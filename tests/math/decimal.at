@@ -1,0 +1,7 @@
+AT_BANNER([Decimal floating point])
+
+AT_SETUP([Decimal float])
+
+AT_CHECK([../../math/decimal-test], [0], [ignore])
+
+AT_CLEANUP

@@ -15,7 +15,7 @@
    along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 
 #include <config.h>
-
+#include "math/decimal.h"
 #include "output/charts/plot-hist.h"
 
 #include <float.h>
@@ -103,9 +103,20 @@ hist_draw_bar (cairo_t *cr, const struct xrchart_geometry *geom,
   cairo_stroke (cr);
 
   if (label)
-    draw_tick (cr, geom, SCALE_ABSCISSA, bins > 10,
-	       x_pos + width / 2.0, "%.*g",
-               DBL_DIG + 1, (upper + lower) / 2.0);
+    {
+      struct decimal decupper;
+      struct decimal declower;
+      struct decimal middle;
+      decimal_from_double (&declower, lower);
+      decimal_from_double (&decupper, upper);
+      middle = declower;
+      decimal_add (&middle, &decupper);
+      decimal_int_divide (&middle, 2);
+      char *str = decimal_to_string (&middle);
+      draw_tick (cr, geom, SCALE_ABSCISSA, bins > 10,
+		 x_pos + width / 2.0, "%s", str);
+      free (str);
+    }
 }
 
 void
@@ -129,7 +140,7 @@ xrchart_draw_histogram (const struct chart_item *chart_item, cairo_t *cr,
 
   bins = gsl_histogram_bins (h->gsl_hist);
 
-  xrchart_write_yscale (cr, geom, 0, gsl_histogram_max_val (h->gsl_hist), 5);
+  xrchart_write_yscale (cr, geom, 0, gsl_histogram_max_val (h->gsl_hist));
 
   for (i = 0; i < bins; i++)
     {

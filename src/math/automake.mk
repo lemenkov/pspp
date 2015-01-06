@@ -17,6 +17,7 @@ src_math_libpspp_math_la_SOURCES = \
 	src/math/covariance.h \
 	src/math/correlation.c \
 	src/math/correlation.h \
+	src/math/decimal.c src/math/decimal.h \
 	src/math/extrema.c src/math/extrema.h \
 	src/math/histogram.c src/math/histogram.h \
 	src/math/interaction.c src/math/interaction.h \

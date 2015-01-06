@@ -1,5 +1,5 @@
 /* PSPP - a program for statistical analysis.
-   Copyright (C) 2004, 2009, 2010, 2011, 2014 Free Software Foundation, Inc.
+   Copyright (C) 2004, 2009, 2010, 2011, 2014, 2015 Free Software Foundation, Inc.
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -17,6 +17,8 @@
 #include <config.h>
 
 #include "output/cairo-chart.h"
+#include "math/decimal.h"
+#include "math/chart-geometry.h"
 
 #include <assert.h>
 #include <cairo/cairo.h>
@@ -347,45 +349,57 @@ xrchart_write_title (cairo_t *cr, const struct xrchart_geometry *geom,
 
 static void
 xrchart_write_scale (cairo_t *cr, struct xrchart_geometry *geom,
-		     double smin, double smax, int ticks, enum tick_orientation orient)
+		     double smin, double smax, enum tick_orientation orient)
 {
   int s;
+  int ticks;
 
-  const double tick_interval =
-    chart_rounded_tick ((smax - smin) / (double) ticks);
+  struct decimal dinterval;
+  struct decimal dlower;
+  struct decimal dupper;
 
-  int upper = ceil (smax / tick_interval);
-  int lower = floor (smin / tick_interval);
+  chart_get_scale (smax, smin, &dlower, &dinterval, &ticks);
 
-  geom->axis[orient].max = tick_interval * upper;
-  geom->axis[orient].min = tick_interval * lower;
+  dupper = dinterval;
+  decimal_int_multiply (&dupper, ticks);
+  decimal_add (&dupper, &dlower);
 
+  double tick_interval = decimal_to_double (&dinterval);
+   
+  geom->axis[orient].max = decimal_to_double (&dupper);
+  geom->axis[orient].min = decimal_to_double (&dlower);
+  
   geom->axis[orient].scale = (fabs (geom->axis[orient].data_max - geom->axis[orient].data_min)
-     / fabs (geom->axis[orient].max - geom->axis[orient].min));
+			      / fabs (geom->axis[orient].max - geom->axis[orient].min));
+  
+  struct decimal pos = dlower;
 
-  for (s = 0 ; s < upper - lower; ++s)
+  for (s = 0 ; s < ticks; ++s)
     {
-      double pos = (s + lower) * tick_interval;
+      char *str = decimal_to_string (&pos);
       draw_tick (cr, geom, orient, false,
-		 s * tick_interval * geom->axis[orient].scale, "%.*g",
-                 DBL_DIG + 1, pos);
+      		 s * tick_interval * geom->axis[orient].scale,
+		 "%s", str);
+      free (str);
+      
+      decimal_add (&pos, &dinterval);
     }
 }
 
 /* Set the scale for the ordinate */
 void
 xrchart_write_yscale (cairo_t *cr, struct xrchart_geometry *geom,
-                    double smin, double smax, int ticks)
+                    double smin, double smax)
 {
-  xrchart_write_scale (cr, geom, smin, smax, ticks, SCALE_ORDINATE);
+  xrchart_write_scale (cr, geom, smin, smax, SCALE_ORDINATE);
 }
 
 /* Set the scale for the abscissa */
 void
 xrchart_write_xscale (cairo_t *cr, struct xrchart_geometry *geom,
-                    double smin, double smax, int ticks)
+		      double smin, double smax)
 {
-  xrchart_write_scale (cr, geom, smin, smax, ticks, SCALE_ABSCISSA);
+  xrchart_write_scale (cr, geom, smin, smax, SCALE_ABSCISSA);
 }
 
 

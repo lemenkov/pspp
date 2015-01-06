@@ -31,6 +31,9 @@ check_PROGRAMS += \
 	tests/libpspp/tower-test \
 	tests/libpspp/u8-istream-test \
 	tests/libpspp/zip-test \
+	tests/math/chart-geometry-test \
+	tests/math/chart-get-scale-test \
+	tests/math/decimal-test \
 	tests/output/render-test \
 	tests/ui/syntax-gen-test
 
@@ -209,6 +212,32 @@ tests_libpspp_zip_test_LDADD = \
 	src/libpspp-core.la \
 	gl/libgl.la 
 
+check_PROGRAMS += tests/math/chart-geometry-test
+tests_math_chart_geometry_test_SOURCES = tests/math/chart-geometry-test.c
+tests_math_chart_geometry_test_LDADD = \
+	src/math/libpspp-math.la \
+	src/libpspp/liblibpspp.la \
+	src/libpspp-core.la \
+	gl/libgl.la 
+
+check_PROGRAMS += tests/math/chart-get-scale-test
+tests_math_chart_get_scale_test_SOURCES = tests/math/chart-get-scale-test.c
+tests_math_chart_get_scale_test_LDADD = \
+	src/math/libpspp-math.la \
+	src/libpspp/liblibpspp.la \
+	src/libpspp-core.la \
+	gl/libgl.la 
+
+
+check_PROGRAMS += tests/math/decimal-test
+tests_math_decimal_test_SOURCES = tests/math/decimal-test.c
+tests_math_decimal_test_LDADD = \
+	src/math/libpspp-math.la \
+	src/libpspp/liblibpspp.la \
+	src/libpspp-core.la \
+	gl/libgl.la 
+
+
 check_PROGRAMS += tests/output/render-test
 tests_output_render_test_SOURCES = tests/output/render-test.c
 tests_output_render_test_LDADD = \
@@ -367,6 +396,8 @@ TESTSUITE_AT = \
 	tests/libpspp/tower.at \
 	tests/libpspp/u8-istream.at \
 	tests/libpspp/zip.at \
+	tests/math/chart-geometry.at \
+	tests/math/decimal.at \
 	tests/math/moments.at \
 	tests/math/randist.at \
 	tests/output/ascii.at \

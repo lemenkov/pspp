@@ -51,8 +51,8 @@ xrchart_draw_scatterplot (const struct chart_item *chart_item, cairo_t *cr,
 
   xrchart_write_xscale (cr, geom,
                       spc->x_min,
-                      spc->x_max, 5);
-  xrchart_write_yscale (cr, geom, spc->y_min, spc->y_max, 5);
+                      spc->x_max);
+  xrchart_write_yscale (cr, geom, spc->y_min, spc->y_max);
   xrchart_write_title (cr, geom, _("Scatterplot %s"), chart_item->title);
   xrchart_write_xlabel (cr, geom, var_to_string(spc->xvar));
   xrchart_write_ylabel (cr, geom, var_to_string(spc->yvar));
