@@ -59,6 +59,7 @@ replace_file_start (const char *file_name, const char *mode,
   struct stat s;
   struct replace_file *rf;
   int fd;
+  int saved_errno = errno;
 
   /* If FILE_NAME represents a special file, write to it directly
      instead of trying to replace it. */
@@ -68,8 +69,10 @@ replace_file_start (const char *file_name, const char *mode,
       fd = open (file_name, O_WRONLY);
       if (fd < 0)
         {
+	  saved_errno = errno;     
           msg (ME, _("Opening %s for writing: %s."),
-               file_name, strerror (errno));
+               file_name, strerror (saved_errno));
+	  errno = saved_errno;
           return NULL;
         }
 
@@ -77,9 +80,11 @@ replace_file_start (const char *file_name, const char *mode,
       *fp = fdopen (fd, mode);
       if (*fp == NULL)
         {
-          msg (ME, _("Opening stream for %s: %s."),
-               file_name, strerror (errno));
+	  saved_errno = errno;     
+	  msg (ME, _("Opening stream for %s: %s."),
+               file_name, strerror (saved_errno));
           close (fd);
+	  errno = saved_errno;
           return NULL;
         }
 
@@ -108,6 +113,7 @@ replace_file_start (const char *file_name, const char *mode,
         {
           msg (ME, _("Creating temporary file to replace %s: %s."),
                rf->file_name, strerror (errno));
+	  saved_errno = errno;
           goto error;
         }
 
@@ -119,6 +125,7 @@ replace_file_start (const char *file_name, const char *mode,
         {
           msg (ME, _("Creating temporary file %s: %s."),
                rf->tmp_name, strerror (errno));
+	  saved_errno = errno;
           goto error;
         }
       free (rf->tmp_name);
@@ -133,6 +140,7 @@ replace_file_start (const char *file_name, const char *mode,
            rf->tmp_name, strerror (errno));
       close (fd);
       unlink (rf->tmp_name);
+      saved_errno = errno;
       goto error;
     }
 
@@ -151,6 +159,7 @@ error:
   *fp = NULL;
   if (tmp_name != NULL)
     *tmp_name = NULL;
+  errno = saved_errno;
   return NULL;
 }
 
