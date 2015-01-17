@@ -72,7 +72,6 @@ replace_file_start (const char *file_name, const char *mode,
 	  saved_errno = errno;     
           msg (ME, _("Opening %s for writing: %s."),
                file_name, strerror (saved_errno));
-	  errno = saved_errno;
           return NULL;
         }
 
@@ -84,7 +83,6 @@ replace_file_start (const char *file_name, const char *mode,
 	  msg (ME, _("Opening stream for %s: %s."),
                file_name, strerror (saved_errno));
           close (fd);
-	  errno = saved_errno;
           return NULL;
         }
 
@@ -111,9 +109,9 @@ replace_file_start (const char *file_name, const char *mode,
       rf->tmp_name = xasprintf ("%s.tmpXXXXXX", file_name);
       if (gen_tempname (rf->tmp_name, 0, 0600, GT_NOCREATE) < 0)
         {
-          msg (ME, _("Creating temporary file to replace %s: %s."),
-               rf->file_name, strerror (errno));
 	  saved_errno = errno;
+          msg (ME, _("Creating temporary file to replace %s: %s."),
+               rf->file_name, strerror (saved_errno));
           goto error;
         }
 
@@ -123,9 +121,9 @@ replace_file_start (const char *file_name, const char *mode,
         break;
       if (errno != EEXIST)
         {
-          msg (ME, _("Creating temporary file %s: %s."),
-               rf->tmp_name, strerror (errno));
 	  saved_errno = errno;
+          msg (ME, _("Creating temporary file %s: %s."),
+               rf->tmp_name, strerror (saved_errno));
           goto error;
         }
       free (rf->tmp_name);
@@ -136,11 +134,11 @@ replace_file_start (const char *file_name, const char *mode,
   *fp = fdopen (fd, mode);
   if (*fp == NULL)
     {
+      saved_errno = errno;
       msg (ME, _("Opening stream for temporary file %s: %s."),
-           rf->tmp_name, strerror (errno));
+           rf->tmp_name, strerror (saved_errno));
       close (fd);
       unlink (rf->tmp_name);
-      saved_errno = errno;
       goto error;
     }
 
