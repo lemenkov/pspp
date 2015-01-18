@@ -75,6 +75,29 @@ xrchart_draw_piechart (const struct chart_item *chart_item, cairo_t *cr,
   for (i = 0; i < pie->n_slices; i++)
     total_magnitude += pie->slices[i].magnitude;
 
+
+  /* Draw the segments */
+  angle = 0.0;
+  for (i = 0; i < pie->n_slices ; ++i )
+    {
+      const double segment_angle =
+	pie->slices[i].magnitude / total_magnitude * 2 * M_PI ;
+
+      /* Fill the segment */
+      draw_segment (cr,
+                    centre_x, centre_y, radius,
+                    angle, segment_angle,
+                    &data_colour[i % XRCHART_N_COLOURS]);
+
+      angle += segment_angle;
+    }
+
+
+  /* Now add the labels.
+     Don't put this in the loop above;  the labels must
+     be put in last, otherwise the segment fill could
+     obscure them.
+   */
   angle = 0.0;
   for (i = 0; i < pie->n_slices ; ++i )
     {
@@ -87,13 +110,6 @@ xrchart_draw_piechart (const struct chart_item *chart_item, cairo_t *cr,
       const double label_y = centre_y +
 	radius * sin (angle + segment_angle/2.0);
 
-      /* Fill the segment */
-      draw_segment (cr,
-                    centre_x, centre_y, radius,
-                    angle, segment_angle,
-                    &data_colour[i % XRCHART_N_COLOURS]);
-
-      /* Now add the labels */
       if ( label_x < centre_x )
 	{
           cairo_move_to (cr, label_x, label_y);
