@@ -14,6 +14,8 @@ src_output_liboutput_la_SOURCES = \
 	src/output/charts/boxplot.h \
 	src/output/charts/np-plot.c \
 	src/output/charts/np-plot.h \
+	src/output/charts/barchart.c \
+	src/output/charts/barchart.h \
 	src/output/charts/piechart.c \
 	src/output/charts/piechart.h \
 	src/output/charts/plot-hist.c \
@@ -68,6 +70,7 @@ src_output_liboutput_la_SOURCES += \
 	src/output/cairo.h \
 	src/output/charts/boxplot-cairo.c \
 	src/output/charts/np-plot-cairo.c \
+	src/output/charts/barchart-cairo.c \
 	src/output/charts/piechart-cairo.c \
 	src/output/charts/plot-hist-cairo.c \
 	src/output/charts/roc-chart-cairo.c \

@@ -136,9 +136,11 @@ FREQUENCIES
                    [@{FREQ[(@var{y_max})],PERCENT[(@var{y_max})]@}] [@{NONORMAL,NORMAL@}]
         /PIECHART=[MINIMUM(@var{x_min})] [MAXIMUM(@var{x_max})]
                   [@{FREQ,PERCENT@}] [@{NOMISSING,MISSING@}]
+        /BARCHART=[MINIMUM(@var{x_min})] [MAXIMUM(@var{x_max})]
+                  [@{FREQ,PERCENT@}]
+
 
 (These options are not currently implemented.)
-        /BARCHART=@dots{}
         /HBAR=@dots{}
         /GROUPED=@dots{}
 @end display

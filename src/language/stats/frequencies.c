@@ -1,6 +1,6 @@
 /*
   PSPP - a program for statistical analysis.
-  Copyright (C) 1997-9, 2000, 2007, 2009, 2010, 2011, 2014 Free Software Foundation, Inc.
+  Copyright (C) 1997-9, 2000, 2007, 2009, 2010, 2011, 2014, 2015 Free Software Foundation, Inc.
    
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -53,6 +53,7 @@
 
 
 #include "output/chart-item.h"
+#include "output/charts/barchart.h"
 #include "output/charts/piechart.h"
 #include "output/charts/plot-hist.h"
 #include "output/tab.h"
@@ -222,7 +223,7 @@ struct frq_proc
     int n_stats;
 
     /* Histogram and pie chart settings. */
-    struct frq_chart *hist, *pie;
+    struct frq_chart *hist, *pie, *bar;
   };
 
 
@@ -238,6 +239,10 @@ struct freq_compare_aux
 static void calc_stats (const struct var_freqs *vf, double d[FRQ_ST_count]);
 
 static void do_piechart(const struct frq_chart *pie, 
+			const struct variable *var,
+			const struct freq_tab *frq_tab);
+
+static void do_barchart(const struct frq_chart *bar,
 			const struct variable *var,
 			const struct freq_tab *frq_tab);
 
@@ -563,6 +568,9 @@ postcalc (struct frq_proc *frq, const struct dataset *ds)
       if (frq->pie)
         do_piechart(frq->pie, vf->var, &vf->tab);
 
+      if (frq->bar)
+        do_barchart(frq->bar, vf->var, &vf->tab);
+
       cleanup_freq_tab (vf);
     }
 }
@@ -581,6 +589,10 @@ cmd_frequencies (struct lexer *lexer, struct dataset *ds)
   double pie_min = -DBL_MAX;
   double pie_max = DBL_MAX;
   bool pie_missing = false;
+
+  double bar_min = -DBL_MAX;
+  double bar_max = DBL_MAX;
+  bool bar_freq = true;
 
   double hi_min = -DBL_MAX;
   double hi_max = DBL_MAX;
@@ -610,6 +622,7 @@ cmd_frequencies (struct lexer *lexer, struct dataset *ds)
 
   frq.hist = NULL;
   frq.pie = NULL;
+  frq.bar = NULL;
 
 
   /* Accept an optional, completely pointless "/VARIABLES=" */
@@ -980,6 +993,66 @@ cmd_frequencies (struct lexer *lexer, struct dataset *ds)
 	    }
 	  sbc_piechart = true;
 	}
+      else if (lex_match_id (lexer, "BARCHART"))
+        {
+	  lex_match (lexer, T_EQUALS);
+	  while (lex_token (lexer) != T_ENDCMD
+		 && lex_token (lexer) != T_SLASH)
+	    {
+	      if (lex_match_id (lexer, "MINIMUM"))
+		{
+		  lex_force_match (lexer, T_LPAREN);
+		  if (lex_force_num (lexer))
+		    {
+		      bar_min = lex_number (lexer);
+		      lex_get (lexer);
+		    }
+		  lex_force_match (lexer, T_RPAREN);
+		}
+	      else if (lex_match_id (lexer, "MAXIMUM"))
+		{
+		  lex_force_match (lexer, T_LPAREN);
+		  if (lex_force_num (lexer))
+		    {
+		      bar_max = lex_number (lexer);
+		      lex_get (lexer);
+		    }
+ 		  lex_force_match (lexer, T_RPAREN);
+		}
+	      else if (lex_match_id (lexer, "FREQ"))
+		{
+		  if ( lex_match (lexer, T_LPAREN))
+		    {
+		      if (lex_force_num (lexer))
+			{
+			  lex_number (lexer);
+			  lex_get (lexer);
+			}
+		      lex_force_match (lexer, T_RPAREN);
+		    }
+		  bar_freq = true;
+		}
+	      else if (lex_match_id (lexer, "PERCENT"))
+		{
+		  if ( lex_match (lexer, T_LPAREN))
+		    {
+		      if (lex_force_num (lexer))
+			{
+			  lex_number (lexer);
+			  lex_get (lexer);
+			}
+		      lex_force_match (lexer, T_RPAREN);
+		    }
+		  bar_freq = false;
+		}
+	      else
+		{
+		  lex_error (lexer, NULL);
+		  goto error;
+		}
+	    }
+	  sbc_barchart = true;
+	}
       else if (lex_match_id (lexer, "MISSING"))
         {
 	  lex_match (lexer, T_EQUALS);
@@ -1024,9 +1097,6 @@ cmd_frequencies (struct lexer *lexer, struct dataset *ds)
 /* Figure out which charts the user requested.  */
 
   {
-    if (sbc_barchart)
-      msg (SW, _("Bar charts are not implemented."));
-
     if (sbc_histogram)
       {
 	struct frq_chart *hist;
@@ -1064,6 +1134,15 @@ cmd_frequencies (struct lexer *lexer, struct dataset *ds)
 	frq.percentiles[frq.n_percentiles + 1].show = false;
 	
 	frq.n_percentiles+=2;
+      }
+
+    if (sbc_barchart)
+      {
+	frq.bar = xmalloc (sizeof *frq.bar);
+	frq.bar->x_min = bar_min;
+	frq.bar->x_max = bar_max;
+	frq.bar->include_missing = true;
+	frq.bar->y_scale = bar_freq ? FRQ_FREQ : FRQ_PERCENT;
       }
 
     if (sbc_piechart)
@@ -1256,7 +1335,7 @@ add_slice (const struct frq_chart *pie, const struct freq *freq,
    The caller is responsible for freeing slices
 */
 static struct slice *
-freq_tab_to_slice_array(const struct frq_chart *pie,
+freq_tab_to_slice_array(const struct frq_chart *catchart,
                         const struct freq_tab *frq_tab,
 			const struct variable *var,
 			int *n_slicesp)
@@ -1264,14 +1343,34 @@ freq_tab_to_slice_array(const struct frq_chart *pie,
   struct slice *slices;
   int n_slices;
   int i;
+  double total = 0;
 
   slices = xnmalloc (frq_tab->n_valid + frq_tab->n_missing, sizeof *slices);
   n_slices = 0;
 
+  
   for (i = 0; i < frq_tab->n_valid; i++)
-    n_slices += add_slice (pie, &frq_tab->valid[i], var, &slices[n_slices]);
+    {
+      const struct freq *f = &frq_tab->valid[i];
+      total += f->count;
+      if (f->count > catchart->x_max)
+	continue;
+
+      if (f->count < catchart->x_min)
+	continue;
+
+      n_slices += add_slice (catchart, f, var, &slices[n_slices]);
+    }
+
+  if (catchart->y_scale == FRQ_PERCENT) 
+    for (i = 0; i < frq_tab->n_valid; i++)
+      {
+	slices[i].magnitude /= total;
+	slices[i].magnitude *= 100.00;
+      }
+  
   for (i = 0; i < frq_tab->n_missing; i++)
-    n_slices += add_slice (pie, &frq_tab->missing[i], var, &slices[n_slices]);
+    n_slices += add_slice (catchart, &frq_tab->missing[i], var, &slices[n_slices]);
 
   *n_slicesp = n_slices;
   return slices;
@@ -1300,6 +1399,26 @@ do_piechart(const struct frq_chart *pie, const struct variable *var,
     ds_destroy (&slices[i].label);
   free (slices);
 }
+
+
+static void
+do_barchart(const struct frq_chart *bar, const struct variable *var,
+            const struct freq_tab *frq_tab)
+{
+  struct slice *slices;
+  int n_slices, i;
+
+  slices = freq_tab_to_slice_array (bar, frq_tab, var, &n_slices);
+
+  chart_item_submit (barchart_create (var_to_string (var), 
+				      (bar->y_scale == FRQ_FREQ) ? _("Count") : _("Percent"),
+				      slices, n_slices));
+
+  for (i = 0; i < n_slices; i++)
+    ds_destroy (&slices[i].label);
+  free (slices);
+}
+
 
 /* Calculates all the pertinent statistics for VF, putting them in array
    D[]. */

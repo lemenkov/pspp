@@ -30,6 +30,7 @@
 #include "output/charts/boxplot.h"
 #include "output/charts/np-plot.h"
 #include "output/charts/piechart.h"
+#include "output/charts/barchart.h"
 #include "output/charts/plot-hist.h"
 #include "output/charts/roc-chart.h"
 #include "output/charts/spreadlevel-plot.h"
@@ -1410,6 +1411,8 @@ xr_draw_chart (const struct chart_item *chart_item, cairo_t *cr,
     xrchart_draw_np_plot (chart_item, cr, &geom);
   else if (is_piechart (chart_item))
     xrchart_draw_piechart (chart_item, cr, &geom);
+  else if (is_barchart (chart_item))
+    xrchart_draw_barchart (chart_item, cr, &geom);
   else if (is_roc_chart (chart_item))
     xrchart_draw_roc (chart_item, cr, &geom);
   else if (is_scree (chart_item))
