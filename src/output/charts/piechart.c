@@ -43,6 +43,11 @@ piechart_create (const char *title, const struct slice *slices, int n_slices)
       struct slice *dst = &pie->slices[i];
 
       ds_init_string (&dst->label, &src->label);
+
+      /* Chomp any whitespace from the RHS of the label.
+	 Doing this ensures that those labels to the right
+	 of the pie, appear right justified. */
+      ds_rtrim (&dst->label, ss_cstr (" \t"));
       dst->magnitude = src->magnitude;
     }
   pie->n_slices = n_slices;
