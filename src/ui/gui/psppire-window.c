@@ -31,6 +31,7 @@
 #include "data/any-reader.h"
 #include "data/file-name.h"
 #include "data/dataset.h"
+#include "libpspp/version.h"
 
 #include "helper.h"
 #include "psppire-data-window.h"
@@ -765,6 +766,8 @@ psppire_window_open (PsppireWindow *de)
 {
   GtkWidget *dialog = psppire_window_file_chooser_dialog (de);
 
+  gtk_file_chooser_add_shortcut_folder (GTK_FILE_CHOOSER (dialog), examples_dir, NULL);
+
   switch (gtk_dialog_run (GTK_DIALOG (dialog)))
     {
     case GTK_RESPONSE_ACCEPT:
@@ -777,9 +780,7 @@ psppire_window_open (PsppireWindow *de)
         gchar *encoding = psppire_encoding_selector_get_encoding (
           gtk_file_chooser_get_extra_widget (GTK_FILE_CHOOSER (dialog)));
 
-        int retval;
-
-        retval = any_reader_detect (sysname, NULL);
+        int retval = any_reader_detect (sysname, NULL);
 	if (retval == 1)
           open_data_window (de, name, encoding, NULL);
 	else if (retval == 0)
