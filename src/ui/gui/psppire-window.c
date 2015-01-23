@@ -15,6 +15,7 @@
    along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 
 #include <config.h>
+#include <gl/relocatable.h>
 
 #include "psppire-window.h"
 #include "psppire-window-base.h"
@@ -766,7 +767,7 @@ psppire_window_open (PsppireWindow *de)
 {
   GtkWidget *dialog = psppire_window_file_chooser_dialog (de);
 
-  gtk_file_chooser_add_shortcut_folder (GTK_FILE_CHOOSER (dialog), examples_dir, NULL);
+  gtk_file_chooser_add_shortcut_folder (GTK_FILE_CHOOSER (dialog), relocate (examples_dir), NULL);
 
   switch (gtk_dialog_run (GTK_DIALOG (dialog)))
     {
