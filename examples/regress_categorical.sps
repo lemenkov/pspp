@@ -5,8 +5,6 @@ title 'Demonstrate REGRESSION procedure'.
 /*                 pspp example.stat
 /*
 /*      Output is written to the file "pspp.list".
-/*
-/*      (This comment will not appear in the output.)
 
 data list / v0 1-2 (A) v1 v2 3-22 (10).
 begin data.
