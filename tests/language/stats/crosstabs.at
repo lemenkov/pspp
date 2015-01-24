@@ -1536,3 +1536,42 @@ Nominal by Nominal,Lambda,Symmetric,.000,.000,NaN,NaN
 ,,y Dependent,.184,.019,7.890,.   @&t@
 ])
 AT_CLEANUP
+
+
+
+AT_SETUP([CROSSTABS barchart])
+AT_DATA([bc.sps], [dnl
+SET FORMAT=F8.3.
+
+DATA LIST LIST NOTABLE /x (a20) y (f8) z (f8) w (f8) .
+BEGIN DATA.
+This  1  0 416
+That  2  0 121
+Other 2  0 335
+This  2  0 231
+That  3  0 112
+Other 4  0 130
+This  1  1 160
+That  2  1 211
+Other 2  1 352
+This  2  1 212
+That  3  1 121
+Other 4  1 101
+END DATA.
+
+WEIGHT BY w.
+
+CROSSTABS 
+	  /table x BY y BY z
+	  /table x BY y
+	  /barchart.
+])
+
+AT_CHECK([pspp -O format=txt -o xxx bc.sps], [0], [ignore])
+
+AT_CHECK([test -e xxx-1.png], [0], [ignore])
+AT_CHECK([test -e xxx-2.png], [0], [ignore])
+
+AT_CHECK([diff xxx-1.png xxx-2.png], [0], [ignore])
+
+AT_CLEANUP

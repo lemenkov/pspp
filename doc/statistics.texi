@@ -209,12 +209,24 @@ histogram.
 The @subcmd{PIECHART} subcommand adds a pie chart for each variable to the data.  Each
 slice represents one value, with the size of the slice proportional to
 the value's frequency.  By default, all non-missing values are given
-slices.  The @subcmd{MINIMUM} and @subcmd{MAXIMUM} keywords can be used to limit the
-displayed slices to a given range of values.  The @subcmd{MISSING} keyword adds
-slices for missing values.
+slices.  
+The @subcmd{MINIMUM} and @subcmd{MAXIMUM} keywords can be used to limit the
+displayed slices to a given range of values.  
+The keyword @subcmd{NOMISSING} causes missing values to be omitted from the
+piechart.  This is the default.
+If instead, @subcmd{MISSING} is specified, then a single slice
+will be included representing all system missing and user-missing cases.
 
-The @subcmd{FREQ} and @subcmd{PERCENT} options on @subcmd{HISTOGRAM} and @subcmd{PIECHART} are accepted
-but not currently honoured.
+@cindex bar chart
+The @subcmd{BARCHART} subcommand produces a bar chart for each variable.
+The @subcmd{MINIMUM} and @subcmd{MAXIMUM} keywords can be used to omit
+categories whose counts which lie outside the specified limits.
+The @subcmd{FREQ} option (default) causes the ordinate to display the frequency
+of each category, whereas the @subcmd{PERCENT} option will display relative
+percentages.
+
+The @subcmd{FREQ} and @subcmd{PERCENT} options on @subcmd{HISTOGRAM} and 
+@subcmd{PIECHART} are accepted but not currently honoured.
 
 @node EXAMINE
 @section EXAMINE
@@ -514,6 +526,7 @@ CROSSTABS
                 ASRESIDUAL,ALL,NONE@}
         /STATISTICS=@{CHISQ,PHI,CC,LAMBDA,UC,BTAU,CTAU,RISK,GAMMA,D,
                      KAPPA,ETA,CORR,ALL,NONE@}
+        /BARCHART
         
 (Integer mode.)
         /VARIABLES=@var{var_list} (@var{low},@var{high})@dots{}
@@ -656,8 +669,15 @@ some statistics are calculated only in integer mode.
 @samp{/STATISTICS} without any settings selects CHISQ.  If the
 @subcmd{STATISTICS} subcommand is not given, no statistics are calculated.
 
+@cindex bar chart
+The @samp{/BARCHART} subcommand produces a clustered bar chart for the first two
+variables on each table.
+If a table has more than two variables, the counts for the third and subsequent levels 
+will be aggregated and the chart will be produces as if there were only two variables.  
+
+
 @strong{Please note:} Currently the implementation of @cmd{CROSSTABS} has the
-following bugs:
+following limitations:
 
 @itemize @bullet
 @item

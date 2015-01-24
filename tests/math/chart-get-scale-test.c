@@ -21,12 +21,16 @@
 #include <assert.h>
 #include <string.h>
 
+#include "libpspp/compiler.h"
+
 #include "math/decimal.h"
+#include "math/chart-geometry.h"
 #include <limits.h>
 #include <float.h>
 #include <math.h>
 
-void
+#if 0
+static void
 dump_scale (const struct decimal *low, const struct decimal *interval, int n_ticks)
 {
   int i;
@@ -37,16 +41,16 @@ dump_scale (const struct decimal *low, const struct decimal *interval, int n_tic
       decimal_add (&tick, interval);
     }
 }
+#endif
 
 
-void
+static void
 test_range (double low, double high)
 {
   int n_ticks = 0;
   struct decimal interval;
   struct decimal lower;
 
-  
   chart_get_scale (high, low,
 		   &lower, &interval, &n_ticks);
 
@@ -82,7 +86,7 @@ test_range (double low, double high)
 
 
 int 
-main (int argc, char **argv)
+main (int argc UNUSED, char **argv UNUSED)
 {
   test_range (0.2, 11);
   test_range (-0.2, 11);

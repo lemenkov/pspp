@@ -21,6 +21,7 @@
 #include <assert.h>
 #include <string.h>
 
+#include "libpspp/compiler.h"
 #include "math/decimal.h"
 #include <limits.h>
 #include <float.h>
@@ -33,7 +34,7 @@
    This function is used purely for testing, and need not and is not intended
    to be efficient.
  */
-char *
+static char *
 canonicalise_string (const char *s)
 {
   char *out;
@@ -109,7 +110,7 @@ canonicalise_string (const char *s)
 
 /* Tests both the decimal_to_string function, and the decimal_input_from_string 
    function */
-void
+static void
 test_run (const char *input)
   {
     struct decimal test;
@@ -131,7 +132,7 @@ test_run (const char *input)
   }
 
 
-void
+static void
 test_can (const char *in, const char *soll)
 {
   char *ist = canonicalise_string (in);
@@ -142,7 +143,8 @@ test_can (const char *in, const char *soll)
 }
 
 
-void
+#if 0
+static void
 dump_scale (const struct decimal *low, const struct decimal *interval, int n_ticks)
 {
   int i;
@@ -154,10 +156,11 @@ dump_scale (const struct decimal *low, const struct decimal *interval, int n_tic
       decimal_add (&tick, interval);
     }
 }
+#endif
 
 
 
-void
+static void
 test_ceil (double x)
 {
   struct decimal dx;
@@ -168,7 +171,7 @@ test_ceil (double x)
   assert (act == expected);
 }
 
-void
+static void
 test_floor (double x)
 {
   struct decimal dx;
@@ -180,12 +183,10 @@ test_floor (double x)
 }
 
 
-void
+static void
 test_addition (const struct decimal *one_, const struct decimal *two)
 {
   struct decimal one = *one_;
-  double d1 = decimal_to_double (&one);
-  double d2 = decimal_to_double (two);
   
   decimal_add (&one, two);
   
@@ -201,7 +202,7 @@ test_addition (const struct decimal *one_, const struct decimal *two)
 }
 
 
-void
+static void
 test_multiplication (const struct decimal *d, int m)
 {
   char b1[256];
@@ -221,7 +222,7 @@ test_multiplication (const struct decimal *d, int m)
 
 
 int 
-main (int argc, char **argv)
+main (int argc UNUSED, char **argv UNUSED)
 {
   /* Test that our canonicalise function works for all corner cases we
      can think of. */

@@ -18,7 +18,7 @@
 #include <stdlib.h>
 #include "math/chart-geometry.h"
 #include "math/decimal.h"
-
+#include "libpspp/compiler.h"
 
 const double in[20] =
   {
@@ -45,7 +45,7 @@ const double in[20] =
   };
 
 int 
-main ()
+main (int argc UNUSED, char **argv UNUSED)
 {
   int i;
   for (i = 0; i < 20; ++i)

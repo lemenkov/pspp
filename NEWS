@@ -6,7 +6,7 @@ Please send PSPP bug reports to bug-gnu-pspp@gnu.org.
  
 Changes since 0.8.4:
 
- * The FREQUENCIES command can now generate barcharts.
+ * The FREQUENCIES and CROSSTABS commands can now generate barcharts.
 
  * The FACTOR command can now perform PROMAX rotations.
 

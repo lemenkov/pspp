@@ -112,26 +112,26 @@ do_binomial (const struct dictionary *dict,
 
 	  if (bst->cutpoint != SYSMIS)
 	    {
-	      if ( cat1[v].value.f >= value )
+	      if ( cat1[v].values[0].f >= value )
 		  cat1[v].count  += w;
 	      else
 		  cat2[v].count += w;
 	    }
 	  else
 	    {
-	      if ( SYSMIS == cat1[v].value.f )
+	      if ( SYSMIS == cat1[v].values[0].f )
 		{
-		  cat1[v].value.f = value;
+		  cat1[v].values[0].f = value;
 		  cat1[v].count = w;
 		}
-	      else if ( cat1[v].value.f == value )
+	      else if ( cat1[v].values[0].f == value )
 		cat1[v].count += w;
-	      else if ( SYSMIS == cat2[v].value.f )
+	      else if ( SYSMIS == cat2[v].values[0].f )
 		{
-		  cat2[v].value.f = value;
+		  cat2[v].values[0].f = value;
 		  cat2[v].count = w;
 		}
-	      else if ( cat2[v].value.f == value )
+	      else if ( cat2[v].values[0].f == value )
 		cat2[v].count += w;
 	      else if ( bst->category1 == SYSMIS)
 		msg (ME, _("Variable %s is not dichotomous"), var_get_name (var));
@@ -172,7 +172,7 @@ binomial_execute (const struct dataset *ds,
       cat[i] = xnmalloc (ost->n_vars, sizeof *cat[i]);
       for (v = 0; v < ost->n_vars; v++)
         {
-          cat[i][v].value.f = value;
+          cat[i][v].values[0].f = value;
           cat[i][v].count = 0;
         }
     }
@@ -209,8 +209,8 @@ binomial_execute (const struct dataset *ds,
 	    }
           else
             {
-              var_append_value_name (var, &cat[0][v].value, &catstr[0]);
-              var_append_value_name (var, &cat[1][v].value, &catstr[1]);
+              var_append_value_name (var, cat[0][v].values, &catstr[0]);
+              var_append_value_name (var, cat[1][v].values, &catstr[1]);
             }
 
           tab_hline (table, TAL_1, 0, tab_nc (table) -1, 1 + v * 3);

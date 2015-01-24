@@ -165,6 +165,8 @@ void xrchart_draw_roc (const struct chart_item *, cairo_t *,
                        struct xrchart_geometry *);
 void xrchart_draw_piechart (const struct chart_item *, cairo_t *,
                             struct xrchart_geometry *);
+void xrchart_draw_barchart (const struct chart_item *, cairo_t *,
+                            struct xrchart_geometry *);
 void xrchart_draw_histogram (const struct chart_item *, cairo_t *,
                              struct xrchart_geometry *);
 void xrchart_draw_np_plot (const struct chart_item *, cairo_t *,

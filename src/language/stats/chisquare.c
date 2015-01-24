@@ -331,7 +331,7 @@ chisquare_execute (const struct dataset *ds,
 	    {
 	      struct string str;
 	      double exp;
-	      const union value *observed_value = &ff[i]->value;
+	      const union value *observed_value = &ff[i]->values[0];
 
 	      ds_init_empty (&str);
 	      var_append_value_name (var, observed_value, &str);
@@ -407,7 +407,7 @@ chisquare_execute (const struct dataset *ds,
 	      struct string str;
 	      double exp;
 
-	      const union value *observed_value = &ff[i]->value;
+	      const union value *observed_value = &ff[i]->values[0];
 
 	      ds_init_empty (&str);
 	      var_append_value_name (ost->vars[v], observed_value, &str);

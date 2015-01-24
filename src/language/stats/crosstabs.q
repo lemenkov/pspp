@@ -41,6 +41,7 @@
 #include "data/value-labels.h"
 #include "data/variable.h"
 #include "language/command.h"
+#include "language/stats/freq.h"
 #include "language/dictionary/split-file.h"
 #include "language/lexer/lexer.h"
 #include "language/lexer/variable-parser.h"
@@ -55,6 +56,8 @@
 #include "libpspp/pool.h"
 #include "libpspp/str.h"
 #include "output/tab.h"
+#include "output/chart-item.h"
+#include "output/charts/barchart.h"
 
 #include "gl/minmax.h"
 #include "gl/xalloc.h"
@@ -77,6 +80,7 @@
 	     tabl:!tables/notables,
 	     box:!box/nobox,
 	     pivot:!pivot/nopivot;
+     +barchart=;
      +cells[cl_]=count,expected,row,column,total,residual,sresidual,
 		 asresidual,all,none;
      +statistics[st_]=chisq,phi,cc,lambda,uc,none,btau,ctau,risk,gamma,d,
@@ -94,20 +98,6 @@
 /* Number of directional statistics. */
 #define N_DIRECTIONAL 13
 
-/* A single table entry for general mode. */
-struct table_entry
-  {
-    struct hmap_node node;      /* Entry in hash table. */
-    double freq;                /* Frequency count. */
-    union value values[1];	/* Values. */
-  };
-
-static size_t
-table_entry_size (size_t n_values)
-{
-  return (offsetof (struct table_entry, values)
-          + n_values * sizeof (union value));
-}
 
 /* Indexes into the 'vars' member of struct pivot_table and
    struct crosstab member. */
@@ -136,7 +126,7 @@ struct pivot_table
 
     /* Data. */
     struct hmap data;
-    struct table_entry **entries;
+    struct freq **entries;
     size_t n_entries;
 
     /* Column values, number of columns. */
@@ -174,6 +164,7 @@ struct crosstabs_proc
     enum { INTEGER, GENERAL } mode;
     enum mv_class exclude;
     bool pivot;
+    bool barchart;
     bool bad_warn;
     struct fmt_spec weight_format;
 
@@ -241,7 +232,7 @@ cmd_crosstabs (struct lexer *lexer, struct dataset *ds)
     }
 
   proc.mode = proc.n_variables ? INTEGER : GENERAL;
-
+  proc.barchart = cmd.sbc_barchart > 0;
 
   proc.descending = cmd.val == CRS_DVALUE;
 
@@ -590,7 +581,7 @@ static void
 tabulate_integer_case (struct pivot_table *pt, const struct ccase *c,
                        double weight)
 {
-  struct table_entry *te;
+  struct freq *te;
   size_t hash;
   int j;
 
@@ -601,14 +592,14 @@ tabulate_integer_case (struct pivot_table *pt, const struct ccase *c,
       hash = hash_int (case_num (c, pt->vars[j]), hash);
     }
 
-  HMAP_FOR_EACH_WITH_HASH (te, struct table_entry, node, hash, &pt->data)
+  HMAP_FOR_EACH_WITH_HASH (te, struct freq, node, hash, &pt->data)
     {
       for (j = 0; j < pt->n_vars; j++)
         if ((int) case_num (c, pt->vars[j]) != (int) te->values[j].f)
           goto no_match;
 
       /* Found an existing entry. */
-      te->freq += weight;
+      te->count += weight;
       return;
 
     no_match: ;
@@ -616,7 +607,7 @@ tabulate_integer_case (struct pivot_table *pt, const struct ccase *c,
 
   /* No existing entry.  Create a new one. */
   te = xmalloc (table_entry_size (pt->n_vars));
-  te->freq = weight;
+  te->count = weight;
   for (j = 0; j < pt->n_vars; j++)
     te->values[j].f = (int) case_num (c, pt->vars[j]);
   hmap_insert (&pt->data, &te->node, hash);
@@ -626,7 +617,7 @@ static void
 tabulate_general_case (struct pivot_table *pt, const struct ccase *c,
                        double weight)
 {
-  struct table_entry *te;
+  struct freq *te;
   size_t hash;
   int j;
 
@@ -637,7 +628,7 @@ tabulate_general_case (struct pivot_table *pt, const struct ccase *c,
       hash = value_hash (case_data (c, var), var_get_width (var), hash);
     }
 
-  HMAP_FOR_EACH_WITH_HASH (te, struct table_entry, node, hash, &pt->data)
+  HMAP_FOR_EACH_WITH_HASH (te, struct freq, node, hash, &pt->data)
     {
       for (j = 0; j < pt->n_vars; j++)
         {
@@ -648,7 +639,7 @@ tabulate_general_case (struct pivot_table *pt, const struct ccase *c,
         }
 
       /* Found an existing entry. */
-      te->freq += weight;
+      te->count += weight;
       return;
 
     no_match: ;
@@ -656,7 +647,7 @@ tabulate_general_case (struct pivot_table *pt, const struct ccase *c,
 
   /* No existing entry.  Create a new one. */
   te = xmalloc (table_entry_size (pt->n_vars));
-  te->freq = weight;
+  te->count = weight;
   for (j = 0; j < pt->n_vars; j++)
     {
       const struct variable *var = pt->vars[j];
@@ -667,8 +658,8 @@ tabulate_general_case (struct pivot_table *pt, const struct ccase *c,
 
 /* Post-data reading calculations. */
 
-static int compare_table_entry_vars_3way (const struct table_entry *a,
-                                          const struct table_entry *b,
+static int compare_table_entry_vars_3way (const struct freq *a,
+                                          const struct freq *b,
                                           const struct pivot_table *pt,
                                           int idx0, int idx1);
 static int compare_table_entry_3way (const void *ap_, const void *bp_,
@@ -694,19 +685,20 @@ postcalc (struct crosstabs_proc *proc)
   /* Convert hash tables into sorted arrays of entries. */
   for (pt = &proc->pivots[0]; pt < &proc->pivots[proc->n_pivots]; pt++)
     {
-      struct table_entry *e;
+      struct freq *e;
       size_t i;
 
       pt->n_entries = hmap_count (&pt->data);
       pt->entries = xnmalloc (pt->n_entries, sizeof *pt->entries);
       i = 0;
-      HMAP_FOR_EACH (e, struct table_entry, node, &pt->data)
+      HMAP_FOR_EACH (e, struct freq, node, &pt->data)
         pt->entries[i++] = e;
       hmap_destroy (&pt->data);
 
       sort (pt->entries, pt->n_entries, sizeof *pt->entries,
             proc->descending ? compare_table_entry_3way_inv : compare_table_entry_3way,
 	    pt);
+
     }
 
   make_summary_table (proc);
@@ -726,6 +718,9 @@ postcalc (struct crosstabs_proc *proc)
               output_pivot_table (proc, &subset);
             }
         }
+      if (proc->barchart)
+	chart_item_submit 
+	  (barchart_create (pt->vars, pt->n_vars, _("Count"), pt->entries, pt->n_entries));
     }
 
   /* Free output and prepare for next split file. */
@@ -780,8 +775,8 @@ make_pivot_table_subset (struct pivot_table *pt, size_t row0, size_t row1,
 }
 
 static int
-compare_table_entry_var_3way (const struct table_entry *a,
-                              const struct table_entry *b,
+compare_table_entry_var_3way (const struct freq *a,
+                              const struct freq *b,
                               const struct pivot_table *pt,
                               int idx)
 {
@@ -790,8 +785,8 @@ compare_table_entry_var_3way (const struct table_entry *a,
 }
 
 static int
-compare_table_entry_vars_3way (const struct table_entry *a,
-                               const struct table_entry *b,
+compare_table_entry_vars_3way (const struct freq *a,
+                               const struct freq *b,
                                const struct pivot_table *pt,
                                int idx0, int idx1)
 {
@@ -806,15 +801,15 @@ compare_table_entry_vars_3way (const struct table_entry *a,
   return 0;
 }
 
-/* Compare the struct table_entry at *AP to the one at *BP and
+/* Compare the struct freq at *AP to the one at *BP and
    return a strcmp()-type result. */
 static int
 compare_table_entry_3way (const void *ap_, const void *bp_, const void *pt_)
 {
-  const struct table_entry *const *ap = ap_;
-  const struct table_entry *const *bp = bp_;
-  const struct table_entry *a = *ap;
-  const struct table_entry *b = *bp;
+  const struct freq *const *ap = ap_;
+  const struct freq *const *bp = bp_;
+  const struct freq *a = *ap;
+  const struct freq *b = *bp;
   const struct pivot_table *pt = pt_;
   int cmp;
 
@@ -843,8 +838,8 @@ find_first_difference (const struct pivot_table *pt, size_t row)
     return pt->n_vars - 1;
   else
     {
-      const struct table_entry *a = pt->entries[row];
-      const struct table_entry *b = pt->entries[row - 1];
+      const struct freq *a = pt->entries[row];
+      const struct freq *b = pt->entries[row - 1];
       int col;
 
       for (col = pt->n_vars - 1; col >= 0; col--)
@@ -902,7 +897,7 @@ make_summary_table (struct crosstabs_proc *proc)
 
       valid = 0.;
       for (i = 0; i < pt->n_entries; i++)
-        valid += pt->entries[i]->freq;
+        valid += pt->entries[i]->count;
 
       n[0] = valid;
       n[1] = pt->missing;
@@ -1088,13 +1083,13 @@ build_matrix (struct pivot_table *x)
   const int row_var_width = var_get_width (x->vars[ROW_VAR]);
   int col, row;
   double *mp;
-  struct table_entry **p;
+  struct freq **p;
 
   mp = x->mat;
   col = row = 0;
   for (p = x->entries; p < &x->entries[x->n_entries]; p++)
     {
-      const struct table_entry *te = *p;
+      const struct freq *te = *p;
 
       while (!value_equal (&x->rows[row], &te->values[ROW_VAR], row_var_width))
         {
@@ -1110,7 +1105,7 @@ build_matrix (struct pivot_table *x)
           col++;
         }
 
-      *mp++ = te->freq;
+      *mp++ = te->count;
       if (++col >= x->n_cols)
         {
           col = 0;
@@ -1430,8 +1425,8 @@ find_crosstab (struct pivot_table *pt, size_t *row0p, size_t *row1p)
 
   for (row1 = row0 + 1; row1 < pt->n_entries; row1++)
     {
-      struct table_entry *a = pt->entries[row0];
-      struct table_entry *b = pt->entries[row1];
+      struct freq *a = pt->entries[row0];
+      struct freq *b = pt->entries[row1];
       if (compare_table_entry_vars_3way (a, b, pt, 2, pt->n_vars) != 0)
         break;
     }
@@ -1495,7 +1490,7 @@ enum_var_values (const struct pivot_table *pt, int var_idx,
       hmapx_init (&set);
       for (i = 0; i < pt->n_entries; i++)
         {
-          const struct table_entry *te = pt->entries[i];
+          const struct freq *te = pt->entries[i];
           const union value *value = &te->values[var_idx];
           size_t hash = value_hash (value, width, 0);
 

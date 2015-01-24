@@ -1,5 +1,5 @@
 /* PSPP - a program for statistical analysis.
-   Copyright (C) 2006, 2010 Free Software Foundation, Inc.
+   Copyright (C) 2006, 2010, 2015 Free Software Foundation, Inc.
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -23,10 +23,27 @@
 /* Frequency table entry. */
 struct freq
   {
-    struct hmap_node hmap_node; /* Element in hash table. */
-    union value value;          /* The value. */
+    struct hmap_node node;      /* Element in hash table. */
     double count;		/* The number of occurrences of the value. */
+    union value values[1];      /* The value. */
   };
+
+
+struct freq *freq_clone (const struct freq *, int values, int *widths);
+void freq_destroy (struct freq *f, int values, int *widths);
+
+
+static inline size_t
+table_entry_size (size_t n_values)
+{
+  return (offsetof (struct freq, values)
+          + n_values * sizeof (union value));
+}
+
+
+int compare_freq_ptr_3way (const void *a_, const void *b_, const void *width_);
+
+
 
 void freq_hmap_destroy (struct hmap *, int width);
 
@@ -37,5 +54,8 @@ struct freq *freq_hmap_insert (struct hmap *, const union value *, int width,
 
 struct freq **freq_hmap_sort (struct hmap *, int width);
 struct freq *freq_hmap_extract (struct hmap *);
+
+
+
 
 #endif /* language/stats/freq.h */
