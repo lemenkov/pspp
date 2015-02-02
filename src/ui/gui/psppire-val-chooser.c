@@ -574,7 +574,7 @@ old_value_append_syntax (struct string *str, const struct old_value *ov)
                        DBL_DIG + 1, ov->v.range[1]);
       break;
     case OV_LOW_UP:
-      ds_put_c_format (str, "LOWEST THRU %*gg",
+      ds_put_c_format (str, "LOWEST THRU %.*g",
                        DBL_DIG + 1, ov->v.range[1]);
       break;
     case OV_HIGH_DOWN:
