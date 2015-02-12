@@ -148,9 +148,8 @@ FREQUENCIES
 The @cmd{FREQUENCIES} procedure outputs frequency tables for specified
 variables.
 @cmd{FREQUENCIES} can also calculate and display descriptive statistics
-(including median and mode) and percentiles,
-@cmd{FREQUENCIES} can also output
-histograms and pie charts.  
+(including median and mode) and percentiles, and various graphical representations
+of the frequency distribution.
 
 The @subcmd{VARIABLES} subcommand is the only required subcommand.  Specify the
 variables to be analyzed.
