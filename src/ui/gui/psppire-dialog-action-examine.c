@@ -209,12 +209,28 @@ psppire_dialog_action_examine_activate (GtkAction *a)
   GtkWidget *opts_button = get_widget_assert (xml, "opts-button");
 
   GtkWidget *dep_sel = get_widget_assert (xml, "psppire-selector1");
+  GtkWidget *dep_sel2 = get_widget_assert (xml, "psppire-selector2");
+  GtkWidget *dep_sel3 = get_widget_assert (xml, "psppire-selector3");
+  GtkWidget *table = get_widget_assert (xml, "table1");
 
   pda->dialog    = get_widget_assert   (xml, "examine-dialog");
   pda->source    = get_widget_assert   (xml, "treeview1");
   act->variables = get_widget_assert   (xml, "treeview2");
   act->factors   = get_widget_assert   (xml, "treeview3");
   act->id_var    = get_widget_assert   (xml, "entry1");
+
+  /* Setting the focus chain like this is a pain.
+     But the default focus order seems to be somewhat odd. */
+  GList *list = NULL;
+  list = g_list_append (list, get_widget_assert (xml, "scrolledwindow1"));
+  list = g_list_append (list, dep_sel);
+  list = g_list_append (list, get_widget_assert (xml, "frame1"));
+  list = g_list_append (list, dep_sel2);
+  list = g_list_append (list, get_widget_assert (xml, "frame2"));
+  list = g_list_append (list, dep_sel3);
+  list = g_list_append (list, get_widget_assert (xml, "frame3"));
+  gtk_container_set_focus_chain (GTK_CONTAINER (table), list);
+
 
   act->stats_dialog        = get_widget_assert (xml, "statistics-dialog");
   act->descriptives_button = get_widget_assert (xml, "descriptives-button");
@@ -236,9 +252,11 @@ psppire_dialog_action_examine_activate (GtkAction *a)
 
   g_signal_connect_swapped (opts_button, "clicked",
 			    G_CALLBACK (run_opts_dialog), act);
-
+ 
   PSPPIRE_DIALOG_ACTION_CLASS (psppire_dialog_action_examine_parent_class)->activate (pda);
-  
+
+
+  g_list_free (list);
   g_object_unref (xml);
 }
 
