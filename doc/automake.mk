@@ -78,8 +78,9 @@ $(srcdir)/doc/pspp.xml: doc/pspp.texi $(doc_pspp_TEXINFOS)
 		-e 's/&period;/./g' \
 		-e 's%\(<figure [^>]*\)>%\1/>%g' \
 	 | $(AWK) '/<para>.*<table.*>.*<\/para>/{x=sub("</para>",""); print; s=1;next}/<\/table>/{print; if (s==1) print "</para>"; s=0; next}1' \
-	> $@
-	$(AM_V_at)$(XMLLINT) --output /dev/null $@ || ( $(RM) $@ ; false)
+	> $@,tmp
+	$(AM_V_at)$(XMLLINT) --output /dev/null $@,tmp
+	mv $@,tmp $@
 
 docbookdir = $(docdir)
 dist_docbook_DATA = doc/pspp.xml
