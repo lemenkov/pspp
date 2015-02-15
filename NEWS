@@ -1,5 +1,5 @@
 PSPP NEWS -- history of user-visible changes.
-Copyright (C) 1996-2000, 2008-2014 Free Software Foundation, Inc.
+Copyright (C) 1996-2000, 2008-2015 Free Software Foundation, Inc.
 See the end for copying conditions.
 
 Please send PSPP bug reports to bug-gnu-pspp@gnu.org.
@@ -42,6 +42,9 @@ Changes from 0.8.3 to 0.8.4:
 
    - Planned comparisons in ONEWAY ANOVA now correctly handle negative
      T-values.
+
+   - The COUNT command now correctly treats missing values as
+     documented.
 
    - Conformance fixes to Open Document output format.
 

@@ -2,16 +2,22 @@ AT_BANNER([COUNT])
 
 AT_SETUP([COUNT -- numeric data])
 AT_DATA([count.sps], [dnl
-DATA LIST LIST /x * y *.
+DATA LIST LIST /x y.
 BEGIN DATA.
 1 2
 2 3
 4 5
 2 2
 5 6
+7 2
+. 2
 END DATA.
 
-COUNT c=x y (2).
+MISSING VALUES x(7)/y(3).
+
+COUNT c=x y (2)/d=x y(7)/e=x y(missing)/f=x y(sysmis).
+
+FORMATS ALL(F1).
 
 LIST.
 ])
@@ -22,12 +28,14 @@ x,F8.0
 y,F8.0
 
 Table: Data List
-x,y,c
-1.00,2.00,1.00
-2.00,3.00,1.00
-4.00,5.00,.00
-2.00,2.00,2.00
-5.00,6.00,.00
+x,y,c,d,e,f
+1,2,1,0,0,0
+2,3,1,0,1,0
+4,5,0,0,0,0
+2,2,2,0,0,0
+5,6,0,0,0,0
+7,2,1,1,1,0
+.,2,1,0,1,1
 ])
 AT_CLEANUP
 
