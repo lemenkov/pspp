@@ -7,6 +7,7 @@
     <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
     <property name="title" translatable="yes">Means</property>
     <property name="modal">True</property>
+    <property name="help-page">MEANS</property>
     <child internal-child="hbox">
       <object class="GtkHBox" id="dialog-hbox16">
         <property name="visible">True</property>

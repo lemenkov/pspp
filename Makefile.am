@@ -74,7 +74,6 @@ include $(top_srcdir)/doc/automake.mk
 include $(top_srcdir)/examples/automake.mk
 include $(top_srcdir)/src/automake.mk
 include $(top_srcdir)/utilities/automake.mk
-
 include $(top_srcdir)/tests/automake.mk
 
 if WITH_GUI_TOOLS

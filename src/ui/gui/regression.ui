@@ -6,6 +6,7 @@
   <object class="PsppireDialog" id="regression-dialog">
     <property name="title" translatable="yes">Regression</property>
     <property name="modal">True</property>
+    <property name="help-page">REGRESSION</property>
     <child internal-child="hbox">
       <object class="GtkHBox" id="dialog-hbox1">
         <property name="visible">True</property>

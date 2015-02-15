@@ -29,6 +29,7 @@
     <property name="title" translatable="yes">Factor Analysis</property>
     <property name="modal">True</property>
     <property name="orientation">Tabular</property>
+    <property name="help-page">FACTOR</property>
     <child internal-child="hbox">
       <object class="GtkTable" id="dialog-hbox1">
         <property name="visible">True</property>

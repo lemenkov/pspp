@@ -47,6 +47,13 @@ UI_FILES = \
 	src/ui/gui/var-sheet.ui \
 	src/ui/gui/var-type-dialog.ui
 
+
+doc/help-pages-list: $(UI_FILES)
+	 cat $^ | grep '"help-page"' | \
+   sed -e 's% *<property name="help-page">\([^<]*\)</property>%//*[@id='"'"'\1'"'"']%' \
+	-e 's%#%'"'"']/*[@id='"'"'%g' > $@
+
+
 EXTRA_DIST += \
 	src/ui/gui/artwork/actions/.empty \
 	src/ui/gui/artwork/apps/scalable/.empty \
@@ -57,7 +64,7 @@ EXTRA_DIST += \
 
 if HAVE_GUI
 bin_PROGRAMS += src/ui/gui/psppire 
-noinst_PROGRAMS += src/ui/gui/spreadsheet-test
+noinst_PROGRAMS += src/ui/gui/spreadsheet-test 
 
 src_ui_gui_psppire_CFLAGS = $(GTK_CFLAGS) $(GTKSOURCEVIEW_CFLAGS) -Wall -DGDK_MULTIHEAD_SAFE=1
 src_ui_gui_spreadsheet_test_CFLAGS = $(GTK_CFLAGS) -Wall -DGDK_MULTIHEAD_SAFE=1
@@ -95,7 +102,6 @@ src_ui_gui_spreadsheet_test_LDADD = \
 
 
 src_ui_gui_spreadsheet_test_SOURCES = src/ui/gui/spreadsheet-test.c src/ui/gui/psppire-spreadsheet-model.c
-
 
 src_ui_gui_psppiredir = $(pkgdatadir)
 

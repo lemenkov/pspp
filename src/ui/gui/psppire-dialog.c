@@ -39,9 +39,29 @@ enum  {DIALOG_REFRESH,
 
 static guint signals [n_SIGNALS];
 
+static GObjectClass     *parent_class = NULL;
+
 
 static void psppire_dialog_buildable_init (GtkBuildableIface *iface);
 
+static void
+psppire_dialog_finalize (GObject *object)
+{
+  PsppireDialog *dialog = PSPPIRE_DIALOG (object);
+
+  g_free (dialog->help_page);
+
+  if (G_OBJECT_CLASS (parent_class)->finalize)
+    G_OBJECT_CLASS (parent_class)->finalize (object);
+}
+
+static void
+psppire_dialog_base_init (PsppireDialogClass *class)
+{
+  GObjectClass *object_class = G_OBJECT_CLASS (class);
+
+  object_class->finalize = psppire_dialog_finalize;
+}
 
 GType
 psppire_dialog_get_type (void)
@@ -53,7 +73,7 @@ psppire_dialog_get_type (void)
       static const GTypeInfo dialog_info =
       {
 	sizeof (PsppireDialogClass),
-	NULL, /* base_init */
+	psppire_dialog_base_init,
         NULL, /* base_finalize */
 	(GClassInitFunc) psppire_dialog_class_init,
         NULL, /* class_finalize */
@@ -83,15 +103,13 @@ psppire_dialog_get_type (void)
 
 
 
-static GObjectClass     *parent_class = NULL;
-
-
 /* Properties */
 enum
 {
   PROP_0,
   PROP_ORIENTATION,
-  PROP_SLIDING
+  PROP_SLIDING,
+  PROP_HELP_PAGE,
 };
 
 
@@ -117,6 +135,9 @@ psppire_dialog_get_property (GObject         *object,
       break;
     case PROP_SLIDING:
       g_value_set_boolean (value, dialog->slidable);
+      break;
+    case PROP_HELP_PAGE:
+      g_value_set_string (value, dialog->help_page);
       break;
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
@@ -178,6 +199,9 @@ psppire_dialog_set_property (GObject         *object,
     case PROP_ORIENTATION:
       dialog->orientation = g_value_get_enum (value);
       break;
+    case PROP_HELP_PAGE:
+      dialog->help_page = g_value_dup_string (value);
+      break;
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
       break;
@@ -195,6 +219,14 @@ psppire_dialog_class_init (PsppireDialogClass *class)
   GObjectClass *object_class = (GObjectClass *) class;
 
   GParamSpec *sliding_spec ;
+  GParamSpec *help_page_spec ;
+
+  help_page_spec = 
+    g_param_spec_string ("help-page", 
+			 "Help Page",
+			 "The section of the manual to load when the Help button is clicked",
+			 NULL,
+			 G_PARAM_READWRITE);
 
   orientation_spec =
     g_param_spec_enum ("orientation",
@@ -222,6 +254,11 @@ psppire_dialog_class_init (PsppireDialogClass *class)
   g_object_class_install_property (object_class,
                                    PROP_SLIDING,
                                    sliding_spec);
+
+  g_object_class_install_property (object_class,
+                                   PROP_HELP_PAGE,
+                                   help_page_spec);
+
 
   signals [DIALOG_REFRESH] =
     g_signal_new ("refresh",
@@ -309,6 +346,7 @@ psppire_dialog_init (PsppireDialog *dialog)
   dialog->contents_are_acceptable = NULL;
   dialog->acceptable_data = NULL;
   dialog->slidable = FALSE;
+  dialog->help_page = NULL;
 
   g_value_init (&value, orientation_spec->value_type);
   g_param_value_set_default (orientation_spec, &value);
@@ -516,12 +554,13 @@ psppire_dialog_reload (PsppireDialog *dialog)
 void
 psppire_dialog_help (PsppireDialog *dialog)
 {
-  char *name = NULL;
-  g_object_get (dialog, "name", &name, NULL);
+  const char *page = NULL;
 
-  online_help (name);
+  g_object_get (dialog, "help-page", &page, NULL);
 
-  g_signal_emit (dialog, signals [DIALOG_HELP], 0, name);
+  online_help (page);
+
+  g_signal_emit (dialog, signals [DIALOG_HELP], 0, page);
 }
 
 
