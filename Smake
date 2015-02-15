@@ -348,7 +348,7 @@ aclocal.m4:
 	aclocal -I m4 -I gl/m4
 
 configure: configure.ac aclocal.m4
-	autoconf
+	autoconf || rm $@  # autoconf 2.69 has (what I think is) a bug.  It will create configure even when failure is detected.
 
 config.h.in: configure.ac
 	autoheader
