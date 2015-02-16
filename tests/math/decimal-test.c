@@ -37,7 +37,7 @@
 static char *
 canonicalise_string (const char *s)
 {
-  char *out;
+  char *out = NULL;
   char *dot = NULL;
   bool negative = false;
   char *p;
