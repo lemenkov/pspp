@@ -1,18 +1,18 @@
 /* PSPPIRE - a graphical user interface for PSPP.
-Copyright (C) 2012  Free Software Foundation
+   Copyright (C) 2012  Free Software Foundation
 
-This program is free software: you can redistribute it and/or modify
-	      it under the terms of the GNU General Public License as published by
-	      the Free Software Foundation, either version 3 of the License, or
-  (at your option) any later version.
+   This program is free software: you can redistribute it and/or modify
+   it under the terms of the GNU General Public License as published by
+   the Free Software Foundation, either version 3 of the License, or
+   (at your option) any later version.
 
-     This program is distributed in the hope that it will be useful,
-     but WITHOUT ANY WARRANTY; without even the implied warranty of
-  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-  GNU General Public License for more details.
+   This program is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+   GNU General Public License for more details.
 
-  You should have received a copy of the GNU General Public License
-  along with this program.  If not, see <http://www.gnu.org/licenses/>. */
+   You should have received a copy of the GNU General Public License
+   along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 
 
 #include <config.h>
@@ -178,6 +178,10 @@ on_charts_clicked (PsppireDialogActionFrequencies *fd)
 
   g_signal_emit_by_name (fd->pie, "toggled");
 
+
+  gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (fd->bar), fd->charts_opts_draw_bar);
+  g_signal_emit_by_name (fd->bar, "toggled");
+
   ret = psppire_dialog_run (PSPPIRE_DIALOG (fd->charts_dialog));
 
   if ( ret == PSPPIRE_RESPONSE_CONTINUE )
@@ -198,6 +202,9 @@ on_charts_clicked (PsppireDialogActionFrequencies *fd)
 	fd->charts_opts_draw_pie = gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (fd->pie));
 	fd->charts_opts_pie_include_missing
           = gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (fd->pie_include_missing));
+
+
+	fd->charts_opts_draw_bar = gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (fd->bar));
     }
 }
 
@@ -295,6 +302,7 @@ psppire_dialog_action_frequencies_activate (GtkAction * a)
   act->charts_opts_draw_normal = false;
   act->charts_opts_scale = FRQ_FREQ;
   act->charts_opts_draw_pie = false;
+  act->charts_opts_draw_bar = false;
   act->charts_opts_pie_include_missing = false;
 
   act->freqs = get_widget_assert (xml, "freqs");
@@ -316,6 +324,8 @@ psppire_dialog_action_frequencies_activate (GtkAction * a)
 
   act->pie =  (get_widget_assert (xml, "pie"));
   act->pie_include_missing = get_widget_assert (xml, "pie-include-missing");
+
+  act->bar =  (get_widget_assert (xml, "bar"));
 
 
   g_object_unref (xml);
@@ -460,6 +470,21 @@ generate_syntax (PsppireDialogAction * a)
       if (fd->charts_opts_use_max)
         ds_put_c_format (&str, " MAX(%.15g)", fd->charts_opts_max);
     }
+
+
+  if (fd->charts_opts_draw_bar)
+    {
+      ds_put_cstr (&str, "\n\t/BARCHART=");
+
+      if (fd->charts_opts_scale == FRQ_PERCENT)
+        ds_put_cstr (&str, " PERCENT");
+
+      if (fd->charts_opts_use_min)
+        ds_put_c_format (&str, " MIN(%.15g)", fd->charts_opts_min);
+      if (fd->charts_opts_use_max)
+        ds_put_c_format (&str, " MAX(%.15g)", fd->charts_opts_max);
+    }
+
 
   ds_put_cstr (&str, ".\n");
 
