@@ -81,8 +81,8 @@ $(srcdir)/doc/pspp.xml: doc/pspp.texi $(doc_pspp_TEXINFOS) doc/help-pages-list
 	 | $(AWK) '/<para>.*<table.*>.*<\/para>/{x=sub("</para>",""); print; s=1;next}/<\/table>/{print; if (s==1) print "</para>"; s=0; next}1' \
 	> $@,tmp
 	$(AM_V_at)$(XMLLINT) --output /dev/null $@,tmp
-	cat doc/help-pages-list | while read node ; do \
-	 $(AM_V_at)$(XMLLINT) --xpath "$$node" $@,tmp > /dev/null; \
+	$(AM_V_at)cat doc/help-pages-list | while read node ; do \
+	 $(XMLLINT) --xpath "$$node" $@,tmp > /dev/null; \
 	 if test $$? -ne 0 ; then  echo "$$node does not appear in $@" ; exit 1; fi ; \
 	 done 
 	mv $@,tmp $@
