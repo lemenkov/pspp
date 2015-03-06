@@ -434,6 +434,8 @@ variable names, separated by an equals sign (@samp{=}), within
 parentheses.  There must be the same number of old and new variable
 names.  Each old variable is renamed to the corresponding new variable
 name.  Multiple parenthesized groups of variables may be specified.
+When the old and new variable names contain only a single variable name,
+the parentheses are optional.
 
 @cmd{RENAME VARIABLES} takes effect immediately.  It does not cause the data
 to be read.
