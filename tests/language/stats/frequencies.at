@@ -18,7 +18,7 @@ quux 5 8
 END DATA.
 EXECUTE.
 
-FREQUENCIES /VAR = name.
+FREQUENCIES /VAR = name/ORDER=ANALYSIS.
 ])
 AT_CHECK([pspp -O format=csv frequencies.sps], [0], [dnl
 Table: name
@@ -43,7 +43,7 @@ begin data.
 3 4
 end data.
 
-frequencies v1 v2/statistics=none.
+frequencies v1 v2/statistics=none/ORDER=VARIABLE.
 frequencies v1 v2/statistics=none.
 ])
 AT_CHECK([pspp -O format=csv frequencies.sps], [0],

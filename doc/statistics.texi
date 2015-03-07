@@ -138,6 +138,7 @@ FREQUENCIES
                   [@{FREQ,PERCENT@}] [@{NOMISSING,MISSING@}]
         /BARCHART=[MINIMUM(@var{x_min})] [MAXIMUM(@var{x_max})]
                   [@{FREQ,PERCENT@}]
+        /ORDER=@{ANALYSIS,VARIABLE@}
 
 
 (These options are not currently implemented.)
@@ -229,6 +230,8 @@ percentages.
 
 The @subcmd{FREQ} and @subcmd{PERCENT} options on @subcmd{HISTOGRAM} and 
 @subcmd{PIECHART} are accepted but not currently honoured.
+
+The @subcmd{ORDER} subcommand is accepted but ignored.
 
 @node EXAMINE
 @section EXAMINE

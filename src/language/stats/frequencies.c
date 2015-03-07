@@ -1072,6 +1072,12 @@ cmd_frequencies (struct lexer *lexer, struct dataset *ds)
                 }
             }
         }
+      else if (lex_match_id (lexer, "ORDER"))
+        {
+          lex_match (lexer, T_EQUALS);
+          if (!lex_match_id (lexer, "ANALYSIS"))
+            lex_match_id (lexer, "VARIABLE");
+        }
       else
         {
           lex_error (lexer, NULL);
