@@ -1,5 +1,5 @@
 /* PSPP - a program for statistical analysis.
-   Copyright (C) 1997-9, 2000, 2006, 2007, 2009, 2010, 2011 Free Software Foundation, Inc.
+   Copyright (C) 1997-9, 2000, 2006, 2007, 2009, 2010, 2011, 2015 Free Software Foundation, Inc.
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -66,6 +66,7 @@ struct settings
   size_t workspace;
   struct fmt_spec default_format;
   bool testing_mode;
+  int fuzzbits;
 
   int cmd_algorithm;
   int global_algorithm;
@@ -108,6 +109,7 @@ static struct settings the_settings = {
   64L * 1024 * 1024,            /* workspace */
   {FMT_F, 8, 2},                /* default_format */
   false,                        /* testing_mode */
+  6,                            /* fuzzbits */
   ENHANCED,                     /* cmd_algorithm */
   ENHANCED,                     /* global_algorithm */
   ENHANCED,                     /* syntax */
@@ -485,6 +487,18 @@ void
 settings_set_testing_mode ( bool testing_mode)
 {
   the_settings.testing_mode = testing_mode;
+}
+
+int
+settings_get_fuzzbits (void)
+{
+  return the_settings.fuzzbits;
+}
+
+void
+settings_set_fuzzbits (int fuzzbits)
+{
+  the_settings.fuzzbits = fuzzbits;
 }
 
 /* Return the current algorithm setting */

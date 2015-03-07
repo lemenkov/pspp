@@ -331,9 +331,13 @@ Returns the remainder when @var{number} is divided by 10.  If
 @end deftypefn
 
 @cindex rounding
-@deftypefn {Function} {} RND (@var{number})
-Takes the absolute value of @var{number} and rounds it to an integer.
-Then, if @var{number} was negative originally, negates the result.
+@deftypefn {Function} {} RND (@var{number} [, @var{mult}[, @var{fuzzbits}]])
+Rounds @var{number} and rounds it to a multiple of @var{mult} (by
+default 1).  Halves are rounded away from zero, as are values that
+fall short of halves by less than @var{fuzzbits} of errors in the
+least-significant bits of @var{number}.  If @var{fuzzbits} is not
+specified then the default is taken from SET FUZZBITS (@pxref{SET
+FUZZBITS}), which is 6 unless overridden.
 @end deftypefn
 
 @cindex truncation

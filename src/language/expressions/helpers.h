@@ -81,4 +81,6 @@ double cdf_bvnor (double x0, double x1, double r);
 
 double idf_fdist (double P, double a, double b);
 
+double round_nearest (double x, double mult, double fuzzbits);
+
 #endif /* expressions/helpers.h */

@@ -334,8 +334,19 @@ CHECK_EXPR_EVAL([exp lg10 ln sqrt abs mod mod10 rnd trunc],
   [[rnd(5.6)], [6.00]],
   [[rnd(-5.4)], [-5.00]],
   [[rnd(-5.6)], [-6.00]],
+  [[rnd(5.56, .1)], [5.60]],
+  [[rnd(-5.56, .1)], [-5.60]],
+  [[rnd(.5)], [1.00]],
+  [[rnd(.5 - 2**-53)], [1.00]],
+  [[rnd(.5 - 2**-52)], [1.00]],
+  [[rnd(.5 - 2**-51)], [1.00]],
+  [[rnd(.5 - 2**-45)], [0.00]],
+  [[rnd(.5 - 2**-45, 1, 10)], [1.00]],
   [[rnd('x')], [error],
-   [error: DEBUG EVALUATE: Type mismatch invoking RND(number) as rnd(string).]],
+   [error: DEBUG EVALUATE: Function invocation rnd(string) does not match any known function.  Candidates are:
+RND(number)
+RND(number, number)
+RND(number, number, number).]],
 
   [[trunc(1.2)], [1.00]],
   [[trunc(1.9)], [1.00]],

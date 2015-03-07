@@ -440,6 +440,7 @@ SET
         /MXLOOPS=@var{max_loops}
         /SEED=@{RANDOM,@var{seed_value}@}
         /UNDEFINED=@{WARN,NOWARN@}
+        /FUZZBITS=@var{fuzzbits}
 
 (data output)
         /CC@{A,B,C,D,E@}=@{'@var{npre},@var{pre},@var{suf},@var{nsuf}','@var{npre}.@var{pre}.@var{suf}.@var{nsuf}'@}
@@ -641,6 +642,13 @@ RANDOM, which will obtain an initial seed from the current time of day.
 
 @item UNDEFINED
 Currently not used.
+
+@item FUZZBITS
+@anchor{SET FUZZBITS}
+The maximum number of bits of errors in the least-significant places
+to accept for rounding up a value that is almost halfway between two
+possibilities for rounding with the RND operator (@pxref{Miscellaneous
+Mathematics}).  The default @var{fuzzbits} is 6.
 
 @item WORKSPACE
 The maximum amount of memory (in kilobytes) that @pspp{} will use to store data being processed.
@@ -878,6 +886,7 @@ SHOW
         [DIRECTORY]
         [ENVIRONMENT]
         [FORMAT]
+        [FUZZBITS]
         [LENGTH]
         [MXERRS]
         [MXLOOPS]

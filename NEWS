@@ -24,6 +24,11 @@ Changes since 0.8.4:
  * The GRAPH command is now available.  Initially it supports
    scatterplots and histograms.
 
+ * The RND operator in expressions now supports additional operands
+   for rounding to values other than integers and to indicate a level
+   of rounding fuzz.  The default rounding fuzz may now be controlled
+   and displayed with SET FUZZBITS and SHOW FUZZBITS, respectively.
+
 Changes from 0.8.3 to 0.8.4:
 
  * Formatting of SYSFILE INFO output was made easier to read.

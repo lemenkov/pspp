@@ -1,5 +1,5 @@
 /* PSPP - a program for statistical analysis.
-   Copyright (C) 1997-9, 2000, 2006, 2009, 2010, 2011, 2012, 2013, 2014 Free Software Foundation, Inc.
+   Copyright (C) 1997-9, 2000, 2006, 2009, 2010, 2011, 2012, 2013, 2014, 2015 Free Software Foundation, Inc.
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -80,6 +80,7 @@ int tgetnum (const char *);
      epoch=custom;
      errors=custom;
      format=custom;
+     fuzzbits=integer;
      headers=headers:no/yes/blank;
      highres=hires:on/off;
      histogram=string;
@@ -153,6 +154,14 @@ cmd_set (struct lexer *lexer, struct dataset *ds)
 
   if (cmd.sbc_decimal)
     settings_set_decimal_char (cmd.dec == STC_DOT ? '.' : ',');
+  if (cmd.sbc_fuzzbits)
+    {
+      int fuzzbits = cmd.n_fuzzbits[0];
+      if (fuzzbits >= 0 && fuzzbits <= 20)
+        settings_set_fuzzbits (fuzzbits);
+      else
+        msg (SE, _("%s must be between 0 and 20."), "FUZZBITS");
+    }
 
   if (cmd.sbc_include)
     settings_set_include (cmd.inc == STC_ON);
@@ -711,6 +720,12 @@ show_format (const struct dataset *ds UNUSED)
 }
 
 static char *
+show_fuzzbits (const struct dataset *ds UNUSED)
+{
+  return xasprintf ("%d", settings_get_fuzzbits ());
+}
+
+static char *
 show_journal (const struct dataset *ds UNUSED)
 {
   return (journal_is_enabled ()
@@ -952,6 +967,7 @@ const struct show_sbc show_table[] =
     {"ENVIRONMENT", show_system},
     {"ERRORS", show_errors},
     {"FORMAT", show_format},
+    {"FUZZBITS", show_fuzzbits},
     {"JOURNAL", show_journal},
     {"LENGTH", show_length},
     {"LOCALE", show_locale},
