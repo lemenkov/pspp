@@ -1,5 +1,5 @@
 /* PSPP - a program for statistical analysis.
-   Copyright (C) 2009, 2010, 2011, 2012, 2014 Free Software Foundation, Inc.
+   Copyright (C) 2009, 2010, 2011, 2012, 2014, 2015 Free Software Foundation, Inc.
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -1051,7 +1051,28 @@ cmd_factor (struct lexer *lexer, struct dataset *ds)
     {
       lex_match (lexer, T_SLASH);
 
-      if (lex_match_id (lexer, "PLOT"))
+      if (lex_match_id (lexer, "ANALYSIS"))
+        {
+          struct const_var_set *vs;
+          const struct variable **vars;
+          size_t n_vars;
+          bool ok;
+
+          lex_match (lexer, T_EQUALS);
+
+          vs = const_var_set_create_from_array (factor.vars, factor.n_vars);
+          ok = parse_const_var_set_vars (lexer, vs, &vars, &n_vars,
+                                         PV_NO_DUPLICATE | PV_NUMERIC);
+          const_var_set_destroy (vs);
+
+          if (!ok)
+            goto error;
+
+          free (factor.vars);
+          factor.vars = vars;
+          factor.n_vars = n_vars;
+        }
+      else if (lex_match_id (lexer, "PLOT"))
 	{
           lex_match (lexer, T_EQUALS);
           while (lex_token (lexer) != T_ENDCMD && lex_token (lexer) != T_SLASH)

@@ -709,6 +709,8 @@ FACTOR  VARIABLES=@var{var_list}
 
         [ /METHOD = @{CORRELATION, COVARIANCE@} ]
 
+        [ /ANALYSIS=@var{var_list} ]
+
         [ /EXTRACTION=@{PC, PAF@}] 
 
         [ /ROTATION=@{VARIMAX, EQUAMAX, QUARTIMAX, PROMAX[(@var{k})], NOROTATE@}]
@@ -727,7 +729,10 @@ FACTOR  VARIABLES=@var{var_list}
 The @cmd{FACTOR} command performs Factor Analysis or Principal Axis Factoring on a dataset.  It may be used to find
 common factors in the data or for data reduction purposes.
 
-The @subcmd{VARIABLES} subcommand is required.  It lists the variables which are to partake in the analysis.
+The @subcmd{VARIABLES} subcommand is required.  It lists the variables
+which are to partake in the analysis.  (The @subcmd{ANALYSIS}
+subcommand may optionally further limit the variables that
+participate; it is not useful and implemented only for compatibility.)
 
 The @subcmd{/EXTRACTION} subcommand is used to specify the way in which factors (components) are extracted from the data.
 If @subcmd{PC} is specified, then Principal Components Analysis is used.  

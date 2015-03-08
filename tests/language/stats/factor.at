@@ -1444,6 +1444,7 @@ missing values
 
 factor
  /variables question13 question14 question15 question16 question17 question18 question19 question20 question21 question22 question23 question24
+ /analysis all
  /print univariate det correlation
  /format blank(.30)
  /plot eigen
@@ -1731,7 +1732,8 @@ begin data.
 end data.
 
 factor
-  /variables read write math science socst  
+  /variables read write math science socst
+  /analysis read write math science socst
   /extraction pc
   /plot eigen
   /criteria mineigen (.557)
