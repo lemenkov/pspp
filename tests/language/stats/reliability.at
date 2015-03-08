@@ -175,6 +175,7 @@ RELIABILITY
   /VARIABLES=var2 var6 var8 var15 var17 var19
   /SCALE('Totals') var6 var8 var15 var17 
   /SUMMARY = total
+  /STATISTICS = DESCRIPTIVES COVARIANCES
  .
 
 
@@ -182,7 +183,9 @@ RELIABILITY
   /VARIABLES=var6 var8 var15 var17 
   .
 ])
-AT_CHECK([pspp -o pspp.csv reliability.sps])
+AT_CHECK([pspp -o pspp.csv reliability.sps], [0],
+  [reliability.sps:174: warning: RELIABILITY: The STATISTICS subcommand is not yet implemented.  No statistics will be produced.
+])
 AT_CHECK([cat pspp.csv], [0], [dnl
 Scale: Everything
 
@@ -214,6 +217,8 @@ Correlation Between Forms,,,.61
 Spearman-Brown Coefficient,Equal Length,,.75
 ,Unequal Length,,.75
 Guttman Split-Half Coefficient,,,.75
+
+reliability.sps:174: warning: RELIABILITY: The STATISTICS subcommand is not yet implemented.  No statistics will be produced.
 
 Scale: Totals
 
