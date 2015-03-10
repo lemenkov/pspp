@@ -48,10 +48,11 @@ UI_FILES = \
 	src/ui/gui/var-type-dialog.ui
 
 
-doc/help-pages-list: $(UI_FILES)
+$(srcdir)/doc/help-pages-list: $(UI_FILES)
 	 cat $^ | grep '"help-page"' | \
    sed -e 's% *<property name="help-page">\([^<]*\)</property>%//*[@id='"'"'\1'"'"']%' \
 	-e 's%#%'"'"']/*[@id='"'"'%g' > $@
+EXTRA_DIST += doc/help-pages-list
 
 
 EXTRA_DIST += \
