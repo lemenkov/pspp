@@ -2288,9 +2288,9 @@ msgid "Usable encodings for %s."
 msgstr "Bruikbare coderingen voor %s."
 
 #: src/language/dictionary/sys-file-info.c:1003
-#, fuzzy, c-format
+#, c-format
 msgid "Encodings that can successfully read %s (by specifying the encoding name on the GET command's ENCODING subcommand).  Encodings that yield identical text are listed together."
-msgstr "de volgende tabel geeft de coderingen die succesvol %s kunnen lezen, door de coderings naam op te geven bij het GET commando's ENCODING subcommando.  Coderingen die identieke teksten opleveren worden samen getoond."
+msgstr ""
 
 #: src/language/dictionary/sys-file-info.c:1011
 msgid "Encodings"
@@ -2302,9 +2302,8 @@ msgid "%s encoded text strings."
 msgstr "%s gecodeerde tekenreeksen."
 
 #: src/language/dictionary/sys-file-info.c:1040
-#, fuzzy
 msgid "Text strings in the file dictionary that the previously listed encodings interpret differently, along with the interpretations."
-msgstr "De volgende tabel geeft tekenreeksen in de bestandsbibliotheek die door de bovenstaande coderingen anders worden geinterpreteerd, tesamen met hun interpretaties."
+msgstr ""
 
 #: src/language/dictionary/sys-file-info.c:1047
 msgid "Purpose"

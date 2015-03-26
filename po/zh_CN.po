@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: pspp 0.8.4\n"
 "Report-Msgid-Bugs-To: pspp-dev@gnu.org\n"
 "POT-Creation-Date: 2014-09-26 21:39-0700\n"
-"PO-Revision-Date: 2015-03-13 10:00-0600\n"
+"PO-Revision-Date: 2015-03-16 00:13-0600\n"
 "Last-Translator: Shulin Yang <shulin.yang.9@gmail.com>\n"
 "Language-Team: Chinese (simplified) <i18n-zh@googlegroups.com>\n"
 "Language: zh_CN\n"
@@ -8245,11 +8245,11 @@ msgstr "外部文件..."
 
 #: src/ui/gui/data-editor.ui:95
 msgid "Recently Used Da_ta"
-msgstr "最近使用过的数据(_t)"
+msgstr "最近打开过的数据(_t)"
 
 #: src/ui/gui/data-editor.ui:102
 msgid "Recently Used _Files"
-msgstr "最近使打开过的文件(_F)"
+msgstr "最近打开过的文件(_F)"
 
 #: src/ui/gui/data-editor.ui:121
 msgid "_View"
