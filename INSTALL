@@ -36,7 +36,11 @@ Before You Install
 
 Before you install PSPP, you will need to install certain prerequisite
 packages.  You may also want to install other packages that enable
-additional functionality in PSPP.
+additional functionality in PSPP.  Please note, if you are installing
+any of the libararies mentioned below using pre-prepared binary
+packages provided by popular GNU/Linux vendors, you may need to ensure
+that you install the "development" versions (normally postfixed with
+-dev or -devel).
 
 If you do not know whether you have these installed already, you may
 proceed to "Basic Installation", below.  The PSPP configuration
@@ -84,6 +88,8 @@ use the GUI, you must run `configure' with --without-gui.
       but other versions should be fine.
 
     * GTK+ (http://www.gtk.org/), version 2.24.0  -  The Gtk+-3.x series will NOT work!
+
+    * Glib (http://www.gtk.org), version 2.32 or later
 
     * GtkSourceView (http://projects.gnome.org/gtksourceview/) 
       version 2.2 or later.
