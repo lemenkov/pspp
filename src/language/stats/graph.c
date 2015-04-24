@@ -142,15 +142,15 @@ show_scatterplot (const struct graph *cmd, const struct casereader *input)
   if (cmd->byvar)
     {
       ds_put_format (&title, _("%s vs. %s by %s"),
-			   var_to_string (cmd->dep_vars[0]),
 			   var_to_string (cmd->dep_vars[1]),
+			   var_to_string (cmd->dep_vars[0]),
 			   var_to_string (cmd->byvar));
     }
   else
     {
       ds_put_format (&title, _("%s vs. %s"),
-		     var_to_string (cmd->dep_vars[0]),
-		     var_to_string (cmd->dep_vars[1]));
+		     var_to_string (cmd->dep_vars[1]),
+		     var_to_string (cmd->dep_vars[0]));
     }
 		 
 
