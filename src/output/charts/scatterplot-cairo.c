@@ -1,5 +1,5 @@
 /* PSPP - a program for statistical analysis.
-   Copyright (C) 2014 Free Software Foundation, Inc.
+   Copyright (C) 2014, 2015 Free Software Foundation, Inc.
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -52,8 +52,8 @@ xrchart_draw_scatterplot (const struct chart_item *chart_item, cairo_t *cr,
   xrchart_write_xscale (cr, geom, spc->x_min, spc->x_max);
   xrchart_write_yscale (cr, geom, spc->y_min, spc->y_max);
   xrchart_write_title (cr, geom, _("Scatterplot %s"), chart_item->title);
-  xrchart_write_xlabel (cr, geom, var_to_string(spc->xvar));
-  xrchart_write_ylabel (cr, geom, var_to_string(spc->yvar));
+  xrchart_write_xlabel (cr, geom, spc->xlabel);
+  xrchart_write_ylabel (cr, geom, spc->ylabel);
 
   cairo_save (cr);
   data = casereader_clone (spc->data);
@@ -61,7 +61,7 @@ xrchart_draw_scatterplot (const struct chart_item *chart_item, cairo_t *cr,
     {
       if (spc->byvar)
 	{
-	  const union value *val = case_data (c,spc->byvar);
+	  const union value *val = case_data_idx (c,SP_IDX_BY);
 	  for(i=0;i<n_catvals && !value_equal (&catvals[i],val,byvar_width);i++);
 	  if (i == n_catvals) /* No entry found */
 	    {
@@ -95,8 +95,8 @@ xrchart_draw_scatterplot (const struct chart_item *chart_item, cairo_t *cr,
                             colour->blue / 255.0);
     
       xrchart_datum (cr, geom, 0,
-		     case_data (c, spc->xvar)->f,
-		     case_data (c, spc->yvar)->f);
+		     case_data_idx (c, SP_IDX_X)->f,
+		     case_data_idx (c, SP_IDX_Y)->f);
     }
   casereader_destroy (data);
   cairo_restore (cr);

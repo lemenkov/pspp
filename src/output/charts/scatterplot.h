@@ -1,5 +1,5 @@
 /* PSPP - a program for statistical analysis.
-   Copyright (C) 2014 Free Software Foundation, Inc.
+   Copyright (C) 2014, 2015 Free Software Foundation, Inc.
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -19,12 +19,22 @@
 
 #include "output/chart-item.h"
 
+/* Indices for the scatterplot_proto members */
+enum
+  {
+    SP_IDX_X,    /* x value */
+    SP_IDX_Y,    /* y value */
+    SP_IDX_BY,   /* graph category for xy plot */
+  };
+
 /* A  scatterplot. */
 struct scatterplot_chart
   {
     struct chart_item chart_item;
     struct casereader *data;
-    const struct variable *xvar, *yvar, *byvar;
+    const struct variable *byvar;
+    const char *xlabel;
+    const char *ylabel;
 
     double y_min, y_max;
     double x_min, x_max;
@@ -36,8 +46,8 @@ struct scatterplot_chart
 
 struct scatterplot_chart *
 scatterplot_create (const struct casereader *, 
-		    const struct variable *, 
-		    const struct variable *,
+		    const char *xlabel,
+		    const char *ylabel,
 		    const struct variable *,
 		    bool *,
 		    const char *label,

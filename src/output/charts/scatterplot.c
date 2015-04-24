@@ -1,5 +1,5 @@
 /* PSPP - a program for statistical analysis.
-   Copyright (C) 2014 Free Software Foundation, Inc.
+   Copyright (C) 2014, 2015 Free Software Foundation, Inc.
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -26,14 +26,11 @@
 
 #include "gl/minmax.h"
 
-
-/* Creates a scatterplot 
-
-   The caller retains ownership of READER. */
+/* Creates a scatterplot */
 struct scatterplot_chart *
 scatterplot_create (const struct casereader *reader, 
-		    const struct variable *xvar, 
-		    const struct variable *yvar,
+		    const char *xlabel,
+		    const char *ylabel,
 		    const struct variable *byvar,
 		    bool *byvar_overflow,
 		    const char *label,
@@ -43,7 +40,7 @@ scatterplot_create (const struct casereader *reader,
 
   spc = xzalloc (sizeof *spc);
   chart_item_init (&spc->chart_item, &scatterplot_chart_class, label);
-  spc->data = casereader_clone (reader);
+  spc->data = reader;
 
   spc->y_min = ymin;
   spc->y_max = ymax;
@@ -51,9 +48,10 @@ scatterplot_create (const struct casereader *reader,
   spc->x_min = xmin;
   spc->x_max = xmax;
 
-  spc->xvar = xvar;
-  spc->yvar = yvar;
-  spc->byvar = byvar;
+  spc->xlabel = xstrdup (xlabel);
+  spc->ylabel = xstrdup (ylabel);
+  spc->byvar = byvar != NULL ? var_clone (byvar) : NULL;
+
   spc->byvar_overflow = byvar_overflow;
 
   return spc;
@@ -64,6 +62,10 @@ scatterplot_chart_destroy (struct chart_item *chart_item)
 {
   struct scatterplot_chart *spc = to_scatterplot_chart (chart_item);
   casereader_destroy (spc->data);
+  free (spc->xlabel);
+  free (spc->ylabel);
+  if (spc->byvar)
+    var_destroy (spc->byvar);
   free (spc);
 }
 

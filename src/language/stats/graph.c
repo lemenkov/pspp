@@ -81,6 +81,13 @@ enum scatter_type
     ST_XYZ
   };
 
+/* Variable index for histogram case */
+enum
+  {
+    HG_IDX_X,
+    HG_IDX_WT
+  };
+
 struct exploratory_stats
 {
   double missing;
@@ -118,6 +125,8 @@ struct graph
   enum chart_type chart_type;
   enum scatter_type scatter_type;
   const struct variable *byvar;
+  /* A caseproto that contains the plot data */
+  struct caseproto *gr_proto;
 };
 
 
@@ -132,22 +141,22 @@ show_scatterplot (const struct graph *cmd, const struct casereader *input)
 
   if (cmd->byvar)
     {
-      ds_put_format (&title, _("%s vs. %s by %s"), 
-			   var_to_string (cmd->dep_vars[0]),  
+      ds_put_format (&title, _("%s vs. %s by %s"),
+			   var_to_string (cmd->dep_vars[0]),
 			   var_to_string (cmd->dep_vars[1]),
-			   var_to_string (cmd->byvar)); 
+			   var_to_string (cmd->byvar));
     }
   else
     {
-      ds_put_format (&title, _("%s vs. %s"), 
+      ds_put_format (&title, _("%s vs. %s"),
 		     var_to_string (cmd->dep_vars[0]),
-		     var_to_string (cmd->dep_vars[1])); 
+		     var_to_string (cmd->dep_vars[1]));
     }
 		 
 
   scatterplot = scatterplot_create (input,
-				    cmd->dep_vars[0], 
-				    cmd->dep_vars[1],
+				    var_to_string(cmd->dep_vars[0]),
+				    var_to_string(cmd->dep_vars[1]),
 				    cmd->byvar,
 				    &byvar_overflow,
 				    ds_cstr (&title),
@@ -158,12 +167,10 @@ show_scatterplot (const struct graph *cmd, const struct casereader *input)
 
   if (byvar_overflow)
     {
-      msg (MW, _("Maximum number of scatterplot categories reached." 
+      msg (MW, _("Maximum number of scatterplot categories reached."
 		 "Your BY variable has too many distinct values."
 		 "The coloring of the plot will not be correct"));
     }
-
-
 }
 
 static void
@@ -184,15 +191,14 @@ show_histogr (const struct graph *cmd, const struct casereader *input)
   }
 
 
-  for (reader=casereader_clone(input);(c = casereader_read (reader)) != NULL; case_unref (c))
+  for (;(c = casereader_read (input)) != NULL; case_unref (c))
     {
-      const struct variable *var = cmd->dep_vars[0];
-      const double x = case_data (c, var)->f;
-      const double weight = dict_get_case_weight (cmd->dict,c,NULL);
+      const double x      = case_data_idx (c, HG_IDX_X)->f;
+      const double weight = case_data_idx (c, HG_IDX_WT)->f;
       moments_pass_two (cmd->es[0].mom, x, weight);
       histogram_add (histogram, x, weight);
     }
-  casereader_destroy (reader);
+  casereader_destroy (input);
 
 
   {
@@ -231,8 +237,7 @@ static void
 run_graph (struct graph *cmd, struct casereader *input)
 {
   struct ccase *c;
-  struct casereader *reader;
-
+  struct casereader *reader, *writer;
 
   cmd->es = pool_calloc (cmd->pool,cmd->n_dep_vars,sizeof(struct exploratory_stats));
   for(int v=0;v<cmd->n_dep_vars;v++)
@@ -253,10 +258,25 @@ run_graph (struct graph *cmd, struct casereader *input)
                                               NULL,
                                               NULL);
 
-  for (reader = casereader_clone (input);
-       (c = casereader_read (reader)) != NULL; case_unref (c))
+  writer = autopaging_writer_create (cmd->gr_proto);
+
+  /* The case data is copied to a new writer        */
+  /* The setup of the case depends on the Charttype */
+  /* For Scatterplot x is assumed in dep_vars[0]    */
+  /*                 y is assumed in dep_vars[1]    */
+  /* For Histogram   x is assumed in dep_vars[0]    */
+  assert(SP_IDX_X == 0 && SP_IDX_Y == 1 && HG_IDX_X == 0);
+
+  for (;(c = casereader_read (input)) != NULL; case_unref (c))
     {
-      const double weight = dict_get_case_weight (cmd->dict,c,NULL);      
+      struct ccase *outcase = case_create (cmd->gr_proto);
+      const double weight = dict_get_case_weight (cmd->dict,c,NULL);
+      if (cmd->chart_type == CT_HISTOGRAM)
+	case_data_rw_idx (outcase, HG_IDX_WT)->f = weight;
+      if (cmd->chart_type == CT_SCATTERPLOT && cmd->byvar)
+	value_copy (case_data_rw_idx (outcase, SP_IDX_BY),
+		    case_data (c, cmd->byvar),
+		    var_get_width (cmd->byvar));
       for(int v=0;v<cmd->n_dep_vars;v++)
 	{
 	  const struct variable *var = cmd->dep_vars[v];
@@ -267,6 +287,8 @@ run_graph (struct graph *cmd, struct casereader *input)
 	      cmd->es[v].missing += weight;
 	      continue;
 	    }
+	  /* Magically v value fits to SP_IDX_X, SP_IDX_Y, HG_IDX_X */
+	  case_data_rw_idx (outcase, v)->f = x;
 
 	  if (x > cmd->es[v].maximum)
 	    cmd->es[v].maximum = x;
@@ -283,20 +305,18 @@ run_graph (struct graph *cmd, struct casereader *input)
 	  if (cmd->es[v].cmin > weight)
 	    cmd->es[v].cmin = weight;
 	}
+      casewriter_write (writer,outcase);
     }
-  casereader_destroy (reader);
+
+  reader = casewriter_make_reader (writer);
 
   switch (cmd->chart_type)
     {
     case CT_HISTOGRAM:
-      reader = casereader_clone (input);
       show_histogr (cmd,reader);
-      casereader_destroy (reader);
       break;
     case CT_SCATTERPLOT:
-      reader = casereader_clone (input);
       show_scatterplot (cmd,reader);
-      casereader_destroy (reader);
       break;
     default:
       NOT_REACHED ();
@@ -304,7 +324,6 @@ run_graph (struct graph *cmd, struct casereader *input)
     };
 
   casereader_destroy (input);
-
   cleanup_exploratory_stats (cmd);
 }
 
@@ -329,6 +348,7 @@ cmd_graph (struct lexer *lexer, struct dataset *ds)
   graph.chart_type = CT_NONE;
   graph.scatter_type = ST_BIVARIATE;
   graph.byvar = NULL;
+  graph.gr_proto = caseproto_create ();
 
   while (lex_token (lexer) != T_ENDCMD)
     {
@@ -516,12 +536,27 @@ cmd_graph (struct lexer *lexer, struct dataset *ds)
         }
     }
 
-  if (graph.chart_type == CT_NONE)
+  switch (graph.chart_type)
     {
+    case CT_SCATTERPLOT:
+      /* See scatterplot.h for the setup of the case prototype */
+      graph.gr_proto = caseproto_add_width (graph.gr_proto, 0); /* x value - SP_IDX_X*/
+      graph.gr_proto = caseproto_add_width (graph.gr_proto, 0); /* y value - SP_IDX_Y*/
+      /* The byvar contains the plot categories for the different xy plot colors */
+      if (graph.byvar) /* SP_IDX_BY */
+	graph.gr_proto = caseproto_add_width (graph.gr_proto, var_get_width(graph.byvar));
+      break;
+    case CT_HISTOGRAM:
+      graph.gr_proto = caseproto_add_width (graph.gr_proto, 0); /* x value      */
+      graph.gr_proto = caseproto_add_width (graph.gr_proto, 0); /* weight value */
+      break;
+    case CT_NONE:
       lex_error_expecting (lexer,"HISTOGRAM","SCATTERPLOT",NULL);
       goto error;
-    }
-
+    default:
+      NOT_REACHED ();
+      break;
+    };
 
   {
     struct casegrouper *grouper;
@@ -537,10 +572,12 @@ cmd_graph (struct lexer *lexer, struct dataset *ds)
 
   free (graph.dep_vars);
   pool_destroy (graph.pool);
+  caseproto_unref (graph.gr_proto);
 
   return CMD_SUCCESS;
 
  error:
+  caseproto_unref (graph.gr_proto);
   free (graph.dep_vars);
   pool_destroy (graph.pool);
 
