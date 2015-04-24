@@ -1,6 +1,6 @@
 /*
   PSPP - a program for statistical analysis.
-  Copyright (C) 2012, 2013  Free Software Foundation, Inc.
+  Copyright (C) 2012, 2013, 2015 Free Software Foundation, Inc.
   
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -145,22 +145,22 @@ show_scatterplot (const struct graph *cmd, const struct casereader *input)
     }
 		 
 
-  scatterplot = scatterplot_create(input,
-				   cmd->dep_vars[0], 
-				   cmd->dep_vars[1],
-				   cmd->byvar,
-				   &byvar_overflow,
-				   ds_cstr (&title),
-				   cmd->es[0].minimum, cmd->es[0].maximum,
-				   cmd->es[1].minimum, cmd->es[1].maximum);
-  scatterplot_chart_submit(scatterplot);
-  ds_destroy(&title);
+  scatterplot = scatterplot_create (input,
+				    cmd->dep_vars[0], 
+				    cmd->dep_vars[1],
+				    cmd->byvar,
+				    &byvar_overflow,
+				    ds_cstr (&title),
+				    cmd->es[0].minimum, cmd->es[0].maximum,
+				    cmd->es[1].minimum, cmd->es[1].maximum);
+  scatterplot_chart_submit (scatterplot);
+  ds_destroy (&title);
 
   if (byvar_overflow)
     {
       msg (MW, _("Maximum number of scatterplot categories reached." 
 		 "Your BY variable has too many distinct values."
-		 "The colouring of the plot will not be correct"));
+		 "The coloring of the plot will not be correct"));
     }
 
 
@@ -188,11 +188,11 @@ show_histogr (const struct graph *cmd, const struct casereader *input)
     {
       const struct variable *var = cmd->dep_vars[0];
       const double x = case_data (c, var)->f;
-      const double weight = dict_get_case_weight(cmd->dict,c,NULL);
+      const double weight = dict_get_case_weight (cmd->dict,c,NULL);
       moments_pass_two (cmd->es[0].mom, x, weight);
       histogram_add (histogram, x, weight);
     }
-  casereader_destroy(reader);
+  casereader_destroy (reader);
 
 
   {
@@ -210,7 +210,7 @@ show_histogr (const struct graph *cmd, const struct casereader *input)
 				ds_cstr (&label), n, mean,
 				sqrt (var), false));
 
-    statistic_destroy(&histogram->parent);      
+    statistic_destroy (&histogram->parent);      
     ds_destroy (&label);
   }
 }
@@ -234,7 +234,7 @@ run_graph (struct graph *cmd, struct casereader *input)
   struct casereader *reader;
 
 
-  cmd->es = pool_calloc(cmd->pool,cmd->n_dep_vars,sizeof(struct exploratory_stats));
+  cmd->es = pool_calloc (cmd->pool,cmd->n_dep_vars,sizeof(struct exploratory_stats));
   for(int v=0;v<cmd->n_dep_vars;v++)
     {
       cmd->es[v].mom = moments_create (MOMENT_KURTOSIS);
@@ -256,7 +256,7 @@ run_graph (struct graph *cmd, struct casereader *input)
   for (reader = casereader_clone (input);
        (c = casereader_read (reader)) != NULL; case_unref (c))
     {
-      const double weight = dict_get_case_weight(cmd->dict,c,NULL);      
+      const double weight = dict_get_case_weight (cmd->dict,c,NULL);      
       for(int v=0;v<cmd->n_dep_vars;v++)
 	{
 	  const struct variable *var = cmd->dep_vars[v];
@@ -289,21 +289,21 @@ run_graph (struct graph *cmd, struct casereader *input)
   switch (cmd->chart_type)
     {
     case CT_HISTOGRAM:
-      reader = casereader_clone(input);
-      show_histogr(cmd,reader);
-      casereader_destroy(reader);
+      reader = casereader_clone (input);
+      show_histogr (cmd,reader);
+      casereader_destroy (reader);
       break;
     case CT_SCATTERPLOT:
-      reader = casereader_clone(input);
-      show_scatterplot(cmd,reader);
-      casereader_destroy(reader);
+      reader = casereader_clone (input);
+      show_scatterplot (cmd,reader);
+      casereader_destroy (reader);
       break;
     default:
       NOT_REACHED ();
       break;
     };
 
-  casereader_destroy(input);
+  casereader_destroy (input);
 
   cleanup_exploratory_stats (cmd);
 }
@@ -334,11 +334,11 @@ cmd_graph (struct lexer *lexer, struct dataset *ds)
     {
       lex_match (lexer, T_SLASH);
 
-      if (lex_match_id(lexer, "HISTOGRAM"))
+      if (lex_match_id (lexer, "HISTOGRAM"))
 	{
 	  if (graph.chart_type != CT_NONE)
 	    {
-	      lex_error(lexer, _("Only one chart type is allowed."));
+	      lex_error (lexer, _("Only one chart type is allowed."));
 	      goto error;
 	    }
 	  if (!lex_force_match (lexer, T_EQUALS))
@@ -350,7 +350,7 @@ cmd_graph (struct lexer *lexer, struct dataset *ds)
 	    goto error;
 	  if (graph.n_dep_vars > 1)
 	    {
-	      lex_error(lexer, _("Only one variable is allowed"));
+	      lex_error (lexer, _("Only one variable is allowed."));
 	      goto error;
 	    }
 	}
@@ -358,7 +358,7 @@ cmd_graph (struct lexer *lexer, struct dataset *ds)
 	{
 	  if (graph.chart_type != CT_NONE)
 	    {
-	      lex_error(lexer, _("Only one chart type is allowed."));
+	      lex_error (lexer, _("Only one chart type is allowed."));
 	      goto error;
 	    }
 	  graph.chart_type = CT_SCATTERPLOT;
@@ -370,12 +370,12 @@ cmd_graph (struct lexer *lexer, struct dataset *ds)
 		}
 	      else if (lex_match_id (lexer, "OVERLAY"))  
 		{
-		  lex_error(lexer, _("%s is not yet implemented."),"OVERLAY");
+		  lex_error (lexer, _("%s is not yet implemented."),"OVERLAY");
 		  goto error;
 		}
 	      else if (lex_match_id (lexer, "MATRIX"))  
 		{
-		  lex_error(lexer, _("%s is not yet implemented."),"MATRIX");
+		  lex_error (lexer, _("%s is not yet implemented."),"MATRIX");
 		  goto error;
 		}
 	      else if (lex_match_id (lexer, "XYZ"))  
@@ -385,7 +385,7 @@ cmd_graph (struct lexer *lexer, struct dataset *ds)
 		}
 	      else
 		{
-		  lex_error_expecting(lexer, "BIVARIATE", NULL);
+		  lex_error_expecting (lexer, "BIVARIATE", NULL);
 		  goto error;
 		}
 	      if (!lex_force_match (lexer, T_RPAREN))
@@ -401,7 +401,7 @@ cmd_graph (struct lexer *lexer, struct dataset *ds)
 	 
 	  if (graph.scatter_type == ST_BIVARIATE && graph.n_dep_vars != 1)
 	    {
-	      lex_error(lexer, _("Only one variable allowed"));
+	      lex_error(lexer, _("Only one variable is allowed."));
 	      goto error;
 	    }
 
@@ -415,16 +415,16 @@ cmd_graph (struct lexer *lexer, struct dataset *ds)
 
 	  if (graph.scatter_type == ST_BIVARIATE && graph.n_dep_vars != 2)
 	    {
-	      lex_error(lexer, _("Only one variable allowed"));
+	      lex_error (lexer, _("Only one variable is allowed."));
 	      goto error;
 	    }
 	  
-	  if (lex_match(lexer, T_BY))
+	  if (lex_match (lexer, T_BY))
 	    {
 	      const struct variable *v = NULL;
 	      if (!lex_match_variable (lexer,graph.dict,&v))
 		{
-		  lex_error(lexer, _("Variable expected"));
+		  lex_error (lexer, _("Variable expected"));
 		  goto error;
 		}
 	      graph.byvar = v;
@@ -518,7 +518,7 @@ cmd_graph (struct lexer *lexer, struct dataset *ds)
 
   if (graph.chart_type == CT_NONE)
     {
-      lex_error_expecting(lexer,"HISTOGRAM","SCATTERPLOT",NULL);
+      lex_error_expecting (lexer,"HISTOGRAM","SCATTERPLOT",NULL);
       goto error;
     }
 

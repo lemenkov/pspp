@@ -47,11 +47,9 @@ xrchart_draw_scatterplot (const struct chart_item *chart_item, cairo_t *cr,
   const struct xrchart_colour *colour;
   
   if (spc->byvar)
-    byvar_width = var_get_width(spc->byvar);
+    byvar_width = var_get_width (spc->byvar);
 
-  xrchart_write_xscale (cr, geom,
-                      spc->x_min,
-                      spc->x_max);
+  xrchart_write_xscale (cr, geom, spc->x_min, spc->x_max);
   xrchart_write_yscale (cr, geom, spc->y_min, spc->y_max);
   xrchart_write_title (cr, geom, _("Scatterplot %s"), chart_item->title);
   xrchart_write_xlabel (cr, geom, var_to_string(spc->xvar));
@@ -63,25 +61,25 @@ xrchart_draw_scatterplot (const struct chart_item *chart_item, cairo_t *cr,
     {
       if (spc->byvar)
 	{
-	  const union value *val = case_data(c,spc->byvar);
-	  for(i=0;i<n_catvals && !value_equal(&catvals[i],val,byvar_width);i++);
+	  const union value *val = case_data (c,spc->byvar);
+	  for(i=0;i<n_catvals && !value_equal (&catvals[i],val,byvar_width);i++);
 	  if (i == n_catvals) /* No entry found */
 	    {
 	      if (n_catvals < MAX_PLOT_CATS)
 		{
 		  struct string label;
-		  ds_init_empty(&label);
-		  if (var_is_value_missing(spc->byvar,val,MV_ANY))
-		    ds_put_cstr(&label,"missing");
+		  ds_init_empty (&label);
+		  if (var_is_value_missing (spc->byvar,val,MV_ANY))
+		    ds_put_cstr (&label,"missing");
 		  else
-		    var_append_value_name(spc->byvar,val,&label);
-		  value_clone(&catvals[n_catvals++],val,byvar_width);
+		    var_append_value_name (spc->byvar,val,&label);
+		  value_clone (&catvals[n_catvals++],val,byvar_width);
 		  geom->n_datasets++;
 		  geom->dataset = xrealloc (geom->dataset,
 					    geom->n_datasets * sizeof (*geom->dataset));
 
-		  geom->dataset[geom->n_datasets - 1] = strdup(ds_cstr(&label));
-		  ds_destroy(&label);
+		  geom->dataset[geom->n_datasets - 1] = strdup (ds_cstr(&label));
+		  ds_destroy (&label);
 		}
 	      else /* Use the last plot category */
 		{
@@ -90,7 +88,7 @@ xrchart_draw_scatterplot (const struct chart_item *chart_item, cairo_t *cr,
 		}
 	    }
 	}
-      colour = &data_colour [ i % XRCHART_N_COLOURS];
+      colour = &data_colour[i % XRCHART_N_COLOURS];
       cairo_set_source_rgb (cr,
                             colour->red / 255.0,
                             colour->green / 255.0,
@@ -101,17 +99,12 @@ xrchart_draw_scatterplot (const struct chart_item *chart_item, cairo_t *cr,
 		     case_data (c, spc->yvar)->f);
     }
   casereader_destroy (data);
-  cairo_restore(cr);
+  cairo_restore (cr);
 
   for(i=0;i<n_catvals;i++)
-    value_destroy(&catvals[i],byvar_width);
+    value_destroy (&catvals[i],byvar_width);
 
   if (spc->byvar)
-    xrchart_write_legend(cr, geom);
-
-    
-
-  //  xrchart_line (cr, geom, npp->slope, npp->intercept,
-  //            npp->y_first, npp->y_last, XRCHART_DIM_Y);
+    xrchart_write_legend (cr, geom);
 
 }
