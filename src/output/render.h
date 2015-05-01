@@ -1,5 +1,5 @@
 /* PSPP - a program for statistical analysis.
-   Copyright (C) 2009, 2010, 2011 Free Software Foundation, Inc.
+   Copyright (C) 2009, 2010, 2011, 2014 Free Software Foundation, Inc.
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -21,7 +21,7 @@
 #include <stddef.h>
 #include "output/table-provider.h"
 
-struct table;
+struct table_item;
 
 enum render_line_style
   {
@@ -31,18 +31,62 @@ enum render_line_style
     RENDER_N_LINES
   };
 
+/* Parameters for rendering a table_item to a device.
+
+
+   Coordinate system
+   =================
+
+   The rendering code assumes that larger 'x' is to the right and larger 'y'
+   toward the bottom of the page.
+
+   The rendering code assumes that the table being rendered has its upper left
+   corner at (0,0) in device coordinates.  This is usually not the case from
+   the driver's perspective, so the driver should expect to apply its own
+   offset to coordinates passed to callback functions.
+
+
+   Callback functions
+   ==================
+
+   For each of the callback functions, AUX is passed as the 'aux' member of the
+   render_params structure.
+
+   The device is expected to transform numerical footnote index numbers into
+   footnote markers.  The existing drivers use str_format_26adic() to transform
+   index 0 to "a", index 1 to "b", and so on.  The FOOTNOTE_IDX supplied to
+   each function is the footnote index number for the first footnote in the
+   cell.  If a cell contains more than one footnote, then the additional
+   footnote indexes increase sequentially, e.g. the second footnote has index
+   FOOTNOTE_IDX + 1.
+*/
 struct render_params
   {
     /* Measures CELL's width.  Stores in *MIN_WIDTH the minimum width required
        to avoid splitting a single word across multiple lines (normally, this
        is the width of the longest word in the cell) and in *MAX_WIDTH the
-       minimum width required to avoid line breaks other than at new-lines. */
+       minimum width required to avoid line breaks other than at new-lines.
+       */
     void (*measure_cell_width) (void *aux, const struct table_cell *cell,
+                                int footnote_idx,
                                 int *min_width, int *max_width);
 
     /* Returns the height required to render CELL given a width of WIDTH. */
     int (*measure_cell_height) (void *aux, const struct table_cell *cell,
-                                int width);
+                                int footnote_idx, int width);
+
+    /* Given that there is space measuring WIDTH by HEIGHT to render CELL,
+       where HEIGHT is insufficient to render the entire height of the cell,
+       returns the largest height less than HEIGHT at which it is appropriate
+       to break the cell.  For example, if breaking at the specified HEIGHT
+       would break in the middle of a line of text, the return value would be
+       just sufficiently less that the breakpoint would be between lines of
+       text.
+
+       Optional.  If NULL, the rendering engine assumes that all breakpoints
+       are acceptable. */
+    int (*adjust_break) (void *aux, const struct table_cell *cell,
+                         int footnote_idx, int width, int height);
 
     /* Draws a generalized intersection of lines in the rectangle whose
        top-left corner is (BB[TABLE_HORZ][0], BB[TABLE_VERT][0]) and whose
@@ -62,6 +106,7 @@ struct render_params
        of the cell that lies within CLIP should actually be drawn, although BB
        should used to determine the layout of the cell. */
     void (*draw_cell) (void *aux, const struct table_cell *cell,
+                       int footnote_idx,
                        int bb[TABLE_N_AXES][2], int clip[TABLE_N_AXES][2]);
 
     /* Auxiliary data passed to each of the above functions. */
@@ -78,39 +123,26 @@ struct render_params
 
     /* Width of different kinds of lines. */
     int line_widths[TABLE_N_AXES][RENDER_N_LINES];
+
+    /* Minimum cell width or height before allowing the cell to be broken
+       across two pages.  (Joined cells may always be broken at join
+       points.) */
+    int min_break[TABLE_N_AXES];
   };
-
-/* A "page" of content that is ready to be rendered.
 
-   A page's size is not limited to the size passed in as part of render_params.
-   Use render_break (see below) to break a too-big render_page into smaller
-   render_pages that will fit in the available space. */
-struct render_page *render_page_create (const struct render_params *,
-                                        const struct table *);
-
-struct render_page *render_page_ref (const struct render_page *);
-void render_page_unref (struct render_page *);
-
-int render_page_get_size (const struct render_page *, enum table_axis);
-void render_page_draw (const struct render_page *);
-
 /* An iterator for breaking render_pages into smaller chunks. */
-struct render_break
-  {
-    struct render_page *page;   /* Page being broken up. */
-    enum table_axis axis;       /* Axis along which 'page' is being broken. */
-    int cell;                   /* Next cell. */
-    int pixel;                  /* Pixel offset within 'cell' (usually 0). */
-    int hw;                     /* Width of headers of 'page' along 'axis'. */
-  };
+struct render_pager *render_pager_create (const struct render_params *,
+                                          const struct table_item *);
+void render_pager_destroy (struct render_pager *);
 
-void render_break_init (struct render_break *, struct render_page *,
-                        enum table_axis);
-void render_break_init_empty (struct render_break *);
-void render_break_destroy (struct render_break *);
+bool render_pager_has_next (const struct render_pager *);
+int render_pager_draw_next (struct render_pager *, int space);
 
-bool render_break_has_next (const struct render_break *);
-int render_break_next_size (const struct render_break *);
-struct render_page *render_break_next (struct render_break *, int size);
+void render_pager_draw (const struct render_pager *);
+void render_pager_draw_region (const struct render_pager *,
+                               int x, int y, int w, int h);
+
+int render_pager_get_size (const struct render_pager *, enum table_axis);
+int render_pager_get_best_breakpoint (const struct render_pager *, int height);
 
 #endif /* output/render.h */

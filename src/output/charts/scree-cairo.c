@@ -44,8 +44,8 @@ xrchart_draw_scree (const struct chart_item *chart_item, cairo_t *cr,
   else
     max = fabs (min);
 
-  xrchart_write_yscale (cr, geom, 0, max, max);
-  xrchart_write_xscale (cr, geom, 0, rc->eval->size + 1, rc->eval->size + 1);
+  xrchart_write_yscale (cr, geom, 0, max);
+  xrchart_write_xscale (cr, geom, 0, rc->eval->size + 1);
 
   xrchart_vector_start (cr, geom, "");
   for (i = 0 ; i < rc->eval->size; ++i)

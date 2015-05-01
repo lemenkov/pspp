@@ -1,5 +1,5 @@
 /* PSPP - a program for statistical analysis.
-   Copyright (C) 2009, 2010, 2011, 2013 Free Software Foundation, Inc.
+   Copyright (C) 2009, 2010, 2011, 2013, 2014 Free Software Foundation, Inc.
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -18,6 +18,7 @@
 
 #include <math.h>
 #include <stdio.h>
+#include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -25,6 +26,8 @@
 #include "libpspp/hash-functions.h"
 #include "libpspp/hmap.h"
 #include "output/render.h"
+#include "output/tab.h"
+#include "output/table-item.h"
 #include "output/table.h"
 
 #include "gl/minmax.h"
@@ -38,7 +41,11 @@
 
    May represent the layout of an entire table presented to
    render_page_create(), or a rectangular subregion of a table broken out using
-   render_page_next() to allow a table to be broken across multiple pages. */
+   render_break_next() to allow a table to be broken across multiple pages.
+
+   A page's size is not limited to the size passed in as part of render_params.
+   render_pager breaks a render_page into smaller render_pages that will fit in
+   the available space. */
 struct render_page
   {
     const struct render_params *params; /* Parameters of the target device. */
@@ -61,7 +68,7 @@ struct render_page
        Similarly, cp[V] represents y positions within the table.
        cp[V][0] = 0.
        cp[V][1] = the height of the topmost horizontal rule.
-       cp[V][2] = cp[V][1] + the height of the topmost column.
+       cp[V][2] = cp[V][1] + the height of the topmost row.
        cp[V][3] = cp[V][2] + the height of the second-from-top horizontal rule.
        and so on:
        cp[V][2 * nr] = y position of the bottommost horizontal rule.
@@ -83,6 +90,15 @@ struct render_page
        border more.  (A single table cell that is so large that it fills the
        entire page can overflow on all four sides!) */
     struct hmap overflows;
+
+    /* Contains "struct render_footnote"s, one for each cell with one or more
+       footnotes.
+
+       'n_footnotes' is the number of footnotes in the table.  There might be
+       more than hmap_count(&page->footnotes) because there can be more than
+       one footnote in a cell. */
+    struct hmap footnotes;
+    size_t n_footnotes;
 
     /* If a single column (or row) is too wide (or tall) to fit on a page
        reasonably, then render_break_next() will split a single row or column
@@ -119,6 +135,12 @@ struct render_page
        across both pages). */
     int *join_crossing[TABLE_N_AXES];
   };
+
+static struct render_page *render_page_create (const struct render_params *,
+                                               const struct table *);
+
+struct render_page *render_page_ref (const struct render_page *page_);
+static void render_page_unref (struct render_page *);
 
 /* Returns the offset in struct render_page's cp[axis] array of the rule with
    index RULE_IDX.  That is, if RULE_IDX is 0, then the offset is that of the
@@ -176,6 +198,21 @@ static int
 cell_width (const struct render_page *page, int axis, int x)
 {
   return axis_width (page, axis, cell_ofs (x), cell_ofs (x) + 1);
+}
+
+/* Returns the width of rule X along AXIS in PAGE. */
+static int
+rule_width (const struct render_page *page, int axis, int x)
+{
+  return axis_width (page, axis, rule_ofs (x), rule_ofs (x) + 1);
+}
+
+/* Returns the width of rule X along AXIS in PAGE. */
+static int
+rule_width_r (const struct render_page *page, int axis, int x)
+{
+  int ofs = rule_ofs_r (page, axis, x);
+  return axis_width (page, axis, ofs, ofs + 1);
 }
 
 /* Returns the width of cells X0 through X1, exclusive, along AXIS in PAGE. */
@@ -274,9 +311,9 @@ struct render_overflow
     int overflow[TABLE_N_AXES][2];
   };
 
-/* Returns a hash value for (X,Y). */
+/* Returns a hash value for (,Y). */
 static unsigned int
-hash_overflow (int x, int y)
+hash_cell (int x, int y)
 {
   return hash_int (x + (y << 16), 0);
 }
@@ -291,12 +328,61 @@ find_overflow (const struct render_page *page, int x, int y)
       const struct render_overflow *of;
 
       HMAP_FOR_EACH_WITH_HASH (of, struct render_overflow, node,
-                               hash_overflow (x, y), &page->overflows)
+                               hash_cell (x, y), &page->overflows)
         if (x == of->d[H] && y == of->d[V])
           return of;
     }
 
   return NULL;
+}
+
+/* A footnote. */
+struct render_footnote
+  {
+    struct hmap_node node;
+
+    /* The area of the table covered by the cell that has the footnote.
+
+       d[H][0] is the leftmost column.
+       d[H][1] is the rightmost column, plus 1.
+       d[V][0] is the top row.
+       d[V][1] is the bottom row, plus 1.
+
+       The cell in its original table might occupy a larger region.  This
+       member reflects the size of the cell in the current render_page, after
+       trimming off any rows or columns due to page-breaking. */
+    int d[TABLE_N_AXES][2];
+
+    /* The index of the first footnote in the cell. */
+    int idx;
+  };
+
+static int
+count_footnotes (const struct table_cell *cell)
+{
+  size_t i;
+  int n;
+
+  n = 0;
+  for (i = 0; i < cell->n_contents; i++)
+    n += cell->contents[i].n_footnotes;
+  return n;
+}
+
+static int
+find_footnote_idx (const struct table_cell *cell, const struct hmap *footnotes)
+{
+  const struct render_footnote *f;
+
+  if (!count_footnotes (cell))
+    return 0;
+
+  HMAP_FOR_EACH_WITH_HASH (f, struct render_footnote, node,
+                           hash_cell (cell->d[H][0], cell->d[V][0]), footnotes)
+    if (f->d[H][0] == cell->d[H][0] && f->d[V][0] == cell->d[V][0])
+      return f->idx;
+
+  NOT_REACHED ();
 }
 
 /* Row or column dimensions.  Used to figure the size of a table in
@@ -502,6 +588,8 @@ render_page_allocate (const struct render_params *params,
     }
 
   hmap_init (&page->overflows);
+  hmap_init (&page->footnotes);
+  page->n_footnotes = 0;
   memset (page->is_edge_cutoff, 0, sizeof page->is_edge_cutoff);
 
   return page;
@@ -592,7 +680,7 @@ set_join_crossings (struct render_page *page, enum table_axis axis,
    The new render_page will be suitable for rendering on a device whose page
    size is PARAMS->size, but the caller is responsible for actually breaking it
    up to fit on such a device, using the render_break abstraction.  */
-struct render_page *
+static struct render_page *
 render_page_create (const struct render_params *params,
                     const struct table *table_)
 {
@@ -603,6 +691,8 @@ render_page_create (const struct render_params *params,
   struct render_row *rows;
   int table_widths[2];
   int *rules[TABLE_N_AXES];
+  struct hmap footnotes;
+  int footnote_idx;
   int nr, nc;
   int x, y;
   int i;
@@ -624,7 +714,9 @@ render_page_create (const struct render_params *params,
     }
 
   /* Calculate minimum and maximum widths of cells that do not
-     span multiple columns. */
+     span multiple columns.  Assign footnote markers. */
+  hmap_init (&footnotes);
+  footnote_idx = 0;
   for (i = 0; i < 2; i++)
     columns[i] = xzalloc (nc * sizeof *columns[i]);
   for (y = 0; y < nr; y++)
@@ -633,15 +725,35 @@ render_page_create (const struct render_params *params,
         struct table_cell cell;
 
         table_get_cell (table, x, y, &cell);
-        if (y == cell.d[V][0] && table_cell_colspan (&cell) == 1)
+        if (y == cell.d[V][0])
           {
-            int w[2];
-            int i;
+            int n;
 
-            params->measure_cell_width (params->aux, &cell, &w[MIN], &w[MAX]);
-            for (i = 0; i < 2; i++)
-              if (columns[i][x].unspanned < w[i])
-                columns[i][x].unspanned = w[i];
+            if (table_cell_colspan (&cell) == 1)
+              {
+                int w[2];
+                int i;
+
+                params->measure_cell_width (params->aux, &cell, footnote_idx,
+                                            &w[MIN], &w[MAX]);
+                for (i = 0; i < 2; i++)
+                  if (columns[i][x].unspanned < w[i])
+                    columns[i][x].unspanned = w[i];
+              }
+
+            n = count_footnotes (&cell);
+            if (n > 0)
+              {
+                struct render_footnote *f = xmalloc (sizeof *f);
+                f->d[H][0] = cell.d[H][0];
+                f->d[H][1] = cell.d[H][1];
+                f->d[V][0] = cell.d[V][0];
+                f->d[V][1] = cell.d[V][1];
+                f->idx = footnote_idx;
+                hmap_insert (&footnotes, &f->node, hash_cell (x, y));
+
+                footnote_idx += n;
+              }
           }
         x = cell.d[H][1];
         table_cell_free (&cell);
@@ -661,7 +773,9 @@ render_page_create (const struct render_params *params,
           {
             int w[2];
 
-            params->measure_cell_width (params->aux, &cell, &w[MIN], &w[MAX]);
+            params->measure_cell_width (params->aux, &cell,
+                                        find_footnote_idx (&cell, &footnotes),
+                                        &w[MIN], &w[MAX]);
             for (i = 0; i < 2; i++)
               distribute_spanned_width (w[i], &columns[i][cell.d[H][0]],
                                         rules[H], table_cell_colspan (&cell));
@@ -710,7 +824,8 @@ render_page_create (const struct render_params *params,
               if (table_cell_rowspan (&cell) == 1)
                 {
                   int w = joined_width (page, H, cell.d[H][0], cell.d[H][1]);
-                  int h = params->measure_cell_height (params->aux, &cell, w);
+                  int h = params->measure_cell_height (
+                    params->aux, &cell, find_footnote_idx (&cell, &footnotes), w);
                   if (h > r->unspanned)
                     r->unspanned = r->width = h;
                 }
@@ -737,7 +852,8 @@ render_page_create (const struct render_params *params,
         if (y == cell.d[V][0] && table_cell_rowspan (&cell) > 1)
           {
             int w = joined_width (page, H, cell.d[H][0], cell.d[H][1]);
-            int h = params->measure_cell_height (params->aux, &cell, w);
+            int h = params->measure_cell_height (
+              params->aux, &cell, find_footnote_idx (&cell, &footnotes), w);
             distribute_spanned_width (h, &rows[cell.d[V][0]], rules[V],
                                       table_cell_rowspan (&cell));
           }
@@ -762,6 +878,10 @@ render_page_create (const struct render_params *params,
         }
     }
 
+  hmap_swap (&page->footnotes, &footnotes);
+  hmap_destroy (&footnotes);
+  page->n_footnotes = footnote_idx;
+
   free (rules[H]);
   free (rules[V]);
 
@@ -779,7 +899,7 @@ render_page_ref (const struct render_page *page_)
 
 /* Decreases PAGE's reference count and destroys PAGE if this causes the
    reference count to fall to zero. */
-void
+static void
 render_page_unref (struct render_page *page)
 {
   if (page != NULL && --page->ref_cnt == 0)
@@ -812,6 +932,23 @@ render_page_get_size (const struct render_page *page, enum table_axis axis)
 {
   return page->cp[axis][page->n[axis] * 2 + 1];
 }
+
+int
+render_page_get_best_breakpoint (const struct render_page *page, int height)
+{
+  int y;
+
+  /* If there's no room for at least the top row and the rules above and below
+     it, don't include any of the table. */
+  if (page->cp[V][3] > height)
+    return 0;
+
+  /* Otherwise include as many rows and rules as we can. */
+  for (y = 5; y <= 2 * page->n[V] + 1; y += 2)
+    if (page->cp[V][y] > height)
+      return page->cp[V][y - 2];
+  return height;
+}
 
 /* Drawing render_pages. */
 
@@ -830,7 +967,8 @@ is_rule (int z)
 }
 
 static void
-render_rule (const struct render_page *page, const int d[TABLE_N_AXES])
+render_rule (const struct render_page *page, const int ofs[TABLE_N_AXES],
+             const int d[TABLE_N_AXES])
 {
   enum render_line_style styles[TABLE_N_AXES][2];
   enum table_axis a;
@@ -869,25 +1007,26 @@ render_rule (const struct render_page *page, const int d[TABLE_N_AXES])
     {
       int bb[TABLE_N_AXES][2];
 
-      bb[H][0] = page->cp[H][d[H]];
-      bb[H][1] = page->cp[H][d[H] + 1];
-      bb[V][0] = page->cp[V][d[V]];
-      bb[V][1] = page->cp[V][d[V] + 1];
+      bb[H][0] = ofs[H] + page->cp[H][d[H]];
+      bb[H][1] = ofs[H] + page->cp[H][d[H] + 1];
+      bb[V][0] = ofs[V] + page->cp[V][d[V]];
+      bb[V][1] = ofs[V] + page->cp[V][d[V] + 1];
       page->params->draw_line (page->params->aux, bb, styles);
     }
 }
 
 static void
-render_cell (const struct render_page *page, const struct table_cell *cell)
+render_cell (const struct render_page *page, const int ofs[TABLE_N_AXES],
+             const struct table_cell *cell)
 {
   const struct render_overflow *of;
   int bb[TABLE_N_AXES][2];
   int clip[TABLE_N_AXES][2];
 
-  bb[H][0] = clip[H][0] = page->cp[H][cell->d[H][0] * 2 + 1];
-  bb[H][1] = clip[H][1] = page->cp[H][cell->d[H][1] * 2];
-  bb[V][0] = clip[V][0] = page->cp[V][cell->d[V][0] * 2 + 1];
-  bb[V][1] = clip[V][1] = page->cp[V][cell->d[V][1] * 2];
+  bb[H][0] = clip[H][0] = ofs[H] + page->cp[H][cell->d[H][0] * 2 + 1];
+  bb[H][1] = clip[H][1] = ofs[H] + page->cp[H][cell->d[H][1] * 2];
+  bb[V][0] = clip[V][0] = ofs[V] + page->cp[V][cell->d[V][0] * 2 + 1];
+  bb[V][1] = clip[V][1] = ofs[V] + page->cp[V][cell->d[V][1] * 2];
 
   of = find_overflow (page, cell->d[H][0], cell->d[V][0]);
   if (of)
@@ -899,25 +1038,26 @@ render_cell (const struct render_page *page, const struct table_cell *cell)
           if (of->overflow[axis][0])
             {
               bb[axis][0] -= of->overflow[axis][0];
-              if (cell->d[axis][0] == 0)
-                clip[axis][0] = page->cp[axis][cell->d[axis][0] * 2];
+              if (cell->d[axis][0] == 0 && !page->is_edge_cutoff[axis][0])
+                clip[axis][0] = ofs[axis] + page->cp[axis][cell->d[axis][0] * 2];
             }
           if (of->overflow[axis][1])
             {
               bb[axis][1] += of->overflow[axis][1];
-              if (cell->d[axis][1] == page->n[axis])
-                clip[axis][1] = page->cp[axis][cell->d[axis][1] * 2 + 1];
+              if (cell->d[axis][1] == page->n[axis] && !page->is_edge_cutoff[axis][1])
+                clip[axis][1] = ofs[axis] + page->cp[axis][cell->d[axis][1] * 2 + 1];
             }
         }
     }
 
-  page->params->draw_cell (page->params->aux, cell, bb, clip);
+  page->params->draw_cell (page->params->aux, cell,
+                           find_footnote_idx (cell, &page->footnotes), bb, clip);
 }
 
 /* Draws the cells of PAGE indicated in BB. */
 static void
 render_page_draw_cells (const struct render_page *page,
-                        int bb[TABLE_N_AXES][2])
+                        int ofs[TABLE_N_AXES], int bb[TABLE_N_AXES][2])
 {
   int x, y;
 
@@ -928,7 +1068,7 @@ render_page_draw_cells (const struct render_page *page,
           int d[TABLE_N_AXES];
           d[H] = x;
           d[V] = y;
-          render_rule (page, d);
+          render_rule (page, ofs, d);
           x++;
         }
       else
@@ -936,8 +1076,8 @@ render_page_draw_cells (const struct render_page *page,
           struct table_cell cell;
 
           table_get_cell (page->table, x / 2, y / 2, &cell);
-          if (y == bb[V][0] || y / 2 == cell.d[V][0])
-            render_cell (page, &cell);
+          if (y / 2 == bb[V][0] / 2 || y / 2 == cell.d[V][0])
+            render_cell (page, ofs, &cell);
           x = rule_ofs (cell.d[H][1]);
           table_cell_free (&cell);
         }
@@ -946,7 +1086,7 @@ render_page_draw_cells (const struct render_page *page,
 /* Renders PAGE, by calling the 'draw_line' and 'draw_cell' functions from the
    render_params provided to render_page_create(). */
 void
-render_page_draw (const struct render_page *page)
+render_page_draw (const struct render_page *page, int ofs[TABLE_N_AXES])
 {
   int bb[TABLE_N_AXES][2];
 
@@ -955,11 +1095,87 @@ render_page_draw (const struct render_page *page)
   bb[V][0] = 0;
   bb[V][1] = page->n[V] * 2 + 1;
 
-  render_page_draw_cells (page, bb);
+  render_page_draw_cells (page, ofs, bb);
 }
 
-
+/* Returns the greatest value i, 0 <= i < n, such that cp[i] <= x0. */
+static int
+get_clip_min_extent (int x0, const int cp[], int n)
+{
+  int low, high, best;
+
+  low = 0;
+  high = n;
+  best = 0;
+  while (low < high)
+    {
+      int middle = low + (high - low) / 2;
+
+      if (cp[middle] <= x0)
+        {
+          best = middle;
+          low = middle + 1;
+        }
+      else
+        high = middle;
+    }
+
+  return best;
+}
+
+/* Returns the least value i, 0 <= i < n, such that cp[i] >= x1. */
+static int
+get_clip_max_extent (int x1, const int cp[], int n)
+{
+  int low, high, best;
+
+  low = 0;
+  high = n;
+  best = n;
+  while (low < high)
+    {
+      int middle = low + (high - low) / 2;
+
+      if (cp[middle] >= x1)
+        best = high = middle;
+      else
+        low = middle + 1;
+    }
+
+  while (best > 0 && cp[best - 1] == cp[best])
+    best--;
+
+  return best;
+}
+
+/* Renders the cells of PAGE that intersect (X,Y)-(X+W,Y+H), by calling the
+   'draw_line' and 'draw_cell' functions from the render_params provided to
+   render_page_create(). */
+void
+render_page_draw_region (const struct render_page *page,
+                         int ofs[TABLE_N_AXES], int clip[TABLE_N_AXES][2])
+{
+  int bb[TABLE_N_AXES][2];
+
+  bb[H][0] = get_clip_min_extent (clip[H][0], page->cp[H], page->n[H] * 2 + 1);
+  bb[H][1] = get_clip_max_extent (clip[H][1], page->cp[H], page->n[H] * 2 + 1);
+  bb[V][0] = get_clip_min_extent (clip[V][0], page->cp[V], page->n[V] * 2 + 1);
+  bb[V][1] = get_clip_max_extent (clip[V][1], page->cp[V], page->n[V] * 2 + 1);
+
+  render_page_draw_cells (page, ofs, bb);
+}
+
 /* Breaking up tables to fit on a page. */
+
+/* An iterator for breaking render_pages into smaller chunks. */
+struct render_break
+  {
+    struct render_page *page;   /* Page being broken up. */
+    enum table_axis axis;       /* Axis along which 'page' is being broken. */
+    int z;                      /* Next cell along 'axis'. */
+    int pixel;                  /* Pixel offset within cell 'z' (usually 0). */
+    int hw;                     /* Width of headers of 'page' along 'axis'. */
+  };
 
 static int needed_size (const struct render_break *, int cell);
 static bool cell_is_breakable (const struct render_break *, int cell);
@@ -968,35 +1184,32 @@ static struct render_page *render_page_select (const struct render_page *,
                                                int z0, int p0,
                                                int z1, int p1);
 
-/* Initializes render_break B for breaking PAGE along AXIS.
-
-   Ownership of PAGE is transferred to B.  The caller must use
-   render_page_ref() if it needs to keep a copy of PAGE. */
-void
-render_break_init (struct render_break *b, struct render_page *page,
+/* Initializes render_break B for breaking PAGE along AXIS. */
+static void
+render_break_init (struct render_break *b, const struct render_page *page,
                    enum table_axis axis)
 {
-  b->page = page;
+  b->page = render_page_ref (page);
   b->axis = axis;
-  b->cell = page->h[axis][0];
+  b->z = page->h[axis][0];
   b->pixel = 0;
   b->hw = headers_width (page, axis);
 }
 
 /* Initializes B as a render_break structure for which
    render_break_has_next() always returns false. */
-void
+static void
 render_break_init_empty (struct render_break *b)
 {
   b->page = NULL;
   b->axis = TABLE_HORZ;
-  b->cell = 0;
+  b->z = 0;
   b->pixel = 0;
   b->hw = 0;
 }
 
 /* Frees B and unrefs the render_page that it owns. */
-void
+static void
 render_break_destroy (struct render_break *b)
 {
   if (b != NULL)
@@ -1008,26 +1221,13 @@ render_break_destroy (struct render_break *b)
 
 /* Returns true if B still has cells that are yet to be returned,
    false if all of B's page has been processed. */
-bool
+static bool
 render_break_has_next (const struct render_break *b)
 {
   const struct render_page *page = b->page;
   enum table_axis axis = b->axis;
 
-  return page != NULL && b->cell < page->n[axis] - page->h[axis][1];
-}
-
-/* Returns the minimum SIZE argument that, if passed to render_break_next(),
-   will avoid a null return value (if cells are still left). */
-int
-render_break_next_size (const struct render_break *b)
-{
-  const struct render_page *page = b->page;
-  enum table_axis axis = b->axis;
-
-  return (!render_break_has_next (b) ? 0
-          : !cell_is_breakable (b, b->cell) ? needed_size (b, b->cell + 1)
-          : b->hw + page->params->font_size[axis]);
+  return page != NULL && b->z < page->n[axis] - page->h[axis][1];
 }
 
 /* Returns a new render_page that is up to SIZE pixels wide along B's axis.
@@ -1035,38 +1235,114 @@ render_break_next_size (const struct render_break *b)
    SIZE is too small to reasonably render any cells.  The latter will never
    happen if SIZE is at least as large as the page size passed to
    render_page_create() along B's axis. */
-struct render_page *
+static struct render_page *
 render_break_next (struct render_break *b, int size)
 {
   const struct render_page *page = b->page;
   enum table_axis axis = b->axis;
   struct render_page *subpage;
-  int cell, pixel;
+  int z, pixel;
 
   if (!render_break_has_next (b))
     return NULL;
 
   pixel = 0;
-  for (cell = b->cell; cell < page->n[axis] - page->h[axis][1]; cell++)
-    if (needed_size (b, cell + 1) > size)
-      {
-        if (!cell_is_breakable (b, cell))
-          {
-            if (cell == b->cell)
-              return NULL;
-          }
-        else
-          pixel = (cell == b->cell
-                   ? b->pixel + size - b->hw
-                   : size - needed_size (b, cell));
-        break;
-      }
+  for (z = b->z; z < page->n[axis] - page->h[axis][1]; z++)
+    {
+      int needed = needed_size (b, z + 1);
+      if (needed > size)
+        {
+          if (cell_is_breakable (b, z))
+            {
+              /* If there is no right header and we render a partial cell on
+                 the right side of the body, then we omit the rightmost rule of
+                 the body.  Otherwise the rendering is deceptive because it
+                 looks like the whole cell is present instead of a partial
+                 cell.
 
-  subpage = render_page_select (page, axis, b->cell, b->pixel,
-                                pixel ? cell + 1 : cell,
-                                pixel ? cell_width (page, axis, cell) - pixel
+                 This is similar to code for the left side in needed_size(). */
+              int rule_allowance = (page->h[axis][1]
+                                    ? 0
+                                    : rule_width (page, axis, z));
+
+              /* The amount that, if we added cell 'z', the rendering would
+                 overfill the allocated 'size'. */
+              int overhang = needed - size - rule_allowance;
+
+              /* The width of cell 'z'. */
+              int cell_size = cell_width (page, axis, z);
+
+              /* The amount trimmed off the left side of 'z',
+                 and the amount left to render. */
+              int cell_ofs = z == b->z ? b->pixel : 0;
+              int cell_left = cell_size - cell_ofs;
+
+              /* A small but visible width.  */
+              int em = page->params->font_size[axis];
+
+              /* If some of the cell remains to render,
+                 and there would still be some of the cell left afterward,
+                 then partially render that much of the cell. */
+              pixel = (cell_left && cell_left > overhang
+                       ? cell_left - overhang + cell_ofs
+                       : 0);
+
+              /* If there would be only a tiny amount of the cell left after
+                 rendering it partially, reduce the amount rendered slightly
+                 to make the output look a little better. */
+              if (pixel + em > cell_size)
+                pixel = MAX (pixel - em, 0);
+
+              /* If we're breaking vertically, then consider whether the cells
+                 being broken have a better internal breakpoint than the exact
+                 number of pixels available, which might look bad e.g. because
+                 it breaks in the middle of a line of text. */
+              if (axis == TABLE_VERT && page->params->adjust_break)
+                {
+                  int x;
+
+                  for (x = 0; x < page->n[H]; )
+                    {
+                      struct table_cell cell;
+                      int better_pixel;
+                      int w;
+
+                      table_get_cell (page->table, x, z, &cell);
+                      w = joined_width (page, H, cell.d[H][0], cell.d[H][1]);
+                      better_pixel = page->params->adjust_break (
+                        page->params->aux, &cell,
+                        find_footnote_idx (&cell, &page->footnotes), w, pixel);
+                      x = cell.d[H][1];
+                      table_cell_free (&cell);
+
+                      if (better_pixel < pixel)
+                        {
+                          if (better_pixel > (z == b->z ? b->pixel : 0))
+                            {
+                              pixel = better_pixel;
+                              break;
+                            }
+                          else if (better_pixel == 0 && z != b->z)
+                            {
+                              pixel = 0;
+                              break;
+                            }
+                        }
+                    }
+                }
+            }
+          break;
+        }
+    }
+
+  if (z == b->z && !pixel)
+    return NULL;
+
+  subpage = render_page_select (page, axis, b->z, b->pixel,
+                                pixel ? z + 1 : z,
+                                pixel ? cell_width (page, axis, z) - pixel
                                 : 0);
-  b->cell = cell;
+  b->z = z;
   b->pixel = pixel;
   return subpage;
 }
@@ -1080,9 +1356,35 @@ needed_size (const struct render_break *b, int cell)
   enum table_axis axis = b->axis;
   int size;
 
-  size = joined_width (page, axis, b->cell, cell) + b->hw - b->pixel;
+  /* Width of left header not including its rightmost rule.  */
+  size = axis_width (page, axis, 0, rule_ofs (page->h[axis][0]));
+
+  /* If we have a pixel offset and there is no left header, then we omit the
+     leftmost rule of the body.  Otherwise the rendering is deceptive because
+     it looks like the whole cell is present instead of a partial cell.
+
+     Otherwise (if there are headers) we will be merging two rules: the
+     rightmost rule in the header and the leftmost rule in the body.  We assume
+     that the width of a merged rule is the larger of the widths of either rule
+     invidiually. */
+  if (b->pixel == 0 || page->h[axis][0])
+    size += MAX (rule_width (page, axis, page->h[axis][0]),
+                 rule_width (page, axis, b->z));
+
+  /* Width of body, minus any pixel offset in the leftmost cell. */
+  size += joined_width (page, axis, b->z, cell) - b->pixel;
+
+  /* Width of rightmost rule in body merged with leftmost rule in headers. */
+  size += MAX (rule_width_r (page, axis, page->h[axis][1]),
+               rule_width (page, axis, cell));
+
+  /* Width of right header not including its leftmost rule. */
+  size += axis_width (page, axis, rule_ofs_r (page, axis, page->h[axis][1]),
+                      rule_ofs_r (page, axis, 0));
+
+  /* Join crossing. */
   if (page->h[axis][0] && page->h[axis][1])
-    size += page->join_crossing[axis][b->cell];
+    size += page->join_crossing[axis][b->z];
 
   return size;
 }
@@ -1097,7 +1399,263 @@ cell_is_breakable (const struct render_break *b, int cell)
   const struct render_page *page = b->page;
   enum table_axis axis = b->axis;
 
-  return cell_width (page, axis, cell) > page->params->size[axis] / 2;
+  return cell_width (page, axis, cell) >= page->params->min_break[axis];
+}
+
+/* render_pager. */
+
+struct render_pager
+  {
+    const struct render_params *params;
+
+    struct render_page **pages;
+    size_t n_pages, allocated_pages;
+
+    size_t cur_page;
+    struct render_break x_break;
+    struct render_break y_break;
+  };
+
+static const struct render_page *
+render_pager_add_table (struct render_pager *p, struct table *table)
+{
+  struct render_page *page;
+
+  if (p->n_pages >= p->allocated_pages)
+    p->pages = x2nrealloc (p->pages, &p->allocated_pages, sizeof *p->pages);
+  page = p->pages[p->n_pages++] = render_page_create (p->params, table);
+  return page;
+}
+
+static void
+render_pager_start_page (struct render_pager *p)
+{
+  render_break_init (&p->x_break, p->pages[p->cur_page++], H);
+  render_break_init_empty (&p->y_break);
+}
+
+static void
+add_footnote_page (struct render_pager *p, const struct render_page *body)
+{
+  const struct table *table = body->table;
+  int nc = table_nc (table);
+  int nr = table_nr (table);
+  int footnote_idx = 0;
+  struct tab_table *t;
+  int x, y;
+
+  if (!body->n_footnotes)
+    return;
+
+  t = tab_create (2, body->n_footnotes);
+  for (y = 0; y < nr; y++)
+    for (x = 0; x < nc; )
+      {
+        struct table_cell cell;
+
+        table_get_cell (table, x, y, &cell);
+        if (y == cell.d[V][0])
+          {
+            size_t i;
+
+            for (i = 0; i < cell.n_contents; i++)
+              {
+                const struct cell_contents *cc = &cell.contents[i];
+                size_t j;
+
+                for (j = 0; j < cc->n_footnotes; j++)
+                  {
+                    const char *f = cc->footnotes[j];
+
+                    tab_text (t, 0, footnote_idx, TAB_LEFT, "");
+                    tab_footnote (t, 0, footnote_idx, "(none)");
+                    tab_text (t, 1, footnote_idx, TAB_LEFT, f);
+                    footnote_idx++;
+                  }
+              }
+          }
+        x = cell.d[H][1];
+        table_cell_free (&cell);
+      }
+  render_pager_add_table (p, &t->table);
+}
+
+/* Creates and returns a new render_pager for rendering TABLE_ITEM on the
+   device with the given PARAMS. */
+struct render_pager *
+render_pager_create (const struct render_params *params,
+                     const struct table_item *table_item)
+{
+  const char *caption = table_item_get_caption (table_item);
+  const char *title = table_item_get_title (table_item);
+  const struct render_page *body_page;
+  struct render_pager *p;
+
+  p = xzalloc (sizeof *p);
+  p->params = params;
+
+  /* Title. */
+  if (title)
+    render_pager_add_table (p, table_from_string (TAB_LEFT, title));
+
+  /* Body. */
+  body_page = render_pager_add_table (p, table_ref (table_item_get_table (
+                                                      table_item)));
+
+  /* Caption. */
+  if (caption)
+    render_pager_add_table (p, table_from_string (TAB_LEFT, caption));
+
+  /* Footnotes. */
+  add_footnote_page (p, body_page);
+
+  render_pager_start_page (p);
+
+  return p;
+}
+
+/* Destroys P. */
+void
+render_pager_destroy (struct render_pager *p)
+{
+  if (p)
+    {
+      size_t i;
+
+      render_break_destroy (&p->x_break);
+      render_break_destroy (&p->y_break);
+      for (i = 0; i < p->n_pages; i++)
+        render_page_unref (p->pages[i]);
+      free (p->pages);
+      free (p);
+    }
+}
+
+/* Returns true if P has content remaining to render, false if rendering is
+   done. */
+bool
+render_pager_has_next (const struct render_pager *p_)
+{
+  struct render_pager *p = CONST_CAST (struct render_pager *, p_);
+
+  while (!render_break_has_next (&p->y_break))
+    {
+      render_break_destroy (&p->y_break);
+      if (!render_break_has_next (&p->x_break))
+        {
+          render_break_destroy (&p->x_break);
+          if (p->cur_page >= p->n_pages)
+            {
+              render_break_init_empty (&p->x_break);
+              render_break_init_empty (&p->y_break);
+              return false;
+            }
+          render_pager_start_page (p);
+        }
+      else
+        render_break_init (&p->y_break,
+                           render_break_next (&p->x_break, p->params->size[H]), V);
+    }
+  return true;
+}
+
+/* Draws a chunk of content from P to fit in a space that has vertical size
+   SPACE and the horizontal size specified in the render_params passed to
+   render_page_create().  Returns the amount of space actually used by the
+   rendered chunk, which will be 0 if SPACE is too small to render anything or
+   if no content remains (use render_pager_has_next() to distinguish these
+   cases). */
+int
+render_pager_draw_next (struct render_pager *p, int space)
+{
+  int ofs[TABLE_N_AXES] = { 0, 0 };
+  size_t start_page = SIZE_MAX;
+
+  while (render_pager_has_next (p))
+    {
+      struct render_page *page;
+
+      if (start_page == p->cur_page)
+        break;
+      start_page = p->cur_page;
+
+      page = render_break_next (&p->y_break, space - ofs[V]);
+      if (!page)
+        break;
+
+      render_page_draw (page, ofs);
+      ofs[V] += render_page_get_size (page, V);
+      render_page_unref (page);
+    }
+  return ofs[V];
+}
+
+/* Draws all of P's content. */
+void
+render_pager_draw (const struct render_pager *p)
+{
+  render_pager_draw_region (p, 0, 0, INT_MAX, INT_MAX);
+}
+
+/* Draws the region of P's content that lies in the region (X,Y)-(X+W,Y+H).
+   Some extra content might be drawn; the device should perform clipping as
+   necessary. */
+void
+render_pager_draw_region (const struct render_pager *p,
+                          int x, int y, int w, int h)
+{
+  int ofs[TABLE_N_AXES] = { 0, 0 };
+  int clip[TABLE_N_AXES][2];
+  size_t i;
+
+  clip[H][0] = x;
+  clip[H][1] = x + w;
+  for (i = 0; i < p->n_pages; i++)
+    {
+      const struct render_page *page = p->pages[i];
+      int size = render_page_get_size (page, V);
+
+      clip[V][0] = MAX (y, ofs[V]) - ofs[V];
+      clip[V][1] = MIN (y + h, ofs[V] + size) - ofs[V];
+      if (clip[V][1] > clip[V][0])
+        render_page_draw_region (page, ofs, clip);
+
+      ofs[V] += size;
+    }
+}
+
+/* Returns the size of P's content along AXIS; i.e. the content's width if AXIS
+   is TABLE_HORZ and its length if AXIS is TABLE_VERT. */
+int
+render_pager_get_size (const struct render_pager *p, enum table_axis axis)
+{
+  int size = 0;
+  size_t i;
+
+  for (i = 0; i < p->n_pages; i++)
+    {
+      int subsize = render_page_get_size (p->pages[i], axis);
+      size = axis == H ? MAX (size, subsize) : size + subsize;
+    }
+
+  return size;
+}
+
+int
+render_pager_get_best_breakpoint (const struct render_pager *p, int height)
+{
+  int y = 0;
+  size_t i;
+
+  for (i = 0; i < p->n_pages; i++)
+    {
+      int size = render_page_get_size (p->pages[i], V);
+      if (y + size >= height)
+        return render_page_get_best_breakpoint (p->pages[i], height - y) + y;
+      y += size;
+    }
+
+  return height;
 }
 
 /* render_page_select() and helpers. */
@@ -1123,8 +1681,8 @@ static struct render_overflow *insert_overflow (struct render_page_selection *,
                                                 const struct table_cell *);
 
 /* Creates and returns a new render_page whose contents are a subregion of
-   PAGE's contents.  The new render_page includes cells Z0 through Z1 along
-   AXIS, plus any headers on AXIS.
+   PAGE's contents.  The new render_page includes cells Z0 through Z1
+   (exclusive) along AXIS, plus any headers on AXIS.
 
    If P0 is nonzero, then it is a number of pixels to exclude from the left or
    top (according to AXIS) of cell Z0.  Similarly, P1 is a number of pixels to
@@ -1140,6 +1698,7 @@ static struct render_page *
 render_page_select (const struct render_page *page, enum table_axis axis,
                     int z0, int p0, int z1, int p1)
 {
+  const struct render_footnote *f;
   struct render_page_selection s;
   enum table_axis a = axis;
   enum table_axis b = !a;
@@ -1194,7 +1753,12 @@ render_page_select (const struct render_page *page, enum table_axis axis,
   dcp = subpage->cp[a];
   *dcp = 0;
   for (z = 0; z <= rule_ofs (subpage->h[a][0]); z++, dcp++)
-    dcp[1] = dcp[0] + (scp[z + 1] - scp[z]);
+    {
+      if (z == 0 && subpage->is_edge_cutoff[a][0])
+        dcp[1] = dcp[0];
+      else
+        dcp[1] = dcp[0] + (scp[z + 1] - scp[z]);
+    }
   for (z = cell_ofs (z0); z <= cell_ofs (z1 - 1); z++, dcp++)
     {
       dcp[1] = dcp[0] + (scp[z + 1] - scp[z]);
@@ -1209,7 +1773,12 @@ render_page_select (const struct render_page *page, enum table_axis axis,
     }
   for (z = rule_ofs_r (page, a, subpage->h[a][1]);
        z <= rule_ofs_r (page, a, 0); z++, dcp++)
-    dcp[1] = dcp[0] + (scp[z + 1] - scp[z]);
+    {
+      if (z == rule_ofs_r (page, a, 0) && subpage->is_edge_cutoff[a][1])
+        dcp[1] = dcp[0];
+      else
+        dcp[1] = dcp[0] + (scp[z + 1] - scp[z]);
+    }
   assert (dcp == &subpage->cp[a][2 * subpage->n[a] + 1]);
 
   for (z = 0; z < page->n[b] * 2 + 2; z++)
@@ -1225,50 +1794,64 @@ render_page_select (const struct render_page *page, enum table_axis axis,
   s.p1 = p1;
   s.subpage = subpage;
 
-  for (z = 0; z < page->n[b]; z++)
-    {
-      struct table_cell cell;
-      int d[TABLE_N_AXES];
+  if (!page->h[a][0] || z0 > page->h[a][0] || p0)
+    for (z = 0; z < page->n[b]; )
+      {
+        struct table_cell cell;
+        int d[TABLE_N_AXES];
+        bool overflow0;
+        bool overflow1;
 
-      d[a] = z0;
-      d[b] = z;
-      table_get_cell (page->table, d[H], d[V], &cell);
-      if ((z == cell.d[b][0] && (p0 || cell.d[a][0] < z0))
-          || (z == cell.d[b][1] - 1 && p1))
-        {
-          ro = insert_overflow (&s, &cell);
-          ro->overflow[a][0] += p0 + axis_width (page, a,
-                                                 cell_ofs (cell.d[a][0]),
-                                                 cell_ofs (z0));
-          if (z1 == z0 + 1)
-            ro->overflow[a][1] += p1;
-          if (page->h[a][0] && page->h[a][1])
-            ro->overflow[a][0] -= page->join_crossing[a][cell.d[a][0] + 1];
-          if (cell.d[a][1] > z1)
-            ro->overflow[a][1] += axis_width (page, a, cell_ofs (z1),
-                                              cell_ofs (cell.d[a][1]));
-        }
-      table_cell_free (&cell);
-    }
+        d[a] = z0;
+        d[b] = z;
 
-  for (z = 0; z < page->n[b]; z++)
-    {
-      struct table_cell cell;
-      int d[TABLE_N_AXES];
+        table_get_cell (page->table, d[H], d[V], &cell);
+        overflow0 = p0 || cell.d[a][0] < z0;
+        overflow1 = cell.d[a][1] > z1 || (cell.d[a][1] == z1 && p1);
+        if (overflow0 || overflow1)
+          {
+            ro = insert_overflow (&s, &cell);
 
-      /* XXX need to handle p1 below */
-      d[a] = z1 - 1;
-      d[b] = z;
-      table_get_cell (page->table, d[H], d[V], &cell);
-      if (z == cell.d[b][0] && cell.d[a][1] > z1
-          && find_overflow_for_cell (&s, &cell) == NULL)
-        {
-          ro = insert_overflow (&s, &cell);
-          ro->overflow[a][1] += axis_width (page, a, cell_ofs (z1),
-                                            cell_ofs (cell.d[a][1]));
-        }
-      table_cell_free (&cell);
-    }
+            if (overflow0)
+              {
+                ro->overflow[a][0] += p0 + axis_width (
+                  page, a, cell_ofs (cell.d[a][0]), cell_ofs (z0));
+                if (page->h[a][0] && page->h[a][1])
+                  ro->overflow[a][0] -= page->join_crossing[a][cell.d[a][0]
+                                                               + 1];
+              }
+
+            if (overflow1)
+              {
+                ro->overflow[a][1] += p1 + axis_width (
+                  page, a, cell_ofs (z1), cell_ofs (cell.d[a][1]));
+                if (page->h[a][0] && page->h[a][1])
+                  ro->overflow[a][1] -= page->join_crossing[a][cell.d[a][1]];
+              }
+          }
+        z = cell.d[b][1];
+        table_cell_free (&cell);
+      }
+
+  if (!page->h[a][1] || z1 < page->n[a] - page->h[a][1] || p1)
+    for (z = 0; z < page->n[b]; )
+      {
+        struct table_cell cell;
+        int d[TABLE_N_AXES];
+
+        d[a] = z1 - 1;
+        d[b] = z;
+        table_get_cell (page->table, d[H], d[V], &cell);
+        if ((cell.d[a][1] > z1 || (cell.d[a][1] == z1 && p1))
+            && find_overflow_for_cell (&s, &cell) == NULL)
+          {
+            ro = insert_overflow (&s, &cell);
+            ro->overflow[a][1] += p1 + axis_width (page, a, cell_ofs (z1),
+                                                   cell_ofs (cell.d[a][1]));
+          }
+        z = cell.d[b][1];
+        table_cell_free (&cell);
+      }
 
   /* Copy overflows from PAGE into subpage. */
   HMAP_FOR_EACH (ro, struct render_overflow, node, &page->overflows)
@@ -1281,6 +1864,21 @@ render_page_select (const struct render_page *page, enum table_axis axis,
         insert_overflow (&s, &cell);
       table_cell_free (&cell);
     }
+
+  /* Copy footnotes from PAGE into subpage. */
+  HMAP_FOR_EACH (f, struct render_footnote, node, &page->footnotes)
+    if ((f->d[a][0] >= z0 && f->d[a][0] < z1)
+        || (f->d[a][1] - 1 >= z0 && f->d[a][1] - 1 < z1))
+      {
+        struct render_footnote *nf = xmalloc (sizeof *nf);
+        nf->d[a][0] = MAX (z0, f->d[a][0]) - z0 + page->h[a][0];
+        nf->d[a][1] = MIN (z1, f->d[a][1]) - z0 + page->h[a][0];
+        nf->d[b][0] = f->d[b][0];
+        nf->d[b][1] = f->d[b][1];
+        nf->idx = f->idx;
+        hmap_insert (&subpage->footnotes, &nf->node,
+                     hash_cell (nf->d[H][0], nf->d[V][0]));
+      }
 
   return subpage;
 }
@@ -1334,7 +1932,7 @@ insert_overflow (struct render_page_selection *s,
   of = xzalloc (sizeof *of);
   cell_to_subpage (s, cell, of->d);
   hmap_insert (&s->subpage->overflows, &of->node,
-               hash_overflow (of->d[H], of->d[V]));
+               hash_cell (of->d[H], of->d[V]));
 
   old = find_overflow (s->page, cell->d[H][0], cell->d[V][0]);
   if (old != NULL)

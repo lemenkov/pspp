@@ -25,4 +25,17 @@ void merge_help_menu (GtkUIManager *uim);
 void online_help (const char *page);
 
 
+enum index
+  {
+    hi_DESCRIPTIVES,
+    hi_EXAMINE,
+    hi_FREQUENCIES,
+    hi_LOGISTIC_REGRESSION,
+    n_hi
+  };
+
+void set_help_page (GtkWidget *w, enum index idx);
+
+
+
 #endif

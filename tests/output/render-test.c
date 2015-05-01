@@ -1,5 +1,5 @@
 /* PSPP - a program for statistical analysis.
-   Copyright (C) 2009, 2010, 2011, 2012, 2013 Free Software Foundation, Inc.
+   Copyright (C) 2009, 2010, 2011, 2012, 2013, 2014 Free Software Foundation, Inc.
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -47,15 +47,27 @@ static char *box;
 /* --draw-mode: special ASCII driver test mode. */
 static int draw_mode;
 
+/* --no-txt: Whether to render to <base>.txt. */
+static int render_txt = true;
+
+/* --no-stdout: Whether to render to stdout. */
+static int render_stdout = true;
+
 /* --pdf: Also render PDF output. */
 static int render_pdf;
+
+/* --csv: Also render CSV output. */
+static int render_csv;
 
 /* ASCII driver, for ASCII driver test mode. */
 static struct output_driver *ascii_driver;
 
+/* -o, --output: Base name for output files. */
+static const char *output_base = "render";
+
 static const char *parse_options (int argc, char **argv);
 static void usage (void) NO_RETURN;
-static struct table *read_table (FILE *);
+static struct table *read_table (FILE *, struct table **tables, size_t n_tables);
 static void draw (FILE *);
 
 int
@@ -65,6 +77,7 @@ main (int argc, char **argv)
   FILE *input;
 
   set_program_name (argv[0]);
+  output_engine_push ();
   input_file_name = parse_options (argc, argv);
 
   if (!strcmp (input_file_name, "-"))
@@ -78,14 +91,31 @@ main (int argc, char **argv)
 
   if (!draw_mode)
     {
+      struct table **tables = NULL;
+      size_t allocated_tables = 0;
+      size_t n_tables = 0;
       struct table *table;
 
-      table = read_table (input);
+      for (;;)
+        {
+          int ch;
 
+          if (n_tables >= allocated_tables)
+            tables = x2nrealloc (tables, &allocated_tables, sizeof *tables);
+
+          tables[n_tables] = read_table (input, tables, n_tables);
+          n_tables++;
+
+          ch = getc (input);
+          if (ch == EOF)
+            break;
+          ungetc (ch, input);
+        }
+
+      table = tables[n_tables - 1];
       if (transpose)
         table = table_transpose (table);
-
-      table_item_submit (table_item_create (table, NULL));
+      table_item_submit (table_item_create (table, NULL, NULL));
     }
   else
     draw (input);
@@ -93,13 +123,13 @@ main (int argc, char **argv)
   if (input != stdin)
     fclose (input);
 
-  output_close ();
+  output_engine_pop ();
 
   return 0;
 }
 
 static void
-configure_drivers (int width, int length)
+configure_drivers (int width, int length, int min_break)
 {
   struct string_map options, tmp;
   struct output_driver *driver;
@@ -111,42 +141,67 @@ configure_drivers (int width, int length)
                             xasprintf ("%d", width));
   string_map_insert_nocopy (&options, xstrdup ("length"),
                             xasprintf ("%d", length));
+  if (min_break >= 0)
+    {
+      string_map_insert_nocopy (&options, xstrdup ("min-hbreak"),
+                                xasprintf ("%d", min_break));
+      string_map_insert_nocopy (&options, xstrdup ("min-vbreak"),
+                                xasprintf ("%d", min_break));
+    }
   if (emphasis != NULL)
     string_map_insert (&options, "emphasis", emphasis);
   if (box != NULL)
     string_map_insert (&options, "box", box);
 
   /* Render to stdout. */
-  string_map_clone (&tmp, &options);
-  ascii_driver = driver = output_driver_create (&tmp);
-  if (driver == NULL)
-    exit (EXIT_FAILURE);
-  output_driver_register (driver);
-  string_map_destroy (&tmp);
+  if (render_stdout)
+    {
+      string_map_clone (&tmp, &options);
+      ascii_driver = driver = output_driver_create (&tmp);
+      if (driver == NULL)
+        exit (EXIT_FAILURE);
+      output_driver_register (driver);
+      string_map_destroy (&tmp);
+    }
 
   if (draw_mode)
    {
-    string_map_destroy (&options);
-    return;
+     string_map_destroy (&options);
+     return;
    }
 
-  /* Render to render.txt. */
-  string_map_replace (&options, "output-file", "render.txt");
-  driver = output_driver_create (&options);
-  if (driver == NULL)
-    exit (EXIT_FAILURE);
-  output_driver_register (driver);
+  /* Render to <base>.txt. */
+  if (render_txt)
+    {
+      string_map_clear (&options);
+      string_map_insert_nocopy (&options, xstrdup ("output-file"),
+                                xasprintf ("%s.txt", output_base));
+      driver = output_driver_create (&options);
+      if (driver == NULL)
+        exit (EXIT_FAILURE);
+      output_driver_register (driver);
+    }
 
 #ifdef HAVE_CAIRO
+  /* Render to <base>.pdf. */
   if (render_pdf)
     {
-      string_map_insert (&options, "output-file", "render.pdf");
+      string_map_clear (&options);
+      string_map_insert_nocopy (&options, xstrdup ("output-file"),
+                                 xasprintf ("%s.pdf", output_base));
       string_map_insert (&options, "top-margin", "0");
       string_map_insert (&options, "bottom-margin", "0");
       string_map_insert (&options, "left-margin", "0");
       string_map_insert (&options, "right-margin", "0");
       string_map_insert_nocopy (&options, xstrdup ("paper-size"),
                                 xasprintf ("%dx%dpt", width * 5, length * 8));
+      if (min_break >= 0)
+        {
+          string_map_insert_nocopy (&options, xstrdup ("min-hbreak"),
+                                    xasprintf ("%d", min_break * 5));
+          string_map_insert_nocopy (&options, xstrdup ("min-vbreak"),
+                                    xasprintf ("%d", min_break * 8));
+        }
       driver = output_driver_create (&options);
       if (driver == NULL)
         exit (EXIT_FAILURE);
@@ -154,7 +209,21 @@ configure_drivers (int width, int length)
     }
 #endif
 
-  string_map_insert (&options, "output-file", "render.odt");
+  /* Render to <base>.csv. */
+  if (render_csv)
+    {
+      string_map_clear (&options);
+      string_map_insert_nocopy (&options, xstrdup ("output-file"),
+                                 xasprintf ("%s.csv", output_base));
+      driver = output_driver_create (&options);
+      if (driver == NULL)
+        exit (EXIT_FAILURE);
+      output_driver_register (driver);
+    }
+
+  /* Render to <base>.odt. */
+  string_map_replace_nocopy (&options, xstrdup ("output-file"),
+                             xasprintf ("%s.odt", output_base));
   driver = output_driver_create (&options);
   if (driver == NULL)
     exit (EXIT_FAILURE);
@@ -168,12 +237,14 @@ parse_options (int argc, char **argv)
 {
   int width = 79;
   int length = 66;
+  int min_break = -1;
 
   for (;;)
     {
       enum {
         OPT_WIDTH = UCHAR_MAX + 1,
         OPT_LENGTH,
+        OPT_MIN_BREAK,
         OPT_EMPHASIS,
         OPT_BOX,
         OPT_HELP
@@ -182,16 +253,21 @@ parse_options (int argc, char **argv)
         {
           {"width", required_argument, NULL, OPT_WIDTH},
           {"length", required_argument, NULL, OPT_LENGTH},
+          {"min-break", required_argument, NULL, OPT_MIN_BREAK},
           {"transpose", no_argument, &transpose, 1},
           {"emphasis", required_argument, NULL, OPT_EMPHASIS},
           {"box", required_argument, NULL, OPT_BOX},
           {"draw-mode", no_argument, &draw_mode, 1},
+          {"no-txt", no_argument, &render_txt, 0},
+          {"no-stdout", no_argument, &render_stdout, 0},
           {"pdf", no_argument, &render_pdf, 1},
+          {"csv", no_argument, &render_csv, 1},
+          {"output", required_argument, NULL, 'o'},
           {"help", no_argument, NULL, OPT_HELP},
           {NULL, 0, NULL, 0},
         };
 
-      int c = getopt_long (argc, argv, "", options, NULL);
+      int c = getopt_long (argc, argv, "o:", options, NULL);
       if (c == -1)
         break;
 
@@ -205,12 +281,20 @@ parse_options (int argc, char **argv)
           length = atoi (optarg);
           break;
 
+        case OPT_MIN_BREAK:
+          min_break = atoi (optarg);
+          break;
+
         case OPT_EMPHASIS:
           emphasis = optarg;
           break;
 
         case OPT_BOX:
           box = optarg;
+          break;
+
+        case 'o':
+          output_base = optarg;
           break;
 
         case OPT_HELP:
@@ -229,7 +313,7 @@ parse_options (int argc, char **argv)
 
     }
 
-  configure_drivers (width, length);
+  configure_drivers (width, length, min_break);
 
   if (optind + 1 != argc)
     error (1, 0, "exactly one non-option argument required; "
@@ -266,7 +350,7 @@ replace_newlines (char *p)
 }
 
 static struct table *
-read_table (FILE *stream)
+read_table (FILE *stream, struct table **tables, size_t n_tables)
 {
   struct tab_table *tab;
   char buffer[1024];
@@ -294,7 +378,9 @@ read_table (FILE *stream)
     for (c = 0; c < nc; c++)
       if (tab_cell_is_empty (tab, c, r))
         {
+          unsigned int opt;
           char *new_line;
+          unsigned int i;
           char *text;
           int rs, cs;
 
@@ -319,7 +405,8 @@ read_table (FILE *stream)
               cs = 1;
             }
 
-          while (*text && strchr ("<>^,@", *text))
+          opt = 0;
+          while (*text && strchr ("<>^,@()|", *text))
             switch (*text++)
               {
               case '<':
@@ -343,17 +430,67 @@ read_table (FILE *stream)
                          c + cs - 1, r + rs - 1);
                 break;
 
+              case '(':
+                opt &= ~TAB_ALIGNMENT;
+                opt |= TAB_LEFT;
+                break;
+
+              case ')':
+                opt &= ~TAB_ALIGNMENT;
+                opt |= TAB_RIGHT;
+                break;
+
+              case '|':
+                opt &= ~TAB_ALIGNMENT;
+                opt |= TAB_CENTER;
+                break;
+
               default:
                 NOT_REACHED ();
               }
 
           replace_newlines (text);
 
-          tab_joint_text (tab, c, r, c + cs - 1, r + rs - 1, 0, text);
-        }
+          if (sscanf (text, "{%u}", &i) == 1)
+            {
+              struct table *table;
 
-  if (getc (stream) != EOF)
-    error (1, 0, "unread data at end of input");
+              if (i >= n_tables)
+                error (1, 0, "bad table number %u", i);
+              table = table_ref (tables[i]);
+
+              text = strchr (text, '}') + 1;
+              while (*text)
+                switch (*text++)
+                  {
+                  case 's':
+                    table = table_stomp (table);
+                    break;
+
+                  case 't':
+                    table = table_transpose (table);
+                    break;
+
+                  default:
+                    error (1, 0, "unexpected subtable modifier \"%c\"", *text);
+                  }
+              tab_subtable (tab, c, r, c + cs - 1, r + rs - 1, opt,
+                            table_item_create (table, NULL, NULL));
+            }
+          else
+            {
+              char *pos = text;
+              char *content;
+              int i;
+
+              for (i = 0; (content = strsep (&pos, "#")) != NULL; i++)
+                if (!i)
+                  tab_joint_text (tab, c, r, c + cs - 1, r + rs - 1, opt,
+                                  content);
+                else
+                  tab_footnote (tab, c, r, "%s", content);
+            }
+        }
 
   return &tab->table;
 }

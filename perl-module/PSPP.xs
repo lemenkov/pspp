@@ -1,5 +1,5 @@
 /* PSPP - computes sample statistics.
-   Copyright (C) 2007, 2008, 2009, 2010, 2011, 2012, 2013 Free Software Foundation, Inc.
+   Copyright (C) 2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014 Free Software Foundation, Inc.
 
    This program is free software; you can redistribute it and/or
    modify it under the terms of the GNU General Public License as
@@ -46,7 +46,6 @@
 #include <data/identifier.h>
 #include <data/settings.h>
 #include <data/sys-file-writer.h>
-#include <data/sys-file-reader.h>
 #include <data/value.h>
 #include <data/vardict.h>
 #include <data/value-labels.h>
@@ -78,7 +77,7 @@ struct syswriter_info
 /*  A thin wrapper around sfm_reader */
 struct sysreader_info
 {
-  struct sfm_read_info opts;
+  struct any_read_info opts;
 
   /* A pointer to the reader. The reader is owned by the struct */
   struct casereader *reader;
@@ -424,7 +423,7 @@ set_label (var, label)
  struct variable *var;
  char *label
 CODE:
-  var_set_label (var, label, false);
+  var_set_label (var, label);
 
 
 void
@@ -633,8 +632,8 @@ INIT:
 
     opts.create_writeable = readonly ? ! SvIV (*readonly) : true;
     opts.compression = (compress && SvIV (*compress)
-                        ? SFM_COMP_SIMPLE
-			: SFM_COMP_NONE);
+                        ? ANY_COMP_SIMPLE
+			: ANY_COMP_NONE);
     opts.version = version ? SvIV (*version) : 3 ;
   }
 CODE:
@@ -757,9 +756,8 @@ CODE:
  struct dictionary *dict;
 
  sri = xmalloc (sizeof (*sri));
- sri->reader = sfm_open_reader (fh, NULL, &dict, &sri->opts);
-
- if ( sri->reader != NULL)
+ sri->reader = any_reader_open_and_decode (fh, NULL, &dict, &sri->opts);
+ if (sri->reader)
    sri->dict = create_pspp_dict (dict);
  else
    {

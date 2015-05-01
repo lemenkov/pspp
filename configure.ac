@@ -2,7 +2,7 @@ dnl Process this file with autoconf to produce a configure script.
 
 dnl Initialize.
 AC_PREREQ(2.63)
-AC_INIT([GNU PSPP], [0.8.1.1], [bug-gnu-pspp@gnu.org], [pspp])
+AC_INIT([GNU PSPP], [0.8.4], [bug-gnu-pspp@gnu.org], [pspp])
 AC_CONFIG_AUX_DIR([build-aux])
 AC_CONFIG_HEADERS([config.h])
 AC_CONFIG_TESTDIR([tests])
@@ -20,7 +20,6 @@ PKG_PROG_PKG_CONFIG
 m4_pattern_forbid([PKG_CHECK_MODULES])
 PSPP_CHECK_CLICKSEQUENCE
 
-PSPP_ENABLE_OPTION(-Wdeclaration-after-statement)
 PSPP_ENABLE_WERROR
 
 AM_CONDITIONAL(cc_is_gcc, test x"$GCC" = x"yes" )
@@ -76,6 +75,9 @@ if test "$with_cairo" != no && test "$with_gui" != "no"; then
 
   PKG_CHECK_MODULES([GTKSOURCEVIEW], [gtksourceview-3.0 >= 3.4.2], [],
     [PSPP_REQUIRED_PREREQ([gtksourceview 3.0 version 3.4.2 or later (or use --without-gui)])])
+
+  PKG_CHECK_MODULES([GLIB], [glib-2.0 >= 2.32], [],
+    [PSPP_REQUIRED_PREREQ([glib 2.0 version 2.32 or later (or use --without-gui)])])
 
   AC_ARG_VAR([GLIB_GENMARSHAL])
   AC_CHECK_PROGS([GLIB_GENMARSHAL], [glib-genmarshal])
@@ -241,8 +243,8 @@ AC_SUBST([WITH_PERL_MODULE])
 AM_CONDITIONAL(WITH_PERL_MODULE, test $WITH_PERL_MODULE = yes)
 
 AC_SEARCH_LIBS([cblas_dsdot], [gslcblas],,[PSPP_REQUIRED_PREREQ([libgslcblas])])
-PKG_CHECK_MODULES([GSL], [gsl >= 1.12], [],
-			 AC_SEARCH_LIBS([gsl_linalg_cholesky_invert], [gsl],,[PSPP_REQUIRED_PREREQ([gsl 2.0 version 1.12 or later])]))
+PKG_CHECK_MODULES([GSL], [gsl >= 1.13], [],
+			 AC_SEARCH_LIBS([gsl_poly_eval_derivs], [gsl],,[PSPP_REQUIRED_PREREQ([gsl version 1.13 or later])]))
 
 
 PSPP_GSL_NEEDS_FGNU89_INLINE
@@ -305,10 +307,6 @@ gl_INIT
 
 AC_C_INLINE
 
-AC_CHECK_SIZEOF([size_t])
-SIZEOF_SIZE_T=$ac_cv_sizeof_size_t
-AC_SUBST([SIZEOF_SIZE_T])
-
 AC_C_BIGENDIAN
 
 AC_CHECK_FUNCS([__setfpucw fork execl isinf isnan finite getpid feholdexcept fpsetmask popen round])
@@ -339,6 +337,10 @@ PSPP_CHECK_PREREQS
 
 AC_CONFIG_FILES(
   [Makefile gl/Makefile po/Makefile tests/atlocal perl-module/lib/PSPP.pm])
+
+AC_CONFIG_COMMANDS([doc/dummy], [:])
+
+m4_ifdef([AM_SILENT_RULES], [AM_SILENT_RULES])
 
 AC_OUTPUT
 echo "PSPP configured successfully."

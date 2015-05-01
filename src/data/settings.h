@@ -1,5 +1,5 @@
 /* PSPP - a program for statistical analysis.
-   Copyright (C) 1997-9, 2000, 2006, 2009, 2010 Free Software Foundation, Inc.
+   Copyright (C) 1997-9, 2000, 2006, 2009, 2010, 2015 Free Software Foundation, Inc.
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -101,6 +101,9 @@ void settings_set_format ( const struct fmt_spec *);
 
 bool settings_get_testing_mode (void);
 void settings_set_testing_mode (bool);
+
+int settings_get_fuzzbits (void);
+void settings_set_fuzzbits (int);
 
 enum settings_var_style
   {

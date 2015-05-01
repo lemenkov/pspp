@@ -1,5 +1,5 @@
 /* PSPP - a program for statistical analysis.
-   Copyright (C) 2009, 2011 Free Software Foundation, Inc.
+   Copyright (C) 2009, 2011, 2014 Free Software Foundation, Inc.
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -20,8 +20,10 @@
 /* Table items.
 
    A table item is a subclass of an output item (see output-item.h) that
-   contains a table (see table.h) and some formatting properties (currently
-   just a caption). */
+   contains a table (see table.h) and some formatting properties.  Currently
+   the formatting properties are an optional title (a brief description
+   typically displayed above the table) and an optional caption (a more verbose
+   description typically displayed below the table). */
 
 #include "libpspp/compiler.h"
 #include "output/output-item.h"
@@ -34,12 +36,17 @@ struct table_item
   {
     struct output_item output_item; /* Superclass. */
     struct table *table;        /* The table to be rendered. */
+    char *title;                /* May be null if there is no title. */
     char *caption;              /* May be null if there is no caption. */
   };
 
-struct table_item *table_item_create (struct table *, const char *caption);
+struct table_item *table_item_create (struct table *, const char *title,
+                                      const char *caption);
 
 const struct table *table_item_get_table (const struct table_item *);
+
+const char *table_item_get_title (const struct table_item *);
+void table_item_set_title (struct table_item *, const char *);
 
 const char *table_item_get_caption (const struct table_item *);
 void table_item_set_caption (struct table_item *, const char *);

@@ -16,10 +16,11 @@ Synopsis:
 @t{pspp-convert -@w{-}version}
 @end display
 
-The format of @var{Iinput} is automatically detected, except that the
-character encoding of old system files cannot always be guessed
-correctly.  Use @code{-e @var{encoding}} to specify the encoding in this
-case.
+The format of @var{input} is automatically detected, when possible.
+The character encoding of old SPSS system files cannot always be
+guessed correctly, and SPSS/PC+ system files do not include any
+indication of their encoding.  Use @code{-e @var{encoding}} to specify
+the encoding in this case.
 
 By default, the intended format for @var{output} is inferred based on its
 extension:
@@ -39,12 +40,18 @@ SPSS system file.
 SPSS portable file.
 @end table
 
+As a special case of format conversion, @command{pspp-convert} can
+decrypt an encrypted SPSS system file.  Specify the encrypted file as
+@var{input}.  The output will be the equivalent plaintext SPSS system
+file.  You will be prompted for the password (or use @option{-p},
+documented below).
+
 Use @code{-O @var{extension}} to override the inferred format or to
 specify the format for unrecognized extensions.
 
 The following options are accepted:
 
-@table @code
+@table @option
 @item -O @var{format}
 @itemx --output-format=@var{format}
 Specifies the desired output format.  @var{format} must be one of the
@@ -60,8 +67,17 @@ Specifying this option to limit the number of cases written to
 @item -e @var{charset}
 @itemx --encoding=@var{charset}
 Overrides the encoding in which character strings in @var{input} are
-interpreted.  This option is necessary because old SPSS system files
-do not self-identify their encoding.
+interpreted.  This option is necessary because old SPSS system files,
+and SPSS/PC+ system files, do not self-identify their encoding.
+
+@item -p @var{password}
+@item --password=@var{password}
+Specifies the password to use to decrypt an encrypted SPSS system
+file.  If this option is not specified, @command{pspp-convert} will
+prompt interactively for the password as necessary.
+
+Be aware that command-line options, including passwords, may be
+visible to other users on multiuser systems.
 
 @item -h
 @itemx --help

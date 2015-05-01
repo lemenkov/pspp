@@ -18,6 +18,11 @@
 #ifndef CHART_GEOMETRY_H
 #define CHART_GEOMETRY_H
 
-double chart_rounded_tick(double tick);
+struct decimal;
+void chart_rounded_tick (double tick, struct decimal *);
+
+void chart_get_scale (double high, double low,
+		      struct decimal *lower, struct decimal *interval, int *n_ticks);
+
 
 #endif

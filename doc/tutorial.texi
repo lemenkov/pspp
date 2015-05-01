@@ -85,6 +85,7 @@ The following sections explain how to define a dataset.
 * Reading data from a pre-prepared PSPP file::  
 * Saving data to a PSPP file.::  
 * Reading data from other sources::  
+* Exiting PSPP::
 @end menu
 
 @node Defining Variables
@@ -286,6 +287,13 @@ separated text, from spreadsheets, databases or other sources.
 In these instances you should
 use the @cmd{GET DATA} command (@pxref{GET DATA}).
 
+@node Exiting PSPP
+@subsection Exiting PSPP
+
+Use the @cmd{FINISH} command to exit PSPP:
+@example
+@prompt{PSPP>} finish.
+@end example
   
 @node Data Screening and Transformation
 @section Data Screening and Transformation
@@ -484,14 +492,14 @@ A sensible check to perform on survey data is the calculation of
 reliability.
 This gives the statistician some confidence that the questionnaires have been 
 completed thoughtfully.
-If you examine the labels of variables @var{v1},  @var{v3} and @var{v5},
+If you examine the labels of variables @var{v1},  @var{v3} and @var{v4},
 you will notice that they ask very similar questions.
 One would therefore expect the values of these variables (after recoding) 
 to closely follow one another, and we can test that with the @cmd{RELIABILITY} 
 command (@pxref{RELIABILITY}).
 @ref{reliability} shows a @pspp{} session where the user (after recoding
 negatively scaled variables) requests reliability statistics for
-@var{v1}, @var{v3} and @var{v5}.
+@var{v1}, @var{v3} and @var{v4}.
 
 @float Example, reliability
 @cartouche
@@ -501,7 +509,7 @@ negatively scaled variables) requests reliability statistics for
 @prompt{PSPP>} * recode negatively worded questions.
 @prompt{PSPP>} compute v3 = 6 - v3.
 @prompt{PSPP>} compute v5 = 6 - v5.
-@prompt{PSPP>} reliability v1, v3, v5.
+@prompt{PSPP>} reliability v1, v3, v4.
 @end example
 
 Output (dictionary information omitted for clarity):
@@ -519,19 +527,19 @@ Output (dictionary information omitted for clarity):
 #================#==========#
 #Cronbach's Alpha#N of Items#
 #================#==========#
-#             .86#         3#
+#             .81#         3#
 #================#==========#
 @end example
 @end cartouche
 @caption{Recoding negatively scaled variables, and testing for
 reliability with the @cmd{RELIABILITY} command. The Cronbach Alpha
 coefficient suggests a high degree of reliability among variables
-@var{v1}, @var{v2} and @var{v5}.}
+@var{v1}, @var{v3} and @var{v4}.}
 @end float
 
 As a rule of thumb, many statisticians consider a value of Cronbach's Alpha of 
 0.7 or higher to indicate reliable data.
-Here, the value is 0.86 so the data and the recoding that we performed 
+Here, the value is 0.81 so the data and the recoding that we performed 
 are vindicated.
 
 
@@ -710,18 +718,19 @@ then an alternative calculation is necessary.
 For the @var{height} variable, the output shows the significance of the 
 Levene test to be 0.33 which means there is a 
 33% probability that the  
-Levene test produces this outcome when the variances are unequal.
-Such a probability is too high
-to assume that the variances are equal so the row
-for unequal variances should be used.
+Levene test produces this outcome when the variances are equal.
+Had the significance been less than 0.05, then it would have been unsafe to assume that
+the variances were equal.
+However, because the value is higher than 0.05 the homogeneity of variances assumption
+is safe and the ``Equal Variances'' row (the more powerful test) can be used.
 Examining this row, the two tailed significance for the @var{height} t-test 
 is less than 0.05, so it is safe to reject the null hypothesis and conclude
 that the mean heights of males and females are unequal.
 
 For the @var{temperature} variable, the significance of the Levene test 
-is 0.58 so again, it is unsafe to use the row for equal variances.
-The unequal variances row indicates that the two tailed significance for
-@var{temperature} is 0.19.  Since this is greater than 0.05 we must reject
+is 0.58 so again, it is safe to use the row for equal variances.
+The equal variances row indicates that the two tailed significance for
+@var{temperature} is 0.20.  Since this is greater than 0.05 we must reject
 the null hypothesis and conclude that there is insufficient evidence to 
 suggest that the body temperature of male and female persons are different.
 

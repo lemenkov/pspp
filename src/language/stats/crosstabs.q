@@ -1,5 +1,5 @@
 /* PSPP - a program for statistical analysis.
-   Copyright (C) 1997-9, 2000, 2006, 2009, 2010, 2011, 2012, 2013 Free Software Foundation, Inc.
+   Copyright (C) 1997-9, 2000, 2006, 2009, 2010, 2011, 2012, 2013, 2014 Free Software Foundation, Inc.
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -16,19 +16,17 @@
 
 /* FIXME:
 
-   - Pearson's R (but not Spearman!) is off a little.
-   - T values for Spearman's R and Pearson's R are wrong.
-   - How to calculate significance of symmetric and directional measures?
-   - Asymmetric ASEs and T values for lambda are wrong.
-   - ASE of Goodman and Kruskal's tau is not calculated.
-   - ASE of symmetric somers' d is wrong.
-   - Approx. T of uncertainty coefficient is wrong.
+   - How to calculate significance of some symmetric and directional measures?
+   - How to calculate ASE for symmetric Somers ' d?
+   - How to calculate ASE for Goodman and Kruskal's tau?
+   - How to calculate approx. T of symmetric uncertainty coefficient?
 
 */
 
 #include <config.h>
 
 #include <ctype.h>
+#include <float.h>
 #include <gsl/gsl_cdf.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -43,6 +41,7 @@
 #include "data/value-labels.h"
 #include "data/variable.h"
 #include "language/command.h"
+#include "language/stats/freq.h"
 #include "language/dictionary/split-file.h"
 #include "language/lexer/lexer.h"
 #include "language/lexer/variable-parser.h"
@@ -57,6 +56,8 @@
 #include "libpspp/pool.h"
 #include "libpspp/str.h"
 #include "output/tab.h"
+#include "output/chart-item.h"
+#include "output/charts/barchart.h"
 
 #include "gl/minmax.h"
 #include "gl/xalloc.h"
@@ -79,6 +80,7 @@
 	     tabl:!tables/notables,
 	     box:!box/nobox,
 	     pivot:!pivot/nopivot;
+     +barchart=;
      +cells[cl_]=count,expected,row,column,total,residual,sresidual,
 		 asresidual,all,none;
      +statistics[st_]=chisq,phi,cc,lambda,uc,none,btau,ctau,risk,gamma,d,
@@ -96,20 +98,6 @@
 /* Number of directional statistics. */
 #define N_DIRECTIONAL 13
 
-/* A single table entry for general mode. */
-struct table_entry
-  {
-    struct hmap_node node;      /* Entry in hash table. */
-    double freq;                /* Frequency count. */
-    union value values[1];	/* Values. */
-  };
-
-static size_t
-table_entry_size (size_t n_values)
-{
-  return (offsetof (struct table_entry, values)
-          + n_values * sizeof (union value));
-}
 
 /* Indexes into the 'vars' member of struct pivot_table and
    struct crosstab member. */
@@ -138,7 +126,7 @@ struct pivot_table
 
     /* Data. */
     struct hmap data;
-    struct table_entry **entries;
+    struct freq **entries;
     size_t n_entries;
 
     /* Column values, number of columns. */
@@ -176,6 +164,7 @@ struct crosstabs_proc
     enum { INTEGER, GENERAL } mode;
     enum mv_class exclude;
     bool pivot;
+    bool barchart;
     bool bad_warn;
     struct fmt_spec weight_format;
 
@@ -243,7 +232,7 @@ cmd_crosstabs (struct lexer *lexer, struct dataset *ds)
     }
 
   proc.mode = proc.n_variables ? INTEGER : GENERAL;
-
+  proc.barchart = cmd.sbc_barchart > 0;
 
   proc.descending = cmd.val == CRS_DVALUE;
 
@@ -294,8 +283,8 @@ cmd_crosstabs (struct lexer *lexer, struct dataset *ds)
                    : MV_NEVER);
   if (proc.mode == GENERAL && proc.exclude == MV_NEVER)
     {
-      msg (SE, _("Missing mode REPORT not allowed in general mode.  "
-		 "Assuming MISSING=TABLE."));
+      msg (SE, _("Missing mode %s not allowed in general mode.  "
+		 "Assuming %s."), "REPORT", "MISSING=TABLE");
       proc.exclude = MV_ANY;
     }
 
@@ -478,7 +467,7 @@ crs_custom_variables (struct lexer *lexer, struct dataset *ds,
   struct crosstabs_proc *proc = proc_;
   if (proc->n_pivots)
     {
-      msg (SE, _("VARIABLES must be specified before TABLES."));
+      msg (SE, _("%s must be specified before %s."), "VARIABLES", "TABLES");
       return 0;
     }
 
@@ -592,7 +581,7 @@ static void
 tabulate_integer_case (struct pivot_table *pt, const struct ccase *c,
                        double weight)
 {
-  struct table_entry *te;
+  struct freq *te;
   size_t hash;
   int j;
 
@@ -603,14 +592,14 @@ tabulate_integer_case (struct pivot_table *pt, const struct ccase *c,
       hash = hash_int (case_num (c, pt->vars[j]), hash);
     }
 
-  HMAP_FOR_EACH_WITH_HASH (te, struct table_entry, node, hash, &pt->data)
+  HMAP_FOR_EACH_WITH_HASH (te, struct freq, node, hash, &pt->data)
     {
       for (j = 0; j < pt->n_vars; j++)
         if ((int) case_num (c, pt->vars[j]) != (int) te->values[j].f)
           goto no_match;
 
       /* Found an existing entry. */
-      te->freq += weight;
+      te->count += weight;
       return;
 
     no_match: ;
@@ -618,7 +607,7 @@ tabulate_integer_case (struct pivot_table *pt, const struct ccase *c,
 
   /* No existing entry.  Create a new one. */
   te = xmalloc (table_entry_size (pt->n_vars));
-  te->freq = weight;
+  te->count = weight;
   for (j = 0; j < pt->n_vars; j++)
     te->values[j].f = (int) case_num (c, pt->vars[j]);
   hmap_insert (&pt->data, &te->node, hash);
@@ -628,7 +617,7 @@ static void
 tabulate_general_case (struct pivot_table *pt, const struct ccase *c,
                        double weight)
 {
-  struct table_entry *te;
+  struct freq *te;
   size_t hash;
   int j;
 
@@ -639,7 +628,7 @@ tabulate_general_case (struct pivot_table *pt, const struct ccase *c,
       hash = value_hash (case_data (c, var), var_get_width (var), hash);
     }
 
-  HMAP_FOR_EACH_WITH_HASH (te, struct table_entry, node, hash, &pt->data)
+  HMAP_FOR_EACH_WITH_HASH (te, struct freq, node, hash, &pt->data)
     {
       for (j = 0; j < pt->n_vars; j++)
         {
@@ -650,7 +639,7 @@ tabulate_general_case (struct pivot_table *pt, const struct ccase *c,
         }
 
       /* Found an existing entry. */
-      te->freq += weight;
+      te->count += weight;
       return;
 
     no_match: ;
@@ -658,7 +647,7 @@ tabulate_general_case (struct pivot_table *pt, const struct ccase *c,
 
   /* No existing entry.  Create a new one. */
   te = xmalloc (table_entry_size (pt->n_vars));
-  te->freq = weight;
+  te->count = weight;
   for (j = 0; j < pt->n_vars; j++)
     {
       const struct variable *var = pt->vars[j];
@@ -669,8 +658,8 @@ tabulate_general_case (struct pivot_table *pt, const struct ccase *c,
 
 /* Post-data reading calculations. */
 
-static int compare_table_entry_vars_3way (const struct table_entry *a,
-                                          const struct table_entry *b,
+static int compare_table_entry_vars_3way (const struct freq *a,
+                                          const struct freq *b,
                                           const struct pivot_table *pt,
                                           int idx0, int idx1);
 static int compare_table_entry_3way (const void *ap_, const void *bp_,
@@ -696,19 +685,20 @@ postcalc (struct crosstabs_proc *proc)
   /* Convert hash tables into sorted arrays of entries. */
   for (pt = &proc->pivots[0]; pt < &proc->pivots[proc->n_pivots]; pt++)
     {
-      struct table_entry *e;
+      struct freq *e;
       size_t i;
 
       pt->n_entries = hmap_count (&pt->data);
       pt->entries = xnmalloc (pt->n_entries, sizeof *pt->entries);
       i = 0;
-      HMAP_FOR_EACH (e, struct table_entry, node, &pt->data)
+      HMAP_FOR_EACH (e, struct freq, node, &pt->data)
         pt->entries[i++] = e;
       hmap_destroy (&pt->data);
 
       sort (pt->entries, pt->n_entries, sizeof *pt->entries,
             proc->descending ? compare_table_entry_3way_inv : compare_table_entry_3way,
 	    pt);
+
     }
 
   make_summary_table (proc);
@@ -728,6 +718,9 @@ postcalc (struct crosstabs_proc *proc)
               output_pivot_table (proc, &subset);
             }
         }
+      if (proc->barchart)
+	chart_item_submit 
+	  (barchart_create (pt->vars, pt->n_vars, _("Count"), pt->entries, pt->n_entries));
     }
 
   /* Free output and prepare for next split file. */
@@ -782,8 +775,8 @@ make_pivot_table_subset (struct pivot_table *pt, size_t row0, size_t row1,
 }
 
 static int
-compare_table_entry_var_3way (const struct table_entry *a,
-                              const struct table_entry *b,
+compare_table_entry_var_3way (const struct freq *a,
+                              const struct freq *b,
                               const struct pivot_table *pt,
                               int idx)
 {
@@ -792,8 +785,8 @@ compare_table_entry_var_3way (const struct table_entry *a,
 }
 
 static int
-compare_table_entry_vars_3way (const struct table_entry *a,
-                               const struct table_entry *b,
+compare_table_entry_vars_3way (const struct freq *a,
+                               const struct freq *b,
                                const struct pivot_table *pt,
                                int idx0, int idx1)
 {
@@ -808,15 +801,15 @@ compare_table_entry_vars_3way (const struct table_entry *a,
   return 0;
 }
 
-/* Compare the struct table_entry at *AP to the one at *BP and
+/* Compare the struct freq at *AP to the one at *BP and
    return a strcmp()-type result. */
 static int
 compare_table_entry_3way (const void *ap_, const void *bp_, const void *pt_)
 {
-  const struct table_entry *const *ap = ap_;
-  const struct table_entry *const *bp = bp_;
-  const struct table_entry *a = *ap;
-  const struct table_entry *b = *bp;
+  const struct freq *const *ap = ap_;
+  const struct freq *const *bp = bp_;
+  const struct freq *a = *ap;
+  const struct freq *b = *bp;
   const struct pivot_table *pt = pt_;
   int cmp;
 
@@ -845,8 +838,8 @@ find_first_difference (const struct pivot_table *pt, size_t row)
     return pt->n_vars - 1;
   else
     {
-      const struct table_entry *a = pt->entries[row];
-      const struct table_entry *b = pt->entries[row - 1];
+      const struct freq *a = pt->entries[row];
+      const struct freq *b = pt->entries[row - 1];
       int col;
 
       for (col = pt->n_vars - 1; col >= 0; col--)
@@ -866,6 +859,7 @@ make_summary_table (struct crosstabs_proc *proc)
   int i;
 
   summary = tab_create (7, 3 + proc->n_pivots);
+  tab_set_format (summary, RC_WEIGHT, &proc->weight_format);
   tab_title (summary, _("Summary."));
   tab_headers (summary, 1, 0, 3, 0);
   tab_joint_text (summary, 1, 0, 6, 0, TAB_CENTER, _("Cases"));
@@ -903,15 +897,14 @@ make_summary_table (struct crosstabs_proc *proc)
 
       valid = 0.;
       for (i = 0; i < pt->n_entries; i++)
-        valid += pt->entries[i]->freq;
+        valid += pt->entries[i]->count;
 
       n[0] = valid;
       n[1] = pt->missing;
       n[2] = n[0] + n[1];
       for (i = 0; i < 3; i++)
         {
-          tab_double (summary, i * 2 + 1, 0, TAB_RIGHT, n[i],
-                      &proc->weight_format);
+          tab_double (summary, i * 2 + 1, 0, TAB_RIGHT, n[i], NULL, RC_WEIGHT);
           tab_text_format (summary, i * 2 + 2, 0, TAB_RIGHT, "%.1f%%",
                            n[i] / n[2] * 100.);
         }
@@ -927,10 +920,10 @@ make_summary_table (struct crosstabs_proc *proc)
 
 static struct tab_table *create_crosstab_table (struct crosstabs_proc *,
                                                 struct pivot_table *);
-static struct tab_table *create_chisq_table (struct pivot_table *);
-static struct tab_table *create_sym_table (struct pivot_table *);
-static struct tab_table *create_risk_table (struct pivot_table *);
-static struct tab_table *create_direct_table (struct pivot_table *);
+static struct tab_table *create_chisq_table (struct crosstabs_proc *proc, struct pivot_table *);
+static struct tab_table *create_sym_table (struct crosstabs_proc *proc, struct pivot_table *);
+static struct tab_table *create_risk_table (struct crosstabs_proc *proc, struct pivot_table *);
+static struct tab_table *create_direct_table (struct crosstabs_proc *proc, struct pivot_table *);
 static void display_dimensions (struct crosstabs_proc *, struct pivot_table *,
                                 struct tab_table *, int first_difference);
 static void display_crosstabulation (struct crosstabs_proc *,
@@ -986,17 +979,17 @@ output_pivot_table (struct crosstabs_proc *proc, struct pivot_table *pt)
   if (proc->cells)
     table = create_crosstab_table (proc, pt);
   if (proc->statistics & (1u << CRS_ST_CHISQ))
-    chisq = create_chisq_table (pt);
+    chisq = create_chisq_table (proc, pt);
   if (proc->statistics & ((1u << CRS_ST_PHI) | (1u << CRS_ST_CC)
                           | (1u << CRS_ST_BTAU) | (1u << CRS_ST_CTAU)
                           | (1u << CRS_ST_GAMMA) | (1u << CRS_ST_CORR)
                           | (1u << CRS_ST_KAPPA)))
-    sym = create_sym_table (pt);
+    sym = create_sym_table (proc, pt);
   if (proc->statistics & (1u << CRS_ST_RISK))
-    risk = create_risk_table (pt);
+    risk = create_risk_table (proc, pt);
   if (proc->statistics & ((1u << CRS_ST_LAMBDA) | (1u << CRS_ST_UC)
                           | (1u << CRS_ST_D) | (1u << CRS_ST_ETA)))
-    direct = create_direct_table (pt);
+    direct = create_direct_table (proc, pt);
 
   row0 = row1 = 0;
   while (find_crosstab (pt, &row0, &row1))
@@ -1090,13 +1083,13 @@ build_matrix (struct pivot_table *x)
   const int row_var_width = var_get_width (x->vars[ROW_VAR]);
   int col, row;
   double *mp;
-  struct table_entry **p;
+  struct freq **p;
 
   mp = x->mat;
   col = row = 0;
   for (p = x->entries; p < &x->entries[x->n_entries]; p++)
     {
-      const struct table_entry *te = *p;
+      const struct freq *te = *p;
 
       while (!value_equal (&x->rows[row], &te->values[ROW_VAR], row_var_width))
         {
@@ -1112,7 +1105,7 @@ build_matrix (struct pivot_table *x)
           col++;
         }
 
-      *mp++ = te->freq;
+      *mp++ = te->count;
       if (++col >= x->n_cols)
         {
           col = 0;
@@ -1197,6 +1190,7 @@ create_crosstab_table (struct crosstabs_proc *proc, struct pivot_table *pt)
   table = tab_create (x.n_consts + 1 + x.n_cols + 1,
                       (x.n_entries / x.n_cols) * 3 / 2 * proc->n_cells + 10);
   tab_headers (table, x.n_consts + 1, 0, 2, 0);
+  tab_set_format (table, RC_WEIGHT, &proc->weight_format);
 
   /* First header line. */
   tab_joint_text (table, x.n_consts + 1, 0,
@@ -1262,13 +1256,14 @@ create_crosstab_table (struct crosstabs_proc *proc, struct pivot_table *pt)
 }
 
 static struct tab_table *
-create_chisq_table (struct pivot_table *pt)
+create_chisq_table (struct crosstabs_proc *proc, struct pivot_table *pt)
 {
   struct tab_table *chisq;
 
   chisq = tab_create (6 + (pt->n_vars - 2),
                       pt->n_entries / pt->n_cols * 3 / 2 * N_CHISQ + 10);
   tab_headers (chisq, 1 + (pt->n_vars - 2), 0, 1, 0);
+  tab_set_format (chisq, RC_WEIGHT, &proc->weight_format);
 
   tab_title (chisq, _("Chi-square tests."));
 
@@ -1289,12 +1284,15 @@ create_chisq_table (struct pivot_table *pt)
 
 /* Symmetric measures. */
 static struct tab_table *
-create_sym_table (struct pivot_table *pt)
+create_sym_table (struct crosstabs_proc *proc, struct pivot_table *pt)
 {
   struct tab_table *sym;
 
   sym = tab_create (6 + (pt->n_vars - 2),
                     pt->n_entries / pt->n_cols * 7 + 10);
+
+  tab_set_format (sym, RC_WEIGHT, &proc->weight_format);
+
   tab_headers (sym, 2 + (pt->n_vars - 2), 0, 1, 0);
   tab_title (sym, _("Symmetric measures."));
 
@@ -1312,13 +1310,14 @@ create_sym_table (struct pivot_table *pt)
 
 /* Risk estimate. */
 static struct tab_table *
-create_risk_table (struct pivot_table *pt)
+create_risk_table (struct crosstabs_proc *proc, struct pivot_table *pt)
 {
   struct tab_table *risk;
 
   risk = tab_create (4 + (pt->n_vars - 2), pt->n_entries / pt->n_cols * 4 + 10);
   tab_headers (risk, 1 + pt->n_vars - 2, 0, 2, 0);
   tab_title (risk, _("Risk estimate."));
+  tab_set_format (risk, RC_WEIGHT, &proc->weight_format);
 
   tab_offset (risk, pt->n_vars - 2, 0);
   tab_joint_text_format (risk, 2, 0, 3, 0, TAB_CENTER | TAT_TITLE,
@@ -1336,7 +1335,7 @@ create_risk_table (struct pivot_table *pt)
 
 /* Directional measures. */
 static struct tab_table *
-create_direct_table (struct pivot_table *pt)
+create_direct_table (struct crosstabs_proc *proc, struct pivot_table *pt)
 {
   struct tab_table *direct;
 
@@ -1344,6 +1343,7 @@ create_direct_table (struct pivot_table *pt)
                        pt->n_entries / pt->n_cols * 7 + 10);
   tab_headers (direct, 3 + (pt->n_vars - 2), 0, 1, 0);
   tab_title (direct, _("Directional measures."));
+  tab_set_format (direct, RC_WEIGHT, &proc->weight_format);
 
   tab_offset (direct, pt->n_vars - 2, 0);
   tab_text (direct, 0, 0, TAB_LEFT | TAT_TITLE, _("Category"));
@@ -1425,8 +1425,8 @@ find_crosstab (struct pivot_table *pt, size_t *row0p, size_t *row1p)
 
   for (row1 = row0 + 1; row1 < pt->n_entries; row1++)
     {
-      struct table_entry *a = pt->entries[row0];
-      struct table_entry *b = pt->entries[row1];
+      struct freq *a = pt->entries[row0];
+      struct freq *b = pt->entries[row1];
       if (compare_table_entry_vars_3way (a, b, pt, 2, pt->n_vars) != 0)
         break;
     }
@@ -1490,7 +1490,7 @@ enum_var_values (const struct pivot_table *pt, int var_idx,
       hmapx_init (&set);
       for (i = 0; i < pt->n_entries; i++)
         {
-          const struct table_entry *te = pt->entries[i];
+          const struct freq *te = pt->entries[i];
           const union value *value = &te->values[var_idx];
           size_t hash = value_hash (value, width, 0);
 
@@ -1806,22 +1806,22 @@ display_chisq (struct pivot_table *pt, struct tab_table *chisq,
       tab_text (chisq, 0, 0, TAB_LEFT, gettext (chisq_stats[i]));
       if (i != 2)
 	{
-	  tab_double (chisq, 1, 0, TAB_RIGHT, chisq_v[i], NULL);
-	  tab_double (chisq, 2, 0, TAB_RIGHT, df[i], &pt->weight_format);
+	  tab_double (chisq, 1, 0, TAB_RIGHT, chisq_v[i], NULL, RC_OTHER);
+	  tab_double (chisq, 2, 0, TAB_RIGHT, df[i], NULL, RC_WEIGHT);
 	  tab_double (chisq, 3, 0, TAB_RIGHT,
-		     gsl_cdf_chisq_Q (chisq_v[i], df[i]), NULL);
+		      gsl_cdf_chisq_Q (chisq_v[i], df[i]), NULL, RC_PVALUE);
 	}
       else
 	{
 	  *showed_fisher = true;
-	  tab_double (chisq, 4, 0, TAB_RIGHT, fisher2, NULL);
-	  tab_double (chisq, 5, 0, TAB_RIGHT, fisher1, NULL);
+	  tab_double (chisq, 4, 0, TAB_RIGHT, fisher2, NULL, RC_PVALUE);
+	  tab_double (chisq, 5, 0, TAB_RIGHT, fisher1, NULL, RC_PVALUE);
 	}
       tab_next_row (chisq);
     }
 
   tab_text (chisq, 0, 0, TAB_LEFT, _("N of Valid Cases"));
-  tab_double (chisq, 1, 0, TAB_RIGHT, pt->total, &pt->weight_format);
+  tab_double (chisq, 1, 0, TAB_RIGHT, pt->total, NULL, RC_WEIGHT);
   tab_next_row (chisq);
 
   tab_offset (chisq, 0, -1);
@@ -1886,17 +1886,17 @@ display_symmetric (struct crosstabs_proc *proc, struct pivot_table *pt,
 	}
 
       tab_text (sym, 1, 0, TAB_LEFT, gettext (stats[i]));
-      tab_double (sym, 2, 0, TAB_RIGHT, sym_v[i], NULL);
+      tab_double (sym, 2, 0, TAB_RIGHT, sym_v[i], NULL, RC_OTHER);
       if (sym_ase[i] != SYSMIS)
-	tab_double (sym, 3, 0, TAB_RIGHT, sym_ase[i], NULL);
+	tab_double (sym, 3, 0, TAB_RIGHT, sym_ase[i], NULL, RC_OTHER);
       if (sym_t[i] != SYSMIS)
-	tab_double (sym, 4, 0, TAB_RIGHT, sym_t[i], NULL);
-      /*tab_double (sym, 5, 0, TAB_RIGHT, normal_sig (sym_v[i]), NULL);*/
+	tab_double (sym, 4, 0, TAB_RIGHT, sym_t[i], NULL, RC_OTHER);
+      /*tab_double (sym, 5, 0, TAB_RIGHT, normal_sig (sym_v[i]), NULL, RC_PVALUE);*/
       tab_next_row (sym);
     }
 
   tab_text (sym, 0, 0, TAB_LEFT, _("N of Valid Cases"));
-  tab_double (sym, 2, 0, TAB_RIGHT, pt->total, &pt->weight_format);
+  tab_double (sym, 2, 0, TAB_RIGHT, pt->total, NULL, RC_WEIGHT);
   tab_next_row (sym);
 
   tab_offset (sym, 0, -1);
@@ -1944,8 +1944,8 @@ display_risk (struct pivot_table *pt, struct tab_table *risk)
 	case 1:
 	case 2:
 	  if (var_is_numeric (rv))
-	    sprintf (buf, _("For cohort %s = %g"),
-		     var_to_string (rv), pt->rows[i - 1].f);
+	    sprintf (buf, _("For cohort %s = %.*g"),
+		     var_to_string (rv), DBL_DIG + 1, pt->rows[i - 1].f);
 	  else
 	    sprintf (buf, _("For cohort %s = %.*s"),
 		     var_to_string (rv),
@@ -1954,14 +1954,14 @@ display_risk (struct pivot_table *pt, struct tab_table *risk)
 	}
 
       tab_text (risk, 0, 0, TAB_LEFT, buf);
-      tab_double (risk, 1, 0, TAB_RIGHT, risk_v[i], NULL);
-      tab_double (risk, 2, 0, TAB_RIGHT, lower[i], NULL);
-      tab_double (risk, 3, 0, TAB_RIGHT, upper[i], NULL);
+      tab_double (risk, 1, 0, TAB_RIGHT, risk_v[i], NULL, RC_OTHER);
+      tab_double (risk, 2, 0, TAB_RIGHT, lower[i], NULL, RC_OTHER);
+      tab_double (risk, 3, 0, TAB_RIGHT, upper[i], NULL, RC_OTHER);
       tab_next_row (risk);
     }
 
   tab_text (risk, 0, 0, TAB_LEFT, _("N of Valid Cases"));
-  tab_double (risk, 1, 0, TAB_RIGHT, pt->total, &pt->weight_format);
+  tab_double (risk, 1, 0, TAB_RIGHT, pt->total, NULL, RC_WEIGHT);
   tab_next_row (risk);
 
   tab_offset (risk, 0, -1);
@@ -1969,7 +1969,7 @@ display_risk (struct pivot_table *pt, struct tab_table *risk)
 
 static int calc_directional (struct crosstabs_proc *, struct pivot_table *,
                              double[N_DIRECTIONAL], double[N_DIRECTIONAL],
-			     double[N_DIRECTIONAL]);
+			     double[N_DIRECTIONAL], double[N_DIRECTIONAL]);
 
 /* Display directional measures. */
 static void
@@ -2036,10 +2036,11 @@ display_directional (struct crosstabs_proc *proc, struct pivot_table *pt,
   double direct_v[N_DIRECTIONAL];
   double direct_ase[N_DIRECTIONAL];
   double direct_t[N_DIRECTIONAL];
+  double sig[N_DIRECTIONAL];
 
   int i;
 
-  if (!calc_directional (proc, pt, direct_v, direct_ase, direct_t))
+  if (!calc_directional (proc, pt, direct_v, direct_ase, direct_t, sig))
     return;
 
   tab_offset (direct, pt->n_consts + pt->n_vars - 2, -1);
@@ -2076,12 +2077,12 @@ display_directional (struct crosstabs_proc *proc, struct pivot_table *pt,
 	    }
       }
 
-      tab_double (direct, 3, 0, TAB_RIGHT, direct_v[i], NULL);
+      tab_double (direct, 3, 0, TAB_RIGHT, direct_v[i], NULL, RC_OTHER);
       if (direct_ase[i] != SYSMIS)
-	tab_double (direct, 4, 0, TAB_RIGHT, direct_ase[i], NULL);
+	tab_double (direct, 4, 0, TAB_RIGHT, direct_ase[i], NULL, RC_OTHER);
       if (direct_t[i] != SYSMIS)
-	tab_double (direct, 5, 0, TAB_RIGHT, direct_t[i], NULL);
-      /*tab_double (direct, 6, 0, TAB_RIGHT, normal_sig (direct_v[i]), NULL);*/
+	tab_double (direct, 5, 0, TAB_RIGHT, direct_t[i], NULL, RC_OTHER);
+      tab_double (direct, 6, 0, TAB_RIGHT, sig[i], NULL, RC_PVALUE);
       tab_next_row (direct);
     }
 
@@ -2258,12 +2259,12 @@ calc_chisq (struct pivot_table *pt,
     }
 }
 
-/* Calculate the value of Pearson's r.  r is stored into R, ase_1 into
-   ASE_1, and ase_0 into ASE_0.  The row and column values must be
+/* Calculate the value of Pearson's r.  r is stored into R, its T value into
+   T, and standard error into ERROR.  The row and column values must be
    passed in PT and Y. */
 static void
 calc_r (struct pivot_table *pt,
-        double *PT, double *Y, double *r, double *ase_0, double *ase_1)
+        double *PT, double *Y, double *r, double *t, double *error)
 {
   double SX, SY, S, T;
   double Xbar, Ybar;
@@ -2301,7 +2302,7 @@ calc_r (struct pivot_table *pt,
   SY = sum_Y2c - pow2 (sum_Yc) / pt->total;
   T = sqrt (SX * SY);
   *r = S / T;
-  *ase_0 = sqrt ((sum_X2Y2f - pow2 (sum_XYf) / pt->total) / (sum_X2r * sum_Y2c));
+  *t = *r / sqrt (1 - pow2 (*r)) * sqrt (pt->total - 2);
 
   {
     double s, c, y, t;
@@ -2322,7 +2323,7 @@ calc_r (struct pivot_table *pt,
 	  c = (t - s) - y;
 	  s = t;
 	}
-    *ase_1 = sqrt (s) / (T * T);
+    *error = sqrt (s) / (T * T);
   }
 }
 
@@ -2529,7 +2530,7 @@ calc_symmetric (struct crosstabs_proc *proc, struct pivot_table *pt,
       if (proc->statistics & (1u << CRS_ST_D))
 	{
 	  somers_d_v[0] = (P - Q) / (.5 * (Dc + Dr));
-	  somers_d_ase[0] = 2. * btau_var / (Dr + Dc) * sqrt (Dr * Dc);
+	  somers_d_ase[0] = SYSMIS;
 	  somers_d_t[0] = (somers_d_v[0]
 			   / (4 / (Dc + Dr)
 			      * sqrt (ctau_cum - pow2 (P - Q) / pt->total)));
@@ -2589,13 +2590,11 @@ calc_symmetric (struct crosstabs_proc *proc, struct pivot_table *pt,
       }
 
       calc_r (pt, R, C, &v[6], &t[6], &ase[6]);
-      t[6] = v[6] / t[6];
 
       free (R);
       free (C);
 
       calc_r (pt, (double *) pt->rows, (double *) pt->cols, &v[7], &t[7], &ase[7]);
-      t[7] = v[7] / t[7];
     }
 
   /* Cohen's kappa. */
@@ -2717,13 +2716,13 @@ calc_risk (struct pivot_table *pt,
 static int
 calc_directional (struct crosstabs_proc *proc, struct pivot_table *pt,
                   double v[N_DIRECTIONAL], double ase[N_DIRECTIONAL],
-		  double t[N_DIRECTIONAL])
+		  double t[N_DIRECTIONAL], double sig[N_DIRECTIONAL])
 {
   {
     int i;
 
     for (i = 0; i < N_DIRECTIONAL; i++)
-      v[i] = ase[i] = t[i] = SYSMIS;
+      v[i] = ase[i] = t[i] = sig[i] = SYSMIS;
   }
 
   /* Lambda. */
@@ -2798,19 +2797,14 @@ calc_directional (struct crosstabs_proc *proc, struct pivot_table *pt,
 
       /* ASE1 for Y given PT. */
       {
-	double accum;
+        double accum;
 
-	for (accum = 0., i = 0; i < pt->n_rows; i++)
-	  for (j = 0; j < pt->n_cols; j++)
-	    {
-	      const int deltaj = j == cm_index;
-	      accum += (pt->mat[j + i * pt->n_cols]
-			* pow2 ((j == fim_index[i])
-			       - deltaj
-			       + v[0] * deltaj));
-	    }
-
-	ase[2] = sqrt (accum - pt->total * v[0]) / (pt->total - cm);
+        accum = 0.;
+	for (i = 0; i < pt->n_rows; i++)
+          if (cm_index == fim_index[i])
+            accum += fim[i];
+        ase[2] = sqrt ((pt->total - sum_fim) * (sum_fim + cm - 2. * accum)
+                       / pow3 (pt->total - cm));
       }
 
       /* ASE0 for Y given PT. */
@@ -2826,19 +2820,14 @@ calc_directional (struct crosstabs_proc *proc, struct pivot_table *pt,
 
       /* ASE1 for PT given Y. */
       {
-	double accum;
+        double accum;
 
-	for (accum = 0., i = 0; i < pt->n_rows; i++)
-	  for (j = 0; j < pt->n_cols; j++)
-	    {
-	      const int deltaj = i == rm_index;
-	      accum += (pt->mat[j + i * pt->n_cols]
-			* pow2 ((i == fmj_index[j])
-			       - deltaj
-			       + v[0] * deltaj));
-	    }
-
-	ase[1] = sqrt (accum - pt->total * v[0]) / (pt->total - rm);
+        accum = 0.;
+	for (j = 0; j < pt->n_cols; j++)
+          if (rm_index == fmj_index[j])
+            accum += fmj[j];
+        ase[1] = sqrt ((pt->total - sum_fmj) * (sum_fmj + rm - 2. * accum)
+                       / pow3 (pt->total - rm));
       }
 
       /* ASE0 for PT given Y. */
@@ -2867,15 +2856,19 @@ calc_directional (struct crosstabs_proc *proc, struct pivot_table *pt,
 			 * pow2 (temp0 + (v[0] - 1.) * temp1));
 	    }
 	ase[0] = sqrt (accum1 - 4. * pt->total * v[0] * v[0]) / (2. * pt->total - rm - cm);
-	t[0] = v[0] / (sqrt (accum0 - pow2 ((sum_fim + sum_fmj - cm - rm) / pt->total))
+	t[0] = v[0] / (sqrt (accum0 - pow2 (sum_fim + sum_fmj - cm - rm) / pt->total)
 		       / (2. * pt->total - rm - cm));
       }
+
+      for (i = 0; i < 3; i++)
+        sig[i] = 2 * gsl_cdf_ugaussian_Q (t[i]);
 
       free (fim);
       free (fim_index);
       free (fmj);
       free (fmj_index);
 
+      /* Tau. */
       {
 	double sum_fij2_ri, sum_fij2_ci;
 	double sum_ri2, sum_cj2;
@@ -2944,8 +2937,7 @@ calc_directional (struct crosstabs_proc *proc, struct pivot_table *pt,
 
       v[5] = 2. * ((UX + UY - UXY) / (UX + UY));
       ase[5] = (2. / (pt->total * pow2 (UX + UY))) * sqrt (ase1_sym);
-      t[5] = v[5] / ((2. / (pt->total * (UX + UY)))
-		     * sqrt (P - pow2 (UX + UY - UXY) / pt->total));
+      t[5] = SYSMIS;
 
       v[6] = (UX + UY - UXY) / UX;
       ase[6] = sqrt (ase1_xy) / (pt->total * UX * UX);
@@ -2975,6 +2967,7 @@ calc_directional (struct crosstabs_proc *proc, struct pivot_table *pt,
               v[8 + i] = somers_d_v[i];
               ase[8 + i] = somers_d_ase[i];
               t[8 + i] = somers_d_t[i];
+              sig[8 + i] = 2 * gsl_cdf_ugaussian_Q (fabs (somers_d_t[i]));
             }
         }
     }

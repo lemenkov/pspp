@@ -1,5 +1,5 @@
 /* PSPP - a program for statistical analysis.
-   Copyright (C) 2005, 2006, 2007, 2009, 2010, 2011, 2012, 2013 Free Software Foundation, Inc
+   Copyright (C) 2005, 2006, 2007, 2009, 2010, 2011, 2012, 2013, 2014 Free Software Foundation, Inc
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -318,7 +318,7 @@ parse_into (struct lexer *lexer, struct rank *cmd,
 	  const char *name = lex_tokcstr (lexer);
 
 	  if ( var_count >= subcase_get_n_fields (&cmd->sc) )
-            msg (SE, _("Too many variables in INTO clause."));
+            msg (SE, _("Too many variables in %s clause."), "INTO");
 	  else if ( dict_lookup_var (cmd->dict, name) != NULL )
             msg (SE, _("Variable %s already exists."), name);
           else if (string_set_contains (new_names, name))
@@ -820,7 +820,7 @@ cmd_rank (struct lexer *lexer, struct dataset *ds)
     {
       int v;
 
-      tab_output_text (0, _("Variables Created By RANK"));
+      tab_output_text_format (0, _("Variables Created By %s"), "RANK");
       tab_output_text (0, "");
 
       for (i = 0 ; i <  rank.n_rs ; ++i )
@@ -1123,7 +1123,7 @@ rank_cmd (struct dataset *ds, const struct rank *cmd)
 
           var = dict_create_var_assert (d, rs->dest_names[i], 0);
           var_set_both_formats (var, &dest_format[rs->rfunc]);
-          var_set_label (var, rs->dest_labels[i], false);
+          var_set_label (var, rs->dest_labels[i]);
 
           iv->output_vars[j] = var;
         }

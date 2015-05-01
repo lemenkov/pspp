@@ -1,5 +1,5 @@
 /* PSPP - a program for statistical analysis. -*-c-*-
-   Copyright (C) 2010, 2011 Free Software Foundation, Inc.
+   Copyright (C) 2010, 2011, 2014 Free Software Foundation, Inc.
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -19,6 +19,7 @@
 
 #include "language/stats/runs.h"
 
+#include <float.h>
 #include <gsl/gsl_cdf.h>
 #include <math.h>
 
@@ -164,8 +165,9 @@ runs_execute (const struct dataset *ds,
 	      }
 	    casegrouper_destroy (grouper);
 	    if (multimodal)
-	      msg (MW, _("Multiple modes exist for variable `%s'.  Using %g as the threshold value."),
-		   var_get_name (var), run->cutpoint);
+	      msg (MW, _("Multiple modes exist for variable `%s'.  "
+                         "Using %.*g as the threshold value."),
+		   var_get_name (var), DBL_DIG + 1, run->cutpoint);
 	  }
       }
       break;
@@ -316,6 +318,7 @@ show_runs_result (const struct runs_test *rt, const struct run_state *rs, const 
   const int column_headers = 1;
   struct tab_table *table =
     tab_create (row_headers + otp->n_vars, column_headers + 7);
+  tab_set_format (table, RC_WEIGHT, wfmt);
 
   tab_headers (table, row_headers, 0, column_headers, 0);
 
@@ -339,25 +342,25 @@ show_runs_result (const struct runs_test *rt, const struct run_state *rs, const 
 		var_to_string (otp->vars[i]));
 
       tab_double (table, row_headers +i, 1, 0,
-		  run->cutpoint, 0);
+		  run->cutpoint, NULL, RC_OTHER);
 
       tab_double (table, row_headers +i, 2, 0,
-		  run->nn, wfmt);
+		  run->nn, NULL, RC_WEIGHT);
 		  
       tab_double (table, row_headers +i, 3, 0,
-		  run->np, wfmt);
+		  run->np, NULL, RC_WEIGHT);
 
       tab_double (table, row_headers +i, 4, 0,
-		  run->n, wfmt);
+		  run->n, NULL, RC_WEIGHT);
 
       tab_double (table, row_headers +i, 5, 0,
-		  run->runs, &F_8_0);
+		  run->runs, NULL, RC_INTEGER);
 
       tab_double (table, row_headers +i, 6, 0,
-		  z, 0);
+		  z, NULL, RC_OTHER);
 
       tab_double (table, row_headers +i, 7, 0,
-		  2.0 * gsl_cdf_ugaussian_P (z), 0);
+		  2.0 * (1.0 - gsl_cdf_ugaussian_P (z)), NULL, RC_PVALUE);
     }
 
   switch  ( rt->cp_mode)

@@ -22,28 +22,45 @@
 
 #include "libpspp/cast.h"
 #include "libpspp/str.h"
+#include "data/variable.h"
 #include "output/chart-item-provider.h"
 
 #include "gl/xalloc.h"
 
+#include "gettext.h"
+#define _(msgid) gettext (msgid)
+#define N_(msgid) msgid
+
+
 /* Creates and returns a chart that will render a piechart with
-   the given TITLE and the N_SLICES described in SLICES. */
+   the of VAR and the N_SLICES described in SLICES. */
 struct chart_item *
-piechart_create (const char *title, const struct slice *slices, int n_slices)
+piechart_create (const struct variable *var, const struct freq *slices, int n_slices)
 {
   struct piechart *pie;
   int i;
 
   pie = xmalloc (sizeof *pie);
-  chart_item_init (&pie->chart_item, &piechart_class, title);
+  chart_item_init (&pie->chart_item, &piechart_class, var_to_string (var));
   pie->slices = xnmalloc (n_slices, sizeof *pie->slices);
   for (i = 0; i < n_slices; i++)
     {
-      const struct slice *src = &slices[i];
+      const struct freq *src = &slices[i];
       struct slice *dst = &pie->slices[i];
 
-      ds_init_string (&dst->label, &src->label);
-      dst->magnitude = src->magnitude;
+      ds_init_empty (&dst->label);
+
+      if ( var_is_value_missing (var, &src->values[0], MV_ANY))
+	ds_assign_cstr (&dst->label, _("*MISSING*"));
+      else
+	var_append_value_name (var, &src->values[0], &dst->label);
+
+      /* Chomp any whitespace from the RHS of the label.
+	 Doing this ensures that those labels to the right
+	 of the pie, appear right justified. */
+      ds_rtrim (&dst->label, ss_cstr (" \t"));
+      ds_ltrim (&dst->label, ss_cstr (" \t"));
+      dst->magnitude = src->count;
     }
   pie->n_slices = n_slices;
   return &pie->chart_item;

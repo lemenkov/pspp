@@ -1,5 +1,5 @@
 /* PSPP - a program for statistical analysis.
-   Copyright (C) 2008, 2010, 2011 Free Software Foundation, Inc.
+   Copyright (C) 2008, 2010, 2011, 2015 Free Software Foundation, Inc.
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -660,4 +660,18 @@ npdf_beta (double x, double a, double b, double lambda)
       }
       return sum;
     }
+}
+
+double
+round_nearest (double x, double mult, double fuzzbits)
+{
+  double adjustment;
+
+  if (fuzzbits <= 0)
+    fuzzbits = settings_get_fuzzbits ();
+  adjustment = .5 + exp2 (fuzzbits - DBL_MANT_DIG);
+
+  x /= mult;
+  x = x >= 0. ? floor (x + adjustment) : -floor (-x + adjustment);
+  return x * mult;
 }

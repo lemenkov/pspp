@@ -145,10 +145,9 @@ GET
 @cmd{GET} clears the current dictionary and active dataset and
 replaces them with the dictionary and data from a specified file.
 
-The @subcmd{FILE} subcommand is the only required subcommand.  
-Specify the system
-file or portable file to be read as a string file name or
-a file handle (@pxref{File Handles}).
+The @subcmd{FILE} subcommand is the only required subcommand.  Specify
+the SPSS system file, SPSS/PC+ system file, or SPSS portable file to
+be read as a string file name or a file handle (@pxref{File Handles}).
 
 By default, all the variables in a file are read.  The DROP
 subcommand can be used to specify a list of variables that are not to be
@@ -175,12 +174,14 @@ Each may be present any number of times.  @cmd{GET} never modifies a
 file on disk.  Only the active dataset read from the file
 is affected by these subcommands.
 
-@pspp{} tries to automatically detect the encoding of string data in the
-file.  Sometimes, however, this does not work well encoding,
-especially for files written by old versions of SPSS or @pspp{}.  Specify
-the @subcmd{ENCODING} subcommand with an @acronym{IANA} character set name as its string
-argument to override the default.  The @subcmd{ENCODING} subcommand is a @pspp{}
-extension.
+@pspp{} automatically detects the encoding of string data in the file,
+when possible.  The character encoding of old SPSS system files cannot
+always be guessed correctly, and SPSS/PC+ system files do not include
+any indication of their encoding.  Specify the @subcmd{ENCODING}
+subcommand with an @acronym{IANA} character set name as its string
+argument to override the default.  Use @cmd{SYSFILE INFO} to analyze
+the encodings that might be valid for a system file.  The
+@subcmd{ENCODING} subcommand is a @pspp{} extension.
 
 @cmd{GET} does not cause the data to be read, only the dictionary.  The data
 is read later, when a procedure is executed.
@@ -238,7 +239,7 @@ GET DATA /TYPE=@{GNM, ODS@}
         /SHEET=@{NAME '@var{sheet_name}', INDEX @var{n}@}
         /CELLRANGE=@{RANGE '@var{range}', FULL@}
         /READNAMES=@{ON, OFF@}
-        /ASSUMEDVARWIDTH=@var{n}.
+        /ASSUMEDSTRWIDTH=@var{n}.
 @end display
 
 @cindex Gnumeric
@@ -260,7 +261,7 @@ The format of each variable is determined by the format of the spreadsheet
 cell containing the first datum for the variable.
 If this cell is of string (text) format, then the width of the variable is
 determined from the length of the string it contains, unless the 
-@subcmd{ASSUMEDVARWIDTH} subcommand is given.
+@subcmd{ASSUMEDSTRWIDTH} subcommand is given.
 
 The @subcmd{SHEET} subcommand specifies the sheet within the spreadsheet file to read.
 There are two forms of the @subcmd{SHEET} subcommand.
@@ -288,7 +289,7 @@ the data from subsequent rows.  This is the default.
 If @subcmd{/READNAMES=OFF} is
 used, then the variables  receive automatically assigned names.
 
-The @subcmd{ASSUMEDVARWIDTH} subcommand specifies the maximum width of string
+The @subcmd{ASSUMEDSTRWIDTH} subcommand specifies the maximum width of string
 variables read  from the file.
 If omitted, the default value is determined from the length of the 
 string in the first spreadsheet cell for each variable.
@@ -301,7 +302,7 @@ string in the first spreadsheet cell for each variable.
 GET DATA /TYPE=PSQL
          /CONNECT=@{@var{connection info}@}
          /SQL=@{@var{query}@}
-         [/ASSUMEDVARWIDTH=@var{w}]
+         [/ASSUMEDSTRWIDTH=@var{w}]
          [/UNENCRYPTED]
          [/BSIZE=@var{n}].
 @end display
@@ -328,7 +329,7 @@ The format of the string is given in the postgres manual
 The @subcmd{SQL} subcommand is mandatory.
 It must be a valid SQL string to retrieve data from the database.
 
-The @subcmd{ASSUMEDVARWIDTH} subcommand specifies the maximum width of string
+The @subcmd{ASSUMEDSTRWIDTH} subcommand specifies the maximum width of string
 variables read  from the database.
 If omitted, the default value is determined from the length of the 
 string in the first value read for each variable.
@@ -910,14 +911,24 @@ qualifier character that appears within a value is doubled.
 @vindex SYSFILE INFO
 
 @display 
-SYSFILE INFO FILE='@var{file_name}'.
+SYSFILE INFO FILE='@var{file_name}' [ENCODING='@var{encoding}'].
 @end display
 
-@cmd{SYSFILE INFO} reads the dictionary in a system file and
-displays the information in its dictionary.
+@cmd{SYSFILE INFO} reads the dictionary in an SPSS system file,
+SPSS/PC+ system file, or SPSS portable file, and displays the
+information in its dictionary.
 
-Specify a file name or file handle.  @cmd{SYSFILE INFO} reads that file as
-a system file and displays information on its dictionary.
+Specify a file name or file handle.  @cmd{SYSFILE INFO} reads that
+file and displays information on its dictionary.
+
+@pspp{} automatically detects the encoding of string data in the file,
+when possible.  The character encoding of old SPSS system files cannot
+always be guessed correctly, and SPSS/PC+ system files do not include
+any indication of their encoding.  Specify the @subcmd{ENCODING}
+subcommand with an @acronym{IANA} character set name as its string
+argument to override the default, or specify @code{ENCODING='DETECT'}
+to analyze and report possibly valid encodings for the system file.
+The @subcmd{ENCODING} subcommand is a @pspp{} extension.
 
 @cmd{SYSFILE INFO} does not affect the current active dataset.
 

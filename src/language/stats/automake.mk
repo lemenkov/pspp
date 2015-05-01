@@ -3,8 +3,7 @@
 AM_CPPFLAGS += -I$(top_srcdir)/src/language/stats
 
 src_language_stats_built_sources = \
-	src/language/stats/crosstabs.c \
-	src/language/stats/frequencies.c
+	src/language/stats/crosstabs.c
 
 language_stats_sources = \
 	src/language/stats/aggregate.c \
@@ -23,9 +22,11 @@ language_stats_sources = \
 	src/language/stats/flip.c \
 	src/language/stats/freq.c \
 	src/language/stats/freq.h \
+	src/language/stats/frequencies.c \
 	src/language/stats/friedman.c \
 	src/language/stats/friedman.h \
 	src/language/stats/glm.c \
+	src/language/stats/graph.c \
 	src/language/stats/kruskal-wallis.c \
 	src/language/stats/kruskal-wallis.h \
 	src/language/stats/ks-one-sample.c \
@@ -71,5 +72,3 @@ EXTRA_DIST += src/language/stats/glm.c
 all_q_sources += $(src_language_stats_built_sources:.c=.q)
 EXTRA_DIST += $(src_language_stats_built_sources:.c=.q)
 CLEANFILES += $(src_language_stats_built_sources)
-
-EXTRA_DIST += src/language/stats/OChangeLog

@@ -1,5 +1,5 @@
 /* PSPP - a program for statistical analysis.
-   Copyright (C) 1997-9, 2000, 2009, 2010, 2011 Free Software Foundation, Inc.
+   Copyright (C) 1997-9, 2000, 2009, 2010, 2011, 2015 Free Software Foundation, Inc.
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -209,7 +209,7 @@ parse_numeric_criteria (struct lexer *lexer, struct pool *pool, struct criteria 
       if (lex_match_id (lexer, "SYSMIS"))
         crit->count_system_missing = true;
       else if (lex_match_id (lexer, "MISSING"))
-	crit->count_user_missing = true;
+	crit->count_system_missing = crit->count_user_missing = true;
       else if (parse_num_range (lexer, &low, &high, NULL))
         {
           struct num_value *cur;
@@ -290,25 +290,25 @@ count_numeric (struct criteria *crit, const struct ccase *c)
   for (i = 0; i < crit->var_cnt; i++)
     {
       double x = case_num (c, crit->vars[i]);
-      if (var_is_num_missing (crit->vars[i], x, MV_ANY))
-        {
-          if (x == SYSMIS
-              ? crit->count_system_missing
-              : crit->count_user_missing)
-            counter++;
-        }
-      else
-        {
-          struct num_value *v;
+      struct num_value *v;
 
-          for (v = crit->values.num; v < crit->values.num + crit->value_cnt;
-               v++)
-            if (v->type == CNT_SINGLE ? x == v->a : x >= v->a && x <= v->b)
-              {
-                counter++;
-                break;
-              }
+      for (v = crit->values.num; v < crit->values.num + crit->value_cnt;
+           v++)
+        if (v->type == CNT_SINGLE ? x == v->a : x >= v->a && x <= v->b)
+          {
+            counter++;
+            break;
+          }
+
+      if (var_is_num_missing (crit->vars[i], x, MV_ANY)
+          && (x == SYSMIS
+              ? crit->count_system_missing
+              : crit->count_user_missing))
+        {
+          counter++;
+          continue;
         }
+
     }
 
   return counter;

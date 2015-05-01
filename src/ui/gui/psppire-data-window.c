@@ -1,5 +1,5 @@
 /* PSPPIRE - a graphical user interface for PSPP.
-   Copyright (C) 2008, 2009, 2010, 2011, 2012, 2013  Free Software Foundation
+   Copyright (C) 2008, 2009, 2010, 2011, 2012, 2013, 2014  Free Software Foundation
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -35,6 +35,7 @@
 #include "ui/gui/helper.h"
 #include "ui/gui/psppire-data-window.h"
 #include "ui/gui/psppire-dialog-action.h"
+#include "ui/gui/psppire-encoding-selector.h"
 #include "ui/gui/psppire-syntax-window.h"
 #include "ui/gui/psppire-window.h"
 #include "ui/gui/psppire.h"
@@ -331,7 +332,8 @@ name_has_suffix (const gchar *name)
 }
 
 static gboolean
-load_file (PsppireWindow *de, const gchar *file_name, gpointer syn)
+load_file (PsppireWindow *de, const gchar *file_name, const char *encoding,
+           gpointer syn)
 {
   const char *mime_type = NULL;
   gchar *syntax = NULL;
@@ -341,17 +343,23 @@ load_file (PsppireWindow *de, const gchar *file_name, gpointer syn)
     {
       gchar *utf8_file_name;
       struct string filename;
-      ds_init_empty (&filename);
       
       utf8_file_name = g_filename_to_utf8 (file_name, -1, NULL, NULL, NULL);
-    
+
+      if (NULL == utf8_file_name)
+	return FALSE;
+
+      ds_init_empty (&filename);    
       syntax_gen_string (&filename, ss_cstr (utf8_file_name));
       
       g_free (utf8_file_name);
-      
-      syntax = g_strdup_printf ("GET FILE=%s.", ds_cstr (&filename));
-      ds_destroy (&filename);
 
+      if (encoding && encoding[0])
+        syntax = g_strdup_printf ("GET FILE=%s ENCODING='%s'.",
+                                  ds_cstr (&filename), encoding);
+      else
+        syntax = g_strdup_printf ("GET FILE=%s.", ds_cstr (&filename));
+      ds_destroy (&filename);
     }
   else
     {
@@ -369,7 +377,7 @@ load_file (PsppireWindow *de, const gchar *file_name, gpointer syn)
       else if (name_has_sav_suffix (file_name))
 	mime_type = "application/x-spss-sav";
       
-      add_most_recent (file_name, mime_type);
+      add_most_recent (file_name, mime_type, encoding);
     }
 
   return ok;
@@ -443,9 +451,11 @@ sysfile_info (PsppireDataWindow *de)
       struct string filename;
       gchar *file_name =
 	gtk_file_chooser_get_filename (GTK_FILE_CHOOSER (dialog));
-
       gchar *utf8_file_name = g_filename_to_utf8 (file_name, -1, NULL, NULL,
                                                   NULL);
+
+      const gchar *encoding = psppire_encoding_selector_get_encoding (
+        gtk_file_chooser_get_extra_widget (GTK_FILE_CHOOSER (dialog)));
 
       gchar *syntax;
 
@@ -455,7 +465,11 @@ sysfile_info (PsppireDataWindow *de)
 
       g_free (utf8_file_name);
 
-      syntax = g_strdup_printf ("SYSFILE INFO %s.", ds_cstr (&filename));
+      if (encoding)
+        syntax = g_strdup_printf ("SYSFILE INFO %s ENCODING='%s'.",
+                                  ds_cstr (&filename), encoding);
+      else
+        syntax = g_strdup_printf ("SYSFILE INFO %s.", ds_cstr (&filename));
       g_free (execute_syntax_string (de, syntax));
     }
 
@@ -749,7 +763,7 @@ on_recent_data_select (GtkMenuShell *menushell,
 
   g_free (uri);
 
-  open_data_window (window, file, NULL);
+  open_data_window (window, file, NULL, NULL);
 
   g_free (file);
 }
@@ -812,7 +826,7 @@ on_recent_files_select (GtkMenuShell *menushell,   gpointer user_data)
 
   free (encoding);
 
-  if ( psppire_window_load (PSPPIRE_WINDOW (se), file, NULL) ) 
+  if ( psppire_window_load (PSPPIRE_WINDOW (se), file, encoding, NULL) ) 
     gtk_widget_show (se);
   else
     gtk_widget_destroy (se);
@@ -1357,7 +1371,8 @@ create_data_window (void)
 }
 
 void
-open_data_window (PsppireWindow *victim, const char *file_name, gpointer hint)
+open_data_window (PsppireWindow *victim, const char *file_name,
+                  const char *encoding, gpointer hint)
 {
   GtkWidget *window;
 
@@ -1370,7 +1385,7 @@ open_data_window (PsppireWindow *victim, const char *file_name, gpointer hint)
   else
     window = psppire_data_window_new (NULL);
 
-  psppire_window_load (PSPPIRE_WINDOW (window), file_name, hint);
+  psppire_window_load (PSPPIRE_WINDOW (window), file_name, encoding, hint);
   gtk_widget_show_all (window);
 }
 

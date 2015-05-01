@@ -17,6 +17,7 @@
 #include <config.h>
 
 #include "math/histogram.h"
+#include "math/decimal.h"
 
 #include <gsl/gsl_histogram.h>
 #include <math.h>
@@ -211,8 +212,9 @@ adjust_bin_ranges (double bin_width, double min, double max, double *adj_min, do
 
 
 struct histogram *
-histogram_create (double bin_width, double min, double max)
+histogram_create (double bin_width_in, double min, double max)
 {
+  struct decimal bin_width;
   const int MAX_BINS = 25;
   struct histogram *h;
   struct statistic *stat;
@@ -225,16 +227,17 @@ histogram_create (double bin_width, double min, double max)
       return NULL;
     }
 
-  assert (bin_width > 0);
+  assert (bin_width_in > 0);
 
-  bin_width = chart_rounded_tick (bin_width);
-  bins = adjust_bin_ranges (bin_width, min, max, &adjusted_min, &adjusted_max);
+  chart_rounded_tick (bin_width_in, &bin_width);
+  bins = adjust_bin_ranges (decimal_to_double (&bin_width), 
+			    min, max, &adjusted_min, &adjusted_max);
 
   /* Force the number of bins to lie in a sensible range. */
   if (bins > MAX_BINS) 
     {
-      bin_width = chart_rounded_tick ((max - min) / (double) (MAX_BINS - 1));
-      bins = adjust_bin_ranges (bin_width,
+      chart_rounded_tick ((max - min) / (double) (MAX_BINS - 1), &bin_width);
+      bins = adjust_bin_ranges (decimal_to_double (&bin_width),
                                 min, max, &adjusted_min, &adjusted_max);
     }
 

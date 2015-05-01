@@ -1,5 +1,5 @@
 /* PSPPIRE - a graphical user interface for PSPP.
-   Copyright (C) 2004, 2005, 2006, 2009, 2010, 2011, 2012, 2013  Free Software Foundation
+   Copyright (C) 2004, 2005, 2006, 2009, 2010, 2011, 2012, 2013, 2014  Free Software Foundation
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -29,10 +29,8 @@
 #include "data/datasheet.h"
 #include "data/file-handle-def.h"
 #include "data/file-name.h"
-#include "data/por-file-reader.h"
 #include "data/session.h"
 #include "data/settings.h"
-#include "data/sys-file-reader.h"
 
 #include "language/lexer/lexer.h"
 #include "libpspp/i18n.h"
@@ -53,6 +51,7 @@
 #include "ui/gui/psppire-syntax-window.h"
 #include "ui/gui/psppire-selector.h"
 #include "ui/gui/psppire-var-view.h"
+#include "ui/gui/psppire-means-layer.h"
 #include "ui/gui/psppire-window-register.h"
 #include "ui/gui/widgets.h"
 #include "ui/source-init-opts.h"
@@ -65,7 +64,6 @@
 #include "gl/xalloc.h"
 #include "gl/relocatable.h"
 
-static void inject_renamed_icons (void);
 static void create_icon_factory (void);
 static gchar *local_to_filename_encoding (const char *fn);
 
@@ -82,6 +80,7 @@ initialize (const char *data_file)
   preregister_widgets ();
 
   gsl_set_error_handler_off ();
+  output_engine_push ();
   settings_init ();
   fh_init ();
 
@@ -89,7 +88,6 @@ initialize (const char *data_file)
 
   bind_textdomain_codeset (PACKAGE, "UTF-8");
 
-  inject_renamed_icons ();
   create_icon_factory ();
 
   psppire_output_window_setup ();
@@ -97,19 +95,23 @@ initialize (const char *data_file)
   journal_init ();
   textdomain (PACKAGE);
 
+  /* FIXME: This should be implemented with a GtkInterface */
   psppire_selector_set_default_selection_func (GTK_TYPE_ENTRY, insert_source_row_into_entry);
   psppire_selector_set_default_selection_func (PSPPIRE_VAR_VIEW_TYPE, insert_source_row_into_tree_view);
   psppire_selector_set_default_selection_func (GTK_TYPE_TREE_VIEW, insert_source_row_into_tree_view);
+  psppire_selector_set_default_selection_func (PSPPIRE_TYPE_MEANS_LAYER, insert_source_row_into_layers);
 
   if (data_file)
     {
       gchar *filename = local_to_filename_encoding (data_file);
 
+      int retval = any_reader_detect (filename, NULL);
+
       /* Check to see if the file is a .sav or a .por file.  If not
          assume that it is a syntax file */
-      if ( any_reader_may_open (filename))
-        open_data_window (NULL, filename, NULL);
-      else
+      if (retval == 1)
+	open_data_window (NULL, filename, NULL, NULL);
+      else if (retval == 0)
         {
           create_data_window ();
           open_syntax_window (filename, NULL);
@@ -126,7 +128,7 @@ void
 de_initialize (void)
 {
   settings_done ();
-  output_close ();
+  output_engine_pop ();
   i18n_done ();
 }
 
@@ -148,73 +150,31 @@ psppire_quit (void)
   gtk_main_quit ();
 }
 
-static void
-inject_renamed_icon (const char *icon, const char *substitute)
-{
-  GtkIconTheme *theme = gtk_icon_theme_get_default ();
-  if (!gtk_icon_theme_has_icon (theme, icon)
-      && gtk_icon_theme_has_icon (theme, substitute))
-    {
-      gint *sizes = gtk_icon_theme_get_icon_sizes (theme, substitute);
-      gint *p;
-
-      for (p = sizes; *p != 0; p++)
-        {
-          gint size = *p;
-          GdkPixbuf *pb;
-
-          pb = gtk_icon_theme_load_icon (theme, substitute, size, 0, NULL);
-          if (pb != NULL)
-            {
-              GdkPixbuf *copy = gdk_pixbuf_copy (pb);
-              if (copy != NULL)
-                gtk_icon_theme_add_builtin_icon (icon, size, copy);
-            }
-        }
-    }
-}
-
-/* Avoid a bug in GTK+ 2.22 that can cause a segfault at startup time.  Earlier
-   and later versions of GTK+ do not have the bug.  Bug #31511.
-
-   Based on this patch against Inkscape:
-   https://launchpadlibrarian.net/60175914/copy_renamed_icons.patch */
-static void
-inject_renamed_icons (void)
-{
-  if (gtk_major_version == 2 && gtk_minor_version == 22)
-    {
-      inject_renamed_icon ("gtk-file", "document-x-generic");
-      inject_renamed_icon ("gtk-directory", "folder");
-    }
-}
-
-
 struct icon_size
 {
   int resolution;  /* The dimension of the images which will be used */
-  size_t n_sizes;  /* The number of items in the array below.
-		      This may be zero, in which case the iconset will be wildcarded
-		      (used by default when no non-wildcarded set is available) */
+  size_t n_sizes;  /* The number of items in the array below. */
   const GtkIconSize *usage; /* An array determining for what the icon set is used */
 };
 
 static const GtkIconSize menus[] = {GTK_ICON_SIZE_MENU};
-static const GtkIconSize toolbar[] = {GTK_ICON_SIZE_LARGE_TOOLBAR};
+static const GtkIconSize large_toolbar[] = {GTK_ICON_SIZE_LARGE_TOOLBAR};
+static const GtkIconSize small_toolbar[] = {GTK_ICON_SIZE_SMALL_TOOLBAR};
 
 
 /* We currently have three icon sets viz: 16x16, 24x24 and 32x32
-   We use the 16x16 for menus, the 32x32 for the toolbar and 
-   the 24x24 for everything else.
+   We use the 16x16 for menus, the 32x32 for the large_toolbars and 
+   the 24x24 for small_toolbars.
 
-   Exactly one element of the following array should have its 2nd and 3rd
-   argument as zero.
+   The order of this array is pertinent.  The icons in the sets occuring
+   earlier in the array will be used a the wildcard (default) icon size,
+   if such an icon exists.
 */
 static const struct icon_size sizemap[] = 
 {
+  {24,  sizeof (small_toolbar) / sizeof (GtkIconSize), small_toolbar},
   {16,  sizeof (menus) / sizeof (GtkIconSize), menus},
-  {24, 0, 0},
-  {32,  sizeof (toolbar) / sizeof (GtkIconSize), toolbar}
+  {32,  sizeof (large_toolbar) / sizeof (GtkIconSize), large_toolbar}
 };
 
 
@@ -232,6 +192,7 @@ create_icon_factory (void)
     gint i;
     for (i = 0 ; i < ic->n_icons ; ++i)
       {
+	gboolean wildcarded = FALSE;
 	GtkIconSet *icon_set = gtk_icon_set_new ();
 	int r;
 	for (r = 0 ; r < sizeof (sizemap) / sizeof (sizemap[0]); ++r)
@@ -243,15 +204,26 @@ create_icon_factory (void)
 					       sizemap[r].resolution, sizemap[r].resolution,
 					       ic->icon_name[i]);
 	    const char *relocated_filename = relocate (filename);
+	    GFile *gf = g_file_new_for_path (relocated_filename);
+	    if (g_file_query_exists (gf, NULL))
+	      {
+		gtk_icon_source_set_filename (source, relocated_filename);
+		if (!wildcarded)
+		  {
+		    gtk_icon_source_set_size_wildcarded (source, TRUE);
+		    wildcarded = TRUE;
+		  }
+	      }
+	    g_object_unref (gf);
 
-	    gtk_icon_source_set_filename (source, relocated_filename);
-	    gtk_icon_source_set_size_wildcarded (source, sizemap[r].n_sizes <= 0);
 	    for (s = 0 ; s < sizemap[r].n_sizes ; ++s)
 	      gtk_icon_source_set_size (source, sizemap[r].usage[s]);
 	    if (filename != relocated_filename)
 	      free (CONST_CAST (char *, relocated_filename));
 	    g_free (filename);
-	    gtk_icon_set_add_source (icon_set, source);
+
+	    if ( gtk_icon_source_get_filename (source))
+	      gtk_icon_set_add_source (icon_set, source);
 	  }
       
 	gtk_icon_factory_add (factory, ic->icon_name[i], icon_set);

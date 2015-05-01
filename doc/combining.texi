@@ -170,6 +170,9 @@ only in files that are not present for the current case are set to the
 system-missing value for numeric variables or spaces for string
 variables.
 
+These commands may combine any number of files, limited only by the
+machine's memory.
+
 @node ADD FILES
 @section ADD FILES
 @vindex ADD FILES

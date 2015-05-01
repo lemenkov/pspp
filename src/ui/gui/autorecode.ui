@@ -6,6 +6,7 @@
   <object class="PsppireDialog" id="autorecode-dialog">
     <property name="title" translatable="yes">Automatic Recode</property>
     <property name="modal">True</property>
+    <property name="help-page">AUTORECODE</property>
     <child internal-child="hbox">
       <object class="GtkHBox" id="dialog-hbox1">
         <property name="visible">True</property>

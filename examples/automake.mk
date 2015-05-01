@@ -5,10 +5,11 @@ examplesdir = $(pkgdatadir)/examples
 
 examples_DATA = \
 	examples/descript.sps \
+	examples/grid.sps \
 	examples/hotel.sav \
 	examples/physiology.sav \
 	examples/repairs.sav \
 	examples/regress.sps \
 	examples/regress_categorical.sps
 
-EXTRA_DIST += examples/OChangeLog $(examples_DATA)
+EXTRA_DIST += $(examples_DATA)

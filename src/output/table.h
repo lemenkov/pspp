@@ -1,5 +1,5 @@
 /* PSPP - a program for statistical analysis.
-   Copyright (C) 1997, 1998, 1999, 2000, 2009 Free Software Foundation, Inc.
+   Copyright (C) 1997, 1998, 1999, 2000, 2009, 2013, 2014 Free Software Foundation, Inc.
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -40,6 +40,7 @@
 
 struct casereader;
 struct fmt_spec;
+struct table_item;
 struct variable;
 
 /* Properties of a table cell. */
@@ -162,18 +163,23 @@ void table_set_hb (struct table *, int hb);
 
 /* Simple kinds of tables. */
 struct table *table_from_string (unsigned int options, const char *);
+struct table *table_from_string_span (unsigned int options, const char *,
+                                      int colspan, int rowspan);
 struct table *table_from_variables (unsigned int options,
                                     struct variable **, size_t);
 struct table *table_from_casereader (const struct casereader *,
                                      size_t column,
                                      const char *heading,
                                      const struct fmt_spec *);
+struct table *table_create_nested (struct table *);
+struct table *table_create_nested_item (struct table_item *);
 
 /* Combining tables. */
 struct table *table_paste (struct table *, struct table *,
                            enum table_axis orientation);
 struct table *table_hpaste (struct table *left, struct table *right);
 struct table *table_vpaste (struct table *top, struct table *bottom);
+struct table *table_stomp (struct table *);
 
 /* Taking subsets of tables. */
 struct table *table_select (struct table *, int rect[TABLE_N_AXES][2]);

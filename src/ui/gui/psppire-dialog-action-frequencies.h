@@ -126,6 +126,7 @@ struct _PsppireDialogActionFrequencies
   gboolean charts_opts_draw_pie;
   gboolean charts_opts_pie_include_missing;
 
+  gboolean charts_opts_draw_bar;
 
   enum frq_scale charts_opts_scale;
 
@@ -133,6 +134,8 @@ struct _PsppireDialogActionFrequencies
   GtkWidget *percents;
   GtkWidget *pie;
   GtkWidget *pie_include_missing;
+
+  GtkWidget *bar;
 
   GtkWidget *charts_dialog;
 };

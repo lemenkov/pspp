@@ -8,6 +8,7 @@ far.
 * DESCRIPTIVES::                Descriptive statistics.
 * FREQUENCIES::                 Frequency tables.
 * EXAMINE::                     Testing data for normality.
+* GRAPH::                       Plot data.
 * CORRELATIONS::                Correlation tables.
 * CROSSTABS::                   Crosstabulation tables.
 * FACTOR::                      Factor analysis and Principal Components analysis.
@@ -135,9 +136,12 @@ FREQUENCIES
                    [@{FREQ[(@var{y_max})],PERCENT[(@var{y_max})]@}] [@{NONORMAL,NORMAL@}]
         /PIECHART=[MINIMUM(@var{x_min})] [MAXIMUM(@var{x_max})]
                   [@{FREQ,PERCENT@}] [@{NOMISSING,MISSING@}]
+        /BARCHART=[MINIMUM(@var{x_min})] [MAXIMUM(@var{x_max})]
+                  [@{FREQ,PERCENT@}]
+        /ORDER=@{ANALYSIS,VARIABLE@}
+
 
 (These options are not currently implemented.)
-        /BARCHART=@dots{}
         /HBAR=@dots{}
         /GROUPED=@dots{}
 @end display
@@ -145,9 +149,8 @@ FREQUENCIES
 The @cmd{FREQUENCIES} procedure outputs frequency tables for specified
 variables.
 @cmd{FREQUENCIES} can also calculate and display descriptive statistics
-(including median and mode) and percentiles,
-@cmd{FREQUENCIES} can also output
-histograms and pie charts.  
+(including median and mode) and percentiles, and various graphical representations
+of the frequency distribution.
 
 The @subcmd{VARIABLES} subcommand is the only required subcommand.  Specify the
 variables to be analyzed.
@@ -194,27 +197,48 @@ For instance, @subcmd{/NTILES=4} would cause quartiles to be reported.
 The @subcmd{HISTOGRAM} subcommand causes the output to include a histogram for
 each specified numeric variable.  The X axis by default ranges from
 the minimum to the maximum value observed in the data, but the @subcmd{MINIMUM}
-and @subcmd{MAXIMUM} keywords can set an explicit range.  Specify @subcmd{NORMAL} to
-superimpose a normal curve on the histogram.  Histograms are not
-created for string variables.
+and @subcmd{MAXIMUM} keywords can set an explicit range. 
+@footnote{The number of
+bins is chosen according to the Freedman-Diaconis rule:
+@math{2 \times IQR(x)n^{-1/3}}, where @math{IQR(x)} is the interquartile range of @math{x}
+and @math{n} is the number of samples.    Note that
+@cmd{EXAMINE} uses a different algorithm to determine bin sizes.}
+Histograms are not created for string variables.
+
+Specify @subcmd{NORMAL} to superimpose a normal curve on the
+histogram.
 
 @cindex piechart
 The @subcmd{PIECHART} subcommand adds a pie chart for each variable to the data.  Each
 slice represents one value, with the size of the slice proportional to
 the value's frequency.  By default, all non-missing values are given
-slices.  The @subcmd{MINIMUM} and @subcmd{MAXIMUM} keywords can be used to limit the
-displayed slices to a given range of values.  The @subcmd{MISSING} keyword adds
-slices for missing values.
+slices.  
+The @subcmd{MINIMUM} and @subcmd{MAXIMUM} keywords can be used to limit the
+displayed slices to a given range of values.  
+The keyword @subcmd{NOMISSING} causes missing values to be omitted from the
+piechart.  This is the default.
+If instead, @subcmd{MISSING} is specified, then a single slice
+will be included representing all system missing and user-missing cases.
 
-The @subcmd{FREQ} and @subcmd{PERCENT} options on @subcmd{HISTOGRAM} and @subcmd{PIECHART} are accepted
-but not currently honoured.
+@cindex bar chart
+The @subcmd{BARCHART} subcommand produces a bar chart for each variable.
+The @subcmd{MINIMUM} and @subcmd{MAXIMUM} keywords can be used to omit
+categories whose counts which lie outside the specified limits.
+The @subcmd{FREQ} option (default) causes the ordinate to display the frequency
+of each category, whereas the @subcmd{PERCENT} option will display relative
+percentages.
+
+The @subcmd{FREQ} and @subcmd{PERCENT} options on @subcmd{HISTOGRAM} and 
+@subcmd{PIECHART} are accepted but not currently honoured.
+
+The @subcmd{ORDER} subcommand is accepted but ignored.
 
 @node EXAMINE
 @section EXAMINE
 
 @vindex EXAMINE
 @cindex Exploratory data analysis
-@cindex Normality, testing for
+@cindex normality, testing
 
 @display
 EXAMINE
@@ -250,7 +274,7 @@ factors which tell @pspp{} how to break down the analysis for each
 dependent variable. 
 
 Following the dependent variables, factors may be specified.
-The factors (if desired) should be preceeded by a single @subcmd{BY} keyword.
+The factors (if desired) should be preceded by a single @subcmd{BY} keyword.
 The format for each factor is 
 @display
 @var{factorvar} [BY @var{subfactorvar}].
@@ -287,6 +311,9 @@ The first three can be used to visualise how closely each cell conforms to a
 normal distribution, whilst the spread vs.@: level plot can be useful to visualise
 how the variance of differs between factors.
 Boxplots will also show you the outliers and extreme values.
+@footnote{@subcmd{HISTOGRAM} uses Sturges' rule to determine the number of
+bins, as approximately @math{1 + \log2(n)}, where @math{n} is the number of samples.
+Note that @cmd{FREQUENCIES} uses a different algorithm to find the bin size.}
 
 The @subcmd{SPREADLEVEL} plot displays the interquartile range versus the 
 median.  It takes an optional parameter @var{t}, which specifies how the data
@@ -309,10 +336,10 @@ If the @subcmd{/COMPARE} subcommand is omitted, then @pspp{} behaves as if
  
 The @subcmd{ID} subcommand is relevant only if @subcmd{/PLOT=BOXPLOT} or 
 @subcmd{/STATISTICS=EXTREME} has been given.
-If given, it shoule provide the name of a variable which is to be used
+If given, it should provide the name of a variable which is to be used
 to labels extreme values and outliers.
 Numeric or string variables are permissible.  
-If the @subcmd{ID} subcommand is not given, then the casenumber will be used for
+If the @subcmd{ID} subcommand is not given, then the case number will be used for
 labelling.
 
 The @subcmd{CINTERVAL} subcommand specifies the confidence interval to use in
@@ -374,6 +401,53 @@ If many dependent variables are specified, or if factor variables are
 specified for which
 there are many distinct values, then @cmd{EXAMINE} will produce a very
 large quantity of output.
+
+@node GRAPH
+@section GRAPH
+
+@vindex GRAPH
+@cindex Exploratory data analysis
+@cindex normality, testing
+
+@display
+GRAPH
+        /HISTOGRAM = @var{var}
+        /SCATTERPLOT [(BIVARIATE)] = @var{var1} WITH @var{var2} [BY @var{var3}] 
+        [ /MISSING=@{LISTWISE, VARIABLE@} [@{EXCLUDE, INCLUDE@}] ] 
+		[@{NOREPORT,REPORT@}]
+
+@end display
+
+The @cmd{GRAPH} produces graphical plots of data. Only one of the subcommands 
+@subcmd{HISTOGRAM} or @subcmd{SCATTERPLOT} can be specified, i.e. only one plot
+can be produced per call of @cmd{GRAPH}. The @subcmd{MISSING} is optional. 
+
+@cindex scatterplot
+
+The subcommand @subcmd{SCATTERPLOT} produces an xy plot of the data. The different 
+values of the optional third variable @var{var3} will result in different colours and/or
+markers for the plot. The following is an example for producing a scatterplot.
+
+@example
+GRAPH   
+        /SCATTERPLOT = @var{height} WITH @var{weight} BY @var{gender}.
+@end example
+
+This example will produce a scatterplot where @var{height} is plotted versus @var{weight}. Depending
+on the value of the @var{gender} variable, the colour of the datapoint is different. With
+this plot it is possible to analyze gender differences for @var{height} vs.@: @var{weight} relation.
+
+@cindex histogram
+
+The subcommand @subcmd{HISTOGRAM} produces a histogram. Only one variable is allowed for
+the histogram plot.
+For an alternative method to produce histograms @pxref{EXAMINE}. The
+following example produces a histogram plot for the variable @var{weight}.
+
+@example
+GRAPH   
+        /HISTOGRAM = @var{weight}.
+@end example
 
 @node CORRELATIONS
 @section CORRELATIONS
@@ -456,6 +530,7 @@ CROSSTABS
                 ASRESIDUAL,ALL,NONE@}
         /STATISTICS=@{CHISQ,PHI,CC,LAMBDA,UC,BTAU,CTAU,RISK,GAMMA,D,
                      KAPPA,ETA,CORR,ALL,NONE@}
+        /BARCHART
         
 (Integer mode.)
         /VARIABLES=@var{var_list} (@var{low},@var{high})@dots{}
@@ -500,7 +575,7 @@ The @subcmd{FORMAT} subcommand controls the characteristics of the
 crosstabulation tables to be displayed.  It has a number of possible
 settings:
 
-@itemize @asis
+@itemize @w{}
 @item
 @subcmd{TABLES}, the default, causes crosstabulation tables to be output.
 @subcmd{NOTABLES} suppresses them.
@@ -598,24 +673,24 @@ some statistics are calculated only in integer mode.
 @samp{/STATISTICS} without any settings selects CHISQ.  If the
 @subcmd{STATISTICS} subcommand is not given, no statistics are calculated.
 
+@cindex bar chart
+The @samp{/BARCHART} subcommand produces a clustered bar chart for the first two
+variables on each table.
+If a table has more than two variables, the counts for the third and subsequent levels 
+will be aggregated and the chart will be produces as if there were only two variables.  
+
+
 @strong{Please note:} Currently the implementation of @cmd{CROSSTABS} has the
-followings bugs:
+following limitations:
 
 @itemize @bullet
 @item
-Pearson's R (but not Spearman) is off a little.
+Significance of some symmetric and directional measures is not calculated.
 @item
-T values for Spearman's R and Pearson's R are wrong.
+Asymptotic standard error is not calculated for
+Goodman and Kruskal's tau or symmetric Somers' d.
 @item
-Significance of symmetric and directional measures is not calculated.
-@item
-Asymmetric ASEs and T values for lambda are wrong.
-@item
-ASE of Goodman and Kruskal's tau is not calculated.
-@item
-ASE of symmetric somers' d is wrong.
-@item
-Approximate T of uncertainty coefficient is wrong.
+Approximate T is not calculated for symmetric uncertainty coefficient.
 @end itemize
 
 Fixes for any of these deficiencies would be welcomed.
@@ -634,9 +709,11 @@ FACTOR  VARIABLES=@var{var_list}
 
         [ /METHOD = @{CORRELATION, COVARIANCE@} ]
 
+        [ /ANALYSIS=@var{var_list} ]
+
         [ /EXTRACTION=@{PC, PAF@}] 
 
-        [ /ROTATION=@{VARIMAX, EQUAMAX, QUARTIMAX, NOROTATE@}]
+        [ /ROTATION=@{VARIMAX, EQUAMAX, QUARTIMAX, PROMAX[(@var{k})], NOROTATE@}]
 
         [ /PRINT=[INITIAL] [EXTRACTION] [ROTATION] [UNIVARIATE] [CORRELATION] [COVARIANCE] [DET] [KMO] [SIG] [ALL] [DEFAULT] ]
 
@@ -652,7 +729,10 @@ FACTOR  VARIABLES=@var{var_list}
 The @cmd{FACTOR} command performs Factor Analysis or Principal Axis Factoring on a dataset.  It may be used to find
 common factors in the data or for data reduction purposes.
 
-The @subcmd{VARIABLES} subcommand is required.  It lists the variables which are to partake in the analysis.
+The @subcmd{VARIABLES} subcommand is required.  It lists the variables
+which are to partake in the analysis.  (The @subcmd{ANALYSIS}
+subcommand may optionally further limit the variables that
+participate; it is not useful and implemented only for compatibility.)
 
 The @subcmd{/EXTRACTION} subcommand is used to specify the way in which factors (components) are extracted from the data.
 If @subcmd{PC} is specified, then Principal Components Analysis is used.  
@@ -660,9 +740,13 @@ If @subcmd{PAF} is specified, then Principal Axis Factoring is
 used. By default Principal Components Analysis will be used.
 
 The @subcmd{/ROTATION} subcommand is used to specify the method by which the extracted solution will be rotated.
-Three methods are available: @subcmd{VARIMAX} (which is the default), @subcmd{EQUAMAX}, and @subcmd{QUARTIMAX}.
-If don't want any rotation to be performed, the word @subcmd{NOROTATE} will prevent the command from performing any
-rotation on the data. Oblique rotations are not supported.
+Three orthogonal rotation methods are available: 
+@subcmd{VARIMAX} (which is the default), @subcmd{EQUAMAX}, and @subcmd{QUARTIMAX}.
+There is one oblique rotation method, @i{viz}: @subcmd{PROMAX}.
+Optionally you may enter the power of the promax rotation @var{k}, which must be enclosed in parentheses.
+The default value of @var{k} is 5.
+If you don't want any rotation to be performed, the word @subcmd{NOROTATE} will prevent the command from performing any
+rotation on the data. 
 
 The @subcmd{/METHOD} subcommand should be used to determine whether the covariance matrix or the correlation matrix of the data is
 to be analysed.  By default, the correlation matrix is analysed.
@@ -1085,7 +1169,7 @@ outside the  specified range are excluded from the analysis.
 The @subcmd{/EXPECTED} subcommand specifies the expected values of each
 category.  
 There must be exactly one non-zero expected value, for each observed
-category, or the @subcmd{EQUAL} keywork must be specified.
+category, or the @subcmd{EQUAL} keyword must be specified.
 You may use the notation @subcmd{@var{n}*@var{f}} to specify @var{n}
 consecutive expected categories all taking a frequency of @var{f}.
 The frequencies given are proportions, not absolute frequencies.  The
@@ -1336,7 +1420,7 @@ of variable preceding @code{WITH} against variable following
 The @subcmd{/WILCOXON} subcommand tests for differences between medians of the 
 variables listed.
 The test does not make any assumptions about the variances of the samples.
-It does however assume that the distribution is symetrical.
+It does however assume that the distribution is symmetrical.
 
 If the @subcmd{WITH} keyword is omitted, then tests for all
 combinations of the listed variables are performed.
@@ -1500,7 +1584,7 @@ The list of variables must be followed by the @subcmd{BY} keyword and
 the name of the independent (or factor) variable.
 
 You can use the @subcmd{STATISTICS} subcommand to tell @pspp{} to display
-ancilliary information.  The options accepted are:
+ancillary information.  The options accepted are:
 @itemize
 @item DESCRIPTIVES
 Displays descriptive statistics about the groups factored by the independent
@@ -1672,7 +1756,7 @@ RELIABILITY
 @end display
 
 @cindex Cronbach's Alpha
-The @cmd{RELIABILTY} command performs reliability analysis on the data.
+The @cmd{RELIABILITY} command performs reliability analysis on the data.
 
 The @subcmd{VARIABLES} subcommand is required. It determines the set of variables 
 upon which analysis is to be performed.

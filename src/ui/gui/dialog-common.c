@@ -1,5 +1,5 @@
 /* PSPPIRE - a graphical user interface for PSPP.
-   Copyright (C) 2007  Free Software Foundation
+   Copyright (C) 2007, 2014  Free Software Foundation
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -18,10 +18,45 @@
 
 #include <libpspp/i18n.h>
 #include "dialog-common.h"
+#include "dict-display.h"
 
 #include "psppire-var-ptr.h"
 
 #include "helper.h"
+
+/* 
+   If m is not a base TreeModel type (ie, is a filter or sorter) then 
+   convert OP to a TreePath for the base and return it.
+   The return value must be freed by the caller.
+*/
+static GtkTreePath *
+get_base_tree_path (GtkTreeModel *m, GtkTreePath *op)
+{
+  GtkTreePath *p = gtk_tree_path_copy (op);
+  while ( ! PSPPIRE_IS_DICT (m))
+    {
+      GtkTreePath *oldp = p;
+      
+      if (GTK_IS_TREE_MODEL_FILTER (m))
+	{
+	  p = gtk_tree_model_filter_convert_path_to_child_path (GTK_TREE_MODEL_FILTER (m), oldp);
+	  m = gtk_tree_model_filter_get_model (GTK_TREE_MODEL_FILTER (m));
+	}
+      else if (GTK_IS_TREE_MODEL_SORT (m))
+	{
+	  p = gtk_tree_model_sort_convert_path_to_child_path (GTK_TREE_MODEL_SORT (m), oldp);
+	  m = gtk_tree_model_sort_get_model (GTK_TREE_MODEL_SORT (m));
+	}
+      else
+	{
+	  g_error ("Unexpected model type: %s", G_OBJECT_TYPE_NAME (m));
+	}
+      
+      gtk_tree_path_free (oldp);
+    }
+
+  return p;
+}
 
 
 /* Returns FALSE if the variables represented by the union of the rows
@@ -39,17 +74,17 @@ homogeneous_types (GtkWidget *source, GtkWidget *dest)
   GtkTreeIter iter;
   gboolean retval = TRUE;
 
-  GtkTreeModel *model = gtk_tree_view_get_model (GTK_TREE_VIEW (source));
+  GtkTreeModel *top_model = gtk_tree_view_get_model (GTK_TREE_VIEW (source));
+  GtkTreeModel *model;
 
   PsppireDict *dict;
   GtkTreeSelection *selection;
-  enum val_type type = -1;
+  enum val_type type;
   GList *list, *l;
+  bool have_type;
 
-  while (GTK_IS_TREE_MODEL_FILTER (model))
-    {
-      model = gtk_tree_model_filter_get_model (GTK_TREE_MODEL_FILTER (model));
-    }
+
+  get_base_model (top_model, NULL, &model, NULL);
 
   dict = PSPPIRE_DICT (model);
 
@@ -58,29 +93,23 @@ homogeneous_types (GtkWidget *source, GtkWidget *dest)
   list = gtk_tree_selection_get_selected_rows (selection, &model);
 
   /* Iterate through the selection of the source treeview */
+  have_type = false;
   for (l = list; l ; l = l->next)
     {
-      GtkTreePath *path = l->data;
-
-      GtkTreePath *fpath =
-	gtk_tree_model_filter_convert_path_to_child_path (GTK_TREE_MODEL_FILTER (model), path);
-
-      gint *idx = gtk_tree_path_get_indices (fpath);
-
+      GtkTreePath *p = get_base_tree_path (top_model, l->data);
+      gint *idx = gtk_tree_path_get_indices (p);
       const struct variable *v = psppire_dict_get_variable (dict, idx[0]);
 
-      gtk_tree_path_free (fpath);
+      gtk_tree_path_free (p);
 
-      if ( type != -1 )
-	{
-	  if ( var_get_type (v) != type )
-	    {
-	      retval = FALSE;
-	      break;
-	    }
-	}
+      if (have_type && var_get_type (v) != type)
+        {
+          retval = FALSE;
+          break;
+        }
 
       type = var_get_type (v);
+      have_type = true;
     }
 
   g_list_foreach (list, (GFunc) gtk_tree_path_free, NULL);
@@ -99,16 +128,14 @@ homogeneous_types (GtkWidget *source, GtkWidget *dest)
       const struct variable *v;
       gtk_tree_model_get (model, &iter, 0, &v, -1);
 
-      if ( type != -1 )
-	{
-	  if ( var_get_type (v) != type )
-	    {
-	      retval = FALSE;
-	      break;
-	    }
-	}
+      if ( have_type && var_get_type (v) != type )
+        {
+          retval = FALSE;
+          break;
+        }
 
       type = var_get_type (v);
+      have_type = true;
     }
 
   return retval;
@@ -122,35 +149,28 @@ numeric_only (GtkWidget *source, GtkWidget *dest)
 {
   gboolean retval = TRUE;
 
-  GtkTreeModel *model = gtk_tree_view_get_model (GTK_TREE_VIEW (source));
+  GtkTreeModel *top_model = gtk_tree_view_get_model (GTK_TREE_VIEW (source));
+  GtkTreeModel *model = NULL;
 
   PsppireDict *dict;
   GtkTreeSelection *selection;
   GList *list, *l;
 
-  while (GTK_IS_TREE_MODEL_FILTER (model))
-    {
-      model = gtk_tree_model_filter_get_model (GTK_TREE_MODEL_FILTER (model));
-    }
+  get_base_model (top_model, NULL, &model, NULL);
 
   dict = PSPPIRE_DICT (model);
 
   selection = gtk_tree_view_get_selection (GTK_TREE_VIEW (source));
 
-  list = gtk_tree_selection_get_selected_rows (selection, &model);
+  list = gtk_tree_selection_get_selected_rows (selection, &top_model);
 
   /* Iterate through the selection of the source treeview */
   for (l = list; l ; l = l->next)
     {
-      GtkTreePath *path = l->data;
-      GtkTreePath *fpath = gtk_tree_model_filter_convert_path_to_child_path
-	(GTK_TREE_MODEL_FILTER (model), path);
-
-      gint *idx = gtk_tree_path_get_indices (fpath);
-
+      GtkTreePath *p = get_base_tree_path (top_model, l->data);
+      gint *idx = gtk_tree_path_get_indices (p);
       const struct variable *v = psppire_dict_get_variable (dict, idx[0]);
-
-      gtk_tree_path_free (fpath);
+      gtk_tree_path_free (p);
 
       if ( var_is_alpha (v))
 	{

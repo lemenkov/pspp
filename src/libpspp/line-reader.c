@@ -1,5 +1,5 @@
 /* PSPP - a program for statistical analysis.
-   Copyright (C) 2010, 2011 Free Software Foundation, Inc.
+   Copyright (C) 2010, 2011, 2014 Free Software Foundation, Inc.
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -125,7 +125,7 @@ line_reader_for_fd (const char *encoding, int fd)
       && !strcmp (r->encoding, "ASCII"))
     {
       r->state = S_AUTO;
-      r->auto_encoding = xstrdup (encoding);
+      r->auto_encoding = encoding ? xstrdup (encoding) : NULL;
     }
   else
     r->state = r->encoding_info.unit == 1 ? S_UNIBYTE : S_MULTIBYTE;
@@ -311,9 +311,9 @@ off_t
 line_reader_tell (const struct line_reader *r)
 {
   off_t pos = lseek (r->fd, 0, SEEK_CUR);
-  if (pos >= 0)
-    pos = MAX (0, pos - r->length);
-  return pos;
+  return (pos < 0 ? pos
+          : pos >= r->length ? pos - r->length
+          : 0);
 }
 
 /* Returns true if end of file has been encountered reading R. */

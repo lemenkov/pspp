@@ -175,15 +175,9 @@ sub run_pspp_syntax_cmp
 	DISPLAY DOCUMENTS.
 	LIST.
 SYNTAX
-Variable,Description,,Position
-id,Format: F2.0,,1
-,Measure: Scale,,
-,Display Alignment: Right,,
-,Display Width: 8,,
-name,Format: A20,,2
-,Measure: Nominal,,
-,Display Alignment: Left,,
-,Display Width: 20,,
+Variable,Description,Position
+id,Format: F2.0,1
+name,Format: A20,2
 
 File label: This is the file label
 
@@ -249,30 +243,27 @@ RESULT
 GET FILE='$tempfile'.
 DISPLAY DICTIONARY.
 SYNTAX
-Variable,Description,,Position
-integer,My Integer,,1
-,Format: F8.0,,
-,Measure: Scale,,
-,Display Alignment: Right,,
-,Display Width: 8,,
-,Missing Values: 9; 99,,
-,0,Zero,
-,1,Unity,
-,2,Duality,
-string,My String,,2
-,Format: A8,,
-,Measure: Nominal,,
-,Display Alignment: Left,,
-,Display Width: 8,,
-,"Missing Values: ""this    ""; ""that    """,,
-,xx      ,foo,
-,yy      ,bar,
-longstring,My Long String,,3
-,Format: A9,,
-,Measure: Nominal,,
-,Display Alignment: Left,,
-,Display Width: 9,,
-,xxx      ,xfoo,
+Variable,Description,Position
+integer,"Label: My Integer
+Format: F8.0
+Missing Values: 9; 99
+
+Value,Label
+0,Zero
+1,Unity
+2,Duality",1
+string,"Label: My String
+Format: A8
+Missing Values: ""this    ""; ""that    ""
+
+Value,Label
+xx      ,foo
+yy      ,bar",2
+longstring,"Label: My Long String
+Format: A9
+
+Value,Label
+xxx      ,xfoo",3
 RESULT
 
   }
@@ -374,7 +365,7 @@ RESULT
     my $vl = $var->get_value_labels ();
 
     print MYFILE "Value Labels:\n";
-    print MYFILE "$_ => $vl->{$_}\n" for keys %$vl;
+    print MYFILE "$_ => $vl->{$_}\n" for (sort keys %$vl);
  }
 
  while (my @c = $sf->get_next_case () )
@@ -391,16 +382,16 @@ RESULT
 ok (compare ("$tempdir/out.txt", <<EOF), "Basic reader operation");
 Variable 0 is "string", label is "A Short String Variable"
 Value Labels:
-3333     => threes
 1111     => ones
 2222     => twos
+3333     => threes
 Variable 1 is "longstring", label is "A Long String Variable"
 Value Labels:
 Variable 2 is "numeric", label is "A Numeric Variable"
 Value Labels:
 1 => Unity
-3 => Thripality
 2 => Duality
+3 => Thripality
 Variable 3 is "date", label is "A Date Variable"
 Value Labels:
 Variable 4 is "dollar", label is "A Dollar Variable"
@@ -531,7 +522,7 @@ SYNTAX
 
   ok ( !ref $sf, "Returns undef on opening failure");
 
-  ok ("$PSPP::errstr" eq "Error opening `$tempdir/no-such-file.sav' for reading as a system file: No such file or directory.",
+  ok ("$PSPP::errstr" eq "An error occurred while opening `$tempdir/no-such-file.sav': No such file or directory.",
       "Error string on open failure");
 }
 

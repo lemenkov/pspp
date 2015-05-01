@@ -1,5 +1,5 @@
 /* PSPP - a program for statistical analysis.
-   Copyright (C) 1997-9, 2000, 2009, 2010, 2011, 2012 Free Software Foundation, Inc.
+   Copyright (C) 1997-9, 2000, 2009, 2010, 2011, 2012, 2014 Free Software Foundation, Inc.
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -53,9 +53,9 @@ cmd_apply_dictionary (struct lexer *lexer, struct dataset *ds)
   handle = fh_parse (lexer, FH_REF_FILE, dataset_session (ds));
   if (!handle)
     return CMD_FAILURE;
-  reader = any_reader_open (handle, NULL, &dict);
+  reader = any_reader_open_and_decode (handle, NULL, &dict, NULL);
   fh_unref (handle);
-  if (dict == NULL)
+  if (!reader)
     return CMD_FAILURE;
 
   casereader_destroy (reader);
@@ -80,7 +80,7 @@ cmd_apply_dictionary (struct lexer *lexer, struct dataset *ds)
 	}
 
       if (var_has_label (s))
-        var_set_label (t, var_get_label (s), false);
+        var_set_label (t, var_get_label (s));
 
       if (var_has_value_labels (s))
         {

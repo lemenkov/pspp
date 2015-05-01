@@ -9,6 +9,7 @@ check_PROGRAMS += \
 	tests/language/lexer/segment-test \
 	tests/libpspp/abt-test \
 	tests/libpspp/bt-test \
+	tests/libpspp/cmac-aes256-test \
 	tests/libpspp/encoding-guesser-test \
 	tests/libpspp/heap-test \
 	tests/libpspp/hmap-test \
@@ -30,7 +31,12 @@ check_PROGRAMS += \
 	tests/libpspp/tower-test \
 	tests/libpspp/u8-istream-test \
 	tests/libpspp/zip-test \
-	tests/output/render-test
+	tests/math/chart-geometry-test \
+	tests/math/chart-get-scale-test \
+	tests/math/decimal-test \
+	tests/output/render-test \
+	tests/ui/syntax-gen-test
+
 
 check-programs: $(check_PROGRAMS)
 
@@ -92,6 +98,11 @@ tests_libpspp_bt_test_SOURCES = \
 	src/libpspp/bt.c \
 	tests/libpspp/bt-test.c
 tests_libpspp_bt_test_CPPFLAGS = $(AM_CPPFLAGS) -DASSERT_LEVEL=10
+
+tests_libpspp_cmac_aes256_test_SOURCES = \
+	src/libpspp/cmac-aes256.c \
+	tests/libpspp/cmac-aes256-test.c
+tests_libpspp_cmac_aes256_test_CPPFLAGS = $(AM_CPPFLAGS) -DASSERT_LEVEL=10
 
 tests_libpspp_range_map_test_SOURCES = \
 	src/libpspp/bt.c \
@@ -201,6 +212,32 @@ tests_libpspp_zip_test_LDADD = \
 	src/libpspp-core.la \
 	gl/libgl.la 
 
+check_PROGRAMS += tests/math/chart-geometry-test
+tests_math_chart_geometry_test_SOURCES = tests/math/chart-geometry-test.c
+tests_math_chart_geometry_test_LDADD = \
+	src/math/libpspp-math.la \
+	src/libpspp/liblibpspp.la \
+	src/libpspp-core.la \
+	gl/libgl.la 
+
+check_PROGRAMS += tests/math/chart-get-scale-test
+tests_math_chart_get_scale_test_SOURCES = tests/math/chart-get-scale-test.c
+tests_math_chart_get_scale_test_LDADD = \
+	src/math/libpspp-math.la \
+	src/libpspp/liblibpspp.la \
+	src/libpspp-core.la \
+	gl/libgl.la 
+
+
+check_PROGRAMS += tests/math/decimal-test
+tests_math_decimal_test_SOURCES = tests/math/decimal-test.c
+tests_math_decimal_test_LDADD = \
+	src/math/libpspp-math.la \
+	src/libpspp/liblibpspp.la \
+	src/libpspp-core.la \
+	gl/libgl.la 
+
+
 check_PROGRAMS += tests/output/render-test
 tests_output_render_test_SOURCES = tests/output/render-test.c
 tests_output_render_test_LDADD = \
@@ -208,23 +245,33 @@ tests_output_render_test_LDADD = \
 	src/libpspp-core.la \
 	$(CAIRO_LIBS)
 
+
+check_PROGRAMS += tests/ui/syntax-gen-test
+tests_ui_syntax_gen_test_SOURCES = tests/ui/syntax-gen-test.c
+tests_ui_syntax_gen_test_LDADD = \
+	src/ui/libuicommon.la \
+	src/libpspp-core.la \
+	$(CAIRO_LIBS)
+
+
 EXTRA_DIST += \
 	tests/coverage.sh \
 	tests/data/bcd-in.expected.cmp.gz \
 	tests/data/binhex-in.expected.cmp.gz \
 	tests/data/binhex-out.expected.gz \
+	tests/data/hotel-encrypted.sav \
 	tests/data/legacy-in.expected.cmp.gz \
 	tests/data/num-in.expected.gz \
 	tests/data/num-out-cmp.pl \
 	tests/data/num-out.expected.cmp.gz \
 	tests/data/v13.sav \
 	tests/data/v14.sav \
-        tests/language/data-io/Book1.gnm.unzipped \
-        tests/language/data-io/test.ods
+	tests/language/data-io/Book1.gnm.unzipped \
+	tests/language/data-io/test.ods \
+	tests/language/data-io/newone.ods \
+	tests/language/stats/llz.zsav
 
 CLEANFILES += *.save pspp.* foo*
-
-EXTRA_DIST += tests/OChangeLog
 
 # Autotest testsuite
 
@@ -243,9 +290,11 @@ TESTSUITE_AT = \
 	tests/data/datasheet-test.at \
 	tests/data/dictionary.at \
 	tests/data/format-guesser.at \
+	tests/data/pc+-file-reader.at \
 	tests/data/por-file.at \
 	tests/data/sys-file-reader.at \
 	tests/data/sys-file.at \
+	tests/data/sys-file-encryption.at \
 	tests/language/command.at \
 	tests/language/control/do-if.at \
 	tests/language/control/do-repeat.at \
@@ -294,6 +343,7 @@ TESTSUITE_AT = \
 	tests/language/stats/crosstabs.at \
 	tests/language/stats/descriptives.at \
 	tests/language/stats/examine.at \
+	tests/language/stats/graph.at \
 	tests/language/stats/factor.at \
 	tests/language/stats/flip.at \
 	tests/language/stats/frequencies.at \
@@ -346,6 +396,8 @@ TESTSUITE_AT = \
 	tests/libpspp/tower.at \
 	tests/libpspp/u8-istream.at \
 	tests/libpspp/zip.at \
+	tests/math/chart-geometry.at \
+	tests/math/decimal.at \
 	tests/math/moments.at \
 	tests/math/randist.at \
 	tests/output/ascii.at \
@@ -353,16 +405,18 @@ TESTSUITE_AT = \
 	tests/output/output.at \
 	tests/output/paper-size.at \
 	tests/output/render.at \
+	tests/output/tables.at \
 	tests/ui/terminal/main.at \
+	tests/ui/syntax-gen.at \
 	tests/perl-module.at
 
 TESTSUITE = $(srcdir)/tests/testsuite
 DISTCLEANFILES += tests/atconfig tests/atlocal $(TESTSUITE)
-AUTOTEST_PATH = tests/data:tests/language/lexer:tests/libpspp:tests/output:src/ui/terminal
+AUTOTEST_PATH = tests/data:tests/language/lexer:tests/libpspp:tests/output:src/ui/terminal:utilities
 
 $(srcdir)/tests/testsuite.at: tests/testsuite.in tests/automake.mk
-	cp $< $@
-	for t in $(TESTSUITE_AT); do \
+	$(AM_V_GEN)cp $< $@
+	$(AM_V_at)for t in $(TESTSUITE_AT); do \
 	  echo "m4_include([$$t])" >> $@ ;\
 	done
 EXTRA_DIST += tests/testsuite.at
@@ -378,12 +432,12 @@ tests_clean:
 AUTOM4TE = $(SHELL) $(srcdir)/build-aux/missing --run autom4te
 AUTOTEST = $(AUTOM4TE) --language=autotest
 $(TESTSUITE): package.m4 $(srcdir)/tests/testsuite.at $(TESTSUITE_AT) 
-	$(AUTOTEST) -I '$(srcdir)' $@.at | sed 's/@<00A0>@/ /g' > $@.tmp
-	mv $@.tmp $@
+	$(AM_V_GEN)$(AUTOTEST) -I '$(srcdir)' $@.at | sed 's/@<00A0>@/ /g' > $@.tmp
+	$(AM_V_at)mv $@.tmp $@
 
 # The `:;' works around a Bash 3.2 bug when the output is not writeable.
 $(srcdir)/package.m4: $(top_srcdir)/configure.ac
-	:;{ \
+	$(AM_V_GEN):;{ \
 	  echo '# Signature of the current package.' && \
 	  echo 'm4_define([AT_PACKAGE_NAME],      [$(PACKAGE_NAME)])' && \
 	  echo 'm4_define([AT_PACKAGE_TARNAME],   [$(PACKAGE_TARNAME)])' && \
@@ -422,14 +476,15 @@ valgrind_wrappers = \
 	tests/valgrind/tower-test \
 	tests/valgrind/u8-istream-test \
 	tests/valgrind/render-test \
+	tests/valgrind/pspp-convert \
 	tests/valgrind/pspp
 
 $(valgrind_wrappers): tests/valgrind-wrapper.in
 	@$(MKDIR_P) tests/valgrind
-	sed -e 's,[@]wrap_program[@],$@,' \
+	$(AM_V_GEN)sed -e 's,[@]wrap_program[@],$@,' \
 		$(top_srcdir)/tests/valgrind-wrapper.in > $@.tmp
-	chmod +x $@.tmp
-	mv $@.tmp $@
+	$(AM_V_at)chmod +x $@.tmp
+	$(AM_V_at)mv $@.tmp $@
 CLEANFILES += $(valgrind_wrappers)
 EXTRA_DIST += tests/valgrind-wrapper.in
 

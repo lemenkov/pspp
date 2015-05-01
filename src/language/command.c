@@ -1,5 +1,5 @@
 /* PSPP - a program for statistical analysis.
-   Copyright (C) 1997-9, 2000, 2009, 2010, 2011, 2012, 2013 Free Software Foundation, Inc.
+   Copyright (C) 1997-9, 2000, 2009, 2010, 2011, 2012, 2013, 2014 Free Software Foundation, Inc.
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -242,8 +242,9 @@ finish:
     result = lex_end_of_command (lexer);
 
   lex_discard_rest_of_command (lexer);
-  while (lex_token (lexer) == T_ENDCMD)
-    lex_get (lexer);
+  if (result != CMD_EOF && result != CMD_FINISH)
+    while (lex_token (lexer) == T_ENDCMD)
+      lex_get (lexer);
 
   if (opened)
     text_item_submit (text_item_create (TEXT_ITEM_COMMAND_CLOSE,
@@ -385,11 +386,11 @@ report_state_mismatch (const struct command *command, enum cmd_state state)
                      "been defined."), command->name);
           break;
         case S_INPUT_PROGRAM:
-          msg (SE, _("%s is allowed only inside INPUT PROGRAM."),
-               command->name);
+          msg (SE, _("%s is allowed only inside %s."),
+               command->name, "INPUT PROGRAM");
           break;
         case S_FILE_TYPE:
-          msg (SE, _("%s is allowed only inside FILE TYPE."), command->name);
+          msg (SE, _("%s is allowed only inside %s."), command->name, "FILE TYPE");
           break;
 
           /* Two allowed states. */
@@ -412,7 +413,8 @@ report_state_mismatch (const struct command *command, enum cmd_state state)
 	       command->name, "FILE TYPE");
           break;
         case S_INPUT_PROGRAM | S_FILE_TYPE:
-          msg (SE, _("%s is allowed only inside INPUT PROGRAM or inside FILE TYPE."), command->name);
+          msg (SE, _("%s is allowed only inside %s or inside %s."), command->name, 
+	       "INPUT PROGRAM", "FILE TYPE");
           break;
 
           /* Three allowed states. */
@@ -525,7 +527,7 @@ cmd_erase (struct lexer *lexer, struct dataset *ds UNUSED)
 
   if (settings_get_safer_mode ())
     {
-      msg (SE, _("This command not allowed when the SAFER option is set."));
+      msg (SE, _("This command not allowed when the %s option is set."), "SAFER");
       return CMD_FAILURE;
     }
 

@@ -1,5 +1,5 @@
 /* PSPP - a program for statistical analysis.
-   Copyright (C) 2007, 2008, 2009, 2010, 2011, 2012, 2013 Free Software Foundation, Inc.
+   Copyright (C) 2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014 Free Software Foundation, Inc.
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -18,6 +18,7 @@
 
 #include <ctype.h>
 #include <errno.h>
+#include <float.h>
 #include <getopt.h>
 #include <inttypes.h>
 #include <limits.h>
@@ -332,7 +333,7 @@ read_header (struct sfm_reader *r)
           : "<error>");
   printf ("\t%17s: %"PRId32"\n", "Weight index", weight_index);
   printf ("\t%17s: %"PRId32"\n", "Number of cases", ncases);
-  printf ("\t%17s: %g\n", "Compression bias", r->bias);
+  printf ("\t%17s: %.*g\n", "Compression bias", DBL_DIG + 1, r->bias);
   printf ("\t%17s: %s\n", "Creation date", creation_date);
   printf ("\t%17s: %s\n", "Creation time", creation_time);
   printf ("\t%17s: \"%s\"\n", "File label", file_label);
@@ -443,18 +444,16 @@ read_variable_record (struct sfm_reader *r)
   if (has_variable_label == 1)
     {
       long long int offset = ftello (r->file);
-      size_t len, read_len;
-      char label[255 + 1];
+      size_t len;
+      char *label;
 
       len = read_int (r);
 
       /* Read up to 255 bytes of label. */
-      read_len = MIN (sizeof label - 1, len);
-      read_string (r, label, read_len + 1);
+      label = xmalloc (len + 1);
+      read_string (r, label, len + 1);
       printf("\t%08llx Variable label: \"%s\"\n", offset, label);
-
-      /* Skip unread label bytes. */
-      skip_bytes (r, len - read_len);
+      free (label);
 
       /* Skip label padding up to multiple of 4 bytes. */
       skip_bytes (r, ROUND_UP (len, 4) - len);
@@ -476,11 +475,11 @@ read_variable_record (struct sfm_reader *r)
             {
               double low = read_float (r);
               double high = read_float (r);
-              printf (" %g...%g", low, high);
+              printf (" %.*g...%.*g", DBL_DIG + 1, low, DBL_DIG + 1, high);
               missing_value_code = -missing_value_code - 2;
             }
           for (i = 0; i < missing_value_code; i++)
-            printf (" %g", read_float (r));
+            printf (" %.*g", DBL_DIG + 1, read_float (r));
         }
       else if (width > 0)
         {
@@ -509,7 +508,7 @@ print_untyped_value (struct sfm_reader *r, char raw_value[8])
     if (!isprint (raw_value[n_printable]))
       break;
 
-  printf ("%g/\"%.*s\"", value, n_printable, raw_value);
+  printf ("%.*g/\"%.*s\"", DBL_DIG + 1, value, n_printable, raw_value);
 }
 
 /* Reads value labels from sysfile R and inserts them into the
@@ -604,12 +603,6 @@ read_extension_record (struct sfm_reader *r)
     case 4:
       read_machine_float_info (r, size, count);
       return;
-
-    case 5:
-      /* Variable sets information.  We don't use these yet.
-         They only apply to GUIs; see VARSETS on the APPLY
-         DICTIONARY command in SPSS documentation. */
-      break;
 
     case 6:
       /* DATE variable information.  We don't use it yet, but we
@@ -718,20 +711,20 @@ read_machine_float_info (struct sfm_reader *r, size_t size, size_t count)
     sys_error (r, "Bad size (%zu) or count (%zu) on extension 4.",
                size, count);
 
-  printf ("\tsysmis: %g (%a)\n", sysmis, sysmis);
+  printf ("\tsysmis: %.*g (%a)\n", DBL_DIG + 1, sysmis, sysmis);
   if (sysmis != SYSMIS)
-    sys_warn (r, "File specifies unexpected value %g (%a) as %s.",
-              sysmis, sysmis, "SYSMIS");
+    sys_warn (r, "File specifies unexpected value %.*g (%a) as %s.",
+              DBL_DIG + 1, sysmis, sysmis, "SYSMIS");
 
-  printf ("\thighest: %g (%a)\n", highest, highest);
+  printf ("\thighest: %.*g (%a)\n", DBL_DIG + 1, highest, highest);
   if (highest != HIGHEST)
-    sys_warn (r, "File specifies unexpected value %g (%a) as %s.",
-              highest, highest, "HIGHEST");
+    sys_warn (r, "File specifies unexpected value %.*g (%a) as %s.",
+              DBL_DIG + 1, highest, highest, "HIGHEST");
 
-  printf ("\tlowest: %g (%a)\n", lowest, lowest);
+  printf ("\tlowest: %.*g (%a)\n", DBL_DIG + 1, lowest, lowest);
   if (lowest != LOWEST && lowest != SYSMIS)
-    sys_warn (r, "File specifies unexpected value %g (%a) as %s.",
-              lowest, lowest, "LOWEST");
+    sys_warn (r, "File specifies unexpected value %.*g (%a) as %s.",
+              DBL_DIG + 1, lowest, lowest, "LOWEST");
 }
 
 static void
@@ -766,6 +759,9 @@ read_mrsets (struct sfm_reader *r, size_t size, size_t count)
       const char *counted;
       const char *label;
       const char *variables;
+
+      while (text_match (text, '\n'))
+        continue;
 
       name = text_tokenize (text, '=');
       if (name == NULL)
@@ -828,12 +824,6 @@ read_mrsets (struct sfm_reader *r, size_t size, size_t count)
         break;
 
       variables = text_tokenize (text, '\n');
-      if (variables == NULL)
-        {
-          sys_warn (r, "missing variable names following label "
-                    "at offset %zu in mrsets record", text_pos (text));
-          break;
-        }
 
       printf ("\t\"%s\": multiple %s set",
               name, type == MRSET_MC ? "category" : "dichotomy");
@@ -845,7 +835,10 @@ read_mrsets (struct sfm_reader *r, size_t size, size_t count)
         printf (", label \"%s\"", label);
       if (label_from_var_label)
         printf (", label from variable label");
-      printf(", variables \"%s\"\n", variables);
+      if (variables != NULL)
+        printf(", variables \"%s\"\n", variables);
+      else
+        printf(", no variables\n");
     }
   close_text_record (text);
 }
@@ -1254,7 +1247,7 @@ read_simple_compressed_data (struct sfm_reader *r, int max_cases)
           switch (opcode)
             {
             default:
-              printf ("%g", opcode - r->bias);
+              printf ("%.*g", DBL_DIG + 1, opcode - r->bias);
               if (width != 0)
                 printf (", but this is a string variable (width=%d)", width);
               printf ("\n");

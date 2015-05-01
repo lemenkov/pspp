@@ -59,6 +59,7 @@ replace_file_start (const char *file_name, const char *mode,
   struct stat s;
   struct replace_file *rf;
   int fd;
+  int saved_errno = errno;
 
   /* If FILE_NAME represents a special file, write to it directly
      instead of trying to replace it. */
@@ -68,8 +69,9 @@ replace_file_start (const char *file_name, const char *mode,
       fd = open (file_name, O_WRONLY);
       if (fd < 0)
         {
+	  saved_errno = errno;     
           msg (ME, _("Opening %s for writing: %s."),
-               file_name, strerror (errno));
+               file_name, strerror (saved_errno));
           return NULL;
         }
 
@@ -77,8 +79,9 @@ replace_file_start (const char *file_name, const char *mode,
       *fp = fdopen (fd, mode);
       if (*fp == NULL)
         {
-          msg (ME, _("Opening stream for %s: %s."),
-               file_name, strerror (errno));
+	  saved_errno = errno;     
+	  msg (ME, _("Opening stream for %s: %s."),
+               file_name, strerror (saved_errno));
           close (fd);
           return NULL;
         }
@@ -106,8 +109,9 @@ replace_file_start (const char *file_name, const char *mode,
       rf->tmp_name = xasprintf ("%s.tmpXXXXXX", file_name);
       if (gen_tempname (rf->tmp_name, 0, 0600, GT_NOCREATE) < 0)
         {
+	  saved_errno = errno;
           msg (ME, _("Creating temporary file to replace %s: %s."),
-               rf->file_name, strerror (errno));
+               rf->file_name, strerror (saved_errno));
           goto error;
         }
 
@@ -117,8 +121,9 @@ replace_file_start (const char *file_name, const char *mode,
         break;
       if (errno != EEXIST)
         {
+	  saved_errno = errno;
           msg (ME, _("Creating temporary file %s: %s."),
-               rf->tmp_name, strerror (errno));
+               rf->tmp_name, strerror (saved_errno));
           goto error;
         }
       free (rf->tmp_name);
@@ -129,8 +134,9 @@ replace_file_start (const char *file_name, const char *mode,
   *fp = fdopen (fd, mode);
   if (*fp == NULL)
     {
+      saved_errno = errno;
       msg (ME, _("Opening stream for temporary file %s: %s."),
-           rf->tmp_name, strerror (errno));
+           rf->tmp_name, strerror (saved_errno));
       close (fd);
       unlink (rf->tmp_name);
       goto error;
@@ -151,6 +157,7 @@ error:
   *fp = NULL;
   if (tmp_name != NULL)
     *tmp_name = NULL;
+  errno = saved_errno;
   return NULL;
 }
 

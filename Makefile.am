@@ -11,6 +11,8 @@ AM_CPPFLAGS = \
 	-I$(top_builddir)/gl \
 	-DINSTALLDIR=\"$(bindir)\"
 
+AM_V_P ?= :
+
 AM_CFLAGS=
 
 if cc_is_gcc
@@ -20,7 +22,7 @@ endif
 
 .q.c:
 	@$(MKDIR_P) `dirname $@`
-	./src/language/lexer/q2c$(EXEEXT_FOR_BUILD) $< $@
+	$(AM_V_GEN)./src/language/lexer/q2c$(EXEEXT_FOR_BUILD) $< $@
 
 $(all_q_sources:.q=.c): src/language/lexer/q2c$(EXEEXT_FOR_BUILD)
 all_q_sources =
@@ -28,7 +30,7 @@ all_q_sources =
 pkgsysconfdir = $(sysconfdir)/$(PACKAGE)
 
 
-EXTRA_DIST = OChangeLog ONEWS pspp-mode.el
+EXTRA_DIST = ONEWS pspp-mode.el
 
 CLEANFILES = 
 CLEAN_LOCAL =
@@ -48,6 +50,12 @@ PHONY =
 SUFFIXES = .q
 LDADD = gl/libgl.la
 
+# This ensures that files added to EXTRA_DIST are always distributed,
+# even if they are inside an Automake if...endif conditional block that is
+# disabled by some particular "configure" run.  For more information, see:
+# http://article.gmane.org/gmane.comp.sysutils.automake.general/10891
+noinst_HEADERS = $(EXTRA_DIST)
+
 generate-changelog:
 	if test -d $(top_srcdir)/.git; then			\
 	  $(top_srcdir)/build-aux/gitlog-to-changelog --since=2008-07-27	\
@@ -66,7 +74,6 @@ include $(top_srcdir)/doc/automake.mk
 include $(top_srcdir)/examples/automake.mk
 include $(top_srcdir)/src/automake.mk
 include $(top_srcdir)/utilities/automake.mk
-
 include $(top_srcdir)/tests/automake.mk
 
 if WITH_GUI_TOOLS
@@ -93,3 +100,40 @@ check-local: $(CHECK_LOCAL)
 
 # A convenience target to build all the binaries
 programs: $(PROGRAMS)
+
+# The following rules are from Open vSwitch.  The original copyright notice
+# and license are:
+#
+# Copyright (C) 2007, 2008, 2009, 2010, 2011, 2012, 2013 Nicira, Inc.
+#
+# Copying and distribution of this file, with or without modification,
+# are permitted in any medium without royalty provided the copyright
+# notice and this notice are preserved.  This file is offered as-is,
+# without warranty of any kind.
+
+# If we're checked out from a Git repository, make sure that every
+# file that is in Git is distributed.
+ALL_LOCAL += dist-hook-git
+dist-hook-git: distfiles
+	@if test -e $(srcdir)/.git && (git --version) >/dev/null 2>&1; then \
+	  (cd $(srcdir) && git ls-files)				    \
+	    | grep -vE '\.gitignore|README.Git|Smake'			    \
+	    | LC_ALL=C sort -u > gitfiles;				    \
+	  LC_ALL=C comm -1 -3 distfiles gitfiles > missing-distfiles;	    \
+	  if test -s missing-distfiles; then				    \
+	    echo "The distribution is missing the following files:";	    \
+	    cat missing-distfiles;					    \
+	    exit 1;							    \
+	  fi;								    \
+	fi
+# The following is based on commands for the Automake "distdir" target.
+distfiles: Makefile
+	@srcdirstrip=`echo "$(srcdir)" | sed 's/[].[^$$\\*]/\\\\&/g'`; \
+	topsrcdirstrip=`echo "$(top_srcdir)" | sed 's/[].[^$$\\*]/\\\\&/g'`; \
+	list='$(DISTFILES)'; \
+	for file in $$list; do echo $$file; done | \
+	  sed -e "s|^$$srcdirstrip/||;t" \
+	      -e "s|^$$topsrcdirstrip/|$(top_builddir)/|;t" \
+	  | LC_ALL=C sort -u > $@
+CLEANFILES += distfiles gitfiles missing-distfiles
+.PHONY: dist-hook-git

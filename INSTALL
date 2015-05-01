@@ -2,7 +2,8 @@ Installation Instructions for GNU pspp
 **************************************
 
 These instructions are based on the generic GNU installation
-instructions, but they have been tailored for PSPP.
+instructions, but they have been tailored for PSPP.  These instructions
+apply only to people wishing to build and install PSPP from source. 
 
 Overview
 ========
@@ -22,6 +23,8 @@ the tarball you are installing.
 In 99% of cases, that is all you have to do - FINISHED! 
 
 
+
+
 If any part of the above process fails, then it is
 likely that one or more of the necessary prerequisites is missing
 from your system.  The following paragraphs contain highly detailed
@@ -33,7 +36,11 @@ Before You Install
 
 Before you install PSPP, you will need to install certain prerequisite
 packages.  You may also want to install other packages that enable
-additional functionality in PSPP.
+additional functionality in PSPP.  Please note, if you are installing
+any of the libararies mentioned below using pre-prepared binary
+packages provided by popular GNU/Linux vendors, you may need to ensure
+that you install the "development" versions (normally postfixed with
+-dev or -devel).
 
 If you do not know whether you have these installed already, you may
 proceed to "Basic Installation", below.  The PSPP configuration
@@ -48,7 +55,7 @@ The following packages are required to install PSPP:
       MinGW (http://www.mingw.org/) are known to work.
 
     * The GNU Scientific Library (http://www.gnu.org/software/gsl/),
-      version 1.8 or later, including libgslcblas included with GSL.
+      version 1.13 or later, including libgslcblas included with GSL.
 
     * Perl (http://www.perl.org/), version 5.005_03 or later.  Perl is
       required during build but not after installation.
@@ -57,7 +64,7 @@ The following packages are required to install PSPP:
       If you don't have a version already, you can install GNU
       libiconv (http://www.gnu.org/software/libiconv/).
 
-    * libintl, from GNU gettext (http://ww.gnu.org/software/gettext).
+    * libintl, from GNU gettext (http://www.gnu.org/software/gettext).
       GNU libc includes an integrated libintl, so there is no need to
       separately install libintl on a GNU/Linux system.
 
@@ -211,7 +218,7 @@ details on some of the pertinent environment variables.
 by setting variables in the command line or in the environment.  Here
 is an example:
 
-     ./configure CC=c89 CFLAGS=-O2 LIBS=-lposix
+     ./configure CC=c89 CFLAGS=-O0 LIBS=-lposix
 
 To cross-compile PSPP, you will likely need to set the
 PKG_CONFIG_LIBDIR environment variable to point to an

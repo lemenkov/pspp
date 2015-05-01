@@ -19,7 +19,7 @@ GNULIB_MODULES = \
 	count-one-bits \
 	crc \
 	crypto/md4 \
-	crypto/md5 \
+	crypto/rijndael \
 	dirname \
 	dtoastr \
 	environ \
@@ -33,6 +33,7 @@ GNULIB_MODULES = \
         ftello \
 	fwriteerror \
 	getline \
+	getpass \
 	gettext \
 	gettimeofday \
         getopt-gnu \
@@ -75,6 +76,7 @@ GNULIB_MODULES = \
 	stpcpy \
 	strerror \
 	strftime \
+	strsep \
 	strtod \
 	strtok_r \
 	sys_stat \
@@ -301,39 +303,11 @@ all: prep_ph  icons
 icons: $(ICONS) src/ui/gui/icons/icon-names.c
 
 src/ui/gui/icons/icon-names.c: $(MAKEFILE_LIST)
-	$(RM) $@
+	$(RM) -f $@
 	printf '/* This is a generated file. Do not edit. */\n' >> $@
-	printf '#include "icon-names.h"\n' >> $@
-	echo >> $@
-	printf 'static const char *action_icon_name[] =' >> $@
-	printf '\n{\n' >> $@
-	for i in $(ACTION_ICONS) ; do \
-	 echo $$i; \
-	done | sed -e 's%[a-zA-Z/]*/[1-9]*x[1-9]*/\([^ ]*\)\.png%\1%g' | sort -u | while read f ; do \
-	 printf '  "%s", \n' $$f >> $@ ; \
-	done ; \
-	printf '};\n\n' >> $@ ; \
-	printf 'const struct icon_context action_icon_context = {\n' >> $@
-	printf '  action_icon_name,\n' >> $@
-	printf "  sizeof (action_icon_name) / sizeof (action_icon_name[0]),\n" >> $@ 
-	printf "  \"actions\"\n" >> $@
-	printf '};\n' >> $@ ; \
-	echo >> $@
-	printf 'static const char *category_icon_name[] =' >> $@
-	printf '\n{\n' >> $@
-	for i in $(CATEGORY_ICONS) ; do \
-	 echo $$i; \
-	done | sed -e 's%[a-zA-Z/]*/[1-9]*x[1-9]*/\([^ ]*\)\.png%\1%g' | sort -u | while read f ; do \
-	 printf '  "%s", \n' $$f >> $@ ; \
-	done ; \
-	printf '};\n\n' >> $@ ; \
-	printf 'const struct icon_context category_icon_context = {\n' >> $@
-	printf '  category_icon_name,\n' >> $@
-	printf "  sizeof (category_icon_name) / sizeof (category_icon_name[0]),\n" >> $@ 
-	printf "  \"categories\"\n" >> $@
-	printf '};\n' >> $@ ; \
-	echo >> $@
-
+	printf '#include "icon-names.h"\n\n' >> $@
+	build-aux/icon-list action actions $(ACTION_ICONS) >> $@
+	build-aux/icon-list category categories $(CATEGORY_ICONS) >> $@
 
 src/ui/gui/icons/manifest: $(MAKEFILE_LIST)
 	$(RM) $@
@@ -368,13 +342,13 @@ prep_ph:
 		echo >&2 "libtoolize not found";		\
 		exit 1;						\
 	fi;							\
-	$$LIBTOOLIZE --force --automake
+	$$LIBTOOLIZE --force --automake --copy
 
 aclocal.m4:
 	aclocal -I m4 -I gl/m4
 
 configure: configure.ac aclocal.m4
-	autoconf
+	autoconf || rm $@  # autoconf 2.69 has (what I think is) a bug.  It will create configure even when failure is detected.
 
 config.h.in: configure.ac
 	autoheader

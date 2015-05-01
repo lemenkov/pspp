@@ -106,6 +106,8 @@ psppire_dialog_action_activate (PsppireDialogAction *act)
   if (GTK_ACTION_CLASS (psppire_dialog_action_parent_class)->activate)
     GTK_ACTION_CLASS (psppire_dialog_action_parent_class)->activate ( GTK_ACTION (act));
 
+  gtk_widget_grab_focus (act->source);
+
   response = psppire_dialog_run (PSPPIRE_DIALOG (act->dialog));
 
   if ( class->generate_syntax )

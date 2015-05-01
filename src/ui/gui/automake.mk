@@ -42,20 +42,30 @@ UI_FILES = \
 	src/ui/gui/val-labs-dialog.ui \
 	src/ui/gui/variable-info.ui \
 	src/ui/gui/data-editor.ui \
-	src/ui/gui/output-viewer.ui \
+	src/ui/gui/output-window.ui \
 	src/ui/gui/syntax-editor.ui \
 	src/ui/gui/var-sheet.ui \
 	src/ui/gui/var-type-dialog.ui
 
+
+$(srcdir)/doc/help-pages-list: $(UI_FILES)
+	 cat $^ | grep '"help-page"' | \
+   sed -e 's% *<property name="help-page">\([^<]*\)</property>%//*[@id='"'"'\1'"'"']%' \
+	-e 's%#%'"'"']/*[@id='"'"'%g' > $@
+EXTRA_DIST += doc/help-pages-list
+
+
 EXTRA_DIST += \
-	src/ui/gui/OChangeLog \
+	src/ui/gui/artwork/actions/.empty \
+	src/ui/gui/artwork/apps/scalable/.empty \
+	src/ui/gui/gen-dot-desktop.sh \
 	src/ui/gui/marshaller-list \
-	src/ui/gui/gen-dot-desktop.sh
+	src/ui/gui/pspplogo.svg
 
 
 if HAVE_GUI
 bin_PROGRAMS += src/ui/gui/psppire 
-noinst_PROGRAMS += src/ui/gui/spreadsheet-test
+noinst_PROGRAMS += src/ui/gui/spreadsheet-test 
 
 src_ui_gui_psppire_CFLAGS = $(GTK_CFLAGS) $(GTKSOURCEVIEW_CFLAGS) -Wall -DGDK_MULTIHEAD_SAFE=1 
 src_ui_gui_spreadsheet_test_CFLAGS = $(GTK_CFLAGS) -Wall -DGDK_MULTIHEAD_SAFE=1 
@@ -93,7 +103,6 @@ src_ui_gui_spreadsheet_test_LDADD = \
 
 
 src_ui_gui_spreadsheet_test_SOURCES = src/ui/gui/spreadsheet-test.c src/ui/gui/psppire-spreadsheet-model.c
-
 
 src_ui_gui_psppiredir = $(pkgdatadir)
 
@@ -251,6 +260,8 @@ src_ui_gui_psppire_SOURCES = \
 	src/ui/gui/psppire-lex-reader.h \
 	src/ui/gui/psppire-means-layer.c \
 	src/ui/gui/psppire-means-layer.h \
+	src/ui/gui/psppire-output-view.c \
+	src/ui/gui/psppire-output-view.h \
 	src/ui/gui/psppire-output-window.c \
 	src/ui/gui/psppire-output-window.h \
 	src/ui/gui/psppire-var-view.c \
@@ -331,16 +342,16 @@ PHONY += yelp-check
 AM_CPPFLAGS += -Isrc
 
 src/ui/gui/pspp.desktop: src/ui/gui/gen-dot-desktop.sh $(POFILES)
-	POFILES="$(POFILES)" top_builddir="$(top_builddir)" $(SHELL) $< > $@
+	$(AM_V_GEN)POFILES="$(POFILES)" top_builddir="$(top_builddir)" $(SHELL) $< > $@
 
 CLEANFILES+=src/ui/gui/pspp.desktop
 
 src/ui/gui/psppire-marshal.c: src/ui/gui/marshaller-list
-	echo '#include <config.h>' > $@
-	$(GLIB_GENMARSHAL) --body --prefix=psppire_marshal $? >> $@
+	$(AM_V_GEN)echo '#include <config.h>' > $@
+	$(AM_V_at)$(GLIB_GENMARSHAL) --body --prefix=psppire_marshal $? >> $@
 
 src/ui/gui/psppire-marshal.h: src/ui/gui/marshaller-list
-	$(GLIB_GENMARSHAL) --header --prefix=psppire_marshal $? > $@
+	$(AM_V_GEN)$(GLIB_GENMARSHAL) --header --prefix=psppire_marshal $? > $@
 
 desktopdir = $(datadir)/applications
 desktop_DATA = src/ui/gui/pspp.desktop

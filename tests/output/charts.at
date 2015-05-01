@@ -33,7 +33,7 @@ examine x y by a
 	.
 ])
 
-AT_CHECK([pspp -O format=csv charts.sps], [0], [ignore])
+AT_CHECK([pspp -o pspp.txt charts.sps], [0], [ignore])
 
 AT_CLEANUP
 
@@ -85,7 +85,7 @@ ROC /fred bert charlie by group (0)
 
 ])
 
-AT_CHECK([pspp -O format=csv roc.sps], [0], [ignore])
+AT_CHECK([pspp -o pspp.txt roc.sps], [0], [ignore])
 
 AT_CLEANUP
 
@@ -115,7 +115,7 @@ factor /variables = all
 
 ])
 
-AT_CHECK([pspp -O format=csv scree.sps], [0], [ignore])
+AT_CHECK([pspp -o pspp.txt scree.sps], [0], [ignore])
 
 AT_CLEANUP
 
@@ -152,6 +152,86 @@ frequencies pos neg pn
 
 
 dnl The --testing-mode flag is important!!
-AT_CHECK([pspp --testing-mode -O format=csv histogram.sps], [0], [ignore])
+AT_CHECK([pspp --testing-mode -o pspp.txt histogram.sps], [0], [ignore])
+
+AT_CLEANUP
+
+
+AT_SETUP([FREQUENCIES charts])
+AT_DATA([xxx.sps],[
+DATA LIST LIST /nationality (A10)  religion (A20) gender (A8).
+BEGIN DATA.
+Australian  Sikh      Male
+Australian  Sikh      Male
+Australian  Sikh      Male
+Australian  Sikh      Male
+British     Zoroastrian Female
+British     Buddist   Female
+British     Buddist   Female
+British      Zoroastrian Female
+German      Muslim    Male
+German      Christian Male
+German      Christian Female
+German      Christian Male
+German      Zoroastrian Female
+German      Sikh   Female
+German      Muslim Female
+German      Pastafarian Female
+German      "Jedi Knight" Female
+Belgian     Sikh      Male
+French       Muslim      Male
+French       Muslim      Male
+French       Christian      Male
+END DATA.
+
+
+FREQUENCIES /VARIABLES=religion nationality /BARCHART /PIECHART. 
+])
+
+
+AT_CHECK([pspp  -o pspp.txt xxx.sps], [0], [ignore])
+
+AT_CLEANUP
+
+
+
+AT_SETUP([CROSSTABS charts])
+AT_DATA([xxx.sps],[
+DATA LIST LIST /nationality (A10)  religion (A20) gender (A8).
+BEGIN DATA.
+Australian  Sikh      Male
+Australian  Sikh      Male
+Australian  Sikh      Male
+Australian  Sikh      Male
+British     Zoroastrian Female
+British     Buddist   Female
+British     Buddist   Female
+British      Zoroastrian Female
+German      Muslim    Male
+German      Christian Male
+German      Christian Female
+German      Christian Male
+German      Zoroastrian Female
+German      Sikh   Female
+German      Muslim Female
+German      Pastafarian Female
+German      "Jedi Knight" Female
+Belgian     Sikh      Male
+French       Muslim      Male
+French       Muslim      Male
+French       Christian      Male
+END DATA.
+
+
+CROSSTABS 
+	  /tables = nationality by religion by gender
+	  /tables = nationality by religion
+	  /tables = religion by gender
+	  /tables = nationality by religion by gender
+	  /barchart.
+])
+
+
+AT_CHECK([pspp  -o pspp.txt xxx.sps], [0], [ignore])
 
 AT_CLEANUP

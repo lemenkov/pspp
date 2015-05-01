@@ -25,15 +25,47 @@
 #include "libpspp/array.h"
 #include "libpspp/compiler.h"
 
+struct freq *
+freq_clone (const struct freq *in, int values, int *widths)
+{
+  int i;
+  struct freq *f = xmalloc (sizeof (struct freq) +
+			    (sizeof (union value) * (values - 1)));
+
+  f->node = in->node;
+  f->count = in->count;
+  for (i = 0; i < values; ++i)
+    {
+      value_init (&f->values[i],  widths[i]);
+      value_copy (&f->values[i], &in->values[i], widths[i]);
+    }
+
+  return f;
+}
+
+void
+freq_destroy (struct freq *f, int values, int *widths)
+{
+  int i;
+  for (i = 0; i < values; ++i)
+    {
+      value_destroy (&f->values[i],  widths[i]);
+    }
+
+  free (f);
+}
+
+
+
 void
 freq_hmap_destroy (struct hmap *hmap, int width)
 {
   struct freq *f, *next;
 
-  HMAP_FOR_EACH_SAFE (f, next, struct freq, hmap_node, hmap)
+  HMAP_FOR_EACH_SAFE (f, next, struct freq, node, hmap)
     {
-      value_destroy (&f->value, width);
-      hmap_delete (hmap, &f->hmap_node);
+      value_destroy (&f->values[0], width);
+      hmap_delete (hmap, &f->node);
       free (f);
     }
   hmap_destroy (hmap);
@@ -45,8 +77,8 @@ freq_hmap_search (struct hmap *hmap,
 {
   struct freq *f;
 
-  HMAP_FOR_EACH_WITH_HASH (f, struct freq, hmap_node, hash, hmap)
-    if (value_equal (value, &f->value, width))
+  HMAP_FOR_EACH_WITH_HASH (f, struct freq, node, hash, hmap)
+    if (value_equal (value, &f->values[0], width))
       return f;
 
   return NULL;
@@ -57,20 +89,20 @@ freq_hmap_insert (struct hmap *hmap,
                   const union value *value, int width, size_t hash)
 {
   struct freq *f = xmalloc (sizeof *f);
-  value_clone (&f->value, value, width);
+  value_clone (&f->values[0], value, width);
   f->count = 0;
-  hmap_insert (hmap, &f->hmap_node, hash);
+  hmap_insert (hmap, &f->node, hash);
   return f;
 }
 
-static int
+int
 compare_freq_ptr_3way (const void *a_, const void *b_, const void *width_)
 {
   const struct freq *const *ap = a_;
   const struct freq *const *bp = b_;
   const int *widthp = width_;
 
-  return value_compare_3way (&(*ap)->value, &(*bp)->value, *widthp);
+  return value_compare_3way (&(*ap)->values[0], &(*bp)->values[0], *widthp);
 }
 
 struct freq **
@@ -83,7 +115,7 @@ freq_hmap_sort (struct hmap *hmap, int width)
 
   entries = xnmalloc (n_entries, sizeof *entries);
   i = 0;
-  HMAP_FOR_EACH (f, struct freq, hmap_node, hmap)
+  HMAP_FOR_EACH (f, struct freq, node, hmap)
     entries[i++] = f;
   assert (i == n_entries);
 
@@ -102,7 +134,7 @@ freq_hmap_extract (struct hmap *hmap)
   n_freqs = hmap_count (hmap);
   freqs = xnmalloc (n_freqs, sizeof *freqs);
   i = 0;
-  HMAP_FOR_EACH (f, struct freq, hmap_node, hmap)
+  HMAP_FOR_EACH (f, struct freq, node, hmap)
     freqs[i++] = *f;
   assert (i == n_freqs);
 

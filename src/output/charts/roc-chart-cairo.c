@@ -37,8 +37,8 @@ xrchart_draw_roc (const struct chart_item *chart_item, cairo_t *cr,
   xrchart_write_xlabel (cr, geom, _("1 - Specificity"));
   xrchart_write_ylabel (cr, geom, _("Sensitivity"));
 
-  xrchart_write_xscale (cr, geom, 0, 1, 5);
-  xrchart_write_yscale (cr, geom, 0, 1, 5);
+  xrchart_write_xscale (cr, geom, 0, 1);
+  xrchart_write_yscale (cr, geom, 0, 1);
 
   if ( rc->reference )
     {

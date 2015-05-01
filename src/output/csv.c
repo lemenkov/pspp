@@ -1,5 +1,5 @@
 /* PSPP - a program for statistical analysis.
-   Copyright (C) 2009, 2010, 2012 Free Software Foundation, Inc.
+   Copyright (C) 2009, 2010, 2012, 2013, 2014 Free Software Foundation, Inc.
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -23,6 +23,7 @@
 #include "libpspp/assertion.h"
 #include "libpspp/compiler.h"
 #include "libpspp/message.h"
+#include "libpspp/str.h"
 #include "libpspp/string-map.h"
 #include "output/text-item.h"
 #include "output/driver-provider.h"
@@ -45,6 +46,7 @@ struct csv_driver
     char *separator;            /* Field separator (usually comma or tab). */
     int quote;                  /* Quote character (usually ' or ") or 0. */
     char *quote_set;            /* Characters that force quoting. */
+    bool titles;                /* Print table titles? */
     bool captions;              /* Print table captions? */
 
     char *file_name;            /* Output file name. */
@@ -86,6 +88,7 @@ csv_create (const char *file_name, enum settings_output_devices device_type,
   csv->quote = quote[0];
   free (quote);
   csv->quote_set = xasprintf ("\n\r\t%s%c", csv->separator, csv->quote);
+  csv->titles = parse_boolean (opt (d, o, "titles", "true"));
   csv->captions = parse_boolean (opt (d, o, "captions", "true"));
   csv->file_name = xstrdup (file_name);
   csv->file = fn_open (csv->file_name, "w");
@@ -146,11 +149,7 @@ csv_output_field (struct csv_driver *csv, const char *field)
     fputs (field, csv->file);
 }
 
-static void
-csv_output_field_format (struct csv_driver *csv, const char *format, ...)
-  PRINTF_FORMAT (2, 3);
-
-static void
+static void PRINTF_FORMAT (2, 3)
 csv_output_field_format (struct csv_driver *csv, const char *format, ...)
 {
   va_list args;
@@ -162,6 +161,93 @@ csv_output_field_format (struct csv_driver *csv, const char *format, ...)
 
   csv_output_field (csv, s);
   free (s);
+}
+
+static void
+csv_put_field (struct csv_driver *csv, struct string *s, const char *field)
+{
+  while (*field == ' ')
+    field++;
+
+  if (csv->quote && field[strcspn (field, csv->quote_set)])
+    {
+      const char *p;
+
+      ds_put_byte (s, csv->quote);
+      for (p = field; *p != '\0'; p++)
+        {
+          if (*p == csv->quote)
+            ds_put_byte (s, csv->quote);
+          ds_put_byte (s, *p);
+        }
+      ds_put_byte (s, csv->quote);
+    }
+  else
+    ds_put_cstr (s, field);
+}
+
+static void
+csv_output_subtable (struct csv_driver *csv, struct string *s,
+                     const struct table_item *item)
+{
+  const struct table *t = table_item_get_table (item);
+  const char *title = table_item_get_title (item);
+  const char *caption = table_item_get_caption (item);
+  int y, x;
+
+  if (csv->titles && title != NULL)
+    {
+      csv_output_field_format (csv, "Table: %s", title);
+      putc ('\n', csv->file);
+    }
+
+  for (y = 0; y < table_nr (t); y++)
+    {
+      if (y > 0)
+        ds_put_byte (s, '\n');
+
+      for (x = 0; x < table_nc (t); x++)
+        {
+          struct table_cell cell;
+
+          table_get_cell (t, x, y, &cell);
+
+          if (x > 0)
+            ds_put_cstr (s, csv->separator);
+
+          if (x != cell.d[TABLE_HORZ][0] || y != cell.d[TABLE_VERT][0])
+            csv_put_field (csv, s, "");
+          else if (cell.n_contents == 1 && cell.contents[0].text != NULL)
+            csv_put_field (csv, s, cell.contents[0].text);
+          else
+            {
+              struct string s2;
+              size_t i;
+
+              ds_init_empty (&s2);
+              for (i = 0; i < cell.n_contents; i++)
+                {
+                  if (i > 0)
+                    ds_put_cstr (&s2, "\n\n");
+
+                  if (cell.contents[i].text != NULL)
+                    ds_put_cstr (&s2, cell.contents[i].text);
+                  else
+                    csv_output_subtable (csv, &s2, cell.contents[i].table);
+                }
+              csv_put_field (csv, s, ds_cstr (&s2));
+              ds_destroy (&s2);
+            }
+
+          table_cell_free (&cell);
+        }
+    }
+
+  if (csv->captions && caption != NULL)
+    {
+      csv_output_field_format (csv, "Caption: %s", caption);
+      putc ('\n', csv->file);
+    }
 }
 
 static void
@@ -182,18 +268,21 @@ csv_submit (struct output_driver *driver,
   if (is_table_item (output_item))
     {
       struct table_item *table_item = to_table_item (output_item);
+      const char *title = table_item_get_title (table_item);
       const char *caption = table_item_get_caption (table_item);
       const struct table *t = table_item_get_table (table_item);
+      int footnote_idx;
       int x, y;
 
       csv_put_separator (csv);
 
-      if (csv->captions && caption != NULL)
+      if (csv->titles && title != NULL)
         {
-          csv_output_field_format (csv, "Table: %s", caption);
+          csv_output_field_format (csv, "Table: %s", title);
           putc ('\n', csv->file);
         }
 
+      footnote_idx = 0;
       for (y = 0; y < table_nr (t); y++)
         {
           for (x = 0; x < table_nc (t); x++)
@@ -207,12 +296,88 @@ csv_submit (struct output_driver *driver,
 
               if (x != cell.d[TABLE_HORZ][0] || y != cell.d[TABLE_VERT][0])
                 csv_output_field (csv, "");
+              else if (cell.n_contents == 1
+                       && cell.contents[0].text != NULL
+                       && cell.contents[0].n_footnotes == 0)
+                csv_output_field (csv, cell.contents[0].text);
               else
-                csv_output_field (csv, cell.contents);
+                {
+                  struct string s;
+                  size_t i;
+
+                  ds_init_empty (&s);
+                  for (i = 0; i < cell.n_contents; i++)
+                    {
+                      const struct cell_contents *c = &cell.contents[i];
+                      int j;
+
+                      if (i > 0)
+                        ds_put_cstr (&s, "\n\n");
+
+                      if (c->text != NULL)
+                        ds_put_cstr (&s, c->text);
+                      else
+                        csv_output_subtable (csv, &s, c->table);
+
+                      for (j = 0; j < c->n_footnotes; j++)
+                        {
+                          char marker[16];
+
+                          str_format_26adic (++footnote_idx, false,
+                                             marker, sizeof marker);
+                          ds_put_format (&s, "[%s]", marker);
+                        }
+                    }
+                  csv_output_field (csv, ds_cstr (&s));
+                  ds_destroy (&s);
+                }
 
               table_cell_free (&cell);
             }
           putc ('\n', csv->file);
+        }
+
+      if (csv->captions && caption != NULL)
+        {
+          csv_output_field_format (csv, "Caption: %s", caption);
+          putc ('\n', csv->file);
+        }
+
+      if (footnote_idx)
+        {
+          size_t i;
+
+          fputs ("\nFootnotes:\n", csv->file);
+
+          footnote_idx = 0;
+          for (y = 0; y < table_nr (t); y++)
+            {
+              struct table_cell cell;
+              for (x = 0; x < table_nc (t); x = cell.d[TABLE_HORZ][1])
+                {
+                  table_get_cell (t, x, y, &cell);
+
+                  if (x == cell.d[TABLE_HORZ][0] && y == cell.d[TABLE_VERT][0])
+                    for (i = 0; i < cell.n_contents; i++)
+                      {
+                        const struct cell_contents *c = &cell.contents[i];
+                        int j;
+
+                        for (j = 0; j < c->n_footnotes; j++)
+                          {
+                            char marker[16];
+
+                            str_format_26adic (++footnote_idx, false,
+                                               marker, sizeof marker);
+                            csv_output_field (csv, marker);
+                            fputs (csv->separator, csv->file);
+                            csv_output_field (csv, c->footnotes[j]);
+                            putc ('\n', csv->file);
+                          }
+                      }
+                  table_cell_free (&cell);
+                }
+            }
         }
     }
   else if (is_text_item (output_item))

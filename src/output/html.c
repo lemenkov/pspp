@@ -1,5 +1,5 @@
 /* PSPP - a program for statistical analysis.
-   Copyright (C) 1997-9, 2000, 2009, 2010, 2011, 2012 Free Software Foundation, Inc.
+   Copyright (C) 1997-9, 2000, 2009, 2010, 2011, 2012, 2013, 2014 Free Software Foundation, Inc.
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -47,10 +47,10 @@
 struct html_driver
   {
     struct output_driver driver;
-
+#ifdef HAVE_CAIRO
     struct xr_color fg;
     struct xr_color bg;
-    
+#endif    
     char *file_name;
     char *chart_file_name;
 
@@ -64,10 +64,10 @@ struct html_driver
 
 static const struct output_driver_class html_driver_class;
 
-static void html_output_table (struct html_driver *, struct table_item *);
+static void html_output_table (struct html_driver *, const struct table_item *);
 static void escape_string (FILE *file,
                            const char *text, size_t length,
-                           const char *space);
+                           const char *space, const char *newline);
 static void print_title_tag (FILE *file, const char *name,
                              const char *content);
 
@@ -104,10 +104,10 @@ html_create (const char *file_name, enum settings_output_devices device_type,
                                                       file_name));
   html->file = NULL;
   html->chart_cnt = 1;
-
+#ifdef HAVE_CAIRO
   parse_color (d, o, "background-color", "#FFFFFFFFFFFF", &html->bg);
   parse_color (d, o, "foreground-color", "#000000000000", &html->fg);
-
+#endif
   html->file = fn_open (html->file_name, "w");
   if (html->file == NULL)
     {
@@ -200,7 +200,7 @@ print_title_tag (FILE *file, const char *name, const char *content)
   if (content != NULL)
     {
       fprintf (file, "<%s>", name);
-      escape_string (file, content, strlen (content), " ");
+      escape_string (file, content, strlen (content), " ", " - ");
       fprintf (file, "</%s>\n", name);
     }
 }
@@ -274,7 +274,7 @@ html_submit (struct output_driver *driver,
 
         case TEXT_ITEM_COMMAND_OPEN:
           fprintf (html->file, "<DIV class=\"");
-          escape_string (html->file, s, strlen (s), "_");
+          escape_string (html->file, s, strlen (s), "_", "<BR>");
           fprintf (html->file, "\">");
           print_title_tag (html->file, "H3", s);
           break;
@@ -289,7 +289,7 @@ html_submit (struct output_driver *driver,
 
         case TEXT_ITEM_SYNTAX:
           fprintf (html->file, "<PRE class=\"syntax\">");
-          escape_string (html->file, s, strlen (s), " ");
+          escape_string (html->file, s, strlen (s), " ", "<BR>");
           fprintf (html->file, "</PRE>\n");
           break;
 
@@ -325,19 +325,23 @@ html_submit (struct output_driver *driver,
     }
 }
 
-/* Write LENGTH characters in TEXT to file F, escaping characters
-   as necessary for HTML.  Spaces are replaced by SPACE, which
-   should be " " or "&nbsp;". */
+/* Write LENGTH characters in TEXT to file F, escaping characters as necessary
+   for HTML.  Spaces are replaced by SPACE, which should be " " or "&nbsp;"
+   New-lines are replaced by NEWLINE, which might be "<BR>" or "\n" or
+   something else appropriate. */
 static void
 escape_string (FILE *file,
                const char *text, size_t length,
-               const char *space)
+               const char *space, const char *newline)
 {
   while (length-- > 0)
     {
       char c = *text++;
       switch (c)
         {
+        case '\n':
+          fputs (newline, file);
+          break;
         case '&':
           fputs ("&amp;", file);
           break;
@@ -370,33 +374,93 @@ put_border (FILE *file, int n_borders, int style, const char *border_name)
 }
 
 static void
-html_output_table (struct html_driver *html, struct table_item *item)
+put_tfoot (struct html_driver *html, const struct table *t, bool *tfoot)
+{
+  if (!*tfoot)
+    {
+      fprintf (html->file, "<TFOOT><TR><TD COLSPAN=%d>", table_nc (t));
+      *tfoot = true;
+    }
+  else
+    fputs ("\n<BR>", html->file);
+}
+
+static void
+html_output_table (struct html_driver *html, const struct table_item *item)
 {
   const struct table *t = table_item_get_table (item);
-  const char *caption;
-  int x, y;
+  const char *title = table_item_get_title (item);
+  const char *caption = table_item_get_caption (item);
+  int footnote_idx = 0;
+  bool tfoot = false;
+  int y;
 
-  fputs ("<TABLE>\n", html->file);
+  fputs ("<TABLE>", html->file);
 
-  caption = table_item_get_caption (item);
-  if (caption != NULL)
+  if (caption)
+    {
+      put_tfoot (html, t, &tfoot);
+      escape_string (html->file, caption, strlen (caption), " ", "<BR>");
+    }
+  footnote_idx = 0;
+  for (y = 0; y < table_nr (t); y++)
+    {
+      int x;
+
+      for (x = 0; x < table_nc (t); )
+        {
+          const struct cell_contents *c;
+          struct table_cell cell;
+
+          table_get_cell (t, x, y, &cell);
+          if (y != cell.d[TABLE_VERT][0])
+            continue;
+
+          for (c = cell.contents; c < &cell.contents[cell.n_contents]; c++)
+            {
+              int i;
+
+              for (i = 0; i < c->n_footnotes; i++)
+                {
+                  char marker[16];
+
+                  put_tfoot (html, t, &tfoot);
+                  str_format_26adic (++footnote_idx, false, marker, sizeof marker);
+                  fprintf (html->file, "<SUP>%s</SUP> ", marker);
+                  escape_string (html->file, c->footnotes[i],
+                                 strlen (c->footnotes[i]), " ", "<BR>");
+                }
+            }
+          x = cell.d[TABLE_HORZ][1];
+          table_cell_free (&cell);
+        }
+    }
+  if (tfoot)
+    fputs ("</TD></TR></TFOOT>\n", html->file);
+  footnote_idx = 0;
+
+  fputs ("<TBODY VALIGN=\"TOP\">\n", html->file);
+
+  if (title != NULL)
     {
       fputs ("  <CAPTION>", html->file);
-      escape_string (html->file, caption, strlen (caption), " ");
+      escape_string (html->file, title, strlen (title), " ", "<BR>");
       fputs ("</CAPTION>\n", html->file);
     }
 
   for (y = 0; y < table_nr (t); y++)
     {
+      int x;
+
       fputs ("  <TR>\n", html->file);
-      for (x = 0; x < table_nc (t); x++)
+      for (x = 0; x < table_nc (t); )
         {
+          const struct cell_contents *c;
           struct table_cell cell;
           const char *tag;
           bool is_header;
           int alignment, colspan, rowspan;
           int top, left, right, bottom, n_borders;
-          const char *s;
 
           table_get_cell (t, x, y, &cell);
           if (x != cell.d[TABLE_HORZ][0] || y != cell.d[TABLE_VERT][0])
@@ -410,7 +474,9 @@ html_output_table (struct html_driver *html, struct table_item *item)
           tag = is_header ? "TH" : "TD";
           fprintf (html->file, "    <%s", tag);
 
-          alignment = cell.options & TAB_ALIGNMENT;
+          alignment = (cell.n_contents > 0
+                       ? cell.contents[0].options & TAB_ALIGNMENT
+                       : TAB_LEFT);
           if (alignment != TAB_LEFT)
             fprintf (html->file, " ALIGN=\"%s\"",
                      alignment == TAB_RIGHT ? "RIGHT" : "CENTER");
@@ -432,9 +498,9 @@ html_output_table (struct html_driver *html, struct table_item *item)
 	      if (top > TAL_GAP)
 		put_border (html->file, n_borders++, top, "top");
 
-	      if (y == table_nr (t) - 1)
+	      if (y + rowspan == table_nr (t))
 		{
-		  bottom = table_get_rule (t, TABLE_VERT, x, y + 1);
+		  bottom = table_get_rule (t, TABLE_VERT, x, y + rowspan);
 		  if (bottom > TAL_GAP)
 		    put_border (html->file, n_borders++, bottom, "bottom");
 		}
@@ -443,9 +509,9 @@ html_output_table (struct html_driver *html, struct table_item *item)
 	      if (left > TAL_GAP)
 		put_border (html->file, n_borders++, left, "left");
 
-	      if (x == table_nc (t) - 1)
+	      if (x + colspan == table_nc (t))
 		{
-		  right = table_get_rule (t, TABLE_HORZ, x + 1, y);
+		  right = table_get_rule (t, TABLE_HORZ, x + colspan, y);
 		  if (right > TAL_GAP)
 		    put_border (html->file, n_borders++, right, "right");
 		}
@@ -457,32 +523,59 @@ html_output_table (struct html_driver *html, struct table_item *item)
           putc ('>', html->file);
 
           /* Output cell contents. */
-          s = cell.contents;
-          if (cell.options & TAB_EMPH)
-            fputs ("<EM>", html->file);
-          if (cell.options & TAB_FIX)
+          for (c = cell.contents; c < &cell.contents[cell.n_contents]; c++)
             {
-              fputs ("<TT>", html->file);
-              escape_string (html->file, s, strlen (s), "&nbsp;");
-              fputs ("</TT>", html->file);
+              if (c->text)
+                {
+                  const char *s = c->text;
+                  int i;
+
+                  if (c->options & TAB_EMPH)
+                    fputs ("<EM>", html->file);
+                  if (c->options & TAB_FIX)
+                    {
+                      fputs ("<TT>", html->file);
+                      escape_string (html->file, s, strlen (s), "&nbsp;", "<BR>");
+                      fputs ("</TT>", html->file);
+                    }
+                  else
+                    {
+                      s += strspn (s, CC_SPACES);
+                      escape_string (html->file, s, strlen (s), " ", "<BR>");
+                    }
+                  if (c->options & TAB_EMPH)
+                    fputs ("</EM>", html->file);
+
+                  if (c->n_footnotes > 0)
+                    {
+                      fputs ("<SUP>", html->file);
+                      for (i = 0; i < c->n_footnotes; i++)
+                        {
+                          char marker[16];
+
+                          if (i > 0)
+                            putc (',', html->file);
+                          str_format_26adic (++footnote_idx, false,
+                                             marker, sizeof marker);
+                          fputs (marker, html->file);
+                        }
+                      fputs ("</SUP>", html->file);
+                    }
+                }
+              else
+                html_output_table (html, c->table);
             }
-          else
-            {
-              s += strspn (s, CC_SPACES);
-              escape_string (html->file, s, strlen (s), " ");
-            }
-          if (cell.options & TAB_EMPH)
-            fputs ("</EM>", html->file);
 
           /* Output </TH> or </TD>. */
           fprintf (html->file, "</%s>\n", tag);
 
+          x = cell.d[TABLE_HORZ][1];
           table_cell_free (&cell);
         }
       fputs ("  </TR>\n", html->file);
     }
 
-  fputs ("</TABLE>\n\n", html->file);
+  fputs ("</TBODY></TABLE>\n\n", html->file);
 }
 
 struct output_driver_factory html_driver_factory =

@@ -1,4 +1,4 @@
-dnl Copyright (C) 2005, 2006, 2007, 2009 Free Software Foundation, Inc.
+dnl Copyright (C) 2005, 2006, 2007, 2009, 2014 Free Software Foundation, Inc.
 dnl This file is free software; the Free Software Foundation
 dnl gives unlimited permission to copy and/or distribute it,
 dnl with or without modifications, as long as this notice is preserved.
@@ -61,13 +61,6 @@ AC_DEFUN([PSPP_CHECK_CC_OPTION],
   fi
 ])
 
-dnl PSPP_ENABLE_OPTION([OPTION])
-dnl Check whether the given C compiler OPTION is accepted.
-dnl If so, add it to CFLAGS.
-dnl Example: PSPP_ENABLE_OPTION([-Wdeclaration-after-statement])
-AC_DEFUN([PSPP_ENABLE_OPTION], 
-  [PSPP_CHECK_CC_OPTION([$1], [CFLAGS="$CFLAGS $1"])])
-
 dnl Check for readline and history libraries.
 
 dnl Modified for PSPP, based on readline.m4 serial 3 from
@@ -123,10 +116,10 @@ AC_DEFUN([PSPP_READLINE],
     AC_DEFINE(HAVE_READLINE, 1, [Define if you have the readline library.])
     AC_MSG_CHECKING([how to link with libreadline])
     AC_MSG_RESULT([$LIBREADLINE])
-    AC_SEARCH_LIBS([rl_outstream], [readline],
-        AC_DEFINE(HAVE_RL_OUTSTREAM, 1, [Define if the readline library provides rl_outstream.]))
     AC_SEARCH_LIBS([rl_echo_signal_char], [readline],
-        AC_DEFINE(HAVE_RL_ECHO_SIGNAL_CHAR, 1, [Define if the readline library provides rl_echo_signal_char.]))
+        AC_DEFINE(HAVE_RL_ECHO_SIGNAL_CHAR, 1, [Define if the readline library provides rl_echo_signal_char.]),[],[$LIBREADLINE])
+    AC_SEARCH_LIBS([rl_outstream], [readline],
+        AC_DEFINE(HAVE_RL_OUTSTREAM, 1, [Define if the readline library provides rl_outstream.]),[],[$LIBREADLINE])
   else
     dnl If $LIBREADLINE didn't lead to a usable library, we don't
     dnl need $INCREADLINE either.

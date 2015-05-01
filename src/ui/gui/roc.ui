@@ -6,6 +6,7 @@
   <object class="PsppireDialog" id="roc-dialog">
     <property name="title" translatable="yes">ROC Curve</property>
     <property name="modal">True</property>
+    <property name="help-page">ROC</property>
     <child internal-child="hbox">
       <object class="GtkHBox" id="dialog-hbox1">
         <property name="visible">True</property>

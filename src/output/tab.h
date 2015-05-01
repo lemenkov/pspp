@@ -1,5 +1,5 @@
 /* PSPP - a program for statistical analysis.
-   Copyright (C) 1997, 1998, 1999, 2000, 2009, 2011 Free Software Foundation, Inc.
+   Copyright (C) 1997, 1998, 1999, 2000, 2009, 2011, 2014 Free Software Foundation, Inc.
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -25,9 +25,9 @@
    Some of the features of this type of table are obsolete but have not yet
    been removed, because some code still uses them.  These features are:
 
-       - The title.  The title (or caption, actually) is a property of the
-         table_item (see output/table-item.h) in which a table is embedded,
-         not a property of the table itself.
+       - The title and caption.  These are properties of the table_item (see
+         output/table-item.h) in which a table is embedded, not properties of
+         the table itself.
 
        - Row and columns offsets (via tab_offset(), tab_next_row()).  This
          feature simply isn't used enough to justify keeping it.
@@ -40,6 +40,16 @@
 
 #include "libpspp/compiler.h"
 #include "output/table.h"
+#include "data/format.h"
+
+enum result_class
+  {
+    RC_INTEGER,
+    RC_WEIGHT,
+    RC_PVALUE,
+    RC_OTHER,
+    n_RC
+  };
 
 /* A table. */
 struct tab_table
@@ -47,10 +57,8 @@ struct tab_table
     struct table table;
     struct pool *container;
 
-    /* Table title, or a null pointer if no title has been set.
-
-       The table title is properly part of struct table_item, not struc*/
-    char *title;
+    /* Table title and caption, or null. */
+    char *title, *caption;
     int cf;			/* Column factor for indexing purposes. */
 
     /* Table contents.
@@ -68,6 +76,8 @@ struct tab_table
 
     /* X and Y offsets. */
     int col_ofs, row_ofs;
+
+    struct fmt_spec fmtmap [n_RC];
   };
 
 struct tab_table *tab_cast (const struct table *);
@@ -95,6 +105,8 @@ void tab_realloc (struct tab_table *, int nc, int nr);
 void tab_headers (struct tab_table *, int l, int r, int t, int b);
 void tab_title (struct tab_table *, const char *, ...)
      PRINTF_FORMAT (2, 3);
+void tab_caption (struct tab_table *, const char *, ...)
+     PRINTF_FORMAT (2, 3);
 void tab_submit (struct tab_table *);
 
 /* Rules. */
@@ -106,6 +118,9 @@ void tab_box (struct tab_table *, int f_h, int f_v, int i_h, int i_v,
 /* Obsolete cell options. */
 #define TAT_TITLE TAB_EMPH      /* Title attributes. */
 
+void tab_set_format (struct tab_table *, enum result_class, const struct fmt_spec *);
+
+
 /* Cells. */
 struct fmt_spec;
 struct dictionary;
@@ -114,11 +129,8 @@ void tab_value (struct tab_table *, int c, int r, unsigned char opt,
 		const union value *, const struct variable *,
 		const struct fmt_spec *);
 
-void tab_fixed (struct tab_table *, int c, int r, unsigned char opt,
-		double v, int w, int d);
-
 void tab_double (struct tab_table *, int c, int r, unsigned char opt,
-		double v, const struct fmt_spec *);
+		 double v, const struct fmt_spec *, enum result_class );
 
 void tab_text (struct tab_table *, int c, int r, unsigned opt, const char *);
 void tab_text_format (struct tab_table *, int c, int r, unsigned opt,
@@ -130,6 +142,14 @@ void tab_joint_text (struct tab_table *, int x1, int y1, int x2, int y2,
 void tab_joint_text_format (struct tab_table *, int x1, int y1, int x2, int y2,
                             unsigned opt, const char *, ...)
      PRINTF_FORMAT (7, 8);
+
+void tab_footnote (struct tab_table *, int x, int y, const char *format, ...)
+  PRINTF_FORMAT (4, 5);
+
+void tab_subtable (struct tab_table *, int x1, int y1, int x2, int y2,
+                   unsigned opt, struct table_item *subtable);
+void tab_subtable_bare (struct tab_table *, int x1, int y1, int x2, int y2,
+                        unsigned opt, struct table_item *subtable);
 
 bool tab_cell_is_empty (const struct tab_table *, int c, int r);
 

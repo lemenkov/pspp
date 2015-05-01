@@ -1,17 +1,116 @@
 PSPP NEWS -- history of user-visible changes.
-Copyright (C) 1996-2000, 2008-2013 Free Software Foundation, Inc.
+Copyright (C) 1996-2000, 2008-2015 Free Software Foundation, Inc.
 See the end for copying conditions.
 
 Please send PSPP bug reports to bug-gnu-pspp@gnu.org.
  
-Changes from 0.8.1 to 0.8.1.1:
+Changes since 0.8.4:
+
+ * The FREQUENCIES and CROSSTABS commands can now generate barcharts.
+
+ * The FACTOR command can now perform PROMAX rotations.
+
+ * SPSS/PC+ system files are now supported on GET and other commands
+   that read SPSS system files.  The pspp-convert program can now read
+   SPSS/PC+ system files.  Writing the obsolete SPSS/PC+ system file
+   format is not supported.
+
+ * SYSFILE INFO can now read SPSS/PC+ system files and SPSS portable
+   files.
+
+ * FREQUENCIES: A bug was fixed where an assertion failure occured
+   when an empty dataset was presented.
+
+ * The GRAPH command is now available.  Initially it supports
+   scatterplots and histograms.
+
+ * The RND operator in expressions now supports additional operands
+   for rounding to values other than integers and to indicate a level
+   of rounding fuzz.  The default rounding fuzz may now be controlled
+   and displayed with SET FUZZBITS and SHOW FUZZBITS, respectively.
+
+Changes from 0.8.3 to 0.8.4:
+
+ * Formatting of SYSFILE INFO output was made easier to read.
+
+ * Bug fixes, including the following notable ones:
+
+   - FREQUENCIES works properly for string variables.  (This bug was
+     introduced in 0.8.2.)
+
+   - CROSSTABS now correctly computes all of the measures that it
+     offers.  Some measures have been removed because they were not
+     computed correctly.
+
+   - The NPAR TESTS calculation of significance for the RUNS
+     subcommand has been corrected.
+
+   - Planned comparisons in ONEWAY ANOVA now correctly handle negative
+     T-values.
+
+   - The COUNT command now correctly treats missing values as
+     documented.
+
+   - Conformance fixes to Open Document output format.
+
+Changes from 0.8.2 to 0.8.3:
+
+ * Independent T-Tests displayed the standard error of the difference
+   and the confidence interval for the unequal variances case, where
+   the equal variances case should have been.  This has been fixed.
+
+ * REGRESSION now recognises /STATISTICS=CI(x) which causes confidence
+   intervals for the coefficients to be printed.
+
+ * When DESCRIPTIVES calculates Z scores, it now omits cases filtered
+   by the current FILTER settings.
+
+ * PSPPIRE graphical user interface improvements:
+
+   - Dialog boxes with source  variable lists can now choose the sort
+     order;  right click and select from the popup menu.
+
+   - File|Open now allows an encoding to be selected for opening
+     system files.
+
+   - File|Display Data File Information|External File... now allows an
+     encoding to be selected.
+
+   - A problem with the Means dialog has been resolved (bug #41433).
+
+   - Several problems related to the input of spreadsheets have been
+     fixed (bug #41657, #41620
+
+ * System file related improvements:
+
+   - With ENCODING="DETECT", SYSFILE INFO can now help the user to
+     pick an encoding for reading a system file that does not identify
+     its own encoding
+
+   - SYSFILE INFO now accepts an ENCODING subcommand to specify the
+     character encoding of string data in the system file.
+
+   - Variable labels over 255 bytes long are now accepted without
+     truncation (bug #41863).
+
+   - System files that contain duplicate variable names may now be
+     read successfully (bug #41475).
+
+Changes from 0.8.1 to 0.8.2:
 
  * Charts are now rendered with colours from the Tango palette instead
    of fully saturated primaries.
 
- * PSPP can now read and write ZCOMPRESSED system files, a new format
-   variant that compresses data much more effectively than the
-   previous form of compression (which is still supported).
+ * Support for new system file variants:
+
+   - PSPP can now read and write ZCOMPRESSED system files, which
+     compress data much more effectively than older "compressed"
+     files.  (The older format is still supported.)
+
+   - PSPP can now decrypt encrypted system files, using the new
+     pspp-convert utility.  The encrypted system file format is
+     unacceptably insecure, so to discourage its use PSPP and PSPPIRE
+     do not directly read or write this format.
 
  * Missing values for long string variables are now read from and
    written to system files in an SPSS-compatible fashion.
@@ -23,8 +122,8 @@ Changes from 0.8.1 to 0.8.1.1:
 
  * pspp-convert, a new standalone utility for converting SPSS system
    and portable files to other formats, is now included.  The initial
-   version is only capable of converting to comma-separated value
-   files..
+   version supports comma-separated value files as output format.
+   pspp-convert can also decrypt encrypted system files.
 
  * Build changes:
 

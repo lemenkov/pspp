@@ -175,6 +175,7 @@ RELIABILITY
   /VARIABLES=var2 var6 var8 var15 var17 var19
   /SCALE('Totals') var6 var8 var15 var17 
   /SUMMARY = total
+  /STATISTICS = DESCRIPTIVES COVARIANCES
  .
 
 
@@ -182,7 +183,9 @@ RELIABILITY
   /VARIABLES=var6 var8 var15 var17 
   .
 ])
-AT_CHECK([pspp -o pspp.csv reliability.sps])
+AT_CHECK([pspp -o pspp.csv reliability.sps], [0],
+  [reliability.sps:174: warning: RELIABILITY: The STATISTICS subcommand is not yet implemented.  No statistics will be produced.
+])
 AT_CHECK([cat pspp.csv], [0], [dnl
 Scale: Everything
 
@@ -214,6 +217,8 @@ Correlation Between Forms,,,.61
 Spearman-Brown Coefficient,Equal Length,,.75
 ,Unequal Length,,.75
 Guttman Split-Half Coefficient,,,.75
+
+reliability.sps:174: warning: RELIABILITY: The STATISTICS subcommand is not yet implemented.  No statistics will be produced.
 
 Scale: Totals
 
@@ -297,3 +302,35 @@ reliability variables=f01 to f10.
 AT_CHECK([pspp -O format=csv reliability.sps], [0], [])
 AT_CLEANUP
 
+
+
+
+dnl This is an example from doc/tutorial.texi
+dnl So if the results of this have to be changed in any way,
+dnl make sure to update that file.
+AT_SETUP([RELIABILITY tutorial example])
+AT_DATA([tut-example.sps], [dnl
+get file='hotel.sav'.
+
+compute v3 = 6 - v3.
+compute v5 = 6 - v5.
+
+reliability variables = v1 v3 v4.
+])
+
+AT_CHECK([ln -s $top_srcdir/examples/hotel.sav .], [0])
+AT_CHECK([pspp -O format=csv tut-example.sps], [0], [dnl 
+Scale: ANY
+
+Table: Case Processing Summary
+,,N,%
+Cases,Valid,17,100.00
+,Excluded,0,.00
+,Total,17,100.00
+
+Table: Reliability Statistics
+Cronbach's Alpha,N of Items
+.81,3
+])
+
+AT_CLEANUP

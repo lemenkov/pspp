@@ -27,12 +27,23 @@
 #include "psppire-selector.h"
 
 
+void
+get_base_model (GtkTreeModel *top_model, GtkTreeIter *top_iter,
+		GtkTreeModel **model, GtkTreeIter *iter);
+
 /* A SelectItemsFunc function for GtkTreeView widgets */
 void insert_source_row_into_tree_view (GtkTreeIter source_iter,
 				       GtkWidget *dest,
 				       GtkTreeModel *source_model,
-				       gpointer data
-				       );
+				       gpointer data);
+
+
+/* A SelectItemsFunc function for PsppireMeansLayers widgets */
+void insert_source_row_into_layers (GtkTreeIter source_iter,
+				    GtkWidget *dest,
+				    GtkTreeModel *source_model,
+				    gpointer data);
+
 
 /* A SelectItemsFunc function for GtkEntry widgets */
 void insert_source_row_into_entry (GtkTreeIter source_iter,

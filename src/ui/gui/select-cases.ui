@@ -8,6 +8,7 @@
     <property name="title" translatable="yes">Select Cases</property>
     <property name="modal">True</property>
     <property name="orientation">Vertical</property>
+    <property name="help-page">SELECT-IF</property>
     <child internal-child="hbox">
       <object class="GtkVBox" id="dialog-hbox6">
         <property name="visible">True</property>

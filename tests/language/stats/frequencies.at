@@ -1,21 +1,33 @@
 AT_BANNER([FREQUENCIES procedure])
 
-AT_SETUP([FREQUENCIES string variable crash])
+AT_SETUP([FREQUENCIES string variable])
 AT_DATA([frequencies.sps],
   [DATA LIST FREE/
    name  (A8) value * quantity .
 BEGIN DATA.
-Cables 829 3 
+foo 1 5
+bar 2 6
+baz 1 9
+quux 3 1
+bar 1 2
+baz 4 3
+baz 1 4
+baz 1 1
+foo 6 0
+quux 5 8
 END DATA.
 EXECUTE.
 
-FREQUENCIES /VAR = name.
+FREQUENCIES /VAR = name/ORDER=ANALYSIS.
 ])
-AT_CHECK([pspp -O format=csv frequencies.sps], [0],
-  [Table: name
+AT_CHECK([pspp -O format=csv frequencies.sps], [0], [dnl
+Table: name
 Value Label,Value,Frequency,Percent,Valid Percent,Cum Percent
-,Cables  ,1,100.00,100.00,100.00
-Total,,1,100.0,100.0,
+,bar     ,2,20.00,20.00,20.00
+,baz     ,4,40.00,40.00,60.00
+,foo     ,2,20.00,20.00,80.00
+,quux    ,2,20.00,20.00,100.00
+Total,,10,100.0,100.0,
 ])
 AT_CLEANUP
 
@@ -31,7 +43,7 @@ begin data.
 3 4
 end data.
 
-frequencies v1 v2/statistics=none.
+frequencies v1 v2/statistics=none/ORDER=VARIABLE.
 frequencies v1 v2/statistics=none.
 ])
 AT_CHECK([pspp -O format=csv frequencies.sps], [0],
@@ -139,6 +151,36 @@ Reading free-form data from INLINE.
 |w       |F8.0  |
 +--------+------+
 ])
+AT_CLEANUP
+
+dnl Check that histogram subcommand runs wihout crashing
+AT_SETUP([FREQUENCIES histogram crash])
+AT_DATA([frequencies.sps],
+  [data list notable list /x * w *.
+begin data.
+1  4
+34 10
+-9 15
+232 6
+11  4
+134 1
+9  5
+32 16
+-2 6
+2  16
+20  6
+end data.
+
+weight by w.
+
+frequencies /x 
+	    /format=notable 
+	    /statistics=none
+	    /histogram=minimum(0) maximum(50) percent(5) normal.
+])
+# Cannot use the CSV driver for this because it does not output charts
+# at all.
+AT_CHECK([pspp -O format=pdf frequencies.sps], [0], [ignore])
 AT_CLEANUP
 
 # Tests for a bug which crashed PSPP when the median and a histogram
@@ -486,6 +528,7 @@ FREQUENCIES
 	VAR=x
 	/PERCENTILES = 0 25 50 75 100.
 ])
+
 AT_CHECK([pspp -O format=csv frequencies.sps], [0],
   [Table: X
 Value Label,Value,Frequency,Percent,Valid Percent,Cum Percent
@@ -509,4 +552,167 @@ Percentiles,0,1.00
 ,75,4.75
 ,100,5.00
 ])
+AT_CLEANUP
+
+AT_SETUP([FREQUENCIES dichotomous histogram])
+AT_DATA([frequencies.sps], [dnl
+data list notable list /d4 *.
+begin data.
+0 
+0 
+0 
+1 
+0 
+0 
+0 
+0 
+1 
+0 
+0 
+0 
+0 
+0 
+1 
+2 
+0 
+end data.
+
+FREQUENCIES
+	/VARIABLES = d4
+	/FORMAT=AVALUE TABLE
+	/HISTOGRAM=NORMAL
+	.
+])
+
+AT_CHECK([pspp frequencies.sps], [0],  [ignore])
+AT_CLEANUP
+
+
+AT_SETUP([FREQUENCIES median])
+AT_DATA([median.sps], [dnl
+data list notable list /x *.
+begin data.
+1
+2
+3000000
+end data.
+
+FREQUENCIES
+	/VARIABLES = x
+	/STATISTICS = MEDIAN
+	.
+])
+
+AT_CHECK([pspp median.sps -O format=csv], [0],  [dnl
+Table: x
+Value Label,Value,Frequency,Percent,Valid Percent,Cum Percent
+,1.00,1,33.33,33.33,33.33
+,2.00,1,33.33,33.33,66.67
+,3000000.00,1,33.33,33.33,100.00
+Total,,3,100.0,100.0,
+
+Table: x
+N,Valid,3
+,Missing,0
+Percentiles,50 (Median),2.00
+])
+AT_CLEANUP
+
+
+
+AT_SETUP([FREQUENCIES default statistics])
+AT_DATA([median.sps], [dnl
+data list notable list /x *.
+begin data.
+10
+20
+3000000
+end data.
+
+FREQUENCIES
+	/VARIABLES = x
+	/STATISTICS
+	.
+
+FREQUENCIES
+	/VARIABLES = x
+	/STATISTICS = DEFAULT
+	.
+])
+
+AT_CHECK([pspp median.sps -O format=csv], [0],  [dnl
+Table: x
+Value Label,Value,Frequency,Percent,Valid Percent,Cum Percent
+,10.00,1,33.33,33.33,33.33
+,20.00,1,33.33,33.33,66.67
+,3000000.00,1,33.33,33.33,100.00
+Total,,3,100.0,100.0,
+
+Table: x
+N,Valid,3
+,Missing,0
+Mean,,1000010.00
+Std Dev,,1732042.15
+Minimum,,10.00
+Maximum,,3000000.00
+
+Table: x
+Value Label,Value,Frequency,Percent,Valid Percent,Cum Percent
+,10.00,1,33.33,33.33,33.33
+,20.00,1,33.33,33.33,66.67
+,3000000.00,1,33.33,33.33,100.00
+Total,,3,100.0,100.0,
+
+Table: x
+N,Valid,3
+,Missing,0
+Mean,,1000010.00
+Std Dev,,1732042.15
+Minimum,,10.00
+Maximum,,3000000.00
+])
+AT_CLEANUP
+
+
+
+AT_SETUP([FREQUENCIES no valid data])
+AT_DATA([empty.sps], [dnl
+data list notable list /x *.
+begin data.
+.
+.
+.
+end data.
+
+FREQUENCIES
+	/VARIABLES = x
+	/STATISTICS = ALL
+	.
+])
+
+AT_CHECK([pspp empty.sps -O format=csv], [0],  [dnl
+Table: x
+Value Label,Value,Frequency,Percent,Valid Percent,Cum Percent
+,.  ,3,100.00,Missing,
+Total,,3,100.0,100.0,
+
+Table: x
+N,Valid,0
+,Missing,3
+Mean,,.
+S.E. Mean,,.
+Mode,,.
+Std Dev,,.
+Variance,,.
+Kurtosis,,.
+S.E. Kurt,,.
+Skewness,,.
+S.E. Skew,,.
+Range,,.
+Minimum,,.
+Maximum,,.
+Sum,,.
+Percentiles,,.
+])
+
 AT_CLEANUP

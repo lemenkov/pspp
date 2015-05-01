@@ -11,12 +11,16 @@ POFILES = \
 	po/en_GB.po \
 	po/es.po \
 	po/fr.po \
+	po/gl.po \
 	po/ja.po \
 	po/lt.po \
 	po/nl.po \
-	po/sl.po \
+	po/pl.po \
 	po/pt_BR.po \
-	po/uk.po
+	po/sl.po \
+	po/tr.po \
+	po/uk.po \
+	po/zh_CN.po
 
 POTFILE=po/$(DOMAIN).pot
 
@@ -32,14 +36,14 @@ XGETTEXT_OPTIONS = \
 
 $(POTFILE): $(TRANSLATABLE_FILES) $(UI_FILES) src/ui/gui/gen-dot-desktop.sh
 	@$(MKDIR_P) po
-	$(XGETTEXT) --directory=$(top_srcdir) $(XGETTEXT_OPTIONS)    $(TRANSLATABLE_FILES) --language=C --keyword=_ --keyword=N_ -o $@
-	$(XGETTEXT) --directory=$(top_srcdir) $(XGETTEXT_OPTIONS) -j $(UI_FILES) --language=glade -o $@
-	$(XGETTEXT) --directory=$(top_srcdir) $(XGETTEXT_OPTIONS) -j src/ui/gui/gen-dot-desktop.sh --language=shell --keyword=TRANSLATE -o $@
+	$(AM_V_GEN)$(XGETTEXT) --directory=$(top_srcdir) $(XGETTEXT_OPTIONS)    $(TRANSLATABLE_FILES) --language=C --keyword=_ --keyword=N_ -o $@
+	$(AM_V_at)$(XGETTEXT) --directory=$(top_srcdir) $(XGETTEXT_OPTIONS) -j $(UI_FILES) --language=glade -o $@
+	$(AM_V_at)$(XGETTEXT) --directory=$(top_srcdir) $(XGETTEXT_OPTIONS) -j src/ui/gui/gen-dot-desktop.sh --language=shell --keyword=TRANSLATE -o $@
 
 
 $(POFILES): $(POTFILE)
-	$(MSGMERGE) $(top_srcdir)/$@ $? -o $@
-	if test -e $(top_srcdir)/$@,aux ; then \
+	$(AM_V_GEN)$(MSGMERGE) --quiet $(top_srcdir)/$@ $? -o $@
+	$(AM_V_at)if test -e $(top_srcdir)/$@,aux ; then \
 	         touch $@ ; \
 		 msgcat --use-first $(top_srcdir)/$@,aux $@ -o $@; \
 	fi ;
@@ -49,7 +53,7 @@ $(POFILES): $(POTFILE)
 SUFFIXES += .po .gmo
 .po.gmo:
 	@$(MKDIR_P) `dirname $@`
-	$(MSGFMT) $< -o $@
+	$(AM_V_GEN)$(MSGFMT) $< -o $@
 
 
 GMOFILES = $(POFILES:.po=.gmo)
@@ -70,7 +74,11 @@ uninstall-hook:
 	done
 
 
-EXTRA_DIST += $(POFILES) $(POTFILE)
+EXTRA_DIST += \
+	$(POFILES) \
+	$(POTFILE) \
+	po/ChangeLog \
+	po/cs.po,aux
 
 CLEANFILES += $(GMOFILES) $(POTFILE)
 

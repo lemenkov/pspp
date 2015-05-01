@@ -432,14 +432,14 @@ quick_cluster_show_centers (struct Kmeans *kmeans, bool initial, const struct qc
 	      tab_double (t, i + 1, j + 4, TAB_CENTER,
 			  gsl_matrix_get (kmeans->centers,
 					  kmeans->group_order->data[i], j),
-			  var_get_print_format (qc->vars[j]));
+			  var_get_print_format (qc->vars[j]), RC_OTHER);
 	    }
 	  else
 	    {
 	      tab_double (t, i + 1, j + 4, TAB_CENTER,
 			  gsl_matrix_get (kmeans->initial_centers,
 					  kmeans->group_order->data[i], j),
-			  var_get_print_format (qc->vars[j]));
+			  var_get_print_format (qc->vars[j]), RC_OTHER);
 	    }
 	}
     }
@@ -548,6 +548,11 @@ cmd_quick_cluster (struct lexer *lexer, struct dataset *ds)
 		    {
 		      lex_force_int (lexer);
 		      qc.ngroups = lex_integer (lexer);
+		      if (qc.ngroups <= 0)
+			{
+			  lex_error (lexer, _("The number of clusters must be positive"));
+			  goto error;
+			}
 		      lex_get (lexer);
 		      lex_force_match (lexer, T_RPAREN);
 		    }
@@ -558,6 +563,11 @@ cmd_quick_cluster (struct lexer *lexer, struct dataset *ds)
 		    {
 		      lex_force_int (lexer);
 		      qc.maxiter = lex_integer (lexer);
+		      if (qc.maxiter <= 0)
+			{
+			  lex_error (lexer, _("The number of iterations must be positive"));
+			  goto error;
+			}
 		      lex_get (lexer);
 		      lex_force_match (lexer, T_RPAREN);
 		    }

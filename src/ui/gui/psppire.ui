@@ -6,6 +6,7 @@
   <object class="PsppireDialog" id="weight-cases-dialog">
     <property name="title" translatable="yes">Weight Cases</property>
     <property name="modal">True</property>
+    <property name="help-page">WEIGHT</property>
     <child internal-child="hbox">
       <object class="GtkHBox" id="dialog-hbox2">
         <property name="visible">True</property>
@@ -194,6 +195,7 @@
   <object class="PsppireDialog" id="transpose-dialog">
     <property name="title" translatable="yes">Transpose</property>
     <property name="modal">True</property>
+    <property name="help-page">FLIP</property>
     <child internal-child="hbox">
       <object class="GtkHBox" id="dialog-hbox1">
         <property name="visible">True</property>
@@ -382,6 +384,7 @@
     <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
     <property name="title" translatable="yes">Data File Comments</property>
     <property name="modal">True</property>
+    <property name="help-page">DOCUMENT</property>
     <property name="orientation">Vertical</property>
     <child internal-child="hbox">
       <object class="GtkVBox" id="dialog-hbox7">

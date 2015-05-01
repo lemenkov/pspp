@@ -1,5 +1,5 @@
 /* PSPP - a program for statistical analysis.
-   Copyright (C) 1997-9, 2000, 2010, 2011 Free Software Foundation, Inc.
+   Copyright (C) 1997-9, 2000, 2010, 2011, 2015 Free Software Foundation, Inc.
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -45,39 +45,39 @@ cmd_rename_variables (struct lexer *lexer, struct dataset *ds)
   int status = CMD_CASCADING_FAILURE;
 
   if (proc_make_temporary_transformations_permanent (ds))
-    msg (SE, _("RENAME VARS may not be used after TEMPORARY.  "
-               "Temporary transformations will be made permanent."));
+    msg (SE, _("%s may not be used after %s.  "
+               "Temporary transformations will be made permanent."), "RENAME VARS", "TEMPORARY");
 
   do
     {
       size_t prev_nv_1 = rename_cnt;
       size_t prev_nv_2 = rename_cnt;
+      int opts = PV_APPEND | PV_NO_DUPLICATE;
 
-      if (!lex_force_match (lexer, T_LPAREN))
+      if (!lex_match (lexer, T_LPAREN))
+        opts |= PV_SINGLE;
+      if (!parse_variables (lexer, dataset_dict (ds),
+                            &rename_vars, &rename_cnt, opts))
         goto lossage;
-      if (!parse_variables (lexer, dataset_dict (ds), &rename_vars, &rename_cnt,
-			    PV_APPEND | PV_NO_DUPLICATE))
-	goto lossage;
       if (!lex_force_match (lexer, T_EQUALS))
         goto lossage;
       if (!parse_DATA_LIST_vars (lexer, dataset_dict (ds),
-                                 &rename_new_names, &prev_nv_1,
-                                 PV_APPEND | PV_NO_DUPLICATE))
-	goto lossage;
+                                 &rename_new_names, &prev_nv_1, opts))
+        goto lossage;
       if (prev_nv_1 != rename_cnt)
-	{
+        {
           size_t i;
 
-	  msg (SE, _("Differing number of variables in old name list "
+          msg (SE, _("Differing number of variables in old name list "
                      "(%zu) and in new name list (%zu)."),
-	       rename_cnt - prev_nv_2, prev_nv_1 - prev_nv_2);
-	  for (i = 0; i < prev_nv_1; i++)
-	    free (rename_new_names[i]);
-	  free (rename_new_names);
-	  rename_new_names = NULL;
-	  goto lossage;
-	}
-      if (!lex_force_match (lexer, T_RPAREN))
+               rename_cnt - prev_nv_2, prev_nv_1 - prev_nv_2);
+          for (i = 0; i < prev_nv_1; i++)
+            free (rename_new_names[i]);
+          free (rename_new_names);
+          rename_new_names = NULL;
+          goto lossage;
+        }
+      if (!(opts & PV_SINGLE) && !lex_force_match (lexer, T_RPAREN))
         goto lossage;
     }
   while (lex_token (lexer) != T_ENDCMD);

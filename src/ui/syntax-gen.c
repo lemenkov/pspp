@@ -1,5 +1,5 @@
 /* PSPPIRE - a graphical user interface for PSPP.
-   Copyright (C) 2008, 2010, 2011 Free Software Foundation, Inc.
+   Copyright (C) 2008, 2010, 2011, 2014 Free Software Foundation, Inc.
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -32,6 +32,7 @@
 #include "libpspp/str.h"
 #include "libpspp/misc.h"
 
+#include "gl/c-ctype.h"
 #include "gl/ftoastr.h"
 
 /* Appends to OUTPUT a pair of hex digits for each byte in IN. */
@@ -232,6 +233,8 @@ syntax_gen_pspp_valist (struct string *output, const char *format,
 {
   for (;;)
     {
+      char qualifier[16];
+      int precision = -1;
       char directive;
       size_t copy = strcspn (format, "%");
       ds_put_substring (output, ss_buffer (format, copy));
@@ -242,6 +245,17 @@ syntax_gen_pspp_valist (struct string *output, const char *format,
       assert (*format == '%');
       format++;
       directive = *format++;
+      if (directive == '.')
+        {
+          int x = 0;
+          while (directive = *format++, c_isdigit (directive))
+            {
+              assert (x < 16);
+              qualifier[x++] = directive;
+            }
+          qualifier[x++] = '\0';
+          precision = atoi (qualifier);
+        }
       switch (directive)
         {
         case 's':
@@ -271,12 +285,21 @@ syntax_gen_pspp_valist (struct string *output, const char *format,
         case 'f':
 	case 'g':
           {
-	    char conv[3];
+	    char conv[32];
             double d = va_arg (args, double);
-	    conv[0]='%';
-	    conv[1]=directive;
-	    conv[2]='\0';
-	    ds_put_c_format (output, conv, d);
+            int x = 0;
+	    conv[x++] = '%';
+            conv[x] = '\0';
+            if (precision != -1)
+              {
+                strcat (conv, ".");
+                strcat (conv, qualifier);
+                x += strlen (qualifier) + 1;
+              }
+	    conv[x++] = directive;
+	    conv[x++] = '\0';
+            
+            ds_put_c_format (output, conv, d);
             break;
           }
 
@@ -301,9 +324,7 @@ syntax_gen_pspp_valist (struct string *output, const char *format,
 
      %d: Same as printf's %d.
 
-     %fp: The double argument is formatted precisely as a PSPP
-          number, as if with a call to syntax_gen_number with a
-          null FORMAT argument.
+     %f %g: Same as printf.
 
      %%: Literal %.
 

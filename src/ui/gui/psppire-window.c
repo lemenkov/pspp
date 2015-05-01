@@ -1,5 +1,5 @@
 /* PSPPIRE - a graphical user interface for PSPP.
-   Copyright (C) 2009, 2010, 2011, 2013  Free Software Foundation
+   Copyright (C) 2009, 2010, 2011, 2013, 2014  Free Software Foundation
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -15,6 +15,7 @@
    along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 
 #include <config.h>
+#include <gl/relocatable.h>
 
 #include "psppire-window.h"
 #include "psppire-window-base.h"
@@ -31,6 +32,7 @@
 #include "data/any-reader.h"
 #include "data/file-name.h"
 #include "data/dataset.h"
+#include "libpspp/version.h"
 
 #include "helper.h"
 #include "psppire-data-window.h"
@@ -664,7 +666,8 @@ psppire_window_save_as (PsppireWindow *w)
 static void delete_recent (const char *file_name);
 
 gboolean
-psppire_window_load (PsppireWindow *w, const gchar *file, gpointer hint)
+psppire_window_load (PsppireWindow *w, const gchar *file,
+                     const gchar *encoding, gpointer hint)
 {
   gboolean ok;
   PsppireWindowIface *i = PSPPIRE_WINDOW_MODEL_GET_IFACE (w);
@@ -675,7 +678,7 @@ psppire_window_load (PsppireWindow *w, const gchar *file, gpointer hint)
 
   g_return_val_if_fail (i->load, FALSE);
 
-  ok = i->load (w, file, hint);
+  ok = i->load (w, file, encoding, hint);
 
   if ( ok )
     {
@@ -688,27 +691,6 @@ psppire_window_load (PsppireWindow *w, const gchar *file, gpointer hint)
   return ok;
 }
 
-
-static void
-on_selection_changed (GtkFileChooser *chooser, GtkWidget *encoding_selector)
-{
-  const gchar *sysname;
-
-  const gchar *name = gtk_file_chooser_get_filename (chooser);
-
-  if ( NULL == name )
-    return;
-
-  sysname = convert_glib_filename_to_system_filename (name, NULL);
-
-  if ( ! fn_exists (sysname))
-    {
-      gtk_widget_set_sensitive (encoding_selector, FALSE);
-      return;
-    }
-
-  gtk_widget_set_sensitive (encoding_selector, ! any_reader_may_open (sysname));
-}
 
 GtkWidget *
 psppire_window_file_chooser_dialog (PsppireWindow *toplevel)
@@ -775,17 +757,9 @@ psppire_window_file_chooser_dialog (PsppireWindow *toplevel)
       free (dir_name);
     }
 
-
-  {
-    GtkWidget *encoding_selector =  psppire_encoding_selector_new ("Auto", true);
-
-    gtk_widget_set_sensitive (encoding_selector, FALSE);
-
-    g_signal_connect (dialog, "selection-changed", G_CALLBACK (on_selection_changed),
-		      encoding_selector);
-
-    gtk_file_chooser_set_extra_widget (GTK_FILE_CHOOSER (dialog), encoding_selector);
-  }
+    gtk_file_chooser_set_extra_widget (
+      GTK_FILE_CHOOSER (dialog),
+      psppire_encoding_selector_new ("Auto", true));
 
   return dialog;
 }
@@ -796,6 +770,8 @@ void
 psppire_window_open (PsppireWindow *de)
 {
   GtkWidget *dialog = psppire_window_file_chooser_dialog (de);
+
+  gtk_file_chooser_add_shortcut_folder (GTK_FILE_CHOOSER (dialog), relocate (examples_dir), NULL);
 
   switch (gtk_dialog_run (GTK_DIALOG (dialog)))
     {
@@ -809,9 +785,10 @@ psppire_window_open (PsppireWindow *de)
         gchar *encoding = psppire_encoding_selector_get_encoding (
           gtk_file_chooser_get_extra_widget (GTK_FILE_CHOOSER (dialog)));
 
-	if (any_reader_may_open (sysname))
-          open_data_window (de, name, NULL);
-	else
+        int retval = any_reader_detect (sysname, NULL);
+	if (retval == 1)
+          open_data_window (de, name, encoding, NULL);
+	else if (retval == 0)
 	  open_syntax_window (name, encoding);
 
         g_free (encoding);
@@ -831,17 +808,24 @@ psppire_window_open (PsppireWindow *de)
    with associated MIME_TYPE.  If it's already in the list, it moves it to the
    top. */
 void
-add_most_recent (const char *file_name, const char *mime_type)
+add_most_recent (const char *file_name,
+                 const char *mime_type, const char *encoding)
 {
   gchar *uri = g_filename_to_uri  (file_name, NULL, NULL);
-
   if ( uri )
     {
       GtkRecentData recent_data;
+      gchar *full_mime_type;
+
+      if (encoding && encoding[0])
+        full_mime_type = g_strdup_printf ("%s; charset=%s",
+                                          mime_type, encoding);
+      else
+        full_mime_type = g_strdup (mime_type);
 
       recent_data.display_name = NULL;
       recent_data.description = NULL;
-      recent_data.mime_type = CONST_CAST (gchar *, mime_type);
+      recent_data.mime_type = full_mime_type;
       recent_data.app_name = CONST_CAST (gchar *, g_get_application_name ());
       recent_data.app_exec = g_strjoin (" ", g_get_prgname (), "%u", NULL);
       recent_data.groups = NULL;
@@ -851,6 +835,7 @@ add_most_recent (const char *file_name, const char *mime_type)
                                    uri, &recent_data);
 
       g_free (recent_data.app_exec);
+      g_free (full_mime_type);
     }
 
   g_free (uri);
