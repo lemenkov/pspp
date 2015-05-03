@@ -4486,8 +4486,6 @@ pspp_sheet_view_draw (GtkWidget      *widget,
 		      cairo_t *cr)
 {
   PsppSheetView *tree_view = PSPP_SHEET_VIEW (widget);
-  GtkAllocation allocation;
-  gtk_widget_get_allocation (widget, &allocation);
   
   if (gtk_cairo_should_draw_window (cr, tree_view->priv->bin_window))
     {
@@ -4495,7 +4493,7 @@ pspp_sheet_view_draw (GtkWidget      *widget,
       GList *tmp_list;
 
       cairo_save (cr);
-      cairo_translate (cr, 0, gdk_window_get_height (tree_view->priv->header_window));
+      gtk_cairo_transform_to_window(cr,widget,tree_view->priv->bin_window);
       retval = pspp_sheet_view_bin_expose (widget, cr);
       cairo_restore (cr);
 
@@ -4519,18 +4517,6 @@ pspp_sheet_view_draw (GtkWidget      *widget,
       gint n_visible_columns;
       GList *list;
 
-      gtk_paint_flat_box (gtk_widget_get_style (widget),
-                          cr,
-                          GTK_STATE_NORMAL,
-                          GTK_SHADOW_NONE,
-                          widget,
-                          "cell_odd",
-			  allocation.x,
-			  allocation.y,
-			  allocation.width,
-			  allocation.height
-			  );
-
       for (list = tree_view->priv->columns; list != NULL; list = list->next)
 	{
 	  PsppSheetViewColumn *column = list->data;
@@ -4539,7 +4525,8 @@ pspp_sheet_view_draw (GtkWidget      *widget,
 	    continue;
 
           if (span_intersects (column->allocation.x, column->allocation.width,
-			       allocation.x, allocation.width)
+                               (int) gtk_adjustment_get_value (tree_view->priv->hadjustment),
+                               (int) gtk_widget_get_allocated_width (widget))
               && column->button != NULL)
             gtk_container_propagate_draw (GTK_CONTAINER (tree_view),
 					  column->button, cr);
@@ -4552,11 +4539,14 @@ pspp_sheet_view_draw (GtkWidget      *widget,
             continue;
           n_visible_columns ++;
         }
+      cairo_save (cr);
+      gtk_cairo_transform_to_window(cr,widget,tree_view->priv->header_window);
       pspp_sheet_view_draw_vertical_grid_lines (tree_view,
 						cr,
 						n_visible_columns,
-						allocation.y,
-						allocation.height);
+						0,
+						TREE_VIEW_HEADER_HEIGHT (tree_view));
+      cairo_restore (cr);
 
       return TRUE;
     }
