@@ -111,7 +111,6 @@ struct _PsppSheetViewColumn
   guint PSEAL (selectable)          : 1;
   guint PSEAL (row_head)            : 1;
   guint PSEAL (tabbable)            : 1;
-  guint PSEAL (need_button)         : 1;
 };
 
 struct _PsppSheetViewColumnClass
@@ -262,8 +261,6 @@ void                    pspp_sheet_view_column_size_request       (PsppSheetView
 void                    pspp_sheet_view_column_size_allocate       (PsppSheetViewColumn       *tree_column,
                                                                     GtkAllocation             *allocation);
 gboolean                pspp_sheet_view_column_can_focus           (PsppSheetViewColumn       *tree_column);
-void                    pspp_sheet_view_column_set_need_button     (PsppSheetViewColumn       *tree_column,
-                                                                    gboolean                   need_button);
 
 G_END_DECLS
 

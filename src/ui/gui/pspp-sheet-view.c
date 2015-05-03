@@ -1979,12 +1979,6 @@ pspp_sheet_view_size_allocate_columns (GtkWidget *widget,
 
       pspp_sheet_view_column_size_allocate (column, &col_allocation);
 
-      if (span_intersects (col_allocation.x, col_allocation.width,
-                           gtk_adjustment_get_value (tree_view->priv->hadjustment),
-                           allocation.width)
-          && gtk_widget_get_realized (widget))
-        pspp_sheet_view_column_set_need_button (column, TRUE);
-
       if (column->window)
 	gdk_window_move_resize (column->window,
                                 col_allocation.x + (rtl ? 0 : col_allocation.width) - TREE_VIEW_DRAG_WIDTH/2,
@@ -6713,13 +6707,6 @@ pspp_sheet_view_focus_column (PsppSheetView *tree_view,
   g_return_if_fail (focus_column != NULL);
 
   tree_view->priv->focus_column = focus_column;
-  if (!focus_column->button)
-    {
-      pspp_sheet_view_column_set_need_button (focus_column, TRUE);
-      //      g_return_if_fail (focus_column->button != NULL);
-      if (focus_column->button == NULL)
-	return;
-    }
 
   if (gtk_container_get_focus_child (GTK_CONTAINER (tree_view)) != focus_column->button)
     gtk_widget_grab_focus (focus_column->button);
@@ -6850,7 +6837,6 @@ pspp_sheet_view_header_focus (PsppSheetView      *tree_view,
           if (column->visible &&
 	      pspp_sheet_view_column_can_focus (column))
             {
-              pspp_sheet_view_column_set_need_button (column, TRUE);
               if (column->button)
                 {
                   pspp_sheet_view_focus_column (tree_view, column,
@@ -8993,23 +8979,6 @@ pspp_sheet_view_adjustment_changed (GtkAdjustment *adjustment,
           if (!tree_view->priv->in_top_row_to_dy)
             pspp_sheet_view_dy_to_top_row (tree_view);
 	}
-
-      for (list = tree_view->priv->columns; list; list = list->next)
-        {
-          PsppSheetViewColumn *column = list->data;
-          GtkAllocation *col_allocation = &column->allocation;
-	  GtkAllocation widget_allocation;
-	  gtk_widget_get_allocation (GTK_WIDGET (tree_view), &widget_allocation);
-
-          if (span_intersects (col_allocation->x, col_allocation->width,
-                               gtk_adjustment_get_value (tree_view->priv->hadjustment),
-                               widget_allocation.width))
-            {
-              pspp_sheet_view_column_set_need_button (column, TRUE);
-              if (!column->button)
-                pspp_sheet_view_column_update_button (column);
-            }
-        }
     }
 }
 
