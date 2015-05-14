@@ -3894,6 +3894,9 @@ pspp_sheet_view_bin_expose (GtkWidget      *widget,
   GtkAllocation allocation;
   gtk_widget_get_allocation (widget, &allocation);
 
+  GdkRectangle exposed_rect;
+  gdk_cairo_get_clip_rectangle (cr, &exposed_rect);
+  
   Zarea.x =      0;
   Zarea.y =      0;
   Zarea.height = allocation.height;
@@ -4131,11 +4134,14 @@ pspp_sheet_view_bin_expose (GtkWidget      *widget,
 
 #if GTK3_TRANSITION
 	  if (gdk_region_rect_in (event->region, &background_area) == GDK_OVERLAP_RECTANGLE_OUT)
+#else
+	  if (!gdk_rectangle_intersect (&background_area, &exposed_rect, NULL))
+#endif
 	    {
 	      cell_offset += column->width;
 	      continue;
 	    }
-#endif
+
 
 	  pspp_sheet_view_column_cell_set_cell_data (column,
                                                      tree_view->priv->model,
