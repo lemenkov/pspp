@@ -457,6 +457,9 @@ get_index_from_treeview (GtkTreeView *treeview)
   GtkTreeIter iter;
   gint index;
 
+  if (selection == NULL)
+    return -1;
+
   gtk_tree_selection_get_selected (selection, &model, &iter);
   path = gtk_tree_model_get_path (model, &iter);
   if (!path || gtk_tree_path_get_depth (path) < 1)
@@ -474,7 +477,11 @@ static void
 set_date_format_from_treeview (GtkTreeView *treeview,
                                PsppireVarTypeDialog *dialog)
 {
-  dialog->fmt_l = date_format[get_index_from_treeview (treeview)];
+  gint idx = get_index_from_treeview (treeview);
+  if (idx < 0)
+    return;
+
+  dialog->fmt_l = date_format[idx];
 }
 
 /* Callback for when a dollar treeview row is changed.
@@ -483,7 +490,11 @@ static void
 set_dollar_format_from_treeview (GtkTreeView *treeview,
                                  PsppireVarTypeDialog *dialog)
 {
-  dialog->fmt_l = dollar_format[get_index_from_treeview (treeview)];
+  gint idx = get_index_from_treeview (treeview);
+  if (idx < 0)
+    return;
+
+  dialog->fmt_l = dollar_format[idx];
 }
 
 /* Callback for when a treeview row is changed.
@@ -492,7 +503,11 @@ static void
 set_custom_format_from_treeview (GtkTreeView *treeview,
                                  PsppireVarTypeDialog *dialog)
 {
-  dialog->fmt_l.type = cc_format[get_index_from_treeview (treeview)];
+  gint idx = get_index_from_treeview (treeview);
+  if (idx < 0)
+    return;
+
+  dialog->fmt_l.type = cc_format[idx];
   update_adj_ranges (dialog);
   fmt_fix_output (&dialog->fmt_l);
   update_width_decimals (dialog);
