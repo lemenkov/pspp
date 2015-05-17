@@ -92,6 +92,8 @@ tt_options_dialog_create (GtkWindow *parent)
 void
 tt_options_dialog_destroy (struct tt_options_dialog *tto)
 {
+  if (tto == NULL)
+    return;
   gtk_container_remove (GTK_CONTAINER (tto->box), tto->confidence);
   g_object_unref (tto->xml);
   g_free (tto);
