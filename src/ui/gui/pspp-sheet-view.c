@@ -3856,9 +3856,9 @@ pspp_sheet_view_draw_vertical_grid_lines (PsppSheetView    *tree_view,
  * KEEP IN SYNC WITH pspp_sheet_view_create_row_drag_icon()!
  * FIXME: It's not...
  */
-static gboolean
-pspp_sheet_view_bin_expose (GtkWidget      *widget,
-			    cairo_t *cr)
+static void
+pspp_sheet_view_draw_bin (GtkWidget      *widget,
+			  cairo_t *cr)
 {
   PsppSheetView *tree_view = PSPP_SHEET_VIEW (widget);
   GtkTreePath *path;
@@ -3914,13 +3914,13 @@ pspp_sheet_view_bin_expose (GtkWidget      *widget,
   if (tree_view->priv->row_count == 0)
     {
       draw_empty_focus (tree_view);
-      return TRUE;
+      return;
     }
 
 #if GTK3_TRANSITION
   /* clip event->area to the visible area */
   if (Zarea.height < 0.5)
-    return TRUE;
+    return;
 #endif
 
   validate_visible_area (tree_view);
@@ -3951,7 +3951,7 @@ pspp_sheet_view_bin_expose (GtkWidget      *widget,
     }
 
   if (node < 0)
-    return TRUE;
+    return;
 
   /* find the path for the node */
   path = _pspp_sheet_view_find_path ((PsppSheetView *)widget, node);
@@ -4441,7 +4441,7 @@ pspp_sheet_view_bin_expose (GtkWidget      *widget,
               done = TRUE;
 
               /* Sanity Check! */
-              TREE_VIEW_INTERNAL_ASSERT (has_next, FALSE);
+              TREE_VIEW_INTERNAL_ASSERT_VOID (has_next);
             }
           else
             goto done;
@@ -4477,7 +4477,7 @@ done:
   if (drag_dest_path)
     gtk_tree_path_free (drag_dest_path);
 
-  return FALSE;
+  return;
 }
 
 
@@ -4489,12 +4489,11 @@ pspp_sheet_view_draw (GtkWidget      *widget,
   
   if (gtk_cairo_should_draw_window (cr, tree_view->priv->bin_window))
     {
-      gboolean retval;
       GList *tmp_list;
 
       cairo_save (cr);
       gtk_cairo_transform_to_window(cr,widget,tree_view->priv->bin_window);
-      retval = pspp_sheet_view_bin_expose (widget, cr);
+      pspp_sheet_view_draw_bin (widget, cr);
       cairo_restore (cr);
 
       /* We can't just chain up to Container::expose as it will try to send the
@@ -4509,10 +4508,8 @@ pspp_sheet_view_draw (GtkWidget      *widget,
 
 	  gtk_container_propagate_draw (GTK_CONTAINER (tree_view), child->widget, cr);
 	}
-
-      return retval;
     }
-  else if (gtk_cairo_should_draw_window (cr, tree_view->priv->header_window))
+  if (gtk_cairo_should_draw_window (cr, tree_view->priv->header_window))
     {
       gint n_visible_columns;
       GList *list;
@@ -4547,16 +4544,13 @@ pspp_sheet_view_draw (GtkWidget      *widget,
 						0,
 						TREE_VIEW_HEADER_HEIGHT (tree_view));
       cairo_restore (cr);
-
-      return TRUE;
     }
-  else if (gtk_cairo_should_draw_window (cr, tree_view->priv->drag_window))
+  if (tree_view->priv->drag_window &&
+      gtk_cairo_should_draw_window (cr, tree_view->priv->drag_window))
     {
       gtk_container_propagate_draw (GTK_CONTAINER (tree_view),
 				    tree_view->priv->drag_column->button,
 				    cr);
-     
-      return TRUE;
     }
 
   return FALSE;
