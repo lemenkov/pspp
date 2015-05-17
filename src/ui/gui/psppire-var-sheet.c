@@ -362,6 +362,7 @@ render_var_cell (PsppSheetViewColumn *tree_column,
                                                   "column-number")) - 1;
   row = GPOINTER_TO_INT (iter->user_data);
 
+  gtk_cell_renderer_set_visible (cell, true);
   if (row >= psppire_dict_get_var_cnt (var_sheet->dict))
     {
       if (GTK_IS_CELL_RENDERER_TEXT (cell))
@@ -376,7 +377,9 @@ render_var_cell (PsppSheetViewColumn *tree_column,
             g_object_set (cell, "adjustment", NULL, NULL);
         }
       else
-        g_object_set (cell, "stock-id", "", NULL);
+	{
+	  gtk_cell_renderer_set_visible (cell, false);
+	}
       return;
     }
 
