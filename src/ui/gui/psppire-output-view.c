@@ -407,7 +407,7 @@ on_row_activate (GtkTreeView *overview,
   y = g_value_get_long (&value);
   g_value_unset (&value);
 
-  vadj = gtk_layout_get_vadjustment (view->output);
+  vadj = gtk_scrollable_get_vadjustment (GTK_SCROLLABLE (view->output));
   min = gtk_adjustment_get_lower (vadj);
   max = gtk_adjustment_get_upper (vadj) - gtk_adjustment_get_page_size (vadj);
   if (y < min)
