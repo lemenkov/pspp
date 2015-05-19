@@ -469,7 +469,7 @@ _psppire_button_box_child_requisition (GtkWidget *widget,
 	{
           gboolean is_secondary = FALSE;
 	  nchildren += 1;
-	  gtk_widget_size_request (child, &child_requisition);
+	  gtk_widget_get_preferred_size (child, NULL, &child_requisition);
 
 	  if (child_requisition.width + ipad_w > needed_width)
 	    needed_width = child_requisition.width + ipad_w;
