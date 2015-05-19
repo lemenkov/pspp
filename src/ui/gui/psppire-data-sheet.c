@@ -291,8 +291,9 @@ get_string_width (PsppSheetView *treeview, GtkCellRenderer *renderer,
 {
   gint width;
   g_object_set (G_OBJECT (renderer), "text", string, (void *) NULL);
-  gtk_cell_renderer_get_size (renderer, GTK_WIDGET (treeview),
-                              NULL, NULL, NULL, &width, NULL);
+  gtk_cell_renderer_get_preferred_width (renderer, GTK_WIDGET (treeview),
+					 NULL, &width);
+
   return width;
 }
 
