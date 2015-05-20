@@ -145,7 +145,7 @@ void pspp_sheet_view_column_update_button                 (PsppSheetViewColumn  
 
 /* Button signal handlers */
 static gint pspp_sheet_view_column_button_event                  (GtkWidget               *widget,
-								GdkEvent                *event,
+								GdkEventButton             *event,
 								gpointer                 data);
 static void pspp_sheet_view_column_button_clicked                (GtkWidget               *widget,
 								gpointer                 data);
@@ -1254,7 +1254,7 @@ pspp_sheet_view_column_update_button (PsppSheetViewColumn *tree_column)
 
 static gint
 pspp_sheet_view_column_button_event (GtkWidget *widget,
-				   GdkEvent  *event,
+				   GdkEventButton  *event,
 				   gpointer   data)
 {
   PsppSheetViewColumn *column = (PsppSheetViewColumn *) data;
@@ -1266,7 +1266,8 @@ pspp_sheet_view_column_button_event (GtkWidget *widget,
       ((GdkEventButton *)event)->button == 1)
     {
       column->maybe_reordered = TRUE;
-      gdk_window_get_pointer (gtk_button_get_event_window (GTK_BUTTON (widget)),
+      gdk_window_get_device_position (gtk_button_get_event_window (GTK_BUTTON (widget)),
+				      event->device,
 			      &column->drag_x,
 			      &column->drag_y,
 			      NULL);
