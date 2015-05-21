@@ -199,8 +199,7 @@ static gint     pspp_sheet_view_focus_out            (GtkWidget        *widget,
 static gint     pspp_sheet_view_focus                (GtkWidget        *widget,
 						    GtkDirectionType  direction);
 static void     pspp_sheet_view_grab_focus           (GtkWidget        *widget);
-static void     pspp_sheet_view_style_set            (GtkWidget        *widget,
-						    GtkStyle         *previous_style);
+static void     pspp_sheet_view_style_updated        (GtkWidget        *widget);
 static void     pspp_sheet_view_grab_notify          (GtkWidget        *widget,
 						    gboolean          was_grabbed);
 static void     pspp_sheet_view_state_changed        (GtkWidget        *widget,
@@ -538,7 +537,7 @@ pspp_sheet_view_class_init (PsppSheetViewClass *class)
   widget_class->drag_data_received = pspp_sheet_view_drag_data_received;
   widget_class->focus = pspp_sheet_view_focus;
   widget_class->grab_focus = pspp_sheet_view_grab_focus;
-  widget_class->style_set = pspp_sheet_view_style_set;
+  widget_class->style_updated = pspp_sheet_view_style_updated;
   widget_class->grab_notify = pspp_sheet_view_grab_notify;
   widget_class->state_changed = pspp_sheet_view_state_changed;
 
@@ -1122,6 +1121,8 @@ pspp_sheet_view_init (PsppSheetView *tree_view)
 
   pspp_sheet_view_do_set_vadjustment (tree_view, NULL);
   pspp_sheet_view_do_set_hadjustment (tree_view, NULL);
+  gtk_style_context_add_class (gtk_widget_get_style_context (GTK_WIDGET (tree_view)),
+                               GTK_STYLE_CLASS_VIEW);
 }
 
 
@@ -1501,15 +1502,14 @@ pspp_sheet_view_realize (GtkWidget *widget)
 {
   PsppSheetView *tree_view = PSPP_SHEET_VIEW (widget);
   GList *tmp_list;
+  GdkWindow *window;
   GdkWindowAttr attributes;
   gint attributes_mask;
   GtkAllocation allocation;
-  GtkAllocation old_allocation;
 
   gtk_widget_set_realized (widget, TRUE);
 
   gtk_widget_get_allocation (widget, &allocation);
-  gtk_widget_get_allocation (widget, &old_allocation);
 
   /* Make the main, clipping window */
   attributes.window_type = GDK_WINDOW_CHILD;
@@ -1523,16 +1523,17 @@ pspp_sheet_view_realize (GtkWidget *widget)
 
   attributes_mask = GDK_WA_X | GDK_WA_Y | GDK_WA_VISUAL;
 
-  gtk_widget_set_window (widget,
-			 gdk_window_new (gtk_widget_get_parent_window (widget),
-					 &attributes, attributes_mask));
-  gdk_window_set_user_data (gtk_widget_get_window (widget), widget);
+  window = gdk_window_new (gtk_widget_get_parent_window (widget),
+                           &attributes, attributes_mask);
+  gtk_widget_set_window (widget, window);
+  gtk_widget_register_window (widget, window);
+  gtk_widget_get_allocation (widget, &allocation);
 
   /* Make the window for the tree */
   attributes.x = 0;
   attributes.y = TREE_VIEW_HEADER_HEIGHT (tree_view);
-  attributes.width = MAX (tree_view->priv->width, old_allocation.width);
-  attributes.height = old_allocation.height;
+  attributes.width = MAX (tree_view->priv->width, allocation.width);
+  attributes.height = allocation.height;
   attributes.event_mask = (GDK_EXPOSURE_MASK |
                            GDK_SCROLL_MASK |
                            GDK_POINTER_MOTION_MASK |
@@ -1542,14 +1543,15 @@ pspp_sheet_view_realize (GtkWidget *widget)
                            GDK_BUTTON_RELEASE_MASK |
                            gtk_widget_get_events (widget));
 
-  tree_view->priv->bin_window = gdk_window_new (gtk_widget_get_window (widget),
+  tree_view->priv->bin_window = gdk_window_new (window,
 						&attributes, attributes_mask);
-  gdk_window_set_user_data (tree_view->priv->bin_window, widget);
+  gtk_widget_register_window (widget, tree_view->priv->bin_window);
+  gtk_widget_get_allocation (widget, &allocation);
 
   /* Make the column header window */
   attributes.x = 0;
   attributes.y = 0;
-  attributes.width = MAX (tree_view->priv->width, old_allocation.width);
+  attributes.width = MAX (tree_view->priv->width, allocation.width);
   attributes.height = tree_view->priv->header_height;
   attributes.event_mask = (GDK_EXPOSURE_MASK |
                            GDK_SCROLL_MASK |
@@ -1559,15 +1561,18 @@ pspp_sheet_view_realize (GtkWidget *widget)
                            GDK_KEY_RELEASE_MASK |
                            gtk_widget_get_events (widget));
 
-  tree_view->priv->header_window = gdk_window_new (gtk_widget_get_window (widget),
+  tree_view->priv->header_window = gdk_window_new (window,
 						   &attributes, attributes_mask);
-  gdk_window_set_user_data (tree_view->priv->header_window, widget);
+  gtk_widget_register_window (widget, tree_view->priv->header_window);
 
-  /* Add them all up. */
-  gtk_widget_set_style (widget,
-		       gtk_style_attach (gtk_widget_get_style (widget), gtk_widget_get_window (widget)));
-  gdk_window_set_background (tree_view->priv->bin_window, &gtk_widget_get_style (widget)->base[gtk_widget_get_state (widget)]);
-  gtk_style_set_background (gtk_widget_get_style (widget), tree_view->priv->header_window, GTK_STATE_NORMAL);
+  { /* Ensure Background */
+    GtkStyleContext *context;
+
+    context = gtk_widget_get_style_context (GTK_WIDGET (tree_view));
+
+    gtk_style_context_set_background (context, gtk_widget_get_window (GTK_WIDGET (tree_view)));
+    gtk_style_context_set_background (context, tree_view->priv->header_window);
+  }
 
   tmp_list = tree_view->priv->children;
   while (tmp_list)
@@ -3889,6 +3894,8 @@ pspp_sheet_view_draw_bin (GtkWidget      *widget,
   gboolean row_ending_details;
   gboolean draw_vgrid_lines, draw_hgrid_lines;
   gint min_y, max_y;
+  GtkStyleContext *context;
+  context = gtk_widget_get_style_context (widget);
 
   GdkRectangle Zarea;
   GtkAllocation allocation;
@@ -4190,57 +4197,24 @@ pspp_sheet_view_draw_bin (GtkWidget      *widget,
 
           g_assert (detail);
 
-	  if (gtk_widget_get_state (widget) == GTK_STATE_INSENSITIVE)
-	    state = GTK_STATE_INSENSITIVE;	    
-	  else if (flags & GTK_CELL_RENDERER_SELECTED)
-	    state = GTK_STATE_SELECTED;
-	  else
-	    state = GTK_STATE_NORMAL;
+	  gtk_style_context_save (context);
+	  state = gtk_cell_renderer_get_state (NULL, widget, flags);
+          gtk_style_context_set_state (context, state);
+          gtk_style_context_add_class (context, GTK_STYLE_CLASS_CELL);
 
 	  /* Draw background */
-	  if (row_ending_details)
-	    {
-	      char new_detail[128];
+          gtk_render_background (context, cr,
+                                 background_area.x,
+                                 background_area.y,
+                                 background_area.width,
+                                 background_area.height);
 
-	      is_first = (rtl ? !list->next : !list->prev);
-	      is_last = (rtl ? !list->prev : !list->next);
-
-	      /* (I don't like the snprintfs either, but couldn't find a
-	       * less messy way).
-	       */
-	      if (is_first && is_last)
-		g_snprintf (new_detail, 127, "%s", detail);
-	      else if (is_first)
-		g_snprintf (new_detail, 127, "%s_start", detail);
-	      else if (is_last)
-		g_snprintf (new_detail, 127, "%s_end", detail);
-	      else
-		g_snprintf (new_detail, 128, "%s_middle", detail);
-
-	      gtk_paint_flat_box (gtk_widget_get_style (widget),
-				  cr,
-				  state,
-				  GTK_SHADOW_NONE,
-				  widget,
-				  new_detail,
-				  background_area.x,
-				  background_area.y,
-				  background_area.width,
-				  background_area.height);
-	    }
-	  else
-	    {
-	      gtk_paint_flat_box (gtk_widget_get_style (widget),
-				  cr,
-				  state,
-				  GTK_SHADOW_NONE,
-				  widget,
-				  detail,
-				  background_area.x,
-				  background_area.y,
-				  background_area.width,
-				  background_area.height);
-	    }
+          /* Draw frame */
+          gtk_render_frame (context, cr,
+                            background_area.x,
+                            background_area.y,
+                            background_area.width,
+                            background_area.height);
 
 	  if (draw_hgrid_lines)
 	    {
@@ -4300,6 +4274,7 @@ pspp_sheet_view_draw_bin (GtkWidget      *widget,
 	    }
 
 	  cell_offset += column->width;
+	  gtk_style_context_restore (context);
 	}
 
       if (cell_offset < Zarea.x)
@@ -4486,7 +4461,10 @@ pspp_sheet_view_draw (GtkWidget      *widget,
 		      cairo_t *cr)
 {
   PsppSheetView *tree_view = PSPP_SHEET_VIEW (widget);
-  
+  GtkStyleContext *context;
+
+  context = gtk_widget_get_style_context (widget);
+
   if (gtk_cairo_should_draw_window (cr, tree_view->priv->bin_window))
     {
       GList *tmp_list;
@@ -4509,6 +4487,17 @@ pspp_sheet_view_draw (GtkWidget      *widget,
 	  gtk_container_propagate_draw (GTK_CONTAINER (tree_view), child->widget, cr);
 	}
     }
+  else
+    {
+      gtk_render_background (context, cr,
+                             0, 0,
+                             gtk_widget_get_allocated_width (widget),
+                             gtk_widget_get_allocated_height (widget));
+    }
+
+  gtk_style_context_save (context);
+  gtk_style_context_remove_class (context, GTK_STYLE_CLASS_VIEW);
+
   if (gtk_cairo_should_draw_window (cr, tree_view->priv->header_window))
     {
       gint n_visible_columns;
@@ -4553,6 +4542,7 @@ pspp_sheet_view_draw (GtkWidget      *widget,
 				    cr);
     }
 
+  gtk_style_context_restore (context);
   return FALSE;
 }
 
@@ -6947,17 +6937,20 @@ pspp_sheet_view_grab_focus (GtkWidget *widget)
 }
 
 static void
-pspp_sheet_view_style_set (GtkWidget *widget,
-			 GtkStyle *previous_style)
+pspp_sheet_view_style_updated (GtkWidget *widget)
 {
   PsppSheetView *tree_view = PSPP_SHEET_VIEW (widget);
   GList *list;
   PsppSheetViewColumn *column;
+  GtkStyleContext *context;
+
+  GTK_WIDGET_CLASS (pspp_sheet_view_parent_class)->style_updated (widget);
 
   if (gtk_widget_get_realized (widget))
     {
-      gdk_window_set_background (tree_view->priv->bin_window, &gtk_widget_get_style (widget)->base[gtk_widget_get_state (widget)]);
-      gtk_style_set_background (gtk_widget_get_style (widget), tree_view->priv->header_window, GTK_STATE_NORMAL);
+      context = gtk_widget_get_style_context (GTK_WIDGET (tree_view));
+      gtk_style_context_set_background (context, gtk_widget_get_window (GTK_WIDGET (tree_view)));
+      gtk_style_context_set_background (context, tree_view->priv->header_window);
       pspp_sheet_view_set_grid_lines (tree_view, tree_view->priv->grid_lines);
     }
 
