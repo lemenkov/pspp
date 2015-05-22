@@ -21,6 +21,7 @@
 #include <gsl/gsl_cdf.h>
 
 #include "data/casereader.h"
+#include "data/variable.h"
 #include "libpspp/cast.h"
 #include "output/chart-item-provider.h"
 
@@ -28,7 +29,7 @@
 
 /* Creates a scatterplot */
 struct scatterplot_chart *
-scatterplot_create (const struct casereader *reader, 
+scatterplot_create (struct casereader *reader,
 		    const char *xlabel,
 		    const char *ylabel,
 		    const struct variable *byvar,

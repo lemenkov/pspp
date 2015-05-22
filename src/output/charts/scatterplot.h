@@ -32,9 +32,9 @@ struct scatterplot_chart
   {
     struct chart_item chart_item;
     struct casereader *data;
-    const struct variable *byvar;
-    const char *xlabel;
-    const char *ylabel;
+    struct variable *byvar;
+    char *xlabel;
+    char *ylabel;
 
     double y_min, y_max;
     double x_min, x_max;
@@ -45,7 +45,7 @@ struct scatterplot_chart
   };
 
 struct scatterplot_chart *
-scatterplot_create (const struct casereader *, 
+scatterplot_create (struct casereader *,
 		    const char *xlabel,
 		    const char *ylabel,
 		    const struct variable *,
