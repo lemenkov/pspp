@@ -131,7 +131,7 @@ struct graph
 
 
 static void
-show_scatterplot (const struct graph *cmd, const struct casereader *input)
+show_scatterplot (const struct graph *cmd, struct casereader *input)
 {
   struct string title;
   struct scatterplot_chart *scatterplot;
@@ -174,11 +174,10 @@ show_scatterplot (const struct graph *cmd, const struct casereader *input)
 }
 
 static void
-show_histogr (const struct graph *cmd, const struct casereader *input)
+show_histogr (const struct graph *cmd, struct casereader *input)
 {
   struct histogram *histogram;
   struct ccase *c;
-  struct casereader *reader;
 
   {
     /* Sturges Rule */
@@ -237,7 +236,8 @@ static void
 run_graph (struct graph *cmd, struct casereader *input)
 {
   struct ccase *c;
-  struct casereader *reader, *writer;
+  struct casereader *reader;
+  struct casewriter *writer;
 
   cmd->es = pool_calloc (cmd->pool,cmd->n_dep_vars,sizeof(struct exploratory_stats));
   for(int v=0;v<cmd->n_dep_vars;v++)
