@@ -443,7 +443,7 @@ psppire_val_labs_dialog_constructor (GType                  type,
     type, n_properties, properties);
   dialog = PSPPIRE_VAL_LABS_DIALOG (obj);
 
-  content_area = GTK_CONTAINER (PSPPIRE_DIALOG (dialog)->box);
+  content_area = GTK_CONTAINER (PSPPIRE_DIALOG (dialog));
   gtk_container_add (GTK_CONTAINER (content_area),
                      get_widget_assert (xml, "val-labs-dialog"));
 

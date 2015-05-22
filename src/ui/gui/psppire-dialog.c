@@ -41,9 +41,6 @@ static guint signals [n_SIGNALS];
 
 static GObjectClass     *parent_class = NULL;
 
-
-static void psppire_dialog_buildable_init (GtkBuildableIface *iface);
-
 static void
 psppire_dialog_finalize (GObject *object)
 {
@@ -83,19 +80,8 @@ psppire_dialog_get_type (void)
 	(GInstanceInitFunc) psppire_dialog_init,
       };
 
-      static const GInterfaceInfo buildable_info =
-      {
-	(GInterfaceInitFunc) psppire_dialog_buildable_init,
-	NULL,
-	NULL
-      };
-
       dialog_type = g_type_register_static (PSPPIRE_TYPE_WINDOW_BASE,
 					    "PsppireDialog", &dialog_info, 0);
-
-      g_type_add_interface_static (dialog_type,
-				   GTK_TYPE_BUILDABLE,
-				   &buildable_info);
     }
 
   return dialog_type;
@@ -123,16 +109,6 @@ psppire_dialog_get_property (GObject         *object,
 
   switch (prop_id)
     {
-    case PROP_ORIENTATION:
-      {
-	if ( GTK_IS_VBOX (dialog->box) || GTK_VPANED (dialog->box))
-	  g_value_set_enum (value, PSPPIRE_VERTICAL);
-	else if ( GTK_IS_HBOX (dialog->box) || GTK_HPANED (dialog->box))
-	  g_value_set_enum (value, PSPPIRE_HORIZONTAL);
-	else if ( GTK_IS_TABLE (dialog->box))
-	  g_value_set_enum (value, PSPPIRE_TABULAR);
-      }
-      break;
     case PROP_SLIDING:
       g_value_set_boolean (value, dialog->slidable);
       break;
@@ -144,43 +120,6 @@ psppire_dialog_get_property (GObject         *object,
       break;
     };
 }
-
-
-static void
-dialog_set_container (PsppireDialog *dialog)
-{
-  if ( dialog->box != NULL)
-    {
-      gtk_container_remove (GTK_CONTAINER (dialog), dialog->box);
-    }
-
-  switch (dialog->orientation)
-    {
-    case PSPPIRE_HORIZONTAL:
-      if ( dialog->slidable)
-	dialog->box = gtk_hpaned_new();
-      else
-	dialog->box = gtk_hbox_new (FALSE, 5);
-      break;
-    case PSPPIRE_VERTICAL:
-      if ( dialog->slidable)
-	dialog->box = gtk_vpaned_new();
-      else
-	dialog->box = gtk_vbox_new (FALSE, 5);
-      break;
-    case PSPPIRE_TABULAR:
-      dialog->box = gtk_table_new (2, 3, FALSE);
-      g_object_set (dialog->box,
-		    "row-spacing", 5,
-		    "column-spacing", 5,
-		    NULL);
-      break;
-    }
-
-  gtk_widget_show_all (dialog->box);
-  gtk_container_add (GTK_CONTAINER (dialog), dialog->box);
-}
-
 
 static void
 psppire_dialog_set_property (GObject         *object,
@@ -196,9 +135,6 @@ psppire_dialog_set_property (GObject         *object,
     case PROP_SLIDING:
       dialog->slidable = g_value_get_boolean (value);
       break;
-    case PROP_ORIENTATION:
-      dialog->orientation = g_value_get_enum (value);
-      break;
     case PROP_HELP_PAGE:
       dialog->help_page = g_value_dup_string (value);
       break;
@@ -206,12 +142,7 @@ psppire_dialog_set_property (GObject         *object,
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
       break;
     };
-
-  dialog_set_container (dialog);
 }
-
-
-static GParamSpec *orientation_spec ;
 
 static void
 psppire_dialog_class_init (PsppireDialogClass *class)
@@ -228,14 +159,6 @@ psppire_dialog_class_init (PsppireDialogClass *class)
 			 NULL,
 			 G_PARAM_READWRITE);
 
-  orientation_spec =
-    g_param_spec_enum ("orientation",
-		       "Orientation",
-		       "Which way widgets are packed",
-		       PSPPIRE_TYPE_ORIENTATION,
-		       PSPPIRE_HORIZONTAL /* default value */,
-		       G_PARAM_CONSTRUCT_ONLY |G_PARAM_READWRITE);
-
   sliding_spec =
     g_param_spec_boolean ("slidable",
 			  "Slidable",
@@ -245,11 +168,6 @@ psppire_dialog_class_init (PsppireDialogClass *class)
 
   object_class->set_property = psppire_dialog_set_property;
   object_class->get_property = psppire_dialog_get_property;
-
-  g_object_class_install_property (object_class,
-                                   PROP_ORIENTATION,
-                                   orientation_spec);
-
 
   g_object_class_install_property (object_class,
                                    PROP_SLIDING,
@@ -306,12 +224,8 @@ psppire_dialog_class_init (PsppireDialogClass *class)
 		  1,
 		  G_TYPE_STRING);
 
-
   parent_class = g_type_class_peek_parent (class);
 }
-
-
-
 
 static void
 close_dialog (GtkWidget *w, gpointer data)
@@ -328,7 +242,6 @@ psppire_dialog_close (PsppireDialog *dialog)
   gtk_widget_hide (GTK_WIDGET (dialog));
 }
 
-
 static void
 delete_event_callback (GtkWidget *w, GdkEvent *e, gpointer data)
 {
@@ -339,8 +252,6 @@ delete_event_callback (GtkWidget *w, GdkEvent *e, gpointer data)
 static void
 psppire_dialog_init (PsppireDialog *dialog)
 {
-  GValue value = {0};
-  dialog->box = NULL;
   dialog->contents_are_valid = NULL;
   dialog->validity_data = NULL;
   dialog->contents_are_acceptable = NULL;
@@ -348,13 +259,8 @@ psppire_dialog_init (PsppireDialog *dialog)
   dialog->slidable = FALSE;
   dialog->help_page = NULL;
 
-  g_value_init (&value, orientation_spec->value_type);
-  g_param_value_set_default (orientation_spec, &value);
-
   gtk_window_set_type_hint (GTK_WINDOW (dialog),
 	GDK_WINDOW_TYPE_HINT_DIALOG);
-
-  g_value_unset (&value);
 
   g_signal_connect (dialog, "delete-event",
 		    G_CALLBACK (delete_event_callback),
@@ -365,7 +271,6 @@ psppire_dialog_init (PsppireDialog *dialog)
 
   g_object_set (dialog, "icon-name", "pspp", NULL);
 }
-
 
 GtkWidget*
 psppire_dialog_new (void)
@@ -519,7 +424,7 @@ psppire_dialog_run (PsppireDialog *dialog)
     g_warning ("PsppireDialog %s has no title", gtk_widget_get_name (GTK_WIDGET (dialog)));
   
   if ( dialog->contents_are_valid != NULL )
-    gtk_container_foreach (GTK_CONTAINER (dialog->box),
+    gtk_container_foreach (gtk_bin_get_child(GTK_BIN(dialog)),
 			   connect_notify_signal,
 			   dialog);
 
@@ -563,29 +468,6 @@ psppire_dialog_help (PsppireDialog *dialog)
   g_signal_emit (dialog, signals [DIALOG_HELP], 0, page);
 }
 
-
-GType
-psppire_orientation_get_type (void)
-{
-  static GType etype = 0;
-  if (etype == 0)
-    {
-      static const GEnumValue values[] =
-	{
-	  { PSPPIRE_HORIZONTAL, "PSPPIRE_HORIZONTAL", "Horizontal" },
-	  { PSPPIRE_VERTICAL,   "PSPPIRE_VERTICAL",   "Vertical" },
-	  { PSPPIRE_TABULAR,   "PSPPIRE_TABULAR",   "Tabular" },
-	  { 0, NULL, NULL }
-	};
-
-      etype = g_enum_register_static
-	(g_intern_static_string ("PsppireOrientation"), values);
-
-    }
-  return etype;
-}
-
-
 /* Sets a predicate function that is checked after each change that the user
    makes to the dialog's state.  If the predicate function returns false, then
    "OK" and other buttons that accept the dialog's settings will be
@@ -622,28 +504,4 @@ psppire_dialog_is_acceptable (const PsppireDialog *dialog)
 {
   return (dialog->contents_are_acceptable == NULL
           || dialog->contents_are_acceptable (dialog->acceptable_data));
-}
-
-
-
-
-static GObject *
-get_internal_child    (GtkBuildable *buildable,
-		       GtkBuilder *builder,
-		       const gchar *childname)
-{
-  PsppireDialog *dialog = PSPPIRE_DIALOG (buildable);
-
-  if ( 0 == strcmp (childname, "hbox"))
-    return G_OBJECT (dialog->box);
-
-  return NULL;
-}
-
-
-
-static void
-psppire_dialog_buildable_init (GtkBuildableIface *iface)
-{
-  iface->get_internal_child = get_internal_child;
 }

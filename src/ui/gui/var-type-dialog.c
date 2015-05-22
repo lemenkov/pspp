@@ -531,7 +531,7 @@ psppire_var_type_dialog_constructor (GType                  type,
 
   xml = builder_new ("var-type-dialog.ui");
 
-  content_area = GTK_CONTAINER (PSPPIRE_DIALOG (dialog)->box);
+  content_area = GTK_CONTAINER (PSPPIRE_DIALOG (dialog));
   gtk_container_add (GTK_CONTAINER (content_area),
                      get_widget_assert (xml, "var-type-dialog"));
 

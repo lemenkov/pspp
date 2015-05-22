@@ -6,9 +6,8 @@
   <object class="PsppireDialog" id="k-means-dialog">
     <property name="title" translatable="yes">K-Means Cluster Analysis</property>
     <property name="modal">True</property>
-    <property name="orientation">Vertical</property>
     <property name="help-page">QUICK-CLUSTER</property>
-    <child internal-child="hbox">
+    <child>
       <object class="GtkVBox" id="dialog-hbox1">
         <property name="visible">True</property>
         <property name="orientation">vertical</property>

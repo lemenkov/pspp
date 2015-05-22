@@ -362,7 +362,7 @@ psppire_missing_val_dialog_constructor (GType                  type,
     type, n_properties, properties);
   dialog = PSPPIRE_MISSING_VAL_DIALOG (obj);
 
-  content_area = GTK_CONTAINER (PSPPIRE_DIALOG (dialog)->box);
+  content_area = GTK_CONTAINER (PSPPIRE_DIALOG (dialog));
   xml = builder_new ("missing-val-dialog.ui");
   gtk_container_add (GTK_CONTAINER (content_area),
                      get_widget_assert (xml, "missing-values-dialog"));

@@ -26,7 +26,7 @@
     <property name="title" translatable="yes">Reliability Analysis</property>
     <property name="modal">True</property>
     <property name="help-page">RELIABILITY</property>
-    <child internal-child="hbox">
+    <child>
       <object class="GtkHBox" id="dialog-hbox5">
         <property name="visible">True</property>
         <child>

@@ -7,7 +7,7 @@
     <property name="title" translatable="yes">Count Occurrences of Values within Cases</property>
     <property name="modal">True</property>
     <property name="help-page">COUNT</property>
-    <child internal-child="hbox">
+    <child>
       <object class="GtkHBox" id="dialog-hbox5">
         <property name="visible">True</property>
         <property name="orientation">vertical</property>
@@ -229,8 +229,7 @@
   <object class="PsppireDialog" id="values-dialog">
     <property name="title" translatable="yes">Count Values within Cases: Values to Count</property>
     <property name="modal">True</property>
-    <property name="orientation">Vertical</property>
-    <child internal-child="hbox">
+    <child>
       <object class="GtkVBox" id="dialog-hbox6">
         <property name="visible">True</property>
         <property name="orientation">vertical</property>

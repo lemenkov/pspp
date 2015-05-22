@@ -28,9 +28,8 @@
   <object class="PsppireDialog" id="factor-dialog">
     <property name="title" translatable="yes">Factor Analysis</property>
     <property name="modal">True</property>
-    <property name="orientation">Tabular</property>
     <property name="help-page">FACTOR</property>
-    <child internal-child="hbox">
+    <child>
       <object class="GtkTable" id="dialog-hbox1">
         <property name="visible">True</property>
         <property name="n_rows">2</property>
@@ -204,7 +203,7 @@
   <object class="PsppireDialog" id="extractions-dialog">
     <property name="title" translatable="yes">Factor Analysis: Extraction</property>
     <property name="modal">True</property>
-    <child internal-child="hbox">
+    <child>
       <object class="GtkHBox" id="dialog-hbox4">
         <property name="visible">True</property>
         <property name="spacing">2</property>
@@ -560,7 +559,7 @@
   <object class="PsppireDialog" id="rotations-dialog">
     <property name="title" translatable="yes">Factor Analysis: Rotation</property>
     <property name="modal">True</property>
-    <child internal-child="hbox">
+    <child>
       <object class="GtkHBox" id="dialog-hbox8">
         <property name="visible">True</property>
         <property name="spacing">2</property>

@@ -55,7 +55,6 @@ typedef enum
 struct _PsppireDialog
 {
   PsppireWindowBase window;
-  GtkWidget *box;
 
   /* Private */
   GMainLoop *loop;
@@ -66,8 +65,6 @@ struct _PsppireDialog
   ContentsAreValid contents_are_acceptable;
   gpointer acceptable_data;
   gboolean slidable;
-  PsppireOrientation orientation;
-
   gchar *help_page;
 
 };
@@ -92,14 +89,6 @@ void           psppire_dialog_set_accept_predicate (PsppireDialog *,
                                                     gpointer );
 gboolean       psppire_dialog_is_acceptable (const PsppireDialog *);
 void           psppire_dialog_notify_change (PsppireDialog *);
-
-
-
-GType psppire_orientation_get_type (void);
-
-
-#define PSPPIRE_TYPE_ORIENTATION (psppire_orientation_get_type ())
-
 
 G_END_DECLS
 
