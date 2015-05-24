@@ -421,7 +421,7 @@ on_data_column_edited (GtkCellRendererText *cell,
     {
       gtk_widget_queue_resize (GTK_WIDGET (data_sheet));
       data_sheet->scroll_to_bottom_signal =
-        g_signal_connect (data_sheet, "size-request",
+        g_signal_connect (data_sheet, "size-allocate",
                           G_CALLBACK (scroll_to_bottom), NULL);
     }
   else
