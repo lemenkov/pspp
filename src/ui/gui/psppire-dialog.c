@@ -424,7 +424,7 @@ psppire_dialog_run (PsppireDialog *dialog)
     g_warning ("PsppireDialog %s has no title", gtk_widget_get_name (GTK_WIDGET (dialog)));
   
   if ( dialog->contents_are_valid != NULL )
-    gtk_container_foreach (gtk_bin_get_child(GTK_BIN(dialog)),
+    gtk_container_foreach (GTK_CONTAINER (gtk_bin_get_child(GTK_BIN(dialog))),
 			   connect_notify_signal,
 			   dialog);
 

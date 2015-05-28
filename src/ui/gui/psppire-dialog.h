@@ -1,5 +1,5 @@
 /* PSPPIRE - a graphical user interface for PSPP.
-   Copyright (C) 2007, 2010, 2011, 2012  Free Software Foundation
+   Copyright (C) 2007, 2010, 2011, 2012, 2015  Free Software Foundation
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -42,15 +42,6 @@ typedef struct _PsppireDialog       PsppireDialog;
 typedef struct _PsppireDialogClass  PsppireDialogClass;
 
 typedef gboolean (*ContentsAreValid) (gpointer);
-
-typedef enum
-  {
-    PSPPIRE_HORIZONTAL,
-    PSPPIRE_VERTICAL,
-    PSPPIRE_TABULAR
-  } PsppireOrientation;
-
-
 
 struct _PsppireDialog
 {

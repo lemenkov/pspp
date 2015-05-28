@@ -1,5 +1,5 @@
 /* PSPPIRE - a graphical user interface for PSPP.
-   Copyright (C) 2005, 2006, 2009, 2011, 2012  Free Software Foundation
+   Copyright (C) 2005, 2006, 2009, 2011, 2012, 2015  Free Software Foundation
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -147,7 +147,6 @@ psppire_missing_val_dialog_new (const struct variable *var)
 {
   return PSPPIRE_MISSING_VAL_DIALOG (
     g_object_new (PSPPIRE_TYPE_MISSING_VAL_DIALOG,
-                  "orientation", PSPPIRE_VERTICAL,
                   "variable", var,
                   NULL));
 }

@@ -1,5 +1,5 @@
 /* PSPPIRE - a graphical user interface for PSPP.
-    Copyright (C) 2005, 2006, 2010, 2011, 2012  Free Software Foundation
+    Copyright (C) 2005, 2006, 2010, 2011, 2012, 2015  Free Software Foundation
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -197,7 +197,6 @@ psppire_var_type_dialog_new (const struct fmt_spec *format)
 {
   return PSPPIRE_VAR_TYPE_DIALOG (
     g_object_new (PSPPIRE_TYPE_VAR_TYPE_DIALOG,
-                  "orientation", PSPPIRE_HORIZONTAL,
                   "format", format,
                   NULL));
 }
