@@ -93,10 +93,8 @@ typedef struct _PsppSheetViewChild PsppSheetViewChild;
 struct _PsppSheetViewChild
 {
   GtkWidget *widget;
-  gint x;
-  gint y;
-  gint width;
-  gint height;
+  PsppSheetViewColumn *column;
+  int node;
 };
 
 
@@ -402,10 +400,8 @@ static void     pspp_sheet_view_search_init               (GtkWidget        *ent
 							 PsppSheetView      *tree_view);
 static void     pspp_sheet_view_put                       (PsppSheetView      *tree_view,
 							 GtkWidget        *child_widget,
-							 gint              x,
-							 gint              y,
-							 gint              width,
-							 gint              height);
+							 GtkTreePath *path,
+							 PsppSheetViewColumn *column);
 static gboolean pspp_sheet_view_start_editing             (PsppSheetView      *tree_view,
 							 GtkTreePath      *cursor_path);
 static gboolean pspp_sheet_view_editable_button_press_event (GtkWidget *,
@@ -2016,6 +2012,24 @@ pspp_sheet_view_size_allocate_columns (GtkWidget *widget,
 }
 
 static void
+update_childrens_allocation (PsppSheetView *tree_view)
+{
+  GList *tmp_list;
+  for (tmp_list = tree_view->priv->children; tmp_list; tmp_list = tmp_list->next)
+    {
+      PsppSheetViewChild *child = tmp_list->data;
+      GtkAllocation allocation;
+      GtkTreePath *path;
+
+      /* totally ignore our child's requisition */
+      path = _pspp_sheet_view_find_path (tree_view, child->node);
+      pspp_sheet_view_get_cell_area (tree_view, path, child->column, &allocation);
+      gtk_tree_path_free (path);
+      gtk_widget_size_allocate (child->widget, &allocation);
+    }
+}
+
+static void
 pspp_sheet_view_size_allocate (GtkWidget     *widget,
 			     GtkAllocation *allocation)
 {
@@ -2028,25 +2042,7 @@ pspp_sheet_view_size_allocate (GtkWidget     *widget,
   if (allocation->width != old_allocation.width)
     width_changed = TRUE;
 
-
   gtk_widget_set_allocation (widget, allocation);
-
-  tmp_list = tree_view->priv->children;
-
-  while (tmp_list)
-    {
-      GtkAllocation allocation;
-
-      PsppSheetViewChild *child = tmp_list->data;
-      tmp_list = tmp_list->next;
-
-      /* totally ignore our child's requisition */
-      allocation.x = child->x;
-      allocation.y = child->y;
-      allocation.width = child->width;
-      allocation.height = child->height;
-      gtk_widget_size_allocate (child->widget, &allocation);
-    }
 
   /* We size-allocate the columns first because the width of the
    * tree view (used in updating the adjustments below) might change.
@@ -2147,6 +2143,7 @@ pspp_sheet_view_size_allocate (GtkWidget     *widget,
 	  else
 	    gtk_widget_queue_draw (widget);
 	}
+      update_childrens_allocation(tree_view);
     }
 }
 
@@ -4273,36 +4270,10 @@ pspp_sheet_view_draw_bin (GtkWidget      *widget,
                                                &cell_area,
                                                flags);
 
-          if (node == cursor && has_special_cell &&
-	      ((column == tree_view->priv->focus_column &&
-		PSPP_SHEET_VIEW_FLAG_SET (tree_view, PSPP_SHEET_VIEW_DRAW_KEYFOCUS) &&
-		gtk_widget_has_focus (widget)) ||
-	       (column == tree_view->priv->edited_column)))
-	    {
-	      _pspp_sheet_view_column_cell_draw_focus (column,
-						       cr,
-						     &background_area,
-						     &cell_area,
-						     flags);
-	    }
 
 	  cell_offset += column->width;
 	  gtk_style_context_restore (context);
 	}
-
-      if (cell_offset < Zarea.x)
-        {
-          gtk_paint_flat_box (gtk_widget_get_style (widget),
-                              cr,
-                              GTK_STATE_NORMAL,
-                              GTK_SHADOW_NONE,
-                              widget,
-                              "base",
-                              cell_offset,
-                              background_area.y,
-                              Zarea.x - cell_offset,
-                              background_area.height);
-        }
 
       if (node == drag_highlight)
         {
@@ -4369,54 +4340,6 @@ pspp_sheet_view_draw_bin (GtkWidget      *widget,
             }
 #endif
         }
-
-      /* draw the big row-spanning focus rectangle, if needed */
-      if (!has_special_cell && node == cursor &&
-	  PSPP_SHEET_VIEW_FLAG_SET (tree_view, PSPP_SHEET_VIEW_DRAW_KEYFOCUS) &&
-	  gtk_widget_has_focus (widget))
-        {
-	  gint tmp_y, tmp_height;
-	  gint width;
-	  GtkStateType focus_rect_state;
-
-	  focus_rect_state =
-	    flags & GTK_CELL_RENDERER_SELECTED ? GTK_STATE_SELECTED :
-	    (flags & GTK_CELL_RENDERER_PRELIT ? GTK_STATE_PRELIGHT :
-	     (flags & GTK_CELL_RENDERER_INSENSITIVE ? GTK_STATE_INSENSITIVE :
-	      GTK_STATE_NORMAL));
-
-	  width = gdk_window_get_width (tree_view->priv->bin_window);
-	  
-	  if (draw_hgrid_lines)
-	    {
-	      tmp_y = BACKGROUND_FIRST_PIXEL (tree_view, node) + grid_line_width / 2;
-	      tmp_height = ROW_HEIGHT (tree_view) - grid_line_width;
-	    }
-	  else
-	    {
-	      tmp_y = BACKGROUND_FIRST_PIXEL (tree_view, node);
-	      tmp_height = ROW_HEIGHT (tree_view);
-	    }
-
-	  if (row_ending_details)
-	    gtk_paint_focus (gtk_widget_get_style (widget),
-			     cr,
-			     focus_rect_state,
-			     widget,
-			     (is_first
-			      ? (is_last ? "treeview" : "treeview-left" )
-			      : (is_last ? "treeview-right" : "treeview-middle" )),
-			     0, tmp_y,
-			     width, tmp_height);
-	  else
-	    gtk_paint_focus (gtk_widget_get_style (widget),
-			     cr,
-			     focus_rect_state,
-			     widget,
-			     "treeview",
-			     0, tmp_y,
-			     width, tmp_height);
-	}
 
       y_offset += max_height;
 
@@ -4498,7 +4421,7 @@ pspp_sheet_view_draw (GtkWidget      *widget,
 	  tmp_list = tmp_list->next;
 
 	  gtk_container_propagate_draw (GTK_CONTAINER (tree_view), child->widget, cr);
-	}
+        }
     }
   else
     {
@@ -7135,12 +7058,9 @@ pspp_sheet_view_real_move_cursor (PsppSheetView       *tree_view,
 
 static void
 pspp_sheet_view_put (PsppSheetView *tree_view,
-		   GtkWidget   *child_widget,
-		   /* in bin_window coordinates */
-		   gint         x,
-		   gint         y,
-		   gint         width,
-		   gint         height)
+		     GtkWidget   *child_widget,
+		     GtkTreePath *path,
+		     PsppSheetViewColumn *column)
 {
   PsppSheetViewChild *child;
   
@@ -7150,10 +7070,12 @@ pspp_sheet_view_put (PsppSheetView *tree_view,
   child = g_slice_new (PsppSheetViewChild);
 
   child->widget = child_widget;
-  child->x = x;
-  child->y = y;
-  child->width = width;
-  child->height = height;
+  _pspp_sheet_view_find_node (tree_view, path, &child->node);
+  if (child->node < 0)
+    {
+      g_assert_not_reached ();
+    }
+  child->column = column;
 
   tree_view->priv->children = g_list_append (tree_view->priv->children, child);
 
@@ -7162,43 +7084,6 @@ pspp_sheet_view_put (PsppSheetView *tree_view,
   
   gtk_widget_set_parent (child_widget, GTK_WIDGET (tree_view));
 }
-
-void
-_pspp_sheet_view_child_move_resize (PsppSheetView *tree_view,
-				  GtkWidget   *widget,
-				  /* in tree coordinates */
-				  gint         x,
-				  gint         y,
-				  gint         width,
-				  gint         height)
-{
-  PsppSheetViewChild *child = NULL;
-  GList *list;
-  GdkRectangle allocation;
-
-  g_return_if_fail (PSPP_IS_SHEET_VIEW (tree_view));
-  g_return_if_fail (GTK_IS_WIDGET (widget));
-
-  for (list = tree_view->priv->children; list; list = list->next)
-    {
-      if (((PsppSheetViewChild *)list->data)->widget == widget)
-	{
-	  child = list->data;
-	  break;
-	}
-    }
-  if (child == NULL)
-    return;
-
-  allocation.x = child->x = x;
-  allocation.y = child->y = y;
-  allocation.width = child->width = width;
-  allocation.height = child->height = height;
-
-  if (gtk_widget_get_realized (widget))
-    gtk_widget_size_allocate (widget, &allocation);
-}
-
 
 /* TreeModel Callbacks
  */
@@ -8855,79 +8740,6 @@ pspp_sheet_view_new_column_width (PsppSheetView *tree_view,
   return width;
 }
 
-
-/* FIXME this adjust_allocation is a big cut-and-paste from
- * GtkCList, needs to be some "official" way to do this
- * factored out.
- */
-typedef struct
-{
-  GdkWindow *window;
-  int dx;
-  int dy;
-} ScrollData;
-
-/* The window to which gtk_widget_get_window (widget) is relative */
-#define ALLOCATION_WINDOW(widget)		\
-   (!gtk_widget_get_has_window (widget) ?		\
-    gtk_widget_get_window (widget) :                          \
-    gdk_window_get_parent (gtk_widget_get_window (widget)))
-
-static void
-adjust_allocation_recurse (GtkWidget *widget,
-			   gpointer   data)
-{
-  ScrollData *scroll_data = data;
-  GtkAllocation allocation;
-  gtk_widget_get_allocation (widget, &allocation);
-  /* Need to really size allocate instead of just poking
-   * into widget->allocation if the widget is not realized.
-   * FIXME someone figure out why this was.
-   */
-  if (!gtk_widget_get_realized (widget))
-    {
-      if (gtk_widget_get_visible (widget))
-	{
-	  GdkRectangle tmp_rectangle = allocation;
-	  tmp_rectangle.x += scroll_data->dx;
-          tmp_rectangle.y += scroll_data->dy;
-          
-	  gtk_widget_size_allocate (widget, &tmp_rectangle);
-	}
-    }
-  else
-    {
-      if (ALLOCATION_WINDOW (widget) == scroll_data->window)
-	{
-	  allocation.x += scroll_data->dx;
-          allocation.y += scroll_data->dy;
-          
-	  if (GTK_IS_CONTAINER (widget))
-	    gtk_container_forall (GTK_CONTAINER (widget),
-				  adjust_allocation_recurse,
-				  data);
-	}
-    }
-}
-
-static void
-adjust_allocation (GtkWidget *widget,
-		   int        dx,
-                   int        dy)
-{
-  ScrollData scroll_data;
-
-  if (gtk_widget_get_realized (widget))
-    scroll_data.window = ALLOCATION_WINDOW (widget);
-  else
-    scroll_data.window = NULL;
-    
-  scroll_data.dx = dx;
-  scroll_data.dy = dy;
-  
-  adjust_allocation_recurse (widget, &scroll_data);
-}
-
 void 
 pspp_sheet_view_column_update_button (PsppSheetViewColumn *tree_column);
 
@@ -8938,9 +8750,8 @@ pspp_sheet_view_adjustment_changed (GtkAdjustment *adjustment,
 {
   if (gtk_widget_get_realized (GTK_WIDGET (tree_view)))
     {
-      GList *list;
       gint dy;
-	
+
       gdk_window_move (tree_view->priv->bin_window,
 		       - gtk_adjustment_get_value (tree_view->priv->hadjustment),
 		       TREE_VIEW_HEADER_HEIGHT (tree_view));
@@ -8948,47 +8759,25 @@ pspp_sheet_view_adjustment_changed (GtkAdjustment *adjustment,
 		       - gtk_adjustment_get_value (tree_view->priv->hadjustment),
 		       0);
       dy = tree_view->priv->dy - (int) gtk_adjustment_get_value (tree_view->priv->vadjustment);
-      if (dy)
-	{
-          update_prelight (tree_view,
-                           tree_view->priv->event_last_x,
-                           tree_view->priv->event_last_y - dy);
 
-	  if (tree_view->priv->edited_column &&
-              GTK_IS_WIDGET (tree_view->priv->edited_column->editable_widget))
-	    {
-	      GList *list;
-	      GtkWidget *widget;
-	      PsppSheetViewChild *child = NULL;
-
-	      widget = GTK_WIDGET (tree_view->priv->edited_column->editable_widget);
-	      adjust_allocation (widget, 0, dy); 
-	      
-	      for (list = tree_view->priv->children; list; list = list->next)
-		{
-		  child = (PsppSheetViewChild *)list->data;
-		  if (child->widget == widget)
-		    {
-		      child->y += dy;
-		      break;
-		    }
-		}
-	    }
-	}
       gdk_window_scroll (tree_view->priv->bin_window, 0, dy);
 
-      if (tree_view->priv->dy != (int) gtk_adjustment_get_value (tree_view->priv->vadjustment))
+      if (dy != 0)
         {
           /* update our dy and top_row */
           tree_view->priv->dy = (int) gtk_adjustment_get_value (tree_view->priv->vadjustment);
 
+	  update_prelight (tree_view,
+                           tree_view->priv->event_last_x,
+                           tree_view->priv->event_last_y);
+
           if (!tree_view->priv->in_top_row_to_dy)
             pspp_sheet_view_dy_to_top_row (tree_view);
 	}
+
+      update_childrens_allocation(tree_view);
     }
 }
-
-
 
 /* Public methods
  */
@@ -12672,25 +12461,12 @@ pspp_sheet_view_real_start_editing (PsppSheetView       *tree_view,
   pspp_sheet_selection_select_column (tree_view->priv->selection, column);
   tree_view->priv->anchor_column = column;
 
-  gtk_widget_size_request (GTK_WIDGET (cell_editable), &requisition);
-
   PSPP_SHEET_VIEW_SET_FLAG (tree_view, PSPP_SHEET_VIEW_DRAW_KEYFOCUS);
 
-  if (requisition.height < cell_area->height)
-    {
-      gint diff = cell_area->height - requisition.height;
-      pspp_sheet_view_put (tree_view,
-			 GTK_WIDGET (cell_editable),
-			 cell_area->x, cell_area->y + diff/2,
-			 cell_area->width, requisition.height);
-    }
-  else
-    {
-      pspp_sheet_view_put (tree_view,
-			 GTK_WIDGET (cell_editable),
-			 cell_area->x, cell_area->y,
-			 cell_area->width, cell_area->height);
-    }
+  pspp_sheet_view_put (tree_view,
+		       GTK_WIDGET (cell_editable),
+		       path,
+		       column);
 
   gtk_cell_editable_start_editing (GTK_CELL_EDITABLE (cell_editable),
 				   (GdkEvent *)event);
