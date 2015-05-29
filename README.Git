@@ -99,3 +99,38 @@ to be announced to glade such that you can view the interface.
 The install process will install the psppire glade library, icons and
 psppire.xml files in the appropiate system locations. You cannot override
 this with --prefix. After that you can run "glade" and open the ui files.
+
+Building from git on Mac OS
+---------------------------
+
+You can build on MacOS in the macports environment. After installing all
+required packages to resolve library dependencies and autotools e.t.c, you
+run make -f Smake as described above.
+
+The macports system provides the libraries and header files in a separate
+location from the MacOS system libraries. The typical locations are
+
+Libraries: /opt/local/lib
+Headers:   /opt/local/include
+
+pspp under macports will be linked against the macports libraries. The configure
+script has to be informed about the library and header locations. Assume the following
+directory structure for an out of tree build:
+
+~/mypspp
+  |----pspp    (This is the pspp git directory)
+  |----install (The install location containing also ui files for psppire)
+  |----build   (The build directory)
+  |----gnulib  (The gnulib directory as described above)
+
+Then you can build with the following commands:
+
+    cd ~/mypspp/pspp
+    make -f Smake
+    cd ../build
+    ../pspp/configure --prefix=/Users/USER/mypspp/install \
+                  LDFLAGS=-L/opt/local/lib \
+		  CPPFLAGS=-I/opt/local/include
+    make
+    make install
+    ../install/bin/psppire (If everything worked, you should see psppire...)
