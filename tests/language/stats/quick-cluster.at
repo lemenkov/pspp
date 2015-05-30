@@ -229,3 +229,18 @@ QUICK CLUSTER x y
 AT_CHECK([pspp -O format=csv badn.sps], [1], [ignore])
 
 AT_CLEANUP
+
+AT_SETUP([QUICK CLUSTER infinite loop on bad command name])
+AT_DATA([quick-cluster.sps], [dnl
+data list notable list /x y.
+begin data.
+1   2
+1   2.2
+end data.
+
+QUICK CLUSTER x y /UNSUPPORTED.
+])
+AT_CHECK([pspp -O format=csv quick-cluster.sps], [1], [dnl
+quick-cluster.sps:7.20-7.30: error: QUICK CLUSTER: Syntax error at `UNSUPPORTED'.
+])
+AT_CLEANUP

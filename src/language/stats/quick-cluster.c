@@ -1,5 +1,5 @@
 /* PSPP - a program for statistical analysis.
-   Copyright (C) 2011, 2012 Free Software Foundation, Inc.
+   Copyright (C) 2011, 2012, 2015 Free Software Foundation, Inc.
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -576,6 +576,11 @@ cmd_quick_cluster (struct lexer *lexer, struct dataset *ds)
                 goto error;
 	    }
 	}
+      else
+        {
+          lex_error (lexer, NULL);
+          goto error;
+        }
     }
 
   qc.wv = dict_get_weight (dict);
