@@ -15,7 +15,7 @@
    along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 
 #include <config.h>
-#include "math/decimal.h"
+#include "math/chart-geometry.h"
 #include "output/charts/plot-hist.h"
 
 #include <float.h>
@@ -25,6 +25,7 @@
 #include "output/cairo-chart.h"
 
 #include "gl/xvasprintf.h"
+#include "gl/minmax.h"
 
 #include "gettext.h"
 #define _(msgid) gettext (msgid)
@@ -68,7 +69,8 @@ histogram_write_legend (cairo_t *cr, const struct xrchart_geometry *geom,
 
 static void
 hist_draw_bar (cairo_t *cr, const struct xrchart_geometry *geom,
-               const gsl_histogram *h, int bar, bool label)
+               const gsl_histogram *h, int bar, const char *tick_format_string,
+	       const double tickscale, const bool tickoversize)
 {
   double upper;
   double lower;
@@ -102,21 +104,9 @@ hist_draw_bar (cairo_t *cr, const struct xrchart_geometry *geom,
   cairo_restore (cr);
   cairo_stroke (cr);
 
-  if (label)
-    {
-      struct decimal decupper;
-      struct decimal declower;
-      struct decimal middle;
-      decimal_from_double (&declower, lower);
-      decimal_from_double (&decupper, upper);
-      middle = declower;
-      decimal_add (&middle, &decupper);
-      decimal_int_divide (&middle, 2);
-      char *str = decimal_to_string (&middle);
-      draw_tick (cr, geom, SCALE_ABSCISSA, bins > 10,
-		 x_pos + width / 2.0, "%s", str);
-      free (str);
-    }
+  draw_tick (cr, geom, SCALE_ABSCISSA, tickoversize,
+	     x_pos + width / 2.0, tick_format_string, (upper+lower)/2.0*tickscale);
+
 }
 
 void
@@ -126,6 +116,11 @@ xrchart_draw_histogram (const struct chart_item *chart_item, cairo_t *cr,
   struct histogram_chart *h = to_histogram_chart (chart_item);
   int i;
   int bins;
+  char *tick_format_string;
+  char *test_text;
+  double width, left_width, right_width, unused;
+  double tickscale;
+  bool tickoversize;
 
   xrchart_write_title (cr, geom, _("HISTOGRAM"));
 
@@ -138,14 +133,28 @@ xrchart_draw_histogram (const struct chart_item *chart_item, cairo_t *cr,
       return;
     }
 
-  bins = gsl_histogram_bins (h->gsl_hist);
-
   xrchart_write_yscale (cr, geom, 0, gsl_histogram_max_val (h->gsl_hist));
 
+  /* Draw the ticks and compute if the rendered tick text is wider than the bin */
+  bins = gsl_histogram_bins (h->gsl_hist);
+  tick_format_string = chart_get_ticks_format (gsl_histogram_max (h->gsl_hist),
+					       gsl_histogram_min (h->gsl_hist),
+					       bins,
+					       &tickscale);
+  test_text = xasprintf(tick_format_string, gsl_histogram_max (h->gsl_hist)*tickscale);
+  xrchart_text_extents (cr, geom, test_text, &right_width, &unused);
+  free(test_text);
+  test_text = xasprintf(tick_format_string, gsl_histogram_min (h->gsl_hist)*tickscale);
+  xrchart_text_extents (cr, geom, test_text, &left_width, &unused);
+  free(test_text);
+  width = MAX(left_width, right_width);
+  tickoversize = width > 0.9 *
+    ((double)(geom->axis[SCALE_ABSCISSA].data_max - geom->axis[SCALE_ABSCISSA].data_min))/bins;
   for (i = 0; i < bins; i++)
     {
-      hist_draw_bar (cr, geom, h->gsl_hist, i, true);
+      hist_draw_bar (cr, geom, h->gsl_hist, i, tick_format_string, tickscale, tickoversize);
     }
+  free(tick_format_string);
 
   histogram_write_legend (cr, geom, h->n, h->mean, h->stddev);
 

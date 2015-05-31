@@ -23,6 +23,10 @@
 #include "decimal.h"
 #include <stdlib.h>
 
+#include "gl/xalloc.h"
+#include "gl/minmax.h"
+#include "gl/xvasprintf.h"
+
 static const double standard_tick[] = {1, 2, 5, 10};
 
 /* Adjust tick to be a sensible value
@@ -148,4 +152,73 @@ chart_get_scale (double highdbl, double lowdbl,
 	  *n_ticks = n_int;
 	}
     }
+}
+
+/*
+ * Compute the optimum format string and the scaling
+ * for the tick drawing on a chart axis
+ * Input:  max:     the maximum value of the range
+ *         min:     the minimum value of the range
+ *         nticks:  the number of tick intervals (bins) on the axis
+ * Return: fs:      format string for printf to print the tick value
+ *         scale:   scaling factor for the tick value
+ * The format string has to be freed after usage.
+ * An example format string and scalefactor:
+ * Non Scientific: "%.3lf", scale=1.00
+ * Scientific:     "%.2lfe3", scale = 0.001
+ * Usage example:
+ *   fs = chart_get_ticks_format(95359943.3,34434.9,8,&scale,&long);
+ *   printf(fs,value*scale);
+ *   free(fs);
+ */
+char *
+chart_get_ticks_format (const double max, const double min,
+			const unsigned int nticks, double *scale)
+{
+  assert(max > min);
+  double interval = (max - min)/nticks;
+  double logmax = log10(fmax(fabs(max),fabs(min)));
+  double logintv = log10(interval);
+  int logshift = 0;
+  char *format_string = NULL;
+  int nrdecs = 0;
+
+  if (logmax > 0.0 && logintv < 0.0)
+    {
+      nrdecs = MIN(6,(int)(fabs(logintv))+1);
+      logshift = 0;
+      format_string = xasprintf("%%.%dlf",nrdecs);
+    }
+  else if (logmax > 0.0) /*logintv is > 0*/
+    {
+      if (logintv < 3.0)
+	{
+	  logshift = 0; /* No scientific format */
+	  nrdecs = 0;
+	  format_string = xstrdup("%.0lf");
+	}
+      else
+	{
+	  logshift = (int)logmax;
+	  nrdecs = MIN(6,(int)(logmax-logintv)+1);
+	  format_string = xasprintf("%%.%dlfe%d",nrdecs,logshift);
+	}
+    }
+  else /* logmax and logintv are < 0 */
+    {
+      if (logmax > -3.0)
+	{
+	  logshift = 0; /* No scientific format */
+	  nrdecs = (int)(-logintv) + 1;
+	  format_string = xasprintf("%%.%dlf",nrdecs);
+	}
+      else
+	{
+	  logshift = (int)logmax-1;
+	  nrdecs = MIN(6,(int)(logmax-logintv)+1);
+	  format_string = xasprintf("%%.%dlfe%d",nrdecs,logshift);
+	}
+    }
+  *scale = pow(10.0,-(double)logshift);
+  return format_string;
 }

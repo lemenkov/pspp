@@ -226,8 +226,15 @@ tests_math_chart_get_scale_test_LDADD = \
 	src/math/libpspp-math.la \
 	src/libpspp/liblibpspp.la \
 	src/libpspp-core.la \
-	gl/libgl.la 
+	gl/libgl.la
 
+check_PROGRAMS += tests/math/chart-get-ticks-format-test
+tests_math_chart_get_ticks_format_test_SOURCES = tests/math/chart-get-ticks-format-test.c
+tests_math_chart_get_ticks_format_test_LDADD = \
+	src/math/libpspp-math.la \
+	src/libpspp/liblibpspp.la \
+	src/libpspp-core.la \
+	gl/libgl.la
 
 check_PROGRAMS += tests/math/decimal-test
 tests_math_decimal_test_SOURCES = tests/math/decimal-test.c

@@ -569,3 +569,27 @@ xrchart_line(cairo_t *cr, const struct xrchart_geometry *geom,
   cairo_line_to (cr, x2, y2);
   cairo_stroke (cr);
 }
+
+void
+xrchart_text_extents (cairo_t *cr, const struct xrchart_geometry *geom,
+		      const char *utf8,
+		      double *width, double *height)
+{
+  PangoFontDescription *desc;
+  PangoLayout *layout;
+  int width_pango;
+  int height_pango;
+
+  desc = pango_font_description_from_string ("sans serif");
+  if (desc == NULL)
+      return;
+  pango_font_description_set_absolute_size (desc, geom->font_size * PANGO_SCALE);
+  layout = pango_cairo_create_layout (cr);
+  pango_layout_set_font_description (layout, desc);
+  pango_layout_set_text (layout, utf8, -1);
+  pango_layout_get_size (layout, &width_pango, &height_pango);
+  *width = (double) width_pango / PANGO_SCALE;
+  *height = (double) height_pango / PANGO_SCALE;
+  g_object_unref (layout);
+  pango_font_description_free (desc);
+}
