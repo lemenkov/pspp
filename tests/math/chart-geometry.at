@@ -33,3 +33,30 @@ AT_SETUP([Chart Scale])
 AT_CHECK([../../math/chart-get-scale-test], [0], [ignore])
 
 AT_CLEANUP
+
+
+AT_SETUP([Chart Ticks Format])
+
+AT_CHECK([../../math/chart-get-ticks-format-test], [0], [dnl
+max: 1000, min: 10, nticks: 10, fs: %.0lf, scale: 1, example: 505
+max: 10000, min: 10, nticks: 10, fs: %.0lf, scale: 1, example: 5005
+max: 100000, min: 10, nticks: 10, fs: %.2lfe5, scale: 1e-05, example: 0.50e5
+max: 1e+06, min: 10, nticks: 10, fs: %.2lfe6, scale: 1e-06, example: 0.50e6
+max: 1e+07, min: 10, nticks: 10, fs: %.2lfe7, scale: 1e-07, example: 0.50e7
+max: 1e+08, min: 10, nticks: 10, fs: %.2lfe8, scale: 1e-08, example: 0.50e8
+max: 0.1, min: 0.01, nticks: 10, fs: %.3lf, scale: 1, example: 0.055
+max: 1e-05, min: 1e-06, nticks: 10, fs: %.2lfe-6, scale: 1e+06, example: 5.50e-6
+max: 1.00001e-05, min: 1e-05, nticks: 10, fs: %.6lfe-5, scale: 100000, example: 1.000005e-5
+max: 1e+08, min: 1e+08, nticks: 10, fs: %.0lf, scale: 1, example: 100000005
+max: 100000, min: -500000, nticks: 10, fs: %.1lfe5, scale: 1e-05, example: -2.0e5
+max: 5, min: -5, nticks: 10, fs: %.0lf, scale: 1, example: 0
+max: 5, min: -4.999, nticks: 10, fs: %.1lf, scale: 1, example: 0.0
+max: 5, min: -4.999, nticks: 9, fs: %.0lf, scale: 1, example: 0
+max: 5, min: 0, nticks: 10, fs: %.1lf, scale: 1, example: 2.5
+max: 0, min: -5, nticks: 9, fs: %.1lf, scale: 1, example: -2.5
+max: 1.001e-95, min: 1e-95, nticks: 10, fs: %.5lfe-95, scale: 1e+95, example: 1.00050e-95
+max: 1.001e+98, min: 1e+98, nticks: 10, fs: %.5lfe98, scale: 1e-98, example: 1.00050e98
+max: 1.001e+33, min: 1e-22, nticks: 10, fs: %.2lfe33, scale: 1e-33, example: 0.50e33
+])
+
+AT_CLEANUP

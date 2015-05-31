@@ -1,5 +1,5 @@
 /* PSPP - a program for statistical analysis.
-   Copyright (C) 2009, 2011 Free Software Foundation, Inc.
+   Copyright (C) 2009, 2011, 2015 Free Software Foundation, Inc.
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -178,5 +178,9 @@ void xrchart_draw_spreadlevel (const struct chart_item *, cairo_t *,
 void xrchart_draw_scatterplot (const struct chart_item *, cairo_t *,
                          struct xrchart_geometry *);
 
+/* Get the width and height of rendered label text */
+void xrchart_text_extents (cairo_t *cr, const struct xrchart_geometry *geom,
+			   const char *utf8,
+			   double *width, double *height);
 
 #endif /* output/cairo-chart.h */
