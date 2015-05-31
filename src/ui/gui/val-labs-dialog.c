@@ -279,7 +279,7 @@ on_value_entry_change (GtkEntry *entry, gpointer data)
 
 
 /* Return the value-label pair currently selected in the dialog box  */
-static void
+static gboolean
 get_selected_tuple (PsppireValLabsDialog *dialog,
                     union value *valuep, const char **label)
 {
@@ -293,7 +293,8 @@ get_selected_tuple (PsppireValLabsDialog *dialog,
 
   GtkTreeModel * model  = gtk_tree_view_get_model (treeview);
 
-  gtk_tree_selection_get_selected (sel, &model, &iter);
+  if (! gtk_tree_selection_get_selected (sel, &model, &iter))
+    return FALSE;
 
   gtk_tree_model_get_value (model, &iter, 1, &the_value);
 
@@ -308,6 +309,8 @@ get_selected_tuple (PsppireValLabsDialog *dialog,
       if (vl != NULL)
         *label = val_lab_get_escaped_label (vl);
     }
+  
+  return TRUE;
 }
 
 
@@ -370,7 +373,9 @@ on_remove (GtkWidget *w, gpointer data)
   union value value;
   struct val_lab *vl;
 
-  get_selected_tuple (dialog, &value, NULL);
+  if (! get_selected_tuple (dialog, &value, NULL))
+    return;
+  
   vl = val_labs_lookup (dialog->labs, &value);
   if (vl != NULL)
     val_labs_remove (dialog->labs, vl);
@@ -395,7 +400,9 @@ on_select_row (GtkTreeView *treeview, gpointer data)
 
   gchar *text;
 
-  get_selected_tuple (dialog, &value, &label);
+  if (! get_selected_tuple (dialog, &value, &label))
+    return;
+  
   text = value_to_text__ (value, &dialog->format, dialog->encoding);
 
   g_signal_handler_block (GTK_ENTRY (dialog->value_entry),
