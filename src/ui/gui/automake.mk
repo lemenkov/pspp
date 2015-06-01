@@ -56,6 +56,7 @@ EXTRA_DIST += doc/help-pages-list
 
 
 EXTRA_DIST += \
+	src/ui/gui/memorandum.txt \
 	src/ui/gui/artwork/actions/.empty \
 	src/ui/gui/artwork/apps/scalable/.empty \
 	src/ui/gui/gen-dot-desktop.sh \
