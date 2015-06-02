@@ -147,3 +147,19 @@ dnl Ignore output -- this is just a no-crash check.
 AT_CLEANUP
 
 
+AT_SETUP([GRAPH histogram with null data])
+AT_DATA([null-hist.sps], [dnl
+data list list /x *.
+begin data.
+1109 
+. 
+end data.
+
+graph 
+      /histogram = x.
+
+])
+
+AT_CHECK([pspp -o pspp.pdf null-hist.sps], [0], [ignore])
+dnl Ignore output -- this is just a no-crash check.
+AT_CLEANUP

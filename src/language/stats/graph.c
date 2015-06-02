@@ -189,6 +189,11 @@ show_histogr (const struct graph *cmd, struct casereader *input)
       histogram_create (bin_width, cmd->es[0].minimum, cmd->es[0].maximum);
   }
 
+  if (NULL == histogram)
+    {
+      casereader_destroy (input);
+      return;
+    }
 
   for (;(c = casereader_read (input)) != NULL; case_unref (c))
     {
