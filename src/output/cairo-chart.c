@@ -196,7 +196,7 @@ xrchart_label_rotate (cairo_t *cr, int horz_justify, int vert_justify,
 
   layout = pango_cairo_create_layout (cr);
   pango_layout_set_font_description (layout, desc);
-  pango_layout_set_text (layout, string, -1);
+  pango_layout_set_markup (layout, string, -1);
   if (horz_justify != 'l')
     {
       int width_pango;
@@ -586,7 +586,7 @@ xrchart_text_extents (cairo_t *cr, const struct xrchart_geometry *geom,
   pango_font_description_set_absolute_size (desc, geom->font_size * PANGO_SCALE);
   layout = pango_cairo_create_layout (cr);
   pango_layout_set_font_description (layout, desc);
-  pango_layout_set_text (layout, utf8, -1);
+  pango_layout_set_markup (layout, utf8, -1);
   pango_layout_get_size (layout, &width_pango, &height_pango);
   *width = (double) width_pango / PANGO_SCALE;
   *height = (double) height_pango / PANGO_SCALE;
