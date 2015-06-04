@@ -167,7 +167,7 @@ chart_get_scale (double highdbl, double lowdbl,
  * Non Scientific: "%.3lf", scale=1.00
  * Scientific:     "%.2lfe3", scale = 0.001
  * Usage example:
- *   fs = chart_get_ticks_format(95359943.3,34434.9,8,&scale,&long);
+ *   fs = chart_get_ticks_format(95359943.3,34434.9,8,&scale);
  *   printf(fs,value*scale);
  *   free(fs);
  */
@@ -191,7 +191,7 @@ chart_get_ticks_format (const double max, const double min,
     }
   else if (logmax > 0.0) /*logintv is > 0*/
     {
-      if (logintv < 3.0)
+      if (logintv < 5.0)
 	{
 	  logshift = 0; /* No scientific format */
 	  nrdecs = 0;
@@ -201,12 +201,12 @@ chart_get_ticks_format (const double max, const double min,
 	{
 	  logshift = (int)logmax;
 	  nrdecs = MIN(6,(int)(logmax-logintv)+1);
-	  format_string = xasprintf("%%.%dlfe%d",nrdecs,logshift);
+	  format_string = xasprintf("%%.%dlf&#8729;10<sup>%d</sup>",nrdecs,logshift);
 	}
     }
   else /* logmax and logintv are < 0 */
     {
-      if (logmax > -3.0)
+      if (logmax > -4.0)
 	{
 	  logshift = 0; /* No scientific format */
 	  nrdecs = (int)(-logintv) + 1;
@@ -216,7 +216,7 @@ chart_get_ticks_format (const double max, const double min,
 	{
 	  logshift = (int)logmax-1;
 	  nrdecs = MIN(6,(int)(logmax-logintv)+1);
-	  format_string = xasprintf("%%.%dlfe%d",nrdecs,logshift);
+	  format_string = xasprintf("%%.%dlf&#8729;10<sup>%d</sup>",nrdecs,logshift);
 	}
     }
   *scale = pow(10.0,-(double)logshift);
