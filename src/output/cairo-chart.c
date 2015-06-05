@@ -179,7 +179,7 @@ xrchart_label_rotate (cairo_t *cr, int horz_justify, int vert_justify,
   PangoLayout *layout;
   double x, y;
 
-  desc = pango_font_description_from_string ("sans serif");
+  desc = pango_font_description_from_string ("Sans");
   if (desc == NULL)
     {
       cairo_new_path (cr);
@@ -580,7 +580,7 @@ xrchart_text_extents (cairo_t *cr, const struct xrchart_geometry *geom,
   int width_pango;
   int height_pango;
 
-  desc = pango_font_description_from_string ("sans serif");
+  desc = pango_font_description_from_string ("Sans");
   if (desc == NULL)
       return;
   pango_font_description_set_absolute_size (desc, geom->font_size * PANGO_SCALE);
