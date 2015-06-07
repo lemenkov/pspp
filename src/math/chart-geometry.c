@@ -20,7 +20,6 @@
 #include <assert.h>
 
 #include "chart-geometry.h"
-#include "decimal.h"
 #include <stdlib.h>
 
 #include "gl/xalloc.h"
@@ -28,47 +27,6 @@
 #include "gl/xvasprintf.h"
 
 static const double standard_tick[] = {1, 2, 5, 10};
-
-/* Adjust tick to be a sensible value
-   ie:  ... 0.1,0.2,0.5,   1,2,5,  10,20,50 ... */
-void
-chart_rounded_tick (double tick, struct decimal *result)
-{
-  int i;
-
-  struct decimal ddif = {1, 1000};
-
-  /* Avoid arithmetic problems with very small values */
-  if (fabs (tick) < DBL_EPSILON)
-    {
-      result->ordinate = 0;
-      result->mantissa = 0;
-      return;
-    }
-
-  struct decimal dt;
-  decimal_from_double (&dt, tick);
-  
-  double expd = dec_log10 (&dt) - 1;
-
-  for (i = 0  ; i < 4 ; ++i)
-    {
-      struct decimal candidate;
-      struct decimal delta;
-
-      decimal_init (&candidate, standard_tick[i], expd);
-      
-      delta = dt;
-      decimal_subtract (&delta, &candidate);
-      delta.ordinate = llabs (delta.ordinate);
-
-      if (decimal_cmp (&delta, &ddif) < 0)
-	{
-	  ddif = delta;
-	  *result = candidate;
-	}
-    }
-}
 
 /* 
    Find a set {LOWER, INTERVAL, N_TICKS} such that:
@@ -92,73 +50,48 @@ chart_rounded_tick (double tick, struct decimal *result)
         ^LOWDBL                 ^HIGHDBL
 */
 void
-chart_get_scale (double highdbl, double lowdbl,
-		 struct decimal *lower, 
-		 struct decimal *interval,
+chart_get_scale (double high, double low,
+		 double *lower, double *interval,
 		 int *n_ticks)
 {
   int i;
   double fitness = DBL_MAX;
+  double logrange;
   *n_ticks = 0;
-  struct decimal high;
-  struct decimal low;
 
-  assert (highdbl >= lowdbl);
+  assert (high >= low);
 
-  decimal_from_double (&high, highdbl);
-  decimal_from_double (&low, lowdbl);
-  
-  struct decimal diff = high;
-  decimal_subtract (&diff, &low);
+  if ((high - low) < 10 * DBL_MIN) {
+    *n_ticks = 0;
+    *lower = low;
+    *interval = 0.0;
+    return;
+  }
 
-  double expd = dec_log10 (&diff) - 2;
+  logrange = floor(log10(high-low));
 
   /* Find the most pleasing interval */
   for (i = 1; i < 4; ++i)
     {
-      struct decimal clbound = low;
-      struct decimal cubound = high;
-      struct decimal candidate;
-      decimal_init (&candidate, standard_tick[i], expd);
+      double cinterval = standard_tick[i] * pow(10.0,logrange-1);
+      double clower = floor(low/cinterval) * cinterval;
+      int cnticks = ceil((high - clower) / cinterval)-1;
+      double cfitness = fabs(7.5 - cnticks);
 
-      decimal_divide (&clbound, &candidate);
-      int fl = decimal_floor (&clbound);
-      decimal_int_multiply (&candidate, fl);
-      clbound = candidate;
-
-
-      decimal_init (&candidate, standard_tick[i], expd);
-      decimal_divide (&cubound, &candidate);
-      int fu = decimal_ceil (&cubound);
-      decimal_int_multiply (&candidate, fu);
-
-      cubound = candidate;
-
-      decimal_init (&candidate, standard_tick[i], expd);
-      decimal_subtract (&cubound, &clbound);
-      decimal_divide (&cubound, &candidate);
-
-
-      ord_t n_int = decimal_floor (&cubound);
-
-      /* We prefer to have between 5 and 10 tick marks on a scale */
-      double f = 1 - exp (-0.2 *  fabs (n_int - 7.5) / 7.5);
-
-      if (f < fitness)
-	{
-	  fitness = f;
-	  *lower = clbound;
-	  *interval = candidate;
-	  *n_ticks = n_int;
-	}
+      if (cfitness < fitness) {
+	fitness = cfitness;
+	*lower = clower;
+	*interval = cinterval;
+	*n_ticks = cnticks;
+      }
     }
 }
 
 /*
  * Compute the optimum format string and the scaling
  * for the tick drawing on a chart axis
- * Input:  max:     the maximum value of the range
- *         min:     the minimum value of the range
+ * Input:  lower:   the lowest tick
+ *         interval:the interval between the ticks
  *         nticks:  the number of tick intervals (bins) on the axis
  * Return: fs:      format string for printf to print the tick value
  *         scale:   scaling factor for the tick value
@@ -167,17 +100,15 @@ chart_get_scale (double highdbl, double lowdbl,
  * Non Scientific: "%.3lf", scale=1.00
  * Scientific:     "%.2lfe3", scale = 0.001
  * Usage example:
- *   fs = chart_get_ticks_format(95359943.3,34434.9,8,&scale);
+ *   fs = chart_get_ticks_format(-0.7,0.1,8,&scale);
  *   printf(fs,value*scale);
  *   free(fs);
  */
 char *
-chart_get_ticks_format (const double max, const double min,
+chart_get_ticks_format (const double lower, const double interval,
 			const unsigned int nticks, double *scale)
 {
-  assert(max > min);
-  double interval = (max - min)/nticks;
-  double logmax = log10(fmax(fabs(max),fabs(min)));
+  double logmax = log10(fmax(fabs(lower + (nticks+1)*interval),fabs(lower)));
   double logintv = log10(interval);
   int logshift = 0;
   char *format_string = NULL;
@@ -185,13 +116,16 @@ chart_get_ticks_format (const double max, const double min,
 
   if (logmax > 0.0 && logintv < 0.0)
     {
-      nrdecs = MIN(6,(int)(fabs(logintv))+1);
+      nrdecs = MIN(6,(int)(ceil(fabs(logintv))));
       logshift = 0;
-      format_string = xasprintf("%%.%dlf",nrdecs);
+      if (logmax < 12.0)
+	format_string = xasprintf("%%.%dlf",nrdecs);
+      else
+	format_string = xasprintf("%%lg");
     }
   else if (logmax > 0.0) /*logintv is > 0*/
     {
-      if (logintv < 5.0)
+      if (logintv < 5.0 && logmax < 10.0)
 	{
 	  logshift = 0; /* No scientific format */
 	  nrdecs = 0;
@@ -200,23 +134,26 @@ chart_get_ticks_format (const double max, const double min,
       else
 	{
 	  logshift = (int)logmax;
-	  nrdecs = MIN(6,(int)(logmax-logintv)+1);
-	  format_string = xasprintf("%%.%dlf&#8729;10<sup>%d</sup>",nrdecs,logshift);
+	  /* Possible intervals are 0.2Ex, 0.5Ex, 1.0Ex                    */
+	  /* log10(0.2E9) = 8.30, log10(0.5E9) = 8.69, log10(1.0E9) = 9    */
+	  /* 0.2 and 0.5 need one decimal more. For stability subtract 0.1 */
+	  nrdecs = MIN(8,(int)(ceil(logshift-logintv-0.1)));
+	  format_string = xasprintf("%%.%dlf&#8901;10<sup>%d</sup>",nrdecs,logshift);
 	}
     }
   else /* logmax and logintv are < 0 */
     {
-      if (logmax > -4.0)
+      if (logmax > -3.0)
 	{
 	  logshift = 0; /* No scientific format */
-	  nrdecs = (int)(-logintv) + 1;
+	  nrdecs = MIN(8,(int)(ceil(-logintv)));
 	  format_string = xasprintf("%%.%dlf",nrdecs);
 	}
       else
 	{
 	  logshift = (int)logmax-1;
-	  nrdecs = MIN(6,(int)(logmax-logintv)+1);
-	  format_string = xasprintf("%%.%dlf&#8729;10<sup>%d</sup>",nrdecs,logshift);
+	  nrdecs = MIN(8,(int)(ceil(logshift-logintv-0.1)));
+	  format_string = xasprintf("%%.%dlf&#8901;10<sup>%d</sup>",nrdecs,logshift);
 	}
     }
   *scale = pow(10.0,-(double)logshift);

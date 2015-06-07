@@ -69,30 +69,24 @@ histogram_write_legend (cairo_t *cr, const struct xrchart_geometry *geom,
 
 static void
 hist_draw_bar (cairo_t *cr, const struct xrchart_geometry *geom,
-               const gsl_histogram *h, int bar, const char *tick_format_string,
-	       const double tickscale, const bool tickoversize)
+               const gsl_histogram *h, int bar)
 {
   double upper;
   double lower;
   double height;
 
-  const size_t bins = gsl_histogram_bins (h);
+  assert ( 0 == gsl_histogram_get_range (h, bar, &lower, &upper));
+  assert ( upper >= lower);
 
   const double x_pos =
-    (geom->axis[SCALE_ABSCISSA].data_max - geom->axis[SCALE_ABSCISSA].data_min) *
-    bar / (double) bins ;
-
-  const double width =
-    (geom->axis[SCALE_ABSCISSA].data_max - geom->axis[SCALE_ABSCISSA].data_min) / (double) bins ;
-
-  assert ( 0 == gsl_histogram_get_range (h, bar, &lower, &upper));
-
-  assert ( upper >= lower);
+    (lower - geom->axis[SCALE_ABSCISSA].min) * geom->axis[SCALE_ABSCISSA].scale
+    +  geom->axis[SCALE_ABSCISSA].data_min;
+  const double width = (upper - lower) * geom->axis[SCALE_ABSCISSA].scale;
 
   height = geom->axis[SCALE_ORDINATE].scale * gsl_histogram_get (h, bar);
 
   cairo_rectangle (cr,
-		   geom->axis[SCALE_ABSCISSA].data_min + x_pos,
+		   x_pos,
 		   geom->axis[SCALE_ORDINATE].data_min,
                    width, height);
   cairo_save (cr);
@@ -103,10 +97,6 @@ hist_draw_bar (cairo_t *cr, const struct xrchart_geometry *geom,
   cairo_fill_preserve (cr);
   cairo_restore (cr);
   cairo_stroke (cr);
-
-  draw_tick (cr, geom, SCALE_ABSCISSA, tickoversize,
-	     x_pos + width / 2.0, tick_format_string, (upper+lower)/2.0*tickscale);
-
 }
 
 void
@@ -116,11 +106,6 @@ xrchart_draw_histogram (const struct chart_item *chart_item, cairo_t *cr,
   struct histogram_chart *h = to_histogram_chart (chart_item);
   int i;
   int bins;
-  char *tick_format_string;
-  char *test_text;
-  double width, left_width, right_width, unused;
-  double tickscale;
-  bool tickoversize;
 
   xrchart_write_title (cr, geom, _("HISTOGRAM"));
 
@@ -134,27 +119,17 @@ xrchart_draw_histogram (const struct chart_item *chart_item, cairo_t *cr,
     }
 
   xrchart_write_yscale (cr, geom, 0, gsl_histogram_max_val (h->gsl_hist));
+  xrchart_write_xscale (cr, geom, gsl_histogram_min (h->gsl_hist),
+			gsl_histogram_max (h->gsl_hist));
+
 
   /* Draw the ticks and compute if the rendered tick text is wider than the bin */
   bins = gsl_histogram_bins (h->gsl_hist);
-  tick_format_string = chart_get_ticks_format (gsl_histogram_max (h->gsl_hist),
-					       gsl_histogram_min (h->gsl_hist),
-					       bins,
-					       &tickscale);
-  test_text = xasprintf(tick_format_string, gsl_histogram_max (h->gsl_hist)*tickscale);
-  xrchart_text_extents (cr, geom, test_text, &right_width, &unused);
-  free(test_text);
-  test_text = xasprintf(tick_format_string, gsl_histogram_min (h->gsl_hist)*tickscale);
-  xrchart_text_extents (cr, geom, test_text, &left_width, &unused);
-  free(test_text);
-  width = MAX(left_width, right_width);
-  tickoversize = width > 0.9 *
-    ((double)(geom->axis[SCALE_ABSCISSA].data_max - geom->axis[SCALE_ABSCISSA].data_min))/bins;
+
   for (i = 0; i < bins; i++)
     {
-      hist_draw_bar (cr, geom, h->gsl_hist, i, tick_format_string, tickscale, tickoversize);
+      hist_draw_bar (cr, geom, h->gsl_hist, i);
     }
-  free(tick_format_string);
 
   histogram_write_legend (cr, geom, h->n, h->mean, h->stddev);
 
@@ -162,31 +137,28 @@ xrchart_draw_histogram (const struct chart_item *chart_item, cairo_t *cr,
       && h->n != SYSMIS && h->mean != SYSMIS && h->stddev != SYSMIS)
     {
       /* Draw the normal curve */
-      double d;
-      double x_min, x_max, not_used;
-      double abscissa_scale;
+      double x_min, x_max;
       double ordinate_scale;
-      double range;
+      double binwidth;
+      double x;
 
-      gsl_histogram_get_range (h->gsl_hist, 0, &x_min, &not_used);
-      range = not_used - x_min;
-      gsl_histogram_get_range (h->gsl_hist, bins - 1, &not_used, &x_max);
+      gsl_histogram_get_range (h->gsl_hist, 0, &x_min, &x_max);
+      binwidth = x_max - x_min;
 
-      abscissa_scale = (geom->axis[SCALE_ABSCISSA].data_max - geom->axis[SCALE_ABSCISSA].data_min) / (x_max - x_min);
-      ordinate_scale = (geom->axis[SCALE_ORDINATE].data_max - geom->axis[SCALE_ORDINATE].data_min) /
-	gsl_histogram_max_val (h->gsl_hist);
+      /* The integral over the histogram is binwidth * sum(bin_i), while the integral over the pdf is 1 */
+      /* Therefore the pdf has to be scaled accordingly such that the integrals are equal               */
+      ordinate_scale = binwidth * gsl_histogram_sum(h->gsl_hist);
 
       cairo_move_to (cr, geom->axis[SCALE_ABSCISSA].data_min, geom->axis[SCALE_ORDINATE].data_min);
-      for (d = geom->axis[SCALE_ABSCISSA].data_min;
-	   d <= geom->axis[SCALE_ABSCISSA].data_max;
-	   d += (geom->axis[SCALE_ABSCISSA].data_max - geom->axis[SCALE_ABSCISSA].data_min) / 100.0)
+      for (x = geom->axis[SCALE_ABSCISSA].min;
+	   x <= geom->axis[SCALE_ABSCISSA].max;
+	   x += (geom->axis[SCALE_ABSCISSA].max - geom->axis[SCALE_ABSCISSA].min) / 100.0)
 	{
-	  const double x = (d - geom->axis[SCALE_ABSCISSA].data_min) / abscissa_scale + x_min;
-	  const double y = h->n * range *
-	    gsl_ran_gaussian_pdf (x - h->mean, h->stddev);
-
-          cairo_line_to (cr, d, geom->axis[SCALE_ORDINATE].data_min  + y * ordinate_scale);
-
+	  const double y = gsl_ran_gaussian_pdf (x - h->mean, h->stddev) * ordinate_scale;
+	  /* Transform to drawing coordinates */
+	  const double x_pos = (x - geom->axis[SCALE_ABSCISSA].min) * geom->axis[SCALE_ABSCISSA].scale + geom->axis[SCALE_ABSCISSA].data_min;
+	  const double y_pos = (y - geom->axis[SCALE_ORDINATE].min) * geom->axis[SCALE_ORDINATE].scale + geom->axis[SCALE_ORDINATE].data_min;
+          cairo_line_to (cr, x_pos, y_pos);
 	}
       cairo_stroke (cr);
     }

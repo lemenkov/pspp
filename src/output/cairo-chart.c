@@ -17,7 +17,6 @@
 #include <config.h>
 
 #include "output/cairo-chart.h"
-#include "math/decimal.h"
 #include "math/chart-geometry.h"
 
 #include <assert.h>
@@ -48,7 +47,7 @@ xrchart_geometry_init (cairo_t *cr, struct xrchart_geometry *geom,
 {
   /* Set default chart geometry. */
   geom->axis[SCALE_ORDINATE].data_max = 0.900 * length;
-  geom->axis[SCALE_ORDINATE].data_min = 0.120 * length;
+  geom->axis[SCALE_ORDINATE].data_min = 0.200 * length;
 
   geom->axis[SCALE_ABSCISSA].data_min = 0.150 * width;
   geom->axis[SCALE_ABSCISSA].data_max = 0.800 * width;
@@ -317,8 +316,6 @@ draw_tick_internal (cairo_t *cr, const struct xrchart_geometry *geom,
 	}
       else if (orientation == SCALE_ORDINATE)
         {
-          if (fabs (position) < DBL_EPSILON)
-	    cairo_rel_move_to (cr, 0, 10);
           xrchart_label (cr, 'r', 'c', geom->font_size, s);
         }
     }
@@ -345,7 +342,29 @@ xrchart_write_title (cairo_t *cr, const struct xrchart_geometry *geom,
   cairo_restore (cr);
 }
 
+static void
+xrchart_text_extents (cairo_t *cr, const struct xrchart_geometry *geom,
+		      const char *utf8,
+		      double *width, double *height)
+{
+  PangoFontDescription *desc;
+  PangoLayout *layout;
+  int width_pango;
+  int height_pango;
 
+  desc = pango_font_description_from_string ("Sans");
+  if (desc == NULL)
+      return;
+  pango_font_description_set_absolute_size (desc, geom->font_size * PANGO_SCALE);
+  layout = pango_cairo_create_layout (cr);
+  pango_layout_set_font_description (layout, desc);
+  pango_layout_set_markup (layout, utf8, -1);
+  pango_layout_get_size (layout, &width_pango, &height_pango);
+  *width = (double) width_pango / PANGO_SCALE;
+  *height = (double) height_pango / PANGO_SCALE;
+  g_object_unref (layout);
+  pango_font_description_free (desc);
+}
 
 static void
 xrchart_write_scale (cairo_t *cr, struct xrchart_geometry *geom,
@@ -354,36 +373,50 @@ xrchart_write_scale (cairo_t *cr, struct xrchart_geometry *geom,
   int s;
   int ticks;
 
-  struct decimal dinterval;
-  struct decimal dlower;
-  struct decimal dupper;
+  double interval;
+  double lower;
+  double upper;
+  double tickscale;
+  char *tick_format_string;
+  bool tickoversize = false;
 
-  chart_get_scale (smax, smin, &dlower, &dinterval, &ticks);
+  chart_get_scale (smax, smin, &lower, &interval, &ticks);
 
-  dupper = dinterval;
-  decimal_int_multiply (&dupper, ticks);
-  decimal_add (&dupper, &dlower);
+  tick_format_string = chart_get_ticks_format (lower, interval, ticks, &tickscale);
 
-  double tick_interval = decimal_to_double (&dinterval);
+  upper = lower + interval * (ticks+1);
    
-  geom->axis[orient].max = decimal_to_double (&dupper);
-  geom->axis[orient].min = decimal_to_double (&dlower);
+  geom->axis[orient].max = upper;
+  geom->axis[orient].min = lower;
   
   geom->axis[orient].scale = (fabs (geom->axis[orient].data_max - geom->axis[orient].data_min)
 			      / fabs (geom->axis[orient].max - geom->axis[orient].min));
-  
-  struct decimal pos = dlower;
 
-  for (s = 0 ; s < ticks; ++s)
+  if (orient == SCALE_ABSCISSA)
     {
-      char *str = decimal_to_string (&pos);
-      draw_tick (cr, geom, orient, false,
-      		 s * tick_interval * geom->axis[orient].scale,
-		 "%s", str);
-      free (str);
-      
-      decimal_add (&pos, &dinterval);
+      char *test_text;
+      double lower_txt_width, upper_txt_width, unused, width;
+      test_text = xasprintf(tick_format_string, upper*tickscale);
+      xrchart_text_extents (cr, geom, test_text, &upper_txt_width, &unused);
+      free(test_text);
+      test_text = xasprintf(tick_format_string, lower*tickscale);
+      xrchart_text_extents (cr, geom, test_text, &lower_txt_width, &unused);
+      free(test_text);
+      width = MAX(lower_txt_width, upper_txt_width);
+      tickoversize = width > 0.9 *
+	((double)(geom->axis[SCALE_ABSCISSA].data_max - geom->axis[SCALE_ABSCISSA].data_min))/(ticks+1);
     }
+  
+  double pos = lower;
+
+  for (s = 0 ; s <= ticks; ++s)
+    {
+      draw_tick (cr, geom, orient, tickoversize,
+		 s * interval * geom->axis[orient].scale,
+		 tick_format_string, pos*tickscale);
+      pos += interval;
+    }
+  free(tick_format_string);
 }
 
 /* Set the scale for the ordinate */
@@ -570,26 +603,3 @@ xrchart_line(cairo_t *cr, const struct xrchart_geometry *geom,
   cairo_stroke (cr);
 }
 
-void
-xrchart_text_extents (cairo_t *cr, const struct xrchart_geometry *geom,
-		      const char *utf8,
-		      double *width, double *height)
-{
-  PangoFontDescription *desc;
-  PangoLayout *layout;
-  int width_pango;
-  int height_pango;
-
-  desc = pango_font_description_from_string ("Sans");
-  if (desc == NULL)
-      return;
-  pango_font_description_set_absolute_size (desc, geom->font_size * PANGO_SCALE);
-  layout = pango_cairo_create_layout (cr);
-  pango_layout_set_font_description (layout, desc);
-  pango_layout_set_markup (layout, utf8, -1);
-  pango_layout_get_size (layout, &width_pango, &height_pango);
-  *width = (double) width_pango / PANGO_SCALE;
-  *height = (double) height_pango / PANGO_SCALE;
-  g_object_unref (layout);
-  pango_font_description_free (desc);
-}
