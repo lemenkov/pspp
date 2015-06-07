@@ -17,7 +17,6 @@
 #include <config.h>
 
 #include "math/histogram.h"
-#include "math/decimal.h"
 
 #include <gsl/gsl_histogram.h>
 #include <math.h>
@@ -59,163 +58,74 @@ destroy (struct statistic *s)
 }
 
 
-static
-double get_slack (double limit, double half_bin_width, int *n_half_bins)
-{
-  double ipart, remainder;
+/* Find a bin width which is adapted to the scaling of the x axis
+In the example here, the binwidth is half of the tick interval.
 
-  assert (half_bin_width > 0);
+        binwidth
+         >   <
+     |....+....+....+.      .+....|
+   LOWER  1    2    3     N_TICKS
+        ^LOWDBL                 ^HIGHDBL
 
-  remainder =  modf (limit / half_bin_width, &ipart);
-
-  /* In C modf and % behave in an unexpected (to me at any rate) manner
-     when presented with a negative value
-
-     For example, modf (-7.0 / 3.0) returns -2.0 R -0.3333
-  */
-
-  
-  *n_half_bins = ipart;
-
-  return remainder * half_bin_width;
-}
-
-
-/* This functions adjusts the upper and lower range of the histogram to make them fit BIN_WIDTH
-   MIN and MAX are the lowest and highest data to be plotted in the histogram.
-   ADJ_MIN and ADJ_MAX are locations of the adjusted values of MIN and MAX (the range will
-   always be  equal or slightly larger).
-   Returns the number of bins.
-
-   The "testing_assert" expressions in this function should be algebraically correct.
-   However, due to floating point rounding they could fail, especially when small numbers
-   are involved.  In normal use, therefore, testing_assert does nothing.
- */
+This only works, when the min and max value for the histogram are adapted
+such that (max-min) is a multiple of the binwidth. Then the location of the
+first bin has to be aligned to the ticks.
+*/
 static int
-adjust_bin_ranges (double bin_width, double min, double max, double *adj_min, double *adj_max)
+hist_find_pretty_no_of_bins(double bin_width_in, double min, double max,
+			    double *adjusted_min, double *adjusted_max)
 {
-  const double half_bin_width = bin_width / 2.0;
+  double lower, interval;
+  int n_ticks;
+  double binwidth;
+  int nbins;
 
-  /* The lower and upper limits of the histogram, in units of half
-     bin widths */
-  int lower_limit, upper_limit;
+  chart_get_scale (max, min, &lower, &interval, &n_ticks);
 
-  double lower_slack =  get_slack (min, half_bin_width, &lower_limit);
-  double upper_slack = -get_slack (max, half_bin_width, &upper_limit);
-
-  testing_assert (max > min);
-
-  /* If min is negative, then lower_slack may be less than zero.
-     In this case, the lower bound must be extended in the negative direction
-     so that it is less than OR EQUAL to min.
-   */
-  if (lower_slack < 0)
+  if (bin_width_in >= 2 * interval)
     {
-      lower_limit--;
-      lower_slack += half_bin_width;
+      binwidth = floor(bin_width_in/interval) * interval;
+      *adjusted_min = lower;
     }
-  testing_assert (lower_limit * half_bin_width <= min);
-
-  /* However, the upper bound must be extended regardless, because histogram bins
-     span the range [lower, upper). In other words, the upper bound must be
-     greater than max.
-  */
-  upper_limit++;;
-  upper_slack += half_bin_width;
-  testing_assert (upper_limit * half_bin_width > max);
-
-  /* The range must be an EVEN number of half bin_widths */
-  if ( (upper_limit - lower_limit) % 2)
+  else if (bin_width_in >= 1.5 * interval)
     {
-      /* Extend the range at the end which gives the least unused space */
-      if (upper_slack > lower_slack)
-        {
-          lower_limit--;
-          lower_slack += half_bin_width;
-        }
+      binwidth = 1.5 * interval;
+      if (min < (lower + 0.5 * interval))
+	*adjusted_min = lower;
       else
-        {
-          upper_limit++;
-          upper_slack += half_bin_width;
-        }
+	*adjusted_min = lower + 0.5 * interval;
     }
-
-  /* But the range should be aligned to an ODD number of
-     half bin widths, so that the labels are aesthetically pleasing ones.
-     Otherwise we are likely to get labels such as -3 -1 1 3 instead of -2 0 2 4
-  */
-  if ( lower_limit % 2 == 0)
+  else if (bin_width_in >= interval)
     {
-      /* If there is not enough slack at either end to perform a shift,
-         then we must extend the range so that there is.  We must extend
-         by two half bin widths in order to preserve the EVEN condition
-         established above.  Also, we extend on the end with the least
-         slack, in order to keep things as balanced as possible. */
-      if ( upper_slack > lower_slack && upper_slack <= half_bin_width)
-        {
-          lower_limit -= 2;
-          lower_slack += 2 * half_bin_width;
-        }
-           
-      if (lower_slack > upper_slack && lower_slack < half_bin_width)
-        {
-          upper_limit += 2;
-          upper_slack += 2 * half_bin_width;
-        }
-
-      if (upper_slack > lower_slack)
-        {
-          testing_assert (upper_slack > half_bin_width);
-
-          /* Adjust the range to the left */
-          lower_limit --;
-          upper_limit --;
-          upper_slack -= half_bin_width;
-          lower_slack += half_bin_width;
-        }
+      binwidth = interval;
+      *adjusted_min = lower;
+    }
+  else if (bin_width_in >= (2.0/3.0 * interval))
+    {
+      binwidth = (2.0/3.0 * interval);
+      if (min >= lower + binwidth)
+	*adjusted_min = lower + binwidth;
       else
-        {
-          testing_assert (lower_slack >= half_bin_width);
-
-          /* Adjust the range to the right */
-          lower_limit ++;
-          upper_limit ++;
-          lower_slack -= half_bin_width;
-          upper_slack += half_bin_width;
-        }
+	*adjusted_min = lower;
     }
-
-  /* If there are any completely empty bins, then remove them,
-     since empty bins don't really add much information to the histogram.
-   */
-  if (upper_slack > 2 * half_bin_width)
+  else
     {
-      upper_slack -= 2 * half_bin_width;
-      upper_limit -=2;
+      int i;
+      for(i = 2; bin_width_in < interval/i; i++);
+      binwidth = interval/i;
+      *adjusted_min = floor((min - lower)/binwidth)*binwidth + lower;
     }
 
-  if (lower_slack >= 2 * half_bin_width)
-    {
-      lower_slack -= 2 * half_bin_width;
-      lower_limit +=2;
-    }
+  nbins = ceil((max-*adjusted_min)/binwidth);
+  *adjusted_max = nbins*binwidth + *adjusted_min;
 
-  *adj_min = lower_limit * half_bin_width;
-  *adj_max = upper_limit * half_bin_width;
-
-  testing_assert (*adj_max > max);
-  testing_assert (*adj_min <= min);
-
-  return (upper_limit - lower_limit) / 2.0;
+  return nbins;
 }
-
 
 
 struct histogram *
 histogram_create (double bin_width_in, double min, double max)
 {
-  struct decimal bin_width;
-  const int MAX_BINS = 25;
   struct histogram *h;
   struct statistic *stat;
   int bins;
@@ -229,21 +139,7 @@ histogram_create (double bin_width_in, double min, double max)
 
   assert (bin_width_in > 0);
 
-  chart_rounded_tick (bin_width_in, &bin_width);
-  bins = adjust_bin_ranges (decimal_to_double (&bin_width), 
-			    min, max, &adjusted_min, &adjusted_max);
-
-  /* Force the number of bins to lie in a sensible range. */
-  if (bins > MAX_BINS) 
-    {
-      chart_rounded_tick ((max - min) / (double) (MAX_BINS - 1), &bin_width);
-      bins = adjust_bin_ranges (decimal_to_double (&bin_width),
-                                min, max, &adjusted_min, &adjusted_max);
-    }
-
-  /* Can this ever happen? */
-  if (bins < 1)
-    bins = 1;
+  bins = hist_find_pretty_no_of_bins(bin_width_in, min, max, &adjusted_min, &adjusted_max);
 
   h = xmalloc (sizeof *h);
 

@@ -21,8 +21,8 @@
 #include "libpspp/compiler.h"
 
 struct range {
-  double max;
-  double min;
+  double lower;
+  double interval;
   int nticks;
 };
 
@@ -39,17 +39,21 @@ struct range tv[] = {
   {       0.0001,         0.00001,     10},
   {      0.00001,       0.0000001,     10},
   {    0.0000001,      0.00000001,     10},
-  { 0.0000100001,         0.00001,     10},
-  {  100000010.0,     100000000.0,     10},
-  {     100000.0,       -500000.0,     10},
-  {          5.0,            -5.0,     10},
-  {          5.0,          -4.999,     10},
-  {          5.0,          -4.999,      9},
-  {          5.0,             0.0,     10},
-  {          0.0,            -5.0,      9},
-  {    1.001E-95,         1.0E-95,     10},
-  {     1.001E98,          1.0E98,     10},
-  {     1.001E33,         1.0E-22,     10},
+  {         -5.0,             1.0,     10},
+  {         -5.0,             0.5,     10},
+  {         -5.0,             0.2,      9},
+  {         -5.0,             2.0,     10},
+  {         -0.5,             0.1,      9},
+  {      0.975E9,         0.005E9,      9},
+  {      0.970E9,          0.01E9,      9},
+  {         -4E7,             1E7,      9},
+  {         -3E7,           0.5E7,      9},
+  {    1.001E-95,      0.0002E-95,     10},
+  {     1.001E98,       0.0002E98,     10},
+  {         5984,         0.00001,     10},
+  {         3E33,           1E-22,     10},
+  {         3E33,            1000,     10},
+  {          0.1,           2E-42,     10},
   {          0.0,             0.0,     -1}
 };
 
@@ -59,18 +63,20 @@ main (int argc UNUSED, char **argv UNUSED)
   char *fs;
   double scale;
   int i = 0;
-  double max, min;
+  double lower, interval;
   int nticks;
 
   for(i=0;tv[i].nticks > 0;i++)
     {
-      max = tv[i].max;
-      min = tv[i].min;
+      lower = tv[i].lower;
+      interval = tv[i].interval;
       nticks = tv[i].nticks;
-      fs = chart_get_ticks_format (max, min, nticks, &scale);
-      printf("max: %lg, min: %lg, nticks: %d, fs: %s, scale: %lg, example: ",
-	     max, min, nticks, fs, scale);
-      printf(fs,((max-min)/2.0+min)*scale);
+      fs = chart_get_ticks_format (lower, interval, nticks, &scale);
+      printf("lower: %lg, interval: %lg, nticks: %d, fs: %s, scale: %lg, ex: ",
+	     lower, interval, nticks, fs, scale);
+      printf(fs,(lower + 3 * interval)*scale);
+      printf(", ex 2: ");
+      printf(fs,(lower + 4 * interval)*scale);
       printf("\n");
       free(fs);
     }
