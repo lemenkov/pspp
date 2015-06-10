@@ -224,6 +224,7 @@ rerender (struct psppire_output_view *view)
   for (item = view->items; item < &view->items[view->n_items]; item++)
     {
       struct xr_rendering *r;
+      GtkAllocation alloc;
       int tw, th;
 
       if (view->y > 0)
@@ -250,6 +251,12 @@ rerender (struct psppire_output_view *view)
           gtk_widget_set_size_request (item->drawing_area, tw, th);
           gtk_layout_move (view->output, item->drawing_area, 0, view->y);
         }
+
+      alloc.x = 0;
+      alloc.y = view->y;
+      alloc.width = tw;
+      alloc.height = th;
+      gtk_widget_size_allocate(item->drawing_area,&alloc);
 
       if (view->max_width < tw)
         view->max_width = tw;
