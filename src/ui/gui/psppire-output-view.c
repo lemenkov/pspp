@@ -375,7 +375,7 @@ psppire_output_view_put (struct psppire_output_view *view,
       gtk_tree_store_set (store, &iter,
                           COL_NAME, ds_cstr (&name),
 			  COL_ADDR, item,
-                          COL_Y, view->y,
+                          COL_Y, (glong)(view->y),
                           -1);
       ds_destroy (&name);
 
