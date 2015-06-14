@@ -2,13 +2,13 @@
 # Copyright (C) 2007, 2008, 2009 Free Software Foundation, Inc.
 # This file is distributed under the same licence as the PSPP package.#
 #
-# Mindaugas Baranauskas <opensuse.lietuviu.kalba@gmail.com>, 2010-2014, 2015.
+# Mindaugas Baranauskas <opensuse.lietuviu.kalba@gmail.com>, 2010-2015.
 msgid ""
 msgstr ""
 "Project-Id-Version: pspp-0.8.4\n"
 "Report-Msgid-Bugs-To: pspp-dev@gnu.org\n"
 "POT-Creation-Date: 2014-09-26 21:39-0700\n"
-"PO-Revision-Date: 2015-04-11 09:53+0300\n"
+"PO-Revision-Date: 2015-06-10 09:53+0300\n"
 "Last-Translator: Mindaugas Baranauskas <opensuse.lietuviu.kalba@gmail.com>\n"
 "Language-Team: Lithuanian <komp_lt@konferencijos.lt>\n"
 "Language: lt\n"
@@ -3298,7 +3298,7 @@ msgstr "Modelis"
 
 #: src/language/stats/glm.c:777
 msgid "Intercept"
-msgstr "Atkarpa"
+msgstr "Bendrasis vidurkis"
 
 #: src/language/stats/glm.c:843
 msgid "Error"
