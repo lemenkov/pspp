@@ -36,3 +36,6 @@ export GZIP
 
 HOME=/nonexistent		# Kluge to make PSPP ignore $HOME/.pspprc.
 export HOME
+
+# Avoids error messages during tests if $TERM is set to an unknown terminal.
+TERM=; unset TERM
