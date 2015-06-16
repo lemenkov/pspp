@@ -94,10 +94,6 @@ struct string;
 void var_append_value_name (const struct variable *, const union value *,
 			    struct string *);
 
-const char *
-var_get_value_name (const struct variable *v, const union value *value);
-
-
 bool var_has_value_labels (const struct variable *);
 const struct val_labs *var_get_value_labels (const struct variable *);
 void var_set_value_labels (struct variable *, const struct val_labs *);
