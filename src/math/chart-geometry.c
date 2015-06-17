@@ -138,7 +138,7 @@ chart_get_ticks_format (const double lower, const double interval,
 	  /* log10(0.2E9) = 8.30, log10(0.5E9) = 8.69, log10(1.0E9) = 9    */
 	  /* 0.2 and 0.5 need one decimal more. For stability subtract 0.1 */
 	  nrdecs = MIN(8,(int)(ceil(logshift-logintv-0.1)));
-	  format_string = xasprintf("%%.%dlf&#8901;10<sup>%d</sup>",nrdecs,logshift);
+	  format_string = xasprintf("%%.%dlf&#215;10<sup>%d</sup>",nrdecs,logshift);
 	}
     }
   else /* logmax and logintv are < 0 */
@@ -153,7 +153,7 @@ chart_get_ticks_format (const double lower, const double interval,
 	{
 	  logshift = (int)logmax-1;
 	  nrdecs = MIN(8,(int)(ceil(logshift-logintv-0.1)));
-	  format_string = xasprintf("%%.%dlf&#8901;10<sup>%d</sup>",nrdecs,logshift);
+	  format_string = xasprintf("%%.%dlf&#215;10<sup>%d</sup>",nrdecs,logshift);
 	}
     }
   *scale = pow(10.0,-(double)logshift);
