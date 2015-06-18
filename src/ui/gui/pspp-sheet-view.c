@@ -1523,11 +1523,7 @@ pspp_sheet_view_realize (GtkWidget *widget)
                            &attributes, attributes_mask);
   gtk_widget_set_window (widget, window);
 
-#if GTK_CHECK_VERSION(3,8,0)
   gtk_widget_register_window (widget, window);
-#else
-  gdk_window_set_user_data (window, widget);
-#endif
   gtk_widget_get_allocation (widget, &allocation);
 
   /* Make the window for the tree */
@@ -1546,11 +1542,7 @@ pspp_sheet_view_realize (GtkWidget *widget)
 
   tree_view->priv->bin_window = gdk_window_new (window,
 						&attributes, attributes_mask);
-#if GTK_CHECK_VERSION(3,8,0)
   gtk_widget_register_window (widget, tree_view->priv->bin_window);
-#else
-  gdk_window_set_user_data (tree_view->priv->bin_window, widget);
-#endif
   gtk_widget_get_allocation (widget, &allocation);
 
   /* Make the column header window */
@@ -1568,11 +1560,7 @@ pspp_sheet_view_realize (GtkWidget *widget)
 
   tree_view->priv->header_window = gdk_window_new (window,
 						   &attributes, attributes_mask);
-#if GTK_CHECK_VERSION(3,8,0)
   gtk_widget_register_window (widget, tree_view->priv->header_window);
-#else
-  gdk_window_set_user_data (tree_view->priv->header_window, widget);
-#endif
 
   { /* Ensure Background */
     GtkStyleContext *context;

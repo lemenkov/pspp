@@ -44,4 +44,9 @@
 
 #define gdk_cursor_unref(X) g_object_unref (X)
 
+#if (GTK_CHECK_VERSION(3,8,0) == 0)
+#define gtk_widget_register_window(widget, window) gdk_window_set_user_data (window, widget);
+#endif
+
+
 #endif /* PSPP_GTK_GTK_H */
