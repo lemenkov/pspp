@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: pspp-0.8.4\n"
 "Report-Msgid-Bugs-To: pspp-dev@gnu.org\n"
 "POT-Creation-Date: 2014-09-26 21:39-0700\n"
-"PO-Revision-Date: 2015-06-10 09:53+0300\n"
+"PO-Revision-Date: 2015-06-20 09:53+0300\n"
 "Last-Translator: Mindaugas Baranauskas <opensuse.lietuviu.kalba@gmail.com>\n"
 "Language-Team: Lithuanian <komp_lt@konferencijos.lt>\n"
 "Language: lt\n"
@@ -1342,7 +1342,7 @@ msgstr "Skirstymas"
 
 #: src/data/variable.c:889 src/ui/gui/reliability.ui:21
 msgid "Split"
-msgstr "Padalijimas"
+msgstr "padalijimas"
 
 #: src/data/variable.c:1002
 msgid "Left"
@@ -2591,7 +2591,7 @@ msgstr "Kriter. prop."
 #: src/language/stats/crosstabs.q:1284
 #, c-format
 msgid "Exact Sig. (%d-tailed)"
-msgstr "Tiksli p-reikšmė (%d-pusė)"
+msgstr "Tiksli p reikšmė (%d-pusė)"
 
 #: src/language/stats/chisquare.c:155
 #, c-format
@@ -2604,7 +2604,7 @@ msgstr "Stebėtų N"
 
 #: src/language/stats/chisquare.c:169 src/language/stats/chisquare.c:212
 msgid "Expected N"
-msgstr "Prognozuotų N"
+msgstr "Tikėtinų N"
 
 #: src/language/stats/chisquare.c:170 src/language/stats/chisquare.c:213
 #: src/language/stats/regression.c:945
@@ -2646,7 +2646,7 @@ msgstr "laisv. l."
 #: src/language/stats/friedman.c:289 src/language/stats/kruskal-wallis.c:352
 #: src/language/stats/median.c:431
 msgid "Asymp. Sig."
-msgstr "Asimt. p-reikšmė"
+msgstr "Asimt. p reikšmė"
 
 #: src/language/stats/cochran.c:110
 msgid "More than two values encountered.  Cochran Q test will not be run."
@@ -2707,11 +2707,11 @@ msgstr "Pirsono koreliacija"
 #: src/language/stats/t-test-one-sample.c:97
 #: src/language/stats/t-test-paired.c:307
 msgid "Sig. (2-tailed)"
-msgstr "p-reikšmė (2-pusė)"
+msgstr "p reikšmė (dvipusė)"
 
 #: src/language/stats/correlations.c:222 src/language/stats/factor.c:1689
 msgid "Sig. (1-tailed)"
-msgstr "p-reikšmė (1-pusė)"
+msgstr "p reikšmė (vienpusė)"
 
 #: src/language/stats/correlations.c:226
 msgid "Cross-products"
@@ -2905,7 +2905,7 @@ msgstr "Statistika"
 #: src/language/stats/oneway.c:1381 src/language/stats/oneway.c:1590
 #: src/language/stats/roc.c:978 src/language/stats/regression.c:829
 msgid "Std. Error"
-msgstr "Std. paklaida"
+msgstr "St. paklaida"
 
 #: src/language/stats/examine.c:905 src/language/stats/oneway.c:1079
 #, c-format
@@ -3092,7 +3092,7 @@ msgstr "Bartleto sferiškumo kriterijus"
 
 #: src/language/stats/factor.c:1884
 msgid "Approx. Chi-Square"
-msgstr "Apytiksl. Chi-kvadratas"
+msgstr "Apytiksl. chi kvadratas"
 
 #: src/language/stats/factor.c:1886 src/language/stats/glm.c:754
 #: src/language/stats/logistic.c:1224 src/language/stats/oneway.c:979
@@ -3101,7 +3101,7 @@ msgstr "Apytiksl. Chi-kvadratas"
 #: src/language/stats/t-test-indep.c:291
 #: src/language/stats/t-test-paired.c:235
 msgid "Sig."
-msgstr "p-reikšmė"
+msgstr "p reikšmė"
 
 #: src/language/stats/factor.c:1927
 #, c-format
@@ -3314,15 +3314,15 @@ msgstr "Kolmogorovo ir Smirnovo kriterijus vienai imčiai"
 
 #: src/language/stats/ks-one-sample.c:299
 msgid "Normal Parameters"
-msgstr "Normalieji parametrai"
+msgstr "Normaliojo skirstinio parametrai"
 
 #: src/language/stats/ks-one-sample.c:308
 msgid "Uniform Parameters"
-msgstr "Tolygieji parametrai"
+msgstr "Tolydžiojo skirstinio parametrai"
 
 #: src/language/stats/ks-one-sample.c:317
 msgid "Poisson Parameters"
-msgstr "Puasono parametrai"
+msgstr "Puasono skirstinio parametrai"
 
 #: src/language/stats/ks-one-sample.c:320
 #: src/ui/gui/psppire-dialog-action-crosstabs.c:74
@@ -3332,7 +3332,7 @@ msgstr "Liambda"
 
 #: src/language/stats/ks-one-sample.c:324
 msgid "Exponential Parameters"
-msgstr "Eksponentiniai parametrai"
+msgstr "Eksponentinio skirstinio parametrai"
 
 #: src/language/stats/ks-one-sample.c:384
 msgid "Most Extreme Differences"
@@ -3359,7 +3359,7 @@ msgstr "Kolmogorovo ir Smirnovo Z"
 #: src/language/stats/mann-whitney.c:267 src/language/stats/runs.c:402
 #: src/language/stats/wilcoxon.c:319 src/language/stats/crosstabs.q:1280
 msgid "Asymp. Sig. (2-tailed)"
-msgstr "Asimp. p-reikšmė (2-pusė)"
+msgstr "Asimp. p reikšmė (2-pusė)"
 
 #: src/language/stats/logistic.c:327
 msgid "All predicted values are either 1 or 0"
@@ -3561,7 +3561,7 @@ msgstr "Z"
 #: src/language/stats/mann-whitney.c:271 src/language/stats/mcnemar.c:265
 #: src/language/stats/sign.c:134 src/language/stats/wilcoxon.c:323
 msgid "Exact Sig. (2-tailed)"
-msgstr "Tiksli p-reikšmė (2-pusė)"
+msgstr "Tiksli p reikšmė (2-pusė)"
 
 #: src/language/stats/mann-whitney.c:272 src/language/stats/mcnemar.c:271
 #: src/language/stats/sign.c:140 src/language/stats/wilcoxon.c:327
@@ -3629,7 +3629,7 @@ msgstr "Maknemaros kriterijus skirtas tik dichotominiams kintamiesiems"
 #: src/language/stats/mcnemar.c:268 src/language/stats/sign.c:137
 #: src/language/stats/wilcoxon.c:324
 msgid "Exact Sig. (1-tailed)"
-msgstr "Tiksli p-reikšmė (1-pusė)"
+msgstr "Tiksli p reikšmė (1-pusė)"
 
 #: src/language/stats/median.c:359
 msgid "> Median"
@@ -3993,7 +3993,7 @@ msgstr "Plotas"
 
 #: src/language/stats/roc.c:979
 msgid "Asymptotic Sig."
-msgstr "Asimptotinė p-reikšmė"
+msgstr "Asimptotinė p reikšmė"
 
 #: src/language/stats/roc.c:986
 #, c-format
@@ -4072,7 +4072,7 @@ msgstr "Koreguotas R kvadratas"
 
 #: src/language/stats/regression.c:779
 msgid "Std. Error of the Estimate"
-msgstr "Įverčio std. paklaida"
+msgstr "Įverčio st. paklaida"
 
 #: src/language/stats/regression.c:784
 #, c-format
@@ -4203,7 +4203,7 @@ msgstr "t kriterijus vidurkių lygybei"
 
 #: src/language/stats/t-test-indep.c:296
 msgid "Std. Error Difference"
-msgstr "Vidurkių skirtumo std. paklaida"
+msgstr "Vidurkių skirtumo st. paklaida"
 
 #: src/language/stats/t-test-indep.c:301
 #: src/language/stats/t-test-one-sample.c:90
@@ -4267,7 +4267,7 @@ msgstr "Porinių imčių skirtumai"
 
 #: src/language/stats/t-test-paired.c:308
 msgid "Std. Error Mean"
-msgstr "std. vidurkio paklaida"
+msgstr "st. vidurkio paklaida"
 
 #: src/language/stats/t-test-paired.c:329
 #, c-format
@@ -5752,7 +5752,7 @@ msgstr "duomenų redaktorius"
 
 #: src/ui/gui/psppire-dialog-action-crosstabs.c:71
 msgid "Chisq"
-msgstr "Chi-kvadr."
+msgstr "Chi kvadr."
 
 #: src/ui/gui/psppire-dialog-action-crosstabs.c:72
 #: src/language/stats/crosstabs.q:1855
@@ -6529,7 +6529,7 @@ msgstr "patiksl. norm. liekana"
 
 #: src/language/stats/crosstabs.q:1273
 msgid "Chi-square tests."
-msgstr "Chi-kvadrato kriterij."
+msgstr "Chi kvadrato kriterijai."
 
 #: src/language/stats/crosstabs.q:1302
 msgid "Symmetric measures."
@@ -6537,7 +6537,7 @@ msgstr "Simetriniai matavimai."
 
 #: src/language/stats/crosstabs.q:1308 src/language/stats/crosstabs.q:1358
 msgid "Asymp. Std. Error"
-msgstr "Asimpt. std. paklaida"
+msgstr "Asimpt. st. paklaida"
 
 #: src/language/stats/crosstabs.q:1309 src/language/stats/crosstabs.q:1359
 msgid "Approx. T"
@@ -6545,7 +6545,7 @@ msgstr "Apytiksl. T"
 
 #: src/language/stats/crosstabs.q:1310 src/language/stats/crosstabs.q:1360
 msgid "Approx. Sig."
-msgstr "Apytiksl. p-reikšmė"
+msgstr "Apytiksl. p reikšmė"
 
 #: src/language/stats/crosstabs.q:1324
 msgid "Risk estimate."
@@ -6562,7 +6562,7 @@ msgstr "Kryptingi matavimai."
 
 #: src/language/stats/crosstabs.q:1789
 msgid "Pearson Chi-Square"
-msgstr "Pirsono Chi-kvadratas"
+msgstr "Pirsono chi kvadratas"
 
 #: src/language/stats/crosstabs.q:1790
 msgid "Likelihood Ratio"
@@ -6993,7 +6993,7 @@ msgstr "Statistika"
 
 #: src/ui/gui/chi-square.ui:13
 msgid "Chi-Square Test"
-msgstr "Chi-kvadrato kriterijus"
+msgstr "Chi kvadrato kriterijus"
 
 #: src/ui/gui/chi-square.ui:99
 msgid "Use _specified range"
@@ -7009,7 +7009,7 @@ msgstr "_Viršus:"
 
 #: src/ui/gui/chi-square.ui:179
 msgid "Expected Range:"
-msgstr "Prognozuojama sritis:"
+msgstr "Tikėtina sritis:"
 
 #: src/ui/gui/chi-square.ui:206
 msgid "All categor_ies equal"
@@ -7021,7 +7021,7 @@ msgstr "_Reikšmės"
 
 #: src/ui/gui/chi-square.ui:270
 msgid "Expected Values:"
-msgstr "Prognozuojamos reikšmės:"
+msgstr "Tikėtinos reikšmės:"
 
 #: src/ui/gui/chi-square.ui:317
 msgid "Test _Variables"
@@ -7586,7 +7586,7 @@ msgstr "_Faktorius:"
 
 #: src/ui/gui/oneway.ui:77
 msgid "Dependent _Variable(s):"
-msgstr "Priklausomas _kintamasis(-ieji):"
+msgstr "Priklausomas(-i) _kintamasis(-ieji):"
 
 #: src/ui/gui/oneway.ui:212
 msgid "_Homogeneity"
@@ -7718,7 +7718,7 @@ msgstr "_Rangas"
 
 #: src/ui/gui/rank.ui:448
 msgid "N_tiles"
-msgstr "_N- procentilės"
+msgstr "_N-procentilės"
 
 #: src/ui/gui/rank.ui:492
 msgid "_Proportion Estimates"
@@ -7742,7 +7742,7 @@ msgstr ""
 
 #: src/ui/gui/rank.ui:587
 msgid "_Van der Waerden"
-msgstr "_Van der Wärden"
+msgstr "_Van der Vardeno"
 
 #: src/ui/gui/rank.ui:608
 msgid "Proportion Estimation Formula"
@@ -7910,7 +7910,7 @@ msgstr "Regresija: įrašyti"
 
 #: src/ui/gui/regression.ui:267 src/ui/gui/univariate.ui:222
 msgid "_Predicted values"
-msgstr "_Prognozuojamas reikšmes"
+msgstr "_Tikėtinos reikšmes"
 
 #: src/ui/gui/regression.ui:281 src/ui/gui/univariate.ui:236
 msgid "_Residuals"
@@ -8474,7 +8474,7 @@ msgstr "_Neparametrinė statistika"
 
 #: src/ui/gui/data-editor.ui:436
 msgid "_Chi-Square..."
-msgstr "_Chi-kvadratas..."
+msgstr "_Chi kvadratas..."
 
 #: src/ui/gui/data-editor.ui:443
 msgid "_Binomial..."
