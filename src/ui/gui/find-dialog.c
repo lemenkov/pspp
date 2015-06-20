@@ -198,7 +198,7 @@ find_dialog (PsppireDataWindow *de)
   fd.xml = builder_new ("find.ui");
   fd.de = de;
 
-  find_button = gtk_button_new_from_stock  (GTK_STOCK_FIND);
+  find_button = gtk_button_new_with_label (_("Find"));
   gtk_widget_show (find_button);
 
   buttonbox = get_widget_assert (fd.xml, "find-buttonbox");

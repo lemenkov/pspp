@@ -323,7 +323,7 @@ psppire_button_box_init (PsppireButtonBox *bb)
 {
   bb->def = PSPPIRE_BUTTON_CONTINUE;
 
-  bb->button[PSPPIRE_BUTTON_OK] = gtk_button_new_from_stock (GTK_STOCK_OK);
+  bb->button[PSPPIRE_BUTTON_OK] = gtk_button_new_with_label (_("OK"));
   psppire_box_pack_start_defaults (GTK_BOX (bb), bb->button[PSPPIRE_BUTTON_OK]);
   g_signal_connect (bb->button[PSPPIRE_BUTTON_OK], "clicked",
 		    G_CALLBACK (ok_button_clicked), NULL);
@@ -331,7 +331,7 @@ psppire_button_box_init (PsppireButtonBox *bb)
 
 
   bb->button[PSPPIRE_BUTTON_GOTO] =
-    gtk_button_new_from_stock (GTK_STOCK_JUMP_TO);
+    gtk_button_new_with_label (_("Go To"));
   psppire_box_pack_start_defaults (GTK_BOX (bb), bb->button[PSPPIRE_BUTTON_GOTO]);
   g_signal_connect (bb->button[PSPPIRE_BUTTON_GOTO], "clicked",
 		    G_CALLBACK (goto_button_clicked), NULL);
@@ -351,33 +351,33 @@ psppire_button_box_init (PsppireButtonBox *bb)
 
 
 
-  bb->button[PSPPIRE_BUTTON_PASTE] = gtk_button_new_from_stock (GTK_STOCK_PASTE);
+  bb->button[PSPPIRE_BUTTON_PASTE] = gtk_button_new_with_label (_("Paste"));
   g_signal_connect (bb->button[PSPPIRE_BUTTON_PASTE], "clicked",
 		    G_CALLBACK (paste_button_clicked), NULL);
   psppire_box_pack_start_defaults (GTK_BOX (bb), bb->button[PSPPIRE_BUTTON_PASTE]);
   g_object_set (bb->button[PSPPIRE_BUTTON_PASTE], "no-show-all", TRUE, NULL);
 
-  bb->button[PSPPIRE_BUTTON_CANCEL] = gtk_button_new_from_stock (GTK_STOCK_CANCEL);
+  bb->button[PSPPIRE_BUTTON_CANCEL] = gtk_button_new_with_label (_("Cancel"));
   g_signal_connect (bb->button[PSPPIRE_BUTTON_CANCEL], "clicked",
 		    G_CALLBACK (close_dialog), NULL);
   psppire_box_pack_start_defaults (GTK_BOX (bb), bb->button[PSPPIRE_BUTTON_CANCEL]);
   g_object_set (bb->button[PSPPIRE_BUTTON_CANCEL], "no-show-all", TRUE, NULL);
 
-  bb->button[PSPPIRE_BUTTON_CLOSE] = gtk_button_new_from_stock (GTK_STOCK_CLOSE);
+  bb->button[PSPPIRE_BUTTON_CLOSE] = gtk_button_new_with_label (_("Close"));
   g_signal_connect (bb->button[PSPPIRE_BUTTON_CLOSE], "clicked",
 		    G_CALLBACK (close_dialog), NULL);
   psppire_box_pack_start_defaults (GTK_BOX (bb), bb->button[PSPPIRE_BUTTON_CLOSE]);
   g_object_set (bb->button[PSPPIRE_BUTTON_CLOSE], "no-show-all", TRUE, NULL);
 
 
-  bb->button[PSPPIRE_BUTTON_RESET] = gtk_button_new_from_stock ("pspp-stock-reset");
+  bb->button[PSPPIRE_BUTTON_RESET] = gtk_button_new_with_label (_("Reset"));
   g_signal_connect (bb->button[PSPPIRE_BUTTON_RESET], "clicked",
 		    G_CALLBACK (refresh_clicked), NULL);
   psppire_box_pack_start_defaults (GTK_BOX (bb), bb->button[PSPPIRE_BUTTON_RESET]);
   g_object_set (bb->button[PSPPIRE_BUTTON_RESET], "no-show-all", TRUE, NULL);
 
 
-  bb->button[PSPPIRE_BUTTON_HELP] = gtk_button_new_from_stock (GTK_STOCK_HELP);
+  bb->button[PSPPIRE_BUTTON_HELP] = gtk_button_new_with_label (_("Help"));
   g_signal_connect (bb->button[PSPPIRE_BUTTON_HELP], "clicked",
 		    G_CALLBACK (help_clicked), NULL);
   psppire_box_pack_start_defaults (GTK_BOX (bb), bb->button[PSPPIRE_BUTTON_HELP]);
