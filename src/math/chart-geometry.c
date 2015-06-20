@@ -26,6 +26,9 @@
 #include "gl/minmax.h"
 #include "gl/xvasprintf.h"
 
+#include "gettext.h"
+#define _(msgid) gettext (msgid)
+
 static const double standard_tick[] = {1, 2, 5, 10};
 
 /* 
@@ -87,6 +90,39 @@ chart_get_scale (double high, double low,
     }
 }
 
+/* 
+   Generate a format string which can be passed to printf like functions,
+   which will produce a string in scientific notation representing a real 
+   number.  N_DECIMALS is the number of decimal places EXPONENT is the 
+   value of the exponent.
+*/
+static inline char *
+gen_pango_markup_scientific_format_string (int n_decimals, int exponent)
+{
+  /* TRANSLATORS: This is a format string which, when presented to
+     printf like functions, will create a pango markup string to
+     display real number in scientific  notation. 
+     
+     In its untranslated form, it will display similar to "1.23 x 10^4". You 
+     can leave it untranslated if this is how scientific notation is usually
+     presented in your language.
+     
+     Some locales (such as German) prefer the centered dot rather than the
+     multiplication sign between the mantissa an exponent. In which
+     case, you can change "#215;" to "#8901;" or other unicode code
+     point as appropriate. 
+
+     The . in this string does not and should not be changed, since
+     that is taken care of by the stdc library. 
+
+     For information on Pango markup, see 
+     http://developer.gnome.org/pango/stable/PangoMarkupFormat.html
+
+     For tables of unicode code points, see http://unicode.org/charts
+   */
+  return xasprintf(_("%%.%dlf&#215;10<sup>%d</sup>"), n_decimals, exponent);
+}
+
 /*
  * Compute the optimum format string and the scaling
  * for the tick drawing on a chart axis
@@ -138,7 +174,7 @@ chart_get_ticks_format (const double lower, const double interval,
 	  /* log10(0.2E9) = 8.30, log10(0.5E9) = 8.69, log10(1.0E9) = 9    */
 	  /* 0.2 and 0.5 need one decimal more. For stability subtract 0.1 */
 	  nrdecs = MIN(8,(int)(ceil(logshift-logintv-0.1)));
-	  format_string = xasprintf("%%.%dlf&#215;10<sup>%d</sup>",nrdecs,logshift);
+	  format_string = gen_pango_markup_scientific_format_string (nrdecs, logshift);
 	}
     }
   else /* logmax and logintv are < 0 */
@@ -153,9 +189,9 @@ chart_get_ticks_format (const double lower, const double interval,
 	{
 	  logshift = (int)logmax-1;
 	  nrdecs = MIN(8,(int)(ceil(logshift-logintv-0.1)));
-	  format_string = xasprintf("%%.%dlf&#215;10<sup>%d</sup>",nrdecs,logshift);
+	  format_string = gen_pango_markup_scientific_format_string (nrdecs, logshift);
 	}
-    }
+      }
   *scale = pow(10.0,-(double)logshift);
   return format_string;
 }

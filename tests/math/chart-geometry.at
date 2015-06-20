@@ -15,23 +15,23 @@ lower: 1e+08, interval: 10, nticks: 10, fs: %.0lf, scale: 1, ex: 100000030, ex 2
 lower: 0.1, interval: 0.01, nticks: 10, fs: %.2lf, scale: 1, ex: 0.13, ex 2: 0.14
 lower: 0.01, interval: 0.001, nticks: 10, fs: %.3lf, scale: 1, ex: 0.013, ex 2: 0.014
 lower: 0.001, interval: 0.0001, nticks: 10, fs: %.4lf, scale: 1, ex: 0.0013, ex 2: 0.0014
-lower: 0.0001, interval: 1e-05, nticks: 10, fs: %.1lf&#8901;10<sup>-4</sup>, scale: 10000, ex: 1.3&#8901;10<sup>-4</sup>, ex 2: 1.4&#8901;10<sup>-4</sup>
-lower: 1e-05, interval: 1e-07, nticks: 10, fs: %.2lf&#8901;10<sup>-5</sup>, scale: 100000, ex: 1.03&#8901;10<sup>-5</sup>, ex 2: 1.04&#8901;10<sup>-5</sup>
-lower: 1e-07, interval: 1e-08, nticks: 10, fs: %.1lf&#8901;10<sup>-7</sup>, scale: 1e+07, ex: 1.3&#8901;10<sup>-7</sup>, ex 2: 1.4&#8901;10<sup>-7</sup>
+lower: 0.0001, interval: 1e-05, nticks: 10, fs: %.1lf&#215;10<sup>-4</sup>, scale: 10000, ex: 1.3&#215;10<sup>-4</sup>, ex 2: 1.4&#215;10<sup>-4</sup>
+lower: 1e-05, interval: 1e-07, nticks: 10, fs: %.2lf&#215;10<sup>-5</sup>, scale: 100000, ex: 1.03&#215;10<sup>-5</sup>, ex 2: 1.04&#215;10<sup>-5</sup>
+lower: 1e-07, interval: 1e-08, nticks: 10, fs: %.1lf&#215;10<sup>-7</sup>, scale: 1e+07, ex: 1.3&#215;10<sup>-7</sup>, ex 2: 1.4&#215;10<sup>-7</sup>
 lower: -5, interval: 1, nticks: 10, fs: %.0lf, scale: 1, ex: -2, ex 2: -1
 lower: -5, interval: 0.5, nticks: 10, fs: %.1lf, scale: 1, ex: -3.5, ex 2: -3.0
 lower: -5, interval: 0.2, nticks: 9, fs: %.1lf, scale: 1, ex: -4.4, ex 2: -4.2
 lower: -5, interval: 2, nticks: 10, fs: %.0lf, scale: 1, ex: 1, ex 2: 3
 lower: -0.5, interval: 0.1, nticks: 9, fs: %.1lf, scale: 1, ex: -0.2, ex 2: -0.1
-lower: 9.75e+08, interval: 5e+06, nticks: 9, fs: %.3lf&#8901;10<sup>9</sup>, scale: 1e-09, ex: 0.990&#8901;10<sup>9</sup>, ex 2: 0.995&#8901;10<sup>9</sup>
-lower: 9.7e+08, interval: 1e+07, nticks: 9, fs: %.2lf&#8901;10<sup>9</sup>, scale: 1e-09, ex: 1.00&#8901;10<sup>9</sup>, ex 2: 1.01&#8901;10<sup>9</sup>
-lower: -4e+07, interval: 1e+07, nticks: 9, fs: %.0lf&#8901;10<sup>7</sup>, scale: 1e-07, ex: -1&#8901;10<sup>7</sup>, ex 2: 0&#8901;10<sup>7</sup>
-lower: -3e+07, interval: 5e+06, nticks: 9, fs: %.1lf&#8901;10<sup>7</sup>, scale: 1e-07, ex: -1.5&#8901;10<sup>7</sup>, ex 2: -1.0&#8901;10<sup>7</sup>
-lower: 1.001e-95, interval: 2e-99, nticks: 10, fs: %.4lf&#8901;10<sup>-95</sup>, scale: 1e+95, ex: 1.0016&#8901;10<sup>-95</sup>, ex 2: 1.0018&#8901;10<sup>-95</sup>
-lower: 1.001e+98, interval: 2e+94, nticks: 10, fs: %.4lf&#8901;10<sup>98</sup>, scale: 1e-98, ex: 1.0016&#8901;10<sup>98</sup>, ex 2: 1.0018&#8901;10<sup>98</sup>
+lower: 9.75e+08, interval: 5e+06, nticks: 9, fs: %.3lf&#215;10<sup>9</sup>, scale: 1e-09, ex: 0.990&#215;10<sup>9</sup>, ex 2: 0.995&#215;10<sup>9</sup>
+lower: 9.7e+08, interval: 1e+07, nticks: 9, fs: %.2lf&#215;10<sup>9</sup>, scale: 1e-09, ex: 1.00&#215;10<sup>9</sup>, ex 2: 1.01&#215;10<sup>9</sup>
+lower: -4e+07, interval: 1e+07, nticks: 9, fs: %.0lf&#215;10<sup>7</sup>, scale: 1e-07, ex: -1&#215;10<sup>7</sup>, ex 2: 0&#215;10<sup>7</sup>
+lower: -3e+07, interval: 5e+06, nticks: 9, fs: %.1lf&#215;10<sup>7</sup>, scale: 1e-07, ex: -1.5&#215;10<sup>7</sup>, ex 2: -1.0&#215;10<sup>7</sup>
+lower: 1.001e-95, interval: 2e-99, nticks: 10, fs: %.4lf&#215;10<sup>-95</sup>, scale: 1e+95, ex: 1.0016&#215;10<sup>-95</sup>, ex 2: 1.0018&#215;10<sup>-95</sup>
+lower: 1.001e+98, interval: 2e+94, nticks: 10, fs: %.4lf&#215;10<sup>98</sup>, scale: 1e-98, ex: 1.0016&#215;10<sup>98</sup>, ex 2: 1.0018&#215;10<sup>98</sup>
 lower: 5984, interval: 1e-05, nticks: 10, fs: %.5lf, scale: 1, ex: 5984.00003, ex 2: 5984.00004
 lower: 3e+33, interval: 1e-22, nticks: 10, fs: %lg, scale: 1, ex: 3e+33, ex 2: 3e+33
-lower: 3e+33, interval: 1000, nticks: 10, fs: %.8lf&#8901;10<sup>33</sup>, scale: 1e-33, ex: 3.00000000&#8901;10<sup>33</sup>, ex 2: 3.00000000&#8901;10<sup>33</sup>
+lower: 3e+33, interval: 1000, nticks: 10, fs: %.8lf&#215;10<sup>33</sup>, scale: 1e-33, ex: 3.00000000&#215;10<sup>33</sup>, ex 2: 3.00000000&#215;10<sup>33</sup>
 lower: 0.1, interval: 2e-42, nticks: 10, fs: %.8lf, scale: 1, ex: 0.10000000, ex 2: 0.10000000
 ])
 AT_CLEANUP

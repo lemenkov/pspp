@@ -75,7 +75,14 @@ compare_freq_2level_ptr_3way (const void *a_, const void *b_, const void *bc_)
 
 
 /* Creates and returns a chart that will render a barchart with
-   the given TITLE and the N_BARS described in CATS. */
+   the given TITLE and the N_CATS described in CATS. 
+
+   VAR is an array containing the categorical variables, and N_VAR 
+   the number of them. N_VAR must be exactly 1 or 2.
+
+   CATS are the counts of the values of those variables. N_CATS is the
+   number of distinct values.
+*/
 struct chart_item *
 barchart_create (const struct variable **var, int n_vars,
 		 const char *ylabel, 

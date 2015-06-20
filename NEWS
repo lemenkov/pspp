@@ -4,7 +4,7 @@ See the end for copying conditions.
 
 Please send PSPP bug reports to bug-gnu-pspp@gnu.org.
  
-Changes since 0.8.4:
+Changes from 0.8.4 to 0.8.5:
 
  * The FREQUENCIES and CROSSTABS commands can now generate barcharts.
 

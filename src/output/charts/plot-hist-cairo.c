@@ -1,5 +1,5 @@
 /* PSPP - a program for statistical analysis.
-   Copyright (C) 2009, 2011, 2014 Free Software Foundation, Inc.
+   Copyright (C) 2009, 2011, 2014, 2015 Free Software Foundation, Inc.
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -149,6 +149,13 @@ xrchart_draw_histogram (const struct chart_item *chart_item, cairo_t *cr,
       /* Therefore the pdf has to be scaled accordingly such that the integrals are equal               */
       ordinate_scale = binwidth * gsl_histogram_sum(h->gsl_hist);
 
+      /* Clip normal curve to the rectangle formed by the axes. */
+      cairo_save (cr);
+      cairo_rectangle (cr, geom->axis[SCALE_ABSCISSA].data_min, geom->axis[SCALE_ORDINATE].data_min,
+                       geom->axis[SCALE_ABSCISSA].data_max - geom->axis[SCALE_ABSCISSA].data_min,
+                       geom->axis[SCALE_ORDINATE].data_max - geom->axis[SCALE_ORDINATE].data_min);
+      cairo_clip (cr);
+
       cairo_move_to (cr, geom->axis[SCALE_ABSCISSA].data_min, geom->axis[SCALE_ORDINATE].data_min);
       for (x = geom->axis[SCALE_ABSCISSA].min;
 	   x <= geom->axis[SCALE_ABSCISSA].max;
@@ -161,5 +168,7 @@ xrchart_draw_histogram (const struct chart_item *chart_item, cairo_t *cr,
           cairo_line_to (cr, x_pos, y_pos);
 	}
       cairo_stroke (cr);
+
+      cairo_restore (cr);
     }
 }
