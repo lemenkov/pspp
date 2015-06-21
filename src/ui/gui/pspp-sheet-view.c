@@ -12410,7 +12410,6 @@ pspp_sheet_view_real_start_editing (PsppSheetView       *tree_view,
 {
   PsppSheetSelectionMode mode = pspp_sheet_selection_get_mode (tree_view->priv->selection);
   gint pre_val = gtk_adjustment_get_value (tree_view->priv->vadjustment);
-  GtkRequisition requisition;
   gint row;
 
   g_return_if_fail (gtk_tree_path_get_depth (path) == 1);
