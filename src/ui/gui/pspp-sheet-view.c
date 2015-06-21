@@ -1,5 +1,5 @@
 /* PSPPIRE - a graphical user interface for PSPP.
-   Copyright (C) 2011, 2012, 2013 Free Software Foundation, Inc.
+   Copyright (C) 2011, 2012, 2013, 2015 Free Software Foundation, Inc.
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -3885,7 +3885,6 @@ pspp_sheet_view_draw_bin (GtkWidget      *widget,
   gint horizontal_separator;
   gint focus_line_width;
   gboolean allow_rules;
-  gboolean has_special_cell;
   gboolean rtl;
   gint n_visible_columns;
   gint grid_line_width;
@@ -4041,27 +4040,6 @@ pspp_sheet_view_draw_bin (GtkWidget      *widget,
       selected = pspp_sheet_view_node_is_selected (tree_view, node);
 
       parity = node % 2;
-
-      if (tree_view->priv->special_cells == PSPP_SHEET_VIEW_SPECIAL_CELLS_DETECT)
-        {
-          /* we *need* to set cell data on all cells before the call
-           * to _has_special_cell, else _has_special_cell() does not
-           * return a correct value.
-           */
-          for (list = (rtl ? g_list_last (tree_view->priv->columns) : g_list_first (tree_view->priv->columns));
-               list;
-               list = (rtl ? list->prev : list->next))
-            {
-              PsppSheetViewColumn *column = list->data;
-              pspp_sheet_view_column_cell_set_cell_data (column,
-                                                         tree_view->priv->model,
-                                                         &iter);
-            }
-
-          has_special_cell = pspp_sheet_view_has_special_cell (tree_view);
-        }
-      else
-        has_special_cell = tree_view->priv->special_cells == PSPP_SHEET_VIEW_SPECIAL_CELLS_YES;
 
       for (list = (rtl ? g_list_last (tree_view->priv->columns) : g_list_first (tree_view->priv->columns));
 	   list;
