@@ -40,7 +40,11 @@
 #include "psppire-acr.h"
 #include "helper.h"
 
-G_DEFINE_TYPE (PsppireAcr, psppire_acr, GTK_TYPE_HBOX);
+#include "gettext.h"
+#define _(msgid) gettext (msgid)
+#define N_(msgid) msgid
+
+G_DEFINE_TYPE (PsppireAcr, psppire_acr, GTK_TYPE_BOX);
 
 static void
 psppire_acr_dispose (GObject *obj)
@@ -248,7 +252,6 @@ psppire_acr_set_enabled (PsppireAcr *acr, gboolean status)
 			    && row_is_selected (acr));
 }
 
-
 static void
 psppire_acr_init (PsppireAcr *acr)
 {
@@ -256,11 +259,13 @@ psppire_acr_init (PsppireAcr *acr)
 
   GtkWidget *sw = gtk_scrolled_window_new (NULL, NULL);
 
+  gtk_orientable_set_orientation (GTK_ORIENTABLE (acr), GTK_ORIENTATION_HORIZONTAL);
+
   acr->tv = GTK_TREE_VIEW (gtk_tree_view_new ());
 
-  acr->add_button = gtk_button_new_from_stock (GTK_STOCK_ADD);
-  acr->change_button = gtk_button_new_from_stock (GTK_STOCK_EDIT);
-  acr->remove_button = gtk_button_new_from_stock (GTK_STOCK_REMOVE);
+  acr->add_button = gtk_button_new_with_label (_("Add"));
+  acr->change_button = gtk_button_new_with_label (_("Edit"));
+  acr->remove_button = gtk_button_new_with_label (_("Remove"));
 
   acr->get_value = NULL;
   acr->get_value_data = NULL;

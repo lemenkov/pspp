@@ -29,7 +29,7 @@
 static void psppire_scanf_class_init          (PsppireScanfClass *class);
 static void psppire_scanf_init                (PsppireScanf      *w);
 
-G_DEFINE_TYPE (PsppireScanf, psppire_scanf, GTK_TYPE_HBOX)
+G_DEFINE_TYPE (PsppireScanf, psppire_scanf, GTK_TYPE_BOX)
 
 /* Properties */
 enum
@@ -331,6 +331,7 @@ psppire_scanf_class_init (PsppireScanfClass *class)
 static void
 psppire_scanf_init (PsppireScanf *w)
 {
+  gtk_orientable_set_orientation (GTK_ORIENTABLE (w), GTK_ORIENTATION_HORIZONTAL);
 }
 
 gchar
@@ -349,7 +350,7 @@ psppire_scanf_get_child (PsppireScanf *w, gint n)
 
 
 /*
-   This widget is a GtkHBox populated with GtkLabel and GtkEntry widgets.
+   This widget is a horizontal GtkBox populated with GtkLabel and GtkEntry widgets.
    Each conversion in FMT will cause a GtkEntry (possibly a GtkSpinButton) to
    be created.  Any text between conversions produces a GtkLabel.
    There should be N arguments following FMT should be of type GtkEntry **,

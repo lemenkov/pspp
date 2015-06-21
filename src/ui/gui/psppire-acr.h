@@ -64,7 +64,7 @@ typedef void (*UpdateCallbackFunc) (gpointer);
 
 struct _PsppireAcr
 {
-  GtkHBox parent;
+  GtkBox parent;
 
 
   GtkListStore *list_store;
@@ -90,7 +90,7 @@ struct _PsppireAcr
 
 struct _PsppireAcrClass
 {
-  GtkHBoxClass parent_class;
+  GtkBoxClass parent_class;
 };
 
 

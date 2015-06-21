@@ -41,7 +41,7 @@ typedef struct _PsppireScanfClass  PsppireScanfClass;
 /* All members are private. */
 struct _PsppireScanf
 {
-  GtkHBox parent;
+  GtkBox parent;
   const gchar *format;
 
   GtkWidget **widgets;
@@ -56,7 +56,7 @@ struct _PsppireScanf
 
 struct _PsppireScanfClass
 {
-  GtkHBoxClass parent_class;
+  GtkBoxClass parent_class;
 };
 
 
