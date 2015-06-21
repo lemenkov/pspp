@@ -167,9 +167,9 @@ show_scatterplot (const struct graph *cmd, struct casereader *input)
 
   if (byvar_overflow)
     {
-      msg (MW, _("Maximum number of scatterplot categories reached."
-		 "Your BY variable has too many distinct values."
-		 "The coloring of the plot will not be correct"));
+      msg (MW, _("Maximum number of scatterplot categories reached. "
+		 "Your BY variable has too many distinct values. "
+		 "The coloring of the plot will not be correct."));
     }
 }
 
