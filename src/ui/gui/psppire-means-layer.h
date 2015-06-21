@@ -52,7 +52,7 @@ typedef struct _PsppireMeansLayerClass  PsppireMeansLayerClass;
 
 struct _PsppireMeansLayer
 {
-  GtkVBox parent;
+  GtkBox parent;
 
   /* <private> */
   GtkWidget *var_view;
@@ -69,7 +69,7 @@ struct _PsppireMeansLayer
 
 struct _PsppireMeansLayerClass
 {
-  GtkVBoxClass parent_class;
+  GtkBoxClass parent_class;
 };
 
 GType      psppire_means_layer_get_type        (void);

@@ -29,7 +29,7 @@
 static void psppire_means_layer_class_init    (PsppireMeansLayerClass *class);
 static void psppire_means_layer_init          (PsppireMeansLayer      *window);
 
-G_DEFINE_TYPE (PsppireMeansLayer, psppire_means_layer, GTK_TYPE_VBOX);
+G_DEFINE_TYPE (PsppireMeansLayer, psppire_means_layer, GTK_TYPE_BOX);
 
 static GObjectClass *parent_class = NULL;
 
@@ -164,9 +164,11 @@ psppire_means_layer_init  (PsppireMeansLayer      *ml)
   GtkWidget *alignment = gtk_alignment_new (0, 0.5, 0, 0);
   GtkWidget *sw = gtk_scrolled_window_new (NULL, NULL);
 
+  gtk_orientable_set_orientation (GTK_ORIENTABLE (ml), GTK_ORIENTATION_VERTICAL);
+  
   ml->dispose_has_run = FALSE;
-  ml->forward = gtk_button_new_from_stock (GTK_STOCK_GO_FORWARD);
-  ml->back = gtk_button_new_from_stock (GTK_STOCK_GO_BACK);
+  ml->forward = gtk_button_new_with_label (_("Forward"));
+  ml->back = gtk_button_new_with_label (_("Back"));
   ml->var_view = psppire_var_view_new ();
   ml->label = gtk_label_new ("");
 

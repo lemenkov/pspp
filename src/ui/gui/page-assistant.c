@@ -84,10 +84,10 @@ init_assistant (GtkWindow *parent_window)
   g_signal_connect (a->assistant, "prepare", G_CALLBACK (on_prepare), ia);
   g_signal_connect (a->assistant, "cancel", G_CALLBACK (on_cancel), ia);
   g_signal_connect (a->assistant, "close", G_CALLBACK (on_close), ia);
-  a->paste_button = gtk_button_new_from_stock (GTK_STOCK_PASTE);
+  a->paste_button = gtk_button_new_with_label (_("Paste"));
   gtk_assistant_add_action_widget (a->assistant, a->paste_button);
   g_signal_connect (a->paste_button, "clicked", G_CALLBACK (on_paste), ia);
-  a->reset_button = gtk_button_new_from_stock ("pspp-stock-reset");
+  a->reset_button = gtk_button_new_with_label (_("Reset"));
   gtk_assistant_add_action_widget (a->assistant, a->reset_button);
   g_signal_connect (a->reset_button, "clicked", G_CALLBACK (on_reset), ia);
   gtk_window_set_title (GTK_WINDOW (a->assistant),

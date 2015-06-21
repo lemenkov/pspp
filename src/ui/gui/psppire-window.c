@@ -521,11 +521,11 @@ psppire_window_query_save (PsppireWindow *se)
 			  GTK_RESPONSE_REJECT);
 
   cancel_button = gtk_dialog_add_button  (GTK_DIALOG (dialog),
-					  GTK_STOCK_CANCEL,
+					  _("Cancel"),
 					  GTK_RESPONSE_CANCEL);
 
   gtk_dialog_add_button  (GTK_DIALOG (dialog),
-			  GTK_STOCK_SAVE,
+			  _("Save"),
 			  GTK_RESPONSE_APPLY);
 
   gtk_widget_grab_focus (cancel_button);
@@ -700,8 +700,8 @@ psppire_window_file_chooser_dialog (PsppireWindow *toplevel)
     gtk_file_chooser_dialog_new (_("Open"),
 				 GTK_WINDOW (toplevel),
 				 GTK_FILE_CHOOSER_ACTION_OPEN,
-				 GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
-				 GTK_STOCK_OPEN, GTK_RESPONSE_ACCEPT,
+				 _("Cancel"), GTK_RESPONSE_CANCEL,
+				 _("Save"), GTK_RESPONSE_ACCEPT,
 				 NULL);
 
   g_object_set (dialog, "local-only", FALSE, NULL);

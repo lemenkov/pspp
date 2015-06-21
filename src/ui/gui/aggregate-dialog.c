@@ -153,11 +153,12 @@ choose_filename (struct aggregate *fd)
   GtkFileFilter *filter;
 
   GtkWidget *dialog = gtk_file_chooser_dialog_new (_("Aggregate destination file"),
-							   GTK_WINDOW (fd->de),
-							   GTK_FILE_CHOOSER_ACTION_SAVE,
-							   GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
-							   GTK_STOCK_OK, GTK_RESPONSE_ACCEPT,
-							   NULL);
+						   GTK_WINDOW (fd->de),
+						   GTK_FILE_CHOOSER_ACTION_SAVE,
+						   _("Cancel"), GTK_RESPONSE_CANCEL,
+						   _("Save"), GTK_RESPONSE_ACCEPT,
+						   NULL);
+  
   g_object_set (dialog, "local-only", FALSE, NULL);
 
   gtk_file_chooser_set_do_overwrite_confirmation (GTK_FILE_CHOOSER (dialog), TRUE);

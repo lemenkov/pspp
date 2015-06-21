@@ -192,8 +192,8 @@ choose_file (GtkWindow *parent_window, gchar **encodingp)
   GtkWidget *dialog = gtk_file_chooser_dialog_new (_("Import Delimited Text Data"),
                                         parent_window,
                                         GTK_FILE_CHOOSER_ACTION_OPEN,
-                                        GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
-                                        GTK_STOCK_OPEN, GTK_RESPONSE_ACCEPT,
+					_("Cancel"), GTK_RESPONSE_CANCEL,
+					_("Open"), GTK_RESPONSE_ACCEPT,
                                         NULL);
 
   g_object_set (dialog, "local-only", FALSE, NULL);
