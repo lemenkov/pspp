@@ -10,12 +10,6 @@
 			default-height="260"
 			title="Dialog Box">
 
-     <post-create-function>glade_psppire_dialog_post_create</post-create-function>
-     <get-internal-child-function>glade_psppire_dialog_get_internal_child</get-internal-child-function>
-
-     <get-children-function>glade_psppire_dialog_get_children</get-children-function>
-
-
      <properties>
         <property id="accept-focus"         disabled="True" />
         <property id="allow-grow"           disabled="True" />
@@ -47,7 +41,6 @@
         <property id="resize-mode"          disabled="True" />
 	<property id="border-width"         disabled="True" />
 
-
 	<property id="modal" ignore="True" default="True" />
 	<property id="visible" ignore="True" default="False" />
     </properties>
@@ -57,15 +50,10 @@
 
     <glade-widget-class name="PsppireVButtonBox" generic-name="psppire-vbuttonbox" title="Vertical Button Box">
 
-      <post-create-function>glade_psppire_button_box_post_create</post-create-function>
-      <get-children-function>glade_psppire_button_box_get_children</get-children-function>
-
-      <get-internal-child-function>glade_psppire_button_box_get_internal_child</get-internal-child-function>
-
     <properties>
       <property id="child"  disabled="True" />
       <property id="visible" ignore="True" default="True" />
-
+      <property id="border-width" default="5" optional-default="True"/>
       <property id="buttons">
   	  <displayable-values>
 	    <value id="PSPPIRE_BUTTON_OK_MASK"     name="OK"></value>
@@ -90,17 +78,11 @@
 
     <glade-widget-class name="PsppireHButtonBox" generic-name="psppire-hbuttonbox" title="Horizontal Button Box">
 
-      <post-create-function>glade_psppire_button_box_post_create</post-create-function>
-      <get-children-function>glade_psppire_button_box_get_children</get-children-function>
-
-      <get-internal-child-function>glade_psppire_button_box_get_internal_child</get-internal-child-function>
-
     <properties>
       <property id="child"                disabled="True" />
-
       <property id="visible" ignore="True" default="True" />
+      <property id="border-width" default="5" optional-default="True"/>
     </properties>
-
 
     <packing-defaults>
       <parent-class name="GtkVBox">
@@ -112,14 +94,11 @@
 
     </glade-widget-class>
 
-
-
     <glade-widget-class name="PsppireKeypad" 
                         get-type-function="psppire_keypad_get_type" 
 			generic-name="psppire-keypad" 
 			fixed="True"
 			title="Keypad">
-
 
      <properties>
     	<property id="child"       disabled="True"/>
@@ -140,12 +119,6 @@
 
     <glade-widget-class name="PsppireSelector" generic-name="psppire-selector" title="Selector Button">
 
-      <post-create-function>glade_psppire_selector_post_create</post-create-function>
-      <get-children-function>glade_psppire_selector_get_children</get-children-function>
-
-      <get-internal-child-function>glade_psppire_selector_get_internal_child</get-internal-child-function>
-
-
      <properties>
     	<property id="child"           disabled="True"/>
 	<property id="label"           disabled="True"/>
@@ -159,7 +132,7 @@
         <property id="xalign"          disabled="True"/>
         <property id="yalign"          disabled="True"/>
         <property id="resize-mode"     disabled="True"/>
-
+        <property id="border-width" default="5" optional-default="True"/>
 	<property id="orientation">
 	  <displayable-values>
 	    <value id="PSPPIRE_SOURCE_BEFORE_DEST" 
@@ -181,49 +154,37 @@
 
     </glade-widget-class>
 
-
-
     <glade-widget-class name="PsppireAcr" generic-name="psppire-acr" title="Add-Change-Remove">
-
-      <post-create-function>glade_psppire_acr_post_create</post-create-function>
-      <get-children-function>glade_psppire_acr_get_children</get-children-function>
-
-      <get-internal-child-function>glade_psppire_acr_get_internal_child</get-internal-child-function>
-
 
     <properties>
       <property id="child"                disabled="True" />
       <property id="homogeneous"          disabled="True" />
       <property id="visible" ignore="True" default="True" />
+      <property id="border-width" default="5" optional-default="True"/>
     </properties>
 
     </glade-widget-class>
 
 
 
-    <glade-widget-class name="PsppireDictView" generic-name="psppire-dictview" title="Dictionary Treeview">
-
-      <post-create-function>glade_psppire_dictview_post_create</post-create-function>
-      <get-children-function>glade_psppire_dictview_get_children</get-children-function>
-      <get-internal-child-function>glade_psppire_dictview_get_internal_child</get-internal-child-function>
-
+    <glade-widget-class name="PsppireDictView"
+			generic-name="psppire-dictview"
+			title="Dictionary Treeview">
 
     <properties>
       <property id="child"                disabled="True" />
       <property id="homogeneous"          disabled="True" />
       <property id="visible" ignore="True" default="True" />
       <property id="model"                visible="False"  query="False" />
+      <property id="border-width" default="5" optional-default="True"/>
     </properties>
 
     </glade-widget-class>
 
 
-    <glade-widget-class name="PsppireVarView" generic-name="psppire-var-view" title="Variable Treeview">
-
-      <post-create-function>glade_psppire_var_view_post_create</post-create-function>
-      <get-children-function>glade_psppire_var_view_get_children</get-children-function>
-      <get-internal-child-function>glade_psppire_var_view_get_internal_child</get-internal-child-function>
-
+    <glade-widget-class name="PsppireVarView"
+			generic-name="psppire-var-view"
+			title="Variable Treeview">
 
     <properties>
       <property id="child"                disabled="True" />
@@ -231,15 +192,44 @@
       <property id="visible" ignore="True" default="True" />
       <property id="model"                visible="False"  query="False" disabled="True" />
       <property id="n-cols"    ignore="True" />
-
+      <property id="border-width" default="5" optional-default="True"/>
     </properties>
 
     </glade-widget-class>
 
+    <glade-widget-class name="PsppireCheckboxTreeview"
+			generic-name="psppire-checkbox-treeview"
+			title="Checkbox Treeview">
+      <properties>
+        <property id="child"                disabled="True" />
+        <property id="homogeneous"          disabled="True" />
+        <property id="visible" ignore="True" default="True" />
+      </properties>
+    </glade-widget-class>
+
+    <glade-widget-class name="PsppireValChooser"
+			generic-name="psppire-val-chooser"
+			title="Value Chooser"
+			icon-name="widget-gtk-recentchooser">
+      <properties>
+        <property id="child"                disabled="True" />
+        <property id="homogeneous"          disabled="True" />
+        <property id="visible" ignore="True" default="True" />
+      </properties>
+    </glade-widget-class>
+
+    <glade-widget-class name="PsppireValueEntry"
+			generic-name="psppire-value-entry"
+			title="Value Entry"
+			icon-name="widget-gtk-entry">
+      <properties>
+        <property id="child"                disabled="True" />
+        <property id="homogeneous"          disabled="True" />
+        <property id="visible" ignore="True" default="True" />
+      </properties>
+    </glade-widget-class>
 
   </glade-widget-classes>
-
- 
 
  <glade-widget-group name="psppire" title="Psppire">
   <glade-widget-class-ref name="PsppireDialog"/>
@@ -250,7 +240,9 @@
   <glade-widget-class-ref name="PsppireSelector"/>
   <glade-widget-class-ref name="PsppireKeypad"/>
   <glade-widget-class-ref name="PsppireAcr"/>
+  <glade-widget-class-ref name="PsppireCheckboxTreeview"/>
+  <glade-widget-class-ref name="PsppireValChooser"/>
+  <glade-widget-class-ref name="PsppireValueEntry"/>
  </glade-widget-group>
-
 
 </glade-catalog>

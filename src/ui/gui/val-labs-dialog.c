@@ -1,5 +1,5 @@
 /* PSPPIRE - a graphical user interface for PSPP.
-   Copyright (C) 2005, 2009, 2010, 2011, 2012  Free Software Foundation
+   Copyright (C) 2005, 2009, 2010, 2011, 2012, 2015  Free Software Foundation
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -142,7 +142,6 @@ psppire_val_labs_dialog_new (const struct variable *var)
 {
   return PSPPIRE_VAL_LABS_DIALOG (
     g_object_new (PSPPIRE_TYPE_VAL_LABS_DIALOG,
-                  "orientation", PSPPIRE_HORIZONTAL,
                   "variable", var,
                   NULL));
 }
@@ -450,7 +449,7 @@ psppire_val_labs_dialog_constructor (GType                  type,
     type, n_properties, properties);
   dialog = PSPPIRE_VAL_LABS_DIALOG (obj);
 
-  content_area = GTK_CONTAINER (PSPPIRE_DIALOG (dialog)->box);
+  content_area = GTK_CONTAINER (PSPPIRE_DIALOG (dialog));
   gtk_container_add (GTK_CONTAINER (content_area),
                      get_widget_assert (xml, "val-labs-dialog"));
 

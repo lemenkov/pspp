@@ -225,14 +225,10 @@ psppire_data_editor_get_property (GObject         *object,
 
 static void
 psppire_data_editor_switch_page (GtkNotebook     *notebook,
-#if GTK_DISABLE_DEPRECATED && GTK_CHECK_VERSION(2,20,0)
-                                 gpointer page,
-#else
-                                 GtkNotebookPage *page,
-#endif
+				 GtkWidget *w,
                                  guint            page_num)
 {
-  GTK_NOTEBOOK_CLASS (parent_class)->switch_page (notebook, page, page_num);
+  GTK_NOTEBOOK_CLASS (parent_class)->switch_page (notebook, w, page_num);
   psppire_data_editor_update_ui_manager (PSPPIRE_DATA_EDITOR (notebook));
 }
 
@@ -800,12 +796,8 @@ static void
 set_font_recursively (GtkWidget *w, gpointer data)
 {
   PangoFontDescription *font_desc = data;
-  GtkRcStyle *style = gtk_widget_get_modifier_style (w);
 
-  pango_font_description_free (style->font_desc);
-  style->font_desc = pango_font_description_copy (font_desc);
-
-  gtk_widget_modify_style (w, style);
+  gtk_widget_override_font (w, font_desc);
 
   if ( GTK_IS_CONTAINER (w))
     gtk_container_foreach (GTK_CONTAINER (w), set_font_recursively, font_desc);

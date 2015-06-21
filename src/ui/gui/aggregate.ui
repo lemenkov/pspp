@@ -6,9 +6,8 @@
   <object class="PsppireDialog" id="psppire-dialog1">
     <property name="title" translatable="yes">Aggregate Data</property>
     <property name="modal">True</property>
-    <property name="orientation">Vertical</property>
     <property name="help-page">AGGREGATE</property>
-    <child internal-child="hbox">
+    <child>
       <object class="GtkVBox" id="dialog-hbox1">
         <property name="visible">True</property>
         <property name="orientation">vertical</property>

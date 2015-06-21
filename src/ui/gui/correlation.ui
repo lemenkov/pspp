@@ -7,7 +7,7 @@
     <property name="title" translatable="yes">Bivariate Correlations</property>
     <property name="modal">True</property>
     <property name="help-page">CORRELATIONS</property>
-    <child internal-child="hbox">
+    <child>
       <object class="GtkHBox" id="dialog-hbox1">
         <property name="visible">True</property>
         <property name="spacing">2</property>

@@ -6,8 +6,7 @@
   <object class="PsppireDialog" id="k-related-dialog">
     <property name="title" translatable="yes">Tests for Several Related Samples</property>
     <property name="modal">True</property>
-    <property name="orientation">Vertical</property>
-    <child internal-child="hbox">
+    <child>
       <object class="GtkVBox" id="dialog-hbox1">
         <property name="visible">True</property>
         <property name="orientation">vertical</property>

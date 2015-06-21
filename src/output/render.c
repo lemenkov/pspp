@@ -1164,7 +1164,7 @@ render_page_draw_region (const struct render_page *page,
 
   render_page_draw_cells (page, ofs, bb);
 }
-
+
 /* Breaking up tables to fit on a page. */
 
 /* An iterator for breaking render_pages into smaller chunks. */

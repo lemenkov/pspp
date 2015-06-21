@@ -320,7 +320,8 @@ src/ui/gui/icons/manifest: $(MAKEFILE_LIST)
 	echo >> $@
 	printf 'icon_srcs = ' >> $@
 	for i in  $(ICONS); do \
-	  printf ' \\\n\t '$$i | sed -e 's/\.png$$/.svg/' -e 's%/icons/%/artwork/%' >> $@ ; \
+	  printf ' \\\n\t ' >> $@ ;\
+	  printf $$i | awk '{ gsub(".png",".svg")gsub("icons","artwork");printf $$0}' >> $@ ; \
 	done
 	echo ' ' >> $@
 	echo >> $@

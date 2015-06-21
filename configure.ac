@@ -70,15 +70,14 @@ if test "$with_cairo" != no && test "$with_gui" != "no"; then
   PKG_CHECK_MODULES([GTHREAD], [gthread-2.0], [],
     [PSPP_REQUIRED_PREREQ([gthread 2.0 (or use --without-gui)])])
 
-  PKG_CHECK_MODULES([GTK], [gtk+-2.0 >= 2.24], [],
-    [PSPP_REQUIRED_PREREQ([gtk+ 2.0 version 2.24 or later (or use --without-gui)])])
+  PKG_CHECK_MODULES([GTK], [gtk+-3.0 >= 3.4.2], [],
+    [PSPP_REQUIRED_PREREQ([gtk+ 3.0 version 3.4.2 or later (or use --without-gui)])])
+
+  PKG_CHECK_MODULES([GTKSOURCEVIEW], [gtksourceview-3.0 >= 3.4.2], [],
+    [PSPP_REQUIRED_PREREQ([gtksourceview 3.0 version 3.4.2 or later (or use --without-gui)])])
 
   PKG_CHECK_MODULES([GLIB], [glib-2.0 >= 2.32], [],
     [PSPP_REQUIRED_PREREQ([glib 2.0 version 2.32 or later (or use --without-gui)])])
-
-
-  PKG_CHECK_MODULES([GTKSOURCEVIEW], [gtksourceview-2.0 >= 2.2], [],
-    [PSPP_REQUIRED_PREREQ([gtksourceview 2.0 version 2.2 or later (or use --without-gui)])])
 
   AC_ARG_VAR([GLIB_GENMARSHAL])
   AC_CHECK_PROGS([GLIB_GENMARSHAL], [glib-genmarshal])
@@ -223,7 +222,7 @@ AC_ARG_WITH(
   gui_tools,
   [AS_HELP_STRING([--with-gui-tools], [build the gui developer tools.  For DEVELOPERS only! There is no reason why users will need this flag.])])
 if test x"$with_gui_tools" = x"yes" ; then 
-	PKG_CHECK_MODULES(GLADE_UI, gladeui-1.0)
+	PKG_CHECK_MODULES(GLADE_UI, gladeui-2.0)
 fi
 AM_CONDITIONAL(WITH_GUI_TOOLS, test x"$with_gui_tools" = x"yes")
 

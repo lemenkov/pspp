@@ -110,8 +110,7 @@ comments_dialog (PsppireDataWindow *de)
     PangoFontDescription *font_desc =
       pango_font_description_from_string ("monospace");
 
-    gtk_widget_modify_font (textview, font_desc);
-
+    gtk_widget_override_font (textview, font_desc);
 
     /* and let's just make sure that a complete line fits into the
        widget's width */

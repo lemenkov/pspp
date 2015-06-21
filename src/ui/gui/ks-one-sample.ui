@@ -6,7 +6,7 @@
   <object class="PsppireDialog" id="ks-one-sample-dialog">
     <property name="title" translatable="yes">One-Sample Kolmogorov-Smirnov Test</property>
     <property name="modal">True</property>
-    <child internal-child="hbox">
+    <child>
       <object class="GtkHBox" id="dialog-hbox1">
         <property name="visible">True</property>
         <property name="spacing">2</property>

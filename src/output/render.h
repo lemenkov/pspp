@@ -129,8 +129,7 @@ struct render_params
        points.) */
     int min_break[TABLE_N_AXES];
   };
-
-
+
 /* An iterator for breaking render_pages into smaller chunks. */
 struct render_pager *render_pager_create (const struct render_params *,
                                           const struct table_item *);

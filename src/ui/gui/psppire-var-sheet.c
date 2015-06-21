@@ -195,7 +195,7 @@ on_var_column_edited (GtkCellRendererText *cell,
             {
               gtk_widget_queue_resize (GTK_WIDGET (var_sheet));
               var_sheet->scroll_to_bottom_signal =
-                g_signal_connect (var_sheet, "size-request",
+                g_signal_connect (var_sheet, "size-allocate",
                                   G_CALLBACK (scroll_to_bottom), NULL);
             }
         }
@@ -588,8 +588,9 @@ get_string_width (PsppSheetView *treeview, GtkCellRenderer *renderer,
   g_object_set (G_OBJECT (renderer),
                 PSPPIRE_IS_CELL_RENDERER_BUTTON (renderer) ? "label" : "text",
                 string, (void *) NULL);
-  gtk_cell_renderer_get_size (renderer, GTK_WIDGET (treeview),
-                              NULL, NULL, NULL, &width, NULL);
+
+  gtk_cell_renderer_get_preferred_width (renderer, GTK_WIDGET (treeview), NULL, &width);
+
   return width;
 }
 

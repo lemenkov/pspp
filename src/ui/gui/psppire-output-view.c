@@ -82,46 +82,11 @@ enum
     N_COLS
   };
 
-static void on_dwgarea_realize (GtkWidget *widget, gpointer data);
-
 static gboolean
-expose_event_callback (GtkWidget *widget, GdkEventExpose *event, gpointer data)
+draw_callback (GtkWidget *widget, cairo_t *cr, gpointer data)
 {
-  struct psppire_output_view *view = data;
   struct xr_rendering *r = g_object_get_data (G_OBJECT (widget), "rendering");
-  cairo_t *cr = gdk_cairo_create (widget->window);
-
-  const GtkStyle *style = gtk_widget_get_style (GTK_WIDGET (view->output));
-
-  PangoFontDescription *font_desc;
-  char *font_name;
-
-  gchar *fgc =
-    gdk_color_to_string (&style->text[gtk_widget_get_state (GTK_WIDGET (view->output))]);
-
-  string_map_replace (&view->render_opts, "foreground-color", fgc);
-
-  free (fgc);
-
-  /* Use GTK+ default font as proportional font. */
-  font_name = pango_font_description_to_string (style->font_desc);
-  string_map_replace (&view->render_opts, "prop-font", font_name);
-  g_free (font_name);
-
-  /* Derived emphasized font from proportional font. */
-  font_desc = pango_font_description_copy (style->font_desc);
-  pango_font_description_set_style (font_desc, PANGO_STYLE_ITALIC);
-  font_name = pango_font_description_to_string (font_desc);
-  string_map_replace (&view->render_opts, "emph-font", font_name);
-  g_free (font_name);
-  pango_font_description_free (font_desc);
-
-  xr_rendering_apply_options (r, &view->render_opts);
-
-  xr_rendering_draw (r, cr, event->area.x, event->area.y,
-                     event->area.width, event->area.height);
-  cairo_destroy (cr);
-
+  xr_rendering_draw_all (r, cr);
   return TRUE;
 }
 
@@ -135,7 +100,6 @@ free_rendering (gpointer rendering_)
 static void
 create_xr (struct psppire_output_view *view)
 {
-  const GtkStyle *style = gtk_widget_get_style (GTK_WIDGET (view->output));
   struct text_item *text_item;
   PangoFontDescription *font_desc;
   struct xr_rendering *r;
@@ -144,21 +108,30 @@ create_xr (struct psppire_output_view *view)
   cairo_t *cr;
   gchar *fgc;
 
-  cr = gdk_cairo_create (GTK_WIDGET (view->output)->window);
+  GtkStyleContext *context = gtk_widget_get_style_context (GTK_WIDGET (view->output));
+  GtkStateFlags state = gtk_widget_get_state_flags (GTK_WIDGET (view->output));
+  GdkRGBA *fg_color;
+
+  gtk_style_context_get (context, state,
+    "font", &font_desc, "color", &fg_color, NULL);
+
+  cr = gdk_cairo_create (gtk_widget_get_window (GTK_WIDGET (view->output)));
 
   /* Set the widget's text color as the foreground color for the output driver */
-  fgc = gdk_color_to_string (&style->text[gtk_widget_get_state (GTK_WIDGET (view->output))]);
-
+  /* gdk_rgba_to_string() would be perfect, but xr's parse_color does not      */
+  /* understand the rgb(255,128,33) format. Therefore we do it ourself.        */
+  fgc = xasprintf("#%4x%4x%4x",(int)(fg_color->red*0xffff),
+    (int)(fg_color->green*0xffff),(int)(fg_color->blue*0xffff));
   string_map_insert (&view->render_opts, "foreground-color", fgc);
   g_free (fgc);
+  gdk_rgba_free (fg_color);
 
   /* Use GTK+ default font as proportional font. */
-  font_name = pango_font_description_to_string (style->font_desc);
+  font_name = pango_font_description_to_string (font_desc);
   string_map_insert (&view->render_opts, "prop-font", font_name);
   g_free (font_name);
 
   /* Derived emphasized font from proportional font. */
-  font_desc = pango_font_description_copy (style->font_desc);
   pango_font_description_set_style (font_desc, PANGO_STYLE_ITALIC);
   font_name = pango_font_description_to_string (font_desc);
   string_map_insert (&view->render_opts, "emph-font", font_name);
@@ -182,7 +155,6 @@ create_xr (struct psppire_output_view *view)
   text_item = text_item_create (TEXT_ITEM_PARAGRAPH, "X");
   r = xr_rendering_create (view->xr, text_item_super (text_item), cr);
   xr_rendering_measure (r, &font_width, &view->font_height);
-  /* xr_rendering_destroy (r); */
   text_item_unref (text_item);
 
   cairo_destroy (cr);
@@ -196,10 +168,8 @@ create_drawing_area (struct psppire_output_view *view,
   g_object_set_data_full (G_OBJECT (drawing_area),
                           "rendering", r, free_rendering);
 
-  g_signal_connect (drawing_area, "realize",
-                    G_CALLBACK (on_dwgarea_realize), view);
-  g_signal_connect (drawing_area, "expose_event",
-                    G_CALLBACK (expose_event_callback), view);
+  g_signal_connect (drawing_area, "draw",
+                    G_CALLBACK (draw_callback), view);
 
   gtk_widget_set_size_request (drawing_area, tw, th);
   gtk_layout_put (view->output, drawing_area, 0, view->y);
@@ -213,20 +183,17 @@ rerender (struct psppire_output_view *view)
   struct output_view_item *item;
   cairo_t *cr;
 
-  if (!view->n_items || !GTK_WIDGET (view->output)->window)
+  if (!view->n_items || !gtk_widget_get_window (GTK_WIDGET (view->output)))
     return;
 
-  string_map_clear (&view->render_opts);
-  xr_driver_destroy (view->xr);
-  create_xr (view);
-
-  cr = gdk_cairo_create (GTK_WIDGET (view->output)->window);
+  cr = gdk_cairo_create (gtk_widget_get_window (GTK_WIDGET (view->output)));
 
   view->y = 0;
   view->max_width = 0;
   for (item = view->items; item < &view->items[view->n_items]; item++)
     {
       struct xr_rendering *r;
+      GtkAllocation alloc;
       int tw, th;
 
       if (view->y > 0)
@@ -253,6 +220,12 @@ rerender (struct psppire_output_view *view)
           gtk_widget_set_size_request (item->drawing_area, tw, th);
           gtk_layout_move (view->output, item->drawing_area, 0, view->y);
         }
+
+      alloc.x = 0;
+      alloc.y = view->y;
+      alloc.width = tw;
+      alloc.height = th;
+      gtk_widget_size_allocate(item->drawing_area,&alloc);
 
       if (view->max_width < tw)
         view->max_width = tw;
@@ -299,11 +272,11 @@ psppire_output_view_put (struct psppire_output_view *view,
   view_item->item = output_item_ref (item);
   view_item->drawing_area = NULL;
 
-  if (GTK_WIDGET (view->output)->window)
+  if (gtk_widget_get_window (GTK_WIDGET (view->output)))
     {
       view_item->drawing_area = drawing_area = gtk_drawing_area_new ();
 
-      cr = gdk_cairo_create (GTK_WIDGET (view->output)->window);
+      cr = gdk_cairo_create (gtk_widget_get_window (GTK_WIDGET (view->output)));
       if (view->xr == NULL)
         create_xr (view);
 
@@ -410,9 +383,9 @@ on_row_activate (GtkTreeView *overview,
   y = g_value_get_long (&value);
   g_value_unset (&value);
 
-  vadj = gtk_layout_get_vadjustment (view->output);
-  min = vadj->lower;
-  max = vadj->upper - vadj->page_size;
+  vadj = gtk_scrollable_get_vadjustment (GTK_SCROLLABLE (view->output));
+  min = gtk_adjustment_get_lower (vadj);
+  max = gtk_adjustment_get_upper (vadj) - gtk_adjustment_get_page_size (vadj);
   if (y < min)
     y = min;
   else if (y > max)
@@ -421,32 +394,14 @@ on_row_activate (GtkTreeView *overview,
 }
 
 static void
-copy_base_to_bg (GtkWidget *dest, GtkWidget *src)
+on_style_updated (GtkWidget *toplevel, struct psppire_output_view *view)
 {
-  int i;
-  for (i = 0; i < 5; ++i)
-    {
-      gtk_widget_modify_bg (dest, i, &gtk_widget_get_style (src)->base[i]);
-      gtk_widget_modify_fg (dest, i, &gtk_widget_get_style (src)->text[i]);
-    }
-}
-
-/* Copy the base style from the parent widget to the container and all its
-   children.  We do this because the container's primary purpose is to display
-   text.  This way psppire appears to follow the chosen gnome theme. */
-static void
-on_style_set (GtkWidget *toplevel, GtkStyle *prev,
-              struct psppire_output_view *view)
-{
-  copy_base_to_bg (GTK_WIDGET (view->output), toplevel);
-  gtk_container_foreach (GTK_CONTAINER (view->output),
-                         (GtkCallback) copy_base_to_bg, view->output);
-}
-
-static void
-on_dwgarea_realize (GtkWidget *dwg_area, gpointer data)
-{
-  copy_base_to_bg (dwg_area, gtk_widget_get_toplevel (dwg_area));
+  if (!view->n_items || !gtk_widget_get_window (GTK_WIDGET (view->output)))
+    return;
+  string_map_clear (&view->render_opts);
+  xr_driver_destroy (view->xr);
+  create_xr (view);
+  rerender (view);
 }
 
 enum {
@@ -552,7 +507,7 @@ clipboard_get_cb (GtkClipboard     *clipboard,
 
   if ( g_file_get_contents (filename, &text, &length, NULL) )
     {
-      gtk_selection_data_set (selection_data, selection_data->target,
+      gtk_selection_data_set (selection_data, gtk_selection_data_get_target (selection_data),
 			      8,
 			      (const guchar *) text, length);
     }
@@ -625,6 +580,7 @@ on_size_allocate (GtkWidget    *widget,
                   struct psppire_output_view *view)
 {
   int new_render_width = MAX (300, allocation->width);
+
   if (view->render_width != new_render_width)
     {
       view->render_width = new_render_width;
@@ -662,9 +618,12 @@ psppire_output_view_new (GtkLayout *output, GtkTreeView *overview,
   view->print_n_pages = 0;
   view->paginated = FALSE;
 
-  g_signal_connect (view->toplevel, "style-set", G_CALLBACK (on_style_set), view);
+  g_signal_connect (output, "style-updated", G_CALLBACK (on_style_updated), view);
 
   g_signal_connect (output, "size-allocate", G_CALLBACK (on_size_allocate), view);
+
+  gtk_style_context_add_class (gtk_widget_get_style_context (GTK_WIDGET (output)),
+			       GTK_STYLE_CLASS_VIEW);
 
   if (overview)
     {
@@ -708,8 +667,8 @@ psppire_output_view_destroy (struct psppire_output_view *view)
   if (!view)
     return;
 
-  g_signal_handlers_disconnect_by_func (view->toplevel,
-                                        G_CALLBACK (on_style_set), view);
+  g_signal_handlers_disconnect_by_func (view->output,
+                                        G_CALLBACK (on_style_updated), view);
 
   string_map_destroy (&view->render_opts);
 
@@ -745,7 +704,7 @@ psppire_output_view_clear (struct psppire_output_view *view)
   view->items = NULL;
   view->n_items = view->allocated_items = 0;
 }
-
+
 /* Export. */
 
 void

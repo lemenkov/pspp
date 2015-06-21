@@ -1,5 +1,5 @@
 /* PSPPIRE - a graphical user interface for PSPP.
-   Copyright (C) 2005, 2006, 2009, 2011, 2012  Free Software Foundation
+   Copyright (C) 2005, 2006, 2009, 2011, 2012, 2015  Free Software Foundation
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -147,7 +147,6 @@ psppire_missing_val_dialog_new (const struct variable *var)
 {
   return PSPPIRE_MISSING_VAL_DIALOG (
     g_object_new (PSPPIRE_TYPE_MISSING_VAL_DIALOG,
-                  "orientation", PSPPIRE_VERTICAL,
                   "variable", var,
                   NULL));
 }
@@ -177,39 +176,16 @@ psppire_missing_val_dialog_run (GtkWindow *parent_window,
 static void
 err_dialog (const gchar *msg, GtkWindow *window)
 {
-  GtkWidget *hbox ;
-  GtkWidget *label = gtk_label_new (msg);
-
   GtkWidget *dialog =
-    gtk_dialog_new_with_buttons ("PSPP",
-				 window,
-				 GTK_DIALOG_MODAL |
-				 GTK_DIALOG_DESTROY_WITH_PARENT |
-				 GTK_DIALOG_NO_SEPARATOR,
-				 GTK_STOCK_OK,
-				 GTK_RESPONSE_ACCEPT,
-				 NULL);
+    gtk_message_dialog_new (window,
+			    GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT,
+			    GTK_MESSAGE_ERROR,
+			    GTK_BUTTONS_CLOSE,
+			    msg);
 
-
-  GtkWidget *icon = gtk_image_new_from_stock (GTK_STOCK_DIALOG_ERROR,
-					     GTK_ICON_SIZE_DIALOG);
-
-  g_signal_connect_swapped (dialog,
-			    "response",
-			    G_CALLBACK (gtk_widget_destroy),
-			    dialog);
-
-  hbox = gtk_hbox_new (FALSE, 10);
-
-  gtk_container_add (GTK_CONTAINER (GTK_DIALOG (dialog)->vbox),
-		     hbox);
-
-  gtk_box_pack_start (GTK_BOX (hbox), icon, TRUE, FALSE, 10);
-  gtk_box_pack_start (GTK_BOX (hbox), label, TRUE, TRUE, 10);
-
-  gtk_widget_show_all (dialog);
+  gtk_dialog_run (GTK_DIALOG (dialog));
+  gtk_widget_destroy (dialog);
 }
-
 
 /* Acceptability predicate for PsppireMissingValDialog.
 
@@ -363,7 +339,7 @@ psppire_missing_val_dialog_constructor (GType                  type,
     type, n_properties, properties);
   dialog = PSPPIRE_MISSING_VAL_DIALOG (obj);
 
-  content_area = GTK_CONTAINER (PSPPIRE_DIALOG (dialog)->box);
+  content_area = GTK_CONTAINER (PSPPIRE_DIALOG (dialog));
   xml = builder_new ("missing-val-dialog.ui");
   gtk_container_add (GTK_CONTAINER (content_area),
                      get_widget_assert (xml, "missing-values-dialog"));

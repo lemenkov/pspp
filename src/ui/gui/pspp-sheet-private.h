@@ -233,7 +233,6 @@ struct _PsppSheetViewPrivate
 
   /* Grid and tree lines */
   PsppSheetViewGridLines grid_lines;
-  GdkGC *grid_line_gc[5];
 
   /* Special cells. */
   PsppSheetViewSpecialCells special_cells;
@@ -275,8 +274,13 @@ struct _PsppSheetViewPrivate
   guint post_validation_flag : 1;
 
   /* Whether our key press handler is to avoid sending an unhandled binding to the search entry */
+
   guint search_entry_avoid_unhandled_binding : 1;
-};
+  /* GtkScrollablePolicy needs to be checked when
+   * driving the scrollable adjustment values */
+  guint hscroll_policy : 1;
+  guint vscroll_policy : 1;
+ };
 
 #ifdef __GNUC__
 
@@ -407,10 +411,9 @@ void              _pspp_sheet_selection_set_tree_view      (PsppSheetSelection *
                                                           PsppSheetView      *tree_view);
 
 void		  _pspp_sheet_view_column_cell_render      (PsppSheetViewColumn  *tree_column,
-							  GdkWindow          *window,
+							    cairo_t *cr,
 							  const GdkRectangle *background_area,
 							  const GdkRectangle *cell_area,
-							  const GdkRectangle *expose_area,
 							  guint               flags);
 void		  _pspp_sheet_view_column_get_focus_area   (PsppSheetViewColumn  *tree_column,
 							  const GdkRectangle *background_area,
@@ -421,10 +424,9 @@ gboolean	  _pspp_sheet_view_column_cell_focus       (PsppSheetViewColumn  *tree_
 							  gboolean            left,
 							  gboolean            right);
 void		  _pspp_sheet_view_column_cell_draw_focus  (PsppSheetViewColumn  *tree_column,
-							  GdkWindow          *window,
+							    cairo_t *cr,
 							  const GdkRectangle *background_area,
 							  const GdkRectangle *cell_area,
-							  const GdkRectangle *expose_area,
 							  guint               flags);
 void		  _pspp_sheet_view_column_cell_set_dirty	 (PsppSheetViewColumn  *tree_column);
 void              _pspp_sheet_view_column_get_neighbor_sizes (PsppSheetViewColumn *column,

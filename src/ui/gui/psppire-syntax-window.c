@@ -296,7 +296,7 @@ clipboard_get_cb (GtkClipboard     *clipboard,
   PsppireSyntaxWindow *sw = data;
   g_assert (info == SELECT_FMT_TEXT);
 
-  gtk_selection_data_set (selection_data, selection_data->target,
+  gtk_selection_data_set (selection_data, gtk_selection_data_get_target (selection_data),
 			  8,
 			  (const guchar *) sw->cliptext, strlen (sw->cliptext));
 
@@ -368,7 +368,6 @@ on_edit_copy (PsppireSyntaxWindow *sw)
 
   set_clip (sw, &begin, &end);
 }
-
 
 static void
 on_edit_paste (PsppireSyntaxWindow *sw)
@@ -870,11 +869,11 @@ psppire_syntax_window_init (PsppireSyntaxWindow *window)
 
   {
   GtkUIManager *uim = GTK_UI_MANAGER (get_object_assert (xml, "uimanager1", GTK_TYPE_UI_MANAGER));
+  GtkWidget *w = gtk_ui_manager_get_widget (uim,"/ui/menubar/windows/windows_minimise_all");
 
   merge_help_menu (uim);
 
-  PSPPIRE_WINDOW (window)->menu =
-    GTK_MENU_SHELL (gtk_ui_manager_get_widget (uim,"/ui/menubar/windows/windows_minimise_all")->parent);
+  PSPPIRE_WINDOW (window)->menu = GTK_MENU_SHELL (gtk_widget_get_parent (w));
   }
 
   g_object_unref (xml);

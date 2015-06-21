@@ -575,8 +575,8 @@ get_string_width (PsppSheetView *treeview, GtkCellRenderer *renderer,
 {
   gint width;
   g_object_set (G_OBJECT (renderer), "text", string, (void *) NULL);
-  gtk_cell_renderer_get_size (renderer, GTK_WIDGET (treeview),
-                              NULL, NULL, NULL, &width, NULL);
+  gtk_cell_renderer_get_preferred_width (renderer, GTK_WIDGET (treeview),
+			      NULL, &width);
   return width;
 }
 
@@ -658,7 +658,7 @@ push_watch_cursor (struct import_assistant *ia)
       GtkWidget *widget = GTK_WIDGET (ia->asst.assistant);
       GdkDisplay *display = gtk_widget_get_display (widget);
       GdkCursor *cursor = gdk_cursor_new_for_display (display, GDK_WATCH);
-      gdk_window_set_cursor (widget->window, cursor);
+      gdk_window_set_cursor (gtk_widget_get_window (widget), cursor);
       gdk_cursor_unref (cursor);
       gdk_display_flush (display);
     }
@@ -672,6 +672,6 @@ pop_watch_cursor (struct import_assistant *ia)
   if (--ia->asst.watch_cursor == 0)
     {
       GtkWidget *widget = GTK_WIDGET (ia->asst.assistant);
-      gdk_window_set_cursor (widget->window, NULL);
+      gdk_window_set_cursor (gtk_widget_get_window (widget), NULL);
     }
 }

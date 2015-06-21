@@ -75,7 +75,7 @@ features.  If you cannot arrange to install them, you must run
 `configure' with --without-cairo (in which case you will get no graphing
 capability).
 
-    * Cairo (http://cairographics.org/), version 1.5 or later.
+    * Cairo (http://cairographics.org/), version 1.12 or later.
 
     * Pango (http://www.pango.org/), version 1.22 or later.
 
@@ -87,12 +87,10 @@ use the GUI, you must run `configure' with --without-gui.
       0.18 and 0.19 have a bug that will prevent library detection,
       but other versions should be fine.
 
-    * GTK+ (http://www.gtk.org/), version 2.24.0  -  The Gtk+-3.x series will NOT work!
-
-    * Glib (http://www.gtk.org), version 2.32 or later
+    * GTK+ (http://www.gtk.org/), version 3.4.0 or later.
 
     * GtkSourceView (http://projects.gnome.org/gtksourceview/) 
-      version 2.2 or later.
+      version 3.4.0 or later.
 
 The following packages are optional:
 

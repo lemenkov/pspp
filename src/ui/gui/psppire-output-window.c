@@ -502,11 +502,14 @@ psppire_output_window_init (PsppireOutputWindow *window)
 		    NULL);
 
   {
+    GtkWidget *w;
     GtkUIManager *uim = GTK_UI_MANAGER (get_object_assert (xml, "uimanager1", GTK_TYPE_UI_MANAGER));
     merge_help_menu (uim);
 
+    w = gtk_ui_manager_get_widget (uim,"/ui/menubar/windows_menuitem/windows_minimise-all");
+
     PSPPIRE_WINDOW (window)->menu =
-      GTK_MENU_SHELL (gtk_ui_manager_get_widget (uim,"/ui/menubar/windows_menuitem/windows_minimise-all")->parent);
+      GTK_MENU_SHELL (gtk_widget_get_parent (w));
   }
 
   g_signal_connect_swapped (get_action_assert (xml, "file_export"), "activate",

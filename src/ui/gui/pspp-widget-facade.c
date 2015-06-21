@@ -311,10 +311,8 @@ get_layout_location (GtkWidget *base,
 
 void
 facade_button_render (GtkWidget *base,
-                      GdkDrawable *window,
-                      GdkRectangle *expose_area,
-
-                      GdkRectangle *button_area,
+                      cairo_t *cr,
+                      const GdkRectangle *button_area,
                       gint border_width,
                       GtkStyle *button_style,
                       GtkStateType state_type,
@@ -332,9 +330,9 @@ facade_button_render (GtkWidget *base,
   gint x, y;
 
   /* Paint the button. */
-  gtk_paint_box (button_style, window,
+  gtk_paint_box (button_style, cr,
                  state_type,
-                 GTK_SHADOW_OUT, expose_area, base, "button",
+                 GTK_SHADOW_OUT, base, "button",
                  button_area->x + border_width,
                  button_area->y + border_width,
                  button_area->width - border_width * 2,
@@ -348,8 +346,10 @@ facade_button_render (GtkWidget *base,
   layout = facade_label_get_layout (base, label);
   get_layout_location (base, &label_area, layout, xpad, ypad, xalign, yalign,
                        &x, &y);
-  gtk_paint_layout (label_style, window, state_type, FALSE, expose_area,
+
+  gtk_paint_layout (label_style, cr, state_type, FALSE, 
                     base, "label", x, y, layout);
+
   g_object_unref (layout);
 }
 

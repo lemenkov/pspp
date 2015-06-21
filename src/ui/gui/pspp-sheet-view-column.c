@@ -145,7 +145,7 @@ void pspp_sheet_view_column_update_button                 (PsppSheetViewColumn  
 
 /* Button signal handlers */
 static gint pspp_sheet_view_column_button_event                  (GtkWidget               *widget,
-								GdkEvent                *event,
+								GdkEventButton             *event,
 								gpointer                 data);
 static void pspp_sheet_view_column_button_clicked                (GtkWidget               *widget,
 								gpointer                 data);
@@ -186,7 +186,7 @@ static void pspp_sheet_view_column_buildable_init                 (GtkBuildableI
 
 static guint tree_column_signals[LAST_SIGNAL] = { 0 };
 
-G_DEFINE_TYPE_WITH_CODE (PsppSheetViewColumn, pspp_sheet_view_column, GTK_TYPE_OBJECT,
+G_DEFINE_TYPE_WITH_CODE (PsppSheetViewColumn, pspp_sheet_view_column, G_TYPE_OBJECT,
 			 G_IMPLEMENT_INTERFACE (GTK_TYPE_CELL_LAYOUT,
 						pspp_sheet_view_column_cell_layout_init)
 			 G_IMPLEMENT_INTERFACE (GTK_TYPE_BUILDABLE,
@@ -437,12 +437,34 @@ pspp_sheet_view_column_class_init (PsppSheetViewColumnClass *class)
                                                          GTK_PARAM_READWRITE));
 }
 
+
+static void _cell_layout_buildable_custom_tag_end (GtkBuildable *buildable,
+						   GtkBuilder   *builder,
+						   GObject      *child,
+						   const gchar  *tagname,
+						   gpointer     *data);
+
+
+static void _cell_layout_buildable_add_child (GtkBuildable      *buildable,
+						  GtkBuilder        *builder,
+						  GObject           *child,
+						  const gchar       *type);
+
+
+static gboolean _cell_layout_buildable_custom_tag_start (GtkBuildable  *buildable,
+                                             GtkBuilder    *builder,
+                                             GObject       *child,
+                                             const gchar   *tagname,
+                                             GMarkupParser *parser,
+					 gpointer      *data);
+
+
 static void
 pspp_sheet_view_column_buildable_init (GtkBuildableIface *iface)
 {
-  iface->add_child = _gtk_cell_layout_buildable_add_child;
-  iface->custom_tag_start = _gtk_cell_layout_buildable_custom_tag_start;
-  iface->custom_tag_end = _gtk_cell_layout_buildable_custom_tag_end;
+  iface->add_child = _cell_layout_buildable_add_child;
+  iface->custom_tag_start = _cell_layout_buildable_custom_tag_start;
+  iface->custom_tag_end = _cell_layout_buildable_custom_tag_end;
 }
 
 static void
@@ -490,7 +512,6 @@ pspp_sheet_view_column_init (PsppSheetViewColumn *tree_column)
   tree_column->use_resized_width = FALSE;
   tree_column->title = g_strdup ("");
   tree_column->quick_edit = TRUE;
-  tree_column->need_button = FALSE;
 }
 
 static void
@@ -999,10 +1020,8 @@ pspp_sheet_view_column_create_button (PsppSheetViewColumn *tree_column)
   g_return_if_fail (PSPP_IS_SHEET_VIEW (tree_view));
   g_return_if_fail (tree_column->button == NULL);
 
-  gtk_widget_push_composite_child ();
   tree_column->button = gtk_button_new ();
   gtk_widget_add_events (tree_column->button, GDK_POINTER_MOTION_MASK);
-  gtk_widget_pop_composite_child ();
 
   /* make sure we own a reference to it as well. */
   if (tree_view->priv->header_window)
@@ -1075,8 +1094,7 @@ pspp_sheet_view_column_update_button (PsppSheetViewColumn *tree_column)
     model = NULL;
 
   /* Create a button if necessary */
-  if (tree_column->need_button &&
-      tree_column->visible &&
+  if (tree_column->visible &&
       tree_column->button == NULL &&
       tree_column->tree_view &&
       gtk_widget_get_realized (tree_column->tree_view))
@@ -1085,10 +1103,10 @@ pspp_sheet_view_column_update_button (PsppSheetViewColumn *tree_column)
   if (! tree_column->button)
     return;
 
-  hbox = GTK_BIN (tree_column->button)->child;
+  hbox = gtk_bin_get_child (GTK_BIN (tree_column->button));
   alignment = tree_column->alignment;
   arrow = tree_column->arrow;
-  current_child = GTK_BIN (alignment)->child;
+  current_child = gtk_bin_get_child (GTK_BIN (alignment));
 
   /* Set up the actual button */
   gtk_alignment_set (GTK_ALIGNMENT (alignment), tree_column->xalign,
@@ -1190,7 +1208,7 @@ pspp_sheet_view_column_update_button (PsppSheetViewColumn *tree_column)
     {
       if (tree_column->visible)
 	{
-	  gtk_widget_show_now (tree_column->button);
+	  gtk_widget_show (tree_column->button);
 	  if (tree_column->window)
 	    {
 	      if (tree_column->resizable)
@@ -1236,7 +1254,7 @@ pspp_sheet_view_column_update_button (PsppSheetViewColumn *tree_column)
 
 static gint
 pspp_sheet_view_column_button_event (GtkWidget *widget,
-				   GdkEvent  *event,
+				   GdkEventButton  *event,
 				   gpointer   data)
 {
   PsppSheetViewColumn *column = (PsppSheetViewColumn *) data;
@@ -1248,7 +1266,8 @@ pspp_sheet_view_column_button_event (GtkWidget *widget,
       ((GdkEventButton *)event)->button == 1)
     {
       column->maybe_reordered = TRUE;
-      gdk_window_get_pointer (GTK_BUTTON (widget)->event_window,
+      gdk_window_get_device_position (gtk_button_get_event_window (GTK_BUTTON (widget)),
+				      event->device,
 			      &column->drag_x,
 			      &column->drag_y,
 			      NULL);
@@ -1552,6 +1571,7 @@ pspp_sheet_view_column_setup_sort_column_id_callback (PsppSheetViewColumn *tree_
 void
 _pspp_sheet_view_column_realize_button (PsppSheetViewColumn *column)
 {
+  GtkAllocation allocation;
   PsppSheetView *tree_view;
   GdkWindowAttr attr;
   guint attributes_mask;
@@ -1563,7 +1583,7 @@ _pspp_sheet_view_column_realize_button (PsppSheetViewColumn *column)
   g_return_if_fail (PSPP_IS_SHEET_VIEW (tree_view));
   g_return_if_fail (gtk_widget_get_realized (GTK_WIDGET (tree_view)));
   g_return_if_fail (tree_view->priv->header_window != NULL);
-  if (!column->need_button || !column->button)
+  if (!column->button)
     return;
 
   g_return_if_fail (column->button != NULL);
@@ -1576,7 +1596,6 @@ _pspp_sheet_view_column_realize_button (PsppSheetViewColumn *column)
   attr.window_type = GDK_WINDOW_CHILD;
   attr.wclass = GDK_INPUT_ONLY;
   attr.visual = gtk_widget_get_visual (GTK_WIDGET (tree_view));
-  attr.colormap = gtk_widget_get_colormap (GTK_WIDGET (tree_view));
   attr.event_mask = gtk_widget_get_events (GTK_WIDGET (tree_view)) |
                     (GDK_BUTTON_PRESS_MASK |
 		     GDK_BUTTON_RELEASE_MASK |
@@ -1584,13 +1603,13 @@ _pspp_sheet_view_column_realize_button (PsppSheetViewColumn *column)
 		     GDK_POINTER_MOTION_HINT_MASK |
 		     GDK_KEY_PRESS_MASK);
   attributes_mask = GDK_WA_CURSOR | GDK_WA_X | GDK_WA_Y;
-  attr.cursor = gdk_cursor_new_for_display (gdk_drawable_get_display (tree_view->priv->header_window),
+  attr.cursor = gdk_cursor_new_for_display (gdk_window_get_display (tree_view->priv->header_window),
 					    GDK_SB_H_DOUBLE_ARROW);
   attr.y = 0;
   attr.width = TREE_VIEW_DRAG_WIDTH;
   attr.height = tree_view->priv->header_height;
-
-  attr.x = (column->button->allocation.x + (rtl ? 0 : column->button->allocation.width)) - TREE_VIEW_DRAG_WIDTH / 2;
+  gtk_widget_get_allocation (column->button, &allocation);
+  attr.x = (allocation.x + (rtl ? 0 : allocation.width)) - TREE_VIEW_DRAG_WIDTH / 2;
   column->window = gdk_window_new (tree_view->priv->header_window,
 				   &attr, attributes_mask);
   gdk_window_set_user_data (column->window, tree_view);
@@ -1632,8 +1651,7 @@ _pspp_sheet_view_column_set_tree_view (PsppSheetViewColumn *column,
   g_assert (column->tree_view == NULL);
 
   column->tree_view = GTK_WIDGET (tree_view);
-  if (column->need_button)
-    pspp_sheet_view_column_create_button (column);
+  pspp_sheet_view_column_create_button (column);
 
   column->property_changed_signal =
 	  g_signal_connect_swapped (tree_view,
@@ -1674,9 +1692,12 @@ _pspp_sheet_view_column_has_editable_cell (PsppSheetViewColumn *column)
   GList *list;
 
   for (list = column->cell_list; list; list = list->next)
-    if (((PsppSheetViewColumnCellInfo *)list->data)->cell->mode ==
-	GTK_CELL_RENDERER_MODE_EDITABLE)
-      return TRUE;
+    {
+      GtkCellRendererMode mode;
+      g_object_get (((PsppSheetViewColumnCellInfo *)list->data)->cell, "mode", &mode, NULL);
+      if (mode == GTK_CELL_RENDERER_MODE_EDITABLE)
+	return TRUE;
+    }
 
   return FALSE;
 }
@@ -1704,9 +1725,12 @@ _pspp_sheet_view_column_count_special_cells (PsppSheetViewColumn *column)
     {
       PsppSheetViewColumnCellInfo *cellinfo = list->data;
 
-      if ((cellinfo->cell->mode == GTK_CELL_RENDERER_MODE_EDITABLE ||
-	  cellinfo->cell->mode == GTK_CELL_RENDERER_MODE_ACTIVATABLE) &&
-	  cellinfo->cell->visible)
+      GtkCellRendererMode mode;
+      g_object_get (cellinfo->cell, "mode", &mode, NULL);
+
+      if ((mode == GTK_CELL_RENDERER_MODE_EDITABLE ||
+	  mode == GTK_CELL_RENDERER_MODE_ACTIVATABLE) &&
+	  gtk_cell_renderer_get_visible (cellinfo->cell))
 	i++;
     }
 
@@ -3094,12 +3118,11 @@ enum {
 
 static gboolean
 pspp_sheet_view_column_cell_process_action (PsppSheetViewColumn  *tree_column,
-					  GdkWindow          *window,
+					    cairo_t *cr,
 					  const GdkRectangle *background_area,
 					  const GdkRectangle *cell_area,
 					  guint               flags,
 					  gint                action,
-					  const GdkRectangle *expose_area,     /* RENDER */
 					  GdkRectangle       *focus_rectangle, /* FOCUS  */
 					  GtkCellEditable   **editable_widget, /* EVENT  */
 					  GdkEvent           *event,           /* EVENT  */
@@ -3108,7 +3131,6 @@ pspp_sheet_view_column_cell_process_action (PsppSheetViewColumn  *tree_column,
   GList *list;
   GdkRectangle real_cell_area;
   GdkRectangle real_background_area;
-  GdkRectangle real_expose_area = *cell_area;
   gint depth = 0;
   gint expand_cell_count = 0;
   gint full_requested_width = 0;
@@ -3181,7 +3203,7 @@ pspp_sheet_view_column_cell_process_action (PsppSheetViewColumn  *tree_column,
     {
       PsppSheetViewColumnCellInfo *info = (PsppSheetViewColumnCellInfo *)list->data;
 
-      if (! info->cell->visible)
+      if (! gtk_cell_renderer_get_visible (info->cell))
 	continue;
 
       if (info->expand == TRUE)
@@ -3208,7 +3230,7 @@ pspp_sheet_view_column_cell_process_action (PsppSheetViewColumn  *tree_column,
       if (info->pack == GTK_PACK_END)
 	continue;
 
-      if (! info->cell->visible)
+      if (! gtk_cell_renderer_get_visible (info->cell))
 	continue;
 
       if ((info->has_focus || special_cells == 1) && cursor_row)
@@ -3253,11 +3275,10 @@ pspp_sheet_view_column_cell_process_action (PsppSheetViewColumn  *tree_column,
       if (action == CELL_ACTION_RENDER)
 	{
 	  gtk_cell_renderer_render (info->cell,
-				    window,
+				    cr,
 				    tree_column->tree_view,
 				    &rtl_background_area,
 				    &rtl_cell_area,
-				    &real_expose_area, 
 				    flags);
 	}
       /* FOCUS */
@@ -3383,7 +3404,7 @@ pspp_sheet_view_column_cell_process_action (PsppSheetViewColumn  *tree_column,
       if (info->pack == GTK_PACK_START)
 	continue;
 
-      if (! info->cell->visible)
+      if (! gtk_cell_renderer_get_visible (info->cell))
 	continue;
 
       if ((info->has_focus || special_cells == 1) && cursor_row)
@@ -3418,11 +3439,10 @@ pspp_sheet_view_column_cell_process_action (PsppSheetViewColumn  *tree_column,
       if (action == CELL_ACTION_RENDER)
 	{
 	  gtk_cell_renderer_render (info->cell,
-				    window,
+				    cr,
 				    tree_column->tree_view,
 				    &rtl_background_area,
 				    &rtl_cell_area,
-				    &real_expose_area,
 				    flags);
 	}
       /* FOCUS */
@@ -3566,7 +3586,6 @@ pspp_sheet_view_column_cell_process_action (PsppSheetViewColumn  *tree_column,
  * @window: a #GdkDrawable to draw to
  * @background_area: entire cell area (including tree expanders and maybe padding on the sides)
  * @cell_area: area normally rendered by a cell renderer
- * @expose_area: area that actually needs updating
  * @flags: flags that affect rendering
  * 
  * Renders the cell contained by #tree_column. This is used primarily by the
@@ -3574,24 +3593,21 @@ pspp_sheet_view_column_cell_process_action (PsppSheetViewColumn  *tree_column,
  **/
 void
 _pspp_sheet_view_column_cell_render (PsppSheetViewColumn  *tree_column,
-				   GdkWindow          *window,
+				     cairo_t *cr,
 				   const GdkRectangle *background_area,
 				   const GdkRectangle *cell_area,
-				   const GdkRectangle *expose_area,
 				   guint               flags)
 {
   g_return_if_fail (PSPP_IS_SHEET_VIEW_COLUMN (tree_column));
   g_return_if_fail (background_area != NULL);
   g_return_if_fail (cell_area != NULL);
-  g_return_if_fail (expose_area != NULL);
 
   pspp_sheet_view_column_cell_process_action (tree_column,
-					    window,
+					      cr,
 					    background_area,
 					    cell_area,
 					    flags,
 					    CELL_ACTION_RENDER,
-					    expose_area,
 					    NULL, NULL, NULL, NULL);
 }
 
@@ -3612,7 +3628,7 @@ _pspp_sheet_view_column_cell_event (PsppSheetViewColumn  *tree_column,
 						   cell_area,
 						   flags,
 						   CELL_ACTION_EVENT,
-						   NULL, NULL,
+						   NULL,
 						   editable_widget,
 						   event,
 						   path_string);
@@ -3630,7 +3646,6 @@ _pspp_sheet_view_column_get_focus_area (PsppSheetViewColumn  *tree_column,
 					    cell_area,
 					    0,
 					    CELL_ACTION_FOCUS,
-					    NULL,
 					    focus_area,
 					    NULL, NULL, NULL);
 }
@@ -3886,10 +3901,9 @@ _pspp_sheet_view_column_cell_focus (PsppSheetViewColumn *tree_column,
 
 void
 _pspp_sheet_view_column_cell_draw_focus (PsppSheetViewColumn  *tree_column,
-				       GdkWindow          *window,
+					 cairo_t *cr,
 				       const GdkRectangle *background_area,
 				       const GdkRectangle *cell_area,
-				       const GdkRectangle *expose_area,
 				       guint               flags)
 {
   gint focus_line_width;
@@ -3919,22 +3933,21 @@ _pspp_sheet_view_column_cell_draw_focus (PsppSheetViewColumn  *tree_column,
     {
       GdkRectangle focus_rectangle;
       pspp_sheet_view_column_cell_process_action (tree_column,
-						window,
+						  cr,
 						background_area,
 						cell_area,
 						flags,
 						CELL_ACTION_FOCUS,
-						expose_area,
 						&focus_rectangle,
 						NULL, NULL, NULL);
 
       cell_state = flags & GTK_CELL_RENDERER_SELECTED ? GTK_STATE_SELECTED :
 	      (flags & GTK_CELL_RENDERER_PRELIT ? GTK_STATE_PRELIGHT :
 	      (flags & GTK_CELL_RENDERER_INSENSITIVE ? GTK_STATE_INSENSITIVE : GTK_STATE_NORMAL));
-      gtk_paint_focus (tree_column->tree_view->style,
-		       window,
+
+      gtk_paint_focus (gtk_widget_get_style (GTK_WIDGET (tree_column->tree_view)),
+		       cr,
 		       cell_state,
-		       cell_area,
 		       tree_column->tree_view,
 		       "treeview",
 		       focus_rectangle.x,
@@ -3965,7 +3978,7 @@ pspp_sheet_view_column_cell_is_visible (PsppSheetViewColumn *tree_column)
     {
       PsppSheetViewColumnCellInfo *info = (PsppSheetViewColumnCellInfo *) list->data;
 
-      if (info->cell->visible)
+      if (gtk_cell_renderer_get_visible (info->cell))
 	return TRUE;
     }
 
@@ -4089,7 +4102,7 @@ _pspp_sheet_view_column_get_neighbor_sizes (PsppSheetViewColumn *column,
       if (info->cell == cell)
 	break;
       
-      if (info->cell->visible)
+      if (gtk_cell_renderer_get_visible (info->cell))
 	l += info->real_width + column->spacing;
     }
 
@@ -4099,7 +4112,7 @@ _pspp_sheet_view_column_get_neighbor_sizes (PsppSheetViewColumn *column,
       
       list = pspp_sheet_view_column_cell_next (column, list);
 
-      if (info->cell->visible)
+      if (gtk_cell_renderer_get_visible (info->cell))
 	r += info->real_width + column->spacing;
     }
 
@@ -4146,7 +4159,7 @@ pspp_sheet_view_column_cell_get_position (PsppSheetViewColumn *tree_column,
           break;
         }
 
-      if (cellinfo->cell->visible)
+      if (gtk_cell_renderer_get_visible (cellinfo->cell))
         current_x += cellinfo->real_width;
     }
 
@@ -4273,8 +4286,8 @@ static const GMarkupParser attributes_parser =
     attributes_text_element,
   };
 
-gboolean
-_gtk_cell_layout_buildable_custom_tag_start (GtkBuildable  *buildable,
+static gboolean
+_cell_layout_buildable_custom_tag_start (GtkBuildable  *buildable,
                                              GtkBuilder    *builder,
                                              GObject       *child,
                                              const gchar   *tagname,
@@ -4301,8 +4314,8 @@ _gtk_cell_layout_buildable_custom_tag_start (GtkBuildable  *buildable,
   return FALSE;
 }
 
-void
-_gtk_cell_layout_buildable_custom_tag_end (GtkBuildable *buildable,
+static void
+_cell_layout_buildable_custom_tag_end (GtkBuildable *buildable,
                                            GtkBuilder   *builder,
                                            GObject      *child,
                                            const gchar  *tagname,
@@ -4315,8 +4328,8 @@ _gtk_cell_layout_buildable_custom_tag_end (GtkBuildable *buildable,
   g_slice_free (AttributesSubParserData, parser_data);
 }
 
-void
-_gtk_cell_layout_buildable_add_child (GtkBuildable      *buildable,
+static void
+_cell_layout_buildable_add_child (GtkBuildable      *buildable,
                                       GtkBuilder        *builder,
                                       GObject           *child,
                                       const gchar       *type)
@@ -4378,16 +4391,4 @@ gboolean
 pspp_sheet_view_column_can_focus (PsppSheetViewColumn       *tree_column)
 {
   return tree_column->reorderable || tree_column->clickable;
-}
-
-void
-pspp_sheet_view_column_set_need_button (PsppSheetViewColumn       *tree_column,
-                                        gboolean                   need_button)
-{
-  if (tree_column->need_button != need_button)
-    {
-      tree_column->need_button = need_button;
-      pspp_sheet_view_column_update_button (tree_column);
-      _pspp_sheet_view_column_realize_button (tree_column);
-    }
 }

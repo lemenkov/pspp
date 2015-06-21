@@ -70,15 +70,14 @@ psppire_cell_renderer_button_set_property (GObject      *object,
                                            GParamSpec   *pspec)
 {
   PsppireCellRendererButton *obj = PSPPIRE_CELL_RENDERER_BUTTON (object);
-
   switch (prop_id)
     {
     case PROP_EDITABLE:
       obj->editable = g_value_get_boolean (value);
       if (obj->editable)
-        GTK_CELL_RENDERER (obj)->mode = GTK_CELL_RENDERER_MODE_EDITABLE;
+	g_object_set (obj, "mode", GTK_CELL_RENDERER_MODE_EDITABLE, NULL);
       else
-        GTK_CELL_RENDERER (obj)->mode = GTK_CELL_RENDERER_MODE_INERT;
+	g_object_set (obj, "mode", GTK_CELL_RENDERER_MODE_INERT, NULL);
       break;
 
     case PROP_LABEL:
@@ -182,17 +181,17 @@ update_style_cache (PsppireCellRendererButton *button,
 
 static void
 psppire_cell_renderer_button_render (GtkCellRenderer      *cell,
-                                     GdkDrawable          *window,
+                                     cairo_t              *cr,
                                      GtkWidget            *widget,
-                                     GdkRectangle         *background_area,
-                                     GdkRectangle         *cell_area,
-                                     GdkRectangle         *expose_area,
+                                     const GdkRectangle         *background_area,
+                                     const GdkRectangle         *cell_area,
                                      GtkCellRendererState  flags)
 {
-  PsppireCellRendererButton *button = PSPPIRE_CELL_RENDERER_BUTTON (cell);
   GtkStateType state_type;
-
-  if (!button->editable || !cell->sensitive)
+  PsppireCellRendererButton *button = PSPPIRE_CELL_RENDERER_BUTTON (cell);
+  gfloat xalign, yalign;
+  
+  if (!button->editable || ! gtk_cell_renderer_get_sensitive (cell))
     state_type = GTK_STATE_INSENSITIVE;
   else if (flags & GTK_CELL_RENDERER_SELECTED)
     {
@@ -211,25 +210,36 @@ psppire_cell_renderer_button_render (GtkCellRenderer      *cell,
         state_type = GTK_STATE_NORMAL;
     }
 
+  gtk_cell_renderer_get_alignment (cell, &xalign, &yalign);
+
+
   update_style_cache (button, widget);
-  facade_button_render (widget, window, expose_area,
+
+  facade_button_render (widget, cr,
                         cell_area, button->border_width, button->button_style,
                         state_type,
                         button->label_style, button->label, button->xpad,
-                        button->ypad, cell->xalign, cell->yalign);
+                        button->ypad, xalign, yalign);
 
   if (button->slash)
-    gdk_draw_line (window, button->button_style->black_gc,
-                   cell_area->x,
-                   cell_area->y + cell_area->height,
-                   cell_area->x + cell_area->width,
-                   cell_area->y);
+    {
+      cairo_set_line_width (cr, 1.0);
+      cairo_set_line_cap (cr, CAIRO_LINE_CAP_SQUARE);
+      cairo_move_to (cr, 
+		     cell_area->x,
+		     cell_area->y + cell_area->height);
+
+      cairo_line_to (cr,
+		     cell_area->x + cell_area->width,
+		     cell_area->y);
+      cairo_stroke (cr);
+    }
 }
 
 static void
 psppire_cell_renderer_button_get_size (GtkCellRenderer      *cell,
                                        GtkWidget            *widget,
-                                       GdkRectangle         *cell_area,
+                                       const GdkRectangle   *cell_area,
                                        gint                 *x_offset,
                                        gint                 *y_offset,
                                        gint                 *width,
@@ -394,8 +404,8 @@ psppire_cell_renderer_button_start_editing (GtkCellRenderer      *cell,
                                             GdkEvent             *event,
                                             GtkWidget            *widget,
                                             const gchar          *path,
-                                            GdkRectangle         *background_area,
-                                            GdkRectangle         *cell_area,
+                                            const GdkRectangle   *background_area,
+                                            const GdkRectangle   *cell_area,
                                             GtkCellRendererState  flags)
 {
   PsppireCellRendererButton *cell_button = PSPPIRE_CELL_RENDERER_BUTTON (cell);
