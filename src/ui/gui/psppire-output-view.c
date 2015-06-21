@@ -54,7 +54,7 @@ struct psppire_output_view
     GtkLayout *output;
     int render_width;
     int max_width;
-    int y;
+    glong y;
 
     struct string_map render_opts;
     GtkTreeView *overview;
@@ -371,7 +371,7 @@ psppire_output_view_put (struct psppire_output_view *view,
       gtk_tree_store_set (store, &iter,
                           COL_NAME, ds_cstr (&name),
 			  COL_ADDR, item,
-                          COL_Y, (glong)(view->y),
+                          COL_Y, (view->y),
                           -1);
       ds_destroy (&name);
 
