@@ -176,38 +176,16 @@ psppire_missing_val_dialog_run (GtkWindow *parent_window,
 static void
 err_dialog (const gchar *msg, GtkWindow *window)
 {
-  GtkWidget *hbox ;
-  GtkWidget *label = gtk_label_new (msg);
-
   GtkWidget *dialog =
-    gtk_dialog_new_with_buttons ("PSPP",
-				 window,
-				 GTK_DIALOG_MODAL |
-				 GTK_DIALOG_DESTROY_WITH_PARENT, 
-				 GTK_STOCK_OK,
-				 GTK_RESPONSE_ACCEPT,
-				 NULL);
+    gtk_message_dialog_new (window,
+			    GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT,
+			    GTK_MESSAGE_ERROR,
+			    GTK_BUTTONS_CLOSE,
+			    msg);
 
-
-  GtkWidget *icon = gtk_image_new_from_stock (GTK_STOCK_DIALOG_ERROR,
-					     GTK_ICON_SIZE_DIALOG);
-
-  g_signal_connect_swapped (dialog,
-			    "response",
-			    G_CALLBACK (gtk_widget_destroy),
-			    dialog);
-
-  hbox = gtk_hbox_new (FALSE, 10);
-
-  gtk_container_add (GTK_CONTAINER (gtk_dialog_get_content_area (GTK_DIALOG (dialog))),
-		     hbox);
-
-  gtk_box_pack_start (GTK_BOX (hbox), icon, TRUE, FALSE, 10);
-  gtk_box_pack_start (GTK_BOX (hbox), label, TRUE, TRUE, 10);
-
-  gtk_widget_show_all (dialog);
+  gtk_dialog_run (GTK_DIALOG (dialog));
+  gtk_widget_destroy (dialog);
 }
-
 
 /* Acceptability predicate for PsppireMissingValDialog.
 
