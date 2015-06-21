@@ -536,16 +536,13 @@ msgstr "Kan %s niet openen als een OpenDocument bestand: %s"
 #. TRANSLATORS: this fragment will be interpolated into
 #. messages in fh_lock() that identify types of files.
 #: src/data/pc+-file-reader.c:206
-#, fuzzy
-#| msgid "system file"
 msgid "SPSS/PC+ system file"
-msgstr "systeembestand"
+msgstr "SPSS/PC+ systeembestand"
 
 #: src/data/pc+-file-reader.c:215
-#, fuzzy, c-format
-#| msgid "Error opening `%s' for reading as a system file: %s."
+#, c-format
 msgid "Error opening `%s' for reading as an SPSS/PC+ system file: %s."
-msgstr "Fout bij het openen van '%s' voor het lezen als een systeembestand: %s."
+msgstr "Fout bij het openen van '%s' voor het lezen als een SPSS/PC+ systeembestand: %s."
 
 #: src/data/pc+-file-reader.c:224 src/data/sys-file-reader.c:3482
 #, c-format
@@ -578,10 +575,9 @@ msgid "Variable %zu Label"
 msgstr "Variabele %zu label"
 
 #: src/data/pc+-file-reader.c:385
-#, fuzzy, c-format
-#| msgid "Variable %zu Label"
+#, c-format
 msgid "Variable %zu Value Label %zu"
-msgstr "Variabele %zu label"
+msgstr "Variabele %zu Waardelabel %zu"
 
 #: src/data/pc+-file-reader.c:388 src/data/sys-file-reader.c:683
 msgid "Creation Date"
@@ -610,21 +606,18 @@ msgid "Error closing system file `%s': %s."
 msgstr "Fout bij het sluiten van systeembestand `%s': %s."
 
 #: src/data/pc+-file-reader.c:542
-#, fuzzy
-#| msgid "This is not an SPSS system file."
 msgid "This is not an SPSS/PC+ system file."
-msgstr "Dit is geen SPSS-systeembestand."
+msgstr "Dit is geen SPSS/PC+ systeembestand."
 
 #: src/data/pc+-file-reader.c:546
 #, c-format
 msgid "Record 0 has unexpected length %u."
-msgstr ""
+msgstr "Record 0 heeft onverwachte lengte %u."
 
 #: src/data/pc+-file-reader.c:570
-#, fuzzy, c-format
-#| msgid "File specifies unexpected value %g (%a) as %s, instead of %g (%a)."
+#, c-format
 msgid "Record 0 specifies unexpected system missing value %g (%a)."
-msgstr "Bestand specificeert onverwachte waarde %g (%a) als %s, inplaats van %g (%a)."
+msgstr "Record 0 specificeert onverwachte system missing waarde %g (%a)."
 
 #: src/data/pc+-file-reader.c:575
 #, c-format
@@ -637,10 +630,9 @@ msgid "Record 0 case counts differ (%u versus %u)."
 msgstr ""
 
 #: src/data/pc+-file-reader.c:583
-#, fuzzy, c-format
-#| msgid "Unsupported compression type (%d)"
+#, c-format
 msgid "Invalid compression type %u."
-msgstr "Niet ondersteund compressie type (%d)"
+msgstr "Ongeldig compressie type (%u)"
 
 #: src/data/pc+-file-reader.c:594
 #, c-format
@@ -678,22 +670,19 @@ msgid "Variable label with length %u starting at offset %u in labels record over
 msgstr ""
 
 #: src/data/pc+-file-reader.c:716
-#, fuzzy, c-format
-#| msgid "Record type 7, subtype %d has bad count %u (expected %d)."
+#, c-format
 msgid "Record 1 has length %u (expected %u)."
-msgstr "Record type 7, subtype %d heeft een foutieve teller %u (verwacht %d)."
+msgstr "Record 1 heeft lengte  %u (verwachtte %u)."
 
 #: src/data/pc+-file-reader.c:748
-#, fuzzy, c-format
-#| msgid "Numeric variable %s has invalid format specifier %s."
+#, c-format
 msgid "Variable %u has invalid type %<PRIu8>."
-msgstr "Numerieke variabele %s heeft een ongeldig opmaakspecificatie %s."
+msgstr "Variabele %u heeft een ongeldig type %<PRIu8>."
 
 #: src/data/pc+-file-reader.c:784
-#, fuzzy, c-format
-#| msgid "Invalid integer."
+#, c-format
 msgid "Invalid weight index %u."
-msgstr "Ongeldige integer."
+msgstr "Ongeldige gewicht index %u."
 
 #: src/data/pc+-file-reader.c:854 src/data/sys-file-reader.c:1427
 #, c-format
@@ -706,10 +695,9 @@ msgid "Renaming variable with duplicate name `%s' to `%s'."
 msgstr "Hernoem variabele met dubbele naam `%s' naar `%s'."
 
 #: src/data/pc+-file-reader.c:874
-#, fuzzy, c-format
-#| msgid "%s is not allowed with string variables."
+#, c-format
 msgid "Cannot weight by string variable `%s'."
-msgstr "%s is niet toegestaan met tekenreeksvariabelen."
+msgstr "Kan niet wegen met een tekenreeksvariabele `%s'."
 
 #: src/data/pc+-file-reader.c:972 src/data/sys-file-reader.c:2705
 msgid "File ends in partial case."
@@ -755,10 +743,8 @@ msgid "%s: seek failed (%s)."
 msgstr "%s: zoeken mislukt (%s)."
 
 #: src/data/pc+-file-reader.c:1356
-#, fuzzy
-#| msgid "System File"
 msgid "SPSS/PC+ System File"
-msgstr "Systeembestand"
+msgstr "SPSS/PC+ Systeembestand"
 
 #: src/data/por-file-reader.c:111
 #, c-format
@@ -900,10 +886,8 @@ msgid "Cannot assign value labels to %s and %s, which have different variable ty
 msgstr "Kan geen waardelabels toekennen aan %s en %s, die verschillende variabelentypes hebben."
 
 #: src/data/por-file-reader.c:983
-#, fuzzy
-#| msgid "Portable File"
 msgid "SPSS Portable File"
-msgstr "Overdraagbaar-bestand"
+msgstr "SPSS/PC+ Overdraagbaar-bestand"
 
 #: src/data/por-file-writer.c:140
 #, c-format
@@ -1446,10 +1430,8 @@ msgid "Unexpected end of ZLIB compressed data."
 msgstr "Onverwacht einde van ZLIB gecomprimeerde data."
 
 #: src/data/sys-file-reader.c:3761
-#, fuzzy
-#| msgid "System File"
 msgid "SPSS System File"
-msgstr "Systeembestand"
+msgstr "SPSS/PC+ Systeembestand"
 
 #: src/data/sys-file-writer.c:211
 #, c-format
@@ -3246,10 +3228,8 @@ msgid "%zu"
 msgstr "%zu"
 
 #: src/language/stats/factor.c:1840
-#, fuzzy
-#| msgid "Correlation Matrix"
 msgid "Factor Correlation Matrix"
-msgstr "Correlatie-Matrix"
+msgstr "Factor Correlatie-Matrix"
 
 #: src/language/stats/factor.c:1932
 msgid "Correlation Matrix"
@@ -3311,16 +3291,12 @@ msgid "Factor Matrix"
 msgstr "Factor-Matrix:"
 
 #: src/language/stats/factor.c:2328
-#, fuzzy
-#| msgid "Factor Matrix"
 msgid "Pattern Matrix"
-msgstr "Factor-Matrix:"
+msgstr "Patroon-Matrix:"
 
 #: src/language/stats/factor.c:2335
-#, fuzzy
-#| msgid "Factor Matrix"
 msgid "Structure Matrix"
-msgstr "Factor-Matrix:"
+msgstr "Structuur-Matrix:"
 
 #: src/language/stats/factor.c:2336
 msgid "Rotated Component Matrix"
@@ -3507,16 +3483,14 @@ msgid "Corrected Total"
 msgstr "Gecorrigeerd Totaal "
 
 #: src/language/stats/graph.c:144
-#, fuzzy, c-format
-#| msgid "%s of %s by %s"
+#, c-format
 msgid "%s vs. %s by %s"
-msgstr "%s van %s per %s"
+msgstr "%s vs. %s per %s"
 
 #: src/language/stats/graph.c:151
-#, fuzzy, c-format
-#| msgid "Boxplot of %s vs. %s"
+#, c-format
 msgid "%s vs. %s"
-msgstr "Boxplot van %s vs. %s"
+msgstr "%s vs. %s"
 
 #: src/language/stats/graph.c:170
 msgid "Maximum number of scatterplot categories reached.Your BY variable has too many distinct values.The coloring of the plot will not be correct"
@@ -3528,10 +3502,8 @@ msgstr "Slechts een chart type is toegestaan."
 
 #: src/language/stats/graph.c:378 src/language/stats/graph.c:429
 #: src/language/stats/graph.c:443
-#, fuzzy
-#| msgid "Only one variable allowed"
 msgid "Only one variable is allowed."
-msgstr "Slechts een variable is toegestaan"
+msgstr "Slechts een variable is toegestaan."
 
 #: src/language/stats/graph.c:452
 msgid "Variable expected"
@@ -6183,10 +6155,8 @@ msgid "Text (*.txt)"
 msgstr "Text (*.txt)"
 
 #: src/ui/gui/psppire-output-window.c:250
-#, fuzzy
-#| msgid "Text (*.txt)"
 msgid "Text [plain] (*.txt)"
-msgstr "Text (*.txt)"
+msgstr "Text [plat] (*.txt)"
 
 #: src/ui/gui/psppire-output-window.c:251
 msgid "PostScript (*.ps)"
@@ -6557,10 +6527,9 @@ msgid "sorry, wrong password"
 msgstr "sorry, foutief wachtwoord"
 
 #: src/language/utilities/set.q:163
-#, fuzzy, c-format
-#| msgid "Value of %s must be between 1 and 100."
+#, c-format
 msgid "%s must be between 0 and 20."
-msgstr "Waarde van %s moet tussen 1 en 100 zijn."
+msgstr "%s moet tussen 0 en 20 zijn."
 
 #: src/language/utilities/set.q:173 src/language/utilities/set.q:180
 #, c-format
@@ -7616,16 +7585,12 @@ msgid "<b>Histograms</b>"
 msgstr "<b>Histogrammen</b>"
 
 #: src/ui/gui/frequencies.ui:741
-#, fuzzy
-#| msgid "Draw _pie charts"
 msgid "Draw _bar charts"
-msgstr "Teken taartdiagram"
+msgstr "Teken staafdiagram"
 
 #: src/ui/gui/frequencies.ui:759
-#, fuzzy
-#| msgid "<b>Pie Charts</b>"
 msgid "<b>Bar Charts</b>"
-msgstr "<b>Taartdiagrammen</b>"
+msgstr "<b>Staafdiagrammen</b>"
 
 #: src/ui/gui/frequencies.ui:783
 msgid "Draw _pie charts"
