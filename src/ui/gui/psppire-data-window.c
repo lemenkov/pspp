@@ -698,25 +698,18 @@ static void
 fonts_activate (PsppireDataWindow  *de)
 {
   GtkWidget *toplevel = gtk_widget_get_toplevel (GTK_WIDGET (de));
-  GtkWidget *dialog =  gtk_font_selection_dialog_new (_("Font Selection"));
+  GtkWidget *dialog =  gtk_font_chooser_dialog_new (NULL, GTK_WINDOW (toplevel));
   GtkStyle *style = gtk_widget_get_style (GTK_WIDGET(de->data_editor));
   PangoFontDescription *current_font = style->font_desc;
-  gchar *font_name = pango_font_description_to_string (current_font);
 
-  gtk_font_selection_dialog_set_font_name (GTK_FONT_SELECTION_DIALOG (dialog), font_name);
-
-  g_free (font_name);
+  gtk_font_chooser_set_font_desc (GTK_FONT_CHOOSER (dialog), current_font);
 
   gtk_window_set_transient_for (GTK_WINDOW (dialog),
 				GTK_WINDOW (toplevel));
 
   if ( GTK_RESPONSE_OK == gtk_dialog_run (GTK_DIALOG (dialog)) )
     {
-      const gchar *font = gtk_font_selection_dialog_get_font_name
-	(GTK_FONT_SELECTION_DIALOG (dialog));
-
-      PangoFontDescription* font_desc =
-	pango_font_description_from_string (font);
+      PangoFontDescription* font_desc = gtk_font_chooser_get_font_desc (GTK_FONT_CHOOSER (dialog));
 
       psppire_data_editor_set_font (de->data_editor, font_desc);
     }
