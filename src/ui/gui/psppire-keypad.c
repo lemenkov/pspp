@@ -160,10 +160,7 @@ add_button (PsppireKeypad *kp, GtkWidget **button,
 {
   g_object_set (G_OBJECT (*button), "focus-on-click", FALSE, NULL);
 
-  gtk_table_attach_defaults (GTK_TABLE (kp->table),
-			     *button,
-			     x1, x2,
-			     y1, y2);
+  gtk_grid_attach (GTK_GRID(kp->table), *button, x1, y1, 1, 1);
 
   gtk_widget_set_size_request (*button,
 			       30 * rows / (float) cols,
@@ -326,7 +323,7 @@ psppire_keypad_init (PsppireKeypad *kp)
 
   kp->frag_table = g_hash_table_new (g_direct_hash, g_direct_equal);
 
-  kp->table = gtk_table_new (rows, cols, TRUE);
+  kp->table = gtk_grid_new ();
 
   /* Buttons for the digits */
   for (i = 0; i < 10; i++)
