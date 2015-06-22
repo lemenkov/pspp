@@ -93,17 +93,17 @@ intro_page_create (struct import_assistant *ia)
 
   table  = get_widget_assert (builder, "button-table");
 
-  gtk_table_attach_defaults (GTK_TABLE (table), hbox_n_cases,
-		    1, 2,
-		    1, 2);
+  gtk_grid_attach (GTK_GRID (table), hbox_n_cases,
+		    1, 1,
+		    1, 1);
 
   p->percent_spin = gtk_spin_button_new_with_range (0, 100, 10);
 
   hbox_percent = psppire_scanf_new (_("Only the first %3d %% of file (approximately)"), &p->percent_spin);
 
-  gtk_table_attach_defaults (GTK_TABLE (table), hbox_percent,
-			     1, 2,
-			     2, 3);
+  gtk_grid_attach (GTK_GRID (table), hbox_percent,
+		   1, 2,
+		   1, 1);
 
   p->page = add_page_to_assistant (ia, get_widget_assert (builder, "Intro"),
                                    GTK_ASSISTANT_PAGE_INTRO);
