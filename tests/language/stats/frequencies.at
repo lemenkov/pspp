@@ -81,6 +81,29 @@ Total,,4,100.0,100.0,
 ])
 AT_CLEANUP
 
+# Test that the LIMIT specification works.
+AT_SETUP([FREQUENCIES with LIMIT])
+AT_DATA([frequencies.sps],
+  [data list free /v1 v2.
+begin data.
+0 1
+2 5
+4 3
+3 5
+end data.
+
+frequencies v1 v2/statistics=none/FORMAT=LIMIT(3).
+])
+AT_CHECK([pspp -O format=csv frequencies.sps], [0], [dnl
+Table: v2
+Value Label,Value,Frequency,Percent,Valid Percent,Cum Percent
+,1.00,1,25.00,25.00,25.00
+,3.00,1,25.00,25.00,50.00
+,5.00,2,50.00,50.00,100.00
+Total,,4,100.0,100.0,
+])
+AT_CLEANUP
+
 # Tests for a bug where PSPP would crash when a FREQUENCIES command
 # was used with the HTML output driver.
 AT_SETUP([FREQUENCIES HTML output crash])

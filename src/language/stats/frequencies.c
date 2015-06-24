@@ -214,7 +214,7 @@ struct frq_proc
     int n_percentiles, n_show_percentiles;
 
     /* Frequency table display. */
-    int max_categories;         /* Maximum categories to show. */
+    long int max_categories;         /* Maximum categories to show. */
     int sort;                   /* FRQ_AVALUE or FRQ_DVALUE
                                    or FRQ_AFREQ or FRQ_DFREQ. */
 
@@ -614,7 +614,7 @@ cmd_frequencies (struct lexer *lexer, struct dataset *ds)
 
   frq.n_stats = 4;
 
-  frq.max_categories = INT_MAX;
+  frq.max_categories = LONG_MAX;
 
   frq.percentiles = NULL;
   frq.n_percentiles = 0;
@@ -803,6 +803,18 @@ cmd_frequencies (struct lexer *lexer, struct dataset *ds)
 		{
 		  frq.max_categories = 0;
 		}
+              else if (lex_match_id (lexer, "LIMIT"))
+                {
+                  if (!lex_force_match (lexer, T_LPAREN)
+                      || !lex_force_int (lexer))
+                    goto error;
+
+                  frq.max_categories = lex_integer (lexer);
+                  lex_get (lexer);
+
+                  if (!lex_force_match (lexer, T_RPAREN))
+                    goto error;
+                }
 	      else if (lex_match_id (lexer, "AVALUE"))
 		{
 		  frq.sort = FRQ_AVALUE;
