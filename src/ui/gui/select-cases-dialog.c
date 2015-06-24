@@ -61,8 +61,8 @@ struct select_cases_dialog
 static gchar * generate_syntax (const struct select_cases_dialog *scd);
 
 
-static const gchar label1[]=N_("Approximately %3d%% of all cases.");
-static const gchar label2[]=N_("Exactly %3d cases from the first %3d cases.");
+static const gchar label1[] = N_("Approximately %3d%% of all cases.");
+static const gchar label2[] = N_("Exactly %3d cases from the first %3d cases.");
 
 
 static void
@@ -90,8 +90,10 @@ sample_subdialog (GtkButton *b, gpointer data)
 
       gtk_widget_show (scd->hbox1);
 
-      gtk_table_attach_defaults (GTK_TABLE (table),
-				 scd->hbox1, 1, 2, 0, 1);
+      gtk_grid_attach (GTK_GRID (table),
+				 scd->hbox1, 
+	1, 0, 
+	1, 1);
 
       g_signal_connect (percent, "toggled",
 			G_CALLBACK (set_sensitivity_from_toggle), scd->hbox1);
@@ -114,8 +116,9 @@ sample_subdialog (GtkButton *b, gpointer data)
       gtk_widget_show (scd->hbox2);
       gtk_widget_set_sensitive (scd->hbox2, FALSE);
 
-      gtk_table_attach_defaults (GTK_TABLE (table),
-				 scd->hbox2, 1, 2, 1, 2);
+      gtk_grid_attach (GTK_GRID (table),
+				 scd->hbox2, 
+	1, 1, 1, 1);
 
       g_signal_connect (sample_n_cases, "toggled",
 			G_CALLBACK (set_sensitivity_from_toggle), scd->hbox2);
