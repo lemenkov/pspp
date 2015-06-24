@@ -42,8 +42,6 @@
 #define gtk_vpaned_new() gtk_paned_new (GTK_ORIENTATION_VERTICAL)
 #define gtk_hpaned_new() gtk_paned_new (GTK_ORIENTATION_HORIZONTAL)
 
-#define gdk_cursor_unref(X) g_object_unref (X)
-
 #if (GTK_CHECK_VERSION(3,8,0) == 0)
 #define gtk_widget_register_window(widget, window) gdk_window_set_user_data (window, widget);
 #endif
