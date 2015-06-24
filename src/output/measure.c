@@ -297,9 +297,12 @@ get_default_paper_size (int *h, int *v)
     return read_paper_conf (getenv ("PAPERCONF"), h, v);
 
 #if HAVE_LC_PAPER
-  /* LC_PAPER is a non-standard glibc extension. */
-  *h = (intptr_t) nl_langinfo(_NL_PAPER_WIDTH) * (72000 / 25.4);
-  *v = (intptr_t) nl_langinfo(_NL_PAPER_HEIGHT) * (72000 / 25.4);
+  /* LC_PAPER is a non-standard glibc extension.
+     The (int)(intptr_t) cast is for 64 Bit Systems where intptr_t
+     translates to 64 Bit long int but the upper 32 Bits have wrong
+     values. The result from nl_langinfo is integer (32 Bit) */
+  *h = (int)(intptr_t) nl_langinfo(_NL_PAPER_WIDTH) * (72000 / 25.4);
+  *v = (int)(intptr_t) nl_langinfo(_NL_PAPER_HEIGHT) * (72000 / 25.4);
   if (*h > 0 && *v > 0)
      return true;
 #endif
