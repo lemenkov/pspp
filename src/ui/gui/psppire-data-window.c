@@ -552,7 +552,7 @@ data_pick_filename (PsppireWindow *window)
     gtk_cell_layout_add_attribute (GTK_CELL_LAYOUT (combo_box), cell,
                                    "text", 1);
 
-    hbox = gtk_hbox_new (FALSE, 0);
+    hbox = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 0);
     gtk_box_pack_start (GTK_BOX (hbox), label, FALSE, FALSE, 0);
     gtk_box_pack_start (GTK_BOX (hbox), combo_box, FALSE, FALSE, 0);
     gtk_widget_show_all (hbox);
@@ -936,7 +936,7 @@ psppire_data_window_finish_init (PsppireDataWindow *de,
   GtkWidget *hb ;
   GtkWidget *sb ;
 
-  GtkWidget *box = gtk_vbox_new (FALSE, 0);
+  GtkWidget *box = gtk_box_new (GTK_ORIENTATION_VERTICAL, 0);
 
   de->dataset = ds;
   de->dict = psppire_dict_new_from_dict (dataset_dict (ds));

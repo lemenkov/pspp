@@ -255,7 +255,7 @@ psppire_acr_set_enabled (PsppireAcr *acr, gboolean status)
 static void
 psppire_acr_init (PsppireAcr *acr)
 {
-  GtkWidget *bb  = gtk_vbutton_box_new ();
+  GtkWidget *bb  = gtk_button_box_new (GTK_ORIENTATION_VERTICAL);
 
   GtkWidget *sw = gtk_scrolled_window_new (NULL, NULL);
 

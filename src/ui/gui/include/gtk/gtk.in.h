@@ -33,15 +33,6 @@
 /* Like GSEAL but only used in PSPP */
 #define PSEAL(X) X
 
-#define gtk_hbox_new(HOMOGENOUS,SPACING) gtk_box_new (GTK_ORIENTATION_HORIZONTAL, SPACING)
-#define gtk_vbox_new(HOMOGENOUS,SPACING) gtk_box_new (GTK_ORIENTATION_VERTICAL, SPACING)
-
-#define gtk_vbutton_box_new() gtk_button_box_new (GTK_ORIENTATION_VERTICAL)
-#define gtk_hbutton_box_new() gtk_button_box_new (GTK_ORIENTATION_HORIZONTAL)
-
-#define gtk_vpaned_new() gtk_paned_new (GTK_ORIENTATION_VERTICAL)
-#define gtk_hpaned_new() gtk_paned_new (GTK_ORIENTATION_HORIZONTAL)
-
 #if (GTK_CHECK_VERSION(3,8,0) == 0)
 #define gtk_widget_register_window(widget, window) gdk_window_set_user_data (window, widget);
 #endif

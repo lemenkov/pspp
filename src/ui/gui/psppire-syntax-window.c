@@ -697,7 +697,7 @@ static void
 psppire_syntax_window_init (PsppireSyntaxWindow *window)
 {
   GtkBuilder *xml = builder_new ("syntax-editor.ui");
-  GtkWidget *box = gtk_vbox_new (FALSE, 0);
+  GtkWidget *box = gtk_box_new (GTK_ORIENTATION_VERTICAL, 0);
 
   GtkWidget *menubar = get_widget_assert (xml, "menubar");
   GtkWidget *sw = get_widget_assert (xml, "scrolledwindow8");

@@ -1046,7 +1046,7 @@ pspp_sheet_view_column_create_button (PsppSheetViewColumn *tree_column)
 
   tree_column->alignment = gtk_alignment_new (tree_column->xalign, 0.5, 0.0, 0.0);
 
-  hbox = gtk_hbox_new (FALSE, 2);
+  hbox = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 2);
   tree_column->arrow = gtk_arrow_new (GTK_ARROW_DOWN, GTK_SHADOW_IN);
 
   if (tree_column->child)

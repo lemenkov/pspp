@@ -159,8 +159,8 @@ psppire_means_layer_clear (PsppireMeansLayer *ml)
 static void 
 psppire_means_layer_init  (PsppireMeansLayer      *ml)
 {
-  GtkWidget *hbox_upper = gtk_hbox_new (FALSE, 5);
-  GtkWidget *hbox_lower = gtk_hbox_new (FALSE, 5);
+  GtkWidget *hbox_upper = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 5);
+  GtkWidget *hbox_lower = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 5);
   GtkWidget *alignment = gtk_alignment_new (0, 0.5, 0, 0);
   GtkWidget *sw = gtk_scrolled_window_new (NULL, NULL);
 

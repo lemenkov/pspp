@@ -8554,7 +8554,7 @@ pspp_sheet_view_ensure_interactive_directory (PsppSheetView *tree_view)
   gtk_widget_show (frame);
   gtk_container_add (GTK_CONTAINER (tree_view->priv->search_window), frame);
 
-  vbox = gtk_vbox_new (FALSE, 0);
+  vbox = gtk_box_new (GTK_ORIENTATION_VERTICAL, 0);
   gtk_widget_show (vbox);
   gtk_container_add (GTK_CONTAINER (frame), vbox);
   gtk_container_set_border_width (GTK_CONTAINER (vbox), 3);

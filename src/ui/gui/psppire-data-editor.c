@@ -717,7 +717,7 @@ psppire_data_editor_init (PsppireDataEditor *de)
   g_signal_connect (GTK_ENTRY (gtk_bin_get_child (GTK_BIN (de->datum_entry))),
                     "activate", G_CALLBACK (on_datum_entry_activate), de);
 
-  hbox = gtk_hbox_new (FALSE, 0);
+  hbox = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 0);
   gtk_box_pack_start (GTK_BOX (hbox), de->cell_ref_label, FALSE, FALSE, 0);
   gtk_box_pack_start (GTK_BOX (hbox), de->datum_entry, TRUE, TRUE, 0);
 
@@ -725,7 +725,7 @@ psppire_data_editor_init (PsppireDataEditor *de)
   de->datasheet_vbox_widget
     = make_single_datasheet (de, GTK_TREE_VIEW_GRID_LINES_BOTH, FALSE);
 
-  de->vbox = gtk_vbox_new (FALSE, 0);
+  de->vbox = gtk_box_new (GTK_ORIENTATION_VERTICAL, 0);
   gtk_box_pack_start (GTK_BOX (de->vbox), hbox, FALSE, FALSE, 0);
   gtk_box_pack_start (GTK_BOX (de->vbox), de->datasheet_vbox_widget,
                       TRUE, TRUE, 0);

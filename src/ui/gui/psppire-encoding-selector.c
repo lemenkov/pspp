@@ -173,7 +173,7 @@ psppire_encoding_selector_new (const char *default_encoding,
                                       renderer, set_sensitive,
                                       NULL, NULL);
 
-  hbox = gtk_hbox_new (FALSE, 0);
+  hbox = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 0);
   gtk_box_pack_start (GTK_BOX (hbox),
                       gtk_label_new (_("Character Encoding: ")),
                       FALSE, FALSE, 0);
