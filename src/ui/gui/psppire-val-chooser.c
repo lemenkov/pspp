@@ -296,7 +296,7 @@ static void range_set (PsppireValChooser *vr, struct old_value *ov, const struct
 
 static GtkWidget * range_entry (struct layout *l, struct range_widgets *rw)
 {
-  GtkWidget *vbox = gtk_vbox_new (3, FALSE);
+  GtkWidget *vbox = gtk_vbox_new (FALSE, 3);
   GtkWidget *entrylo = gtk_entry_new ();
   GtkWidget *label = gtk_label_new (_("through"));
   GtkWidget *entryhi = gtk_entry_new ();
