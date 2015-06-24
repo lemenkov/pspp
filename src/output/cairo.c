@@ -842,8 +842,6 @@ xr_measure_cell_height (void *xr_, const struct table_cell *cell,
 
   bb[H][0] = 0;
   bb[H][1] = width - xr->cell_margin * 2;
-  if (bb[H][1] <= 0)
-    return 0;
   bb[V][0] = 0;
   bb[V][1] = INT_MAX;
   clip[H][0] = clip[H][1] = clip[V][0] = clip[V][1] = 0;
