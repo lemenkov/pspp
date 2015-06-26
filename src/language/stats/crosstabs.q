@@ -2600,6 +2600,7 @@ calc_symmetric (struct crosstabs_proc *proc, struct pivot_table *pt,
   /* Cohen's kappa. */
   if (proc->statistics & (1u << CRS_ST_KAPPA) && pt->ns_rows == pt->ns_cols)
     {
+      double ase_under_h0;
       double sum_fii, sum_rici, sum_fiiri_ci, sum_fijri_ci2, sum_riciri_ci;
       int i, j;
 
@@ -2628,24 +2629,23 @@ calc_symmetric (struct crosstabs_proc *proc, struct pivot_table *pt,
 
       v[8] = (pt->total * sum_fii - sum_rici) / (pow2 (pt->total) - sum_rici);
 
-      ase[8] = sqrt ((pow2 (pt->total) * sum_rici
-		      + sum_rici * sum_rici
-		      - pt->total * sum_riciri_ci)
-		     / (pt->total * (pow2 (pt->total) - sum_rici) * (pow2 (pt->total) - sum_rici)));
-#if 0
-      t[8] = v[8] / sqrt (pt->total * (((sum_fii * (pt->total - sum_fii))
+      ase_under_h0 = sqrt ((pow2 (pt->total) * sum_rici
+			    + sum_rici * sum_rici
+			    - pt->total * sum_riciri_ci)
+			   / (pt->total * (pow2 (pt->total) - sum_rici) * (pow2 (pt->total) - sum_rici)));
+      
+      ase[8] = sqrt (pt->total * (((sum_fii * (pt->total - sum_fii))
 				/ pow2 (pow2 (pt->total) - sum_rici))
 			       + ((2. * (pt->total - sum_fii)
 				   * (2. * sum_fii * sum_rici
 				      - pt->total * sum_fiiri_ci))
-				  / cube (pow2 (pt->total) - sum_rici))
+				  / pow3 (pow2 (pt->total) - sum_rici))
 			       + (pow2 (pt->total - sum_fii)
 				  * (pt->total * sum_fijri_ci2 - 4.
 				     * sum_rici * sum_rici)
 				  / pow4 (pow2 (pt->total) - sum_rici))));
-#else
-      t[8] = v[8] / ase[8];
-#endif
+
+      t[8] = v[8] / ase_under_h0;
     }
 
   return 1;

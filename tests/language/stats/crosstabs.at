@@ -1442,6 +1442,51 @@ Ordinal by Ordinal,Somers' d,Symmetric,.209,,3.338,.001
 ])
 AT_CLEANUP
 
+AT_SETUP([CROSSTABS Cohens Kappa])
+
+dnl Example from Wood J. M. 
+dnl "Understanding and Computing Cohen's Kappa: A Tutorial"
+dnl WebPsychEmpiricist. Oct 3 2007
+AT_DATA([kappa.sps], [dnl
+SET FORMAT=F8.3.
+
+data list notable list /p1 * p2 * w *.
+begin data.
+0 0 18
+1 0 1
+0 1 1
+end data.
+
+weight by w.
+
+crosstabs /table = p1 by p2
+	statistics = kappa
+	.
+])
+
+AT_CHECK([pspp -O format=csv kappa.sps], [0], [dnl
+Table: Summary.
+,Cases,,,,,
+,Valid,,Missing,,Total,
+,N,Percent,N,Percent,N,Percent
+p1 * p2,20.000,100.0%,.000,0.0%,20.000,100.0%
+
+Table: p1 * p2 [[count]].
+,p2,,
+p1,.000,1.000,Total
+.000,18.000,1.000,19.000
+1.000,1.000,.000,1.000
+Total,19.000,1.000,20.000
+
+Table: Symmetric measures.
+Category,Statistic,Value,Asymp. Std. Error,Approx. T,Approx. Sig.
+Measure of Agreement,Kappa,-.053,.037,-.235,
+N of Valid Cases,,20.000,,,
+])
+
+AT_CLEANUP
+
+
 AT_SETUP([CROSSTABS many statistics])
 AT_DATA([crosstabs.sps], [dnl
 SET FORMAT=F8.4.
