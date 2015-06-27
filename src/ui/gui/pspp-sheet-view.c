@@ -2564,11 +2564,14 @@ pspp_sheet_view_button_press (GtkWidget      *widget,
 	{
 	  gpointer drag_data;
 
-	  if (gdk_pointer_grab (column->window, FALSE,
-				GDK_POINTER_MOTION_HINT_MASK |
-				GDK_BUTTON1_MOTION_MASK |
-				GDK_BUTTON_RELEASE_MASK,
-				NULL, NULL, event->time))
+	  if (GDK_GRAB_SUCCESS != gdk_device_grab (event->device,
+						   column->window,
+						   GDK_OWNERSHIP_NONE,
+						   FALSE,
+						   GDK_POINTER_MOTION_HINT_MASK |
+						   GDK_BUTTON1_MOTION_MASK |
+						   GDK_BUTTON_RELEASE_MASK,
+						   NULL, event->time))
 	    return FALSE;
 
 	  gtk_grab_add (widget);
@@ -2684,8 +2687,8 @@ pspp_sheet_view_button_release_column_resize (GtkWidget      *widget,
 
   PSPP_SHEET_VIEW_UNSET_FLAG (tree_view, PSPP_SHEET_VIEW_IN_COLUMN_RESIZE);
   gtk_grab_remove (widget);
-  gdk_display_pointer_ungrab (gdk_window_get_display (event->window),
-			      event->time);
+  gdk_device_ungrab (event->device, event->time);
+
   return TRUE;
 }
 
