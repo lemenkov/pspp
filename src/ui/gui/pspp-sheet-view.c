@@ -1770,7 +1770,9 @@ pspp_sheet_view_size_request (GtkWidget      *widget,
       tmp_list = tmp_list->next;
 
       if (gtk_widget_get_visible (child->widget))
-        gtk_widget_size_request (child->widget, &child_requisition);
+	{
+	  gtk_widget_get_preferred_size (child->widget, NULL, &child_requisition);
+	}
     }
 }
 
@@ -5386,7 +5388,7 @@ do_presize_handler (PsppSheetView *tree_view)
   if (! gtk_widget_get_realized (GTK_WIDGET (tree_view)))
     return FALSE;
 
-  gtk_widget_size_request (GTK_WIDGET (tree_view), &requisition);
+  gtk_widget_get_preferred_size (GTK_WIDGET (tree_view), NULL, &requisition);
 
   gtk_adjustment_set_upper (tree_view->priv->hadjustment, MAX (gtk_adjustment_get_upper (tree_view->priv->hadjustment), (gfloat)requisition.width));
   gtk_adjustment_set_upper (tree_view->priv->vadjustment, MAX (gtk_adjustment_get_upper (tree_view->priv->vadjustment), (gfloat)requisition.height));
