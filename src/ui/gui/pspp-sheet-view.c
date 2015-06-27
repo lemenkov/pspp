@@ -3199,7 +3199,7 @@ pspp_sheet_view_motion_resize_column (GtkWidget      *widget,
   column = pspp_sheet_view_get_column (tree_view, tree_view->priv->drag_pos);
 
   if (event->is_hint || event->window != gtk_widget_get_window (widget))
-    gtk_widget_get_pointer (widget, &x, NULL);
+    gdk_device_get_position (event->device, NULL, &x, NULL);
   else
     x = event->x;
 
@@ -3565,7 +3565,7 @@ pspp_sheet_view_update_rubber_band_selection (PsppSheetView *tree_view)
 #define GDK_RECTANGLE_PTR(X) ((GdkRectangle *)(X))
 
 static void
-pspp_sheet_view_update_rubber_band (PsppSheetView *tree_view)
+pspp_sheet_view_update_rubber_band (PsppSheetView *tree_view, GdkDevice *device)
 {
   gint x, y;
   cairo_rectangle_int_t old_area;
@@ -3579,7 +3579,7 @@ pspp_sheet_view_update_rubber_band (PsppSheetView *tree_view)
   old_area.width = ABS (tree_view->priv->rubber_band_x - tree_view->priv->press_start_x) + 1;
   old_area.height = ABS (tree_view->priv->rubber_band_y - tree_view->priv->press_start_y) + 1;
 
-  gdk_window_get_pointer (tree_view->priv->bin_window, &x, &y, NULL);
+  gdk_device_get_position (device, NULL, &x, &y);
 
   x = MAX (x, 0);
   y = MAX (y, 0) + tree_view->priv->dy;
@@ -3712,14 +3712,14 @@ pspp_sheet_view_motion_bin_window (GtkWidget      *widget,
         return FALSE;
 
       gtk_grab_add (GTK_WIDGET (tree_view));
-      pspp_sheet_view_update_rubber_band (tree_view);
+      pspp_sheet_view_update_rubber_band (tree_view, event->device);
 
       tree_view->priv->rubber_band_status = RUBBER_BAND_ACTIVE;
     }
   else if (tree_view->priv->rubber_band_status == RUBBER_BAND_ACTIVE)
     {
-      pspp_sheet_view_update_rubber_band (tree_view);
-
+      pspp_sheet_view_update_rubber_band (tree_view, event->device);
+      tree_view->priv->drag_device = event->device;
       add_scroll_timeout (tree_view);
     }
 
@@ -5826,7 +5826,9 @@ scroll_row_timeout (gpointer data)
   pspp_sheet_view_vertical_autoscroll (tree_view);
 
   if (tree_view->priv->rubber_band_status == RUBBER_BAND_ACTIVE)
-    pspp_sheet_view_update_rubber_band (tree_view);
+    {
+      pspp_sheet_view_update_rubber_band (tree_view, tree_view->priv->drag_device);
+    }
 
   return TRUE;
 }
@@ -6276,6 +6278,7 @@ pspp_sheet_view_drag_motion (GtkWidget        *widget,
         }
       else
         {
+	  tree_view->priv->drag_device = gdk_drag_context_get_device (context);
 	  add_scroll_timeout (tree_view);
 	}
 
