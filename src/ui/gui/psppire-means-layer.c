@@ -161,7 +161,6 @@ psppire_means_layer_init  (PsppireMeansLayer      *ml)
 {
   GtkWidget *hbox_upper = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 5);
   GtkWidget *hbox_lower = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 5);
-  GtkWidget *alignment = gtk_alignment_new (0, 0.5, 0, 0);
   GtkWidget *sw = gtk_scrolled_window_new (NULL, NULL);
 
   gtk_orientable_set_orientation (GTK_ORIENTABLE (ml), GTK_ORIENTATION_VERTICAL);
@@ -190,7 +189,6 @@ psppire_means_layer_init  (PsppireMeansLayer      *ml)
   gtk_box_pack_start (GTK_BOX (hbox_upper), ml->label, TRUE, FALSE, 5);
   gtk_box_pack_start (GTK_BOX (hbox_upper), ml->forward, FALSE, FALSE, 5);
 
-  gtk_box_pack_start (GTK_BOX (hbox_lower), alignment, FALSE, FALSE, 5);
   gtk_box_pack_start (GTK_BOX (hbox_lower), sw, TRUE, TRUE, 5);
   gtk_container_add (GTK_CONTAINER (sw), ml->var_view);
 
