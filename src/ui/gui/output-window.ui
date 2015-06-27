@@ -82,8 +82,9 @@
     <property name="default_width">600</property>
     <property name="default_height">400</property>
     <child>
-      <object class="GtkVBox" id="vbox1">
+      <object class="GtkBox" id="box1">
         <property name="visible">True</property>
+	<property name="orientation">GTK_ORIENTATION_VERTICAL</property>
         <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
         <child>
           <object class="GtkMenuBar" constructor="uimanager1" id="menubar">
@@ -96,8 +97,9 @@
           </packing>
         </child>
         <child>
-          <object class="GtkHPaned" id="hpaned1">
+          <object class="GtkPaned" id="paned1">
             <property name="visible">True</property>
+	    <property name="orientation">GTK_ORIENTATION_HORIZONTAL</property>
             <property name="can_focus">True</property>
             <property name="position">112</property>
             <property name="position_set">True</property>
@@ -142,6 +144,7 @@
           </object>
           <packing>
             <property name="position">1</property>
+	    <property name="expand">True</property>
           </packing>
         </child>
       </object>

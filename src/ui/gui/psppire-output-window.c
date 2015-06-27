@@ -478,7 +478,7 @@ psppire_output_window_init (PsppireOutputWindow *window)
 
   xml = builder_new ("output-window.ui");
 
-  gtk_widget_reparent (get_widget_assert (xml, "vbox1"), GTK_WIDGET (window));
+  gtk_widget_reparent (get_widget_assert (xml, "box1"), GTK_WIDGET (window));
 
   window->dispose_has_run = FALSE;
 
