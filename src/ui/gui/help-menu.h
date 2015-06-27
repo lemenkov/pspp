@@ -20,7 +20,7 @@
 #include <gtk/gtk.h>
 
 
-void merge_help_menu (GtkUIManager *uim);
+GtkWidget * create_help_menu (GtkWindow *toplevel);
 
 void online_help (const char *page);
 

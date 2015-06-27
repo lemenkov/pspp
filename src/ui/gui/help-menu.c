@@ -1,5 +1,5 @@
 /* PSPPIRE - a graphical user interface for PSPP.
-   Copyright (C) 2006, 2007, 2010, 2011, 2012, 2013  Free Software Foundation
+   Copyright (C) 2006, 2007, 2010, 2011, 2012, 2013, 2015  Free Software Foundation
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -35,7 +35,7 @@
 static const gchar *artists[] = { "Bastián Díaz", "Hugo Alejandro", NULL};
 
 static void
-about_new (GtkMenuItem *m, GtkWindow *parent)
+about_new (GtkMenuItem *mmm, GtkWindow *parent)
 {
   GtkWidget *about =  gtk_about_dialog_new ();
 
@@ -114,48 +114,26 @@ reference_manual (GtkMenuItem *menu, gpointer data)
   online_help (NULL);
 }
 
-
-
-void
-merge_help_menu (GtkUIManager *uim)
+GtkWidget *
+create_help_menu (GtkWindow *toplevel)
 {
-  GtkActionGroup *action_group = gtk_action_group_new ("help");
+  GtkWidget *menuitem = gtk_menu_item_new_with_mnemonic (_("_Help"));
+  GtkWidget *menu = gtk_menu_new ();
 
-  static const GtkActionEntry entries[] =
-    {
-      {
-	"help", NULL,                               /* name, stock id */
-	N_("_Help"), NULL,                          /* label, accelerator */
-	NULL,
-	NULL,
-      },
-    
-      {
-	"help_reference", "help-reference-manual",            /* name, stock id */
-	N_("_Reference Manual"), "F1",               /* label, accelerator */
-	NULL,                                        /* tooltip */
-	G_CALLBACK (reference_manual)
-      },
-    
-      {
-	"help_about", "help-about",
-	NULL, NULL, NULL,
-	G_CALLBACK (about_new)
-      },
-    };
+  GtkWidget *help_about = gtk_menu_item_new_with_mnemonic (_("_About"));
+  GtkWidget *help_ref = gtk_menu_item_new_with_mnemonic (_("_Reference Manual"));
+  GtkWidget *child = gtk_bin_get_child (GTK_BIN (help_ref));
+  gtk_accel_label_set_accel (GTK_ACCEL_LABEL (child), GDK_KEY_F1, 0);
+  
+  gtk_menu_attach (GTK_MENU (menu), help_ref, 0, 1, 0, 1);
+  gtk_menu_attach (GTK_MENU (menu), help_about, 0, 1, 1, 2);
 
-  gtk_action_group_set_translation_domain (action_group, PACKAGE);
+  g_signal_connect (help_about, "activate", G_CALLBACK (about_new), toplevel);
+  g_signal_connect (help_ref, "activate", G_CALLBACK (reference_manual), NULL);
+  
+  g_object_set (menuitem, "submenu", menu, NULL);
 
-  gtk_ui_manager_add_ui_from_string   (uim, "\
-      <menubar name=\"menubar\">\
-        <menu action=\"help\">\
-          <menuitem action=\"help_reference\"/>\
-          <menuitem action=\"help_about\"/>\
-        </menu>\
-       </menubar>\
-       ", -1, 0);
-
-  gtk_action_group_add_actions (action_group, entries, G_N_ELEMENTS (entries), NULL);
-
-  gtk_ui_manager_insert_action_group  (uim, action_group, 0);
+  gtk_widget_show_all (menuitem);
+  
+  return menuitem;
 }

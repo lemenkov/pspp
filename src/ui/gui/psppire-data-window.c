@@ -1089,8 +1089,8 @@ psppire_data_window_finish_init (PsppireDataWindow *de,
 
   g_signal_connect_swapped (get_action_assert (de->builder, "windows_split"), "toggled", G_CALLBACK (toggle_split_window), de);
 
-  merge_help_menu (de->ui_manager);
-
+  gtk_menu_shell_append (GTK_MENU_SHELL (menubar),  create_help_menu (GTK_WINDOW (de)));
+  
   g_signal_connect (de->data_editor, "notify::ui-manager",
                     G_CALLBACK (on_ui_manager_changed), de);
   on_ui_manager_changed (de->data_editor, NULL, de);

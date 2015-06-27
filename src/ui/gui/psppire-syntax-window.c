@@ -864,16 +864,13 @@ psppire_syntax_window_init (PsppireSyntaxWindow *window)
 		    G_CALLBACK (psppire_window_minimise_all), NULL);
 
 
-
-
-
   {
-  GtkUIManager *uim = GTK_UI_MANAGER (get_object_assert (xml, "uimanager1", GTK_TYPE_UI_MANAGER));
-  GtkWidget *w = gtk_ui_manager_get_widget (uim,"/ui/menubar/windows/windows_minimise_all");
+    GtkUIManager *uim = GTK_UI_MANAGER (get_object_assert (xml, "uimanager1", GTK_TYPE_UI_MANAGER));
+    GtkWidget *w = gtk_ui_manager_get_widget (uim,"/ui/menubar/windows/windows_minimise_all");
 
-  merge_help_menu (uim);
+    gtk_menu_shell_append (GTK_MENU_SHELL (menubar),  create_help_menu (GTK_WINDOW (window)));
 
-  PSPPIRE_WINDOW (window)->menu = GTK_MENU_SHELL (gtk_widget_get_parent (w));
+    PSPPIRE_WINDOW (window)->menu = GTK_MENU_SHELL (gtk_widget_get_parent (w));
   }
 
   g_object_unref (xml);
