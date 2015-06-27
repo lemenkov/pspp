@@ -187,7 +187,8 @@ rerender (struct psppire_output_view *view)
     return;
 
   cr = gdk_cairo_create (gtk_widget_get_window (GTK_WIDGET (view->output)));
-
+  if (view->xr == NULL)
+    create_xr (view);
   view->y = 0;
   view->max_width = 0;
   for (item = view->items; item < &view->items[view->n_items]; item++)
