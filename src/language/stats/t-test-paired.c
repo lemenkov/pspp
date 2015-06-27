@@ -132,7 +132,7 @@ paired_run (const struct tt *tt, size_t n_pairs, vp *pairs, struct casereader *r
 	  moments_pass_two (pp->mom0, val0->f, w);
 	  moments_pass_two (pp->mom1, val1->f, w);
 	  moments_pass_two (pp->mom_diff, val0->f - val1->f, w);
-	  pp->sum_of_prod += val0->f * val1->f;
+	  pp->sum_of_prod += val0->f * val1->f * w;
 	}
     }
   casereader_destroy (r);

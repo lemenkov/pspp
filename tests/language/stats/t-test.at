@@ -170,6 +170,49 @@ AT_CHECK([pspp -o missing.csv missing.sps])
 AT_CHECK([cat missing.csv], [0], [expout])
 AT_CLEANUP
 
+
+dnl Tests for a bug in the paired samples T test when weighted
+dnl Thanks to Douglas Bonett for reporting this.
+AT_SETUP([T-TEST weighted paired bug])
+AT_DATA([t-test.sps], [dnl
+DATA LIST notable LIST /x y w *.
+BEGIN DATA.
+1 1 255
+1 2 43
+1 3 216
+2 1 3
+2 2 1
+2 3 12
+END DATA.
+
+WEIGHT BY w.
+
+T-TEST
+        PAIRS =  y WITH  x (PAIRED)
+        /MISSING=ANALYSIS
+        /CRITERIA=CIN(0.95).
+])
+
+AT_CHECK([pspp -O format=csv t-test.sps], [0], [dnl
+Table: Paired Sample Statistics
+,,Mean,N,Std. Deviation,S.E. Mean
+Pair 1,y,1.94,530.00,.96,.04
+,x,1.03,530.00,.17,.01
+
+Table: Paired Samples Correlations
+,,N,Correlation,Sig.
+Pair 1,y & x,530.00,.11,.008
+
+Table: Paired Samples Test
+,,Paired Differences,,,,,,,
+,,,,,95% Confidence Interval of the Difference,,,,
+,,Mean,Std. Deviation,Std. Error Mean,Lower,Upper,t,df,Sig. (2-tailed)
+Pair 1,y - x,.91,.95,.04,.83,.99,22.07,529.00,.000
+])
+
+AT_CLEANUP
+
+
 dnl Tests for a bug in the paired samples T test.
 dnl Thanks to Mike Griffiths for reporting this problem.
 AT_SETUP([T-TEST /PAIRS bug])
