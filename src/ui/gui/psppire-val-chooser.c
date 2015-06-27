@@ -304,7 +304,11 @@ static GtkWidget * range_entry (struct layout *l, struct range_widgets *rw)
   rw->e1 = GTK_ENTRY (entrylo);
   rw->e2 = GTK_ENTRY (entryhi);
 
-  gtk_misc_set_alignment (GTK_MISC (label), 0, 0.5);
+  g_object_set (G_OBJECT (label),
+		"valign", GTK_ALIGN_CENTER,
+		"halign", GTK_ALIGN_START,
+		NULL);
+		
 
   g_signal_connect (vbox, "notify::sensitive", G_CALLBACK (focus_follows_sensitivity), entrylo);
 
@@ -340,13 +344,15 @@ static void
 psppire_val_chooser_init (PsppireValChooser *vr)
 {
   gint i;
-  GtkWidget *aln = gtk_alignment_new (0.5, 0.5, 1.0, 1.0);
   GtkWidget *grid = gtk_grid_new ();
   GSList *group = NULL;
   gint row = 0;
 
-  gtk_alignment_set_padding (GTK_ALIGNMENT (aln), 0, 0, 5, 5);
-
+  g_object_set (G_OBJECT (grid),
+		"margin-left", 5,
+		"margin-right", 5,
+		NULL);
+  
   vr->input_var_is_string = FALSE;
 
   for (i = 0; i < n_VAL_CHOOSER_BUTTONS; ++i)
@@ -357,7 +363,10 @@ psppire_val_chooser_init (PsppireValChooser *vr)
       vr->rw[i].rb = GTK_TOGGLE_BUTTON (gtk_radio_button_new (group));
       gtk_label_set_mnemonic_widget (vr->rw[i].label, GTK_WIDGET (vr->rw[i].rb));
 
-      gtk_misc_set_alignment (GTK_MISC (vr->rw[i].label), 0, 0.5);
+      g_object_set (G_OBJECT (vr->rw[i].label),
+		    "valign", GTK_ALIGN_CENTER,
+		    "halign", GTK_ALIGN_START,
+		    NULL);
 
       group = gtk_radio_button_get_group (GTK_RADIO_BUTTON (vr->rw[i].rb));
 
@@ -394,10 +403,9 @@ psppire_val_chooser_init (PsppireValChooser *vr)
 
   gtk_frame_set_shadow_type (GTK_FRAME (vr), GTK_SHADOW_ETCHED_IN);
 
-  gtk_container_add (GTK_CONTAINER (aln), grid);
-  gtk_container_add (GTK_CONTAINER (vr), aln);
+  gtk_container_add (GTK_CONTAINER (vr), grid);
 
-  gtk_widget_show_all (aln);
+  gtk_widget_show_all (grid);
 }
 
 
