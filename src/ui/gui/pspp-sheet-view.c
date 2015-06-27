@@ -5127,7 +5127,6 @@ validate_visible_area (PsppSheetView *tree_view)
   GtkTreePath *above_path = NULL;
   GtkTreeIter iter;
   int node = -1;
-  gboolean size_changed = FALSE;
   gint total_height;
   gint area_above = 0;
   gint area_below = 0;
@@ -5300,23 +5299,6 @@ validate_visible_area (PsppSheetView *tree_view)
    */
   pspp_sheet_view_set_top_row (tree_view, above_path, -area_above);
   pspp_sheet_view_top_row_to_dy (tree_view);
-
-  /* update width/height and queue a resize */
-  if (size_changed)
-    {
-      GtkRequisition requisition;
-
-      /* We temporarily guess a size, under the assumption that it will be the
-       * same when we get our next size_allocate.  If we don't do this, we'll be
-       * in an inconsistent state if we call top_row_to_dy. */
-
-      gtk_widget_size_request (GTK_WIDGET (tree_view), &requisition);
-      gtk_adjustment_set_upper (tree_view->priv->hadjustment, MAX (gtk_adjustment_get_upper (tree_view->priv->hadjustment), (gfloat)requisition.width));
-      gtk_adjustment_set_upper (tree_view->priv->vadjustment, MAX (gtk_adjustment_get_upper (tree_view->priv->vadjustment), (gfloat)requisition.height));
-      gtk_adjustment_changed (tree_view->priv->hadjustment);
-      gtk_adjustment_changed (tree_view->priv->vadjustment);
-      gtk_widget_queue_resize (GTK_WIDGET (tree_view));
-    }
 
   gtk_tree_row_reference_free (tree_view->priv->scroll_to_path);
   tree_view->priv->scroll_to_path = NULL;
