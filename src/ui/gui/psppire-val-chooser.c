@@ -341,7 +341,7 @@ psppire_val_chooser_init (PsppireValChooser *vr)
 {
   gint i;
   GtkWidget *aln = gtk_alignment_new (0.5, 0.5, 1.0, 1.0);
-  GtkWidget *table = gtk_table_new (11, 2, FALSE);
+  GtkWidget *grid = gtk_grid_new ();
   GSList *group = NULL;
   gint row = 0;
 
@@ -362,16 +362,18 @@ psppire_val_chooser_init (PsppireValChooser *vr)
       group = gtk_radio_button_get_group (GTK_RADIO_BUTTON (vr->rw[i].rb));
 
       /* Attach the buttons */
-      gtk_table_attach (GTK_TABLE (table), GTK_WIDGET (vr->rw[i].rb),
-			0, 1,	row, row + 1,
-			0, GTK_EXPAND | GTK_FILL,
-			0, 0);
+      gtk_grid_attach (GTK_GRID (grid), GTK_WIDGET (vr->rw[i].rb),
+		       0, row, 1, 1);
 
+      gtk_widget_set_hexpand (GTK_WIDGET (vr->rw[i].rb), FALSE);
+      
       /* Attach the labels */
-      gtk_table_attach (GTK_TABLE (table), GTK_WIDGET (vr->rw[i].label),
-			1, 2,   row, row + 1,
-			GTK_EXPAND | GTK_FILL, GTK_EXPAND | GTK_FILL,
-			0, 0);
+      gtk_grid_attach (GTK_GRID (grid), GTK_WIDGET (vr->rw[i].label),
+			1, row, 1, 1);
+
+      gtk_widget_set_hexpand (GTK_WIDGET (vr->rw[i].label), TRUE);
+
+      
       ++row;
 
       if (l->fill)
@@ -380,8 +382,10 @@ psppire_val_chooser_init (PsppireValChooser *vr)
 
 	  gtk_widget_set_sensitive (fill, FALSE);
 
-	  gtk_table_attach_defaults (GTK_TABLE (table), fill, 1, 2,
-				 row, row + 1);
+	  gtk_grid_attach (GTK_GRID (grid), fill, 1, row, 1, 1);
+
+	  gtk_widget_set_hexpand (fill, TRUE);
+	  
 	  ++row;
 
       	  g_signal_connect (vr->rw[i].rb, "toggled", G_CALLBACK (set_sensitivity_from_toggle), fill);
@@ -390,7 +394,7 @@ psppire_val_chooser_init (PsppireValChooser *vr)
 
   gtk_frame_set_shadow_type (GTK_FRAME (vr), GTK_SHADOW_ETCHED_IN);
 
-  gtk_container_add (GTK_CONTAINER (aln), table);
+  gtk_container_add (GTK_CONTAINER (aln), grid);
   gtk_container_add (GTK_CONTAINER (vr), aln);
 
   gtk_widget_show_all (aln);
