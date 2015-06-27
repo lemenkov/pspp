@@ -194,7 +194,6 @@ struct _PsppSheetViewPrivate
   guint open_dest_timeout;
 
   /* Rubber banding */
-  GdkDevice *drag_device;
   gint rubber_band_status;
   gint rubber_band_x;
   gint rubber_band_y;
