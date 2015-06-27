@@ -490,8 +490,8 @@ data_pick_filename (PsppireWindow *window)
     gtk_file_chooser_dialog_new (_("Save"),
 				 GTK_WINDOW (de),
 				 GTK_FILE_CHOOSER_ACTION_SAVE,
-				 GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
-				 GTK_STOCK_SAVE, GTK_RESPONSE_ACCEPT,
+				 _("Cancel"), GTK_RESPONSE_CANCEL,
+				 _("Save"), GTK_RESPONSE_ACCEPT,
 				 NULL);
 
   g_object_set (dialog, "local-only", FALSE, NULL);
@@ -618,8 +618,8 @@ confirm_delete_dataset (PsppireDataWindow *de,
     old_dataset, new_dataset, existing_dataset);
 
   gtk_dialog_add_buttons (GTK_DIALOG (dialog),
-                          GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
-                          GTK_STOCK_DELETE, GTK_RESPONSE_OK,
+                          _("Cancel"), GTK_RESPONSE_CANCEL,
+                          _("Delete"), GTK_RESPONSE_OK,
                           NULL);
 
   g_object_set (dialog, "icon-name", "pspp", NULL);

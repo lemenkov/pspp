@@ -565,8 +565,8 @@ syntax_pick_filename (PsppireWindow *window)
     gtk_file_chooser_dialog_new (_("Save Syntax"),
 				 GTK_WINDOW (se),
 				 GTK_FILE_CHOOSER_ACTION_SAVE,
-				 GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
-				 GTK_STOCK_SAVE,   GTK_RESPONSE_ACCEPT,
+				 _("Cancel"), GTK_RESPONSE_CANCEL,
+				 _("Save"),   GTK_RESPONSE_ACCEPT,
 				 NULL);
 
   g_object_set (dialog, "local-only", FALSE, NULL);

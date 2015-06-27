@@ -353,8 +353,8 @@ psppire_output_window_export (PsppireOutputWindow *window)
   GtkWidget *dialog = gtk_file_chooser_dialog_new (_("Export Output"),
                                         GTK_WINDOW (window),
                                         GTK_FILE_CHOOSER_ACTION_SAVE,
-                                        GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
-                                        GTK_STOCK_SAVE,   GTK_RESPONSE_ACCEPT,
+                                        _("Cancel"), GTK_RESPONSE_CANCEL,
+                                        _("Save"),   GTK_RESPONSE_ACCEPT,
                                         NULL);
 
   g_object_set (dialog, "local-only", FALSE, NULL);
