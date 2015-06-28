@@ -187,6 +187,41 @@ err_dialog (const gchar *msg, GtkWindow *window)
   gtk_widget_destroy (dialog);
 }
 
+/* Interpret text, display error dialog
+   If parsing is o.k., the value is initialized and it is the responsibility of
+   the caller to destroy the variable. */
+static gboolean
+try_missing_value(const PsppireMissingValDialog *dialog, const gchar *text, union value *vp)
+{
+  const int var_width = fmt_var_width (&dialog->format);
+  char *error_txt = NULL;
+
+  value_init(vp, var_width);
+  error_txt = data_in (ss_cstr(text), "UTF-8", dialog->format.type,
+		       vp, var_width, dialog->encoding);
+  if (error_txt)
+    {
+      err_dialog (error_txt, GTK_WINDOW (dialog));
+      free (error_txt);
+      goto error;
+    }
+  else
+    {
+      if (mv_is_acceptable (vp, var_width))
+	return TRUE;
+      else
+	{
+	  err_dialog (_("The maximum length of a missing value"
+			" for a string variable is 8 in UTF-8."),
+		      GTK_WINDOW (dialog));
+	  goto error;
+	}
+    }
+ error:
+  value_destroy (vp, var_width);
+  return FALSE;
+}
+
 /* Acceptability predicate for PsppireMissingValDialog.
 
    This function is also the only place that dialog->mvl gets updated. */
@@ -194,12 +229,13 @@ static gboolean
 missing_val_dialog_acceptable (gpointer data)
 {
   PsppireMissingValDialog *dialog = data;
+  int var_width = fmt_var_width (&dialog->format);
 
   if ( gtk_toggle_button_get_active (dialog->button_discrete))
     {
       gint nvals = 0;
-      gint badvals = 0;
       gint i;
+
       mv_clear(&dialog->mvl);
       for(i = 0 ; i < 3 ; ++i )
 	{
@@ -213,80 +249,77 @@ missing_val_dialog_acceptable (gpointer data)
 	      continue;
 	    }
 
-	  if ( text_to_value__ (text, &dialog->format, dialog->encoding, &v))
+	  if (!try_missing_value (dialog, text, &v))
 	    {
-	      nvals++;
-	      mv_add_value (&dialog->mvl, &v);
+	      g_free (text);
+	      gtk_widget_grab_focus (dialog->mv[i]);
+	      return FALSE;
 	    }
-	  else
-	      badvals++;
+	  mv_add_value (&dialog->mvl, &v);
+	  nvals++;
 	  g_free (text);
-	  value_destroy (&v, fmt_var_width (&dialog->format));
+	  value_destroy (&v, var_width);
 	}
-      if ( nvals == 0 || badvals > 0 )
+      if ( nvals == 0 )
 	{
-	  err_dialog (_("Incorrect value for variable type"),
-                      GTK_WINDOW (dialog));
+	  err_dialog (_("At least one value must be specified"),
+		      GTK_WINDOW (dialog));
+	  gtk_widget_grab_focus (dialog->mv[0]);
 	  return FALSE;
 	}
     }
 
   if (gtk_toggle_button_get_active (dialog->button_range))
     {
-      gchar *discrete_text ;
-
+      gchar *discrete_text;
       union value low_val ;
       union value high_val;
       const gchar *low_text = gtk_entry_get_text (GTK_ENTRY (dialog->low));
       const gchar *high_text = gtk_entry_get_text (GTK_ENTRY (dialog->high));
-      gboolean low_ok;
-      gboolean high_ok;
-      gboolean ok;
 
-      low_ok = text_to_value__ (low_text, &dialog->format, dialog->encoding,
-                                &low_val) != NULL;
-      high_ok = text_to_value__ (high_text, &dialog->format, dialog->encoding,
-                                 &high_val) != NULL;
-      ok = low_ok && high_ok && low_val.f <= high_val.f;
-      if (!ok)
-        {
-          err_dialog (_("Incorrect range specification"), GTK_WINDOW (dialog));
-          if (low_ok)
-            value_destroy (&low_val, fmt_var_width (&dialog->format));
-          if (high_ok)
-            value_destroy (&high_val, fmt_var_width (&dialog->format));
-          return FALSE;
-        }
+      assert (var_width == 0); /* Ranges are only for numeric variables */
 
-      discrete_text =
-	g_strdup (gtk_entry_get_text (GTK_ENTRY (dialog->discrete)));
-
+      if (!try_missing_value(dialog, low_text, &low_val))
+	{
+	  gtk_widget_grab_focus (dialog->low);
+	  return FALSE;
+	}
+      if (!try_missing_value (dialog, high_text, &high_val))
+	{
+	  gtk_widget_grab_focus (dialog->high);
+	  value_destroy (&low_val, var_width);
+	  return FALSE;
+	}
+      if (low_val.f > high_val.f)
+	{
+	  err_dialog (_("Incorrect range specification"),
+		      GTK_WINDOW (dialog));
+	  value_destroy (&low_val, var_width);
+	  value_destroy (&high_val, var_width);
+	  gtk_widget_grab_focus (dialog->low);
+	  return FALSE;
+	}
       mv_clear (&dialog->mvl);
       mv_add_range (&dialog->mvl, low_val.f, high_val.f);
+      value_destroy (&low_val, var_width);
+      value_destroy (&high_val, var_width);
 
-      value_destroy (&low_val, fmt_var_width (&dialog->format));
-      value_destroy (&high_val, fmt_var_width (&dialog->format));
+      discrete_text = g_strdup (gtk_entry_get_text (GTK_ENTRY (dialog->discrete)));
 
       if ( discrete_text && strlen (g_strstrip (discrete_text)) > 0 )
 	{
 	  union value discrete_val;
-	  if ( !text_to_value__ (discrete_text,
-                                 &dialog->format,
-                                 dialog->encoding,
-                                 &discrete_val))
+	  if (!try_missing_value (dialog, discrete_text, &discrete_val))
 	    {
-	      err_dialog (_("Incorrect value for variable type"),
-			 GTK_WINDOW (dialog) );
 	      g_free (discrete_text);
-	      value_destroy (&discrete_val, fmt_var_width (&dialog->format));
+	      gtk_widget_grab_focus (dialog->discrete);
 	      return FALSE;
 	    }
 	  mv_add_value (&dialog->mvl, &discrete_val);
-	  value_destroy (&discrete_val, fmt_var_width (&dialog->format));
+	  value_destroy (&discrete_val, var_width);
 	}
       g_free (discrete_text);
     }
-
 
   if (gtk_toggle_button_get_active (dialog->button_none))
     mv_clear (&dialog->mvl);
@@ -389,7 +422,11 @@ psppire_missing_val_dialog_set_variable (PsppireMissingValDialog *dialog,
 
   if (var != NULL)
     {
-      mv_copy (&dialog->mvl, var_get_missing_values (var));
+      const struct missing_values *vmv = var_get_missing_values (var);
+      if (mv_is_empty(vmv))
+	mv_init (&dialog->mvl, var_get_width(var));
+      else
+	mv_copy (&dialog->mvl, vmv);
       dialog->encoding = g_strdup (var_get_encoding (var));
       dialog->format = *var_get_print_format (var);
     }
