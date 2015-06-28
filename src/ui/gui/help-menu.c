@@ -122,9 +122,16 @@ create_help_menu (GtkWindow *toplevel)
 
   GtkWidget *help_about = gtk_menu_item_new_with_mnemonic (_("_About"));
   GtkWidget *help_ref = gtk_menu_item_new_with_mnemonic (_("_Reference Manual"));
-  GtkWidget *child = gtk_bin_get_child (GTK_BIN (help_ref));
-  gtk_accel_label_set_accel (GTK_ACCEL_LABEL (child), GDK_KEY_F1, 0);
+
+  GtkAccelGroup *accel_group = gtk_accel_group_new ();
   
+  gtk_window_add_accel_group (toplevel, accel_group);
+
+  gtk_widget_add_accelerator (help_ref,
+			      "activate", accel_group,
+			      GDK_KEY_F1, 0,
+			      GTK_ACCEL_VISIBLE);
+
   gtk_menu_attach (GTK_MENU (menu), help_ref, 0, 1, 0, 1);
   gtk_menu_attach (GTK_MENU (menu), help_about, 0, 1, 1, 2);
 
