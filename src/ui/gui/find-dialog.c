@@ -1,5 +1,5 @@
 /* PSPPIRE - a graphical user interface for PSPP.
-   Copyright (C) 2007, 2009, 2011, 2012  Free Software Foundation
+   Copyright (C) 2007, 2009, 2011, 2012, 2015  Free Software Foundation
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -107,11 +107,8 @@ do_find (GObject *obj, const struct find_dialog *fd)
 
   data_sheet = psppire_data_editor_get_active_data_sheet (fd->de->data_editor);
   row = psppire_data_sheet_get_selected_case (data_sheet);
-  if ( row < 0 )
-    row = 0;
 
   find_value (fd, row, &x, &column);
-
 
   if ( x != -1)
     {
@@ -121,7 +118,6 @@ do_find (GObject *obj, const struct find_dialog *fd)
       psppire_data_sheet_goto_case (data_sheet, x);
       psppire_data_sheet_goto_variable (data_sheet, column);
     }
-
 }
 
 /* Callback on the selector.
@@ -317,6 +313,9 @@ cp1c (casenumber current, struct datasheet *data)
 static casenumber
 cm1 (casenumber current, struct datasheet *data)
 {
+  if (current == -1)
+    return datasheet_get_n_rows (data);
+
   return current - 1;
 }
 
@@ -325,6 +324,9 @@ static casenumber
 cm1c (casenumber current, struct datasheet *data)
 {
   casenumber next = current;
+
+  if (current == -1)
+    return datasheet_get_n_rows (data);
 
   backward_wrap (&next, data);
 
@@ -341,6 +343,9 @@ last (casenumber current, struct datasheet *data)
 static casenumber
 minus1 (casenumber current, struct datasheet *data)
 {
+  if (current == -1)
+    return 0;
+
   return -1;
 }
 
@@ -702,7 +707,6 @@ find_value (const struct find_dialog *fd, casenumber current_row,
   const char *target_string = gtk_entry_get_text (GTK_ENTRY (fd->value_entry));
 
   enum string_cmp_flags flags = 0;
-  g_assert (current_row >= 0);
 
   var = dict_lookup_var (fd->dict->dict, var_name);
   if ( ! var )
