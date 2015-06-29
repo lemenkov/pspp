@@ -701,7 +701,7 @@ psppire_window_file_chooser_dialog (PsppireWindow *toplevel)
 				 GTK_WINDOW (toplevel),
 				 GTK_FILE_CHOOSER_ACTION_OPEN,
 				 _("Cancel"), GTK_RESPONSE_CANCEL,
-				 _("Save"), GTK_RESPONSE_ACCEPT,
+				 _("Open"), GTK_RESPONSE_ACCEPT,
 				 NULL);
 
   g_object_set (dialog, "local-only", FALSE, NULL);
