@@ -168,21 +168,6 @@ psppire_window_register_foreach (PsppireWindowRegister *wr,
   g_hash_table_foreach (wr->name_table, func, data);
 }
 
-static void
-minimise_window (gpointer key, gpointer value, gpointer data)
-{
-  gtk_window_iconify (GTK_WINDOW (value));
-}
-
-
-void
-psppire_window_register_minimise_all (PsppireWindowRegister *wr)
-{
-  g_hash_table_foreach (wr->name_table, minimise_window, wr);
-}
-
-
-
 PsppireWindowRegister *
 psppire_window_register_new (void)
 {
