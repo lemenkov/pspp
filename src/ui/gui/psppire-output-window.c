@@ -474,11 +474,10 @@ psppire_output_window_export (PsppireOutputWindow *window)
 static void
 psppire_output_window_init (PsppireOutputWindow *window)
 {
-  GtkBuilder *xml;
+  GtkBuilder *xml = builder_new ("output-window.ui");
 
-  xml = builder_new ("output-window.ui");
-
-  gtk_widget_reparent (get_widget_assert (xml, "box1"), GTK_WIDGET (window));
+  GtkWidget *box = get_widget_assert (xml, "box1");
+  gtk_container_add (GTK_CONTAINER (window), box);
 
   window->dispose_has_run = FALSE;
 
