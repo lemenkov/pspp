@@ -1,5 +1,5 @@
 /* PSPPIRE - a graphical user interface for PSPP.
-   Copyright (C) 2007, 2009, 2010, 2012 Free Software Foundation
+   Copyright (C) 2007, 2009, 2010, 2012, 2015 Free Software Foundation
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -19,7 +19,7 @@
   This module provides a widget, PsppireSelector derived from
   GtkButton.
 
-  It contains a GtkArrow, and is used for selecting objects from a
+  It contains a GtkImage (to indicate the arrow), and is used for selecting objects from a
   GtkTreeView and putting them into a destination widget (often
   another GtkTreeView).  Typically this is used in psppire for
   selecting variables, thus:
@@ -439,8 +439,7 @@ psppire_selector_init (PsppireSelector *selector)
   selector->allow_selection = NULL;
   selector->filter = NULL;
 
-  selector->arrow = gtk_arrow_new (GTK_ARROW_LEFT, GTK_SHADOW_NONE);
-
+  selector->arrow = gtk_image_new_from_icon_name ("pan-start-symbolic", GTK_ICON_SIZE_BUTTON);
 
   gtk_container_add (GTK_CONTAINER (selector), selector->arrow);
 
@@ -479,16 +478,16 @@ set_direction (PsppireSelector *selector, enum psppire_selector_dir d)
       switch (selector->orientation)
 	{
 	case   PSPPIRE_SELECT_SOURCE_BEFORE_DEST:
-	  g_object_set (selector->arrow, "arrow-type", GTK_ARROW_RIGHT, NULL);
+	  g_object_set (selector->arrow, "icon-name", "pan-end-symbolic", NULL);
 	  break;
 	case   PSPPIRE_SELECT_SOURCE_AFTER_DEST:
-	  g_object_set (selector->arrow, "arrow-type", GTK_ARROW_LEFT, NULL);
+	  g_object_set (selector->arrow, "icon-name", "pan-start-symbolic", NULL);
 	  break;
 	case   PSPPIRE_SELECT_SOURCE_ABOVE_DEST:
-	  g_object_set (selector->arrow, "arrow-type", GTK_ARROW_DOWN, NULL);
+	  g_object_set (selector->arrow, "icon-name", "pan-down-symbolic", NULL);
 	  break;
 	case   PSPPIRE_SELECT_SOURCE_BELOW_DEST:
-	  g_object_set (selector->arrow, "arrow-type", GTK_ARROW_UP, NULL);
+	  g_object_set (selector->arrow, "icon-name", "pan-up-symbolic", NULL);
 	  break;
 	default:
 	  g_assert_not_reached ();
@@ -500,22 +499,21 @@ set_direction (PsppireSelector *selector, enum psppire_selector_dir d)
       switch (selector->orientation)
 	{
 	case   PSPPIRE_SELECT_SOURCE_BEFORE_DEST:
-	  g_object_set (selector->arrow, "arrow-type", GTK_ARROW_LEFT, NULL);
+	  g_object_set (selector->arrow, "icon-name", "pan-start-symbolic", NULL);
 	  break;
 	case   PSPPIRE_SELECT_SOURCE_AFTER_DEST:
-	  g_object_set (selector->arrow, "arrow-type", GTK_ARROW_RIGHT, NULL);
+	  g_object_set (selector->arrow, "icon-name", "pan-end-symbolic", NULL);
 	  break;
 	case   PSPPIRE_SELECT_SOURCE_ABOVE_DEST:
-	  g_object_set (selector->arrow, "arrow-type", GTK_ARROW_UP, NULL);
+	  g_object_set (selector->arrow, "icon-name", "pan-up-symbolic", NULL);
 	  break;
 	case   PSPPIRE_SELECT_SOURCE_BELOW_DEST:
-	  g_object_set (selector->arrow, "arrow-type", GTK_ARROW_DOWN, NULL);
+	  g_object_set (selector->arrow, "icon-name", "pan-down-symbolic", NULL);
 	  break;
 	default:
 	  g_assert_not_reached ();
 	  break;
 	};
-
     }
 }
 
