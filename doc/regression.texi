@@ -20,7 +20,7 @@ the @math{k}th explanatory variable.
 
 @item The dependent variable @math{Y} has the following relationship to the 
 explanatory variables:
-@math{Y_i = b_0 + b_1 X_{1i} + ... + b_k X_{ki} + Z_i} 
+@math{Y_i = b_0 + b_1 X_{1i} + ... + b_k X_{ki} + Z_i}
 where @math{b_0, b_1, @dots{}, b_k} are unknown
 coefficients, and @math{Z_1,@dots{},Z_n} are independent, normally
 distributed @dfn{noise} terms with mean zero and common variance.
@@ -61,7 +61,7 @@ are treated as explanatory variables in the linear model.
 
 All other subcommands are optional:
 
-The @subcmd{STATISTICS} subcommand specifies additional statistics to be displayed.
+The @subcmd{STATISTICS} subcommand specifies which statistics are to be displayed.
 The following keywords are accepted:
 
 @table @subcmd
@@ -82,6 +82,8 @@ Analysis of variance table for the model.
 The covariance matrix for the estimated model coefficients.
 @item DEFAULT
 The same as if R, COEFF, and ANOVA had been selected.
+This is what you get if the /STATISTICS command is not specified,
+or if it is specified without any parameters.
 @end table
 
 The @subcmd{SAVE} subcommand causes @pspp{} to save the residuals or predicted

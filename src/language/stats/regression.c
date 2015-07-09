@@ -248,6 +248,7 @@ cmd_regression (struct lexer *lexer, struct dataset *ds)
         }
       else if (lex_match_id (lexer, "STATISTICS"))
         {
+	  unsigned long statistics = 0;
           lex_match (lexer, T_EQUALS);
 
           while (lex_token (lexer) != T_ENDCMD
@@ -255,31 +256,31 @@ cmd_regression (struct lexer *lexer, struct dataset *ds)
             {
               if (lex_match (lexer, T_ALL))
                 {
-		  regression.stats = ~0;
+		  statistics = ~0;
                 }
               else if (lex_match_id (lexer, "DEFAULTS"))
                 {
-		  regression.stats |= STATS_DEFAULT;
+		  statistics |= STATS_DEFAULT;
                 }
               else if (lex_match_id (lexer, "R"))
                 {
-		  regression.stats |= STATS_R;
+		  statistics |= STATS_R;
                 }
               else if (lex_match_id (lexer, "COEFF"))
                 {
-		  regression.stats |= STATS_COEFF;
+		  statistics |= STATS_COEFF;
                 }
               else if (lex_match_id (lexer, "ANOVA"))
                 {
-		  regression.stats |= STATS_ANOVA;
+		  statistics |= STATS_ANOVA;
                 }
               else if (lex_match_id (lexer, "BCOV"))
                 {
-		  regression.stats |= STATS_BCOV;
+		  statistics |= STATS_BCOV;
                 }
               else if (lex_match_id (lexer, "CI"))
                 {
-		  regression.stats |= STATS_CI;
+		  statistics |= STATS_CI;
 
 		  if (lex_match (lexer, T_LPAREN))
 		    {
@@ -294,6 +295,10 @@ cmd_regression (struct lexer *lexer, struct dataset *ds)
                   goto error;
                 }
             }
+
+	  if (statistics)
+	    regression.stats = statistics;
+
         }
       else if (lex_match_id (lexer, "SAVE"))
         {
