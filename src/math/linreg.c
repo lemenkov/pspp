@@ -134,7 +134,6 @@ post_sweep_computations (linreg *l, gsl_matrix *sw)
   gsl_matrix_view xtx;
   gsl_matrix_view xmxtx;
   double m;
-  double tmp;
   size_t i;
   size_t j;
   int rc;
@@ -150,7 +149,7 @@ post_sweep_computations (linreg *l, gsl_matrix *sw)
   m = l->depvar_mean;
   for (i = 0; i < l->n_indeps; i++)
     {
-      tmp = gsl_matrix_get (sw, i, l->n_indeps);
+      double tmp = gsl_matrix_get (sw, i, l->n_indeps);
       l->coeff[i] = tmp;
       m -= tmp * linreg_get_indep_variable_mean (l, i);
     }
@@ -166,7 +165,7 @@ post_sweep_computations (linreg *l, gsl_matrix *sw)
   for (i = 0; i < l->n_indeps; i++)
     for (j = i; j < l->n_indeps; j++)
       {
-	tmp = -1.0 * l->mse * gsl_matrix_get (sw, i, j);
+	double tmp = -1.0 * l->mse * gsl_matrix_get (sw, i, j);
 	gsl_matrix_set (l->cov, i + 1, j + 1, tmp);
       }
   /*
@@ -185,7 +184,7 @@ post_sweep_computations (linreg *l, gsl_matrix *sw)
   gsl_matrix_free (xm);
   if (rc == GSL_SUCCESS)
     {
-      tmp = l->mse / l->n_obs;
+      double tmp = l->mse / l->n_obs;
       for (i = 1; i < 1 + l->n_indeps; i++)
 	{
 	  tmp -= gsl_matrix_get (l->cov, 0, i)
@@ -270,7 +269,6 @@ linreg_fit_qr (const gsl_matrix *cov, linreg *l)
   gsl_vector *xty;
   gsl_vector *tau;
   gsl_vector *params;
-  double tmp = 0.0;
   size_t i;
   size_t j;
 
@@ -320,10 +318,9 @@ linreg_fit_qr (const gsl_matrix *cov, linreg *l)
 	}
     }
   l->intercept = linreg_get_depvar_mean (l);
-  tmp = 0.0;
   for (i = 0; i < l->n_indeps; i++)
     {
-      tmp = linreg_get_indep_variable_mean (l, i);
+      double tmp = linreg_get_indep_variable_mean (l, i);
       l->intercept -= l->coeff[i] * tmp;
       intercept_variance += tmp * tmp * gsl_matrix_get (q, i, i);
     }
