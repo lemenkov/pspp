@@ -286,7 +286,7 @@ Gilly     ,. ,White,10.04.2007,10.00,"3""   ",Guinea Pig
 AT_CLEANUP
 dnl " (fixes Emacs highlighting)
 
-AT_SETUP([GET DATA /TYPE=TXT with IMPORTCASES])
+AT_SETUP([GET DATA /TYPE=TXT with IMPORTCASE])
 AT_CHECK([$PERL > test.data <<'EOF'
 for ($i = 1; $i <= 100; $i++) {
     printf "%02d\n", $i;
@@ -294,19 +294,19 @@ for ($i = 1; $i <= 100; $i++) {
 EOF
 ])
 AT_DATA([get-data.sps], [dnl
-get data /type=txt /file='test.data' /importcases=first 10 /variables x f8.0.
+get data /type=txt /file='test.data' /importcase=first 10 /variables x f8.0.
 list.
 
-get data /type=txt /file='test.data' /importcases=percent 1 /variables x f8.0.
+get data /type=txt /file='test.data' /importcase=percent 1 /variables x f8.0.
 list.
 
-get data /type=txt /file='test.data' /importcases=percent 35 /variables x f8.0.
+get data /type=txt /file='test.data' /importcase=percent 35 /variables x f8.0.
 list.
 
-get data /type=txt /file='test.data' /importcases=percent 95 /variables x f8.0.
+get data /type=txt /file='test.data' /importcase=percent 95 /variables x f8.0.
 list.
 
-get data /type=txt /file='test.data' /importcases=percent 100 /variables x f8.0.
+get data /type=txt /file='test.data' /importcase=percent 100 /variables x f8.0.
 list.
 ])
 AT_CHECK([pspp -o pspp.csv get-data.sps])

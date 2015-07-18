@@ -186,11 +186,11 @@ void
 intro_append_syntax (const struct intro_page *p, struct string *s)
 {
   if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (p->n_cases_button)))
-    ds_put_format (s, "  /IMPORTCASES=FIRST %d\n",
+    ds_put_format (s, "  /IMPORTCASE=FIRST %d\n",
 		   gtk_spin_button_get_value_as_int (GTK_SPIN_BUTTON (p->n_cases_spin)));
   else if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (p->percent_button)))
-    ds_put_format (s, "  /IMPORTCASES=PERCENT %d\n",
+    ds_put_format (s, "  /IMPORTCASE=PERCENT %d\n",
 		   gtk_spin_button_get_value_as_int (GTK_SPIN_BUTTON (p->percent_spin)));
   else
-    ds_put_cstr (s, "  /IMPORTCASES=ALL\n");
+    ds_put_cstr (s, "  /IMPORTCASE=ALL\n");
 }
