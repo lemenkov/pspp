@@ -162,8 +162,8 @@ run_define_groups (PsppireDialogActionIndepSamps *act)
 
   if ( var_is_numeric (act->grp_var))
     {
-      gtk_table_attach_defaults (GTK_TABLE (act->dg_table1), act->dg_table2,
-  				 1, 2, 1, 2);
+      gtk_grid_attach (GTK_GRID (act->dg_table1), act->dg_table2,
+		       1, 1, 1, 1);
 
       gtk_container_add (GTK_CONTAINER (act->dg_box), act->dg_table1);
     }
