@@ -149,6 +149,8 @@ on_realize (GtkWidget *w)
   g_signal_connect (buffer, "notify::text",
                     G_CALLBACK (psppire_value_entry_text_changed), w);
 
+  gtk_widget_set_can_focus (GTK_WIDGET (entry), TRUE);
+
   GTK_WIDGET_CLASS (psppire_value_entry_parent_class)->realize (w);
 }
 
