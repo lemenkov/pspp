@@ -263,7 +263,7 @@ AT_DATA([pets.data], [dnl
 "Gilly", , White, "10 Apr 2007", 10, "3""", "Guinea Pig"
 ])
 AT_DATA([pets.sps], [dnl
-GET DATA /TYPE=TXT /FILE='pets.data' /DELIMITERS=', ' /QUALIFIER='''"' /ESCAPE
+GET DATA /TYPE=TXT /FILE='pets.data' /DELIMITERS=', ' /QUALIFIER='''"'
         /FIRSTCASE=3
         /VARIABLES=name A10
                    age F3.1

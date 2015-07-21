@@ -9,9 +9,15 @@ Changes since 0.8.5:
  * The graphical user interface uses Gtk+ version 3 instead of version 2.
    Accordingly, it has a somewhat different look and feel.
 
- * A bug, where the correlation coefficient in the paired samples t-test
-   procedure was incorrectly calculated when presented with weighted data,
-   has been fixed.
+ * Bug fixes, including the following notable ones:
+
+   - The correlation coefficient in the paired samples t-test
+     procedure is now correctly calculated when presented with
+     weighted data.
+
+   - The ESCAPE subcommand has been removed from GET DATA /TYPE=TXT.
+     For compatibility, the behavior that ESCAPE enabled is now the
+     default and only supported behavior.
 
 Changes from 0.8.4 to 0.8.5:
 

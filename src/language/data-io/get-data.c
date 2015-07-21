@@ -1,6 +1,6 @@
 /* PSPP - a program for statistical analysis.
    Copyright (C) 2007, 2008, 2009, 2010, 2011, 2012,
-                 2013 Free Software Foundation, Inc.
+                 2013, 2015 Free Software Foundation, Inc.
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -390,6 +390,7 @@ parse_get_txt (struct lexer *lexer, struct dataset *ds)
   data_parser_set_type (parser, DP_DELIMITED);
   data_parser_set_span (parser, false);
   data_parser_set_quotes (parser, ss_empty ());
+  data_parser_set_quote_escape (parser, true);
   data_parser_set_empty_line_has_field (parser, true);
 
   for (;;)
@@ -562,9 +563,6 @@ parse_get_txt (struct lexer *lexer, struct dataset *ds)
           data_parser_set_quotes (parser, lex_tokss (lexer));
           lex_get (lexer);
         }
-      else if (settings_get_syntax () == ENHANCED
-               && lex_match_id (lexer, "ESCAPE"))
-        data_parser_set_quote_escape (parser, true);
       else if (lex_match_id (lexer, "VARIABLES"))
         break;
       else

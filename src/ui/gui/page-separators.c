@@ -1,5 +1,5 @@
 /* PSPPIRE - a graphical user interface for PSPP.
-   Copyright (C) 2008, 2009, 2010, 2011, 2012, 2013  Free Software Foundation
+   Copyright (C) 2008, 2009, 2010, 2011, 2012, 2013, 2015  Free Software Foundation
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -62,7 +62,6 @@ struct separators_page
     /* How to break lines into columns. */
     struct string separators;   /* Field separators. */
     struct string quotes;       /* Quote characters. */
-    bool escape;                /* Doubled quotes yield a quote mark? */
 
     GtkWidget *page;
     GtkWidget *custom_cb;
@@ -70,7 +69,6 @@ struct separators_page
     GtkWidget *quote_cb;
     GtkWidget *quote_combo;
     GtkEntry *quote_entry;
-    GtkWidget *escape_cb;
     PsppSheetView *fields_tree_view;
   };
 
@@ -163,7 +161,6 @@ separators_page_create (struct import_assistant *ia)
   p->quote_combo = get_widget_assert (builder, "quote-combo");
   p->quote_entry = GTK_ENTRY (gtk_bin_get_child (GTK_BIN (p->quote_combo)));
   p->quote_cb = get_widget_assert (builder, "quote-cb");
-  p->escape_cb = get_widget_assert (builder, "escape");
 
   set_quote_list (GTK_COMBO_BOX (p->quote_combo));
   p->fields_tree_view = PSPP_SHEET_VIEW (get_widget_assert (builder, "fields"));
@@ -178,8 +175,6 @@ separators_page_create (struct import_assistant *ia)
   for (i = 0; i < SEPARATOR_CNT; i++)
     g_signal_connect (get_widget_assert (builder, separators[i].name),
                       "toggled", G_CALLBACK (on_separator_toggle), ia);
-  g_signal_connect (p->escape_cb, "toggled",
-                    G_CALLBACK (on_separator_toggle), ia);
 
   return p;
 }
@@ -291,23 +286,18 @@ split_fields (struct import_assistant *ia)
                    && ds_find_byte (&s->quotes, text.string[0]) != SIZE_MAX)
             {
               int quote = ss_get_byte (&text);
-              if (!s->escape)
-                ss_get_until (&text, quote, &field);
-              else
-                {
-                  struct string s;
-                  int c;
+              struct string s;
+              int c;
 
-                  ds_init_empty (&s);
-                  while ((c = ss_get_byte (&text)) != EOF)
-                    if (c != quote)
-                      ds_put_byte (&s, c);
-                    else if (ss_match_byte (&text, quote))
-                      ds_put_byte (&s, quote);
-                    else
-                      break;
-                  field = ds_ss (&s);
-                }
+              ds_init_empty (&s);
+              while ((c = ss_get_byte (&text)) != EOF)
+                if (c != quote)
+                  ds_put_byte (&s, c);
+                else if (ss_match_byte (&text, quote))
+                  ds_put_byte (&s, quote);
+                else
+                  break;
+              field = ds_ss (&s);
             }
           else
             ss_get_bytes (&text, ss_cspan (text, ds_ss (&s->separators)),
@@ -388,7 +378,6 @@ choose_likely_separators (struct import_assistant *ia)
 
   find_commonest_chars (histogram, "\"'", "", &ia->separators->quotes);
   find_commonest_chars (histogram, ",;:/|!\t-", ",", &ia->separators->separators);
-  ia->separators->escape = true;
 }
 
 /* Chooses the most common character among those in TARGETS,
@@ -498,10 +487,7 @@ set_separators (struct import_assistant *ia)
                       any_quotes ? ds_cstr (&s->quotes) : "\"");
   gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (s->quote_cb),
                                 any_quotes);
-  gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (s->escape_cb),
-                                s->escape);
   gtk_widget_set_sensitive (s->quote_combo, any_quotes);
-  gtk_widget_set_sensitive (s->escape_cb, any_quotes);
 }
 
 /* Sets IA's separators substructure to match the widgets. */
@@ -531,7 +517,6 @@ get_separators (struct import_assistant *ia)
     }
   else
     ds_clear (&s->quotes);
-  s->escape = gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (s->escape_cb));
 }
 
 /* Called when the user changes the entry field for custom
@@ -570,7 +555,6 @@ on_quote_cb_toggle (GtkToggleButton *quote_cb, struct import_assistant *ia)
 {
   bool is_active = gtk_toggle_button_get_active (quote_cb);
   gtk_widget_set_sensitive (ia->separators->quote_combo, is_active);
-  gtk_widget_set_sensitive (ia->separators->escape_cb, is_active);
   revise_fields_preview (ia);
 }
 
@@ -605,6 +589,4 @@ separators_append_syntax (const struct import_assistant *ia, struct string *s)
   ds_put_cstr (s, "\"\n");
   if (!ds_is_empty (&ia->separators->quotes))
     syntax_gen_pspp (s, "  /QUALIFIER=%sq\n", ds_cstr (&ia->separators->quotes));
-  if (!ds_is_empty (&ia->separators->quotes) && ia->separators->escape)
-    ds_put_cstr (s, "  /ESCAPE\n");
 }

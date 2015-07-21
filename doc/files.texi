@@ -428,7 +428,7 @@ GET DATA /TYPE=TXT
         [/IMPORTCASE=@{ALL,FIRST @var{max_cases},PERCENT @var{percent}@}]
 
         /DELIMITERS="@var{delimiters}"
-        [/QUALIFIER="@var{quotes}" [/ESCAPE]]
+        [/QUALIFIER="@var{quotes}"
         [/DELCASE=@{LINE,VARIABLES @var{n_variables}@}]
         /VARIABLES=@var{del_var1} [@var{del_var2}]@dots{}
 where each @var{del_var} takes the form:
@@ -467,15 +467,10 @@ matching quote.  Intervening delimiters become part of the field,
 instead of terminating it.  The ability to specify more than one quote
 character is a @pspp{} extension.
 
-By default, a character specified on @subcmd{QUALIFIER} cannot itself be
-embedded within a field that it quotes, because the quote character
-always terminates the quoted field.  With ESCAPE, however, a doubled
-quote character within a quoted field inserts a single instance of the
-quote into the field.  For example, if @samp{'} is specified on
-@subcmd{QUALIFIER}, then without ESCAPE @code{'a''b'} specifies a pair of
-fields that contain @samp{a} and @samp{b}, but with ESCAPE it
-specifies a single field that contains @samp{a'b}.  ESCAPE is a @pspp{}
-extension.
+The character specified on @subcmd{QUALIFIER} can be embedded within a
+field that it quotes by doubling the qualifier.  For example, if
+@samp{'} is specified on @subcmd{QUALIFIER}, then @code{'a''b'}
+specifies a field that contains @samp{a'b}.
 
 The @subcmd{DELCASE} subcommand controls how data may be broken across lines in
 the data file.  With LINE, the default setting, each line must contain
