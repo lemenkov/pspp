@@ -30,7 +30,7 @@ files and translates as necessary.  PSPP also detects the
 floating-point format in use, as well as the endianness of IEEE 754
 floating-point numbers, and translates as needed.  However, only IEEE
 754 numbers with the same endianness as integer data in the same file
-has actually been observed in system files, and it is likely that
+have actually been observed in system files, and it is likely that
 other formats are obsolete or were never used.
 
 System files use a few floating point values for special purposes:
@@ -68,10 +68,81 @@ used for the dictionary and the data in the file, although it is
 possible to artificially synthesize files that use different encodings
 (@pxref{Character Encoding Record}).
 
-System files are divided into records, each of which begins with a
-4-byte record type, usually regarded as an @code{int32}.
+@menu
+* System File Record Structure::
+* File Header Record::
+* Variable Record::
+* Value Labels Records::
+* Document Record::
+* Machine Integer Info Record::
+* Machine Floating-Point Info Record::
+* Multiple Response Sets Records::
+* Extra Product Info Record::
+* Variable Display Parameter Record::
+* Long Variable Names Record::
+* Very Long String Record::
+* Character Encoding Record::
+* Long String Value Labels Record::
+* Long String Missing Values Record::
+* Data File and Variable Attributes Records::
+* Extended Number of Cases Record::
+* Other Informational Records::
+* Dictionary Termination Record::
+* Data Record::
+* Encrypted System Files::
+@end menu
 
-The records must appear in the following order:
+@node System File Record Structure
+@section System File Record Structure
+
+System files are divided into records with the following format:
+
+@example
+int32               type;
+char                data[];
+@end example
+
+This header does not identify the length of the @code{data} or any
+information about what it contains, so the system file reader must
+understand the format of @code{data} based on @code{type}.  However,
+records with type 7, called @dfn{extension records}, have a stricter
+format:
+
+@example
+int32               type;
+int32               subtype;
+int32               size;
+int32               count;
+char                data[size * count];
+@end example
+
+@table @code
+@item int32 rec_type;
+Record type.  Always set to 7.
+
+@item int32 subtype;
+Record subtype.  This value identifies a particular kind of extension
+record.
+
+@item int32 size;
+The size of each piece of data that follows the header, in bytes.
+Known extension records use 1, 4, or 8, for @code{char}, @code{int32},
+and @code{flt64} format data, respectively.
+
+@item int32 count;
+The number of pieces of data that follow the header.
+
+@item char data[size * count];
+Data, whose format and interpretation depend on the subtype.
+@end table
+
+An extension record contains exactly @code{size * count} bytes of
+data, which allows a reader that does not understand an extension
+record to skip it.  Extension records provide only nonessential
+information, so this allows for files written by newer software to
+preserve backward compatibility with older or less capable readers.
+
+Records in a system file must appear in the following order:
 
 @itemize @bullet
 @item
@@ -98,36 +169,19 @@ Dictionary termination record.
 Data record.
 @end itemize
 
-Each type of record is described separately below.
+We advise authors of programs that read system files to tolerate
+format variations.  Various kinds of misformatting and corruption have
+been observed in system files written by SPSS and other software
+alike.  In particular, because extension records provide nonessential
+information, it is generally better to ignore an extension record
+entirely than to refuse to read a system file.
 
-@menu
-* File Header Record::
-* Variable Record::
-* Value Labels Records::
-* Document Record::
-* Machine Integer Info Record::
-* Machine Floating-Point Info Record::
-* Multiple Response Sets Records::
-* Extra Product Info Record::
-* Variable Display Parameter Record::
-* Long Variable Names Record::
-* Very Long String Record::
-* Character Encoding Record::
-* Long String Value Labels Record::
-* Long String Missing Values Record::
-* Data File and Variable Attributes Records::
-* Extended Number of Cases Record::
-* Miscellaneous Informational Records::
-* Dictionary Termination Record::
-* Data Record::
-* Encrypted System Files::
-@end menu
+The following sections describe the known kinds of records.
 
 @node File Header Record
 @section File Header Record
 
-The file header is always the first record in the file.  It has the
-following format:
+A system file begins with the file header, with the following format:
 
 @example
 char                rec_type[4];
@@ -1412,46 +1466,25 @@ same reason as @code{ncases} in the file header record, but this has
 not been observed in the wild.
 @end table
 
-@node Miscellaneous Informational Records
-@section Miscellaneous Informational Records
+@node Other Informational Records
+@section Other Informational Records
 
-Some specific types of miscellaneous informational records are
+This chapter documents many specific types of extension records are
 documented here, but others are known to exist.  PSPP ignores unknown
-miscellaneous informational records when reading system files.
+extension records when reading system files.
 
-@example
-/* @r{Header.} */
-int32               rec_type;
-int32               subtype;
-int32               size;
-int32               count;
+The following extension record subtypes have also been observed, with
+the following believed meanings:
 
-/* @r{Exactly @code{size * count} bytes of data.} */
-char                data[];
-@end example
+@table @asis
+@item 5
+A set of grouped variables (according to Aapi H@"am@"al@"ainen).
 
-@table @code
-@item int32 rec_type;
-Record type.  Always set to 7.
+@item 6
+Date info, probably related to USE (according to Aapi H@"am@"al@"ainen).
 
-@item int32 subtype;
-Record subtype.  May take any value.  According to Aapi
-H@"am@"al@"ainen, value 5 indicates a set of grouped variables and 6
-indicates date info (probably related to USE).  Subtype 24 appears to
-contain XML that describes how data in the file should be displayed
-on-screen.
-
-@item int32 size;
-Size of each piece of data in the data part.  Should have the value 1,
-4, or 8, for @code{char}, @code{int32}, and @code{flt64} format data,
-respectively.
-
-@item int32 count;
-Number of pieces of data in the data part.
-
-@item char data[];
-Arbitrary data.  There must be @code{size} times @code{count} bytes of
-data.
+@item 24
+XML that describes how data in the file should be displayed on-screen.
 @end table
 
 @node Dictionary Termination Record

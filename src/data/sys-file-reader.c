@@ -1,5 +1,5 @@
 /* PSPP - a program for statistical analysis.
-   Copyright (C) 1997-2000, 2006-2007, 2009-2014 Free Software Foundation, Inc.
+   Copyright (C) 1997-2000, 2006-2007, 2009-2015 Free Software Foundation, Inc.
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -366,10 +366,10 @@ static void parse_variable_attributes (struct sfm_reader *,
                                        const struct sfm_extension_record *,
                                        struct dictionary *);
 static void assign_variable_roles (struct sfm_reader *, struct dictionary *);
-static bool parse_long_string_value_labels (struct sfm_reader *,
+static void parse_long_string_value_labels (struct sfm_reader *,
                                             const struct sfm_extension_record *,
                                             struct dictionary *);
-static bool parse_long_string_missing_values (
+static void parse_long_string_missing_values (
   struct sfm_reader *, const struct sfm_extension_record *,
   struct dictionary *);
 
@@ -838,14 +838,11 @@ sfm_decode (struct any_reader *r_, const char *encoding,
       assign_variable_roles (r, dict);
     }
 
-  if (r->extensions[EXT_LONG_LABELS] != NULL
-      && !parse_long_string_value_labels (r, r->extensions[EXT_LONG_LABELS],
-                                          dict))
-    goto error;
-  if (r->extensions[EXT_LONG_MISSING] != NULL
-      && !parse_long_string_missing_values (r, r->extensions[EXT_LONG_MISSING],
-                                            dict))
-    goto error;
+  if (r->extensions[EXT_LONG_LABELS] != NULL)
+    parse_long_string_value_labels (r, r->extensions[EXT_LONG_LABELS], dict);
+  if (r->extensions[EXT_LONG_MISSING] != NULL)
+    parse_long_string_missing_values (r, r->extensions[EXT_LONG_MISSING],
+                                      dict);
 
   /* Warn if the actual amount of data per case differs from the
      amount that the header claims.  SPSS version 13 gets this
@@ -2419,15 +2416,15 @@ check_overflow (struct sfm_reader *r,
   size_t end = record->size * record->count;
   if (length >= end || ofs + length > end)
     {
-      sys_error (r, record->pos + end,
-                 _("Extension record subtype %d ends unexpectedly."),
-                 record->subtype);
+      sys_warn (r, record->pos + end,
+                _("Extension record subtype %d ends unexpectedly."),
+                record->subtype);
       return false;
     }
   return true;
 }
 
-static bool
+static void
 parse_long_string_value_labels (struct sfm_reader *r,
                                 const struct sfm_extension_record *record,
                                 struct dictionary *dict)
@@ -2447,13 +2444,13 @@ parse_long_string_value_labels (struct sfm_reader *r,
 
       /* Parse variable name length. */
       if (!check_overflow (r, record, ofs, 4))
-        return false;
+        return;
       var_name_len = parse_int (r, record->data, ofs);
       ofs += 4;
 
       /* Parse variable name, width, and number of labels. */
       if (!check_overflow (r, record, ofs, var_name_len + 8))
-        return false;
+        return;
       var_name = recode_string_pool ("UTF-8", dict_encoding,
                                      (const char *) record->data + ofs,
                                      var_name_len, r->pool);
@@ -2493,13 +2490,13 @@ parse_long_string_value_labels (struct sfm_reader *r,
 
           /* Parse value length. */
           if (!check_overflow (r, record, ofs, 4))
-            return false;
+            return;
           value_length = parse_int (r, record->data, ofs);
           ofs += 4;
 
           /* Parse value. */
           if (!check_overflow (r, record, ofs, value_length))
-            return false;
+            return;
           if (!skip)
             {
               if (value_length == width)
@@ -2519,13 +2516,13 @@ parse_long_string_value_labels (struct sfm_reader *r,
 
           /* Parse label length. */
           if (!check_overflow (r, record, ofs, 4))
-            return false;
+            return;
           label_length = parse_int (r, record->data, ofs);
           ofs += 4;
 
           /* Parse label. */
           if (!check_overflow (r, record, ofs, label_length))
-            return false;
+            return;
           if (!skip)
             {
               char *label;
@@ -2543,11 +2540,9 @@ parse_long_string_value_labels (struct sfm_reader *r,
           ofs += label_length;
         }
     }
-
-  return true;
 }
 
-static bool
+static void
 parse_long_string_missing_values (struct sfm_reader *r,
                                   const struct sfm_extension_record *record,
                                   struct dictionary *dict)
@@ -2567,13 +2562,13 @@ parse_long_string_missing_values (struct sfm_reader *r,
 
       /* Parse variable name length. */
       if (!check_overflow (r, record, ofs, 4))
-        return false;
+        return;
       var_name_len = parse_int (r, record->data, ofs);
       ofs += 4;
 
       /* Parse variable name. */
       if (!check_overflow (r, record, ofs, var_name_len + 1))
-        return false;
+        return;
       var_name = recode_string_pool ("UTF-8", dict_encoding,
                                      (const char *) record->data + ofs,
                                      var_name_len, r->pool);
@@ -2611,13 +2606,13 @@ parse_long_string_missing_values (struct sfm_reader *r,
 
           /* Parse value length. */
           if (!check_overflow (r, record, ofs, 4))
-            return false;
+            return;
           value_length = parse_int (r, record->data, ofs);
           ofs += 4;
 
           /* Parse value. */
           if (!check_overflow (r, record, ofs, value_length))
-            return false;
+            return;
           if (var != NULL
               && i < 3
               && !mv_add_str (&mv, (const uint8_t *) record->data + ofs,
@@ -2632,8 +2627,6 @@ parse_long_string_missing_values (struct sfm_reader *r,
       if (var != NULL)
         var_set_missing_values (var, &mv);
     }
-
-  return true;
 }
 
 /* Case reader. */
