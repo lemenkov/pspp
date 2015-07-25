@@ -2660,7 +2660,7 @@ sys_file_casereader_read (struct casereader *reader, void *r_)
   int retval;
   int i;
 
-  if (r->error)
+  if (r->error || !r->sfm_var_cnt)
     return NULL;
 
   c = case_create (r->proto);

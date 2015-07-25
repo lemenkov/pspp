@@ -928,6 +928,8 @@ GET FILE='pc+-file.sav' ENCODING='us-ascii'.
 ])
 AT_CHECK([pspp -O format=csv pc+-file.sps], [1], [dnl
 error: `pc+-file.sav' near offset 0x1b0: Record 1 has length 192 (expected 224).
+
+pc+-file.sps:1: error: GET: `pc+-file.sav': Data file dictionary has no variables.
 ])
 AT_CLEANUP
 

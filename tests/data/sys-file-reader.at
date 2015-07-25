@@ -1557,6 +1557,43 @@ AT_CLEANUP
 
 AT_BANNER([system file reader - negative])
 
+AT_SETUP([no variables])
+AT_KEYWORDS([sack synthetic system file negative])
+AT_DATA([sys-file.sack], [dnl
+dnl File header.
+"$FL2"; s60 "$(#) SPSS DATA FILE PSPP synthetic test file";
+2; dnl Layout code
+0; dnl Nominal case size (empty)
+0; dnl Not compressed
+0; dnl Not weighted
+0; dnl 0 cases.
+100.0; dnl Bias.
+"01 Jan 11"; "20:53:52"; s64 "PSPP synthetic test file";
+i8 0 *3;
+
+dnl Character encoding record.
+7; 20; 1; 12; "windows-1252";
+
+dnl Dictionary termination record.
+999; 0;
+])
+for variant in be le; do
+  AT_CHECK([sack --$variant sys-file.sack > sys-file.sav])
+  AT_DATA([sys-file.sps], [dnl
+GET FILE='sys-file.sav'.
+])
+  AT_CHECK([pspp -O format=csv sys-file.sps], [1], [dnl
+sys-file.sps:1: error: GET: `sys-file.sav': Data file dictionary has no variables.
+])
+
+  dnl At one point pspp-convert would hang forever if there were no variables,
+  dnl so check against regression.
+  AT_CHECK([pspp-convert sys-file.sav sys-file.txt])
+  AT_CHECK([cat sys-file.txt], [0], [
+])
+done
+AT_CLEANUP
+
 AT_SETUP([unspecified character encoding])
 AT_KEYWORDS([sack synthetic system file positive])
 AT_DATA([sys-file.sack], [dnl

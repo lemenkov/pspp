@@ -262,6 +262,10 @@ wider than 255 bytes.  Such very long string variables are represented
 by a number of narrower string variables.  @xref{Very Long String
 Record}, for details.
 
+A system file should contain at least one variable and thus at least
+one variable record, but system files have been observed in the wild
+without any variables (thus, no data either).
+
 @example
 int32               rec_type;
 int32               type;

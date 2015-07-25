@@ -1,5 +1,5 @@
 /* PSPP - a program for statistical analysis.
-   Copyright (C) 1997-9, 2000, 2006, 2007, 2010, 2011, 2012, 2013, 2014 Free Software Foundation, Inc.
+   Copyright (C) 1997-9, 2000, 2006-2007, 2010-15 Free Software Foundation, Inc.
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -31,6 +31,7 @@
 #include "language/lexer/lexer.h"
 #include "libpspp/compiler.h"
 #include "libpspp/misc.h"
+#include "libpspp/message.h"
 #include "libpspp/str.h"
 
 #include "gl/xalloc.h"
@@ -125,6 +126,13 @@ parse_read_command (struct lexer *lexer, struct dataset *ds,
   reader = any_reader_open_and_decode (fh, encoding, &dict, NULL);
   if (reader == NULL)
     goto error;
+
+  if (dict_get_var_cnt (dict) == 0)
+    {
+      msg (SE, _("%s: Data file dictionary has no variables."),
+           fh_get_name (fh));
+      goto error;
+    }
 
   stage = case_map_stage_create (dict);
 
