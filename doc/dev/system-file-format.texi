@@ -746,13 +746,16 @@ Size of each piece of data in the data part, in bytes.  Always set to 8.
 Number of pieces of data in the data part.  Always set to 3.
 
 @item flt64 sysmis;
-The system missing value.
+@itemx flt64 highest;
+@itemx flt64 lowest;
+The system missing value, the value used for HIGHEST in missing
+values, and the value used for LOWEST in missing values, respectively.
+@xref{System File Format}, for more information.
 
-@item flt64 highest;
-The value used for HIGHEST in missing values.
-
-@item flt64 lowest;
-The value used for LOWEST in missing values.
+The SPSSWriter library in PHP, which identifies itself as @code{FOM
+SPSS 1.0.0} in the file header record @code{prod_name} field, writes
+unexpected values to these fields, but it uses the same values
+consistently throughout the rest of the file.
 @end table
 
 @node Multiple Response Sets Records
@@ -845,8 +848,8 @@ The short names of the variables in the set, converted to lowercase,
 each separated from the previous by a single space.
 
 Even though a multiple response set must have at least two variables,
-some system files contain multiple response sets with no variables at
-all.  The source and meaning of these multiple response sets is
+some system files contain multiple response sets with no variables or
+one variable.  The source and meaning of these multiple response sets is
 unknown.  (Perhaps they arise from creating a multiple response set
 then deleting all the variables that it contains?)
 
@@ -1482,6 +1485,11 @@ A set of grouped variables (according to Aapi H@"am@"al@"ainen).
 
 @item 6
 Date info, probably related to USE (according to Aapi H@"am@"al@"ainen).
+
+@item 12
+A UUID in the format described in RFC 4122.  Only two examples
+observed, both written by SPSS 13, and in each case the UUID contained
+both upper and lower case.
 
 @item 24
 XML that describes how data in the file should be displayed on-screen.
