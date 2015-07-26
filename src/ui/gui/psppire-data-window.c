@@ -944,7 +944,7 @@ psppire_data_window_finish_init (PsppireDataWindow *de,
   psppire_data_store_set_reader (de->data_store, NULL);
 
   menubar = get_widget_assert (de->builder, "menubar");
-  hb = get_widget_assert (de->builder, "handlebox1");
+  hb = get_widget_assert (de->builder, "toolbar");
   sb = get_widget_assert (de->builder, "status-bar");
 
   de->uim = NULL;
