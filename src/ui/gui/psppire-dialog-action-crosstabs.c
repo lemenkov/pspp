@@ -378,10 +378,7 @@ generate_syntax (PsppireDialogAction *a)
 static void
 psppire_dialog_action_crosstabs_class_init (PsppireDialogActionCrosstabsClass *class)
 {
-  GtkActionClass *action_class = GTK_ACTION_CLASS (class);
-
-  action_class->activate = psppire_dialog_action_crosstabs_activate;
-
+  psppire_dialog_action_set_activation (class, psppire_dialog_action_crosstabs_activate);
   PSPPIRE_DIALOG_ACTION_CLASS (class)->generate_syntax = generate_syntax;
 }
 

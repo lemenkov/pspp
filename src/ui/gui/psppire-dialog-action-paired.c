@@ -208,13 +208,11 @@ psppire_dialog_action_paired_finalize (GObject *o)
 static void
 psppire_dialog_action_paired_class_init (PsppireDialogActionPairedClass *class)
 {
-  GtkActionClass *action_class = GTK_ACTION_CLASS (class);
   GObjectClass *object_class = G_OBJECT_CLASS (class);
-
-  action_class->activate = psppire_dialog_action_paired_activate;
+  psppire_dialog_action_set_activation (class, psppire_dialog_action_paired_activate);
   PSPPIRE_DIALOG_ACTION_CLASS (class)->generate_syntax = generate_syntax;
 
-   object_class->finalize = psppire_dialog_action_paired_finalize;
+  object_class->finalize = psppire_dialog_action_paired_finalize;
 }
 
 

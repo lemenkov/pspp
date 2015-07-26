@@ -371,7 +371,7 @@ psppire_dialog_action_factor_activate (GtkAction *a)
 static void
 psppire_dialog_action_factor_class_init (PsppireDialogActionFactorClass *class)
 {
-  GTK_ACTION_CLASS (class)->activate = psppire_dialog_action_factor_activate;
+  psppire_dialog_action_set_activation (class, psppire_dialog_action_factor_activate);
 
   PSPPIRE_DIALOG_ACTION_CLASS (class)->generate_syntax = generate_syntax;
 }

@@ -188,3 +188,10 @@ psppire_dialog_action_set_refresh (PsppireDialogAction *pda,
   g_signal_connect_swapped (pda->dialog, "refresh", G_CALLBACK (refresh),  pda);
 }
 
+
+void 
+psppire_dialog_action_set_activation (gpointer class, activation activate)
+{
+  GTK_ACTION_CLASS (class)->activate = activate;
+}
+

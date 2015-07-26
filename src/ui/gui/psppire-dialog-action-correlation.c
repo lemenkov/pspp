@@ -117,9 +117,8 @@ psppire_dialog_action_correlation_activate (GtkAction *a)
 static void
 psppire_dialog_action_correlation_class_init (PsppireDialogActionCorrelationClass *class)
 {
-  GtkActionClass *action_class = GTK_ACTION_CLASS (class);
+  psppire_dialog_action_set_activation (class, psppire_dialog_action_correlation_activate);
 
-  action_class->activate = psppire_dialog_action_correlation_activate;
   PSPPIRE_DIALOG_ACTION_CLASS (class)->generate_syntax = generate_syntax;
 }
 

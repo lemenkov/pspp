@@ -96,6 +96,13 @@ void psppire_dialog_action_set_refresh (PsppireDialogAction *pda,
 void psppire_dialog_action_set_valid_predicate (PsppireDialogAction *act, 
 						ContentsAreValid dialog_state_valid);
 
+typedef void (*activation) (GtkAction *);
+
+void psppire_dialog_action_set_activation (gpointer class, activation a);
+
+
+
+
 G_END_DECLS
 
 #endif /* __PSPPIRE_DIALOG_ACTION_H__ */

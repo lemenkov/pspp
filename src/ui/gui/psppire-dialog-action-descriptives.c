@@ -234,7 +234,7 @@ psppire_dialog_action_descriptives_activate (GtkAction *a)
 static void
 psppire_dialog_action_descriptives_class_init (PsppireDialogActionDescriptivesClass *class)
 {
-  GTK_ACTION_CLASS (class)->activate = psppire_dialog_action_descriptives_activate;
+  psppire_dialog_action_set_activation (class, psppire_dialog_action_descriptives_activate);
 
   PSPPIRE_DIALOG_ACTION_CLASS (class)->generate_syntax = generate_syntax;
 }
