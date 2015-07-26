@@ -9,10 +9,8 @@ How to add a new dialog to Psppire
 
 Before you start.
 
-1. You will need to install Glade version 3.8.4 ---    ANY OTHER VERSION
-IS UNLIKELY TO WORK  --- I know that 3.18.x does not!  If your
-distro  doesn't have this version, you will need to download it and
-build it from source.
+1. You will need to install Glade (but see the important note
+   about which version at the end of this document!
 
 
 
@@ -33,7 +31,7 @@ build it from source.
 Having done the above, you should be able to edit an existing dialog
 definition, thus:
 
-	    glade-3 src/ui/gui/descriptives.ui
+	    glade src/ui/gui/descriptives.ui
 
 You will probably get a lot of Gtk-Warnings/Criticals  most of them
 are harmless.
@@ -313,6 +311,34 @@ This is necessary to that GtkBuilder knows about the new object class.
 Don't forget to put any new files you've created in
 src/ui/gui/automake.mk and to rerun make ; make install
 
+
+
+Note!  Currently (as of commit fe7682b3c3d36cf9ba3e867588e5b808af833262 )
+psppire is in a transitional phase.  Our .ui files come in two mutually
+incompatible varieties.  The older variety can be identified by a
+string similar to:
+
+  <requires lib="psppire" version="2054.17080"/>
+  <!-- interface-requires gtk+ 2.12 -->
+  <!-- interface-naming-policy project-wide -->
+
+To edit these files  you will need to install Glade version 3.8.4 ---
+ANY OTHER VERSION IS UNLIKELY TO WORK  --- I know that 3.18.x does
+not!  If your distro  doesn't have this version, you will need to
+download it and build it from source.
+
+
+The newer ones contain the string:
+
+<!-- Generated with glade 3.18.3 -->
+<interface>
+  <requires lib="gtk+" version="3.12"/>
+
+Like the string suggests Glade version 3.18.x or later will probably
+be ok for these files. 
+
+Hopefully the older style .ui files will gradually be converted to new
+style ones.
 
 
 That's about it, I think.  Did I forget anything?
