@@ -840,15 +840,16 @@ static void
 on_switch_page (PsppireDataEditor *de, gpointer p,
 		gint pagenum, PsppireDataWindow *dw)
 {
-  GtkWidget *page_menu_item;
-  gboolean is_ds;
-  const char *path;
+  /* Set the appropriate ui_manager according to the selected page.
+     This is necessary, because the menus for the variable view and
+     the data view are different (slightly). */
 
-  is_ds = pagenum == PSPPIRE_DATA_EDITOR_DATA_VIEW;
-  path = (is_ds
+  gboolean is_ds = pagenum == PSPPIRE_DATA_EDITOR_DATA_VIEW;
+  const char *path = (is_ds
           ? "/ui/menubar/view/view_data"
           : "/ui/menubar/view/view_variables");
-  page_menu_item = gtk_ui_manager_get_widget (dw->ui_manager, path);
+
+  GtkWidget *page_menu_item = gtk_ui_manager_get_widget (dw->ui_manager, path);
   gtk_check_menu_item_set_active (GTK_CHECK_MENU_ITEM (page_menu_item), TRUE);
 }
 
