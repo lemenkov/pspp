@@ -156,15 +156,18 @@ transformation_change_callback (bool transformations_pending,
 {
   PsppireDataWindow  *de = PSPPIRE_DATA_WINDOW (data);
 
-  GtkUIManager *uim = GTK_UI_MANAGER (get_object_assert (de->builder, "uimanager1", GTK_TYPE_UI_MANAGER));
-
-  GtkWidget *menuitem =
-    gtk_ui_manager_get_widget (uim,"/ui/menubar/transform/transform_run-pending");
-
   GtkWidget *status_label  =
     get_widget_assert (de->builder, "case-counter-area");
 
-  gtk_widget_set_sensitive (menuitem, transformations_pending);
+  { /* Set the sensitivity of the "Transformations Pending" menuitem */
+    GtkUIManager *uim = 
+      GTK_UI_MANAGER (get_object_assert (de->builder, "uimanager1", GTK_TYPE_UI_MANAGER));
+
+    GtkWidget *menuitem =
+      gtk_ui_manager_get_widget (uim,"/ui/menubar/transform/transform_run-pending");
+    
+    gtk_widget_set_sensitive (menuitem, transformations_pending);
+  }
 
 
   if ( transformations_pending)
