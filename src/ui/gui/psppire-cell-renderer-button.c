@@ -204,7 +204,7 @@ psppire_cell_renderer_button_render (GtkCellRenderer      *cell,
     state_type = GTK_STATE_PRELIGHT;
   else
     {
-      if (gtk_widget_get_state (widget) == GTK_STATE_INSENSITIVE)
+      if (gtk_widget_get_state_flags (widget) == GTK_STATE_FLAG_INSENSITIVE)
         state_type = GTK_STATE_INSENSITIVE;
       else
         state_type = GTK_STATE_NORMAL;
