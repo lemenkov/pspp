@@ -100,8 +100,9 @@ cmd_t_test (struct lexer *lexer, struct dataset *ds)
 	      value_init (&gval0, var_get_width (gvar));
 	      parse_value (lexer, &gval0, gvar);
 	      cut = true;
-	      if (lex_match (lexer, T_COMMA))
+	      if (lex_token (lexer) != T_RPAREN)
 		{
+		  lex_match (lexer, T_COMMA);
 		  value_init (&gval1, var_get_width (gvar));
 		  parse_value (lexer, &gval1, gvar);
 		  cut = false;

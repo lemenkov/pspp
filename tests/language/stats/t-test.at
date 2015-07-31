@@ -658,7 +658,7 @@ end data.
 TEMPORARY.
 SELECT IF x < 7.
 
-t-test /groups=ind(1,2) /var x.
+t-test /groups=ind(1 2) /var x.
 ])
 AT_CHECK([pspp -o temporary.csv temporary.sps])
 AT_CHECK([cat temporary.csv], [0], [expout])
