@@ -272,7 +272,7 @@ cmd_t_test (struct lexer *lexer, struct dataset *ds)
       else if (lex_match_id (lexer, "CRITERIA"))
 	{
           lex_match (lexer, T_EQUALS);
-	  if ( lex_force_match_id (lexer, "CI"))
+	  if ( lex_match_id (lexer, "CIN") || lex_force_match_id (lexer, "CI"))
 	    if ( lex_force_match (lexer, T_LPAREN))
 	      {
 		lex_force_num (lexer);
