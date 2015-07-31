@@ -1442,7 +1442,7 @@ of variable preceding @subcmd{WITH} against variable following
 @display
 T-TEST
         /MISSING=@{ANALYSIS,LISTWISE@} @{EXCLUDE,INCLUDE@}
-        /CRITERIA=CIN(@var{confidence})
+        /CRITERIA=CI(@var{confidence})
 
 
 (One Sample mode.)

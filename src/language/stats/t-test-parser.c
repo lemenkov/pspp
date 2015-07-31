@@ -1,5 +1,5 @@
 /* PSPP - a program for statistical analysis.
-   Copyright (C) 2011 Free Software Foundation, Inc.
+   Copyright (C) 2011, 2015 Free Software Foundation, Inc.
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -272,7 +272,7 @@ cmd_t_test (struct lexer *lexer, struct dataset *ds)
       else if (lex_match_id (lexer, "CRITERIA"))
 	{
           lex_match (lexer, T_EQUALS);
-	  if ( lex_force_match_id (lexer, "CIN"))
+	  if ( lex_force_match_id (lexer, "CI"))
 	    if ( lex_force_match (lexer, T_LPAREN))
 	      {
 		lex_force_num (lexer);

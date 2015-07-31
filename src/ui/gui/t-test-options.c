@@ -1,5 +1,5 @@
 /* PSPPIRE - a graphical user interface for PSPP.
-   Copyright (C) 2007, 2012  Free Software Foundation
+   Copyright (C) 2007, 2012, 2015  Free Software Foundation
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -139,7 +139,7 @@ tt_options_dialog_append_syntax (const struct tt_options_dialog *tto, GString *s
   else
     ds_put_cstr (&dss, "LISTWISE");
 
-  ds_put_c_format (&dss, "\n\t/CRITERIA=CIN(%g)",
+  ds_put_c_format (&dss, "\n\t/CRITERIA=CI(%g)",
 		   tto->confidence_interval/100.0);
 
   g_string_append (str, ds_cstr (&dss));

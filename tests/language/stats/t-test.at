@@ -98,7 +98,7 @@ begin data.
 end data.
 
 
-t-test /MISSING=analysis /PAIRS a c with b d (PAIRED) /CRITERIA=CIN(0.95). 
+t-test /MISSING=analysis /PAIRS a c with b d (PAIRED) /CRITERIA=CI(0.95).
 ])
 
 AT_CHECK([pspp -o missing.csv missing.sps])
@@ -190,7 +190,7 @@ WEIGHT BY w.
 T-TEST
         PAIRS =  y WITH  x (PAIRED)
         /MISSING=ANALYSIS
-        /CRITERIA=CIN(0.95).
+        /CRITERIA=CI(0.95).
 ])
 
 AT_CHECK([pspp -O format=csv t-test.sps], [0], [dnl
