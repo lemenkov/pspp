@@ -205,9 +205,10 @@ generate_syntax (PsppireDialogAction *a)
 
   g_string_append (string, "\n\t/VARIABLES=");
   psppire_var_view_append_names (PSPPIRE_VAR_VIEW (rd->indep_vars), 0, string);
-  g_string_append (string, "\n\t/DEPENDENT=\t");
+  g_string_append (string, "\n\t/DEPENDENT=");
   psppire_var_view_append_names (PSPPIRE_VAR_VIEW (rd->dep_vars), 0, string);
-
+  g_string_append (string, "\n\t/METHOD=ENTER");
+  
   selected = 0;
   for (i = 0, ok = gtk_tree_model_get_iter_first (model, &iter); ok; 
        i++, ok = gtk_tree_model_iter_next (model, &iter))

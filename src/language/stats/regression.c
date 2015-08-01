@@ -225,8 +225,7 @@ cmd_regression (struct lexer *lexer, struct dataset *ds)
 
       if (lex_match_id (lexer, "DEPENDENT"))
         {
-          if (!lex_force_match (lexer, T_EQUALS))
-            goto error;
+          lex_match (lexer, T_EQUALS);
 
 	  free (regression.dep_vars);
 	  regression.n_dep_vars = 0;
