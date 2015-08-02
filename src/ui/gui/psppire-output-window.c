@@ -28,7 +28,6 @@
 #include "libpspp/cast.h"
 #include "libpspp/message.h"
 #include "libpspp/string-map.h"
-#include "output/cairo.h"
 #include "output/chart-item.h"
 #include "output/driver-provider.h"
 #include "output/message-item.h"
