@@ -2262,8 +2262,8 @@ for variant in be le; do
   AT_DATA([sys-file.sps], [dnl
 GET FILE='sys-file.sav'.
 ])
-  AT_CHECK([pspp -O format=csv sys-file.sps], [0], [dnl
-"warning: `sys-file.sav' near offset 0xd8: Unrecognized record type 7, subtype 30.  Please send a copy of this file, and the syntax which created it to bug-gnu-pspp@gnu.org."
+  AT_CHECK_UNQUOTED([pspp -O format=csv sys-file.sps], [0], [dnl
+"warning: \`sys-file.sav' near offset 0xd8: Unrecognized record type 7, subtype 30.  For help, please send this file to ${PACKAGE_BUGREPORT} and mention that you were using ${PACKAGE_STRING}."
 ])
 done
 AT_CLEANUP

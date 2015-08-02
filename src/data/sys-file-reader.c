@@ -507,21 +507,21 @@ read_record (struct sfm_reader *r, int type,
                || subtype >= sizeof r->extensions / sizeof *r->extensions)
         {
           sys_warn (r, r->pos,
-                    _("Unrecognized record type 7, subtype %d.  Please "
-                      "send a copy of this file, and the syntax which "
-                      "created it to %s."),
-                    subtype, PACKAGE_BUGREPORT);
+                    _("Unrecognized record type 7, subtype %d.  For help, "
+                      "please send this file to %s and mention that you were "
+                      "using %s."),
+                    subtype, PACKAGE_BUGREPORT, PACKAGE_STRING);
           return skip_extension_record (r, subtype);
         }
       else if (r->extensions[subtype] != NULL)
         {
           sys_warn (r, r->pos,
                     _("Record type 7, subtype %d found here has the same "
-                      "type as the record found near offset 0x%llx.  "
-                      "Please send a copy of this file, and the syntax "
-                      "which created it to %s."),
+                      "type as the record found near offset 0x%llx.  For "
+                      "help, please send this file to %s and mention that "
+                      "you were using %s."),
                     subtype, (long long int) r->extensions[subtype]->pos,
-                    PACKAGE_BUGREPORT);
+                    PACKAGE_BUGREPORT, PACKAGE_STRING);
           return skip_extension_record (r, subtype);
         }
       else
@@ -1346,9 +1346,9 @@ read_extension_record (struct sfm_reader *r, int subtype,
       }
 
   sys_warn (r, record->pos,
-            _("Unrecognized record type 7, subtype %d.  Please send a "
-              "copy of this file, and the syntax which created it to %s."),
-            subtype, PACKAGE_BUGREPORT);
+            _("Unrecognized record type 7, subtype %d.  For help, please "
+              "send this file to %s and mention that you were using %s."),
+            subtype, PACKAGE_BUGREPORT, PACKAGE_STRING);
 
 skip:
   return skip_bytes (r, n_bytes);

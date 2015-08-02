@@ -24,16 +24,18 @@ AT_CLEANUP
 AT_SETUP([SIGSEGV yields error report])
 AT_CHECK([[echo 'host command=["kill -SEGV $PPID"].' | pspp -O format=csv]],
   [139], [], [stderr])
-AT_DATA([expout], [dnl
+
+cat > expout <<EOF
 ******************************************************
 You have discovered a bug in PSPP.  Please report this
-to bug-gnu-pspp@gnu.org.  Please include this entire
+to $PACKAGE_BUGREPORT.  Please include this entire
 message, *plus* several lines of output just above it.
 For the best chance at having the bug fixed, also
 include the syntax file that triggered it and a sample
 of any data file used for input.
 proximate cause:     Segmentation Violation
-])
+EOF
+
 AT_CHECK([sed '/proximate/q' < stderr], [0], [expout])
 AT_CLEANUP
 
