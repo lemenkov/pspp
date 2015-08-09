@@ -711,7 +711,7 @@ psppire_data_editor_init (PsppireDataEditor *de)
 
   de->cell_ref_label = gtk_label_new ("");
   gtk_label_set_width_chars (GTK_LABEL (de->cell_ref_label), 25);
-  gtk_misc_set_alignment (GTK_MISC (de->cell_ref_label), 0.0, 0.5);
+  gtk_widget_set_valign (de->cell_ref_label, GTK_ALIGN_CENTER);
 
   de->datum_entry = psppire_value_entry_new ();
   g_signal_connect (GTK_ENTRY (gtk_bin_get_child (GTK_BIN (de->datum_entry))),
