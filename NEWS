@@ -6,6 +6,8 @@ Please send PSPP bug reports to bug-gnu-pspp@gnu.org.
  
 Changes since 0.8.5:
 
+ * A Russian localisation has been contributed.
+
  * The graphical user interface uses Gtk+ version 3 instead of version 2.
    Accordingly, it has a somewhat different look and feel.
 
