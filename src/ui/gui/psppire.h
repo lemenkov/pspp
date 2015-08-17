@@ -17,9 +17,11 @@
 #ifndef PSPPIRE_H
 #define PSPPIRE_H
 
+#include <stdbool.h>
+
 struct lexer;
 
-void initialize (const char *data_file);
+bool initialize (const char *data_file, int state);
 void de_initialize (void);
 
 void psppire_quit (void);

@@ -72,55 +72,85 @@ static gchar *local_to_filename_encoding (const char *fn);
 #define N_(msgid) msgid
 
 
-void
-initialize (const char *data_file)
+bool
+initialize (const char *data_file, int state)
 {
-  i18n_init ();
-
-  preregister_widgets ();
-
-  gsl_set_error_handler_off ();
-  output_engine_push ();
-  settings_init ();
-  fh_init ();
-
-  psppire_set_lexer (NULL);
-
-  bind_textdomain_codeset (PACKAGE, "UTF-8");
-
-  create_icon_factory ();
-
-  psppire_output_window_setup ();
-
-  journal_init ();
-  textdomain (PACKAGE);
-
-  /* FIXME: This should be implemented with a GtkInterface */
-  psppire_selector_set_default_selection_func (GTK_TYPE_ENTRY, insert_source_row_into_entry);
-  psppire_selector_set_default_selection_func (PSPPIRE_VAR_VIEW_TYPE, insert_source_row_into_tree_view);
-  psppire_selector_set_default_selection_func (GTK_TYPE_TREE_VIEW, insert_source_row_into_tree_view);
-  psppire_selector_set_default_selection_func (PSPPIRE_TYPE_MEANS_LAYER, insert_source_row_into_layers);
-
-  if (data_file)
+  switch (state)
     {
-      gchar *filename = local_to_filename_encoding (data_file);
+    case 0:
+      i18n_init ();
+      break;
+    case 1:
+      preregister_widgets ();
+      break;
+    case 2:
+      gsl_set_error_handler_off ();
+      break;
+    case 3:
+      output_engine_push ();
+      break;
+    case 4:
+      settings_init ();
+      break;
+    case 5:
+      fh_init ();
+      break;
+    case 6:
+      psppire_set_lexer (NULL);
+      break;
+    case 7:
+      bind_textdomain_codeset (PACKAGE, "UTF-8");
+      break;
+    case 8:
+      create_icon_factory ();
+      break;
+    case 9:
+      psppire_output_window_setup ();
+      break;
+    case 10:
+      journal_init ();
+      break;
+    case 11:
+      textdomain (PACKAGE);
+      break;
+    case 12:
+      /* FIXME: This should be implemented with a GtkInterface */
+      psppire_selector_set_default_selection_func (GTK_TYPE_ENTRY, insert_source_row_into_entry);
+      psppire_selector_set_default_selection_func (PSPPIRE_VAR_VIEW_TYPE, insert_source_row_into_tree_view);
+      psppire_selector_set_default_selection_func (GTK_TYPE_TREE_VIEW, insert_source_row_into_tree_view);
+      psppire_selector_set_default_selection_func (PSPPIRE_TYPE_MEANS_LAYER, insert_source_row_into_layers);
+      break;
+    case 13:
+      {
+      if (data_file)
+	{
+	  gchar *filename = local_to_filename_encoding (data_file);
 
-      int retval = any_reader_detect (filename, NULL);
+	  int retval = any_reader_detect (filename, NULL);
 
-      /* Check to see if the file is a .sav or a .por file.  If not
-         assume that it is a syntax file */
-      if (retval == 1)
-	open_data_window (NULL, filename, NULL, NULL);
-      else if (retval == 0)
-        {
-          create_data_window ();
-          open_syntax_window (filename, NULL);
-        }
-
-      g_free (filename);
+	  /* Check to see if the file is a .sav or a .por file.  If not
+	     assume that it is a syntax file */
+	  if (retval == 1)
+	    open_data_window (NULL, filename, NULL, NULL);
+	  else if (retval == 0)
+	    {
+	      create_data_window ();
+	      open_syntax_window (filename, NULL);
+	    }
+	  g_free (filename);
+	}
+      else
+	{
+	  create_data_window ();
+	}
+      return TRUE;
+      }
+      break;
+    default:
+      return TRUE;
+      break;
     }
-  else
-    create_data_window ();
+  return FALSE;
 }
 
 

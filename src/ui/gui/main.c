@@ -1,5 +1,5 @@
 /* PSPPIRE - a graphical user interface for PSPP.
-   Copyright (C) 2004, 2005, 2006, 2010, 2011, 2012, 2013, 2014  Free Software Foundation
+   Copyright (C) 2004, 2005, 2006, 2010, 2011, 2012, 2013, 2014, 2015  Free Software Foundation
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -41,6 +41,12 @@
 #include "gettext.h"
 #define _(msgid) gettext (msgid)
 #define N_(msgid) msgid
+
+
+GdkWindow *create_splash_window (GMainContext *context);
+gboolean destroy_splash_window (gpointer ud);
+
+
 
 
 /* Arguments to be interpreted before the X server gets initialised */
@@ -153,40 +159,6 @@ startup_option_callback (int id, void *show_splash_)
       NOT_REACHED ();
     }
 }
-
-static GtkWidget *
-create_splash_window (void)
-{
-  GtkWidget *splash ;
-  GtkWidget *image;
-
-  gtk_window_set_auto_startup_notification (FALSE);
-
-  splash = gtk_window_new (GTK_WINDOW_POPUP);
-
-  gtk_window_set_position (GTK_WINDOW (splash),
-			   GTK_WIN_POS_CENTER_ALWAYS);
-
-  gtk_window_set_type_hint (GTK_WINDOW (splash),
-			    GDK_WINDOW_TYPE_HINT_SPLASHSCREEN);
-
-  image = gtk_image_new_from_file (relocate (PKGDATADIR "/splash.png"));
-
-  gtk_container_add (GTK_CONTAINER (splash), image);
-
-  gtk_widget_show (image);
-
-  return splash;
-}
-
-static gboolean
-hide_splash_window (gpointer data)
-{
-  GtkWidget *splash = data;
-  gtk_widget_destroy (splash);
-  gtk_window_set_auto_startup_notification (TRUE);
-  return FALSE;
-}
 
 static gboolean
 print_startup_time (gpointer data)
@@ -198,47 +170,6 @@ print_startup_time (gpointer data)
 
   return FALSE;
 }
-
-/*
-static gboolean
-quit_one_loop (gpointer data)
-{
-  gtk_main_quit ();
-  return FALSE;
-}
-*/
-
-struct initialisation_parameters
-{
-  const char *data_file;
-  GtkWidget *splash_window;
-};
-
-
-static gboolean
-run_inner_loop (gpointer data)
-{
-  struct initialisation_parameters *ip = data;
-  initialize (ip->data_file);
-
-  g_timeout_add (500, hide_splash_window, ip->splash_window);
-
-  if (measure_startup)
-    {
-      GSource *source = g_idle_source_new ();
-      g_source_set_priority (source, G_PRIORITY_LOW);
-      g_source_set_callback (source, print_startup_time, NULL, NULL);
-      g_source_attach (source, NULL);
-      g_source_unref (source);
-    }
-
-  gtk_main ();
-
-  de_initialize ();
-
-  return FALSE;
-}
-
 
 static GMemVTable vtable =
   {
@@ -278,10 +209,57 @@ remove_psn (int argc, char **argv)
   return argc;
 }
 
+
+
+struct init_source
+{
+  GSource parent;
+  int state;
+  GMainLoop *loop;
+  gchar *file;
+};
+
+
+gboolean
+init_prepare (GSource *source, gint *timeout_)
+{
+  return TRUE;
+}
+
+
+
+gboolean
+init_check (GSource *source)
+{
+  return TRUE;
+}
+
+
+gboolean
+init_dispatch (GSource *ss,
+	       GSourceFunc callback,
+	       gpointer user_data)
+{
+  struct init_source *is = (struct init_source *)ss;
+
+  bool finished = initialize (is->file, is->state++);
+  
+  if (finished)
+    {
+      g_main_loop_quit (is->loop);
+      return FALSE;
+    }
+
+  return TRUE;
+}
+
+static GSourceFuncs init_funcs = {init_prepare, init_check, init_dispatch, NULL};
+
+
+
 int
 main (int argc, char *argv[])
 {
-  struct initialisation_parameters init_p;
   gboolean show_splash = TRUE;
   struct argv_parser *parser;
   const gchar *vers;
@@ -333,17 +311,161 @@ main (int argc, char *argv[])
      However there shouldn't be any here because of the gtk_parse_args call above. */
   gdk_init (&argc, &argv);
 
-  init_p.splash_window = create_splash_window ();
-  init_p.data_file = optind < argc ? argv[optind] : NULL;
+  GMainContext *context = g_main_context_new ();
+  
+  GdkWindow *win = show_splash ? create_splash_window (context) : NULL;
 
-  //  if ( show_splash )
-  //    gtk_widget_show (init_p.splash_window);
+  GMainLoop *loop = g_main_loop_new (context, FALSE);
 
-  //  g_idle_add (quit_one_loop, 0);
+  GSource *ss = g_source_new (&init_funcs,
+			      sizeof (struct init_source));
+  
+  ((struct init_source *) ss)->state = 0;
+  
+  g_source_set_priority (ss, G_PRIORITY_DEFAULT);
+    
+  g_source_attach (ss, context);
 
-  //  gtk_quit_add (0, run_inner_loop, &init_p);
-  run_inner_loop (&init_p);
-  //  gtk_main ();
+  ((struct init_source *) ss)->loop = loop;
+  ((struct init_source *) ss)->file = optind < argc ? argv[optind] : NULL;
+  
+  g_source_unref (ss);
 
+  g_main_loop_run (loop);
+
+  g_main_loop_unref (loop);
+  g_main_context_unref (context);
+
+  if (win) 
+    g_timeout_add (500, destroy_splash_window, win);
+  
+  gtk_main ();
+
+  /* Not much point in this except to check for memory leaks */
+  de_initialize ();
+  
   return 0;
 }
+
+
+
+
+
+struct splash_source
+{
+  GSource parent;
+  cairo_surface_t *sfc;
+};
+
+void
+fill_splash_window (GdkWindow *win, cairo_surface_t *sfce)
+{
+  cairo_t *cr = gdk_cairo_create (win);
+  
+  cairo_set_source_surface (cr, sfce, 0, 0);
+  
+  cairo_paint (cr);
+  cairo_destroy (cr);
+}
+
+gboolean
+splash_prepare  (GSource    *source,
+	    gint       *timeout_)
+{
+  return TRUE;
+}
+
+gboolean
+splash_check   (GSource    *source)
+{
+  return TRUE;
+}
+
+gboolean
+splash_dispatch (GSource *ss,
+	    GSourceFunc callback,
+	    gpointer    user_data)
+{
+  struct splash_source *source = (struct splash_source *) ss;
+
+  GdkEvent *e = gdk_event_get ();
+  if (!e)
+    return FALSE;
+
+  GdkWindow *w = ((GdkEventAny *)e)->window;
+
+  if (!w)
+    {
+      gdk_event_free (e);
+      return TRUE;
+    }
+
+  fill_splash_window (w, source->sfc);
+
+  gdk_window_show (w);
+  gdk_event_free (e);
+
+  return TRUE;
+}
+
+
+gboolean
+destroy_splash_window (gpointer ud)
+{
+  GdkWindow *win = GDK_WINDOW (ud);
+  gdk_window_withdraw (win);
+  gdk_display_flush (gdk_window_get_display (win));
+  gdk_window_destroy (win);
+  
+  return FALSE;
+}
+
+GSourceFuncs splash_funcs = {splash_prepare, splash_check, splash_dispatch, NULL};
+
+
+GdkWindow *
+create_splash_window (GMainContext *context)
+{
+  const gchar *filename = PKGDATADIR "/splash.png";
+
+  const char *relocated_filename = relocate (filename);
+  cairo_surface_t *the_surface = 
+    cairo_image_surface_create_from_png  (relocated_filename);
+
+  if (filename != relocated_filename)
+    free (CONST_CAST (char *, relocated_filename));
+
+  
+  g_return_val_if_fail (the_surface, NULL);
+    
+  int attr_mask = GDK_WA_TYPE_HINT;
+  GdkWindowAttr attr;
+    
+  attr.width =  cairo_image_surface_get_width (the_surface);
+  attr.height = cairo_image_surface_get_height (the_surface);
+  attr.wclass = GDK_INPUT_OUTPUT; 
+  attr.window_type = GDK_WINDOW_TOPLEVEL;
+    
+  attr.type_hint = GDK_WINDOW_TYPE_HINT_SPLASHSCREEN;
+    
+  GdkWindow *win = gdk_window_new (NULL, &attr, attr_mask);
+    
+  gdk_window_set_events (win, GDK_EXPOSURE_MASK);
+  gdk_window_set_keep_above (win, TRUE);
+  gdk_window_show (win);
+  
+
+  GSource *ss = g_source_new (&splash_funcs,
+			      sizeof (struct splash_source));
+  
+  ((struct splash_source *) ss)->sfc = the_surface;
+  g_source_set_priority (ss, G_PRIORITY_HIGH);
+    
+  g_source_attach (ss, context);
+
+  g_source_unref (ss);
+    
+  return win;
+}
+
+
