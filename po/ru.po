@@ -9,9 +9,9 @@ msgstr ""
 "Project-Id-Version: pspp 0.8.5\n"
 "Report-Msgid-Bugs-To: pspp-dev@gnu.org\n"
 "POT-Creation-Date: 2015-06-19 20:56-0700\n"
-"PO-Revision-Date: 2015-08-11 11:32+0300\n"
+"PO-Revision-Date: 2015-08-21 14:48+0300\n"
 "Last-Translator: Pavel Maryanov <acid@jack.kiev.ua>\n"
-"Language-Team: Russian <gnu@mx.ru>\n"
+"Language-Team: Russian <gnu@d07.ru>\n"
 "Language: ru\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -21,7 +21,7 @@ msgstr ""
 
 #: src/ui/gui/helper.c:204
 msgid "Sorry. The help system hasn't yet been implemented."
-msgstr "К сожалениею справка ещё не реализована."
+msgstr "К сожалению справка ещё не реализована."
 
 #: src/ui/gui/psppire-buttonbox.c:342
 msgid "Continue"
@@ -81,7 +81,7 @@ msgstr "Здесь нельзя использовать встроенные ф
 #: src/data/any-reader.c:201
 #, c-format
 msgid "Cannot read from dataset %s because no dictionary or data has been written to it yet."
-msgstr "Чтение набора данных %s невозможно, так как набор данных еще не записан в словарь или базу."
+msgstr "Чтение базы данных %s невозможно, так как нет словаря или данные еще не записаны в базу."
 
 #: src/data/any-reader.c:256 src/language/data-io/dataset.c:257
 msgid "Dataset"
@@ -98,16 +98,13 @@ msgid "Day %d is not in acceptable range of 0 to 31."
 msgstr "День %d не входит в приемлемый диапазон от 0 до 31."
 
 #: src/data/calendar.c:119
-#, fuzzy, c-format
-#| msgid "Date %04d-%d-%d is before the earliest date of acceptable 1582-10-15."
+#, c-format
 msgid "Date %04d-%d-%d is before the earliest acceptable date of 1582-10-15."
-msgstr "Дата %04d-%d-%d предшествует самой старой из приемлемых дат, 1582-10-15."
+msgstr "Дата% 04d-% d-% d находится перед первой приемлемой датой 1582-10-15."
 
 #: src/data/casereader-filter.c:221
-#, fuzzy
-#| msgid "At least one case in the data read had a weight value that was user-missing, system-missing, zero, or negative. These case(s) were ignored."
 msgid "At least one case in the data read had a weight value that was user-missing, system-missing, zero, or negative.  These case(s) were ignored."
-msgstr "Значение веса по крайней мере одного параметра в полученных данных пропущено пользователем, пропущено системой, является нулем или отрицательным значением. Такие параметры будут проигнорированы."
+msgstr "По крайней мере, один случай в чтении данных имел значение веса, которое было пропущено пользователем, пропущено системой, является нулевым или отрицательным. Такое(ие) наблюдение будут проигнорировано(ы)."
 
 #. TRANSLATORS: this fragment will be interpolated into messages in fh_lock()
 #. that identify types of files.
@@ -123,7 +120,7 @@ msgstr "Ошибка при попытке открыть `%s' для запис
 #: src/data/csv-file-writer.c:466
 #, c-format
 msgid "An I/O error occurred writing CSV file `%s'."
-msgstr "При попытке записать CSV файл «%s» произошла ошибка."
+msgstr "При попытке записать CSV файл `%s' произошла ошибка."
 
 #: src/data/data-in.c:171
 #, c-format
@@ -179,25 +176,22 @@ msgid "Syntax error in date field."
 msgstr "Синтаксическая ошибка в поле данных."
 
 #: src/data/data-in.c:779
-#, fuzzy, c-format
-#| msgid "Day\" (%ld) must be between 1 and 31."
+#, c-format
 msgid "Day (%ld) must be between 1 and 31."
-msgstr "День\" (%ld) должен быть целым числом от 1 до 31."
+msgstr "День (%ld) должен находиться в диапазоне от 1 до 31."
 
 #: src/data/data-in.c:824
 msgid "Delimiter expected between fields in date."
 msgstr "Между полями в дате необходимо указать разделитель."
 
 #: src/data/data-in.c:898
-#, fuzzy
-#| msgid "Unrecognized month format. Months may be specified as Arabic or Roman numerals or as at least 3 letters of their English names."
 msgid "Unrecognized month format.  Months may be specified as Arabic or Roman numerals or as at least 3 letters of their English names."
-msgstr "Неизвестный формат записи месяца. Месяц следует указывать или в формате арабских или римских цифр или с помощью первых трех букв английского названия месяца."
+msgstr "Неизвестный Формат месяца. Месяцы могут быть указаны в формате арабских или римских цифр или с помощью минимум 3-х букв их английских названий. "
 
 #: src/data/data-in.c:925
 #, c-format
 msgid "Year (%ld) must be between 1582 and 19999."
-msgstr "Год (%ld) должно быть целым числом от 1582 до 19999."
+msgstr "Год (%ld) должен быть целым числом от 1582 до 19999."
 
 #: src/data/data-in.c:936
 #, c-format
@@ -233,10 +227,8 @@ msgid "Minute (%ld) must be between 0 and 59."
 msgstr "Минуты (%ld) должны быть целым числом от 0 до 59."
 
 #: src/data/data-in.c:1067
-#, fuzzy
-#| msgid "Unrecognized weekday name. At least the first two letters of an English weekday name must be specified."
 msgid "Unrecognized weekday name.  At least the first two letters of an English weekday name must be specified."
-msgstr "Нераспознанное название дня недели. Следует указать по крайней мере две первых буквы названия дня недели на английском."
+msgstr "Нераспознанное название дня недели. Следует указать по крайней мере первые две буквы английского названия дня недели."
 
 #: src/data/data-in.c:1197
 #, c-format
@@ -261,7 +253,7 @@ msgstr "база данных"
 
 #: src/data/dict-class.c:52
 msgid "ordinary"
-msgstr "порядковый"
+msgstr "порядковая"
 
 #: src/data/dict-class.c:54
 msgid "system"
@@ -269,13 +261,11 @@ msgstr "системный"
 
 #: src/data/dict-class.c:56
 msgid "scratch"
-msgstr "ноль"
+msgstr "нулевой"
 
 #: src/data/dictionary.c:1010
-#, fuzzy
-#| msgid "At least one case in the data file had a weight value that was user-missing, system-missing, zero or negative.  These case(s) were ignored."
 msgid "At least one case in the data file had a weight value that was user-missing, system-missing, zero, or negative.  These case(s) were ignored."
-msgstr "Значение веса по крайней мере одного из параметров в файле данных пропущенно пользователем, пропущено системой, является нулем или отрицательным значением. Эти значения будут проигнорированы."
+msgstr "По крайней мере, один случай в чтении данных имел значение веса, которое было пропущено пользователем, пропущено системой, является нулевым или отрицательным. Такое(ие) наблюдение будут проигнорировано(ы)."
 
 #: src/data/dictionary.c:1339
 #, c-format
@@ -287,28 +277,24 @@ msgid "active dataset"
 msgstr "активная база данных"
 
 #: src/data/file-handle-def.c:482
-#, fuzzy, c-format
-#| msgid "can't read from %s as a %s because it is already being read as a %s."
+#, c-format
 msgid "Can't read from %s as a %s because it is already being read as a %s."
-msgstr "Не удалось прочитать %s как %s, поскольку это значение уже было прочитано как %s."
+msgstr "Не удалось прочитать %s как %s, поскольку оно уже было прочитано как %s. "
 
 #: src/data/file-handle-def.c:486
-#, fuzzy, c-format
-#| msgid "can't write to %s as a %s because it is already being written as a %s."
+#, c-format
 msgid "Can't write to %s as a %s because it is already being written as a %s."
-msgstr "Не удалось записать %s как %s, поскольку это значение уже было записано как %s."
+msgstr "Не удалось записать %s как %s, поскольку оно уже было записано как %s."
 
 #: src/data/file-handle-def.c:493
-#, fuzzy, c-format
-#| msgid "can't re-open %s as a %s."
+#, c-format
 msgid "Can't re-open %s as a %s."
-msgstr "Не удалось открыть %s как %s."
+msgstr "Не удалось открыть `%s' для чтения в формате файла данных: %s."
 
 #: src/data/file-name.c:173
-#, fuzzy, c-format
-#| msgid "Not pipe opening file `%s' because %s option set."
+#, c-format
 msgid "Not opening pipe file `%s' because %s option set."
-msgstr "Файл канала `%s' не открыто, поскольку установлен параметр %s."
+msgstr "Не открыт pipe файл `%s'  так как установлен параметр %s."
 
 #: src/data/format.c:329
 msgid "Input format"
@@ -425,16 +411,14 @@ msgid "Support for %s files was not compiled into this installation of PSPP"
 msgstr "Поддержка файлов %s не используется в этом варианте PSPP"
 
 #: src/data/gnumeric-reader.c:490 src/data/ods-reader.c:517
-#, fuzzy, c-format
-#| msgid "Cannot convert the value in the cell spreadsheet %s to format (%s): %s"
+#, c-format
 msgid "Cannot convert the value in the spreadsheet cell %s to format (%s): %s"
-msgstr "Не удалось преобразовать значение в ячейке электронной таблицы %s до формата (%s): %s"
+msgstr "Не удается преобразовать значение в ячейке электронной таблицы %s в формат (%s): %s"
 
 #: src/data/gnumeric-reader.c:513 src/data/ods-reader.c:572
-#, fuzzy, c-format
-#| msgid "There was a problem whilst reading the %s file `%s' (near line %d: `%s'"
+#, c-format
 msgid "There was a problem whilst reading the %s file `%s' (near line %d): `%s'"
-msgstr "Во время чтения %s файла `%s' возникли проблемы (в строке %d): `%s'"
+msgstr "Возникла проблема при чтении %s файла `%s' (в строке %d): `%s'"
 
 #: src/data/gnumeric-reader.c:608
 #, c-format
@@ -517,16 +501,14 @@ msgid "Removing %s: %s."
 msgstr "Изымаем %s: %s."
 
 #: src/data/mrset.c:83
-#, fuzzy, c-format
-#| msgid "%s is not a valid name for a multiple response set. Multiple response set names must begin with `$'."
+#, c-format
 msgid "%s is not a valid name for a multiple response set.  Multiple response set names must begin with `$'."
-msgstr "%s не является корректным названием для набора множественных ответов. Названия наборов множеств ответов должны начинаться с `$'."
+msgstr "%s не является допустимым именем для набора множественных ответов. Имя набора множественных ответов должно начинаться с `$'. "
 
 #: src/data/ods-reader.c:624
-#, fuzzy, c-format
-#| msgid "Cannot open %s as a Presentation file: %s"
+#, c-format
 msgid "Cannot open %s as a OpenDocument file: %s"
-msgstr "Не удалось открыть %s как файл OpenDocument: %s"
+msgstr "Не удалось открыть %s как OpenDocument файл: %s"
 
 #. TRANSLATORS: this fragment will be interpolated into
 #. messages in fh_lock() that identify types of files.
@@ -591,10 +573,9 @@ msgid "File Label"
 msgstr "Метка файла"
 
 #: src/data/pc+-file-reader.c:427
-#, fuzzy, c-format
-#| msgid "Using default encoding %s to read this SPSS/PC+ system file. For best results, specify an encoding explicitly. Use SYSFILE INFO with ENCODING=\"DETECT\" to analyze the possible encodings."
+#, c-format
 msgid "Using default encoding %s to read this SPSS/PC+ system file.  For best results, specify an encoding explicitly.  Use SYSFILE INFO with ENCODING=\"DETECT\" to analyze the possible encodings."
-msgstr "Для чтения этого системного файла SPSS/PC+ используется типовая кодировка %s. Чтобы улучшить результаты, укажите кодировку точно. Проанализировать возможные результаты и применение различных кодировок можно с помощью команды SYSFILE INFO с ENCODING=\"DETECT\"."
+msgstr "Используется кодировка по умолчанию %s для чтения этого SPSS/PC+ системного файла. Чтобы улучшить результаты, укажите кодировку точно. Используйте SYSFILE INFO с ENCODING=\"DETECT\" для анализа возможных кодировок."
 
 #: src/data/pc+-file-reader.c:483 src/data/sys-file-reader.c:902
 #, c-format
@@ -616,16 +597,14 @@ msgid "Record 0 specifies unexpected system missing value %g (%a)."
 msgstr "Запись 0 определяет неожиданно пропущенное системой значение %g (%a)."
 
 #: src/data/pc+-file-reader.c:575
-#, fuzzy, c-format
-#| msgid "Record 0 reserved fields have unexpected values(%u,%u,%u,%u,%u,%u)."
+#, c-format
 msgid "Record 0 reserved fields have unexpected values (%u,%u,%u,%u,%u,%u)."
-msgstr "Резервные поля записи 0 содержат неожиданные значения(%u,%u,%u,%u,%u,%u)."
+msgstr "Запись зарезервированных полей 0 имеет неожиданные значения (%u,%u,%u,%u,%u,%u). "
 
 #: src/data/pc+-file-reader.c:579
-#, fuzzy, c-format
-#| msgid "Record case 0 counts differ (%u versus %u)."
+#, c-format
 msgid "Record 0 case counts differ (%u versus %u)."
-msgstr "Наблюдения записи 0 имеет другую размерность (%u вместо %u)."
+msgstr "Запись наблюдения 0 имеет другую размерность (%u вместо %u)."
 
 #: src/data/pc+-file-reader.c:583
 #, c-format
@@ -638,10 +617,9 @@ msgid "Record 0 claims %u cases with %u values per case (requiring at least %zu 
 msgstr "Для записи 0 определено %u наблюдений с %u значениями наблюдения (нужно по крайней мере %zu байт), но запись данных состоит только из %u байт."
 
 #: src/data/pc+-file-reader.c:616
-#, fuzzy, c-format
-#| msgid "Value labels claimed to end at offset %u in labels record but record labels is only %u bytes."
+#, c-format
 msgid "Value labels claimed to end at offset %u in labels record but labels record is only %u bytes."
-msgstr "Метки значений должны завершаться с отступлением %u в записи меток, но запись меток состоит только из %u байт."
+msgstr "Метки значений должны завершаться смещением %u в записи меток, но запись меток состоит только из %u байт."
 
 #: src/data/pc+-file-reader.c:627
 #, c-format
@@ -649,10 +627,9 @@ msgid "Value labels claimed to be at offset %u with length %u but file size is o
 msgstr "Метки значений должны начинаться с отступом %u и иметь длину %u, но файл имеет размер всего в %u байт."
 
 #: src/data/pc+-file-reader.c:653
-#, fuzzy, c-format
-#| msgid "Value labels end with partial label (%u bytes left in record label length %<PRIu8>)."
+#, c-format
 msgid "Value labels end with partial label (%u bytes left in record, label length %<PRIu8>)."
-msgstr "Метки значений завершаются частичной меткой (в записи остается %u байт, длина метки — %<PRIu8>)."
+msgstr "Метки значений завершаются частичной меткой (в записи остается %u байт, длина метки %<PRIu8>)."
 
 #: src/data/pc+-file-reader.c:666
 #, c-format
@@ -660,16 +637,14 @@ msgid "%u leftover bytes following value labels."
 msgstr "%u остаточных байт следуют за метками значений."
 
 #: src/data/pc+-file-reader.c:682
-#, fuzzy, c-format
-#| msgid "Variable label claimed to start at offset %u in labels record but record labels is only %u bytes."
+#, c-format
 msgid "Variable label claimed to start at offset %u in labels record but labels record is only %u bytes."
-msgstr "Метка переменной должна начинаться с отступом %u в записи меток, но запись меток состоит только из %u байт."
+msgstr "Переменная метка должна начинаться отступом %u в записи меток, но запись метки состоит только из %u байт."
 
 #: src/data/pc+-file-reader.c:694
-#, fuzzy, c-format
-#| msgid "Variable label with length %u starting at offset %u in record labels overruns end of %u-byte record labels."
+#, c-format
 msgid "Variable label with length %u starting at offset %u in labels record overruns end of %u-byte labels record."
-msgstr "Метка переменной с длиной %u начиная с отступления %u в записи меток перекрывает конец %u-байтовой записи меток."
+msgstr "Метки переменной длиной %u начиная с отступа %u в записи меток перекрывает конец %u - байтовой записи меток."
 
 #: src/data/pc+-file-reader.c:716
 #, c-format
@@ -820,10 +795,9 @@ msgid "Bad time string length %zu."
 msgstr "Ошибочная длина строки времени, %zu."
 
 #: src/data/por-file-reader.c:641
-#, fuzzy, c-format
-#| msgid "%s: Bad format specifier byte (%d). Variable will be assigned a default format."
+#, c-format
 msgid "%s: Bad format specifier byte (%d).  Variable will be assigned a default format."
-msgstr "%s: ошибочный байт спецификаторы формата (%d). Для переменной будет определен типовой формат."
+msgstr "%s: Ошибочный спецификатор формата байт (%d). Переменной будет присвоено значение формата по умолчанию."
 
 #: src/data/por-file-reader.c:662
 #, c-format
@@ -893,10 +867,9 @@ msgid "SPSS Portable File"
 msgstr "Портативный файл SPSS"
 
 #: src/data/por-file-writer.c:140
-#, fuzzy, c-format
-#| msgid "Invalid decimal digits count %d. Treating as %d."
+#, c-format
 msgid "Invalid decimal digits count %d.  Treating as %d."
-msgstr "Некорректное число десятичных знаков %d. Будет использовано количество %d."
+msgstr "Некорректное число десятичных знаков %d. Будет исправлено на %d."
 
 #: src/data/por-file-writer.c:160
 #, c-format
@@ -922,10 +895,9 @@ msgid "Error opening psql source: %s."
 msgstr "Ошибка при попытке открыть источник psql: %s."
 
 #: src/data/psql-reader.c:263
-#, fuzzy, c-format
-#| msgid "Postgres server version is %s. Reading from versions earlier than 8.0 is not supported."
+#, c-format
 msgid "Postgres server is version %s. Reading from versions earlier than 8.0 is not supported."
-msgstr "Версия сервера Postgres — %s. Поддержка чтения данных серверов с версией, предшествующей 8.0, не предусмотрена."
+msgstr "Postgres сервер версии %s. Чтение версий ранее  8.0 не поддерживается."
 
 #: src/data/psql-reader.c:283
 msgid "Connection is unencrypted, but unencrypted connections have not been permitted."
@@ -938,10 +910,9 @@ msgid "Error from psql source: %s."
 msgstr "Ошибка источника psql: %s."
 
 #: src/data/psql-reader.c:449
-#, fuzzy, c-format
-#| msgid "Unsupported OID %d. SYSMIS values will be inserted."
+#, c-format
 msgid "Unsupported OID %d.  SYSMIS values will be inserted."
-msgstr "Неподдерживаемые элементы OID %d. Следует вставить значение SYSMIS."
+msgstr "Неподдерживаемые элементы OID %d. Будут вставлены значения SYSMIS."
 
 #: src/data/settings.c:391
 msgid "MXWARNS set to zero.  No further warnings will be given even when potentially problematic situations are encountered."
@@ -982,15 +953,14 @@ msgid "Duplicate type 6 (document) record."
 msgstr "Дублирование записи типа 6 (документа)."
 
 #: src/data/sys-file-reader.c:510 src/data/sys-file-reader.c:1352
-#, fuzzy, c-format
-#| msgid "Unrecognized record type 7, subtype %d. Please send a copy of this file, and the syntax which created it to %s."
+#, c-format
 msgid "Unrecognized record type 7, subtype %d.  Please send a copy of this file, and the syntax which created it to %s."
-msgstr "Нераспознанный тип записи 7, подтип %d. Пожалуйста, пришлите копию этого файла и синтаксические конструкции, с помощью которых он был создан, по адресу %s."
+msgstr "Нераспознанный тип записи 7, подтип %d. Пожалуйста, отправьте копию этого файла, и синтаксис его создания по адресу %s."
 
 #: src/data/sys-file-reader.c:519
 #, c-format
 msgid "Record type 7, subtype %d found here has the same type as the record found near offset 0x%llx.  Please send a copy of this file, and the syntax which created it to %s."
-msgstr "Запись тип 7, подтип %d, обнаруженая здесь принадлежит к тому же типу, что и записи по адресу 0x%llx. Пожалуйста, пришлите копию этого файла и синтаксические конструкции, с помощью которых он был создан, по адресу %s."
+msgstr "Запись тип 7, подтип %d, обнаруженная здесь принадлежит к тому же типу, что и записи по адресу 0x%llx. Пожалуйста, пришлите копию этого файла и синтаксические конструкции, с помощью которых он был создан, по адресу %s."
 
 #: src/data/sys-file-reader.c:531
 #, c-format
@@ -1027,10 +997,9 @@ msgid "MRSET %zu Counted Value"
 msgstr "Расчет значения MRSET %zu"
 
 #: src/data/sys-file-reader.c:758
-#, fuzzy, c-format
-#| msgid "This file system does not indicate its own character encoding. Using default encoding %s.  For best results, specify an encoding explicitly. Use SYSFILE INFO with ENCODING=\"DETECT\" to analyze the possible encodings."
+#, c-format
 msgid "This system file does not indicate its own character encoding.  Using default encoding %s.  For best results, specify an encoding explicitly.  Use SYSFILE INFO with ENCODING=\"DETECT\" to analyze the possible encodings."
-msgstr "В системном файле не указаны данные о кодировке. Будет использована типовая кодировка %s. Чтобы улучшить результаты, укажите точную кодировку. Проанализировать возможность применения различных кодировок можно с помощью команды SYSFILE INFO с ENCODING=\"DETECT\"."
+msgstr "В данном системном файле не указана кодировка. Используется кодировка по умолчанию %s. Чтобы улучшить результаты, укажите точную кодировку. Используйте SYSFILE INFO с ENCODING=\"DETECT\" для анализа возможных кодировок."
 
 #: src/data/sys-file-reader.c:812
 #, c-format
@@ -1043,32 +1012,24 @@ msgid "File header claims %d variable positions but %zu were read from file."
 msgstr "В заголовке файла объявлено о %d позиций переменных, но из файла было прочитано только %zu."
 
 #: src/data/sys-file-reader.c:969 src/data/sys-file-reader.c:983
-#, fuzzy
-#| msgid "This is not an SPSS/PC+ system file."
 msgid "This is not an SPSS system file."
-msgstr "Это не системный файл SPSS/PC+."
+msgstr "Это не системный файл SPSS."
 
 #: src/data/sys-file-reader.c:1038
-#, fuzzy
-#| msgid "Compression bias is not the usual value of 100 or system file uses unrecognized floating-point format."
 msgid "Compression bias is not the usual value of 100, or system file uses unrecognized floating-point format."
-msgstr "Уровень сжатия не является обычным значением - 100 или в системном файле содержатся данные в неизвестном формате значений с плавающей запятой."
+msgstr "Уровень сжатия не является обычным значением 100, или в системном файле содержатся данные в неизвестном формате с плавающей точкой."
 
 #: src/data/sys-file-reader.c:1113
 msgid "Variable label indicator field is not 0 or 1."
 msgstr "Поле индикатора метки переменной не содержит 0 или 1."
 
 #: src/data/sys-file-reader.c:1126
-#, fuzzy
-#| msgid "Numeric missing value field indicator is not -3, -2, 0, 1, 2, or 3."
 msgid "Numeric missing value indicator field is not -3, -2, 0, 1, 2, or 3."
-msgstr "В числовом значении отсутствует индикатор поля не равный -3, -2, 0, 1, 2 или 3."
+msgstr "В числовом значении отсутствует индикатор поля не равный -3, -2, 0, 1, 2, или 3."
 
 #: src/data/sys-file-reader.c:1136
-#, fuzzy
-#| msgid "missing String value field indicator is not 0, 1, 2, or 3."
 msgid "String missing value indicator field is not 0, 1, 2, or 3."
-msgstr "в Строке отсутствует значение поля с показателем не равным 0, 1, 2, или 3."
+msgstr "В строке отсутствует значение поля с показателем не равным 0, 1, 2, или 3."
 
 #: src/data/sys-file-reader.c:1163
 #, c-format
@@ -1128,16 +1089,14 @@ msgid "Integer format indicated by system file (%d) differs from expected (%d)."
 msgstr "Формат записи целого числа, определенный в системном файле (%d) отличается от ожидаемого (%d)."
 
 #: src/data/sys-file-reader.c:1657 src/data/sys-file-reader.c:1663
-#, fuzzy, c-format
-#| msgid "File specifies unexpected value %g (%a) as %s instead of %g (%a)."
+#, c-format
 msgid "File specifies unexpected value %g (%a) as %s, instead of %g (%a)."
-msgstr "Файл определяет неожиданное значение %g (%a) %s вместо %g (%a)."
+msgstr "Файл имеет неожиданные значения %g (%a) как %s, вместо %g (%a)."
 
 #: src/data/sys-file-reader.c:1672
-#, fuzzy, c-format
-#| msgid "File specifies unexpected value %g (%a) as %s instead of %g (%a) or %g (%a)."
+#, c-format
 msgid "File specifies unexpected value %g (%a) as %s, instead of %g (%a) or %g (%a)."
-msgstr "Файл определяет неожиданное значение %g (%a) %s вместо %g (%a) или %g (%a)."
+msgstr "Файл имеет неожиданное значение %g (%a) как %s, вместо %g (%a) или %g (%a)."
 
 #: src/data/sys-file-reader.c:1724 src/data/sys-file-reader.c:1743
 #, c-format
@@ -1220,22 +1179,19 @@ msgid "Very long string %s overflows dictionary."
 msgstr "Слишком длинная строка %s выходит за пределы словаря."
 
 #: src/data/sys-file-reader.c:2137
-#, fuzzy, c-format
-#| msgid "Very long string with width %ld segment has %d of width %d (expected %d)."
+#, c-format
 msgid "Very long string with width %ld has segment %d of width %d (expected %d)."
-msgstr "Очень длинная строка с шириной %ld содержит сегмент %d длины %d (должно быть %d)."
+msgstr "Очень длинная строка с шириной %ld имеет сегмент линии %d шириной не более %d (должна быть %d). "
 
 #: src/data/sys-file-reader.c:2180
-#, fuzzy, c-format
-#| msgid "Variables associated with value label are not all of identical type. Variable %s is %s, but variable %s is %s."
+#, c-format
 msgid "Variables associated with value label are not all of identical type.  Variable %s is %s, but variable %s is %s."
-msgstr "Переменные, связанные с меткой значения не принадлежат к одному и тому же типу. Переменная %s относится к типу %s, а переменная %s к %s."
+msgstr "Переменные, связанные со значением метки не все одинакового типа. Переменная %s есть %s, но переменная %s есть %s."
 
 #: src/data/sys-file-reader.c:2200
-#, fuzzy, c-format
-#| msgid "Value labels may not be added to long string variables (например %s) using records types 3 and 4."
+#, c-format
 msgid "Value labels may not be added to long string variables (e.g. %s) using records types 3 and 4."
-msgstr "Метки значений нельзя добавлять к переменным длинных строк (например %s) с помощью записей типов 3 и 4."
+msgstr "Значения меток не могут быть добавлены к длинным строковым переменным (например, %s) с помощью записей типов 3 и 4. "
 
 #: src/data/sys-file-reader.c:2221
 #, c-format
@@ -1278,10 +1234,9 @@ msgid "%zu other variables had invalid roles."
 msgstr "%zu других переменных имеет некорректную роль."
 
 #: src/data/sys-file-reader.c:2423
-#, fuzzy, c-format
-#| msgid "Extension record subtype %d unexpectedly ends."
+#, c-format
 msgid "Extension record subtype %d ends unexpectedly."
-msgstr "Неожиданное завершение записи расширения подтип %d."
+msgstr "Запись расширения подтипа %d неожиданно заканчивается."
 
 #: src/data/sys-file-reader.c:2468
 #, c-format
@@ -1389,7 +1344,7 @@ msgstr "Уровень ZLIB (%lld) отличается от уровня заг
 #: src/data/sys-file-reader.c:3516
 #, c-format
 msgid "ZLIB trailer \"zero\" field has nonzero value %lld."
-msgstr "Поле «zero» ZLIB имеет ненулевое значение %lld."
+msgstr "Поле \"zero\" ZLIB имеет ненулевое значение %lld."
 
 #: src/data/sys-file-reader.c:3522
 #, c-format
@@ -1402,40 +1357,34 @@ msgid "%lld-byte ZLIB trailer specifies %u data blocks (expected %lld)."
 msgstr "%lld-байтовый концовка ZLIB определяет %u блоков данных (должно быть %lld)."
 
 #: src/data/sys-file-reader.c:3555
-#, fuzzy, c-format
-#| msgid "ZLIB descriptor block %u reported uncompressed data offset %#llx, когда %#llx was expected."
+#, c-format
 msgid "ZLIB block descriptor %u reported uncompressed data offset %#llx, when %#llx was expected."
-msgstr "В дескрипторе блока ZLIB %u сообщается о не сжатии данных %#llx, хотя должно быть указано %#llx."
+msgstr "Сжатие ZLIB блока дескриптора %u сообщило о не сжатии данных %#llx, хотя ожидалось %#llx"
 
 #: src/data/sys-file-reader.c:3564
-#, fuzzy, c-format
-#| msgid "ZLIB descriptor block %u reported compressed data offset %#llx, когда %#llx was expected."
+#, c-format
 msgid "ZLIB block descriptor %u reported compressed data offset %#llx, when %#llx was expected."
-msgstr "В дескрипторе блока ZLIB %u сообщается о не сжатии данных %#llx, хотя должно быть указано %#llx."
+msgstr "Сжатие ZLIB блока дескриптора %u сообщило о не сжатии данных %#llx, хотя ожидалось %#llx"
 
 #: src/data/sys-file-reader.c:3574
-#, fuzzy, c-format
-#| msgid "ZLIB descriptor block %u reported block size %#x, when %#x was expected."
+#, c-format
 msgid "ZLIB block descriptor %u reported block size %#x, when %#x was expected."
-msgstr "В дескрипторе блока ZLIB %u сообщается о размере блока %#x, хотя должен быть указан размер %#x."
+msgstr "Сжатие ZLIB блока дескриптора %u сообщило о размере блока %#x, хотя ожидалось %#x"
 
 #: src/data/sys-file-reader.c:3582
-#, fuzzy, c-format
-#| msgid "ZLIB descriptor block %u reported block size %#x, when at most %#x was expected."
+#, c-format
 msgid "ZLIB block descriptor %u reported block size %#x, when at most %#x was expected."
-msgstr "В дескрипторе блока ZLIB %u сообщается о размере блока %#x, хотя должен быть указан размер, который не превышает %#x."
+msgstr "Сжатие ZLIB блока дескриптора %u сообщило о размере блока %#x, хотя ожидалось не более %#x."
 
 #: src/data/sys-file-reader.c:3594
-#, fuzzy, c-format
-#| msgid "ZLIB descriptor block %u reports compressed size %u and uncompressed size %u."
+#, c-format
 msgid "ZLIB block descriptor %u reports compressed size %u and uncompressed size %u."
-msgstr "В дескрипторе блока ZLIB %u сообщается о размере сжатых данных %u и размере несжатых данных %u."
+msgstr "Сжатие ZLIB блока дескриптора %u сообщило о сжатом размере данных %u и несжатом размере данных %u."
 
 #: src/data/sys-file-reader.c:3606
-#, fuzzy, c-format
-#| msgid "ZLIB trailer is at offset %#llx but %#llx would be expected from only on a block."
+#, c-format
 msgid "ZLIB trailer is at offset %#llx but %#llx would be expected from block descriptors."
-msgstr "Концовка ZLIB расположена на позиции %#llx, но если брать в расчет дескрипторы блоков, то должно быть %#llx."
+msgstr "Концовка ZLIB расположена на позиции %#llx но %#llx можно было бы ожидать от блока дескрипторов."
 
 #: src/data/sys-file-reader.c:3625
 #, c-format
@@ -1457,16 +1406,13 @@ msgid "Unexpected end of ZLIB compressed data."
 msgstr "Неожиданное завершение сжатия данных ZLIB."
 
 #: src/data/sys-file-reader.c:3761
-#, fuzzy
-#| msgid "SPSS/PC+ System File"
 msgid "SPSS System File"
-msgstr "Системный файл SPSS/PC+"
+msgstr "Системный файл SPSS"
 
 #: src/data/sys-file-writer.c:211
-#, fuzzy, c-format
-#| msgid "Unknown file system version %d. Treating as version %d."
+#, c-format
 msgid "Unknown system file version %d. Treating as version %d."
-msgstr "Неизвестная версия системного файла %d. Считаем версию равной %d."
+msgstr "Неизвестная версия системного файла %d. Исправлено как версия %d."
 
 #: src/data/sys-file-writer.c:1280
 #, c-format
@@ -1500,11 +1446,11 @@ msgstr "%s (%s)"
 
 #: src/data/variable.c:777
 msgid "Nominal"
-msgstr "Номинал"
+msgstr "Номинальная"
 
 #: src/data/variable.c:780
 msgid "Ordinal"
-msgstr "Порядковый"
+msgstr "Порядковая"
 
 #: src/data/variable.c:783 src/language/stats/ks-one-sample.c:327
 msgid "Scale"
@@ -1649,40 +1595,34 @@ msgid "expecting %s or %s"
 msgstr "должно быть %s или %s"
 
 #: src/language/lexer/lexer.c:303
-#, fuzzy, c-format
-#| msgid "expecting %s, %s or %s"
+#, c-format
 msgid "expecting %s, %s, or %s"
-msgstr "должно быть %s, %s или %s"
+msgstr "должно быть %s, %s, или %s"
 
 #: src/language/lexer/lexer.c:308
-#, fuzzy, c-format
-#| msgid "expecting %s, %s, %s or %s"
+#, c-format
 msgid "expecting %s, %s, %s, or %s"
-msgstr "должно быть %s, %s, %s или %s"
+msgstr "должно быть %s, %s, %s, или %s"
 
 #: src/language/lexer/lexer.c:313
-#, fuzzy, c-format
-#| msgid "expecting %s, %s, %s, %s or %s"
+#, c-format
 msgid "expecting %s, %s, %s, %s, or %s"
-msgstr "должно быть %s, %s, %s, %s или %s"
+msgstr "должно быть %s, %s, %s, %s, или %s"
 
 #: src/language/lexer/lexer.c:318
-#, fuzzy, c-format
-#| msgid "expecting %s, %s, %s, %s, %s or %s"
+#, c-format
 msgid "expecting %s, %s, %s, %s, %s, or %s"
-msgstr "должно быть %s, %s, %s, %s, %s или %s"
+msgstr "должно быть %s, %s, %s, %s, %s, или %s"
 
 #: src/language/lexer/lexer.c:324
-#, fuzzy, c-format
-#| msgid "expecting %s, %s, %s, %s, %s, %s or %s"
+#, c-format
 msgid "expecting %s, %s, %s, %s, %s, %s, or %s"
-msgstr "должно быть %s, %s, %s, %s, %s, %s или %s"
+msgstr "должно быть %s, %s, %s, %s, %s, %s, или %s"
 
 #: src/language/lexer/lexer.c:330
-#, fuzzy, c-format
-#| msgid "expecting %s, %s, %s, %s, %s, %s, %s or %s"
+#, c-format
 msgid "expecting %s, %s, %s, %s, %s, %s, %s, or %s"
-msgstr "должно быть %s, %s, %s, %s, %s, %s, %s или %s"
+msgstr "должно быть %s, %s, %s, %s, %s, %s, %s, или %s"
 
 #: src/language/lexer/lexer.c:350
 #, c-format
@@ -1818,10 +1758,9 @@ msgid "expecting format type"
 msgstr "должен быть указан формат"
 
 #: src/language/lexer/value-parser.c:66
-#, fuzzy, c-format
-#| msgid "The high end of the range (%.*g) is below the low end (%.*g). The range will be treated as if reversed."
+#, c-format
 msgid "The high end of the range (%.*g) is below the low end (%.*g).  The range will be treated as if reversed."
-msgstr "Верхняя граница диапазона (%.*g) ниже нижней границы (%.*g). Рамки будут переставлены местами."
+msgstr "Верхняя граница диапазона (%.*g) ниже нижней границы (%.*g). Границы будут переставлены местами."
 
 #: src/language/lexer/value-parser.c:74
 #, c-format
@@ -1856,10 +1795,9 @@ msgid "%s is not a numeric variable.  It will not be included in the variable li
 msgstr "%s не является числовой переменной и не будет включена в список переменных."
 
 #: src/language/lexer/variable-parser.c:186
-#, fuzzy, c-format
-#| msgid "%s is not a string variable. It will not be included in the variable list."
+#, c-format
 msgid "%s is not a string variable.  It will not be included in the variable list."
-msgstr "%s не является строчной переменной и не будет включена в список переменных"
+msgstr "%s не является строчной переменной. Она не будет включена в список переменных."
 
 #: src/language/lexer/variable-parser.c:190
 #, c-format
@@ -1867,16 +1805,14 @@ msgid "Scratch variables (such as %s) are not allowed here."
 msgstr "Использование нулевых значений переменных недопустимо (в частности %s)."
 
 #: src/language/lexer/variable-parser.c:194
-#, fuzzy, c-format
-#| msgid "%s and %s are not the same type. All variables in this variable list must be of the same type. %s will be omitted from the list."
+#, c-format
 msgid "%s and %s are not the same type.  All variables in this variable list must be of the same type.  %s will be omitted from the list."
-msgstr "%s и %s не принадлежат к одному типу. Все переменные в этом списке переменных должны принадлежать к одному типу. %s будет удалено из списка."
+msgstr "%s и %s не принадлежат к одному и тому же типу. Все переменные в этом списке переменных должны принадлежать к одному и тому же типу. %s будет удалена из списка."
 
 #: src/language/lexer/variable-parser.c:200
-#, fuzzy, c-format
-#| msgid "%s and %s are string variables with different widths. All variables in this variable list must have the same width. %s will be omitted from the list."
+#, c-format
 msgid "%s and %s are string variables with different widths.  All variables in this variable list must have the same width.  %s will be omitted from the list."
-msgstr "Строковые переменные %s и %s имеют разную длину. Длина всех переменных в списке переменных должна быть одинаковой. %s будет удалена из списка."
+msgstr "Строковые переменные %s и %s имеют разную длину. Все переменные в списке переменных должны иметь одинаковую длину. %s будет удалена из списка."
 
 #: src/language/lexer/variable-parser.c:205
 #: src/language/lexer/variable-parser.c:407
@@ -1890,10 +1826,9 @@ msgid "%s TO %s is not valid syntax since %s precedes %s in the dictionary."
 msgstr "%s TO %s является некорректной синтаксической конструкцией, поскольку %s предшествует %s в словаре."
 
 #: src/language/lexer/variable-parser.c:326
-#, fuzzy, c-format
-#| msgid "When using the keyword TO to specify several variables, both variables must be from the same variable dictionaries of either ordinary, scratch, or system variables. %s is a s variable, whereas %s is %s."
+#, c-format
 msgid "When using the TO keyword to specify several variables, both variables must be from the same variable dictionaries, of either ordinary, scratch, or system variables.  %s is a %s variable, whereas %s is %s."
-msgstr "Если используется ключевое слово TO для определение нескольких переменных, обе переменные должны принадлежать одному словарю порядковых, нулевых или системных переменных. %s является переменной, а %s — %s."
+msgstr "Если используется ключевое слово TO для определение нескольких переменных, обе переменные должны принадлежать одному и тому же словарю обычных, нулевых или системных переменных. %s является %s  переменной, а %s является %s."
 
 #: src/language/lexer/variable-parser.c:384
 #, c-format
@@ -1918,16 +1853,14 @@ msgid "Bad bounds in use of TO convention."
 msgstr "TO использует ложные границы."
 
 #: src/language/xforms/compute.c:150 src/language/xforms/compute.c:205
-#, fuzzy, c-format
-#| msgid "When при выполнении COMPUTE: SYSMIS is not a valid value as an index into vector %s."
+#, c-format
 msgid "When executing COMPUTE: SYSMIS is not a valid value as an index into vector %s."
-msgstr "Во время выполнения COMPUTE: SYSMIS не является корректным значением индекса в векторе %s."
+msgstr "При выполнении ВЫЧИСЛЕНИЯ: SYSMIS получено не действительное значение индекса в векторе %s."
 
 #: src/language/xforms/compute.c:154 src/language/xforms/compute.c:212
-#, fuzzy, c-format
-#| msgid "When при выполнении COMPUTE: %.*g is not a valid value as an index into vector %s."
+#, c-format
 msgid "When executing COMPUTE: %.*g is not a valid value as an index into vector %s."
-msgstr "Во время выполнения COMPUTE: %.*g не является корректным значением индекса в векторе %s."
+msgstr "При выполнении ВЫЧИСЛЕНИЯ: %.*g  получено не действительное значение индекса в векторе %s."
 
 #: src/language/xforms/compute.c:356
 #, c-format
@@ -1948,10 +1881,8 @@ msgid "Cannot sample %d observations from a population of %d."
 msgstr "Не удалось назначить выборку %d данных из совокупности в %d данных."
 
 #: src/language/xforms/recode.c:261
-#, fuzzy
-#| msgid "Inconsistent target variable types. Target variables must be all numeric or all string."
 msgid "Inconsistent target variable types.  Target variables must be all numeric or all string."
-msgstr "Несовместимый тип переменных назначения. Переменные назначения должны быть или все числовые, или все строчные."
+msgstr "Несогласованное назначение типа переменных. Назначенные переменные должны быть или все числовые или все строчные."
 
 #: src/language/xforms/recode.c:282
 msgid "CONVERT requires string input values and numeric output values."
@@ -1967,16 +1898,14 @@ msgid "expecting output value"
 msgstr "должно быть получено выходное значение"
 
 #: src/language/xforms/recode.c:479
-#, fuzzy, c-format
-#| msgid "%zu variable(s) cannot be работаете ли вы без оплаты в %zu variable(s). Specify the same number of variables as source and target variables."
+#, c-format
 msgid "%zu variable(s) cannot be recoded into %zu variable(s).  Specify the same number of variables as source and target variables."
-msgstr "%zu переменных невозможно перекодировать в %zu переменных. Вам следует использовать одинаковое количество исходных переменных и переменных назначения."
+msgstr "%zu переменной(ых) не может быть перекодирована(ы) в %zu переменную(ые). Задайте одинаковое число переменных в качестве исходных и целевых переменных."
 
 #: src/language/xforms/recode.c:494
-#, fuzzy, c-format
-#| msgid "There is no variable named %s. (All string variables specified on INTO must already exist. Use the STRING command to create a string variable.)"
+#, c-format
 msgid "There is no variable named %s.  (All string variables specified on INTO must already exist.  Use the STRING command to create a string variable.)"
-msgstr "Не существует переменной с именем %s. (Все строковые переменные указаны в INTO должны уже существовать. Воспользуйтесь командой STRING для создания строчной переменной.)"
+msgstr "Не существует переменной с именем %s. (Все строковые переменные указаны в INTO должны уже существовать. Воспользуйтесь командой STRING для создания строковой переменной.)"
 
 #: src/language/xforms/recode.c:510
 #, c-format
@@ -1984,10 +1913,9 @@ msgid "INTO is required with %s input values and %s output values."
 msgstr "С входными значениями %s и исходными значениями %s следует использовать INTO."
 
 #: src/language/xforms/recode.c:523
-#, fuzzy, c-format
-#| msgid "Type mismatch. Cannot store %s data in %s variable %s."
+#, c-format
 msgid "Type mismatch.  Cannot store %s data in %s variable %s."
-msgstr "Несоответствие типов. Не удалось сохранить данные %s data в переменной %s %s."
+msgstr "Несоответствие типов. Невозможно сохранить %s данные в %s переменной %s."
 
 #: src/language/xforms/recode.c:566
 #, c-format
@@ -1995,10 +1923,8 @@ msgid "Cannot recode because the variable %s would require a width of %d bytes o
 msgstr "Перекодирование невозможно, поскольку для переменной %s нужна ширина %d байтов или больше, но имеем ширину лишь в %d байт."
 
 #: src/language/xforms/select-if.c:100
-#, fuzzy
-#| msgid "Syntax error expecting OFF or BY. Turning off case filtering."
 msgid "Syntax error expecting OFF or BY.  Turning off case filtering."
-msgstr "Синтаксическая ошибка. Мало быть использовано OFF или BY. Выключаем фильтрацию данных."
+msgstr "Синтаксическая ошибка ожидания OFF или BY. Отключаем фильтрацию."
 
 #: src/language/xforms/select-if.c:115
 msgid "The filter variable must be numeric."
@@ -2009,10 +1935,9 @@ msgid "The filter variable may not be scratch."
 msgstr "Переменная фильтрация не может быть нулевой."
 
 #: src/language/control/control-stack.c:31
-#, fuzzy, c-format
-#| msgid "%s without matching %s."
+#, c-format
 msgid "%s without %s."
-msgstr "%s без аналога, %s."
+msgstr "%s без %s."
 
 #: src/language/control/control-stack.c:59
 #, c-format
@@ -2082,22 +2007,19 @@ msgstr "Не найдено соответствующих переменных 
 #: src/language/dictionary/delete-variables.c:40
 #: src/language/dictionary/modify-variables.c:92
 #: src/language/dictionary/rename-variables.c:48
-#, fuzzy, c-format
-#| msgid "%s may not be used after %s. Temporary transformations will be made permanent."
+#, c-format
 msgid "%s may not be used after %s.  Temporary transformations will be made permanent."
-msgstr "%s нельзя использовать после %s. Временные преобразования будут сделаны постоянными."
+msgstr "%s не может использоваться после %s.  Временные преобразования будут сделаны постоянными."
 
 #: src/language/dictionary/delete-variables.c:48
-#, fuzzy, c-format
-#| msgid "%s may not be used to delete all variables from the active dataset dictionary. Use %s instead."
+#, c-format
 msgid "%s may not be used to delete all variables from the active dataset dictionary.  Use %s instead."
-msgstr "%s не может использовать все переменные из активного словаря баз данных. Воспользуйтесь лучше %s."
+msgstr "%s не может использоваться, чтобы удалить все переменные из словаря активной базы данных. Используйте %s вместо этого."
 
 #: src/language/dictionary/missing-values.c:70
-#, fuzzy, c-format
-#| msgid "Cannot mix numeric variables (например %s) and string variables (например %s) within a single list."
+#, c-format
 msgid "Cannot mix numeric variables (e.g. %s) and string variables (e.g. %s) within a single list."
-msgstr "Нельзя совмещать числовые переменные (например %s) и строковые переменные (например %s) в пределах одного списка."
+msgstr "Нельзя смешивать числовые переменные (например %s) и строковые переменные (например %s) в одном списке."
 
 #: src/language/dictionary/missing-values.c:123
 #, c-format
@@ -2105,10 +2027,9 @@ msgid "Truncating missing value to maximum acceptable length (%d bytes)."
 msgstr "Обрезаем пропущенное значение до максимально доступной длины (%d байт)."
 
 #: src/language/dictionary/missing-values.c:146
-#, fuzzy, c-format
-#| msgid "Missing values provided are too long to assign to variable width of %d."
+#, c-format
 msgid "Missing values provided are too long to assign to variable of width %d."
-msgstr "Предоставленные пропущенные значения слишком длинные для назначения переменным ширины %d."
+msgstr "Отсутствующие значения будут слишком длинными для назначения переменной ширины не более %d."
 
 #: src/language/dictionary/modify-variables.c:137
 msgid "Cannot specify ALL after specifying a set of variables."
@@ -2122,10 +2043,9 @@ msgstr "Различные количества переменных в спис
 
 #: src/language/dictionary/modify-variables.c:232
 #: src/language/dictionary/modify-variables.c:276
-#, fuzzy, c-format
-#| msgid "%s subcommand may be given at most once. It may not be given in conjunction with the %s subcommand."
+#, c-format
 msgid "%s subcommand may be given at most once.  It may not be given in conjunction with the %s subcommand."
-msgstr "Подкоманду %s можно использовать не более одного раза. Ее нельзя использовать в сочетании с подкомандою %s."
+msgstr "Подкоманду %s можно использовать не более одного раза. Ее нельзя использовать в сочетании с подкомандой %s."
 
 #: src/language/dictionary/modify-variables.c:304
 #, c-format
@@ -2146,10 +2066,9 @@ msgid "Numeric VALUE must be an integer."
 msgstr "Значение VALUE должно быть целым числом."
 
 #: src/language/dictionary/mrsets.c:229 src/language/dictionary/mrsets.c:267
-#, fuzzy, c-format
-#| msgid "MDGROUP subcommand for group %s specifies a string VALUE, but the specified variables for this group are numeric."
+#, c-format
 msgid "MDGROUP subcommand for group %s specifies a string VALUE, but the variables specified for this group are numeric."
-msgstr "Подкоманда MDGROUP для группы %s определяет значение строки VALUE, но переменные, указаные для этой группы, являются числовыми."
+msgstr "Подкоманда MDGROUP для группы %s задает строковое значение, но переменные, заданные для этой группы являются числовыми."
 
 #: src/language/dictionary/mrsets.c:253
 #, c-format
@@ -2157,40 +2076,34 @@ msgid "VALUE string on MDGROUP subcommand for group %s is %d bytes long, but it 
 msgstr "Строка VALUE в подкоманде MDGROUP для группы %s имеет длину %d байт, но ее длина не должна превышать самую короткую переменную в группе, то есть %s длиной %d."
 
 #: src/language/dictionary/mrsets.c:279
-#, fuzzy, c-format
-#| msgid "MDGROUP subcommand for group %s specifies LABELSOURCE=VARLABEL but not CATEGORYLABELS=COUNTEDVALUES. Ignoring LABELSOURCE."
+#, c-format
 msgid "MDGROUP subcommand for group %s specifies LABELSOURCE=VARLABEL but not CATEGORYLABELS=COUNTEDVALUES.  Ignoring LABELSOURCE."
-msgstr "Подкоманда MDGROUP для группы %s определяет LABELSOURCE=VARLABEL, но не CATEGORYLABELS=COUNTEDVALUES. Игнорируем LABELSOURCE."
+msgstr "Подкоманда MDGROUP для группы %s задает LABELSOURCE=VARLABEL но не CATEGORYLABELS=COUNTEDVALUES. Игнорируем LABELSOURCE."
 
 #: src/language/dictionary/mrsets.c:285
-#, fuzzy, c-format
-#| msgid "MDGROUP subcommand for group %s specifies both LABEL and LABELSOURCE, but only one of these subcommands may be used at a time. Ignoring LABELSOURCE."
+#, c-format
 msgid "MDGROUP subcommand for group %s specifies both LABEL and LABELSOURCE, but only one of these subcommands may be used at a time.  Ignoring LABELSOURCE."
-msgstr "Подкоманда MDGROUP для группы %s определяет LABEL и LABELSOURCE, но одновременно можно использовать только одну из этих подкоманд. Игнорируем LABELSOURCE."
+msgstr "Подкоманда MDGROUP для группы %s задает и LABEL и LABELSOURCE, но только одна из этих подкоманд может быть использована единовременно. Игнорируем LABELSOURCE."
 
 #: src/language/dictionary/mrsets.c:325
-#, fuzzy, c-format
-#| msgid "Variables %s and %s specified as part of multiple dichotomy group %s have the same variable label. Categories represented by these variables will not be distinguishable in output."
+#, c-format
 msgid "Variables %s and %s specified as part of multiple dichotomy group %s have the same variable label.  Categories represented by these variables will not be distinguishable in output."
-msgstr "Переменные %s и %s, указанные как часть группы кратной дихотомией %s, имеют одинаковую метку переменной. Категории, которые определяются этими переменными, в выведенных данных нельзя будет различить."
+msgstr "Переменные %s и %s, указанные как часть множественной дихотомии %s, имеют одинаковую метку переменной. Категории, которые определяются этими переменными, в выведенных данных нельзя будет различить."
 
 #: src/language/dictionary/mrsets.c:355
-#, fuzzy, c-format
-#| msgid "Variable %s specified as part of multiple dichotomy group %s (which has CATEGORYLABELS=COUNTEDVALUES) has no value label for its counted value. This category will not be distinguishable in output."
+#, c-format
 msgid "Variable %s specified as part of multiple dichotomy group %s (which has CATEGORYLABELS=COUNTEDVALUES) has no value label for its counted value.  This category will not be distinguishable in output."
-msgstr "Переменная %s, указанная как часть группы кратной дихотомии %s (где CATEGORYLABELS=COUNTEDVALUES), не имеет метки значение для подсчитанного значения. В выведенных данных эта категория объединена с другими."
+msgstr "Переменная %s, указанная как часть множественной дихотомии %s (где CATEGORYLABELS=COUNTEDVALUES), не имеет метки значения для подсчитанного значения. Категории, которые определяются этими переменными, в выведенных данных нельзя будет различить."
 
 #: src/language/dictionary/mrsets.c:368
-#, fuzzy, c-format
-#| msgid "Variables %s and %s specified as part of multiple dichotomy group %s (which has CATEGORYLABELS=COUNTEDVALUES) have the same value label for the group's counted value. These categories will not be distinguishable in output."
+#, c-format
 msgid "Variables %s and %s specified as part of multiple dichotomy group %s (which has CATEGORYLABELS=COUNTEDVALUES) have the same value label for the group's counted value.  These categories will not be distinguishable in output."
-msgstr "Переменные %s и %s, указанные как часть группы кратной дихотомии %s (где CATEGORYLABELS=COUNTEDVALUES), имеют одинаковую метку значения подсчитанного значения в группе. В выведенных данных соответствующие категории будут объединены."
+msgstr "Переменные %s и %s, указанные как часть множественной дихотомии %s (где CATEGORYLABELS=COUNTEDVALUES), имеют одинаковую метку значения подсчитанного значения в группе. Категории, которые определяются этими переменными, в выведенных данных нельзя будет различить."
 
 #: src/language/dictionary/mrsets.c:425
-#, fuzzy, c-format
-#| msgid "specified Variables on MCGROUP should have the same categories, but %s and %s (and possibly others) in multiple category group %s have different value labels for value %s."
+#, c-format
 msgid "Variables specified on MCGROUP should have the same categories, but %s and %s (and possibly others) in multiple category group %s have different value labels for value %s."
-msgstr "Переменные, указанные в MCGROUP должны принадлежать одинаковым категориям. Впрочем, %s и %s (и, вероятно, другие) переменные в группе из нескольких категорий %s имеют различные метки значения %s."
+msgstr "Переменные, указанные в MCGROUP должны принадлежать одним и тем же категориям, но %s и %s (и, вероятно, другие) переменные в группе из нескольких категорий %s имеют различные метки значения %s."
 
 #: src/language/dictionary/mrsets.c:483
 #, c-format
@@ -2314,7 +2227,7 @@ msgstr "Продукт:"
 
 #: src/language/dictionary/sys-file-info.c:187
 msgid "Integer Format:"
-msgstr "Численный формат:"
+msgstr "Числовой формат:"
 
 #: src/language/dictionary/sys-file-info.c:189
 msgid "Big Endian"
@@ -2450,7 +2363,7 @@ msgstr "Формат записи: %s\n"
 #: src/language/dictionary/sys-file-info.c:593
 #, c-format
 msgid "Measure: %s\n"
-msgstr "Мера: %s\n"
+msgstr "Шкала: %s\n"
 
 #: src/language/dictionary/sys-file-info.c:597
 #, c-format
@@ -2568,10 +2481,9 @@ msgid "expecting weight value"
 msgstr "должно быть использовано значение веса"
 
 #: src/language/utilities/cd.c:45
-#, fuzzy, c-format
-#| msgid "Cannot change directory to %s: %s "
+#, c-format
 msgid "Cannot change directory to %s:  %s "
-msgstr "Не удалось изменить каталог на %s: %s "
+msgstr "Невозможно изменить каталог на %s:  %s "
 
 #: src/language/utilities/date.c:33
 #, c-format
@@ -2579,10 +2491,9 @@ msgid "Only %s is currently implemented."
 msgstr "В текущей версии реализовано только %s."
 
 #: src/language/utilities/host.c:87
-#, fuzzy, c-format
-#| msgid "couldn't fork: %s."
+#, c-format
 msgid "Couldn't fork: %s."
-msgstr "Не удалось выполнить разветвление: %s."
+msgstr "Невозможно выполнить разветвление: %s."
 
 #: src/language/utilities/host.c:102
 msgid "Interactive shell not supported on this platform."
@@ -2593,22 +2504,19 @@ msgid "Command shell not supported on this platform."
 msgstr "На этой платформе не предусмотрено поддержки командной оболочки."
 
 #: src/language/utilities/host.c:120
-#, fuzzy, c-format
-#| msgid "expecting command name"
+#, c-format
 msgid "Error executing command: %s."
-msgstr "должно быть указано название команды"
+msgstr "Ошибка при выполнении команды: %s."
 
 #: src/language/utilities/title.c:97
-#, fuzzy, c-format
-#| msgid " (Entered %s)"
+#, c-format
 msgid "   (Entered %s)"
-msgstr " (Введено %s)"
+msgstr "  (Введено %s)"
 
 #: src/language/utilities/include.c:71
-#, fuzzy, c-format
-#| msgid "can't find `%s' in include file search path."
+#, c-format
 msgid "Can't find `%s' in include file search path."
-msgstr "Не удалось найти `%s' в каталогах включенных файлов."
+msgstr "Не удалось найти `%s' в каталоге включенных файлов."
 
 #: src/language/utilities/output.c:120
 msgid "Unknown TABLECELLS class"
@@ -2824,10 +2732,9 @@ msgid "Exact Sig. (%d-tailed)"
 msgstr "Точное значение (%d-боковая)"
 
 #: src/language/stats/chisquare.c:155
-#, fuzzy, c-format
-#| msgid "CHISQUARE test type %d expected values, but %d distinct values were encountered in variable %s."
+#, c-format
 msgid "CHISQUARE test specified %d expected values, but %d distinct values were encountered in variable %s."
-msgstr "В проверке CHISQUARE задано %d ожидаемых значений, но %d различных значений было выявлено в переменной %s."
+msgstr "Проверка CHISQUARE определила %d ожидаемых значений, но было выявлено %d различных значений в переменной %s."
 
 #: src/language/stats/chisquare.c:168 src/language/stats/chisquare.c:211
 msgid "Observed N"
@@ -2880,10 +2787,8 @@ msgid "Asymp. Sig."
 msgstr "Асимпт. знач."
 
 #: src/language/stats/cochran.c:110
-#, fuzzy
-#| msgid "More than two values encountered. Cochran Q test will not be run."
 msgid "More than two values encountered.  Cochran Q test will not be run."
-msgstr "Обнаружено свыше двух значений. Будет выполнена проверка Q Кохрена."
+msgstr "Обнаружено свыше двух значений. Проверка Q Кохрена не будет запускаться."
 
 #: src/language/stats/cochran.c:174
 #, c-format
@@ -2902,7 +2807,7 @@ msgstr "Q Кохрена"
 #: src/language/stats/correlations.c:97 src/language/stats/factor.c:2087
 #: src/language/stats/npar-summary.c:109
 msgid "Descriptive Statistics"
-msgstr "Описательная статистика"
+msgstr "Описательные статистики"
 
 #: src/language/stats/correlations.c:118 src/language/stats/descriptives.c:108
 #: src/language/stats/examine.c:888 src/language/stats/factor.c:2108
@@ -2956,19 +2861,15 @@ msgstr "Ковариация"
 
 #: src/language/stats/correlations.c:461 src/language/stats/descriptives.c:373
 #: src/language/data-io/list.c:167
-#, fuzzy
-#| msgid "At least one variable must be specified."
 msgid "No variables specified."
-msgstr "Должна быть указана по крайней мере одна переменная."
+msgstr "Не указаны переменные."
 
 #: src/language/stats/descriptives.c:109 src/language/stats/frequencies.c:142
 #: src/language/stats/means.c:414 src/language/stats/t-test-indep.c:214
 #: src/language/stats/t-test-one-sample.c:162
 #: src/language/stats/t-test-paired.c:182
-#, fuzzy
-#| msgid "S. E. Mean"
 msgid "S.E. Mean"
-msgstr "Станд. погрешность"
+msgstr "Стандартная ошибка среднего значения."
 
 #: src/language/stats/descriptives.c:110 src/language/stats/frequencies.c:145
 msgid "Std Dev"
@@ -2990,10 +2891,8 @@ msgstr "Эксцесс"
 
 #: src/language/stats/descriptives.c:113 src/language/stats/frequencies.c:148
 #: src/language/stats/means.c:421
-#, fuzzy
-#| msgid "S. E. Kurt"
 msgid "S.E. Kurt"
-msgstr "Эксцесс. станд. погрешности"
+msgstr "Стандартная ошибка эксцесса."
 
 #: src/language/stats/descriptives.c:114 src/language/stats/examine.c:1053
 #: src/language/stats/frequencies.c:149 src/language/stats/means.c:422
@@ -3004,10 +2903,8 @@ msgstr "Асимметрия"
 
 #: src/language/stats/descriptives.c:115 src/language/stats/frequencies.c:150
 #: src/language/stats/means.c:423
-#, fuzzy
-#| msgid "S. E. Skew"
 msgid "S.E. Skew"
-msgstr "Перекос станд. погрешности"
+msgstr "Стандартная ошибка асимметрии."
 
 #: src/language/stats/descriptives.c:116 src/language/stats/examine.c:1020
 #: src/language/stats/frequencies.c:151 src/language/stats/means.c:418
@@ -3045,20 +2942,16 @@ msgid "Z-score variable name %s would be a duplicate variable name."
 msgstr "Имя переменной Z-оценки %s будет дубликатом названия переменной."
 
 #: src/language/stats/descriptives.c:406
-#, fuzzy
-#| msgid "DESCRIPTIVES with Z scores ignores TEMPORARY. Temporary transformations will be made permanent."
 msgid "DESCRIPTIVES with Z scores ignores TEMPORARY.  Temporary transformations will be made permanent."
-msgstr "DESCRIPTIVES с Z-оценкам игнорирует TEMPORARY. Временные преобразования преобразуются в окончательные."
+msgstr "DESCRIPTIVES с Z оценками игнорирует TEMPORARY. Временные преобразования преобразуются в постоянные."
 
 #: src/language/stats/descriptives.c:483
 msgid "expecting statistic name: reverting to default"
 msgstr "неожиданное название статистики: возвращаемся к типовому названию"
 
 #: src/language/stats/descriptives.c:566
-#, fuzzy
-#| msgid "Ran out of generic names for Z-score variables. There are only 126 generic names: ZSC001-ZSC0999, STDZ01-STDZ09, ZZZZ01-ZZZZ09, ZQZQ01-ZQZQ09."
 msgid "Ran out of generic names for Z-score variables.  There are only 126 generic names: ZSC001-ZSC0999, STDZ01-STDZ09, ZZZZ01-ZZZZ09, ZQZQ01-ZQZQ09."
-msgstr "Исчерпан диапазон типичных названий для переменных Z-оценок. Предусмотрено лишь 126 типовых названий: ZSC001-ZSC0999, STDZ01-STDZ09, ZZZZ01-ZZZZ09, ZQZQ01-ZQZQ09."
+msgstr "Исчерпан диапазон типовых названий переменных для Z-оценок. Предусмотрено только 126 типовых названий:  ZSC001-ZSC0999, STDZ01-STDZ09, ZZZZ01-ZZZZ09, ZQZQ01-ZQZQ09."
 
 #: src/language/stats/descriptives.c:595
 msgid "Mapping of variables to corresponding Z-scores."
@@ -3099,10 +2992,9 @@ msgid " (missing)"
 msgstr " (потеряно)"
 
 #: src/language/stats/examine.c:269
-#, fuzzy, c-format
-#| msgid "Boxplot of %s или %s"
+#, c-format
 msgid "Boxplot of %s vs. %s"
-msgstr "Блочная диаграмма зависимости %s от %s"
+msgstr "Блочная диаграмма %s от %s"
 
 #: src/language/stats/examine.c:275 src/language/stats/examine.c:381
 #, c-format
@@ -3139,7 +3031,7 @@ msgstr "Угловые точки Туки"
 #: src/language/stats/examine.c:789 src/language/stats/oneway.c:1088
 #: src/ui/gui/descriptives.ui:8
 msgid "Descriptives"
-msgstr "Описательная статистика"
+msgstr "Описательные статистики"
 
 #: src/language/stats/examine.c:806 src/ui/gui/psppire-checkbox-treeview.c:103
 #: src/language/stats/crosstabs.q:1271 src/language/stats/crosstabs.q:1301
@@ -3337,7 +3229,7 @@ msgstr "Проверка КМО и Бартлета"
 
 #: src/language/stats/factor.c:2175
 msgid "Kaiser-Meyer-Olkin Measure of Sampling Adequacy"
-msgstr "Мера Кайзера-Мейера-Олкена адекватности разделения выборки на"
+msgstr "Шкала Кайзера-Мейера-Олкена адекватности разделения выборки на"
 
 #: src/language/stats/factor.c:2179
 msgid "Bartlett's Test of Sphericity"
@@ -3345,7 +3237,7 @@ msgstr "Проверка сферичности Бартлета"
 
 #: src/language/stats/factor.c:2181
 msgid "Approx. Chi-Square"
-msgstr "Приблизительное χ-квадрат"
+msgstr "Приблизительный χ-квадрат"
 
 #: src/language/stats/factor.c:2183 src/language/stats/glm.c:754
 #: src/language/stats/logistic.c:1224 src/language/stats/oneway.c:979
@@ -3476,16 +3368,14 @@ msgid "Histogram percentage must be greater than zero."
 msgstr "Процент в гистограмме должен превышать ноль."
 
 #: src/language/stats/frequencies.c:1120
-#, fuzzy, c-format
-#| msgid "%s for histogram must be greater than or equal to %s, but %s was specified as %.15g and %s as %.15g. %s and %s will be ignored."
+#, c-format
 msgid "%s for histogram must be greater than or equal to %s, but %s was specified as %.15g and %s as %.15g.  %s and %s will be ignored."
-msgstr "%s для гистограммы должен быть не меньше %s, впрочем, было указано %s как %.15g и %s как %.15g. %s и %s будут проигнорированы."
+msgstr "%s для гистограммы должно быть больше или равно %s, но %s была указано как %.15g и %s как %.15g. %s и %s будут проигнорированы."
 
 #: src/language/stats/frequencies.c:1165
-#, fuzzy, c-format
-#| msgid "%s for pie chart must be greater than or equal to %s, but %s was specified as %.15g and %s as %.15g. %s and %s will be ignored."
+#, c-format
 msgid "%s for pie chart must be greater than or equal to %s, but %s was specified as %.15g and %s as %.15g.  %s and %s will be ignored."
-msgstr "%s для круговой диаграммы должен быть не менее %s, впрочем, было указано %s как %.15g и %s как %.15g. %s и %s будут проигнорированы."
+msgstr "%s для круговой диаграммы должно быть больше или равно %s, но %s была указано как %.15g и %s как %.15g. %s и %s будут проигнорированы."
 
 #: src/language/stats/frequencies.c:1430
 #, c-format
@@ -3711,7 +3601,7 @@ msgstr "B"
 
 #: src/language/stats/logistic.c:1221
 msgid "S.E."
-msgstr ""
+msgstr "Стандартная ошибка"
 
 #: src/language/stats/logistic.c:1222
 msgid "Wald"
@@ -3865,7 +3755,7 @@ msgstr "Медиана группы"
 
 #: src/language/stats/means.c:416
 msgid "Min"
-msgstr "Мин.\"."
+msgstr "Мин."
 
 #: src/language/stats/means.c:417
 msgid "Max"
@@ -3914,10 +3804,8 @@ msgid "Report"
 msgstr "Отчет"
 
 #: src/language/stats/mcnemar.c:143
-#, fuzzy
-#| msgid "The McNemar test is only appropriate for dichotomous variables"
 msgid "The McNemar test is appropriate only for dichotomous variables"
-msgstr "Проверку МакНемара можно применять только к дихотомическим переменным"
+msgstr "McNemar проверка уместна только для дихотомических переменных"
 
 #: src/language/stats/mcnemar.c:268 src/language/stats/sign.c:137
 #: src/language/stats/wilcoxon.c:324
@@ -4135,10 +4023,9 @@ msgid "The number of iterations must be positive"
 msgstr "Количество итераций должно быть положительным"
 
 #: src/language/stats/rank.c:206
-#, fuzzy, c-format
-#| msgid "Cannot generate variable name for ranking %s with %s. All candidates in use."
+#, c-format
 msgid "Cannot generate variable name for ranking %s with %s.  All candidates in use."
-msgstr "Не удалось создать имя переменной для ранжирования %s с помощью %s. Все возможные варианты уже использованы."
+msgstr "Не удается создать имя переменной для ранжирования %s с %s. Все возможные варианты уже использованы. "
 
 #: src/language/stats/rank.c:321
 #, c-format
@@ -4195,10 +4082,8 @@ msgid "Reliability on a single variable is not useful."
 msgstr "Оценка пригодности для одной переменной лишена смысла."
 
 #: src/language/stats/reliability.c:280
-#, fuzzy
-#| msgid "The STATISTICS subcommand is not yet implemented. No statistics will be produced."
 msgid "The STATISTICS subcommand is not yet implemented.  No statistics will be produced."
-msgstr "Подкоманда STATISTICS еще не реализована. Статистическая обработка производиться не будет."
+msgstr "Подкоманда STATISTICS пока не реализована. Статистическая обработка производиться не будет."
 
 #: src/language/stats/reliability.c:299
 msgid "The split point must be less than the number of variables"
@@ -4346,10 +4231,8 @@ msgid "1 - Specificity"
 msgstr "1 - специфичность"
 
 #: src/language/stats/regression.c:372
-#, fuzzy
-#| msgid "REGRESSION with SAVE ignores TEMPORARY. Temporary transformations will be made permanent."
 msgid "REGRESSION with SAVE ignores TEMPORARY.  Temporary transformations will be made permanent."
-msgstr "REGRESSION с SAVE игнорирует TEMPORARY. Временные преобразования преобразуются в окончательные."
+msgstr "REGRESSION с SAVE игнорируют TEMPORARY. Временные преобразования преобразуются в постоянные."
 
 #: src/language/stats/regression.c:507
 msgid "The dependent variable is equal to the independent variable. The least squares line is therefore Y=X. Standard errors and related statistics may be meaningless."
@@ -4426,10 +4309,9 @@ msgid "Coefficient Correlations (%s)"
 msgstr "коэффициентов Корреляции (%s)"
 
 #: src/language/stats/runs.c:168
-#, fuzzy, c-format
-#| msgid "Multiple modes exist for variable `%s'. Using %.*g as the threshold value."
+#, c-format
 msgid "Multiple modes exist for variable `%s'.  Using %.*g as the threshold value."
-msgstr "Для переменной «%s» существует несколько мод. Используем %.*g как пороговое значение."
+msgstr "Существует несколько мод для переменной `%s'. Используем %.*g как пороговое значение."
 
 #: src/language/stats/runs.c:325 src/ui/gui/runs.ui:7
 msgid "Runs Test"
@@ -4558,7 +4440,7 @@ msgstr "Корреляция"
 #: src/language/stats/t-test-paired.c:246
 #, c-format
 msgid "%s & %s"
-msgstr ""
+msgstr "%s и %s"
 
 #: src/language/stats/t-test-paired.c:290
 msgid "Paired Samples Test"
@@ -4609,10 +4491,8 @@ msgid "Cannot specify the active dataset since none has been defined."
 msgstr "нельзя указывать активную базу данных, поскольку еще не было определено ни одной базы данных."
 
 #: src/language/data-io/combine-files.c:220
-#, fuzzy
-#| msgid "This command may not be used after TEMPORARY when the active dataset is an input source. Temporary transformations will be made permanent."
 msgid "This command may not be used after TEMPORARY when the active dataset is an input source.  Temporary transformations will be made permanent."
-msgstr "Эту команду нельзя использовать после TEMPORARY, если источником входных данных является активная база данных. Временные преобразования будут сделаны постоянными."
+msgstr "Эта команда не может быть использована после TEMPORARY, когда источником входных данных является активная база данных. Временные преобразования будут сделаны постоянными."
 
 #: src/language/data-io/combine-files.c:255
 msgid "Multiple IN subcommands for a single FILE or TABLE."
@@ -4664,10 +4544,9 @@ msgid "In an earlier file, %s was a string variable with width %d."
 msgstr "В предыдущем файле %s была строчной переменной шириной %d."
 
 #: src/language/data-io/combine-files.c:621
-#, fuzzy, c-format
-#| msgid "Variable name %s specified on %s subcommand допускаются an existing variable name."
+#, c-format
 msgid "Variable name %s specified on %s subcommand duplicates an existing variable name."
-msgstr "Название переменной %s, указанной в подкоманде %s, дублирует название существующей переменной."
+msgstr "Название переменной %s, указанной в %s подкоманде, дублирует название существующей переменной."
 
 #: src/language/data-io/combine-files.c:793
 #, c-format
@@ -4742,16 +4621,14 @@ msgid "Partial case of %d of %d records discarded."
 msgstr "Частичное наблюдения %d из %d записей отвергнуто."
 
 #: src/language/data-io/data-parser.c:601
-#, fuzzy, c-format
-#| msgid "Partial case discarded.  The first variable was missing %s."
+#, c-format
 msgid "Partial case discarded.  The first variable missing was %s."
-msgstr "Данные неполного наблюдения отвергнуты. Первой пропущенной переменной является %s."
+msgstr "Данные неполного наблюдения отвергнуты. Первая пропущенная переменная %s."
 
 #: src/language/data-io/data-parser.c:643
-#, fuzzy, c-format
-#| msgid "Missing value(s) for all variables from %s onward. These will be filled with the system-missing value or blanks, as appropriate."
+#, c-format
 msgid "Missing value(s) for all variables from %s onward.  These will be filled with the system-missing value or blanks, as appropriate."
-msgstr "Нет значений для всех переменных, начиная с %s. Переменные будут заполнены значением «пропущено системой» или не заполнено, соответственно."
+msgstr "Отсутствующее(ие) значение(я) для всех переменных, начиная с %s . Переменные будут заполнены значением «пропущено системой» или заготовками, по мере необходимости."
 
 #: src/language/data-io/data-parser.c:663
 msgid "Record ends in data not part of any field."
@@ -4764,7 +4641,7 @@ msgstr "Запись"
 #: src/language/data-io/data-parser.c:684 src/language/data-io/print.c:448
 #: src/ui/gui/psppire-var-sheet.c:1385
 msgid "Columns"
-msgstr "Столбики"
+msgstr "Столбцы"
 
 #: src/language/data-io/data-parser.c:685
 #: src/language/data-io/data-parser.c:722 src/language/data-io/print.c:449
@@ -4802,10 +4679,9 @@ msgid "Could not read `%s' as a text file with encoding `%s': %s."
 msgstr "Не удалось прочитать `%s' как текстовый файл в кодировке `%s': %s."
 
 #: src/language/data-io/data-reader.c:239
-#, fuzzy, c-format
-#| msgid "Missing %s, while reading inline data. This probably indicates a missing or incorrectly formatted %s command. %s must appear by itself on a single line with exactly one space between words."
+#, c-format
 msgid "Missing %s while reading inline data.  This probably indicates a missing or incorrectly formatted %s command.  %s must appear by itself on a single line with exactly one space between words."
-msgstr "Во время чтения встроенных данных не было выявлено команды %s. Вероятно, это означает, что команда %s пропущена или неправильно отформатована. %s должна быть указана в отдельной строке с одним пробелом между словами."
+msgstr "Во время чтения встроенных данных не было выявлено команды %s. Вероятно, это означает, что команда %s пропущена или неправильно отформатирована. %s должна быть указана в отдельной строке с одним пробелом между словами."
 
 #: src/language/data-io/data-reader.c:259
 #: src/language/data-io/data-reader.c:393
@@ -4880,10 +4756,8 @@ msgid "Unsupported TYPE %s."
 msgstr "неподдерживаемые элементы значения TYPE %s."
 
 #: src/language/data-io/get-data.c:276
-#, fuzzy
-#| msgid "The index sheet must be greater than or equal to 1"
 msgid "The sheet index must be greater than or equal to 1"
-msgstr "Индекс листа должен быть не меньше 1"
+msgstr "Индекс листа должен быть больше или равен 1"
 
 #: src/language/data-io/get-data.c:283 src/language/data-io/get-data.c:306
 #: src/language/data-io/get-data.c:325
@@ -4908,10 +4782,8 @@ msgid "Value of %s must be between 1 and 100."
 msgstr "Значение %s должно принадлежать диапазону от 1 до 100."
 
 #: src/language/data-io/get-data.c:557
-#, fuzzy
-#| msgid "In compatible syntax mode, the string QUALIFIER must contain exactly one character."
 msgid "In compatible syntax mode, the QUALIFIER string must contain exactly one character."
-msgstr "В режиме совместимости синтаксиса строка QUALIFIER должен содержать только один символ."
+msgstr "В режиме совместимости синтаксиса строка QUALIFIER должна содержать только один символ."
 
 #: src/language/data-io/get-data.c:592
 #: src/language/data-io/placement-parser.c:406
@@ -4939,40 +4811,33 @@ msgid "Input program did not create any variables."
 msgstr "Входная программа не создала никаких переменных."
 
 #: src/language/data-io/inpt-pgm.c:365
-#, fuzzy
-#| msgid "REREAD: Column numbers must be positive finite numbers. Column set to 1."
 msgid "REREAD: Column numbers must be positive finite numbers.  Column set to 1."
-msgstr "REREAD: номера столбцов должны быть положительными целыми числами. Будет использовано типовое значение номера столбца, 1."
+msgstr "REREAD: номера столбцов должны быть положительными целыми числами. Столбцу установлено значение 1."
 
 #: src/language/data-io/list.c:227
-#, fuzzy, c-format
-#| msgid "The first case (%ld) specified precedes the last case (%ld) specified. The values will be swapped."
+#, c-format
 msgid "The first case (%ld) specified precedes the last case (%ld) specified.  The values will be swapped."
-msgstr "Первое указанное наблюдения (%ld) предшествует последнему указанному наблюдению (%ld). Будет выполнено соответствующее переставляемых значений."
+msgstr "Первое указанное наблюдения (%ld) предшествует последнему указанному наблюдению (%ld). Значения поменяются местами."
 
 #: src/language/data-io/list.c:236
-#, fuzzy, c-format
-#| msgid "The first case (%ld) to list is less than 1. The value is being reset to 1."
+#, c-format
 msgid "The first case (%ld) to list is less than 1.  The value is being reset to 1."
-msgstr "Значение первого наблюдения (%ld) является меньше 1. Значение заменено на 1."
+msgstr "Значение первого наблюдения (%ld) меньше 1. Значение изменено на 1."
 
 #: src/language/data-io/list.c:243
-#, fuzzy, c-format
-#| msgid "The last case (%ld) to list is less than 1. The value is being reset to 1."
+#, c-format
 msgid "The last case (%ld) to list is less than 1.  The value is being reset to 1."
-msgstr "Значение последнего наблюдения (%ld) является меньше 1. Значение заменено на 1."
+msgstr "Значение последнего наблюдения (%ld) меньше 1. Значение изменено на 1."
 
 #: src/language/data-io/list.c:250
-#, fuzzy, c-format
-#| msgid "The step value %ld is less than 1. The value is being reset to 1."
+#, c-format
 msgid "The step value %ld is less than 1.  The value is being reset to 1."
-msgstr "Значение шага %ld меньше 1. Восстановлено типовое значение шага, 1."
+msgstr "Значение шага %ld меньше 1. Значение сбрасывается в 1."
 
 #: src/language/data-io/placement-parser.c:96
-#, fuzzy, c-format
-#| msgid "Number of variables specified (%zu) differs from number of variable formats(%zu)."
+#, c-format
 msgid "Number of variables specified (%zu) differs from number of variable formats (%zu)."
-msgstr "Указанное количество переменных (%zu) отличается от количества форматов переменных (%zu)."
+msgstr "Количество заданных переменных (%zu) отличается от количества форматов переменных (%zu)."
 
 #: src/language/data-io/placement-parser.c:106
 msgid "SPSS-like or Fortran-like format specification expected after variable names."
@@ -5047,10 +4912,9 @@ msgid "Output file `%s' exists but %s was not specified."
 msgstr "Файл выводимых данных `%s' уже существует, но %s не указано."
 
 #: src/language/data-io/trim.c:89
-#, fuzzy, c-format
-#| msgid "Cannot rename %s as %s because there already exists a variable named %s. To rename variables with overlapping names, use a single RENAME subcommand such as `/RENAME(A=B)(B=C)(C=A)', or equivalently, `/RENAME (A B C=B C A)'."
+#, c-format
 msgid "Cannot rename %s as %s because there already exists a variable named %s.  To rename variables with overlapping names, use a single RENAME subcommand such as `/RENAME (A=B)(B=C)(C=A)', or equivalently, `/RENAME (A B C=B C A)'."
-msgstr "Переименовать %s на %s невозможно, поскольку переменная с именем %s уже существует. Чтобы переименовать переменные без конфликтов названий, воспользуйтесь отдельной подкомандою RENAME так: `/RENAME(A=B)(B=C)(C=A)' или так: `/RENAME (A B C=B C A)'."
+msgstr "Переименовать %s на %s невозможно, поскольку переменная с именем %s уже существует. Чтобы переименовать переменные без конфликтов названий, воспользуйтесь подкомандой RENAME так: `/RENAME (A=B)(B=C)(C=A)', или так: `/RENAME (A B C=B C A)'."
 
 #: src/language/data-io/trim.c:123
 #, c-format
@@ -5058,10 +4922,9 @@ msgid "Number of variables on left side of `=' (%zu) does not match number of va
 msgstr "Количество переменных слева от `=' (%zu) не совпадает с количеством переменных справа от знака равенства (%zu) (группа %d в скобках подкоманды RENAME)."
 
 #: src/language/data-io/trim.c:136
-#, fuzzy, c-format
-#| msgid "Renaming would duplicate variable name %s."
+#, c-format
 msgid "Requested renaming duplicates variable name %s."
-msgstr "Переименование приведет к дублированию названия переменной %s."
+msgstr "Запрос переименования дубликатов переменной с именем %s."
 
 #: src/language/data-io/trim.c:167
 msgid "Cannot DROP all variables from dictionary."
@@ -5072,50 +4935,36 @@ msgid "expecting number or string"
 msgstr "должно быть указано число или строка"
 
 #: src/language/expressions/helpers.c:41
-#, fuzzy
-#| msgid "One of the arguments to a DATE function is not an integer. The result will be system-missing."
 msgid "One of the arguments to a DATE function is not an integer.  The result will be system-missing."
 msgstr "Один из аргументов функции DATE не является целым числом. Результат будет пропущен системой."
 
 #: src/language/expressions/helpers.c:69
-#, fuzzy
-#| msgid "The week argument to DATE.WKYR is not an integer. The result will be system-missing."
 msgid "The week argument to DATE.WKYR is not an integer.  The result will be system-missing."
 msgstr "Аргумент недели DATE.WKYR не является целым числом. Результат будет пропущен системой."
 
 #: src/language/expressions/helpers.c:75
-#, fuzzy
-#| msgid "The week argument to DATE.WKYR is outside the acceptable range of 1 to 53. The result will be system-missing."
 msgid "The week argument to DATE.WKYR is outside the acceptable range of 1 to 53.  The result will be system-missing."
 msgstr "Аргумент недели DATE.WKYR лежит вне допустимого диапазона от 1 до 53. Результат будет пропущен системой."
 
 #: src/language/expressions/helpers.c:97
-#, fuzzy
-#| msgid "The day argument to DATE.YRDAY is not an integer. The result will be system-missing."
 msgid "The day argument to DATE.YRDAY is not an integer.  The result will be system-missing."
 msgstr "Аргумент дня DATE.YRDAY не является целым числом. Результат будет пропущен системой."
 
 #: src/language/expressions/helpers.c:103
-#, fuzzy
-#| msgid "The day argument to DATE.YRDAY is outside the acceptable range of 1 to 366. The result will be system-missing."
 msgid "The day argument to DATE.YRDAY is outside the acceptable range of 1 to 366.  The result will be system-missing."
 msgstr "Аргумент дня DATE.YRDAY лежит вне допустимого диапазона от 1 до 366. Результат будет пропущен системой."
 
 #: src/language/expressions/helpers.c:125
-#, fuzzy
-#| msgid "The year argument to YRMODA is greater than 47516. The result will be system-missing."
 msgid "The year argument to YRMODA is greater than 47516.  The result will be system-missing."
 msgstr "Аргумент года YRMODA превышает 47516. Результат будет пропущен системой."
 
 #: src/language/expressions/helpers.c:178
-#, fuzzy, c-format
-#| msgid "Unrecognized date unit `%.*s'. Valid date units are `%s', `%s', `%s', `%s', `%s', `%s', `%s' and `%s'."
+#, c-format
 msgid "Unrecognized date unit `%.*s'.  Valid date units are `%s', `%s', `%s', `%s', `%s', `%s', `%s', and `%s'."
-msgstr "Неизвестная единица даты, `%.*s'. Корректными единицами даты являются: `%s', `%s', `%s', `%s', `%s', `%s', `%s' и `%s'."
+msgstr "Неизвестная единица даты, `%.*s'. Корректными единицами даты являются: `%s', `%s', `%s', `%s', `%s', `%s', `%s', и `%s'."
 
 #: src/language/expressions/helpers.c:331
-#, fuzzy, c-format
-#| msgid "Invalid DATESUM method. Valid choices are `%s' and `%s'."
+#, c-format
 msgid "Invalid DATESUM method.  Valid choices are `%s' and `%s'."
 msgstr "Некорректный метод DATESUM. Корректными вариантами являются `%s' и `%s'."
 
@@ -5135,16 +4984,12 @@ msgid "Type mismatch while applying %s operator: cannot convert %s to %s."
 msgstr "Несоответствие типов во время применения оператора %s: не удалось преобразовать %s на %s."
 
 #: src/language/expressions/parse.c:650
-#, fuzzy
-#| msgid "Chaining relational operators (e.g. `a < b < c') will not produce the mathematically expected result. Use the AND logical operator to fix the problem (e.g. `a < b AND b < c'). If chaining is really intended, invalid will disable this warning (e.g. `(a < b) < c'.)"
 msgid "Chaining relational operators (e.g. `a < b < c') will not produce the mathematically expected result.  Use the AND logical operator to fix the problem (e.g. `a < b AND b < c').  If chaining is really intended, parentheses will disable this warning (e.g. `(a < b) < c'.)"
-msgstr "Использование цепочек неравенств (например `a < b < c') не приведет к получению желаемого математического корректного результата. Для устранения проблемы воспользуйтесь логическим оператором AND (например `a < b AND b < c'). Если без цепочки неравенств не обойтись, используйте скобки, чтобы программа больше не показывала этого предупреждения (например `(a < b) < c')."
+msgstr "Использование цепочек неравенств (например `a < b < c') не приведет к получению математически корректного результата. Используйте логический оператор AND чтобы исправить проблему (например  `a < b AND b < c'). Если без цепочки неравенств не обойтись, используйте скобки, чтобы программа больше не показывала это предупреждение (например `(a < b) < c')."
 
 #: src/language/expressions/parse.c:752
-#, fuzzy
-#| msgid "The exponentiation operator (`**') is left-associative, even though right-associative semantics are more useful. That is, `a**b**c' equals`(a**b)**c', not as`a**(b**c)'. To disable this warning, insert invalid."
 msgid "The exponentiation operator (`**') is left-associative, even though right-associative semantics are more useful.  That is, `a**b**c' equals `(a**b)**c', not as `a**(b**c)'.  To disable this warning, insert parentheses."
-msgstr "Последовательные операторы возведения в степень (`**') исчисляются в направлении слева направо, хотя иногда предпочтительнее могло бы быть вычисление справа налево. Это означает, что `a**b**c' равно `(a**b)**c', а не как `a**(b**c)' Чтобы избежать этого предупреждения, вставьте скобки."
+msgstr "Оператор возведения в степень (`**') исчисляется в направлении слева направо, хотя предпочтительнее могло бы быть вычисление справа налево. Это означает, что `a**b**c' равно `(a**b)**c', а не  `a**(b**c)'. Чтобы отключить это предупреждение, вставьте круглые скобки."
 
 #: src/language/expressions/parse.c:832
 #, c-format
@@ -5196,10 +5041,8 @@ msgid "Function invocation "
 msgstr "Вызов функции "
 
 #: src/language/expressions/parse.c:1200
-#, fuzzy
-#| msgid " does not match any known function. Candidates are:"
 msgid " does not match any known function.  Candidates are:"
-msgstr " не соответствует ни одной из известных функций. Кандидаты:"
+msgstr "не соответствует любой известной функции. Кандидаты:"
 
 #: src/language/expressions/parse.c:1230
 #, c-format
@@ -5292,10 +5135,8 @@ msgid "Cyrillic/Russian"
 msgstr "кириллица/русский"
 
 #: src/libpspp/i18n.c:1019
-#, fuzzy
-#| msgid "Cyrillic/Russian"
 msgid "Cyrillic/Ukrainian"
-msgstr "кириллица/русский"
+msgstr "кириллица/украинский"
 
 #: src/libpspp/i18n.c:1021
 msgid "Georgian"
@@ -5383,22 +5224,19 @@ msgid "note"
 msgstr "заметка"
 
 #: src/libpspp/message.c:338
-#, fuzzy, c-format
-#| msgid "Notes (%d) exceed limit (%d). Suppressing further notes."
+#, c-format
 msgid "Notes (%d) exceed limit (%d).  Suppressing further notes."
-msgstr "Количество заметок (%d) превышает ограничение (%d). Вывод дальнейших заметок прекращен."
+msgstr "Заметки (%d) превышают предел (%d). Вывод дальнейших заметок прекращен."
 
 #: src/libpspp/message.c:346
-#, fuzzy, c-format
-#| msgid "Warnings (%d) exceed limit (%d). Syntax processing will be halted."
+#, c-format
 msgid "Warnings (%d) exceed limit (%d).  Syntax processing will be halted."
-msgstr "Количество предупреждений (%d) превышает ограничение (%d). Обработка синтаксических конструкций будет прервана."
+msgstr "Предупреждения (%d) превышают предел (%d). Обработка синтаксических конструкций будет прервана."
 
 #: src/libpspp/message.c:349
-#, fuzzy, c-format
-#| msgid "Errors (%d) exceed limit (%d). Syntax processing will be halted."
+#, c-format
 msgid "Errors (%d) exceed limit (%d).  Syntax processing will be halted."
-msgstr "Количество ошибок (%d) превышает ограничение (%d). Обработка синтаксических конструкций будет прервана."
+msgstr "Ошибки (%d) превышают предел (%d). Обработка синтаксических конструкций будет прервана."
 
 #: src/libpspp/zip-reader.c:84
 #, c-format
@@ -5496,8 +5334,6 @@ msgid "Empirical"
 msgstr "Эмпирическое"
 
 #: src/math/percentiles.c:40
-#, fuzzy
-#| msgid "with Empirical averaging"
 msgid "Empirical with averaging"
 msgstr "Эмпирическое с усреднением"
 
@@ -5507,10 +5343,9 @@ msgid "%s: %s must be positive integer or `auto'"
 msgstr "%s: %s должно быть положительным целым числом или `auto'"
 
 #: src/output/ascii.c:356
-#, fuzzy, c-format
-#| msgid "ascii: page excluding margins and headers must be at least %d characters wide by %d lines long, but as is configured only %d characters by %d lines"
+#, c-format
 msgid "ascii: page excluding margins and headers must be at least %d characters wide by %d lines long, but as configured is only %d characters by %d lines"
-msgstr "ascii: на странице, без полей, нижнего и верхнего колонтитула, должно быть по крайней мере %d символов в строке, %d строк, но страница настроена так, что на ней только %d символов в строке и %d строк."
+msgstr "в ASCII: страницы исключая отступы и заголовки должны быть как минимум %d символов в ширину и %d строк данных, но было настроено только %d символов строк %d"
 
 #: src/output/ascii.c:404
 #, c-format
@@ -5528,10 +5363,9 @@ msgid "ascii: opening output file `%s'"
 msgstr "ascii: открываем файл выводимых результатов `%s'"
 
 #: src/output/ascii.c:1170
-#, fuzzy, c-format
-#| msgid "%s Page %d"
+#, c-format
 msgid "%s - Page %d"
-msgstr "%s страница %d"
+msgstr "%s - страница %d"
 
 #: src/output/charts/piechart.c:54
 msgid "*MISSING*"
@@ -5627,10 +5461,9 @@ msgid "%s: `%s' is `%s' but an integer greater than %d is required"
 msgstr "%s: `%s' равен `%s', но должно быть указано целое число, которое превышает %d"
 
 #: src/output/options.c:246
-#, fuzzy, c-format
-#| msgid "%s: `%s' is `%s' but an integer between %d and %d is required"
+#, c-format
 msgid "%s: `%s' is `%s'  but an integer between %d and %d is required"
-msgstr "%s: `%s' равен `%s', но должно быть указано целое число от %d до %d"
+msgstr "%s: `%s' есть `%s', но требуется целое число между %d и %d"
 
 #: src/output/options.c:325
 #, c-format
@@ -5638,22 +5471,21 @@ msgid "%s: `%s' is `%s' but a file name that contains `#' is required."
 msgstr "%s: `%s' равен `%s', но должно быть указано название файла, которое содержит `#'."
 
 #: src/output/tab.c:240
-#, fuzzy, c-format
-#| msgid "bad vline: x=%d+%d=%d y=(%d+%d=%d,%d+%d=%d) in table size(%d,%d)\n"
+#, c-format
 msgid "bad vline: x=%d+%d=%d y=(%d+%d=%d,%d+%d=%d) in table size (%d,%d)\n"
-msgstr "ошибочная вертикальная линия: x=%d+%d=%d y=(%d+%d=%d,%d+%d=%d) в позиции таблицы(%d,%d)\n"
+msgstr ""
+"ошибочная вертикальная линия:  x=%d+%d=%d y=(%d+%d=%d,%d+%d=%d) в позиции таблицы (%d,%d)\n"
+"\n"
 
 #: src/output/tab.c:278
-#, fuzzy, c-format
-#| msgid "bad hline: x=(%d+%d=%d,%d+%d=%d) y=%d+%d=%d in table size(%d,%d)\n"
+#, c-format
 msgid "bad hline: x=(%d+%d=%d,%d+%d=%d) y=%d+%d=%d in table size (%d,%d)\n"
-msgstr "ошибочная горизонтальная линия: x=(%d+%d=%d,%d+%d=%d) y=%d+%d=%d в позиции таблицы(%d,%d)\n"
+msgstr "ошибочная горизонтальная линия: x=(%d+%d=%d,%d+%d=%d) y=%d+%d=%d в позиции таблицы (%d,%d)\n"
 
 #: src/output/tab.c:322
-#, fuzzy, c-format
-#| msgid "bad box:(%d+%d=%d,%d+%d=%d)-(%d+%d=%d,%d+%d=%d) in table size(%d,%d)\n"
+#, c-format
 msgid "bad box: (%d+%d=%d,%d+%d=%d)-(%d+%d=%d,%d+%d=%d) in table size (%d,%d)\n"
-msgstr "ошибочный блок:(%d+%d=%d,%d+%d=%d)-(%d+%d=%d,%d+%d=%d в таблице размера(%d,%d)\n"
+msgstr "ошибочный блок:(%d+%d=%d,%d+%d=%d)-(%d+%d=%d,%d+%d=%d в таблице размера (%d,%d)\n"
 
 #: src/output/cairo.c:237
 #, c-format
@@ -5666,16 +5498,14 @@ msgid "error opening output file `%s': %s"
 msgstr "ошибка при попытке открыть файл результатов `%s': %s"
 
 #: src/output/cairo.c:452
-#, fuzzy, c-format
-#| msgid "The defined page is not wide enough to hold at least %d characters in the default font. In fact, there's only room for %d characters."
+#, c-format
 msgid "The defined page is not wide enough to hold at least %d characters in the default font.  In fact, there's only room for %d characters."
-msgstr "Определенный размер страницы является слишком маленьким для того, чтобы поместить по крайней мере %d символов текста типовым шрифтом. Фактически, на нем есть место только для %d символов."
+msgstr "Определенные страницы не достаточно широки для того, чтобы содержать по крайней мере %d символов текста, исполненных  шрифтом по умолчанию. Фактически, на ней есть место только для %d символов. "
 
 #: src/output/cairo.c:462
-#, fuzzy, c-format
-#| msgid "The defined page is not long enough to hold at least %d lines in the default font. In fact, there's only room for %d lines."
+#, c-format
 msgid "The defined page is not long enough to hold at least %d lines in the default font.  In fact, there's only room for %d lines."
-msgstr "Определенный размер страницы является слишком маленьким для того, чтобы поместить по крайней мере %d строк текста типовым шрифтом. Фактически, на нем есть место только для %d строк."
+msgstr "Определенные страницы не достаточно широки для того, чтобы содержать по крайней мере %d строк текста, исполненных  шрифтом по умолчанию. Фактически, на нем есть место только для %d строк."
 
 #: src/output/cairo.c:513
 #, c-format
@@ -5795,42 +5625,7 @@ msgid "%s: output option specified more than once"
 msgstr "%s: параметр вывода результатов указан несколько раз"
 
 #: src/ui/terminal/terminal-opts.c:174
-#, fuzzy, c-format
-#| msgid ""
-#| "PSPP, a program for statistical analysis of sampled data.\n"
-#| "Usage: %s [OPTION]... FILE...\n"
-#| "\n"
-#| "Arguments to long options also apply to equivalent short options.\n"
-#| "\n"
-#| "Output options:\n"
-#| "-o, --output=FILE output to FILE, default format from FILE's name\n"
-#| "-O format=FORMAT override format for previous-o\n"
-#| "-O OPTION=VALUE set output option to customize previous-o\n"
-#| "-O device={terminal|listing} override device type for previous-o\n"
-#| "-e, --error-file=FILE append errors, warnings, and notes to FILE\n"
-#| "--no-output disable default output driver\n"
-#| "Supported output formats: %s\n"
-#| "\n"
-#| "Language options:\n"
-#| "-I, --include=append DIR DIR to search path\n"
-#| "-I-, --no-include clear search path\n"
-#| "-r, --no-statrc disable running rc file at startup\n"
-#| "-a,--algorithm={compatible|enhanced}\n"
-#| "set to `compatible' if you want output\n"
-#| "calculated from broken algorithms\n"
-#| "-x,--syntax={compatible|enhanced}\n"
-#| "set to `compatible' to disable PSPP extensions\n"
-#| "-b, --batch interpret syntax in batch mode\n"
-#| "-i, --interactive interpret syntax in interactive mode\n"
-#| "--syntax-encoding=ENCODING specify encoding for syntax files\n"
-#| "-s, --safer don't allow some unsafe operations\n"
-#| "Default search path: %s\n"
-#| "\n"
-#| "Informative output:\n"
-#| "-h, --help display this help and exit\n"
-#| "-V, --version output version information and exit\n"
-#| "\n"
-#| "Non-option arguments are interpreted as syntax files to execute.\n"
+#, c-format
 msgid ""
 "PSPP, a program for statistical analysis of sampled data.\n"
 "Usage: %s [OPTION]... FILE...\n"
@@ -5870,41 +5665,37 @@ msgstr ""
 "PSPP - программа статистического анализа выбранных данных.\n"
 "Использование: %s [ПАРАМЕТР]... ФАЙЛ...\n"
 "\n"
-"Аргументы длинных версий записи параметров также относятся и к сокращенным\n"
-"версии записи.\n"
+"Аргументы для длинных опций также применимы к эквивалентным коротким вариантам.\n"
 "\n"
 "Параметры вывода данных:\n"
-"-o, --output=ФАЙЛ вывести данные в Файл, по умолчанию формат определяется\n"
-"по названию\n"
-"-O format=ФОРМАТ переопределить формат для предыдущего-o\n"
-"-O ПАРАМЕТР=ЗНАЧЕНИЕ установить значение параметра вывода с целью\n"
-"корректировки предыдущего-o\n"
-"-O device={terminal|listing} переопределить тип устройства для предварительного-o\n"
-"-e, --error-file=ФАЙЛ дописывать ошибки, предупреждения и примечания в файл\n"
-"и заметок в Файл\n"
-"--no-output отключить драйвер вывода по умолчанию\n"
-"Поддерживаемые форматы вывода данных: %s\n"
+"-o, --вывод=ФАЙЛ          вывод в файл, формат имени файла по умолчанию\n"
+"-O формат=ФОРМАТ     переопределить формат для предыдущего-o\n"
+"-O ПАРАМЕТР=ЗНАЧЕНИЕ     установить выходной параметр для настройки предыдущего -o\n"
+"-O устройство={терминал|объявление}      переопределить Тип устройства для предыдущего-o\n"
+"-e, --ошибка-файл=файл     дописывать ошибки, предупреждения и примечания в файл\n"
+"--нет-вывода           отключить драйвер вывода по умолчанию\n"
+"Поддерживаемые выходные форматы: %s\n"
 "\n"
 "Параметры языка:\n"
-"-I, --include=КАТ добавить КАТАЛОГ в список каталогов поиска данных\n"
-"-I-, --no-include очистить список каталогов поиска данных\n"
-"-r, --no-statrc отключить выполнение rc-файла при запуске\n"
-"-a,--algorithm={compatible|enhanced}\n"
-"установите значение «compatible», если выведены данные\n"
+"-I, --включить=каталог      добавить каталог к пути поиска\n"
+"-I-, --не-включать      очистить пути поиска данных\n"
+"-r, --не выполнять rc     отключить выполнение rc-файла при запуске\n"
+"-a,--алгоритм={совместимый|улучшенный}\n"
+"установите значение `compatible', если хотите вывести данные\n"
 "следует вычислять на основе совместимых со старыми\n"
 "версиями алгоритмов, содержащих ошибки\n"
-"-x,--syntax={compatible|enhanced}\n"
-"установите значение «compatible», чтобы отключить\n"
+"-x,--синтаксис={совместимый|улучшенный}\n"
+"установите значение `compatible', чтобы отключить\n"
 "расширение PSPP\n"
-"-b, --batch обрабатывать синтаксические конструкции в пакетном режиме\n"
-"-i, --interactive обрабатывать синтаксические конструкции в интерактивном режиме\n"
-"--syntax-encoding=КОДИРОВКА указать кодировку файлов синтаксических конструкций\n"
-"-s, --safer запретить все действия, кроме безопасных\n"
-"Типичный путь поиска данных: %s\n"
+"-b, --пакет     обрабатывать синтаксические конструкции в пакетном режиме\n"
+"-i, --интерактивный       обрабатывать синтаксические конструкции в интерактивном режиме\n"
+"--синтаксис-кодирования=КОДИРОВКА     указать кодировку файлов синтаксических конструкций\n"
+"-s, --безопасный      запретить все действия, кроме безопасных\n"
+"Путь поиска данных по умолчанию: %s\n"
 "\n"
 "Вывод информационных данных:\n"
-"-h, --help показать это справочное сообщение и закончить работу\n"
-"-V, --version вывести информацию о версии и закончить работу\n"
+"-h, --помощь      показать справочную информацию и выйти\n"
+"-V, --версия         вывести информацию о версии и выйти\n"
 "\n"
 "Аргументы, которые не являются параметрами, считаются файлами синтаксических конструкций, которые\n"
 "следует выполнить.\n"
@@ -5949,15 +5740,13 @@ msgid "System Files (*.sav)"
 msgstr "системные файлы (*.sav)"
 
 #: src/ui/gui/aggregate-dialog.c:172 src/ui/gui/psppire-data-window.c:505
-#, fuzzy
-#| msgid "System Compressed Files (*.zsav)"
 msgid "Compressed System Files (*.zsav)"
-msgstr "сжатые системные файлы (*.zsav)"
+msgstr "Сжатые Системные Файлы (*.zsav)"
 
 #: src/ui/gui/aggregate-dialog.c:177 src/ui/gui/psppire-data-window.c:510
 #: src/ui/gui/psppire-window.c:720
 msgid "Portable Files (*.por) "
-msgstr "портативные файлы (*.por) "
+msgstr "Портативные Файлы (*.por) "
 
 #: src/ui/gui/comments-dialog.c:57
 #, c-format
@@ -5982,10 +5771,9 @@ msgstr ""
 "Pavel Maryanov"
 
 #: src/ui/gui/help-menu.c:101
-#, fuzzy, c-format
-#| msgid "Cannot open reference manual: %s. The PSPP user manual is also available at %s"
+#, c-format
 msgid "Cannot open reference manual: %s.  The PSPP user manual is also available at %s"
-msgstr "Не удалось открыть Руководство пользователя: %s. Руководство пользователя PSPP можно посмотреть по адресу %s"
+msgstr "Не удалось открыть справочное руководство: %s. Справочное руководство PSPP также доступно в %s"
 
 #: src/ui/gui/help-menu.c:128
 msgid "_Help"
@@ -5993,37 +5781,10 @@ msgstr "_Помощь"
 
 #: src/ui/gui/help-menu.c:135
 msgid "_Reference Manual"
-msgstr "_Руководство пользователя"
+msgstr "_Справочное Руководство"
 
 #: src/ui/gui/main.c:90
-#, fuzzy, c-format
-#| msgid ""
-#| "PSPPIRE, a GUI for PSPP, a program for statistical analysis of sampled data.\n"
-#| "Usage: %s [OPTION]... FILE\n"
-#| "\n"
-#| "Arguments to long options also apply to equivalent short options.\n"
-#| "\n"
-#| "GUI options:\n"
-#| "-q, --no-splash don't show splash screen during startup\n"
-#| "\n"
-#| "%sLanguage options:\n"
-#| "-I, --include=DIR append DIR to search path\n"
-#| "-I-, --no-include clear search path\n"
-#| "-a,--algorithm={compatible|enhanced}\n"
-#| "set to `compatible' if you want output\n"
-#| "calculated from broken algorithms\n"
-#| "-x,--syntax={compatible|enhanced}\n"
-#| "set to `compatible' to disable PSPP extensions\n"
-#| "-i, --interactive interpret syntax in interactive mode\n"
-#| "-s, --safer don't allow some unsafe operations\n"
-#| "Default search path: %s\n"
-#| "\n"
-#| "Informative output:\n"
-#| "-h, --help display this help and exit\n"
-#| "-V, --version output version information and exit\n"
-#| "\n"
-#| "A non-option argument is interpreted as a data file in .sav or .zsav or .por\n"
-#| "format or a syntax file to load.\n"
+#, c-format
 msgid ""
 "PSPPIRE, a GUI for PSPP, a program for statistical analysis of sampled data.\n"
 "Usage: %s [OPTION]... FILE\n"
@@ -6055,32 +5816,30 @@ msgstr ""
 "PSPPIRE, графический интерфейс PSPP, программы для статистического анализа данных выборок.\n"
 "Использование: %s [ПАРАМЕТР]... ФАЙЛ...\n"
 "\n"
-"Аргументы длинных версий записи параметров также относятся и к сокращенным\n"
-"версиям записи.\n"
+"Аргументы для длинных опций также применимы к эквивалентным коротким вариантам.\n"
 "\n"
 "Параметры графического интерфейса:\n"
-"-q, --no-splash не показывать окно приветствия при запуске\n"
+"-q, --нет заставки          не показывать окно приветствия при запуске\n"
 "\n"
-"%sПараметри языка:\n"
-"-I, --include=КАТ добавить КАТАЛОГ в список каталогов поиска данных\n"
-"-I-, --no-include очистить список каталогов поиска данных\n"
-"-a,--algorithm={compatible|enhanced}\n"
-"установите значение «compatible», если выведены данные\n"
+"%sПараметры языка:\n"
+"-I, --включить=каталог      добавить каталог к пути поиска\n"
+"-I-, --не-включать      очистить пути поиска данных\n"
+"-a,--алгоритм={совместимый|улучшенный}\n"
+"установите значение `compatible', если хотите вывести данные\n"
 "следует вычислять на основе совместимых со старыми\n"
 "версиями алгоритмов, содержащих ошибки\n"
-"-x,--syntax={compatible|enhanced}\n"
-"установите значение «compatible», чтобы отключить\n"
+"-x,--синтаксис={совместимый|улучшенный}\n"
+"установите значение `compatible', чтобы отключить\n"
 "расширение PSPP\n"
-"-i, --interactive обрабатывать синтаксические конструкции в интерактивном режиме\n"
-"-s, --safer запретить все действия, кроме безопасных\n"
-"Типичный путь поиска данных: %s\n"
+"-i, --интерактивный       обрабатывать синтаксические конструкции в интерактивном режиме\n"
+"-s, --безопасный      запретить все действия, кроме безопасных\n"
+"Путь поиска данных по умолчанию: %s\n"
 "\n"
 "Вывод информационных данных:\n"
-"-h, --help показать это справочное сообщение и закончить работу\n"
-"-V, --version вывести информацию о версии и закончить работу\n"
-"\n"
-"Аргументы, которые не являются параметрами, считаются файлами .sav, .por или синтаксических\n"
-"конструкций, скачать.\n"
+"-h, --помощь      показать справочную информацию и выйти\n"
+"-V, --версия         вывести информацию о версии и выйти\n"
+"Не вариант аргумента, который интерпретируется как файл данных в .sav or .zsav or .por\n"
+"формате или синтаксисе файла для загрузки\n"
 
 #: src/ui/gui/missing-val-dialog.c:252 src/ui/gui/missing-val-dialog.c:302
 msgid "Incorrect value for variable type"
@@ -6182,10 +5941,8 @@ msgid "System File"
 msgstr "Системный файл"
 
 #: src/ui/gui/psppire-data-window.c:539
-#, fuzzy
-#| msgid "Compressed File System"
 msgid "Compressed System File"
-msgstr "Сжатый системный файл"
+msgstr "Система Сжатия Файла"
 
 #: src/ui/gui/psppire-data-window.c:545
 msgid "Portable File"
@@ -6298,10 +6055,9 @@ msgid "Standard error"
 msgstr "Стандартная погрешность"
 
 #: src/ui/gui/psppire-dialog-action-factor.c:323
-#, fuzzy, c-format
-#| msgid "_Eigenvalues over %4.2 f times the mean eigenvalue"
+#, c-format
 msgid "_Eigenvalues over %4.2f times the mean eigenvalue"
-msgstr "_Собственные значения, превышающие среднее более чем %4.2 f раз"
+msgstr "_Значения, превышающие более чем в %4.2f раз среднее значение"
 
 #: src/ui/gui/psppire-dialog-action-frequencies.c:44
 msgid "Standard error of the mean"
@@ -6309,11 +6065,9 @@ msgstr "Стандартная ошибка среднего"
 
 #: src/ui/gui/psppire-dialog-action-frequencies.c:47
 msgid "Standard error of the skewness"
-msgstr "Стандартная погрешность наклона"
+msgstr "Стандартная погрешность асимметрии"
 
 #: src/ui/gui/psppire-dialog-action-frequencies.c:51
-#, fuzzy
-#| msgid "Standard error of kurtosis"
 msgid "Standard error of the kurtosis"
 msgstr "Стандартная ошибка эксцесса"
 
@@ -6587,7 +6341,7 @@ msgstr "Выровнять"
 
 #: src/ui/gui/psppire-var-sheet.c:1393
 msgid "Measure"
-msgstr "Мера"
+msgstr "Шкала"
 
 #: src/ui/gui/psppire-var-sheet.c:1399
 msgid "Role"
@@ -6665,46 +6419,34 @@ msgid "Only the first %3d %% of file (approximately)"
 msgstr "Только первые %3d%% файла (приблизительно)"
 
 #: src/ui/gui/page-intro.c:127
-#, fuzzy
-#| msgid ""
-#| "This assistant will guide you through the process of importing data into PSPP from a text file with one line per case, in which fields are separated by tabs, commas, or other delimiters.\n"
-#| "\n"
 msgid ""
 "This assistant will guide you through the process of importing data into PSPP from a text file with one line per case,  in which fields are separated by tabs, commas, or other delimiters.\n"
 "\n"
-msgstr ""
-"С помощью этой вспомогательной программы вы сможете выполнить процедуру импорта в PSPP данных из текстового файла, в котором каждое наблюдение записано в отдельной строке, а поля разделены символами табуляции, запятыми или другими разделителями.\n"
-"\n"
+msgstr "Этот помощник проведет вас через процесс импорта данных в PSPP из текстового файла, в котором каждое наблюдение записано в отдельной строке, а поля разделены символами табуляции, запятыми или другими разделителями.\n"
 
 #: src/ui/gui/page-intro.c:133
-#, fuzzy, c-format
-#| msgid "The selected file contains %'zu line of text. "
-#| msgid_plural "The selected file contains %'zu lines of text. "
+#, c-format
 msgid "The selected file contains %'zu line of text.  "
 msgid_plural "The selected file contains %'zu lines of text.  "
-msgstr[0] "В обозначенном файле содержится %'zu строка текста. "
-msgstr[1] "В обозначенном файле содержится %'zu строки текста. "
-msgstr[2] "В обозначенном файле содержится %'zu строк текста. "
+msgstr[0] "В выбранном файле содержится %'zu строка текста. "
+msgstr[1] "В выбранном файле содержится %'zu строк текста. "
+msgstr[2] "В выбранном файле содержится %'zu строк текста. "
 
 #: src/ui/gui/page-intro.c:141
-#, fuzzy, c-format
-#| msgid "The selected file contains approximately %'lu line of text. "
-#| msgid_plural "The selected file contains approximately %'lu lines of text. "
+#, c-format
 msgid "The selected file contains approximately %'lu line of text.  "
 msgid_plural "The selected file contains approximately %'lu lines of text.  "
-msgstr[0] "В обозначенном файле содержится примерно %'lu строка текста. "
-msgstr[1] "В обозначенном файле содержится примерно %'lu строки текста. "
-msgstr[2] "В обозначенном файле содержится примерно %'lu строк текста. "
+msgstr[0] "В выбранном файле содержится приблизительно %'lu строка текста. "
+msgstr[1] "В выбранном файле содержится приблизительно %'lu строк текста. "
+msgstr[2] "В выбранном файле содержится приблизительно %'lu строк текста"
 
 #: src/ui/gui/page-intro.c:147
-#, fuzzy, c-format
-#| msgid "Only the first %zu line of the file will be shown for preview purposes in the following screens. "
-#| msgid_plural "Only the first %zu lines of the file will be shown for preview purposes in the following screens. "
+#, c-format
 msgid "Only the first %zu line of the file will be shown for preview purposes in the following screens.  "
 msgid_plural "Only the first %zu lines of the file will be shown for preview purposes in the following screens.  "
-msgstr[0] "На последующих страницах, с целью предварительного просмотра будет показана только первая %zu строка файла. "
-msgstr[1] "На последующих страницах, с целью предварительного просмотра будут показаны только первые %zu строки файла. "
-msgstr[2] "На последующих страницах, с целью предварительного просмотра будут показаны только первые %zu строк файла. "
+msgstr[0] "Только первая %zu строка файла будет отображаться при предварительном просмотре следующих экранов."
+msgstr[1] "Только первые %zu строк файла будут отображаться при предварительном просмотре следующих экранов."
+msgstr[2] "Только первые %zu строк файла будут отображаться при предварительном просмотре следующих экранов."
 
 #: src/ui/gui/page-intro.c:154
 msgid "You may choose below how much of the file should actually be imported."
@@ -6809,20 +6551,18 @@ msgid "exactly two non-option arguments are required; use --help for help"
 msgstr "должно быть указано только два аргумента, которые не являются параметрами; воспользуйтесь параметром --help, чтобы получить справку"
 
 #: utilities/pspp-convert.c:142
-#, fuzzy, c-format
-#| msgid "%s: cannot guess output format (use-O option)"
+#, c-format
 msgid "%s: cannot guess output format (use -O option)"
-msgstr "%s: не удалось определить формат вывода данных (воспользуйтесь параметром-O)"
+msgstr "%s: не удалось определить формат вывода данных (используйте -O параметры)"
 
 #: utilities/pspp-convert.c:151
 msgid "can only convert encrypted data file to sav or sys format"
 msgstr "преобразование файла с зашифрованными данными возможно только в форматы sav или sys"
 
 #: utilities/pspp-convert.c:188
-#, fuzzy, c-format
-#| msgid "%s: unknown output format (use-O option)"
+#, c-format
 msgid "%s: unknown output format (use -O option)"
-msgstr "%s: неизвестный формат вывода данных (воспользуйтесь параметром-O)"
+msgstr "%s: неизвестный формат вывода данных (воспользуйтесь -O параметры)"
 
 #: utilities/pspp-convert.c:205
 #, c-format
@@ -6898,10 +6638,9 @@ msgid "%s is not a recognized encoding or locale name"
 msgstr "%s не известная программе кодировка или имя"
 
 #: src/language/utilities/set.q:575
-#, fuzzy, c-format
-#| msgid "%s requires numeric output format as an argument. Specified format %s is of type string."
+#, c-format
 msgid "%s requires numeric output format as an argument.  Specified format %s is of type string."
-msgstr "команда %s следует указывать аргумент формата вывода числовых данных. Указанным форматом %s-строковый."
+msgstr "%s требует числовой формат вывода данных в качестве аргумента. Указанный формат %s имеет строковый формат. "
 
 #: src/language/utilities/set.q:804
 msgid "ISL (32-bit IEEE 754 single, little-endian)"
@@ -6955,10 +6694,9 @@ msgid "%s without matching %s."
 msgstr "%s без аналога, %s."
 
 #: src/language/stats/crosstabs.q:286
-#, fuzzy, c-format
-#| msgid "Missing mode %s not allowed in general mode. Assuming %s."
+#, c-format
 msgid "Missing mode %s not allowed in general mode.  Assuming %s."
-msgstr "Не указан режим %s. Так нельзя делать в общем режиме. Предполагаем, что %s."
+msgstr "Отсутствует мода %s не разрешенная в общем. Предполагаем, что %s. "
 
 #: src/language/stats/crosstabs.q:402
 msgid "Too many cross-tabulation variables or dimensions."
@@ -7023,7 +6761,7 @@ msgstr "χ2-тесты."
 
 #: src/language/stats/crosstabs.q:1297
 msgid "Symmetric measures."
-msgstr "Симметричные меры."
+msgstr "Симметричные шкалы."
 
 #: src/language/stats/crosstabs.q:1303 src/language/stats/crosstabs.q:1353
 msgid "Asymp. Std. Error"
@@ -7048,7 +6786,7 @@ msgstr "Доверительный интервал в 95%%"
 
 #: src/language/stats/crosstabs.q:1345
 msgid "Directional measures."
-msgstr "Направленные меры."
+msgstr "Направленные шкалы."
 
 #: src/language/stats/crosstabs.q:1784
 msgid "Pearson Chi-Square"
@@ -7077,11 +6815,11 @@ msgstr "Кол-во корректных наблюдений"
 
 #: src/language/stats/crosstabs.q:1842 src/language/stats/crosstabs.q:1981
 msgid "Nominal by Nominal"
-msgstr "Номинальная по номинальной"
+msgstr "Номинальная по Номинальной"
 
 #: src/language/stats/crosstabs.q:1843 src/language/stats/crosstabs.q:1982
 msgid "Ordinal by Ordinal"
-msgstr "порядковый номер по порядковому"
+msgstr "Порядковая по Порядковой"
 
 #: src/language/stats/crosstabs.q:1844
 msgid "Interval by Interval"
@@ -7089,7 +6827,7 @@ msgstr "Интервал за интервалом"
 
 #: src/language/stats/crosstabs.q:1845
 msgid "Measure of Agreement"
-msgstr "Степень согласованности"
+msgstr "Шкала согласованности"
 
 #: src/language/stats/crosstabs.q:1851
 msgid "Cramer's V"
@@ -7171,16 +6909,14 @@ msgid "%s must be specified with %s."
 msgstr "%s должен быть указан с %s."
 
 #: src/language/data-io/file-handle.q:146
-#, fuzzy, c-format
-#| msgid "The specified file mode requires LRECL. Assuming %zu-character records."
+#, c-format
 msgid "The specified file mode requires LRECL.  Assuming %zu-character records."
-msgstr "Для указанного режима доступа к файлам нужен LRECL. Предполагаем размер записи в %zu символов."
+msgstr "Указанный файл мод требует LRECL. Предполагаем %zu-символьные записи. "
 
 #: src/language/data-io/file-handle.q:150
-#, fuzzy, c-format
-#| msgid "Record length (%ld) must be between 1 and %lu bytes. Assuming %zu-character records."
+#, c-format
 msgid "Record length (%ld) must be between 1 and %lu bytes.  Assuming %zu-character records."
-msgstr "Длина записи (%ld) должно быть значением от 1 до %lu байт. Предполагаем размеры записи в %zu символов."
+msgstr "Длина записи (%ld)  должна находиться между значениями 1 и %lu байт. Предполагаем %zu-символьные записи. "
 
 #: src/language/data-io/file-handle.q:194
 msgid "file"
@@ -7253,7 +6989,7 @@ msgstr "Файл _уже упорядочен по переменным груп
 
 #: src/ui/gui/aggregate.ui:490
 msgid "Sort file before a_ggregating"
-msgstr "Упорядочить файл в _агрегування"
+msgstr "Упорядочить файл перед агрегированием"
 
 #: src/ui/gui/aggregate.ui:511
 msgid "Options for very large datasets"
@@ -7633,11 +7369,11 @@ msgstr "Исследование: статистика"
 
 #: src/ui/gui/examine.ui:328 src/ui/gui/oneway.ui:197
 msgid "_Descriptives"
-msgstr "_Описательная статистика"
+msgstr "_Описательные статистики"
 
 #: src/ui/gui/examine.ui:342
 msgid "_Extremes"
-msgstr "_Екстремальные значения"
+msgstr "_Экстремальные значения"
 
 #: src/ui/gui/examine.ui:356
 msgid "_Percentiles"
@@ -7681,7 +7417,7 @@ msgstr "Факторный анализ"
 
 #: src/ui/gui/factor.ui:56 src/ui/gui/data-editor.ui:304
 msgid "_Descriptives..."
-msgstr "_Описательная статистика..."
+msgstr "_Описательные статистики..."
 
 #: src/ui/gui/factor.ui:69
 msgid "_Extraction..."
@@ -7725,7 +7461,7 @@ msgstr "Показать"
 
 #: src/ui/gui/factor.ui:449
 msgid "_Number of factors:"
-msgstr "_Номер факторов:"
+msgstr "_Номера факторов:"
 
 #: src/ui/gui/factor.ui:481
 msgid "Extract"
@@ -7785,15 +7521,15 @@ msgstr "Соответствие по формальным выражением"
 
 #: src/ui/gui/find.ui:187
 msgid "Search substrings"
-msgstr "Искать подстроки"
+msgstr "Искать в тексте"
 
 #: src/ui/gui/find.ui:203
 msgid "Wrap around"
-msgstr "Циклически"
+msgstr "Искать по кругу"
 
 #: src/ui/gui/find.ui:218
 msgid "Search backward"
-msgstr "Поиск назад"
+msgstr "Искать в обратном направлении"
 
 #: src/ui/gui/frequencies.ui:108 src/ui/gui/rank.ui:108
 msgid "_Variable(s):"
@@ -8105,10 +7841,8 @@ msgid "_Coefficients:"
 msgstr "_Коэффициенты:"
 
 #: src/ui/gui/oneway.ui:432
-#, fuzzy
-#| msgid "_Coefficients:"
 msgid "Coefficient Total: "
-msgstr "_Коэффициенты:"
+msgstr "_Коэффициент Общий:"
 
 #: src/ui/gui/oneway.ui:468
 msgid "Contrast 1 of 1"
@@ -8139,10 +7873,8 @@ msgid "Transpose"
 msgstr "Транспонирование"
 
 #: src/ui/gui/psppire.ui:249
-#, fuzzy
-#| msgid "_State Variable:"
 msgid "Name Variable:"
-msgstr "_Переменная Состояния:"
+msgstr "_Имя Переменной:"
 
 #: src/ui/gui/psppire.ui:284
 msgid "Variable(s):"
@@ -8317,10 +8049,8 @@ msgid "Split File"
 msgstr "Разделить файл"
 
 #: src/ui/gui/split-file.ui:70
-#, fuzzy
-#| msgid "Anal_yze all cases. Do not create groups."
 msgid "Anal_yze all cases.  Do not create groups."
-msgstr "Анализировать все наблюдения. Не создавать групп."
+msgstr "_Проанализировать все случаи. Не создавать группы."
 
 #: src/ui/gui/split-file.ui:87
 msgid "Compare _groups."
@@ -8579,19 +8309,14 @@ msgid "Importing Textual Data"
 msgstr "Импорт текстовых данных"
 
 #: src/ui/gui/text-data-import.ui:19
-#, fuzzy
-#| msgid ""
-#| "This assistant will guide you through the process of importing data into PSPP from a text file with one line per case, in which fields are separated by tabs, commas, or other delimiters.\n"
-#| "\n"
-#| "The selected file contains N lines of text. Only the first M of these will be shown for preview purposes in the following screens.  You may choose below how much of the file should actually be imported."
 msgid ""
 "This assistant will guide you through the process of importing data into PSPP from a text file with one line per case,  in which fields are separated by tabs, commas, or other delimiters.\n"
 "\n"
 "The selected file contains N lines of text.  Only the first M of these will be shown for preview purposes in the following screens.  You may choose below how much of the file should actually be imported."
 msgstr ""
-"С помощью этой вспомогательной программы вы сможете выполнить процедуру импорта данных в PSPP из текстового файла, каждая из записей которого расположена в отдельной строке, а поля разделены символами табуляции, запятыми или другими разделителями.\n"
+"Этот помощник проведет вас через процесс импорта данных в PSPP из текстового файла, каждая из записей которого расположена в отдельной строке, а поля разделены символами табуляции, запятыми или другими разделителями.\n"
 "\n"
-"В обозначенном файле содержится N строк текста. На следующих страницах мастера будет показано только первые M записей с целью предварительного просмотра. Ниже вы можете выбрать объем данных, которые будут импортированы."
+"В обозначенном файле содержится N строк текста. На следующих страницах мастера будут показаны только первые M записей с целью предварительного просмотра. Ниже вы можете выбрать объем данных, который будет импортирован."
 
 #: src/ui/gui/text-data-import.ui:95
 msgid "All cases"
@@ -8765,11 +8490,11 @@ msgstr "_Открыть..."
 
 #: src/ui/gui/data-editor.ui:44
 msgid "I_mport Data..."
-msgstr "Импортированные данные..."
+msgstr "Импортировать данные..."
 
 #: src/ui/gui/data-editor.ui:51
 msgid "_Rename Dataset..."
-msgstr "Переназвать базу данных..."
+msgstr "Переименовать..."
 
 #: src/ui/gui/data-editor.ui:59
 msgid "_Save"
@@ -8781,15 +8506,15 @@ msgstr "Сохранить _как..."
 
 #: src/ui/gui/data-editor.ui:74
 msgid "D_isplay Data File Information"
-msgstr "_Показать сведения относительно базы данных"
+msgstr "_Показать сведения о"
 
 #: src/ui/gui/data-editor.ui:81
 msgid "Working File"
-msgstr "Текущего файла"
+msgstr "Текущем файле"
 
 #: src/ui/gui/data-editor.ui:88
 msgid "External File..."
-msgstr "Внешнего файла..."
+msgstr "Внешнем файле..."
 
 #: src/ui/gui/data-editor.ui:95
 msgid "Recently Used Da_ta"
@@ -8909,7 +8634,7 @@ msgstr "_Анализ"
 
 #: src/ui/gui/data-editor.ui:289
 msgid "_Descriptive Statistics"
-msgstr "_Описательная статистика"
+msgstr "_Описательные статистики"
 
 #: src/ui/gui/data-editor.ui:297
 msgid "_Frequencies..."
@@ -8925,11 +8650,11 @@ msgstr "_Таблицы сопряженности..."
 
 #: src/ui/gui/data-editor.ui:324
 msgid "Compare _Means"
-msgstr "Сравнить _середние"
+msgstr "Сравнение_средних"
 
 #: src/ui/gui/data-editor.ui:332
 msgid "_Means..."
-msgstr "_Середние..."
+msgstr "_Средние..."
 
 #: src/ui/gui/data-editor.ui:339
 msgid "_One Sample T Test..."
@@ -9046,10 +8771,8 @@ msgid "Case Counter Area"
 msgstr "Область счетчика наблюдений"
 
 #: src/ui/gui/data-editor.ui:712
-#, fuzzy
-#| msgid "Use Filter Status Area"
 msgid "Filter Use Status Area"
-msgstr "Область показа состояния фильтра"
+msgstr "Фильтр  Использования Состояния Области"
 
 #: src/ui/gui/data-editor.ui:738
 msgid "Weight Status Area"
