@@ -25,11 +25,6 @@
 
 enum { MAX_PREVIEW_LINES = 1000 }; /* Max number of lines to read. */
 
-struct assist_page
-{
-  GtkWidget *page;
-};
-
 /* The file to be imported. */
 struct file
   {
