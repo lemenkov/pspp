@@ -138,10 +138,6 @@ text_data_import_assistant (PsppireDataWindow *dw)
       destroy_formats_page (ia);
       destroy_separators_page (ia);
     }
-
-  destroy_assistant (ia);
-  destroy_file (ia);
-  free (ia);
 }
 
 /* Emits PSPP syntax to S that applies the dictionary attributes
