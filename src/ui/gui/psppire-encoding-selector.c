@@ -191,9 +191,9 @@ gchar *
 psppire_encoding_selector_get_encoding (GtkWidget *selector)
 {
   gchar *encoding = NULL;
-  GList *list, *pos;
+  GList *pos;
+  GList *list = gtk_container_get_children (GTK_CONTAINER (selector));
 
-  list = gtk_container_get_children (GTK_CONTAINER (selector));
   for (pos = list; pos; pos = pos->next)
     {
       GtkWidget *widget = pos->data;
@@ -210,7 +210,14 @@ psppire_encoding_selector_get_encoding (GtkWidget *selector)
           break;
         }
     }
+
   g_list_free (list);
 
-  return encoding && !strcmp (encoding, "Auto") ? NULL : encoding;
+  if (0 == strcmp (encoding, "Auto"))
+    {
+      g_free (encoding);
+      return NULL;
+    }
+
+  return encoding;
 }
