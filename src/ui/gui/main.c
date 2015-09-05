@@ -336,9 +336,9 @@ main (int argc, char *argv[])
   g_main_loop_unref (loop);
   g_main_context_unref (context);
 
-  if (win) 
+  if (win)
     g_timeout_add (500, destroy_splash_window, win);
-  
+
   gtk_main ();
 
   /* Not much point in this except to check for memory leaks */
@@ -372,14 +372,25 @@ gboolean
 splash_prepare  (GSource    *source,
 	    gint       *timeout_)
 {
+  GdkEvent *e = gdk_event_peek ();
+  if (!e)
+    return FALSE;
+
+  gdk_event_free (e);
   return TRUE;
 }
 
 gboolean
 splash_check   (GSource    *source)
 {
+  GdkEvent *e = gdk_event_peek ();
+  if (!e)
+    return FALSE;
+
+  gdk_event_free (e);
   return TRUE;
 }
+
 
 gboolean
 splash_dispatch (GSource *ss,
@@ -387,10 +398,9 @@ splash_dispatch (GSource *ss,
 	    gpointer    user_data)
 {
   struct splash_source *source = (struct splash_source *) ss;
-
   GdkEvent *e = gdk_event_get ();
   if (!e)
-    return FALSE;
+    return TRUE;
 
   GdkWindow *w = ((GdkEventAny *)e)->window;
 
@@ -401,8 +411,8 @@ splash_dispatch (GSource *ss,
     }
 
   fill_splash_window (w, source->sfc);
+  gdk_display_flush (gdk_window_get_display (w));
 
-  gdk_window_show (w);
   gdk_event_free (e);
 
   return TRUE;
