@@ -31,7 +31,6 @@
 #include "ui/gui/psppire-data-store.h"
 #include "ui/gui/psppire-value-entry.h"
 #include "ui/gui/psppire-var-sheet.h"
-#include "ui/gui/psppire.h"
 #include "ui/gui/psppire-conf.h"
 
 #include <gettext.h>

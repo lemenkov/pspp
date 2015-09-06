@@ -26,7 +26,7 @@
 #include "libpspp/cast.h"
 #include "output/driver.h"
 #include "ui/gui/psppire-data-store.h"
-#include "ui/gui/psppire-output-window.h"
+#include "ui/gui/psppire.h"
 
 /* Lazy casereader callback function used by execute_syntax. */
 static struct casereader *

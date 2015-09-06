@@ -40,7 +40,6 @@
 #include <data/settings.h>
 
 #include "psppire-data-store.h"
-#include "psppire.h"
 
 #include "gl/configmake.h"
 #include "xalloc.h"

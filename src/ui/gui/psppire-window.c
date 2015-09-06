@@ -39,7 +39,6 @@
 #include "psppire-encoding-selector.h"
 #include "psppire-syntax-window.h"
 #include "psppire-window-register.h"
-#include "psppire.h"
 
 static void psppire_window_base_init     (PsppireWindowClass *class);
 static void psppire_window_class_init    (PsppireWindowClass *class);

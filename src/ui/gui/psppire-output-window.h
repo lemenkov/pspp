@@ -23,7 +23,6 @@
 #include <glib-object.h>
 #include <gtk/gtk.h>
 #include "psppire-window.h"
-#include "psppire.h"
 #include "libpspp/string-map.h"
 
 
