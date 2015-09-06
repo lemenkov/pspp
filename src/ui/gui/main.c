@@ -210,16 +210,6 @@ remove_psn (int argc, char **argv)
 }
 
 
-
-struct init_source
-{
-  GSource parent;
-  int state;
-  GMainLoop *loop;
-  gchar *file;
-};
-
-
 gboolean
 init_prepare (GSource *source, gint *timeout_)
 {
@@ -242,7 +232,8 @@ init_dispatch (GSource *ss,
 {
   struct init_source *is = (struct init_source *)ss;
 
-  bool finished = initialize (is->file, is->state++);
+  bool finished = initialize (is);
+  is->state++;
   
   if (finished)
     {
@@ -279,12 +270,6 @@ main (int argc, char *argv[])
   startup = g_timer_new ();
   g_timer_start (startup);
 
-  if ( ! gtk_parse_args (&argc, &argv) )
-    {
-      perror ("Error parsing arguments");
-      exit (1);
-    }
-
   if ( (vers = gtk_check_version (GTK_MAJOR_VERSION,
 				 GTK_MINOR_VERSION,
 				 GTK_MICRO_VERSION)) )
@@ -306,9 +291,7 @@ main (int argc, char *argv[])
     exit (EXIT_FAILURE);
   argv_parser_destroy (parser);
 
-  /* Initialise GDK.  Theoretically this call can remove options from argc,argv if
-     it thinks they are gdk options.
-     However there shouldn't be any here because of the gtk_parse_args call above. */
+  /* Initialise GDK.  GTK gets initialized later. */
   gdk_init (&argc, &argv);
 
   GMainContext *context = g_main_context_new ();
@@ -326,6 +309,8 @@ main (int argc, char *argv[])
     
   g_source_attach (ss, context);
 
+  ((struct init_source *) ss)->argc = &argc;
+  ((struct init_source *) ss)->argv = &argv;
   ((struct init_source *) ss)->loop = loop;
   ((struct init_source *) ss)->file = optind < argc ? argv[optind] : NULL;
   

@@ -73,9 +73,9 @@ static gchar *local_to_filename_encoding (const char *fn);
 
 
 bool
-initialize (const char *data_file, int state)
+initialize (const struct init_source *is)
 {
-  switch (state)
+  switch (is->state)
     {
     case 0:
       i18n_init ();
@@ -102,29 +102,36 @@ initialize (const char *data_file, int state)
       bind_textdomain_codeset (PACKAGE, "UTF-8");
       break;
     case 8:
-      create_icon_factory ();
+      if ( ! gtk_parse_args (is->argc, is->argv) )
+	{
+	  perror ("Error parsing arguments");
+	  exit (1);
+	}
       break;
     case 9:
-      psppire_output_window_setup ();
+      create_icon_factory ();
       break;
     case 10:
-      journal_init ();
+      psppire_output_window_setup ();
       break;
     case 11:
-      textdomain (PACKAGE);
+      journal_init ();
       break;
     case 12:
+      textdomain (PACKAGE);
+      break;
+    case 13:
       /* FIXME: This should be implemented with a GtkInterface */
       psppire_selector_set_default_selection_func (GTK_TYPE_ENTRY, insert_source_row_into_entry);
       psppire_selector_set_default_selection_func (PSPPIRE_VAR_VIEW_TYPE, insert_source_row_into_tree_view);
       psppire_selector_set_default_selection_func (GTK_TYPE_TREE_VIEW, insert_source_row_into_tree_view);
       psppire_selector_set_default_selection_func (PSPPIRE_TYPE_MEANS_LAYER, insert_source_row_into_layers);
       break;
-    case 13:
+    case 14:
       {
-      if (data_file)
+      if (is->file)
 	{
-	  gchar *filename = local_to_filename_encoding (data_file);
+	  gchar *filename = local_to_filename_encoding (is->file);
 
 	  int retval = any_reader_detect (filename, NULL);
 

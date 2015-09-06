@@ -17,11 +17,25 @@
 #ifndef PSPPIRE_H
 #define PSPPIRE_H
 
+#include <glib.h>
+
 #include <stdbool.h>
 
 struct lexer;
 
-bool initialize (const char *data_file, int state);
+
+struct init_source
+{
+  GSource parent;
+  int state;
+  GMainLoop *loop;
+  gchar *file;
+  int *argc;
+  char ***argv;
+};
+
+bool initialize (const struct init_source *is);
+
 void de_initialize (void);
 
 void psppire_quit (void);
