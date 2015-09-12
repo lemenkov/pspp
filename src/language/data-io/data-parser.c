@@ -578,7 +578,6 @@ static bool
 parse_delimited_span (const struct data_parser *parser,
                       struct dfm_reader *reader, struct ccase *c)
 {
-  const char *input_encoding = dfm_reader_get_encoding (reader);
   const char *output_encoding = dict_get_encoding (parser->dict);
   struct string tmp = DS_EMPTY_INITIALIZER;
   struct field *f;
@@ -605,6 +604,7 @@ parse_delimited_span (const struct data_parser *parser,
 	    }
 	}
 
+      const char *input_encoding = dfm_reader_get_encoding (reader);
       error = data_in (s, input_encoding, f->format.type,
                        case_data_rw_idx (c, f->case_idx),
                        fmt_var_width (&f->format), output_encoding);
@@ -622,7 +622,6 @@ static bool
 parse_delimited_no_span (const struct data_parser *parser,
                          struct dfm_reader *reader, struct ccase *c)
 {
-  const char *input_encoding = dfm_reader_get_encoding (reader);
   const char *output_encoding = dict_get_encoding (parser->dict);
   struct string tmp = DS_EMPTY_INITIALIZER;
   struct substring s;
@@ -650,6 +649,7 @@ parse_delimited_no_span (const struct data_parser *parser,
           goto exit;
 	}
 
+      const char *input_encoding = dfm_reader_get_encoding (reader);
       error = data_in (s, input_encoding, f->format.type,
                        case_data_rw_idx (c, f->case_idx),
                        fmt_var_width (&f->format), output_encoding);
