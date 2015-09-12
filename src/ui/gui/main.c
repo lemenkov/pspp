@@ -160,7 +160,7 @@ startup_option_callback (int id, void *show_splash_)
     }
 }
 
-static gboolean
+static gboolean UNUSED
 print_startup_time (gpointer data)
 {
   g_timer_stop (startup);
