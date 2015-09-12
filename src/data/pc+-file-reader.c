@@ -1,5 +1,5 @@
 /* PSPP - a program for statistical analysis.
-   Copyright (C) 1997-2000, 2006-2007, 2009-2014 Free Software Foundation, Inc.
+   Copyright (C) 1997-2000, 2006-2007, 2009-2015 Free Software Foundation, Inc.
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -505,17 +505,19 @@ pcp_file_casereader_destroy (struct casereader *reader UNUSED, void *r_)
   pcp_close (&r->any_reader);
 }
 
-/* Returns true if FILE is an SPSS/PC+ system file,
-   false otherwise. */
+/* Detects whether FILE is an SPSS/PC+ system file.  Returns 1 if so, 0 if
+   not, and a negative errno value if there is an error reading FILE. */
 static int
 pcp_detect (FILE *file)
 {
   static const char signature[4] = "SPSS";
   char buf[sizeof signature];
 
-  if (fseek (file, 0x104, SEEK_SET)
-      || (fread (buf, sizeof buf, 1, file) != 1 && !feof (file)))
+  if (fseek (file, 0x104, SEEK_SET))
     return -errno;
+
+  if (fread (buf, sizeof buf, 1, file) != 1)
+    return ferror (file) ? -errno : 0;
 
   return !memcmp (buf, signature, sizeof buf);
 }
