@@ -921,9 +921,8 @@ sys_file_casereader_destroy (struct casereader *reader UNUSED, void *r_)
   sfm_close (&r->any_reader);
 }
 
-/* Returns 1 if FILE is an SPSS system file,
-   0 if it is not,
-   otherwise a negative errno value. */
+/* Detects whether FILE is an SPSS system file.  Returns 1 if so, 0 if not, and
+   a negative errno value if there is an error reading FILE. */
 static int
 sfm_detect (FILE *file)
 {
@@ -932,7 +931,7 @@ sfm_detect (FILE *file)
   if (fseek (file, 0, SEEK_SET) != 0)
     return -errno;
   if (fread (magic, 4, 1, file) != 1)
-    return feof (file) ? 0 : -errno;
+    return ferror (file) ? -errno : 0;
   magic[4] = '\0';
 
   return (!strcmp (ASCII_MAGIC, magic)

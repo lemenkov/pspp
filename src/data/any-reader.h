@@ -1,5 +1,5 @@
 /* PSPP - a program for statistical analysis.
-   Copyright (C) 2006, 2010, 2012, 2014 Free Software Foundation, Inc.
+   Copyright (C) 2006, 2010, 2012, 2014, 2015 Free Software Foundation, Inc.
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -34,9 +34,12 @@ struct any_reader
 
 struct any_reader_class
   {
+    /* The name of this kind of data file, e.g. "SPSS System File". */
     const char *name;
 
-    int (*detect) (FILE *);
+    /* Detects whether FILE contains this type of file.  Returns 1 if so, 0 if
+       not, and a negative errno value if there is an error reading FILE. */
+    int (*detect) (FILE *file);
 
     struct any_reader *(*open) (struct file_handle *);
     bool (*close) (struct any_reader *);

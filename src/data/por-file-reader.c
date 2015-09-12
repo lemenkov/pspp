@@ -1,5 +1,5 @@
 /* PSPP - a program for statistical analysis.
-   Copyright (C) 1997-9, 2000, 2006, 2009, 2010, 2011, 2012, 2013, 2014 Free Software Foundation, Inc.
+   Copyright (C) 1997-9, 2000, 2006, 2009, 2010, 2011, 2012, 2013, 2014, 2015 Free Software Foundation, Inc.
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -922,8 +922,8 @@ por_file_casereader_read (struct casereader *reader, void *r_)
   return c;
 }
 
-/* Returns true if FILE is an SPSS portable file,
-   false otherwise. */
+/* Detects whether FILE is an SPSS portable file.  Returns 1 if so, 0 if not,
+   and a negative errno value if there is an error reading FILE. */
 int
 pfm_detect (FILE *file)
 {
@@ -938,7 +938,7 @@ pfm_detect (FILE *file)
     {
       int c = getc (file);
       if (c == EOF || raw_cnt++ > 512)
-        return 0;
+        return ferror (file) ? -errno : 0;
       else if (c == '\n')
         {
           while (line_len < 80 && cooked_cnt < sizeof header)
