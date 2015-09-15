@@ -127,7 +127,7 @@ struct ods_reader
 {
   struct spreadsheet spreadsheet;
   struct zip_reader *zreader;
-  int ref_cnt;
+
   int target_sheet_index;
   xmlChar *target_sheet_name;
   
@@ -157,11 +157,11 @@ struct ods_reader
 };
 
 void
-ods_destroy (struct spreadsheet *s)
+ods_unref (struct spreadsheet *s)
 {
   struct ods_reader *r = (struct ods_reader *) s;
 
-  if (--r->ref_cnt == 0)
+  if (--s->ref_cnt == 0)
     {
       int i;
 
@@ -276,7 +276,7 @@ ods_file_casereader_destroy (struct casereader *reader UNUSED, void *r_)
   r->target_sheet_name = NULL;
 
 
-  ods_destroy (&r->spreadsheet);
+  ods_unref (&r->spreadsheet);
 }
 
 
@@ -632,7 +632,7 @@ ods_probe (const char *filename, bool report_errors)
   sheet_count = get_sheet_count (zr);
 
   r->zreader = zr;
-  r->ref_cnt = 1;
+  r->spreadsheet.ref_cnt = 1;
 
   xtr = init_reader (r, report_errors);
   if (xtr == NULL)
@@ -679,7 +679,7 @@ ods_make_reader (struct spreadsheet *spreadsheet,
   assert (r);
   r->read_names = opts->read_names;
   ds_init_empty (&r->ods_errs);
-  ++r->ref_cnt;
+  ++r->spreadsheet.ref_cnt;
 
   xtr = init_reader (r, true);
   if ( xtr == NULL)

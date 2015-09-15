@@ -42,18 +42,24 @@ const bool GNM_READING_SUPPORTED = false;
 #endif
 
 void 
-spreadsheet_destroy (struct spreadsheet *s)
+spreadsheet_ref (struct spreadsheet *s)
+{
+  s->ref_cnt++;
+}
+
+void 
+spreadsheet_unref (struct spreadsheet *s)
 {
   switch (s->type)
     {
     case SPREADSHEET_ODS:
       assert (ODF_READING_SUPPORTED);
-      ods_destroy (s);
+      ods_unref (s);
       break;
 
     case SPREADSHEET_GNUMERIC:
       assert (GNM_READING_SUPPORTED);
-      gnumeric_destroy (s);
+      gnumeric_unref (s);
       break;
     default:
       NOT_REACHED ();

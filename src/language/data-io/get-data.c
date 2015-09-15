@@ -114,7 +114,7 @@ cmd_get_data (struct lexer *lexer, struct dataset *ds)
 	    goto error;
 	  reader = gnumeric_make_reader (spreadsheet, &opts);
 	  dict = spreadsheet->dict;
-	  gnumeric_destroy (spreadsheet);
+	  gnumeric_unref (spreadsheet);
 	}
       else if ( odf_read_support && 0 == strncasecmp (tok, "ODS", 3))
 	{
@@ -123,7 +123,7 @@ cmd_get_data (struct lexer *lexer, struct dataset *ds)
 	    goto error;
 	  reader = ods_make_reader (spreadsheet, &opts);
 	  dict = spreadsheet->dict;
-	  ods_destroy (spreadsheet);
+	  ods_unref (spreadsheet);
 	}
 
       free (filename);

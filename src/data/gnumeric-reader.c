@@ -149,7 +149,6 @@ state_data_destroy (struct state_data *sd)
 struct gnumeric_reader
 {
   struct spreadsheet spreadsheet;
-  int ref_cnt;
 
   struct state_data rsd;
   struct state_data msd;
@@ -174,11 +173,11 @@ struct gnumeric_reader
 
 
 void
-gnumeric_destroy (struct spreadsheet *s)
+gnumeric_unref (struct spreadsheet *s)
 {
   struct gnumeric_reader *r = (struct gnumeric_reader *) s;
 
-  if (0 == --r->ref_cnt)
+  if (0 == --s->ref_cnt)
     {
       int i;
 
@@ -250,7 +249,7 @@ gnm_file_casereader_destroy (struct casereader *reader UNUSED, void *r_)
   if (r->proto) 
     caseproto_unref (r->proto);
 
-  gnumeric_destroy (&r->spreadsheet);
+  gnumeric_unref (&r->spreadsheet);
 }
 
 
@@ -573,7 +572,8 @@ gnumeric_reopen (struct gnumeric_reader *r, const char *filename, bool show_erro
   sd->row = sd->col = -1;
   sd->state = STATE_PRE_INIT;
   sd->xtr = xtr;
-  r->ref_cnt++;
+  r->spreadsheet.ref_cnt++;
+
 
   /* Advance to the start of the workbook.
      This gives us some confidence that we are actually dealing with a gnumeric

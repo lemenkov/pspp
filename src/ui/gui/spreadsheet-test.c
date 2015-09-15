@@ -192,7 +192,7 @@ main (int argc, char *argv[] )
 
   gtk_main ();
 
-  spreadsheet_destroy (stuff.sp);
+  spreadsheet_unref (stuff.sp);
 
   return 0;
 }
