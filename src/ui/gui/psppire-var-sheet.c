@@ -1114,6 +1114,9 @@ psppire_var_sheet_dispose (GObject *obj)
   g_object_unref (var_sheet->var_type_dialog);
   */
 
+  g_object_unref (var_sheet->builder);
+
+  
   G_OBJECT_CLASS (psppire_var_sheet_parent_class)->dispose (obj);
 }
 
