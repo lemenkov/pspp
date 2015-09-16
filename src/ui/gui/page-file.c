@@ -138,17 +138,27 @@ init_file (struct import_assistant *ia, GtkWindow *parent_window)
 	return false;
       }
 
+
     /* Estimate the number of lines in the file. */
     if (file->line_cnt < MAX_PREVIEW_LINES)
-      file->total_lines = file->line_cnt;
+      {
+	file->total_lines = file->line_cnt;
+	file->total_is_exact = true;
+      }
     else
       {
 	struct stat s;
 	off_t position = line_reader_tell (reader);
 	if (fstat (line_reader_fileno (reader), &s) == 0 && position > 0)
-	  file->total_lines = (double) file->line_cnt / position * s.st_size;
+	  {
+	    file->total_lines = (double) file->line_cnt / position * s.st_size;
+	    file->total_is_exact = false;
+	  }
 	else
+	  {
 	  file->total_lines = 0;
+	  file->total_is_exact = true;
+	  }
       }
 
     line_reader_close (reader);
