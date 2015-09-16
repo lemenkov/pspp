@@ -1014,6 +1014,9 @@ ods_file_casereader_read (struct casereader *reader UNUSED, void *r_)
 	break;
     }
 
+  xmlFree (type);
+  xmlFree (val_string);
+  
   return c;
 }
 #endif
