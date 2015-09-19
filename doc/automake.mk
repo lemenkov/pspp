@@ -41,6 +41,7 @@ doc_pspp_dev_TEXINFOS = doc/version-dev.texi \
 	doc/dev/system-file-format.texi \
 	doc/dev/pc+-file-format.texi \
 	doc/dev/portable-file-format.texi \
+	doc/dev/encrypted-file-wrappers.texi \
 	doc/dev/q2c.texi
 
 dist_man_MANS += doc/pspp.1 \
