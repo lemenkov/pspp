@@ -106,6 +106,7 @@ psppire_spreadsheet_model_set_property (GObject * object,
     {
     case PROP_SPREADSHEET:
       spreadsheetModel->spreadsheet = g_value_get_pointer (value);
+      spreadsheet_ref (spreadsheetModel->spreadsheet);
       break;
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
@@ -117,6 +118,14 @@ psppire_spreadsheet_model_set_property (GObject * object,
 static void
 psppire_spreadsheet_model_dispose (GObject * object)
 {
+  PsppireSpreadsheetModel *spreadsheetModel = PSPPIRE_SPREADSHEET_MODEL (object);
+
+  if (!spreadsheetModel->dispose_has_run)
+    {
+      spreadsheet_unref (spreadsheetModel->spreadsheet);
+
+      spreadsheetModel->dispose_has_run = TRUE;
+    }
 }
 
 static void
