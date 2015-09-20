@@ -261,6 +261,8 @@ create_icon_factory (void)
 
 	    if ( gtk_icon_source_get_filename (source))
 	      gtk_icon_set_add_source (icon_set, source);
+
+	    gtk_icon_source_free (source);
 	  }
       
 	gtk_icon_factory_add (factory, ic->icon_name[i], icon_set);
