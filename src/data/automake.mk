@@ -58,6 +58,8 @@ src_data_libdata_la_SOURCES = \
 	src/data/dict-class.h \
 	src/data/dictionary.c \
 	src/data/dictionary.h \
+	src/data/encrypted-file.c \
+	src/data/encrypted-file.h \
 	src/data/file-handle-def.c \
 	src/data/file-handle-def.h \
 	src/data/file-name.c \
@@ -99,8 +101,6 @@ src_data_libdata_la_SOURCES = \
 	src/data/subcase.c \
 	src/data/subcase.h \
 	src/data/sys-file-encoding.c \
-	src/data/sys-file-encryption.c \
-	src/data/sys-file-encryption.h \
 	src/data/sys-file-private.c \
 	src/data/sys-file-private.h \
 	src/data/sys-file-reader.c \

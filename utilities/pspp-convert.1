@@ -7,7 +7,7 @@
 .TH pspp\-convert 1 "October 2013" "PSPP" "PSPP Manual"
 .
 .SH NAME
-pspp\-convert \- convert SPSS system and portable files to other formats
+pspp\-convert \- convert SPSS files to other formats
 .
 .SH SYNOPSIS
 \fBpspp\-convert\fR [\fIoptions\fR] \fIinput\fR \fIoutput\fR
@@ -18,7 +18,8 @@ pspp\-convert \- convert SPSS system and portable files to other formats
 .
 .SH DESCRIPTION
 The \fBpspp\-convert\fR program reads \fIinput\fR, which may be an
-SPSS system file, an SPSS/PC+ system file, or an SPSS portable file,
+SPSS system file, an SPSS/PC+ system file, an SPSS portable file,
+or an encrypted SPSS syntax file,
 and writes it to \fIoutput\fR, performing format conversion as
 necessary.
 .PP
@@ -44,14 +45,19 @@ SPSS system file.
 .IP \fBpor\fR
 SPSS portable file.
 .
+.IP \fBsps\fR
+SPSS syntax file.  (Only encrypted syntax files may be converted to
+this format.)
+.
 .PP
 Use \fB\-O \fIextension\fR to override the inferred format or to
 specify the format for unrecognized extensions.
 .
 .PP
 \fBpspp\-convert\fR can convert most input formats to most output
-formats, with one exception: if the input file is an encrypted system
-file, then the output file must also be an (unencrypted) system file.
+formats.  Encrypted system file and syntax files are exceptions: if
+the input file is in an encrypted format, then the output file must
+be the same format (decrypted).
 .
 .SH "OPTIONS"
 .
@@ -75,7 +81,8 @@ do not self-identify their encoding.
 .
 .IP "\fB\-p \fIpassword\fR"
 .IQ "\fB\-\-password=\fIpassword\fR"
-Specifies the password to use to decrypt an encrypted SPSS system file
+Specifies the password to use to decrypt encrypted SPSS system file
+or syntax file
 \fIinput\fR.  If this option is not specified, \fBpspp\-convert\fR
 prompts for the password.
 .

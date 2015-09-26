@@ -283,7 +283,7 @@ TESTSUITE_AT = \
 	tests/data/por-file.at \
 	tests/data/sys-file-reader.at \
 	tests/data/sys-file.at \
-	tests/data/sys-file-encryption.at \
+	tests/data/encrypted-file.at \
 	tests/language/command.at \
 	tests/language/control/do-if.at \
 	tests/language/control/do-repeat.at \

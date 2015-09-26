@@ -1,5 +1,5 @@
 /* PSPP - a program for statistical analysis.
-   Copyright (C) 2013, 2014 Free Software Foundation, Inc.
+   Copyright (C) 2013, 2014, 2015 Free Software Foundation, Inc.
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -26,10 +26,10 @@
 #include "data/casereader.h"
 #include "data/casewriter.h"
 #include "data/csv-file-writer.h"
+#include "data/encrypted-file.h"
 #include "data/file-name.h"
 #include "data/por-file-writer.h"
 #include "data/settings.h"
-#include "data/sys-file-encryption.h"
 #include "data/sys-file-writer.h"
 #include "data/file-handle-def.h"
 #include "libpspp/assertion.h"
@@ -46,10 +46,10 @@
 
 static void usage (void);
 
-static void decrypt_sav_file (struct encrypted_sys_file *enc,
-                              const char *input_filename,
-                              const char *output_filename,
-                              const char *password);
+static void decrypt_file (struct encrypted_file *enc,
+                          const char *input_filename,
+                          const char *output_filename,
+                          const char *password);
 
 int
 main (int argc, char *argv[])
@@ -62,7 +62,7 @@ main (int argc, char *argv[])
   struct casereader *reader;
   struct file_handle *input_fh;
   const char *encoding = NULL;
-  struct encrypted_sys_file *enc;
+  struct encrypted_file *enc;
 
   const char *output_format = NULL;
   struct file_handle *output_fh;
@@ -145,13 +145,22 @@ main (int argc, char *argv[])
       output_format = dot + 1;
     }
 
-  if (encrypted_sys_file_open (&enc, input_filename) > 0)
+  if (encrypted_file_open (&enc, input_filename) > 0)
     {
-      if (strcmp (output_format, "sav") && strcmp (output_format, "sys"))
-        error (1, 0, _("can only convert encrypted data file to sav or sys "
-                       "format"));
+      if (encrypted_file_is_sav (enc))
+        {
+          if (strcmp (output_format, "sav") && strcmp (output_format, "sys"))
+            error (1, 0, _("can only convert encrypted data file to sav or "
+                           "sys format"));
+        }
+      else
+        {
+          if (strcmp (output_format, "sps"))
+            error (1, 0, _("can only convert encrypted syntax file to sps "
+                           "format"));
+        }
 
-      decrypt_sav_file (enc, input_filename, output_filename, password);
+      decrypt_file (enc, input_filename, output_filename, password);
       goto exit;
     }
 
@@ -214,10 +223,10 @@ exit:
 }
 
 static void
-decrypt_sav_file (struct encrypted_sys_file *enc,
-                  const char *input_filename,
-                  const char *output_filename,
-                  const char *password)
+decrypt_file (struct encrypted_file *enc,
+              const char *input_filename,
+              const char *output_filename,
+              const char *password)
 {
   FILE *out;
   int err;
@@ -229,7 +238,7 @@ decrypt_sav_file (struct encrypted_sys_file *enc,
         exit (1);
     }
 
-  if (!encrypted_sys_file_unlock (enc, password))
+  if (!encrypted_file_unlock (enc, password))
     error (1, 0, _("sorry, wrong password"));
 
   out = fn_open (output_filename, "wb");
@@ -241,7 +250,7 @@ decrypt_sav_file (struct encrypted_sys_file *enc,
       uint8_t buffer[1024];
       size_t n;
 
-      n = encrypted_sys_file_read (enc, buffer, sizeof buffer);
+      n = encrypted_file_read (enc, buffer, sizeof buffer);
       if (n == 0)
         break;
 
@@ -249,7 +258,7 @@ decrypt_sav_file (struct encrypted_sys_file *enc,
         error (1, errno, ("%s: write error"), output_filename);
     }
 
-  err = encrypted_sys_file_close (enc);
+  err = encrypted_file_close (enc);
   if (err)
     error (1, err, ("%s: read error"), input_filename);
 
@@ -264,20 +273,21 @@ usage (void)
   printf ("\
 %s, a utility for converting SPSS data files to other formats.\n\
 Usage: %s [OPTION]... INPUT OUTPUT\n\
-where INPUT is an SPSS system or portable file\n\
+where INPUT is an SPSS data file or encrypted syntax file\n\
   and OUTPUT is the name of the desired output file.\n\
 \n\
 The desired format of OUTPUT is by default inferred from its extension:\n\
   csv txt             comma-separated value\n\
   sav sys             SPSS system file\n\
   por                 SPSS portable file\n\
+  sps                 SPSS syntax file (encrypted syntax input files only)\n\
 \n\
 Options:\n\
   -O, --output-format=FORMAT  set specific output format, where FORMAT\n\
                       is one of the extensions listed above\n\
   -e, --encoding=CHARSET  override encoding of input data file\n\
   -c MAXCASES         limit number of cases to copy (default is all cases)\n\
-  -p PASSWORD         password for encrypted .sav files\n\
+  -p PASSWORD         password for encrypted files\n\
   --help              display this help and exit\n\
   --version           output version information and exit\n",
           program_name, program_name);

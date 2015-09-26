@@ -11,6 +11,11 @@ Changes since 0.8.5:
  * The graphical user interface uses Gtk+ version 3 instead of version 2.
    Accordingly, it has a somewhat different look and feel.
 
+ * The pspp-convert utility can now decrypt encrypted syntax files.
+   The encrypted syntax file format is unacceptably insecure, so to
+   discourage its use PSPP and PSPPIRE do not directly read or write
+   this format.
+
  * Bug fixes, including the following notable ones:
 
    - The correlation coefficient in the paired samples t-test

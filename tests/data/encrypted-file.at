@@ -1,0 +1,51 @@
+AT_BANNER([encrypted files])
+
+AT_SETUP([decrypt an encrypted system file])
+AT_KEYWORDS([system file decrypt pspp-convert])
+AT_CHECK([pspp-convert $srcdir/data/hotel-encrypted.sav hotel.sav -p pspp])
+AT_CHECK([pspp-convert hotel.sav hotel.csv])
+AT_CHECK([cat hotel.csv], [0], [dnl
+v1,v2,v3,v4,v5
+4,2,3,4,1
+1,1,3,1,1
+5,2,2,3,4
+3,1,3,1,2
+5,3,1,5,3
+1,2,5,4,2
+3,2,4,3,1
+1,4,5,2,1
+3,2,3,1,2
+2,5,4,2,1
+4,2,2,3,5
+2,1,4,1,1
+1,2,5,5,2
+2,3,3,3,1
+4,1,1,1,3
+1,1,5,1,2
+2,5,5,2,2
+])
+AT_CLEANUP
+
+AT_SETUP([decrypt an encrypted syntax file])
+AT_KEYWORDS([syntax file decrypt pspp-convert])
+AT_CHECK([pspp-convert $srcdir/data/test-encrypted.sps test.sps -p password])
+
+# The sample file is not ideal: lines end in CRLF and its last line
+# lacks a new-line, so "sed" and "echo" make it easier to work with.
+AT_CHECK([sed 's///' test.sps; echo], [0], [dnl
+* Encoding: windows-1252.
+DATA LIST LIST /name (a25) quantity (f8).
+BEGIN DATA.
+widgets 10345
+oojars 2345
+dubreys 98
+thingumies 518
+END DATA.
+ @&t@
+LIST.
+ @&t@
+DESCRIPTIVES /quantity
+ /statistics ALL.
+])
+AT_CLEANUP
+

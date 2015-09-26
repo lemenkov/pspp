@@ -1,5 +1,5 @@
 /* PSPP - a program for statistical analysis.
-   Copyright (C) 2013 Free Software Foundation, Inc.
+   Copyright (C) 2013, 2015 Free Software Foundation, Inc.
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -16,7 +16,7 @@
 
 #include <config.h>
 
-#include "data/sys-file-encryption.h"
+#include "data/encrypted-file.h"
 
 #include <errno.h>
 #include <stdlib.h>
@@ -34,34 +34,35 @@
 #include "gettext.h"
 #define _(msgid) gettext (msgid)
 
-struct encrypted_sys_file
+struct encrypted_file
   {
     FILE *file;
+    enum { SYSTEM, SYNTAX } type;
     int error;
 
     uint8_t ciphertext[16];
     uint8_t plaintext[16];
-    unsigned int n;
+    unsigned int ofs, n;
 
     uint32_t rk[4 * (RIJNDAEL_MAXNR + 1)];
     int Nr;
   };
 
-static bool try_password(struct encrypted_sys_file *, const char *password);
+static bool try_password(struct encrypted_file *, const char *password);
 static bool decode_password (const char *input, char output[11]);
-static bool fill_buffer (struct encrypted_sys_file *);
+static bool fill_buffer (struct encrypted_file *);
 
-/* If FILENAME names an encrypted system file, returns 1 and initializes *FP
+/* If FILENAME names an encrypted SPSS file, returns 1 and initializes *FP
    for further use by the caller.
 
-   If FILENAME can be opened and read, but is not an encrypted system file,
+   If FILENAME can be opened and read, but is not an encrypted SPSS file,
    returns 0.
 
    If FILENAME cannot be open or read, returns a negative errno value. */
 int
-encrypted_sys_file_open (struct encrypted_sys_file **fp, const char *filename)
+encrypted_file_open (struct encrypted_file **fp, const char *filename)
 {
-  struct encrypted_sys_file *f;
+  struct encrypted_file *f;
   char header[36 + 16];
   int retval;
   int n;
@@ -88,7 +89,11 @@ encrypted_sys_file_open (struct encrypted_sys_file **fp, const char *filename)
       goto error;
     }
 
-  if (memcmp (header + 8, "ENCRYPTEDSAV", 12))
+  if (!memcmp (header + 8, "ENCRYPTEDSAV", 12))
+    f->type = SYSTEM;
+  else if (!memcmp (header + 8, "ENCRYPTEDSPS", 12))
+    f->type = SYNTAX;
+  else
     {
       retval = 0;
       goto error;
@@ -96,6 +101,7 @@ encrypted_sys_file_open (struct encrypted_sys_file **fp, const char *filename)
 
   memcpy (f->ciphertext, header + 36, 16);
   f->n = 16;
+  f->ofs = 0;
   *fp = f;
   return 1;
 
@@ -111,7 +117,7 @@ error:
 /* Attempts to use PASSWORD, which may be a plaintext or "encrypted" password,
    to unlock F.  Returns true if successful, otherwise false. */
 bool
-encrypted_sys_file_unlock (struct encrypted_sys_file *f, const char *password)
+encrypted_file_unlock (struct encrypted_file *f, const char *password)
 {
   char decoded_password[11];
 
@@ -122,12 +128,12 @@ encrypted_sys_file_unlock (struct encrypted_sys_file *f, const char *password)
 
 /* Attempts to read N bytes of plaintext from F into BUF.  Returns the number
    of bytes successfully read.  A return value less than N may indicate end of
-   file or an error; use encrypted_sys_file_close() to distinguish.
+   file or an error; use encrypted_file_close() to distinguish.
 
-   This function can only be used after encrypted_sys_file_unlock() returns
+   This function can only be used after encrypted_file_unlock() returns
    true. */
 size_t
-encrypted_sys_file_read (struct encrypted_sys_file *f, void *buf_, size_t n)
+encrypted_file_read (struct encrypted_file *f, void *buf_, size_t n)
 {
   uint8_t *buf = buf_;
   size_t ofs = 0;
@@ -137,12 +143,12 @@ encrypted_sys_file_read (struct encrypted_sys_file *f, void *buf_, size_t n)
 
   while (ofs < n)
     {
-      unsigned int chunk = MIN (n - ofs, f->n);
+      unsigned int chunk = MIN (n - ofs, f->n - f->ofs);
       if (chunk > 0)
         {
-          memcpy (buf + ofs, &f->plaintext[16 - f->n], chunk);
+          memcpy (buf + ofs, &f->plaintext[f->ofs], chunk);
           ofs += chunk;
-          f->n -= chunk;
+          f->ofs += chunk;
         }
       else
         {
@@ -157,7 +163,7 @@ encrypted_sys_file_read (struct encrypted_sys_file *f, void *buf_, size_t n)
 /* Closes F.  Returns 0 if no read errors occurred, otherwise a positive errno
    value. */
 int
-encrypted_sys_file_close (struct encrypted_sys_file *f)
+encrypted_file_close (struct encrypted_file *f)
 {
   int error = f->error;
   if (fclose (f->file) == EOF && !error)
@@ -165,6 +171,14 @@ encrypted_sys_file_close (struct encrypted_sys_file *f)
   free (f);
 
   return error;
+}
+
+/* Returns true if F is an encrypted system file,
+   false if it is an encrypted syntax file. */
+bool
+encrypted_file_is_sav (const struct encrypted_file *f)
+{
+  return f->type == SYSTEM;
 }
 
 #define b(x) (1 << (x))
@@ -277,7 +291,7 @@ decode_password (const char *input, char output[11])
 
    Otherwise, returns zero. */
 static bool
-try_password(struct encrypted_sys_file *f, const char *password)
+try_password(struct encrypted_file *f, const char *password)
 {
   /* NIST SP 800-108 fixed data. */
   static const uint8_t fixed[] = {
@@ -329,22 +343,29 @@ try_password(struct encrypted_sys_file *f, const char *password)
   assert (sizeof key == 32);
   f->Nr = rijndaelKeySetupDec (f->rk, CHAR_CAST (const char *, key), 256);
 
-  /* Check for magic number "$FL" always present in SPSS .sav file. */
+  /* Check for magic number at beginning of plaintext. */
   rijndaelDecrypt (f->rk, f->Nr,
                    CHAR_CAST (const char *, f->ciphertext),
                    CHAR_CAST (char *, f->plaintext));
-  return !memcmp (f->plaintext, "$FL", 3);
+  return !memcmp (f->plaintext, f->type == SYSTEM ? "$FL" : "* E", 3);
 }
 
 static bool
-fill_buffer (struct encrypted_sys_file *f)
+fill_buffer (struct encrypted_file *f)
 {
   f->n = fread (f->ciphertext, 1, sizeof f->ciphertext, f->file);
+  f->ofs = 0;
   if (f->n == sizeof f->ciphertext)
     {
       rijndaelDecrypt (f->rk, f->Nr,
                        CHAR_CAST (const char *, f->ciphertext),
                        CHAR_CAST (char *, f->plaintext));
+      if (f->type == SYNTAX)
+        {
+          const char *eof = memchr (f->plaintext, '\04', sizeof f->plaintext);
+          if (eof)
+            f->n = CHAR_CAST (const uint8_t *, eof) - f->plaintext;
+        }
       return true;
     }
   else

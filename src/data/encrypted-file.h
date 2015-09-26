@@ -1,5 +1,5 @@
 /* PSPP - a program for statistical analysis.
-   Copyright (C) 2013 Free Software Foundation, Inc.
+   Copyright (C) 2013, 2015 Free Software Foundation, Inc.
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -14,21 +14,21 @@
    You should have received a copy of the GNU General Public License
    along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 
-#ifndef SYS_FILE_ENCRYPTION_H
-#define SYS_FILE_ENCRYPTION_H 1
+#ifndef ENCRYPTED_FILE_H
+#define ENCRYPTED_FILE_H 1
 
 #include <stdbool.h>
 #include <stdio.h>
 
-/* Reading encrypted system files. */
+/* Reading encrypted SPSS files. */
 
-struct encrypted_sys_file;
+struct encrypted_file;
 
-int encrypted_sys_file_open (struct encrypted_sys_file **,
-                             const char *filename);
-bool encrypted_sys_file_unlock (struct encrypted_sys_file *,
-                                const char *password);
-size_t encrypted_sys_file_read (struct encrypted_sys_file *, void *, size_t);
-int encrypted_sys_file_close (struct encrypted_sys_file *);
+int encrypted_file_open (struct encrypted_file **, const char *filename);
+bool encrypted_file_unlock (struct encrypted_file *, const char *password);
+size_t encrypted_file_read (struct encrypted_file *, void *, size_t);
+int encrypted_file_close (struct encrypted_file *);
 
-#endif /* sys-file-encryption.h */
+bool encrypted_file_is_sav (const struct encrypted_file *);
+
+#endif /* encrypted-file.h */
