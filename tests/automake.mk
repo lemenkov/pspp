@@ -255,6 +255,7 @@ EXTRA_DIST += \
 	tests/data/num-out.expected.cmp.gz \
 	tests/data/v13.sav \
 	tests/data/v14.sav \
+	tests/data/test-encrypted.sps \
 	tests/language/data-io/Book1.gnm.unzipped \
 	tests/language/data-io/test.ods \
 	tests/language/data-io/newone.ods \
