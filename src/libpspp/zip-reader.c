@@ -25,6 +25,7 @@
 #include <errno.h>
 #include <xalloc.h>
 #include <libpspp/assertion.h>
+#include <libpspp/compiler.h>
 
 #include <byteswap.h>
 #include <crc.h>
@@ -148,37 +149,50 @@ skip_bytes (FILE *f, size_t n)
   fseeko (f, n, SEEK_CUR);
 }
 
+static bool get_bytes (FILE *f, void *x, size_t n) WARN_UNUSED_RESULT;
+
+
 /* Read N bytes from F, storing the result in X */
-static void
-get_bytes (FILE *f, void *x, size_t n)
+static bool
+get_bytes (FILE *f, void *x, size_t n) 
 {
-  fread (x, 1, n, f);
+  return (n == fread (x, 1, n, f));
 }
 
+static bool get_u32 (FILE *f, uint32_t *v) WARN_UNUSED_RESULT;
+
+
 /* Read a 32 bit value from F */
-static void
+static bool
 get_u32 (FILE *f, uint32_t *v)
 {
   uint32_t x;
-  get_bytes (f, &x, sizeof x);
+  if (!get_bytes (f, &x, sizeof x))
+    return false;
 #ifdef WORDS_BIGENDIAN
   *v = bswap_32 (x);
 #else
   *v = x;
 #endif
+  return true;
 }
 
+static bool get_u16 (FILE *f, uint16_t *v) WARN_UNUSED_RESULT;
+
+
 /* Read a 16 bit value from F */
-static void
+static bool
 get_u16 (FILE *f, uint16_t *v)
 {
   uint16_t x;
-  get_bytes (f, &x, sizeof x);
+  if (!get_bytes (f, &x, sizeof x))
+    return false;
 #ifdef WORDS_BIGENDIAN
   *v = bswap_16 (x);
 #else
   *v = x;
 #endif
+  return true;
 }
 
 
@@ -189,7 +203,7 @@ check_magic (FILE *f, uint32_t expected, struct string *err)
 {
   uint32_t magic;
 
-  get_u32 (f, &magic);
+  if (! get_u32 (f, &magic)) return false;
 
   if ((expected != magic))
     {
@@ -250,29 +264,29 @@ zip_header_read_next (struct zip_reader *zr)
   if ( ! check_magic (zr->fr, MAGIC_SOCD, zr->errs))
     return NULL;
 
-  get_u16 (zr->fr, &v);
+  if (! get_u16 (zr->fr, &v)) return NULL;
 
-  get_u16 (zr->fr, &v);
-  get_u16 (zr->fr, &gp);
-  get_u16 (zr->fr, &comp_type);
+  if (! get_u16 (zr->fr, &v)) return NULL;
+  if (! get_u16 (zr->fr, &gp)) return NULL;
+  if (! get_u16 (zr->fr, &comp_type)) return NULL;
 
   zm->compression = comp_code (zm, comp_type);
 
-  get_u16 (zr->fr, &time);
-  get_u16 (zr->fr, &date);
-  get_u32 (zr->fr, &zm->expected_crc);
-  get_u32 (zr->fr, &zm->comp_size);
-  get_u32 (zr->fr, &zm->ucomp_size);
-  get_u16 (zr->fr, &nlen);
-  get_u16 (zr->fr, &extralen);
-  get_u16 (zr->fr, &clen);
-  get_u16 (zr->fr, &diskstart);
-  get_u16 (zr->fr, &iattr);
-  get_u32 (zr->fr, &eattr);
-  get_u32 (zr->fr, &zm->offset);
+  if (! get_u16 (zr->fr, &time)) return NULL;
+  if (! get_u16 (zr->fr, &date)) return NULL;
+  if (! get_u32 (zr->fr, &zm->expected_crc)) return NULL;
+  if (! get_u32 (zr->fr, &zm->comp_size)) return NULL;
+  if (! get_u32 (zr->fr, &zm->ucomp_size)) return NULL;
+  if (! get_u16 (zr->fr, &nlen)) return NULL;
+  if (! get_u16 (zr->fr, &extralen)) return NULL;
+  if (! get_u16 (zr->fr, &clen)) return NULL;
+  if (! get_u16 (zr->fr, &diskstart)) return NULL;
+  if (! get_u16 (zr->fr, &iattr)) return NULL;
+  if (! get_u32 (zr->fr, &eattr)) return NULL;
+  if (! get_u32 (zr->fr, &zm->offset)) return NULL;
 
   zm->name = xzalloc (nlen + 1);
-  get_bytes (zr->fr, zm->name, nlen);
+  if (! get_bytes (zr->fr, zm->name, nlen)) return NULL;
 
   skip_bytes (zr->fr, extralen);
   
@@ -341,14 +355,14 @@ zip_reader_create (const char *filename, struct string *errs)
       return NULL;
     }
   
-  get_u16 (zr->fr, &disknum);
-  get_u16 (zr->fr, &disknum);
+  if (! get_u16 (zr->fr, &disknum)) return NULL;
+  if (! get_u16 (zr->fr, &disknum)) return NULL;
 
-  get_u16 (zr->fr, &zr->n_members);
-  get_u16 (zr->fr, &total_members);
+  if (! get_u16 (zr->fr, &zr->n_members)) return NULL;
+  if (! get_u16 (zr->fr, &total_members)) return NULL;
 
-  get_u32 (zr->fr, &central_dir_length);
-  get_u32 (zr->fr, &central_dir_start);
+  if (! get_u32 (zr->fr, &central_dir_length)) return NULL;
+  if (! get_u32 (zr->fr, &central_dir_start)) return NULL;
 
   if ( 0 != fseeko (zr->fr, central_dir_start, SEEK_SET))
     {
@@ -417,22 +431,22 @@ zip_member_open (struct zip_reader *zr, const char *member)
       return NULL;
     }
 
-  get_u16 (zm->fp, &v);
-  get_u16 (zm->fp, &gp);
-  get_u16 (zm->fp, &comp_type);
+  if (! get_u16 (zm->fp, &v)) return NULL;
+  if (! get_u16 (zm->fp, &gp)) return NULL;
+  if (! get_u16 (zm->fp, &comp_type)) return NULL;
   zm->compression = comp_code (zm, comp_type);
-  get_u16 (zm->fp, &time);
-  get_u16 (zm->fp, &date);
-  get_u32 (zm->fp, &crc);
-  get_u32 (zm->fp, &comp_size);
+  if (! get_u16 (zm->fp, &time)) return NULL;
+  if (! get_u16 (zm->fp, &date)) return NULL;
+  if (! get_u32 (zm->fp, &crc)) return NULL;
+  if (! get_u32 (zm->fp, &comp_size)) return NULL;
 
-  get_u32 (zm->fp, &ucomp_size);
-  get_u16 (zm->fp, &nlen);
-  get_u16 (zm->fp, &extra_len);
+  if (! get_u32 (zm->fp, &ucomp_size)) return NULL;
+  if (! get_u16 (zm->fp, &nlen)) return NULL;
+  if (! get_u16 (zm->fp, &extra_len)) return NULL;
 
   name = xzalloc (nlen + 1);
 
-  get_bytes (zm->fp, name, nlen);
+  if (! get_bytes (zm->fp, name, nlen)) return NULL;
 
   skip_bytes (zm->fp, extra_len);
 
