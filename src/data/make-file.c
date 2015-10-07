@@ -28,6 +28,7 @@
 #include <unistd.h>
 
 #include "data/file-name.h"
+#include "data/file-handle-def.h"
 #include "libpspp/ll.h"
 #include "libpspp/message.h"
 
@@ -45,14 +46,14 @@ struct replace_file
     char *file_name;
     char *tmp_name;
   };
-
+ 
 static struct ll_list all_files = LL_INITIALIZER (all_files);
 
 static void free_replace_file (struct replace_file *);
 static void unlink_replace_files (void);
 
 struct replace_file *
-replace_file_start (const char *file_name, const char *mode,
+replace_file_start (const struct file_handle *fh, const char *mode,
                     mode_t permissions, FILE **fp, char **tmp_name)
 {
   static bool registered;
@@ -60,6 +61,8 @@ replace_file_start (const char *file_name, const char *mode,
   struct replace_file *rf;
   int fd;
   int saved_errno = errno;
+
+  const char *file_name = fh_get_file_name (fh);
 
   /* If FILE_NAME represents a special file, write to it directly
      instead of trying to replace it. */

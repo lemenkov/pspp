@@ -154,7 +154,7 @@ csv_writer_open (struct file_handle *fh, const struct dictionary *dict,
     goto error;
 
   /* Create the file on disk. */
-  w->rf = replace_file_start (fh_get_file_name (fh), "w", 0666,
+  w->rf = replace_file_start (fh, "w", 0666,
                               &w->file, NULL);
   if (w->rf == NULL)
     {

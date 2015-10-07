@@ -153,7 +153,7 @@ pfm_open_writer (struct file_handle *fh, struct dictionary *dict,
   mode = 0444;
   if (opts.create_writeable)
     mode |= 0222;
-  w->rf = replace_file_start (fh_get_file_name (fh), "w", mode,
+  w->rf = replace_file_start (fh, "w", mode,
                               &w->file, NULL);
   if (w->rf == NULL)
     {

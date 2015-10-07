@@ -92,7 +92,7 @@ dfm_open_writer (struct file_handle *fh, const char *encoding)
   w = xmalloc (sizeof *w);
   w->fh = fh_ref (fh);
   w->lock = lock;
-  w->rf = replace_file_start (fh_get_file_name (w->fh), "wb", 0666,
+  w->rf = replace_file_start (w->fh, "wb", 0666,
                               &w->file, NULL);
   w->encoding = xstrdup (encoding);
   w->line_ends = fh_get_line_ends (fh);

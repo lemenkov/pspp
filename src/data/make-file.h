@@ -21,6 +21,8 @@
 #include <stdio.h>
 #include <sys/types.h>
 
+struct file_handle;
+
 /* Prepares to atomically replace a (potentially) existing file
    by a new file, by creating a temporary file with the given
    PERMISSIONS bits in the same directory as *FILE_NAME.
@@ -37,7 +39,7 @@
 
    The caller is responsible for closing *FP, but *TMP_NAME is
    owned by the callee. */
-struct replace_file *replace_file_start (const char *file_name,
+struct replace_file *replace_file_start (const struct file_handle *fh,
                                          const char *mode, mode_t permissions,
                                          FILE **fp, char **tmp_name);
 

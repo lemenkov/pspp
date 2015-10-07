@@ -251,8 +251,7 @@ sfm_open_writer (struct file_handle *fh, struct dictionary *d,
   mode = 0444;
   if (opts.create_writeable)
     mode |= 0222;
-  w->rf = replace_file_start (fh_get_file_name (fh), "wb", mode,
-                              &w->file, NULL);
+  w->rf = replace_file_start (fh, "wb", mode, &w->file, NULL);
   if (w->rf == NULL)
     {
       msg (ME, _("Error opening `%s' for writing as a system file: %s."),
