@@ -370,7 +370,7 @@ load_file (PsppireWindow *de, const gchar *file_name, const char *encoding,
     }
 
   ok = execute_syntax (PSPPIRE_DATA_WINDOW (de),
-                       lex_reader_for_string (syntax));
+                       lex_reader_for_string (syntax, "UTF-8"));
   g_free (syntax);
 
   if (ok && syn == NULL)

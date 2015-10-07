@@ -131,6 +131,7 @@ lex_reader_init (struct lex_reader *reader,
   reader->syntax = LEX_SYNTAX_AUTO;
   reader->error = LEX_ERROR_CONTINUE;
   reader->file_name = NULL;
+  reader->encoding = NULL;
   reader->line_number = 0;
 }
 
@@ -1038,6 +1039,14 @@ lex_get_file_name (const struct lexer *lexer)
   return src == NULL ? NULL : src->reader->file_name;
 }
 
+const char *
+lex_get_encoding (const struct lexer *lexer)
+{
+  struct lex_source *src = lex_source__ (lexer);
+  return src == NULL ? NULL : src->reader->encoding;
+}
+
+
 /* Returns the syntax mode for the syntax file from which the current drawn is
    drawn.  Returns LEX_SYNTAX_AUTO for a T_STOP token or if the command's
    source does not have line numbers.
@@ -1527,9 +1536,11 @@ static void
 lex_source_destroy (struct lex_source *src)
 {
   char *file_name = src->reader->file_name;
+  char *encoding = src->reader->encoding;
   if (src->reader->class->destroy != NULL)
     src->reader->class->destroy (src->reader);
   free (file_name);
+  free (encoding);
   free (src->buffer);
   while (!deque_is_empty (&src->deque))
     lex_source_pop__ (src);
@@ -1575,6 +1586,7 @@ lex_reader_for_file (const char *file_name, const char *encoding,
   r->reader.syntax = syntax;
   r->reader.error = error;
   r->reader.file_name = xstrdup (file_name);
+  r->reader.encoding = encoding ? xstrdup (encoding) : NULL;
   r->reader.line_number = 1;
   r->istream = istream;
 
@@ -1633,16 +1645,17 @@ struct lex_string_reader
 static struct lex_reader_class lex_string_reader_class;
 
 /* Creates and returns a new lex_reader for the contents of S, which must be
-   encoded in UTF-8.  The new reader takes ownership of S and will free it
+   encoded in the given ENCODING.  The new reader takes ownership of S and will free it
    with ss_dealloc() when it is closed. */
 struct lex_reader *
-lex_reader_for_substring_nocopy (struct substring s)
+lex_reader_for_substring_nocopy (struct substring s, const char *encoding)
 {
   struct lex_string_reader *r;
 
   r = xmalloc (sizeof *r);
   lex_reader_init (&r->reader, &lex_string_reader_class);
   r->reader.syntax = LEX_SYNTAX_AUTO;
+  r->reader.encoding = encoding ? xstrdup (encoding) : NULL;
   r->s = s;
   r->offset = 0;
 
@@ -1650,25 +1663,25 @@ lex_reader_for_substring_nocopy (struct substring s)
 }
 
 /* Creates and returns a new lex_reader for a copy of null-terminated string S,
-   which must be encoded in UTF-8.  The caller retains ownership of S. */
+   which must be encoded in ENCODING.  The caller retains ownership of S. */
 struct lex_reader *
-lex_reader_for_string (const char *s)
+lex_reader_for_string (const char *s, const char *encoding)
 {
   struct substring ss;
   ss_alloc_substring (&ss, ss_cstr (s));
-  return lex_reader_for_substring_nocopy (ss);
+  return lex_reader_for_substring_nocopy (ss, encoding);
 }
 
 /* Formats FORMAT as a printf()-like format string and creates and returns a
    new lex_reader for the formatted result.  */
 struct lex_reader *
-lex_reader_for_format (const char *format, ...)
+lex_reader_for_format (const char *format, const char *encoding, ...)
 {
   struct lex_reader *r;
   va_list args;
 
-  va_start (args, format);
-  r = lex_reader_for_substring_nocopy (ss_cstr (xvasprintf (format, args)));
+  va_start (args, encoding);
+  r = lex_reader_for_substring_nocopy (ss_cstr (xvasprintf (format, args)), encoding);
   va_end (args);
 
   return r;

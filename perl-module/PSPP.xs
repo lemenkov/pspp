@@ -638,7 +638,7 @@ INIT:
   }
 CODE:
  struct file_handle *fh =
-  fh_create_file (NULL, name, fh_default_properties () );
+   fh_create_file (NULL, name, "UTF-8", fh_default_properties () );
  struct syswriter_info *swi = xmalloc (sizeof (*swi));
  swi->writer = sfm_open_writer (fh, dict->dict, opts);
  swi->dict = dict;
@@ -752,7 +752,7 @@ CODE:
  struct casereader *reader;
  struct sysreader_info *sri = NULL;
  struct file_handle *fh =
- 	 fh_create_file (NULL, name, fh_default_properties () );
+   fh_create_file (NULL, name, "UTF-8", fh_default_properties () );
  struct dictionary *dict;
 
  sri = xmalloc (sizeof (*sri));

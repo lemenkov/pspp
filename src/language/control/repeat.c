@@ -305,9 +305,8 @@ parse_commands (struct lexer *lexer, struct hmap *dummies)
   for (i = 0; i < n_values; i++)
     {
       struct string *output = &outputs[n_values - i - 1];
-      struct lex_reader *reader;
-
-      reader = lex_reader_for_substring_nocopy (ds_ss (output));
+      const char *encoding = lex_get_encoding (lexer);
+      struct lex_reader *reader = lex_reader_for_substring_nocopy (ds_ss (output), encoding);
       lex_reader_set_file_name (reader, file_name);
       reader->line_number = line_number;
       lex_include (lexer, reader);

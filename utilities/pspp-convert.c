@@ -164,12 +164,12 @@ main (int argc, char *argv[])
       goto exit;
     }
 
-  input_fh = fh_create_file (NULL, input_filename, fh_default_properties ());
+  input_fh = fh_create_file (NULL, input_filename, NULL, fh_default_properties ());
   reader = any_reader_open_and_decode (input_fh, encoding, &dict, NULL);
   if (reader == NULL)
     exit (1);
 
-  output_fh = fh_create_file (NULL, output_filename, fh_default_properties ());
+  output_fh = fh_create_file (NULL, output_filename, NULL, fh_default_properties ());
   if (!strcmp (output_format, "csv") || !strcmp (output_format, "txt"))
     {
       struct csv_writer_options options;

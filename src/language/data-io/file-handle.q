@@ -157,7 +157,7 @@ cmd_file_handle (struct lexer *lexer, struct dataset *ds)
   if (cmd.s_encoding != NULL)
     properties.encoding = cmd.s_encoding;
 
-  fh_create_file (handle_name, cmd.s_name, &properties);
+  fh_create_file (handle_name, cmd.s_name, lex_get_encoding (lexer), &properties);
 
   result = CMD_SUCCESS;
 
@@ -249,7 +249,7 @@ fh_parse (struct lexer *lexer, enum fh_referent referent_mask,
       if (lex_token (lexer) == T_ID)
         handle = fh_from_id (lex_tokcstr (lexer));
       if (handle == NULL)
-            handle = fh_create_file (NULL, lex_tokcstr (lexer),
+	handle = fh_create_file (NULL, lex_tokcstr (lexer), lex_get_encoding (lexer),
                                      fh_default_properties ());
       lex_get (lexer);
     }

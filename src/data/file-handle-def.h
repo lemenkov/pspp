@@ -75,7 +75,7 @@ void fh_done (void);
 
 /* Creating file handles. */
 struct file_handle *fh_create_file (const char *handle_name,
-                                    const char *file_name,
+                                    const char *file_name, const char *file_name_encoding,
                                     const struct fh_properties *);
 struct file_handle *fh_create_dataset (struct dataset *);
 const struct fh_properties *fh_default_properties (void);

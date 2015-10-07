@@ -402,7 +402,8 @@ package PSPP::Sysfile;
 =head3 new ($filename, $dict [,%opts])
 
 Creates a new system file from the dictionary C<dict>.  The file will
-be written to the file called C<filename>.
+be written to the file called C<filename>. The string C<filename> must 
+be encoded in UTF-8.
 C<opt>, if specified, is a hash containing optional parameters for the
 system file.  Currently, the only supported parameter is
 C<compress>. If C<compress> is non zero, then the system file written
@@ -481,7 +482,8 @@ Opens a system file for reading.
 
 Open is used to read data from an existing system file. 
 It creates and returns a PSPP::Reader object which can be used to read 
-data and dictionary information from C<filename>.
+data and dictionary information from C<filename>.  The string C<filename> 
+must be in UTF-8 encoding.
 
 =head3 get_case_cnt ()
 

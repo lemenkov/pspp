@@ -53,6 +53,7 @@ struct lex_reader
     const struct lex_reader_class *class;
     enum lex_syntax_mode syntax;
     enum lex_error_mode error;
+    char *encoding;
     char *file_name;            /* NULL if not associated with a file. */
     int line_number;            /* 1-based initial line number, 0 if none. */
   };
@@ -85,10 +86,10 @@ struct lex_reader *lex_reader_for_file (const char *file_name,
                                         const char *encoding,
                                         enum lex_syntax_mode syntax,
                                         enum lex_error_mode error);
-struct lex_reader *lex_reader_for_string (const char *);
-struct lex_reader *lex_reader_for_format (const char *, ...)
-  PRINTF_FORMAT (1, 2);
-struct lex_reader *lex_reader_for_substring_nocopy (struct substring);
+struct lex_reader *lex_reader_for_string (const char *, const char *encoding);
+struct lex_reader *lex_reader_for_format (const char *, const char *, ...)
+  PRINTF_FORMAT (1, 3);
+struct lex_reader *lex_reader_for_substring_nocopy (struct substring, const char *encoding);
 
 /* Initialization. */
 struct lexer *lex_create (void);
@@ -150,6 +151,7 @@ int lex_get_last_line_number (const struct lexer *, int n);
 int lex_get_first_column (const struct lexer *, int n);
 int lex_get_last_column (const struct lexer *, int n);
 const char *lex_get_file_name (const struct lexer *);
+const char *lex_get_encoding (const struct lexer *);
 
 /* Issuing errors. */
 void lex_error (struct lexer *, const char *, ...) PRINTF_FORMAT (2, 3);

@@ -227,7 +227,7 @@ fh_inline_file (void)
    existing file identifiers.  The new handle is associated with file FILE_NAME
    and the given PROPERTIES. */
 struct file_handle *
-fh_create_file (const char *id, const char *file_name,
+fh_create_file (const char *id, const char *file_name, const char *file_name_encoding,
                 const struct fh_properties *properties)
 {
   char *handle_name;

@@ -200,5 +200,5 @@ execute_syntax_string (PsppireDataWindow *window, gchar *syntax)
 void
 execute_const_syntax_string (PsppireDataWindow *window, const gchar *syntax)
 {
-  execute_syntax (window, lex_reader_for_string (syntax));
+  execute_syntax (window, lex_reader_for_string (syntax, "UTF-8"));
 }
