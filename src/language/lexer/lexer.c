@@ -1542,7 +1542,6 @@ struct lex_file_reader
   {
     struct lex_reader reader;
     struct u8_istream *istream;
-    char *file_name;
   };
 
 static struct lex_reader_class lex_file_reader_class;
@@ -1578,7 +1577,6 @@ lex_reader_for_file (const char *file_name, const char *encoding,
   r->reader.file_name = xstrdup (file_name);
   r->reader.line_number = 1;
   r->istream = istream;
-  r->file_name = xstrdup (file_name);
 
   return &r->reader;
 }
@@ -1597,7 +1595,7 @@ lex_file_read (struct lex_reader *r_, char *buf, size_t n,
   ssize_t n_read = u8_istream_read (r->istream, buf, n);
   if (n_read < 0)
     {
-      msg (ME, _("Error reading `%s': %s."), r->file_name, strerror (errno));
+      msg (ME, _("Error reading `%s': %s."), r_->file_name, strerror (errno));
       return 0;
     }
   return n_read;
@@ -1611,12 +1609,11 @@ lex_file_close (struct lex_reader *r_)
   if (u8_istream_fileno (r->istream) != STDIN_FILENO)
     {
       if (u8_istream_close (r->istream) != 0)
-        msg (ME, _("Error closing `%s': %s."), r->file_name, strerror (errno));
+        msg (ME, _("Error closing `%s': %s."), r_->file_name, strerror (errno));
     }
   else
     u8_istream_free (r->istream);
 
-  free (r->file_name);
   free (r);
 }
 
