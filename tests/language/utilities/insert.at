@@ -158,3 +158,26 @@ insert.sps:2: error: INSERT: Can't find `nonexistent' in include file search pat
 insert.sps:6: error: LIST: LIST is allowed only after the active dataset has been defined.
 ])
 AT_CLEANUP
+
+
+dnl A test to check the INCLUDE command complete with the 
+dnl syntax and function of the ENCODING subcommand.
+AT_SETUP([INCLUDE full check])
+AT_DATA([two-utf8.sps], [dnl
+echo 'Äpfelfölfaß'.
+])
+
+AT_DATA([include.sps], [dnl
+echo 'ONE'.
+
+include FILE='two-latin1.sps' ENCODING='ISO_8859-1'.
+])
+
+AT_CHECK([iconv -f UTF-8 -t iso-8859-1 two-utf8.sps > two-latin1.sps], [0], [])
+
+AT_CHECK([pspp -O format=csv include.sps], [0], [dnl
+ONE
+
+Äpfelfölfaß
+])
+AT_CLEANUP

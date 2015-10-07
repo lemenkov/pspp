@@ -90,6 +90,7 @@ do_insert (struct lexer *lexer, struct dataset *ds, enum variant variant)
 
           free (encoding);
           encoding = xstrdup (lex_tokcstr (lexer));
+	  lex_get (lexer);
         }
       else if (variant == INSERT && lex_match_id (lexer, "SYNTAX"))
 	{
