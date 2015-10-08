@@ -154,7 +154,7 @@ pfm_open_writer (struct file_handle *fh, struct dictionary *dict,
   if (opts.create_writeable)
     mode |= 0222;
   w->rf = replace_file_start (fh, "w", mode,
-                              &w->file, NULL);
+                              &w->file);
   if (w->rf == NULL)
     {
       msg (ME, _("Error opening `%s' for writing as a portable file: %s."),

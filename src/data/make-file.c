@@ -17,6 +17,7 @@
 #include <config.h>
 
 #include "data/make-file.h"
+#include "libpspp/i18n.h"
 
 #include <assert.h>
 #include <errno.h>
@@ -54,7 +55,7 @@ static void unlink_replace_files (void);
 
 struct replace_file *
 replace_file_start (const struct file_handle *fh, const char *mode,
-                    mode_t permissions, FILE **fp, char **tmp_name)
+                    mode_t permissions, FILE **fp)
 {
   static bool registered;
   struct stat s;
@@ -92,8 +93,6 @@ replace_file_start (const struct file_handle *fh, const char *mode,
       rf = xmalloc (sizeof *rf);
       rf->file_name = NULL;
       rf->tmp_name = xstrdup (file_name);
-      if (tmp_name != NULL)
-        *tmp_name = rf->tmp_name;
       return rf;
     }
 
@@ -149,17 +148,12 @@ replace_file_start (const struct file_handle *fh, const char *mode,
   ll_push_head (&all_files, &rf->ll);
   unblock_fatal_signals ();
 
-  if (tmp_name != NULL)
-    *tmp_name = rf->tmp_name;
-
   return rf;
 
 error:
   unblock_fatal_signals ();
   free_replace_file (rf);
   *fp = NULL;
-  if (tmp_name != NULL)
-    *tmp_name = NULL;
   errno = saved_errno;
   return NULL;
 }

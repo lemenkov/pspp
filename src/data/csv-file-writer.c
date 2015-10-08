@@ -154,8 +154,7 @@ csv_writer_open (struct file_handle *fh, const struct dictionary *dict,
     goto error;
 
   /* Create the file on disk. */
-  w->rf = replace_file_start (fh, "w", 0666,
-                              &w->file, NULL);
+  w->rf = replace_file_start (fh, "w", 0666,  &w->file);
   if (w->rf == NULL)
     {
       msg (ME, _("Error opening `%s' for writing as a system file: %s."),
