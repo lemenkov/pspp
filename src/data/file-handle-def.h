@@ -98,6 +98,7 @@ const char *fh_get_encoding (const struct file_handle *);
 
 /* Properties of FH_REF_FILE file handles. */
 const char *fh_get_file_name (const struct file_handle *);
+const char *fh_get_file_name_encoding (const struct file_handle *handle);
 enum fh_mode fh_get_mode (const struct file_handle *) ;
 enum fh_line_ends fh_get_line_ends (const struct file_handle *);
 

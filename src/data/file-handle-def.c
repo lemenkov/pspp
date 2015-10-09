@@ -50,6 +50,8 @@ struct file_handle
 
     /* FH_REF_FILE only. */
     char *file_name;		/* File name as provided by user. */
+    char *file_name_encoding;	/* The character encoding of file_name,
+				   This is NOT the encoding of the file contents! */
     enum fh_mode mode;  	/* File mode. */
     enum fh_line_ends line_ends; /* Line ends for text files. */
 
@@ -114,6 +116,7 @@ free_handle (struct file_handle *handle)
   free (handle->id);
   free (handle->name);
   free (handle->file_name);
+  free (handle->file_name_encoding);
   free (handle->encoding);
   free (handle);
 }
@@ -236,6 +239,7 @@ fh_create_file (const char *id, const char *file_name, const char *file_name_enc
   handle_name = id != NULL ? xstrdup (id) : xasprintf ("`%s'", file_name);
   handle = create_handle (id, handle_name, FH_REF_FILE, properties->encoding);
   handle->file_name = xstrdup (file_name);
+  handle->file_name_encoding = file_name_encoding ? xstrdup (file_name_encoding) : NULL;
   handle->mode = properties->mode;
   handle->line_ends = properties->line_ends;
   handle->record_width = properties->record_width;
@@ -313,6 +317,16 @@ fh_get_file_name (const struct file_handle *handle)
   assert (handle->referent == FH_REF_FILE);
   return handle->file_name;
 }
+
+
+/* Returns the character encoding of the name of the file associated with HANDLE. */
+const char *
+fh_get_file_name_encoding (const struct file_handle *handle)
+{
+  assert (handle->referent == FH_REF_FILE);
+  return handle->file_name_encoding;
+}
+
 
 /* Returns the mode of HANDLE. */
 enum fh_mode
