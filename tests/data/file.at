@@ -1,0 +1,82 @@
+AT_BANNER([files handling])
+
+AT_SETUP([Write error - directory exists])
+
+mkdir foobar.sav
+
+AT_DATA([file.sps], [dnl
+DATA LIST NOTABLE/x 1.
+BEGIN DATA.
+5
+END DATA.
+SAVE OUTFILE='foobar.sav'.
+])
+
+AT_CHECK([pspp -O format=csv file.sps], [1], [dnl
+error: Opening foobar.sav for writing: Is a directory.
+
+error: Error opening `foobar.sav' for writing as a system file: Is a directory.
+])
+
+AT_CLEANUP
+
+
+AT_SETUP([Write error - no permission])
+
+mkdir  directory
+touch directory/foobar.sav
+chmod 000 directory
+
+AT_DATA([file.sps], [dnl
+DATA LIST NOTABLE/x 1.
+BEGIN DATA.
+5
+END DATA.
+SAVE OUTFILE='directory/foobar.sav'.
+])
+
+AT_CHECK([pspp -O format=csv file.sps], [1], [dnl
+error: Creating temporary file to replace directory/foobar.sav: Permission denied.
+
+error: Error opening `directory/foobar.sav' for writing as a system file: Permission denied.
+])
+
+AT_CLEANUP
+
+
+
+AT_SETUP([Write error - temp file disappeared])
+
+AT_DATA([file.sps], [dnl
+DATA LIST NOTABLE/x 1.
+BEGIN DATA.
+5
+END DATA.
+XSAVE OUTFILE='foobar.sav'.
+HOST COMMAND=[['rm foobar.sav.tmp*']].
+EXECUTE.
+])
+
+AT_CHECK([pspp -O format=csv file.sps], [1], [ignore])
+
+AT_CLEANUP
+
+
+
+AT_SETUP([Write fifo])
+
+AT_DATA([file.sps], [dnl
+DATA LIST NOTABLE/x 1.
+BEGIN DATA.
+5
+END DATA.
+SAVE OUTFILE='foobar.sav'.
+])
+
+mkfifo foobar.sav
+cat foobar.sav > /dev/null & 
+pid=$!
+
+AT_CHECK([pspp -O format=csv file.sps], [0], [ignore])
+
+AT_CLEANUP

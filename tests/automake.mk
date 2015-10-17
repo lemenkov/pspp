@@ -279,6 +279,7 @@ TESTSUITE_AT = \
 	tests/data/data-out.at \
 	tests/data/datasheet-test.at \
 	tests/data/dictionary.at \
+	tests/data/file.at \
 	tests/data/format-guesser.at \
 	tests/data/pc+-file-reader.at \
 	tests/data/por-file.at \
