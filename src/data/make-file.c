@@ -1,5 +1,5 @@
 /* PSPP - a program for statistical analysis.
-   Copyright (C) 2004, 2010 Free Software Foundation, Inc.
+   Copyright (C) 2004, 2010, 2015 Free Software Foundation, Inc.
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -37,16 +37,157 @@
 #include "gl/tempname.h"
 #include "gl/xalloc.h"
 #include "gl/xvasprintf.h"
+#include "gl/localcharset.h"
 
 #include "gettext.h"
 #define _(msgid) gettext (msgid)
 
+
+#if defined _WIN32 || defined __WIN32__
+#define WIN32_LEAN_AND_MEAN  /* avoid including junk */
+#define UNICODE 1
+#include <windows.h>
+#define TS_stat _stat
+#define Tunlink _wunlink
+#define Topen _wopen
+#define Tstat _wstat
+
+/* Shamelessly lifted and modified from the rpl_rename function in Gnulib */
+static int
+Trename (TCHAR const *src, TCHAR const *dst)
+{
+  int error;
+
+  /* MoveFileExW works if SRC is a directory without any flags, but
+     fails with MOVEFILE_REPLACE_EXISTING, so try without flags first.
+     Thankfully, MoveFileExW handles hard links correctly, even though
+     rename() does not.  */
+  if (MoveFileExW (src, dst, 0))
+    return 0;
+
+  /* Retry with MOVEFILE_REPLACE_EXISTING if the move failed
+     due to the destination already existing.  */
+  error = GetLastError ();
+  if (error == ERROR_FILE_EXISTS || error == ERROR_ALREADY_EXISTS)
+    {
+      if (MoveFileExW (src, dst, MOVEFILE_REPLACE_EXISTING))
+        return 0;
+
+      error = GetLastError ();
+    }
+
+  switch (error)
+    {
+    case ERROR_FILE_NOT_FOUND:
+    case ERROR_PATH_NOT_FOUND:
+    case ERROR_BAD_PATHNAME:
+    case ERROR_DIRECTORY:
+      errno = ENOENT;
+      break;
+
+    case ERROR_ACCESS_DENIED:
+    case ERROR_SHARING_VIOLATION:
+      errno = EACCES;
+      break;
+
+    case ERROR_OUTOFMEMORY:
+      errno = ENOMEM;
+      break;
+
+    case ERROR_CURRENT_DIRECTORY:
+      errno = EBUSY;
+      break;
+
+    case ERROR_NOT_SAME_DEVICE:
+      errno = EXDEV;
+      break;
+
+    case ERROR_WRITE_PROTECT:
+      errno = EROFS;
+      break;
+
+    case ERROR_WRITE_FAULT:
+    case ERROR_READ_FAULT:
+    case ERROR_GEN_FAILURE:
+      errno = EIO;
+      break;
+
+    case ERROR_HANDLE_DISK_FULL:
+    case ERROR_DISK_FULL:
+    case ERROR_DISK_TOO_FRAGMENTED:
+      errno = ENOSPC;
+      break;
+
+    case ERROR_FILE_EXISTS:
+    case ERROR_ALREADY_EXISTS:
+      errno = EEXIST;
+      break;
+
+    case ERROR_BUFFER_OVERFLOW:
+    case ERROR_FILENAME_EXCED_RANGE:
+      errno = ENAMETOOLONG;
+      break;
+
+    case ERROR_INVALID_NAME:
+    case ERROR_DELETE_PENDING:
+      errno = EPERM;        /* ? */
+      break;
+
+# ifndef ERROR_FILE_TOO_LARGE
+/* This value is documented but not defined in all versions of windows.h.  */
+#  define ERROR_FILE_TOO_LARGE 223
+# endif
+    case ERROR_FILE_TOO_LARGE:
+      errno = EFBIG;
+      break;
+
+    default:
+      errno = EINVAL;
+      break;
+    }
+
+  return -1;
+}
+
+static TCHAR * 
+convert_to_filename_encoding (const char *s, size_t len, const char *current_encoding)
+{
+  const char *enc = current_encoding;
+  if (0 == strcmp (current_encoding, "Auto"))
+    enc = locale_charset ();
+
+  return (TCHAR *) recode_string ("UTF-16LE", enc, s, len);
+}
+
+
+#else
+typedef char TCHAR;
+#define TS_stat stat
+#define Trename rename
+#define Tunlink unlink
+#define Topen open
+#define Tstat stat
+
+static TCHAR * 
+convert_to_filename_encoding (const char *s, size_t len UNUSED, const char *current_encoding UNUSED)
+{
+  /* Non-windows systems don't care about the encoding.  
+     The string is copied here, to be consistent with the w32 case.  */
+  return xstrdup (s);
+}
+
+#endif
+
+
 struct replace_file
-  {
-    struct ll ll;
-    char *file_name;
-    char *tmp_name;
-  };
+{
+  struct ll ll;
+  TCHAR *file_name;
+  TCHAR *tmp_name;
+
+  char *tmp_name_verbatim;
+  const char *file_name_verbatim;
+};
  
 static struct ll_list all_files = LL_INITIALIZER (all_files);
 
@@ -58,24 +199,27 @@ replace_file_start (const struct file_handle *fh, const char *mode,
                     mode_t permissions, FILE **fp)
 {
   static bool registered;
-  struct stat s;
+  struct TS_stat s;
   struct replace_file *rf;
   int fd;
   int saved_errno = errno;
 
   const char *file_name = fh_get_file_name (fh);
 
+  TCHAR * Tfile_name = convert_to_filename_encoding (file_name, strlen (file_name), fh_get_file_name_encoding (fh));
+
   /* If FILE_NAME represents a special file, write to it directly
      instead of trying to replace it. */
-  if (stat (file_name, &s) == 0 && !S_ISREG (s.st_mode))
+  if (Tstat (Tfile_name, &s) == 0 && !S_ISREG (s.st_mode))
     {
       /* Open file descriptor. */
-      fd = open (file_name, O_WRONLY);
+      fd = Topen (Tfile_name, O_WRONLY);
       if (fd < 0)
         {
 	  saved_errno = errno;     
           msg (ME, _("Opening %s for writing: %s."),
                file_name, strerror (saved_errno));
+	  free (Tfile_name);
           return NULL;
         }
 
@@ -87,12 +231,13 @@ replace_file_start (const struct file_handle *fh, const char *mode,
 	  msg (ME, _("Opening stream for %s: %s."),
                file_name, strerror (saved_errno));
           close (fd);
+	  free (Tfile_name);
           return NULL;
         }
 
-      rf = xmalloc (sizeof *rf);
+      rf = xzalloc (sizeof *rf);
       rf->file_name = NULL;
-      rf->tmp_name = xstrdup (file_name);
+      rf->tmp_name = Tfile_name;
       return rf;
     }
 
@@ -103,32 +248,36 @@ replace_file_start (const struct file_handle *fh, const char *mode,
     }
   block_fatal_signals ();
 
-  rf = xmalloc (sizeof *rf);
-  rf->file_name = xstrdup (file_name);
+  rf = xzalloc (sizeof *rf);
+  rf->file_name = Tfile_name;
+  rf->file_name_verbatim = file_name;
+
   for (;;)
     {
       /* Generate unique temporary file name. */
-      rf->tmp_name = xasprintf ("%stmpXXXXXX", file_name);
-      if (gen_tempname (rf->tmp_name, 0, 0600, GT_NOCREATE) < 0)
+      free (rf->tmp_name_verbatim);
+      rf->tmp_name_verbatim = xasprintf ("%stmpXXXXXX", file_name);
+      if (gen_tempname (rf->tmp_name_verbatim, 0, 0600, GT_NOCREATE) < 0)
         {
 	  saved_errno = errno;
           msg (ME, _("Creating temporary file to replace %s: %s."),
-               rf->file_name, strerror (saved_errno));
+               file_name, strerror (saved_errno));
           goto error;
         }
 
+      rf->tmp_name = convert_to_filename_encoding (rf->tmp_name_verbatim, strlen (rf->tmp_name_verbatim), fh_get_file_name_encoding (fh));
+
       /* Create file by that name. */
-      fd = open (rf->tmp_name, O_WRONLY | O_CREAT | O_EXCL | O_BINARY, permissions);
+      fd = Topen (rf->tmp_name, O_WRONLY | O_CREAT | O_EXCL | O_BINARY, permissions);
       if (fd >= 0)
         break;
       if (errno != EEXIST)
         {
 	  saved_errno = errno;
           msg (ME, _("Creating temporary file %s: %s."),
-               rf->tmp_name, strerror (saved_errno));
+               rf->tmp_name_verbatim, strerror (saved_errno));
           goto error;
         }
-      free (rf->tmp_name);
     }
 
 
@@ -138,9 +287,9 @@ replace_file_start (const struct file_handle *fh, const char *mode,
     {
       saved_errno = errno;
       msg (ME, _("Opening stream for temporary file %s: %s."),
-           rf->tmp_name, strerror (saved_errno));
+           rf->tmp_name_verbatim, strerror (saved_errno));
       close (fd);
-      unlink (rf->tmp_name);
+      Tunlink (rf->tmp_name);
       goto error;
     }
 
@@ -150,7 +299,7 @@ replace_file_start (const struct file_handle *fh, const char *mode,
 
   return rf;
 
-error:
+ error:
   unblock_fatal_signals ();
   free_replace_file (rf);
   *fp = NULL;
@@ -168,14 +317,14 @@ replace_file_commit (struct replace_file *rf)
       int save_errno;
 
       block_fatal_signals ();
-      ok = rename (rf->tmp_name, rf->file_name) == 0;
+      ok = Trename (rf->tmp_name, rf->file_name) == 0;
       save_errno = errno;
       ll_remove (&rf->ll);
       unblock_fatal_signals ();
 
       if (!ok)
         msg (ME, _("Replacing %s by %s: %s."),
-             rf->tmp_name, rf->file_name, strerror (save_errno));
+             rf->file_name_verbatim, rf->tmp_name_verbatim, strerror (save_errno));
     }
   else
     {
@@ -196,13 +345,13 @@ replace_file_abort (struct replace_file *rf)
       int save_errno;
 
       block_fatal_signals ();
-      ok = unlink (rf->tmp_name) == 0;
+      ok = Tunlink (rf->tmp_name) == 0;
       save_errno = errno;
       ll_remove (&rf->ll);
       unblock_fatal_signals ();
 
       if (!ok)
-        msg (ME, _("Removing %s: %s."), rf->tmp_name, strerror (save_errno));
+        msg (ME, _("Removing %s: %s."), rf->tmp_name_verbatim, strerror (save_errno));
     }
   else
     {
@@ -218,6 +367,7 @@ free_replace_file (struct replace_file *rf)
 {
   free (rf->file_name);
   free (rf->tmp_name);
+  free (rf->tmp_name_verbatim);
   free (rf);
 }
 
@@ -231,7 +381,7 @@ unlink_replace_files (void)
     {
       /* We don't free_replace_file(RF) because calling free is unsafe
          from an asynchronous signal handler. */
-      unlink (rf->tmp_name);
+      Tunlink (rf->tmp_name);
     }
   unblock_fatal_signals ();
 }
