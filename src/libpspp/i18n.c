@@ -22,7 +22,6 @@
 #include <errno.h>
 #include <iconv.h>
 #include <langinfo.h>
-#include <libintl.h>
 #include <locale.h>
 #include <stdio.h>
 #include <stdlib.h>
