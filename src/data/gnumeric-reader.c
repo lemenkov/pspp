@@ -189,6 +189,8 @@ gnumeric_unref (struct spreadsheet *s)
       free (r->sheets);
       state_data_destroy (&r->msd);
 
+      free (s->file_name);
+
       free (r);
     }
 }
@@ -555,7 +557,7 @@ gnumeric_reopen (struct gnumeric_reader *r, const char *filename, bool show_erro
     {
       r = xzalloc (sizeof *r);
       r->spreadsheet.n_sheets = -1;
-      r->spreadsheet.file_name = filename;
+      r->spreadsheet.file_name = strdup (filename);
       sd = &r->msd;
     }
   else
@@ -589,8 +591,7 @@ gnumeric_reopen (struct gnumeric_reader *r, const char *filename, bool show_erro
   if ( ret != 1)
     {
       /* Does not seem to be a gnumeric file */
-      xmlFreeTextReader (sd->xtr);
-      free (r);
+      gnumeric_unref (&r->spreadsheet);
       return NULL;
     }
 

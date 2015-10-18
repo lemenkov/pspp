@@ -59,7 +59,7 @@ enum spreadsheet_type
 
 struct spreadsheet
 {
-  const char *file_name;
+  char *file_name;
 
   enum spreadsheet_type type;
 

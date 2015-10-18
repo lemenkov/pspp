@@ -173,6 +173,8 @@ ods_unref (struct spreadsheet *s)
 	
       zip_reader_destroy (r->zreader);
       free (r->sheets);
+
+      free (s->file_name);
 	
       free (r);
     }
@@ -650,7 +652,7 @@ ods_probe (const char *filename, bool report_errors)
   r->n_allocated_sheets = 0;
   r->sheets = NULL;
 
-  r->spreadsheet.file_name = filename;
+  r->spreadsheet.file_name = strdup (filename);
   return &r->spreadsheet;
 
  error:
