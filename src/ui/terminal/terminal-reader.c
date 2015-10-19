@@ -256,15 +256,6 @@ readline_prompt (enum prompt_style style)
 static int pfd[2];
 static bool sigint_received ;
 
-static void 
-handler (int sig)
-{
-  rl_end = 0;
-
-  write (pfd[1], "x", 1);
-  rl_echo_signal_char (sig);
-}
-
 
 /* 
    A function similar to getc from stdio.
@@ -319,6 +310,16 @@ interruptible_getc (FILE *fp)
 
 
 #if HAVE_READLINE
+
+static void 
+handler (int sig)
+{
+  rl_end = 0;
+
+  write (pfd[1], "x", 1);
+  rl_echo_signal_char (sig);
+}
+
 
 static void
 readline_init (void)
