@@ -53,7 +53,7 @@ BEGIN DATA.
 5
 END DATA.
 XSAVE OUTFILE='foobar.sav'.
-HOST COMMAND=[['rm foobar.sav.tmp*']].
+HOST COMMAND=[['rm foobar.savtmp*']].
 EXECUTE.
 ])
 

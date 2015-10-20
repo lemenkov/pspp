@@ -108,7 +108,7 @@ replace_file_start (const struct file_handle *fh, const char *mode,
   for (;;)
     {
       /* Generate unique temporary file name. */
-      rf->tmp_name = xasprintf ("%s.tmpXXXXXX", file_name);
+      rf->tmp_name = xasprintf ("%stmpXXXXXX", file_name);
       if (gen_tempname (rf->tmp_name, 0, 0600, GT_NOCREATE) < 0)
         {
 	  saved_errno = errno;
