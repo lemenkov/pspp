@@ -1,5 +1,5 @@
 /* PSPP - a program for statistical analysis.
-   Copyright (C) 2006, 2009, 2010, 2011, 2012, 2013, 2014 Free Software Foundation, Inc.
+   Copyright (C) 2006, 2009, 2010, 2011, 2012, 2013, 2014, 2015 Free Software Foundation, Inc.
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -48,19 +48,19 @@
 #define _(msgid) gettext (msgid)
 
 struct converter
- {
-    char *tocode;
-    char *fromcode;
-    iconv_t conv;
-    int error;
-  };
+{
+  char *tocode;
+  char *fromcode;
+  iconv_t conv;
+  int null_char_width;
+};
 
 static char *default_encoding;
 static struct hmapx map;
 
 /* A wrapper around iconv_open */
 static struct converter *
-create_iconv__ (const char* tocode, const char* fromcode)
+create_iconv (const char* tocode, const char* fromcode)
 {
   size_t hash;
   struct hmapx_node *node;
@@ -69,40 +69,58 @@ create_iconv__ (const char* tocode, const char* fromcode)
 
   hash = hash_string (tocode, hash_string (fromcode, 0));
   HMAPX_FOR_EACH_WITH_HASH (converter, node, hash, &map)
-    if (!strcmp (tocode, converter->tocode)
-        && !strcmp (fromcode, converter->fromcode))
-      return converter;
+    {
+      if (!converter)
+	return NULL;
+
+      if (!strcmp (tocode, converter->tocode)
+	  && !strcmp (fromcode, converter->fromcode))
+	return converter;
+    }
 
   converter = xmalloc (sizeof *converter);
   converter->tocode = xstrdup (tocode);
   converter->fromcode = xstrdup (fromcode);
   converter->conv = iconv_open (tocode, fromcode);
-  converter->error = converter->conv == (iconv_t) -1 ? errno : 0;
+  int error = converter->conv == (iconv_t) -1 ? errno : 0;
+  /* I don't think it's safe to translate this string or to use messaging
+     as the converters have not yet been set up */
+  if (error && strcmp (tocode, fromcode))
+    {
+      fprintf (stderr,
+               "Warning: "
+               "cannot create a converter for `%s' to `%s': %s\n",
+               fromcode, tocode, strerror (error));
+
+      hmapx_insert (&map, NULL, hash);
+      return NULL;
+    }
+
+  /* Find out how many bytes there are in a null char in the target
+     encoding */
+  iconv_t bconv = iconv_open (tocode, "ASCII");
+  if (bconv != (iconv_t) -1)
+    {
+      ICONV_CONST  char *nullstr = strdup ("");
+      ICONV_CONST  char *outbuf = strdup ("XXXXXXXX");
+      ICONV_CONST  char *snullstr = nullstr;
+      ICONV_CONST  char *soutbuf = outbuf;
+
+      size_t inbytes = 1;
+      const size_t bytes = 8;
+      size_t outbytes = bytes;
+      if (-1 != iconv (bconv, &nullstr, &inbytes, &outbuf, &outbytes))
+	converter->null_char_width = bytes - outbytes;
+      free (snullstr);
+      free (soutbuf);
+      iconv_close (bconv);
+    }
+  
   hmapx_insert (&map, converter, hash);
 
   return converter;
 }
 
-static iconv_t
-create_iconv (const char* tocode, const char* fromcode)
-{
-  struct converter *converter;
-
-  converter = create_iconv__ (tocode, fromcode);
-
-  /* I don't think it's safe to translate this string or to use messaging
-     as the converters have not yet been set up */
-  if (converter->error && strcmp (tocode, fromcode))
-    {
-      fprintf (stderr,
-               "Warning: "
-               "cannot create a converter for `%s' to `%s': %s\n",
-               fromcode, tocode, strerror (converter->error));
-      converter->error = 0;
-    }
-
-  return converter->conv;
-}
 
 /* Converts the single byte C from encoding FROM to TO, returning the first
    byte of the result.
@@ -147,43 +165,46 @@ recode_string_len (const char *to, const char *from,
    Returns the output length if successful, -1 if the output buffer is too
    small. */
 static ssize_t
-try_recode (iconv_t conv, char fallbackchar,
+try_recode (struct converter *cvtr, char fallbackchar,
             const char *in, size_t inbytes,
             char *out_, size_t outbytes)
 {
   char *out = out_;
-  int i;
+  int i, j;
+
+  int null_bytes = cvtr->null_char_width;
 
   /* Put the converter into the initial shift state, in case there was any
      state information left over from its last usage. */
-  iconv (conv, NULL, 0, NULL, 0);
+  iconv (cvtr->conv, NULL, 0, NULL, 0);
 
   /* Do two rounds of iconv() calls:
 
      - The first round does the bulk of the conversion using the
-       caller-supplied input data..
+     caller-supplied input data..
 
      - The second round flushes any leftover output.  This has a real effect
-       with input encodings that use combining diacritics, e.g. without the
-       second round the last character tends to gets dropped when converting
-       from windows-1258 to other encodings.
+     with input encodings that use combining diacritics, e.g. without the
+     second round the last character tends to gets dropped when converting
+     from windows-1258 to other encodings.
   */
   for (i = 0; i < 2; i++)
     {
       ICONV_CONST char **inp = i ? NULL : (ICONV_CONST char **) &in;
       size_t *inbytesp = i ? NULL : &inbytes;
 
-      while (iconv (conv, inp, inbytesp, &out, &outbytes) == -1)
+      while (iconv (cvtr->conv, inp, inbytesp, &out, &outbytes) == -1)
         switch (errno)
           {
           case EINVAL:
-            if (outbytes < 2)
+            if (outbytes < null_bytes + 1)
               return -E2BIG;
             if (!fallbackchar)
               return -EINVAL;
             *out++ = fallbackchar;
-            *out = '\0';
-            return out - out_;
+	    for (j = 0 ; j < null_bytes ; ++j)
+	      *out++ = '\0';
+            return out - 1 - out_;
 
           case EILSEQ:
             if (outbytes == 0)
@@ -211,11 +232,13 @@ try_recode (iconv_t conv, char fallbackchar,
           }
     }
 
-  if (outbytes == 0)
+  if (outbytes <= null_bytes - 1)
     return -E2BIG;
 
-  *out = '\0';
-  return out - out_;
+  for (i = 0 ; i < null_bytes ; ++i)
+    *out++ = '\0';
+  
+  return out - 1 - out_;
 }
 
 /* Converts the string TEXT, which should be encoded in FROM-encoding, to a
@@ -240,7 +263,7 @@ recode_string_pool (const char *to, const char *from,
     return NULL;
 
   if ( length == -1 )
-     length = strlen (text);
+    length = strlen (text);
 
   out = recode_substring_pool (to, from, ss_buffer (text, length), pool);
   return out.string;
@@ -279,10 +302,10 @@ xconcat2 (const char *a, size_t a_len,
    fits or until HEAD_LEN reaches 0.
 
    [*] Actually this function drops grapheme clusters instead of characters, so
-       that, e.g. a Unicode character followed by a combining accent character
-       is either completely included or completely excluded from HEAD_LEN.  See
-       UAX #29 at http://unicode.org/reports/tr29/ for more information on
-       grapheme clusters.
+   that, e.g. a Unicode character followed by a combining accent character
+   is either completely included or completely excluded from HEAD_LEN.  See
+   UAX #29 at http://unicode.org/reports/tr29/ for more information on
+   grapheme clusters.
 
    A null ENCODING is treated as UTF-8.
 
@@ -293,16 +316,16 @@ xconcat2 (const char *a, size_t a_len,
 
    Simple examples for encoding="UTF-8", max_len=6:
 
-       head="abc",  tail="xyz"     => 3
-       head="abcd", tail="xyz"     => 3 ("d" dropped).
-       head="abc",  tail="uvwxyz"  => 0 ("abc" dropped).
-       head="abc",  tail="tuvwxyz" => 0 ("abc" dropped).
+   head="abc",  tail="xyz"     => 3
+   head="abcd", tail="xyz"     => 3 ("d" dropped).
+   head="abc",  tail="uvwxyz"  => 0 ("abc" dropped).
+   head="abc",  tail="tuvwxyz" => 0 ("abc" dropped).
 
    Examples for encoding="ISO-8859-1", max_len=6:
 
-       head="éèä",  tail="xyz"     => 6
-         (each letter in head is only 1 byte in ISO-8859-1 even though they
-          each take 2 bytes in UTF-8 encoding)
+   head="éèä",  tail="xyz"     => 6
+   (each letter in head is only 1 byte in ISO-8859-1 even though they
+   each take 2 bytes in UTF-8 encoding)
 */
 static size_t
 utf8_encoding_concat__ (const char *head, size_t head_len,
@@ -421,25 +444,25 @@ utf8_encoding_concat__ (const char *head, size_t head_len,
    included, even if TAIL by itself is longer than MAX_LEN in ENCODING.
 
    [*] Actually this function drops grapheme clusters instead of characters, so
-       that, e.g. a Unicode character followed by a combining accent character
-       is either completely included or completely excluded from the returned
-       string.  See UAX #29 at http://unicode.org/reports/tr29/ for more
-       information on grapheme clusters.
+   that, e.g. a Unicode character followed by a combining accent character
+   is either completely included or completely excluded from the returned
+   string.  See UAX #29 at http://unicode.org/reports/tr29/ for more
+   information on grapheme clusters.
 
    A null ENCODING is treated as UTF-8.
 
    Simple examples for encoding="UTF-8", max_len=6:
 
-       head="abc",  tail="xyz"     => "abcxyz"
-       head="abcd", tail="xyz"     => "abcxyz"
-       head="abc",  tail="uvwxyz"  => "uvwxyz"
-       head="abc",  tail="tuvwxyz" => "tuvwxyz"
+   head="abc",  tail="xyz"     => "abcxyz"
+   head="abcd", tail="xyz"     => "abcxyz"
+   head="abc",  tail="uvwxyz"  => "uvwxyz"
+   head="abc",  tail="tuvwxyz" => "tuvwxyz"
 
    Examples for encoding="ISO-8859-1", max_len=6:
 
-       head="éèä",  tail="xyz"    => "éèäxyz"
-         (each letter in HEAD is only 1 byte in ISO-8859-1 even though they
-          each take 2 bytes in UTF-8 encoding)
+   head="éèä",  tail="xyz"    => "éèäxyz"
+   (each letter in HEAD is only 1 byte in ISO-8859-1 even though they
+   each take 2 bytes in UTF-8 encoding)
 */
 char *
 utf8_encoding_concat (const char *head, const char *tail,
@@ -479,10 +502,10 @@ utf8_encoding_concat_len (const char *head, const char *tail,
    ENCODING.  Both S and the returned string are encoded in UTF-8.
 
    [*] Actually this function drops grapheme clusters instead of characters, so
-       that, e.g. a Unicode character followed by a combining accent character
-       is either completely included or completely excluded from the returned
-       string.  See UAX #29 at http://unicode.org/reports/tr29/ for more
-       information on grapheme clusters.
+   that, e.g. a Unicode character followed by a combining accent character
+   is either completely included or completely excluded from the returned
+   string.  See UAX #29 at http://unicode.org/reports/tr29/ for more
+   information on grapheme clusters.
 
    A null ENCODING is treated as UTF-8.
 */
@@ -525,7 +548,7 @@ recode_substring_pool__ (const char *to, const char *from,
                          struct pool *pool, struct substring *out)
 {
   size_t bufsize;
-  iconv_t conv ;
+  struct converter *conv;
 
   if (to == NULL)
     to = default_encoding;
@@ -535,7 +558,7 @@ recode_substring_pool__ (const char *to, const char *from,
 
   conv = create_iconv (to, from);
 
-  if ( (iconv_t) -1 == conv )
+  if ( NULL == conv )
     {
       if (fallbackchar)
         {
@@ -687,6 +710,8 @@ i18n_done (void)
 
   HMAPX_FOR_EACH (cvtr, node, &map)
     {
+      if (cvtr == NULL)
+	continue;
       free (cvtr->tocode);
       free (cvtr->fromcode);
       if (cvtr->conv != (iconv_t) -1)
@@ -853,10 +878,10 @@ bool
 get_encoding_info (struct encoding_info *e, const char *name)
 {
   const struct substring in = SS_LITERAL_INITIALIZER (
-    "\t\n\v\f\r "
-    "!\"#$%&'()*+,-./0123456789:;<=>?@"
-    "ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`"
-    "abcdefghijklmnopqrstuvwxyz{|}~");
+						      "\t\n\v\f\r "
+						      "!\"#$%&'()*+,-./0123456789:;<=>?@"
+						      "ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`"
+						      "abcdefghijklmnopqrstuvwxyz{|}~");
 
   struct substring out, cr, lf, space;
   bool ok;
@@ -930,8 +955,8 @@ is_encoding_ebcdic_compatible (const char *encoding)
 bool
 is_encoding_supported (const char *encoding)
 {
-  return (create_iconv__ ("UTF-8", encoding)->conv != (iconv_t) -1
-          && create_iconv__ (encoding, "UTF-8")->conv != (iconv_t) -1);
+  return (create_iconv ("UTF-8", encoding)
+          && create_iconv (encoding, "UTF-8"));
 }
 
 /* Returns true if E is the name of a UTF-8 encoding.
@@ -952,7 +977,7 @@ static struct encoding_category *categories;
 static int n_categories;
 
 static void SENTINEL (0)
-add_category (size_t *allocated_categories, const char *category, ...)
+  add_category (size_t *allocated_categories, const char *category, ...)
 {
   struct encoding_category *c;
   const char *encodings[16];
