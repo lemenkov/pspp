@@ -1649,6 +1649,7 @@ The default is 0.05.
 QUICK CLUSTER @var{var_list}
       [/CRITERIA=CLUSTERS(@var{k}) [MXITER(@var{max_iter})]]
       [/MISSING=@{EXCLUDE,INCLUDE@} @{LISTWISE, PAIRWISE@}]
+      [/PRINT=@{INITIAL@} @{CLUSTERS@}]
 @end display
 
 The @cmd{QUICK CLUSTER} command performs k-means clustering on the
@@ -1676,6 +1677,12 @@ If @subcmd{PAIRWISE} is set, then a case is considered missing only if all the
 clustering variables contain missing values.  Otherwise it is clustered
 on the basis of the non-missing values.
 The default is @subcmd{LISTWISE}.
+
+The @subcmd{PRINT} subcommand requests additional output to be printed.
+If @subcmd{INITIAL} is set, then the initial cluster memberships will
+be printed.
+If @subcmd{CLUSTERS} is set, the cluster memberships of the individual
+cases will be displayed (potentially generating lengthy output).
 
 
 @node RANK

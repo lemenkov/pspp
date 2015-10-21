@@ -6,6 +6,10 @@ Please send PSPP bug reports to bug-gnu-pspp@gnu.org.
  
 Changes since 0.8.5:
 
+ * The QUICK CLUSTER command has a  /PRINT subcommand which shows
+   the initial cluster centres and the final cluster membership of
+   each case.
+
  * A Russian localisation has been contributed.
 
  * The graphical user interface uses Gtk+ version 3 instead of version 2.
