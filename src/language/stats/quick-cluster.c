@@ -156,7 +156,7 @@ kmeans_destroy (struct Kmeans *kmeans)
 
 /* Creates random centers using randomly selected cases from the data. */
 static void
-kmeans_randomize_centers (struct Kmeans *kmeans, const struct casereader *reader, const struct qc *qc)
+kmeans_randomize_centers (struct Kmeans *kmeans, const struct casereader *reader UNUSED, const struct qc *qc)
 {
   int i, j;
   for (i = 0; i < qc->ngroups; i++)
