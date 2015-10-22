@@ -80,8 +80,8 @@ struct pool;
 
 /* Creation and destruction. */
 struct caseproto *caseproto_create (void) MALLOC_LIKE;
-static inline struct caseproto *caseproto_ref (const struct caseproto *);
-struct caseproto *caseproto_ref_pool (const struct caseproto *, struct pool *);
+static inline struct caseproto *caseproto_ref (const struct caseproto *) WARN_UNUSED_RESULT;
+struct caseproto *caseproto_ref_pool (const struct caseproto *, struct pool *) WARN_UNUSED_RESULT;
 static inline void caseproto_unref (struct caseproto *);
 
 /* Inspecting stored widths.  */
