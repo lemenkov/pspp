@@ -255,7 +255,7 @@ static void read_documents (struct pfm_reader *, struct dictionary *);
 /* Reads the dictionary from file with handle H, and returns it in a
    dictionary structure.  This dictionary may be modified in order to
    rename, reorder, and delete variables, etc. */
-struct any_reader *
+static struct any_reader *
 pfm_open (struct file_handle *fh)
 {
   struct pool *volatile pool = NULL;
@@ -322,7 +322,7 @@ pfm_open (struct file_handle *fh)
   return NULL;
 }
 
-struct casereader *
+static struct casereader *
 pfm_decode (struct any_reader *r_, const char *encoding UNUSED,
             struct dictionary **dictp, struct any_read_info *info)
 {
@@ -924,7 +924,7 @@ por_file_casereader_read (struct casereader *reader, void *r_)
 
 /* Detects whether FILE is an SPSS portable file.  Returns 1 if so, 0 if not,
    and a negative errno value if there is an error reading FILE. */
-int
+static int
 pfm_detect (FILE *file)
 {
   unsigned char header[464];

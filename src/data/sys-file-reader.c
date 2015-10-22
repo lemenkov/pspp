@@ -537,7 +537,7 @@ read_record (struct sfm_reader *r, int type,
 
 /* Returns the character encoding obtained from R, or a null pointer if R
    doesn't have an indication of its character encoding.  */
-const char *
+static const char *
 sfm_get_encoding (const struct sfm_reader *r)
 {
   /* The EXT_ENCODING record is the best way to determine dictionary
