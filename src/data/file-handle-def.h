@@ -87,7 +87,6 @@ void fh_unname (struct file_handle *);
 
 /* Finding file handles. */
 struct file_handle *fh_from_id (const char *handle_name);
-struct file_handle *fh_from_file_name (const char *file_name);
 struct file_handle *fh_inline_file (void);
 
 /* Generic properties of file handles. */
