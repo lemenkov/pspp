@@ -37,8 +37,6 @@ const char *fn_getenv_default (const char *variable, const char *def);
 FILE *fn_open (const char *fn, const char *mode);
 int fn_close (const char *fn, FILE *file);
 
-FILE *create_stream (const char *fn, const char *mode, mode_t permissions);
-
 struct file_identity *fn_get_identity (const char *file_name);
 void fn_free_identity (struct file_identity *);
 int fn_compare_file_identities (const struct file_identity *,
