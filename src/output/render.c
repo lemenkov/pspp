@@ -927,13 +927,13 @@ render_page_unref (struct render_page *page)
 /* Returns the size of PAGE along AXIS.  (This might be larger than the page
    size specified in the parameters passed to render_page_create().  Use a
    render_break to break up a render_page into page-sized chunks.) */
-int
+static int
 render_page_get_size (const struct render_page *page, enum table_axis axis)
 {
   return page->cp[axis][page->n[axis] * 2 + 1];
 }
 
-int
+static int
 render_page_get_best_breakpoint (const struct render_page *page, int height)
 {
   int y;
@@ -1085,7 +1085,7 @@ render_page_draw_cells (const struct render_page *page,
 
 /* Renders PAGE, by calling the 'draw_line' and 'draw_cell' functions from the
    render_params provided to render_page_create(). */
-void
+static void
 render_page_draw (const struct render_page *page, int ofs[TABLE_N_AXES])
 {
   int bb[TABLE_N_AXES][2];
@@ -1151,7 +1151,7 @@ get_clip_max_extent (int x1, const int cp[], int n)
 /* Renders the cells of PAGE that intersect (X,Y)-(X+W,Y+H), by calling the
    'draw_line' and 'draw_cell' functions from the render_params provided to
    render_page_create(). */
-void
+static void
 render_page_draw_region (const struct render_page *page,
                          int ofs[TABLE_N_AXES], int clip[TABLE_N_AXES][2])
 {
