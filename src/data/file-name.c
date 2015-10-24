@@ -111,23 +111,6 @@ fn_is_absolute (const char *name)
   return IS_ABSOLUTE_FILE_NAME (name);
 }
 
-/* Returns true if FILE_NAME is a virtual file that doesn't
-   really exist on disk, false if it's a real file name. */
-bool
-fn_is_special (const char *file_name)
-{
-  if (!strcmp (file_name, "-") || !strcmp (file_name, "stdin")
-      || !strcmp (file_name, "stdout") || !strcmp (file_name, "stderr")
-#ifdef HAVE_POPEN
-      || file_name[0] == '|'
-      || (*file_name && file_name[strlen (file_name) - 1] == '|')
-#endif
-      )
-    return true;
-
-  return false;
-}
-
 /* Returns true if file with name NAME exists, and that file is not a
    directory */
 bool

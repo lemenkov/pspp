@@ -28,7 +28,6 @@ char *fn_dir_name (const char *fn);
 char *fn_extension (const char *fn);
 
 bool fn_is_absolute (const char *fn);
-bool fn_is_special (const char *fn);
 bool fn_exists (const char *fn);
 
 const char *fn_getenv (const char *variable);
