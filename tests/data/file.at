@@ -83,3 +83,22 @@ pid=$!
 AT_CHECK([pspp -O format=csv file.sps], [0], [ignore])
 
 AT_CLEANUP
+
+
+
+AT_SETUP([Reading from pipe])
+
+AT_DATA([pipe.sps], [dnl
+data list file='echo "1 2\n 3 4\n 5 6" |' notable list /x * y *.
+list.
+])
+
+AT_CHECK([pspp -O format=csv pipe.sps], [0], [dnl
+Table: Data List
+x,y
+1.00,2.00
+3.00,4.00
+5.00,6.00
+])
+
+AT_CLEANUP
