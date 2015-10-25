@@ -262,12 +262,40 @@ fn_get_identity (const char *file_name)
       free (dir);
     }
 #else /* Windows */
-  char cname[PATH_MAX];
-  int ok = GetFullPathName (file_name, sizeof cname, cname, NULL);
-  identity->device = 0;
-  identity->inode = 0;
-  identity->name = xstrdup (ok ? cname : file_name);
-  str_lowercase (identity->name);
+  bool ok = false;
+  HANDLE h = CreateFile (file_name, GENERIC_READ, 0, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_READONLY, NULL);
+  if (h != INVALID_HANDLE_VALUE)
+  {
+    BY_HANDLE_FILE_INFORMATION fi;
+    ok = GetFileInformationByHandle (h, &fi);
+    if (ok)
+      {
+	identity->device = fi.dwVolumeSerialNumber;
+	identity->inode = fi.nFileIndexHigh << 16 | fi.nFileIndexLow;
+	identity->name = 0;
+      }
+    CloseHandle (h);
+  }
+
+  if (!ok)
+    {
+      identity->device = 0;
+      identity->inode = 0;
+
+      size_t bufsize;
+      size_t pathlen = 255;
+      char *cname = NULL;
+      do 
+      {
+	bufsize = pathlen;
+	cname = xrealloc (cname, bufsize);
+	pathlen = GetFullPathName (file_name, bufsize, cname, NULL);
+      }
+      while (pathlen > bufsize);
+      identity->name = xstrdup (cname);
+      free (cname);
+      str_lowercase (identity->name);
+    }
 #endif /* Windows */
 
   return identity;
