@@ -114,7 +114,7 @@ dfm_open_writer (struct file_handle *fh, const char *encoding)
   return w;
 }
 
-/* Returns false if an I/O error occurred on WRITER, true otherwise. */
+/* Returns true if an I/O error occurred on WRITER, false otherwise. */
 bool
 dfm_write_error (const struct dfm_writer *writer)
 {
