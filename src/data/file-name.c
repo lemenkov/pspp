@@ -82,14 +82,6 @@ fn_search_path (const char *base_name, char **path)
   return NULL;
 }
 
-/* Returns the directory part of FILE_NAME, as a malloc()'d
-   string. */
-char *
-fn_dir_name (const char *file_name)
-{
-  return dir_name (file_name);
-}
-
 /* Returns the extension part of FILE_NAME as a malloc()'d string.
    If FILE_NAME does not have an extension, returns an empty
    string. */
@@ -122,28 +114,7 @@ fn_exists (const char *name)
 
   return ! S_ISDIR (temp.st_mode);
 }
-
-/* Environment variables. */
 
-/* Simulates $VER and $ARCH environment variables. */
-const char *
-fn_getenv (const char *s)
-{
-  if (!strcmp (s, "VER"))
-    return fn_getenv_default ("STAT_VER", bare_version);
-  else if (!strcmp (s, "ARCH"))
-    return fn_getenv_default ("STAT_ARCH", host_system);
-  else
-    return getenv (s);
-}
-
-/* Returns getenv(KEY) if that's non-NULL; else returns DEF. */
-const char *
-fn_getenv_default (const char *key, const char *def)
-{
-  const char *value = getenv (key);
-  return value ? value : def;
-}
 
 /* Basic file handling. */
 

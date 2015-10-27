@@ -21,17 +21,11 @@
 #include <stdbool.h>
 #include <sys/types.h>
 
-struct string_set;
-
 char *fn_search_path (const char *base_name, char **path);
-char *fn_dir_name (const char *fn);
 char *fn_extension (const char *fn);
 
 bool fn_is_absolute (const char *fn);
 bool fn_exists (const char *fn);
-
-const char *fn_getenv (const char *variable);
-const char *fn_getenv_default (const char *variable, const char *def);
 
 FILE *fn_open (const char *fn, const char *mode);
 int fn_close (const char *fn, FILE *file);
