@@ -55,9 +55,11 @@ if test "$with_cairo" != no; then
      AC_DEFINE([HAVE_CAIRO], 1, 
        [Define to 1 if Cairo and Pango are available.])],
     [PSPP_REQUIRED_PREREQ([cairo 1.5 or later and pango 1.22 or later (or use --without-cairo)])])
-  AC_PATH_PROG([XMLLINT], [xmllint], [echo], [$PATH])
-  AC_SUBST(XMLLINT)
 fi
+
+dnl Xmllint may be required to build the documentation
+AC_PATH_PROG([XMLLINT], [xmllint], [echo], [$PATH])
+AC_SUBST(XMLLINT)
 
 # Support for GUI.
 AC_ARG_WITH([gui], 

@@ -47,7 +47,7 @@ doc_pspp_dev_TEXINFOS = doc/version-dev.texi \
 dist_man_MANS += doc/pspp.1 \
                  doc/psppire.1
 
-EXTRA_DIST += doc/get-commands.pl
+EXTRA_DIST += doc/get-commands.pl doc/help-pages-list
 
 $(srcdir)/doc/ni.texi: $(top_srcdir)/src/language/command.def doc/get-commands.pl
 	@$(MKDIR_P)  doc
