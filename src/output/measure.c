@@ -18,6 +18,7 @@
 
 #include "output/measure.h"
 
+#include <unistd.h>
 #include <gl/c-strtod.h>
 #include <ctype.h>
 #include <errno.h>
@@ -27,7 +28,6 @@
 #include <stdint.h>
 #include <stdlib.h>
 
-#include "data/file-name.h"
 #include "libpspp/str.h"
 
 #include "gl/c-strcase.h"
@@ -308,7 +308,7 @@ get_default_paper_size (int *h, int *v)
 #endif
 
   /* libpaper defaults to /etc/papersize. */
-  if (fn_exists ("/etc/papersize"))
+  if (0 == access ("/etc/papersize", R_OK))
     return read_paper_conf ("/etc/papersize", h, v);
 
   /* Can't find a default. */
