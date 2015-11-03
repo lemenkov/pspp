@@ -153,7 +153,7 @@ static TCHAR *
 convert_to_filename_encoding (const char *s, size_t len, const char *current_encoding)
 {
   const char *enc = current_encoding;
-  if (0 == strcmp (current_encoding, "Auto"))
+  if (NULL == enc || 0 == strcmp (enc, "Auto"))
     enc = locale_charset ();
 
   return (TCHAR *) recode_string ("UTF-16LE", enc, s, len);
