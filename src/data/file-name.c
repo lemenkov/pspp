@@ -220,8 +220,8 @@ fn_close (const char *fn, FILE *f)
    there. */
 struct file_identity
 {
-  dev_t device;               /* Device number. */
-  ino_t inode;                /* Inode number. */
+  unsigned long long device;               /* Device number. */
+  unsigned long long inode;                /* Inode number. */
   char *name;                 /* File name, where needed, otherwise NULL. */
 };
 
@@ -271,7 +271,9 @@ fn_get_identity (const char *file_name)
     if (ok)
       {
 	identity->device = fi.dwVolumeSerialNumber;
-	identity->inode = fi.nFileIndexHigh << 16 | fi.nFileIndexLow;
+	identity->inode = fi.nFileIndexHigh;
+	identity->inode <<= (sizeof fi.nFileIndexLow) * CHAR_BIT;
+	identity->inode |= fi.nFileIndexLow;
 	identity->name = 0;
       }
     CloseHandle (h);
