@@ -473,6 +473,8 @@ quick_cluster_show_membership (struct Kmeans *kmeans, const struct casereader *r
   tab_text (t, 0, 0, TAB_CENTER, _("Case Number"));
   tab_text (t, 1, 0, TAB_CENTER, _("Cluster"));
   tab_box (t, TAL_2, TAL_2, TAL_0, TAL_1, 0, 0, nc - 1, nr - 1);
+  tab_hline (t, TAL_1, 0, nc - 1, 1);
+
 
   for (i = 0; (c = casereader_read (cs)) != NULL; i++, case_unref (c))
     {
