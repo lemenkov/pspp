@@ -46,13 +46,13 @@ AT_CLEANUP
 AT_SETUP([QUICK CLUSTER with large data set])
 AT_DATA([quick-cluster.sps], [dnl
 input program.
-loop #i = 1 to 500000.
+loop #i = 1 to 50000.
 compute x = 3.
 end case.
 end loop.
 end file.
 end input program.
-QUICK CLUSTER x /CRITERIA = CLUSTER(4) MXITER (100).
+QUICK CLUSTER x /CRITERIA = CLUSTER(4) NOINITIAL.
 ])
 AT_CHECK([pspp -o pspp.csv quick-cluster.sps])
 AT_CHECK([cat pspp.csv], [0], [dnl
@@ -61,14 +61,14 @@ Table: Final Cluster Centers
 ,,,,
 ,1,2,3,4
 ,,,,
-x,.00,.00,.00,3.00
+x,NaN,NaN,NaN,3.00
 
 Table: Number of Cases in each Cluster
 Cluster,1,0
 ,2,0
 ,3,0
-,4,500000
-Valid,,500000
+,4,50000
+Valid,,50000
 ])
 AT_CLEANUP
 
@@ -91,7 +91,7 @@ end input program.
 
 weight by w.
 
-QUICK CLUSTER x /CRITERIA = CLUSTER(4) MXITER (100).
+QUICK CLUSTER x /CRITERIA = CLUSTER(4) MXITER (10).
 ])
 
 AT_CHECK([pspp -o pspp-w.csv qc-weighted.sps])
@@ -106,7 +106,7 @@ end loop.
 end file.
 end input program.
 
-QUICK CLUSTER x /CRITERIA = CLUSTER(4) MXITER (100).
+QUICK CLUSTER x /CRITERIA = CLUSTER(4) MXITER (10).
 ])
 
 AT_CHECK([pspp -o pspp-unw.csv qc-unweighted.sps])
@@ -128,7 +128,7 @@ begin data.
 2
 end data.
 
-QUICK CLUSTER x /CRITERIA = CLUSTER(4) MXITER (100).
+QUICK CLUSTER x /CRITERIA = CLUSTER(4) MXITER (10).
 ])
 
 AT_CHECK([pspp -o pspp-m.csv quick-miss.sps])
@@ -144,7 +144,7 @@ begin data.
 2
 end data.
 
-QUICK CLUSTER x /CRITERIA = CLUSTER(4) MXITER (100).
+QUICK CLUSTER x /CRITERIA = CLUSTER(4) MXITER (10).
 ])
 
 AT_CHECK([pspp -o pspp-nm.csv quick-nmiss.sps])
@@ -155,6 +155,12 @@ AT_CLEANUP
 
 
 AT_SETUP([QUICK CLUSTER with pairwise missing])
+
+dnl This test runs two programs, which are identical except that one
+dnl has an extra case with one missing value. Becuase the syntax uses
+dnl NOINITIAL and NOUPDATE, the results should be identical except for
+dnl the final classification.
+
 AT_DATA([quick-s.sps], [dnl
 data list notable list /x * y *.
 begin data.
@@ -169,16 +175,15 @@ begin data.
 3.4 3
 3.5 2.5
 3.1 2.0
-3.9 2.5
-3.8 2.0
 end data.
 
 QUICK CLUSTER x y 
-	/CRITERIA = CLUSTER(3) MXITER (100)
+	/PRINT = INITIAL
+	/CRITERIA = CLUSTER(3) NOINITIAL NOUPDATE
 	.
 ])
 
-AT_CHECK([pspp -O format=csv quick-s.sps | tail -5 > pspp-s.csv])
+AT_CHECK([pspp -O format=csv quick-s.sps  > pspp-s.csv])
 
 AT_DATA([quick-pw.sps], [dnl
 data list notable list /x * y *.
@@ -194,19 +199,28 @@ begin data.
 3.4 3
 3.5 2.5
 3.1 2.0
-3.9 .
-3.8 .
+.   2.3
 end data.
 
 QUICK CLUSTER x y 
-	/CRITERIA = CLUSTER(3) MXITER (100)
+	/CRITERIA = CLUSTER(3) NOINITIAL NOUPDATE
+	/PRINT = INITIAL
 	/MISSING = PAIRWISE
 	.
 ])
 
-AT_CHECK([pspp -O format=csv quick-pw.sps | tail -5 > pspp-pw.csv])
+AT_CHECK([pspp -O format=csv quick-pw.sps  > pspp-pw.csv])
 
-AT_CHECK([diff pspp-s.csv pspp-pw.csv], [0])
+AT_CHECK([head -n -3  pspp-s.csv > top-s.csv])
+AT_CHECK([head -n -3  pspp-pw.csv > top-pw.csv])
+AT_CHECK([diff top-s.csv top-pw.csv])
+
+
+AT_CHECK([grep Valid pspp-s.csv], [0], [Valid,,11
+])
+
+AT_CHECK([grep Valid pspp-pw.csv], [0], [Valid,,12
+])
 
 
 AT_CLEANUP
@@ -321,8 +335,8 @@ Table: Initial Cluster Centers
 ,,,
 ,1,2,3
 ,,,
-x,0,0,1
-y,0,1,0
+x,-11,-12,11
+y,-12,11,11
 
 Table: Final Cluster Centers
 ,Cluster,,

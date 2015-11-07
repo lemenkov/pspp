@@ -8,7 +8,8 @@ Changes from 0.8.5 to 0.9.0:
 
  * The QUICK CLUSTER command has a  /PRINT subcommand which shows
    the initial cluster centres and the final cluster membership of
-   each case.
+   each case.  The clustering algorithm has also been updated, so
+   as to produce better separated clusters.
 
  * A Russian localisation has been contributed.
 

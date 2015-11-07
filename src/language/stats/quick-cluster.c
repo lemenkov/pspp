@@ -37,6 +37,7 @@
 #include "language/lexer/variable-parser.h"
 #include "libpspp/message.h"
 #include "libpspp/misc.h"
+#include "libpspp/assertion.h"
 #include "libpspp/str.h"
 #include "math/random.h"
 #include "output/tab.h"
@@ -58,10 +59,14 @@ struct qc
   const struct variable **vars;
   size_t n_vars;
 
+  double epsilon;               /* The convergence criterium */
+
   int ngroups;			/* Number of group. (Given by the user) */
   int maxiter;			/* Maximum iterations (Given by the user) */
-  int print_cluster_membership; /* true => print membership */
-  int print_initial_clusters;   /* true => print initial cluster */
+  bool print_cluster_membership; /* true => print membership */
+  bool print_initial_clusters;   /* true => print initial cluster */
+  bool no_initial;              /* true => simplified initial cluster selection */
+  bool no_update;               /* true => do not iterate  */
 
   const struct variable *wv;	/* Weighting variable. */
 
@@ -75,30 +80,19 @@ struct qc
 struct Kmeans
 {
   gsl_matrix *centers;		/* Centers for groups. */
+  gsl_matrix *updated_centers;
+  casenumber n;
+
   gsl_vector_long *num_elements_groups;
 
-  casenumber n;			/* Number of observations (default -1). */
-
-  int lastiter;			/* Iteration where it found the solution. */
-  int trials;			/* If not convergence, how many times has
-                                   clustering done. */
   gsl_matrix *initial_centers;	/* Initial random centers. */
-
+  double convergence_criteria;
   gsl_permutation *group_order;	/* Group order for reporting. */
-  struct caseproto *proto;
-  struct casereader *index_rdr;	/* Group ids for each case. */
 };
 
 static struct Kmeans *kmeans_create (const struct qc *qc);
 
-static void kmeans_randomize_centers (struct Kmeans *kmeans, const struct casereader *reader, const struct qc *qc);
-
-static int kmeans_get_nearest_group (struct Kmeans *kmeans, struct ccase *c, const struct qc *);
-
-static void kmeans_recalculate_centers (struct Kmeans *kmeans, const struct casereader *reader, const struct qc *);
-
-static int
-kmeans_calculate_indexes_and_check_convergence (struct Kmeans *kmeans, const struct casereader *reader, const struct qc *);
+static void kmeans_get_nearest_group (const struct Kmeans *kmeans, struct ccase *c, const struct qc *, int *, double *, int *, double *);
 
 static void kmeans_order_groups (struct Kmeans *kmeans, const struct qc *);
 
@@ -124,16 +118,11 @@ kmeans_create (const struct qc *qc)
 {
   struct Kmeans *kmeans = xmalloc (sizeof (struct Kmeans));
   kmeans->centers = gsl_matrix_alloc (qc->ngroups, qc->n_vars);
+  kmeans->updated_centers = gsl_matrix_alloc (qc->ngroups, qc->n_vars);
   kmeans->num_elements_groups = gsl_vector_long_alloc (qc->ngroups);
-  kmeans->n = 0;
-  kmeans->lastiter = 0;
-  kmeans->trials = 0;
   kmeans->group_order = gsl_permutation_alloc (kmeans->centers->size1);
   kmeans->initial_centers = NULL;
 
-  kmeans->proto = caseproto_create ();
-  kmeans->proto = caseproto_add_width (kmeans->proto, 0);
-  kmeans->index_rdr = NULL;
   return (kmeans);
 }
 
@@ -141,55 +130,214 @@ static void
 kmeans_destroy (struct Kmeans *kmeans)
 {
   gsl_matrix_free (kmeans->centers);
+  gsl_matrix_free (kmeans->updated_centers);
   gsl_matrix_free (kmeans->initial_centers);
 
   gsl_vector_long_free (kmeans->num_elements_groups);
 
   gsl_permutation_free (kmeans->group_order);
 
-  caseproto_unref (kmeans->proto);
-
-  casereader_destroy (kmeans->index_rdr);
-
   free (kmeans);
 }
 
-/* Creates random centers using randomly selected cases from the data. */
-static void
-kmeans_randomize_centers (struct Kmeans *kmeans, const struct casereader *reader UNUSED, const struct qc *qc)
+static double
+diff_matrix (const gsl_matrix *m1, const gsl_matrix *m2)
+{
+  int i,j;
+  double max_diff = -INFINITY;
+  for (i = 0; i < m1->size1; ++i)
+    {
+      double diff = 0;
+      for (j = 0; j < m1->size2; ++j)
+	{
+	  diff += pow2 (gsl_matrix_get (m1,i,j) - gsl_matrix_get (m2,i,j) );
+	}
+      if (diff > max_diff)
+	max_diff = diff;
+    }
+
+  return max_diff;
+}
+
+
+
+static double 
+matrix_mindist (const gsl_matrix *m, int *mn, int *mm)
 {
   int i, j;
-  for (i = 0; i < qc->ngroups; i++)
+  double mindist = INFINITY;
+  for (i = 0; i < m->size1 - 1; ++i)
     {
-      for (j = 0; j < qc->n_vars; j++)
+      for (j = i + 1; j < m->size1; ++j)
 	{
-	  if (i == j)
+	  int k;
+	  double diff_sq = 0;
+	  for (k = 0; k < m->size2; ++k)
 	    {
-	      gsl_matrix_set (kmeans->centers, i, j, 1);
+	      diff_sq += pow2 (gsl_matrix_get (m, j, k) - gsl_matrix_get (m, i, k));
 	    }
-	  else
+	  if (diff_sq < mindist)
 	    {
-	      gsl_matrix_set (kmeans->centers, i, j, 0);
+	      mindist = diff_sq;
+	      if (mn)
+		*mn = i;
+	      if (mm)
+		*mm = j;
 	    }
 	}
     }
-  /* If it is the first iteration, the variable kmeans->initial_centers is NULL
-     and it is created once for reporting issues. In SPSS, initial centers are
-     shown in the reports but in PSPP it is not shown now. I am leaving it
-     here. */
-  if (!kmeans->initial_centers)
+
+  return sqrt (mindist);
+}
+
+
+static void
+dump_matrix (const gsl_matrix *m)
+{
+  size_t i, j;
+
+  for (i = 0 ; i < m->size1; ++i)
     {
-      kmeans->initial_centers = gsl_matrix_alloc (qc->ngroups, qc->n_vars);
-      gsl_matrix_memcpy (kmeans->initial_centers, kmeans->centers);
+      for (j = 0 ; j < m->size2; ++j)
+	printf ("%02f ", gsl_matrix_get (m, i, j));
+      printf ("\n");
     }
 }
 
-static int
-kmeans_get_nearest_group (struct Kmeans *kmeans, struct ccase *c, const struct qc *qc)
+
+/* Return the distance of C from the group whose index is WHICH */
+static double
+dist_from_case (const struct Kmeans *kmeans, const struct ccase *c, const struct qc *qc, int which)
 {
-  int result = -1;
-  int i, j;
+  int j;
+  double dist = 0;
+  for (j = 0; j < qc->n_vars; j++)
+    {
+      const union value *val = case_data (c, qc->vars[j]);
+      if ( var_is_value_missing (qc->vars[j], val, qc->exclude))
+	NOT_REACHED ();
+      
+      dist += pow2 (gsl_matrix_get (kmeans->centers, which, j) - val->f);
+    }
+ 
+  return sqrt (dist);
+}
+
+/* Return the minimum distance of the group WHICH and all other groups */
+static double
+min_dist_from (const struct Kmeans *kmeans, const struct qc *qc, int which)
+{
+  int j, i;
+
   double mindist = INFINITY;
+  for (i = 0; i < qc->ngroups; i++)
+    {
+      if (i == which)
+	continue;
+
+      double dist = 0;
+      for (j = 0; j < qc->n_vars; j++)
+	{
+	  dist += pow2 (gsl_matrix_get (kmeans->centers, i, j) - gsl_matrix_get (kmeans->centers, which, j));
+	}
+      
+      if (dist < mindist)
+	{
+	  mindist = dist;
+	}
+    }
+
+  return sqrt (mindist);
+}
+
+
+
+/* Calculate the intial cluster centers. */
+static void
+kmeans_initial_centers (struct Kmeans *kmeans, const struct casereader *reader, const struct qc *qc)
+{
+  struct ccase *c;
+  int nc = 0, j;
+
+  struct casereader *cs = casereader_clone (reader);
+  for (; (c = casereader_read (cs)) != NULL; case_unref (c))
+    {
+      bool missing = false;
+      for (j = 0; j < qc->n_vars; ++j)
+	{
+	  const union value *val = case_data (c, qc->vars[j]);
+	  if ( var_is_value_missing (qc->vars[j], val, qc->exclude))
+	    {
+	      missing = true;
+	      break;
+	    }
+
+	  if (nc < qc->ngroups)
+	    gsl_matrix_set (kmeans->centers, nc, j, val->f);
+	}
+
+      if (missing)
+	continue;
+
+      if (nc++ < qc->ngroups)
+	continue;
+
+      if (!qc->no_initial)
+	{
+	  int mq, mp;
+	  double delta;
+
+	  int mn, mm;
+	  double m = matrix_mindist (kmeans->centers, &mn, &mm);
+
+	  kmeans_get_nearest_group (kmeans, c, qc, &mq, &delta, &mp, NULL);
+	  if (delta > m)
+	    /* If the distance between C and the nearest group, is greater than the distance
+	       between the two  groups which are clostest to each other, then one group must be replaced */
+	    {
+	      /* Out of mn and mm, which is the clostest of the two groups to C ? */
+	      int which = (dist_from_case (kmeans, c, qc, mn) > dist_from_case (kmeans, c, qc, mm)) ? mm : mn;
+
+	      for (j = 0; j < qc->n_vars; ++j)
+		{
+		  const union value *val = case_data (c, qc->vars[j]);
+		  gsl_matrix_set (kmeans->centers, which, j, val->f);
+		}
+	    }
+	  else if (dist_from_case (kmeans, c, qc, mp) > min_dist_from (kmeans, qc, mq))
+	    /* If the distance between C and the second nearest group (MP) is greater than the 
+	       smallest distance between the nearest group (MQ) and any other group, then replace
+	       MQ with C */
+	    {
+	      for (j = 0; j < qc->n_vars; ++j)
+		{
+		  const union value *val = case_data (c, qc->vars[j]);
+		  gsl_matrix_set (kmeans->centers, mq, j, val->f);
+		}
+	    }
+	}
+    }
+
+  casereader_destroy (cs);
+
+  kmeans->convergence_criteria = qc->epsilon * matrix_mindist (kmeans->centers, NULL, NULL);
+
+  /* As it is the first iteration, the variable kmeans->initial_centers is NULL
+     and it is created once for reporting issues. */
+  kmeans->initial_centers = gsl_matrix_alloc (qc->ngroups, qc->n_vars);
+  gsl_matrix_memcpy (kmeans->initial_centers, kmeans->centers);
+}
+
+
+/* Return the index of the group which is nearest to the case C */
+static void
+kmeans_get_nearest_group (const struct Kmeans *kmeans, struct ccase *c, const struct qc *qc, int *g_q, double *delta_q, int *g_p, double *delta_p)
+{
+  int result0 = -1;
+  int result1 = -1;
+  int i, j;
+  double mindist0 = INFINITY;
+  double mindist1 = INFINITY;
   for (i = 0; i < qc->ngroups; i++)
     {
       double dist = 0;
@@ -201,136 +349,38 @@ kmeans_get_nearest_group (struct Kmeans *kmeans, struct ccase *c, const struct q
 
 	  dist += pow2 (gsl_matrix_get (kmeans->centers, i, j) - val->f);
 	}
-      if (dist < mindist)
+      dist = sqrt (dist);
+
+      if (dist < mindist0)
 	{
-	  mindist = dist;
-	  result = i;
+	  mindist1 = mindist0;
+	  result1 = result0;
+
+	  mindist0 = dist;
+	  result0 = i;
+	}
+      else if (dist < mindist1)
+	{
+	  mindist1 = dist;
+	  result1 = i;
 	}
     }
-  return (result);
+
+  if (delta_q)
+    *delta_q = mindist0;
+
+  if (g_q)
+    *g_q = result0;
+
+
+  if (delta_p)
+    *delta_p = mindist1;
+
+  if (g_p)
+    *g_p = result1;
 }
 
-/* Re-calculate the cluster centers. */
-static void
-kmeans_recalculate_centers (struct Kmeans *kmeans, const struct casereader *reader, const struct qc *qc)
-{
-  casenumber i = 0;
-  int v, j;
-  struct ccase *c;
 
-  struct casereader *cs = casereader_clone (reader);
-  struct casereader *cs_index = casereader_clone (kmeans->index_rdr);
-
-  gsl_matrix_set_all (kmeans->centers, 0.0);
-  for (; (c = casereader_read (cs)) != NULL; case_unref (c))
-    {
-      double weight = qc->wv ? case_data (c, qc->wv)->f : 1.0;
-      struct ccase *c_index = casereader_read (cs_index);
-      int index = case_data_idx (c_index, 0)->f;
-      for (v = 0; v < qc->n_vars; ++v)
-	{
-	  const union value *val = case_data (c, qc->vars[v]);
-	  double x = val->f * weight;
-	  double curval;
-
-	  if ( var_is_value_missing (qc->vars[v], val, qc->exclude))
-	    continue;
-
-	  curval = gsl_matrix_get (kmeans->centers, index, v);
-	  gsl_matrix_set (kmeans->centers, index, v, curval + x);
-	}
-      i++;
-      case_unref (c_index);
-    }
-  casereader_destroy (cs);
-  casereader_destroy (cs_index);
-
-  /* Getting number of cases */
-  if (kmeans->n == 0)
-    kmeans->n = i;
-
-  /* We got sum of each center but we need averages.
-     We are dividing centers to numobs. This may be inefficient and
-     we should check it again. */
-  for (i = 0; i < qc->ngroups; i++)
-    {
-      casenumber numobs = kmeans->num_elements_groups->data[i];
-      for (j = 0; j < qc->n_vars; j++)
-	{
-	  if (numobs > 0)
-	    {
-	      double *x = gsl_matrix_ptr (kmeans->centers, i, j);
-	      *x /= numobs;
-	    }
-	  else
-	    {
-	      gsl_matrix_set (kmeans->centers, i, j, 0);
-	    }
-	}
-    }
-}
-
-/* The variable index in struct Kmeans holds integer values that represents the
-   current groups of cases.  index[n]=a shows the nth case is belong to ath
-   cluster.  This function calculates these indexes and returns the number of
-   different cases of the new and old index variables.  If last two index
-   variables are equal, there is no any enhancement of clustering. */
-static int
-kmeans_calculate_indexes_and_check_convergence (struct Kmeans *kmeans, const struct casereader *reader, const struct qc *qc)
-{
-  int totaldiff = 0;
-  struct ccase *c;
-  struct casereader *cs = casereader_clone (reader);
-
-  /* A casewriter into which we will write the indexes. */
-  struct casewriter *index_wtr = autopaging_writer_create (kmeans->proto);
-
-  gsl_vector_long_set_all (kmeans->num_elements_groups, 0);
-
-  for (; (c = casereader_read (cs)) != NULL; case_unref (c))
-    {
-      /* A case to hold the new index. */
-      struct ccase *index_case_new = case_create (kmeans->proto);
-      int bestindex = kmeans_get_nearest_group (kmeans, c, qc);
-      double weight = qc->wv ? case_data (c, qc->wv)->f : 1.0;
-      assert (bestindex < kmeans->num_elements_groups->size);
-      kmeans->num_elements_groups->data[bestindex] += weight;
-      if (kmeans->index_rdr)
-	{
-	  /* A case from which the old index will be read. */
-	  struct ccase *index_case_old = NULL;
-
-	  /* Read the case from the index casereader. */
-	  index_case_old = casereader_read (kmeans->index_rdr);
-
-	  /* Set totaldiff, using the old_index. */
-	  totaldiff += abs (case_data_idx (index_case_old, 0)->f - bestindex);
-
-	  /* We have no use for the old case anymore, so unref it. */
-	  case_unref (index_case_old);
-	}
-      else
-	{
-	  /* If this is the first run, then assume index is zero. */
-	  totaldiff += bestindex;
-	}
-
-      /* Set the value of the new inde.x */
-      case_data_rw_idx (index_case_new, 0)->f = bestindex;
-
-      /* and write the new index to the casewriter */
-      casewriter_write (index_wtr, index_case_new);
-    }
-  casereader_destroy (cs);
-  /* We have now read through the entire index_rdr, so it's of no use
-     anymore. */
-  casereader_destroy (kmeans->index_rdr);
-
-  /* Convert the writer into a reader, ready for the next iteration to read */
-  kmeans->index_rdr = casewriter_make_reader (index_wtr);
-
-  return (totaldiff);
-}
 
 static void
 kmeans_order_groups (struct Kmeans *kmeans, const struct qc *qc)
@@ -346,50 +396,134 @@ kmeans_order_groups (struct Kmeans *kmeans, const struct qc *qc)
 static void
 kmeans_cluster (struct Kmeans *kmeans, struct casereader *reader, const struct qc *qc)
 {
-  int i;
-  bool redo;
-  int diffs;
-  bool show_warning1;
-  int redo_count = 0;
+  int j;
 
-  show_warning1 = true;
- cluster:
-  redo = false;
-  kmeans_randomize_centers (kmeans, reader, qc);
-  for (kmeans->lastiter = 0; kmeans->lastiter < qc->maxiter;
-       kmeans->lastiter++)
+  kmeans_initial_centers (kmeans, reader, qc);
+
+  gsl_matrix_memcpy (kmeans->updated_centers, kmeans->centers);
+
+
+  for (int xx = 0 ; xx < qc->maxiter ; ++xx)
     {
-      diffs = kmeans_calculate_indexes_and_check_convergence (kmeans, reader, qc);
-      kmeans_recalculate_centers (kmeans, reader, qc);
-      if (show_warning1 && qc->ngroups > kmeans->n)
+      gsl_vector_long_set_all (kmeans->num_elements_groups, 0.0);
+
+      kmeans->n = 0;
+      if (!qc->no_update)
 	{
-	  msg (MW, _("Number of clusters may not be larger than the number "
-                     "of cases."));
-	  show_warning1 = false;
+	  struct casereader *r = casereader_clone (reader);
+	  struct ccase *c;
+	  for (; (c = casereader_read (r)) != NULL; case_unref (c))
+	    {
+	      int group = -1;
+	      int g;
+	      bool missing = false;
+
+	      for (j = 0; j < qc->n_vars; j++)
+		{
+		  const union value *val = case_data (c, qc->vars[j]);
+		  if ( var_is_value_missing (qc->vars[j], val, qc->exclude))
+		    missing = true;
+		}
+	
+	      if (missing)
+		continue;
+
+	      double mindist = INFINITY;
+	      for (g = 0; g < qc->ngroups; ++g)
+		{
+		  double d = dist_from_case (kmeans, c, qc, g);
+
+		  if (d < mindist)
+		    {
+		      mindist = d;
+		      group = g;
+		    }
+		}
+
+	      long *n = gsl_vector_long_ptr (kmeans->num_elements_groups, group);
+	      *n += qc->wv ? case_data (c, qc->wv)->f : 1.0;
+	      kmeans->n++;
+
+	      for (j = 0; j < qc->n_vars; ++j)
+		{
+		  const union value *val = case_data (c, qc->vars[j]);
+		  if ( var_is_value_missing (qc->vars[j], val, qc->exclude))
+		    continue;
+		  double *x = gsl_matrix_ptr (kmeans->updated_centers, group, j);
+		  *x += val->f * (qc->wv ? case_data (c, qc->wv)->f : 1.0);
+		}
+	    }    
+
+	  casereader_destroy (r);
 	}
-      if (diffs == 0)
+
+      int g;
+
+      /* Divide the cluster sums by the number of items in each cluster */
+      for (g = 0; g < qc->ngroups; ++g)
+	{
+	  for (j = 0; j < qc->n_vars; ++j)
+	    {
+	      long n = gsl_vector_long_get (kmeans->num_elements_groups, g);
+	      double *x = gsl_matrix_ptr (kmeans->updated_centers, g, j);
+	      *x /= n + 1;  // Plus 1 for the initial centers
+	    }
+	}
+  
+
+      gsl_matrix_memcpy (kmeans->centers, kmeans->updated_centers);
+
+      {
+	kmeans->n = 0;
+	int i;
+	/* Step 3 */
+	gsl_vector_long_set_all (kmeans->num_elements_groups, 0.0);
+	gsl_matrix_set_all (kmeans->updated_centers, 0.0);
+	struct ccase *c;
+	struct casereader *cs = casereader_clone (reader);
+	for (; (c = casereader_read (cs)) != NULL; i++, case_unref (c))
+	  {
+	    int group = -1; 
+	    kmeans_get_nearest_group (kmeans, c, qc, &group, NULL, NULL, NULL);
+
+	    for (j = 0; j < qc->n_vars; ++j)
+	      {
+		const union value *val = case_data (c, qc->vars[j]);
+		if ( var_is_value_missing (qc->vars[j], val, qc->exclude))
+		  continue;
+
+		double *x = gsl_matrix_ptr (kmeans->updated_centers, group, j);
+		*x += val->f;
+	      }
+
+	    long *n = gsl_vector_long_ptr (kmeans->num_elements_groups, group);
+	    *n += qc->wv ? case_data (c, qc->wv)->f : 1.0;
+	    kmeans->n++;
+
+
+	  }
+	casereader_destroy (cs);
+
+
+	/* Divide the cluster sums by the number of items in each cluster */
+	for (g = 0; g < qc->ngroups; ++g)
+	  {
+	    for (j = 0; j < qc->n_vars; ++j)
+	      {
+		long n = gsl_vector_long_get (kmeans->num_elements_groups, g);
+		double *x = gsl_matrix_ptr (kmeans->updated_centers, g, j);
+		*x /= n ;
+	      }
+	  }
+
+	double d = diff_matrix (kmeans->updated_centers, kmeans->centers);
+	if (d < kmeans->convergence_criteria)
+	  break;
+      }
+
+      if (qc->no_update)
 	break;
     }
-
-  for (i = 0; i < qc->ngroups; i++)
-    {
-      if (kmeans->num_elements_groups->data[i] == 0)
-	{
-	  kmeans->trials++;
-	  if (kmeans->trials >= 3)
-	    break;
-	  redo = true;
-	  break;
-	}
-    }
-
-  if (redo)
-    {
-      redo_count++;
-      assert (redo_count < 10);
-      goto cluster;
-    }
-
 }
 
 /* Reports centers of clusters.
@@ -461,8 +595,8 @@ static void
 quick_cluster_show_membership (struct Kmeans *kmeans, const struct casereader *reader, const struct qc *qc)
 {
   struct tab_table *t;
-  int nc, nr;
-  int i, clust; 
+  int nc, nr, i;
+
   struct ccase *c;
   struct casereader *cs = casereader_clone (reader);
   nc = 2;
@@ -475,15 +609,19 @@ quick_cluster_show_membership (struct Kmeans *kmeans, const struct casereader *r
   tab_box (t, TAL_2, TAL_2, TAL_0, TAL_1, 0, 0, nc - 1, nr - 1);
   tab_hline (t, TAL_1, 0, nc - 1, 1);
 
+  gsl_permutation *ip = gsl_permutation_alloc (qc->ngroups);
+  gsl_permutation_inverse (ip, kmeans->group_order);
 
   for (i = 0; (c = casereader_read (cs)) != NULL; i++, case_unref (c))
     {
+      int clust = -1; 
       assert (i < kmeans->n);
-      clust = kmeans_get_nearest_group (kmeans, c, qc);
-      clust = kmeans->group_order->data[clust];
+      kmeans_get_nearest_group (kmeans, c, qc, &clust, NULL, NULL, NULL);
+      clust = ip->data[clust];
       tab_text_format (t, 0, i+1, TAB_CENTER, "%d", (i + 1));
       tab_text_format (t, 1, i+1, TAB_CENTER, "%d", (clust + 1));
     }
+  gsl_permutation_free (ip);
   assert (i == kmeans->n);
   tab_submit (t);
   casereader_destroy (cs);
@@ -526,6 +664,7 @@ static void
 quick_cluster_show_results (struct Kmeans *kmeans, const struct casereader *reader, const struct qc *qc)
 {
   kmeans_order_groups (kmeans, qc); /* what does this do? */
+  
   if( qc->print_initial_clusters )
     quick_cluster_show_centers (kmeans, true, qc);
   quick_cluster_show_centers (kmeans, false, qc);
@@ -542,11 +681,14 @@ cmd_quick_cluster (struct lexer *lexer, struct dataset *ds)
   bool ok;
   const struct dictionary *dict = dataset_dict (ds);
   qc.ngroups = 2;
-  qc.maxiter = 2;
+  qc.maxiter = 10;
+  qc.epsilon = DBL_EPSILON;
   qc.missing_type = MISS_LISTWISE;
   qc.exclude = MV_ANY;
   qc.print_cluster_membership = false; /* default = do not output case cluster membership */
   qc.print_initial_clusters = false;   /* default = do not print initial clusters */
+  qc.no_initial = false;               /* default = use well separated initial clusters */
+  qc.no_update = false;               /* default = iterate until convergence or max iterations */
 
   if (!parse_variables_const (lexer, dict, &qc.vars, &qc.n_vars,
 			      PV_NO_DUPLICATE | PV_NUMERIC))
@@ -625,6 +767,21 @@ cmd_quick_cluster (struct lexer *lexer, struct dataset *ds)
 		      lex_force_match (lexer, T_RPAREN);
 		    }
 		}
+	      else if (lex_match_id (lexer, "CONVERGE"))
+		{
+		  if (lex_force_match (lexer, T_LPAREN))
+		    {
+		      lex_force_num (lexer);
+		      qc.epsilon = lex_number (lexer);
+		      if (qc.epsilon <= 0)
+			{
+			  lex_error (lexer, _("The convergence criterium must be positive"));
+			  goto error;
+			}
+		      lex_get (lexer);
+		      lex_force_match (lexer, T_RPAREN);
+		    }
+		}
 	      else if (lex_match_id (lexer, "MXITER"))
 		{
 		  if (lex_force_match (lexer, T_LPAREN))
@@ -639,6 +796,14 @@ cmd_quick_cluster (struct lexer *lexer, struct dataset *ds)
 		      lex_get (lexer);
 		      lex_force_match (lexer, T_RPAREN);
 		    }
+		}
+	      else if (lex_match_id (lexer, "NOINITIAL"))
+		{
+		  qc.no_initial = true;
+		}
+	      else if (lex_match_id (lexer, "NOUPDATE"))
+		{
+		  qc.no_update = true;
 		}
 	      else
 		{

@@ -1647,7 +1647,7 @@ The default is 0.05.
 
 @display
 QUICK CLUSTER @var{var_list}
-      [/CRITERIA=CLUSTERS(@var{k}) [MXITER(@var{max_iter})]]
+      [/CRITERIA=CLUSTERS(@var{k}) [MXITER(@var{max_iter})] CONVERGE(@var{epsilon}) [NOINITIAL]]
       [/MISSING=@{EXCLUDE,INCLUDE@} @{LISTWISE, PAIRWISE@}]
       [/PRINT=@{INITIAL@} @{CLUSTERS@}]
 @end display
@@ -1659,11 +1659,29 @@ of similar values and you already know the number of clusters.
 The minimum specification is @samp{QUICK CLUSTER} followed by the names
 of the variables which contain the cluster data.  Normally you will also
 want to specify @subcmd{/CRITERIA=CLUSTERS(@var{k})} where @var{k} is the
-number of clusters.  If this is not given, then @var{k} defaults to 2.
+number of clusters.  If this is not specified, then @var{k} defaults to 2.
 
-The command uses an iterative algorithm to determine the clusters for
-each case.  It will continue iterating until convergence, or until @var{max_iter}
-iterations have been done.  The default value of @var{max_iter} is 2.
+If you use @subcmd{/CRITERIA=NOINITIAL} then a naive algorithm to select
+the initial clusters is used.   This will provide for faster execution but
+less well separated initial clusters and hence possibly an inferior final
+result.
+
+
+@cmd{QUICK CLUSTER} uses an iterative algorithm to select the clusters centers.
+The subcommand  @subcmd{/CRITERIA=MXITER(@var{max_iter})} sets the maximum number of iterations.
+During classification, @pspp{} will continue iterating until until @var{max_iter}
+iterations have been done or the convergence criterion (see below) is fulfilled.
+The default value of @var{max_iter} is 2.
+
+If however, you specify @subcmd{/CRITERIA=NOUPDATE} then after selecting the initial centers,
+no further update to the cluster centers is done.  In this case, @var{max_iter}, if specified.
+is ignored.
+
+The subcommand  @subcmd{/CRITERIA=CONVERGE(@var{epsilon})} is used
+to set the convergence criterion.  The value of convergence criterion is  @var{epsilon}
+times the minimum distance between the @emph{initial} cluster centers.  Iteration stops when
+the  mean cluster distance between  one iteration and the next  
+is less than the convergence criterion.  The default value of @var{epsilon} is zero.
 
 The @subcmd{MISSING} subcommand determines the handling of missing variables.  
 If @subcmd{INCLUDE} is set, then user-missing values are considered at their face
