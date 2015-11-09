@@ -353,7 +353,7 @@ kmeans_cluster (struct Kmeans *kmeans, struct casereader *reader, const struct q
   int redo_count = 0;
 
   show_warning1 = true;
-cluster:
+ cluster:
   redo = false;
   kmeans_randomize_centers (kmeans, reader, qc);
   for (kmeans->lastiter = 0; kmeans->lastiter < qc->maxiter;
@@ -531,7 +531,7 @@ quick_cluster_show_results (struct Kmeans *kmeans, const struct casereader *read
   quick_cluster_show_centers (kmeans, false, qc);
   quick_cluster_show_number_cases (kmeans, qc);
   if( qc->print_cluster_membership )
-     quick_cluster_show_membership(kmeans, reader, qc);
+    quick_cluster_show_membership(kmeans, reader, qc);
 }
 
 int
@@ -581,7 +581,10 @@ cmd_quick_cluster (struct lexer *lexer, struct dataset *ds)
 		  qc.exclude = MV_ANY;
 		}
 	      else
-		goto error;
+		{
+		  lex_error (lexer, NULL);
+		  goto error;
+		}
 	    }	  
 	}
       else if (lex_match_id (lexer, "PRINT"))
@@ -595,7 +598,10 @@ cmd_quick_cluster (struct lexer *lexer, struct dataset *ds)
 	      else if (lex_match_id (lexer, "INITIAL"))
 	        qc.print_initial_clusters = true;
 	      else
-                goto error;
+		{
+		  lex_error (lexer, NULL);
+		  goto error;
+		}
 	    }
 	}
       else if (lex_match_id (lexer, "CRITERIA"))
@@ -635,7 +641,10 @@ cmd_quick_cluster (struct lexer *lexer, struct dataset *ds)
 		    }
 		}
 	      else
-                goto error;
+		{
+		  lex_error (lexer, NULL);
+		  goto error;
+		}
 	    }
 	}
       else
@@ -656,8 +665,8 @@ cmd_quick_cluster (struct lexer *lexer, struct dataset *ds)
 	if ( qc.missing_type == MISS_LISTWISE )
 	  {
 	    group  = casereader_create_filter_missing (group, qc.vars, qc.n_vars,
-						     qc.exclude,
-						     NULL,  NULL);
+						       qc.exclude,
+						       NULL,  NULL);
 	  }
 
 	kmeans = kmeans_create (&qc);
