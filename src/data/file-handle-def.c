@@ -34,10 +34,18 @@
 #include "libpspp/message.h"
 #include "libpspp/str.h"
 
+#include <sys/stat.h>
+
+#include "gl/dirname.h"
 #include "gl/xalloc.h"
 
 #include "gettext.h"
 #define _(msgid) gettext (msgid)
+
+#if defined _WIN32 || defined __WIN32__
+#define WIN32_LEAN_AND_MEAN  /* avoid including junk */
+#include <windows.h>
+#endif
 
 /* File handle. */
 struct file_handle
@@ -82,6 +90,12 @@ static void unname_handle (struct file_handle *);
 
 /* Hash table of all active locks. */
 static struct hmap locks = HMAP_INITIALIZER (locks);
+
+struct file_identity *fh_get_identity (const struct file_handle *);
+static void fh_free_identity (struct file_identity *);
+static int fh_compare_file_identities (const struct file_identity *,
+                                const struct file_identity *);
+static unsigned int fh_hash_identity (const struct file_identity *);
 
 /* File handle initialization routine. */
 void
@@ -616,7 +630,7 @@ make_key (struct fh_lock *lock, const struct file_handle *h,
   lock->referent = fh_get_referent (h);
   lock->access = access;
   if (lock->referent == FH_REF_FILE)
-    lock->u.file = fn_get_identity (fh_get_file_name (h));
+    lock->u.file = fh_get_identity (h);
   else if (lock->referent == FH_REF_DATASET)
     lock->u.unique_id = dataset_seqno (fh_get_dataset (h));
 }
@@ -626,7 +640,7 @@ static void
 free_key (struct fh_lock *lock)
 {
   if (lock->referent == FH_REF_FILE)
-    fn_free_identity (lock->u.file);
+    fh_free_identity (lock->u.file);
 }
 
 /* Compares the key fields in struct fh_lock objects A and B and
@@ -639,7 +653,7 @@ compare_fh_locks (const struct fh_lock *a, const struct fh_lock *b)
   else if (a->access != b->access)
     return a->access < b->access ? -1 : 1;
   else if (a->referent == FH_REF_FILE)
-    return fn_compare_file_identities (a->u.file, b->u.file);
+    return fh_compare_file_identities (a->u.file, b->u.file);
   else if (a->referent == FH_REF_DATASET)
     return (a->u.unique_id < b->u.unique_id ? -1
             : a->u.unique_id > b->u.unique_id);
@@ -653,10 +667,151 @@ hash_fh_lock (const struct fh_lock *lock)
 {
   unsigned int basis;
   if (lock->referent == FH_REF_FILE)
-    basis = fn_hash_identity (lock->u.file);
+    basis = fh_hash_identity (lock->u.file);
   else if (lock->referent == FH_REF_DATASET)
     basis = lock->u.unique_id;
   else
     basis = 0;
   return hash_int ((lock->referent << 3) | lock->access, basis);
+}
+
+
+
+
+
+
+/* A file's identity:
+
+   - For a file that exists, this is its device and inode.
+
+   - For a file that does not exist, but which has a directory
+     name that exists, this is the device and inode of the
+     directory, plus the file's base name.
+
+   - For a file that does not exist and has a nonexistent
+     directory, this is the file name.
+
+   Windows doesn't have inode numbers, so we just use the name
+   there. */
+struct file_identity
+{
+  unsigned long long device;               /* Device number. */
+  unsigned long long inode;                /* Inode number. */
+  char *name;                 /* File name, where needed, otherwise NULL. */
+};
+
+/* Returns a pointer to a dynamically allocated structure whose
+   value can be used to tell whether two files are actually the
+   same file.  Returns a null pointer if no information about the
+   file is available, perhaps because it does not exist.  The
+   caller is responsible for freeing the structure with
+   fh_free_identity() when finished. */
+struct file_identity *
+fh_get_identity (const struct file_handle *fh)
+{
+  struct file_identity *identity = xmalloc (sizeof *identity);
+
+  const char *file_name = fh_get_file_name (fh);
+  
+#if !(defined _WIN32 || defined __WIN32__)
+  struct stat s;
+  if (lstat (file_name, &s) == 0)
+    {
+      identity->device = s.st_dev;
+      identity->inode = s.st_ino;
+      identity->name = NULL;
+    }
+  else
+    {
+      char *dir = dir_name (file_name);
+      if (last_component (file_name) != NULL && stat (dir, &s) == 0)
+        {
+          identity->device = s.st_dev;
+          identity->inode = s.st_ino;
+          identity->name = base_name (file_name);
+        }
+      else
+        {
+          identity->device = 0;
+          identity->inode = 0;
+          identity->name = xstrdup (file_name);
+        }
+      free (dir);
+    }
+#else /* Windows */
+  bool ok = false;
+  HANDLE h = CreateFile (file_name, GENERIC_READ, 0, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_READONLY, NULL);
+  if (h != INVALID_HANDLE_VALUE)
+  {
+    BY_HANDLE_FILE_INFORMATION fi;
+    ok = GetFileInformationByHandle (h, &fi);
+    if (ok)
+      {
+	identity->device = fi.dwVolumeSerialNumber;
+	identity->inode = fi.nFileIndexHigh;
+	identity->inode <<= (sizeof fi.nFileIndexLow) * CHAR_BIT;
+	identity->inode |= fi.nFileIndexLow;
+	identity->name = 0;
+      }
+    CloseHandle (h);
+  }
+
+  if (!ok)
+    {
+      identity->device = 0;
+      identity->inode = 0;
+
+      size_t bufsize;
+      size_t pathlen = 255;
+      char *cname = NULL;
+      do 
+      {
+	bufsize = pathlen;
+	cname = xrealloc (cname, bufsize);
+	pathlen = GetFullPathName (file_name, bufsize, cname, NULL);
+      }
+      while (pathlen > bufsize);
+      identity->name = xstrdup (cname);
+      free (cname);
+      str_lowercase (identity->name);
+    }
+#endif /* Windows */
+
+  return identity;
+}
+
+/* Frees IDENTITY obtained from fh_get_identity(). */
+void
+fh_free_identity (struct file_identity *identity)
+{
+  if (identity != NULL)
+    {
+      free (identity->name);
+      free (identity);
+    }
+}
+
+/* Compares A and B, returning a strcmp()-type result. */
+int
+fh_compare_file_identities (const struct file_identity *a,
+                            const struct file_identity *b)
+{
+  if (a->device != b->device)
+    return a->device < b->device ? -1 : 1;
+  else if (a->inode != b->inode)
+    return a->inode < b->inode ? -1 : 1;
+  else if (a->name != NULL)
+    return b->name != NULL ? strcmp (a->name, b->name) : 1;
+  else
+    return b->name != NULL ? -1 : 0;
+}
+
+/* Returns a hash value for IDENTITY. */
+unsigned int
+fh_hash_identity (const struct file_identity *identity)
+{
+  unsigned int hash = hash_int (identity->device, identity->inode);
+  if (identity->name != NULL)
+    hash = hash_string (identity->name, hash);
+  return hash;
 }

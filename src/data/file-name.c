@@ -17,6 +17,7 @@
 #include <config.h>
 
 #include "data/file-name.h"
+#include "data/file-handle-def.h"
 
 #include <ctype.h>
 #include <errno.h>
@@ -24,6 +25,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/stat.h>
+
 #include <unistd.h>
 
 #include "data/settings.h"
@@ -43,10 +45,6 @@
 #include "gettext.h"
 #define _(msgid) gettext (msgid)
 
-#if defined _WIN32 || defined __WIN32__
-#define WIN32_LEAN_AND_MEAN  /* avoid including junk */
-#include <windows.h>
-#endif
 
 /* Functions for performing operations on file names. */
 
@@ -204,140 +202,6 @@ fn_close (const char *fn, FILE *f)
     return fclose (f);
 }
 
-
-/* A file's identity:
-
-   - For a file that exists, this is its device and inode.
-
-   - For a file that does not exist, but which has a directory
-     name that exists, this is the device and inode of the
-     directory, plus the file's base name.
-
-   - For a file that does not exist and has a nonexistent
-     directory, this is the file name.
-
-   Windows doesn't have inode numbers, so we just use the name
-   there. */
-struct file_identity
-{
-  unsigned long long device;               /* Device number. */
-  unsigned long long inode;                /* Inode number. */
-  char *name;                 /* File name, where needed, otherwise NULL. */
-};
-
-/* Returns a pointer to a dynamically allocated structure whose
-   value can be used to tell whether two files are actually the
-   same file.  Returns a null pointer if no information about the
-   file is available, perhaps because it does not exist.  The
-   caller is responsible for freeing the structure with
-   fn_free_identity() when finished. */
-struct file_identity *
-fn_get_identity (const char *file_name)
-{
-  struct file_identity *identity = xmalloc (sizeof *identity);
-
-#if !(defined _WIN32 || defined __WIN32__)
-  struct stat s;
-  if (lstat (file_name, &s) == 0)
-    {
-      identity->device = s.st_dev;
-      identity->inode = s.st_ino;
-      identity->name = NULL;
-    }
-  else
-    {
-      char *dir = dir_name (file_name);
-      if (last_component (file_name) != NULL && stat (dir, &s) == 0)
-        {
-          identity->device = s.st_dev;
-          identity->inode = s.st_ino;
-          identity->name = base_name (file_name);
-        }
-      else
-        {
-          identity->device = 0;
-          identity->inode = 0;
-          identity->name = xstrdup (file_name);
-        }
-      free (dir);
-    }
-#else /* Windows */
-  bool ok = false;
-  HANDLE h = CreateFile (file_name, GENERIC_READ, 0, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_READONLY, NULL);
-  if (h != INVALID_HANDLE_VALUE)
-  {
-    BY_HANDLE_FILE_INFORMATION fi;
-    ok = GetFileInformationByHandle (h, &fi);
-    if (ok)
-      {
-	identity->device = fi.dwVolumeSerialNumber;
-	identity->inode = fi.nFileIndexHigh;
-	identity->inode <<= (sizeof fi.nFileIndexLow) * CHAR_BIT;
-	identity->inode |= fi.nFileIndexLow;
-	identity->name = 0;
-      }
-    CloseHandle (h);
-  }
-
-  if (!ok)
-    {
-      identity->device = 0;
-      identity->inode = 0;
-
-      size_t bufsize;
-      size_t pathlen = 255;
-      char *cname = NULL;
-      do 
-      {
-	bufsize = pathlen;
-	cname = xrealloc (cname, bufsize);
-	pathlen = GetFullPathName (file_name, bufsize, cname, NULL);
-      }
-      while (pathlen > bufsize);
-      identity->name = xstrdup (cname);
-      free (cname);
-      str_lowercase (identity->name);
-    }
-#endif /* Windows */
-
-  return identity;
-}
-
-/* Frees IDENTITY obtained from fn_get_identity(). */
-void
-fn_free_identity (struct file_identity *identity)
-{
-  if (identity != NULL)
-    {
-      free (identity->name);
-      free (identity);
-    }
-}
-
-/* Compares A and B, returning a strcmp()-type result. */
-int
-fn_compare_file_identities (const struct file_identity *a,
-                            const struct file_identity *b)
-{
-  if (a->device != b->device)
-    return a->device < b->device ? -1 : 1;
-  else if (a->inode != b->inode)
-    return a->inode < b->inode ? -1 : 1;
-  else if (a->name != NULL)
-    return b->name != NULL ? strcmp (a->name, b->name) : 1;
-  else
-    return b->name != NULL ? -1 : 0;
-}
-
-/* Returns a hash value for IDENTITY. */
-unsigned int
-fn_hash_identity (const struct file_identity *identity)
-{
-  unsigned int hash = hash_int (identity->device, identity->inode);
-  if (identity->name != NULL)
-    hash = hash_string (identity->name, hash);
-  return hash;
-}
 
 #ifdef WIN32
 
