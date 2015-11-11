@@ -163,3 +163,131 @@ graph
 AT_CHECK([pspp -o pspp.pdf null-hist.sps], [0], [ignore])
 dnl Ignore output -- this is just a no-crash check.
 AT_CLEANUP
+
+
+
+
+AT_SETUP([GRAPH barcharts])
+AT_CHECK([ln -s $top_srcdir/examples/physiology.sav .], [0])
+AT_CHECK([ln -s $top_srcdir/examples/repairs.sav .], [0])
+
+AT_DATA([barchart.sps], [dnl
+GET FILE="physiology.sav".
+
+GRAPH /BAR = COUNT BY SEX.
+
+GRAPH /BAR = MEAN(height) BY SEX.
+
+NEW FILE.
+
+GET FILE="repairs.sav".
+
+GRAPH /BAR = MEAN (mtbf) BY factory.
+
+COMPUTE  R = TRUNC(RV.UNIFORM(1,5)).
+
+GRAPH /BAR = MEAN (mtbf) BY factory BY R.
+])
+
+AT_CHECK([pspp -o pspp.pdf barchart.sps], [0], [ignore])
+dnl Ignore output -- this is just a no-crash check.
+
+AT_CLEANUP
+
+
+
+AT_SETUP([GRAPH barchart arity])
+
+AT_DATA([barchart.sps], [dnl
+data list notable list /x y z*.
+begin data
+1  1  3
+2  1  4
+3  1  3
+4  1  4
+5  .  3
+6  2  4
+7  2  3
+8  2  4
+9  2  3
+10  2  4
+end data.
+
+* This line is invalid
+GRAPH /BAR = COUNT(x) BY y.
+])
+
+AT_CHECK([pspp -o pspp.pdf barchart.sps], [1], [ignore])
+dnl Ignore output -- this is just a no-crash check.
+
+AT_CLEANUP
+
+
+
+
+AT_SETUP([GRAPH barchart bad syntax])
+
+AT_DATA([barchart.sps], [dnl
+data list notable list /x y z*.
+begin data
+1  1  3
+2  1  4
+3  1  3
+4  1  4
+5  .  3
+6  2  4
+7  2  3
+8  2  4
+9  2  3
+10  2  4
+end data.
+
+* This line is invalid
+GRAPH /BAR = SCROD BY y.
+])
+
+AT_CHECK([pspp -o pspp.pdf barchart.sps], [1], [ignore])
+dnl Ignore output -- this is just a no-crash check.
+
+AT_CLEANUP
+
+
+
+AT_SETUP([GRAPH barchart full])
+
+AT_DATA([barchart.sps], [dnl
+data list notable list /x y z*.
+begin data
+1  1  3
+2  1  4
+3  1  3
+4  1  4
+5  .  3
+6  2  4
+7  2  3
+8  2  4
+9  2  3
+10  2  4
+end data.
+
+* This line is invalid
+GRAPH /BAR = COUNT by z.
+GRAPH /BAR = CUFREQ by z.
+GRAPH /BAR = PCT by z.
+GRAPH /BAR = CUPCT by z.
+
+GRAPH /BAR = MEAN(y) BY z.
+GRAPH /BAR = SUM(y) BY z.
+GRAPH /BAR = MAXIMUM(y) BY z.
+GRAPH /BAR = MINIMUM(y) BY z.
+
+GRAPH /BAR = MEAN(y) BY z BY y.
+GRAPH /BAR = SUM(y) BY z BY y.
+GRAPH /BAR = MAXIMUM(y) BY z BY y.
+GRAPH /BAR = MINIMUM(y) BY z BY y.
+])
+
+AT_CHECK([pspp -o pspp.pdf barchart.sps], [0], [ignore])
+dnl Ignore output -- this is just a no-crash check.
+
+AT_CLEANUP

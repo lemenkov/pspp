@@ -480,6 +480,36 @@
           </object>
         </child>
         <child>
+          <object class="GtkAction" id="graphs">
+            <property name="name">graphs</property>
+            <property name="label" translatable="yes">_Graphs</property>
+          </object>
+        </child>
+        <child>
+          <object class="PsppireDialogActionScatterplot" id="graphs_scatterplot">
+            <property name="manager">uimanager1</property>
+            <property name="name">graphs_scatterplot</property>
+            <property name="label" translatable="yes">_Scatterplot</property>
+	    <property name="stock-id">graphs-scatterplot</property>
+          </object>
+        </child>
+        <child>
+          <object class="PsppireDialogActionHistogram" id="graphs_histogram">
+            <property name="manager">uimanager1</property>
+            <property name="name">graphs_histogram</property>
+            <property name="label" translatable="yes">_Histogram</property>
+	    <property name="stock-id">graphs-histogram</property>
+          </object>
+        </child>
+        <child>
+          <object class="PsppireDialogActionBarchart" id="graphs_barchart">
+            <property name="manager">uimanager1</property>
+            <property name="name">graphs_barchart</property>
+            <property name="label" translatable="yes">_Barchart</property>
+	    <property name="stock-id">graphs-barchart</property>
+          </object>
+        </child>
+        <child>
           <object class="GtkAction" id="utilities">
             <property name="name">utilities</property>
             <property name="label" translatable="yes">_Utilities</property>
@@ -611,6 +641,14 @@
             <menuitem action="k-related-samples"/>
           </menu>
           <menuitem action="roc-curve"/>
+        </menu>
+        <menu action="graphs">
+          <menuitem action="graphs_scatterplot"/>
+        </menu>
+        <menu action="graphs">
+          <menuitem action="graphs_scatterplot"/>
+          <menuitem action="graphs_histogram"/>
+	  <menuitem action="graphs_barchart"/>
         </menu>
         <menu action="utilities">
           <menuitem action="utilities_variables"/>

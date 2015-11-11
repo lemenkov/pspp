@@ -16,6 +16,7 @@
 #include "psppire-val-chooser.h"
 #include "psppire-checkbox-treeview.h"
 
+#include "psppire-dialog-action-barchart.h"
 #include "psppire-dialog-action-binomial.h"
 #include "psppire-dialog-action-chisquare.h"
 #include "psppire-dialog-action-compute.h"
@@ -27,6 +28,7 @@
 #include "psppire-dialog-action-flip.h"
 #include "psppire-dialog-action-factor.h"
 #include "psppire-dialog-action-frequencies.h"
+#include "psppire-dialog-action-histogram.h"
 #include "psppire-dialog-action-indep-samps.h"
 #include "psppire-dialog-action-k-related.h"
 #include "psppire-dialog-action-1sks.h"
@@ -41,6 +43,7 @@
 #include "psppire-dialog-action-reliability.h"
 #include "psppire-dialog-action-roc.h"
 #include "psppire-dialog-action-runs.h"
+#include "psppire-dialog-action-scatterplot.h"
 #include "psppire-dialog-action-sort.h"
 #include "psppire-dialog-action-tt1s.h"
 #include "psppire-dialog-action-two-sample.h"
@@ -70,6 +73,7 @@ preregister_widgets (void)
 
   psppire_dialog_action_1sks_get_type ();
   psppire_dialog_action_binomial_get_type ();
+  psppire_dialog_action_barchart_get_type ();
   psppire_dialog_action_chisquare_get_type ();
   psppire_dialog_action_compute_get_type ();
   psppire_dialog_action_correlation_get_type ();
@@ -80,6 +84,7 @@ preregister_widgets (void)
   psppire_dialog_action_factor_get_type ();
   psppire_dialog_action_flip_get_type ();
   psppire_dialog_action_frequencies_get_type ();
+  psppire_dialog_action_histogram_get_type ();
   psppire_dialog_action_logistic_get_type ();
   psppire_dialog_action_kmeans_get_type ();
   psppire_dialog_action_k_related_get_type ();
@@ -94,6 +99,7 @@ preregister_widgets (void)
   psppire_dialog_action_regression_get_type ();
   psppire_dialog_action_roc_get_type ();
   psppire_dialog_action_runs_get_type ();
+  psppire_dialog_action_scatterplot_get_type ();
   psppire_dialog_action_sort_get_type ();
   psppire_dialog_action_tt1s_get_type ();
   psppire_dialog_action_two_sample_get_type ();

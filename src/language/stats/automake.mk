@@ -11,6 +11,7 @@ language_stats_sources = \
 	src/language/stats/autorecode.c \
 	src/language/stats/binomial.c \
 	src/language/stats/binomial.h \
+	src/language/stats/chart-category.h  \
 	src/language/stats/chisquare.c  \
 	src/language/stats/chisquare.h \
 	src/language/stats/cochran.c \

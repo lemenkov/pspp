@@ -5,6 +5,7 @@ UI_FILES = \
 	src/ui/gui/autorecode.ui \
 	src/ui/gui/binomial.ui \
 	src/ui/gui/compute.ui \
+	src/ui/gui/barchart.ui \
 	src/ui/gui/correlation.ui \
 	src/ui/gui/count.ui \
 	src/ui/gui/crosstabs.ui \
@@ -17,6 +18,7 @@ UI_FILES = \
 	src/ui/gui/factor.ui \
 	src/ui/gui/find.ui \
 	src/ui/gui/frequencies.ui \
+	src/ui/gui/histogram.ui \
 	src/ui/gui/indep-samples.ui \
 	src/ui/gui/k-means.ui \
 	src/ui/gui/k-related.ui \
@@ -35,6 +37,7 @@ UI_FILES = \
 	src/ui/gui/regression.ui \
 	src/ui/gui/reliability.ui \
 	src/ui/gui/roc.ui \
+	src/ui/gui/scatterplot.ui \
 	src/ui/gui/select-cases.ui \
 	src/ui/gui/t-test.ui \
 	src/ui/gui/text-data-import.ui \
@@ -189,6 +192,8 @@ src_ui_gui_psppire_SOURCES = \
 	src/ui/gui/psppire-dialog-action.h \
 	src/ui/gui/psppire-dialog-action-1sks.c \
 	src/ui/gui/psppire-dialog-action-1sks.h \
+	src/ui/gui/psppire-dialog-action-barchart.c \
+	src/ui/gui/psppire-dialog-action-barchart.h \
 	src/ui/gui/psppire-dialog-action-binomial.c \
 	src/ui/gui/psppire-dialog-action-binomial.h \
 	src/ui/gui/psppire-dialog-action-chisquare.c \
@@ -211,6 +216,8 @@ src_ui_gui_psppire_SOURCES = \
 	src/ui/gui/psppire-dialog-action-flip.h \
 	src/ui/gui/psppire-dialog-action-frequencies.c \
 	src/ui/gui/psppire-dialog-action-frequencies.h \
+	src/ui/gui/psppire-dialog-action-histogram.c \
+	src/ui/gui/psppire-dialog-action-histogram.h \
 	src/ui/gui/psppire-dialog-action-indep-samps.c \
 	src/ui/gui/psppire-dialog-action-indep-samps.h \
 	src/ui/gui/psppire-dialog-action-kmeans.c \
@@ -235,6 +242,8 @@ src_ui_gui_psppire_SOURCES = \
 	src/ui/gui/psppire-dialog-action-roc.h \
 	src/ui/gui/psppire-dialog-action-runs.c \
 	src/ui/gui/psppire-dialog-action-runs.h \
+	src/ui/gui/psppire-dialog-action-scatterplot.c \
+	src/ui/gui/psppire-dialog-action-scatterplot.h \
 	src/ui/gui/psppire-dialog-action-sort.c \
 	src/ui/gui/psppire-dialog-action-sort.h \
 	src/ui/gui/psppire-dialog-action-tt1s.c \

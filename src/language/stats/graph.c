@@ -23,6 +23,7 @@
 #include <config.h>
 
 #include <math.h>
+#include "gl/xalloc.h"
 #include <gsl/gsl_cdf.h>
 
 #include "libpspp/assertion.h"
@@ -48,11 +49,14 @@
 #include "math/order-stats.h"
 #include "output/charts/plot-hist.h"
 #include "output/charts/scatterplot.h"
+#include "output/charts/barchart.h"
 
 #include "language/command.h"
 #include "language/lexer/lexer.h"
 #include "language/lexer/value-parser.h"
 #include "language/lexer/variable-parser.h"
+#include "language/stats/freq.h"
+#include "language/stats/chart-category.h"
 
 #include "output/tab.h"
 
@@ -80,6 +84,15 @@ enum scatter_type
     ST_MATRIX,
     ST_XYZ
   };
+
+enum  bar_type
+  {
+    CBT_SIMPLE,
+    CBT_GROUPED,
+    CBT_STACKED,
+    CBT_RANGE
+  };
+
 
 /* Variable index for histogram case */
 enum
@@ -122,12 +135,150 @@ struct graph
   bool missing_pw;
 
   /* ------------ Graph ---------------- */
+  bool normal; /* For histograms, draw the normal curve */
+
   enum chart_type chart_type;
   enum scatter_type scatter_type;
-  const struct variable *byvar;
+  enum bar_type bar_type;
+  const struct variable *by_var[2];
+  size_t n_by_vars;
+  
+  struct subcase ordering; /* Ordering for aggregation */
+  int agr; /* Index into ag_func */
+  
   /* A caseproto that contains the plot data */
   struct caseproto *gr_proto;
 };
+
+
+
+
+static double
+calc_mom1 (double acc, double x, double w)
+{
+  return acc + x * w;
+}
+
+static double
+calc_mom0 (double acc, double x UNUSED, double w)
+{
+  return acc + w;
+}
+
+static double
+pre_low_extreme (void)
+{
+  return -DBL_MAX;
+}
+
+static double
+calc_max (double acc, double x, double w UNUSED)
+{
+  return (acc > x) ? acc : x;
+}
+
+static double
+pre_high_extreme (void)
+{
+  return DBL_MAX;
+}
+
+static double
+calc_min (double acc, double x, double w UNUSED)
+{
+  return (acc < x) ? acc : x;
+}
+
+static double
+post_normalise (double acc, double cc)
+{
+  return acc / cc;
+}
+
+static double
+post_percentage (double acc, double ccc)
+{
+  return acc / ccc * 100.0;
+}
+
+
+const struct ag_func ag_func[] =
+  {
+    {"COUNT",   N_("Count"),      0, 0, NULL, calc_mom0, 0, 0},
+    {"PCT",     N_("Percentage"), 0, 0, NULL, calc_mom0, 0, post_percentage},
+    {"CUFREQ",  N_("Cumulative Count"),   0, 1, NULL, calc_mom0, 0, 0},
+    {"CUPCT",   N_("Cumulative Percent"), 0, 1, NULL, calc_mom0, 0, post_percentage},
+
+    {"MEAN",    N_("Mean"),    1, 0, NULL, calc_mom1, post_normalise, 0},
+    {"SUM",     N_("Sum"),     1, 0, NULL, calc_mom1, 0, 0},
+    {"MAXIMUM", N_("Maximum"), 1, 0, pre_low_extreme, calc_max, 0, 0},
+    {"MINIMUM", N_("Minimum"), 1, 0, pre_high_extreme, calc_min, 0, 0},
+  };
+
+const int N_AG_FUNCS = sizeof (ag_func) / sizeof (ag_func[0]);
+
+static bool
+parse_function (struct lexer *lexer, struct graph *graph)
+{
+  int i;
+  for (i = 0 ; i < N_AG_FUNCS; ++i)
+    {
+      if (lex_match_id (lexer, ag_func[i].name))
+	{
+	  graph->agr = i;
+	  break;
+	}
+    }
+  if (i == N_AG_FUNCS)
+    {
+      goto error;
+    }
+
+  graph->n_dep_vars = ag_func[i].arity;
+  if (ag_func[i].arity > 0)
+    {
+      int v;
+      if (!lex_force_match (lexer, T_LPAREN))
+	goto error;
+
+      graph->dep_vars = xzalloc (sizeof (graph->dep_vars) * graph->n_dep_vars);
+      for (v = 0; v < ag_func[i].arity; ++v)
+	{
+	  graph->dep_vars[v] = parse_variable (lexer, graph->dict);
+	}
+
+      if (!lex_force_match (lexer, T_RPAREN))
+	goto error;
+    }
+
+  if (!lex_force_match (lexer, T_BY))
+    goto error;
+
+  graph->by_var[0] = parse_variable (lexer, graph->dict);
+  if (!graph->by_var[0])
+    {
+      goto error;
+    }
+  subcase_add_var (&graph->ordering, graph->by_var[0], SC_ASCEND);
+  graph->n_by_vars++;
+
+  if (lex_match (lexer, T_BY))
+    {
+      graph->by_var[1] = parse_variable (lexer, graph->dict);
+      if (!graph->by_var[1])
+	{
+	  goto error;
+	}
+      subcase_add_var (&graph->ordering, graph->by_var[1], SC_ASCEND);
+      graph->n_by_vars++;
+    }
+
+  return true;
+  
+ error:
+  lex_error (lexer, NULL);
+  return false;
+}
 
 
 static void
@@ -139,12 +290,12 @@ show_scatterplot (const struct graph *cmd, struct casereader *input)
 
   ds_init_empty (&title);
 
-  if (cmd->byvar)
+  if (cmd->n_by_vars > 0)
     {
       ds_put_format (&title, _("%s vs. %s by %s"),
 			   var_to_string (cmd->dep_vars[1]),
 			   var_to_string (cmd->dep_vars[0]),
-			   var_to_string (cmd->byvar));
+			   var_to_string (cmd->by_var[0]));
     }
   else
     {
@@ -152,12 +303,11 @@ show_scatterplot (const struct graph *cmd, struct casereader *input)
 		     var_to_string (cmd->dep_vars[1]),
 		     var_to_string (cmd->dep_vars[0]));
     }
-		 
 
   scatterplot = scatterplot_create (input,
 				    var_to_string(cmd->dep_vars[0]),
 				    var_to_string(cmd->dep_vars[1]),
-				    cmd->byvar,
+				    (cmd->n_by_vars > 0) ? cmd->by_var[0] : NULL,
 				    &byvar_overflow,
 				    ds_cstr (&title),
 				    cmd->es[0].minimum, cmd->es[0].maximum,
@@ -218,7 +368,7 @@ show_histogr (const struct graph *cmd, struct casereader *input)
     chart_item_submit
       ( histogram_chart_create (histogram->gsl_hist,
 				ds_cstr (&label), n, mean,
-				sqrt (var), false));
+				sqrt (var), cmd->normal));
 
     statistic_destroy (&histogram->parent);      
     ds_destroy (&label);
@@ -234,6 +384,122 @@ cleanup_exploratory_stats (struct graph *cmd)
     {
       moments_destroy (cmd->es[v].mom);
     }
+}
+
+
+static void
+run_barchart (struct graph *cmd, struct casereader *input)
+{
+  struct casegrouper *grouper;
+  struct casereader *group;
+  double ccc = 0.0;
+
+  if ( cmd->missing_pw == false) 
+    input = casereader_create_filter_missing (input,
+                                              cmd->dep_vars,
+                                              cmd->n_dep_vars,
+                                              cmd->dep_excl,
+                                              NULL,
+                                              NULL);
+
+
+  input = sort_execute (input, &cmd->ordering);
+
+  struct freq **freqs = NULL;
+  int n_freqs = 0;
+
+  for (grouper = casegrouper_create_vars (input, cmd->by_var,
+                                          cmd->n_by_vars);
+       casegrouper_get_next_group (grouper, &group);
+       casereader_destroy (group))
+    {
+      int v;
+      struct ccase *c = casereader_peek (group, 0);
+
+      /* Deal with missing values in the categorical variables */
+      for (v = 0; v < cmd->n_by_vars; ++v)
+	{
+	  if (var_is_value_missing (cmd->by_var[v], case_data (c, cmd->by_var[v]), cmd->fctr_excl) )
+	    break;
+	}
+
+      if (v < cmd->n_by_vars)
+	{
+	  case_unref (c);
+	  continue;
+	}
+
+      freqs = xrealloc (freqs, sizeof (*freqs) * ++n_freqs);
+      freqs[n_freqs - 1] = xzalloc (sizeof (**freqs) +
+				    sizeof (union value) * (cmd->n_by_vars - 1) );
+
+      if (ag_func[cmd->agr].cumulative && n_freqs >= 2)
+	freqs[n_freqs - 1]->count = freqs[n_freqs - 2]->count;
+      else
+	freqs[n_freqs - 1]->count = 0;
+      if (ag_func[cmd->agr].pre)
+	freqs[n_freqs - 1]->count = ag_func[cmd->agr].pre();
+
+
+      for (v = 0; v < cmd->n_by_vars; ++v)
+	{
+	  value_clone (&freqs[n_freqs - 1]->values[v], case_data (c, cmd->by_var[v]),
+		       var_get_width (cmd->by_var[v])
+		       );
+	}
+      case_unref (c);
+
+      double cc = 0;
+      for (;(c = casereader_read (group)) != NULL; case_unref (c))
+	{
+	  const double weight = dict_get_case_weight (cmd->dict,c,NULL);
+	  const double x =  (cmd->n_dep_vars > 0) ? case_data (c, cmd->dep_vars[0])->f : SYSMIS;
+
+	  cc += weight;
+	  
+	  freqs[n_freqs - 1]->count
+	    = ag_func[cmd->agr].calc (freqs[n_freqs - 1]->count, x, weight);
+	}
+
+      if (ag_func[cmd->agr].post)
+      	freqs[n_freqs - 1]->count
+      	  = ag_func[cmd->agr].post (freqs[n_freqs - 1]->count, cc);
+
+      ccc += cc;
+    }
+
+  casegrouper_destroy (grouper);
+
+  for (int i = 0; i < n_freqs; ++i)
+    {
+      if (ag_func[cmd->agr].ppost)
+      	freqs[i]->count = ag_func[cmd->agr].ppost (freqs[i]->count, ccc);
+    }
+
+
+  {
+    struct string label;
+    ds_init_empty (&label);
+
+    if (cmd->n_dep_vars > 0)
+      ds_put_format (&label, _("%s of %s"),
+		     ag_func[cmd->agr].description,
+		     var_get_name (cmd->dep_vars[0]));
+    else
+      ds_put_cstr (&label, 
+		     ag_func[cmd->agr].description);
+      
+    chart_item_submit (barchart_create (cmd->by_var, cmd->n_by_vars,
+					ds_cstr (&label),
+					freqs, n_freqs));
+
+    ds_destroy (&label);
+  }
+
+  for (int i = 0; i < n_freqs; ++i)
+    free (freqs[i]);
+  
+  free (freqs);
 }
 
 
@@ -278,10 +544,10 @@ run_graph (struct graph *cmd, struct casereader *input)
       const double weight = dict_get_case_weight (cmd->dict,c,NULL);
       if (cmd->chart_type == CT_HISTOGRAM)
 	case_data_rw_idx (outcase, HG_IDX_WT)->f = weight;
-      if (cmd->chart_type == CT_SCATTERPLOT && cmd->byvar)
+      if (cmd->chart_type == CT_SCATTERPLOT && cmd->n_by_vars > 0)
 	value_copy (case_data_rw_idx (outcase, SP_IDX_BY),
-		    case_data (c, cmd->byvar),
-		    var_get_width (cmd->byvar));
+		    case_data (c, cmd->by_var[0]),
+		    var_get_width (cmd->by_var[0]));
       for(int v=0;v<cmd->n_dep_vars;v++)
 	{
 	  const struct variable *var = cmd->dep_vars[v];
@@ -347,14 +613,14 @@ cmd_graph (struct lexer *lexer, struct dataset *ds)
   
   graph.dict = dataset_dict (ds);
   
-
-  /* ---------------- graph ------------------ */
   graph.dep_vars = NULL;
   graph.chart_type = CT_NONE;
   graph.scatter_type = ST_BIVARIATE;
-  graph.byvar = NULL;
+  graph.n_by_vars = 0;
   graph.gr_proto = caseproto_create ();
 
+  subcase_init_empty (&graph.ordering);
+  
   while (lex_token (lexer) != T_ENDCMD)
     {
       lex_match (lexer, T_SLASH);
@@ -366,6 +632,17 @@ cmd_graph (struct lexer *lexer, struct dataset *ds)
 	      lex_error (lexer, _("Only one chart type is allowed."));
 	      goto error;
 	    }
+          graph.normal = false;
+          if (lex_match (lexer, T_LPAREN))
+            {
+              if (!lex_force_match_id (lexer, "NORMAL"))
+                goto error;
+              
+              if (!lex_force_match (lexer, T_RPAREN))
+                goto error;
+
+              graph.normal = true;
+            }
 	  if (!lex_force_match (lexer, T_EQUALS))
 	    goto error;
 	  graph.chart_type = CT_HISTOGRAM;
@@ -378,6 +655,54 @@ cmd_graph (struct lexer *lexer, struct dataset *ds)
 	      lex_error (lexer, _("Only one variable is allowed."));
 	      goto error;
 	    }
+	}
+      else if (lex_match_id (lexer, "BAR"))
+	{
+	  if (graph.chart_type != CT_NONE)
+	    {
+	      lex_error (lexer, _("Only one chart type is allowed."));
+	      goto error;
+	    }
+	  graph.chart_type = CT_BAR;
+	  graph.bar_type = CBT_SIMPLE;
+	  
+	  if (lex_match (lexer, T_LPAREN)) 
+	    {
+	      if (lex_match_id (lexer, "SIMPLE"))
+		{
+		  /* This is the default anyway */
+		}
+	      else if (lex_match_id (lexer, "GROUPED"))  
+		{
+		  graph.bar_type = CBT_GROUPED; 
+		  goto error;
+		}
+	      else if (lex_match_id (lexer, "STACKED"))  
+		{
+		  graph.bar_type = CBT_STACKED; 
+		  lex_error (lexer, _("%s is not yet implemented."), "STACKED");
+		  goto error;
+		}
+	      else if (lex_match_id (lexer, "RANGE"))  
+		{
+		  graph.bar_type = CBT_RANGE; 
+		  lex_error (lexer, _("%s is not yet implemented."), "RANGE");
+		  goto error;
+		}
+	      else
+		{
+		  lex_error (lexer, NULL);
+		  goto error;
+		}
+	      if (!lex_force_match (lexer, T_RPAREN))
+		goto error;
+	    }
+	  
+	  if (!lex_force_match (lexer, T_EQUALS))
+	    goto error;
+
+	  if (! parse_function (lexer, &graph))
+	    goto error;
 	}
       else if (lex_match_id (lexer, "SCATTERPLOT"))
 	{
@@ -452,13 +777,8 @@ cmd_graph (struct lexer *lexer, struct dataset *ds)
 		  lex_error (lexer, _("Variable expected"));
 		  goto error;
 		}
-	      graph.byvar = v;
+	      graph.by_var[0] = v;
 	    }
-	}
-      else if (lex_match_id (lexer, "BAR"))
-	{
-	  lex_error (lexer, _("%s is not yet implemented."),"BAR");
-	  goto error;
 	}
       else if (lex_match_id (lexer, "LINE"))
 	{
@@ -547,16 +867,18 @@ cmd_graph (struct lexer *lexer, struct dataset *ds)
       /* See scatterplot.h for the setup of the case prototype */
       graph.gr_proto = caseproto_add_width (graph.gr_proto, 0); /* x value - SP_IDX_X*/
       graph.gr_proto = caseproto_add_width (graph.gr_proto, 0); /* y value - SP_IDX_Y*/
-      /* The byvar contains the plot categories for the different xy plot colors */
-      if (graph.byvar) /* SP_IDX_BY */
-	graph.gr_proto = caseproto_add_width (graph.gr_proto, var_get_width(graph.byvar));
+      /* The by_var contains the plot categories for the different xy plot colors */
+      if (graph.n_by_vars > 0) /* SP_IDX_BY */
+	graph.gr_proto = caseproto_add_width (graph.gr_proto, var_get_width(graph.by_var[0]));
       break;
     case CT_HISTOGRAM:
       graph.gr_proto = caseproto_add_width (graph.gr_proto, 0); /* x value      */
       graph.gr_proto = caseproto_add_width (graph.gr_proto, 0); /* weight value */
       break;
+    case CT_BAR:
+      break;
     case CT_NONE:
-      lex_error_expecting (lexer,"HISTOGRAM","SCATTERPLOT",NULL);
+      lex_error_expecting (lexer, "HISTOGRAM", "SCATTERPLOT", "BAR", NULL);
       goto error;
     default:
       NOT_REACHED ();
@@ -570,11 +892,17 @@ cmd_graph (struct lexer *lexer, struct dataset *ds)
     
     grouper = casegrouper_create_splits (proc_open (ds), graph.dict);
     while (casegrouper_get_next_group (grouper, &group))
-      run_graph (&graph, group);
+      {
+	if (graph.chart_type == CT_BAR)
+	  run_barchart (&graph, group);
+	else
+	  run_graph (&graph, group);
+      }
     ok = casegrouper_destroy (grouper);
     ok = proc_commit (ds) && ok;
   }
 
+  subcase_destroy (&graph.ordering);
   free (graph.dep_vars);
   pool_destroy (graph.pool);
   caseproto_unref (graph.gr_proto);
@@ -582,6 +910,7 @@ cmd_graph (struct lexer *lexer, struct dataset *ds)
   return CMD_SUCCESS;
 
  error:
+  subcase_destroy (&graph.ordering);
   caseproto_unref (graph.gr_proto);
   free (graph.dep_vars);
   pool_destroy (graph.pool);

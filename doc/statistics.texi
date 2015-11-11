@@ -411,8 +411,9 @@ large quantity of output.
 
 @display
 GRAPH
-        /HISTOGRAM = @var{var}
-        /SCATTERPLOT [(BIVARIATE)] = @var{var1} WITH @var{var2} [BY @var{var3}] 
+        /HISTOGRAM [(NORMAL)]= @var{var}
+        /SCATTERPLOT [(BIVARIATE)] = @var{var1} WITH @var{var2} [BY @var{var3}]
+        /BAR = @{@var{summary-function}(@var{var1}) | @var{count-function}@} BY @var{var2} [BY @var{var3}] 
         [ /MISSING=@{LISTWISE, VARIABLE@} [@{EXCLUDE, INCLUDE@}] ] 
 		[@{NOREPORT,REPORT@}]
 
@@ -441,6 +442,8 @@ this plot it is possible to analyze gender differences for @var{height} vs.@: @v
 
 The subcommand @subcmd{HISTOGRAM} produces a histogram. Only one variable is allowed for
 the histogram plot.
+The keyword @subcmd{NORMAL} may be specified in parentheses, to indicate that the ideal normal curve
+should be superimposed over the histogram.
 For an alternative method to produce histograms @pxref{EXAMINE}. The
 following example produces a histogram plot for the variable @var{weight}.
 
@@ -448,6 +451,57 @@ following example produces a histogram plot for the variable @var{weight}.
 GRAPH   
         /HISTOGRAM = @var{weight}.
 @end example
+
+@cindex bar chart
+The subcommand @subcmd{BAR} produces a bar chart.
+This subcommand requires that a @var{count-function} be specified (with no arguments) or a @var{summary-function} with a variable @var{var1} in parentheses.
+Following the summary or count function, the keyword @subcmd{BY} should be specified and then a catagorical variable, @var{var2}.
+The values of the variable @var{var2} determine the labels of the bars to be plotted.
+Optionally a second categorical variable @var{var3} may be specified in which case a clustered (grouped) bar chart is produced.
+
+Valid count functions are
+@table @subcmd
+@item COUNT
+The weighted counts of the cases in each category.
+@item PCT
+The weighted counts of the cases in each category expressed as a percentage of the total weights of the cases.
+@item CUFREQ
+The cumulative weighted counts of the cases in each category.
+@item CUPCT
+The cumulative weighted counts of the cases in each category expressed as a percentage of the total weights of the cases.
+@end table
+
+The summary function is applied to @var{var1} across all cases in each category.
+The recognised summary functions are:
+@table @subcmd
+@item SUM
+The sum.
+@item MEAN
+The arithmetic mean.
+@item MAXIMUM
+The maximum value.
+@item MINIMUM
+The minimum value.
+@end table
+
+The following examples assume a dataset which is the results of a survey.
+Each respondent has indicated annual income, their sex and city of residence.
+One could create a bar chart showing how the mean income varies between of residents of different cities, thus:
+@example
+GRAPH  /BAR  = MEAN(@var{income}) BY @var{city}.
+@end example
+
+This can be extended to also indicate how income in each city differs between the sexes.
+@example
+GRAPH  /BAR  = MEAN(@var{income}) BY @var{city} BY @var{sex}.
+@end example
+
+One might also want to see how many respondents there are from each city.  This can be achieved as follows:
+@example
+GRAPH  /BAR  = COUNT BY @var{city}.
+@end example
+
+Bar charts can also be produced using the @ref{FREQUENCIES} and @ref{CROSSTABS} commands.
 
 @node CORRELATIONS
 @section CORRELATIONS
