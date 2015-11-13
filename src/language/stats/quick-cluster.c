@@ -20,7 +20,6 @@
 #include <gsl/gsl_permutation.h>
 #include <gsl/gsl_sort_vector.h>
 #include <gsl/gsl_statistics.h>
-#include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -187,7 +186,7 @@ matrix_mindist (const gsl_matrix *m, int *mn, int *mm)
 	}
     }
 
-  return sqrt (mindist);
+  return mindist;
 }
 
 
@@ -220,7 +219,7 @@ dist_from_case (const struct Kmeans *kmeans, const struct ccase *c, const struct
       dist += pow2 (gsl_matrix_get (kmeans->centers, which, j) - val->f);
     }
  
-  return sqrt (dist);
+  return dist;
 }
 
 /* Return the minimum distance of the group WHICH and all other groups */
@@ -247,7 +246,7 @@ min_dist_from (const struct Kmeans *kmeans, const struct qc *qc, int which)
 	}
     }
 
-  return sqrt (mindist);
+  return mindist;
 }
 
 
@@ -349,7 +348,6 @@ kmeans_get_nearest_group (const struct Kmeans *kmeans, struct ccase *c, const st
 
 	  dist += pow2 (gsl_matrix_get (kmeans->centers, i, j) - val->f);
 	}
-      dist = sqrt (dist);
 
       if (dist < mindist0)
 	{
