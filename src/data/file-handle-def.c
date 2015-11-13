@@ -702,9 +702,7 @@ struct file_identity
 
 /* Returns a pointer to a dynamically allocated structure whose
    value can be used to tell whether two files are actually the
-   same file.  Returns a null pointer if no information about the
-   file is available, perhaps because it does not exist.  The
-   caller is responsible for freeing the structure with
+   same file.  The caller is responsible for freeing the structure with
    fh_free_identity() when finished. */
 struct file_identity *
 fh_get_identity (const struct file_handle *fh)
