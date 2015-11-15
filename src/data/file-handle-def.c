@@ -91,7 +91,7 @@ static void unname_handle (struct file_handle *);
 /* Hash table of all active locks. */
 static struct hmap locks = HMAP_INITIALIZER (locks);
 
-struct file_identity *fh_get_identity (const struct file_handle *);
+static struct file_identity *fh_get_identity (const struct file_handle *);
 static void fh_free_identity (struct file_identity *);
 static int fh_compare_file_identities (const struct file_identity *,
                                 const struct file_identity *);
@@ -704,7 +704,7 @@ struct file_identity
    value can be used to tell whether two files are actually the
    same file.  The caller is responsible for freeing the structure with
    fh_free_identity() when finished. */
-struct file_identity *
+static struct file_identity *
 fh_get_identity (const struct file_handle *fh)
 {
   struct file_identity *identity = xmalloc (sizeof *identity);
