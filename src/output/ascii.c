@@ -28,6 +28,7 @@
 #include <uniwidth.h>
 
 #include "data/file-name.h"
+#include "data/file-handle-def.h"
 #include "data/settings.h"
 #include "libpspp/assertion.h"
 #include "libpspp/cast.h"
@@ -172,7 +173,7 @@ struct ascii_driver
     char *command_name;
     char *title;
     char *subtitle;
-    char *file_name;            /* Output file name. */
+    struct file_handle *handle;
     FILE *file;                 /* Output file. */
     bool error;                 /* Output error? */
     int page_number;		/* Current page number. */
@@ -233,7 +234,7 @@ opt (struct output_driver *d, struct string_map *options, const char *key,
 }
 
 static struct output_driver *
-ascii_create (const char *file_name, enum settings_output_devices device_type,
+ascii_create (struct  file_handle *fh, enum settings_output_devices device_type,
               struct string_map *o)
 {
   enum { BOX_ASCII, BOX_UNICODE } box;
@@ -244,7 +245,7 @@ ascii_create (const char *file_name, enum settings_output_devices device_type,
 
   a = xzalloc (sizeof *a);
   d = &a->driver;
-  output_driver_init (&a->driver, &ascii_driver_class, file_name, device_type);
+  output_driver_init (&a->driver, &ascii_driver_class, fh_get_file_name (fh), device_type);
   a->append = parse_boolean (opt (d, o, "append", "false"));
   a->headers = parse_boolean (opt (d, o, "headers", "false"));
   a->paginate = parse_boolean (opt (d, o, "paginate", "false"));
@@ -255,7 +256,8 @@ ascii_create (const char *file_name, enum settings_output_devices device_type,
                             "none", EMPH_NONE,
                             NULL_SENTINEL);
 
-  a->chart_file_name = parse_chart_file_name (opt (d, o, "charts", file_name));
+  a->chart_file_name = parse_chart_file_name (opt (d, o, "charts", fh_get_file_name (fh)));
+  a->handle = fh;
 
   a->top_margin = parse_int (opt (d, o, "top-margin", "0"), 0, INT_MAX);
   a->bottom_margin = parse_int (opt (d, o, "bottom-margin", "0"), 0, INT_MAX);
@@ -283,7 +285,6 @@ ascii_create (const char *file_name, enum settings_output_devices device_type,
   a->command_name = NULL;
   a->title = xstrdup ("");
   a->subtitle = xstrdup ("");
-  a->file_name = xstrdup (file_name);
   a->file = NULL;
   a->error = false;
   a->page_number = 0;
@@ -380,11 +381,11 @@ ascii_destroy (struct output_driver *driver)
     ascii_close_page (a);
 
   if (a->file != NULL)
-    fn_close (a->file_name, a->file);
+    fn_close (a->handle, a->file);
+  fh_unref (a->handle);
   free (a->command_name);
   free (a->title);
   free (a->subtitle);
-  free (a->file_name);
   free (a->chart_file_name);
   for (i = 0; i < a->allocated_lines; i++)
     u8_line_destroy (&a->lines[i]);
@@ -400,8 +401,8 @@ ascii_flush (struct output_driver *driver)
     {
       ascii_close_page (a);
 
-      if (fn_close (a->file_name, a->file) != 0)
-        msg_error (errno, _("ascii: closing output file `%s'"), a->file_name);
+      if (fn_close (a->handle, a->file) != 0)
+        msg_error (errno, _("ascii: closing output file `%s'"), fh_get_file_name (a->handle));
       a->file = NULL;
     }
 }
@@ -1091,7 +1092,7 @@ ascii_open_page (struct ascii_driver *a)
 
   if (a->file == NULL)
     {
-      a->file = fn_open (a->file_name, a->append ? "a" : "w");
+      a->file = fn_open (a->handle, a->append ? "a" : "w");
       if (a->file != NULL)
         {
 	  if ( isatty (fileno (a->file)))
@@ -1111,7 +1112,7 @@ ascii_open_page (struct ascii_driver *a)
       else
         {
           msg_error (errno, _("ascii: opening output file `%s'"),
-                 a->file_name);
+		     fh_get_file_name (a->handle));
           a->error = true;
           return false;
         }

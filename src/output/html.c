@@ -24,6 +24,7 @@
 #include <unistd.h>
 
 #include "data/file-name.h"
+#include "data/file-handle-def.h"
 #include "libpspp/assertion.h"
 #include "libpspp/cast.h"
 #include "libpspp/compiler.h"
@@ -51,7 +52,7 @@ struct html_driver
     struct xr_color fg;
     struct xr_color bg;
 #endif    
-    char *file_name;
+    struct file_handle *handle;
     char *chart_file_name;
 
     char *command_name;
@@ -86,7 +87,7 @@ opt (struct output_driver *d, struct string_map *options, const char *key,
 }
 
 static struct output_driver *
-html_create (const char *file_name, enum settings_output_devices device_type,
+html_create (struct file_handle *fh, enum settings_output_devices device_type,
              struct string_map *o)
 {
   struct output_driver *d;
@@ -94,24 +95,24 @@ html_create (const char *file_name, enum settings_output_devices device_type,
 
   html = xzalloc (sizeof *html);
   d = &html->driver;
-  output_driver_init (&html->driver, &html_driver_class, file_name,
+  output_driver_init (&html->driver, &html_driver_class, fh_get_file_name (fh),
                       device_type);
   html->css = parse_boolean (opt (d, o, "css", "true"));
   html->borders = parse_boolean (opt (d, o, "borders", "true"));
 
-  html->file_name = xstrdup (file_name);
+  html->handle = fh;
   html->chart_file_name = parse_chart_file_name (opt (d, o, "charts",
-                                                      file_name));
+                                                      fh_get_file_name (fh)));
   html->file = NULL;
   html->chart_cnt = 1;
 #ifdef HAVE_CAIRO
   parse_color (d, o, "background-color", "#FFFFFFFFFFFF", &html->bg);
   parse_color (d, o, "foreground-color", "#000000000000", &html->fg);
 #endif
-  html->file = fn_open (html->file_name, "w");
+  html->file = fn_open (html->handle, "w");
   if (html->file == NULL)
     {
-      msg_error (errno, _("error opening output file `%s'"), html->file_name);
+      msg_error (errno, _("error opening output file `%s'"), fh_get_file_name (html->handle));
       goto error;
     }
 
@@ -216,10 +217,10 @@ html_destroy (struct output_driver *driver)
                "</BODY>\n"
                "</HTML>\n"
                "<!-- end of file -->\n");
-      fn_close (html->file_name, html->file);
+      fn_close (html->handle, html->file);
     }
   free (html->chart_file_name);
-  free (html->file_name);
+  fh_unref (html->handle);
   free (html->command_name);
   free (html);
 }

@@ -24,6 +24,7 @@
 #include <unistd.h>
 
 #include "data/file-name.h"
+#include "data/file-handle-def.h"
 #include "data/settings.h"
 #include "libpspp/cast.h"
 #include "libpspp/message.h"
@@ -40,7 +41,7 @@ struct msglog_driver
   {
     struct output_driver driver;
     FILE *file;
-    char *file_name;
+    struct file_handle *handle;
     char *command_name;
   };
 
@@ -60,7 +61,9 @@ msglog_create (const char *file_name)
   struct msglog_driver *ml;
   FILE *file;
 
-  file = fn_open (file_name, "w");
+  struct file_handle *handle = fh_create_file  (NULL, file_name, NULL, fh_default_properties ());
+
+  file = fn_open (handle, "w");
   if (file == NULL)
     {
       msg_error (errno, _("error opening output file `%s'"), file_name);
@@ -72,9 +75,9 @@ msglog_create (const char *file_name)
           : SETTINGS_DEVICE_UNFILTERED);
 
   ml = xzalloc (sizeof *ml);
+  ml->handle = handle;
   output_driver_init (&ml->driver, &msglog_class, file_name, type);
   ml->file = file;
-  ml->file_name = xstrdup (file_name);
   ml->command_name = NULL;
 
   output_driver_register (&ml->driver);
@@ -87,9 +90,9 @@ msglog_destroy (struct output_driver *driver)
 {
   struct msglog_driver *ml = msglog_driver_cast (driver);
 
-  fn_close (ml->file_name, ml->file);
-  free (ml->file_name);
+  fn_close (ml->handle, ml->file);
   free (ml->command_name);
+  fh_unref (ml->handle);
   free (ml);
 }
 

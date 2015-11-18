@@ -97,7 +97,7 @@ void any_read_info_destroy (struct any_read_info *);
 struct file_handle;
 struct dictionary;
 
-int any_reader_detect (const char *file_name,
+int any_reader_detect (const struct file_handle *file_name,
                        const struct any_reader_class **);
 
 struct any_reader *any_reader_open (struct file_handle *);

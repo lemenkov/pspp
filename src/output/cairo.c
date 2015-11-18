@@ -25,6 +25,7 @@
 #include "libpspp/str.h"
 #include "libpspp/string-map.h"
 #include "libpspp/version.h"
+#include "data/file-handle-def.h"
 #include "output/cairo-chart.h"
 #include "output/chart-item-provider.h"
 #include "output/charts/boxplot.h"
@@ -475,24 +476,30 @@ xr_create (const char *file_name, enum settings_output_devices device_type,
 }
 
 static struct output_driver *
-xr_pdf_create (const char *file_name, enum settings_output_devices device_type,
+xr_pdf_create (struct  file_handle *fh, enum settings_output_devices device_type,
                struct string_map *o)
 {
-  return xr_create (file_name, device_type, o, XR_PDF);
+  struct output_driver *od = xr_create (fh_get_file_name (fh), device_type, o, XR_PDF);
+  fh_unref (fh);
+  return od ;
 }
 
 static struct output_driver *
-xr_ps_create (const char *file_name, enum settings_output_devices device_type,
+xr_ps_create (struct  file_handle *fh, enum settings_output_devices device_type,
                struct string_map *o)
 {
-  return xr_create (file_name, device_type, o, XR_PS);
+  struct output_driver *od =  xr_create (fh_get_file_name (fh), device_type, o, XR_PS);
+  fh_unref (fh);
+  return od ;
 }
 
 static struct output_driver *
-xr_svg_create (const char *file_name, enum settings_output_devices device_type,
+xr_svg_create (struct file_handle *fh, enum settings_output_devices device_type,
                struct string_map *o)
 {
-  return xr_create (file_name, device_type, o, XR_SVG);
+  struct output_driver *od = xr_create (fh_get_file_name (fh), device_type, o, XR_SVG);
+  fh_unref (fh);
+  return od ;
 }
 
 static void

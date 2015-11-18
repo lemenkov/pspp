@@ -25,6 +25,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "data/file-handle-def.h"
 #include "data/settings.h"
 #include "libpspp/array.h"
 #include "libpspp/assertion.h"
@@ -374,8 +375,10 @@ output_driver_create (struct string_map *options)
                      device_string, "terminal", "listing");
       device_type = default_device_type (file_name);
     }
+  
+  struct file_handle *fh = fh_create_file (NULL, file_name, NULL, fh_default_properties ());
 
-  driver = f->create (file_name, device_type, options);
+  driver = f->create (fh, device_type, options);
   if (driver != NULL)
     {
       const struct string_map_node *node;

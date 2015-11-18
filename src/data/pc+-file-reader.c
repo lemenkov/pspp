@@ -209,7 +209,7 @@ pcp_open (struct file_handle *fh)
     goto error;
 
   /* Open file. */
-  r->file = fn_open (fh_get_file_name (fh), "rb");
+  r->file = fn_open (fh, "rb");
   if (r->file == NULL)
     {
       msg (ME, _("Error opening `%s' for reading as an SPSS/PC+ "
@@ -478,7 +478,7 @@ pcp_close (struct any_reader *r_)
 
   if (r->file)
     {
-      if (fn_close (fh_get_file_name (r->fh), r->file) == EOF)
+      if (fn_close (r->fh, r->file) == EOF)
         {
           msg (ME, _("Error closing system file `%s': %s."),
                fh_get_file_name (r->fh), strerror (errno));

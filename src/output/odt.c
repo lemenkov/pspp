@@ -36,6 +36,7 @@
 #include "libpspp/temp-file.h"
 #include "libpspp/version.h"
 #include "libpspp/zip-writer.h"
+#include "data/file-handle-def.h"
 #include "output/driver-provider.h"
 #include "output/message-item.h"
 #include "output/options.h"
@@ -290,12 +291,13 @@ write_meta_data (struct odt_driver *odt)
 }
 
 static struct output_driver *
-odt_create (const char *file_name, enum settings_output_devices device_type,
+odt_create (struct file_handle *fh, enum settings_output_devices device_type,
             struct string_map *o UNUSED)
 {
   struct output_driver *d;
   struct odt_driver *odt;
   struct zip_writer *zip;
+  const char *file_name = fh_get_file_name (fh);
 
   zip = zip_writer_create (file_name);
   if (zip == NULL)
@@ -303,6 +305,7 @@ odt_create (const char *file_name, enum settings_output_devices device_type,
 
   odt = xzalloc (sizeof *odt);
   d = &odt->driver;
+
   output_driver_init (d, &odt_driver_class, file_name, device_type);
 
   odt->zip = zip;

@@ -17,6 +17,7 @@
 #include <config.h>
 
 #include "data/encrypted-file.h"
+#include "data/file-handle-def.h"
 
 #include <errno.h>
 #include <stdlib.h>
@@ -60,7 +61,7 @@ static bool fill_buffer (struct encrypted_file *);
 
    If FILENAME cannot be open or read, returns a negative errno value. */
 int
-encrypted_file_open (struct encrypted_file **fp, const char *filename)
+encrypted_file_open (struct encrypted_file **fp, const struct file_handle *fh)
 {
   struct encrypted_file *f;
   char header[36 + 16];
@@ -69,11 +70,11 @@ encrypted_file_open (struct encrypted_file **fp, const char *filename)
 
   f = xmalloc (sizeof *f);
   f->error = 0;
-  f->file = fn_open (filename, "rb");
+  f->file = fn_open (fh, "rb");
   if (f->file == NULL)
     {
       msg (ME, _("An error occurred while opening `%s': %s."),
-           filename, strerror (errno));
+           fh_get_file_name (fh), strerror (errno));
       retval = -errno;
       goto error;
     }
@@ -84,7 +85,7 @@ encrypted_file_open (struct encrypted_file **fp, const char *filename)
       int error = feof (f->file) ? 0 : errno;
       if (error)
         msg (ME, _("An error occurred while reading `%s': %s."),
-             filename, strerror (error));
+             fh_get_file_name (fh), strerror (error));
       retval = -error;
       goto error;
     }
@@ -107,7 +108,7 @@ encrypted_file_open (struct encrypted_file **fp, const char *filename)
 
 error:
   if (f->file)
-    fn_close (filename, f->file);
+    fn_close (fh, f->file);
   free (f);
   *fp = NULL;
 

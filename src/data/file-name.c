@@ -31,6 +31,7 @@
 #include "data/settings.h"
 #include "libpspp/hash-functions.h"
 #include "libpspp/message.h"
+#include "libpspp/i18n.h"
 #include "libpspp/str.h"
 #include "libpspp/version.h"
 
@@ -48,7 +49,32 @@
 
 /* Functions for performing operations on file names. */
 
-/* Searches for a configuration file with name NAME in the directories given in
+
+/* Returns the extension part of FILE_NAME as a malloc()'d string.
+   If FILE_NAME does not have an extension, returns an empty
+   string. */
+char *
+fn_extension (const struct file_handle *fh)
+{
+  const char *file_name = fh_get_file_name (fh);
+
+  const char *extension = strrchr (file_name, '.');
+  if (extension == NULL)
+    extension = "";
+  return xstrdup (extension);
+}
+
+/* Find out information about files. */
+
+/* Returns true iff NAME specifies an absolute file name. */
+static bool
+fn_is_absolute (const char *name)
+{
+  return IS_ABSOLUTE_FILE_NAME (name);
+}
+
+
+/* Searches for a file with name NAME in the directories given in
    PATH, which is terminated by a null pointer.  Returns the full name of the
    first file found, which the caller is responsible for freeing with free(),
    or NULL if none is found. */
@@ -72,40 +98,23 @@ fn_search_path (const char *base_name, char **path)
       else
         file = xasprintf ("%s/%s", dir, base_name);
 
-      if (fn_exists (file))
-        return file;
+      struct stat temp;
+      if (( (stat (file, &temp) == 0 ) && ( ! S_ISDIR (temp.st_mode) )))
+	return file;
+      
       free (file);
     }
 
   return NULL;
 }
 
-/* Returns the extension part of FILE_NAME as a malloc()'d string.
-   If FILE_NAME does not have an extension, returns an empty
-   string. */
-char *
-fn_extension (const char *file_name)
-{
-  const char *extension = strrchr (file_name, '.');
-  if (extension == NULL)
-    extension = "";
-  return xstrdup (extension);
-}
-
-/* Find out information about files. */
-
-/* Returns true iff NAME specifies an absolute file name. */
-bool
-fn_is_absolute (const char *name)
-{
-  return IS_ABSOLUTE_FILE_NAME (name);
-}
 
 /* Returns true if file with name NAME exists, and that file is not a
    directory */
 bool
-fn_exists (const char *name)
+fn_exists (const struct file_handle *fh)
 {
+  const char *name = fh_get_file_name (fh);
   struct stat temp;
   if ( stat (name, &temp) != 0 )
     return false;
@@ -133,8 +142,10 @@ safety_violation (const char *fn)
    NULL on failure.  If NULL is returned then errno is set to a
    sensible value.  */
 FILE *
-fn_open (const char *fn, const char *mode)
+fn_open (const struct file_handle *fh, const char *mode)
 {
+  const char *fn = fh_get_file_name (fh);
+
   assert (mode[0] == 'r' || mode[0] == 'w' || mode[0] == 'a');
 
   if (mode[0] == 'r')
@@ -178,15 +189,28 @@ fn_open (const char *fn, const char *mode)
     }
   else
 #endif
+
+#if WIN32
+    {
+      wchar_t *ss = convert_to_filename_encoding (fn, strlen (fn), fh_get_file_name_encoding (fh));
+      wchar_t *m =  (wchar_t *) recode_string ("UTF-16LE", "ASCII", mode, strlen (mode));
+      FILE *fp = _wfopen (ss, m);
+      free (m);
+      free (ss);
+      return fp;
+    }
+#else    
     return fopen (fn, mode);
+#endif    
 }
 
 /* Counterpart to fn_open that closes file F with name FN; returns 0
    on success, EOF on failure.  If EOF is returned, errno is set to a
    sensible value. */
 int
-fn_close (const char *fn, FILE *f)
+fn_close (const struct file_handle *fh, FILE *f)
 {
+  const char *fn = fh_get_file_name (fh);
   if (fileno (f) == STDIN_FILENO
       || fileno (f) == STDOUT_FILENO
       || fileno (f) == STDERR_FILENO)
@@ -216,7 +240,6 @@ default_output_path (void)
     {
       /* Windows NT defines HOMEDRIVE and HOMEPATH.  But give preference
 	 to HOME, because the user can change HOME.  */
-
       const char *home_dir = getenv ("HOME");
       int i;
 

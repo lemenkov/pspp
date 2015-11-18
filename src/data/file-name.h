@@ -21,15 +21,28 @@
 #include <stdbool.h>
 #include <sys/types.h>
 
+struct file_handle ;
+
 char *fn_search_path (const char *base_name, char **path);
-char *fn_extension (const char *fn);
+char *fn_extension (const struct file_handle *);
 
-bool fn_is_absolute (const char *fn);
-bool fn_exists (const char *fn);
+bool fn_exists (const struct file_handle *);
 
-FILE *fn_open (const char *fn, const char *mode);
-int fn_close (const char *fn, FILE *file);
+
+FILE *fn_open (const struct file_handle *fn, const char *mode);
+int fn_close (const struct file_handle *fn, FILE *file);
 
 const char * default_output_path (void);
+
+#if defined _WIN32 || defined __WIN32__
+#define WIN32_LEAN_AND_MEAN  /* avoid including junk */
+#define UNICODE 1
+#include <windows.h>
+#else
+typedef char TCHAR;
+#endif
+
+TCHAR * convert_to_filename_encoding (const char *s, size_t len, const char *current_encoding);
+
 
 #endif /* file-name.h */

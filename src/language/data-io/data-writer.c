@@ -218,7 +218,7 @@ dfm_close_writer (struct dfm_writer *w)
   if (w->file != NULL)
     {
       const char *file_name = fh_get_file_name (w->fh);
-      ok = !dfm_write_error (w) && !fn_close (file_name, w->file);
+      ok = !dfm_write_error (w) && !fn_close (w->fh, w->file);
 
       if (!ok)
         msg (ME, _("I/O error occurred writing data file `%s'."), file_name);

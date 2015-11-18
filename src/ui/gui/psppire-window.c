@@ -30,6 +30,7 @@
 #define N_(msgid) msgid
 
 #include "data/any-reader.h"
+#include "data/file-handle-def.h"
 #include "data/dataset.h"
 #include "libpspp/version.h"
 
@@ -778,19 +779,22 @@ psppire_window_open (PsppireWindow *de)
 	gchar *name =
 	  gtk_file_chooser_get_filename (GTK_FILE_CHOOSER (dialog));
 
-	gchar *sysname = convert_glib_filename_to_system_filename (name, NULL);
+	const gchar **cs = NULL;
+	g_get_filename_charsets (&cs);
 
         gchar *encoding = psppire_encoding_selector_get_encoding (
           gtk_file_chooser_get_extra_widget (GTK_FILE_CHOOSER (dialog)));
 
-        int retval = any_reader_detect (sysname, NULL);
+	struct file_handle *fh = fh_create_file (NULL, name, cs[0], fh_default_properties ());
+
+        int retval = any_reader_detect (fh, NULL);
 	if (retval == 1)
           open_data_window (de, name, encoding, NULL);
 	else if (retval == 0)
 	  open_syntax_window (name, encoding);
 
         g_free (encoding);
-	g_free (sysname);
+	fh_unref (fh);
 	g_free (name);
       }
       break;

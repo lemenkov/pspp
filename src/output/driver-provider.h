@@ -25,6 +25,7 @@
 
 struct output_item;
 struct string_map;
+struct file_handle;
 
 /* A configured output driver. */
 struct output_driver
@@ -36,7 +37,8 @@ struct output_driver
 
 void output_driver_init (struct output_driver *,
                          const struct output_driver_class *,
-                         const char *name, enum settings_output_devices);
+                         const char *, enum settings_output_devices);
+
 void output_driver_destroy (struct output_driver *);
 
 const char *output_driver_get_name (const struct output_driver *);
@@ -98,7 +100,7 @@ struct output_driver_factory
        The returned driver should not have been registered (with
        output_driver_register).  The caller will register the driver (if this
        is desirable). */
-    struct output_driver *(*create) (const char *name,
+    struct output_driver *(*create) (struct file_handle *,
                                      enum settings_output_devices type,
                                      struct string_map *options);
   };

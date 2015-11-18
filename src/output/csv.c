@@ -20,6 +20,7 @@
 #include <stdlib.h>
 
 #include "data/file-name.h"
+#include "data/file-handle-def.h"
 #include "libpspp/assertion.h"
 #include "libpspp/compiler.h"
 #include "libpspp/message.h"
@@ -49,7 +50,7 @@ struct csv_driver
     bool titles;                /* Print table titles? */
     bool captions;              /* Print table captions? */
 
-    char *file_name;            /* Output file name. */
+    struct file_handle *handle;
     char *command_name;         /* Current command. */
     FILE *file;                 /* Output file. */
     int n_items;                /* Number of items output so far. */
@@ -72,7 +73,7 @@ opt (struct output_driver *d, struct string_map *options, const char *key,
 }
 
 static struct output_driver *
-csv_create (const char *file_name, enum settings_output_devices device_type,
+csv_create (struct file_handle *fh, enum settings_output_devices device_type,
             struct string_map *o)
 {
   struct output_driver *d;
@@ -81,7 +82,7 @@ csv_create (const char *file_name, enum settings_output_devices device_type,
 
   csv = xzalloc (sizeof *csv);
   d = &csv->driver;
-  output_driver_init (&csv->driver, &csv_driver_class, file_name, device_type);
+  output_driver_init (&csv->driver, &csv_driver_class, fh_get_file_name (fh), device_type);
 
   csv->separator = parse_string (opt (d, o, "separator", ","));
   quote = parse_string (opt (d, o, "quote", "\""));
@@ -90,13 +91,13 @@ csv_create (const char *file_name, enum settings_output_devices device_type,
   csv->quote_set = xasprintf ("\n\r\t%s%c", csv->separator, csv->quote);
   csv->titles = parse_boolean (opt (d, o, "titles", "true"));
   csv->captions = parse_boolean (opt (d, o, "captions", "true"));
-  csv->file_name = xstrdup (file_name);
-  csv->file = fn_open (csv->file_name, "w");
+  csv->handle = fh;
+  csv->file = fn_open (fh, "w");
   csv->n_items = 0;
 
   if (csv->file == NULL)
     {
-      msg_error (errno, _("error opening output file `%s'"), csv->file_name);
+      msg_error (errno, _("error opening output file `%s'"), fh_get_file_name (fh));
       output_driver_destroy (d);
       return NULL;
     }
@@ -110,11 +111,11 @@ csv_destroy (struct output_driver *driver)
   struct csv_driver *csv = csv_driver_cast (driver);
 
   if (csv->file != NULL)
-    fn_close (csv->file_name, csv->file);
+    fn_close (csv->handle, csv->file);
 
   free (csv->separator);
   free (csv->quote_set);
-  free (csv->file_name);
+  fh_unref (csv->handle);
   free (csv);
 }
 

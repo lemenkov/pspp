@@ -170,7 +170,7 @@ pfm_close (struct any_reader *r_)
   any_read_info_destroy (&r->info);
   if (r->file)
     {
-      if (fn_close (fh_get_file_name (r->fh), r->file) == EOF)
+      if (fn_close (r->fh, r->file) == EOF)
         {
           msg (ME, _("Error closing portable file `%s': %s."),
                fh_get_file_name (r->fh), strerror (errno));
@@ -288,7 +288,7 @@ pfm_open (struct file_handle *fh)
     goto error;
 
   /* Open file. */
-  r->file = fn_open (fh_get_file_name (r->fh), "rb");
+  r->file = fn_open (r->fh, "rb");
   if (r->file == NULL)
     {
       msg (ME, _("An error occurred while opening `%s' for reading "

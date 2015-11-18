@@ -24,7 +24,6 @@
 #include <string.h>
 
 #include "data/dataset.h"
-#include "data/file-name.h"
 #include "data/variable.h"
 #include "libpspp/cast.h"
 #include "libpspp/compiler.h"

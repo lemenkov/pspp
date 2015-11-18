@@ -45,7 +45,6 @@
 
 #if defined _WIN32 || defined __WIN32__
 #define WIN32_LEAN_AND_MEAN  /* avoid including junk */
-#define UNICODE 1
 #include <windows.h>
 #define TS_stat _stat
 #define Tunlink _wunlink
@@ -149,7 +148,7 @@ Trename (TCHAR const *src, TCHAR const *dst)
   return -1;
 }
 
-static TCHAR * 
+TCHAR * 
 convert_to_filename_encoding (const char *s, size_t len, const char *current_encoding)
 {
   const char *enc = current_encoding;
@@ -168,7 +167,7 @@ typedef char TCHAR;
 #define Topen open
 #define Tstat stat
 
-static TCHAR * 
+TCHAR * 
 convert_to_filename_encoding (const char *s, size_t len UNUSED, const char *current_encoding UNUSED)
 {
   /* Non-windows systems don't care about the encoding.  

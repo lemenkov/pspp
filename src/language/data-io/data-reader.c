@@ -95,7 +95,7 @@ dfm_close_reader (struct dfm_reader *r)
 
   /* This was the last client, so close the underlying file. */
   if (fh_get_referent (r->fh) != FH_REF_INLINE)
-    fn_close (fh_get_file_name (r->fh), r->file);
+    fn_close (r->fh, r->file);
   else
     {
       /* Skip any remaining data on the inline file. */
@@ -157,7 +157,7 @@ dfm_open_reader (struct file_handle *fh, struct lexer *lexer,
     {
       struct stat s;
       r->line_number = 0;
-      r->file = fn_open (fh_get_file_name (fh), "rb");
+      r->file = fn_open (fh, "rb");
       if (r->file == NULL)
         {
           msg (ME, _("Could not open `%s' for reading as a data file: %s."),

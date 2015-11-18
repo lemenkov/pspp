@@ -64,8 +64,6 @@
 #include "gl/relocatable.h"
 
 static void create_icon_factory (void);
-static gchar *local_to_filename_encoding (const char *fn);
-
 
 #define _(msgid) gettext (msgid)
 #define N_(msgid) msgid
@@ -130,9 +128,13 @@ initialize (const struct init_source *is)
       {
       if (is->file)
 	{
-	  gchar *filename = local_to_filename_encoding (is->file);
+	  const gchar *local_encoding = NULL;
+	  g_get_charset (&local_encoding);
 
-	  int retval = any_reader_detect (filename, NULL);
+	  struct file_handle *fh = fh_create_file (NULL, is->file, local_encoding, fh_default_properties ());
+	  const char *filename = fh_get_file_name (fh);
+
+	  int retval = any_reader_detect (fh, NULL);
 
 	  /* Check to see if the file is a .sav or a .por file.  If not
 	     assume that it is a syntax file */
@@ -143,7 +145,8 @@ initialize (const struct init_source *is)
 	      create_data_window ();
 	      open_syntax_window (filename, NULL);
 	    }
-	  g_free (filename);
+
+	  fh_unref (fh);
 	}
       else
 	{
@@ -328,67 +331,8 @@ create_icon_factory (void)
 
   gtk_icon_factory_add_default (factory);
 }
+
 
-/* 
-   Convert a filename from the local encoding into "filename" encoding.
-   The return value will be allocated on the heap.  It is the responsibility
-   of the caller to free it.
- */
-static gchar *
-local_to_filename_encoding (const char *fn)
-{
-  gchar *filename = NULL;
-  gchar *utf8 = NULL;
-  const gchar *local_encoding = NULL;
-  gsize written = -1;
-  const gboolean local_is_utf8 = g_get_charset (&local_encoding);
-
-  /* There seems to be no Glib function to convert from local encoding
-     to filename encoding.  Therefore it has to be done in two steps:
-     the intermediate encoding is UTF8.
-
-     Either step could fail.  However, in many cases the file can still
-     be loaded even if the conversion fails. So in those cases, after showing
-     a warning, we simply copy the locally encoded filename to the destination
-     and hope for the best.
-  */
-
-  if ( local_is_utf8)
-    {
-      utf8 = xstrdup (fn);
-    }
-  else
-    {
-      GError *err = NULL;
-      utf8 = g_locale_to_utf8 (fn, -1, NULL, &written, &err);
-      if ( NULL == utf8)
-        {
-          g_warning ("Cannot convert filename from local encoding `%s' to UTF-8: %s",
-                     local_encoding,
-                     err->message);
-          g_clear_error (&err);
-        }
-    }
-
-  if ( NULL != utf8)
-    {
-      GError *err = NULL;
-      filename = g_filename_from_utf8 (utf8, written, NULL, NULL, &err);
-      if ( NULL == filename)
-        {
-          g_warning ("Cannot convert filename from UTF8 to filename encoding: %s",
-                     err->message);
-          g_clear_error (&err);
-        }
-    }
-
-  g_free (utf8);
-
-  if ( filename == NULL)
-    filename = xstrdup (fn);
-
-  return filename;
-}
 
 static void
 handle_msg (const struct msg *m_, void *lexer_)

@@ -51,7 +51,7 @@ static const struct any_reader_class *classes[] =
 enum { N_CLASSES = sizeof classes / sizeof *classes };
 
 int
-any_reader_detect (const char *file_name,
+any_reader_detect (const struct file_handle *file_handle,
                    const struct any_reader_class **classp)
 {
   struct detector
@@ -66,11 +66,11 @@ any_reader_detect (const char *file_name,
   if (classp)
     *classp = NULL;
 
-  file = fn_open (file_name, "rb");
+  file = fn_open (file_handle, "rb");
   if (file == NULL)
     {
       msg (ME, _("An error occurred while opening `%s': %s."),
-           file_name, strerror (errno));
+           fh_get_file_name (file_handle), strerror (errno));
       return -errno;
     }
 
@@ -90,9 +90,9 @@ any_reader_detect (const char *file_name,
     }
 
   if (retval < 0)
-    msg (ME, _("Error reading `%s': %s."), file_name, strerror (-retval));
+    msg (ME, _("Error reading `%s': %s."), fh_get_file_name (file_handle), strerror (-retval));
 
-  fn_close (file_name, file);
+  fn_close (file_handle, file);
 
   return retval;
 }
@@ -107,7 +107,7 @@ any_reader_open (struct file_handle *handle)
         const struct any_reader_class *class;
         int retval;
 
-        retval = any_reader_detect (fh_get_file_name (handle), &class);
+        retval = any_reader_detect (handle, &class);
         if (retval <= 0)
           {
             if (retval == 0)

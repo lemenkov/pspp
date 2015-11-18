@@ -23,8 +23,9 @@
 /* Reading encrypted SPSS files. */
 
 struct encrypted_file;
+struct file_handle;
 
-int encrypted_file_open (struct encrypted_file **, const char *filename);
+int encrypted_file_open (struct encrypted_file **, const struct file_handle *);
 bool encrypted_file_unlock (struct encrypted_file *, const char *password);
 size_t encrypted_file_read (struct encrypted_file *, void *, size_t);
 int encrypted_file_close (struct encrypted_file *);

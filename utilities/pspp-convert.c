@@ -47,8 +47,8 @@
 static void usage (void);
 
 static void decrypt_file (struct encrypted_file *enc,
-                          const char *input_filename,
-                          const char *output_filename,
+                          const struct file_handle *input_filename,
+                          const struct file_handle *output_filename,
                           const char *password);
 
 int
@@ -135,6 +135,8 @@ main (int argc, char *argv[])
 
   input_filename = argv[optind];
   output_filename = argv[optind + 1];
+  input_fh = fh_create_file (NULL, input_filename, NULL, fh_default_properties ());
+
   if (output_format == NULL)
     {
       const char *dot = strrchr (output_filename, '.');
@@ -145,7 +147,8 @@ main (int argc, char *argv[])
       output_format = dot + 1;
     }
 
-  if (encrypted_file_open (&enc, input_filename) > 0)
+  output_fh = fh_create_file (NULL, output_filename, NULL, fh_default_properties ());
+  if (encrypted_file_open (&enc, input_fh) > 0)
     {
       if (encrypted_file_is_sav (enc))
         {
@@ -160,16 +163,16 @@ main (int argc, char *argv[])
                            "format"));
         }
 
-      decrypt_file (enc, input_filename, output_filename, password);
+      decrypt_file (enc, input_fh, output_fh, password);
       goto exit;
     }
 
-  input_fh = fh_create_file (NULL, input_filename, NULL, fh_default_properties ());
+
   reader = any_reader_open_and_decode (input_fh, encoding, &dict, NULL);
   if (reader == NULL)
     exit (1);
 
-  output_fh = fh_create_file (NULL, output_filename, NULL, fh_default_properties ());
+
   if (!strcmp (output_format, "csv") || !strcmp (output_format, "txt"))
     {
       struct csv_writer_options options;
@@ -224,12 +227,14 @@ exit:
 
 static void
 decrypt_file (struct encrypted_file *enc,
-              const char *input_filename,
-              const char *output_filename,
+	      const struct file_handle *ifh,
+	      const struct file_handle *ofh,
               const char *password)
 {
   FILE *out;
   int err;
+  const char *input_filename = fh_get_file_name (ifh);
+  const char *output_filename = fh_get_file_name (ofh);
 
   if (password == NULL)
     {
@@ -241,7 +246,7 @@ decrypt_file (struct encrypted_file *enc,
   if (!encrypted_file_unlock (enc, password))
     error (1, 0, _("sorry, wrong password"));
 
-  out = fn_open (output_filename, "wb");
+  out = fn_open (ofh, "wb");
   if (out == NULL)
     error (1, errno, ("%s: error opening output file"), output_filename);
 
@@ -264,7 +269,7 @@ decrypt_file (struct encrypted_file *enc,
 
   if (fflush (out) == EOF)
     error (1, errno, ("%s: write error"), output_filename);
-  fn_close (output_filename, out);
+  fn_close (ofh, out);
 }
 
 static void
