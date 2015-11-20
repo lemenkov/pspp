@@ -33,7 +33,6 @@
 #include "data/casewriter.h"
 #include "data/dictionary.h"
 #include "data/file-handle-def.h"
-#include "data/file-name.h"
 #include "data/format.h"
 #include "data/make-file.h"
 #include "data/missing-values.h"

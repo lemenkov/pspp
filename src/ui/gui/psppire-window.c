@@ -30,7 +30,6 @@
 #define N_(msgid) msgid
 
 #include "data/any-reader.h"
-#include "data/file-name.h"
 #include "data/dataset.h"
 #include "libpspp/version.h"
 

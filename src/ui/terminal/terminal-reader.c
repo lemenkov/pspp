@@ -52,7 +52,6 @@ static int rl_end;
 #include <stdint.h>
 #include <stdlib.h>
 
-#include "data/file-name.h"
 #include "data/settings.h"
 #include "language/command.h"
 #include "language/lexer/lexer.h"

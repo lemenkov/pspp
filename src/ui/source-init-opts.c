@@ -22,7 +22,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "data/file-name.h"
 #include "data/settings.h"
 #include "language/lexer/include-path.h"
 #include "language/lexer/lexer.h"

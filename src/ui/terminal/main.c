@@ -33,7 +33,6 @@
 #include "data/dataset.h"
 #include "data/dictionary.h"
 #include "data/file-handle-def.h"
-#include "data/file-name.h"
 #include "data/session.h"
 #include "data/settings.h"
 #include "data/variable.h"

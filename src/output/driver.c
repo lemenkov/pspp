@@ -25,7 +25,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "data/file-name.h"
 #include "data/settings.h"
 #include "libpspp/array.h"
 #include "libpspp/assertion.h"

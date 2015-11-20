@@ -23,7 +23,6 @@
 #include <unistd.h>
 
 #include "data/dataset.h"
-#include "data/file-name.h"
 #include "data/session.h"
 #include "language/command.h"
 #include "language/lexer/include-path.h"

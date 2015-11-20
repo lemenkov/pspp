@@ -24,7 +24,6 @@
 
 
 #include "data/settings.h"
-#include "data/file-name.h"
 #include "language/lexer/include-path.h"
 #include "libpspp/argv-parser.h"
 #include "libpspp/assertion.h"

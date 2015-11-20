@@ -30,7 +30,6 @@
 #include <unistr.h>
 #include <uniwidth.h>
 
-#include "data/file-name.h"
 #include "language/command.h"
 #include "language/lexer/scan.h"
 #include "language/lexer/segment.h"
