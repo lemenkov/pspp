@@ -190,20 +190,6 @@ matrix_mindist (const gsl_matrix *m, int *mn, int *mm)
 }
 
 
-static void
-dump_matrix (const gsl_matrix *m)
-{
-  size_t i, j;
-
-  for (i = 0 ; i < m->size1; ++i)
-    {
-      for (j = 0 ; j < m->size2; ++j)
-	printf ("%02f ", gsl_matrix_get (m, i, j));
-      printf ("\n");
-    }
-}
-
-
 /* Return the distance of C from the group whose index is WHICH */
 static double
 dist_from_case (const struct Kmeans *kmeans, const struct ccase *c, const struct qc *qc, int which)
