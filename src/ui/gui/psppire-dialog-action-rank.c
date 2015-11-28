@@ -212,7 +212,13 @@ psppire_dialog_action_rank_activate (GtkAction *a)
   PsppireDialogAction *pda = PSPPIRE_DIALOG_ACTION (a);
   PsppireDialogActionRank *act = PSPPIRE_DIALOG_ACTION_RANK (a);
 
-  GtkBuilder *xml = builder_new ("rank.ui");
+  GHashTable *thing = psppire_dialog_action_get_pointer (pda);
+  GtkBuilder *xml = g_hash_table_lookup (thing, a);
+  if (!xml)
+    {
+      xml = builder_new ("rank.ui");
+      g_hash_table_insert (thing, a, xml);
+    }
 
   GtkWidget *types_button = get_widget_assert (xml, "button1");
   GtkWidget *ties_button = get_widget_assert (xml, "button2");
@@ -293,8 +299,6 @@ psppire_dialog_action_rank_activate (GtkAction *a)
   psppire_dialog_action_set_refresh (pda, dialog_refresh);
 
   PSPPIRE_DIALOG_ACTION_CLASS (psppire_dialog_action_rank_parent_class)->activate (pda);
-  
-  g_object_unref (xml);
 }
 
 static void

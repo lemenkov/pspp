@@ -301,7 +301,13 @@ psppire_dialog_action_factor_activate (GtkAction *a)
   GtkWidget *extraction_button ;
   GtkWidget *rotation_button ;
 
-  GtkBuilder *xml = builder_new ("factor.ui");
+  GHashTable *thing = psppire_dialog_action_get_pointer (pda);
+  GtkBuilder *xml = g_hash_table_lookup (thing, a);
+  if (!xml)
+    {
+      xml = builder_new ("factor.ui");
+      g_hash_table_insert (thing, a, xml);
+    }
 
   pda->dialog = get_widget_assert   (xml, "factor-dialog");
   pda->source = get_widget_assert   (xml, "dict-view");
@@ -364,8 +370,6 @@ psppire_dialog_action_factor_activate (GtkAction *a)
   psppire_dialog_action_set_refresh (pda, dialog_refresh);
 
   PSPPIRE_DIALOG_ACTION_CLASS (psppire_dialog_action_factor_parent_class)->activate (pda);
-  
-  g_object_unref (xml);
 }
 
 static void

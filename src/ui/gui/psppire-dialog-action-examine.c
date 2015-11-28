@@ -203,7 +203,13 @@ psppire_dialog_action_examine_activate (GtkAction *a)
   PsppireDialogAction *pda = PSPPIRE_DIALOG_ACTION (a);
   PsppireDialogActionExamine *act = PSPPIRE_DIALOG_ACTION_EXAMINE (a);
 
-  GtkBuilder *xml = builder_new ("examine.ui");
+  GHashTable *thing = psppire_dialog_action_get_pointer (pda);
+  GtkBuilder *xml = g_hash_table_lookup (thing, a);
+  if (!xml)
+    {
+      xml = builder_new ("examine.ui");
+      g_hash_table_insert (thing, a, xml);
+    }
 
   GtkWidget *stats_button = get_widget_assert (xml, "stats-button");
   GtkWidget *opts_button = get_widget_assert (xml, "opts-button");
@@ -255,9 +261,7 @@ psppire_dialog_action_examine_activate (GtkAction *a)
  
   PSPPIRE_DIALOG_ACTION_CLASS (psppire_dialog_action_examine_parent_class)->activate (pda);
 
-
   g_list_free (list);
-  g_object_unref (xml);
 }
 
 static void

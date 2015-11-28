@@ -259,7 +259,13 @@ psppire_dialog_action_frequencies_activate (GtkAction * a)
   PsppireDialogActionFrequencies *act = PSPPIRE_DIALOG_ACTION_FREQUENCIES (a);
   PsppireDialogAction *pda = PSPPIRE_DIALOG_ACTION (a);
 
-  GtkBuilder *xml = builder_new ("frequencies.ui");
+  GHashTable *thing = psppire_dialog_action_get_pointer (pda);
+  GtkBuilder *xml = g_hash_table_lookup (thing, a);
+  if (!xml)
+    {
+      xml = builder_new ("frequencies.ui");
+      g_hash_table_insert (thing, a, xml);
+    }
 
   GtkWidget *stats_treeview = get_widget_assert (xml, "stats-treeview");
   GtkWidget *tables_button = get_widget_assert (xml, "tables-button");
@@ -326,10 +332,6 @@ psppire_dialog_action_frequencies_activate (GtkAction * a)
   act->pie_include_missing = get_widget_assert (xml, "pie-include-missing");
 
   act->bar =  (get_widget_assert (xml, "bar"));
-
-
-  g_object_unref (xml);
-
 
   act->tables_opts_order = FRQ_AVALUE;
   act->tables_opts_table = FRQ_TABLE;

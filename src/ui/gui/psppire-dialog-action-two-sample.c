@@ -174,7 +174,14 @@ psppire_dialog_action_two_sample_activate (GtkAction *a)
   PsppireDialogAction *pda = PSPPIRE_DIALOG_ACTION (a);
   PsppireDialogActionTwoSample *act = PSPPIRE_DIALOG_ACTION_TWO_SAMPLE (a);
 
-  GtkBuilder *xml = builder_new ("paired-samples.ui");
+  GHashTable *thing = psppire_dialog_action_get_pointer (pda);
+  GtkBuilder *xml = g_hash_table_lookup (thing, a);
+  if (!xml)
+    {
+      xml = builder_new ("paired-samples.ui");
+      g_hash_table_insert (thing, a, xml);
+    }
+
   GtkWidget *selector = get_widget_assert (xml, "psppire-selector3");
 
   pda->dialog = get_widget_assert   (xml, "t-test-paired-samples-dialog");
@@ -222,8 +229,6 @@ psppire_dialog_action_two_sample_activate (GtkAction *a)
 				    select_as_pair_member,
 				    act);
   
-  g_object_unref (xml);
-
   if (PSPPIRE_DIALOG_ACTION_CLASS (psppire_dialog_action_two_sample_parent_class)->activate)
     PSPPIRE_DIALOG_ACTION_CLASS (psppire_dialog_action_two_sample_parent_class)->activate (pda);
 }

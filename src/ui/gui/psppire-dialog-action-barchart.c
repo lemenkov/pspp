@@ -120,7 +120,14 @@ psppire_dialog_action_barchart_activate (GtkAction *a)
   PsppireDialogActionBarchart *act = PSPPIRE_DIALOG_ACTION_BARCHART (a);
   PsppireDialogAction *pda = PSPPIRE_DIALOG_ACTION (a);
 
-  GtkBuilder *xml = builder_new ("barchart.ui");
+  GHashTable *thing = psppire_dialog_action_get_pointer (pda);
+  GtkBuilder *xml = g_hash_table_lookup (thing, a);
+  if (!xml)
+    {
+      xml = builder_new ("barchart.ui");
+      g_hash_table_insert (thing, a, xml);
+    }
+
   pda->dialog = get_widget_assert (xml, "barchart-dialog");
   pda->source = get_widget_assert (xml, "dict-view");
 
@@ -138,15 +145,13 @@ psppire_dialog_action_barchart_activate (GtkAction *a)
 
   populate_combo_model (GTK_COMBO_BOX(act->combobox));
   
-  g_object_unref (xml);
-
   g_signal_connect_swapped (act->button_summary_func, "toggled",
 			    G_CALLBACK (on_summary_toggle), act);
 
   psppire_dialog_action_set_refresh (pda, refresh);
 
   psppire_dialog_action_set_valid_predicate (pda,
-					dialog_state_valid);
+					     dialog_state_valid);
 
   if (PSPPIRE_DIALOG_ACTION_CLASS (psppire_dialog_action_barchart_parent_class)->activate)
     PSPPIRE_DIALOG_ACTION_CLASS (psppire_dialog_action_barchart_parent_class)->activate (pda);

@@ -84,29 +84,73 @@ psppire_dialog_action_get_property (GObject    *object,
 
 
 static void
+set_toplevel (PsppireDialogAction *act)
+{
+  if (act->toplevel)
+    return;
+
+  GSList *sl = gtk_ui_manager_get_toplevels (act->uim, GTK_UI_MANAGER_MENUBAR | GTK_UI_MANAGER_TOOLBAR);
+  g_return_if_fail (sl);
+  
+  act->toplevel = gtk_widget_get_toplevel (GTK_WIDGET (sl->data));
+  g_slist_free (sl);
+}
+
+static void
+on_destroy_dataset (GObject *w)
+{
+  GHashTable *t = g_object_get_data (w, "thing-table");
+  GSList *dl = g_object_get_data (w, "widget-list");
+  
+  g_slist_free_full (dl, (GDestroyNotify) gtk_widget_destroy);
+  g_hash_table_unref (t);
+}
+
+GHashTable *
+psppire_dialog_action_get_pointer (PsppireDialogAction *act)
+{
+  set_toplevel (act);
+  
+  GHashTable *thing = g_object_get_data (G_OBJECT (act->toplevel), "thing-table");
+  if (thing == NULL)
+    {
+      thing = g_hash_table_new_full (g_direct_hash, g_direct_equal, 0, g_object_unref);
+      g_object_set_data (G_OBJECT (act->toplevel), "thing-table", thing);
+      g_object_set_data (G_OBJECT (act->toplevel), "widget-list", NULL);
+      g_signal_connect (act->toplevel, "destroy", G_CALLBACK (on_destroy_dataset), NULL);
+    }
+
+  return thing;
+}
+
+static void
 psppire_dialog_action_activate (PsppireDialogAction *act)
 {
   gint response;
 
   PsppireDialogActionClass *class = PSPPIRE_DIALOG_ACTION_GET_CLASS (act);
 
-  GSList *sl = gtk_ui_manager_get_toplevels (act->uim, GTK_UI_MANAGER_MENUBAR | GTK_UI_MANAGER_TOOLBAR);
-  g_return_if_fail (sl);
+  gboolean first_time = ! act->toplevel;
 
-  act->toplevel = gtk_widget_get_toplevel (GTK_WIDGET (sl->data));
-  g_slist_free (sl);
+  set_toplevel (act);
 
   act->dict = PSPPIRE_DATA_WINDOW(act->toplevel)->dict;
   
   g_object_set (act->source, "model", act->dict, NULL);
-  
-  gtk_window_set_transient_for (GTK_WINDOW (act->dialog), GTK_WINDOW (act->toplevel));
 
+  GSList *wl = g_object_get_data (G_OBJECT (act->toplevel), "widget-list");
+  wl = g_slist_prepend (wl, act->dialog);
+  g_object_set_data (G_OBJECT (act->toplevel), "widget-list", wl);
+
+  gtk_window_set_transient_for (GTK_WINDOW (act->dialog), GTK_WINDOW (act->toplevel));
 
   if (GTK_ACTION_CLASS (psppire_dialog_action_parent_class)->activate)
     GTK_ACTION_CLASS (psppire_dialog_action_parent_class)->activate ( GTK_ACTION (act));
 
   gtk_widget_grab_focus (act->source);
+
+  if (first_time)
+    psppire_dialog_reload (PSPPIRE_DIALOG (act->dialog));
 
   response = psppire_dialog_run (PSPPIRE_DIALOG (act->dialog));
 
@@ -125,8 +169,6 @@ psppire_dialog_action_activate (PsppireDialogAction *act)
 	  break;
 	}
     }
-
-  gtk_widget_destroy (act->dialog);
 }
 
 static void

@@ -192,22 +192,29 @@ dialog_refresh (PsppireDialogAction *scd_)
   gtk_toggle_button_set_active (scd->save_z_scores, false);
 }
 
+
 static void
 psppire_dialog_action_descriptives_activate (GtkAction *a)
 {
   PsppireDialogAction *pda = PSPPIRE_DIALOG_ACTION (a);
   PsppireDialogActionDescriptives *act = PSPPIRE_DIALOG_ACTION_DESCRIPTIVES (a);
 
-  GtkBuilder *xml = builder_new ("descriptives.ui");
+  GHashTable *thing = psppire_dialog_action_get_pointer (pda);
+  GtkBuilder *xml = g_hash_table_lookup (thing, a);
+  if (!xml)
+    {
+      xml = builder_new ("descriptives.ui");
+      g_hash_table_insert (thing, a, xml);
+    }
 
-  GtkWidget *stats_treeview = get_widget_assert    (xml, "statistics");
+  GtkWidget *stats_treeview = get_widget_assert (xml, "statistics");
 
   pda->dialog = get_widget_assert   (xml, "descriptives-dialog");
   pda->source = get_widget_assert   (xml, "all-variables");
   act->variables =   get_widget_assert   (xml, "stat-variables");
 
   g_object_set (pda->source,
-	"predicate", var_is_numeric, NULL);
+		"predicate", var_is_numeric, NULL);
 
   psppire_checkbox_treeview_populate (PSPPIRE_CHECKBOX_TREEVIEW (stats_treeview),
 				      B_DS_DEFAULT,
@@ -227,8 +234,6 @@ psppire_dialog_action_descriptives_activate (GtkAction *a)
   psppire_dialog_action_set_refresh (pda, dialog_refresh);
 
   PSPPIRE_DIALOG_ACTION_CLASS (psppire_dialog_action_descriptives_parent_class)->activate (pda);
-
-  g_object_unref (xml);
 }
 
 static void

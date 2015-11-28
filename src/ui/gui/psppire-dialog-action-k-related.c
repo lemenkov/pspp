@@ -110,7 +110,14 @@ psppire_dialog_action_k_related_activate (GtkAction *a)
   PsppireDialogAction *pda = PSPPIRE_DIALOG_ACTION (a);
   PsppireDialogActionKRelated *act = PSPPIRE_DIALOG_ACTION_K_RELATED (a);
 
-  GtkBuilder *xml = builder_new ("k-related.ui");
+  GHashTable *thing = psppire_dialog_action_get_pointer (pda);
+  GtkBuilder *xml = g_hash_table_lookup (thing, a);
+  if (!xml)
+    {
+      xml = builder_new ("k-related.ui");
+      g_hash_table_insert (thing, a, xml);
+    }
+
   pda->dialog = get_widget_assert   (xml, "k-related-dialog");
   pda->source = get_widget_assert   (xml, "dict-view");
 
@@ -125,8 +132,6 @@ psppire_dialog_action_k_related_activate (GtkAction *a)
   g_object_set (pda->source,
 		"predicate", var_is_numeric,
 		NULL);
-
-  g_object_unref (xml);
 
   if (PSPPIRE_DIALOG_ACTION_CLASS (psppire_dialog_action_k_related_parent_class)->activate)
     PSPPIRE_DIALOG_ACTION_CLASS (psppire_dialog_action_k_related_parent_class)->activate (pda);

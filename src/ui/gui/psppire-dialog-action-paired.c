@@ -155,7 +155,14 @@ psppire_dialog_action_paired_activate (GtkAction *a)
   PsppireDialogAction *pda = PSPPIRE_DIALOG_ACTION (a);
   PsppireDialogActionPaired *act = PSPPIRE_DIALOG_ACTION_PAIRED (a);
 
-  GtkBuilder *xml = builder_new ("paired-samples.ui");
+  GHashTable *thing = psppire_dialog_action_get_pointer (pda);
+  GtkBuilder *xml = g_hash_table_lookup (thing, a);
+  if (!xml)
+    {
+      xml = builder_new ("paired-samples.ui");
+      g_hash_table_insert (thing, a, xml);
+    }
+
   GtkWidget *selector = get_widget_assert (xml, "psppire-selector3");
   GtkWidget *bb = gtk_button_box_new (GTK_ORIENTATION_HORIZONTAL);
   GtkWidget *button = gtk_button_new_with_mnemonic (_("O_ptions..."));
@@ -192,8 +199,6 @@ psppire_dialog_action_paired_activate (GtkAction *a)
 				    select_as_pair_member,
 				    act);
   
-  g_object_unref (xml);
-
   if (PSPPIRE_DIALOG_ACTION_CLASS (psppire_dialog_action_paired_parent_class)->activate)
     PSPPIRE_DIALOG_ACTION_CLASS (psppire_dialog_action_paired_parent_class)->activate (pda);
 }

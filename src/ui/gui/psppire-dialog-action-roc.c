@@ -126,7 +126,15 @@ psppire_dialog_action_roc_activate (GtkAction *a)
   PsppireDialogActionRoc *act = PSPPIRE_DIALOG_ACTION_ROC (a);
   PsppireDialogAction *pda = PSPPIRE_DIALOG_ACTION (a);
 
-  GtkBuilder *xml = builder_new ("roc.ui");
+  GHashTable *thing = psppire_dialog_action_get_pointer (pda);
+  GtkBuilder *xml = g_hash_table_lookup (thing, a);
+  if (!xml)
+    {
+      xml = builder_new ("roc.ui");
+      g_hash_table_insert (thing, a, xml);
+    }
+
+
   pda->dialog = get_widget_assert   (xml, "roc-dialog");
   pda->source = get_widget_assert   (xml, "dict-view");
 
@@ -141,8 +149,6 @@ psppire_dialog_action_roc_activate (GtkAction *a)
 
   g_signal_connect_swapped (act->state_variable, "changed",
 			    G_CALLBACK (on_state_var_changed), act);
-
-  g_object_unref (xml);
 
   g_signal_connect (act->curve, "toggled",
 		    G_CALLBACK (on_curve_button_toggle), act);

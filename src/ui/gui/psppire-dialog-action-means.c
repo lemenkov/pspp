@@ -97,18 +97,24 @@ psppire_dialog_action_means_activate (GtkAction *a)
   PsppireDialogAction *pda = PSPPIRE_DIALOG_ACTION (a);
   PsppireDialogActionMeans *act = PSPPIRE_DIALOG_ACTION_MEANS (a);
 
-  GtkBuilder *xml = builder_new ("means.ui");
+  GHashTable *thing = psppire_dialog_action_get_pointer (pda);
+  GtkBuilder *xml = g_hash_table_lookup (thing, a);
+  if (!xml)
+    {
+      xml = builder_new ("means.ui");
+      g_hash_table_insert (thing, a, xml);
+    }
 
-  GtkWidget *vb =   get_widget_assert   (xml, "alignment3");
-  GtkWidget *selector = get_widget_assert   (xml, "layer-selector");
+  GtkWidget *vb =   get_widget_assert (xml, "alignment3");
+  GtkWidget *selector = get_widget_assert (xml, "layer-selector");
   
   act->layer = psppire_means_layer_new ();
   gtk_container_add (GTK_CONTAINER (vb), act->layer);
   gtk_widget_show (act->layer);
 
-  pda->dialog = get_widget_assert   (xml, "means-dialog");
-  pda->source = get_widget_assert   (xml, "all-variables");
-  act->variables = get_widget_assert   (xml, "stat-variables");
+  pda->dialog = get_widget_assert (xml, "means-dialog");
+  pda->source = get_widget_assert (xml, "all-variables");
+  act->variables = get_widget_assert (xml, "stat-variables");
 
   g_object_set (pda->source,
 		"predicate", var_is_numeric,
@@ -118,13 +124,10 @@ psppire_dialog_action_means_activate (GtkAction *a)
 		"dest-widget", act->layer,
 		NULL);
 
-
   psppire_dialog_action_set_valid_predicate (pda, (void *) dialog_state_valid);
   psppire_dialog_action_set_refresh (pda, dialog_refresh);
 
   PSPPIRE_DIALOG_ACTION_CLASS (psppire_dialog_action_means_parent_class)->activate (pda);
-
-  g_object_unref (xml);
 }
 
 static void

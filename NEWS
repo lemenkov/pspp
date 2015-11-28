@@ -13,13 +13,17 @@ Changes from 0.8.5 to 0.9.0:
 
  * A Russian localisation has been contributed.
 
- * The graphic user interface now has a Graphs menu to access the GRAPH
-   command.
-
  * The GRAPH command now has a /BAR subcommand to draw barcharts.
 
- * The graphical user interface uses Gtk+ version 3 instead of version 2.
-   Accordingly, it has a somewhat different look and feel.
+ * The graphical user interface (psppire) has been changed as follows:
+
+   - It now uses Gtk+ version 3 instead of version 2.  Accordingly, it has a 
+     somewhat different look and feel.
+
+   - There is now has a Graphs menu to access the GRAPH command.
+
+   - The status of dialog box widgets are now preserved between calls
+     to the same dialog box for the same dataset.
 
  * The pspp-convert utility can now decrypt encrypted syntax files.
    The encrypted syntax file format is unacceptably insecure, so to

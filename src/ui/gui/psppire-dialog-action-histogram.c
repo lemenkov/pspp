@@ -65,14 +65,19 @@ psppire_dialog_action_histogram_activate (GtkAction *a)
   PsppireDialogActionHistogram *act = PSPPIRE_DIALOG_ACTION_HISTOGRAM (a);
   PsppireDialogAction *pda = PSPPIRE_DIALOG_ACTION (a);
 
-  GtkBuilder *xml = builder_new ("histogram.ui");
+  GHashTable *thing = psppire_dialog_action_get_pointer (pda);
+  GtkBuilder *xml = g_hash_table_lookup (thing, a);
+  if (!xml)
+    {
+      xml = builder_new ("histogram.ui");
+      g_hash_table_insert (thing, a, xml);
+    }
+
   pda->dialog = get_widget_assert (xml, "histogram-dialog");
   pda->source = get_widget_assert (xml, "dict-view");
 
   act->variable = get_widget_assert (xml, "entry1");
   act->curve = get_widget_assert (xml, "curve");
-
-  g_object_unref (xml);
 
   psppire_dialog_action_set_refresh (pda, refresh);
 

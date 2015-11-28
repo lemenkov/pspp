@@ -123,7 +123,7 @@ psppire_checkbox_treeview_init (PsppireCheckboxTreeview *cbtv)
 						   G_TYPE_STRING));
 
   gtk_tree_view_set_model (GTK_TREE_VIEW (cbtv), cbtv->list);
-  g_object_unref (cbtv->list);
+  //  g_object_unref (cbtv->list);
 
   treeview_checkbox_populate (GTK_TREE_VIEW (cbtv));
 }

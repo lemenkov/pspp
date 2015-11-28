@@ -147,7 +147,14 @@ psppire_dialog_action_regression_activate (GtkAction *a)
   PsppireDialogActionRegression *act = PSPPIRE_DIALOG_ACTION_REGRESSION (a);
   PsppireDialogAction *pda = PSPPIRE_DIALOG_ACTION (a);
 
-  GtkBuilder *xml = builder_new ("regression.ui");
+  GHashTable *thing = psppire_dialog_action_get_pointer (pda);
+  GtkBuilder *xml = g_hash_table_lookup (thing, a);
+  if (!xml)
+    {
+      xml = builder_new ("regression.ui");
+      g_hash_table_insert (thing, a, xml);
+    }
+
   GtkWidget *stat_button = get_widget_assert (xml, "stat-button");
   GtkWidget *save_button = get_widget_assert (xml, "save-button");
 
@@ -161,8 +168,6 @@ psppire_dialog_action_regression_activate (GtkAction *a)
   act->save_dialog = get_widget_assert (xml, "save-dialog");
   act->pred_button = get_widget_assert (xml, "pred-button");
   act->resid_button = get_widget_assert (xml, "resid-button");
-
-  g_object_unref (xml);
 
   psppire_checkbox_treeview_populate (PSPPIRE_CHECKBOX_TREEVIEW (act->stat_view),
   				  B_RG_STATS_DEFAULT,

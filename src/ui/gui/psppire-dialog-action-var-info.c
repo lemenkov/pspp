@@ -169,7 +169,14 @@ psppire_dialog_action_var_info_activate (GtkAction *a)
   PsppireDialogAction *pda = PSPPIRE_DIALOG_ACTION (a);
   PsppireDialogActionVarInfo *act = PSPPIRE_DIALOG_ACTION_VAR_INFO (pda);
 
-  GtkBuilder *xml = builder_new ("variable-info.ui");
+  GHashTable *thing = psppire_dialog_action_get_pointer (pda);
+  GtkBuilder *xml = g_hash_table_lookup (thing, a);
+  if (!xml)
+    {
+      xml = builder_new ("variable-info.ui");
+      g_hash_table_insert (thing, a, xml);
+    }
+
   act->output = psppire_output_view_new (
     GTK_LAYOUT (get_widget_assert (xml, "layout1")), NULL, NULL, NULL);
 
@@ -184,14 +191,11 @@ psppire_dialog_action_var_info_activate (GtkAction *a)
                     "changed", G_CALLBACK (populate_output),
 		    act);
 
-
   g_signal_connect (pda->dialog, "response", G_CALLBACK (jump_to),
 		    pda);
 
   psppire_dialog_action_set_valid_predicate (pda,
 					     treeview_item_selected);
-
-  g_object_unref (xml);
 
   if (PSPPIRE_DIALOG_ACTION_CLASS (psppire_dialog_action_var_info_parent_class)->activate)
     PSPPIRE_DIALOG_ACTION_CLASS (psppire_dialog_action_var_info_parent_class)->activate (pda);

@@ -86,7 +86,14 @@ psppire_dialog_action_kmeans_activate (GtkAction *a)
 {
   PsppireDialogActionKmeans *act = PSPPIRE_DIALOG_ACTION_KMEANS (a);
   PsppireDialogAction *pda = PSPPIRE_DIALOG_ACTION (a);
-  GtkBuilder *xml = builder_new ("k-means.ui");
+
+  GHashTable *thing = psppire_dialog_action_get_pointer (pda);
+  GtkBuilder *xml = g_hash_table_lookup (thing, a);
+  if (!xml)
+    {
+      xml = builder_new ("k-means.ui");
+      g_hash_table_insert (thing, a, xml);
+    }
 
   pda->dialog = get_widget_assert   (xml, "k-means-dialog");
   pda->source = get_widget_assert   (xml, "dict-view");
@@ -95,10 +102,7 @@ psppire_dialog_action_kmeans_activate (GtkAction *a)
   act->variables = get_widget_assert (xml, "psppire-var-view1");
 
   psppire_dialog_action_set_refresh (pda, refresh);
-
   psppire_dialog_action_set_valid_predicate (pda, dialog_state_valid);
-
-  g_object_unref (xml);
 
   if (PSPPIRE_DIALOG_ACTION_CLASS (psppire_dialog_action_kmeans_parent_class)->activate)
     PSPPIRE_DIALOG_ACTION_CLASS (psppire_dialog_action_kmeans_parent_class)->activate (pda);

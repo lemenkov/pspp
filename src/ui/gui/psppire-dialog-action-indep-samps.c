@@ -292,7 +292,13 @@ psppire_dialog_action_indep_samps_activate (GtkAction *a)
   PsppireDialogActionIndepSamps *act = PSPPIRE_DIALOG_ACTION_INDEP_SAMPS (a);
   PsppireDialogAction *pda = PSPPIRE_DIALOG_ACTION (a);
 
-  GtkBuilder *xml = builder_new ("indep-samples.ui");
+  GHashTable *thing = psppire_dialog_action_get_pointer (pda);
+  GtkBuilder *xml = g_hash_table_lookup (thing, a);
+  if (!xml)
+    {
+      xml = builder_new ("indep-samples.ui");
+      g_hash_table_insert (thing, a, xml);
+    }
 
   pda->dialog = get_widget_assert (xml,"independent-samples-dialog"); 
   pda->source = get_widget_assert (xml, "indep-samples-treeview1");
@@ -323,9 +329,6 @@ psppire_dialog_action_indep_samps_activate (GtkAction *a)
 
   g_signal_connect (act->dg_values_toggle_button, "toggled",
 		    G_CALLBACK (set_group_criterion_type), act);
-
-
-  g_object_unref (xml);
 
   psppire_dialog_action_set_refresh (pda, refresh);
 

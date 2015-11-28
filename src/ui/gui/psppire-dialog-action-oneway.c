@@ -226,7 +226,14 @@ psppire_dialog_action_oneway_activate (GtkAction *a)
   PsppireDialogAction *pda = PSPPIRE_DIALOG_ACTION (a);
   PsppireDialogActionOneway *act = PSPPIRE_DIALOG_ACTION_ONEWAY (a);
 
-  GtkBuilder *xml = builder_new ("oneway.ui");
+  GHashTable *thing = psppire_dialog_action_get_pointer (pda);
+  GtkBuilder *xml = g_hash_table_lookup (thing, a);
+  if (!xml)
+    {
+      xml = builder_new ("oneway.ui");
+      g_hash_table_insert (thing, a, xml);
+    }
+
   GtkWidget *contrasts_button =
     get_widget_assert (xml, "contrasts-button");
   GtkEntry *entry = GTK_ENTRY (get_widget_assert (xml, "entry1"));
@@ -265,8 +272,6 @@ psppire_dialog_action_oneway_activate (GtkAction *a)
 
   psppire_dialog_action_set_valid_predicate (pda, dialog_state_valid);
   psppire_dialog_action_set_refresh (pda, refresh);
-
-  g_object_unref (xml);
 
   if (PSPPIRE_DIALOG_ACTION_CLASS (psppire_dialog_action_oneway_parent_class)->activate)
     PSPPIRE_DIALOG_ACTION_CLASS (psppire_dialog_action_oneway_parent_class)->activate (pda);

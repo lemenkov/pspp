@@ -208,7 +208,13 @@ psppire_dialog_action_crosstabs_activate (GtkAction *a)
   PsppireDialogActionCrosstabs *act = PSPPIRE_DIALOG_ACTION_CROSSTABS (a);
   PsppireDialogAction *pda = PSPPIRE_DIALOG_ACTION (a);
 
-  GtkBuilder *xml = builder_new ("crosstabs.ui");
+  GHashTable *thing = psppire_dialog_action_get_pointer (pda);
+  GtkBuilder *xml = g_hash_table_lookup (thing, a);
+  if (!xml)
+    {
+      xml = builder_new ("crosstabs.ui");
+      g_hash_table_insert (thing, a, xml);
+    }
 
   pda->dialog = get_widget_assert   (xml, "crosstabs-dialog");
   pda->source = get_widget_assert   (xml, "dict-treeview");
@@ -227,9 +233,6 @@ psppire_dialog_action_crosstabs_activate (GtkAction *a)
   act->avalue_button = get_widget_assert (xml, "ascending");
   act->table_button = get_widget_assert (xml, "print-tables");
   act->pivot_button = get_widget_assert (xml, "pivot");
-
-
-  g_object_unref (xml);
 
   act->format_options_avalue = TRUE;
   act->format_options_table = TRUE;

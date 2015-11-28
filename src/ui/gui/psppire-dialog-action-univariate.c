@@ -88,7 +88,14 @@ psppire_dialog_action_univariate_activate (GtkAction *a)
   PsppireDialogAction *pda = PSPPIRE_DIALOG_ACTION (a);
   PsppireDialogActionUnivariate *act = PSPPIRE_DIALOG_ACTION_UNIVARIATE (a);
 
-  GtkBuilder *xml = builder_new ("univariate.ui");
+  GHashTable *thing = psppire_dialog_action_get_pointer (pda);
+  GtkBuilder *xml = g_hash_table_lookup (thing, a);
+  if (!xml)
+    {
+      xml = builder_new ("univariate.ui");
+      g_hash_table_insert (thing, a, xml);
+    }
+
   pda->dialog = get_widget_assert   (xml, "univariate-dialog");
   pda->source = get_widget_assert   (xml, "dict-view");
 
@@ -97,8 +104,6 @@ psppire_dialog_action_univariate_activate (GtkAction *a)
 
   psppire_dialog_action_set_valid_predicate (pda, dialog_state_valid);
   psppire_dialog_action_set_refresh (pda, refresh);
-
-  g_object_unref (xml);
 
   if (PSPPIRE_DIALOG_ACTION_CLASS (psppire_dialog_action_univariate_parent_class)->activate)
     PSPPIRE_DIALOG_ACTION_CLASS (psppire_dialog_action_univariate_parent_class)->activate (pda);

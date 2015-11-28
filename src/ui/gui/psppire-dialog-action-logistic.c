@@ -102,7 +102,13 @@ psppire_dialog_action_logistic_activate (GtkAction *a)
   PsppireDialogAction *pda = PSPPIRE_DIALOG_ACTION (a);
   GtkWidget *opts_button;
 
-  GtkBuilder *xml = builder_new ("logistic.ui");
+  GHashTable *thing = psppire_dialog_action_get_pointer (pda);
+  GtkBuilder *xml = g_hash_table_lookup (thing, a);
+  if (!xml)
+    {
+      xml = builder_new ("logistic.ui");
+      g_hash_table_insert (thing, a, xml);
+    }
 
   pda->dialog = get_widget_assert   (xml, "logistic-dialog");
   pda->source = get_widget_assert   (xml, "dict-view");
@@ -133,8 +139,6 @@ psppire_dialog_action_logistic_activate (GtkAction *a)
 
   gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON(act->conf_checkbox), TRUE);
   gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON(act->conf_checkbox), FALSE);
-
-  g_object_unref (xml);
 
   psppire_dialog_action_set_refresh (pda, refresh);
 

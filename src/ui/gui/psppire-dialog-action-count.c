@@ -150,7 +150,14 @@ psppire_dialog_action_count_activate (GtkAction *a)
   PsppireDialogAction *pda = PSPPIRE_DIALOG_ACTION (a);
   PsppireDialogActionCount *act = PSPPIRE_DIALOG_ACTION_COUNT (a);
 
-  GtkBuilder *xml = builder_new ("count.ui");
+  GHashTable *thing = psppire_dialog_action_get_pointer (pda);
+  GtkBuilder *xml = g_hash_table_lookup (thing, a);
+  if (!xml)
+    {
+      xml = builder_new ("count.ui");
+      g_hash_table_insert (thing, a, xml);
+    }
+
   GtkWidget *selector = get_widget_assert (xml, "count-selector1");
   GtkWidget *button = get_widget_assert (xml, "button1");
 
@@ -168,11 +175,8 @@ psppire_dialog_action_count_activate (GtkAction *a)
 
   g_signal_connect_swapped (button, "clicked", G_CALLBACK (values_dialog), act);
 
-
   psppire_dialog_action_set_valid_predicate (pda, dialog_state_valid);
   psppire_dialog_action_set_refresh (pda, refresh);
-
-  g_object_unref (xml);
 
   if (PSPPIRE_DIALOG_ACTION_CLASS (psppire_dialog_action_count_parent_class)->activate)
     PSPPIRE_DIALOG_ACTION_CLASS (psppire_dialog_action_count_parent_class)->activate (pda);

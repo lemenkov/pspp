@@ -108,7 +108,14 @@ psppire_dialog_action_tt1s_activate (GtkAction *a)
   PsppireDialogAction *pda = PSPPIRE_DIALOG_ACTION (a);
   PsppireDialogActionTt1s *act = PSPPIRE_DIALOG_ACTION_TT1S (a);
 
-  GtkBuilder *xml = builder_new ("t-test.ui");
+  GHashTable *thing = psppire_dialog_action_get_pointer (pda);
+  GtkBuilder *xml = g_hash_table_lookup (thing, a);
+  if (!xml)
+    {
+      xml = builder_new ("t-test.ui");
+      g_hash_table_insert (thing, a, xml);
+    }
+
   GtkWidget *options_button = get_widget_assert (xml, "button1");
 
   pda->dialog = get_widget_assert (xml, "t-test-one-sample-dialog");
@@ -127,9 +134,6 @@ psppire_dialog_action_tt1s_activate (GtkAction *a)
 
   g_signal_connect_swapped (options_button, "clicked",
 			    G_CALLBACK (tt_options_dialog_run), act->opt);
-
-
-  g_object_unref (xml);
 
   if (PSPPIRE_DIALOG_ACTION_CLASS (psppire_dialog_action_tt1s_parent_class)->activate)
     PSPPIRE_DIALOG_ACTION_CLASS (psppire_dialog_action_tt1s_parent_class)->activate (pda);

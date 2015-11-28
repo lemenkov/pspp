@@ -95,11 +95,18 @@ psppire_dialog_action_sort_activate (GtkAction *a)
   PsppireDialogAction *pda = PSPPIRE_DIALOG_ACTION (a);
   PsppireDialogActionSort *act = PSPPIRE_DIALOG_ACTION_SORT (a);
 
-  GtkBuilder *xml = builder_new ("sort.ui");
-  pda->dialog = get_widget_assert   (xml, "sort-cases-dialog");
-  pda->source = get_widget_assert   (xml, "sort-cases-treeview1");
+  GHashTable *thing = psppire_dialog_action_get_pointer (pda);
+  GtkBuilder *xml = g_hash_table_lookup (thing, a);
+  if (!xml)
+    {
+      xml = builder_new ("sort.ui");
+      g_hash_table_insert (thing, a, xml);
+    }
+
+  pda->dialog = get_widget_assert (xml, "sort-cases-dialog");
+  pda->source = get_widget_assert (xml, "sort-cases-treeview1");
   
-  act->variables =  get_widget_assert   (xml, "sort-cases-treeview2");
+  act->variables =  get_widget_assert (xml, "sort-cases-treeview2");
   act->ascending = get_widget_assert (xml, "sort-cases-radiobutton0");
 
   psppire_dialog_action_set_refresh (pda, reset);
@@ -109,8 +116,6 @@ psppire_dialog_action_sort_activate (GtkAction *a)
 
   if (PSPPIRE_DIALOG_ACTION_CLASS (psppire_dialog_action_sort_parent_class)->activate)
     PSPPIRE_DIALOG_ACTION_CLASS (psppire_dialog_action_sort_parent_class)->activate (pda);
-
-  g_object_unref (xml);
 }
 
 static void

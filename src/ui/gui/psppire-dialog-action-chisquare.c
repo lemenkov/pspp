@@ -134,7 +134,13 @@ psppire_dialog_action_chisquare_activate (GtkAction *a)
   PsppireDialogAction *pda = PSPPIRE_DIALOG_ACTION (a);
   PsppireDialogActionChisquare *act = PSPPIRE_DIALOG_ACTION_CHISQUARE (a);
 
-  GtkBuilder *xml = builder_new ("chi-square.ui");
+  GHashTable *thing = psppire_dialog_action_get_pointer (pda);
+  GtkBuilder *xml = g_hash_table_lookup (thing, a);
+  if (!xml)
+    {
+      xml = builder_new ("chi-square.ui");
+      g_hash_table_insert (thing, a, xml);
+    }
 
   GtkWidget *range_table = get_widget_assert   (xml, "range-table");
   GtkWidget *values_acr = get_widget_assert   (xml, "psppire-acr1");
@@ -158,8 +164,6 @@ psppire_dialog_action_chisquare_activate (GtkAction *a)
 
   psppire_dialog_action_set_valid_predicate (pda, dialog_state_valid);
   psppire_dialog_action_set_refresh (pda, refresh);
-
-  g_object_unref (xml);
 
   g_signal_connect (act->range_button, "toggled", 
 		    G_CALLBACK (set_sensitivity_from_toggle), 

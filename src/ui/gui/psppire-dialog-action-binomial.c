@@ -102,7 +102,13 @@ psppire_dialog_action_binomial_activate (GtkAction *a)
   PsppireDialogActionBinomial *act = PSPPIRE_DIALOG_ACTION_BINOMIAL (a);
   PsppireDialogAction *pda = PSPPIRE_DIALOG_ACTION (a);
 
-  GtkBuilder *xml = builder_new ("binomial.ui");
+  GHashTable *thing = psppire_dialog_action_get_pointer (pda);
+  GtkBuilder *xml = g_hash_table_lookup (thing, a);
+  if (!xml)
+    {
+      xml = builder_new ("binomial.ui");
+      g_hash_table_insert (thing, a, xml);
+    }
 
   pda->dialog = get_widget_assert   (xml, "binomial-dialog");
   pda->source = get_widget_assert   (xml, "dict-view");
@@ -113,9 +119,6 @@ psppire_dialog_action_binomial_activate (GtkAction *a)
 
   act->cutpoint_entry =     get_widget_assert   (xml, "cutpoint-entry");
   act->cutpoint_button =    get_widget_assert   (xml, "radiobutton4");
-
-  g_object_unref (xml);
-
 
   g_signal_connect (act->cutpoint_button, "toggled", G_CALLBACK (set_sensitivity_from_toggle),
 		    act->cutpoint_entry);
