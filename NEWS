@@ -40,6 +40,9 @@ Changes from 0.8.5 to 0.9.0:
      For compatibility, the behavior that ESCAPE enabled is now the
      default and only supported behavior.
 
+   - Rendering of the variable and data sheets in right-to-left locales
+     now works properly.
+
 Changes from 0.8.4 to 0.8.5:
 
  * The FREQUENCIES and CROSSTABS commands can now generate barcharts.

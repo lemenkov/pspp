@@ -2032,6 +2032,9 @@ pspp_sheet_view_size_allocate (GtkWidget     *widget,
   if (allocation->width != old_allocation.width)
     width_changed = TRUE;
 
+  if (gtk_widget_get_direction(widget) == GTK_TEXT_DIR_RTL)   
+    allocation->x += allocation->width - tree_view->priv->width ;
+
   gtk_widget_set_allocation (widget, allocation);
 
   /* We size-allocate the columns first because the width of the
@@ -3833,7 +3836,11 @@ pspp_sheet_view_draw_vertical_grid_lines (PsppSheetView    *tree_view,
     return;
 
   /* Only draw the lines for visible rows and columns */
-  for (list = tree_view->priv->columns; list; list = list->next, i++)
+  gboolean rtl = (gtk_widget_get_direction (tree_view) == GTK_TEXT_DIR_RTL);
+
+  for (list = (rtl ? g_list_last (tree_view->priv->columns) : g_list_first (tree_view->priv->columns));
+       list;
+       list = (rtl ? list->prev : list->next))
     {
       PsppSheetViewColumn *column = list->data;
       gint x;
