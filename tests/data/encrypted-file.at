@@ -32,7 +32,7 @@ AT_CHECK([pspp-convert $srcdir/data/test-encrypted.sps test.sps -p password])
 
 # The sample file is not ideal: lines end in CRLF and its last line
 # lacks a new-line, so "sed" and "echo" make it easier to work with.
-AT_CHECK([sed 's///' test.sps; echo], [0], [dnl
+AT_CHECK([tr -d "\r" < test.sps; echo], [0], [dnl
 * Encoding: windows-1252.
 DATA LIST LIST /name (a25) quantity (f8).
 BEGIN DATA.
