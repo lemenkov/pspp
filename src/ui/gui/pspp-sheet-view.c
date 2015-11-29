@@ -3836,7 +3836,7 @@ pspp_sheet_view_draw_vertical_grid_lines (PsppSheetView    *tree_view,
     return;
 
   /* Only draw the lines for visible rows and columns */
-  gboolean rtl = (gtk_widget_get_direction (tree_view) == GTK_TEXT_DIR_RTL);
+  gboolean rtl = (gtk_widget_get_direction (GTK_WIDGET (tree_view)) == GTK_TEXT_DIR_RTL);
 
   for (list = (rtl ? g_list_last (tree_view->priv->columns) : g_list_first (tree_view->priv->columns));
        list;
