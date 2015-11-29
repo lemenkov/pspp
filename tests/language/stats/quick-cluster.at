@@ -211,8 +211,8 @@ QUICK CLUSTER x y
 
 AT_CHECK([pspp -O format=csv quick-pw.sps  > pspp-pw.csv])
 
-AT_CHECK([head -n -3  pspp-s.csv > top-s.csv])
-AT_CHECK([head -n -3  pspp-pw.csv > top-pw.csv])
+AT_CHECK([head -n 18  pspp-s.csv > top-s.csv])
+AT_CHECK([head -n 18  pspp-pw.csv > top-pw.csv])
 AT_CHECK([diff top-s.csv top-pw.csv])
 
 
