@@ -160,7 +160,6 @@ convert_to_filename_encoding (const char *s, size_t len, const char *current_enc
 
 
 #else
-typedef char TCHAR;
 #define TS_stat stat
 #define Trename rename
 #define Tunlink unlink
