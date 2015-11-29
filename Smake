@@ -380,8 +380,7 @@ _debug: all
 
 
 
-PO_FILES = po/ChangeLog \
-po/Rules-quot po/boldquot.sed		\
+PO_FILES = po/Rules-quot po/boldquot.sed \
 po/cat-id-tbl.c po/en@boldquot.header po/en@quot.header			\
 po/insert-header.sin po/quot.sed po/remove-potcdate.sin po/stamp-po	\
 po/Makevars.template po/pspp.pot
@@ -401,7 +400,8 @@ clean:
 	rm -f doc/stamp-vti
 	rm -f config.h.in~
 	rm -f config.h.in
-	find . -name Makefile.in -exec rm -f {} \; 
+	rm -f gl/Makefile.in
+	rm -f Makefile.in
 	rm -f compile
 	rm -f ltmain.sh
 	rm -f reloc-ldflags install-reloc
