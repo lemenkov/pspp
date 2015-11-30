@@ -191,12 +191,13 @@ static void
 rerender (struct psppire_output_view *view)
 {
   struct output_view_item *item;
+  GdkWindow *gdkw = gtk_widget_get_window (GTK_WIDGET (view->output));
   cairo_t *cr;
 
-  if (!view->n_items || !gtk_widget_get_window (GTK_WIDGET (view->output)))
+  if (!view->n_items || ! gdkw)
     return;
 
-  cr = gdk_cairo_create (gtk_widget_get_window (GTK_WIDGET (view->output)));
+  cr = gdk_cairo_create (gdkw);
   if (view->xr == NULL)
     create_xr (view);
   view->y = 0;
@@ -219,6 +220,10 @@ rerender (struct psppire_output_view *view)
 
       xr_rendering_measure (r, &tw, &th);
 
+      guint w = gdk_window_get_width (gdkw);
+      gint xpos = (gtk_widget_get_direction (GTK_WIDGET (view->output)) ==
+		   GTK_TEXT_DIR_RTL) ? w - tw : 0;
+
       if (!item->drawing_area)
         {
           item->drawing_area = gtk_drawing_area_new ();
@@ -229,10 +234,10 @@ rerender (struct psppire_output_view *view)
           g_object_set_data_full (G_OBJECT (item->drawing_area),
                                   "rendering", r, free_rendering);
           gtk_widget_set_size_request (item->drawing_area, tw, th);
-          gtk_layout_move (view->output, item->drawing_area, 0, view->y);
+          gtk_layout_move (view->output, item->drawing_area, xpos, view->y);
         }
 
-      alloc.x = 0;
+      alloc.x = xpos;
       alloc.y = view->y;
       alloc.width = tw;
       alloc.height = th;
