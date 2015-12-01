@@ -165,6 +165,16 @@ create_drawing_area (struct psppire_output_view *view,
                      GtkWidget *drawing_area, struct xr_rendering *r,
                      int tw, int th)
 {
+  /* Enable this to help with debugging.  It shows you which widgets are being
+     put where. */
+  if (0)
+    {
+      GdkRGBA green = {0, 1, 0, 1};
+      gtk_widget_override_background_color (view->output, GTK_STATE_NORMAL, &green);
+      GdkRGBA red = {1, 0, 0, 1};
+      gtk_widget_override_background_color (drawing_area, GTK_STATE_NORMAL, &red);
+    }
+
   g_object_set_data_full (G_OBJECT (drawing_area),
                           "rendering", r, free_rendering);
 
