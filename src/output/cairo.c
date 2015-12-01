@@ -711,9 +711,9 @@ xr_draw_line (void *xr_, int bb[TABLE_N_AXES][2],
   const int x3 = bb[H][1];
   const int y3 = bb[V][1];
   const int top = styles[H][0];
-  const int left = styles[V][0];
   const int bottom = styles[H][1];
-  const int right = styles[V][1];
+  const int start_of_line = render_direction_rtl() ? styles[V][1]: styles[V][0];
+  const int end_of_line   = render_direction_rtl() ? styles[V][0]: styles[V][1];
 
   /* The algorithm here is somewhat subtle, to allow it to handle
      all the kinds of intersections that we need.
@@ -753,7 +753,7 @@ xr_draw_line (void *xr_, int bb[TABLE_N_AXES][2],
      (It doesn't make sense to have different kinds of line on the
      same axis, so we don't try to gracefully handle that case.) */
   bool double_vert = top == RENDER_LINE_DOUBLE || bottom == RENDER_LINE_DOUBLE;
-  bool double_horz = left == RENDER_LINE_DOUBLE || right == RENDER_LINE_DOUBLE;
+  bool double_horz = start_of_line == RENDER_LINE_DOUBLE || end_of_line == RENDER_LINE_DOUBLE;
 
   /* When horizontal lines are doubled,
      the left-side line along y1 normally runs from x0 to x2,
@@ -788,8 +788,8 @@ xr_draw_line (void *xr_, int bb[TABLE_N_AXES][2],
   int x1 = xc - horz_line_ofs;
   int x2 = xc + horz_line_ofs;
 
-  bool shorten_x1_lines = left == RENDER_LINE_DOUBLE;
-  bool shorten_x2_lines = right == RENDER_LINE_DOUBLE;
+  bool shorten_x1_lines = start_of_line == RENDER_LINE_DOUBLE;
+  bool shorten_x2_lines = end_of_line == RENDER_LINE_DOUBLE;
   bool shorten_xc_line = shorten_x1_lines && shorten_x2_lines;
   int vert_line_ofs = double_horz ? double_line_ofs : 0;
   int yc = (y0 + y3) / 2;
@@ -797,11 +797,11 @@ xr_draw_line (void *xr_, int bb[TABLE_N_AXES][2],
   int y2 = yc + vert_line_ofs;
 
   if (!double_horz)
-    horz_line (xr, x0, x1, x2, x3, yc, left, right, shorten_yc_line);
+    horz_line (xr, x0, x1, x2, x3, yc, start_of_line, end_of_line, shorten_yc_line);
   else
     {
-      horz_line (xr, x0, x1, x2, x3, y1, left, right, shorten_y1_lines);
-      horz_line (xr, x0, x1, x2, x3, y2, left, right, shorten_y2_lines);
+      horz_line (xr, x0, x1, x2, x3, y1, start_of_line, end_of_line, shorten_y1_lines);
+      horz_line (xr, x0, x1, x2, x3, y2, start_of_line, end_of_line, shorten_y2_lines);
     }
 
   if (!double_vert)

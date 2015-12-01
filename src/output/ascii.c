@@ -127,7 +127,15 @@ static const ucs4_t unicode_box_chars[N_BOX] =
 static inline int
 make_box_index (int left, int right, int top, int bottom)
 {
-  return ((right * RENDER_N_LINES + bottom) * RENDER_N_LINES + left) * RENDER_N_LINES + top;
+  int start_side = left;
+  int end_side = right;
+  if (render_direction_rtl ())
+    {
+      start_side = right;
+      end_side = left;
+    }
+    
+  return ((end_side * RENDER_N_LINES + bottom) * RENDER_N_LINES + start_side) * RENDER_N_LINES + top;
 }
 
 /* How to emphasize text. */

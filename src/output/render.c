@@ -1032,8 +1032,8 @@ render_rule (const struct render_page *page, const int ofs[TABLE_N_AXES],
       if (render_direction_rtl ())
 	{
 	  int temp = bb[H][0];
-	  bb[H][0] = page->params->size[H] - bb[H][1];
-	  bb[H][1] = page->params->size[H] - temp;
+	  bb[H][0] = render_page_get_size (page, H) - bb[H][1];
+	  bb[H][1] = render_page_get_size (page, H) - temp;
 	}
       bb[V][0] = ofs[V] + page->cp[V][d[V]];
       bb[V][1] = ofs[V] + page->cp[V][d[V] + 1];
@@ -1054,8 +1054,8 @@ render_cell (const struct render_page *page, const int ofs[TABLE_N_AXES],
   if (render_direction_rtl ())
     {
       int temp = bb[H][0];
-      bb[H][0] = clip[H][0] = page->params->size[H] - bb[H][1];
-      bb[H][1] = clip[H][1] = page->params->size[H] - temp;
+      bb[H][0] = clip[H][0] = render_page_get_size (page, H) - bb[H][1];
+      bb[H][1] = clip[H][1] = render_page_get_size (page, H) - temp;
     }
   bb[V][0] = clip[V][0] = ofs[V] + page->cp[V][cell->d[V][0] * 2 + 1];
   bb[V][1] = clip[V][1] = ofs[V] + page->cp[V][cell->d[V][1] * 2];
