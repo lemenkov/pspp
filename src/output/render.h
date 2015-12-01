@@ -145,4 +145,7 @@ void render_pager_draw_region (const struct render_pager *,
 int render_pager_get_size (const struct render_pager *, enum table_axis);
 int render_pager_get_best_breakpoint (const struct render_pager *, int height);
 
+bool render_direction_rtl (void);
+
+
 #endif /* output/render.h */

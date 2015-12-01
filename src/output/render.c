@@ -33,6 +33,9 @@
 #include "gl/minmax.h"
 #include "gl/xalloc.h"
 
+#include "gettext.h"
+#define _(msgid) gettext (msgid)
+
 /* This file uses TABLE_HORZ and TABLE_VERT enough to warrant abbreviating. */
 #define H TABLE_HORZ
 #define V TABLE_VERT
@@ -966,6 +969,23 @@ is_rule (int z)
   return !(z & 1);
 }
 
+bool
+render_direction_rtl (void)
+{
+  /* TRANSLATORS: Do not translate this string.  If the script of your language 
+     reads from right to left (eg Persian, Arabic, Hebrew etc), then replace 
+     this string with "output-direction-rtl".  Otherwise either leave it 
+     untranslated or copy it verbatim. */
+  const char *dir = _("output-direction-ltr");
+  if ( 0 == strcmp ("output-direction-rtl", dir))
+    return true;
+
+  if ( 0 != strcmp ("output-direction-ltr", dir))
+    fprintf (stderr, "This localisation has been incorrectly translated.  Complain to the translator.\n");
+
+  return false;
+}
+
 static void
 render_rule (const struct render_page *page, const int ofs[TABLE_N_AXES],
              const int d[TABLE_N_AXES])
@@ -1009,6 +1029,12 @@ render_rule (const struct render_page *page, const int ofs[TABLE_N_AXES],
 
       bb[H][0] = ofs[H] + page->cp[H][d[H]];
       bb[H][1] = ofs[H] + page->cp[H][d[H] + 1];
+      if (render_direction_rtl ())
+	{
+	  int temp = bb[H][0];
+	  bb[H][0] = page->params->size[H] - bb[H][1];
+	  bb[H][1] = page->params->size[H] - temp;
+	}
       bb[V][0] = ofs[V] + page->cp[V][d[V]];
       bb[V][1] = ofs[V] + page->cp[V][d[V] + 1];
       page->params->draw_line (page->params->aux, bb, styles);
@@ -1025,6 +1051,12 @@ render_cell (const struct render_page *page, const int ofs[TABLE_N_AXES],
 
   bb[H][0] = clip[H][0] = ofs[H] + page->cp[H][cell->d[H][0] * 2 + 1];
   bb[H][1] = clip[H][1] = ofs[H] + page->cp[H][cell->d[H][1] * 2];
+  if (render_direction_rtl ())
+    {
+      int temp = bb[H][0];
+      bb[H][0] = clip[H][0] = page->params->size[H] - bb[H][1];
+      bb[H][1] = clip[H][1] = page->params->size[H] - temp;
+    }
   bb[V][0] = clip[V][0] = ofs[V] + page->cp[V][cell->d[V][0] * 2 + 1];
   bb[V][1] = clip[V][1] = ofs[V] + page->cp[V][cell->d[V][1] * 2];
 
