@@ -3846,13 +3846,17 @@ pspp_sheet_view_draw_vertical_grid_lines (PsppSheetView    *tree_view,
       if (! column->visible)
 	continue;
 
-      x += column->width;
+      if (!rtl)
+	x += column->width;
 
       cairo_set_line_width (cr, 1.0);
       cairo_set_line_cap (cr, CAIRO_LINE_CAP_SQUARE);
       cairo_move_to (cr, x + 0.5, min_y);
       cairo_line_to (cr, x + 0.5, max_y - min_y - 0.5);
       cairo_stroke (cr);
+
+      if (rtl)
+	x += column->width;
     }
 }
 
