@@ -3828,8 +3828,7 @@ pspp_sheet_view_draw_vertical_grid_lines (PsppSheetView    *tree_view,
 					  gint max_y)
 {
   GList *list = tree_view->priv->columns;
-  gint i = 0;
-  gint current_x = 0;
+  gint x = 0;
 
   if (tree_view->priv->grid_lines != PSPP_SHEET_VIEW_GRID_LINES_VERTICAL
       && tree_view->priv->grid_lines != PSPP_SHEET_VIEW_GRID_LINES_BOTH)
@@ -3843,24 +3842,16 @@ pspp_sheet_view_draw_vertical_grid_lines (PsppSheetView    *tree_view,
        list = (rtl ? list->prev : list->next))
     {
       PsppSheetViewColumn *column = list->data;
-      gint x;
 
       if (! column->visible)
 	continue;
 
-      current_x += column->width;
-
-      /* Generally the grid lines should fit within the column, but for the
-         last visible column we put it just past the end of the column.
-         (Otherwise horizontal grid lines sometimes stick out by one pixel.) */
-      x = current_x;
-      if (i != n_visible_columns - 1)
-        x--;
+      x += column->width;
 
       cairo_set_line_width (cr, 1.0);
       cairo_set_line_cap (cr, CAIRO_LINE_CAP_SQUARE);
       cairo_move_to (cr, x + 0.5, min_y);
-      cairo_line_to (cr, x + 0.5, max_y - min_y);
+      cairo_line_to (cr, x + 0.5, max_y - min_y - 0.5);
       cairo_stroke (cr);
     }
 }
