@@ -20,7 +20,7 @@ Changes from 0.8.5 to 0.9.0:
    - It now uses Gtk+ version 3 instead of version 2.  Accordingly, it has a 
      somewhat different look and feel.
 
-   - There is now has a Graphs menu to access the GRAPH command.
+   - There is now a Graphs menu to access the GRAPH command.
 
    - The status of dialog box widgets are now preserved between calls
      to the same dialog box for the same dataset.
