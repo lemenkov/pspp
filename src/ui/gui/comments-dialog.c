@@ -90,7 +90,7 @@ comments_dialog (PsppireDataWindow *de)
   gint response ;
   struct comment_dialog cd;
 
-  GtkBuilder *xml = builder_new ("psppire.ui");
+  GtkBuilder *xml = builder_new ("comments.ui");
 
   GtkWidget *dialog = get_widget_assert (xml, "comments-dialog");
   GtkWidget *textview = get_widget_assert (xml, "comments-textview1");

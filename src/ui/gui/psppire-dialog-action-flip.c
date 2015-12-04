@@ -99,7 +99,7 @@ psppire_dialog_action_flip_activate (GtkAction *a)
   GtkBuilder *xml = g_hash_table_lookup (thing, a);
   if (!xml)
     {
-      xml = builder_new ("psppire.ui");
+      xml = builder_new ("transpose.ui");
       g_hash_table_insert (thing, a, xml);
     }
 

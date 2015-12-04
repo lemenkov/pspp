@@ -8,6 +8,7 @@ UI_FILES = \
 	src/ui/gui/barchart.ui \
 	src/ui/gui/correlation.ui \
 	src/ui/gui/count.ui \
+	src/ui/gui/comments.ui \
 	src/ui/gui/crosstabs.ui \
 	src/ui/gui/chi-square.ui \
 	src/ui/gui/data-sheet.ui \
@@ -28,7 +29,6 @@ UI_FILES = \
 	src/ui/gui/missing-val-dialog.ui \
 	src/ui/gui/oneway.ui \
 	src/ui/gui/paired-samples.ui \
-	src/ui/gui/psppire.ui \
 	src/ui/gui/rank.ui \
 	src/ui/gui/runs.ui \
 	src/ui/gui/sort.ui \
@@ -41,6 +41,7 @@ UI_FILES = \
 	src/ui/gui/select-cases.ui \
 	src/ui/gui/t-test.ui \
 	src/ui/gui/text-data-import.ui \
+	src/ui/gui/transpose.ui \
 	src/ui/gui/univariate.ui \
 	src/ui/gui/val-labs-dialog.ui \
 	src/ui/gui/variable-info.ui \
@@ -48,7 +49,8 @@ UI_FILES = \
 	src/ui/gui/output-window.ui \
 	src/ui/gui/syntax-editor.ui \
 	src/ui/gui/var-sheet.ui \
-	src/ui/gui/var-type-dialog.ui
+	src/ui/gui/var-type-dialog.ui \
+	src/ui/gui/weight.ui
 
 
 $(srcdir)/doc/help-pages-list: $(UI_FILES)

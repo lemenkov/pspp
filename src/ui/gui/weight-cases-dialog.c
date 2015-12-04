@@ -105,7 +105,7 @@ weight_cases_dialog (PsppireDataWindow *de)
   gint response;
   struct weight_cases_dialog wcd;
 
-  GtkBuilder *xml = builder_new ("psppire.ui");
+  GtkBuilder *xml = builder_new ("weight.ui");
 
   GtkWidget *dialog = get_widget_assert (xml, "weight-cases-dialog");
   GtkWidget *source = get_widget_assert (xml, "weight-cases-treeview");
