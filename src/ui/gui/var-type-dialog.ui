@@ -212,13 +212,10 @@
                 <property name="visible">True</property>
                 <property name="label_xalign">0</property>
                 <child>
-                  <object class="GtkAlignment" id="alignment2">
-                    <property name="visible">True</property>
-                    <property name="left_padding">12</property>
-                    <child>
                       <object class="GtkVBox" id="vbox10">
                         <property name="visible">True</property>
                         <property name="orientation">vertical</property>
+			<property name="margin-start">12</property>
                         <property name="homogeneous">True</property>
                         <child>
                           <object class="GtkLabel" id="psample_label">
@@ -239,8 +236,6 @@
                           </packing>
                         </child>
                       </object>
-                    </child>
-                  </object>
                 </child>
                 <child type="label">
                   <object class="GtkLabel" id="label13">
