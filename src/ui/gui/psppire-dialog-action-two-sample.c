@@ -180,6 +180,31 @@ psppire_dialog_action_two_sample_activate (GtkAction *a)
     {
       xml = builder_new ("paired-samples.ui");
       g_hash_table_insert (thing, a, xml);
+
+
+      /* NPAR Specific options */
+      GtkWidget *frame = gtk_frame_new (_("Test Type"));
+      GtkWidget *bb = gtk_button_box_new (GTK_ORIENTATION_VERTICAL);
+      GtkWidget *box = get_widget_assert (xml, "vbox3");
+
+
+      strcpy (act->nts[NT_WILCOXON].syntax, "/WILCOXON");
+      strcpy (act->nts[NT_SIGN].syntax, "/SIGN");
+      strcpy (act->nts[NT_MCNEMAR].syntax, "/MCNEMAR");
+
+      act->nts[NT_WILCOXON].button = gtk_check_button_new_with_mnemonic (_("_Wilcoxon"));
+      act->nts[NT_SIGN].button = gtk_check_button_new_with_mnemonic (_("_Sign"));
+      act->nts[NT_MCNEMAR].button = gtk_check_button_new_with_mnemonic (_("_McNemar"));
+
+      gtk_box_pack_start (GTK_BOX (bb), act->nts[NT_WILCOXON].button, FALSE, FALSE, 5);
+      gtk_box_pack_start (GTK_BOX (bb), act->nts[NT_SIGN].button,     FALSE, FALSE, 5);
+      gtk_box_pack_start (GTK_BOX (bb), act->nts[NT_MCNEMAR].button,  FALSE, FALSE, 5);
+
+      gtk_container_add (GTK_CONTAINER (frame), bb);
+
+      gtk_widget_show_all (frame);
+
+      gtk_box_pack_start (GTK_BOX (box), frame, FALSE, FALSE,  5);
     }
 
   GtkWidget *selector = get_widget_assert (xml, "psppire-selector3");
@@ -192,31 +217,6 @@ psppire_dialog_action_two_sample_activate (GtkAction *a)
   act->pairs_treeview = get_widget_assert (xml, "paired-samples-t-test-treeview2");
   act->list_store = GTK_LIST_STORE (gtk_tree_view_get_model (GTK_TREE_VIEW (act->pairs_treeview)));
 
-  {
-    /* NPAR Specific options */
-    GtkWidget *frame = gtk_frame_new (_("Test Type"));
-    GtkWidget *bb = gtk_button_box_new (GTK_ORIENTATION_VERTICAL);
-    GtkWidget *box = get_widget_assert (xml, "vbox3");
-
-
-    strcpy (act->nts[NT_WILCOXON].syntax, "/WILCOXON");
-    strcpy (act->nts[NT_SIGN].syntax, "/SIGN");
-    strcpy (act->nts[NT_MCNEMAR].syntax, "/MCNEMAR");
-
-    act->nts[NT_WILCOXON].button = gtk_check_button_new_with_mnemonic (_("_Wilcoxon"));
-    act->nts[NT_SIGN].button = gtk_check_button_new_with_mnemonic (_("_Sign"));
-    act->nts[NT_MCNEMAR].button = gtk_check_button_new_with_mnemonic (_("_McNemar"));
-
-    gtk_box_pack_start (GTK_BOX (bb), act->nts[NT_WILCOXON].button, FALSE, FALSE, 5);
-    gtk_box_pack_start (GTK_BOX (bb), act->nts[NT_SIGN].button,     FALSE, FALSE, 5);
-    gtk_box_pack_start (GTK_BOX (bb), act->nts[NT_MCNEMAR].button,  FALSE, FALSE, 5);
-
-    gtk_container_add (GTK_CONTAINER (frame), bb);
-
-    gtk_widget_show_all (frame);
-
-    gtk_box_pack_start (GTK_BOX (box), frame, FALSE, FALSE,  5);
-  }
 
   psppire_dialog_action_set_valid_predicate (pda, dialog_state_valid);
   psppire_dialog_action_set_refresh (pda, refresh);
