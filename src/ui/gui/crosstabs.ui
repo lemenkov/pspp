@@ -106,12 +106,8 @@
                     <property name="label_xalign">0</property>
                     <property name="shadow_type">none</property>
                     <child>
-                      <object class="GtkAlignment" id="alignment4">
-                        <property name="visible">True</property>
-                        <property name="can_focus">False</property>
-                        <property name="left_padding">12</property>
-                        <child>
                           <object class="GtkScrolledWindow" id="scrolledwindow2">
+			    <property name="margin-left">12</property>
                             <property name="visible">True</property>
                             <property name="can_focus">True</property>
                             <property name="hscrollbar_policy">never</property>
@@ -126,8 +122,6 @@
                                 <child internal-child="selection">
                                   <object class="GtkTreeSelection" id="psppire-var-view-selection1"/>
                                 </child>
-                              </object>
-                            </child>
                           </object>
                         </child>
                       </object>
@@ -155,12 +149,8 @@
                     <property name="label_xalign">0</property>
                     <property name="shadow_type">none</property>
                     <child>
-                      <object class="GtkAlignment" id="alignment5">
-                        <property name="visible">True</property>
-                        <property name="can_focus">False</property>
-                        <property name="left_padding">12</property>
-                        <child>
                           <object class="GtkScrolledWindow" id="scrolledwindow3">
+			    <property name="margin-start">12</property>
                             <property name="visible">True</property>
                             <property name="can_focus">True</property>
                             <property name="hscrollbar_policy">never</property>
@@ -174,8 +164,6 @@
                                 <property name="headers_clickable">False</property>
                                 <child internal-child="selection">
                                   <object class="GtkTreeSelection" id="psppire-var-view-selection2"/>
-                                </child>
-                              </object>
                             </child>
                           </object>
                         </child>
