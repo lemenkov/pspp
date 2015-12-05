@@ -3,7 +3,7 @@
 <interface>
   <requires lib="gtk+" version="3.0"/>
   <requires lib="psppire" version="0.0"/>
-  <object class="GtkHBox" id="val-labs-dialog">
+  <object class="GtkBox" id="val-labs-dialog">
     <property name="visible">True</property>
     <property name="can_focus">False</property>
     <property name="border_width">5</property>
@@ -13,12 +13,12 @@
         <property name="can_focus">False</property>
         <property name="label_xalign">0</property>
         <child>
-          <object class="GtkTable" id="table3">
+          <object class="GtkGrid" id="table3">
             <property name="visible">True</property>
             <property name="can_focus">False</property>
             <property name="margin_start">12</property>
-            <property name="n_rows">2</property>
-            <property name="n_columns">2</property>
+            <property name="hexpand">True</property>
+            <property name="vexpand">True</property>
             <property name="row_spacing">5</property>
             <child>
               <object class="GtkScrolledWindow" id="scrolledwindow3">
@@ -26,6 +26,7 @@
                 <property name="can_focus">True</property>
                 <property name="margin_right">5</property>
                 <property name="margin_bottom">5</property>
+                <property name="hexpand">True</property>
                 <property name="shadow_type">etched-in</property>
                 <child>
                   <object class="GtkTreeView" id="treeview1">
@@ -41,57 +42,39 @@
               </object>
               <packing>
                 <property name="left_attach">1</property>
-                <property name="right_attach">2</property>
                 <property name="top_attach">1</property>
-                <property name="bottom_attach">2</property>
-                <property name="y_options">GTK_FILL</property>
               </packing>
             </child>
             <child>
-              <object class="GtkTable" id="table4">
+              <object class="GtkGrid" id="table4">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
+                <property name="margin_left">6</property>
+                <property name="hexpand">False</property>
                 <property name="border_width">5</property>
-                <property name="n_rows">2</property>
-                <property name="n_columns">2</property>
-                <property name="column_spacing">5</property>
                 <property name="row_spacing">4</property>
+                <property name="column_spacing">5</property>
                 <child>
-                  <object class="GtkHBox" id="hbox4">
+                  <object class="GtkEntry" id="value_entry">
+                    <property name="width_request">85</property>
                     <property name="visible">True</property>
-                    <property name="can_focus">False</property>
-                    <child>
-                      <object class="GtkEntry" id="value_entry">
-                        <property name="width_request">85</property>
-                        <property name="visible">True</property>
-                        <property name="can_focus">True</property>
-                      </object>
-                      <packing>
-                        <property name="expand">False</property>
-                        <property name="fill">False</property>
-                        <property name="padding">1</property>
-                        <property name="position">0</property>
-                      </packing>
-                    </child>
+                    <property name="can_focus">True</property>
+                    <property name="hexpand">False</property>
                   </object>
                   <packing>
                     <property name="left_attach">1</property>
-                    <property name="right_attach">2</property>
-                    <property name="x_options">GTK_FILL</property>
-                    <property name="y_options">GTK_FILL</property>
+                    <property name="top_attach">0</property>
                   </packing>
                 </child>
                 <child>
                   <object class="GtkEntry" id="label_entry">
                     <property name="visible">True</property>
                     <property name="can_focus">True</property>
+                    <property name="hexpand">True</property>
                   </object>
                   <packing>
                     <property name="left_attach">1</property>
-                    <property name="right_attach">2</property>
                     <property name="top_attach">1</property>
-                    <property name="bottom_attach">2</property>
-                    <property name="y_options"/>
                   </packing>
                 </child>
                 <child>
@@ -102,10 +85,8 @@
                     <property name="label" translatable="yes">Value Label:</property>
                   </object>
                   <packing>
+                    <property name="left_attach">0</property>
                     <property name="top_attach">1</property>
-                    <property name="bottom_attach">2</property>
-                    <property name="x_options">GTK_FILL</property>
-                    <property name="y_options"/>
                   </packing>
                 </child>
                 <child>
@@ -116,22 +97,24 @@
                     <property name="label" translatable="yes">Value:</property>
                   </object>
                   <packing>
-                    <property name="x_options">GTK_FILL</property>
-                    <property name="y_options"/>
+                    <property name="left_attach">0</property>
+                    <property name="top_attach">0</property>
                   </packing>
                 </child>
               </object>
               <packing>
-                <property name="right_attach">2</property>
-                <property name="x_options">GTK_FILL</property>
-                <property name="y_options"/>
+                <property name="left_attach">0</property>
+                <property name="top_attach">0</property>
+                <property name="width">2</property>
               </packing>
             </child>
             <child>
-              <object class="GtkVButtonBox" id="vbuttonbox2">
+              <object class="GtkButtonBox" id="vbuttonbox2">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
+                <property name="vexpand">True</property>
                 <property name="border_width">5</property>
+                <property name="orientation">vertical</property>
                 <child>
                   <object class="GtkButton" id="val_labs_add">
                     <property name="label">gtk-add</property>
@@ -182,9 +165,8 @@
                 </child>
               </object>
               <packing>
+                <property name="left_attach">0</property>
                 <property name="top_attach">1</property>
-                <property name="bottom_attach">2</property>
-                <property name="x_options">GTK_FILL</property>
               </packing>
             </child>
           </object>
