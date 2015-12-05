@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!-- Generated with glade 3.18.3 -->
 <interface>
+  <requires lib="gtk+" version="3.0"/>
   <requires lib="psppire" version="2054.17080"/>
-  <!-- interface-requires gtk+ 2.12 -->
-  <!-- interface-naming-policy project-wide -->
   <object class="PsppireDialog" id="scatterplot-dialog">
     <property name="can_focus">False</property>
     <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
@@ -10,7 +10,7 @@
     <property name="modal">True</property>
     <property name="help_page">GRAPH</property>
     <child>
-      <object class="GtkHBox" id="dialog-hbox15">
+      <object class="GtkBox" id="dialog-hbox15">
         <property name="visible">True</property>
         <property name="can_focus">False</property>
         <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
@@ -31,10 +31,11 @@
                 <property name="n_columns">3</property>
                 <property name="column_spacing">5</property>
                 <child>
-                  <object class="GtkVBox" id="vbox-x">
+                  <object class="GtkBox" id="vbox-x">
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
                     <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
+                    <property name="orientation">vertical</property>
                     <child>
                       <object class="GtkLabel" id="label-x-axis">
                         <property name="visible">True</property>
@@ -59,8 +60,6 @@
                         <property name="invisible_char">●</property>
                         <property name="primary_icon_activatable">False</property>
                         <property name="secondary_icon_activatable">False</property>
-                        <property name="primary_icon_sensitive">True</property>
-                        <property name="secondary_icon_sensitive">True</property>
                       </object>
                       <packing>
                         <property name="expand">True</property>
@@ -78,10 +77,11 @@
                   </packing>
                 </child>
                 <child>
-                  <object class="GtkVBox" id="vbox-y">
+                  <object class="GtkBox" id="vbox-y">
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
                     <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
+                    <property name="orientation">vertical</property>
                     <child>
                       <object class="GtkLabel" id="label-y-axis">
                         <property name="visible">True</property>
@@ -106,8 +106,6 @@
                         <property name="invisible_char">●</property>
                         <property name="primary_icon_activatable">False</property>
                         <property name="secondary_icon_activatable">False</property>
-                        <property name="primary_icon_sensitive">True</property>
-                        <property name="secondary_icon_sensitive">True</property>
                       </object>
                       <packing>
                         <property name="expand">True</property>
@@ -128,15 +126,18 @@
                     <property name="can_focus">True</property>
                     <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
                     <property name="hscrollbar_policy">never</property>
-                    <property name="vscrollbar_policy">automatic</property>
                     <property name="shadow_type">etched-in</property>
                     <child>
                       <object class="PsppireDictView" id="scatterplot-treeview1">
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
                         <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
+                        <property name="border_width">0</property>
                         <property name="headers_visible">False</property>
                         <property name="headers_clickable">False</property>
+                        <child internal-child="selection">
+                          <object class="GtkTreeSelection" id="psppire-dictview-selection1"/>
+                        </child>
                       </object>
                     </child>
                   </object>
