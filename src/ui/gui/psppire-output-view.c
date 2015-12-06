@@ -222,8 +222,8 @@ rerender (struct psppire_output_view *view)
       xr_rendering_measure (r, &tw, &th);
 
       guint w = gdk_window_get_width (gdkw);
-      gint xpos = (gtk_widget_get_direction (GTK_WIDGET (view->output)) ==
-		   GTK_TEXT_DIR_RTL) ? w - tw : 0;
+      const gint gutter = 5;
+      gint xpos = (gtk_widget_get_direction (GTK_WIDGET (view->output)) ==  GTK_TEXT_DIR_RTL) ? w - tw - gutter: gutter;
 
       if (!item->drawing_area)
         {
