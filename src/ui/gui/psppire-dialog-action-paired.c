@@ -164,10 +164,7 @@ psppire_dialog_action_paired_activate (GtkAction *a)
     }
 
   GtkWidget *selector = get_widget_assert (xml, "psppire-selector3");
-  GtkWidget *bb = gtk_button_box_new (GTK_ORIENTATION_HORIZONTAL);
-  GtkWidget *button = gtk_button_new_with_mnemonic (_("O_ptions..."));
-  GtkWidget *box = get_widget_assert (xml, "vbox3");
-
+  GtkWidget *button = get_widget_assert (xml, "option-button");
 
   pda->dialog = get_widget_assert   (xml, "t-test-paired-samples-dialog");
   pda->source = get_widget_assert   (xml, "paired-samples-t-test-treeview1");
@@ -179,15 +176,9 @@ psppire_dialog_action_paired_activate (GtkAction *a)
 
   act->opt = tt_options_dialog_create (GTK_WINDOW (pda->toplevel));
 
-
   g_signal_connect_swapped (button, "clicked", G_CALLBACK (tt_options_dialog_run), act->opt);
 
-
-  gtk_box_pack_start (GTK_BOX (bb), button, TRUE, TRUE, 5);
-  gtk_box_pack_start (GTK_BOX (box), bb, FALSE, FALSE, 5);
-  gtk_widget_show_all (box);
  
-
   psppire_dialog_action_set_valid_predicate (pda, dialog_state_valid);
   psppire_dialog_action_set_refresh (pda, refresh);
 
