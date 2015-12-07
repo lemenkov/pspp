@@ -307,64 +307,65 @@ psppire_dialog_action_factor_activate (GtkAction *a)
     {
       xml = builder_new ("factor.ui");
       g_hash_table_insert (thing, a, xml);
+
+
+      pda->dialog = get_widget_assert   (xml, "factor-dialog");
+      pda->source = get_widget_assert   (xml, "dict-view");
+
+      extraction_button = get_widget_assert (xml, "button-extractions");
+      rotation_button = get_widget_assert (xml, "button-rotations");
+
+      act->extraction_dialog = get_widget_assert (xml, "extractions-dialog");
+      act->rotation_dialog = get_widget_assert (xml, "rotations-dialog");
+
+      act->variables = get_widget_assert   (xml, "psppire-var-view1");
+
+      {
+	GtkWidget *hbox = get_widget_assert (xml, "hbox6");
+	GtkWidget *eigenvalue_extraction ;
+
+	act->mineigen_toggle = get_widget_assert (xml, "mineigen-radiobutton");
+
+	eigenvalue_extraction = psppire_scanf_new (_("_Eigenvalues over %4.2f times the mean eigenvalue"), &act->mineigen);
+
+	g_object_set (eigenvalue_extraction,
+		      "use-underline", TRUE,
+		      "mnemonic-widget", act->mineigen_toggle,
+		      NULL);
+
+	act->nfactors_toggle = get_widget_assert (xml, "nfactors-radiobutton");
+	act->n_factors = get_widget_assert (xml, "spinbutton-nfactors");
+	act->extract_iterations = get_widget_assert (xml, "spinbutton-extract-iterations");
+	act->covariance_toggle = get_widget_assert (xml,  "covariance-radiobutton");
+	act->correlation_toggle = get_widget_assert (xml, "correlations-radiobutton");
+
+	act->scree_button = get_widget_assert (xml, "scree-button");
+	act->unrotated_button = get_widget_assert (xml, "unrotated-button");
+	act->extraction_combo = get_widget_assert (xml, "combobox1");
+
+	gtk_container_add (GTK_CONTAINER (hbox), eigenvalue_extraction);
+
+	g_signal_connect (act->nfactors_toggle, "toggled", G_CALLBACK (on_extract_toggle), act);
+
+	gtk_widget_show_all (eigenvalue_extraction);
+      }
+
+      {
+	act->rotate_iterations = get_widget_assert (xml, "spinbutton-rot-iterations");
+
+	act->display_rotated_solution = get_widget_assert (xml, "checkbutton-rotated-solution");
+
+	act->rotation_none      = get_widget_assert (xml, "radiobutton-none");
+	act->rotation_varimax   = get_widget_assert (xml, "radiobutton-varimax");
+	act->rotation_quartimax = get_widget_assert (xml, "radiobutton-quartimax");
+	act->rotation_equimax   = get_widget_assert (xml, "radiobutton-equimax");
+      }
+
+      g_signal_connect_swapped (extraction_button, "clicked",
+				G_CALLBACK (run_extractions_subdialog), act);
+      g_signal_connect_swapped (rotation_button, "clicked", G_CALLBACK (run_rotations_subdialog), act);
+
     }
-
-  pda->dialog = get_widget_assert   (xml, "factor-dialog");
-  pda->source = get_widget_assert   (xml, "dict-view");
-
-  extraction_button = get_widget_assert (xml, "button-extractions");
-  rotation_button = get_widget_assert (xml, "button-rotations");
-
-  act->extraction_dialog = get_widget_assert (xml, "extractions-dialog");
-  act->rotation_dialog = get_widget_assert (xml, "rotations-dialog");
-
-  act->variables = get_widget_assert   (xml, "psppire-var-view1");
-
-  {
-    GtkWidget *hbox = get_widget_assert (xml, "hbox6");
-    GtkWidget *eigenvalue_extraction ;
-
-    act->mineigen_toggle = get_widget_assert (xml, "mineigen-radiobutton");
-
-    eigenvalue_extraction = psppire_scanf_new (_("_Eigenvalues over %4.2f times the mean eigenvalue"), &act->mineigen);
-
-    g_object_set (eigenvalue_extraction,
-		  "use-underline", TRUE,
-		  "mnemonic-widget", act->mineigen_toggle,
-		  NULL);
-
-    act->nfactors_toggle = get_widget_assert (xml, "nfactors-radiobutton");
-    act->n_factors = get_widget_assert (xml, "spinbutton-nfactors");
-    act->extract_iterations = get_widget_assert (xml, "spinbutton-extract-iterations");
-    act->covariance_toggle = get_widget_assert (xml,  "covariance-radiobutton");
-    act->correlation_toggle = get_widget_assert (xml, "correlations-radiobutton");
-
-    act->scree_button = get_widget_assert (xml, "scree-button");
-    act->unrotated_button = get_widget_assert (xml, "unrotated-button");
-    act->extraction_combo = get_widget_assert (xml, "combobox1");
-
-    gtk_container_add (GTK_CONTAINER (hbox), eigenvalue_extraction);
-
-    g_signal_connect (act->nfactors_toggle, "toggled", G_CALLBACK (on_extract_toggle), act);
-
-    gtk_widget_show_all (eigenvalue_extraction);
-  }
-
-  {
-    act->rotate_iterations = get_widget_assert (xml, "spinbutton-rot-iterations");
-
-    act->display_rotated_solution = get_widget_assert (xml, "checkbutton-rotated-solution");
-
-    act->rotation_none      = get_widget_assert (xml, "radiobutton-none");
-    act->rotation_varimax   = get_widget_assert (xml, "radiobutton-varimax");
-    act->rotation_quartimax = get_widget_assert (xml, "radiobutton-quartimax");
-    act->rotation_equimax   = get_widget_assert (xml, "radiobutton-equimax");
-  }
-
-  g_signal_connect_swapped (extraction_button, "clicked",
-			    G_CALLBACK (run_extractions_subdialog), act);
-  g_signal_connect_swapped (rotation_button, "clicked", G_CALLBACK (run_rotations_subdialog), act);
-
 
   psppire_dialog_action_set_valid_predicate (pda, (void *) dialog_state_valid);
   psppire_dialog_action_set_refresh (pda, dialog_refresh);
