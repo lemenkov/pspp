@@ -1,5 +1,5 @@
 /* PSPPIRE - a graphical user interface for PSPP.
-   Copyright (C) 2012  Free Software Foundation
+   Copyright (C) 2015  Free Software Foundation
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -205,9 +205,13 @@ psppire_dialog_action_descriptives_activate (GtkAction *a)
     {
       xml = builder_new ("descriptives.ui");
       g_hash_table_insert (thing, a, xml);
-    }
 
-  GtkWidget *stats_treeview = get_widget_assert (xml, "statistics");
+      GtkWidget *stats_treeview = get_widget_assert (xml, "statistics");
+      psppire_checkbox_treeview_populate (PSPPIRE_CHECKBOX_TREEVIEW (stats_treeview),
+					  B_DS_DEFAULT,
+					  N_DESCRIPTIVE_STATS, stats);
+      act->stats = gtk_tree_view_get_model (GTK_TREE_VIEW (stats_treeview));
+    }
 
   pda->dialog = get_widget_assert   (xml, "descriptives-dialog");
   pda->source = get_widget_assert   (xml, "all-variables");
@@ -216,12 +220,7 @@ psppire_dialog_action_descriptives_activate (GtkAction *a)
   g_object_set (pda->source,
 		"predicate", var_is_numeric, NULL);
 
-  psppire_checkbox_treeview_populate (PSPPIRE_CHECKBOX_TREEVIEW (stats_treeview),
-				      B_DS_DEFAULT,
-				      N_DESCRIPTIVE_STATS, stats);
-
   act->stat_vars = GTK_TREE_VIEW (act->variables);
-  act->stats = gtk_tree_view_get_model (GTK_TREE_VIEW (stats_treeview));
   
   act->include_user_missing =
     GTK_TOGGLE_BUTTON (get_widget_assert (xml, "include_user_missing"));
