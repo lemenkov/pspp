@@ -126,32 +126,32 @@ psppire_dialog_action_barchart_activate (GtkAction *a)
     {
       xml = builder_new ("barchart.ui");
       g_hash_table_insert (thing, a, xml);
+
+      pda->dialog = get_widget_assert (xml, "barchart-dialog");
+      pda->source = get_widget_assert (xml, "dict-view");
+
+      act->variable_xaxis = get_widget_assert (xml, "entry1");
+      act->variable_cluster = get_widget_assert (xml, "entry3");
+      act->var = get_widget_assert (xml, "entry2");
+      act->button_freq_func[0] = get_widget_assert (xml, "radiobutton-count");
+      act->button_freq_func[1] = get_widget_assert (xml, "radiobutton-percent");
+      act->button_freq_func[2] = get_widget_assert (xml, "radiobutton-cum-count");
+      act->button_freq_func[3] = get_widget_assert (xml, "radiobutton-cum-percent");
+  
+      act->button_summary_func = get_widget_assert (xml, "radiobutton3");
+      act->summary_variables = get_widget_assert (xml, "hbox1");
+      act->combobox = get_widget_assert (xml, "combobox1");
+
+      populate_combo_model (GTK_COMBO_BOX(act->combobox));
+  
+      g_signal_connect_swapped (act->button_summary_func, "toggled",
+				G_CALLBACK (on_summary_toggle), act);
+
+      psppire_dialog_action_set_refresh (pda, refresh);
+
+      psppire_dialog_action_set_valid_predicate (pda,
+						 dialog_state_valid);
     }
-
-  pda->dialog = get_widget_assert (xml, "barchart-dialog");
-  pda->source = get_widget_assert (xml, "dict-view");
-
-  act->variable_xaxis = get_widget_assert (xml, "entry1");
-  act->variable_cluster = get_widget_assert (xml, "entry3");
-  act->var = get_widget_assert (xml, "entry2");
-  act->button_freq_func[0] = get_widget_assert (xml, "radiobutton-count");
-  act->button_freq_func[1] = get_widget_assert (xml, "radiobutton-percent");
-  act->button_freq_func[2] = get_widget_assert (xml, "radiobutton-cum-count");
-  act->button_freq_func[3] = get_widget_assert (xml, "radiobutton-cum-percent");
-  
-  act->button_summary_func = get_widget_assert (xml, "radiobutton3");
-  act->summary_variables = get_widget_assert (xml, "hbox1");
-  act->combobox = get_widget_assert (xml, "combobox1");
-
-  populate_combo_model (GTK_COMBO_BOX(act->combobox));
-  
-  g_signal_connect_swapped (act->button_summary_func, "toggled",
-			    G_CALLBACK (on_summary_toggle), act);
-
-  psppire_dialog_action_set_refresh (pda, refresh);
-
-  psppire_dialog_action_set_valid_predicate (pda,
-					     dialog_state_valid);
 
   if (PSPPIRE_DIALOG_ACTION_CLASS (psppire_dialog_action_barchart_parent_class)->activate)
     PSPPIRE_DIALOG_ACTION_CLASS (psppire_dialog_action_barchart_parent_class)->activate (pda);
