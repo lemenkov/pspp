@@ -160,6 +160,18 @@ create_xr (struct psppire_output_view *view)
   cairo_destroy (cr);
 }
 
+/* Return the horizontal position to place a widget whose 
+   width is CHILD_WIDTH */
+static gint
+get_xpos (const struct psppire_output_view *view, gint child_width)
+{
+  GdkWindow *gdkw = gtk_widget_get_window (GTK_WIDGET (view->output));
+  guint w = gdk_window_get_width (gdkw);
+  int gutter = 0;
+  g_object_get (view->output, "border-width", &gutter, NULL);
+  return (gtk_widget_get_direction (GTK_WIDGET (view->output)) ==  GTK_TEXT_DIR_RTL) ? w - child_width - gutter: gutter;
+}
+
 static void
 create_drawing_area (struct psppire_output_view *view,
                      GtkWidget *drawing_area, struct xr_rendering *r,
@@ -183,7 +195,9 @@ create_drawing_area (struct psppire_output_view *view,
                     G_CALLBACK (draw_callback), view);
 
   gtk_widget_set_size_request (drawing_area, tw, th);
-  gtk_layout_put (view->output, drawing_area, 0, view->y);
+  gint xpos = get_xpos (view, tw);
+
+  gtk_layout_put (view->output, drawing_area, xpos, view->y);
 
   gtk_widget_show (drawing_area);
 }
@@ -221,9 +235,7 @@ rerender (struct psppire_output_view *view)
 
       xr_rendering_measure (r, &tw, &th);
 
-      guint w = gdk_window_get_width (gdkw);
-      const gint gutter = 5;
-      gint xpos = (gtk_widget_get_direction (GTK_WIDGET (view->output)) ==  GTK_TEXT_DIR_RTL) ? w - tw - gutter: gutter;
+      gint xpos = get_xpos (view, tw);
 
       if (!item->drawing_area)
         {
