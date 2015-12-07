@@ -45,7 +45,7 @@
               <object class="GtkScrolledWindow" id="scrolledwindow1">
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
-                <property name="hexpand">False</property>
+                <property name="hexpand">True</property>
                 <property name="vexpand">True</property>
                 <property name="hscrollbar_policy">never</property>
                 <property name="shadow_type">in</property>
@@ -63,15 +63,17 @@
                 </child>
               </object>
               <packing>
-                <property name="left_attach">2</property>
+                <property name="left_attach">0</property>
                 <property name="top_attach">0</property>
+                <property name="height">2</property>
               </packing>
             </child>
             <child>
               <object class="GtkScrolledWindow" id="scrolledwindow2">
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
-                <property name="hexpand">True</property>
+                <property name="hexpand">False</property>
+                <property name="vexpand">True</property>
                 <property name="shadow_type">in</property>
                 <child>
                   <object class="PsppireVarView" id="psppire-var-view1">
@@ -87,9 +89,8 @@
                 </child>
               </object>
               <packing>
-                <property name="left_attach">0</property>
+                <property name="left_attach">2</property>
                 <property name="top_attach">0</property>
-                <property name="height">2</property>
               </packing>
             </child>
             <child>
