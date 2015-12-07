@@ -185,7 +185,7 @@ psppire_dialog_action_two_sample_activate (GtkAction *a)
       /* NPAR Specific options */
       GtkWidget *frame = gtk_frame_new (_("Test Type"));
       GtkWidget *bb = gtk_button_box_new (GTK_ORIENTATION_VERTICAL);
-      GtkWidget *box = get_widget_assert (xml, "vbox3");
+      GtkWidget *box = get_widget_assert (xml, "dynamic-populate");
 
 
       strcpy (act->nts[NT_WILCOXON].syntax, "/WILCOXON");
