@@ -863,7 +863,7 @@ SET LOCALE='ru_RU.cp1251'.
 SET LOCALE='japanese'.
 @end example
 
-Contrary to the intuition, this command does not affect any aspect 
+Contrary to intuition, this command does not affect any aspect 
 of the system's locale.
 @end table
 
