@@ -37,19 +37,18 @@ XGETTEXT_OPTIONS = \
 
 $(POTFILE): $(TRANSLATABLE_FILES) $(UI_FILES) src/ui/gui/gen-dot-desktop.sh
 	@$(MKDIR_P) po
-	$(AM_V_GEN)$(XGETTEXT) --directory=$(top_srcdir) $(XGETTEXT_OPTIONS)    $(TRANSLATABLE_FILES) --language=C --keyword=_ --keyword=N_ -o $@
-	$(AM_V_at)$(XGETTEXT) --directory=$(top_srcdir) $(XGETTEXT_OPTIONS) -j $(UI_FILES) --language=glade -o $@
-	$(AM_V_at)$(XGETTEXT) --directory=$(top_srcdir) $(XGETTEXT_OPTIONS) -j src/ui/gui/gen-dot-desktop.sh --language=shell --keyword=TRANSLATE -o $@
-
+	$(AM_V_GEN)$(XGETTEXT) --directory=$(top_srcdir) $(XGETTEXT_OPTIONS)    $(TRANSLATABLE_FILES) --language=C --keyword=_ --keyword=N_ -o $@,tmp
+	$(AM_V_at)$(XGETTEXT) --directory=$(top_srcdir) $(XGETTEXT_OPTIONS) -j $(UI_FILES) --language=glade -o $@,tmp
+	$(AM_V_at)$(XGETTEXT) --directory=$(top_srcdir) $(XGETTEXT_OPTIONS) -j src/ui/gui/gen-dot-desktop.sh --language=shell --keyword=TRANSLATE -o $@,tmp
+	$(SED) -e '/^"POT-Creation-Date: .*/d' $@,tmp > $@
 
 $(POFILES): $(POTFILE)
-	$(AM_V_GEN)$(MSGMERGE) --quiet $(top_srcdir)/$@ $? -o $@
+	$(AM_V_GEN)$(MSGMERGE) --quiet $(top_srcdir)/$@ $? -o $@,tmp
 	$(AM_V_at)if test -e $(top_srcdir)/$@,aux ; then \
-	         touch $@ ; \
-		 msgcat --use-first $(top_srcdir)/$@,aux $@ -o $@; \
+	         touch $@,tmp ; \
+		 msgcat --use-first $(top_srcdir)/$@,aux $@,tmp -o $@,tmp; \
 	fi ;
-
-
+	$(SED) -e '/^"POT-Creation-Date: /d' $@,tmp > $@
 
 SUFFIXES += .po .gmo
 .po.gmo:
@@ -63,14 +62,14 @@ ALL_LOCAL += $(GMOFILES)
 
 install-data-hook: $(GMOFILES)
 	for f in $(GMOFILES); do \
-	  lang=`echo $$f | sed -e 's%po/\(.*\)\.gmo%\1%' ` ; \
+	  lang=`echo $$f | $(SED) -e 's%po/\(.*\)\.gmo%\1%' ` ; \
 	  $(MKDIR_P) $(DESTDIR)$(prefix)/share/locale/$$lang/LC_MESSAGES; \
 	  $(INSTALL_DATA) $$f $(DESTDIR)$(prefix)/share/locale/$$lang/LC_MESSAGES/$(DOMAIN).mo ; \
 	done
 
 uninstall-hook:
 	for f in $(GMOFILES); do \
-	  lang=`echo $$f | sed -e 's%po/\(.*\)\.gmo%\1%' ` ; \
+	  lang=`echo $$f | $(SED) -e 's%po/\(.*\)\.gmo%\1%' ` ; \
 	  rm -f $(DESTDIR)$(prefix)/share/locale/$$lang/LC_MESSAGES/$(DOMAIN).mo ; \
 	done
 
