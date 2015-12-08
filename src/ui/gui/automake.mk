@@ -53,10 +53,11 @@ UI_FILES = \
 	src/ui/gui/weight.ui
 
 
-$(srcdir)/doc/help-pages-list: $(UI_FILES)
-	 cat $^ | grep '"help-page"' | \
-   sed -e 's% *<property name="help-page">\([^<]*\)</property>%//*[@id='"'"'\1'"'"']%' \
+$(top_srcdir)/doc/help-pages-list: $(UI_FILES)
+	 cat $^ | grep '"help[-_]page"' | \
+   $(SED) -e 's% *<property name="help[-_]page">\([^<]*\)</property>%//*[@id='"'"'\1'"'"']%' \
 	-e 's%#%'"'"']/*[@id='"'"'%g' > $@
+
 EXTRA_DIST += doc/help-pages-list
 
 

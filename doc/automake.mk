@@ -61,7 +61,7 @@ $(srcdir)/doc/tut.texi:
 # The SED and AWK filters in this rule, are to work-around some nasty bugs in 
 # makeinfo version 4.13, which produces broken docbook xml.  These workarounds 
 # are rather horrible and must be removed asap.
-$(srcdir)/doc/pspp.xml: doc/pspp.texi $(doc_pspp_TEXINFOS) doc/help-pages-list
+$(srcdir)/doc/pspp.xml: doc/pspp.texi $(doc_pspp_TEXINFOS) $(top_srcdir)/doc/help-pages-list
 	@$(MKDIR_P)  doc
 	$(AM_V_GEN)$(MAKEINFO) $(AM_MAKEINFOFLAGS) --docbook -I $(top_srcdir) \
 		$(top_srcdir)/doc/pspp.texi -o - \
@@ -82,7 +82,7 @@ $(srcdir)/doc/pspp.xml: doc/pspp.texi $(doc_pspp_TEXINFOS) doc/help-pages-list
 	 | $(AWK) '/<para>.*<table.*>.*<\/para>/{x=sub("</para>",""); print; s=1;next}/<\/table>/{print; if (s==1) print "</para>"; s=0; next}1' \
 	> $@,tmp
 	$(AM_V_at)$(XMLLINT) --output /dev/null $@,tmp
-	$(AM_V_at)cat doc/help-pages-list | while read node ; do \
+	$(AM_V_at)cat $(top_srcdir)/doc/help-pages-list | while read node ; do \
 	 $(XMLLINT) --xpath "$$node" $@,tmp > /dev/null; \
 	 if test $$? -ne 0 ; then  echo "$$node does not appear in $@" ; exit 1; fi ; \
 	 done 
