@@ -446,20 +446,6 @@ on_acr_change (const struct aggregate *agg, GtkTreeView *tv)
 }
 
 
-/* Set the pane to 50% of its maximum size */
-static void
-set_initial_pos (GtkPaned *pane)
-{
-  int max_pos;
-  g_object_get (pane, 
-		"max-position", &max_pos,
-		NULL);
-
-  gtk_paned_set_position (pane, max_pos);
-}
-
-
-
 /* Pops up the Aggregate dialog box */
 void
 aggregate_dialog (PsppireDataWindow *dw)
@@ -552,7 +538,6 @@ aggregate_dialog (PsppireDataWindow *dw)
   g_signal_connect_swapped (fd.summary_arg2_entry, "changed", G_CALLBACK (update_acr),  &fd);  
 
 
-  g_signal_connect (fd.pane, "realize", G_CALLBACK (set_initial_pos),  &fd);  
 
 
   g_signal_connect_swapped (fd.function_combo, "changed",
