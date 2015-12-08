@@ -213,9 +213,6 @@ static void on_click (GtkButton *b);
 static void on_realize (GtkWidget *selector);
 
 
-static void update_subjects (PsppireSelector *selector);
-
-
 static void
 psppire_selector_set_property (GObject         *object,
 			       guint            prop_id,
@@ -232,15 +229,15 @@ psppire_selector_set_property (GObject         *object,
       break;
     case PROP_PRIMARY:
       selector->primary_requested = TRUE;
-      update_subjects (selector);
+      psppire_selector_update_subjects (selector);
       break;
     case PROP_SOURCE_WIDGET:
       selector->source = g_value_dup_object (value);
-      update_subjects (selector);
+      psppire_selector_update_subjects (selector);
       break;
     case PROP_DEST_WIDGET:
       selector->dest = g_value_dup_object (value);
-      update_subjects (selector);
+      psppire_selector_update_subjects (selector);
       break;
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
@@ -1013,8 +1010,8 @@ set_default_filter (PsppireSelector *selector)
 }
 
 
-static void
-update_subjects (PsppireSelector *selector)
+void
+psppire_selector_update_subjects (PsppireSelector *selector)
 {
   if ( NULL == selector->dest )
     return;

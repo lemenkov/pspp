@@ -126,6 +126,9 @@ void psppire_selector_set_select_func (PsppireSelector *selector,
 				       SelectItemsFunc *select_func,
 				       gpointer user_data);
 
+/* Force the selector to update its dest and source widgets */
+void psppire_selector_update_subjects (PsppireSelector *selector);
+
 
 void psppire_selector_set_allow (PsppireSelector *, AllowSelectionFunc *);
 

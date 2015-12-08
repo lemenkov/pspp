@@ -334,6 +334,8 @@ connect_notify_signal (GtkWidget *w, gpointer data)
       g_signal_connect_swapped (w, "de-selected",
 				G_CALLBACK (psppire_dialog_notify_change),
 				dialog);
+      
+      psppire_selector_update_subjects (PSPPIRE_SELECTOR (w));
     }
 
   if ( GTK_IS_EDITABLE (w))
