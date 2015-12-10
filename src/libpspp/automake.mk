@@ -129,6 +129,6 @@ $(AM_V_at)(`LC_ALL=C TZ=UTC date`).\";" >> $@,tmp
 	$(AM_V_at)echo "const char locale_dir[] = \"$(datadir)/locale\";" >> $@,tmp
 	$(AM_V_at)echo "const char examples_dir[] = \"$(examplesdir)\";" >> $@,tmp
 	$(AM_V_at)echo "const char *const authors[] = {" >> $@,tmp
-	$(AM_V_at)sed -e 's/^/  \"/' -e 's/$$/\",/' $(top_srcdir)/AUTHORS >> $@,tmp
+	$(AM_V_at)$(SED) -e 's/^/  \"/' -e 's/$$/\",/' $(top_srcdir)/AUTHORS >> $@,tmp
 	$(AM_V_at)echo "0 };" >> $@,tmp
 	mv $@,tmp $@

@@ -128,11 +128,11 @@ dist-hook-git: distfiles
 	fi
 # The following is based on commands for the Automake "distdir" target.
 distfiles: Makefile
-	@srcdirstrip=`echo "$(srcdir)" | sed 's/[].[^$$\\*]/\\\\&/g'`; \
-	topsrcdirstrip=`echo "$(top_srcdir)" | sed 's/[].[^$$\\*]/\\\\&/g'`; \
+	@srcdirstrip=`echo "$(srcdir)" | $(SED) 's/[].[^$$\\*]/\\\\&/g'`; \
+	topsrcdirstrip=`echo "$(top_srcdir)" | $(SED) 's/[].[^$$\\*]/\\\\&/g'`; \
 	list='$(DISTFILES)'; \
 	for file in $$list; do echo $$file; done | \
-	  sed -e "s|^$$srcdirstrip/||;t" \
+	  $(SED) -e "s|^$$srcdirstrip/||;t" \
 	      -e "s|^$$topsrcdirstrip/|$(top_builddir)/|;t" \
 	  | LC_ALL=C sort -u > $@
 CLEANFILES += distfiles gitfiles missing-distfiles

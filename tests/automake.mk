@@ -422,7 +422,7 @@ tests_clean:
 AUTOM4TE = $(SHELL) $(srcdir)/build-aux/missing --run autom4te
 AUTOTEST = $(AUTOM4TE) --language=autotest
 $(TESTSUITE): package.m4 $(srcdir)/tests/testsuite.at $(TESTSUITE_AT) 
-	$(AM_V_GEN)$(AUTOTEST) -I '$(srcdir)' $@.at | sed 's/@<00A0>@/ /g' > $@.tmp
+	$(AM_V_GEN)$(AUTOTEST) -I '$(srcdir)' $@.at | $(SED) 's/@<00A0>@/ /g' > $@.tmp
 	$(AM_V_at)mv $@.tmp $@
 
 # The `:;' works around a Bash 3.2 bug when the output is not writeable.
@@ -471,7 +471,7 @@ valgrind_wrappers = \
 
 $(valgrind_wrappers): tests/valgrind-wrapper.in
 	@$(MKDIR_P) tests/valgrind
-	$(AM_V_GEN)sed -e 's,[@]wrap_program[@],$@,' \
+	$(AM_V_GEN)$(SED) -e 's,[@]wrap_program[@],$@,' \
 		$(top_srcdir)/tests/valgrind-wrapper.in > $@.tmp
 	$(AM_V_at)chmod +x $@.tmp
 	$(AM_V_at)mv $@.tmp $@
