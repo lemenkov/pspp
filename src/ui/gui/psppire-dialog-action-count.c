@@ -150,7 +150,7 @@ psppire_dialog_action_count_activate (GtkAction *a)
   PsppireDialogAction *pda = PSPPIRE_DIALOG_ACTION (a);
   PsppireDialogActionCount *act = PSPPIRE_DIALOG_ACTION_COUNT (a);
 
-  GHashTable *thing = psppire_dialog_action_get_pointer (pda);
+  GHashTable *thing = psppire_dialog_action_get_hash_table (pda);
   GtkBuilder *xml = g_hash_table_lookup (thing, a);
   if (!xml)
     {

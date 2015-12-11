@@ -126,7 +126,7 @@ psppire_dialog_action_reliability_activate (GtkAction *a)
   PsppireDialogActionReliability *act = PSPPIRE_DIALOG_ACTION_RELIABILITY (a);
   GtkTreeModel *liststore ;
 
-  GHashTable *thing = psppire_dialog_action_get_pointer (pda);
+  GHashTable *thing = psppire_dialog_action_get_hash_table (pda);
   GtkBuilder *xml = g_hash_table_lookup (thing, a);
   if (!xml)
     {

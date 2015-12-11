@@ -96,7 +96,7 @@ psppire_dialog_action_scatterplot_activate (GtkAction *a)
   PsppireDialogAction *pda = PSPPIRE_DIALOG_ACTION (a);
   PsppireDialogActionScatterplot *act = PSPPIRE_DIALOG_ACTION_SCATTERPLOT (a);
 
-  GHashTable *thing = psppire_dialog_action_get_pointer (pda);
+  GHashTable *thing = psppire_dialog_action_get_hash_table (pda);
   GtkBuilder *xml = g_hash_table_lookup (thing, a);
   if (!xml)
     {

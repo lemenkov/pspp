@@ -106,21 +106,29 @@ on_destroy_dataset (GObject *w)
   g_hash_table_unref (t);
 }
 
+/* Each toplevel widget - that is the data window, which generally has a 1-1 association
+   with a dataset - has an associated GHashTable.
+   
+   This GHashTable is keyed by the address of a PsppireDialogAction, and its values
+   are user determined pointers (typically a GtkBuilder*).
+
+   This is useful for storing the state of dialogs so they can persist between invocations.
+*/
 GHashTable *
-psppire_dialog_action_get_pointer (PsppireDialogAction *act)
+psppire_dialog_action_get_hash_table (PsppireDialogAction *act)
 {
   set_toplevel (act);
   
-  GHashTable *thing = g_object_get_data (G_OBJECT (act->toplevel), "thing-table");
-  if (thing == NULL)
+  GHashTable *t = g_object_get_data (G_OBJECT (act->toplevel), "thing-table");
+  if (t == NULL)
     {
-      thing = g_hash_table_new_full (g_direct_hash, g_direct_equal, 0, g_object_unref);
-      g_object_set_data (G_OBJECT (act->toplevel), "thing-table", thing);
+      t = g_hash_table_new_full (g_direct_hash, g_direct_equal, 0, g_object_unref);
+      g_object_set_data (G_OBJECT (act->toplevel), "thing-table", t);
       g_object_set_data (G_OBJECT (act->toplevel), "widget-list", NULL);
       g_signal_connect (act->toplevel, "destroy", G_CALLBACK (on_destroy_dataset), NULL);
     }
 
-  return thing;
+  return t;
 }
 
 static void

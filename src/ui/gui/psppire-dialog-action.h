@@ -100,7 +100,7 @@ typedef void (*activation) (GtkAction *);
 
 void psppire_dialog_action_set_activation (gpointer class, activation a);
 
-GHashTable *psppire_dialog_action_get_pointer (PsppireDialogAction *act);
+GHashTable *psppire_dialog_action_get_hash_table (PsppireDialogAction *act);
 
 
 

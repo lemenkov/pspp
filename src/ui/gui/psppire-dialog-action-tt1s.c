@@ -108,7 +108,7 @@ psppire_dialog_action_tt1s_activate (GtkAction *a)
   PsppireDialogAction *pda = PSPPIRE_DIALOG_ACTION (a);
   PsppireDialogActionTt1s *act = PSPPIRE_DIALOG_ACTION_TT1S (a);
 
-  GHashTable *thing = psppire_dialog_action_get_pointer (pda);
+  GHashTable *thing = psppire_dialog_action_get_hash_table (pda);
   GtkBuilder *xml = g_hash_table_lookup (thing, a);
   if (!xml)
     {

@@ -97,7 +97,7 @@ psppire_dialog_action_means_activate (GtkAction *a)
   PsppireDialogAction *pda = PSPPIRE_DIALOG_ACTION (a);
   PsppireDialogActionMeans *act = PSPPIRE_DIALOG_ACTION_MEANS (a);
 
-  GHashTable *thing = psppire_dialog_action_get_pointer (pda);
+  GHashTable *thing = psppire_dialog_action_get_hash_table (pda);
   GtkBuilder *xml = g_hash_table_lookup (thing, a);
   if (!xml)
     {
