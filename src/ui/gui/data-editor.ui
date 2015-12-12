@@ -188,10 +188,12 @@
           </object>
         </child>
         <child>
-          <object class="GtkAction" id="data_aggregate">
+          <object class="PsppireDialogActionAggregate" id="data_aggregate">
 	    <property name="stock-id">data-aggregate</property>
             <property name="name">data_aggregate</property>
+            <property name="manager">uimanager1</property>
             <property name="label" translatable="yes">_Aggregate...</property>
+	    <property name="tooltip" translatable="yes">Aggregate the case values into a new variable</property>
           </object>
         </child>
         <child>

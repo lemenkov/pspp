@@ -16,6 +16,7 @@
 #include "psppire-val-chooser.h"
 #include "psppire-checkbox-treeview.h"
 
+#include "psppire-dialog-action-aggregate.h"
 #include "psppire-dialog-action-barchart.h"
 #include "psppire-dialog-action-binomial.h"
 #include "psppire-dialog-action-chisquare.h"
@@ -72,6 +73,7 @@ preregister_widgets (void)
   psppire_checkbox_treeview_get_type ();
 
   psppire_dialog_action_1sks_get_type ();
+  psppire_dialog_action_aggregate_get_type ();
   psppire_dialog_action_binomial_get_type ();
   psppire_dialog_action_barchart_get_type ();
   psppire_dialog_action_chisquare_get_type ();
