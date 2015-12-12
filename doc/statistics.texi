@@ -423,11 +423,20 @@ The @cmd{GRAPH} produces graphical plots of data. Only one of the subcommands
 @subcmd{HISTOGRAM} or @subcmd{SCATTERPLOT} can be specified, i.e. only one plot
 can be produced per call of @cmd{GRAPH}. The @subcmd{MISSING} is optional. 
 
+@menu
+* SCATTERPLOT::             Cartesian Plots
+* HISTOGRAM::               Histograms
+* BAR CHART::               Bar Charts
+@end menu
+
+@node SCATTERPLOT
+@subsection Scatterplot
 @cindex scatterplot
 
-The subcommand @subcmd{SCATTERPLOT} produces an xy plot of the data. The different 
-values of the optional third variable @var{var3} will result in different colours and/or
-markers for the plot. The following is an example for producing a scatterplot.
+The subcommand @subcmd{SCATTERPLOT} produces an xy plot of the
+data. The different values of the optional third variable @var{var3}
+will result in different colours and/or markers for the plot. The
+following is an example for producing a scatterplot.
 
 @example
 GRAPH   
@@ -438,6 +447,8 @@ This example will produce a scatterplot where @var{height} is plotted versus @va
 on the value of the @var{gender} variable, the colour of the datapoint is different. With
 this plot it is possible to analyze gender differences for @var{height} vs.@: @var{weight} relation.
 
+@node HISTOGRAM
+@subsection Histogram
 @cindex histogram
 
 The subcommand @subcmd{HISTOGRAM} produces a histogram. Only one variable is allowed for
@@ -452,7 +463,10 @@ GRAPH
         /HISTOGRAM = @var{weight}.
 @end example
 
+@node BAR CHART
+@subsection Bar Chart
 @cindex bar chart
+
 The subcommand @subcmd{BAR} produces a bar chart.
 This subcommand requires that a @var{count-function} be specified (with no arguments) or a @var{summary-function} with a variable @var{var1} in parentheses.
 Following the summary or count function, the keyword @subcmd{BY} should be specified and then a catagorical variable, @var{var2}.
