@@ -317,11 +317,6 @@ gboolean               pspp_sheet_view_get_dest_row_at_pos           (PsppSheetV
 								    GtkTreePath              **path,
 								    PsppSheetViewDropPosition   *pos);
 
-#if GTK3_TRANSITION
-GdkPixmap             *pspp_sheet_view_create_row_drag_icon          (PsppSheetView               *tree_view,
-								    GtkTreePath               *path);
-#endif
-
 /* Interactive search */
 void                       pspp_sheet_view_set_enable_search     (PsppSheetView                *tree_view,
 								gboolean                    enable_search);

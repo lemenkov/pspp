@@ -361,10 +361,6 @@ static void     pspp_sheet_view_search_position_func      (PsppSheetView      *t
 static void     pspp_sheet_view_search_disable_popdown    (GtkEntry         *entry,
 							 GtkMenu          *menu,
 							 gpointer          data);
-#if GTK3_TRANSITION
-static void     pspp_sheet_view_search_preedit_changed    (GtkIMContext     *im_context,
-							 PsppSheetView      *tree_view);
-#endif
 static void     pspp_sheet_view_search_activate           (GtkEntry         *entry,
 							 PsppSheetView      *tree_view);
 static gboolean pspp_sheet_view_real_search_enable_popdown(gpointer          data);
@@ -772,27 +768,6 @@ pspp_sheet_view_class_init (PsppSheetViewClass *class)
 								GTK_PARAM_READABLE));
 
   /* Signals */
-#if GTK3_TRANSITION
-  /**
-   * PsppSheetView::set-scroll-adjustments
-   * @horizontal: the horizontal #GtkAdjustment
-   * @vertical: the vertical #GtkAdjustment
-   *
-   * Set the scroll adjustments for the tree view. Usually scrolled containers
-   * like #GtkScrolledWindow will emit this signal to connect two instances
-   * of #GtkScrollbar to the scroll directions of the #PsppSheetView.
-   */
-  widget_class->set_scroll_adjustments_signal =
-    g_signal_new ("set-scroll-adjustments",
-		  G_TYPE_FROM_CLASS (o_class),
-		  G_SIGNAL_RUN_LAST | G_SIGNAL_ACTION,
-		  G_STRUCT_OFFSET (PsppSheetViewClass, set_scroll_adjustments),
-		  NULL, NULL,
-		  psppire_marshal_VOID__OBJECT_OBJECT,
-		  G_TYPE_NONE, 2,
-		  GTK_TYPE_ADJUSTMENT,
-		  GTK_TYPE_ADJUSTMENT);
-#endif
 
   /**
    * PsppSheetView::row-activated:
@@ -2953,246 +2928,6 @@ update_prelight (PsppSheetView *tree_view,
 static void
 pspp_sheet_view_motion_draw_column_motion_arrow (PsppSheetView *tree_view)
 {
-#if GTK3_TRANSITION
-  PsppSheetViewColumnReorder *reorder = tree_view->priv->cur_reorder;
-  GtkWidget *widget = GTK_WIDGET (tree_view);
-  GdkBitmap *mask = NULL;
-  gint x;
-  gint y;
-  gint width;
-  gint height;
-  gint arrow_type = DRAG_COLUMN_WINDOW_STATE_UNSET;
-  GdkWindowAttr attributes;
-  guint attributes_mask;
-
-  if (!reorder ||
-      reorder->left_column == tree_view->priv->drag_column ||
-      reorder->right_column == tree_view->priv->drag_column)
-    arrow_type = DRAG_COLUMN_WINDOW_STATE_ORIGINAL;
-  else if (reorder->left_column || reorder->right_column)
-    {
-      GdkRectangle visible_rect;
-      pspp_sheet_view_get_visible_rect (tree_view, &visible_rect);
-      if (reorder->left_column)
-	x = reorder->left_column->allocation.x + reorder->left_column->allocation.width;
-      else
-	x = reorder->right_column->allocation.x;
-
-      if (x < visible_rect.x)
-	arrow_type = DRAG_COLUMN_WINDOW_STATE_ARROW_LEFT;
-      else if (x > visible_rect.x + visible_rect.width)
-	arrow_type = DRAG_COLUMN_WINDOW_STATE_ARROW_RIGHT;
-      else
-        arrow_type = DRAG_COLUMN_WINDOW_STATE_ARROW;
-    }
-
-  /* We want to draw the rectangle over the initial location. */
-  if (arrow_type == DRAG_COLUMN_WINDOW_STATE_ORIGINAL)
-    {
-      GdkGC *gc;
-      GdkColor col;
-
-      if (tree_view->priv->drag_column_window_state != DRAG_COLUMN_WINDOW_STATE_ORIGINAL)
-	{
-	  if (tree_view->priv->drag_highlight_window)
-	    {
-	      gdk_window_set_user_data (tree_view->priv->drag_highlight_window,
-					NULL);
-	      gdk_window_destroy (tree_view->priv->drag_highlight_window);
-	    }
-
-	  attributes.window_type = GDK_WINDOW_CHILD;
-	  attributes.wclass = GDK_INPUT_OUTPUT;
-          attributes.x = tree_view->priv->drag_column_x;
-          attributes.y = 0;
-	  width = attributes.width = tree_view->priv->drag_column->allocation.width;
-	  height = attributes.height = tree_view->priv->drag_column->allocation.height;
-	  attributes.visual = gtk_widget_get_visual (GTK_WIDGET (tree_view));
-	  attributes.colormap = gtk_widget_get_colormap (GTK_WIDGET (tree_view));
-	  attributes.event_mask = GDK_VISIBILITY_NOTIFY_MASK | GDK_EXPOSURE_MASK | GDK_POINTER_MOTION_MASK;
-	  attributes_mask = GDK_WA_X | GDK_WA_Y | GDK_WA_VISUAL | GDK_WA_COLORMAP;
-	  tree_view->priv->drag_highlight_window = gdk_window_new (tree_view->priv->header_window, &attributes, attributes_mask);
-	  gdk_window_set_user_data (tree_view->priv->drag_highlight_window, GTK_WIDGET (tree_view));
-
-	  mask = gdk_pixmap_new (tree_view->priv->drag_highlight_window, width, height, 1);
-	  gc = gdk_gc_new (mask);
-	  col.pixel = 1;
-	  gdk_gc_set_foreground (gc, &col);
-	  gdk_draw_rectangle (mask, gc, TRUE, 0, 0, width, height);
-	  col.pixel = 0;
-	  gdk_gc_set_foreground(gc, &col);
-	  gdk_draw_rectangle (mask, gc, TRUE, 2, 2, width - 4, height - 4);
-	  g_object_unref (gc);
-
-	  gdk_window_shape_combine_mask (tree_view->priv->drag_highlight_window,
-					 mask, 0, 0);
-	  if (mask) g_object_unref (mask);
-	  tree_view->priv->drag_column_window_state = DRAG_COLUMN_WINDOW_STATE_ORIGINAL;
-	}
-    }
-  else if (arrow_type == DRAG_COLUMN_WINDOW_STATE_ARROW)
-    {
-      gint i, j = 1;
-      GdkGC *gc;
-      GdkColor col;
-
-      width = tree_view->priv->expander_size;
-
-      /* Get x, y, width, height of arrow */
-      gdk_window_get_origin (tree_view->priv->header_window, &x, &y);
-      if (reorder->left_column)
-	{
-	  x += reorder->left_column->allocation.x + reorder->left_column->allocation.width - width/2;
-	  height = reorder->left_column->allocation.height;
-	}
-      else
-	{
-	  x += reorder->right_column->allocation.x - width/2;
-	  height = reorder->right_column->allocation.height;
-	}
-      y -= tree_view->priv->expander_size/2; /* The arrow takes up only half the space */
-      height += tree_view->priv->expander_size;
-
-      /* Create the new window */
-      if (tree_view->priv->drag_column_window_state != DRAG_COLUMN_WINDOW_STATE_ARROW)
-	{
-	  if (tree_view->priv->drag_highlight_window)
-	    {
-	      gdk_window_set_user_data (tree_view->priv->drag_highlight_window,
-					NULL);
-	      gdk_window_destroy (tree_view->priv->drag_highlight_window);
-	    }
-
-	  attributes.window_type = GDK_WINDOW_TEMP;
-	  attributes.wclass = GDK_INPUT_OUTPUT;
-	  attributes.visual = gtk_widget_get_visual (GTK_WIDGET (tree_view));
-	  attributes.colormap = gtk_widget_get_colormap (GTK_WIDGET (tree_view));
-	  attributes.event_mask = GDK_VISIBILITY_NOTIFY_MASK | GDK_EXPOSURE_MASK | GDK_POINTER_MOTION_MASK;
-	  attributes_mask = GDK_WA_X | GDK_WA_Y | GDK_WA_VISUAL | GDK_WA_COLORMAP;
-          attributes.x = x;
-          attributes.y = y;
-	  attributes.width = width;
-	  attributes.height = height;
-	  tree_view->priv->drag_highlight_window = gdk_window_new (gtk_widget_get_root_window (widget),
-								   &attributes, attributes_mask);
-	  gdk_window_set_user_data (tree_view->priv->drag_highlight_window, GTK_WIDGET (tree_view));
-
-	  mask = gdk_pixmap_new (tree_view->priv->drag_highlight_window, width, height, 1);
-	  gc = gdk_gc_new (mask);
-	  col.pixel = 1;
-	  gdk_gc_set_foreground (gc, &col);
-	  gdk_draw_rectangle (mask, gc, TRUE, 0, 0, width, height);
-
-	  /* Draw the 2 arrows as per above */
-	  col.pixel = 0;
-	  gdk_gc_set_foreground (gc, &col);
-	  for (i = 0; i < width; i ++)
-	    {
-	      if (i == (width/2 - 1))
-		continue;
-	      gdk_draw_line (mask, gc, i, j, i, height - j);
-	      if (i < (width/2 - 1))
-		j++;
-	      else
-		j--;
-	    }
-	  g_object_unref (gc);
-	  gdk_window_shape_combine_mask (tree_view->priv->drag_highlight_window,
-					 mask, 0, 0);
-	  if (mask) g_object_unref (mask);
-	}
-
-      tree_view->priv->drag_column_window_state = DRAG_COLUMN_WINDOW_STATE_ARROW;
-      gdk_window_move (tree_view->priv->drag_highlight_window, x, y);
-    }
-  else if (arrow_type == DRAG_COLUMN_WINDOW_STATE_ARROW_LEFT ||
-	   arrow_type == DRAG_COLUMN_WINDOW_STATE_ARROW_RIGHT)
-    {
-      gint i, j = 1;
-      GdkGC *gc;
-      GdkColor col;
-
-      width = tree_view->priv->expander_size;
-
-      /* Get x, y, width, height of arrow */
-      width = width/2; /* remember, the arrow only takes half the available width */
-      gdk_window_get_origin (gtk_widget_get_window (widget), &x, &y);
-      if (arrow_type == DRAG_COLUMN_WINDOW_STATE_ARROW_RIGHT)
-	x += widget->allocation.width - width;
-
-      if (reorder->left_column)
-	height = reorder->left_column->allocation.height;
-      else
-	height = reorder->right_column->allocation.height;
-
-      y -= tree_view->priv->expander_size;
-      height += 2*tree_view->priv->expander_size;
-
-      /* Create the new window */
-      if (tree_view->priv->drag_column_window_state != DRAG_COLUMN_WINDOW_STATE_ARROW_LEFT &&
-	  tree_view->priv->drag_column_window_state != DRAG_COLUMN_WINDOW_STATE_ARROW_RIGHT)
-	{
-	  if (tree_view->priv->drag_highlight_window)
-	    {
-	      gdk_window_set_user_data (tree_view->priv->drag_highlight_window,
-					NULL);
-	      gdk_window_destroy (tree_view->priv->drag_highlight_window);
-	    }
-
-	  attributes.window_type = GDK_WINDOW_TEMP;
-	  attributes.wclass = GDK_INPUT_OUTPUT;
-	  attributes.visual = gtk_widget_get_visual (GTK_WIDGET (tree_view));
-	  attributes.colormap = gtk_widget_get_colormap (GTK_WIDGET (tree_view));
-	  attributes.event_mask = GDK_VISIBILITY_NOTIFY_MASK | GDK_EXPOSURE_MASK | GDK_POINTER_MOTION_MASK;
-	  attributes_mask = GDK_WA_X | GDK_WA_Y | GDK_WA_VISUAL | GDK_WA_COLORMAP;
-          attributes.x = x;
-          attributes.y = y;
-	  attributes.width = width;
-	  attributes.height = height;
-	  tree_view->priv->drag_highlight_window = gdk_window_new (NULL, &attributes, attributes_mask);
-	  gdk_window_set_user_data (tree_view->priv->drag_highlight_window, GTK_WIDGET (tree_view));
-
-	  mask = gdk_pixmap_new (tree_view->priv->drag_highlight_window, width, height, 1);
-	  gc = gdk_gc_new (mask);
-	  col.pixel = 1;
-	  gdk_gc_set_foreground (gc, &col);
-	  gdk_draw_rectangle (mask, gc, TRUE, 0, 0, width, height);
-
-	  /* Draw the 2 arrows as per above */
-	  col.pixel = 0;
-	  gdk_gc_set_foreground (gc, &col);
-	  j = tree_view->priv->expander_size;
-	  for (i = 0; i < width; i ++)
-	    {
-	      gint k;
-	      if (arrow_type == DRAG_COLUMN_WINDOW_STATE_ARROW_LEFT)
-		k = width - i - 1;
-	      else
-		k = i;
-	      gdk_draw_line (mask, gc, k, j, k, height - j);
-	      gdk_draw_line (mask, gc, k, 0, k, tree_view->priv->expander_size - j);
-	      gdk_draw_line (mask, gc, k, height, k, height - tree_view->priv->expander_size + j);
-	      j--;
-	    }
-	  g_object_unref (gc);
-	  gdk_window_shape_combine_mask (tree_view->priv->drag_highlight_window,
-					 mask, 0, 0);
-	  if (mask) g_object_unref (mask);
-	}
-
-      tree_view->priv->drag_column_window_state = arrow_type;
-      gdk_window_move (tree_view->priv->drag_highlight_window, x, y);
-   }
-  else
-    {
-      g_warning (G_STRLOC"Invalid PsppSheetViewColumnReorder struct");
-      gdk_window_hide (tree_view->priv->drag_highlight_window);
-      return;
-    }
-
-  gdk_window_show (tree_view->priv->drag_highlight_window);
-  gdk_window_raise (tree_view->priv->drag_highlight_window);
-#endif
 }
 
 static gboolean
@@ -3647,52 +3382,6 @@ pspp_sheet_view_update_rubber_band (PsppSheetView *tree_view)
   pspp_sheet_view_update_rubber_band_selection (tree_view);
 }
 
-#if GTK3_TRANSITION
-static void
-pspp_sheet_view_paint_rubber_band (PsppSheetView  *tree_view,
-				GdkRectangle *area)
-{
-  cairo_t *cr;
-  GdkRectangle rect;
-  GdkRectangle rubber_rect;
-  GtkStyle *style;
-
-  return;
-  rubber_rect.x = MIN (tree_view->priv->press_start_x, tree_view->priv->rubber_band_x);
-  rubber_rect.y = MIN (tree_view->priv->press_start_y, tree_view->priv->rubber_band_y) - tree_view->priv->dy;
-  rubber_rect.width = ABS (tree_view->priv->press_start_x - tree_view->priv->rubber_band_x) + 1;
-  rubber_rect.height = ABS (tree_view->priv->press_start_y - tree_view->priv->rubber_band_y) + 1;
-
-  if (!gdk_rectangle_intersect (&rubber_rect, area, &rect))
-    return;
-
-  cr = gdk_cairo_create (tree_view->priv->bin_window);
-  cairo_set_line_width (cr, 1.0);
-
-  style = gtk_widget_get_style (GTK_WIDGET (tree_view));
-  cairo_set_source_rgba (cr,
-			 style->fg[GTK_STATE_NORMAL].red / 65535.,
-			 style->fg[GTK_STATE_NORMAL].green / 65535.,
-			 style->fg[GTK_STATE_NORMAL].blue / 65535.,
-			 .25);
-
-  gdk_cairo_rectangle (cr, &rect);
-  cairo_clip (cr);
-  cairo_paint (cr);
-
-  cairo_set_source_rgb (cr,
-			style->fg[GTK_STATE_NORMAL].red / 65535.,
-			style->fg[GTK_STATE_NORMAL].green / 65535.,
-			style->fg[GTK_STATE_NORMAL].blue / 65535.);
-
-  cairo_rectangle (cr,
-		   rubber_rect.x + 0.5, rubber_rect.y + 0.5,
-		   rubber_rect.width - 1, rubber_rect.height - 1);
-  cairo_stroke (cr);
-
-  cairo_destroy (cr);
-}
-#endif
 
 
 static gboolean
@@ -3928,12 +3617,6 @@ pspp_sheet_view_draw_bin (GtkWidget      *widget,
       return;
     }
 
-#if GTK3_TRANSITION
-  /* clip event->area to the visible area */
-  if (Zarea.height < 0.5)
-    return;
-#endif
-
   validate_visible_area (tree_view);
 
   new_y = TREE_WINDOW_Y_TO_RBTREE_Y (tree_view, Zarea.y);
@@ -4065,15 +3748,6 @@ pspp_sheet_view_draw_bin (GtkWidget      *widget,
           else
             selected_column = TRUE;
 
-#if GTK3_TRANSITION
-	  if (cell_offset > Zarea.x + Zarea.width ||
-	      cell_offset + column->width < Zarea.x)
-	    {
-	      cell_offset += column->width;
-	      continue;
-	    }
-#endif
-
           if (selected && selected_column)
             flags |= GTK_CELL_RENDERER_SELECTED;
           else
@@ -4122,11 +3796,7 @@ pspp_sheet_view_draw_bin (GtkWidget      *widget,
 	      cell_area.height -= grid_line_width;
 	    }
 
-#if GTK3_TRANSITION
-	  if (gdk_region_rect_in (event->region, &background_area) == GDK_OVERLAP_RECTANGLE_OUT)
-#else
 	  if (!gdk_rectangle_intersect (&background_area, &exposed_rect, NULL))
-#endif
 	    {
 	      cell_offset += column->width;
 	      continue;
@@ -4206,33 +3876,16 @@ pspp_sheet_view_draw_bin (GtkWidget      *widget,
 
 	      if (background_area.y >= 0)
 		{
-#if GTK3_TRANSITION
-		  gdk_draw_line (event->window,
-				 tree_view->priv->grid_line_gc[widget->state],
-				 background_area.x, background_area.y,
-				 background_area.x + background_area.width,
-				 background_area.y);
-#else
 		  cairo_move_to (cr, background_area.x, background_area.y - 0.5);
 		  cairo_line_to (cr, background_area.x + background_area.width,
 				 background_area.y - 0.5);
-#endif
 		}
 
 	      if (y_offset + max_height <= Zarea.height - 0.5)
 		{
-#if GTK3_TRANSITION
-		  gdk_draw_line (event->window,
-				 tree_view->priv->grid_line_gc[widget->state],
-				 background_area.x, background_area.y + max_height,
-				 background_area.x + background_area.width,
-				 background_area.y + max_height);
-#else
-
 		  cairo_move_to (cr, background_area.x, background_area.y + max_height - 0.5);
 		  cairo_line_to (cr, background_area.x + background_area.width,
 				 background_area.y + max_height - 0.5);
-#endif
 		}
 	      cairo_stroke (cr);
 	    }
@@ -4301,17 +3954,6 @@ pspp_sheet_view_draw_bin (GtkWidget      *widget,
               break;
             }
 
-#if GTK3_TRANSITION
-          if (highlight_y >= 0)
-            {
-              gdk_draw_line (event->window,
-                             widget->style->fg_gc[gtk_widget_get_state (widget)],
-                             0,
-                             highlight_y,
-                             rtl ? 0 : bin_window_width,
-                             highlight_y);
-            }
-#endif
         }
 
       y_offset += max_height;
@@ -4337,23 +3979,6 @@ pspp_sheet_view_draw_bin (GtkWidget      *widget,
 done:
   pspp_sheet_view_draw_vertical_grid_lines (tree_view, cr, n_visible_columns,
                                    min_y, max_y);
-
-#if GTK3_TRANSITION
- if (tree_view->priv->rubber_band_status == RUBBER_BAND_ACTIVE)
-   {
-     GdkRectangle *rectangles;
-     gint n_rectangles;
-
-     gdk_region_get_rectangles (event->region,
-				&rectangles,
-				&n_rectangles);
-
-     while (n_rectangles--)
-       pspp_sheet_view_paint_rubber_band (tree_view, &rectangles[n_rectangles]);
-
-     g_free (rectangles);
-   }
-#endif
 
   if (cursor_path)
     gtk_tree_path_free (cursor_path);
@@ -6075,45 +5700,6 @@ static void
 pspp_sheet_view_drag_begin (GtkWidget      *widget,
                           GdkDragContext *context)
 {
-#if GTK3_TRANSITION
-  PsppSheetView *tree_view;
-  GtkTreePath *path = NULL;
-  gint cell_x, cell_y;
-  GdkPixmap *row_pix;
-  TreeViewDragInfo *di;
-
-  tree_view = PSPP_SHEET_VIEW (widget);
-
-  /* if the user uses a custom DND source impl, we don't set the icon here */
-  di = get_info (tree_view);
-
-  if (di == NULL || !di->source_set)
-    return;
-
-  pspp_sheet_view_get_path_at_pos (tree_view,
-                                 tree_view->priv->press_start_x,
-                                 tree_view->priv->press_start_y,
-                                 &path,
-                                 NULL,
-                                 &cell_x,
-                                 &cell_y);
-
-  g_return_if_fail (path != NULL);
-
-  row_pix = pspp_sheet_view_create_row_drag_icon (tree_view,
-                                                path);
-
-  gtk_drag_set_icon_pixmap (context,
-                            gdk_drawable_get_colormap (row_pix),
-                            row_pix,
-                            NULL,
-                            /* the + 1 is for the black border in the icon */
-                            tree_view->priv->press_start_x + 1,
-                            cell_y + 1);
-
-  g_object_unref (row_pix);
-  gtk_tree_path_free (path);
-#endif
 }
 
 
@@ -8557,13 +8143,6 @@ pspp_sheet_view_ensure_interactive_directory (PsppSheetView *tree_view)
   g_signal_connect (tree_view->priv->search_entry,
 		    "activate", G_CALLBACK (pspp_sheet_view_search_activate),
 		    tree_view);
-
-#if GTK3_TRANSITION
-  g_signal_connect (GTK_ENTRY (tree_view->priv->search_entry)->im_context,
-		    "preedit-changed",
-		    G_CALLBACK (pspp_sheet_view_search_preedit_changed),
-		    tree_view);
-#endif
 
   gtk_container_add (GTK_CONTAINER (vbox),
 		     tree_view->priv->search_entry);
@@ -11145,130 +10724,6 @@ pspp_sheet_view_get_dest_row_at_pos (PsppSheetView             *tree_view,
 }
 
 
-#if GTK3_TRANSITION
-/* KEEP IN SYNC WITH PSPP_SHEET_VIEW_BIN_EXPOSE */
-/**
- * pspp_sheet_view_create_row_drag_icon:
- * @tree_view: a #PsppSheetView
- * @path: a #GtkTreePath in @tree_view
- *
- * Creates a #GdkPixmap representation of the row at @path.  
- * This image is used for a drag icon.
- *
- * Return value: a newly-allocated pixmap of the drag icon.
- **/
-GdkPixmap *
-pspp_sheet_view_create_row_drag_icon (PsppSheetView  *tree_view,
-                                    GtkTreePath  *path)
-{
-  GtkTreeIter   iter;
-  int node;
-  gint cell_offset;
-  GList *list;
-  GdkRectangle background_area;
-  GdkRectangle expose_area;
-  GtkWidget *widget;
-  /* start drawing inside the black outline */
-  gint x = 1, y = 1;
-  GdkDrawable *drawable;
-  gint bin_window_width;
-  gboolean rtl;
-
-  g_return_val_if_fail (PSPP_IS_SHEET_VIEW (tree_view), NULL);
-  g_return_val_if_fail (path != NULL, NULL);
-
-  widget = GTK_WIDGET (tree_view);
-
-  if (!gtk_widget_get_realized (widget))
-    return NULL;
-
-  _pspp_sheet_view_find_node (tree_view,
-                            path,
-                            &node);
-
-  if (node < 0)
-    return NULL;
-
-  if (!gtk_tree_model_get_iter (tree_view->priv->model,
-                                &iter,
-                                path))
-    return NULL;
-  
-  cell_offset = x;
-
-  background_area.y = y;
-  background_area.height = ROW_HEIGHT (tree_view);
-
-  bin_window_width = gdk_window_get_width (tree_view->priv->bin_window);
-
-  drawable = gdk_pixmap_new (tree_view->priv->bin_window,
-                             bin_window_width + 2,
-                             background_area.height + 2,
-                             -1);
-
-  expose_area.x = 0;
-  expose_area.y = 0;
-  expose_area.width = bin_window_width + 2;
-  expose_area.height = background_area.height + 2;
-
-#if GTK3_TRANSITION
-  gdk_draw_rectangle (drawable,
-                      widget->style->base_gc [gtk_widget_get_state (widget)],
-                      TRUE,
-                      0, 0,
-                      bin_window_width + 2,
-                      background_area.height + 2);
-#endif
-
-  rtl = gtk_widget_get_direction (GTK_WIDGET (tree_view)) == GTK_TEXT_DIR_RTL;
-
-  for (list = (rtl ? g_list_last (tree_view->priv->columns) : g_list_first (tree_view->priv->columns));
-      list;
-      list = (rtl ? list->prev : list->next))
-    {
-      PsppSheetViewColumn *column = list->data;
-      GdkRectangle cell_area;
-      gint vertical_separator;
-
-      if (!column->visible)
-        continue;
-
-      pspp_sheet_view_column_cell_set_cell_data (column, tree_view->priv->model, &iter);
-
-      background_area.x = cell_offset;
-      background_area.width = column->width;
-
-      gtk_widget_style_get (widget,
-			    "vertical-separator", &vertical_separator,
-			    NULL);
-
-      cell_area = background_area;
-
-      cell_area.y += vertical_separator / 2;
-      cell_area.height -= vertical_separator;
-
-      if (pspp_sheet_view_column_cell_is_visible (column))
-        _pspp_sheet_view_column_cell_render (column,
-                                             drawable,
-                                             &background_area,
-                                             &cell_area,
-                                             &expose_area,
-                                             0);
-      cell_offset += column->width;
-    }
-
-#if GTK3_TRANSITION
-  gdk_draw_rectangle (drawable,
-                      widget->style->black_gc,
-                      FALSE,
-                      0, 0,
-                      bin_window_width + 1,
-                      background_area.height + 1);
-#endif
-
-  return drawable;
-}
-#endif
 
 /**
  * pspp_sheet_view_set_destroy_count_func:
@@ -11659,26 +11114,6 @@ pspp_sheet_view_search_disable_popdown (GtkEntry *entry,
 		    G_CALLBACK (pspp_sheet_view_search_enable_popdown), data);
 }
 
-#if GTK3_TRANSITION
-/* Because we're visible but offscreen, we just set a flag in the preedit
- * callback.
- */
-static void
-pspp_sheet_view_search_preedit_changed (GtkIMContext *im_context,
-				      PsppSheetView  *tree_view)
-{
-  tree_view->priv->imcontext_changed = 1;
-  if (tree_view->priv->typeselect_flush_timeout)
-    {
-      g_source_remove (tree_view->priv->typeselect_flush_timeout);
-      tree_view->priv->typeselect_flush_timeout =
-	gdk_threads_add_timeout (PSPP_SHEET_VIEW_SEARCH_DIALOG_TIMEOUT,
-		       (GSourceFunc) pspp_sheet_view_search_entry_flush_timeout,
-		       tree_view);
-    }
-
-}
-#endif
 
 static void
 pspp_sheet_view_search_activate (GtkEntry    *entry,
