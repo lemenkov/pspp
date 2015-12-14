@@ -621,7 +621,7 @@ format for @var{format}, system-missing is returned.
 @end deftypefn
 
 @cindex strings, searching backwards
-@deftypefn {Function} {} RINDEX (@var{string}, @var{format})
+@deftypefn {Function} {} RINDEX (@var{haystack}, @var{needle})
 Returns a positive integer indicating the position of the last
 occurrence of @var{needle} in @var{haystack}.  Returns 0 if
 @var{haystack} does not contain @var{needle}.  Returns system-missing if
@@ -634,7 +634,7 @@ Searches @var{haystack} for the last occurrence of each part, and
 returns the largest value.  Returns 0 if @var{haystack} does not contain
 any part in @var{needle}.  It is an error if @var{needle_len} does not
 evenly divide the length of @var{needle}.  Returns system-missing
-if @var{needle} is an empty string.
+if @var{needle} is an empty string or if needle_len is less than 1.
 @end deftypefn
 
 @cindex padding strings

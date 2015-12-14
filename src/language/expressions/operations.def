@@ -417,7 +417,7 @@ function RINDEX (string haystack, string needle)
 
 function RINDEX (string haystack, string needles, needle_len_d)
 {
-  if (needle_len_d <= INT_MIN || needle_len_d >= INT_MAX
+  if (needle_len_d <= 0 || needle_len_d >= INT_MAX
       || (int) needle_len_d != needle_len_d
       || needles.length == 0)
     return SYSMIS;
