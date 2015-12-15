@@ -3024,13 +3024,13 @@ pspp_sheet_view_column_cell_get_size (PsppSheetViewColumn  *tree_column,
       if (first_cell == FALSE && width)
 	*width += tree_column->spacing;
 
-      gtk_cell_renderer_get_size (info->cell,
-				  tree_column->tree_view,
-				  cell_area,
-				  x_offset,
-				  y_offset,
-				  &new_width,
-				  &new_height);
+      gtk_cell_renderer_get_padding (info->cell, x_offset, y_offset);
+      gtk_cell_renderer_get_preferred_width (info->cell, tree_column->tree_view,
+					     NULL, &new_width);
+
+      gtk_cell_renderer_get_preferred_height (info->cell, tree_column->tree_view,
+					      NULL, &new_height);
+
 
       if (height)
 	* height = MAX (*height, new_height + focus_line_width * 2);
@@ -3224,11 +3224,15 @@ pspp_sheet_view_column_cell_process_action (PsppSheetViewColumn  *tree_column,
 	{
 	  gint x_offset, y_offset, width, height;
 
-	  gtk_cell_renderer_get_size (info->cell,
-				      tree_column->tree_view,
-				      &rtl_cell_area,
-				      &x_offset, &y_offset,
-				      &width, &height);
+	  gtk_cell_renderer_get_preferred_height (info->cell, tree_column->tree_view,
+						  NULL, &height);
+
+	  gtk_cell_renderer_get_preferred_width (info->cell, tree_column->tree_view,
+						  NULL, &width);
+
+
+	  gtk_cell_renderer_get_padding (info->cell,
+					 &x_offset, &y_offset);
 
 	  if (special_cells > 1)
 	    {
@@ -3388,11 +3392,15 @@ pspp_sheet_view_column_cell_process_action (PsppSheetViewColumn  *tree_column,
 	{
 	  gint x_offset, y_offset, width, height;
 
-	  gtk_cell_renderer_get_size (info->cell,
-				      tree_column->tree_view,
-				      &rtl_cell_area,
-				      &x_offset, &y_offset,
-				      &width, &height);
+	  gtk_cell_renderer_get_preferred_height (info->cell, tree_column->tree_view,
+						  NULL, &height);
+
+	  gtk_cell_renderer_get_preferred_width (info->cell, tree_column->tree_view,
+						  NULL, &width);
+
+
+	  gtk_cell_renderer_get_padding (info->cell,
+					 &x_offset, &y_offset);
 
 	  if (special_cells > 1)
 	    {
@@ -3641,6 +3649,7 @@ pspp_sheet_view_column_cell_last (PsppSheetViewColumn *tree_column)
 
   return NULL;
 }
+
 
 static GList *
 pspp_sheet_view_column_cell_next (PsppSheetViewColumn *tree_column,
@@ -4295,7 +4304,7 @@ pspp_sheet_view_column_size_request (PsppSheetViewColumn       *tree_column,
 
   if (tree_column->button)
     {
-      gtk_widget_size_request (tree_column->button, request);
+      gtk_widget_get_preferred_size (tree_column->button, NULL, request);
       return;
     }
 
