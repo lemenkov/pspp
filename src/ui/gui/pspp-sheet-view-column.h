@@ -64,7 +64,6 @@ struct _PsppSheetViewColumn
   GtkWidget *PSEAL (tree_view);
   GtkWidget *PSEAL (button);
   GtkWidget *PSEAL (child);
-  GtkWidget *PSEAL (arrow);
   GtkWidget *PSEAL (alignment);
   GdkWindow *PSEAL (window);
   GtkCellEditable *PSEAL (editable_widget);

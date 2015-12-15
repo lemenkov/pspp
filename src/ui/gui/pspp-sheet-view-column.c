@@ -1,5 +1,5 @@
 /* PSPPIRE - a graphical user interface for PSPP.
-   Copyright (C) 2011, 2012 Free Software Foundation, Inc.
+   Copyright (C) 2011, 2012, 2015 Free Software Foundation, Inc.
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -1047,7 +1047,6 @@ pspp_sheet_view_column_create_button (PsppSheetViewColumn *tree_column)
   tree_column->alignment = gtk_alignment_new (tree_column->xalign, 0.5, 0.0, 0.0);
 
   hbox = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 2);
-  tree_column->arrow = gtk_arrow_new (GTK_ARROW_DOWN, GTK_SHADOW_IN);
 
   if (tree_column->child)
     child = tree_column->child;
@@ -1061,10 +1060,6 @@ pspp_sheet_view_column_create_button (PsppSheetViewColumn *tree_column)
 		    G_CALLBACK (pspp_sheet_view_column_mnemonic_activate),
 		    tree_column);
 
-  if (tree_column->xalign <= 0.5)
-    gtk_box_pack_end (GTK_BOX (hbox), tree_column->arrow, FALSE, FALSE, 0);
-  else
-    gtk_box_pack_start (GTK_BOX (hbox), tree_column->arrow, FALSE, FALSE, 0);
 
   gtk_box_pack_start (GTK_BOX (hbox), tree_column->alignment, TRUE, TRUE, 0);
         
@@ -1080,11 +1075,8 @@ void
 pspp_sheet_view_column_update_button (PsppSheetViewColumn *tree_column)
 {
   gint sort_column_id = -1;
-  GtkWidget *hbox;
   GtkWidget *alignment;
-  GtkWidget *arrow;
   GtkWidget *current_child;
-  GtkArrowType arrow_type = GTK_ARROW_NONE;
   GtkTreeModel *model;
   gboolean can_focus;
 
@@ -1103,9 +1095,7 @@ pspp_sheet_view_column_update_button (PsppSheetViewColumn *tree_column)
   if (! tree_column->button)
     return;
 
-  hbox = gtk_bin_get_child (GTK_BIN (tree_column->button));
   alignment = tree_column->alignment;
-  arrow = tree_column->arrow;
   current_child = gtk_bin_get_child (GTK_BIN (alignment));
 
   /* Set up the actual button */
@@ -1147,58 +1137,6 @@ pspp_sheet_view_column_update_button (PsppSheetViewColumn *tree_column)
 					  &sort_column_id,
 					  NULL);
 
-  if (tree_column->show_sort_indicator)
-    {
-      gboolean alternative;
-
-      g_object_get (gtk_widget_get_settings (tree_column->tree_view),
-		    "gtk-alternative-sort-arrows", &alternative,
-		    NULL);
-
-      switch (tree_column->sort_order)
-        {
-	  case GTK_SORT_ASCENDING:
-	    arrow_type = alternative ? GTK_ARROW_UP : GTK_ARROW_DOWN;
-	    break;
-
-	  case GTK_SORT_DESCENDING:
-	    arrow_type = alternative ? GTK_ARROW_DOWN : GTK_ARROW_UP;
-	    break;
-
-	  default:
-	    g_warning (G_STRLOC": bad sort order");
-	    break;
-	}
-    }
-
-  gtk_arrow_set (GTK_ARROW (arrow),
-		 arrow_type,
-		 GTK_SHADOW_IN);
-
-  /* Put arrow on the right if the text is left-or-center justified, and on the
-   * left otherwise; do this by packing boxes, so flipping text direction will
-   * reverse things
-   */
-  g_object_ref (arrow);
-  gtk_container_remove (GTK_CONTAINER (hbox), arrow);
-
-  if (tree_column->xalign <= 0.5)
-    {
-      gtk_box_pack_end (GTK_BOX (hbox), arrow, FALSE, FALSE, 0);
-    }
-  else
-    {
-      gtk_box_pack_start (GTK_BOX (hbox), arrow, FALSE, FALSE, 0);
-      /* move it to the front */
-      gtk_box_reorder_child (GTK_BOX (hbox), arrow, 0);
-    }
-  g_object_unref (arrow);
-
-  if (tree_column->show_sort_indicator
-      || (GTK_IS_TREE_SORTABLE (model) && tree_column->sort_column_id >= 0))
-    gtk_widget_show (arrow);
-  else
-    gtk_widget_hide (arrow);
 
   /* It's always safe to hide the button.  It isn't always safe to show it, as
    * if you show it before it's realized, it'll get the wrong window. */
