@@ -778,6 +778,7 @@ cmd_graph (struct lexer *lexer, struct dataset *ds)
 		  goto error;
 		}
 	      graph.by_var[0] = v;
+              graph.n_by_vars = 1;
 	    }
 	}
       else if (lex_match_id (lexer, "LINE"))
