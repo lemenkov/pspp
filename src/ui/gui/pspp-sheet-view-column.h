@@ -64,10 +64,10 @@ struct _PsppSheetViewColumn
   GtkWidget *PSEAL (tree_view);
   GtkWidget *PSEAL (button);
   GtkWidget *PSEAL (child);
-  GtkWidget *PSEAL (alignment);
+  GtkWidget *PSEAL (bin);
   GdkWindow *PSEAL (window);
   GtkCellEditable *PSEAL (editable_widget);
-  gfloat PSEAL (xalign);
+  GtkAlign PSEAL (halign);
   guint PSEAL (property_changed_signal);
   gint PSEAL (spacing);
   GtkAllocation PSEAL (allocation);
@@ -193,9 +193,9 @@ gboolean                pspp_sheet_view_column_get_clickable       (PsppSheetVie
 void                    pspp_sheet_view_column_set_widget          (PsppSheetViewColumn       *tree_column,
 								  GtkWidget               *widget);
 GtkWidget              *pspp_sheet_view_column_get_widget          (PsppSheetViewColumn       *tree_column);
-void                    pspp_sheet_view_column_set_alignment       (PsppSheetViewColumn       *tree_column,
-								  gfloat                   xalign);
-gfloat                  pspp_sheet_view_column_get_alignment       (PsppSheetViewColumn       *tree_column);
+void                    pspp_sheet_view_column_set_alignment       (PsppSheetViewColumn       *tree_columna,
+								  GtkAlign                   xalign);
+GtkAlign                  pspp_sheet_view_column_get_alignment       (PsppSheetViewColumn       *tree_column);
 void                    pspp_sheet_view_column_set_reorderable     (PsppSheetViewColumn       *tree_column,
 								  gboolean                 reorderable);
 gboolean                pspp_sheet_view_column_get_reorderable     (PsppSheetViewColumn       *tree_column);

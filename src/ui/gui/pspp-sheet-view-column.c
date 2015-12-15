@@ -484,7 +484,7 @@ static void
 pspp_sheet_view_column_init (PsppSheetViewColumn *tree_column)
 {
   tree_column->button = NULL;
-  tree_column->xalign = 0.0;
+  tree_column->halign = GTK_ALIGN_START;
   tree_column->width = 0;
   tree_column->spacing = 0;
   tree_column->requested_width = -1;
@@ -1044,7 +1044,8 @@ pspp_sheet_view_column_create_button (PsppSheetViewColumn *tree_column)
                     G_CALLBACK (on_query_tooltip), tree_column);
   g_object_set (tree_column->button, "has-tooltip", TRUE, NULL);
 
-  tree_column->alignment = gtk_alignment_new (tree_column->xalign, 0.5, 0.0, 0.0);
+  tree_column->bin = gtk_event_box_new ();
+  g_object_set (tree_column->bin, "halign", GTK_ALIGN_CENTER, NULL);
 
   hbox = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 2);
 
@@ -1061,13 +1062,13 @@ pspp_sheet_view_column_create_button (PsppSheetViewColumn *tree_column)
 		    tree_column);
 
 
-  gtk_box_pack_start (GTK_BOX (hbox), tree_column->alignment, TRUE, TRUE, 0);
+  gtk_box_pack_start (GTK_BOX (hbox), tree_column->bin, TRUE, TRUE, 0);
         
-  gtk_container_add (GTK_CONTAINER (tree_column->alignment), child);
+  gtk_container_add (GTK_CONTAINER (tree_column->bin), child);
   gtk_container_add (GTK_CONTAINER (tree_column->button), hbox);
 
   gtk_widget_show (hbox);
-  gtk_widget_show (tree_column->alignment);
+  gtk_widget_show (tree_column->bin);
   pspp_sheet_view_column_update_button (tree_column);
 }
 
@@ -1095,12 +1096,13 @@ pspp_sheet_view_column_update_button (PsppSheetViewColumn *tree_column)
   if (! tree_column->button)
     return;
 
-  alignment = tree_column->alignment;
+  alignment = tree_column->bin;
   current_child = gtk_bin_get_child (GTK_BIN (alignment));
 
   /* Set up the actual button */
-  gtk_alignment_set (GTK_ALIGNMENT (alignment), tree_column->xalign,
-		     0.5, 0.0, 0.0);
+  g_object_set (alignment,
+		"halign", tree_column->halign,
+		"valign", GTK_ALIGN_CENTER, NULL);
       
   if (tree_column->child)
     {
@@ -2479,21 +2481,19 @@ pspp_sheet_view_column_get_widget (PsppSheetViewColumn *tree_column)
  * @xalign: The alignment, which is between [0.0 and 1.0] inclusive.
  * 
  * Sets the alignment of the title or custom widget inside the column header.
- * The alignment determines its location inside the button -- 0.0 for left, 0.5
- * for center, 1.0 for right.
+ * The alignment determines its location inside the button.
  **/
 void
 pspp_sheet_view_column_set_alignment (PsppSheetViewColumn *tree_column,
-                                    gfloat             xalign)
+                                    GtkAlign  xalign)
 {
   g_return_if_fail (PSPP_IS_SHEET_VIEW_COLUMN (tree_column));
 
-  xalign = CLAMP (xalign, 0.0, 1.0);
 
-  if (tree_column->xalign == xalign)
+  if (tree_column->halign == xalign)
     return;
 
-  tree_column->xalign = xalign;
+  tree_column->halign = xalign;
   pspp_sheet_view_column_update_button (tree_column);
   g_object_notify (G_OBJECT (tree_column), "alignment");
 }
@@ -2502,18 +2502,18 @@ pspp_sheet_view_column_set_alignment (PsppSheetViewColumn *tree_column,
  * pspp_sheet_view_column_get_alignment:
  * @tree_column: A #PsppSheetViewColumn.
  * 
- * Returns the current x alignment of @tree_column.  This value can range
- * between 0.0 and 1.0.
+ * Returns the current x alignment of @tree_column.
  * 
  * Return value: The current alignent of @tree_column.
  **/
-gfloat
+GtkAlign
 pspp_sheet_view_column_get_alignment (PsppSheetViewColumn *tree_column)
 {
-  g_return_val_if_fail (PSPP_IS_SHEET_VIEW_COLUMN (tree_column), 0.5);
+  g_return_val_if_fail (PSPP_IS_SHEET_VIEW_COLUMN (tree_column), GTK_ALIGN_CENTER);
 
-  return tree_column->xalign;
+  return tree_column->halign;
 }
+
 
 /**
  * pspp_sheet_view_column_set_reorderable:
