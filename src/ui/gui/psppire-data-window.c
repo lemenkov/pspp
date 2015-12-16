@@ -24,7 +24,6 @@
 #include "language/lexer/lexer.h"
 #include "libpspp/message.h"
 #include "libpspp/str.h"
-#include "ui/gui/autorecode-dialog.h"
 #include "ui/gui/builder-wrapper.h"
 #include "ui/gui/comments-dialog.h"
 #include "ui/gui/entry-dialog.h"
@@ -1010,7 +1009,6 @@ psppire_data_window_finish_init (PsppireDataWindow *de,
   g_signal_connect_swapped (get_action_assert (de->builder, "view_value-labels"), "toggled", G_CALLBACK (toggle_value_labels), de);
 
   connect_action (de, "data_select-cases", G_CALLBACK (select_cases_dialog));
-  connect_action (de, "transform_autorecode", G_CALLBACK (autorecode_dialog));
   connect_action (de, "data_split-file", G_CALLBACK (split_file_dialog));
   connect_action (de, "data_weight-cases", G_CALLBACK (weight_cases_dialog));
   connect_action (de, "utilities_comments", G_CALLBACK (comments_dialog));

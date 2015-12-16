@@ -147,8 +147,6 @@ src_ui_gui_psppire_SOURCES = \
 	src/ui/gui/psppire-scanf.c \
 	src/ui/gui/psppire-scanf.h \
 	src/ui/gui/psppire-acr.c \
-	src/ui/gui/autorecode-dialog.c \
-	src/ui/gui/autorecode-dialog.h \
 	src/ui/gui/builder-wrapper.c \
 	src/ui/gui/builder-wrapper.h \
 	src/ui/gui/comments-dialog.c \
@@ -193,6 +191,8 @@ src_ui_gui_psppire_SOURCES = \
 	src/ui/gui/psppire-dialog-action.h \
 	src/ui/gui/psppire-dialog-action-aggregate.c \
 	src/ui/gui/psppire-dialog-action-aggregate.h \
+	src/ui/gui/psppire-dialog-action-autorecode.c \
+	src/ui/gui/psppire-dialog-action-autorecode.h \
 	src/ui/gui/psppire-dialog-action-1sks.c \
 	src/ui/gui/psppire-dialog-action-1sks.h \
 	src/ui/gui/psppire-dialog-action-barchart.c \

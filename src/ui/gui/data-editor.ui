@@ -251,8 +251,9 @@
           </object>
         </child>
         <child>
-          <object class="GtkAction" id="transform_autorecode">
+          <object class="PsppireDialogActionAutorecode" id="transform_autorecode">
             <property name="name">transform_autorecode</property>
+            <property name="manager">uimanager1</property>
             <property name="label" translatable="yes">Auto_matic Recode...</property>
 	    <property name="stock-id">transform-automatic-recode</property>
           </object>
