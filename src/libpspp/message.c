@@ -396,7 +396,7 @@ request_bug_report (const char *msg)
   fprintf (stderr, "include the syntax file that triggered it and a sample\n");
   fprintf (stderr, "of any data file used for input.\n");
   fprintf (stderr, "proximate cause:     %s\n", msg);
-  fprintf (stderr, "version:             %s\n", stat_version);
+  fprintf (stderr, "version:             %s\n", version);
   fprintf (stderr, "host_system:         %s\n", host_system);
   fprintf (stderr, "build_system:        %s\n", build_system);
   fprintf (stderr, "locale_dir:          %s\n", locale_dir);

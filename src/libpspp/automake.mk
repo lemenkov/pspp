@@ -122,8 +122,6 @@ src/libpspp/version.c: $(top_srcdir)/AUTHORS Makefile
 	$(AM_V_at)echo "#include \"version.h\"" >> $@,tmp
 	$(AM_V_at)echo "const char bare_version[] = \"$(VERSION)\";" >> $@,tmp
 	$(AM_V_at)echo "const char version[] = \"GNU $(PACKAGE) $(VERSION)\";" >> $@,tmp
-	$(AM_V_at)echo "const char stat_version[] = \"GNU $(PACKAGE) $(VERSION) \
-$(AM_V_at)(`LC_ALL=C TZ=UTC date`).\";" >> $@,tmp
 	$(AM_V_at)echo "const char host_system[] = \"$(host_triplet)\";" >> $@,tmp
 	$(AM_V_at)echo "const char build_system[] = \"$(build_triplet)\";" >> $@,tmp
 	$(AM_V_at)echo "const char locale_dir[] = \"$(datadir)/locale\";" >> $@,tmp

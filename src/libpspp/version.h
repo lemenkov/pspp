@@ -23,10 +23,6 @@ extern const char bare_version[];
 /* "GNU PSPP A.B.C" */
 extern const char version[];
 
-/* "GNU PSPP version A.B (date), Copyright (C) XXXX Free Software
-   Foundation, Inc." */
-extern const char stat_version[];
-
 /* Canonical name of host system type. */
 extern const char host_system[];
 

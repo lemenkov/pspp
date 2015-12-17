@@ -245,7 +245,7 @@ write_meta_data (struct odt_driver *odt)
   xmlTextWriterStartElement (w, _xml ("office:meta"));
   {
     xmlTextWriterStartElement (w, _xml ("meta:generator"));
-    xmlTextWriterWriteString (w, _xml (stat_version));
+    xmlTextWriterWriteString (w, _xml (version));
     xmlTextWriterEndElement (w);
   }
 
