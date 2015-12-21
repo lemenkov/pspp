@@ -57,9 +57,20 @@ if test "$with_cairo" != no; then
     [PSPP_REQUIRED_PREREQ([cairo 1.5 or later and pango 1.22 or later (or use --without-cairo)])])
 fi
 
-dnl Xmllint may be required to build the documentation
-AC_PATH_PROG([XMLLINT], [xmllint], [echo], [$PATH])
-AC_SUBST(XMLLINT)
+dnl Xmllint is used in the rules to build the documentation.  It is not actually necessary,
+dnl but is used for post-build consistency checks.  Thus, non-developers can live without it.
+dnl However for it to be usefull, it needs to be a certain version and have certain features.
+dnl The macros below check that it the xmllint available is up to scratch.  If it isn't
+dnl then a dummy /bin/echo is subsituted instead.
+
+AC_CACHE_CHECK([for an xmllint program which fits our needs],[ac_cv_path_XMLLINT],
+[AC_PATH_PROGS_FEATURE_CHECK([XMLLINT], [xmllint], 
+  [[$ac_path_XMLLINT --version 2>&1 | $GREP XPath > /dev/null && 
+    test `$ac_path_XMLLINT --version 2>&1 | $SED 's/^.* \([0-9]*\).*/\1/'` -gt 20900 &&
+    ac_cv_path_XMLLINT=$ac_path_XMLLINT]],
+   [AC_MSG_WARN([no appropriate xmllint program found. Using a dummy (echo)]); ac_cv_path_XMLLINT=$ECHO])])
+
+AC_SUBST([XMLLINT],[$ac_cv_path_XMLLINT])
 
 # Support for GUI.
 AC_ARG_WITH([gui], 
