@@ -31,6 +31,7 @@
 #include "ui/gui/help-menu.h"
 #include "ui/gui/helper.h"
 #include "ui/gui/helper.h"
+#include "ui/gui/psppire-import-assistant.h"
 #include "ui/gui/psppire-data-window.h"
 #include "ui/gui/psppire-dialog-action.h"
 #include "ui/gui/psppire-encoding-selector.h"
@@ -40,7 +41,6 @@
 #include "ui/gui/recode-dialog.h"
 #include "ui/gui/select-cases-dialog.h"
 #include "ui/gui/split-file-dialog.h"
-#include "ui/gui/text-data-import-dialog.h"
 #include "ui/gui/weight-cases-dialog.h"
 #include "ui/syntax-gen.h"
 
@@ -925,6 +925,42 @@ psppire_data_window_init (PsppireDataWindow *de)
 }
 
 static void
+file_import (PsppireDataWindow *dw)
+{
+  GtkWidget *w = psppire_import_assistant_new (GTK_WINDOW (dw));
+  PsppireImportAssistant *asst = PSPPIRE_IMPORT_ASSISTANT (w);
+  gtk_widget_show_all (w);
+  
+  asst->main_loop = g_main_loop_new (NULL, TRUE);
+  g_main_loop_run (asst->main_loop);
+  g_main_loop_unref (asst->main_loop);
+
+  if (!asst->file_name)
+    goto end;
+  
+  switch (asst->response)
+    {
+    case GTK_RESPONSE_APPLY:
+      {
+	g_debug ("HERE");
+	gchar *fn = g_path_get_basename (asst->file_name);
+	open_data_window (PSPPIRE_WINDOW (dw), fn, NULL, psppire_import_assistant_generate_syntax (asst));
+	g_free (fn);
+      }
+      break;
+    case PSPPIRE_RESPONSE_PASTE:
+      g_debug ("THERE");
+      free (paste_syntax_to_window (psppire_import_assistant_generate_syntax (asst)));
+      break;
+    default:
+      break;
+    }
+    
+ end:  
+  gtk_widget_destroy (GTK_WIDGET (asst));
+}
+
+static void
 psppire_data_window_finish_init (PsppireDataWindow *de,
                                  struct dataset *ds)
 {
@@ -998,7 +1034,8 @@ psppire_data_window_finish_init (PsppireDataWindow *de,
   enable_save (de);
 
   connect_action (de, "file_new_data", G_CALLBACK (create_data_window));
-  connect_action (de, "file_import", G_CALLBACK (text_data_import_assistant));
+  connect_action (de, "file_import", G_CALLBACK (file_import));
+
   connect_action (de, "file_save", G_CALLBACK (psppire_window_save));
   connect_action (de, "file_open", G_CALLBACK (psppire_window_open));
   connect_action (de, "file_save_as", G_CALLBACK (psppire_window_save_as));

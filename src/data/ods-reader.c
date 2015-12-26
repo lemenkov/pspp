@@ -173,9 +173,7 @@ ods_unref (struct spreadsheet *s)
 	
       zip_reader_destroy (r->zreader);
       free (r->sheets);
-
       free (s->file_name);
-	
       free (r);
     }
 }

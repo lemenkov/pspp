@@ -147,6 +147,8 @@ src_ui_gui_psppire_SOURCES = \
 	src/ui/gui/psppire-scanf.c \
 	src/ui/gui/psppire-scanf.h \
 	src/ui/gui/psppire-acr.c \
+	src/ui/gui/psppire-import-assistant.c \
+	src/ui/gui/psppire-import-assistant.h \
 	src/ui/gui/builder-wrapper.c \
 	src/ui/gui/builder-wrapper.h \
 	src/ui/gui/comments-dialog.c \
@@ -307,20 +309,6 @@ src_ui_gui_psppire_SOURCES = \
 	src/ui/gui/select-cases-dialog.h \
 	src/ui/gui/split-file-dialog.c \
 	src/ui/gui/split-file-dialog.h \
-	src/ui/gui/page-assistant.c \
-	src/ui/gui/page-intro.c \
-	src/ui/gui/page-intro.h \
-	src/ui/gui/page-file.c \
-	src/ui/gui/page-first-line.c \
-	src/ui/gui/page-first-line.h \
-	src/ui/gui/page-formats.c \
-	src/ui/gui/page-formats.h \
-	src/ui/gui/page-separators.c \
-	src/ui/gui/page-separators.h \
-	src/ui/gui/page-sheet-spec.c \
-	src/ui/gui/page-sheet-spec.h \
-	src/ui/gui/text-data-import-dialog.c \
-	src/ui/gui/text-data-import-dialog.h \
 	src/ui/gui/t-test-options.c \
 	src/ui/gui/t-test-options.h \
 	src/ui/gui/val-labs-dialog.c \
@@ -335,6 +323,24 @@ src_ui_gui_psppire_SOURCES = \
 	src/ui/gui/widget-io.h \
 	src/ui/gui/widgets.c \
 	src/ui/gui/widgets.h
+
+
+OBSOLETE = \
+	src/ui/gui/page-assistant.c \
+	src/ui/gui/page-intro.c \
+	src/ui/gui/page-intro.h \
+	src/ui/gui/page-file.c \
+	src/ui/gui/page-first-line.c \
+	src/ui/gui/page-first-line.h \
+	src/ui/gui/page-formats.c \
+	src/ui/gui/page-formats.h \
+	src/ui/gui/page-separators.c \
+	src/ui/gui/page-separators.h \
+	src/ui/gui/page-sheet-spec.c \
+	src/ui/gui/page-sheet-spec.h \
+	src/ui/gui/text-data-import-dialog.c \
+	src/ui/gui/text-data-import-dialog.h
+
 
 nodist_src_ui_gui_psppire_SOURCES = \
 	src/ui/gui/psppire-marshal.c \
