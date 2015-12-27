@@ -105,7 +105,7 @@ refresh (PsppireDialogAction *rd_)
 }
 
 static void
-on_state_var_changed (GtkAction *a)
+on_state_var_changed (PsppireDialogAction *a)
 {
   PsppireDialogActionRoc *act = PSPPIRE_DIALOG_ACTION_ROC (a);
 
@@ -121,7 +121,7 @@ on_state_var_changed (GtkAction *a)
 }
 
 static void
-psppire_dialog_action_roc_activate (GtkAction *a)
+psppire_dialog_action_roc_activate (PsppireDialogAction *a)
 {
   PsppireDialogActionRoc *act = PSPPIRE_DIALOG_ACTION_ROC (a);
   PsppireDialogAction *pda = PSPPIRE_DIALOG_ACTION (a);

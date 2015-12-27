@@ -483,7 +483,7 @@ update_arguments (PsppireDialogActionAggregate *agg)
 
 
 static void
-psppire_dialog_action_aggregate_activate (GtkAction *a)
+psppire_dialog_action_aggregate_activate (PsppireDialogAction *a)
 {
   PsppireDialogActionAggregate *act = PSPPIRE_DIALOG_ACTION_AGGREGATE (a);
   PsppireDialogAction *pda = PSPPIRE_DIALOG_ACTION (a);

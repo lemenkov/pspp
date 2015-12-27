@@ -287,7 +287,7 @@ set_group_criterion_type (GtkToggleButton *button,
 
 
 static void
-psppire_dialog_action_indep_samps_activate (GtkAction *a)
+psppire_dialog_action_indep_samps_activate (PsppireDialogAction *a)
 {
   PsppireDialogActionIndepSamps *act = PSPPIRE_DIALOG_ACTION_INDEP_SAMPS (a);
   PsppireDialogAction *pda = PSPPIRE_DIALOG_ACTION (a);

@@ -194,7 +194,7 @@ dialog_refresh (PsppireDialogAction *scd_)
 
 
 static void
-psppire_dialog_action_descriptives_activate (GtkAction *a)
+psppire_dialog_action_descriptives_activate (PsppireDialogAction *a)
 {
   PsppireDialogAction *pda = PSPPIRE_DIALOG_ACTION (a);
   PsppireDialogActionDescriptives *act = PSPPIRE_DIALOG_ACTION_DESCRIPTIVES (a);

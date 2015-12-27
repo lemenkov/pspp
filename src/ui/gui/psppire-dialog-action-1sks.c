@@ -117,7 +117,7 @@ refresh (PsppireDialogAction *rd_)
 }
 
 static void
-psppire_dialog_action_1sks_activate (GtkAction *a)
+psppire_dialog_action_1sks_activate (PsppireDialogAction *a)
 {
   PsppireDialogAction *pda = PSPPIRE_DIALOG_ACTION (a);
   PsppireDialogAction1sks *act = PSPPIRE_DIALOG_ACTION_1SKS (a);

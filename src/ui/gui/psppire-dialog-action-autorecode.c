@@ -309,7 +309,7 @@ render_new_var_name (GtkTreeViewColumn *tree_column,
 
 
 static void
-psppire_dialog_action_autorecode_activate (GtkAction *a)
+psppire_dialog_action_autorecode_activate (PsppireDialogAction *a)
 {
   PsppireDialogActionAutorecode *act = PSPPIRE_DIALOG_ACTION_AUTORECODE (a);
   PsppireDialogAction *pda = PSPPIRE_DIALOG_ACTION (a);

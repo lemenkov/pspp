@@ -82,7 +82,7 @@ refresh (PsppireDialogAction *fd_)
 }
 
 static void
-psppire_dialog_action_kmeans_activate (GtkAction *a)
+psppire_dialog_action_kmeans_activate (PsppireDialogAction *a)
 {
   PsppireDialogActionKmeans *act = PSPPIRE_DIALOG_ACTION_KMEANS (a);
   PsppireDialogAction *pda = PSPPIRE_DIALOG_ACTION (a);

@@ -203,7 +203,7 @@ on_statistics_clicked (PsppireDialogActionCrosstabs *cd)
 
 
 static void
-psppire_dialog_action_crosstabs_activate (GtkAction *a)
+psppire_dialog_action_crosstabs_activate (PsppireDialogAction *a)
 {
   PsppireDialogActionCrosstabs *act = PSPPIRE_DIALOG_ACTION_CROSSTABS (a);
   PsppireDialogAction *pda = PSPPIRE_DIALOG_ACTION (a);

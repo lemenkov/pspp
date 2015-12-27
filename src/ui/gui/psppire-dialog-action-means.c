@@ -92,7 +92,7 @@ dialog_refresh (PsppireDialogAction *da)
 }
 
 static void
-psppire_dialog_action_means_activate (GtkAction *a)
+psppire_dialog_action_means_activate (PsppireDialogAction *a)
 {
   PsppireDialogAction *pda = PSPPIRE_DIALOG_ACTION (a);
   PsppireDialogActionMeans *act = PSPPIRE_DIALOG_ACTION_MEANS (a);

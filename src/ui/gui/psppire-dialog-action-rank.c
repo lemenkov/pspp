@@ -207,7 +207,7 @@ set_sensitivity (PsppireDialogActionRank *dar)
 }
 
 static void
-psppire_dialog_action_rank_activate (GtkAction *a)
+psppire_dialog_action_rank_activate (PsppireDialogAction *a)
 {
   PsppireDialogAction *pda = PSPPIRE_DIALOG_ACTION (a);
   PsppireDialogActionRank *act = PSPPIRE_DIALOG_ACTION_RANK (a);

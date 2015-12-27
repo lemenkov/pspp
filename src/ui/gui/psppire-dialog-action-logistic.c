@@ -96,7 +96,7 @@ on_opts_clicked (PsppireDialogActionLogistic *act)
 
 
 static void
-psppire_dialog_action_logistic_activate (GtkAction *a)
+psppire_dialog_action_logistic_activate (PsppireDialogAction *a)
 {
   PsppireDialogActionLogistic *act = PSPPIRE_DIALOG_ACTION_LOGISTIC (a);
   PsppireDialogAction *pda = PSPPIRE_DIALOG_ACTION (a);

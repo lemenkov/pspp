@@ -129,7 +129,7 @@ refresh (PsppireDialogAction *rd_)
 }
 
 static void
-psppire_dialog_action_chisquare_activate (GtkAction *a)
+psppire_dialog_action_chisquare_activate (PsppireDialogAction *a)
 {
   PsppireDialogAction *pda = PSPPIRE_DIALOG_ACTION (a);
   PsppireDialogActionChisquare *act = PSPPIRE_DIALOG_ACTION_CHISQUARE (a);

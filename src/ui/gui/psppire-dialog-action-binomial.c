@@ -97,7 +97,7 @@ refresh (PsppireDialogAction *da)
 
 
 static void
-psppire_dialog_action_binomial_activate (GtkAction *a)
+psppire_dialog_action_binomial_activate (PsppireDialogAction *a)
 {
   PsppireDialogActionBinomial *act = PSPPIRE_DIALOG_ACTION_BINOMIAL (a);
   PsppireDialogAction *pda = PSPPIRE_DIALOG_ACTION (a);

@@ -120,7 +120,7 @@ refresh (PsppireDialogAction *pda_)
 }
 
 static void
-psppire_dialog_action_reliability_activate (GtkAction *a)
+psppire_dialog_action_reliability_activate (PsppireDialogAction *a)
 {
   PsppireDialogAction *pda = PSPPIRE_DIALOG_ACTION (a);
   PsppireDialogActionReliability *act = PSPPIRE_DIALOG_ACTION_RELIABILITY (a);

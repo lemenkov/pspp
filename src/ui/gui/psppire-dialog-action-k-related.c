@@ -105,7 +105,7 @@ refresh (PsppireDialogAction *rd_)
 }
 
 static void
-psppire_dialog_action_k_related_activate (GtkAction *a)
+psppire_dialog_action_k_related_activate (PsppireDialogAction *a)
 {
   PsppireDialogAction *pda = PSPPIRE_DIALOG_ACTION (a);
   PsppireDialogActionKRelated *act = PSPPIRE_DIALOG_ACTION_K_RELATED (a);

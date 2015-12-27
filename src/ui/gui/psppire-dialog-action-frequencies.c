@@ -254,7 +254,7 @@ refresh (PsppireDialogAction * fdx)
 
 
 static void
-psppire_dialog_action_frequencies_activate (GtkAction * a)
+psppire_dialog_action_frequencies_activate (PsppireDialogAction * a)
 {
   PsppireDialogActionFrequencies *act = PSPPIRE_DIALOG_ACTION_FREQUENCIES (a);
   PsppireDialogAction *pda = PSPPIRE_DIALOG_ACTION (a);

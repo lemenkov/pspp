@@ -169,7 +169,7 @@ generate_syntax (PsppireDialogAction *pda)
 }
 
 static void
-psppire_dialog_action_two_sample_activate (GtkAction *a)
+psppire_dialog_action_two_sample_activate (PsppireDialogAction *a)
 {
   PsppireDialogAction *pda = PSPPIRE_DIALOG_ACTION (a);
   PsppireDialogActionTwoSample *act = PSPPIRE_DIALOG_ACTION_TWO_SAMPLE (a);

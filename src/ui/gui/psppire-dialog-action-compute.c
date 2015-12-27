@@ -456,7 +456,7 @@ insert_function_into_syntax_area (GtkTreeIter iter,
 
 
 static void
-psppire_dialog_action_compute_activate (GtkAction *a)
+psppire_dialog_action_compute_activate (PsppireDialogAction *a)
 {
   PsppireDialogAction *pda = PSPPIRE_DIALOG_ACTION (a);
   PsppireDialogActionCompute *act = PSPPIRE_DIALOG_ACTION_COMPUTE (a);

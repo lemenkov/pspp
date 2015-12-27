@@ -142,7 +142,7 @@ on_save_clicked (PsppireDialogActionRegression *rd)
 
 
 static void
-psppire_dialog_action_regression_activate (GtkAction *a)
+psppire_dialog_action_regression_activate (PsppireDialogAction *a)
 {
   PsppireDialogActionRegression *act = PSPPIRE_DIALOG_ACTION_REGRESSION (a);
   PsppireDialogAction *pda = PSPPIRE_DIALOG_ACTION (a);

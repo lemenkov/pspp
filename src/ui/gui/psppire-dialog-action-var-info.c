@@ -164,7 +164,7 @@ jump_to (PsppireDialog *d, gint response, gpointer data)
 }
 
 static void
-psppire_dialog_action_var_info_activate (GtkAction *a)
+psppire_dialog_action_var_info_activate (PsppireDialogAction *a)
 {
   PsppireDialogAction *pda = PSPPIRE_DIALOG_ACTION (a);
   PsppireDialogActionVarInfo *act = PSPPIRE_DIALOG_ACTION_VAR_INFO (pda);

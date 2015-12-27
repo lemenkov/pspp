@@ -221,7 +221,7 @@ clone_contrasts_array (GArray *src_array)
 
 
 static void
-psppire_dialog_action_oneway_activate (GtkAction *a)
+psppire_dialog_action_oneway_activate (PsppireDialogAction *a)
 {
   PsppireDialogAction *pda = PSPPIRE_DIALOG_ACTION (a);
   PsppireDialogActionOneway *act = PSPPIRE_DIALOG_ACTION_ONEWAY (a);

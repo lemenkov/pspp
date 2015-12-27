@@ -90,7 +90,7 @@ refresh (PsppireDialogAction *rd_)
 }
 
 static void
-psppire_dialog_action_flip_activate (GtkAction *a)
+psppire_dialog_action_flip_activate (PsppireDialogAction *a)
 {
   PsppireDialogAction *pda = PSPPIRE_DIALOG_ACTION (a);
   PsppireDialogActionFlip *act = PSPPIRE_DIALOG_ACTION_FLIP (a);

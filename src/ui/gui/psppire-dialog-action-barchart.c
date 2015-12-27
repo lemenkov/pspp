@@ -115,7 +115,7 @@ populate_combo_model (GtkComboBox *cb)
 
 
 static void
-psppire_dialog_action_barchart_activate (GtkAction *a)
+psppire_dialog_action_barchart_activate (PsppireDialogAction *a)
 {
   PsppireDialogActionBarchart *act = PSPPIRE_DIALOG_ACTION_BARCHART (a);
   PsppireDialogAction *pda = PSPPIRE_DIALOG_ACTION (a);
