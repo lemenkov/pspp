@@ -1,5 +1,5 @@
 /* PSPPIRE - a graphical user interface for PSPP.
-   Copyright (C) 2007, 2010, 2011 Free Software Foundation, Inc.
+   Copyright (C) 2007, 2010, 2011, 2015 Free Software Foundation, Inc.
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -160,7 +160,7 @@ add_button (PsppireKeypad *kp, GtkWidget **button,
 {
   g_object_set (G_OBJECT (*button), "focus-on-click", FALSE, NULL);
 
-  gtk_grid_attach (GTK_GRID(kp->table), *button, x1, y1, 1, 1);
+  gtk_grid_attach (GTK_GRID(kp->table), *button, x1, y1, x2 - x1, y2 - y1);
 
   gtk_widget_set_size_request (*button,
 			       30 * rows / (float) cols,
