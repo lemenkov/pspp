@@ -22,6 +22,7 @@
 #include "psppire-dialog-action-binomial.h"
 #include "psppire-dialog-action-chisquare.h"
 #include "psppire-dialog-action-compute.h"
+#include "psppire-dialog-action-comments.h"
 #include "psppire-dialog-action-correlation.h"
 #include "psppire-dialog-action-count.h"
 #include "psppire-dialog-action-crosstabs.h"
@@ -80,6 +81,7 @@ preregister_widgets (void)
   psppire_dialog_action_binomial_get_type ();
   psppire_dialog_action_barchart_get_type ();
   psppire_dialog_action_chisquare_get_type ();
+  psppire_dialog_action_comments_get_type ();
   psppire_dialog_action_compute_get_type ();
   psppire_dialog_action_correlation_get_type ();
   psppire_dialog_action_count_get_type ();

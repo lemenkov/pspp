@@ -143,8 +143,8 @@ psppire_dialog_action_activate (PsppireDialogAction *act)
   set_toplevel (act);
 
   act->dict = PSPPIRE_DATA_WINDOW(act->toplevel)->dict;
-  
-  g_object_set (act->source, "model", act->dict, NULL);
+  if (act->source)
+    g_object_set (act->source, "model", act->dict, NULL);
 
   GSList *wl = g_object_get_data (G_OBJECT (act->toplevel), "widget-list");
   wl = g_slist_prepend (wl, act->dialog);
@@ -155,7 +155,8 @@ psppire_dialog_action_activate (PsppireDialogAction *act)
   if (GTK_ACTION_CLASS (psppire_dialog_action_parent_class)->activate)
     GTK_ACTION_CLASS (psppire_dialog_action_parent_class)->activate ( GTK_ACTION (act));
 
-  gtk_widget_grab_focus (act->source);
+  if (act->source)
+    gtk_widget_grab_focus (act->source);
 
   if (first_time)
     psppire_dialog_reload (PSPPIRE_DIALOG (act->dialog));

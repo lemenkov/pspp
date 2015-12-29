@@ -529,7 +529,8 @@
           </object>
         </child>
         <child>
-          <object class="GtkAction" id="utilities_comments">
+          <object class="PsppireDialogActionComments" id="utilities_comments">
+            <property name="manager">uimanager1</property>
             <property name="name">utilities_comments</property>
             <property name="label" translatable="yes">Data File _Comments...</property>
             <property name="stock-id">utilities-data-file-comments</property>

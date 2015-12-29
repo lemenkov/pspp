@@ -25,7 +25,6 @@
 #include "libpspp/message.h"
 #include "libpspp/str.h"
 #include "ui/gui/builder-wrapper.h"
-#include "ui/gui/comments-dialog.h"
 #include "ui/gui/entry-dialog.h"
 #include "ui/gui/executor.h"
 #include "ui/gui/help-menu.h"
@@ -1046,7 +1045,6 @@ psppire_data_window_finish_init (PsppireDataWindow *de,
 
   connect_action (de, "data_select-cases", G_CALLBACK (select_cases_dialog));
   connect_action (de, "data_split-file", G_CALLBACK (split_file_dialog));
-  connect_action (de, "utilities_comments", G_CALLBACK (comments_dialog));
   connect_action (de, "transform_recode-same", G_CALLBACK (recode_same_dialog));
   connect_action (de, "transform_recode-different", G_CALLBACK (recode_different_dialog));
 
