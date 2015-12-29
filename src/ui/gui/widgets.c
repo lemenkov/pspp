@@ -58,6 +58,64 @@
 
 static  volatile GType kludge;
 
+
+typedef GType (*get_type_func)(void);
+
+static const get_type_func dialog_action_types[]=
+{
+  psppire_dialog_action_1sks_get_type,
+  psppire_dialog_action_autorecode_get_type,
+  psppire_dialog_action_aggregate_get_type,
+  psppire_dialog_action_binomial_get_type,
+  psppire_dialog_action_barchart_get_type,
+  psppire_dialog_action_chisquare_get_type,
+  psppire_dialog_action_compute_get_type,
+  psppire_dialog_action_comments_get_type,
+  psppire_dialog_action_correlation_get_type,
+  psppire_dialog_action_count_get_type,
+  psppire_dialog_action_crosstabs_get_type,
+  psppire_dialog_action_descriptives_get_type,
+  psppire_dialog_action_examine_get_type,
+  psppire_dialog_action_factor_get_type,
+  psppire_dialog_action_flip_get_type,
+  psppire_dialog_action_frequencies_get_type,
+  psppire_dialog_action_histogram_get_type,
+  psppire_dialog_action_logistic_get_type,
+  psppire_dialog_action_kmeans_get_type,
+  psppire_dialog_action_k_related_get_type,
+  psppire_dialog_action_means_get_type,
+  psppire_dialog_action_oneway_get_type,
+  psppire_dialog_action_paired_get_type,
+  psppire_dialog_action_indep_samps_get_type,
+  psppire_dialog_action_var_info_get_type,
+  psppire_dialog_action_rank_get_type,
+  psppire_dialog_action_reliability_get_type,
+  psppire_dialog_action_regression_get_type,
+  psppire_dialog_action_roc_get_type,
+  psppire_dialog_action_runs_get_type,
+  psppire_dialog_action_scatterplot_get_type,
+  psppire_dialog_action_sort_get_type,
+  psppire_dialog_action_split_get_type,
+  psppire_dialog_action_tt1s_get_type,
+  psppire_dialog_action_two_sample_get_type,
+  psppire_dialog_action_weight_get_type,
+  psppire_dialog_action_univariate_get_type
+};
+
+
+static void
+preregister_actions (void)
+{
+  int i;
+  for (i = 0; i < sizeof (dialog_action_types) / sizeof (dialog_action_types[0]); ++i)
+    {
+      get_type_func x = dialog_action_types[i];
+      x ();
+    }
+}
+
+
+
 /* Any custom widgets which are to be used in GtkBuilder ui files
    need to be preregistered, otherwise GtkBuilder refuses to 
    acknowledge their existence. */
@@ -75,45 +133,9 @@ preregister_widgets (void)
   psppire_var_view_get_type ();
   psppire_value_entry_get_type ();
   psppire_checkbox_treeview_get_type ();
-
-  psppire_dialog_action_1sks_get_type ();
-  psppire_dialog_action_autorecode_get_type ();
-  psppire_dialog_action_aggregate_get_type ();
-  psppire_dialog_action_binomial_get_type ();
-  psppire_dialog_action_barchart_get_type ();
-  psppire_dialog_action_chisquare_get_type ();
-  psppire_dialog_action_comments_get_type ();
-  psppire_dialog_action_compute_get_type ();
-  psppire_dialog_action_correlation_get_type ();
-  psppire_dialog_action_count_get_type ();
-  psppire_dialog_action_crosstabs_get_type ();
-  psppire_dialog_action_descriptives_get_type ();
-  psppire_dialog_action_examine_get_type ();
-  psppire_dialog_action_factor_get_type ();
-  psppire_dialog_action_flip_get_type ();
-  psppire_dialog_action_frequencies_get_type ();
-  psppire_dialog_action_histogram_get_type ();
-  psppire_dialog_action_logistic_get_type ();
-  psppire_dialog_action_kmeans_get_type ();
-  psppire_dialog_action_k_related_get_type ();
-  psppire_dialog_action_means_get_type ();
-  psppire_dialog_action_oneway_get_type ();
-  psppire_dialog_action_paired_get_type ();
-  psppire_dialog_action_indep_samps_get_type ();
   psppire_means_layer_get_type ();
-  psppire_dialog_action_var_info_get_type ();
-  psppire_dialog_action_rank_get_type ();
-  psppire_dialog_action_reliability_get_type ();
-  psppire_dialog_action_regression_get_type ();
-  psppire_dialog_action_roc_get_type ();
-  psppire_dialog_action_runs_get_type ();
-  psppire_dialog_action_scatterplot_get_type ();
-  psppire_dialog_action_sort_get_type ();
-  psppire_dialog_action_split_get_type ();
-  psppire_dialog_action_tt1s_get_type ();
-  psppire_dialog_action_two_sample_get_type ();
-  psppire_dialog_action_univariate_get_type ();
-  psppire_dialog_action_weight_get_type ();
+
+  preregister_actions ();
 
   /* This seems to be necessary on Cygwin.
      It ought not to be necessary.  Having it here can't do any harm. */
