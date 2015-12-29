@@ -259,6 +259,8 @@ src_ui_gui_psppire_SOURCES = \
 	src/ui/gui/psppire-dialog-action-univariate.h \
 	src/ui/gui/psppire-dialog-action-var-info.c \
 	src/ui/gui/psppire-dialog-action-var-info.h \
+	src/ui/gui/psppire-dialog-action-weight.c \
+	src/ui/gui/psppire-dialog-action-weight.h \
 	src/ui/gui/psppire-dict.c \
 	src/ui/gui/psppire-dict.h \
 	src/ui/gui/psppire-dictview.c \
@@ -317,8 +319,6 @@ src_ui_gui_psppire_SOURCES = \
 	src/ui/gui/var-display.h \
 	src/ui/gui/var-type-dialog.c \
 	src/ui/gui/var-type-dialog.h \
-	src/ui/gui/weight-cases-dialog.c \
-	src/ui/gui/weight-cases-dialog.h \
 	src/ui/gui/widget-io.c \
 	src/ui/gui/widget-io.h \
 	src/ui/gui/widgets.c \

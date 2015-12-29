@@ -213,9 +213,10 @@
           </object>
         </child>
         <child>
-          <object class="GtkAction" id="data_weight-cases">
+          <object class="PsppireDialogActionWeight" id="data_weight-cases">
             <property name="name">data_weight-cases</property>
             <property name="label" translatable="yes">_Weight Cases...</property>
+	    <property name="manager">uimanager1</property>
             <property name="tooltip" translatable="yes">Weight cases by variable</property>
             <property name="stock-id">data-weight-cases</property>
           </object>

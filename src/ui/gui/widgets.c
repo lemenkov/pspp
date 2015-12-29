@@ -51,6 +51,7 @@
 #include "psppire-dialog-action-two-sample.h"
 #include "psppire-dialog-action-univariate.h"
 #include "psppire-dialog-action-var-info.h"
+#include "psppire-dialog-action-weight.h"
 #include "psppire-value-entry.h"
 
 static  volatile GType kludge;
@@ -108,6 +109,7 @@ preregister_widgets (void)
   psppire_dialog_action_tt1s_get_type ();
   psppire_dialog_action_two_sample_get_type ();
   psppire_dialog_action_univariate_get_type ();
+  psppire_dialog_action_weight_get_type ();
 
   /* This seems to be necessary on Cygwin.
      It ought not to be necessary.  Having it here can't do any harm. */

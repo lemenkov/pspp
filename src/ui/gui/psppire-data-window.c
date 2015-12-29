@@ -41,7 +41,6 @@
 #include "ui/gui/recode-dialog.h"
 #include "ui/gui/select-cases-dialog.h"
 #include "ui/gui/split-file-dialog.h"
-#include "ui/gui/weight-cases-dialog.h"
 #include "ui/syntax-gen.h"
 
 #include "gl/c-strcase.h"
@@ -1047,7 +1046,6 @@ psppire_data_window_finish_init (PsppireDataWindow *de,
 
   connect_action (de, "data_select-cases", G_CALLBACK (select_cases_dialog));
   connect_action (de, "data_split-file", G_CALLBACK (split_file_dialog));
-  connect_action (de, "data_weight-cases", G_CALLBACK (weight_cases_dialog));
   connect_action (de, "utilities_comments", G_CALLBACK (comments_dialog));
   connect_action (de, "transform_recode-same", G_CALLBACK (recode_same_dialog));
   connect_action (de, "transform_recode-different", G_CALLBACK (recode_different_dialog));
