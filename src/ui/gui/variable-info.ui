@@ -9,6 +9,7 @@
     <property name="title" translatable="yes">Variables</property>
     <property name="modal">True</property>
     <property name="slidable">True</property>
+    <property name="help_page">Variable-Attributes</property>
     <child>
       <object class="GtkPaned" id="dialog-hbox2">
         <property name="visible">True</property>
