@@ -251,6 +251,8 @@ src_ui_gui_psppire_SOURCES = \
 	src/ui/gui/psppire-dialog-action-scatterplot.h \
 	src/ui/gui/psppire-dialog-action-sort.c \
 	src/ui/gui/psppire-dialog-action-sort.h \
+	src/ui/gui/psppire-dialog-action-split.c \
+	src/ui/gui/psppire-dialog-action-split.h \
 	src/ui/gui/psppire-dialog-action-tt1s.c \
 	src/ui/gui/psppire-dialog-action-tt1s.h \
 	src/ui/gui/psppire-dialog-action-two-sample.c \
@@ -309,8 +311,6 @@ src_ui_gui_psppire_SOURCES = \
 	src/ui/gui/recode-dialog.h \
 	src/ui/gui/select-cases-dialog.c \
 	src/ui/gui/select-cases-dialog.h \
-	src/ui/gui/split-file-dialog.c \
-	src/ui/gui/split-file-dialog.h \
 	src/ui/gui/t-test-options.c \
 	src/ui/gui/t-test-options.h \
 	src/ui/gui/val-labs-dialog.c \

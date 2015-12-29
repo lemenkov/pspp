@@ -197,8 +197,9 @@
           </object>
         </child>
         <child>
-          <object class="GtkAction" id="data_split-file">
+          <object class="PsppireDialogActionSplit" id="data_split-file">
             <property name="name">data_split-file</property>
+            <property name="manager">uimanager1</property>
             <property name="label" translatable="yes">S_plit File...</property>
             <property name="tooltip" translatable="yes">Split the active dataset</property>
             <property name="stock-id">data-split-file</property>

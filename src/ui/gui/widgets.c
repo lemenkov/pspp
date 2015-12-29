@@ -48,6 +48,7 @@
 #include "psppire-dialog-action-runs.h"
 #include "psppire-dialog-action-scatterplot.h"
 #include "psppire-dialog-action-sort.h"
+#include "psppire-dialog-action-split.h"
 #include "psppire-dialog-action-tt1s.h"
 #include "psppire-dialog-action-two-sample.h"
 #include "psppire-dialog-action-univariate.h"
@@ -108,6 +109,7 @@ preregister_widgets (void)
   psppire_dialog_action_runs_get_type ();
   psppire_dialog_action_scatterplot_get_type ();
   psppire_dialog_action_sort_get_type ();
+  psppire_dialog_action_split_get_type ();
   psppire_dialog_action_tt1s_get_type ();
   psppire_dialog_action_two_sample_get_type ();
   psppire_dialog_action_univariate_get_type ();
