@@ -1,5 +1,5 @@
 /* PSPPIRE - a graphical user interface for PSPP.
-   Copyright (C) 2007, 2008, 2009, 2010, 2011, 2014 Free Software Foundation, Inc.
+   Copyright (C) 2007, 2008, 2009, 2010, 2011, 2014, 2015 Free Software Foundation, Inc.
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -45,9 +45,6 @@
 
 struct select_cases_dialog
 {
-  /* The XML that created the dialog */
-  GtkBuilder *xml;
-
   GtkWidget *spinbutton ;
   GtkWidget *spinbutton1 ;
   GtkWidget *spinbutton2 ;
@@ -56,6 +53,22 @@ struct select_cases_dialog
   GtkWidget *hbox2;
 
   PsppireDataStore *data_store;
+  GtkWidget *parent_dialog  ; 
+  GtkWidget *dialog         ; 
+  GtkWidget *percent        ; 
+  GtkWidget *sample_n_cases ; 
+  GtkWidget *table          ;
+  GtkWidget *l0 ;
+  GtkWidget *l1 ;
+  GtkWidget *radiobutton_range ;
+  GtkWidget *first ;
+  GtkWidget *last ;
+  GtkWidget *radiobutton_sample;
+  GtkWidget *radiobutton_all;
+  GtkWidget *entry;
+  GtkWidget *radiobutton_filter;
+  GtkWidget *radiobutton_delete;
+  GtkWidget *range_subdialog;
 };
 
 static gchar * generate_syntax (const struct select_cases_dialog *scd);
@@ -73,32 +86,21 @@ sample_subdialog (GtkButton *b, gpointer data)
 
   gint case_count = psppire_data_store_get_case_count (scd->data_store);
 
-  GtkWidget *parent_dialog = get_widget_assert (scd->xml,
-						"select-cases-dialog");
-  GtkWidget *dialog = get_widget_assert (scd->xml,
-					 "select-cases-random-sample-dialog");
-  GtkWidget *percent = get_widget_assert (scd->xml,
-					  "radiobutton-sample-percent");
-  GtkWidget *sample_n_cases = get_widget_assert (scd->xml,
-						 "radiobutton-sample-n-cases");
-  GtkWidget *table = get_widget_assert (scd->xml,
-					"select-cases-random-sample-table");
-
   if ( ! scd->hbox1 )
     {
       scd->hbox1 = psppire_scanf_new (gettext (label1), &scd->spinbutton);
 
       gtk_widget_show (scd->hbox1);
 
-      gtk_grid_attach (GTK_GRID (table),
-				 scd->hbox1, 
-	1, 0, 
-	1, 1);
+      gtk_grid_attach (GTK_GRID (scd->table),
+		       scd->hbox1,
+		       1, 0,
+		       1, 1);
 
-      g_signal_connect (percent, "toggled",
+      g_signal_connect (scd->percent, "toggled",
 			G_CALLBACK (set_sensitivity_from_toggle), scd->hbox1);
 
-      gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (percent), TRUE);
+      gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (scd->percent), TRUE);
     }
 
 
@@ -116,31 +118,31 @@ sample_subdialog (GtkButton *b, gpointer data)
       gtk_widget_show (scd->hbox2);
       gtk_widget_set_sensitive (scd->hbox2, FALSE);
 
-      gtk_grid_attach (GTK_GRID (table),
-				 scd->hbox2, 
-	1, 1, 1, 1);
+      gtk_grid_attach (GTK_GRID (scd->table),
+		       scd->hbox2,
+		       1, 1, 1, 1);
 
-      g_signal_connect (sample_n_cases, "toggled",
+      g_signal_connect (scd->sample_n_cases, "toggled",
 			G_CALLBACK (set_sensitivity_from_toggle), scd->hbox2);
 
-      gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (sample_n_cases), FALSE);
+      gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (scd->sample_n_cases), FALSE);
     }
 
 
-  gtk_window_set_transient_for (GTK_WINDOW (dialog),
-				GTK_WINDOW (parent_dialog));
+  gtk_window_set_transient_for (GTK_WINDOW (scd->dialog),
+				GTK_WINDOW (scd->parent_dialog));
 
-  response = psppire_dialog_run (PSPPIRE_DIALOG (dialog));
+  response = psppire_dialog_run (PSPPIRE_DIALOG (scd->dialog));
 
   if ( response != PSPPIRE_RESPONSE_CONTINUE)
     {
       g_signal_handlers_disconnect_by_func
-	(G_OBJECT (percent),
+	(G_OBJECT (scd->percent),
 	 G_CALLBACK (set_sensitivity_from_toggle),
 	 scd->hbox1);
 
       g_signal_handlers_disconnect_by_func
-	(G_OBJECT (sample_n_cases),
+	(G_OBJECT (scd->sample_n_cases),
 	 G_CALLBACK (set_sensitivity_from_toggle),
 	 scd->hbox2);
 
@@ -151,22 +153,20 @@ sample_subdialog (GtkButton *b, gpointer data)
   else
     {
       gchar *text;
-      GtkWidget *l0 = get_widget_assert (scd->xml, "random-sample-label");
 
-      if ( gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (percent)))
+      if ( gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (scd->percent)))
 	{
 	  text = widget_printf (gettext(label1), scd->spinbutton);
-	  gtk_label_set_text (GTK_LABEL (l0), text);
+	  gtk_label_set_text (GTK_LABEL (scd->l0), text);
 	}
       else
 	{
 	  text =
 	    widget_printf (gettext(label2), scd->spinbutton1, scd->spinbutton2);
-	  gtk_label_set_text (GTK_LABEL (l0), text);
+	  gtk_label_set_text (GTK_LABEL (scd->l0), text);
 
 	}
       g_free (text);
-
     }
 }
 
@@ -178,36 +178,17 @@ range_subdialog (GtkButton *b, gpointer data)
 
   gint n_cases = psppire_data_store_get_case_count (scd->data_store);
 
-  GtkWidget *parent_dialog = get_widget_assert (scd->xml,
-						"select-cases-dialog");
+  gtk_spin_button_set_range (GTK_SPIN_BUTTON (scd->last),  1,  n_cases);
+  gtk_spin_button_set_range (GTK_SPIN_BUTTON (scd->first), 1,  n_cases);
 
-  GtkWidget *dialog = get_widget_assert (scd->xml,
-					 "select-cases-range-dialog");
+  gtk_window_set_transient_for (GTK_WINDOW (scd->range_subdialog),
+				GTK_WINDOW (scd->parent_dialog));
 
-  GtkWidget *first = get_widget_assert (scd->xml,
-					"range-dialog-first");
-
-  GtkWidget *last = get_widget_assert (scd->xml,
-					"range-dialog-last");
-
-
-  gtk_spin_button_set_range (GTK_SPIN_BUTTON (last),  1,  n_cases);
-  gtk_spin_button_set_range (GTK_SPIN_BUTTON (first), 1,  n_cases);
-
-  gtk_window_set_transient_for (GTK_WINDOW (dialog),
-				GTK_WINDOW (parent_dialog));
-
-
-  response = psppire_dialog_run (PSPPIRE_DIALOG (dialog));
+  response = psppire_dialog_run (PSPPIRE_DIALOG (scd->range_subdialog));
   if ( response == PSPPIRE_RESPONSE_CONTINUE)
     {
-      GtkWidget *first = get_widget_assert (scd->xml, "range-dialog-first");
-      GtkWidget *last = get_widget_assert (scd->xml, "range-dialog-last");
-      GtkWidget *l1 = get_widget_assert (scd->xml, "range-sample-label");
-      gchar *text = widget_printf (_("%d thru %d"), first, last);
-
-      gtk_label_set_text (GTK_LABEL (l1), text);
-
+      gchar *text = widget_printf (_("%d thru %d"), scd->first, scd->last);
+      gtk_label_set_text (GTK_LABEL (scd->l1), text);
       g_free (text);
     }
 }
@@ -225,89 +206,91 @@ select_cases_dialog (PsppireDataWindow *de)
 {
   gint response;
   struct select_cases_dialog scd = {0,0,0,0,0,0};
-  GtkWidget *dialog   ;
   GtkWidget *entry = NULL;
   GtkWidget *selector ;
-  GtkWidget *button_range;
-  GtkWidget *button_sample;
 
-  scd.xml = builder_new ("select-cases.ui");
+  GtkBuilder *xml = builder_new ("select-cases.ui");
 
   g_object_get (de->data_editor, "data-store", &scd.data_store, NULL);
 
-  button_range = get_widget_assert (scd.xml, "button-range");
-  button_sample = get_widget_assert (scd.xml, "button-sample");
-  entry = get_widget_assert (scd.xml, "filter-variable-entry");
-  selector = get_widget_assert (scd.xml, "psppire-selector-filter");
+  GtkWidget
+    *button_range = get_widget_assert (xml, "button-range");
+  GtkWidget *
+    button_sample = get_widget_assert (xml, "button-sample");
+  scd.entry = get_widget_assert (xml, "filter-variable-entry");
+  selector = get_widget_assert (xml, "psppire-selector-filter");
+  
+  scd.parent_dialog = get_widget_assert (xml, "select-cases-dialog");
+  scd.dialog = get_widget_assert (xml, "select-cases-random-sample-dialog");
+  scd.percent = get_widget_assert (xml, "radiobutton-sample-percent");
+  scd.sample_n_cases = get_widget_assert (xml, "radiobutton-sample-n-cases");
+  scd.table = get_widget_assert (xml, "select-cases-random-sample-table");
 
+  scd.l0 = get_widget_assert (xml, "random-sample-label");;
+
+  scd.radiobutton_range = get_widget_assert (xml, "radiobutton-range");
+  scd.range_subdialog = get_widget_assert (xml, "select-cases-range-dialog");
+
+  scd.first = get_widget_assert (xml, "range-dialog-first");
+  scd.last = get_widget_assert (xml, "range-dialog-last");
+
+  scd.l1 = get_widget_assert (xml, "range-sample-label");
+  scd.radiobutton_sample =  get_widget_assert (xml, "radiobutton-sample");
+
+  scd.radiobutton_all = get_widget_assert (xml, "radiobutton-all");
+  scd.radiobutton_filter =  get_widget_assert (xml, "radiobutton-filter-variable");
+  scd.radiobutton_delete = get_widget_assert (xml,   "radiobutton-delete");
+  
   {
     GtkWidget *button_if =
-      get_widget_assert (scd.xml, "button-if");
+      get_widget_assert (xml, "button-if");
 
     GtkWidget *radiobutton_if =
-      get_widget_assert (scd.xml, "radiobutton-if");
-
-    GtkWidget *radiobutton_all =
-      get_widget_assert (scd.xml, "radiobutton-all");
-
-    GtkWidget *radiobutton_sample =
-      get_widget_assert (scd.xml, "radiobutton-sample");
-
-    GtkWidget *radiobutton_range =
-      get_widget_assert (scd.xml, "radiobutton-range");
-
-    GtkWidget *radiobutton_filter =
-      get_widget_assert (scd.xml, "radiobutton-filter-variable");
-
-    GtkWidget *range_label =
-      get_widget_assert (scd.xml, "range-sample-label");
+      get_widget_assert (xml, "radiobutton-if");
 
     GtkWidget *sample_label =
-      get_widget_assert (scd.xml, "random-sample-label");
+      get_widget_assert (xml, "random-sample-label");
 
-    g_signal_connect (radiobutton_all, "toggled",
+    g_signal_connect (scd.radiobutton_all, "toggled",
 		      G_CALLBACK (set_sensitivity_from_toggle_invert),
-		      get_widget_assert (scd.xml, "filter-delete-button-box")
+		      get_widget_assert (xml, "filter-delete-button-box")
 		      );
 
     g_signal_connect (button_if, "clicked",
 		      G_CALLBACK (set_radiobutton), radiobutton_if);
 
     g_signal_connect (button_sample, "clicked",
-		      G_CALLBACK (set_radiobutton), radiobutton_sample);
+		      G_CALLBACK (set_radiobutton), scd.radiobutton_sample);
 
     g_signal_connect (button_range,  "clicked",
-		      G_CALLBACK (set_radiobutton), radiobutton_range);
+    		      G_CALLBACK (set_radiobutton), scd.radiobutton_range);
 
     g_signal_connect (selector, "clicked",
-		      G_CALLBACK (set_radiobutton), radiobutton_filter);
+		      G_CALLBACK (set_radiobutton), scd.radiobutton_filter);
 
     g_signal_connect (selector, "selected",
-		      G_CALLBACK (set_radiobutton), radiobutton_filter);
+		      G_CALLBACK (set_radiobutton), scd.radiobutton_filter);
 
-    g_signal_connect (radiobutton_range, "toggled",
+    g_signal_connect (scd.radiobutton_range, "toggled",
 		      G_CALLBACK (set_sensitivity_from_toggle),
-		      range_label
-		      );
+		      scd.l1);
 
-    g_signal_connect (radiobutton_sample, "toggled",
+    g_signal_connect (scd.radiobutton_sample, "toggled",
 		      G_CALLBACK (set_sensitivity_from_toggle),
-		      sample_label
-		      );
+		      sample_label);
 
-    g_signal_connect (radiobutton_filter, "toggled",
+    g_signal_connect (scd.radiobutton_filter, "toggled",
 		      G_CALLBACK (set_sensitivity_from_toggle),
-		      entry
-		      );
+		      entry);
   }
 
 
 
-  dialog = get_widget_assert (scd.xml, "select-cases-dialog");
+  GtkWidget *dialog = get_widget_assert (xml, "select-cases-dialog");
   gtk_window_set_transient_for (GTK_WINDOW (dialog), GTK_WINDOW (de));
 
   {
-    GtkWidget *source = get_widget_assert   (scd.xml, "select-cases-treeview");
+    GtkWidget *source = get_widget_assert   (xml, "select-cases-treeview");
 
     g_object_set (source, "model",
 		  scd.data_store->dict,
@@ -315,13 +298,11 @@ select_cases_dialog (PsppireDataWindow *de)
 		  GTK_SELECTION_SINGLE, NULL);
 
     psppire_selector_set_filter_func (PSPPIRE_SELECTOR (selector),
-				   is_currently_in_entry);
+				      is_currently_in_entry);
   }
 
-
-
   g_signal_connect (button_range,
-		    "clicked", G_CALLBACK (range_subdialog), &scd);
+  		    "clicked", G_CALLBACK (range_subdialog), &scd);
 
 
   g_signal_connect (button_sample,
@@ -342,7 +323,7 @@ select_cases_dialog (PsppireDataWindow *de)
       break;
     }
 
-  g_object_unref (scd.xml);
+  g_object_unref (xml);
 }
 
 
@@ -358,43 +339,28 @@ generate_syntax_filter (const struct select_cases_dialog *scd)
   ds_init_empty (&dss);
 
   if (gtk_toggle_button_get_active
-       (GTK_TOGGLE_BUTTON (get_widget_assert (scd->xml,
-					      "radiobutton-range"))))
+      (GTK_TOGGLE_BUTTON (scd->radiobutton_range)))
     {
-      GtkSpinButton *first =
-	GTK_SPIN_BUTTON (get_widget_assert (scd->xml,
-					   "range-dialog-first"));
-
-      GtkSpinButton *last =
-	GTK_SPIN_BUTTON (get_widget_assert (scd->xml,
-					   "range-dialog-last"));
-
       ds_put_c_format (&dss,
-			      "COMPUTE filter_$ = ($CASENUM >= %ld "
-			       "AND $CASENUM <= %ld).\n",
-			      (long) gtk_spin_button_get_value (first),
-			      (long) gtk_spin_button_get_value (last)
-			      );
+		       "COMPUTE filter_$ = ($CASENUM >= %ld "
+		       "AND $CASENUM <= %ld).\n",
+		       (long) gtk_spin_button_get_value (GTK_SPIN_BUTTON (scd->first)),
+		       (long) gtk_spin_button_get_value (GTK_SPIN_BUTTON (scd->last)));
 
       ds_put_cstr (&dss, "EXECUTE.\n");
     }
   else if ( gtk_toggle_button_get_active
-       (GTK_TOGGLE_BUTTON (get_widget_assert (scd->xml,
-					      "radiobutton-sample"))))
+	    (GTK_TOGGLE_BUTTON (scd->radiobutton_sample)))
     {
-      GtkWidget *random_sample =
-	get_widget_assert (scd->xml,
-			   "radiobutton-sample-percent");
-
-      if ( gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (random_sample)))
+      if ( gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (scd->percent)))
 	{
 	  const double percentage =
 	    gtk_spin_button_get_value (GTK_SPIN_BUTTON (scd->spinbutton));
 
 	  ds_put_c_format (&dss,
-				  "COMPUTE %s = RV.UNIFORM (0,1) < %.*g.\n",
-				  filter,
-                                  DBL_DIG + 1, percentage / 100.0 );
+			   "COMPUTE %s = RV.UNIFORM (0,1) < %.*g.\n",
+			   filter,
+			   DBL_DIG + 1, percentage / 100.0 );
 	}
       else
 	{
@@ -407,53 +373,50 @@ generate_syntax_filter (const struct select_cases_dialog *scd)
 	  const gchar ranvar[]="rv_$";
 
 	  ds_put_c_format (&dss,
-				  "COMPUTE %s = $CASENUM.\n", key);
+			   "COMPUTE %s = $CASENUM.\n", key);
 
 	  ds_put_c_format (&dss,
-				  "COMPUTE %s = %s > %d.\n",
-				  filter, key, from_n_cases);
+			   "COMPUTE %s = %s > %d.\n",
+			   filter, key, from_n_cases);
 
 	  ds_put_c_format (&dss,
-				  "COMPUTE %s = RV.UNIFORM (0, 1).\n",
-				  ranvar);
+			   "COMPUTE %s = RV.UNIFORM (0, 1).\n",
+			   ranvar);
 
 	  ds_put_c_format (&dss,
-				  "SORT BY %s, %s.\n",
-				  filter, ranvar);
+			   "SORT BY %s, %s.\n",
+			   filter, ranvar);
 
 	  ds_put_cstr (&dss, "EXECUTE.\n");
 				  
 
 	  ds_put_c_format (&dss,
-				  "COMPUTE %s = $CASENUM.\n",
-				  filter );
+			   "COMPUTE %s = $CASENUM.\n",
+			   filter );
 
 	  ds_put_c_format (&dss,
-				  "COMPUTE %s = %s <= %d\n",
-				  filter,
-				  filter,
-				  n_cases );
+			   "COMPUTE %s = %s <= %d\n",
+			   filter,
+			   filter,
+			   n_cases );
 
 	  ds_put_cstr (&dss, "EXECUTE.\n");
 
 
 	  ds_put_c_format (&dss,
-				  "SORT BY %s.\n",
-				  key);
+			   "SORT BY %s.\n",
+			   key);
 
 	  ds_put_c_format (&dss,
-				  "DELETE VARIABLES %s, %s.\n",
-				  key, ranvar);
+			   "DELETE VARIABLES %s, %s.\n",
+			   key, ranvar);
 	}
 
       ds_put_cstr (&dss, "EXECUTE.\n");
     }
   else
     {
-      GtkEntry *entry =
-	GTK_ENTRY (get_widget_assert (scd->xml,
-				      "filter-variable-entry"));
-      filter = gtk_entry_get_text (entry);
+      filter = gtk_entry_get_text (GTK_ENTRY (scd->entry));
     }
 
   ds_put_c_format (&dss, "FILTER BY %s.\n", filter);
@@ -472,8 +435,7 @@ generate_syntax_delete (const struct select_cases_dialog *scd)
   struct string dss;
 
   if ( gtk_toggle_button_get_active
-       (GTK_TOGGLE_BUTTON (get_widget_assert (scd->xml,
-					      "radiobutton-all"))))
+       (GTK_TOGGLE_BUTTON (scd->radiobutton_all)))
     {
       return xstrdup ("\n");
     }
@@ -481,65 +443,44 @@ generate_syntax_delete (const struct select_cases_dialog *scd)
   ds_init_empty (&dss);
 
   if ( gtk_toggle_button_get_active
-       (GTK_TOGGLE_BUTTON (get_widget_assert (scd->xml,
-					      "radiobutton-sample"))))
-  {
-    GtkWidget *random_sample =
-      get_widget_assert (scd->xml,
-			 "radiobutton-sample-percent");
-
-    ds_put_cstr (&dss, "SAMPLE ");
-
-    if ( gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (random_sample)))
-      {
-	const double percentage =
-	  gtk_spin_button_get_value (GTK_SPIN_BUTTON (scd->spinbutton));
-	ds_put_c_format (&dss, "%g.", percentage / 100.0);
-      }
-    else
-      {
-	const gint n_cases =
-	  gtk_spin_button_get_value (GTK_SPIN_BUTTON (scd->spinbutton1));
-	const gint from_n_cases =
-	  gtk_spin_button_get_value (GTK_SPIN_BUTTON (scd->spinbutton2));
-
-      	ds_put_c_format (&dss, "%d FROM %d .", n_cases, from_n_cases);
-      }
-
-  }
-  else if ( gtk_toggle_button_get_active
-	    (GTK_TOGGLE_BUTTON (get_widget_assert (scd->xml,
-						   "radiobutton-range"))))
+       (GTK_TOGGLE_BUTTON (scd->radiobutton_sample)))
     {
-      GtkSpinButton *first =
-	GTK_SPIN_BUTTON (get_widget_assert (scd->xml,
-					   "range-dialog-first"));
-
-      GtkSpinButton *last =
-	GTK_SPIN_BUTTON (get_widget_assert (scd->xml,
-					   "range-dialog-last"));
-
+      ds_put_cstr (&dss, "SAMPLE ");
+      
+      if ( gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (scd->percent)))
+	{
+	  const double percentage =
+	    gtk_spin_button_get_value (GTK_SPIN_BUTTON (scd->spinbutton));
+	  ds_put_c_format (&dss, "%g.", percentage / 100.0);
+	}
+      else
+	{
+	  const gint n_cases =
+	    gtk_spin_button_get_value (GTK_SPIN_BUTTON (scd->spinbutton1));
+	  const gint from_n_cases =
+	    gtk_spin_button_get_value (GTK_SPIN_BUTTON (scd->spinbutton2));
+	  
+	  ds_put_c_format (&dss, "%d FROM %d .", n_cases, from_n_cases);
+	}
+      
+    }
+  else if ( gtk_toggle_button_get_active
+	    (GTK_TOGGLE_BUTTON (scd->radiobutton_range)))
+    {
       ds_put_c_format (&dss,
-			      "COMPUTE filter_$ = ($CASENUM >= %ld "
-			       "AND $CASENUM <= %ld).\n",
-			      (long) gtk_spin_button_get_value (first),
-			      (long) gtk_spin_button_get_value (last)
-			      );
+		       "COMPUTE filter_$ = ($CASENUM >= %ld "
+		       "AND $CASENUM <= %ld).\n",
+		       (long) gtk_spin_button_get_value (GTK_SPIN_BUTTON (scd->first)),
+		       (long) gtk_spin_button_get_value (GTK_SPIN_BUTTON (scd->last)));
       ds_put_cstr (&dss, "EXECUTE.\n");
       ds_put_c_format (&dss, "SELECT IF filter_$.\n");
 
     }
-  else if ( gtk_toggle_button_get_active
-	    (GTK_TOGGLE_BUTTON
-	     (get_widget_assert (scd->xml,
-				 "radiobutton-filter-variable"))))
+  else if (gtk_toggle_button_get_active
+	    (GTK_TOGGLE_BUTTON (scd->radiobutton_filter)))
     {
-      GtkEntry *entry =
-	GTK_ENTRY (get_widget_assert (scd->xml,
-				      "filter-variable-entry"));
-
       ds_put_c_format (&dss, "SELECT IF (%s <> 0).",
-			      gtk_entry_get_text (entry));
+		       gtk_entry_get_text (GTK_ENTRY (scd->entry)));
     }
 
 
@@ -557,18 +498,13 @@ static gchar *
 generate_syntax (const struct select_cases_dialog *scd)
 {
   /* In the simple case, all we need to do is cancel any existing filter */
-  if ( gtk_toggle_button_get_active
-       (GTK_TOGGLE_BUTTON (get_widget_assert (scd->xml,
-					      "radiobutton-all"))))
+  if ( gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (scd->radiobutton_all)))
     {
       return g_strdup ("FILTER OFF.\n");
     }
 
-
   /* Are we filtering or deleting ? */
-  if ( gtk_toggle_button_get_active
-       (GTK_TOGGLE_BUTTON (get_widget_assert (scd->xml,
-					      "radiobutton-delete"))))
+  if ( gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (scd->radiobutton_delete)))
     {
       return generate_syntax_delete (scd);
     }
@@ -576,8 +512,4 @@ generate_syntax (const struct select_cases_dialog *scd)
     {
       return generate_syntax_filter (scd);
     }
-
 }
-
-
-
