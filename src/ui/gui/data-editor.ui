@@ -206,8 +206,9 @@
           </object>
         </child>
         <child>
-          <object class="GtkAction" id="data_select-cases">
+          <object class="PsppireDialogActionSelect" id="data_select-cases">
             <property name="name">data_select-cases</property>
+            <property name="manager">uimanager1</property>
             <property name="label" translatable="yes">Select _Cases...</property>
             <property name="tooltip" translatable="yes">Choose a subset of cases for analysis</property>
             <property name="stock-id">data-select-cases</property>

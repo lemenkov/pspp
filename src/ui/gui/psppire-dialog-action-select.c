@@ -14,64 +14,63 @@
    You should have received a copy of the GNU General Public License
    along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 
+
 #include <config.h>
 
-#include "select-cases-dialog.h"
-#include <float.h>
-#include <gtk/gtk.h>
-#include "executor.h"
-#include "psppire-dialog.h"
-#include "psppire-data-window.h"
-#include "psppire-selector.h"
-#include "dict-display.h"
-#include "dialog-common.h"
-#include "widget-io.h"
-#include "psppire-scanf.h"
-#include "builder-wrapper.h"
-#include "helper.h"
 
-#include <xalloc.h>
+#include "builder-wrapper.h"
+#include "dialog-common.h"
+#include "dict-display.h"
+#include "libpspp/str.h"
+#include "psppire-data-store.h"
+#include "psppire-data-window.h"
+#include "psppire-dialog-action-select.h"
+#include "psppire-dialog.h"
+#include "psppire-dict.h"
+#include "psppire-scanf.h"
+#include "psppire-value-entry.h"
+#include "psppire-var-view.h"
+#include "widget-io.h"
+
+#include <ui/syntax-gen.h>
+
 
 
 #include <gettext.h>
 #define _(msgid) gettext (msgid)
 #define N_(msgid) msgid
 
+static void psppire_dialog_action_select_class_init (PsppireDialogActionSelectClass *class);
 
+G_DEFINE_TYPE (PsppireDialogActionSelect, psppire_dialog_action_select, PSPPIRE_TYPE_DIALOG_ACTION);
 
-/* FIXME: These shouldn't be here */
-#include "psppire-data-store.h"
-
-
-struct select_cases_dialog
+static gboolean
+dialog_state_valid (gpointer data)
 {
-  GtkWidget *spinbutton ;
-  GtkWidget *spinbutton1 ;
-  GtkWidget *spinbutton2 ;
+  return TRUE;
+}
 
-  GtkWidget *hbox1;
-  GtkWidget *hbox2;
 
-  PsppireDataStore *data_store;
-  GtkWidget *parent_dialog  ; 
-  GtkWidget *dialog         ; 
-  GtkWidget *percent        ; 
-  GtkWidget *sample_n_cases ; 
-  GtkWidget *table          ;
-  GtkWidget *l0 ;
-  GtkWidget *l1 ;
-  GtkWidget *radiobutton_range ;
-  GtkWidget *first ;
-  GtkWidget *last ;
-  GtkWidget *radiobutton_sample;
-  GtkWidget *radiobutton_all;
-  GtkWidget *entry;
-  GtkWidget *radiobutton_filter;
-  GtkWidget *radiobutton_delete;
-  GtkWidget *range_subdialog;
-};
+static void
+refresh (PsppireDialogAction *pda)
+{
+  PsppireDialogActionSelect *act = PSPPIRE_DIALOG_ACTION_SELECT (pda);
 
-static gchar * generate_syntax (const struct select_cases_dialog *scd);
+  gtk_entry_set_text (GTK_ENTRY (act->entry), "");
+  gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (act->radiobutton_all), TRUE);
+  gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (act->radiobutton_filter), TRUE);
+
+  gtk_label_set_text (GTK_LABEL (act->l1), "");
+  gtk_label_set_text (GTK_LABEL (act->l0), "");
+}
+
+
+static void
+set_radiobutton (GtkWidget *button, gpointer data)
+{
+  GtkToggleButton *toggle = data;
+  gtk_toggle_button_set_active (toggle, TRUE);
+}
 
 
 static const gchar label1[] = N_("Approximately %3d%% of all cases.");
@@ -82,11 +81,17 @@ static void
 sample_subdialog (GtkButton *b, gpointer data)
 {
   gint response;
-  struct select_cases_dialog *scd = data;
+  PsppireDialogActionSelect *scd = PSPPIRE_DIALOG_ACTION_SELECT (data);
+  PsppireDialogAction *pda = PSPPIRE_DIALOG_ACTION (data);
 
-  gint case_count = psppire_data_store_get_case_count (scd->data_store);
+  PsppireDataStore *data_store = NULL;
+  g_object_get (PSPPIRE_DATA_WINDOW (pda->toplevel)->data_editor,
+		"data-store", &data_store,
+		NULL);
 
-  if ( ! scd->hbox1 )
+  gint case_count = psppire_data_store_get_case_count (data_store);
+
+  if (!scd->hbox1)
     {
       scd->hbox1 = psppire_scanf_new (gettext (label1), &scd->spinbutton);
 
@@ -104,7 +109,7 @@ sample_subdialog (GtkButton *b, gpointer data)
     }
 
 
-  if ( ! scd->hbox2 )
+  if (!scd->hbox2)
     {
       scd->hbox2 =
 	psppire_scanf_new (gettext (label2), &scd->spinbutton1, &scd->spinbutton2);
@@ -129,10 +134,10 @@ sample_subdialog (GtkButton *b, gpointer data)
     }
 
 
-  gtk_window_set_transient_for (GTK_WINDOW (scd->dialog),
-				GTK_WINDOW (scd->parent_dialog));
+  gtk_window_set_transient_for (GTK_WINDOW (scd->rsample_dialog),
+				GTK_WINDOW (pda->dialog));
 
-  response = psppire_dialog_run (PSPPIRE_DIALOG (scd->dialog));
+  response = psppire_dialog_run (PSPPIRE_DIALOG (scd->rsample_dialog));
 
   if ( response != PSPPIRE_RESPONSE_CONTINUE)
     {
@@ -170,19 +175,27 @@ sample_subdialog (GtkButton *b, gpointer data)
     }
 }
 
+
+
 static void
 range_subdialog (GtkButton *b, gpointer data)
 {
   gint response;
-  struct select_cases_dialog *scd = data;
+  PsppireDialogActionSelect *scd = PSPPIRE_DIALOG_ACTION_SELECT (data);
+  PsppireDialogAction *pda = PSPPIRE_DIALOG_ACTION (data);
 
-  gint n_cases = psppire_data_store_get_case_count (scd->data_store);
+  PsppireDataStore *data_store = NULL;
+  g_object_get (PSPPIRE_DATA_WINDOW (pda->toplevel)->data_editor,
+		"data-store", &data_store,
+		NULL);
+
+  gint n_cases = psppire_data_store_get_case_count (data_store);
 
   gtk_spin_button_set_range (GTK_SPIN_BUTTON (scd->last),  1,  n_cases);
   gtk_spin_button_set_range (GTK_SPIN_BUTTON (scd->first), 1,  n_cases);
 
   gtk_window_set_transient_for (GTK_WINDOW (scd->range_subdialog),
-				GTK_WINDOW (scd->parent_dialog));
+				GTK_WINDOW (pda->dialog));
 
   response = psppire_dialog_run (PSPPIRE_DIALOG (scd->range_subdialog));
   if ( response == PSPPIRE_RESPONSE_CONTINUE)
@@ -193,143 +206,119 @@ range_subdialog (GtkButton *b, gpointer data)
     }
 }
 
+
 static void
-set_radiobutton (GtkWidget *button, gpointer data)
+psppire_dialog_action_select_activate (PsppireDialogAction *a)
 {
-  GtkToggleButton *toggle = data;
-  gtk_toggle_button_set_active (toggle, TRUE);
-}
+  PsppireDialogActionSelect *act = PSPPIRE_DIALOG_ACTION_SELECT (a);
+  PsppireDialogAction *pda = PSPPIRE_DIALOG_ACTION (a);
 
-/* Pops up the Select Cases dialog box */
-void
-select_cases_dialog (PsppireDataWindow *de)
-{
-  gint response;
-  struct select_cases_dialog scd = {0,0,0,0,0,0};
-  GtkWidget *entry = NULL;
-  GtkWidget *selector ;
-
-  GtkBuilder *xml = builder_new ("select-cases.ui");
-
-  g_object_get (de->data_editor, "data-store", &scd.data_store, NULL);
-
-  GtkWidget
-    *button_range = get_widget_assert (xml, "button-range");
-  GtkWidget *
-    button_sample = get_widget_assert (xml, "button-sample");
-  scd.entry = get_widget_assert (xml, "filter-variable-entry");
-  selector = get_widget_assert (xml, "psppire-selector-filter");
-  
-  scd.parent_dialog = get_widget_assert (xml, "select-cases-dialog");
-  scd.dialog = get_widget_assert (xml, "select-cases-random-sample-dialog");
-  scd.percent = get_widget_assert (xml, "radiobutton-sample-percent");
-  scd.sample_n_cases = get_widget_assert (xml, "radiobutton-sample-n-cases");
-  scd.table = get_widget_assert (xml, "select-cases-random-sample-table");
-
-  scd.l0 = get_widget_assert (xml, "random-sample-label");;
-
-  scd.radiobutton_range = get_widget_assert (xml, "radiobutton-range");
-  scd.range_subdialog = get_widget_assert (xml, "select-cases-range-dialog");
-
-  scd.first = get_widget_assert (xml, "range-dialog-first");
-  scd.last = get_widget_assert (xml, "range-dialog-last");
-
-  scd.l1 = get_widget_assert (xml, "range-sample-label");
-  scd.radiobutton_sample =  get_widget_assert (xml, "radiobutton-sample");
-
-  scd.radiobutton_all = get_widget_assert (xml, "radiobutton-all");
-  scd.radiobutton_filter =  get_widget_assert (xml, "radiobutton-filter-variable");
-  scd.radiobutton_delete = get_widget_assert (xml,   "radiobutton-delete");
-  
-  {
-    GtkWidget *button_if =
-      get_widget_assert (xml, "button-if");
-
-    GtkWidget *radiobutton_if =
-      get_widget_assert (xml, "radiobutton-if");
-
-    GtkWidget *sample_label =
-      get_widget_assert (xml, "random-sample-label");
-
-    g_signal_connect (scd.radiobutton_all, "toggled",
-		      G_CALLBACK (set_sensitivity_from_toggle_invert),
-		      get_widget_assert (xml, "filter-delete-button-box")
-		      );
-
-    g_signal_connect (button_if, "clicked",
-		      G_CALLBACK (set_radiobutton), radiobutton_if);
-
-    g_signal_connect (button_sample, "clicked",
-		      G_CALLBACK (set_radiobutton), scd.radiobutton_sample);
-
-    g_signal_connect (button_range,  "clicked",
-    		      G_CALLBACK (set_radiobutton), scd.radiobutton_range);
-
-    g_signal_connect (selector, "clicked",
-		      G_CALLBACK (set_radiobutton), scd.radiobutton_filter);
-
-    g_signal_connect (selector, "selected",
-		      G_CALLBACK (set_radiobutton), scd.radiobutton_filter);
-
-    g_signal_connect (scd.radiobutton_range, "toggled",
-		      G_CALLBACK (set_sensitivity_from_toggle),
-		      scd.l1);
-
-    g_signal_connect (scd.radiobutton_sample, "toggled",
-		      G_CALLBACK (set_sensitivity_from_toggle),
-		      sample_label);
-
-    g_signal_connect (scd.radiobutton_filter, "toggled",
-		      G_CALLBACK (set_sensitivity_from_toggle),
-		      entry);
-  }
-
-
-
-  GtkWidget *dialog = get_widget_assert (xml, "select-cases-dialog");
-  gtk_window_set_transient_for (GTK_WINDOW (dialog), GTK_WINDOW (de));
-
-  {
-    GtkWidget *source = get_widget_assert   (xml, "select-cases-treeview");
-
-    g_object_set (source, "model",
-		  scd.data_store->dict,
-		  "selection-mode",
-		  GTK_SELECTION_SINGLE, NULL);
-
-    psppire_selector_set_filter_func (PSPPIRE_SELECTOR (selector),
-				      is_currently_in_entry);
-  }
-
-  g_signal_connect (button_range,
-  		    "clicked", G_CALLBACK (range_subdialog), &scd);
-
-
-  g_signal_connect (button_sample,
-		    "clicked", G_CALLBACK (sample_subdialog), &scd);
-
-
-  response = psppire_dialog_run (PSPPIRE_DIALOG (dialog));
-
-  switch (response)
+  GHashTable *thing = psppire_dialog_action_get_hash_table (pda);
+  GtkBuilder *xml = g_hash_table_lookup (thing, a);
+  if (!xml)
     {
-    case GTK_RESPONSE_OK:
-      g_free (execute_syntax_string (de, generate_syntax (&scd)));
-      break;
-    case PSPPIRE_RESPONSE_PASTE:
-      g_free (paste_syntax_to_window (generate_syntax (&scd)));
-      break;
-    default:
-      break;
+      xml = builder_new ("select-cases.ui");
+      g_hash_table_insert (thing, a, xml);
+
+
+      pda->dialog = get_widget_assert (xml, "select-cases-dialog");
+      pda->source = get_widget_assert   (xml, "select-cases-treeview");
+
+      g_object_set (pda->source, 
+		    "selection-mode", GTK_SELECTION_SINGLE,
+		    NULL);
+      
+      act->entry = get_widget_assert (xml, "filter-variable-entry");
+
+      GtkWidget *selector = get_widget_assert (xml, "psppire-selector-filter");
+      psppire_selector_set_filter_func (PSPPIRE_SELECTOR (selector),
+					is_currently_in_entry);
+
+      act->rsample_dialog = get_widget_assert (xml, "select-cases-random-sample-dialog");
+      act->percent = get_widget_assert (xml, "radiobutton-sample-percent");
+      act->sample_n_cases = get_widget_assert (xml, "radiobutton-sample-n-cases");
+      act->table = get_widget_assert (xml, "select-cases-random-sample-table");
+
+      act->l0 = get_widget_assert (xml, "random-sample-label");;
+
+      act->radiobutton_range = get_widget_assert (xml, "radiobutton-range");
+      act->range_subdialog = get_widget_assert (xml, "select-cases-range-dialog");
+
+      act->first = get_widget_assert (xml, "range-dialog-first");
+      act->last = get_widget_assert (xml, "range-dialog-last");
+
+      act->l1 = get_widget_assert (xml, "range-sample-label");
+      act->radiobutton_sample =  get_widget_assert (xml, "radiobutton-sample");
+
+      act->radiobutton_all = get_widget_assert (xml, "radiobutton-all");
+      act->radiobutton_filter_variable =  get_widget_assert (xml, "radiobutton-filter-variable");
+
+      act->radiobutton_filter =  get_widget_assert (xml, "radiobutton-filter");
+      act->radiobutton_delete = get_widget_assert (xml,   "radiobutton-delete");
+
+
+      GtkWidget	*button_range = get_widget_assert (xml, "button-range");
+      GtkWidget *button_sample = get_widget_assert (xml, "button-sample");
+
+      GtkWidget *button_if =get_widget_assert (xml, "button-if");
+
+      GtkWidget *radiobutton_if = get_widget_assert (xml, "radiobutton-if");
+
+      GtkWidget *sample_label = get_widget_assert (xml, "random-sample-label");
+
+      g_signal_connect (act->radiobutton_all, "toggled",
+			G_CALLBACK (set_sensitivity_from_toggle_invert),
+			get_widget_assert (xml, "filter-delete-button-box"));
+
+      g_signal_connect (button_if, "clicked",
+			G_CALLBACK (set_radiobutton), radiobutton_if);
+
+      g_signal_connect (button_sample, "clicked",
+			G_CALLBACK (set_radiobutton), act->radiobutton_sample);
+
+      g_signal_connect (button_range,  "clicked",
+			G_CALLBACK (set_radiobutton), act->radiobutton_range);
+
+      g_signal_connect (selector, "clicked",
+			G_CALLBACK (set_radiobutton), act->radiobutton_filter_variable);
+
+      g_signal_connect (selector, "selected",
+			G_CALLBACK (set_radiobutton), act->radiobutton_filter_variable);
+
+      g_signal_connect (act->radiobutton_range, "toggled",
+			G_CALLBACK (set_sensitivity_from_toggle),
+			act->l1);
+
+      g_signal_connect (act->radiobutton_sample, "toggled",
+			G_CALLBACK (set_sensitivity_from_toggle),
+			sample_label);
+
+      g_signal_connect (act->radiobutton_filter_variable, "toggled",
+			G_CALLBACK (set_sensitivity_from_toggle),
+			act->entry);
+
+      g_signal_connect (button_range,
+			"clicked", G_CALLBACK (range_subdialog), act);
+
+      g_signal_connect (button_sample,
+			"clicked", G_CALLBACK (sample_subdialog), act);
     }
 
-  g_object_unref (xml);
+  psppire_dialog_action_set_refresh (pda, refresh);
+
+  psppire_dialog_action_set_valid_predicate (pda,
+					dialog_state_valid);
+
+  if (PSPPIRE_DIALOG_ACTION_CLASS (psppire_dialog_action_select_parent_class)->activate)
+    PSPPIRE_DIALOG_ACTION_CLASS (psppire_dialog_action_select_parent_class)->activate (pda);
 }
 
 
-static gchar *
-generate_syntax_filter (const struct select_cases_dialog *scd)
+static char *
+generate_syntax_filter (PsppireDialogAction *a)
 {
+  PsppireDialogActionSelect *scd = PSPPIRE_DIALOG_ACTION_SELECT (a);
+
   gchar *text = NULL;
   struct string dss;
 
@@ -428,9 +417,11 @@ generate_syntax_filter (const struct select_cases_dialog *scd)
   return text;
 }
 
+
 static gchar *
-generate_syntax_delete (const struct select_cases_dialog *scd)
+generate_syntax_delete (PsppireDialogAction *a)
 {
+  PsppireDialogActionSelect *scd = PSPPIRE_DIALOG_ACTION_SELECT (a);
   gchar *text = NULL;
   struct string dss;
 
@@ -477,7 +468,7 @@ generate_syntax_delete (const struct select_cases_dialog *scd)
 
     }
   else if (gtk_toggle_button_get_active
-	    (GTK_TOGGLE_BUTTON (scd->radiobutton_filter)))
+	    (GTK_TOGGLE_BUTTON (scd->radiobutton_filter_variable)))
     {
       ds_put_c_format (&dss, "SELECT IF (%s <> 0).",
 		       gtk_entry_get_text (GTK_ENTRY (scd->entry)));
@@ -495,21 +486,39 @@ generate_syntax_delete (const struct select_cases_dialog *scd)
 
 
 static gchar *
-generate_syntax (const struct select_cases_dialog *scd)
+generate_syntax (PsppireDialogAction *a)
 {
+  PsppireDialogActionSelect *scd = PSPPIRE_DIALOG_ACTION_SELECT (a);
+
   /* In the simple case, all we need to do is cancel any existing filter */
   if ( gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (scd->radiobutton_all)))
     {
       return g_strdup ("FILTER OFF.\n");
     }
-
+  
   /* Are we filtering or deleting ? */
   if ( gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (scd->radiobutton_delete)))
     {
-      return generate_syntax_delete (scd);
+      return generate_syntax_delete (a);
     }
   else
     {
-      return generate_syntax_filter (scd);
+      return generate_syntax_filter (a);
     }
 }
+
+
+static void
+psppire_dialog_action_select_class_init (PsppireDialogActionSelectClass *class)
+{
+  psppire_dialog_action_set_activation (class, psppire_dialog_action_select_activate);
+
+  PSPPIRE_DIALOG_ACTION_CLASS (class)->generate_syntax = generate_syntax;
+}
+
+
+static void
+psppire_dialog_action_select_init (PsppireDialogActionSelect *act)
+{
+}
+

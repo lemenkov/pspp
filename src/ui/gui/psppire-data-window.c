@@ -38,7 +38,6 @@
 #include "ui/gui/psppire-window.h"
 #include "ui/gui/psppire.h"
 #include "ui/gui/recode-dialog.h"
-#include "ui/gui/select-cases-dialog.h"
 #include "ui/syntax-gen.h"
 
 #include "gl/c-strcase.h"
@@ -1042,7 +1041,6 @@ psppire_data_window_finish_init (PsppireDataWindow *de,
 
   g_signal_connect_swapped (get_action_assert (de->builder, "view_value-labels"), "toggled", G_CALLBACK (toggle_value_labels), de);
 
-  connect_action (de, "data_select-cases", G_CALLBACK (select_cases_dialog));
   connect_action (de, "transform_recode-same", G_CALLBACK (recode_same_dialog));
   connect_action (de, "transform_recode-different", G_CALLBACK (recode_different_dialog));
 

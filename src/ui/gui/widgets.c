@@ -47,6 +47,7 @@
 #include "psppire-dialog-action-roc.h"
 #include "psppire-dialog-action-runs.h"
 #include "psppire-dialog-action-scatterplot.h"
+#include "psppire-dialog-action-select.h"
 #include "psppire-dialog-action-sort.h"
 #include "psppire-dialog-action-split.h"
 #include "psppire-dialog-action-tt1s.h"
@@ -94,6 +95,7 @@ static const get_type_func dialog_action_types[]=
   psppire_dialog_action_roc_get_type,
   psppire_dialog_action_runs_get_type,
   psppire_dialog_action_scatterplot_get_type,
+  psppire_dialog_action_select_get_type,
   psppire_dialog_action_sort_get_type,
   psppire_dialog_action_split_get_type,
   psppire_dialog_action_tt1s_get_type,
