@@ -3064,6 +3064,8 @@ dnl Numeric variables.
 dnl Long variable names.
 7; 13; 1; COUNT (
 "LONGVARI=_Invalid"; i8 9;
+"LONGVARI=$Invalid"; i8 9;
+"LONGVARI=#Invalid"; i8 9;
 "LONGVA_A=LongVariableName"; i8 9;
 "LONGVA_B=LONGVARIABLENAME"; i8 9;
 );
@@ -3081,6 +3083,10 @@ GET FILE='sys-file.sav'.
 ])
   AT_CHECK([pspp -O format=csv sys-file.sps], [0], [dnl
 warning: `sys-file.sav' near offset 0x138: Long variable mapping from LONGVARI to invalid variable name `_Invalid'.
+
+warning: `sys-file.sav' near offset 0x138: Long variable mapping from LONGVARI to invalid variable name `$Invalid'.
+
+warning: `sys-file.sav' near offset 0x138: Long variable mapping from LONGVARI to invalid variable name `#Invalid'.
 
 warning: `sys-file.sav' near offset 0x138: Duplicate long variable name `LONGVARIABLENAME'.
 ])

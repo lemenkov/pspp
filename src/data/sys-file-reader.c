@@ -1,5 +1,5 @@
 /* PSPP - a program for statistical analysis.
-   Copyright (C) 1997-2000, 2006-2007, 2009-2015 Free Software Foundation, Inc.
+   Copyright (C) 1997-2000, 2006-2007, 2009-2016 Free Software Foundation, Inc.
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -2046,7 +2046,8 @@ parse_long_var_name_map (struct sfm_reader *r,
   while (read_variable_to_value_pair (r, dict, text, &var, &long_name))
     {
       /* Validate long name. */
-      if (!dict_id_is_valid (dict, long_name, false))
+      if (!dict_id_is_valid (dict, long_name, false)
+          || long_name[0] == '$' || long_name[0] == '#')
         {
           sys_warn (r, record->pos,
                     _("Long variable mapping from %s to invalid "
