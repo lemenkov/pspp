@@ -1,6 +1,6 @@
 /* PSPP - a program for statistical analysis.
    Copyright (C) 2007, 2008, 2009, 2010, 2011, 2012,
-                 2013, 2015 Free Software Foundation, Inc.
+                 2013, 2015, 2016 Free Software Foundation, Inc.
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -492,33 +492,22 @@ parse_get_txt (struct lexer *lexer, struct dataset *ds)
           lex_match (lexer, T_EQUALS);
           if (lex_match (lexer, T_ALL))
             {
-              data_parser_set_case_limit (parser, -1);
-              data_parser_set_case_percent (parser, 100);
+              /* Nothing to do. */
             }
           else if (lex_match_id (lexer, "FIRST"))
             {
               if (!lex_force_int (lexer))
                 goto error;
-              if (lex_integer (lexer) < 1)
-                {
-                  msg (SE, _("Value of %s must be 1 or greater."), "FIRST");
-                  goto error;
-                }
-              data_parser_set_case_limit (parser, lex_integer (lexer));
               lex_get (lexer);
             }
           else if (lex_match_id (lexer, "PERCENT"))
             {
               if (!lex_force_int (lexer))
                 goto error;
-              if (lex_integer (lexer) < 1 || lex_integer (lexer) > 100)
-                {
-                  msg (SE, _("Value of %s must be between 1 and 100."), "PERCENT");
-                  goto error;
-                }
-              data_parser_set_case_percent (parser, lex_integer (lexer));
               lex_get (lexer);
             }
+          msg (SW, _("Ignoring obsolete IMPORTCASES subcommand.  (N OF CASES "
+                     "or SAMPLE may be used to substitute.)"));
         }
       else if (lex_match_id_n (lexer, "DELIMITERS", 4))
         {

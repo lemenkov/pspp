@@ -1,5 +1,5 @@
 /* PSPP - a program for statistical analysis.
-   Copyright (C) 2007, 2009, 2010, 2011, 2012, 2013 Free Software Foundation, Inc.
+   Copyright (C) 2007, 2009, 2010, 2011, 2012, 2013, 2016 Free Software Foundation, Inc.
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -44,8 +44,6 @@ struct data_parser
     const struct dictionary *dict; /*Dictionary of destination */
     enum data_parser_type type; /* Type of data to parse. */
     int skip_records;           /* Records to skip before first real data. */
-    casenumber max_cases;       /* Max number of cases to read. */
-    int percent_cases;          /* Approximate percent of cases to read. */
 
     struct field *fields;       /* Fields to parse. */
     size_t field_cnt;           /* Number of fields. */
@@ -86,8 +84,6 @@ data_parser_create (const struct dictionary *dict)
 
   parser->type = DP_FIXED;
   parser->skip_records = 0;
-  parser->max_cases = -1;
-  parser->percent_cases = 100;
 
   parser->fields = NULL;
   parser->field_cnt = 0;
@@ -152,24 +148,6 @@ data_parser_set_skip (struct data_parser *parser, int initial_records_to_skip)
 {
   assert (initial_records_to_skip >= 0);
   parser->skip_records = initial_records_to_skip;
-}
-
-/* Sets the maximum number of cases parsed by PARSER to
-   MAX_CASES.  The default is -1, meaning no limit. */
-void
-data_parser_set_case_limit (struct data_parser *parser, casenumber max_cases)
-{
-  parser->max_cases = max_cases;
-}
-
-/* Sets the percentage of cases that PARSER should read from the
-   input file to PERCENT_CASES.  By default, all cases are
-   read. */
-void
-data_parser_set_case_percent (struct data_parser *parser, int percent_cases)
-{
-  assert (percent_cases >= 0 && percent_cases <= 100);
-  parser->percent_cases = percent_cases;
 }
 
 /* Returns true if PARSER is configured to allow cases to span
@@ -389,12 +367,6 @@ data_parser_parse (struct data_parser *parser, struct dfm_reader *reader,
     }
 
   /* Limit cases. */
-  if (parser->max_cases != -1 && parser->max_cases-- == 0)
-    return false;
-  if (parser->percent_cases < 100
-      && dfm_get_percent_read (reader) >= parser->percent_cases)
-    return false;
-
   if (parser->type == DP_DELIMITED)
     {
       if (parser->span)

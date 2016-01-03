@@ -370,7 +370,7 @@ GET DATA /TYPE=TXT
         [ENCODING='@var{encoding}']
         [/ARRANGEMENT=@{DELIMITED,FIXED@}]
         [/FIRSTCASE=@{@var{first_case}@}]
-        [/IMPORTCASE=@{ALL,FIRST @var{max_cases},PERCENT @var{percent}@}]
+        [/IMPORTCASES=...]
         @dots{}additional subcommands depending on ARRANGEMENT@dots{}
 @end display
 
@@ -398,19 +398,13 @@ line.  To skip lines at the beginning of an input file, set @subcmd{FIRSTCASE}
 to the number of the first line to read: 2 to skip the first line, 3
 to skip the first two lines, and so on.
 
-@subcmd{IMPORTCASE} can be used to limit the number of cases read from the
-input file.  With the default setting, ALL, all cases in the file are
-read.  Specify FIRST @var{max_cases} to read at most @var{max_cases} cases
-from the file.  Use @subcmd{PERCENT @var{percent}} to read only @var{percent}
-percent, approximately, of the cases contained in the file.  (The
-percentage is approximate, because there is no way to accurately count
-the number of cases in the file without reading the entire file.  The
-number of cases in some kinds of unusual files cannot be estimated;
-@pspp{} will read all cases in such files.)
+@subcmd{IMPORTCASES} is ignored, for compatibility.  Use @cmd{N OF
+CASES} to limit the number of cases read from a file (@pxref{N OF
+CASES}), or @cmd{SAMPLE} to obtain a random sample of cases
+(@pxref{SAMPLE}).
 
-@subcmd{FIRSTCASE} and @subcmd{IMPORTCASE} may be used with delimited and fixed-format
-data.  The remaining subcommands, which apply only to one of the two  file
-arrangements, are described below.
+The remaining subcommands apply only to one of the two file
+arrangements, described below.
 
 @menu
 * GET DATA /TYPE=TXT /ARRANGEMENT=DELIMITED::

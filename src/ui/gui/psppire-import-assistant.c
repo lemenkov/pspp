@@ -1,5 +1,5 @@
 /* PSPPIRE - a graphical user interface for PSPP.
-   Copyright (C) 2015  Free Software Foundation
+   Copyright (C) 2015, 2016  Free Software Foundation
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -2233,13 +2233,11 @@ static void
 intro_append_syntax (const PsppireImportAssistant *ia, struct string *s)
 {
   if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (ia->n_cases_button)))
-    ds_put_format (s, "  /IMPORTCASE=FIRST %d\n",
+    ds_put_format (s, "N OF CASES %d.\n",
 		   gtk_spin_button_get_value_as_int (GTK_SPIN_BUTTON (ia->n_cases_spin)));
   else if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (ia->percent_button)))
-    ds_put_format (s, "  /IMPORTCASE=PERCENT %d\n",
-		   gtk_spin_button_get_value_as_int (GTK_SPIN_BUTTON (ia->percent_spin)));
-  else
-    ds_put_cstr (s, "  /IMPORTCASE=ALL\n");
+    ds_put_format (s, "SAMPLE %.4g.\n",
+		   gtk_spin_button_get_value (GTK_SPIN_BUTTON (ia->percent_spin)) / 100.0);
 }
 
 
@@ -2386,9 +2384,6 @@ psppire_import_assistant_generate_syntax (PsppireImportAssistant *ia)
       if (ia->encoding && strcmp (ia->encoding, "Auto"))
 	syntax_gen_pspp (&s, "  /ENCODING=%sq\n", ia->encoding);
 
-      intro_append_syntax (ia, &s);
-
-
       ds_put_cstr (&s,
 		   "  /ARRANGEMENT=DELIMITED\n"
 		   "  /DELCASE=LINE\n");
@@ -2398,6 +2393,7 @@ psppire_import_assistant_generate_syntax (PsppireImportAssistant *ia)
 
       formats_append_syntax (ia, &s);
       apply_dict (ia->dict, &s);
+      intro_append_syntax (ia, &s);
     }
   else
     {

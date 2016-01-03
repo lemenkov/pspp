@@ -1,5 +1,5 @@
 /* PSPP - a program for statistical analysis.
-   Copyright (C) 1997-2004, 2006, 2010, 2011, 2012 Free Software Foundation, Inc.
+   Copyright (C) 1997-2004, 2006, 2010, 2011, 2012, 2016 Free Software Foundation, Inc.
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -23,7 +23,6 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <sys/stat.h>
 
 #include "data/casereader.h"
 #include "data/dataset.h"
@@ -67,7 +66,6 @@ struct dfm_reader
     struct string scratch;      /* Extra line buffer. */
     enum dfm_reader_flags flags; /* Zero or more of DFM_*. */
     FILE *file;                 /* Associated file. */
-    off_t file_size;            /* File size, or -1 if unavailable. */
     size_t pos;                 /* Offset in line of current character. */
     unsigned eof_cnt;           /* # of attempts to advance past EOF. */
     struct lexer *lexer;        /* The lexer reading the file */
@@ -155,7 +153,6 @@ dfm_open_reader (struct file_handle *fh, struct lexer *lexer,
   r->block_left = 0;
   if (fh_get_referent (fh) != FH_REF_INLINE)
     {
-      struct stat s;
       r->line_number = 0;
       r->file = fn_open (fh, "rb");
       if (r->file == NULL)
@@ -164,10 +161,7 @@ dfm_open_reader (struct file_handle *fh, struct lexer *lexer,
                fh_get_file_name (r->fh), strerror (errno));
           goto error;
         }
-      r->file_size = fstat (fileno (r->file), &s) == 0 ? s.st_size : -1;
     }
-  else
-    r->file_size = -1;
   fh_lock_set_aux (lock, r);
 
   if (encoding == NULL)
@@ -656,31 +650,6 @@ const char *
 dfm_reader_get_encoding (const struct dfm_reader *reader)
 {
   return reader->encoding;
-}
-
-/* Returns a number between 0 and 100 that approximates the
-   percentage of the data in READER that has already been read,
-   or -1 if this value cannot be estimated.
-
-   ftello is slow in glibc (it flushes the read buffer), so don't
-   call this function unless you need to. */
-int
-dfm_get_percent_read (const struct dfm_reader *reader)
-{
-  if (reader->file_size >= 0)
-    {
-      off_t position;
-
-      position = (reader->line_reader != NULL
-                  ? line_reader_tell (reader->line_reader)
-                  : ftello (reader->file));
-      if (position >= 0)
-        {
-          double p = 100.0 * position / reader->file_size;
-          return p < 0 ? 0 : p > 100 ? 100 : p;
-        }
-    }
-  return -1;
 }
 
 /* Causes dfm_get_record() or dfm_get_whole_record() to read in

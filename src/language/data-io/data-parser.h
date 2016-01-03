@@ -1,5 +1,5 @@
 /* PSPP - a program for statistical analysis.
-   Copyright (C) 2007, 2011 Free Software Foundation, Inc.
+   Copyright (C) 2007, 2011, 2016 Free Software Foundation, Inc.
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -45,8 +45,6 @@ enum data_parser_type data_parser_get_type (const struct data_parser *);
 void data_parser_set_type (struct data_parser *, enum data_parser_type);
 
 void data_parser_set_skip (struct data_parser *, int initial_records_to_skip);
-void data_parser_set_case_limit (struct data_parser *, casenumber max_cases);
-void data_parser_set_case_percent (struct data_parser *, int case_percent);
 
 /* For configuring delimited parsers only. */
 bool data_parser_get_span (const struct data_parser *);
