@@ -66,8 +66,8 @@
           </object>
         </child>
         <child>
-          <object class="GtkAction" id="menuitem7">
-            <property name="name">menuitem7</property>
+          <object class="GtkAction" id="edit-menu">
+            <property name="name">edit-menu</property>
             <property name="label" translatable="yes">_Edit</property>
           </object>
         </child>
@@ -178,7 +178,7 @@
           <separator/>
           <menuitem action="file_quit"/>
         </menu>
-        <menu action="menuitem7">
+        <menu action="edit-menu">
           <menuitem action="edit_cut"/>
           <menuitem action="edit_copy"/>
           <menuitem action="edit_paste"/>
