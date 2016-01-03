@@ -1,5 +1,5 @@
 /* PSPPIRE - a graphical user interface for PSPP.
-   Copyright (C) 2012  Free Software Foundation
+   Copyright (C) 2012, 2016  Free Software Foundation
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -243,6 +243,6 @@ psppire_dialog_action_set_refresh (PsppireDialogAction *pda,
 void 
 psppire_dialog_action_set_activation (gpointer class, activation activate)
 {
-  GTK_ACTION_CLASS (class)->activate = activate;
+  GTK_ACTION_CLASS (class)->activate = (void (*)(GtkAction *)) activate;
 }
 
