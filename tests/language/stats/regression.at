@@ -4,6 +4,7 @@ AT_SETUP([LINEAR REGRESSION - basic])
 AT_DATA([regression.sps], [dnl
 set format = F22.3.
 data list notable list / v0 to v2.
+filter by v0.
 begin data
  0.65377128  7.735648 -23.97588
 -0.13087553  6.142625 -19.63854
@@ -21,6 +22,8 @@ list.
 ])
 
 AT_CHECK([pspp -O format=csv regression.sps], [0], [dnl
+regression.sps:16: warning: REGRESSION: REGRESSION with SAVE ignores FILTER.  All cases will be processed.
+
 Table: Model Summary (v2)
 ,R,R Square,Adjusted R Square,Std. Error of the Estimate
 ,.971,.942,.925,1.337

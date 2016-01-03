@@ -1,5 +1,5 @@
 /* PSPP - a program for statistical analysis.
-   Copyright (C) 2005, 2009, 2010, 2011, 2012, 2013, 2014 Free Software Foundation, Inc.
+   Copyright (C) 2005, 2009, 2010, 2011, 2012, 2013, 2014, 2016 Free Software Foundation, Inc.
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -375,6 +375,10 @@ cmd_regression (struct lexer *lexer, struct dataset *ds)
       if (proc_make_temporary_transformations_permanent (ds))
         msg (SW, _("REGRESSION with SAVE ignores TEMPORARY.  "
                    "Temporary transformations will be made permanent."));
+
+      if (dict_get_filter (dict))
+        msg (SW, _("REGRESSION with SAVE ignores FILTER.  "
+                   "All cases will be processed."));
 
       workspace.writer = autopaging_writer_create (proto);
       caseproto_unref (proto);
