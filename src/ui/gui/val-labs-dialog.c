@@ -1,5 +1,5 @@
 /* PSPPIRE - a graphical user interface for PSPP.
-   Copyright (C) 2005, 2009, 2010, 2011, 2012, 2015  Free Software Foundation
+   Copyright (C) 2005, 2009, 2010, 2011, 2012, 2015, 2016  Free Software Foundation
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -47,6 +47,8 @@ enum
     PROP_VARIABLE,
     PROP_VALUE_LABELS
   };
+
+static void do_change (PsppireValLabsDialog *);
 
 static void
 psppire_val_labs_dialog_set_property (GObject      *object,
@@ -195,6 +197,15 @@ on_label_entry_change (GtkEntry *entry, gpointer data)
   value_destroy (&v, val_labs_get_width (dialog->labs));
 }
 
+/* This callback occurs when Enter is pressed in the label entry box. */
+static void
+on_label_entry_activate (GtkEntry *entry, gpointer data)
+{
+  PsppireValLabsDialog *dialog = data;
+  do_change (dialog);
+}
+
+/* Return the value-label pair currently selected in the dialog box  */
 
 /* Set the TREEVIEW list cursor to the item which has the value VAL */
 static void
@@ -276,8 +287,15 @@ on_value_entry_change (GtkEntry *entry, gpointer data)
   value_destroy (&v, val_labs_get_width (dialog->labs));
 }
 
+/* This callback occurs when Enter is pressed in the value entry box. */
+static void
+on_value_entry_activate (GtkEntry *entry, gpointer data)
+{
+  PsppireValLabsDialog *dialog = data;
 
-/* Return the value-label pair currently selected in the dialog box  */
+  gtk_widget_grab_focus (dialog->label_entry);
+}
+
 static gboolean
 get_selected_tuple (PsppireValLabsDialog *dialog,
                     union value *valuep, const char **label)
@@ -320,7 +338,12 @@ static void
 on_change (GtkWidget *w, gpointer data)
 {
   PsppireValLabsDialog *dialog = data;
+  do_change (dialog);
+}
 
+static void
+do_change (PsppireValLabsDialog *dialog)
+{
   const gchar *val_text = gtk_entry_get_text (GTK_ENTRY (dialog->value_entry));
 
   union value v;
@@ -478,11 +501,15 @@ psppire_val_labs_dialog_constructor (GType                  type,
     g_signal_connect (dialog->label_entry,
 		     "changed",
 		     G_CALLBACK (on_label_entry_change), dialog);
+  g_signal_connect (dialog->label_entry, "activate",
+                    G_CALLBACK (on_label_entry_activate), dialog);
 
   dialog->value_handler_id  =
     g_signal_connect (dialog->value_entry,
 		     "changed",
 		     G_CALLBACK (on_value_entry_change), dialog);
+  g_signal_connect (dialog->value_entry, "activate",
+                    G_CALLBACK (on_value_entry_activate), dialog);
 
   g_signal_connect (dialog->change_button,
 		   "clicked",
