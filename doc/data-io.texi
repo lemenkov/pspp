@@ -942,10 +942,6 @@ currently not used.
 Case numbers start from 1.  They are counted after all transformations
 have been considered.
 
-@cmd{LIST} attempts to fit all the values on a single line.  If needed
-to make them fit, variable names are displayed vertically.  If values
-cannot fit on a single line, then a multi-line format will be used.
-
 @cmd{LIST} is a procedure.  It causes the data to be read.
 
 @node NEW FILE
