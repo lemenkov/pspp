@@ -198,12 +198,13 @@ generate_syntax (PsppireDialogAction *a)
   g_string_append (strx, categoricals->str);
   g_string_free (categoricals, TRUE);
   g_slist_free (vars);
-  
-  g_string_append (strx, "\n\t/CRITERIA =");
 
-  g_string_append_printf (strx, " CUT(%g)", rd->cut_point);
-
-  g_string_append_printf (strx, " ITERATE(%d)", rd->max_iterations);
+  struct string opt_str;
+  ds_init_cstr (&opt_str, "\n\t/CRITERIA =");
+  syntax_gen_pspp (&opt_str, " CUT(%g)", rd->cut_point);
+  syntax_gen_pspp (&opt_str, " ITERATE(%d)", rd->max_iterations);
+  g_string_append (strx, ds_data (&opt_str));
+  ds_destroy (&opt_str);
 
   if (rd->conf)
     {
