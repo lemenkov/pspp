@@ -349,8 +349,8 @@ psppire_val_chooser_init (PsppireValChooser *vr)
   gint row = 0;
 
   g_object_set (G_OBJECT (grid),
-		"margin-left", 5,
-		"margin-right", 5,
+		"margin-start", 5,
+		"margin-end", 5,
 		NULL);
   
   vr->input_var_is_string = FALSE;
