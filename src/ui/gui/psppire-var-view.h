@@ -66,6 +66,9 @@ gboolean psppire_var_view_get_iter_first (PsppireVarView *vv, GtkTreeIter *iter)
 
 gboolean psppire_var_view_get_iter_next (PsppireVarView *vv, GtkTreeIter *iter);
 
+GSList *psppire_var_view_list_names (PsppireVarView *vv, gint column);
+
+
 const struct variable * psppire_var_view_get_variable (PsppireVarView *vv, gint column, GtkTreeIter *iter);
 const struct variable * psppire_var_view_get_var_from_model (GtkTreeModel *, gint column, GtkTreeIter *iter);
 

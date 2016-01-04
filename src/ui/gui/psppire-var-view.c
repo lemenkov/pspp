@@ -371,6 +371,31 @@ psppire_var_view_append_names (PsppireVarView *vv, gint column, GString *string)
   return n_vars;
 }
 
+/* Return a linked list of struct variables which are
+   contained in VV.
+   The caller is responsible for freeing the returned list.
+   The variables however are owned by their dictionary
+   and should not be freed.
+  */
+GSList *
+psppire_var_view_list_names (PsppireVarView *vv, gint column)
+{
+  GtkTreeIter iter;
+  GSList *list = NULL;
+  
+  if ( psppire_var_view_get_iter_first (vv, &iter) )
+    {
+      do
+	{
+	  const struct variable *var = psppire_var_view_get_variable (vv, column, &iter);
+	  list = g_slist_prepend (list, var);
+	}
+      while (psppire_var_view_get_iter_next (vv, &iter));
+    }
+
+  return list;
+}
+
 
 /*
   Append the names of selected variables to STR

@@ -163,10 +163,42 @@ generate_syntax (PsppireDialogAction *a)
 
   g_string_append (strx, dep);
 
-  g_string_append (strx, " WITH ");
+  g_string_append (strx, " WITH");
 
-  psppire_var_view_append_names (PSPPIRE_VAR_VIEW (rd->indep_vars), 0, strx);
+  GSList *vars = psppire_var_view_list_names (PSPPIRE_VAR_VIEW (rd->indep_vars), 0);
+  GSList *node = vars;
 
+  GString *var_names = g_string_new ("");
+  while (node)
+    {
+      g_string_prepend (var_names, var_get_name (node->data));
+      g_string_prepend (var_names, " ");
+      node = node->next;
+    }
+
+  g_string_append (strx, var_names->str);
+  g_string_free (var_names, TRUE);
+
+
+  GString *categoricals = g_string_new ("");
+  for (node = vars; node; node = node->next)
+    {
+      const struct variable *v = node->data;
+      enum measure m = var_get_measure (v);
+
+      if (m == MEASURE_NOMINAL || m == MEASURE_ORDINAL || var_is_alpha (v))
+	{
+	  g_string_prepend (categoricals, var_get_name (v));
+	  g_string_prepend (categoricals, " ");
+	}
+    }
+  if (0 != strcmp (categoricals->str, ""))
+    g_string_prepend (categoricals, "\n\t/CATEGORICAL =");
+
+  g_string_append (strx, categoricals->str);
+  g_string_free (categoricals, TRUE);
+  g_slist_free (vars);
+  
   g_string_append (strx, "\n\t/CRITERIA =");
 
   g_string_append_printf (strx, " CUT(%g)", rd->cut_point);

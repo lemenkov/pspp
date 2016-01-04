@@ -25,6 +25,11 @@ Changes from 0.8.5 to 0.9.0:
    - The status of dialog box widgets are now preserved between calls
      to the same dialog box for the same dataset.
 
+   - The dialog box for the Logistic Regression command will now
+     infer that string variables or any varible with a "measure"
+     of Nominal or Ordinal are to be treated as categorical variables
+     and will generate syntax accordingly.
+
  * The pspp-convert utility can now decrypt encrypted syntax files.
    The encrypted syntax file format is unacceptably insecure, so to
    discourage its use PSPP and PSPPIRE do not directly read or write
