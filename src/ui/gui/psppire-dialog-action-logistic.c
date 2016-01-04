@@ -156,38 +156,38 @@ generate_syntax (PsppireDialogAction *a)
 {
   PsppireDialogActionLogistic *rd = PSPPIRE_DIALOG_ACTION_LOGISTIC (a);
   gchar *text = NULL;
-  struct string str;
+
   const gchar *dep = gtk_entry_get_text (GTK_ENTRY (rd->dep_var));
 
-  ds_init_cstr (&str, "LOGISTIC REGRESSION ");
+  GString *strx = g_string_new ("LOGISTIC REGRESSION ");
 
-  ds_put_cstr (&str, dep);
+  g_string_append (strx, dep);
 
-  ds_put_cstr (&str, " WITH ");
+  g_string_append (strx, " WITH ");
 
-  psppire_var_view_append_names_str (PSPPIRE_VAR_VIEW (rd->indep_vars), 0, &str);
+  psppire_var_view_append_names (PSPPIRE_VAR_VIEW (rd->indep_vars), 0, strx);
 
-  ds_put_cstr (&str, "\n\t/CRITERIA =");
+  g_string_append (strx, "\n\t/CRITERIA =");
 
-  syntax_gen_pspp (&str, " CUT(%g)", rd->cut_point);
+  g_string_append_printf (strx, " CUT(%g)", rd->cut_point);
 
-  syntax_gen_pspp (&str, " ITERATE(%d)", rd->max_iterations);
+  g_string_append_printf (strx, " ITERATE(%d)", rd->max_iterations);
 
   if (rd->conf)
     {
-      syntax_gen_pspp (&str, "\n\t/PRINT = CI(%g)", rd->conf_level);
+      g_string_append_printf (strx, "\n\t/PRINT = CI(%g)", rd->conf_level);
     }
 
   if (rd->constant) 
-    ds_put_cstr (&str, "\n\t/NOORIGIN");
+    g_string_append (strx, "\n\t/NOORIGIN");
   else
-    ds_put_cstr (&str, "\n\t/ORIGIN");
+    g_string_append (strx, "\n\t/ORIGIN");
 
-  ds_put_cstr (&str, ".\n");
+  g_string_append (strx, ".\n");
 
-  text = ds_steal_cstr (&str);
+  text = strx->str;
 
-  ds_destroy (&str);
+  g_string_free (strx, FALSE);
 
   return text;
 }
