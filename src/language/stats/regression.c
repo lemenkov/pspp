@@ -348,8 +348,7 @@ cmd_regression (struct lexer *lexer, struct dataset *ds)
 
       if (regression.resid)
         {
-          workspace.extras ++;
-          workspace.res_idx = 0;
+          workspace.res_idx = workspace.extras ++;
           workspace.residvars = xcalloc (regression.n_dep_vars, sizeof (*workspace.residvars));
 
           for (i = 0; i < regression.n_dep_vars; ++i)
@@ -361,8 +360,7 @@ cmd_regression (struct lexer *lexer, struct dataset *ds)
 
       if (regression.pred)
         {
-          workspace.extras ++;
-          workspace.pred_idx = 1;
+          workspace.pred_idx = workspace.extras ++;
           workspace.predvars = xcalloc (regression.n_dep_vars, sizeof (*workspace.predvars));
 
           for (i = 0; i < regression.n_dep_vars; ++i)
@@ -709,7 +707,7 @@ run_regression (const struct regression *cmd,
       
       for (; (c = casereader_read (r)) != NULL; case_unref (c))
         {
-          struct ccase *outc = case_clone (c);
+          struct ccase *outc = case_create (casewriter_get_proto (ws->writer));
           for (k = 0; k < cmd->n_dep_vars; k++)
             {
               const struct variable **vars = xnmalloc (cmd->n_vars, sizeof (*vars));

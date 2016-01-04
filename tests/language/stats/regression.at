@@ -2130,3 +2130,53 @@ Table: Coefficients (science)
 
 
 AT_CLEANUP
+
+
+dnl Checks for regression against bug #44877.
+AT_SETUP([LINEAR REGRESSION crash with long string variables])
+AT_DATA([regression.sps], [dnl
+SET DECIMAL=DOT.
+
+DATA LIST notable LIST /text (A24) Y * X1 *
+BEGIN DATA.
+V00276601 0.00 90.00
+V00292909 10.00 30.00
+V00291204 20.00 20.00
+V00300070 0.00 90.00
+END DATA.
+
+REGRESSION
+/VARIABLES= Y
+/DEPENDENT= X1
+/METHOD=ENTER
+/STATISTICS=COEFF R ANOVA
+/SAVE= RESID.
+
+LIST.
+])
+AT_CHECK([pspp -o pspp.csv regression.sps])
+AT_CHECK([cat pspp.csv], [0], [dnl
+Table: Model Summary (X1)
+,R,R Square,Adjusted R Square,Std. Error of the Estimate
+,.95,.89,.84,15.08
+
+Table: ANOVA (X1)
+,,Sum of Squares,df,Mean Square,F,Sig.
+,Regression,3820.45,1,3820.45,16.81,.055
+,Residual,454.55,2,227.27,,
+,Total,4275.00,3,,,
+
+Table: Coefficients (X1)
+,,Unstandardized Coefficients,,Standardized Coefficients,,
+,,B,Std. Error,Beta,t,Sig.
+,(Constant),85.45,10.16,.00,8.41,.004
+,Y,-3.73,.91,-.95,-4.10,.055
+
+Table: Data List
+text,Y,X1,RES1
+V00276601               ,.00,90.00,4.55
+V00292909               ,10.00,30.00,-18.18
+V00291204               ,20.00,20.00,9.09
+V00300070               ,.00,90.00,4.55
+])
+AT_CLEANUP
