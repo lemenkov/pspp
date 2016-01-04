@@ -64,7 +64,6 @@
                   <object class="GtkSpinButton" id="spinbutton1">
                     <property name="visible">True</property>
                     <property name="can_focus">True</property>
-                    <property name="editable">False</property>
                     <property name="width_chars">2</property>
                     <property name="adjustment">adjustment1</property>
                   </object>
