@@ -46,11 +46,11 @@ generate_syntax (PsppireDialogAction *act)
 
   ds_init_cstr (&dss, "GRAPH SCATTERPLOT(BIVARIATE) = ");
 
-  ds_put_cstr (&dss, gtk_entry_get_text (GTK_ENTRY (ow->y_axis)));
+  ds_put_cstr (&dss, gtk_entry_get_text (GTK_ENTRY (ow->x_axis)));
   
   ds_put_cstr (&dss, " WITH ");
 
-  ds_put_cstr (&dss, gtk_entry_get_text (GTK_ENTRY (ow->x_axis)));
+  ds_put_cstr (&dss, gtk_entry_get_text (GTK_ENTRY (ow->y_axis)));
 
   ds_put_cstr (&dss, ".\n");
 
