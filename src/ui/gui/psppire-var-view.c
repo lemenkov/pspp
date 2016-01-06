@@ -21,6 +21,7 @@
 #include "psppire-var-ptr.h"
 #include "psppire-select-dest.h"
 
+#include <libpspp/cast.h>
 #include <libpspp/str.h>
 #include <data/variable.h>
 
@@ -388,7 +389,7 @@ psppire_var_view_list_names (PsppireVarView *vv, gint column)
       do
 	{
 	  const struct variable *var = psppire_var_view_get_variable (vv, column, &iter);
-	  list = g_slist_prepend (list, var);
+	  list = g_slist_prepend (list, CONST_CAST (struct variable *, var));
 	}
       while (psppire_var_view_get_iter_next (vv, &iter));
     }
