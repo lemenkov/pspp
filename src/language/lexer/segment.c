@@ -1,5 +1,5 @@
 /* PSPP - a program for statistical analysis.
-   Copyright (C) 2010, 2011, 2013 Free Software Foundation, Inc.
+   Copyright (C) 2010, 2011, 2013, 2016 Free Software Foundation, Inc.
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -1010,6 +1010,9 @@ segmenter_detect_command_name__ (const char *input, size_t n, int ofs)
 
       ofs += mblen;
     }
+  if (!ofs)
+    return 0;
+
   if (input[ofs - 1] == '.')
     ofs--;
 
