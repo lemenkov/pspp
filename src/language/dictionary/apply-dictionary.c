@@ -1,5 +1,5 @@
 /* PSPP - a program for statistical analysis.
-   Copyright (C) 1997-9, 2000, 2009, 2010, 2011, 2012, 2014 Free Software Foundation, Inc.
+   Copyright (C) 1997-9, 2000, 2009, 2010, 2011, 2012, 2014, 2016 Free Software Foundation, Inc.
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -62,7 +62,7 @@ cmd_apply_dictionary (struct lexer *lexer, struct dataset *ds)
 
   for (i = 0; i < dict_get_var_cnt (dict); i++)
     {
-      struct variable *s = dict_get_var (dict, i);
+      const struct variable *s = dict_get_var (dict, i);
       struct variable *t = dict_lookup_var (dataset_dict (ds),
                                             var_get_name (s));
       if (t == NULL)
@@ -86,7 +86,7 @@ cmd_apply_dictionary (struct lexer *lexer, struct dataset *ds)
         {
           const struct val_labs *value_labels = var_get_value_labels (s);
           if (val_labs_can_set_width (value_labels, var_get_width (t)))
-            var_set_value_labels (s, value_labels);
+            var_set_value_labels (t, value_labels);
         }
 
       if (var_has_missing_values (s))
