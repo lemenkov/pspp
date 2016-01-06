@@ -40,7 +40,7 @@ $(POTFILE): $(TRANSLATABLE_FILES) $(UI_FILES) src/ui/gui/gen-dot-desktop.sh
 	$(AM_V_GEN)$(XGETTEXT) --directory=$(top_srcdir) $(XGETTEXT_OPTIONS)    $(TRANSLATABLE_FILES) --language=C --keyword=_ --keyword=N_ -o $@,tmp
 	$(AM_V_at)$(XGETTEXT) --directory=$(top_srcdir) $(XGETTEXT_OPTIONS) -j $(UI_FILES) --language=glade -o $@,tmp
 	$(AM_V_at)$(XGETTEXT) --directory=$(top_srcdir) $(XGETTEXT_OPTIONS) -j src/ui/gui/gen-dot-desktop.sh --language=shell --keyword=TRANSLATE -o $@,tmp
-	$(SED) -e '/^"POT-Creation-Date: .*/d' $@,tmp > $@
+	$(AM_V_at)$(SED) -e '/^"POT-Creation-Date: .*/d' $@,tmp > $@
 
 $(POFILES): $(POTFILE)
 	$(AM_V_GEN)$(MSGMERGE) --quiet $(top_srcdir)/$@ $? -o $@,tmp
@@ -48,7 +48,7 @@ $(POFILES): $(POTFILE)
 	         touch $@,tmp ; \
 		 msgcat --use-first $(top_srcdir)/$@,aux $@,tmp -o $@,tmp; \
 	fi ;
-	$(SED) -e '/^"POT-Creation-Date: /d' $@,tmp > $@
+	$(AM_V_at)$(SED) -e '/^"POT-Creation-Date: /d' $@,tmp > $@
 
 SUFFIXES += .po .gmo
 .po.gmo:

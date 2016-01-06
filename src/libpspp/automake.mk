@@ -129,4 +129,4 @@ src/libpspp/version.c: $(top_srcdir)/AUTHORS Makefile
 	$(AM_V_at)echo "const char *const authors[] = {" >> $@,tmp
 	$(AM_V_at)$(SED) -e 's/^/  \"/' -e 's/$$/\",/' $(top_srcdir)/AUTHORS >> $@,tmp
 	$(AM_V_at)echo "0 };" >> $@,tmp
-	mv $@,tmp $@
+	$(AM_V_at)mv $@,tmp $@

@@ -54,7 +54,7 @@ UI_FILES = \
 
 
 $(top_srcdir)/doc/help-pages-list: $(UI_FILES)
-	 cat $^ | grep '"help[-_]page"' | \
+	 $(AM_V_GEN)cat $^ | grep '"help[-_]page"' | \
    $(SED) -e 's% *<property name="help[-_]page">\([^<]*\)</property>%//*[@id='"'"'\1'"'"']%' \
 	-e 's%#%'"'"']/*[@id='"'"'%g' > $@
 
