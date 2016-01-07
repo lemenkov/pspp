@@ -1,5 +1,5 @@
 /* PSPP - a program for statistical analysis.
-   Copyright (C) 2009, 2010, 2011, 2012, 2014, 2015 Free Software Foundation, Inc.
+   Copyright (C) 2009, 2010, 2011, 2012, 2014, 2015, 2016 Free Software Foundation, Inc.
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -1134,9 +1134,9 @@ cmd_factor (struct lexer *lexer, struct dataset *ds)
 	      else if (lex_match_id (lexer, "PROMAX"))
 		{
 		  factor.promax_power = 5;
-		  if (lex_match (lexer, T_LPAREN))
+		  if (lex_match (lexer, T_LPAREN)
+                      && lex_force_int (lexer))
 		    {
-		      lex_force_int (lexer);
 		      factor.promax_power = lex_integer (lexer);
 		      lex_get (lexer);
 		      lex_force_match (lexer, T_RPAREN);
@@ -1162,9 +1162,9 @@ cmd_factor (struct lexer *lexer, struct dataset *ds)
 	    {
 	      if (lex_match_id (lexer, "FACTORS"))
 		{
-		  if ( lex_force_match (lexer, T_LPAREN))
+		  if ( lex_force_match (lexer, T_LPAREN)
+                       && lex_force_int (lexer))
 		    {
-		      lex_force_int (lexer);
 		      factor.n_factors = lex_integer (lexer);
 		      lex_get (lexer);
 		      lex_force_match (lexer, T_RPAREN);
@@ -1172,9 +1172,9 @@ cmd_factor (struct lexer *lexer, struct dataset *ds)
 		}
 	      else if (lex_match_id (lexer, "MINEIGEN"))
 		{
-		  if ( lex_force_match (lexer, T_LPAREN))
+		  if ( lex_force_match (lexer, T_LPAREN)
+                       && lex_force_num (lexer))
 		    {
-		      lex_force_num (lexer);
 		      factor.min_eigen = lex_number (lexer);
 		      lex_get (lexer);
 		      lex_force_match (lexer, T_RPAREN);
@@ -1182,29 +1182,29 @@ cmd_factor (struct lexer *lexer, struct dataset *ds)
 		}
 	      else if (lex_match_id (lexer, "ECONVERGE"))
 		{
-		  if ( lex_force_match (lexer, T_LPAREN))
+		  if ( lex_force_match (lexer, T_LPAREN)
+                       && lex_force_num (lexer))
 		    {
-		      lex_force_num (lexer);
 		      factor.econverge = lex_number (lexer);
 		      lex_get (lexer);
 		      lex_force_match (lexer, T_RPAREN);
 		    }
 		}
 	      else if (lex_match_id (lexer, "RCONVERGE"))
-		{
-		  if ( lex_force_match (lexer, T_LPAREN))
-		    {
-		      lex_force_num (lexer);
-		      factor.rconverge = lex_number (lexer);
-		      lex_get (lexer);
-		      lex_force_match (lexer, T_RPAREN);
-		    }
+                {
+                  if (lex_force_match (lexer, T_LPAREN)
+                      && lex_force_num (lexer))
+                    {
+                      factor.rconverge = lex_number (lexer);
+                      lex_get (lexer);
+                      lex_force_match (lexer, T_RPAREN);
+                    }
 		}
 	      else if (lex_match_id (lexer, "ITERATE"))
 		{
-		  if ( lex_force_match (lexer, T_LPAREN))
+		  if ( lex_force_match (lexer, T_LPAREN)
+                       && lex_force_int (lexer))
 		    {
-		      lex_force_int (lexer);
 		      n_iterations = lex_integer (lexer);
 		      lex_get (lexer);
 		      lex_force_match (lexer, T_RPAREN);
@@ -1263,9 +1263,9 @@ cmd_factor (struct lexer *lexer, struct dataset *ds)
 		}
 	      else if (lex_match_id (lexer, "BLANK"))
 		{
-		  if ( lex_force_match (lexer, T_LPAREN))
+		  if ( lex_force_match (lexer, T_LPAREN)
+                       && lex_force_num (lexer))
 		    {
-		      lex_force_num (lexer);
 		      factor.blank = lex_number (lexer);
 		      lex_get (lexer);
 		      lex_force_match (lexer, T_RPAREN);
