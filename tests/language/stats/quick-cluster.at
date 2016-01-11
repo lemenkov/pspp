@@ -414,3 +414,24 @@ Case Number,Cluster
 ])
 
 AT_CLEANUP
+
+
+dnl Test for a crash which happened on bad input syntax
+AT_SETUP([QUICK CLUSTER -- Empty Parentheses])
+
+AT_DATA([empty-parens.sps], [dnl
+data list notable list /x * y *.
+begin data.
+1   2
+1   2.2
+end data.
+
+QUICK CLUSTER x y
+	/CRITERIA = CONVERGE()
+	.
+])
+
+AT_CHECK([pspp -o pspp.csv empty-parens.sps], [1], [ignore])
+
+AT_CLEANUP
+

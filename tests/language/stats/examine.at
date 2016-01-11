@@ -1018,3 +1018,26 @@ X,Mean,,587.6603,23.2665
 ])
 
 AT_CLEANUP 
+
+
+
+dnl Test for a crash which happened on bad input syntax
+AT_SETUP([EXAMINE -- Empty Parentheses])
+
+AT_DATA([examine-empty-parens.sps], [dnl
+DATA LIST notable LIST /X *
+BEGIN DATA.
+2
+3
+END DATA.
+
+
+EXAMINE
+	x
+	/PLOT = SPREADLEVEL()
+	.
+])
+
+AT_CHECK([pspp -o pspp.csv examine-empty-parens.sps], [1], [ignore])
+
+AT_CLEANUP 

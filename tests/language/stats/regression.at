@@ -2180,3 +2180,27 @@ V00291204               ,20.00,20.00,9.09
 V00300070               ,.00,90.00,4.55
 ])
 AT_CLEANUP
+
+
+dnl Test for a crash which happened on bad input syntax
+AT_SETUP([LINEAR REGRESSION -- Empty Parentheses])
+
+AT_DATA([empty-parens.sps], [dnl
+set format = F22.3.
+
+data list notable list /math female socst read science *
+begin data.
+    58.00      1.00     61.00     55.00     58.00
+    65.00      1.00     61.00     63.00     53.00
+end data.
+
+regression
+ /variables = math female socst read
+ /statistics = coeff r anova ci ()
+ /dependent = science
+ /method = enter
+])
+
+AT_CHECK([pspp -o pspp.csv empty-parens.sps], [1], [ignore])
+
+AT_CLEANUP 
