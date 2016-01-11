@@ -281,7 +281,8 @@ cmd_regression (struct lexer *lexer, struct dataset *ds)
                 {
 		  statistics |= STATS_CI;
 
-		  if (lex_match (lexer, T_LPAREN))
+		  if (lex_match (lexer, T_LPAREN) &&
+		      lex_force_num (lexer))
 		    {
 		      regression.ci = lex_number (lexer) / 100.0;
 		      lex_get (lexer);

@@ -738,9 +738,9 @@ cmd_quick_cluster (struct lexer *lexer, struct dataset *ds)
 	    {
 	      if (lex_match_id (lexer, "CLUSTERS"))
 		{
-		  if (lex_force_match (lexer, T_LPAREN))
+		  if (lex_force_match (lexer, T_LPAREN) &&
+		      lex_force_int (lexer))
 		    {
-		      lex_force_int (lexer);
 		      qc.ngroups = lex_integer (lexer);
 		      if (qc.ngroups <= 0)
 			{
@@ -753,9 +753,9 @@ cmd_quick_cluster (struct lexer *lexer, struct dataset *ds)
 		}
 	      else if (lex_match_id (lexer, "CONVERGE"))
 		{
-		  if (lex_force_match (lexer, T_LPAREN))
+		  if (lex_force_match (lexer, T_LPAREN) &&
+		      lex_force_num (lexer))
 		    {
-		      lex_force_num (lexer);
 		      qc.epsilon = lex_number (lexer);
 		      if (qc.epsilon <= 0)
 			{
@@ -768,9 +768,9 @@ cmd_quick_cluster (struct lexer *lexer, struct dataset *ds)
 		}
 	      else if (lex_match_id (lexer, "MXITER"))
 		{
-		  if (lex_force_match (lexer, T_LPAREN))
+		  if (lex_force_match (lexer, T_LPAREN) &&
+		      lex_force_int (lexer))
 		    {
-		      lex_force_int (lexer);
 		      qc.maxiter = lex_integer (lexer);
 		      if (qc.maxiter <= 0)
 			{

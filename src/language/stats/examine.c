@@ -2159,7 +2159,7 @@ cmd_examine (struct lexer *lexer, struct dataset *ds)
                 {
 		  examine.spreadlevelplot = true;
 		  examine.sl_power = 0;
-		  if (lex_match (lexer, T_LPAREN))
+		  if (lex_match (lexer, T_LPAREN) && lex_force_int (lexer))
 		    {
                       examine.sl_power = lex_integer (lexer);
 

@@ -1274,9 +1274,8 @@ npar_median (struct lexer *lexer,
 
   mt->median = SYSMIS;
 
-  if ( lex_match (lexer, T_LPAREN))
+  if ( lex_match (lexer, T_LPAREN) && lex_force_num (lexer))
     {
-      lex_force_num (lexer);
       mt->median = lex_number (lexer);
       lex_get (lexer);
       lex_force_match (lexer, T_RPAREN);

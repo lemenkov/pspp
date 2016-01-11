@@ -229,9 +229,9 @@ cmd_reliability (struct lexer *lexer, struct dataset *ds)
 	      reliability.model = MODEL_SPLIT;
 	      reliability.split_point = -1;
 
-	      if ( lex_match (lexer, T_LPAREN))
+	      if ( lex_match (lexer, T_LPAREN)
+		   && lex_force_num (lexer))
 		{
-		  lex_force_num (lexer);
 		  reliability.split_point = lex_number (lexer);
 		  lex_get (lexer);
 		  lex_force_match (lexer, T_RPAREN);
