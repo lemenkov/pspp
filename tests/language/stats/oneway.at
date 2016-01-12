@@ -974,3 +974,24 @@ ONEWAY
 AT_CHECK([pspp -O format=csv crash3.sps], [0], [ignore])
 
 AT_CLEANUP
+
+
+AT_SETUP([ONEWAY Crash on empty data])
+AT_DATA([crash4.sps],[dnl
+DATA LIST NOTABLE LIST /height * weight * temperature * sex *.
+BEGIN DATA.
+1801     .       .     0
+1606     .       .     1
+END DATA.
+
+ONEWAY /VARIABLES= height weight temperature BY sex
+ /CONTRAST = -1  1
+ /CONTRAST = -3  3
+ /CONTRAST =  2 -2  1
+ /CONTRAST = -9  9
+ .
+])
+
+AT_CHECK([pspp -O format=csv crash4.sps], [0], [ignore])
+
+AT_CLEANUP

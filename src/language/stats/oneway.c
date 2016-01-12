@@ -1387,6 +1387,8 @@ show_contrast_tests (const struct oneway_spec *cmd, const struct oneway_workspac
     {
       const struct per_var_ws *pvw = &ws->vws[v];
       const struct categoricals *cats = covariance_get_categoricals (pvw->cov);
+      if (!categoricals_is_complete (cats))
+	continue;
       struct ll *cli;
       int i = 0;
       int lines_per_variable = 2 * n_contrasts;
