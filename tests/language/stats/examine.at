@@ -615,7 +615,12 @@ BEGIN DATA.
 .
 END DATA.
 
-EXAMINE /x PLOT=HISTOGRAM.
+EXAMINE /x 
+	PLOT=HISTOGRAM BOXPLOT NPPLOT SPREADLEVEL(1) ALL
+	/ID=x
+        /STATISTICS = DESCRIPTIVES EXTREME (5) ALL
+	/PERCENTILE=AEMPIRICAL
+	.
 ])
 AT_CHECK([pspp -o pspp.csv examine.sps], [0], [ignore])
 dnl Ignore output -- this is just a no-crash check.

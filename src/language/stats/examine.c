@@ -1532,6 +1532,25 @@ update_n (const void *aux1, void *aux2 UNUSED, void *user_data,
   const struct examine *examine = aux1;
   struct exploratory_stats *es = user_data;
   
+  bool this_case_is_missing = false;
+  /* LISTWISE missing must be dealt with here */
+  if (!examine->missing_pw)
+    {
+      for (v = 0; v < examine->n_dep_vars; v++)
+	{
+	  const struct variable *var = examine->dep_vars[v];
+
+	  if (var_is_value_missing (var, case_data (c, var), examine->dep_excl))
+	    {
+	      es[v].missing += weight;
+	      this_case_is_missing = true;
+	    }
+	}
+    }
+
+  if (this_case_is_missing)
+    return;
+
   for (v = 0; v < examine->n_dep_vars; v++)
     {
       struct ccase *outcase ;
@@ -1588,7 +1607,7 @@ calculate_n (const void *aux1, void *aux2 UNUSED, void *user_data)
       struct casereader *reader;
       struct ccase *c;
 
-      if (examine->histogramplot)
+      if (examine->histogramplot && es[v].non_missing > 0)
         {
           /* Sturges Rule */
           double bin_width = fabs (es[v].minimum - es[v].maximum)
@@ -1655,7 +1674,7 @@ calculate_n (const void *aux1, void *aux2 UNUSED, void *user_data)
         }
       casereader_destroy (reader);
 
-      if (examine->calc_extremes > 0)
+      if (examine->calc_extremes > 0 && es[v].non_missing > 0)
         {
           assert (es[v].minima[0].val == es[v].minimum);
 	  assert (es[v].maxima[0].val == es[v].maximum);
@@ -1815,15 +1834,6 @@ run_examine (struct examine *cmd, struct casereader *input)
       case_unref (c);
     }
 
-  /* Remove cases on a listwise basis if requested */
-  if ( cmd->missing_pw == false)
-    input = casereader_create_filter_missing (input,
-                                              cmd->dep_vars,
-                                              cmd->n_dep_vars,
-                                              cmd->dep_excl,
-                                              NULL,
-                                              NULL);
-
   for (reader = input;
        (c = casereader_read (reader)) != NULL; case_unref (c))
     {
@@ -1835,6 +1845,10 @@ run_examine (struct examine *cmd, struct casereader *input)
   for (i = 0; i < cmd->n_iacts; ++i)
     {
       summary_report (cmd, i);
+
+      const size_t n_cats =  categoricals_n_count (cmd->cats, i);
+      if (n_cats == 0)
+	continue;
 
       if (cmd->disp_extremes > 0)
         extremes_report (cmd, i);
