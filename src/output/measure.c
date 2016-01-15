@@ -1,5 +1,5 @@
 /* PSPP - a program for statistical analysis.
-   Copyright (C) 1997-9, 2000, 2007, 2009, 2010, 2011, 2012, 2014 Free Software Foundation, Inc.
+   Copyright (C) 1997-9, 2000, 2007, 2009, 2010, 2011, 2012, 2014, 2016 Free Software Foundation, Inc.
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -276,8 +276,7 @@ read_paper_conf (const char *file_name, int *h, int *v)
 
   fclose (file);
   ds_destroy (&line);
-  msg (ME, _("paper size file `%s' does not state a paper size"),
-         file_name);
+  msg (ME, _("file `%s' does not state a paper size"), file_name);
   return false;
 }
 
