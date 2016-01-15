@@ -228,15 +228,15 @@ cmd_list (struct lexer *lexer, struct dataset *ds)
 
   if (cmd.first < 1)
     {
-      msg (SW, _("The first case (%ld) to list is less than 1.  The value is "
-                 "being reset to 1."), cmd.first);
+      msg (SW, _("The first case (%ld) to list is numbered less than 1.  "
+                 "The value is being reset to 1."), cmd.first);
       cmd.first = 1;
     }
 
   if (cmd.last < 1)
     {
-      msg (SW, _("The last case (%ld) to list is less than 1.  The value is "
-                 "being reset to 1."), cmd.last);
+      msg (SW, _("The last case (%ld) to list is numbered less than 1.  "
+                 "The value is being reset to 1."), cmd.last);
       cmd.last = 1;
     }
 
