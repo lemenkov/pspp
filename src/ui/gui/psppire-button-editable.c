@@ -1,5 +1,5 @@
 /* PSPPIRE - a graphical user interface for PSPP.
-   Copyright (C) 2011, 2012 Free Software Foundation, Inc.
+   Copyright (C) 2011, 2012, 2016 Free Software Foundation, Inc.
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -21,6 +21,7 @@
 #include <gettext.h>
 #define _(msgid) gettext (msgid)
 #define N_(msgid) msgid
+#define P_(STRING) STRING
 
 /* GtkCellEditable interface. */
 static void gtk_cell_editable_interface_init (GtkCellEditableIface *iface);
@@ -132,8 +133,8 @@ psppire_button_editable_class_init (PsppireButtonEditableClass *class)
   g_object_class_install_property (gobject_class,
                                    PROP_PATH,
                                    g_param_spec_string ("path",
-							_("TreeView path"),
-							_("The path to the row in the GtkTreeView, as a string"),
+							P_("TreeView path"),
+							P_("The path to the row in the GtkTreeView, as a string"),
 							"",
 							G_PARAM_READWRITE));
 
