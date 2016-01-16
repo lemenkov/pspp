@@ -89,6 +89,23 @@ static const gchar label1[] = N_("Approximately %3d%% of all cases.");
 static const gchar label2[] = N_("Exactly %3d cases from the first %3d cases.");
 
 
+/* Ensure that the range "first" and "last" spinbuttons are self consistent */
+static void
+sample_consistent (GtkSpinButton *spin, PsppireDialogActionSelect *act)
+{
+  gdouble size = gtk_spin_button_get_value (GTK_SPIN_BUTTON (act->spin_sample_size));
+  gdouble limit  = gtk_spin_button_get_value (GTK_SPIN_BUTTON (act->spin_sample_limit));
+
+  if (limit < size)
+    {
+      if (spin == GTK_SPIN_BUTTON (act->spin_sample_size))
+	gtk_spin_button_set_value (GTK_SPIN_BUTTON (act->spin_sample_limit), size);
+      if (spin == GTK_SPIN_BUTTON (act->spin_sample_limit))
+	gtk_spin_button_set_value (GTK_SPIN_BUTTON (act->spin_sample_size), limit);
+    }
+}
+
+
 static void
 sample_subdialog (GtkButton *b, gpointer data)
 {
@@ -124,14 +141,18 @@ sample_subdialog (GtkButton *b, gpointer data)
   if (!scd->hbox2)
     {
       scd->hbox2 =
-	psppire_scanf_new (gettext (label2), &scd->spinbutton1, &scd->spinbutton2);
+	psppire_scanf_new (gettext (label2), &scd->spin_sample_size, &scd->spin_sample_limit);
 
-      gtk_spin_button_set_range (GTK_SPIN_BUTTON (scd->spinbutton1),
+      gtk_spin_button_set_range (GTK_SPIN_BUTTON (scd->spin_sample_size),
 				 1, case_count);
 
-      gtk_spin_button_set_range (GTK_SPIN_BUTTON (scd->spinbutton2),
+      gtk_spin_button_set_range (GTK_SPIN_BUTTON (scd->spin_sample_limit),
 				 1, case_count);
 
+      g_signal_connect (scd->spin_sample_size, "value-changed", G_CALLBACK (sample_consistent), scd);
+      g_signal_connect (scd->spin_sample_limit, "value-changed", G_CALLBACK (sample_consistent), scd);
+
+      
       gtk_widget_show (scd->hbox2);
       gtk_widget_set_sensitive (scd->hbox2, FALSE);
 
@@ -179,7 +200,7 @@ sample_subdialog (GtkButton *b, gpointer data)
       else
 	{
 	  text =
-	    widget_printf (gettext(label2), scd->spinbutton1, scd->spinbutton2);
+	    widget_printf (gettext(label2), scd->spin_sample_size, scd->spin_sample_limit);
 	  gtk_label_set_text (GTK_LABEL (scd->l0), text);
 
 	}
@@ -218,6 +239,21 @@ range_subdialog (GtkButton *b, gpointer data)
     }
 }
 
+/* Ensure that the range "first" and "last" spinbuttons are self consistent */
+static void
+consistency (GtkSpinButton *spin, PsppireDialogActionSelect *act)
+{
+  gdouble first = gtk_spin_button_get_value (GTK_SPIN_BUTTON (act->first));
+  gdouble last  = gtk_spin_button_get_value (GTK_SPIN_BUTTON (act->last));
+
+  if (last < first)
+    {
+      if (spin == GTK_SPIN_BUTTON (act->first))
+	gtk_spin_button_set_value (GTK_SPIN_BUTTON (act->last), first);
+      if (spin == GTK_SPIN_BUTTON (act->last))
+	gtk_spin_button_set_value (GTK_SPIN_BUTTON (act->first), last);
+    }
+}
 
 static void
 psppire_dialog_action_select_activate (PsppireDialogAction *a)
@@ -258,6 +294,9 @@ psppire_dialog_action_select_activate (PsppireDialogAction *a)
 
       act->first = get_widget_assert (xml, "range-dialog-first");
       act->last = get_widget_assert (xml, "range-dialog-last");
+
+      g_signal_connect (act->first, "value-changed", G_CALLBACK (consistency), act);
+      g_signal_connect (act->last, "value-changed", G_CALLBACK (consistency), act);
 
       act->l1 = get_widget_assert (xml, "range-sample-label");
       act->radiobutton_sample =  get_widget_assert (xml, "radiobutton-sample");
@@ -366,9 +405,9 @@ generate_syntax_filter (PsppireDialogAction *a)
       else
 	{
 	  const gint n_cases =
-	    gtk_spin_button_get_value (GTK_SPIN_BUTTON (scd->spinbutton1));
+	    gtk_spin_button_get_value (GTK_SPIN_BUTTON (scd->spin_sample_size));
 	  const gint from_n_cases =
-	    gtk_spin_button_get_value (GTK_SPIN_BUTTON (scd->spinbutton2));
+	    gtk_spin_button_get_value (GTK_SPIN_BUTTON (scd->spin_sample_limit));
 
 
 	  const gchar ranvar[]="rv_$";
@@ -459,9 +498,9 @@ generate_syntax_delete (PsppireDialogAction *a)
       else
 	{
 	  const gint n_cases =
-	    gtk_spin_button_get_value (GTK_SPIN_BUTTON (scd->spinbutton1));
+	    gtk_spin_button_get_value (GTK_SPIN_BUTTON (scd->spin_sample_size));
 	  const gint from_n_cases =
-	    gtk_spin_button_get_value (GTK_SPIN_BUTTON (scd->spinbutton2));
+	    gtk_spin_button_get_value (GTK_SPIN_BUTTON (scd->spin_sample_limit));
 	  
 	  ds_put_c_format (&dss, "%d FROM %d .", n_cases, from_n_cases);
 	}

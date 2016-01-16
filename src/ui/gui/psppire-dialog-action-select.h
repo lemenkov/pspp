@@ -59,8 +59,8 @@ struct _PsppireDialogActionSelect
 
   /*< private >*/
   GtkWidget *spinbutton ;
-  GtkWidget *spinbutton1 ;
-  GtkWidget *spinbutton2 ;
+  GtkWidget *spin_sample_size ;
+  GtkWidget *spin_sample_limit ;
 
   GtkWidget *hbox1;
   GtkWidget *hbox2;
