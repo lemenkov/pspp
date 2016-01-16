@@ -47,6 +47,18 @@ G_DEFINE_TYPE (PsppireDialogActionSelect, psppire_dialog_action_select, PSPPIRE_
 static gboolean
 dialog_state_valid (gpointer data)
 {
+  PsppireDialogActionSelect *act = PSPPIRE_DIALOG_ACTION_SELECT (data);
+  if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (act->radiobutton_all)))
+    {
+      return TRUE;
+    }
+  else if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (act->radiobutton_filter_variable)))
+    {
+      const gchar *text = gtk_entry_get_text (GTK_ENTRY (act->entry));
+      if (!psppire_dict_lookup_var (PSPPIRE_DIALOG_ACTION (act)->dict, text))
+	return FALSE;
+    }
+
   return TRUE;
 }
 
