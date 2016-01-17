@@ -1,0 +1,25 @@
+digraph spv_structure {
+   "heading" -> "pageSetup" [label="?"];
+   "heading" -> "label";
+   "heading" -> "container" [label="*"];
+   "heading" -> "heading" [label="*"];
+
+   "container" -> "label";
+   "container" -> "table" [label="*"];
+   "container" -> "text" [label="*"];
+
+   "text" -> "html";
+
+   "table" -> "tableStructure";
+
+   "tableStructure" -> "dataPath";
+
+   "pageSetup" -> "pageHeader";
+   "pageSetup" -> "pageFooter";
+
+   "pageHeader" -> "pageParagraph" [label="*"];
+
+   "pageFooter" -> "pageParagraph" [label="*"];
+
+   "pageParagraph" -> "text";
+}

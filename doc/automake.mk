@@ -41,8 +41,23 @@ doc_pspp_dev_TEXINFOS = doc/version-dev.texi \
 	doc/dev/system-file-format.texi \
 	doc/dev/pc+-file-format.texi \
 	doc/dev/portable-file-format.texi \
+	doc/dev/spv-file-format.texi \
 	doc/dev/encrypted-file-wrappers.texi \
 	doc/dev/q2c.texi
+
+if HAVE_DOT
+$(PDFS): doc/dev/spv-structure.pdf
+$(srcdir)/doc/dev/spv-structure.pdf: doc/dev/spv-structure.gv
+	dot -Tpdf < $< > $@
+
+$(DVIS): doc/dev/spv-structure.eps
+$(srcdir)/doc/dev/spv-structure.eps: doc/dev/spv-structure.gv
+	dot -Teps < $< > $@
+endif
+EXTRA_DIST += \
+	doc/dev/spv-structure.gv \
+	doc/dev/spv-structure.pdf \
+	doc/dev/spv-structure.eps
 
 dist_man_MANS += doc/pspp.1 \
                  doc/psppire.1
