@@ -58,11 +58,9 @@ Same format used for tables, with a different name.
 The structure of a chart plus its data.  Charts do not have a
 ``light'' format.
 
-@item @file{@var{prefix}_model.scf}
-@itemx @file{@var{prefix}_pmml.scf}
-Not yet investigated.  The corpus contains only one example of each.
-
-@item @file{@var{prefix}_stats.xml}
+@item @file{@var{prefix}_pmml.scf}
+@itemx @file{@var{prefix}_stats.scf}
+@item @file{@var{prefix}_model.xml}
 Not yet investigated.  The corpus contains few examples.
 @end table
 
