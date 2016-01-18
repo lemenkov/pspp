@@ -12,6 +12,7 @@ far.
 * CORRELATIONS::                Correlation tables.
 * CROSSTABS::                   Crosstabulation tables.
 * FACTOR::                      Factor analysis and Principal Components analysis.
+* GLM::                         Univariate Linear Models.
 * LOGISTIC REGRESSION::         Bivariate Logistic Regression.
 * MEANS::                       Average values and other statistics.
 * NPAR TESTS::                  Nonparametric tests.
@@ -887,6 +888,64 @@ contains a missing value.
 If @subcmd{PAIRWISE} is set, then a case is considered missing only if either of the
 values  for the particular coefficient are missing.
 The default is @subcmd{LISTWISE}.
+
+@node GLM
+@section GLM
+
+@vindex GLM
+@cindex univariate analysis of variance
+@cindex fixed effects
+@cindex factorial anova
+@cindex analysis of variance
+@cindex ANOVA
+
+
+@display
+GLM @var{dependent_vars} BY @var{fixed_factors}
+     [/METHOD = SSTYPE(@var{type})]
+     [/DESIGN = @var{interaction_0} [@var{interaction_1} [... @var{interaction_n}]]]
+     [/INTERCEPT = @{INCLUDE|EXCLUDE@}]
+     [/MISSING = @{INCLUDE|EXCLUDE@}]
+@end display
+
+The @cmd{GLM} procedure can be used for fixed effects factorial Anova.
+
+The @var{dependent_vars} are the variables to be analysed.
+You may analyse several variables in the same command in which case they should all
+appear before the @code{BY} keyword.
+
+The @var{fixed_factors} list must be one or more categorical variables.  Normally it
+will not make sense to enter a scalar variable in the @var{fixed_factors} and doing
+so may cause @pspp{} to do a lot of unnecessary processing.
+
+The @subcmd{METHOD} subcommand is used to change the method for producing the sums of
+squares.  Available values of @var{type} are 1, 2 and 3.  The default is type 3.
+
+You may specify a custom design using the @subcmd{DESIGN} subcommand.
+The design comprises a list of interactions where each interaction is a 
+list of variables separated by a @samp{*}.  For example the command
+@display
+GLM subject BY sex age_group race
+    /DESIGN = age_group sex group age_group*sex age_group*race
+@end display
+@noindent specifies the model @math{subject = age_group + sex + race + age_group*sex + age_group*race}.
+If no @subcmd{DESIGN} subcommand is specified, then the default is all possible combinations
+of the fixed factors.  That is to say
+@display
+GLM subject BY sex age_group race
+@end display
+implies the model
+@math{subject = age_group + sex + race + age_group*sex + age_group*race + sex*race + age_group*sex*race}.
+
+
+The @subcmd{MISSING} subcommand determines the handling of missing
+variables.  
+If @subcmd{INCLUDE} is set, then user-missing values are included in the
+calculations, but system-missing values are not.
+If @subcmd{EXCLUDE} is set, which is the default, user-missing
+values are excluded as well as system-missing values. 
+This is the default.
+
 
 @node LOGISTIC REGRESSION
 @section LOGISTIC REGRESSION
@@ -1948,3 +2007,5 @@ exclude them.
 Cases are excluded on a listwise basis; if any of the variables in @var{var_list} 
 or if the variable @var{state_var} is missing, then the entire case will be 
 excluded.
+
+@c  LocalWords:  subcmd subcommand
