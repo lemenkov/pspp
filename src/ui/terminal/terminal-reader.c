@@ -97,7 +97,7 @@ welcome (void)
 	 "it\nunder certain conditions; type \"show copying.\" to see the "
 	 "conditions.\nThere is ABSOLUTELY NO WARRANTY for PSPP; type \"show "
 	 "warranty.\" for details.\n", stdout);
-  puts (version);
+  puts (announced_version);
   journal_init ();
 }
 

@@ -23,6 +23,9 @@ extern const char bare_version[];
 /* "GNU PSPP A.B.C" */
 extern const char version[];
 
+/* Human readable version string */
+extern const char announced_version[];
+
 /* Canonical name of host system type. */
 extern const char host_system[];
 

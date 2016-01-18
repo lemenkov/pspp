@@ -922,7 +922,7 @@ show_tempdir (const struct dataset *ds UNUSED)
 static char *
 show_version (const struct dataset *ds UNUSED)
 {
-  return strdup (version);
+  return strdup (announced_version);
 }
 
 static char *
