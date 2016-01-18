@@ -46,7 +46,7 @@ about_new (GtkMenuItem *mmm, GtkWindow *parent)
   gtk_about_dialog_set_website (GTK_ABOUT_DIALOG (about), PACKAGE_URL);
 
   gtk_about_dialog_set_version (GTK_ABOUT_DIALOG (about),
-				bare_version);
+				version);
 
   gtk_about_dialog_set_authors (GTK_ABOUT_DIALOG (about),
 				(const gchar **) authors);
