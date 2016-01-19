@@ -57,8 +57,6 @@ glm y by   b a c
 
 AT_CHECK([pspp -O format=csv latin.sps | sed 's/329.62[[678]]/329.62/'], [0],
   [dnl
-warning: GLM is experimental.  Do not rely on these results.
-
 Table: Tests of Between-Subjects Effects
 Source,Type III Sum of Squares,df,Mean Square,F,Sig.
 Corrected Model,263.064,15,17.538,5.269,.000
@@ -110,8 +108,6 @@ glm points by Factor0 Factor1
 
 AT_CHECK([pspp -O format=csv 2by2.sps ], [0],
   [dnl
-warning: GLM is experimental.  Do not rely on these results.
-
 Table: Tests of Between-Subjects Effects
 Source,Type III Sum of Squares,df,Mean Square,F,Sig.
 Corrected Model,8667.053,3,2889.018,5.043,.012
@@ -209,8 +205,6 @@ glm dv by Agrp Bgrp
 
 AT_CHECK([pspp -O format=csv type1.sps], [0],
   [dnl
-warning: GLM is experimental.  Do not rely on these results.
-
 Table: Tests of Between-Subjects Effects
 Source,Type I Sum of Squares,df,Mean Square,F,Sig.
 Corrected Model,216.017,7,30.860,5.046,.001
@@ -221,8 +215,6 @@ Agrp * Bgrp,20.212,3,6.737,1.102,.364
 Error,183.457,30,6.115,,
 Total,3810.000,38,,,
 Corrected Total,399.474,37,,,
-
-warning: GLM is experimental.  Do not rely on these results.
 
 Table: Tests of Between-Subjects Effects
 Source,Type I Sum of Squares,df,Mean Square,F,Sig.
@@ -248,8 +240,6 @@ glm dv by Agrp Bgrp
 
 AT_CHECK([pspp -O format=csv type2.sps], [0],
   [dnl
-warning: GLM is experimental.  Do not rely on these results.
-
 Table: Tests of Between-Subjects Effects
 Source,Type II Sum of Squares,df,Mean Square,F,Sig.
 Corrected Model,216.017,7,30.860,5.046,.001
@@ -317,16 +307,12 @@ GLM depvar by A
 
 AT_CHECK([pspp -O format=csv intercept-exclude.sps], [0],
   [dnl
-warning: GLM is experimental.  Do not rely on these results.
-
 Table: Tests of Between-Subjects Effects
 Source,Type III Sum of Squares,df,Mean Square,F,Sig.
 Model,1636.826,2,818.413,43.556,.000
 A,1636.826,2,818.413,43.556,.000
 Error,338.216,18,18.790,,
 Total,1975.042,20,,,
-
-warning: GLM is experimental.  Do not rely on these results.
 
 Table: Tests of Between-Subjects Effects
 Source,Type III Sum of Squares,df,Mean Square,F,Sig.
