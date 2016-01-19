@@ -42,6 +42,7 @@
 #include "psppire-dialog-action-oneway.h"
 #include "psppire-means-layer.h"
 #include "psppire-dialog-action-rank.h"
+#include "psppire-dialog-action-recode.h"
 #include "psppire-dialog-action-regression.h"
 #include "psppire-dialog-action-reliability.h"
 #include "psppire-dialog-action-roc.h"
@@ -90,6 +91,7 @@ static const get_type_func dialog_action_types[]=
   psppire_dialog_action_indep_samps_get_type,
   psppire_dialog_action_var_info_get_type,
   psppire_dialog_action_rank_get_type,
+  psppire_dialog_action_recode_get_type,
   psppire_dialog_action_reliability_get_type,
   psppire_dialog_action_regression_get_type,
   psppire_dialog_action_roc_get_type,

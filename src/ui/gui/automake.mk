@@ -239,6 +239,8 @@ src_ui_gui_psppire_SOURCES = \
 	src/ui/gui/psppire-dialog-action-paired.h \
 	src/ui/gui/psppire-dialog-action-rank.c \
 	src/ui/gui/psppire-dialog-action-rank.h \
+	src/ui/gui/psppire-dialog-action-recode.c \
+	src/ui/gui/psppire-dialog-action-recode.h \
 	src/ui/gui/psppire-dialog-action-regression.c \
 	src/ui/gui/psppire-dialog-action-regression.h \
 	src/ui/gui/psppire-dialog-action-reliability.c \
@@ -309,8 +311,6 @@ src_ui_gui_psppire_SOURCES = \
 	src/ui/gui/psppire-window-base.h \
 	src/ui/gui/psppire-window-register.c \
 	src/ui/gui/psppire-window-register.h \
-	src/ui/gui/recode-dialog.c \
-	src/ui/gui/recode-dialog.h \
 	src/ui/gui/t-test-options.c \
 	src/ui/gui/t-test-options.h \
 	src/ui/gui/val-labs-dialog.c \

@@ -262,14 +262,18 @@
           </object>
         </child>
         <child>
-          <object class="GtkAction" id="transform_recode-same">
+          <object class="PsppireDialogActionRecode" id="transform_recode-same">
             <property name="name">transform_recode-same</property>
+	    <property name="manager">uimanager1</property>
+	    <property name="recode-to-new-variable">FALSE</property>
             <property name="label" translatable="yes">Recode into _Same Variables...</property>
             <property name="stock-id">transform-in-to-same-variables</property>
           </object>
         </child>
         <child>
-          <object class="GtkAction" id="transform_recode-different">
+          <object class="PsppireDialogActionRecode" id="transform_recode-different">
+	    <property name="manager">uimanager1</property>
+	    <property name="recode-to-new-variable">TRUE</property>
             <property name="name">transform_recode-different</property>
             <property name="label" translatable="yes">Recode into _Different Variables...</property>
             <property name="stock-id">transform-in-to-different-variables</property>
