@@ -196,6 +196,31 @@ struct categoricals
   const struct payload *payload;
 };
 
+
+bool
+categoricals_isbalanced (const struct categoricals *cat)
+{
+  int i;
+
+  for (i = 0 ; i < cat->n_iap; ++i)
+    {
+      int v;
+      const struct interact_params *iap = &cat->iap[i];
+
+      double oval = -1.0;
+      for (v = 0; v < hmap_count (&iap->ivmap); ++v)
+	{
+	  const struct interaction_value *iv = iap->reverse_interaction_value_map[v];
+	  if (oval == -1.0)
+	    oval = iv->cc;
+	  if (oval != iv->cc)
+	    return false;
+	}
+    }
+  return true;
+}
+
+
 static void
 categoricals_dump (const struct categoricals *cat)
 {

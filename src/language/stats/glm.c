@@ -775,12 +775,17 @@ output_glm (const struct glm_spec *cmd, const struct glm_workspace *ws)
       const double df = 1.0;
       const double F = intercept_ssq / df / mse;
       tab_text (t, 0, r, TAB_LEFT | TAT_TITLE, _("Intercept"));
-      tab_double (t, 1, r, 0, intercept_ssq, NULL, RC_OTHER);
-      tab_double (t, 2, r, 0, 1.00, NULL, RC_WEIGHT);
-      tab_double (t, 3, r, 0, intercept_ssq / df, NULL, RC_OTHER);
-      tab_double (t, 4, r, 0, F, NULL, RC_OTHER);
-      tab_double (t, 5, r, 0, gsl_cdf_fdist_Q (F, df, n_total - df_corr),
-		  NULL, RC_PVALUE);
+      /* The intercept for unbalanced models is of limited use and
+	 nobody knows how to calculate it properly */
+      if (categoricals_isbalanced (ws->cats))
+	{
+	  tab_double (t, 1, r, 0, intercept_ssq, NULL, RC_OTHER);
+	  tab_double (t, 2, r, 0, 1.00, NULL, RC_WEIGHT);
+	  tab_double (t, 3, r, 0, intercept_ssq / df, NULL, RC_OTHER);
+	  tab_double (t, 4, r, 0, F, NULL, RC_OTHER);
+	  tab_double (t, 5, r, 0, gsl_cdf_fdist_Q (F, df, n_total - df_corr),
+		      NULL, RC_PVALUE);
+	}
       r++;
     }
 

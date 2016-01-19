@@ -214,7 +214,7 @@ warning: GLM is experimental.  Do not rely on these results.
 Table: Tests of Between-Subjects Effects
 Source,Type I Sum of Squares,df,Mean Square,F,Sig.
 Corrected Model,216.017,7,30.860,5.046,.001
-Intercept,3410.526,1,3410.526,557.709,.000
+Intercept,,,,,
 Agrp,9.579,1,9.579,1.566,.220
 Bgrp,186.225,3,62.075,10.151,.000
 Agrp * Bgrp,20.212,3,6.737,1.102,.364
@@ -227,7 +227,7 @@ warning: GLM is experimental.  Do not rely on these results.
 Table: Tests of Between-Subjects Effects
 Source,Type I Sum of Squares,df,Mean Square,F,Sig.
 Corrected Model,216.017,7,30.860,5.046,.001
-Intercept,3410.526,1,3410.526,557.709,.000
+Intercept,,,,,
 Bgrp,193.251,3,64.417,10.534,.000
 Agrp,2.553,1,2.553,.418,.523
 Bgrp * Agrp,20.212,3,6.737,1.102,.364
@@ -253,7 +253,7 @@ warning: GLM is experimental.  Do not rely on these results.
 Table: Tests of Between-Subjects Effects
 Source,Type II Sum of Squares,df,Mean Square,F,Sig.
 Corrected Model,216.017,7,30.860,5.046,.001
-Intercept,3410.526,1,3410.526,557.709,.000
+Intercept,,,,,
 Agrp,2.553,1,2.553,.418,.523
 Bgrp,186.225,3,62.075,10.151,.000
 Agrp * Bgrp,20.212,3,6.737,1.102,.364

@@ -124,5 +124,6 @@ struct payload
 
 void  categoricals_set_payload (struct categoricals *cats, const struct payload *p, const void *aux1, void *aux2);
 
+bool categoricals_isbalanced (const struct categoricals *cat);
 
 #endif
