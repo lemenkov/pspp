@@ -2,6 +2,7 @@
 <!-- Created with Inkscape (http://www.inkscape.org/) -->
 
 <svg
+   xmlns:osb="http://www.openswatchbook.org/uri/2009/osb"
    xmlns:dc="http://purl.org/dc/elements/1.1/"
    xmlns:cc="http://creativecommons.org/ns#"
    xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
@@ -14,7 +15,7 @@
    height="300"
    id="svg2"
    version="1.1"
-   inkscape:version="0.48.4 r9939"
+   inkscape:version="0.48.5 r10040"
    sodipodi:docname="splash.svg"
    inkscape:export-filename="/home/raizen/Dropbox/Proyectos personales/GNU PSPP/PSPPire artwork/logo/splash.png"
    inkscape:export-xdpi="90"
@@ -23,6 +24,30 @@
      id="title3189">GNU PSPP splash</title>
   <defs
      id="defs4">
+    <linearGradient
+       id="linearGradient4423"
+       osb:paint="solid">
+      <stop
+         style="stop-color:#000000;stop-opacity:1;"
+         offset="0"
+         id="stop4425" />
+    </linearGradient>
+    <linearGradient
+       id="linearGradient4417"
+       osb:paint="solid">
+      <stop
+         style="stop-color:#000000;stop-opacity:1;"
+         offset="0"
+         id="stop4419" />
+    </linearGradient>
+    <linearGradient
+       id="linearGradient4411"
+       osb:paint="solid">
+      <stop
+         style="stop-color:#ffffff;stop-opacity:1;"
+         offset="0"
+         id="stop4413" />
+    </linearGradient>
     <linearGradient
        y2="98.883202"
        x2="118.3481"
@@ -2168,6 +2193,26 @@
        y1="101.5"
        x2="90"
        y2="112.65313" />
+    <linearGradient
+       inkscape:collect="always"
+       xlink:href="#linearGradient4423"
+       id="linearGradient4433"
+       gradientUnits="userSpaceOnUse"
+       x1="-117.56339"
+       y1="253.17569"
+       x2="474.60955"
+       y2="253.17569"
+       gradientTransform="matrix(0.96506904,0,0,0.96506904,17.608816,8.8307243)" />
+    <linearGradient
+       inkscape:collect="always"
+       xlink:href="#linearGradient4411"
+       id="linearGradient4435"
+       gradientUnits="userSpaceOnUse"
+       x1="-117.06339"
+       y1="253.17569"
+       x2="474.10955"
+       y2="253.17569"
+       gradientTransform="matrix(0.96506904,0,0,0.96506904,17.608816,8.8307243)" />
   </defs>
   <sodipodi:namedview
      id="base"
@@ -2176,19 +2221,19 @@
      borderopacity="1.0"
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
-     inkscape:zoom="1.0045881"
-     inkscape:cx="299.60747"
+     inkscape:zoom="1.4207021"
+     inkscape:cx="297.35286"
      inkscape:cy="101.8687"
      inkscape:document-units="px"
-     inkscape:current-layer="layer2"
+     inkscape:current-layer="layer3"
      showgrid="true"
      showborder="false"
      inkscape:snap-bbox="true"
-     inkscape:window-width="1366"
-     inkscape:window-height="709"
+     inkscape:window-width="1678"
+     inkscape:window-height="1048"
      inkscape:window-x="0"
-     inkscape:window-y="27"
-     inkscape:window-maximized="1"
+     inkscape:window-y="0"
+     inkscape:window-maximized="0"
      inkscape:snap-global="true"
      fit-margin-top="0"
      fit-margin-left="0"
@@ -2291,7 +2336,8 @@
      id="layer2"
      inkscape:label="gráficos"
      style="display:inline"
-     transform="translate(-30,445.00001)">
+     transform="translate(-30,445.00001)"
+     sodipodi:insensitive="true">
     <g
        id="g4719"
        transform="translate(19.999994,-4.1518431)">
@@ -3490,7 +3536,7 @@
            id="g4023">
           <path
              transform="matrix(0.53515625,0,0,0.53515625,6.5136504,-44.753155)"
-             d="m 225.56707,202.61343 c 0,32.21826 -45.42959,58.33632 -101.46983,58.33632 -56.040245,0 -101.469837,-26.11806 -101.469837,-58.33632 0,-32.21825 45.429592,-58.33631 101.469837,-58.33631 56.04024,0 101.46983,26.11806 101.46983,58.33631 z"
+             d="m 225.56707,202.61343 a 101.46983,58.336311 0 1 1 -202.939667,0 101.46983,58.336311 0 1 1 202.939667,0 z"
              sodipodi:ry="58.336311"
              sodipodi:rx="101.46983"
              sodipodi:cy="202.61343"
@@ -3662,10 +3708,10 @@
                sodipodi:cy="158"
                sodipodi:rx="15"
                sodipodi:ry="15"
-               d="m 70,158 c 0,8.28427 -6.715729,15 -15,15 -8.284271,0 -15,-6.71573 -15,-15 0,-8.28427 6.715729,-15 15,-15 8.284271,0 15,6.71573 15,15 z"
+               d="m 70,158 a 15,15 0 1 1 -30,0 15,15 0 1 1 30,0 z"
                transform="translate(6,4)" />
             <path
-               d="m 70,158 c 0,8.28427 -6.715729,15 -15,15 -8.284271,0 -15,-6.71573 -15,-15 0,-8.28427 6.715729,-15 15,-15 8.284271,0 15,6.71573 15,15 z"
+               d="m 70,158 a 15,15 0 1 1 -30,0 15,15 0 1 1 30,0 z"
                sodipodi:ry="15"
                sodipodi:rx="15"
                sodipodi:cy="158"
@@ -3727,5 +3773,28 @@
            id="path1350" />
       </g>
     </g>
+  </g>
+  <g
+     inkscape:groupmode="layer"
+     id="layer3"
+     inkscape:label="Overlay" style="display:inline">
+    <text
+       xml:space="preserve"
+       style="font-size:40.68980026px;font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;text-align:center;line-height:125%;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:middle;fill:url(#linearGradient4433);fill-opacity:1;stroke:url(#linearGradient4435);stroke-width:1.93013811;stroke-miterlimit:4;stroke-dasharray:none;font-family:LMMonoProp10;-inkscape-font-specification:LMMonoProp10 Bold"
+       x="190.15651"
+       y="236.96051"
+       id="text3637"
+       sodipodi:linespacing="125%"
+       transform="matrix(1.0022992,-0.38312368,0.46924938,0.81833792,0,0)"><tspan
+         sodipodi:role="line"
+         id="tspan3639"
+         x="190.15651"
+         y="236.96051"
+         style="font-size:46.40864563px;fill:url(#linearGradient4433);fill-opacity:1;stroke:url(#linearGradient4435);stroke-width:1.93013811;stroke-miterlimit:4;stroke-dasharray:none;font-family:DejaVu Sans;-inkscape-font-specification:DejaVu Sans">Test Release Only</tspan><tspan
+         sodipodi:role="line"
+         x="190.15652"
+         y="294.97131"
+         id="tspan3641"
+         style="font-size:46.40864563px;fill:url(#linearGradient4433);fill-opacity:1;stroke:url(#linearGradient4435);stroke-width:1.93013811;stroke-miterlimit:4;stroke-dasharray:none;font-family:DejaVu Sans;-inkscape-font-specification:DejaVu Sans">Not for production use</tspan></text>
   </g>
 </svg>

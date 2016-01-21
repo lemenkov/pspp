@@ -181,7 +181,16 @@ src/ui/gui/icons/mimetypes/48x48/application-x-spss-sav.png \
 src/ui/gui/icons/mimetypes/48x48/application-x-spss-sps.png \
 src/ui/gui/icons/mimetypes/48x48/application-x-spss-zsav.png \
 
-MISC_ICONS = src/ui/gui/icons/splash.png
+
+src/ui/gui/artwork/splash-t.svg: src/ui/gui/artwork/splash.svg
+	cp $< $@
+
+src/ui/gui/artwork/splash-r.svg: src/ui/gui/artwork/splash.svg
+	sed -e '/inkscape:label="Overlay"/s/inline/none/' $< > $@
+
+
+MISC_ICONS = src/ui/gui/icons/splash-t.png \
+	src/ui/gui/icons/splash-r.png
 
 
 ACTION_ICONS = \
