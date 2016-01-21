@@ -108,6 +108,11 @@ psppire_window_set_title (PsppireWindow *window)
 
   g_string_append_printf (title, "PSPPIRE %s", window->description);
 
+  int minor = 1;
+  sscanf (bare_version, "%*d.%d.%*d", &minor);
+  if (minor % 2)
+    g_string_append (title, " - UNRELEASED TEST SOFTWARE!  NOT FOR PRODUCTION USE.");
+
   gtk_window_set_title (GTK_WINDOW (window), title->str);
 
   g_string_free (title, TRUE);
