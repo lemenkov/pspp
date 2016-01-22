@@ -1,5 +1,7 @@
 # -*- makefile -*-
 
+all: everything
+
 # Adjust these to reflect where you've installed gnulib.
 GNULIB = ../gnulib
 GNULIB_TOOL = $(GNULIB)/gnulib-tool
@@ -306,7 +308,7 @@ src/ui/gui/icons/actions/16x16/help-about.png
 
 ICONS=$(CATEGORY_ICONS) $(ACTION_ICONS) $(MIMETYPE_ICONS) $(APP_ICONS) $(MISC_ICONS)
 
-all: prep_ph  icons
+everything: prep_ph  icons
 	$(MAKE) -f Smake Makefile.in configure
 
 icons: $(ICONS) src/ui/gui/icons/icon-names.c
