@@ -876,9 +876,11 @@ new_value_append_syntax (struct string *dds, const struct new_value *nv)
     }
 }
 
+
 static char *
-generate_syntax (const PsppireDialogActionRecode *rd)
+generate_syntax (PsppireDialogAction *act)
 {
+  PsppireDialogActionRecode *rd = PSPPIRE_DIALOG_ACTION_RECODE (act);
   gboolean ok;
   GtkTreeIter iter;
   gchar *text;
