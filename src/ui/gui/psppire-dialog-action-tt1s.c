@@ -32,7 +32,7 @@ G_DEFINE_TYPE (PsppireDialogActionTt1s, psppire_dialog_action_tt1s, PSPPIRE_TYPE
 
 
 static char *
-generate_syntax (PsppireDialogAction *act)
+generate_syntax (const PsppireDialogAction *act)
 {
   PsppireDialogActionTt1s *d = PSPPIRE_DIALOG_ACTION_TT1S (act);
   gchar *text;

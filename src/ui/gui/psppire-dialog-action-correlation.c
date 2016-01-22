@@ -30,7 +30,7 @@ static void psppire_dialog_action_correlation_class_init      (PsppireDialogActi
 G_DEFINE_TYPE (PsppireDialogActionCorrelation, psppire_dialog_action_correlation, PSPPIRE_TYPE_DIALOG_ACTION);
 
 static char *
-generate_syntax (PsppireDialogAction *act)
+generate_syntax (const PsppireDialogAction *act)
 {
   PsppireDialogActionCorrelation *rd = PSPPIRE_DIALOG_ACTION_CORRELATION (act);
   gchar *text;

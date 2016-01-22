@@ -31,7 +31,7 @@ static void psppire_dialog_action_kmeans_class_init      (PsppireDialogActionKme
 G_DEFINE_TYPE (PsppireDialogActionKmeans, psppire_dialog_action_kmeans, PSPPIRE_TYPE_DIALOG_ACTION);
 
 static char *
-generate_syntax (PsppireDialogAction *act)
+generate_syntax (const PsppireDialogAction *act)
 {
   PsppireDialogActionKmeans *km = PSPPIRE_DIALOG_ACTION_KMEANS (act);
   gchar *text;

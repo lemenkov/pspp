@@ -30,7 +30,7 @@ static void psppire_dialog_action_sort_class_init      (PsppireDialogActionSortC
 G_DEFINE_TYPE (PsppireDialogActionSort, psppire_dialog_action_sort, PSPPIRE_TYPE_DIALOG_ACTION);
 
 static char *
-generate_syntax (PsppireDialogAction *act)
+generate_syntax (const PsppireDialogAction *act)
 {
   PsppireDialogActionSort *scd = PSPPIRE_DIALOG_ACTION_SORT (act);
   gchar *text;

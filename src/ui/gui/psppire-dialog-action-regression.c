@@ -193,7 +193,7 @@ psppire_dialog_action_regression_activate (PsppireDialogAction *a)
 
 
 static char *
-generate_syntax (PsppireDialogAction *a)
+generate_syntax (const PsppireDialogAction *a)
 {
   PsppireDialogActionRegression *rd = PSPPIRE_DIALOG_ACTION_REGRESSION (a);
   gchar *text = NULL;

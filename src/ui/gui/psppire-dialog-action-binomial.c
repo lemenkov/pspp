@@ -135,7 +135,7 @@ psppire_dialog_action_binomial_activate (PsppireDialogAction *a)
 
 
 static char *
-generate_syntax (PsppireDialogAction *a)
+generate_syntax (const PsppireDialogAction *a)
 {
   PsppireDialogActionBinomial *scd = PSPPIRE_DIALOG_ACTION_BINOMIAL (a);
   gchar *text = NULL;

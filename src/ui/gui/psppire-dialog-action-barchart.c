@@ -158,7 +158,7 @@ psppire_dialog_action_barchart_activate (PsppireDialogAction *a)
 }
 
 static char *
-generate_syntax (PsppireDialogAction *a)
+generate_syntax (const PsppireDialogAction *a)
 {
   PsppireDialogActionBarchart *rd = PSPPIRE_DIALOG_ACTION_BARCHART (a);
   gchar *text;

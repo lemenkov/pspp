@@ -90,7 +90,7 @@ psppire_dialog_action_histogram_activate (PsppireDialogAction *a)
 
 
 static char *
-generate_syntax (PsppireDialogAction *a)
+generate_syntax (const PsppireDialogAction *a)
 {
   PsppireDialogActionHistogram *rd = PSPPIRE_DIALOG_ACTION_HISTOGRAM (a);
   gchar *text;

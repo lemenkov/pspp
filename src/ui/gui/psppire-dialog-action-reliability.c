@@ -36,7 +36,7 @@ enum
   };
 
 static char *
-generate_syntax (PsppireDialogAction *act)
+generate_syntax (const PsppireDialogAction *act)
 {
   PsppireDialogActionReliability *rd = PSPPIRE_DIALOG_ACTION_RELIABILITY (act);
   gchar *text;

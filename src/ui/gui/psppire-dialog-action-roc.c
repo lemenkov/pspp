@@ -165,7 +165,7 @@ psppire_dialog_action_roc_activate (PsppireDialogAction *a)
 
 
 static char *
-generate_syntax (PsppireDialogAction *a)
+generate_syntax (const PsppireDialogAction *a)
 {
   PsppireDialogActionRoc *rd = PSPPIRE_DIALOG_ACTION_ROC (a);
   gchar *text;

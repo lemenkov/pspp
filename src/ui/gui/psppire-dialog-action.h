@@ -83,7 +83,7 @@ struct _PsppireDialogActionClass
 {
   GtkActionClass parent_class;
   void   (*activate) (PsppireDialogAction *);
-  char * (*generate_syntax) (PsppireDialogAction *);
+  char * (*generate_syntax) (const PsppireDialogAction *);
 };
 
 GType psppire_dialog_action_get_type (void) ;

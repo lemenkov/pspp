@@ -34,7 +34,7 @@ G_DEFINE_TYPE (PsppireDialogActionFlip, psppire_dialog_action_flip, PSPPIRE_TYPE
      FLIP /VARIABLES=var_list /NEWNAMES=var_name.
 */
 static char *
-generate_syntax (PsppireDialogAction *act)
+generate_syntax (const PsppireDialogAction *act)
 {
   const gchar *text;
   PsppireDialogActionFlip *rd = PSPPIRE_DIALOG_ACTION_FLIP (act);

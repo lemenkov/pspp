@@ -36,7 +36,7 @@ G_DEFINE_TYPE (PsppireDialogActionRank, psppire_dialog_action_rank, PSPPIRE_TYPE
 
 
 static char *
-generate_syntax (PsppireDialogAction *act)
+generate_syntax (const PsppireDialogAction *act)
 {
   PsppireDialogActionRank *rd  = PSPPIRE_DIALOG_ACTION_RANK (act);
 

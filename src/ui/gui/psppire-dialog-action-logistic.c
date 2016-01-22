@@ -152,7 +152,7 @@ psppire_dialog_action_logistic_activate (PsppireDialogAction *a)
 
 
 static char *
-generate_syntax (PsppireDialogAction *a)
+generate_syntax (const PsppireDialogAction *a)
 {
   PsppireDialogActionLogistic *rd = PSPPIRE_DIALOG_ACTION_LOGISTIC (a);
   gchar *text = NULL;

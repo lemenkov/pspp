@@ -352,7 +352,7 @@ psppire_dialog_action_indep_samps_activate (PsppireDialogAction *a)
 
 
 static char *
-generate_syntax (PsppireDialogAction *a)
+generate_syntax (const PsppireDialogAction *a)
 {
   PsppireDialogActionIndepSamps *act = PSPPIRE_DIALOG_ACTION_INDEP_SAMPS (a);
   gchar *text;

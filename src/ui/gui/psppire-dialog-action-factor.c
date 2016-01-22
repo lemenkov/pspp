@@ -56,7 +56,7 @@ on_extract_toggle (GtkToggleButton *button, PsppireDialogActionFactor *f)
 }
 
 static char *
-generate_syntax (PsppireDialogAction *act)
+generate_syntax (const PsppireDialogAction *act)
 {
   PsppireDialogActionFactor *rd  = PSPPIRE_DIALOG_ACTION_FACTOR (act);
 

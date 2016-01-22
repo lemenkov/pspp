@@ -37,7 +37,7 @@ G_DEFINE_TYPE (PsppireDialogActionChisquare, psppire_dialog_action_chisquare, PS
 
 
 static char *
-generate_syntax (PsppireDialogAction *act)
+generate_syntax (const PsppireDialogAction *act)
 {
   PsppireDialogActionChisquare *scd = PSPPIRE_DIALOG_ACTION_CHISQUARE (act);
 

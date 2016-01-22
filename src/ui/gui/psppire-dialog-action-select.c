@@ -366,7 +366,7 @@ psppire_dialog_action_select_activate (PsppireDialogAction *a)
 
 
 static char *
-generate_syntax_filter (PsppireDialogAction *a)
+generate_syntax_filter (const PsppireDialogAction *a)
 {
   PsppireDialogActionSelect *scd = PSPPIRE_DIALOG_ACTION_SELECT (a);
 
@@ -470,7 +470,7 @@ generate_syntax_filter (PsppireDialogAction *a)
 
 
 static gchar *
-generate_syntax_delete (PsppireDialogAction *a)
+generate_syntax_delete (const PsppireDialogAction *a)
 {
   PsppireDialogActionSelect *scd = PSPPIRE_DIALOG_ACTION_SELECT (a);
   gchar *text = NULL;
@@ -537,7 +537,7 @@ generate_syntax_delete (PsppireDialogAction *a)
 
 
 static gchar *
-generate_syntax (PsppireDialogAction *a)
+generate_syntax (const PsppireDialogAction *a)
 {
   PsppireDialogActionSelect *scd = PSPPIRE_DIALOG_ACTION_SELECT (a);
 

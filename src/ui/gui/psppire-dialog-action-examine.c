@@ -107,7 +107,7 @@ run_opts_dialog (PsppireDialogActionExamine *ed)
 
 
 static char *
-generate_syntax (PsppireDialogAction *act)
+generate_syntax (const PsppireDialogAction *act)
 {
   PsppireDialogActionExamine *ed  = PSPPIRE_DIALOG_ACTION_EXAMINE (act);
 

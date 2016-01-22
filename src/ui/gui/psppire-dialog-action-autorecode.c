@@ -112,7 +112,7 @@ nlp_destroy (gpointer data)
 
 
 static char *
-generate_syntax (PsppireDialogAction *act)
+generate_syntax (const PsppireDialogAction *act)
 {
   PsppireDialogActionAutorecode *rd = PSPPIRE_DIALOG_ACTION_AUTORECODE (act);
   

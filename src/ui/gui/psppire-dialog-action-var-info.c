@@ -56,7 +56,7 @@ treeview_item_selected (gpointer data)
 }
 
 static gchar *
-generate_syntax__ (PsppireDialogAction *act, const char *prefix)
+generate_syntax__ (const PsppireDialogAction *act, const char *prefix)
 {
   struct variable **vars;
   size_t n_vars;
@@ -101,7 +101,7 @@ generate_syntax__ (PsppireDialogAction *act, const char *prefix)
 }
 
 static gchar *
-generate_syntax (PsppireDialogAction *act)
+generate_syntax (const PsppireDialogAction *act)
 {
   return generate_syntax__ (act, "");
 }

@@ -43,7 +43,7 @@ G_DEFINE_TYPE (PsppireDialogActionCount, psppire_dialog_action_count, PSPPIRE_TY
 
 
 static char *
-generate_syntax (PsppireDialogAction *act)
+generate_syntax (const PsppireDialogAction *act)
 {
   PsppireDialogActionCount *cnt = PSPPIRE_DIALOG_ACTION_COUNT (act);
   gchar *text = NULL;

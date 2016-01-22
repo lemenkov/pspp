@@ -47,7 +47,7 @@ G_DEFINE_TYPE (PsppireDialogActionOneway, psppire_dialog_action_oneway, PSPPIRE_
 
 
 static char *
-generate_syntax (PsppireDialogAction *act)
+generate_syntax (const PsppireDialogAction *act)
 {
   PsppireDialogActionOneway *ow = PSPPIRE_DIALOG_ACTION_ONEWAY (act);
   gchar *text;

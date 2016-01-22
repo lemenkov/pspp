@@ -356,7 +356,7 @@ psppire_dialog_action_frequencies_activate (PsppireDialogAction * a)
 }
 
 static char *
-generate_syntax (PsppireDialogAction * a)
+generate_syntax (const PsppireDialogAction * a)
 {
   PsppireDialogActionFrequencies *fd = PSPPIRE_DIALOG_ACTION_FREQUENCIES (a);
   gchar *text = NULL;

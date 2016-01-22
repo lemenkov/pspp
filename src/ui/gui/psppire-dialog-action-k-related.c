@@ -30,7 +30,7 @@ static void psppire_dialog_action_k_related_class_init      (PsppireDialogAction
 G_DEFINE_TYPE (PsppireDialogActionKRelated, psppire_dialog_action_k_related, PSPPIRE_TYPE_DIALOG_ACTION);
 
 static char *
-generate_syntax (PsppireDialogAction *act)
+generate_syntax (const PsppireDialogAction *act)
 {
   PsppireDialogActionKRelated *krd = PSPPIRE_DIALOG_ACTION_K_RELATED (act);
   gchar *text;

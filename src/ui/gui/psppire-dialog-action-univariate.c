@@ -30,7 +30,7 @@ static void psppire_dialog_action_univariate_class_init      (PsppireDialogActio
 G_DEFINE_TYPE (PsppireDialogActionUnivariate, psppire_dialog_action_univariate, PSPPIRE_TYPE_DIALOG_ACTION);
 
 static char *
-generate_syntax (PsppireDialogAction *act)
+generate_syntax (const PsppireDialogAction *act)
 {
   PsppireDialogActionUnivariate *uvd = PSPPIRE_DIALOG_ACTION_UNIVARIATE (act);
 

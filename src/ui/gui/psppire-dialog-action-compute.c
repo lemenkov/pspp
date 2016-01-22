@@ -35,7 +35,7 @@ G_DEFINE_TYPE (PsppireDialogActionCompute, psppire_dialog_action_compute, PSPPIR
 
 
 static char *
-generate_syntax (PsppireDialogAction *act)
+generate_syntax (const PsppireDialogAction *act)
 {
   PsppireDialogActionCompute *cd = PSPPIRE_DIALOG_ACTION_COMPUTE (act);
   gchar *text;

@@ -36,7 +36,7 @@ G_DEFINE_TYPE (PsppireDialogActionMeans, psppire_dialog_action_means, PSPPIRE_TY
 
 
 static char *
-generate_syntax (PsppireDialogAction *act)
+generate_syntax (const PsppireDialogAction *act)
 {
   gint l;
   PsppireDialogActionMeans *scd = PSPPIRE_DIALOG_ACTION_MEANS (act);

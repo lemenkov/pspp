@@ -36,7 +36,7 @@ G_DEFINE_TYPE (PsppireDialogActionSplit, psppire_dialog_action_split, PSPPIRE_TY
 
 
 static char *
-generate_syntax (PsppireDialogAction *pda)
+generate_syntax (const PsppireDialogAction *pda)
 {
   PsppireDialogActionSplit *act = PSPPIRE_DIALOG_ACTION_SPLIT (pda);
   gchar *text;

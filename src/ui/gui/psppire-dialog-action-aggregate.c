@@ -95,7 +95,7 @@ append_destination_filename (const PsppireDialogActionAggregate *agg, GString *g
 
 
 static char *
-generate_syntax (PsppireDialogAction *act)
+generate_syntax (const PsppireDialogAction *act)
 {
   PsppireDialogActionAggregate *agg = PSPPIRE_DIALOG_ACTION_AGGREGATE (act);
 

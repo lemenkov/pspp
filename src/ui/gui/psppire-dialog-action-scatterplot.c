@@ -38,7 +38,7 @@ G_DEFINE_TYPE (PsppireDialogActionScatterplot, psppire_dialog_action_scatterplot
 
 
 static char *
-generate_syntax (PsppireDialogAction *act)
+generate_syntax (const PsppireDialogAction *act)
 {
   PsppireDialogActionScatterplot *ow = PSPPIRE_DIALOG_ACTION_SCATTERPLOT (act);
   gchar *text;

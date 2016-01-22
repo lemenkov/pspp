@@ -36,7 +36,7 @@ static void psppire_dialog_action_comments_class_init      (PsppireDialogActionC
 G_DEFINE_TYPE (PsppireDialogActionComments, psppire_dialog_action_comments, PSPPIRE_TYPE_DIALOG_ACTION);
 
 static char *
-generate_syntax (PsppireDialogAction *pda)
+generate_syntax (const PsppireDialogAction *pda)
 {
   PsppireDialogActionComments *cd = PSPPIRE_DIALOG_ACTION_COMMENTS (pda);
   gint i;

@@ -74,7 +74,7 @@ static const struct checkbox_entry_item stats[] =
 
 
 static char *
-generate_syntax (PsppireDialogAction *act)
+generate_syntax (const PsppireDialogAction *act)
 {
   PsppireDialogActionDescriptives *scd = PSPPIRE_DIALOG_ACTION_DESCRIPTIVES (act);
   gchar *text;

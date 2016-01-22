@@ -52,7 +52,7 @@ append_fragment (GString *string, const gchar *dist, PsppireVarView *vv)
 
 
 static char *
-generate_syntax (PsppireDialogAction *act)
+generate_syntax (const PsppireDialogAction *act)
 {
   PsppireDialogAction1sks *rd = PSPPIRE_DIALOG_ACTION_1SKS (act);
   gchar *text;

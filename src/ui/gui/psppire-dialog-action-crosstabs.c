@@ -274,7 +274,7 @@ psppire_dialog_action_crosstabs_activate (PsppireDialogAction *a)
 
 
 static char *
-generate_syntax (PsppireDialogAction *a)
+generate_syntax (const PsppireDialogAction *a)
 {
   PsppireDialogActionCrosstabs *cd = PSPPIRE_DIALOG_ACTION_CROSSTABS (a);
   gchar *text = NULL;

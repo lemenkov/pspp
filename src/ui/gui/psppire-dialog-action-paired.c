@@ -124,7 +124,7 @@ select_as_pair_member (GtkTreeIter source_iter,
 
 
 static gchar *
-generate_syntax (PsppireDialogAction *pda)
+generate_syntax (const PsppireDialogAction *pda)
 {
   PsppireDialogActionPaired *d = PSPPIRE_DIALOG_ACTION_PAIRED (pda);
   gchar *text = NULL;

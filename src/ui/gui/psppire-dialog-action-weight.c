@@ -36,7 +36,7 @@ G_DEFINE_TYPE (PsppireDialogActionWeight, psppire_dialog_action_weight, PSPPIRE_
 
 
 static char *
-generate_syntax (PsppireDialogAction *pda)
+generate_syntax (const PsppireDialogAction *pda)
 {
   gchar *syntax = NULL;
   PsppireDialogActionWeight *wcd = PSPPIRE_DIALOG_ACTION_WEIGHT (pda);

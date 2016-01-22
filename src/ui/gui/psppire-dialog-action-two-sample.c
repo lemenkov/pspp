@@ -134,7 +134,7 @@ select_as_pair_member (GtkTreeIter source_iter,
 
 
 static gchar *
-generate_syntax (PsppireDialogAction *pda)
+generate_syntax (const PsppireDialogAction *pda)
 {
   gint i;
 
