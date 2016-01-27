@@ -29,7 +29,7 @@ struct init_source
   GSource parent;
   int state;
   GMainLoop *loop;
-  gchar *file;
+  int filename_arg;
   int *argc;
   char ***argv;
 };

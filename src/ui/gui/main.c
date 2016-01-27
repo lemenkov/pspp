@@ -300,7 +300,7 @@ main (int argc, char *argv[])
   ((struct init_source *) ss)->argc = &argc;
   ((struct init_source *) ss)->argv = &argv;
   ((struct init_source *) ss)->loop = loop;
-  ((struct init_source *) ss)->file = optind < argc ? argv[optind] : NULL;
+  ((struct init_source *) ss)->filename_arg = optind < argc ? optind : -1;
   
   g_source_unref (ss);
 

@@ -126,12 +126,23 @@ initialize (const struct init_source *is)
       break;
     case 14:
       {
-      if (is->file)
+      if (is->filename_arg != -1)
 	{
+#ifndef G_OS_WIN32
+	  const char *file = (*is->argv)[is->filename_arg];
 	  const gchar *local_encoding = NULL;
 	  g_get_charset (&local_encoding);
+#else
+	  char **as = g_win32_get_command_line ();
+	  const char *file = as[is->filename_arg];
+	  const gchar *local_encoding = "UTF-8";
+#endif	  
 
-	  struct file_handle *fh = fh_create_file (NULL, is->file, local_encoding, fh_default_properties ());
+	  struct file_handle *fh = fh_create_file (NULL,
+						   file,
+						   local_encoding,
+						   fh_default_properties ());
+	  
 	  const char *filename = fh_get_file_name (fh);
 
 	  int retval = any_reader_detect (fh, NULL);
