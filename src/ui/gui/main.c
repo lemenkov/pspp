@@ -171,16 +171,6 @@ print_startup_time (gpointer data)
   return FALSE;
 }
 
-static GMemVTable vtable =
-  {
-    xmalloc,
-    xrealloc,
-    free,
-    xcalloc,
-    malloc,
-    realloc
-  };
-
 #ifdef __APPLE__
 static const bool apple = true;
 #else
@@ -256,8 +246,6 @@ main (int argc, char *argv[])
   const gchar *vers;
 
   set_program_name (argv[0]);
-
-  g_mem_set_vtable (&vtable);
 
 #if !GLIB_CHECK_VERSION(2,32,0)
   /* g_thread_init() was required before glib 2.32, but it is deprecated since
