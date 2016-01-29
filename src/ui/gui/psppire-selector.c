@@ -133,8 +133,6 @@ static GObjectClass * parent_class = NULL;
 
 
 
-#define SELECTOR_DEBUGGING 0
-
 static void
 dump_hash_entry (gpointer key, gpointer value, gpointer obj)
 {
