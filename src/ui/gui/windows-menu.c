@@ -42,22 +42,17 @@ min_all (GtkWidget *widget, gpointer ud)
 static void
 reset_check_state (GtkWidget *widget, gpointer ud)
 {
+  GtkWindow *win = GTK_WINDOW (ud);
+  gboolean state = gtk_check_menu_item_get_active (GTK_CHECK_MENU_ITEM (widget));
+
+  if (state == TRUE)
+    gtk_window_present (win);
+  
   /* Prevent the state from actually changing */
   g_signal_handlers_block_by_func (widget, reset_check_state, ud);
-  gboolean state = gtk_check_menu_item_get_active (GTK_CHECK_MENU_ITEM (widget));
   gtk_check_menu_item_set_active (GTK_CHECK_MENU_ITEM (widget), !state);
   g_signal_handlers_unblock_by_func (widget, reset_check_state, ud);
 }
-
-static gboolean
-raise_window (GtkWidget *widget, GdkEvent *ev, gpointer ud)
-{
-  GtkWindow *win = GTK_WINDOW (ud);
-  gtk_window_present_with_time (win, ((GdkEventButton *)ev)->time);
-  
-  return FALSE;
-}
-
 
 static void
 add_menuitem (gpointer key, gpointer value, gpointer user_data)
@@ -71,9 +66,6 @@ add_menuitem (gpointer key, gpointer value, gpointer user_data)
 				  pw == g_object_get_data (G_OBJECT (menu), "toplevel"));
 
   g_signal_connect (mi, "toggled", G_CALLBACK (reset_check_state), pw);
-
-  g_signal_connect (mi, "button-press-event", G_CALLBACK (raise_window), pw);
-  
 
   gtk_container_add (GTK_CONTAINER(menu), mi);
 }
