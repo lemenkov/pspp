@@ -36,6 +36,7 @@
 #include "ui/gui/psppire-encoding-selector.h"
 #include "ui/gui/psppire-syntax-window.h"
 #include "ui/gui/psppire-window.h"
+#include "ui/gui/windows-menu.h"
 #include "ui/gui/psppire.h"
 #include "ui/syntax-gen.h"
 
@@ -722,13 +723,6 @@ toggle_value_labels (PsppireDataWindow  *de, GtkToggleAction *ta)
   g_object_set (de->data_editor, "value-labels", gtk_toggle_action_get_active (ta), NULL);
 }
 
-static void
-toggle_split_window (PsppireDataWindow  *de, GtkToggleAction *ta)
-{
-  psppire_data_editor_split_window (de->data_editor,
-				    gtk_toggle_action_get_active (ta));
-}
-
 
 static void
 file_quit (PsppireDataWindow *de)
@@ -906,14 +900,9 @@ enable_save (PsppireDataWindow *dw)
 static void
 psppire_data_window_init (PsppireDataWindow *de)
 {
-  GtkWidget *w ;
   de->builder = builder_new ("data-editor.ui");
 
   de->ui_manager = GTK_UI_MANAGER (get_object_assert (de->builder, "uimanager1", GTK_TYPE_UI_MANAGER));
-
-  w = gtk_ui_manager_get_widget (de->ui_manager, "/ui/menubar/windows/windows_minimise_all");
-
-  PSPPIRE_WINDOW (de)->menu = GTK_MENU_SHELL (gtk_widget_get_parent (w));
 
   de->uim = NULL;
   de->merge_id = 0;
@@ -1110,10 +1099,7 @@ psppire_data_window_finish_init (PsppireDataWindow *de,
 
   connect_action (de, "transform_run-pending", G_CALLBACK (execute));
 
-  connect_action (de, "windows_minimise_all", G_CALLBACK (psppire_window_minimise_all));
-
-  g_signal_connect_swapped (get_action_assert (de->builder, "windows_split"), "toggled", G_CALLBACK (toggle_split_window), de);
-
+  gtk_menu_shell_append (GTK_MENU_SHELL (menubar),  create_windows_menu (GTK_WINDOW (de)));
   gtk_menu_shell_append (GTK_MENU_SHELL (menubar),  create_help_menu (GTK_WINDOW (de)));
   
   g_signal_connect (de->data_editor, "notify::ui-manager",

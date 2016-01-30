@@ -322,7 +322,9 @@ src_ui_gui_psppire_SOURCES = \
 	src/ui/gui/widget-io.c \
 	src/ui/gui/widget-io.h \
 	src/ui/gui/widgets.c \
-	src/ui/gui/widgets.h
+	src/ui/gui/widgets.h \
+	src/ui/gui/windows-menu.c \
+	src/ui/gui/windows-menu.h
 
 
 OBSOLETE = \

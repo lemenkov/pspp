@@ -542,26 +542,6 @@
             <property name="stock-id">utilities-data-file-comments</property>
           </object>
         </child>
-        <child>
-          <object class="GtkAction" id="windows">
-            <property name="name">windows</property>
-            <property name="label" translatable="yes">_Windows</property>
-          </object>
-        </child>
-        <child>
-          <object class="GtkAction" id="windows_minimise_all">
-            <property name="name">windows_minimise_all</property>
-            <property name="label" translatable="yes">_Minimize All Windows</property>
-            <property name="stock-id">windows-minimize-all</property>
-          </object>
-        </child>
-        <child>
-          <object class="GtkToggleAction" id="windows_split">
-            <property name="name">windows_split</property>
-            <property name="label" translatable="yes">_Split</property>
-            <property name="stock-id">windows-split</property>
-          </object>
-        </child>
       </object>
     </child>
     <ui>
@@ -664,10 +644,6 @@
         <menu action="utilities">
           <menuitem action="utilities_variables"/>
           <menuitem action="utilities_comments"/>
-        </menu>
-        <menu action="windows">
-          <menuitem action="windows_minimise_all"/>
-          <menuitem action="windows_split"/>
         </menu>
       </menubar>
       <toolbar action="toolbar">

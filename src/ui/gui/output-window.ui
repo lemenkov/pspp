@@ -44,19 +44,6 @@
             <property name="label" translatable="yes">_Copy</property>
           </object>
         </child>
-        <child>
-          <object class="GtkAction" id="windows_menuitem">
-            <property name="name">windows_menuitem</property>
-            <property name="label" translatable="yes">_Windows</property>
-          </object>
-        </child>
-        <child>
-          <object class="GtkAction" id="windows_minimise-all">
-            <property name="stock-id">windows-minimize-all</property>
-            <property name="name">windows_minimise-all</property>
-            <property name="label" translatable="yes">_Minimize All Windows</property>
-          </object>
-        </child>
       </object>
     </child>
     <ui>
@@ -68,9 +55,6 @@
         <menu action="menuitem2">
           <menuitem action="edit_copy"/>
           <menuitem action="edit_select-all"/>
-        </menu>
-        <menu action="windows_menuitem">
-          <menuitem action="windows_minimise-all"/>
         </menu>
       </menubar>
     </ui>

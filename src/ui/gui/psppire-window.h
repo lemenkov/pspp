@@ -68,7 +68,6 @@ struct _PsppireWindow
   gchar *list_name;            /* Name for "Windows" menu list. */
 
   GHashTable *menuitem_table;
-  GtkMenuShell *menu;
 
   guint insert_handler;
   guint remove_handler;

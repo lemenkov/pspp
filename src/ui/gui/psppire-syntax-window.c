@@ -36,8 +36,8 @@
 #include "ui/gui/psppire-encoding-selector.h"
 #include "ui/gui/psppire-lex-reader.h"
 #include "ui/gui/psppire-syntax-window.h"
-#include "ui/gui/psppire-window-register.h"
 #include "ui/gui/psppire.h"
+#include "ui/gui/windows-menu.h"
 
 #include "gl/localcharset.h"
 #include "gl/xalloc.h"
@@ -859,19 +859,11 @@ psppire_syntax_window_init (PsppireSyntaxWindow *window)
 		    G_CALLBACK (on_run_to_end),
 		    window);
 
-  g_signal_connect (get_action_assert (xml,"windows_minimise_all"),
-		    "activate",
-		    G_CALLBACK (psppire_window_minimise_all), NULL);
+  gtk_menu_shell_append (GTK_MENU_SHELL (menubar),
+			 create_windows_menu (GTK_WINDOW (window)));
 
-
-  {
-    GtkUIManager *uim = GTK_UI_MANAGER (get_object_assert (xml, "uimanager1", GTK_TYPE_UI_MANAGER));
-    GtkWidget *w = gtk_ui_manager_get_widget (uim,"/ui/menubar/windows/windows_minimise_all");
-
-    gtk_menu_shell_append (GTK_MENU_SHELL (menubar),  create_help_menu (GTK_WINDOW (window)));
-
-    PSPPIRE_WINDOW (window)->menu = GTK_MENU_SHELL (gtk_widget_get_parent (w));
-  }
+  gtk_menu_shell_append (GTK_MENU_SHELL (menubar),
+			 create_help_menu (GTK_WINDOW (window)));
 
   g_object_unref (xml);
 }

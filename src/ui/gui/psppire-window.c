@@ -314,61 +314,14 @@ psppire_window_base_init (PsppireWindowClass *class)
 
 
 static void
-menu_toggled (GtkCheckMenuItem *mi, gpointer data)
-{
-#if GTK3_TRANSITION
-  /* Prohibit changes to the state */
-  mi->active = !mi->active;
-#endif
-}
-
-
-/* Look up the window associated with this menuitem and present it to the user */
-static void
-menu_activate (GtkMenuItem *mi, gpointer data)
-{
-  const gchar *key = data;
-
-  PsppireWindowRegister *reg = psppire_window_register_new ();
-
-  PsppireWindow *window = psppire_window_register_lookup (reg, key);
-
-  gtk_window_present (GTK_WINDOW (window));
-}
-
-static void
 insert_menuitem_into_menu (PsppireWindow *window, gpointer key)
 {
   gchar *filename;
   GtkWidget *item;
-
-  /* Add a separator before adding the first real item.  If we add a separator
-     at any other time, sometimes GtkUIManager removes it. */
-  if (!window->added_separator)
-    {
-      GtkWidget *separator = gtk_separator_menu_item_new ();
-      gtk_widget_show (separator);
-      gtk_menu_shell_append (window->menu, separator);
-      window->added_separator = TRUE;
-    }
-
   filename = g_filename_display_name (key);
   item = gtk_check_menu_item_new_with_label (filename);
   g_free (filename);
-
-  g_signal_connect (item, "toggled", G_CALLBACK (menu_toggled), NULL);
-  g_signal_connect (item, "activate", G_CALLBACK (menu_activate), key);
-
-  gtk_widget_show (item);
-
-  gtk_menu_shell_append (window->menu, item);
-
-#if GTK3_TRANSITION
-  /* Set the state without emitting a signal */
-  GTK_CHECK_MENU_ITEM (item)->active =
-   (psppire_window_register_lookup (psppire_window_register_new (), key) == window);
-#endif
-
+  
   g_hash_table_insert (window->menuitem_table, key, item);
 }
 
@@ -397,14 +350,7 @@ static void
 remove_menuitem (PsppireWindowRegister *reg, const gchar *key, gpointer data)
 {
   PsppireWindow *window = PSPPIRE_WINDOW (data);
-  GtkWidget *item ;
-
-  item = g_hash_table_lookup (window->menuitem_table, key);
-
   g_hash_table_remove (window->menuitem_table, key);
-
-  if (GTK_IS_CONTAINER (window->menu))
-    gtk_container_remove (GTK_CONTAINER (window->menu), item);
 }
 
 static void
@@ -452,7 +398,6 @@ on_delete (PsppireWindow *w, GdkEvent *event, gpointer user_data)
 static void
 psppire_window_init (PsppireWindow *window)
 {
-  window->menu = NULL;
   window->filename = NULL;
   window->basename = NULL;
   window->id = NULL;
@@ -619,7 +564,7 @@ psppire_window_model_get_type (void)
       window_model_type =
 	g_type_register_static (G_TYPE_INTERFACE, "PsppireWindowModel",
 				&window_model_info, 0);
-
+      
       g_type_interface_add_prerequisite (window_model_type, G_TYPE_OBJECT);
     }
 

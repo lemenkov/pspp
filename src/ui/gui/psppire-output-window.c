@@ -38,6 +38,7 @@
 #include "ui/gui/help-menu.h"
 #include "ui/gui/builder-wrapper.h"
 #include "ui/gui/psppire-output-view.h"
+#include "ui/gui/windows-menu.h"
 
 #include "gl/xalloc.h"
 
@@ -494,24 +495,14 @@ psppire_output_window_init (PsppireOutputWindow *window)
 		    G_CALLBACK (cancel_urgency),
 		    NULL);
 
-  g_signal_connect (get_action_assert (xml,"windows_minimise-all"),
-		    "activate",
-		    G_CALLBACK (psppire_window_minimise_all),
-		    NULL);
+  GtkWidget *menubar = get_widget_assert (xml, "menubar");
 
-  {
-    GtkWidget *w;
-    GtkUIManager *uim = GTK_UI_MANAGER (get_object_assert (xml, "uimanager1", GTK_TYPE_UI_MANAGER));
+  gtk_menu_shell_append (GTK_MENU_SHELL (menubar),
+			 create_windows_menu (GTK_WINDOW (window)));
+    
+  gtk_menu_shell_append (GTK_MENU_SHELL (menubar),
+			 create_help_menu (GTK_WINDOW (window)));
 
-    GtkWidget *menubar = get_widget_assert (xml, "menubar");
-
-    gtk_menu_shell_append (GTK_MENU_SHELL (menubar),  create_help_menu (GTK_WINDOW (window)));
-
-    w = gtk_ui_manager_get_widget (uim,"/ui/menubar/windows_menuitem/windows_minimise-all");
-
-    PSPPIRE_WINDOW (window)->menu =
-      GTK_MENU_SHELL (gtk_widget_get_parent (w));
-  }
 
   g_signal_connect_swapped (get_action_assert (xml, "file_export"), "activate",
                             G_CALLBACK (psppire_output_window_export), window);

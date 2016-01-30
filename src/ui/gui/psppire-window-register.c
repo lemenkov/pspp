@@ -1,5 +1,5 @@
 /* PSPPIRE - a graphical user interface for PSPP.
-   Copyright (C) 2008  Free Software Foundation
+   Copyright (C) 2008 Free Software Foundation
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -146,13 +146,11 @@ psppire_window_register_insert (PsppireWindowRegister *wr, PsppireWindow *window
   g_signal_emit (wr, signals[INSERTED], 0, name);
 }
 
-
 void
 psppire_window_register_remove (PsppireWindowRegister *wr, const gchar *name)
 {
-  g_signal_emit (wr, signals[REMOVED], 0, name);
-
   g_hash_table_remove (wr->name_table, (gpointer) name);
+  g_signal_emit (wr, signals[REMOVED], 0, name);
 }
 
 PsppireWindow *

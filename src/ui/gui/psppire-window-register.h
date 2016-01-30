@@ -87,6 +87,8 @@ void psppire_window_register_foreach (PsppireWindowRegister *wr, GHFunc func,
 
 gint psppire_window_register_n_items (PsppireWindowRegister *wr);
 
+GtkWidget *create_windows_menu (GtkWindow *toplevel);
+
 
 G_END_DECLS
 

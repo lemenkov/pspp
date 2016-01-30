@@ -148,19 +148,6 @@
             <property name="label" translatable="yes">To End</property>
           </object>
         </child>
-        <child>
-          <object class="GtkAction" id="windows">
-            <property name="name">windows</property>
-            <property name="label" translatable="yes">_Windows</property>
-          </object>
-        </child>
-        <child>
-          <object class="GtkAction" id="windows_minimise_all">
-            <property name="stock-id">windows-minimize-all</property>
-            <property name="name">windows_minimise_all</property>
-            <property name="label" translatable="yes">_Minimize All Windows</property>
-          </object>
-        </child>
       </object>
     </child>
     <ui>
@@ -192,9 +179,6 @@
           <menuitem action="run_selection"/>
           <menuitem action="run_current_line"/>
           <menuitem action="run_to_end"/>
-        </menu>
-        <menu action="windows">
-          <menuitem action="windows_minimise_all"/>
         </menu>
       </menubar>
     </ui>
