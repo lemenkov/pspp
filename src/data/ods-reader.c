@@ -1,5 +1,5 @@
 /* PSPP - a program for statistical analysis.
-   Copyright (C) 2011, 2012, 2013 Free Software Foundation, Inc.
+   Copyright (C) 2011, 2012, 2013, 2016 Free Software Foundation, Inc.
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -170,7 +170,9 @@ ods_unref (struct spreadsheet *s)
 	{
 	  xmlFree (r->sheets[i].name);
 	}
-	
+
+      dict_destroy (r->dict);
+
       zip_reader_destroy (r->zreader);
       free (r->sheets);
       free (s->file_name);
@@ -919,8 +921,6 @@ ods_make_reader (struct spreadsheet *spreadsheet,
 
   free (var_spec);
 
-  dict_destroy (r->spreadsheet.dict);
-  r->spreadsheet.dict = NULL;
   ods_file_casereader_destroy (NULL, r);
 
   return NULL;

@@ -1,5 +1,5 @@
 /* PSPP - a program for statistical analysis.
-   Copyright (C) 2007, 2010 Free Software Foundation, Inc.
+   Copyright (C) 2007, 2010, 2016 Free Software Foundation, Inc.
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -66,8 +66,9 @@ struct spreadsheet
   /* The total number of sheets in the "workbook" */
   int n_sheets;
 
-  /* The dictionary */
-  struct dictionary *dict;
+  /* The dictionary for client's reference.
+     Client must clone if it needs a permanent or modifiable copy. */
+  const struct dictionary *dict;
 
   int ref_cnt;
 };

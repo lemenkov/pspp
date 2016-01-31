@@ -110,41 +110,30 @@ cmd_get_data (struct lexer *lexer, struct dataset *ds)
       lex_match_id (lexer, "ODS"))
     {
       char *filename = NULL;
-      struct casereader *reader = NULL;
-      struct dictionary *dict = NULL;
-
       if (!parse_spreadsheet (lexer, &filename, &opts))
 	goto error;
 
+      struct spreadsheet *spreadsheet = NULL;
       if ( gnm_read_support && 0 == strncasecmp (tok, "GNM", 3))
-	{
-	  struct spreadsheet *spreadsheet = gnumeric_probe (filename, true);
-	  if (spreadsheet == NULL)
-	    goto error;
-	  reader = gnumeric_make_reader (spreadsheet, &opts);
-	  dict = spreadsheet->dict;
-	  gnumeric_unref (spreadsheet);
-	}
+        spreadsheet = gnumeric_probe (filename, true);
       else if ( odf_read_support && 0 == strncasecmp (tok, "ODS", 3))
-	{
-	  struct spreadsheet *spreadsheet = ods_probe (filename, true);
-	  if (spreadsheet == NULL)
-	    goto error;
-	  reader = ods_make_reader (spreadsheet, &opts);
-	  dict = spreadsheet->dict;
-	  ods_unref (spreadsheet);
-	}
+        spreadsheet = ods_probe (filename, true);
 
       free (filename);
+      if (spreadsheet == NULL)
+        goto error;
 
+      struct casereader *reader = spreadsheet_make_reader (spreadsheet, &opts);
       if (reader)
 	{
-	  dataset_set_dict (ds, dict);
+	  dataset_set_dict (ds, dict_clone (spreadsheet->dict));
 	  dataset_set_source (ds, reader);
 	  free (tok);
 	  destroy_spreadsheet_read_info (&opts);
+	  spreadsheet_unref (spreadsheet);
 	  return CMD_SUCCESS;
 	}
+      spreadsheet_unref (spreadsheet);
     }
   else
     msg (SE, _("Unsupported TYPE %s."), tok);

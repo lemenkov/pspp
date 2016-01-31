@@ -2047,7 +2047,7 @@ prepare_formats_page (PsppireImportAssistant *ia)
 	case SPREADSHEET_GNUMERIC:
 	  {
 	    reader = spreadsheet_make_reader (ia->spreadsheet, &sro);
-	    ia->dict = ia->spreadsheet->dict;
+	    ia->dict = dict_clone (ia->spreadsheet->dict);
 	  }
 	  break;
 	default:

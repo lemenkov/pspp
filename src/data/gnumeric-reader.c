@@ -1,5 +1,5 @@
 /* PSPP - a program for statistical analysis.
-   Copyright (C) 2007, 2009, 2010, 2011, 2012, 2013  Free Software Foundation, Inc.
+   Copyright (C) 2007, 2009, 2010, 2011, 2012, 2013, 2016  Free Software Foundation, Inc.
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -185,9 +185,12 @@ gnumeric_unref (struct spreadsheet *s)
 	{
 	  xmlFree (r->sheets[i].name);
 	}
-    
+
+
       free (r->sheets);
       state_data_destroy (&r->msd);
+
+      dict_destroy (r->dict);
 
       free (s->file_name);
 
@@ -872,8 +875,6 @@ gnumeric_make_reader (struct spreadsheet *spreadsheet,
     }
 
   free (var_spec);
-  dict_destroy (spreadsheet->dict);
-  spreadsheet->dict = NULL;
 
   gnm_file_casereader_destroy (NULL, r);
 
