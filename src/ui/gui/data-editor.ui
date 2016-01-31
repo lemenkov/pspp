@@ -376,7 +376,6 @@
             <property name="manager">uimanager1</property>
             <property name="label" translatable="yes">_Univariate Analysis...</property>
             <property name="stock-id">analyze-univariate-analysis</property>
-            <property name="visible">False</property>
           </object>
         </child>
         <child>
