@@ -54,7 +54,9 @@ enum ChildProperties
   {
     CHILD_PROP_0,
     CHILD_PROP_RESIZE,
-    CHILD_PROP_SHRINK
+    CHILD_PROP_SHRINK,
+    CHILD_PROP_LEFT_ATTACH,
+    CHILD_PROP_TOP_ATTACH
   };
 
 enum WidgetSignals
@@ -526,6 +528,29 @@ gtk_xpaned_class_init (GtkXPanedClass * class)
                                                      G_MAXINT,
                                                      G_PARAM_READABLE));
 
+
+  gtk_container_class_install_child_property (container_class,
+                                              CHILD_PROP_LEFT_ATTACH,
+                                              g_param_spec_int ("left-attach",
+								"Left Attach",
+								"The column number to which the  left side of the widget should be attached",
+								0, 1,
+								0,
+								G_PARAM_READWRITE));
+
+
+
+  gtk_container_class_install_child_property (container_class,
+                                              CHILD_PROP_TOP_ATTACH,
+                                              g_param_spec_int ("top-attach",
+								"Top Attach",
+								"The row number to which the  top side of the widget should be attached",
+								0, 1,
+								0,
+								G_PARAM_READWRITE));
+
+
+  
   /**
    * GtkPaned:resize:
    *
@@ -812,6 +837,12 @@ gtk_xpaned_size_allocate (GtkWidget * widget, GtkAllocation * allocation)
   GtkRequisition bottom_right_child_requisition;
   gint handle_size;
 
+  g_print ("Allocate %p %p %p %p\n",
+	   xpaned->top_left_child,
+	   xpaned->top_right_child,
+	   xpaned->bottom_left_child,
+	   xpaned->bottom_right_child);
+  
   /* determine size of handle(s) */
   gtk_widget_style_get (widget, "handle-size", &handle_size, NULL);
 
@@ -1046,73 +1077,109 @@ gtk_xpaned_set_child_property (GtkContainer * container,
                                const GValue * value, GParamSpec * pspec)
 {
   GtkXPaned *xpaned = GTK_XPANED (container);
-  gboolean old_value = FALSE;
-  gboolean new_value = FALSE;
 
   g_assert (child == xpaned->top_left_child ||
             child == xpaned->top_right_child ||
             child == xpaned->bottom_left_child ||
             child == xpaned->bottom_right_child);
 
-  new_value = g_value_get_boolean (value);
-
+  gint attach = g_value_get_int (value);
   switch (property_id)
     {
-    case CHILD_PROP_RESIZE:
-      if (child == xpaned->top_left_child)
-        {
-          old_value = xpaned->top_left_child_resize;
-          xpaned->top_left_child_resize = new_value;
-        }
-      else if (child == xpaned->top_right_child)
-        {
-          old_value = xpaned->top_right_child_resize;
-          xpaned->top_right_child_resize = new_value;
-        }
-      else if (child == xpaned->bottom_left_child)
-        {
-          old_value = xpaned->bottom_left_child_resize;
-          xpaned->bottom_left_child_resize = new_value;
-        }
-      else if (child == xpaned->bottom_right_child)
-        {
-          old_value = xpaned->bottom_right_child_resize;
-          xpaned->bottom_right_child_resize = new_value;
-        }
+    case CHILD_PROP_LEFT_ATTACH:
+      g_object_ref (child);
+      gtk_widget_unparent (child);
+      if (attach == 0)
+      {
+	if (child == xpaned->top_right_child)
+	  xpaned->top_left_child = child;
+	else if (child == xpaned->bottom_right_child)
+	  xpaned->bottom_left_child = child;
+      }
+      else
+      {
+	if (child == xpaned->top_left_child)
+	  xpaned->top_right_child = child;
+	else if (child == xpaned->bottom_left_child)
+	  xpaned->bottom_right_child = child;
+      }
+      gtk_widget_set_parent (child, GTK_WIDGET (xpaned));
+      g_object_unref (child);
       break;
-
+    case CHILD_PROP_TOP_ATTACH:
+      g_object_ref (child);
+      gtk_widget_unparent (child);
+      if (attach == 0)
+	{
+	  if (child == xpaned->bottom_right_child)
+	    xpaned->top_right_child = child;
+	  else if (child == xpaned->bottom_left_child)
+	    xpaned->top_left_child = child;
+	}
+      else
+	{
+	  if (child == xpaned->top_left_child)
+	    xpaned->bottom_left_child = child;
+	  else if (child == xpaned->top_right_child)
+	    xpaned->bottom_right_child = child;
+	}
+      gtk_widget_set_parent (child, GTK_WIDGET (xpaned));
+      g_object_unref (child);
+      break;
+    case CHILD_PROP_RESIZE:
+      {
+	gboolean  new_value = TRUE;
+	
+	if (child == xpaned->top_left_child)
+	  {
+	    xpaned->top_left_child_resize = new_value;
+	  }
+	else if (child == xpaned->top_right_child)
+	  {
+	    xpaned->top_right_child_resize = new_value;
+	  }
+	else if (child == xpaned->bottom_left_child)
+	  {
+	    xpaned->bottom_left_child_resize = new_value;
+	  }
+	else if (child == xpaned->bottom_right_child)
+	  {
+	    xpaned->bottom_right_child_resize = new_value;
+	  }
+      }
+      break;
+      
     case CHILD_PROP_SHRINK:
-      if (child == xpaned->top_left_child)
-        {
-          old_value = xpaned->top_left_child_shrink;
-          xpaned->top_left_child_shrink = new_value;
-        }
-      else if (child == xpaned->top_right_child)
-        {
-          old_value = xpaned->top_right_child_shrink;
-          xpaned->top_right_child_shrink = new_value;
-        }
-      else if (child == xpaned->bottom_left_child)
-        {
-          old_value = xpaned->bottom_left_child_shrink;
-          xpaned->bottom_left_child_shrink = new_value;
-        }
-      else if (child == xpaned->bottom_right_child)
-        {
-          old_value = xpaned->bottom_right_child_shrink;
-          xpaned->bottom_right_child_shrink = new_value;
-        }
+      {
+	gboolean  new_value = FALSE;
+	
+	if (child == xpaned->top_left_child)
+	  {
+	    xpaned->top_left_child_shrink = new_value;
+	  }
+	else if (child == xpaned->top_right_child)
+	  {
+	    xpaned->top_right_child_shrink = new_value;
+	  }
+	else if (child == xpaned->bottom_left_child)
+	  {
+	    xpaned->bottom_left_child_shrink = new_value;
+	  }
+	else if (child == xpaned->bottom_right_child)
+	  {
+	    xpaned->bottom_right_child_shrink = new_value;
+	  }
+      }
       break;
 
     default:
       GTK_CONTAINER_WARN_INVALID_CHILD_PROPERTY_ID (container,
                                                     property_id, pspec);
-      old_value = -1;           /* quiet gcc */
       break;
     }
 
-  if (old_value != new_value)
-    gtk_widget_queue_resize (GTK_WIDGET (container));
+  gtk_widget_queue_resize (GTK_WIDGET (container));
+  gtk_widget_queue_draw (GTK_WIDGET (container));
 }
 
 static void
@@ -1130,6 +1197,26 @@ gtk_xpaned_get_child_property (GtkContainer * container,
 
   switch (property_id)
     {
+    case CHILD_PROP_TOP_ATTACH:
+      if (child == xpaned->top_left_child)
+	g_value_set_int (value, 0);
+      if (child == xpaned->top_right_child)
+	g_value_set_int (value, 0);
+      if (child == xpaned->bottom_left_child)
+	g_value_set_int (value, 1);
+      if (child == xpaned->bottom_right_child)
+	g_value_set_int (value, 1);
+      break;
+    case CHILD_PROP_LEFT_ATTACH:
+      if (child == xpaned->top_left_child)
+	g_value_set_int (value, 0);
+      if (child == xpaned->bottom_left_child)
+	g_value_set_int (value, 0);
+      if (child == xpaned->top_right_child)
+	g_value_set_int (value, 1);
+      if (child == xpaned->bottom_right_child)
+	g_value_set_int (value, 1);
+      break;
     case CHILD_PROP_RESIZE:
       if (child == xpaned->top_left_child)
         g_value_set_boolean (value, xpaned->top_left_child_resize);

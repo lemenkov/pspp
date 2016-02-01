@@ -17,6 +17,8 @@
 #ifndef PSPPIRE_DATA_SHEET_H
 #define PSPPIRE_DATA_SHEET_H 1
 
+#error "Do not include this file"
+
 /* PsppireDataSheet is a PsppSheetView that displays the data in a dataset,
    with one column per variable and one row per case.
 

@@ -17,8 +17,7 @@
 #ifndef __GOTO_CASE_DIALOG_H
 #define __GOTO_CASE_DIALOG_H
 
-#include "psppire-data-sheet.h"
 
-void goto_case_dialog (PsppireDataSheet *ds);
+void goto_case_dialog (void *ds);
 
 #endif

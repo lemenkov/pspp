@@ -383,6 +383,7 @@ dist_appdata_DATA = src/ui/gui/pspp.appdata.xml
 BUILT_SOURCES += src/ui/gui/psppire-marshal.c src/ui/gui/psppire-marshal.h
 CLEANFILES += src/ui/gui/psppire-marshal.c src/ui/gui/psppire-marshal.h \
 	$(nodist_src_ui_gui_psppire_DATA)
+include $(top_srcdir)/src/ui/gui/efficient-sheet/automake.mk
 endif HAVE_GUI
 
 #ensure the installcheck passes even if there is no X server available

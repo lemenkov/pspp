@@ -76,6 +76,90 @@ enum
 
 static guint signals [n_SIGNALS];
 
+static gint
+__tree_model_iter_n_children (GtkTreeModel *tree_model,
+			     GtkTreeIter *iter)
+{
+  PsppireDataStore *store  = PSPPIRE_DATA_STORE (tree_model);
+
+  gint n =  datasheet_get_n_rows (store->datasheet);
+
+  return n;
+}
+
+
+static gint
+__tree_model_get_n_columns (GtkTreeModel *tree_model)
+{
+  PsppireDataStore *store  = PSPPIRE_DATA_STORE (tree_model);
+
+  return psppire_dict_get_value_cnt (store->dict);
+}
+
+
+static gboolean
+__iter_nth_child (GtkTreeModel *tree_model,
+		  GtkTreeIter *iter,
+		  GtkTreeIter *parent,
+		  gint n)
+{
+  PsppireDataStore *store  = PSPPIRE_DATA_STORE (tree_model);
+  
+  g_assert (parent == NULL);
+
+  g_return_val_if_fail (store, FALSE);
+  g_return_val_if_fail (store->datasheet, FALSE);
+
+  if (n >= datasheet_get_n_rows (store->datasheet))
+    {
+      iter->stamp = -1;
+      iter->user_data = NULL;
+      return FALSE;
+    }
+  
+  iter->user_data = n;
+  return TRUE;
+}
+
+
+
+static void
+__get_value (GtkTreeModel *tree_model,
+	     GtkTreeIter *iter,
+	     gint column,
+	     GValue *value)
+{
+  PsppireDataStore *store  = PSPPIRE_DATA_STORE (tree_model);
+
+  g_value_init (value, G_TYPE_DOUBLE);
+
+  gint row = GPOINTER_TO_INT (iter->user_data);
+
+  struct ccase *cc = datasheet_get_row (store->datasheet, row);
+  
+  g_value_set_double (value, case_data_idx (cc, column)->f);
+  case_unref (cc);
+}
+
+
+static void
+__tree_model_init (GtkTreeModelIface *iface)
+{
+  iface->get_flags       = NULL; 
+  iface->get_n_columns   = __tree_model_get_n_columns ;
+  iface->get_column_type = NULL; 
+  iface->get_iter        = NULL; 
+  iface->iter_next       = NULL; 
+  iface->get_path        = NULL; 
+  iface->get_value       = __get_value;
+
+  iface->iter_children   = NULL; 
+  iface->iter_has_child  = NULL; 
+  iface->iter_n_children = __tree_model_iter_n_children;
+  iface->iter_nth_child  = __iter_nth_child;
+  iface->iter_parent     = NULL; 
+}
+
 
 GType
 psppire_data_store_get_type (void)
@@ -97,9 +181,18 @@ psppire_data_store_get_type (void)
         (GInstanceInitFunc) psppire_data_store_init,
       };
 
+      static const GInterfaceInfo tree_model_info = {
+	(GInterfaceInitFunc) __tree_model_init,
+	NULL,
+	NULL
+      };
+
       data_store_type = g_type_register_static (G_TYPE_OBJECT,
 						"PsppireDataStore",
 						&data_store_info, 0);
+
+      g_type_add_interface_static (data_store_type, GTK_TYPE_TREE_MODEL,
+				   &tree_model_info);
     }
 
   return data_store_type;
@@ -297,6 +390,9 @@ psppire_data_store_set_reader (PsppireDataStore *ds,
     datasheet_destroy (ds->datasheet);
 
   ds->datasheet = datasheet_create (reader);
+
+  g_signal_emit_by_name (ds, "notify", 0, 0);
+  g_print ("Datasheet row count %d\n", datasheet_get_n_rows (ds->datasheet));
 
   if ( ds->dict )
     for (i = 0 ; i < n_dict_signals; ++i )

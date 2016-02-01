@@ -33,6 +33,9 @@
 #include "ui/gui/psppire-marshal.h"
 #include "ui/gui/psppire-var-ptr.h"
 
+#include "ui/gui/efficient-sheet/jmd-datum.h"
+
+
 #include <gettext.h>
 #define _(msgid) gettext (msgid)
 #define N_(msgid) msgid
@@ -57,6 +60,53 @@ static void psppire_dict_init	(PsppireDict		*dict);
 static void psppire_dict_dispose	(GObject		*object);
 
 static void dictionary_tree_model_init (GtkTreeModelIface *iface);
+
+
+
+static guint
+gni (GListModel *list)
+{
+  PsppireDict *dict = PSPPIRE_DICT (list);
+
+  return psppire_dict_get_var_cnt (dict);
+}
+
+static GType
+git (GListModel *list)
+{
+  return JMD_TYPE_DATUM;
+}
+
+static gpointer
+gi (GListModel *list, guint id)
+{
+  JmdDatum *gd = JMD_DATUM (g_object_new (JMD_TYPE_DATUM, NULL));
+
+  PsppireDict *dict = PSPPIRE_DICT (list);
+  
+  if (id >= psppire_dict_get_var_cnt (dict))
+    {
+      gd->text = g_strdup (_("Var"));
+    }
+  else
+    {
+      const struct variable *v =  psppire_dict_get_variable (dict, id);
+
+      gd->text = g_strdup (var_get_name (v));
+      gd->label = g_strdup (var_get_label (v));
+    }
+
+  return gd;
+}
+
+
+static void
+jmd_init_iface (GListModelInterface *iface)
+{
+  iface->get_n_items = gni;
+  iface->get_item = gi;
+  iface->get_item_type = git;
+}
 
 
 /* --- variables --- */
@@ -94,12 +144,21 @@ psppire_dict_get_type (void)
 	NULL
       };
 
+      static const GInterfaceInfo list_model_info = {
+	(GInterfaceInitFunc) jmd_init_iface,
+	NULL,
+	NULL
+      };
+
       object_type = g_type_register_static (G_TYPE_OBJECT,
 					    "PsppireDict",
 					    &object_info, 0);
-
+      
       g_type_add_interface_static (object_type, GTK_TYPE_TREE_MODEL,
 				   &tree_model_info);
+
+      g_type_add_interface_static (object_type, G_TYPE_LIST_MODEL,
+				   &list_model_info);
     }
 
   return object_type;
