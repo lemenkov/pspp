@@ -29,6 +29,7 @@ struct category
   int idx;                     /* Unique zero based index */
   struct string label;         /* The label to be displayed for this category */
   union value val;             /* The value of this category */
+  int width;                   /* The width of VAL */
 };
 
 

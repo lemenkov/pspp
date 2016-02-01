@@ -136,8 +136,9 @@ barchart_create (const struct variable **var, int n_vars,
 	    {
 	      struct category *s = xzalloc (sizeof *s);
 	      s->idx = idx++;
-	      value_init (&s->val, var_get_width (var[pidx]));
-	      value_copy (&s->val, &src->values[pidx], var_get_width (var[pidx]));
+	      s->width = var_get_width (var[pidx]);
+	      value_init (&s->val, s->width);
+	      value_copy (&s->val, &src->values[pidx], s->width);
 	      ds_init_empty (&s->label);
 	      var_append_value_name (var[pidx], &s->val, &s->label);
 
@@ -173,7 +174,8 @@ barchart_create (const struct variable **var, int n_vars,
 	    {
 	      struct category *s = xzalloc (sizeof *s);
 	      s->idx = idx++;
-	      value_init (&s->val, var_get_width (var[sidx]));
+	      s->width = var_get_width (var[sidx]);
+	      value_init (&s->val, s->width);
 	      value_copy (&s->val, &src->values[sidx], var_get_width (var[sidx]));
 	      ds_init_empty (&s->label);
 	      var_append_value_name (var[sidx], &s->val, &s->label);
@@ -256,6 +258,8 @@ destroy_cat_map (struct hmap *m)
   struct category *next = NULL;
   HMAP_FOR_EACH_SAFE (foo, next, struct category, node, m)
     {
+      value_destroy (&foo->val, foo->width);
+
       ds_destroy (&foo->label);
       free (foo);
     }
