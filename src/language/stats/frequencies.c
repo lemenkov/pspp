@@ -580,7 +580,7 @@ cmd_frequencies (struct lexer *lexer, struct dataset *ds)
 {
   int i;
   struct frq_proc frq;
-  const struct variable **vars;
+  const struct variable **vars = NULL;
 
   bool sbc_barchart = false;
   bool sbc_piechart = false;
@@ -1225,18 +1225,36 @@ cmd_frequencies (struct lexer *lexer, struct dataset *ds)
       {
 	struct ccase *c;
 	precalc (&frq, group, ds);
+
 	for (; (c = casereader_read (group)) != NULL; case_unref (c))
 	  calc (&frq, c, ds);
 	postcalc (&frq, ds);
+	casereader_destroy (group);
       }
     ok = casegrouper_destroy (grouper);
     ok = proc_commit (ds) && ok;
   }
 
 
+  free (vars);
+  free (frq.vars);
+  free (frq.bar);
+  free (frq.pie);
+  free (frq.hist);
+  free (frq.percentiles);
+  pool_destroy (frq.pool);
+
   return CMD_SUCCESS;
 
  error:
+
+  free (vars);
+  free (frq.vars);
+  free (frq.bar);
+  free (frq.pie);
+  free (frq.hist);
+  free (frq.percentiles);
+  pool_destroy (frq.pool);
 
   return CMD_FAILURE;
 }
