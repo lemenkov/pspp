@@ -41,6 +41,8 @@ error: Creating temporary file to replace directory/foobar.sav: Permission denie
 error: Error opening `directory/foobar.sav' for writing as a system file: Permission denied.
 ])
 
+chmod 700 directory
+
 AT_CLEANUP
 
 
