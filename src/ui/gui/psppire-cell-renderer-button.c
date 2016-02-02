@@ -27,8 +27,7 @@
 #include "gl/configmake.h"
 #include "gl/relocatable.h"
 
-#include "gettext.h"
-#define _(msgid) gettext (msgid)
+#define P_(msgid) (msgid)
 
 static void psppire_cell_renderer_button_dispose (GObject *);
 static void psppire_cell_renderer_button_finalize (GObject *);
@@ -489,24 +488,24 @@ psppire_cell_renderer_button_class_init (PsppireCellRendererButtonClass *class)
   g_object_class_install_property (gobject_class,
                                    PROP_EDITABLE,
                                    g_param_spec_boolean ("editable",
-                                                         "Editable",
-                                                         "Whether the button may be clicked.",
+                                                         P_("Editable"),
+                                                         P_("Whether the button may be clicked."),
                                                          FALSE,
                                                          G_PARAM_READWRITE));
 
   g_object_class_install_property (gobject_class,
                                    PROP_LABEL,
                                    g_param_spec_string ("label",
-                                                        "Label",
-                                                        "Text to appear in button.",
+                                                        P_("Label"),
+                                                        P_("Text to appear in button."),
                                                         "",
                                                         G_PARAM_READWRITE));
 
   g_object_class_install_property (gobject_class,
                                    PROP_SLASH,
                                    g_param_spec_boolean ("slash",
-                                                         _("Diagonal slash"),
-                                                         _("Whether to draw a diagonal slash across the button."),
+                                                         P_("Diagonal slash"),
+                                                         P_("Whether to draw a diagonal slash across the button."),
                                                          FALSE,
                                                          G_PARAM_READWRITE));
 
