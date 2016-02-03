@@ -397,7 +397,6 @@ psppire_data_editor_init (PsppireDataEditor *de)
 
   de->split = FALSE;
   de->data_sheet = g_object_new (JMD_TYPE_SHEET,
-				 "splitter", GTK_TYPE_XPANED,
 				 NULL);
   GtkWidget *button = jmd_sheet_get_button (JMD_SHEET (de->data_sheet));
   gtk_button_set_label (GTK_BUTTON (button), _("Case"));
