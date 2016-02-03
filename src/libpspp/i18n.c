@@ -82,7 +82,7 @@ create_iconv (const char* tocode, const char* fromcode)
   converter->tocode = xstrdup (tocode);
   converter->fromcode = xstrdup (fromcode);
   converter->conv = iconv_open (tocode, fromcode);
-  int error = converter->conv == (iconv_t) -1 ? errno : 0;
+  int error = converter->conv == (iconv_t) ~0 ? errno : 0;
   /* I don't think it's safe to translate this string or to use messaging
      as the converters have not yet been set up */
   if (error && strcmp (tocode, fromcode))
@@ -91,6 +91,10 @@ create_iconv (const char* tocode, const char* fromcode)
                "Warning: "
                "cannot create a converter for `%s' to `%s': %s\n",
                fromcode, tocode, strerror (error));
+
+      free (converter->tocode);
+      free (converter->fromcode);
+      free (converter);
 
       hmapx_insert (&map, NULL, hash);
       return NULL;
