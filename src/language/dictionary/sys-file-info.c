@@ -133,7 +133,10 @@ cmd_sysfile_info (struct lexer *lexer, struct dataset *ds UNUSED)
 
   any_reader = any_reader_open (h);
   if (!any_reader)
-    return CMD_FAILURE;
+    {
+      free (encoding);
+      return CMD_FAILURE;
+    }
 
   if (encoding && !strcasecmp (encoding, "detect"))
     {
@@ -150,7 +153,8 @@ cmd_sysfile_info (struct lexer *lexer, struct dataset *ds UNUSED)
       report_encodings (h, pool, titles, ids, strings, n_strings);
       fh_unref (h);
       pool_destroy (pool);
-
+      free (encoding);
+      
       return CMD_SUCCESS;
     }
 
@@ -249,6 +253,7 @@ cmd_sysfile_info (struct lexer *lexer, struct dataset *ds UNUSED)
   dict_destroy (d);
 
   fh_unref (h);
+  free (encoding);
   any_read_info_destroy (&info);
   return CMD_SUCCESS;
 
