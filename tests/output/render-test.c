@@ -116,6 +116,7 @@ main (int argc, char **argv)
       if (transpose)
         table = table_transpose (table);
       table_item_submit (table_item_create (table, NULL, NULL));
+      free (tables);
     }
   else
     draw (input);
