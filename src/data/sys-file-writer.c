@@ -1420,6 +1420,7 @@ finish_zstream (struct sfm_writer *w)
   block = &w->blocks[w->n_blocks++];
   block->uncompressed_size = w->zstream.total_in;
   block->compressed_size = w->zstream.total_out;
+  deflateEnd (&w->zstream);
 }
 
 static void
