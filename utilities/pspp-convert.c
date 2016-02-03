@@ -46,7 +46,7 @@
 
 static void usage (void);
 
-static void decrypt_file (struct encrypted_file *enc,
+static bool decrypt_file (struct encrypted_file *enc,
                           const struct file_handle *input_filename,
                           const struct file_handle *output_filename,
                           const char *password);
@@ -125,7 +125,7 @@ main (int argc, char *argv[])
           exit (EXIT_SUCCESS);
 
         default:
-          exit (EXIT_FAILURE);
+          goto error;
         }
     }
 
@@ -163,15 +163,16 @@ main (int argc, char *argv[])
                            "format"));
         }
 
-      decrypt_file (enc, input_fh, output_fh, password);
+      if (! decrypt_file (enc, input_fh, output_fh, password))
+	goto error;
+	  
       goto exit;
     }
 
 
   reader = any_reader_open_and_decode (input_fh, encoding, &dict, NULL);
   if (reader == NULL)
-    exit (1);
-
+    goto error;
 
   if (!strcmp (output_format, "csv") || !strcmp (output_format, "txt"))
     {
@@ -219,13 +220,23 @@ main (int argc, char *argv[])
     error (1, 0, _("%s: error writing output file"), output_filename);
 
 exit:
+  fh_unref (output_fh);
+  fh_unref (input_fh);
   fh_done ();
   i18n_done ();
 
   return 0;
+
+error:
+  fh_unref (output_fh);
+  fh_unref (input_fh);
+  fh_done ();
+  i18n_done ();
+
+  return 1;
 }
 
-static void
+static bool
 decrypt_file (struct encrypted_file *enc,
 	      const struct file_handle *ifh,
 	      const struct file_handle *ofh,
@@ -240,7 +251,7 @@ decrypt_file (struct encrypted_file *enc,
     {
       password = getpass ("password: ");
       if (password == NULL)
-        exit (1);
+	return false;
     }
 
   if (!encrypted_file_unlock (enc, password))
@@ -270,6 +281,8 @@ decrypt_file (struct encrypted_file *enc,
   if (fflush (out) == EOF)
     error (1, errno, ("%s: write error"), output_filename);
   fn_close (ofh, out);
+
+  return true;
 }
 
 static void
