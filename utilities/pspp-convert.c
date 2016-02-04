@@ -58,7 +58,7 @@ main (int argc, char *argv[])
   const char *output_filename;
 
   long long int max_cases = LLONG_MAX;
-  struct dictionary *dict;
+  struct dictionary *dict = NULL;
   struct casereader *reader;
   struct file_handle *input_fh;
   const char *encoding = NULL;
@@ -220,6 +220,7 @@ main (int argc, char *argv[])
     error (1, 0, _("%s: error writing output file"), output_filename);
 
 exit:
+  dict_destroy (dict);
   fh_unref (output_fh);
   fh_unref (input_fh);
   fh_done ();
@@ -228,6 +229,7 @@ exit:
   return 0;
 
 error:
+  dict_destroy (dict);
   fh_unref (output_fh);
   fh_unref (input_fh);
   fh_done ();
