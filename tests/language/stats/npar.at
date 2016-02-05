@@ -1008,7 +1008,11 @@ begin data.
 85 0            
 76 1            
 145 1            
-24 1            
+24 1
+1 4
+-4 5
+34 5
+21 4
 end data.
 
 NPAR TESTS 

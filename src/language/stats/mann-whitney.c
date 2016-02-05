@@ -54,6 +54,26 @@ static void show_ranks_box (const struct n_sample_test *nst, const struct mw *mw
 static void show_statistics_box (const struct n_sample_test *nst, const struct mw *mw, bool exact);
 
 
+
+static bool
+belongs_to_test (const struct ccase *c, void *aux)
+{
+  const struct n_sample_test *nst = aux;
+
+  const union value *group = case_data (c, nst->indep_var);
+  const size_t group_var_width = var_get_width (nst->indep_var);
+
+  if ( value_equal (group, &nst->val1, group_var_width))
+    return true;
+
+  if ( value_equal (group, &nst->val2, group_var_width))
+    return true;
+
+  return false;
+}
+
+					 
+
 void
 mann_whitney_execute (const struct dataset *ds,
 		      struct casereader *input,
@@ -79,9 +99,16 @@ mann_whitney_execute (const struct dataset *ds,
       struct casereader *rr;
       struct ccase *c;
       const struct variable *var = nst->vars[i];
+
+      struct casereader *reader = 
+	casereader_create_filter_func (casereader_clone (input),
+				       belongs_to_test,
+				       NULL,
+				       CONST_CAST (struct n_sample_test *, nst),
+				       NULL);
+
       
-      struct casereader *reader =
-	sort_execute_1var (casereader_clone (input), var);
+      reader = sort_execute_1var (reader, var);
 
       rr = casereader_create_append_rank (reader, var,
 					  dict_get_weight (dict),
