@@ -16,6 +16,8 @@
 
 #include <config.h>
 
+#error "Do not do this"
+
 #include "ui/gui/psppire-var-sheet.h"
 
 #include "data/format.h"

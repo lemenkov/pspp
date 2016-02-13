@@ -781,6 +781,7 @@ tree_model_get_path (GtkTreeModel *model, GtkTreeIter *iter)
   return path;
 }
 
+const struct fmt_spec *var_get_write_format (const struct variable *);
 
 static void
 tree_model_get_value (GtkTreeModel *model, GtkTreeIter *iter,
@@ -791,22 +792,51 @@ tree_model_get_value (GtkTreeModel *model, GtkTreeIter *iter,
 
   g_return_if_fail (iter->stamp == dict->stamp);
 
-  var =  iter->user_data;
+  var = iter->user_data;
 
+  const struct fmt_spec *fs = var_get_write_format (var);
+  
   switch (column)
     {
     case DICT_TVM_COL_NAME:
-      {
-	g_value_init (value, G_TYPE_STRING);
-	g_value_set_string (value, var_get_name (var));
-      }
+      g_value_init (value, G_TYPE_STRING);
+      g_value_set_string (value, var_get_name (var));
+      break;
+    case DICT_TVM_COL_WIDTH:
+      g_value_init (value, G_TYPE_INT);
+      g_value_set_int (value, fs->w);
+      break;
+    case DICT_TVM_COL_DECIMAL:
+      g_value_init (value, G_TYPE_INT);
+      g_value_set_int (value, fs->d);
+      break;
+    case DICT_TVM_COL_LABEL:
+      g_value_init (value, G_TYPE_STRING);
+      g_value_set_string (value, var_get_label (var));
+      break;
+    case DICT_TVM_COL_COLUMNS:
+      g_value_init (value, G_TYPE_INT);
+      g_value_set_int (value, var_get_display_width (var));
+      break;
+    case DICT_TVM_COL_ALIGNMENT:
+      g_value_init (value, G_TYPE_INT);
+      g_value_set_int (value, var_get_alignment (var));
+      break;
+    case DICT_TVM_COL_MEASURE:
+      g_value_init (value, G_TYPE_INT);
+      g_value_set_int (value, var_get_measure (var));
+      break;
+    case DICT_TVM_COL_ROLE:
+      g_value_init (value, G_TYPE_INT);
+      g_value_set_int (value, var_get_role (var));
       break;
     case DICT_TVM_COL_VAR:
       g_value_init (value, PSPPIRE_VAR_PTR_TYPE);
       g_value_set_boxed (value, var);
       break;
     default:
-      g_return_if_reached ();
+      g_value_init (value, G_TYPE_STRING);
+      g_value_set_string (value, "????");
       break;
     }
 }

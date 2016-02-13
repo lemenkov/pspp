@@ -31,6 +31,7 @@
 #include "ui/gui/psppire-value-entry.h"
 #include "ui/gui/psppire-var-sheet.h"
 #include "ui/gui/psppire-conf.h"
+#include "ui/gui/psppire-var-sheet-header.h"
 
 #include "ui/gui/efficient-sheet/jmd-sheet.h"
 
@@ -122,10 +123,6 @@ enum
 static void
 psppire_data_editor_refresh_model (PsppireDataEditor *de)
 {
-  PsppireVarSheet *var_sheet = PSPPIRE_VAR_SHEET (de->var_sheet);
-    int i;
-
-  psppire_var_sheet_set_dictionary (var_sheet, de->dict);
 }
 
 static void
@@ -135,8 +132,6 @@ psppire_data_editor_set_property (GObject         *object,
 				  GParamSpec      *pspec)
 {
   PsppireDataEditor *de = PSPPIRE_DATA_EDITOR (object);
-
-  int i;
 
   switch (prop_id)
     {
@@ -170,9 +165,8 @@ psppire_data_editor_set_property (GObject         *object,
       g_object_ref (de->dict);
 
       g_object_set (de->data_sheet, "hmodel", de->dict, NULL);
+      g_object_set (de->var_sheet, "data-model", de->dict, NULL);
 
-      psppire_var_sheet_set_dictionary (PSPPIRE_VAR_SHEET (de->var_sheet),
-                                        de->dict);
       break;
     case PROP_VALUE_LABELS:
       break;
@@ -306,19 +300,6 @@ psppire_data_editor_class_init (PsppireDataEditorClass *klass)
                                    ui_manager_spec);
 }
 
-static gboolean
-on_data_sheet_var_double_clicked (GtkWidget *data_sheet,
-                                  gint dict_index,
-                                  PsppireDataEditor *de)
-{
-  gtk_notebook_set_current_page (GTK_NOTEBOOK (de),
-                                 PSPPIRE_DATA_EDITOR_VARIABLE_VIEW);
-
-  psppire_var_sheet_goto_variable (PSPPIRE_VAR_SHEET (de->var_sheet),
-                                   dict_index);
-
-  return TRUE;
-}
 
 static gboolean
 on_var_sheet_var_double_clicked (PsppireVarSheet *var_sheet, gint dict_index,
@@ -344,27 +325,10 @@ on_datum_entry_activate (PsppireValueEntry *entry, PsppireDataEditor *de)
 {
 }
 
-static void
-on_data_sheet_selection_changed (PsppSheetSelection *selection,
-                                 PsppireDataEditor *de)
-{
-  /* In a split view, ensure that only a single data sheet has a nonempty
-     selection.  */
-  if (de->split
-      && pspp_sheet_selection_count_selected_rows (selection)
-      && pspp_sheet_selection_count_selected_columns (selection))
-    {
-    }
-
-  refresh_entry (de);
-}
-
 
 static void
 disconnect_data_sheets (PsppireDataEditor *de)
 {
-  int i;
-
 }
 
 
@@ -373,7 +337,6 @@ static void set_font_recursively (GtkWidget *w, gpointer data);
 static void
 psppire_data_editor_init (PsppireDataEditor *de)
 {
-  GtkWidget *var_sheet_scroller;
   GtkWidget *hbox;
   gchar *fontname = NULL;
 
@@ -396,10 +359,9 @@ psppire_data_editor_init (PsppireDataEditor *de)
   gtk_box_pack_start (GTK_BOX (hbox), de->datum_entry, TRUE, TRUE, 0);
 
   de->split = FALSE;
-  de->data_sheet = g_object_new (JMD_TYPE_SHEET,
-				 NULL);
-  GtkWidget *button = jmd_sheet_get_button (JMD_SHEET (de->data_sheet));
-  gtk_button_set_label (GTK_BUTTON (button), _("Case"));
+  de->data_sheet = g_object_new (JMD_TYPE_SHEET, NULL);
+  GtkWidget *data_button = jmd_sheet_get_button (JMD_SHEET (de->data_sheet));
+  gtk_button_set_label (GTK_BUTTON (data_button), _("Case"));
   de->vbox = gtk_box_new (GTK_ORIENTATION_VERTICAL, 0);
   gtk_box_pack_start (GTK_BOX (de->vbox), hbox, FALSE, FALSE, 0);
   gtk_box_pack_start (GTK_BOX (de->vbox), de->data_sheet, TRUE, TRUE, 0);
@@ -409,19 +371,21 @@ psppire_data_editor_init (PsppireDataEditor *de)
 
   gtk_widget_show_all (de->vbox);
 
-  de->var_sheet = GTK_WIDGET (psppire_var_sheet_new ());
+  de->var_sheet = g_object_new (JMD_TYPE_SHEET, NULL);
 
-  pspp_sheet_view_set_grid_lines (PSPP_SHEET_VIEW (de->var_sheet),
-                                  GTK_TREE_VIEW_GRID_LINES_BOTH);
-  var_sheet_scroller = gtk_scrolled_window_new (NULL, NULL);
-  gtk_scrolled_window_set_policy (GTK_SCROLLED_WINDOW (var_sheet_scroller),
-                                  GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
-  gtk_container_add (GTK_CONTAINER (var_sheet_scroller), de->var_sheet);
-  gtk_widget_show_all (var_sheet_scroller);
+  PsppireVarSheetHeader *vsh = g_object_new (PSPPIRE_TYPE_VAR_SHEET_HEADER, NULL);
+  
+  g_object_set (de->var_sheet, "hmodel", vsh, NULL);
 
-  gtk_notebook_append_page (GTK_NOTEBOOK (de), var_sheet_scroller,
+  
+  GtkWidget *var_button = jmd_sheet_get_button (JMD_SHEET (de->var_sheet));
+  gtk_button_set_label (GTK_BUTTON (var_button), _("Variable"));
+  
+  gtk_notebook_append_page (GTK_NOTEBOOK (de), de->var_sheet,
 			    gtk_label_new_with_mnemonic (_("Variable View")));
 
+  gtk_widget_show_all (de->var_sheet);
+  
   g_signal_connect (de->var_sheet, "var-double-clicked",
                     G_CALLBACK (on_var_sheet_var_double_clicked), de);
 
@@ -455,7 +419,6 @@ void
 psppire_data_editor_show_grid (PsppireDataEditor *de, gboolean grid_visible)
 {
   GtkTreeViewGridLines grid;
-  int i;
 
   grid = (grid_visible
           ? GTK_TREE_VIEW_GRID_LINES_BOTH
@@ -499,13 +462,8 @@ psppire_data_editor_set_font (PsppireDataEditor *de, PangoFontDescription *font_
 void
 psppire_data_editor_split_window (PsppireDataEditor *de, gboolean split)
 {
-  GtkTreeViewGridLines grid_lines;
-  gboolean labels;
-
   if (split == de->split)
     return;
-
-
 
   disconnect_data_sheets (de);
 
@@ -526,15 +484,6 @@ psppire_data_editor_split_window (PsppireDataEditor *de, gboolean split)
 void
 psppire_data_editor_goto_variable (PsppireDataEditor *de, gint dict_index)
 {
-
-  switch (gtk_notebook_get_current_page (GTK_NOTEBOOK (de)))
-    {
-
-    case PSPPIRE_DATA_EDITOR_VARIABLE_VIEW:
-      psppire_var_sheet_goto_variable (PSPPIRE_VAR_SHEET (de->var_sheet),
-                                       dict_index);
-      break;
-    }
 }
 
 
@@ -564,8 +513,6 @@ psppire_data_editor_update_ui_manager (PsppireDataEditor *de)
       break;
 
     case PSPPIRE_DATA_EDITOR_VARIABLE_VIEW:
-      ui_manager = psppire_var_sheet_get_ui_manager (
-        PSPPIRE_VAR_SHEET (de->var_sheet));
       break;
 
     default:

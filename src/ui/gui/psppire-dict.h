@@ -42,7 +42,19 @@ G_BEGIN_DECLS
 typedef struct _PsppireDict	   PsppireDict;
 typedef struct _PsppireDictClass PsppireDictClass;
 
-enum {DICT_TVM_COL_NAME=0, DICT_TVM_COL_VAR, DICT_TVM_COL_LABEL, n_DICT_COLS} ;
+enum {DICT_TVM_COL_NAME=0,
+      DICT_TVM_COL_TYPE,
+      DICT_TVM_COL_WIDTH,
+      DICT_TVM_COL_DECIMAL,
+      DICT_TVM_COL_LABEL,
+      DICT_TVM_COL_VALUE_LABELS,
+      DICT_TVM_COL_MISSING_VALUES,
+      DICT_TVM_COL_COLUMNS,
+      DICT_TVM_COL_ALIGNMENT,
+      DICT_TVM_COL_MEASURE,
+      DICT_TVM_COL_ROLE,
+      DICT_TVM_COL_VAR,
+      n_DICT_COLS} ;
 
 struct _PsppireDict
 {
