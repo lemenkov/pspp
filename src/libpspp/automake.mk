@@ -122,12 +122,12 @@ src/libpspp/version.c: $(top_srcdir)/AUTHORS Makefile
 	$(AM_V_at)echo "#include \"version.h\"" >> $@,tmp
 	$(AM_V_at)echo "const char bare_version[] = \"$(VERSION)\";" >> $@,tmp
 	$(AM_V_at)echo "const char version[] = \"GNU $(PACKAGE) $(VERSION)\";" >> $@,tmp
-	$(AM_V_at)echo "const char announced_version[] = \"GNU $(PACKAGE) $(VERSION)\"" >> $@,tmp
+	$(AM_V_at)printf "const char announced_version[] = \"GNU $(PACKAGE) $(VERSION)\"" >> $@,tmp
 	@case `$(AM_V_at)echo $(VERSION) | $(AM_V_at)$(SED) -e 's/[0-9][0-9]*\.[0-9]*\([0-9]\)\.[0-9][0-9]*/\1/'` in \
-	  [13579]) $(AM_V_at)echo "\"\nThis is an unreleased test version. It is not recommended for production use. Use at your own risk\"" >> $@,tmp \
+	  [13579]) $(AM_V_at)printf "\"\\\nThis is an unreleased test version. It is not recommended for production use. Use at your own risk\"" >> $@,tmp \
 	;;\
 	esac
-	$(AM_V_at)echo ";" >> $@,tmp
+	$(AM_V_at)printf ";\n" >> $@,tmp
 	$(AM_V_at)echo "const char host_system[] = \"$(host_triplet)\";" >> $@,tmp
 	$(AM_V_at)echo "const char build_system[] = \"$(build_triplet)\";" >> $@,tmp
 	$(AM_V_at)echo "const char locale_dir[] = \"$(datadir)/locale\";" >> $@,tmp
