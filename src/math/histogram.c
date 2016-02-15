@@ -154,7 +154,27 @@ histogram_create (double bin_width_in, double min, double max)
 
   h->gsl_hist = gsl_histogram_alloc (bins);
 
-  gsl_histogram_set_ranges_uniform (h->gsl_hist, adjusted_min, adjusted_max);
+  /* The bin ranges could be computed with gsl_histogram_set_ranges_uniform,
+     but the number of bins is adapted to the ticks of the axis such that for example
+     data ranging from 1.0 to 7.0 with 6 bins will have bin limits at
+     2.0,3.0,4.0 and 5.0. Due to numerical accuracy the computed bin limits might
+     be 4.99999999 for a value which is expected to be 5.0. But the limits of
+     the histogram bins should be that what is expected from the displayed ticks.
+     Therefore the bin limits are computed from the rounded values which is similar
+     to the procedure at the chart_get_ticks_format. Actual bin limits should be
+     exactly what is displayed at the ticks.
+     But... I cannot reproduce the problem that I see with gsl_histogram_set_ranges_uniform
+     with the code below without rounding...
+  */
+  {
+    double *ranges = xmalloc (sizeof (double) * (bins + 1));
+    double interval = (adjusted_max - adjusted_min) / bins;
+    for (int i = 0; i < bins; i++)
+      ranges[i] = adjusted_min + interval * i;
+    ranges[bins] = adjusted_max;
+    gsl_histogram_set_ranges (h->gsl_hist, ranges, bins + 1);
+    free (ranges);
+  }
 
   stat = &h->parent;
   stat->accumulate = acc;
