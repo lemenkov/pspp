@@ -113,14 +113,20 @@ boxplot_draw_box (cairo_t *cr, const struct xrchart_geometry *geom,
 
   /* Draw centre line.
      (bottom half) */
-  cairo_move_to (cr, box_centre, bottom_whisker);
-  cairo_line_to (cr, box_centre, box_bottom);
-  cairo_stroke (cr);
+  if (! isnan (whisker[0]))
+    {
+      cairo_move_to (cr, box_centre, bottom_whisker);
+      cairo_line_to (cr, box_centre, box_bottom);
+      cairo_stroke (cr);
+    }
 
-  /* (top half) */
-  cairo_move_to (cr, box_centre, top_whisker);
-  cairo_line_to (cr, box_centre, box_top);
-  cairo_stroke (cr);
+  if (! isnan (whisker[1]))
+    {
+      /* (top half) */
+      cairo_move_to (cr, box_centre, top_whisker);
+      cairo_line_to (cr, box_centre, box_top);
+      cairo_stroke (cr);
+    }
 
   outliers = box_whisker_outliers (bw);
   for (ll = ll_head (outliers);
