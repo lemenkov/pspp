@@ -119,6 +119,15 @@ hist_find_pretty_no_of_bins(double bin_width_in, double min, double max,
   nbins = ceil((max-*adjusted_min)/binwidth);
   *adjusted_max = nbins*binwidth + *adjusted_min;
 
+  /* adjusted_max should never be smaller than max but if it is equal
+     then the gsl_histogram will not add the cases which have max value */
+  if (*adjusted_max <= max)
+    {
+      *adjusted_max += binwidth;
+      nbins++;
+    }
+  assert (*adjusted_min <= min);
+
   return nbins;
 }
 
