@@ -45,17 +45,8 @@ static void
 acc (struct statistic *s, const struct ccase *cx UNUSED, double c, double cc UNUSED, double y)
 {
   struct histogram *hist = UP_CAST (s, struct histogram, parent);
-  gsl_histogram *gslh = hist->gsl_hist;
 
-  /* Include cases which are just on the boundary */
-  if (y == gsl_histogram_max (gslh))
-    {
-      double lower, upper;
-      gsl_histogram_get_range (gslh, gsl_histogram_bins (gslh)-1, &lower, &upper);
-      gsl_histogram_accumulate (gslh, lower + (upper - lower)/2.0, c);
-    }
-  else
-    gsl_histogram_accumulate (hist->gsl_hist, y, c);
+  gsl_histogram_accumulate (hist->gsl_hist, y, c);
 }
 
 static void
