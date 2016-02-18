@@ -235,3 +235,37 @@ CROSSTABS
 AT_CHECK([pspp  -o pspp.txt xxx.sps], [0], [ignore])
 
 AT_CLEANUP
+
+
+
+
+AT_SETUP([BOXPLOT Empty])
+AT_DATA([bp.sps],[
+DATA LIST LIST /X * Y * .
+BEGIN DATA
+1
+2
+2
+2
+3
+END DATA
+
+EXAMINE
+    /VARIABLES = Y
+    /PLOT = BOXPLOT.
+])
+
+
+AT_CHECK([pspp -o pspp.txt bp.sps], [0], [ignore])
+
+AT_CLEANUP
+
+
+
+
+
+
+
+
+
+

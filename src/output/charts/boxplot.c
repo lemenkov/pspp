@@ -25,6 +25,8 @@
 struct boxplot *
 boxplot_create (double y_min, double y_max, const char *title)
 {
+  if (y_min >= y_max)
+    return NULL;
   struct boxplot *boxplot = xmalloc (sizeof *boxplot);
   chart_item_init (&boxplot->chart_item, &boxplot_class, title);
   boxplot->y_min = y_min;
@@ -38,6 +40,9 @@ void
 boxplot_add_box (struct boxplot *boxplot,
                  struct box_whisker *bw, const char *label)
 {
+  if (boxplot == NULL)
+    return;
+
   struct boxplot_box *box;
   if (boxplot->n_boxes >= boxplot->boxes_allocated)
     boxplot->boxes = x2nrealloc (boxplot->boxes, &boxplot->boxes_allocated,
@@ -51,6 +56,9 @@ static void
 boxplot_chart_destroy (struct chart_item *chart_item)
 {
   struct boxplot *boxplot = to_boxplot (chart_item);
+  if (boxplot == NULL)
+    return;
+
   size_t i;
 
   for (i = 0; i < boxplot->n_boxes; i++)

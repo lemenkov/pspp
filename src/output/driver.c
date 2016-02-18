@@ -159,6 +159,9 @@ output_submit (struct output_item *item)
 {
   struct output_engine *e = engine_stack_top ();
 
+  if (item == NULL)
+    return;
+
   if (is_syntax_item (item))
     {
       ds_put_cstr (&e->deferred_syntax, text_item_get_text (to_text_item (item)));
