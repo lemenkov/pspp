@@ -57,10 +57,10 @@ boxplot_draw_box (cairo_t *cr, const struct xrchart_geometry *geom,
 
   const double box_right = box_centre + box_width / 2.0;
 
-  double box_bottom ;
-  double box_top ;
-  double bottom_whisker ;
-  double top_whisker ;
+  double box_bottom;
+  double box_top;
+  double bottom_whisker;
+  double top_whisker;
 
   box_whisker_whiskers (bw, whisker);
   box_whisker_hinges (bw, hinge);
@@ -107,20 +107,23 @@ boxplot_draw_box (cairo_t *cr, const struct xrchart_geometry *geom,
   cairo_stroke (cr);
 
   /* Draw top whisker */
-  cairo_move_to (cr, box_left, top_whisker);
-  cairo_line_to (cr, box_right, top_whisker);
-  cairo_stroke (cr);
-
-  /* Draw centre line.
-     (bottom half) */
-  if (! isnan (whisker[0]))
+  if (! isnan (top_whisker) )
     {
+      cairo_move_to (cr, box_left, top_whisker);
+      cairo_line_to (cr, box_right, top_whisker);
+      cairo_stroke (cr);
+    }
+
+  /* Draw centre line. */
+  if (! isnan (bottom_whisker) && ! isnan (box_bottom))
+    {
+      /* (bottom half) */
       cairo_move_to (cr, box_centre, bottom_whisker);
       cairo_line_to (cr, box_centre, box_bottom);
       cairo_stroke (cr);
     }
 
-  if (! isnan (whisker[1]))
+  if (! isnan (top_whisker) && ! isnan (box_top))
     {
       /* (top half) */
       cairo_move_to (cr, box_centre, top_whisker);
