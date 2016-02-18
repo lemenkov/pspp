@@ -213,7 +213,7 @@ barchart_create (const struct variable **var, int n_vars,
 	struct freq *c = cats[i];
 
 	struct freq *foo;
-	int flag = 0;
+	bool flag = false;
 	size_t hash = hash_freq_2level_ptr (&c, bar);
 	HMAP_FOR_EACH_WITH_HASH (foo, struct freq, node, hash, &level2table)
 	  {
@@ -224,7 +224,7 @@ barchart_create (const struct variable **var, int n_vars,
 		if (foo->count > bar->largest)
 		  bar->largest = foo->count;
 		
-		flag = 1;
+		flag = true;
 		break;
 	      }
 	  }
