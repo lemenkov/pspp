@@ -1,5 +1,5 @@
 /* PSPP - a program for statistical analysis.
-   Copyright (C) 2013, 2014, 2015 Free Software Foundation, Inc.
+   Copyright (C) 2013, 2014, 2015, 2016 Free Software Foundation, Inc.
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -26,6 +26,7 @@
 #include "data/casereader.h"
 #include "data/casewriter.h"
 #include "data/csv-file-writer.h"
+#include "data/dictionary.h"
 #include "data/encrypted-file.h"
 #include "data/file-name.h"
 #include "data/por-file-writer.h"
@@ -60,12 +61,12 @@ main (int argc, char *argv[])
   long long int max_cases = LLONG_MAX;
   struct dictionary *dict = NULL;
   struct casereader *reader;
-  struct file_handle *input_fh;
+  struct file_handle *input_fh = NULL;
   const char *encoding = NULL;
   struct encrypted_file *enc;
 
   const char *output_format = NULL;
-  struct file_handle *output_fh;
+  struct file_handle *output_fh = NULL;
   struct casewriter *writer;
   const char *password = NULL;
 
