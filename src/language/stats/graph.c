@@ -490,7 +490,7 @@ run_barchart (struct graph *cmd, struct casereader *input)
 		     ag_func[cmd->agr].description);
       
     chart_item_submit (barchart_create (cmd->by_var, cmd->n_by_vars,
-					ds_cstr (&label),
+					ds_cstr (&label), false,
 					freqs, n_freqs));
 
     ds_destroy (&label);

@@ -1477,7 +1477,8 @@ do_barchart(const struct frq_chart *bar, const struct variable **var,
   struct freq **slices = pick_cat_counts_ptr (bar, frq_tab, &n_slices);
 
   chart_item_submit (barchart_create (var, 1,
-				      (bar->y_scale == FRQ_FREQ) ? _("Count") : _("Percent"),
+				      (bar->y_scale == FRQ_FREQ) ? _("Count") : _("Percent"), 
+				      (bar->y_scale == FRQ_PERCENT),
 				      slices, n_slices));
   free (slices);
 }

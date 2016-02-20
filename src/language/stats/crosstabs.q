@@ -720,7 +720,7 @@ postcalc (struct crosstabs_proc *proc)
         }
       if (proc->barchart)
 	chart_item_submit 
-	  (barchart_create (pt->vars, pt->n_vars, _("Count"), pt->entries, pt->n_entries));
+	  (barchart_create (pt->vars, pt->n_vars, _("Count"), false, pt->entries, pt->n_entries));
     }
 
   /* Free output and prepare for next split file. */

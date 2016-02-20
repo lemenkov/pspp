@@ -1,5 +1,5 @@
 /* PSPP - a program for statistical analysis.
-   Copyright (C) 2015 Free Software Foundation, Inc.
+   Copyright (C) 2015, 2016 Free Software Foundation, Inc.
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -67,7 +67,10 @@ xrchart_draw_barchart (const struct chart_item *chart_item, cairo_t *cr,
   xrchart_write_ylabel (cr, geom, bc->ylabel);
   xrchart_write_xlabel (cr, geom, chart_item_get_title (chart_item));
 
-  xrchart_write_yscale (cr, geom, 0, bc->largest);
+  if (bc->percent)
+    xrchart_write_yscale (cr, geom, 0, bc->largest * 100.0 / bc->total_count );
+  else
+    xrchart_write_yscale (cr, geom, 0, bc->largest);
 
   const double abscale = geom->axis[SCALE_ABSCISSA].data_max - geom->axis[SCALE_ABSCISSA].data_min;
   const double width = abscale / (double) (bc->n_nzcats + bc->n_pcats);
@@ -122,6 +125,8 @@ xrchart_draw_barchart (const struct chart_item *chart_item, cairo_t *cr,
   for (i = 0; i < bc->n_nzcats; i++)
     {
       double height = geom->axis[SCALE_ORDINATE].scale * bc->cats[i]->count;
+      if (bc->percent)
+	height *= 100.0  /  bc->total_count ;
 
       if (prev && !value_equal (prev, &bc->cats[i]->values[0], bc->widths[0]))
 	{

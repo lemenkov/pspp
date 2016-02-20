@@ -37,6 +37,9 @@ struct barchart
   {
     struct chart_item chart_item;
 
+    /* Should the chart be displayed as percentages */
+    bool percent;
+
     /* The categories */
     struct freq **cats;
 
@@ -48,6 +51,9 @@ struct barchart
 
     /* The largest count of all the categories */
     double largest;
+
+    /* The sum of all the counts */
+    double total_count;
 
     /* The label for the ordinate (vertical axis) */
     char *ylabel;
@@ -75,7 +81,7 @@ struct variable;
 struct freq;
 
 struct chart_item *barchart_create (const struct variable **, int n_vars,
-				    const char *ylabel,
+				    const char *ylabel, bool percent,
                                     struct freq *const *, int n_cats);
 
 /* This boilerplate for barchart, a subclass of chart_item, was

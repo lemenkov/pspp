@@ -85,7 +85,7 @@ compare_freq_2level_ptr_3way (const void *a_, const void *b_, const void *bc_)
 */
 struct chart_item *
 barchart_create (const struct variable **var, int n_vars,
-		 const char *ylabel, 
+		 const char *ylabel, bool percent, 
 		 struct freq *const *cats, int n_cats)
 {
   struct barchart *bar;
@@ -100,6 +100,7 @@ barchart_create (const struct variable **var, int n_vars,
   assert (n_vars >= 1);
 
   bar = xzalloc (sizeof *bar);
+  bar->percent = percent;
   bar->var = var;
   bar->n_vars = n_vars;
   bar->n_nzcats = n_cats;
@@ -220,6 +221,7 @@ barchart_create (const struct variable **var, int n_vars,
 	    if (0 == compare_freq_2level_ptr_3way (&foo, &c, bar))
 	      {
 		foo->count += c->count;
+		bar->total_count += c->count;
 		
 		if (foo->count > bar->largest)
 		  bar->largest = foo->count;
@@ -237,6 +239,7 @@ barchart_create (const struct variable **var, int n_vars,
 	    if (c->count > bar->largest)
 	      bar->largest = aggregated_freq->count;
 	    
+	    bar->total_count += c->count;
 	    bar->cats[x++] = aggregated_freq;
 	  }
       }
