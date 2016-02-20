@@ -142,6 +142,15 @@ MISSING VALUES str1 ('a' THRU 'z').
 
 * Mixing string and numeric variables.
 MISSING VALUES str1 num1 ('123').
+
+* Too many values.
+MISSING VALUES num1 (1, 2, 3, 4).
+MISSING VALUES num1 (1 THRU 2, 3 THRU 4).
+MISSING VALUES num1 (1, 2 THRU 3, 4).
+MISSING VALUES str1 ('abc', 'def', 'ghi', 'jkl').
+
+* Bad range.
+MISSING VALUES num1 (2 THRU 1).
 ])
 AT_CHECK([pspp -O format=csv missing-values.sps], [1], [dnl
 missing-values.sps:5: error: MISSING VALUES: Missing values provided are too long to assign to variable of width 3.
@@ -153,5 +162,15 @@ missing-values.sps:11.26-11.29: error: MISSING VALUES: Syntax error at `THRU': e
 missing-values.sps:11: error: MISSING VALUES: THRU is not a variable name.
 
 missing-values.sps:14: error: MISSING VALUES: Cannot mix numeric variables (e.g. num1) and string variables (e.g. str1) within a single list.
+
+missing-values.sps:17: error: MISSING VALUES: Too many numeric missing values.  At most three individual values or one value and one range are allowed.
+
+missing-values.sps:18: error: MISSING VALUES: Too many numeric missing values.  At most three individual values or one value and one range are allowed.
+
+missing-values.sps:19: error: MISSING VALUES: Too many numeric missing values.  At most three individual values or one value and one range are allowed.
+
+missing-values.sps:20: error: MISSING VALUES: Too many string missing values.  At most three individual values are allowed.
+
+missing-values.sps:23: warning: MISSING VALUES: The high end of the range (1) is below the low end (2).  The range will be treated as if reversed.
 ])
 AT_CLEANUP

@@ -1,5 +1,5 @@
 /* PSPP - a program for statistical analysis.
-   Copyright (C) 1997-9, 2000, 2006, 2009, 2010, 2011, 2013 Free Software Foundation, Inc.
+   Copyright (C) 1997-9, 2000, 2006, 2009, 2010, 2011, 2013, 2016 Free Software Foundation, Inc.
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -80,16 +80,19 @@ cmd_missing_values (struct lexer *lexer, struct dataset *ds)
                 {
                   enum fmt_type type = var_get_print_format (v[0])->type;
                   double x, y;
-                  bool ok;
 
                   if (!parse_num_range (lexer, &x, &y, &type))
                     goto error;
 
-                  ok = (x == y
+                  if (!(x == y
                         ? mv_add_num (&mv, x)
-                        : mv_add_range (&mv, x, y));
-                  if (!ok)
-                    ok = false;
+                        : mv_add_range (&mv, x, y)))
+                    {
+                      msg (SE, _("Too many numeric missing values.  At most "
+                                 "three individual values or one value and "
+                                 "one range are allowed."));
+                      ok = false;
+                    }
 
                   lex_match (lexer, T_COMMA);
                 }
@@ -129,7 +132,12 @@ cmd_missing_values (struct lexer *lexer, struct dataset *ds)
                                          utf8_s, utf8_trunc_len);
                   if (!mv_add_str (&mv, CHAR_CAST (const uint8_t *, raw_s),
                                    strlen (raw_s)))
-                    ok = false;
+                    {
+                      msg (SE,
+                           _("Too many string missing values.  "
+                             "At most three individual values are allowed."));
+                      ok = false;
+                    }
                   free (raw_s);
 
                   lex_get (lexer);
