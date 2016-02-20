@@ -45,6 +45,7 @@
 #include "libpspp/assertion.h"
 #include "libpspp/compiler.h"
 #include "libpspp/i18n.h"
+#include "libpspp/ll.h"
 #include "libpspp/message.h"
 #include "libpspp/misc.h"
 #include "libpspp/pool.h"
@@ -158,6 +159,7 @@ struct sfm_mrset
 
 struct sfm_extension_record
   {
+    struct ll ll;               /* In struct sfm_reader 'var_attrs' list. */
     int subtype;                /* Record subtype. */
     off_t pos;                  /* Starting offset in file. */
     unsigned int size;          /* Size of data elements. */
@@ -184,6 +186,7 @@ struct sfm_reader
     struct sfm_mrset *mrsets;
     size_t n_mrsets;
     struct sfm_extension_record *extensions[32];
+    struct ll_list var_attrs;   /* Contains "struct sfm_extension_record"s. */
 
     /* File state. */
     struct file_handle *fh;     /* File handle. */
@@ -401,6 +404,7 @@ sfm_open (struct file_handle *fh)
   pool_register (r->pool, free, r);
   r->fh = fh_ref (fh);
   r->opcode_idx = sizeof r->opcodes;
+  ll_init (&r->var_attrs);
 
   /* TRANSLATORS: this fragment will be interpolated into
      messages in fh_lock() that identify types of files. */
@@ -512,6 +516,17 @@ read_record (struct sfm_reader *r, int type,
                       "using %s."),
                     subtype, PACKAGE_BUGREPORT, PACKAGE_STRING);
           return skip_extension_record (r, subtype);
+        }
+      else if (subtype == 18)
+        {
+          /* System files written by "Stata 14.1/-savespss- 1.77 by S.Radyakin"
+             put each variable attribute into a separate record with subtype
+             18.  I'm surprised that SPSS puts up with this. */
+          struct sfm_extension_record *ext;
+          bool ok = read_extension_record (r, subtype, &ext);
+          if (ok)
+            ll_push_tail (&r->var_attrs, &ext->ll);
+          return ok;
         }
       else if (r->extensions[subtype] != NULL)
         {
@@ -719,7 +734,6 @@ sfm_get_strings (const struct any_reader *r_, struct pool *pool,
                     mrset_idx);
     }
 
-  /*  */
   /* data file attributes */
   /* variable attributes */
   /* long var map */
@@ -830,14 +844,15 @@ sfm_decode (struct any_reader *r_, const char *encoding,
   parse_long_var_name_map (r, r->extensions[EXT_LONG_NAMES], dict);
 
   /* The following records use long names, so they need to follow renaming. */
-  if (r->extensions[EXT_VAR_ATTRS] != NULL)
+  if (!ll_is_empty (&r->var_attrs))
     {
-      parse_variable_attributes (r, r->extensions[EXT_VAR_ATTRS], dict);
+      struct sfm_extension_record *ext;
+      ll_for_each (ext, struct sfm_extension_record, ll, &r->var_attrs)
+        parse_variable_attributes (r, ext, dict);
 
       /* Roles use the $@Role attribute.  */
       assign_variable_roles (r, dict);
     }
-
   if (r->extensions[EXT_LONG_LABELS] != NULL)
     parse_long_string_value_labels (r, r->extensions[EXT_LONG_LABELS], dict);
   if (r->extensions[EXT_LONG_MISSING] != NULL)

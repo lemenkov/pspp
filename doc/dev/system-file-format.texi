@@ -161,6 +161,11 @@ Document record, if present.
 Extension (type 7) records, in ascending numerical order of their
 subtypes.
 
+System files written by SPSS include at most one of each kind of
+extension record.  This is generally true of system files written by
+other software as well, with known exceptions noted below in the
+individual sections about each type of record.
+
 @item
 Dictionary termination record.
 
@@ -1360,7 +1365,7 @@ The total number of bytes in @code{attributes}.
 @item char attributes[];
 The attributes, in a text-based format.
 
-In record type 17, this field contains a single attribute set.  An
+In record subtype 17, this field contains a single attribute set.  An
 attribute set is a sequence of one or more attributes concatenated
 together.  Each attribute consists of a name, which has the same
 syntax as a variable name, followed by, inside parentheses, a sequence
@@ -1372,13 +1377,17 @@ way to embed a line feed in a value.  There is no distinction between
 an attribute with a single value and an attribute array with one
 element.
 
-In record type 18, this field contains a sequence of one or more
+In record subtype 18, this field contains a sequence of one or more
 variable attribute sets.  If more than one variable attribute set is
 present, each one after the first is delimited from the previous by
 @code{/}.  Each variable attribute set consists of a long
 variable name,
 followed by @code{:}, followed by an attribute set with the same
-syntax as on record type 17.
+syntax as on record subtype 17.
+
+System files written by @code{Stata 14.1/-savespss- 1.77 by
+S.Radyakin} may include multiple records with subtype 18, one per
+variable that has variable attributes.
 
 The total length is @code{count} bytes.
 @end table

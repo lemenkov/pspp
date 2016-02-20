@@ -1096,7 +1096,7 @@ AT_DATA([sys-file.sack], [dnl
 dnl File header.
 "$FL2"; s60 "$(#) SPSS DATA FILE PSPP synthetic test file";
 2; dnl Layout code
-2; dnl Nominal case size
+3; dnl Nominal case size
 0; dnl Not compressed
 0; dnl Not weighted 
 0; dnl 1 case.
@@ -1107,6 +1107,7 @@ i8 0 *3;
 dnl Variables.
 2; 0; 0; 0; 0x050800 *2; s8 "FIRSTVAR";
 2; 0; 0; 0; 0x050800 *2; s8 "SECONDVA";
+2; 0; 0; 0; 0x050800 *2; s8 "THIRDVAR";
 
 dnl Machine integer info record.
 7; 3; 4; 8; 1; 2; 3; -1; 1; 1; ENDIAN; 1252;
@@ -1115,6 +1116,7 @@ dnl Long variable names.
 7; 13; 1; COUNT (
 "FIRSTVAR=FirstVariable"; i8 9;
 "SECONDVA=S"; i8 233; "condVariable"; i8 9;
+"THIRDVAR=ThirdVariable"; i8 9
 );
 
 dnl Data file attributes record.
@@ -1133,6 +1135,10 @@ dnl Variable attributes record.
   "xyzzy('quux'"; i8 10; ")";
 );
 
+dnl Another variable attributes record.
+dnl Only system files written by "Stata 14.1/-savespss- 1.77 by S.Radyakin"
+dnl include multiple variable attributes records.
+7; 18; 1; COUNT ("ThirdVariable:fizz('buzz'"; i8 10; ")";);
 
 dnl Character encoding record.
 7; 20; 1; 12; "windows-1252";
@@ -1156,6 +1162,8 @@ adèle[2],34
 bert,123"
 SécondVariable,"Attribute,Value
 xyzzy,quux"
+ThirdVariable,"Attribute,Value
+fizz,buzz"
 
 Table: Custom data file attributes.
 Attribute,Value
@@ -1183,6 +1191,11 @@ Role: Input
 
 Attribute,Value
 xyzzy,quux",2
+ThirdVariable,"Format: F8.0
+Role: Input
+
+Attribute,Value
+fizz,buzz",3
 
 Table: Custom data file attributes.
 Attribute,Value
