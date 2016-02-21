@@ -1,5 +1,5 @@
 /* PSPP - a program for statistical analysis.
-   Copyright (C) 2009, 2011, 2014 Free Software Foundation, Inc.
+   Copyright (C) 2009, 2011, 2014, 2016 Free Software Foundation, Inc.
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -367,7 +367,7 @@ table_create_nested_item (struct table_item *inner)
   struct table_nested *tn = xmalloc (sizeof *tn);
   table_init (&tn->table, &table_nested_class);
   tn->table.n[TABLE_HORZ] = tn->table.n[TABLE_VERT] = 1;
-  tn->inner = table_item_ref (inner);
+  tn->inner = inner;
   return &tn->table;
 }
 
