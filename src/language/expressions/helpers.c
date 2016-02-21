@@ -1,5 +1,5 @@
 /* PSPP - a program for statistical analysis.
-   Copyright (C) 2008, 2010, 2011, 2015 Free Software Foundation, Inc.
+   Copyright (C) 2008, 2010, 2011, 2015, 2016 Free Software Foundation, Inc.
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -24,6 +24,8 @@
 #include "language/expressions/private.h"
 #include "libpspp/assertion.h"
 #include "libpspp/pool.h"
+
+#include "gl/minmax.h"
 
 const struct substring empty_string = {NULL, 0};
 
@@ -674,4 +676,44 @@ round_nearest (double x, double mult, double fuzzbits)
   x /= mult;
   x = x >= 0. ? floor (x + adjustment) : -floor (-x + adjustment);
   return x * mult;
+}
+
+struct substring
+replace_string (struct expression *e,
+                struct substring haystack,
+                struct substring needle,
+                struct substring replacement,
+                double n)
+{
+  if (!needle.length
+      || haystack.length < needle.length
+      || n <= 0
+      || n == SYSMIS)
+    return haystack;
+
+  struct substring result = alloc_string (e, MAX_STRING);
+  result.length = 0;
+
+  size_t i = 0;
+  while (i <= haystack.length - needle.length)
+    if (!memcmp (&haystack.string[i], needle.string, needle.length))
+      {
+        size_t copy_len = MIN (replacement.length, MAX_STRING - result.length);
+        memcpy (&result.string[result.length], replacement.string, copy_len);
+        result.length += copy_len;
+        i += needle.length;
+
+        if (--n < 1)
+          break;
+      }
+    else
+      {
+        if (result.length < MAX_STRING)
+          result.string[result.length++] = haystack.string[i];
+        i++;
+      }
+  while (i < haystack.length && result.length < MAX_STRING)
+    result.string[result.length++] = haystack.string[i++];
+
+  return result;
 }

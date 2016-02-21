@@ -810,6 +810,21 @@ RINDEX(string, string, number).]],
   [[lower(1)], [error],
    [error: DEBUG EVALUATE: Type mismatch invoking LOWER(string) as lower(number).]])
 
+CHECK_EXPR_EVAL([replace],
+  [[replace('banana', 'an', 'AN')], ["bANANa"]],
+  [[replace('banana', 'an', 'a')], ["baaa"]],
+  [[replace('banana', 'an', '')], ["ba"]],
+  [[replace('banana', 'na', '')], ["ba"]],
+  [[replace('banana', 'ba', 'BA')], ["BAnana"]],
+  [[replace('banana', 'na', 'xyzzy')], ["baxyzzyxyzzy"]],
+  [[replace('banana', 'an', 'xyzzy', 1)], ["bxyzzyana"]],
+  [[replace('banana', 'an', 'xyzzy', 1.5)], ["bxyzzyana"]],
+  [[replace('banana', 'bananana', 'xyzzy')], ["banana"]],
+  [[replace('banana', '', 'xyzzy')], ["banana"]],
+  [[replace('banana', 'ba', '', 0)], ["banana"]],
+  [[replace('banana', 'ba', '', -1)], ["banana"]],
+  [[replace('banana', 'ba', '', $sysmis)], ["banana"]])
+
 CHECK_EXPR_EVAL([lpad number ltrim lpad rtrim rpad string substr upcase],
   [[lpad('abc', -1)], [""]],
   [[lpad('abc', 0)], ["abc"]],

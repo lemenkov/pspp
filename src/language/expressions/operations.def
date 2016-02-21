@@ -1,7 +1,7 @@
 // -*- c -*-
 //
 // PSPP - a program for statistical analysis.
-// Copyright (C) 2005, 2006, 2009, 2010, 2011, 2012, 2015 Free Software Foundation, Inc.
+// Copyright (C) 2005, 2006, 2009, 2010, 2011, 2012, 2015, 2016 Free Software Foundation, Inc.
 // 
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -399,7 +399,6 @@ function INDEX (string haystack, string needles, needle_len_d)
     }
 }
 
-
 function RINDEX (string haystack, string needle)
 {
   if (needle.length == 0)
@@ -503,6 +502,15 @@ absorb_miss string function LPAD (string s, n, string c)
       return t;
     }
 }
+
+string function REPLACE (string haystack, string needle, string replacement)
+    expression e;
+  = replace_string (e, haystack, needle, replacement, DBL_MAX);
+
+absorb_miss string function REPLACE (string haystack, string needle,
+                                     string replacement, n)
+    expression e;
+  = replace_string (e, haystack, needle, replacement, n);
 
 absorb_miss string function RPAD (string s, n)
      expression e;

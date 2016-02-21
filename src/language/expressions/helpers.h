@@ -83,4 +83,10 @@ double idf_fdist (double P, double a, double b);
 
 double round_nearest (double x, double mult, double fuzzbits);
 
+struct substring replace_string (struct expression *,
+                                 struct substring haystack,
+                                 struct substring needle,
+                                 struct substring replacement,
+                                 double n);
+
 #endif /* expressions/helpers.h */

@@ -264,7 +264,7 @@ The sections below describe each function in detail.
 * Set Membership::              ANY RANGE
 * Statistical Functions::       CFVAR MAX MEAN MIN SD SUM VARIANCE
 * String Functions::            CONCAT INDEX LENGTH LOWER LPAD LTRIM NUMBER 
-                                RINDEX RPAD RTRIM STRING SUBSTR UPCASE
+                                REPLACE RINDEX RPAD RTRIM STRING SUBSTR UPCASE
 * Time and Date::               CTIME.xxx DATE.xxx TIME.xxx XDATE.xxx
                                 DATEDIFF DATESUM
 * Miscellaneous Functions::     LAG YRMODA VALUELABEL
@@ -618,6 +618,15 @@ and @code{NUMBER("1234", F3.0)} both have value 123.  If @var{w} is
 greater than @var{string}'s length, then it is treated as if it were
 right-padded with spaces.  If @var{string} is not in the correct
 format for @var{format}, system-missing is returned.
+@end deftypefn
+
+@cindex strings, replacing substrings
+@cindex replacing substrings
+@deftypefn {Function} {} REPLACE (@var{haystack}, @var{needle}, @var{replacement}[, @var{n}])
+Returns string @var{haystack} with instances of @var{needle} replaced
+by @var{replacement}.  If nonnegative integer @var{n} is specified, it
+limits the maximum number of replacements; otherwise, all instances of
+@var{needle} are replaced.
 @end deftypefn
 
 @cindex strings, searching backwards
