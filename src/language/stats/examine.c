@@ -1,6 +1,6 @@
 /*
   PSPP - a program for statistical analysis.
-  Copyright (C) 2012, 2013  Free Software Foundation, Inc.
+  Copyright (C) 2012, 2013, 2016  Free Software Foundation, Inc.
   
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -298,7 +298,7 @@ show_boxplot_grouped (const struct examine *cmd, int iact_idx)
           const struct ccase *c =
             categoricals_get_case_by_category_real (cmd->cats,  iact_idx, grp);
 
-          const struct exploratory_stats *es =
+          struct exploratory_stats *es =
             categoricals_get_user_data_by_category_real (cmd->cats, iact_idx, grp);
 
           ds_init_empty (&label);
@@ -320,6 +320,7 @@ show_boxplot_grouped (const struct examine *cmd, int iact_idx)
             }
 
           boxplot_add_box (boxplot, es[v].box_whisker, ds_cstr (&label));
+          es[v].box_whisker = NULL;
 
           ds_destroy (&label);
         }
@@ -390,11 +391,12 @@ show_boxplot_variabled (const struct examine *cmd, int iact_idx)
 
       for (v = 0; v < cmd->n_dep_vars; ++v)
         {
-          const struct exploratory_stats *es =
+          struct exploratory_stats *es =
             categoricals_get_user_data_by_category_real (cmd->cats, iact_idx, grp);
 
           boxplot_add_box (boxplot, es[v].box_whisker, 
                            var_to_string (cmd->dep_vars[v]));
+          es[v].box_whisker = NULL;
         }
 
       boxplot_submit (boxplot);
@@ -1795,6 +1797,12 @@ cleanup_exploratory_stats (struct examine *cmd)
 
 	      statistic_destroy (&es[v].histogram->parent);
 	      moments_destroy (es[v].mom);
+
+              if (es[v].box_whisker)
+                {
+                  stat = &es[v].box_whisker->parent.parent;
+                  stat->destroy (stat);
+                }
 
 	      casereader_destroy (es[v].sorted_reader);
 	    }
