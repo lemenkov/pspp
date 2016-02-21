@@ -1,5 +1,5 @@
 /* PSPP - a program for statistical analysis.
-   Copyright (C) 2009, 2010, 2011, 2013, 2014 Free Software Foundation, Inc.
+   Copyright (C) 2009, 2010, 2011, 2013, 2014, 2016 Free Software Foundation, Inc.
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -140,7 +140,7 @@ struct render_page
   };
 
 static struct render_page *render_page_create (const struct render_params *,
-                                               const struct table *);
+                                               struct table *);
 
 struct render_page *render_page_ref (const struct render_page *page_);
 static void render_page_unref (struct render_page *);
@@ -684,11 +684,9 @@ set_join_crossings (struct render_page *page, enum table_axis axis,
    size is PARAMS->size, but the caller is responsible for actually breaking it
    up to fit on such a device, using the render_break abstraction.  */
 static struct render_page *
-render_page_create (const struct render_params *params,
-                    const struct table *table_)
+render_page_create (const struct render_params *params, struct table *table)
 {
   struct render_page *page;
-  struct table *table;
   enum { MIN, MAX };
   struct render_row *columns[2];
   struct render_row *rows;
@@ -701,7 +699,6 @@ render_page_create (const struct render_params *params,
   int i;
   enum table_axis axis;
 
-  table = table_ref (table_);
   nc = table_nc (table);
   nr = table_nr (table);
 
@@ -1216,12 +1213,13 @@ static struct render_page *render_page_select (const struct render_page *,
                                                int z0, int p0,
                                                int z1, int p1);
 
-/* Initializes render_break B for breaking PAGE along AXIS. */
+/* Initializes render_break B for breaking PAGE along AXIS.
+   Takes ownership of PAGE. */
 static void
-render_break_init (struct render_break *b, const struct render_page *page,
+render_break_init (struct render_break *b, struct render_page *page,
                    enum table_axis axis)
 {
-  b->page = render_page_ref (page);
+  b->page = page;
   b->axis = axis;
   b->z = page->h[axis][0];
   b->pixel = 0;
@@ -1462,7 +1460,8 @@ render_pager_add_table (struct render_pager *p, struct table *table)
 static void
 render_pager_start_page (struct render_pager *p)
 {
-  render_break_init (&p->x_break, p->pages[p->cur_page++], H);
+  render_break_init (&p->x_break, render_page_ref (p->pages[p->cur_page++]),
+                     H);
   render_break_init_empty (&p->y_break);
 }
 
