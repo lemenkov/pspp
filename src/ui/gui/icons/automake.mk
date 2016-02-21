@@ -62,7 +62,7 @@ if HAVE_GUI
 nodist_src_ui_gui_psppire_DATA = src/ui/gui/icons/splash.png
 
 src/ui/gui/icons/splash.png: $(top_srcdir)/src/ui/gui/icons/splash-t.png $(top_srcdir)/src/ui/gui/icons/splash-r.png Makefile
-	@case `$(AM_V_at)echo $(VERSION) | $(AM_V_at)$(SED) -e 's/[0-9][0-9]*\.[0-9]*\([0-9]\)\.[0-9][0-9]*/\1/'` in \
+	@case `echo $(VERSION) | $(SED) -e 's/[0-9][0-9]*\.[0-9]*\([0-9]\)\.[0-9][0-9]*/\1/'` in \
 	  [13579]) cp $(top_srcdir)/src/ui/gui/icons/splash-t.png $@ ; \
 	;;\
 	  *) cp $(top_srcdir)/src/ui/gui/icons/splash-r.png $@ ; \
