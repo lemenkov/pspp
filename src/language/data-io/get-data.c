@@ -174,14 +174,20 @@ parse_get_psql (struct lexer *lexer, struct dataset *ds)
       if ( lex_match_id (lexer, "ASSUMEDSTRWIDTH"))
 	{
 	  lex_match (lexer, T_EQUALS);
-	  psql.str_width = lex_integer (lexer);
-	  lex_get (lexer);
+          if (lex_force_int (lexer))
+            {
+              psql.str_width = lex_integer (lexer);
+              lex_get (lexer);
+            }
 	}
       else if ( lex_match_id (lexer, "BSIZE"))
 	{
 	  lex_match (lexer, T_EQUALS);
-	  psql.bsize = lex_integer (lexer);
-	  lex_get (lexer);
+          if (lex_force_int (lexer))
+            {
+              psql.bsize = lex_integer (lexer);
+              lex_get (lexer);
+            }
 	}
       else if ( lex_match_id (lexer, "UNENCRYPTED"))
 	{
@@ -250,8 +256,11 @@ parse_spreadsheet (struct lexer *lexer, char **filename,
       if ( lex_match_id (lexer, "ASSUMEDSTRWIDTH"))
 	{
 	  lex_match (lexer, T_EQUALS);
-	  opts->asw = lex_integer (lexer);
-	  lex_get (lexer);
+          if (lex_force_int (lexer))
+            {
+              opts->asw = lex_integer (lexer);
+              lex_get (lexer);
+            }
 	}
       else if (lex_match_id (lexer, "SHEET"))
 	{
@@ -268,6 +277,9 @@ parse_spreadsheet (struct lexer *lexer, char **filename,
 	    }
 	  else if (lex_match_id (lexer, "INDEX"))
 	    {
+              if (!lex_force_int (lexer))
+                goto error;
+
 	      opts->sheet_index = lex_integer (lexer);
 	      if (opts->sheet_index <= 0)
 		{

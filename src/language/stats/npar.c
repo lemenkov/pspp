@@ -1,5 +1,5 @@
 /* PSPP - a program for statistical analysis. -*-c-*-
-   Copyright (C) 2006, 2008, 2009, 2010, 2011 Free Software Foundation, Inc.
+   Copyright (C) 2006, 2008, 2009, 2010, 2011, 2016 Free Software Foundation, Inc.
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -865,6 +865,8 @@ npar_chisquare (struct lexer *lexer, struct dataset *ds,
               if ( lex_match (lexer, T_ASTERISK))
                 {
                   n = f;
+                  if (!lex_force_num (lexer))
+                    return 0;
                   f = lex_number (lexer);
                   lex_get (lexer);
                 }

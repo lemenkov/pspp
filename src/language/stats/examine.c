@@ -1999,6 +1999,8 @@ cmd_examine (struct lexer *lexer, struct dataset *ds)
                   int extr = 5;
                   if (lex_match (lexer, T_LPAREN))
                     {
+                      if (!lex_force_int (lexer))
+                        goto error;
                       extr = lex_integer (lexer);
 
                       if (extr < 0)
