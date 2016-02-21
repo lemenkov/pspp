@@ -1,5 +1,5 @@
 /* PSPP - a program for statistical analysis.
-   Copyright (C) 2009, 2010, 2011, 2012, 2013, 2014, 2015 Free Software Foundation, Inc.
+   Copyright (C) 2009, 2010, 2011, 2012, 2013, 2014, 2015, 2016 Free Software Foundation, Inc.
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -1084,6 +1084,7 @@ xr_layout_cell_text (struct xr_driver *xr,
             break;
         }
       while (pango_layout_iter_next_line (iter));
+      pango_layout_iter_free (iter);
 
       /* If enabled, draws a green line across the chosen breakpoint, which can
          be useful for debugging issues with breaking.  */
