@@ -9,7 +9,7 @@ language_expressions_sources = \
 	src/language/expressions/private.h \
 	src/language/expressions/public.h
 
-expressions_built_sources= \
+expressions_built_sources = \
 	src/language/expressions/evaluate.h \
 	src/language/expressions/evaluate.inc \
 	src/language/expressions/operations.h \
@@ -21,21 +21,13 @@ CLEANFILES += $(expressions_built_sources)
 
 helpers = src/language/expressions/generate.pl \
 	src/language/expressions/operations.def
+EXTRA_DIST += $(helpers)
 
 $(expressions_built_sources): $(helpers)
-EXTRA_DIST += $(helpers) $(expressions_built_sources:=pl)
+	$(AV_V_GEN)$(MKDIR_P) `dirname $@` && \
+	$(PERL) $< -o $@ -i $(top_srcdir)/src/language/expressions/operations.def
+
 AM_CPPFLAGS += -I$(top_builddir)/src/language/expressions \
 	-I$(top_srcdir)/src/language/expressions
-
-SUFFIXES += .h .hpl .inc .incpl
-
-generate_from_pl = $(MKDIR_P) `dirname $@` && \
-	$(PERL) -I $(top_srcdir)/src/language/expressions $< -o $@ -i $(top_srcdir)/src/language/expressions/operations.def
-
-.hpl.h:
-	$(AM_V_GEN)$(generate_from_pl)
-
-.incpl.inc:
-	$(AM_V_GEN)$(generate_from_pl)
 
 EXTRA_DIST += src/language/expressions/TODO

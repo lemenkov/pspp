@@ -4,8 +4,6 @@ use warnings 'all';
 use Getopt::Long;
 
 # Parse command line.
-our ($default_output_file) = $0;
-$default_output_file =~ s/\.pl//;
 our ($input_file);
 our ($output_file);
 parse_cmd_line ();
@@ -21,7 +19,19 @@ parse_input ();
 
 # Produce output.
 print_header ();
-generate_output ();
+if ($output_file =~ /evaluate\.h$/) {
+    generate_evaluate_h ();
+} elsif ($output_file =~ /evaluate\.inc$/) {
+    generate_evaluate_inc ();
+} elsif ($output_file =~ /operations\.h$/) {
+    generate_operations_h ();
+} elsif ($output_file =~ /optimize\.inc$/) {
+    generate_optimize_inc ();
+} elsif ($output_file =~ /parse\.inc$/) {
+    generate_parse_inc ();
+} else {
+    die "$output_file: unknown output type\n";
+}
 print_trailer ();
 
 # Command line.
@@ -36,7 +46,7 @@ sub parse_cmd_line {
       or exit 1;
 
     $input_file = "operations.def" if !defined $input_file;
-    $output_file = $default_output_file if !defined $output_file;
+    die "$0: output file must be specified\n" if !defined $output_file;
 
     open (INPUT, "<$input_file") or die "$input_file: open: $!\n";
     open (OUTPUT, ">$output_file") or die "$output_file: create: $!\n";
@@ -46,10 +56,10 @@ sub parse_cmd_line {
 
 sub usage {
     print <<EOF;
-$0, for generating $default_output_file from definitions
-usage: generate.pl [-i INPUT] [-o OUTPUT] [-h]
+$0, for generating expression parsers and evaluators from definitions
+usage: generate.pl -o OUTPUT [-i INPUT] [-h]
   -i INPUT    input file containing definitions (default: operations.def)
-  -o OUTPUT   output file (default: $default_output_file)
+  -o OUTPUT   output file
   -h          display this help message
 EOF
     exit (0);
@@ -574,6 +584,325 @@ sub print_trailer {
    End:
 */
 EOF
+}
+
+sub generate_evaluate_h {
+    print "#include \"helpers.h\"\n\n";
+
+    for my $opname (@order) {
+	my ($op) = $ops{$opname};
+	next if $op->{UNIMPLEMENTED};
+
+	my (@args);
+	for my $arg (@{$op->{ARGS}}) {
+	    if (!defined $arg->{IDX}) {
+		push (@args, c_type ($arg->{TYPE}) . $arg->{NAME});
+	    } else {
+		push (@args, c_type ($arg->{TYPE}) . "$arg->{NAME}" . "[]");
+		push (@args, "size_t $arg->{IDX}");
+	    }
+	}
+	for my $aux (@{$op->{AUX}}) {
+	    push (@args, c_type ($aux->{TYPE}) . $aux->{NAME});
+	}
+	push (@args, "void") if !@args;
+
+	my ($statements) = $op->{BLOCK} || "  return $op->{EXPRESSION};\n";
+
+	print "static inline ", c_type ($op->{RETURNS}), "\n";
+	print "eval_$opname (", join (', ', @args), ")\n";
+	print "{\n";
+	print "$statements";
+	print "}\n\n";
+    }
+}
+
+sub generate_evaluate_inc {
+    for my $opname (@order) {
+	my ($op) = $ops{$opname};
+
+	if ($op->{UNIMPLEMENTED}) {
+	    print "case $opname:\n";
+	    print "  NOT_REACHED ();\n\n";
+	    next;
+	}
+
+	my (@decls);
+	my (@args);
+	for my $arg (@{$op->{ARGS}}) {
+	    my ($name) = $arg->{NAME};
+	    my ($type) = $arg->{TYPE};
+	    my ($c_type) = c_type ($type);
+	    my ($idx) = $arg->{IDX};
+	    push (@args, "arg_$arg->{NAME}");
+	    if (!defined ($idx)) {
+		my ($decl) = "${c_type}arg_$name";
+		if ($type->{ROLE} eq 'any') {
+		    unshift (@decls, "$decl = *--$type->{STACK}");
+		} elsif ($type->{ROLE} eq 'leaf') {
+		    push (@decls, "$decl = op++->$type->{ATOM}");
+		} else {
+		    die;
+		}
+	    } else {
+		my ($stack) = $type->{STACK};
+		defined $stack or die;
+		unshift (@decls,
+			 "$c_type*arg_$arg->{NAME} = $stack -= arg_$idx");
+		unshift (@decls, "size_t arg_$arg->{IDX} = op++->integer");
+
+		my ($idx) = "arg_$idx";
+		if ($arg->{TIMES} != 1) {
+		    $idx .= " / $arg->{TIMES}";
+		}
+		push (@args, $idx);
+	    }
+	}
+	for my $aux (@{$op->{AUX}}) {
+	    my ($type) = $aux->{TYPE};
+	    my ($name) = $aux->{NAME};
+	    if ($type->{ROLE} eq 'leaf') {
+		my ($c_type) = c_type ($type);
+		push (@decls, "${c_type}aux_$name = op++->$type->{ATOM}");
+		push (@args, "aux_$name");
+	    } elsif ($type->{ROLE} eq 'fixed') {
+		push (@args, $type->{FIXED_VALUE});
+	    }
+	}
+
+	my ($sysmis_cond) = make_sysmis_decl ($op, "op++->integer");
+	push (@decls, $sysmis_cond) if defined $sysmis_cond;
+
+	my ($result) = "eval_$op->{OPNAME} (" . join (', ', @args) . ")";
+
+	my ($stack) = $op->{RETURNS}{STACK};
+
+	print "case $opname:\n";
+	if (@decls) {
+	    print "  {\n";
+	    print "    $_;\n" foreach @decls;
+	    if (defined $sysmis_cond) {
+		my ($miss_ret) = $op->{RETURNS}{MISSING_VALUE};
+		print "    *$stack++ = force_sysmis ? $miss_ret : $result;\n";
+	    } else {
+		print "    *$stack++ = $result;\n";
+	    }
+	    print "  }\n";
+	} else {
+	    print "  *$stack++ = $result;\n";
+	}
+	print "  break;\n\n";
+    }
+}
+
+sub generate_operations_h {
+    print "#include <stdlib.h>\n";
+    print "#include <stdbool.h>\n\n";
+
+    print "typedef enum";
+    print "  {\n";
+    my (@atoms);
+    foreach my $type (@types) {
+	next if $type->{ROLE} eq 'fixed';
+	push (@atoms, "OP_$type->{NAME}");
+    }
+    print_operations ('atom', 1, \@atoms);
+    print_operations ('function', "OP_atom_last + 1", \@funcs);
+    print_operations ('operator', "OP_function_last + 1", \@opers);
+    print_range ("OP_composite", "OP_function_first", "OP_operator_last");
+    print ",\n\n";
+    print_range ("OP", "OP_atom_first", "OP_composite_last");
+    print "\n  }\n";
+    print "operation_type, atom_type;\n";
+
+    print_predicate ('is_operation', 'OP');
+    print_predicate ("is_$_", "OP_$_")
+	foreach qw (atom composite function operator);
+}
+
+sub print_operations {
+    my ($type, $first, $names) = @_;
+    print "    /* \u$type types. */\n";
+    print "    $names->[0] = $first,\n";
+    print "    $_,\n" foreach @$names[1...$#{$names}];
+    print_range ("OP_$type", $names->[0], $names->[$#{$names}]);
+    print ",\n\n";
+}
+
+sub print_range {
+    my ($prefix, $first, $last) = @_;
+    print "    ${prefix}_first = $first,\n";
+    print "    ${prefix}_last = $last,\n";
+    print "    ${prefix}_cnt = ${prefix}_last - ${prefix}_first + 1";
+}
+
+sub print_predicate {
+    my ($function, $category) = @_;
+    my ($assertion) = "";
+
+    print "\nstatic inline bool\n";
+    print "$function (operation_type op)\n";
+    print "{\n";
+    print "  assert (is_operation (op));\n" if $function ne 'is_operation';
+    print "  return op >= ${category}_first && op <= ${category}_last;\n";
+    print "}\n";
+}
+
+sub generate_optimize_inc {
+    for my $opname (@order) {
+	my ($op) = $ops{$opname};
+
+	if (!$op->{OPTIMIZABLE} || $op->{UNIMPLEMENTED}) {
+	    print "case $opname:\n";
+	    print "  NOT_REACHED ();\n\n";
+	    next;
+	}
+
+	my (@decls);
+	my ($arg_idx) = 0;
+	for my $arg (@{$op->{ARGS}}) {
+	    my ($decl);
+	    my ($name) = $arg->{NAME};
+	    my ($type) = $arg->{TYPE};
+	    my ($ctype) = c_type ($type);
+	    my ($idx) = $arg->{IDX};
+	    if (!defined ($idx)) {
+		my ($func) = "get_$type->{ATOM}_arg";
+		push (@decls, "${ctype}arg_$name = $func (node, $arg_idx)");
+	    } else {
+		my ($decl) = "size_t arg_$idx = node->arg_cnt";
+		$decl .= " - $arg_idx" if $arg_idx;
+		push (@decls, $decl);
+
+		push (@decls, "${ctype}*arg_$name = "
+		      . "get_$type->{ATOM}_args "
+		      . " (node, $arg_idx, arg_$idx, e)");
+	    }
+	    $arg_idx++;
+	}
+
+	my ($sysmis_cond) = make_sysmis_decl ($op, "node->min_valid");
+	push (@decls, $sysmis_cond) if defined $sysmis_cond;
+
+	my (@args);
+	for my $arg (@{$op->{ARGS}}) {
+	    push (@args, "arg_$arg->{NAME}");
+	    if (defined $arg->{IDX}) {
+		my ($idx) = "arg_$arg->{IDX}";
+		$idx .= " / $arg->{TIMES}" if $arg->{TIMES} != 1;
+		push (@args, $idx);
+	    }
+	}
+	for my $aux (@{$op->{AUX}}) {
+	    my ($type) = $aux->{TYPE};
+	    if ($type->{ROLE} eq 'leaf') {
+		my ($func) = "get_$type->{ATOM}_arg";
+		push (@args, "$func (node, $arg_idx)");
+		$arg_idx++;
+	    } elsif ($type->{ROLE} eq 'fixed') {
+		push (@args, $type->{FIXED_VALUE});
+	    } else {
+		die;
+	    }
+	}
+
+	my ($result) = "eval_$op->{OPNAME} (" . join (', ', @args) . ")";
+	if (@decls && defined ($sysmis_cond)) {
+	    my ($miss_ret) = $op->{RETURNS}{MISSING_VALUE};
+	    push (@decls, c_type ($op->{RETURNS}) . "result = "
+		  . "force_sysmis ? $miss_ret : $result");
+	    $result = "result";
+	}
+
+	print "case $opname:\n";
+	my ($alloc_func) = "expr_allocate_$op->{RETURNS}{NAME}";
+	if (@decls) {
+	    print "  {\n";
+	    print "    $_;\n" foreach @decls;
+	    print "    return $alloc_func (e, $result);\n";
+	    print "  }\n";
+	} else {
+	    print "  return $alloc_func (e, $result);\n";
+	}
+	print "\n";
+    }
+}
+
+sub generate_parse_inc {
+    my (@members) = ("\"\"", "\"\"", 0, 0, 0, "{}", 0, 0);
+    print "{", join (', ', @members), "},\n";
+
+    for my $type (@types) {
+	next if $type->{ROLE} eq 'fixed';
+
+	my ($human_name) = $type->{HUMAN_NAME};
+	$human_name = $type->{NAME} if !defined $human_name;
+
+	my (@members) = ("\"$type->{NAME}\"", "\"$human_name\"",
+			 0, "OP_$type->{NAME}", 0, "{}", 0, 0);
+	print "{", join (', ', @members), "},\n";
+    }
+
+    for my $opname (@order) {
+	my ($op) = $ops{$opname};
+
+	my (@members);
+
+	push (@members, "\"$op->{NAME}\"");
+
+	if ($op->{CATEGORY} eq 'function') {
+	    my (@args, @opt_args);
+	    for my $arg (@{$op->{ARGS}}) {
+		push (@args, $arg->{TYPE}{HUMAN_NAME}) if !defined $arg->{IDX};
+	    }
+
+	    if (my ($array) = array_arg ($op)) {
+		if (!defined $op->{MIN_VALID}) {
+		    my (@array_args);
+		    for (my $i = 0; $i < $array->{TIMES}; $i++) {
+			push (@array_args, $array->{TYPE}{HUMAN_NAME});
+		    }
+		    push (@args, @array_args);
+		    @opt_args = @array_args;
+		} else {
+		    for (my $i = 0; $i < $op->{MIN_VALID}; $i++) {
+			push (@args, $array->{TYPE}{HUMAN_NAME});
+		    }
+		    push (@opt_args, $array->{TYPE}{HUMAN_NAME});
+		}
+	    }
+	    my ($human) = "$op->{NAME}(" . join (', ', @args);
+	    $human .= '[, ' . join (', ', @opt_args) . ']...' if @opt_args;
+	    $human .= ')';
+	    push (@members, "\"$human\"");
+	} else {
+	    push (@members, "NULL");
+	}
+
+	my (@flags);
+	push (@flags, "OPF_ABSORB_MISS") if defined $op->{ABSORB_MISS};
+	push (@flags, "OPF_ARRAY_OPERAND") if array_arg ($op);
+	push (@flags, "OPF_MIN_VALID") if defined $op->{MIN_VALID};
+	push (@flags, "OPF_NONOPTIMIZABLE") if !$op->{OPTIMIZABLE};
+	push (@flags, "OPF_EXTENSION") if $op->{EXTENSION};
+	push (@flags, "OPF_UNIMPLEMENTED") if $op->{UNIMPLEMENTED};
+	push (@flags, "OPF_PERM_ONLY") if $op->{PERM_ONLY};
+	push (@flags, "OPF_NO_ABBREV") if $op->{NO_ABBREV};
+	push (@members, @flags ? join (' | ', @flags) : 0);
+
+	push (@members, "OP_$op->{RETURNS}{NAME}");
+
+	push (@members, scalar (@{$op->{ARGS}}));
+
+	my (@arg_types) = map ("OP_$_->{TYPE}{NAME}", @{$op->{ARGS}});
+	push (@members, "{" . join (', ', @arg_types) . "}");
+
+	push (@members, $op->{MIN_VALID} || 0);
+
+	push (@members, array_arg ($op) ? ${array_arg ($op)}{TIMES} : 0);
+
+	print "{", join (', ', @members), "},\n";
+    }
 }
 
 # Utilities.
