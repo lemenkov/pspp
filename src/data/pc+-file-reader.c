@@ -1,5 +1,5 @@
 /* PSPP - a program for statistical analysis.
-   Copyright (C) 1997-2000, 2006-2007, 2009-2015 Free Software Foundation, Inc.
+   Copyright (C) 1997-2000, 2006-2007, 2009-2016 Free Software Foundation, Inc.
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -641,8 +641,9 @@ read_value_labels (struct pcp_reader *r, struct pcp_var_record *var,
       uint8_t len;
 
       if (var->n_val_labs >= allocated_val_labs)
-        var->val_labs = x2nrealloc (var->val_labs, &allocated_val_labs,
-                                    sizeof *var->val_labs);
+        var->val_labs = pool_2nrealloc (r->pool, var->val_labs,
+                                        &allocated_val_labs,
+                                        sizeof *var->val_labs);
       vl = &var->val_labs[var->n_val_labs];
 
       if (!read_bytes (r, vl->value, sizeof vl->value)
