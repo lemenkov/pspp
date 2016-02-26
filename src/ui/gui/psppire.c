@@ -194,9 +194,6 @@ func (gpointer key, gpointer value, gpointer data)
 void
 psppire_quit (void)
 {
-  PsppireWindowRegister *reg = psppire_window_register_new ();
-  psppire_window_register_foreach (reg, func, NULL);
-
   gtk_main_quit ();
 }
 
