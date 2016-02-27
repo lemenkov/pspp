@@ -1,3 +1,4 @@
+about-logo.png
 actions/
 apps/
 categories/
@@ -5,3 +6,5 @@ icon-names.c
 manifest
 mimetypes/
 splash.png
+splash-r.png
+splash-t.png
