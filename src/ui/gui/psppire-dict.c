@@ -41,6 +41,7 @@
 #define N_(msgid) msgid
 
 enum  {
+  ITEMS_CHANGED,
   BACKEND_CHANGED,
 
   VARIABLE_CHANGED,
@@ -183,6 +184,19 @@ psppire_dict_class_init (PsppireDictClass *class)
 		  g_cclosure_marshal_VOID__VOID,
 		  G_TYPE_NONE,
 		  0);
+  
+  signals [ITEMS_CHANGED] =
+    g_signal_new ("changed",
+		  G_TYPE_FROM_CLASS (class),
+		  G_SIGNAL_RUN_FIRST,
+		  0,
+		  NULL, NULL,
+		  psppire_marshal_VOID__UINT_UINT_UINT,
+		  G_TYPE_NONE,
+		  3,
+		  G_TYPE_UINT,
+		  G_TYPE_UINT,
+		  G_TYPE_UINT);
 
 
   signals [VARIABLE_CHANGED] =
@@ -280,7 +294,10 @@ addcb (struct dictionary *d, int idx, void *pd)
   PsppireDict *dict = PSPPIRE_DICT (pd);
 
   if ( ! dict->disable_insert_signal)
-    g_signal_emit (dict, signals [VARIABLE_INSERTED], 0, idx);
+    {
+      g_signal_emit (dict, signals [VARIABLE_INSERTED], 0, idx);
+      g_signal_emit (dict, signals [ITEMS_CHANGED], 0, idx, 1, 1);
+    }
 }
 
 static void
@@ -289,12 +306,14 @@ delcb (struct dictionary *d, const struct variable *var,
 {
   g_signal_emit (pd, signals [VARIABLE_DELETED], 0,
                  var, dict_idx, case_idx);
+  g_signal_emit (pd, signals [ITEMS_CHANGED], 0, dict_idx, 1, 0);
 }
 
 static void
 mutcb (struct dictionary *d, int idx, unsigned int what, const struct variable *oldvar, void *pd)
 {
   g_signal_emit (pd, signals [VARIABLE_CHANGED], 0, idx, what, oldvar);
+  g_signal_emit (pd, signals [ITEMS_CHANGED], 0, idx, 1, 1);
 }
 
 static void
@@ -343,7 +362,7 @@ psppire_dict_new_from_dict (struct dictionary *d)
 {
   PsppireDict *new_dict = g_object_new (PSPPIRE_TYPE_DICT, NULL);
   new_dict->dict = d;
-
+  
   dict_set_callbacks (new_dict->dict, &gui_callbacks, new_dict);
 
   return new_dict;
@@ -355,6 +374,9 @@ psppire_dict_replace_dictionary (PsppireDict *dict, struct dictionary *d)
 {
   struct variable *var =  dict_get_weight (d);
 
+  guint old_n = dict_get_var_cnt (dict->dict);
+  guint new_n = dict_get_var_cnt (d);
+  
   dict->dict = d;
 
   weight_changed_callback (d, var ? var_get_dict_index (var) : -1, dict);
@@ -367,6 +389,7 @@ psppire_dict_replace_dictionary (PsppireDict *dict, struct dictionary *d)
   dict_set_callbacks (dict->dict, &gui_callbacks, dict);
 
   g_signal_emit (dict, signals [BACKEND_CHANGED], 0);
+  g_signal_emit (dict, signals [ITEMS_CHANGED], 0, 0, old_n, new_n);
 }
 
 
@@ -430,7 +453,8 @@ psppire_dict_insert_variable (PsppireDict *d, gint idx, const gchar *name)
   d->disable_insert_signal = FALSE;
 
   g_signal_emit (d, signals[VARIABLE_INSERTED], 0, idx);
-
+  g_signal_emit (d, signals [ITEMS_CHANGED], 0, idx, 0, 1);
+  
   return var;
 }
 
@@ -687,12 +711,8 @@ tree_model_column_type (GtkTreeModel *model, gint index)
     case DICT_TVM_COL_LABEL:
       return G_TYPE_STRING;
       break;
-    default:
-      g_return_val_if_reached ((GType)0);
-      break;
     }
 
-  g_assert_not_reached ();
   return ((GType)0);
 }
 
@@ -855,7 +875,7 @@ tree_model_n_children (GtkTreeModel *model,
 {
   PsppireDict *dict = PSPPIRE_DICT (model);
 
-  if ( iter == NULL )
+  if (iter == NULL)
     return psppire_dict_get_var_cnt (dict);
 
   return 0;
