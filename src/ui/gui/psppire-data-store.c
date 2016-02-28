@@ -67,7 +67,7 @@ static GObjectClass *parent_class = NULL;
 
 enum
   {
-    BACKEND_CHANGED,
+    ITEMS_CHANGED,
     CASES_DELETED,
     CASE_INSERTED,
     CASE_CHANGED,
@@ -210,15 +210,18 @@ psppire_data_store_class_init (PsppireDataStoreClass *class)
   object_class->finalize = psppire_data_store_finalize;
   object_class->dispose = psppire_data_store_dispose;
 
-  signals [BACKEND_CHANGED] =
-    g_signal_new ("backend-changed",
+    signals [ITEMS_CHANGED] =
+    g_signal_new ("changed",
 		  G_TYPE_FROM_CLASS (class),
 		  G_SIGNAL_RUN_FIRST,
 		  0,
 		  NULL, NULL,
-		  g_cclosure_marshal_VOID__VOID,
+		  psppire_marshal_VOID__UINT_UINT_UINT,
 		  G_TYPE_NONE,
-		  0);
+		  3,
+		  G_TYPE_UINT,
+		  G_TYPE_UINT,
+		  G_TYPE_UINT);
 
   signals [CASE_INSERTED] =
     g_signal_new ("case-inserted",
@@ -385,15 +388,17 @@ psppire_data_store_set_reader (PsppireDataStore *ds,
 			       struct casereader *reader)
 {
   gint i;
-
+  gint old_n = 0;
   if ( ds->datasheet)
-    datasheet_destroy (ds->datasheet);
+    {
+      old_n = datasheet_get_n_rows (ds->datasheet);
+      datasheet_destroy (ds->datasheet);
+    }
 
   ds->datasheet = datasheet_create (reader);
 
-  g_signal_emit_by_name (ds, "notify", 0, 0);
-  g_print ("Datasheet row count %d\n", datasheet_get_n_rows (ds->datasheet));
-
+  gint new_n = datasheet_get_n_rows (ds->datasheet);
+  
   if ( ds->dict )
     for (i = 0 ; i < n_dict_signals; ++i )
       {
@@ -404,7 +409,7 @@ psppire_data_store_set_reader (PsppireDataStore *ds,
 	  }
       }
 
-  g_signal_emit (ds, signals[BACKEND_CHANGED], 0);
+  g_signal_emit (ds, signals[ITEMS_CHANGED], 0, 0, old_n, new_n);
 }
 
 

@@ -1009,7 +1009,7 @@ psppire_data_window_finish_init (PsppireDataWindow *de,
 		    G_CALLBACK (on_split_change),
 		    de);
 
-  g_signal_connect_swapped (de->dict, "backend-changed",
+  g_signal_connect_swapped (de->dict, "changed",
                             G_CALLBACK (enable_save), de);
   g_signal_connect_swapped (de->dict, "variable-inserted",
                             G_CALLBACK (enable_save), de);

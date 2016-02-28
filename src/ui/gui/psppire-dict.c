@@ -42,7 +42,6 @@
 
 enum  {
   ITEMS_CHANGED,
-  BACKEND_CHANGED,
 
   VARIABLE_CHANGED,
   VARIABLE_INSERTED,
@@ -175,16 +174,6 @@ psppire_dict_class_init (PsppireDictClass *class)
 
   object_class->dispose = psppire_dict_dispose;
 
-  signals [BACKEND_CHANGED] =
-    g_signal_new ("backend-changed",
-		  G_TYPE_FROM_CLASS (class),
-		  G_SIGNAL_RUN_FIRST,
-		  0,
-		  NULL, NULL,
-		  g_cclosure_marshal_VOID__VOID,
-		  G_TYPE_NONE,
-		  0);
-  
   signals [ITEMS_CHANGED] =
     g_signal_new ("changed",
 		  G_TYPE_FROM_CLASS (class),
@@ -388,7 +377,6 @@ psppire_dict_replace_dictionary (PsppireDict *dict, struct dictionary *d)
 
   dict_set_callbacks (dict->dict, &gui_callbacks, dict);
 
-  g_signal_emit (dict, signals [BACKEND_CHANGED], 0);
   g_signal_emit (dict, signals [ITEMS_CHANGED], 0, 0, old_n, new_n);
 }
 
