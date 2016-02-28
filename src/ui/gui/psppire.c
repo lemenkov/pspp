@@ -1,5 +1,5 @@
 /* PSPPIRE - a graphical user interface for PSPP.
-   Copyright (C) 2004, 2005, 2006, 2009, 2010, 2011, 2012, 2013, 2014  Free Software Foundation
+   Copyright (C) 2004, 2005, 2006, 2009, 2010, 2011, 2012, 2013, 2014, 2016  Free Software Foundation
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -180,15 +180,6 @@ de_initialize (void)
   settings_done ();
   output_engine_pop ();
   i18n_done ();
-}
-
-static void
-func (gpointer key, gpointer value, gpointer data)
-{
-  gboolean rv;
-  PsppireWindow *window = PSPPIRE_WINDOW (value);
-
-  g_signal_emit_by_name (window, "delete-event", 0, &rv);
 }
 
 void
