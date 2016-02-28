@@ -87,6 +87,13 @@ __tree_model_iter_n_children (GtkTreeModel *tree_model,
   return n;
 }
 
+static GtkTreeModelFlags
+__tree_model_get_flags (GtkTreeModel *model)
+{
+  g_return_val_if_fail (PSPPIRE_IS_DATA_STORE (model), (GtkTreeModelFlags) 0);
+
+  return GTK_TREE_MODEL_LIST_ONLY;
+}
 
 static gint
 __tree_model_get_n_columns (GtkTreeModel *tree_model)
@@ -145,7 +152,7 @@ __get_value (GtkTreeModel *tree_model,
 static void
 __tree_model_init (GtkTreeModelIface *iface)
 {
-  iface->get_flags       = NULL; 
+  iface->get_flags       = __tree_model_get_flags;
   iface->get_n_columns   = __tree_model_get_n_columns ;
   iface->get_column_type = NULL; 
   iface->get_iter        = NULL; 
