@@ -517,6 +517,8 @@ Setting it to @subcmd{DOT} causes the decimal point character to be
 Setting it to @subcmd{COMMA}
 causes the decimal point character to be @samp{,} and the grouping
 character to be @samp{.}.
+If the setting is @subcmd{COMMA}, then @samp{,} will not be treated
+as a field separator in the @cmd{DATA LIST} command (@pxref{DATA LIST}).
 The default value is determined from the system locale.
 
 @item FORMAT

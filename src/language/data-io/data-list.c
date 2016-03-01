@@ -229,7 +229,9 @@ cmd_data_list (struct lexer *lexer, struct dataset *ds)
                   data_parser_set_quotes (parser, ss_cstr ("'\""));
                   data_parser_set_soft_delimiters (parser,
                                                    ss_cstr (CC_SPACES));
-                  data_parser_set_hard_delimiters (parser, ss_cstr (","));
+                  const char decimal = settings_get_decimal_char (FMT_F);
+                  data_parser_set_hard_delimiters (parser,
+                                                   ss_buffer (",", (decimal == '.') ? 1 : 0));
                 }
             }
         }
