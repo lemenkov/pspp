@@ -3997,8 +3997,10 @@ _pspp_sheet_view_column_cell_set_dirty (PsppSheetViewColumn *tree_column)
   tree_column->width = 0;
 
   if (tree_column->tree_view &&
+      PSPP_SHEET_VIEW (tree_column->tree_view)->priv->resized &&
       gtk_widget_get_realized (tree_column->tree_view))
     {
+      PSPP_SHEET_VIEW (tree_column->tree_view)->priv->resized = FALSE;
       _pspp_sheet_view_install_mark_rows_col_dirty (PSPP_SHEET_VIEW (tree_column->tree_view));
       gtk_widget_queue_resize (tree_column->tree_view);
     }

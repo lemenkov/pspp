@@ -280,6 +280,9 @@ struct _PsppSheetViewPrivate
    * driving the scrollable adjustment values */
   guint hscroll_policy : 1;
   guint vscroll_policy : 1;
+
+  /* For optimisation of size allocate requests */
+  guint resized : 1;
  };
 
 #ifdef __GNUC__
