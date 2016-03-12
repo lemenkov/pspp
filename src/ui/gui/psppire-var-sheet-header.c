@@ -24,6 +24,10 @@
 #include "efficient-sheet/jmd-axis-model.h"
 #include "efficient-sheet/jmd-datum.h"
 
+enum  {CHANGED,
+       n_SIGNALS};
+
+static guint signals [n_SIGNALS];
 
 static guint
 gni (GListModel *list)
@@ -110,5 +114,17 @@ psppire_var_sheet_header_init (PsppireVarSheetHeader *d)
 static void
 psppire_var_sheet_header_class_init (PsppireVarSheetHeaderClass *dc)
 {
+  GObjectClass *object_class = G_OBJECT_CLASS (dc);
+
+  /* This signal is never emitted.  It is just to satisfy the interface. */
+  signals [CHANGED] =
+    g_signal_new ("changed",
+		  G_TYPE_FROM_CLASS (object_class),
+		  G_SIGNAL_RUN_FIRST,
+		  0,
+		  NULL, NULL,
+		  g_cclosure_marshal_VOID__VOID,
+		  G_TYPE_NONE,
+		  0);
 }
 
