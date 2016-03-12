@@ -301,17 +301,26 @@ psppire_data_editor_class_init (PsppireDataEditorClass *klass)
 }
 
 
-static gboolean
+static void
 on_var_sheet_var_double_clicked (PsppireVarSheet *var_sheet, gint dict_index,
                                  PsppireDataEditor *de)
 {
-
   gtk_notebook_set_current_page (GTK_NOTEBOOK (de),
                                  PSPPIRE_DATA_EDITOR_DATA_VIEW);
 
-
-  return TRUE;
+  jmd_sheet_scroll_to (de->data_sheet, dict_index, -1);
 }
+
+static void
+on_data_sheet_var_double_clicked (JmdSheet *data_sheet, gint dict_index,
+                                 PsppireDataEditor *de)
+{
+  gtk_notebook_set_current_page (GTK_NOTEBOOK (de),
+                                 PSPPIRE_DATA_EDITOR_VARIABLE_VIEW);
+
+  jmd_sheet_scroll_to (de->var_sheet, -1, dict_index);
+}
+
 
 /* Refreshes 'de->cell_ref_label' and 'de->datum_entry' from the currently
    active cell or cells. */
@@ -386,8 +395,11 @@ psppire_data_editor_init (PsppireDataEditor *de)
 
   gtk_widget_show_all (de->var_sheet);
   
-  g_signal_connect (de->var_sheet, "var-double-clicked",
+  g_signal_connect (de->var_sheet, "row-header-double-clicked",
                     G_CALLBACK (on_var_sheet_var_double_clicked), de);
+
+  g_signal_connect (de->data_sheet, "column-header-double-clicked",
+                    G_CALLBACK (on_data_sheet_var_double_clicked), de);
 
   g_object_set (de, "can-focus", FALSE, NULL);
 

@@ -79,7 +79,7 @@ gi (GListModel *list, guint position)
       break;
     default:
       //      g_assert_not_reached ();
-      g_print ("Bug: Request for item %d", position);
+      g_print ("Bug: Request for item %d\n", position);
       break;
     }
 
