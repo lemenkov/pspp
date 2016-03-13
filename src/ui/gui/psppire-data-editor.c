@@ -327,6 +327,7 @@ on_data_sheet_var_double_clicked (JmdSheet *data_sheet, gint dict_index,
 static void
 refresh_entry (PsppireDataEditor *de)
 {
+  g_print ("%s\n", __FUNCTION__);
 }
 
 static void
@@ -338,6 +339,48 @@ on_datum_entry_activate (PsppireValueEntry *entry, PsppireDataEditor *de)
 static void
 disconnect_data_sheets (PsppireDataEditor *de)
 {
+}
+
+/* Called when the active cell or the selection in the data sheet changes */
+static void
+on_data_selection_change (PsppireDataEditor *de, JmdRange *sel)
+{
+  gchar *ref_cell_text = NULL;
+
+  gint n_cases = abs (sel->end_y - sel->start_y) + 1;
+  gint n_vars = abs (sel->end_x - sel->start_x) + 1;
+
+  if (n_cases == 1 && n_vars == 1)
+    {
+      /* A single cell is selected */
+      const struct variable *var = psppire_dict_get_variable (de->dict, sel->start_x);
+      
+      ref_cell_text = g_strdup_printf (_("%d : %s"),
+				       sel->start_y + 1, var_get_name (var));
+    }
+  else
+    {
+      struct string s;
+
+      /* The glib string library does not understand the ' printf modifier
+	 on all platforms, but the "struct string" library does (because
+	 Gnulib fixes that problem), so use the latter.  */
+      ds_init_empty (&s);
+      ds_put_format (&s, ngettext ("%'d case", "%'d cases", n_cases),
+		     n_cases);
+      ds_put_byte (&s, ' ');
+      ds_put_unichar (&s, 0xd7); /* U+00D7 MULTIPLICATION SIGN */
+      ds_put_byte (&s, ' ');
+      ds_put_format (&s, ngettext ("%'d variable", "%'d variables",
+				   n_vars),
+		     n_vars);
+      ref_cell_text = ds_steal_cstr (&s);
+    }
+  
+  gtk_label_set_label (GTK_LABEL (de->cell_ref_label),
+		       ref_cell_text ? ref_cell_text : "");
+  
+  g_free (ref_cell_text);
 }
 
 
@@ -375,6 +418,10 @@ psppire_data_editor_init (PsppireDataEditor *de)
   gtk_box_pack_start (GTK_BOX (de->vbox), hbox, FALSE, FALSE, 0);
   gtk_box_pack_start (GTK_BOX (de->vbox), de->data_sheet, TRUE, TRUE, 0);
 
+
+  g_signal_connect_swapped (de->data_sheet, "selection-changed",
+		    G_CALLBACK (on_data_selection_change), de);
+  
   gtk_notebook_append_page (GTK_NOTEBOOK (de), de->vbox,
 			    gtk_label_new_with_mnemonic (_("Data View")));
 
