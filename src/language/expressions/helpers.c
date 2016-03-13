@@ -717,3 +717,32 @@ replace_string (struct expression *e,
 
   return result;
 }
+
+static int
+compare_doubles (const void *a_, const void *b_)
+{
+  const double *ap = a_;
+  const double *bp = b_;
+  double a = *ap;
+  double b = *bp;
+
+  /* Sort SYSMIS to the end. */
+  return (a == b ? 0
+          : a == SYSMIS ? 1
+          : b == SYSMIS ? -1
+          : a > b ? 1 : -1);
+}
+
+double
+median (double *a, size_t n)
+{
+  /* Sort the array in-place, sorting SYSMIS to the end. */
+  qsort (a, n, sizeof *a, compare_doubles);
+
+  /* Drop SYSMIS. */
+  n = count_valid (a, n);
+
+  return (!n ? SYSMIS
+          : n % 2 ? a[n / 2]
+          : (a[n / 2 - 1] + a[n / 2]) / 2.0);
+}

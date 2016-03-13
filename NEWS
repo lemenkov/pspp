@@ -38,6 +38,12 @@ Changes from 0.8.5 to 0.9.0:
    discourage its use PSPP and PSPPIRE do not directly read or write
    this format.
 
+ * The following functions for transformation expressions are new:
+
+   - REPLACE, for search-and-replace of one string with another.
+
+   - MEDIAN, to compute the median of its arguments.
+
  * Bug fixes, including the following notable ones:
 
    - The correlation coefficient in the paired samples t-test

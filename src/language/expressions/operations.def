@@ -168,6 +168,11 @@ function MEAN.1 (a[n])
   return mean;
 }
 
+function MEDIAN.1 (a[n])
+{
+  return median (a, n);
+}
+
 function MIN.1 (a[n])
 {
   double min;

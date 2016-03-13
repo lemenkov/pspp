@@ -89,4 +89,6 @@ struct substring replace_string (struct expression *,
                                  struct substring replacement,
                                  double n);
 
+double median (double *, size_t n);
+
 #endif /* expressions/helpers.h */

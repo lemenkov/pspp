@@ -262,7 +262,7 @@ The sections below describe each function in detail.
 * Trigonometry::                ACOS ARCOS ARSIN ARTAN ASIN ATAN COS SIN TAN
 * Missing Value Functions::     MISSING NMISS NVALID SYSMIS VALUE
 * Set Membership::              ANY RANGE
-* Statistical Functions::       CFVAR MAX MEAN MIN SD SUM VARIANCE
+* Statistical Functions::       CFVAR MAX MEAN MEDIAN MIN SD SUM VARIANCE
 * String Functions::            CONCAT INDEX LENGTH LOWER LPAD LTRIM NUMBER 
                                 REPLACE RINDEX RPAD RTRIM STRING SUBSTR UPCASE
 * Time and Date::               CTIME.xxx DATE.xxx TIME.xxx XDATE.xxx
@@ -508,6 +508,13 @@ be numeric or string.
 @cindex mean
 @deftypefn {Function} {} MEAN (@var{number}, @var{number}[, @dots{}])
 Results in the mean of the values of @var{number}.
+@end deftypefn
+
+@cindex median
+@deftypefn {Function} {} MEDIAN (@var{number}, @var{number}[, @dots{}])
+Results in the median of the values of @var{number}.  Given an even
+number of nonmissing arguments, yields the mean of the two middle
+values.
 @end deftypefn
 
 @cindex minimum
