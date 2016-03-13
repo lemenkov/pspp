@@ -11,4 +11,22 @@ RENAME VARIABLE (aèiöu=AÈIÖU).
 LIST.
 RENAME VARIABLE (aeiou=aèiöu).
 ])
+
+AT_CHECK([pspp -O format=csv dictionary.sps],[1],
+[Table: Reading free-form data from INLINE.
+Variable,Format
+aèiöu,F8.0
+aeiou,F8.0
+
+Table: Data List
+aèiöu
+1.00
+
+Table: Data List
+AÈIÖU,aeiou
+1.00,2.00
+
+dictionary.sps:8: error: RENAME VARIABLES: Renaming would duplicate variable name aèiöu.
+])
+
 AT_CLEANUP
