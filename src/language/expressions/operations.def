@@ -629,6 +629,18 @@ absorb_miss string function STRING (x, no_format f)
   return dst;
 }
 
+absorb_miss string function STRUNC (string s, n)
+{
+  if (n < 1 || n == SYSMIS)
+    return empty_string;
+
+  if (n < s.length)
+    s.length = n;
+  while (s.length > 0 && s.string[s.length - 1] == ' ')
+    s.length--;
+  return s;
+}
+
 absorb_miss string function SUBSTR (string s, ofs)
      expression e;
 {

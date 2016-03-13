@@ -42,6 +42,8 @@ Changes from 0.8.5 to 0.9.0:
 
    - REPLACE, for search-and-replace of one string with another.
 
+   - STRUNC, to truncate a string and trim trailing spaces.
+
    - MEDIAN, to compute the median of its arguments.
 
  * Bug fixes, including the following notable ones:

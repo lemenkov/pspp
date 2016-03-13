@@ -264,7 +264,8 @@ The sections below describe each function in detail.
 * Set Membership::              ANY RANGE
 * Statistical Functions::       CFVAR MAX MEAN MEDIAN MIN SD SUM VARIANCE
 * String Functions::            CONCAT INDEX LENGTH LOWER LPAD LTRIM NUMBER 
-                                REPLACE RINDEX RPAD RTRIM STRING SUBSTR UPCASE
+                                REPLACE RINDEX RPAD RTRIM STRING STRUNC SUBSTR
+                                UPCASE
 * Time and Date::               CTIME.xxx DATE.xxx TIME.xxx XDATE.xxx
                                 DATEDIFF DATESUM
 * Miscellaneous Functions::     LAG YRMODA VALUELABEL
@@ -689,6 +690,15 @@ empty string.
 Returns a string corresponding to @var{number} in the format given by
 format specifier @var{format}.  For example, @code{STRING(123.56, F5.1)}
 has the value @code{"123.6"}.
+@end deftypefn
+
+@cindex strings, trimming
+@cindex strings, truncating
+@cindex white space, trimming
+@deftypefn {Function} {} STRUNC (@var{string}, @var{n})
+Returns @var{string}, first trimming it to at most @var{n} bytes, then
+removing trailing spaces.  Returns an empty string if @var{n} is
+missing or negative.
 @end deftypefn
 
 @cindex substrings
