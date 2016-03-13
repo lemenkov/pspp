@@ -452,11 +452,16 @@ VALUE LABELS
         /@var{var_list} @var{value} '@var{label}' [@var{value} '@var{label}']@dots{}
 @end display
 
-@cmd{VALUE LABELS} allows values of numeric and short string
+@cmd{VALUE LABELS} allows values of
 variables to be associated with labels.  In this way, a short value can
-stand for a long value.
+stand for a longer, more descriptive label.
 
-To set up value labels for a set of variables, specify the
+Both numeric and string variables can be given labels.  For string
+variables, the values are case-sensitive, so that, for example, a
+capitalized value and its lowercase variant would have to be labeled
+separately if both are present in the data.
+
+To set up value labels for one or more variables, specify the
 variable names after a slash (@samp{/}), followed by a list of values
 and their associated labels, separated by spaces.
 
