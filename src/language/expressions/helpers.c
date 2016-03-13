@@ -665,17 +665,27 @@ npdf_beta (double x, double a, double b, double lambda)
 }
 
 double
-round_nearest (double x, double mult, double fuzzbits)
+round__ (double x, double mult, double fuzzbits, double adjustment)
 {
-  double adjustment;
-
   if (fuzzbits <= 0)
     fuzzbits = settings_get_fuzzbits ();
-  adjustment = .5 + exp2 (fuzzbits - DBL_MANT_DIG);
+  adjustment += exp2 (fuzzbits - DBL_MANT_DIG);
 
   x /= mult;
   x = x >= 0. ? floor (x + adjustment) : -floor (-x + adjustment);
   return x * mult;
+}
+
+double
+round_nearest (double x, double mult, double fuzzbits)
+{
+  return round__ (x, mult, fuzzbits, .5);
+}
+
+double
+round_zero (double x, double mult, double fuzzbits)
+{
+  return round__ (x, mult, fuzzbits, 0);
 }
 
 struct substring

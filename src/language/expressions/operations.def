@@ -90,7 +90,9 @@ function RND (x, mult != 0, fuzzbits >= 0) = round_nearest (x, mult, fuzzbits);
 function SIN (x) = sin (x);
 function SQRT (x >= 0) = sqrt (x);
 function TAN (x) = check_errno (tan (x));
-function TRUNC (x) = x >= 0. ? floor (x) : -floor (-x);
+function TRUNC (x) = round_zero (x, 1, 0);
+function TRUNC (x, mult != 0) = round_zero (x, mult, 0);
+function TRUNC (x, mult != 0, fuzzbits >= 0) = round_zero (x, mult, fuzzbits);
 
 absorb_miss function MOD (n, d)
 {

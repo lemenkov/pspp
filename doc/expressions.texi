@@ -342,9 +342,14 @@ FUZZBITS}), which is 6 unless overridden.
 @end deftypefn
 
 @cindex truncation
-@deftypefn {Function} {} TRUNC (@var{number})
-Discards the fractional part of @var{number}; that is, rounds
-@var{number} towards zero.
+@deftypefn {Function} {} TRUNC (@var{number} [, @var{mult}[, @var{fuzzbits}]])
+Rounds @var{number} to a multiple of @var{mult}, toward zero.  For the
+default @var{mult} of 1, this is equivalent to discarding the
+fractional part of @var{number}.  Values that fall short of a multiple
+of @var{mult} by less than @var{fuzzbits} of errors in the
+least-significant bits of @var{number} are rounded away from zero.  If
+@var{fuzzbits} is not specified then the default is taken from SET
+FUZZBITS (@pxref{SET FUZZBITS}), which is 6 unless overridden.
 @end deftypefn
 
 @node Trigonometry

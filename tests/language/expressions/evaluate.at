@@ -352,8 +352,19 @@ RND(number, number, number).]],
   [[trunc(1.9)], [1.00]],
   [[trunc(-1.2)], [-1.00]],
   [[trunc(-1.9)], [-1.00]],
+  [[trunc(5.06, .1)], [5.00]],
+  [[trunc(-5.06, .1)], [-5.00]],
+  [[trunc(1)], [1.00]],
+  [[trunc(1 - 2**-53)], [1.00]],
+  [[trunc(1 - 2**-52)], [1.00]],
+  [[trunc(1 - 2**-51)], [1.00]],
+  [[trunc(1 - 2**-45)], [0.00]],
+  [[trunc(1 - 2**-45, 1, 10)], [1.00]],
   [[trunc('x')], [error],
-   [error: DEBUG EVALUATE: Type mismatch invoking TRUNC(number) as trunc(string).]])
+   [error: DEBUG EVALUATE: Function invocation trunc(string) does not match any known function.  Candidates are:
+TRUNC(number)
+TRUNC(number, number)
+TRUNC(number, number, number).]])
 
 CHECK_EXPR_EVAL([acos arsin artan cos sin tan],
   [[acos(.5) / 3.14159 * 180], [60.00]],

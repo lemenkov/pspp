@@ -82,6 +82,7 @@ double cdf_bvnor (double x0, double x1, double r);
 double idf_fdist (double P, double a, double b);
 
 double round_nearest (double x, double mult, double fuzzbits);
+double round_zero (double x, double mult, double fuzzbits);
 
 struct substring replace_string (struct expression *,
                                  struct substring haystack,

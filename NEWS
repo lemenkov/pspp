@@ -46,6 +46,11 @@ Changes from 0.8.5 to 0.9.0:
 
    - MEDIAN, to compute the median of its arguments.
 
+   - The TRUNC function in expressions now supports additional arguments
+     for truncating to values other than integers and to indicate a level
+     of rounding fuzz.  The default rounding fuzz may now be controlled
+     and displayed with SET FUZZBITS and SHOW FUZZBITS, respectively.
+
  * Bug fixes, including the following notable ones:
 
    - The correlation coefficient in the paired samples t-test
