@@ -138,23 +138,48 @@ __get_value (GtkTreeModel *tree_model,
 {
   PsppireDataStore *store  = PSPPIRE_DATA_STORE (tree_model);
 
-  g_value_init (value, G_TYPE_DOUBLE);
+  const struct variable *variable = psppire_dict_get_variable (store->dict, column);
+
+  if (var_is_numeric (variable))
+    g_value_init (value, G_TYPE_DOUBLE);
+  else
+    g_value_init (value, G_TYPE_STRING);
 
   gint row = GPOINTER_TO_INT (iter->user_data);
 
   struct ccase *cc = datasheet_get_row (store->datasheet, row);
   
-  g_value_set_double (value, case_data_idx (cc, column)->f);
+  if (var_is_numeric (variable))
+    g_value_set_double (value, case_data_idx (cc, column)->f);
+  else
+    {
+      const gchar *ss = value_str (case_data_idx (cc, column),
+			     var_get_width (variable));
+      g_value_set_string (value, ss);
+    }
   case_unref (cc);
 }
 
+
+static GType
+__get_type (GtkTreeModel *tree_model,   gint idx)
+{
+  PsppireDataStore *store  = PSPPIRE_DATA_STORE (tree_model);
+
+  const struct variable *variable = psppire_dict_get_variable (store->dict, idx);
+
+  if (var_is_numeric (variable))
+    return G_TYPE_DOUBLE;
+
+  return G_TYPE_STRING;
+}
 
 static void
 __tree_model_init (GtkTreeModelIface *iface)
 {
   iface->get_flags       = __tree_model_get_flags;
   iface->get_n_columns   = __tree_model_get_n_columns ;
-  iface->get_column_type = NULL; 
+  iface->get_column_type = __get_type;
   iface->get_iter        = NULL; 
   iface->iter_next       = NULL; 
   iface->get_path        = NULL; 
