@@ -1,5 +1,5 @@
 /* PSPP - a program for statistical analysis.
-   Copyright (C) 1997-9, 2000, 2006, 2009, 2010, 2011, 2012, 2013, 2014 Free Software Foundation, Inc.
+   Copyright (C) 1997-9, 2000, 2006, 2009, 2010, 2011, 2012, 2013, 2014, 2016 Free Software Foundation, Inc.
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -42,6 +42,42 @@
 
 #include "gettext.h"
 #define _(msgid) gettext (msgid)
+#define N_(msgid) (msgid)
+
+/* This should follow the definition in Gtk */
+typedef struct
+{
+  int value;
+  const char *name;
+  const char *nick;
+} GEnumValue;
+
+const GEnumValue align[] =
+  {
+    {ALIGN_LEFT,   N_("Left"), N_("Left")},
+    {ALIGN_RIGHT,  N_("Right"), N_("Right")},
+    {ALIGN_CENTRE, N_("Center"), N_("Center")},
+    {0,0,0}
+  };
+
+const GEnumValue measure[] =
+  {
+    {MEASURE_NOMINAL, N_("Nominal"), N_("Nominal")},
+    {MEASURE_ORDINAL, N_("Ordinal"), N_("Ordinal")},
+    {MEASURE_SCALE,   N_("Scale"), N_("Scale")},
+    {0,0,0}
+  };
+
+const GEnumValue role[] =
+  {
+    {ROLE_INPUT,  N_("Input"),    N_("Input")},
+    {ROLE_TARGET, N_("Output"),   N_("Output")},
+    {ROLE_BOTH,   N_("Both"),     N_("Both")},
+    {ROLE_NONE,   N_("None"),     N_("None")},
+    {ROLE_PARTITION, N_("Partition"), N_("Partition")},
+    {ROLE_SPLIT,  N_("Split"),    N_("Split")},
+    {0,0,0}
+  };
 
 /* A variable. */
 struct variable
@@ -771,20 +807,8 @@ measure_is_valid (enum measure m)
 const char *
 measure_to_string (enum measure m)
 {
-  switch (m)
-    {
-    case MEASURE_NOMINAL:
-      return _("Nominal");
-
-    case MEASURE_ORDINAL:
-      return _("Ordinal");
-
-    case MEASURE_SCALE:
-      return _("Scale");
-
-    default:
-      return "Invalid";
-    }
+  assert (m == measure[m].value);
+  return gettext (measure[m].nick);
 }
 
 /* Returns a string version of measurement level M, for use in PSPP command
@@ -866,31 +890,10 @@ var_role_is_valid (enum var_role role)
 
 /* Returns a string version of ROLE, for display to a user. */
 const char *
-var_role_to_string (enum var_role role)
+var_role_to_string (enum var_role r)
 {
-  switch (role)
-    {
-    case ROLE_INPUT:
-      return _("Input");
-
-    case ROLE_TARGET:
-      return _("Output");
-
-    case ROLE_BOTH:
-      return _("Both");
-
-    case ROLE_NONE:
-      return _("None");
-
-    case ROLE_PARTITION:
-      return _("Partition");
-
-    case ROLE_SPLIT:
-      return _("Split");
-
-    default:
-      return "Invalid";
-    }
+  assert (r == role[r].value);
+  return gettext (role[r].nick);
 }
 
 /* Returns a string version of ROLE, for use in PSPP comamnd syntax. */
@@ -996,20 +999,8 @@ alignment_is_valid (enum alignment a)
 const char *
 alignment_to_string (enum alignment a)
 {
-  switch (a)
-    {
-    case ALIGN_LEFT:
-      return _("Left");
-
-    case ALIGN_RIGHT:
-      return _("Right");
-
-    case ALIGN_CENTRE:
-      return _("Center");
-
-    default:
-      return "Invalid";
-    }
+  assert (a == align[a].value);
+  return gettext (align[a].nick);
 }
 
 /* Returns a string version of alignment A, for use in PSPP command syntax. */
