@@ -1,5 +1,5 @@
 /* PSPPIRE - a graphical user interface for PSPP.
-   Copyright (C) 2004, 2006, 2007, 2009, 2010, 2011, 2012  Free Software Foundation
+   Copyright (C) 2004, 2006, 2007, 2009, 2010, 2011, 2012, 2016  Free Software Foundation
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -35,10 +35,18 @@
 
 #include "ui/gui/efficient-sheet/jmd-datum.h"
 
+#include <gobject/genums.h>
 
 #include <gettext.h>
 #define _(msgid) gettext (msgid)
 #define N_(msgid) msgid
+
+
+
+GType align_enum_type;
+GType measure_enum_type;
+GType role_enum_type;
+
 
 enum  {
   ITEMS_CHANGED,
@@ -173,7 +181,7 @@ psppire_dict_class_init (PsppireDictClass *class)
   parent_class = g_type_class_peek_parent (class);
 
   object_class->dispose = psppire_dict_dispose;
-
+  
   signals [ITEMS_CHANGED] =
     g_signal_new ("changed",
 		  G_TYPE_FROM_CLASS (class),
@@ -688,20 +696,34 @@ tree_model_column_type (GtkTreeModel *model, gint index)
 {
   g_return_val_if_fail (PSPPIRE_IS_DICT (model), (GType) 0);
 
+  GType t = 0;
+  
   switch (index)
     {
     case DICT_TVM_COL_NAME:
-      return G_TYPE_STRING;
+      t = G_TYPE_STRING;
       break;
     case DICT_TVM_COL_VAR:
-      return PSPPIRE_VAR_PTR_TYPE;
+      t = PSPPIRE_VAR_PTR_TYPE;
       break;
     case DICT_TVM_COL_LABEL:
-      return G_TYPE_STRING;
+      t = G_TYPE_STRING;
+      break;
+    case DICT_TVM_COL_COLUMNS:
+      t = G_TYPE_INT;
+      break;
+    case DICT_TVM_COL_ALIGNMENT:
+      t = align_enum_type;
+      break;
+    case DICT_TVM_COL_MEASURE:
+      t = measure_enum_type;
+      break;
+    case DICT_TVM_COL_ROLE:
+      t = role_enum_type;
       break;
     }
 
-  return ((GType)0);
+  return t;
 }
 
 static gboolean
@@ -827,16 +849,16 @@ tree_model_get_value (GtkTreeModel *model, GtkTreeIter *iter,
       g_value_set_int (value, var_get_display_width (var));
       break;
     case DICT_TVM_COL_ALIGNMENT:
-      g_value_init (value, G_TYPE_INT);
-      g_value_set_int (value, var_get_alignment (var));
+      g_value_init (value, align_enum_type);
+      g_value_set_enum (value, var_get_alignment (var));
       break;
     case DICT_TVM_COL_MEASURE:
-      g_value_init (value, G_TYPE_INT);
-      g_value_set_int (value, var_get_measure (var));
+      g_value_init (value, measure_enum_type);
+      g_value_set_enum (value, var_get_measure (var));
       break;
     case DICT_TVM_COL_ROLE:
-      g_value_init (value, G_TYPE_INT);
-      g_value_set_int (value, var_get_role (var));
+      g_value_init (value, role_enum_type);
+      g_value_set_enum (value, var_get_role (var));
       break;
     case DICT_TVM_COL_VAR:
       g_value_init (value, PSPPIRE_VAR_PTR_TYPE);
