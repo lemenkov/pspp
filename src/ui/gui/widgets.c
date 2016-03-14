@@ -119,6 +119,34 @@ preregister_actions (void)
 }
 
 
+static void
+tx_string_to_double (const GValue *src, GValue *dest)
+{
+  const gchar *str = g_value_get_string (src);
+  gdouble dble = g_strtod (str, NULL);
+  g_value_set_double (dest, dble);
+}
+
+
+GType align_enum_type;
+GType measure_enum_type;
+GType role_enum_type;
+
+extern const GEnumValue align[];
+extern const GEnumValue measure[];
+extern const GEnumValue role[];
+
+static void
+preregister_misc (void)
+{
+  g_value_register_transform_func (G_TYPE_STRING, G_TYPE_DOUBLE, tx_string_to_double);
+
+  align_enum_type = g_enum_register_static ("PsppAlignment", align);
+  measure_enum_type = g_enum_register_static ("PsppMeasure", measure);
+  role_enum_type = g_enum_register_static ("PsppRole", role);
+
+}
+
 
 /* Any custom widgets which are to be used in GtkBuilder ui files
    need to be preregistered, otherwise GtkBuilder refuses to 
@@ -140,6 +168,7 @@ preregister_widgets (void)
   psppire_means_layer_get_type ();
 
   preregister_actions ();
+  preregister_misc ();
 
   /* This seems to be necessary on Cygwin.
      It ought not to be necessary.  Having it here can't do any harm. */
