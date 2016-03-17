@@ -398,7 +398,7 @@ on_var_sheet_var_double_clicked (PsppireVarSheet *var_sheet, gint dict_index,
   gtk_notebook_set_current_page (GTK_NOTEBOOK (de),
                                  PSPPIRE_DATA_EDITOR_DATA_VIEW);
 
-  jmd_sheet_scroll_to (de->data_sheet, dict_index, -1);
+  jmd_sheet_scroll_to (JMD_SHEET (de->data_sheet), dict_index, -1);
 }
 
 static void
@@ -408,7 +408,7 @@ on_data_sheet_var_double_clicked (JmdSheet *data_sheet, gint dict_index,
   gtk_notebook_set_current_page (GTK_NOTEBOOK (de),
                                  PSPPIRE_DATA_EDITOR_VARIABLE_VIEW);
 
-  jmd_sheet_scroll_to (de->var_sheet, -1, dict_index);
+  jmd_sheet_scroll_to (JMD_SHEET (de->var_sheet), -1, dict_index);
 }
 
 
@@ -683,5 +683,3 @@ psppire_data_editor_update_ui_manager (PsppireDataEditor *de)
       g_object_notify (G_OBJECT (de), "ui-manager");
     }
 }
-
-
