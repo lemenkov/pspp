@@ -49,33 +49,33 @@ typedef struct
 {
   int value;
   const char *name;
-  const char *nick;
+  const char *label;
 } GEnumValue;
 
 const GEnumValue align[] =
   {
-    {ALIGN_LEFT,   N_("Left"), N_("Left")},
-    {ALIGN_RIGHT,  N_("Right"), N_("Right")},
-    {ALIGN_CENTRE, N_("Center"), N_("Center")},
+    {ALIGN_LEFT,   "left", N_("Left")},
+    {ALIGN_RIGHT,  "right", N_("Right")},
+    {ALIGN_CENTRE, "center", N_("Center")},
     {0,0,0}
   };
 
 const GEnumValue measure[] =
   {
-    {MEASURE_NOMINAL, N_("Nominal"), N_("Nominal")},
-    {MEASURE_ORDINAL, N_("Ordinal"), N_("Ordinal")},
-    {MEASURE_SCALE,   N_("Scale"), N_("Scale")},
+    {MEASURE_NOMINAL, "nominal", N_("Nominal")},
+    {MEASURE_ORDINAL, "ordinal", N_("Ordinal")},
+    {MEASURE_SCALE,   "scale", N_("Scale")},
     {0,0,0}
   };
 
 const GEnumValue role[] =
   {
-    {ROLE_INPUT,  N_("Input"),    N_("Input")},
-    {ROLE_TARGET, N_("Output"),   N_("Output")},
-    {ROLE_BOTH,   N_("Both"),     N_("Both")},
-    {ROLE_NONE,   N_("None"),     N_("None")},
-    {ROLE_PARTITION, N_("Partition"), N_("Partition")},
-    {ROLE_SPLIT,  N_("Split"),    N_("Split")},
+    {ROLE_INPUT,  "input",    N_("Input")},
+    {ROLE_TARGET, "output",   N_("Output")},
+    {ROLE_BOTH,   "both",     N_("Both")},
+    {ROLE_NONE,   "none",     N_("None")},
+    {ROLE_PARTITION, "partition", N_("Partition")},
+    {ROLE_SPLIT,  "split",    N_("Split")},
     {0,0,0}
   };
 
@@ -808,7 +808,7 @@ const char *
 measure_to_string (enum measure m)
 {
   assert (m == measure[m].value);
-  return gettext (measure[m].nick);
+  return gettext (measure[m].label);
 }
 
 /* Returns a string version of measurement level M, for use in PSPP command
@@ -893,7 +893,7 @@ const char *
 var_role_to_string (enum var_role r)
 {
   assert (r == role[r].value);
-  return gettext (role[r].nick);
+  return gettext (role[r].label);
 }
 
 /* Returns a string version of ROLE, for use in PSPP comamnd syntax. */
@@ -1000,7 +1000,7 @@ const char *
 alignment_to_string (enum alignment a)
 {
   assert (a == align[a].value);
-  return gettext (align[a].nick);
+  return gettext (align[a].label);
 }
 
 /* Returns a string version of alignment A, for use in PSPP command syntax. */

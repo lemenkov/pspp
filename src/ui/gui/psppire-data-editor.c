@@ -71,7 +71,7 @@ create_combo_renderer (GType type)
 
       gtk_list_store_set (list_store, &iter,
 			  0, ev->value,
-			  1, ev->value_nick,
+			  1, gettext (ev->value_nick),
 			  -1);
     }
 
