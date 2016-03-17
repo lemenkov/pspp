@@ -39,6 +39,96 @@
 #define _(msgid) gettext (msgid)
 
 
+static GtkCellRenderer *
+create_spin_renderer (GType type)
+{
+  GtkCellRenderer *r = gtk_cell_renderer_spin_new ();
+      
+  GtkAdjustment *adj = gtk_adjustment_new (0,
+					   0, G_MAXDOUBLE,
+					   1, 1,
+					   0);
+  g_object_set (r,
+		"adjustment", adj,
+		NULL);
+  
+  return r;
+}
+
+static GtkCellRenderer *
+create_combo_renderer (GType type)
+{
+  GtkListStore *list_store = gtk_list_store_new (2, G_TYPE_INT, G_TYPE_STRING);
+  
+  GEnumClass *ec = g_type_class_ref (type);
+  
+  const GEnumValue *ev ;
+  for (ev = ec->values; ev->value_name; ++ev)
+    {
+      GtkTreeIter iter;
+
+      gtk_list_store_append (list_store, &iter);
+
+      gtk_list_store_set (list_store, &iter,
+			  0, ev->value,
+			  1, ev->value_nick,
+			  -1);
+    }
+
+  GtkCellRenderer *r = gtk_cell_renderer_combo_new ();
+
+  g_object_set (r,
+		"model", list_store,
+		"text-column", 1,
+		"has-entry", TRUE,
+		NULL);
+
+  return r;
+}
+
+GtkCellRenderer *xx ;
+GtkCellRenderer *column_width_renderer ;
+GtkCellRenderer *measure_renderer ;
+GtkCellRenderer *alignment_renderer ;
+
+
+
+static GtkCellRenderer *
+select_renderer_func (gint col, gint row, GType type)
+{
+  if (!xx)
+    xx = create_spin_renderer (type);
+
+  if (col == DICT_TVM_COL_ROLE && !column_width_renderer)
+    column_width_renderer = create_combo_renderer (type);
+
+  if (col == DICT_TVM_COL_MEASURE && !measure_renderer)
+    measure_renderer = create_combo_renderer (type);
+
+  if (col == DICT_TVM_COL_ALIGNMENT && !alignment_renderer)
+    alignment_renderer = create_combo_renderer (type);
+
+  switch  (col)
+    {
+    case DICT_TVM_COL_WIDTH:
+    case DICT_TVM_COL_DECIMAL:
+    case DICT_TVM_COL_COLUMNS:
+      return xx;
+      
+    case DICT_TVM_COL_ALIGNMENT:
+      return alignment_renderer;
+
+    case DICT_TVM_COL_MEASURE:
+      return measure_renderer;
+      
+    case DICT_TVM_COL_ROLE:
+      return column_width_renderer;
+    }
+  
+  return NULL;
+}
+
+
 static void psppire_data_editor_class_init          (PsppireDataEditorClass *klass);
 static void psppire_data_editor_init                (PsppireDataEditor      *de);
 
@@ -431,7 +521,10 @@ psppire_data_editor_init (PsppireDataEditor *de)
 
   PsppireVarSheetHeader *vsh = g_object_new (PSPPIRE_TYPE_VAR_SHEET_HEADER, NULL);
   
-  g_object_set (de->var_sheet, "hmodel", vsh, NULL);
+  g_object_set (de->var_sheet,
+		"hmodel", vsh,
+		"select-renderer-func", select_renderer_func,
+		NULL);
 
   
   GtkWidget *var_button = jmd_sheet_get_button (JMD_SHEET (de->var_sheet));
