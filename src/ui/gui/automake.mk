@@ -69,6 +69,7 @@ EXTRA_DIST += \
 	src/ui/gui/marshaller-list \
 	src/ui/gui/pspplogo.svg
 
+src_ui_gui_psppire_CPPFLAGS=
 
 if HAVE_GUI
 bin_PROGRAMS += src/ui/gui/psppire 
@@ -392,7 +393,7 @@ installcheck-local:
 	DISPLAY=/invalid/port $(MAKE) $(AM_MAKEFLAGS) installcheck-binPROGRAMS
 
 # <gtk/gtk.h> wrapper
-src_ui_gui_psppire_CPPFLAGS = $(AM_CPPFLAGS) -Isrc/ui/gui/include
+src_ui_gui_psppire_CPPFLAGS += $(AM_CPPFLAGS) -Isrc/ui/gui/include
 BUILT_SOURCES += src/ui/gui/include/gtk/gtk.h
 src/ui/gui/include/gtk/gtk.h: src/ui/gui/include/gtk/gtk.in.h
 	@$(MKDIR_P) src/ui/gui/include/gtk
