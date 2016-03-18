@@ -701,16 +701,16 @@ tree_model_column_type (GtkTreeModel *model, gint index)
   switch (index)
     {
     case DICT_TVM_COL_NAME:
-      t = G_TYPE_STRING;
-      break;
-    case DICT_TVM_COL_VAR:
-      t = PSPPIRE_VAR_PTR_TYPE;
-      break;
     case DICT_TVM_COL_LABEL:
       t = G_TYPE_STRING;
       break;
+    case DICT_TVM_COL_DECIMAL:
+    case DICT_TVM_COL_WIDTH:
     case DICT_TVM_COL_COLUMNS:
       t = G_TYPE_INT;
+      break;
+    case DICT_TVM_COL_VAR:
+      t = PSPPIRE_VAR_PTR_TYPE;
       break;
     case DICT_TVM_COL_ALIGNMENT:
       t = align_enum_type;
