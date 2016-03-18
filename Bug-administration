@@ -1,0 +1,17 @@
+Bugs and feature requests in PSPP are handled by the bug database
+at http://sv.gnu.org/bugs/?group=pspp
+
+We use the following conventions for classiying / ranking bugs:
+
+Relase: 
+* Bugs which we think must be fixed before a release get their "Release" field set accordingly. 
+* Bugs which need not be fixed before any particular release, get their "Release" field set to "Future". 
+* Bugs where we have not get decided are left at "None". 
+
+Severity:
+* Feature requests have their "Severity" field set to "Wishlist". 
+* Bugs which cause a crash or other unwanted effects when incorrect input is given are "Average". 
+* Bugs which cause a crash when correct input is given are "Major" 
+* Bugs which render the software unusable are "Blocker" 
+
+Obviously some cases are unclear and judgement has be be used.
