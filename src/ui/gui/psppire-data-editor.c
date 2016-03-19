@@ -232,6 +232,15 @@ change_var_property (PsppireDict *dict, gint col, gint row, GValue *value)
     case DICT_TVM_COL_COLUMNS:
       var_set_display_width (var, g_value_get_int (value));
       break;
+    case DICT_TVM_COL_MEASURE:
+      var_set_measure (var, g_value_get_enum (value));
+      break;
+    case DICT_TVM_COL_ALIGNMENT:
+      var_set_alignment (var, g_value_get_enum (value));
+      break;
+    case DICT_TVM_COL_ROLE:
+      var_set_role (var, g_value_get_enum (value));
+      break;
     default:
       g_message ("Changing col %d of var sheet not yet supported", col);
       break;
