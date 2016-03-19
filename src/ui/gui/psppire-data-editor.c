@@ -216,6 +216,43 @@ psppire_data_editor_refresh_model (PsppireDataEditor *de)
 }
 
 static void
+change_var_property (PsppireDict *dict, gint col, gint row, GValue *value)
+{
+  /* Return the IDXth variable */
+  struct variable *var =  psppire_dict_get_variable (dict, row);
+
+  switch (col)
+    {
+    case DICT_TVM_COL_NAME:
+      dict_rename_var (dict->dict, var, g_value_get_string (value));
+      break;
+    case DICT_TVM_COL_LABEL:
+      var_set_label (var, g_value_get_string (value));
+      break;
+    case DICT_TVM_COL_COLUMNS:
+      var_set_display_width (var, g_value_get_int (value));
+      break;
+    default:
+      g_message ("Changing col %d of var sheet not yet supported", col);
+      break;
+    }
+}
+
+static void
+change_data_value (PsppireDataStore *store, gint col, gint row, GValue *value)
+{
+  const struct variable *var = psppire_dict_get_variable (store->dict, col);
+
+  union value v;
+  value_init (&v, var_get_width (var));
+  v.f = g_value_get_double (value);
+  
+  psppire_data_store_set_value (store, row, var, &v);
+
+  value_destroy (&v, var_get_width (var));
+}
+
+static void
 psppire_data_editor_set_property (GObject         *object,
 				  guint            prop_id,
 				  const GValue    *value,
@@ -244,6 +281,9 @@ psppire_data_editor_set_property (GObject         *object,
       g_object_set (de->data_sheet, "data-model", de->data_store, NULL);
       psppire_data_editor_refresh_model (de);
 
+      g_signal_connect_swapped (de->data_sheet, "value-changed",
+				G_CALLBACK (change_data_value), de->data_store);
+      
       g_signal_connect_swapped (de->data_store, "case-changed",
                                 G_CALLBACK (refresh_entry), de);
 
@@ -256,6 +296,8 @@ psppire_data_editor_set_property (GObject         *object,
 
       g_object_set (de->data_sheet, "hmodel", de->dict, NULL);
       g_object_set (de->var_sheet, "data-model", de->dict, NULL);
+      g_signal_connect_swapped (de->var_sheet, "value-changed",
+				G_CALLBACK (change_var_property), de->dict);
 
       break;
     case PROP_VALUE_LABELS:
