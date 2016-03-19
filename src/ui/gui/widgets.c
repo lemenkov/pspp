@@ -4,6 +4,7 @@
 
 #include "widgets.h"
 
+#include "gettext.h"
 
 #include "psppire-dialog.h"
 #include "psppire-selector.h"
@@ -136,26 +137,43 @@ tx_string_to_int (const GValue *src, GValue *dest)
   g_value_set_int (dest, x);
 }
 
+static void
+enum_to_string (const GValue *src, GValue *dest)
+{
+  gint n = g_value_get_enum (src);
+  GType t = G_VALUE_TYPE (src);
+  GEnumClass *ec = g_type_class_ref (t);
+  GEnumValue *ev = g_enum_get_value (ec, n);
+
+  g_value_set_string (dest, gettext (ev->value_nick));
+}
+
 
 
 GType align_enum_type;
 GType measure_enum_type;
 GType role_enum_type;
 
+
 extern const GEnumValue align[];
 extern const GEnumValue measure[];
 extern const GEnumValue role[];
 
+
+
 static void
 preregister_misc (void)
 {
-  g_value_register_transform_func (G_TYPE_STRING, G_TYPE_DOUBLE, tx_string_to_double);
-  g_value_register_transform_func (G_TYPE_STRING, G_TYPE_INT, tx_string_to_int);
-
   align_enum_type = g_enum_register_static ("PsppAlignment", align);
   measure_enum_type = g_enum_register_static ("PsppMeasure", measure);
   role_enum_type = g_enum_register_static ("PsppRole", role);
 
+  g_value_register_transform_func (G_TYPE_STRING, G_TYPE_DOUBLE, tx_string_to_double);
+  g_value_register_transform_func (G_TYPE_STRING, G_TYPE_INT, tx_string_to_int);
+  
+  g_value_register_transform_func (measure_enum_type, G_TYPE_STRING, enum_to_string);
+  g_value_register_transform_func (align_enum_type, G_TYPE_STRING, enum_to_string);
+  g_value_register_transform_func (role_enum_type, G_TYPE_STRING, enum_to_string);
 }
 
 
