@@ -128,6 +128,16 @@ tx_string_to_double (const GValue *src, GValue *dest)
 }
 
 
+static void
+tx_string_to_int (const GValue *src, GValue *dest)
+{
+  const gchar *str = g_value_get_string (src);
+  gint x = atoi (str);
+  g_value_set_int (dest, x);
+}
+
+
+
 GType align_enum_type;
 GType measure_enum_type;
 GType role_enum_type;
@@ -140,6 +150,7 @@ static void
 preregister_misc (void)
 {
   g_value_register_transform_func (G_TYPE_STRING, G_TYPE_DOUBLE, tx_string_to_double);
+  g_value_register_transform_func (G_TYPE_STRING, G_TYPE_INT, tx_string_to_int);
 
   align_enum_type = g_enum_register_static ("PsppAlignment", align);
   measure_enum_type = g_enum_register_static ("PsppMeasure", measure);
