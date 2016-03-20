@@ -38,6 +38,10 @@ Changes from 0.8.5 to 0.9.0:
    discourage its use PSPP and PSPPIRE do not directly read or write
    this format.
 
+ * New commands:
+
+   - SORT VARIABLES.
+
  * The following functions for transformation expressions are new:
 
    - REPLACE, for search-and-replace of one string with another.

@@ -1,5 +1,5 @@
 /* PSPP - a program for statistical analysis.
-   Copyright (C) 2008, 2011, 2012 Free Software Foundation, Inc.
+   Copyright (C) 2008, 2011, 2012, 2016 Free Software Foundation, Inc.
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -52,7 +52,7 @@ void attrset_destroy (struct attrset *);
 
 size_t attrset_count (const struct attrset *);
 
-struct attribute *attrset_lookup (struct attrset *, const char *);
+struct attribute *attrset_lookup (const struct attrset *, const char *);
 void attrset_add (struct attrset *, struct attribute *);
 void attrset_delete (struct attrset *, const char *);
 void attrset_clear (struct attrset *);

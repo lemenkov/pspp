@@ -1,5 +1,5 @@
 /* PSPP - a program for statistical analysis.
-   Copyright (C) 2008, 2009, 2011, 2012 Free Software Foundation, Inc.
+   Copyright (C) 2008, 2009, 2011, 2012, 2016 Free Software Foundation, Inc.
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -220,14 +220,14 @@ attrset_count (const struct attrset *set)
    case-insensitively, or a null pointer if SET does not contain
    an attribute with that name. */
 struct attribute *
-attrset_lookup (struct attrset *set, const char *name)
+attrset_lookup (const struct attrset *set, const char *name)
 {
-  struct attribute *attr;
+  const struct attribute *attr;
   HMAP_FOR_EACH_WITH_HASH (attr, struct attribute, node,
                            utf8_hash_case_string (name, 0), &set->map)
     if (!utf8_strcasecmp (attribute_get_name (attr), name))
       break;
-  return attr;
+  return CONST_CAST (struct attribute *, attr);
 }
 
 /* Adds ATTR to SET, which must not already contain an attribute

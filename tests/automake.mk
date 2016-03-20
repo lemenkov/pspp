@@ -314,6 +314,7 @@ TESTSUITE_AT = \
 	tests/language/dictionary/missing-values.at \
 	tests/language/dictionary/mrsets.at \
 	tests/language/dictionary/rename-variables.at \
+	tests/language/dictionary/sort-variables.at \
 	tests/language/dictionary/split-file.at \
 	tests/language/dictionary/sys-file-info.at \
 	tests/language/dictionary/value-labels.at \

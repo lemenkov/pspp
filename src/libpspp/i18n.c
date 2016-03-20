@@ -1,5 +1,5 @@
 /* PSPP - a program for statistical analysis.
-   Copyright (C) 2006, 2009, 2010, 2011, 2012, 2013, 2014, 2015 Free Software Foundation, Inc.
+   Copyright (C) 2006, 2009, 2010, 2011, 2012, 2013, 2014, 2015, 2016 Free Software Foundation, Inc.
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -37,6 +37,7 @@
 #include "libpspp/str.h"
 #include "libpspp/version.h"
 
+#include "gl/c-ctype.h"
 #include "gl/c-strcase.h"
 #include "gl/localcharset.h"
 #include "gl/minmax.h"
@@ -842,6 +843,80 @@ utf8_strncasecmp (const char *a, size_t an, const char *b, size_t bn)
         result = an < bn ? -1 : an > bn;
     }
 
+  return result;
+}
+
+static bool
+is_all_digits (const uint8_t *s, size_t len)
+{
+  for (size_t i = 0; i < len; i++)
+    if (!c_isdigit (s[i]))
+      return false;
+  return true;
+}
+
+/* Compares UTF-8 strings A and B case-insensitively.  If the strings end in a
+   number, then they are compared numerically.  Returns a negative value if A <
+   B, zero if A == B, positive if A > B. */
+int
+utf8_strverscasecmp (const char *a, const char *b)
+{
+  /* Normalize A. */
+  uint8_t a_stub[64];
+  size_t a_len = sizeof a_stub;
+  uint8_t *a_norm = u8_casefold (CHAR_CAST (uint8_t *, a), strlen (a), NULL,
+                                 UNINORM_NFKD, a_stub, &a_len);
+
+  /* Normalize B. */
+  uint8_t b_stub[64];
+  size_t b_len = sizeof b_stub;
+  uint8_t *b_norm = u8_casefold (CHAR_CAST (uint8_t *, b), strlen (b), NULL,
+                                 UNINORM_NFKD, b_stub, &b_len);
+
+  int result;
+  if (!a_norm || !b_norm)
+    {
+      result = strcmp (a, b);
+      goto exit;
+    }
+
+  size_t len = MIN (a_len, b_len);
+  for (size_t i = 0; i < len; i++)
+    if (a_norm[i] != b_norm[i])
+      {
+        /* If both strings end in digits, compare them numerically. */
+        if (is_all_digits (&a_norm[i], a_len - i)
+            && is_all_digits (&b_norm[i], b_len - i))
+          {
+            /* Start by stripping leading zeros, since those don't matter for
+               numerical comparison. */
+            size_t ap, bp;
+            for (ap = i; ap < a_len; ap++)
+              if (a_norm[ap] != '0')
+                break;
+            for (bp = i; bp < b_len; bp++)
+              if (b_norm[bp] != '0')
+                break;
+
+            /* The number with more digits, if there is one, is larger. */
+            size_t a_digits = a_len - ap;
+            size_t b_digits = b_len - bp;
+            if (a_digits != b_digits)
+              result = a_digits > b_digits ? 1 : -1;
+            else
+              result = memcmp (&a_norm[ap], &b_norm[bp], a_digits);
+          }
+        else
+          result = a_norm[i] > b_norm[i] ? 1 : -1;
+        goto exit;
+      }
+  result = a_len < b_len ? -1 : a_len > b_len;
+
+exit:
+  if (a_norm != a_stub)
+    free (a_norm);
+  if (b_norm != b_stub)
+    free (b_norm);
   return result;
 }
 
