@@ -1,5 +1,5 @@
 /* PSPP - a program for statistical analysis.
-   Copyright (C) 2006, 2009, 2010 Free Software Foundation, Inc.
+   Copyright (C) 2006, 2009, 2010, 2016 Free Software Foundation, Inc.
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -86,5 +86,16 @@
 #else
 #define SENTINEL(IDX)
 #endif
+
+
+/* This attribute indicates that the function should be compiled
+   with the specified LEVEL, regardless of what has been specified
+   on the command line */
+#if __GNUC__ > 3
+#define OPTIMIZE(LEVEL) ATTRIBUTE ((optimize(LEVEL)))
+#else
+#define OPTIMIZE(LEVEL)
+#endif
+
 
 #endif /* compiler.h */

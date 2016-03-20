@@ -18,6 +18,7 @@
 #define SPREADSHEET_READ_H 1
 
 #include <stdbool.h>
+#include <libpspp/compiler.h>
 
 struct casereeader;
 
@@ -76,8 +77,8 @@ struct spreadsheet
 
 struct casereader * spreadsheet_make_reader (struct spreadsheet *, const struct spreadsheet_read_options *);
 
-const char * spreadsheet_get_sheet_name (struct spreadsheet *s, int n);
-char * spreadsheet_get_sheet_range (struct spreadsheet *s, int n);
+const char * spreadsheet_get_sheet_name (struct spreadsheet *s, int n) OPTIMIZE(2);
+char * spreadsheet_get_sheet_range (struct spreadsheet *s, int n) OPTIMIZE(2);
 
 
 char * create_cell_ref (int col0, int row0);
