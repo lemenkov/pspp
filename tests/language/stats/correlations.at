@@ -348,3 +348,16 @@ var5,Pearson Correlation,-.0519,-.0407
 ])
 
 AT_CLEANUP
+
+
+dnl Crash found by zzuf
+AT_SETUP([CORRELATIONS -- empty dataset])
+
+AT_DATA([correlations.sps], [dnl
+data list list /a b c q g *.
+CORRELATIONS 'VARIABLES = a b.]
+)
+
+AT_CHECK([pspp -o pspp.csv correlations.sps], [1], [ignore])
+
+AT_CLEANUP

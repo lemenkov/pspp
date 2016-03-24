@@ -511,7 +511,8 @@ cmd_correlation (struct lexer *lexer, struct dataset *ds)
   return ok ? CMD_SUCCESS : CMD_CASCADING_FAILURE;
 
  error:
-  free (corr->vars);
+  if (corr)
+    free (corr->vars);
   free (corr);
   return CMD_FAILURE;
 }
