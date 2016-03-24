@@ -328,7 +328,13 @@ show_histogr (const struct graph *cmd, struct casereader *input)
 {
   struct histogram *histogram;
   struct ccase *c;
-
+  
+  if (cmd->es[0].cc <= 0)
+    {
+      casereader_destroy (input);
+      return;
+    }
+  
   {
     /* Sturges Rule */
     double bin_width = fabs (cmd->es[0].minimum - cmd->es[0].maximum)

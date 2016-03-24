@@ -165,6 +165,23 @@ dnl Ignore output -- this is just a no-crash check.
 AT_CLEANUP
 
 
+AT_SETUP([GRAPH histogram all missing])
+AT_DATA([null-hist.sps], [dnl
+data list list /x *.
+begin data.
+. 
+end data.
+
+graph 
+      /histogram = x.
+
+])
+
+AT_CHECK([pspp null-hist.sps], [0], [ignore])
+dnl Ignore output -- this is just a no-crash check.
+AT_CLEANUP
+
+
 
 
 AT_SETUP([GRAPH barcharts])
