@@ -93,9 +93,14 @@ cmd_get_data (struct lexer *lexer, struct dataset *ds)
   if (!lex_force_match_id (lexer, "TYPE"))
     goto error;
 
-  lex_force_match (lexer, T_EQUALS);
+  if (!lex_force_match (lexer, T_EQUALS))
+    goto error;
 
-  tok = strdup (lex_tokcstr (lexer));
+  const char *s = lex_tokcstr (lexer);
+
+  if (s)
+    tok = strdup (s);
+  
   if (lex_match_id (lexer, "TXT"))
     {
       free (tok);

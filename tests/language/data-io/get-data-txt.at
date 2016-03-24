@@ -329,3 +329,17 @@ s
 é      @&t@
 ])
 AT_CLEANUP
+
+
+AT_SETUP([GET DATA /TYPE= truncated])
+
+AT_DATA([x.sps], [dnl
+GET DATA /TYPE=
+.
+])
+
+AT_CHECK([pspp -o pspp.csv x.sps], [1], [ignore])
+
+AT_CLEANUP
+
+
