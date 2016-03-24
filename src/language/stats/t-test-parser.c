@@ -80,7 +80,8 @@ cmd_t_test (struct lexer *lexer, struct dataset *ds)
 	  mode_count++;
 	  tt.mode = MODE_SINGLE;
 	  lex_match (lexer, T_EQUALS);
-	  lex_force_num (lexer);
+	  if (!lex_force_num (lexer))
+	    goto parse_failed;
 	  testval = lex_number (lexer);
 	  lex_get (lexer);
 	}
@@ -276,7 +277,8 @@ cmd_t_test (struct lexer *lexer, struct dataset *ds)
 	  if ( lex_match_id (lexer, "CIN") || lex_force_match_id (lexer, "CI"))
 	    if ( lex_force_match (lexer, T_LPAREN))
 	      {
-		lex_force_num (lexer);
+		if (!lex_force_num (lexer))
+		  goto parse_failed;
 		tt.confidence = lex_number (lexer);
 		lex_get (lexer);
 		lex_force_match (lexer, T_RPAREN);
