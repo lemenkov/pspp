@@ -1742,3 +1742,26 @@ NPAR TEST
 AT_CHECK([pspp -O format=csv npar.sps], [1], [ignore])
 
 AT_CLEANUP
+
+
+AT_SETUP([NPAR TESTS - crash on invalid syntax])
+
+AT_DATA([npar.sps], [dnl
+data list notable list /ev * xscore *.
+begin data.
+2 109
+3 115
+1 61
+1 101
+3 147
+end data.
+
+
+npar tests
+        /kruskal-wallis xscore by(gv (1, 3).
+])
+
+AT_CHECK([pspp -O format=csv npar.sps], [1], [ignore])
+
+AT_CLEANUP
+ 

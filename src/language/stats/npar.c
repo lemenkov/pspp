@@ -1191,6 +1191,8 @@ parse_n_sample_related_test (struct lexer *lexer,
     return false;
 
   nst->indep_var = parse_variable_const (lexer, dict);
+  if (!nst->indep_var)
+    return false;
 
   if ( ! lex_force_match (lexer, T_LPAREN))
     return false;
