@@ -384,3 +384,36 @@ Case Number,A
 ])
 
 AT_CLEANUP
+
+
+AT_SETUP([DATA LIST - Negative SKIP])
+AT_DATA([data-list.sps], [dnl
+DATA LIST LIST FILE='f.in' NOTABLE SKIP=-1 /a b c d.
+
+EXECUTE.
+])
+
+AT_CHECK([pspp -O format=csv data-list.sps], [1], [dnl
+data-list.sps:1: error: DATA LIST: The SKIP value must be nonnegative.
+
+data-list.sps:3: error: Stopping syntax file processing here to avoid a cascade of dependent command failures.
+])
+
+AT_CLEANUP
+
+
+AT_SETUP([DATA LIST - Negative RECORDS])
+AT_DATA([data-list.sps], [dnl
+DATA LIST LIST FILE='f.in' NOTABLE RECORDS=-1 /a b c d.
+
+EXECUTE.
+])
+
+AT_CHECK([pspp -O format=csv data-list.sps], [1], [dnl
+data-list.sps:1: error: DATA LIST: The RECORDS value must be nonnegative.
+
+data-list.sps:3: error: Stopping syntax file processing here to avoid a cascade of dependent command failures.
+])
+
+AT_CLEANUP
+
