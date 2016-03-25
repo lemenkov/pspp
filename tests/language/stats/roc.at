@@ -164,3 +164,22 @@ Area,Std. Error,Asymptotic Sig.,Lower Bound,Upper Bound
 .490,.111,.927,.307,.673
 ])
 AT_CLEANUP
+
+
+
+
+AT_SETUP([ROC crash on no state variable])
+AT_DATA([roc.sps], [dnl
+data list notable list /x * y * w * a *.
+begin data.
+5 5 1  0
+end data.
+
+
+roc x y By(a (1)
+ .
+])
+
+AT_CHECK([pspp -o pspp.csv roc.sps], [1], [ignore])
+
+AT_CLEANUP

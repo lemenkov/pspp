@@ -108,6 +108,10 @@ cmd_roc (struct lexer *lexer, struct dataset *ds)
     }
 
   roc.state_var = parse_variable (lexer, dict);
+  if (! roc.state_var)
+    {
+      goto error;
+    }
 
   if ( !lex_force_match (lexer, T_LPAREN))
     {
