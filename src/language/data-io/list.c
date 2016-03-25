@@ -85,7 +85,7 @@ list_execute (const struct lst_cmd *lcmd, struct dataset *ds)
   while (casegrouper_get_next_group (grouper, &group))
     {
       struct ccase *ccase;
-      struct table *t;
+      struct table *t = NULL;
 
       ccase = casereader_peek (group, 0);
       if (ccase != NULL)
@@ -128,7 +128,8 @@ list_execute (const struct lst_cmd *lcmd, struct dataset *ds)
 
       casereader_destroy (group);
 
-      table_item_submit (table_item_create (t, "Data List", NULL));
+      if (t)
+	table_item_submit (table_item_create (t, "Data List", NULL));
     }
   ok = casegrouper_destroy (grouper);
   ok = proc_commit (ds) && ok;
