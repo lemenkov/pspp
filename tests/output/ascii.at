@@ -653,3 +653,20 @@ Valid cases = 3; cases with missing value(s) = 0.
 ])
 
 AT_CLEANUP
+
+AT_SETUP([ASCII crash on empty line])
+
+AT_DATA([print.sps], [dnl
+data list notable /x y 1-2.
+begin data.
+12
+end data.
+
+print.
+
+execute.
+])
+
+AT_CHECK([pspp print.sps], [0], [ignore])
+
+AT_CLEANUP

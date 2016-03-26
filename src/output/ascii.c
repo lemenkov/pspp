@@ -457,7 +457,7 @@ ascii_output_table_item (struct ascii_driver *a,
       used = render_pager_draw_next (p, a->length - a->y);
       if (used == 0)
         {
-          assert (a->y > 0);
+          assert (a->y >= 0);
           ascii_close_page (a);
           if (!ascii_open_page (a))
             break;
