@@ -144,6 +144,8 @@ cmd_flip (struct lexer *lexer, struct dataset *ds)
 	    break;
 	  }
     }
+  if (flip->n_vars <= 0)
+    goto error;
 
   flip->file = pool_create_temp_file (flip->pool);
   if (flip->file == NULL)

@@ -81,3 +81,20 @@ v9      ,9.00,12.00
 v10     ,10.00,13.00
 ])
 AT_CLEANUP
+
+
+
+
+AT_SETUP([FLIP badly formed])
+
+AT_DATA([flip.sps], [dnl
+data list notable /N 1 (a) a b c d 2-9.
+
+flip newnames=n.
+list.
+flip.
+])
+
+AT_CHECK([pspp -O format=csv flip.sps], [1], [ignore])
+
+AT_CLEANUP
