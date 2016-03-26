@@ -453,6 +453,8 @@ cmd_oneway (struct lexer *lexer, struct dataset *ds)
   lex_force_match (lexer, T_BY);
 
   oneway.indep_var = parse_variable_const (lexer, dict);
+  if (oneway.indep_var == NULL)
+    goto error;
 
   while (lex_token (lexer) != T_ENDCMD)
     {
