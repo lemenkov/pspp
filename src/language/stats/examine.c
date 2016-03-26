@@ -1942,7 +1942,8 @@ cmd_examine (struct lexer *lexer, struct dataset *ds)
   examine.boxplot = false;
   examine.spreadlevelplot = false;
   examine.sl_power = 0;
-  
+  examine.dep_vars = NULL;
+  examine.n_dep_vars = 0;
   examine.dict = dataset_dict (ds);
 
   /* Accept an optional, completely pointless "/VARIABLES=" */

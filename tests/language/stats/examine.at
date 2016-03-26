@@ -1046,3 +1046,30 @@ EXAMINE
 AT_CHECK([pspp -o pspp.csv examine-empty-parens.sps], [1], [ignore])
 
 AT_CLEANUP 
+
+
+
+
+dnl Test for another crash which happened on bad input syntax
+AT_SETUP([EXAMINE -- Bad variable])
+
+AT_DATA([examine-bad-variable.sps], [dnl
+data list list /h * g *.
+begin data.
+3 1
+4 1
+5 2
+end data.
+
+EXAMINE
+        /VARIABLES/ h
+        BY  g
+        .
+])
+
+AT_CHECK([pspp -o pspp.csv examine-bad-variable.sps], [1], [ignore])
+
+AT_CLEANUP 
+
+
+
