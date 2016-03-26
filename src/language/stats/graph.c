@@ -245,6 +245,8 @@ parse_function (struct lexer *lexer, struct graph *graph)
       for (v = 0; v < ag_func[i].arity; ++v)
 	{
 	  graph->dep_vars[v] = parse_variable (lexer, graph->dict);
+	  if (! graph->dep_vars[v])
+	    goto error;
 	}
 
       if (!lex_force_match (lexer, T_RPAREN))

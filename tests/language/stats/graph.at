@@ -308,3 +308,25 @@ AT_CHECK([pspp -o pspp.pdf barchart.sps], [0], [ignore])
 dnl Ignore output -- this is just a no-crash check.
 
 AT_CLEANUP
+
+
+
+
+
+AT_SETUP([GRAPH buggy syntax])
+
+AT_DATA([barchart.sps], [dnl
+data list notable list /x y z*.
+begin data
+1  1  3
+2  1  4
+10  2  4
+end data.
+
+GRAPH /BAR = MINIMUM({) BY z BY y.
+])
+
+AT_CHECK([pspp -o pspp.pdf barchart.sps], [1], [ignore])
+dnl Ignore output -- this is just a no-crash check.
+
+AT_CLEANUP
