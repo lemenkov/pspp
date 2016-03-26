@@ -4,7 +4,7 @@ See the end for copying conditions.
 
 Please send PSPP bug reports to bug-gnu-pspp@gnu.org.
  
-Changes from 0.8.5 to 0.9.0:
+Changes from 0.8.5 to 0.10.0:
 
  * The QUICK CLUSTER command has a  /PRINT subcommand which shows
    the initial cluster centres and the final cluster membership of
