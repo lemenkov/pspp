@@ -93,6 +93,7 @@ cmd_output (struct lexer *lexer, struct dataset *ds UNUSED)
 	  os = &output_specs[n_os - 1];
 	  os->n_rc = 0;
 	  os->rc = NULL;
+	  bool format = false;
 	  
 	  while (lex_token (lexer) != T_SLASH && 
 		 lex_token (lexer) != T_ENDCMD)
@@ -153,20 +154,21 @@ cmd_output (struct lexer *lexer, struct dataset *ds UNUSED)
 		  fmt.d = decimals;
 
 		  os->fmt = fmt;
+		  format = true;
 		}
 	      else 
 		{
 		  lex_error (lexer, NULL);
 		  goto error;
-	    
 		}
 	    }
+	  if (!format)
+	    goto error;
 	}
       else 
 	{
 	  lex_error (lexer, NULL);
 	  goto error;	
-
 	}
     }
 
