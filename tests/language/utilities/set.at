@@ -22,6 +22,16 @@ x,3,2.00,1.00,1.00,3.00
 AT_CLEANUP
 
 
+dnl This scenario was observed to erroneously free things twice
+AT_SETUP([SET crash on invalid cc])
+AT_DATA([set.pspp], [dnl
+SET CCA='xxxx'.SHGW CCA.
+])
+
+AT_CHECK([pspp -O format=csv set.pspp], [1], [ignore])
+AT_CLEANUP
+
+
 
 AT_SETUP([SET MXWARNS])
 dnl Make sure that syntax processing stops and that
@@ -92,7 +102,9 @@ x,y,z
 ])
 
 AT_CLEANUP
+
 
+
 AT_BANNER([PRESERVE and RESTORE])
 
 AT_SETUP([PRESERVE of SET FORMAT])

@@ -137,7 +137,6 @@ cmd_set (struct lexer *lexer, struct dataset *ds)
 
   if (!parse_set (lexer, ds, &cmd, NULL))
     {
-      free_set (&cmd);
       return CMD_FAILURE;
     }
 
