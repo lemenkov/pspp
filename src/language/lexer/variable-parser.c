@@ -633,7 +633,10 @@ parse_mixed_vars (struct lexer *lexer, const struct dictionary *dict,
       else if (!parse_DATA_LIST_vars (lexer, dict, names, nnames, PV_APPEND))
 	goto fail;
     }
-  return 1;
+  if (*nnames == 0)
+    goto fail;
+  
+  return true;
 
 fail:
   for (i = 0; i < *nnames; i++)
@@ -641,7 +644,7 @@ fail:
   free (*names);
   *names = NULL;
   *nnames = 0;
-  return 0;
+  return false;
 }
 
 /* Parses a list of variables where some of the variables may be

@@ -325,3 +325,25 @@ c,b       ,2.00
 ])
 
 AT_CLEANUP
+
+
+
+AT_SETUP([RECODE crash on invalid dest variable])
+
+AT_DATA([recode.sps],[dnl
+DATA LIST LIST NOTABLE/x (f1) s (a4) t (a10).
+MISSING VALUES x(9)/s('xxx').
+BEGIN DATA.
+0, '', ''
+1, a, a
+2, ab, ab
+3, abc, abc
+END DATA.
+
+RECODE x (1=9) INTO ".
+EXECUTE.
+])
+
+AT_CHECK([pspp -O format=csv recode.sps], [1], [ignore])
+
+AT_CLEANUP
