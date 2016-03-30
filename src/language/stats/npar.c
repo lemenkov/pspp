@@ -692,8 +692,12 @@ npar_runs (struct lexer *lexer, struct dataset *ds,
 	  return 0;
 	}
 		  
-      lex_force_match (lexer, T_RPAREN);
-      lex_force_match (lexer, T_EQUALS);
+      if (! lex_force_match (lexer, T_RPAREN))
+	return 2;
+      
+      if (! lex_force_match (lexer, T_EQUALS))
+	return 2;
+      
       if (!parse_variables_const_pool (lexer, specs->pool, dataset_dict (ds),
 				  &tp->vars, &tp->n_vars,
 				  PV_NO_SCRATCH | PV_NO_DUPLICATE | PV_NUMERIC))
