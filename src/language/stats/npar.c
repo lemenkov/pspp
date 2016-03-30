@@ -498,7 +498,6 @@ parse_npar_tests (struct lexer *lexer, struct dataset *ds, struct cmd_npar_tests
         if (!lex_match (lexer, T_SLASH))
           break;
       }
-
     if (lex_token (lexer) != T_ENDCMD)
       {
         lex_error (lexer, _("expecting end of command"));
@@ -943,7 +942,10 @@ npar_binomial (struct lexer *lexer, struct dataset *ds,
   else
     equals = true;
 
-  if (equals || lex_match (lexer, T_EQUALS) )
+  if (!equals)
+    if (!lex_force_match (lexer, T_EQUALS))
+      return 0;
+
     {
       if (parse_variables_const_pool (lexer, specs->pool, dataset_dict (ds),
 				      &tp->vars, &tp->n_vars,
@@ -970,8 +972,9 @@ npar_binomial (struct lexer *lexer, struct dataset *ds,
 	    }
 	}
       else
-	return 2;
-
+	{
+	  return 2;
+	}
     }
 
   specs->n_tests++;
