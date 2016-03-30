@@ -1053,8 +1053,7 @@ psppire_selector_update_subjects (PsppireSelector *selector)
     g_error ("Unsupported destination widget: %s", G_OBJECT_TYPE_NAME (selector->dest));
 
 
-  /* FIXME: Remove this dependency */
-  if ( PSPPIRE_IS_DICT_VIEW (selector->source) )
+  if ( PSPPIRE_IS_DICT_VIEW (selector->source) && selector->select_items == NULL)
     {
       GObjectClass *class = G_OBJECT_GET_CLASS (selector);
       GType type = G_OBJECT_TYPE (selector->dest);
