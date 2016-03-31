@@ -739,3 +739,25 @@ Percentiles,,.
 ])
 
 AT_CLEANUP
+
+
+AT_SETUP([FREQUENCIES histogram no valid cases])
+AT_DATA([empty.sps], [dnl
+data list notable list /x w *.
+begin data.
+1 .
+2 .
+3 .
+end data.
+
+weight by w.
+
+FREQUENCIES
+	/VARIABLES = x
+	/histogram
+	.
+])
+
+AT_CHECK([pspp empty.sps -O format=csv], [0],  [ignore])
+
+AT_CLEANUP

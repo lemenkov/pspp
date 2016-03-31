@@ -1324,6 +1324,8 @@ freq_tab_to_hist (const struct frq_proc *frq, const struct freq_tab *ft,
         }
     }
 
+  if (valid_freq <= 0)
+    return NULL;
 
   iqr = calculate_iqr (frq);
 
