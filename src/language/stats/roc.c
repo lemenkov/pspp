@@ -237,15 +237,19 @@ cmd_roc (struct lexer *lexer, struct dataset *ds)
 		}
 	      else if (lex_match_id (lexer, "CI"))
 		{
-		  lex_force_match (lexer, T_LPAREN);
-		  lex_force_num (lexer);
+		  if (!lex_force_match (lexer, T_LPAREN))
+		    goto error;
+		  if (! lex_force_num (lexer))
+		    goto error;
 		  roc.ci = lex_number (lexer);
 		  lex_get (lexer);
-		  lex_force_match (lexer, T_RPAREN);
+		  if (!lex_force_match (lexer, T_RPAREN))
+		    goto error;
 		}
 	      else if (lex_match_id (lexer, "DISTRIBUTION"))
 		{
-		  lex_force_match (lexer, T_LPAREN);
+		  if (!lex_force_match (lexer, T_LPAREN))
+		    goto error;
 		  if (lex_match_id (lexer, "FREE"))
 		    {
 		      roc.bi_neg_exp = false;
@@ -259,7 +263,8 @@ cmd_roc (struct lexer *lexer, struct dataset *ds)
 		      lex_error (lexer, NULL);
 		      goto error;
 		    }
-		  lex_force_match (lexer, T_RPAREN);
+		  if (!lex_force_match (lexer, T_RPAREN))
+		    goto error;
 		}
 	      else
 		{
