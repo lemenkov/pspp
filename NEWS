@@ -9,6 +9,9 @@ Changes from 0.10.1 to 0.10.1:
  * A bug where certain dialog boxes could not be properly populated
    has been fixed.
 
+ * Various commands have been hardened against errors when called
+   with invalid syntax.
+
 Changes from 0.8.5 to 0.10.0:
 
  * The QUICK CLUSTER command has a  /PRINT subcommand which shows
