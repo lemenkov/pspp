@@ -7121,7 +7121,7 @@ msgstr "_Voeg nieuwe naam toe"
 
 #: src/ui/gui/autorecode.ui:269
 msgid "_Use the same recoding scheme for all variables"
-msgstr "_Gebruik hetzelfde hercoderings schema voro alle variabelen"
+msgstr "Gebruik hetzelfde hercoderings schema voor alle variabelen"
 
 #: src/ui/gui/autorecode.ui:285
 msgid "Treat _blank string values as missing"
