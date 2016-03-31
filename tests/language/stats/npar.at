@@ -1764,4 +1764,28 @@ npar tests
 AT_CHECK([pspp -O format=csv npar.sps], [1], [ignore])
 
 AT_CLEANUP
+
+
+
+
+AT_SETUP([NPAR TESTS - crash on unterminated string])
+
+AT_DATA([npar.sps], [dnl
+DATA LIST NOTABLE LIST /x * y * w * .
+BEGIN DATA.
+3.1 1  4
+3.2 2  1
+4   2  6
+END DATA.
+
+
+NPAR TESTS
+" CHISQUARE=x y(-2,5)
+  /STATISTICS=DESCRIPTIVES
+  .
+])
+
+AT_CHECK([pspp -O format=csv npar.sps], [1], [ignore])
+
+AT_CLEANUP
  

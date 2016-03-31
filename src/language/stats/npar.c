@@ -539,7 +539,7 @@ npar_execute (struct casereader *input,
       test->execute (ds, casereader_clone (input), specs->filter, test, specs->exact, specs->timer);
     }
 
-  if ( specs->descriptives )
+  if (specs->descriptives && specs->n_vars > 0)
     {
       summary_descriptives = xnmalloc (sizeof (*summary_descriptives),
 				       specs->n_vars);
