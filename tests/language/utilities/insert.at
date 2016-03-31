@@ -181,3 +181,16 @@ ONE
 Äpfelfölfaß
 ])
 AT_CLEANUP
+
+
+
+
+dnl Test for a bug where insert crashed on an unterminated string input
+AT_SETUP([INSERT unterminated string])
+
+AT_DATA([insert.sps], [INSERT FILE=7bar.sps' CD=NO.
+])
+
+AT_CHECK([pspp -O format=csv insert.sps], [1], [ignore])
+
+AT_CLEANUP
