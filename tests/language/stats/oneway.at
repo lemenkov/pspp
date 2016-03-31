@@ -1008,8 +1008,30 @@ begin data.
 end data.
 
 oneway a"by b.
+
 ])
 
 AT_CHECK([pspp -O format=csv crash5.sps], [1], [ignore])
+
+AT_CLEANUP
+
+
+
+
+AT_SETUP([ONEWAY Crash on unterminated string])
+
+AT_DATA([crash6.sps], [dnl
+DATA LIST NOTABLE LIST /height * weight * temperature * sex *.
+BEGIN DATA.
+1801     .       .     0
+1606     .   0   .     1
+END DATA.
+
+ONEWAY /VARIABLES= height weight temperature BY sex
+ /CONTRAST =" 2 -2  1
+ .
+])
+
+AT_CHECK([pspp -O format=csv crash6.sps], [1], [ignore])
 
 AT_CLEANUP
