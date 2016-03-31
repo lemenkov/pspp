@@ -4,7 +4,7 @@ See the end for copying conditions.
 
 Please send PSPP bug reports to bug-gnu-pspp@gnu.org.
  
-Changes from 0.10.1 to 0.10.1:
+Changes from 0.10.0 to 0.10.1:
 
  * A bug where certain dialog boxes could not be properly populated
    has been fixed.
