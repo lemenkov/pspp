@@ -124,9 +124,12 @@ int
 cmd_else (struct lexer *lexer UNUSED, struct dataset *ds)
 {
   struct do_if_trns *do_if = ctl_stack_top (&do_if_class);
-  assert (ds == do_if->ds);
+
   if (do_if == NULL || !must_not_have_else (do_if))
     return CMD_CASCADING_FAILURE;
+
+  assert (ds == do_if->ds);
+
   add_else (do_if);
   return CMD_SUCCESS;
 }
