@@ -100,8 +100,11 @@ cmd_output (struct lexer *lexer, struct dataset *ds UNUSED)
 	    {
 	      if (lex_match_id (lexer, "SELECT"))
 		{
-		  lex_force_match (lexer, T_EQUALS);
-		  lex_force_match (lexer, T_LBRACK);
+		  if (! lex_force_match (lexer, T_EQUALS))
+		    goto error;
+		  
+		  if (! lex_force_match (lexer, T_LBRACK))
+		    goto error;
 		  
 		  while (lex_token (lexer) != T_RBRACK &&
 			 lex_token (lexer) != T_ENDCMD)
@@ -122,7 +125,8 @@ cmd_output (struct lexer *lexer, struct dataset *ds UNUSED)
 			  goto error;
 			}
 		    }
-		  lex_force_match (lexer, T_RBRACK);
+		  if (! lex_force_match (lexer, T_RBRACK))
+		    goto error;
 		}
 	      else if (lex_match_id (lexer, "FORMAT"))
 		{
@@ -131,7 +135,8 @@ cmd_output (struct lexer *lexer, struct dataset *ds UNUSED)
 		  int width = -1;
 		  int decimals = -1;
 
-		  lex_force_match (lexer, T_EQUALS);
+		  if (! lex_force_match (lexer, T_EQUALS))
+		    goto error;
 		  if (! parse_abstract_format_specifier (lexer, type, &width, &decimals))
 		    {
 		      lex_error (lexer, NULL);
