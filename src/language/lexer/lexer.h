@@ -124,13 +124,13 @@ bool lex_match_int (struct lexer *, int);
 bool lex_match_phrase (struct lexer *, const char *s);
 
 /* Forcible matching functions. */
-bool lex_force_match (struct lexer *, enum token_type);
-bool lex_force_match_id (struct lexer *, const char *);
-bool lex_force_int (struct lexer *);
-bool lex_force_num (struct lexer *);
-bool lex_force_id (struct lexer *);
-bool lex_force_string (struct lexer *);
-bool lex_force_string_or_id (struct lexer *);
+bool lex_force_match (struct lexer *, enum token_type) WARN_UNUSED_RESULT;
+bool lex_force_match_id (struct lexer *, const char *) WARN_UNUSED_RESULT;
+bool lex_force_int (struct lexer *) WARN_UNUSED_RESULT;
+bool lex_force_num (struct lexer *) WARN_UNUSED_RESULT;
+bool lex_force_id (struct lexer *) WARN_UNUSED_RESULT;
+bool lex_force_string (struct lexer *) WARN_UNUSED_RESULT;
+bool lex_force_string_or_id (struct lexer *) WARN_UNUSED_RESULT;
 
 /* Token accessors. */
 enum token_type lex_token (const struct lexer *);
