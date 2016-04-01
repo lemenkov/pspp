@@ -96,13 +96,7 @@ parse_num_range (struct lexer *lexer,
 static bool
 parse_number (struct lexer *lexer, double *x, const enum fmt_type *format)
 {
-  if (lex_is_number (lexer))
-    {
-      *x = lex_number (lexer);
-      lex_get (lexer);
-      return true;
-    }
-  else if (lex_is_string (lexer) && format != NULL)
+  if (lex_is_string (lexer) && format != NULL)
     {
       union value v;
 
@@ -120,14 +114,15 @@ parse_number (struct lexer *lexer, double *x, const enum fmt_type *format)
         }
       return true;
     }
-  else
+
+    if (lex_force_num (lexer))
     {
-      if (format != NULL)
-        lex_error (lexer, _("expecting number or data string"));
-      else
-        lex_force_num (lexer);
-      return false;
+      *x = lex_number (lexer);
+      lex_get (lexer);
+      return true;
     }
+
+    return false;
 }
 
 /* Parses the current token from LEXER into value V, which must already have
