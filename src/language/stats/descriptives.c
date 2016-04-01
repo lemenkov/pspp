@@ -309,7 +309,8 @@ cmd_descriptives (struct lexer *lexer, struct dataset *ds)
                 dsc->sort_ascending = 0;
               else
                 lex_error (lexer, NULL);
-              lex_force_match (lexer, T_RPAREN);
+              if (! lex_force_match (lexer, T_RPAREN))
+		goto error;
             }
         }
       else if (var_cnt == 0)

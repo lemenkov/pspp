@@ -155,7 +155,8 @@ cmd_glm (struct lexer *lexer, struct dataset *ds)
 			      PV_NO_DUPLICATE | PV_NUMERIC))
     goto error;
 
-  lex_force_match (lexer, T_BY);
+  if (! lex_force_match (lexer, T_BY))
+    goto error;
 
   if (!parse_variables_const (lexer, glm.dict,
 			      &glm.factor_vars, &glm.n_factor_vars,

@@ -1139,7 +1139,8 @@ cmd_factor (struct lexer *lexer, struct dataset *ds)
 		    {
 		      factor.promax_power = lex_integer (lexer);
 		      lex_get (lexer);
-		      lex_force_match (lexer, T_RPAREN);
+		      if (! lex_force_match (lexer, T_RPAREN))
+			goto error;
 		    }
 		  factor.rotation = ROT_PROMAX;
 		}
@@ -1167,7 +1168,8 @@ cmd_factor (struct lexer *lexer, struct dataset *ds)
 		    {
 		      factor.n_factors = lex_integer (lexer);
 		      lex_get (lexer);
-		      lex_force_match (lexer, T_RPAREN);
+		      if (! lex_force_match (lexer, T_RPAREN))
+			goto error;
 		    }
 		}
 	      else if (lex_match_id (lexer, "MINEIGEN"))
@@ -1177,7 +1179,8 @@ cmd_factor (struct lexer *lexer, struct dataset *ds)
 		    {
 		      factor.min_eigen = lex_number (lexer);
 		      lex_get (lexer);
-		      lex_force_match (lexer, T_RPAREN);
+		      if (! lex_force_match (lexer, T_RPAREN))
+			goto error;
 		    }
 		}
 	      else if (lex_match_id (lexer, "ECONVERGE"))
@@ -1187,7 +1190,8 @@ cmd_factor (struct lexer *lexer, struct dataset *ds)
 		    {
 		      factor.econverge = lex_number (lexer);
 		      lex_get (lexer);
-		      lex_force_match (lexer, T_RPAREN);
+		      if (! lex_force_match (lexer, T_RPAREN))
+			goto error;
 		    }
 		}
 	      else if (lex_match_id (lexer, "RCONVERGE"))
@@ -1197,7 +1201,8 @@ cmd_factor (struct lexer *lexer, struct dataset *ds)
                     {
                       factor.rconverge = lex_number (lexer);
                       lex_get (lexer);
-                      lex_force_match (lexer, T_RPAREN);
+                      if (! lex_force_match (lexer, T_RPAREN))
+			goto error;
                     }
 		}
 	      else if (lex_match_id (lexer, "ITERATE"))
@@ -1207,7 +1212,8 @@ cmd_factor (struct lexer *lexer, struct dataset *ds)
 		    {
 		      n_iterations = lex_integer (lexer);
 		      lex_get (lexer);
-		      lex_force_match (lexer, T_RPAREN);
+		      if (! lex_force_match (lexer, T_RPAREN))
+			goto error;
 		    }
 		}
 	      else if (lex_match_id (lexer, "DEFAULT"))
@@ -1268,7 +1274,8 @@ cmd_factor (struct lexer *lexer, struct dataset *ds)
 		    {
 		      factor.blank = lex_number (lexer);
 		      lex_get (lexer);
-		      lex_force_match (lexer, T_RPAREN);
+		      if (! lex_force_match (lexer, T_RPAREN))
+			goto error;
 		    }
 		}
 	      else if (lex_match_id (lexer, "DEFAULT"))

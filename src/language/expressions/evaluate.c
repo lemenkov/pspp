@@ -181,13 +181,9 @@ cmd_debug_evaluate (struct lexer *lexer, struct dataset *dsother UNUSED)
       else
         break;
     }
-  if (lex_token (lexer) != T_SLASH)
-    {
-      lex_force_match (lexer, T_SLASH);
+  
+  if (!lex_force_match (lexer, T_SLASH))
       goto done;
-    }
-
-  lex_get (lexer);
 
   expr = expr_parse_any (lexer, ds, optimize);
   if (!expr || lex_end_of_command (lexer) != CMD_SUCCESS)

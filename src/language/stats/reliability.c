@@ -234,7 +234,8 @@ cmd_reliability (struct lexer *lexer, struct dataset *ds)
 		{
 		  reliability.split_point = lex_number (lexer);
 		  lex_get (lexer);
-		  lex_force_match (lexer, T_RPAREN);
+		  if (! lex_force_match (lexer, T_RPAREN))
+		    goto error;
 		}
 	    }
 	  else

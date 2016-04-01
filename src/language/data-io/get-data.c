@@ -88,7 +88,8 @@ cmd_get_data (struct lexer *lexer, struct dataset *ds)
   opts.read_names = false;
   opts.asw = -1;
 
-  lex_force_match (lexer, T_SLASH);
+  if (! lex_force_match (lexer, T_SLASH))
+    goto error;
 
   if (!lex_force_match_id (lexer, "TYPE"))
     goto error;
@@ -160,12 +161,14 @@ parse_get_psql (struct lexer *lexer, struct dataset *ds)
   psql.bsize = -1;
   ds_init_empty (&psql.sql);
 
-  lex_force_match (lexer, T_SLASH);
+  if (! lex_force_match (lexer, T_SLASH))
+    goto error;
 
   if (!lex_force_match_id (lexer, "CONNECT"))
     goto error;
 
-  lex_force_match (lexer, T_EQUALS);
+  if (! lex_force_match (lexer, T_EQUALS))
+    goto error;
 
   if (!lex_force_string (lexer))
     goto error;
@@ -242,12 +245,14 @@ parse_spreadsheet (struct lexer *lexer, char **filename,
   opts->read_names = true;
   opts->asw = -1;
 
-  lex_force_match (lexer, T_SLASH);
+  if (! lex_force_match (lexer, T_SLASH))
+    goto error;
 
   if (!lex_force_match_id (lexer, "FILE"))
     goto error;
 
-  lex_force_match (lexer, T_EQUALS);
+  if (! lex_force_match (lexer, T_EQUALS))
+    goto error;
 
   if (!lex_force_string (lexer))
     goto error;
@@ -391,11 +396,13 @@ parse_get_txt (struct lexer *lexer, struct dataset *ds)
   enum data_parser_type type;
   bool has_type;
 
-  lex_force_match (lexer, T_SLASH);
+  if (! lex_force_match (lexer, T_SLASH))
+    goto error;
 
   if (!lex_force_match_id (lexer, "FILE"))
     goto error;
-  lex_force_match (lexer, T_EQUALS);
+  if (! lex_force_match (lexer, T_EQUALS))
+    goto error;
   fh = fh_parse (lexer, FH_REF_FILE | FH_REF_INLINE, NULL);
   if (fh == NULL)
     goto error;

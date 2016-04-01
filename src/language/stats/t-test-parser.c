@@ -109,7 +109,8 @@ cmd_t_test (struct lexer *lexer, struct dataset *ds)
 		  cut = false;
 		}
 
-	      lex_force_match (lexer, T_RPAREN);
+	      if (! lex_force_match (lexer, T_RPAREN))
+		goto parse_failed;
 	    }
 	  else
 	    {
@@ -281,7 +282,8 @@ cmd_t_test (struct lexer *lexer, struct dataset *ds)
 		  goto parse_failed;
 		tt.confidence = lex_number (lexer);
 		lex_get (lexer);
-		lex_force_match (lexer, T_RPAREN);
+		if (! lex_force_match (lexer, T_RPAREN))
+		  goto parse_failed;
 	      }
 	}
       else 

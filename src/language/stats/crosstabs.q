@@ -404,14 +404,11 @@ crs_custom_tables (struct lexer *lexer, struct dataset *ds,
         }
       nx *= by_nvar[n_by];
       n_by++;
-
+      
       if (!lex_match (lexer, T_BY))
 	{
 	  if (n_by < 2)
-	    {
-              lex_force_match (lexer, T_BY);
-	      goto done;
-	    }
+	    goto done;
 	  else
 	    break;
 	}
