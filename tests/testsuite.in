@@ -6,3 +6,41 @@ m4_ifndef([AT_SKIP_IF],
      [AT_CHECK([($1) \
 && exit 77 || exit 0], [0], [ignore], [ignore])])])
 
+m4_divert_text([PREPARE_TESTS], [dnl
+if test X"$RUNNER" != X; then
+    wrapper_dir=`pwd`/wrappers
+    rm "$wrapper_dir"/*
+    test -d "$wrapper_dir" || mkdir "$wrapper_dir"
+
+    wrap_dir () {
+        test -d "$1" || return
+	for file in "$1"/*; do
+            if test -x "$file" && test -f "$file"; then
+		base=`basename $file $EXEEXT`
+		wrapper=$wrapper_dir/$base
+		if test ! -e "$wrapper"; then
+		    echo "exec $RUNNER $file \"\$@\"" > $wrapper
+		    chmod +x $wrapper
+		fi
+	    fi
+	done
+    }
+
+    save_IFS=$IFS; IFS=$PATH_SEPARATOR
+    for dir in $AUTOTEST_PATH; do
+        IFS=$save_IFS
+        test X"$dir" = X && dir=.
+	case $dir in
+            [\\/]* | ?:[\\/]*)
+                wrap_dir "$dir"
+		;;
+            *)
+	        wrap_dir "$abs_top_builddir/$dir"
+		wrap_dir "$abs_top_srcdir/$dir"
+		;;
+	esac
+    done
+    IFS=$save_IFS
+    PATH=$wrapper_dir:$PATH
+fi
+])

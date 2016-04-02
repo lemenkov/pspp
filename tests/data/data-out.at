@@ -46,7 +46,7 @@ print "EXECUTE.\n";
 ]])
 AT_CHECK([$PERL num-out.pl > num-out.sps])
 AT_CHECK([pspp -O format=csv num-out.sps])
-AT_CHECK([inexactify$EXEEXT < output.txt > output.inexact])
+AT_CHECK([inexactify < output.txt > output.inexact])
 AT_CHECK([gzip -cd < $top_srcdir/tests/data/num-out.expected.cmp.gz > expout.cmp])
 AT_DATA([num-out-decmp.pl],
 [[use strict;
