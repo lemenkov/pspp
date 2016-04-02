@@ -1,5 +1,5 @@
 /* PSPP - a program for statistical analysis.
-   Copyright (C) 1997-9, 2000, 2006, 2009, 2010, 2011, 2013 Free Software Foundation, Inc.
+   Copyright (C) 1997-9, 2000, 2006, 2009, 2010, 2011, 2013, 2016 Free Software Foundation, Inc.
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -184,7 +184,7 @@ lex_append (struct lexer *lexer, struct lex_reader *reader)
   ll_push_tail (&lexer->sources, &lex_source_create (reader)->ll);
 }
 
-/* Advacning. */
+/* Advancing. */
 
 static struct lex_token *
 lex_push_token__ (struct lex_source *src)
@@ -1315,37 +1315,44 @@ lex_get_error (struct lex_source *src, const char *format, ...)
   va_end (args);
 }
 
+/* Attempts to append an additional token into SRC's deque, reading more from
+   the underlying lex_reader if necessary..  Returns true if successful, false
+   if the deque already represents (a suffix of) the whole lex_reader's
+   contents, */
 static bool
 lex_source_get__ (const struct lex_source *src_)
 {
   struct lex_source *src = CONST_CAST (struct lex_source *, src_);
+  if (src->eof)
+    return false;
 
+  /* State maintained while scanning tokens.  Usually we only need a single
+     state, but scanner_push() can return SCAN_SAVE to indicate that the state
+     needs to be saved and possibly restored later with SCAN_BACK. */
   struct state
     {
       struct segmenter segmenter;
       enum segment_type last_segment;
-      int newlines;
+      int newlines;             /* Number of newlines encountered so far. */
+      /* Maintained here so we can update lex_source's similar members when we
+         finish. */
       size_t line_pos;
       size_t seg_pos;
     };
 
-  struct state state, saved;
-  enum scan_result result;
+  /* Initialize state. */
+  struct state state =
+    {
+      .segmenter = src->segmenter,
+      .newlines = 0,
+      .seg_pos = src->seg_pos,
+      .line_pos = src->line_pos,
+    };
+  struct state saved = state;
+
+  /* Append a new token to SRC and initialize it. */
+  struct lex_token *token = lex_push_token__ (src);
   struct scanner scanner;
-  struct lex_token *token;
-  int n_lines;
-  int i;
-
-  if (src->eof)
-    return false;
-
-  state.segmenter = src->segmenter;
-  state.newlines = 0;
-  state.seg_pos = src->seg_pos;
-  state.line_pos = src->line_pos;
-  saved = state;
-
-  token = lex_push_token__ (src);
   scanner_init (&scanner, &token->token);
   token->line_pos = src->line_pos;
   token->token_pos = src->seg_pos;
@@ -1354,22 +1361,24 @@ lex_source_get__ (const struct lex_source *src_)
   else
     token->first_line = 0;
 
+  /* Extract segments and pass them through the scanner until we obtain a
+     token. */
   for (;;)
     {
+      /* Extract a segment. */
+      const char *segment = &src->buffer[state.seg_pos - src->tail];
+      size_t seg_maxlen = src->head - state.seg_pos;
       enum segment_type type;
-      const char *segment;
-      size_t seg_maxlen;
-      int seg_len;
-
-      segment = &src->buffer[state.seg_pos - src->tail];
-      seg_maxlen = src->head - state.seg_pos;
-      seg_len = segmenter_push (&state.segmenter, segment, seg_maxlen, &type);
+      int seg_len = segmenter_push (&state.segmenter, segment, seg_maxlen,
+                                    &type);
       if (seg_len < 0)
         {
+          /* The segmenter needs more input to produce a segment. */
           lex_source_read__ (src);
           continue;
         }
 
+      /* Update state based on the segment. */
       state.last_segment = type;
       state.seg_pos += seg_len;
       if (type == SEG_NEWLINE)
@@ -1378,8 +1387,10 @@ lex_source_get__ (const struct lex_source *src_)
           state.line_pos = state.seg_pos;
         }
 
-      result = scanner_push (&scanner, type, ss_buffer (segment, seg_len),
-                             &token->token);
+      /* Pass the segment into the scanner and try to get a token out. */
+      enum scan_result result = scanner_push (&scanner, type,
+                                              ss_buffer (segment, seg_len),
+                                              &token->token);
       if (result == SCAN_SAVE)
         saved = state;
       else if (result == SCAN_BACK)
@@ -1391,7 +1402,9 @@ lex_source_get__ (const struct lex_source *src_)
         break;
     }
 
-  n_lines = state.newlines;
+  /* If we've reached the end of a line, or the end of a command, then pass
+     the line to the output engine as a syntax text item.  */
+  int n_lines = state.newlines;
   if (state.last_segment == SEG_END_COMMAND && !src->suppress_next_newline)
     {
       n_lines++;
@@ -1402,20 +1415,15 @@ lex_source_get__ (const struct lex_source *src_)
       n_lines--;
       src->suppress_next_newline = false;
     }
-  for (i = 0; i < n_lines; i++)
+  for (int i = 0; i < n_lines; i++)
     {
-      const char *newline;
-      const char *line;
-      size_t line_len;
-      char *syntax;
-
-      line = &src->buffer[src->journal_pos - src->tail];
-      newline = rawmemchr (line, '\n');
-      line_len = newline - line;
+      const char *line = &src->buffer[src->journal_pos - src->tail];
+      const char *newline = rawmemchr (line, '\n');
+      size_t line_len = newline - line;
       if (line_len > 0 && line[line_len - 1] == '\r')
         line_len--;
 
-      syntax = malloc (line_len + 2);
+      char *syntax = malloc (line_len + 2);
       memcpy (syntax, line, line_len);
       syntax[line_len] = '\n';
       syntax[line_len + 1] = '\0';
