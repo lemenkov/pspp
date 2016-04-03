@@ -6,11 +6,15 @@ Please send PSPP bug reports to bug-gnu-pspp@gnu.org.
  
 Changes from 0.10.0 to 0.10.1:
 
- * A bug where certain dialog boxes could not be properly populated
-   has been fixed.
+ * Bug fixes, including the following:
 
- * Various commands have been hardened against errors when called
-   with invalid syntax.
+   - A bug where certain dialog boxes could not be properly populated
+     has been fixed.
+
+   - Various commands have been hardened against errors when called
+     with invalid syntax.
+
+ * Translation updates.  Thanks to our translators!
 
 Changes from 0.8.5 to 0.10.0:
 
