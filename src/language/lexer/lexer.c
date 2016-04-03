@@ -1174,18 +1174,32 @@ lex_source_read__ (struct lex_source *src)
 {
   do
     {
-      size_t head_ofs;
-      size_t space;
-      size_t n;
-
       lex_source_expand__ (src);
 
-      head_ofs = src->head - src->tail;
-      space = src->allocated - head_ofs;
-      n = src->reader->class->read (src->reader, &src->buffer[head_ofs],
-                                    space,
-                                    segmenter_get_prompt (&src->segmenter));
+      size_t head_ofs = src->head - src->tail;
+      size_t space = src->allocated - head_ofs;
+      enum prompt_style prompt = segmenter_get_prompt (&src->segmenter);
+      size_t n = src->reader->class->read (src->reader, &src->buffer[head_ofs],
+                                           space, prompt);
       assert (n <= space);
+
+      for (char *p = &src->buffer[head_ofs]; p < &src->buffer[head_ofs + n];
+           p++)
+        if (*p == '\0')
+          {
+            struct msg m;
+            m.category = MSG_C_SYNTAX;
+            m.severity = MSG_S_ERROR;
+            m.file_name = src->reader->file_name;
+            m.first_line = 0;
+            m.last_line = 0;
+            m.first_column = 0;
+            m.last_column = 0;
+            m.text = xstrdup ("Bad character U+0000 in input.");
+            msg_emit (&m);
+
+            *p = ' ';
+          }
 
       if (n == 0)
         {

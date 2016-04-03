@@ -61,3 +61,17 @@ lexer.sps:10.1: error: Syntax error at ``': Bad character ``' in input.
 lexer.sps:11.1: error: Syntax error at `�': Bad character U+FFFD in input.
 ])
 AT_CLEANUP
+
+# Bug #47602.
+AT_SETUP([lexer crash due to null byte])
+# Intentionally leave out the new-line and add a null byte:
+printf "datA dist list notable file='input.txt'/a b c.
+lis|.\0" > lexer.sps
+AT_CHECK([pspp -O format=csv lexer.sps], [1], [dnl
+lexer.sps: error: Bad character U+0000 in input.
+
+lexer.sps:1: error: Unknown command `datA dist'.
+
+lexer.sps:2: error: LIST: LIST is allowed only after the active dataset has been defined.
+])
+AT_CLEANUP
