@@ -67,11 +67,14 @@ AT_SETUP([lexer crash due to null byte])
 # Intentionally leave out the new-line and add a null byte:
 printf "datA dist list notable file='input.txt'/a b c.
 lis|.\0" > lexer.sps
-AT_CHECK([pspp -O format=csv lexer.sps], [1], [dnl
+
+# We sort the output into a predictable order because the lexer finds
+# and reports null bytes as soon as it reads them into its input
+# buffer, as opposed to when it encounters them during tokenization.
+AT_CHECK([pspp -O format=csv lexer.sps > lexer.csv], [1])
+AT_CHECK([sed '/^$/d' lexer.csv | sort], [0], [dnl
 lexer.sps: error: Bad character U+0000 in input.
-
 lexer.sps:1: error: Unknown command `datA dist'.
-
 lexer.sps:2: error: LIST: LIST is allowed only after the active dataset has been defined.
 ])
 AT_CLEANUP
