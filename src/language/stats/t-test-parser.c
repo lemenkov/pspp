@@ -44,9 +44,9 @@ cmd_t_test (struct lexer *lexer, struct dataset *ds)
 
   /* Variables pertaining to the paired mode */
   const struct variable **v1 = NULL;
-  size_t n_v1;
+  size_t n_v1 = 0;
   const struct variable **v2 = NULL;
-  size_t n_v2;
+  size_t n_v2 = 0;
 	  
   size_t n_pairs = 0;
   vp *pairs = NULL;
