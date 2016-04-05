@@ -51,9 +51,10 @@ cmd_permissions (struct lexer *lexer, struct dataset *ds UNUSED)
     lex_match (lexer, T_EQUALS);
 
   str = lex_tokcstr (lexer);
-  fn = strdup (str);
+  if (str)
+    fn = strdup (str);
 
-  if (!lex_force_match (lexer, T_STRING))
+  if (!lex_force_match (lexer, T_STRING) || str == NULL)
     goto error;
 
   lex_match (lexer, T_SLASH);

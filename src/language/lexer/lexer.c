@@ -604,9 +604,16 @@ lex_force_match (struct lexer *lexer, enum token_type type)
     }
   else
     {
-      char *s = xasprintf ("`%s'", token_type_to_string (type));
-      lex_error_expecting (lexer, s, NULL_SENTINEL);
-      free (s);
+      const char *type_string = token_type_to_string (type);
+      if (type_string)
+	{
+	  char *s = xasprintf ("`%s'", type_string);
+	  lex_error_expecting (lexer, s, NULL_SENTINEL);
+	  free (s);
+	}
+      else
+	lex_error_expecting (lexer, token_type_to_name (type), NULL_SENTINEL);
+      
       return false;
     }
 }

@@ -23,3 +23,14 @@ AT_CHECK([ls -l foobar], [0], [stdout])
 AT_CHECK([sed 's/^\(..........\).*/\1/' stdout], [0], [-rw-r--r--
 ])
 AT_CLEANUP
+
+
+
+AT_SETUP([PERMISSIONS - bad syntax])
+AT_DATA([pe.sps], [[PERMI|SIONS /FILE='foobar' PERMISSIONS=WRITEABLE.
+]])
+
+AT_CHECK([pspp -O format=csv pe.sps], [1], [dnl
+pe.sps:1.6: error: PERMISSIONS: Syntax error at `|': expecting STRING.
+])
+AT_CLEANUP
