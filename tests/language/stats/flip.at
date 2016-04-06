@@ -98,3 +98,30 @@ flip.
 AT_CHECK([pspp -O format=csv flip.sps], [1], [ignore])
 
 AT_CLEANUP
+
+
+
+AT_SETUP([FLIP with invalid variable names])
+
+AT_DATA([flip.sps], [dnl
+data list notable list /N (a3) a b c d *.
+begin data.
+""   1  2  3  4
+BY   1  2  3  4
+end data.
+
+flip newnames=n.
+
+list.
+])
+
+AT_CHECK([pspp -O format=csv flip.sps], [0], [dnl
+Table: Data List
+CASE_LBL,v,BY1
+a       ,1.00,1.00
+b       ,2.00,2.00
+c       ,3.00,3.00
+d       ,4.00,4.00
+])
+
+AT_CLEANUP

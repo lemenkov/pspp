@@ -271,9 +271,15 @@ make_new_var (struct dictionary *dict, const char *name_)
       }
   *cp = '\0';
 
+  if (strlen (name) == 0)
+    {
+      free (name);
+      name = xstrdup ("v");
+    }
+
   /* Use the mangled name, if it is available, or add numeric
      extensions until we find one that is. */
-  if (!dict_create_var (dict, name, 0))
+  if (!id_is_plausible (name, false) || !dict_create_var (dict, name, 0))
     {
       int len = strlen (name);
       int i;
@@ -284,7 +290,7 @@ make_new_var (struct dictionary *dict, const char *name_)
           strncpy (n, name, ofs);
           sprintf (&n[ofs], "%d", i);
 
-          if (dict_create_var (dict, n, 0))
+          if (id_is_plausible (n, false) && dict_create_var (dict, n, 0))
             break;
         }
     }
