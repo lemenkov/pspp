@@ -44,9 +44,9 @@ cmd_t_test (struct lexer *lexer, struct dataset *ds)
 
   /* Variables pertaining to the paired mode */
   const struct variable **v1 = NULL;
-  size_t n_v1;
+  size_t n_v1 = 0;
   const struct variable **v2 = NULL;
-  size_t n_v2;
+  size_t n_v2 = 0;
 	  
   size_t n_pairs = 0;
   vp *pairs = NULL;
@@ -80,7 +80,8 @@ cmd_t_test (struct lexer *lexer, struct dataset *ds)
 	  mode_count++;
 	  tt.mode = MODE_SINGLE;
 	  lex_match (lexer, T_EQUALS);
-	  lex_force_num (lexer);
+	  if (!lex_force_num (lexer))
+	    goto parse_failed;
 	  testval = lex_number (lexer);
 	  lex_get (lexer);
 	}
@@ -108,7 +109,8 @@ cmd_t_test (struct lexer *lexer, struct dataset *ds)
 		  cut = false;
 		}
 
-	      lex_force_match (lexer, T_RPAREN);
+	      if (! lex_force_match (lexer, T_RPAREN))
+		goto parse_failed;
 	    }
 	  else
 	    {
@@ -276,10 +278,12 @@ cmd_t_test (struct lexer *lexer, struct dataset *ds)
 	  if ( lex_match_id (lexer, "CIN") || lex_force_match_id (lexer, "CI"))
 	    if ( lex_force_match (lexer, T_LPAREN))
 	      {
-		lex_force_num (lexer);
+		if (!lex_force_num (lexer))
+		  goto parse_failed;
 		tt.confidence = lex_number (lexer);
 		lex_get (lexer);
-		lex_force_match (lexer, T_RPAREN);
+		if (! lex_force_match (lexer, T_RPAREN))
+		  goto parse_failed;
 	      }
 	}
       else 

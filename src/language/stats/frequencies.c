@@ -914,7 +914,8 @@ cmd_frequencies (struct lexer *lexer, struct dataset *ds)
 			      lex_error (lexer, _("Histogram frequency must be greater than zero."));
 			    }
 			  lex_get (lexer);
-			  lex_force_match (lexer, T_RPAREN);
+			  if (! lex_force_match (lexer, T_RPAREN))
+			    goto error;
 			}
                     }
 		}
@@ -931,29 +932,34 @@ cmd_frequencies (struct lexer *lexer, struct dataset *ds)
 			      lex_error (lexer, _("Histogram percentage must be greater than zero."));
 			    }
 			  lex_get (lexer);
-			  lex_force_match (lexer, T_RPAREN);
+			  if (! lex_force_match (lexer, T_RPAREN))
+			    goto error;
 			}
                     }
 		}
 	      else if (lex_match_id (lexer, "MINIMUM"))
 		{
-		  lex_force_match (lexer, T_LPAREN);
+		  if (! lex_force_match (lexer, T_LPAREN))
+		    goto error;
 		  if (lex_force_num (lexer))
 		    {
 		      hi_min = lex_number (lexer);
 		      lex_get (lexer);
 		    }
-		  lex_force_match (lexer, T_RPAREN);
+		  if (! lex_force_match (lexer, T_RPAREN))
+		    goto error;
 		}
 	      else if (lex_match_id (lexer, "MAXIMUM"))
 		{
-		  lex_force_match (lexer, T_LPAREN);
+		  if (! lex_force_match (lexer, T_LPAREN))
+		    goto error;
 		  if (lex_force_num (lexer))
 		    {
 		      hi_max = lex_number (lexer);
 		      lex_get (lexer);
 		    }
- 		  lex_force_match (lexer, T_RPAREN);
+ 		  if (! lex_force_match (lexer, T_RPAREN))
+		    goto error;
 		}
 	      else
 		{
@@ -970,23 +976,27 @@ cmd_frequencies (struct lexer *lexer, struct dataset *ds)
 	    {
 	      if (lex_match_id (lexer, "MINIMUM"))
 		{
-		  lex_force_match (lexer, T_LPAREN);
+		  if (! lex_force_match (lexer, T_LPAREN))
+		    goto error;
 		  if (lex_force_num (lexer))
 		    {
 		      pie_min = lex_number (lexer);
 		      lex_get (lexer);
 		    }
-		  lex_force_match (lexer, T_RPAREN);
+		  if (! lex_force_match (lexer, T_RPAREN))
+		    goto error;
 		}
 	      else if (lex_match_id (lexer, "MAXIMUM"))
 		{
-		  lex_force_match (lexer, T_LPAREN);
+		  if (! lex_force_match (lexer, T_LPAREN))
+		    goto error;
 		  if (lex_force_num (lexer))
 		    {
 		      pie_max = lex_number (lexer);
 		      lex_get (lexer);
 		    }
- 		  lex_force_match (lexer, T_RPAREN);
+ 		  if (! lex_force_match (lexer, T_RPAREN))
+		    goto error;
 		}
 	      else if (lex_match_id (lexer, "MISSING"))
 		{
@@ -1012,23 +1022,27 @@ cmd_frequencies (struct lexer *lexer, struct dataset *ds)
 	    {
 	      if (lex_match_id (lexer, "MINIMUM"))
 		{
-		  lex_force_match (lexer, T_LPAREN);
+		  if (! lex_force_match (lexer, T_LPAREN))
+		    goto error;
 		  if (lex_force_num (lexer))
 		    {
 		      bar_min = lex_number (lexer);
 		      lex_get (lexer);
 		    }
-		  lex_force_match (lexer, T_RPAREN);
+		  if (! lex_force_match (lexer, T_RPAREN))
+		    goto error;
 		}
 	      else if (lex_match_id (lexer, "MAXIMUM"))
 		{
-		  lex_force_match (lexer, T_LPAREN);
+		  if (! lex_force_match (lexer, T_LPAREN))
+		    goto error;
 		  if (lex_force_num (lexer))
 		    {
 		      bar_max = lex_number (lexer);
 		      lex_get (lexer);
 		    }
- 		  lex_force_match (lexer, T_RPAREN);
+ 		  if (! lex_force_match (lexer, T_RPAREN))
+		    goto error;
 		}
 	      else if (lex_match_id (lexer, "FREQ"))
 		{
@@ -1039,7 +1053,8 @@ cmd_frequencies (struct lexer *lexer, struct dataset *ds)
 			  lex_number (lexer);
 			  lex_get (lexer);
 			}
-		      lex_force_match (lexer, T_RPAREN);
+		      if (! lex_force_match (lexer, T_RPAREN))
+			goto error;
 		    }
 		  bar_freq = true;
 		}
@@ -1052,7 +1067,8 @@ cmd_frequencies (struct lexer *lexer, struct dataset *ds)
 			  lex_number (lexer);
 			  lex_get (lexer);
 			}
-		      lex_force_match (lexer, T_RPAREN);
+		      if (! lex_force_match (lexer, T_RPAREN))
+			goto error;
 		    }
 		  bar_freq = false;
 		}
@@ -1324,6 +1340,8 @@ freq_tab_to_hist (const struct frq_proc *frq, const struct freq_tab *ft,
         }
     }
 
+  if (valid_freq <= 0)
+    return NULL;
 
   iqr = calculate_iqr (frq);
 

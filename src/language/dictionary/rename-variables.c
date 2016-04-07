@@ -1,5 +1,5 @@
 /* PSPP - a program for statistical analysis.
-   Copyright (C) 1997-9, 2000, 2010, 2011, 2015 Free Software Foundation, Inc.
+   Copyright (C) 1997-9, 2000, 2010, 2011, 2015, 2016 Free Software Foundation, Inc.
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -37,9 +37,12 @@
 int
 cmd_rename_variables (struct lexer *lexer, struct dataset *ds)
 {
-  struct variable **rename_vars = NULL;
-  char **rename_new_names = NULL;
-  size_t rename_cnt = 0;
+  struct variable **vars_to_be_renamed = NULL;
+  size_t n_vars_to_be_renamed = 0;
+
+  char **new_names = NULL;
+  size_t n_new_names = 0;
+
   char *err_name;
 
   int status = CMD_CASCADING_FAILURE;
@@ -50,40 +53,40 @@ cmd_rename_variables (struct lexer *lexer, struct dataset *ds)
 
   do
     {
-      size_t prev_nv_1 = rename_cnt;
-      size_t prev_nv_2 = rename_cnt;
       int opts = PV_APPEND | PV_NO_DUPLICATE;
 
       if (!lex_match (lexer, T_LPAREN))
         opts |= PV_SINGLE;
       if (!parse_variables (lexer, dataset_dict (ds),
-                            &rename_vars, &rename_cnt, opts))
-        goto lossage;
+                            &vars_to_be_renamed, &n_vars_to_be_renamed, opts))
+	{
+	  goto lossage;
+	}
       if (!lex_force_match (lexer, T_EQUALS))
-        goto lossage;
+	{
+	  goto lossage;
+	}
       if (!parse_DATA_LIST_vars (lexer, dataset_dict (ds),
-                                 &rename_new_names, &prev_nv_1, opts))
-        goto lossage;
-      if (prev_nv_1 != rename_cnt)
+                                 &new_names, &n_new_names, opts))
+	{
+	  goto lossage;
+	}
+      if (n_new_names != n_vars_to_be_renamed)
         {
-          size_t i;
-
           msg (SE, _("Differing number of variables in old name list "
                      "(%zu) and in new name list (%zu)."),
-               rename_cnt - prev_nv_2, prev_nv_1 - prev_nv_2);
-          for (i = 0; i < prev_nv_1; i++)
-            free (rename_new_names[i]);
-          free (rename_new_names);
-          rename_new_names = NULL;
+	       n_vars_to_be_renamed, n_new_names);
           goto lossage;
         }
       if (!(opts & PV_SINGLE) && !lex_force_match (lexer, T_RPAREN))
-        goto lossage;
+	{
+	  goto lossage;
+	}
     }
   while (lex_token (lexer) != T_ENDCMD);
 
   if (!dict_rename_vars (dataset_dict (ds),
-                         rename_vars, rename_new_names, rename_cnt,
+                         vars_to_be_renamed, new_names, n_new_names,
                          &err_name))
     {
       msg (SE, _("Renaming would duplicate variable name %s."), err_name);
@@ -93,13 +96,13 @@ cmd_rename_variables (struct lexer *lexer, struct dataset *ds)
   status = CMD_SUCCESS;
 
  lossage:
-  free (rename_vars);
-  if (rename_new_names != NULL)
+  free (vars_to_be_renamed);
+  if (new_names != NULL)
     {
       size_t i;
-      for (i = 0; i < rename_cnt; i++)
-        free (rename_new_names[i]);
-      free (rename_new_names);
+      for (i = 0; i < n_new_names; ++i)
+        free (new_names[i]);
+      free (new_names);
     }
   return status;
 }

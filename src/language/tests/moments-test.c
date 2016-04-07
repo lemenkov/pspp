@@ -82,12 +82,8 @@ cmd_debug_moments (struct lexer *lexer, struct dataset *ds UNUSED)
 
   if (lex_match_id (lexer, "ONEPASS"))
     two_pass = 0;
-  if (lex_token (lexer) != T_SLASH)
-    {
-      lex_force_match (lexer, T_SLASH);
+  if (!lex_force_match (lexer, T_SLASH))
       goto done;
-    }
-  lex_get (lexer);
 
   if (two_pass)
     {

@@ -90,7 +90,9 @@ function RND (x, mult != 0, fuzzbits >= 0) = round_nearest (x, mult, fuzzbits);
 function SIN (x) = sin (x);
 function SQRT (x >= 0) = sqrt (x);
 function TAN (x) = check_errno (tan (x));
-function TRUNC (x) = x >= 0. ? floor (x) : -floor (-x);
+function TRUNC (x) = round_zero (x, 1, 0);
+function TRUNC (x, mult != 0) = round_zero (x, mult, 0);
+function TRUNC (x, mult != 0, fuzzbits >= 0) = round_zero (x, mult, fuzzbits);
 
 absorb_miss function MOD (n, d)
 {
@@ -166,6 +168,11 @@ function MEAN.1 (a[n])
   double mean;
   moments_of_doubles (a, n, NULL, &mean, NULL, NULL, NULL);
   return mean;
+}
+
+function MEDIAN.1 (a[n])
+{
+  return median (a, n);
 }
 
 function MIN.1 (a[n])
@@ -622,6 +629,18 @@ absorb_miss string function STRING (x, no_format f)
   strcpy (dst.string, s);
   free (s);
   return dst;
+}
+
+absorb_miss string function STRUNC (string s, n)
+{
+  if (n < 1 || n == SYSMIS)
+    return empty_string;
+
+  if (n < s.length)
+    s.length = n;
+  while (s.length > 0 && s.string[s.length - 1] == ' ')
+    s.length--;
+  return s;
 }
 
 absorb_miss string function SUBSTR (string s, ofs)

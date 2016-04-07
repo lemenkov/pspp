@@ -10,6 +10,7 @@ language_dictionary_sources = \
  src/language/dictionary/mrsets.c \
  src/language/dictionary/numeric.c \
  src/language/dictionary/rename-variables.c \
+ src/language/dictionary/sort-variables.c \
  src/language/dictionary/split-file.c \
  src/language/dictionary/split-file.h \
  src/language/dictionary/sys-file-info.c \

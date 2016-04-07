@@ -30,15 +30,15 @@
 #include <stdlib.h>
 
 #ifdef ODF_READ_SUPPORT
-const bool ODF_READING_SUPPORTED = true;
+static const bool ODF_READING_SUPPORTED = true;
 #else
-const bool ODF_READING_SUPPORTED = false;
+static const bool ODF_READING_SUPPORTED = false;
 #endif
 
 #ifdef GNM_READ_SUPPORT
-const bool GNM_READING_SUPPORTED = true;
+static const bool GNM_READING_SUPPORTED = true;
 #else
-const bool GNM_READING_SUPPORTED = false;
+static const bool GNM_READING_SUPPORTED = false;
 #endif
 
 void 

@@ -1,5 +1,5 @@
 /* PSPPIRE - a graphical user interface for PSPP.
-   Copyright (C) 2005, 2006, 2009, 2011, 2012, 2015  Free Software Foundation
+   Copyright (C) 2005, 2006, 2009, 2011, 2012, 2015, 2016  Free Software Foundation
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -181,7 +181,7 @@ err_dialog (const gchar *msg, GtkWindow *window)
 			    GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT,
 			    GTK_MESSAGE_ERROR,
 			    GTK_BUTTONS_CLOSE,
-			    msg);
+			    "%s",msg);
 
   gtk_dialog_run (GTK_DIALOG (dialog));
   gtk_widget_destroy (dialog);

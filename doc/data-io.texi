@@ -484,7 +484,10 @@ where each @var{var_spec} takes one of the forms
 @end display
 
 In free format, the input data is, by default, structured as a series
-of fields separated by spaces, tabs, commas, or line breaks.  Each
+of fields separated by spaces, tabs, or line breaks.
+If the current @subcmd{DECIMAL} separator is @subcmd{DOT} (@pxref{SET}),
+then commas are also treated as field separators.
+Each
 field's content may be unquoted, or it may be quoted with a pairs of
 apostrophes (@samp{'}) or double quotes (@samp{"}).  Unquoted white
 space separates fields but is not part of any field.  Any mix of

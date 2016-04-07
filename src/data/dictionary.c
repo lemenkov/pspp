@@ -1007,15 +1007,8 @@ dict_get_case_weight (const struct dictionary *d, const struct ccase *c,
   else
     {
       double w = case_num (c, d->weight);
-      if (w < 0.0 || var_is_num_missing (d->weight, w, MV_ANY))
-        w = 0.0;
-      if ( w == 0.0 && warn_on_invalid != NULL && *warn_on_invalid ) {
-	  *warn_on_invalid = false;
-	  msg (SW, _("At least one case in the data file had a weight value "
-		     "that was user-missing, system-missing, zero, or "
-		     "negative.  These case(s) were ignored."));
-      }
-      return w;
+
+      return var_force_valid_weight (d->weight, w, warn_on_invalid);
     }
 }
 

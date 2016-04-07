@@ -2113,6 +2113,8 @@ pspp_sheet_view_size_allocate (GtkWidget     *widget,
 	}
       update_childrens_allocation(tree_view);
     }
+
+  tree_view->priv->resized = TRUE;
 }
 
 /* Grabs the focus and unsets the PSPP_SHEET_VIEW_DRAW_KEYFOCUS flag */

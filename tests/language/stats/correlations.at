@@ -348,3 +348,41 @@ var5,Pearson Correlation,-.0519,-.0407
 ])
 
 AT_CLEANUP
+
+
+dnl Crash found by zzuf
+AT_SETUP([CORRELATIONS -- empty dataset])
+
+AT_DATA([correlations.sps], [dnl
+data list list /a b c q g *.
+CORRELATIONS 'VARIABLES = a b.]
+)
+
+AT_CHECK([pspp -o pspp.csv correlations.sps], [1], [ignore])
+
+AT_CLEANUP
+
+dnl Another Crash found by zzuf
+AT_SETUP([CORRELATIONS -- empty dataset 2])
+
+AT_DATA([correlations.sps], [dnl
+data list notable list /foo * bar * wiz bang *.
+begin data.
+ 1     00      3           .
+ 3     9     -50           .
+98    78     104           .
+ .     4       4           .
+ 5     3       0           .
+end data.
+
+correlations
+        variables = foo bar wiz bang
+        /missing = listwise
+        .
+])
+
+AT_CHECK([pspp -O format=csv correlations.sps], [1], [dnl
+correlations.sps:13: error: CORRELATIONS: The data for the chosen variables are all missing or empty.
+])
+
+AT_CLEANUP

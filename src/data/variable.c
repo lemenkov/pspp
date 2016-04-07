@@ -1303,3 +1303,29 @@ var_clear_vardict (struct variable *v)
 {
   v->vardict = NULL;
 }
+
+
+/*
+  Returns zero, if W is a missing value for WV or if it is less than zero.
+  Typically used to force a numerical value into a valid weight.
+  
+  As a side effect, this function will emit a warning if the value 
+  WARN_ON_INVALID points to a bool which is TRUE.  That bool will be then
+  set to FALSE.
+ */
+double
+var_force_valid_weight (const struct variable *wv, double w, bool *warn_on_invalid)
+{
+  if (w < 0.0 || (wv && var_is_num_missing (wv, w, MV_ANY)))
+    w = 0.0;
+  
+  if (w == 0.0 && warn_on_invalid != NULL && *warn_on_invalid)
+    {
+      *warn_on_invalid = false;
+      msg (SW, _("At least one case in the data file had a weight value "
+		 "that was user-missing, system-missing, zero, or "
+		 "negative.  These case(s) were ignored."));
+    }
+
+  return w;
+}

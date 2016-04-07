@@ -1,5 +1,5 @@
 /* PSPP - a program for statistical analysis.
-   Copyright (C) 1997-9, 2000, 2006, 2009, 2010, 2011, 2012, 2013, 2014 Free Software Foundation, Inc.
+   Copyright (C) 1997-9, 2000, 2006, 2009, 2010, 2011, 2012, 2013, 2014, 2016 Free Software Foundation, Inc.
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -404,14 +404,11 @@ crs_custom_tables (struct lexer *lexer, struct dataset *ds,
         }
       nx *= by_nvar[n_by];
       n_by++;
-
+      
       if (!lex_match (lexer, T_BY))
 	{
 	  if (n_by < 2)
-	    {
-              lex_force_match (lexer, T_BY);
-	      goto done;
-	    }
+	    goto done;
 	  else
 	    break;
 	}
@@ -517,7 +514,7 @@ crs_custom_variables (struct lexer *lexer, struct dataset *ds,
 
           vr->var = var;
           vr->min = min;
-	  vr->max = max + 1.;
+	  vr->max = max;
 	  vr->count = max - min + 1;
           hmap_insert (&proc->var_ranges, &vr->hmap_node,
                        hash_pointer (var, 0));
@@ -570,7 +567,7 @@ should_tabulate_case (const struct pivot_table *pt, const struct ccase *c,
       if (range != NULL)
         {
           double num = case_num (c, var);
-          if (num < range->min || num > range->max)
+          if (num < range->min || num >= range->max + 1.)
             return false;
         }
     }

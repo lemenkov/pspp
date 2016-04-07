@@ -286,8 +286,8 @@ run_corr (struct casereader *r, const struct corr_opts *opts, const struct corr 
 {
   struct ccase *c;
   const gsl_matrix *var_matrix,  *samples_matrix, *mean_matrix;
-  gsl_matrix *cov_matrix;
-  gsl_matrix *corr_matrix;
+  gsl_matrix *cov_matrix = NULL;
+  gsl_matrix *corr_matrix = NULL;
   struct covariance *cov = covariance_2pass_create (corr->n_vars_total, corr->vars,
 						    NULL,
 						    opts->wv, opts->exclude);
@@ -302,11 +302,15 @@ run_corr (struct casereader *r, const struct corr_opts *opts, const struct corr 
     {
       covariance_accumulate_pass2 (cov, c);
     }
-
-  cov_matrix = covariance_calculate (cov);
-
   casereader_destroy (rc);
-
+  
+  cov_matrix = covariance_calculate (cov);
+  if (! cov_matrix)
+    {
+      msg (SE, _("The data for the chosen variables are all missing or empty."));
+      goto error;
+    }
+  
   samples_matrix = covariance_moments (cov, MOMENT_NONE);
   var_matrix = covariance_moments (cov, MOMENT_VARIANCE);
   mean_matrix = covariance_moments (cov, MOMENT_MEAN);
@@ -319,6 +323,7 @@ run_corr (struct casereader *r, const struct corr_opts *opts, const struct corr 
   output_correlation (corr, opts, corr_matrix,
 		      samples_matrix, cov_matrix);
 
+ error:
   covariance_destroy (cov);
   gsl_matrix_free (corr_matrix);
   gsl_matrix_free (cov_matrix);
@@ -511,7 +516,8 @@ cmd_correlation (struct lexer *lexer, struct dataset *ds)
   return ok ? CMD_SUCCESS : CMD_CASCADING_FAILURE;
 
  error:
-  free (corr->vars);
+  if (corr)
+    free (corr->vars);
   free (corr);
   return CMD_FAILURE;
 }

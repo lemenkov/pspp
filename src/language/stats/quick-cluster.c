@@ -748,7 +748,8 @@ cmd_quick_cluster (struct lexer *lexer, struct dataset *ds)
 			  goto error;
 			}
 		      lex_get (lexer);
-		      lex_force_match (lexer, T_RPAREN);
+		      if (!lex_force_match (lexer, T_RPAREN))
+			goto error;
 		    }
 		}
 	      else if (lex_match_id (lexer, "CONVERGE"))
@@ -763,7 +764,8 @@ cmd_quick_cluster (struct lexer *lexer, struct dataset *ds)
 			  goto error;
 			}
 		      lex_get (lexer);
-		      lex_force_match (lexer, T_RPAREN);
+		      if (!lex_force_match (lexer, T_RPAREN))
+			goto error;
 		    }
 		}
 	      else if (lex_match_id (lexer, "MXITER"))
@@ -778,7 +780,8 @@ cmd_quick_cluster (struct lexer *lexer, struct dataset *ds)
 			  goto error;
 			}
 		      lex_get (lexer);
-		      lex_force_match (lexer, T_RPAREN);
+		      if (!lex_force_match (lexer, T_RPAREN))
+			goto error;
 		    }
 		}
 	      else if (lex_match_id (lexer, "NOINITIAL"))

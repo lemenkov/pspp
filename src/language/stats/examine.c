@@ -1533,7 +1533,7 @@ update_n (const void *aux1, void *aux2 UNUSED, void *user_data,
   int v;
   const struct examine *examine = aux1;
   struct exploratory_stats *es = user_data;
-  
+
   bool this_case_is_missing = false;
   /* LISTWISE missing must be dealt with here */
   if (!examine->missing_pw)
@@ -1632,13 +1632,15 @@ calculate_n (const void *aux1, void *aux2 UNUSED, void *user_data)
           value_init_pool (examine->pool, &es[v].maxima[i].identity, examine->id_width) ;
           value_init_pool (examine->pool, &es[v].minima[i].identity, examine->id_width) ;
         }
-      
+
+      bool warn = true;
       for (reader = casereader_clone (es[v].sorted_reader);
            (c = casereader_read (reader)) != NULL; case_unref (c))
         {
           const double val = case_data_idx (c, EX_VAL)->f;
-          const double wt = case_data_idx (c, EX_WT)->f;
-
+          double wt = case_data_idx (c, EX_WT)->f;
+	  wt = var_force_valid_weight (examine->wv, wt, &warn);
+	  
           moments_pass_two (es[v].mom, val, wt);
 
           if (es[v].histogram)
@@ -1942,7 +1944,8 @@ cmd_examine (struct lexer *lexer, struct dataset *ds)
   examine.boxplot = false;
   examine.spreadlevelplot = false;
   examine.sl_power = 0;
-  
+  examine.dep_vars = NULL;
+  examine.n_dep_vars = 0;
   examine.dict = dataset_dict (ds);
 
   /* Accept an optional, completely pointless "/VARIABLES=" */

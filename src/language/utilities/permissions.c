@@ -43,19 +43,19 @@ int change_permissions(const char *file_name, enum PER per);
 int
 cmd_permissions (struct lexer *lexer, struct dataset *ds UNUSED)
 {
-  char  *fn = 0;
-
+  char  *fn = NULL;
+  const char *str = NULL;
   lex_match (lexer, T_SLASH);
 
   if (lex_match_id (lexer, "FILE"))
     lex_match (lexer, T_EQUALS);
 
-  if (!lex_force_string (lexer))
-    return CMD_FAILURE;
+  str = lex_tokcstr (lexer);
+  if (str)
+    fn = strdup (str);
 
-  fn = ss_xstrdup (lex_tokss (lexer));
-  lex_force_match (lexer, T_STRING);
-
+  if (!lex_force_match (lexer, T_STRING) || str == NULL)
+    goto error;
 
   lex_match (lexer, T_SLASH);
 
@@ -66,12 +66,12 @@ cmd_permissions (struct lexer *lexer, struct dataset *ds UNUSED)
 
   if ( lex_match_id (lexer, "READONLY"))
     {
-      if ( ! change_permissions(fn, PER_RO ) )
+      if (! change_permissions (fn, PER_RO))
 	goto error;
     }
-  else if ( lex_match_id (lexer, "WRITEABLE"))
+  else if (lex_match_id (lexer, "WRITEABLE"))
     {
-      if ( ! change_permissions(fn, PER_RW ) )
+      if (! change_permissions (fn, PER_RW ))
 	goto error;
     }
   else
@@ -80,7 +80,7 @@ cmd_permissions (struct lexer *lexer, struct dataset *ds UNUSED)
       goto error;
     }
 
-  free(fn);
+  free (fn);
 
   return CMD_SUCCESS;
 
@@ -105,7 +105,6 @@ change_permissions (const char *file_name, enum PER per)
       msg (SE, _("This command not allowed when the %s option is set."), "SAFER");
       return 0;
     }
-
 
   locale_file_name = utf8_to_filename (file_name);
   if ( -1 == stat(locale_file_name, &buf) )

@@ -91,7 +91,7 @@ AT_CLEANUP
 AT_SETUP([Reading from pipe])
 
 AT_DATA([pipe.sps], [dnl
-data list file='echo "1 2\n 3 4\n 5 6" |' notable list /x * y *.
+data list file='printf "1 2\n 3 4\n 5 6\n" |' notable list /x * y *.
 list.
 ])
 

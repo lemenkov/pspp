@@ -36,8 +36,19 @@ export CHARSETALIASDIR
 GZIP=
 export GZIP
 
+WINEPREFIX=$HOME/.wine    # Work around the following kludge to keep wine happy
+export WINEPREFIX
+
+
 HOME=/nonexistent		# Kluge to make PSPP ignore $HOME/.pspprc.
 export HOME
 
 # Avoids error messages during tests if $TERM is set to an unknown terminal.
 TERM=; unset TERM
+
+pspp_diff=`which diff`
+if test X"$RUNNER" = Xwine; then
+    diff () {
+        $pspp_diff -w  "$@"
+    }
+fi

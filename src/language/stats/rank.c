@@ -668,7 +668,8 @@ cmd_rank (struct lexer *lexer, struct dataset *ds)
   string_set_init (&new_names);
 
   if (lex_match_id (lexer, "VARIABLES"))
-    lex_force_match (lexer, T_EQUALS);
+    if (! lex_force_match (lexer, T_EQUALS))
+      goto error;
 
   if (!parse_sort_criteria (lexer, rank.dict,
 			    &rank.sc,
@@ -688,10 +689,12 @@ cmd_rank (struct lexer *lexer, struct dataset *ds)
 
   while (lex_token (lexer) != T_ENDCMD )
     {
-      lex_force_match (lexer, T_SLASH);
+      if (! lex_force_match (lexer, T_SLASH))
+	goto error;
       if (lex_match_id (lexer, "TIES"))
 	{
-	  lex_force_match (lexer, T_EQUALS);
+	  if (! lex_force_match (lexer, T_EQUALS))
+	    goto error;
 	  if (lex_match_id (lexer, "MEAN"))
 	    {
 	      rank.ties = TIES_MEAN;
@@ -716,7 +719,8 @@ cmd_rank (struct lexer *lexer, struct dataset *ds)
 	}
       else if (lex_match_id (lexer, "FRACTION"))
 	{
-	  lex_force_match (lexer, T_EQUALS);
+	  if (! lex_force_match (lexer, T_EQUALS))
+	    goto error;
 	  if (lex_match_id (lexer, "BLOM"))
 	    {
 	      rank.fraction = FRAC_BLOM;
@@ -741,7 +745,8 @@ cmd_rank (struct lexer *lexer, struct dataset *ds)
 	}
       else if (lex_match_id (lexer, "PRINT"))
 	{
-	  lex_force_match (lexer, T_EQUALS);
+	  if (! lex_force_match (lexer, T_EQUALS))
+	    goto error;
 	  if (lex_match_id (lexer, "YES"))
 	    {
 	      rank.print = true;
@@ -758,7 +763,8 @@ cmd_rank (struct lexer *lexer, struct dataset *ds)
 	}
       else if (lex_match_id (lexer, "MISSING"))
 	{
-	  lex_force_match (lexer, T_EQUALS);
+	  if (! lex_force_match (lexer, T_EQUALS))
+	    goto error;
 	  if (lex_match_id (lexer, "INCLUDE"))
 	    {
 	      rank.exclude = MV_SYSTEM;

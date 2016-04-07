@@ -37,6 +37,32 @@ Total,.00,.00,.00,.00,1.00,.00,.00,1.00
 ]])
 AT_CLEANUP
 
+# Bug #47600.
+AT_SETUP([CROSSTABS integer mode crash 2])
+AT_DATA([crosstabs.sps], [dnl
+DATA LIST lIST /x y.
+BEGIN DATA.
+4 5
+END DATA.
+
+CROSSTABS
+        VARIABLES x (1,3) y (1,7)
+      /TABLES x BY y.
+])
+AT_CHECK([pspp -O format=csv crosstabs.sps], [0],
+  [[Table: Reading free-form data from INLINE.
+Variable,Format
+x,F8.0
+y,F8.0
+
+Table: Summary.
+,Cases,,,,,
+,Valid,,Missing,,Total,
+,N,Percent,N,Percent,N,Percent
+x * y,0,0.0%,1,100.0%,1,100.0%
+]])
+AT_CLEANUP
+
 # Bug #22037.
 AT_SETUP([CROSSTABS long string crash])
 AT_DATA([crosstabs.sps],

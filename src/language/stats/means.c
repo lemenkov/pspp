@@ -597,7 +597,8 @@ cmd_means (struct lexer *lexer, struct dataset *ds)
   /*   Optional TABLES =   */
   if (lex_match_id (lexer, "TABLES"))
     {
-      lex_force_match (lexer, T_EQUALS);
+      if (! lex_force_match (lexer, T_EQUALS))
+	goto error;
     }
 
 
@@ -621,7 +622,7 @@ cmd_means (struct lexer *lexer, struct dataset *ds)
 	  if (lex_is_variable (lexer, means.dict, 1) )
 	    {
 	      more_tables = true;
-	      lex_force_match (lexer, T_SLASH);
+	      lex_match (lexer, T_SLASH);
 	    }
 	}
     }

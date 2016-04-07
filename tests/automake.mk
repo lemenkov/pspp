@@ -314,6 +314,7 @@ TESTSUITE_AT = \
 	tests/language/dictionary/missing-values.at \
 	tests/language/dictionary/mrsets.at \
 	tests/language/dictionary/rename-variables.at \
+	tests/language/dictionary/sort-variables.at \
 	tests/language/dictionary/split-file.at \
 	tests/language/dictionary/sys-file-info.at \
 	tests/language/dictionary/value-labels.at \
@@ -405,15 +406,18 @@ DISTCLEANFILES += tests/atconfig tests/atlocal $(TESTSUITE)
 AUTOTEST_PATH = tests/data:tests/language/lexer:tests/libpspp:tests/output:src/ui/terminal:utilities
 
 $(srcdir)/tests/testsuite.at: tests/testsuite.in tests/automake.mk
-	$(AM_V_GEN)cp $< $@
+	$(AM_V_GEN)printf '\043 Generated automatically -- do not modify!    -*- buffer-read-only: t -*-\n' > $@,tmp
+	$(AM_V_at)cat $< >> $@,tmp
 	$(AM_V_at)for t in $(TESTSUITE_AT); do \
-	  echo "m4_include([$$t])" >> $@ ;\
+	  echo "m4_include([$$t])" >> $@,tmp ;\
 	done
+	mv $@,tmp $@
+
 EXTRA_DIST += tests/testsuite.at
 
 CHECK_LOCAL += tests_check
 tests_check: tests/atconfig tests/atlocal $(TESTSUITE) $(check_PROGRAMS)
-	XTERM_LOCALE='' $(SHELL) '$(TESTSUITE)' -C tests AUTOTEST_PATH=$(AUTOTEST_PATH) $(TESTSUITEFLAGS)
+	XTERM_LOCALE='' $(SHELL) '$(TESTSUITE)' -C tests AUTOTEST_PATH=$(AUTOTEST_PATH) RUNNER='$(RUNNER)' $(TESTSUITEFLAGS)
 
 CLEAN_LOCAL += tests_clean
 tests_clean:
@@ -436,51 +440,9 @@ $(srcdir)/package.m4: $(top_srcdir)/configure.ac
 	  echo 'm4_define([AT_PACKAGE_BUGREPORT], [$(PACKAGE_BUGREPORT)])' && \
 	  echo 'm4_define([AT_PACKAGE_URL],       [$(PACKAGE_URL)])'; \
 	} >'$(srcdir)/package.m4'
-
-# valgrind support for Autotest testsuite
 
-valgrind_wrappers = \
-	tests/valgrind/datasheet-test \
-	tests/valgrind/command-name-test \
-	tests/valgrind/scan-test \
-	tests/valgrind/segment-test \
-	tests/valgrind/abt-test \
-	tests/valgrind/bt-test \
-	tests/valgrind/encoding-guesser-test \
-	tests/valgrind/heap-test \
-	tests/valgrind/hmap-test \
-	tests/valgrind/hmapx-test \
-	tests/valgrind/i18n-test \
-	tests/valgrind/ll-test \
-	tests/valgrind/llx-test \
-	tests/valgrind/range-map-test \
-	tests/valgrind/range-set-test \
-	tests/valgrind/range-tower-test \
-	tests/valgrind/sparse-array-test \
-	tests/valgrind/sparse-xarray-test \
-	tests/valgrind/str-test \
-	tests/valgrind/string-map-test \
-	tests/valgrind/stringi-map-test \
-	tests/valgrind/string-set-test \
-	tests/valgrind/stringi-set-test \
-	tests/valgrind/tower-test \
-	tests/valgrind/u8-istream-test \
-	tests/valgrind/render-test \
-	tests/valgrind/pspp-convert \
-	tests/valgrind/pspp
-
-$(valgrind_wrappers): tests/valgrind-wrapper.in
-	@$(MKDIR_P) tests/valgrind
-	$(AM_V_GEN)$(SED) -e 's,[@]wrap_program[@],$@,' \
-		$(top_srcdir)/tests/valgrind-wrapper.in > $@.tmp
-	$(AM_V_at)chmod +x $@.tmp
-	$(AM_V_at)mv $@.tmp $@
-CLEANFILES += $(valgrind_wrappers)
-EXTRA_DIST += tests/valgrind-wrapper.in
-
-VALGRIND = $(SHELL) $(abs_top_builddir)/libtool --mode=execute valgrind --log-file=valgrind.%p --leak-check=full --num-callers=20
-check-valgrind: all tests/atconfig tests/atlocal $(TESTSUITE) $(valgrind_wrappers)
-	XTERM_LOCALE='' $(SHELL) '$(TESTSUITE)' -C tests VALGRIND='$(VALGRIND)' AUTOTEST_PATH='tests/valgrind:$(AUTOTEST_PATH)' -d $(TESTSUITEFLAGS)
+check-valgrind:
+	$(MAKE) check RUNNER='$(SHELL) $(abs_top_builddir)/libtool --mode=execute valgrind --log-file=valgrind.%p --leak-check=full --num-callers=20' TESTSUITEFLAGS='$(TESTSUITEFLAGS) -d'
 	@echo
 	@echo '--------------------------------'
 	@echo 'Valgrind output is in:'

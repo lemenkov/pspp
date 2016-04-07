@@ -783,7 +783,8 @@ cmd_logistic (struct lexer *lexer, struct dataset *ds)
   if (! (lr.dep_var = parse_variable_const (lexer, lr.dict)))
     goto error;
 
-  lex_force_match (lexer, T_WITH);
+  if (! lex_force_match (lexer, T_WITH))
+    goto error;
 
   if (!parse_variables_const (lexer, lr.dict,
 			      &pred_vars, &n_pred_vars,

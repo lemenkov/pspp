@@ -1,5 +1,5 @@
 /* PSPP - a program for statistical analysis.
-   Copyright (C) 2006, 2010, 2011, 2012, 2014 Free Software Foundation, Inc.
+   Copyright (C) 2006, 2010, 2011, 2012, 2014, 2016 Free Software Foundation, Inc.
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -75,6 +75,7 @@ unsigned int utf8_hash_case_bytes (const char *, size_t n, unsigned int basis);
 unsigned int utf8_hash_case_string (const char *, unsigned int basis);
 int utf8_strcasecmp (const char *, const char *);
 int utf8_strncasecmp (const char *, size_t, const char *, size_t);
+int utf8_strverscasecmp (const char *, const char *);
 char *utf8_to_upper (const char *);
 char *utf8_to_lower (const char *);
 

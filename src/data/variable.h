@@ -206,4 +206,7 @@ const char *var_get_encoding (const struct variable *);
 /* Function types. */
 typedef bool var_predicate_func (const struct variable *);
 
+double var_force_valid_weight (const struct variable *wv, double w,
+			       bool *warn_on_invalid);
+
 #endif /* data/variable.h */

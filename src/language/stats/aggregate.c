@@ -470,7 +470,6 @@ parse_aggregate_functions (struct lexer *lexer, const struct dictionary *dict,
 	{
 	  if (function->src_vars == AGR_SV_YES)
 	    {
-              lex_force_match (lexer, T_LPAREN);
 	      goto error;
 	    }
 	}

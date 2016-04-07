@@ -4,7 +4,23 @@ See the end for copying conditions.
 
 Please send PSPP bug reports to bug-gnu-pspp@gnu.org.
  
-Changes from 0.8.5 to 0.9.0:
+Changes from 0.10.1 to 0.10.2:
+
+ (nothing yet)
+
+Changes from 0.10.0 to 0.10.1:
+
+ * Bug fixes, including the following:
+
+   - A bug where certain dialog boxes could not be properly populated
+     has been fixed.
+
+   - Various commands have been hardened against errors when called
+     with invalid syntax.
+
+ * Translation updates.  Thanks to our translators!
+
+Changes from 0.8.5 to 0.10.0:
 
  * The QUICK CLUSTER command has a  /PRINT subcommand which shows
    the initial cluster centres and the final cluster membership of
@@ -14,6 +30,9 @@ Changes from 0.8.5 to 0.9.0:
  * A Russian localisation has been contributed.
 
  * The GRAPH command now has a /BAR subcommand to draw barcharts.
+
+ * If the DECIMAL character is set to COMMA then the ',' character
+   will not be treated as a separator by DATA LIST.
 
  * The graphical user interface (psppire) has been changed as follows:
 
@@ -34,6 +53,23 @@ Changes from 0.8.5 to 0.9.0:
    The encrypted syntax file format is unacceptably insecure, so to
    discourage its use PSPP and PSPPIRE do not directly read or write
    this format.
+
+ * New commands:
+
+   - SORT VARIABLES.
+
+ * The following functions for transformation expressions are new:
+
+   - REPLACE, for search-and-replace of one string with another.
+
+   - STRUNC, to truncate a string and trim trailing spaces.
+
+   - MEDIAN, to compute the median of its arguments.
+
+   - The TRUNC function in expressions now supports additional arguments
+     for truncating to values other than integers and to indicate a level
+     of rounding fuzz.  The default rounding fuzz may now be controlled
+     and displayed with SET FUZZBITS and SHOW FUZZBITS, respectively.
 
  * Bug fixes, including the following notable ones:
 

@@ -995,3 +995,43 @@ ONEWAY /VARIABLES= height weight temperature BY sex
 AT_CHECK([pspp -O format=csv crash4.sps], [0], [ignore])
 
 AT_CLEANUP
+
+
+
+AT_SETUP([ONEWAY Crash on invalid dependent variable])
+AT_DATA([crash5.sps],[dnl
+data list notable list /a * b *.
+begin data.
+3 0
+2 0
+6 2
+end data.
+
+oneway a"by b.
+
+])
+
+AT_CHECK([pspp -O format=csv crash5.sps], [1], [ignore])
+
+AT_CLEANUP
+
+
+
+
+AT_SETUP([ONEWAY Crash on unterminated string])
+
+AT_DATA([crash6.sps], [dnl
+DATA LIST NOTABLE LIST /height * weight * temperature * sex *.
+BEGIN DATA.
+1801     .       .     0
+1606     .   0   .     1
+END DATA.
+
+ONEWAY /VARIABLES= height weight temperature BY sex
+ /CONTRAST =" 2 -2  1
+ .
+])
+
+AT_CHECK([pspp -O format=csv crash6.sps], [1], [ignore])
+
+AT_CLEANUP

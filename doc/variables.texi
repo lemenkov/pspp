@@ -16,6 +16,7 @@ several utility functions for examining and adjusting them.
 * NUMERIC::                     Create new numeric variables.
 * PRINT FORMATS::               Set variable print formats.
 * RENAME VARIABLES::            Rename variables.
+* SORT VARIABLES::              Reorder variables.
 * VALUE LABELS::                Set value labels for variables.
 * STRING::                      Create new string variables.
 * VARIABLE ATTRIBUTE::          Set custom attributes on variables.
@@ -443,6 +444,82 @@ to be read.
 @cmd{RENAME VARIABLES} may not be specified following @cmd{TEMPORARY}
 (@pxref{TEMPORARY}).
 
+@node SORT VARIABLES
+@section SORT VARIABLES
+@vindex SORT VARIABLES
+
+@display
+SORT VARIABLES [BY]
+    (NAME | TYPE | FORMAT | LABEL | VALUES | MISSING | MEASURE
+     | ROLE | COLUMNS | ALIGNMENT | ATTRIBUTE @var{name})
+    [(D)].
+@end display
+
+@cmd{SORT VARIABLES} reorders the variables in the active dataset.
+The main specification is one of the following identifiers, which
+determines how the variables are sorted:
+
+@table @asis
+@item NAME
+Sorts the variables according to their names, in a case-insensitive
+fashion.  However, when variable names differ only in a number at the
+end, they are sorted numerically.  For example, @code{VAR5} is sorted
+before @code{VAR400} even though @samp{4} precedes @samp{5}.
+
+@item TYPE
+Sorts numeric variables before string variables, and shorter string
+variables before longer ones.
+
+@item FORMAT
+Groups variables by print format; within a format, sorts narrower
+formats before wider ones; with the same format and width, sorts fewer
+decimal places before more decimal places.
+@xref{FORMATS}.
+
+@item LABEL
+Sorts variables without a variable label before those with one.
+@xref{VARIABLE LABELS}.
+
+@item VALUES
+Sorts variables without value labels before those with some.
+@xref{VALUE LABELS}.
+
+@item MISSING
+Sorts variables without missing values before those with some.
+@xref{MISSING VALUES}.
+
+@item MEASURE
+Sorts nominal variables first, followed by ordinal variables, followed
+by scale variables.  @xref{VARIABLE LEVEL}.
+
+@item ROLE
+Groups variables according to their role.  @xref{VARIABLE ROLE}.
+
+@item COLUMNS
+Sorts variables in ascending display width.  @xref{VARIABLE WIDTH}.
+
+@item ALIGNMENT
+Sorts variables according to their alignment, first left-aligned, then
+right-aligned, then centered.  @xref{VARIABLE ALIGNMENT}.
+
+@item ATTRIBUTE @var{name}
+Sorts variables according to the first value of their @var{name}
+attribute.  Variables without attribute are sorted first.
+@xref{VARIABLE ATTRIBUTE}.
+@end table
+
+Only one sort criterion can be specified.  The sort is ``stable,'' so
+to sort on multiple criteria one may perform multiple sorts.  For
+example, the following will sort primarily based on alignment, with
+variables that have the same alignment ordered based on display width:
+
+@example
+SORT VARIABLES BY COLUMNS.
+SORT VARIABLES BY ALIGNMENT.
+@end example
+
+Specify @code{(D)} to reverse the sort order.
+
 @node VALUE LABELS
 @section VALUE LABELS
 @vindex VALUE LABELS
@@ -452,11 +529,16 @@ VALUE LABELS
         /@var{var_list} @var{value} '@var{label}' [@var{value} '@var{label}']@dots{}
 @end display
 
-@cmd{VALUE LABELS} allows values of numeric and short string
+@cmd{VALUE LABELS} allows values of
 variables to be associated with labels.  In this way, a short value can
-stand for a long value.
+stand for a longer, more descriptive label.
 
-To set up value labels for a set of variables, specify the
+Both numeric and string variables can be given labels.  For string
+variables, the values are case-sensitive, so that, for example, a
+capitalized value and its lowercase variant would have to be labeled
+separately if both are present in the data.
+
+To set up value labels for one or more variables, specify the
 variable names after a slash (@samp{/}), followed by a list of values
 and their associated labels, separated by spaces.
 

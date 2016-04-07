@@ -122,7 +122,14 @@ cmd_data_list (struct lexer *lexer, struct dataset *ds)
 	  lex_match (lexer, T_LPAREN);
 	  if (!lex_force_int (lexer))
 	    goto error;
-          data_parser_set_records (parser, lex_integer (lexer));
+	  
+	  int records = lex_integer (lexer);
+	  if (records < 0)
+	    {
+	      msg (SE, _("The %s value must be nonnegative."), "RECORDS");
+	      goto error;
+	    }
+          data_parser_set_records (parser, records);
 	  lex_get (lexer);
 	  lex_match (lexer, T_RPAREN);
 	}
@@ -131,7 +138,13 @@ cmd_data_list (struct lexer *lexer, struct dataset *ds)
 	  lex_match (lexer, T_EQUALS);
 	  if (!lex_force_int (lexer))
 	    goto error;
-          data_parser_set_skip (parser, lex_integer (lexer));
+	  int skip = lex_integer (lexer);
+	  if (skip < 0)
+	    {
+	      msg (SE, _("The %s value must be nonnegative."), "SKIP");
+	      goto error;
+	    }
+          data_parser_set_skip (parser, skip);
 	  lex_get (lexer);
 	}
       else if (lex_match_id (lexer, "END"))
@@ -229,7 +242,9 @@ cmd_data_list (struct lexer *lexer, struct dataset *ds)
                   data_parser_set_quotes (parser, ss_cstr ("'\""));
                   data_parser_set_soft_delimiters (parser,
                                                    ss_cstr (CC_SPACES));
-                  data_parser_set_hard_delimiters (parser, ss_cstr (","));
+                  const char decimal = settings_get_decimal_char (FMT_F);
+                  data_parser_set_hard_delimiters (parser,
+                                                   ss_buffer (",", (decimal == '.') ? 1 : 0));
                 }
             }
         }

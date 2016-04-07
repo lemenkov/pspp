@@ -65,7 +65,8 @@ cmd_variable_alignment (struct lexer *lexer, struct dataset *ds)
               return CMD_FAILURE;
             }
 
-	  lex_force_match (lexer, T_RPAREN);
+	  if (!lex_force_match (lexer, T_RPAREN))
+	    return CMD_FAILURE;
 	}
       else
         {
@@ -163,7 +164,8 @@ cmd_variable_level (struct lexer *lexer, struct dataset *ds)
               return CMD_FAILURE;
             }
 
-	  lex_force_match (lexer, T_RPAREN);
+	  if (!lex_force_match (lexer, T_RPAREN))
+	    return CMD_FAILURE;
 	}
       else
         {

@@ -1,5 +1,5 @@
 /* PSPP - a program for statistical analysis.
-   Copyright (C) 2006, 2009, 2010, 2011, 2013 Free Software Foundation, Inc.
+   Copyright (C) 2006, 2009, 2010, 2011, 2013, 2016 Free Software Foundation, Inc.
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -140,6 +140,7 @@ DEF_CMD (S_DATA, 0, "SAMPLE", cmd_sample)
 DEF_CMD (S_DATA, 0, "SAVE", cmd_save)
 DEF_CMD (S_DATA, 0, "SAVE TRANSLATE", cmd_save_translate)
 DEF_CMD (S_DATA, 0, "SORT CASES", cmd_sort_cases)
+DEF_CMD (S_DATA, 0, "SORT VARIABLES", cmd_sort_variables)
 DEF_CMD (S_DATA, 0, "T-TEST", cmd_t_test)
 DEF_CMD (S_DATA, 0, "TEMPORARY", cmd_temporary)
 DEF_CMD (S_DATA, 0, "USE", cmd_use)

@@ -58,3 +58,25 @@ AT_CHECK([pspp -O format=csv do-if.sps], [1], [dnl
 do-if.sps:2: error: END IF: This command cannot appear outside DO IF...END IF.
 ])
 AT_CLEANUP
+
+
+
+AT_SETUP([ELSE without DO IF])
+AT_DATA([do-if.sps], [dnl
+DATA lIST NOTABLE LIST /QUA BRA *.
+BEGIN DATA
+4  1
+6  3
+END DATA
+
+ELSE QUA 'A string'.
+
+EXECUTE.
+])
+AT_CHECK([pspp -O format=csv do-if.sps], [1], [dnl
+do-if.sps:7: error: ELSE: This command cannot appear outside DO IF...END IF.
+
+do-if.sps:9: error: Stopping syntax file processing here to avoid a cascade of dependent command failures.
+])
+AT_CLEANUP
+

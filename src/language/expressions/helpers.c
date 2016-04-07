@@ -665,17 +665,27 @@ npdf_beta (double x, double a, double b, double lambda)
 }
 
 double
-round_nearest (double x, double mult, double fuzzbits)
+round__ (double x, double mult, double fuzzbits, double adjustment)
 {
-  double adjustment;
-
   if (fuzzbits <= 0)
     fuzzbits = settings_get_fuzzbits ();
-  adjustment = .5 + exp2 (fuzzbits - DBL_MANT_DIG);
+  adjustment += exp2 (fuzzbits - DBL_MANT_DIG);
 
   x /= mult;
   x = x >= 0. ? floor (x + adjustment) : -floor (-x + adjustment);
   return x * mult;
+}
+
+double
+round_nearest (double x, double mult, double fuzzbits)
+{
+  return round__ (x, mult, fuzzbits, .5);
+}
+
+double
+round_zero (double x, double mult, double fuzzbits)
+{
+  return round__ (x, mult, fuzzbits, 0);
 }
 
 struct substring
@@ -716,4 +726,33 @@ replace_string (struct expression *e,
     result.string[result.length++] = haystack.string[i++];
 
   return result;
+}
+
+static int
+compare_doubles (const void *a_, const void *b_)
+{
+  const double *ap = a_;
+  const double *bp = b_;
+  double a = *ap;
+  double b = *bp;
+
+  /* Sort SYSMIS to the end. */
+  return (a == b ? 0
+          : a == SYSMIS ? 1
+          : b == SYSMIS ? -1
+          : a > b ? 1 : -1);
+}
+
+double
+median (double *a, size_t n)
+{
+  /* Sort the array in-place, sorting SYSMIS to the end. */
+  qsort (a, n, sizeof *a, compare_doubles);
+
+  /* Drop SYSMIS. */
+  n = count_valid (a, n);
+
+  return (!n ? SYSMIS
+          : n % 2 ? a[n / 2]
+          : (a[n / 2 - 1] + a[n / 2]) / 2.0);
 }

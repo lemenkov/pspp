@@ -413,6 +413,7 @@ categoricals_update (struct categoricals *cat, const struct ccase *c)
     return;
 
   weight = cat->wv ? case_data (c, cat->wv)->f : 1.0;
+  weight = var_force_valid_weight (cat->wv, weight, NULL);
 
   assert (NULL == cat->reverse_variable_map_short);
   assert (NULL == cat->reverse_variable_map_long);
@@ -471,10 +472,8 @@ categoricals_update (struct categoricals *cat, const struct ccase *c)
 
       if (cat->payload)
 	{
-	  double weight = cat->wv ? case_data (c, cat->wv)->f : 1.0;
 	  cat->payload->update (cat->aux1, cat->aux2, node->user_data, c, weight);
 	}
-
     }
 }
 

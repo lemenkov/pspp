@@ -108,6 +108,10 @@ cmd_roc (struct lexer *lexer, struct dataset *ds)
     }
 
   roc.state_var = parse_variable (lexer, dict);
+  if (! roc.state_var)
+    {
+      goto error;
+    }
 
   if ( !lex_force_match (lexer, T_LPAREN))
     {
@@ -156,8 +160,10 @@ cmd_roc (struct lexer *lexer, struct dataset *ds)
 	      if (lex_match (lexer, T_LPAREN))
 		{
 		  roc.reference = true;
-		  lex_force_match_id (lexer, "REFERENCE");
-		  lex_force_match (lexer, T_RPAREN);
+		  if (! lex_force_match_id (lexer, "REFERENCE"))
+		    goto error;
+		  if (! lex_force_match (lexer, T_RPAREN))
+		    goto error;
 		}
 	    }
 	  else if (lex_match_id (lexer, "NONE"))
@@ -197,7 +203,8 @@ cmd_roc (struct lexer *lexer, struct dataset *ds)
 	    {
 	      if (lex_match_id (lexer, "CUTOFF"))
 		{
-		  lex_force_match (lexer, T_LPAREN);
+		  if (! lex_force_match (lexer, T_LPAREN))
+		    goto error;
 		  if (lex_match_id (lexer, "INCLUDE"))
 		    {
 		      roc.exclude = MV_SYSTEM;
@@ -211,11 +218,13 @@ cmd_roc (struct lexer *lexer, struct dataset *ds)
 		      lex_error (lexer, NULL);
 		      goto error;
 		    }
-		  lex_force_match (lexer, T_RPAREN);
+		  if (! lex_force_match (lexer, T_RPAREN))
+		    goto error;
 		}
 	      else if (lex_match_id (lexer, "TESTPOS"))
 		{
-		  lex_force_match (lexer, T_LPAREN);
+		  if (! lex_force_match (lexer, T_LPAREN))
+		    goto error;
 		  if (lex_match_id (lexer, "LARGE"))
 		    {
 		      roc.invert = false;
@@ -229,19 +238,24 @@ cmd_roc (struct lexer *lexer, struct dataset *ds)
 		      lex_error (lexer, NULL);
 		      goto error;
 		    }
-		  lex_force_match (lexer, T_RPAREN);
+		  if (! lex_force_match (lexer, T_RPAREN))
+		    goto error;
 		}
 	      else if (lex_match_id (lexer, "CI"))
 		{
-		  lex_force_match (lexer, T_LPAREN);
-		  lex_force_num (lexer);
+		  if (!lex_force_match (lexer, T_LPAREN))
+		    goto error;
+		  if (! lex_force_num (lexer))
+		    goto error;
 		  roc.ci = lex_number (lexer);
 		  lex_get (lexer);
-		  lex_force_match (lexer, T_RPAREN);
+		  if (!lex_force_match (lexer, T_RPAREN))
+		    goto error;
 		}
 	      else if (lex_match_id (lexer, "DISTRIBUTION"))
 		{
-		  lex_force_match (lexer, T_LPAREN);
+		  if (!lex_force_match (lexer, T_LPAREN))
+		    goto error;
 		  if (lex_match_id (lexer, "FREE"))
 		    {
 		      roc.bi_neg_exp = false;
@@ -255,7 +269,8 @@ cmd_roc (struct lexer *lexer, struct dataset *ds)
 		      lex_error (lexer, NULL);
 		      goto error;
 		    }
-		  lex_force_match (lexer, T_RPAREN);
+		  if (!lex_force_match (lexer, T_RPAREN))
+		    goto error;
 		}
 	      else
 		{

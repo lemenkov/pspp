@@ -17,7 +17,6 @@
 #include <config.h>
 #include <gtk/gtk.h>
 #include <gdk/gdkkeysyms.h>
-#include <gdk/gdkkeysyms-compat.h>
 #include "psppire-keypad.h"
 
 enum {
@@ -229,67 +228,67 @@ key_release_callback (GtkWidget   *widget,
     case '<':
       g_signal_emit (widget, keypad_signals [INSERT_SYNTAX], 0, "<");
       break;
-    case GDK_KP_Equal :
+    case GDK_KEY_KP_Equal :
     case '=':
       g_signal_emit (widget, keypad_signals [INSERT_SYNTAX], 0, "=");
       break;
-    case GDK_KP_Multiply :
+    case GDK_KEY_KP_Multiply :
     case '*':
       g_signal_emit (widget, keypad_signals [INSERT_SYNTAX], 0, "*");
       break;
-    case GDK_KP_Add :
+    case GDK_KEY_KP_Add :
     case '+':
       g_signal_emit (widget, keypad_signals [INSERT_SYNTAX], 0, "+");
       break;
-    case GDK_KP_Subtract :
+    case GDK_KEY_KP_Subtract :
     case '-':
       g_signal_emit (widget, keypad_signals [INSERT_SYNTAX], 0, "-");
       break;
-    case GDK_KP_Decimal :
+    case GDK_KEY_KP_Decimal :
     case '.':
       g_signal_emit (widget, keypad_signals [INSERT_SYNTAX], 0, ".");
       break;
-    case GDK_KP_Divide :
+    case GDK_KEY_KP_Divide :
     case '/':
       g_signal_emit (widget, keypad_signals [INSERT_SYNTAX], 0, "/");
       break;
-    case GDK_KP_0 :
+    case GDK_KEY_KP_0 :
     case '0':
       g_signal_emit (widget, keypad_signals [INSERT_SYNTAX], 0, "0");
       break;
-    case GDK_KP_1 :
+    case GDK_KEY_KP_1 :
     case '1':
       g_signal_emit (widget, keypad_signals [INSERT_SYNTAX], 0, "1");
       break;
-    case GDK_KP_2 :
+    case GDK_KEY_KP_2 :
     case '2':
       g_signal_emit (widget, keypad_signals [INSERT_SYNTAX], 0, "2");
       break;
-    case GDK_KP_3 :
+    case GDK_KEY_KP_3 :
     case '3':
       g_signal_emit (widget, keypad_signals [INSERT_SYNTAX], 0, "3");
       break;
-    case GDK_KP_4 :
+    case GDK_KEY_KP_4 :
     case '4':
       g_signal_emit (widget, keypad_signals [INSERT_SYNTAX], 0, "4");
       break;
-    case GDK_KP_5 :
+    case GDK_KEY_KP_5 :
     case '5':
       g_signal_emit (widget, keypad_signals [INSERT_SYNTAX], 0, "5");
       break;
-    case GDK_KP_6 :
+    case GDK_KEY_KP_6 :
     case '6':
       g_signal_emit (widget, keypad_signals [INSERT_SYNTAX], 0, "6");
       break;
-    case GDK_KP_7 :
+    case GDK_KEY_KP_7 :
     case '7':
       g_signal_emit (widget, keypad_signals [INSERT_SYNTAX], 0, "7");
       break;
-    case GDK_KP_8 :
+    case GDK_KEY_KP_8 :
     case '8':
       g_signal_emit (widget, keypad_signals [INSERT_SYNTAX], 0, "8");
       break;
-    case GDK_KP_9 :
+    case GDK_KEY_KP_9 :
     case '9':
       g_signal_emit (widget, keypad_signals [INSERT_SYNTAX], 0, "9");
       break;

@@ -450,9 +450,12 @@ cmd_oneway (struct lexer *lexer, struct dataset *ds)
 			      PV_NO_DUPLICATE | PV_NUMERIC))
     goto error;
 
-  lex_force_match (lexer, T_BY);
+  if (!lex_force_match (lexer, T_BY))
+    goto error;
 
   oneway.indep_var = parse_variable_const (lexer, dict);
+  if (oneway.indep_var == NULL)
+    goto error;
 
   while (lex_token (lexer) != T_ENDCMD)
     {
@@ -502,7 +505,8 @@ cmd_oneway (struct lexer *lexer, struct dataset *ds)
 		    {
 		      if ( !lex_force_match (lexer, T_LPAREN))
 			goto error;
-		      lex_force_num (lexer);
+		      if (! lex_force_num (lexer))
+			goto error;
 		      oneway.alpha = lex_number (lexer);
 		      lex_get (lexer);
 		      if ( !lex_force_match (lexer, T_RPAREN))
@@ -543,6 +547,9 @@ cmd_oneway (struct lexer *lexer, struct dataset *ds)
 		  goto error;
 		}
 	    }
+	  
+	  if ( ll_count (coefficient_list) <= 0)
+	    goto error;
 
 	  ll_push_tail (&oneway.contrast_list, &cl->ll);
 	}

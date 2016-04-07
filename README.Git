@@ -21,7 +21,7 @@ following:
 
 	* libtool 1.5.22 (or later).
 
-	* Texinfo 4.7 or later, to build the documentation.
+	* Texinfo 5.2 or later, to build the documentation.
 
 	* Gimp --  2.8.2 is known to work
 

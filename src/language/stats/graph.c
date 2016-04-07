@@ -245,6 +245,8 @@ parse_function (struct lexer *lexer, struct graph *graph)
       for (v = 0; v < ag_func[i].arity; ++v)
 	{
 	  graph->dep_vars[v] = parse_variable (lexer, graph->dict);
+	  if (! graph->dep_vars[v])
+	    goto error;
 	}
 
       if (!lex_force_match (lexer, T_RPAREN))
@@ -328,7 +330,13 @@ show_histogr (const struct graph *cmd, struct casereader *input)
 {
   struct histogram *histogram;
   struct ccase *c;
-
+  
+  if (cmd->es[0].cc <= 0)
+    {
+      casereader_destroy (input);
+      return;
+    }
+  
   {
     /* Sturges Rule */
     double bin_width = fabs (cmd->es[0].minimum - cmd->es[0].maximum)

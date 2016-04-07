@@ -46,7 +46,7 @@ print "EXECUTE.\n";
 ]])
 AT_CHECK([$PERL num-out.pl > num-out.sps])
 AT_CHECK([pspp -O format=csv num-out.sps])
-AT_CHECK([inexactify$EXEEXT < output.txt > output.inexact])
+AT_CHECK([inexactify < output.txt > output.inexact])
 AT_CHECK([gzip -cd < $top_srcdir/tests/data/num-out.expected.cmp.gz > expout.cmp])
 AT_DATA([num-out-decmp.pl],
 [[use strict;
@@ -14045,7 +14045,7 @@ print outfile='month-out.out'/x(month40).
 execute.
 ])
 AT_CHECK([pspp -O format=csv month-out.sps], [1], [stdout])
-AT_CHECK([[sed '/^$/d' stdout | sort | uniq -c | sed 's/^[ 	]*//']], [0],
+AT_CHECK([[sed '/^ **$/d' stdout | sort | uniq -c | sed 's/^[ 	]*//']], [0],
 [dnl
 38 error: Month number 0.000000 is not between 1 and 12.
 38 error: Month number 0.500000 is not between 1 and 12.
@@ -14961,7 +14961,7 @@ end repeat.
 execute.
 ])
 AT_CHECK([pspp -O format=csv wkday-out.sps], [1], [stdout])
-AT_CHECK([[sed '/^$/d' stdout | sort | uniq -c | sed 's/^[ 	]*//']], [0],
+AT_CHECK([[sed '/^ **$/d' stdout | sort | uniq -c | sed 's/^[ 	]*//']], [0],
 [dnl
 39 error: Weekday number 0.000000 is not between 1 and 7.
 39 error: Weekday number 0.500000 is not between 1 and 7.
