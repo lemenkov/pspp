@@ -597,6 +597,8 @@ CROSSTABS
                 @{BOX,NOBOX@}
         /CELLS=@{COUNT,ROW,COLUMN,TOTAL,EXPECTED,RESIDUAL,SRESIDUAL,
                 ASRESIDUAL,ALL,NONE@}
+        /COUNT=@{ASIS,CASE,CELL@}
+               @{ROUND,TRUNCATE@}
         /STATISTICS=@{CHISQ,PHI,CC,LAMBDA,UC,BTAU,CTAU,RISK,GAMMA,D,
                      KAPPA,ETA,CORR,ALL,NONE@}
         /BARCHART
@@ -695,6 +697,15 @@ Suppress cells entirely.
 @subcmd{COLUMN}, and @subcmd{TOTAL}.  
 If @subcmd{CELLS} is not specified at all then only @subcmd{COUNT}
 will be selected.
+
+By default, crosstabulation and statistics use raw case weights,
+without rounding.  Use the @subcmd{/COUNT} subcommand to perform
+rounding: CASE rounds the weights of individual weights as cases are
+read, CELL rounds the weights of cells within each crosstabulation
+table after it has been constructed, and ASIS explicitly specifies the
+default non-rounding behavior.  When rounding is requested, ROUND, the
+default, rounds to the nearest integer and TRUNCATE rounds toward
+zero.
 
 The @subcmd{STATISTICS} subcommand selects statistics for computation:
 
