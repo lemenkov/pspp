@@ -664,7 +664,7 @@ npdf_beta (double x, double a, double b, double lambda)
     }
 }
 
-double
+static double
 round__ (double x, double mult, double fuzzbits, double adjustment)
 {
   if (fuzzbits <= 0)
