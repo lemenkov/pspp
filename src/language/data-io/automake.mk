@@ -1,8 +1,5 @@
 ## Process this file with automake to produce Makefile.in  -*- makefile -*-
 
-src_language_data_io_built_sources = \
-	src/language/data-io/file-handle.c
-
 language_data_io_sources = \
 	src/language/data-io/combine-files.c \
 	src/language/data-io/data-list.c \
@@ -13,6 +10,7 @@ language_data_io_sources = \
 	src/language/data-io/data-writer.c \
 	src/language/data-io/data-writer.h \
 	src/language/data-io/dataset.c \
+	src/language/data-io/file-handle.c \
 	src/language/data-io/file-handle.h \
 	src/language/data-io/get-data.c \
 	src/language/data-io/get.c \
@@ -27,7 +25,3 @@ language_data_io_sources = \
 	src/language/data-io/save.c \
 	src/language/data-io/trim.c \
 	src/language/data-io/trim.h
-
-all_q_sources += $(src_language_data_io_built_sources:.c=.q)
-EXTRA_DIST += $(src_language_data_io_built_sources:.c=.q)
-CLEANFILES += $(src_language_data_io_built_sources)
