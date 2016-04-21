@@ -343,3 +343,40 @@ AT_CHECK([pspp -o pspp.csv x.sps], [1], [ignore])
 AT_CLEANUP
 
 
+
+AT_SETUP([GET DATA /TYPE=txt bug])
+
+
+AT_DATA([thing.txt], [dnl
+foo, title, last
+1, this, 1
+2, that, 2
+3, other, 3
+])
+
+AT_DATA([x.sps], [dnl
+GET DATA
+  /TYPE=TXT
+  /FILE="thing.txt"
+  /ARRANGEMENT=DELIMITED
+  /DELCASE=LINE
+  /FIRSTCASE=2
+  /DELIMITERS=","
+  /VARIABLES=foo F1.0
+    title A8
+    last F2.0.
+
+list.
+])
+
+AT_CHECK([pspp -O format=csv x.sps], [0], [dnl
+Table: Data List
+foo,title,last
+1,this   ,1
+2,that   ,2
+3,other  ,3
+])
+
+AT_CLEANUP
+
+

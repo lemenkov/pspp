@@ -40,7 +40,7 @@ parse_abstract_format_specifier__ (struct lexer *lexer,
   struct substring type_ss, width_ss, decimals_ss;
   bool has_decimals;
 
-  if (lex_token (lexer) != T_ID)
+  if (lex_token (lexer) != T_ID && lex_token (lexer) != T_STRING)
     goto error;
 
   /* Extract pieces. */
