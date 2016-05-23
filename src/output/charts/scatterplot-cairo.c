@@ -28,6 +28,7 @@
 #include "gettext.h"
 #define _(msgid) gettext (msgid)
 
+static const struct xrchart_colour black = {0,0,0};
 
 void
 xrchart_draw_scatterplot (const struct chart_item *chart_item, cairo_t *cr,
@@ -87,8 +88,11 @@ xrchart_draw_scatterplot (const struct chart_item *chart_item, cairo_t *cr,
 		  i--;
 		}
 	    }
+          colour = &data_colour[i % XRCHART_N_COLOURS];
 	}
-      colour = &data_colour[i % XRCHART_N_COLOURS];
+      else
+        colour = &black;
+
       cairo_set_source_rgb (cr,
                             colour->red / 255.0,
                             colour->green / 255.0,
