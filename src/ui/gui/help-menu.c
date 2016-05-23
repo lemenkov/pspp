@@ -1,5 +1,5 @@
 /* PSPPIRE - a graphical user interface for PSPP.
-   Copyright (C) 2006, 2007, 2010, 2011, 2012, 2013, 2015  Free Software Foundation
+   Copyright (C) 2006, 2007, 2010, 2011, 2012, 2013, 2015, 2016  Free Software Foundation
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -31,6 +31,13 @@
 #define _(msgid) gettext (msgid)
 #define N_(msgid) msgid
 
+#ifdef __APPLE__
+#define HTMLOPENAPP "open"
+#elif  _WIN32
+#define HTMLOPENAPP "start"
+#else
+#define HTMLOPENAPP "xdg-open"
+#endif
 
 static const gchar *artists[] = { "Bastián Díaz", "Hugo Alejandro", NULL};
 
@@ -85,27 +92,62 @@ void
 online_help (const char *page)
 {
   GError *err = NULL;
-  gchar *cmd = NULL;
-
+  GError *htmlerr = NULL;
   gchar *argv[3] = { "yelp", 0, 0};
+  gchar *htmlargv[3] = { HTMLOPENAPP, 0, 0};
+  gchar *htmlfilename = NULL;
+  gchar *htmlfullname = NULL;
 
   if (page == NULL)
-    argv[1] = g_strdup_printf ("file://%s", relocate (DOCDIR "/pspp.xml"));
-  else
-    argv[1] = g_strdup_printf ("file://%s#%s", relocate (DOCDIR "/pspp.xml"), page);
-
-  if (! g_spawn_async (NULL, argv,
-		       NULL, G_SPAWN_SEARCH_PATH,
-		       NULL, NULL,   NULL,   &err))
     {
-      msg (ME, _("Cannot open reference manual: %s.  The PSPP user manual is "
-                 "also available at %s"),
+      argv[1] = g_strdup_printf ("file://%s", relocate (DOCDIR "/pspp.xml"));
+      htmlfilename = g_strdup ("index.html");
+      htmlargv[1] = g_strdup_printf ("file://%s", htmlfilename);
+    }
+  else
+    {
+      gchar **tokens = NULL;
+      const int maxtokens = 5;
+      int idx = 0;
+      argv[1] = g_strdup_printf ("file://%s#%s",
+                                 relocate (DOCDIR "/pspp.xml"), page);
+      tokens = g_strsplit (page, "#", maxtokens);
+      for(;tokens[idx] && idx < maxtokens;idx++);
+      htmlfilename = g_strdup_printf ("%s.html", tokens[idx-1]);
+      g_strfreev (tokens);
+    }
+
+  htmlfullname = g_strdup_printf ("%s/%s", relocate (DOCDIR "/pspp.html"),
+                                  htmlfilename);
+  if (g_file_test (relocate (DOCDIR "/pspp.html"), G_FILE_TEST_EXISTS))
+    htmlargv[1] = g_strdup_printf ("file://%s", htmlfullname);
+  else
+    htmlargv[1] = g_strdup_printf (PACKAGE_URL "manual/html_node/%s",
+                                   htmlfilename);
+
+  g_free (htmlfullname);
+  g_free (htmlfilename);
+
+  if (! (g_spawn_async (NULL, argv,
+                        NULL, G_SPAWN_SEARCH_PATH,
+                        NULL, NULL,   NULL,   &err) ||
+         g_spawn_async (NULL, htmlargv,
+                        NULL, G_SPAWN_SEARCH_PATH,
+                        NULL, NULL,   NULL,   &htmlerr))
+      )
+    {
+      msg (ME, _("Cannot open reference manual via yelp: %s. "
+                 "Cannot open via html: %s "
+                 "The PSSP manual is also available at %s"),
                   err->message,
+                  htmlerr->message,
                   PACKAGE_URL "documentation.html");
     }
 
-  g_free (cmd);
+  g_free (argv[1]);
+  g_free (htmlargv[1]);
   g_clear_error (&err);
+  g_clear_error (&htmlerr);
 }
 
 static void
