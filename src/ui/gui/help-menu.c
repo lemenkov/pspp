@@ -31,12 +31,17 @@
 #define _(msgid) gettext (msgid)
 #define N_(msgid) msgid
 
+/* Try to open html documentation uri via the default
+   browser on the operating system */
 #ifdef __APPLE__
-#define HTMLOPENAPP "open"
+#define HTMLOPENARGV {"open", 0, 0, 0, 0}
+#define HTMLOPENARGIDX 1
 #elif  _WIN32
-#define HTMLOPENAPP "start"
+#define HTMLOPENARGV {"cmd","/C", "start", 0, 0}
+#define HTMLOPENARGIDX 3
 #else
-#define HTMLOPENAPP "xdg-open"
+#define HTMLOPENARGV {"xdg-open", 0, 0, 0, 0}
+#define HTMLOPENARGIDX 1
 #endif
 
 static const gchar *artists[] = { "Bastián Díaz", "Hugo Alejandro", NULL};
@@ -87,14 +92,17 @@ about_new (GtkMenuItem *mmm, GtkWindow *parent)
   gtk_widget_hide (about);
 }
 
-/* Open the manual at PAGE */
+/* Open the manual at PAGE with the following priorities
+   First: local yelp help system
+   Second: browser with local html doc dir in path pspp.html/<helppage>.html
+   Third:  browers with Internet html help at gnu.org */
 void
 online_help (const char *page)
 {
   GError *err = NULL;
   GError *htmlerr = NULL;
   gchar *argv[3] = { "yelp", 0, 0};
-  gchar *htmlargv[3] = { HTMLOPENAPP, 0, 0};
+  gchar *htmlargv[5] = HTMLOPENARGV;
   gchar *htmlfilename = NULL;
   gchar *htmlfullname = NULL;
 
@@ -102,7 +110,6 @@ online_help (const char *page)
     {
       argv[1] = g_strdup_printf ("file://%s", relocate (DOCDIR "/pspp.xml"));
       htmlfilename = g_strdup ("index.html");
-      htmlargv[1] = g_strdup_printf ("file://%s", htmlfilename);
     }
   else
     {
@@ -111,20 +118,35 @@ online_help (const char *page)
       int idx = 0;
       argv[1] = g_strdup_printf ("file://%s#%s",
                                  relocate (DOCDIR "/pspp.xml"), page);
+      /* The page will be translated to the htmlfilename
+         page                   htmlfilename
+         GRAPH#SCATTERPLOT      SCATTERPLOT.html
+         QUICK-CLUSTER          QUICK-CLUSTER.html
+         which is valid for the multiple page html doc*/
       tokens = g_strsplit (page, "#", maxtokens);
       for(;tokens[idx] && idx < maxtokens;idx++);
       htmlfilename = g_strdup_printf ("%s.html", tokens[idx-1]);
       g_strfreev (tokens);
     }
-
+  /* Hint: pspp.html is a directory...*/
   htmlfullname = g_strdup_printf ("%s/%s", relocate (DOCDIR "/pspp.html"),
                                   htmlfilename);
-  if (g_file_test (relocate (DOCDIR "/pspp.html"), G_FILE_TEST_EXISTS))
-    htmlargv[1] = g_strdup_printf ("file://%s", htmlfullname);
+  if (g_file_test (relocate (DOCDIR "/pspp.html"), G_FILE_TEST_IS_DIR))
+    {
+      GError *urierr = NULL;
+      gchar *uriname =  g_filename_to_uri (htmlfullname,NULL, &urierr);
+      if (uriname)
+        htmlargv[HTMLOPENARGIDX] = uriname;
+      else
+        {
+          msg (ME, _("Help path conversion error: %s"), urierr->message);
+          htmlargv[HTMLOPENARGIDX] = htmlfullname;
+        }
+      g_clear_error (&urierr);
+    }
   else
-    htmlargv[1] = g_strdup_printf (PACKAGE_URL "manual/html_node/%s",
-                                   htmlfilename);
-
+    htmlargv[HTMLOPENARGIDX] = g_strdup_printf (PACKAGE_URL "manual/html_node/%s",
+                                                htmlfilename);
   g_free (htmlfullname);
   g_free (htmlfilename);
 
@@ -138,14 +160,16 @@ online_help (const char *page)
     {
       msg (ME, _("Cannot open reference manual via yelp: %s. "
                  "Cannot open via html: %s "
+                 "with uri: %s "
                  "The PSSP manual is also available at %s"),
                   err->message,
                   htmlerr->message,
+                  htmlargv[HTMLOPENARGIDX],
                   PACKAGE_URL "documentation.html");
     }
 
   g_free (argv[1]);
-  g_free (htmlargv[1]);
+  g_free (htmlargv[HTMLOPENARGIDX]);
   g_clear_error (&err);
   g_clear_error (&htmlerr);
 }
