@@ -49,10 +49,10 @@ dialog_state_valid (gpointer data)
   if (NULL == act->grp_var)
     return FALSE;
 
-  if ( 0 == gtk_tree_model_get_iter_first (vars, &notused))
+  if (0 == gtk_tree_model_get_iter_first (vars, &notused))
     return FALSE;
 
-  if ( act->group_defn == GROUPS_UNDEF)
+  if (act->group_defn == GROUPS_UNDEF)
     return FALSE;
 
   return TRUE;
@@ -102,7 +102,7 @@ value_entry_contains_invalid (PsppireValueEntry *ve, const struct variable *var)
       const int width = var_get_width (var);
       value_init (&val, width);
 
-      if ( psppire_value_entry_get_value (ve, &val, width))
+      if (psppire_value_entry_get_value (ve, &val, width))
 	{
 	  if (var_is_value_missing (var, &val, MV_SYSTEM))
 	    {
@@ -187,7 +187,7 @@ run_define_groups (PsppireDialogActionIndepSamps *act)
   psppire_value_entry_set_variable (PSPPIRE_VALUE_ENTRY (act->dg_grp_entry[1]), act->grp_var);
   psppire_value_entry_set_variable (PSPPIRE_VALUE_ENTRY (act->dg_cut_point_entry), act->grp_var);
 
-  if ( act->group_defn != GROUPS_CUT_POINT )
+  if (act->group_defn != GROUPS_CUT_POINT )
     {
       gtk_toggle_button_set_active
   	(GTK_TOGGLE_BUTTON (act->dg_cut_point_toggle_button), TRUE);
