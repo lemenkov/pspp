@@ -34,14 +34,11 @@
 /* Try to open html documentation uri via the default
    browser on the operating system */
 #ifdef __APPLE__
-#define HTMLOPENARGV {"open", 0, 0, 0, 0}
-#define HTMLOPENARGIDX 1
+#define HTMLOPENARGV {"open", 0, 0}
 #elif  _WIN32
-#define HTMLOPENARGV {"cmd","/C", "start", 0, 0}
-#define HTMLOPENARGIDX 3
+#define HTMLOPENARGV {"wscript", 0, 0}
 #else
-#define HTMLOPENARGV {"xdg-open", 0, 0, 0, 0}
-#define HTMLOPENARGIDX 1
+#define HTMLOPENARGV {"xdg-open", 0, 0}
 #endif
 
 static const gchar *artists[] = { "Bastián Díaz", "Hugo Alejandro", NULL};
@@ -92,6 +89,41 @@ about_new (GtkMenuItem *mmm, GtkWindow *parent)
   gtk_widget_hide (about);
 }
 
+
+/* Opening the htmluri in windows via cmd /start uri opens
+   the windows command shell for a moment. The alternative is
+   to start a script via wscript. This will not be visible*/
+#ifdef _WIN32
+static gboolean open_windows_help (const gchar *helpuri,
+                                   GError **err)
+{
+  gchar *vbsfilename = NULL;
+  gchar *vbs = NULL;
+  gboolean result;
+  vbsfilename = g_build_filename (g_get_tmp_dir (),
+                                  "pspp-help-open.vbs",
+                                  NULL);
+  vbs = g_strdup_printf("CreateObject(\"WScript.Shell\").Run \"%s\"",
+                        helpuri);
+  result = g_file_set_contents (vbsfilename,
+                                vbs,
+                                strlen(vbs),
+                                err);
+  g_free (vbs);
+  if (!result)
+    goto error;
+
+  gchar *argv[] = {"wscript",vbsfilename,0};
+
+  result = g_spawn_async (NULL, argv,
+                          NULL, G_SPAWN_SEARCH_PATH,
+                          NULL, NULL, NULL, err);
+ error:
+  g_free (vbsfilename);
+  return result;
+}
+#endif
+
 /* Open the manual at PAGE with the following priorities
    First: local yelp help system
    Second: browser with local html doc dir in path pspp.html/<helppage>.html
@@ -102,9 +134,10 @@ online_help (const char *page)
   GError *err = NULL;
   GError *htmlerr = NULL;
   gchar *argv[3] = { "yelp", 0, 0};
-  gchar *htmlargv[5] = HTMLOPENARGV;
+  gchar *htmlargv[3] = HTMLOPENARGV;
   gchar *htmlfilename = NULL;
   gchar *htmlfullname = NULL;
+  gchar *htmluri = NULL;
 
   if (page == NULL)
     {
@@ -134,28 +167,36 @@ online_help (const char *page)
   if (g_file_test (relocate (DOCDIR "/pspp.html"), G_FILE_TEST_IS_DIR))
     {
       GError *urierr = NULL;
-      gchar *uriname =  g_filename_to_uri (htmlfullname,NULL, &urierr);
-      if (uriname)
-        htmlargv[HTMLOPENARGIDX] = uriname;
-      else
+      htmluri =  g_filename_to_uri (htmlfullname,NULL, &urierr);
+      if (!htmluri)
         {
           msg (ME, _("Help path conversion error: %s"), urierr->message);
-          htmlargv[HTMLOPENARGIDX] = htmlfullname;
+          htmluri = htmlfullname;
         }
       g_clear_error (&urierr);
     }
   else
-    htmlargv[HTMLOPENARGIDX] = g_strdup_printf (PACKAGE_URL "manual/html_node/%s",
-                                                htmlfilename);
+    htmluri = g_strdup_printf (PACKAGE_URL "manual/html_node/%s",
+                               htmlfilename);
   g_free (htmlfullname);
   g_free (htmlfilename);
+  htmlargv[1] = htmluri;
+
+  /* The following **SHOULD** work but it does not on 28.5.2016
+     g_app_info_launch_default_for_uri (htmluri, NULL, &err);
+     osx: wine is started to launch the uri...
+     windows: not so bad, but the first access does not work*/
 
   if (! (g_spawn_async (NULL, argv,
                         NULL, G_SPAWN_SEARCH_PATH,
                         NULL, NULL,   NULL,   &err) ||
+#ifdef _WIN32
+         open_windows_help (htmluri, &htmlerr))
+#else
          g_spawn_async (NULL, htmlargv,
                         NULL, G_SPAWN_SEARCH_PATH,
                         NULL, NULL,   NULL,   &htmlerr))
+#endif
       )
     {
       msg (ME, _("Cannot open reference manual via yelp: %s. "
@@ -164,12 +205,12 @@ online_help (const char *page)
                  "The PSSP manual is also available at %s"),
                   err->message,
                   htmlerr->message,
-                  htmlargv[HTMLOPENARGIDX],
+                  htmluri,
                   PACKAGE_URL "documentation.html");
     }
 
   g_free (argv[1]);
-  g_free (htmlargv[HTMLOPENARGIDX]);
+  g_free (htmluri);
   g_clear_error (&err);
   g_clear_error (&htmlerr);
 }
