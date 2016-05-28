@@ -1,5 +1,5 @@
 /* PSPPIRE - a graphical user interface for PSPP.
-   Copyright (C) 2012  Free Software Foundation
+   Copyright (C) 2012, 2016  Free Software Foundation
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -76,6 +76,7 @@ struct _PsppireDialogActionIndepSamps
 
   /* The variable which determines to which group a datum belongs */
   const struct variable *grp_var;
+  int grp_var_width;
 
   /* The GtkEntry which holds the reference to the above variable */
   GtkWidget *group_var_entry;
