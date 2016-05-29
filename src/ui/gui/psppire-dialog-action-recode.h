@@ -74,15 +74,12 @@ struct _PsppireDialogActionRecode
   GtkWidget *convert_button;
   GtkWidget *new_copy_label;
 
+
   GtkWidget *new_value_entry;
 
   GtkWidget *old_value_chooser;
 
   GtkListStore *value_map;
-
-  /* Indicates that the INTO {new variables} form of the dialog
-     is being used */
-  gboolean different;
 
   GtkWidget *acr;
 
@@ -92,21 +89,34 @@ struct _PsppireDialogActionRecode
   GtkWidget *new_label_entry;
   GtkWidget *change_button;
 
+  GtkWidget *output_variable_box;
+  
   GtkWidget *string_button;
   GtkWidget *width_entry;
-
-  /* A hash table of struct nlp's indexed by variable */
-  GHashTable *varmap;
 };
 
 
 struct _PsppireDialogActionRecodeClass
 {
   PsppireDialogActionClass parent_class;
+
+  gboolean (*target_is_string) (const PsppireDialogActionRecode *);
 };
 
-
 GType psppire_dialog_action_recode_get_type (void) ;
+
+void psppire_dialog_action_recode_refresh (PsppireDialogAction *);
+
+void psppire_dialog_action_recode_pre_activate (PsppireDialogActionRecode *act, void (*populate_treeview) (PsppireDialogActionRecode *) );
+
+
+GType new_value_get_type (void);
+
+
+char *psppire_dialog_action_recode_generate_syntax (const PsppireDialogAction *act,
+						    void (*add_string_decls) (const PsppireDialogActionRecode *, struct string *),
+						    void (*add_into_clause) (const PsppireDialogActionRecode *, struct string *),
+						    void (*add_new_value_labels) (const PsppireDialogActionRecode *, struct string *));
 
 G_END_DECLS
 
