@@ -1124,6 +1124,7 @@ cmd_frequencies (struct lexer *lexer, struct dataset *ds)
 	frq.percentiles[frq.n_percentiles].show = true;
 
 	frq.n_percentiles++;
+        frq.n_show_percentiles++;
     }
 
 
@@ -1212,19 +1213,20 @@ cmd_frequencies (struct lexer *lexer, struct dataset *ds)
     frq.n_show_percentiles = 0;
     for (i = o = 0; i < frq.n_percentiles; ++i)
       {
-	frq.percentiles[o].p = frq.percentiles[i].p;
-
-	if (frq.percentiles[i].show)
-	  frq.percentiles[o].show = true;
-
-	if (frq.percentiles[i].p != previous_p)
-	  {
-	    if (frq.percentiles[i].show)
-	      frq.n_show_percentiles++;
-
-	    o++;
-	  }
-
+        if (frq.percentiles[i].p != previous_p)
+          {
+            frq.percentiles[o].p = frq.percentiles[i].p;
+            frq.percentiles[o].show = frq.percentiles[i].show;
+            if (frq.percentiles[i].show)
+              frq.n_show_percentiles++;
+            o++;
+          }
+        else if (frq.percentiles[i].show &&
+                 !frq.percentiles[o].show)
+          {
+            frq.percentiles[o].show = true;
+            frq.n_show_percentiles++;
+          }
 	previous_p = frq.percentiles[i].p;
       }
 
