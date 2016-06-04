@@ -528,7 +528,7 @@ add_joined_cell (struct tab_table *table, int x1, int y1, int x2, int y2,
   if (x1 + table->col_ofs < 0 || x1 + table->col_ofs >= tab_nc (table)
       || y1 + table->row_ofs < 0 || y1 + table->row_ofs >= tab_nr (table)
       || x2 < x1 || x2 + table->col_ofs >= tab_nc (table)
-      || y2 < y2 || y2 + table->row_ofs >= tab_nr (table))
+      || y2 < y1 || y2 + table->row_ofs >= tab_nr (table))
     {
       printf ("tab_joint_text(): bad cell "
 	      "(%d+%d=%d,%d+%d=%d)-(%d+%d=%d,%d+%d=%d) in table size (%d,%d)\n",
@@ -537,7 +537,7 @@ add_joined_cell (struct tab_table *table, int x1, int y1, int x2, int y2,
 	      x2, table->col_ofs, x2 + table->col_ofs,
 	      y2, table->row_ofs, y2 + table->row_ofs,
 	      tab_nc (table), tab_nr (table));
-      return;
+      return NULL;
     }
 #endif
 
