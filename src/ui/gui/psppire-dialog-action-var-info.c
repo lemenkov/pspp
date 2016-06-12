@@ -175,28 +175,29 @@ psppire_dialog_action_var_info_activate (PsppireDialogAction *a)
     {
       xml = builder_new ("variable-info.ui");
       g_hash_table_insert (thing, a, xml);
+
+      act->output =
+	psppire_output_view_new (GTK_LAYOUT (get_widget_assert (xml, "layout1")),
+				 NULL, NULL, NULL);
+  
+      pda->dialog = get_widget_assert (xml, "variable-info-dialog");
+      pda->source = get_widget_assert (xml, "treeview2");
+
+      g_object_set (pda->source,
+		    "selection-mode", GTK_SELECTION_MULTIPLE,
+		    NULL);
+
+      g_signal_connect (gtk_tree_view_get_selection (GTK_TREE_VIEW (pda->source)),
+			"changed", G_CALLBACK (populate_output),
+			act);
+
+      g_signal_connect (pda->dialog, "response", G_CALLBACK (jump_to),
+			pda);
+
+      psppire_dialog_action_set_valid_predicate (pda,
+						 treeview_item_selected);
     }
-
-  act->output = psppire_output_view_new (
-    GTK_LAYOUT (get_widget_assert (xml, "layout1")), NULL, NULL, NULL);
-
-  pda->dialog = get_widget_assert (xml, "variable-info-dialog");
-  pda->source = get_widget_assert (xml, "treeview2");
-
-  g_object_set (pda->source,
-		"selection-mode", GTK_SELECTION_MULTIPLE,
-		NULL);
-
-  g_signal_connect (gtk_tree_view_get_selection (GTK_TREE_VIEW (pda->source)),
-                    "changed", G_CALLBACK (populate_output),
-		    act);
-
-  g_signal_connect (pda->dialog, "response", G_CALLBACK (jump_to),
-		    pda);
-
-  psppire_dialog_action_set_valid_predicate (pda,
-					     treeview_item_selected);
-
+  
   if (PSPPIRE_DIALOG_ACTION_CLASS (psppire_dialog_action_var_info_parent_class)->activate)
     PSPPIRE_DIALOG_ACTION_CLASS (psppire_dialog_action_var_info_parent_class)->activate (pda);
 }
