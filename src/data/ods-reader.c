@@ -43,6 +43,19 @@ ods_open_reader (const struct spreadsheet_read_options *opts,
   return NULL;
 }
 
+struct casereader *
+ods_make_reader (struct spreadsheet *spreadsheet,
+		 const struct spreadsheet_read_options *opts)
+{
+  return NULL;
+}
+
+
+void
+ods_unref (struct spreadsheet *r)
+{
+}
+
 #else
 
 #include "libpspp/zip-reader.h"

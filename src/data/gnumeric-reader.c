@@ -38,6 +38,19 @@ gnumeric_open_reader (const struct spreadsheet_read_options *opts, struct dictio
   return NULL;
 }
 
+struct casereader *
+gnumeric_make_reader (struct spreadsheet *spreadsheet,
+		      const struct spreadsheet_read_options *opts)
+{
+  return NULL;
+}
+
+void
+gnumeric_unref (struct spreadsheet *r)
+{
+}
+
+
 #else
 
 #include "data/gnumeric-reader.h"

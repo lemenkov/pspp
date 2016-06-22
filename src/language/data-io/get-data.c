@@ -52,9 +52,6 @@ static const bool odf_read_support = true;
 #else
 static const bool odf_read_support = false;
 struct spreadsheet *ods_probe (const char *filename, bool report_errors){}
-struct casereader * ods_make_reader (struct spreadsheet *spreadsheet,
-					  const struct spreadsheet_read_options *opts){}
-void ods_unref (struct spreadsheet *r){}
 #endif
 
 #ifdef GNM_READ_SUPPORT
@@ -62,10 +59,6 @@ static const bool gnm_read_support = true;
 #else
 static const bool gnm_read_support = false;
 struct spreadsheet *gnumeric_probe (const char *filename, bool report_errors){}
-struct casereader * gnumeric_make_reader (struct spreadsheet *spreadsheet,
-					  const struct spreadsheet_read_options *opts){}
-void gnumeric_unref (struct spreadsheet *r){}
-
 #endif
 
 static bool parse_spreadsheet (struct lexer *lexer, char **filename,
