@@ -20,6 +20,9 @@ Changes from 0.10.1 to 0.10.2:
    - The variable info dialog showed the previous selected variable
      superimposed with the currently selected one.
 
+   - The GLM command did not properly deal with missing values.  This
+     has been fixed.
+
 Changes from 0.10.0 to 0.10.1:
 
  * Bug fixes, including the following:

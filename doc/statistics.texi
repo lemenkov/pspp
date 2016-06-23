@@ -951,12 +951,13 @@ implies the model
 
 The @subcmd{MISSING} subcommand determines the handling of missing
 variables.  
-If @subcmd{INCLUDE} is set, then user-missing values are included in the
-calculations, but system-missing values are not.
-If @subcmd{EXCLUDE} is set, which is the default, user-missing
-values are excluded as well as system-missing values. 
-This is the default.
-
+If @subcmd{INCLUDE} is set then, for the purposes of GLM analysis,
+only system-missing values are considered
+to be missing; user-missing values are not regarded as missing.
+If @subcmd{EXCLUDE} is set, which is the default, then user-missing
+values are considered to be missing as well as system-missing values. 
+A case for which any dependent variable or any factor
+variable has a missing value is excluded from the analysis.
 
 @node LOGISTIC REGRESSION
 @section LOGISTIC REGRESSION

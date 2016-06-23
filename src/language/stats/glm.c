@@ -587,6 +587,16 @@ run_glm (struct glm_spec *cmd, struct casereader *input,
   struct glm_workspace ws;
   struct covariance *cov;
 
+  input  = casereader_create_filter_missing (input,
+					     cmd->dep_vars, cmd->n_dep_vars,
+					     cmd->exclude,
+					     NULL,  NULL);
+
+  input  = casereader_create_filter_missing (input,
+					     cmd->factor_vars, cmd->n_factor_vars,
+					     cmd->exclude,
+					     NULL,  NULL);
+  
   ws.cats = categoricals_create (cmd->interactions, cmd->n_interactions,
 				 cmd->wv, cmd->exclude, MV_ANY);
 
