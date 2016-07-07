@@ -12,6 +12,10 @@ Changes from 0.10.1 to 0.10.2:
  * Help will be opened as HTML in default browser if yelp
    is not available.
 
+ * When plotting scatterplots with only one dataset (the simple case)
+   the colour used for the dataset is now black.  The previous default
+   from the Tango palette was too faint to see easily.
+
  * Bug fixes, including the following:
 
    - T-test with independent samples GUI crashed with string
