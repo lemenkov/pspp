@@ -1,5 +1,5 @@
 /* PSPP - a program for statistical analysis.
-   Copyright (C) 1997-9, 2000, 2006, 2009, 2010, 2011, 2013, 2014 Free Software Foundation, Inc.
+   Copyright (C) 1997-9, 2000, 2006, 2009, 2010, 2011, 2013, 2014, 2016 Free Software Foundation, Inc.
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -44,6 +44,13 @@
 #include "gettext.h"
 #define _(msgid) gettext (msgid)
 
+
+#if DEBUGGING
+static const bool debugging = true;
+#else
+static const bool debugging = false;
+#endif
+
 /* Cell options. */
 #define TAB_JOIN     (1u << TAB_FIRST_AVAILABLE)
 #define TAB_SUBTABLE (1u << (TAB_FIRST_AVAILABLE + 1))
@@ -51,28 +58,27 @@
 
 /* Joined cell. */
 struct tab_joined_cell
+{
+  int d[TABLE_N_AXES][2];       /* Table region, same as struct table_cell. */
+  union
   {
-    int d[TABLE_N_AXES][2];     /* Table region, same as struct table_cell. */
-    union
-      {
-        char *text;
-        struct table_item *subtable;
-      }
+    char *text;
+    struct table_item *subtable;
+  }
     u;
 
-    size_t n_footnotes;
-    char **footnotes;
-  };
+  size_t n_footnotes;
+  char **footnotes;
+};
 
 static const struct table_class tab_table_class;
 
-struct fmt_spec ugly [n_RC] = 
-  {
-    {FMT_F, 8, 0}, /* INTEGER */
-    {FMT_F, 8, 3}, /* WEIGHT (ignored) */
-    {FMT_F, 8, 3}, /* PVALUE */
-    {FMT_F, 8, 3}  /* OTHER (ignored) */
-  };
+struct fmt_spec ugly[n_RC] = {
+  {FMT_F, 8, 0},                /* INTEGER */
+  {FMT_F, 8, 3},                /* WEIGHT (ignored) */
+  {FMT_F, 8, 3},                /* PVALUE */
+  {FMT_F, 8, 3}                 /* OTHER (ignored) */
+};
 
 
 /* Creates and returns a new table with NC columns and NR rows and initially no
@@ -112,8 +118,9 @@ tab_create (int nc, int nr)
 }
 
 
-void 
-tab_set_format (struct tab_table *t, enum result_class rc, const struct fmt_spec *fmt)
+void
+tab_set_format (struct tab_table *t, enum result_class rc,
+                const struct fmt_spec *fmt)
 {
   t->fmtmap[rc] = *fmt;
 }
@@ -175,11 +182,12 @@ tab_realloc (struct tab_table *t, int nc, int nr)
       new_cc = pool_calloc (t->container, nr * nc, sizeof *new_cc);
       new_ct = pool_malloc (t->container, nr * nc);
       for (r = 0; r < mr1; r++)
-	{
-	  memcpy (&new_cc[r * nc], &t->cc[r * tab_nc (t)], mc1 * sizeof *t->cc);
-	  memcpy (&new_ct[r * nc], &t->ct[r * tab_nc (t)], mc1);
-	  memset (&new_ct[r * nc + tab_nc (t)], 0, nc - tab_nc (t));
-	}
+        {
+          memcpy (&new_cc[r * nc], &t->cc[r * tab_nc (t)],
+                  mc1 * sizeof *t->cc);
+          memcpy (&new_ct[r * nc], &t->ct[r * tab_nc (t)], mc1);
+          memset (&new_ct[r * nc + tab_nc (t)], 0, nc - tab_nc (t));
+        }
       pool_free (t->container, t->cc);
       pool_free (t->container, t->ct);
       t->cc = new_cc;
@@ -195,11 +203,12 @@ tab_realloc (struct tab_table *t, int nc, int nr)
       t->rv = pool_nrealloc (t->container, t->rv, nr, nc + 1);
 
       if (nr > tab_nr (t))
-	{
-	  memset (&t->rh[nc * (tab_nr (t) + 1)], TAL_0, (nr - tab_nr (t)) * nc);
-	  memset (&t->rv[(nc + 1) * tab_nr (t)], TAL_GAP,
+        {
+          memset (&t->rh[nc * (tab_nr (t) + 1)], TAL_0,
+                  (nr - tab_nr (t)) * nc);
+          memset (&t->rv[(nc + 1) * tab_nr (t)], TAL_GAP,
                   (nr - tab_nr (t)) * (nc + 1));
-	}
+        }
     }
 
   memset (&t->ct[nc * tab_nr (t)], 0, nc * (nr - tab_nr (t)));
@@ -232,20 +241,20 @@ tab_headers (struct tab_table *table, int l, int r, int t, int b)
 void
 tab_vline (struct tab_table *t, int style, int x, int y1, int y2)
 {
-#if DEBUGGING
-  if (x + t->col_ofs < 0 || x + t->col_ofs > tab_nc (t)
-      || y1 + t->row_ofs < 0 || y1 + t->row_ofs >= tab_nr (t)
-      || y2 + t->row_ofs < 0 || y2 + t->row_ofs >= tab_nr (t))
+  if (debugging)
     {
-      printf (_("bad vline: x=%d+%d=%d y=(%d+%d=%d,%d+%d=%d) in "
-		"table size (%d,%d)\n"),
-	      x, t->col_ofs, x + t->col_ofs,
-	      y1, t->row_ofs, y1 + t->row_ofs,
-	      y2, t->row_ofs, y2 + t->row_ofs,
-	      tab_nc (t), tab_nr (t));
-      return;
+      if (x + t->col_ofs < 0 || x + t->col_ofs > tab_nc (t)
+          || y1 + t->row_ofs < 0 || y1 + t->row_ofs >= tab_nr (t)
+          || y2 + t->row_ofs < 0 || y2 + t->row_ofs >= tab_nr (t))
+        {
+          printf (_("bad vline: x=%d+%d=%d y=(%d+%d=%d,%d+%d=%d) in "
+                    "table size (%d,%d)\n"),
+                  x, t->col_ofs, x + t->col_ofs,
+                  y1, t->row_ofs, y1 + t->row_ofs,
+                  y2, t->row_ofs, y2 + t->row_ofs, tab_nc (t), tab_nr (t));
+          return;
+        }
     }
-#endif
 
   x += t->col_ofs;
   y1 += t->row_ofs;
@@ -268,22 +277,22 @@ tab_vline (struct tab_table *t, int style, int x, int y1, int y2)
 /* Draws a horizontal line above cells at vertical position Y from X1
    to X2 inclusive in style STYLE, if style is not -1. */
 void
-tab_hline (struct tab_table * t, int style, int x1, int x2, int y)
+tab_hline (struct tab_table *t, int style, int x1, int x2, int y)
 {
-#if DEBUGGING
-  if (y + t->row_ofs < 0 || y + t->row_ofs > tab_nr (t)
-      || x1 + t->col_ofs < 0 || x1 + t->col_ofs >= tab_nc (t)
-      || x2 + t->col_ofs < 0 || x2 + t->col_ofs >= tab_nc (t))
+  if (debugging)
     {
-      printf (_("bad hline: x=(%d+%d=%d,%d+%d=%d) y=%d+%d=%d in "
-		"table size (%d,%d)\n"),
-              x1, t->col_ofs, x1 + t->col_ofs,
-              x2, t->col_ofs, x2 + t->col_ofs,
-              y, t->row_ofs, y + t->row_ofs,
-	      tab_nc (t), tab_nr (t));
-      return;
+      if (y + t->row_ofs < 0 || y + t->row_ofs > tab_nr (t)
+          || x1 + t->col_ofs < 0 || x1 + t->col_ofs >= tab_nc (t)
+          || x2 + t->col_ofs < 0 || x2 + t->col_ofs >= tab_nc (t))
+        {
+          printf (_("bad hline: x=(%d+%d=%d,%d+%d=%d) y=%d+%d=%d in "
+                    "table size (%d,%d)\n"),
+                  x1, t->col_ofs, x1 + t->col_ofs,
+                  x2, t->col_ofs, x2 + t->col_ofs,
+                  y, t->row_ofs, y + t->row_ofs, tab_nc (t), tab_nr (t));
+          return;
+        }
     }
-#endif
 
   x1 += t->col_ofs;
   x2 += t->col_ofs;
@@ -291,8 +300,8 @@ tab_hline (struct tab_table * t, int style, int x1, int x2, int y)
 
   assert (y >= 0);
   assert (y <= tab_nr (t));
-  assert (x2 >= x1 );
-  assert (x1 >= 0 );
+  assert (x2 >= x1);
+  assert (x1 >= 0);
   assert (x2 < tab_nc (t));
 
   if (style != -1)
@@ -311,24 +320,24 @@ tab_hline (struct tab_table * t, int style, int x1, int x2, int y)
    line. */
 void
 tab_box (struct tab_table *t, int f_h, int f_v, int i_h, int i_v,
-	 int x1, int y1, int x2, int y2)
+         int x1, int y1, int x2, int y2)
 {
-#if DEBUGGING
-  if (x1 + t->col_ofs < 0 || x1 + t->col_ofs >= tab_nc (t)
-      || x2 + t->col_ofs < 0 || x2 + t->col_ofs >= tab_nc (t)
-      || y1 + t->row_ofs < 0 || y1 + t->row_ofs >= tab_nr (t)
-      || y2 + t->row_ofs < 0 || y2 + t->row_ofs >= tab_nr (t))
+  if (debugging)
     {
-      printf (_("bad box: (%d+%d=%d,%d+%d=%d)-(%d+%d=%d,%d+%d=%d) "
-		"in table size (%d,%d)\n"),
-	      x1, t->col_ofs, x1 + t->col_ofs,
-	      y1, t->row_ofs, y1 + t->row_ofs,
-	      x2, t->col_ofs, x2 + t->col_ofs,
-	      y2, t->row_ofs, y2 + t->row_ofs,
-	      tab_nc (t), tab_nr (t));
-      NOT_REACHED ();
+      if (x1 + t->col_ofs < 0 || x1 + t->col_ofs >= tab_nc (t)
+          || x2 + t->col_ofs < 0 || x2 + t->col_ofs >= tab_nc (t)
+          || y1 + t->row_ofs < 0 || y1 + t->row_ofs >= tab_nr (t)
+          || y2 + t->row_ofs < 0 || y2 + t->row_ofs >= tab_nr (t))
+        {
+          printf (_("bad box: (%d+%d=%d,%d+%d=%d)-(%d+%d=%d,%d+%d=%d) "
+                    "in table size (%d,%d)\n"),
+                  x1, t->col_ofs, x1 + t->col_ofs,
+                  y1, t->row_ofs, y1 + t->row_ofs,
+                  x2, t->col_ofs, x2 + t->col_ofs,
+                  y2, t->row_ofs, y2 + t->row_ofs, tab_nc (t), tab_nr (t));
+          NOT_REACHED ();
+        }
     }
-#endif
 
   x1 += t->col_ofs;
   x2 += t->col_ofs;
@@ -366,24 +375,24 @@ tab_box (struct tab_table *t, int f_h, int f_v, int i_h, int i_v,
       int y;
 
       for (y = y1 + 1; y <= y2; y++)
-	{
-	  int x;
+        {
+          int x;
 
           for (x = x1; x <= x2; x++)
             t->rh[x + t->cf * y] = i_h;
-	}
+        }
     }
   if (i_v != -1)
     {
       int x;
 
       for (x = x1 + 1; x <= x2; x++)
-	{
-	  int y;
+        {
+          int y;
 
           for (y = y1; y <= y2; y++)
             t->rv[x + (t->cf + 1) * y] = i_v;
-	}
+        }
     }
 }
 
@@ -393,24 +402,25 @@ tab_box (struct tab_table *t, int f_h, int f_v, int i_h, int i_v,
    from V, displayed with format spec F. */
 void
 tab_value (struct tab_table *table, int c, int r, unsigned char opt,
-	   const union value *v, const struct variable *var,
-	   const struct fmt_spec *f)
+           const union value *v, const struct variable *var,
+           const struct fmt_spec *f)
 {
   char *contents;
 
-#if DEBUGGING
-  if (c + table->col_ofs < 0 || r + table->row_ofs < 0
-      || c + table->col_ofs >= tab_nc (table)
-      || r + table->row_ofs >= tab_nr (table))
+  if (debugging)
     {
-      printf ("tab_value(): bad cell (%d+%d=%d,%d+%d=%d) in table size "
-	      "(%d,%d)\n",
-	      c, table->col_ofs, c + table->col_ofs,
-	      r, table->row_ofs, r + table->row_ofs,
-	      tab_nc (table), tab_nr (table));
-      return;
+      if (c + table->col_ofs < 0 || r + table->row_ofs < 0
+          || c + table->col_ofs >= tab_nc (table)
+          || r + table->row_ofs >= tab_nr (table))
+        {
+          printf ("tab_value(): bad cell (%d+%d=%d,%d+%d=%d) in table size "
+                  "(%d,%d)\n",
+                  c, table->col_ofs, c + table->col_ofs,
+                  r, table->row_ofs, r + table->row_ofs,
+                  tab_nc (table), tab_nr (table));
+          return;
+        }
     }
-#endif
 
   contents = data_out_stretchy (v, var_get_encoding (var),
                                 f != NULL ? f : var_get_print_format (var),
@@ -426,9 +436,9 @@ tab_value (struct tab_table *table, int c, int r, unsigned char opt,
 */
 void
 tab_double (struct tab_table *table, int c, int r, unsigned char opt,
-	    double val, const struct fmt_spec *fmt, enum result_class rc)
+            double val, const struct fmt_spec *fmt, enum result_class rc)
 {
-  union value double_value ;
+  union value double_value;
   char *s;
 
   assert (c >= 0);
@@ -438,22 +448,23 @@ tab_double (struct tab_table *table, int c, int r, unsigned char opt,
 
   if (fmt == NULL)
     fmt = &table->fmtmap[rc];
-  
+
   fmt_check_output (fmt);
 
-#if DEBUGGING
-  if (c + table->col_ofs < 0 || r + table->row_ofs < 0
-      || c + table->col_ofs >= tab_nc (table)
-      || r + table->row_ofs >= tab_nr (table))
+  if (debugging)
     {
-      printf ("tab_double(): bad cell (%d+%d=%d,%d+%d=%d) in table size "
-	      "(%d,%d)\n",
-	      c, table->col_ofs, c + table->col_ofs,
-	      r, table->row_ofs, r + table->row_ofs,
-	      tab_nc (table), tab_nr (table));
-      return;
+      if (c + table->col_ofs < 0 || r + table->row_ofs < 0
+          || c + table->col_ofs >= tab_nc (table)
+          || r + table->row_ofs >= tab_nr (table))
+        {
+          printf ("tab_double(): bad cell (%d+%d=%d,%d+%d=%d) in table size "
+                  "(%d,%d)\n",
+                  c, table->col_ofs, c + table->col_ofs,
+                  r, table->row_ofs, r + table->row_ofs,
+                  tab_nc (table), tab_nr (table));
+          return;
+        }
     }
-#endif
 
   double_value.f = val;
   s = data_out_stretchy (&double_value, C_ENCODING, fmt, table->container);
@@ -465,24 +476,25 @@ tab_double (struct tab_table *table, int c, int r, unsigned char opt,
 static void
 do_tab_text (struct tab_table *table, int c, int r, unsigned opt, char *text)
 {
-  assert (c >= 0 );
-  assert (r >= 0 );
+  assert (c >= 0);
+  assert (r >= 0);
   assert (c < tab_nc (table));
   assert (r < tab_nr (table));
 
-#if DEBUGGING
-  if (c + table->col_ofs < 0 || r + table->row_ofs < 0
-      || c + table->col_ofs >= tab_nc (table)
-      || r + table->row_ofs >= tab_nr (table))
+  if (debugging)
     {
-      printf ("tab_text(): bad cell (%d+%d=%d,%d+%d=%d) in table size "
-	      "(%d,%d)\n",
-	      c, table->col_ofs, c + table->col_ofs,
-	      r, table->row_ofs, r + table->row_ofs,
-	      tab_nc (table), tab_nr (table));
-      return;
+      if (c + table->col_ofs < 0 || r + table->row_ofs < 0
+          || c + table->col_ofs >= tab_nc (table)
+          || r + table->row_ofs >= tab_nr (table))
+        {
+          printf ("tab_text(): bad cell (%d+%d=%d,%d+%d=%d) in table size "
+                  "(%d,%d)\n",
+                  c, table->col_ofs, c + table->col_ofs,
+                  r, table->row_ofs, r + table->row_ofs,
+                  tab_nc (table), tab_nr (table));
+          return;
+        }
     }
-#endif
 
   table->cc[c + r * table->cf] = text;
   table->ct[c + r * table->cf] = opt;
@@ -524,22 +536,23 @@ add_joined_cell (struct tab_table *table, int x1, int y1, int x2, int y2,
   assert (y2 + table->row_ofs < tab_nr (table));
   assert (x2 + table->col_ofs < tab_nc (table));
 
-#if DEBUGGING
-  if (x1 + table->col_ofs < 0 || x1 + table->col_ofs >= tab_nc (table)
-      || y1 + table->row_ofs < 0 || y1 + table->row_ofs >= tab_nr (table)
-      || x2 < x1 || x2 + table->col_ofs >= tab_nc (table)
-      || y2 < y2 || y2 + table->row_ofs >= tab_nr (table))
+  if (debugging)
     {
-      printf ("tab_joint_text(): bad cell "
-	      "(%d+%d=%d,%d+%d=%d)-(%d+%d=%d,%d+%d=%d) in table size (%d,%d)\n",
-	      x1, table->col_ofs, x1 + table->col_ofs,
-	      y1, table->row_ofs, y1 + table->row_ofs,
-	      x2, table->col_ofs, x2 + table->col_ofs,
-	      y2, table->row_ofs, y2 + table->row_ofs,
-	      tab_nc (table), tab_nr (table));
-      return;
+      if (x1 + table->col_ofs < 0 || x1 + table->col_ofs >= tab_nc (table)
+          || y1 + table->row_ofs < 0 || y1 + table->row_ofs >= tab_nr (table)
+          || x2 < x1 || x2 + table->col_ofs >= tab_nc (table)
+          || y2 < y1 || y2 + table->row_ofs >= tab_nr (table))
+        {
+          printf ("tab_joint_text(): bad cell "
+                  "(%d+%d=%d,%d+%d=%d)-(%d+%d=%d,%d+%d=%d) in table size (%d,%d)\n",
+                  x1, table->col_ofs, x1 + table->col_ofs,
+                  y1, table->row_ofs, y1 + table->row_ofs,
+                  x2, table->col_ofs, x2 + table->col_ofs,
+                  y2, table->row_ofs, y2 + table->row_ofs,
+                  tab_nc (table), tab_nr (table));
+          return NULL;
+        }
     }
-#endif
 
   tab_box (table, -1, -1, TAL_0, TAL_0, x1, y1, x2, y2);
 
@@ -560,16 +573,16 @@ add_joined_cell (struct tab_table *table, int x1, int y1, int x2, int y2,
 
     for (y = y1; y < y2; y++)
       {
-	int x;
+        int x;
 
-	for (x = x1; x < x2; x++)
-	  {
-	    *cc++ = j;
-	    *ct++ = opt | TAB_JOIN;
-	  }
+        for (x = x1; x < x2; x++)
+          {
+            *cc++ = j;
+            *ct++ = opt | TAB_JOIN;
+          }
 
-	cc += ofs;
-	ct += ofs;
+        cc += ofs;
+        ct += ofs;
       }
   }
 
@@ -590,8 +603,8 @@ tab_joint_text (struct tab_table *table, int x1, int y1, int x2, int y2,
    with options OPT to have text value FORMAT, which is formatted
    as if passed to printf. */
 void
-tab_joint_text_format (struct tab_table *table, int x1, int y1, int x2, int y2,
-                       unsigned opt, const char *format, ...)
+tab_joint_text_format (struct tab_table *table, int x1, int y1, int x2,
+                       int y2, unsigned opt, const char *format, ...)
 {
   va_list args;
   char *s;
@@ -625,7 +638,8 @@ tab_footnote (struct tab_table *table, int x, int y, const char *format, ...)
                            (j->n_footnotes + 1) * sizeof *j->footnotes);
 
   va_start (args, format);
-  j->footnotes[j->n_footnotes++] = pool_vasprintf (table->container, format, args);
+  j->footnotes[j->n_footnotes++] =
+    pool_vasprintf (table->container, format, args);
   va_end (args);
 }
 
@@ -712,18 +726,20 @@ tab_offset (struct tab_table *t, int col, int row)
 {
   int diff = 0;
 
-#if DEBUGGING
-  if (row < -1 || row > tab_nr (t))
+  if (debugging)
     {
-      printf ("tab_offset(): row=%d in %d-row table\n", row, tab_nr (t));
-      NOT_REACHED ();
+      if (row < -1 || row > tab_nr (t))
+        {
+          printf ("tab_offset(): row=%d in %d-row table\n", row, tab_nr (t));
+          NOT_REACHED ();
+        }
+      if (col < -1 || col > tab_nc (t))
+        {
+          printf ("tab_offset(): col=%d in %d-column table\n", col,
+                  tab_nc (t));
+          NOT_REACHED ();
+        }
     }
-  if (col < -1 || col > tab_nc (t))
-    {
-      printf ("tab_offset(): col=%d in %d-column table\n", col, tab_nc (t));
-      NOT_REACHED ();
-    }
-#endif
 
   if (row != -1)
     diff += (row - t->row_ofs) * t->cf, t->row_ofs = row;
@@ -790,7 +806,8 @@ tab_destroy (struct table *table)
 }
 
 static void
-tab_get_cell (const struct table *table, int x, int y, struct table_cell *cell)
+tab_get_cell (const struct table *table, int x, int y,
+              struct table_cell *cell)
 {
   const struct tab_table *t = tab_cast (table);
   int index = x + y * t->cf;
@@ -858,18 +875,16 @@ tab_get_rule (const struct table *table, enum table_axis axis, int x, int y)
 {
   const struct tab_table *t = tab_cast (table);
   return (axis == TABLE_VERT
-          ? t->rh[x + t->cf * y]
-          : t->rv[x + (t->cf + 1) * y]);
+          ? t->rh[x + t->cf * y] : t->rv[x + (t->cf + 1) * y]);
 }
 
-static const struct table_class tab_table_class =
-  {
-    tab_destroy,
-    tab_get_cell,
-    tab_get_rule,
-    NULL,                       /* paste */
-    NULL,                       /* select */
-  };
+static const struct table_class tab_table_class = {
+  tab_destroy,
+  tab_get_cell,
+  tab_get_rule,
+  NULL,                         /* paste */
+  NULL,                         /* select */
+};
 
 struct tab_table *
 tab_cast (const struct table *table)

@@ -74,6 +74,8 @@
      *^tables=custom;
      +variables=custom;
      missing=miss:!table/include/report;
+     count=roundwhat:asis/case/!cell,
+           roundhow:!round/truncate;
      +write[wr_]=none,cells,all;
      +format=val:!avalue/dvalue,
 	     indx:!noindex/index,
@@ -182,6 +184,11 @@ struct crosstabs_proc
     unsigned int cells;         /* Bit k is 1 if cell k is requested. */
     int a_cells[CRS_CL_count];  /* 0...n_cells-1 are the requested cells. */
 
+    /* Rounding of cells. */
+    bool round_case_weights;    /* Round case weights? */
+    bool round_cells;           /* If !round_case_weights, round cells? */
+    bool round_down;            /* Round down? (otherwise to nearest) */
+
     /* STATISTICS. */
     unsigned int statistics;    /* Bit k is 1 if statistic k is requested. */
 
@@ -199,6 +206,12 @@ static void tabulate_integer_case (struct pivot_table *, const struct ccase *,
                                    double weight);
 static void postcalc (struct crosstabs_proc *);
 static void submit (struct pivot_table *, struct tab_table *);
+
+static double
+round_weight (const struct crosstabs_proc *proc, double weight)
+{
+  return proc->round_down ? floor (weight) : floor (weight + 0.5);
+}
 
 /* Parses and executes the CROSSTABS procedure. */
 int
@@ -235,6 +248,10 @@ cmd_crosstabs (struct lexer *lexer, struct dataset *ds)
   proc.barchart = cmd.sbc_barchart > 0;
 
   proc.descending = cmd.val == CRS_DVALUE;
+
+  proc.round_case_weights = cmd.sbc_count && cmd.roundwhat == CRS_CASE;
+  proc.round_cells = cmd.sbc_count && cmd.roundwhat == CRS_CELL;
+  proc.round_down = cmd.roundhow == CRS_TRUNCATE;
 
   /* CELLS. */
   if (!cmd.sbc_cells)
@@ -316,6 +333,12 @@ cmd_crosstabs (struct lexer *lexer, struct dataset *ds)
           {
             double weight = dict_get_case_weight (dataset_dict (ds), c,
                                                   &proc.bad_warn);
+            if (cmd.roundwhat == CRS_CASE)
+              {
+                weight = round_weight (&proc, weight);
+                if (weight == 0.)
+                  continue;
+              }
             if (should_tabulate_case (pt, c, proc.exclude))
               {
                 if (proc.mode == GENERAL)
@@ -677,17 +700,36 @@ static bool find_crosstab (struct pivot_table *, size_t *row0p, size_t *row1p);
 static void
 postcalc (struct crosstabs_proc *proc)
 {
-  struct pivot_table *pt;
+
+  /* Round hash table entries, if requested
+
+     If this causes any of the cell counts to fall to zero, delete those
+     cells. */
+  if (proc->round_cells)
+    for (struct pivot_table *pt = proc->pivots;
+         pt < &proc->pivots[proc->n_pivots]; pt++)
+      {
+        struct freq *e, *next;
+        HMAP_FOR_EACH_SAFE (e, next, struct freq, node, &pt->data)
+          {
+            e->count = round_weight (proc, e->count);
+            if (e->count == 0.0)
+              {
+                hmap_delete (&pt->data, &e->node);
+                free (e);
+              }
+          }
+      }
 
   /* Convert hash tables into sorted arrays of entries. */
-  for (pt = &proc->pivots[0]; pt < &proc->pivots[proc->n_pivots]; pt++)
+  for (struct pivot_table *pt = proc->pivots;
+       pt < &proc->pivots[proc->n_pivots]; pt++)
     {
       struct freq *e;
-      size_t i;
 
       pt->n_entries = hmap_count (&pt->data);
       pt->entries = xnmalloc (pt->n_entries, sizeof *pt->entries);
-      i = 0;
+      size_t i = 0;
       HMAP_FOR_EACH (e, struct freq, node, &pt->data)
         pt->entries[i++] = e;
       hmap_destroy (&pt->data);
@@ -701,7 +743,8 @@ postcalc (struct crosstabs_proc *proc)
   make_summary_table (proc);
 
   /* Output each pivot table. */
-  for (pt = &proc->pivots[0]; pt < &proc->pivots[proc->n_pivots]; pt++)
+  for (struct pivot_table *pt = proc->pivots;
+       pt < &proc->pivots[proc->n_pivots]; pt++)
     {
       if (proc->pivot || pt->n_vars == 2)
         output_pivot_table (proc, pt);
@@ -721,10 +764,9 @@ postcalc (struct crosstabs_proc *proc)
     }
 
   /* Free output and prepare for next split file. */
-  for (pt = &proc->pivots[0]; pt < &proc->pivots[proc->n_pivots]; pt++)
+  for (struct pivot_table *pt = proc->pivots;
+       pt < &proc->pivots[proc->n_pivots]; pt++)
     {
-      size_t i;
-
       pt->missing = 0.0;
 
       /* Free the members that were allocated in this function(and the values
@@ -734,7 +776,7 @@ postcalc (struct crosstabs_proc *proc)
          lower level (in output_pivot_table), or both allocated and destroyed
          at a higher level (in crs_custom_tables and free_proc,
          respectively). */
-      for (i = 0; i < pt->n_vars; i++)
+      for (size_t i = 0; i < pt->n_vars; i++)
         {
           int width = var_get_width (pt->vars[i]);
           if (value_needs_init (width))
@@ -746,7 +788,7 @@ postcalc (struct crosstabs_proc *proc)
             }
         }
 
-      for (i = 0; i < pt->n_entries; i++)
+      for (size_t i = 0; i < pt->n_entries; i++)
         free (pt->entries[i]);
       free (pt->entries);
     }

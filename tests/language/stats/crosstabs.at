@@ -431,7 +431,112 @@ z,Category,Statistic,Type,Value,Asymp. Std. Error,Approx. T,Approx. Sig.
 ]])
 AT_CLEANUP
 
+AT_SETUP([CROSSTABS rounding weights with COUNT])
+AT_DATA([crosstabs.sps],
+  [[DATA LIST NOTABLE LIST /x y w.
+BEGIN DATA.
+1 1 1.4
+1 1 1.4
+1 2 1.6
+1 2 1.6
+2 1 1
+2 2 2
+END DATA.
+WEIGHT BY w.
 
+* These should have the same effect (no rounding).
+CROSSTABS /TABLES x BY y.
+CROSSTABS /TABLES x BY y /COUNT ASIS.
+
+* Round input weights.
+CROSSTABS /TABLES x BY y /COUNT CASE ROUND.
+CROSSTABS /TABLES x BY y /COUNT CASE TRUNCATE.
+
+* Round cell weights.
+CROSSTABS /TABLES x BY y /COUNT.
+CROSSTABS /TABLES x BY y /COUNT TRUNCATE.
+]])
+
+AT_CHECK([pspp -O format=csv crosstabs.sps], [0],
+  [[Table: Summary.
+,Cases,,,,,
+,Valid,,Missing,,Total,
+,N,Percent,N,Percent,N,Percent
+x * y,9.00,100.0%,.00,0.0%,9.00,100.0%
+
+Table: x * y [count].
+,y,,
+x,1.00,2.00,Total
+1.00,2.80,3.20,6.00
+2.00,1.00,2.00,3.00
+Total,3.80,5.20,9.00
+
+Table: Summary.
+,Cases,,,,,
+,Valid,,Missing,,Total,
+,N,Percent,N,Percent,N,Percent
+x * y,9.00,100.0%,.00,0.0%,9.00,100.0%
+
+Table: x * y [count].
+,y,,
+x,1.00,2.00,Total
+1.00,2.80,3.20,6.00
+2.00,1.00,2.00,3.00
+Total,3.80,5.20,9.00
+
+Table: Summary.
+,Cases,,,,,
+,Valid,,Missing,,Total,
+,N,Percent,N,Percent,N,Percent
+x * y,9.00,100.0%,.00,0.0%,9.00,100.0%
+
+Table: x * y [count].
+,y,,
+x,1.00,2.00,Total
+1.00,2.00,4.00,6.00
+2.00,1.00,2.00,3.00
+Total,3.00,6.00,9.00
+
+Table: Summary.
+,Cases,,,,,
+,Valid,,Missing,,Total,
+,N,Percent,N,Percent,N,Percent
+x * y,7.00,100.0%,.00,0.0%,7.00,100.0%
+
+Table: x * y [count].
+,y,,
+x,1.00,2.00,Total
+1.00,2.00,2.00,4.00
+2.00,1.00,2.00,3.00
+Total,3.00,4.00,7.00
+
+Table: Summary.
+,Cases,,,,,
+,Valid,,Missing,,Total,
+,N,Percent,N,Percent,N,Percent
+x * y,9.00,100.0%,.00,0.0%,9.00,100.0%
+
+Table: x * y [count].
+,y,,
+x,1.00,2.00,Total
+1.00,3.00,3.00,6.00
+2.00,1.00,2.00,3.00
+Total,4.00,5.00,9.00
+
+Table: Summary.
+,Cases,,,,,
+,Valid,,Missing,,Total,
+,N,Percent,N,Percent,N,Percent
+x * y,8.00,100.0%,.00,0.0%,8.00,100.0%
+
+Table: x * y [count].
+,y,,
+x,1.00,2.00,Total
+1.00,2.00,3.00,5.00
+2.00,1.00,2.00,3.00
+Total,3.00,5.00,8.00
+]])
+AT_CLEANUP
 
 AT_SETUP([CROSSTABS descending sort order])
 AT_DATA([crosstabs-descending.sps],

@@ -9,7 +9,7 @@ m4_ifndef([AT_SKIP_IF],
 m4_divert_text([PREPARE_TESTS], [dnl
 if test X"$RUNNER" != X; then
     wrapper_dir=`pwd`/wrappers
-    rm "$wrapper_dir"/*
+    rm -f "$wrapper_dir"/*
     test -d "$wrapper_dir" || mkdir "$wrapper_dir"
 
     wrap_dir () {

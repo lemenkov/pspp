@@ -52,9 +52,6 @@ static const bool odf_read_support = true;
 #else
 static const bool odf_read_support = false;
 struct spreadsheet *ods_probe (const char *filename, bool report_errors){}
-struct casereader * ods_make_reader (struct spreadsheet *spreadsheet,
-					  const struct spreadsheet_read_options *opts){}
-void ods_unref (struct spreadsheet *r){}
 #endif
 
 #ifdef GNM_READ_SUPPORT
@@ -62,10 +59,6 @@ static const bool gnm_read_support = true;
 #else
 static const bool gnm_read_support = false;
 struct spreadsheet *gnumeric_probe (const char *filename, bool report_errors){}
-struct casereader * gnumeric_make_reader (struct spreadsheet *spreadsheet,
-					  const struct spreadsheet_read_options *opts){}
-void gnumeric_unref (struct spreadsheet *r){}
-
 #endif
 
 static bool parse_spreadsheet (struct lexer *lexer, char **filename,
@@ -617,18 +610,20 @@ parse_get_txt (struct lexer *lexer, struct dataset *ds)
           lex_get (lexer);
         }
 
-      if (!lex_force_id (lexer)
-          || !dict_id_is_valid (dict, lex_tokcstr (lexer), true))
-        goto error;
       name = xstrdup (lex_tokcstr (lexer));
+      if (!lex_force_id (lexer)
+          || !dict_id_is_valid (dict, name, true))
+	{
+      	  goto error;
+      	}
       lex_get (lexer);
-
       if (type == DP_DELIMITED)
         {
           if (!parse_format_specifier (lexer, &input)
-              || !fmt_check_input (&input))
-            goto error;
-
+	      || !fmt_check_input (&input))
+	    {
+	      goto error;
+	    }
           output = fmt_for_output_from_input (&input);
         }
       else
@@ -648,14 +643,12 @@ parse_get_txt (struct lexer *lexer, struct dataset *ds)
               msg (SE, _("Unknown format type `%s'."), fmt_type_name);
               goto error;
             }
-
           /* Compose input format. */
           input.type = fmt_type;
           input.w = lc - fc + 1;
           input.d = 0;
           if (!fmt_check_input (&input))
             goto error;
-
           /* Compose output format. */
           if (w != 0)
             {
@@ -668,7 +661,6 @@ parse_get_txt (struct lexer *lexer, struct dataset *ds)
           else
             output = fmt_for_output_from_input (&input);
         }
-
       v = dict_create_var (dict, name, fmt_var_width (&input));
       if (v == NULL)
         {
@@ -676,7 +668,6 @@ parse_get_txt (struct lexer *lexer, struct dataset *ds)
           goto error;
         }
       var_set_both_formats (v, &output);
-
       if (type == DP_DELIMITED)
         data_parser_add_delimited_field (parser, &input,
                                          var_get_case_index (v),

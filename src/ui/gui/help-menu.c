@@ -1,5 +1,5 @@
 /* PSPPIRE - a graphical user interface for PSPP.
-   Copyright (C) 2006, 2007, 2010, 2011, 2012, 2013, 2015  Free Software Foundation
+   Copyright (C) 2006, 2007, 2010, 2011, 2012, 2013, 2015, 2016  Free Software Foundation
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -31,6 +31,15 @@
 #define _(msgid) gettext (msgid)
 #define N_(msgid) msgid
 
+/* Try to open html documentation uri via the default
+   browser on the operating system */
+#ifdef __APPLE__
+#define HTMLOPENARGV {"open", 0, 0}
+#elif  _WIN32
+#define HTMLOPENARGV {"wscript", 0, 0}
+#else
+#define HTMLOPENARGV {"xdg-open", 0, 0}
+#endif
 
 static const gchar *artists[] = { "Bastián Díaz", "Hugo Alejandro", NULL};
 
@@ -80,32 +89,130 @@ about_new (GtkMenuItem *mmm, GtkWindow *parent)
   gtk_widget_hide (about);
 }
 
-/* Open the manual at PAGE */
+
+/* Opening the htmluri in windows via cmd /start uri opens
+   the windows command shell for a moment. The alternative is
+   to start a script via wscript. This will not be visible*/
+#ifdef _WIN32
+static gboolean open_windows_help (const gchar *helpuri,
+                                   GError **err)
+{
+  gchar *vbsfilename = NULL;
+  gchar *vbs = NULL;
+  gboolean result;
+  vbsfilename = g_build_filename (g_get_tmp_dir (),
+                                  "pspp-help-open.vbs",
+                                  NULL);
+  vbs = g_strdup_printf("CreateObject(\"WScript.Shell\").Run \"%s\"",
+                        helpuri);
+  result = g_file_set_contents (vbsfilename,
+                                vbs,
+                                strlen(vbs),
+                                err);
+  g_free (vbs);
+  if (!result)
+    goto error;
+
+  gchar *argv[] = {"wscript",vbsfilename,0};
+
+  result = g_spawn_async (NULL, argv,
+                          NULL, G_SPAWN_SEARCH_PATH,
+                          NULL, NULL, NULL, err);
+ error:
+  g_free (vbsfilename);
+  return result;
+}
+#endif
+
+/* Open the manual at PAGE with the following priorities
+   First: local yelp help system
+   Second: browser with local html doc dir in path pspp.html/<helppage>.html
+   Third:  browers with Internet html help at gnu.org */
 void
 online_help (const char *page)
 {
   GError *err = NULL;
-  gchar *cmd = NULL;
-
+  GError *htmlerr = NULL;
   gchar *argv[3] = { "yelp", 0, 0};
+  gchar *htmlargv[3] = HTMLOPENARGV;
+  gchar *htmlfilename = NULL;
+  gchar *htmlfullname = NULL;
+  gchar *htmluri = NULL;
 
   if (page == NULL)
-    argv[1] = g_strdup_printf ("file://%s", relocate (DOCDIR "/pspp.xml"));
-  else
-    argv[1] = g_strdup_printf ("file://%s#%s", relocate (DOCDIR "/pspp.xml"), page);
-
-  if (! g_spawn_async (NULL, argv,
-		       NULL, G_SPAWN_SEARCH_PATH,
-		       NULL, NULL,   NULL,   &err))
     {
-      msg (ME, _("Cannot open reference manual: %s.  The PSPP user manual is "
-                 "also available at %s"),
+      argv[1] = g_strdup_printf ("file://%s", relocate (DOCDIR "/pspp.xml"));
+      htmlfilename = g_strdup ("index.html");
+    }
+  else
+    {
+      gchar **tokens = NULL;
+      const int maxtokens = 5;
+      int idx = 0;
+      argv[1] = g_strdup_printf ("file://%s#%s",
+                                 relocate (DOCDIR "/pspp.xml"), page);
+      /* The page will be translated to the htmlfilename
+         page                   htmlfilename
+         GRAPH#SCATTERPLOT      SCATTERPLOT.html
+         QUICK-CLUSTER          QUICK-CLUSTER.html
+         which is valid for the multiple page html doc*/
+      tokens = g_strsplit (page, "#", maxtokens);
+      for(;tokens[idx] && idx < maxtokens;idx++);
+      htmlfilename = g_strdup_printf ("%s.html", tokens[idx-1]);
+      g_strfreev (tokens);
+    }
+  /* Hint: pspp.html is a directory...*/
+  htmlfullname = g_strdup_printf ("%s/%s", relocate (DOCDIR "/pspp.html"),
+                                  htmlfilename);
+  if (g_file_test (relocate (DOCDIR "/pspp.html"), G_FILE_TEST_IS_DIR))
+    {
+      GError *urierr = NULL;
+      htmluri =  g_filename_to_uri (htmlfullname,NULL, &urierr);
+      if (!htmluri)
+        {
+          msg (ME, _("Help path conversion error: %s"), urierr->message);
+          htmluri = htmlfullname;
+        }
+      g_clear_error (&urierr);
+    }
+  else
+    htmluri = g_strdup_printf (PACKAGE_URL "manual/html_node/%s",
+                               htmlfilename);
+  g_free (htmlfullname);
+  g_free (htmlfilename);
+  htmlargv[1] = htmluri;
+
+  /* The following **SHOULD** work but it does not on 28.5.2016
+     g_app_info_launch_default_for_uri (htmluri, NULL, &err);
+     osx: wine is started to launch the uri...
+     windows: not so bad, but the first access does not work*/
+
+  if (! (g_spawn_async (NULL, argv,
+                        NULL, G_SPAWN_SEARCH_PATH,
+                        NULL, NULL,   NULL,   &err) ||
+#ifdef _WIN32
+         open_windows_help (htmluri, &htmlerr))
+#else
+         g_spawn_async (NULL, htmlargv,
+                        NULL, G_SPAWN_SEARCH_PATH,
+                        NULL, NULL,   NULL,   &htmlerr))
+#endif
+      )
+    {
+      msg (ME, _("Cannot open reference manual via yelp: %s. "
+                 "Cannot open via html: %s "
+                 "with uri: %s "
+                 "The PSSP manual is also available at %s"),
                   err->message,
+                  htmlerr->message,
+                  htmluri,
                   PACKAGE_URL "documentation.html");
     }
 
-  g_free (cmd);
+  g_free (argv[1]);
+  g_free (htmluri);
   g_clear_error (&err);
+  g_clear_error (&htmlerr);
 }
 
 static void

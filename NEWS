@@ -3,10 +3,29 @@ Copyright (C) 1996-2000, 2008-2016 Free Software Foundation, Inc.
 See the end for copying conditions.
 
 Please send PSPP bug reports to bug-gnu-pspp@gnu.org.
- 
+
 Changes from 0.10.1 to 0.10.2:
 
- (nothing yet)
+ * CROSSTABS implements a new COUNT subcommand to round case or cell
+   weights.
+
+ * Help will be opened as HTML in default browser if yelp
+   is not available.
+
+ * When plotting scatterplots with only one dataset (the simple case)
+   the colour used for the dataset is now black.  The previous default
+   from the Tango palette was too faint to see easily.
+
+ * Bug fixes, including the following:
+
+   - T-test with independent samples GUI crashed with string
+     type variable as group variable.
+
+   - The variable info dialog showed the previous selected variable
+     superimposed with the currently selected one.
+
+   - The GLM command did not properly deal with missing values.  This
+     has been fixed.
 
 Changes from 0.10.0 to 0.10.1:
 

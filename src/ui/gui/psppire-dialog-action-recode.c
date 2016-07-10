@@ -122,7 +122,7 @@ new_value_to_string (const GValue *src, GValue *dest)
     }
 }
 
-static GType
+GType
 new_value_get_type (void)
 {
   static GType t = 0;
@@ -153,102 +153,6 @@ on_string_toggled (GtkToggleButton *b, PsppireDialogActionRecode *rd)
   gtk_widget_set_sensitive (rd->convert_button, !active);
 }
 
-/* Name-Label pair */
-struct nlp
-{
-  char *name;
-  char *label;
-};
-
-static struct nlp *
-nlp_create (const char *name, const char *label)
-{
-  struct nlp *nlp = xmalloc (sizeof *nlp);
-
-  nlp->name = g_strdup (name);
-
-  nlp->label = NULL;
-
-  if ( 0 != strcmp ("", label))
-    nlp->label = g_strdup (label);
-
-  return nlp;
-}
-
-static void
-nlp_destroy (gpointer data)
-{
-  struct nlp *nlp = data ;
-  if ( ! nlp )
-    return;
-
-  g_free (nlp->name);
-  g_free (nlp->label);
-  g_free (nlp);
-}
-
-
-/* Callback which gets called when a new row is selected
-   in the variable treeview.
-   It sets the name and label entry widgets to reflect the
-   currently selected row.
- */
-static void
-on_selection_change (GtkTreeSelection *selection, gpointer data)
-{
-  PsppireDialogActionRecode *rd = data;
-
-  GtkTreeModel *model = gtk_tree_view_get_model (GTK_TREE_VIEW (rd->variable_treeview));
-
-  GList *rows = gtk_tree_selection_get_selected_rows (selection, &model);
-
-  if ( rows && !rows->next)
-    {
-      /* Exactly one row is selected */
-      struct nlp *nlp;
-      struct variable *var;
-      gboolean ok;
-      GtkTreeIter iter;
-
-      gtk_widget_set_sensitive  (rd->change_button, TRUE);
-      gtk_widget_set_sensitive  (rd->new_name_entry, TRUE);
-      gtk_widget_set_sensitive  (rd->new_label_entry, TRUE);
-
-      ok = gtk_tree_model_get_iter (model, &iter, (GtkTreePath*) rows->data);
-      g_return_if_fail (ok);
-
-      gtk_tree_model_get (model, &iter,
-			  0, &var, 
-			  -1);
-
-      nlp = g_hash_table_lookup (rd->varmap, var);
-
-      if (nlp)
-	{
-	  gtk_entry_set_text (GTK_ENTRY (rd->new_name_entry), nlp->name ? nlp->name : "");
-	  gtk_entry_set_text (GTK_ENTRY (rd->new_label_entry), nlp->label ? nlp->label : "");
-	}
-      else
-	{
-	  gtk_entry_set_text (GTK_ENTRY (rd->new_name_entry), "");
-	  gtk_entry_set_text (GTK_ENTRY (rd->new_label_entry), "");
-	}
-    }
-  else
-    {
-      gtk_widget_set_sensitive  (rd->change_button, FALSE);
-      gtk_widget_set_sensitive  (rd->new_name_entry, FALSE);
-      gtk_widget_set_sensitive  (rd->new_label_entry, FALSE);
-
-      gtk_entry_set_text (GTK_ENTRY (rd->new_name_entry), "");
-      gtk_entry_set_text (GTK_ENTRY (rd->new_label_entry), "");
-    }
-
-
-  g_list_foreach (rows, (GFunc) gtk_tree_path_free, NULL);
-  g_list_free (rows);
-}
-
 
 static void
 on_convert_toggled (GtkToggleButton *b, PsppireDialogActionRecode *rd)
@@ -260,48 +164,6 @@ on_convert_toggled (GtkToggleButton *b, PsppireDialogActionRecode *rd)
   active = gtk_toggle_button_get_active (b);
   gtk_widget_set_sensitive (rd->string_button, !active);
 }
-
-static void
-on_change_clicked (GObject *obj, gpointer data)
-{
-  PsppireDialogActionRecode *rd = data;
-  struct variable *var = NULL;
-  struct nlp *nlp;
-
-  GtkTreeModel *model =  gtk_tree_view_get_model (GTK_TREE_VIEW (rd->variable_treeview));
-
-  GtkTreeIter iter;
-  GtkTreeSelection *selection =
-    gtk_tree_view_get_selection (GTK_TREE_VIEW (rd->variable_treeview));
-
-  GList *rows = gtk_tree_selection_get_selected_rows (selection, &model);
-
-  const gchar *dest_var_name =
-    gtk_entry_get_text (GTK_ENTRY (rd->new_name_entry));
-
-  const gchar *dest_var_label =
-    gtk_entry_get_text (GTK_ENTRY (rd->new_label_entry));
-
-  if ( NULL == rows || rows->next != NULL)
-    goto finish;
-
-  gtk_tree_model_get_iter (model, &iter, rows->data);
-
-  gtk_tree_model_get (model, &iter, 0, &var, -1);
-
-  g_hash_table_remove (rd->varmap, var);
-
-  nlp = nlp_create (dest_var_name, dest_var_label);
-
-  g_hash_table_insert (rd->varmap, var, nlp);
-
-  gtk_tree_model_row_changed (model, rows->data, &iter);
-
- finish:
-  g_list_foreach (rows, (GFunc) gtk_tree_path_free, NULL);
-  g_list_free (rows);
-}
-
 
 static void
 focus_value_entry (GtkWidget *w, PsppireDialogActionRecode *rd)
@@ -330,47 +192,12 @@ set_acr (PsppireDialogActionRecode *rd)
   psppire_acr_set_enabled (PSPPIRE_ACR (rd->acr), !g_str_equal (text, ""));
 }
 
-enum {
-  COL_VALUE_OLD,
-  COL_VALUE_NEW,
-  n_COL_VALUES
-};
-
-/* Dialog is valid iff at least one variable has been selected,
-   AND the list of mappings is not empty.
- */
-static gboolean
-dialog_state_valid (gpointer data)
-{
-  GtkTreeIter not_used;
-  PsppireDialogActionRecode *rd = data;
-
-  if ( ! rd->value_map )
-    return FALSE;
-
-  if ( ! gtk_tree_model_get_iter_first (GTK_TREE_MODEL (rd->value_map),
-					&not_used) )
-    return FALSE;
-
-  if ( rd->different )
-    {
-      GtkTreeModel *model = gtk_tree_view_get_model (GTK_TREE_VIEW (rd->variable_treeview));
-
-      if (g_hash_table_size (rd->varmap) != gtk_tree_model_iter_n_children (model, NULL) )
-	return FALSE;
-    }
-  else
-    {
-      GtkTreeModel *vars =
-	gtk_tree_view_get_model (GTK_TREE_VIEW (rd->variable_treeview));
-
-      if ( !gtk_tree_model_get_iter_first (vars, &not_used))
-	return FALSE;
-    }
-
-  return TRUE;
-}
-
+enum
+  {
+    COL_VALUE_OLD,
+    COL_VALUE_NEW,
+    n_COL_VALUES
+  };
 
 /* Callback which gets called when a new row is selected
    in the acr's variable treeview.
@@ -468,34 +295,26 @@ set_new_value (GValue *val, const PsppireDialogActionRecode *rd)
   const gchar *text = NULL;
   struct new_value nv;
 
-  if ( gtk_toggle_button_get_active
-       (GTK_TOGGLE_BUTTON (rd->toggle [BUTTON_NEW_VALUE])))
+  if (gtk_toggle_button_get_active
+      (GTK_TOGGLE_BUTTON (rd->toggle [BUTTON_NEW_VALUE])))
     {
       text = gtk_entry_get_text (GTK_ENTRY (rd->new_value_entry));
-
       nv.type = NV_NUMERIC;
-      if (
-	  (! rd->different && rd->input_var_is_string) ||
-	  ( rd->different &&
-	    gtk_toggle_button_get_active
-	       (GTK_TOGGLE_BUTTON (rd->string_button)))
-	  )
-	{
-	  nv.type = NV_STRING;
-	}
+
+      if (PSPPIRE_DIALOG_ACTION_RECODE_CLASS (G_OBJECT_GET_CLASS (rd))->target_is_string (rd))
+	nv.type = NV_STRING;
 
       if ( nv.type == NV_STRING )
 	nv.v.s = g_strdup (text);
       else
 	nv.v.v = g_strtod (text, 0);
     }
-  else if ( gtk_toggle_button_get_active
+  else if (gtk_toggle_button_get_active
 	    (GTK_TOGGLE_BUTTON (rd->toggle [BUTTON_NEW_COPY])))
     {
       nv.type = NV_COPY;
     }
-
-  else if ( gtk_toggle_button_get_active
+  else if (gtk_toggle_button_get_active
 	    (GTK_TOGGLE_BUTTON (rd->toggle [BUTTON_NEW_SYSMIS])))
     {
       nv.type = NV_SYSMIS;
@@ -540,13 +359,6 @@ run_old_and_new_dialog (PsppireDialogActionRecode *rd)
   psppire_acr_set_model (PSPPIRE_ACR (rd->acr), local_store);
   psppire_acr_set_get_value_func (PSPPIRE_ACR (rd->acr), set_value, rd);
 
-  gtk_window_set_title (GTK_WINDOW (rd->old_and_new_dialog),
-			rd->different
-			? _("Recode into Different Variables: Old and New Values ")
-			: _("Recode into Same Variables: Old and New Values")
-			);
-
-
   {
     /* Find the type of the first variable (it's invariant that
        all variables are of the same type) */
@@ -588,24 +400,6 @@ run_old_and_new_dialog (PsppireDialogActionRecode *rd)
   psppire_dialog_notify_change (PSPPIRE_DIALOG (pda->dialog));
 }
 
-static void
-on_old_new_show (PsppireDialogActionRecode *rd)
-{
-  gtk_toggle_button_set_active
-    (GTK_TOGGLE_BUTTON (rd->toggle[BUTTON_NEW_VALUE]), TRUE);
-
-  g_signal_emit_by_name (rd->toggle[BUTTON_NEW_VALUE], "toggled");
-
-  g_object_set (rd->toggle[BUTTON_NEW_COPY],
-		"visible", rd->different, NULL);
-
-  g_object_set (rd->new_copy_label,
-		"visible", rd->different, NULL);
-
-  g_object_set (rd->strings_box,
-		"visible", rd->different, NULL);
-}
-
 
 /* Sets the sensitivity of TARGET dependent upon the active status
    of BUTTON */
@@ -620,31 +414,6 @@ toggle_sensitivity (GtkToggleButton *button, GtkWidget *target)
   gtk_widget_set_sensitive (target, state);
 }
 
-static void
-render_new_var_name (GtkTreeViewColumn *tree_column,
-		     GtkCellRenderer *cell,
-		     GtkTreeModel *tree_model,
-		     GtkTreeIter *iter,
-		     gpointer data)
-{
-  struct nlp *nlp = NULL;
-  PsppireDialogActionRecode *rd = data;
-
-  struct variable *var = NULL;
-
-  gtk_tree_model_get (tree_model, iter, 
-		      0, &var,
-		      -1);
-
-  nlp = g_hash_table_lookup (rd->varmap, var);
-
-  if ( nlp )
-    g_object_set (cell, "text", nlp->name, NULL);
-  else
-    g_object_set (cell, "text", "", NULL);
-}
-
-
 
 
 
@@ -653,8 +422,8 @@ psppire_dialog_action_recode_class_init (PsppireDialogActionRecodeClass *class);
 
 G_DEFINE_TYPE (PsppireDialogActionRecode, psppire_dialog_action_recode, PSPPIRE_TYPE_DIALOG_ACTION);
 
-static void
-refresh (PsppireDialogAction *rd_)
+void
+psppire_dialog_action_recode_refresh (PsppireDialogAction *rd_)
 {
   PsppireDialogActionRecode *rd = PSPPIRE_DIALOG_ACTION_RECODE (rd_);
 
@@ -667,26 +436,29 @@ refresh (PsppireDialogAction *rd_)
   gtk_widget_set_sensitive (rd->new_name_entry, FALSE);
   gtk_widget_set_sensitive (rd->new_label_entry, FALSE);
 
-  if ( rd->different && rd->varmap )
-    g_hash_table_remove_all (rd->varmap);
-
   gtk_list_store_clear (GTK_LIST_STORE (rd->value_map));
 }
 
 
-
 static void
-psppire_dialog_action_recode_activate (PsppireDialogAction *a)
+psppire_dialog_action_recode_activate (PsppireDialogAction *act)
 {
-  PsppireDialogActionRecode *act = PSPPIRE_DIALOG_ACTION_RECODE (a);
-  PsppireDialogAction *pda = PSPPIRE_DIALOG_ACTION (a);
+  if (PSPPIRE_DIALOG_ACTION_CLASS (psppire_dialog_action_recode_parent_class)->activate)
+    PSPPIRE_DIALOG_ACTION_CLASS (psppire_dialog_action_recode_parent_class)->activate (act);
+}
+
+
+void
+psppire_dialog_action_recode_pre_activate (PsppireDialogActionRecode *act, void (*populate_treeview) (PsppireDialogActionRecode *))
+{
+  PsppireDialogAction *pda = PSPPIRE_DIALOG_ACTION (act);
 
   GHashTable *thing = psppire_dialog_action_get_hash_table (pda);
-  GtkBuilder *xml = g_hash_table_lookup (thing, a);
+  GtkBuilder *xml = g_hash_table_lookup (thing, act);
   if (!xml)
     {
       xml = builder_new ("recode.ui");
-      g_hash_table_insert (thing, a, xml);
+      g_hash_table_insert (thing, act, xml);
 
       pda->dialog = get_widget_assert   (xml, "recode-dialog");
       pda->source = get_widget_assert   (xml, "treeview1");
@@ -696,10 +468,9 @@ psppire_dialog_action_recode_activate (PsppireDialogAction *a)
       GtkWidget *oldandnew = get_widget_assert (xml, "button1");
 
 
-      GtkWidget *output_variable_box = get_widget_assert (xml,"frame4");
+      act->output_variable_box = get_widget_assert (xml,"frame4");
 
       act->change_button = get_widget_assert (xml, "change-button");
-      act->varmap = NULL;
       act->variable_treeview =   get_widget_assert (xml, "treeview2");
       act->new_name_entry = get_widget_assert (xml, "dest-name-entry");
       act->new_label_entry = get_widget_assert (xml, "dest-label-entry");
@@ -708,51 +479,8 @@ psppire_dialog_action_recode_activate (PsppireDialogAction *a)
 					   old_value_get_type (),
 					   new_value_get_type ());
 
-      if (act->different)
-	gtk_window_set_title (GTK_WINDOW (pda->dialog),
-			      _("Recode into Different Variables"));
-      else
-	gtk_window_set_title (GTK_WINDOW (pda->dialog),
-			      _("Recode into Same Variables"));
-
-      g_object_set (output_variable_box, "visible", act->different, NULL);
-
-      if (act->different)
-	{
-	  GtkTreeSelection *sel;
-
-	  GtkCellRenderer *renderer = gtk_cell_renderer_text_new ();
-
-	  GtkTreeViewColumn *col = gtk_tree_view_column_new_with_attributes (_("New"),
-									     renderer,
-									     "text", NULL,
-									     NULL);
-
-	  gtk_tree_view_column_set_cell_data_func (col, renderer,
-						   render_new_var_name,
-						   act, NULL);
-
-
-	  gtk_tree_view_append_column (GTK_TREE_VIEW (act->variable_treeview), col);
-
-
-	  col = gtk_tree_view_get_column (GTK_TREE_VIEW (act->variable_treeview), 0);
-
-	  g_object_set (col, "title", _("Old"), NULL);
-
-	  g_object_set (act->variable_treeview, "headers-visible", TRUE, NULL);
-
-	  act->varmap = g_hash_table_new_full (g_direct_hash, g_direct_equal, NULL, nlp_destroy);
-
-	  sel = gtk_tree_view_get_selection (GTK_TREE_VIEW (act->variable_treeview));
-
-	  g_signal_connect (sel, "changed",
-			    G_CALLBACK (on_selection_change), act);
-
-	  g_signal_connect (act->change_button, "clicked",
-			    G_CALLBACK (on_change_clicked),  act);
-	}
-
+      if (populate_treeview)
+	populate_treeview (act);
       
       psppire_selector_set_allow (PSPPIRE_SELECTOR (selector), homogeneous_types);
 
@@ -835,19 +563,8 @@ psppire_dialog_action_recode_activate (PsppireDialogAction *a)
 
 	g_signal_connect (act->convert_button, "toggled",
 			  G_CALLBACK (on_convert_toggled), act);
-
-	g_signal_connect_swapped (act->old_and_new_dialog, "show",
-				  G_CALLBACK (on_old_new_show), act);
       }
     }
-
-  psppire_dialog_action_set_refresh (pda, refresh);
-
-  psppire_dialog_action_set_valid_predicate (pda,
-					dialog_state_valid);
-
-  if (PSPPIRE_DIALOG_ACTION_CLASS (psppire_dialog_action_recode_parent_class)->activate)
-    PSPPIRE_DIALOG_ACTION_CLASS (psppire_dialog_action_recode_parent_class)->activate (pda);
 }
 
 /* Generate a syntax fragment for NV and append it to STR */
@@ -877,8 +594,11 @@ new_value_append_syntax (struct string *dds, const struct new_value *nv)
 }
 
 
-static char *
-generate_syntax (const PsppireDialogAction *act)
+char *
+psppire_dialog_action_recode_generate_syntax (const PsppireDialogAction *act,
+					      void (*append_string_decls) (const PsppireDialogActionRecode *, struct string *),
+					      void (*append_into_clause) (const PsppireDialogActionRecode *, struct string *),
+					      void (*append_new_value_labels) (const PsppireDialogActionRecode *, struct string *))
 {
   PsppireDialogActionRecode *rd = PSPPIRE_DIALOG_ACTION_RECODE (act);
   gboolean ok;
@@ -888,28 +608,8 @@ generate_syntax (const PsppireDialogAction *act)
 
   ds_init_empty (&dds);
 
-
-  /* Declare new string variables if applicable */
-  if ( rd->different &&
-       gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (rd->string_button)))
-    {
-      GHashTableIter iter;
-
-      struct variable *var = NULL;
-      struct nlp *nlp = NULL;
-
-      g_hash_table_iter_init (&iter, rd->varmap);
-      while (g_hash_table_iter_next (&iter, (void**) &var, (void**) &nlp))
-	{
-	  ds_put_cstr (&dds, "\nSTRING ");
-	  ds_put_cstr (&dds, nlp->name);
-	  ds_put_c_format (&dds, " (A%d).",
-				  (int)
-				  gtk_spin_button_get_value (GTK_SPIN_BUTTON (rd->width_entry) )
-				  );
-	}
-    }
-
+  append_string_decls (rd, &dds);
+  
   ds_put_cstr (&dds, "\nRECODE ");
 
   psppire_var_view_append_names_str (PSPPIRE_VAR_VIEW (rd->variable_treeview), 0, &dds);
@@ -950,53 +650,12 @@ generate_syntax (const PsppireDialogAction *act)
       g_value_unset (&nv_value);
     }
 
-
-  if ( rd->different )
-    {
-
-      GtkTreeIter iter;
-      ds_put_cstr (&dds, "\n\tINTO ");
-
-      for (ok = psppire_var_view_get_iter_first (PSPPIRE_VAR_VIEW (rd->variable_treeview), &iter);
-	   ok;
-	   ok = psppire_var_view_get_iter_next (PSPPIRE_VAR_VIEW (rd->variable_treeview), &iter))
-	  {
-	    struct nlp *nlp = NULL;
-	    const struct variable *var = psppire_var_view_get_variable (PSPPIRE_VAR_VIEW (rd->variable_treeview), 0, &iter);
-
-	    nlp = g_hash_table_lookup (rd->varmap, var);
-	    
-	    ds_put_cstr (&dds, nlp->name);
-	    ds_put_cstr (&dds, " ");
-	  }
-    }
+  append_into_clause (rd, &dds);
 
   ds_put_cstr (&dds, ".");
 
-  /* If applicable, set labels for the new variables. */
-  if ( rd->different )
-    {
-      GHashTableIter iter;
-
-      struct variable *var = NULL;
-      struct nlp *nlp = NULL;
-
-      g_hash_table_iter_init (&iter, rd->varmap);
-      while (g_hash_table_iter_next (&iter, (void**) &var, (void**) &nlp))
-	{
-	  if (nlp->label)
-	    {
-	      struct string sl;
-	      ds_init_empty (&sl);
-	      syntax_gen_string (&sl, ss_cstr (nlp->label));
-	      ds_put_c_format (&dds, "\nVARIABLE LABELS %s %s.",
-				      nlp->name, ds_cstr (&sl));
-
-	      ds_destroy (&sl);
-	    }
-	}
-    }
-
+  append_new_value_labels (rd, &dds);
+  
   ds_put_cstr (&dds, "\nEXECUTE.\n");
 
 
@@ -1008,75 +667,10 @@ generate_syntax (const PsppireDialogAction *act)
 }
 
 
-enum
-{
-  PROP_0,
-  PROP_DIFF
-};
-
-static void
-__set_property (GObject         *object,
-		guint            prop_id,
-		const GValue    *value,
-		GParamSpec      *pspec)
-{
-  PsppireDialogActionRecode *act = PSPPIRE_DIALOG_ACTION_RECODE (object);
-
-  switch (prop_id)
-    {
-    case PROP_DIFF:
-      act->different = g_value_get_boolean (value);
-      break;
-    default:
-      G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
-      break;
-    };
-}
-
-
-static void
-__get_property (GObject         *object,
-		guint            prop_id,
-		GValue          *value,
-		GParamSpec      *pspec)
-{
-  PsppireDialogActionRecode *act = PSPPIRE_DIALOG_ACTION_RECODE (object);
-
-  switch (prop_id)
-    {
-    case PROP_DIFF:
-      g_value_set_boolean (value, act->different);
-      break;
-    default:
-      G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
-      break;
-    };
-}
-
-
 static void
 psppire_dialog_action_recode_class_init (PsppireDialogActionRecodeClass *class)
 {
-  GObjectClass *object_class = G_OBJECT_CLASS (class);
-
   psppire_dialog_action_set_activation (class, psppire_dialog_action_recode_activate);
-
-  PSPPIRE_DIALOG_ACTION_CLASS (class)->generate_syntax = generate_syntax;
-
-  GParamSpec *diff_spec =
-    g_param_spec_boolean ("recode-to-new-variable",
-			  "Recode to New Variable",
-			  "True iff the new values should be placed in a new variable",
-			  FALSE,
-			  G_PARAM_READWRITE | G_PARAM_CONSTRUCT_ONLY);
-
-
-  object_class->set_property = __set_property;
-  object_class->get_property = __get_property;
-  
-  g_object_class_install_property (object_class,
-                                   PROP_DIFF,
-                                   diff_spec);
 }
 
 

@@ -242,6 +242,10 @@ src_ui_gui_psppire_SOURCES = \
 	src/ui/gui/psppire-dialog-action-rank.h \
 	src/ui/gui/psppire-dialog-action-recode.c \
 	src/ui/gui/psppire-dialog-action-recode.h \
+	src/ui/gui/psppire-dialog-action-recode-same.c \
+	src/ui/gui/psppire-dialog-action-recode-same.h \
+	src/ui/gui/psppire-dialog-action-recode-different.c \
+	src/ui/gui/psppire-dialog-action-recode-different.h \
 	src/ui/gui/psppire-dialog-action-regression.c \
 	src/ui/gui/psppire-dialog-action-regression.h \
 	src/ui/gui/psppire-dialog-action-reliability.c \

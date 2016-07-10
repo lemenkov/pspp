@@ -1,5 +1,5 @@
 /* PSPPIRE - a graphical user interface for PSPP.
-   Copyright (C) 2007, 2009, 2010, 2011, 2012  Free Software Foundation
+   Copyright (C) 2007, 2009, 2010, 2011, 2012, 2016  Free Software Foundation
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -49,10 +49,10 @@ dialog_state_valid (gpointer data)
   if (NULL == act->grp_var)
     return FALSE;
 
-  if ( 0 == gtk_tree_model_get_iter_first (vars, &notused))
+  if (0 == gtk_tree_model_get_iter_first (vars, &notused))
     return FALSE;
 
-  if ( act->group_defn == GROUPS_UNDEF)
+  if (act->group_defn == GROUPS_UNDEF)
     return FALSE;
 
   return TRUE;
@@ -70,11 +70,12 @@ refresh (PsppireDialogAction *da)
 
   if (act->grp_var)
     {
-      int width = var_get_width (act->grp_var);
+      const int width = act->grp_var_width;
       value_destroy (&act->cut_point, width);
       value_destroy (&act->grp_val[0], width);
       value_destroy (&act->grp_val[1], width);
       act->grp_var = NULL;
+      act->grp_var_width = -1;
     }
 
   psppire_value_entry_set_variable (PSPPIRE_VALUE_ENTRY (act->dg_grp_entry[0]), NULL);
@@ -101,7 +102,7 @@ value_entry_contains_invalid (PsppireValueEntry *ve, const struct variable *var)
       const int width = var_get_width (var);
       value_init (&val, width);
 
-      if ( psppire_value_entry_get_value (ve, &val, width))
+      if (psppire_value_entry_get_value (ve, &val, width))
 	{
 	  if (var_is_value_missing (var, &val, MV_SYSTEM))
 	    {
@@ -123,6 +124,9 @@ static gboolean
 define_groups_state_valid (gpointer data)
 {
   PsppireDialogActionIndepSamps *act = data;
+
+  if (act->grp_var == NULL)
+    return FALSE;
 
   if (gtk_toggle_button_get_active
       (GTK_TOGGLE_BUTTON (act->dg_values_toggle_button)))
@@ -153,14 +157,16 @@ run_define_groups (PsppireDialogActionIndepSamps *act)
   PsppireDialogAction *da = PSPPIRE_DIALOG_ACTION (act);
   GtkWidget *parent1 = gtk_widget_get_parent (act->dg_table1);
   GtkWidget *parent2 = gtk_widget_get_parent (act->dg_table2);
-
+  
+  g_return_if_fail (act->grp_var);
+  
   if (parent1)
     gtk_container_remove (GTK_CONTAINER (parent1), act->dg_table1);
 
   if (parent2)
     gtk_container_remove (GTK_CONTAINER (parent2), act->dg_table2);
 
-  if ( var_is_numeric (act->grp_var))
+  if (var_is_numeric (act->grp_var))
     {
       gtk_grid_attach (GTK_GRID (act->dg_table1), act->dg_table2,
 		       1, 1, 1, 1);
@@ -181,7 +187,7 @@ run_define_groups (PsppireDialogActionIndepSamps *act)
   psppire_value_entry_set_variable (PSPPIRE_VALUE_ENTRY (act->dg_grp_entry[1]), act->grp_var);
   psppire_value_entry_set_variable (PSPPIRE_VALUE_ENTRY (act->dg_cut_point_entry), act->grp_var);
 
-  if ( act->group_defn != GROUPS_CUT_POINT )
+  if (act->group_defn != GROUPS_CUT_POINT )
     {
       gtk_toggle_button_set_active
   	(GTK_TOGGLE_BUTTON (act->dg_cut_point_toggle_button), TRUE);
@@ -237,13 +243,13 @@ on_grp_var_change (GtkEntry *entry, PsppireDialogActionIndepSamps *act)
   PsppireDialogAction *da = PSPPIRE_DIALOG_ACTION (act);
   const gchar *text = gtk_entry_get_text (entry);
 
-  const struct variable *v = psppire_dict_lookup_var (da->dict, text);
+  const struct variable *v = da->dict ? psppire_dict_lookup_var (da->dict, text) : NULL;
 
   gtk_widget_set_sensitive (act->define_groups_button, v != NULL);
 
   if (act->grp_var)
     {
-      int width = var_get_width (act->grp_var);
+      const int width = act->grp_var_width;
       value_destroy (&act->cut_point, width);
       value_destroy (&act->grp_val[0], width);
       value_destroy (&act->grp_val[1], width);
@@ -264,13 +270,14 @@ on_grp_var_change (GtkEntry *entry, PsppireDialogActionIndepSamps *act)
         }
       else
         {
-          act->cut_point.short_string[0] = '\0';
-          act->grp_val[0].short_string[0] = '\0';
-          act->grp_val[1].short_string[0] = '\0';
+	  value_str_rw (&act->cut_point, width)[0] = '\0';
+	  value_str_rw (&act->grp_val[0], width)[0] = '\0';
+	  value_str_rw (&act->grp_val[1], width)[0] = '\0';
         }
     }
 
   act->grp_var = v;
+  act->grp_var_width = v ? var_get_width (v) : -1;
 }
 
 static void
@@ -344,6 +351,8 @@ psppire_dialog_action_indep_samps_activate (PsppireDialogAction *a)
 
   g_signal_connect (act->group_var_entry, "changed",
 		    G_CALLBACK (on_grp_var_change), act);
+
+  on_grp_var_change (GTK_ENTRY (act->group_var_entry), act);
 
   if (PSPPIRE_DIALOG_ACTION_CLASS (psppire_dialog_action_indep_samps_parent_class)->activate)
     PSPPIRE_DIALOG_ACTION_CLASS (psppire_dialog_action_indep_samps_parent_class)->activate (pda);
@@ -427,6 +436,7 @@ static void
 psppire_dialog_action_indep_samps_init (PsppireDialogActionIndepSamps *act)
 {
   act->grp_var = NULL;
+  act->grp_var_width = -1;
   act->group_defn = GROUPS_UNDEF;
 }
 
