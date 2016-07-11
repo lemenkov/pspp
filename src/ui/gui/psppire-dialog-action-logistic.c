@@ -1,5 +1,5 @@
 /* PSPPIRE - a graphical user interface for PSPP.
-   Copyright (C) 2008, 2010, 2011, 2012  Free Software Foundation
+   Copyright (C) 2008, 2010, 2011, 2012, 2016  Free Software Foundation
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -203,7 +203,7 @@ generate_syntax (const PsppireDialogAction *a)
   ds_init_cstr (&opt_str, "\n\t/CRITERIA =");
   syntax_gen_pspp (&opt_str, " CUT(%g)", rd->cut_point);
   syntax_gen_pspp (&opt_str, " ITERATE(%d)", rd->max_iterations);
-  g_string_append (strx, ds_data (&opt_str));
+  g_string_append (strx, ds_cstr (&opt_str));
   ds_destroy (&opt_str);
 
   if (rd->conf)
