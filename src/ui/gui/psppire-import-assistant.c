@@ -663,7 +663,7 @@ add_line_number_column (const PsppireImportAssistant *ia,
 
 
 static void
-set_model_on_treeview (const PsppireImportAssistant *ia, GtkWidget *tree_view, size_t first_line)
+set_model_on_treeview (PsppireImportAssistant *ia, GtkWidget *tree_view, size_t first_line)
 {
   GtkTreeModel *model = GTK_TREE_MODEL (psppire_empty_list_store_new (ia->line_cnt - first_line));
 
