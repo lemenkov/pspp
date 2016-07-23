@@ -16,6 +16,9 @@ Changes from 0.10.1 to 0.10.2:
    the colour used for the dataset is now black.  The previous default
    from the Tango palette was too faint to see easily.
 
+ * The varible info dialog could previously only paste a single variable.
+   Now it can paste multiple variables.
+
  * Bug fixes, including the following:
 
    - T-test with independent samples GUI crashed with string
