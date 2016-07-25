@@ -4,6 +4,10 @@ See the end for copying conditions.
 
 Please send PSPP bug reports to bug-gnu-pspp@gnu.org.
 
+Changes from 0.10.2 to 0.10.3:
+
+ * No changes yet.
+
 Changes from 0.10.1 to 0.10.2:
 
  * CROSSTABS implements a new COUNT subcommand to round case or cell
