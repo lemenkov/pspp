@@ -279,12 +279,6 @@ test_insert (void)
   unsigned int init_pat;
   int i, j;
 
-#if __GNUC__ == 4 && __GNUC_MINOR__ == 2 && __llvm__
-  /* This test seems to trigger a bug in llvm-gcc 4.2 on Mac OS X 10.8.0.
-     Exit code 77 tells the Autotest framework that the test was skipped. */
-  exit (77);
-#endif
-
   for (init_pat = 0; init_pat < (1u << positions); init_pat++)
     for (i = 0; i < positions + 1; i++)
       for (j = i; j <= positions + 1; j++)
@@ -312,12 +306,6 @@ test_delete (void)
   unsigned int init_pat;
   int i, j;
 
-#if __GNUC__ == 4 && __GNUC_MINOR__ == 2 && __llvm__
-  /* This test seems to trigger a bug in llvm-gcc 4.2 on Mac OS X 10.8.0.
-     Exit code 77 tells the Autotest framework that the test was skipped. */
-  exit (77);
-#endif
-
   for (init_pat = 0; init_pat < (1u << positions); init_pat++)
     for (i = 0; i < positions + 1; i++)
       for (j = i; j <= positions + 1; j++)
@@ -341,12 +329,6 @@ test_allocate (void)
   const int positions = 9;
   unsigned int init_pat;
   int request;
-
-#if __GNUC__ == 4 && __GNUC_MINOR__ == 2 && __llvm__
-  /* This test seems to trigger a bug in llvm-gcc 4.2 on Mac OS X 10.8.0.
-     Exit code 77 tells the Autotest framework that the test was skipped. */
-  exit (77);
-#endif
 
   for (init_pat = 0; init_pat < (1u << positions); init_pat++)
     for (request = 1; request <= positions + 1; request++)
@@ -397,12 +379,6 @@ test_allocate_fully (void)
   const int positions = 9;
   unsigned int init_pat;
   int request;
-
-#if __GNUC__ == 4 && __GNUC_MINOR__ == 2 && __llvm__
-  /* This test seems to trigger a bug in llvm-gcc 4.2 on Mac OS X 10.8.0.
-     Exit code 77 tells the Autotest framework that the test was skipped. */
-  exit (77);
-#endif
 
   for (init_pat = 0; init_pat < (1u << positions); init_pat++)
     for (request = 1; request <= positions + 1; request++)
