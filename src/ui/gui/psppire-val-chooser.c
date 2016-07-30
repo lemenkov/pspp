@@ -612,11 +612,10 @@ psppire_val_chooser_get_status (PsppireValChooser *vr, struct old_value *ov)
     {
       if ( gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (vr->rw[i].rb)))
 	{
+	  range_opt[i].set (vr, ov, &vr->rw[i]);
 	  break;
 	}
     }
-
-  range_opt[i].set (vr, ov, &vr->rw[i]);
 }
 
 /* This might need to be changed to something less naive.
