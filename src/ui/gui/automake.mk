@@ -142,8 +142,7 @@ src_ui_gui_psppire_SOURCES = \
 	src/ui/gui/psppire-keypad.c \
 	src/ui/gui/psppire-selector.c \
 	src/ui/gui/psppire-buttonbox.c \
-	src/ui/gui/psppire-hbuttonbox.c \
-	src/ui/gui/psppire-vbuttonbox.c \
+	src/ui/gui/psppire-buttonbox.h \
 	src/ui/gui/psppire-scanf.c \
 	src/ui/gui/psppire-scanf.h \
 	src/ui/gui/psppire-acr.c \
@@ -173,7 +172,6 @@ src_ui_gui_psppire_SOURCES = \
 	src/ui/gui/psppire.c \
 	src/ui/gui/psppire.h \
 	src/ui/gui/psppire-acr.h \
-	src/ui/gui/psppire-buttonbox.h \
 	src/ui/gui/psppire-checkbox-treeview.c \
 	src/ui/gui/psppire-checkbox-treeview.h \
 	src/ui/gui/psppire-conf.c \
@@ -281,7 +279,6 @@ src_ui_gui_psppire_SOURCES = \
 	src/ui/gui/psppire-encoding-selector.h \
 	src/ui/gui/psppire-format.c \
 	src/ui/gui/psppire-format.h \
-	src/ui/gui/psppire-hbuttonbox.h \
 	src/ui/gui/psppire-keypad.h \
 	src/ui/gui/psppire-lex-reader.c \
 	src/ui/gui/psppire-lex-reader.h \
@@ -308,7 +305,6 @@ src_ui_gui_psppire_SOURCES = \
 	src/ui/gui/psppire-var-ptr.h \
 	src/ui/gui/psppire-var-sheet.c \
 	src/ui/gui/psppire-var-sheet.h \
-	src/ui/gui/psppire-vbuttonbox.h \
 	src/ui/gui/psppire-window.c \
 	src/ui/gui/psppire-window.h \
 	src/ui/gui/psppire-window-base.c \

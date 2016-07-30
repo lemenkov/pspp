@@ -21,8 +21,6 @@ libglade_psppire_la_SOURCES = \
 	src/ui/gui/psppire-conf.c \
 	src/ui/gui/psppire-acr.c \
 	src/ui/gui/psppire-buttonbox.c \
-	src/ui/gui/psppire-hbuttonbox.c \
-	src/ui/gui/psppire-vbuttonbox.c \
 	src/ui/gui/psppire-dialog.c \
 	src/ui/gui/psppire-keypad.c \
 	src/ui/gui/psppire-dictview.c \
@@ -39,16 +37,12 @@ dist_catalog_DATA = \
 
 dist_small_pixmap_DATA = \
 	glade/icons/16x16/widget-psppire-psppire-acr.png \
-	glade/icons/16x16/widget-psppire-psppire-hbuttonbox.png \
-	glade/icons/16x16/widget-psppire-psppire-vbuttonbox.png \
 	glade/icons/16x16/widget-psppire-psppire-dialog.png \
 	glade/icons/16x16/widget-psppire-psppire-keypad.png \
 	glade/icons/16x16/widget-psppire-psppire-selector.png
 
 dist_large_pixmap_DATA = \
 	glade/icons/22x22/widget-psppire-psppire-acr.png \
-	glade/icons/22x22/widget-psppire-psppire-hbuttonbox.png \
-	glade/icons/22x22/widget-psppire-psppire-vbuttonbox.png \
 	glade/icons/22x22/widget-psppire-psppire-dialog.png \
 	glade/icons/22x22/widget-psppire-psppire-keypad.png \
 	glade/icons/22x22/widget-psppire-psppire-selector.png

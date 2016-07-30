@@ -32,12 +32,12 @@
 GType psppire_button_flags_get_type (void);
 
 
-static void psppire_button_box_class_init          (PsppireButtonBoxClass *);
-static void psppire_button_box_init                (PsppireButtonBox      *);
+static void psppire_button_box_class_init          (PsppireButtonboxClass *);
+static void psppire_button_box_init                (PsppireButtonbox      *);
 
 
 GType
-psppire_button_box_get_type (void)
+psppire_buttonbox_get_type (void)
 {
   static GType button_box_type = 0;
 
@@ -45,19 +45,19 @@ psppire_button_box_get_type (void)
     {
       static const GTypeInfo button_box_info =
       {
-	sizeof (PsppireButtonBoxClass),
+	sizeof (PsppireButtonboxClass),
 	NULL, /* base_init */
         NULL, /* base_finalize */
 	(GClassInitFunc) psppire_button_box_class_init,
         NULL, /* class_finalize */
 	NULL, /* class_data */
-        sizeof (PsppireButtonBox),
+        sizeof (PsppireButtonbox),
 	0,
 	(GInstanceInitFunc) psppire_button_box_init,
       };
 
       button_box_type = g_type_register_static (GTK_TYPE_BUTTON_BOX,
-					    "PsppireButtonBox", &button_box_info, G_TYPE_FLAG_ABSTRACT);
+					    "PsppireButtonbox", &button_box_info, 0);
     }
 
   return button_box_type;
@@ -69,11 +69,11 @@ enum {
 };
 
 static void
-set_default (PsppireButtonBox *bb)
+set_default (PsppireButtonbox *bb)
 {
   int i;
 
-  for (i = 0 ; i < n_PsppireButtonBoxButtons ; ++i )
+  for (i = 0 ; i < n_PsppireButtonboxButtons ; ++i )
     if (bb->def == (1 << i))
       {
         gtk_widget_set_can_default (bb->button[i], TRUE);
@@ -89,13 +89,13 @@ psppire_buttonbox_set_property (GObject         *object,
 {
   gint i;
   guint flags;
-  PsppireButtonBox *bb = PSPPIRE_BUTTONBOX (object);
+  PsppireButtonbox *bb = PSPPIRE_BUTTONBOX (object);
 
   switch (prop_id)
     {
     case PROP_BUTTONS:
       flags = g_value_get_flags (value);
-      for (i = 0 ; i < n_PsppireButtonBoxButtons ; ++i )
+      for (i = 0 ; i < n_PsppireButtonboxButtons ; ++i )
         g_object_set (bb->button[i], "visible", 0x01 & (flags >> i)  , NULL);
       break;
 
@@ -119,12 +119,12 @@ psppire_buttonbox_get_property (GObject         *object,
   guint flags = 0;
   gint i;
 
-  PsppireButtonBox *bb = PSPPIRE_BUTTONBOX (object);
+  PsppireButtonbox *bb = PSPPIRE_BUTTONBOX (object);
 
   switch (prop_id)
     {
     case PROP_BUTTONS:
-      for (i = 0 ; i < n_PsppireButtonBoxButtons ; ++i )
+      for (i = 0 ; i < n_PsppireButtonboxButtons ; ++i )
         {
           gboolean visibility;
           g_object_get (bb->button[i], "visible", &visibility, NULL);
@@ -162,7 +162,7 @@ static GParamSpec *button_flags;
 static GParamSpec *default_flags;
 
 static void
-psppire_button_box_class_init (PsppireButtonBoxClass *class)
+psppire_button_box_class_init (PsppireButtonboxClass *class)
 {
   GObjectClass *object_class = G_OBJECT_CLASS (class);
 
@@ -275,8 +275,6 @@ refresh_clicked (GtkWidget *w, gpointer data)
   psppire_dialog_reload (dialog);
 }
 
-
-
 static void
 help_clicked (GtkWidget *w, gpointer data)
 {
@@ -291,12 +289,10 @@ help_clicked (GtkWidget *w, gpointer data)
   psppire_dialog_help (dialog);
 }
 
-
-
 static void
 on_validity_change (GtkWidget *toplevel, gboolean valid, gpointer data)
 {
-  PsppireButtonBox *bb = data;
+  PsppireButtonbox *bb = data;
 
   /* Set the sensitivity of all the 'executive order' buttons */
   gtk_widget_set_sensitive (GTK_WIDGET (bb->button[PSPPIRE_BUTTON_OK]), valid);
@@ -319,7 +315,7 @@ on_realize (GtkWidget *buttonbox, gpointer data)
 }
 
 static void
-psppire_button_box_init (PsppireButtonBox *bb)
+psppire_button_box_init (PsppireButtonbox *bb)
 {
   bb->def = PSPPIRE_BUTTON_CONTINUE;
 
@@ -395,7 +391,7 @@ psppire_button_box_init (PsppireButtonBox *bb)
 
     flags = g_value_get_flags (&value);
 
-    for (i = 0 ; i < n_PsppireButtonBoxButtons ; ++i )
+    for (i = 0 ; i < n_PsppireButtonboxButtons ; ++i )
       g_object_set (bb->button[i], "visible", 0x01 & (flags >> i)  , NULL);
 
     g_value_unset (&value);
@@ -404,95 +400,6 @@ psppire_button_box_init (PsppireButtonBox *bb)
 
   g_signal_connect (bb, "realize", G_CALLBACK (on_realize), NULL);
 }
-
-
-/* This function was lifted verbatim from the Gtk2.10.6 library.
-   But later modified to fit Gtk2.24
- */
-void
-_psppire_button_box_child_requisition (GtkWidget *widget,
-				       int       *nvis_children,
-				       int       *nvis_secondaries,
-				       int       *width,
-				       int       *height)
-{
-  GtkButtonBox *bbox;
-  GList *children;
-  gint nchildren;
-  gint nsecondaries;
-  gint needed_width;
-  gint needed_height;
-  GtkRequisition child_requisition;
-  gint ipad_w;
-  gint ipad_h;
-  gint width_default;
-  gint height_default;
-  gint ipad_x_default;
-  gint ipad_y_default;
-
-  gint child_min_width;
-  gint child_min_height;
-  gint ipad_x;
-  gint ipad_y;
-
-  g_return_if_fail (GTK_IS_BUTTON_BOX (widget));
-
-  bbox = GTK_BUTTON_BOX (widget);
-
-  gtk_widget_style_get (widget,
-                        "child-min-width", &width_default,
-                        "child-min-height", &height_default,
-                        "child-internal-pad-x", &ipad_x_default,
-                        "child-internal-pad-y", &ipad_y_default,
-			NULL);
-
-  child_min_width = width_default;
-  child_min_height = height_default;
-  ipad_x = ipad_x_default;
-  ipad_y = ipad_y_default;
-
-  nchildren = 0;
-  nsecondaries = 0;
-
-  needed_width = child_min_width;
-  needed_height = child_min_height;
-  ipad_w = ipad_x * 2;
-  ipad_h = ipad_y * 2;
-
-  children = gtk_container_get_children (GTK_CONTAINER (bbox));
-  while (children)
-    {
-      GtkWidget *child = children->data;
-      children = children->next;
-
-      if (gtk_widget_get_visible (child))
-	{
-          gboolean is_secondary = FALSE;
-	  nchildren += 1;
-	  gtk_widget_get_preferred_size (child, NULL, &child_requisition);
-
-	  if (child_requisition.width + ipad_w > needed_width)
-	    needed_width = child_requisition.width + ipad_w;
-	  if (child_requisition.height + ipad_h > needed_height)
-	    needed_height = child_requisition.height + ipad_h;
-
-          gtk_container_child_get (GTK_CONTAINER (bbox), child, "secondary", &is_secondary, NULL);
-
-          if (is_secondary)
-	    nsecondaries++;
-	}
-    }
-
-  if (nvis_children)
-    *nvis_children = nchildren;
-  if (nvis_secondaries)
-    *nvis_secondaries = nsecondaries;
-  if (width)
-    *width = needed_width;
-  if (height)
-    *height = needed_height;
-}
-
 
 GType
 psppire_button_flags_get_type (void)

@@ -218,7 +218,7 @@
           <object class="PsppireDialogActionWeight" id="data_weight-cases">
             <property name="name">data_weight-cases</property>
             <property name="label" translatable="yes">_Weight Cases...</property>
-	    <property name="manager">uimanager1</property>
+            <property name="manager">uimanager1</property>
             <property name="tooltip" translatable="yes">Weight cases by variable</property>
             <property name="stock-id">data-weight-cases</property>
           </object>
@@ -264,14 +264,14 @@
         <child>
           <object class="PsppireDialogActionRecodeSame" id="transform_recode-same">
             <property name="name">transform_recode-same</property>
-	    <property name="manager">uimanager1</property>
+            <property name="manager">uimanager1</property>
             <property name="label" translatable="yes">Recode into _Same Variables...</property>
             <property name="stock-id">transform-in-to-same-variables</property>
           </object>
         </child>
         <child>
           <object class="PsppireDialogActionRecodeDifferent" id="transform_recode-different">
-	    <property name="manager">uimanager1</property>
+            <property name="manager">uimanager1</property>
             <property name="name">transform_recode-different</property>
             <property name="label" translatable="yes">Recode into _Different Variables...</property>
             <property name="stock-id">transform-in-to-different-variables</property>
