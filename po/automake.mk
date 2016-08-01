@@ -12,6 +12,7 @@ POFILES = \
 	po/es.po \
 	po/fr.po \
 	po/gl.po \
+	po/hu.po \
 	po/ja.po \
 	po/lt.po \
 	po/nl.po \
