@@ -798,7 +798,7 @@ psppire_syntax_window_init (PsppireSyntaxWindow *window)
 
   gtk_widget_show_all (box);
 
-  GApplication *app = g_application_get_default ();
+  GtkApplication *app = GTK_APPLICATION (g_application_get_default ());
 
   {
     GSimpleAction *open = g_simple_action_new ("open", NULL);
@@ -885,7 +885,7 @@ psppire_syntax_window_init (PsppireSyntaxWindow *window)
 
     g_action_map_add_action (G_ACTION_MAP (window), G_ACTION (run_current_line));
 
-    GApplication *app = g_application_get_default ();
+    GtkApplication *app = GTK_APPLICATION (g_application_get_default ());
     const gchar *accels[2] = { "<Ctrl>R", NULL};
     gtk_application_set_accels_for_action (app,
 					   "win.run-current-line",
