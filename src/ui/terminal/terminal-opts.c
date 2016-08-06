@@ -145,7 +145,6 @@ get_supported_formats (void)
   struct string_set format_set;
   char *format_string;
   const char *format;
-  size_t i;
 
   /* Get supported formats as unordered set. */
   string_set_init (&format_set);
