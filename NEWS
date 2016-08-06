@@ -4,9 +4,9 @@ See the end for copying conditions.
 
 Please send PSPP bug reports to bug-gnu-pspp@gnu.org.
 
-Changes from 0.10.2 to 0.10.3:
+Changes from 0.10.2 to 0.10.4:
 
- * No changes yet.
+ * Updated to Gtk+3.14.5
 
 Changes from 0.10.1 to 0.10.2:
 

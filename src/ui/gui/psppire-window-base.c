@@ -35,7 +35,7 @@
 static void psppire_window_base_class_init    (PsppireWindowBaseClass *class);
 static void psppire_window_base_init          (PsppireWindowBase      *window);
 
-G_DEFINE_ABSTRACT_TYPE (PsppireWindowBase, psppire_window_base, GTK_TYPE_WINDOW);
+G_DEFINE_ABSTRACT_TYPE (PsppireWindowBase, psppire_window_base, GTK_TYPE_APPLICATION_WINDOW);
 
 
 /* Obtain a string identifying this window.

@@ -186,8 +186,6 @@ psppire_dialog_action_regression_activate (PsppireDialogAction *a)
 			    G_CALLBACK (on_save_clicked),  act);
 
 
-  if (PSPPIRE_DIALOG_ACTION_CLASS (psppire_dialog_action_regression_parent_class)->activate)
-    PSPPIRE_DIALOG_ACTION_CLASS (psppire_dialog_action_regression_parent_class)->activate (pda);
 }
 
 

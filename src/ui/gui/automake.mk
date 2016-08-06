@@ -11,7 +11,6 @@ UI_FILES = \
 	src/ui/gui/comments.ui \
 	src/ui/gui/crosstabs.ui \
 	src/ui/gui/chi-square.ui \
-	src/ui/gui/data-sheet.ui \
 	src/ui/gui/descriptives.ui \
 	src/ui/gui/entry-dialog.ui \
 	src/ui/gui/examine.ui \
@@ -48,7 +47,6 @@ UI_FILES = \
 	src/ui/gui/data-editor.ui \
 	src/ui/gui/output-window.ui \
 	src/ui/gui/syntax-editor.ui \
-	src/ui/gui/var-sheet.ui \
 	src/ui/gui/var-type-dialog.ui \
 	src/ui/gui/weight.ui
 
@@ -63,8 +61,6 @@ EXTRA_DIST += doc/help-pages-list
 
 EXTRA_DIST += \
 	src/ui/gui/memorandum.txt \
-	src/ui/gui/artwork/actions/.empty \
-	src/ui/gui/artwork/apps/scalable/.empty \
 	src/ui/gui/gen-dot-desktop.sh \
 	src/ui/gui/marshaller-list \
 	src/ui/gui/pspplogo.svg
@@ -346,7 +342,8 @@ OBSOLETE = \
 
 nodist_src_ui_gui_psppire_SOURCES = \
 	src/ui/gui/psppire-marshal.c \
-	src/ui/gui/psppire-marshal.h
+	src/ui/gui/psppire-marshal.h \
+	src/ui/gui/resources.c
 
 yelp-check:
 	@if ! yelp --version > /dev/null 2>&1 ; then \
@@ -367,6 +364,13 @@ src/ui/gui/pspp.desktop: src/ui/gui/gen-dot-desktop.sh $(POFILES)
 
 CLEANFILES+=src/ui/gui/pspp.desktop
 
+src/ui/gui/resources.c: src/ui/gui/resources.xml
+	$(AM_V_at)$(GLIB_COMPILE_RESOURCES) --sourcedir=$(top_srcdir)/src/ui/gui --generate-source $< --target=$@,out
+	$(AM_V_GEN)echo '#include <config.h>' > $@,tmp
+	cat $@,out >> $@,tmp
+	$(RM) $@,out
+	mv $@,tmp $@
+
 src/ui/gui/psppire-marshal.c: src/ui/gui/marshaller-list
 	$(AM_V_GEN)echo '#include <config.h>' > $@
 	$(AM_V_at)$(GLIB_GENMARSHAL) --body --prefix=psppire_marshal $? >> $@
@@ -380,9 +384,10 @@ desktop_DATA = src/ui/gui/pspp.desktop
 appdatadir = $(datadir)/appdata
 dist_appdata_DATA = src/ui/gui/pspp.appdata.xml
 
-BUILT_SOURCES += src/ui/gui/psppire-marshal.c src/ui/gui/psppire-marshal.h
+BUILT_SOURCES += src/ui/gui/psppire-marshal.c src/ui/gui/psppire-marshal.h src/ui/gui/resources.c
+
 CLEANFILES += src/ui/gui/psppire-marshal.c src/ui/gui/psppire-marshal.h \
-	$(nodist_src_ui_gui_psppire_DATA)
+	src/ui/gui/resources.c $(nodist_src_ui_gui_psppire_DATA)
 endif HAVE_GUI
 
 #ensure the installcheck passes even if there is no X server available
@@ -404,7 +409,7 @@ src/ui/gui/include/gtk/gtk.h: src/ui/gui/include/gtk/gtk.in.h
 	} > $@-t && \
 	mv $@-t $@
 CLEANFILES += src/ui/gui/include/gtk/gtk.h
-EXTRA_DIST += src/ui/gui/include/gtk/gtk.in.h
+EXTRA_DIST += src/ui/gui/include/gtk/gtk.in.h src/ui/gui/resources.xml
 
 include $(top_srcdir)/src/ui/gui/icons/automake.mk
 

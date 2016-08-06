@@ -2,7 +2,7 @@ dnl Process this file with autoconf to produce a configure script.
 
 dnl Initialize.
 AC_PREREQ(2.63)
-AC_INIT([GNU PSPP], [0.10.3], [bug-gnu-pspp@gnu.org], [pspp])
+AC_INIT([GNU PSPP], [0.10.4], [bug-gnu-pspp@gnu.org], [pspp])
 AC_CONFIG_AUX_DIR([build-aux])
 AC_CONFIG_HEADERS([config.h])
 AC_CONFIG_TESTDIR([tests])
@@ -84,8 +84,8 @@ if test "$with_cairo" != no && test "$with_gui" != "no"; then
   PKG_CHECK_MODULES([GTHREAD], [gthread-2.0], [],
     [PSPP_REQUIRED_PREREQ([gthread 2.0 (or use --without-gui)])])
 
-  PKG_CHECK_MODULES([GTK], [gtk+-3.0 >= 3.4.2], [],
-    [PSPP_REQUIRED_PREREQ([gtk+ 3.0 version 3.4.2 or later (or use --without-gui)])])
+  PKG_CHECK_MODULES([GTK], [gtk+-3.0 >= 3.14.5], [],
+    [PSPP_REQUIRED_PREREQ([gtk+ 3.0 version 3.14.5 or later (or use --without-gui)])])
 
   PKG_CHECK_MODULES([GTKSOURCEVIEW], [gtksourceview-3.0 >= 3.4.2], [],
     [PSPP_REQUIRED_PREREQ([gtksourceview 3.0 version 3.4.2 or later (or use --without-gui)])])
@@ -97,6 +97,11 @@ if test "$with_cairo" != no && test "$with_gui" != "no"; then
   AC_CHECK_PROGS([GLIB_GENMARSHAL], [glib-genmarshal])
   if test "x$GLIB_GENMARSHAL" = x; then
     PSPP_REQUIRED_PREREQ([glib-genmarshal (or use --without-gui)])
+  fi
+
+  AC_CHECK_PROGS([GLIB_COMPILE_RESOURCES], [glib-compile-resources])
+  if test "x$GLIB_COMPILE_RESOURCES" = x; then
+    PSPP_REQUIRED_PREREQ([glib-compile-resources (or use --without-gui)])
   fi
 
 fi

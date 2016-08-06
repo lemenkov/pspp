@@ -1,5 +1,5 @@
 /* PSPPIRE - a graphical user interface for PSPP.
-   Copyright (C) 2008, 2010, 2011, 2012, 2013, 2014  Free Software Foundation
+   Copyright (C) 2008, 2010, 2011, 2012, 2013, 2014, 2016  Free Software Foundation
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -65,7 +65,6 @@ struct _PsppireDataWindow
   /* <private> */
   PsppireDataEditor *data_editor;
   GtkBuilder *builder;
-  GtkUIManager *ui_manager;
 
   PsppireDict *dict;
   struct dataset *dataset;
@@ -77,8 +76,27 @@ struct _PsppireDataWindow
   unsigned long int lazy_serial;
   unsigned int dataset_seqno;
 
-  GtkUIManager *uim;
-  guint merge_id;
+  GtkToolItem *ti_value_labels_button;
+
+  GtkToolItem *ti_jump_to_variable;
+  GtkToolItem *ti_insert_variable;
+  GtkToolItem *ti_jump_to_case;
+  GtkToolItem *ti_insert_case;
+  GtkToolItem *ti_find;
+
+  GtkWidget *mi_go_to_case;
+  GtkWidget *mi_insert_case;
+  GtkWidget *mi_find;
+  GtkWidget *mi_find_separator;
+
+
+  GtkWidget *mi_edit_separator ;
+  GtkWidget *mi_cut;
+  GtkWidget *mi_copy;
+  GtkWidget *mi_paste;
+  GtkWidget *mi_clear_variables;
+  GtkWidget *mi_clear_cases;
+  GtkWidget *mi_insert_var;
 };
 
 struct _PsppireDataWindowClass
@@ -100,7 +118,7 @@ PsppireDataWindow *psppire_data_window_for_dataset (struct dataset *);
 PsppireDataWindow *psppire_data_window_for_data_store (PsppireDataStore *);
 
 bool psppire_data_window_is_empty (PsppireDataWindow *);
-void create_data_window (void);
+GtkWindow * create_data_window (void);
 void open_data_window (PsppireWindow *victim, const char *file_name,
                        const char *encoding, gpointer hint);
 

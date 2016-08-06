@@ -527,8 +527,6 @@ psppire_dialog_action_compute_activate (PsppireDialogAction *a)
       psppire_dialog_action_set_refresh (pda, refresh);
     }
 
-  if (PSPPIRE_DIALOG_ACTION_CLASS (psppire_dialog_action_compute_parent_class)->activate)
-    PSPPIRE_DIALOG_ACTION_CLASS (psppire_dialog_action_compute_parent_class)->activate (pda);
 }
 
 static void

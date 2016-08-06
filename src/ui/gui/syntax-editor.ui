@@ -1,220 +1,135 @@
 <?xml version="1.0"?>
 <!--*- mode: xml -*-->
 <interface>
-  <object class="GtkUIManager" id="uimanager1">
-    <child>
-      <object class="GtkActionGroup" id="actiongroup1">
-        <child>
-          <object class="GtkAction" id="menu_syntax_file">
-            <property name="name">menu_syntax_file</property>
-            <property name="label" translatable="yes">_File</property>
-          </object>
-        </child>
-        <child>
-          <object class="GtkAction" id="new2">
-            <property name="stock-id">file-new-data</property>
-            <property name="name">new2</property>
-            <property name="label" translatable="yes">_New...</property>
-          </object>
-        </child>
-        <child>
-          <object class="GtkAction" id="file_new_syntax">
-            <property name="stock-id">file-syntax-data</property>
-            <property name="name">file_new_syntax</property>
-            <property name="label" translatable="yes">_Syntax</property>
-          </object>
-        </child>
-        <child>
-          <object class="GtkAction" id="file_new_data">
-            <property name="stock-id">file-system-data</property>
-            <property name="name">file_new_data</property>
-            <property name="label" translatable="yes">_Data</property>
-          </object>
-        </child>
-        <child>
-          <object class="GtkAction" id="file_open">
-            <property name="stock-id">file-open-data</property>
-            <property name="name">file_open</property>
-            <property name="label" translatable="yes">_Open...</property>
-          </object>
-        </child>
-        <child>
-          <object class="GtkAction" id="file_save">
-            <property name="stock-id">file-save-data</property>
-            <property name="name">file_save</property>
-            <property name="label" translatable="yes">_Save...</property>
-          </object>
-        </child>
-        <child>
-          <object class="GtkAction" id="file_save_as">
-            <property name="stock-id">file-save-as</property>
-            <property name="name">file_save_as</property>
-            <property name="label" translatable="yes">Save _As...</property>
-          </object>
-        </child>
-        <child>
-          <object class="GtkAction" id="file_print">
-            <property name="name">file_print</property>
-            <property name="stock-id">file-print</property>
-            <property name="label" translatable="yes">_Print...</property>
-          </object>
-        </child>
-        <child>
-          <object class="GtkAction" id="file_quit">
-            <property name="stock-id">file-quit</property>
-            <property name="name">file_quit</property>
-          </object>
-        </child>
-        <child>
-          <object class="GtkAction" id="edit-menu">
-            <property name="name">edit-menu</property>
-            <property name="label" translatable="yes">_Edit</property>
-          </object>
-        </child>
-        <child>
-          <object class="GtkAction" id="edit_cut">
-            <property name="stock-id">edit-cut</property>
-            <property name="name">edit_cut</property>
-            <property name="sensitive">false</property>
-          </object>
-        </child>
-        <child>
-          <object class="GtkAction" id="edit_copy">
-            <property name="stock-id">edit-copy</property>
-            <property name="name">edit_copy</property>
-            <property name="sensitive">false</property>
-          </object>
-        </child>
-        <child>
-          <object class="GtkAction" id="edit_paste">
-            <property name="stock-id">edit-paste</property>
-            <property name="name">edit_paste</property>
-            <property name="sensitive">false</property>
-          </object>
-        </child>
-        <child>
-          <object class="GtkAction" id="edit_delete">
-            <property name="stock-id">edit-delete</property>
-            <property name="name">edit_delete</property>
-            <property name="sensitive">false</property>
-          </object>
-        </child>
-        <child>
-          <object class="GtkAction" id="edit_undo">
-            <property name="stock-id">edit-undo</property>
-            <property name="name">edit_undo</property>
-            <property name="sensitive">false</property>
-          </object>
-        </child>
-        <child>
-          <object class="GtkAction" id="edit_redo">
-            <property name="stock-id">edit-redo</property>
-            <property name="name">edit_redo</property>
-            <property name="sensitive">false</property>
-          </object>
-        </child>
-        <child>
-          <object class="GtkAction" id="run1">
-            <property name="name">run1</property>
-            <property name="label" translatable="yes">_Run</property>
-          </object>
-        </child>
-        <child>
-          <object class="GtkAction" id="run_all">
-            <property name="stock-id">run-all</property>
-            <property name="name">run_all</property>
-            <property name="label" translatable="yes">All</property>
-          </object>
-        </child>
-        <child>
-          <object class="GtkAction" id="run_selection">
-            <property name="stock-id">run-selection</property>
-            <property name="name">run_selection</property>
-            <property name="label" translatable="yes">Selection</property>
-          </object>
-        </child>
-        <child>
-          <object class="GtkAction" id="run_current_line">
-            <property name="stock-id">run-current-line</property>
-            <property name="name">run_current_line</property>
-            <property name="label" translatable="yes">Current Line</property>
-          </object>
-          <accelerator key="R" modifiers="GDK_CONTROL_MASK"/>
-        </child>
-        <child>
-          <object class="GtkAction" id="run_to_end">
-            <property name="stock-id">run-to-end</property>
-            <property name="name">run-to-end</property>
-            <property name="label" translatable="yes">To End</property>
-          </object>
-        </child>
-      </object>
-    </child>
-    <ui>
-      <menubar name="menubar">
-        <menu action="menu_syntax_file">
-          <menu action="new2">
-            <menuitem action="file_new_syntax"/>
-            <menuitem action="file_new_data"/>
-          </menu>
-          <menuitem action="file_open"/>
-          <menuitem action="file_save"/>
-          <menuitem action="file_save_as"/>
-          <separator/>
-          <menuitem action="file_print"/>
-          <separator/>
-          <menuitem action="file_quit"/>
-        </menu>
-        <menu action="edit-menu">
-          <menuitem action="edit_cut"/>
-          <menuitem action="edit_copy"/>
-          <menuitem action="edit_paste"/>
-          <menuitem action="edit_delete"/>
-          <separator/>
-          <menuitem action="edit_undo"/>
-          <menuitem action="edit_redo"/>
-        </menu>
-        <menu action="run1">
-          <menuitem action="run_all"/>
-          <menuitem action="run_selection"/>
-          <menuitem action="run_current_line"/>
-          <menuitem action="run_to_end"/>
-        </menu>
-      </menubar>
-    </ui>
-  </object>
-  <object class="GtkMenuBar" constructor="uimanager1" id="menubar">
-    <property name="visible">True</property>
-    <property name="pack_direction">GTK_PACK_DIRECTION_LTR</property>
-    <property name="child_pack_direction">GTK_PACK_DIRECTION_LTR</property>
-  </object>
-  <object class="GtkScrolledWindow" id="scrolledwindow8">
-    <property name="visible">True</property>
-    <property name="can_focus">True</property>
-    <property name="hscrollbar_policy">GTK_POLICY_AUTOMATIC</property>
-    <property name="vscrollbar_policy">GTK_POLICY_AUTOMATIC</property>
-    <property name="shadow_type">GTK_SHADOW_IN</property>
-    <property name="window_placement">GTK_CORNER_TOP_LEFT</property>
-    <child>
-      <object class="GtkSourceView" id="syntax_text_view">
-        <property name="visible">True</property>
-        <property name="can_focus">True</property>
-        <property name="editable">True</property>
-        <property name="overwrite">False</property>
-        <property name="accepts_tab">True</property>
-        <property name="justification">GTK_JUSTIFY_LEFT</property>
-        <property name="wrap_mode">GTK_WRAP_NONE</property>
-        <property name="cursor_visible">True</property>
-        <property name="pixels_above_lines">0</property>
-        <property name="pixels_below_lines">0</property>
-        <property name="pixels_inside_wrap">0</property>
-        <property name="left_margin">0</property>
-        <property name="right_margin">0</property>
-        <property name="indent">0</property>
-      </object>
-    </child>
-  </object>
-  <object class="GtkStatusbar" id="statusbar2">
-    <property name="visible">True</property>
-  </object>
+  <menu id="syntax-window-menu">
+    <submenu>
+      <attribute name="label" translatable="yes">_File</attribute>
+      <section>
+	<submenu>
+	  <attribute name="label" translatable="yes">_New</attribute>
+	  <item>
+	    <attribute name="label" translatable="yes">Syntax</attribute>
+	  <attribute name="action">app.new-syntax</attribute>
+	  </item>
+	  <item>
+	    <attribute name="label" translatable="yes">Data</attribute>
+	    <attribute name="action">app.new-data</attribute>
+	  </item>
+	</submenu>
+	<item>
+	  <attribute name="label" translatable="yes">_Open</attribute>
+	  <attribute name="action">win.open</attribute>
+	  <attribute name="accel">&lt;Primary&gt;o</attribute>
+	</item>
+	<item>
+	  <attribute name="label" translatable="yes">_Save</attribute>
+	  <attribute name="action">win.save</attribute>
+	  <attribute name="accel">&lt;Primary&gt;s</attribute>
+	</item>
+	<item>
+	  <attribute name="label" translatable="yes">Save _As</attribute>
+	  <attribute name="action">win.save_as</attribute>
+	  <attribute name="accel">&lt;Primary&gt;&lt;Shift&gt;s</attribute>
+	</item>
+      </section>
+      <section>
+	<item>
+	  <attribute name="label" translatable="yes">_Print</attribute>
+	  <attribute name="action">win.print</attribute>
+	</item>
+      </section>
+      <section>
+	<item>
+	  <attribute name="label" translatable="yes">_Quit</attribute>
+	  <attribute name="accel">&lt;Primary&gt;q</attribute>
+	  <attribute name="action">app.quit</attribute>
+	</item>
+      </section>
+    </submenu>
+    <submenu>
+    <attribute name="label" translatable="yes">_Edit</attribute>
+    <section>
+      <item>
+	<attribute name="label" translatable="yes">Cu_t</attribute>
+	<attribute name="action">win.cut</attribute>
+	<attribute name="accel">&lt;Primary&gt;x</attribute>
+      </item>
+      <item>
+	<attribute name="label" translatable="yes">_Copy</attribute>
+	<attribute name="action">win.copy</attribute>
+	<attribute name="accel">&lt;Primary&gt;c</attribute>
+      </item>
+      <item>
+	<attribute name="label" translatable="yes">_Paste</attribute>
+	<attribute name="action">win.paste</attribute>
+	<attribute name="accel">&lt;Primary&gt;v</attribute>
+      </item>
+      <item>
+	<attribute name="label" translatable="yes">_Delete</attribute>
+	<attribute name="action">win.delete</attribute>
+      </item>
+    </section>
+    <section>
+      <item>
+	<attribute name="label" translatable="yes">_Undo</attribute>
+	<attribute name="action">win.undo</attribute>
+      </item>
+      <item>
+	<attribute name="label" translatable="yes">_Redo</attribute>
+	<attribute name="action">win.redo</attribute>
+      </item>
+    </section>
+  </submenu>
+  <submenu>
+    <attribute name="label" translatable="yes">_Run</attribute>
+    <section>
+      <item>
+	<attribute name="label" translatable="yes">_All</attribute>
+	<attribute name="action">win.run-all</attribute>
+      </item>
+      <item>
+	<attribute name="label" translatable="yes">_Selection</attribute>
+	<attribute name="action">win.run-selection</attribute>
+      </item>
+      <item>
+	<attribute name="label" translatable="yes">_Current Line</attribute>
+	<attribute name="action">win.run-current-line</attribute>
+	<attribute name="accel">&lt;Primary&gt;r</attribute>
+      </item>
+      <item>
+	<attribute name="label" translatable="yes">_To End</attribute>
+	<attribute name="action">win.run-to-end</attribute>
+      </item>
+    </section>
+  </submenu>
+</menu>
+<object class="GtkScrolledWindow" id="scrolledwindow8">
+  <property name="visible">True</property>
+  <property name="can_focus">True</property>
+  <property name="hscrollbar_policy">GTK_POLICY_AUTOMATIC</property>
+  <property name="vscrollbar_policy">GTK_POLICY_AUTOMATIC</property>
+  <property name="shadow_type">GTK_SHADOW_IN</property>
+  <property name="window_placement">GTK_CORNER_TOP_LEFT</property>
+  <child>
+    <object class="GtkSourceView" id="syntax_text_view">
+      <property name="visible">True</property>
+      <property name="can_focus">True</property>
+      <property name="editable">True</property>
+      <property name="overwrite">False</property>
+      <property name="accepts_tab">True</property>
+      <property name="justification">GTK_JUSTIFY_LEFT</property>
+      <property name="wrap_mode">GTK_WRAP_NONE</property>
+      <property name="cursor_visible">True</property>
+      <property name="pixels_above_lines">0</property>
+      <property name="pixels_below_lines">0</property>
+      <property name="pixels_inside_wrap">0</property>
+      <property name="left_margin">0</property>
+      <property name="right_margin">0</property>
+      <property name="indent">0</property>
+    </object>
+  </child>
+</object>
+<object class="GtkStatusbar" id="statusbar2">
+  <property name="visible">True</property>
+</object>
 </interface>

@@ -52,7 +52,7 @@ typedef struct _PsppireWindowBaseClass  PsppireWindowBaseClass;
 
 struct _PsppireWindowBase
 {
-  GtkWindow parent;
+  GtkApplicationWindow parent;
 
   /* <private> */
 };
@@ -60,7 +60,7 @@ struct _PsppireWindowBase
 
 struct _PsppireWindowBaseClass
 {
-  GtkWindowClass parent_class;
+  GtkApplicationWindowClass parent_class;
 };
 
 

@@ -133,8 +133,6 @@ psppire_dialog_action_k_related_activate (PsppireDialogAction *a)
 		"predicate", var_is_numeric,
 		NULL);
 
-  if (PSPPIRE_DIALOG_ACTION_CLASS (psppire_dialog_action_k_related_parent_class)->activate)
-    PSPPIRE_DIALOG_ACTION_CLASS (psppire_dialog_action_k_related_parent_class)->activate (pda);
 }
 
 static void

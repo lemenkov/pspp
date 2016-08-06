@@ -71,7 +71,6 @@ struct _PsppireDataEditor
   gboolean split;              /* True if data sheets are split. */
 
   /* UI manager for whichever var or data sheet is currently in use. */
-  GtkUIManager *ui_manager;
   GtkWidget *old_vbox_widget;
 };
 
@@ -90,8 +89,6 @@ void           psppire_data_editor_split_window    (PsppireDataEditor *, gboolea
 void           psppire_data_editor_goto_variable   (PsppireDataEditor *, gint dict_index);
 
 struct _PsppireDataSheet *psppire_data_editor_get_active_data_sheet (PsppireDataEditor *);
-
-GtkUIManager *psppire_data_editor_get_ui_manager (PsppireDataEditor *);
 
 enum {PSPPIRE_DATA_EDITOR_DATA_VIEW = 0, PSPPIRE_DATA_EDITOR_VARIABLE_VIEW};
 

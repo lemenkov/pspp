@@ -48,7 +48,6 @@ static void psppire_data_editor_init                (PsppireDataEditor      *de)
 
 static void disconnect_data_sheets (PsppireDataEditor *);
 static void refresh_entry (PsppireDataEditor *);
-static void psppire_data_editor_update_ui_manager (PsppireDataEditor *);
 
 GType
 psppire_data_editor_get_type (void)
@@ -104,12 +103,6 @@ psppire_data_editor_dispose (GObject *obj)
       de->font = NULL;
     }
 
-  if (de->ui_manager)
-    {
-      g_object_unref (de->ui_manager);
-      de->ui_manager = NULL;
-    }
-
   /* Chain up to the parent class */
   G_OBJECT_CLASS (parent_class)->dispose (obj);
 }
@@ -120,8 +113,7 @@ enum
     PROP_DATA_STORE,
     PROP_DICTIONARY,
     PROP_VALUE_LABELS,
-    PROP_SPLIT_WINDOW,
-    PROP_UI_MANAGER
+    PROP_SPLIT_WINDOW
   };
 
 static void
@@ -182,7 +174,7 @@ psppire_data_editor_set_property (GObject         *object,
         psppire_data_sheet_set_value_labels (data_sheet,
                                           g_value_get_boolean (value));
       break;
-    case PROP_UI_MANAGER:
+
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
       break;
@@ -213,9 +205,6 @@ psppire_data_editor_get_property (GObject         *object,
                            psppire_data_sheet_get_value_labels (
                              PSPPIRE_DATA_SHEET (de->data_sheets[0])));
       break;
-    case PROP_UI_MANAGER:
-      g_value_set_object (value, psppire_data_editor_get_ui_manager (de));
-      break;
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
       break;
@@ -228,7 +217,7 @@ psppire_data_editor_switch_page (GtkNotebook     *notebook,
                                  guint            page_num)
 {
   GTK_NOTEBOOK_CLASS (parent_class)->switch_page (notebook, w, page_num);
-  psppire_data_editor_update_ui_manager (PSPPIRE_DATA_EDITOR (notebook));
+
 }
 
 static void
@@ -236,7 +225,7 @@ psppire_data_editor_set_focus_child (GtkContainer *container,
                                      GtkWidget    *widget)
 {
   GTK_CONTAINER_CLASS (parent_class)->set_focus_child (container, widget);
-  psppire_data_editor_update_ui_manager (PSPPIRE_DATA_EDITOR (container));
+
 }
 
 static void
@@ -246,7 +235,7 @@ psppire_data_editor_class_init (PsppireDataEditorClass *klass)
   GParamSpec *dict_spec ;
   GParamSpec *value_labels_spec;
   GParamSpec *split_window_spec;
-  GParamSpec *ui_manager_spec;
+
   GObjectClass *object_class = G_OBJECT_CLASS (klass);
   GtkContainerClass *container_class = GTK_CONTAINER_CLASS (klass);
   GtkNotebookClass *notebook_class = GTK_NOTEBOOK_CLASS (klass);
@@ -304,15 +293,6 @@ psppire_data_editor_class_init (PsppireDataEditorClass *klass)
                                    PROP_SPLIT_WINDOW,
                                    split_window_spec);
 
-  ui_manager_spec =
-    g_param_spec_object ("ui-manager",
-                         "UI Manager",
-                         "UI manager for the active notebook tab.  The client should merge this UI manager with the active UI manager to obtain menu items and tool bar items specific to the active notebook tab.",
-                         GTK_TYPE_UI_MANAGER,
-                         G_PARAM_READABLE);
-  g_object_class_install_property (object_class,
-                                   PROP_UI_MANAGER,
-                                   ui_manager_spec);
 }
 
 static gboolean
@@ -703,7 +683,6 @@ psppire_data_editor_init (PsppireDataEditor *de)
   gchar *fontname = NULL;
 
   de->font = NULL;
-  de->ui_manager = NULL;
   de->old_vbox_widget = NULL;
 
   g_object_set (de, "tab-pos", GTK_POS_BOTTOM, NULL);
@@ -759,7 +738,6 @@ psppire_data_editor_init (PsppireDataEditor *de)
       set_font_recursively (GTK_WIDGET (de), de->font);
     }
 
-  psppire_data_editor_update_ui_manager (de);
 }
 
 GtkWidget*
@@ -863,7 +841,6 @@ psppire_data_editor_split_window (PsppireDataEditor *de, gboolean split)
 
   de->split = split;
   g_object_notify (G_OBJECT (de), "split");
-  psppire_data_editor_update_ui_manager (de);
 }
 
 /* Makes the variable with dictionary index DICT_INDEX in DE's dictionary
@@ -921,59 +898,4 @@ psppire_data_editor_get_active_data_sheet (PsppireDataEditor *de)
     }
 
   return PSPPIRE_DATA_SHEET (de->data_sheets[0]);
-}
-
-/* Returns the UI manager that should be merged into DE's toplevel widget's UI
-   manager to display menu items and toolbar items specific to DE's current
-   page and data sheet.
-
-   DE's toplevel widget can watch for changes by connecting to DE's
-   notify::ui-manager signal. */
-GtkUIManager *
-psppire_data_editor_get_ui_manager (PsppireDataEditor *de)
-{
-  psppire_data_editor_update_ui_manager (de);
-  return de->ui_manager;
-}
-
-static void
-psppire_data_editor_update_ui_manager (PsppireDataEditor *de)
-{
-  PsppireDataSheet *data_sheet;
-  GtkUIManager *ui_manager;
-
-  ui_manager = NULL;
-
-  switch (gtk_notebook_get_current_page (GTK_NOTEBOOK (de)))
-    {
-    case PSPPIRE_DATA_EDITOR_DATA_VIEW:
-      data_sheet = psppire_data_editor_get_active_data_sheet (de);
-      if (data_sheet != NULL)
-        ui_manager = psppire_data_sheet_get_ui_manager (data_sheet);
-      else
-        {
-          /* This happens transiently in psppire_data_editor_split_window(). */
-        }
-      break;
-
-    case PSPPIRE_DATA_EDITOR_VARIABLE_VIEW:
-      ui_manager = psppire_var_sheet_get_ui_manager (
-        PSPPIRE_VAR_SHEET (de->var_sheet));
-      break;
-
-    default:
-      /* This happens transiently in psppire_data_editor_init(). */
-      break;
-    }
-
-  if (ui_manager != de->ui_manager)
-    {
-      if (de->ui_manager)
-        g_object_unref (de->ui_manager);
-      if (ui_manager)
-        g_object_ref (ui_manager);
-      de->ui_manager = ui_manager;
-
-      g_object_notify (G_OBJECT (de), "ui-manager");
-    }
 }

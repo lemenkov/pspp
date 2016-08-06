@@ -135,8 +135,6 @@ psppire_dialog_action_tt1s_activate (PsppireDialogAction *a)
   g_signal_connect_swapped (options_button, "clicked",
 			    G_CALLBACK (tt_options_dialog_run), act->opt);
 
-  if (PSPPIRE_DIALOG_ACTION_CLASS (psppire_dialog_action_tt1s_parent_class)->activate)
-    PSPPIRE_DIALOG_ACTION_CLASS (psppire_dialog_action_tt1s_parent_class)->activate (pda);
 }
 
 static void

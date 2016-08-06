@@ -180,7 +180,7 @@ psppire_dialog_action_var_info_activate (PsppireDialogAction *a)
 
       act->output =
 	psppire_output_view_new (GTK_LAYOUT (get_widget_assert (xml, "layout1")),
-				 NULL, NULL, NULL);
+				 NULL);
   
       pda->dialog = get_widget_assert (xml, "variable-info-dialog");
       pda->source = get_widget_assert (xml, "treeview2");
@@ -199,9 +199,6 @@ psppire_dialog_action_var_info_activate (PsppireDialogAction *a)
       psppire_dialog_action_set_valid_predicate (pda,
 						 treeview_item_selected);
     }
-  
-  if (PSPPIRE_DIALOG_ACTION_CLASS (psppire_dialog_action_var_info_parent_class)->activate)
-    PSPPIRE_DIALOG_ACTION_CLASS (psppire_dialog_action_var_info_parent_class)->activate (pda);
 }
 
 static void

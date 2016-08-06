@@ -474,7 +474,7 @@ render_var_cell (PsppSheetViewColumn *tree_column,
                       "editable", TRUE,
                       NULL);
       else
-        g_object_set (cell, "stock-id",
+        g_object_set (cell, "icon-name",
                       get_var_align_stock_id (var_get_alignment (var)), NULL);
       break;
 
@@ -489,7 +489,7 @@ render_var_cell (PsppSheetViewColumn *tree_column,
           enum fmt_type type = var_get_print_format (var)->type;
           enum measure measure = var_get_measure (var);
 
-          g_object_set (cell, "stock-id",
+          g_object_set (cell, "icon-name",
                         get_var_measurement_stock_id (type, measure),
                         NULL);
         }
@@ -502,7 +502,7 @@ render_var_cell (PsppSheetViewColumn *tree_column,
                       "editable", TRUE,
                       NULL);
       else
-        g_object_set (cell, "stock-id",
+        g_object_set (cell, "icon-name",
                       get_var_role_stock_id (var_get_role (var)), NULL);
       break;
     }
@@ -695,7 +695,7 @@ render_var_pixbuf (GtkCellLayout *cell_layout,
   value_to_stock_id = g_object_get_data (G_OBJECT (cell), "value-to-stock-id");
 
   gtk_tree_model_get (tree_model, iter, 0, &value, -1);
-  g_object_set (cell, "stock-id", value_to_stock_id (type, value), NULL);
+  g_object_set (cell, "icon-name", value_to_stock_id (type, value), NULL);
 }
 
 static void
@@ -937,9 +937,21 @@ static void
 do_popup_menu (GtkWidget *widget, guint button, guint32 time)
 {
   PsppireVarSheet *var_sheet = PSPPIRE_VAR_SHEET (widget);
-  GtkWidget *menu;
+  GtkWidget *menu = gtk_menu_new ();
 
-  menu = get_widget_assert (var_sheet->builder, "varsheet-variable-popup");
+  int i = 0;
+
+  GtkWidget *insert_variable = gtk_menu_item_new_with_mnemonic (_("_Insert Variable"));
+  GtkWidget *clear_variables = gtk_menu_item_new_with_mnemonic (_("Cl_ear Variables"));
+
+  g_signal_connect_swapped (insert_variable, "activate", G_CALLBACK (psppire_var_sheet_insert_variable), var_sheet);
+  g_signal_connect_swapped (clear_variables, "activate", G_CALLBACK (psppire_var_sheet_clear_variables), var_sheet);
+
+  gtk_menu_attach (GTK_MENU (menu), insert_variable,  0, 1, i, i + 1);  ++i;
+  gtk_menu_attach (GTK_MENU (menu), clear_variables,  0, 1, i, i + 1);  ++i;
+
+  gtk_widget_show_all (menu);
+  
   gtk_menu_popup (GTK_MENU (menu), NULL, NULL, NULL, NULL, button, time);
 }
 
@@ -979,6 +991,7 @@ on_button_pressed (GtkWidget *widget, GdkEventButton *event,
 
   return FALSE;
 }
+
 
 GType
 psppire_fmt_use_get_type (void)
@@ -1005,8 +1018,7 @@ enum
     PROP_DICTIONARY,
     PROP_MAY_CREATE_VARS,
     PROP_MAY_DELETE_VARS,
-    PROP_FORMAT_TYPE,
-    PROP_UI_MANAGER
+    PROP_FORMAT_TYPE
   };
 
 static void
@@ -1039,7 +1051,6 @@ psppire_var_sheet_set_property (GObject      *object,
       obj->format_use = g_value_get_enum (value);
       break;
 
-    case PROP_UI_MANAGER:
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
       break;
@@ -1073,10 +1084,6 @@ psppire_var_sheet_get_property (GObject      *object,
       g_value_set_enum (value, obj->format_use);
       break;
 
-    case PROP_UI_MANAGER:
-      g_value_set_object (value, psppire_var_sheet_get_ui_manager (obj));
-      break;
-
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
       break;
@@ -1102,9 +1109,6 @@ psppire_var_sheet_dispose (GObject *obj)
   if (var_sheet->dict)
     g_object_unref (var_sheet->dict);
   
-  if (var_sheet->uim)
-    g_object_unref (var_sheet->uim);
-
   /* These dialogs are not GObjects (although they should be!)
     But for now, unreffing them only causes a GCritical Error
     so comment them out for now. (and accept the memory leakage)
@@ -1114,9 +1118,6 @@ psppire_var_sheet_dispose (GObject *obj)
   g_object_unref (var_sheet->var_type_dialog);
   */
 
-  g_object_unref (var_sheet->builder);
-
-  
   G_OBJECT_CLASS (psppire_var_sheet_parent_class)->dispose (obj);
 }
 
@@ -1168,13 +1169,6 @@ psppire_var_sheet_class_init (PsppireVarSheetClass *class)
                              FMT_FOR_OUTPUT,
                              G_PARAM_READWRITE);
   g_object_class_install_property (gobject_class, PROP_FORMAT_TYPE, pspec);
-
-  pspec = g_param_spec_object ("ui-manager",
-                               "UI Manager",
-                               "UI manager for the variable sheet.  The client should merge this UI manager with the active UI manager to obtain variable sheet specific menu items and tool bar items.",
-                               GTK_TYPE_UI_MANAGER,
-                               G_PARAM_READABLE);
-  g_object_class_install_property (gobject_class, PROP_UI_MANAGER, pspec);
 }
 
 static void
@@ -1259,16 +1253,15 @@ make_row_number_column (PsppireVarSheet *var_sheet)
   return column;
 }
 
-static void
-on_edit_clear_variables (GtkAction *action, PsppireVarSheet *var_sheet)
+void
+psppire_var_sheet_clear_variables (PsppireVarSheet *var_sheet)
 {
   PsppSheetView *sheet_view = PSPP_SHEET_VIEW (var_sheet);
   PsppSheetSelection *selection = pspp_sheet_view_get_selection (sheet_view);
   PsppireDict *dict = var_sheet->dict;
   const struct range_set_node *node;
-  struct range_set *selected;
-
-  selected = pspp_sheet_selection_get_range_set (selection);
+  struct range_set *selected = pspp_sheet_selection_get_range_set (selection);
+  
   for (node = range_set_last (selected); node != NULL;
        node = range_set_prev (selected, node))
     {
@@ -1290,17 +1283,17 @@ on_selection_changed (PsppSheetSelection *selection,
 {
   PsppSheetView *sheet_view = pspp_sheet_selection_get_tree_view (selection);
   PsppireVarSheet *var_sheet = PSPPIRE_VAR_SHEET (sheet_view);
-  gint n_selected_rows;
+  gint n_selected_rows = pspp_sheet_selection_count_selected_rows (selection);
   gboolean may_delete;
   GtkTreePath *path;
-  GtkAction *action;
 
-  n_selected_rows = pspp_sheet_selection_count_selected_rows (selection);
-
-  action = get_action_assert (var_sheet->builder, "edit_insert-variable");
-  gtk_action_set_sensitive (action, (var_sheet->may_create_vars
-                                     && n_selected_rows > 0));
-
+  GtkWidget *top = gtk_widget_get_toplevel (GTK_WIDGET (var_sheet));
+  if (! PSPPIRE_IS_DATA_WINDOW (top))
+    return;
+  
+  PsppireDataWindow *dw = PSPPIRE_DATA_WINDOW (top);
+  gtk_widget_set_sensitive (dw->mi_insert_var, n_selected_rows > 0);
+  
   switch (n_selected_rows)
     {
     case 0:
@@ -1319,12 +1312,12 @@ on_selection_changed (PsppSheetSelection *selection,
       may_delete = TRUE;
       break;
     }
-  action = get_action_assert (var_sheet->builder, "edit_clear-variables");
-  gtk_action_set_sensitive (action, var_sheet->may_delete_vars && may_delete);
+
+  gtk_widget_set_sensitive (dw->mi_clear_variables, var_sheet->may_delete_vars && may_delete); 
 }
 
-static void
-on_edit_insert_variable (GtkAction *action, PsppireVarSheet *var_sheet)
+void
+psppire_var_sheet_insert_variable (PsppireVarSheet *var_sheet)
 {
   PsppSheetView *sheet_view = PSPP_SHEET_VIEW (var_sheet);
   PsppSheetSelection *selection = pspp_sheet_view_get_selection (sheet_view);
@@ -1349,7 +1342,6 @@ psppire_var_sheet_init (PsppireVarSheet *obj)
 {
   PsppSheetView *sheet_view = PSPP_SHEET_VIEW (obj);
   PsppSheetViewColumn *column;
-  GtkAction *action;
   GList *list;
 
   obj->dict = NULL;
@@ -1361,7 +1353,6 @@ psppire_var_sheet_init (PsppireVarSheet *obj)
 
   obj->container = NULL;
   obj->dispose_has_run = FALSE;
-  obj->uim = NULL;
 
   pspp_sheet_view_append_column (sheet_view, make_row_number_column (obj));
 
@@ -1418,21 +1409,11 @@ psppire_var_sheet_init (PsppireVarSheet *obj)
                     G_CALLBACK (on_query_var_tooltip), NULL);
   g_signal_connect (obj, "button-press-event",
                     G_CALLBACK (on_button_pressed), NULL);
+  
   g_signal_connect (obj, "popup-menu", G_CALLBACK (on_popup_menu), NULL);
 
-  obj->builder = builder_new ("var-sheet.ui");
-
-  action = get_action_assert (obj->builder, "edit_clear-variables");
-  g_signal_connect (action, "activate", G_CALLBACK (on_edit_clear_variables),
-                    obj);
-  gtk_action_set_sensitive (action, FALSE);
   g_signal_connect (pspp_sheet_view_get_selection (sheet_view),
                     "changed", G_CALLBACK (on_selection_changed), NULL);
-
-  action = get_action_assert (obj->builder, "edit_insert-variable");
-  gtk_action_set_sensitive (action, FALSE);
-  g_signal_connect (action, "activate", G_CALLBACK (on_edit_insert_variable),
-                    obj);
 }
 
 GtkWidget *
@@ -1638,17 +1619,4 @@ psppire_var_sheet_goto_variable (PsppireVarSheet *var_sheet, int dict_index)
   gtk_tree_path_free (path);
 }
 
-GtkUIManager *
-psppire_var_sheet_get_ui_manager (PsppireVarSheet *var_sheet)
-{
-  if (var_sheet->uim == NULL)
-    {
-      var_sheet->uim = GTK_UI_MANAGER (get_object_assert (var_sheet->builder,
-							  "var_sheet_uim",
-							  GTK_TYPE_UI_MANAGER));
-      g_object_ref (var_sheet->uim);
-    }
-
-  return var_sheet->uim;
-}
 

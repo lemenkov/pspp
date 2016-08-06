@@ -591,16 +591,71 @@ on_data_column_resized (GObject    *gobject,
   var_set_display_width (var, display_width);
 }
 
+enum sort_order
+  {
+    SORT_ASCEND,
+    SORT_DESCEND
+  };
+
+static void
+do_sort (PsppireDataSheet *data_sheet, enum sort_order order)
+{
+  PsppSheetView *sheet_view = PSPP_SHEET_VIEW (data_sheet);
+  PsppSheetSelection *selection = pspp_sheet_view_get_selection (sheet_view);
+  PsppireDataWindow *pdw;
+  GList *list, *iter;
+  GString *syntax;
+  int n_vars;
+
+  pdw = psppire_data_window_for_data_store (data_sheet->data_store);
+  g_return_if_fail (pdw != NULL);
+
+  list = pspp_sheet_selection_get_selected_columns (selection);
+
+  syntax = g_string_new ("SORT CASES BY");
+  n_vars = 0;
+  for (iter = list; iter; iter = iter->next)
+    {
+      PsppSheetViewColumn *column = iter->data;
+      struct variable *var;
+
+      var = g_object_get_data (G_OBJECT (column), "variable");
+      if (var != NULL)
+        {
+          g_string_append_printf (syntax, " %s", var_get_name (var));
+          n_vars++;
+        }
+    }
+  if (n_vars > 0)
+    {
+      if (order == SORT_DESCEND)
+        g_string_append (syntax, " (DOWN)");
+      g_string_append_c (syntax, '.');
+      execute_const_syntax_string (pdw, syntax->str);
+    }
+  g_string_free (syntax, TRUE);
+}
+
+static void
+on_sort_up (PsppireDataSheet *data_sheet)
+{
+  do_sort (data_sheet, SORT_ASCEND);
+}
+
+static void
+on_sort_down (PsppireDataSheet *data_sheet)
+{
+  do_sort (data_sheet, SORT_DESCEND);
+}
+
 static void
 do_data_column_popup_menu (PsppSheetViewColumn *column,
                            guint button, guint32 time)
 {
   GtkWidget *sheet_view = pspp_sheet_view_column_get_tree_view (column);
   PsppireDataSheet *data_sheet = PSPPIRE_DATA_SHEET (sheet_view);
-  GtkWidget *menu;
 
-  menu = get_widget_assert (data_sheet->builder, "datasheet-variable-popup");
-  gtk_menu_popup (GTK_MENU (menu), NULL, NULL, NULL, NULL, button, time);
+  gtk_menu_popup (GTK_MENU (data_sheet->column_popup_menu), NULL, NULL, NULL, NULL, button, time);
 }
 
 static void
@@ -838,8 +893,7 @@ enum
     PROP_CASE_NUMBERS,
     PROP_CURRENT_CASE,
     PROP_MAY_CREATE_VARS,
-    PROP_MAY_DELETE_VARS,
-    PROP_UI_MANAGER
+    PROP_MAY_DELETE_VARS
   };
 
 static void
@@ -879,7 +933,6 @@ psppire_data_sheet_set_property (GObject      *object,
                                               g_value_get_boolean (value));
       break;
 
-    case PROP_UI_MANAGER:
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
       break;
@@ -918,10 +971,6 @@ psppire_data_sheet_get_property (GObject      *object,
 
     case PROP_MAY_DELETE_VARS:
       g_value_set_boolean (value, obj->may_delete_vars);
-      break;
-
-    case PROP_UI_MANAGER:
-      g_value_set_object (value, psppire_data_sheet_get_ui_manager (obj));
       break;
 
     default:
@@ -1189,20 +1238,6 @@ psppire_data_sheet_get_current_case (const PsppireDataSheet *data_sheet)
   return row;
 }
 
-GtkUIManager *
-psppire_data_sheet_get_ui_manager (PsppireDataSheet *data_sheet)
-{
-  if (data_sheet->uim == NULL)
-    {
-      data_sheet->uim = 
-	GTK_UI_MANAGER (get_object_assert (data_sheet->builder,
-					   "data_sheet_uim",
-					   GTK_TYPE_UI_MANAGER));
-      g_object_ref (data_sheet->uim);
-    }
-
-  return data_sheet->uim;
-}
 
 static void
 psppire_data_sheet_dispose (GObject *object)
@@ -1222,11 +1257,6 @@ psppire_data_sheet_dispose (GObject *object)
   data_sheet->dispose_has_run = TRUE;
 
   psppire_data_sheet_unset_data_store (data_sheet);
-
-  g_object_unref (data_sheet->builder);
-
-  if (data_sheet->uim)
-    g_object_unref (data_sheet->uim);
 
   G_OBJECT_CLASS (psppire_data_sheet_parent_class)->dispose (object);
 }
@@ -1314,6 +1344,7 @@ psppire_data_sheet_class_init (PsppireDataSheetClass *class)
                           TRUE,
                           G_PARAM_READWRITE));
 
+  
   g_object_class_install_property (
     gobject_class,
     PROP_MAY_DELETE_VARS,
@@ -1322,31 +1353,21 @@ psppire_data_sheet_class_init (PsppireDataSheetClass *class)
                           "Whether the user may delete variables",
                           TRUE,
                           G_PARAM_READWRITE));
-
-  g_object_class_install_property (
-    gobject_class,
-    PROP_UI_MANAGER,
-    g_param_spec_object ("ui-manager",
-                         "UI Manager",
-                         "UI manager for the data sheet.  The client should merge this UI manager with the active UI manager to obtain data sheet specific menu items and tool bar items.",
-                         GTK_TYPE_UI_MANAGER,
-                         G_PARAM_READABLE));
 }
 
 static void
-do_popup_menu (GtkWidget *widget, guint button, guint32 time)
+do_row_popup_menu (GtkWidget *widget, guint button, guint32 time)
 {
   PsppireDataSheet *data_sheet = PSPPIRE_DATA_SHEET (widget);
-  GtkWidget *menu;
 
-  menu = get_widget_assert (data_sheet->builder, "datasheet-cases-popup");
-  gtk_menu_popup (GTK_MENU (menu), NULL, NULL, NULL, NULL, button, time);
+  
+  gtk_menu_popup (GTK_MENU (data_sheet->row_popup_menu), NULL, NULL, NULL, NULL, button, time);
 }
 
 static void
 on_popup_menu (GtkWidget *widget, gpointer user_data UNUSED)
 {
-  do_popup_menu (widget, 0, gtk_get_current_event_time ());
+  do_row_popup_menu (widget, 0, gtk_get_current_event_time ());
 }
 
 static gboolean
@@ -1374,7 +1395,7 @@ on_button_pressed (GtkWidget *widget, GdkEventButton *event,
             }
         }
 
-      do_popup_menu (widget, event->button, event->time);
+      do_row_popup_menu (widget, event->button, event->time);
 
       return TRUE;
     }
@@ -1382,8 +1403,8 @@ on_button_pressed (GtkWidget *widget, GdkEventButton *event,
   return FALSE;
 }
 
-static void
-on_edit_clear_cases (GtkAction *action, PsppireDataSheet *data_sheet)
+void
+psppire_data_sheet_edit_clear_cases (PsppireDataSheet *data_sheet)
 {
   PsppSheetView *sheet_view = PSPP_SHEET_VIEW (data_sheet);
   PsppSheetSelection *selection = pspp_sheet_view_get_selection (sheet_view);
@@ -1408,17 +1429,20 @@ on_selection_changed (PsppSheetSelection *selection,
 {
   PsppSheetView *sheet_view = pspp_sheet_selection_get_tree_view (selection);
   PsppireDataSheet *data_sheet = PSPPIRE_DATA_SHEET (sheet_view);
-  gint n_selected_rows;
   gboolean any_variables_selected;
   gboolean may_delete_cases, may_delete_vars, may_insert_vars;
   GList *list, *iter;
   GtkTreePath *path;
-  GtkAction *action;
 
-  n_selected_rows = pspp_sheet_selection_count_selected_rows (selection);
+  GtkWidget *top = gtk_widget_get_toplevel (GTK_WIDGET (data_sheet));
+  if (! PSPPIRE_IS_DATA_WINDOW (top))
+    return;
+  
+  PsppireDataWindow *dw = PSPPIRE_DATA_WINDOW (top);
 
-  action = get_action_assert (data_sheet->builder, "edit_insert-case");
-  gtk_action_set_sensitive (action, n_selected_rows > 0);
+  gint n_selected_rows = pspp_sheet_selection_count_selected_rows (selection);
+
+  gtk_widget_set_sensitive (dw->mi_insert_case, n_selected_rows > 0);
 
   switch (n_selected_rows)
     {
@@ -1439,12 +1463,13 @@ on_selection_changed (PsppSheetSelection *selection,
       may_delete_cases = TRUE;
       break;
     }
-  action = get_action_assert (data_sheet->builder, "edit_clear-cases");
-  gtk_action_set_sensitive (action, may_delete_cases);
+
+  gtk_widget_set_sensitive (dw->mi_clear_cases, may_delete_cases);
 
   any_variables_selected = FALSE;
   may_delete_vars = may_insert_vars = FALSE;
   list = pspp_sheet_selection_get_selected_columns (selection);
+
   for (iter = list; iter != NULL; iter = iter->next)
     {
       PsppSheetViewColumn *column = iter->data;
@@ -1464,17 +1489,10 @@ on_selection_changed (PsppSheetSelection *selection,
   may_insert_vars = may_insert_vars && data_sheet->may_create_vars;
   may_delete_vars = may_delete_vars && data_sheet->may_delete_vars;
 
-  action = get_action_assert (data_sheet->builder, "edit_insert-variable");
-  gtk_action_set_sensitive (action, may_insert_vars);
-
-  action = get_action_assert (data_sheet->builder, "edit_clear-variables");
-  gtk_action_set_sensitive (action, may_delete_vars);
-
-  action = get_action_assert (data_sheet->builder, "sort-up");
-  gtk_action_set_sensitive (action, may_delete_vars);
-
-  action = get_action_assert (data_sheet->builder, "sort-down");
-  gtk_action_set_sensitive (action, may_delete_vars);
+  gtk_widget_set_sensitive (dw->mi_insert_var, may_insert_vars);
+  gtk_widget_set_sensitive (dw->mi_clear_variables, may_delete_vars);
+  gtk_widget_set_sensitive (data_sheet->pu_sort_up, may_delete_vars);
+  gtk_widget_set_sensitive (data_sheet->pu_sort_down, may_delete_vars);
 
   psppire_data_sheet_update_clip_actions (data_sheet);
   psppire_data_sheet_update_primary_selection (data_sheet,
@@ -1529,25 +1547,23 @@ psppire_data_sheet_get_selected_range (PsppireDataSheet *data_sheet,
   return TRUE;
 }
 
-static void
-on_edit_insert_case (GtkAction *action, PsppireDataSheet *data_sheet)
+/* Insert a case at the selected row */
+void
+psppire_data_sheet_insert_case (PsppireDataSheet *data_sheet)
 {
   PsppSheetView *sheet_view = PSPP_SHEET_VIEW (data_sheet);
   PsppSheetSelection *selection = pspp_sheet_view_get_selection (sheet_view);
   PsppireDataStore *data_store = data_sheet->data_store;
-  struct range_set *selected;
-  unsigned long row;
-
-  selected = pspp_sheet_selection_get_range_set (selection);
-  row = range_set_scan (selected, 0);
+  struct range_set *selected = pspp_sheet_selection_get_range_set (selection);
+  unsigned long row = range_set_scan (selected, 0);
   range_set_destroy (selected);
 
   if (row <= psppire_data_store_get_case_count (data_store))
     psppire_data_store_insert_new_case (data_store, row);
 }
 
-static void
-on_edit_insert_variable (GtkAction *action, PsppireDataSheet *data_sheet)
+void
+psppire_data_sheet_insert_variable (PsppireDataSheet *data_sheet)
 {
   PsppSheetView *sheet_view = PSPP_SHEET_VIEW (data_sheet);
   PsppSheetSelection *selection = pspp_sheet_view_get_selection (sheet_view);
@@ -1570,118 +1586,42 @@ on_edit_insert_variable (GtkAction *action, PsppireDataSheet *data_sheet)
     psppire_dict_insert_variable (dict, index, name);
 }
 
-static void
-on_edit_clear_variables (GtkAction *action, PsppireDataSheet *data_sheet)
+void
+psppire_data_sheet_edit_clear_variables (PsppireDataSheet *data_sheet)
 {
   PsppSheetView *sheet_view = PSPP_SHEET_VIEW (data_sheet);
   PsppSheetSelection *selection = pspp_sheet_view_get_selection (sheet_view);
   PsppireDict *dict = data_sheet->data_store->dict;
-  GList *list, *iter;
-
-  list = pspp_sheet_selection_get_selected_columns (selection);
+  GList *iter;
+  GList *list = pspp_sheet_selection_get_selected_columns (selection);
+  
   if (list == NULL)
     return;
   list = g_list_reverse (list);
   for (iter = list; iter; iter = iter->next)
     {
       PsppSheetViewColumn *column = iter->data;
-      struct variable *var;
-
-      var = g_object_get_data (G_OBJECT (column), "variable");
+      struct variable *var = g_object_get_data (G_OBJECT (column), "variable");
       if (var != NULL)
         psppire_dict_delete_variables (dict, var_get_dict_index (var), 1);
     }
   g_list_free (list);
 }
 
-enum sort_order
-  {
-    SORT_ASCEND,
-    SORT_DESCEND
-  };
-
-static void
-do_sort (PsppireDataSheet *data_sheet, enum sort_order order)
-{
-  PsppSheetView *sheet_view = PSPP_SHEET_VIEW (data_sheet);
-  PsppSheetSelection *selection = pspp_sheet_view_get_selection (sheet_view);
-  PsppireDataWindow *pdw;
-  GList *list, *iter;
-  GString *syntax;
-  int n_vars;
-
-  pdw = psppire_data_window_for_data_store (data_sheet->data_store);
-  g_return_if_fail (pdw != NULL);
-
-  list = pspp_sheet_selection_get_selected_columns (selection);
-
-  syntax = g_string_new ("SORT CASES BY");
-  n_vars = 0;
-  for (iter = list; iter; iter = iter->next)
-    {
-      PsppSheetViewColumn *column = iter->data;
-      struct variable *var;
-
-      var = g_object_get_data (G_OBJECT (column), "variable");
-      if (var != NULL)
-        {
-          g_string_append_printf (syntax, " %s", var_get_name (var));
-          n_vars++;
-        }
-    }
-  if (n_vars > 0)
-    {
-      if (order == SORT_DESCEND)
-        g_string_append (syntax, " (DOWN)");
-      g_string_append_c (syntax, '.');
-      execute_const_syntax_string (pdw, syntax->str);
-    }
-  g_string_free (syntax, TRUE);
-}
-
 void
-on_sort_up (GtkAction *action, PsppireDataSheet *data_sheet)
-{
-  do_sort (data_sheet, SORT_ASCEND);
-}
-
-void
-on_sort_down (GtkAction *action, PsppireDataSheet *data_sheet)
-{
-  do_sort (data_sheet, SORT_DESCEND);
-}
-
-void
-on_edit_goto_case (GtkAction *action, PsppireDataSheet *data_sheet)
-{
-  goto_case_dialog (data_sheet);
-}
-
-void
-on_edit_find (GtkAction *action, PsppireDataSheet *data_sheet)
-{
-  PsppireDataWindow *pdw;
-
-  pdw = psppire_data_window_for_data_store (data_sheet->data_store);
-  g_return_if_fail (pdw != NULL);
-
-  find_dialog (pdw);
-}
-
-void
-on_edit_copy (GtkAction *action, PsppireDataSheet *data_sheet)
+psppire_data_sheet_edit_copy (PsppireDataSheet *data_sheet)
 {
   psppire_data_sheet_set_clip (data_sheet, FALSE);
 }
 
 void
-on_edit_cut (GtkAction *action, PsppireDataSheet *data_sheet)
+psppire_data_sheet_edit_cut (PsppireDataSheet *data_sheet)
 {
   psppire_data_sheet_set_clip (data_sheet, TRUE);
 }
 
 void
-on_edit_paste (GtkAction *action, PsppireDataSheet *data_sheet)
+psppire_data_sheet_edit_paste (PsppireDataSheet *data_sheet)
 {
   GdkDisplay *display = gtk_widget_get_display (GTK_WIDGET (data_sheet));
   GtkClipboard *clipboard =
@@ -1697,7 +1637,6 @@ static void
 psppire_data_sheet_init (PsppireDataSheet *obj)
 {
   PsppSheetView *sheet_view = PSPP_SHEET_VIEW (obj);
-  GtkAction *action;
 
   obj->show_value_labels = FALSE;
   obj->show_case_numbers = TRUE;
@@ -1712,11 +1651,53 @@ psppire_data_sheet_init (PsppireDataSheet *obj)
   obj->new_variable_column = NULL;
   obj->container = NULL;
 
-  obj->uim = NULL;
   obj->dispose_has_run = FALSE;
 
   pspp_sheet_view_set_special_cells (sheet_view, PSPP_SHEET_VIEW_SPECIAL_CELLS_YES);
 
+  {
+    obj->row_popup_menu = gtk_menu_new ();
+    int i = 0;
+
+    GtkWidget *insert_case = gtk_menu_item_new_with_mnemonic (_("_Insert Case"));
+    GtkWidget *clear_cases = gtk_menu_item_new_with_mnemonic (_("Cl_ear Cases"));
+
+    gtk_menu_attach (GTK_MENU (obj->row_popup_menu), insert_case,     0, 1, i, i + 1); ++i;
+    gtk_menu_attach (GTK_MENU (obj->row_popup_menu), clear_cases,     0, 1, i, i + 1); ++i;
+
+    g_signal_connect_swapped (clear_cases, "activate", G_CALLBACK (psppire_data_sheet_edit_clear_cases), obj);
+    g_signal_connect_swapped (insert_case, "activate", G_CALLBACK (psppire_data_sheet_insert_case), obj);
+  
+    gtk_widget_show_all (obj->row_popup_menu);
+  }
+  
+  {
+    obj->column_popup_menu = gtk_menu_new ();
+    int i = 0;
+
+    GtkWidget *insert_variable = gtk_menu_item_new_with_mnemonic (_("_Insert Variable"));
+    GtkWidget *clear_variables = gtk_menu_item_new_with_mnemonic (_("Cl_ear Variables"));
+    obj->pu_sort_up = gtk_menu_item_new_with_mnemonic (_("Sort _Ascending"));
+    obj->pu_sort_down = gtk_menu_item_new_with_mnemonic (_("Sort _Descending"));
+
+    g_signal_connect_swapped (clear_variables, "activate", G_CALLBACK (psppire_data_sheet_edit_clear_variables), obj);
+    g_signal_connect_swapped (insert_variable, "activate", G_CALLBACK (psppire_data_sheet_insert_variable), obj);
+
+    g_signal_connect_swapped (obj->pu_sort_up, "activate", G_CALLBACK (on_sort_up), obj);
+    g_signal_connect_swapped (obj->pu_sort_down, "activate", G_CALLBACK (on_sort_down), obj);
+  
+    gtk_menu_attach (GTK_MENU (obj->column_popup_menu), insert_variable,     0, 1, i, i + 1); ++i;
+    gtk_menu_attach (GTK_MENU (obj->column_popup_menu), clear_variables,     0, 1, i, i + 1); ++i;
+
+    gtk_menu_attach (GTK_MENU (obj->column_popup_menu), gtk_separator_menu_item_new (),     0, 1, i, i + 1); ++i;
+  
+    gtk_menu_attach (GTK_MENU (obj->column_popup_menu), obj->pu_sort_up,             0, 1, i, i + 1); ++i;
+    gtk_menu_attach (GTK_MENU (obj->column_popup_menu), obj->pu_sort_down,           0, 1, i, i + 1); ++i;
+
+    gtk_widget_show_all (obj->column_popup_menu);
+  }
+
+  
   g_signal_connect (obj, "notify::model",
                     G_CALLBACK (psppire_data_sheet_model_changed), NULL);
 
@@ -1729,51 +1710,11 @@ psppire_data_sheet_init (PsppireDataSheet *obj)
                     G_CALLBACK (on_query_tooltip), NULL);
   g_signal_connect (obj, "button-press-event",
                     G_CALLBACK (on_button_pressed), NULL);
+  
   g_signal_connect (obj, "popup-menu", G_CALLBACK (on_popup_menu), NULL);
 
-  obj->builder = builder_new ("data-sheet.ui");
-
-  action = get_action_assert (obj->builder, "edit_clear-cases");
-  g_signal_connect (action, "activate", G_CALLBACK (on_edit_clear_cases),
-                    obj);
-  gtk_action_set_sensitive (action, FALSE);
   g_signal_connect (pspp_sheet_view_get_selection (sheet_view),
                     "changed", G_CALLBACK (on_selection_changed), NULL);
-
-  action = get_action_assert (obj->builder, "edit_insert-case");
-  g_signal_connect (action, "activate", G_CALLBACK (on_edit_insert_case),
-                    obj);
-
-  action = get_action_assert (obj->builder, "edit_insert-variable");
-  g_signal_connect (action, "activate", G_CALLBACK (on_edit_insert_variable),
-                    obj);
-
-  action = get_action_assert (obj->builder, "edit_goto-case");
-  g_signal_connect (action, "activate", G_CALLBACK (on_edit_goto_case),
-                    obj);
-
-  action = get_action_assert (obj->builder, "edit_copy");
-  g_signal_connect (action, "activate", G_CALLBACK (on_edit_copy), obj);
-
-  action = get_action_assert (obj->builder, "edit_cut");
-  g_signal_connect (action, "activate", G_CALLBACK (on_edit_cut), obj);
-
-  action = get_action_assert (obj->builder, "edit_paste");
-  g_signal_connect (action, "activate", G_CALLBACK (on_edit_paste), obj);
-
-  action = get_action_assert (obj->builder, "edit_clear-variables");
-  g_signal_connect (action, "activate", G_CALLBACK (on_edit_clear_variables),
-                    obj);
-
-  action = get_action_assert (obj->builder, "edit_find");
-  g_signal_connect (action, "activate", G_CALLBACK (on_edit_find), obj);
-
-  action = get_action_assert (obj->builder, "sort-up");
-  g_signal_connect (action, "activate", G_CALLBACK (on_sort_up), obj);
-
-  action = get_action_assert (obj->builder, "sort-down");
-  g_signal_connect (action, "activate", G_CALLBACK (on_sort_down), obj);
-
 }
 
 GtkWidget *
@@ -1795,19 +1736,11 @@ refresh_model (PsppireDataSheet *data_sheet)
 
   if (data_sheet->data_store != NULL)
     {
-      PsppireEmptyListStore *model;
-      GtkAction *action;
-      int n_rows;
-
-      n_rows = psppire_data_store_get_case_count (data_sheet->data_store) + 1;
-      model = psppire_empty_list_store_new (n_rows);
+      int n_rows = psppire_data_store_get_case_count (data_sheet->data_store) + 1;
+      PsppireEmptyListStore *model = psppire_empty_list_store_new (n_rows);
       pspp_sheet_view_set_model (PSPP_SHEET_VIEW (data_sheet),
                                  GTK_TREE_MODEL (model));
       g_object_unref (model);
-
-      action = get_action_assert (data_sheet->builder, "edit_copy");
-      g_signal_connect (action, "activate", G_CALLBACK (on_edit_copy),
-                        data_sheet);
     }
 }
 
@@ -2371,21 +2304,22 @@ static void
 psppire_data_sheet_update_clip_actions (PsppireDataSheet *data_sheet)
 {
   struct range_set *rows, *cols;
-  GtkAction *action;
-  gboolean enable;
+  GtkWidget *top = gtk_widget_get_toplevel (GTK_WIDGET (data_sheet));
+  if (! PSPPIRE_IS_DATA_WINDOW (top))
+    return;
+  
+  PsppireDataWindow *dw = PSPPIRE_DATA_WINDOW (top);
+  gboolean enable =
+    psppire_data_sheet_get_selected_range (data_sheet, &rows, &cols);
 
-  enable = psppire_data_sheet_get_selected_range (data_sheet, &rows, &cols);
   if (enable)
     {
       range_set_destroy (rows);
       range_set_destroy (cols);
     }
 
-  action = get_action_assert (data_sheet->builder, "edit_copy");
-  gtk_action_set_sensitive (action, enable);
-
-  action = get_action_assert (data_sheet->builder, "edit_cut");
-  gtk_action_set_sensitive (action, enable);
+  gtk_widget_set_sensitive (dw->mi_copy, enable);
+  gtk_widget_set_sensitive (dw->mi_cut, enable);
 }
 
 static void
@@ -2501,11 +2435,9 @@ psppire_data_sheet_targets_received_cb (GtkClipboard *clipboard,
                                         gint n_atoms,
                                         gpointer data)
 {
-  GtkAction *action = GTK_ACTION (data);
-  gboolean compatible_target;
+  GtkWidget *mi = GTK_WIDGET (data);
+  gboolean compatible_target = FALSE;
   gint i;
-
-  compatible_target = FALSE;
   for (i = 0; i < G_N_ELEMENTS (targets); i++)
     {
       GdkAtom target = gdk_atom_intern (targets[i].target, TRUE);
@@ -2519,17 +2451,21 @@ psppire_data_sheet_targets_received_cb (GtkClipboard *clipboard,
           }
     }
 
-  gtk_action_set_sensitive (action, compatible_target);
-  g_object_unref (action);
+  gtk_widget_set_sensitive (mi, compatible_target);
 }
 
 static void
 on_owner_change (GtkClipboard *clip, GdkEventOwnerChange *event, gpointer data)
 {
   PsppireDataSheet *data_sheet = PSPPIRE_DATA_SHEET (data);
-  GtkAction *action = get_action_assert (data_sheet->builder, "edit_paste");
 
-  g_object_ref (action);
-  gtk_clipboard_request_targets (clip, psppire_data_sheet_targets_received_cb,
-                                 action);
+  GtkWidget *top = gtk_widget_get_toplevel (GTK_WIDGET (data_sheet));
+  if (! PSPPIRE_IS_DATA_WINDOW (top))
+    return;
+  
+  PsppireDataWindow *dw = PSPPIRE_DATA_WINDOW (top);
+
+  gtk_clipboard_request_targets (clip,
+  				 psppire_data_sheet_targets_received_cb,
+  				 dw->mi_paste);
 }

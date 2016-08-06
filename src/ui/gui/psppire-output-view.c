@@ -1,5 +1,5 @@
 /* PSPPIRE - a graphical user interface for PSPP.
-   Copyright (C) 2008-2015 Free Software Foundation.
+   Copyright (C) 2008-2015, 2016 Free Software Foundation.
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -589,10 +589,12 @@ on_copy (struct psppire_output_view *view)
 }
 
 static void
-on_selection_change (GtkTreeSelection *sel, GtkAction *copy_action)
+on_selection_change (GtkTreeSelection *sel, GAction *copy_action)
 {
   /* The Copy action is available only if there is something selected */
-  gtk_action_set_sensitive (copy_action, gtk_tree_selection_count_selected_rows (sel) > 0);
+  g_object_set (copy_action,
+		"enabled", gtk_tree_selection_count_selected_rows (sel) > 0,
+		NULL);
 }
 
 static void
@@ -617,16 +619,41 @@ on_size_allocate (GtkWidget    *widget,
     }
 }
 
+static void
+on_realize (GtkWidget *overview, GObject *view)
+{
+  GtkTreeSelection *sel = gtk_tree_view_get_selection (GTK_TREE_VIEW (overview));
+  gtk_tree_selection_set_mode (sel, GTK_SELECTION_MULTIPLE);
+
+  GtkWidget *toplevel = gtk_widget_get_toplevel (GTK_WIDGET (overview));
+
+  GAction *copy_action = g_action_map_lookup_action (G_ACTION_MAP (toplevel),
+						     "copy");
+  
+  GAction *select_all_action = g_action_map_lookup_action (G_ACTION_MAP (toplevel),
+							   "select-all");
+
+  g_object_set (copy_action, "enabled", FALSE, NULL); 
+
+  g_signal_connect_swapped (select_all_action, "activate",
+			    G_CALLBACK (on_select_all), view);
+
+  g_signal_connect_swapped (copy_action, "activate",
+                            G_CALLBACK (on_copy), view);
+  
+  g_signal_connect (sel, "changed", G_CALLBACK (on_selection_change),
+                    copy_action);
+}
+
 struct psppire_output_view *
-psppire_output_view_new (GtkLayout *output, GtkTreeView *overview,
-                         GtkAction *copy_action, GtkAction *select_all_action)
+psppire_output_view_new (GtkLayout *output, GtkTreeView *overview)
 {
   struct psppire_output_view *view;
   GtkTreeViewColumn *column;
   GtkCellRenderer *renderer;
-  GtkTreeSelection *sel;
-  GtkTreeModel *model;
 
+  GtkTreeModel *model;
+  
   view = xmalloc (sizeof *view);
   view->xr = NULL;
   view->font_height = 0;
@@ -656,6 +683,8 @@ psppire_output_view_new (GtkLayout *output, GtkTreeView *overview,
 
   if (overview)
     {
+      g_signal_connect (overview, "realize", G_CALLBACK (on_realize), view);
+
       model = GTK_TREE_MODEL (gtk_tree_store_new (
                                 N_COLS,
                                 G_TYPE_STRING,  /* COL_NAME */
@@ -663,11 +692,6 @@ psppire_output_view_new (GtkLayout *output, GtkTreeView *overview,
                                 G_TYPE_LONG));  /* COL_Y */
       gtk_tree_view_set_model (overview, model);
       g_object_unref (model);
-
-      sel = gtk_tree_view_get_selection (overview);
-      gtk_tree_selection_set_mode (sel, GTK_SELECTION_MULTIPLE);
-      g_signal_connect (sel, "changed", G_CALLBACK (on_selection_change),
-                        copy_action);
 
       column = gtk_tree_view_column_new ();
       gtk_tree_view_append_column (GTK_TREE_VIEW (overview), column);
@@ -677,12 +701,6 @@ psppire_output_view_new (GtkLayout *output, GtkTreeView *overview,
 
       g_signal_connect (GTK_TREE_VIEW (overview),
                         "row-activated", G_CALLBACK (on_row_activate), view);
-
-      gtk_action_set_sensitive (copy_action, FALSE);
-      g_signal_connect_swapped (copy_action, "activate",
-                                G_CALLBACK (on_copy), view);
-      g_signal_connect_swapped (select_all_action, "activate",
-                                G_CALLBACK (on_select_all), view);
     }
 
   return view;

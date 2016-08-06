@@ -26,14 +26,117 @@
 static void psppire_dialog_action_init            (PsppireDialogAction      *act);
 static void psppire_dialog_action_class_init      (PsppireDialogActionClass *class);
 
-G_DEFINE_ABSTRACT_TYPE (PsppireDialogAction, psppire_dialog_action, GTK_TYPE_ACTION);
+static GObjectClass * parent_class = NULL;
+
+
+static const gchar *
+__get_name (GAction *act)
+{
+  return G_OBJECT_TYPE_NAME (act);
+}
+
+static const GVariantType *
+__get_state_type (GAction *act)
+{
+  return NULL;
+}
+
+
+static GVariant *
+__get_state (GAction *act)
+{
+  return NULL;
+}
+
+
+static const GVariantType *
+__get_parameter_type (GAction *act)
+{
+  return PSPPIRE_DIALOG_ACTION (act)->parameter_type;
+}
+
+static gboolean
+__get_enabled (GAction *act)
+{
+  return TRUE;
+}
+
+static void psppire_dialog_action_activate (PsppireDialogAction *act, GVariant *parameter);
+
+void
+psppire_dialog_action_activate_null (PsppireDialogAction *act)
+{
+  psppire_dialog_action_activate (act, NULL);
+}
+
+
+static void
+__activate (GAction *action, GVariant *parameter)
+{
+  psppire_dialog_action_activate (PSPPIRE_DIALOG_ACTION (action), parameter);
+}
+
+
+static void
+action_model_init (GActionInterface *iface)
+{
+  iface->get_name = __get_name;
+  iface->get_state_type = __get_state_type;
+  iface->get_state = __get_state;
+  iface->get_parameter_type = __get_parameter_type;
+  iface->get_enabled = __get_enabled;
+  iface->activate = __activate;
+}
+
+
+GType
+psppire_dialog_action_get_type (void)
+{
+  static GType de_type = 0;
+
+  if (!de_type)
+    {
+      static const GTypeInfo de_info =
+      {
+	sizeof (PsppireDialogActionClass),
+	NULL, /* base_init */
+        NULL, /* base_finalize */
+	(GClassInitFunc) psppire_dialog_action_class_init,
+        NULL, /* class_finalize */
+	NULL, /* class_data */
+        sizeof (PsppireDialogAction),
+	0,
+	(GInstanceInitFunc) psppire_dialog_action_init,
+      };
+
+
+      static const GInterfaceInfo ga_info = {
+	(GInterfaceInitFunc) action_model_init,
+	NULL,
+	NULL
+      };
+
+
+      de_type = g_type_register_static (G_TYPE_OBJECT, "PsppireDialogAction",
+					&de_info, G_TYPE_FLAG_ABSTRACT);
+
+      g_type_add_interface_static (de_type, G_TYPE_ACTION, &ga_info);
+    }
+
+  return de_type;
+}
+
 
 /* Properties */
 enum
 {
   PROP_0,
-  PROP_MANAGER,
   PROP_TOPLEVEL,
+  PROP_NAME,
+  PROP_ENABLED,
+  PROP_STATE,
+  PROP_STATE_TYPE,
+  PROP_PARAMETER_TYPE
 };
 
 static void
@@ -46,11 +149,10 @@ psppire_dialog_action_set_property (GObject         *object,
 
   switch (prop_id)
     {
-    case PROP_MANAGER:
+    case PROP_TOPLEVEL:
       {
-
 	GObject *p = g_value_get_object (value);
-	act->uim = GTK_UI_MANAGER (p);
+	act->toplevel = GTK_WIDGET (p);
       }
       break;
     default:
@@ -70,10 +172,7 @@ psppire_dialog_action_get_property (GObject    *object,
 
   switch (prop_id)
     {
-    case PROP_MANAGER:
-      g_value_take_object (value, dialog_action->uim);
-      break;
-  case PROP_TOPLEVEL:
+    case PROP_TOPLEVEL:
       g_value_take_object (value, dialog_action->toplevel);
       break;
     default:
@@ -83,18 +182,6 @@ psppire_dialog_action_get_property (GObject    *object,
 }
 
 
-static void
-set_toplevel (PsppireDialogAction *act)
-{
-  if (act->toplevel)
-    return;
-
-  GSList *sl = gtk_ui_manager_get_toplevels (act->uim, GTK_UI_MANAGER_MENUBAR | GTK_UI_MANAGER_TOOLBAR);
-  g_return_if_fail (sl);
-  
-  act->toplevel = gtk_widget_get_toplevel (GTK_WIDGET (sl->data));
-  g_slist_free (sl);
-}
 
 static void
 on_destroy_dataset (GObject *w)
@@ -117,8 +204,6 @@ on_destroy_dataset (GObject *w)
 GHashTable *
 psppire_dialog_action_get_hash_table (PsppireDialogAction *act)
 {
-  set_toplevel (act);
-  
   GHashTable *t = g_object_get_data (G_OBJECT (act->toplevel), "thing-table");
   if (t == NULL)
     {
@@ -131,35 +216,36 @@ psppire_dialog_action_get_hash_table (PsppireDialogAction *act)
   return t;
 }
 
+
 static void
-psppire_dialog_action_activate (PsppireDialogAction *act)
+psppire_dialog_action_activate (PsppireDialogAction *act, GVariant *parameter)
 {
   gint response;
 
   PsppireDialogActionClass *class = PSPPIRE_DIALOG_ACTION_GET_CLASS (act);
 
-  gboolean first_time = ! act->toplevel;
-
-  set_toplevel (act);
-
   act->dict = PSPPIRE_DATA_WINDOW(act->toplevel)->dict;
-  if (act->source)
-    g_object_set (act->source, "model", act->dict, NULL);
 
   GSList *wl = g_object_get_data (G_OBJECT (act->toplevel), "widget-list");
   wl = g_slist_prepend (wl, act->dialog);
   g_object_set_data (G_OBJECT (act->toplevel), "widget-list", wl);
 
-  gtk_window_set_transient_for (GTK_WINDOW (act->dialog), GTK_WINDOW (act->toplevel));
+  if (class->activate)
+    class->activate (act, parameter);
 
-  if (GTK_ACTION_CLASS (psppire_dialog_action_parent_class)->activate)
-    GTK_ACTION_CLASS (psppire_dialog_action_parent_class)->activate ( GTK_ACTION (act));
+  gtk_window_set_transient_for (GTK_WINDOW (act->dialog),
+				GTK_WINDOW (act->toplevel));
 
   if (act->source)
-    gtk_widget_grab_focus (act->source);
+    {
+      g_object_set (act->source, "model", act->dict, NULL);
+      gtk_widget_grab_focus (act->source);
+    }
 
-  if (first_time)
+  if (!act->activated)
     psppire_dialog_reload (PSPPIRE_DIALOG (act->dialog));
+
+  act->activated = TRUE;
 
   response = psppire_dialog_run (PSPPIRE_DIALOG (act->dialog));
 
@@ -185,19 +271,14 @@ psppire_dialog_action_class_init (PsppireDialogActionClass *class)
 {
   GObjectClass *object_class = G_OBJECT_CLASS (class);
 
-  GParamSpec *manager_spec =
-    g_param_spec_object ("manager",
-			 "Manager",
-			 "The GtkUIManager which created this object",
-			 GTK_TYPE_UI_MANAGER,
-			 G_PARAM_READWRITE);
+  parent_class = g_type_class_peek_parent (class);
 
   GParamSpec *toplevel_spec =
     g_param_spec_object ("top-level",
 			 "Top Level",
 			 "The top level widget to which this dialog action belongs",
 			 GTK_TYPE_WINDOW,
-			 G_PARAM_READABLE);
+			 G_PARAM_READWRITE | G_PARAM_CONSTRUCT_ONLY);
 
   object_class->set_property = psppire_dialog_action_set_property;
   object_class->get_property = psppire_dialog_action_get_property;
@@ -207,12 +288,14 @@ psppire_dialog_action_class_init (PsppireDialogActionClass *class)
   class->activate = psppire_dialog_action_activate;
 
   g_object_class_install_property (object_class,
-                                   PROP_MANAGER,
-                                   manager_spec);
-
-  g_object_class_install_property (object_class,
                                    PROP_TOPLEVEL,
                                    toplevel_spec);
+
+  g_object_class_override_property (object_class, PROP_NAME, "name");
+  g_object_class_override_property (object_class, PROP_ENABLED, "enabled");
+  g_object_class_override_property (object_class, PROP_STATE, "state");
+  g_object_class_override_property (object_class, PROP_STATE_TYPE, "state-type");
+  g_object_class_override_property (object_class, PROP_PARAMETER_TYPE, "parameter-type");
 }
 
 
@@ -221,8 +304,9 @@ psppire_dialog_action_init (PsppireDialogAction *act)
 {
   act->toplevel = NULL;
   act->dict = NULL;
+  act->activated = FALSE;
+  act->parameter_type = NULL;
 }
-
 
 void
 psppire_dialog_action_set_valid_predicate (PsppireDialogAction *act, 
@@ -243,6 +327,6 @@ psppire_dialog_action_set_refresh (PsppireDialogAction *pda,
 void 
 psppire_dialog_action_set_activation (gpointer class, activation activate)
 {
-  GTK_ACTION_CLASS (class)->activate = (void (*)(GtkAction *)) activate;
+  PSPPIRE_DIALOG_ACTION_CLASS (class)->activate = (void (*)(PsppireDialogAction *, GVariant *)) activate;
 }
 

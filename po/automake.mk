@@ -49,7 +49,9 @@ $(POFILES): $(POTFILE)
 	         touch $@,tmp ; \
 		 msgcat --use-first $(top_srcdir)/$@,aux $@,tmp -o $@,tmp; \
 	fi ;
-	$(AM_V_at)$(SED) -e '/^"POT-Creation-Date: /d' $@,tmp > $@
+	$(AM_V_at)$(SED) -e '/^"POT-Creation-Date: /d' $@,tmp > $@,tmp2
+	$(RM) $@,tmp
+	mv $@,tmp2 $@
 
 SUFFIXES += .po .gmo
 .po.gmo:

@@ -259,8 +259,6 @@ psppire_dialog_action_examine_activate (PsppireDialogAction *a)
   g_signal_connect_swapped (opts_button, "clicked",
 			    G_CALLBACK (run_opts_dialog), act);
  
-  PSPPIRE_DIALOG_ACTION_CLASS (psppire_dialog_action_examine_parent_class)->activate (pda);
-
   g_list_free (list);
 }
 

@@ -231,8 +231,6 @@ psppire_dialog_action_descriptives_activate (PsppireDialogAction *a)
 
   psppire_dialog_action_set_valid_predicate (pda, dialog_state_valid);
   psppire_dialog_action_set_refresh (pda, dialog_refresh);
-
-  PSPPIRE_DIALOG_ACTION_CLASS (psppire_dialog_action_descriptives_parent_class)->activate (pda);
 }
 
 static void

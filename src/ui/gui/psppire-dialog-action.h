@@ -15,7 +15,7 @@
    along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 
 /* 
-   This is a an abstract base class, deriving from GtkAction.
+   This is a an abstract base class, which implements GAction.
    It's purpose is to abstract the way in which dialog boxes behave.
    That is, this action will fire whenever a dialog box is to be 
    popped up.
@@ -67,22 +67,23 @@ typedef struct _PsppireDialogActionClass  PsppireDialogActionClass;
 
 struct _PsppireDialogAction
 {
-  GtkAction parent;
+  GObject parent;
 
   /*< private >*/
-  GtkUIManager *uim;
-
+  GVariantType *parameter_type;
   GtkWidget *source;
   GtkWidget *dialog;
 
   GtkWidget *toplevel;
   PsppireDict *dict;
+
+  gboolean activated;
 };
 
 struct _PsppireDialogActionClass
 {
-  GtkActionClass parent_class;
-  void   (*activate) (PsppireDialogAction *);
+  GObjectClass parent_class;
+  void   (*activate) (PsppireDialogAction *, GVariant *);
   char * (*generate_syntax) (const PsppireDialogAction *);
 };
 
@@ -102,6 +103,7 @@ void psppire_dialog_action_set_activation (gpointer class, activation a);
 
 GHashTable *psppire_dialog_action_get_hash_table (PsppireDialogAction *act);
 
+void psppire_dialog_action_activate_null (PsppireDialogAction *act);
 
 
 G_END_DECLS

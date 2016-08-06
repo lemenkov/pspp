@@ -66,12 +66,8 @@ struct _PsppireVarSheet
   gulong scroll_to_bottom_signal;
   gulong dict_signals[PSPPIRE_VAR_SHEET_N_SIGNALS];
 
-  GtkBuilder *builder;
-
   GtkWidget *container;
   gulong on_switch_page_handler;
-
-  GtkUIManager *uim;
 
   gboolean dispose_has_run;
 };
@@ -95,8 +91,9 @@ gboolean psppire_var_sheet_get_may_delete_vars (PsppireVarSheet *);
 void psppire_var_sheet_set_may_delete_vars (PsppireVarSheet *, gboolean);
 
 void psppire_var_sheet_goto_variable (PsppireVarSheet *, int dict_index);
+void psppire_var_sheet_insert_variable (PsppireVarSheet *var_sheet);
+void psppire_var_sheet_clear_variables (PsppireVarSheet *var_sheet);
 
-GtkUIManager *psppire_var_sheet_get_ui_manager (PsppireVarSheet *);
 
 G_END_DECLS
 

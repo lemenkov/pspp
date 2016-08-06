@@ -236,8 +236,6 @@ psppire_dialog_action_comments_activate (PsppireDialogAction *pda)
 
 
 
-  if (PSPPIRE_DIALOG_ACTION_CLASS (psppire_dialog_action_comments_parent_class)->activate)
-    PSPPIRE_DIALOG_ACTION_CLASS (psppire_dialog_action_comments_parent_class)->activate (pda);
 }
 
 static void

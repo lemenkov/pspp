@@ -360,8 +360,6 @@ psppire_dialog_action_select_activate (PsppireDialogAction *a)
   psppire_dialog_action_set_valid_predicate (pda,
 					dialog_state_valid);
 
-  if (PSPPIRE_DIALOG_ACTION_CLASS (psppire_dialog_action_select_parent_class)->activate)
-    PSPPIRE_DIALOG_ACTION_CLASS (psppire_dialog_action_select_parent_class)->activate (pda);
 }
 
 

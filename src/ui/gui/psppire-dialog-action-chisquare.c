@@ -184,8 +184,6 @@ psppire_dialog_action_chisquare_activate (PsppireDialogAction *a)
   psppire_acr_set_model(PSPPIRE_ACR (values_acr), act->expected_list);
 
 
-  if (PSPPIRE_DIALOG_ACTION_CLASS (psppire_dialog_action_chisquare_parent_class)->activate)
-    PSPPIRE_DIALOG_ACTION_CLASS (psppire_dialog_action_chisquare_parent_class)->activate (pda);
 }
 
 static void

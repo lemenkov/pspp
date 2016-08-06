@@ -197,8 +197,6 @@ psppire_dialog_action_paired_activate (PsppireDialogAction *a)
 					act);
     }
   
-  if (PSPPIRE_DIALOG_ACTION_CLASS (psppire_dialog_action_paired_parent_class)->activate)
-    PSPPIRE_DIALOG_ACTION_CLASS (psppire_dialog_action_paired_parent_class)->activate (pda);
 }
 
 static void

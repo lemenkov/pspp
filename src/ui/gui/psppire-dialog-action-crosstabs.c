@@ -266,9 +266,6 @@ psppire_dialog_action_crosstabs_activate (PsppireDialogAction *a)
 				G_CALLBACK (on_format_clicked), act);
 
     }
-  
-  if (PSPPIRE_DIALOG_ACTION_CLASS (psppire_dialog_action_crosstabs_parent_class)->activate)
-    PSPPIRE_DIALOG_ACTION_CLASS (psppire_dialog_action_crosstabs_parent_class)->activate (pda);
 }
 
 

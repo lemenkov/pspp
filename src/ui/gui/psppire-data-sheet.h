@@ -58,11 +58,14 @@ struct _PsppireDataSheet
 
   PsppSheetViewColumn *new_variable_column;
 
-  GtkBuilder *builder;
-
   GtkWidget *container;
-  GtkUIManager *uim;
   gboolean dispose_has_run;
+
+  GtkWidget *column_popup_menu;
+  GtkWidget *row_popup_menu;
+  
+  GtkWidget *pu_sort_up;
+  GtkWidget *pu_sort_down;
 };
 
 struct _PsppireDataSheetClass 
@@ -98,7 +101,15 @@ void psppire_data_sheet_goto_case (PsppireDataSheet *, gint case_index);
 gint psppire_data_sheet_get_selected_case (const PsppireDataSheet *);
 gint psppire_data_sheet_get_current_case (const PsppireDataSheet *);
 
-GtkUIManager *psppire_data_sheet_get_ui_manager (PsppireDataSheet *);
+void psppire_data_sheet_insert_case (PsppireDataSheet *data_sheet);
+void psppire_data_sheet_insert_variable (PsppireDataSheet *data_sheet);
+
+void psppire_data_sheet_edit_cut (PsppireDataSheet *data_sheet);
+void psppire_data_sheet_edit_copy (PsppireDataSheet *data_sheet);
+void psppire_data_sheet_edit_paste (PsppireDataSheet *data_sheet);
+
+void psppire_data_sheet_edit_clear_cases (PsppireDataSheet *data_sheet);
+void psppire_data_sheet_edit_clear_variables (PsppireDataSheet *data_sheet);
 
 G_END_DECLS
 

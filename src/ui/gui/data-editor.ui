@@ -1,672 +1,7 @@
 <?xml version="1.0"?>
 <interface>
-  <object class="GtkUIManager" id="uimanager1">
-    <child>
-      <object class="GtkActionGroup" id="actiongroup1">
-        <child>
-          <object class="GtkAction" id="file">
-            <property name="name">file</property>
-            <property name="label" translatable="yes">_File</property>
-          </object>
-        </child>
-        <child>
-          <object class="GtkAction" id="new1">
-            <property name="stock-id">file-new-data</property>
-            <property name="label" translatable="yes">_New...</property>
-            <property name="name">new1</property>
-          </object>
-        </child>
-        <child>
-          <object class="GtkAction" id="file_new_syntax">
-            <property name="name">file_new_syntax</property>
-            <property name="stock-id">file-syntax-data</property>
-            <property name="label" translatable="yes">_Syntax</property>
-          </object>
-        </child>
-        <child>
-          <object class="GtkAction" id="file_new_data">
-            <property name="name">file_new_data</property>
-            <property name="stock-id">file-system-data</property>
-            <property name="label" translatable="yes">_Data</property>
-          </object>
-        </child>
-        <child>
-          <object class="GtkAction" id="file_open">
-            <property name="stock-id">file-open-data</property>
-            <property name="name">file_open</property>
-            <property name="label" translatable="yes">_Open...</property>
-          </object>
-          <accelerator key="O" modifiers="GDK_CONTROL_MASK"/>
-        </child>
-        <child>
-          <object class="GtkAction" id="file_import">
-            <property name="name">file_import</property>
-            <property name="label" translatable="yes">I_mport Data...</property>
-            <property name="stock-id">file-import-data</property>
-          </object>
-        </child>
-        <child>
-          <object class="GtkAction" id="rename_dataset">
-            <property name="name">rename_dataset</property>
-            <property name="label" translatable="yes">_Rename Dataset...</property>
-            <property name="stock-id">file-rename-data-set</property>
-          </object>
-        </child>
-        <child>
-          <object class="GtkAction" id="file_save">
-            <property name="stock-id">file-save-data</property>
-            <property name="name">file_save</property>
-            <property name="label" translatable="yes">_Save</property>
-          </object>
-          <accelerator key="S" modifiers="GDK_CONTROL_MASK"/>
-        </child>
-        <child>
-          <object class="GtkAction" id="file_save_as">
-            <property name="stock-id">file-save-as</property>
-            <property name="name">file_save_as</property>
-            <property name="label" translatable="yes">Save _As...</property>
-          </object>
-          <accelerator key="S" modifiers="GDK_CONTROL_MASK | GDK_SHIFT_MASK"/>
-        </child>
-        <child>
-          <object class="GtkAction" id="file-information">
-            <property name="name">file-information</property>
-            <property name="label" translatable="yes">D_isplay Data File Information</property>
-            <property name="stock-id">file-display-information</property>
-          </object>
-        </child>
-        <child>
-          <object class="GtkAction" id="file_information_working-file">
-            <property name="name">file_information_working-file</property>
-            <property name="label" translatable="yes">Working File</property>
-            <property name="stock-id">display-information-working-file</property>
-          </object>
-        </child>
-        <child>
-          <object class="GtkAction" id="file_information_external-file">
-            <property name="name">file_information_external-file</property>
-            <property name="label" translatable="yes">External File...</property>
-            <property name="stock-id">display-information-external-file</property>
-          </object>
-        </child>
-        <child>
-          <object class="GtkAction" id="file_recent-data">
-            <property name="name">file_recent-data</property>
-            <property name="label" translatable="yes">Recently Used Da_ta</property>
-            <property name="stock-id">file-recently-used</property>
-          </object>
-        </child>
-        <child>
-          <object class="GtkAction" id="file_recent-files">
-            <property name="name">file_recent-files</property>
-            <property name="label" translatable="yes">Recently Used _Files</property>
-            <property name="stock-id">file-recently-used</property>
-          </object>
-        </child>
-        <child>
-          <object class="GtkAction" id="file_quit">
-            <property name="stock-id">file-quit</property>
-            <property name="name">file_quit</property>
-          </object>
-        </child>
-        <child>
-          <object class="GtkAction" id="edit">
-            <property name="name">edit</property>
-            <property name="label" translatable="yes">_Edit</property>
-          </object>
-        </child>
-        <child>
-          <object class="GtkAction" id="view">
-            <property name="name">view</property>
-            <property name="label" translatable="yes">_View</property>
-          </object>
-        </child>
-        <child>
-          <object class="GtkToggleAction" id="view_statusbar">
-            <property name="active">True</property>
-            <property name="name">view_statusbar</property>
-            <property name="label" translatable="yes">_Status Bar</property>
-          </object>
-        </child>
-        <child>
-          <object class="GtkAction" id="view_fonts">
-            <property name="name">view_fonts</property>
-            <property name="stock-id">view-font</property>
-            <property name="label" translatable="yes">_Font...</property>
-          </object>
-        </child>
-        <child>
-          <object class="GtkToggleAction" id="view_gridlines">
-            <property name="active">True</property>
-            <property name="name">view_gridlines</property>
-            <property name="label" translatable="yes">_Grid Lines</property>
-          </object>
-        </child>
-        <child>
-          <object class="GtkToggleAction" id="view_value-labels">
-            <property name="name">view_value-labels</property>
-            <property name="label" translatable="yes">Value _Labels</property>
-            <property name="tooltip" translatable="yes">Show/hide value labels</property>
-            <property name="stock-id">view-value-labels</property>
-          </object>
-        </child>
-        <child>
-          <object class="GtkRadioAction" id="view_data">
-            <property name="name">view_data</property>
-            <property name="label" translatable="yes">_Data</property>
-          </object>
-        </child>
-        <child>
-          <object class="GtkRadioAction" id="view_variables">
-            <property name="name">view_variables</property>
-            <property name="label" translatable="yes">_Variables</property>
-            <property name="group">view_data</property>
-          </object>
-        </child>
-        <child>
-          <object class="GtkAction" id="data">
-            <property name="name">data</property>
-            <property name="label" translatable="yes">_Data</property>
-          </object>
-        </child>
-        <child>
-          <object class="PsppireDialogActionSort" id="data_sort-cases">
-            <property name="label" translatable="yes">_Sort Cases...</property>
-            <property name="name">data_sort-cases</property>
-            <property name="manager">uimanager1</property>
-            <property name="stock-id">data-sort-cases</property>
-            <property name="tooltip" translatable="yes">Sort cases in the active dataset</property>
-          </object>
-        </child>
-        <child>
-          <object class="PsppireDialogActionFlip" id="data_transpose">
-            <property name="stock-id">data-transpose</property>
-            <property name="name">data_transpose</property>
-            <property name="manager">uimanager1</property>
-            <property name="label" translatable="yes">_Transpose...</property>
-            <property name="tooltip" translatable="yes">Transpose the cases with the variables</property>
-          </object>
-        </child>
-        <child>
-          <object class="PsppireDialogActionAggregate" id="data_aggregate">
-            <property name="stock-id">data-aggregate</property>
-            <property name="name">data_aggregate</property>
-            <property name="manager">uimanager1</property>
-            <property name="label" translatable="yes">_Aggregate...</property>
-            <property name="tooltip" translatable="yes">Aggregate the case values into a new variable</property>
-          </object>
-        </child>
-        <child>
-          <object class="PsppireDialogActionSplit" id="data_split-file">
-            <property name="name">data_split-file</property>
-            <property name="manager">uimanager1</property>
-            <property name="label" translatable="yes">S_plit File...</property>
-            <property name="tooltip" translatable="yes">Split the active dataset</property>
-            <property name="stock-id">data-split-file</property>
-          </object>
-        </child>
-        <child>
-          <object class="PsppireDialogActionSelect" id="data_select-cases">
-            <property name="name">data_select-cases</property>
-            <property name="manager">uimanager1</property>
-            <property name="label" translatable="yes">Select _Cases...</property>
-            <property name="tooltip" translatable="yes">Choose a subset of cases for analysis</property>
-            <property name="stock-id">data-select-cases</property>
-          </object>
-        </child>
-        <child>
-          <object class="PsppireDialogActionWeight" id="data_weight-cases">
-            <property name="name">data_weight-cases</property>
-            <property name="label" translatable="yes">_Weight Cases...</property>
-            <property name="manager">uimanager1</property>
-            <property name="tooltip" translatable="yes">Weight cases by variable</property>
-            <property name="stock-id">data-weight-cases</property>
-          </object>
-        </child>
-        <child>
-          <object class="GtkAction" id="transform">
-            <property name="name">transform</property>
-            <property name="label" translatable="yes">_Transform</property>
-          </object>
-        </child>
-        <child>
-          <object class="PsppireDialogActionCompute" id="transform_compute">
-            <property name="name">transform_compute</property>
-            <property name="manager">uimanager1</property>
-            <property name="label" translatable="yes">_Compute...</property>
-            <property name="stock-id">transform-compute</property>
-          </object>
-        </child>
-        <child>
-          <object class="PsppireDialogActionCount" id="transform_count">
-            <property name="name">transform_count</property>
-            <property name="manager">uimanager1</property>
-            <property name="label" translatable="yes">Cou_nt...</property>
-            <property name="stock-id">transform-count</property>
-          </object>
-        </child>
-        <child>
-          <object class="PsppireDialogActionRank" id="transform_rank">
-            <property name="name">transform_rank</property>
-            <property name="manager">uimanager1</property>
-            <property name="label" translatable="yes">Ran_k Cases...</property>
-            <property name="stock-id">transform-rank-cases</property>
-          </object>
-        </child>
-        <child>
-          <object class="PsppireDialogActionAutorecode" id="transform_autorecode">
-            <property name="name">transform_autorecode</property>
-            <property name="manager">uimanager1</property>
-            <property name="label" translatable="yes">Auto_matic Recode...</property>
-            <property name="stock-id">transform-automatic-recode</property>
-          </object>
-        </child>
-        <child>
-          <object class="PsppireDialogActionRecodeSame" id="transform_recode-same">
-            <property name="name">transform_recode-same</property>
-            <property name="manager">uimanager1</property>
-            <property name="label" translatable="yes">Recode into _Same Variables...</property>
-            <property name="stock-id">transform-in-to-same-variables</property>
-          </object>
-        </child>
-        <child>
-          <object class="PsppireDialogActionRecodeDifferent" id="transform_recode-different">
-            <property name="manager">uimanager1</property>
-            <property name="name">transform_recode-different</property>
-            <property name="label" translatable="yes">Recode into _Different Variables...</property>
-            <property name="stock-id">transform-in-to-different-variables</property>
-          </object>
-        </child>
-        <child>
-          <object class="GtkAction" id="transform_run-pending">
-            <property name="name">transform_run-pending</property>
-            <property name="label" translatable="yes">_Run Pending Transforms</property>
-            <property name="stock-id">transform-run-pending</property>
-          </object>
-          <accelerator key="G" modifiers="GDK_CONTROL_MASK"/>
-        </child>
-        <child>
-          <object class="GtkAction" id="analyze">
-            <property name="name">analyze</property>
-            <property name="label" translatable="yes">_Analyze</property>
-          </object>
-        </child>
-        <child>
-          <object class="GtkAction" id="descriptive-statistics">
-            <property name="name">descriptive-statistics</property>
-            <property name="label" translatable="yes">_Descriptive Statistics</property>
-            <property name="stock-id">analyze-descriptive-statistics</property>
-          </object>
-        </child>
-        <child>
-          <object class="PsppireDialogActionFrequencies" id="frequencies">
-            <property name="manager">uimanager1</property>
-            <property name="name">frequencies</property>
-            <property name="label" translatable="yes">_Frequencies...</property>
-          </object>
-        </child>
-        <child>
-          <object class="PsppireDialogActionDescriptives" id="analyze_descriptives">
-            <property name="manager">uimanager1</property>
-            <property name="name">analyze_descriptives</property>
-            <property name="label" translatable="yes">_Descriptives...</property>
-          </object>
-        </child>
-        <child>
-          <object class="PsppireDialogActionExamine" id="explore">
-            <property name="name">analyze_explore</property>
-            <property name="manager">uimanager1</property>
-            <property name="label" translatable="yes">_Explore...</property>
-          </object>
-        </child>
-        <child>
-          <object class="PsppireDialogActionCrosstabs" id="crosstabs">
-            <property name="name">crosstabs</property>
-            <property name="manager">uimanager1</property>
-            <property name="label" translatable="yes">_Crosstabs...</property>
-          </object>
-        </child>
-        <child>
-          <object class="GtkAction" id="compare-means">
-            <property name="name">compare-means</property>
-            <property name="label" translatable="yes">Compare _Means</property>
-            <property name="stock-id">analyze-compare-means</property>
-          </object>
-        </child>
-        <child>
-          <object class="PsppireDialogActionMeans" id="means">
-            <property name="name">means</property>
-            <property name="manager">uimanager1</property>
-            <property name="label" translatable="yes">_Means...</property>
-          </object>
-        </child>
-        <child>
-          <object class="PsppireDialogActionTt1s" id="one-sample-t-test">
-            <property name="name">one-sample-t-test</property>
-            <property name="manager">uimanager1</property>
-            <property name="label" translatable="yes">_One Sample T Test...</property>
-          </object>
-        </child>
-        <child>
-          <object class="PsppireDialogActionIndepSamps" id="indep-t-test">
-            <property name="name">indep-t-test</property>
-            <property name="manager">uimanager1</property>
-            <property name="label" translatable="yes">_Independent Samples T Test...</property>
-          </object>
-        </child>
-        <child>
-          <object class="PsppireDialogActionPaired" id="paired-t-test">
-            <property name="name">paired-t-test</property>
-            <property name="manager">uimanager1</property>
-            <property name="label" translatable="yes">_Paired Samples T Test...</property>
-          </object>
-        </child>
-        <child>
-          <object class="PsppireDialogActionOneway" id="oneway-anova">
-            <property name="name">oneway-anova</property>
-            <property name="manager">uimanager1</property>
-            <property name="label" translatable="yes">One Way _ANOVA...</property>
-          </object>
-        </child>
-        <child>
-          <object class="PsppireDialogActionUnivariate" id="univariate">
-            <property name="name">univariate</property>
-            <property name="manager">uimanager1</property>
-            <property name="label" translatable="yes">_Univariate Analysis...</property>
-            <property name="stock-id">analyze-univariate-analysis</property>
-          </object>
-        </child>
-        <child>
-          <object class="PsppireDialogActionCorrelation" id="correlation">
-            <property name="name">correlation</property>
-            <property name="manager">uimanager1</property>
-            <property name="label" translatable="yes">Bivariate _Correlation...</property>
-            <property name="stock-id">analyze-bivariate-correlation</property>
-          </object>
-        </child>
-        <child>
-          <object class="PsppireDialogActionKmeans" id="k-means">
-            <property name="name">k-means</property>
-            <property name="manager">uimanager1</property>
-            <property name="label" translatable="yes">_K-Means Cluster...</property>
-            <property name="stock-id">analyze-kmeans-cluster</property>
-          </object>
-        </child>
-        <child>
-          <object class="PsppireDialogActionFactor" id="factor-analysis">
-            <property name="name">factor-analysis</property>
-            <property name="manager">uimanager1</property>
-            <property name="label" translatable="yes">Factor _Analysis...</property>
-            <property name="stock-id">analyze-factor-analysis</property>
-          </object>
-        </child>
-        <child>
-          <object class="PsppireDialogActionReliability" id="reliability">
-            <property name="name">reliability</property>
-            <property name="manager">uimanager1</property>
-            <property name="label" translatable="yes">Re_liability...</property>
-            <property name="stock-id">analyze-realiability</property>
-          </object>
-        </child>
-        <child>
-          <object class="GtkAction" id="regression">
-            <property name="name">regression</property>
-            <property name="label" translatable="yes">_Regression</property>
-            <property name="stock-id">analyze-regression</property>
-          </object>
-        </child>
-        <child>
-          <object class="PsppireDialogActionRegression" id="linear-regression">
-            <property name="name">linear-regression</property>
-            <property name="manager">uimanager1</property>
-            <property name="label" translatable="yes">_Linear...</property>
-          </object>
-        </child>
-        <child>
-          <object class="PsppireDialogActionLogistic" id="logistic-regression">
-            <property name="name">logistic-regression</property>
-            <property name="manager">uimanager1</property>
-            <property name="label" translatable="yes">_Binary Logistic...</property>
-          </object>
-        </child>
-        <child>
-          <object class="GtkAction" id="non-parametrics">
-            <property name="name">non-parametrics</property>
-            <property name="label" translatable="yes">_Non-Parametric Statistics</property>
-            <property name="stock-id">analyze-non-parametric-statistics</property>
-          </object>
-        </child>
-        <child>
-          <object class="PsppireDialogActionChisquare" id="chi-square">
-            <property name="name">chi-square</property>
-            <property name="manager">uimanager1</property>
-            <property name="label" translatable="yes">_Chi-Square...</property>
-          </object>
-        </child>
-        <child>
-          <object class="PsppireDialogActionBinomial" id="binomial">
-            <property name="name">binomial</property>
-            <property name="manager">uimanager1</property>
-            <property name="label" translatable="yes">_Binomial...</property>
-          </object>
-        </child>
-        <child>
-          <object class="PsppireDialogActionRuns" id="runs">
-            <property name="name">runs</property>
-            <property name="manager">uimanager1</property>
-            <property name="label" translatable="yes">R_uns...</property>
-          </object>
-        </child>
-        <child>
-          <object class="PsppireDialogAction1sks" id="ks-one-sample">
-            <property name="name">ks-one-sample</property>
-            <property name="manager">uimanager1</property>
-            <property name="label" translatable="yes">1-Sample _K-S...</property>
-          </object>
-        </child>
-        <child>
-          <object class="PsppireDialogActionTwoSample" id="two-related-samples">
-            <property name="name">two-related-samples</property>
-            <property name="manager">uimanager1</property>
-            <property name="label" translatable="yes">2 _Related Samples...</property>
-          </object>
-        </child>
-        <child>
-          <object class="PsppireDialogActionKRelated" id="k-related-samples">
-            <property name="name">k-related-samples</property>
-            <property name="manager">uimanager1</property>
-            <property name="label" translatable="yes">K Related _Samples...</property>
-          </object>
-        </child>
-        <child>
-          <object class="PsppireDialogActionRoc" id="roc-curve">
-            <property name="name">roc-curve</property>
-            <property name="manager">uimanager1</property>
-            <property name="label" translatable="yes">ROC Cur_ve...</property>
-            <property name="stock-id">analyze-roc-curve</property>
-          </object>
-        </child>
-        <child>
-          <object class="GtkAction" id="graphs">
-            <property name="name">graphs</property>
-            <property name="label" translatable="yes">_Graphs</property>
-          </object>
-        </child>
-        <child>
-          <object class="PsppireDialogActionScatterplot" id="graphs_scatterplot">
-            <property name="manager">uimanager1</property>
-            <property name="name">graphs_scatterplot</property>
-            <property name="label" translatable="yes">_Scatterplot</property>
-            <property name="stock-id">graphs-scatterplot</property>
-          </object>
-        </child>
-        <child>
-          <object class="PsppireDialogActionHistogram" id="graphs_histogram">
-            <property name="manager">uimanager1</property>
-            <property name="name">graphs_histogram</property>
-            <property name="label" translatable="yes">_Histogram</property>
-            <property name="stock-id">graphs-histogram</property>
-          </object>
-        </child>
-        <child>
-          <object class="PsppireDialogActionBarchart" id="graphs_barchart">
-            <property name="manager">uimanager1</property>
-            <property name="name">graphs_barchart</property>
-            <property name="label" translatable="yes">_Barchart</property>
-            <property name="stock-id">graphs-barchart</property>
-          </object>
-        </child>
-        <child>
-          <object class="GtkAction" id="utilities">
-            <property name="name">utilities</property>
-            <property name="label" translatable="yes">_Utilities</property>
-          </object>
-        </child>
-        <child>
-          <object class="PsppireDialogActionVarInfo" id="utilities_variables">
-            <property name="manager">uimanager1</property>
-            <property name="name">utilities_variables</property>
-            <property name="label" translatable="yes">_Variables...</property>
-            <property name="tooltip" translatable="yes">Jump to variable</property>
-            <property name="stock-id">utilities-variables</property>
-          </object>
-        </child>
-        <child>
-          <object class="PsppireDialogActionComments" id="utilities_comments">
-            <property name="manager">uimanager1</property>
-            <property name="name">utilities_comments</property>
-            <property name="label" translatable="yes">Data File _Comments...</property>
-            <property name="stock-id">utilities-data-file-comments</property>
-          </object>
-        </child>
-      </object>
-    </child>
-    <ui>
-      <menubar name="menubar">
-        <menu action="file">
-          <menu action="new1">
-            <menuitem action="file_new_syntax"/>
-            <menuitem action="file_new_data"/>
-          </menu>
-          <menuitem action="file_open"/>
-          <menuitem action="file_import"/>
-          <separator/>
-          <menuitem action="file_save"/>
-          <menuitem action="file_save_as"/>
-          <menuitem action="rename_dataset"/>
-          <separator/>
-          <menu action="file-information">
-            <menuitem action="file_information_working-file"/>
-            <menuitem action="file_information_external-file"/>
-          </menu>
-          <separator/>
-          <menuitem action="file_recent-data"/>
-          <menuitem action="file_recent-files"/>
-          <separator/>
-          <menuitem action="file_quit"/>
-        </menu>
-        <placeholder name="DataSheetEditMenu"/>
-        <placeholder name="VarSheetEditMenu"/>
-        <menu action="view">
-          <menuitem action="view_statusbar"/>
-          <separator/>
-          <menuitem action="view_fonts"/>
-          <menuitem action="view_gridlines"/>
-          <menuitem action="view_value-labels"/>
-          <separator/>
-          <menuitem action="view_data"/>
-          <menuitem action="view_variables"/>
-        </menu>
-        <menu action="data">
-          <menuitem action="data_sort-cases"/>
-          <menuitem action="data_transpose"/>
-          <menuitem action="data_aggregate"/>
-          <separator/>
-          <menuitem action="data_split-file"/>
-          <menuitem action="data_select-cases"/>
-          <menuitem action="data_weight-cases"/>
-        </menu>
-        <menu action="transform">
-          <menuitem action="transform_compute"/>
-          <menuitem action="transform_count"/>
-          <menuitem action="transform_rank"/>
-          <menuitem action="transform_autorecode"/>
-          <separator/>
-          <menuitem action="transform_recode-same"/>
-          <menuitem action="transform_recode-different"/>
-          <separator/>
-          <menuitem action="transform_run-pending"/>
-        </menu>
-        <menu action="analyze">
-          <menu action="descriptive-statistics">
-            <menuitem action="frequencies"/>
-            <menuitem action="analyze_descriptives"/>
-            <menuitem action="explore"/>
-            <menuitem action="crosstabs"/>
-          </menu>
-          <menu action="compare-means">
-            <menuitem action="means"/>
-            <menuitem action="one-sample-t-test"/>
-            <menuitem action="indep-t-test"/>
-            <menuitem action="paired-t-test"/>
-            <menuitem action="oneway-anova"/>
-          </menu>
-          <menuitem action="univariate"/>
-          <menuitem action="correlation"/>
-          <menuitem action="k-means"/>
-          <menuitem action="factor-analysis"/>
-          <menuitem action="reliability"/>
-          <menu action="regression">
-            <menuitem action="linear-regression"/>
-            <menuitem action="logistic-regression"/>
-          </menu>
-          <menu action="non-parametrics">
-            <menuitem action="chi-square"/>
-            <menuitem action="binomial"/>
-            <menuitem action="runs"/>
-            <menuitem action="ks-one-sample"/>
-            <menuitem action="two-related-samples"/>
-            <menuitem action="k-related-samples"/>
-          </menu>
-          <menuitem action="roc-curve"/>
-        </menu>
-        <menu action="graphs">
-          <menuitem action="graphs_scatterplot"/>
-        </menu>
-        <menu action="graphs">
-          <menuitem action="graphs_scatterplot"/>
-          <menuitem action="graphs_histogram"/>
-          <menuitem action="graphs_barchart"/>
-        </menu>
-        <menu action="utilities">
-          <menuitem action="utilities_variables"/>
-          <menuitem action="utilities_comments"/>
-        </menu>
-      </menubar>
-      <toolbar action="toolbar">
-        <toolitem name="toolbar_open" action="file_open"/>
-        <toolitem name="toolbar_save" action="file_save"/>
-        <separator/>
-        <placeholder name="DataSheetToolItems"/>
-        <placeholder name="VarSheetToolItems"/>
-        <separator/>
-        <toolitem name="toolbar_split-file" action="data_split-file"/>
-        <toolitem name="toolbar_weight-cases" action="data_weight-cases"/>
-        <toolitem name="toolbar_select-cases" action="data_select-cases"/>
-        <separator/>
-        <toolitem name="toolbar_select-cases" action="view_value-labels"/>
-      </toolbar>
-    </ui>
-  </object>
   <!-- interface-requires gtk+ 2.6 -->
   <!-- interface-naming-policy toplevel-contextual -->
-  <object class="GtkMenuBar" constructor="uimanager1" id="menubar">
-    <property name="visible">True</property>
-  </object>
-  <object class="GtkToolbar" constructor="uimanager1" id="toolbar">
-    <property name="visible">True</property>
-    <property name="toolbar-style">GTK_TOOLBAR_ICONS</property>
-  </object>
   <object class="GtkBox" id="status-bar">
     <property name="visible">True</property>
     <property name="orientation">GTK_ORIENTATION_HORIZONTAL</property>
@@ -797,4 +132,253 @@
       </packing>
     </child>
   </object>
+
+  <menu id="data-editor-menu">
+    <submenu>
+      <attribute name="label" translatable="yes">_View</attribute>
+      <section>
+	<item>
+	  <attribute name="label" translatable="yes">_Status Bar</attribute>
+	  <attribute name="action">win.statusbar</attribute>
+	</item>
+      </section>
+      <section>
+	<item>
+	  <attribute name="label" translatable="yes">_Font...</attribute>
+	  <attribute name="action">win.fonts</attribute>
+	</item>
+	<item>
+	  <attribute name="label" translatable="yes">_Grid Lines</attribute>
+	  <attribute name="action">win.gridlines</attribute>
+	</item>
+	<item>
+	  <attribute name="label" translatable="yes">Value _Labels</attribute>
+	  <attribute name="action">win.value_labels</attribute>
+	</item>
+      </section>
+      <section>
+	<item>
+	  <attribute name="label" translatable="yes">_Data</attribute>
+	  <attribute name="target">DATA</attribute>
+	  <attribute name="action">win.view_dv</attribute>
+	</item>
+	<item>
+	  <attribute name="label" translatable="yes">_Variables</attribute>
+	  <attribute name="target">VARS</attribute>
+	  <attribute name="action">win.view_dv</attribute>
+	</item>
+      </section>
+    </submenu>
+    <submenu>
+      <attribute name="label" translatable="yes">_Data</attribute>
+      <section>
+	<item>
+	  <attribute name="label" translatable="yes">_Sort Cases...</attribute>
+	  <attribute name="action">win.PsppireDialogActionSort</attribute>
+	</item>
+	<item>
+	  <attribute name="label" translatable="yes">_Transpose...</attribute>
+	  <attribute name="action">win.PsppireDialogActionFlip</attribute>
+	</item>
+	<item>
+	  <attribute name="label" translatable="yes">_Aggregate...</attribute>
+	  <attribute name="action">win.PsppireDialogActionAggregate</attribute>
+	</item>
+      </section>
+      <section>
+	<item>
+	  <attribute name="label" translatable="yes">S_plit File...</attribute>
+	  <attribute name="action">win.PsppireDialogActionSplit</attribute>
+	</item>
+	<item>
+	  <attribute name="label" translatable="yes">Select _Cases...</attribute>
+	  <attribute name="action">win.PsppireDialogActionSelect</attribute>
+	</item>
+	<item>
+	  <attribute name="label" translatable="yes">_Weight Cases...</attribute>
+	  <attribute name="action">win.PsppireDialogActionWeight</attribute>
+	</item>
+      </section>
+    </submenu>
+    <submenu>
+      <attribute name="label" translatable="yes">_Transform</attribute>
+      <section>
+	<item>
+	  <attribute name="label" translatable="yes">_Compute...</attribute>
+	  <attribute name="action">win.PsppireDialogActionCompute</attribute>
+	</item>
+	<item>
+	  <attribute name="label" translatable="yes">Cou_nt...</attribute>
+	  <attribute name="action">win.PsppireDialogActionCount</attribute>
+	</item>
+	<item>
+	  <attribute name="label" translatable="yes">Ran_k Cases...</attribute>
+	  <attribute name="action">win.PsppireDialogActionRank</attribute>
+	</item>
+	<item>
+	  <attribute name="label" translatable="yes">Auto_matic Recode...</attribute>
+	  <attribute name="action">win.PsppireDialogActionAutorecode</attribute>
+	</item>
+      </section>
+      <section>
+	<item>
+	  <attribute name="label" translatable="yes">Recode into _Same Variables...</attribute>
+	  <attribute name="action">win.PsppireDialogActionRecodeSame</attribute>
+	</item>
+	<item>
+	  <attribute name="label" translatable="yes">Recode into _Different Variables...</attribute>
+	  <attribute name="action">win.PsppireDialogActionRecodeDifferent</attribute>
+	</item>
+      </section>
+      <section>
+	<item>
+	  <attribute name="label" translatable="yes">_Run Pending Transforms</attribute>
+	  <attribute name="action">win.transform-pending</attribute>
+	</item>
+      </section>
+    </submenu>
+    <submenu>
+      <attribute name="label" translatable="yes">_Analyze</attribute>
+      <section>
+	<submenu>
+	  <attribute name="label" translatable="yes">_Descriptive Statistics</attribute>
+	  <item>
+	    <attribute name="label" translatable="yes">_Frequencies...</attribute>
+	    <attribute name="action">win.PsppireDialogActionFrequencies</attribute>
+	  </item>
+	  <item>
+	    <attribute name="label" translatable="yes">_Descriptives...</attribute>
+	    <attribute name="action">win.PsppireDialogActionDescriptives</attribute>
+	  </item>
+	  <item>
+	    <attribute name="label" translatable="yes">_Explore...</attribute>
+	    <attribute name="action">win.PsppireDialogActionExamine</attribute>
+	  </item>
+	  <item>
+	    <attribute name="label" translatable="yes">_Crosstabs...</attribute>
+	    <attribute name="action">win.PsppireDialogActionCrosstabs</attribute>
+	  </item>
+	</submenu>
+	<submenu>
+	  <attribute name="label" translatable="yes">Compare _Means</attribute>
+	  <item>
+	    <attribute name="label" translatable="yes">_Means...</attribute>
+	    <attribute name="action">win.PsppireDialogActionMeans</attribute>
+	  </item>
+	  <item>
+	    <attribute name="label" translatable="yes">_One Sample T Test...</attribute>
+	    <attribute name="action">win.PsppireDialogActionTt1s</attribute>
+	  </item>
+	  <item>
+	    <attribute name="label" translatable="yes">_Independent Samples T Test...</attribute>
+	    <attribute name="action">win.PsppireDialogActionIndepSamps</attribute>
+	  </item>
+	  <item>
+	    <attribute name="label" translatable="yes">_Paired Samples T Test...</attribute>
+	    <attribute name="action">win.PsppireDialogActionPaired</attribute>
+	  </item>
+	  <item>
+	    <attribute name="label" translatable="yes">_One Way _ANOVA...</attribute>
+	    <attribute name="action">win.PsppireDialogActionOneway</attribute>
+	  </item>
+	</submenu>
+	<item>
+	  <attribute name="label" translatable="yes">_Univariate Analysis...</attribute>
+	  <attribute name="action">win.PsppireDialogActionUnivariate</attribute>
+	</item>
+	<item>
+	  <attribute name="label" translatable="yes">Bivariate _Correlation...</attribute>
+	  <attribute name="action">win.PsppireDialogActionCorrelation</attribute>
+	</item>
+	<item>
+	  <attribute name="label" translatable="yes">_K-Means Cluster...</attribute>
+	  <attribute name="action">win.PsppireDialogActionKmeans</attribute>
+	</item>
+	<item>
+	  <attribute name="label" translatable="yes">_Factor Analysis...</attribute>
+	  <attribute name="action">win.PsppireDialogActionFactor</attribute>
+	</item>
+	<item>
+	  <attribute name="label" translatable="yes">Re_liability...</attribute>
+	  <attribute name="action">win.PsppireDialogActionReliability</attribute>
+	</item>
+	<submenu>
+	  <attribute name="label" translatable="yes">_Regression</attribute>
+	  <section>
+	    <item>
+	      <attribute name="label" translatable="yes">_Linear...</attribute>
+	      <attribute name="action">win.PsppireDialogActionRegression</attribute>
+	    </item>
+	    <item>
+	      <attribute name="label" translatable="yes">_Binary Logistic...</attribute>
+	      <attribute name="action">win.PsppireDialogActionLogistic</attribute>
+	    </item>
+	  </section>
+	</submenu>
+	<submenu>
+	  <attribute name="label" translatable="yes">_Non-Parametric Statistics</attribute>
+	  <section>
+	    <item>
+	      <attribute name="label" translatable="yes">_Chi Square...</attribute>
+	      <attribute name="action">win.PsppireDialogActionChisquare</attribute>
+	    </item>
+	    <item>
+	      <attribute name="label" translatable="yes">_Binomial...</attribute>
+	      <attribute name="action">win.PsppireDialogActionBinomial</attribute>
+	    </item>
+	    <item>
+	      <attribute name="label" translatable="yes">_Runs...</attribute>
+	      <attribute name="action">win.PsppireDialogActionRuns</attribute>
+	    </item>
+	    <item>
+	      <attribute name="label" translatable="yes">_1 Sample K-S...</attribute>
+	      <attribute name="action">win.PsppireDialogAction1sks</attribute>
+	    </item>
+	    <item>
+	      <attribute name="label" translatable="yes">_2 Related Samples...</attribute>
+	      <attribute name="action">win.PsppireDialogActionTwoSample</attribute>
+	    </item>
+	    <item>
+	      <attribute name="label" translatable="yes">_K Related Samples...</attribute>
+	      <attribute name="action">win.PsppireDialogActionKRelated</attribute>
+	    </item>
+	  </section>
+	</submenu>
+	<item>
+	  <attribute name="label" translatable="yes">ROC Cur_ve...</attribute>
+	  <attribute name="action">win.PsppireDialogActionRoc</attribute>
+	</item>
+      </section>
+    </submenu>
+    <submenu>
+      <attribute name="label" translatable="yes">_Graphs</attribute>
+      <section>
+	<item>
+	  <attribute name="label" translatable="yes">_Scatterplot</attribute>
+	  <attribute name="action">win.PsppireDialogActionScatterplot</attribute>
+	</item>
+	<item>
+	  <attribute name="label" translatable="yes">_Histogram</attribute>
+	  <attribute name="action">win.PsppireDialogActionHistogram</attribute>
+	</item>
+	<item>
+	  <attribute name="label" translatable="yes">_Barchart</attribute>
+	  <attribute name="action">win.PsppireDialogActionBarchart</attribute>
+	</item>
+      </section>
+    </submenu>
+    <submenu>
+      <attribute name="label" translatable="yes">_Utilities</attribute>
+      <section>
+	<item>
+	  <attribute name="label" translatable="yes">_Variables...</attribute>
+	  <attribute name="action">win.PsppireDialogActionVarInfo</attribute>
+	</item>
+	<item>
+	  <attribute name="label" translatable="yes">Data File _Comments...</attribute>
+	  <attribute name="action">win.PsppireDialogActionComments</attribute>
+	</item>
+      </section>
+    </submenu>
+  </menu>
 </interface>

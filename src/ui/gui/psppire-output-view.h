@@ -24,9 +24,8 @@ struct output_item;
 struct string_map;
 
 struct psppire_output_view *psppire_output_view_new (GtkLayout *output,
-                                                     GtkTreeView *overview,
-                                                     GtkAction *copy_action,
-                                                     GtkAction *select_all_action);
+						     GtkTreeView *overview);
+
 void psppire_output_view_clear (struct psppire_output_view *);
 void psppire_output_view_destroy (struct psppire_output_view *);
 
