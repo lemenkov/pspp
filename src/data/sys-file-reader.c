@@ -297,8 +297,7 @@ static bool read_variable_to_value_pair (struct sfm_reader *,
                                          struct text_record *,
                                          struct variable **var, char **value);
 static void text_warn (struct sfm_reader *r, struct text_record *text,
-                       const char *format, ...)
-  PRINTF_FORMAT (3, 4);
+                       const char *format, ...)  PRINTF_FORMAT (3, 4);
 static char *text_get_token (struct text_record *,
                              struct substring delimiters, char *delimiter);
 static bool text_match (struct text_record *, char c);
@@ -3141,6 +3140,9 @@ text_parse_counted_string (struct sfm_reader *r, struct text_record *text)
 static bool
 text_match (struct text_record *text, char c)
 {
+  if (text->pos >= text->buffer.length)
+    return false;
+  
   if (text->buffer.string[text->pos] == c) 
     {
       text->pos++;
