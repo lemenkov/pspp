@@ -56,18 +56,24 @@
 #include "ui/source-init-opts.h"
 #include "ui/syntax-gen.h"
 
-#include "ui/gui/icons/icon-names.h"
-
 
 #include "gl/configmake.h"
 #include "gl/xalloc.h"
 #include "gl/relocatable.h"
 
-static void create_icon_factory (void);
+void create_icon_factory (void);
 
 #define _(msgid) gettext (msgid)
 #define N_(msgid) msgid
 
+void
+register_selection_functions (void)
+{
+  psppire_selector_set_default_selection_func (GTK_TYPE_ENTRY, insert_source_row_into_entry);
+  psppire_selector_set_default_selection_func (PSPPIRE_VAR_VIEW_TYPE, insert_source_row_into_tree_view);
+  psppire_selector_set_default_selection_func (GTK_TYPE_TREE_VIEW, insert_source_row_into_tree_view);
+  psppire_selector_set_default_selection_func (PSPPIRE_TYPE_MEANS_LAYER, insert_source_row_into_layers);
+}
 
 bool
 initialize (const struct init_source *is)
@@ -106,65 +112,10 @@ initialize (const struct init_source *is)
 	}
       break;
     case 9:
-      create_icon_factory ();
-      break;
-    case 10:
-      psppire_output_window_setup ();
-      break;
-    case 11:
       journal_init ();
       break;
-    case 12:
+    case 10:
       textdomain (PACKAGE);
-      break;
-    case 13:
-      /* FIXME: This should be implemented with a GtkInterface */
-      psppire_selector_set_default_selection_func (GTK_TYPE_ENTRY, insert_source_row_into_entry);
-      psppire_selector_set_default_selection_func (PSPPIRE_VAR_VIEW_TYPE, insert_source_row_into_tree_view);
-      psppire_selector_set_default_selection_func (GTK_TYPE_TREE_VIEW, insert_source_row_into_tree_view);
-      psppire_selector_set_default_selection_func (PSPPIRE_TYPE_MEANS_LAYER, insert_source_row_into_layers);
-      break;
-    case 14:
-      {
-      if (is->filename_arg != -1)
-	{
-#ifndef G_OS_WIN32
-	  const char *file = (*is->argv)[is->filename_arg];
-	  const gchar *local_encoding = NULL;
-	  g_get_charset (&local_encoding);
-#else
-	  char **as = g_win32_get_command_line ();
-	  const char *file = as[is->filename_arg];
-	  const gchar *local_encoding = "UTF-8";
-#endif	  
-
-	  struct file_handle *fh = fh_create_file (NULL,
-						   file,
-						   local_encoding,
-						   fh_default_properties ());
-	  
-	  const char *filename = fh_get_file_name (fh);
-
-	  int retval = any_reader_detect (fh, NULL);
-
-	  /* Check to see if the file is a .sav or a .por file.  If not
-	     assume that it is a syntax file */
-	  if (retval == 1)
-	    open_data_window (NULL, filename, NULL, NULL);
-	  else if (retval == 0)
-	    {
-	      create_data_window ();
-	      open_syntax_window (filename, NULL);
-	    }
-
-	  fh_unref (fh);
-	}
-      else
-	{
-	  create_data_window ();
-	}
-      return TRUE;
-      }
       break;
     default:
       return TRUE;
@@ -183,9 +134,9 @@ de_initialize (void)
 }
 
 void
-psppire_quit (void)
+psppire_quit (GApplication *app)
 {
-  gtk_main_quit ();
+  g_application_quit (app);
 }
 
 struct icon_size
@@ -209,127 +160,13 @@ static const GtkIconSize small_toolbar[] = {GTK_ICON_SIZE_SMALL_TOOLBAR};
    if such an icon exists.
 */
 static const struct icon_size sizemap[] = 
-{
-  {24,  sizeof (small_toolbar) / sizeof (GtkIconSize), small_toolbar},
-  {16,  sizeof (menus) / sizeof (GtkIconSize), menus},
-  {32,  sizeof (large_toolbar) / sizeof (GtkIconSize), large_toolbar}
-};
-
-
-static void
-create_icon_factory (void)
-{
-  gint c;
-  GtkIconFactory *factory = gtk_icon_factory_new ();
-  struct icon_context ctx[2];
-  ctx[0] = action_icon_context;
-  ctx[1] = category_icon_context;
-  for (c = 0 ; c < 2 ; ++c)
   {
-    const struct icon_context *ic = &ctx[c];
-    gint i;
-    for (i = 0 ; i < ic->n_icons ; ++i)
-      {
-	gboolean wildcarded = FALSE;
-	GtkIconSet *icon_set = gtk_icon_set_new ();
-	int r;
-	for (r = 0 ; r < sizeof (sizemap) / sizeof (sizemap[0]); ++r)
-	  {
-	    int s;
-	    GtkIconSource *source = gtk_icon_source_new ();
-	    gchar *filename = g_strdup_printf ("%s/%s/%dx%d/%s.png", PKGDATADIR,
-					       ic->context_name,
-					       sizemap[r].resolution, sizemap[r].resolution,
-					       ic->icon_name[i]);
-	    const char *relocated_filename = relocate (filename);
-	    GFile *gf = g_file_new_for_path (relocated_filename);
-	    if (g_file_query_exists (gf, NULL))
-	      {
-		gtk_icon_source_set_filename (source, relocated_filename);
-		if (!wildcarded)
-		  {
-		    gtk_icon_source_set_size_wildcarded (source, TRUE);
-		    wildcarded = TRUE;
-		  }
-	      }
-	    g_object_unref (gf);
-
-	    for (s = 0 ; s < sizemap[r].n_sizes ; ++s)
-	      gtk_icon_source_set_size (source, sizemap[r].usage[s]);
-	    if (filename != relocated_filename)
-	      free (CONST_CAST (char *, relocated_filename));
-	    g_free (filename);
-
-	    if ( gtk_icon_source_get_filename (source))
-	      gtk_icon_set_add_source (icon_set, source);
-
-	    gtk_icon_source_free (source);
-	  }
-      
-	gtk_icon_factory_add (factory, ic->icon_name[i], icon_set);
-    }
-  }
-
-  {
-    struct iconmap
-    {
-      const gchar *gtk_id;
-      gchar *pspp_id;
-    };
-
-    /* We have our own icons for some things.
-       But we want the Stock Item to be identical to the Gtk standard
-       ones in all other respects.
-    */
-    const struct iconmap map[] = {
-      {GTK_STOCK_NEW,    "file-new-document"},
-      {GTK_STOCK_QUIT,   "file-quit"},
-      {GTK_STOCK_SAVE,   "file-save-document"},
-      {GTK_STOCK_CUT,    "edit-cut"},
-      {GTK_STOCK_COPY,   "edit-copy"},
-      {GTK_STOCK_PASTE,  "edit-paste"},
-      {GTK_STOCK_UNDO,   "edit-undo"},
-      {GTK_STOCK_REDO,   "edit-redo"},
-      {GTK_STOCK_DELETE, "edit-delete"},
-      {GTK_STOCK_ABOUT,  "help-about"},
-      {GTK_STOCK_PRINT,  "file-print-document"}
-    };
-
-    GtkStockItem customised[sizeof (map) / sizeof (map[0])];
-    int i;
-
-    for (i = 0; i < sizeof (map) / sizeof (map[0]); ++i)
-    {
-      gtk_stock_lookup (map[i].gtk_id, &customised[i]);
-      customised[i].stock_id =  map[i].pspp_id;
-    }
+    {24,  sizeof (small_toolbar) / sizeof (GtkIconSize), small_toolbar},
+    {16,  sizeof (menus) / sizeof (GtkIconSize), menus},
+    {32,  sizeof (large_toolbar) / sizeof (GtkIconSize), large_toolbar}
+  };
 
 
-
-    gtk_stock_add (customised, sizeof (map) / sizeof (map[0]));
-  }
-
-  {
-    /* Create our own "pspp-stock-reset" item, using the
-       GTK_STOCK_REFRESH icon set */
-    GtkStockItem items[2] = {
-      {"pspp-stock-reset", N_("_Reset"), 0, 0, PACKAGE},
-      {"pspp-stock-select", N_("_Select"), 0, 0, PACKAGE}
-    };
-
-    gtk_stock_add (items, 2);
-
-    gtk_icon_factory_add (factory, "pspp-stock-reset",
-			  gtk_icon_factory_lookup_default (GTK_STOCK_REFRESH)
-			  );
-
-    gtk_icon_factory_add (factory, "pspp-stock-select",
-			  gtk_icon_factory_lookup_default (GTK_STOCK_INDEX)
-			  );
-  }
-
-  gtk_icon_factory_add_default (factory);
-}
 
 
 
@@ -355,4 +192,31 @@ void
 psppire_set_lexer (struct lexer *lexer)
 {
   msg_set_handler (handle_msg, lexer);
+}
+
+
+void
+psppire_preload_file (const gchar *file)
+{
+  const gchar *local_encoding = "UTF-8";
+  
+  struct file_handle *fh = fh_create_file (NULL,
+					   file,
+					   local_encoding,
+					   fh_default_properties ());
+  const char *filename = fh_get_file_name (fh);
+  
+  int retval = any_reader_detect (fh, NULL);
+  
+  /* Check to see if the file is a .sav or a .por file.  If not
+     assume that it is a syntax file */
+  if (retval == 1)
+    open_data_window (NULL, filename, NULL, NULL);
+  else if (retval == 0)
+    {
+      create_data_window ();
+      open_syntax_window (filename, NULL);
+    }
+
+  fh_unref (fh);
 }

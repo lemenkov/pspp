@@ -11,7 +11,6 @@ UI_FILES = \
 	src/ui/gui/comments.ui \
 	src/ui/gui/crosstabs.ui \
 	src/ui/gui/chi-square.ui \
-	src/ui/gui/data-sheet.ui \
 	src/ui/gui/descriptives.ui \
 	src/ui/gui/entry-dialog.ui \
 	src/ui/gui/examine.ui \
@@ -48,7 +47,6 @@ UI_FILES = \
 	src/ui/gui/data-editor.ui \
 	src/ui/gui/output-window.ui \
 	src/ui/gui/syntax-editor.ui \
-	src/ui/gui/var-sheet.ui \
 	src/ui/gui/var-type-dialog.ui \
 	src/ui/gui/weight.ui
 
@@ -63,8 +61,6 @@ EXTRA_DIST += doc/help-pages-list
 
 EXTRA_DIST += \
 	src/ui/gui/memorandum.txt \
-	src/ui/gui/artwork/actions/.empty \
-	src/ui/gui/artwork/apps/scalable/.empty \
 	src/ui/gui/gen-dot-desktop.sh \
 	src/ui/gui/marshaller-list \
 	src/ui/gui/pspplogo.svg
@@ -126,25 +122,11 @@ dist_src_ui_gui_psppire_DATA = \
 	$(top_srcdir)/src/ui/gui/psppire.gtkrc
 
 src_ui_gui_psppire_SOURCES = \
-	src/ui/gui/pspp-sheet-private.h \
-	src/ui/gui/pspp-sheet-selection.c \
-	src/ui/gui/pspp-sheet-selection.h \
-	src/ui/gui/pspp-sheet-view-column.c \
-	src/ui/gui/pspp-sheet-view-column.h \
-	src/ui/gui/pspp-sheet-view.c \
-	src/ui/gui/pspp-sheet-view.h \
-	src/ui/gui/pspp-widget-facade.c \
-	src/ui/gui/pspp-widget-facade.h \
-	src/ui/gui/psppire-button-editable.c \
-	src/ui/gui/psppire-button-editable.h \
-	src/ui/gui/psppire-cell-renderer-button.c \
-	src/ui/gui/psppire-cell-renderer-button.h \
 	src/ui/gui/psppire-dialog.c \
 	src/ui/gui/psppire-keypad.c \
 	src/ui/gui/psppire-selector.c \
 	src/ui/gui/psppire-buttonbox.c \
-	src/ui/gui/psppire-hbuttonbox.c \
-	src/ui/gui/psppire-vbuttonbox.c \
+	src/ui/gui/psppire-buttonbox.h \
 	src/ui/gui/psppire-scanf.c \
 	src/ui/gui/psppire-scanf.h \
 	src/ui/gui/psppire-acr.c \
@@ -174,7 +156,6 @@ src_ui_gui_psppire_SOURCES = \
 	src/ui/gui/psppire.c \
 	src/ui/gui/psppire.h \
 	src/ui/gui/psppire-acr.h \
-	src/ui/gui/psppire-buttonbox.h \
 	src/ui/gui/psppire-checkbox-treeview.c \
 	src/ui/gui/psppire-checkbox-treeview.h \
 	src/ui/gui/psppire-conf.c \
@@ -282,7 +263,6 @@ src_ui_gui_psppire_SOURCES = \
 	src/ui/gui/psppire-encoding-selector.h \
 	src/ui/gui/psppire-format.c \
 	src/ui/gui/psppire-format.h \
-	src/ui/gui/psppire-hbuttonbox.h \
 	src/ui/gui/psppire-keypad.h \
 	src/ui/gui/psppire-lex-reader.c \
 	src/ui/gui/psppire-lex-reader.h \
@@ -307,10 +287,8 @@ src_ui_gui_psppire_SOURCES = \
 	src/ui/gui/psppire-value-entry.h \
 	src/ui/gui/psppire-var-ptr.c \
 	src/ui/gui/psppire-var-ptr.h \
-	src/ui/gui/psppire-var-sheet.h \
 	src/ui/gui/psppire-var-sheet-header.h \
 	src/ui/gui/psppire-var-sheet-header.c \
-	src/ui/gui/psppire-vbuttonbox.h \
 	src/ui/gui/psppire-window.c \
 	src/ui/gui/psppire-window.h \
 	src/ui/gui/psppire-window-base.c \
@@ -352,7 +330,8 @@ OBSOLETE = \
 
 nodist_src_ui_gui_psppire_SOURCES = \
 	src/ui/gui/psppire-marshal.c \
-	src/ui/gui/psppire-marshal.h
+	src/ui/gui/psppire-marshal.h \
+	src/ui/gui/resources.c
 
 yelp-check:
 	@if ! yelp --version > /dev/null 2>&1 ; then \
@@ -373,6 +352,13 @@ src/ui/gui/pspp.desktop: src/ui/gui/gen-dot-desktop.sh $(POFILES)
 
 CLEANFILES+=src/ui/gui/pspp.desktop
 
+src/ui/gui/resources.c: src/ui/gui/resources.xml
+	$(AM_V_at)$(GLIB_COMPILE_RESOURCES) --sourcedir=$(top_srcdir)/src/ui/gui --generate-source $< --target=$@,out
+	$(AM_V_GEN)echo '#include <config.h>' > $@,tmp
+	cat $@,out >> $@,tmp
+	$(RM) $@,out
+	mv $@,tmp $@
+
 src/ui/gui/psppire-marshal.c: src/ui/gui/marshaller-list
 	$(AM_V_GEN)echo '#include <config.h>' > $@
 	$(AM_V_at)$(GLIB_GENMARSHAL) --body --prefix=psppire_marshal $? >> $@
@@ -386,9 +372,11 @@ desktop_DATA = src/ui/gui/pspp.desktop
 appdatadir = $(datadir)/appdata
 dist_appdata_DATA = src/ui/gui/pspp.appdata.xml
 
-BUILT_SOURCES += src/ui/gui/psppire-marshal.c src/ui/gui/psppire-marshal.h
+BUILT_SOURCES += src/ui/gui/psppire-marshal.c src/ui/gui/psppire-marshal.h src/ui/gui/resources.c
+
 CLEANFILES += src/ui/gui/psppire-marshal.c src/ui/gui/psppire-marshal.h \
-	$(nodist_src_ui_gui_psppire_DATA)
+	src/ui/gui/resources.c $(nodist_src_ui_gui_psppire_DATA) 
+
 include $(top_srcdir)/src/ui/gui/efficient-sheet.mk
 endif HAVE_GUI
 
@@ -411,7 +399,7 @@ src/ui/gui/include/gtk/gtk.h: src/ui/gui/include/gtk/gtk.in.h
 	} > $@-t && \
 	mv $@-t $@
 CLEANFILES += src/ui/gui/include/gtk/gtk.h
-EXTRA_DIST += src/ui/gui/include/gtk/gtk.in.h
+EXTRA_DIST += src/ui/gui/include/gtk/gtk.in.h src/ui/gui/resources.xml
 
 include $(top_srcdir)/src/ui/gui/icons/automake.mk
 

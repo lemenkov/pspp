@@ -353,9 +353,6 @@ psppire_dialog_action_indep_samps_activate (PsppireDialogAction *a)
 		    G_CALLBACK (on_grp_var_change), act);
 
   on_grp_var_change (GTK_ENTRY (act->group_var_entry), act);
-
-  if (PSPPIRE_DIALOG_ACTION_CLASS (psppire_dialog_action_indep_samps_parent_class)->activate)
-    PSPPIRE_DIALOG_ACTION_CLASS (psppire_dialog_action_indep_samps_parent_class)->activate (pda);
 }
 
 

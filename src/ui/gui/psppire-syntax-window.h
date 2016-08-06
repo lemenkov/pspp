@@ -58,15 +58,15 @@ struct _PsppireSyntaxWindow
 
   GtkPrintSettings *print_settings;
   GtkSourcePrintCompositor *compositor;
-  GtkAction *undo_menuitem;
-  GtkAction *redo_menuitem;
+  GSimpleAction *undo_menuitem;
+  GSimpleAction *redo_menuitem;
 
   gchar *cliptext;
 
-  GtkAction *edit_cut;
-  GtkAction *edit_copy;
-  GtkAction *edit_delete;
-  GtkAction *edit_paste;
+  GSimpleAction *edit_cut;
+  GSimpleAction *edit_copy;
+  GSimpleAction *edit_delete;
+  GSimpleAction *edit_paste;
 
   gulong ps_handler;
   gulong sel_handler;

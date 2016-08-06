@@ -31,7 +31,6 @@ GtkBuilder * builder_new_x (const gchar *obj_name);
 #define builder_new(NAME) (builder_new_real (relocate (PKGDATADIR "/" NAME)))
 
 GObject *get_object_assert (GtkBuilder *builder, const gchar *name, GType type);
-GtkAction * get_action_assert (GtkBuilder *builder, const gchar *name);
 GtkWidget * get_widget_assert (GtkBuilder *builder, const gchar *name);
 
 

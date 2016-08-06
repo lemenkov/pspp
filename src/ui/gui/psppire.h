@@ -18,6 +18,7 @@
 #define PSPPIRE_H
 
 #include <glib.h>
+#include <gio/gio.h>
 
 #include <stdbool.h>
 
@@ -38,10 +39,15 @@ bool initialize (const struct init_source *is);
 
 void de_initialize (void);
 
-void psppire_quit (void);
+void psppire_quit (GApplication *app);
 
 const char * output_file_name (void);
 
 void psppire_set_lexer (struct lexer *);
+
+void register_selection_functions (void);
+
+void psppire_preload_file (const gchar *file);
+
 
 #endif /* PSPPIRE_H */

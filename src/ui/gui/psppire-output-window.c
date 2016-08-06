@@ -1,5 +1,5 @@
 /* PSPPIRE - a graphical user interface for PSPP.
-   Copyright (C) 2008, 2009, 2010, 2011, 2012, 2013, 2014  Free Software Foundation
+   Copyright (C) 2008, 2009, 2010, 2011, 2012, 2013, 2014, 2016  Free Software Foundation
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -145,6 +145,10 @@ psppire_output_submit (struct output_driver *this,
   if (new)
     {
       pod->window = PSPPIRE_OUTPUT_WINDOW (psppire_output_window_new ());
+      GApplication *app = g_application_get_default ();
+      gtk_application_add_window (GTK_APPLICATION (app),
+				  GTK_WINDOW (pod->window));
+
       pod->window->driver = pod;
     }
   window = pod->window;
@@ -475,17 +479,17 @@ static void
 psppire_output_window_init (PsppireOutputWindow *window)
 {
   GtkBuilder *xml = builder_new ("output-window.ui");
-
-  GtkWidget *box = get_widget_assert (xml, "box1");
+  GtkApplication *app = GTK_APPLICATION (g_application_get_default());
+  GtkWidget *box = gtk_box_new (GTK_ORIENTATION_VERTICAL, 0);
   gtk_container_add (GTK_CONTAINER (window), box);
 
+  GtkWidget *paned = get_widget_assert (xml, "paned1");
+  
   window->dispose_has_run = FALSE;
 
   window->view = psppire_output_view_new (
     GTK_LAYOUT (get_widget_assert (xml, "output")),
-    GTK_TREE_VIEW (get_widget_assert (xml, "overview")),
-    get_action_assert (xml, "edit_copy"),
-    get_action_assert (xml, "edit_select-all"));
+    GTK_TREE_VIEW (get_widget_assert (xml, "overview")));
 
 
   connect_help (xml);
@@ -495,7 +499,10 @@ psppire_output_window_init (PsppireOutputWindow *window)
 		    G_CALLBACK (cancel_urgency),
 		    NULL);
 
-  GtkWidget *menubar = get_widget_assert (xml, "menubar");
+  GObject *menu = get_object_assert (xml, "output-window-menu", G_TYPE_MENU);
+  GtkWidget *menubar = gtk_menu_bar_new_from_model (G_MENU_MODEL (menu));
+  gtk_box_pack_start (GTK_BOX (box), menubar, FALSE, FALSE, 0);
+  gtk_box_pack_start (GTK_BOX (box), paned, TRUE, TRUE, 0);
 
   gtk_menu_shell_append (GTK_MENU_SHELL (menubar),
 			 create_windows_menu (GTK_WINDOW (window)));
@@ -503,14 +510,41 @@ psppire_output_window_init (PsppireOutputWindow *window)
   gtk_menu_shell_append (GTK_MENU_SHELL (menubar),
 			 create_help_menu (GTK_WINDOW (window)));
 
+  {
+    GSimpleAction *print = g_simple_action_new ("print", NULL);
+    g_signal_connect_swapped (print, "activate", G_CALLBACK (psppire_output_window_print), window);
+    g_action_map_add_action (G_ACTION_MAP (window), G_ACTION (print));
 
-  g_signal_connect_swapped (get_action_assert (xml, "file_export"), "activate",
-                            G_CALLBACK (psppire_output_window_export), window);
 
+    const gchar *accels[2] = { "<Ctrl>P", NULL};
+    gtk_application_set_accels_for_action (app,
+					   "win.print",
+					   accels);
+  }
 
-  g_signal_connect_swapped (get_action_assert (xml, "file_print"), "activate",
-                            G_CALLBACK (psppire_output_window_print), window);
+  
+  {
+    GSimpleAction *export = g_simple_action_new ("export", NULL);
+    g_signal_connect_swapped (export, "activate", G_CALLBACK (psppire_output_window_export), window);
+    g_action_map_add_action (G_ACTION_MAP (window), G_ACTION (export));
+  }
 
+  {
+    GSimpleAction *select_all = g_simple_action_new ("select-all", NULL);
+    g_action_map_add_action (G_ACTION_MAP (window), G_ACTION (select_all));
+  }
+
+  {
+    GSimpleAction *copy = g_simple_action_new ("copy", NULL);
+    g_action_map_add_action (G_ACTION_MAP (window), G_ACTION (copy));
+
+    const gchar *accels[2] = { "<Ctrl>C", NULL};
+    gtk_application_set_accels_for_action (app,
+					   "win.copy",
+					   accels);
+  }
+
+  
   g_object_unref (xml);
 
   g_signal_connect (window, "delete-event",
@@ -522,7 +556,7 @@ GtkWidget*
 psppire_output_window_new (void)
 {
   return GTK_WIDGET (g_object_new (psppire_output_window_get_type (),
-				   /* TRANSLATORS: This will form a filename.  Please avoid whitespace. */
+				   /* TRANSLATORS: This will be part of a filename.  Please avoid whitespace. */
 				   "filename", _("Output"),
 				   "description", _("Output Viewer"),
 				   NULL));

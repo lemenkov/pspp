@@ -1,5 +1,5 @@
 /* PSPPIRE - a graphical user interface for PSPP.
-   Copyright (C) 2008, 2009, 2010, 2011, 2012, 2013, 2014  Free Software Foundation
+   Copyright (C) 2008, 2009, 2010, 2011, 2012, 2013, 2014, 2016  Free Software Foundation
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -37,12 +37,56 @@
 #include "ui/gui/psppire-syntax-window.h"
 #include "ui/gui/psppire-window.h"
 #include "ui/gui/windows-menu.h"
+#include "ui/gui/goto-case-dialog.h"
 #include "ui/gui/psppire.h"
 #include "ui/syntax-gen.h"
 
 #include "gl/c-strcase.h"
 #include "gl/c-strcasestr.h"
 #include "gl/xvasprintf.h"
+
+#include "find-dialog.h"
+#include "psppire-dialog-action-1sks.h"
+#include "psppire-dialog-action-aggregate.h"
+#include "psppire-dialog-action-autorecode.h"
+#include "psppire-dialog-action-barchart.h"
+#include "psppire-dialog-action-binomial.h"
+#include "psppire-dialog-action-chisquare.h"
+#include "psppire-dialog-action-comments.h"
+#include "psppire-dialog-action-compute.h"
+#include "psppire-dialog-action-correlation.h"
+#include "psppire-dialog-action-count.h"
+#include "psppire-dialog-action-crosstabs.h"
+#include "psppire-dialog-action-descriptives.h"
+#include "psppire-dialog-action-examine.h"
+#include "psppire-dialog-action-factor.h"
+#include "psppire-dialog-action-flip.h"
+#include "psppire-dialog-action-frequencies.h"
+#include "psppire-dialog-action-histogram.h"
+#include "psppire-dialog-action-indep-samps.h"
+#include "psppire-dialog-action-k-related.h"
+#include "psppire-dialog-action-kmeans.h"
+#include "psppire-dialog-action-logistic.h"
+#include "psppire-dialog-action-means.h"
+#include "psppire-dialog-action-oneway.h"
+#include "psppire-dialog-action-paired.h"
+#include "psppire-dialog-action-rank.h"
+#include "psppire-dialog-action-recode-same.h"
+#include "psppire-dialog-action-recode-different.h"
+#include "psppire-dialog-action-regression.h"
+#include "psppire-dialog-action-reliability.h"
+#include "psppire-dialog-action-roc.h"
+#include "psppire-dialog-action-runs.h"
+#include "psppire-dialog-action-scatterplot.h"
+#include "psppire-dialog-action-select.h"
+#include "psppire-dialog-action-sort.h"
+#include "psppire-dialog-action-split.h"
+#include "psppire-dialog-action-tt1s.h"
+#include "psppire-dialog-action-two-sample.h"
+#include "psppire-dialog-action-univariate.h"
+#include "psppire-dialog-action-var-info.h"
+#include "psppire-dialog-action-weight.h"
+
 
 #include <gettext.h>
 #define _(msgid) gettext (msgid)
@@ -67,10 +111,6 @@ static void psppire_data_window_get_property (GObject         *object,
                                               guint            prop_id,
                                               GValue          *value,
                                               GParamSpec      *pspec);
-
-static guint psppire_data_window_add_ui (PsppireDataWindow *, GtkUIManager *);
-static void psppire_data_window_remove_ui (PsppireDataWindow *,
-                                           GtkUIManager *, guint);
 
 GType
 psppire_data_window_get_type (void)
@@ -115,7 +155,7 @@ psppire_data_window_get_type (void)
 static GObjectClass *parent_class ;
 
 enum {
-    PROP_DATASET = 1
+  PROP_DATASET = 1
 };
 
 static void
@@ -131,12 +171,14 @@ psppire_data_window_class_init (PsppireDataWindowClass *class)
   object_class->get_property = psppire_data_window_get_property;
 
   g_object_class_install_property (
-    object_class, PROP_DATASET,
-    g_param_spec_pointer ("dataset", "Dataset",
-                          "'struct datset *' represented by the window",
-                          G_PARAM_CONSTRUCT_ONLY | G_PARAM_READWRITE));
+				   object_class, PROP_DATASET,
+				   g_param_spec_pointer ("dataset", "Dataset",
+							 "'struct datset *' represented by the window",
+							 G_PARAM_CONSTRUCT_ONLY | G_PARAM_READWRITE));
 }
+
 
+
 /* Run the EXECUTE command. */
 static void
 execute (PsppireDataWindow *dw)
@@ -153,16 +195,13 @@ transformation_change_callback (bool transformations_pending,
   GtkWidget *status_label  =
     get_widget_assert (de->builder, "case-counter-area");
 
-  { /* Set the sensitivity of the "Transformations Pending" menuitem */
-    GtkUIManager *uim = 
-      GTK_UI_MANAGER (get_object_assert (de->builder, "uimanager1", GTK_TYPE_UI_MANAGER));
+  {
+    GAction *action = g_action_map_lookup_action (G_ACTION_MAP (de),
+						  "transform-pending");
 
-    GtkWidget *menuitem =
-      gtk_ui_manager_get_widget (uim,"/ui/menubar/transform/transform_run-pending");
-    
-    gtk_widget_set_sensitive (menuitem, transformations_pending);
+    g_simple_action_set_enabled (G_SIMPLE_ACTION (action),
+				 transformations_pending); 
   }
-
 
   if ( transformations_pending)
     gtk_label_set_text (GTK_LABEL (status_label),
@@ -452,7 +491,7 @@ sysfile_info (PsppireDataWindow *de)
                                                   NULL);
 
       const gchar *encoding = psppire_encoding_selector_get_encoding (
-        gtk_file_chooser_get_extra_widget (GTK_FILE_CHOOSER (dialog)));
+								      gtk_file_chooser_get_extra_widget (GTK_FILE_CHOOSER (dialog)));
 
       gchar *syntax;
 
@@ -605,14 +644,14 @@ confirm_delete_dataset (PsppireDataWindow *de,
   int result;
 
   dialog = gtk_message_dialog_new (
-    GTK_WINDOW (de), 0, GTK_MESSAGE_QUESTION, GTK_BUTTONS_NONE, "%s",
-    _("Delete Existing Dataset?"));
+				   GTK_WINDOW (de), 0, GTK_MESSAGE_QUESTION, GTK_BUTTONS_NONE, "%s",
+				   _("Delete Existing Dataset?"));
 
   gtk_message_dialog_format_secondary_text (
-    GTK_MESSAGE_DIALOG (dialog),
-    _("Renaming \"%s\" to \"%s\" will destroy the existing "
-      "dataset named \"%s\".  Are you sure that you want to do this?"),
-    old_dataset, new_dataset, existing_dataset);
+					    GTK_MESSAGE_DIALOG (dialog),
+					    _("Renaming \"%s\" to \"%s\" will destroy the existing "
+					      "dataset named \"%s\".  Are you sure that you want to do this?"),
+					    old_dataset, new_dataset, existing_dataset);
 
   gtk_dialog_add_buttons (GTK_DIALOG (dialog),
                           _("Cancel"), GTK_RESPONSE_CANCEL,
@@ -657,38 +696,88 @@ on_rename_dataset (PsppireDataWindow *de)
   free (new_name);
 }
 
+
 static void
-status_bar_activate (PsppireDataWindow  *de, GtkToggleAction *action)
+status_bar_activate (GAction *action, GVariant *param,  PsppireDataWindow  *de)
 {
   GtkWidget *statusbar = get_widget_assert (de->builder, "status-bar");
+  
+  GVariant *state = g_action_get_state (action);
+  const gboolean visible = g_variant_get_boolean (state);
+  g_action_change_state (action, g_variant_new_boolean (!visible));
 
-  if ( gtk_toggle_action_get_active (action))
-    gtk_widget_show (statusbar);
-  else
-    gtk_widget_hide (statusbar);
+  gtk_widget_set_visible (statusbar, !visible);
 }
 
 
 static void
-grid_lines_activate (PsppireDataWindow  *de, GtkToggleAction *action)
+grid_lines_activate (GAction *action, GVariant *param,  PsppireDataWindow  *de)
 {
-  const gboolean grid_visible = gtk_toggle_action_get_active (action);
+  GVariant *state = g_action_get_state (action);
+  const gboolean grid_visible = g_variant_get_boolean (state);
+  g_action_change_state (action, g_variant_new_boolean (!grid_visible));
 
-  psppire_data_editor_show_grid (de->data_editor, grid_visible);
-}
-
-static void
-data_view_activate (PsppireDataWindow  *de)
-{
-  gtk_notebook_set_current_page (GTK_NOTEBOOK (de->data_editor), PSPPIRE_DATA_EDITOR_DATA_VIEW);
+  psppire_data_editor_show_grid (de->data_editor, !grid_visible);
 }
 
 
 static void
-variable_view_activate (PsppireDataWindow  *de)
+on_switch_page (GtkNotebook *notebook, GtkWidget *page, guint pn, gpointer ud)
 {
-  gtk_notebook_set_current_page (GTK_NOTEBOOK (de->data_editor), PSPPIRE_DATA_EDITOR_VARIABLE_VIEW);
+  PsppireDataWindow *de = PSPPIRE_DATA_WINDOW (ud);
+
+  GAction *action = g_action_map_lookup_action (G_ACTION_MAP (de), "view_dv");
+
+  switch (pn)
+    {
+    case 0:
+      g_action_change_state (action, g_variant_new_string ("DATA"));
+      gtk_widget_show (GTK_WIDGET (de->ti_insert_case));
+      gtk_widget_show (GTK_WIDGET (de->ti_jump_to_case));
+      gtk_widget_show (GTK_WIDGET (de->ti_find));
+
+      gtk_widget_show (GTK_WIDGET (de->mi_go_to_case));
+      gtk_widget_show (GTK_WIDGET (de->mi_insert_case));
+      gtk_widget_show (GTK_WIDGET (de->mi_find));
+      gtk_widget_show (GTK_WIDGET (de->mi_find_separator));
+      gtk_widget_show (GTK_WIDGET (de->mi_clear_cases));
+
+      break;
+      
+    case 1:
+      g_action_change_state (action, g_variant_new_string ("VARS"));
+      gtk_widget_hide (GTK_WIDGET (de->ti_insert_case));
+      gtk_widget_hide (GTK_WIDGET (de->ti_jump_to_case));
+      gtk_widget_hide (GTK_WIDGET (de->ti_find));
+
+      gtk_widget_hide (GTK_WIDGET (de->mi_go_to_case));
+      gtk_widget_hide (GTK_WIDGET (de->mi_insert_case));
+      gtk_widget_hide (GTK_WIDGET (de->mi_find));
+      gtk_widget_hide (GTK_WIDGET (de->mi_find_separator));
+      gtk_widget_hide (GTK_WIDGET (de->mi_clear_cases));
+      
+      break;
+    }      
 }
+
+
+static void
+activate_change_view (GAction *action, GVariant *param, PsppireDataWindow  *de)
+{
+  g_action_change_state (action, param);
+  GVariant *new_state = g_action_get_state (action);
+
+  const gchar *what = g_variant_get_string (new_state, NULL);
+  if (0 == g_strcmp0 (what, "DATA"))
+    {
+      gtk_notebook_set_current_page (GTK_NOTEBOOK (de->data_editor), PSPPIRE_DATA_EDITOR_DATA_VIEW);
+    }
+  else if (0 == g_strcmp0 (what, "VARS"))
+    {
+      gtk_notebook_set_current_page (GTK_NOTEBOOK (de->data_editor), PSPPIRE_DATA_EDITOR_VARIABLE_VIEW);
+    }
+}
+
 
 
 static void
@@ -696,8 +785,8 @@ fonts_activate (PsppireDataWindow  *de)
 {
   GtkWidget *toplevel = gtk_widget_get_toplevel (GTK_WIDGET (de));
   GtkWidget *dialog =  gtk_font_chooser_dialog_new (NULL, GTK_WINDOW (toplevel));
-  GtkStyle *style = gtk_widget_get_style (GTK_WIDGET(de->data_editor));
-  PangoFontDescription *current_font = style->font_desc;
+  GtkStyleContext *style = gtk_widget_get_style_context (GTK_WIDGET(de->data_editor));
+  const PangoFontDescription *current_font = gtk_style_context_get_font (style, GTK_STATE_FLAG_NORMAL);
 
   gtk_font_chooser_set_font_desc (GTK_FONT_CHOOSER (dialog), current_font);
 
@@ -717,20 +806,34 @@ fonts_activate (PsppireDataWindow  *de)
 
 
 /* Callback for the value labels action */
+
 static void
-toggle_value_labels (PsppireDataWindow  *de, GtkToggleAction *ta)
+value_labels_activate (GAction *action, GVariant *param,  PsppireDataWindow  *de)
 {
-  g_object_set (de->data_editor, "value-labels", gtk_toggle_action_get_active (ta), NULL);
+  GVariant *v = g_action_get_state (action);
+  gboolean labels_active = g_variant_get_boolean (v);
+  g_action_change_state (action, g_variant_new_boolean (!labels_active));
+
+  GVariant *new_state  = g_action_get_state (action);
+  labels_active = g_variant_get_boolean (new_state);
+  g_object_set (de->data_editor, "value-labels", labels_active, NULL);
+  
+  gtk_toggle_tool_button_set_active (GTK_TOGGLE_TOOL_BUTTON (de->ti_value_labels_button),
+				     labels_active);
 }
 
-
 static void
-file_quit (PsppireDataWindow *de)
+on_labels_button_toggle (GtkToggleToolButton *ttb, PsppireDataWindow *de)
 {
-  /* FIXME: Need to be more intelligent here.
-     Give the user the opportunity to save any unsaved data.
-  */
-  psppire_quit ();
+  GAction *a = g_action_map_lookup_action (G_ACTION_MAP (de), "value_labels");
+  g_assert (a);
+  gboolean labels_active = gtk_toggle_tool_button_get_active (ttb);
+
+  g_action_change_state (a, g_variant_new_boolean (labels_active));
+
+  GVariant *new_state  = g_action_get_state (a);
+  labels_active = g_variant_get_boolean (new_state);
+  g_object_set (de->data_editor, "value-labels", labels_active, NULL);
 }
 
 static void
@@ -823,60 +926,6 @@ set_unsaved (gpointer w)
   psppire_window_set_unsaved (PSPPIRE_WINDOW (w));
 }
 
-static void
-on_switch_page (PsppireDataEditor *de, gpointer p,
-		gint pagenum, PsppireDataWindow *dw)
-{
-  /* Set the appropriate ui_manager according to the selected page.
-     This is necessary, because the menus for the variable view and
-     the data view are different (slightly). */
-
-  gboolean is_ds = pagenum == PSPPIRE_DATA_EDITOR_DATA_VIEW;
-  const char *path = (is_ds
-          ? "/ui/menubar/view/view_data"
-          : "/ui/menubar/view/view_variables");
-
-  GtkWidget *page_menu_item = gtk_ui_manager_get_widget (dw->ui_manager, path);
-  gtk_check_menu_item_set_active (GTK_CHECK_MENU_ITEM (page_menu_item), TRUE);
-}
-
-static void
-on_ui_manager_changed (PsppireDataEditor *de,
-                       GParamSpec *pspec UNUSED,
-                       PsppireDataWindow *dw)
-{
-  GtkUIManager *uim = psppire_data_editor_get_ui_manager (de);
-  if (uim == dw->uim)
-    return;
-
-  if (dw->uim)
-    {
-      psppire_data_window_remove_ui (dw, dw->uim, dw->merge_id);
-      g_object_unref (dw->uim);
-      dw->uim = NULL;
-    }
-
-  dw->uim = uim;
-  if (dw->uim)
-    {
-      g_object_ref (dw->uim);
-      dw->merge_id = psppire_data_window_add_ui (dw, dw->uim);
-    }
-}
-
-/* Connects the action called ACTION_NAME to HANDLER passing DW as the auxilliary data.
-   Returns a pointer to the action
-*/
-static GtkAction *
-connect_action (PsppireDataWindow *dw, const char *action_name, 
-				    GCallback handler)
-{
-  GtkAction *action = get_action_assert (dw->builder, action_name);
-
-  g_signal_connect_swapped (action, "activate", handler, dw);
-
-  return action;
-}
 
 /* Only a data file with at least one variable can be saved. */
 static void
@@ -884,10 +933,14 @@ enable_save (PsppireDataWindow *dw)
 {
   gboolean enable = psppire_dict_get_var_cnt (dw->dict) > 0;
 
-  gtk_action_set_sensitive (get_action_assert (dw->builder, "file_save"),
-                            enable);
-  gtk_action_set_sensitive (get_action_assert (dw->builder, "file_save_as"),
-                            enable);
+  GAction *save_as = g_action_map_lookup_action (G_ACTION_MAP (dw), "save-as");
+  GAction *save = g_action_map_lookup_action (G_ACTION_MAP (dw), "save");
+
+  if (save)
+    g_object_set (save, "enabled", enable, NULL);
+
+  if (save_as)
+    g_object_set (save_as, "enabled", enable, NULL);
 }
 
 /* Initializes as much of a PsppireDataWindow as we can and must before the
@@ -901,11 +954,6 @@ static void
 psppire_data_window_init (PsppireDataWindow *de)
 {
   de->builder = builder_new ("data-editor.ui");
-
-  de->ui_manager = GTK_UI_MANAGER (get_object_assert (de->builder, "uimanager1", GTK_TYPE_UI_MANAGER));
-
-  de->uim = NULL;
-  de->merge_id = 0;
 }
 
 static void
@@ -926,14 +974,12 @@ file_import (PsppireDataWindow *dw)
     {
     case GTK_RESPONSE_APPLY:
       {
-	g_debug ("HERE");
 	gchar *fn = g_path_get_basename (asst->file_name);
 	open_data_window (PSPPIRE_WINDOW (dw), fn, NULL, psppire_import_assistant_generate_syntax (asst));
 	g_free (fn);
       }
       break;
     case PSPPIRE_RESPONSE_PASTE:
-      g_debug ("THERE");
       free (paste_syntax_to_window (psppire_import_assistant_generate_syntax (asst)));
       break;
     default:
@@ -942,6 +988,401 @@ file_import (PsppireDataWindow *dw)
     
  end:  
   gtk_widget_destroy (GTK_WIDGET (asst));
+}
+
+
+
+static void
+connect_dialog_action (GType type, PsppireDataWindow *de)
+{
+  GAction *act = g_object_new (type,
+			       "top-level", de,
+			       NULL);
+  
+  g_action_map_add_action (G_ACTION_MAP (de), act);
+}
+
+static void
+g_action_activate_null (GAction *a)
+{
+  g_action_activate (a, NULL);
+}
+
+static void
+connect_action_to_menuitem (GActionMap *map, const gchar *action_name, GtkWidget *w, const gchar *accel)
+{
+  GAction *a = g_action_map_lookup_action (map, action_name);
+  
+  if (NULL == a)
+    g_error ("Action \"%s\" not found in map", action_name);
+
+  if (accel)
+    {
+      GtkApplication *app = GTK_APPLICATION (g_application_get_default());
+
+      /* First set the label for the accellerator so that it appears
+	 on the menuitem */
+      GtkWidget *child = gtk_bin_get_child (GTK_BIN (w));
+      guint key;
+      GdkModifierType modifier;
+      gtk_accelerator_parse (accel, &key, &modifier);
+      gtk_accel_label_set_accel (GTK_ACCEL_LABEL (child), key, modifier);
+
+      /* Now tell the application that it must do something when that
+	 key combination is pressed */
+      const gchar *accels[2];
+      accels[0] = accel;
+      accels[1] = NULL;
+
+      gchar *detailed_action_name = NULL;
+      if (GTK_IS_WINDOW (map))
+	detailed_action_name = g_strdup_printf ("win.%s", action_name);
+      else if (GTK_IS_APPLICATION (map))
+	detailed_action_name = g_strdup_printf ("app.%s", action_name);
+      
+      gtk_application_set_accels_for_action (app,
+					     detailed_action_name,
+					     accels);
+      free (detailed_action_name);
+    }
+  
+  g_signal_connect_swapped (w, "activate", G_CALLBACK (g_action_activate_null), a);
+ }
+
+
+static void
+set_data_page (PsppireDataWindow *dw)
+{
+  gtk_notebook_set_current_page (GTK_NOTEBOOK (dw->data_editor), 1);
+  gtk_notebook_set_current_page (GTK_NOTEBOOK (dw->data_editor), 0);
+}
+
+
+static void
+on_cut (PsppireDataWindow *dw)
+{
+  #if 0
+  int p = gtk_notebook_get_current_page (GTK_NOTEBOOK (dw->data_editor));
+  if (p == 0)
+    {
+      PsppireDataSheet *ds = psppire_data_editor_get_active_data_sheet (dw->data_editor);
+      psppire_data_sheet_edit_cut (ds);
+    }
+  #endif
+}
+
+
+
+static void
+on_copy (PsppireDataWindow *dw)
+{
+  #if 0
+  int p = gtk_notebook_get_current_page (GTK_NOTEBOOK (dw->data_editor));
+  if (p == 0)
+    {
+      PsppireDataSheet *ds = psppire_data_editor_get_active_data_sheet (dw->data_editor);
+      psppire_data_sheet_edit_copy (ds);
+    }
+  #endif
+}
+
+static void
+on_paste (PsppireDataWindow *dw)
+{
+  #if 0
+  int p = gtk_notebook_get_current_page (GTK_NOTEBOOK (dw->data_editor));
+  if (p == 0)
+    {
+      PsppireDataSheet *ds = psppire_data_editor_get_active_data_sheet (dw->data_editor);
+      psppire_data_sheet_edit_paste (ds);
+    }
+  #endif
+}
+
+
+static void
+on_clear_cases (PsppireDataWindow *dw)
+{
+  #if 0
+  int p = gtk_notebook_get_current_page (GTK_NOTEBOOK (dw->data_editor));
+  if (p == 0)
+    {
+      PsppireDataSheet *ds = psppire_data_editor_get_active_data_sheet (dw->data_editor);
+      psppire_data_sheet_edit_clear_cases (ds);
+    }
+  #endif
+}
+
+static void
+on_clear_variables (PsppireDataWindow *dw)
+{
+  #if 0
+  int p = gtk_notebook_get_current_page (GTK_NOTEBOOK (dw->data_editor));
+  if (p == 0)
+    {
+      PsppireDataSheet *ds = psppire_data_editor_get_active_data_sheet (dw->data_editor);
+      psppire_data_sheet_edit_clear_variables (ds);
+    }
+  else
+    {
+      psppire_var_sheet_clear_variables (PSPPIRE_VAR_SHEET (dw->data_editor->var_sheet));
+    }
+  #endif
+}
+
+
+
+static void
+insert_variable (PsppireDataWindow *dw)
+{
+#if 0  
+  int p = gtk_notebook_get_current_page (GTK_NOTEBOOK (dw->data_editor));
+  if (p == 0)
+    {
+      PsppireDataSheet *ds = psppire_data_editor_get_active_data_sheet (dw->data_editor);
+      psppire_data_sheet_insert_variable (ds);
+    }
+  else
+    {
+      psppire_var_sheet_insert_variable (PSPPIRE_VAR_SHEET (dw->data_editor->var_sheet));
+    }
+#endif
+}
+
+
+
+static void
+insert_case_at_row (PsppireDataWindow *dw)
+{
+#if 0
+  PsppireDataSheet *ds = psppire_data_editor_get_active_data_sheet (dw->data_editor);
+
+  psppire_data_sheet_insert_case (ds);
+#endif
+}
+
+
+
+static void
+goto_case (PsppireDataWindow *dw)
+{
+  #if 0
+  PsppireDataSheet *ds = psppire_data_editor_get_active_data_sheet (dw->data_editor);
+
+  goto_case_dialog (ds);
+  #endif
+}
+
+
+static GtkWidget *
+create_file_menu (PsppireDataWindow *dw)
+{
+  GtkWidget *menuitem = gtk_menu_item_new_with_mnemonic (_("_File"));
+  GtkWidget *menu = gtk_menu_new ();
+
+  {
+    GtkWidget *new = gtk_menu_item_new_with_mnemonic (_("_New"));
+    gtk_menu_attach (GTK_MENU (menu), new,        0, 1, 0, 1);
+
+    GtkWidget *new_menu = gtk_menu_new ();
+
+    g_object_set (new, "submenu", new_menu, NULL);
+	
+    GtkWidget *syntax  = gtk_menu_item_new_with_mnemonic (_("_Syntax"));
+    connect_action_to_menuitem (G_ACTION_MAP (g_application_get_default ()), "new-syntax", syntax, 0);
+    
+    GtkWidget *data = gtk_menu_item_new_with_mnemonic (_("_Data"));
+    connect_action_to_menuitem (G_ACTION_MAP (g_application_get_default ()), "new-data", data, 0);
+
+    gtk_menu_attach (GTK_MENU (new_menu), syntax,    0, 1, 0, 1);
+    gtk_menu_attach (GTK_MENU (new_menu), data,      0, 1, 1, 2);
+  }
+  
+  GtkWidget *open = gtk_menu_item_new_with_mnemonic (_("_Open"));
+  connect_action_to_menuitem (G_ACTION_MAP (dw), "open", open, "<Ctrl>O");
+  
+  GtkWidget *import = gtk_menu_item_new_with_mnemonic (_("_Import Data..."));
+  connect_action_to_menuitem (G_ACTION_MAP (dw), "file-import", import, 0);
+  
+  gtk_menu_attach (GTK_MENU (menu), open,       0, 1, 1, 2);
+  gtk_menu_attach (GTK_MENU (menu), import,     0, 1, 2, 3);
+
+  gtk_menu_attach (GTK_MENU (menu), gtk_separator_menu_item_new (), 0, 1, 3, 4);
+
+  GtkWidget *save = gtk_menu_item_new_with_mnemonic (_("_Save..."));
+  connect_action_to_menuitem (G_ACTION_MAP (dw), "save", save, "<Ctrl>S");
+  
+  GtkWidget *save_as = gtk_menu_item_new_with_mnemonic (_("Save _As..."));
+  connect_action_to_menuitem (G_ACTION_MAP (dw), "save-as", save_as, "<Shift><Ctrl>S");
+  
+  GtkWidget *rename_dataset = gtk_menu_item_new_with_mnemonic (_("_Rename Dataset..."));
+  connect_action_to_menuitem (G_ACTION_MAP (dw), "rename-dataset", rename_dataset, 0);
+
+  
+  gtk_menu_attach (GTK_MENU (menu), save,        0, 1, 4, 5);
+  gtk_menu_attach (GTK_MENU (menu), save_as,     0, 1, 5, 6);
+  gtk_menu_attach (GTK_MENU (menu), rename_dataset,     0, 1, 6, 7);
+
+  gtk_menu_attach (GTK_MENU (menu), gtk_separator_menu_item_new (), 0, 1, 7, 8);
+
+  {
+    GtkWidget *display_data = gtk_menu_item_new_with_mnemonic (_("_Display Data File Information"));
+    gtk_menu_attach (GTK_MENU (menu), display_data,     0, 1, 8, 9);
+
+    GtkWidget *dd_menu = gtk_menu_new ();
+
+    g_object_set (display_data, "submenu", dd_menu, NULL);
+    
+    GtkWidget *working_file  = gtk_menu_item_new_with_mnemonic (_("Working File"));
+    connect_action_to_menuitem (G_ACTION_MAP (dw), "info-working", working_file, 0);
+    GtkWidget *external_file = gtk_menu_item_new_with_mnemonic (_("_External File..."));
+    connect_action_to_menuitem (G_ACTION_MAP (dw), "info-external", external_file, 0);
+
+    gtk_menu_attach (GTK_MENU (dd_menu), working_file,    0, 1, 0, 1);
+    gtk_menu_attach (GTK_MENU (dd_menu), external_file,   0, 1, 1, 2);
+  }
+  
+  gtk_menu_attach (GTK_MENU (menu), gtk_separator_menu_item_new (), 0, 1, 9, 10);
+
+  {
+    GtkWidget *mi_data = gtk_menu_item_new_with_mnemonic (_("_Recently Used Data"));
+    GtkWidget *mi_files = gtk_menu_item_new_with_mnemonic (_("Recently Used _Files"));
+
+    GtkWidget *menu_data = gtk_recent_chooser_menu_new_for_manager (
+      gtk_recent_manager_get_default ());
+
+    GtkWidget *menu_files = gtk_recent_chooser_menu_new_for_manager (
+      gtk_recent_manager_get_default ());
+
+    gtk_menu_attach (GTK_MENU (menu), mi_data,       0, 1, 10, 11);
+    gtk_menu_attach (GTK_MENU (menu), mi_files,      0, 1, 11, 12);
+    
+    g_object_set (menu_data, "show-tips",  TRUE, NULL);
+    g_object_set (menu_files, "show-tips",  TRUE, NULL);
+
+    g_object_set (mi_data, "submenu",  menu_data, NULL);
+    g_object_set (mi_files, "submenu", menu_files, NULL);
+    
+    {
+      GtkRecentFilter *filter = gtk_recent_filter_new ();
+
+      gtk_recent_filter_add_mime_type (filter, "application/x-spss-sav");
+      gtk_recent_filter_add_mime_type (filter, "application/x-spss-por");
+
+      gtk_recent_chooser_set_sort_type (GTK_RECENT_CHOOSER (menu_data), GTK_RECENT_SORT_MRU);
+
+      gtk_recent_chooser_add_filter (GTK_RECENT_CHOOSER (menu_data), filter);
+    }
+
+    g_signal_connect (menu_data, "selection-done", G_CALLBACK (on_recent_data_select), dw);
+
+    {
+      GtkRecentFilter *filter = gtk_recent_filter_new ();
+
+      gtk_recent_filter_add_pattern (filter, "*.sps");
+      gtk_recent_filter_add_pattern (filter, "*.SPS");
+
+      gtk_recent_chooser_set_sort_type (GTK_RECENT_CHOOSER (menu_files), GTK_RECENT_SORT_MRU);
+
+      gtk_recent_chooser_add_filter (GTK_RECENT_CHOOSER (menu_files), filter);
+    }
+
+    g_signal_connect (menu_files, "selection-done", G_CALLBACK (on_recent_files_select), dw);
+  }
+
+  gtk_menu_attach (GTK_MENU (menu), gtk_separator_menu_item_new (), 0, 1, 12, 13);
+
+  {
+    GtkWidget *quit = gtk_menu_item_new_with_mnemonic (_("_Quit"));
+    gtk_menu_attach (GTK_MENU (menu), quit,     0, 1, 13, 14);
+
+    connect_action_to_menuitem (G_ACTION_MAP (g_application_get_default ()),
+				"quit", quit, "<Ctrl>Q");
+  }
+  
+  g_object_set (menuitem, "submenu", menu, NULL);
+  gtk_widget_show_all (menuitem);
+  
+  return menuitem;
+}
+
+
+static GtkWidget *
+create_edit_menu (PsppireDataWindow *dw)
+{
+  int i = 0;
+  GtkWidget *menuitem = gtk_menu_item_new_with_mnemonic (_("_Edit"));
+
+  GtkWidget *menu = gtk_menu_new ();
+
+  dw->mi_insert_var = gtk_menu_item_new_with_mnemonic (_("_Insert Variable"));
+  dw->mi_insert_case = gtk_menu_item_new_with_mnemonic (_("_Insert Case"));
+  GtkWidget *go_to_variable = gtk_menu_item_new_with_mnemonic (_("_Go To Variable..."));
+  dw->mi_go_to_case = gtk_menu_item_new_with_mnemonic (_("_Go To Case..."));
+
+  gtk_menu_attach (GTK_MENU (menu), dw->mi_insert_var,        0, 1, i, i + 1); ++i;
+  gtk_menu_attach (GTK_MENU (menu), dw->mi_insert_case,     0, 1, i, i + 1); ++i;
+
+  g_signal_connect_swapped (dw->mi_insert_case, "activate", G_CALLBACK (insert_case_at_row), dw);
+  g_signal_connect_swapped (dw->mi_go_to_case, "activate", G_CALLBACK (goto_case), dw);
+  g_signal_connect_swapped (dw->mi_insert_var, "activate", G_CALLBACK (insert_variable), dw);
+
+  GAction *a = g_action_map_lookup_action (G_ACTION_MAP (dw),  "PsppireDialogActionVarInfo");
+  g_assert (a);
+  g_signal_connect_swapped (go_to_variable, "activate", G_CALLBACK (psppire_dialog_action_activate_null), a);
+  
+  gtk_menu_attach (GTK_MENU (menu), go_to_variable,         0, 1, i, i + 1); ++i;
+  gtk_menu_attach (GTK_MENU (menu), dw->mi_go_to_case,      0, 1, i, i + 1); ++i;
+
+  {
+    GtkAccelGroup *ag = gtk_accel_group_new ();
+    
+    dw->mi_edit_separator = gtk_separator_menu_item_new ();
+    gtk_menu_attach (GTK_MENU (menu), dw->mi_edit_separator, 0, 1, i, i + 1); ++i;
+
+    dw->mi_cut = gtk_menu_item_new_with_mnemonic (_("Cu_t"));
+    gtk_menu_attach (GTK_MENU (menu), dw->mi_cut,     0, 1, i, i + 1); ++i;
+    g_signal_connect_swapped (dw->mi_cut, "activate", G_CALLBACK (on_cut), dw);
+
+    gtk_window_add_accel_group (GTK_WINDOW (dw), ag);
+    gtk_widget_add_accelerator (dw->mi_cut, "activate", ag,
+				'X', GDK_CONTROL_MASK, GTK_ACCEL_VISIBLE);
+    
+    dw->mi_copy = gtk_menu_item_new_with_mnemonic (_("_Copy"));
+    gtk_menu_attach (GTK_MENU (menu), dw->mi_copy,     0, 1, i, i + 1); ++i;
+    g_signal_connect_swapped (dw->mi_copy, "activate", G_CALLBACK (on_copy), dw);
+    gtk_widget_add_accelerator (dw->mi_copy, "activate", ag,
+				'C', GDK_CONTROL_MASK, GTK_ACCEL_VISIBLE);
+	
+    dw->mi_paste = gtk_menu_item_new_with_mnemonic (_("_Paste"));
+    gtk_menu_attach (GTK_MENU (menu), dw->mi_paste,     0, 1, i, i + 1); ++i;
+    g_signal_connect_swapped (dw->mi_paste, "activate", G_CALLBACK (on_paste), dw);
+    gtk_widget_add_accelerator (dw->mi_paste, "activate", ag,
+				'V', GDK_CONTROL_MASK, GTK_ACCEL_VISIBLE);
+
+    dw->mi_clear_variables = gtk_menu_item_new_with_mnemonic (_("Clear _Variables"));
+    gtk_menu_attach (GTK_MENU (menu), dw->mi_clear_variables,     0, 1, i, i + 1); ++i;
+    g_signal_connect_swapped (dw->mi_clear_variables, "activate", G_CALLBACK (on_clear_variables), dw);
+    
+    dw->mi_clear_cases = gtk_menu_item_new_with_mnemonic (_("Cl_ear Cases"));
+    gtk_menu_attach (GTK_MENU (menu), dw->mi_clear_cases,     0, 1, i, i + 1); ++i;
+    g_signal_connect_swapped (dw->mi_clear_cases, "activate", G_CALLBACK (on_clear_cases), dw);
+  }
+  
+  {
+    dw->mi_find_separator = gtk_separator_menu_item_new ();
+    gtk_menu_attach (GTK_MENU (menu), dw->mi_find_separator, 0, 1, i, i + 1); ++i;
+  
+    dw->mi_find = gtk_menu_item_new_with_mnemonic (_("_Find..."));
+    g_signal_connect_swapped (dw->mi_find, "activate", G_CALLBACK (find_dialog), dw);
+    gtk_menu_attach (GTK_MENU (menu), dw->mi_find,      0, 1,  i, i + 1); ++i;
+  }
+  
+  g_object_set (menuitem, "submenu", menu, NULL);
+  
+  gtk_widget_show_all (menuitem);
+  
+  return menuitem;
 }
 
 static void
@@ -965,17 +1406,18 @@ psppire_data_window_finish_init (PsppireDataWindow *de,
   de->data_store = psppire_data_store_new (de->dict);
   psppire_data_store_set_reader (de->data_store, NULL);
 
-  menubar = get_widget_assert (de->builder, "menubar");
-  hb = get_widget_assert (de->builder, "toolbar");
-  sb = get_widget_assert (de->builder, "status-bar");
+  GObject *menu = get_object_assert (de->builder, "data-editor-menu", G_TYPE_MENU);
+  menubar = gtk_menu_bar_new_from_model (G_MENU_MODEL (menu));
+  gtk_widget_show (menubar);
 
-  de->uim = NULL;
-  de->merge_id = 0;
+  hb = gtk_toolbar_new ();
+  sb = get_widget_assert (de->builder, "status-bar");
 
   de->data_editor =
     PSPPIRE_DATA_EDITOR (psppire_data_editor_new (de->dict, de->data_store));
-  g_signal_connect (de->data_editor, "switch-page",
-                    G_CALLBACK (on_switch_page), de);
+  
+  g_signal_connect (de, "realize",
+                    G_CALLBACK (set_data_page), de);
 
   g_signal_connect_swapped (de->data_store, "case-changed",
 			    G_CALLBACK (set_unsaved), de);
@@ -1017,112 +1459,310 @@ psppire_data_window_finish_init (PsppireDataWindow *de,
                             G_CALLBACK (enable_save), de);
   enable_save (de);
 
-  connect_action (de, "file_new_data", G_CALLBACK (create_data_window));
-  connect_action (de, "file_import", G_CALLBACK (file_import));
+  connect_dialog_action (PSPPIRE_TYPE_DIALOG_ACTION_SORT,  de);
+  connect_dialog_action (PSPPIRE_TYPE_DIALOG_ACTION_SPLIT,  de);
+  connect_dialog_action (PSPPIRE_TYPE_DIALOG_ACTION_FLIP,  de);
+  connect_dialog_action (PSPPIRE_TYPE_DIALOG_ACTION_AGGREGATE,  de);
+  connect_dialog_action (PSPPIRE_TYPE_DIALOG_ACTION_WEIGHT,  de);
+  
+  connect_dialog_action (PSPPIRE_TYPE_DIALOG_ACTION_COMPUTE,  de);
+  connect_dialog_action (PSPPIRE_TYPE_DIALOG_ACTION_COUNT,  de);
+  connect_dialog_action (PSPPIRE_TYPE_DIALOG_ACTION_AUTORECODE,  de);
+  connect_dialog_action (PSPPIRE_TYPE_DIALOG_ACTION_RANK,  de);
+  connect_dialog_action (PSPPIRE_TYPE_DIALOG_ACTION_SELECT,  de);
+  connect_dialog_action (PSPPIRE_TYPE_DIALOG_ACTION_RECODE_SAME,  de);
+  connect_dialog_action (PSPPIRE_TYPE_DIALOG_ACTION_RECODE_DIFFERENT,  de);
 
-  connect_action (de, "file_save", G_CALLBACK (psppire_window_save));
-  connect_action (de, "file_open", G_CALLBACK (psppire_window_open));
-  connect_action (de, "file_save_as", G_CALLBACK (psppire_window_save_as));
-  connect_action (de, "rename_dataset", G_CALLBACK (on_rename_dataset));
-  connect_action (de, "file_information_working-file", G_CALLBACK (display_dict));
-  connect_action (de, "file_information_external-file", G_CALLBACK (sysfile_info));
+    
+  connect_dialog_action (PSPPIRE_TYPE_DIALOG_ACTION_DESCRIPTIVES,  de);
+  connect_dialog_action (PSPPIRE_TYPE_DIALOG_ACTION_FREQUENCIES,  de);
+  connect_dialog_action (PSPPIRE_TYPE_DIALOG_ACTION_EXAMINE,  de);
+  connect_dialog_action (PSPPIRE_TYPE_DIALOG_ACTION_CROSSTABS,  de);
 
-  g_signal_connect_swapped (get_action_assert (de->builder, "view_value-labels"), "toggled", G_CALLBACK (toggle_value_labels), de);
+  connect_dialog_action (PSPPIRE_TYPE_DIALOG_ACTION_INDEP_SAMPS,  de);
+  connect_dialog_action (PSPPIRE_TYPE_DIALOG_ACTION_PAIRED,  de);
+
+  connect_dialog_action (PSPPIRE_TYPE_DIALOG_ACTION_MEANS,  de);
+  connect_dialog_action (PSPPIRE_TYPE_DIALOG_ACTION_TT1S,  de);
+
+  connect_dialog_action (PSPPIRE_TYPE_DIALOG_ACTION_ONEWAY, de);
+  connect_dialog_action (PSPPIRE_TYPE_DIALOG_ACTION_UNIVARIATE, de);
+  connect_dialog_action (PSPPIRE_TYPE_DIALOG_ACTION_KMEANS, de);
+  connect_dialog_action (PSPPIRE_TYPE_DIALOG_ACTION_FACTOR, de);
+  connect_dialog_action (PSPPIRE_TYPE_DIALOG_ACTION_CORRELATION, de);
+  connect_dialog_action (PSPPIRE_TYPE_DIALOG_ACTION_RELIABILITY, de);
+  connect_dialog_action (PSPPIRE_TYPE_DIALOG_ACTION_REGRESSION, de);
+  connect_dialog_action (PSPPIRE_TYPE_DIALOG_ACTION_LOGISTIC, de);
+  connect_dialog_action (PSPPIRE_TYPE_DIALOG_ACTION_ROC, de);
+  
+  connect_dialog_action (PSPPIRE_TYPE_DIALOG_ACTION_COMMENTS, de);
+  connect_dialog_action (PSPPIRE_TYPE_DIALOG_ACTION_VAR_INFO, de);
+
+  connect_dialog_action (PSPPIRE_TYPE_DIALOG_ACTION_BARCHART, de);
+  connect_dialog_action (PSPPIRE_TYPE_DIALOG_ACTION_SCATTERPLOT, de);
+  connect_dialog_action (PSPPIRE_TYPE_DIALOG_ACTION_HISTOGRAM, de);
+
+  connect_dialog_action (PSPPIRE_TYPE_DIALOG_ACTION_CHISQUARE, de);
+  connect_dialog_action (PSPPIRE_TYPE_DIALOG_ACTION_BINOMIAL, de);
+  connect_dialog_action (PSPPIRE_TYPE_DIALOG_ACTION_RUNS, de);
+  connect_dialog_action (PSPPIRE_TYPE_DIALOG_ACTION_1SKS, de);
+  connect_dialog_action (PSPPIRE_TYPE_DIALOG_ACTION_TWO_SAMPLE, de);
+  connect_dialog_action (PSPPIRE_TYPE_DIALOG_ACTION_K_RELATED, de);
 
   {
-    GtkWidget *recent_data =
-      gtk_ui_manager_get_widget (de->ui_manager, "/ui/menubar/file/file_recent-data");
-
-    GtkWidget *recent_files =
-      gtk_ui_manager_get_widget (de->ui_manager, "/ui/menubar/file/file_recent-files");
-
-
-    GtkWidget *menu_data = gtk_recent_chooser_menu_new_for_manager (
-      gtk_recent_manager_get_default ());
-
-    GtkWidget *menu_files = gtk_recent_chooser_menu_new_for_manager (
-      gtk_recent_manager_get_default ());
-
-    g_object_set (menu_data, "show-tips",  TRUE, NULL);
-    g_object_set (menu_files, "show-tips",  TRUE, NULL);
-
-    {
-      GtkRecentFilter *filter = gtk_recent_filter_new ();
-
-      gtk_recent_filter_add_mime_type (filter, "application/x-spss-sav");
-      gtk_recent_filter_add_mime_type (filter, "application/x-spss-por");
-
-      gtk_recent_chooser_set_sort_type (GTK_RECENT_CHOOSER (menu_data), GTK_RECENT_SORT_MRU);
-
-      gtk_recent_chooser_add_filter (GTK_RECENT_CHOOSER (menu_data), filter);
-    }
-
-    gtk_menu_item_set_submenu (GTK_MENU_ITEM (recent_data), menu_data);
-
-
-    g_signal_connect (menu_data, "selection-done", G_CALLBACK (on_recent_data_select), de);
-
-    {
-      GtkRecentFilter *filter = gtk_recent_filter_new ();
-
-      gtk_recent_filter_add_pattern (filter, "*.sps");
-      gtk_recent_filter_add_pattern (filter, "*.SPS");
-
-      gtk_recent_chooser_set_sort_type (GTK_RECENT_CHOOSER (menu_files), GTK_RECENT_SORT_MRU);
-
-      gtk_recent_chooser_add_filter (GTK_RECENT_CHOOSER (menu_files), filter);
-    }
-
-    gtk_menu_item_set_submenu (GTK_MENU_ITEM (recent_files), menu_files);
-
-    g_signal_connect (menu_files, "selection-done", G_CALLBACK (on_recent_files_select), de);
-
+    GSimpleAction *file_import_action = g_simple_action_new ("file-import", NULL);
+    g_signal_connect_swapped (file_import_action, "activate", G_CALLBACK (file_import), de);
+    g_action_map_add_action (G_ACTION_MAP (de), G_ACTION (file_import_action));
+  }
+  
+  {
+    GSimpleAction *save = g_simple_action_new ("save", NULL);
+    g_signal_connect_swapped (save, "activate", G_CALLBACK (psppire_window_save), de);
+    g_action_map_add_action (G_ACTION_MAP (de), G_ACTION (save));
   }
 
-  connect_action (de, "file_new_syntax", G_CALLBACK (create_syntax_window));
+  {
+    GSimpleAction *open = g_simple_action_new ("open", NULL);
+    g_signal_connect_swapped (open, "activate", G_CALLBACK (psppire_window_open), de);
+    g_action_map_add_action (G_ACTION_MAP (de), G_ACTION (open));
+  }
+
+  {
+    GSimpleAction *save_as = g_simple_action_new ("save-as", NULL);
+    g_signal_connect_swapped (save_as, "activate", G_CALLBACK (psppire_window_save_as), de);
+    g_action_map_add_action (G_ACTION_MAP (de), G_ACTION (save_as));
+  }
+
+  {
+    GSimpleAction *rename_dataset_act = g_simple_action_new ("rename-dataset", NULL);
+    g_signal_connect_swapped (rename_dataset_act, "activate",
+			      G_CALLBACK (on_rename_dataset), de);
+    g_action_map_add_action (G_ACTION_MAP (de), G_ACTION (rename_dataset_act));
+  }
+
+  {
+    GSimpleAction *info_working = g_simple_action_new ("info-working", NULL);
+    g_signal_connect_swapped (info_working, "activate", G_CALLBACK (display_dict), de);
+    g_action_map_add_action (G_ACTION_MAP (de), G_ACTION (info_working));
+  }
+  {
+    GSimpleAction *info_external = g_simple_action_new ("info-external", NULL);
+    g_signal_connect_swapped (info_external, "activate", G_CALLBACK (sysfile_info), de);
+    g_action_map_add_action (G_ACTION_MAP (de), G_ACTION (info_external));
+  }
+
+  {
+    GSimpleAction *act_statusbar = g_simple_action_new_stateful ("statusbar", NULL, g_variant_new_boolean (TRUE));
+    g_signal_connect (act_statusbar, "activate", G_CALLBACK (status_bar_activate), de);
+    g_action_map_add_action (G_ACTION_MAP (de), G_ACTION (act_statusbar));
+  }
+
+  {
+    GSimpleAction *act_gridlines = g_simple_action_new_stateful ("gridlines", NULL, g_variant_new_boolean (TRUE));
+    g_signal_connect (act_gridlines, "activate", G_CALLBACK (grid_lines_activate), de);
+    g_action_map_add_action (G_ACTION_MAP (de), G_ACTION (act_gridlines));
+  }
+
+  
+  {
+    GSimpleAction *act_view_data = g_simple_action_new_stateful ("view_dv", G_VARIANT_TYPE_STRING,
+								 g_variant_new_string ("DATA"));
+    g_signal_connect (act_view_data, "activate", G_CALLBACK (activate_change_view), de);
+    g_action_map_add_action (G_ACTION_MAP (de), G_ACTION (act_view_data));
+  }
+
+  {
+    GSimpleAction *act_fonts = g_simple_action_new ("fonts", NULL);
+    g_signal_connect_swapped (act_fonts, "activate", G_CALLBACK (fonts_activate), de);
+    g_action_map_add_action (G_ACTION_MAP (de), G_ACTION (act_fonts));
+  }
+
+  {
+    GSimpleAction *act_value_labels =
+      g_simple_action_new_stateful ("value_labels", NULL,
+				    g_variant_new_boolean (FALSE));
+    g_signal_connect (act_value_labels, "activate", G_CALLBACK (value_labels_activate), de);
+    g_action_map_add_action (G_ACTION_MAP (de), G_ACTION (act_value_labels));
+  }
+
+  {
+    GSimpleAction *act_transform_pending = g_simple_action_new ("transform-pending", NULL);
+    g_signal_connect_swapped (act_transform_pending, "activate", G_CALLBACK (execute), de);
+    g_action_map_add_action (G_ACTION_MAP (de), G_ACTION (act_transform_pending));
+  }
+
+  {
+    GSimpleAction *act_jump_to_variable = g_simple_action_new ("jump-to-variable", NULL);
+    g_action_map_add_action (G_ACTION_MAP (de), G_ACTION (act_jump_to_variable));
+  }
+
+  {
+    GSimpleAction *act_insert_variable = g_simple_action_new ("insert-variable", NULL);
+    g_signal_connect_swapped (act_insert_variable, "activate", G_CALLBACK (insert_variable), de);
+    g_action_map_add_action (G_ACTION_MAP (de), G_ACTION (act_insert_variable));
+  }
+
+  {
+    GSimpleAction *act_jump_to_case = g_simple_action_new ("jump-to-case", NULL);
+    g_signal_connect_swapped (act_jump_to_case, "activate", G_CALLBACK (goto_case), de);
+    g_action_map_add_action (G_ACTION_MAP (de), G_ACTION (act_jump_to_case));
+  }
+
+  {
+    GSimpleAction *act_insert_case = g_simple_action_new ("insert-case", NULL);
+    g_signal_connect_swapped (act_insert_case, "activate", G_CALLBACK (insert_case_at_row), de);
+    g_action_map_add_action (G_ACTION_MAP (de), G_ACTION (act_insert_case));
+  }
+
+  {
+    GSimpleAction *find = g_simple_action_new ("find", NULL);
+    g_signal_connect_swapped (find, "activate", G_CALLBACK (find_dialog), de);
+    g_action_map_add_action (G_ACTION_MAP (de), G_ACTION (find));
+  }
+  
+  {
+    int idx = 0;
+    {
+      GtkToolItem *ti = gtk_tool_button_new (NULL, "Open");
+      g_signal_connect_swapped (ti, "clicked", G_CALLBACK (psppire_window_open), de);
+      gtk_toolbar_insert (GTK_TOOLBAR (hb), ti, idx++);
+      gtk_tool_button_set_icon_name (GTK_TOOL_BUTTON (ti), "file-open-data");
+    }
+
+    {
+      GtkToolItem *ti = gtk_tool_button_new (NULL, "Save");
+      g_signal_connect_swapped (ti, "clicked", G_CALLBACK (psppire_window_save), de);
+      gtk_toolbar_insert (GTK_TOOLBAR (hb), ti, idx++);
+      gtk_tool_button_set_icon_name (GTK_TOOL_BUTTON (ti), "file-save-data");
+    }
+
+    gtk_toolbar_insert (GTK_TOOLBAR (hb), gtk_separator_tool_item_new (), idx++);
+
+    {
+      de->ti_jump_to_variable = gtk_tool_button_new (NULL, "Goto Var");
+
+      GAction *a = g_action_map_lookup_action (G_ACTION_MAP (de),  "PsppireDialogActionVarInfo");
+      g_assert (a);
+      g_signal_connect_swapped (de->ti_jump_to_variable, "clicked",
+				G_CALLBACK (psppire_dialog_action_activate_null), a);
+
+      gtk_toolbar_insert (GTK_TOOLBAR (hb), de->ti_jump_to_variable, idx++);
+      gtk_tool_button_set_icon_name (GTK_TOOL_BUTTON (de->ti_jump_to_variable), "edit-go-to-variable");
+      gtk_widget_set_tooltip_text (GTK_WIDGET (de->ti_jump_to_variable), _("Jump to variable"));
+    }
+
+    {
+      de->ti_jump_to_case = gtk_tool_button_new (NULL, "Jump to Case");
+      
+      GAction *a = g_action_map_lookup_action (G_ACTION_MAP (de),  "jump-to-case");
+      g_assert (a);
+      g_signal_connect_swapped (de->ti_jump_to_case, "clicked",
+				G_CALLBACK (g_action_activate_null), a);
+      
+      gtk_toolbar_insert (GTK_TOOLBAR (hb), de->ti_jump_to_case, idx++);
+      gtk_tool_button_set_icon_name (GTK_TOOL_BUTTON (de->ti_jump_to_case), "edit-go-to-case");
+      gtk_widget_set_tooltip_text (GTK_WIDGET (de->ti_jump_to_case), _("Jump to a case in the data sheet"));
+    }
+
+    {
+      de->ti_find = gtk_tool_button_new (NULL, "Find");
+
+      GAction *a = g_action_map_lookup_action (G_ACTION_MAP (de),  "find");
+      g_assert (a);
+      g_signal_connect_swapped (de->ti_find, "clicked",
+				G_CALLBACK (g_action_activate_null), a);
+
+      
+      gtk_toolbar_insert (GTK_TOOLBAR (hb), de->ti_find, idx++);
+      gtk_tool_button_set_icon_name (GTK_TOOL_BUTTON (de->ti_find), "edit-find");
+      gtk_widget_set_tooltip_text (GTK_WIDGET (de->ti_find), _("Search for values in the data"));
+    }
+
+    {
+      de->ti_insert_case = gtk_tool_button_new (NULL, "Create Case");
+      GAction *a = g_action_map_lookup_action (G_ACTION_MAP (de),  "insert-case");
+      g_assert (a);
+      g_signal_connect_swapped (de->ti_insert_case, "clicked",
+				G_CALLBACK (g_action_activate_null), a);
+
+      gtk_toolbar_insert (GTK_TOOLBAR (hb), de->ti_insert_case, idx++);
+      gtk_tool_button_set_icon_name (GTK_TOOL_BUTTON (de->ti_insert_case), "edit-insert-case");
+      gtk_widget_set_tooltip_text (GTK_WIDGET (de->ti_insert_case), _("Create a new case at the current position"));
+    }
+
+    {
+      de->ti_insert_variable = gtk_tool_button_new (NULL, "Create Variable");
+      GAction *a = g_action_map_lookup_action (G_ACTION_MAP (de),  "insert-variable");
+      g_assert (a);
+      g_signal_connect_swapped (de->ti_insert_variable, "clicked",
+				G_CALLBACK (g_action_activate_null), a);
+
+      gtk_toolbar_insert (GTK_TOOLBAR (hb), de->ti_insert_variable, idx++);
+      gtk_tool_button_set_icon_name (GTK_TOOL_BUTTON (de->ti_insert_variable), "edit-insert-variable");
+      gtk_widget_set_tooltip_text (GTK_WIDGET (de->ti_insert_variable), _("Create a new variable at the current position"));
+    }
+
+    gtk_toolbar_insert (GTK_TOOLBAR (hb), gtk_separator_tool_item_new (), idx++);
+
+    {
+      GtkToolItem *ti = gtk_tool_button_new (NULL, "Split");
+      GAction *a = g_action_map_lookup_action (G_ACTION_MAP (de),
+					       "PsppireDialogActionSplit");
+      g_assert (a);
+      g_signal_connect_swapped (ti, "clicked",
+				G_CALLBACK (psppire_dialog_action_activate_null), a);
+      gtk_toolbar_insert (GTK_TOOLBAR (hb), ti, idx++);
+      gtk_tool_button_set_icon_name (GTK_TOOL_BUTTON (ti), "data-split-file");
+      gtk_widget_set_tooltip_text (GTK_WIDGET (ti), _("Split the active dataset"));
+    }
+
+    {
+      GtkToolItem *ti = gtk_tool_button_new (NULL, "Weight");
+      GAction *a = g_action_map_lookup_action (G_ACTION_MAP (de),
+					       "PsppireDialogActionWeight");
+      g_assert (a);
+      g_signal_connect_swapped (ti, "clicked",
+				G_CALLBACK (psppire_dialog_action_activate_null), a);
+      gtk_toolbar_insert (GTK_TOOLBAR (hb), ti, idx++);
+      gtk_tool_button_set_icon_name (GTK_TOOL_BUTTON (ti), "data-weight-cases");
+      gtk_widget_set_tooltip_text (GTK_WIDGET (ti), _("Weight cases by variable"));
+    }
+
+    {
+      de->ti_value_labels_button = gtk_toggle_tool_button_new ();
+      gtk_tool_button_set_label (GTK_TOOL_BUTTON (de->ti_value_labels_button),
+				 "Value Labels");
+      g_signal_connect (de->ti_value_labels_button, "toggled",
+			G_CALLBACK (on_labels_button_toggle), de);
+      gtk_toolbar_insert (GTK_TOOLBAR (hb), de->ti_value_labels_button, idx++);
+      gtk_tool_button_set_icon_name (GTK_TOOL_BUTTON (de->ti_value_labels_button), "view-value-labels");
+      gtk_widget_set_tooltip_text (GTK_WIDGET (de->ti_value_labels_button), _("Show/hide value labels"));
+    }
+  }
 
 
   gtk_notebook_set_current_page (GTK_NOTEBOOK (de->data_editor), PSPPIRE_DATA_EDITOR_VARIABLE_VIEW);
   gtk_notebook_set_current_page (GTK_NOTEBOOK (de->data_editor), PSPPIRE_DATA_EDITOR_DATA_VIEW);
 
-  connect_action (de, "view_statusbar", G_CALLBACK (status_bar_activate));
-
-  connect_action (de, "view_gridlines", G_CALLBACK (grid_lines_activate));
-
-  connect_action (de, "view_data", G_CALLBACK (data_view_activate));
-
-  connect_action (de, "view_variables", G_CALLBACK (variable_view_activate));
-
-  connect_action (de, "view_fonts", G_CALLBACK (fonts_activate));
-
-  connect_action (de, "file_quit", G_CALLBACK (file_quit));
-
-  connect_action (de, "transform_run-pending", G_CALLBACK (execute));
-
+  gtk_menu_shell_insert (GTK_MENU_SHELL (menubar),  create_file_menu (de), 0);
+  gtk_menu_shell_insert (GTK_MENU_SHELL (menubar),  create_edit_menu (de), 1);
   gtk_menu_shell_append (GTK_MENU_SHELL (menubar),  create_windows_menu (GTK_WINDOW (de)));
   gtk_menu_shell_append (GTK_MENU_SHELL (menubar),  create_help_menu (GTK_WINDOW (de)));
-  
-  g_signal_connect (de->data_editor, "notify::ui-manager",
-                    G_CALLBACK (on_ui_manager_changed), de);
-  on_ui_manager_changed (de->data_editor, NULL, de);
+
+  g_signal_connect (de->data_editor, "switch-page",
+                    G_CALLBACK (on_switch_page), de);
 
   gtk_widget_show (GTK_WIDGET (de->data_editor));
-  gtk_widget_show (box);
+  gtk_widget_show_all (box);
 
   ll_push_head (&all_data_windows, &de->ll);
 }
+
 
 static void
 psppire_data_window_dispose (GObject *object)
 {
   PsppireDataWindow *dw = PSPPIRE_DATA_WINDOW (object);
-
-  if (dw->uim)
-    {
-      psppire_data_window_remove_ui (dw, dw->uim, dw->merge_id);
-      g_object_unref (dw->uim);
-      dw->uim = NULL;
-    }
 
   if (dw->builder != NULL)
     {
@@ -1220,64 +1860,7 @@ psppire_data_window_get_property (GObject         *object,
     };
 }
 
-static guint
-psppire_data_window_add_ui (PsppireDataWindow *pdw, GtkUIManager *uim)
-{
-  gchar *ui_string;
-  guint merge_id;
-  GList *list;
 
-  ui_string = gtk_ui_manager_get_ui (uim);
-  merge_id = gtk_ui_manager_add_ui_from_string (pdw->ui_manager, ui_string,
-                                                -1, NULL);
-  g_free (ui_string);
-
-  g_return_val_if_fail (merge_id != 0, 0);
-
-  list = gtk_ui_manager_get_action_groups (uim);
-  for (; list != NULL; list = list->next)
-    {
-      GtkActionGroup *action_group = list->data;
-      GList *actions = gtk_action_group_list_actions (action_group);
-      GList *action;
-
-      for (action = actions; action != NULL; action = action->next)
-        {
-          GtkAction *a = action->data;
-
-          if (PSPPIRE_IS_DIALOG_ACTION (a))
-            g_object_set (a, "manager", pdw->ui_manager, NULL);
-        }
-
-      gtk_ui_manager_insert_action_group (pdw->ui_manager, action_group, 0);
-    }
-
-  gtk_window_add_accel_group (GTK_WINDOW (pdw),
-                              gtk_ui_manager_get_accel_group (uim));
-
-  return merge_id;
-}
-
-static void
-psppire_data_window_remove_ui (PsppireDataWindow *pdw,
-                               GtkUIManager *uim, guint merge_id)
-{
-  GList *list;
-
-  g_return_if_fail (merge_id != 0);
-
-  gtk_ui_manager_remove_ui (pdw->ui_manager, merge_id);
-
-  list = gtk_ui_manager_get_action_groups (uim);
-  for (; list != NULL; list = list->next)
-    {
-      GtkActionGroup *action_group = list->data;
-      gtk_ui_manager_remove_action_group (pdw->ui_manager, action_group);
-    }
-
-  gtk_window_remove_accel_group (GTK_WINDOW (pdw),
-                                 gtk_ui_manager_get_accel_group (uim));
-}
 
 GtkWidget*
 psppire_data_window_new (struct dataset *ds)
@@ -1296,23 +1879,30 @@ psppire_data_window_new (struct dataset *ds)
   assert (dataset_session (ds) == the_session);
 
   dw = GTK_WIDGET (
-    g_object_new (
-      psppire_data_window_get_type (),
-      "description", _("Data Editor"),
-      "dataset", ds,
-      NULL));
+		   g_object_new (
+				 psppire_data_window_get_type (),
+				 "description", _("Data Editor"),
+				 "dataset", ds,
+				 NULL));
 
   if (dataset_name (ds) != NULL)
     g_object_set (dw, "id", dataset_name (ds), (void *) NULL);
 
+
+  GApplication *app = g_application_get_default ();
+  gtk_application_add_window (GTK_APPLICATION (app), GTK_WINDOW (dw));
+  
   return dw;
 }
+
+
 
 bool
 psppire_data_window_is_empty (PsppireDataWindow *dw)
 {
   return psppire_dict_get_var_cnt (dw->dict) == 0;
 }
+
 
 static void
 psppire_data_window_iface_init (PsppireWindowIface *iface)
@@ -1321,7 +1911,10 @@ psppire_data_window_iface_init (PsppireWindowIface *iface)
   iface->pick_filename = data_pick_filename;
   iface->load = load_file;
 }
+
 
+
+
 PsppireDataWindow *
 psppire_default_data_window (void)
 {
@@ -1329,6 +1922,8 @@ psppire_default_data_window (void)
     create_data_window ();
   return ll_data (ll_head (&all_data_windows), PsppireDataWindow, ll);
 }
+
+
 
 void
 psppire_data_window_set_default (PsppireDataWindow *pdw)
@@ -1344,6 +1939,8 @@ psppire_data_window_undefault (PsppireDataWindow *pdw)
   ll_push_tail (&all_data_windows, &pdw->ll);
 }
 
+
+
 PsppireDataWindow *
 psppire_data_window_for_dataset (struct dataset *ds)
 {
@@ -1355,6 +1952,8 @@ psppire_data_window_for_dataset (struct dataset *ds)
 
   return NULL;
 }
+
+#if 0
 
 PsppireDataWindow *
 psppire_data_window_for_data_store (PsppireDataStore *data_store)
@@ -1368,11 +1967,19 @@ psppire_data_window_for_data_store (PsppireDataStore *data_store)
   return NULL;
 }
 
-void
+#endif
+
+GtkWindow *
 create_data_window (void)
 {
-  gtk_widget_show (psppire_data_window_new (NULL));
+  GtkWidget *w = psppire_data_window_new (NULL);
+
+  gtk_widget_show (w);
+  
+  return GTK_WINDOW (w);
 }
+
+
 
 void
 open_data_window (PsppireWindow *victim, const char *file_name,
@@ -1392,4 +1999,3 @@ open_data_window (PsppireWindow *victim, const char *file_name,
   psppire_window_load (PSPPIRE_WINDOW (window), file_name, encoding, hint);
   gtk_widget_show_all (window);
 }
-

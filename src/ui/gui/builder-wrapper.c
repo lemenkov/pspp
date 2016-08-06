@@ -74,12 +74,6 @@ get_object_assert (GtkBuilder *builder, const gchar *name, GType type)
 }
 
 
-GtkAction *
-get_action_assert (GtkBuilder *builder, const gchar *name)
-{
-  return GTK_ACTION (get_object_assert (builder, name, GTK_TYPE_ACTION));
-}
-
 GtkWidget *
 get_widget_assert (GtkBuilder *builder, const gchar *name)
 {

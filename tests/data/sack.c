@@ -705,6 +705,7 @@ main (int argc, char **argv)
     fclose (input);
 
   fwrite (output.data, output.size, 1, stdout);
+  free (output.data);
 
   return 0;
 }

@@ -1,131 +1,86 @@
-<?xml version="1.0"?>
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Generated with glade 3.18.3 -->
 <interface>
-  <object class="GtkUIManager" id="uimanager1">
-    <child>
-      <object class="GtkActionGroup" id="actiongroup1">
-        <child>
-          <object class="GtkAction" id="menuitem1">
-            <property name="name">menuitem1</property>
-            <property name="label" translatable="yes">_File</property>
-          </object>
-        </child>
-        <child>
-          <object class="GtkAction" id="file_print">
-            <property name="name">file_print</property>
-            <property name="stock-id">file-print</property>
-            <property name="label" translatable="yes">_Print...</property>
-          </object>
-          <accelerator key="P" modifiers="GDK_CONTROL_MASK"/>
-        </child>
-        <child>
-          <object class="GtkAction" id="file_export">
-            <property name="name">file_export</property>
-            <property name="stock-id">file-export-data</property>
-            <property name="label" translatable="yes">_Export...</property>
-          </object>
-        </child>
-        <child>
-          <object class="GtkAction" id="menuitem2">
-            <property name="name">menuitem2</property>
-            <property name="label" translatable="yes">_Edit</property>
-          </object>
-        </child>
-        <child>
-          <object class="GtkAction" id="edit_select-all">
-            <property name="name">edit_select-all</property>
-            <property name="stock-id">edit-select-all</property>
-            <property name="label" translatable="yes">Select _All</property>
-          </object>
-        </child>
-        <child>
-          <object class="GtkAction" id="edit_copy">
-            <property name="stock-id">edit-copy</property>
-            <property name="name">edit_copy</property>
-            <property name="label" translatable="yes">_Copy</property>
-          </object>
-        </child>
-      </object>
-    </child>
-    <ui>
-      <menubar name="menubar">
-        <menu action="menuitem1">
-          <menuitem action="file_export"/>
-          <menuitem action="file_print"/>
-        </menu>
-        <menu action="menuitem2">
-          <menuitem action="edit_copy"/>
-          <menuitem action="edit_select-all"/>
-        </menu>
-      </menubar>
-    </ui>
-  </object>
-  <!-- interface-requires gtk+ 2.16 -->
-  <!-- interface-naming-policy toplevel-contextual -->
-  <object class="GtkBox" id="box1">
+  <requires lib="gtk+" version="3.0"/>
+  <object class="GtkPaned" id="paned1">
     <property name="visible">True</property>
-    <property name="orientation">GTK_ORIENTATION_VERTICAL</property>
-    <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
+    <property name="can_focus">True</property>
+    <property name="position">112</property>
+    <property name="position_set">True</property>
     <child>
-      <object class="GtkMenuBar" constructor="uimanager1" id="menubar">
+      <object class="GtkScrolledWindow" id="scrolledwindow2">
         <property name="visible">True</property>
-        <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
+        <property name="can_focus">True</property>
+        <child>
+          <object class="GtkTreeView" id="overview">
+            <property name="visible">True</property>
+            <property name="can_focus">True</property>
+            <property name="headers_visible">False</property>
+            <child internal-child="selection">
+              <object class="GtkTreeSelection" id="treeview-selection1"/>
+            </child>
+          </object>
+        </child>
       </object>
       <packing>
-        <property name="expand">False</property>
-        <property name="position">0</property>
+        <property name="resize">False</property>
+        <property name="shrink">True</property>
       </packing>
     </child>
     <child>
-      <object class="GtkPaned" id="paned1">
+      <object class="GtkScrolledWindow" id="scrolledwindow1">
         <property name="visible">True</property>
-        <property name="orientation">GTK_ORIENTATION_HORIZONTAL</property>
         <property name="can_focus">True</property>
-        <property name="position">112</property>
-        <property name="position_set">True</property>
+        <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
         <child>
-          <object class="GtkScrolledWindow" id="scrolledwindow2">
+          <object class="GtkLayout" id="output">
             <property name="visible">True</property>
-            <property name="can_focus">True</property>
-            <property name="hscrollbar_policy">automatic</property>
-            <property name="vscrollbar_policy">automatic</property>
-            <child>
-              <object class="GtkTreeView" id="overview">
-                <property name="visible">True</property>
-                <property name="can_focus">True</property>
-                <property name="headers_visible">False</property>
-              </object>
-            </child>
-          </object>
-          <packing>
-            <property name="resize">False</property>
-            <property name="shrink">True</property>
-          </packing>
-        </child>
-        <child>
-          <object class="GtkScrolledWindow" id="scrolledwindow1">
-            <property name="visible">True</property>
-            <property name="can_focus">True</property>
+            <property name="can_focus">False</property>
             <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
-            <property name="hscrollbar_policy">automatic</property>
-            <property name="vscrollbar_policy">automatic</property>
-            <child>
-              <object class="GtkLayout" id="output">
-                <property name="visible">True</property>
-                <property name="border-width">5</property>
-                <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
-              </object>
-            </child>
+            <property name="border_width">5</property>
           </object>
-          <packing>
-            <property name="resize">True</property>
-            <property name="shrink">True</property>
-          </packing>
         </child>
       </object>
       <packing>
-        <property name="position">1</property>
-        <property name="expand">True</property>
+        <property name="resize">True</property>
+        <property name="shrink">True</property>
       </packing>
     </child>
   </object>
+  <menu id="output-window-menu">
+    <submenu>
+      <attribute name="label" translatable="yes">_File</attribute>
+      <section>
+	<item>
+	  <attribute name="label" translatable="yes">_Print...</attribute>
+	  <attribute name="action">win.print</attribute>
+	  <attribute name="accel">&lt;Primary&gt;p</attribute>
+	</item>
+	<item>
+	  <attribute name="label" translatable="yes">_Export...</attribute>
+	  <attribute name="action">win.export</attribute>
+	</item>
+      </section>
+      <section>
+	<item>
+	  <attribute name="label" translatable="yes">_Quit</attribute>
+	  <attribute name="accel">&lt;Primary&gt;q</attribute>
+	  <attribute name="action">app.quit</attribute>
+	</item>
+      </section>
+    </submenu>
+    <submenu>
+      <attribute name="label" translatable="yes">_Edit</attribute>
+      <section>
+	<item>
+	  <attribute name="label" translatable="yes">Select _All</attribute>
+	  <attribute name="action">win.select-all</attribute>
+	</item>
+	<item>
+	  <attribute name="label" translatable="yes">_Copy</attribute>
+	  <attribute name="action">win.copy</attribute>
+	</item>
+      </section>
+    </submenu>
+  </menu>
 </interface>

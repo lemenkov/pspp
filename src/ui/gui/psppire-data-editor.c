@@ -26,10 +26,8 @@
 #include "libpspp/range-set.h"
 #include "libpspp/str.h"
 #include "ui/gui/helper.h"
-#include "ui/gui/pspp-sheet-selection.h"
 #include "ui/gui/psppire-data-store.h"
 #include "ui/gui/psppire-value-entry.h"
-#include "ui/gui/psppire-var-sheet.h"
 #include "ui/gui/psppire-conf.h"
 #include "ui/gui/psppire-var-sheet-header.h"
 
@@ -134,7 +132,6 @@ static void psppire_data_editor_init                (PsppireDataEditor      *de)
 
 static void disconnect_data_sheets (PsppireDataEditor *);
 static void refresh_entry (PsppireDataEditor *);
-static void psppire_data_editor_update_ui_manager (PsppireDataEditor *);
 
 GType
 psppire_data_editor_get_type (void)
@@ -190,12 +187,6 @@ psppire_data_editor_dispose (GObject *obj)
       de->font = NULL;
     }
 
-  if (de->ui_manager)
-    {
-      g_object_unref (de->ui_manager);
-      de->ui_manager = NULL;
-    }
-
   /* Chain up to the parent class */
   G_OBJECT_CLASS (parent_class)->dispose (obj);
 }
@@ -206,8 +197,7 @@ enum
     PROP_DATA_STORE,
     PROP_DICTIONARY,
     PROP_VALUE_LABELS,
-    PROP_SPLIT_WINDOW,
-    PROP_UI_MANAGER
+    PROP_SPLIT_WINDOW
   };
 
 static void
@@ -311,7 +301,7 @@ psppire_data_editor_set_property (GObject         *object,
       break;
     case PROP_VALUE_LABELS:
       break;
-    case PROP_UI_MANAGER:
+
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
       break;
@@ -339,9 +329,6 @@ psppire_data_editor_get_property (GObject         *object,
       break;
     case PROP_VALUE_LABELS:
       break;
-    case PROP_UI_MANAGER:
-      g_value_set_object (value, psppire_data_editor_get_ui_manager (de));
-      break;
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
       break;
@@ -354,7 +341,7 @@ psppire_data_editor_switch_page (GtkNotebook     *notebook,
                                  guint            page_num)
 {
   GTK_NOTEBOOK_CLASS (parent_class)->switch_page (notebook, w, page_num);
-  psppire_data_editor_update_ui_manager (PSPPIRE_DATA_EDITOR (notebook));
+
 }
 
 static void
@@ -362,7 +349,7 @@ psppire_data_editor_set_focus_child (GtkContainer *container,
                                      GtkWidget    *widget)
 {
   GTK_CONTAINER_CLASS (parent_class)->set_focus_child (container, widget);
-  psppire_data_editor_update_ui_manager (PSPPIRE_DATA_EDITOR (container));
+
 }
 
 static void
@@ -372,7 +359,7 @@ psppire_data_editor_class_init (PsppireDataEditorClass *klass)
   GParamSpec *dict_spec ;
   GParamSpec *value_labels_spec;
   GParamSpec *split_window_spec;
-  GParamSpec *ui_manager_spec;
+
   GObjectClass *object_class = G_OBJECT_CLASS (klass);
   GtkContainerClass *container_class = GTK_CONTAINER_CLASS (klass);
   GtkNotebookClass *notebook_class = GTK_NOTEBOOK_CLASS (klass);
@@ -430,20 +417,11 @@ psppire_data_editor_class_init (PsppireDataEditorClass *klass)
                                    PROP_SPLIT_WINDOW,
                                    split_window_spec);
 
-  ui_manager_spec =
-    g_param_spec_object ("ui-manager",
-                         "UI Manager",
-                         "UI manager for the active notebook tab.  The client should merge this UI manager with the active UI manager to obtain menu items and tool bar items specific to the active notebook tab.",
-                         GTK_TYPE_UI_MANAGER,
-                         G_PARAM_READABLE);
-  g_object_class_install_property (object_class,
-                                   PROP_UI_MANAGER,
-                                   ui_manager_spec);
 }
 
 
 static void
-on_var_sheet_var_double_clicked (PsppireVarSheet *var_sheet, gint dict_index,
+on_var_sheet_var_double_clicked (void *var_sheet, gint dict_index,
                                  PsppireDataEditor *de)
 {
   gtk_notebook_set_current_page (GTK_NOTEBOOK (de),
@@ -452,15 +430,18 @@ on_var_sheet_var_double_clicked (PsppireVarSheet *var_sheet, gint dict_index,
   jmd_sheet_scroll_to (JMD_SHEET (de->data_sheet), dict_index, -1);
 }
 
+
 static void
 on_data_sheet_var_double_clicked (JmdSheet *data_sheet, gint dict_index,
                                  PsppireDataEditor *de)
 {
+  
   gtk_notebook_set_current_page (GTK_NOTEBOOK (de),
                                  PSPPIRE_DATA_EDITOR_VARIABLE_VIEW);
 
   jmd_sheet_scroll_to (JMD_SHEET (de->var_sheet), -1, dict_index);
 }
+
 
 
 /* Refreshes 'de->cell_ref_label' and 'de->datum_entry' from the currently
@@ -534,7 +515,6 @@ psppire_data_editor_init (PsppireDataEditor *de)
   gchar *fontname = NULL;
 
   de->font = NULL;
-  de->ui_manager = NULL;
   de->old_vbox_widget = NULL;
 
   g_object_set (de, "tab-pos", GTK_POS_BOTTOM, NULL);
@@ -603,7 +583,6 @@ psppire_data_editor_init (PsppireDataEditor *de)
       set_font_recursively (GTK_WIDGET (de), de->font);
     }
 
-  psppire_data_editor_update_ui_manager (de);
 }
 
 GtkWidget*
@@ -621,6 +600,7 @@ psppire_data_editor_new (PsppireDict *dict,
 void
 psppire_data_editor_show_grid (PsppireDataEditor *de, gboolean grid_visible)
 {
+#if 0
   GtkTreeViewGridLines grid;
 
   grid = (grid_visible
@@ -628,6 +608,7 @@ psppire_data_editor_show_grid (PsppireDataEditor *de, gboolean grid_visible)
           : GTK_TREE_VIEW_GRID_LINES_NONE);
 
   pspp_sheet_view_set_grid_lines (PSPP_SHEET_VIEW (de->var_sheet), grid);
+#endif  
 }
 
 
@@ -679,7 +660,6 @@ psppire_data_editor_split_window (PsppireDataEditor *de, gboolean split)
 
   de->split = split;
   g_object_notify (G_OBJECT (de), "split");
-  psppire_data_editor_update_ui_manager (de);
 }
 
 /* Makes the variable with dictionary index DICT_INDEX in DE's dictionary
@@ -689,48 +669,40 @@ psppire_data_editor_goto_variable (PsppireDataEditor *de, gint dict_index)
 {
 }
 
-
-/* Returns the UI manager that should be merged into DE's toplevel widget's UI
-   manager to display menu items and toolbar items specific to DE's current
-   page and data sheet.
-
-   DE's toplevel widget can watch for changes by connecting to DE's
-   notify::ui-manager signal. */
-GtkUIManager *
-psppire_data_editor_get_ui_manager (PsppireDataEditor *de)
+#if 0
+/* Returns the "active" data sheet in DE.  If DE is in single-paned mode, this
+   is the only data sheet.  If DE is in split mode (showing four data sheets),
+   this is the focused data sheet or, if none is focused, the data sheet with
+   selected cells or, if none has selected cells, the upper-left data sheet. */
+PsppireDataSheet *
+psppire_data_editor_get_active_data_sheet (PsppireDataEditor *de)
 {
-  psppire_data_editor_update_ui_manager (de);
-  return de->ui_manager;
-}
-
-static void
-psppire_data_editor_update_ui_manager (PsppireDataEditor *de)
-{
-  GtkUIManager *ui_manager;
-
-  ui_manager = NULL;
-
-  switch (gtk_notebook_get_current_page (GTK_NOTEBOOK (de)))
+  if (de->split)
     {
-    case PSPPIRE_DATA_EDITOR_DATA_VIEW:
-      break;
+      PsppireDataSheet *data_sheet;
+      GtkWidget *scroller;
+      int i;
 
-    case PSPPIRE_DATA_EDITOR_VARIABLE_VIEW:
-      break;
+      /* If one of the datasheet's scrollers is focused, choose that one. */
+      scroller = gtk_container_get_focus_child (
+        GTK_CONTAINER (de->datasheet_vbox_widget));
+      if (scroller != NULL)
+        return PSPPIRE_DATA_SHEET (gtk_bin_get_child (GTK_BIN (scroller)));
 
-    default:
-      /* This happens transiently in psppire_data_editor_init(). */
-      break;
+      /* Otherwise if there's a nonempty selection in some data sheet, choose
+         that one. */
+      FOR_EACH_DATA_SHEET (data_sheet, i, de)
+        {
+          PsppSheetSelection *selection;
+
+          selection = pspp_sheet_view_get_selection (
+            PSPP_SHEET_VIEW (data_sheet));
+          if (pspp_sheet_selection_count_selected_rows (selection)
+              && pspp_sheet_selection_count_selected_columns (selection))
+            return data_sheet;
+        }
     }
 
-  if (ui_manager != de->ui_manager)
-    {
-      if (de->ui_manager)
-        g_object_unref (de->ui_manager);
-      if (ui_manager)
-        g_object_ref (ui_manager);
-      de->ui_manager = ui_manager;
-
-      g_object_notify (G_OBJECT (de), "ui-manager");
-    }
+  return PSPPIRE_DATA_SHEET (de->data_sheets[0]);
 }
+#endif

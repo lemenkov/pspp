@@ -229,8 +229,6 @@ psppire_dialog_action_two_sample_activate (PsppireDialogAction *a)
 				    select_as_pair_member,
 				    act);
   
-  if (PSPPIRE_DIALOG_ACTION_CLASS (psppire_dialog_action_two_sample_parent_class)->activate)
-    PSPPIRE_DIALOG_ACTION_CLASS (psppire_dialog_action_two_sample_parent_class)->activate (pda);
 }
 
 static void

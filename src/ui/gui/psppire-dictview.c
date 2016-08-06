@@ -359,9 +359,10 @@ var_icon_cell_data_func (GtkTreeViewColumn *col,
 
   gtk_tree_model_get (model, iter, DICT_TVM_COL_VAR, &var, -1);
 
-  g_object_set (cell, "stock_id",
-                get_var_measurement_stock_id (var_get_print_format (var)->type,
-                                              var_get_measure (var)),
+  g_object_set (cell,
+		"stock-size", GTK_ICON_SIZE_MENU,
+		"icon-name", get_var_measurement_stock_id (var_get_print_format (var)->type,
+							   var_get_measure (var)),
                 NULL);
 }
 

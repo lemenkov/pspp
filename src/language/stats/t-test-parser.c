@@ -367,12 +367,17 @@ cmd_t_test (struct lexer *lexer, struct dataset *ds)
   free (pairs);
   free (v1);
   free (v2);
-
   free (tt.vars);
 
   return ok ? CMD_SUCCESS : CMD_FAILURE;
 
  parse_failed:
+
+  free (pairs);
+  free (v1);
+  free (v2);
+  free (tt.vars);
+
   return CMD_FAILURE;
 }
 

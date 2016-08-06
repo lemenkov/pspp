@@ -459,13 +459,12 @@ kmeans_cluster (struct Kmeans *kmeans, struct casereader *reader, const struct q
 
       {
 	kmeans->n = 0;
-	int i;
 	/* Step 3 */
 	gsl_vector_long_set_all (kmeans->num_elements_groups, 0.0);
 	gsl_matrix_set_all (kmeans->updated_centers, 0.0);
 	struct ccase *c;
 	struct casereader *cs = casereader_clone (reader);
-	for (; (c = casereader_read (cs)) != NULL; i++, case_unref (c))
+	for (; (c = casereader_read (cs)) != NULL; case_unref (c))
 	  {
 	    int group = -1; 
 	    kmeans_get_nearest_group (kmeans, c, qc, &group, NULL, NULL, NULL);
@@ -483,8 +482,6 @@ kmeans_cluster (struct Kmeans *kmeans, struct casereader *reader, const struct q
 	    long *n = gsl_vector_long_ptr (kmeans->num_elements_groups, group);
 	    *n += qc->wv ? case_data (c, qc->wv)->f : 1.0;
 	    kmeans->n++;
-
-
 	  }
 	casereader_destroy (cs);
 

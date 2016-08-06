@@ -440,14 +440,6 @@ psppire_dialog_action_recode_refresh (PsppireDialogAction *rd_)
 }
 
 
-static void
-psppire_dialog_action_recode_activate (PsppireDialogAction *act)
-{
-  if (PSPPIRE_DIALOG_ACTION_CLASS (psppire_dialog_action_recode_parent_class)->activate)
-    PSPPIRE_DIALOG_ACTION_CLASS (psppire_dialog_action_recode_parent_class)->activate (act);
-}
-
-
 void
 psppire_dialog_action_recode_pre_activate (PsppireDialogActionRecode *act, void (*populate_treeview) (PsppireDialogActionRecode *))
 {
@@ -670,7 +662,6 @@ psppire_dialog_action_recode_generate_syntax (const PsppireDialogAction *act,
 static void
 psppire_dialog_action_recode_class_init (PsppireDialogActionRecodeClass *class)
 {
-  psppire_dialog_action_set_activation (class, psppire_dialog_action_recode_activate);
 }
 
 

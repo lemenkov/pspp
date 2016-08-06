@@ -1,5 +1,5 @@
 /* PSPPIRE - a graphical user interface for PSPP.
-   Copyright (C) 2007, 2009, 2010, 2011, 2012, 2013, 2014  Free Software Foundation
+   Copyright (C) 2007, 2009, 2010, 2011, 2012, 2013, 2014, 2016  Free Software Foundation
 
 
    This program is free software: you can redistribute it and/or modify
@@ -52,7 +52,7 @@ treeview_item_selected (gpointer data)
   GtkTreeView *tv = GTK_TREE_VIEW (pda->source);
   GtkTreeSelection *selection = gtk_tree_view_get_selection (tv);
 
-  return gtk_tree_selection_count_selected_rows (selection) == 1;
+  return gtk_tree_selection_count_selected_rows (selection) >= 1;
 }
 
 static gchar *
@@ -105,7 +105,9 @@ generate_syntax (const PsppireDialogAction *act)
 {
   return generate_syntax__ (act, "");
 }
+
 
+
 static void
 populate_output (GtkTreeSelection *selection, gpointer data)
 {
@@ -178,7 +180,7 @@ psppire_dialog_action_var_info_activate (PsppireDialogAction *a)
 
       act->output =
 	psppire_output_view_new (GTK_LAYOUT (get_widget_assert (xml, "layout1")),
-				 NULL, NULL, NULL);
+				 NULL);
   
       pda->dialog = get_widget_assert (xml, "variable-info-dialog");
       pda->source = get_widget_assert (xml, "treeview2");
@@ -197,9 +199,6 @@ psppire_dialog_action_var_info_activate (PsppireDialogAction *a)
       psppire_dialog_action_set_valid_predicate (pda,
 						 treeview_item_selected);
     }
-  
-  if (PSPPIRE_DIALOG_ACTION_CLASS (psppire_dialog_action_var_info_parent_class)->activate)
-    PSPPIRE_DIALOG_ACTION_CLASS (psppire_dialog_action_var_info_parent_class)->activate (pda);
 }
 
 static void

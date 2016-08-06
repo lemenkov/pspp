@@ -233,7 +233,8 @@
           </packing>
         </child>
         <child>
-          <object class="PsppireVButtonBox" id="psppire-vbuttonbox1">
+          <object class="PsppireButtonbox" id="psppire-vbuttonbox1">
+            <property name="orientation">vertical</property>
             <property name="visible">True</property>
             <property name="can_focus">False</property>
             <property name="border_width">5</property>
@@ -309,7 +310,8 @@
           </packing>
         </child>
         <child>
-          <object class="PsppireVButtonBox" id="psppire-vbuttonbox2">
+          <object class="PsppireButtonbox" id="psppire-vbuttonbox2">
+            <property name="orientation">vertical</property>
             <property name="visible">True</property>
             <property name="can_focus">False</property>
             <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
@@ -384,7 +386,8 @@
           </packing>
         </child>
         <child>
-          <object class="PsppireVButtonBox" id="psppire-vbuttonbox3">
+          <object class="PsppireButtonbox" id="psppire-vbuttonbox3">
+            <property name="orientation">vertical</property>
             <property name="visible">True</property>
             <property name="can_focus">False</property>
             <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>

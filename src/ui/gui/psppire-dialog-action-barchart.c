@@ -153,8 +153,6 @@ psppire_dialog_action_barchart_activate (PsppireDialogAction *a)
 						 dialog_state_valid);
     }
 
-  if (PSPPIRE_DIALOG_ACTION_CLASS (psppire_dialog_action_barchart_parent_class)->activate)
-    PSPPIRE_DIALOG_ACTION_CLASS (psppire_dialog_action_barchart_parent_class)->activate (pda);
 }
 
 static char *

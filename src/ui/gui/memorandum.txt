@@ -169,7 +169,7 @@ Displaying the Dialog box in Psppire
 1. Define a new PsppireDialogAction Class
 
 Create a new object class derived from PsppireDialogAction  (note that
-PsppireDialogAction itself derives from GtkAction).  It's probably
+PsppireDialogAction itself implements GAction).  It's probably
 best if you use an existing example as a template.  The minimum you
 require is:
 
@@ -213,7 +213,7 @@ refresh (PsppireDialogAction *rd_)
 // This function is called when the menuitem is activated.
 // It is what pops up the dialog 
 static void
-psppire_dialog_action_foobar_activate (GtkAction *a)
+psppire_dialog_action_foobar_activate (GAction *a)
 {
   PsppireDialogAction *pda = PSPPIRE_DIALOG_ACTION (a);
   PsppireDialogActionFoobar *act = PSPPIRE_DIALOG_ACTION_FOOBAR (a);
@@ -244,7 +244,7 @@ psppire_dialog_action_foobar_activate (GtkAction *a)
 static void
 psppire_dialog_action_foobar_class_init (PsppireDialogActionFoobarClass *class)
 {
-  GtkActionClass *action_class = GTK_ACTION_CLASS (class);
+  GActionClass *action_class = GTK_ACTION_CLASS (class);
 
   action_class->activate = psppire_dialog_action_foobar_activate;
   PSPPIRE_DIALOG_ACTION_CLASS (class)->generate_syntax = generate_syntax;

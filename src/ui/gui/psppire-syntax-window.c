@@ -1,5 +1,5 @@
 /* PSPPIRE - a graphical user interface for PSPP.
-   Copyright (C) 2008, 2009, 2010, 2011, 2012, 2014  Free Software Foundation
+   Copyright (C) 2008, 2009, 2010, 2011, 2012, 2014, 2016  Free Software Foundation
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -281,9 +281,9 @@ selection_changed (PsppireSyntaxWindow *sw)
 {
   gboolean sel = gtk_text_buffer_get_has_selection (GTK_TEXT_BUFFER (sw->buffer));
 
-  gtk_action_set_sensitive (sw->edit_copy, sel);
-  gtk_action_set_sensitive (sw->edit_cut, sel);
-  gtk_action_set_sensitive (sw->edit_delete, sel);
+  g_object_set (sw->edit_copy,    "enabled", sel, NULL);
+  g_object_set (sw->edit_cut,     "enabled", sel, NULL);
+  g_object_set (sw->edit_delete,  "enabled", sel, NULL);
 }
 
 /* The callback which runs when something request clipboard data */
@@ -400,7 +400,7 @@ set_paste_sensitivity (GtkClipboard *clip, GdkEventOwnerChange *event, gpointer 
 	}
     }
 
-  gtk_action_set_sensitive (sw->edit_paste, compatible_target);
+  g_object_set (sw->edit_paste, "enabled", compatible_target, NULL);
 }
 
 
@@ -408,10 +408,9 @@ set_paste_sensitivity (GtkClipboard *clip, GdkEventOwnerChange *event, gpointer 
 
 /* Parse and execute all the text in the buffer */
 static void
-on_run_all (GtkMenuItem *menuitem, gpointer user_data)
+on_run_all (PsppireSyntaxWindow *se)
 {
   GtkTextIter begin, end;
-  PsppireSyntaxWindow *se = PSPPIRE_SYNTAX_WINDOW (user_data);
 
   gtk_text_buffer_get_iter_at_offset (GTK_TEXT_BUFFER (se->buffer), &begin, 0);
   gtk_text_buffer_get_iter_at_offset (GTK_TEXT_BUFFER (se->buffer), &end, -1);
@@ -421,10 +420,9 @@ on_run_all (GtkMenuItem *menuitem, gpointer user_data)
 
 /* Parse and execute the currently selected text */
 static void
-on_run_selection (GtkMenuItem *menuitem, gpointer user_data)
+on_run_selection (PsppireSyntaxWindow *se)
 {
   GtkTextIter begin, end;
-  PsppireSyntaxWindow *se = PSPPIRE_SYNTAX_WINDOW (user_data);
 
   if ( gtk_text_buffer_get_selection_bounds (GTK_TEXT_BUFFER (se->buffer), &begin, &end) )
     editor_execute_syntax (se, begin, end);
@@ -434,13 +432,11 @@ on_run_selection (GtkMenuItem *menuitem, gpointer user_data)
 /* Parse and execute the from the current line, to the end of the
    buffer */
 static void
-on_run_to_end (GtkMenuItem *menuitem, gpointer user_data)
+on_run_to_end (PsppireSyntaxWindow *se)
 {
   GtkTextIter begin, end;
   GtkTextIter here;
   gint line;
-
-  PsppireSyntaxWindow *se = PSPPIRE_SYNTAX_WINDOW (user_data);
 
   /* Get the current line */
   gtk_text_buffer_get_iter_at_mark (GTK_TEXT_BUFFER (se->buffer),
@@ -462,13 +458,11 @@ on_run_to_end (GtkMenuItem *menuitem, gpointer user_data)
 
 /* Parse and execute the current line */
 static void
-on_run_current_line (GtkMenuItem *menuitem, gpointer user_data)
+on_run_current_line (PsppireSyntaxWindow *se)
 {
   GtkTextIter begin, end;
   GtkTextIter here;
   gint line;
-
-  PsppireSyntaxWindow *se = PSPPIRE_SYNTAX_WINDOW (user_data);
 
   /* Get the current line */
   gtk_text_buffer_get_iter_at_mark (GTK_TEXT_BUFFER (se->buffer),
@@ -629,16 +623,6 @@ syntax_save (PsppireWindow *se)
 }
 
 
-/* Callback for the File->Quit menuitem */
-static gboolean
-on_quit (GtkMenuItem *menuitem, gpointer    user_data)
-{
-  psppire_quit ();
-
-  return FALSE;
-}
-
-
 static void
 load_and_show_syntax_window (GtkWidget *se, const gchar *filename,
                              const gchar *encoding)
@@ -659,6 +643,7 @@ void
 create_syntax_window (void)
 {
   GtkWidget *w = psppire_syntax_window_new (NULL);
+
   gtk_widget_show (w);
 }
 
@@ -699,7 +684,9 @@ psppire_syntax_window_init (PsppireSyntaxWindow *window)
   GtkBuilder *xml = builder_new ("syntax-editor.ui");
   GtkWidget *box = gtk_box_new (GTK_ORIENTATION_VERTICAL, 0);
 
-  GtkWidget *menubar = get_widget_assert (xml, "menubar");
+  GObject *menu = get_object_assert (xml, "syntax-window-menu", G_TYPE_MENU);
+  GtkWidget *menubar = gtk_menu_bar_new_from_model (G_MENU_MODEL (menu));
+
   GtkWidget *sw = get_widget_assert (xml, "scrolledwindow8");
 
   GtkWidget *text_view = get_widget_assert (xml, "syntax_text_view");
@@ -711,9 +698,14 @@ psppire_syntax_window_init (PsppireSyntaxWindow *window)
   GtkClipboard *clip_primary =   gtk_widget_get_clipboard (GTK_WIDGET (window), GDK_SELECTION_PRIMARY);
 
   window->print_settings = NULL;
-  window->undo_menuitem = get_action_assert (xml, "edit_undo");
-  window->redo_menuitem = get_action_assert (xml, "edit_redo");
 
+  window->undo_menuitem = g_simple_action_new ("undo", NULL);
+  window->redo_menuitem = g_simple_action_new ("redo", NULL);
+
+  g_action_map_add_action (G_ACTION_MAP (window), G_ACTION (window->undo_menuitem));
+  g_action_map_add_action (G_ACTION_MAP (window), G_ACTION (window->redo_menuitem));
+
+  
   if (class->lan)
     window->buffer = gtk_source_buffer_new_with_language (class->lan);
   else
@@ -738,10 +730,19 @@ psppire_syntax_window_init (PsppireSyntaxWindow *window)
   window->cliptext = NULL;
   window->dispose_has_run = FALSE;
 
-  window->edit_delete = get_action_assert (xml, "edit_delete");
-  window->edit_copy = get_action_assert (xml, "edit_copy");
-  window->edit_cut = get_action_assert (xml, "edit_cut");
-  window->edit_paste = get_action_assert (xml, "edit_paste");
+
+  window->edit_delete = g_simple_action_new ("delete", NULL);
+  g_action_map_add_action (G_ACTION_MAP (window), G_ACTION (window->edit_delete));
+
+  window->edit_copy = g_simple_action_new ("copy", NULL);
+  g_action_map_add_action (G_ACTION_MAP (window), G_ACTION (window->edit_copy));
+
+  window->edit_cut = g_simple_action_new ("cut", NULL);
+  g_action_map_add_action (G_ACTION_MAP (window), G_ACTION (window->edit_cut));
+
+  window->edit_paste = g_simple_action_new ("paste", NULL);
+  g_action_map_add_action (G_ACTION_MAP (window), G_ACTION (window->edit_paste));
+
 
   window->buffer = GTK_SOURCE_BUFFER (gtk_text_view_get_buffer (GTK_TEXT_VIEW (text_view)));
 
@@ -754,13 +755,19 @@ psppire_syntax_window_init (PsppireSyntaxWindow *window)
   g_signal_connect (window->buffer, "modified-changed", 
 		    G_CALLBACK (on_modified_changed), window);
 
-  g_signal_connect_swapped (get_action_assert (xml, "file_print"), "activate",
-                            G_CALLBACK (psppire_syntax_window_print), window);
 
+  {
+    GSimpleAction *print = g_simple_action_new ("print", NULL);
+    
+    g_signal_connect_swapped (print, "activate",
+			      G_CALLBACK (psppire_syntax_window_print), window);
+    
+    g_action_map_add_action (G_ACTION_MAP (window), G_ACTION (print));
+  }
 
   g_signal_connect_swapped (window->undo_menuitem,
 			    "activate",
-                            G_CALLBACK (undo_last_edit),
+			    G_CALLBACK (undo_last_edit),
 			    window);
 
   g_signal_connect_swapped (window->redo_menuitem,
@@ -769,6 +776,7 @@ psppire_syntax_window_init (PsppireSyntaxWindow *window)
 			    window);
 
   undo_redo_update (window);
+
 
   window->sel_handler = g_signal_connect_swapped (clip_primary, "owner-change", 
 						   G_CALLBACK (selection_changed), window);
@@ -780,8 +788,6 @@ psppire_syntax_window_init (PsppireSyntaxWindow *window)
 
   gtk_container_add (GTK_CONTAINER (window), box);
 
-  g_object_ref (menubar);
-
   g_object_ref (sw);
 
   g_object_ref (window->sb);
@@ -792,32 +798,55 @@ psppire_syntax_window_init (PsppireSyntaxWindow *window)
 
   gtk_widget_show_all (box);
 
-  g_signal_connect_swapped (get_action_assert (xml,"file_new_syntax"), "activate", G_CALLBACK (create_syntax_window), NULL);
+  GApplication *app = g_application_get_default ();
 
-  g_signal_connect (get_action_assert (xml,"file_new_data"),
-		    "activate",
-		    G_CALLBACK (create_data_window),
-		    window);
+  {
+    GSimpleAction *open = g_simple_action_new ("open", NULL);
+    
+    g_action_map_add_action (G_ACTION_MAP (window), G_ACTION (open));
 
-  g_signal_connect_swapped (get_action_assert (xml, "file_open"),
-		    "activate",
-		    G_CALLBACK (psppire_window_open),
-		    window);
+    g_signal_connect_swapped (open,
+			      "activate",
+			      G_CALLBACK (psppire_window_open),
+			      window);
+  }
 
-  g_signal_connect_swapped (get_action_assert (xml, "file_save"),
-		    "activate",
-		    G_CALLBACK (psppire_window_save),
-		    window);
+  {
+    GSimpleAction *save = g_simple_action_new ("save", NULL);
+    
+    g_action_map_add_action (G_ACTION_MAP (window), G_ACTION (save));
+    
+    g_signal_connect_swapped (save,
+			      "activate",
+			      G_CALLBACK (psppire_window_save),
+			      window);
 
-  g_signal_connect_swapped (get_action_assert (xml, "file_save_as"),
-		    "activate",
-		    G_CALLBACK (psppire_window_save_as),
-		    window);
+    const gchar *accels[2] = { "<Ctrl>S", NULL};
+    gtk_application_set_accels_for_action (app,
+					   "win.save",
+					   accels);
+  
+  }
 
-  g_signal_connect (get_action_assert (xml,"file_quit"),
-		    "activate",
-		    G_CALLBACK (on_quit),
-		    window);
+  {
+    GSimpleAction *save_as = g_simple_action_new ("save_as", NULL);
+    
+    g_action_map_add_action (G_ACTION_MAP (window), G_ACTION (save_as));
+    
+    g_signal_connect_swapped (save_as,
+			      "activate",
+			      G_CALLBACK (psppire_window_save_as),
+			      window);
+
+
+    const gchar *accels[2] = { "<Shift><Ctrl>S", NULL};
+    gtk_application_set_accels_for_action (app,
+					   "win.save_as",
+					   accels);
+    
+    
+  }
+
 
   g_signal_connect_swapped (window->edit_delete,
 		    "activate",
@@ -839,31 +868,53 @@ psppire_syntax_window_init (PsppireSyntaxWindow *window)
 		    G_CALLBACK (on_edit_paste),
 		    window);
 
-  g_signal_connect (get_action_assert (xml,"run_all"),
-		    "activate",
-		    G_CALLBACK (on_run_all),
-		    window);
+  {
+    GSimpleAction *run_all = g_simple_action_new ("run-all", NULL);
 
-  g_signal_connect (get_action_assert (xml,"run_selection"),
-		    "activate",
-		    G_CALLBACK (on_run_selection),
-		    window);
+    g_signal_connect_swapped (run_all, "activate",
+			      G_CALLBACK (on_run_all), window);
 
-  g_signal_connect (get_action_assert (xml,"run_current_line"),
-		    "activate",
-		    G_CALLBACK (on_run_current_line),
-		    window);
+    g_action_map_add_action (G_ACTION_MAP (window), G_ACTION (run_all));
+  }
 
-  g_signal_connect (get_action_assert (xml,"run_to_end"),
-		    "activate",
-		    G_CALLBACK (on_run_to_end),
-		    window);
+  {
+    GSimpleAction *run_current_line = g_simple_action_new ("run-current-line", NULL);
+
+    g_signal_connect_swapped (run_current_line, "activate",
+			      G_CALLBACK (on_run_current_line), window);
+
+    g_action_map_add_action (G_ACTION_MAP (window), G_ACTION (run_current_line));
+
+    GApplication *app = g_application_get_default ();
+    const gchar *accels[2] = { "<Ctrl>R", NULL};
+    gtk_application_set_accels_for_action (app,
+					   "win.run-current-line",
+					   accels);
+  }
+
+  {
+    GSimpleAction *run_selection = g_simple_action_new ("run-selection", NULL);
+      
+    g_signal_connect_swapped (run_selection, "activate",
+			      G_CALLBACK (on_run_selection), window);
+
+    g_action_map_add_action (G_ACTION_MAP (window), G_ACTION (run_selection));
+  }
+
+  {
+    GSimpleAction *run_to_end = g_simple_action_new ("run-to-end", NULL);
+    
+    g_signal_connect_swapped (run_to_end, "activate",
+			      G_CALLBACK (on_run_to_end), window);
+    
+    g_action_map_add_action (G_ACTION_MAP (window), G_ACTION (run_to_end));
+  }
 
   gtk_menu_shell_append (GTK_MENU_SHELL (menubar),
-			 create_windows_menu (GTK_WINDOW (window)));
+  			 create_windows_menu (GTK_WINDOW (window)));
 
   gtk_menu_shell_append (GTK_MENU_SHELL (menubar),
-			 create_help_menu (GTK_WINDOW (window)));
+  			 create_help_menu (GTK_WINDOW (window)));
 
   g_object_unref (xml);
 }
@@ -872,13 +923,18 @@ psppire_syntax_window_init (PsppireSyntaxWindow *window)
 
 
 
-GtkWidget*
+GtkWidget *
 psppire_syntax_window_new (const char *encoding)
 {
-  return GTK_WIDGET (g_object_new (psppire_syntax_window_get_type (),
-				   "description", _("Syntax Editor"),
-                                   "encoding", encoding,
-				   NULL));
+  GObject *sw = g_object_new (psppire_syntax_window_get_type (),
+			      "description", _("Syntax Editor"),
+			      "encoding", encoding,
+			      NULL);
+  
+  GApplication *app = g_application_get_default ();
+  gtk_application_add_window (GTK_APPLICATION (app), GTK_WINDOW (sw));
+
+  return GTK_WIDGET (sw);
 }
 
 static void
@@ -990,11 +1046,11 @@ psppire_syntax_window_iface_init (PsppireWindowIface *iface)
 static void
 undo_redo_update (PsppireSyntaxWindow *window)
 {
-  gtk_action_set_sensitive (window->undo_menuitem,
-			    gtk_source_buffer_can_undo (window->buffer));
+  g_object_set (window->undo_menuitem, "enabled",
+		gtk_source_buffer_can_undo (window->buffer), NULL);
 
-  gtk_action_set_sensitive (window->redo_menuitem,
-			    gtk_source_buffer_can_redo (window->buffer));
+  g_object_set  (window->redo_menuitem, "enabled",
+		 gtk_source_buffer_can_redo (window->buffer), NULL);
 }
 
 static void

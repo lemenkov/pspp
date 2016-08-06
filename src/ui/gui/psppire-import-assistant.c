@@ -42,21 +42,24 @@
 
 #include "builder-wrapper.h"
 #include "helper.h"
-#include "pspp-sheet-view.h"
-#include "pspp-sheet-selection.h"
 #include "psppire-import-assistant.h"
 #include "psppire-scanf.h"
 #include "psppire-dialog.h"
 #include "psppire-empty-list-store.h"
 #include "psppire-encoding-selector.h"
 #include "psppire-spreadsheet-model.h"
-#include "psppire-var-sheet.h"
 #include "ui/syntax-gen.h"
 
 #include <gettext.h>
 #define _(msgid) gettext (msgid)
 #define N_(msgid) msgid
 
+GType psppire_import_assistant_get_type (void)
+{
+  return 0;
+}
+
+#if 0
 enum { MAX_LINE_LEN = 16384 }; /* Max length of an acceptable line. */
 
 
@@ -663,7 +666,7 @@ add_line_number_column (const PsppireImportAssistant *ia,
 
 
 static void
-set_model_on_treeview (const PsppireImportAssistant *ia, GtkWidget *tree_view, size_t first_line)
+set_model_on_treeview (PsppireImportAssistant *ia, GtkWidget *tree_view, size_t first_line)
 {
   GtkTreeModel *model = GTK_TREE_MODEL (psppire_empty_list_store_new (ia->line_cnt - first_line));
 
@@ -1254,6 +1257,7 @@ intro_page_create (PsppireImportAssistant *ia)
   g_object_set_data (G_OBJECT (w), "on-reset", reset_intro_page);
 }
 
+#endif
 
 GtkWidget *
 psppire_import_assistant_new (GtkWindow *toplevel)
@@ -1262,6 +1266,8 @@ psppire_import_assistant_new (GtkWindow *toplevel)
 				   "transient-for", toplevel,
 				   NULL));
 }
+
+#if 0
 
 
 
@@ -2165,11 +2171,14 @@ sheet_spec_gen_syntax (PsppireImportAssistant *ia)
   return ds_cstr (&s);
 }
 
+#endif
+
 gchar *
 psppire_import_assistant_generate_syntax (PsppireImportAssistant *ia)
 {
   struct string s = DS_EMPTY_INITIALIZER;
 
+#if 0
   if (!ia->spreadsheet)
     {
       if (ia->file_name == NULL)
@@ -2198,6 +2207,8 @@ psppire_import_assistant_generate_syntax (PsppireImportAssistant *ia)
     {
       return sheet_spec_gen_syntax (ia);
     }
+
+#endif
   
   return ds_cstr (&s);
 }
