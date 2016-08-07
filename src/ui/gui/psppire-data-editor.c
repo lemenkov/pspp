@@ -600,15 +600,8 @@ psppire_data_editor_new (PsppireDict *dict,
 void
 psppire_data_editor_show_grid (PsppireDataEditor *de, gboolean grid_visible)
 {
-#if 0
-  GtkTreeViewGridLines grid;
-
-  grid = (grid_visible
-          ? GTK_TREE_VIEW_GRID_LINES_BOTH
-          : GTK_TREE_VIEW_GRID_LINES_NONE);
-
-  pspp_sheet_view_set_grid_lines (PSPP_SHEET_VIEW (de->var_sheet), grid);
-#endif  
+  g_object_set (JMD_SHEET (de->var_sheet), "gridlines", grid_visible, NULL);
+  g_object_set (JMD_SHEET (de->data_sheet), "gridlines", grid_visible, NULL);
 }
 
 
@@ -669,7 +662,7 @@ psppire_data_editor_goto_variable (PsppireDataEditor *de, gint dict_index)
 {
 }
 
-#if 0
+#if SHEET_MERGE
 /* Returns the "active" data sheet in DE.  If DE is in single-paned mode, this
    is the only data sheet.  If DE is in split mode (showing four data sheets),
    this is the focused data sheet or, if none is focused, the data sheet with

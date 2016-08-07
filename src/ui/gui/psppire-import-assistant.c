@@ -54,12 +54,6 @@
 #define _(msgid) gettext (msgid)
 #define N_(msgid) msgid
 
-GType psppire_import_assistant_get_type (void)
-{
-  return 0;
-}
-
-#if 0
 enum { MAX_LINE_LEN = 16384 }; /* Max length of an acceptable line. */
 
 
@@ -203,6 +197,7 @@ on_paste (GtkButton *button, PsppireImportAssistant *ia)
 {
   close_assistant (ia, PSPPIRE_RESPONSE_PASTE);
 }
+
 
 /* Revises the contents of the fields tree view based on the
    currently chosen set of separators. */
@@ -601,6 +596,8 @@ process_file (PsppireImportAssistant *ia)
   return TRUE;
 }
 
+#if SHEET_MERGE
+
 
 static void
 render_line_number (PsppSheetViewColumn *tree_column,
@@ -616,7 +613,6 @@ render_line_number (PsppSheetViewColumn *tree_column,
   sprintf (s, "%d", first_line + row);
   g_object_set (cell, "text", s, NULL);
 }
-
 
 
 static gint
@@ -690,6 +686,8 @@ make_tree_view (const PsppireImportAssistant *ia)
   return tree_view;
 }
 
+#endif
+
 static GtkWidget *
 add_page_to_assistant (PsppireImportAssistant *ia,
 		       GtkWidget *page, GtkAssistantPageType type, const gchar *);
@@ -727,7 +725,6 @@ prepare_sheet_spec_page (PsppireImportAssistant *ia)
 }
 
 
-
 /* Initializes IA's sheet_spec substructure. */
 static void
 sheet_spec_page_create (PsppireImportAssistant *ia)
@@ -750,7 +747,6 @@ sheet_spec_page_create (PsppireImportAssistant *ia)
 
   g_object_set_data (G_OBJECT (page), "on-entering", prepare_sheet_spec_page);
 }
-
 
 static void 
 on_chosen (PsppireImportAssistant *ia, GtkWidget *page)
@@ -806,6 +802,8 @@ on_map (PsppireImportAssistant *ia, GtkWidget *page)
   on_chosen (ia, page);
 }
 
+
+
 static void
 chooser_page_enter (PsppireImportAssistant *ia, GtkWidget *page)
 {
@@ -837,6 +835,8 @@ chooser_page_reset (PsppireImportAssistant *ia, GtkWidget *page)
 
   on_chosen (ia, page);
 }
+
+
 
 static void
 chooser_page_create (PsppireImportAssistant *ia)
@@ -910,6 +910,7 @@ chooser_page_create (PsppireImportAssistant *ia)
   g_signal_connect_swapped (chooser, "selection-changed", G_CALLBACK (on_chosen), ia);
   g_signal_connect_swapped (chooser, "map", G_CALLBACK (on_map), ia);
 }
+
 
 
 static void
@@ -993,6 +994,8 @@ on_intro_amount_changed (PsppireImportAssistant *p)
 }
 
 
+#if SHEET_MERGE
+
 static void
 render_line (PsppSheetViewColumn *tree_column,
              GtkCellRenderer *cell,
@@ -1009,17 +1012,19 @@ render_line (PsppSheetViewColumn *tree_column,
   g_object_set (cell, "text", ds_cstr (&lines[row]), NULL);
 }
 
+#endif
+
 /* Sets the widgets to match IA's first_line substructure. */
 static void
 set_first_line (PsppireImportAssistant *ia)
 {
   GtkTreePath *path = gtk_tree_path_new_from_indices (ia->skip_lines, -1);
 
-  
+#if SHEET_MERGE  
   set_model_on_treeview (ia, ia->tree_view, 0);
-
   pspp_sheet_view_set_cursor (PSPP_SHEET_VIEW (ia->tree_view),
 			      path, NULL, false);
+#endif  
   gtk_tree_path_free (path);
 
   gtk_toggle_button_set_active (
@@ -1029,6 +1034,7 @@ set_first_line (PsppireImportAssistant *ia)
                             ia->skip_lines > 0);
 }
 
+#if SHEET_MERGE
 
 /* Creates and returns a tree view that contains each of the
    lines in IA's file as a row. */
@@ -1074,6 +1080,7 @@ create_lines_tree_view (GtkContainer *parent, PsppireImportAssistant *ia)
 }
 
 
+
 /* Sets IA's first_line substructure to match the widgets. */
 static void
 set_first_line_options (PsppireImportAssistant *ia)
@@ -1097,6 +1104,8 @@ set_first_line_options (PsppireImportAssistant *ia)
   gtk_widget_set_sensitive (ia->variable_names_cb, ia->skip_lines > 0);
 }
 
+
+
 static void
 reset_first_line_page (PsppireImportAssistant *ia)
 {
@@ -1106,7 +1115,7 @@ reset_first_line_page (PsppireImportAssistant *ia)
   gtk_widget_set_sensitive (ia->variable_names_cb, FALSE);
 }
 
-
+#endif
 /* Initializes IA's first_line substructure. */
 static void
 first_line_page_create (PsppireImportAssistant *ia)
@@ -1118,6 +1127,8 @@ first_line_page_create (PsppireImportAssistant *ia)
   add_page_to_assistant (ia, w,
 			 GTK_ASSISTANT_PAGE_CONTENT, _("Select the First Line"));
 
+#if SHEET_MERGE
+  
   ia->tree_view = GTK_WIDGET (create_lines_tree_view (
 						      GTK_CONTAINER (get_widget_assert (ia->builder, "first-line-scroller")), ia));
   ia->variable_names_cb = get_widget_assert (ia->builder, "variable-names");
@@ -1135,7 +1146,10 @@ first_line_page_create (PsppireImportAssistant *ia)
 
 
   g_object_set_data (G_OBJECT (w), "on-reset", reset_first_line_page);
+#endif
 }
+
+
 
 
 static void
@@ -1257,7 +1271,6 @@ intro_page_create (PsppireImportAssistant *ia)
   g_object_set_data (G_OBJECT (w), "on-reset", reset_intro_page);
 }
 
-#endif
 
 GtkWidget *
 psppire_import_assistant_new (GtkWindow *toplevel)
@@ -1267,7 +1280,7 @@ psppire_import_assistant_new (GtkWindow *toplevel)
 				   NULL));
 }
 
-#if 0
+
 
 
 
@@ -1309,6 +1322,8 @@ destroy_columns (PsppireImportAssistant *ia)
   free (ia->columns);
 }
 
+#if SHEET_MERGE
+
 /* Called to render one of the cells in the fields preview tree
    view. */
 static void
@@ -1342,6 +1357,7 @@ render_input_cell (PsppSheetViewColumn *tree_column, GtkCellRenderer *cell,
                   (void *) NULL);
 }
 
+#endif
 
 /* Parses the contents of the field at (ROW,COLUMN) according to
    its variable format.  If OUTPUTP is non-null, then *OUTPUTP
@@ -1401,6 +1417,7 @@ parse_field (PsppireImportAssistant *ia,
   return ok;
 }
 
+#if SHEET_MERGE
 
 /* Called to render one of the cells in the data preview tree
    view. */
@@ -1471,6 +1488,7 @@ get_tooltip_location (GtkWidget *widget, gint wx, gint wy,
 }
 
 
+
 
 
 
@@ -1519,7 +1537,7 @@ on_query_output_tooltip (GtkWidget *widget, gint wx, gint wy,
   free (text);
   return TRUE;
 }
-
+#endif
 
 
 
@@ -1714,6 +1732,8 @@ split_fields (PsppireImportAssistant *ia)
     }
 }
 
+
+#if SHEET_MERGE
 static PsppSheetViewColumn *
 make_data_column (PsppireImportAssistant *ia, GtkWidget *tree_view,
                   bool input, gint dict_idx)
@@ -1754,15 +1774,19 @@ make_data_column (PsppireImportAssistant *ia, GtkWidget *tree_view,
   return tree_column;
 }
 
+#endif
 
 static GtkWidget *
 create_data_tree_view (gboolean input, GtkContainer *parent,
                        PsppireImportAssistant *ia)
 {
   gint i;
+#if SHEET_MERGE  
   GtkWidget *tree_view = make_tree_view (ia);
 
   set_model_on_treeview (ia, tree_view, ia->skip_lines);
+
+
   
   pspp_sheet_selection_set_mode (pspp_sheet_view_get_selection (PSPP_SHEET_VIEW (tree_view)),
                                  PSPP_SHEET_SELECTION_NONE);
@@ -1792,7 +1816,9 @@ create_data_tree_view (gboolean input, GtkContainer *parent,
   gtk_widget_show (tree_view);
 
   return tree_view;
+#endif
 }
+
 
 
 /* Chooses a name for each column on the separators page */
@@ -1911,6 +1937,9 @@ separators_page_create (PsppireImportAssistant *ia)
 
 
 
+
+#if SHEET_MERGE
+
 /* Called when the user changes one of the variables in the
    dictionary. */
 static void
@@ -1949,7 +1978,7 @@ on_variable_change (PsppireDict *dict, int dict_idx,
   pop_watch_cursor (ia);
 }
 
-
+#endif
 
 
 /* Called just before the formats page of the assistant is
@@ -2171,14 +2200,13 @@ sheet_spec_gen_syntax (PsppireImportAssistant *ia)
   return ds_cstr (&s);
 }
 
-#endif
 
 gchar *
 psppire_import_assistant_generate_syntax (PsppireImportAssistant *ia)
 {
   struct string s = DS_EMPTY_INITIALIZER;
 
-#if 0
+#if SHEET_MERGE
   if (!ia->spreadsheet)
     {
       if (ia->file_name == NULL)

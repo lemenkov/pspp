@@ -1061,14 +1061,14 @@ set_data_page (PsppireDataWindow *dw)
 static void
 on_cut (PsppireDataWindow *dw)
 {
-  #if 0
+#if SHEET_MERGE
   int p = gtk_notebook_get_current_page (GTK_NOTEBOOK (dw->data_editor));
   if (p == 0)
     {
       PsppireDataSheet *ds = psppire_data_editor_get_active_data_sheet (dw->data_editor);
       psppire_data_sheet_edit_cut (ds);
     }
-  #endif
+#endif
 }
 
 
@@ -1076,47 +1076,47 @@ on_cut (PsppireDataWindow *dw)
 static void
 on_copy (PsppireDataWindow *dw)
 {
-  #if 0
+#if SHEET_MERGE
   int p = gtk_notebook_get_current_page (GTK_NOTEBOOK (dw->data_editor));
   if (p == 0)
     {
       PsppireDataSheet *ds = psppire_data_editor_get_active_data_sheet (dw->data_editor);
       psppire_data_sheet_edit_copy (ds);
     }
-  #endif
+#endif
 }
 
 static void
 on_paste (PsppireDataWindow *dw)
 {
-  #if 0
+#if SHEET_MERGE
   int p = gtk_notebook_get_current_page (GTK_NOTEBOOK (dw->data_editor));
   if (p == 0)
     {
       PsppireDataSheet *ds = psppire_data_editor_get_active_data_sheet (dw->data_editor);
       psppire_data_sheet_edit_paste (ds);
     }
-  #endif
+#endif
 }
 
 
 static void
 on_clear_cases (PsppireDataWindow *dw)
 {
-  #if 0
+#if SHEET_MERGE
   int p = gtk_notebook_get_current_page (GTK_NOTEBOOK (dw->data_editor));
   if (p == 0)
     {
       PsppireDataSheet *ds = psppire_data_editor_get_active_data_sheet (dw->data_editor);
       psppire_data_sheet_edit_clear_cases (ds);
     }
-  #endif
+#endif
 }
 
 static void
 on_clear_variables (PsppireDataWindow *dw)
 {
-  #if 0
+#if SHEET_MERGE
   int p = gtk_notebook_get_current_page (GTK_NOTEBOOK (dw->data_editor));
   if (p == 0)
     {
@@ -1127,7 +1127,7 @@ on_clear_variables (PsppireDataWindow *dw)
     {
       psppire_var_sheet_clear_variables (PSPPIRE_VAR_SHEET (dw->data_editor->var_sheet));
     }
-  #endif
+#endif
 }
 
 
@@ -1135,7 +1135,7 @@ on_clear_variables (PsppireDataWindow *dw)
 static void
 insert_variable (PsppireDataWindow *dw)
 {
-#if 0  
+#if SHEET_MERGE
   int p = gtk_notebook_get_current_page (GTK_NOTEBOOK (dw->data_editor));
   if (p == 0)
     {
@@ -1154,7 +1154,7 @@ insert_variable (PsppireDataWindow *dw)
 static void
 insert_case_at_row (PsppireDataWindow *dw)
 {
-#if 0
+#if SHEET_MERGE
   PsppireDataSheet *ds = psppire_data_editor_get_active_data_sheet (dw->data_editor);
 
   psppire_data_sheet_insert_case (ds);
@@ -1166,11 +1166,11 @@ insert_case_at_row (PsppireDataWindow *dw)
 static void
 goto_case (PsppireDataWindow *dw)
 {
-  #if 0
+#if SHEET_MERGE
   PsppireDataSheet *ds = psppire_data_editor_get_active_data_sheet (dw->data_editor);
 
   goto_case_dialog (ds);
-  #endif
+#endif
 }
 
 
@@ -1953,7 +1953,7 @@ psppire_data_window_for_dataset (struct dataset *ds)
   return NULL;
 }
 
-#if 0
+#if SHEET_MERGE
 
 PsppireDataWindow *
 psppire_data_window_for_data_store (PsppireDataStore *data_store)
