@@ -45,6 +45,8 @@
 #include "gl/c-strcasestr.h"
 #include "gl/xvasprintf.h"
 
+#include "ui/gui/efficient-sheet/jmd-sheet.h"
+
 #include "find-dialog.h"
 #include "psppire-dialog-action-1sks.h"
 #include "psppire-dialog-action-aggregate.h"
@@ -1076,14 +1078,15 @@ on_cut (PsppireDataWindow *dw)
 static void
 on_copy (PsppireDataWindow *dw)
 {
-#if SHEET_MERGE
   int p = gtk_notebook_get_current_page (GTK_NOTEBOOK (dw->data_editor));
   if (p == 0)
     {
-      PsppireDataSheet *ds = psppire_data_editor_get_active_data_sheet (dw->data_editor);
-      psppire_data_sheet_edit_copy (ds);
+      GtkClipboard *clip =
+	gtk_clipboard_get_for_display (gtk_widget_get_display (GTK_WIDGET (dw)),
+				   GDK_SELECTION_CLIPBOARD);
+
+      jmd_sheet_set_clip (JMD_SHEET (dw->data_editor->data_sheet), clip);
     }
-#endif
 }
 
 static void
