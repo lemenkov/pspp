@@ -242,6 +242,9 @@ change_data_value (PsppireDataStore *store, gint col, gint row, GValue *value)
 {
   const struct variable *var = psppire_dict_get_variable (store->dict, col);
 
+  if (NULL == var)
+    return;
+
   union value v;
   value_init (&v, var_get_width (var));
   v.f = g_value_get_double (value);
@@ -476,9 +479,10 @@ on_data_selection_change (PsppireDataEditor *de, JmdRange *sel)
     {
       /* A single cell is selected */
       const struct variable *var = psppire_dict_get_variable (de->dict, sel->start_x);
-      
-      ref_cell_text = g_strdup_printf (_("%d : %s"),
-				       sel->start_y + 1, var_get_name (var));
+
+      if (var)
+	ref_cell_text = g_strdup_printf (_("%d : %s"),
+					 sel->start_y + 1, var_get_name (var));
     }
   else
     {

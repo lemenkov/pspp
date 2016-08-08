@@ -139,6 +139,8 @@ __get_value (GtkTreeModel *tree_model,
   PsppireDataStore *store  = PSPPIRE_DATA_STORE (tree_model);
 
   const struct variable *variable = psppire_dict_get_variable (store->dict, column);
+  if (NULL == variable)
+    return;
 
   if (var_is_numeric (variable))
     g_value_init (value, G_TYPE_DOUBLE);
@@ -167,6 +169,9 @@ __get_type (GtkTreeModel *tree_model,   gint idx)
   PsppireDataStore *store  = PSPPIRE_DATA_STORE (tree_model);
 
   const struct variable *variable = psppire_dict_get_variable (store->dict, idx);
+
+  if (NULL == variable)
+    return 0;
 
   if (var_is_numeric (variable))
     return G_TYPE_DOUBLE;
