@@ -798,7 +798,7 @@ psppire_syntax_window_init (PsppireSyntaxWindow *window)
 
   gtk_widget_show_all (box);
 
-  GApplication *app = g_application_get_default ();
+  GtkApplication *app = GTK_APPLICATION (g_application_get_default ());
 
   {
     GSimpleAction *open = g_simple_action_new ("open", NULL);
