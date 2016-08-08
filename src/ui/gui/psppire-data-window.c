@@ -1063,14 +1063,54 @@ set_data_page (PsppireDataWindow *dw)
 static void
 on_cut (PsppireDataWindow *dw)
 {
-#if SHEET_MERGE
   int p = gtk_notebook_get_current_page (GTK_NOTEBOOK (dw->data_editor));
   if (p == 0)
     {
-      PsppireDataSheet *ds = psppire_data_editor_get_active_data_sheet (dw->data_editor);
-      psppire_data_sheet_edit_cut (ds);
+      PsppireDict *dict = NULL;
+      g_object_get (dw->data_editor, "dictionary", &dict, NULL);
+      
+      gint x, y;
+      JmdSheet *sheet = JMD_SHEET (dw->data_editor->data_sheet);
+      JmdRange sel = *sheet->selection;
+
+      GtkClipboard *clip =
+	gtk_clipboard_get_for_display (gtk_widget_get_display (GTK_WIDGET (dw)),
+				       GDK_SELECTION_CLIPBOARD);
+
+      /* Save the selected area to a string */
+      GString *str = g_string_new ("");
+      for (y = sel.start_y ; y <= sel.end_y; ++y)
+	{
+	  for (x = sel.start_x ; x <= sel.end_x; ++x)
+	    {
+	      const struct variable * var = psppire_dict_get_variable (dict, x);
+	      gchar *s = psppire_data_store_get_string (dw->data_editor->data_store,
+							  y, var, FALSE);
+	      g_string_append (str, s);
+	      g_string_append (str, "\t");
+	      g_free (s);
+	    }
+	  g_string_append (str, "\n");
+	}
+      
+      gtk_clipboard_set_text (clip, str->str, str->len);
+      g_string_free (str, TRUE);
+
+      /* Now fill the selected area with SYSMIS */
+      union value sm ;
+      sm.f = SYSMIS;
+      for (x = sel.start_x ; x <= sel.end_x; ++x)
+	{
+	  const struct variable * var = psppire_dict_get_variable (dict, x);
+	  for (y = sel.start_y ; y <= sel.end_y; ++y)
+	    {
+	      psppire_data_store_set_value (dw->data_editor->data_store,
+					    y,
+					    var, &sm);
+	    }
+	}
+
     }
-#endif
 }
 
 
@@ -1089,17 +1129,32 @@ on_copy (PsppireDataWindow *dw)
     }
 }
 
+
+static void
+trf (GtkClipboard *clip,
+	  GdkAtom *atoms,
+	  gint n_atoms,
+	  gpointer data)
+{
+  int i;
+  for (i = 0; i < n_atoms; ++i)
+    {
+      g_print ("%s\n", gdk_atom_name (atoms[i]));
+    }
+}
+
 static void
 on_paste (PsppireDataWindow *dw)
 {
-#if SHEET_MERGE
   int p = gtk_notebook_get_current_page (GTK_NOTEBOOK (dw->data_editor));
   if (p == 0)
     {
-      PsppireDataSheet *ds = psppire_data_editor_get_active_data_sheet (dw->data_editor);
-      psppire_data_sheet_edit_paste (ds);
+      GtkClipboard *clip =
+	gtk_clipboard_get_for_display (gtk_widget_get_display (GTK_WIDGET (dw)),
+				   GDK_SELECTION_CLIPBOARD);
+
+      gtk_clipboard_request_targets (clip, trf, dw);
     }
-#endif
 }
 
 
