@@ -72,6 +72,7 @@ struct _PsppireDataStore
   gboolean dispose_has_run ;
   PsppireDict *dict;
   struct datasheet *datasheet;
+  gint stamp;
 
   gint dict_handler_id [n_dict_signals];
 };

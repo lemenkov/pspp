@@ -124,7 +124,9 @@ __iter_nth_child (GtkTreeModel *tree_model,
       return FALSE;
     }
   
-  iter->user_data = n;
+  iter->user_data = GINT_TO_POINTER (n);
+  iter->stamp = store->stamp;
+  
   return TRUE;
 }
 
@@ -138,6 +140,8 @@ __get_value (GtkTreeModel *tree_model,
 {
   PsppireDataStore *store  = PSPPIRE_DATA_STORE (tree_model);
 
+  g_return_if_fail (iter->stamp == store->stamp);
+  
   const struct variable *variable = psppire_dict_get_variable (store->dict, column);
   if (NULL == variable)
     return;
@@ -326,6 +330,7 @@ psppire_data_store_init (PsppireDataStore *data_store)
   data_store->dict = NULL;
   data_store->datasheet = NULL;
   data_store->dispose_has_run = FALSE;
+  data_store->stamp = g_random_int ();
 }
 
 /*
