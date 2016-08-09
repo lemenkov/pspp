@@ -788,7 +788,9 @@ fonts_activate (PsppireDataWindow  *de)
   GtkWidget *toplevel = gtk_widget_get_toplevel (GTK_WIDGET (de));
   GtkWidget *dialog =  gtk_font_chooser_dialog_new (NULL, GTK_WINDOW (toplevel));
   GtkStyleContext *style = gtk_widget_get_style_context (GTK_WIDGET(de->data_editor));
-  const PangoFontDescription *current_font = gtk_style_context_get_font (style, GTK_STATE_FLAG_NORMAL);
+  const PangoFontDescription *current_font ;
+  
+  gtk_style_context_get (style, GTK_STATE_FLAG_NORMAL, "font", &current_font, NULL);
 
   gtk_font_chooser_set_font_desc (GTK_FONT_CHOOSER (dialog), current_font);
 
