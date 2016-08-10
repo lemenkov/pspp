@@ -32,6 +32,8 @@
 #include "ppport.h"
 
 #include "minmax.h"
+#include <libpspp/hmap.h>
+#include <libpspp/hash-functions.h>
 #include <libpspp/message.h>
 #include <libpspp/version.h>
 #include <libpspp/i18n.h>
