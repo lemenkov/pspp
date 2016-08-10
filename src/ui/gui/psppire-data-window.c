@@ -1226,11 +1226,11 @@ insert_case_at_row (PsppireDataWindow *dw)
 static void
 goto_case (PsppireDataWindow *dw)
 {
-#if SHEET_MERGE
-  PsppireDataSheet *ds = psppire_data_editor_get_active_data_sheet (dw->data_editor);
-
-  goto_case_dialog (ds);
-#endif
+  int p = gtk_notebook_get_current_page (GTK_NOTEBOOK (dw->data_editor));
+  if (p == 0)
+    {
+      goto_case_dialog (JMD_SHEET (dw->data_editor->data_sheet));
+    }
 }
 
 

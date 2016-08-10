@@ -1,5 +1,5 @@
 /* PSPPIRE - a graphical user interface for PSPP.
-   Copyright (C) 2007, 2011, 2012  Free Software Foundation
+   Copyright (C) 2007, 2011, 2012, 2016  Free Software Foundation
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -21,14 +21,47 @@
 #include "psppire-dialog.h"
 #include "psppire-data-window.h"
 #include "psppire-data-store.h"
+#include "ui/gui/efficient-sheet/jmd-sheet.h"
 
 
 static void
-refresh (GtkWidget *ds, GtkBuilder *xml)
+refresh (JmdSheet *ds, GtkBuilder *xml)
 {
+  GtkWidget *case_num_entry = get_widget_assert (xml, "goto-case-case-num-entry");
+  casenumber case_count =  gtk_tree_model_iter_n_children (ds->data_model, NULL);
+
+  gtk_spin_button_set_range (GTK_SPIN_BUTTON (case_num_entry), 1, case_count);
 }
 
 void
-goto_case_dialog (void *ds)
+goto_case_dialog (JmdSheet *ds)
 {
+  GtkWindow *top_level;
+  gint response;
+  GtkBuilder *xml = builder_new ("goto-case.ui");
+  GtkWidget *dialog = get_widget_assert   (xml, "goto-case-dialog");
+
+  top_level = GTK_WINDOW (gtk_widget_get_toplevel (GTK_WIDGET (ds)));
+  gtk_window_set_transient_for (GTK_WINDOW (dialog), top_level);
+
+  refresh (ds, xml);
+
+  response = psppire_dialog_run (PSPPIRE_DIALOG (dialog));
+
+  if (response == PSPPIRE_RESPONSE_GOTO)
+    {
+      GtkWidget *case_num_entry =
+  	get_widget_assert (xml, "goto-case-case-num-entry");
+
+      glong case_num =
+	gtk_spin_button_get_value_as_int (GTK_SPIN_BUTTON (case_num_entry))
+  	- FIRST_CASE_NUMBER ;
+
+      if (case_num >= 0 && 
+	  case_num < gtk_tree_model_iter_n_children (ds->data_model, NULL))
+      {
+	jmd_sheet_scroll_to (ds, -1, case_num);
+	jmd_sheet_set_active_cell (ds, -1, case_num, 0);
+      }
+    }
 }

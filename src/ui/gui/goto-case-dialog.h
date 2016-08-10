@@ -17,7 +17,9 @@
 #ifndef __GOTO_CASE_DIALOG_H
 #define __GOTO_CASE_DIALOG_H
 
+#include "ui/gui/efficient-sheet/jmd-sheet.h"
 
-void goto_case_dialog (void *ds);
+
+void goto_case_dialog (JmdSheet *ds);
 
 #endif
