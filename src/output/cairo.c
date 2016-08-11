@@ -1078,7 +1078,8 @@ xr_layout_cell_text (struct xr_driver *xr,
             {
               if (brk && clip[H][0] != clip[H][1])
                 best = bottom;
-              *brk = bottom;
+              if (brk)
+                *brk = bottom;
             }
           else
             break;
