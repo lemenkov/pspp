@@ -196,7 +196,6 @@ psppire_window_set_property (GObject         *object,
                           : NULL);
       psppire_window_name_changed (window);
       break;
-      break;
     case PROP_ID:
       g_free (window->id);
       window->id = g_value_dup_string (value);
