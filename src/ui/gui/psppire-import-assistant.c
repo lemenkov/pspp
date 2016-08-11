@@ -1714,18 +1714,24 @@ make_data_column (PsppireImportAssistant *ia, GtkWidget *tree_view,
 {
   struct variable *var = NULL;
   struct column *column = NULL;
-  size_t char_cnt;
+  size_t char_cnt = 0;
   gint content_width, header_width;
   PsppSheetViewColumn *tree_column;
-  char *name;
+  char *name = NULL;
 
   if (input)
-    column = &ia->columns[dict_idx];
+    {
+      column = &ia->columns[dict_idx];
+      name = escape_underscores (column->name);
+      char_cnt = column->width; 
+    }
   else
-    var = dict_get_var (ia->dict, dict_idx);
+    {
+      var = dict_get_var (ia->dict, dict_idx);
+      name = escape_underscores (var_get_name (var));
+      char_cnt = var_get_print_format (var)->w;
+    }
 
-  name = escape_underscores (input ? column->name : var_get_name (var));
-  char_cnt = input ? column->width : var_get_print_format (var)->w;
   content_width = get_monospace_width (tree_view, ia->fixed_renderer,
                                        char_cnt);
   header_width = get_string_width (tree_view, ia->prop_renderer,
