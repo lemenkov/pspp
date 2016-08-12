@@ -148,7 +148,7 @@ online_help (const char *page)
     {
       gchar **tokens = NULL;
       const int maxtokens = 5;
-      int idx = 0;
+      int idx ;
       argv[1] = g_strdup_printf ("file://%s#%s",
                                  relocate (DOCDIR "/pspp.xml"), page);
       /* The page will be translated to the htmlfilename
@@ -157,7 +157,8 @@ online_help (const char *page)
          QUICK-CLUSTER          QUICK-CLUSTER.html
          which is valid for the multiple page html doc*/
       tokens = g_strsplit (page, "#", maxtokens);
-      for(;tokens[idx] && idx < maxtokens;idx++);
+      for (idx = 0; idx < maxtokens && tokens[idx]; idx++)
+	;
       htmlfilename = g_strdup_printf ("%s.html", tokens[idx-1]);
       g_strfreev (tokens);
     }
