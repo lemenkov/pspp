@@ -769,10 +769,10 @@ tree_model_iter_next (GtkTreeModel *model, GtkTreeIter *iter)
   struct variable *var;
   gint idx;
 
-  g_return_val_if_fail (iter->stamp == dict->stamp, FALSE);
-
   if ( iter == NULL || iter->user_data == NULL)
     return FALSE;
+
+  g_return_val_if_fail (iter->stamp == dict->stamp, FALSE);
 
   var = iter->user_data;
 

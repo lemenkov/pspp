@@ -94,7 +94,7 @@ static GSourceFuncs init_funcs =
 
 
 
-GtkWidget *wsplash;
+GtkWidget *wsplash = 0;
 gint64 start_time = 0;
 
 
@@ -202,6 +202,7 @@ destroy_splash (gpointer ud)
 {
   GtkWidget *sp = GTK_WIDGET (ud);
   gtk_widget_destroy (sp);
+  wsplash = NULL;
   return G_SOURCE_REMOVE;
 }
 
@@ -211,18 +212,21 @@ on_activate (GApplication * app, gpointer ud)
   post_initialise (app);
 
   GtkWindow *x = create_data_window ();
-  gtk_window_set_transient_for (GTK_WINDOW (wsplash), GTK_WINDOW (x));
-  gtk_application_add_window (GTK_APPLICATION (app), x);
-  gtk_application_add_window (GTK_APPLICATION (app), GTK_WINDOW (wsplash));
-  gtk_window_set_keep_above (GTK_WINDOW (wsplash), TRUE);
-  gtk_window_present (GTK_WINDOW (wsplash));
+  if (wsplash)
+    {
+      gtk_window_set_transient_for (GTK_WINDOW (wsplash), GTK_WINDOW (x));
+      gtk_application_add_window (GTK_APPLICATION (app), x);
+      gtk_application_add_window (GTK_APPLICATION (app), GTK_WINDOW (wsplash));
+      gtk_window_set_keep_above (GTK_WINDOW (wsplash), TRUE);
+      gtk_window_present (GTK_WINDOW (wsplash));
 
-  /* Remove the splash screen after SPLASH_DURATION milliseconds */
-  gint64 elapsed_time = (g_get_monotonic_time () - start_time) / 1000;
-  if (SPLASH_DURATION - elapsed_time <= 0)
-    destroy_splash (wsplash);
-  else
-    g_timeout_add (SPLASH_DURATION - elapsed_time, destroy_splash, wsplash);
+      /* Remove the splash screen after SPLASH_DURATION milliseconds */
+      gint64 elapsed_time = (g_get_monotonic_time () - start_time) / 1000;
+      if (SPLASH_DURATION - elapsed_time <= 0)
+	destroy_splash (wsplash);
+      else
+	g_timeout_add (SPLASH_DURATION - elapsed_time, destroy_splash, wsplash);
+    }
 }
 
 
