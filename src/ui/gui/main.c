@@ -248,7 +248,7 @@ process_pre_start_arguments (int *argc, char ***argv)
 {
   GOptionEntry oe[] = {
     {"version", 'V', G_OPTION_FLAG_NO_ARG, G_OPTION_ARG_CALLBACK,
-     show_version_and_exit, "Show version information and exit", 0},
+     show_version_and_exit, N_("Show version information and exit"), 0},
     {NULL}
   };
 
@@ -270,7 +270,7 @@ main (int argc, char *argv[])
 
   GOptionEntry oe[] = {
     {"no-splash", 'q', G_OPTION_FLAG_NONE, G_OPTION_ARG_NONE, NULL,
-     "Do not display the splash screen", 0},
+      N_("Do not display the splash screen"), 0},
     {NULL}
   };
 
