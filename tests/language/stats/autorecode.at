@@ -272,3 +272,36 @@ asdfk,0,2.00,.  @&t@
 asdfk,1,2.00,.  @&t@
 ])
 AT_CLEANUP
+
+
+dnl For compatibility, make sure that /INTO (with leading slash) is accepted
+dnl (bug #48762)
+AT_SETUP([AUTORECODE with /INTO])
+AT_DATA([autorecode.sps],
+  [data list list notable /x .
+begin data.
+1
+8
+-901
+4
+1
+99
+8
+end data.
+
+autorecode x  /into y.
+
+list.
+])
+AT_CHECK([pspp -O format=csv autorecode.sps], [0],
+[Table: Data List
+x,y
+1.00,2.00
+8.00,4.00
+-901.00,1.00
+4.00,3.00
+1.00,2.00
+99.00,5.00
+8.00,4.00
+])
+AT_CLEANUP

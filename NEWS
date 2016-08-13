@@ -6,7 +6,9 @@ Please send PSPP bug reports to bug-gnu-pspp@gnu.org.
 
 Changes from 0.10.2 to 0.10.4:
 
- * Updated to Gtk+3.14.5
+ *  Gtk+3.14.5 or later must now be used when building.
+
+ *  The AUTORECODE command now accepts an optional / before INTO.
 
 Changes from 0.10.1 to 0.10.2:
 
