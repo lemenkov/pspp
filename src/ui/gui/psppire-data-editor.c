@@ -31,7 +31,11 @@
 #include "ui/gui/psppire-conf.h"
 #include "ui/gui/psppire-var-sheet-header.h"
 
+#include "value-variant.h"
+
+
 #include "ui/gui/efficient-sheet/jmd-sheet.h"
+#include "ui/gui/efficient-sheet/jmd-sheet-body.h"
 
 #include <gettext.h>
 #define _(msgid) gettext (msgid)
@@ -246,12 +250,14 @@ change_data_value (PsppireDataStore *store, gint col, gint row, GValue *value)
     return;
 
   union value v;
-  value_init (&v, var_get_width (var));
-  v.f = g_value_get_double (value);
+
+  GVariant *vrnt = g_value_get_variant (value);
+  
+  value_variant_get (&v, vrnt);
   
   psppire_data_store_set_value (store, row, var, &v);
 
-  value_destroy (&v, var_get_width (var));
+  value_destroy_from_variant (&v, vrnt);
 }
 
 static void
@@ -512,6 +518,10 @@ on_data_selection_change (PsppireDataEditor *de, JmdRange *sel)
 
 static void set_font_recursively (GtkWidget *w, gpointer data);
 
+gchar *myconvfunc (GtkTreeModel *m, gint col, gint row, const GValue *v);
+void myreversefunc (GtkTreeModel *model, gint col, gint row, const gchar *in, GValue *out);
+
+
 static void
 psppire_data_editor_init (PsppireDataEditor *de)
 {
@@ -536,7 +546,11 @@ psppire_data_editor_init (PsppireDataEditor *de)
   gtk_box_pack_start (GTK_BOX (hbox), de->datum_entry, TRUE, TRUE, 0);
 
   de->split = FALSE;
-  de->data_sheet = g_object_new (JMD_TYPE_SHEET, NULL);
+  de->data_sheet = jmd_sheet_new ();
+  jmd_sheet_body_set_conversion_func
+    (JMD_SHEET_BODY (JMD_SHEET(de->data_sheet)->selected_body),
+     myconvfunc, myreversefunc);
+				      
   GtkWidget *data_button = jmd_sheet_get_button (JMD_SHEET (de->data_sheet));
   gtk_button_set_label (GTK_BUTTON (data_button), _("Case"));
   de->vbox = gtk_box_new (GTK_ORIENTATION_VERTICAL, 0);

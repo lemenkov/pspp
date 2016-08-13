@@ -44,7 +44,7 @@
 #include "xalloc.h"
 #include "xmalloca.h"
 
-
+#include "value-variant.h"
 
 static void psppire_data_store_init            (PsppireDataStore      *data_store);
 static void psppire_data_store_class_init      (PsppireDataStoreClass *class);
@@ -130,7 +130,51 @@ __iter_nth_child (GtkTreeModel *tree_model,
   return TRUE;
 }
 
+void
+myreversefunc (GtkTreeModel *model, gint col, gint row,
+	       const gchar *in, GValue *out)
+{
+  PsppireDataStore *store  = PSPPIRE_DATA_STORE (model);
 
+  const struct variable *variable = psppire_dict_get_variable (store->dict, col);
+  g_return_if_fail (variable);
+
+  const struct fmt_spec *fmt = var_get_print_format (variable);
+
+  int width = var_get_width (variable);
+
+  union value val;
+  value_init (&val, width);
+  char *xx = 
+    data_in (ss_cstr (in), psppire_dict_encoding (store->dict),
+	     fmt->type, &val, width, "UTF-8");
+
+  GVariant *vrnt = value_variant_new (&val, width);
+  value_destroy (&val, width);
+
+  g_value_init (out, G_TYPE_VARIANT);
+  g_value_set_variant (out, vrnt);
+  free (xx);
+}
+
+gchar *
+myconvfunc (GtkTreeModel *model, gint col, gint row, const GValue *v)
+{
+  PsppireDataStore *store  = PSPPIRE_DATA_STORE (model);
+
+  const struct variable *variable = psppire_dict_get_variable (store->dict, col);
+  g_return_val_if_fail (variable, g_strdup ("???"));
+
+  GVariant *vrnt = g_value_get_variant (v);
+  union value val;
+  value_variant_get (&val, vrnt);
+
+  const struct fmt_spec *fmt = var_get_print_format (variable);
+  char *out =  data_out (&val, psppire_dict_encoding (store->dict),  fmt);
+  value_destroy_from_variant (&val, vrnt);
+
+  return out;
+}
 
 static void
 __get_value (GtkTreeModel *tree_model,
@@ -146,49 +190,28 @@ __get_value (GtkTreeModel *tree_model,
   if (NULL == variable)
     return;
 
-  if (var_is_numeric (variable))
-    g_value_init (value, G_TYPE_DOUBLE);
-  else
-    g_value_init (value, G_TYPE_STRING);
+  g_value_init (value, G_TYPE_VARIANT);
 
   gint row = GPOINTER_TO_INT (iter->user_data);
 
   struct ccase *cc = datasheet_get_row (store->datasheet, row);
+
+  const union value *val = case_data_idx (cc, column);
+
+  GVariant *vv = value_variant_new (val, var_get_width (variable));
+
+  g_value_set_variant (value, vv);
   
-  if (var_is_numeric (variable))
-    g_value_set_double (value, case_data_idx (cc, column)->f);
-  else
-    {
-      const gchar *ss = value_str (case_data_idx (cc, column),
-			     var_get_width (variable));
-      g_value_set_string (value, ss);
-    }
   case_unref (cc);
 }
 
-
-static GType
-__get_type (GtkTreeModel *tree_model,   gint idx)
-{
-  PsppireDataStore *store  = PSPPIRE_DATA_STORE (tree_model);
-
-  const struct variable *variable = psppire_dict_get_variable (store->dict, idx);
-
-  if (NULL == variable)
-    return 0;
-
-  if (var_is_numeric (variable))
-    return G_TYPE_DOUBLE;
-
-  return G_TYPE_STRING;
-}
 
 static void
 __tree_model_init (GtkTreeModelIface *iface)
 {
   iface->get_flags       = __tree_model_get_flags;
   iface->get_n_columns   = __tree_model_get_n_columns ;
-  iface->get_column_type = __get_type;
+  iface->get_column_type = NULL;
   iface->get_iter        = NULL; 
   iface->iter_next       = NULL; 
   iface->get_path        = NULL; 
