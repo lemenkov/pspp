@@ -301,6 +301,8 @@ src_ui_gui_psppire_SOURCES = \
 	src/ui/gui/var-display.h \
 	src/ui/gui/var-type-dialog.c \
 	src/ui/gui/var-type-dialog.h \
+	src/ui/gui/value-variant.c \
+	src/ui/gui/value-variant.h \
 	src/ui/gui/widget-io.c \
 	src/ui/gui/widget-io.h \
 	src/ui/gui/widgets.c \
