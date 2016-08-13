@@ -57,8 +57,8 @@ show_version_and_exit ()
 
   return TRUE;
 }
-
 
+
 
 gboolean
 init_prepare (GSource * source, gint * timeout_)
@@ -139,20 +139,29 @@ static gint
 on_local_options (GApplication * application,
                   GVariantDict * options, gpointer user_data)
 {
-  GVariant *b;
-
-  b =
-    g_variant_dict_lookup_value (options, "no-splash",
-                                 G_VARIANT_TYPE_BOOLEAN);
-  if (b)
-    {
+  {
+    GVariant *b =
+      g_variant_dict_lookup_value (options, "no-unique",
+				   G_VARIANT_TYPE_BOOLEAN);
+    if (b)
+      {
+	GApplicationFlags flags =  g_application_get_flags (application);
+	flags |= G_APPLICATION_NON_UNIQUE;
+	g_application_set_flags (application, flags);
+	g_variant_unref (b);
+      }
+  }
+  {
+    GVariant *b =
+      g_variant_dict_lookup_value (options, "no-splash",
+				   G_VARIANT_TYPE_BOOLEAN);
+    if (b)
       g_variant_unref (b);
-    }
-  else
-    {
+    else
       start_time = g_get_monotonic_time ();
-    }
+  }
 
+  
   return -1;
 }
 
@@ -248,7 +257,7 @@ process_pre_start_arguments (int *argc, char ***argv)
 {
   GOptionEntry oe[] = {
     {"version", 'V', G_OPTION_FLAG_NO_ARG, G_OPTION_ARG_CALLBACK,
-     show_version_and_exit, "Show version information and exit", 0},
+     show_version_and_exit, N_("Show version information and exit"), 0},
     {NULL}
   };
 
@@ -270,7 +279,9 @@ main (int argc, char *argv[])
 
   GOptionEntry oe[] = {
     {"no-splash", 'q', G_OPTION_FLAG_NONE, G_OPTION_ARG_NONE, NULL,
-     "Do not display the splash screen", 0},
+      N_("Do not display the splash screen"), 0},
+    {"no-unique", 'n', G_OPTION_FLAG_NONE, G_OPTION_ARG_NONE, NULL,
+      N_("Do not attempt single instance negotiation"), 0},
     {NULL}
   };
 

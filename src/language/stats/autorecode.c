@@ -153,6 +153,7 @@ cmd_autorecode (struct lexer *lexer, struct dataset *ds)
   if (!parse_variables_const (lexer, dict, &src_vars, &n_srcs,
                               PV_NO_DUPLICATE | PV_NO_SCRATCH))
     goto error;
+  lex_match (lexer, T_SLASH);
   if (!lex_force_match_id (lexer, "INTO"))
     goto error;
   lex_match (lexer, T_EQUALS);
