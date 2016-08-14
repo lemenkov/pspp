@@ -119,7 +119,7 @@ PsppireDataWindow *psppire_data_window_for_data_store (PsppireDataStore *);
 
 bool psppire_data_window_is_empty (PsppireDataWindow *);
 GtkWindow * create_data_window (void);
-void open_data_window (PsppireWindow *victim, const char *file_name,
+GtkWindow * open_data_window (PsppireWindow *victim, const char *file_name,
                        const char *encoding, gpointer hint);
 
 G_END_DECLS

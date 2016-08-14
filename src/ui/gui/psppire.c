@@ -195,7 +195,7 @@ psppire_set_lexer (struct lexer *lexer)
 }
 
 
-void
+GtkWindow *
 psppire_preload_file (const gchar *file)
 {
   const gchar *local_encoding = "UTF-8";
@@ -207,16 +207,18 @@ psppire_preload_file (const gchar *file)
   const char *filename = fh_get_file_name (fh);
   
   int retval = any_reader_detect (fh, NULL);
-  
+
+  GtkWindow *w ;
   /* Check to see if the file is a .sav or a .por file.  If not
      assume that it is a syntax file */
   if (retval == 1)
-    open_data_window (NULL, filename, NULL, NULL);
+    w = open_data_window (NULL, filename, NULL, NULL);
   else if (retval == 0)
     {
       create_data_window ();
-      open_syntax_window (filename, NULL);
+      w = open_syntax_window (filename, NULL);
     }
 
   fh_unref (fh);
+  return w;
 }

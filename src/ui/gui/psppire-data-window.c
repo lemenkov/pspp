@@ -1948,7 +1948,7 @@ create_data_window (void)
   return GTK_WINDOW (w);
 }
 
-void
+GtkWindow *
 open_data_window (PsppireWindow *victim, const char *file_name,
                   const char *encoding, gpointer hint)
 {
@@ -1965,4 +1965,5 @@ open_data_window (PsppireWindow *victim, const char *file_name,
 
   psppire_window_load (PSPPIRE_WINDOW (window), file_name, encoding, hint);
   gtk_widget_show_all (window);
+  return GTK_WINDOW (window);
 }

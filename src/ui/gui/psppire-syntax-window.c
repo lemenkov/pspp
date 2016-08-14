@@ -647,13 +647,15 @@ create_syntax_window (void)
   gtk_widget_show (w);
 }
 
-void
+GtkWindow *
 open_syntax_window (const char *file_name, const gchar *encoding)
 {
   GtkWidget *se = psppire_syntax_window_new (NULL);
 
   if ( file_name)
     load_and_show_syntax_window (se, file_name, encoding);
+
+  return GTK_WINDOW (se);
 }
 
 

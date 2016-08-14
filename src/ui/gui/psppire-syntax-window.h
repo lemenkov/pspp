@@ -86,7 +86,7 @@ GType      psppire_syntax_window_get_type        (void);
 GtkWidget* psppire_syntax_window_new             (const char *encoding);
 
 void create_syntax_window (void);
-void open_syntax_window (const char *file_name, const char *encoding);
+GtkWindow * open_syntax_window (const char *file_name, const char *encoding);
 
 G_END_DECLS
 
