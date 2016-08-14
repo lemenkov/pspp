@@ -208,7 +208,7 @@ psppire_preload_file (const gchar *file)
   
   int retval = any_reader_detect (fh, NULL);
 
-  GtkWindow *w ;
+  GtkWindow *w = NULL;
   /* Check to see if the file is a .sav or a .por file.  If not
      assume that it is a syntax file */
   if (retval == 1)
