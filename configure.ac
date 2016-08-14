@@ -60,7 +60,7 @@ fi
 
 dnl Xmllint is used in the rules to build the documentation.  It is not actually necessary,
 dnl but is used for post-build consistency checks.  Thus, non-developers can live without it.
-dnl However for it to be usefull, it needs to be a certain version and have certain features.
+dnl However for it to be useful, it needs to be a certain version and have certain features.
 dnl The macros below check that it the xmllint available is up to scratch.  If it isn't
 dnl then a dummy /bin/echo is subsituted instead.
 
@@ -311,7 +311,7 @@ PSPP_READLINE
 dnl Checks for header files.
 AC_CHECK_HEADERS([sys/wait.h fpu_control.h ieeefp.h fenv.h pwd.h])
 
-dnl Some systems dont have SIGWINCH
+dnl Some systems don't have SIGWINCH
 AC_CHECK_DECLS([SIGWINCH], [], [],
           [#include <signal.h>
           /* NetBSD declares sys_siglist in unistd.h.  */
