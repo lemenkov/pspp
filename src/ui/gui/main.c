@@ -215,16 +215,13 @@ destroy_splash (gpointer ud)
   return G_SOURCE_REMOVE;
 }
 
-static void
-on_activate (GApplication * app, gpointer ud)
-{
-  post_initialise (app);
 
-  GtkWindow *x = create_data_window ();
+static void
+wait_for_splash (GApplication *app, GtkWindow *x)
+{
   if (wsplash)
     {
-      gtk_window_set_transient_for (GTK_WINDOW (wsplash), GTK_WINDOW (x));
-      gtk_application_add_window (GTK_APPLICATION (app), x);
+      gtk_window_set_transient_for (GTK_WINDOW (wsplash), x);
       gtk_application_add_window (GTK_APPLICATION (app), GTK_WINDOW (wsplash));
       gtk_window_set_keep_above (GTK_WINDOW (wsplash), TRUE);
       gtk_window_present (GTK_WINDOW (wsplash));
@@ -240,14 +237,28 @@ on_activate (GApplication * app, gpointer ud)
 
 
 static void
-on_open (GApplication * app, GFile ** files, gint n_files, gchar * hint,
+on_activate (GApplication * app, gpointer ud)
+{
+  post_initialise (app);
+
+  GtkWindow *x = create_data_window ();
+  gtk_application_add_window (GTK_APPLICATION (app), x);
+
+  wait_for_splash (app, x);
+}
+
+
+static void
+on_open (GApplication *app, GFile **files, gint n_files, gchar * hint,
          gpointer ud)
 {
   post_initialise (app);
 
   gchar *file = g_file_get_parse_name (files[0]);
-  psppire_preload_file (file);
+  GtkWindow *x = psppire_preload_file (file);
   g_free (file);
+
+  wait_for_splash (app, x);
 }
 
 

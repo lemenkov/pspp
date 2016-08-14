@@ -19,6 +19,7 @@
 
 #include <glib.h>
 #include <gio/gio.h>
+#include <gtk/gtk.h>
 
 #include <stdbool.h>
 
@@ -47,7 +48,7 @@ void psppire_set_lexer (struct lexer *);
 
 void register_selection_functions (void);
 
-void psppire_preload_file (const gchar *file);
+GtkWindow * psppire_preload_file (const gchar *file);
 
 
 #endif /* PSPPIRE_H */
