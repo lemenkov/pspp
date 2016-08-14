@@ -23,6 +23,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+G_GNUC_BEGIN_IGNORE_DEPRECATIONS
+
 static void
 inset_rectangle (const GdkRectangle *src,
                  const GtkBorder *inset,

@@ -27,6 +27,8 @@
 #include "gl/configmake.h"
 #include "gl/relocatable.h"
 
+G_GNUC_BEGIN_IGNORE_DEPRECATIONS
+
 #define P_(msgid) (msgid)
 
 static void psppire_cell_renderer_button_dispose (GObject *);
