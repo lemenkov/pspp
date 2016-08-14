@@ -807,7 +807,7 @@ psppire_data_editor_set_font (PsppireDataEditor *de, PangoFontDescription *font_
   psppire_conf_set_string (psppire_conf_new (),
 			   "Data Editor", "font",
 			   font_name);
-
+  g_free (font_name);
 }
 
 /* If SPLIT is TRUE, splits DE's data sheet into four panes.
