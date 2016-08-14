@@ -592,6 +592,27 @@ psppire_data_store_insert_new_case (PsppireDataStore *ds, casenumber posn)
   return result;
 }
 
+gboolean
+psppire_data_store_get_value (PsppireDataStore *store,
+			      glong row, const struct variable *var,
+			      union value *val)
+{
+  g_return_val_if_fail (store != NULL, NULL);
+  g_return_val_if_fail (store->datasheet != NULL, NULL);
+  g_return_val_if_fail (var != NULL, NULL);
+
+  if (row < 0 || row >= datasheet_get_n_rows (store->datasheet))
+    return FALSE;
+
+  int width = var_get_width (var);
+  value_init (val, width);
+  datasheet_get_value (store->datasheet, row, var_get_case_index (var), val);
+
+  return TRUE;
+}
+
+  
+
 gchar *
 psppire_data_store_get_string (PsppireDataStore *store,
                                glong row, const struct variable *var,
@@ -599,19 +620,10 @@ psppire_data_store_get_string (PsppireDataStore *store,
 {
   gchar *string;
   union value v;
-  int width;
-
-  g_return_val_if_fail (store != NULL, NULL);
-  g_return_val_if_fail (store->datasheet != NULL, NULL);
-  g_return_val_if_fail (var != NULL, NULL);
-
-  if (row < 0 || row >= datasheet_get_n_rows (store->datasheet))
+  int width = var_get_width (var);
+  if (! psppire_data_store_get_value (store, row, var, &v))
     return NULL;
-
-  width = var_get_width (var);
-  value_init (&v, width);
-  datasheet_get_value (store->datasheet, row, var_get_case_index (var), &v);
-
+  
   string = NULL;
   if (use_value_label)
     {

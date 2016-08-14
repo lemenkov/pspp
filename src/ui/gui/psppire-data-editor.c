@@ -1,5 +1,5 @@
 /* PSPPIRE - a graphical user interface for PSPP.
-   Copyright (C) 2008, 2009, 2010, 2011, 2012 Free Software Foundation, Inc.
+   Copyright (C) 2008, 2009, 2010, 2011, 2012, 2016 Free Software Foundation, Inc.
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -458,7 +458,21 @@ on_data_sheet_var_double_clicked (JmdSheet *data_sheet, gint dict_index,
 static void
 refresh_entry (PsppireDataEditor *de)
 {
-  g_print ("%s\n", __FUNCTION__);
+  union value val;
+  gint row, col;
+  jmd_sheet_get_active_cell (JMD_SHEET (de->data_sheet), &col, &row);
+
+  const struct variable *var = psppire_dict_get_variable (de->dict, col);
+  psppire_value_entry_set_variable (PSPPIRE_VALUE_ENTRY (de->datum_entry), var);
+
+  int width = var_get_width (var);
+  if (! psppire_data_store_get_value (PSPPIRE_DATA_STORE (de->data_store),
+				      row, var, &val))
+    return;
+
+  psppire_value_entry_set_value (PSPPIRE_VALUE_ENTRY (de->datum_entry),
+				 &val, width);
+  value_destroy (&val, width);
 }
 
 static void
@@ -679,41 +693,3 @@ void
 psppire_data_editor_goto_variable (PsppireDataEditor *de, gint dict_index)
 {
 }
-
-#if SHEET_MERGE
-/* Returns the "active" data sheet in DE.  If DE is in single-paned mode, this
-   is the only data sheet.  If DE is in split mode (showing four data sheets),
-   this is the focused data sheet or, if none is focused, the data sheet with
-   selected cells or, if none has selected cells, the upper-left data sheet. */
-PsppireDataSheet *
-psppire_data_editor_get_active_data_sheet (PsppireDataEditor *de)
-{
-  if (de->split)
-    {
-      PsppireDataSheet *data_sheet;
-      GtkWidget *scroller;
-      int i;
-
-      /* If one of the datasheet's scrollers is focused, choose that one. */
-      scroller = gtk_container_get_focus_child (
-        GTK_CONTAINER (de->datasheet_vbox_widget));
-      if (scroller != NULL)
-        return PSPPIRE_DATA_SHEET (gtk_bin_get_child (GTK_BIN (scroller)));
-
-      /* Otherwise if there's a nonempty selection in some data sheet, choose
-         that one. */
-      FOR_EACH_DATA_SHEET (data_sheet, i, de)
-        {
-          PsppSheetSelection *selection;
-
-          selection = pspp_sheet_view_get_selection (
-            PSPP_SHEET_VIEW (data_sheet));
-          if (pspp_sheet_selection_count_selected_rows (selection)
-              && pspp_sheet_selection_count_selected_columns (selection))
-            return data_sheet;
-        }
-    }
-
-  return PSPPIRE_DATA_SHEET (de->data_sheets[0]);
-}
-#endif
