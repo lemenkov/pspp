@@ -85,5 +85,6 @@
   </screenshot>
   </screenshots>
  <url type="homepage">http://www.gnu.org/software/pspp/</url>
+ <url type="translate">http://translationproject.org/domain/pspp.html</url>
  <updatecontact>pspp-dev@gnu.org</updatecontact>
 </component>
