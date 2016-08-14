@@ -682,6 +682,9 @@ psppire_data_editor_init (PsppireDataEditor *de)
   GtkWidget *hbox;
   gchar *fontname = NULL;
 
+  GtkStyleContext *context = gtk_widget_get_style_context (GTK_WIDGET (de));
+  gtk_style_context_add_class (context, "psppire-data-editor");
+  
   de->font = NULL;
   de->old_vbox_widget = NULL;
 
@@ -774,7 +777,16 @@ set_font_recursively (GtkWidget *w, gpointer data)
 {
   PangoFontDescription *font_desc = data;
 
-  gtk_widget_override_font (w, font_desc);
+  GtkCssProvider *cssp = gtk_css_provider_get_default ();
+
+  gchar *str = pango_font_description_to_string (font_desc);
+  gchar *css = g_strdup_printf (".psppire-data-editor {font: %s }", str);
+  g_free (str);
+                                                                                   
+  if (!gtk_css_provider_load_from_data (cssp, css, -1, NULL))
+    g_warning ("Failed to load font css \"%s\"", css);
+
+  g_free (css);
 
   if ( GTK_IS_CONTAINER (w))
     gtk_container_foreach (GTK_CONTAINER (w), set_font_recursively, font_desc);

@@ -199,8 +199,21 @@ psppire_dialog_action_comments_activate (PsppireDialogAction *pda)
 	PangoFontDescription *font_desc =
 	  pango_font_description_from_string ("monospace");
 
-	gtk_widget_override_font (act->textview, font_desc);
+	GtkStyleContext *style =
+	  gtk_widget_get_style_context (GTK_WIDGET (act->textview));
+	gtk_style_context_add_class (style, "psppire-dialog-comment-pane");
+	GtkCssProvider *cssp = gtk_css_provider_get_default ();
 
+	gchar *str = pango_font_description_to_string (font_desc);
+	gchar *css =
+	  g_strdup_printf (".psppire-dialog-comment-pane {font: %s }", str);
+	g_free (str);
+                                                                                   
+	if (!gtk_css_provider_load_from_data (cssp, css, -1, NULL))
+	  g_warning ("Failed to load font css \"%s\"", css);
+
+	g_free (css);
+	
 	/* and let's just make sure that a complete line fits into the
 	   widget's width */
 	context = gtk_widget_create_pango_context (act->textview);
@@ -233,9 +246,6 @@ psppire_dialog_action_comments_activate (PsppireDialogAction *pda)
   
   psppire_dialog_action_set_valid_predicate (pda, dialog_state_valid);
   psppire_dialog_action_set_refresh (pda, refresh);
-
-
-
 }
 
 static void

@@ -403,6 +403,10 @@ psppire_window_init (PsppireWindow *window)
   window->description = NULL;
   window->list_name = NULL;
 
+  gtk_style_context_add_provider_for_screen (gdk_screen_get_default (),
+					     GTK_STYLE_PROVIDER (gtk_css_provider_get_default ()),
+					     GTK_STYLE_PROVIDER_PRIORITY_APPLICATION);
+  
   window->menuitem_table  = g_hash_table_new (g_str_hash, g_str_equal);
 
 
