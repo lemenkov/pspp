@@ -597,9 +597,9 @@ psppire_data_store_get_value (PsppireDataStore *store,
 			      glong row, const struct variable *var,
 			      union value *val)
 {
-  g_return_val_if_fail (store != NULL, NULL);
-  g_return_val_if_fail (store->datasheet != NULL, NULL);
-  g_return_val_if_fail (var != NULL, NULL);
+  g_return_val_if_fail (store != NULL, FALSE);
+  g_return_val_if_fail (store->datasheet != NULL, FALSE);
+  g_return_val_if_fail (var != NULL, FALSE);
 
   if (row < 0 || row >= datasheet_get_n_rows (store->datasheet))
     return FALSE;
