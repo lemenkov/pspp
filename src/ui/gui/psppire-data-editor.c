@@ -777,16 +777,28 @@ set_font_recursively (GtkWidget *w, gpointer data)
 {
   PangoFontDescription *font_desc = data;
 
-  GtkCssProvider *cssp = gtk_css_provider_get_default ();
+  GtkStyleContext *style = gtk_widget_get_style_context (w);
+  GtkCssProvider *cssp = gtk_css_provider_new ();
 
   gchar *str = pango_font_description_to_string (font_desc);
-  gchar *css = g_strdup_printf (".psppire-data-editor {font: %s }", str);
+  gchar *css =
+    g_strdup_printf ("* {font: %s}", str);
   g_free (str);
-                                                                                   
-  if (!gtk_css_provider_load_from_data (cssp, css, -1, NULL))
-    g_warning ("Failed to load font css \"%s\"", css);
 
+  GError *err = NULL;
+  gtk_css_provider_load_from_data (cssp, css, -1, &err);
+  if (err)
+    {
+      g_warning ("Failed to load font css \"%s\": %s", css, err->message);
+      g_error_free (err);
+    }
   g_free (css);
+
+  gtk_style_context_add_provider (style,
+				  GTK_STYLE_PROVIDER (cssp),
+				  GTK_STYLE_PROVIDER_PRIORITY_APPLICATION);
+  g_object_unref (cssp);
+
 
   if ( GTK_IS_CONTAINER (w))
     gtk_container_foreach (GTK_CONTAINER (w), set_font_recursively, font_desc);
