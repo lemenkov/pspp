@@ -19,7 +19,8 @@ AT_CLEANUP
 AT_SETUP([VECTOR short form with format specification])
 AT_DATA([vector.sps], [dnl
 data list notable/x 1.
-vector #vec(4, comma10.2).
+vector #vec(4, comma10.2)
+      /#svec(3, a8).
 display vector.
 ])
 AT_CHECK([pspp -o pspp.csv vector.sps])
@@ -29,6 +30,9 @@ Vector,Position,Variable,Print Format
 ,2,#vec2,COMMA10.2
 ,3,#vec3,COMMA10.2
 ,4,#vec4,COMMA10.2
+#svec,1,#svec1,A8
+,2,#svec2,A8
+,3,#svec3,A8
 ])
 AT_CLEANUP
 

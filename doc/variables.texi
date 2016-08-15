@@ -782,18 +782,20 @@ were consecutive members of an array with a vector(index) notation.
 
 To make a vector out of a set of existing variables, specify a name
 for the vector followed by an equals sign (@samp{=}) and the variables
-to put in the vector.  All the variables in the vector must be the same
-type.  String variables in a vector must all have the same width.
+to put in the vector.  The variables must be all numeric or all
+string, and string variables must have the same width.
 
 To make a vector and create variables at the same time, specify one or
-more vector names followed by a count in parentheses.  This will cause
-variables named @code{@var{vec}1} through @code{@var{vec}@var{count}}
-to be created as numeric variables.  By default, the new variables
-have print and write format F8.2, but an alternate format may be
-specified inside the parentheses before or after the count and
-separated from it by white space or a comma.  Variable names including
-numeric suffixes may not exceed 64 characters in length, and none of
-the variables may exist prior to @cmd{VECTOR}.
+more vector names followed by a count in parentheses.  This will
+create variables named @code{@var{vec}1} through
+@code{@var{vec}@var{count}}.  By default, the new variables are
+numeric with format F8.2, but an alternate format may be specified
+inside the parentheses before or after the count and separated from it
+by white space or a comma.  With a string format such as A8, the
+variables will be string variables; with a numeric format, they will
+be numeric.  Variable names including the suffixes may not exceed 64
+characters in length, and none of the variables may exist prior to
+@cmd{VECTOR}.
 
 Vectors created with @cmd{VECTOR} disappear after any procedure or
 procedure-like command is executed.  The variables contained in the
