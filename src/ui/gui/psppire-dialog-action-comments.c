@@ -194,27 +194,36 @@ psppire_dialog_action_comments_activate (PsppireDialogAction *pda)
 	PangoLayout *  layout ;
 	PangoRectangle rect;
 
+	
 	/* Since we're going to truncate lines to 80 chars,
 	   we need a monospaced font otherwise it'll look silly */
 	PangoFontDescription *font_desc =
 	  pango_font_description_from_string ("monospace");
+	{
+	  GtkStyleContext *style = gtk_widget_get_style_context (GTK_WIDGET (act->textview));
+	  GtkCssProvider *cssp = gtk_css_provider_new ();
 
-	GtkStyleContext *style =
-	  gtk_widget_get_style_context (GTK_WIDGET (act->textview));
-	gtk_style_context_add_class (style, "psppire-dialog-comment-pane");
-	GtkCssProvider *cssp = gtk_css_provider_get_default ();
+	  gchar *str = pango_font_description_to_string (font_desc);
+	  gchar *css =
+	    g_strdup_printf ("* {font: %s}", str);
+	  g_free (str);
 
-	gchar *str = pango_font_description_to_string (font_desc);
-	gchar *css =
-	  g_strdup_printf (".psppire-dialog-comment-pane {font: %s }", str);
-	g_free (str);
-                                                                                   
-	if (!gtk_css_provider_load_from_data (cssp, css, -1, NULL))
-	  g_warning ("Failed to load font css \"%s\"", css);
+	  GError *err = NULL;
+	  gtk_css_provider_load_from_data (cssp, css, -1, &err);
+	  if (err)
+	    {
+	      g_warning ("Failed to load font css \"%s\": %s", css, err->message);
+	      g_error_free (err);
+	    }
+	  g_free (css);
 
-	g_free (css);
+	  gtk_style_context_add_provider (style,
+					  GTK_STYLE_PROVIDER (cssp),
+					  GTK_STYLE_PROVIDER_PRIORITY_APPLICATION);
+	  g_object_unref (cssp);
+	}
 	
-	/* and let's just make sure that a complete line fits into the
+	/* And let's just make sure that a complete line fits into the
 	   widget's width */
 	context = gtk_widget_create_pango_context (act->textview);
 	layout = pango_layout_new (context);
