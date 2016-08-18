@@ -283,6 +283,8 @@ process_pre_start_arguments (int *argc, char ***argv)
 int
 main (int argc, char *argv[])
 {
+  set_program_name (argv[0]);
+
   GtkApplication *app =
     gtk_application_new ("gnu.pspp", G_APPLICATION_HANDLES_OPEN);
 
