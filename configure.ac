@@ -32,6 +32,11 @@ dnl Disable automatic po/ support, because PSPP provides its own po/ support.
 AC_PROVIDE([AM_PO_SUBDIRS])
 AM_GNU_GETTEXT([external], [need-ngettext])
 LIBS="$LIBINTL $LIBS"
+AC_CHECK_PROGS([MSGFMT], [msgfmt])
+if test "x$MSGFMT" = x; then
+  PSPP_REQUIRED_PREREQ([msgfmt (is usually provided with gettext)])
+fi
+
 
 dnl Checks for libraries.
 AC_SYS_LARGEFILE
