@@ -252,7 +252,7 @@ psql_open_reader (struct psql_read_info *info, struct dictionary **dict)
     }
 
   {
-    int ver_num;
+    int ver_num = 0;
     const char *vers = PQparameterStatus (r->conn, "server_version");
 
     sscanf (vers, "%d", &ver_num);
@@ -303,12 +303,17 @@ psql_open_reader (struct psql_read_info *info, struct dictionary **dict)
     *dict = r->dict = dict_create (encoding);
   }
 
+  const int version = PQserverVersion (r->conn);
+  ds_init_empty (&query);
   /*
-    select count (*) from (select * from medium) stupid_sql_standard;
-  */
-  ds_init_cstr (&query,
-		"BEGIN READ ONLY ISOLATION LEVEL SERIALIZABLE; "
-		"DECLARE  pspp BINARY CURSOR FOR ");
+    Versions before 9.1 don't have the REPEATABLE READ isolation level.
+    However according to <a12321aabb@gmail.com> if the server is in the
+    "hot standby" mode then SERIALIZABLE won't work.
+   */
+  ds_put_c_format (&query,
+		   "BEGIN READ ONLY ISOLATION LEVEL %s; "
+		   "DECLARE  pspp BINARY CURSOR FOR ",
+		   (version < 90100) ? "SERIALIZABLE" : "REPEATABLE READ");
 
   ds_put_substring (&query, info->sql.ss);
 
