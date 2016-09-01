@@ -250,11 +250,23 @@ rerender (struct psppire_output_view *view)
           gtk_layout_move (view->output, item->drawing_area, xpos, view->y);
         }
 
+      {
+	gint minw;
+	gint minh;
+	/* This code probably doesn't bring us anthing, but Gtk
+	   shows warnings if get_preferred_width/height is not
+	   called before the size_allocate below is called. */
+	gtk_widget_get_preferred_width (item->drawing_area, &minw, NULL);
+	gtk_widget_get_preferred_height (item->drawing_area, &minh, NULL);
+	if (th > minh) th = minh;
+	if (tw > minw) tw = minw;
+      }
       alloc.x = xpos;
       alloc.y = view->y;
       alloc.width = tw;
       alloc.height = th;
-      gtk_widget_size_allocate(item->drawing_area,&alloc);
+
+      gtk_widget_size_allocate (item->drawing_area, &alloc);
 
       if (view->max_width < tw)
         view->max_width = tw;
