@@ -8,6 +8,7 @@ POFILES = \
 	po/ca.po \
 	po/cs.po \
 	po/de.po \
+	po/el.po \
 	po/en_GB.po \
 	po/es.po \
 	po/fr.po \
