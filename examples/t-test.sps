@@ -9,7 +9,7 @@
 input program.
 
 * Females have gender 0
-* Create 10 female cases
+* Create 8 female cases
 loop #i = 1 to 8.
  compute weight  = rv.normal (65, 10).
  compute height = rv.normal(170.7,6.3).
@@ -36,7 +36,7 @@ end input program.
 value labels
   /gender 0 female 1 male.
 
-* Plot the data as boxplot and histogram
+* Plot the data as boxplot
 examine
   /variables=weight height beauty iq by gender
   /plot=boxplot.
