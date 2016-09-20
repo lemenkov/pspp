@@ -10,7 +10,7 @@ msgstr ""
 "Project-Id-Version: pspp-0.10.2\n"
 "Report-Msgid-Bugs-To: pspp-dev@gnu.org\n"
 "POT-Creation-Date: 2015-06-19 20:56-0700\n"
-"PO-Revision-Date: 2016-09-05 18:27+0200\n"
+"PO-Revision-Date: 2016-09-20 18:31+0200\n"
 "Last-Translator: Francesc Josep Miguel Quesada <Miguel.Quesada@uab.cat>\n"
 "Language-Team: Spanish <es@tp.org.es>\n"
 "Language: es\n"
@@ -125,7 +125,7 @@ msgstr "Fecha"
 
 #: src/data/format.c:1000 src/ui/gui/var-type-dialog.ui:117
 msgid "Dollar"
-msgstr "Dolar"
+msgstr "Dólar"
 
 #: src/data/format.c:1007
 msgid "Custom"
@@ -145,7 +145,7 @@ msgstr "Elimina"
 
 #: src/ui/gui/psppire-buttonbox.c:326
 msgid "OK"
-msgstr "Ok"
+msgstr "OK"
 
 #: src/ui/gui/psppire-buttonbox.c:334
 msgid "Go To"
@@ -274,7 +274,7 @@ msgstr "El archivo en línea no está permitido aquí."
 #: src/data/any-reader.c:201
 #, c-format
 msgid "Cannot read from dataset %s because no dictionary or data has been written to it yet."
-msgstr "No es pot llegir de l'arxiu de dades actiu %s perquè no s'ha omplert encara amb cap diccionari o dades."
+msgstr "No se puede leer desde el conjunto de datos %s porque aún no se le ha escrito un diccionario o datos."
 
 #: src/data/any-reader.c:256 src/language/data-io/dataset.c:257
 msgid "Dataset"
@@ -290,6 +290,7 @@ msgstr "El mes %d no está en el intervalo válido de 0 a 13."
 msgid "Day %d is not in acceptable range of 0 to 31."
 msgstr "El día %d no está en el intervalo válido de 0 a 31."
 
+# Thanks to Pope Gregory XIII !!!
 #: src/data/calendar.c:119
 #, c-format
 msgid "Date %04d-%d-%d is before the earliest acceptable date of 1582-10-15."
@@ -342,7 +343,7 @@ msgstr "Número demasiado pequeño definido como cero."
 
 #: src/data/data-in.c:422
 msgid "All characters in field must be digits."
-msgstr "Todos los carácteres del campo tienen que ser dígitos."
+msgstr "Todos los caracteres del campo tienen que ser dígitos."
 
 #: src/data/data-in.c:441
 msgid "Unrecognized character in field."
@@ -379,7 +380,7 @@ msgstr "En la fecha se espera un delimitador entre los campos."
 
 #: src/data/data-in.c:898
 msgid "Unrecognized month format.  Months may be specified as Arabic or Roman numerals or as at least 3 letters of their English names."
-msgstr "Formato de mes no reconocido. Los meses pueden ser especificados como números Arábicos o Romanos, o como mínimo 3 letras de sus nombres en Inglés."
+msgstr "Formato de mes no reconocido. Los meses pueden ser especificados como números Arábigos o Romanos, o como mínimo 3 letras de sus nombres en Inglés."
 
 #: src/data/data-in.c:925
 #, c-format
@@ -538,7 +539,7 @@ msgstr "`%s' no puede ser utilizado como identificador porque es una palabra res
 #: src/data/identifier2.c:103
 #, c-format
 msgid "`%s' may not be used as an identifier because it contains ill-formed UTF-8 at byte offset %tu."
-msgstr "`%s' no puede ser utilizado como identificador porque contiene UTF-8 malformado en la posición %tu."
+msgstr "`%s' no puede ser utilizado como identificador porque contiene UTF-8 mal formado en la posición %tu."
 
 #: src/data/identifier2.c:114
 #, c-format
@@ -643,7 +644,7 @@ msgstr "Variable %zu Etiqueta de Valor %zu"
 
 #: src/data/pc+-file-reader.c:388 src/data/sys-file-reader.c:698
 msgid "Creation Date"
-msgstr "Fecha de Creacion"
+msgstr "Fecha de Creación"
 
 #: src/data/pc+-file-reader.c:389 src/data/sys-file-reader.c:699
 msgid "Creation Time"
@@ -660,7 +661,7 @@ msgstr "Etiqueta de Fichero"
 #: src/data/pc+-file-reader.c:427
 #, c-format
 msgid "Using default encoding %s to read this SPSS/PC+ system file.  For best results, specify an encoding explicitly.  Use SYSFILE INFO with ENCODING=\"DETECT\" to analyze the possible encodings."
-msgstr "Se utilizará la codificación por defecto %s para leer este fichero de sistema SPSS/PC+. Para mejorar los resultados, especificar explícitamente una codificación. Para analizar las codificaciones posibles utilizar SYSFILE INFO con ENCODING=\"DETECT\"."
+msgstr "Se utilizará la codificación predeterminada %s para leer este fichero de sistema SPSS/PC+. Para mejorar los resultados, especificar explícitamente una codificación. Para analizar las codificaciones posibles utilizar SYSFILE INFO con ENCODING=\"DETECT\"."
 
 #: src/data/pc+-file-reader.c:483 src/data/sys-file-reader.c:914
 #, c-format
@@ -669,7 +670,7 @@ msgstr "Error cerrando el archivo de sistema `%s': %s."
 
 #: src/data/pc+-file-reader.c:544
 msgid "This is not an SPSS/PC+ system file."
-msgstr "Este no es un archivo de sistema de SPSS/PC+."
+msgstr "Éste no es un archivo de sistema de SPSS/PC+."
 
 #: src/data/pc+-file-reader.c:548
 #, c-format
@@ -694,7 +695,7 @@ msgstr "El recuento de casos del registro 0 es contradictorio (%u versus %u)."
 #: src/data/pc+-file-reader.c:585
 #, c-format
 msgid "Invalid compression type %u."
-msgstr "Tipo de compresión no vàlido %u."
+msgstr "Tipo de compresión no válido %u."
 
 #: src/data/pc+-file-reader.c:596
 #, c-format
@@ -704,7 +705,7 @@ msgstr "El registro 0 pide %u casos con %u valores por caso (requiriendo al mono
 #: src/data/pc+-file-reader.c:618
 #, c-format
 msgid "Value labels claimed to end at offset %u in labels record but labels record is only %u bytes."
-msgstr "Las etiquetas de valor requieren acabr en la posición %u en el registro de etiquetas pero el registro de etiquetas tiene sólo %u bytes."
+msgstr "Las etiquetas de valor requieren acabar en la posición %u en el registro de etiquetas pero el registro de etiquetas tiene sólo %u bytes."
 
 #: src/data/pc+-file-reader.c:629
 #, c-format
@@ -1001,7 +1002,7 @@ msgstr "OID %d no admitido. Valores SYSMIS serán insertados."
 
 #: src/data/settings.c:391
 msgid "MXWARNS set to zero.  No further warnings will be given even when potentially problematic situations are encountered."
-msgstr "MXWARNS colocado a cero.  NIngún aviso se mostrará en lo sucesivo aunque se den situaciones problemáticas."
+msgstr "MXWARNS colocado a cero.  Ningún aviso se mostrará en lo sucesivo aunque se den situaciones problemáticas."
 
 #: src/data/settings.c:398
 #, c-format
@@ -1054,7 +1055,7 @@ msgstr "Etiqueta de Valor %zu"
 
 #: src/data/sys-file-reader.c:705
 msgid "Extra Product Info"
-msgstr "Informacion Extra del Producto"
+msgstr "Información Extra del Producto"
 
 #: src/data/sys-file-reader.c:718
 #, c-format
@@ -1079,7 +1080,7 @@ msgstr "Valor de recuento para MRSET %zu"
 #: src/data/sys-file-reader.c:772
 #, c-format
 msgid "This system file does not indicate its own character encoding.  Using default encoding %s.  For best results, specify an encoding explicitly.  Use SYSFILE INFO with ENCODING=\"DETECT\" to analyze the possible encodings."
-msgstr "Este fichero de sistema no indica su codificación de carácteres.  Se utilizará la codificación por defecto %s.  Para mejorar los resultados, especifica explícitamente una codificación.   Para analizar codificaciones posibles utiliza SYSFILE INFO con ENCODING=\"DETECT\"."
+msgstr "Este fichero de sistema no indica su codificación de caracteres.  Se utilizará la codificación por defecto %s.  Para mejorar los resultados, especifica explícitamente una codificación.   Para analizar codificaciones posibles utiliza SYSFILE INFO con ENCODING=\"DETECT\"."
 
 #: src/data/sys-file-reader.c:826
 #, c-format
@@ -1399,7 +1400,7 @@ msgstr "Se espera un espacio en la posición %zu tras un texto de %zu-bytes."
 #: src/data/sys-file-reader.c:3425
 #, c-format
 msgid "Wrong ZLIB data header offset %#llx (expected %#llx)."
-msgstr "Posición incorrecta de cabezera de datos ZLIB %#llx (se esperaba %#llx)."
+msgstr "Posición incorrecta de cabecera de datos ZLIB %#llx (se esperaba %#llx)."
 
 #: src/data/sys-file-reader.c:3433
 #, c-format
@@ -1419,7 +1420,7 @@ msgstr "Final del ZLIB trailer (0x%llx) no es el tamaño de archivo (0x%llx)."
 #: src/data/sys-file-reader.c:3514
 #, c-format
 msgid "ZLIB trailer bias (%lld) differs from file header bias (%.2f)."
-msgstr "Sesgo de ZLIB trailer (%lld) difiere respecto al sesgo de cabezera de archivo (%.2f)."
+msgstr "Sesgo de ZLIB trailer (%lld) difiere respecto al sesgo de cabecera de archivo (%.2f)."
 
 #: src/data/sys-file-reader.c:3524
 #, c-format
@@ -1716,7 +1717,7 @@ msgstr "Subcomando %s sólo se puede especificar una vez."
 #: src/language/lexer/lexer.c:362
 #, c-format
 msgid "Required subcommand %s was not specified."
-msgstr "El Subcomando %s requerido no fué especificao."
+msgstr "El Subcomando %s requerido no fue especificado."
 
 #: src/language/lexer/lexer.c:370
 #, c-format
@@ -1803,7 +1804,7 @@ msgstr "`.' inesperado en mitad de un comando"
 #: src/language/lexer/lexer.c:1513
 #, c-format
 msgid "Bad character %s in input"
-msgstr "Caracter erróneo `%s' en la entrada"
+msgstr "Carácter erróneo `%s' en la entrada"
 
 #: src/language/lexer/lexer.c:1608
 #, c-format
@@ -1882,7 +1883,7 @@ msgstr "%s no es una variable de cadena. No será incluida en la lista de variab
 #: src/language/lexer/variable-parser.c:190
 #, c-format
 msgid "Scratch variables (such as %s) are not allowed here."
-msgstr "Las variables de trabajol  (como %s) no están permitidas aquí."
+msgstr "Las variables de trabajo  (como %s) no están permitidas aquí."
 
 #: src/language/lexer/variable-parser.c:194
 #, c-format
@@ -1913,7 +1914,7 @@ msgstr "Cuando se utiliza la palabra clave TO para especificar diversas variable
 #: src/language/lexer/variable-parser.c:384
 #, c-format
 msgid "`%s' cannot be used with TO because it does not end in a digit."
-msgstr "`%s' no puede ser utilitzado con TO por que no acaba con un dígito."
+msgstr "`%s' no puede ser utilizado con TO por que no acaba con un dígito."
 
 #: src/language/lexer/variable-parser.c:392
 #, c-format
@@ -1953,7 +1954,7 @@ msgstr "El destino no puede ser una variable de cadena."
 
 #: src/language/xforms/sample.c:76
 msgid "The sampling factor must be between 0 and 1 exclusive."
-msgstr "El factor de mostreo tiene que estar exclusivamente entre 0 y 1."
+msgstr "El factor de muestreo tiene que estar exclusivamente entre 0 y 1."
 
 #: src/language/xforms/sample.c:96
 #, c-format
@@ -2166,37 +2167,37 @@ msgstr "El VALUE textual del subcomando MDGROUP para el grupo %s tiene %d bytes,
 #: src/language/dictionary/mrsets.c:279
 #, c-format
 msgid "MDGROUP subcommand for group %s specifies LABELSOURCE=VARLABEL but not CATEGORYLABELS=COUNTEDVALUES.  Ignoring LABELSOURCE."
-msgstr "El subcomando MDGROUP para el grupo %s espeficifica LABELSOURCE=VARLABEL pero no CATEGORYLABELS=COUNTEDVALUES. Se ignorará LABELSOURCE."
+msgstr "El subcomando MDGROUP para el grupo %s especifica LABELSOURCE=VARLABEL pero no CATEGORYLABELS=COUNTEDVALUES. Se ignorará LABELSOURCE."
 
 #: src/language/dictionary/mrsets.c:285
 #, c-format
 msgid "MDGROUP subcommand for group %s specifies both LABEL and LABELSOURCE, but only one of these subcommands may be used at a time.  Ignoring LABELSOURCE."
-msgstr "El subcomando MDGROUP para el grupo %s espeficifica LABEL i LABELSOURCE, pero sólo uno de estos subcomandos puede ser utilitzado a la vez. Se ignorará LABELSOURCE."
+msgstr "El subcomando MDGROUP para el grupo %s especifica LABEL i LABELSOURCE, pero sólo uno de estos subcomandos puede ser utilizado a la vez. Se ignorará LABELSOURCE."
 
 #: src/language/dictionary/mrsets.c:325
 #, c-format
 msgid "Variables %s and %s specified as part of multiple dichotomy group %s have the same variable label.  Categories represented by these variables will not be distinguishable in output."
-msgstr "Las variables %s y %s especificadas como parte del grupo dicotomico múltiple %s tienen la misma etiqueta de variable. Las categorias representadas por estas variables no seran distingibles en los resultados."
+msgstr "Las variables %s y %s especificadas como parte del grupo dicotómico múltiple %s tienen la misma etiqueta de variable. Las categorías representadas por estas variables no serán distinguibles en los resultados."
 
 #: src/language/dictionary/mrsets.c:355
 #, c-format
 msgid "Variable %s specified as part of multiple dichotomy group %s (which has CATEGORYLABELS=COUNTEDVALUES) has no value label for its counted value.  This category will not be distinguishable in output."
-msgstr "La variable %s especificada como parte del grupe dicotomico múltiple %s (que tiene CATEGORYLABELS=COUNTEDVALUES) no tiene etiqueta de valor para su valor de recuento. Esta categoria no será distingible en los resultados."
+msgstr "La variable %s especificada como parte del grupo dicotómico múltiple %s (que tiene CATEGORYLABELS=COUNTEDVALUES) no tiene etiqueta de valor para su valor de recuento. Esta categoría no será distinguible en los resultados."
 
 #: src/language/dictionary/mrsets.c:368
 #, c-format
 msgid "Variables %s and %s specified as part of multiple dichotomy group %s (which has CATEGORYLABELS=COUNTEDVALUES) have the same value label for the group's counted value.  These categories will not be distinguishable in output."
-msgstr "Las variables %s y %s especificadas como parte del grupo dicotomico múltiple %s (que tiene CATEGORYLABELS=COUNTEDVALUES) tienen la misma etiqueta de valor para el valor de recuento de los grupos. Estas categorías no será distinguibles en los resultados."
+msgstr "Las variables %s y %s especificadas como parte del grupo dicotómico múltiple %s (que tiene CATEGORYLABELS=COUNTEDVALUES) tienen la misma etiqueta de valor para el valor de recuento de los grupos. Estas categorías no será distinguibles en los resultados."
 
 #: src/language/dictionary/mrsets.c:425
 #, c-format
 msgid "Variables specified on MCGROUP should have the same categories, but %s and %s (and possibly others) in multiple category group %s have different value labels for value %s."
-msgstr "La variables especificadas en MDGROUP deben tener las mismas categorias, pero %s y %s (y posiblemente otras) del grupo de caterorias múltiples %s tiene diferentes etiquetas de valores para el valor %s."
+msgstr "La variables especificadas en MDGROUP deben tener las mismas categorías, pero %s y %s (y posiblemente otras) del grupo de categorías múltiples %s tiene diferentes etiquetas de valores para el valor %s."
 
 #: src/language/dictionary/mrsets.c:483
 #, c-format
 msgid "No multiple response set named %s."
-msgstr "Ningún conjunto multirespuesta llamado %s."
+msgstr "Ningún conjunto multi-respuesta llamado %s."
 
 #: src/language/dictionary/mrsets.c:537
 msgid "The active dataset dictionary does not contain any multiple response sets."
@@ -2220,11 +2221,11 @@ msgstr "Detalles"
 
 #: src/language/dictionary/mrsets.c:564
 msgid "Multiple dichotomy set"
-msgstr "Conjunto de Dicotomias Múltiples"
+msgstr "Conjunto de Dicotomías Múltiples"
 
 #: src/language/dictionary/mrsets.c:565
 msgid "Multiple category set"
-msgstr "Conjunto de Categorias Múltiples"
+msgstr "Conjunto de Categorías Múltiples"
 
 #: src/language/dictionary/mrsets.c:567
 #: src/language/dictionary/split-file.c:84
@@ -2252,7 +2253,7 @@ msgstr "Valor de recuento"
 
 #: src/language/dictionary/mrsets.c:587
 msgid "Category label source"
-msgstr "Fuente de etiquetas de categoria"
+msgstr "Fuente de etiquetas de categoría"
 
 #: src/language/dictionary/mrsets.c:589
 msgid "Variable labels"
@@ -2708,12 +2709,12 @@ msgstr "Cuando se especifica PRESORTED, dar directivas de ordenación con (A) o 
 
 #: src/language/stats/aggregate.c:448
 msgid "expecting aggregation function"
-msgstr "esperando una función agregadora"
+msgstr "esperando una función de agregación"
 
 #: src/language/stats/aggregate.c:460
 #, c-format
 msgid "Unknown aggregation function %s."
-msgstr "Función agregadora desconocida %s."
+msgstr "Función de agregación desconocida %s."
 
 #: src/language/stats/aggregate.c:513
 #, c-format
@@ -2733,7 +2734,7 @@ msgstr "Número de variables de origen (%zu) no coincide con el número de varia
 #: src/language/stats/aggregate.c:557
 #, c-format
 msgid "The value arguments passed to the %s function are out-of-order.  They will be treated as if they had been specified in the correct order."
-msgstr "El valor de los argumentos pasados en la función %s están fuera de orden. Serán tratatos como si hubieran sido especificados en el orden correcto."
+msgstr "El valor de los argumentos pasados en la función %s están fuera de orden. Serán tratados como si hubieran sido especificados en el orden correcto."
 
 #: src/language/stats/aggregate.c:631
 #, c-format
@@ -3221,7 +3222,7 @@ msgstr "Los percentiles deben estar dentro del rango (0, 100)"
 #: src/language/stats/examine.c:2242
 #, c-format
 msgid "%s and %s are mutually exclusive"
-msgstr "%s i %s son mútuamente excluyentes"
+msgstr "%s i %s son mutuamente excluyentes"
 
 #: src/language/stats/factor.c:1048
 msgid "Factor analysis on a single variable is not useful."
@@ -3507,11 +3508,11 @@ msgstr "Análisis multivariado todavía no está implementado."
 
 #: src/language/stats/glm.c:273
 msgid "Only types 1, 2 & 3 sums of squares are currently implemented"
-msgstr "Sólo los tipos 1, 2 & 3 de sumas cadráticas están actualmente implementadas."
+msgstr "Sólo los tipos 1, 2 & 3 de sumas cuadráticas están actualmente implementadas."
 
 #: src/language/stats/glm.c:746
 msgid "Tests of Between-Subjects Effects"
-msgstr "Puebas de Efectos Entre-Sujetos"
+msgstr "Pruebas de Efectos Entre-Sujetos"
 
 #: src/language/stats/glm.c:759
 #, c-format
@@ -4055,7 +4056,7 @@ msgstr "Pruebas de contrate"
 
 #: src/language/stats/oneway.c:1387
 msgid "Value of Contrast"
-msgstr "Valor de constraste"
+msgstr "Valor de contraste"
 
 #: src/language/stats/oneway.c:1389 src/language/stats/regression.c:840
 #: src/language/stats/t-test-indep.c:292
@@ -4337,7 +4338,7 @@ msgstr "Sensibilidad"
 
 #: src/language/stats/roc.c:1137 src/output/charts/roc-chart-cairo.c:37
 msgid "1 - Specificity"
-msgstr "1 - Especificitado"
+msgstr "1 - Especificidad"
 
 #: src/language/stats/regression.c:376
 msgid "REGRESSION with SAVE ignores TEMPORARY.  Temporary transformations will be made permanent."
@@ -4370,7 +4371,7 @@ msgstr "R Cuadrada Ajustada"
 
 #: src/language/stats/regression.c:787
 msgid "Std. Error of the Estimate"
-msgstr "Error estándard del Estimador"
+msgstr "Error estándar del Estimador"
 
 #: src/language/stats/regression.c:792
 #, c-format
@@ -4609,7 +4610,7 @@ msgstr "Este comando no puede ser utilizado después de TEMPORARY cuando el arch
 
 #: src/language/data-io/combine-files.c:255
 msgid "Multiple IN subcommands for a single FILE or TABLE."
-msgstr "Múltiples subcomandos IN  per a un único FILE o TABLE."
+msgstr "Múltiples subcomandos IN  para un único FILE o TABLE."
 
 #: src/language/data-io/combine-files.c:308
 #, c-format
@@ -4931,7 +4932,7 @@ msgstr "Valor de %s debe ser mayor o igual a 1."
 
 #: src/language/data-io/get-data.c:515
 msgid "Ignoring obsolete IMPORTCASES subcommand.  (N OF CASES or SAMPLE may be used to substitute.)"
-msgstr "Ignorando la subinstrucción obsoleta IMPORTCASES.  (N OF CASES o SAMPLE deben usarse como substituto.)"
+msgstr "Ignorando el subcomando obsoleto IMPORTCASES.  (N OF CASES o SAMPLE deben usarse como substituto.)"
 
 #: src/language/data-io/get-data.c:562
 msgid "In compatible syntax mode, the QUALIFIER string must contain exactly one character."
@@ -4974,7 +4975,7 @@ msgstr "REREAD: Los números de columna tienen que ser números positivos finito
 #: src/language/data-io/list.c:223
 #, c-format
 msgid "The first case (%ld) specified precedes the last case (%ld) specified.  The values will be swapped."
-msgstr "El primer caso (%ld) especificado precede al último caso (%ld) especificado.  Los valores se intercanviarán."
+msgstr "El primer caso (%ld) especificado precede al último caso (%ld) especificado.  Los valores se intercambiarán."
 
 #: src/language/data-io/list.c:232
 #, c-format
@@ -5694,7 +5695,7 @@ msgstr "Normal Esperada"
 #: src/output/charts/np-plot-cairo.c:64
 #, c-format
 msgid "Detrended Normal Q-Q Plot of %s"
-msgstr "Gráfica Normal Adireccional Q-Q de %s"
+msgstr "Gráfica Normal Q-Q sin tendencias de %s"
 
 #: src/output/charts/np-plot-cairo.c:66
 msgid "Dev from Normal"
@@ -5830,7 +5831,7 @@ msgstr ""
 "\n"
 "Opciones de salida:\n"
 "  -o, --output=FILE         salida a FILE, format por defecto según el nombre de FILE\n"
-"  -O format=FORMAT          sobreescribir el formato por el previo -o\n"
+"  -O format=FORMAT          sobrescribir el formato por el previo -o\n"
 "  -O OPTION=VALUE           establecer opciones de salida a las previas personalizadas -o\n"
 "  -O device={terminal|listing}  sustituir el tipo de dispositivo por el previo -o\n"
 "  -e, --error-file=FILE     añade errores, advertencias, y notas a FILE\n"
@@ -5840,7 +5841,7 @@ msgstr ""
 "Opciones de lenguaje:\n"
 "  -I, --include=DIR         añadir DIR a la ruta de búsqueda\n"
 "  -I-, --no-include         limpiar la ruta de búsqueda\n"
-"  -r, --no-statrc           desactivar el archivo que ejectuta rc al inicio\n"
+"  -r, --no-statrc           desactivar el archivo que ejecuta rc al inicio\n"
 "  -a, --algorithm={compatible|enhanced}\n"
 "                            establecer a `compatible' si se quiere una salida\n"
 "                            calculada a partir de algoritmos rotos\n"
@@ -5946,7 +5947,7 @@ msgid ""
 "This assistant will guide you through the process of importing data into PSPP from a text file with one line per case,  in which fields are separated by tabs, commas, or other delimiters.\n"
 "\n"
 msgstr ""
-"Este asistente te quiará a lo largo del proceso de importar datos en PSPP desde un archivo de texto con una línea por caso,  en el que los campos estan separados por tabuladores, comas, u otros delimitadores.\n"
+"Este asistente te guiará a lo largo del proceso de importar datos en PSPP desde un archivo de texto con una línea por caso,  en el que los campos están separados por tabuladores, comas, u otros delimitadores.\n"
 "\n"
 
 #: src/ui/gui/psppire-import-assistant.c:1158
@@ -5967,8 +5968,8 @@ msgstr[1] "El archivo seleccionado contiene aproximadamente %lu líneas de texto
 #, c-format
 msgid "Only the first %zu line of the file will be shown for preview purposes in the following screens.  "
 msgid_plural "Only the first %zu lines of the file will be shown for preview purposes in the following screens.  "
-msgstr[0] "Únicamente la primera %zu líneas del archivo se previsualizaran en las siguientes pantallas.  "
-msgstr[1] "Únicamente las primeras %zu líneas del archivo se previsualizaran en las siguientes pantallas.  "
+msgstr[0] "Únicamente la primera %zu líneas del archivo se pre-visualizaran en las siguientes pantallas.  "
+msgstr[1] "Únicamente las primeras %zu líneas del archivo se pre-visualizaran en las siguientes pantallas.  "
 
 #: src/ui/gui/psppire-import-assistant.c:1181
 msgid "You may choose below how much of the file should actually be imported."
@@ -6432,7 +6433,7 @@ msgstr "Anova"
 
 #: src/ui/gui/psppire-dialog-action-regression.c:43
 msgid "Show the analysis of variance table"
-msgstr "Mostrar la tabla de análisis de la variancia"
+msgstr "Mostrar la tabla de análisis de la varianza"
 
 #: src/ui/gui/psppire-dialog-action-regression.c:44
 msgid "Bcov"
@@ -6440,7 +6441,7 @@ msgstr "Bcov"
 
 #: src/ui/gui/psppire-dialog-action-regression.c:44
 msgid "Show the variance coefficient matrix"
-msgstr "Mostrar la matriz de coeficientes de variancia"
+msgstr "Mostrar la matriz de coeficientes de varianza"
 
 #: src/ui/gui/psppire-dialog-action-select.c:88
 #, c-format
@@ -6592,7 +6593,7 @@ msgstr "Guardar sintaxis"
 
 #: src/ui/gui/psppire-syntax-window.c:575 src/ui/gui/psppire-window.c:678
 msgid "Syntax Files (*.sps) "
-msgstr "Archivos de Sintàxis (*.sps) "
+msgstr "Archivos de Sintaxis (*.sps) "
 
 #: src/ui/gui/psppire-syntax-window.c:879
 msgid "Syntax Editor"
@@ -6677,7 +6678,7 @@ msgstr "¿Guardar los cambios en `%s' antes de salir?"
 #: src/ui/gui/psppire-window.c:465
 #, c-format
 msgid "If you don't save, changes from the last %ld seconds will be permanently lost."
-msgstr "Si no se guarda ahora, los cambios de los últims %ld segundos se perderan permanentemente."
+msgstr "Si no se guarda ahora, los cambios de los últimos %ld segundos se perderán permanentemente."
 
 #: src/ui/gui/psppire-window.c:469
 msgid "Close _without saving"
@@ -6689,7 +6690,7 @@ msgstr "Abrir"
 
 #: src/ui/gui/psppire-window.c:658
 msgid "Data and Syntax Files"
-msgstr "Ficheros de Datos y Sintaxsi"
+msgstr "Ficheros de Datos y Sintaxis"
 
 #: src/ui/gui/psppire-window.c:667
 msgid "System Files (*.sav, *.zsav)"
@@ -6737,7 +6738,7 @@ msgstr "sólo se pueden convertir ficheros de datos encriptados al formato sps"
 #: utilities/pspp-convert.c:202
 #, c-format
 msgid "%s: unknown output format (use -O option)"
-msgstr "%s: formato de archivo desconocid0 (usar la opción -O)"
+msgstr "%s: formato de archivo desconocido (usar la opción -O)"
 
 #: utilities/pspp-convert.c:219
 #, c-format
@@ -8449,7 +8450,7 @@ msgstr "Eliminado"
 
 #: src/ui/gui/select-cases.ui:630
 msgid "Unselected Cases Are"
-msgstr "Los casos no seleccionados són"
+msgstr "Los casos no seleccionados son"
 
 #: src/ui/gui/select-cases.ui:676
 msgid "Select Cases: Random Sample"
@@ -8465,7 +8466,7 @@ msgstr "Opciones"
 
 #: src/ui/gui/t-test.ui:46
 msgid "Exclude cases _analysis by analysis"
-msgstr "Excluir casos _análisis por análìsis"
+msgstr "Excluir casos _análisis por análisis"
 
 #: src/ui/gui/t-test.ui:130
 msgid "One - Sample T Test"
@@ -8493,7 +8494,7 @@ msgstr "<b>Variables</b>"
 
 #: src/ui/gui/text-data-import.ui:133
 msgid "<b>Data Preview</b>"
-msgstr "<b>Previsualización de datos</b>"
+msgstr "<b>Pre-visualización de datos</b>"
 
 #: src/ui/gui/text-data-import.ui:162
 msgid ""
@@ -8501,9 +8502,9 @@ msgid ""
 "\n"
 "\tThe selected file contains N lines of text.  Only the first M of these will be shown for preview purposes in the following screens.  You may choose below how much of the file should actually be imported."
 msgstr ""
-"Este asistente te quiará a lo largo del proceso de importar datos al PSPP desde un archivo de texto con una línea por caso,  en el cual los campos están separados por tabuladores, comas, u otros delimitadores.\n"
+"Este asistente te guiará a lo largo del proceso de importar datos al PSPP desde un archivo de texto con una línea por caso,  en el cual los campos están separados por tabuladores, comas, u otros delimitadores.\n"
 "\n"
-"\tEl archivo seleccionado contiene N líneas de texto.  Solo las primeras M se mostrarán como previsualización en las pantallas siguientes.  Puedes escoger a continuación qué parte del archivo ha de ser importado."
+"\tEl archivo seleccionado contiene N líneas de texto.  Solo las primeras M se mostrarán como pre-visualización en las pantallas siguientes.  Puedes escoger a continuación qué parte del archivo ha de ser importado."
 
 #: src/ui/gui/text-data-import.ui:233
 msgid "All cases"
@@ -8527,7 +8528,7 @@ msgstr "Punto y coma (;)"
 
 #: src/ui/gui/text-data-import.ui:354
 msgid "P_ipe (|)"
-msgstr "Tub (|)"
+msgstr "Barra (|)"
 
 #: src/ui/gui/text-data-import.ui:370
 msgid "H_yphen (-)"
@@ -8567,7 +8568,7 @@ msgstr "<b>Comillas</b>"
 
 #: src/ui/gui/text-data-import.ui:575
 msgid "<b>Fields Preview</b>"
-msgstr "<b>Previsualizar Campos</b>"
+msgstr "<b>Pre-visualizar Campos</b>"
 
 #: src/ui/gui/text-data-import.ui:598
 msgid "Enter below the sheet number and the cell range which you wish to import."
@@ -8697,7 +8698,7 @@ msgstr "_Fuentes..."
 
 #: src/ui/gui/data-editor.ui:142
 msgid "_Grid Lines"
-msgstr "Línias divisorias"
+msgstr "Líneas divisorias"
 
 #: src/ui/gui/data-editor.ui:148
 msgid "Value _Labels"
