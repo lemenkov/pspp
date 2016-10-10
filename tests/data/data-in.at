@@ -25,7 +25,7 @@ EOF
 #! /usr/bin/perl
 use strict;
 use warnings;
-do 'my-rand.pl';
+do './my-rand.pl';
 my_rand (1) foreach 1...10000;
 our $seed;
 die $seed if $seed != 1043618065;
@@ -39,7 +39,7 @@ date_in () {
 use strict;
 use warnings;
 
-do 'my-rand.pl';
+do './my-rand.pl';
 
 my ($fmt_name, @templates) = @ARGV;
 
@@ -198,7 +198,7 @@ time_in () {
 use strict;
 use warnings;
 
-do 'my-rand.pl';
+do './my-rand.pl';
 
 my ($skip, $fmt_name, @templates) = @ARGV;
 
@@ -287,7 +287,7 @@ use POSIX;
 use strict;
 use warnings;
 
-do 'my-rand.pl';
+do './my-rand.pl';
 
 for my $number (0, 1, .5, .015625, 123) {
     my ($base_exp) = floor ($number ? log10 ($number) : 0);
