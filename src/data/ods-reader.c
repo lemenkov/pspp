@@ -34,12 +34,24 @@
 
 #if !ODF_READ_SUPPORT
 
-struct casereader *
-ods_open_reader (const struct spreadsheet_read_options *opts, 
-		 struct dictionary **dict)
+struct spreadsheet *
+ods_probe (const char *filename, bool report_errors)
 {
-  msg (ME, _("Support for %s files was not compiled into this installation of PSPP"), "OpenDocument");
+  if (report_errors)
+    msg (ME, _("Support for %s files was not compiled into this installation of PSPP"), "OpenDocument");
 
+  return NULL;
+}
+
+const char *
+ods_get_sheet_name (struct spreadsheet *s, int n)
+{
+  return NULL;
+}
+
+char *
+ods_get_sheet_range (struct spreadsheet *s, int n)
+{
   return NULL;
 }
 

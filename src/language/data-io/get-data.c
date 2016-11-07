@@ -46,21 +46,6 @@
 #define _(msgid) gettext (msgid)
 #define N_(msgid) (msgid)
 
-
-#ifdef ODF_READ_SUPPORT
-static const bool odf_read_support = true;
-#else
-static const bool odf_read_support = false;
-struct spreadsheet *ods_probe (const char *filename, bool report_errors){}
-#endif
-
-#ifdef GNM_READ_SUPPORT
-static const bool gnm_read_support = true;
-#else
-static const bool gnm_read_support = false;
-struct spreadsheet *gnumeric_probe (const char *filename, bool report_errors){}
-#endif
-
 static bool parse_spreadsheet (struct lexer *lexer, char **filename,
 			       struct spreadsheet_read_options *opts);
 
@@ -113,14 +98,18 @@ cmd_get_data (struct lexer *lexer, struct dataset *ds)
 	goto error;
 
       struct spreadsheet *spreadsheet = NULL;
-      if ( gnm_read_support && 0 == strncasecmp (tok, "GNM", 3))
+      if ( 0 == strncasecmp (tok, "GNM", 3))
         spreadsheet = gnumeric_probe (filename, true);
-      else if ( odf_read_support && 0 == strncasecmp (tok, "ODS", 3))
+      else if ( 0 == strncasecmp (tok, "ODS", 3))
         spreadsheet = ods_probe (filename, true);
 
-      free (filename);
       if (spreadsheet == NULL)
-        goto error;
+        {
+          msg (SE, _("error reading file `%s'"), filename);
+          free (filename);
+          goto error;
+        }
+      free (filename);
 
       struct casereader *reader = spreadsheet_make_reader (spreadsheet, &opts);
       if (reader)
