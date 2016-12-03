@@ -947,37 +947,37 @@ npar_binomial (struct lexer *lexer, struct dataset *ds,
     if (!lex_force_match (lexer, T_EQUALS))
       return 0;
 
-    {
-      if (parse_variables_const_pool (lexer, specs->pool, dataset_dict (ds),
-				      &tp->vars, &tp->n_vars,
-				      PV_NUMERIC | PV_NO_SCRATCH | PV_NO_DUPLICATE) )
-	{
-	  if (lex_match (lexer, T_LPAREN))
-	    {
-	      if (! lex_force_num (lexer))
-		return 2;
-	      btp->category1 = lex_number (lexer);
-      	      lex_get (lexer);
-	      if ( lex_match (lexer, T_COMMA))
-		{
-		  if ( ! lex_force_num (lexer) ) return 2;
-		  btp->category2 = lex_number (lexer);
-		  lex_get (lexer);
-		}
-	      else
-		{
-      		  btp->cutpoint = btp->category1;
-		}
+  {
+    if (parse_variables_const_pool (lexer, specs->pool, dataset_dict (ds),
+                                    &tp->vars, &tp->n_vars,
+                                    PV_NUMERIC | PV_NO_SCRATCH | PV_NO_DUPLICATE) )
+      {
+        if (lex_match (lexer, T_LPAREN))
+          {
+            if (! lex_force_num (lexer))
+              return 2;
+            btp->category1 = lex_number (lexer);
+            lex_get (lexer);
+            if ( lex_match (lexer, T_COMMA))
+              {
+                if ( ! lex_force_num (lexer) ) return 2;
+                btp->category2 = lex_number (lexer);
+                lex_get (lexer);
+              }
+            else
+              {
+                btp->cutpoint = btp->category1;
+              }
 
-	      if (! lex_force_match (lexer, T_RPAREN))
-		return 0;
-	    }
-	}
-      else
-	{
-	  return 2;
-	}
-    }
+            if (! lex_force_match (lexer, T_RPAREN))
+              return 0;
+          }
+      }
+    else
+      {
+        return 2;
+      }
+  }
 
   specs->n_tests++;
   specs->test = pool_realloc (specs->pool,
