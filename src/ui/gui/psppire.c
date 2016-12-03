@@ -145,31 +145,7 @@ struct icon_size
   size_t n_sizes;  /* The number of items in the array below. */
   const GtkIconSize *usage; /* An array determining for what the icon set is used */
 };
-
-static const GtkIconSize menus[] = {GTK_ICON_SIZE_MENU};
-static const GtkIconSize large_toolbar[] = {GTK_ICON_SIZE_LARGE_TOOLBAR};
-static const GtkIconSize small_toolbar[] = {GTK_ICON_SIZE_SMALL_TOOLBAR};
-
-
-/* We currently have three icon sets viz: 16x16, 24x24 and 32x32
-   We use the 16x16 for menus, the 32x32 for the large_toolbars and 
-   the 24x24 for small_toolbars.
-
-   The order of this array is pertinent.  The icons in the sets occuring
-   earlier in the array will be used a the wildcard (default) icon size,
-   if such an icon exists.
-*/
-static const struct icon_size sizemap[] = 
-  {
-    {24,  sizeof (small_toolbar) / sizeof (GtkIconSize), small_toolbar},
-    {16,  sizeof (menus) / sizeof (GtkIconSize), menus},
-    {32,  sizeof (large_toolbar) / sizeof (GtkIconSize), large_toolbar}
-  };
-
-
-
 
-
 static void
 handle_msg (const struct msg *m_, void *lexer_)
 {
