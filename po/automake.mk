@@ -94,3 +94,11 @@ po_CLEAN:
 		rm -f $(POFILES); \
 	fi
 CLEAN_LOCAL += po_CLEAN
+
+WGET = wget
+po-update:
+	cd $(srcdir) && rm -f $(POFILES)
+	cd $(srcdir)/po && \
+	for po in `echo '$(POFILES)' | sed 's,po/,,g'`; do \
+	   $(WGET) https://translationproject.org/latest/pspp/$$po; \
+        done
