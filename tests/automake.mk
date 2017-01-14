@@ -427,6 +427,7 @@ AUTOM4TE = $(SHELL) $(srcdir)/build-aux/missing --run autom4te
 AUTOTEST = $(AUTOM4TE) --language=autotest
 $(TESTSUITE): package.m4 $(srcdir)/tests/testsuite.at $(TESTSUITE_AT) 
 	$(AM_V_GEN)$(AUTOTEST) -I '$(srcdir)' $@.at | $(SED) 's/@<00A0>@/ /g' > $@.tmp
+	test -s $@.tmp
 	$(AM_V_at)mv $@.tmp $@
 
 # The `:;' works around a Bash 3.2 bug when the output is not writeable.
