@@ -18,7 +18,7 @@ dnl read the first token of the next command.
 dnl
 dnl (If this reecurs, the the test will run forever.)
 AT_SETUP([FINISH executes immediately])
-AT_CHECK([(echo "FINISH."; while :; do echo; done) | pspp])
+AT_CHECK([(echo "FINISH."; while echo ; do true; done) | pspp], [0], [ignore], [ignore])
 AT_CLEANUP
 
 AT_BANNER([ERASE])
