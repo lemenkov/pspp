@@ -641,7 +641,36 @@ Percentiles,50 (Median),2.00
 ])
 AT_CLEANUP
 
+AT_SETUP([FREQUENCIES variance])
+AT_DATA([variance.sps], [dnl
+data list notable list /forename (A12) height.
+begin data.
+Ahmed 188
+bertram 167
+Catherine 134
+David 109
+end data.
 
+FREQUENCIES
+   /VARIABLES = height
+   /STATISTICS = VARIANCE.
+])
+
+AT_CHECK([pspp variance.sps -O format=csv], [0],  [dnl
+Table: height
+Value Label,Value,Frequency,Percent,Valid Percent,Cum Percent
+,109.00,1,25.00,25.00,25.00
+,134.00,1,25.00,25.00,50.00
+,167.00,1,25.00,25.00,75.00
+,188.00,1,25.00,25.00,100.00
+Total,,4,100.0,100.0,
+
+Table: height
+N,Valid,4
+,Missing,0
+Variance,,1223.00
+])
+AT_CLEANUP
 
 AT_SETUP([FREQUENCIES default statistics])
 AT_DATA([median.sps], [dnl
