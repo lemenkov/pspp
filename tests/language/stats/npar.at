@@ -1034,6 +1034,52 @@ height,98.0000,218.0000,-.6020,.547
 AT_CLEANUP
 
 
+AT_SETUP([NPAR TESTS Mann-Whitney Multiple])
+dnl Check for a bug where the ranks were inappropriately allocated, when
+dnl multiple variables were tested and MISSING=ANALYSIS chosen.
+
+cp $abs_srcdir/language/mann-whitney.txt .
+
+AT_DATA([npar-mann-whitney.sps], [dnl
+SET FORMAT     = F11.3
+
+DATA LIST NOTABLE FILE='mann-whitney.txt'
+     LIST /I002_01 I002_02 I002_03 I002_04 sum_HL *.
+
+VARIABLE LABELS
+  I002_01 'IOS: Familie'
+  I002_02 'IOS: Freunde'
+  I002_03 'IOS: Partner*in'
+  I002_04 'IOS: Bekannte'.
+  
+MISSING VALUES I002_01 I002_02 I002_03 I002_04 (-9 -1).
+
+NPAR TESTS
+    /MISSING=ANALYSIS
+    /M-W=I002_01 I002_02 I002_03 I002_04 BY sum_HL (0 1).
+])
+
+AT_CHECK([pspp -O format=csv npar-mann-whitney.sps], [0], [dnl
+Table: Ranks
+,N,,,Mean Rank,,Sum of Ranks,
+,.000,1.000,Total,.000,1.000,.000,1.000
+IOS: Familie,114.000,115.000,229.000,110.018,119.939,12542.000,13793.000
+IOS: Freunde,115.000,115.000,230.000,108.339,122.661,12459.000,14106.000
+IOS: Partner*in,97.000,91.000,188.000,95.351,93.593,9249.000,8517.000
+IOS: Bekannte,115.000,115.000,230.000,111.065,119.935,12772.500,13792.500
+
+Table: Test Statistics
+,Mann-Whitney U,Wilcoxon W,Z,Asymp. Sig. (2-tailed)
+IOS: Familie,5987.000,12542.000,-1.167,.243
+IOS: Freunde,5789.000,12459.000,-1.674,.094
+IOS: Partner*in,4331.000,8517.000,-.245,.807
+IOS: Bekannte,6102.500,12772.500,-1.046,.296
+])
+
+AT_CLEANUP
+
+
+
 AT_SETUP([NPAR TESTS Cochran])
 AT_DATA([npar-cochran.sps], [dnl
 set format f11.3.

@@ -107,7 +107,10 @@ mann_whitney_execute (const struct dataset *ds,
 				       CONST_CAST (struct n_sample_test *, nst),
 				       NULL);
 
-      
+      reader = casereader_create_filter_missing (reader, &var, 1,
+						 exclude,
+						 NULL, NULL);
+
       reader = sort_execute_1var (reader, var);
 
       rr = casereader_create_append_rank (reader, var,
@@ -121,9 +124,6 @@ mann_whitney_execute (const struct dataset *ds,
 	  const union value *group = case_data (c, nst->indep_var);
 	  const size_t group_var_width = var_get_width (nst->indep_var);
 	  const double rank = case_data_idx (c, rank_idx)->f;
-
-	  if ( var_is_value_missing (var, val, exclude))
-	    continue;
 
 	  if ( value_equal (group, &nst->val1, group_var_width))
 	    {
