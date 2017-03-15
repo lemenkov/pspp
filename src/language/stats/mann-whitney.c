@@ -120,7 +120,6 @@ mann_whitney_execute (const struct dataset *ds,
 
       for (; (c = casereader_read (rr)); case_unref (c))
 	{
-	  const union value *val = case_data (c, var);
 	  const union value *group = case_data (c, nst->indep_var);
 	  const size_t group_var_width = var_get_width (nst->indep_var);
 	  const double rank = case_data_idx (c, rank_idx)->f;
