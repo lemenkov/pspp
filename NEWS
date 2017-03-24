@@ -6,6 +6,9 @@ Please send PSPP bug reports to bug-gnu-pspp@gnu.org.
 
 Changes from 0.10.2 to 0.10.4:
 
+ * A bug which could cause the HTML driver to go into a tight loop
+   has been fixed.
+
  * An error in the FREQUENCIES procedure, where the word "Mean" was
    printed when "Variance" was appropriate has been fixed.
 

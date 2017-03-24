@@ -394,6 +394,7 @@ TESTSUITE_AT = \
 	tests/math/randist.at \
 	tests/output/ascii.at \
 	tests/output/charts.at \
+	tests/output/html.at \
 	tests/output/output.at \
 	tests/output/paper-size.at \
 	tests/output/render.at \

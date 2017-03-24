@@ -1,5 +1,5 @@
 /* PSPP - a program for statistical analysis.
-   Copyright (C) 1997-9, 2000, 2009, 2010, 2011, 2012, 2013, 2014 Free Software Foundation, Inc.
+   Copyright (C) 1997-9, 2000, 2009, 2010, 2011, 2012, 2013, 2014, 2017 Free Software Foundation, Inc.
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -407,7 +407,6 @@ html_output_table (struct html_driver *html, const struct table_item *item)
   for (y = 0; y < table_nr (t); y++)
     {
       int x;
-
       for (x = 0; x < table_nc (t); )
         {
           const struct cell_contents *c;
@@ -415,7 +414,7 @@ html_output_table (struct html_driver *html, const struct table_item *item)
 
           table_get_cell (t, x, y, &cell);
           if (y != cell.d[TABLE_VERT][0])
-            continue;
+            goto next_0;
 
           for (c = cell.contents; c < &cell.contents[cell.n_contents]; c++)
             {
@@ -432,6 +431,8 @@ html_output_table (struct html_driver *html, const struct table_item *item)
                                  strlen (c->footnotes[i]), " ", "<BR>");
                 }
             }
+
+	next_0:
           x = cell.d[TABLE_HORZ][1];
           table_cell_free (&cell);
         }
@@ -465,7 +466,7 @@ html_output_table (struct html_driver *html, const struct table_item *item)
 
           table_get_cell (t, x, y, &cell);
           if (x != cell.d[TABLE_HORZ][0] || y != cell.d[TABLE_VERT][0])
-            continue;
+            goto next_1;
 
           /* Output <TD> or <TH> tag. */
           is_header = (y < table_ht (t)
@@ -570,6 +571,7 @@ html_output_table (struct html_driver *html, const struct table_item *item)
           /* Output </TH> or </TD>. */
           fprintf (html->file, "</%s>\n", tag);
 
+	next_1:
           x = cell.d[TABLE_HORZ][1];
           table_cell_free (&cell);
         }
