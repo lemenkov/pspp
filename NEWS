@@ -6,6 +6,9 @@ Please send PSPP bug reports to bug-gnu-pspp@gnu.org.
 
 Changes from 0.10.2 to 0.10.4:
 
+ * An error in the FREQUENCIES procedure, where the word "Mean" was
+   printed when "Variance" was appropriate has been fixed.
+
  * The ncurses library is no longer required or used.
 
  * A bug where the Mann-Whitney test would give misleading results
