@@ -6,6 +6,8 @@ Please send PSPP bug reports to bug-gnu-pspp@gnu.org.
 
 Changes from 0.10.2 to 0.10.4:
 
+ * The ncurses library is no longer required or used.
+
  * A bug where the Mann-Whitney test would give misleading results
    if run on multiple variables and MISSING=ANALAYSIS was specified
    has been fixed.

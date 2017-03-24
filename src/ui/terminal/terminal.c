@@ -1,5 +1,5 @@
 /* PSPP - a program for statistical analysis.
-   Copyright (C) 1997-9, 2000, 2006, 2007, 2010 Free Software Foundation, Inc.
+   Copyright (C) 1997-9, 2000, 2006, 2007, 2010, 2017 Free Software Foundation, Inc.
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -27,16 +27,18 @@
 #include "gl/error.h"
 
 #include "gettext.h"
+
+
+#ifdef HAVE_TERMIOS_H
+# include <termios.h>
+#endif
+
+#ifdef GWINSZ_IN_SYS_IOCTL
+# include <sys/ioctl.h>
+#endif
+
 #define _(msgid) gettext (msgid)
 
-/* Code that interfaces to ncurses.  This must be at the very end
-   of this file because curses.h redefines "bool" on some systems
-   (e.g. OpenBSD), causing declaration mismatches with functions
-   that have parameters or return values of type "bool". */
-#if LIBNCURSES_USABLE
-#include <curses.h>
-#include <term.h>
-#endif
 
 /* Determines the size of the terminal, if possible, or at least
    takes an educated guess. */
@@ -46,31 +48,24 @@ terminal_check_size (void)
   int view_width = 0;
   int view_length = 0;
 
-#if LIBNCURSES_USABLE
-  if (getenv ("TERM") != NULL)
+  struct winsize ws;
+  if (0 == ioctl (0, TIOCGWINSZ, &ws))
     {
-      char term_buffer [16384];
-
-      if (tgetent (term_buffer, getenv ("TERM")) > 0)
-        {
-          if (tgetnum ("li") > 0)
-            view_length = tgetnum ("li");
-          if (tgetnum ("co") > 1)
-            view_width = tgetnum ("co") - 1;
-        }
-      else
-        error (0, 0, _("could not access definition for terminal `%s'"),
-               getenv ("TERM"));
+      view_width = ws.ws_col;
+      view_length = ws.ws_row;
     }
-#endif
+  else
+    {
+      if (view_width <= 0 && getenv ("COLUMNS") != NULL)
+	view_width = atoi (getenv ("COLUMNS"));
 
-  if (view_width <= 0 && getenv ("COLUMNS") != NULL)
-    view_width = atoi (getenv ("COLUMNS"));
+      if (view_length <= 0 && getenv ("LINES") != NULL)
+	view_length = atoi (getenv ("LINES"));
+    }
+
   if (view_width > 0)
     settings_set_viewwidth (view_width);
 
-  if (view_length <= 0 && getenv ("LINES") != NULL)
-    view_length = atoi (getenv ("LINES"));
   if (view_length > 0)
     settings_set_viewlength (view_length);
 }
