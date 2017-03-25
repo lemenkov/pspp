@@ -88,7 +88,7 @@ struct _PsppireDataWindow
   GtkWidget *mi_insert_case;
   GtkWidget *mi_find;
   GtkWidget *mi_find_separator;
-
+  GtkWidget *mi_options;
 
   GtkWidget *mi_edit_separator ;
   GtkWidget *mi_cut;

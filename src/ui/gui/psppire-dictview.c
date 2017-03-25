@@ -1,5 +1,5 @@
 /* PSPPIRE - a graphical user interface for PSPP.
-   Copyright (C) 2009, 2010, 2011, 2012, 2013  Free Software Foundation
+   Copyright (C) 2009, 2010, 2011, 2012, 2013, 2017  Free Software Foundation
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -21,6 +21,7 @@
 #include "psppire-dict.h"
 #include "dict-display.h"
 #include "psppire-conf.h"
+#include "options-dialog.h"
 #include <data/format.h>
 #include <libpspp/i18n.h>
 #include "helper.h"
@@ -106,7 +107,6 @@ filter_variables (GtkTreeModel *tmodel, GtkTreeIter *titer, gpointer data)
   return predicate (var);
 }
 
-
 static gint
 unsorted (GtkTreeModel *model,
      GtkTreeIter *a,
@@ -154,6 +154,36 @@ sort_by_label (GtkTreeModel *model,
   return g_strcmp0 (var_get_label (var_a), var_get_label (var_b));
 }
 
+
+static gint
+default_sort (GtkTreeModel *model,
+     GtkTreeIter *a,
+     GtkTreeIter *b,
+     gpointer user_data)
+{
+  int what = -1;
+  psppire_conf_get_enum (psppire_conf_new (), "VariableLists", "sort-order",
+			 PSPP_TYPE_OPTIONS_VAR_ORDER, &what);
+
+  switch (what)
+    {
+    default:
+      return unsorted (model, a, b, user_data);
+      break;
+    case PSPP_OPTIONS_VAR_ORDER_NAME:
+      return sort_by_name (model, a, b, user_data);
+      break;
+    case PSPP_OPTIONS_VAR_ORDER_LABEL:
+      return sort_by_label (model, a, b, user_data);
+      break;
+    }
+
+  g_assert_not_reached ();
+}
+
+
+
+
 static void
 set_model (PsppireDictView *dict_view)
 {
@@ -163,7 +193,7 @@ set_model (PsppireDictView *dict_view)
     return;
 
   dict_view->sorted_model = gtk_tree_model_sort_new_with_model (GTK_TREE_MODEL (dict_view->dict));
-  gtk_tree_sortable_set_default_sort_func (GTK_TREE_SORTABLE (dict_view->sorted_model), unsorted, dict_view, 0);
+  gtk_tree_sortable_set_default_sort_func (GTK_TREE_SORTABLE (dict_view->sorted_model), default_sort, dict_view, 0);
   gtk_tree_sortable_set_sort_column_id (GTK_TREE_SORTABLE (dict_view->sorted_model), 
 					GTK_TREE_SORTABLE_DEFAULT_SORT_COLUMN_ID, GTK_SORT_ASCENDING);
 
@@ -307,7 +337,24 @@ psppire_dict_view_base_finalize (PsppireDictViewClass *class,
 
 }
 
+static gboolean
+use_labels (PsppireDictView *dv)
+{
+  gboolean disp_labels = TRUE;
 
+  if (gtk_check_menu_item_get_inconsistent (GTK_CHECK_MENU_ITEM
+					    (dv->override_button)))
+    {
+      psppire_conf_get_boolean (psppire_conf_new (),
+				"VariableLists", "display-labels", &disp_labels);
+    }
+  else
+    {
+      disp_labels = gtk_check_menu_item_get_active (GTK_CHECK_MENU_ITEM
+						    (dv->override_button));
+    }
+  return disp_labels;
+}
 
 
 /* A GtkTreeCellDataFunc which renders the name and/or label of the
@@ -329,7 +376,7 @@ var_description_cell_data_func (GtkTreeViewColumn *col,
   gtk_tree_model_get (model,
 		      &iter, DICT_TVM_COL_VAR, &var, -1);
 
-  if ( var_has_label (var) && dv->prefer_labels)
+  if (var_has_label (var) && use_labels (dv))
     {
       gchar *text = g_markup_printf_escaped (
 				     "<span stretch=\"condensed\">%s</span>",
@@ -453,7 +500,7 @@ set_tooltip_for_variable (GtkTreeView  *treeview,
 
     get_base_model (tree_model, NULL, &m, NULL);
 
-    if ( PSPPIRE_DICT_VIEW (treeview)->prefer_labels )
+    if ( use_labels (PSPPIRE_DICT_VIEW (treeview)))
       tip = var_get_name (var);
     else
       tip = var_get_label (var);
@@ -481,8 +528,15 @@ toggle_label_preference (GtkCheckMenuItem *checkbox, gpointer data)
 {
   PsppireDictView *dv = PSPPIRE_DICT_VIEW (data);
 
-  dv->prefer_labels = gtk_check_menu_item_get_active (checkbox);
+  gboolean global_setting = TRUE;
+  psppire_conf_get_boolean (psppire_conf_new (),
+			    "VariableLists", "display-labels", &global_setting);
 
+  if (gtk_check_menu_item_get_inconsistent (checkbox))
+    gtk_check_menu_item_set_active (checkbox, !global_setting);
+  
+  gtk_check_menu_item_set_inconsistent (checkbox, FALSE);
+  
   gtk_widget_queue_draw (GTK_WIDGET (dv));
 }
 
@@ -502,6 +556,14 @@ set_sort_criteria (GtkCheckMenuItem *checkbox, PsppireDictView *dv, GtkTreeIterC
 
   gtk_widget_queue_draw (GTK_WIDGET (dv));
 }
+
+static void
+set_sort_criteria_default (GtkCheckMenuItem *checkbox, gpointer data)
+{
+  PsppireDictView *dv = PSPPIRE_DICT_VIEW (data);
+  set_sort_criteria (checkbox, dv, default_sort);
+}
+
 
 static void
 set_sort_criteria_name (GtkCheckMenuItem *checkbox, gpointer data)
@@ -535,13 +597,8 @@ psppire_dict_view_init (PsppireDictView *dict_view)
 
   GtkCellRenderer *renderer = gtk_cell_renderer_pixbuf_new ();
 
-  dict_view->prefer_labels = TRUE;
+  dict_view->prefer_labels_override = FALSE;
   dict_view->sorted_model = NULL;
-
-  psppire_conf_get_boolean (psppire_conf_new (),
-			    G_OBJECT_TYPE_NAME (dict_view),
-			    "prefer-labels",
-			    &dict_view->prefer_labels);
 
   gtk_tree_view_column_set_title (col, _("Variable"));
 
@@ -577,15 +634,15 @@ psppire_dict_view_init (PsppireDictView *dict_view)
 
   dict_view->menu = gtk_menu_new ();
 
-
   {
     GSList *group = NULL;
     GtkWidget *item =
       gtk_check_menu_item_new_with_label  (_("Prefer variable labels"));
 
-    gtk_check_menu_item_set_active (GTK_CHECK_MENU_ITEM (item),
-				    dict_view->prefer_labels);
-
+    dict_view->override_button = item;
+    gtk_check_menu_item_set_inconsistent (GTK_CHECK_MENU_ITEM (item),
+					  TRUE);
+    
     g_signal_connect (item, "toggled",
 		      G_CALLBACK (toggle_label_preference), dict_view);
 
@@ -594,9 +651,14 @@ psppire_dict_view_init (PsppireDictView *dict_view)
     item = gtk_separator_menu_item_new ();
     gtk_menu_shell_append (GTK_MENU_SHELL (dict_view->menu), item);
 
-    item = gtk_radio_menu_item_new_with_label (group, _("Unsorted (dictionary order)"));
+    item = gtk_radio_menu_item_new_with_label (group, _("Default sort order"));
     group = gtk_radio_menu_item_get_group (GTK_RADIO_MENU_ITEM (item));
     gtk_check_menu_item_set_active (GTK_CHECK_MENU_ITEM (item), TRUE);
+    gtk_menu_shell_append (GTK_MENU_SHELL (dict_view->menu), item);
+    g_signal_connect (item, "toggled", G_CALLBACK (set_sort_criteria_default), dict_view);
+
+    item = gtk_radio_menu_item_new_with_label (group, _("Unsorted (dictionary order)"));
+    group = gtk_radio_menu_item_get_group (GTK_RADIO_MENU_ITEM (item));
     gtk_menu_shell_append (GTK_MENU_SHELL (dict_view->menu), item);
     g_signal_connect (item, "toggled", G_CALLBACK (set_sort_criteria_unsorted), dict_view);
 

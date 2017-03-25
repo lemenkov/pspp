@@ -48,6 +48,7 @@
 #include "gl/xvasprintf.h"
 
 #include "find-dialog.h"
+#include "options-dialog.h"
 #include "psppire-dialog-action-1sks.h"
 #include "psppire-dialog-action-aggregate.h"
 #include "psppire-dialog-action-autorecode.h"
@@ -1357,7 +1358,14 @@ create_edit_menu (PsppireDataWindow *dw)
   
     dw->mi_find = gtk_menu_item_new_with_mnemonic (_("_Find..."));
     g_signal_connect_swapped (dw->mi_find, "activate", G_CALLBACK (find_dialog), dw);
-    gtk_menu_attach (GTK_MENU (menu), dw->mi_find,      0, 1,  i, i + 1); ++i;
+    gtk_menu_attach (GTK_MENU (menu), dw->mi_find,    0, 1,  i, i + 1); ++i;
+  }
+
+  {
+    dw->mi_options = gtk_menu_item_new_with_mnemonic (_("_Options..."));
+    g_signal_connect_swapped (dw->mi_options, "activate",
+			      G_CALLBACK (options_dialog), dw);
+    gtk_menu_attach (GTK_MENU (menu), dw->mi_options, 0, 1,  i, i + 1); ++i;
   }
   
   g_object_set (menuitem, "submenu", menu, NULL);

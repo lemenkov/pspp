@@ -248,6 +248,62 @@ psppire_conf_get_string (PsppireConf *conf, const gchar *base,
 
 
 
+
+gboolean
+psppire_conf_get_variant (PsppireConf *conf, const gchar *base,
+			  const gchar *name, GVariant **v)
+{
+  gboolean ok;
+  gchar *b;
+  GError *err = NULL;
+  conf_read (conf);
+  b = g_key_file_get_string (conf->keyfile,
+			     base,
+			     name, &err);
+
+  ok = (err == NULL);
+  if ( err != NULL )
+    g_error_free (err);
+
+  if (ok)
+    {
+      *v = g_variant_parse (NULL, b, NULL, NULL, NULL);
+      g_free (b);
+    }
+
+  return ok;
+}
+
+gboolean
+psppire_conf_get_enum (PsppireConf *conf, const gchar *base,
+		       const gchar *name,
+		       GType t,
+		       int *v)
+{
+  gboolean ok;
+  gchar *b;
+  GError *err = NULL;
+  conf_read (conf);
+  b = g_key_file_get_string (conf->keyfile,
+			     base,
+			     name, &err);
+
+  ok = (err == NULL);
+  if ( err != NULL )
+    g_error_free (err);
+
+  if (ok)
+    {
+      GEnumClass *ec = g_type_class_ref (t);
+      GEnumValue *ev = g_enum_get_value_by_nick (ec, b);
+      *v = ev->value;
+      g_type_class_unref (ec);
+      g_free (b);
+    }
+
+  return ok;
+}
+
 void
 psppire_conf_set_int (PsppireConf *conf,
 		      const gchar *base, const gchar *name,
@@ -273,6 +329,34 @@ psppire_conf_set_string (PsppireConf *conf,
 			 const gchar *value)
 {
   g_key_file_set_string (conf->keyfile, base, name, value);
+  conf_write (conf);
+}
+
+void
+psppire_conf_set_variant (PsppireConf *conf,
+			       const gchar *base, const gchar *name,
+			       GVariant *value)
+{
+  gchar *v = g_variant_print (value, FALSE);
+  g_key_file_set_string (conf->keyfile, base, name, v);
+  conf_write (conf);
+  g_free (v);
+}
+
+void
+psppire_conf_set_enum (PsppireConf *conf,
+		       const gchar *base, const gchar *name,
+		       GType enum_type,
+		       int value)
+{
+  GEnumClass *ec = g_type_class_ref (enum_type);
+  GEnumValue *ev = g_enum_get_value (ec, value);
+  
+  g_key_file_set_string (conf->keyfile, base, name,
+			 ev->value_nick);
+
+  g_type_class_unref (ec);
+  
   conf_write (conf);
 }
 
