@@ -38,6 +38,7 @@
 #include "ui/gui/help-menu.h"
 #include "ui/gui/builder-wrapper.h"
 #include "ui/gui/psppire-output-view.h"
+#include "ui/gui/psppire-conf.h"
 #include "ui/gui/windows-menu.h"
 
 #include "gl/xalloc.h"
@@ -164,7 +165,27 @@ psppire_output_submit (struct output_driver *this,
       gtk_widget_show_all (GTK_WIDGET (pod->window));
     }
 
-  gtk_window_set_urgency_hint (GTK_WINDOW (pod->window), TRUE);
+  PsppireConf *conf = psppire_conf_new ();
+  {
+    gboolean status = true;
+    psppire_conf_get_boolean (conf, "OutputWindowAction", "alert",
+			      &status);
+    gtk_window_set_urgency_hint (GTK_WINDOW (pod->window), status);
+  }
+
+  {
+    gboolean status ;
+    if (psppire_conf_get_boolean (conf, "OutputWindowAction", "maximize",
+				  &status) && status)
+      gtk_window_maximize (GTK_WINDOW (pod->window));
+  }
+
+  {
+    gboolean status ;
+    if (psppire_conf_get_boolean (conf, "OutputWindowAction", "raise",
+				  &status) && status)
+      gtk_window_present (GTK_WINDOW (pod->window));
+  }
 }
 
 static struct output_driver_class psppire_output_class =

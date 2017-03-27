@@ -41,6 +41,10 @@ struct options_dialog
   GtkWidget *sort_names;
   GtkWidget *sort_labels;
   GtkWidget *sort_none;
+
+  GtkWidget *maximize;
+  GtkWidget *alert;
+  GtkWidget *raise;
 };
 
 GType
@@ -83,8 +87,11 @@ options_dialog (PsppireDataWindow *de)
   fd.sort_names  = get_widget_assert (fd.xml, "radiobutton-sort-by-name");
   fd.sort_none   = get_widget_assert (fd.xml, "radiobutton-unsorted");
 
+  fd.maximize = get_widget_assert (fd.xml, "checkbutton-maximize");
+  fd.alert    = get_widget_assert (fd.xml, "checkbutton-alert");
+  fd.raise    = get_widget_assert (fd.xml, "checkbutton-raise");
+  
   gtk_window_set_transient_for (GTK_WINDOW (dialog), GTK_WINDOW (de));
-
 
   fd.conf = psppire_conf_new ();
 
@@ -116,6 +123,26 @@ options_dialog (PsppireDataWindow *de)
       break;
     }
 
+  {
+    gboolean status;
+    if (psppire_conf_get_boolean (fd.conf, "OutputWindowAction", "maximize",
+				  &status))
+      gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (fd.maximize), status);
+  }
+  
+  {
+    gboolean status = true;
+    psppire_conf_get_boolean (fd.conf, "OutputWindowAction", "alert", &status);
+    gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (fd.alert), status);
+  }
+  
+  {
+    gboolean status;
+    if (psppire_conf_get_boolean (fd.conf, "OutputWindowAction", "raise",
+				  &status))
+      gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (fd.raise), status);
+  }
+  
   const int result = psppire_dialog_run (PSPPIRE_DIALOG (dialog));
 
   if (result == GTK_RESPONSE_OK)
@@ -143,6 +170,18 @@ options_dialog (PsppireDataWindow *de)
 			     "VariableLists", "sort-order",
 			     PSPP_TYPE_OPTIONS_VAR_ORDER,
 			     sort_order);
+
+      psppire_conf_set_boolean (fd.conf, "OutputWindowAction", "maximize",
+				gtk_toggle_button_get_active
+				(GTK_TOGGLE_BUTTON (fd.maximize)));
+      
+      psppire_conf_set_boolean (fd.conf, "OutputWindowAction", "raise",
+				gtk_toggle_button_get_active
+				(GTK_TOGGLE_BUTTON (fd.raise)));
+
+      psppire_conf_set_boolean (fd.conf, "OutputWindowAction", "alert",
+				gtk_toggle_button_get_active
+				(GTK_TOGGLE_BUTTON (fd.alert)));
     }
 
   g_object_unref (fd.xml);
