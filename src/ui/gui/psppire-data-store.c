@@ -1,5 +1,5 @@
 /* PSPPIRE - a graphical user interface for PSPP.
-   Copyright (C) 2006, 2008, 2009, 2010, 2011, 2012, 2013  Free Software Foundation
+   Copyright (C) 2006, 2008, 2009, 2010, 2011, 2012, 2013, 2016  Free Software Foundation
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -719,17 +719,6 @@ psppire_data_store_get_reader (PsppireDataStore *ds)
 
   return reader;
 }
-
-
-
-/* Column related funcs */
-
-
-static const gchar null_var_name[]=N_("var");
-
-
-
-
 
 /* Returns the CASENUMth case, or a null pointer on failure.
  */

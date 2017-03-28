@@ -16,6 +16,7 @@ AM_PROG_CC_C_O
 AC_LIBTOOL_WIN32_DLL
 AC_LIBTOOL_DLOPEN
 AC_PROG_LIBTOOL
+AC_HEADER_TIOCGWINSZ
 PKG_PROG_PKG_CONFIG
 m4_pattern_forbid([PKG_CHECK_MODULES])
 PSPP_CHECK_CLICKSEQUENCE
@@ -32,6 +33,11 @@ dnl Disable automatic po/ support, because PSPP provides its own po/ support.
 AC_PROVIDE([AM_PO_SUBDIRS])
 AM_GNU_GETTEXT([external], [need-ngettext])
 LIBS="$LIBINTL $LIBS"
+AC_CHECK_PROGS([MSGFMT], [msgfmt])
+if test "x$MSGFMT" = x; then
+  PSPP_REQUIRED_PREREQ([msgfmt (is usually provided with gettext)])
+fi
+
 
 dnl Checks for libraries.
 AC_SYS_LARGEFILE
@@ -267,44 +273,6 @@ PKG_CHECK_MODULES([GSL], [gsl >= 1.13], [],
 
 
 PSPP_GSL_NEEDS_FGNU89_INLINE
-
-dnl Recent versions of GNU ncurses install the curses header files into
-dnl /usr/include/ncurses, and provide a 'ncurses5-config' program which
-dnl enables us to discover where they are. Earlier versions don't have
-dnl this, so we can't rely on it.  So if ncurses5-config is present,
-dnl we'll trust it to find the right information.  Otherwise, we'll
-dnl try to discover it ourselves.
-dnl To confound things further, Cygwin has decided to rename ncurses5-config
-dnl to ncurses8-config !!!
-AC_ARG_WITH(
-  libncurses, 
-  [AS_HELP_STRING([--without-libncurses], [don't compile in ncurses functions])])
-
-if test x"$with_libncurses" != x"no" ; then
-  if test x"$cross_compiling" != x"yes" ; then
-	  AC_CHECK_PROGS([NCURSES_CONFIG], [ncurses5-config ncurses8-config])
-  fi
-  if test x"$NCURSES_CONFIG" = x ; then
-	  AC_SEARCH_LIBS([tgetent], [ncurses],
-	      [curses_available=yes; AC_CHECK_HEADERS([term.h curses.h],,[curses_available=no])])
-  else
-          old_cflags=$CFLAGS
-          CFLAGS="$CFLAGS `$NCURSES_CONFIG --cflags`"
-	  AC_CHECK_HEADERS([term.h curses.h],[curses_available=yes])
-	  CFLAGS=$old_cflags
-	  if test x"$curses_available" = x"yes" ; then
-	   NCURSES_LIBS=`$NCURSES_CONFIG --libs`
-	   NCURSES_CFLAGS=`$NCURSES_CONFIG --cflags`
-	   AC_SUBST(NCURSES_CFLAGS)
-	   AC_SUBST(NCURSES_LIBS)
-          fi
-  fi
-  if test x"$curses_available" = x"yes" ; then
-	  AC_DEFINE([LIBNCURSES_USABLE], 1,
-	      [Define to 1 if the libncurses is both present and usable.])
-  fi
-  AC_CHECK_HEADERS([termcap.h])
-fi
 
 PSPP_READLINE
 

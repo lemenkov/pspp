@@ -27,6 +27,7 @@ UI_FILES = \
 	src/ui/gui/means.ui \
 	src/ui/gui/missing-val-dialog.ui \
 	src/ui/gui/oneway.ui \
+	src/ui/gui/options.ui \
 	src/ui/gui/paired-samples.ui \
 	src/ui/gui/rank.ui \
 	src/ui/gui/runs.ui \
@@ -54,7 +55,9 @@ UI_FILES = \
 $(top_srcdir)/doc/help-pages-list: $(UI_FILES)
 	 $(AM_V_GEN)cat $^ | grep '"help[-_]page"' | \
    $(SED) -e 's% *<property name="help[-_]page">\([^<]*\)</property>%//*[@id='"'"'\1'"'"']%' \
-	-e 's%#%'"'"']/*[@id='"'"'%g' > $@
+	-e 's%#%'"'"']/*[@id='"'"'%g' > $@,tmp
+	test -s $@,tmp
+	mv $@,tmp $@
 
 EXTRA_DIST += doc/help-pages-list
 
@@ -153,6 +156,8 @@ src_ui_gui_psppire_SOURCES = \
 	src/ui/gui/main.c \
 	src/ui/gui/missing-val-dialog.c \
 	src/ui/gui/missing-val-dialog.h \
+	src/ui/gui/options-dialog.c \
+	src/ui/gui/options-dialog.h \
 	src/ui/gui/psppire.c \
 	src/ui/gui/psppire.h \
 	src/ui/gui/psppire-acr.h \

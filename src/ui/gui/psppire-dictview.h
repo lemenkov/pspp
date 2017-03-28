@@ -51,7 +51,8 @@ struct _PsppireDictView
   PsppireDict *dict;
   var_predicate_func *predicate;
   GtkWidget *menu;
-  gboolean prefer_labels;
+  gboolean prefer_labels_override;
+  GtkWidget *override_button;
   GtkTreeModel *sorted_model;
 };
 

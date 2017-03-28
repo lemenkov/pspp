@@ -1,0 +1,29 @@
+AT_BANNER([HTML driver])
+
+AT_SETUP([HTML bug])
+
+dnl Checks for a bug which caused the html driver to go into a tight loop.
+AT_DATA([foo.sps], [data list notable list /w l96_r l99_r l102_r *.
+begin data.
+15  0 0 0 
+ 1  1 1 1 
+ 2  1 1 2 
+ 1  1 2 1 
+ 1  1 2 2 
+ 1  2 1 1 
+ 4  2 2 1 
+ 2  2 2 2 
+end data.
+
+weight by w.
+
+crosstabs
+	/tables=l96_r by l99_r by l102_r
+	/format=avalue table pivot
+	/statistics=none
+	/cell=count.
+])
+
+AT_CHECK([pspp -O format=html foo.sps], [0], [ignore])
+
+AT_CLEANUP

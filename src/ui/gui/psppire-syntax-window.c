@@ -19,10 +19,7 @@
 #include <gtk/gtk.h>
 #include <stdlib.h>
 
-#include <gtksourceview/gtksourcebuffer.h>
-#include <gtksourceview/gtksourcelanguage.h>
-#include <gtksourceview/gtksourcelanguagemanager.h>
-#include <gtksourceview/gtksourceprintcompositor.h>
+#include <gtksourceview/gtksource.h>
 
 #include "language/lexer/lexer.h"
 #include "libpspp/encoding-guesser.h"

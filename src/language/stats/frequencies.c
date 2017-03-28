@@ -704,7 +704,7 @@ cmd_frequencies (struct lexer *lexer, struct dataset *ds)
                 }
               else if (lex_match_id (lexer, "VARIANCE"))
                 {
-		  frq.stats |= BIT_INDEX (FRQ_ST_MEAN);
+		  frq.stats |= BIT_INDEX (FRQ_ST_VARIANCE);
 		  frq.n_stats++;
                 }
               else if (lex_match_id (lexer, "KURTOSIS"))

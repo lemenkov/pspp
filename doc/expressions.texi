@@ -1,7 +1,7 @@
 @c Use @func when refering to a function.
 @c Use @deftypefn for their definitions 
 @macro func{NAME}
-@code{/NAME/}
+@code{\NAME\}
 @end macro
 
 @node Expressions

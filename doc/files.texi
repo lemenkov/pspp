@@ -936,7 +936,7 @@ XEXPORT
         /MAP
 @end display
 
-The @cmd{EXPORT} transformation writes the active dataset dictionary and
+The @cmd{XEXPORT} transformation writes the active dataset dictionary and
 data to a specified portable file.
 
 This transformation is a @pspp{} extension.

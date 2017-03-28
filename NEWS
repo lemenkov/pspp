@@ -1,10 +1,24 @@
 PSPP NEWS -- history of user-visible changes.
-Copyright (C) 1996-2000, 2008-2016 Free Software Foundation, Inc.
+Copyright (C) 1996-2000, 2008-2016, 2017 Free Software Foundation, Inc.
 See the end for copying conditions.
 
 Please send PSPP bug reports to bug-gnu-pspp@gnu.org.
 
 Changes from 0.10.2 to 0.10.4:
+
+ * A graphical user interface has a new menu: Edit|Options
+
+ * A bug which could cause the HTML driver to go into a tight loop
+   has been fixed.
+
+ * An error in the FREQUENCIES procedure, where the word "Mean" was
+   printed when "Variance" was appropriate has been fixed.
+
+ * The ncurses library is no longer required or used.
+
+ * A bug where the Mann-Whitney test would give misleading results
+   if run on multiple variables and MISSING=ANALAYSIS was specified
+   has been fixed.
 
  * Gtk+3.14.5 or later must now be used when building.
 

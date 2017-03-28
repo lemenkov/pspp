@@ -1,5 +1,5 @@
 /* PSPP - a program for statistical analysis.
-   Copyright (C) 2009, 2010, 2011, 2013, 2015 Free Software Foundation, Inc.
+   Copyright (C) 2009, 2010, 2011, 2013, 2015, 2016 Free Software Foundation, Inc.
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -164,23 +164,23 @@ cmd_reliability (struct lexer *lexer, struct dataset *ds)
     msg (MW, _("Reliability on a single variable is not useful."));
 
 
-    {
-      int i;
-      struct cronbach *c;
-      /* Create a default Scale */
+  {
+    int i;
+    struct cronbach *c;
+    /* Create a default Scale */
 
-      reliability.n_sc = 1;
-      reliability.sc = xzalloc (sizeof (struct cronbach) * reliability.n_sc);
+    reliability.n_sc = 1;
+    reliability.sc = xzalloc (sizeof (struct cronbach) * reliability.n_sc);
 
-      ds_assign_cstr (&reliability.scale_name, "ANY");
+    ds_assign_cstr (&reliability.scale_name, "ANY");
 
-      c = &reliability.sc[0];
-      c->n_items = reliability.n_variables;
-      c->items = xzalloc (sizeof (struct variable*) * c->n_items);
+    c = &reliability.sc[0];
+    c->n_items = reliability.n_variables;
+    c->items = xzalloc (sizeof (struct variable*) * c->n_items);
 
-      for (i = 0 ; i < c->n_items ; ++i)
-	c->items[i] = reliability.variables[i];
-    }
+    for (i = 0 ; i < c->n_items ; ++i)
+      c->items[i] = reliability.variables[i];
+  }
 
 
 

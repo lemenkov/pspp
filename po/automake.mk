@@ -6,9 +6,8 @@ MSGFMT=msgfmt
 
 POFILES = \
 	po/ca.po \
-	po/cs.po \
 	po/de.po \
-	po/en_GB.po \
+	po/el.po \
 	po/es.po \
 	po/fr.po \
 	po/gl.po \
@@ -23,6 +22,8 @@ POFILES = \
 	po/tr.po \
 	po/uk.po \
 	po/zh_CN.po
+
+LOCALPOFILES = po/cs.po po/en_GB.po
 
 POTFILE=po/$(DOMAIN).pot
 
@@ -43,7 +44,7 @@ $(POTFILE): $(TRANSLATABLE_FILES) $(UI_FILES) src/ui/gui/gen-dot-desktop.sh
 	$(AM_V_at)$(XGETTEXT) --directory=$(top_srcdir) $(XGETTEXT_OPTIONS) -j src/ui/gui/gen-dot-desktop.sh --language=shell --keyword=TRANSLATE -o $@,tmp
 	$(AM_V_at)$(SED) -e '/^"POT-Creation-Date: .*/d' $@,tmp > $@
 
-$(POFILES): $(POTFILE)
+$(LOCALPOFILED) $(POFILES): $(POTFILE)
 	$(AM_V_GEN)$(MSGMERGE) --quiet $(top_srcdir)/$@ $? -o $@,tmp
 	$(AM_V_at)if test -e $(top_srcdir)/$@,aux ; then \
 	         touch $@,tmp ; \
@@ -59,7 +60,7 @@ SUFFIXES += .po .gmo
 	$(AM_V_GEN)$(MSGFMT) $< -o $@
 
 
-GMOFILES = $(POFILES:.po=.gmo)
+GMOFILES = $(LOCALPOFILES:.po=.gmo) $(POFILES:.po=.gmo)
 
 ALL_LOCAL += $(GMOFILES)
 
@@ -78,6 +79,7 @@ uninstall-hook:
 
 
 EXTRA_DIST += \
+	$(LOCALPOFILES) \
 	$(POFILES) \
 	$(POTFILE) \
 	po/ChangeLog \
@@ -89,7 +91,15 @@ CLEANFILES += $(GMOFILES) $(POTFILE)
 # the source directory.
 po_CLEAN:
 	@if test "$(srcdir)" != .; then \
-		echo rm -f $(POFILES); \
-		rm -f $(POFILES); \
+		echo rm -f $(LOCALPOFILES) $(POFILES); \
+		rm -f $(LOCALPOFILES) $(POFILES); \
 	fi
 CLEAN_LOCAL += po_CLEAN
+
+WGET = wget
+po-update:
+	cd $(srcdir) && rm -f $(POFILES)
+	cd $(srcdir)/po && \
+	for po in `echo '$(POFILES)' | sed 's,po/,,g'`; do \
+	   $(WGET) https://translationproject.org/latest/pspp/$$po; \
+        done

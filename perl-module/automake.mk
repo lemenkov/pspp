@@ -26,7 +26,9 @@ perl-module/pspp-module-config: Makefile
 	 echo ');') > $(top_builddir)/perl-module/pspp-module-config
 
 perl-module/Makefile: perl-module/Makefile.PL perl-module/pspp-module-config $(module_sources)
-	$(AM_V_GEN)cd perl-module && $(PERL) Makefile.PL PREFIX=$(prefix)
+	$(AM_V_GEN)cd perl-module && $(PERL) Makefile.PL PREFIX=$(prefix) \
+                                                         OPTIMIZE="$(CFLAGS) $(CPPFLAGS)" \
+                                                         LD="`$(PERL) -V::ld:` $(LDFLAGS)"
 
 perl-module/PSPP-Perl-$(VERSION_FOR_PERL).tar.gz: $(module_sources) perl-module/Makefile
 	$(AM_V_at)rm -f $@

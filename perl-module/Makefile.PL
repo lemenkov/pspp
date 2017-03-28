@@ -4,7 +4,7 @@ use ExtUtils::MakeMaker;
 # the contents of the Makefile that is written.
 
 
-do 'pspp-module-config' || do {
+do './pspp-module-config' || do {
     my $build = prompt ("Enter the location of the build directory of the configured pspp source:", "" );
     my $src = $top_srcdir;
 

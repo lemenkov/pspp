@@ -106,9 +106,6 @@ OpenDocument text (ODT) files:
 
 Other optional packages:
 
-    * libncurses (http://www.gnu.org/software/ncurses/).  Without it,
-      PSPP will assume it is running in an 80x25 terminal.
-
     * libreadline and libhistory
       (http://tiswww.case.edu/php/chet/readline/rltop.html).  Without
       them, interactive command editing and history features in the

@@ -256,6 +256,7 @@ EXTRA_DIST += \
 	tests/data/v13.sav \
 	tests/data/v14.sav \
 	tests/data/test-encrypted.sps \
+	tests/language/mann-whitney.txt \
 	tests/language/data-io/Book1.gnm.unzipped \
 	tests/language/data-io/test.ods \
 	tests/language/data-io/newone.ods \
@@ -393,6 +394,7 @@ TESTSUITE_AT = \
 	tests/math/randist.at \
 	tests/output/ascii.at \
 	tests/output/charts.at \
+	tests/output/html.at \
 	tests/output/output.at \
 	tests/output/paper-size.at \
 	tests/output/render.at \
@@ -427,6 +429,7 @@ AUTOM4TE = $(SHELL) $(srcdir)/build-aux/missing --run autom4te
 AUTOTEST = $(AUTOM4TE) --language=autotest
 $(TESTSUITE): package.m4 $(srcdir)/tests/testsuite.at $(TESTSUITE_AT) 
 	$(AM_V_GEN)$(AUTOTEST) -I '$(srcdir)' $@.at | $(SED) 's/@<00A0>@/ /g' > $@.tmp
+	test -s $@.tmp
 	$(AM_V_at)mv $@.tmp $@
 
 # The `:;' works around a Bash 3.2 bug when the output is not writeable.

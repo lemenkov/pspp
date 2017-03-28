@@ -958,7 +958,7 @@ psppire_import_assistant_init (PsppireImportAssistant *ia)
 
   gtk_assistant_set_forward_page_func (GTK_ASSISTANT (ia), next_page_func, NULL, NULL);
 
-  gtk_window_fullscreen (GTK_WINDOW (ia));
+  gtk_window_maximize (GTK_WINDOW (ia));
 }
 
 

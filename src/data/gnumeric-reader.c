@@ -30,11 +30,24 @@
 
 #if !GNM_READ_SUPPORT
 
-struct casereader *
-gnumeric_open_reader (const struct spreadsheet_read_options *opts, struct dictionary **dict)
+struct spreadsheet *
+gnumeric_probe (const char *filename, bool report_errors)
 {
-  msg (ME, _("Support for %s files was not compiled into this installation of PSPP"), "Gnumeric");
+  if (report_errors)
+    msg (ME, _("Support for %s files was not compiled into this installation of PSPP"), "Gnumeric");
 
+  return NULL;
+}
+
+const char *
+gnumeric_get_sheet_name (struct spreadsheet *s, int n)
+{
+  return NULL;
+}
+
+char *
+gnumeric_get_sheet_range (struct spreadsheet *s, int n)
+{
   return NULL;
 }
 
