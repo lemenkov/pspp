@@ -1,5 +1,6 @@
 /* PSPPIRE - a graphical user interface for PSPP.
-   Copyright (C) 2004, 2006, 2007, 2009, 2010, 2011, 2012, 2016  Free Software Foundation
+   Copyright (C) 2004, 2006, 2007, 2009, 2010, 2011, 2012,
+   2016, 2017  Free Software Foundation
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -49,8 +50,6 @@ GType role_enum_type;
 
 
 enum  {
-  ITEMS_CHANGED,
-
   VARIABLE_CHANGED,
   VARIABLE_INSERTED,
   VARIABLE_DELETED,
@@ -182,20 +181,6 @@ psppire_dict_class_init (PsppireDictClass *class)
 
   object_class->dispose = psppire_dict_dispose;
   
-  signals [ITEMS_CHANGED] =
-    g_signal_new ("changed",
-		  G_TYPE_FROM_CLASS (class),
-		  G_SIGNAL_RUN_FIRST,
-		  0,
-		  NULL, NULL,
-		  psppire_marshal_VOID__UINT_UINT_UINT,
-		  G_TYPE_NONE,
-		  3,
-		  G_TYPE_UINT,
-		  G_TYPE_UINT,
-		  G_TYPE_UINT);
-
-
   signals [VARIABLE_CHANGED] =
     g_signal_new ("variable-changed",
 		  G_TYPE_FROM_CLASS (class),
@@ -293,7 +278,7 @@ addcb (struct dictionary *d, int idx, void *pd)
   if ( ! dict->disable_insert_signal)
     {
       g_signal_emit (dict, signals [VARIABLE_INSERTED], 0, idx);
-      g_signal_emit (dict, signals [ITEMS_CHANGED], 0, idx, 1, 1);
+      g_signal_emit_by_name (dict, "items-changed", idx, 1, 1);
     }
 }
 
@@ -303,14 +288,14 @@ delcb (struct dictionary *d, const struct variable *var,
 {
   g_signal_emit (pd, signals [VARIABLE_DELETED], 0,
                  var, dict_idx, case_idx);
-  g_signal_emit (pd, signals [ITEMS_CHANGED], 0, dict_idx, 1, 0);
+  g_signal_emit_by_name (pd, "items-changed",  dict_idx, 1, 0);
 }
 
 static void
 mutcb (struct dictionary *d, int idx, unsigned int what, const struct variable *oldvar, void *pd)
 {
   g_signal_emit (pd, signals [VARIABLE_CHANGED], 0, idx, what, oldvar);
-  g_signal_emit (pd, signals [ITEMS_CHANGED], 0, idx, 1, 1);
+  g_signal_emit_by_name (pd, "items-changed", idx, 1, 1);
 }
 
 static void
@@ -385,7 +370,7 @@ psppire_dict_replace_dictionary (PsppireDict *dict, struct dictionary *d)
 
   dict_set_callbacks (dict->dict, &gui_callbacks, dict);
 
-  g_signal_emit (dict, signals [ITEMS_CHANGED], 0, 0, old_n, new_n);
+  g_signal_emit_by_name (dict, "items-changed", 0, old_n, new_n);
 }
 
 
@@ -449,7 +434,7 @@ psppire_dict_insert_variable (PsppireDict *d, gint idx, const gchar *name)
   d->disable_insert_signal = FALSE;
 
   g_signal_emit (d, signals[VARIABLE_INSERTED], 0, idx);
-  g_signal_emit (d, signals [ITEMS_CHANGED], 0, idx, 0, 1);
+  g_signal_emit_by_name (d, "items-changed", idx, 0, 1);
   
   return var;
 }

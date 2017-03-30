@@ -538,6 +538,17 @@ void myreversefunc (GtkTreeModel *model, gint col, gint row, const gchar *in, GV
 
 
 static void
+delete_cases (PsppireDataEditor *de)
+{
+  JmdRange *range = JMD_SHEET(de->data_sheet)->selection;
+
+  psppire_data_store_delete_cases (de->data_store, range->start_y,
+				   range->end_y - range->start_y + 1);
+
+  gtk_widget_queue_draw (GTK_WIDGET (de));
+}
+
+static void
 insert_new_case (PsppireDataEditor *de)
 {
   gint item = g_object_get_data (G_OBJECT (de->data_sheet_cases_popup), "item");
@@ -564,6 +575,8 @@ create_row_header_popup_menu (PsppireDataEditor *de)
   de->clear_cases_menu_item = gtk_menu_item_new_with_mnemonic (_("Cl_ear Cases"));
   gtk_widget_set_sensitive (de->clear_cases_menu_item, FALSE);
   gtk_menu_shell_append (GTK_MENU_SHELL (menu), de->clear_cases_menu_item);
+  g_signal_connect_swapped (de->clear_cases_menu_item, "activate",
+			    G_CALLBACK (delete_cases), de);
 
   gtk_widget_show_all (menu);
   return menu;

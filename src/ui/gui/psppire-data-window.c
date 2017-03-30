@@ -1491,9 +1491,6 @@ psppire_data_window_finish_init (PsppireDataWindow *de,
   g_signal_connect_swapped (de->data_store, "case-changed",
 			    G_CALLBACK (set_unsaved), de);
 
-  g_signal_connect_swapped (de->data_store, "cases-deleted",
-			    G_CALLBACK (set_unsaved), de);
-
   dataset_set_callbacks (de->dataset, &cbs, de);
 
   connect_help (de->builder);
@@ -1517,7 +1514,7 @@ psppire_data_window_finish_init (PsppireDataWindow *de,
 		    G_CALLBACK (on_split_change),
 		    de);
 
-  g_signal_connect_swapped (de->dict, "changed",
+  g_signal_connect_swapped (de->dict, "items-changed",
                             G_CALLBACK (enable_save), de);
   g_signal_connect_swapped (de->dict, "variable-inserted",
                             G_CALLBACK (enable_save), de);

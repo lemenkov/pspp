@@ -69,7 +69,6 @@ static GObjectClass *parent_class = NULL;
 enum
   {
     ITEMS_CHANGED,
-    CASES_DELETED,
     CASE_CHANGED,
     n_SIGNALS
   };
@@ -275,7 +274,7 @@ psppire_data_store_class_init (PsppireDataStoreClass *class)
   object_class->dispose = psppire_data_store_dispose;
 
   signals [ITEMS_CHANGED] =
-    g_signal_new ("changed",
+    g_signal_new ("items-changed",
 		  G_TYPE_FROM_CLASS (class),
 		  G_SIGNAL_RUN_FIRST,
 		  0,
@@ -283,9 +282,9 @@ psppire_data_store_class_init (PsppireDataStoreClass *class)
 		  psppire_marshal_VOID__UINT_UINT_UINT,
 		  G_TYPE_NONE,
 		  3,
-		  G_TYPE_UINT,
-		  G_TYPE_UINT,
-		  G_TYPE_UINT);
+		  G_TYPE_UINT,  /* Index of the start of the change */
+		  G_TYPE_UINT,  /* The number of items deleted */
+		  G_TYPE_UINT); /* The number of items inserted */
 
   signals [CASE_CHANGED] =
     g_signal_new ("case-changed",
@@ -296,18 +295,6 @@ psppire_data_store_class_init (PsppireDataStoreClass *class)
 		  g_cclosure_marshal_VOID__INT,
 		  G_TYPE_NONE,
 		  1,
-		  G_TYPE_INT);
-
-  signals [CASES_DELETED] =
-    g_signal_new ("cases-deleted",
-		  G_TYPE_FROM_CLASS (class),
-		  G_SIGNAL_RUN_FIRST,
-		  0,
-		  NULL, NULL,
-		  psppire_marshal_VOID__INT_INT,
-		  G_TYPE_NONE,
-		  2,
-		  G_TYPE_INT,
 		  G_TYPE_INT);
 }
 
@@ -681,7 +668,7 @@ psppire_data_store_clear (PsppireDataStore *ds)
 
   psppire_dict_clear (ds->dict);
 
-  g_signal_emit (ds, signals [CASES_DELETED], 0, 0, -1);
+  g_signal_emit (ds, signals [ITEMS_CHANGED], 0, 0, -1, 0);
 }
 
 
@@ -734,7 +721,7 @@ psppire_data_store_delete_cases (PsppireDataStore *ds, casenumber first,
 
   datasheet_delete_rows (ds->datasheet, first, n_cases);
 
-  g_signal_emit (ds, signals [CASES_DELETED], 0, first, n_cases);
+  g_signal_emit (ds, signals[ITEMS_CHANGED], 0, first, n_cases, 0);
 
   return TRUE;
 }
