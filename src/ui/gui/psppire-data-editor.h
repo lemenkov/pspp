@@ -63,8 +63,10 @@ struct _PsppireDataEditor
   GtkWidget *data_sheet;
 
   /* Data sheet popup menu */
-  GtkWidget *data_sheet_cases_popup;
+  GtkWidget *data_sheet_cases_row_popup;
   GtkWidget *clear_cases_menu_item;
+
+  GtkWidget *data_sheet_cases_column_popup;
 
   /* Data sheet tab. */
   GtkWidget *vbox;             /* Top-level widget in tab. */
