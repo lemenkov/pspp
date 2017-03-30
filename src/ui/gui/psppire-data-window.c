@@ -1,5 +1,6 @@
 /* PSPPIRE - a graphical user interface for PSPP.
-   Copyright (C) 2008, 2009, 2010, 2011, 2012, 2013, 2014, 2016  Free Software Foundation
+   Copyright (C) 2008, 2009, 2010, 2011, 2012, 2013, 2014,
+   2016, 2017  Free Software Foundation
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -1488,9 +1489,6 @@ psppire_data_window_finish_init (PsppireDataWindow *de,
                     G_CALLBACK (set_data_page), de);
 
   g_signal_connect_swapped (de->data_store, "case-changed",
-			    G_CALLBACK (set_unsaved), de);
-
-  g_signal_connect_swapped (de->data_store, "case-inserted",
 			    G_CALLBACK (set_unsaved), de);
 
   g_signal_connect_swapped (de->data_store, "cases-deleted",

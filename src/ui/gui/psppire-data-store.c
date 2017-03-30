@@ -1,5 +1,6 @@
 /* PSPPIRE - a graphical user interface for PSPP.
-   Copyright (C) 2006, 2008, 2009, 2010, 2011, 2012, 2013, 2016  Free Software Foundation
+   Copyright (C) 2006, 2008, 2009, 2010, 2011, 2012,
+   2013, 2016, 2017  Free Software Foundation
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -69,7 +70,6 @@ enum
   {
     ITEMS_CHANGED,
     CASES_DELETED,
-    CASE_INSERTED,
     CASE_CHANGED,
     n_SIGNALS
   };
@@ -274,7 +274,7 @@ psppire_data_store_class_init (PsppireDataStoreClass *class)
   object_class->finalize = psppire_data_store_finalize;
   object_class->dispose = psppire_data_store_dispose;
 
-    signals [ITEMS_CHANGED] =
+  signals [ITEMS_CHANGED] =
     g_signal_new ("changed",
 		  G_TYPE_FROM_CLASS (class),
 		  G_SIGNAL_RUN_FIRST,
@@ -286,18 +286,6 @@ psppire_data_store_class_init (PsppireDataStoreClass *class)
 		  G_TYPE_UINT,
 		  G_TYPE_UINT,
 		  G_TYPE_UINT);
-
-  signals [CASE_INSERTED] =
-    g_signal_new ("case-inserted",
-		  G_TYPE_FROM_CLASS (class),
-		  G_SIGNAL_RUN_FIRST,
-		  0,
-		  NULL, NULL,
-		  g_cclosure_marshal_VOID__INT,
-		  G_TYPE_NONE,
-		  1,
-		  G_TYPE_INT);
-
 
   signals [CASE_CHANGED] =
     g_signal_new ("case-changed",
@@ -768,7 +756,9 @@ psppire_data_store_insert_case (PsppireDataStore *ds,
   result = datasheet_insert_rows (ds->datasheet, posn, &cc, 1);
 
   if ( result )
-    g_signal_emit (ds, signals [CASE_INSERTED], 0, posn);
+    {
+      g_signal_emit (ds, signals[ITEMS_CHANGED], 0, posn, 0, 1);
+    }
   else
     g_warning ("Cannot insert case at position %ld\n", posn);
 
