@@ -1,5 +1,6 @@
 /* PSPPIRE - a graphical user interface for PSPP.
-   Copyright (C) 2008, 2009, 2010, 2011, 2012, 2016 Free Software Foundation, Inc.
+   Copyright (C) 2008, 2009, 2010, 2011, 2012, 2016,
+   2017 Free Software Foundation, Inc.
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -45,7 +46,7 @@ static GtkCellRenderer *
 create_spin_renderer (GType type)
 {
   GtkCellRenderer *r = gtk_cell_renderer_spin_new ();
-      
+
   GtkAdjustment *adj = gtk_adjustment_new (0,
 					   0, G_MAXDOUBLE,
 					   1, 1,
@@ -53,7 +54,7 @@ create_spin_renderer (GType type)
   g_object_set (r,
 		"adjustment", adj,
 		NULL);
-  
+
   return r;
 }
 
@@ -61,9 +62,9 @@ static GtkCellRenderer *
 create_combo_renderer (GType type)
 {
   GtkListStore *list_store = gtk_list_store_new (2, G_TYPE_INT, G_TYPE_STRING);
-  
+
   GEnumClass *ec = g_type_class_ref (type);
-  
+
   const GEnumValue *ev ;
   for (ev = ec->values; ev->value_name; ++ev)
     {
@@ -116,17 +117,17 @@ select_renderer_func (gint col, gint row, GType type)
     case DICT_TVM_COL_DECIMAL:
     case DICT_TVM_COL_COLUMNS:
       return xx;
-      
+
     case DICT_TVM_COL_ALIGNMENT:
       return alignment_renderer;
 
     case DICT_TVM_COL_MEASURE:
       return measure_renderer;
-      
+
     case DICT_TVM_COL_ROLE:
       return column_width_renderer;
     }
-  
+
   return NULL;
 }
 
@@ -252,9 +253,9 @@ change_data_value (PsppireDataStore *store, gint col, gint row, GValue *value)
   union value v;
 
   GVariant *vrnt = g_value_get_variant (value);
-  
+
   value_variant_get (&v, vrnt);
-  
+
   psppire_data_store_set_value (store, row, var, &v);
 
   value_destroy_from_variant (&v, vrnt);
@@ -291,7 +292,7 @@ psppire_data_editor_set_property (GObject         *object,
 
       g_signal_connect_swapped (de->data_sheet, "value-changed",
 				G_CALLBACK (change_data_value), de->data_store);
-      
+
       g_signal_connect_swapped (de->data_store, "case-changed",
                                 G_CALLBACK (refresh_entry), de);
 
@@ -444,7 +445,7 @@ static void
 on_data_sheet_var_double_clicked (JmdSheet *data_sheet, gint dict_index,
                                  PsppireDataEditor *de)
 {
-  
+
   gtk_notebook_set_current_page (GTK_NOTEBOOK (de),
                                  PSPPIRE_DATA_EDITOR_VARIABLE_VIEW);
 
@@ -522,10 +523,10 @@ on_data_selection_change (PsppireDataEditor *de, JmdRange *sel)
 		     n_vars);
       ref_cell_text = ds_steal_cstr (&s);
     }
-  
+
   gtk_label_set_label (GTK_LABEL (de->cell_ref_label),
 		       ref_cell_text ? ref_cell_text : "");
-  
+
   g_free (ref_cell_text);
 }
 
@@ -537,6 +538,72 @@ void myreversefunc (GtkTreeModel *model, gint col, gint row, const gchar *in, GV
 
 
 static void
+insert_new_case (PsppireDataEditor *de)
+{
+  gint item = g_object_get_data (G_OBJECT (de->data_sheet_cases_popup), "item");
+
+  psppire_data_store_insert_new_case (de->data_store, item);
+
+  gtk_widget_queue_draw (GTK_WIDGET (de));
+}
+
+static GtkWidget *
+create_row_header_popup_menu (PsppireDataEditor *de)
+{
+  GtkWidget *menu = gtk_menu_new ();
+
+  GtkWidget *item =
+    gtk_menu_item_new_with_mnemonic  (_("_Insert Case"));
+
+  g_signal_connect_swapped (item, "activate", G_CALLBACK (insert_new_case), de);
+  gtk_menu_shell_append (GTK_MENU_SHELL (menu), item);
+
+  item = gtk_separator_menu_item_new ();
+  gtk_menu_shell_append (GTK_MENU_SHELL (menu), item);
+
+  de->clear_cases_menu_item = gtk_menu_item_new_with_mnemonic (_("Cl_ear Cases"));
+  gtk_widget_set_sensitive (de->clear_cases_menu_item, FALSE);
+  gtk_menu_shell_append (GTK_MENU_SHELL (menu), de->clear_cases_menu_item);
+
+  gtk_widget_show_all (menu);
+  return menu;
+}
+
+
+static void
+set_clear_cases_sensitivity (JmdSheet *sheet, gpointer selection, gpointer p)
+{
+  JmdRange *range = selection;
+  PsppireDataEditor *de = PSPPIRE_DATA_EDITOR (p);
+  gint width = gtk_tree_model_get_n_columns (sheet->data_model);
+
+  gboolean whole_row_selected = (range->start_x == 0 && range->end_x == width - 1);
+  gtk_widget_set_sensitive (de->clear_cases_menu_item, whole_row_selected);
+}
+
+static void
+show_cases_popup (JmdSheet *sheet, int row, uint button, uint state, gpointer p)
+{
+  PsppireDataEditor *de = PSPPIRE_DATA_EDITOR (p);
+  GListModel *vmodel = NULL;
+  g_object_get (sheet, "vmodel", &vmodel, NULL);
+  if (vmodel == NULL)
+    return;
+
+  guint n_items = g_list_model_get_n_items (vmodel);
+
+  if (row >= n_items)
+    return;
+
+  if (button != 3)
+    return;
+
+  g_object_set_data (de->data_sheet_cases_popup, "item", row);
+
+  gtk_menu_popup_at_pointer (de->data_sheet_cases_popup, NULL);
+}
+
+static void
 psppire_data_editor_init (PsppireDataEditor *de)
 {
   GtkWidget *hbox;
@@ -544,7 +611,7 @@ psppire_data_editor_init (PsppireDataEditor *de)
 
   GtkStyleContext *context = gtk_widget_get_style_context (GTK_WIDGET (de));
   gtk_style_context_add_class (context, "psppire-data-editor");
-  
+
   de->font = NULL;
   de->old_vbox_widget = NULL;
 
@@ -564,10 +631,17 @@ psppire_data_editor_init (PsppireDataEditor *de)
 
   de->split = FALSE;
   de->data_sheet = jmd_sheet_new ();
+
+  de->data_sheet_cases_popup = create_row_header_popup_menu (de);
+  g_signal_connect (de->data_sheet, "row-header-pressed",
+		    G_CALLBACK (show_cases_popup), de);
+  g_signal_connect (de->data_sheet, "selection-changed",
+		    G_CALLBACK (set_clear_cases_sensitivity), de);
+
   jmd_sheet_body_set_conversion_func
     (JMD_SHEET_BODY (JMD_SHEET(de->data_sheet)->selected_body),
      myconvfunc, myreversefunc);
-				      
+
   GtkWidget *data_button = jmd_sheet_get_button (JMD_SHEET (de->data_sheet));
   gtk_button_set_label (GTK_BUTTON (data_button), _("Case"));
   de->vbox = gtk_box_new (GTK_ORIENTATION_VERTICAL, 0);
@@ -577,7 +651,7 @@ psppire_data_editor_init (PsppireDataEditor *de)
 
   g_signal_connect_swapped (de->data_sheet, "selection-changed",
 		    G_CALLBACK (on_data_selection_change), de);
-  
+
   gtk_notebook_append_page (GTK_NOTEBOOK (de), de->vbox,
 			    gtk_label_new_with_mnemonic (_("Data View")));
 
@@ -586,21 +660,21 @@ psppire_data_editor_init (PsppireDataEditor *de)
   de->var_sheet = g_object_new (JMD_TYPE_SHEET, NULL);
 
   PsppireVarSheetHeader *vsh = g_object_new (PSPPIRE_TYPE_VAR_SHEET_HEADER, NULL);
-  
+
   g_object_set (de->var_sheet,
 		"hmodel", vsh,
 		"select-renderer-func", select_renderer_func,
 		NULL);
 
-  
+
   GtkWidget *var_button = jmd_sheet_get_button (JMD_SHEET (de->var_sheet));
   gtk_button_set_label (GTK_BUTTON (var_button), _("Variable"));
-  
+
   gtk_notebook_append_page (GTK_NOTEBOOK (de), de->var_sheet,
 			    gtk_label_new_with_mnemonic (_("Variable View")));
 
   gtk_widget_show_all (de->var_sheet);
-  
+
   g_signal_connect (de->var_sheet, "row-header-double-clicked",
                     G_CALLBACK (on_var_sheet_var_double_clicked), de);
 
