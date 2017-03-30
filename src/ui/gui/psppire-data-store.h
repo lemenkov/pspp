@@ -97,6 +97,8 @@ void psppire_data_store_clear (PsppireDataStore *data_store);
 
 gboolean psppire_data_store_insert_new_case (PsppireDataStore *ds, casenumber posn);
 
+gboolean psppire_data_store_insert_value (PsppireDataStore *ds,
+					  gint width, gint where);
 
 gboolean psppire_data_store_delete_cases (PsppireDataStore *ds, casenumber first, casenumber count);
 

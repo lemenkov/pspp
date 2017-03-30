@@ -195,7 +195,7 @@ __get_value (GtkTreeModel *tree_model,
 
   struct ccase *cc = datasheet_get_row (store->datasheet, row);
 
-  const union value *val = case_data_idx (cc, column);
+  const union value *val = case_data_idx (cc, var_get_case_index (variable));
 
   GVariant *vv = value_variant_new (val, var_get_width (variable));
 
@@ -299,10 +299,6 @@ psppire_data_store_class_init (PsppireDataStoreClass *class)
 }
 
 
-
-static gboolean
-psppire_data_store_insert_value (PsppireDataStore *ds,
-				  gint width, gint where);
 
 casenumber
 psppire_data_store_get_case_count (const PsppireDataStore *store)
@@ -820,7 +816,7 @@ psppire_data_store_data_in (PsppireDataStore *ds, casenumber casenum, gint idx,
    given WIDTH into every one of them at the position immediately
    preceding WHERE.
 */
-static gboolean
+gboolean
 psppire_data_store_insert_value (PsppireDataStore *ds,
                                  gint width, gint where)
 {

@@ -559,6 +559,21 @@ insert_new_case (PsppireDataEditor *de)
   gtk_widget_queue_draw (GTK_WIDGET (de));
 }
 
+static void
+insert_new_variable (PsppireDataEditor *de)
+{
+  gint item = GPOINTER_TO_INT (g_object_get_data
+				(G_OBJECT (de->data_sheet_cases_column_popup),
+				 "item"));
+
+  const struct variable *v = psppire_dict_insert_variable (de->dict, item, NULL);
+  psppire_data_store_insert_value (de->data_store, var_get_width(v),
+				   var_get_case_index (v));
+
+  gtk_widget_queue_draw (GTK_WIDGET (de));
+}
+
+
 static GtkWidget *
 create_row_header_popup_menu (PsppireDataEditor *de)
 {
@@ -590,6 +605,7 @@ create_column_header_popup_menu (PsppireDataEditor *de)
 
   GtkWidget *item =
     gtk_menu_item_new_with_mnemonic  (_("_Insert Variable"));
+  g_signal_connect_swapped (item, "activate", G_CALLBACK (insert_new_variable), de);
   gtk_menu_shell_append (GTK_MENU_SHELL (menu), item);
 
   item = gtk_separator_menu_item_new ();
@@ -597,18 +613,20 @@ create_column_header_popup_menu (PsppireDataEditor *de)
 
   item =
     gtk_menu_item_new_with_mnemonic  (_("Cl_ear Variables"));
+  gtk_widget_set_sensitive (item, FALSE);
   gtk_menu_shell_append (GTK_MENU_SHELL (menu), item);
 
   item = gtk_separator_menu_item_new ();
   gtk_menu_shell_append (GTK_MENU_SHELL (menu), item);
 
-
   item =
     gtk_menu_item_new_with_mnemonic  (_("Sort _Ascending"));
+  gtk_widget_set_sensitive (item, FALSE);
   gtk_menu_shell_append (GTK_MENU_SHELL (menu), item);
 
   item =
     gtk_menu_item_new_with_mnemonic  (_("Sort _Descending"));
+  gtk_widget_set_sensitive (item, FALSE);
   gtk_menu_shell_append (GTK_MENU_SHELL (menu), item);
 
   gtk_widget_show_all (menu);
