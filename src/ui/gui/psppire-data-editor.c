@@ -560,6 +560,17 @@ insert_new_case (PsppireDataEditor *de)
 }
 
 static void
+delete_variables (PsppireDataEditor *de)
+{
+  JmdRange *range = JMD_SHEET(de->data_sheet)->selection;
+
+  psppire_dict_delete_variables (de->dict, range->start_x,
+				 (range->end_x - range->start_x + 1));
+
+  gtk_widget_queue_draw (GTK_WIDGET (de));
+}
+
+static void
 insert_new_variable (PsppireDataEditor *de)
 {
   gint item = GPOINTER_TO_INT (g_object_get_data
@@ -611,10 +622,12 @@ create_column_header_popup_menu (PsppireDataEditor *de)
   item = gtk_separator_menu_item_new ();
   gtk_menu_shell_append (GTK_MENU_SHELL (menu), item);
 
-  item =
+  de->clear_variables_menu_item =
     gtk_menu_item_new_with_mnemonic  (_("Cl_ear Variables"));
-  gtk_widget_set_sensitive (item, FALSE);
-  gtk_menu_shell_append (GTK_MENU_SHELL (menu), item);
+  g_signal_connect_swapped (de->clear_variables_menu_item, "activate",
+			    G_CALLBACK (delete_variables), de);
+  gtk_widget_set_sensitive (de->clear_variables_menu_item, FALSE);
+  gtk_menu_shell_append (GTK_MENU_SHELL (menu), de->clear_variables_menu_item);
 
   item = gtk_separator_menu_item_new ();
   gtk_menu_shell_append (GTK_MENU_SHELL (menu), item);
@@ -633,16 +646,22 @@ create_column_header_popup_menu (PsppireDataEditor *de)
   return menu;
 }
 
-
 static void
-set_clear_cases_sensitivity (JmdSheet *sheet, gpointer selection, gpointer p)
+set_menu_items_sensitivity (JmdSheet *sheet, gpointer selection, gpointer p)
 {
   JmdRange *range = selection;
   PsppireDataEditor *de = PSPPIRE_DATA_EDITOR (p);
   gint width = gtk_tree_model_get_n_columns (sheet->data_model);
+  gint length = psppire_data_store_get_case_count (de->data_store);
+
 
   gboolean whole_row_selected = (range->start_x == 0 && range->end_x == width - 1);
   gtk_widget_set_sensitive (de->clear_cases_menu_item, whole_row_selected);
+
+
+  gboolean whole_column_selected =
+    (range->start_y == 0 && range->end_y == length - 1);
+  gtk_widget_set_sensitive (de->clear_variables_menu_item, whole_column_selected);
 }
 
 static void
@@ -731,7 +750,7 @@ psppire_data_editor_init (PsppireDataEditor *de)
 		    G_CALLBACK (show_cases_column_popup), de);
 
   g_signal_connect (de->data_sheet, "selection-changed",
-		    G_CALLBACK (set_clear_cases_sensitivity), de);
+		    G_CALLBACK (set_menu_items_sensitivity), de);
 
   jmd_sheet_body_set_conversion_func
     (JMD_SHEET_BODY (JMD_SHEET(de->data_sheet)->selected_body),

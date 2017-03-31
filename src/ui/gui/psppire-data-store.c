@@ -99,7 +99,7 @@ __tree_model_get_n_columns (GtkTreeModel *tree_model)
 {
   PsppireDataStore *store  = PSPPIRE_DATA_STORE (tree_model);
 
-  return psppire_dict_get_value_cnt (store->dict);
+  return psppire_dict_get_var_cnt (store->dict);
 }
 
 
@@ -327,6 +327,16 @@ psppire_data_store_init (PsppireDataStore *data_store)
   data_store->stamp = g_random_int ();
 }
 
+
+static void
+psppire_data_store_delete_value (PsppireDataStore *store, gint case_index)
+{
+  g_return_if_fail (store->datasheet);
+  datasheet_delete_columns (store->datasheet, case_index, 1);
+  datasheet_insert_column (store->datasheet, NULL, -1, case_index);
+}
+
+
 /*
    A callback which occurs after a variable has been deleted.
  */
@@ -337,10 +347,7 @@ delete_variable_callback (GObject *obj, const struct variable *var UNUSED,
 {
   PsppireDataStore *store  = PSPPIRE_DATA_STORE (data);
 
-  g_return_if_fail (store->datasheet);
-
-  datasheet_delete_columns (store->datasheet, case_index, 1);
-  datasheet_insert_column (store->datasheet, NULL, -1, case_index);
+  psppire_data_store_delete_value (store, case_index);
 }
 
 struct resize_datum_aux
