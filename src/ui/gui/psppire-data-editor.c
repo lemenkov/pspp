@@ -616,15 +616,27 @@ insert_new_case (PsppireDataEditor *de)
 }
 
 static void
-delete_variables (PsppireDataEditor *de)
+data_delete_variables (PsppireDataEditor *de)
 {
   JmdRange *range = JMD_SHEET(de->data_sheet)->selection;
 
   psppire_dict_delete_variables (de->dict, range->start_x,
 				 (range->end_x - range->start_x + 1));
 
-  gtk_widget_queue_draw (GTK_WIDGET (de));
+  gtk_widget_queue_draw (GTK_WIDGET (de->data_sheet));
 }
+
+static void
+var_delete_variables (PsppireDataEditor *de)
+{
+  JmdRange *range = JMD_SHEET(de->var_sheet)->selection;
+
+  psppire_dict_delete_variables (de->dict, range->start_y,
+				 (range->end_y - range->start_y + 1));
+
+  gtk_widget_queue_draw (GTK_WIDGET (de->var_sheet));
+}
+
 
 static void
 insert_new_variable_data (PsppireDataEditor *de)
@@ -671,6 +683,8 @@ create_var_row_header_popup_menu (PsppireDataEditor *de)
 
   de->var_clear_variables_menu_item =
     gtk_menu_item_new_with_mnemonic (_("Cl_ear Variables"));
+  g_signal_connect_swapped (de->var_clear_variables_menu_item, "activate",
+			    G_CALLBACK (var_delete_variables), de);
   gtk_widget_set_sensitive (de->var_clear_variables_menu_item, FALSE);
   gtk_menu_shell_append (GTK_MENU_SHELL (menu), de->var_clear_variables_menu_item);
 
@@ -719,7 +733,7 @@ create_data_column_header_popup_menu (PsppireDataEditor *de)
   de->data_clear_variables_menu_item =
     gtk_menu_item_new_with_mnemonic  (_("Cl_ear Variables"));
   g_signal_connect_swapped (de->data_clear_variables_menu_item, "activate",
-			    G_CALLBACK (delete_variables), de);
+			    G_CALLBACK (data_delete_variables), de);
   gtk_widget_set_sensitive (de->data_clear_variables_menu_item, FALSE);
   gtk_menu_shell_append (GTK_MENU_SHELL (menu), de->data_clear_variables_menu_item);
 
@@ -742,6 +756,20 @@ create_data_column_header_popup_menu (PsppireDataEditor *de)
 
   gtk_widget_show_all (menu);
   return menu;
+}
+
+static void
+set_var_popup_sensitivity (JmdSheet *sheet, gpointer selection, gpointer p)
+{
+
+  JmdRange *range = selection;
+  PsppireDataEditor *de = PSPPIRE_DATA_EDITOR (p);
+  gint width = gtk_tree_model_get_n_columns (sheet->data_model);
+
+  gboolean whole_row_selected = (range->start_x == 0 &&
+				 range->end_x == width - 1 - 1);
+  /*  PsppireDict has an "extra" column: TVM_COL_VAR   ^^^ */ 
+  gtk_widget_set_sensitive (de->var_clear_variables_menu_item, whole_row_selected);
 }
 
 static void
@@ -911,6 +939,9 @@ psppire_data_editor_init (PsppireDataEditor *de)
 
   g_signal_connect (de->var_sheet, "row-header-pressed",
 		    G_CALLBACK (show_variables_row_popup), de);
+
+  g_signal_connect (de->var_sheet, "selection-changed",
+		    G_CALLBACK (set_var_popup_sensitivity), de);
 
 
   GtkWidget *var_button = jmd_sheet_get_button (JMD_SHEET (de->var_sheet));
