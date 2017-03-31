@@ -2016,6 +2016,18 @@ psppire_data_window_for_dataset (struct dataset *ds)
   return NULL;
 }
 
+PsppireDataWindow *
+psppire_data_window_for_data_store (PsppireDataStore *data_store)
+{
+  PsppireDataWindow *pdw;
+
+  ll_for_each (pdw, PsppireDataWindow, ll, &all_data_windows)
+    if (pdw->data_store == data_store)
+      return pdw;
+
+  return NULL;
+}
+
 GtkWindow *
 create_data_window (void)
 {

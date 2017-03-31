@@ -28,6 +28,7 @@
 #include "libpspp/str.h"
 #include "ui/gui/helper.h"
 #include "ui/gui/psppire-data-store.h"
+#include "ui/gui/psppire-data-window.h"
 #include "ui/gui/psppire-value-entry.h"
 #include "ui/gui/psppire-conf.h"
 #include "ui/gui/psppire-var-sheet-header.h"
@@ -537,6 +538,60 @@ gchar *myconvfunc (GtkTreeModel *m, gint col, gint row, const GValue *v);
 void myreversefunc (GtkTreeModel *model, gint col, gint row, const gchar *in, GValue *out);
 
 
+enum sort_order
+  {
+    SORT_ASCEND,
+    SORT_DESCEND
+  };
+
+static void
+do_sort (PsppireDataEditor *de, enum sort_order order)
+{
+  JmdRange *range = JMD_SHEET(de->data_sheet)->selection;
+
+  int n_vars = 0;
+  int i;
+
+  PsppireDataWindow *pdw =
+     psppire_data_window_for_dataset (de->data_store);
+
+  GString *syntax = g_string_new ("SORT CASES BY");
+  for (i = range->start_x ; i <= range->end_x; ++i)
+    {
+      const struct variable *var = psppire_dict_get_variable (de->dict, i);
+      if (var != NULL)
+        {
+          g_string_append_printf (syntax, " %s", var_get_name (var));
+          n_vars++;
+        }
+    }
+  if (n_vars > 0)
+    {
+      if (order == SORT_DESCEND)
+        g_string_append (syntax, " (DOWN)");
+      g_string_append_c (syntax, '.');
+      execute_const_syntax_string (pdw, syntax->str);
+    }
+  g_string_free (syntax, TRUE);
+}
+
+
+static void
+sort_ascending (PsppireDataEditor *de)
+{
+  do_sort (de, SORT_ASCEND);
+
+  gtk_widget_queue_draw (GTK_WIDGET (de));
+}
+
+static void
+sort_descending (PsppireDataEditor *de)
+{
+  do_sort (de, SORT_DESCEND);
+
+  gtk_widget_queue_draw (GTK_WIDGET (de));
+}
+
 static void
 delete_cases (PsppireDataEditor *de)
 {
@@ -632,15 +687,19 @@ create_column_header_popup_menu (PsppireDataEditor *de)
   item = gtk_separator_menu_item_new ();
   gtk_menu_shell_append (GTK_MENU_SHELL (menu), item);
 
-  item =
-    gtk_menu_item_new_with_mnemonic  (_("Sort _Ascending"));
-  gtk_widget_set_sensitive (item, FALSE);
-  gtk_menu_shell_append (GTK_MENU_SHELL (menu), item);
+  de->sort_ascending_menu_item =
+    gtk_menu_item_new_with_mnemonic (_("Sort _Ascending"));
+  g_signal_connect_swapped (de->sort_ascending_menu_item, "activate",
+			    G_CALLBACK (sort_ascending), de);
+  gtk_widget_set_sensitive (de->sort_ascending_menu_item, FALSE);
+  gtk_menu_shell_append (GTK_MENU_SHELL (menu), de->sort_ascending_menu_item);
 
-  item =
-    gtk_menu_item_new_with_mnemonic  (_("Sort _Descending"));
-  gtk_widget_set_sensitive (item, FALSE);
-  gtk_menu_shell_append (GTK_MENU_SHELL (menu), item);
+  de->sort_descending_menu_item =
+    gtk_menu_item_new_with_mnemonic (_("Sort _Descending"));
+  g_signal_connect_swapped (de->sort_descending_menu_item, "activate",
+			    G_CALLBACK (sort_descending), de);
+  gtk_widget_set_sensitive (de->sort_descending_menu_item, FALSE);
+  gtk_menu_shell_append (GTK_MENU_SHELL (menu), de->sort_descending_menu_item);
 
   gtk_widget_show_all (menu);
   return menu;
@@ -662,6 +721,8 @@ set_menu_items_sensitivity (JmdSheet *sheet, gpointer selection, gpointer p)
   gboolean whole_column_selected =
     (range->start_y == 0 && range->end_y == length - 1);
   gtk_widget_set_sensitive (de->clear_variables_menu_item, whole_column_selected);
+  gtk_widget_set_sensitive (de->sort_ascending_menu_item, whole_column_selected);
+  gtk_widget_set_sensitive (de->sort_descending_menu_item, whole_column_selected);
 }
 
 static void
