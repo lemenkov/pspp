@@ -218,10 +218,17 @@ change_var_property (PsppireDict *dict, gint col, gint row, GValue *value)
   /* Return the IDXth variable */
   struct variable *var =  psppire_dict_get_variable (dict, row);
 
+  if (NULL == var)
+    var = psppire_dict_insert_variable (dict, row, NULL);
+
   switch (col)
     {
     case DICT_TVM_COL_NAME:
-      dict_rename_var (dict->dict, var, g_value_get_string (value));
+      {
+	const char *name = g_value_get_string (value);
+	if (psppire_dict_check_name (dict, name, FALSE))
+	  dict_rename_var (dict->dict, var, g_value_get_string (value));
+      }
       break;
     case DICT_TVM_COL_LABEL:
       var_set_label (var, g_value_get_string (value));
@@ -768,7 +775,7 @@ set_var_popup_sensitivity (JmdSheet *sheet, gpointer selection, gpointer p)
 
   gboolean whole_row_selected = (range->start_x == 0 &&
 				 range->end_x == width - 1 - 1);
-  /*  PsppireDict has an "extra" column: TVM_COL_VAR   ^^^ */ 
+  /*  PsppireDict has an "extra" column: TVM_COL_VAR   ^^^ */
   gtk_widget_set_sensitive (de->var_clear_variables_menu_item, whole_row_selected);
 }
 
