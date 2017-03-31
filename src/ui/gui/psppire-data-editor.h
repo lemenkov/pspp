@@ -64,12 +64,17 @@ struct _PsppireDataEditor
 
   /* Data sheet popup menu */
   GtkWidget *data_sheet_cases_row_popup;
-  GtkWidget *clear_cases_menu_item;
+  GtkWidget *data_clear_cases_menu_item;
+
 
   GtkWidget *data_sheet_cases_column_popup;
-  GtkWidget *clear_variables_menu_item;
-  GtkWidget *sort_ascending_menu_item;
-  GtkWidget *sort_descending_menu_item;
+  GtkWidget *data_clear_variables_menu_item;
+  GtkWidget *data_sort_ascending_menu_item;
+  GtkWidget *data_sort_descending_menu_item;
+
+  /* Var sheet popup menu */
+  GtkWidget *var_sheet_row_popup;
+  GtkWidget *var_clear_variables_menu_item;
 
   
   /* Data sheet tab. */
