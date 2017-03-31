@@ -563,7 +563,7 @@ psppire_dict_clear (PsppireDict *d)
 }
 
 
-/* Return true is NAME would be a valid name of a variable to add to the
+/* Return true if NAME would be a valid name of a variable to add to the
    dictionary.  False otherwise.
    If REPORT is true, then invalid names will be reported as such as errors
 */
