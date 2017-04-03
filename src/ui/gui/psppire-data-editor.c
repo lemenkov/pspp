@@ -91,18 +91,18 @@ create_combo_renderer (GType type)
   return r;
 }
 
-GtkCellRenderer *xx ;
-GtkCellRenderer *column_width_renderer ;
-GtkCellRenderer *measure_renderer ;
-GtkCellRenderer *alignment_renderer ;
+static GtkCellRenderer *spin_renderer;
+static GtkCellRenderer *column_width_renderer;
+static GtkCellRenderer *measure_renderer;
+static GtkCellRenderer *alignment_renderer;
 
 
 
 static GtkCellRenderer *
 select_renderer_func (gint col, gint row, GType type)
 {
-  if (!xx)
-    xx = create_spin_renderer (type);
+  if (!spin_renderer)
+    spin_renderer = create_spin_renderer (type);
 
   if (col == DICT_TVM_COL_ROLE && !column_width_renderer)
     column_width_renderer = create_combo_renderer (type);
@@ -118,7 +118,7 @@ select_renderer_func (gint col, gint row, GType type)
     case DICT_TVM_COL_WIDTH:
     case DICT_TVM_COL_DECIMAL:
     case DICT_TVM_COL_COLUMNS:
-      return xx;
+      return spin_renderer;
 
     case DICT_TVM_COL_ALIGNMENT:
       return alignment_renderer;
