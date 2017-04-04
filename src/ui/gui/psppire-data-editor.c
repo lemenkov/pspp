@@ -28,6 +28,7 @@
 #include "libpspp/str.h"
 #include "ui/gui/executor.h"
 #include "ui/gui/helper.h"
+#include "ui/gui/var-display.h"
 #include "ui/gui/psppire-data-store.h"
 #include "ui/gui/psppire-data-window.h"
 #include "ui/gui/psppire-value-entry.h"
@@ -91,12 +92,45 @@ create_combo_renderer (GType type)
   return r;
 }
 
+static gchar *
+var_sheet_data_to_string (GtkTreeModel *m, gint col, gint row, const GValue *in)
+{
+  if (col >= n_DICT_COLS - 1) /* -1 because psppire-dict has an extra column */
+    return NULL;
+
+  const struct variable *var = psppire_dict_get_variable (PSPPIRE_DICT (m), row);
+  if (var == NULL)
+    return NULL;
+
+  if (col == DICT_TVM_COL_TYPE)
+    {
+      const struct fmt_spec *print = var_get_print_format (var);
+      return strdup (fmt_gui_name (print->type));
+    }
+  else if (col == DICT_TVM_COL_MISSING_VALUES)
+    return missing_values_to_string (var, NULL);
+  else if (col == DICT_TVM_COL_VALUE_LABELS)
+    {
+      const struct val_labs *vls = var_get_value_labels (var);
+      if (vls == NULL)
+	return strdup (_("None"));
+      const struct val_lab **labels = val_labs_sorted (vls);
+      const struct val_lab *vl = labels[0];
+      gchar *vstr = value_to_text (vl->value, var);
+      char *text = xasprintf (_("{%s, %s}..."), vstr,
+			      val_lab_get_escaped_label (vl));
+      free (vstr);
+      free (labels);
+      return text;
+    }
+
+  return jmd_sheet_default_forward_conversion (m, col, row, in);
+}
+
 static GtkCellRenderer *spin_renderer;
 static GtkCellRenderer *column_width_renderer;
 static GtkCellRenderer *measure_renderer;
 static GtkCellRenderer *alignment_renderer;
-
-
 
 static GtkCellRenderer *
 select_renderer_func (gint col, gint row, GType type)
@@ -435,7 +469,6 @@ psppire_data_editor_class_init (PsppireDataEditorClass *klass)
   g_object_class_install_property (object_class,
                                    PROP_SPLIT_WINDOW,
                                    split_window_spec);
-
 }
 
 
@@ -943,6 +976,9 @@ psppire_data_editor_init (PsppireDataEditor *de)
 		"hmodel", vsh,
 		"select-renderer-func", select_renderer_func,
 		NULL);
+
+  jmd_sheet_set_conversion_func (JMD_SHEET (de->var_sheet),
+				 var_sheet_data_to_string, NULL);
 
   g_signal_connect (de->var_sheet, "row-header-pressed",
 		    G_CALLBACK (show_variables_row_popup), de);
