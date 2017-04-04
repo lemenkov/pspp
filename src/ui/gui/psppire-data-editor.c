@@ -171,7 +171,6 @@ select_renderer_func (gint col, gint row, GType type)
 static void psppire_data_editor_class_init          (PsppireDataEditorClass *klass);
 static void psppire_data_editor_init                (PsppireDataEditor      *de);
 
-static void disconnect_data_sheets (PsppireDataEditor *);
 static void refresh_entry (PsppireDataEditor *);
 
 GType
@@ -207,8 +206,6 @@ static void
 psppire_data_editor_dispose (GObject *obj)
 {
   PsppireDataEditor *de = (PsppireDataEditor *) obj;
-
-  disconnect_data_sheets (de);
 
   if (de->data_store)
     {
@@ -315,7 +312,7 @@ psppire_data_editor_set_property (GObject         *object,
   switch (prop_id)
     {
     case PROP_SPLIT_WINDOW:
-      psppire_data_editor_split_window (de, g_value_get_boolean (value));
+      g_object_set (de->data_sheet, "split", g_value_get_boolean (value), NULL);
       break;
     case PROP_DATA_STORE:
       if ( de->data_store)
@@ -523,11 +520,6 @@ on_datum_entry_activate (PsppireValueEntry *entry, PsppireDataEditor *de)
 {
 }
 
-
-static void
-disconnect_data_sheets (PsppireDataEditor *de)
-{
-}
 
 /* Called when the active cell or the selection in the data sheet changes */
 static void
@@ -949,9 +941,8 @@ psppire_data_editor_init (PsppireDataEditor *de)
   g_signal_connect (de->data_sheet, "selection-changed",
 		    G_CALLBACK (set_menu_items_sensitivity), de);
 
-  jmd_sheet_body_set_conversion_func
-    (JMD_SHEET_BODY (JMD_SHEET(de->data_sheet)->selected_body),
-     myconvfunc, myreversefunc);
+  jmd_sheet_set_conversion_func (JMD_SHEET (de->data_sheet),
+				 myconvfunc, myreversefunc);
 
   GtkWidget *data_button = jmd_sheet_get_button (JMD_SHEET (de->data_sheet));
   gtk_button_set_label (GTK_BUTTON (data_button), _("Case"));
@@ -1089,20 +1080,7 @@ psppire_data_editor_set_font (PsppireDataEditor *de, PangoFontDescription *font_
 void
 psppire_data_editor_split_window (PsppireDataEditor *de, gboolean split)
 {
-  if (split == de->split)
-    return;
-
-  disconnect_data_sheets (de);
-
-  psppire_data_editor_refresh_model (de);
-
-  gtk_widget_show_all (de->vbox);
-
-  if (de->font)
-    set_font_recursively (GTK_WIDGET (de), de->font);
-
-  de->split = split;
-  g_object_notify (G_OBJECT (de), "split");
+  g_object_set (de, "split", split, NULL);
 }
 
 /* Makes the variable with dictionary index DICT_INDEX in DE's dictionary
