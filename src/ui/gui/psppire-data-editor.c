@@ -1110,4 +1110,17 @@ psppire_data_editor_split_window (PsppireDataEditor *de, gboolean split)
 void
 psppire_data_editor_goto_variable (PsppireDataEditor *de, gint dict_index)
 {
+  gint page = gtk_notebook_get_current_page (GTK_NOTEBOOK (de));
+
+  switch (page)
+    {
+      case PSPPIRE_DATA_EDITOR_DATA_VIEW:
+	jmd_sheet_scroll_to (JMD_SHEET (de->data_sheet), dict_index, -1);
+	jmd_sheet_set_active_cell (JMD_SHEET (de->data_sheet), dict_index, -1, NULL);
+	break;
+      case PSPPIRE_DATA_EDITOR_VARIABLE_VIEW:
+	jmd_sheet_scroll_to (JMD_SHEET (de->var_sheet), -1, dict_index);
+	jmd_sheet_set_active_cell (JMD_SHEET (de->var_sheet), -1, dict_index, NULL);
+	break;
+    }
 }
