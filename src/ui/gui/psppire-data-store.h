@@ -109,6 +109,10 @@ gchar *psppire_data_store_get_string (PsppireDataStore *,
                                       glong row, const struct variable *,
                                       bool use_value_label);
 
+gchar * psppire_data_store_value_to_string (PsppireDataStore *store,
+					    gint col, gint row,
+					    const GValue *v);
+
 
 gboolean psppire_data_store_get_value (PsppireDataStore *store,
 				       glong row, const struct variable *var,

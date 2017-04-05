@@ -157,10 +157,8 @@ myreversefunc (GtkTreeModel *model, gint col, gint row,
 }
 
 gchar *
-myconvfunc (GtkTreeModel *model, gint col, gint row, const GValue *v)
+psppire_data_store_value_to_string (PsppireDataStore *store, gint col, gint row, const GValue *v)
 {
-  PsppireDataStore *store  = PSPPIRE_DATA_STORE (model);
-
   const struct variable *variable = psppire_dict_get_variable (store->dict, col);
   g_return_val_if_fail (variable, g_strdup ("???"));
 

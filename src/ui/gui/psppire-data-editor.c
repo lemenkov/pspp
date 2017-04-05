@@ -567,8 +567,8 @@ on_data_selection_change (PsppireDataEditor *de, JmdRange *sel)
 
 static void set_font_recursively (GtkWidget *w, gpointer data);
 
-gchar *myconvfunc (GtkTreeModel *m, gint col, gint row, const GValue *v);
-void myreversefunc (GtkTreeModel *model, gint col, gint row, const gchar *in, GValue *out);
+void myreversefunc (GtkTreeModel *model, gint col, gint row, const gchar *in,
+		    GValue *out);
 
 
 enum sort_order
@@ -932,8 +932,6 @@ psppire_data_editor_init (PsppireDataEditor *de)
   de->data_sheet_cases_row_popup = create_data_row_header_popup_menu (de);
   de->var_sheet_row_popup = create_var_row_header_popup_menu (de);
 
-  g_object_set (de->data_sheet, "export-function", myconvfunc, NULL);
-
   g_signal_connect (de->data_sheet, "row-header-pressed",
 		    G_CALLBACK (show_cases_row_popup), de);
 
@@ -943,8 +941,13 @@ psppire_data_editor_init (PsppireDataEditor *de)
   g_signal_connect (de->data_sheet, "selection-changed",
 		    G_CALLBACK (set_menu_items_sensitivity), de);
 
+  /* FIXME:  The following two statements do basically the same thing.
+     Do we need both? */
+  g_object_set (de->data_sheet, "export-function",
+		psppire_data_store_value_to_string, NULL);
+
   jmd_sheet_set_conversion_func (JMD_SHEET (de->data_sheet),
-				 myconvfunc, myreversefunc);
+				 psppire_data_store_value_to_string, myreversefunc);
 
   GtkWidget *data_button = jmd_sheet_get_button (JMD_SHEET (de->data_sheet));
   gtk_button_set_label (GTK_BUTTON (data_button), _("Case"));
