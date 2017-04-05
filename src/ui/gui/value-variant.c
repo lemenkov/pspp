@@ -28,7 +28,10 @@ enum
     IDX_DATA
   };
 
-
+/* Returns a GVariant containing the data contained
+   in IN and WIDTH.  The returned GVariant has a floating
+   reference.
+ */
 GVariant *
 value_variant_new (const union value *in, int width)
 {
@@ -56,16 +59,20 @@ value_variant_new (const union value *in, int width)
   return g_variant_new_tuple (vv, 2);
 }
 
+/* Destroy the contents of VAL.  Also unref V */
 void
 value_destroy_from_variant (union value *val, GVariant *v)
 {
   GVariant *vwidth = g_variant_get_child_value (v, IDX_WIDTH);
-  gint32 width = g_variant_get_int32 (vwidth);
+  gint32 width = g_variant_get_int32 (vwidth); /* v is unreffed here */
   g_variant_unref (vwidth);
   value_destroy (val, width);
 }
 
 
+/* Fills VAL with the value data held in V.
+   When VAL is no longer required it must be destroyed using
+   value_destroy_from_variant. */
 void
 value_variant_get (union value *val, GVariant *v)
 {
