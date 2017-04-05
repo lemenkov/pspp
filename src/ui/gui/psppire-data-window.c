@@ -1068,8 +1068,8 @@ static void
 on_cut (PsppireDataWindow *dw)
 {
   int p = gtk_notebook_get_current_page (GTK_NOTEBOOK (dw->data_editor));
-  if (p == 0)
-    {
+  if (p == PSPPIRE_DATA_EDITOR_DATA_VIEW)
+  {
       PsppireDict *dict = NULL;
       g_object_get (dw->data_editor, "dictionary", &dict, NULL);
       
@@ -1123,7 +1123,7 @@ static void
 on_copy (PsppireDataWindow *dw)
 {
   int p = gtk_notebook_get_current_page (GTK_NOTEBOOK (dw->data_editor));
-  if (p == 0)
+  if (p == PSPPIRE_DATA_EDITOR_DATA_VIEW)
     {
       GtkClipboard *clip =
 	gtk_clipboard_get_for_display (gtk_widget_get_display (GTK_WIDGET (dw)),
@@ -1151,7 +1151,7 @@ static void
 on_paste (PsppireDataWindow *dw)
 {
   int p = gtk_notebook_get_current_page (GTK_NOTEBOOK (dw->data_editor));
-  if (p == 0)
+  if (p == PSPPIRE_DATA_EDITOR_DATA_VIEW)
     {
       GtkClipboard *clip =
 	gtk_clipboard_get_for_display (gtk_widget_get_display (GTK_WIDGET (dw)),
@@ -1165,31 +1165,30 @@ on_paste (PsppireDataWindow *dw)
 static void
 on_clear_cases (PsppireDataWindow *dw)
 {
-#if SHEET_MERGE
-  int p = gtk_notebook_get_current_page (GTK_NOTEBOOK (dw->data_editor));
-  if (p == 0)
+  PsppireDataEditor *de = dw->data_editor;
+  int p = gtk_notebook_get_current_page (GTK_NOTEBOOK (de));
+  if (p == PSPPIRE_DATA_EDITOR_DATA_VIEW)
     {
-      PsppireDataSheet *ds = psppire_data_editor_get_active_data_sheet (dw->data_editor);
-      psppire_data_sheet_edit_clear_cases (ds);
+      JmdRange *range = JMD_SHEET(de->data_sheet)->selection;
+      psppire_data_store_delete_cases (de->data_store, range->start_y,
+				       range->end_y - range->start_y + 1);
+      gtk_widget_queue_draw (GTK_WIDGET (de->data_sheet));
     }
-#endif
 }
 
 static void
 on_clear_variables (PsppireDataWindow *dw)
 {
-#if SHEET_MERGE
-  int p = gtk_notebook_get_current_page (GTK_NOTEBOOK (dw->data_editor));
-  if (p == 0)
+  PsppireDataEditor *de = dw->data_editor;
+  int p = gtk_notebook_get_current_page (GTK_NOTEBOOK (de));
+  if (p == PSPPIRE_DATA_EDITOR_DATA_VIEW)
     {
-      PsppireDataSheet *ds = psppire_data_editor_get_active_data_sheet (dw->data_editor);
-      psppire_data_sheet_edit_clear_variables (ds);
+      data_delete_variables (de);
     }
   else
     {
-      psppire_var_sheet_clear_variables (PSPPIRE_VAR_SHEET (dw->data_editor->var_sheet));
+      var_delete_variables (de);
     }
-#endif
 }
 
 
@@ -1197,18 +1196,19 @@ on_clear_variables (PsppireDataWindow *dw)
 static void
 insert_variable (PsppireDataWindow *dw)
 {
-#if SHEET_MERGE
-  int p = gtk_notebook_get_current_page (GTK_NOTEBOOK (dw->data_editor));
-  if (p == 0)
+  PsppireDataEditor *de = dw->data_editor;
+  int p = gtk_notebook_get_current_page (GTK_NOTEBOOK (de));
+
+  if (p == PSPPIRE_DATA_EDITOR_DATA_VIEW)
     {
-      PsppireDataSheet *ds = psppire_data_editor_get_active_data_sheet (dw->data_editor);
-      psppire_data_sheet_insert_variable (ds);
+      JmdRange *range = JMD_SHEET(de->data_sheet)->selection;
+      insert_new_variable_at_posn (de, range->start_x);
     }
   else
     {
-      psppire_var_sheet_insert_variable (PSPPIRE_VAR_SHEET (dw->data_editor->var_sheet));
+      JmdRange *range = JMD_SHEET(de->var_sheet)->selection;
+      insert_new_variable_at_posn (de, range->start_y);
     }
-#endif
 }
 
 
@@ -1216,22 +1216,20 @@ insert_variable (PsppireDataWindow *dw)
 static void
 insert_case_at_row (PsppireDataWindow *dw)
 {
-#if SHEET_MERGE
-  PsppireDataSheet *ds = psppire_data_editor_get_active_data_sheet (dw->data_editor);
-
-  psppire_data_sheet_insert_case (ds);
-#endif
+  PsppireDataEditor *de = dw->data_editor;
+  JmdRange *range = JMD_SHEET(de->data_sheet)->selection;
+  insert_new_case_at_posn (de, range->start_y);
 }
-
 
 
 static void
 goto_case (PsppireDataWindow *dw)
 {
-  int p = gtk_notebook_get_current_page (GTK_NOTEBOOK (dw->data_editor));
-  if (p == 0)
+  PsppireDataEditor *de = dw->data_editor;
+  int p = gtk_notebook_get_current_page (GTK_NOTEBOOK (de));
+  if (p == PSPPIRE_DATA_EDITOR_DATA_VIEW)
     {
-      goto_case_dialog (JMD_SHEET (dw->data_editor->data_sheet));
+      goto_case_dialog (JMD_SHEET (de->data_sheet));
     }
 }
 

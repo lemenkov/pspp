@@ -636,18 +636,24 @@ delete_cases (PsppireDataEditor *de)
   gtk_widget_queue_draw (GTK_WIDGET (de));
 }
 
-static void
-insert_new_case (PsppireDataEditor *de)
+void
+insert_new_case_at_posn  (PsppireDataEditor *de, gint posn)
 {
-  gint item = GPOINTER_TO_INT (g_object_get_data
-				(G_OBJECT (de->data_sheet_cases_row_popup), "item"));
-
-  psppire_data_store_insert_new_case (de->data_store, item);
+  psppire_data_store_insert_new_case (de->data_store, posn);
 
   gtk_widget_queue_draw (GTK_WIDGET (de));
 }
 
 static void
+insert_new_case (PsppireDataEditor *de)
+{
+  gint posn = GPOINTER_TO_INT (g_object_get_data
+				(G_OBJECT (de->data_sheet_cases_row_popup), "item"));
+
+  insert_new_case_at_posn (de, posn);
+}
+
+void
 data_delete_variables (PsppireDataEditor *de)
 {
   JmdRange *range = JMD_SHEET(de->data_sheet)->selection;
@@ -658,7 +664,7 @@ data_delete_variables (PsppireDataEditor *de)
   gtk_widget_queue_draw (GTK_WIDGET (de->data_sheet));
 }
 
-static void
+void
 var_delete_variables (PsppireDataEditor *de)
 {
   JmdRange *range = JMD_SHEET(de->var_sheet)->selection;
@@ -669,19 +675,24 @@ var_delete_variables (PsppireDataEditor *de)
   gtk_widget_queue_draw (GTK_WIDGET (de->var_sheet));
 }
 
-
-static void
-insert_new_variable_data (PsppireDataEditor *de)
+void
+insert_new_variable_at_posn (PsppireDataEditor *de, gint posn)
 {
-  gint item = GPOINTER_TO_INT (g_object_get_data
-				(G_OBJECT (de->data_sheet_cases_column_popup),
-				 "item"));
-
-  const struct variable *v = psppire_dict_insert_variable (de->dict, item, NULL);
+  const struct variable *v = psppire_dict_insert_variable (de->dict, posn, NULL);
   psppire_data_store_insert_value (de->data_store, var_get_width(v),
 				   var_get_case_index (v));
 
   gtk_widget_queue_draw (GTK_WIDGET (de));
+}
+
+static void
+insert_new_variable_data (PsppireDataEditor *de)
+{
+  gint posn = GPOINTER_TO_INT (g_object_get_data
+				(G_OBJECT (de->data_sheet_cases_column_popup),
+				 "item"));
+
+  insert_new_variable_at_posn (de, posn);
 }
 
 static void
