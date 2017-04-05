@@ -121,8 +121,7 @@ INSTALL_DATA_HOOKS += install-lang
 
 dist_src_ui_gui_psppire_DATA = \
 	$(UI_FILES) \
-	$(top_srcdir)/src/ui/gui/pspp.lang \
-	$(top_srcdir)/src/ui/gui/psppire.gtkrc
+	$(top_srcdir)/src/ui/gui/pspp.lang
 
 src_ui_gui_psppire_SOURCES = \
 	src/ui/gui/psppire-dialog.c \
