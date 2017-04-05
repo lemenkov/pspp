@@ -932,6 +932,8 @@ psppire_data_editor_init (PsppireDataEditor *de)
   de->data_sheet_cases_row_popup = create_data_row_header_popup_menu (de);
   de->var_sheet_row_popup = create_var_row_header_popup_menu (de);
 
+  g_object_set (de->data_sheet, "export-function", myconvfunc, NULL);
+
   g_signal_connect (de->data_sheet, "row-header-pressed",
 		    G_CALLBACK (show_cases_row_popup), de);
 
