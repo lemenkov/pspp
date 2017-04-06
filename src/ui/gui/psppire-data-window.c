@@ -33,6 +33,7 @@
 #include "ui/gui/helper.h"
 #include "ui/gui/psppire-import-assistant.h"
 #include "ui/gui/psppire-data-window.h"
+#include "ui/gui/psppire-data-editor.h"
 #include "ui/gui/psppire-dialog-action.h"
 #include "ui/gui/psppire-encoding-selector.h"
 #include "ui/gui/psppire-syntax-window.h"
@@ -1183,11 +1184,11 @@ on_clear_variables (PsppireDataWindow *dw)
   int p = gtk_notebook_get_current_page (GTK_NOTEBOOK (de));
   if (p == PSPPIRE_DATA_EDITOR_DATA_VIEW)
     {
-      data_delete_variables (de);
+      psppire_data_editor_data_delete_variables (de);
     }
   else
     {
-      var_delete_variables (de);
+      psppire_data_editor_var_delete_variables (de);
     }
 }
 
@@ -1202,12 +1203,12 @@ insert_variable (PsppireDataWindow *dw)
   if (p == PSPPIRE_DATA_EDITOR_DATA_VIEW)
     {
       JmdRange *range = JMD_SHEET(de->data_sheet)->selection;
-      insert_new_variable_at_posn (de, range->start_x);
+      psppire_data_editor_insert_new_variable_at_posn (de, range->start_x);
     }
   else
     {
       JmdRange *range = JMD_SHEET(de->var_sheet)->selection;
-      insert_new_variable_at_posn (de, range->start_y);
+      psppire_data_editor_insert_new_variable_at_posn (de, range->start_y);
     }
 }
 
@@ -1218,7 +1219,7 @@ insert_case_at_row (PsppireDataWindow *dw)
 {
   PsppireDataEditor *de = dw->data_editor;
   JmdRange *range = JMD_SHEET(de->data_sheet)->selection;
-  insert_new_case_at_posn (de, range->start_y);
+  psppire_data_editor_insert_new_case_at_posn (de, range->start_y);
 }
 
 

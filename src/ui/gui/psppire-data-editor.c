@@ -636,25 +636,17 @@ delete_cases (PsppireDataEditor *de)
   gtk_widget_queue_draw (GTK_WIDGET (de));
 }
 
-void
-insert_new_case_at_posn  (PsppireDataEditor *de, gint posn)
-{
-  psppire_data_store_insert_new_case (de->data_store, posn);
-
-  gtk_widget_queue_draw (GTK_WIDGET (de));
-}
-
 static void
 insert_new_case (PsppireDataEditor *de)
 {
   gint posn = GPOINTER_TO_INT (g_object_get_data
 				(G_OBJECT (de->data_sheet_cases_row_popup), "item"));
 
-  insert_new_case_at_posn (de, posn);
+  psppire_data_editor_insert_new_case_at_posn (de, posn);
 }
 
 void
-data_delete_variables (PsppireDataEditor *de)
+psppire_data_editor_data_delete_variables (PsppireDataEditor *de)
 {
   JmdRange *range = JMD_SHEET(de->data_sheet)->selection;
 
@@ -665,7 +657,7 @@ data_delete_variables (PsppireDataEditor *de)
 }
 
 void
-var_delete_variables (PsppireDataEditor *de)
+psppire_data_editor_var_delete_variables (PsppireDataEditor *de)
 {
   JmdRange *range = JMD_SHEET(de->var_sheet)->selection;
 
@@ -676,7 +668,15 @@ var_delete_variables (PsppireDataEditor *de)
 }
 
 void
-insert_new_variable_at_posn (PsppireDataEditor *de, gint posn)
+psppire_data_editor_insert_new_case_at_posn  (PsppireDataEditor *de, gint posn)
+{
+  psppire_data_store_insert_new_case (de->data_store, posn);
+
+  gtk_widget_queue_draw (GTK_WIDGET (de->data_sheet));
+}
+
+void
+psppire_data_editor_insert_new_variable_at_posn (PsppireDataEditor *de, gint posn)
 {
   const struct variable *v = psppire_dict_insert_variable (de->dict, posn, NULL);
   psppire_data_store_insert_value (de->data_store, var_get_width(v),
@@ -692,7 +692,7 @@ insert_new_variable_data (PsppireDataEditor *de)
 				(G_OBJECT (de->data_sheet_cases_column_popup),
 				 "item"));
 
-  insert_new_variable_at_posn (de, posn);
+  psppire_data_editor_insert_new_variable_at_posn (de, posn);
 }
 
 static void
@@ -727,7 +727,8 @@ create_var_row_header_popup_menu (PsppireDataEditor *de)
   de->var_clear_variables_menu_item =
     gtk_menu_item_new_with_mnemonic (_("Cl_ear Variables"));
   g_signal_connect_swapped (de->var_clear_variables_menu_item, "activate",
-			    G_CALLBACK (var_delete_variables), de);
+			    G_CALLBACK (psppire_data_editor_var_delete_variables),
+			    de);
   gtk_widget_set_sensitive (de->var_clear_variables_menu_item, FALSE);
   gtk_menu_shell_append (GTK_MENU_SHELL (menu), de->var_clear_variables_menu_item);
 
@@ -776,7 +777,8 @@ create_data_column_header_popup_menu (PsppireDataEditor *de)
   de->data_clear_variables_menu_item =
     gtk_menu_item_new_with_mnemonic  (_("Cl_ear Variables"));
   g_signal_connect_swapped (de->data_clear_variables_menu_item, "activate",
-			    G_CALLBACK (data_delete_variables), de);
+			    G_CALLBACK (psppire_data_editor_data_delete_variables),
+			    de);
   gtk_widget_set_sensitive (de->data_clear_variables_menu_item, FALSE);
   gtk_menu_shell_append (GTK_MENU_SHELL (menu), de->data_clear_variables_menu_item);
 
