@@ -954,9 +954,10 @@ psppire_data_editor_init (PsppireDataEditor *de)
   g_signal_connect (de->data_sheet, "selection-changed",
 		    G_CALLBACK (set_menu_items_sensitivity), de);
 
-  jmd_sheet_set_conversion_func (JMD_SHEET (de->data_sheet),
-				 psppire_data_store_value_to_string,
-				 myreversefunc);
+  g_object_set (de->data_sheet,
+		"forward-conversion", psppire_data_store_value_to_string,
+		"reverse-conversion", myreversefunc,
+		NULL);
 
   GtkWidget *data_button = jmd_sheet_get_button (JMD_SHEET (de->data_sheet));
   gtk_button_set_label (GTK_BUTTON (data_button), _("Case"));
@@ -982,8 +983,9 @@ psppire_data_editor_init (PsppireDataEditor *de)
 		"select-renderer-func", select_renderer_func,
 		NULL);
 
-  jmd_sheet_set_conversion_func (JMD_SHEET (de->var_sheet),
-				 var_sheet_data_to_string, NULL);
+  g_object_set (de->var_sheet,
+		"forward-conversion", var_sheet_data_to_string,
+		NULL);
 
   g_signal_connect (de->var_sheet, "row-header-pressed",
 		    G_CALLBACK (show_variables_row_popup), de);
