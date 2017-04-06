@@ -952,13 +952,9 @@ psppire_data_editor_init (PsppireDataEditor *de)
   g_signal_connect (de->data_sheet, "selection-changed",
 		    G_CALLBACK (set_menu_items_sensitivity), de);
 
-  /* FIXME:  The following two statements do basically the same thing.
-     Do we need both? */
-  g_object_set (de->data_sheet, "export-function",
-		psppire_data_store_value_to_string, NULL);
-
   jmd_sheet_set_conversion_func (JMD_SHEET (de->data_sheet),
-				 psppire_data_store_value_to_string, myreversefunc);
+				 psppire_data_store_value_to_string,
+				 myreversefunc);
 
   GtkWidget *data_button = jmd_sheet_get_button (JMD_SHEET (de->data_sheet));
   gtk_button_set_label (GTK_BUTTON (data_button), _("Case"));
