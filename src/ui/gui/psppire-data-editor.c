@@ -498,21 +498,22 @@ on_data_sheet_var_double_clicked (JmdSheet *data_sheet, gint dict_index,
 static void
 refresh_entry (PsppireDataEditor *de)
 {
-  union value val;
   gint row, col;
-  jmd_sheet_get_active_cell (JMD_SHEET (de->data_sheet), &col, &row);
+  if (jmd_sheet_get_active_cell (JMD_SHEET (de->data_sheet), &col, &row))
+    {
+      union value val;
+      const struct variable *var = psppire_dict_get_variable (de->dict, col);
+      psppire_value_entry_set_variable (PSPPIRE_VALUE_ENTRY (de->datum_entry), var);
 
-  const struct variable *var = psppire_dict_get_variable (de->dict, col);
-  psppire_value_entry_set_variable (PSPPIRE_VALUE_ENTRY (de->datum_entry), var);
+      int width = var_get_width (var);
+      if (! psppire_data_store_get_value (PSPPIRE_DATA_STORE (de->data_store),
+					  row, var, &val))
+	return;
 
-  int width = var_get_width (var);
-  if (! psppire_data_store_get_value (PSPPIRE_DATA_STORE (de->data_store),
-				      row, var, &val))
-    return;
-
-  psppire_value_entry_set_value (PSPPIRE_VALUE_ENTRY (de->datum_entry),
-				 &val, width);
-  value_destroy (&val, width);
+      psppire_value_entry_set_value (PSPPIRE_VALUE_ENTRY (de->datum_entry),
+				     &val, width);
+      value_destroy (&val, width);
+    }
 }
 
 static void
