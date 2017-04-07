@@ -568,7 +568,7 @@ on_data_selection_change (PsppireDataEditor *de, JmdRange *sel)
 
 static void set_font_recursively (GtkWidget *w, gpointer data);
 
-void myreversefunc (GtkTreeModel *model, gint col, gint row, const gchar *in,
+gboolean myreversefunc (GtkTreeModel *model, gint col, gint row, const gchar *in,
 		    GValue *out);
 
 

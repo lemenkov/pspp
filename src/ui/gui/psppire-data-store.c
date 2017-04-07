@@ -129,14 +129,14 @@ __iter_nth_child (GtkTreeModel *tree_model,
   return TRUE;
 }
 
-void
+gboolean
 myreversefunc (GtkTreeModel *model, gint col, gint row,
 	       const gchar *in, GValue *out)
 {
   PsppireDataStore *store  = PSPPIRE_DATA_STORE (model);
 
   const struct variable *variable = psppire_dict_get_variable (store->dict, col);
-  g_return_if_fail (variable);
+  g_return_val_if_fail (variable, FALSE);
 
   const struct fmt_spec *fmt = var_get_print_format (variable);
 
@@ -154,6 +154,7 @@ myreversefunc (GtkTreeModel *model, gint col, gint row,
   g_value_init (out, G_TYPE_VARIANT);
   g_value_set_variant (out, vrnt);
   free (xx);
+  return TRUE;
 }
 
 gchar *
