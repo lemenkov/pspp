@@ -1119,3 +1119,29 @@ psppire_data_editor_goto_variable (PsppireDataEditor *de, gint dict_index)
 	break;
     }
 }
+
+/* Set the datum at COL, ROW, to that contained in VALUE.
+ */
+static void
+store_set_datum (GtkTreeModel *model, gint col, gint row,
+			 const GValue *value)
+{
+  PsppireDataStore *store = PSPPIRE_DATA_STORE (model);
+  GVariant *v = g_value_get_variant (value);
+  union value uv;
+  value_variant_get (&uv, v);
+  const struct variable *var = psppire_dict_get_variable (store->dict, col);
+  psppire_data_store_set_value (store, row, var, &uv);
+  value_destroy_from_variant (&uv, v);
+}
+
+void
+psppire_data_editor_paste (PsppireDataEditor *de)
+{
+  JmdSheet *sheet = JMD_SHEET (de->data_sheet);
+  GtkClipboard *clip =
+    gtk_clipboard_get_for_display (gtk_widget_get_display (GTK_WIDGET (sheet)),
+				   GDK_SELECTION_CLIPBOARD);
+
+  jmd_sheet_paste (sheet, clip, store_set_datum);
+}

@@ -110,8 +110,7 @@ struct _PsppireDataSheet *psppire_data_editor_get_active_data_sheet (PsppireData
 
 enum {PSPPIRE_DATA_EDITOR_DATA_VIEW = 0, PSPPIRE_DATA_EDITOR_VARIABLE_VIEW};
 
-
-
+void psppire_data_editor_paste (PsppireDataEditor *de);
 
 G_END_DECLS
 

@@ -1118,8 +1118,6 @@ on_cut (PsppireDataWindow *dw)
     }
 }
 
-
-
 static void
 on_copy (PsppireDataWindow *dw)
 {
@@ -1134,34 +1132,15 @@ on_copy (PsppireDataWindow *dw)
     }
 }
 
-
-static void
-trf (GtkClipboard *clip,
-	  GdkAtom *atoms,
-	  gint n_atoms,
-	  gpointer data)
-{
-  int i;
-  for (i = 0; i < n_atoms; ++i)
-    {
-      g_print ("%s\n", gdk_atom_name (atoms[i]));
-    }
-}
-
 static void
 on_paste (PsppireDataWindow *dw)
 {
   int p = gtk_notebook_get_current_page (GTK_NOTEBOOK (dw->data_editor));
   if (p == PSPPIRE_DATA_EDITOR_DATA_VIEW)
     {
-      GtkClipboard *clip =
-	gtk_clipboard_get_for_display (gtk_widget_get_display (GTK_WIDGET (dw)),
-				   GDK_SELECTION_CLIPBOARD);
-
-      gtk_clipboard_request_targets (clip, trf, dw);
+      psppire_data_editor_paste (dw->data_editor);
     }
 }
-
 
 static void
 on_clear_cases (PsppireDataWindow *dw)
@@ -1192,8 +1171,6 @@ on_clear_variables (PsppireDataWindow *dw)
     }
 }
 
-
-
 static void
 insert_variable (PsppireDataWindow *dw)
 {
@@ -1212,8 +1189,6 @@ insert_variable (PsppireDataWindow *dw)
     }
 }
 
-
-
 static void
 insert_case_at_row (PsppireDataWindow *dw)
 {
@@ -1221,7 +1196,6 @@ insert_case_at_row (PsppireDataWindow *dw)
   JmdRange *range = JMD_SHEET(de->data_sheet)->selection;
   psppire_data_editor_insert_new_case_at_posn (de, range->start_y);
 }
-
 
 static void
 goto_case (PsppireDataWindow *dw)
@@ -1233,7 +1207,6 @@ goto_case (PsppireDataWindow *dw)
       goto_case_dialog (JMD_SHEET (de->data_sheet));
     }
 }
-
 
 static GtkWidget *
 create_file_menu (PsppireDataWindow *dw)
