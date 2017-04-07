@@ -243,7 +243,7 @@ psppire_data_editor_refresh_model (PsppireDataEditor *de)
 }
 
 static void
-change_var_property (PsppireDict *dict, gint col, gint row, GValue *value)
+change_var_property (PsppireDict *dict, gint col, gint row, const GValue *value)
 {
   /* Return the IDXth variable */
   struct variable *var =  psppire_dict_get_variable (dict, row);
