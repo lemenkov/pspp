@@ -39,7 +39,6 @@
 
 
 #include "ui/gui/efficient-sheet/jmd-sheet.h"
-#include "ui/gui/efficient-sheet/jmd-sheet-body.h"
 
 #include <gettext.h>
 #define _(msgid) gettext (msgid)
