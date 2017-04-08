@@ -111,7 +111,7 @@ var_sheet_data_to_string (GtkTreeModel *m, gint col, gint row, const GValue *in)
   else if (col == DICT_TVM_COL_VALUE_LABELS)
     {
       const struct val_labs *vls = var_get_value_labels (var);
-      if (vls == NULL)
+      if (vls == NULL || val_labs_count (vls) == 0)
 	return strdup (_("None"));
       const struct val_lab **labels = val_labs_sorted (vls);
       const struct val_lab *vl = labels[0];
