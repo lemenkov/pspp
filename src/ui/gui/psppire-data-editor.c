@@ -311,7 +311,9 @@ psppire_data_editor_set_property (GObject         *object,
   switch (prop_id)
     {
     case PROP_SPLIT_WINDOW:
-      g_object_set (de->data_sheet, "split", g_value_get_boolean (value), NULL);
+      de->split = g_value_get_boolean (value);
+      g_object_set (de->data_sheet, "split", de->split, NULL);
+      g_object_set (de->var_sheet, "split", de->split, NULL);
       break;
     case PROP_DATA_STORE:
       if ( de->data_store)
