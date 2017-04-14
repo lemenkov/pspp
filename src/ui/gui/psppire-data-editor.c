@@ -326,7 +326,6 @@ psppire_data_editor_set_property (GObject         *object,
 
       de->data_store = g_value_get_pointer (value);
       g_object_ref (de->data_store);
-      g_print ("NEW STORE\n");
 
       g_object_set (de->data_sheet, "data-model", de->data_store, NULL);
       psppire_data_editor_refresh_model (de);
