@@ -404,7 +404,7 @@ TESTSUITE_AT = \
 	tests/perl-module.at
 
 TESTSUITE = $(srcdir)/tests/testsuite
-DISTCLEANFILES += tests/atconfig tests/atlocal $(TESTSUITE)
+DISTCLEANFILES += tests/atconfig tests/atlocal
 AUTOTEST_PATH = tests/data:tests/language/lexer:tests/libpspp:tests/output:src/ui/terminal:utilities
 
 $(srcdir)/tests/testsuite.at: tests/testsuite.in tests/automake.mk
