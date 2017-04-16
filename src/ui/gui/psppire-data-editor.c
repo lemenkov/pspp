@@ -260,6 +260,32 @@ change_var_property (PsppireDict *dict, gint col, gint row, const GValue *value)
 	  dict_rename_var (dict->dict, var, g_value_get_string (value));
       }
       break;
+    case DICT_TVM_COL_WIDTH:
+      {
+      gint width = g_value_get_int (value);
+      if (var_is_numeric (var))
+        {
+          struct fmt_spec format = *var_get_print_format (var);
+	  fmt_change_width (&format, width, FMT_FOR_OUTPUT);
+          var_set_both_formats (var, &format);
+        }
+      else
+	{
+	  var_set_width (var, width);
+	}
+      }
+      break;
+    case DICT_TVM_COL_DECIMAL:
+      {
+      gint decimals = g_value_get_int (value);
+      if (decimals >= 0)
+        {
+          struct fmt_spec format = *var_get_print_format (var);
+	  fmt_change_decimals (&format, decimals, FMT_FOR_OUTPUT);
+          var_set_both_formats (var, &format);
+        }
+      }
+      break;
     case DICT_TVM_COL_LABEL:
       var_set_label (var, g_value_get_string (value));
       break;
