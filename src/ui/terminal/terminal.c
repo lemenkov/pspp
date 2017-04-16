@@ -48,6 +48,7 @@ terminal_check_size (void)
   int view_width = 0;
   int view_length = 0;
 
+#ifdef HAVE_TERMIOS_H
   struct winsize ws;
   if (0 == ioctl (0, TIOCGWINSZ, &ws))
     {
@@ -55,6 +56,7 @@ terminal_check_size (void)
       view_length = ws.ws_row;
     }
   else
+#endif
     {
       if (view_width <= 0 && getenv ("COLUMNS") != NULL)
 	view_width = atoi (getenv ("COLUMNS"));
