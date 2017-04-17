@@ -76,16 +76,12 @@ struct _PsppireDataEditor
   GtkWidget *var_sheet_row_popup;
   GtkWidget *var_clear_variables_menu_item;
 
-  
   /* Data sheet tab. */
   GtkWidget *vbox;             /* Top-level widget in tab. */
   GtkWidget *cell_ref_label;   /* GtkLabel that shows selected case and var. */
   GtkWidget *datum_entry;      /* PsppireValueEntry for editing current cell. */
 
-  gboolean split;              /* True if data sheets are split. */
-
-  /* UI manager for whichever var or data sheet is currently in use. */
-  GtkWidget *old_vbox_widget;
+  gboolean split;              /* True if the sheets are in split view. */
 
   GtkCellRenderer *value_label_renderer;
 };

@@ -977,7 +977,6 @@ psppire_data_editor_init (PsppireDataEditor *de)
   gtk_style_context_add_class (context, "psppire-data-editor");
 
   de->font = NULL;
-  de->old_vbox_widget = NULL;
 
   g_object_set (de, "tab-pos", GTK_POS_BOTTOM, NULL);
 
