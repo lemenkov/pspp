@@ -29,6 +29,8 @@
 #include "ui/gui/executor.h"
 #include "ui/gui/helper.h"
 #include "ui/gui/var-display.h"
+#include "ui/gui/val-labs-dialog.h"
+#include "ui/gui/psppire-dict.h"
 #include "ui/gui/psppire-data-store.h"
 #include "ui/gui/psppire-data-window.h"
 #include "ui/gui/psppire-value-entry.h"
@@ -126,13 +128,36 @@ var_sheet_data_to_string (GtkTreeModel *m, gint col, gint row, const GValue *in)
   return jmd_sheet_default_forward_conversion (m, col, row, in);
 }
 
+static void
+set_value_labels (GtkCellRenderer *renderer,
+     GtkCellEditable *editable,
+     gchar           *path,
+     gpointer         user_data)
+{
+  PsppireDataEditor *de = PSPPIRE_DATA_EDITOR (user_data);
+  gint row = -1, col = -1;
+  sscanf (path, "r%dc%d", &row, &col);
+
+  struct variable *var =
+    psppire_dict_get_variable (PSPPIRE_DICT (de->dict), row);
+
+  struct val_labs *vls = psppire_val_labs_dialog_run (NULL, var);
+
+  if (vls)
+    {
+      var_set_value_labels (var, vls);
+      val_labs_destroy (vls);
+    }
+}
+
+
 static GtkCellRenderer *spin_renderer;
 static GtkCellRenderer *column_width_renderer;
 static GtkCellRenderer *measure_renderer;
 static GtkCellRenderer *alignment_renderer;
 
 static GtkCellRenderer *
-select_renderer_func (gint col, gint row, GType type)
+select_renderer_func (gint col, gint row, GType type, PsppireDataEditor *de)
 {
   if (!spin_renderer)
     spin_renderer = create_spin_renderer (type);
@@ -152,6 +177,9 @@ select_renderer_func (gint col, gint row, GType type)
     case DICT_TVM_COL_DECIMAL:
     case DICT_TVM_COL_COLUMNS:
       return spin_renderer;
+
+    case DICT_TVM_COL_VALUE_LABELS:
+      return de->value_label_renderer;
 
     case DICT_TVM_COL_ALIGNMENT:
       return alignment_renderer;
@@ -1008,6 +1036,7 @@ psppire_data_editor_init (PsppireDataEditor *de)
   g_object_set (de->var_sheet,
 		"hmodel", vsh,
 		"select-renderer-func", select_renderer_func,
+		"select-renderer-datum", de,
 		NULL);
 
   g_object_set (de->var_sheet,
@@ -1046,6 +1075,10 @@ psppire_data_editor_init (PsppireDataEditor *de)
       set_font_recursively (GTK_WIDGET (de), de->font);
     }
 
+  de->value_label_renderer = gtk_cell_renderer_text_new ();
+  g_signal_connect (de->value_label_renderer,
+		    "editing-started", G_CALLBACK (set_value_labels),
+		    de);
 }
 
 GtkWidget*

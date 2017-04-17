@@ -86,6 +86,8 @@ struct _PsppireDataEditor
 
   /* UI manager for whichever var or data sheet is currently in use. */
   GtkWidget *old_vbox_widget;
+
+  GtkCellRenderer *value_label_renderer;
 };
 
 struct _PsppireDataEditorClass
