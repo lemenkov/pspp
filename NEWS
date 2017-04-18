@@ -6,6 +6,8 @@ Please send PSPP bug reports to bug-gnu-pspp@gnu.org.
 
 Changes from 0.10.2 to 0.10.4:
 
+ * Some inappropriate properties in selection dialogs have been corrected.
+
  * The graphical user interface has a new menu: Edit|Options
 
  * A bug which could cause the HTML driver to go into a tight loop

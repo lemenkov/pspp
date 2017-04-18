@@ -58,7 +58,6 @@
                         <property name="border_width">5</property>
                         <property name="headers_visible">False</property>
                         <property name="headers_clickable">False</property>
-                        <property name="selection_mode">single</property>
                         <child internal-child="selection">
                           <object class="GtkTreeSelection" id="psppire-dictview-selection"/>
                         </child>
