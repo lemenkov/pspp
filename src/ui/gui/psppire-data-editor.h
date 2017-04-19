@@ -84,6 +84,7 @@ struct _PsppireDataEditor
   gboolean split;              /* True if the sheets are in split view. */
 
   GtkCellRenderer *value_label_renderer;
+  GtkCellRenderer *missing_values_renderer;
 };
 
 struct _PsppireDataEditorClass

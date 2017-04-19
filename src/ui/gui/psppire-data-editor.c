@@ -129,6 +129,29 @@ var_sheet_data_to_string (GtkTreeModel *m, gint col, gint row, const GValue *in)
 }
 
 static void
+set_missing_values (GtkCellRenderer *renderer,
+     GtkCellEditable *editable,
+     gchar           *path,
+     gpointer         user_data)
+{
+  PsppireDataEditor *de = PSPPIRE_DATA_EDITOR (user_data);
+  gint row = -1, col = -1;
+  jmd_sheet_get_active_cell (JMD_SHEET (de->var_sheet), &col, &row);
+
+  struct variable *var =
+    psppire_dict_get_variable (PSPPIRE_DICT (de->dict), row);
+
+  struct missing_values mv;
+  if (GTK_RESPONSE_OK == psppire_missing_val_dialog_run (NULL,
+							 var, &mv))
+    {
+      var_set_missing_values (var, &mv);
+    }
+
+  mv_destroy (&mv);
+}
+
+static void
 set_value_labels (GtkCellRenderer *renderer,
      GtkCellEditable *editable,
      gchar           *path,
@@ -136,7 +159,7 @@ set_value_labels (GtkCellRenderer *renderer,
 {
   PsppireDataEditor *de = PSPPIRE_DATA_EDITOR (user_data);
   gint row = -1, col = -1;
-  sscanf (path, "r%dc%d", &row, &col);
+  jmd_sheet_get_active_cell (JMD_SHEET (de->var_sheet), &col, &row);
 
   struct variable *var =
     psppire_dict_get_variable (PSPPIRE_DICT (de->dict), row);
@@ -180,6 +203,9 @@ select_renderer_func (gint col, gint row, GType type, PsppireDataEditor *de)
 
     case DICT_TVM_COL_VALUE_LABELS:
       return de->value_label_renderer;
+
+    case DICT_TVM_COL_MISSING_VALUES:
+      return de->missing_values_renderer;
 
     case DICT_TVM_COL_ALIGNMENT:
       return alignment_renderer;
@@ -1077,6 +1103,11 @@ psppire_data_editor_init (PsppireDataEditor *de)
   de->value_label_renderer = gtk_cell_renderer_text_new ();
   g_signal_connect (de->value_label_renderer,
 		    "editing-started", G_CALLBACK (set_value_labels),
+		    de);
+
+  de->missing_values_renderer = gtk_cell_renderer_text_new ();
+  g_signal_connect (de->missing_values_renderer,
+		    "editing-started", G_CALLBACK (set_missing_values),
 		    de);
 }
 
