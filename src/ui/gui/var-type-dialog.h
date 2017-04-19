@@ -102,7 +102,7 @@ struct _PsppireVarTypeDialogClass {
 GType psppire_var_type_dialog_get_type (void) G_GNUC_CONST;
 PsppireVarTypeDialog* psppire_var_type_dialog_new (const struct fmt_spec *);
 
-void psppire_var_type_dialog_run (GtkWindow *parent_window,
+gint psppire_var_type_dialog_run (GtkWindow *parent_window,
                                   struct fmt_spec *format);
 
 G_END_DECLS

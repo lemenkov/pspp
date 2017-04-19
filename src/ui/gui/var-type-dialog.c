@@ -201,7 +201,7 @@ psppire_var_type_dialog_new (const struct fmt_spec *format)
                   NULL));
 }
 
-void
+gint
 psppire_var_type_dialog_run (GtkWindow *parent_window,
                              struct fmt_spec *format)
 {
@@ -212,10 +212,13 @@ psppire_var_type_dialog_run (GtkWindow *parent_window,
   gtk_window_set_modal (GTK_WINDOW (dialog), TRUE);
   gtk_widget_show (GTK_WIDGET (dialog));
 
-  if (psppire_dialog_run (PSPPIRE_DIALOG (dialog)) == GTK_RESPONSE_OK)
+  gint result = psppire_dialog_run (PSPPIRE_DIALOG (dialog));
+  if (result == GTK_RESPONSE_OK)
     *format = *psppire_var_type_dialog_get_format (dialog);
 
   gtk_widget_destroy (GTK_WIDGET (dialog));
+
+  return result;
 }
 
 
