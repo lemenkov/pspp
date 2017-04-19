@@ -142,8 +142,9 @@ set_missing_values (GtkCellRenderer *renderer,
     psppire_dict_get_variable (PSPPIRE_DICT (de->dict), row);
 
   struct missing_values mv;
-  if (GTK_RESPONSE_OK == psppire_missing_val_dialog_run (NULL,
-							 var, &mv))
+  if (GTK_RESPONSE_OK ==
+      psppire_missing_val_dialog_run (gtk_widget_get_toplevel (GTK_WIDGET (de)),
+				      var, &mv))
     {
       var_set_missing_values (var, &mv);
     }
@@ -164,7 +165,8 @@ set_value_labels (GtkCellRenderer *renderer,
   struct variable *var =
     psppire_dict_get_variable (PSPPIRE_DICT (de->dict), row);
 
-  struct val_labs *vls = psppire_val_labs_dialog_run (NULL, var);
+  struct val_labs *vls =
+    psppire_val_labs_dialog_run (gtk_widget_get_toplevel (GTK_WIDGET (de)), var);
 
   if (vls)
     {
