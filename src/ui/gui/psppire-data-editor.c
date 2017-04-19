@@ -30,6 +30,8 @@
 #include "ui/gui/helper.h"
 #include "ui/gui/var-display.h"
 #include "ui/gui/val-labs-dialog.h"
+#include "ui/gui/missing-val-dialog.h"
+#include "ui/gui/var-type-dialog.h"
 #include "ui/gui/psppire-dict.h"
 #include "ui/gui/psppire-data-store.h"
 #include "ui/gui/psppire-data-window.h"
@@ -129,6 +131,28 @@ var_sheet_data_to_string (GtkTreeModel *m, gint col, gint row, const GValue *in)
 }
 
 static void
+set_var_type (GtkCellRenderer *renderer,
+     GtkCellEditable *editable,
+     gchar           *path,
+     gpointer         user_data)
+{
+  PsppireDataEditor *de = PSPPIRE_DATA_EDITOR (user_data);
+  gint row = -1, col = -1;
+  jmd_sheet_get_active_cell (JMD_SHEET (de->var_sheet), &col, &row);
+
+  struct variable *var =
+    psppire_dict_get_variable (PSPPIRE_DICT (de->dict), row);
+
+  const struct fmt_spec *format = var_get_write_format (var);
+  struct fmt_spec fmt = *format;
+  GtkWindow *win = GTK_WINDOW (gtk_widget_get_toplevel (GTK_WIDGET (de)));
+  if (GTK_RESPONSE_OK == psppire_var_type_dialog_run (win, &fmt))
+    {
+      var_set_width_and_formats (var, fmt_var_width (&fmt), &fmt, &fmt);
+    }
+}
+
+static void
 set_missing_values (GtkCellRenderer *renderer,
      GtkCellEditable *editable,
      gchar           *path,
@@ -143,7 +167,7 @@ set_missing_values (GtkCellRenderer *renderer,
 
   struct missing_values mv;
   if (GTK_RESPONSE_OK ==
-      psppire_missing_val_dialog_run (gtk_widget_get_toplevel (GTK_WIDGET (de)),
+      psppire_missing_val_dialog_run (GTK_WINDOW (gtk_widget_get_toplevel (GTK_WIDGET (de))),
 				      var, &mv))
     {
       var_set_missing_values (var, &mv);
@@ -166,7 +190,7 @@ set_value_labels (GtkCellRenderer *renderer,
     psppire_dict_get_variable (PSPPIRE_DICT (de->dict), row);
 
   struct val_labs *vls =
-    psppire_val_labs_dialog_run (gtk_widget_get_toplevel (GTK_WIDGET (de)), var);
+    psppire_val_labs_dialog_run (GTK_WINDOW (gtk_widget_get_toplevel (GTK_WIDGET (de))), var);
 
   if (vls)
     {
@@ -202,6 +226,9 @@ select_renderer_func (gint col, gint row, GType type, PsppireDataEditor *de)
     case DICT_TVM_COL_DECIMAL:
     case DICT_TVM_COL_COLUMNS:
       return spin_renderer;
+
+    case DICT_TVM_COL_TYPE:
+      return de->var_type_renderer;
 
     case DICT_TVM_COL_VALUE_LABELS:
       return de->value_label_renderer;
@@ -1110,6 +1137,11 @@ psppire_data_editor_init (PsppireDataEditor *de)
   de->missing_values_renderer = gtk_cell_renderer_text_new ();
   g_signal_connect (de->missing_values_renderer,
 		    "editing-started", G_CALLBACK (set_missing_values),
+		    de);
+
+  de->var_type_renderer = gtk_cell_renderer_text_new ();
+  g_signal_connect (de->var_type_renderer,
+		    "editing-started", G_CALLBACK (set_var_type),
 		    de);
 }
 

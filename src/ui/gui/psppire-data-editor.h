@@ -85,6 +85,7 @@ struct _PsppireDataEditor
 
   GtkCellRenderer *value_label_renderer;
   GtkCellRenderer *missing_values_renderer;
+  GtkCellRenderer *var_type_renderer;
 };
 
 struct _PsppireDataEditorClass
