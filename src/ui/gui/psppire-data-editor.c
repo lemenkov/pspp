@@ -621,6 +621,9 @@ refresh_entry (PsppireDataEditor *de)
     {
       union value val;
       const struct variable *var = psppire_dict_get_variable (de->dict, col);
+      if (var == NULL)
+	return;
+
       psppire_value_entry_set_variable (PSPPIRE_VALUE_ENTRY (de->datum_entry), var);
 
       int width = var_get_width (var);
