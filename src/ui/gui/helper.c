@@ -155,7 +155,14 @@ text_to_value__ (const gchar *text,
     }
 
   value_init (val, width);
-  free (data_in (ss_cstr (text), UTF8, format->type, val, width, encoding));
+  char *err = data_in (ss_cstr (text), UTF8, format->type, val, width, encoding);
+
+  if (err)
+    {
+      value_destroy (val, width);
+      val = NULL;
+      free (err);
+    }
 
   return val;
 }
