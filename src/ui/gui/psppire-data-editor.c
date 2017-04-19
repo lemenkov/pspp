@@ -443,6 +443,10 @@ psppire_data_editor_set_property (GObject         *object,
       g_object_set (de->data_sheet, "data-model", de->data_store, NULL);
       psppire_data_editor_refresh_model (de);
 
+      g_signal_connect_swapped (de->data_sheet, "selection-changed",
+				G_CALLBACK (refresh_entry),
+				de);
+
       g_signal_connect_swapped (de->data_sheet, "value-changed",
 				G_CALLBACK (change_data_value), de->data_store);
 
