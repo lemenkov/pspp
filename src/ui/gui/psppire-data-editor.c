@@ -389,7 +389,8 @@ change_var_property (PsppireDict *dict, gint col, gint row, const GValue *value)
       var_set_role (var, g_value_get_int (value));
       break;
     default:
-      g_message ("Changing col %d of var sheet not yet supported", col);
+      g_warning ("Changing unknown column %d of variable sheet column not supported",
+		 col);
       break;
     }
 }
