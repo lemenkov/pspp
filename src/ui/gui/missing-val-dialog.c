@@ -151,7 +151,7 @@ psppire_missing_val_dialog_new (const struct variable *var)
                   NULL));
 }
 
-void
+gint
 psppire_missing_val_dialog_run (GtkWindow *parent_window,
                                 const struct variable *var,
                                 struct missing_values *mv)
@@ -163,12 +163,14 @@ psppire_missing_val_dialog_run (GtkWindow *parent_window,
   gtk_window_set_modal (GTK_WINDOW (dialog), TRUE);
   gtk_widget_show (GTK_WIDGET (dialog));
 
-  if (psppire_dialog_run (PSPPIRE_DIALOG (dialog)) == GTK_RESPONSE_OK)
+  gint result = psppire_dialog_run (PSPPIRE_DIALOG (dialog));
+  if (result == GTK_RESPONSE_OK)
     mv_copy (mv, psppire_missing_val_dialog_get_missing_values (dialog));
   else
     mv_copy (mv, var_get_missing_values (var));
 
   gtk_widget_destroy (GTK_WIDGET (dialog));
+  return result;
 }
 
 
