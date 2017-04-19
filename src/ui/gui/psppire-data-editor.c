@@ -307,6 +307,10 @@ psppire_data_editor_dispose (GObject *obj)
       de->font = NULL;
     }
 
+  g_object_unref (de->value_label_renderer);
+  g_object_unref (de->missing_values_renderer);
+  g_object_unref (de->var_type_renderer);
+
   /* Chain up to the parent class */
   G_OBJECT_CLASS (parent_class)->dispose (obj);
 }
