@@ -26,6 +26,7 @@
 #include "libpspp/str.h"
 #include "psppire-dict.h"
 #include "data/spreadsheet-reader.h"
+#include "psppire-text-file.h"
 
 G_BEGIN_DECLS
 
@@ -58,11 +59,7 @@ typedef struct _PsppireImportAssistant       PsppireImportAssistant;
 typedef struct _PsppireImportAssistantClass  PsppireImportAssistantClass;
 
 
-struct first_line_page;
-
 typedef void page_func (PsppireImportAssistant *, GtkWidget *page);
-
-enum { MAX_PREVIEW_LINES = 1000 }; /* Max number of lines to read. */
 
 struct _PsppireImportAssistant
 {
@@ -112,7 +109,7 @@ struct _PsppireImportAssistant
 
 
   /* START first line page */
-  GtkWidget *tree_view;
+  GtkWidget *first_line_tree_view;
   GtkWidget *variable_names_cb;
   /* END first line page */
 
@@ -125,23 +122,11 @@ struct _PsppireImportAssistant
   GtkCellRenderer *prop_renderer;
   GtkCellRenderer *fixed_renderer;
 
-  // START     struct file file;
-  char *file_name;        /* File name. */
+  PsppireTextFile *text_file;
 
-  /* Relevant only for text files */
-
-  gchar *encoding;        /* Encoding. */
-  unsigned long int total_lines; /* Number of lines in file. */
-  gboolean total_is_exact;    /* Is total_lines exact (or an estimate)? */
-
-  /* The first several lines of the file. */
-  struct string lines[MAX_PREVIEW_LINES];
-  size_t line_cnt;
-
-  // END     struct file file;
-
+  GtkTreeModel *delimiters_model;
+  
   struct sheet_spec_page *sheet_spec;
-  struct first_line_page *first_line;
 
   /* The columns produced. */
   struct column *columns;     /* Information about each column. */

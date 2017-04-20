@@ -974,8 +974,10 @@ file_import (PsppireDataWindow *dw)
   g_main_loop_run (asst->main_loop);
   g_main_loop_unref (asst->main_loop);
 
+#if TEXT_FILE  
   if (!asst->file_name)
     goto end;
+
   
   switch (asst->response)
     {
@@ -992,7 +994,7 @@ file_import (PsppireDataWindow *dw)
     default:
       break;
     }
-    
+#endif    
  end:  
   gtk_widget_destroy (GTK_WIDGET (asst));
 }
