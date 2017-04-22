@@ -1,7 +1,7 @@
 /*
   PSPP - a program for statistical analysis.
   Copyright (C) 1997-9, 2000, 2007, 2009, 2010, 2011, 2014, 2015 Free Software Foundation, Inc.
-   
+
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
   the Free Software Foundation, either version 3 of the License, or
@@ -11,7 +11,7 @@
   but WITHOUT ANY WARRANTY; without even the implied warranty of
   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
   GNU General Public License for more details.
-  
+
   You should have received a copy of the GNU General Public License
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
@@ -107,7 +107,7 @@ enum
     FRQ_PERCENT
   };
 
-enum sortprops 
+enum sortprops
   {
     FRQ_AFREQ,
     FRQ_DFREQ,
@@ -238,7 +238,7 @@ struct freq_compare_aux
 
 static void calc_stats (const struct var_freqs *vf, double d[FRQ_ST_count]);
 
-static void do_piechart(const struct frq_chart *pie, 
+static void do_piechart(const struct frq_chart *pie,
 			const struct variable *var,
 			const struct freq_tab *frq_tab);
 
@@ -246,7 +246,7 @@ static void do_barchart(const struct frq_chart *bar,
 			const struct variable **var,
 			const struct freq_tab *frq_tab);
 
-static void dump_statistics (const struct frq_proc *frq, 
+static void dump_statistics (const struct frq_proc *frq,
 			     const struct var_freqs *vf,
 			     const struct variable *wv);
 
@@ -606,9 +606,9 @@ cmd_frequencies (struct lexer *lexer, struct dataset *ds)
 
   frq.vars = NULL;
   frq.n_vars = 0;
-  
-  frq.stats = BIT_INDEX (FRQ_ST_MEAN) 
-    | BIT_INDEX (FRQ_ST_STDDEV) 
+
+  frq.stats = BIT_INDEX (FRQ_ST_MEAN)
+    | BIT_INDEX (FRQ_ST_STDDEV)
     | BIT_INDEX (FRQ_ST_MINIMUM)
     | BIT_INDEX (FRQ_ST_MAXIMUM);
 
@@ -652,11 +652,11 @@ cmd_frequencies (struct lexer *lexer, struct dataset *ds)
 
       if (lex_match_id (lexer, "STATISTICS"))
 	{
-	  frq.stats = BIT_INDEX (FRQ_ST_MEAN) 
-	    | BIT_INDEX (FRQ_ST_STDDEV) 
+	  frq.stats = BIT_INDEX (FRQ_ST_MEAN)
+	    | BIT_INDEX (FRQ_ST_STDDEV)
 	    | BIT_INDEX (FRQ_ST_MINIMUM)
 	    | BIT_INDEX (FRQ_ST_MAXIMUM);
-	  
+
 	  frq.n_stats = 4;
 
 	  if (lex_match (lexer, T_EQUALS))
@@ -670,8 +670,8 @@ cmd_frequencies (struct lexer *lexer, struct dataset *ds)
 	    {
               if (lex_match_id (lexer, "DEFAULT"))
                 {
-		  frq.stats = BIT_INDEX (FRQ_ST_MEAN) 
-		    | BIT_INDEX (FRQ_ST_STDDEV) 
+		  frq.stats = BIT_INDEX (FRQ_ST_MEAN)
+		    | BIT_INDEX (FRQ_ST_STDDEV)
 		    | BIT_INDEX (FRQ_ST_MINIMUM)
 		    | BIT_INDEX (FRQ_ST_MAXIMUM);
 
@@ -773,7 +773,7 @@ cmd_frequencies (struct lexer *lexer, struct dataset *ds)
 	      if (lex_force_num (lexer))
 		{
 		  frq.percentiles =
-		    xrealloc (frq.percentiles, 
+		    xrealloc (frq.percentiles,
 			      (frq.n_percentiles + 1)
 			      * sizeof (*frq.percentiles));
 		  frq.percentiles[frq.n_percentiles].p = lex_number (lexer)  / 100.0;
@@ -850,7 +850,7 @@ cmd_frequencies (struct lexer *lexer, struct dataset *ds)
 	      for (i = 0; i < n + 1; ++i)
 		{
 		  frq.percentiles =
-		    xrealloc (frq.percentiles, 
+		    xrealloc (frq.percentiles,
 			      (frq.n_percentiles + 1)
 			      * sizeof (*frq.percentiles));
 		  frq.percentiles[frq.n_percentiles].p =
@@ -1116,10 +1116,10 @@ cmd_frequencies (struct lexer *lexer, struct dataset *ds)
   if (frq.stats & BIT_INDEX (FRQ_ST_MEDIAN))
     {
 	frq.percentiles =
-	  xrealloc (frq.percentiles, 
+	  xrealloc (frq.percentiles,
 		    (frq.n_percentiles + 1)
 		    * sizeof (*frq.percentiles));
-	
+
 	frq.percentiles[frq.n_percentiles].p = 0.50;
 	frq.percentiles[frq.n_percentiles].show = true;
 
@@ -1149,24 +1149,24 @@ cmd_frequencies (struct lexer *lexer, struct dataset *ds)
 	    msg (SE, _("%s for histogram must be greater than or equal to %s, "
 		       "but %s was specified as %.15g and %s as %.15g.  "
 		       "%s and %s will be ignored."),
-		 "MAX", "MIN", 
-		 "MIN", hist->x_min, 
+		 "MAX", "MIN",
+		 "MIN", hist->x_min,
 		 "MAX", hist->x_max,
 		 "MIN", "MAX");
 	    hist->x_min = hist->x_max = SYSMIS;
 	  }
 
 	frq.percentiles =
-	  xrealloc (frq.percentiles, 
+	  xrealloc (frq.percentiles,
 		    (frq.n_percentiles + 2)
 		    * sizeof (*frq.percentiles));
-	
+
 	frq.percentiles[frq.n_percentiles].p = 0.25;
 	frq.percentiles[frq.n_percentiles].show = false;
 
 	frq.percentiles[frq.n_percentiles + 1].p = 0.75;
 	frq.percentiles[frq.n_percentiles + 1].show = false;
-	
+
 	frq.n_percentiles+=2;
       }
 
@@ -1193,8 +1193,8 @@ cmd_frequencies (struct lexer *lexer, struct dataset *ds)
 	  {
 	    msg (SE, _("%s for pie chart must be greater than or equal to %s, "
 		       "but %s was specified as %.15g and %s as %.15g.  "
-		       "%s and %s will be ignored."), 
-		 "MAX", "MIN", 
+		       "%s and %s will be ignored."),
+		 "MAX", "MIN",
 		 "MIN", pie->x_min,
 		 "MAX", pie->x_max,
 		 "MIN", "MAX");
@@ -1207,7 +1207,7 @@ cmd_frequencies (struct lexer *lexer, struct dataset *ds)
     int i,o;
     double previous_p = -1;
     qsort (frq.percentiles, frq.n_percentiles,
-	   sizeof (*frq.percentiles), 
+	   sizeof (*frq.percentiles),
 	   ptile_3way);
 
     frq.n_show_percentiles = 0;
@@ -1384,7 +1384,7 @@ pick_cat_counts (const struct frq_chart *catchart,
   int n_slices = 0;
   int i;
   struct freq *slices = xnmalloc (frq_tab->n_valid + frq_tab->n_missing, sizeof *slices);
-  
+
   for (i = 0; i < frq_tab->n_valid; i++)
     {
       const struct freq *f = &frq_tab->valid[i];
@@ -1393,9 +1393,9 @@ pick_cat_counts (const struct frq_chart *catchart,
 
       if (f->count < catchart->x_min)
 	continue;
-      
+
       slices[n_slices] = *f;
-      
+
       n_slices++;
     }
 
@@ -1405,11 +1405,11 @@ pick_cat_counts (const struct frq_chart *catchart,
 	{
 	  const struct freq *f = &frq_tab->missing[i];
 	  slices[n_slices].count += f->count;
-	  
+
 	  if (i == 0)
 	    slices[n_slices].values[0] = f->values[0];
 	}
-      
+
       if (frq_tab->n_missing > 0)
 	n_slices++;
     }
@@ -1432,7 +1432,7 @@ pick_cat_counts_ptr (const struct frq_chart *catchart,
   int n_slices = 0;
   int i;
   struct freq **slices = xnmalloc (frq_tab->n_valid + frq_tab->n_missing, sizeof *slices);
-  
+
   for (i = 0; i < frq_tab->n_valid; i++)
     {
       struct freq *f = &frq_tab->valid[i];
@@ -1441,9 +1441,9 @@ pick_cat_counts_ptr (const struct frq_chart *catchart,
 
       if (f->count < catchart->x_min)
 	continue;
-      
+
       slices[n_slices] = f;
-      
+
       n_slices++;
     }
 
@@ -1459,7 +1459,7 @@ pick_cat_counts_ptr (const struct frq_chart *catchart,
 	    }
 
 	  slices[n_slices]->count += f->count;
-	  
+
 	}
     }
 
@@ -1497,7 +1497,7 @@ do_barchart(const struct frq_chart *bar, const struct variable **var,
   struct freq **slices = pick_cat_counts_ptr (bar, frq_tab, &n_slices);
 
   chart_item_submit (barchart_create (var, 1,
-				      (bar->y_scale == FRQ_FREQ) ? _("Count") : _("Percent"), 
+				      (bar->y_scale == FRQ_FREQ) ? _("Count") : _("Percent"),
 				      (bar->y_scale == FRQ_PERCENT),
 				      slices, n_slices));
   free (slices);

@@ -328,7 +328,7 @@ parse_map_in (struct lexer *lexer, struct map_in *in, struct pool *pool,
         set_map_in_generic (in, MAP_MISSING);
       else if (!lex_force_string (lexer))
         return false;
-      else 
+      else
 	{
 	  set_map_in_str (in, pool, lex_tokss (lexer), max_src_width,
                           dict_encoding);
@@ -412,10 +412,10 @@ parse_map_out (struct lexer *lexer, struct pool *pool, struct map_out *out)
       set_map_out_str (out, pool, lex_tokss (lexer));
       lex_get (lexer);
     }
-  else if (lex_match_id (lexer, "COPY")) 
+  else if (lex_match_id (lexer, "COPY"))
     {
       out->copy_input = true;
-      out->width = 0; 
+      out->width = 0;
     }
   else
     {
@@ -541,7 +541,7 @@ enlarge_dst_widths (struct recode_trns *trns)
   const struct variable *narrow_var = NULL;
   int min_dst_width = INT_MAX;
   trns->max_dst_width = 0;
-  
+
   for (i = 0; i < trns->var_cnt; i++)
     {
       const struct variable *v = trns->dst_vars[i];
@@ -562,12 +562,12 @@ enlarge_dst_widths (struct recode_trns *trns)
 	{
 	  if (out->width > min_dst_width)
 	    {
-	      msg (ME, 
+	      msg (ME,
 		   _("Cannot recode because the variable %s would require a width of %d bytes or greater, but it has a width of only %d bytes."),
 		   var_get_name (narrow_var), out->width, min_dst_width);
 	      return false;
 	    }
-	    
+
 	  value_resize_pool (trns->pool, &out->value,
 			     out->width, trns->max_dst_width);
 	}

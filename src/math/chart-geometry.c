@@ -31,17 +31,17 @@
 
 static const double standard_tick[] = {1, 2, 5, 10};
 
-/* 
+/*
    Find a set {LOWER, INTERVAL, N_TICKS} such that:
 
    LOWER <= LOWDBL,
    LOWER + INTERVAL > LOWDBL,
-   
+
    LOWER + N_TICKS * INTERVAL < HIGHDBL
    LOWER + (N_TICKS + 1) * INTERVAL >= HIGHDBL
 
    INTERVAL = X * 10^N
-    where: N is integer 
+    where: N is integer
     and    X is an element of {1, 2, 5}
 
    In other words:
@@ -90,10 +90,10 @@ chart_get_scale (double high, double low,
     }
 }
 
-/* 
+/*
    Generate a format string which can be passed to printf like functions,
-   which will produce a string in scientific notation representing a real 
-   number.  N_DECIMALS is the number of decimal places EXPONENT is the 
+   which will produce a string in scientific notation representing a real
+   number.  N_DECIMALS is the number of decimal places EXPONENT is the
    value of the exponent.
 */
 static inline char *
@@ -101,21 +101,21 @@ gen_pango_markup_scientific_format_string (int n_decimals, int exponent)
 {
   /* TRANSLATORS: This is a format string which, when presented to
      printf like functions, will create a pango markup string to
-     display real number in scientific  notation. 
-     
-     In its untranslated form, it will display similar to "1.23 x 10^4". You 
+     display real number in scientific  notation.
+
+     In its untranslated form, it will display similar to "1.23 x 10^4". You
      can leave it untranslated if this is how scientific notation is usually
      presented in your language.
-     
+
      Some locales (such as German) prefer the centered dot rather than the
      multiplication sign between the mantissa an exponent. In which
      case, you can change "#215;" to "#8901;" or other unicode code
-     point as appropriate. 
+     point as appropriate.
 
      The . in this string does not and should not be changed, since
-     that is taken care of by the stdc library. 
+     that is taken care of by the stdc library.
 
-     For information on Pango markup, see 
+     For information on Pango markup, see
      http://developer.gnome.org/pango/stable/PangoMarkupFormat.html
 
      For tables of unicode code points, see http://unicode.org/charts

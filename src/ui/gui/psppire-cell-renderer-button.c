@@ -191,7 +191,7 @@ psppire_cell_renderer_button_render (GtkCellRenderer      *cell,
   GtkStateType state_type;
   PsppireCellRendererButton *button = PSPPIRE_CELL_RENDERER_BUTTON (cell);
   gfloat xalign, yalign;
-  
+
   if (!button->editable || ! gtk_cell_renderer_get_sensitive (cell))
     state_type = GTK_STATE_INSENSITIVE;
   else if (flags & GTK_CELL_RENDERER_SELECTED)
@@ -226,7 +226,7 @@ psppire_cell_renderer_button_render (GtkCellRenderer      *cell,
     {
       cairo_set_line_width (cr, 1.0);
       cairo_set_line_cap (cr, CAIRO_LINE_CAP_SQUARE);
-      cairo_move_to (cr, 
+      cairo_move_to (cr,
 		     cell_area->x,
 		     cell_area->y + cell_area->height);
 
@@ -548,7 +548,7 @@ psppire_cell_renderer_button_dispose (GObject *obj)
 
   if (button->dispose_has_run)
     return;
-  
+
   button->dispose_has_run = TRUE;
 
   /* When called with NULL, as we are doing here, update_style_cache

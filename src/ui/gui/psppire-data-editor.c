@@ -684,7 +684,7 @@ psppire_data_editor_init (PsppireDataEditor *de)
 
   GtkStyleContext *context = gtk_widget_get_style_context (GTK_WIDGET (de));
   gtk_style_context_add_class (context, "psppire-data-editor");
-  
+
   de->font = NULL;
   de->old_vbox_widget = NULL;
 
@@ -845,7 +845,7 @@ psppire_data_editor_split_window (PsppireDataEditor *de, gboolean split)
   de->old_vbox_widget = de->datasheet_vbox_widget;
   g_object_ref (de->old_vbox_widget);
   /* FIXME:  old_vbox_widget needs to be unreffed in dispose.
-	(currently it seems to provoke an error if I do that.  
+	(currently it seems to provoke an error if I do that.
 	I don't know why. */
   gtk_container_remove (GTK_CONTAINER (de->vbox), de->datasheet_vbox_widget);
 

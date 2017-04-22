@@ -1344,7 +1344,7 @@ psppire_data_sheet_class_init (PsppireDataSheetClass *class)
                           TRUE,
                           G_PARAM_READWRITE));
 
-  
+
   g_object_class_install_property (
     gobject_class,
     PROP_MAY_DELETE_VARS,
@@ -1360,7 +1360,7 @@ do_row_popup_menu (GtkWidget *widget, guint button, guint32 time)
 {
   PsppireDataSheet *data_sheet = PSPPIRE_DATA_SHEET (widget);
 
-  
+
   gtk_menu_popup (GTK_MENU (data_sheet->row_popup_menu), NULL, NULL, NULL, NULL, button, time);
 }
 
@@ -1437,7 +1437,7 @@ on_selection_changed (PsppSheetSelection *selection,
   GtkWidget *top = gtk_widget_get_toplevel (GTK_WIDGET (data_sheet));
   if (! PSPPIRE_IS_DATA_WINDOW (top))
     return;
-  
+
   PsppireDataWindow *dw = PSPPIRE_DATA_WINDOW (top);
 
   gint n_selected_rows = pspp_sheet_selection_count_selected_rows (selection);
@@ -1594,7 +1594,7 @@ psppire_data_sheet_edit_clear_variables (PsppireDataSheet *data_sheet)
   PsppireDict *dict = data_sheet->data_store->dict;
   GList *iter;
   GList *list = pspp_sheet_selection_get_selected_columns (selection);
-  
+
   if (list == NULL)
     return;
   list = g_list_reverse (list);
@@ -1667,10 +1667,10 @@ psppire_data_sheet_init (PsppireDataSheet *obj)
 
     g_signal_connect_swapped (clear_cases, "activate", G_CALLBACK (psppire_data_sheet_edit_clear_cases), obj);
     g_signal_connect_swapped (insert_case, "activate", G_CALLBACK (psppire_data_sheet_insert_case), obj);
-  
+
     gtk_widget_show_all (obj->row_popup_menu);
   }
-  
+
   {
     obj->column_popup_menu = gtk_menu_new ();
     int i = 0;
@@ -1685,19 +1685,19 @@ psppire_data_sheet_init (PsppireDataSheet *obj)
 
     g_signal_connect_swapped (obj->pu_sort_up, "activate", G_CALLBACK (on_sort_up), obj);
     g_signal_connect_swapped (obj->pu_sort_down, "activate", G_CALLBACK (on_sort_down), obj);
-  
+
     gtk_menu_attach (GTK_MENU (obj->column_popup_menu), insert_variable,     0, 1, i, i + 1); ++i;
     gtk_menu_attach (GTK_MENU (obj->column_popup_menu), clear_variables,     0, 1, i, i + 1); ++i;
 
     gtk_menu_attach (GTK_MENU (obj->column_popup_menu), gtk_separator_menu_item_new (),     0, 1, i, i + 1); ++i;
-  
+
     gtk_menu_attach (GTK_MENU (obj->column_popup_menu), obj->pu_sort_up,             0, 1, i, i + 1); ++i;
     gtk_menu_attach (GTK_MENU (obj->column_popup_menu), obj->pu_sort_down,           0, 1, i, i + 1); ++i;
 
     gtk_widget_show_all (obj->column_popup_menu);
   }
 
-  
+
   g_signal_connect (obj, "notify::model",
                     G_CALLBACK (psppire_data_sheet_model_changed), NULL);
 
@@ -1710,7 +1710,7 @@ psppire_data_sheet_init (PsppireDataSheet *obj)
                     G_CALLBACK (on_query_tooltip), NULL);
   g_signal_connect (obj, "button-press-event",
                     G_CALLBACK (on_button_pressed), NULL);
-  
+
   g_signal_connect (obj, "popup-menu", G_CALLBACK (on_popup_menu), NULL);
 
   g_signal_connect (pspp_sheet_view_get_selection (sheet_view),
@@ -2307,7 +2307,7 @@ psppire_data_sheet_update_clip_actions (PsppireDataSheet *data_sheet)
   GtkWidget *top = gtk_widget_get_toplevel (GTK_WIDGET (data_sheet));
   if (! PSPPIRE_IS_DATA_WINDOW (top))
     return;
-  
+
   PsppireDataWindow *dw = PSPPIRE_DATA_WINDOW (top);
   gboolean enable =
     psppire_data_sheet_get_selected_range (data_sheet, &rows, &cols);
@@ -2462,7 +2462,7 @@ on_owner_change (GtkClipboard *clip, GdkEventOwnerChange *event, gpointer data)
   GtkWidget *top = gtk_widget_get_toplevel (GTK_WIDGET (data_sheet));
   if (! PSPPIRE_IS_DATA_WINDOW (top))
     return;
-  
+
   PsppireDataWindow *dw = PSPPIRE_DATA_WINDOW (top);
 
   gtk_clipboard_request_targets (clip,

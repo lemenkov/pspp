@@ -263,7 +263,7 @@ struct _PsppSheetViewPrivate
   guint enable_search : 1;
   guint disable_popdown : 1;
   guint search_custom_entry_set : 1;
-  
+
   guint hover_selection : 1;
   guint imcontext_changed : 1;
 

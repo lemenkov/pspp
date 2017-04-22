@@ -51,7 +51,7 @@ psppire_means_layer_dispose (GObject *obj)
 }
 
 
-static void 
+static void
 psppire_means_layer_class_init    (PsppireMeansLayerClass *class)
 {
   GObjectClass *object_class = G_OBJECT_CLASS (class);
@@ -79,7 +79,7 @@ add_new_layer (PsppireMeansLayer *ml)
   GtkTreeModel *tm = gtk_tree_view_get_model (GTK_TREE_VIEW (ml->var_view));
   g_ptr_array_add (ml->layer, tm);
   g_signal_connect_swapped (tm, "row-inserted", G_CALLBACK (refresh_view), ml);
-  
+
   g_object_ref (tm);
 }
 
@@ -94,7 +94,7 @@ psppire_means_layer_update (PsppireMeansLayer *ml)
 
   l = g_strdup_printf (_("Layer %d of %d"),
 			      ml->current_layer + 1, ml->n_layers);
-  
+
   gtk_label_set_text (GTK_LABEL (ml->label), l);
   g_free (l);
 
@@ -105,7 +105,7 @@ psppire_means_layer_update (PsppireMeansLayer *ml)
     GtkTreeModel *tm = g_ptr_array_index (ml->layer, ml->current_layer);
 
     g_return_if_fail (GTK_IS_TREE_MODEL (tm));
-    
+
     gtk_widget_set_sensitive (ml->forward,
 			      gtk_tree_model_get_iter_first (tm, &dummy));
   }
@@ -156,7 +156,7 @@ psppire_means_layer_clear (PsppireMeansLayer *ml)
   psppire_means_layer_update (ml);
 }
 
-static void 
+static void
 psppire_means_layer_init  (PsppireMeansLayer      *ml)
 {
   GtkWidget *hbox_upper = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 5);
@@ -164,7 +164,7 @@ psppire_means_layer_init  (PsppireMeansLayer      *ml)
   GtkWidget *sw = gtk_scrolled_window_new (NULL, NULL);
 
   gtk_orientable_set_orientation (GTK_ORIENTABLE (ml), GTK_ORIENTATION_VERTICAL);
-  
+
   ml->dispose_has_run = FALSE;
   ml->forward = gtk_button_new_with_label (_("Forward"));
   ml->back = gtk_button_new_with_label (_("Back"));

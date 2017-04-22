@@ -105,7 +105,7 @@ main (int argc, char **argv)
 	}
       zip_reader_destroy (zr);
     }
-  else 
+  else
     exit (1);
 
   return 0;

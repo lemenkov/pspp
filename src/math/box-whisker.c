@@ -80,7 +80,7 @@ acc (struct statistic *s, const struct ccase *cx,
 
       if (y > bw->whiskers[1])
 	bw->whiskers[1] = y;
-	  
+
       return;
     }
 
@@ -136,7 +136,7 @@ box_whisker_outliers (const struct box_whisker *bw)
 
   TH are the tukey hinges of the dataset.
 
-  id_idx is the index into the casereader which will be used to label 
+  id_idx is the index into the casereader which will be used to label
   outliers.
   id_var is the variable from which that label came, or NULL
 */

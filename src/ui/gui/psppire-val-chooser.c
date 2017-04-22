@@ -83,7 +83,7 @@ enum
 };
 
 
-enum 
+enum
   {
     VC_VALUE,
     VC_SYSMIS,
@@ -116,7 +116,7 @@ psppire_val_chooser_set_property (GObject         *object,
       gtk_widget_set_sensitive (GTK_WIDGET (vr->rw[VC_SYSMIS].rb), !vr->input_var_is_string);
       gtk_widget_set_sensitive (GTK_WIDGET (vr->rw[VC_MISSING].rb), !vr->input_var_is_string);
       gtk_widget_set_sensitive (GTK_WIDGET (vr->rw[VC_RANGE].rb), !vr->input_var_is_string);
-      gtk_widget_set_sensitive (GTK_WIDGET (vr->rw[VC_LOW_UP].rb), !vr->input_var_is_string);      
+      gtk_widget_set_sensitive (GTK_WIDGET (vr->rw[VC_LOW_UP].rb), !vr->input_var_is_string);
       gtk_widget_set_sensitive (GTK_WIDGET (vr->rw[VC_HIGH_DOWN].rb), !vr->input_var_is_string);
       break;
     default:
@@ -252,7 +252,7 @@ static void simple_set (PsppireValChooser *vr, struct old_value *ov, const struc
 static void lo_up_set (PsppireValChooser *vr, struct old_value *ov, const struct range_widgets  *rw)
 {
   const gchar *text = gtk_entry_get_text (rw->e1);
-  
+
   ov->type = OV_LOW_UP;
   ov->v.range[1] = g_strtod (text, 0);
 }
@@ -261,7 +261,7 @@ static void lo_up_set (PsppireValChooser *vr, struct old_value *ov, const struct
 static void hi_down_set (PsppireValChooser *vr, struct old_value *ov, const struct range_widgets *rw)
 {
   const gchar *text = gtk_entry_get_text (rw->e1);
-  
+
   ov->type = OV_HIGH_DOWN;
   ov->v.range[0] = g_strtod (text, 0);
 }
@@ -289,7 +289,7 @@ static void range_set (PsppireValChooser *vr, struct old_value *ov, const struct
 
   ov->type = OV_RANGE;
   ov->v.range[0] = g_strtod (text, 0);
-  
+
   text = gtk_entry_get_text (rw->e2);
   ov->v.range[1] = g_strtod (text, 0);
 }
@@ -308,7 +308,7 @@ static GtkWidget * range_entry (struct layout *l, struct range_widgets *rw)
 		"valign", GTK_ALIGN_CENTER,
 		"halign", GTK_ALIGN_START,
 		NULL);
-		
+
 
   g_signal_connect (vbox, "notify::sensitive", G_CALLBACK (focus_follows_sensitivity), entrylo);
 
@@ -329,7 +329,7 @@ static GtkWidget * simple_entry (struct layout *l, struct range_widgets *rw)
 }
 
 
-static struct layout range_opt[n_VAL_CHOOSER_BUTTONS]= 
+static struct layout range_opt[n_VAL_CHOOSER_BUTTONS]=
   {
     {N_("_Value:"),                    simple_entry, simple_set },
     {N_("_System Missing"),            NULL,         sysmis_set },
@@ -352,7 +352,7 @@ psppire_val_chooser_init (PsppireValChooser *vr)
 		"margin-start", 5,
 		"margin-end", 5,
 		NULL);
-  
+
   vr->input_var_is_string = FALSE;
 
   for (i = 0; i < n_VAL_CHOOSER_BUTTONS; ++i)
@@ -375,14 +375,14 @@ psppire_val_chooser_init (PsppireValChooser *vr)
 		       0, row, 1, 1);
 
       gtk_widget_set_hexpand (GTK_WIDGET (vr->rw[i].rb), FALSE);
-      
+
       /* Attach the labels */
       gtk_grid_attach (GTK_GRID (grid), GTK_WIDGET (vr->rw[i].label),
 			1, row, 1, 1);
 
       gtk_widget_set_hexpand (GTK_WIDGET (vr->rw[i].label), TRUE);
 
-      
+
       ++row;
 
       if (l->fill)
@@ -394,7 +394,7 @@ psppire_val_chooser_init (PsppireValChooser *vr)
 	  gtk_grid_attach (GTK_GRID (grid), fill, 1, row, 1, 1);
 
 	  gtk_widget_set_hexpand (fill, TRUE);
-	  
+
 	  ++row;
 
       	  g_signal_connect (vr->rw[i].rb, "toggled", G_CALLBACK (set_sensitivity_from_toggle), fill);
@@ -651,14 +651,14 @@ psppire_val_chooser_set_status (PsppireValChooser *vr, const struct old_value *o
       gtk_toggle_button_set_active (vr->rw[0].rb, TRUE);
       gtk_entry_set_text (vr->rw[0].e1, ov->v.s);
       break;
-      
+
     case OV_NUMERIC:
       {
 	gchar *str;
 	gtk_toggle_button_set_active (vr->rw[0].rb, TRUE);
-	
+
 	str = num_to_string (ov->v.v);
-	
+
 	gtk_entry_set_text (vr->rw[0].e1, str);
 	g_free (str);
       }

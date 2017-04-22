@@ -455,7 +455,7 @@ psppire_dialog_action_recode_pre_activate (PsppireDialogActionRecode *act, void 
       pda->dialog = get_widget_assert   (xml, "recode-dialog");
       pda->source = get_widget_assert   (xml, "treeview1");
 
-  
+
       GtkWidget *selector = get_widget_assert (xml, "psppire-selector1");
       GtkWidget *oldandnew = get_widget_assert (xml, "button1");
 
@@ -473,7 +473,7 @@ psppire_dialog_action_recode_pre_activate (PsppireDialogActionRecode *act, void 
 
       if (populate_treeview)
 	populate_treeview (act);
-      
+
       psppire_selector_set_allow (PSPPIRE_SELECTOR (selector), homogeneous_types);
 
       /* Set up the Old & New Values subdialog */
@@ -601,7 +601,7 @@ psppire_dialog_action_recode_generate_syntax (const PsppireDialogAction *act,
   ds_init_empty (&dds);
 
   append_string_decls (rd, &dds);
-  
+
   ds_put_cstr (&dds, "\nRECODE ");
 
   psppire_var_view_append_names_str (PSPPIRE_VAR_VIEW (rd->variable_treeview), 0, &dds);
@@ -647,7 +647,7 @@ psppire_dialog_action_recode_generate_syntax (const PsppireDialogAction *act,
   ds_put_cstr (&dds, ".");
 
   append_new_value_labels (rd, &dds);
-  
+
   ds_put_cstr (&dds, "\nEXECUTE.\n");
 
 

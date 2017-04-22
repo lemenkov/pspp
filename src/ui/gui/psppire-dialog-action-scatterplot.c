@@ -47,7 +47,7 @@ generate_syntax (const PsppireDialogAction *act)
   ds_init_cstr (&dss, "GRAPH SCATTERPLOT(BIVARIATE) = ");
 
   ds_put_cstr (&dss, gtk_entry_get_text (GTK_ENTRY (ow->x_axis)));
-  
+
   ds_put_cstr (&dss, " WITH ");
 
   ds_put_cstr (&dss, gtk_entry_get_text (GTK_ENTRY (ow->y_axis)));
@@ -75,7 +75,7 @@ dialog_state_valid (gpointer data)
   if ( 0 == strcmp ("", yvar))
     return FALSE;
 
-  
+
   return TRUE;
 }
 

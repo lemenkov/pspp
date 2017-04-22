@@ -5,7 +5,7 @@ struct ag_func
 {
   const char *name;
   const char *description;
-  
+
   int arity;
   bool cumulative;
   double (*pre) (void);

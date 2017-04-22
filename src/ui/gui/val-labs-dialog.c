@@ -326,7 +326,7 @@ get_selected_tuple (PsppireValLabsDialog *dialog,
       if (vl != NULL)
         *label = val_lab_get_escaped_label (vl);
     }
-  
+
   return TRUE;
 }
 
@@ -399,7 +399,7 @@ on_remove (GtkWidget *w, gpointer data)
 
   if (! get_selected_tuple (dialog, &value, NULL))
     return;
-  
+
   vl = val_labs_lookup (dialog->labs, &value);
   if (vl != NULL)
     val_labs_remove (dialog->labs, vl);
@@ -426,7 +426,7 @@ on_select_row (GtkTreeView *treeview, gpointer data)
 
   if (! get_selected_tuple (dialog, &value, &label))
     return;
-  
+
   text = value_to_text__ (value, &dialog->format, dialog->encoding);
 
   g_signal_handler_block (GTK_ENTRY (dialog->value_entry),

@@ -567,7 +567,7 @@ stc_custom_format (struct lexer *lexer, struct dataset *ds UNUSED, struct cmd_se
 
   if (!fmt_check_output (&fmt))
     return 0;
-  
+
   if (fmt_is_string (fmt.type))
     {
       char str[FMT_STRING_LEN_MAX + 1];
@@ -906,7 +906,7 @@ show_current_directory (const struct dataset *ds UNUSED)
     {
       len <<= 1;
       buf = xrealloc (buf, len);
-    } 
+    }
   while (NULL == (wd = getcwd (buf, len)));
 
   return wd;

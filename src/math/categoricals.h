@@ -73,7 +73,7 @@ bool categoricals_sane (const struct categoricals *cat);
 
 /*
   The *_by_subscript functions use the short map.
-  Their intended use is by covariance matrix routines, where normally 1 less than 
+  Their intended use is by covariance matrix routines, where normally 1 less than
   the total number of distinct values of each categorical variable should
   be considered.
  */
@@ -89,7 +89,7 @@ categoricals_get_dummy_code_for_case (const struct categoricals *cat, int subscr
 				     const struct ccase *c);
 
 /* Returns unity if the value in case C at SUBSCRIPT is equal to the category
-   for that subscript. 
+   for that subscript.
    Else if it is the last category, return -1.
    Otherwise return 0.
  */

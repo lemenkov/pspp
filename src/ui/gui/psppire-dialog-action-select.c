@@ -152,7 +152,7 @@ sample_subdialog (GtkButton *b, gpointer data)
       g_signal_connect (scd->spin_sample_size, "value-changed", G_CALLBACK (sample_consistent), scd);
       g_signal_connect (scd->spin_sample_limit, "value-changed", G_CALLBACK (sample_consistent), scd);
 
-      
+
       gtk_widget_show (scd->hbox2);
       gtk_widget_set_sensitive (scd->hbox2, FALSE);
 
@@ -272,10 +272,10 @@ psppire_dialog_action_select_activate (PsppireDialogAction *a)
       pda->dialog = get_widget_assert (xml, "select-cases-dialog");
       pda->source = get_widget_assert   (xml, "select-cases-treeview");
 
-      g_object_set (pda->source, 
+      g_object_set (pda->source,
 		    "selection-mode", GTK_SELECTION_SINGLE,
 		    NULL);
-      
+
       act->entry = get_widget_assert (xml, "filter-variable-entry");
 
       GtkWidget *selector = get_widget_assert (xml, "psppire-selector-filter");
@@ -426,7 +426,7 @@ generate_syntax_filter (const PsppireDialogAction *a)
 			   filter, ranvar);
 
 	  ds_put_cstr (&dss, "EXECUTE.\n");
-				  
+
 
 	  ds_put_c_format (&dss,
 			   "COMPUTE %s = $CASENUM.\n",
@@ -486,7 +486,7 @@ generate_syntax_delete (const PsppireDialogAction *a)
        (GTK_TOGGLE_BUTTON (scd->radiobutton_sample)))
     {
       ds_put_cstr (&dss, "SAMPLE ");
-      
+
       if ( gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (scd->percent)))
 	{
 	  const double percentage =
@@ -499,10 +499,10 @@ generate_syntax_delete (const PsppireDialogAction *a)
 	    gtk_spin_button_get_value (GTK_SPIN_BUTTON (scd->spin_sample_size));
 	  const gint from_n_cases =
 	    gtk_spin_button_get_value (GTK_SPIN_BUTTON (scd->spin_sample_limit));
-	  
+
 	  ds_put_c_format (&dss, "%d FROM %d .", n_cases, from_n_cases);
 	}
-      
+
     }
   else if ( gtk_toggle_button_get_active
 	    (GTK_TOGGLE_BUTTON (scd->radiobutton_range)))
@@ -544,7 +544,7 @@ generate_syntax (const PsppireDialogAction *a)
     {
       return g_strdup ("FILTER OFF.\n");
     }
-  
+
   /* Are we filtering or deleting ? */
   if ( gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (scd->radiobutton_delete)))
     {

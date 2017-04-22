@@ -16,7 +16,7 @@
 
 /*
  This is an abstract base class upon which all (well almost all) windows in
- psppire are based.   The exceptions are transient windows such as the 
+ psppire are based.   The exceptions are transient windows such as the
  splash screen and popups.
 */
 

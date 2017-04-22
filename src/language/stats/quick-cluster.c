@@ -160,7 +160,7 @@ diff_matrix (const gsl_matrix *m1, const gsl_matrix *m2)
 
 
 
-static double 
+static double
 matrix_mindist (const gsl_matrix *m, int *mn, int *mm)
 {
   int i, j;
@@ -201,10 +201,10 @@ dist_from_case (const struct Kmeans *kmeans, const struct ccase *c, const struct
       const union value *val = case_data (c, qc->vars[j]);
       if ( var_is_value_missing (qc->vars[j], val, qc->exclude))
 	NOT_REACHED ();
-      
+
       dist += pow2 (gsl_matrix_get (kmeans->centers, which, j) - val->f);
     }
- 
+
   return dist;
 }
 
@@ -225,7 +225,7 @@ min_dist_from (const struct Kmeans *kmeans, const struct qc *qc, int which)
 	{
 	  dist += pow2 (gsl_matrix_get (kmeans->centers, i, j) - gsl_matrix_get (kmeans->centers, which, j));
 	}
-      
+
       if (dist < mindist)
 	{
 	  mindist = dist;
@@ -290,7 +290,7 @@ kmeans_initial_centers (struct Kmeans *kmeans, const struct casereader *reader, 
 		}
 	    }
 	  else if (dist_from_case (kmeans, c, qc, mp) > min_dist_from (kmeans, qc, mq))
-	    /* If the distance between C and the second nearest group (MP) is greater than the 
+	    /* If the distance between C and the second nearest group (MP) is greater than the
 	       smallest distance between the nearest group (MQ) and any other group, then replace
 	       MQ with C */
 	    {
@@ -408,7 +408,7 @@ kmeans_cluster (struct Kmeans *kmeans, struct casereader *reader, const struct q
 		  if ( var_is_value_missing (qc->vars[j], val, qc->exclude))
 		    missing = true;
 		}
-	
+
 	      if (missing)
 		continue;
 
@@ -436,7 +436,7 @@ kmeans_cluster (struct Kmeans *kmeans, struct casereader *reader, const struct q
 		  double *x = gsl_matrix_ptr (kmeans->updated_centers, group, j);
 		  *x += val->f * (qc->wv ? case_data (c, qc->wv)->f : 1.0);
 		}
-	    }    
+	    }
 
 	  casereader_destroy (r);
 	}
@@ -453,7 +453,7 @@ kmeans_cluster (struct Kmeans *kmeans, struct casereader *reader, const struct q
 	      *x /= n + 1;  // Plus 1 for the initial centers
 	    }
 	}
-  
+
 
       gsl_matrix_memcpy (kmeans->centers, kmeans->updated_centers);
 
@@ -466,7 +466,7 @@ kmeans_cluster (struct Kmeans *kmeans, struct casereader *reader, const struct q
 	struct casereader *cs = casereader_clone (reader);
 	for (; (c = casereader_read (cs)) != NULL; case_unref (c))
 	  {
-	    int group = -1; 
+	    int group = -1;
 	    kmeans_get_nearest_group (kmeans, c, qc, &group, NULL, NULL, NULL);
 
 	    for (j = 0; j < qc->n_vars; ++j)
@@ -595,7 +595,7 @@ quick_cluster_show_membership (struct Kmeans *kmeans, const struct casereader *r
 
   for (i = 0; (c = casereader_read (cs)) != NULL; i++, case_unref (c))
     {
-      int clust = -1; 
+      int clust = -1;
       assert (i < kmeans->n);
       kmeans_get_nearest_group (kmeans, c, qc, &clust, NULL, NULL, NULL);
       clust = ip->data[clust];
@@ -645,7 +645,7 @@ static void
 quick_cluster_show_results (struct Kmeans *kmeans, const struct casereader *reader, const struct qc *qc)
 {
   kmeans_order_groups (kmeans, qc); /* what does this do? */
-  
+
   if( qc->print_initial_clusters )
     quick_cluster_show_centers (kmeans, true, qc);
   quick_cluster_show_centers (kmeans, false, qc);
@@ -708,7 +708,7 @@ cmd_quick_cluster (struct lexer *lexer, struct dataset *ds)
 		  lex_error (lexer, NULL);
 		  goto error;
 		}
-	    }	  
+	    }
 	}
       else if (lex_match_id (lexer, "PRINT"))
 	{

@@ -257,7 +257,7 @@ parse_into (struct lexer *lexer, struct rank *cmd,
 
   cmd->rs = pool_realloc (cmd->pool, cmd->rs, sizeof (*cmd->rs) * (cmd->n_rs + 1));
   rs = &cmd->rs[cmd->n_rs];
-      
+
   if (lex_match_id (lexer, "RANK"))
     {
       rs->rfunc = RANK;
@@ -290,13 +290,13 @@ parse_into (struct lexer *lexer, struct rank *cmd,
     {
       if ( !lex_force_match (lexer, T_LPAREN))
 	return false;
-      
+
       if (! lex_force_int (lexer) )
 	return false;
-      
+
       cmd->k_ntiles = lex_integer (lexer);
       lex_get (lexer);
-      
+
       if ( !lex_force_match (lexer, T_RPAREN))
 	return false;
 
@@ -638,7 +638,7 @@ create_var_label (struct rank *cmd, const struct variable *src_var,
                    function_name[f], var_get_name (src_var));
 
   pool_label = pool_strdup (cmd->pool, ds_cstr (&label));
-  
+
   ds_destroy (&label);
 
   return pool_label;

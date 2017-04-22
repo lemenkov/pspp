@@ -146,7 +146,7 @@ journal_init (void)
 		      SETTINGS_DEVICE_UNFILTERED);
   journal.file = NULL;
   journal.command_name = NULL;
-  
+
   /* Register journal driver. */
   output_driver_register (&journal.driver);
 

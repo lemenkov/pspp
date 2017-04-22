@@ -951,7 +951,7 @@ do_popup_menu (GtkWidget *widget, guint button, guint32 time)
   gtk_menu_attach (GTK_MENU (menu), clear_variables,  0, 1, i, i + 1);  ++i;
 
   gtk_widget_show_all (menu);
-  
+
   gtk_menu_popup (GTK_MENU (menu), NULL, NULL, NULL, NULL, button, time);
 }
 
@@ -1108,7 +1108,7 @@ psppire_var_sheet_dispose (GObject *obj)
 
   if (var_sheet->dict)
     g_object_unref (var_sheet->dict);
-  
+
   /* These dialogs are not GObjects (although they should be!)
     But for now, unreffing them only causes a GCritical Error
     so comment them out for now. (and accept the memory leakage)
@@ -1261,7 +1261,7 @@ psppire_var_sheet_clear_variables (PsppireVarSheet *var_sheet)
   PsppireDict *dict = var_sheet->dict;
   const struct range_set_node *node;
   struct range_set *selected = pspp_sheet_selection_get_range_set (selection);
-  
+
   for (node = range_set_last (selected); node != NULL;
        node = range_set_prev (selected, node))
     {
@@ -1290,10 +1290,10 @@ on_selection_changed (PsppSheetSelection *selection,
   GtkWidget *top = gtk_widget_get_toplevel (GTK_WIDGET (var_sheet));
   if (! PSPPIRE_IS_DATA_WINDOW (top))
     return;
-  
+
   PsppireDataWindow *dw = PSPPIRE_DATA_WINDOW (top);
   gtk_widget_set_sensitive (dw->mi_insert_var, n_selected_rows > 0);
-  
+
   switch (n_selected_rows)
     {
     case 0:
@@ -1313,7 +1313,7 @@ on_selection_changed (PsppSheetSelection *selection,
       break;
     }
 
-  gtk_widget_set_sensitive (dw->mi_clear_variables, var_sheet->may_delete_vars && may_delete); 
+  gtk_widget_set_sensitive (dw->mi_clear_variables, var_sheet->may_delete_vars && may_delete);
 }
 
 void
@@ -1409,7 +1409,7 @@ psppire_var_sheet_init (PsppireVarSheet *obj)
                     G_CALLBACK (on_query_var_tooltip), NULL);
   g_signal_connect (obj, "button-press-event",
                     G_CALLBACK (on_button_pressed), NULL);
-  
+
   g_signal_connect (obj, "popup-menu", G_CALLBACK (on_popup_menu), NULL);
 
   g_signal_connect (pspp_sheet_view_get_selection (sheet_view),
@@ -1515,13 +1515,13 @@ psppire_var_sheet_set_dictionary (PsppireVarSheet *var_sheet,
   if (var_sheet->dict != NULL)
     {
       int i;
-      
+
       for (i = 0; i < PSPPIRE_VAR_SHEET_N_SIGNALS; i++)
 	{
 	  if (var_sheet->dict_signals[i])
 	    g_signal_handler_disconnect (var_sheet->dict,
 					 var_sheet->dict_signals[i]);
-	  
+
 	  var_sheet->dict_signals[i] = 0;
 	}
 

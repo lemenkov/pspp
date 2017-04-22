@@ -1308,7 +1308,7 @@ xr_rendering_create_text (struct xr_driver *xr, const char *text, cairo_t *cr)
   return r;
 }
 
-void 
+void
 xr_rendering_apply_options (struct xr_rendering *xr, struct string_map *o)
 {
   if (is_table_item (xr->item))

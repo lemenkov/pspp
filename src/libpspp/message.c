@@ -1,5 +1,5 @@
 /* PSPP - a program for statistical analysis.
-   Copyright (C) 1997-9, 2000, 2006, 2009, 2010, 
+   Copyright (C) 1997-9, 2000, 2006, 2009, 2010,
    2011, 2013 Free Software Foundation, Inc.
 
    This program is free software: you can redistribute it and/or modify

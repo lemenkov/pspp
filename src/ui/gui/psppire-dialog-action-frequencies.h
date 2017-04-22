@@ -100,7 +100,7 @@ struct _PsppireDialogActionFrequencies
   GtkWidget * avalue;
   GtkWidget * dvalue;
   GtkWidget * afreq;
-  GtkWidget * dfreq;  
+  GtkWidget * dfreq;
 
   GtkWidget *tables_dialog;
 

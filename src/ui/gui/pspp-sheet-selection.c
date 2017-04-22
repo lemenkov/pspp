@@ -238,9 +238,9 @@ pspp_sheet_selection_get_mode (PsppSheetSelection *selection)
 /**
  * pspp_sheet_selection_get_tree_view:
  * @selection: A #PsppSheetSelection
- * 
+ *
  * Returns the tree view associated with @selection.
- * 
+ *
  * Return value: A #PsppSheetView
  **/
 PsppSheetView *
@@ -402,7 +402,7 @@ pspp_sheet_selection_get_selected_rows (PsppSheetSelection   *selection,
  * Returns the number of rows that have been selected in @tree.
  *
  * Return value: The number of rows selected.
- * 
+ *
  * Since: 2.2
  **/
 gint
@@ -501,7 +501,7 @@ pspp_sheet_selection_selected_foreach (PsppSheetSelection            *selection,
 					   G_CALLBACK (model_changed),
 				           &stop);
   changed_id = g_signal_connect_swapped (selection->tree_view, "notify::model",
-					 G_CALLBACK (model_changed), 
+					 G_CALLBACK (model_changed),
 					 &stop);
 
   RANGE_TOWER_FOR_EACH (node, start, selection->tree_view->priv->selected)
@@ -557,7 +557,7 @@ pspp_sheet_selection_select_path (PsppSheetSelection *selection,
                                path,
                                &node);
 
-  if (node < 0 || pspp_sheet_view_node_is_selected (selection->tree_view, node)) 
+  if (node < 0 || pspp_sheet_view_node_is_selected (selection->tree_view, node))
     return;
 
   if (selection->type == PSPP_SHEET_SELECTION_MULTIPLE ||
@@ -592,7 +592,7 @@ pspp_sheet_selection_unselect_path (PsppSheetSelection *selection,
                               path,
                               &node);
 
-  if (node < 0 || !pspp_sheet_view_node_is_selected (selection->tree_view, node)) 
+  if (node < 0 || !pspp_sheet_view_node_is_selected (selection->tree_view, node))
     return;
 
   _pspp_sheet_selection_internal_select_node (selection,
@@ -663,10 +663,10 @@ pspp_sheet_selection_unselect_iter (PsppSheetSelection *selection,
  * pspp_sheet_selection_path_is_selected:
  * @selection: A #PsppSheetSelection.
  * @path: A #GtkTreePath to check selection on.
- * 
+ *
  * Returns %TRUE if the row pointed to by @path is currently selected.  If @path
  * does not point to a valid location, %FALSE is returned
- * 
+ *
  * Return value: %TRUE if @path is selected.
  **/
 gboolean
@@ -686,7 +686,7 @@ pspp_sheet_selection_path_is_selected (PsppSheetSelection *selection,
 				  path,
 				  &node);
 
-  if (node < 0 || !pspp_sheet_view_node_is_selected (selection->tree_view, node)) 
+  if (node < 0 || !pspp_sheet_view_node_is_selected (selection->tree_view, node))
     return FALSE;
 
   return TRUE;
@@ -696,9 +696,9 @@ pspp_sheet_selection_path_is_selected (PsppSheetSelection *selection,
  * pspp_sheet_selection_iter_is_selected:
  * @selection: A #PsppSheetSelection
  * @iter: A valid #GtkTreeIter
- * 
+ *
  * Returns %TRUE if the row at @iter is currently selected.
- * 
+ *
  * Return value: %TRUE, if @iter is selected
  **/
 gboolean
@@ -839,7 +839,7 @@ pspp_sheet_selection_unselect_all (PsppSheetSelection *selection)
 
   if (selection->tree_view->priv->row_count == 0 || selection->tree_view->priv->model == NULL)
     return;
-  
+
   if (pspp_sheet_selection_real_unselect_all (selection))
     g_signal_emit (selection, tree_selection_signals[CHANGED], 0);
 }
@@ -1126,14 +1126,14 @@ _pspp_sheet_selection_internal_select_node (PsppSheetSelection *selection,
     gtk_tree_path_free (anchor_path);
 
   if (dirty)
-    g_signal_emit (selection, tree_selection_signals[CHANGED], 0);  
+    g_signal_emit (selection, tree_selection_signals[CHANGED], 0);
 }
 
 
-void 
+void
 _pspp_sheet_selection_emit_changed (PsppSheetSelection *selection)
 {
-  g_signal_emit (selection, tree_selection_signals[CHANGED], 0);  
+  g_signal_emit (selection, tree_selection_signals[CHANGED], 0);
 }
 
 /* NOTE: Any {un,}selection ever done _MUST_ be done through this function!
@@ -1153,7 +1153,7 @@ pspp_sheet_selection_real_select_node (PsppSheetSelection *selection,
         pspp_sheet_view_node_unselect (selection->tree_view, node);
 
       _pspp_sheet_view_queue_draw_node (selection->tree_view, node, NULL);
-      
+
       return TRUE;
     }
 

@@ -204,7 +204,7 @@ static inline void hmapx_move (struct hmapx_node *, void *);
    These macros automatically use hmapx_node_data() to obtain the
    data elements that encapsulate hmap nodes, which often saves
    typing and can make code easier to read.  Refer to the large
-   comment near the top of this file for an example. 
+   comment near the top of this file for an example.
 
    These macros evaluate their arguments many times. */
 #define HMAPX_FOR_EACH(DATA, NODE, HMAPX)                               \
@@ -238,7 +238,7 @@ hmapx_node_hash (const struct hmapx_node *node)
 
 /* Initializes MAP as a new hash map that is initially empty. */
 static inline void
-hmapx_init (struct hmapx *map) 
+hmapx_init (struct hmapx *map)
 {
   hmap_init (&map->hmap);
 }
@@ -263,7 +263,7 @@ hmapx_reserve (struct hmapx *map, size_t capacity)
    store its current number of elements, allocating a new set of
    buckets and rehashing if that would save space. */
 static inline void
-hmapx_shrink (struct hmapx *map) 
+hmapx_shrink (struct hmapx *map)
 {
   hmap_shrink (&map->hmap);
 }
@@ -291,7 +291,7 @@ hmapx_shrink (struct hmapx *map)
    macros provide convenient ways to iterate over all the nodes
    with a given hash. */
 static inline struct hmapx_node *
-hmapx_first_with_hash (struct hmapx *map, size_t hash) 
+hmapx_first_with_hash (struct hmapx *map, size_t hash)
 {
   return HMAP_FIRST_WITH_HASH (struct hmapx_node, hmap_node, &map->hmap, hash);
 }
@@ -319,7 +319,7 @@ hmapx_first_with_hash (struct hmapx *map, size_t hash)
    macros provide convenient ways to iterate over all the nodes
    with a given hash. */
 static inline struct hmapx_node *
-hmapx_next_with_hash (struct hmapx_node *node) 
+hmapx_next_with_hash (struct hmapx_node *node)
 {
   return HMAP_NEXT_WITH_HASH (node, struct hmapx_node, hmap_node);
 }
@@ -346,7 +346,7 @@ hmapx_next_with_hash (struct hmapx_node *node)
    hmapx_delete() does not change NODE's hash value reported by
    hmapx_node_hash(). */
 static inline void
-hmapx_delete (struct hmapx *map, struct hmapx_node *node) 
+hmapx_delete (struct hmapx *map, struct hmapx_node *node)
 {
   hmap_delete (&map->hmap, &node->hmap_node);
   free (node);
@@ -374,7 +374,7 @@ hmapx_delete (struct hmapx *map, struct hmapx_node *node)
    convenient ways to iterate over all the nodes in a hash
    map. */
 static inline struct hmapx_node *
-hmapx_first (const struct hmapx *map) 
+hmapx_first (const struct hmapx *map)
 {
   return HMAP_FIRST (struct hmapx_node, hmap_node, &map->hmap);
 }
@@ -401,7 +401,7 @@ hmapx_first (const struct hmapx *map)
    convenient ways to iterate over all the nodes in a hash
    map. */
 static inline struct hmapx_node *
-hmapx_next (const struct hmapx *map, const struct hmapx_node *node) 
+hmapx_next (const struct hmapx *map, const struct hmapx_node *node)
 {
   return HMAP_NEXT (node, struct hmapx_node, hmap_node, &map->hmap);
 }
@@ -416,7 +416,7 @@ hmapx_is_empty (const struct hmapx *map)
 
 /* Returns the number of data items currently in MAP. */
 static inline size_t
-hmapx_count (const struct hmapx *map) 
+hmapx_count (const struct hmapx *map)
 {
   return hmap_count (&map->hmap);
 }
@@ -430,7 +430,7 @@ hmapx_count (const struct hmapx *map)
    capacity.  However, inserting many more elements than the
    map's capacity will degrade search performance. */
 static inline size_t
-hmapx_capacity (const struct hmapx *map) 
+hmapx_capacity (const struct hmapx *map)
 {
   return hmap_capacity (&map->hmap);
 }
@@ -445,7 +445,7 @@ hmapx_capacity (const struct hmapx *map)
    value. */
 static inline void
 hmapx_change (struct hmapx *map,
-              struct hmapx_node *node, void *data, size_t new_hash) 
+              struct hmapx_node *node, void *data, size_t new_hash)
 {
   hmapx_move (node, data);
   hmapx_changed (map, node, new_hash);
@@ -460,7 +460,7 @@ hmapx_change (struct hmapx *map,
    case), then the client must check for duplicates before
    changing NODE's value. */
 static inline void
-hmapx_changed (struct hmapx *map, struct hmapx_node *node, size_t new_hash) 
+hmapx_changed (struct hmapx *map, struct hmapx_node *node, size_t new_hash)
 {
   hmap_changed (&map->hmap, &node->hmap_node, new_hash);
 }

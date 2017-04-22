@@ -46,7 +46,7 @@ xrchart_draw_scatterplot (const struct chart_item *chart_item, cairo_t *cr,
   int byvar_width = 0;
   int i = 0;
   const struct xrchart_colour *colour;
-  
+
   if (spc->byvar)
     byvar_width = var_get_width (spc->byvar);
 
@@ -97,7 +97,7 @@ xrchart_draw_scatterplot (const struct chart_item *chart_item, cairo_t *cr,
                             colour->red / 255.0,
                             colour->green / 255.0,
                             colour->blue / 255.0);
-    
+
       xrchart_datum (cr, geom, 0,
 		     case_data_idx (c, SP_IDX_X)->f,
 		     case_data_idx (c, SP_IDX_Y)->f);

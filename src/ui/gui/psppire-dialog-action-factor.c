@@ -38,7 +38,7 @@ static void psppire_dialog_action_factor_class_init      (PsppireDialogActionFac
 
 G_DEFINE_TYPE (PsppireDialogActionFactor, psppire_dialog_action_factor, PSPPIRE_TYPE_DIALOG_ACTION);
 
-static const char *rot_method_syntax[] = 
+static const char *rot_method_syntax[] =
   {
     "NOROTATE",
     "VARIMAX",
@@ -105,7 +105,7 @@ generate_syntax (const PsppireDialogAction *act)
   ds_put_cstr (&str, "\n\t/PRINT = ");
   ds_put_cstr (&str, "INITIAL ");
 
-  if ( rd->extraction.unrotated )  
+  if ( rd->extraction.unrotated )
     ds_put_cstr (&str, "EXTRACTION ");
 
   if ( rd->rotation.rotated_solution )
@@ -133,7 +133,7 @@ load_rotation_parameters (PsppireDialogActionFactor *fd, const struct rotation_p
 {
   gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (fd->display_rotated_solution),
 				p->rotated_solution);
-  
+
   gtk_spin_button_set_value (GTK_SPIN_BUTTON (fd->rotate_iterations),
 			     p->iterations);
 
@@ -184,7 +184,7 @@ load_extraction_parameters (PsppireDialogActionFactor *fd, const struct extracti
     gtk_combo_box_set_active (GTK_COMBO_BOX (fd->extraction_combo), 1);
   else
     gtk_combo_box_set_active (GTK_COMBO_BOX (fd->extraction_combo), 0);
-    
+
 }
 
 static gboolean

@@ -95,7 +95,7 @@ psppire_output_window_dispose (GObject *obj)
 {
   PsppireOutputWindow *window = PSPPIRE_OUTPUT_WINDOW (obj);
 
-  if (window->dispose_has_run) 
+  if (window->dispose_has_run)
     return;
 
   window->dispose_has_run = TRUE;
@@ -113,7 +113,7 @@ psppire_output_window_class_init (PsppireOutputWindowClass *class)
 
   parent_class = g_type_class_peek_parent (class);
   object_class->dispose = psppire_output_window_dispose;
-  
+
   object_class->finalize = psppire_output_window_finalize;
 }
 
@@ -251,7 +251,7 @@ struct file_types
   const gchar *ext;
 };
 
-enum 
+enum
   {
     FT_AUTO = 0,
     FT_PDF,
@@ -284,7 +284,7 @@ on_combo_change (GtkFileChooser *chooser)
   gboolean sensitive = FALSE;
   GtkWidget *combo = gtk_file_chooser_get_extra_widget (chooser);
 
-  int x = 0; 
+  int x = 0;
   gchar *fn = gtk_file_chooser_get_filename (chooser);
 
   if (combo &&  gtk_widget_get_realized (combo))
@@ -353,7 +353,7 @@ create_file_type_list (void)
   int i;
   GtkTreeIter iter;
   GtkListStore *list = gtk_list_store_new (2, G_TYPE_STRING, G_TYPE_STRING);
-  
+
   for (i = 0 ; i < n_FT ; ++i)
     {
       gtk_list_store_append (list, &iter);
@@ -362,7 +362,7 @@ create_file_type_list (void)
 			  1,  ft[i].ext,
 			  -1);
     }
-  
+
   return list;
 }
 
@@ -374,7 +374,7 @@ psppire_output_window_export (PsppireOutputWindow *window)
   GtkListStore *list;
 
   GtkFileChooser *chooser;
-  
+
   GtkWidget *dialog = gtk_file_chooser_dialog_new (_("Export Output"),
                                         GTK_WINDOW (window),
                                         GTK_FILE_CHOOSER_ACTION_SAVE,
@@ -448,7 +448,7 @@ psppire_output_window_export (PsppireOutputWindow *window)
           filename = g_strconcat (filename, ft[file_type].ext, NULL);
           g_free (of);
         }
-      
+
       string_map_init (&options);
       string_map_insert (&options, "output-file", filename);
 
@@ -505,7 +505,7 @@ psppire_output_window_init (PsppireOutputWindow *window)
   gtk_container_add (GTK_CONTAINER (window), box);
 
   GtkWidget *paned = get_widget_assert (xml, "paned1");
-  
+
   window->dispose_has_run = FALSE;
 
   window->view = psppire_output_view_new (
@@ -527,7 +527,7 @@ psppire_output_window_init (PsppireOutputWindow *window)
 
   gtk_menu_shell_append (GTK_MENU_SHELL (menubar),
 			 create_windows_menu (GTK_WINDOW (window)));
-    
+
   gtk_menu_shell_append (GTK_MENU_SHELL (menubar),
 			 create_help_menu (GTK_WINDOW (window)));
 
@@ -543,7 +543,7 @@ psppire_output_window_init (PsppireOutputWindow *window)
 					   accels);
   }
 
-  
+
   {
     GSimpleAction *export = g_simple_action_new ("export", NULL);
     g_signal_connect_swapped (export, "activate", G_CALLBACK (psppire_output_window_export), window);
@@ -565,7 +565,7 @@ psppire_output_window_init (PsppireOutputWindow *window)
 					   accels);
   }
 
-  
+
   g_object_unref (xml);
 
   g_signal_connect (window, "delete-event",

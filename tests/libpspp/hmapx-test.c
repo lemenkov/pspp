@@ -204,13 +204,13 @@ random_shuffle (void *array_, size_t cnt, size_t size)
 typedef size_t hash_function (int data);
 
 static size_t
-identity_hash (int data) 
+identity_hash (int data)
 {
   return data;
 }
 
 static size_t
-constant_hash (int data UNUSED) 
+constant_hash (int data UNUSED)
 {
   return 0x12345678u;
 }
@@ -277,8 +277,8 @@ check_hmapx (struct hmapx *hmapx, const int data[], size_t cnt,
 
       count = 0;
       HMAPX_FOR_EACH_WITH_HASH (e, node, hash (order[i]), hmapx)
-        if (e->data == order[i]) 
-          count++; 
+        if (e->data == order[i])
+          count++;
 
       check (count == j - i);
     }
@@ -301,7 +301,7 @@ check_hmapx (struct hmapx *hmapx, const int data[], size_t cnt,
 
           check (hmapx_node_hash (p) == hash (e->data));
           for (j = 0; j < left; j++)
-            if (order[j] == e->data) 
+            if (order[j] == e->data)
               {
                 order[j] = order[--left];
                 goto next;
@@ -354,11 +354,11 @@ test_insert_delete (const int insertions[],
       check_hmapx (&hmapx, insertions, i + 1, hash);
 
       /* A series of insertions should not produce a shrinkable hmapx. */
-      if (i >= reserve) 
+      if (i >= reserve)
         {
           capacity = hmapx_capacity (&hmapx);
           hmapx_shrink (&hmapx);
-          check (capacity == hmapx_capacity (&hmapx)); 
+          check (capacity == hmapx_capacity (&hmapx));
         }
     }
   for (i = 0; i < cnt; i++)
@@ -417,19 +417,19 @@ test_insert_any_remove_any (hash_function *hash)
 }
 
 static void
-test_insert_any_remove_any_random_hash (void) 
+test_insert_any_remove_any_random_hash (void)
 {
   test_insert_any_remove_any (random_hash);
 }
 
 static void
-test_insert_any_remove_any_identity_hash (void) 
+test_insert_any_remove_any_identity_hash (void)
 {
   test_insert_any_remove_any (identity_hash);
 }
 
 static void
-test_insert_any_remove_any_constant_hash (void) 
+test_insert_any_remove_any_constant_hash (void)
 {
   test_insert_any_remove_any (constant_hash);
 }
@@ -464,19 +464,19 @@ test_insert_any_remove_same (hash_function *hash)
 }
 
 static void
-test_insert_any_remove_same_random_hash (void) 
+test_insert_any_remove_same_random_hash (void)
 {
   test_insert_any_remove_same (random_hash);
 }
 
 static void
-test_insert_any_remove_same_identity_hash (void) 
+test_insert_any_remove_same_identity_hash (void)
 {
   test_insert_any_remove_same (identity_hash);
 }
 
 static void
-test_insert_any_remove_same_constant_hash (void) 
+test_insert_any_remove_same_constant_hash (void)
 {
   test_insert_any_remove_same (constant_hash);
 }
@@ -570,19 +570,19 @@ test_random_sequence (int max_elems, hash_function *hash)
 }
 
 static void
-test_random_sequence_random_hash (void) 
+test_random_sequence_random_hash (void)
 {
   test_random_sequence (64, random_hash);
 }
 
 static void
-test_random_sequence_identity_hash (void) 
+test_random_sequence_identity_hash (void)
 {
   test_random_sequence (64, identity_hash);
 }
 
 static void
-test_random_sequence_constant_hash (void) 
+test_random_sequence_constant_hash (void)
 {
   test_random_sequence (32, constant_hash);
 }
@@ -609,7 +609,7 @@ test_insert_ordered (int max_elems, hash_function *hash)
       nodes[i] = hmapx_insert (&hmapx, &elements[i], hash (elements[i].data));
       check_hmapx (&hmapx, values, i + 1, hash);
 
-      if (hash == identity_hash) 
+      if (hash == identity_hash)
         {
           /* Check that every every hash bucket has (almost) the
              same number of nodes in it.  */
@@ -617,7 +617,7 @@ test_insert_ordered (int max_elems, hash_function *hash)
           int max = INT_MIN;
           int j;
 
-          for (j = 0; j <= hmapx.hmap.mask; j++) 
+          for (j = 0; j <= hmapx.hmap.mask; j++)
             {
               int count = 0;
               struct hmap_node *node;
@@ -703,19 +703,19 @@ test_moved (int max_elems, hash_function *hash)
 }
 
 static void
-test_moved_random_hash (void) 
+test_moved_random_hash (void)
 {
   test_moved (128, random_hash);
 }
 
 static void
-test_moved_identity_hash (void) 
+test_moved_identity_hash (void)
 {
   test_moved (128, identity_hash);
 }
 
 static void
-test_moved_constant_hash (void) 
+test_moved_constant_hash (void)
 {
   test_moved (32, constant_hash);
 }
@@ -768,7 +768,7 @@ test_changed (hash_function *hash)
 
                   /* Change value i to j. */
                   elements[i].data = j;
-                  hmapx_changed (&hmapx, nodes[i], 
+                  hmapx_changed (&hmapx, nodes[i],
                                  hash (elements[i].data));
                   for (k = 0; k < cnt; k++)
                     changed_values[k] = k;
@@ -893,7 +893,7 @@ test_change_constant_hash (void)
 }
 
 static void
-test_swap (int max_elems, hash_function *hash) 
+test_swap (int max_elems, hash_function *hash)
 {
   struct element *elements;
   int *values;
@@ -926,7 +926,7 @@ test_swap (int max_elems, hash_function *hash)
 }
 
 static void
-test_swap_random_hash (void) 
+test_swap_random_hash (void)
 {
   test_swap (128, random_hash);
 }
@@ -970,7 +970,7 @@ test_clear (void)
 }
 
 static void
-test_destroy_null (void) 
+test_destroy_null (void)
 {
   hmapx_destroy (NULL);
 }

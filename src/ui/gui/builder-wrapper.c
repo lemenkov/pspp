@@ -37,7 +37,7 @@ builder_new_real (const gchar *name)
 }
 
 
-GtkBuilder * 
+GtkBuilder *
 builder_new_x (const gchar *obj_name)
 {
   GtkBuilder *b;
@@ -66,7 +66,7 @@ get_object_assert (GtkBuilder *builder, const gchar *name, GType type)
     g_critical ("Object `%s' could not be found\n", name);
   else if ( ! g_type_is_a (G_OBJECT_TYPE (o), type))
    {
-     g_critical ("Object `%s' was expected to have type %s, but in fact has type %s", 
+     g_critical ("Object `%s' was expected to have type %s, but in fact has type %s",
 	name, g_type_name (type), G_OBJECT_TYPE_NAME (o));
    }
 
@@ -78,7 +78,7 @@ GtkWidget *
 get_widget_assert (GtkBuilder *builder, const gchar *name)
 {
   GtkWidget *w = GTK_WIDGET (get_object_assert (builder, name, GTK_TYPE_WIDGET));
-  
+
   g_object_set (w, "name", name, NULL);
 
   return w;

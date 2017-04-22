@@ -67,7 +67,7 @@ refresh (PsppireDialogAction *rd_)
      This ensures that the signal handler gets called.   */
   gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (rd->button_summary_func), TRUE);
   gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (rd->button_freq_func[0]), TRUE);
-				
+
   gtk_widget_set_sensitive (rd->combobox, FALSE);
 
   gtk_combo_box_set_active (GTK_COMBO_BOX (rd->combobox), 0);
@@ -137,13 +137,13 @@ psppire_dialog_action_barchart_activate (PsppireDialogAction *a)
       act->button_freq_func[1] = get_widget_assert (xml, "radiobutton-percent");
       act->button_freq_func[2] = get_widget_assert (xml, "radiobutton-cum-count");
       act->button_freq_func[3] = get_widget_assert (xml, "radiobutton-cum-percent");
-  
+
       act->button_summary_func = get_widget_assert (xml, "radiobutton3");
       act->summary_variables = get_widget_assert (xml, "hbox1");
       act->combobox = get_widget_assert (xml, "combobox1");
 
       populate_combo_model (GTK_COMBO_BOX(act->combobox));
-  
+
       g_signal_connect_swapped (act->button_summary_func, "toggled",
 				G_CALLBACK (on_summary_toggle), act);
 
@@ -216,7 +216,7 @@ generate_syntax (const PsppireDialogAction *a)
     g_string_append (string, " BY ");
     g_string_append (string, var_name_cluster);
   }
-  
+
   g_string_append (string, ".\n");
 
   text = string->str;

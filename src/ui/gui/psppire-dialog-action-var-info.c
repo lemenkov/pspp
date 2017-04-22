@@ -181,7 +181,7 @@ psppire_dialog_action_var_info_activate (PsppireDialogAction *a)
       act->output =
 	psppire_output_view_new (GTK_LAYOUT (get_widget_assert (xml, "layout1")),
 				 NULL);
-  
+
       pda->dialog = get_widget_assert (xml, "variable-info-dialog");
       pda->source = get_widget_assert (xml, "treeview2");
 

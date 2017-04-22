@@ -16,7 +16,7 @@
 
 /*
  This is an abstract base class upon which all (well almost all) windows in
- psppire are based.   The exceptions are transient windows such as the 
+ psppire are based.   The exceptions are transient windows such as the
  splash screen and popups.
 
  It currently provides the feature where the window's geometry "persists"
@@ -88,7 +88,7 @@ configure_event (GtkWidget *wb, GdkEventConfigure *event)
   return FALSE;
 }
 
-static void 
+static void
 psppire_window_base_class_init    (PsppireWindowBaseClass *class)
 {
   GtkWidgetClass *widget_class = GTK_WIDGET_CLASS (class);
@@ -96,7 +96,7 @@ psppire_window_base_class_init    (PsppireWindowBaseClass *class)
   widget_class->realize = realize;
 }
 
-static void 
+static void
 psppire_window_base_init          (PsppireWindowBase      *window)
 {
 }

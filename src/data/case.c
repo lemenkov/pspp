@@ -405,7 +405,7 @@ case_compare_2dict (const struct ccase *ca, const struct ccase *cb,
       const union value *va = case_data (ca, *vap);
       const union value *vb = case_data (cb, *vbp);
       assert (var_get_width (*vap) == var_get_width (*vbp));
-      cmp = value_compare_3way (va, vb, var_get_width (*vap)); 
+      cmp = value_compare_3way (va, vb, var_get_width (*vap));
     }
   return cmp;
 }

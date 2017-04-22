@@ -24,8 +24,8 @@
 
 #include "helper.h"
 
-/* 
-   If m is not a base TreeModel type (ie, is a filter or sorter) then 
+/*
+   If m is not a base TreeModel type (ie, is a filter or sorter) then
    convert OP to a TreePath for the base and return it.
    The return value must be freed by the caller.
 */
@@ -36,7 +36,7 @@ get_base_tree_path (GtkTreeModel *m, GtkTreePath *op)
   while ( ! PSPPIRE_IS_DICT (m))
     {
       GtkTreePath *oldp = p;
-      
+
       if (GTK_IS_TREE_MODEL_FILTER (m))
 	{
 	  p = gtk_tree_model_filter_convert_path_to_child_path (GTK_TREE_MODEL_FILTER (m), oldp);
@@ -51,7 +51,7 @@ get_base_tree_path (GtkTreeModel *m, GtkTreePath *op)
 	{
 	  g_error ("Unexpected model type: %s", G_OBJECT_TYPE_NAME (m));
 	}
-      
+
       gtk_tree_path_free (oldp);
     }
 

@@ -51,7 +51,7 @@ dialog_state_valid (gpointer data)
 
   GtkTreeIter notused;
 
-  return (gtk_tree_model_get_iter_first (row_vars, &notused) 
+  return (gtk_tree_model_get_iter_first (row_vars, &notused)
     && gtk_tree_model_get_iter_first (col_vars, &notused));
 }
 
@@ -62,7 +62,7 @@ refresh (PsppireDialogAction *rd_)
 
   GtkTreeModel *liststore = gtk_tree_view_get_model (GTK_TREE_VIEW (cd->dest_rows));
   gtk_list_store_clear (GTK_LIST_STORE (liststore));
-  
+
   liststore = gtk_tree_view_get_model (GTK_TREE_VIEW (cd->dest_cols));
   gtk_list_store_clear (GTK_LIST_STORE (liststore));
 }
@@ -159,7 +159,7 @@ on_format_clicked (PsppireDialogActionCrosstabs *cd)
       cd->format_options_table =
 	gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (cd->table_button));
 
-      cd->format_options_pivot = 
+      cd->format_options_pivot =
 	gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (cd->pivot_button));
     }
 }
@@ -291,7 +291,7 @@ generate_syntax (const PsppireDialogAction *a)
 
   if (cd->format_options_avalue)
     g_string_append (string, "AVALUE");
-  else 
+  else
     g_string_append (string, "DVALUE");
   g_string_append (string, " ");
 
@@ -303,20 +303,20 @@ generate_syntax (const PsppireDialogAction *a)
 
   if (cd->format_options_pivot)
     g_string_append (string, "PIVOT");
-  else 
+  else
     g_string_append (string, "NOPIVOT");
 
 
   selected = 0;
-  for (i = 0, ok = gtk_tree_model_get_iter_first (cd->stat, &iter); ok; 
+  for (i = 0, ok = gtk_tree_model_get_iter_first (cd->stat, &iter); ok;
        i++, ok = gtk_tree_model_iter_next (cd->stat, &iter))
     {
       gboolean toggled;
       gtk_tree_model_get (cd->stat, &iter,
-			  CHECKBOX_COLUMN_SELECTED, &toggled, -1); 
-      if (toggled) 
-	selected |= 1u << i; 
-      else 
+			  CHECKBOX_COLUMN_SELECTED, &toggled, -1);
+      if (toggled)
+	selected |= 1u << i;
+      else
 	selected &= ~(1u << i);
     }
 
@@ -337,15 +337,15 @@ generate_syntax (const PsppireDialogAction *a)
     }
 
   selected = 0;
-  for (i = 0, ok = gtk_tree_model_get_iter_first (cd->cell, &iter); ok; 
+  for (i = 0, ok = gtk_tree_model_get_iter_first (cd->cell, &iter); ok;
        i++, ok = gtk_tree_model_iter_next (cd->cell, &iter))
     {
       gboolean toggled;
       gtk_tree_model_get (cd->cell, &iter,
-			  CHECKBOX_COLUMN_SELECTED, &toggled, -1); 
-      if (toggled) 
-	selected |= 1u << i; 
-      else 
+			  CHECKBOX_COLUMN_SELECTED, &toggled, -1);
+      if (toggled)
+	selected |= 1u << i;
+      else
 	selected &= ~(1u << i);
     }
 

@@ -145,7 +145,7 @@ on_realize (GtkWidget *w)
   GtkEntryBuffer *buffer = gtk_entry_get_buffer (entry);
 
   gtk_combo_box_set_entry_text_column (GTK_COMBO_BOX (w), COL_LABEL);
-  
+
   g_signal_connect (buffer, "notify::text",
                     G_CALLBACK (psppire_value_entry_text_changed), w);
 

@@ -77,7 +77,7 @@ struct _PsppireImportAssistant
   GtkFileFilter *default_filter;
   /* END The chooser page of the assistant. */
 
-  
+
   /* START The introduction page of the assistant. */
     GtkWidget *all_cases_button;
     GtkWidget *n_cases_button;

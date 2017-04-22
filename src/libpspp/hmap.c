@@ -70,9 +70,9 @@ hmap_clear (struct hmap *map)
    should iterate through the map and free the data items before
    destroying it. */
 void
-hmap_destroy (struct hmap *map) 
+hmap_destroy (struct hmap *map)
 {
-  if (map != NULL && map->buckets != &map->one) 
+  if (map != NULL && map->buckets != &map->one)
     free (map->buckets);
 }
 
@@ -83,7 +83,7 @@ hmap_destroy (struct hmap *map)
    NEW_MASK must be a power of 2 minus 1 (including 0), that is,
    its value in binary must be all 1-bits.  */
 static void
-hmap_rehash (struct hmap *map, size_t new_mask) 
+hmap_rehash (struct hmap *map, size_t new_mask)
 {
   struct hmap_node **new_buckets;
   struct hmap_node *node, *next;
@@ -91,12 +91,12 @@ hmap_rehash (struct hmap *map, size_t new_mask)
   assert ((new_mask & (new_mask + 1)) == 0);
   if (new_mask)
     new_buckets = xcalloc (new_mask + 1, sizeof *new_buckets);
-  else 
+  else
     {
       new_buckets = &map->one;
       new_buckets[0] = NULL;
     }
-      
+
   if (map->count > 0)
     {
       for (node = hmap_first (map); node != NULL; node = next)
@@ -106,7 +106,7 @@ hmap_rehash (struct hmap *map, size_t new_mask)
           next = hmap_next (map, node);
           node->next = *new_bucket;
           *new_bucket = node;
-        } 
+        }
     }
   if (map->buckets != &map->one)
     free (map->buckets);
@@ -128,11 +128,11 @@ hmap_reserve (struct hmap *map, size_t capacity)
    store its current number of elements, allocating a new set of
    buckets and rehashing if that would save space. */
 void
-hmap_shrink (struct hmap *map) 
+hmap_shrink (struct hmap *map)
 {
   size_t new_mask = capacity_to_mask (map->count);
-  if (new_mask < map->mask) 
-    hmap_rehash (map, new_mask); 
+  if (new_mask < map->mask)
+    hmap_rehash (map, new_mask);
 }
 
 /* Moves NODE around in MAP to compensate for its hash value
@@ -146,7 +146,7 @@ hmap_shrink (struct hmap *map)
 void
 hmap_changed (struct hmap *map, struct hmap_node *node, size_t new_hash)
 {
-  if ((new_hash ^ node->hash) & map->mask) 
+  if ((new_hash ^ node->hash) & map->mask)
     {
       hmap_delete (map, node);
       hmap_insert_fast (map, node, new_hash);
@@ -172,7 +172,7 @@ hmap_changed (struct hmap *map, struct hmap_node *node, size_t new_hash)
    this function runs in constant time. */
 void
 hmap_moved (struct hmap *map,
-            struct hmap_node *node, const struct hmap_node *old) 
+            struct hmap_node *node, const struct hmap_node *old)
 {
   struct hmap_node **p = &map->buckets[node->hash & map->mask];
   while (*p != old)
@@ -185,7 +185,7 @@ hmap_moved (struct hmap *map,
    a bit-mask suitable for use as the "mask" member of struct
    hmap, that is, a power of 2 minus 1 (including 0). */
 static size_t
-capacity_to_mask (size_t capacity) 
+capacity_to_mask (size_t capacity)
 {
   /* Calculate the minimum mask necesary to support the given
      capacity. */

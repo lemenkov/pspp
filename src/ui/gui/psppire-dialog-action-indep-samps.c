@@ -96,7 +96,7 @@ value_entry_contains_invalid (PsppireValueEntry *ve, const struct variable *var)
 {
   gboolean result = FALSE;
 
-  if (var) 
+  if (var)
     {
       union value val;
       const int width = var_get_width (var);
@@ -157,9 +157,9 @@ run_define_groups (PsppireDialogActionIndepSamps *act)
   PsppireDialogAction *da = PSPPIRE_DIALOG_ACTION (act);
   GtkWidget *parent1 = gtk_widget_get_parent (act->dg_table1);
   GtkWidget *parent2 = gtk_widget_get_parent (act->dg_table2);
-  
+
   g_return_if_fail (act->grp_var);
-  
+
   if (parent1)
     gtk_container_remove (GTK_CONTAINER (parent1), act->dg_table1);
 
@@ -307,7 +307,7 @@ psppire_dialog_action_indep_samps_activate (PsppireDialogAction *a)
       g_hash_table_insert (thing, a, xml);
     }
 
-  pda->dialog = get_widget_assert (xml,"independent-samples-dialog"); 
+  pda->dialog = get_widget_assert (xml,"independent-samples-dialog");
   pda->source = get_widget_assert (xml, "indep-samples-treeview1");
   act->define_groups_button = get_widget_assert (xml, "define-groups-button");
   act->options_button = get_widget_assert (xml, "indep-samples-options-button");
@@ -376,16 +376,16 @@ generate_syntax (const PsppireDialogAction *a)
       g_string_append (str, "(");
 
       {
-        const union value *val = 
+        const union value *val =
           (act->group_defn == GROUPS_VALUES) ?
           &act->grp_val[0] :
           &act->cut_point;
 
-        struct string strx;        
+        struct string strx;
         ds_init_empty (&strx);
         syntax_gen_value (&strx, val, var_get_width (act->grp_var),
                           var_get_print_format (act->grp_var));
-      
+
         g_string_append (str, ds_cstr (&strx));
         ds_destroy (&strx);
       }
@@ -397,10 +397,10 @@ generate_syntax (const PsppireDialogAction *a)
           {
             struct string strx;
             ds_init_empty (&strx);
-            
+
             syntax_gen_value (&strx, &act->grp_val[1], var_get_width (act->grp_var),
                               var_get_print_format (act->grp_var));
-            
+
             g_string_append (str, ds_cstr (&strx));
             ds_destroy (&strx);
           }

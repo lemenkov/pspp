@@ -102,7 +102,7 @@ psppire_var_view_get_type (void)
   return psppire_var_view_type;
 }
 
-void 
+void
 psppire_var_view_clear (PsppireVarView *vv)
 {
   GtkListStore *l = gtk_list_store_newv  (vv->n_cols, vv->cols);
@@ -181,28 +181,28 @@ set_renderers (PsppireVarView *var_view)
 {
   gint c;
   var_view->nums = g_malloc (sizeof *var_view->nums * var_view->n_cols);
-  
+
   for (c = 0 ; c < var_view->n_cols; ++c)
     {
       GtkCellRenderer *renderer = gtk_cell_renderer_text_new ();
       GtkTreeViewColumn *col = gtk_tree_view_column_new ();
-      
+
       gchar *label = g_strdup_printf (_("Var%d"), c + 1);
-      
+
       gtk_tree_view_column_set_min_width (col, 100);
       gtk_tree_view_column_set_sizing (col, GTK_TREE_VIEW_COLUMN_FIXED);
       gtk_tree_view_column_set_resizable (col, TRUE);
       gtk_tree_view_column_set_title (col, label);
-      
+
       g_free (label);
-      
+
       var_view->nums[c] = c;
-      
+
       gtk_tree_view_column_pack_start (col, renderer, TRUE);
       gtk_tree_view_column_set_cell_data_func (col, renderer,
 					       display_cell_var_name,
 					       &var_view->nums[c], 0);
-      
+
       gtk_tree_view_append_column (GTK_TREE_VIEW (var_view), col);
     }
 }
@@ -383,7 +383,7 @@ psppire_var_view_list_names (PsppireVarView *vv, gint column)
 {
   GtkTreeIter iter;
   GSList *list = NULL;
-  
+
   if ( psppire_var_view_get_iter_first (vv, &iter) )
     {
       do
@@ -402,7 +402,7 @@ psppire_var_view_list_names (PsppireVarView *vv, gint column)
   Append the names of selected variables to STR
   Returns the number of variables appended.
 */
-gint 
+gint
 psppire_var_view_append_names_str (PsppireVarView *vv, gint column, struct string *str)
 {
   gint n_vars = 0;

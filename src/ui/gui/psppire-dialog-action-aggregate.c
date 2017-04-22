@@ -136,7 +136,7 @@ dialog_state_valid (gpointer user_data)
     return FALSE;
 
   liststore = GTK_TREE_MODEL (PSPPIRE_ACR (agg->summary_acr)->list_store);
-  
+
   if ( ! gtk_tree_model_get_iter_first (liststore, &iter))
     return FALSE;
 
@@ -194,12 +194,12 @@ render_summary   (GtkTreeViewColumn *tree_column,
 		  gpointer data)
 {
  PsppireDialogActionAggregate *agg = data;
-  
+
   GString *string = g_string_new ("");
 
   append_summary_spec (agg, iter, string);
 
-  
+
   g_object_set (cell, "text", string->str, NULL);
 
   g_string_free (string, TRUE);
@@ -216,7 +216,7 @@ choose_filename (PsppireDialogActionAggregate *fd)
 						   _("Cancel"), GTK_RESPONSE_CANCEL,
 						   _("Save"), GTK_RESPONSE_ACCEPT,
 						   NULL);
-  
+
   g_object_set (dialog, "local-only", FALSE, NULL);
 
   gtk_file_chooser_set_do_overwrite_confirmation (GTK_FILE_CHOOSER (dialog), TRUE);
@@ -287,7 +287,7 @@ populate_combo_model (GtkComboBox *cb)
 }
 
 
-enum 
+enum
   {
     SUMMARY_COL_VARNAME = 0,
     SUMMARY_COL_VARLABEL,
@@ -416,7 +416,7 @@ on_acr_change (const PsppireDialogActionAggregate *agg, GtkTreeView *tv)
   double arg1, arg2;
   gchar *text1 = g_strdup ("");
   gchar *text2 = g_strdup ("");
-    
+
   GtkTreeIter iter;
   GtkTreeModel *model = gtk_tree_view_get_model (tv);
   GtkTreeSelection *sel = gtk_tree_view_get_selection (tv);
@@ -434,7 +434,7 @@ on_acr_change (const PsppireDialogActionAggregate *agg, GtkTreeView *tv)
       gtk_entry_set_text (GTK_ENTRY (agg->summary_var_name_entry), varname);
       gtk_entry_set_text (GTK_ENTRY (agg->summary_var_label_entry), label);
       gtk_entry_set_text (GTK_ENTRY (agg->summary_sv_entry), srcvar);
-  
+
       text1 = c_xasprintf ("%.*g", DBL_DIG + 1, arg1);
       text2 = c_xasprintf ("%.*g", DBL_DIG + 1, arg2);
     }
@@ -504,7 +504,7 @@ psppire_dialog_action_aggregate_activate (PsppireDialogAction *a)
       GtkWidget *break_selector = get_widget_assert   (xml, "break-selector");
 
       act->pane = get_widget_assert (xml, "hbox1");
-  
+
       act->break_variables = get_widget_assert (xml, "psppire-var-view1");
       act->filename_radiobutton = get_widget_assert (xml, "filename-radiobutton");
       act->filename_button = get_widget_assert (xml, "filename-button");
@@ -541,7 +541,7 @@ psppire_dialog_action_aggregate_activate (PsppireDialogAction *a)
 	GtkListStore *list = gtk_list_store_new (6,
 						 G_TYPE_STRING,
 						 G_TYPE_STRING,
-						 G_TYPE_INT, 
+						 G_TYPE_INT,
 						 G_TYPE_STRING,
 						 G_TYPE_DOUBLE,
 						 G_TYPE_DOUBLE);
@@ -567,7 +567,7 @@ psppire_dialog_action_aggregate_activate (PsppireDialogAction *a)
 	g_signal_connect_swapped (PSPPIRE_ACR (act->summary_acr)->tv,
 				  "cursor-changed", G_CALLBACK (on_acr_change), act);
       }
-  
+
       g_signal_connect_swapped (act->summary_var_name_entry, "changed", G_CALLBACK (update_acr),  act);
       g_signal_connect_swapped (act->function_combo, "changed", G_CALLBACK (update_acr),  act);
       g_signal_connect_swapped (act->summary_sv_entry, "changed", G_CALLBACK (update_acr),  act);
@@ -658,14 +658,14 @@ append_summary_spec (const PsppireDialogActionAggregate *agg, GtkTreeIter *iter,
       g_string_append (string, ds_cstr (&ss));
       ds_destroy (&ss);
     }
-    
+
   g_string_append_printf (string, " = %s", funcname);
 
   if ( has_src_vars != AGR_SV_NO)
     {
       struct string dss;
       ds_init_cstr (&dss, " (");
-      
+
       ds_put_cstr (&dss, srcvar);
 
       if ( arity > 0)

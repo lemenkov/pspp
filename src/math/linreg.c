@@ -1,5 +1,5 @@
 /* PSPP - a program for statistical analysis.
-   Copyright (C) 2005, 2010, 2011 Free Software Foundation, Inc. 
+   Copyright (C) 2005, 2010, 2011 Free Software Foundation, Inc.
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -137,7 +137,7 @@ post_sweep_computations (linreg *l, gsl_matrix *sw)
   size_t i;
   size_t j;
   int rc;
-  
+
   assert (sw != NULL);
   assert (l != NULL);
 
@@ -157,7 +157,7 @@ post_sweep_computations (linreg *l, gsl_matrix *sw)
     Get the covariance matrix of the parameter estimates.
     Only the upper triangle is necessary.
   */
-  
+
   /*
     The loops below do not compute the entries related
     to the estimated intercept.
@@ -176,7 +176,7 @@ post_sweep_computations (linreg *l, gsl_matrix *sw)
   xm = gsl_matrix_calloc (1, l->n_indeps);
   for (i = 0; i < xm->size2; i++)
     {
-      gsl_matrix_set (xm, 0, i, 
+      gsl_matrix_set (xm, 0, i,
 		      linreg_get_indep_variable_mean (l, i));
     }
   rc = gsl_blas_dsymm (CblasRight, CblasUpper, l->mse,
@@ -191,7 +191,7 @@ post_sweep_computations (linreg *l, gsl_matrix *sw)
 	    * linreg_get_indep_variable_mean (l, i - 1);
 	}
       gsl_matrix_set (l->cov, 0, 0, tmp);
-      
+
       l->intercept = m;
     }
   else
@@ -200,7 +200,7 @@ post_sweep_computations (linreg *l, gsl_matrix *sw)
 	       __FILE__, __LINE__, gsl_strerror (rc));
       exit (rc);
     }
-}  
+}
 
 /*
   Predict the value of the dependent variable with the new set of
@@ -327,19 +327,19 @@ linreg_fit_qr (const gsl_matrix *cov, linreg *l)
 
   /* Covariances related to the intercept. */
   intercept_variance += linreg_mse (l) / linreg_n_obs (l);
-  gsl_matrix_set (l->cov, 0, 0, intercept_variance);  
+  gsl_matrix_set (l->cov, 0, 0, intercept_variance);
   for (i = 0; i < q->size1; i++)
     {
       for (j = 0; j < q->size2; j++)
 	{
-	  intcpt_coef -= gsl_matrix_get (q, i, j) 
+	  intcpt_coef -= gsl_matrix_get (q, i, j)
 	    * linreg_get_indep_variable_mean (l, j);
 	}
       gsl_matrix_set (l->cov, 0, i + 1, intcpt_coef);
       gsl_matrix_set (l->cov, i + 1, 0, intcpt_coef);
       intcpt_coef = 0.0;
     }
-      
+
   gsl_matrix_free (q);
   gsl_matrix_free (r);
   gsl_vector_free (xty);
@@ -367,7 +367,7 @@ linreg_fit (const gsl_matrix *cov, linreg *l)
       params = gsl_matrix_calloc (cov->size1, cov->size2);
       gsl_matrix_memcpy (params, cov);
       reg_sweep (params, l->dependent_column);
-      post_sweep_computations (l, params);  
+      post_sweep_computations (l, params);
       gsl_matrix_free (params);
     }
   else if (l->method == LINREG_QR)
@@ -393,7 +393,7 @@ linreg_cov (const linreg *c)
   return c->cov;
 }
 
-double 
+double
 linreg_coeff (const linreg *c, size_t i)
 {
   return (c->coeff[i]);
@@ -405,7 +405,7 @@ linreg_indep_var (const linreg *c, size_t i)
   return (c->indep_vars[i]);
 }
 
-size_t 
+size_t
 linreg_n_coeffs (const linreg *c)
 {
   return c->n_coeffs;
@@ -434,7 +434,7 @@ double linreg_sst (const linreg *c)
   return c->sst;
 }
 
-double 
+double
 linreg_dfmodel ( const linreg *c)
 {
   return c->dfm;
@@ -446,7 +446,7 @@ linreg_set_depvar_mean (linreg *c, double x)
   c->depvar_mean = x;
 }
 
-double 
+double
 linreg_get_depvar_mean (const linreg *c)
 {
   return c->depvar_mean;

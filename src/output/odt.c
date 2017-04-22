@@ -149,7 +149,7 @@ write_style_data (struct odt_driver *odt)
 			       _xml ("urn:oasis:names:tc:opendocument:xmlns:xsl-fo-compatible:1.0") );
 
   xmlTextWriterWriteAttribute (w, _xml ("office:version"),  _xml ("1.1"));
-			       
+
 
 
   xmlTextWriterStartElement (w, _xml ("office:styles"));
@@ -385,7 +385,7 @@ odt_destroy (struct output_driver *driver)
 
       zip_writer_close (odt->zip);
     }
-  
+
   free (odt->file_name);
   free (odt->command_name);
   free (odt);
@@ -474,7 +474,7 @@ write_table (struct odt_driver *odt, const struct table_item *item)
 
   /* Start table */
   xmlTextWriterStartElement (odt->content_wtr, _xml("table:table"));
-  xmlTextWriterWriteFormatAttribute (odt->content_wtr, _xml("table:name"), 
+  xmlTextWriterWriteFormatAttribute (odt->content_wtr, _xml("table:name"),
 				     "TABLE-%d", odt->table_num++);
 
 
@@ -487,7 +487,7 @@ write_table (struct odt_driver *odt, const struct table_item *item)
   /* Deal with row headers */
   if ( table_ht (tab) > 0)
     xmlTextWriterStartElement (odt->content_wtr, _xml("table:table-header-rows"));
-    
+
 
   /* Write all the rows */
   for (r = 0 ; r < table_nr (tab); ++r)
@@ -556,7 +556,7 @@ write_table (struct odt_driver *odt, const struct table_item *item)
 
           table_cell_free (&cell);
 	}
-  
+
       xmlTextWriterEndElement (odt->content_wtr); /* row */
 
       if ( table_ht (tab) > 0 && r == table_ht (tab) - 1)

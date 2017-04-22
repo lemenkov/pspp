@@ -152,7 +152,7 @@ psppire_import_assistant_finalize (GObject *object)
 
   //  clear_fields (ia);
   destroy_columns (ia);
-  
+
   ds_destroy (&ia->separators);
   ds_destroy (&ia->quotes);
 
@@ -402,7 +402,7 @@ on_reset (GtkButton *button, PsppireImportAssistant *ia)
   gint pn = gtk_assistant_get_current_page (GTK_ASSISTANT (ia));
   {
     GtkWidget *page =  gtk_assistant_get_nth_page (GTK_ASSISTANT (ia), pn);
-      
+
     page_func *on_reset = g_object_get_data (G_OBJECT (page), "on-reset");
 
     if (on_reset)
@@ -458,7 +458,7 @@ on_prepare (GtkAssistant *assistant, GtkWidget *page, PsppireImportAssistant *ia
     if (on_entering)
       on_entering (ia, new_page);
   }
-  
+
   ia->current_page = pn;
 }
 
@@ -536,7 +536,7 @@ process_file (PsppireImportAssistant *ia)
 		 ia->file_name);
       return FALSE;
     }
-  
+
   ds_init_empty (&input);
   for (ia->line_cnt = 0; ia->line_cnt < MAX_PREVIEW_LINES; ia->line_cnt++)
     {
@@ -572,7 +572,7 @@ process_file (PsppireImportAssistant *ia)
       destroy_file (ia);
       return FALSE;
     }
-  
+
   /* Estimate the number of lines in the file. */
   if (ia->line_cnt < MAX_PREVIEW_LINES)
     {
@@ -669,9 +669,9 @@ set_model_on_treeview (PsppireImportAssistant *ia, GtkWidget *tree_view, size_t 
 
   g_object_set_data (G_OBJECT (model), "lines", &ia->lines + first_line);
   g_object_set_data (G_OBJECT (model), "first-line", GINT_TO_POINTER (first_line));
-  
+
   pspp_sheet_view_set_model (PSPP_SHEET_VIEW (tree_view), model);
-  
+
   g_object_unref (model);
 }
 
@@ -692,7 +692,7 @@ add_page_to_assistant (PsppireImportAssistant *ia,
 		       GtkWidget *page, GtkAssistantPageType type, const gchar *);
 
 
-static void 
+static void
 on_sheet_combo_changed (GtkComboBox *cb, PsppireImportAssistant *ia)
 {
   GtkTreeIter iter;
@@ -715,7 +715,7 @@ prepare_sheet_spec_page (PsppireImportAssistant *ia)
   GtkWidget *sheet_entry = get_widget_assert (builder, "sheet-entry");
   GtkWidget *readnames_checkbox = get_widget_assert (builder, "readnames-checkbox");
 
-  gtk_combo_box_set_model (GTK_COMBO_BOX (sheet_entry), 
+  gtk_combo_box_set_model (GTK_COMBO_BOX (sheet_entry),
 			   psppire_spreadsheet_model_new (ia->spreadsheet));
 
   gtk_combo_box_set_active (GTK_COMBO_BOX (sheet_entry), 0);
@@ -731,7 +731,7 @@ sheet_spec_page_create (PsppireImportAssistant *ia)
 {
   GtkBuilder *builder = ia->builder;
   GtkWidget *page = get_widget_assert (builder, "Spreadsheet-Importer");
-  
+
   GtkWidget *combo_box = get_widget_assert (builder, "sheet-entry");
   GtkCellRenderer *renderer = gtk_cell_renderer_text_new ();
   gtk_cell_layout_clear (GTK_CELL_LAYOUT (combo_box));
@@ -749,7 +749,7 @@ sheet_spec_page_create (PsppireImportAssistant *ia)
 }
 
 
-static void 
+static void
 on_chosen (PsppireImportAssistant *ia, GtkWidget *page)
 {
   GtkFileChooser *fc = GTK_FILE_CHOOSER (page);
@@ -764,10 +764,10 @@ on_chosen (PsppireImportAssistant *ia, GtkWidget *page)
   if (f && !g_file_test (f, G_FILE_TEST_IS_DIR))
     {
       gtk_assistant_set_page_complete (GTK_ASSISTANT(ia), GTK_WIDGET (fc), TRUE);
-      
+
       if (ia->spreadsheet)
 	spreadsheet_unref (ia->spreadsheet);
-      
+
       ia->spreadsheet = gnumeric_probe (f, FALSE);
 
       if (!ia->spreadsheet)
@@ -783,16 +783,16 @@ on_chosen (PsppireImportAssistant *ia, GtkWidget *page)
 	{
 	  sheet_spec_page_create (ia);
 	}
-      
+
       formats_page_create (ia);
     }
 
-  g_free (f);  
+  g_free (f);
 }
 
 /* This has to be done on a map signal callback,
    because GtkFileChooserWidget resets everything when it is mapped. */
-static void 
+static void
 on_map (PsppireImportAssistant *ia, GtkWidget *page)
 {
   GtkFileChooser *fc = GTK_FILE_CHOOSER (page);
@@ -853,7 +853,7 @@ chooser_page_create (PsppireImportAssistant *ia)
   gtk_file_filter_set_name (ia->default_filter, _("All Files"));
   gtk_file_filter_add_pattern (ia->default_filter, "*");
   gtk_file_chooser_add_filter (GTK_FILE_CHOOSER (chooser), ia->default_filter);
-    
+
   filter = gtk_file_filter_new ();
   gtk_file_filter_set_name (filter, _("Text Files"));
   gtk_file_filter_add_mime_type (filter, "text/*");
@@ -914,7 +914,7 @@ psppire_import_assistant_init (PsppireImportAssistant *ia)
 {
   ia->builder = builder_new ("text-data-import.ui");
 
-  ia->current_page = -1 ; 
+  ia->current_page = -1 ;
   ia->column_cnt = 0;
   ia->columns = NULL;
 
@@ -922,7 +922,7 @@ psppire_import_assistant_init (PsppireImportAssistant *ia)
   ia->encoding = NULL;
   ia->spreadsheet = NULL;
   ia->watch_cursor = 0;
-  
+
   ia->prop_renderer = gtk_cell_renderer_text_new ();
   g_object_ref_sink (ia->prop_renderer);
   ia->fixed_renderer = gtk_cell_renderer_text_new ();
@@ -934,10 +934,10 @@ psppire_import_assistant_init (PsppireImportAssistant *ia)
   g_signal_connect (ia, "prepare", G_CALLBACK (on_prepare), ia);
   g_signal_connect (ia, "cancel", G_CALLBACK (on_cancel), ia);
   g_signal_connect (ia, "close", G_CALLBACK (on_close), ia);
-  
+
   ia->paste_button = gtk_button_new_with_label (_("Paste"));
   ia->reset_button = gtk_button_new_with_label (_("Reset"));
-  
+
   gtk_assistant_add_action_widget (GTK_ASSISTANT(ia), ia->paste_button);
 
   g_signal_connect (ia->paste_button, "clicked", G_CALLBACK (on_paste), ia);
@@ -947,7 +947,7 @@ psppire_import_assistant_init (PsppireImportAssistant *ia)
 
   gtk_window_set_title (GTK_WINDOW (ia),
                         _("Importing Delimited Text Data"));
-  
+
   gtk_window_set_icon_name (GTK_WINDOW (ia), "pspp");
 
   chooser_page_create (ia);
@@ -999,7 +999,7 @@ render_line (PsppSheetViewColumn *tree_column,
 {
   gint row = empty_list_store_iter_to_row (iter);
   struct string *lines;
-  
+
   lines = g_object_get_data (G_OBJECT (tree_model), "lines");
   g_return_if_fail (lines != NULL);
 
@@ -1012,7 +1012,7 @@ set_first_line (PsppireImportAssistant *ia)
 {
   GtkTreePath *path = gtk_tree_path_new_from_indices (ia->skip_lines, -1);
 
-  
+
   set_model_on_treeview (ia, ia->tree_view, 0);
 
   pspp_sheet_view_set_cursor (PSPP_SHEET_VIEW (ia->tree_view),
@@ -1040,7 +1040,7 @@ create_lines_tree_view (GtkContainer *parent, PsppireImportAssistant *ia)
   PsppSheetViewColumn *column =
     pspp_sheet_view_column_new_with_attributes (title,
 						ia->fixed_renderer, (void *) NULL);
-  
+
   pspp_sheet_view_column_set_cell_data_func (column, ia->fixed_renderer,
 					     render_line, NULL, NULL);
   pspp_sheet_view_column_set_resizable (column, TRUE);
@@ -1063,7 +1063,7 @@ create_lines_tree_view (GtkContainer *parent, PsppireImportAssistant *ia)
   GtkWidget *oldtv = gtk_bin_get_child (GTK_BIN (parent));
   if (oldtv)
     gtk_container_remove (parent, oldtv);
-  
+
   gtk_container_add (parent, tree_view);
   gtk_widget_show (tree_view);
 
@@ -1111,7 +1111,7 @@ first_line_page_create (PsppireImportAssistant *ia)
   GtkWidget *w =  get_widget_assert (ia->builder, "FirstLine");
 
   g_object_set_data (G_OBJECT (w), "on-entering", set_first_line);
-  
+
   add_page_to_assistant (ia, w,
 			 GTK_ASSISTANT_PAGE_CONTENT, _("Select the First Line"));
 
@@ -1145,7 +1145,7 @@ intro_on_enter (PsppireImportAssistant *ia)
 
   if (ia->line_cnt > MAX_PREVIEW_LINES)
     ia->line_cnt = MAX_PREVIEW_LINES;
-  
+
   ds_init_empty (&s);
   ds_put_cstr (&s, _("This assistant will guide you through the process of "
                      "importing data into PSPP from a text file with one line "
@@ -1194,7 +1194,7 @@ intro_on_enter (PsppireImportAssistant *ia)
   if (w)
     gtk_container_remove (GTK_CONTAINER (table), w);
 
-  
+
   GtkWidget *hbox_n_cases = psppire_scanf_new (_("Only the first %4d cases"), &ia->n_cases_spin);
 
   GtkAdjustment *adj = gtk_spin_button_get_adjustment (GTK_SPIN_BUTTON (ia->n_cases_spin));
@@ -1299,7 +1299,7 @@ destroy_columns (PsppireImportAssistant *ia)
       free (col->name);
       free (col->contents);
     }
-  
+
   free (ia->columns);
 }
 
@@ -1723,7 +1723,7 @@ make_data_column (PsppireImportAssistant *ia, GtkWidget *tree_view,
     {
       column = &ia->columns[dict_idx];
       name = escape_underscores (column->name);
-      char_cnt = column->width; 
+      char_cnt = column->width;
     }
   else
     {
@@ -1763,7 +1763,7 @@ create_data_tree_view (gboolean input, GtkContainer *parent,
   GtkWidget *tree_view = make_tree_view (ia);
 
   set_model_on_treeview (ia, tree_view, ia->skip_lines);
-  
+
   pspp_sheet_selection_set_mode (pspp_sheet_view_get_selection (PSPP_SHEET_VIEW (tree_view)),
                                  PSPP_SHEET_SELECTION_NONE);
 
@@ -1882,7 +1882,7 @@ separators_page_create (PsppireImportAssistant *ia)
 
   g_object_set_data (G_OBJECT (w), "on-entering", prepare_separators_page);
   g_object_set_data (G_OBJECT (w), "on-reset", prepare_separators_page);
-  
+
 
   add_page_to_assistant (ia, w,   GTK_ASSISTANT_PAGE_CONTENT, _("Choose Separators"));
 
@@ -1893,7 +1893,7 @@ separators_page_create (PsppireImportAssistant *ia)
   ia->quote_cb = get_widget_assert (builder, "quote-cb");
 
   set_quote_list (GTK_COMBO_BOX (ia->quote_combo));
-  ia->fields_tree_view = NULL; 
+  ia->fields_tree_view = NULL;
 
   g_signal_connect (ia->quote_combo, "changed",
                     G_CALLBACK (on_quote_combo_change), ia);
@@ -1962,7 +1962,7 @@ prepare_formats_page (PsppireImportAssistant *ia)
   GtkBin *vars_scroller;
   GtkWidget *old_var_sheet;
 
-  
+
   push_watch_cursor (ia);
 
   if (ia->spreadsheet == NULL)
@@ -1971,12 +1971,12 @@ prepare_formats_page (PsppireImportAssistant *ia)
       unsigned long int number = 0;
       size_t column_idx;
 
-      
+
       ia->dict = dict_create (get_default_encoding ());
       fg = fmt_guesser_create ();
       for (column_idx = 0; column_idx < ia->column_cnt; column_idx++)
 	{
-	  struct variable *modified_var = 
+	  struct variable *modified_var =
 	    (column_idx < ia->modified_var_cnt ? ia->modified_vars[column_idx] : NULL);
 
 	  if (modified_var == NULL)
@@ -2034,7 +2034,7 @@ prepare_formats_page (PsppireImportAssistant *ia)
       gint num = gtk_combo_box_get_active (GTK_COMBO_BOX (combo_box));
 
       struct spreadsheet_read_options sro;
-  
+
       sro.sheet_name = NULL;
       sro.cell_range = NULL;
       sro.sheet_index = num + 1;
@@ -2046,7 +2046,7 @@ prepare_formats_page (PsppireImportAssistant *ia)
 
       sro.read_names = gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (readnames_checkbox));
       sro.asw = -1;
-  
+
       switch (ia->spreadsheet->type)
 	{
 	case SPREADSHEET_ODS:
@@ -2084,16 +2084,16 @@ prepare_formats_page (PsppireImportAssistant *ia)
 		{
 		  char *ss;
 		  const struct variable *var = dict_get_var (ia->dict, col);
-	      
+
 		  ia->columns[col].contents = xrealloc (ia->columns[col].contents,
 							sizeof (struct substring) * rows);
-	      
-		  ss = data_out (case_data (c, var), dict_get_encoding (ia->dict), 
+
+		  ss = data_out (case_data (c, var), dict_get_encoding (ia->dict),
 				 var_get_print_format (var));
-	      
+
 		  ia->columns[col].contents[rows - 1] = ss_cstr (ss);
 		}
-	  
+
 	      if (rows > MAX_PREVIEW_LINES)
 		{
 		  case_unref (c);
@@ -2121,7 +2121,7 @@ prepare_formats_page (PsppireImportAssistant *ia)
 		    G_CALLBACK (on_variable_change), ia);
   ia->psppire_dict = psppire_dict;
 
-  
+
   /* XXX: PsppireVarStore doesn't hold a reference to
      psppire_dict for now, but it should.  After it does, we
      should g_object_ref the psppire_dict here, since we also
@@ -2162,7 +2162,7 @@ formats_page_create (PsppireImportAssistant *ia)
   GtkWidget *w = get_widget_assert (builder, "Formats");
   g_object_set_data (G_OBJECT (w), "on-entering", prepare_formats_page);
   g_object_set_data (G_OBJECT (w), "on-reset", reset_formats_page);
-  
+
   add_page_to_assistant (ia, w,
 			 GTK_ASSISTANT_PAGE_CONFIRM, _("Adjust Variable Formats"));
 
@@ -2174,7 +2174,7 @@ formats_page_create (PsppireImportAssistant *ia)
 
 
 
-static void 
+static void
 separators_append_syntax (const PsppireImportAssistant *ia, struct string *s)
 {
   int i;
@@ -2204,9 +2204,9 @@ formats_append_syntax (const PsppireImportAssistant *ia, struct string *s)
   int var_cnt;
 
   g_return_if_fail (ia->dict);
-  
+
   ds_put_cstr (s, "  /VARIABLES=\n");
-  
+
   var_cnt = dict_get_var_cnt (ia->dict);
   for (i = 0; i < var_cnt; i++)
     {
@@ -2342,7 +2342,7 @@ sheet_spec_gen_syntax (PsppireImportAssistant *ia)
 		   "\n  /SHEET=index %d"
 		   "\n  /READNAMES=%ss",
 		   (ia->spreadsheet->type == SPREADSHEET_GNUMERIC) ? "GNM" : "ODS",
-		   ia->file_name,			 
+		   ia->file_name,
 		   sheet_index,
 		   read_names ? "ON" : "OFF");
 
@@ -2361,7 +2361,7 @@ sheet_spec_gen_syntax (PsppireImportAssistant *ia)
 
   syntax_gen_pspp (&s, ".");
 
-  
+
   return ds_cstr (&s);
 }
 
@@ -2398,6 +2398,6 @@ psppire_import_assistant_generate_syntax (PsppireImportAssistant *ia)
     {
       return sheet_spec_gen_syntax (ia);
     }
-  
+
   return ds_cstr (&s);
 }

@@ -122,7 +122,7 @@ cmd_data_list (struct lexer *lexer, struct dataset *ds)
 	  lex_match (lexer, T_LPAREN);
 	  if (!lex_force_int (lexer))
 	    goto error;
-	  
+
 	  int records = lex_integer (lexer);
 	  if (records < 0)
 	    {

@@ -148,11 +148,11 @@ psppire_dialog_action_weight_activate (PsppireDialogAction *pda)
 		    "selection-mode", GTK_SELECTION_SINGLE,
 		    "predicate", var_is_numeric,
 		    NULL);
-      
+
       psppire_selector_set_filter_func (PSPPIRE_SELECTOR (selector),
 					is_currently_in_entry);
     }
-  
+
   psppire_dialog_action_set_valid_predicate (pda, dialog_state_valid);
   psppire_dialog_action_set_refresh (pda, refresh);
 

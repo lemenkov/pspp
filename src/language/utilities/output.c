@@ -42,7 +42,7 @@ struct thing
 
 extern struct fmt_spec ugly [n_RC];
 
-static const struct thing things[] = 
+static const struct thing things[] =
   {
     {"SIGNIFICANCE", RC_PVALUE},
     {"COUNT" ,RC_WEIGHT}
@@ -67,7 +67,7 @@ cmd_output (struct lexer *lexer, struct dataset *ds UNUSED)
   int j, i;
   struct output_spec *output_specs = NULL;
   int n_os = 0;
-  
+
   if (!lex_force_match_id (lexer, "MODIFY"))
     {
       lex_error (lexer, NULL);
@@ -94,18 +94,18 @@ cmd_output (struct lexer *lexer, struct dataset *ds UNUSED)
 	  os->n_rc = 0;
 	  os->rc = NULL;
 	  bool format = false;
-	  
-	  while (lex_token (lexer) != T_SLASH && 
+
+	  while (lex_token (lexer) != T_SLASH &&
 		 lex_token (lexer) != T_ENDCMD)
 	    {
 	      if (lex_match_id (lexer, "SELECT"))
 		{
 		  if (! lex_force_match (lexer, T_EQUALS))
 		    goto error;
-		  
+
 		  if (! lex_force_match (lexer, T_LBRACK))
 		    goto error;
-		  
+
 		  while (lex_token (lexer) != T_RBRACK &&
 			 lex_token (lexer) != T_ENDCMD)
 		    {
@@ -130,7 +130,7 @@ cmd_output (struct lexer *lexer, struct dataset *ds UNUSED)
 		}
 	      else if (lex_match_id (lexer, "FORMAT"))
 		{
-		  struct fmt_spec fmt;    
+		  struct fmt_spec fmt;
 		  char type[FMT_TYPE_LEN_MAX + 1];
 		  int width = -1;
 		  int decimals = -1;
@@ -161,7 +161,7 @@ cmd_output (struct lexer *lexer, struct dataset *ds UNUSED)
 		  os->fmt = fmt;
 		  format = true;
 		}
-	      else 
+	      else
 		{
 		  lex_error (lexer, NULL);
 		  goto error;
@@ -170,10 +170,10 @@ cmd_output (struct lexer *lexer, struct dataset *ds UNUSED)
 	  if (!format)
 	    goto error;
 	}
-      else 
+      else
 	{
 	  lex_error (lexer, NULL);
-	  goto error;	
+	  goto error;
 	}
     }
 
@@ -185,7 +185,7 @@ cmd_output (struct lexer *lexer, struct dataset *ds UNUSED)
 	  ugly [output_specs[i].rc[j]] = output_specs[i].fmt;
 	}
     }
-  
+
   for (j = 0; j < n_os;  ++j)
     free (output_specs[j].rc);
   free (output_specs);

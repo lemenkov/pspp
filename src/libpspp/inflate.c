@@ -60,8 +60,8 @@ inflate_init (struct zip_member *zm)
 {
   int r;
   struct inflator *inf = xzalloc (sizeof *inf);
-  
-  uint16_t flg = 0 ; 
+
+  uint16_t flg = 0 ;
   uint16_t cmf = 0x8; /* Always 8 for inflate */
 
   const uint16_t cinfo = 7;  /* log_2(Window size) - 8 */
@@ -116,7 +116,7 @@ inflate_read (struct zip_member *zm, void *buf, size_t n)
 	}
 
       bytes_to_read = zm->comp_size - inf->ucomp_bytes_read;
-      
+
       if (bytes_to_read == 0)
 	return 0;
 
@@ -138,7 +138,7 @@ inflate_read (struct zip_member *zm, void *buf, size_t n)
     {
       return n - inf->zss.avail_out;
     }
-  
+
   ds_put_format (zm->errs, _("Error inflating: %s"), zError (r));
 
   return -1;

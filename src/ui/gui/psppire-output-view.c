@@ -160,7 +160,7 @@ create_xr (struct psppire_output_view *view)
   cairo_destroy (cr);
 }
 
-/* Return the horizontal position to place a widget whose 
+/* Return the horizontal position to place a widget whose
    width is CHILD_WIDTH */
 static gint
 get_xpos (const struct psppire_output_view *view, gint child_width)
@@ -641,18 +641,18 @@ on_realize (GtkWidget *overview, GObject *view)
 
   GAction *copy_action = g_action_map_lookup_action (G_ACTION_MAP (toplevel),
 						     "copy");
-  
+
   GAction *select_all_action = g_action_map_lookup_action (G_ACTION_MAP (toplevel),
 							   "select-all");
 
-  g_object_set (copy_action, "enabled", FALSE, NULL); 
+  g_object_set (copy_action, "enabled", FALSE, NULL);
 
   g_signal_connect_swapped (select_all_action, "activate",
 			    G_CALLBACK (on_select_all), view);
 
   g_signal_connect_swapped (copy_action, "activate",
                             G_CALLBACK (on_copy), view);
-  
+
   g_signal_connect (sel, "changed", G_CALLBACK (on_selection_change),
                     copy_action);
 }
@@ -665,7 +665,7 @@ psppire_output_view_new (GtkLayout *output, GtkTreeView *overview)
   GtkCellRenderer *renderer;
 
   GtkTreeModel *model;
-  
+
   view = xmalloc (sizeof *view);
   view->xr = NULL;
   view->font_height = 0;
@@ -789,17 +789,17 @@ static cairo_t *
 get_cairo_context_from_print_context (GtkPrintContext *context)
 {
   cairo_t *cr = gtk_print_context_get_cairo_context (context);
-  
+
   /*
     For all platforms except windows, gtk_print_context_get_dpi_[xy] returns 72.
     Windows returns 600.
   */
   double xres = gtk_print_context_get_dpi_x (context);
   double yres = gtk_print_context_get_dpi_y (context);
-  
+
   /* This means that the cairo context now has its dimensions in Points */
   cairo_scale (cr, xres / 72.0, yres / 72.0);
-  
+
   return cr;
 }
 
@@ -918,7 +918,7 @@ psppire_output_view_print (struct psppire_output_view *view,
 
   GtkPrintOperation *print = gtk_print_operation_new ();
 
-  if (view->print_settings != NULL) 
+  if (view->print_settings != NULL)
     gtk_print_operation_set_print_settings (print, view->print_settings);
 
   g_signal_connect (print, "begin_print", G_CALLBACK (begin_print), view);

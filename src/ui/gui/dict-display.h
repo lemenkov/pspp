@@ -19,7 +19,7 @@
    dictionary in  GTK widgets.
 */
 
-#ifndef DICT_DISPLAY 
+#ifndef DICT_DISPLAY
 #define DICT_DISPLAY 1
 
 #include <gtk/gtk.h>

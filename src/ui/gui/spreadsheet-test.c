@@ -69,7 +69,7 @@ on_clicked (GtkButton *button, struct xxx *stuff)
   proto = casereader_get_proto (reader);
 
   nvals = caseproto_get_n_widths (proto);
-  
+
   for (; (c = casereader_read (reader)) != NULL; case_unref (c))
     {
       int i;
@@ -84,7 +84,7 @@ on_clicked (GtkButton *button, struct xxx *stuff)
 	  {
 	    char *ss = xzalloc (width + 1);
             memcpy (ss, value_str (val, width), width);
-	    
+
 	    printf ("%s ", ss);
 	    free (ss);
 	  }
@@ -95,7 +95,7 @@ on_clicked (GtkButton *button, struct xxx *stuff)
   casereader_destroy (reader);
 }
 
-static void 
+static void
 print_msg (const struct msg *m, void *aux UNUSED)
 {
   fprintf (stderr, "%s\n", m->text);
@@ -118,7 +118,7 @@ main (int argc, char *argv[] )
   settings_init ();
 
   gtk_init (&argc, &argv);
-    
+
   if ( argc < 2)
     g_error ("Usage: prog file\n");
 
@@ -131,7 +131,7 @@ main (int argc, char *argv[] )
 
   if (stuff.sp == NULL)
     stuff.sp = ods_probe (argv[1], false);
-  
+
   if (stuff.sp == NULL)
     {
       g_error ("%s is neither a gnumeric nor a ods file\n", argv[1]);
@@ -145,9 +145,9 @@ main (int argc, char *argv[] )
 
   button = gtk_button_new_with_label ("Test reader");
   g_signal_connect (button, "clicked", G_CALLBACK (on_clicked), &stuff);
-   
+
   gtk_container_set_border_width (GTK_CONTAINER (window), 10);
-  
+
   stuff.combo_box = gtk_combo_box_new();
 
   {

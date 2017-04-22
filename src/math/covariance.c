@@ -62,7 +62,7 @@ resize_matrix (gsl_matrix *in, size_t new_size)
 	  gsl_matrix_set (out, i, j, x);
 	}
     }
-    
+
   gsl_matrix_free (in);
 
   return out;
@@ -97,7 +97,7 @@ struct covariance
   double *cm;
   int n_cm;
 
-  /* 1 for single pass algorithm; 
+  /* 1 for single pass algorithm;
      2 for double pass algorithm
   */
   short passes;
@@ -105,8 +105,8 @@ struct covariance
   /*
     0 : No pass has  been made
     1 : First pass has been started
-    2 : Second pass has been 
-    
+    2 : Second pass has been
+
     IE: How many passes have been (partially) made. */
   short state;
 
@@ -146,7 +146,7 @@ covariance_1pass_create (size_t n_vars, const struct variable *const *vars,
   cov->passes = 1;
   cov->state = 0;
   cov->pass_one_first_case_seen = cov->pass_two_first_case_seen = false;
-  
+
   cov->vars = vars;
 
   cov->wv = weight;
@@ -154,7 +154,7 @@ covariance_1pass_create (size_t n_vars, const struct variable *const *vars,
   cov->dim = n_vars;
 
   cov->moments = xmalloc (sizeof *cov->moments * n_MOMENTS);
-  
+
   for (i = 0; i < n_MOMENTS; ++i)
     cov->moments[i] = gsl_matrix_calloc (n_vars, n_vars);
 
@@ -186,7 +186,7 @@ covariance_2pass_create (size_t n_vars, const struct variable *const *vars,
   cov->passes = 2;
   cov->state = 0;
   cov->pass_one_first_case_seen = cov->pass_two_first_case_seen = false;
-  
+
   cov->vars = vars;
 
   cov->wv = wv;
@@ -194,7 +194,7 @@ covariance_2pass_create (size_t n_vars, const struct variable *const *vars,
   cov->dim = n_vars;
 
   cov->moments = xmalloc (sizeof *cov->moments * n_MOMENTS);
-  
+
   for (i = 0; i < n_MOMENTS; ++i)
     cov->moments[i] = gsl_matrix_calloc (n_vars, n_vars);
 
@@ -209,7 +209,7 @@ covariance_2pass_create (size_t n_vars, const struct variable *const *vars,
   return cov;
 }
 
-/* Return an integer, which can be used to index 
+/* Return an integer, which can be used to index
    into COV->cm, to obtain the I, J th element
    of the covariance matrix.  If COV->cm does not
    contain that element, then a negative value
@@ -221,7 +221,7 @@ cm_idx (const struct covariance *cov, int i, int j)
   int as;
   const int n2j = cov->dim - 2 - j;
   const int nj = cov->dim - 2 ;
-  
+
   assert (i >= 0);
   assert (j < cov->dim);
 
@@ -231,11 +231,11 @@ cm_idx (const struct covariance *cov, int i, int j)
   if (j >= cov->dim - 1)
     return -1;
 
-  if ( i <= j) 
+  if ( i <= j)
     return -1 ;
 
   as = nj * (nj + 1) ;
-  as -= n2j * (n2j + 1) ; 
+  as -= n2j * (n2j + 1) ;
   as /= 2;
 
   return i - 1 + as;
@@ -243,14 +243,14 @@ cm_idx (const struct covariance *cov, int i, int j)
 
 
 /*
-  Returns true iff the variable corresponding to the Ith element of the covariance matrix 
+  Returns true iff the variable corresponding to the Ith element of the covariance matrix
    has a missing value for case C
 */
 static bool
 is_missing (const struct covariance *cov, int i, const struct ccase *c)
 {
   const struct variable *var = i < cov->n_vars ?
-    cov->vars[i] : 
+    cov->vars[i] :
     categoricals_get_interaction_by_subscript (cov->categoricals, i - cov->n_vars)->vars[0];
 
   const union value *val = case_data (c, var);
@@ -354,7 +354,7 @@ covariance_accumulate_pass2 (struct covariance *cov, const struct ccase *c)
       	categoricals_done (cov->categoricals);
 
       cov->dim = cov->n_vars;
-      
+
       if (cov->categoricals)
 	cov->dim += categoricals_df_total (cov->categoricals);
 
@@ -431,9 +431,9 @@ covariance_accumulate_pass2 (struct covariance *cov, const struct ccase *c)
 	    *x += s;
 	  }
 
-	  ss = 
+	  ss =
 	    (v1 - gsl_matrix_get (cov->moments[MOMENT_MEAN], i, j))
-	    * 
+	    *
 	    (v2 - gsl_matrix_get (cov->moments[MOMENT_MEAN], i, j))
 	    * weight
 	    ;
@@ -503,7 +503,7 @@ covariance_accumulate (struct covariance *cov, const struct ccase *c)
 }
 
 
-/* 
+/*
    Allocate and return a gsl_matrix containing the covariances of the
    data.
 */
@@ -590,13 +590,13 @@ covariance_calculate_single_pass (struct covariance *cov)
       for (i = j + 1 ; i < cov->dim; ++i)
 	{
 	  double *x = &cov->cm [cm_idx (cov, i, j)];
-	  
+
 	  *x /= gsl_matrix_get (cov->moments[0], i, j);
 
 	  *x -=
-	    gsl_matrix_get (cov->moments[MOMENT_MEAN], i, j) 
+	    gsl_matrix_get (cov->moments[MOMENT_MEAN], i, j)
 	    *
-	    gsl_matrix_get (cov->moments[MOMENT_MEAN], j, i); 
+	    gsl_matrix_get (cov->moments[MOMENT_MEAN], j, i);
 	}
     }
 
@@ -618,10 +618,10 @@ covariance_calculate (struct covariance *cov)
   switch (cov->passes)
     {
     case 1:
-      return covariance_calculate_single_pass (cov);  
+      return covariance_calculate_single_pass (cov);
       break;
     case 2:
-      return covariance_calculate_double_pass (cov);  
+      return covariance_calculate_double_pass (cov);
       break;
     default:
       NOT_REACHED ();
@@ -656,11 +656,11 @@ covariance_calculate_single_pass_unnormalized (struct covariance *cov)
       for (i = j + 1 ; i < cov->dim; ++i)
 	{
 	  double *x = &cov->cm [cm_idx (cov, i, j)];
-	  
+
 	  *x -=
-	    gsl_matrix_get (cov->moments[MOMENT_MEAN], i, j) 
+	    gsl_matrix_get (cov->moments[MOMENT_MEAN], i, j)
 	    *
-	    gsl_matrix_get (cov->moments[MOMENT_MEAN], j, i) 
+	    gsl_matrix_get (cov->moments[MOMENT_MEAN], j, i)
 	  / gsl_matrix_get (cov->moments[MOMENT_NONE], i, j);
 	}
     }
@@ -685,10 +685,10 @@ covariance_calculate_unnormalized (struct covariance *cov)
   switch (cov->passes)
     {
     case 1:
-      cov->unnormalised =  covariance_calculate_single_pass_unnormalized (cov);  
+      cov->unnormalised =  covariance_calculate_single_pass_unnormalized (cov);
       break;
     case 2:
-      cov->unnormalised =  covariance_calculate_double_pass_unnormalized (cov);  
+      cov->unnormalised =  covariance_calculate_double_pass_unnormalized (cov);
       break;
     default:
       NOT_REACHED ();
@@ -755,7 +755,7 @@ covariance_dump_enc_header (const struct covariance *cov, int length)
 
   tab_title (t, "Covariance Encoding");
 
-  tab_box (t, 
+  tab_box (t,
 	   TAL_2, TAL_2, 0, 0,
 	   0, 0,   tab_nc (t) - 1,   tab_nr (t) - 1);
 

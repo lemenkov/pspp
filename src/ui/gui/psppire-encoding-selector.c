@@ -183,8 +183,8 @@ psppire_encoding_selector_new (const char *default_encoding,
   return hbox;
 }
 
-/* 
-   Return a string describing the currently selected encoding. 
+/*
+   Return a string describing the currently selected encoding.
    The caller should free this string when no longer required.
 */
 gchar *

@@ -615,10 +615,10 @@ pspp_sheet_view_class_init (PsppSheetViewClass *class)
 
     /**
      * PsppSheetView:hover-selection:
-     * 
+     *
      * Enables of disables the hover selection mode of @tree_view.
      * Hover selection makes the selected row follow the pointer.
-     * Currently, this works only for the selection modes 
+     * Currently, this works only for the selection modes
      * %PSPP_SHEET_SELECTION_SINGLE and %PSPP_SHEET_SELECTION_BROWSE.
      *
      * This mode is primarily intended for treeviews in popups, e.g.
@@ -778,12 +778,12 @@ pspp_sheet_view_class_init (PsppSheetViewClass *class)
    * @column: the #PsppSheetViewColumn in which the activation occurred
    *
    * The "row-activated" signal is emitted when the method
-   * pspp_sheet_view_row_activated() is called or the user double clicks 
-   * a treeview row. It is also emitted when a non-editable row is 
-   * selected and one of the keys: Space, Shift+Space, Return or 
+   * pspp_sheet_view_row_activated() is called or the user double clicks
+   * a treeview row. It is also emitted when a non-editable row is
+   * selected and one of the keys: Space, Shift+Space, Return or
    * Enter is pressed.
-   * 
-   * For selection handling refer to the <link linkend="TreeWidget">tree 
+   *
+   * For selection handling refer to the <link linkend="TreeWidget">tree
    * widget conceptual overview</link> as well as #PsppSheetSelection.
    */
   tree_view_signals[ROW_ACTIVATED] =
@@ -799,8 +799,8 @@ pspp_sheet_view_class_init (PsppSheetViewClass *class)
 
   /**
    * PsppSheetView::columns-changed:
-   * @tree_view: the object on which the signal is emitted 
-   * 
+   * @tree_view: the object on which the signal is emitted
+   *
    * The number of columns of the treeview has changed.
    */
   tree_view_signals[COLUMNS_CHANGED] =
@@ -815,7 +815,7 @@ pspp_sheet_view_class_init (PsppSheetViewClass *class)
   /**
    * PsppSheetView::cursor-changed:
    * @tree_view: the object on which the signal is emitted
-   * 
+   *
    * The position of the cursor (focused cell) has changed.
    */
   tree_view_signals[CURSOR_CHANGED] =
@@ -1061,9 +1061,9 @@ pspp_sheet_view_init (PsppSheetView *tree_view)
   tree_view->priv->search_equal_func = pspp_sheet_view_search_equal_func;
   tree_view->priv->search_custom_entry_set = FALSE;
   tree_view->priv->typeselect_flush_timeout = 0;
-  tree_view->priv->init_hadjust_value = TRUE;    
+  tree_view->priv->init_hadjust_value = TRUE;
   tree_view->priv->width = 0;
-          
+
   tree_view->priv->hover_selection = FALSE;
 
   tree_view->priv->rubber_banding_enable = FALSE;
@@ -1563,7 +1563,7 @@ pspp_sheet_view_realize (GtkWidget *widget)
   /* Need to call those here, since they create GCs */
   pspp_sheet_view_set_grid_lines (tree_view, tree_view->priv->grid_lines);
 
-  install_presize_handler (tree_view); 
+  install_presize_handler (tree_view);
 }
 
 static void
@@ -1610,7 +1610,7 @@ pspp_sheet_view_unrealize (GtkWidget *widget)
       g_source_remove (priv->typeselect_flush_timeout);
       priv->typeselect_flush_timeout = 0;
     }
-  
+
   for (list = priv->columns; list; list = list->next)
     _pspp_sheet_view_column_unrealize_button (PSPP_SHEET_VIEW_COLUMN (list->data));
 
@@ -1684,12 +1684,12 @@ pspp_sheet_view_update_size (PsppSheetView *tree_view)
   if (tree_view->priv->model == NULL)
     {
       tree_view->priv->width = 0;
-      tree_view->priv->prev_width = 0;                   
+      tree_view->priv->prev_width = 0;
       tree_view->priv->height = 0;
       return;
     }
 
-  tree_view->priv->prev_width = tree_view->priv->width;  
+  tree_view->priv->prev_width = tree_view->priv->width;
   tree_view->priv->width = 0;
 
   /* keep this in sync with size_allocate below */
@@ -1727,7 +1727,7 @@ pspp_sheet_view_size_request (GtkWidget      *widget,
   PsppSheetView *tree_view = PSPP_SHEET_VIEW (widget);
   GList *tmp_list;
 
-  /* we validate some rows initially just to make sure we have some size. 
+  /* we validate some rows initially just to make sure we have some size.
    * In practice, with a lot of static lists, this should get a good width.
    */
   initialize_fixed_height_mode (tree_view);
@@ -1781,11 +1781,11 @@ invalidate_column (PsppSheetView       *tree_view,
 	  invalid_rect.y = 0;
 	  invalid_rect.width = column->width;
 	  invalid_rect.height = allocation.height;
-	  
+
 	  gdk_window_invalidate_rect (gtk_widget_get_window (widget), &invalid_rect, TRUE);
 	  break;
 	}
-      
+
       column_offset += tmpcolumn->width;
     }
 }
@@ -1900,9 +1900,9 @@ pspp_sheet_view_size_allocate_columns (GtkWidget *widget,
   else
     extra_per_column = 0;
 
-  for (list = (rtl ? last_column : first_column); 
+  for (list = (rtl ? last_column : first_column);
        list != (rtl ? first_column->prev : last_column->next);
-       list = (rtl ? list->prev : list->next)) 
+       list = (rtl ? list->prev : list->next))
     {
       gint real_requested_width = 0;
       gint old_width;
@@ -2009,7 +2009,7 @@ pspp_sheet_view_size_allocate (GtkWidget     *widget,
   if (allocation->width != old_allocation.width)
     width_changed = TRUE;
 
-  if (gtk_widget_get_direction(widget) == GTK_TEXT_DIR_RTL)   
+  if (gtk_widget_get_direction(widget) == GTK_TEXT_DIR_RTL)
     allocation->x += allocation->width - tree_view->priv->width ;
 
   gtk_widget_set_allocation (widget, allocation);
@@ -2025,7 +2025,7 @@ pspp_sheet_view_size_allocate (GtkWidget     *widget,
   gtk_adjustment_set_lower (tree_view->priv->hadjustment, 0);
   gtk_adjustment_set_upper (tree_view->priv->hadjustment, MAX (gtk_adjustment_get_page_size (tree_view->priv->hadjustment), tree_view->priv->width));
 
-  if (gtk_widget_get_direction(widget) == GTK_TEXT_DIR_RTL)   
+  if (gtk_widget_get_direction(widget) == GTK_TEXT_DIR_RTL)
     {
       if (allocation->width < tree_view->priv->width)
         {
@@ -2071,7 +2071,7 @@ pspp_sheet_view_size_allocate (GtkWidget     *widget,
     pspp_sheet_view_top_row_to_dy (tree_view);
   else
     pspp_sheet_view_dy_to_top_row (tree_view);
-  
+
   if (gtk_widget_get_realized (widget))
     {
       gdk_window_move_resize (gtk_widget_get_window (widget),
@@ -2836,7 +2836,7 @@ prelight_or_select (PsppSheetView *tree_view,
 		    gint         y)
 {
   PsppSheetSelectionMode mode = pspp_sheet_selection_get_mode (tree_view->priv->selection);
-  
+
   if (tree_view->priv->hover_selection &&
       (mode == PSPP_SHEET_SELECTION_SINGLE || mode == PSPP_SHEET_SELECTION_BROWSE) &&
       !(tree_view->priv->edited_column &&
@@ -2847,7 +2847,7 @@ prelight_or_select (PsppSheetView *tree_view,
           if (!pspp_sheet_view_node_is_selected (tree_view, node))
 	    {
 	      GtkTreePath *path;
-	      
+
 	      path = _pspp_sheet_view_find_path (tree_view, node);
 	      pspp_sheet_selection_select_path (tree_view->priv->selection, path);
               if (pspp_sheet_view_node_is_selected (tree_view, node))
@@ -3071,7 +3071,7 @@ pspp_sheet_view_motion_drag_column (GtkWidget      *widget,
   x = CLAMP (x + (gint)event->x - column->drag_x, 0,
 	     MAX (tree_view->priv->width, allocation.width) - column->allocation.width);
   gdk_window_move (tree_view->priv->drag_window, x, y);
-  
+
   /* autoscroll, if needed */
   pspp_sheet_view_horizontal_autoscroll (tree_view);
   /* Update the current reorder position and arrow; */
@@ -3339,7 +3339,7 @@ pspp_sheet_view_update_rubber_band (PsppSheetView *tree_view)
   invalid_region = cairo_region_create_rectangle (&old_area);
   cairo_region_union_rectangle (invalid_region, &new_area);
 
-  gdk_rectangle_intersect (GDK_RECTANGLE_PTR (&old_area), 
+  gdk_rectangle_intersect (GDK_RECTANGLE_PTR (&old_area),
 			   GDK_RECTANGLE_PTR (&new_area), GDK_RECTANGLE_PTR (&common));
   if (common.width > 2 && common.height > 2)
     {
@@ -3358,7 +3358,7 @@ pspp_sheet_view_update_rubber_band (PsppSheetView *tree_view)
     }
 
 #if GTK_MAJOR_VERSION == 3
-  gdk_window_invalidate_region (tree_view->priv->bin_window, invalid_region, TRUE);  
+  gdk_window_invalidate_region (tree_view->priv->bin_window, invalid_region, TRUE);
 #else
   {
     cairo_rectangle_int_t extents;
@@ -3600,7 +3600,7 @@ pspp_sheet_view_draw_bin (GtkWidget      *widget,
 
   GdkRectangle exposed_rect;
   gdk_cairo_get_clip_rectangle (cr, &exposed_rect);
-  
+
   Zarea.x =      0;
   Zarea.y =      0;
   Zarea.height = allocation.height;
@@ -3628,10 +3628,10 @@ pspp_sheet_view_draw_bin (GtkWidget      *widget,
   if (new_y < 0)
     new_y = 0;
   y_offset = -pspp_sheet_view_find_offset (tree_view, new_y, &node);
-  bin_window_width = 
+  bin_window_width =
     gdk_window_get_width (tree_view->priv->bin_window);
 
-  bin_window_height = 
+  bin_window_height =
     gdk_window_get_height (tree_view->priv->bin_window);
 
 
@@ -3657,7 +3657,7 @@ pspp_sheet_view_draw_bin (GtkWidget      *widget,
 			   &iter,
 			   path);
   gtk_tree_path_free (path);
-  
+
   cursor_path = NULL;
   drag_dest_path = NULL;
 
@@ -3683,7 +3683,7 @@ pspp_sheet_view_draw_bin (GtkWidget      *widget,
 
   if (draw_vgrid_lines || draw_hgrid_lines)
     gtk_widget_style_get (widget, "grid-line-width", &grid_line_width, NULL);
-  
+
   n_visible_columns = 0;
   for (list = tree_view->priv->columns; list; list = list->next)
     {
@@ -4486,7 +4486,7 @@ pspp_sheet_view_key_press (GtkWidget   *widget,
       ((GdkEventKey *) new_event)->window = g_object_ref (gtk_widget_get_window (tree_view->priv->search_window));
       gtk_widget_realize (tree_view->priv->search_window);
 
-      popup_menu_id = g_signal_connect (tree_view->priv->search_entry, 
+      popup_menu_id = g_signal_connect (tree_view->priv->search_entry,
 					"popup-menu", G_CALLBACK (gtk_true),
                                         NULL);
 
@@ -4504,7 +4504,7 @@ pspp_sheet_view_key_press (GtkWidget   *widget,
       gdk_event_free (new_event);
       gtk_widget_hide (tree_view->priv->search_window);
 
-      g_signal_handler_disconnect (tree_view->priv->search_entry, 
+      g_signal_handler_disconnect (tree_view->priv->search_entry,
 				   popup_menu_id);
 
       /* We check to make sure that the entry tried to handle the text, and that
@@ -4693,7 +4693,7 @@ validate_row (PsppSheetView *tree_view,
                         "wide-separators",  &wide_separators,
                         "separator-height", &separator_height,
 			NULL);
-  
+
   draw_vgrid_lines =
     tree_view->priv->grid_lines == PSPP_SHEET_VIEW_GRID_LINES_VERTICAL
     || tree_view->priv->grid_lines == PSPP_SHEET_VIEW_GRID_LINES_BOTH;
@@ -5008,7 +5008,7 @@ do_presize_handler (PsppSheetView *tree_view)
   gtk_adjustment_changed (tree_view->priv->hadjustment);
   gtk_adjustment_changed (tree_view->priv->vadjustment);
   gtk_widget_queue_resize (GTK_WIDGET (tree_view));
-		   
+
   return FALSE;
 }
 
@@ -5016,7 +5016,7 @@ static gboolean
 presize_handler_callback (gpointer data)
 {
   do_presize_handler (PSPP_SHEET_VIEW (data));
-		   
+
   return FALSE;
 }
 
@@ -6608,7 +6608,7 @@ pspp_sheet_view_put (PsppSheetView *tree_view,
 		     PsppSheetViewColumn *column)
 {
   PsppSheetViewChild *child;
-  
+
   g_return_if_fail (PSPP_IS_SHEET_VIEW (tree_view));
   g_return_if_fail (GTK_IS_WIDGET (child_widget));
 
@@ -6626,7 +6626,7 @@ pspp_sheet_view_put (PsppSheetView *tree_view,
 
   if (gtk_widget_get_realized (GTK_WIDGET (tree_view)))
     gtk_widget_set_parent_window (child->widget, tree_view->priv->bin_window);
-  
+
   gtk_widget_set_parent (child_widget, GTK_WIDGET (tree_view));
 }
 
@@ -6675,7 +6675,7 @@ pspp_sheet_view_row_changed (GtkTreeModel *model,
       if (gtk_widget_get_realized (GTK_WIDGET (tree_view)))
         pspp_sheet_view_node_queue_redraw (tree_view, node);
     }
-  
+
   if (free_path)
     gtk_tree_path_free (path);
 }
@@ -7003,7 +7003,7 @@ pspp_sheet_view_add_move_binding (GtkBindingSet  *binding_set,
 				GtkMovementStep step,
 				gint            count)
 {
-  
+
   gtk_binding_entry_add_signal (binding_set, keyval, modmask,
                                 "move-cursor", 2,
                                 G_TYPE_ENUM, step,
@@ -7094,7 +7094,7 @@ pspp_sheet_view_set_column_drag_info (PsppSheetView       *tree_view,
 
   /* We know there are always 2 slots possbile, as you can always return column. */
   /* If that's all there is, return */
-  if (tree_view->priv->column_drag_info->next == NULL || 
+  if (tree_view->priv->column_drag_info->next == NULL ||
       (tree_view->priv->column_drag_info->next->next == NULL &&
        ((PsppSheetViewColumnReorder *)tree_view->priv->column_drag_info->data)->right_column == column &&
        ((PsppSheetViewColumnReorder *)tree_view->priv->column_drag_info->next->data)->left_column == column))
@@ -7192,7 +7192,7 @@ _pspp_sheet_view_column_start_drag (PsppSheetView       *tree_view,
   send_event->button.axes = NULL;
   send_event->button.state = 0;
   send_event->button.button = 1;
-  send_event->button.device = 
+  send_event->button.device =
     gdk_device_manager_get_client_pointer (gdk_display_get_device_manager (display));
 
   send_event->button.x_root = 0;
@@ -8003,7 +8003,7 @@ pspp_sheet_view_real_select_cursor_row (PsppSheetView *tree_view,
   if (!(mode & PSPP_SHEET_SELECT_MODE_EXTEND))
     pspp_sheet_view_row_activated (tree_view, cursor_path,
                                  tree_view->priv->focus_column);
-    
+
   gtk_tree_path_free (cursor_path);
 
   return TRUE;
@@ -8076,7 +8076,7 @@ send_focus_change (GtkWidget *widget,
   fevent->focus_change.type = GDK_FOCUS_CHANGE;
   fevent->focus_change.window = g_object_ref (gtk_widget_get_window (widget));
   fevent->focus_change.in = in;
-  
+
   gtk_widget_send_focus_change (widget, fevent);
   gdk_event_free (fevent);
 }
@@ -8104,7 +8104,7 @@ pspp_sheet_view_ensure_interactive_directory (PsppSheetView *tree_view)
        gtk_window_set_screen (GTK_WINDOW (tree_view->priv->search_window), screen);
        return;
      }
-   
+
   tree_view->priv->search_window = gtk_window_new (GTK_WINDOW_POPUP);
   gtk_window_set_screen (GTK_WINDOW (tree_view->priv->search_window), screen);
 
@@ -8155,7 +8155,7 @@ pspp_sheet_view_ensure_interactive_directory (PsppSheetView *tree_view)
 }
 
 /* Pops up the interactive search entry.  If keybinding is TRUE then the user
- * started this by typing the start_interactive_search keybinding.  Otherwise, it came from 
+ * started this by typing the start_interactive_search keybinding.  Otherwise, it came from
  */
 static gboolean
 pspp_sheet_view_real_start_interactive_search (PsppSheetView *tree_view,
@@ -8168,7 +8168,7 @@ pspp_sheet_view_real_start_interactive_search (PsppSheetView *tree_view,
   GList *list;
   gboolean found_focus = FALSE;
   GtkWidgetClass *entry_parent_class;
-  
+
   if (!tree_view->priv->enable_search && !keybinding)
     return FALSE;
 
@@ -8193,7 +8193,7 @@ pspp_sheet_view_real_start_interactive_search (PsppSheetView *tree_view,
 	  break;
 	}
     }
-  
+
   if (gtk_widget_has_focus (GTK_WIDGET (tree_view)))
     found_focus = TRUE;
 
@@ -8264,7 +8264,7 @@ pspp_sheet_view_new_column_width (PsppSheetView *tree_view,
   rtl = (gtk_widget_get_direction (GTK_WIDGET (tree_view)) == GTK_TEXT_DIR_RTL);
   column = g_list_nth (tree_view->priv->columns, i)->data;
   width = rtl ? (column->allocation.x + column->allocation.width - *x) : (*x - column->allocation.x);
- 
+
   /* Clamp down the value */
   if (column->min_width == -1)
     width = MAX (column->button_request, width);
@@ -8274,11 +8274,11 @@ pspp_sheet_view_new_column_width (PsppSheetView *tree_view,
     width = MIN (width, column->max_width);
 
   *x = rtl ? (column->allocation.x + column->allocation.width - width) : (column->allocation.x + width);
- 
+
   return width;
 }
 
-void 
+void
 pspp_sheet_view_column_update_button (PsppSheetViewColumn *tree_column);
 
 /* Callbacks */
@@ -8713,7 +8713,7 @@ pspp_sheet_view_set_headers_visible (PsppSheetView *tree_view,
       gdk_window_get_position (tree_view->priv->bin_window, &x, &y);
       if (headers_visible)
 	{
-	  gdk_window_move_resize (tree_view->priv->bin_window, x, y  + TREE_VIEW_HEADER_HEIGHT (tree_view), 
+	  gdk_window_move_resize (tree_view->priv->bin_window, x, y  + TREE_VIEW_HEADER_HEIGHT (tree_view),
 				  tree_view->priv->width, allocation.height -  + TREE_VIEW_HEADER_HEIGHT (tree_view));
 
           if (gtk_widget_get_mapped (GTK_WIDGET (tree_view)))
@@ -8803,11 +8803,11 @@ pspp_sheet_view_set_headers_clickable (PsppSheetView *tree_view,
  *
  * Since: 2.10
  **/
-gboolean 
+gboolean
 pspp_sheet_view_get_headers_clickable (PsppSheetView *tree_view)
 {
   GList *list;
-  
+
   g_return_val_if_fail (PSPP_IS_SHEET_VIEW (tree_view), FALSE);
 
   for (list = tree_view->priv->columns; list; list = list->next)
@@ -8941,7 +8941,7 @@ pspp_sheet_view_remove_column (PsppSheetView       *tree_view,
 	}
 
       if (tree_view->priv->n_columns == 0 &&
-	  pspp_sheet_view_get_headers_visible (tree_view) && 
+	  pspp_sheet_view_get_headers_visible (tree_view) &&
 	  tree_view->priv->header_window)
 	gdk_window_hide (tree_view->priv->header_window);
 
@@ -9581,11 +9581,11 @@ pspp_sheet_view_get_cursor (PsppSheetView        *tree_view,
  *
  * Sets the current keyboard focus to be at @path, and selects it.  This is
  * useful when you want to focus the user's attention on a particular row.  If
- * @focus_column is not %NULL, then focus is given to the column specified by 
- * it. Additionally, if @focus_column is specified, and @start_editing is 
- * %TRUE, then editing should be started in the specified cell.  
- * This function is often followed by @gtk_widget_grab_focus (@tree_view) 
- * in order to give keyboard focus to the widget.  Please note that editing 
+ * @focus_column is not %NULL, then focus is given to the column specified by
+ * it. Additionally, if @focus_column is specified, and @start_editing is
+ * %TRUE, then editing should be started in the specified cell.
+ * This function is often followed by @gtk_widget_grab_focus (@tree_view)
+ * in order to give keyboard focus to the widget.  Please note that editing
  * can only happen when the widget is realized.
  *
  * If @path is invalid for @model, the current cursor (if any) will be unset
@@ -9680,11 +9680,11 @@ pspp_sheet_view_set_cursor_on_cell (PsppSheetView       *tree_view,
 /**
  * pspp_sheet_view_get_bin_window:
  * @tree_view: A #PsppSheetView
- * 
+ *
  * Returns the window that @tree_view renders to.  This is used primarily to
  * compare to <literal>event->window</literal> to confirm that the event on
  * @tree_view is on the right window.
- * 
+ *
  * Return value: A #GdkWindow, or %NULL when @tree_view hasn't been realized yet
  **/
 GdkWindow *
@@ -9800,7 +9800,7 @@ pspp_sheet_view_get_path_at_pos (PsppSheetView        *tree_view,
 	    {
 	      if (column)
 		*column = last_column;
-	      
+
 	      if (cell_x)
 		*cell_x = last_column->width + remaining_x;
 	    }
@@ -10334,7 +10334,7 @@ pspp_sheet_view_get_visible_range (PsppSheetView  *tree_view,
 {
   int node;
   gboolean retval;
-  
+
   g_return_val_if_fail (PSPP_IS_SHEET_VIEW (tree_view), FALSE);
 
   if (!tree_view->priv->row_count)
@@ -10427,7 +10427,7 @@ pspp_sheet_view_enable_model_drag_source (PsppSheetView              *tree_view,
  * @n_targets: the number of items in @targets
  * @actions: the bitmask of possible actions for a drag from this
  *    widget
- * 
+ *
  * Turns @tree_view into a drop destination for automatic DND. Calling
  * this method sets #PsppSheetView:reorderable to %FALSE.
  **/
@@ -10481,7 +10481,7 @@ pspp_sheet_view_unset_rows_drag_source (PsppSheetView *tree_view)
       if (!di->dest_set && !di->source_set)
         remove_info (tree_view);
     }
-  
+
   unset_reorderable (tree_view);
 }
 
@@ -10522,7 +10522,7 @@ pspp_sheet_view_unset_rows_drag_dest (PsppSheetView *tree_view)
  * @tree_view: a #PsppSheetView
  * @path: (allow-none): The path of the row to highlight, or %NULL.
  * @pos: Specifies whether to drop before, after or into the row
- * 
+ *
  * Sets the row that is highlighted for feedback.
  **/
 void
@@ -10599,7 +10599,7 @@ pspp_sheet_view_set_drag_dest_row (PsppSheetView            *tree_view,
  * @tree_view: a #PsppSheetView
  * @path: (allow-none): Return location for the path of the highlighted row, or %NULL.
  * @pos: (allow-none): Return location for the drop position, or %NULL
- * 
+ *
  * Gets information about the row that is highlighted for feedback.
  **/
 void
@@ -10633,12 +10633,12 @@ pspp_sheet_view_get_drag_dest_row (PsppSheetView              *tree_view,
  * @drag_y: the position to determine the destination row for
  * @path: (allow-none): Return location for the path of the highlighted row, or %NULL.
  * @pos: (allow-none): Return location for the drop position, or %NULL
- * 
+ *
  * Determines the destination row for a given position.  @drag_x and
  * @drag_y are expected to be in widget coordinates.  This function is only
  * meaningful if @tree_view is realized.  Therefore this function will always
  * return %FALSE if @tree_view is not realized or does not have a model.
- * 
+ *
  * Return value: whether there is a row at the given position, %TRUE if this
  * is indeed the case.
  **/
@@ -10767,8 +10767,8 @@ pspp_sheet_view_set_destroy_count_func (PsppSheetView             *tree_view,
  *
  * If @enable_search is set, then the user can type in text to search through
  * the tree interactively (this is sometimes called "typeahead find").
- * 
- * Note that even if this is %FALSE, the user can still initiate a search 
+ *
+ * Note that even if this is %FALSE, the user can still initiate a search
  * using the "start-interactive-search" key binding.
  */
 void
@@ -10778,7 +10778,7 @@ pspp_sheet_view_set_enable_search (PsppSheetView *tree_view,
   g_return_if_fail (PSPP_IS_SHEET_VIEW (tree_view));
 
   enable_search = !!enable_search;
-  
+
   if (tree_view->priv->enable_search != enable_search)
     {
        tree_view->priv->enable_search = enable_search;
@@ -10790,7 +10790,7 @@ pspp_sheet_view_set_enable_search (PsppSheetView *tree_view,
  * pspp_sheet_view_get_enable_search:
  * @tree_view: A #PsppSheetView
  *
- * Returns whether or not the tree allows to start interactive searching 
+ * Returns whether or not the tree allows to start interactive searching
  * by typing in text.
  *
  * Return value: whether or not to let the user search interactively
@@ -10826,13 +10826,13 @@ pspp_sheet_view_get_search_column (PsppSheetView *tree_view)
  * @column: the column of the model to search in, or -1 to disable searching
  *
  * Sets @column as the column where the interactive search code should
- * search in for the current model. 
- * 
+ * search in for the current model.
+ *
  * If the search column is set, users can use the "start-interactive-search"
  * key binding to bring up search popup. The enable-search property controls
  * whether simply typing text will also start an interactive search.
  *
- * Note that @column refers to a column of the current model. The search 
+ * Note that @column refers to a column of the current model. The search
  * column is reset to -1 when the model is changed.
  */
 void
@@ -10972,7 +10972,7 @@ pspp_sheet_view_set_search_entry (PsppSheetView *tree_view,
 			      G_CALLBACK (pspp_sheet_view_search_init),
 			      tree_view);
 	}
-      
+
         g_signal_connect (tree_view->priv->search_entry, "key-press-event",
 		          G_CALLBACK (pspp_sheet_view_search_key_press_event),
 		          tree_view);
@@ -11053,7 +11053,7 @@ pspp_sheet_view_search_dialog_hide (GtkWidget   *search_dialog,
       g_source_remove (tree_view->priv->typeselect_flush_timeout);
       tree_view->priv->typeselect_flush_timeout = 0;
     }
-	
+
   if (gtk_widget_get_visible (search_dialog))
     {
       /* send focus-in event */
@@ -11134,12 +11134,12 @@ pspp_sheet_view_search_activate (GtkEntry    *entry,
   if (gtk_tree_row_reference_valid (tree_view->priv->cursor))
     {
       path = gtk_tree_row_reference_get_path (tree_view->priv->cursor);
-      
+
       _pspp_sheet_view_find_node (tree_view, path, &node);
-      
+
       if (node >= 0 && pspp_sheet_view_node_is_selected (tree_view, node))
 	pspp_sheet_view_row_activated (tree_view, path, tree_view->priv->focus_column);
-      
+
       gtk_tree_path_free (path);
     }
 }
@@ -11545,7 +11545,7 @@ pspp_sheet_view_remove_widget (GtkCellEditable *cell_editable,
 					tree_view);
 
   gtk_container_remove (GTK_CONTAINER (tree_view),
-			GTK_WIDGET (cell_editable));  
+			GTK_WIDGET (cell_editable));
 
   /* FIXME should only redraw a single node */
   gtk_widget_queue_draw (GTK_WIDGET (tree_view));
@@ -11926,12 +11926,12 @@ pspp_sheet_view_stop_editing (PsppSheetView *tree_view,
  *
  * Enables of disables the hover selection mode of @tree_view.
  * Hover selection makes the selected row follow the pointer.
- * Currently, this works only for the selection modes 
+ * Currently, this works only for the selection modes
  * %PSPP_SHEET_SELECTION_SINGLE and %PSPP_SHEET_SELECTION_BROWSE.
- * 
+ *
  * Since: 2.6
  **/
-void     
+void
 pspp_sheet_view_set_hover_selection (PsppSheetView *tree_view,
 				   gboolean     hover)
 {
@@ -11948,14 +11948,14 @@ pspp_sheet_view_set_hover_selection (PsppSheetView *tree_view,
 /**
  * pspp_sheet_view_get_hover_selection:
  * @tree_view: a #PsppSheetView
- * 
+ *
  * Returns whether hover selection mode is turned on for @tree_view.
- * 
+ *
  * Return value: %TRUE if @tree_view is in hover selection mode
  *
- * Since: 2.6 
+ * Since: 2.6
  **/
-gboolean 
+gboolean
 pspp_sheet_view_get_hover_selection (PsppSheetView *tree_view)
 {
   return tree_view->priv->hover_selection;
@@ -11969,7 +11969,7 @@ pspp_sheet_view_get_hover_selection (PsppSheetView *tree_view)
  * Enables or disables rubber banding in @tree_view.  If the selection mode is
  * #PSPP_SHEET_SELECTION_MULTIPLE or #PSPP_SHEET_SELECTION_RECTANGLE, rubber
  * banding will allow the user to select multiple rows by dragging the mouse.
- * 
+ *
  * Since: 2.10
  **/
 void
@@ -11989,12 +11989,12 @@ pspp_sheet_view_set_rubber_banding (PsppSheetView *tree_view,
 /**
  * pspp_sheet_view_get_rubber_banding:
  * @tree_view: a #PsppSheetView
- * 
+ *
  * Returns whether rubber banding is turned on for @tree_view.  If the
  * selection mode is #PSPP_SHEET_SELECTION_MULTIPLE or
  * #PSPP_SHEET_SELECTION_RECTANGLE, rubber banding will allow the user to
  * select multiple rows by dragging the mouse.
- * 
+ *
  * Return value: %TRUE if rubber banding in @tree_view is enabled.
  *
  * Since: 2.10
@@ -12008,7 +12008,7 @@ pspp_sheet_view_get_rubber_banding (PsppSheetView *tree_view)
 /**
  * pspp_sheet_view_is_rubber_banding_active:
  * @tree_view: a #PsppSheetView
- * 
+ *
  * Returns whether a rubber banding operation is currently being done
  * in @tree_view.
  *
@@ -12103,11 +12103,11 @@ pspp_sheet_view_set_grid_lines (PsppSheetView           *tree_view,
 
   old_grid_lines = priv->grid_lines;
   priv->grid_lines = grid_lines;
-  
+
   if (old_grid_lines != grid_lines)
     {
       gtk_widget_queue_draw (GTK_WIDGET (tree_view));
-      
+
       g_object_notify (G_OBJECT (tree_view), "enable-grid-lines");
     }
 }
@@ -12489,11 +12489,11 @@ _gtk_boolean_handled_accumulator (GSignalInvocationHint *ihint,
 {
   gboolean continue_emission;
   gboolean signal_handled;
-  
+
   signal_handled = g_value_get_boolean (handler_return);
   g_value_set_boolean (return_accu, signal_handled);
   continue_emission = !signal_handled;
-  
+
   return continue_emission;
 }
 

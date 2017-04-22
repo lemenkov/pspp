@@ -15,7 +15,7 @@
    along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 
 
-/* 
+/*
    This module provides a subclass of GtkTreeView, designed for dialogs
    which need lists of annotated checkbox items.
    The object contains the necessary model and renderers, which means that
@@ -118,7 +118,7 @@ static void
 psppire_checkbox_treeview_init (PsppireCheckboxTreeview *cbtv)
 {
   cbtv->list = GTK_TREE_MODEL (gtk_list_store_new (N_CHECKBOX_COLUMNS,
-						   G_TYPE_STRING, 
+						   G_TYPE_STRING,
 						   G_TYPE_BOOLEAN,
 						   G_TYPE_STRING));
 

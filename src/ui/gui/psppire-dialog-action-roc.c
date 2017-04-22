@@ -62,10 +62,10 @@ dialog_state_valid (gpointer data)
   value_init (&val, width);
 
   result = psppire_value_entry_get_value (PSPPIRE_VALUE_ENTRY (rd->state_value), &val, width);
-  
+
   if (var_is_value_missing (var, &val, MV_SYSTEM))
       result = FALSE;
-  
+
   value_destroy (&val, width);
 
   return result;
@@ -80,7 +80,7 @@ on_curve_button_toggle (GtkCheckButton *curve, PsppireDialogActionRoc *rd)
 	g_object_set (rd->reference, "inconsistent", TRUE, NULL);
       g_object_set (rd->reference, "sensitive", FALSE, NULL);
     }
-  else 
+  else
     {
       g_object_set (rd->reference, "inconsistent", FALSE, NULL);
       g_object_set (rd->reference, "sensitive", TRUE, NULL);
@@ -192,10 +192,10 @@ generate_syntax (const PsppireDialogAction *a)
     {
       struct string str;
       ds_init_empty (&str);
-      
+
       syntax_gen_value (&str, &val, var_get_width (var),
 			var_get_print_format (var));
-      
+
       g_string_append (string, ds_cstr (&str));
       ds_destroy (&str);
     }

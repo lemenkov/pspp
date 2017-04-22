@@ -166,7 +166,7 @@ main (int argc, char *argv[])
 
       if (! decrypt_file (enc, input_fh, output_fh, password))
 	goto error;
-	  
+
       goto exit;
     }
 

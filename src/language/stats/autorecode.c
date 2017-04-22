@@ -257,7 +257,7 @@ cmd_autorecode (struct lexer *lexer, struct dataset *ds)
 
         item = find_arc_item (spec, value, hash);
         if ( (item == NULL)
-	     &&  
+	     &&
 	     ( arc->blank_valid
                || val_type_from_width (spec->width) == VAL_NUMERIC
                || ! value_is_blank (value, width, dict))
@@ -312,7 +312,7 @@ cmd_autorecode (struct lexer *lexer, struct dataset *ds)
 	  value_init (&to_val, 0);
 
 	  items[j]->to = direction == ASCENDING ? j + 1 : n_items - j;
-	  
+
 	  to_val.f = items[j]->to;
 
 	  /* Add value labels to the destination variable which indicate
@@ -326,7 +326,7 @@ cmd_autorecode (struct lexer *lexer, struct dataset *ds)
 	    }
 	  else
 	    recoded_value = c_xasprintf ("%.*g", DBL_DIG + 1, from->f);
-	  
+
 	  /* Remove trailing whitespace */
           len = strlen (recoded_value);
           while (len > 0 && recoded_value[len - 1] == ' ')
@@ -382,7 +382,7 @@ arc_free (struct autorecode_pgm *arc)
       for (i = 0; i < arc->n_specs; i++)
 	{
 	  struct arc_spec *spec = &arc->specs[i];
-	  
+
 	  if (--spec->items->refcnt == 0)
 	    {
 	      hmap_destroy (&spec->items->ht);
@@ -395,7 +395,7 @@ arc_free (struct autorecode_pgm *arc)
 	  hmap_destroy (&arc->global_items->ht);
 	  free (arc->global_items);
 	}
-      
+
       free (arc->specs);
       free (arc);
     }

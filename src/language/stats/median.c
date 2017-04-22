@@ -12,7 +12,7 @@
    GNU General Public License for more details.
 
    You should have received a copy of the GNU General Public License
-   along with this program.  If not, see <http://www.gnu.org/licenses/>. 
+   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 #include <config.h>
@@ -61,12 +61,12 @@ struct results
   struct val_node **sorted_array;
   double n;
   double median;
-  double chisq;  
+  double chisq;
 };
 
 
 
-static int 
+static int
 val_node_cmp_3way (const void *a_, const void *b_, const void *aux)
 {
   const struct variable *indep_var = aux;
@@ -76,15 +76,15 @@ val_node_cmp_3way (const void *a_, const void *b_, const void *aux)
   return value_compare_3way (&(*a)->val, &(*b)->val, var_get_width (indep_var));
 }
 
-static void 
+static void
 show_frequencies (const struct n_sample_test *nst, const struct results *results,  int n_vals, const struct dictionary *);
 
-static void 
+static void
 show_test_statistics (const struct n_sample_test *nst, const struct results *results, int, const struct dictionary *);
 
 
 static struct val_node *
-find_value (const struct hmap *map, const union value *val, 
+find_value (const struct hmap *map, const union value *val,
 	    const struct variable *var)
 {
   struct val_node *foo = NULL;
@@ -174,7 +174,7 @@ median_execute (const struct dataset *ds,
 
 	  ptl = percentile_create (0.5, cc);
 	  os = &ptl->parent;
-	    
+
 	  order_stats_accumulate (&os, 1,
 				  rr,
 				  wvar,
@@ -186,7 +186,7 @@ median_execute (const struct dataset *ds,
 	}
 
       results[v].median = median;
-      
+
 
       for (; (c = casereader_read (r)) != NULL; case_unref (c))
 	{
@@ -222,7 +222,7 @@ median_execute (const struct dataset *ds,
 		  int width = var_get_width (nst->indep_var);
 		  vn = xzalloc (sizeof *vn);
 		  value_clone (&vn->val,  indep_val, width);
-		  
+
 		  hmap_insert (&map, &vn->node, value_hash (indep_val, width, 0));
 		}
 	      else
@@ -269,7 +269,7 @@ median_execute (const struct dataset *ds,
 	n_vals = x;
 	hmap_destroy (&map);
 
-	sort (results[v].sorted_array, x, sizeof (*results[v].sorted_array), 
+	sort (results[v].sorted_array, x, sizeof (*results[v].sorted_array),
 	      val_node_cmp_3way, nst->indep_var);
 
       }
@@ -298,7 +298,7 @@ median_execute (const struct dataset *ds,
 
 
 
-static void 
+static void
 show_frequencies (const struct n_sample_test *nst, const struct results *results,  int n_vals, const struct dictionary *dict)
 {
   const struct variable *weight = dict_get_weight (dict);
@@ -311,7 +311,7 @@ show_frequencies (const struct n_sample_test *nst, const struct results *results
   const int column_headers = 2;
   const int nc = row_headers + n_vals;
   const int nr = column_headers + nst->n_vars * 2;
-    
+
   struct tab_table *table = tab_create (nc, nr);
   tab_set_format (table, RC_WEIGHT, wfmt);
 
@@ -345,7 +345,7 @@ show_frequencies (const struct n_sample_test *nst, const struct results *results
 
       tab_text (table, row_headers + i, 1,
 		TAT_TITLE | TAB_LEFT, ds_cstr (&label));
-  
+
       ds_destroy (&label);
     }
 
@@ -385,7 +385,7 @@ show_frequencies (const struct n_sample_test *nst, const struct results *results
 }
 
 
-static void 
+static void
 show_test_statistics (const struct n_sample_test *nst,
 		      const struct results *results,
 		      int n_vals,
@@ -400,7 +400,7 @@ show_test_statistics (const struct n_sample_test *nst,
   const int column_headers = 1;
   const int nc = row_headers + 5;
   const int nr = column_headers + nst->n_vars;
-    
+
   struct tab_table *table = tab_create (nc, nr);
   tab_set_format (table, RC_WEIGHT, wfmt);
 
@@ -454,6 +454,6 @@ show_test_statistics (const struct n_sample_test *nst,
       tab_double (table, row_headers + 4, column_headers + v,
 		  0, gsl_cdf_chisq_Q (rs->chisq, df), NULL, RC_PVALUE);
     }
-  
+
   tab_submit (table);
 }

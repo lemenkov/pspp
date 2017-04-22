@@ -100,7 +100,7 @@ runs_statistic (const struct run_state *rs)
 
 static void show_runs_result (const struct runs_test *, const struct run_state *, const struct dictionary *);
 
-void 
+void
 runs_execute (const struct dataset *ds,
 	      struct casereader *input,
 	      enum mv_class exclude,
@@ -132,7 +132,7 @@ runs_execute (const struct dataset *ds,
 	    const struct variable *var = otp->vars[v];
 
 	    reader = sort_execute_1var (reader, var);
-	    
+
 	    grouper = casegrouper_create_vars (reader, &var, 1);
 	    last_cc = SYSMIS;
 	    while (casegrouper_get_next_group (grouper, &group))
@@ -206,7 +206,7 @@ runs_execute (const struct dataset *ds,
 
 	    median = percentile_create (0.5, cc);
 	    os = &median->parent;
-	    
+
 	    order_stats_accumulate (&os, 1,
 				    reader,
 				    weight,
@@ -337,7 +337,7 @@ show_runs_result (const struct runs_test *rt, const struct run_state *rs, const 
 
       double z = runs_statistic (run);
 
-      tab_text (table,  row_headers + i, 0, 
+      tab_text (table,  row_headers + i, 0,
 		TAT_TITLE | TAB_CENTER ,
 		var_to_string (otp->vars[i]));
 
@@ -346,7 +346,7 @@ show_runs_result (const struct runs_test *rt, const struct run_state *rs, const 
 
       tab_double (table, row_headers +i, 2, 0,
 		  run->nn, NULL, RC_WEIGHT);
-		  
+
       tab_double (table, row_headers +i, 3, 0,
 		  run->np, NULL, RC_WEIGHT);
 

@@ -14,7 +14,7 @@
    You should have received a copy of the GNU General Public License
    along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 
-/* This file implements a GtkTreeModel.  It allows GtkComboBox and 
+/* This file implements a GtkTreeModel.  It allows GtkComboBox and
    GtkTreeView to display the names and non-empty cell ranges of the
    sheets aka "Tables" of spreadsheet files.
    It doesn't take any notice of the spreadsheet data itself.
@@ -99,7 +99,7 @@ psppire_spreadsheet_model_set_property (GObject * object,
                                         const GValue * value,
                                         GParamSpec * pspec)
 {
-  PsppireSpreadsheetModel *spreadsheetModel = 
+  PsppireSpreadsheetModel *spreadsheetModel =
     PSPPIRE_SPREADSHEET_MODEL (object);
 
   switch (prop_id)
@@ -266,7 +266,7 @@ tree_model_get_value (GtkTreeModel * model, GtkTreeIter * iter,
         const char *x =
           spreadsheet_get_sheet_name (spreadsheetModel->spreadsheet,
                                       (intptr_t) iter->user_data);
-	
+
         g_value_set_string (value, x);
       }
       break;
@@ -352,7 +352,7 @@ tree_model_children (GtkTreeModel *model, GtkTreeIter *iter, GtkTreeIter *parent
 
   iter->stamp = spreadsheetModel->stamp;
   iter->user_data = 0;
-    
+
   return TRUE;
 }
 

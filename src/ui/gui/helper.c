@@ -289,7 +289,7 @@ clone_list_store (const GtkListStore *src)
 
 
 
-static gboolean 
+static gboolean
 on_delete (GtkWindow *window, GdkEvent *e, GtkWindow **addr)
 {
   *addr = NULL;

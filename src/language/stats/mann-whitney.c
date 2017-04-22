@@ -47,7 +47,7 @@ struct mw
 
   double u;  /* The Mann-Whitney U statistic */
   double w;  /* The Wilcoxon Rank Sum W statistic */
-  double z;  
+  double z;
 };
 
 static void show_ranks_box (const struct n_sample_test *nst, const struct mw *mw);
@@ -72,7 +72,7 @@ belongs_to_test (const struct ccase *c, void *aux)
   return false;
 }
 
-					 
+
 
 void
 mann_whitney_execute (const struct dataset *ds,
@@ -100,7 +100,7 @@ mann_whitney_execute (const struct dataset *ds,
       struct ccase *c;
       const struct variable *var = nst->vars[i];
 
-      struct casereader *reader = 
+      struct casereader *reader =
 	casereader_create_filter_func (casereader_clone (input),
 				       belongs_to_test,
 				       NULL,
@@ -159,7 +159,7 @@ mann_whitney_execute (const struct dataset *ds,
 	denominator -= tiebreaker;
 	denominator *= mwv->n[0] * mwv->n[1];
 	denominator /= n * (n - 1);
-      
+
 	mwv->z /= sqrt (denominator);
       }
     }
@@ -292,7 +292,7 @@ show_statistics_box (const struct n_sample_test *nst, const struct mw *mwv, bool
   tab_text (table, 3, 0, TAT_TITLE | TAB_CENTER, _("Z"));
   tab_text (table, 4, 0, TAT_TITLE | TAB_CENTER, _("Asymp. Sig. (2-tailed)"));
 
-  if (exact) 
+  if (exact)
     {
       tab_text (table, 5, 0, TAT_TITLE | TAB_CENTER, _("Exact Sig. (2-tailed)"));
       tab_text (table, 6, 0, TAT_TITLE | TAB_CENTER, _("Point Probability"));

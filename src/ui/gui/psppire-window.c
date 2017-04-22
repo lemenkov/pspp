@@ -112,7 +112,7 @@ psppire_window_set_title (PsppireWindow *window)
   sscanf (bare_version, "%*d.%d.%*d", &minor);
   if (minor % 2)
     g_string_append_printf (title, " - Test version! Please report bugs to %s", PACKAGE_BUGREPORT);
-  
+
   gtk_window_set_title (GTK_WINDOW (window), title->str);
 
   g_string_free (title, TRUE);
@@ -320,7 +320,7 @@ insert_menuitem_into_menu (PsppireWindow *window, gpointer key)
   filename = g_filename_display_name (key);
   item = gtk_check_menu_item_new_with_label (filename);
   g_free (filename);
-  
+
   g_hash_table_insert (window->menuitem_table, key, item);
 }
 
@@ -340,7 +340,7 @@ static void
 insert_menuitem (GObject *reg, const gchar *key, gpointer data)
 {
   PsppireWindow *window = PSPPIRE_WINDOW (data);
-  
+
   insert_menuitem_into_menu (window, (gpointer) key);
 }
 
@@ -563,7 +563,7 @@ psppire_window_model_get_type (void)
       window_model_type =
 	g_type_register_static (G_TYPE_INTERFACE, "PsppireWindowModel",
 				&window_model_info, 0);
-      
+
       g_type_interface_add_prerequisite (window_model_type, G_TYPE_OBJECT);
     }
 

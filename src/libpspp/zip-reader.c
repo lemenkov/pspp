@@ -63,7 +63,7 @@ stored_finish (struct zip_member *zm UNUSED)
 }
 
 
-static struct decompressor decompressors[n_COMPRESSION] = 
+static struct decompressor decompressors[n_COMPRESSION] =
   {
     {stored_init, stored_read, stored_finish},
     {inflate_init, inflate_read, inflate_finish}
@@ -120,7 +120,7 @@ void
 zip_reader_destroy (struct zip_reader *zr)
 {
   int i;
-  if (zr == NULL) 
+  if (zr == NULL)
     return;
 
   fclose (zr->fr);
@@ -154,7 +154,7 @@ static bool get_bytes (FILE *f, void *x, size_t n) WARN_UNUSED_RESULT;
 
 /* Read N bytes from F, storing the result in X */
 static bool
-get_bytes (FILE *f, void *x, size_t n) 
+get_bytes (FILE *f, void *x, size_t n)
 {
   return (n == fread (x, 1, n, f));
 }
@@ -208,7 +208,7 @@ check_magic (FILE *f, uint32_t expected, struct string *err)
   if ((expected != magic))
     {
       ds_put_format (err,
-		     _("Corrupt file at 0x%llx: Expected %"PRIx32"; got %"PRIx32), 
+		     _("Corrupt file at 0x%llx: Expected %"PRIx32"; got %"PRIx32),
 		     (long long int) ftello (f) - sizeof (uint32_t), expected, magic);
 
       return false;
@@ -244,7 +244,7 @@ zip_member_read (struct zip_member *zm, void *buf, size_t bytes)
 /*
   Read a local file header from ZR and add it to ZR's internal array.
   Returns a pointer to the member read.  This pointer belongs to ZR.
-  If the caller wishes to control it, she should ref it with 
+  If the caller wishes to control it, she should ref it with
   zip_member_ref.
 */
 static struct zip_member *
@@ -254,7 +254,7 @@ zip_header_read_next (struct zip_reader *zr)
 
   uint16_t v, nlen, extralen;
   uint16_t gp, time, date;
-  
+
   uint16_t clen, diskstart, iattr;
   uint32_t eattr;
   uint16_t comp_type;
@@ -289,7 +289,7 @@ zip_header_read_next (struct zip_reader *zr)
   if (! get_bytes (zr->fr, zm->name, nlen)) return NULL;
 
   skip_bytes (zr->fr, extralen);
-  
+
   zr->members[zr->nm++] = zm;
 
   zm->fp = fopen (zr->filename, "rb");
@@ -354,7 +354,7 @@ zip_reader_create (const char *filename, struct string *errs)
       free (zr);
       return NULL;
     }
-  
+
   if (! get_u16 (zr->fr, &disknum)) return NULL;
   if (! get_u16 (zr->fr, &disknum)) return NULL;
 
@@ -390,7 +390,7 @@ zip_member_open (struct zip_reader *zr, const char *member)
   uint16_t v, nlen, extra_len;
   uint16_t gp, comp_type, time, date;
   uint32_t ucomp_size, comp_size;
-  
+
   uint32_t crc;
   bool new_member = false;
   char *name = NULL;
@@ -415,7 +415,7 @@ zip_member_open (struct zip_reader *zr, const char *member)
     else
       zm = NULL;
   }
-  
+
   if ( zm == NULL)
     return NULL;
 
@@ -463,7 +463,7 @@ zip_member_open (struct zip_reader *zr, const char *member)
   free (name);
 
   zm->bytes_unread = zm->ucomp_size;
-  
+
   if ( !new_member)
     decompressors[zm->compression].finish (zm);
 
@@ -515,7 +515,7 @@ find_eocd (FILE *fp, off_t *off)
   const uint32_t magic = MAGIC_EOCD;
   bool found = false;
 
-  /* The magic cannot be more than 22 bytes from the end of the file, 
+  /* The magic cannot be more than 22 bytes from the end of the file,
      because that is the minimum length of the EndOfCentralDirectory
      record.
    */
@@ -525,7 +525,7 @@ find_eocd (FILE *fp, off_t *off)
     }
   start = ftello (fp);
   stop = start + sizeof (magic);
-  do 
+  do
     {
       found = probe_magic (fp, magic, start, stop, off);
       /* FIXME: For extra confidence lookup the directory start record here*/
@@ -572,7 +572,7 @@ probe_magic (FILE *fp, uint32_t magic, off_t start, off_t stop, off_t *off)
 	state++;
       else
 	state = 0;
-      
+
       if ( state == 4)
 	{
 	  *off = ftello (fp) - 4;

@@ -14,13 +14,13 @@
    You should have received a copy of the GNU General Public License
    along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 
-/* 
+/*
    This is a an abstract base class, which implements GAction.
    It's purpose is to abstract the way in which dialog boxes behave.
-   That is, this action will fire whenever a dialog box is to be 
+   That is, this action will fire whenever a dialog box is to be
    popped up.
-   
-   Additionally, most dialog boxes generate syntax to 
+
+   Additionally, most dialog boxes generate syntax to
    be run by the pspp back-end.  This provides an abstraction
    to do that.  The programmer needs only to provide the function
    to generate the syntax.  This base class looks after the rest.
@@ -91,10 +91,10 @@ GType psppire_dialog_action_get_type (void) ;
 
 typedef void (*PsppireDialogActionRefresh) (PsppireDialogAction *) ;
 
-void psppire_dialog_action_set_refresh (PsppireDialogAction *pda, 
+void psppire_dialog_action_set_refresh (PsppireDialogAction *pda,
 					PsppireDialogActionRefresh refresh);
 
-void psppire_dialog_action_set_valid_predicate (PsppireDialogAction *act, 
+void psppire_dialog_action_set_valid_predicate (PsppireDialogAction *act,
 						ContentsAreValid dialog_state_valid);
 
 typedef void (*activation) (PsppireDialogAction *);

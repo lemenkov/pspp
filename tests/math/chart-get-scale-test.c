@@ -64,7 +64,7 @@ test_range (double low, double high)
   assert (n_ticks <= 10);
 
 #if 0
-  printf("%s: high: %lg, low %lg, interval: %lg, nticks: %d\n", 
+  printf("%s: high: %lg, low %lg, interval: %lg, nticks: %d\n",
 	 __FUNCTION__, high, low, interval, n_ticks);
   dump_scale (lower, interval, n_ticks);
 #endif
@@ -78,7 +78,7 @@ test_range (double low, double high)
 }
 
 
-int 
+int
 main (int argc UNUSED, char **argv UNUSED)
 {
   test_range (0, 0);
@@ -94,8 +94,8 @@ main (int argc UNUSED, char **argv UNUSED)
   test_range (-50010, -49999);
   test_range (0.000100002, 0.000100010);
 
-  test_range (102, 50030); 
-  test_range (0.00102, 0.0050030); 
+  test_range (102, 50030);
+  test_range (0.00102, 0.0050030);
 
   return 0;
 }

@@ -300,7 +300,7 @@ terminal_opts_init (struct argv_parser *ap,
   return to;
 }
 
-/* Return true iff the terminal appears to be an xterm with 
+/* Return true iff the terminal appears to be an xterm with
    UTF-8 capabilities */
 static bool
 term_is_utf8_xterm (void)
@@ -326,7 +326,7 @@ terminal_opts_done (struct terminal_opts *to, int argc, char *argv[])
 	{
 	  string_map_insert (&to->options, "box", "unicode");
 	}
-  
+
       string_map_insert (&to->options, "output-file", "-");
       string_map_insert (&to->options, "format", "txt");
       register_output_driver (to);

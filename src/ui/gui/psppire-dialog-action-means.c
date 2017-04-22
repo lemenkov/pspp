@@ -109,7 +109,7 @@ psppire_dialog_action_means_activate (PsppireDialogAction *a)
       gtk_container_add (GTK_CONTAINER (vb), act->layer);
       gtk_widget_show (act->layer);
     }
-  
+
   GtkWidget *selector = get_widget_assert (xml, "layer-selector");
 
   pda->dialog = get_widget_assert (xml, "means-dialog");

@@ -161,7 +161,7 @@ on_local_options (GApplication * application,
       start_time = g_get_monotonic_time ();
   }
 
-  
+
   return -1;
 }
 

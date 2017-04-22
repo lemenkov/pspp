@@ -194,7 +194,7 @@ cmd_reliability (struct lexer *lexer, struct dataset *ds)
 	  if ( ! lex_force_match (lexer, T_LPAREN))
 	    goto error;
 
-	  if ( ! lex_force_string (lexer) ) 
+	  if ( ! lex_force_string (lexer) )
 	    goto error;
 
 	  ds_assign_substring (&reliability.scale_name, lex_tokss (lexer));
@@ -354,7 +354,7 @@ cmd_reliability (struct lexer *lexer, struct dataset *ds)
     }
 
 
-  if ( ! run_reliability (ds, &reliability)) 
+  if ( ! run_reliability (ds, &reliability))
     goto error;
 
   reliability_destroy (&reliability);

@@ -146,7 +146,7 @@ typedef struct linreg_struct linreg;
 
 
 
-linreg *linreg_alloc (const struct variable *, const struct variable **, 
+linreg *linreg_alloc (const struct variable *, const struct variable **,
 		      double, size_t);
 
 void linreg_unref (linreg *);

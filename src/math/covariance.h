@@ -27,7 +27,7 @@ struct variable;
 struct ccase ;
 struct categoricals;
 
-struct covariance * covariance_1pass_create (size_t n_vars, const struct variable *const *vars, 
+struct covariance * covariance_1pass_create (size_t n_vars, const struct variable *const *vars,
 					     const struct variable *wv, enum mv_class excl);
 
 struct covariance *

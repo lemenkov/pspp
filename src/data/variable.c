@@ -461,7 +461,7 @@ var_set_value_labels (struct variable *v, const struct val_labs *vls)
 {
   struct variable *ov = var_clone (v);
   var_set_value_labels_quiet (v, vls);
-  dict_var_changed (v, VAR_TRAIT_LABEL, ov);  
+  dict_var_changed (v, VAR_TRAIT_LABEL, ov);
 }
 
 
@@ -544,7 +544,7 @@ var_append_value_name (const struct variable *v, const union value *value,
     case SETTINGS_VAL_STYLE_VALUES:
       append_value (v, value, str);
       break;
-      
+
     case SETTINGS_VAL_STYLE_LABELS:
       if (name == NULL)
 	append_value (v, value, str);
@@ -1115,7 +1115,7 @@ var_must_leave (const struct variable *v)
    all if it hasn't been saved to or read from a system or
    portable file. */
 size_t
-var_get_short_name_cnt (const struct variable *var) 
+var_get_short_name_cnt (const struct variable *var)
 {
   return var->short_name_cnt;
 }
@@ -1144,14 +1144,14 @@ var_set_short_name (struct variable *var, size_t idx, const char *short_name)
   assert (short_name == NULL || id_is_plausible (short_name, false));
 
   /* Clear old short name numbered IDX, if any. */
-  if (idx < var->short_name_cnt) 
+  if (idx < var->short_name_cnt)
     {
       free (var->short_names[idx]);
-      var->short_names[idx] = NULL; 
+      var->short_names[idx] = NULL;
     }
 
   /* Install new short name for IDX. */
-  if (short_name != NULL) 
+  if (short_name != NULL)
     {
       if (idx >= var->short_name_cnt)
         {
@@ -1210,14 +1210,14 @@ var_get_case_index (const struct variable *v)
    V, or calling var_set_attributes() on V, will also destroy its
    attribute set. */
 struct attrset *
-var_get_attributes (const struct variable *v) 
+var_get_attributes (const struct variable *v)
 {
   return CONST_CAST (struct attrset *, &v->attributes);
 }
 
 /* Replaces variable V's attributes set by a copy of ATTRS. */
 static void
-var_set_attributes_quiet (struct variable *v, const struct attrset *attrs) 
+var_set_attributes_quiet (struct variable *v, const struct attrset *attrs)
 {
   attrset_destroy (&v->attributes);
   attrset_clone (&v->attributes, attrs);
@@ -1225,7 +1225,7 @@ var_set_attributes_quiet (struct variable *v, const struct attrset *attrs)
 
 /* Replaces variable V's attributes set by a copy of ATTRS. */
 void
-var_set_attributes (struct variable *v, const struct attrset *attrs) 
+var_set_attributes (struct variable *v, const struct attrset *attrs)
 {
   struct variable *ov = var_clone (v);
   var_set_attributes_quiet (v, attrs);
@@ -1317,8 +1317,8 @@ var_clear_vardict (struct variable *v)
 /*
   Returns zero, if W is a missing value for WV or if it is less than zero.
   Typically used to force a numerical value into a valid weight.
-  
-  As a side effect, this function will emit a warning if the value 
+
+  As a side effect, this function will emit a warning if the value
   WARN_ON_INVALID points to a bool which is TRUE.  That bool will be then
   set to FALSE.
  */
@@ -1327,7 +1327,7 @@ var_force_valid_weight (const struct variable *wv, double w, bool *warn_on_inval
 {
   if (w < 0.0 || (wv && var_is_num_missing (wv, w, MV_ANY)))
     w = 0.0;
-  
+
   if (w == 0.0 && warn_on_invalid != NULL && *warn_on_invalid)
     {
       *warn_on_invalid = false;

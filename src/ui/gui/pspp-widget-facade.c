@@ -349,7 +349,7 @@ facade_button_render (GtkWidget *base,
   get_layout_location (base, &label_area, layout, xpad, ypad, xalign, yalign,
                        &x, &y);
 
-  gtk_paint_layout (label_style, cr, state_type, FALSE, 
+  gtk_paint_layout (label_style, cr, state_type, FALSE,
                     base, "label", x, y, layout);
 
   g_object_unref (layout);

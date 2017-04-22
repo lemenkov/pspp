@@ -105,7 +105,7 @@ psppire_dialog_action_sort_activate (PsppireDialogAction *a)
 
   pda->dialog = get_widget_assert (xml, "sort-cases-dialog");
   pda->source = get_widget_assert (xml, "sort-cases-treeview1");
-  
+
   act->variables =  get_widget_assert (xml, "sort-cases-treeview2");
   act->ascending = get_widget_assert (xml, "sort-cases-radiobutton0");
 

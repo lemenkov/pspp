@@ -298,7 +298,7 @@ syntax_gen_pspp_valist (struct string *output, const char *format,
               }
 	    conv[x++] = directive;
 	    conv[x++] = '\0';
-            
+
             ds_put_c_format (output, conv, d);
             break;
           }

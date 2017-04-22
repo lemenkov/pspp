@@ -66,7 +66,7 @@ lookup_value (const struct hmap *map, const union value *val, unsigned int hash,
       if (value_equal (&vn->val, val, width))
 	break;
     }
-  
+
   return vn;
 }
 
@@ -103,10 +103,10 @@ lookup_variable (const struct hmap *map, const struct variable *var, unsigned in
     {
       if (vn->var == var)
 	break;
-      
+
       fprintf (stderr, "%s:%d Warning: Hash table collision\n", __FILE__, __LINE__);
     }
-  
+
   return vn;
 }
 
@@ -125,9 +125,9 @@ struct interact_params
   int n_cats;
 
   /* An array of integers df_n * df_{n-1} * df_{n-2} ...
-     These are the products of the degrees of freedom for the current 
+     These are the products of the degrees of freedom for the current
      variable and all preceeding variables */
-  int *df_prod; 
+  int *df_prod;
 
   double *enc_sum;
 
@@ -345,7 +345,7 @@ lookup_case (const struct hmap *map, const struct interaction *iact, const struc
   return iv;
 }
 
-bool 
+bool
 categoricals_sane (const struct categoricals *cat)
 {
   return cat->sane;
@@ -357,7 +357,7 @@ categoricals_create (struct interaction *const*inter, size_t n_inter,
 {
   size_t i;
   struct categoricals *cat = xmalloc (sizeof *cat);
-  
+
   cat->n_iap = n_inter;
   cat->wv = wv;
   cat->n_cats_total = 0;
@@ -430,14 +430,14 @@ categoricals_update (struct categoricals *cat, const struct ccase *c)
       if (valn == NULL)
 	{
 	  valn = pool_malloc (cat->pool, sizeof *valn);
-	  valn->index = -1; 
+	  valn->index = -1;
 	  vn->n_vals++;
 	  value_init (&valn->val, width);
 	  value_copy (&valn->val, val, width);
 	  hmap_insert (&vn->valmap, &valn->node, hash);
 	}
     }
-  
+
   for (i = 0 ; i < cat->n_iap; ++i)
     {
       const struct interaction *iact = cat->iap[i].iact;
@@ -459,7 +459,7 @@ categoricals_update (struct categoricals *cat, const struct ccase *c)
 
 	  hmap_insert (&cat->iap[i].ivmap, &node->node, hash);
 
-	  if (cat->payload) 
+	  if (cat->payload)
 	    {
 	      node->user_data = cat->payload->create (cat->aux1, cat->aux2);
 	    }
@@ -551,7 +551,7 @@ categoricals_done (const struct categoricals *cat_)
       cat->iap[i].df_prod = iact->n_vars ? xcalloc (iact->n_vars, sizeof (int)) : NULL;
 
       cat->iap[i].n_cats = 1;
-      
+
       for (v = 0 ; v < iact->n_vars; ++v)
 	{
 	  int x;
@@ -575,12 +575,12 @@ categoricals_done (const struct categoricals *cat_)
 	  x = 0;
 	  HMAP_FOR_EACH (valnd, struct value_node, node, &vn->valmap)
 	    {
-	      /* Note: This loop is probably superfluous, it could be done in the 
+	      /* Note: This loop is probably superfluous, it could be done in the
 	       update stage (at the expense of a realloc) */
 	      array[x++] = valnd;
 	    }
 
-	  sort (array, vn->n_vals, sizeof (*array), 
+	  sort (array, vn->n_vals, sizeof (*array),
 		compare_value_node_3way, vn);
 
 	  for (x = 0; x <  vn->n_vals; ++x)
@@ -773,7 +773,7 @@ categoricals_get_code_for_case (const struct categoricals *cat, int subscript,
 	bin = -1.0;
       else if ( valn->index != index )
 	bin = 0;
-    
+
       result *= bin;
     }
 
@@ -791,7 +791,7 @@ categoricals_get_dummy_code_for_case (const struct categoricals *cat, int subscr
 }
 
 /* Returns unity if the value in case C at SUBSCRIPT is equal to the category
-   for that subscript. 
+   for that subscript.
    Else if it is the last category, return -1.
    Otherwise return 0.
  */
@@ -811,7 +811,7 @@ categoricals_get_n_variables (const struct categoricals *cat)
 }
 
 
-/* Return a case containing the set of values corresponding to 
+/* Return a case containing the set of values corresponding to
    the Nth Category of the IACTth interaction */
 const struct ccase *
 categoricals_get_case_by_category_real (const struct categoricals *cat, int iact, int n)

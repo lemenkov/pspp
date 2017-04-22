@@ -427,7 +427,7 @@ crs_custom_tables (struct lexer *lexer, struct dataset *ds,
         }
       nx *= by_nvar[n_by];
       n_by++;
-      
+
       if (!lex_match (lexer, T_BY))
 	{
 	  if (n_by < 2)
@@ -759,7 +759,7 @@ postcalc (struct crosstabs_proc *proc)
             }
         }
       if (proc->barchart)
-	chart_item_submit 
+	chart_item_submit
 	  (barchart_create (pt->vars, pt->n_vars, _("Count"), false, pt->entries, pt->n_entries));
     }
 
@@ -2672,7 +2672,7 @@ calc_symmetric (struct crosstabs_proc *proc, struct pivot_table *pt,
 			    + sum_rici * sum_rici
 			    - pt->total * sum_riciri_ci)
 			   / (pt->total * (pow2 (pt->total) - sum_rici) * (pow2 (pt->total) - sum_rici)));
-      
+
       ase[8] = sqrt (pt->total * (((sum_fii * (pt->total - sum_fii))
 				/ pow2 (pow2 (pt->total) - sum_rici))
 			       + ((2. * (pt->total - sum_fii)

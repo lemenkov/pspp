@@ -913,7 +913,7 @@ render_page_unref (struct render_page *page)
       hmap_destroy (&page->overflows);
 
       table_unref (page->table);
-      
+
       for (i = 0; i < TABLE_N_AXES; ++i)
 	{
 	  free (page->join_crossing[i]);
@@ -969,9 +969,9 @@ is_rule (int z)
 bool
 render_direction_rtl (void)
 {
-  /* TRANSLATORS: Do not translate this string.  If the script of your language 
-     reads from right to left (eg Persian, Arabic, Hebrew etc), then replace 
-     this string with "output-direction-rtl".  Otherwise either leave it 
+  /* TRANSLATORS: Do not translate this string.  If the script of your language
+     reads from right to left (eg Persian, Arabic, Hebrew etc), then replace
+     this string with "output-direction-rtl".  Otherwise either leave it
      untranslated or copy it verbatim. */
   const char *dir = _("output-direction-ltr");
   if ( 0 == strcmp ("output-direction-rtl", dir))

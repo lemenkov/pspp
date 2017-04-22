@@ -72,7 +72,7 @@ about_new (GtkMenuItem *mmm, GtkWindow *parent)
   gtk_about_dialog_set_copyright (GTK_ABOUT_DIALOG (about),
 				  "Free Software Foundation");
 
-  gtk_about_dialog_set_translator_credits 
+  gtk_about_dialog_set_translator_credits
     (
      GTK_ABOUT_DIALOG (about),
      /* TRANSLATORS: Do not translate this string.  Instead, put the names of the people
@@ -232,7 +232,7 @@ create_help_menu (GtkWindow *toplevel)
   GtkWidget *help_ref = gtk_menu_item_new_with_mnemonic (_("_Reference Manual"));
 
   GtkAccelGroup *accel_group = gtk_accel_group_new ();
-  
+
   gtk_window_add_accel_group (toplevel, accel_group);
 
   gtk_widget_add_accelerator (help_ref,
@@ -245,10 +245,10 @@ create_help_menu (GtkWindow *toplevel)
 
   g_signal_connect (help_about, "activate", G_CALLBACK (about_new), toplevel);
   g_signal_connect (help_ref, "activate", G_CALLBACK (reference_manual), NULL);
-  
+
   g_object_set (menuitem, "submenu", menu, NULL);
 
   gtk_widget_show_all (menuitem);
-  
+
   return menuitem;
 }

@@ -19,7 +19,7 @@
 
 #include "output/chart-item.h"
 
-struct datum 
+struct datum
 {
   double x;
   double y;
@@ -105,4 +105,4 @@ spreadlevel_plot_chart_submit (struct spreadlevel_plot_chart *instance)
   chart_item_submit (&instance->chart_item);
 }
 
-#endif 
+#endif

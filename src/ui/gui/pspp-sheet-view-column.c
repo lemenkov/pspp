@@ -208,7 +208,7 @@ pspp_sheet_view_column_class_init (PsppSheetViewColumnClass *class)
   object_class->finalize = pspp_sheet_view_column_finalize;
   object_class->set_property = pspp_sheet_view_column_set_property;
   object_class->get_property = pspp_sheet_view_column_get_property;
-  
+
   tree_column_signals[CLICKED] =
     g_signal_new ("clicked",
                   G_OBJECT_CLASS_TYPE (object_class),
@@ -254,7 +254,7 @@ pspp_sheet_view_column_class_init (PsppSheetViewColumnClass *class)
                                                         P_("Whether to display the column"),
                                                          TRUE,
                                                          GTK_PARAM_READWRITE));
-  
+
   g_object_class_install_property (object_class,
                                    PROP_RESIZABLE,
                                    g_param_spec_boolean ("resizable",
@@ -262,7 +262,7 @@ pspp_sheet_view_column_class_init (PsppSheetViewColumnClass *class)
 							 P_("Column is user-resizable"),
                                                          FALSE,
                                                          GTK_PARAM_READWRITE));
-  
+
   g_object_class_install_property (object_class,
                                    PROP_WIDTH,
                                    g_param_spec_int ("width",
@@ -281,7 +281,7 @@ pspp_sheet_view_column_class_init (PsppSheetViewColumnClass *class)
 						     G_MAXINT,
 						     0,
 						     GTK_PARAM_READWRITE));
-  
+
   g_object_class_install_property (object_class,
                                    PROP_FIXED_WIDTH,
                                    g_param_spec_int ("fixed-width",
@@ -319,7 +319,7 @@ pspp_sheet_view_column_class_init (PsppSheetViewColumnClass *class)
                                                         P_("Title to appear in column header"),
                                                         "",
                                                         GTK_PARAM_READWRITE));
-  
+
   g_object_class_install_property (object_class,
                                    PROP_EXPAND,
                                    g_param_spec_boolean ("expand",
@@ -327,7 +327,7 @@ pspp_sheet_view_column_class_init (PsppSheetViewColumnClass *class)
 							 P_("Column gets share of extra width allocated to the widget"),
 							 FALSE,
 							 GTK_PARAM_READWRITE));
-  
+
   g_object_class_install_property (object_class,
                                    PROP_CLICKABLE,
                                    g_param_spec_boolean ("clickable",
@@ -335,7 +335,7 @@ pspp_sheet_view_column_class_init (PsppSheetViewColumnClass *class)
                                                         P_("Whether the header can be clicked"),
                                                          FALSE,
                                                          GTK_PARAM_READWRITE));
-  
+
 
   g_object_class_install_property (object_class,
                                    PROP_WIDGET,
@@ -628,7 +628,7 @@ pspp_sheet_view_column_set_property (GObject         *object,
       pspp_sheet_view_column_set_sort_order (tree_column,
                                            g_value_get_enum (value));
       break;
-      
+
     case PROP_SORT_COLUMN_ID:
       pspp_sheet_view_column_set_sort_column_id (tree_column,
                                                g_value_get_int (value));
@@ -751,7 +751,7 @@ pspp_sheet_view_column_get_property (GObject         *object,
       g_value_set_enum (value,
                         pspp_sheet_view_column_get_sort_order (tree_column));
       break;
-      
+
     case PROP_SORT_COLUMN_ID:
       g_value_set_int (value,
                        pspp_sheet_view_column_get_sort_column_id (tree_column));
@@ -854,7 +854,7 @@ pspp_sheet_view_column_cell_layout_clear (GtkCellLayout *cell_layout)
       pspp_sheet_view_column_cell_layout_clear_attributes (cell_layout, info->cell);
       g_object_unref (info->cell);
       g_free (info);
-      column->cell_list = g_list_delete_link (column->cell_list, 
+      column->cell_list = g_list_delete_link (column->cell_list,
 					      column->cell_list);
     }
 }
@@ -1065,7 +1065,7 @@ pspp_sheet_view_column_create_button (PsppSheetViewColumn *tree_column)
 
 
   gtk_box_pack_start (GTK_BOX (hbox), tree_column->bin, TRUE, TRUE, 0);
-        
+
   gtk_container_add (GTK_CONTAINER (tree_column->bin), child);
   gtk_container_add (GTK_CONTAINER (tree_column->button), hbox);
 
@@ -1074,7 +1074,7 @@ pspp_sheet_view_column_create_button (PsppSheetViewColumn *tree_column)
   pspp_sheet_view_column_update_button (tree_column);
 }
 
-void 
+void
 pspp_sheet_view_column_update_button (PsppSheetViewColumn *tree_column)
 {
   gint sort_column_id = -1;
@@ -1094,7 +1094,7 @@ pspp_sheet_view_column_update_button (PsppSheetViewColumn *tree_column)
       tree_column->tree_view &&
       gtk_widget_get_realized (tree_column->tree_view))
     pspp_sheet_view_column_create_button (tree_column);
-  
+
   if (! tree_column->button)
     return;
 
@@ -1105,7 +1105,7 @@ pspp_sheet_view_column_update_button (PsppSheetViewColumn *tree_column)
   g_object_set (alignment,
 		"halign", tree_column->halign,
 		"valign", GTK_ALIGN_CENTER, NULL);
-      
+
   if (tree_column->child)
     {
       if (current_child != tree_column->child)
@@ -1116,7 +1116,7 @@ pspp_sheet_view_column_update_button (PsppSheetViewColumn *tree_column)
 			     tree_column->child);
 	}
     }
-  else 
+  else
     {
       if (current_child == NULL)
 	{
@@ -1219,7 +1219,7 @@ pspp_sheet_view_column_button_event (GtkWidget *widget,
   if (event->type == GDK_BUTTON_RELEASE ||
       event->type == GDK_LEAVE_NOTIFY)
     column->maybe_reordered = FALSE;
-  
+
   if (event->type == GDK_MOTION_NOTIFY &&
       column->maybe_reordered &&
       (gtk_drag_check_threshold (widget,
@@ -1489,7 +1489,7 @@ pspp_sheet_view_column_setup_sort_column_id_callback (PsppSheetViewColumn *tree_
 	  g_signal_connect (model, "sort-column-changed",
 			    G_CALLBACK (pspp_sheet_view_model_sort_column_changed),
 			    tree_column);
-      
+
       if (gtk_tree_sortable_get_sort_column_id (GTK_TREE_SORTABLE (model),
 						&real_sort_column_id,
 						&real_order) &&
@@ -1498,7 +1498,7 @@ pspp_sheet_view_column_setup_sort_column_id_callback (PsppSheetViewColumn *tree_
 	  pspp_sheet_view_column_set_sort_indicator (tree_column, TRUE);
 	  pspp_sheet_view_column_set_sort_order (tree_column, real_order);
  	}
-      else 
+      else
 	{
 	  pspp_sheet_view_column_set_sort_indicator (tree_column, FALSE);
 	}
@@ -1703,9 +1703,9 @@ _pspp_sheet_view_column_get_cell_at_pos (PsppSheetViewColumn *column,
 
 /**
  * pspp_sheet_view_column_new:
- * 
+ *
  * Creates a new #PsppSheetViewColumn.
- * 
+ *
  * Return value: A newly created #PsppSheetViewColumn.
  **/
 PsppSheetViewColumn *
@@ -1723,7 +1723,7 @@ pspp_sheet_view_column_new (void)
  * @title: The title to set the header to.
  * @cell: The #GtkCellRenderer.
  * @Varargs: A %NULL-terminated list of attributes.
- * 
+ *
  * Creates a new #PsppSheetViewColumn with a number of default values.  This is
  * equivalent to calling pspp_sheet_view_column_set_title(),
  * pspp_sheet_view_column_pack_start(), and
@@ -1736,7 +1736,7 @@ pspp_sheet_view_column_new (void)
  *  {
  *    PsppSheetViewColumn *column;
  *    GtkCellRenderer   *renderer = gtk_cell_renderer_text_new ();
- *  
+ *
  *    column = pspp_sheet_view_column_new_with_attributes ("Title",
  *                                                       renderer,
  *                                                       "text", TEXT_COLUMN,
@@ -1744,7 +1744,7 @@ pspp_sheet_view_column_new (void)
  *                                                       NULL);
  *  }
  * ]|
- * 
+ *
  * Return value: A newly created #PsppSheetViewColumn.
  **/
 PsppSheetViewColumn *
@@ -1782,7 +1782,7 @@ pspp_sheet_view_column_get_cell_info (PsppSheetViewColumn *tree_column,
 /**
  * pspp_sheet_view_column_pack_start:
  * @tree_column: A #PsppSheetViewColumn.
- * @cell: The #GtkCellRenderer. 
+ * @cell: The #GtkCellRenderer.
  * @expand: %TRUE if @cell is to be given extra space allocated to @tree_column.
  *
  * Packs the @cell into the beginning of the column. If @expand is %FALSE, then
@@ -1800,7 +1800,7 @@ pspp_sheet_view_column_pack_start (PsppSheetViewColumn *tree_column,
 /**
  * pspp_sheet_view_column_pack_end:
  * @tree_column: A #PsppSheetViewColumn.
- * @cell: The #GtkCellRenderer. 
+ * @cell: The #GtkCellRenderer.
  * @expand: %TRUE if @cell is to be given extra space allocated to @tree_column.
  *
  * Adds the @cell to end of the column. If @expand is %FALSE, then the @cell
@@ -1818,7 +1818,7 @@ pspp_sheet_view_column_pack_end (PsppSheetViewColumn  *tree_column,
 /**
  * pspp_sheet_view_column_clear:
  * @tree_column: A #PsppSheetViewColumn
- * 
+ *
  * Unsets all the mappings on all renderers on the @tree_column.
  **/
 void
@@ -1868,7 +1868,7 @@ pspp_sheet_view_column_get_cell_renderers (PsppSheetViewColumn *tree_column)
  * @cell_renderer: the #GtkCellRenderer to set attributes on
  * @attribute: An attribute on the renderer
  * @column: The column position on the model to get the attribute from.
- * 
+ *
  * Adds an attribute mapping to the list in @tree_column.  The @column is the
  * column of the model to get a value from, and the @attribute is the
  * parameter on @cell_renderer to be set from the value. So for example
@@ -1897,7 +1897,7 @@ pspp_sheet_view_column_set_attributesv (PsppSheetViewColumn *tree_column,
   attribute = va_arg (args, gchar *);
 
   pspp_sheet_view_column_clear_attributes (tree_column, cell_renderer);
-  
+
   while (attribute != NULL)
     {
       column = va_arg (args, gint);
@@ -1911,7 +1911,7 @@ pspp_sheet_view_column_set_attributesv (PsppSheetViewColumn *tree_column,
  * @tree_column: A #PsppSheetViewColumn.
  * @cell_renderer: the #GtkCellRenderer we're setting the attributes of
  * @Varargs: A %NULL-terminated list of attributes.
- * 
+ *
  * Sets the attributes in the list as the attributes of @tree_column.
  * The attributes should be in attribute/column order, as in
  * pspp_sheet_view_column_add_attribute(). All existing attributes
@@ -1938,10 +1938,10 @@ pspp_sheet_view_column_set_attributes (PsppSheetViewColumn *tree_column,
  * pspp_sheet_view_column_set_cell_data_func:
  * @tree_column: A #PsppSheetViewColumn
  * @cell_renderer: A #GtkCellRenderer
- * @func: The #PsppSheetViewColumnFunc to use. 
+ * @func: The #PsppSheetViewColumnFunc to use.
  * @func_data: The user data for @func.
  * @destroy: The destroy notification for @func_data
- * 
+ *
  * Sets the #PsppSheetViewColumnFunc to use for the column.  This
  * function is used instead of the standard attributes mapping for
  * setting the column value, and should set the value of @tree_column's
@@ -1966,7 +1966,7 @@ pspp_sheet_view_column_set_cell_data_func (PsppSheetViewColumn   *tree_column,
  * pspp_sheet_view_column_clear_attributes:
  * @tree_column: a #PsppSheetViewColumn
  * @cell_renderer: a #GtkCellRenderer to clear the attribute mapping on.
- * 
+ *
  * Clears all existing attributes previously set with
  * pspp_sheet_view_column_set_attributes().
  **/
@@ -1982,7 +1982,7 @@ pspp_sheet_view_column_clear_attributes (PsppSheetViewColumn *tree_column,
  * pspp_sheet_view_column_set_spacing:
  * @tree_column: A #PsppSheetViewColumn.
  * @spacing: distance between cell renderers in pixels.
- * 
+ *
  * Sets the spacing field of @tree_column, which is the number of pixels to
  * place between cell renderers packed into it.
  **/
@@ -2004,9 +2004,9 @@ pspp_sheet_view_column_set_spacing (PsppSheetViewColumn *tree_column,
 /**
  * pspp_sheet_view_column_get_spacing:
  * @tree_column: A #PsppSheetViewColumn.
- * 
+ *
  * Returns the spacing of @tree_column.
- * 
+ *
  * Return value: the spacing of @tree_column.
  **/
 gint
@@ -2023,7 +2023,7 @@ pspp_sheet_view_column_get_spacing (PsppSheetViewColumn *tree_column)
  * pspp_sheet_view_column_set_visible:
  * @tree_column: A #PsppSheetViewColumn.
  * @visible: %TRUE if the @tree_column is visible.
- * 
+ *
  * Sets the visibility of @tree_column.
  **/
 void
@@ -2033,7 +2033,7 @@ pspp_sheet_view_column_set_visible (PsppSheetViewColumn *tree_column,
   g_return_if_fail (PSPP_IS_SHEET_VIEW_COLUMN (tree_column));
 
   visible = !! visible;
-  
+
   if (tree_column->visible == visible)
     return;
 
@@ -2049,9 +2049,9 @@ pspp_sheet_view_column_set_visible (PsppSheetViewColumn *tree_column,
 /**
  * pspp_sheet_view_column_get_visible:
  * @tree_column: A #PsppSheetViewColumn.
- * 
+ *
  * Returns %TRUE if @tree_column is visible.
- * 
+ *
  * Return value: whether the column is visible or not.  If it is visible, then
  * the tree will show the column.
  **/
@@ -2067,7 +2067,7 @@ pspp_sheet_view_column_get_visible (PsppSheetViewColumn *tree_column)
  * pspp_sheet_view_column_set_resizable:
  * @tree_column: A #PsppSheetViewColumn
  * @resizable: %TRUE, if the column can be resized
- * 
+ *
  * If @resizable is %TRUE, then the user can explicitly resize the column by
  * grabbing the outer edge of the column button.
  **/
@@ -2092,9 +2092,9 @@ pspp_sheet_view_column_set_resizable (PsppSheetViewColumn *tree_column,
 /**
  * pspp_sheet_view_column_get_resizable:
  * @tree_column: A #PsppSheetViewColumn
- * 
+ *
  * Returns %TRUE if the @tree_column can be resized by the end user.
- * 
+ *
  * Return value: %TRUE, if the @tree_column can be resized.
  **/
 gboolean
@@ -2109,9 +2109,9 @@ pspp_sheet_view_column_get_resizable (PsppSheetViewColumn *tree_column)
 /**
  * pspp_sheet_view_column_get_width:
  * @tree_column: A #PsppSheetViewColumn.
- * 
+ *
  * Returns the current size of @tree_column in pixels.
- * 
+ *
  * Return value: The current width of @tree_column.
  **/
 gint
@@ -2126,7 +2126,7 @@ pspp_sheet_view_column_get_width (PsppSheetViewColumn *tree_column)
  * pspp_sheet_view_column_set_fixed_width:
  * @tree_column: A #PsppSheetViewColumn.
  * @fixed_width: The size to set @tree_column to. Must be greater than 0.
- * 
+ *
  * Sets the size of the column in pixels.  The size of the column is clamped to
  * the min/max width for the column.  Please note that the min/max width of the
  * column doesn't actually affect the "fixed_width" property of the widget, just
@@ -2154,10 +2154,10 @@ pspp_sheet_view_column_set_fixed_width (PsppSheetViewColumn *tree_column,
 /**
  * pspp_sheet_view_column_get_fixed_width:
  * @tree_column: a #PsppSheetViewColumn
- * 
+ *
  * Gets the fixed width of the column.  This value is only meaning may not be
  * the actual width of the column on the screen, just what is requested.
- * 
+ *
  * Return value: the fixed width of the column
  **/
 gint
@@ -2172,7 +2172,7 @@ pspp_sheet_view_column_get_fixed_width (PsppSheetViewColumn *tree_column)
  * pspp_sheet_view_column_set_min_width:
  * @tree_column: A #PsppSheetViewColumn.
  * @min_width: The minimum width of the column in pixels, or -1.
- * 
+ *
  * Sets the minimum width of the @tree_column.  If @min_width is -1, then the
  * minimum width is unset.
  **/
@@ -2208,10 +2208,10 @@ pspp_sheet_view_column_set_min_width (PsppSheetViewColumn *tree_column,
 /**
  * pspp_sheet_view_column_get_min_width:
  * @tree_column: A #PsppSheetViewColumn.
- * 
+ *
  * Returns the minimum width in pixels of the @tree_column, or -1 if no minimum
  * width is set.
- * 
+ *
  * Return value: The minimum width of the @tree_column.
  **/
 gint
@@ -2226,7 +2226,7 @@ pspp_sheet_view_column_get_min_width (PsppSheetViewColumn *tree_column)
  * pspp_sheet_view_column_set_max_width:
  * @tree_column: A #PsppSheetViewColumn.
  * @max_width: The maximum width of the column in pixels, or -1.
- * 
+ *
  * Sets the maximum width of the @tree_column.  If @max_width is -1, then the
  * maximum width is unset.  Note, the column can actually be wider than max
  * width if it's the last column in a view.  In this case, the column expands to
@@ -2264,10 +2264,10 @@ pspp_sheet_view_column_set_max_width (PsppSheetViewColumn *tree_column,
 /**
  * pspp_sheet_view_column_get_max_width:
  * @tree_column: A #PsppSheetViewColumn.
- * 
+ *
  * Returns the maximum width in pixels of the @tree_column, or -1 if no maximum
  * width is set.
- * 
+ *
  * Return value: The maximum width of the @tree_column.
  **/
 gint
@@ -2281,7 +2281,7 @@ pspp_sheet_view_column_get_max_width (PsppSheetViewColumn *tree_column)
 /**
  * pspp_sheet_view_column_clicked:
  * @tree_column: a #PsppSheetViewColumn
- * 
+ *
  * Emits the "clicked" signal on the column.  This function will only work if
  * @tree_column is clickable.
  **/
@@ -2300,7 +2300,7 @@ pspp_sheet_view_column_clicked (PsppSheetViewColumn *tree_column)
  * pspp_sheet_view_column_set_title:
  * @tree_column: A #PsppSheetViewColumn.
  * @title: The title of the @tree_column.
- * 
+ *
  * Sets the title of the @tree_column.  If a custom widget has been set, then
  * this value is ignored.
  **/
@@ -2309,7 +2309,7 @@ pspp_sheet_view_column_set_title (PsppSheetViewColumn *tree_column,
 				const gchar       *title)
 {
   gchar *new_title;
-  
+
   g_return_if_fail (PSPP_IS_SHEET_VIEW_COLUMN (tree_column));
 
   new_title = g_strdup (title);
@@ -2323,9 +2323,9 @@ pspp_sheet_view_column_set_title (PsppSheetViewColumn *tree_column,
 /**
  * pspp_sheet_view_column_get_title:
  * @tree_column: A #PsppSheetViewColumn.
- * 
+ *
  * Returns the title of the widget.
- * 
+ *
  * Return value: the title of the column. This string should not be
  * modified or freed.
  **/
@@ -2341,7 +2341,7 @@ pspp_sheet_view_column_get_title (PsppSheetViewColumn *tree_column)
  * pspp_sheet_view_column_set_expand:
  * @tree_column: A #PsppSheetViewColumn
  * @expand: %TRUE if the column should take available extra space, %FALSE if not
- * 
+ *
  * Sets the column to take available extra space.  This space is shared equally
  * amongst all columns that have the expand set to %TRUE.  If no column has this
  * option set, then the last column gets all extra space.  By default, every
@@ -2380,9 +2380,9 @@ pspp_sheet_view_column_set_expand (PsppSheetViewColumn *tree_column,
 /**
  * pspp_sheet_view_column_get_expand:
  * @tree_column: a #PsppSheetViewColumn
- * 
+ *
  * Return %TRUE if the column expands to take any available space.
- * 
+ *
  * Return value: %TRUE, if the column expands
  *
  * Since: 2.4
@@ -2399,7 +2399,7 @@ pspp_sheet_view_column_get_expand (PsppSheetViewColumn *tree_column)
  * pspp_sheet_view_column_set_clickable:
  * @tree_column: A #PsppSheetViewColumn.
  * @clickable: %TRUE if the header is active.
- * 
+ *
  * Sets the header to be active if @active is %TRUE.  When the header is active,
  * then it can take keyboard focus, and can be clicked.
  **/
@@ -2421,9 +2421,9 @@ pspp_sheet_view_column_set_clickable (PsppSheetViewColumn *tree_column,
 /**
  * pspp_sheet_view_column_get_clickable:
  * @tree_column: a #PsppSheetViewColumn
- * 
+ *
  * Returns %TRUE if the user can click on the header for the column.
- * 
+ *
  * Return value: %TRUE if user can click the column header.
  **/
 gboolean
@@ -2452,7 +2452,7 @@ pspp_sheet_view_column_set_widget (PsppSheetViewColumn *tree_column,
   if (widget)
     g_object_ref_sink (widget);
 
-  if (tree_column->child)      
+  if (tree_column->child)
     g_object_unref (tree_column->child);
 
   tree_column->child = widget;
@@ -2463,10 +2463,10 @@ pspp_sheet_view_column_set_widget (PsppSheetViewColumn *tree_column,
 /**
  * pspp_sheet_view_column_get_widget:
  * @tree_column: A #PsppSheetViewColumn.
- * 
+ *
  * Returns the #GtkWidget in the button on the column header.  If a custom
  * widget has not been set then %NULL is returned.
- * 
+ *
  * Return value: The #GtkWidget in the column header, or %NULL
  **/
 GtkWidget *
@@ -2481,7 +2481,7 @@ pspp_sheet_view_column_get_widget (PsppSheetViewColumn *tree_column)
  * pspp_sheet_view_column_set_alignment:
  * @tree_column: A #PsppSheetViewColumn.
  * @xalign: The alignment, which is between [0.0 and 1.0] inclusive.
- * 
+ *
  * Sets the alignment of the title or custom widget inside the column header.
  * The alignment determines its location inside the button.
  **/
@@ -2503,9 +2503,9 @@ pspp_sheet_view_column_set_alignment (PsppSheetViewColumn *tree_column,
 /**
  * pspp_sheet_view_column_get_alignment:
  * @tree_column: A #PsppSheetViewColumn.
- * 
+ *
  * Returns the current x alignment of @tree_column.
- * 
+ *
  * Return value: The current alignent of @tree_column.
  **/
 GtkAlign
@@ -2521,7 +2521,7 @@ pspp_sheet_view_column_get_alignment (PsppSheetViewColumn *tree_column)
  * pspp_sheet_view_column_set_reorderable:
  * @tree_column: A #PsppSheetViewColumn
  * @reorderable: %TRUE, if the column can be reordered.
- * 
+ *
  * If @reorderable is %TRUE, then the column can be reordered by the end user
  * dragging the header.
  **/
@@ -2546,9 +2546,9 @@ pspp_sheet_view_column_set_reorderable (PsppSheetViewColumn *tree_column,
 /**
  * pspp_sheet_view_column_get_reorderable:
  * @tree_column: A #PsppSheetViewColumn
- * 
+ *
  * Returns %TRUE if the @tree_column can be reordered by the user.
- * 
+ *
  * Return value: %TRUE if the @tree_column can be reordered by the user.
  **/
 gboolean
@@ -2768,7 +2768,7 @@ pspp_sheet_view_column_get_tabbable (PsppSheetViewColumn *tree_column)
  * @tree_column: a #PsppSheetViewColumn
  * @sort_column_id: The @sort_column_id of the model to sort on.
  *
- * Sets the logical @sort_column_id that this column sorts on when this column 
+ * Sets the logical @sort_column_id that this column sorts on when this column
  * is selected for sorting.  Doing so makes the column header clickable.
  **/
 void
@@ -2847,7 +2847,7 @@ pspp_sheet_view_column_get_sort_column_id (PsppSheetViewColumn *tree_column)
  * the header button indicating the column is sorted. Call
  * pspp_sheet_view_column_set_sort_order() to change the direction of
  * the arrow.
- * 
+ *
  **/
 void
 pspp_sheet_view_column_set_sort_indicator (PsppSheetViewColumn     *tree_column,
@@ -2868,9 +2868,9 @@ pspp_sheet_view_column_set_sort_indicator (PsppSheetViewColumn     *tree_column,
 /**
  * pspp_sheet_view_column_get_sort_indicator:
  * @tree_column: a #PsppSheetViewColumn
- * 
+ *
  * Gets the value set by pspp_sheet_view_column_set_sort_indicator().
- * 
+ *
  * Return value: whether the sort indicator arrow is displayed
  **/
 gboolean
@@ -2886,16 +2886,16 @@ pspp_sheet_view_column_get_sort_indicator  (PsppSheetViewColumn     *tree_column
  * @tree_column: a #PsppSheetViewColumn
  * @order: sort order that the sort indicator should indicate
  *
- * Changes the appearance of the sort indicator. 
- * 
+ * Changes the appearance of the sort indicator.
+ *
  * This <emphasis>does not</emphasis> actually sort the model.  Use
  * pspp_sheet_view_column_set_sort_column_id() if you want automatic sorting
  * support.  This function is primarily for custom sorting behavior, and should
  * be used in conjunction with gtk_tree_sortable_set_sort_column() to do
- * that. For custom models, the mechanism will vary. 
- * 
+ * that. For custom models, the mechanism will vary.
+ *
  * The sort indicator changes direction to indicate normal sort or reverse sort.
- * Note that you must have the sort indicator enabled to see anything when 
+ * Note that you must have the sort indicator enabled to see anything when
  * calling this function; see pspp_sheet_view_column_set_sort_indicator().
  **/
 void
@@ -2915,9 +2915,9 @@ pspp_sheet_view_column_set_sort_order      (PsppSheetViewColumn     *tree_column
 /**
  * pspp_sheet_view_column_get_sort_order:
  * @tree_column: a #PsppSheetViewColumn
- * 
+ *
  * Gets the value set by pspp_sheet_view_column_set_sort_order().
- * 
+ *
  * Return value: the sort order the sort indicator is indicating
  **/
 GtkSortType
@@ -2933,7 +2933,7 @@ pspp_sheet_view_column_get_sort_order      (PsppSheetViewColumn     *tree_column
  * @tree_column: A #PsppSheetViewColumn.
  * @tree_model: The #GtkTreeModel to to get the cell renderers attributes from.
  * @iter: The #GtkTreeIter to to get the cell renderer's attributes from.
- * 
+ *
  * Sets the cell renderer based on the @tree_model and @iter.  That is, for
  * every attribute mapping in @tree_column, it will get a value from the set
  * column on the @iter, and use that value to set the attribute on the cell
@@ -2987,7 +2987,7 @@ pspp_sheet_view_column_cell_set_cell_data (PsppSheetViewColumn *tree_column,
  * @y_offset: (allow-none): location to return y offset of a cell relative to @cell_area, or %NULL
  * @width: (allow-none): location to return width needed to render a cell, or %NULL
  * @height: (allow-none): location to return height needed to render a cell, or %NULL
- * 
+ *
  * Obtains the width and height needed to render the column.  This is used
  * primarily by the #PsppSheetView.
  **/
@@ -3011,7 +3011,7 @@ pspp_sheet_view_column_cell_get_size (PsppSheetViewColumn  *tree_column,
     * width = 0;
 
   gtk_widget_style_get (tree_column->tree_view, "focus-line-width", &focus_line_width, NULL);
-  
+
   for (list = tree_column->cell_list; list; list = list->next)
     {
       PsppSheetViewColumnCellInfo *info = (PsppSheetViewColumnCellInfo *) list->data;
@@ -3184,7 +3184,7 @@ pspp_sheet_view_column_cell_process_action (PsppSheetViewColumn  *tree_column,
       if (real_cell_area.x - focus_line_width + info->real_width > cell_area->x + cell_area->width)
 	{
 	  info->real_width = cell_area->x + cell_area->width - real_cell_area.x;
-	}   
+	}
 
       if (real_cell_area.x > cell_area->x + cell_area->width)
 	break;
@@ -3204,7 +3204,7 @@ pspp_sheet_view_column_cell_process_action (PsppSheetViewColumn  *tree_column,
 
       rtl_cell_area = real_cell_area;
       rtl_background_area = real_background_area;
-      
+
       if (rtl)
 	{
 	  rtl_cell_area.x = cell_area->x + cell_area->width - (real_cell_area.x - cell_area->x) - real_cell_area.width;
@@ -3322,7 +3322,7 @@ pspp_sheet_view_column_cell_process_action (PsppSheetViewColumn  *tree_column,
 		      g_return_val_if_fail (GTK_IS_CELL_EDITABLE (*editable_widget), FALSE);
 		      info->in_editing_mode = TRUE;
 		      pspp_sheet_view_column_focus_cell (tree_column, info->cell);
-		      
+
                       flags &= ~GTK_CELL_RENDERER_FOCUSED;
 
 		      return TRUE;
@@ -3362,7 +3362,7 @@ pspp_sheet_view_column_cell_process_action (PsppSheetViewColumn  *tree_column,
       if (real_cell_area.x - focus_line_width + info->real_width > cell_area->x + cell_area->width)
 	{
 	  info->real_width = cell_area->x + cell_area->width - real_cell_area.x;
-	}   
+	}
 
       if (real_cell_area.x > cell_area->x + cell_area->width)
 	break;
@@ -3535,7 +3535,7 @@ pspp_sheet_view_column_cell_process_action (PsppSheetViewColumn  *tree_column,
  * @background_area: entire cell area (including tree expanders and maybe padding on the sides)
  * @cell_area: area normally rendered by a cell renderer
  * @flags: flags that affect rendering
- * 
+ *
  * Renders the cell contained by #tree_column. This is used primarily by the
  * #PsppSheetView.
  **/
@@ -3857,7 +3857,7 @@ _pspp_sheet_view_column_cell_draw_focus (PsppSheetViewColumn  *tree_column,
 {
   gint focus_line_width;
   GtkStateType cell_state;
-  
+
   g_return_if_fail (PSPP_IS_SHEET_VIEW_COLUMN (tree_column));
   gtk_widget_style_get (GTK_WIDGET (tree_column->tree_view),
 			"focus-line-width", &focus_line_width, NULL);
@@ -3876,7 +3876,7 @@ _pspp_sheet_view_column_cell_draw_focus (PsppSheetViewColumn  *tree_column,
 		       cell_area->y - focus_line_width,
 		       cell_area->width + 2 * focus_line_width,
 		       cell_area->height + 2 * focus_line_width);
-#endif      
+#endif
     }
   else
     {
@@ -3909,11 +3909,11 @@ _pspp_sheet_view_column_cell_draw_focus (PsppSheetViewColumn  *tree_column,
 /**
  * pspp_sheet_view_column_cell_is_visible:
  * @tree_column: A #PsppSheetViewColumn
- * 
+ *
  * Returns %TRUE if any of the cells packed into the @tree_column are visible.
  * For this to be meaningful, you must first initialize the cells with
  * pspp_sheet_view_column_cell_set_cell_data()
- * 
+ *
  * Return value: %TRUE, if any of the cells packed into the @tree_column are currently visible
  **/
 gboolean
@@ -4042,17 +4042,17 @@ _pspp_sheet_view_column_get_neighbor_sizes (PsppSheetViewColumn *column,
 
   l = r = 0;
 
-  list = pspp_sheet_view_column_cell_first (column);  
+  list = pspp_sheet_view_column_cell_first (column);
 
   while (list)
     {
       info = (PsppSheetViewColumnCellInfo *)list->data;
-      
+
       list = pspp_sheet_view_column_cell_next (column, list);
 
       if (info->cell == cell)
 	break;
-      
+
       if (gtk_cell_renderer_get_visible (info->cell))
 	l += info->real_width + column->spacing;
     }
@@ -4060,7 +4060,7 @@ _pspp_sheet_view_column_get_neighbor_sizes (PsppSheetViewColumn *column,
   while (list)
     {
       info = (PsppSheetViewColumnCellInfo *)list->data;
-      
+
       list = pspp_sheet_view_column_cell_next (column, list);
 
       if (gtk_cell_renderer_get_visible (info->cell))
@@ -4086,7 +4086,7 @@ _pspp_sheet_view_column_get_neighbor_sizes (PsppSheetViewColumn *column,
  * Obtains the horizontal position and size of a cell in a column. If the
  * cell is not found in the column, @start_pos and @width are not changed and
  * %FALSE is returned.
- * 
+ *
  * Return value: %TRUE if @cell belongs to @tree_column.
  */
 gboolean
@@ -4204,7 +4204,7 @@ attributes_text_element (GMarkupParseContext *context,
   glong l;
   gchar *endptr;
   gchar *string;
-  
+
   if (!parser_data->attr_name)
     return;
 
@@ -4213,7 +4213,7 @@ attributes_text_element (GMarkupParseContext *context,
   l = strtol (string, &endptr, 0);
   if (errno || endptr == string)
     {
-      g_set_error (error, 
+      g_set_error (error,
                    GTK_BUILDER_ERROR,
                    GTK_BUILDER_ERROR_INVALID_VALUE,
                    "Could not parse integer `%s'",
@@ -4286,7 +4286,7 @@ _cell_layout_buildable_add_child (GtkBuildable      *buildable,
                                       const gchar       *type)
 {
   GtkCellLayoutIface *iface;
-  
+
   g_return_if_fail (GTK_IS_CELL_LAYOUT (buildable));
   g_return_if_fail (GTK_IS_CELL_RENDERER (child));
 

@@ -214,7 +214,7 @@ cmd_list (struct lexer *lexer, struct dataset *ds)
           return CMD_FAILURE;
         }
     }
-        
+
 
   /* Verify arguments. */
   if (cmd.first > cmd.last)

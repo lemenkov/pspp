@@ -38,7 +38,7 @@ generate_syntax (const PsppireDialogAction *act)
   GString *str = g_string_new ("GLM ");
 
   g_string_append (str, gtk_entry_get_text (GTK_ENTRY (uvd->dep_entry)));
-  
+
   g_string_append (str, " BY ");
 
   psppire_var_view_append_names (PSPPIRE_VAR_VIEW (uvd->factor_list), 0, str);

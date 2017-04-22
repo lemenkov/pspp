@@ -248,7 +248,7 @@ psppire_dialog_action_oneway_activate (PsppireDialogAction *a)
   act->homogeneity =  get_widget_assert (xml, "checkbutton2");
 
   act->contrasts_dialog = get_widget_assert (xml, "contrasts-dialog");
-  
+
   act->next = get_widget_assert (xml, "next-button");
   act->prev = get_widget_assert (xml, "prev-button");
   act->ctotal = get_widget_assert (xml, "entry2");

@@ -59,7 +59,7 @@ cmd_get_data (struct lexer *lexer, struct dataset *ds)
 {
   char *tok = NULL;
   struct spreadsheet_read_options opts;
-  
+
   opts.sheet_name = NULL;
   opts.sheet_index = -1;
   opts.cell_range = NULL;
@@ -79,7 +79,7 @@ cmd_get_data (struct lexer *lexer, struct dataset *ds)
 
   if (s)
     tok = strdup (s);
-  
+
   if (lex_match_id (lexer, "TXT"))
     {
       free (tok);
@@ -90,7 +90,7 @@ cmd_get_data (struct lexer *lexer, struct dataset *ds)
       free (tok);
       return parse_get_psql (lexer, ds);
     }
-  else if (lex_match_id (lexer, "GNM") || 
+  else if (lex_match_id (lexer, "GNM") ||
       lex_match_id (lexer, "ODS"))
     {
       char *filename = NULL;
@@ -218,7 +218,7 @@ parse_get_psql (struct lexer *lexer, struct dataset *ds)
 }
 
 static bool
-parse_spreadsheet (struct lexer *lexer, char **filename, 
+parse_spreadsheet (struct lexer *lexer, char **filename,
 		   struct spreadsheet_read_options *opts)
 {
   opts->sheet_index = 1;
@@ -688,7 +688,7 @@ parse_get_txt (struct lexer *lexer, struct dataset *ds)
 }
 
 
-static void 
+static void
 destroy_spreadsheet_read_info (struct spreadsheet_read_options *opts)
 {
   free (opts->cell_range);

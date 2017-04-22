@@ -51,7 +51,7 @@ struct html_driver
 #ifdef HAVE_CAIRO
     struct xr_color fg;
     struct xr_color bg;
-#endif    
+#endif
     struct file_handle *handle;
     char *chart_file_name;
 
@@ -495,7 +495,7 @@ html_output_table (struct html_driver *html, const struct table_item *item)
 	    {
 	      /* Cell borders. */
 	      n_borders = 0;
-          
+
 	      top = table_get_rule (t, TABLE_VERT, x, y);
 	      if (top > TAL_GAP)
 		put_border (html->file, n_borders++, top, "top");

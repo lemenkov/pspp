@@ -28,9 +28,9 @@
    items should be freed, then it should be done by iterating
    through MAP's contents before destroying MAP. */
 void
-hmapx_destroy (struct hmapx *map) 
+hmapx_destroy (struct hmapx *map)
 {
-  if (map != NULL) 
+  if (map != NULL)
     {
       if (!(hmapx_is_empty (map)))
         {
@@ -38,7 +38,7 @@ hmapx_destroy (struct hmapx *map)
           for (node = hmapx_first (map); node != NULL; node = next)
             {
               next = hmapx_next (map, node);
-              free (node); 
+              free (node);
             }
         }
       hmap_destroy (&map->hmap);
@@ -62,7 +62,7 @@ hmapx_clear (struct hmapx *map)
 /* Allocates and returns a new hmapx_node with DATA as its data
    item. */
 static struct hmapx_node *
-make_hmapx_node (void *data) 
+make_hmapx_node (void *data)
 {
   struct hmapx_node *node = xmalloc (sizeof *node);
   node->data = data;
@@ -84,7 +84,7 @@ make_hmapx_node (void *data)
    then the client must check for duplicates itself before
    inserting the new item. */
 struct hmapx_node *
-hmapx_insert (struct hmapx *map, void *data, size_t hash) 
+hmapx_insert (struct hmapx *map, void *data, size_t hash)
 {
   struct hmapx_node *node = make_hmapx_node (data);
   hmap_insert (&map->hmap, &node->hmap_node, hash);
@@ -105,7 +105,7 @@ hmapx_insert (struct hmapx *map, void *data, size_t hash)
    then the client must check for duplicates itself before
    inserting the new node. */
 struct hmapx_node *
-hmapx_insert_fast (struct hmapx *map, void *data, size_t hash) 
+hmapx_insert_fast (struct hmapx *map, void *data, size_t hash)
 {
   struct hmapx_node *node = make_hmapx_node (data);
   hmap_insert_fast (&map->hmap, &node->hmap_node, hash);

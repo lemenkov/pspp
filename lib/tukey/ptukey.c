@@ -59,7 +59,7 @@
  *    Vol.30, pp.1-15, 1988.
  */
 
- 
+
 
 #include <config.h>
 
@@ -84,13 +84,13 @@
 #define ME_PRECISION	8
 
 
-static inline double 
+static inline double
 pnorm(double x, double mu, double sigma, int lower_tail, int log_p)
 {
   assert (lower_tail == 1);
   assert (log_p == 0);
   assert (sigma == 1.0);
-  
+
   return gsl_cdf_gaussian_P (x - mu, sigma);
 }
 

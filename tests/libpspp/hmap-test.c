@@ -285,13 +285,13 @@ random_shuffle (void *array_, size_t cnt, size_t size)
 typedef size_t hash_function (int data);
 
 static size_t
-identity_hash (int data) 
+identity_hash (int data)
 {
   return data;
 }
 
 static size_t
-constant_hash (int data UNUSED) 
+constant_hash (int data UNUSED)
 {
   return 0x12345678u;
 }
@@ -356,7 +356,7 @@ check_hmap (struct hmap *hmap, const int data[], size_t cnt,
 
       count = 0;
       HMAP_FOR_EACH_WITH_HASH (e, struct element, node, hash (order[i]), hmap)
-        if (e->data == order[i]) 
+        if (e->data == order[i])
           count++;
 
       check (count == j - i);
@@ -378,7 +378,7 @@ check_hmap (struct hmap *hmap, const int data[], size_t cnt,
 
           check (hmap_node_hash (&e->node) == hash (e->data));
           for (j = 0; j < left; j++)
-            if (order[j] == e->data) 
+            if (order[j] == e->data)
               {
                 order[j] = order[--left];
                 goto next;
@@ -481,19 +481,19 @@ test_insert_any_remove_any (hash_function *hash)
 }
 
 static void
-test_insert_any_remove_any_random_hash (void) 
+test_insert_any_remove_any_random_hash (void)
 {
   test_insert_any_remove_any (random_hash);
 }
 
 static void
-test_insert_any_remove_any_identity_hash (void) 
+test_insert_any_remove_any_identity_hash (void)
 {
   test_insert_any_remove_any (identity_hash);
 }
 
 static void
-test_insert_any_remove_any_constant_hash (void) 
+test_insert_any_remove_any_constant_hash (void)
 {
   test_insert_any_remove_any (constant_hash);
 }
@@ -528,19 +528,19 @@ test_insert_any_remove_same (hash_function *hash)
 }
 
 static void
-test_insert_any_remove_same_random_hash (void) 
+test_insert_any_remove_same_random_hash (void)
 {
   test_insert_any_remove_same (random_hash);
 }
 
 static void
-test_insert_any_remove_same_identity_hash (void) 
+test_insert_any_remove_same_identity_hash (void)
 {
   test_insert_any_remove_same (identity_hash);
 }
 
 static void
-test_insert_any_remove_same_constant_hash (void) 
+test_insert_any_remove_same_constant_hash (void)
 {
   test_insert_any_remove_same (constant_hash);
 }
@@ -634,19 +634,19 @@ test_random_sequence (int max_elems, hash_function *hash)
 }
 
 static void
-test_random_sequence_random_hash (void) 
+test_random_sequence_random_hash (void)
 {
   test_random_sequence (64, random_hash);
 }
 
 static void
-test_random_sequence_identity_hash (void) 
+test_random_sequence_identity_hash (void)
 {
   test_random_sequence (64, identity_hash);
 }
 
 static void
-test_random_sequence_constant_hash (void) 
+test_random_sequence_constant_hash (void)
 {
   test_random_sequence (32, constant_hash);
 }
@@ -676,7 +676,7 @@ test_insert_ordered (int max_elems, hash_function *hash)
       hmap_insert (&hmap, &elements[i].node, hash (elements[i].data));
       check_hmap (&hmap, values, i + 1, hash);
 
-      if (hash == identity_hash) 
+      if (hash == identity_hash)
         {
           /* Check that every every hash bucket has (almost) the
              same number of nodes in it.  */
@@ -684,7 +684,7 @@ test_insert_ordered (int max_elems, hash_function *hash)
           int max = INT_MIN;
           int j;
 
-          for (j = 0; j <= hmap.mask; j++) 
+          for (j = 0; j <= hmap.mask; j++)
             {
               int count = 0;
               struct hmap_node *node;
@@ -770,19 +770,19 @@ test_moved (int max_elems, hash_function *hash)
 }
 
 static void
-test_moved_random_hash (void) 
+test_moved_random_hash (void)
 {
   test_moved (128, random_hash);
 }
 
 static void
-test_moved_identity_hash (void) 
+test_moved_identity_hash (void)
 {
   test_moved (128, identity_hash);
 }
 
 static void
-test_moved_constant_hash (void) 
+test_moved_constant_hash (void)
 {
   test_moved (32, constant_hash);
 }
@@ -871,7 +871,7 @@ test_changed_constant_hash (void)
 }
 
 static void
-test_swap (int max_elems, hash_function *hash) 
+test_swap (int max_elems, hash_function *hash)
 {
   struct element *elements;
   int *values;
@@ -909,7 +909,7 @@ test_swap (int max_elems, hash_function *hash)
 }
 
 static void
-test_swap_random_hash (void) 
+test_swap_random_hash (void)
 {
   test_swap (128, random_hash);
 }
@@ -955,7 +955,7 @@ test_clear (void)
 }
 
 static void
-test_destroy_null (void) 
+test_destroy_null (void)
 {
   hmap_destroy (NULL);
 }

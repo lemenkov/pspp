@@ -1,7 +1,7 @@
 /*
   PSPP - a program for statistical analysis.
   Copyright (C) 2012, 2013, 2015 Free Software Foundation, Inc.
-  
+
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
   the Free Software Foundation, either version 3 of the License, or
@@ -11,7 +11,7 @@
   but WITHOUT ANY WARRANTY; without even the implied warranty of
   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
   GNU General Public License for more details.
-  
+
   You should have received a copy of the GNU General Public License
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
@@ -142,10 +142,10 @@ struct graph
   enum bar_type bar_type;
   const struct variable *by_var[2];
   size_t n_by_vars;
-  
+
   struct subcase ordering; /* Ordering for aggregation */
   int agr; /* Index into ag_func */
-  
+
   /* A caseproto that contains the plot data */
   struct caseproto *gr_proto;
 };
@@ -276,7 +276,7 @@ parse_function (struct lexer *lexer, struct graph *graph)
     }
 
   return true;
-  
+
  error:
   lex_error (lexer, NULL);
   return false;
@@ -330,13 +330,13 @@ show_histogr (const struct graph *cmd, struct casereader *input)
 {
   struct histogram *histogram;
   struct ccase *c;
-  
+
   if (cmd->es[0].cc <= 0)
     {
       casereader_destroy (input);
       return;
     }
-  
+
   {
     /* Sturges Rule */
     double bin_width = fabs (cmd->es[0].minimum - cmd->es[0].maximum)
@@ -368,7 +368,7 @@ show_histogr (const struct graph *cmd, struct casereader *input)
 
     struct string label;
 
-    ds_init_cstr (&label, 
+    ds_init_cstr (&label,
 		  var_to_string (cmd->dep_vars[0]));
 
     moments_calculate (cmd->es[0].mom, &n, &mean, &var, NULL, NULL);
@@ -378,14 +378,14 @@ show_histogr (const struct graph *cmd, struct casereader *input)
 				ds_cstr (&label), n, mean,
 				sqrt (var), cmd->normal));
 
-    statistic_destroy (&histogram->parent);      
+    statistic_destroy (&histogram->parent);
     ds_destroy (&label);
   }
 }
 
 static void
 cleanup_exploratory_stats (struct graph *cmd)
-{ 
+{
   int v;
 
   for (v = 0; v < cmd->n_dep_vars; ++v)
@@ -402,7 +402,7 @@ run_barchart (struct graph *cmd, struct casereader *input)
   struct casereader *group;
   double ccc = 0.0;
 
-  if ( cmd->missing_pw == false) 
+  if ( cmd->missing_pw == false)
     input = casereader_create_filter_missing (input,
                                               cmd->dep_vars,
                                               cmd->n_dep_vars,
@@ -464,7 +464,7 @@ run_barchart (struct graph *cmd, struct casereader *input)
 	  const double x =  (cmd->n_dep_vars > 0) ? case_data (c, cmd->dep_vars[0])->f : SYSMIS;
 
 	  cc += weight;
-	  
+
 	  freqs[n_freqs - 1]->count
 	    = ag_func[cmd->agr].calc (freqs[n_freqs - 1]->count, x, weight);
 	}
@@ -494,9 +494,9 @@ run_barchart (struct graph *cmd, struct casereader *input)
 		     ag_func[cmd->agr].description,
 		     var_get_name (cmd->dep_vars[0]));
     else
-      ds_put_cstr (&label, 
+      ds_put_cstr (&label,
 		     ag_func[cmd->agr].description);
-      
+
     chart_item_submit (barchart_create (cmd->by_var, cmd->n_by_vars,
 					ds_cstr (&label), false,
 					freqs, n_freqs));
@@ -506,7 +506,7 @@ run_barchart (struct graph *cmd, struct casereader *input)
 
   for (int i = 0; i < n_freqs; ++i)
     free (freqs[i]);
-  
+
   free (freqs);
 }
 
@@ -613,14 +613,14 @@ cmd_graph (struct lexer *lexer, struct dataset *ds)
   struct graph graph;
 
   graph.missing_pw = false;
-  
+
   graph.pool = pool_create ();
 
   graph.dep_excl = MV_ANY;
   graph.fctr_excl = MV_ANY;
-  
+
   graph.dict = dataset_dict (ds);
-  
+
   graph.dep_vars = NULL;
   graph.chart_type = CT_NONE;
   graph.scatter_type = ST_BIVARIATE;
@@ -628,7 +628,7 @@ cmd_graph (struct lexer *lexer, struct dataset *ds)
   graph.gr_proto = caseproto_create ();
 
   subcase_init_empty (&graph.ordering);
-  
+
   while (lex_token (lexer) != T_ENDCMD)
     {
       lex_match (lexer, T_SLASH);
@@ -645,7 +645,7 @@ cmd_graph (struct lexer *lexer, struct dataset *ds)
             {
               if (!lex_force_match_id (lexer, "NORMAL"))
                 goto error;
-              
+
               if (!lex_force_match (lexer, T_RPAREN))
                 goto error;
 
@@ -673,27 +673,27 @@ cmd_graph (struct lexer *lexer, struct dataset *ds)
 	    }
 	  graph.chart_type = CT_BAR;
 	  graph.bar_type = CBT_SIMPLE;
-	  
-	  if (lex_match (lexer, T_LPAREN)) 
+
+	  if (lex_match (lexer, T_LPAREN))
 	    {
 	      if (lex_match_id (lexer, "SIMPLE"))
 		{
 		  /* This is the default anyway */
 		}
-	      else if (lex_match_id (lexer, "GROUPED"))  
+	      else if (lex_match_id (lexer, "GROUPED"))
 		{
-		  graph.bar_type = CBT_GROUPED; 
+		  graph.bar_type = CBT_GROUPED;
 		  goto error;
 		}
-	      else if (lex_match_id (lexer, "STACKED"))  
+	      else if (lex_match_id (lexer, "STACKED"))
 		{
-		  graph.bar_type = CBT_STACKED; 
+		  graph.bar_type = CBT_STACKED;
 		  lex_error (lexer, _("%s is not yet implemented."), "STACKED");
 		  goto error;
 		}
-	      else if (lex_match_id (lexer, "RANGE"))  
+	      else if (lex_match_id (lexer, "RANGE"))
 		{
-		  graph.bar_type = CBT_RANGE; 
+		  graph.bar_type = CBT_RANGE;
 		  lex_error (lexer, _("%s is not yet implemented."), "RANGE");
 		  goto error;
 		}
@@ -705,7 +705,7 @@ cmd_graph (struct lexer *lexer, struct dataset *ds)
 	      if (!lex_force_match (lexer, T_RPAREN))
 		goto error;
 	    }
-	  
+
 	  if (!lex_force_match (lexer, T_EQUALS))
 	    goto error;
 
@@ -720,23 +720,23 @@ cmd_graph (struct lexer *lexer, struct dataset *ds)
 	      goto error;
 	    }
 	  graph.chart_type = CT_SCATTERPLOT;
-	  if (lex_match (lexer, T_LPAREN)) 
+	  if (lex_match (lexer, T_LPAREN))
 	    {
 	      if (lex_match_id (lexer, "BIVARIATE"))
 		{
 		  /* This is the default anyway */
 		}
-	      else if (lex_match_id (lexer, "OVERLAY"))  
+	      else if (lex_match_id (lexer, "OVERLAY"))
 		{
 		  lex_error (lexer, _("%s is not yet implemented."),"OVERLAY");
 		  goto error;
 		}
-	      else if (lex_match_id (lexer, "MATRIX"))  
+	      else if (lex_match_id (lexer, "MATRIX"))
 		{
 		  lex_error (lexer, _("%s is not yet implemented."),"MATRIX");
 		  goto error;
 		}
-	      else if (lex_match_id (lexer, "XYZ"))  
+	      else if (lex_match_id (lexer, "XYZ"))
 		{
 		  lex_error(lexer, _("%s is not yet implemented."),"XYZ");
 		  goto error;
@@ -756,7 +756,7 @@ cmd_graph (struct lexer *lexer, struct dataset *ds)
 				      &graph.dep_vars, &graph.n_dep_vars,
 				      PV_NO_DUPLICATE | PV_NUMERIC))
 	    goto error;
-	 
+
 	  if (graph.scatter_type == ST_BIVARIATE && graph.n_dep_vars != 1)
 	    {
 	      lex_error(lexer, _("Only one variable is allowed."));
@@ -776,7 +776,7 @@ cmd_graph (struct lexer *lexer, struct dataset *ds)
 	      lex_error (lexer, _("Only one variable is allowed."));
 	      goto error;
 	    }
-	  
+
 	  if (lex_match (lexer, T_BY))
 	    {
 	      const struct variable *v = NULL;
@@ -898,7 +898,7 @@ cmd_graph (struct lexer *lexer, struct dataset *ds)
     struct casegrouper *grouper;
     struct casereader *group;
     bool ok;
-    
+
     grouper = casegrouper_create_splits (proc_open (ds), graph.dict);
     while (casegrouper_get_next_group (grouper, &group))
       {

@@ -188,13 +188,13 @@ psppire_dialog_action_comments_activate (PsppireDialogAction *pda)
       act->check = get_widget_assert (xml, "comments-checkbutton1");
 
       g_signal_connect_swapped (pda->dialog, "show", G_CALLBACK (retrieve_comments), pda);
-      
+
       {
 	PangoContext * context ;
 	PangoLayout *  layout ;
 	PangoRectangle rect;
 
-	
+
 	/* Since we're going to truncate lines to 80 chars,
 	   we need a monospaced font otherwise it'll look silly */
 	PangoFontDescription *font_desc =
@@ -222,7 +222,7 @@ psppire_dialog_action_comments_activate (PsppireDialogAction *pda)
 					  GTK_STYLE_PROVIDER_PRIORITY_APPLICATION);
 	  g_object_unref (cssp);
 	}
-	
+
 	/* And let's just make sure that a complete line fits into the
 	   widget's width */
 	context = gtk_widget_create_pango_context (act->textview);
@@ -242,7 +242,7 @@ psppire_dialog_action_comments_activate (PsppireDialogAction *pda)
 
 	pango_font_description_free (font_desc);
       }
-      
+
       g_signal_connect (buffer, "mark-set",
 			G_CALLBACK (set_column_number), label);
 
@@ -252,7 +252,7 @@ psppire_dialog_action_comments_activate (PsppireDialogAction *pda)
       gtk_text_buffer_get_iter_at_offset (buffer, &iter, 0);
       gtk_text_buffer_place_cursor (buffer, &iter);
     }
-  
+
   psppire_dialog_action_set_valid_predicate (pda, dialog_state_valid);
   psppire_dialog_action_set_refresh (pda, refresh);
 }

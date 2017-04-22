@@ -12,14 +12,14 @@ test_runner (const char *format, ...)
   va_start (args, format);
 
   ds_init_empty (&syntax);
-  
+
   syntax_gen_pspp_valist (&syntax, format, args);
 
   va_end (args);
 
   puts (ds_cstr (&syntax));
 
-  ds_destroy (&syntax);  
+  ds_destroy (&syntax);
 }
 
 int

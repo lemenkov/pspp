@@ -63,9 +63,9 @@ tt_options_dialog_create (GtkWindow *parent)
 
   tto->confidence =
     psppire_scanf_new (_("Con_fidence Interval: %2d %%"), &tto->conf_percent);
-  
-  g_object_set (tto->confidence, 
-		"use-underline", TRUE, 
+
+  g_object_set (tto->confidence,
+		"use-underline", TRUE,
 		"mnemonic-widget", psppire_scanf_get_child (PSPPIRE_SCANF (tto->confidence), 0),
 		NULL);
 

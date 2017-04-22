@@ -240,7 +240,7 @@ psppire_dialog_action_examine_activate (PsppireDialogAction *a)
 
   act->stats_dialog        = get_widget_assert (xml, "statistics-dialog");
   act->descriptives_button = get_widget_assert (xml, "descriptives-button");
-  act->extremes_button     = get_widget_assert (xml, "extremes-button"); 
+  act->extremes_button     = get_widget_assert (xml, "extremes-button");
   act->percentiles_button  = get_widget_assert (xml, "percentiles-button");
 
   act->opts_dialog = get_widget_assert (xml, "options-dialog");
@@ -258,7 +258,7 @@ psppire_dialog_action_examine_activate (PsppireDialogAction *a)
 
   g_signal_connect_swapped (opts_button, "clicked",
 			    G_CALLBACK (run_opts_dialog), act);
- 
+
   g_list_free (list);
 }
 

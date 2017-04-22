@@ -44,7 +44,7 @@ struct friedman
   const struct dictionary *dict;
 };
 
-static void show_ranks_box (const struct one_sample_test *ost, 
+static void show_ranks_box (const struct one_sample_test *ost,
 			    const struct friedman *fr);
 
 static void show_sig_box (const struct one_sample_test *ost,
@@ -64,7 +64,7 @@ cmp_x (const void *a_, const void *b_)
 
   if (a->x < b->x)
     return -1;
-  
+
   return (a->x > b->x);
 }
 
@@ -76,7 +76,7 @@ cmp_posn (const void *a_, const void *b_)
 
   if (a->posn < b->posn)
     return -1;
-  
+
   return (a->posn > b->posn);
 }
 
@@ -99,7 +99,7 @@ friedman_execute (const struct dataset *ds,
   struct friedman_test *ft = UP_CAST (ost, struct friedman_test, parent);
   bool warn = true;
 
-  double sigma_t = 0.0;	
+  double sigma_t = 0.0;
   struct datum *row = xcalloc (ost->n_vars, sizeof *row);
   double rsq;
   struct friedman fr;
@@ -257,7 +257,7 @@ static void
 show_sig_box (const struct one_sample_test *ost, const struct friedman *fr)
 {
   const struct friedman_test *ft = UP_CAST (ost, const struct friedman_test, parent);
-  
+
   int row = 0;
   const struct variable *weight = dict_get_weight (fr->dict);
   const struct fmt_spec *wfmt = weight ? var_get_print_format (weight) : &F_8_0;
@@ -297,21 +297,21 @@ show_sig_box (const struct one_sample_test *ost, const struct friedman *fr)
   tab_vline (table, TAL_2, row_headers, 0, tab_nr (table) - 1);
 
   row = 0;
-  tab_double (table, 1, column_headers + row++, 
+  tab_double (table, 1, column_headers + row++,
 	      0, fr->cc, NULL, RC_WEIGHT);
 
   if (ft->kendalls_w)
-    tab_double (table, 1, column_headers + row++, 
+    tab_double (table, 1, column_headers + row++,
 		0, fr->w, NULL, RC_OTHER);
 
-  tab_double (table, 1, column_headers + row++, 
+  tab_double (table, 1, column_headers + row++,
 	      0, fr->chi_sq, NULL, RC_OTHER);
 
-  tab_double (table, 1, column_headers + row++, 
+  tab_double (table, 1, column_headers + row++,
 	      0, ost->n_vars - 1, NULL, RC_INTEGER);
 
-  tab_double (table, 1, column_headers + row++, 
-	      0, gsl_cdf_chisq_Q (fr->chi_sq, ost->n_vars - 1), 
+  tab_double (table, 1, column_headers + row++,
+	      0, gsl_cdf_chisq_Q (fr->chi_sq, ost->n_vars - 1),
 	      NULL, RC_PVALUE);
 
   tab_submit (table);

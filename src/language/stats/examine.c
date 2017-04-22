@@ -1,7 +1,7 @@
 /*
   PSPP - a program for statistical analysis.
   Copyright (C) 2012, 2013, 2016  Free Software Foundation, Inc.
-  
+
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
   the Free Software Foundation, either version 3 of the License, or
@@ -11,7 +11,7 @@
   but WITHOUT ANY WARRANTY; without even the implied warranty of
   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
   GNU General Public License for more details.
-  
+
   You should have received a copy of the GNU General Public License
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
@@ -66,7 +66,7 @@
 #define _(msgid) gettext (msgid)
 #define N_(msgid) msgid
 
-static void 
+static void
 append_value_name (const struct variable *var, const union value *val, struct string *str)
 {
   var_append_value_name (var, val, str);
@@ -127,7 +127,7 @@ struct examine
   enum pc_alg pc_alg;
   double *ptiles;
   size_t n_percentiles;
-  
+
   bool npplot;
   bool histogramplot;
   bool boxplot;
@@ -165,7 +165,7 @@ struct exploratory_stats
   struct extremity *minima;
   struct extremity *maxima;
 
-  /* 
+  /*
      Minimum should alway equal mimima[0].val.
      Likewise, maximum should alway equal maxima[0].val.
      This redundancy exists as an optimisation effort.
@@ -224,7 +224,7 @@ previous_value_record (const struct interaction *iact, const struct ccase *c, co
       const struct variable *ivar = iact->vars[ivar_idx];
       const int width = var_get_width (ivar);
       const union value *val = case_data (c, ivar);
-                  
+
       if (prev_val[ivar_idx])
         if (! value_equal (prev_val[ivar_idx], val, width))
           {
@@ -237,7 +237,7 @@ previous_value_record (const struct interaction *iact, const struct ccase *c, co
     {
       const struct variable *ivar = iact->vars[ivar_idx];
       const union value *val = case_data (c, ivar);
-      
+
       prev_val[ivar_idx] = val;
     }
   return diff_idx;
@@ -273,7 +273,7 @@ show_boxplot_grouped (const struct examine *cmd, int iact_idx)
         }
       else
         ds_put_format (&title, _("Boxplot of %s"), var_to_string (cmd->dep_vars[v]));
-      
+
       for (grp = 0; grp < n_cats; ++grp)
         {
           const struct exploratory_stats *es =
@@ -285,7 +285,7 @@ show_boxplot_grouped (const struct examine *cmd, int iact_idx)
           if ( y_max < es[v].maximum)
             y_max = es[v].maximum;
         }
-      
+
       boxplot = boxplot_create (y_min, y_max, ds_cstr (&title));
 
       ds_destroy (&title);
@@ -324,7 +324,7 @@ show_boxplot_grouped (const struct examine *cmd, int iact_idx)
 
           ds_destroy (&label);
         }
-      
+
       boxplot_submit (boxplot);
     }
 }
@@ -372,7 +372,7 @@ show_boxplot_variabled (const struct examine *cmd, int iact_idx)
             {
               const struct variable *ivar = iact->vars[ivar_idx];
               const union value *val = case_data (c, ivar);
-              
+
               ds_put_cstr (&label, var_to_string (ivar));
               ds_put_cstr (&label, " = ");
               append_value_name (ivar, val, &label);
@@ -394,7 +394,7 @@ show_boxplot_variabled (const struct examine *cmd, int iact_idx)
           struct exploratory_stats *es =
             categoricals_get_user_data_by_category_real (cmd->cats, iact_idx, grp);
 
-          boxplot_add_box (boxplot, es[v].box_whisker, 
+          boxplot_add_box (boxplot, es[v].box_whisker,
                            var_to_string (cmd->dep_vars[v]));
           es[v].box_whisker = NULL;
         }
@@ -430,7 +430,7 @@ show_npplot (const struct examine *cmd, int iact_idx)
             categoricals_get_user_data_by_category_real (cmd->cats, iact_idx, grp);
 
           struct string label;
-          ds_init_cstr (&label, 
+          ds_init_cstr (&label,
                         var_to_string (cmd->dep_vars[v]));
 
           if ( iact->n_vars > 0)
@@ -440,16 +440,16 @@ show_npplot (const struct examine *cmd, int iact_idx)
                 {
                   const struct variable *ivar = iact->vars[ivar_idx];
                   const union value *val = case_data (c, ivar);
-                  
+
                   ds_put_cstr (&label, var_to_string (ivar));
                   ds_put_cstr (&label, " = ");
                   append_value_name (ivar, val, &label);
                   ds_put_cstr (&label, "; ");
-                  
+
                 }
               ds_put_cstr (&label, ")");
             }
-          
+
           np = es[v].np;
           reader = casewriter_make_reader (np->writer);
           np->writer = NULL;
@@ -493,7 +493,7 @@ show_spreadlevel (const struct examine *cmd, int iact_idx)
       struct chart_item *sl;
 
       struct string label;
-      ds_init_cstr (&label, 
+      ds_init_cstr (&label,
 		    var_to_string (cmd->dep_vars[v]));
 
       if (iact->n_vars > 0)
@@ -502,7 +502,7 @@ show_spreadlevel (const struct examine *cmd, int iact_idx)
 	  interaction_to_string (iact, &label);
 	  ds_put_cstr (&label, ")");
 	}
-      
+
       sl = spreadlevel_plot_create (ds_cstr (&label), cmd->sl_power);
 
       for (grp = 0; grp < n_cats; ++grp)
@@ -520,7 +520,7 @@ show_spreadlevel (const struct examine *cmd, int iact_idx)
 
       if (sl == NULL)
 	msg (MW, _("Not creating spreadlevel chart for %s"), ds_cstr (&label));
-      else 
+      else
 	chart_item_submit (sl);
 
       ds_destroy (&label);
@@ -555,7 +555,7 @@ show_histogram (const struct examine *cmd, int iact_idx)
 	  if (es[v].histogram == NULL)
 	    continue;
 
-          ds_init_cstr (&label, 
+          ds_init_cstr (&label,
                         var_to_string (cmd->dep_vars[v]));
 
           if ( iact->n_vars > 0)
@@ -565,12 +565,12 @@ show_histogram (const struct examine *cmd, int iact_idx)
                 {
                   const struct variable *ivar = iact->vars[ivar_idx];
                   const union value *val = case_data (c, ivar);
-                  
+
                   ds_put_cstr (&label, var_to_string (ivar));
                   ds_put_cstr (&label, " = ");
                   append_value_name (ivar, val, &label);
                   ds_put_cstr (&label, "; ");
-                  
+
                 }
               ds_put_cstr (&label, ")");
             }
@@ -583,7 +583,7 @@ show_histogram (const struct examine *cmd, int iact_idx)
                                       ds_cstr (&label), n, mean,
                                       sqrt (var), false));
 
-          
+
           ds_destroy (&label);
         }
     }
@@ -661,7 +661,7 @@ percentiles_report (const struct examine *cmd, int iact_idx)
 	  int ivar_idx;
 	  if ( v > 0 )
 	    tab_hline (t, TAL_1, 0, nc - 1, heading_rows + v * rows_per_var);
-        
+
 	  tab_text (t,
 		    0, heading_rows + v * rows_per_var,
 		    TAT_TITLE | TAB_LEFT,
@@ -691,18 +691,18 @@ percentiles_report (const struct examine *cmd, int iact_idx)
 
 		  if (( diff_idx != -1 && diff_idx <= ivar_idx)
 		      || i == 0)
-		    {              
+		    {
 		      struct string str;
 		      ds_init_empty (&str);
 		      append_value_name (ivar, val, &str);
-              
+
 		      tab_text (t,
 				1 + ivar_idx,
 				heading_rows + v * rows_per_var + i * rows_per_cat,
 				TAT_TITLE | TAB_LEFT,
 				ds_cstr (&str)
 				);
-                  
+
 		      ds_destroy (&str);
 		    }
 		}
@@ -714,7 +714,7 @@ percentiles_report (const struct examine *cmd, int iact_idx)
 			     );
 		}
 
-	      tab_text (t, heading_columns - 1, 
+	      tab_text (t, heading_columns - 1,
 			heading_rows + v * rows_per_var + i * rows_per_cat,
 			TAT_TITLE | TAB_LEFT,
 			gettext (ptile_alg_desc [cmd->pc_alg]));
@@ -723,15 +723,15 @@ percentiles_report (const struct examine *cmd, int iact_idx)
 
 	      for (p = 0; p < cmd->n_percentiles; ++p)
 		{
-		  tab_double (t, heading_columns + p, 
+		  tab_double (t, heading_columns + p,
 			      heading_rows + v * rows_per_var + i * rows_per_cat,
 			      0,
 			      percentile_calculate (es->percentiles[p], cmd->pc_alg),
 			      NULL, RC_OTHER);
-              
+
 		  if (cmd->ptiles[p] == 25.0)
 		    {
-		      tab_double (t, heading_columns + p, 
+		      tab_double (t, heading_columns + p,
 				  heading_rows + v * rows_per_var + i * rows_per_cat + 1,
 				  0,
 				  hinges[0],
@@ -739,7 +739,7 @@ percentiles_report (const struct examine *cmd, int iact_idx)
 		    }
 		  else if (cmd->ptiles[p] == 50.0)
 		    {
-		      tab_double (t, heading_columns + p, 
+		      tab_double (t, heading_columns + p,
 				  heading_rows + v * rows_per_var + i * rows_per_cat + 1,
 				  0,
 				  hinges[1],
@@ -747,7 +747,7 @@ percentiles_report (const struct examine *cmd, int iact_idx)
 		    }
 		  else if (cmd->ptiles[p] == 75.0)
 		    {
-		      tab_double (t, heading_columns + p, 
+		      tab_double (t, heading_columns + p,
 				  heading_rows + v * rows_per_var + i * rows_per_cat + 1,
 				  0,
 				  hinges[2],
@@ -756,11 +756,11 @@ percentiles_report (const struct examine *cmd, int iact_idx)
 		}
 
 
-	      tab_text (t, heading_columns - 1, 
+	      tab_text (t, heading_columns - 1,
 			heading_rows + v * rows_per_var + i * rows_per_cat + 1,
 			TAT_TITLE | TAB_LEFT,
 			_("Tukey's Hinges"));
-          
+
 	    }
 
 	  free (prev_vals);
@@ -826,7 +826,7 @@ descriptives_report (const struct examine *cmd, int iact_idx)
       int ivar_idx;
       if ( v > 0 )
         tab_hline (t, TAL_1, 0, nc - 1, heading_rows + v * rows_per_var);
-        
+
       tab_text (t,
                 0, heading_rows + v * rows_per_var,
                 TAT_TITLE | TAB_LEFT,
@@ -860,18 +860,18 @@ descriptives_report (const struct examine *cmd, int iact_idx)
 
               if (( diff_idx != -1 && diff_idx <= ivar_idx)
                   || i == 0)
-                {              
+                {
                   struct string str;
                   ds_init_empty (&str);
                   append_value_name (ivar, val, &str);
-              
+
                   tab_text (t,
                             1 + ivar_idx,
                             heading_rows + v * rows_per_var + i * rows_per_cat,
                             TAT_TITLE | TAB_LEFT,
                             ds_cstr (&str)
                             );
-                  
+
                   ds_destroy (&str);
                 }
             }
@@ -907,7 +907,7 @@ descriptives_report (const struct examine *cmd, int iact_idx)
                            _("%g%% Confidence Interval for Mean"),
                            cmd->conf * 100.0
                            );
-          
+
           tab_text (t,
                     1 + iact->n_vars + 1,
                     heading_rows + v * rows_per_var + i * rows_per_cat + 1,
@@ -954,7 +954,7 @@ descriptives_report (const struct examine *cmd, int iact_idx)
                     TAB_LEFT,
                     _("Median")
                     );
-          
+
           tab_double (t,
                       1 + iact->n_vars + 2,
                       heading_rows + v * rows_per_var + i * rows_per_cat + 4,
@@ -997,7 +997,7 @@ descriptives_report (const struct examine *cmd, int iact_idx)
           tab_double (t,
                       1 + iact->n_vars + 2,
                       heading_rows + v * rows_per_var + i * rows_per_cat + 7,
-                      0, 
+                      0,
                       es->minima[0].val,
                       NULL, RC_OTHER);
 
@@ -1011,7 +1011,7 @@ descriptives_report (const struct examine *cmd, int iact_idx)
           tab_double (t,
                       1 + iact->n_vars + 2,
                       heading_rows + v * rows_per_var + i * rows_per_cat + 8,
-                      0, 
+                      0,
                       es->maxima[0].val,
                       NULL, RC_OTHER);
 
@@ -1025,7 +1025,7 @@ descriptives_report (const struct examine *cmd, int iact_idx)
           tab_double (t,
                       1 + iact->n_vars + 2,
                       heading_rows + v * rows_per_var + i * rows_per_cat + 9,
-                      0, 
+                      0,
                       es->maxima[0].val - es->minima[0].val,
                       NULL, RC_OTHER);
 
@@ -1041,7 +1041,7 @@ descriptives_report (const struct examine *cmd, int iact_idx)
                       1 + iact->n_vars + 2,
                       heading_rows + v * rows_per_var + i * rows_per_cat + 10,
                       0,
-                      percentile_calculate (es->quartiles[2], cmd->pc_alg) - 
+                      percentile_calculate (es->quartiles[2], cmd->pc_alg) -
                       percentile_calculate (es->quartiles[0], cmd->pc_alg),
                       NULL, RC_OTHER);
 
@@ -1124,7 +1124,7 @@ extremes_report (const struct examine *cmd, int iact_idx)
   tab_vline (t, TAL_2, heading_columns, 0, nr - 1);
 
 
-  if ( cmd->id_var ) 
+  if ( cmd->id_var )
     tab_text (t, heading_columns, 0, TAB_CENTER | TAT_TITLE,
               var_to_string (cmd->id_var));
   else
@@ -1150,7 +1150,7 @@ extremes_report (const struct examine *cmd, int iact_idx)
       int ivar_idx;
       if ( v > 0 )
         tab_hline (t, TAL_1, 0, nc - 1, heading_rows + v * rows_per_var);
-        
+
       tab_text (t,
                 0, heading_rows + v * rows_per_var,
                 TAT_TITLE,
@@ -1177,18 +1177,18 @@ extremes_report (const struct examine *cmd, int iact_idx)
 
               if (( diff_idx != -1 && diff_idx <= ivar_idx)
                   || i == 0)
-                {              
+                {
                   struct string str;
                   ds_init_empty (&str);
                   append_value_name (ivar, val, &str);
-              
+
                   tab_text (t,
                             1 + ivar_idx,
                             heading_rows + v * rows_per_var + i * rows_per_cat,
                             TAT_TITLE | TAB_LEFT,
                             ds_cstr (&str)
                             );
-                  
+
                   ds_destroy (&str);
                 }
             }
@@ -1199,7 +1199,7 @@ extremes_report (const struct examine *cmd, int iact_idx)
                          heading_rows + v * rows_per_var + i * rows_per_cat
                          );
             }
-          
+
 	  tab_text (t,
                     heading_columns - 2,
 		    heading_rows + v * rows_per_var + i * rows_per_cat,
@@ -1235,7 +1235,7 @@ extremes_report (const struct examine *cmd, int iact_idx)
                            &es->maxima[e].identity,
                            cmd->id_var,
                            NULL);
-              else 
+              else
                 tab_double (t,
                           heading_columns,
                             heading_rows + v * rows_per_var + i * rows_per_cat + e,
@@ -1249,7 +1249,7 @@ extremes_report (const struct examine *cmd, int iact_idx)
                          0,
                          es->maxima[e].val,
 			  var_get_print_format (cmd->dep_vars[v]), RC_OTHER);
-                         
+
 
               tab_double (t,
                           heading_columns - 1,
@@ -1331,7 +1331,7 @@ summary_report (const struct examine *cmd, int iact_idx)
                   TAB_CENTER | TAT_TITLE, _("Valid"));
 
   tab_joint_text (t,
-                  heading_columns + 2, 1, 
+                  heading_columns + 2, 1,
                   heading_columns + 3, 1,
                   TAB_CENTER | TAT_TITLE, _("Missing"));
 
@@ -1396,17 +1396,17 @@ summary_report (const struct examine *cmd, int iact_idx)
 
 		    if (( diff_idx != -1 && diff_idx <= ivar_idx)
 			|| i == 0)
-		      {              
+		      {
 			struct string str;
 			ds_init_empty (&str);
 			append_value_name (ivar, val, &str);
-              
+
 			tab_text (t,
 				  1 + ivar_idx, heading_rows + n_cats * v + i,
 				  TAT_TITLE | TAB_LEFT,
 				  ds_cstr (&str)
 				  );
-                  
+
 			ds_destroy (&str);
 		      }
 		  }
@@ -1414,10 +1414,10 @@ summary_report (const struct examine *cmd, int iact_idx)
 
 
 	    es = categoricals_get_user_data_by_category_real (cmd->cats, iact_idx, i);
-  
-          
+
+
 	    total = es[v].missing + es[v].non_missing;
-	    tab_double (t, 
+	    tab_double (t,
 			heading_columns + 0,
 			heading_rows + n_cats * v + i,
 			0,
@@ -1425,7 +1425,7 @@ summary_report (const struct examine *cmd, int iact_idx)
 			NULL, RC_WEIGHT);
 
 
-	    tab_text_format (t, 
+	    tab_text_format (t,
 			     heading_columns + 1,
 			     heading_rows + n_cats * v + i,
 			     0,
@@ -1434,21 +1434,21 @@ summary_report (const struct examine *cmd, int iact_idx)
 			     );
 
 
-	    tab_double (t, 
+	    tab_double (t,
 			heading_columns + 2,
 			heading_rows + n_cats * v + i,
 			0,
 			es[v].missing,
 			NULL, RC_WEIGHT);
 
-	    tab_text_format (t, 
+	    tab_text_format (t,
 			     heading_columns + 3,
 			     heading_rows + n_cats * v + i,
 			     0,
 			     "%g%%",
 			     100.0 * es[v].missing / total
 			     );
-	    tab_double (t, 
+	    tab_double (t,
 			heading_columns + 4,
 			heading_rows + n_cats * v + i,
 			0,
@@ -1456,7 +1456,7 @@ summary_report (const struct examine *cmd, int iact_idx)
 			NULL, RC_WEIGHT);
 
 	    /* This can only be 100% can't it? */
-	    tab_text_format (t, 
+	    tab_text_format (t,
 			     heading_columns + 5,
 			     heading_rows + n_cats * v + i,
 			     0,
@@ -1479,7 +1479,7 @@ parse_interaction (struct lexer *lexer, struct examine *ex)
 {
   const struct variable *v = NULL;
   struct interaction *iact = NULL;
-  
+
   if ( lex_match_variable (lexer, ex->dict, &v))
     {
       iact = interaction_create (v);
@@ -1495,7 +1495,7 @@ parse_interaction (struct lexer *lexer, struct examine *ex)
         }
       lex_match (lexer, T_COMMA);
     }
-  
+
   return iact;
 }
 
@@ -1504,7 +1504,7 @@ static void *
 create_n (const void *aux1, void *aux2 UNUSED)
 {
   int v;
-  
+
   const struct examine *examine = aux1;
   struct exploratory_stats *es = pool_calloc (examine->pool, examine->n_dep_vars, sizeof (*es));
   struct subcase ordering;
@@ -1558,7 +1558,7 @@ update_n (const void *aux1, void *aux2 UNUSED, void *user_data,
       struct ccase *outcase ;
       const struct variable *var = examine->dep_vars[v];
       const double x = case_data (c, var)->f;
-      
+
       if (var_is_value_missing (var, case_data (c, var), examine->dep_excl))
         {
           es[v].missing += weight;
@@ -1584,7 +1584,7 @@ update_n (const void *aux1, void *aux2 UNUSED, void *user_data,
                   case_data_idx (c, examine->id_idx), examine->id_width);
 
       case_data_rw_idx (outcase, EX_WT)->f = weight;
-      
+
       es[v].cc += weight;
 
       if (es[v].cmin > weight)
@@ -1640,7 +1640,7 @@ calculate_n (const void *aux1, void *aux2 UNUSED, void *user_data)
           const double val = case_data_idx (c, EX_VAL)->f;
           double wt = case_data_idx (c, EX_WT)->f;
 	  wt = var_force_valid_weight (examine->wv, wt, &warn);
-	  
+
           moments_pass_two (es[v].mom, val, wt);
 
           if (es[v].histogram)
@@ -1667,7 +1667,7 @@ calculate_n (const void *aux1, void *aux2 UNUSED, void *user_data)
                 {
                   struct extremity *max;
 
-                  if (x >= examine->calc_extremes) 
+                  if (x >= examine->calc_extremes)
                     break;
 
                   max = &es[v].maxima[x];
@@ -1722,7 +1722,7 @@ calculate_n (const void *aux1, void *aux2 UNUSED, void *user_data)
         {
           struct order_stats *os;
 
-          es[v].box_whisker = box_whisker_create (es[v].hinges, 
+          es[v].box_whisker = box_whisker_create (es[v].hinges,
                                                   EX_ID, examine->id_var);
 
           os = &es[v].box_whisker->parent;
@@ -1737,7 +1737,7 @@ calculate_n (const void *aux1, void *aux2 UNUSED, void *user_data)
           struct order_stats *os;
 
           moments_calculate (es[v].mom, &n, &mean, &var, NULL, NULL);
-          
+
           es[v].np = np_create (n, mean, var);
 
           os = &es[v].np->parent;
@@ -1752,7 +1752,7 @@ calculate_n (const void *aux1, void *aux2 UNUSED, void *user_data)
 
 static void
 cleanup_exploratory_stats (struct examine *cmd)
-{ 
+{
   int i;
   for (i = 0; i < cmd->n_iacts; ++i)
     {
@@ -1825,11 +1825,11 @@ run_examine (struct examine *cmd, struct casereader *input)
   payload.update = update_n;
   payload.calculate = calculate_n;
   payload.destroy = NULL;
-  
+
   cmd->wv = dict_get_weight (cmd->dict);
 
   cmd->cats
-    = categoricals_create (cmd->iacts, cmd->n_iacts,  
+    = categoricals_create (cmd->iacts, cmd->n_iacts,
                            cmd->wv, cmd->dep_excl, cmd->fctr_excl);
 
   categoricals_set_payload (cmd->cats, &payload, cmd, NULL);
@@ -1923,7 +1923,7 @@ cmd_examine (struct lexer *lexer, struct dataset *ds)
   examine.id_width = 0;
   examine.id_var = NULL;
   examine.boxplot_mode = BP_GROUPS;
-  
+
   examine.ex_proto = caseproto_create ();
 
   examine.pool = pool_create ();
@@ -1970,11 +1970,11 @@ cmd_examine (struct lexer *lexer, struct dataset *ds)
           if (iact)
             {
               examine.n_iacts++;
-              iacts_mem = 
+              iacts_mem =
                 pool_nrealloc (examine.pool, iacts_mem,
 			       examine.n_iacts,
 			       sizeof (*iacts_mem));
-              
+
               iacts_mem[examine.n_iacts - 1] = iact;
             }
         }
@@ -2041,7 +2041,7 @@ cmd_examine (struct lexer *lexer, struct dataset *ds)
               while (lex_is_number (lexer))
                 {
                   double p = lex_number (lexer);
-                  
+
                   if ( p <= 0 || p >= 100.0)
                     {
                       lex_error (lexer,
@@ -2207,19 +2207,19 @@ cmd_examine (struct lexer *lexer, struct dataset *ds)
                   examine.npplot = true;
                   examine.boxplot = true;
                 }
-              else 
+              else
                 {
                   lex_error (lexer, NULL);
                   goto error;
                 }
               lex_match (lexer, T_COMMA);
-            }          
+            }
         }
       else if (lex_match_id (lexer, "CINTERVAL"))
         {
           if ( !lex_force_num (lexer))
             goto error;
-        
+
           examine.conf = lex_number (lexer);
           lex_get (lexer);
         }
@@ -2299,7 +2299,7 @@ cmd_examine (struct lexer *lexer, struct dataset *ds)
     struct casegrouper *grouper;
     struct casereader *group;
     bool ok;
-    
+
     grouper = casegrouper_create_splits (proc_open (ds), examine.dict);
     while (casegrouper_get_next_group (grouper, &group))
       run_examine (&examine, group);

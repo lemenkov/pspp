@@ -413,7 +413,7 @@ report_state_mismatch (const struct command *command, enum cmd_state state)
 	       command->name, "FILE TYPE");
           break;
         case S_INPUT_PROGRAM | S_FILE_TYPE:
-          msg (SE, _("%s is allowed only inside %s or inside %s."), command->name, 
+          msg (SE, _("%s is allowed only inside %s or inside %s."), command->name,
 	       "INPUT PROGRAM", "FILE TYPE");
           break;
 

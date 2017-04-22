@@ -63,12 +63,12 @@ struct _PsppireDataSheet
 
   GtkWidget *column_popup_menu;
   GtkWidget *row_popup_menu;
-  
+
   GtkWidget *pu_sort_up;
   GtkWidget *pu_sort_down;
 };
 
-struct _PsppireDataSheetClass 
+struct _PsppireDataSheetClass
 {
   PsppSheetViewClass parent_class;
 };

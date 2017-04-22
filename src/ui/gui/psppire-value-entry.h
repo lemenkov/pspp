@@ -50,7 +50,7 @@ struct variable;
 typedef struct _PsppireValueEntry      PsppireValueEntry;
 typedef struct _PsppireValueEntryClass PsppireValueEntryClass;
 
-struct _PsppireValueEntry 
+struct _PsppireValueEntry
 {
   GtkComboBox parent;
 
@@ -63,7 +63,7 @@ struct _PsppireValueEntry
   const union value *cur_value;
 };
 
-struct _PsppireValueEntryClass 
+struct _PsppireValueEntryClass
 {
   GtkComboBoxClass parent_class;
 };

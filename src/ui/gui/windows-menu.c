@@ -47,7 +47,7 @@ reset_check_state (GtkWidget *widget, gpointer ud)
 
   if (state == TRUE)
     gtk_window_present (win);
-  
+
   /* Prevent the state from actually changing */
   g_signal_handlers_block_by_func (widget, reset_check_state, ud);
   gtk_check_menu_item_set_active (GTK_CHECK_MENU_ITEM (widget), !state);
@@ -92,9 +92,9 @@ repopulate_windows_menu (GObject *inst, gchar *name, gpointer data)
   GtkWidget *minimize = gtk_menu_item_new_with_mnemonic (_("_Minimize all Windows"));
   GtkWidget *split = gtk_check_menu_item_new_with_mnemonic (_("_Split"));
 
-  
+
   GtkWidget *sep = gtk_separator_menu_item_new ();
-    
+
   gtk_menu_attach (GTK_MENU (menu), minimize, 0, 1, 0, 1);
 
   if (PSPPIRE_DATA_WINDOW_TYPE == G_OBJECT_TYPE (toplevel) )
@@ -103,17 +103,17 @@ repopulate_windows_menu (GObject *inst, gchar *name, gpointer data)
       g_signal_connect_swapped (split, "toggled",
 				G_CALLBACK (toggle_split_window), toplevel);
     }
-    
+
   gtk_container_add (GTK_CONTAINER (menu), sep);
 
   gtk_menu_item_set_submenu (GTK_MENU_ITEM (mi), menu);
 
   g_object_set_data (G_OBJECT (menu), "toplevel", toplevel);
-  
+
   g_hash_table_foreach (reg->name_table, add_menuitem, menu);
 
   g_signal_connect (minimize, "activate", G_CALLBACK (min_all), NULL);
-  
+
   gtk_widget_show_all (GTK_WIDGET (mi));
 }
 
@@ -129,11 +129,11 @@ GtkWidget *
 create_windows_menu (GtkWindow *toplevel)
 {
   PsppireWindowRegister *reg = psppire_window_register_new ();
-  
+
   GtkWidget *menuitem = gtk_menu_item_new_with_mnemonic (_("_Windows"));
 
   g_object_set_data (G_OBJECT (menuitem), "toplevel", toplevel);
-  
+
   g_signal_connect (reg, "removed", G_CALLBACK (repopulate_windows_menu), menuitem);
   g_signal_connect (reg, "inserted", G_CALLBACK (repopulate_windows_menu), menuitem);
 

@@ -74,7 +74,7 @@ struct extraction_parameters
   gint n_factors;
   gint n_iterations;
 
-  gboolean explicit_nfactors;  
+  gboolean explicit_nfactors;
   gboolean covariance;
 
   gboolean scree;

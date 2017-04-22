@@ -96,7 +96,7 @@ static void
 conf_write (PsppireConf *conf)
 {
   if ( conf->idle == 0)
-    conf->idle = g_idle_add_full (G_PRIORITY_LOW, 
+    conf->idle = g_idle_add_full (G_PRIORITY_LOW,
 				  (GSourceFunc) flush_conf, conf, NULL);
 }
 
@@ -351,12 +351,12 @@ psppire_conf_set_enum (PsppireConf *conf,
 {
   GEnumClass *ec = g_type_class_ref (enum_type);
   GEnumValue *ev = g_enum_get_value (ec, value);
-  
+
   g_key_file_set_string (conf->keyfile, base, name,
 			 ev->value_nick);
 
   g_type_class_unref (ec);
-  
+
   conf_write (conf);
 }
 

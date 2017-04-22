@@ -104,7 +104,7 @@ indep_run (struct tt *tt, const struct variable *gvar,
       double w = dict_get_case_weight (tt->dict, c, NULL);
 
       const union value *gv = case_data (c, gvar);
-      
+
       int grp = which_group (gv, &is);
       if ( grp < 0)
 	continue;
@@ -169,7 +169,7 @@ indep_run (struct tt *tt, const struct variable *gvar,
 
   for (v = 0; v < tt->n_vars; ++v)
     ps[v].lev = levene_calculate (ps[v].nl);
-  
+
   indep_summary (tt, &is, ps);
   indep_test (tt, ps);
 
@@ -247,7 +247,7 @@ indep_summary (const struct tt *tt, struct indep_samples *is, const struct pair_
 	{
 	  double cc, mean, sigma;
 	  moments_calculate (ps[v].mom[i], &cc, &mean, &sigma, NULL, NULL);
-      
+
 	  tab_double (t, 2, v * 2 + i + heading_rows, TAB_RIGHT, cc, NULL, RC_WEIGHT);
 	  tab_double (t, 3, v * 2 + i + heading_rows, TAB_RIGHT, mean, NULL, RC_OTHER);
 	  tab_double (t, 4, v * 2 + i + heading_rows, TAB_RIGHT, sqrt (sigma), NULL, RC_OTHER);
@@ -318,7 +318,7 @@ indep_test (const struct tt *tt, const struct pair_stats *ps)
 
     df = cc0 + cc1 - 2.0;
     tab_double (t, 5, v * 2 + heading_rows, TAB_RIGHT, df, NULL, RC_OTHER);
-    
+
     pooled_variance = ((cc0 - 1)* sigma0 + (cc1 - 1) * sigma1) / df ;
 
     tval = (mean0 - mean1) / sqrt (pooled_variance);
