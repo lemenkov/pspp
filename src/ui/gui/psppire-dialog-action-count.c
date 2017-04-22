@@ -51,7 +51,7 @@ generate_syntax (const PsppireDialogAction *act)
   gboolean ok;
   GtkTreeIter iter;
   struct string dds;
-  
+
   ds_init_empty (&dds);
 
   ds_put_cstr (&dds, "\nCOUNT ");
@@ -230,7 +230,7 @@ set_value (gint col, GValue  *val, gpointer data)
   PsppireDialogActionCount *cnt = PSPPIRE_DIALOG_ACTION_COUNT (data);
   PsppireValChooser *vc = PSPPIRE_VAL_CHOOSER (cnt->chooser);
   struct old_value ov;
-	
+
   g_assert (col == 0);
 
   psppire_val_chooser_get_status (vc, &ov);

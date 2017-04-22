@@ -76,7 +76,11 @@ static int hexit_value (int c);
    Stores the parsed representation in OUTPUT, which the caller must have
    initialized with the given WIDTH (0 for a numeric field, otherwise the
    string width).  If FORMAT is FMT_A, then OUTPUT_ENCODING must specify the
-   correct encoding for OUTPUT (normally obtained via dict_get_encoding()). */
+   correct encoding for OUTPUT (normally obtained via dict_get_encoding()).
+
+   If successful NULL is the return value.  Otherwise a string describing
+   the problem is returned.  The caller must free this string.
+ */
 char *
 data_in (struct substring input, const char *input_encoding,
          enum fmt_type format,

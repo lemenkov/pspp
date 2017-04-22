@@ -179,7 +179,7 @@ preregister_misc (void)
 
 
 /* Any custom widgets which are to be used in GtkBuilder ui files
-   need to be preregistered, otherwise GtkBuilder refuses to 
+   need to be preregistered, otherwise GtkBuilder refuses to
    acknowledge their existence. */
 void
 preregister_widgets (void)

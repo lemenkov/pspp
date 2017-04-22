@@ -115,7 +115,7 @@ cochran_execute (const struct dataset *ds,
       rowsq += pow2 (case_hits);
     }
   casereader_destroy (input);
-  
+
   {
     double c_l = 0;
     double c_l2 = 0;
@@ -130,7 +130,7 @@ cochran_execute (const struct dataset *ds,
     ch.q *= ct->n_vars - 1;
 
     ch.q /= ct->n_vars * c_l - rowsq;
-  
+
     ch.df = ct->n_vars - 1;
   }
 
@@ -233,17 +233,17 @@ show_sig_box (const struct cochran *ch)
   tab_hline (table, TAL_2, 0, tab_nc (table) -1, column_headers);
   tab_vline (table, TAL_2, row_headers, 0, tab_nr (table) - 1);
 
-  tab_double (table, 1, column_headers, 
+  tab_double (table, 1, column_headers,
 	      0, ch->cc, NULL, RC_WEIGHT);
 
-  tab_double (table, 1, column_headers + 1, 
+  tab_double (table, 1, column_headers + 1,
 	      0, ch->q, NULL, RC_OTHER);
 
-  tab_double (table, 1, column_headers + 2, 
+  tab_double (table, 1, column_headers + 2,
 	      0, ch->df, NULL, RC_INTEGER);
 
-  tab_double (table, 1, column_headers + 3, 
-	      0, gsl_cdf_chisq_Q (ch->q, ch->df), 
+  tab_double (table, 1, column_headers + 3,
+	      0, gsl_cdf_chisq_Q (ch->q, ch->df),
 	      NULL, RC_PVALUE);
 
   tab_submit (table);

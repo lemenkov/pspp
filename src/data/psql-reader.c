@@ -376,11 +376,11 @@ psql_open_reader (struct psql_read_info *info, struct dictionary **dict)
       int width = 0;
       int length ;
 
-      /* If there are no data then make a finger in the air 
+      /* If there are no data then make a finger in the air
 	 guess at the contents */
       if ( n_tuples > 0 )
 	length = PQgetlength (qres, 0, i);
-      else 
+      else
 	length = PSQL_DEFAULT_WIDTH;
 
       switch (type)

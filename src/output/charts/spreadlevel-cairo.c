@@ -37,7 +37,7 @@ xrchart_draw_spreadlevel (const struct chart_item *chart_item, cairo_t *cr,
   xrchart_write_title (cr, geom, _("Spread vs. Level Plot of %s"), name);
   xrchart_write_xlabel (cr, geom, _("Level"));
   xrchart_write_ylabel (cr, geom, _("Spread"));
-  
+
 
   xrchart_write_xscale (cr, geom, sl->x_lower, sl->x_upper);
   xrchart_write_yscale (cr, geom, sl->y_lower, sl->y_upper);

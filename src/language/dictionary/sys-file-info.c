@@ -56,7 +56,7 @@
 #define _(msgid) gettext (msgid)
 
 /* Information to include in displaying a dictionary. */
-enum 
+enum
   {
     DF_DICT_INDEX       = 1 << 0,
     DF_FORMATS          = 1 << 1,
@@ -154,7 +154,7 @@ cmd_sysfile_info (struct lexer *lexer, struct dataset *ds UNUSED)
       fh_unref (h);
       pool_destroy (pool);
       free (encoding);
-      
+
       return CMD_SUCCESS;
     }
 
@@ -307,19 +307,19 @@ cmd_display (struct lexer *lexer, struct dataset *ds)
 	  display_vectors (dataset_dict(ds), sorted);
 	  return CMD_SUCCESS;
 	}
-      else if (lex_match_id (lexer, "SCRATCH")) 
+      else if (lex_match_id (lexer, "SCRATCH"))
         {
           dict_get_vars (dataset_dict (ds), &vl, &n, DC_ORDINARY);
           flags = 0;
         }
-      else 
+      else
         {
-          struct subcommand 
+          struct subcommand
             {
               const char *name;
               int flags;
             };
-          static const struct subcommand subcommands[] = 
+          static const struct subcommand subcommands[] =
             {
               {"@ATTRIBUTES", DF_ATTRIBUTES | DF_AT_ATTRIBUTES},
               {"ATTRIBUTES", DF_ATTRIBUTES},
@@ -359,7 +359,7 @@ cmd_display (struct lexer *lexer, struct dataset *ds)
             dict_get_vars (dict, &vl, &n, 0);
         }
 
-      if (n > 0) 
+      if (n > 0)
         {
           sort (vl, n, sizeof *vl,
                 (sorted
@@ -438,7 +438,7 @@ display_variables (const struct variable **vl, size_t n, int flags)
   tab_headers (t, 0, 0, 1, 0);
   tab_hline (t, TAL_2, 0, nc - 1, 1);
   tab_text (t, 0, 0, TAB_LEFT | TAT_TITLE, _("Variable"));
-  if (flags & ~DF_DICT_INDEX) 
+  if (flags & ~DF_DICT_INDEX)
     tab_text (t, 1, 0, TAB_LEFT | TAT_TITLE,
               (flags & ~(DF_DICT_INDEX | DF_VARIABLE_LABELS)
                ? _("Description") : _("Label")));
@@ -454,21 +454,21 @@ display_variables (const struct variable **vl, size_t n, int flags)
 }
 
 static bool
-is_at_name (const char *name) 
+is_at_name (const char *name)
 {
   return name[0] == '@' || (name[0] == '$' && name[1] == '@');
 }
 
 static size_t
-count_attributes (const struct attrset *set, int flags) 
+count_attributes (const struct attrset *set, int flags)
 {
   struct attrset_iterator i;
   struct attribute *attr;
   size_t n_attrs;
-  
+
   n_attrs = 0;
   for (attr = attrset_first (set, &i); attr != NULL;
-       attr = attrset_next (set, &i)) 
+       attr = attrset_next (set, &i))
     if (flags & DF_AT_ATTRIBUTES || !is_at_name (attribute_get_name (attr)))
       n_attrs += attribute_get_n_values (attr);
   return n_attrs;
@@ -519,7 +519,7 @@ describe_attributes (const struct attrset *set, int flags)
 }
 
 static void
-display_data_file_attributes (struct attrset *set, int flags) 
+display_data_file_attributes (struct attrset *set, int flags)
 {
   if (count_attributes (set, flags))
     table_item_submit (table_item_create (describe_attributes (set, flags),
@@ -576,7 +576,7 @@ describe_variable_details (const struct variable *v, int flags)
     }
 
   /* Print/write format, or print and write formats. */
-  if (flags & DF_FORMATS) 
+  if (flags & DF_FORMATS)
     {
       const struct fmt_spec *print = var_get_print_format (v);
       const struct fmt_spec *write = var_get_write_format (v);

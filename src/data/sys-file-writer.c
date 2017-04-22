@@ -715,14 +715,14 @@ put_attrset (struct string *string, const struct attrset *attrs)
   struct attrset_iterator i;
 
   for (attr = attrset_first (attrs, &i); attr != NULL;
-       attr = attrset_next (attrs, &i)) 
+       attr = attrset_next (attrs, &i))
     {
       size_t n_values = attribute_get_n_values (attr);
       size_t j;
 
       ds_put_cstr (string, attribute_get_name (attr));
       ds_put_byte (string, '(');
-      for (j = 0; j < n_values; j++) 
+      for (j = 0; j < n_values; j++)
         ds_put_format (string, "'%s'\n", attribute_get_value (attr, j));
       ds_put_byte (string, ')');
     }
@@ -787,7 +787,7 @@ write_variable_attributes (struct sfm_writer *w, const struct dictionary *d)
   size_t i;
 
   for (i = 0; i < n_vars; i++)
-    { 
+    {
       struct variable *v = dict_get_var (d, i);
       struct attrset attrs;
 

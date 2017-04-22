@@ -193,7 +193,7 @@ main (int argc, char *argv[])
 
       if (argc - optind > 1)
         printf ("Reading \"%s\":\n", r.file_name);
-      
+
       read_header (&r);
       while ((rec_type = read_int (&r)) != 999)
         {
@@ -237,7 +237,7 @@ main (int argc, char *argv[])
 
       fclose (r.file);
     }
-  
+
   return 0;
 }
 
@@ -935,17 +935,17 @@ read_attributes (struct sfm_reader *r, struct text_record *text,
   const char *key;
   int index;
 
-  for (;;) 
+  for (;;)
     {
       key = text_tokenize (text, '(');
       if (key == NULL)
         return true;
-  
+
       for (index = 1; ; index++)
         {
           /* Parse the value. */
           const char *value = text_tokenize (text, '\n');
-          if (value == NULL) 
+          if (value == NULL)
             {
               sys_warn (r, "%s: Error parsing attribute value %s[%d]",
                         variable, key, index);
@@ -965,7 +965,7 @@ read_attributes (struct sfm_reader *r, struct text_record *text,
         }
 
       if (text_match (text, '/'))
-        return true; 
+        return true;
     }
 }
 
@@ -995,10 +995,10 @@ read_ncases64 (struct sfm_reader *r, size_t size, size_t count)
 }
 
 static void
-read_datafile_attributes (struct sfm_reader *r, size_t size, size_t count) 
+read_datafile_attributes (struct sfm_reader *r, size_t size, size_t count)
 {
   struct text_record *text;
-  
+
   printf ("%08llx: datafile attributes\n", (long long int) ftello (r->file));
   text = open_text_record (r, size * count);
   read_attributes (r, text, "datafile");
@@ -1187,17 +1187,17 @@ read_unknown_extension (struct sfm_reader *r, size_t size, size_t count)
 }
 
 static void
-read_variable_attributes (struct sfm_reader *r, size_t size, size_t count) 
+read_variable_attributes (struct sfm_reader *r, size_t size, size_t count)
 {
   struct text_record *text;
-  
+
   printf ("%08llx: variable attributes\n", (long long int) ftello (r->file));
   text = open_text_record (r, size * count);
-  for (;;) 
+  for (;;)
     {
       const char *variable = text_tokenize (text, ':');
       if (variable == NULL || !read_attributes (r, text, variable))
-        break; 
+        break;
     }
   close_text_record (text);
 }
@@ -1426,9 +1426,9 @@ text_tokenize (struct text_record *text, int delimiter)
 }
 
 static bool
-text_match (struct text_record *text, int c) 
+text_match (struct text_record *text, int c)
 {
-  if (text->pos < text->size && text->buffer[text->pos] == c) 
+  if (text->pos < text->size && text->buffer[text->pos] == c)
     {
       text->pos++;
       return true;

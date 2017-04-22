@@ -50,10 +50,10 @@ tower_node_get_level (const struct tower_node *node)
 {
   const struct abt_node *p = &node->abt_node;
   unsigned long level = get_subtree_size (p->down[0]);
-  while (p->up != NULL) 
+  while (p->up != NULL)
     {
       if (p == p->up->down[1])
-        level += (get_subtree_size (p->up->down[0]) 
+        level += (get_subtree_size (p->up->down[0])
                   + abt_to_tower_node (p->up)->size);
       p = p->up;
     }
@@ -72,7 +72,7 @@ tower_node_get_index (const struct tower_node *node)
 {
   const struct abt_node *p = &node->abt_node;
   unsigned long index = get_subtree_count (p->down[0]);
-  while (p->up != NULL) 
+  while (p->up != NULL)
     {
       if (p == p->up->down[1])
         index += get_subtree_count (p->up->down[0]) + 1;
@@ -233,7 +233,7 @@ tower_lookup (const struct tower *t_,
    less than the number of nodes in T (as returned by
    tower_count). */
 struct tower_node *
-tower_get (const struct tower *t_, unsigned long int index) 
+tower_get (const struct tower *t_, unsigned long int index)
 {
   struct tower *t = CONST_CAST (struct tower *, t_);
   struct abt_node *p;

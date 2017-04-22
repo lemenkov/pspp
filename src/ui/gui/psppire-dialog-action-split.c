@@ -164,7 +164,7 @@ psppire_dialog_action_split_activate (PsppireDialogAction *pda)
       g_signal_connect (act->off, "toggled", G_CALLBACK (on_off_toggled), pda);
       g_signal_connect_swapped (pda->dialog, "show", G_CALLBACK (refresh), pda);
     }
-  
+
   psppire_dialog_action_set_valid_predicate (pda, dialog_state_valid);
   psppire_dialog_action_set_refresh (pda, refresh);
 

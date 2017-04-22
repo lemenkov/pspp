@@ -120,7 +120,7 @@ case_map_get_proto (const struct case_map *map)
 }
 
 /* Creates and returns a new casereader whose cases are produced
-   by reading from SUBREADER and executing the actions of MAP.  
+   by reading from SUBREADER and executing the actions of MAP.
    The casereader will have as many `union value's as MAP.  When
    the new casereader is destroyed, MAP will be destroyed too.
 
@@ -129,7 +129,7 @@ case_map_get_proto (const struct case_map *map)
    when the returned casereader is destroyed. */
 struct casereader *
 case_map_create_input_translator (struct case_map *map,
-                                  struct casereader *subreader) 
+                                  struct casereader *subreader)
 {
     return casereader_create_translator (subreader,
                                          case_map_get_proto (map),
@@ -149,7 +149,7 @@ case_map_create_input_translator (struct case_map *map,
    when the returned casewriter is destroyed. */
 struct casewriter *
 case_map_create_output_translator (struct case_map *map,
-                                   struct casewriter *subwriter) 
+                                   struct casewriter *subwriter)
 {
     return casewriter_create_translator (subwriter,
                                          case_map_get_proto (map),

@@ -66,8 +66,8 @@ struct _PsppireDialogActionSelect
   GtkWidget *hbox2;
 
   GtkWidget *rsample_dialog;
-  GtkWidget *percent        ; 
-  GtkWidget *sample_n_cases ; 
+  GtkWidget *percent        ;
+  GtkWidget *sample_n_cases ;
   GtkWidget *table          ;
   GtkWidget *l0 ;
   GtkWidget *l1 ;

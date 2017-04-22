@@ -97,7 +97,7 @@ output_split_file_values (const struct dataset *ds, const struct ccase *c)
       tab_text_format (t, 1, i + 1, 0, "%.*s", print->w, s);
 
       free (s);
-      
+
       val_lab = var_lookup_value_label (v, case_data (c, v));
       if (val_lab)
 	tab_text (t, 2, i + 1, TAB_LEFT, val_lab);

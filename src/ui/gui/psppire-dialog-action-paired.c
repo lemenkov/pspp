@@ -58,7 +58,7 @@ dialog_state_valid (gpointer data)
 
   if (v == NULL)
     return FALSE;
-    
+
   /* if ( NULL == pd->valid) */
   /*   return TRUE; */
 
@@ -161,7 +161,7 @@ psppire_dialog_action_paired_activate (PsppireDialogAction *a)
     {
       xml = builder_new ("paired-samples.ui");
       g_hash_table_insert (thing, a, xml);
-      
+
       GtkWidget *selector = get_widget_assert (xml, "psppire-selector3");
       GtkWidget *bb = gtk_button_box_new (GTK_ORIENTATION_HORIZONTAL);
       GtkWidget *button = gtk_button_new_with_mnemonic (_("O_ptions..."));
@@ -183,7 +183,7 @@ psppire_dialog_action_paired_activate (PsppireDialogAction *a)
       gtk_box_pack_start (GTK_BOX (bb), button, TRUE, TRUE, 5);
       gtk_box_pack_start (GTK_BOX (box), bb, FALSE, FALSE, 5);
       gtk_widget_show_all (box);
- 
+
 
       psppire_dialog_action_set_valid_predicate (pda, dialog_state_valid);
       psppire_dialog_action_set_refresh (pda, refresh);
@@ -196,7 +196,7 @@ psppire_dialog_action_paired_activate (PsppireDialogAction *a)
 					select_as_pair_member,
 					act);
     }
-  
+
 }
 
 static void

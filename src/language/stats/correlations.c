@@ -145,10 +145,10 @@ output_descriptives (const struct corr *corr, const gsl_matrix *means,
 	    case 3:
 	      x = gsl_matrix_get (ns, r, 0);
 	      break;
-	    default: 
+	    default:
 	      NOT_REACHED ();
 	    };
-	  
+
 	  tab_double (t, c, r + heading_rows, 0, x, NULL, RC_OTHER);
 	}
     }
@@ -214,11 +214,11 @@ output_correlation (const struct corr *corr, const struct corr_opts *opts,
   /* Row Headers */
   for (r = 0 ; r < corr->n_vars1 ; ++r)
     {
-      tab_text (t, 0, 1 + r * rows_per_variable, TAB_LEFT | TAT_TITLE, 
+      tab_text (t, 0, 1 + r * rows_per_variable, TAB_LEFT | TAT_TITLE,
 		var_to_string (corr->vars[r]));
 
       tab_text (t, 1, 1 + r * rows_per_variable, TAB_LEFT | TAT_TITLE, _("Pearson Correlation"));
-      tab_text (t, 1, 2 + r * rows_per_variable, TAB_LEFT | TAT_TITLE, 
+      tab_text (t, 1, 2 + r * rows_per_variable, TAB_LEFT | TAT_TITLE,
 		(opts->tails == 2) ? _("Sig. (2-tailed)") : _("Sig. (1-tailed)"));
 
       if (opts->statistics & STATS_XPROD)
@@ -238,7 +238,7 @@ output_correlation (const struct corr *corr, const struct corr_opts *opts,
     {
       const struct variable *v = corr->n_vars_total > corr->n_vars1 ?
 	corr->vars[corr->n_vars1 + c] : corr->vars[c];
-      tab_text (t, heading_columns + c, 0, TAB_LEFT | TAT_TITLE, var_to_string (v));      
+      tab_text (t, heading_columns + c, 0, TAB_LEFT | TAT_TITLE, var_to_string (v));
     }
 
   for (r = 0 ; r < corr->n_vars1 ; ++r)
@@ -246,9 +246,9 @@ output_correlation (const struct corr *corr, const struct corr_opts *opts,
       const int row = r * rows_per_variable + heading_rows;
       for (c = 0 ; c < matrix_cols ; ++c)
 	{
-	  unsigned char flags = 0; 
-	  const int col_index = corr->n_vars_total > corr->n_vars1 ? 
-	    corr->n_vars1 + c : 
+	  unsigned char flags = 0;
+	  const int col_index = corr->n_vars_total > corr->n_vars1 ?
+	    corr->n_vars1 + c :
 	    c;
 	  double pearson = gsl_matrix_get (cm, r, col_index);
 	  double w = gsl_matrix_get (samples, r, col_index);
@@ -262,7 +262,7 @@ output_correlation (const struct corr *corr, const struct corr_opts *opts,
 
 	  if ( opts->sig && col_index != r && sig < 0.05)
 	    flags = TAB_EMPH;
-	  
+
 	  tab_double (t, c + heading_columns, row, flags, pearson, NULL, RC_OTHER);
 
 	  if (opts->statistics & STATS_XPROD)
@@ -303,21 +303,21 @@ run_corr (struct casereader *r, const struct corr_opts *opts, const struct corr 
       covariance_accumulate_pass2 (cov, c);
     }
   casereader_destroy (rc);
-  
+
   cov_matrix = covariance_calculate (cov);
   if (! cov_matrix)
     {
       msg (SE, _("The data for the chosen variables are all missing or empty."));
       goto error;
     }
-  
+
   samples_matrix = covariance_moments (cov, MOMENT_NONE);
   var_matrix = covariance_moments (cov, MOMENT_VARIANCE);
   mean_matrix = covariance_moments (cov, MOMENT_MEAN);
 
   corr_matrix = correlation_from_covariance (cov_matrix, var_matrix);
 
-  if ( opts->statistics & STATS_DESCRIPTIVES) 
+  if ( opts->statistics & STATS_DESCRIPTIVES)
     output_descriptives (corr, mean_matrix, var_matrix, samples_matrix);
 
   output_correlation (corr, opts, corr_matrix,
@@ -414,7 +414,7 @@ cmd_correlation (struct lexer *lexer, struct dataset *ds)
 		  opts.statistics = STATS_ALL;
 		  lex_get (lexer);
 		}
-	      else 
+	      else
 		{
 		  lex_error (lexer, NULL);
 		  goto error;
@@ -432,8 +432,8 @@ cmd_correlation (struct lexer *lexer, struct dataset *ds)
 
 	  corr = xrealloc (corr, sizeof (*corr) * (n_corrs + 1));
 	  corr[n_corrs].n_vars_total = corr[n_corrs].n_vars1 = 0;
-      
-	  if ( ! parse_variables_const (lexer, dict, &corr[n_corrs].vars, 
+
+	  if ( ! parse_variables_const (lexer, dict, &corr[n_corrs].vars,
 					&corr[n_corrs].n_vars_total,
 					PV_NUMERIC))
 	    {

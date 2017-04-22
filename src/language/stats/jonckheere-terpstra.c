@@ -49,7 +49,7 @@ include_func_bi (const struct ccase *c, void *aux)
   const struct n_sample_test *nst = aux;
   const union value *bigger = NULL;
   const union value *smaller = NULL;
-  
+
   if (0 > value_compare_3way (&nst->val1, &nst->val2, var_get_width (nst->indep_var)))
     {
       bigger = &nst->val2;
@@ -60,7 +60,7 @@ include_func_bi (const struct ccase *c, void *aux)
       smaller = &nst->val2;
       bigger = &nst->val1;
     }
-  
+
   if (0 < value_compare_3way (smaller, case_data (c, nst->indep_var), var_get_width (nst->indep_var)))
     return false;
 
@@ -74,7 +74,7 @@ struct group_data
 {
   /* The total of the caseweights in the group */
   double cc;
-  
+
   /* A casereader containing the group data.
      This casereader contains just two values:
      0: The raw value of the data
@@ -106,7 +106,7 @@ u (const struct group_data *grp0, const struct group_data *grp1)
         {
           double x1 = case_data_idx (c1, 0)->f;
           double cc1 = case_data_idx (c1, 1)->f;
-     
+
           if (x0 > x1)
             {
               /* Do nothing */
@@ -141,31 +141,31 @@ u (const struct group_data *grp0, const struct group_data *grp1)
 
 typedef double func_f (double e_l);
 
-/* 
-   These 3 functions are used repeatedly in the calculation of the 
+/*
+   These 3 functions are used repeatedly in the calculation of the
    variance of the JT statistic.
-   Having them explicitly defined makes the variance calculation 
+   Having them explicitly defined makes the variance calculation
    a lot simpler.
 */
-static  double 
+static  double
 ff1 (double e)
 {
   return e * (e - 1) * (2*e + 5);
 }
 
-static  double 
+static  double
 ff2 (double e)
 {
   return e * (e - 1) * (e - 2);
 }
 
-static  double 
+static  double
 ff3 (double e)
 {
   return e * (e - 1) ;
 }
 
-static  func_f *mff[3] = 
+static  func_f *mff[3] =
   {
     ff1, ff2, ff3
   };
@@ -181,7 +181,7 @@ static  func_f *mff[3] =
  */
 static
 void variance_calculation (struct casereader *ir, const struct variable *var,
-                           const struct dictionary *dict, 
+                           const struct dictionary *dict,
                            func_f **f, double *result, size_t n)
 {
   int i;
@@ -195,7 +195,7 @@ void variance_calculation (struct casereader *ir, const struct variable *var,
   r = sort_execute_1var (r, var);
 
   r = casereader_create_distinct (r, var, dict_get_weight (dict));
-  
+
   for (; (c = casereader_read (r)); case_unref (c))
     {
       double w = case_data_idx (c, w_idx)->f;
@@ -231,13 +231,13 @@ jonckheere_terpstra_execute (const struct dataset *ds,
   bool warn = true;
   const struct dictionary *dict = dataset_dict (ds);
   const struct n_sample_test *nst = UP_CAST (test, const struct n_sample_test, parent);
-  
+
   struct caseproto *proto = caseproto_create ();
   proto = caseproto_add_width (proto, 0);
   proto = caseproto_add_width (proto, 0);
 
   /* If the independent variable is missing, then we ignore the case */
-  input = casereader_create_filter_missing (input, 
+  input = casereader_create_filter_missing (input,
 					    &nst->indep_var, 1,
 					    exclude,
 					    NULL, NULL);
@@ -246,7 +246,7 @@ jonckheere_terpstra_execute (const struct dataset *ds,
   input = casereader_create_filter_weight (input, dict, &warn, NULL);
 
   /* Remove all those cases which are outside the range (val1, val2) */
-  input = casereader_create_filter_func (input, include_func_bi, NULL, 
+  input = casereader_create_filter_func (input, include_func_bi, NULL,
 	CONST_CAST (struct n_sample_test *, nst), NULL);
 
   /* Sort the data by the independent variable */
@@ -271,14 +271,14 @@ jonckheere_terpstra_execute (const struct dataset *ds,
 
     /* Get a few values into e_sum - we'll be needing these later */
     variance_calculation (vreader, nst->vars[v], dict, mff, e_sum, 3);
-  
+
     grouper =
       casegrouper_create_vars (vreader, &nst->indep_var, 1);
 
     jt.obs = 0;
     jt.levels = 0;
     jt.n = 0;
-    for (; casegrouper_get_next_group (grouper, &group); 
+    for (; casegrouper_get_next_group (grouper, &group);
          casereader_destroy (group) )
       {
         struct casewriter *writer = autopaging_writer_create (proto);
@@ -390,31 +390,31 @@ show_jt (const struct n_sample_test *nst, const struct jt *jt, const struct vari
     {
       double std_jt;
 
-      tab_text (table, 0, i + row_headers, TAT_TITLE, 
+      tab_text (table, 0, i + row_headers, TAT_TITLE,
                 var_to_string (nst->vars[i]) );
 
-      tab_double (table, 1, i + row_headers, TAT_TITLE, 
+      tab_double (table, 1, i + row_headers, TAT_TITLE,
                   jt[0].levels, NULL, RC_INTEGER);
- 
-      tab_double (table, 2, i + row_headers, TAT_TITLE, 
+
+      tab_double (table, 2, i + row_headers, TAT_TITLE,
                   jt[0].n, NULL, RC_WEIGHT);
 
-      tab_double (table, 3, i + row_headers, TAT_TITLE, 
+      tab_double (table, 3, i + row_headers, TAT_TITLE,
                   jt[0].obs, NULL, RC_OTHER);
 
-      tab_double (table, 4, i + row_headers, TAT_TITLE, 
+      tab_double (table, 4, i + row_headers, TAT_TITLE,
                   jt[0].mean, NULL, RC_OTHER);
 
-      tab_double (table, 5, i + row_headers, TAT_TITLE, 
+      tab_double (table, 5, i + row_headers, TAT_TITLE,
                   jt[0].stddev, NULL, RC_OTHER);
 
       std_jt = (jt[0].obs - jt[0].mean) / jt[0].stddev;
-      tab_double (table, 6, i + row_headers, TAT_TITLE, 
+      tab_double (table, 6, i + row_headers, TAT_TITLE,
                   std_jt, NULL, RC_OTHER);
 
-      tab_double (table, 7, i + row_headers, TAT_TITLE, 
+      tab_double (table, 7, i + row_headers, TAT_TITLE,
                   2.0 * ((std_jt > 0) ? gsl_cdf_ugaussian_Q (std_jt) : gsl_cdf_ugaussian_P (std_jt)), NULL, RC_PVALUE);
     }
-  
+
   tab_submit (table);
 }

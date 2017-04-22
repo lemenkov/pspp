@@ -177,12 +177,12 @@ casegrouper_create_vars (struct casereader *reader,
                          const struct variable *const *vars,
                          size_t var_cnt)
 {
-  if (var_cnt > 0) 
+  if (var_cnt > 0)
     {
       struct subcase *sc = xmalloc (sizeof *sc);
       subcase_init_vars (sc, vars, var_cnt);
       return casegrouper_create_func (reader, casegrouper_vars_same_group,
-                                      casegrouper_vars_destroy, sc); 
+                                      casegrouper_vars_destroy, sc);
     }
   else
     return casegrouper_create_func (reader, NULL, NULL, NULL);
@@ -215,12 +215,12 @@ struct casegrouper *
 casegrouper_create_subcase (struct casereader *reader,
                             const struct subcase *sc)
 {
-  if (subcase_get_n_fields (sc) > 0) 
+  if (subcase_get_n_fields (sc) > 0)
     {
       struct subcase *sc_copy = xmalloc (sizeof *sc);
       subcase_clone (sc_copy, sc);
       return casegrouper_create_func (reader, casegrouper_vars_same_group,
-                                      casegrouper_vars_destroy, sc_copy); 
+                                      casegrouper_vars_destroy, sc_copy);
     }
   else
     return casegrouper_create_func (reader, NULL, NULL, NULL);
@@ -240,9 +240,9 @@ static void
 casegrouper_vars_destroy (void *sc_)
 {
   struct subcase *sc = sc_;
-  if (sc != NULL) 
+  if (sc != NULL)
     {
       subcase_destroy (sc);
-      free (sc); 
+      free (sc);
     }
 }

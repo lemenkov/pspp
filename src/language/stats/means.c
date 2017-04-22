@@ -395,7 +395,7 @@ first_get (const struct per_var_data *pvd UNUSED,  void *stat)
   return *f;
 }
 
-enum 
+enum
   {
     MEANS_MEAN = 0,
     MEANS_N,
@@ -516,11 +516,11 @@ parse_means_table_syntax (struct lexer *lexer, const struct means *cmd, struct m
       if (lex_match (lexer, T_BY))
 	{
 	  table->n_layers++;
-          table->layers = 
-	    pool_realloc (cmd->pool, table->layers, 
+          table->layers =
+	    pool_realloc (cmd->pool, table->layers,
 			  sizeof (*table->layers) * table->n_layers);
 
-	  if (!parse_variables_const_pool 
+	  if (!parse_variables_const_pool
               (lexer, cmd->pool, cmd->dict,
                &table->layers[table->n_layers - 1].factor_vars,
                &table->layers[table->n_layers - 1].n_factor_vars,
@@ -532,13 +532,13 @@ parse_means_table_syntax (struct lexer *lexer, const struct means *cmd, struct m
 
   /* There is always at least one layer.
      However the final layer is the total, and not
-     normally considered by the user as a 
+     normally considered by the user as a
      layer.
   */
 
   table->n_layers++;
-  table->layers = 
-    pool_realloc (cmd->pool, table->layers, 
+  table->layers =
+    pool_realloc (cmd->pool, table->layers,
 		  sizeof (*table->layers) * table->n_layers);
   table->layers[table->n_layers - 1].factor_vars = NULL;
   table->layers[table->n_layers - 1].n_factor_vars = 0;
@@ -609,7 +609,7 @@ cmd_means (struct lexer *lexer, struct dataset *ds)
       means.n_tables ++;
       means.table = pool_realloc (means.pool, means.table, means.n_tables * sizeof (*means.table));
 
-      if (! parse_means_table_syntax (lexer, &means, 
+      if (! parse_means_table_syntax (lexer, &means,
 				      &means.table[means.n_tables - 1]))
 	{
 	  goto error;
@@ -664,7 +664,7 @@ cmd_means (struct lexer *lexer, struct dataset *ds)
 	  else if (lex_match_id (lexer, "DEPENDENT"))
 	    /*
 	      Use the command "/MISSING=DEPENDENT" to
-	      include user-missing values for the categorical variables, 
+	      include user-missing values for the categorical variables,
 	      while excluding them for the dependent variables.
 
 	      Cases are dropped only when user-missing values
@@ -672,7 +672,7 @@ cmd_means (struct lexer *lexer, struct dataset *ds)
 	      values for categorical variables are treated according to
 	      their face value.
 
-	      Cases are ALWAYS dropped when System Missing values appear 
+	      Cases are ALWAYS dropped when System Missing values appear
 	      in the categorical variables.
 	    */
 	    {
@@ -714,7 +714,7 @@ cmd_means (struct lexer *lexer, struct dataset *ds)
 		  means.cells =
 		    pool_realloc (means.pool, means.cells,
 				  (means.n_cells += 3) * sizeof (*means.cells));
-		  
+
 		  means.cells[means.n_cells - 2 - 1] = MEANS_MEAN;
 		  means.cells[means.n_cells - 1 - 1] = MEANS_N;
 		  means.cells[means.n_cells - 0 - 1] = MEANS_STDDEV;
@@ -728,7 +728,7 @@ cmd_means (struct lexer *lexer, struct dataset *ds)
 			  means.cells =
 			    pool_realloc (means.pool, means.cells,
 					  ++means.n_cells * sizeof (*means.cells));
-			
+
 			  means.cells[means.n_cells - 1] = k;
 			  break;
 			}
@@ -812,9 +812,9 @@ cmd_means (struct lexer *lexer, struct dataset *ds)
 	for (l = 0; l < table->n_layers; ++l)
 	  {
 	    interaction_destroy (table->interactions[l]);
-	  }  
+	  }
     }
-  
+
   pool_destroy (means.pool);
   return CMD_FAILURE;
 }
@@ -851,7 +851,7 @@ struct per_cat_data
 };
 
 
-static void 
+static void
 destroy_n (const void *aux1 UNUSED, void *aux2, void *user_data)
 {
   struct mtable *table = aux2;
@@ -882,7 +882,7 @@ create_n (const void *aux1, void *aux2)
       struct per_var_data *pp = &pvd[v];
 
       pp->cell_stats = pool_calloc (means->pool, means->n_cells, sizeof *pp->cell_stats);
-      
+
 
       for (i = 0; i < means->n_cells; ++i)
 	{
@@ -979,7 +979,7 @@ run_means (struct means *cmd, struct casereader *input,
   payload.update = update_n;
   payload.calculate = calculate_n;
   payload.destroy = destroy_n;
-  
+
   for (t = 0; t < cmd->n_tables; ++t)
     {
       struct mtable *table = &cmd->table[t];
@@ -1111,14 +1111,14 @@ output_case_processing_summary (const struct mtable *table)
 		    TAB_LEFT | TAT_TITLE, ds_cstr (&str));
 
 
-	  n_total = table->summary[row].missing + 
+	  n_total = table->summary[row].missing +
 	    table->summary[row].non_missing;
 
 	  tab_double (t, 1, row + heading_rows,
 		      0, table->summary[row].non_missing, NULL, RC_INTEGER);
 
 	  tab_text_format (t, 2, row + heading_rows,
-			   0, _("%g%%"), 
+			   0, _("%g%%"),
 			   table->summary[row].non_missing / (double) n_total * 100.0);
 
 
@@ -1127,16 +1127,16 @@ output_case_processing_summary (const struct mtable *table)
 
 
 	  tab_text_format (t, 4, row + heading_rows,
-			   0, _("%g%%"), 
+			   0, _("%g%%"),
 			   table->summary[row].missing / (double) n_total * 100.0);
 
 
 	  tab_double (t, 5, row + heading_rows,
-		      0, table->summary[row].missing + 
+		      0, table->summary[row].missing +
 		      table->summary[row].non_missing, NULL, RC_INTEGER);
 
 	  tab_text_format (t, 6, row + heading_rows,
-			   0, _("%g%%"), 
+			   0, _("%g%%"),
 			   n_total / (double) n_total * 100.0);
 
 

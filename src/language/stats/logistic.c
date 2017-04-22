@@ -15,21 +15,21 @@
    along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 
 
-/* 
-   References: 
+/*
+   References:
    1. "Coding Logistic Regression with Newton-Raphson", James McCaffrey
    http://msdn.microsoft.com/en-us/magazine/jj618304.aspx
 
    2. "SPSS Statistical Algorithms" Chapter LOGISTIC REGRESSION Algorithms
 
 
-   The Newton Raphson method finds successive approximations to $\bf b$ where 
+   The Newton Raphson method finds successive approximations to $\bf b$ where
    approximation ${\bf b}_t$ is (hopefully) better than the previous ${\bf b}_{t-1}$.
 
    $ {\bf b}_t = {\bf b}_{t -1} + ({\bf X}^T{\bf W}_{t-1}{\bf X})^{-1}{\bf X}^T({\bf y} - {\bf \pi}_{t-1})$
    where:
 
-   $\bf X$ is the $n \times p$ design matrix, $n$ being the number of cases, 
+   $\bf X$ is the $n \times p$ design matrix, $n$ being the number of cases,
    $p$ the number of parameters, \par
    $\bf W$ is the diagonal matrix whose diagonal elements are
    $\hat{\pi}_0(1 - \hat{\pi}_0), \, \hat{\pi}_1(1 - \hat{\pi}_2)\dots \hat{\pi}_{n-1}(1 - \hat{\pi}_{n-1})$
@@ -39,7 +39,7 @@
 
 #include <config.h>
 
-#include <gsl/gsl_blas.h> 
+#include <gsl/gsl_blas.h>
 
 #include <gsl/gsl_linalg.h>
 #include <gsl/gsl_cdf.h>
@@ -146,7 +146,7 @@ struct lr_spec
 */
 struct lr_result
 {
-  /* Used to indicate if a pass should flag a warning when 
+  /* Used to indicate if a pass should flag a warning when
      invalid (ie negative or missing) weight values are encountered */
   bool warn_bad_weight;
 
@@ -174,7 +174,7 @@ struct lr_result
   /* The estimates of the predictor coefficients */
   gsl_vector *beta_hat;
 
-  /* The predicted classifications: 
+  /* The predicted classifications:
      True Negative, True Positive, False Negative, False Positive */
   double tn, tp, fn, fp;
 };
@@ -208,7 +208,7 @@ static void output_categories (const struct lr_spec *cmd, const struct lr_result
 
 static void output_depvarmap (const struct lr_spec *cmd, const struct lr_result *);
 
-static void output_variables (const struct lr_spec *cmd, 
+static void output_variables (const struct lr_spec *cmd,
 			      const struct lr_result *);
 
 static void output_model_summary (const struct lr_result *,
@@ -220,13 +220,13 @@ static void case_processing_summary (const struct lr_result *);
 /* Return the value of case C corresponding to the INDEX'th entry in the
    model */
 static double
-predictor_value (const struct ccase *c, 
-                    const struct variable **x, size_t n_x, 
+predictor_value (const struct ccase *c,
+                    const struct variable **x, size_t n_x,
                     const struct categoricals *cats,
                     size_t index)
 {
   /* Values of the scalar predictor variables */
-  if (index < n_x) 
+  if (index < n_x)
     return case_data (c, x[index])->f;
 
   /* Coded values of categorical predictor variables (or interactions) */
@@ -245,8 +245,8 @@ predictor_value (const struct ccase *c,
   Return the probability beta_hat (that is the estimator logit(y) )
   corresponding to the coefficient estimator for case C
 */
-static double 
-pi_hat (const struct lr_spec *cmd, 
+static double
+pi_hat (const struct lr_spec *cmd,
 	const struct lr_result *res,
 	const struct variable **x, size_t n_x,
 	const struct ccase *c)
@@ -260,10 +260,10 @@ pi_hat (const struct lr_spec *cmd,
       pi += gsl_vector_get (res->beta_hat, res->beta_hat->size - 1);
       n_coeffs--;
     }
-  
+
   for (v0 = 0; v0 < n_coeffs; ++v0)
     {
-      pi += gsl_vector_get (res->beta_hat, v0) * 
+      pi += gsl_vector_get (res->beta_hat, v0) *
 	predictor_value (c, x, n_x, res->cats, v0);
     }
 
@@ -276,14 +276,14 @@ pi_hat (const struct lr_spec *cmd,
 /*
   Calculates the Hessian matrix X' V  X,
   where: X is the n by N_X matrix comprising the n cases in INPUT
-  V is a diagonal matrix { (pi_hat_0)(1 - pi_hat_0), (pi_hat_1)(1 - pi_hat_1), ... (pi_hat_{N-1})(1 - pi_hat_{N-1})} 
+  V is a diagonal matrix { (pi_hat_0)(1 - pi_hat_0), (pi_hat_1)(1 - pi_hat_1), ... (pi_hat_{N-1})(1 - pi_hat_{N-1})}
   (the partial derivative of the predicted values)
 
   If ALL predicted values derivatives are close to zero or one, then CONVERGED
   will be set to true.
 */
 static void
-hessian (const struct lr_spec *cmd, 
+hessian (const struct lr_spec *cmd,
 	 struct lr_result *res,
 	 struct casereader *input,
 	 const struct variable **x, size_t n_x,
@@ -330,7 +330,7 @@ hessian (const struct lr_spec *cmd,
 
 
 /* Calculates the value  X' (y - pi)
-   where X is the design model, 
+   where X is the design model,
    y is the vector of observed independent variables
    pi is the vector of estimates for y
 
@@ -417,7 +417,7 @@ frq_update  (const void *aux1 UNUSED, void *aux2 UNUSED,
   *freq += weight;
 }
 
-static void 
+static void
 frq_destroy (const void *aux1 UNUSED, void *aux2 UNUSED, void *user_data UNUSED)
 {
   free (user_data);
@@ -425,7 +425,7 @@ frq_destroy (const void *aux1 UNUSED, void *aux2 UNUSED, void *user_data UNUSED)
 
 
 
-/* 
+/*
    Makes an initial pass though the data, doing the following:
 
    * Checks that the dependent variable is  dichotomous,
@@ -482,7 +482,7 @@ initial_pass (const struct lr_spec *cmd, struct lr_result *res, struct casereade
 	{
 	  missing = true;
 	}
-      else 
+      else
       for (v = 0; v < cmd->n_indep_vars; ++v)
 	{
 	  const union value *val = case_data (c, cmd->indep_vars[v]);
@@ -601,14 +601,14 @@ run_lr (const struct lr_spec *cmd, struct casereader *input,
      And perform other auxilliary initialisation.  */
   if (! initial_pass (cmd, &work, input))
     goto error;
-  
+
   for (i = 0; i < cmd->n_cat_predictors; ++i)
     {
       if (1 >= categoricals_n_count (work.cats, i))
 	{
 	  struct string str;
 	  ds_init_empty (&str);
-	  
+
 	  interaction_to_string (cmd->cat_predictors[i], &str);
 
 	  msg (ME, _("Category %s does not have at least two distinct values. Logistic regression will not be run."),
@@ -645,7 +645,7 @@ run_lr (const struct lr_spec *cmd, struct casereader *input,
       double min, max;
       gsl_vector *v ;
 
-      
+
       hessian (cmd, &work, input,
 	       cmd->predictor_vars, cmd->n_predictor_vars,
 	       &converged);
@@ -697,7 +697,7 @@ run_lr (const struct lr_spec *cmd, struct casereader *input,
 
 
 
-  if ( ! converged) 
+  if ( ! converged)
     msg (MW, _("Estimation terminated at iteration number %d because maximum iterations has been reached"), i );
 
 
@@ -711,7 +711,7 @@ run_lr (const struct lr_spec *cmd, struct casereader *input,
 
   casereader_destroy (input);
   gsl_matrix_free (work.hessian);
-  gsl_vector_free (work.beta_hat); 
+  gsl_vector_free (work.beta_hat);
   categoricals_destroy (work.cats);
 
   return true;
@@ -719,7 +719,7 @@ run_lr (const struct lr_spec *cmd, struct casereader *input,
  error:
   casereader_destroy (input);
   gsl_matrix_free (work.hessian);
-  gsl_vector_free (work.beta_hat); 
+  gsl_vector_free (work.beta_hat);
   categoricals_destroy (work.cats);
 
   return false;
@@ -739,10 +739,10 @@ lookup_variable (const struct hmap *map, const struct variable *var, unsigned in
     {
       if (vn->var == var)
 	break;
-      
+
       fprintf (stderr, "Warning: Hash table collision\n");
     }
-  
+
   return vn;
 }
 
@@ -842,7 +842,7 @@ cmd_logistic (struct lexer *lexer, struct dataset *ds)
 				  sizeof (*lr.cat_predictors) * ++lr.n_cat_predictors);
 	      lr.cat_predictors[lr.n_cat_predictors - 1] = 0;
 	    }
-	  while (parse_design_interaction (lexer, lr.dict, 
+	  while (parse_design_interaction (lexer, lr.dict,
 					   lr.cat_predictors + lr.n_cat_predictors - 1));
 	  lr.n_cat_predictors--;
 	}
@@ -990,7 +990,7 @@ cmd_logistic (struct lexer *lexer, struct dataset *ds)
 			  goto error;
 			}
 		      cp = lex_number (lexer);
-		      
+
 		      if (cp < 0 || cp > 1.0)
 			{
 			  msg (ME, _("Cut point value must be in the range [0,1]"));
@@ -1019,9 +1019,9 @@ cmd_logistic (struct lexer *lexer, struct dataset *ds)
     }
 
   lr.ilogit_cut_point = - log (1/cp - 1);
-  
 
-  /* Copy the predictor variables from the temporary location into the 
+
+  /* Copy the predictor variables from the temporary location into the
      final one, dropping any categorical variables which appear there.
      FIXME: This is O(NxM).
   */
@@ -1057,7 +1057,7 @@ cmd_logistic (struct lexer *lexer, struct dataset *ds)
 		{
 		  vn = xmalloc (sizeof *vn);
 		  vn->var = ivar;
-		  
+
 		  hmap_insert (&allvars, &vn->node,  hash);
 		}
 
@@ -1088,7 +1088,7 @@ cmd_logistic (struct lexer *lexer, struct dataset *ds)
       free (vn);
     }
   hmap_destroy (&allvars);
-  }  
+  }
 
 
   /* logistical regression for each split group */
@@ -1179,7 +1179,7 @@ output_depvarmap (const struct lr_spec *cmd, const struct lr_result *res)
 
 /* Show the Variables in the Equation box */
 static void
-output_variables (const struct lr_spec *cmd, 
+output_variables (const struct lr_spec *cmd,
 		  const struct lr_result *res)
 {
   int row = 0;
@@ -1233,7 +1233,7 @@ output_variables (const struct lr_spec *cmd,
       tab_text (t,  8, row, TAB_CENTER | TAT_TITLE, _("Lower"));
       tab_text (t,  9, row, TAB_CENTER | TAT_TITLE, _("Upper"));
     }
- 
+
   for (row = heading_rows ; row < nr; ++row)
     {
       const int idx = row - heading_rows - idx_correction;
@@ -1245,7 +1245,7 @@ output_variables (const struct lr_spec *cmd,
 
       if (idx < cmd->n_predictor_vars)
 	{
-	  tab_text (t, 1, row, TAB_LEFT | TAT_TITLE, 
+	  tab_text (t, 1, row, TAB_LEFT | TAT_TITLE,
 		    var_to_string (cmd->predictor_vars[idx]));
 	}
       else if (i < cmd->n_cat_predictors)
@@ -1264,7 +1264,7 @@ output_variables (const struct lr_spec *cmd,
 	      /* Calculate the Wald statistic,
 		 which is \beta' C^-1 \beta .
 		 where \beta is the vector of the coefficient estimates comprising this
-		 categorial variable. and C is the corresponding submatrix of the 
+		 categorial variable. and C is the corresponding submatrix of the
 		 hessian matrix.
 	      */
 	      gsl_matrix_const_view mv =
@@ -1499,7 +1499,7 @@ output_categories (const struct lr_spec *cmd, const struct lr_result *res)
 	  struct string str;
 	  const struct ccase *c = categoricals_get_case_by_category_real (res->cats, v, cat);
 	  const double *freq = categoricals_get_user_data_by_category_real (res->cats, v, cat);
-	  
+
 	  int x;
 	  ds_init_empty (&str);
 
@@ -1511,7 +1511,7 @@ output_categories (const struct lr_spec *cmd, const struct lr_result *res)
 	      if (x < cat_predictors->n_vars - 1)
 		ds_put_cstr (&str, " ");
 	    }
-	  
+
 	  tab_text   (t, 1, heading_rows + r, 0, ds_cstr (&str));
 	  ds_destroy (&str);
        	  tab_double (t, 2, heading_rows + r, 0, *freq, NULL, RC_WEIGHT);
@@ -1530,7 +1530,7 @@ output_categories (const struct lr_spec *cmd, const struct lr_result *res)
 }
 
 
-static void 
+static void
 output_classification_table (const struct lr_spec *cmd, const struct lr_result *res)
 {
   const struct fmt_spec *wfmt =
@@ -1566,7 +1566,7 @@ output_classification_table (const struct lr_spec *cmd, const struct lr_result *
   tab_joint_text (t, heading_columns, 0, nc - 1, 0,
 		  TAB_CENTER | TAT_TITLE, _("Predicted"));
 
-  tab_joint_text (t, heading_columns, 1, heading_columns + 1, 1, 
+  tab_joint_text (t, heading_columns, 1, heading_columns + 1, 1,
 		  0, var_to_string (cmd->dep_var) );
 
   tab_joint_text (t, 1, 2, 2, 2,
@@ -1606,7 +1606,7 @@ output_classification_table (const struct lr_spec *cmd, const struct lr_result *
   tab_double (t, heading_columns + 2, 3, 0, 100 * res->tn / (res->tn + res->fp), NULL, RC_OTHER);
   tab_double (t, heading_columns + 2, 4, 0, 100 * res->tp / (res->tp + res->fn), NULL, RC_OTHER);
 
-  tab_double (t, heading_columns + 2, 5, 0, 
+  tab_double (t, heading_columns + 2, 5, 0,
 	      100 * (res->tp + res->tn) / (res->tp  + res->tn + res->fp + res->fn), NULL, RC_OTHER);
 
 

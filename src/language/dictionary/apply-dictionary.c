@@ -102,7 +102,7 @@ cmd_apply_dictionary (struct lexer *lexer, struct dataset *ds)
           var_set_write_format (t, var_get_write_format (s));
 	}
 
-      if (var_has_attributes (s)) 
+      if (var_has_attributes (s))
         var_set_attributes (t, var_get_attributes (s));
     }
 

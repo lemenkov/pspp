@@ -47,7 +47,7 @@ cmd_t_test (struct lexer *lexer, struct dataset *ds)
   size_t n_v1 = 0;
   const struct variable **v2 = NULL;
   size_t n_v2 = 0;
-	  
+
   size_t n_pairs = 0;
   vp *pairs = NULL;
 
@@ -94,7 +94,7 @@ cmd_t_test (struct lexer *lexer, struct dataset *ds)
 
 	  if (NULL == (gvar = parse_variable (lexer, dict)))
 	    goto parse_failed;
-      
+
 	  if (lex_match (lexer, T_LPAREN))
 	    {
 
@@ -180,7 +180,7 @@ cmd_t_test (struct lexer *lexer, struct dataset *ds)
 	      n_pairs = n_v1;
 	    else
 	      n_pairs = n_v1 * n_v2;
-	  
+
 	    pairs = xcalloc (n_pairs, sizeof *pairs);
 
 	    if ( with)
@@ -193,7 +193,7 @@ cmd_t_test (struct lexer *lexer, struct dataset *ds)
 			vp *pair = &pairs[i];
 			(*pair)[0] = v1[i];
 			(*pair)[1] = v2[i];
-		      }	
+		      }
 		  }
 		else
 		  {
@@ -286,7 +286,7 @@ cmd_t_test (struct lexer *lexer, struct dataset *ds)
 		  goto parse_failed;
 	      }
 	}
-      else 
+      else
 	{
 	  lex_error (lexer, NULL);
 	  goto parse_failed;

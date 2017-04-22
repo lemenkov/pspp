@@ -39,7 +39,7 @@ significance_of_correlation (double rho, double w)
 
   t = sqrt (t);
   t *= rho;
-  
+
   if (t > 0)
     return  gsl_cdf_tdist_Q (t, w - 2);
   else
@@ -51,20 +51,20 @@ correlation_from_covariance (const gsl_matrix *cv, const gsl_matrix *v)
 {
   size_t i, j;
   gsl_matrix *corr = gsl_matrix_calloc (cv->size1, cv->size2);
-  
+
   for (i = 0 ; i < cv->size1; ++i)
     {
       for (j = 0 ; j < cv->size2; ++j)
 	{
 	  double rho = gsl_matrix_get (cv, i, j);
-	  
+
 	  rho /= sqrt (gsl_matrix_get (v, i, j))
-	    * 
+	    *
 	    sqrt (gsl_matrix_get (v, j, i));
-	  
+
 	  gsl_matrix_set (corr, i, j, rho);
 	}
     }
-  
+
   return corr;
 }

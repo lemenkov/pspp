@@ -93,14 +93,14 @@ enum statistics
 
 struct coeff_node
 {
-  struct ll ll; 
-  double coeff; 
+  struct ll ll;
+  double coeff;
 };
 
 
 struct contrasts_node
 {
-  struct ll ll; 
+  struct ll ll;
   struct ll_list coefficient_list;
 };
 
@@ -164,9 +164,9 @@ df_individual (const struct per_var_ws *pvw UNUSED, const struct moments1 *mom_i
   double n_j, var_j;
   double nom,denom;
 
-  moments1_calculate (mom_i, &n_i, NULL, &var_i, 0, 0);  
+  moments1_calculate (mom_i, &n_i, NULL, &var_i, 0, 0);
   moments1_calculate (mom_j, &n_j, NULL, &var_j, 0, 0);
-  
+
   if ( n_i <= 1.0 || n_j <= 1.0)
     return SYSMIS;
 
@@ -214,7 +214,7 @@ static double gh_pinv (double std_err UNUSED, double alpha, double df, int k, co
   double n_j, mean_j, var_j;
   double m;
 
-  moments1_calculate (mom_i, &n_i, &mean_i, &var_i, 0, 0);  
+  moments1_calculate (mom_i, &n_i, &mean_i, &var_i, 0, 0);
   moments1_calculate (mom_j, &n_j, &mean_j, &var_j, 0, 0);
 
   m = sqrt ((var_i/n_i + var_j/n_j) / 2.0);
@@ -226,7 +226,7 @@ static double gh_pinv (double std_err UNUSED, double alpha, double df, int k, co
 }
 
 
-static double 
+static double
 multiple_comparison_sig (double std_err,
 				       const struct per_var_ws *pvw,
 				       const struct descriptive_data *dd_i, const struct descriptive_data *dd_j,
@@ -240,7 +240,7 @@ multiple_comparison_sig (double std_err,
   return  ph->p1f (ts, k - 1, df);
 }
 
-static double 
+static double
 mc_half_range (const struct oneway_spec *cmd, const struct per_var_ws *pvw, double std_err, const struct descriptive_data *dd_i, const struct descriptive_data *dd_j, const struct posthoc *ph)
 {
   int k = pvw->n_groups;
@@ -298,7 +298,7 @@ static double tukey_test_stat (int k UNUSED, const struct moments1 *mom_i, const
   double n_i, mean_i, var_i;
   double n_j, mean_j, var_j;
 
-  moments1_calculate (mom_i, &n_i, &mean_i, &var_i, 0, 0);  
+  moments1_calculate (mom_i, &n_i, &mean_i, &var_i, 0, 0);
   moments1_calculate (mom_j, &n_j, &mean_j, &var_j, 0, 0);
 
   ts =  (mean_i - mean_j) / std_err;
@@ -312,7 +312,7 @@ static double lsd_test_stat (int k UNUSED, const struct moments1 *mom_i, const s
   double n_i, mean_i, var_i;
   double n_j, mean_j, var_j;
 
-  moments1_calculate (mom_i, &n_i, &mean_i, &var_i, 0, 0);  
+  moments1_calculate (mom_i, &n_i, &mean_i, &var_i, 0, 0);
   moments1_calculate (mom_j, &n_j, &mean_j, &var_j, 0, 0);
 
   return (mean_i - mean_j) / std_err;
@@ -324,7 +324,7 @@ static double scheffe_test_stat (int k, const struct moments1 *mom_i, const stru
   double n_i, mean_i, var_i;
   double n_j, mean_j, var_j;
 
-  moments1_calculate (mom_i, &n_i, &mean_i, &var_i, 0, 0);  
+  moments1_calculate (mom_i, &n_i, &mean_i, &var_i, 0, 0);
   moments1_calculate (mom_j, &n_j, &mean_j, &var_j, 0, 0);
 
   t = (mean_i - mean_j) / std_err;
@@ -341,7 +341,7 @@ static double gh_test_stat (int k UNUSED, const struct moments1 *mom_i, const st
   double n_i, mean_i, var_i;
   double n_j, mean_j, var_j;
 
-  moments1_calculate (mom_i, &n_i, &mean_i, &var_i, 0, 0);  
+  moments1_calculate (mom_i, &n_i, &mean_i, &var_i, 0, 0);
   moments1_calculate (mom_j, &n_j, &mean_j, &var_j, 0, 0);
 
   thing = var_i / n_i + var_j / n_j;
@@ -355,7 +355,7 @@ static double gh_test_stat (int k UNUSED, const struct moments1 *mom_i, const st
 
 
 
-static const struct posthoc ph_tests [] = 
+static const struct posthoc ph_tests [] =
   {
     { "LSD",        N_("LSD"),          df_common, lsd_test_stat,     lsd_1tailsig,          lsd_pinv},
     { "TUKEY",      N_("Tukey HSD"),    df_common, tukey_test_stat,   tukey_1tailsig,        tukey_pinv},
@@ -393,12 +393,12 @@ destroy_coeff_list (struct contrasts_node *coeff_list)
   struct coeff_node *cn = NULL;
   struct coeff_node *cnx = NULL;
   struct ll_list *cl = &coeff_list->coefficient_list;
-  
+
   ll_for_each_safe (cn, cnx, struct coeff_node, ll, cl)
     {
       free (cn);
     }
-  
+
   free (coeff_list);
 }
 
@@ -420,7 +420,7 @@ oneway_cleanup (struct oneway_spec *cmd)
 int
 cmd_oneway (struct lexer *lexer, struct dataset *ds)
 {
-  const struct dictionary *dict = dataset_dict (ds);  
+  const struct dictionary *dict = dataset_dict (ds);
   struct oneway_spec oneway ;
   oneway.n_vars = 0;
   oneway.vars = NULL;
@@ -435,7 +435,7 @@ cmd_oneway (struct lexer *lexer, struct dataset *ds)
 
   ll_init (&oneway.contrast_list);
 
-  
+
   if ( lex_match (lexer, T_SLASH))
     {
       if (!lex_force_match_id (lexer, "VARIABLES"))
@@ -547,7 +547,7 @@ cmd_oneway (struct lexer *lexer, struct dataset *ds)
 		  goto error;
 		}
 	    }
-	  
+
 	  if ( ll_count (coefficient_list) <= 0)
 	    goto error;
 
@@ -645,7 +645,7 @@ makeit (const void *aux1, void *aux2 UNUSED)
   return dd;
 }
 
-static void 
+static void
 killit (const void *aux1 UNUSED, void *aux2 UNUSED, void *user_data)
 {
   struct descriptive_data *dd = user_data;
@@ -654,7 +654,7 @@ killit (const void *aux1 UNUSED, void *aux2 UNUSED, void *user_data)
 }
 
 
-static void 
+static void
 updateit (const void *aux1, void *aux2, void *user_data,
 	  const struct ccase *c, double weight)
 {
@@ -721,13 +721,13 @@ run_oneway (const struct oneway_spec *cmd,
       ws.vws[v].cat = categoricals_create (&ws.vws[v].iact, 1, cmd->wv,
                                            cmd->exclude, cmd->exclude);
 
-      categoricals_set_payload (ws.vws[v].cat, &payload, 
+      categoricals_set_payload (ws.vws[v].cat, &payload,
 				CONST_CAST (struct variable *, cmd->vars[v]),
 				ws.dd_total[v]);
 
 
       ws.vws[v].cov = covariance_2pass_create (1, &cmd->vars[v],
-					       ws.vws[v].cat, 
+					       ws.vws[v].cat,
 					       cmd->wv, cmd->exclude);
       ws.vws[v].nl = levene_create (var_get_width (cmd->indep_var), NULL);
     }
@@ -831,7 +831,7 @@ run_oneway (const struct oneway_spec *cmd,
 
       if ( ! ok)
 	{
-	  msg (MW, 
+	  msg (MW,
 	       _("Dependent variable %s has no non-missing values.  No analysis for this variable will be done."),
 	       var_get_name (cmd->vars[v]));
 	  continue;
@@ -1017,8 +1017,8 @@ show_anova_table (const struct oneway_spec *cmd, const struct oneway_workspace *
 
       /* Degrees of freedom */
       tab_double (t, 3, i * 3 + 1, 0, df1, NULL, RC_INTEGER);
-      tab_double (t, 3, i * 3 + 2, 0, df2,  NULL, RC_INTEGER); 
-      tab_double (t, 3, i * 3 + 3, 0, n - 1, NULL, RC_INTEGER); 
+      tab_double (t, 3, i * 3 + 2, 0, df2,  NULL, RC_INTEGER);
+      tab_double (t, 3, i * 3 + 3, 0, n - 1, NULL, RC_INTEGER);
 
       /* Mean Squares */
       tab_double (t, 4, i * 3 + 1, TAB_RIGHT, msa, NULL, RC_OTHER);
@@ -1462,7 +1462,7 @@ show_contrast_tests (const struct oneway_spec *cmd, const struct oneway_workspac
 	      double n, mean, variance;
 	      const struct descriptive_data *dd = categoricals_get_user_data_by_category (cats, ci);
 	      struct coeff_node *cn = ll_data (coeffi, struct coeff_node, ll);
-	      const double coef = cn->coeff; 
+	      const double coef = cn->coeff;
 	      double winv ;
 
 	      moments1_calculate (dd->mom, &n, &mean, &variance, NULL, NULL);
@@ -1624,7 +1624,7 @@ show_comparisons (const struct oneway_spec *cmd, const struct oneway_workspace *
 	  int j;
 	  struct descriptive_data *dd_i = categoricals_get_user_data_by_category (cat, i);
 	  const struct ccase *gcc = categoricals_get_case_by_category (cat, i);
-	  
+
 
 	  ds_init_empty (&vstr);
 	  var_append_value_name (cmd->indep_var, case_data (gcc, cmd->indep_var), &vstr);
@@ -1660,7 +1660,7 @@ show_comparisons (const struct oneway_spec *cmd, const struct oneway_workspace *
 	      std_err = sqrt (std_err);
 
 	      tab_double  (t, 4, r + rx, 0, std_err, NULL, RC_OTHER);
-	  
+
 	      tab_double (t, 5, r + rx, 0, 2 * multiple_comparison_sig (std_err, pvw, dd_i, dd_j, ph), NULL, RC_PVALUE);
 
 	      half_range = mc_half_range (cmd, pvw, std_err, dd_i, dd_j, ph);

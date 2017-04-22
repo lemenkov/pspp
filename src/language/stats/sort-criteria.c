@@ -44,7 +44,7 @@ parse_sort_criteria (struct lexer *lexer, const struct dictionary *dict,
   const struct variable **local_vars = NULL;
   size_t var_cnt = 0;
 
-  if (vars == NULL) 
+  if (vars == NULL)
     vars = &local_vars;
   *vars = NULL;
 
@@ -82,12 +82,12 @@ parse_sort_criteria (struct lexer *lexer, const struct dictionary *dict,
       else
         direction = SC_ASCEND;
 
-      for (i = prev_var_cnt; i < var_cnt; i++) 
+      for (i = prev_var_cnt; i < var_cnt; i++)
         {
           const struct variable *var = (*vars)[i];
           if (!subcase_add_var (ordering, var, direction))
             msg (SW, _("Variable %s specified twice in sort criteria."),
-                 var_get_name (var)); 
+                 var_get_name (var));
         }
     }
   while (lex_token (lexer) == T_ID

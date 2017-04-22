@@ -192,14 +192,14 @@ double qtukey(double p, double rr, double cc, double df,
     }
 
     /* df must be > 1 ; there must be at least two values */
-    /*              ^^ 
+    /*              ^^
        JMD: The comment says 1 but the code says 2.
        Which is correct?
     */
     assert (df >= 2);
     assert (rr >= 1);
     assert (cc >= 2);
-    
+
 
     R_Q_P01_boundaries (p, 0, ML_POSINF);
 

@@ -181,7 +181,7 @@ cmd_debug_evaluate (struct lexer *lexer, struct dataset *dsother UNUSED)
       else
         break;
     }
-  
+
   if (!lex_force_match (lexer, T_SLASH))
       goto done;
 

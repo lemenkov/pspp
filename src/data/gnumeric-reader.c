@@ -147,7 +147,7 @@ struct sheet_detail
   int maxrow;
 };
 
-struct state_data 
+struct state_data
 {
   /* The libxml reader for this instance */
   xmlTextReaderPtr xtr;
@@ -183,7 +183,7 @@ struct gnumeric_reader
   int stop_col;
   int start_row;
   int stop_row;
-  
+
   struct sheet_detail *sheets;
 
   const xmlChar *target_sheet;
@@ -231,7 +231,7 @@ gnumeric_get_sheet_name (struct spreadsheet *s, int n)
   struct gnumeric_reader *gr = (struct gnumeric_reader *) s;
   assert (n < s->n_sheets);
 
-  return gr->sheets[n].name; 
+  return gr->sheets[n].name;
 }
 
 
@@ -244,12 +244,12 @@ gnumeric_get_sheet_range (struct spreadsheet *s, int n)
 {
   int ret;
   struct gnumeric_reader *gr = (struct gnumeric_reader *) s;
-  
+
   assert (n < s->n_sheets);
 
-  while ( 
+  while (
 	 (gr->sheets[n].stop_col == -1)
-	 && 
+	 &&
 	 (1 == (ret = xmlTextReaderRead (gr->msd.xtr)))
 	  )
     {
@@ -277,7 +277,7 @@ gnm_file_casereader_destroy (struct casereader *reader UNUSED, void *r_)
   if (r->first_case &&  ! r->used_first_case )
     case_unref (r->first_case);
 
-  if (r->proto) 
+  if (r->proto)
     caseproto_unref (r->proto);
 
   gnumeric_unref (&r->spreadsheet);
@@ -511,13 +511,13 @@ convert_xml_string_to_value (struct ccase *c, const struct variable *var,
 			 v,
 			 var_get_width (var),
 			 "UTF-8");
-      
+
       if (m)
 	{
 	  char buf [FMT_STRING_LEN_MAX + 1];
 	  char *cell = create_cell_ref (col, row);
-	  
-	  msg (MW, _("Cannot convert the value in the spreadsheet cell %s to format (%s): %s"), 
+
+	  msg (MW, _("Cannot convert the value in the spreadsheet cell %s to format (%s): %s"),
 	       cell, fmt_to_string (fmt, buf), m);
 	  free (cell);
 	}
@@ -539,7 +539,7 @@ gnumeric_error_handler (void *ctx, const char *mesg,
 			UNUSED xmlParserSeverities sev, xmlTextReaderLocatorPtr loc)
 {
   struct gnumeric_reader *r = ctx;
-       
+
   msg (MW, _("There was a problem whilst reading the %s file `%s' (near line %d): `%s'"),
        "Gnumeric",
        r->spreadsheet.file_name,
@@ -549,7 +549,7 @@ gnumeric_error_handler (void *ctx, const char *mesg,
 
 static struct gnumeric_reader *
 gnumeric_reopen (struct gnumeric_reader *r, const char *filename, bool show_errors)
-{  
+{
   int ret = -1;
   struct state_data *sd;
 
@@ -593,8 +593,8 @@ gnumeric_reopen (struct gnumeric_reader *r, const char *filename, bool show_erro
     {
       sd = &r->rsd;
     }
-  
-  if (show_errors) 
+
+  if (show_errors)
     xmlTextReaderSetErrorHandler (xtr, gnumeric_error_handler, r);
 
   r->target_sheet = NULL;
@@ -633,7 +633,7 @@ gnumeric_reopen (struct gnumeric_reader *r, const char *filename, bool show_erro
 
       if ( XML_CHAR_ENCODING_UTF8 != xce)
 	{
-	  /* I have been told that ALL gnumeric files are UTF8 encoded.  If that is correct, this 
+	  /* I have been told that ALL gnumeric files are UTF8 encoded.  If that is correct, this
 	     can never happen. */
 	  msg (MW, _("The gnumeric file `%s' is encoded as %s instead of the usual UTF-8 encoding. "
 		     "Any non-ascii characters will be incorrectly imported."),
@@ -749,13 +749,13 @@ gnumeric_make_reader (struct spreadsheet *spreadsheet,
 
       process_node (r, &r->rsd);
 
-      if ( r->rsd.row > r->start_row ) 
+      if ( r->rsd.row > r->start_row )
 	{
 	  xmlChar *attr =
 	    xmlTextReaderGetAttribute (r->rsd.xtr, _xml ("ValueType"));
-	  
+
 	  r->vtype  =  _xmlchar_to_int (attr);
-	  
+
 	  xmlFree (attr);
 	  break;
 	}
@@ -869,9 +869,9 @@ gnumeric_make_reader (struct spreadsheet *spreadsheet,
 	continue;
 
       var = dict_get_var (r->dict, x++);
-      
+
       convert_xml_string_to_value (r->first_case, var,
-				   var_spec[i].first_value, 
+				   var_spec[i].first_value,
 				   var_spec[i].first_type,
 				   r->rsd.col + i - 1,
 				   r->rsd.row - 1);
@@ -884,7 +884,7 @@ gnumeric_make_reader (struct spreadsheet *spreadsheet,
     }
 
   free (var_spec);
-  
+
 
   return casereader_create_sequential
     (NULL,
@@ -964,7 +964,7 @@ gnm_file_casereader_read (struct casereader *reader UNUSED, void *r_)
 	  const int idx = r->rsd.col - r->start_col;
 	  const struct variable *var = dict_get_var (r->dict, idx);
 
-	  convert_xml_string_to_value (c, var, value, r->vtype, 
+	  convert_xml_string_to_value (c, var, value, r->vtype,
 				       r->rsd.col, r->rsd.row);
 
 	  xmlFree (value);

@@ -43,10 +43,10 @@ abscissa_label (const struct barchart *bc, cairo_t *cr,
   size_t hash = value_hash (prev, bc->widths[0], 0);
   HMAP_FOR_EACH_WITH_HASH (foo, struct category, node, hash, &bc->primaries)
     {
-      if (value_equal (&foo->val, prev, bc->widths[0])) 
+      if (value_equal (&foo->val, prev, bc->widths[0]))
 	break;
     }
-  
+
   draw_tick (cr, geom, SCALE_ABSCISSA, false,
 	     x_pos - (width * n_last_cat) / 2.0,
 	     "%s",  ds_cstr (&foo->label));
@@ -82,7 +82,7 @@ xrchart_draw_barchart (const struct chart_item *chart_item, cairo_t *cr,
     {
       const int blob_size = 13;
       const int height = blob_size * (hmap_count (&bc->secondaries) * 2);
-      
+
       cairo_rectangle (cr,
 		       geom->axis[SCALE_ABSCISSA].data_max + 10,
 		       geom->axis[SCALE_ORDINATE].data_max - height,
@@ -95,10 +95,10 @@ xrchart_draw_barchart (const struct chart_item *chart_item, cairo_t *cr,
 	{
 	  const struct category *foo = bc->ss[i];
 
-	  cairo_move_to (cr, 
+	  cairo_move_to (cr,
 			 geom->axis[SCALE_ABSCISSA].data_max + (1.5 * blob_size) + 20,
 			 geom->axis[SCALE_ORDINATE].data_max - ypos);
-	  
+
 	  xrchart_label (cr, 'l', 'b', geom->font_size, ds_cstr (&foo->label));
 
 	  cairo_rectangle (cr,
@@ -114,7 +114,7 @@ xrchart_draw_barchart (const struct chart_item *chart_item, cairo_t *cr,
 	  cairo_fill_preserve (cr);
 
 	  cairo_restore (cr);
-	  
+
 	  cairo_stroke (cr);
 
 	  ypos += blob_size * 2;

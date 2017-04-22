@@ -419,7 +419,7 @@ psppire_button_flags_get_type (void)
 	  { PSPPIRE_BUTTON_PASTE_MASK,   "PSPPIRE_BUTTON_PASTE_MASK",    "Accept dialog and paste syntax" },
 	  { 0, NULL, NULL }
 	};
-      
+
       ftype = g_flags_register_static
 	(g_intern_static_string ("PsppireButtonFlags"), values);
 

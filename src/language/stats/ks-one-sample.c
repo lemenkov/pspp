@@ -93,7 +93,7 @@ theoretical_exponential (const struct ks *ks, double x)
 }
 
 
-static const  theoreticalfp theoreticalf[4] = 
+static const  theoreticalfp theoreticalf[4] =
 {
   theoretical_normal,
   theoretical_uniform,
@@ -101,7 +101,7 @@ static const  theoreticalfp theoreticalf[4] =
   theoretical_exponential
 };
 
-/* 
+/*
    Return the assymptotic approximation to the significance of Z
  */
 static double
@@ -109,7 +109,7 @@ ks_asymp_sig (double z)
 {
   if (z < 0.27)
     return 1;
-  
+
   if (z >= 3.1)
     return 0;
 
@@ -166,7 +166,7 @@ ks_one_sample_execute (const struct dataset *ds,
 	{
 	  const struct variable *var = ost->vars[v];
 	  const union value *val = case_data (c, var);
-      
+
 	  if (var_is_value_missing (var, val, exclude))
 	    continue;
 
@@ -215,7 +215,7 @@ ks_one_sample_execute (const struct dataset *ds,
 	case KS_EXPONENTIAL:
 	  if (kst->p[0] != SYSMIS)
 	    ks[v].mu = ks[v].sigma = kst->p[0];
-	  else 
+	  else
 	    ks[v].mu = ks[v].sigma = ks[v].sum / ks[v].obs_cc;
 	  break;
 	default:
@@ -236,19 +236,19 @@ ks_one_sample_execute (const struct dataset *ds,
 	  cc += weight;
 
 	  empirical = cc / ks[v].obs_cc;
-      
+
 	  theoretical = theoreticalf[kst->dist] (&ks[v], val->f);
-      
+
 	  d = empirical - theoretical;
 	  dp = prev_empirical - theoretical;
 
 	  if (d > 0)
-	    maximize (&ks[v].diff_pos, d); 
+	    maximize (&ks[v].diff_pos, d);
 	  else
 	    minimize (&ks[v].diff_neg, d);
 
 	  if (dp > 0)
-	    maximize (&ks[v].diff_pos, dp); 
+	    maximize (&ks[v].diff_pos, dp);
 	  else
 	    minimize (&ks[v].diff_neg, dp);
 
@@ -297,7 +297,7 @@ show_results (const struct ks *ks,
     case KS_NORMAL:
       tab_text (table,  0, 2,
 		TAT_TITLE | TAB_LEFT , _("Normal Parameters"));
-      
+
       tab_text (table,  1, 2,
 		TAT_TITLE | TAB_LEFT , _("Mean"));
       tab_text (table,  1, 3,
@@ -306,7 +306,7 @@ show_results (const struct ks *ks,
     case KS_UNIFORM:
       tab_text (table,  0, 2,
 		TAT_TITLE | TAB_LEFT , _("Uniform Parameters"));
-      
+
       tab_text (table,  1, 2,
 		TAT_TITLE | TAB_LEFT , _("Minimum"));
       tab_text (table,  1, 3,
@@ -315,14 +315,14 @@ show_results (const struct ks *ks,
     case KS_POISSON:
       tab_text (table,  0, 2,
 		TAT_TITLE | TAB_LEFT , _("Poisson Parameters"));
-      
+
       tab_text (table,  1, 2,
 		TAT_TITLE | TAB_LEFT , _("Lambda"));
       break;
     case KS_EXPONENTIAL:
       tab_text (table,  0, 2,
 		TAT_TITLE | TAB_LEFT , _("Exponential Parameters"));
-      
+
       tab_text (table,  1, 2,
 		TAT_TITLE | TAB_LEFT , _("Scale"));
       break;
@@ -338,7 +338,7 @@ show_results (const struct ks *ks,
       double z = 0;
       const int col = 2 + i;
       tab_text (table, col, 0,
-		TAT_TITLE | TAB_CENTER , 
+		TAT_TITLE | TAB_CENTER ,
 		var_to_string (kst->parent.vars[i]));
 
       switch (kst->dist)

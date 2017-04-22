@@ -41,13 +41,13 @@ static const bool GNM_READING_SUPPORTED = true;
 static const bool GNM_READING_SUPPORTED = false;
 #endif
 
-void 
+void
 spreadsheet_ref (struct spreadsheet *s)
 {
   s->ref_cnt++;
 }
 
-void 
+void
 spreadsheet_unref (struct spreadsheet *s)
 {
   switch (s->type)
@@ -68,7 +68,7 @@ spreadsheet_unref (struct spreadsheet *s)
 }
 
 
-struct casereader * 
+struct casereader *
 spreadsheet_make_reader (struct spreadsheet *s,
                          const struct spreadsheet_read_options *opts)
 {
@@ -83,7 +83,7 @@ spreadsheet_make_reader (struct spreadsheet *s,
   return NULL;
 }
 
-const char * 
+const char *
 spreadsheet_get_sheet_name (struct spreadsheet *s, int n)
 {
   if (ODF_READING_SUPPORTED)
@@ -98,7 +98,7 @@ spreadsheet_get_sheet_name (struct spreadsheet *s, int n)
 }
 
 
-char * 
+char *
 spreadsheet_get_sheet_range (struct spreadsheet *s, int n)
 {
   if (ODF_READING_SUPPORTED)
@@ -174,7 +174,7 @@ int_to_ps26 (int i)
   while (i > lower + base - 1)
     {
       lower += base;
-      base *= RADIX;      
+      base *= RADIX;
       assert (base > 0);
       exp++;
     }

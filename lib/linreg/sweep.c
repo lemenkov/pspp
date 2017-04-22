@@ -83,7 +83,7 @@ reg_sweep (gsl_matrix * A, int last_col)
   assert (last_col < A->size1);
   gsl_matrix_swap_rows (A, A->size1 - 1, last_col);
   gsl_matrix_swap_columns (A, A->size1 - 1 , last_col);
-	  
+
   B = gsl_matrix_alloc (A->size1, A->size2);
   for (k = 0; k < (A->size1 - 1); k++)
     {

@@ -613,7 +613,7 @@ lex_force_match (struct lexer *lexer, enum token_type type)
 	}
       else
 	lex_error_expecting (lexer, token_type_to_name (type), NULL_SENTINEL);
-      
+
       return false;
     }
 }

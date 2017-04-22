@@ -61,10 +61,10 @@ do_insert (struct lexer *lexer, struct dataset *ds, enum variant variant)
   if (!lex_force_string_or_id (lexer))
     return CMD_FAILURE;
 
-  relative_name = utf8_to_filename (lex_tokcstr (lexer)); 
+  relative_name = utf8_to_filename (lex_tokcstr (lexer));
   if (NULL == relative_name)
     return CMD_FAILURE;
-   
+
   filename = include_path_search (relative_name);
   free (relative_name);
 

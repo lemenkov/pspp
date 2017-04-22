@@ -125,7 +125,7 @@ close_temp_file (FILE *file)
       struct hmapx_node *node = hmapx_first_with_hash (&map, hash_pointer (file, 0));
       char *fn = node->data;
       fclose_temp (file);
-      cleanup_temp_file (temp_dir, fn); 
+      cleanup_temp_file (temp_dir, fn);
       hmapx_delete (&map, node);
       free (fn);
     }

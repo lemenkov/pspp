@@ -71,7 +71,7 @@ struct barchart
     struct hmap secondaries;
 
 
-    /* A array of pointers to the members of the above hmap, 
+    /* A array of pointers to the members of the above hmap,
        sorted by VAL */
     struct category **ss;
   };

@@ -29,7 +29,7 @@ static void psppire_dialog_action_reliability_class_init      (PsppireDialogActi
 
 G_DEFINE_TYPE (PsppireDialogActionReliability, psppire_dialog_action_reliability, PSPPIRE_TYPE_DIALOG_ACTION);
 
-enum 
+enum
   {
     ALPHA = 0,
     SPLIT = 1

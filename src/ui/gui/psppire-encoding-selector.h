@@ -22,8 +22,8 @@
 GtkWidget *psppire_encoding_selector_new (const char *default_encoding,
                                           gboolean allow_auto);
 
-/* 
-   Return a string describing the currently selected encoding. 
+/*
+   Return a string describing the currently selected encoding.
    The caller should free this string when no longer required.
 */
 gchar *psppire_encoding_selector_get_encoding (GtkWidget *selector);

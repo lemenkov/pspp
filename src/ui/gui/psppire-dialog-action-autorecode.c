@@ -40,13 +40,13 @@ static gboolean
 dialog_state_valid (gpointer pda)
 {
   PsppireDialogActionAutorecode *rd = PSPPIRE_DIALOG_ACTION_AUTORECODE (pda);
-  
+
   GtkTreeModel *model = gtk_tree_view_get_model (GTK_TREE_VIEW (rd->var_view));
   const gint n_vars = gtk_tree_model_iter_n_children (model, NULL);
 
   if (n_vars == 0)
     return FALSE;
-  
+
   if (g_hash_table_size (rd->varmap) != n_vars)
     return FALSE;
 
@@ -73,7 +73,7 @@ refresh (PsppireDialogAction *pda)
 
   gtk_list_store_clear (GTK_LIST_STORE (target_list));
 
-  
+
 }
 
 /* Name-Label pair */
@@ -115,7 +115,7 @@ static char *
 generate_syntax (const PsppireDialogAction *act)
 {
   PsppireDialogActionAutorecode *rd = PSPPIRE_DIALOG_ACTION_AUTORECODE (act);
-  
+
   GHashTableIter iter;
   gpointer key, value;
   gchar *text;
@@ -125,7 +125,7 @@ generate_syntax (const PsppireDialogAction *act)
   g_string_append (string, "\n\tVARIABLES =");
 
   g_hash_table_iter_init (&iter, rd->varmap);
-  while (g_hash_table_iter_next (&iter, &key, &value)) 
+  while (g_hash_table_iter_next (&iter, &key, &value))
   {
     struct variable *var = key;
     g_string_append (string, " ");
@@ -135,7 +135,7 @@ generate_syntax (const PsppireDialogAction *act)
   g_string_append (string, " INTO");
 
   g_hash_table_iter_init (&iter, rd->varmap);
-  while (g_hash_table_iter_next (&iter, &key, &value)) 
+  while (g_hash_table_iter_next (&iter, &key, &value))
   {
     struct nlp *nlp  = value;
     g_string_append (string, " ");
@@ -213,10 +213,10 @@ on_entry_change (PsppireDialogActionAutorecode *rd)
       gpointer key, value;
 
       g_hash_table_iter_init (&iter, rd->varmap);
-      while (g_hash_table_iter_next (&iter, &key, &value)) 
+      while (g_hash_table_iter_next (&iter, &key, &value))
 	{
 	  struct nlp *nlp = value;
-	  
+
 	  if ( 0 == strcmp (nlp->name, text))
 	    {
 	      valid = FALSE;
@@ -252,7 +252,7 @@ on_selection_change (GtkTreeSelection *selection, gpointer data)
       GtkTreeIter iter;
 
       gtk_widget_set_sensitive  (rd->new_name_entry, TRUE);
-      gtk_widget_set_sensitive  (rd->change_button, TRUE);      
+      gtk_widget_set_sensitive  (rd->change_button, TRUE);
 
 
       ok = gtk_tree_model_get_iter (model, &iter, (GtkTreePath*) rows->data);
@@ -292,10 +292,10 @@ render_new_var_name (GtkTreeViewColumn *tree_column,
   PsppireDialogActionAutorecode *rd = PSPPIRE_DIALOG_ACTION_AUTORECODE (data);
 
 
-  
+
   struct variable *var = NULL;
 
-  gtk_tree_model_get (tree_model, iter, 
+  gtk_tree_model_get (tree_model, iter,
 		      0, &var,
 		      -1);
 
@@ -376,7 +376,7 @@ psppire_dialog_action_autorecode_activate (PsppireDialogAction *a)
       }
 
     }
-  
+
   psppire_dialog_action_set_refresh (pda, refresh);
   psppire_dialog_action_set_valid_predicate (pda, dialog_state_valid);
 

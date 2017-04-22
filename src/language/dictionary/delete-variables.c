@@ -38,7 +38,7 @@ cmd_delete_variables (struct lexer *lexer, struct dataset *ds)
 
   if (proc_make_temporary_transformations_permanent (ds))
     msg (SE, _("%s may not be used after %s.  "
-               "Temporary transformations will be made permanent."), 
+               "Temporary transformations will be made permanent."),
 	 "DELETE VARIABLES", "TEMPORARY");
 
   if (!parse_variables (lexer, dataset_dict (ds), &vars, &var_cnt, PV_NONE))

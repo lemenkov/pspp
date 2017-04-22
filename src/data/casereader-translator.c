@@ -499,7 +499,7 @@ uniquify (const struct ccase *c, void *aux)
 
   if ( NULL == next_case)
       goto end;
-  
+
   dir = value_compare_3way (case_data (next_case, cdr->key),
 			    current_value, key_width);
   case_unref (next_case);
@@ -510,7 +510,7 @@ uniquify (const struct ccase *c, void *aux)
       cdr->direction = dir;
       goto end;
     }
-  
+
   return false;
 
  end:
@@ -535,7 +535,7 @@ consolodate_weight (struct ccase *input, void *aux)
   else
     {
       c = case_unshare_and_resize (input, cdr->proto);
-      case_data_rw_idx (c, caseproto_get_n_widths (cdr->proto) - 1)->f = cdr->prev_cc;    
+      case_data_rw_idx (c, caseproto_get_n_widths (cdr->proto) - 1)->f = cdr->prev_cc;
     }
 
   return c;
@@ -556,7 +556,7 @@ uniquify_destroy (void *aux)
 
 
 
-/* Returns a new casereader which is based upon INPUT, but which contains a maximum 
+/* Returns a new casereader which is based upon INPUT, but which contains a maximum
    of one case for each distinct value of KEY.
    If WEIGHT is non-null, then the new casereader's values for this variable
    will be the sum of all values matching KEY.

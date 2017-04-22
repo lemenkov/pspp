@@ -522,7 +522,7 @@ fh_lock (struct file_handle *h, enum fh_referent mask UNUSED,
           return NULL;
         }
       lock->open_cnt++;
-      
+
       free_key (key);
       free (key);
 
@@ -709,7 +709,7 @@ fh_get_identity (const struct file_handle *fh)
   struct file_identity *identity = xmalloc (sizeof *identity);
 
   const char *file_name = fh_get_file_name (fh);
-  
+
 #if !(defined _WIN32 || defined __WIN32__)
   struct stat s;
   if (lstat (file_name, &s) == 0)
@@ -761,7 +761,7 @@ fh_get_identity (const struct file_handle *fh)
       size_t bufsize;
       size_t pathlen = 255;
       char *cname = NULL;
-      do 
+      do
       {
 	bufsize = pathlen;
 	cname = xrealloc (cname, bufsize);

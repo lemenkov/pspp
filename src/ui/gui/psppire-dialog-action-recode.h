@@ -90,7 +90,7 @@ struct _PsppireDialogActionRecode
   GtkWidget *change_button;
 
   GtkWidget *output_variable_box;
-  
+
   GtkWidget *string_button;
   GtkWidget *width_entry;
 };

@@ -99,8 +99,8 @@ pango_layout_get_baseline (PangoLayout    *layout)
 }
 #endif
 
-/*  
-    These colours come from: 
+/*
+    These colours come from:
     http://tango.freedesktop.org/static/cvs/tango-art-tools/palettes/Tango-Palette.gpl */
 const struct xrchart_colour data_colour[XRCHART_N_COLOURS] =
   {
@@ -309,7 +309,7 @@ draw_tick_internal (cairo_t *cr, const struct xrchart_geometry *geom,
 
       if (orientation == SCALE_ABSCISSA)
 	{
-	  if ( rotated) 
+	  if ( rotated)
 	    xrchart_label_rotate (cr, 'l', 'c', geom->font_size, s, -G_PI_4);
 	  else
 	    xrchart_label (cr, 'c', 't', geom->font_size, s);
@@ -385,10 +385,10 @@ xrchart_write_scale (cairo_t *cr, struct xrchart_geometry *geom,
   tick_format_string = chart_get_ticks_format (lower, interval, ticks, &tickscale);
 
   upper = lower + interval * (ticks+1);
-   
+
   geom->axis[orient].max = upper;
   geom->axis[orient].min = lower;
-  
+
   geom->axis[orient].scale = (fabs (geom->axis[orient].data_max - geom->axis[orient].data_min)
 			      / fabs (geom->axis[orient].max - geom->axis[orient].min));
 
@@ -406,7 +406,7 @@ xrchart_write_scale (cairo_t *cr, struct xrchart_geometry *geom,
       tickoversize = width > 0.9 *
 	((double)(geom->axis[SCALE_ABSCISSA].data_max - geom->axis[SCALE_ABSCISSA].data_min))/(ticks+1);
     }
-  
+
   double pos = lower;
 
   for (s = 0 ; s <= ticks; ++s)

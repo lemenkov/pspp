@@ -221,7 +221,7 @@ psppire_dialog_action_descriptives_activate (PsppireDialogAction *a)
 		"predicate", var_is_numeric, NULL);
 
   act->stat_vars = GTK_TREE_VIEW (act->variables);
-  
+
   act->include_user_missing =
     GTK_TOGGLE_BUTTON (get_widget_assert (xml, "include_user_missing"));
   act->exclude_missing_listwise =

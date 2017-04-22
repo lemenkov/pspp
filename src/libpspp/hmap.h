@@ -59,7 +59,7 @@
      hmap_init (&map);
    or, alternatively:
      struct hmap map = HMAP_INITIALIZER (map);
-   
+
    Each node in the hash table, presumably a structure type, must
    include a struct hmap_node member.  Here's an example:
      struct foo
@@ -273,7 +273,7 @@ static inline size_t hmap_mask_to_capacity__ (size_t mask);
 
 /* Returns the hash value associated with NODE. */
 static inline size_t
-hmap_node_hash (const struct hmap_node *node) 
+hmap_node_hash (const struct hmap_node *node)
 {
   return node->hash;
 }
@@ -333,7 +333,7 @@ hmap_first_with_hash (const struct hmap *map, size_t hash)
    interface to this particular function that is often more
    convenient. */
 static inline struct hmap_node *
-hmap_next_with_hash (const struct hmap_node *node) 
+hmap_next_with_hash (const struct hmap_node *node)
 {
   return hmap_find_hash__ (node->next, node->hash);
 }
@@ -372,7 +372,7 @@ hmap_insert (struct hmap *map, struct hmap_node *node, size_t hash)
    then the client must check for duplicates itself before
    inserting the new node. */
 static inline void
-hmap_insert_fast (struct hmap *map, struct hmap_node *node, size_t hash) 
+hmap_insert_fast (struct hmap *map, struct hmap_node *node, size_t hash)
 {
   struct hmap_node **bucket = &map->buckets[hash & map->mask];
   node->hash = hash;
@@ -476,7 +476,7 @@ hmap_delete (struct hmap *map, struct hmap_node *node)
    The HMAP_FIRST macro is an interface to this particular
    function that is often more convenient. */
 static inline struct hmap_node *
-hmap_first (const struct hmap *map) 
+hmap_first (const struct hmap *map)
 {
   return hmap_first_nonempty_bucket__ (map, 0);
 }
@@ -504,7 +504,7 @@ hmap_first (const struct hmap *map)
    The HMAP_NEXT macro is an interface to this particular
    function that is often more convenient. */
 static inline struct hmap_node *
-hmap_next (const struct hmap *map, const struct hmap_node *node) 
+hmap_next (const struct hmap *map, const struct hmap_node *node)
 {
   return (node->next != NULL
           ? node->next
@@ -521,7 +521,7 @@ hmap_is_empty (const struct hmap *map)
 
 /* Returns the number of data items currently in MAP. */
 static inline size_t
-hmap_count (const struct hmap *map) 
+hmap_count (const struct hmap *map)
 {
   return map->count;
 }
@@ -535,7 +535,7 @@ hmap_count (const struct hmap *map)
    capacity.  However, inserting many more elements than the
    map's capacity will degrade search performance. */
 static inline size_t
-hmap_capacity (const struct hmap *map) 
+hmap_capacity (const struct hmap *map)
 {
   return hmap_mask_to_capacity__ (map->mask);
 }
@@ -545,9 +545,9 @@ hmap_capacity (const struct hmap *map)
 /* Returns the first node at or after NODE in NODE's chain that
    has hash value HASH. */
 static inline struct hmap_node *
-hmap_find_hash__ (struct hmap_node *node, size_t hash) 
+hmap_find_hash__ (struct hmap_node *node, size_t hash)
 {
-  for (; node != NULL; node = node->next) 
+  for (; node != NULL; node = node->next)
     if (node->hash == hash)
       break;
   return node;
@@ -572,7 +572,7 @@ hmap_first_nonempty_bucket__ (const struct hmap *map, size_t start)
    MASK must be a power of 2 minus 1 (including 0), that is, its
    value in binary must be all 1-bits.  */
 static inline size_t
-hmap_mask_to_capacity__ (size_t mask) 
+hmap_mask_to_capacity__ (size_t mask)
 {
   return (mask + 1) * 2;
 }
@@ -581,7 +581,7 @@ hmap_mask_to_capacity__ (size_t mask)
    argument more than once).  */
 static inline void *
 hmap_nullable_data__ (struct hmap_node *node, size_t member_offset)
-{ 
+{
   return node != NULL ? (char *) node - member_offset : NULL;
 }
 

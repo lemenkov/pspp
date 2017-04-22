@@ -31,7 +31,7 @@
 #include "libpspp/str.h"
 #include "output/tab.h"
 #include "libpspp/message.h"
- 
+
 #include "gl/minmax.h"
 #include "gl/xalloc.h"
 
@@ -79,7 +79,7 @@ mcnemar_execute (const struct dataset *ds,
 
   const struct two_sample_test *t2s = UP_CAST (test, const struct two_sample_test, parent);
   struct ccase *c;
-  
+
   struct casereader *r = input;
 
   struct mcnemar *mc = xcalloc (t2s->n_pairs, sizeof *mc);
@@ -178,7 +178,7 @@ output_freq_table (variable_pair *vp,
 
   ds_init_empty (&val0str);
   ds_init_empty (&val1str);
-  
+
   var_append_value_name ((*vp)[0], &param->val0, &val0str);
   var_append_value_name ((*vp)[1], &param->val1, &val1str);
 

@@ -189,7 +189,7 @@ buf_copy_rpad (char *dst, size_t dst_size,
 void
 str_copy_rpad (char *dst, size_t dst_size, const char *src)
 {
-  if (dst_size > 0) 
+  if (dst_size > 0)
     {
       size_t src_len = strlen (src);
       if (src_len < dst_size - 1)
@@ -1523,7 +1523,7 @@ ds_put_c_format (struct string *st, const char *format, ...)
 }
 
 
-/* Formats FORMAT as a printf string, using fmt_func (a snprintf like function) 
+/* Formats FORMAT as a printf string, using fmt_func (a snprintf like function)
    and appends the result to ST. */
 static void
 ds_put_vformat_int (struct string *st, const char *format, va_list args_,
@@ -1575,7 +1575,7 @@ ds_put_vformat (struct string *st, const char *format, va_list args_)
   ds_put_vformat_int (st, format, args_, vsnprintf);
 }
 
-/* Formats FORMAT as a printf string, as if in the C locale, 
+/* Formats FORMAT as a printf string, as if in the C locale,
    and appends the result to ST. */
 void
 ds_put_c_vformat (struct string *st, const char *format, va_list args_)

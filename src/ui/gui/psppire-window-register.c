@@ -82,7 +82,7 @@ psppire_window_register_construct   (GType                  type,
 				     GObjectConstructParam *construct_params)
 {
   GObject *object;
-  
+
   if (!the_instance)
     {
       object = G_OBJECT_CLASS (parent_class)->constructor (type,

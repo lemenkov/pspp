@@ -1572,7 +1572,7 @@ dict_unset_mrset_var (struct dictionary *dict, struct variable *var)
    calling dict_set_attributes for D will also destroy D's
    attribute set. */
 struct attrset *
-dict_get_attributes (const struct dictionary *d) 
+dict_get_attributes (const struct dictionary *d)
 {
   return CONST_CAST (struct attrset *, &d->attributes);
 }
@@ -1588,7 +1588,7 @@ dict_set_attributes (struct dictionary *d, const struct attrset *attrs)
 /* Returns true if D has at least one attribute in its attribute
    set, false if D's attribute set is empty. */
 bool
-dict_has_attributes (const struct dictionary *d) 
+dict_has_attributes (const struct dictionary *d)
 {
   return attrset_count (&d->attributes) > 0;
 }

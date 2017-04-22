@@ -78,11 +78,11 @@ dialog_state_valid (gpointer data)
     return FALSE;
 
   /* At least one checkbutton must be active */
-  if ( 
+  if (
       ! gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (krd->friedman))
-      && 
+      &&
       ! gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (krd->kendal))
-      && 
+      &&
       ! gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (krd->cochran))
        )
     return FALSE;

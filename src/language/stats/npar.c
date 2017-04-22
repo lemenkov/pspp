@@ -601,7 +601,7 @@ cmd_npar_tests (struct lexer *lexer, struct dataset *ds)
       }
   }
 
-  sort (npar_specs.vv, npar_specs.n_vars, sizeof (*npar_specs.vv), 
+  sort (npar_specs.vv, npar_specs.n_vars, sizeof (*npar_specs.vv),
 	 compare_var_ptrs_by_name, NULL);
 
   if ( cmd.statistics )
@@ -690,13 +690,13 @@ npar_runs (struct lexer *lexer, struct dataset *ds,
 	  lex_error (lexer, _("Expecting %s, %s, %s or a number."), "MEAN", "MEDIAN", "MODE");
 	  return 0;
 	}
-		  
+
       if (! lex_force_match (lexer, T_RPAREN))
 	return 2;
-      
+
       if (! lex_force_match (lexer, T_EQUALS))
 	return 2;
-      
+
       if (!parse_variables_const_pool (lexer, specs->pool, dataset_dict (ds),
 				  &tp->vars, &tp->n_vars,
 				  PV_NO_SCRATCH | PV_NO_DUPLICATE | PV_NUMERIC))
@@ -719,7 +719,7 @@ static int
 npar_friedman (struct lexer *lexer, struct dataset *ds,
 	       struct npar_specs *specs)
 {
-  struct friedman_test *ft = pool_alloc (specs->pool, sizeof (*ft)); 
+  struct friedman_test *ft = pool_alloc (specs->pool, sizeof (*ft));
   struct one_sample_test *ost = &ft->parent;
   struct npar_test *nt = &ost->parent;
 
@@ -750,7 +750,7 @@ static int
 npar_kendall (struct lexer *lexer, struct dataset *ds,
 	       struct npar_specs *specs)
 {
-  struct friedman_test *kt = pool_alloc (specs->pool, sizeof (*kt)); 
+  struct friedman_test *kt = pool_alloc (specs->pool, sizeof (*kt));
   struct one_sample_test *ost = &kt->parent;
   struct npar_test *nt = &ost->parent;
 
@@ -782,7 +782,7 @@ static int
 npar_cochran (struct lexer *lexer, struct dataset *ds,
 	       struct npar_specs *specs)
 {
-  struct one_sample_test *ft = pool_alloc (specs->pool, sizeof (*ft)); 
+  struct one_sample_test *ft = pool_alloc (specs->pool, sizeof (*ft));
   struct npar_test *nt = &ft->parent;
 
   nt->execute = cochran_execute;
@@ -1414,7 +1414,7 @@ insert_variable_into_map (struct hmapx *var_map, const struct variable *var)
   size_t hash = hash_pointer (var, 0);
   struct hmapx_node *node;
   const struct variable *v = NULL;
-      
+
   HMAPX_FOR_EACH_WITH_HASH (v, node, hash, var_map)
     {
       if ( v == var)
@@ -1453,7 +1453,7 @@ two_sample_insert_variables (const struct npar_test *test,
     }
 }
 
-static void 
+static void
 n_sample_insert_variables (const struct npar_test *test,
 			   struct hmapx *var_map)
 {

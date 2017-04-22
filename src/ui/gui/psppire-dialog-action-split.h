@@ -64,13 +64,13 @@ struct _PsppireDialogActionSplit
 
   GtkWidget *selector;
 
-  GtkWidget *dest ; 
-  GtkWidget *source ; 
+  GtkWidget *dest ;
+  GtkWidget *source ;
 
-  GtkWidget *sort ; 
-  GtkWidget *layered ; 
+  GtkWidget *sort ;
+  GtkWidget *layered ;
 
-  GtkWidget *off ; 
+  GtkWidget *off ;
 };
 
 

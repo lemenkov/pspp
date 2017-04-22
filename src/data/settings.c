@@ -374,9 +374,9 @@ settings_get_max_messages (enum msg_severity severity)
 
 /* Sets the maximum number of messages to show of the given SEVERITY before
    aborting to MAX.  (The value for MSG_S_WARNING is interpreted as maximum
-   number of warnings and errors combined.)  In addition, in the case of 
+   number of warnings and errors combined.)  In addition, in the case of
    warnings the special value of zero indicates that no warnings are to be
-   issued. 
+   issued.
 */
 void
 settings_set_max_messages (enum msg_severity severity, int max)
@@ -707,7 +707,7 @@ settings_get_output_routing (enum settings_output_type type)
   return the_settings.output_routing[type] | SETTINGS_DEVICE_UNFILTERED;
 }
 
-enum settings_value_style 
+enum settings_value_style
 settings_get_value_style (void)
 {
   return the_settings.value_output_style;

@@ -25,7 +25,7 @@ union value;
 struct dictionary;
 
 char *data_in (struct substring input, const char *input_encoding,
-               enum fmt_type, 
+               enum fmt_type,
                union value *output, int width, const char *output_encoding);
 
 bool data_in_msg (struct substring input, const char *input_encoding,

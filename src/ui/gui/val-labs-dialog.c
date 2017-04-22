@@ -326,7 +326,7 @@ get_selected_tuple (PsppireValLabsDialog *dialog,
       if (vl != NULL)
         *label = val_lab_get_escaped_label (vl);
     }
-  
+
   return TRUE;
 }
 
@@ -348,17 +348,18 @@ do_change (PsppireValLabsDialog *dialog)
 
   union value v;
 
-  text_to_value__ (val_text, &dialog->format, dialog->encoding, &v);
+  if (text_to_value__ (val_text, &dialog->format, dialog->encoding, &v))
+    {
+      val_labs_replace (dialog->labs, &v,
+			gtk_entry_get_text (GTK_ENTRY (dialog->label_entry)));
 
-  val_labs_replace (dialog->labs, &v,
-		    gtk_entry_get_text (GTK_ENTRY (dialog->label_entry)));
+      gtk_widget_set_sensitive (dialog->change_button, FALSE);
 
-  gtk_widget_set_sensitive (dialog->change_button, FALSE);
+      repopulate_dialog (dialog);
+      gtk_widget_grab_focus (dialog->value_entry);
 
-  repopulate_dialog (dialog);
-  gtk_widget_grab_focus (dialog->value_entry);
-
-  value_destroy (&v, val_labs_get_width (dialog->labs));
+      value_destroy (&v, val_labs_get_width (dialog->labs));
+    }
 }
 
 /* Callback which occurs when the "Add" button is clicked */
@@ -371,19 +372,20 @@ on_add (GtkWidget *w, gpointer data)
 
   const gchar *text = gtk_entry_get_text (GTK_ENTRY (dialog->value_entry));
 
-  text_to_value__ (text, &dialog->format, dialog->encoding, &v);
-
-  if (val_labs_add (dialog->labs, &v,
-		    gtk_entry_get_text
-		    ( GTK_ENTRY (dialog->label_entry)) ) )
+  if (text_to_value__ (text, &dialog->format, dialog->encoding, &v))
     {
-      gtk_widget_set_sensitive (dialog->add_button, FALSE);
+      if (val_labs_add (dialog->labs, &v,
+			gtk_entry_get_text
+			( GTK_ENTRY (dialog->label_entry)) ) )
+	{
+	  gtk_widget_set_sensitive (dialog->add_button, FALSE);
 
-      repopulate_dialog (dialog);
-      gtk_widget_grab_focus (dialog->value_entry);
+	  repopulate_dialog (dialog);
+	  gtk_widget_grab_focus (dialog->value_entry);
+	}
+
+      value_destroy (&v, val_labs_get_width (dialog->labs));
     }
-
-  value_destroy (&v, val_labs_get_width (dialog->labs));
 }
 
 /* Callback which occurs when the "Remove" button is clicked */
@@ -397,7 +399,7 @@ on_remove (GtkWidget *w, gpointer data)
 
   if (! get_selected_tuple (dialog, &value, NULL))
     return;
-  
+
   vl = val_labs_lookup (dialog->labs, &value);
   if (vl != NULL)
     val_labs_remove (dialog->labs, vl);
@@ -424,7 +426,7 @@ on_select_row (GtkTreeView *treeview, gpointer data)
 
   if (! get_selected_tuple (dialog, &value, &label))
     return;
-  
+
   text = value_to_text__ (value, &dialog->format, dialog->encoding);
 
   g_signal_handler_block (GTK_ENTRY (dialog->value_entry),

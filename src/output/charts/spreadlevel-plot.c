@@ -44,11 +44,11 @@ spreadlevel_plot_create (const char *label, double tx_pwr)
 
   sl->n_data = 0;
   sl->data = NULL;
-  
+
   return &sl->chart_item;
 }
 
-void 
+void
 spreadlevel_plot_add (struct chart_item *ci, double spread, double level)
 {
   struct spreadlevel_plot_chart *sl = to_spreadlevel_plot_chart (ci);

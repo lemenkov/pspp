@@ -2308,20 +2308,20 @@ parse_attributes (struct sfm_reader *r, struct text_record *text,
               text_warn (r, text, _("Error parsing attribute value %s[%d]."),
                          key, index);
               break;
-            }              
+            }
 
           length = strlen (value);
-          if (length >= 2 && value[0] == '\'' && value[length - 1] == '\'') 
+          if (length >= 2 && value[0] == '\'' && value[length - 1] == '\'')
             {
               value[length - 1] = '\0';
-              attribute_add_value (attr, value + 1); 
+              attribute_add_value (attr, value + 1);
             }
-          else 
+          else
             {
               text_warn (r, text,
                          _("Attribute value %s[%d] is not quoted: %s."),
                          key, index, value);
-              attribute_add_value (attr, value); 
+              attribute_add_value (attr, value);
             }
 
           /* Was this the last value for this attribute? */
@@ -2995,7 +2995,7 @@ read_variable_to_value_pair (struct sfm_reader *r, struct dictionary *dict,
     {
       if (!text_read_short_name (r, dict, text, ss_cstr ("="), var))
         return false;
-      
+
       *value = text_get_token (text, ss_buffer ("\t\0", 2), NULL);
       if (*value == NULL)
         return false;
@@ -3051,7 +3051,7 @@ static void
 text_warn (struct sfm_reader *r, struct text_record *text,
            const char *format, ...)
 {
-  if (text->n_warnings++ < MAX_TEXT_WARNINGS) 
+  if (text->n_warnings++ < MAX_TEXT_WARNINGS)
     {
       va_list args;
 
@@ -3142,8 +3142,8 @@ text_match (struct text_record *text, char c)
 {
   if (text->pos >= text->buffer.length)
     return false;
-  
-  if (text->buffer.string[text->pos] == c) 
+
+  if (text->buffer.string[text->pos] == c)
     {
       text->pos++;
       return true;

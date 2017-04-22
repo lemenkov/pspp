@@ -41,7 +41,7 @@ difx_variable_treeview_is_populated (PsppireDialogActionRecode *rd)
 {
   PsppireDialogActionRecodeDifferent *rdd = PSPPIRE_DIALOG_ACTION_RECODE_DIFFERENT (rd);
   GtkTreeModel *model = gtk_tree_view_get_model (GTK_TREE_VIEW (rd->variable_treeview));
-  
+
   if (g_hash_table_size (rdd->varmap) != gtk_tree_model_iter_n_children (model, NULL) )
     return FALSE;
 
@@ -57,7 +57,7 @@ dialog_state_valid (gpointer data)
 {
   PsppireDialogActionRecode *rd = data;
   GtkTreeIter not_used;
-      
+
   if ( ! rd->value_map )
     return FALSE;
 
@@ -155,7 +155,7 @@ render_new_var_name (GtkTreeViewColumn *tree_column,
 
   struct variable *var = NULL;
 
-  gtk_tree_model_get (tree_model, iter, 
+  gtk_tree_model_get (tree_model, iter,
 		      0, &var,
 		      -1);
 
@@ -243,7 +243,7 @@ on_selection_change (GtkTreeSelection *selection, gpointer data)
       g_return_if_fail (ok);
 
       gtk_tree_model_get (model, &iter,
-			  0, &var, 
+			  0, &var,
 			  -1);
 
       nlp = g_hash_table_lookup (rdd->varmap, var);
@@ -327,7 +327,7 @@ psppire_dialog_action_recode_different_activate (PsppireDialogAction *a)
 			_("Recode into Different Variables: Old and New Values "));
 
   gtk_widget_show (act->output_variable_box);
-  
+
   g_signal_connect_swapped (act->old_and_new_dialog, "show",
 			    G_CALLBACK (on_old_new_show), act);
 
@@ -346,7 +346,7 @@ append_into_clause (const PsppireDialogActionRecode *rd, struct string *dds)
   GtkTreeIter iter;
   ds_put_cstr (dds, "\n\tINTO ");
   gboolean ok;
-      
+
   for (ok = psppire_var_view_get_iter_first (PSPPIRE_VAR_VIEW (rd->variable_treeview), &iter);
        ok;
        ok = psppire_var_view_get_iter_next (PSPPIRE_VAR_VIEW (rd->variable_treeview), &iter))
@@ -355,7 +355,7 @@ append_into_clause (const PsppireDialogActionRecode *rd, struct string *dds)
       const struct variable *var = psppire_var_view_get_variable (PSPPIRE_VAR_VIEW (rd->variable_treeview), 0, &iter);
 
       nlp = g_hash_table_lookup (rdd->varmap, var);
-	    
+
       ds_put_cstr (dds, nlp->name);
       ds_put_cstr (dds, " ");
     }

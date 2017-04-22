@@ -148,7 +148,7 @@ Trename (TCHAR const *src, TCHAR const *dst)
   return -1;
 }
 
-TCHAR * 
+TCHAR *
 convert_to_filename_encoding (const char *s, size_t len, const char *current_encoding)
 {
   const char *enc = current_encoding;
@@ -166,10 +166,10 @@ convert_to_filename_encoding (const char *s, size_t len, const char *current_enc
 #define Topen open
 #define Tstat stat
 
-TCHAR * 
+TCHAR *
 convert_to_filename_encoding (const char *s, size_t len UNUSED, const char *current_encoding UNUSED)
 {
-  /* Non-windows systems don't care about the encoding.  
+  /* Non-windows systems don't care about the encoding.
      The string is copied here, to be consistent with the w32 case.  */
   return xstrdup (s);
 }
@@ -186,7 +186,7 @@ struct replace_file
   char *tmp_name_verbatim;
   const char *file_name_verbatim;
 };
- 
+
 static struct ll_list all_files = LL_INITIALIZER (all_files);
 
 static void free_replace_file (struct replace_file *);
@@ -214,7 +214,7 @@ replace_file_start (const struct file_handle *fh, const char *mode,
       fd = Topen (Tfile_name, O_WRONLY);
       if (fd < 0)
         {
-	  saved_errno = errno;     
+	  saved_errno = errno;
           msg (ME, _("Opening %s for writing: %s."),
                file_name, strerror (saved_errno));
 	  free (Tfile_name);
@@ -225,7 +225,7 @@ replace_file_start (const struct file_handle *fh, const char *mode,
       *fp = fdopen (fd, mode);
       if (*fp == NULL)
         {
-	  saved_errno = errno;     
+	  saved_errno = errno;
 	  msg (ME, _("Opening stream for %s: %s."),
                file_name, strerror (saved_errno));
           close (fd);

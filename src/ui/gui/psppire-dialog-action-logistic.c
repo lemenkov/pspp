@@ -79,14 +79,14 @@ on_opts_clicked (PsppireDialogActionLogistic *act)
   gtk_spin_button_set_value (GTK_SPIN_BUTTON (act->cut_point_entry), act->cut_point);
   gtk_spin_button_set_value (GTK_SPIN_BUTTON (act->iterations_entry), act->max_iterations);
 
-  
+
   ret = psppire_dialog_run (PSPPIRE_DIALOG (act->opts_dialog));
 
   if ( ret == PSPPIRE_RESPONSE_CONTINUE )
     {
       act->conf = gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON(act->conf_checkbox));
       act->conf_level = gtk_spin_button_get_value (GTK_SPIN_BUTTON (act->conf_entry));
-      
+
       act->constant = gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON(act->const_checkbox));
 
       act->cut_point = gtk_spin_button_get_value (GTK_SPIN_BUTTON (act->cut_point_entry));
@@ -134,7 +134,7 @@ psppire_dialog_action_logistic_activate (PsppireDialogAction *a)
 			    G_CALLBACK (on_opts_clicked),  act);
 
   g_signal_connect (act->conf_checkbox, "toggled",
-		    G_CALLBACK (set_sensitivity_from_toggle),  
+		    G_CALLBACK (set_sensitivity_from_toggle),
 		    act->conf_entry);
 
   gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON(act->conf_checkbox), TRUE);
@@ -209,7 +209,7 @@ generate_syntax (const PsppireDialogAction *a)
       g_string_append_printf (strx, "\n\t/PRINT = CI(%g)", rd->conf_level);
     }
 
-  if (rd->constant) 
+  if (rd->constant)
     g_string_append (strx, "\n\t/NOORIGIN");
   else
     g_string_append (strx, "\n\t/ORIGIN");

@@ -134,12 +134,12 @@ levene_create (int indep_width, const union value *cutpoint)
 
 
 /* Data accumulation. First pass */
-void 
+void
 levene_pass_one (struct levene *nl, double value, double weight, const union value *gv)
 {
   struct lev *lev = find_group (nl, gv);
 
-  if ( nl->pass == 0 ) 
+  if ( nl->pass == 0 )
     {
       nl->pass = 1;
     }
@@ -160,7 +160,7 @@ levene_pass_one (struct levene *nl, double value, double weight, const union val
 }
 
 /* Data accumulation. Second pass */
-void 
+void
 levene_pass_two (struct levene *nl, double value, double weight, const union value *gv)
 {
   struct lev *lev = NULL;
@@ -186,7 +186,7 @@ levene_pass_two (struct levene *nl, double value, double weight, const union val
 }
 
 /* Data accumulation. Third pass */
-void 
+void
 levene_pass_three (struct levene *nl, double value, double weight, const union value *gv)
 {
   double z;
@@ -244,7 +244,7 @@ levene_calculate (struct levene *nl)
     }
 
   numerator *= nn - hmap_count (&nl->hmap);
-    
+
   return numerator / nl->denominator;
 }
 

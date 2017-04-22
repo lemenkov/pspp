@@ -188,14 +188,14 @@ on_destroy_dataset (GObject *w)
 {
   GHashTable *t = g_object_get_data (w, "thing-table");
   GSList *dl = g_object_get_data (w, "widget-list");
-  
+
   g_slist_free_full (dl, (GDestroyNotify) gtk_widget_destroy);
   g_hash_table_unref (t);
 }
 
 /* Each toplevel widget - that is the data window, which generally has a 1-1 association
    with a dataset - has an associated GHashTable.
-   
+
    This GHashTable is keyed by the address of a PsppireDialogAction, and its values
    are user determined pointers (typically a GtkBuilder*).
 
@@ -309,7 +309,7 @@ psppire_dialog_action_init (PsppireDialogAction *act)
 }
 
 void
-psppire_dialog_action_set_valid_predicate (PsppireDialogAction *act, 
+psppire_dialog_action_set_valid_predicate (PsppireDialogAction *act,
 					   ContentsAreValid dialog_state_valid)
 {
   psppire_dialog_set_valid_predicate (PSPPIRE_DIALOG (act->dialog),
@@ -317,14 +317,14 @@ psppire_dialog_action_set_valid_predicate (PsppireDialogAction *act,
 }
 
 void
-psppire_dialog_action_set_refresh (PsppireDialogAction *pda, 
+psppire_dialog_action_set_refresh (PsppireDialogAction *pda,
 				   PsppireDialogActionRefresh refresh)
 {
   g_signal_connect_swapped (pda->dialog, "refresh", G_CALLBACK (refresh),  pda);
 }
 
 
-void 
+void
 psppire_dialog_action_set_activation (gpointer class, activation activate)
 {
   PSPPIRE_DIALOG_ACTION_CLASS (class)->activate = (void (*)(PsppireDialogAction *, GVariant *)) activate;

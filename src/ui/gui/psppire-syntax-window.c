@@ -260,7 +260,7 @@ on_edit_delete (PsppireSyntaxWindow *sw)
 {
   GtkTextIter begin, end;
   GtkTextBuffer *buffer = GTK_TEXT_BUFFER (sw->buffer);
-  
+
   if ( gtk_text_buffer_get_selection_bounds (buffer, &begin, &end) )
     gtk_text_buffer_delete (buffer, &begin, &end);
 }
@@ -353,7 +353,7 @@ static void
 on_edit_cut (PsppireSyntaxWindow *sw)
 {
   GtkTextIter begin, end;
-  
+
   if ( set_clip (sw, &begin, &end))
     gtk_text_buffer_delete (GTK_TEXT_BUFFER (sw->buffer), &begin, &end);
 }
@@ -704,7 +704,7 @@ psppire_syntax_window_init (PsppireSyntaxWindow *window)
   g_action_map_add_action (G_ACTION_MAP (window), G_ACTION (window->undo_menuitem));
   g_action_map_add_action (G_ACTION_MAP (window), G_ACTION (window->redo_menuitem));
 
-  
+
   if (class->lan)
     window->buffer = gtk_source_buffer_new_with_language (class->lan);
   else
@@ -748,19 +748,19 @@ psppire_syntax_window_init (PsppireSyntaxWindow *window)
   window->sb = get_widget_assert (xml, "statusbar2");
   window->text_context = gtk_statusbar_get_context_id (GTK_STATUSBAR (window->sb), "Text Context");
 
-  g_signal_connect (window->buffer, "changed", 
+  g_signal_connect (window->buffer, "changed",
 		    G_CALLBACK (on_text_changed), window);
 
-  g_signal_connect (window->buffer, "modified-changed", 
+  g_signal_connect (window->buffer, "modified-changed",
 		    G_CALLBACK (on_modified_changed), window);
 
 
   {
     GSimpleAction *print = g_simple_action_new ("print", NULL);
-    
+
     g_signal_connect_swapped (print, "activate",
 			      G_CALLBACK (psppire_syntax_window_print), window);
-    
+
     g_action_map_add_action (G_ACTION_MAP (window), G_ACTION (print));
   }
 
@@ -777,10 +777,10 @@ psppire_syntax_window_init (PsppireSyntaxWindow *window)
   undo_redo_update (window);
 
 
-  window->sel_handler = g_signal_connect_swapped (clip_primary, "owner-change", 
+  window->sel_handler = g_signal_connect_swapped (clip_primary, "owner-change",
 						   G_CALLBACK (selection_changed), window);
 
-  window->ps_handler = g_signal_connect (clip_selection, "owner-change", 
+  window->ps_handler = g_signal_connect (clip_selection, "owner-change",
 					  G_CALLBACK (set_paste_sensitivity), window);
 
   connect_help (xml);
@@ -801,7 +801,7 @@ psppire_syntax_window_init (PsppireSyntaxWindow *window)
 
   {
     GSimpleAction *open = g_simple_action_new ("open", NULL);
-    
+
     g_action_map_add_action (G_ACTION_MAP (window), G_ACTION (open));
 
     g_signal_connect_swapped (open,
@@ -812,9 +812,9 @@ psppire_syntax_window_init (PsppireSyntaxWindow *window)
 
   {
     GSimpleAction *save = g_simple_action_new ("save", NULL);
-    
+
     g_action_map_add_action (G_ACTION_MAP (window), G_ACTION (save));
-    
+
     g_signal_connect_swapped (save,
 			      "activate",
 			      G_CALLBACK (psppire_window_save),
@@ -824,14 +824,14 @@ psppire_syntax_window_init (PsppireSyntaxWindow *window)
     gtk_application_set_accels_for_action (app,
 					   "win.save",
 					   accels);
-  
+
   }
 
   {
     GSimpleAction *save_as = g_simple_action_new ("save_as", NULL);
-    
+
     g_action_map_add_action (G_ACTION_MAP (window), G_ACTION (save_as));
-    
+
     g_signal_connect_swapped (save_as,
 			      "activate",
 			      G_CALLBACK (psppire_window_save_as),
@@ -842,8 +842,8 @@ psppire_syntax_window_init (PsppireSyntaxWindow *window)
     gtk_application_set_accels_for_action (app,
 					   "win.save_as",
 					   accels);
-    
-    
+
+
   }
 
 
@@ -893,7 +893,7 @@ psppire_syntax_window_init (PsppireSyntaxWindow *window)
 
   {
     GSimpleAction *run_selection = g_simple_action_new ("run-selection", NULL);
-      
+
     g_signal_connect_swapped (run_selection, "activate",
 			      G_CALLBACK (on_run_selection), window);
 
@@ -902,10 +902,10 @@ psppire_syntax_window_init (PsppireSyntaxWindow *window)
 
   {
     GSimpleAction *run_to_end = g_simple_action_new ("run-to-end", NULL);
-    
+
     g_signal_connect_swapped (run_to_end, "activate",
 			      G_CALLBACK (on_run_to_end), window);
-    
+
     g_action_map_add_action (G_ACTION_MAP (window), G_ACTION (run_to_end));
   }
 
@@ -929,7 +929,7 @@ psppire_syntax_window_new (const char *encoding)
 			      "description", _("Syntax Editor"),
 			      "encoding", encoding,
 			      NULL);
-  
+
   GApplication *app = g_application_get_default ();
   gtk_application_add_window (GTK_APPLICATION (app), GTK_WINDOW (sw));
 
@@ -1101,7 +1101,7 @@ paginate (GtkPrintOperation *operation,
     {
       gint n_pages = gtk_source_print_compositor_get_n_pages (window->compositor);
       gtk_print_operation_set_n_pages (operation, n_pages);
-        
+
       return TRUE;
     }
 
@@ -1114,7 +1114,7 @@ draw_page (GtkPrintOperation *operation,
            gint               page_nr,
           PsppireSyntaxWindow *window)
 {
-  gtk_source_print_compositor_draw_page (window->compositor, 
+  gtk_source_print_compositor_draw_page (window->compositor,
 					 context,
 					 page_nr);
 }
@@ -1128,7 +1128,7 @@ psppire_syntax_window_print (PsppireSyntaxWindow *window)
 
   GtkPrintOperation *print = gtk_print_operation_new ();
 
-  if (window->print_settings != NULL) 
+  if (window->print_settings != NULL)
     gtk_print_operation_set_print_settings (print, window->print_settings);
 
 

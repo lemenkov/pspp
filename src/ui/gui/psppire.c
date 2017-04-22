@@ -175,13 +175,13 @@ GtkWindow *
 psppire_preload_file (const gchar *file)
 {
   const gchar *local_encoding = "UTF-8";
-  
+
   struct file_handle *fh = fh_create_file (NULL,
 					   file,
 					   local_encoding,
 					   fh_default_properties ());
   const char *filename = fh_get_file_name (fh);
-  
+
   int retval = any_reader_detect (fh, NULL);
 
   GtkWindow *w = NULL;

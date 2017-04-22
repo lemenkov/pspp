@@ -41,7 +41,7 @@ void attribute_set_value (struct attribute *, size_t index, const char *);
 void attribute_del_value (struct attribute *, size_t index);
 size_t attribute_get_n_values (const struct attribute *);
 
-struct attrset 
+struct attrset
   {
     struct hmap map;
   };

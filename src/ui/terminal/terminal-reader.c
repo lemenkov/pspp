@@ -127,7 +127,7 @@ rl_echo_signal_char (int sig)
   if (0 == tcgetattr (0, &t))
     {
       cc_t c = t.c_cc[VINTR];
-  
+
       if (c >= 0  && c <= 'Z' - 'A')
 	fprintf (rl_outstream, "^%c", 'A' + c - 1);
       else
@@ -138,7 +138,7 @@ rl_echo_signal_char (int sig)
     fprintf (rl_outstream, "^C");
 
   fflush (rl_outstream);
-}  
+}
 #endif
 #endif
 
@@ -256,7 +256,7 @@ static int pfd[2];
 static bool sigint_received ;
 
 
-/* 
+/*
    A function similar to getc from stdio.
    However this one may be interrupted by SIGINT.
    If that happens it will return EOF and the global variable
@@ -310,7 +310,7 @@ interruptible_getc (FILE *fp)
 
 #if HAVE_READLINE
 
-static void 
+static void
 handler (int sig)
 {
   rl_end = 0;
@@ -354,7 +354,7 @@ readline_done (void)
   free (history_file);
 }
 
-/* Prompt the user for a line of input and return it in LINE. 
+/* Prompt the user for a line of input and return it in LINE.
    Returns true if the LINE should be considered valid, false otherwise.
  */
 static bool
@@ -454,9 +454,9 @@ readline_read (struct substring *line, enum prompt_style style)
   fflush (stdout);
   ds_init_empty (&string);
   ds_read_line (&string, stdin, SIZE_MAX);
-  
+
   *line = string.ss;
-  
+
   return false;
 }
 #endif /* !HAVE_READLINE */

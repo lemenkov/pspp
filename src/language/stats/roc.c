@@ -286,7 +286,7 @@ cmd_roc (struct lexer *lexer, struct dataset *ds)
 	}
     }
 
-  if ( ! run_roc (ds, &roc)) 
+  if ( ! run_roc (ds, &roc))
     goto error;
 
   if ( roc.state_var)
@@ -348,10 +348,10 @@ dump_casereader (struct casereader *reader)
 #endif
 
 
-/* 
+/*
    Return true iff the state variable indicates that C has positive actual state.
 
-   As a side effect, this function also accumulates the roc->{pos,neg} and 
+   As a side effect, this function also accumulates the roc->{pos,neg} and
    roc->{pos,neg}_weighted counts.
  */
 static bool
@@ -384,7 +384,7 @@ match_positives (const struct ccase *c, void *aux)
 #define N_EQ   1
 #define N_PRED 2
 
-/* Some intermediate state for calculating the cutpoints and the 
+/* Some intermediate state for calculating the cutpoints and the
    standard error values */
 struct roc_state
 {
@@ -394,7 +394,7 @@ struct roc_state
   double n2;  /* total weight of negatives */
 
   /* intermediates for standard error */
-  double q1hat; 
+  double q1hat;
   double q2hat;
 
   /* intermediates for cutpoints */
@@ -405,18 +405,18 @@ struct roc_state
   double max;
 };
 
-/* 
+/*
    Return a new casereader based upon CUTPOINT_RDR.
    The number of "positive" cases are placed into
    the position TRUE_INDEX, and the number of "negative" cases
    into FALSE_INDEX.
-   POS_COND and RESULT determine the semantics of what is 
+   POS_COND and RESULT determine the semantics of what is
    "positive".
    WEIGHT is the value of a single count.
  */
 static struct casereader *
 accumulate_counts (struct casereader *input,
-		   double result, double weight, 
+		   double result, double weight,
 		   bool (*pos_cond) (double, double),
 		   int true_index, int false_index)
 {
@@ -469,7 +469,7 @@ static void output_roc (struct roc_state *rs, const struct cmd_roc *roc);
   CUTPOINT_RDR accordingly.  TRUE_INDEX and FALSE_INDEX are the indices
   which receive these values.  POS_COND is the condition defining true
   and false.
-  
+
   3. CC is filled with the cumulative weight of all cases of READER.
 */
 static struct casereader *
@@ -477,7 +477,7 @@ process_group (const struct variable *var, struct casereader *reader,
 	       bool (*pred) (double, double),
 	       const struct dictionary *dict,
 	       double *cc,
-	       struct casereader **cutpoint_rdr, 
+	       struct casereader **cutpoint_rdr,
 	       bool (*pos_cond) (double, double),
 	       int true_index,
 	       int false_index)
@@ -489,7 +489,7 @@ process_group (const struct variable *var, struct casereader *reader,
 
   const int weight_idx  = w ? var_get_case_index (w) :
     caseproto_get_n_widths (casereader_get_proto (r1)) - 1;
-  
+
   struct ccase *c1;
 
   struct casereader *rclone = casereader_clone (r1);
@@ -500,7 +500,7 @@ process_group (const struct variable *var, struct casereader *reader,
   proto = caseproto_add_width (proto, 0);
   proto = caseproto_add_width (proto, 0);
 
-  wtr = autopaging_writer_create (proto);  
+  wtr = autopaging_writer_create (proto);
 
   *cc = 0;
 
@@ -546,7 +546,7 @@ process_group (const struct variable *var, struct casereader *reader,
       casereader_destroy (r2);
     }
 
-  
+
   casereader_destroy (r1);
   casereader_destroy (rclone);
 
@@ -635,7 +635,7 @@ append_cutpoint (struct casewriter *writer, double cutpoint)
 }
 
 
-/* 
+/*
    Create and initialise the rs[x].cutpoint_rdr casereaders.  That is, the readers will
    be created with width 5, ready to take the values (cutpoint, ROC_TP, ROC_FN, ROC_TN, ROC_FP), and the
    reader will be populated with its final number of cases.
@@ -676,7 +676,7 @@ prepare_cutpoints (struct cmd_roc *roc, struct roc_state *rs, struct casereader 
     {
       for (i = 0 ; i < roc->n_vars; ++i)
 	{
-	  const union value *v = case_data (c, roc->vars[i]); 
+	  const union value *v = case_data (c, roc->vars[i]);
 	  const double result = v->f;
 
 	  if ( mv_is_value_missing (var_get_missing_values (roc->vars[i]), v, roc->exclude))
@@ -742,7 +742,7 @@ do_roc (struct cmd_roc *roc, struct casereader *reader, struct dictionary *dict)
 
 
   /* Separate the positive actual state cases from the negative ones */
-  positives = 
+  positives =
     casereader_create_filter_func (input,
 				   match_positives,
 				   NULL,
@@ -750,7 +750,7 @@ do_roc (struct cmd_roc *roc, struct casereader *reader, struct dictionary *dict)
 				   neg_wtr);
 
   n_proto = caseproto_create ();
-      
+
   n_proto = caseproto_add_width (n_proto, 0);
   n_proto = caseproto_add_width (n_proto, 0);
   n_proto = caseproto_add_width (n_proto, 0);
@@ -849,7 +849,7 @@ do_roc (struct cmd_roc *roc, struct casereader *reader, struct dictionary *dict)
 		n_pos_gt = prev_pos_gt;
 		case_data_rw_idx (nc, N_POS_GT)->f = n_pos_gt;
 	      }
-	    
+
 	    casewriter_write (w, nc);
 	    prev_pos_gt = n_pos_gt;
 	  }
@@ -874,7 +874,7 @@ do_roc (struct cmd_roc *roc, struct casereader *reader, struct dictionary *dict)
 		n_neg_lt = prev_neg_lt;
 		case_data_rw_idx (nc, N_NEG_LT)->f = n_neg_lt;
 	      }
-	    
+
 	    casewriter_write (w, nc);
 	    prev_neg_lt = n_neg_lt;
 	  }
@@ -928,8 +928,8 @@ do_roc (struct cmd_roc *roc, struct casereader *reader, struct dictionary *dict)
 	casereader_destroy (r);
 	case_unref (prev_case);
 
-	rs[i].auc /=  rs[i].n1 * rs[i].n2; 
-	if ( roc->invert ) 
+	rs[i].auc /=  rs[i].n1 * rs[i].n2;
+	if ( roc->invert )
 	  rs[i].auc = 1 - rs[i].auc;
 
 	if ( roc->bi_neg_exp )
@@ -953,7 +953,7 @@ do_roc (struct cmd_roc *roc, struct casereader *reader, struct dictionary *dict)
   subcase_destroy (&down_ordering);
 
   output_roc (rs, roc);
- 
+
   for (i = 0 ; i < roc->n_vars; ++i)
     casereader_destroy (rs[i].cutpoint_rdr);
 

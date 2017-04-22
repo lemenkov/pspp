@@ -121,7 +121,7 @@ psppire_dialog_action_tt1s_activate (PsppireDialogAction *a)
   pda->dialog = get_widget_assert (xml, "t-test-one-sample-dialog");
   pda->source = get_widget_assert (xml, "one-sample-t-test-treeview2");
 
-  g_object_set (pda->source, 
+  g_object_set (pda->source,
 		"predicate", var_is_numeric, NULL);
 
   act->vars_treeview = get_widget_assert (xml, "one-sample-t-test-treeview1");

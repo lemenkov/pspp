@@ -53,7 +53,7 @@ get_proportion (PsppireDialogActionBinomial *act, double *prop)
     if (endptr == text)
       return FALSE;
 
-    return TRUE; 
+    return TRUE;
 }
 
 static gboolean

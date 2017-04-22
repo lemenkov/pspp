@@ -84,10 +84,10 @@ struct regression
 struct regression_workspace
 {
   /* The new variables which will be introduced by /SAVE */
-  const struct variable **predvars; 
+  const struct variable **predvars;
   const struct variable **residvars;
 
-  /* A reader/writer pair to temporarily hold the 
+  /* A reader/writer pair to temporarily hold the
      values of the new variables */
   struct casewriter *writer;
   struct casereader *reader;
@@ -155,7 +155,7 @@ save_trans_free (void *aux)
   return true;
 }
 
-static int 
+static int
 save_trans_func (void *aux, struct ccase **c, casenumber x UNUSED)
 {
   struct save_trans_data *save_trans_data = aux;
@@ -174,7 +174,7 @@ save_trans_func (void *aux, struct ccase **c, casenumber x UNUSED)
               double pred = case_data_idx (in, ws->extras * k + ws->pred_idx)->f;
               case_data_rw (*c, ws->predvars[k])->f = pred;
             }
-          
+
           if (ws->res_idx != -1)
             {
               double resid = case_data_idx (in, ws->extras * k + ws->res_idx)->f;
@@ -229,7 +229,7 @@ cmd_regression (struct lexer *lexer, struct dataset *ds)
 
 	  free (regression.dep_vars);
 	  regression.n_dep_vars = 0;
-	  
+
           if (!parse_variables_const (lexer, dict,
                                       &regression.dep_vars,
                                       &regression.n_dep_vars,
@@ -339,7 +339,7 @@ cmd_regression (struct lexer *lexer, struct dataset *ds)
   workspace.extras = 0;
   workspace.res_idx = -1;
   workspace.pred_idx = -1;
-  workspace.writer = NULL;                      
+  workspace.writer = NULL;
   workspace.reader = NULL;
   workspace.residvars = NULL;
   workspace.predvars = NULL;
@@ -413,7 +413,7 @@ cmd_regression (struct lexer *lexer, struct dataset *ds)
       save_trans_data->ws = xmalloc (sizeof (workspace));
       memcpy (save_trans_data->ws, &workspace, sizeof (workspace));
       save_trans_data->n_dep_vars = regression.n_dep_vars;
-          
+
       add_transformation (ds, save_trans_func, save_trans_free, save_trans_data);
     }
 
@@ -607,10 +607,10 @@ static void
 subcommand_statistics (const struct regression *cmd, const linreg * c, const gsl_matrix * cm,
                        const struct variable *var)
 {
-  if (cmd->stats & STATS_R) 
+  if (cmd->stats & STATS_R)
     reg_stats_r     (c, var);
 
-  if (cmd->stats & STATS_ANOVA) 
+  if (cmd->stats & STATS_ANOVA)
     reg_stats_anova (c, var);
 
   if (cmd->stats & STATS_COEFF)
@@ -622,7 +622,7 @@ subcommand_statistics (const struct regression *cmd, const linreg * c, const gsl
 
 
 static void
-run_regression (const struct regression *cmd, 
+run_regression (const struct regression *cmd,
                 struct regression_workspace *ws,
                 struct casereader *input)
 {
@@ -706,7 +706,7 @@ run_regression (const struct regression *cmd,
   if (ws->extras > 0)
    {
       struct casereader *r = casereader_clone (reader);
-      
+
       for (; (c = casereader_read (r)) != NULL; case_unref (c))
         {
           struct ccase *outc = case_create (casewriter_get_proto (ws->writer));
@@ -736,7 +736,7 @@ run_regression (const struct regression *cmd,
                 }
 	      free (vals);
 	      free (vars);
-            }          
+            }
           casewriter_write (ws->writer, outc);
         }
       casereader_destroy (r);
@@ -831,7 +831,7 @@ reg_stats_coeff (const linreg * c, const gsl_matrix *cov, const struct variable 
   tab_vline (t, TAL_0, 1, 0, 0);
 
 
-  tab_hline (t, TAL_1, 2, 4, 1); 
+  tab_hline (t, TAL_1, 2, 4, 1);
   tab_joint_text (t, 2, 0, 3, 0, TAB_CENTER | TAT_TITLE, _("Unstandardized Coefficients"));
   tab_text (t, 2, 1, TAB_CENTER | TAT_TITLE, _("B"));
   tab_text (t, 3, 1, TAB_CENTER | TAT_TITLE, _("Std. Error"));
@@ -851,7 +851,7 @@ reg_stats_coeff (const linreg * c, const gsl_matrix *cov, const struct variable 
       tab_double (t, 8, heading_rows, 0, upper, NULL, RC_OTHER);
 
       tab_joint_text_format (t, 7, 0, 8, 0, TAB_CENTER | TAT_TITLE, _("%g%% Confidence Interval for B"), cmd->ci * 100);
-      tab_hline (t, TAL_1, 7, 8, 1); 
+      tab_hline (t, TAL_1, 7, 8, 1);
       tab_text (t, 7, 1, TAB_CENTER | TAT_TITLE, _("Lower Bound"));
       tab_text (t, 8, 1, TAB_CENTER | TAT_TITLE, _("Upper Bound"));
     }
@@ -909,7 +909,7 @@ reg_stats_coeff (const linreg * c, const gsl_matrix *cov, const struct variable 
 	{
 	  double lower = linreg_coeff (c, j)  - tval * std_err ;
 	  double upper = linreg_coeff (c, j)  + tval * std_err ;
-			
+
 	  tab_double (t, 7, this_row, 0, lower, NULL, RC_OTHER);
 	  tab_double (t, 8, this_row, 0, upper, NULL, RC_OTHER);
 	}

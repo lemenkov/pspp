@@ -68,7 +68,7 @@ dialog_state_valid (gpointer data)
 
   if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (pd->nts[NT_MCNEMAR].button)))
     return TRUE;
-    
+
   return FALSE;
 }
 
@@ -228,7 +228,7 @@ psppire_dialog_action_two_sample_activate (PsppireDialogAction *a)
   psppire_selector_set_select_func (PSPPIRE_SELECTOR (selector),
 				    select_as_pair_member,
 				    act);
-  
+
 }
 
 static void

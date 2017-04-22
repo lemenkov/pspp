@@ -81,7 +81,7 @@ struct glm_workspace
 
   struct categoricals *cats;
 
-  /* 
+  /*
      Sums of squares due to different variables. Element 0 is the SSE
      for the entire model. For i > 0, element i is the SS due to
      variable i.
@@ -230,7 +230,7 @@ cmd_glm (struct lexer *lexer, struct dataset *ds)
 		      lex_error (lexer, NULL);
 		      goto error;
 		    }
-		  
+
 		  glm.alpha = lex_number (lexer);
 		  lex_get (lexer);
 		  if ( ! lex_force_match (lexer, T_RPAREN))
@@ -360,11 +360,11 @@ fill_submatrix (const gsl_matrix * cov, gsl_matrix * submatrix, bool *dropped_f)
   size_t j;
   size_t n = 0;
   size_t m = 0;
-  
+
   for (i = 0; i < cov->size1; i++)
     {
       if (not_dropped (i, dropped_f))
-	{	  
+	{
 	  m = 0;
 	  for (j = 0; j < cov->size2; j++)
 	    {
@@ -373,7 +373,7 @@ fill_submatrix (const gsl_matrix * cov, gsl_matrix * submatrix, bool *dropped_f)
 		  gsl_matrix_set (submatrix, n, m,
 				  gsl_matrix_get (cov, i, j));
 		  m++;
-		}	
+		}
 	    }
 	  n++;
 	}
@@ -381,7 +381,7 @@ fill_submatrix (const gsl_matrix * cov, gsl_matrix * submatrix, bool *dropped_f)
 }
 
 
-/* 
+/*
    Type 1 sums of squares.
    Populate SSQ with the Type 1 sums of squares according to COV
  */
@@ -410,7 +410,7 @@ ssq_type1 (struct covariance *cov, gsl_vector *ssq, const struct glm_spec *cmd)
     {
       gsl_matrix *model_cov = NULL;
       gsl_matrix *submodel_cov = NULL;
-      
+
       n_dropped_submodel = n_dropped_model;
       for (i = cmd->n_dep_vars; i < covariance_dim (cov); i++)
 	{
@@ -419,7 +419,7 @@ ssq_type1 (struct covariance *cov, gsl_vector *ssq, const struct glm_spec *cmd)
 
       for (i = cmd->n_dep_vars; i < covariance_dim (cov); i++)
 	{
-	  const struct interaction * x = 
+	  const struct interaction * x =
 	    categoricals_get_interaction_by_subscript (cats, i - cmd->n_dep_vars);
 
 	  if ( x == cmd->interactions [k])
@@ -450,7 +450,7 @@ ssq_type1 (struct covariance *cov, gsl_vector *ssq, const struct glm_spec *cmd)
   free (submodel_dropped);
 }
 
-/* 
+/*
    Type 2 sums of squares.
    Populate SSQ with the Type 2 sums of squares according to COV
  */
@@ -472,7 +472,7 @@ ssq_type2 (struct covariance *cov, gsl_vector *ssq, const struct glm_spec *cmd)
       size_t n_dropped_submodel = 0;
       for (i = cmd->n_dep_vars; i < covariance_dim (cov); i++)
 	{
-	  const struct interaction * x = 
+	  const struct interaction * x =
 	    categoricals_get_interaction_by_subscript (cats, i - cmd->n_dep_vars);
 
 	  model_dropped[i] = false;
@@ -513,7 +513,7 @@ ssq_type2 (struct covariance *cov, gsl_vector *ssq, const struct glm_spec *cmd)
   free (submodel_dropped);
 }
 
-/* 
+/*
    Type 3 sums of squares.
    Populate SSQ with the Type 2 sums of squares according to COV
  */
@@ -542,7 +542,7 @@ ssq_type3 (struct covariance *cov, gsl_vector *ssq, const struct glm_spec *cmd)
 
       for (i = cmd->n_dep_vars; i < covariance_dim (cov); i++)
 	{
-	  const struct interaction * x = 
+	  const struct interaction * x =
 	    categoricals_get_interaction_by_subscript (cats, i - cmd->n_dep_vars);
 
 	  model_dropped[i] = false;
@@ -596,7 +596,7 @@ run_glm (struct glm_spec *cmd, struct casereader *input,
 					     cmd->factor_vars, cmd->n_factor_vars,
 					     cmd->exclude,
 					     NULL,  NULL);
-  
+
   ws.cats = categoricals_create (cmd->interactions, cmd->n_interactions,
 				 cmd->wv, cmd->exclude, MV_ANY);
 
@@ -709,7 +709,7 @@ run_glm (struct glm_spec *cmd, struct casereader *input,
   taint_destroy (taint);
 }
 
-static const char *roman[] = 
+static const char *roman[] =
   {
     "", /* The Romans had no concept of zero */
     "I",
@@ -756,7 +756,7 @@ output_glm (const struct glm_spec *cmd, const struct glm_workspace *ws)
 
   /* TRANSLATORS: The parameter is a roman numeral */
   tab_text_format (t, 1, 0, TAB_CENTER | TAT_TITLE,
-		   _("Type %s Sum of Squares"), 
+		   _("Type %s Sum of Squares"),
 		   roman[cmd->ss_type]);
   tab_text (t, 2, 0, TAB_CENTER | TAT_TITLE, _("df"));
   tab_text (t, 3, 0, TAB_CENTER | TAT_TITLE, _("Mean Square"));
@@ -809,7 +809,7 @@ output_glm (const struct glm_spec *cmd, const struct glm_workspace *ws)
 
       ssq_effects += ssq;
 
-      if (! cmd->intercept) 
+      if (! cmd->intercept)
 	{
 	  df++;
 	  ssq += intercept_ssq;
@@ -865,7 +865,7 @@ output_glm (const struct glm_spec *cmd, const struct glm_workspace *ws)
     tab_text (t, 0, r, TAB_LEFT | TAT_TITLE, _("Total"));
     tab_double (t, 1, r, 0, ws->total_ssq + intercept_ssq, NULL, RC_OTHER);
     tab_double (t, 2, r, 0, n_total, NULL, RC_WEIGHT);
-    
+
     r++;
   }
 
@@ -915,7 +915,7 @@ parse_nested_variable (struct lexer *lexer, struct glm_spec *glm)
 	return false;
     }
 
-  lex_error (lexer, "Nested variables are not yet implemented"); return false;  
+  lex_error (lexer, "Nested variables are not yet implemented"); return false;
   return true;
 }
 

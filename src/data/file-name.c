@@ -101,7 +101,7 @@ fn_search_path (const char *base_name, char **path)
       struct stat temp;
       if (( (stat (file, &temp) == 0 ) && ( ! S_ISDIR (temp.st_mode) )))
 	return file;
-      
+
       free (file);
     }
 
@@ -199,9 +199,9 @@ fn_open (const struct file_handle *fh, const char *mode)
       free (ss);
       return fp;
     }
-#else    
+#else
     return fopen (fn, mode);
-#endif    
+#endif
 }
 
 /* Counterpart to fn_open that closes file F with name FN; returns 0

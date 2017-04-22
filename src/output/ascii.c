@@ -134,7 +134,7 @@ make_box_index (int left, int right, int top, int bottom)
       start_side = right;
       end_side = left;
     }
-    
+
   return ((end_side * RENDER_N_LINES + bottom) * RENDER_N_LINES + start_side) * RENDER_N_LINES + top;
 }
 
@@ -500,7 +500,7 @@ ascii_submit (struct output_driver *driver,
 
       file_name = xr_draw_png_chart (chart_item, a->chart_file_name,
                                      a->chart_cnt++,
-				     &a->fg, 
+				     &a->fg,
 				     &a->bg);
       if (file_name != NULL)
         {

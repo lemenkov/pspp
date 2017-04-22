@@ -378,7 +378,7 @@ output_driver_create (struct string_map *options)
                      device_string, "terminal", "listing");
       device_type = default_device_type (file_name);
     }
-  
+
   struct file_handle *fh = fh_create_file (NULL, file_name, NULL, fh_default_properties ());
 
   driver = f->create (fh, device_type, options);

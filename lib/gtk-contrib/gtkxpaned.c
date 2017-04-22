@@ -1,5 +1,5 @@
 /*******************************************************************************
- **3456789 123456789 123456789 123456789 123456789 123456789 123456789 123456789 
+ **3456789 123456789 123456789 123456789 123456789 123456789 123456789 123456789
  **      10        20        30        40        50        60        70        80
  **
  **  library for GtkXPaned-widget, a 2x2 grid-like variation of GtkPaned of gtk+
@@ -554,10 +554,10 @@ gtk_xpaned_class_init (GtkXPanedClass * class)
   /**
    * GtkPaned:resize:
    *
-   * The "resize" child property determines whether the child expands and 
+   * The "resize" child property determines whether the child expands and
    * shrinks along with the paned widget.
-   * 
-   * Since: 2.4 
+   *
+   * Since: 2.4
    */
   gtk_container_class_install_child_property (container_class,
                                               CHILD_PROP_RESIZE,
@@ -570,10 +570,10 @@ gtk_xpaned_class_init (GtkXPanedClass * class)
   /**
    * GtkPaned:shrink:
    *
-   * The "shrink" child property determines whether the child can be made 
+   * The "shrink" child property determines whether the child can be made
    * smaller than its requisition.
-   * 
-   * Since: 2.4 
+   *
+   * Since: 2.4
    */
   gtk_container_class_install_child_property (container_class,
                                               CHILD_PROP_SHRINK,
@@ -2101,9 +2101,9 @@ gtk_xpaned_forall (GtkContainer * container,
 /**
  * gtk_xpaned_get_position_x:
  * @paned: a #GtkXPaned widget
- * 
+ *
  * Obtains the x-position of the divider.
- * 
+ *
  * Return value: x-position of the divider
  **/
 gint
@@ -2117,9 +2117,9 @@ gtk_xpaned_get_position_x (GtkXPaned * xpaned)
 /**
  * gtk_xpaned_get_position_y:
  * @paned: a #GtkXPaned widget
- * 
+ *
  * Obtains the y-position of the divider.
- * 
+ *
  * Return value: y-position of the divider
  **/
 gint
@@ -2135,7 +2135,7 @@ gtk_xpaned_get_position_y (GtkXPaned * xpaned)
  * @paned: a #GtkXPaned widget
  * @xposition: pixel x-position of divider, a negative values
  * 			   of a component mean that the position is unset.
- * 
+ *
  * Sets the x-position of the divider between the four panes.
  **/
 void
@@ -2184,7 +2184,7 @@ gtk_xpaned_set_position_x (GtkXPaned * xpaned, gint xposition)
  * @paned: a #GtkXPaned widget
  * @yposition: pixel y-position of divider, a negative values
  * 			   of a component mean that the position is unset.
- * 
+ *
  * Sets the y-position of the divider between the four panes.
  **/
 void
@@ -2259,9 +2259,9 @@ gtk_xpaned_fetch_unmaximized_y (GtkXPaned * xpaned)
 /**
  * gtk_xpaned_get_top_left_child:
  * @xpaned: a #GtkXPaned widget
- * 
+ *
  * Obtains the top-left child of the xpaned widget.
- * 
+ *
  * Return value: top-left child, or %NULL if it is not set.
  *
  * Since: 2.4
@@ -2277,9 +2277,9 @@ gtk_xpaned_get_top_left_child (GtkXPaned * xpaned)
 /**
  * gtk_xpaned_get_top_right_child:
  * @xpaned: a #GtkXPaned widget
- * 
+ *
  * Obtains the top-right child of the xpaned widget.
- * 
+ *
  * Return value: top-right child, or %NULL if it is not set.
  *
  * Since: 2.4
@@ -2295,9 +2295,9 @@ gtk_xpaned_get_top_right_child (GtkXPaned * xpaned)
 /**
  * gtk_xpaned_get_bottom_left_child:
  * @xpaned: a #GtkXPaned widget
- * 
+ *
  * Obtains the bottom-left child of the xpaned widget.
- * 
+ *
  * Return value: bottom-left child, or %NULL if it is not set.
  *
  * Since: 2.4
@@ -2313,9 +2313,9 @@ gtk_xpaned_get_bottom_left_child (GtkXPaned * xpaned)
 /**
  * gtk_xpaned_get_bottom_right_child:
  * @xpaned: a #GtkXPaned widget
- * 
+ *
  * Obtains the bottom-right child of the xpaned widget.
- * 
+ *
  * Return value: bottom-right child, or %NULL if it is not set.
  *
  * Since: 2.4

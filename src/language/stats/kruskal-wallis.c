@@ -93,7 +93,7 @@ find_rank_entry (const struct hmap *map, const union value *group, size_t width)
       if (0 == value_compare_3way (group, &re->group, width))
 	return re;
     }
-  
+
   return re;
 }
 
@@ -137,7 +137,7 @@ kruskal_wallis_execute (const struct dataset *ds,
   struct kw *kw = xcalloc (nst->n_vars, sizeof *kw);
 
   /* If the independent variable is missing, then we ignore the case */
-  input = casereader_create_filter_missing (input, 
+  input = casereader_create_filter_missing (input,
 					    &nst->indep_var, 1,
 					    exclude,
 					    NULL, NULL);
@@ -145,7 +145,7 @@ kruskal_wallis_execute (const struct dataset *ds,
   input = casereader_create_filter_weight (input, dict, &warn, NULL);
 
   /* Remove all those cases which are outside the range (val1, val2) */
-  input = casereader_create_filter_func (input, include_func, NULL, 
+  input = casereader_create_filter_func (input, include_func, NULL,
 	CONST_CAST (struct n_sample_test *, nst), NULL);
 
   proto = casereader_get_proto (input);
@@ -167,7 +167,7 @@ kruskal_wallis_execute (const struct dataset *ds,
 					    exclude,
 					    NULL, NULL);
 
-      rr = casereader_create_append_rank (r, 
+      rr = casereader_create_append_rank (r,
 					  nst->vars[i],
 					  dict_get_weight (dict),
 					  &rerr,
@@ -178,7 +178,7 @@ kruskal_wallis_execute (const struct dataset *ds,
 	{
 	  const union value *group = case_data (c, nst->indep_var);
 	  const size_t group_var_width = var_get_width (nst->indep_var);
-	  struct rank_entry *rank = find_rank_entry (&kw[i].map, group, group_var_width); 
+	  struct rank_entry *rank = find_rank_entry (&kw[i].map, group, group_var_width);
 
 	  if ( NULL == rank)
 	    {
@@ -212,14 +212,14 @@ kruskal_wallis_execute (const struct dataset *ds,
 	    total_n_groups ++;
 	  }
 	kw[i].h *= 12 / (n * ( n + 1));
-	kw[i].h -= 3 * (n + 1) ; 
+	kw[i].h -= 3 * (n + 1) ;
 
 	kw[i].h /= 1 - tiebreaker/ (pow3 (n) - n);
       }
     }
 
   casereader_destroy (input);
-  
+
   show_ranks_box (nst, kw, total_n_groups);
   show_sig_box (nst, kw);
 
@@ -265,7 +265,7 @@ show_ranks_box (const struct n_sample_test *nst, const struct kw *kw, int n_grou
   tab_box (table, TAL_2, TAL_2, -1, -1,
 	   0,  0, tab_nc (table) - 1, tab_nr (table) - 1 );
 
-  tab_text (table, 1, 0, TAT_TITLE, 
+  tab_text (table, 1, 0, TAT_TITLE,
 	    var_to_string (nst->indep_var)
 	    );
 
@@ -286,7 +286,7 @@ show_ranks_box (const struct n_sample_test *nst, const struct kw *kw, int n_grou
 
       if (i > 0)
 	tab_hline (table, TAL_1, 0, tab_nc (table) -1, row);
-      
+
       tab_text (table,  0, row,
 		TAT_TITLE, var_to_string (nst->vars[i]));
 
@@ -308,13 +308,13 @@ show_ranks_box (const struct n_sample_test *nst, const struct kw *kw, int n_grou
 
 	  struct string str;
 	  ds_init_empty (&str);
-          
+
 	  var_append_value_name (nst->indep_var, &re->group, &str);
-          
+
 	  tab_text   (table, 1, row, TAB_LEFT, ds_cstr (&str));
 	  tab_double (table, 2, row, TAB_LEFT, re->n, NULL, RC_INTEGER);
 	  tab_double (table, 3, row, TAB_LEFT, re->sum_of_ranks / re->n, NULL, RC_OTHER);
-          
+
 	  tot += re->n;
 	  row++;
 	  ds_destroy (&str);
@@ -362,7 +362,7 @@ show_sig_box (const struct n_sample_test *nst, const struct kw *kw)
   for (i = 0 ; i < nst->n_vars; ++i)
     {
       const double df = hmap_count (&kw[i].map) - 1;
-      tab_text (table, column_headers + 1 + i, 0, TAT_TITLE, 
+      tab_text (table, column_headers + 1 + i, 0, TAT_TITLE,
 		var_to_string (nst->vars[i])
 		);
 

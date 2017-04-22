@@ -75,9 +75,9 @@ compare_freq_2level_ptr_3way (const void *a_, const void *b_, const void *bc_)
 
 
 /* Creates and returns a chart that will render a barchart with
-   the given TITLE and the N_CATS described in CATS. 
+   the given TITLE and the N_CATS described in CATS.
 
-   VAR is an array containing the categorical variables, and N_VAR 
+   VAR is an array containing the categorical variables, and N_VAR
    the number of them. N_VAR must be exactly 1 or 2.
 
    CATS are the counts of the values of those variables. N_CATS is the
@@ -85,7 +85,7 @@ compare_freq_2level_ptr_3way (const void *a_, const void *b_, const void *bc_)
 */
 struct chart_item *
 barchart_create (const struct variable **var, int n_vars,
-		 const char *ylabel, bool percent, 
+		 const char *ylabel, bool percent,
 		 struct freq *const *cats, int n_cats)
 {
   struct barchart *bar;
@@ -113,7 +113,7 @@ barchart_create (const struct variable **var, int n_vars,
       int idx = 0;
       hmap_init (&bar->primaries);
 
-      /* 
+      /*
 	 Iterate the categories and create a hash table of the primary categories.
 	 We need to do this to find out how many there are and to cache the labels.
       */
@@ -133,7 +133,7 @@ barchart_create (const struct variable **var, int n_vars,
 		}
 	    }
 
-	  if (!flag) 
+	  if (!flag)
 	    {
 	      struct category *s = xzalloc (sizeof *s);
 	      s->idx = idx++;
@@ -170,8 +170,8 @@ barchart_create (const struct variable **var, int n_vars,
 		  break;
 		}
 	    }
-      
-	  if (!flag) 
+
+	  if (!flag)
 	    {
 	      struct category *s = xzalloc (sizeof *s);
 	      s->idx = idx++;
@@ -192,7 +192,7 @@ barchart_create (const struct variable **var, int n_vars,
       sort (bar->ss, n_category, sizeof *bar->ss,
 	    compare_category_3way, bar);
     }
-    
+
 
   /* Deep copy.  Not necessary for cmd line, but essential for the GUI,
      since an expose callback will access these structs which may not
@@ -208,7 +208,7 @@ barchart_create (const struct variable **var, int n_vars,
     struct hmap level2table;
     hmap_init (&level2table);
     int x = 0;
-  
+
     for (i = 0; i < n_cats; i++)
       {
 	struct freq *c = cats[i];
@@ -222,23 +222,23 @@ barchart_create (const struct variable **var, int n_vars,
 	      {
 		foo->count += c->count;
 		bar->total_count += c->count;
-		
+
 		if (foo->count > bar->largest)
 		  bar->largest = foo->count;
-		
+
 		flag = true;
 		break;
 	      }
 	  }
-	
-	if (!flag) 
+
+	if (!flag)
 	  {
-	    struct freq *aggregated_freq = freq_clone (c, n_vars, bar->widths); 
+	    struct freq *aggregated_freq = freq_clone (c, n_vars, bar->widths);
 	    hmap_insert (&level2table, &aggregated_freq->node, hash);
-	    
+
 	    if (c->count > bar->largest)
 	      bar->largest = aggregated_freq->count;
-	    
+
 	    bar->total_count += c->count;
 	    bar->cats[x++] = aggregated_freq;
 	  }
@@ -287,7 +287,7 @@ barchart_destroy (struct chart_item *chart_item)
     {
       freq_destroy (bar->cats[i], bar->n_vars, bar->widths);
     }
-  
+
   free (bar->cats);
   free (bar->ylabel);
   free (bar->ss);

@@ -152,8 +152,8 @@ psppire_dialog_class_init (PsppireDialogClass *class)
   GParamSpec *sliding_spec ;
   GParamSpec *help_page_spec ;
 
-  help_page_spec = 
-    g_param_spec_string ("help-page", 
+  help_page_spec =
+    g_param_spec_string ("help-page",
 			 "Help Page",
 			 "The section of the manual to load when the Help button is clicked",
 			 NULL,
@@ -334,7 +334,7 @@ connect_notify_signal (GtkWidget *w, gpointer data)
       g_signal_connect_swapped (w, "de-selected",
 				G_CALLBACK (psppire_dialog_notify_change),
 				dialog);
-      
+
       psppire_selector_update_subjects (PSPPIRE_SELECTOR (w));
     }
 
@@ -385,7 +385,7 @@ connect_notify_signal (GtkWidget *w, gpointer data)
 				    dialog);
 
 	}
-      
+
       g_signal_connect_swapped (selection, "changed",
 				G_CALLBACK (psppire_dialog_notify_change),
 				dialog);

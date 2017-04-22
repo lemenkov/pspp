@@ -294,7 +294,7 @@ repopulate_delimiter_columns (PsppireImportAssistant *ia)
 		    "resizable", TRUE,
 		    "sizing", GTK_TREE_VIEW_COLUMN_AUTOSIZE,
 		    NULL);
-      
+
       gtk_tree_view_append_column (GTK_TREE_VIEW (ia->fields_tree_view), column);
     }
 }
@@ -321,7 +321,7 @@ static void
 prepare_separators_page (PsppireImportAssistant *ia, GtkWidget *page)
 {
   gtk_tree_view_set_model (GTK_TREE_VIEW (ia->fields_tree_view), ia->delimiters_model);
-     
+
   g_signal_connect_swapped (ia->delimiters_model, "notify::delimiters",
   			G_CALLBACK (reset_tree_view_model), ia);
 
@@ -978,9 +978,9 @@ on_cursor_change (GtkTreeView *treeview, gpointer user_data)
       PsppireTextFile *tf = PSPPIRE_TEXT_FILE (model);
       GtkTreePath *path = gtk_tree_model_get_path (model, &iter);
       gint *index = gtk_tree_path_get_indices (path);
-      
+
       n = *index;
-      
+
       gtk_tree_path_free (path);
 
       g_print ("%s:%d Setting first line to %d\n", __FILE__, __LINE__, n);

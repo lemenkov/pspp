@@ -20,7 +20,7 @@
 
 #include "psppire-dialog-action.h"
 
-/* 
+/*
    This module provides a subclass of GtkTreeView, designed for dialogs
    which need lists of annotated checkbox items.
    The object contains the necessary model and renderers, which means that
@@ -71,7 +71,7 @@ struct _PsppireDialogActionCrosstabs
   GtkWidget *col_vars;
   GtkWidget *row_vars;
 
-  GtkWidget *dest_rows; 
+  GtkWidget *dest_rows;
   GtkWidget *dest_cols ;
   GtkWidget *format_button ;
   GtkWidget *stat_button ;

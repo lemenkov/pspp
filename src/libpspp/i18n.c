@@ -120,7 +120,7 @@ create_iconv (const char* tocode, const char* fromcode)
       free (soutbuf);
       iconv_close (bconv);
     }
-  
+
   hmapx_insert (&map, converter, hash);
 
   return converter;
@@ -242,7 +242,7 @@ try_recode (struct converter *cvtr, char fallbackchar,
 
   for (i = 0 ; i < null_bytes ; ++i)
     *out++ = '\0';
-  
+
   return out - 1 - out_;
 }
 

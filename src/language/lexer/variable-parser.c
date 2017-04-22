@@ -635,7 +635,7 @@ parse_mixed_vars (struct lexer *lexer, const struct dictionary *dict,
     }
   if (*nnames == 0)
     goto fail;
-  
+
   return true;
 
 fail:
@@ -924,7 +924,7 @@ parse_internal_interaction (struct lexer *lexer, const struct dictionary *dict, 
       *iact = NULL;
       return false;
     }
-  
+
   assert (v);
 
   if ( *iact == NULL)

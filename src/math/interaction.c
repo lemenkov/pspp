@@ -34,10 +34,10 @@
 
   Interaction is commutative.  That means, that from a mathematical point of
   view,  the order of the variables is irrelevant.  However, for display
-  purposes, and for matching with an interaction's value the order is 
+  purposes, and for matching with an interaction's value the order is
   pertinent.
-  
-  Therefore, when using these functions, make sure the orders of variables 
+
+  Therefore, when using these functions, make sure the orders of variables
   and values match when appropriate.
 */
 
@@ -106,7 +106,7 @@ interaction_is_proper_subset (const struct interaction *x, const struct interact
 }
 
 /*
-  Do the variables in X->VARS constitute a 
+  Do the variables in X->VARS constitute a
   subset (proper or otherwise) of the variables in Y->VARS?
  */
 bool
@@ -132,7 +132,7 @@ interaction_is_subset (const struct interaction *x, const struct interaction *y)
 	}
     }
 
-  /* If ALL the members of X were also found in Y, then this must be a subset */    
+  /* If ALL the members of X were also found in Y, then this must be a subset */
   if (n >= x->n_vars)
     return true;
 

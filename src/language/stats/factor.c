@@ -19,8 +19,8 @@
 #include <gsl/gsl_vector.h>
 #include <gsl/gsl_linalg.h>
 #include <gsl/gsl_matrix.h>
-#include <gsl/gsl_eigen.h> 
-#include <gsl/gsl_blas.h> 
+#include <gsl/gsl_eigen.h>
+#include <gsl/gsl_blas.h>
 #include <gsl/gsl_sort_vector.h>
 #include <gsl/gsl_cdf.h>
 
@@ -87,7 +87,7 @@ enum print_opts
     PRINT_EXTRACTION  = 0x0100,
     PRINT_INITIAL     = 0x0200,
     PRINT_KMO         = 0x0400,
-    PRINT_REPR        = 0x0800, 
+    PRINT_REPR        = 0x0800,
     PRINT_FSCORE      = 0x1000
   };
 
@@ -142,7 +142,7 @@ static const rotation_coefficients rotation_coeff[] = {
 
 /* return diag (C'C) ^ {-0.5} */
 static gsl_matrix *
-diag_rcp_sqrt (const gsl_matrix *C) 
+diag_rcp_sqrt (const gsl_matrix *C)
 {
   int j;
   gsl_matrix *d =  gsl_matrix_calloc (C->size1, C->size2);
@@ -170,7 +170,7 @@ diag_rcp_sqrt (const gsl_matrix *C)
 
 /* return diag ((C'C)^-1) ^ {-0.5} */
 static gsl_matrix *
-diag_rcp_inv_sqrt (const gsl_matrix *CCinv) 
+diag_rcp_inv_sqrt (const gsl_matrix *CCinv)
 {
   int j;
   gsl_matrix *r =  gsl_matrix_calloc (CCinv->size1, CCinv->size2);
@@ -191,7 +191,7 @@ diag_rcp_inv_sqrt (const gsl_matrix *CCinv)
 
 
 
-struct cmd_factor 
+struct cmd_factor
 {
   size_t n_vars;
   const struct variable **vars;
@@ -276,7 +276,7 @@ anti_image (const gsl_matrix *m)
   assert (m->size1 == m->size2);
 
   a = gsl_matrix_alloc (m->size1, m->size2);
-  
+
   for (i = 0; i < m->size1; ++i)
     {
       for (j = 0; j < m->size2; ++j)
@@ -301,7 +301,7 @@ ssq_od_n (const gsl_matrix *m, int n)
   assert (m->size1 == m->size2);
 
   assert (n < m->size1);
-  
+
   for (i = 0; i < m->size1; ++i)
     {
       if (i == n ) continue;
@@ -357,11 +357,11 @@ dump_vector (const gsl_vector *v)
 #endif
 
 
-static int 
+static int
 n_extracted_factors (const struct cmd_factor *factor, struct idata *idata)
 {
   int i;
-  
+
   /* If there is a cached value, then return that. */
   if ( idata->n_extractions != 0)
     return idata->n_extractions;
@@ -373,7 +373,7 @@ n_extracted_factors (const struct cmd_factor *factor, struct idata *idata)
       idata->n_extractions = factor->n_factors;
       goto finish;
     }
-  
+
   /* Use the MIN_EIGEN setting. */
   for (i = 0 ; i < idata->eval->size; ++i)
     {
@@ -408,7 +408,7 @@ struct smr_workspace
 {
   /* Copy of the subject */
   gsl_matrix *m;
-  
+
   gsl_matrix *inverse;
 
   gsl_permutation *perm;
@@ -421,7 +421,7 @@ struct smr_workspace
 static struct smr_workspace *ws_create (const gsl_matrix *input)
 {
   struct smr_workspace *ws = xmalloc (sizeof (*ws));
-  
+
   ws->m = gsl_matrix_alloc (input->size1, input->size2);
   ws->inverse = gsl_matrix_calloc (input->size1 - 1, input->size2 - 1);
   ws->perm = gsl_permutation_alloc (input->size1 - 1);
@@ -444,13 +444,13 @@ ws_destroy (struct smr_workspace *ws)
 }
 
 
-/* 
+/*
    Return the square of the regression coefficient for VAR regressed against all other variables.
  */
 static double
 squared_multiple_correlation (const gsl_matrix *corr, int var, struct smr_workspace *ws)
 {
-  /* For an explanation of what this is doing, see 
+  /* For an explanation of what this is doing, see
      http://www.visualstatistics.net/Visual%20Statistics%20Multimedia/multiple_regression_analysis.htm
   */
 
@@ -462,7 +462,7 @@ squared_multiple_correlation (const gsl_matrix *corr, int var, struct smr_worksp
   gsl_matrix_swap_rows (ws->m, 0, var);
   gsl_matrix_swap_columns (ws->m, 0, var);
 
-  rxx = gsl_matrix_submatrix (ws->m, 1, 1, ws->m->size1 - 1, ws->m->size1 - 1); 
+  rxx = gsl_matrix_submatrix (ws->m, 1, 1, ws->m->size1 - 1, ws->m->size1 - 1);
 
   gsl_linalg_LU_decomp (&rxx.matrix, ws->perm, &signum);
 
@@ -511,7 +511,7 @@ factor_matrix_workspace_alloc (size_t n, size_t nf)
   ws->eval = gsl_vector_alloc (n);
   ws->evec = gsl_matrix_alloc (n, n);
   ws->r  = gsl_matrix_alloc (n, n);
-  
+
   return ws;
 }
 
@@ -546,10 +546,10 @@ perm_shift_apply (gsl_permutation *target, const gsl_permutation *p,
 }
 
 
-/* 
+/*
    Indirectly sort the rows of matrix INPUT, storing the sort order in PERM.
    The sort criteria are as follows:
-   
+
    Rows are sorted on the first column, until the absolute value of an
    element in a subsequent column  is greater than that of the first
    column.  Thereafter, rows will be sorted on the second column,
@@ -582,7 +582,7 @@ sort_matrix_indirect (const gsl_matrix *input, gsl_permutation *perm)
 	}
     }
 
-  while (column_n < m && row_n < n) 
+  while (column_n < m && row_n < n)
     {
       gsl_vector_const_view columni = gsl_matrix_const_column (mat, column_n);
       gsl_sort_vector_index (p, &columni.vector);
@@ -591,7 +591,7 @@ sort_matrix_indirect (const gsl_matrix *input, gsl_permutation *perm)
 	{
 	  gsl_vector_view row = gsl_matrix_row (mat, p->data[n - 1 - i]);
 	  size_t maxindex = gsl_vector_max_index (&row.vector);
-	  
+
 	  if ( maxindex > column_n )
 	    break;
 
@@ -609,11 +609,11 @@ sort_matrix_indirect (const gsl_matrix *input, gsl_permutation *perm)
 
   gsl_permutation_free (p);
   gsl_matrix_free (mat);
-  
+
   assert ( 0 == gsl_permutation_valid (perm));
 
   /* We want the biggest value to be first */
-  gsl_permutation_reverse (perm);    
+  gsl_permutation_reverse (perm);
 }
 
 
@@ -647,7 +647,7 @@ clone_matrix (const gsl_matrix *m)
 }
 
 
-static double 
+static double
 initial_sv (const gsl_matrix *fm)
 {
   int j, k;
@@ -738,7 +738,7 @@ rotate (const struct cmd_factor *cf, const gsl_matrix *unrot,
 		{
 		  double jv = gsl_matrix_get (normalised, p, j);
 		  double kv = gsl_matrix_get (normalised, p, k);
-	      
+
 		  double u = jv * jv - kv * kv;
 		  double v = 2 * jv * kv;
 		  a += u;
@@ -787,10 +787,10 @@ rotate (const struct cmd_factor *cf, const gsl_matrix *unrot,
   gsl_matrix_free (h_sqrt);
   gsl_matrix_free (normalised);
 
-  if (cf->rotation == ROT_PROMAX) 
+  if (cf->rotation == ROT_PROMAX)
     {
       /* general purpose m by m matrix, where m is the number of factors */
-      gsl_matrix *mm1 =  gsl_matrix_calloc (unrot->size2, unrot->size2); 
+      gsl_matrix *mm1 =  gsl_matrix_calloc (unrot->size2, unrot->size2);
       gsl_matrix *mm2 =  gsl_matrix_calloc (unrot->size2, unrot->size2);
 
       /* general purpose m by p matrix, where p is the number of variables */
@@ -814,7 +814,7 @@ rotate (const struct cmd_factor *cf, const gsl_matrix *unrot,
 
       /* Vector of length p containing (indexed by i)
 	 \Sum^m_j {\lambda^2_{ij}} */
-      gsl_vector *rssq = gsl_vector_calloc (unrot->size1); 
+      gsl_vector *rssq = gsl_vector_calloc (unrot->size1);
 
       for (i = 0; i < P->size1; ++i)
 	{
@@ -823,9 +823,9 @@ rotate (const struct cmd_factor *cf, const gsl_matrix *unrot,
 	    {
 	      sum += gsl_matrix_get (result, i, j)
 		* gsl_matrix_get (result, i, j);
-		    
+
 	    }
-		
+
 	  gsl_vector_set (rssq, i, sqrt (sum));
 	}
 
@@ -898,7 +898,7 @@ rotate (const struct cmd_factor *cf, const gsl_matrix *unrot,
       gsl_linalg_matmult_mod (mm1,      GSL_LINALG_MOD_NONE,
 			      C,  GSL_LINALG_MOD_TRANSPOSE,
 			      factor_correlation_matrix);
-      
+
       gsl_linalg_matmult_mod (pattern_matrix,      GSL_LINALG_MOD_NONE,
 			      factor_correlation_matrix,  GSL_LINALG_MOD_NONE,
 			      pm1);
@@ -954,7 +954,7 @@ rotate (const struct cmd_factor *cf, const gsl_matrix *unrot,
   WS is a pointer to a structure which must have been initialised with factor_matrix_workspace_init.
  */
 static void
-iterate_factor_matrix (const gsl_matrix *r, gsl_vector *communalities, gsl_matrix *factors, 
+iterate_factor_matrix (const gsl_matrix *r, gsl_vector *communalities, gsl_matrix *factors,
 		       struct factor_matrix_workspace *ws)
 {
   size_t i;
@@ -1408,7 +1408,7 @@ cmd_factor (struct lexer *lexer, struct dataset *ds)
   if ( factor.rotation == ROT_NONE )
     factor.print &= ~PRINT_ROTATION;
 
-  if ( ! run_factor (ds, &factor)) 
+  if ( ! run_factor (ds, &factor))
     goto error;
 
   free (factor.vars);
@@ -1580,10 +1580,10 @@ show_factor_matrix (const struct cmd_factor *factor, struct idata *idata, const 
 
   struct tab_table *t = tab_create (nc, nr);
 
-  /* 
+  /*
   if ( factor->extraction == EXTRACTION_PC )
     tab_title (t, _("Component Matrix"));
-  else 
+  else
     tab_title (t, _("Factor Matrix"));
   */
 
@@ -1887,7 +1887,7 @@ show_factor_correlation (const struct cmd_factor * factor, const gsl_matrix *fcm
   for (i = 0 ; i < fcm->size1; ++i)
     {
       for (j = 0 ; j < fcm->size2; ++j)
-	tab_double (t, heading_columns + i,  heading_rows +j, 0, 
+	tab_double (t, heading_columns + i,  heading_rows +j, 0,
 		    gsl_matrix_get (fcm, i, j), NULL, RC_OTHER);
     }
 
@@ -2050,12 +2050,12 @@ do_factor (const struct cmd_factor *factor, struct casereader *r)
   var_matrix = covariance_moments (cov, MOMENT_VARIANCE);
   mean_matrix = covariance_moments (cov, MOMENT_MEAN);
   idata->n = covariance_moments (cov, MOMENT_NONE);
-  
+
 
   if ( factor->method == METHOD_CORR)
     {
       idata->corr = correlation_from_covariance (idata->cov, var_matrix);
-      
+
       analysis_matrix = idata->corr;
     }
   else
@@ -2190,7 +2190,7 @@ do_factor (const struct cmd_factor *factor, struct casereader *r)
       tab_text (t, 1, 3, TAT_TITLE, _("Sig."));
 
 
-      /* The literature doesn't say what to do for the value of W when 
+      /* The literature doesn't say what to do for the value of W when
 	 missing values are involved.  The best thing I can think of
 	 is to take the mean average. */
       w = 0;
@@ -2204,7 +2204,7 @@ do_factor (const struct cmd_factor *factor, struct casereader *r)
       tab_double (t, 2, 1, 0, xsq, NULL, RC_OTHER);
       tab_double (t, 2, 2, 0, df, NULL, RC_INTEGER);
       tab_double (t, 2, 3, 0, gsl_cdf_chisq_Q (xsq, df), NULL, RC_PVALUE);
-      
+
 
       tab_submit (t);
     }
@@ -2215,7 +2215,7 @@ do_factor (const struct cmd_factor *factor, struct casereader *r)
   {
     gsl_matrix *am = matrix_dup (analysis_matrix);
     gsl_eigen_symmv_workspace *workspace = gsl_eigen_symmv_alloc (factor->n_vars);
-    
+
     gsl_eigen_symmv (am, idata->eval, idata->evec, workspace);
 
     gsl_eigen_symmv_free (workspace);
@@ -2234,12 +2234,12 @@ do_factor (const struct cmd_factor *factor, struct casereader *r)
 
   if (idata->n_extractions > factor->n_vars)
     {
-      msg (MW, 
-	   _("The %s criteria result in more factors than variables, which is not meaningful. No analysis will be performed."), 
+      msg (MW,
+	   _("The %s criteria result in more factors than variables, which is not meaningful. No analysis will be performed."),
 	   "FACTOR");
       goto finish;
     }
-    
+
   {
     gsl_matrix *rotated_factors = NULL;
     gsl_matrix *pattern_matrix = NULL;
@@ -2274,11 +2274,11 @@ do_factor (const struct cmd_factor *factor, struct casereader *r)
 	    gsl_vector_memcpy (diff, idata->msr);
 
 	    iterate_factor_matrix (analysis_matrix, idata->msr, factor_matrix, fmw);
-      
+
 	    gsl_vector_sub (diff, idata->msr);
 
 	    gsl_vector_minmax (diff, &min, &max);
-      
+
 	    if ( fabs (min) < factor->econverge && fabs (max) < factor->econverge)
 	      break;
 	  }
@@ -2315,11 +2315,11 @@ do_factor (const struct cmd_factor *factor, struct casereader *r)
 	    pattern_matrix = gsl_matrix_calloc (factor_matrix->size1, factor_matrix->size2);
 	    fcm = gsl_matrix_calloc (factor_matrix->size2, factor_matrix->size2);
 	  }
-	  
+
 
 	rotate (factor, factor_matrix, extracted_communalities, rotated_factors, rotated_loadings, pattern_matrix, fcm);
       }
-    
+
     show_explained_variance (factor, idata, idata->eval, extracted_eigenvalues, rotated_loadings);
 
     factor_matrix_workspace_free (fmw);

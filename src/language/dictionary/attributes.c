@@ -52,7 +52,7 @@ cmd_variable_attribute (struct lexer *lexer, struct dataset *ds)
   struct dictionary *dict = dataset_dict (ds);
   const char *dict_encoding = dict_get_encoding (dict);
 
-  do 
+  do
     {
       struct variable **vars;
       struct attrset **sets;
@@ -120,7 +120,7 @@ error:
 
 static bool
 add_attribute (struct lexer *lexer, const char *dict_encoding,
-               struct attrset **sets, size_t n) 
+               struct attrset **sets, size_t n)
 {
   const char *value;
   size_t index, i;
@@ -139,10 +139,10 @@ add_attribute (struct lexer *lexer, const char *dict_encoding,
   for (i = 0; i < n; i++)
     {
       struct attribute *attr = attrset_lookup (sets[i], name);
-      if (attr == NULL) 
+      if (attr == NULL)
         {
           attr = attribute_create (name);
-          attrset_add (sets[i], attr); 
+          attrset_add (sets[i], attr);
         }
       attribute_set_value (attr, index ? index - 1 : 0, value);
     }
@@ -154,7 +154,7 @@ add_attribute (struct lexer *lexer, const char *dict_encoding,
 
 static bool
 delete_attribute (struct lexer *lexer, const char *dict_encoding,
-                  struct attrset **sets, size_t n) 
+                  struct attrset **sets, size_t n)
 {
   size_t index, i;
   char *name;
@@ -163,7 +163,7 @@ delete_attribute (struct lexer *lexer, const char *dict_encoding,
   if (name == NULL)
     return false;
 
-  for (i = 0; i < n; i++) 
+  for (i = 0; i < n; i++)
     {
       struct attrset *set = sets[i];
       if (index == 0)
@@ -171,11 +171,11 @@ delete_attribute (struct lexer *lexer, const char *dict_encoding,
       else
         {
           struct attribute *attr = attrset_lookup (set, name);
-          if (attr != NULL) 
+          if (attr != NULL)
             {
               attribute_del_value (attr, index - 1);
               if (attribute_get_n_values (attr) == 0)
-                attrset_delete (set, name); 
+                attrset_delete (set, name);
             }
         }
     }
@@ -186,10 +186,10 @@ delete_attribute (struct lexer *lexer, const char *dict_encoding,
 
 static enum cmd_result
 parse_attributes (struct lexer *lexer, const char *dict_encoding,
-                  struct attrset **sets, size_t n) 
+                  struct attrset **sets, size_t n)
 {
   enum { UNKNOWN, ADD, DELETE } command = UNKNOWN;
-  do 
+  do
     {
       if (lex_match_phrase (lexer, "ATTRIBUTE="))
         command = ADD;

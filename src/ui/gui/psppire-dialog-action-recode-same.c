@@ -58,7 +58,7 @@ dialog_state_valid (gpointer data)
 {
   PsppireDialogActionRecode *rd = data;
   GtkTreeIter not_used;
-      
+
   if ( ! rd->value_map )
     return FALSE;
 
@@ -106,7 +106,7 @@ psppire_dialog_action_recode_same_activate (PsppireDialogAction *a)
 
   gtk_window_set_title (GTK_WINDOW (pda->dialog),
 			_("Recode into Same Variables"));
-  
+
   g_signal_connect_swapped (act->old_and_new_dialog, "show",
 			    G_CALLBACK (on_old_new_show), act);
 
@@ -114,7 +114,7 @@ psppire_dialog_action_recode_same_activate (PsppireDialogAction *a)
 			_("Recode into Same Variables: Old and New Values"));
 
   gtk_widget_hide (act->output_variable_box);
-  
+
   psppire_dialog_action_set_refresh (pda, refresh);
 
   psppire_dialog_action_set_valid_predicate (pda,

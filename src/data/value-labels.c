@@ -364,7 +364,7 @@ val_labs_equal (const struct val_labs *a, const struct val_labs *b)
 
   if (val_labs_count (a) != val_labs_count (b))
     return false;
-  
+
   if (a == NULL || b == NULL)
     return true;
 
