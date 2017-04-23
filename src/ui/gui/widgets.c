@@ -171,7 +171,7 @@ preregister_misc (void)
 
   g_value_register_transform_func (G_TYPE_STRING, G_TYPE_DOUBLE, tx_string_to_double);
   g_value_register_transform_func (G_TYPE_STRING, G_TYPE_INT, tx_string_to_int);
-  
+
   g_value_register_transform_func (measure_enum_type, G_TYPE_STRING, enum_to_string);
   g_value_register_transform_func (align_enum_type, G_TYPE_STRING, enum_to_string);
   g_value_register_transform_func (role_enum_type, G_TYPE_STRING, enum_to_string);

@@ -90,7 +90,7 @@ gi (GListModel *list, guint id)
   JmdDatum *gd = JMD_DATUM (g_object_new (JMD_TYPE_DATUM, NULL));
 
   PsppireDict *dict = PSPPIRE_DICT (list);
-  
+
   if (id >= psppire_dict_get_var_cnt (dict))
     {
       gd->text = g_strdup (_("Var"));
@@ -160,7 +160,7 @@ psppire_dict_get_type (void)
       object_type = g_type_register_static (G_TYPE_OBJECT,
 					    "PsppireDict",
 					    &object_info, 0);
-      
+
       g_type_add_interface_static (object_type, GTK_TYPE_TREE_MODEL,
 				   &tree_model_info);
 
@@ -180,7 +180,7 @@ psppire_dict_class_init (PsppireDictClass *class)
   parent_class = g_type_class_peek_parent (class);
 
   object_class->dispose = psppire_dict_dispose;
-  
+
   signals [VARIABLE_CHANGED] =
     g_signal_new ("variable-changed",
 		  G_TYPE_FROM_CLASS (class),
@@ -344,7 +344,7 @@ psppire_dict_new_from_dict (struct dictionary *d)
 {
   PsppireDict *new_dict = g_object_new (PSPPIRE_TYPE_DICT, NULL);
   new_dict->dict = d;
-  
+
   dict_set_callbacks (new_dict->dict, &gui_callbacks, new_dict);
 
   return new_dict;
@@ -358,7 +358,7 @@ psppire_dict_replace_dictionary (PsppireDict *dict, struct dictionary *d)
 
   guint old_n = dict_get_var_cnt (dict->dict);
   guint new_n = dict_get_var_cnt (d);
-  
+
   dict->dict = d;
 
   weight_changed_callback (d, var ? var_get_dict_index (var) : -1, dict);
@@ -435,7 +435,7 @@ psppire_dict_insert_variable (PsppireDict *d, gint idx, const gchar *name)
 
   g_signal_emit (d, signals[VARIABLE_INSERTED], 0, idx);
   g_signal_emit_by_name (d, "items-changed", idx, 0, 1);
-  
+
   return var;
 }
 
@@ -682,7 +682,7 @@ tree_model_column_type (GtkTreeModel *model, gint index)
   g_return_val_if_fail (PSPPIRE_IS_DICT (model), (GType) 0);
 
   GType t = 0;
-  
+
   switch (index)
     {
     case DICT_TVM_COL_NAME:
@@ -810,7 +810,7 @@ tree_model_get_value (GtkTreeModel *model, GtkTreeIter *iter,
   var = iter->user_data;
 
   const struct fmt_spec *fs = var_get_write_format (var);
-  
+
   switch (column)
     {
     case DICT_TVM_COL_NAME:

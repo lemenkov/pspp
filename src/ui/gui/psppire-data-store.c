@@ -110,7 +110,7 @@ __iter_nth_child (GtkTreeModel *tree_model,
 		  gint n)
 {
   PsppireDataStore *store  = PSPPIRE_DATA_STORE (tree_model);
-  
+
   g_assert (parent == NULL);
 
   g_return_val_if_fail (store, FALSE);
@@ -122,10 +122,10 @@ __iter_nth_child (GtkTreeModel *tree_model,
       iter->user_data = NULL;
       return FALSE;
     }
-  
+
   iter->user_data = GINT_TO_POINTER (n);
   iter->stamp = store->stamp;
-  
+
   return TRUE;
 }
 
@@ -144,7 +144,7 @@ myreversefunc (GtkTreeModel *model, gint col, gint row,
 
   union value val;
   value_init (&val, width);
-  char *xx = 
+  char *xx =
     data_in (ss_cstr (in), psppire_dict_encoding (store->dict),
 	     fmt->type, &val, width, "UTF-8");
 
@@ -183,7 +183,7 @@ __get_value (GtkTreeModel *tree_model,
   PsppireDataStore *store  = PSPPIRE_DATA_STORE (tree_model);
 
   g_return_if_fail (iter->stamp == store->stamp);
-  
+
   const struct variable *variable = psppire_dict_get_variable (store->dict, column);
   if (NULL == variable)
     return;
@@ -199,7 +199,7 @@ __get_value (GtkTreeModel *tree_model,
   GVariant *vv = value_variant_new (val, var_get_width (variable));
 
   g_value_set_variant (value, vv);
-  
+
   case_unref (cc);
 }
 
@@ -210,16 +210,16 @@ __tree_model_init (GtkTreeModelIface *iface)
   iface->get_flags       = __tree_model_get_flags;
   iface->get_n_columns   = __tree_model_get_n_columns ;
   iface->get_column_type = NULL;
-  iface->get_iter        = NULL; 
-  iface->iter_next       = NULL; 
-  iface->get_path        = NULL; 
+  iface->get_iter        = NULL;
+  iface->iter_next       = NULL;
+  iface->get_path        = NULL;
   iface->get_value       = __get_value;
 
-  iface->iter_children   = NULL; 
-  iface->iter_has_child  = NULL; 
+  iface->iter_children   = NULL;
+  iface->iter_has_child  = NULL;
   iface->iter_n_children = __tree_model_iter_n_children;
   iface->iter_nth_child  = __iter_nth_child;
-  iface->iter_parent     = NULL; 
+  iface->iter_parent     = NULL;
 }
 
 
@@ -440,7 +440,7 @@ psppire_data_store_set_reader (PsppireDataStore *ds,
   ds->datasheet = datasheet_create (reader);
 
   gint new_n = datasheet_get_n_rows (ds->datasheet);
-  
+
   if ( ds->dict )
     for (i = 0 ; i < n_dict_signals; ++i )
       {
@@ -588,7 +588,7 @@ psppire_data_store_get_value (PsppireDataStore *store,
   return TRUE;
 }
 
-  
+
 
 gchar *
 psppire_data_store_get_string (PsppireDataStore *store,
@@ -600,7 +600,7 @@ psppire_data_store_get_string (PsppireDataStore *store,
   int width = var_get_width (var);
   if (! psppire_data_store_get_value (store, row, var, &v))
     return NULL;
-  
+
   string = NULL;
   if (use_value_label)
     {

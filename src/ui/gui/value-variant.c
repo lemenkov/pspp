@@ -55,7 +55,7 @@ value_variant_new (const union value *in, int width)
       vv[IDX_DATA] = g_variant_new_from_data (G_VARIANT_TYPE_BYTESTRING, q,
 					      width + 1, FALSE, NULL, NULL);
     }
-  
+
   return g_variant_new_tuple (vv, 2);
 }
 

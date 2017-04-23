@@ -103,7 +103,7 @@ do_find (GObject *obj, const struct find_dialog *fd)
   gint column = -1;
   glong row;
 
-  
+
   row = 10;
 
   find_value (fd, row, &x, &column);

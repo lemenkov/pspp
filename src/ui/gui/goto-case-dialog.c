@@ -57,7 +57,7 @@ goto_case_dialog (JmdSheet *ds)
 	gtk_spin_button_get_value_as_int (GTK_SPIN_BUTTON (case_num_entry))
   	- FIRST_CASE_NUMBER ;
 
-      if (case_num >= 0 && 
+      if (case_num >= 0 &&
 	  case_num < gtk_tree_model_iter_n_children (ds->data_model, NULL))
       {
 	jmd_sheet_scroll_to (ds, -1, case_num);
