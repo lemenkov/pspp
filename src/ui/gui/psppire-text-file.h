@@ -57,9 +57,11 @@ struct _PsppireTextFile
   gchar *file_name;
   gchar *encoding;
 
-  /* The first several lines of the file. */
+  /* The first several lines of the file.   These copies which are UTF8 encoded,
+     regardless of the file encoding.  */
   struct substring lines[MAX_PREVIEW_LINES];
   size_t line_cnt;
+
   gulong total_lines; /* Number of lines in file. */
   gboolean total_is_exact;    /* Is total_lines exact (or an estimate)? */
 

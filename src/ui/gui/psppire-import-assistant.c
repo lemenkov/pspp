@@ -286,8 +286,26 @@ repopulate_delimiter_columns (PsppireImportAssistant *ia)
        f < n_fields; f++)
     {
       GtkCellRenderer *renderer = gtk_cell_renderer_text_new ();
+
+      const gchar *title = NULL;
+
+      if (f == 0)
+	title = _("line");
+      else
+	{
+	  if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (ia->variable_names_cb)))
+	    {
+	      title =
+		psppire_delimited_text_get_header_title
+		(PSPPIRE_DELIMITED_TEXT (ia->delimiters_model), f - 1);
+	    }
+	  if (title == NULL)
+	    title = _("var");
+	}
+
       GtkTreeViewColumn *column =
-	gtk_tree_view_column_new_with_attributes ("var", renderer,
+	gtk_tree_view_column_new_with_attributes (title,
+						  renderer,
 						  "text", f,
 						  NULL);
       g_object_set (column,
@@ -911,20 +929,6 @@ on_intro_amount_changed (PsppireImportAssistant *p)
 							  GTK_TOGGLE_BUTTON (p->percent_button)));
 }
 
-/* Sets the widgets to match IA's first_line substructure. */
-static void
-set_first_line (PsppireImportAssistant *ia)
-{
-  GtkTreePath *path = gtk_tree_path_new_from_indices (ia->skip_lines, -1);
-
-  gtk_tree_path_free (path);
-
-  gtk_toggle_button_set_active (
-				GTK_TOGGLE_BUTTON (ia->variable_names_cb),
-				ia->variable_names);
-  gtk_widget_set_sensitive (ia->variable_names_cb,
-                            ia->skip_lines > 0);
-}
 
 #if SHEET_MERGE
 
@@ -966,10 +970,9 @@ reset_first_line_page (PsppireImportAssistant *ia)
 #endif
 
 static void
-on_cursor_change (GtkTreeView *treeview, gpointer user_data)
+on_treeview_selection_change (PsppireImportAssistant *ia)
 {
-  PsppireImportAssistant *ia = PSPPIRE_IMPORT_ASSISTANT (user_data);
-  GtkTreeSelection *selection = gtk_tree_view_get_selection (treeview);
+  GtkTreeSelection *selection = gtk_tree_view_get_selection (GTK_TREE_VIEW (ia->first_line_tree_view));
   GtkTreeModel *model = NULL;
   GtkTreeIter iter;
   if (gtk_tree_selection_get_selected (selection, &model, &iter))
@@ -983,9 +986,10 @@ on_cursor_change (GtkTreeView *treeview, gpointer user_data)
 
       gtk_tree_path_free (path);
 
-      g_print ("%s:%d Setting first line to %d\n", __FILE__, __LINE__, n);
+      gtk_widget_set_sensitive (ia->variable_names_cb, n > 0);
 
-      ia->delimiters_model = psppire_delimited_text_new (ia->text_file);
+      ia->delimiters_model
+	= psppire_delimited_text_new (GTK_TREE_MODEL (ia->text_file));
       g_object_set (ia->delimiters_model, "first-line", n, NULL);
     }
 }
@@ -998,7 +1002,7 @@ first_line_page_create (PsppireImportAssistant *ia)
   g_print ("%s:%d %s\n", __FILE__, __LINE__, __FUNCTION__);
   GtkWidget *w =  get_widget_assert (ia->builder, "FirstLine");
 
-  g_object_set_data (G_OBJECT (w), "on-entering", set_first_line);
+  g_object_set_data (G_OBJECT (w), "on-entering", on_treeview_selection_change);
 
   add_page_to_assistant (ia, w,
 			 GTK_ASSISTANT_PAGE_CONTENT, _("Select the First Line"));
@@ -1023,15 +1027,14 @@ first_line_page_create (PsppireImportAssistant *ia)
 
       gtk_container_add (GTK_CONTAINER (scrolled_window), ia->first_line_tree_view);
 
-      g_signal_connect (ia->first_line_tree_view, "cursor-changed",
-			G_CALLBACK (on_cursor_change), ia);
+      g_signal_connect_swapped (ia->first_line_tree_view, "cursor-changed",
+			G_CALLBACK (on_treeview_selection_change), ia);
     }
   gtk_widget_show_all (scrolled_window);
 
-
+  ia->variable_names_cb = get_widget_assert (ia->builder, "variable-names");
 
 #if SHEET_MERGE
-  ia->variable_names_cb = get_widget_assert (ia->builder, "variable-names");
   pspp_sheet_selection_set_mode (
 				 pspp_sheet_view_get_selection (PSPP_SHEET_VIEW (ia->tree_view)),
 				 PSPP_SHEET_SELECTION_BROWSE);

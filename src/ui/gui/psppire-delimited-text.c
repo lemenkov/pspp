@@ -147,7 +147,7 @@ __tree_get_iter (GtkTreeModel *tree_model,
     return FALSE;
 
   //  g_print ("%s:%d %s %s\n", __FILE__, __LINE__, __FUNCTION__, gtk_tree_path_to_string (path));
-  
+
   gint *indices = gtk_tree_path_get_indices (path);
 
   if (!indices)
@@ -159,9 +159,9 @@ __tree_get_iter (GtkTreeModel *tree_model,
 
   if (n >= children - file->first_line)
     return FALSE;
-  
+
   //  g_print ("%s:%d %s  %d Children: %d\n", __FILE__, __LINE__, __FUNCTION__, n, children);
-  
+
   iter->user_data = GINT_TO_POINTER (n);
   iter->stamp = file->stamp;
 
@@ -177,7 +177,7 @@ __tree_iter_next (GtkTreeModel *tree_model,
   g_return_val_if_fail (file->stamp == iter->stamp, FALSE);
 
   gint n = GPOINTER_TO_INT (iter->user_data);
-  
+
   //  g_print ("%s:%d %s %d\n", __FILE__, __LINE__, __FUNCTION__, n);
 
   gint children = gtk_tree_model_iter_n_children (file->child, NULL);
@@ -234,7 +234,7 @@ __tree_get_path (GtkTreeModel *tree_model,
 
   if (n >= children - file->first_line)
     return NULL;
-  
+
   return gtk_tree_path_new_from_indices (n, -1);
 }
 
@@ -254,7 +254,6 @@ __tree_model_iter_n_children (GtkTreeModel *tree_model,
 			      GtkTreeIter *iter)
 {
   g_print ("%s:%d %s\n", __FILE__, __LINE__, __FUNCTION__);
-  PsppireDelimitedText *file  = PSPPIRE_DELIMITED_TEXT (tree_model);
   g_assert (iter == NULL);
   return 0;
 }
@@ -308,30 +307,11 @@ __iter_nth_child (GtkTreeModel *tree_model,
 }
 
 
+/* Split row N into it's delimited fields (if it is not already cached)
+   and set this row as the current cache. */
 static void
-__get_value (GtkTreeModel *tree_model,
-	     GtkTreeIter *iter,
-	     gint column,
-	     GValue *value)
+split_row_into_fields (PsppireDelimitedText *file, gint n)
 {
-  //  g_print ("%s:%d %s Col: %d\n", __FILE__, __LINE__, __FUNCTION__, column);
-  PsppireDelimitedText *file  = PSPPIRE_DELIMITED_TEXT (tree_model);
-
-  g_return_if_fail (iter->stamp == file->stamp);
-
-  gint n = GPOINTER_TO_INT (iter->user_data) + file->first_line;
-
-  //  g_print ("%s:%d Row: %d\n", __FILE__, __LINE__, n);
-  
-  if (column == 0)
-    {
-      g_value_init (value, G_TYPE_INT);
-      g_value_set_int (value, n + 1);
-      return;
-    }
-
-  g_value_init (value, G_TYPE_STRING);
-
   if (n != file->cache_row)
     {
       if (file->const_cache.string)
@@ -367,7 +347,45 @@ __get_value (GtkTreeModel *tree_model,
 
       file->cache_row = n;
     }
-  
+}
+
+const gchar *
+psppire_delimited_text_get_header_title (PsppireDelimitedText *file, gint column)
+{
+  if (file->first_line <= 0)
+    return NULL;
+
+  split_row_into_fields (file, file->first_line - 1);
+
+  return file->cache_starts [column];
+}
+
+static void
+__get_value (GtkTreeModel *tree_model,
+	     GtkTreeIter *iter,
+	     gint column,
+	     GValue *value)
+{
+  //  g_print ("%s:%d %s Col: %d\n", __FILE__, __LINE__, __FUNCTION__, column);
+  PsppireDelimitedText *file  = PSPPIRE_DELIMITED_TEXT (tree_model);
+
+  g_return_if_fail (iter->stamp == file->stamp);
+
+  gint n = GPOINTER_TO_INT (iter->user_data) + file->first_line;
+
+  //  g_print ("%s:%d Row: %d\n", __FILE__, __LINE__, n);
+
+  if (column == 0)
+    {
+      g_value_init (value, G_TYPE_INT);
+      g_value_set_int (value, n + 1);
+      return;
+    }
+
+  g_value_init (value, G_TYPE_STRING);
+
+  split_row_into_fields (file, n);
+
   g_value_set_string (value, file->cache_starts [column - 1]);
 }
 
@@ -443,20 +461,20 @@ psppire_delimited_text_class_init (PsppireDelimitedTextClass *class)
 		      P_("The first line to be considered."),
 		      0, 1000, 0,
 		      G_PARAM_READWRITE);
-  
+
   GParamSpec *delimiters_spec =
     g_param_spec_pointer ("delimiters",
 			  "Field Delimiters",
 			  P_("A GSList of gunichars which delimit the fields."),
 			  G_PARAM_READWRITE);
 
-  GParamSpec *child_spec = 
+  GParamSpec *child_spec =
     g_param_spec_object ("child",
 			 "Child Model",
 			 P_("The GtkTextModel which this object wraps."),
 			 GTK_TYPE_TREE_MODEL,
 			 G_PARAM_CONSTRUCT_ONLY |G_PARAM_READWRITE);
-  
+
   object_class->set_property = psppire_delimited_text_set_property;
   object_class->get_property = psppire_delimited_text_get_property;
 
@@ -471,7 +489,7 @@ psppire_delimited_text_class_init (PsppireDelimitedTextClass *class)
   g_object_class_install_property (object_class,
                                    PROP_FIRST_LINE,
                                    first_line_spec);
-  
+
   object_class->finalize = psppire_delimited_text_finalize;
   object_class->dispose = psppire_delimited_text_dispose;
 }
