@@ -673,7 +673,7 @@ parse_get_txt (struct lexer *lexer, struct dataset *ds)
   if (reader == NULL)
     goto error;
 
-  data_parser_make_active_file (parser, ds, reader, dict);
+  data_parser_make_active_file (parser, ds, reader, dict, NULL, NULL);
   fh_unref (fh);
   free (encoding);
   return CMD_SUCCESS;

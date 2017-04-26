@@ -52,6 +52,7 @@ struct data_parser
     /* DP_DELIMITED parsers only. */
     bool span;                  /* May cases span multiple records? */
     bool empty_line_has_field;  /* Does an empty line have an (empty) field? */
+    bool warn_missing_fields;   /* Should missing fields be considered errors? */
     struct substring quotes;    /* Characters that can quote separators. */
     bool quote_escape;          /* Doubled quote acts as escape? */
     struct substring soft_seps; /* Two soft separators act like just one. */
@@ -92,6 +93,7 @@ data_parser_create (const struct dictionary *dict)
 
   parser->span = true;
   parser->empty_line_has_field = false;
+  parser->warn_missing_fields = true;
   ss_alloc_substring (&parser->quotes, ss_cstr ("\"'"));
   parser->quote_escape = false;
   ss_alloc_substring (&parser->soft_seps, ss_cstr (CC_SPACES));
@@ -185,6 +187,21 @@ data_parser_set_empty_line_has_field (struct data_parser *parser,
 {
   parser->empty_line_has_field = empty_line_has_field;
 }
+
+
+/* If WARN_MISSING_FIELDS is true, configures PARSER to emit a warning
+   and cause an error condition when a missing field is encountered.
+   If  WARN_MISSING_FIELDS is false, PARSER will silently fill such
+   fields with the system missing value.
+
+   This setting affects parsing of DP_DELIMITED files only. */
+void
+data_parser_set_warn_missing_fields (struct data_parser *parser,
+				     bool warn_missing_fields)
+{
+  parser->warn_missing_fields = warn_missing_fields;
+}
+
 
 /* Sets the characters that may be used for quoting field
    contents to QUOTES.  If QUOTES is empty, quoting will be
@@ -386,10 +403,11 @@ data_parser_parse (struct data_parser *parser, struct dfm_reader *reader,
    *FIELD is set to the field content.  The caller must not or
    destroy this constant string.
 
-   After parsing the field, sets the current position in the
-   record to just past the field and any trailing delimiter.
-   Returns 0 on failure or a 1-based column number indicating the
-   beginning of the field on success. */
+   Sets *FIRST_COLUMN to the 1-based column number of the start of
+   the extracted field, and *LAST_COLUMN to the end of the extracted
+   field.
+
+   Returns true on success, false on failure. */
 static bool
 cut_field (const struct data_parser *parser, struct dfm_reader *reader,
            int *first_column, int *last_column, struct string *tmp,
@@ -610,7 +628,7 @@ parse_delimited_no_span (const struct data_parser *parser,
 
       if (!cut_field (parser, reader, &first_column, &last_column, &tmp, &s))
 	{
-	  if (f < end - 1 && settings_get_undefined ())
+	  if (f < end - 1 && settings_get_undefined () && parser->warn_missing_fields)
 	    msg (DW, _("Missing value(s) for all variables from %s onward.  "
                        "These will be filled with the system-missing value "
                        "or blanks, as appropriate."),
@@ -740,22 +758,34 @@ static const struct casereader_class data_parser_casereader_class;
    transferred to the dataset. */
 void
 data_parser_make_active_file (struct data_parser *parser, struct dataset *ds,
-                              struct dfm_reader *reader,
-                              struct dictionary *dict)
+			       struct dfm_reader *reader,
+			       struct dictionary *dict,
+			       struct casereader* (*func)(struct casereader *,
+							  const struct dictionary *,
+							  void *),
+			       void *ud)
 {
   struct data_parser_casereader *r;
-  struct casereader *casereader;
+  struct casereader *casereader0;
+  struct casereader *casereader1;
 
   r = xmalloc (sizeof *r);
   r->parser = parser;
   r->reader = reader;
   r->proto = caseproto_ref (dict_get_proto (dict));
-  casereader = casereader_create_sequential (NULL, r->proto,
+  casereader0 = casereader_create_sequential (NULL, r->proto,
                                              CASENUMBER_MAX,
                                              &data_parser_casereader_class, r);
+
+  if (func)
+    casereader1 = func (casereader0, dict, ud);
+  else
+    casereader1 = casereader0;
+
   dataset_set_dict (ds, dict);
-  dataset_set_source (ds, casereader);
+  dataset_set_source (ds, casereader1);
 }
+
 
 static struct ccase *
 data_parser_casereader_read (struct casereader *reader UNUSED, void *r_)
