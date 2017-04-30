@@ -186,6 +186,18 @@ preprocess (struct casereader *casereader0, const struct dictionary *dict, void 
 	  set_varname_column (outcase, mformat, "        ", 8);
 	}
 
+      /* Special case for SD and N_VECTOR: Rewrite as STDDEV and N respectively */
+      if (0 == strncasecmp (val, "sd      ", 8))
+	{
+	  value_copy_buf_rpad (case_data_rw (outcase, mformat->rowtype), 8,
+			       (uint8_t *) "STDDEV", 6, ' ');
+	}
+      else if (0 == strncasecmp (val, "n_vector", 8))
+	{
+	  value_copy_buf_rpad (case_data_rw (outcase, mformat->rowtype), 8,
+			       (uint8_t *) "N", 1, ' ');
+	}
+
       casewriter_write (writer, outcase);
     }
 
