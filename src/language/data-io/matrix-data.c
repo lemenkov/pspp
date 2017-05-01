@@ -302,6 +302,8 @@ cmd_matrix (struct lexer *lexer, struct dataset *ds)
 
   mformat.triangle = LOWER;
   mformat.diagonal = DIAGONAL;
+  mformat.n_split_vars = 0;
+  mformat.split_vars = NULL;
 
   dict = (in_input_program ()
           ? dataset_dict (ds)
@@ -324,7 +326,7 @@ cmd_matrix (struct lexer *lexer, struct dataset *ds)
 
   lex_match (lexer, T_EQUALS);
 
-  if (! parse_mixed_vars (lexer, dict, &names, &n_names, 0))
+  if (! parse_mixed_vars (lexer, dict, &names, &n_names, PV_NO_DUPLICATE))
     {
       int i;
       for (i = 0; i < n_names; ++i)
@@ -475,6 +477,7 @@ cmd_matrix (struct lexer *lexer, struct dataset *ds)
 
   fh_unref (fh);
   free (encoding);
+  free (mformat.split_vars);
 
   return CMD_DATA_LIST;
 
@@ -484,6 +487,7 @@ cmd_matrix (struct lexer *lexer, struct dataset *ds)
     dict_destroy (dict);
   fh_unref (fh);
   free (encoding);
+  free (mformat.split_vars);
   return CMD_CASCADING_FAILURE;
 }
 

@@ -607,7 +607,6 @@ parse_mixed_vars (struct lexer *lexer, const struct dictionary *dict,
 
   assert (names != NULL);
   assert (nnames != NULL);
-  assert ((pv_opts & ~PV_APPEND) == 0);
 
   if (!(pv_opts & PV_APPEND))
     {
@@ -621,7 +620,7 @@ parse_mixed_vars (struct lexer *lexer, const struct dictionary *dict,
 	  struct variable **v;
 	  size_t nv;
 
-	  if (!parse_variables (lexer, dict, &v, &nv, PV_NONE))
+	  if (!parse_variables (lexer, dict, &v, &nv, pv_opts))
 	    goto fail;
 	  *names = xnrealloc (*names, *nnames + nv, sizeof **names);
 	  for (i = 0; i < nv; i++)
@@ -629,7 +628,7 @@ parse_mixed_vars (struct lexer *lexer, const struct dictionary *dict,
 	  free (v);
 	  *nnames += nv;
 	}
-      else if (!parse_DATA_LIST_vars (lexer, dict, names, nnames, PV_APPEND))
+      else if (!parse_DATA_LIST_vars (lexer, dict, names, nnames, PV_APPEND | pv_opts))
 	goto fail;
     }
   if (*nnames == 0)

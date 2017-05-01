@@ -242,3 +242,36 @@ s1,s2,ROWTYPE_,VARNAME_,var01,var02,var03
 ])
 
 AT_CLEANUP
+
+
+
+
+AT_SETUP([Matrix data duplicate variable])
+
+dnl Negative test to check for sane behaviour in the face of bad syntax
+AT_DATA([matrix-data.pspp], [dnl
+set decimal = dot .
+matrix data
+    variables = s1 s1 rowtype_  var01 var02 var03
+    /split=s1.
+
+begin data
+0   mean     21.4  5.0  72.9
+0   sd       6.5   1.6  22.8
+0   n        106   106  106
+0   corr     1
+0   corr    .41  1
+0   corr    -.16  -.22  1
+end data .
+
+list.
+])
+
+
+AT_CHECK([pspp -O format=csv matrix-data.pspp], [1], [dnl
+matrix-data.pspp:3: error: MATRIX DATA: Variable s1 appears twice in variable list.
+
+matrix-data.pspp:6: error: Stopping syntax file processing here to avoid a cascade of dependent command failures.
+])
+
+AT_CLEANUP
