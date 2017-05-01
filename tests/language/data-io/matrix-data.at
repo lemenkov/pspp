@@ -9,7 +9,7 @@ matrix data
     /format = lower diagonal
     /file = 'matrix.dat'
     .
-    
+
 list.
 ])
 
@@ -186,28 +186,34 @@ corr    ,var04,7.0000,5.0000,4.0000,1.0000
 AT_CLEANUP
 
 
-AT_SETUP([Matrix data split])
+
+AT_SETUP([Matrix data split data])
 
 AT_DATA([matrix-data.pspp], [dnl
 matrix data
-    variables = s1 s2 rowtype_  var01 TO var04
-    /split = s1 s2
-    /format = full diagonal.
+    variables = s1 s2 rowtype_  var01 var02 var03
+    /split=s1 s2.
 
 begin data
-1 1 mean 34 35 36 37
-1 1 sd   22 11 55 66
-1 0 n    100 101 102 103
-1 0 corr 1 9 8 7
-0 1 corr 9 1 6 5
-0 1 corr 8 6 1 4
-0 0 corr 7 5 4 1
+8 0   mean     21.4  5.0  72.9
+8 0   sd       6.5   1.6  22.8
+8 0   n        106   106  106
+8 0   corr     1
+8 0   corr    .41  1
+8 0   corr    -.16  -.22  1
+8 1   mean     11.4  1.0  52.9
+8 1   sd       9.5   8.6  12.8
+8 1   n        10   11  12
+8 1   corr     1
+8 1   corr    .51  1
+8 1   corr    .36  -.41  1
 end data.
 
 display dictionary.
 
 list.
 ])
+
 
 AT_CHECK([pspp -O format=csv matrix-data.pspp], [0], [dnl
 Variable,Description,Position
@@ -218,20 +224,21 @@ VARNAME_,Format: A8,4
 var01,Format: F10.4,5
 var02,Format: F10.4,6
 var03,Format: F10.4,7
-var04,Format: F10.4,8
 
 Table: Data List
-s1,s2,ROWTYPE_,VARNAME_,var01,var02,var03,var04
-1,1,mean    ,,34.0000,35.0000,36.0000,37.0000
-1,1,STDDEV  ,,22.0000,11.0000,55.0000,66.0000
-1,0,n       ,,100.0000,101.0000,102.0000,103.0000
-1,0,corr    ,var01,1.0000,9.0000,8.0000,7.0000
-0,1,corr    ,var02,9.0000,1.0000,6.0000,5.0000
-0,1,corr    ,var03,8.0000,6.0000,1.0000,4.0000
-0,0,corr    ,var04,7.0000,5.0000,4.0000,1.0000
+s1,s2,ROWTYPE_,VARNAME_,var01,var02,var03
+8,0,mean    ,,21.4000,5.0000,72.9000
+8,0,STDDEV  ,,6.5000,1.6000,22.8000
+8,0,n       ,,106.0000,106.0000,106.0000
+8,0,corr    ,var01,1.0000,.4100,-.1600
+8,0,corr    ,var02,.4100,1.0000,-.2200
+8,0,corr    ,var03,-.1600,-.2200,1.0000
+8,1,mean    ,,11.4000,1.0000,52.9000
+8,1,STDDEV  ,,9.5000,8.6000,12.8000
+8,1,n       ,,10.0000,11.0000,12.0000
+8,1,corr    ,var01,1.0000,.5100,.3600
+8,1,corr    ,var02,.5100,1.0000,-.4100
+8,1,corr    ,var03,.3600,-.4100,1.0000
 ])
 
 AT_CLEANUP
-
-
-

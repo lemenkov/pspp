@@ -72,6 +72,8 @@ struct matrix_format
   const struct variable *rowtype;
   const struct variable *varname;
   int n_continuous_vars;
+  struct variable **split_vars;
+  size_t n_split_vars;
 };
 
 /*
@@ -114,16 +116,41 @@ preprocess (struct casereader *casereader0, const struct dictionary *dict, void 
   struct casewriter *writer;
   writer = autopaging_writer_create (proto);
 
-  double *temp_matrix =
-    xcalloc (sizeof (*temp_matrix),
-	     mformat->n_continuous_vars * mformat->n_continuous_vars);
+  double **matrices = NULL;
+  size_t n_splits = 0;
+
+  const size_t sizeof_matrix =
+    sizeof (double) * mformat->n_continuous_vars * mformat->n_continuous_vars;
+
 
   /* Make an initial pass to populate our temporary matrix */
   struct casereader *pass0 = casereader_clone (casereader0);
   struct ccase *c;
+  unsigned int prev_split_hash = 1;
   int row = (mformat->triangle == LOWER && mformat->diagonal == NO_DIAGONAL) ? 1 : 0;
   for (; (c = casereader_read (pass0)) != NULL; case_unref (c))
     {
+      int s;
+      unsigned int split_hash = 0;
+      for (s = 0; s < mformat->n_split_vars; ++s)
+	{
+	  const struct variable *svar = mformat->split_vars[s];
+	  const union value *sv = case_data (c, svar);
+	  split_hash = value_hash (sv, var_get_width (svar), split_hash);
+	}
+
+      if (matrices == NULL || prev_split_hash != split_hash)
+	{
+	  row = (mformat->triangle == LOWER && mformat->diagonal == NO_DIAGONAL) ?
+	    1 : 0;
+
+	  n_splits++;
+	  matrices = xrealloc (matrices, sizeof (double*)  * n_splits);
+	  matrices[n_splits - 1] = xmalloc (sizeof_matrix);
+	}
+
+      prev_split_hash = split_hash;
+
       int c_offset = (mformat->triangle == UPPER) ? row : 0;
       if (mformat->triangle == UPPER && mformat->diagonal == NO_DIAGONAL)
 	c_offset++;
@@ -137,13 +164,16 @@ preprocess (struct casereader *casereader0, const struct dictionary *dict, void 
 	    {
 	      const struct variable *var =
 		dict_get_var (dict,
-			      1 + col - c_offset + var_get_dict_index (mformat->varname));
+			      1 + col - c_offset +
+			      var_get_dict_index (mformat->varname));
 
 	      double e = case_data (c, var)->f;
 	      if (e == SYSMIS)
 	      	continue;
-	      temp_matrix [col + mformat->n_continuous_vars * row] = e;
-	      temp_matrix [row + mformat->n_continuous_vars * col] = e;
+
+
+	      (matrices[n_splits-1])[col + mformat->n_continuous_vars * row] = e;
+	      (matrices[n_splits-1]) [row + mformat->n_continuous_vars * col] = e;
 	    }
 	  row++;
 	}
@@ -155,8 +185,26 @@ preprocess (struct casereader *casereader0, const struct dictionary *dict, void 
   const int idx = var_get_dict_index (mformat->varname);
   row = 0;
   struct ccase *prev_case = NULL;
+  prev_split_hash = 1;
+  n_splits = 0;
   for (; (c = casereader_read (casereader0)) != NULL; prev_case = c)
     {
+      int s;
+      unsigned int split_hash = 0;
+      for (s = 0; s < mformat->n_split_vars; ++s)
+	{
+	  const struct variable *svar = mformat->split_vars[s];
+	  const union value *sv = case_data (c, svar);
+	  split_hash = value_hash (sv, var_get_width (svar), split_hash);
+	}
+      if (prev_split_hash != split_hash)
+	{
+	  n_splits++;
+	  row = 0;
+	}
+
+      prev_split_hash = split_hash;
+
       case_unref (prev_case);
       struct ccase *outcase = case_create (proto);
       case_copy (outcase, 0, c, 0, caseproto_get_n_widths (proto));
@@ -175,7 +223,7 @@ preprocess (struct casereader *casereader0, const struct dictionary *dict, void 
 	      union value *dest_val =
 		case_data_rw_idx (outcase,
 				  1 + col + var_get_dict_index (mformat->varname));
-	      dest_val->f = temp_matrix [col + mformat->n_continuous_vars * row];
+	      dest_val->f = (matrices[n_splits - 1])[col + mformat->n_continuous_vars * row];
 	      if (col == row && mformat->diagonal == NO_DIAGONAL)
 		dest_val->f = 1.0;
 	    }
@@ -219,7 +267,7 @@ preprocess (struct casereader *casereader0, const struct dictionary *dict, void 
 	  union value *dest_val =
 	    case_data_rw_idx (outcase, 1 + col +
 			      var_get_dict_index (mformat->varname));
-	  dest_val->f = temp_matrix [col + mformat->n_continuous_vars * row];
+	  dest_val->f = (matrices[n_splits - 1]) [col + mformat->n_continuous_vars * row];
 	  if (col == row && mformat->diagonal == NO_DIAGONAL)
 	    dest_val->f = 1.0;
 	}
@@ -230,7 +278,10 @@ preprocess (struct casereader *casereader0, const struct dictionary *dict, void 
   if (prev_case)
     case_unref (prev_case);
 
-  free (temp_matrix);
+  int i;
+  for (i = 0 ; i < n_splits; ++i)
+    free (matrices[i]);
+  free (matrices);
   struct casereader *reader1 = casewriter_make_reader (writer);
   casereader_destroy (casereader0);
   return reader1;
@@ -266,6 +317,7 @@ cmd_matrix (struct lexer *lexer, struct dataset *ds)
   mformat.varname = dict_create_var (dict, "VARNAME_", 8);
 
   mformat.n_continuous_vars = 0;
+  mformat.n_split_vars = 0;
 
   if (! lex_force_match_id (lexer, "VARIABLES"))
     goto error;
@@ -364,22 +416,19 @@ cmd_matrix (struct lexer *lexer, struct dataset *ds)
       else if (lex_match_id (lexer, "SPLIT"))
 	{
 	  lex_match (lexer, T_EQUALS);
-	  struct variable **split_vars = NULL;
-	  size_t n_split_vars;
-	  if (! parse_variables (lexer, dict, &split_vars, &n_split_vars, 0))
+	  if (! parse_variables (lexer, dict, &mformat.split_vars, &mformat.n_split_vars, 0))
 	    {
-	      free (split_vars);
+	      free (mformat.split_vars);
 	      goto error;
 	    }
 	  int i;
-	  for (i = 0; i < n_split_vars; ++i)
+	  for (i = 0; i < mformat.n_split_vars; ++i)
 	    {
 	      const struct fmt_spec fmt = fmt_for_input (FMT_F, 4, 0);
-	      var_set_both_formats (split_vars[i], &fmt);
+	      var_set_both_formats (mformat.split_vars[i], &fmt);
 	    }
-	  dict_reorder_vars (dict, split_vars, n_split_vars);
-	  mformat.n_continuous_vars -= n_split_vars;
-	  free (split_vars);
+	  dict_reorder_vars (dict, mformat.split_vars, mformat.n_split_vars);
+	  mformat.n_continuous_vars -= mformat.n_split_vars;
 	}
       else
 	{
