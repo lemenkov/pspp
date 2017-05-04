@@ -22,6 +22,8 @@ language_data_io_sources = \
 	src/language/data-io/print-space.c \
 	src/language/data-io/print.c \
 	src/language/data-io/matrix-data.c \
+	src/language/data-io/matrix-reader.c \
+	src/language/data-io/matrix-reader.h \
 	src/language/data-io/save-translate.c \
 	src/language/data-io/save.c \
 	src/language/data-io/trim.c \
