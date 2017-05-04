@@ -1380,11 +1380,10 @@ cmd_factor (struct lexer *lexer, struct dataset *ds)
 		{
 		  factor.print |= PRINT_CORRELATION;
 		}
-#if FACTOR_FULLY_IMPLEMENTED
 	      else if (lex_match_id (lexer, "COVARIANCE"))
 		{
+		  factor.print |= PRINT_COVARIANCE;
 		}
-#endif
 	      else if (lex_match_id (lexer, "ROTATION"))
 		{
 		  factor.print |= PRINT_ROTATION;
@@ -2100,6 +2099,91 @@ show_correlation_matrix (const struct cmd_factor *factor, const struct idata *id
   tab_submit (t);
 }
 
+static void
+show_covariance_matrix (const struct cmd_factor *factor, const struct idata *idata)
+{
+  struct tab_table *t ;
+  size_t i, j;
+  int y_pos_corr = -1;
+  int y_pos_sig = -1;
+  int suffix_rows = 0;
+
+  const int heading_rows = 1;
+  const int heading_columns = 1;
+
+  int nc = heading_columns ;
+  int nr = heading_rows ;
+  int n_data_sets = 0;
+
+  if (factor->print & PRINT_COVARIANCE)
+    {
+      y_pos_corr = n_data_sets;
+      n_data_sets++;
+      nc = heading_columns + factor->n_vars;
+    }
+
+  nr += n_data_sets * factor->n_vars;
+
+  /* If the table would contain only headings, don't bother rendering it */
+  if (nr <= heading_rows && suffix_rows == 0)
+    return;
+
+  t = tab_create (nc, nr + suffix_rows);
+
+  tab_title (t, _("Covariance Matrix"));
+
+  tab_hline (t, TAL_1, 0, nc - 1, heading_rows);
+
+  if (nr > heading_rows)
+    {
+      tab_headers (t, heading_columns, 0, heading_rows, 0);
+
+      tab_vline (t, TAL_2, heading_columns, 0, nr - 1);
+
+      /* Outline the box */
+      tab_box (t,
+	       TAL_2, TAL_2,
+	       -1, -1,
+	       0, 0,
+	       nc - 1, nr - 1);
+
+      /* Vertical lines */
+      tab_box (t,
+	       -1, -1,
+	       -1, TAL_1,
+	       heading_columns, 0,
+	       nc - 1, nr - 1);
+
+
+      for (i = 0; i < factor->n_vars; ++i)
+	tab_text (t, heading_columns + i, 0, TAT_TITLE, var_to_string (factor->vars[i]));
+
+
+      for (i = 0 ; i < n_data_sets; ++i)
+	{
+	  int y = heading_rows + i * factor->n_vars;
+	  size_t v;
+	  for (v = 0; v < factor->n_vars; ++v)
+	    tab_text (t, heading_columns -1, y + v, TAT_TITLE, var_to_string (factor->vars[v]));
+
+	  tab_hline (t, TAL_1, 0, nc - 1, y);
+	}
+
+      if (factor->print & PRINT_COVARIANCE)
+	{
+	  const double y = heading_rows + y_pos_corr;
+
+	  for (i = 0; i < factor->n_vars; ++i)
+	    {
+	      for (j = 0; j < factor->n_vars; ++j)
+		tab_double (t, heading_columns + i,  y + j, 0, gsl_matrix_get (idata->mm.cov, i, j), NULL, RC_OTHER);
+	    }
+	}
+    }
+
+  tab_submit (t);
+}
+
 
 static void
 do_factor (const struct cmd_factor *factor, struct casereader *r)
@@ -2295,6 +2379,7 @@ do_factor_by_matrix (const struct cmd_factor *factor, struct idata *idata)
     }
 
   show_correlation_matrix (factor, idata);
+  show_covariance_matrix (factor, idata);
   if (idata->cvm)
     covariance_destroy (idata->cvm);
 
