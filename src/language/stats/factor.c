@@ -1,5 +1,6 @@
 /* PSPP - a program for statistical analysis.
-   Copyright (C) 2009, 2010, 2011, 2012, 2014, 2015, 2016 Free Software Foundation, Inc.
+   Copyright (C) 2009, 2010, 2011, 2012, 2014, 2015,
+   2016, 2017 Free Software Foundation, Inc.
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -24,6 +25,7 @@
 #include <gsl/gsl_sort_vector.h>
 #include <gsl/gsl_cdf.h>
 
+#include "data/any-reader.h"
 #include "data/casegrouper.h"
 #include "data/casereader.h"
 #include "data/casewriter.h"
@@ -35,6 +37,8 @@
 #include "language/lexer/lexer.h"
 #include "language/lexer/value-parser.h"
 #include "language/lexer/variable-parser.h"
+#include "language/data-io/file-handle.h"
+#include "language/data-io/matrix-reader.h"
 #include "libpspp/cast.h"
 #include "libpspp/message.h"
 #include "libpspp/misc.h"
@@ -44,6 +48,7 @@
 #include "output/chart-item.h"
 #include "output/charts/scree.h"
 #include "output/tab.h"
+
 
 #include "gettext.h"
 #define _(msgid) gettext (msgid)
@@ -221,13 +226,13 @@ struct cmd_factor
   bool sort;
 };
 
+
 struct idata
 {
   /* Intermediate values used in calculation */
+  struct matrix_material mm;
 
-  const gsl_matrix *corr ;  /* The correlation matrix */
-  gsl_matrix *cov ;         /* The covariance matrix */
-  const gsl_matrix *n ;     /* Matrix of number of samples */
+  gsl_matrix *analysis_matrix; /* A pointer to either mm.corr or mm.cov */
 
   gsl_vector *eval ;  /* The eigenvalues */
   gsl_matrix *evec ;  /* The eigenvectors */
@@ -237,6 +242,8 @@ struct idata
   gsl_vector *msr ;  /* Multiple Squared Regressions */
 
   double detR;  /* The determinant of the correlation matrix */
+
+  struct covariance *cvm;
 };
 
 static struct idata *
@@ -259,10 +266,10 @@ idata_free (struct idata *id)
   gsl_vector_free (id->msr);
   gsl_vector_free (id->eval);
   gsl_matrix_free (id->evec);
-  if (id->cov != NULL)
-    gsl_matrix_free (id->cov);
-  if (id->corr != NULL)
-    gsl_matrix_free (CONST_CAST (gsl_matrix *, id->corr));
+  if (id->mm.cov != NULL)
+    gsl_matrix_free (id->mm.cov);
+  if (id->mm.corr != NULL)
+    gsl_matrix_free (CONST_CAST (gsl_matrix *, id->mm.corr));
 
   free (id);
 }
@@ -1002,11 +1009,14 @@ iterate_factor_matrix (const gsl_matrix *r, gsl_vector *communalities, gsl_matri
 
 static bool run_factor (struct dataset *ds, const struct cmd_factor *factor);
 
+static void do_factor_by_matrix (const struct cmd_factor *factor, struct idata *idata);
+
+
 
 int
 cmd_factor (struct lexer *lexer, struct dataset *ds)
 {
-  const struct dictionary *dict = dataset_dict (ds);
+  struct dictionary *dict = NULL;
   int n_iterations = 25;
   struct cmd_factor factor;
   factor.n_vars = 0;
@@ -1026,26 +1036,76 @@ cmd_factor (struct lexer *lexer, struct dataset *ds)
   factor.sort = false;
   factor.plot = 0;
   factor.rotation = ROT_VARIMAX;
+  factor.wv = NULL;
 
   factor.rconverge = 0.0001;
 
-  factor.wv = dict_get_weight (dict);
-
   lex_match (lexer, T_SLASH);
 
-  if (!lex_force_match_id (lexer, "VARIABLES"))
+  struct matrix_reader *mr = NULL;
+  struct casereader *matrix_reader = NULL;
+
+  if (lex_match_id (lexer, "VARIABLES"))
+    {
+      lex_match (lexer, T_EQUALS);
+      dict = dataset_dict (ds);
+      factor.wv = dict_get_weight (dict);
+
+      if (!parse_variables_const (lexer, dict, &factor.vars, &factor.n_vars,
+				  PV_NO_DUPLICATE | PV_NUMERIC))
+	goto error;
+    }
+  else if (lex_match_id (lexer, "MATRIX"))
+    {
+      if (! lex_force_match_id (lexer, "IN"))
+	goto error;
+      if (!lex_force_match (lexer, T_LPAREN))
+	{
+	  goto error;
+	}
+      if (lex_match_id (lexer, "CORR"))
+	{
+	}
+      else if (lex_match_id (lexer, "COV"))
+	{
+	}
+      else
+	{
+	  lex_error (lexer, _("Matrix input for %s must be either COV or CORR"), "FACTOR");
+	  goto error;
+	}
+      if (! lex_force_match (lexer, T_EQUALS))
+	goto error;
+      if (lex_match (lexer, T_ASTERISK))
+	{
+	  dict = dataset_dict (ds);
+	  matrix_reader = casereader_clone (dataset_source (ds));
+	}
+      else
+	{
+	  struct file_handle *fh = fh_parse (lexer, FH_REF_FILE, NULL);
+	  if (fh == NULL)
+	    goto error;
+
+	  matrix_reader
+	    = any_reader_open_and_decode (fh, NULL, &dict, NULL);
+
+	  if (! (matrix_reader && dict))
+	    {
+	      goto error;
+	    }
+	}
+
+      if (! lex_force_match (lexer, T_RPAREN))
+	goto error;
+
+      mr = create_matrix_reader_from_case_reader (dict, matrix_reader,
+						  &factor.vars, &factor.n_vars);
+    }
+  else
     {
       goto error;
     }
-
-  lex_match (lexer, T_EQUALS);
-
-  if (!parse_variables_const (lexer, dict, &factor.vars, &factor.n_vars,
-			      PV_NO_DUPLICATE | PV_NUMERIC))
-    goto error;
-
-  if (factor.n_vars < 2)
-    msg (MW, _("Factor analysis on a single variable is not useful."));
 
   while (lex_token (lexer) != T_ENDCMD)
     {
@@ -1408,13 +1468,35 @@ cmd_factor (struct lexer *lexer, struct dataset *ds)
   if ( factor.rotation == ROT_NONE )
     factor.print &= ~PRINT_ROTATION;
 
-  if ( ! run_factor (ds, &factor))
-    goto error;
+  if (factor.n_vars < 2)
+    msg (MW, _("Factor analysis on a single variable is not useful."));
 
+  if (matrix_reader)
+    {
+      struct idata *id = idata_alloc (factor.n_vars);
+
+      while (next_matrix_from_reader (&id->mm, mr,
+				      factor.vars, factor.n_vars))
+	{
+	  do_factor_by_matrix (&factor, id);
+
+	  id->mm.corr = NULL;
+	  id->mm.cov = NULL;
+	}
+
+      idata_free (id);
+    }
+  else
+    if ( ! run_factor (ds, &factor))
+      goto error;
+
+
+  destroy_matrix_reader (mr);
   free (factor.vars);
   return CMD_SUCCESS;
 
  error:
+  destroy_matrix_reader (mr);
   free (factor.vars);
   return CMD_FAILURE;
 }
@@ -1983,7 +2065,7 @@ show_correlation_matrix (const struct cmd_factor *factor, const struct idata *id
 	  for (i = 0; i < factor->n_vars; ++i)
 	    {
 	      for (j = 0; j < factor->n_vars; ++j)
-		tab_double (t, heading_columns + i,  y + j, 0, gsl_matrix_get (idata->corr, i, j), NULL, RC_OTHER);
+		tab_double (t, heading_columns + i,  y + j, 0, gsl_matrix_get (idata->mm.corr, i, j), NULL, RC_OTHER);
 	    }
 	}
 
@@ -1996,8 +2078,8 @@ show_correlation_matrix (const struct cmd_factor *factor, const struct idata *id
 	    {
 	      for (j = 0; j < factor->n_vars; ++j)
 		{
-		  double rho = gsl_matrix_get (idata->corr, i, j);
-		  double w = gsl_matrix_get (idata->n, i, j);
+		  double rho = gsl_matrix_get (idata->mm.corr, i, j);
+		  double w = gsl_matrix_get (idata->mm.n, i, j);
 
 		  if (i == j)
 		    continue;
@@ -2019,58 +2101,61 @@ show_correlation_matrix (const struct cmd_factor *factor, const struct idata *id
 }
 
 
-
 static void
 do_factor (const struct cmd_factor *factor, struct casereader *r)
 {
   struct ccase *c;
-  const gsl_matrix *var_matrix;
-  const gsl_matrix *mean_matrix;
-
-  const gsl_matrix *analysis_matrix;
   struct idata *idata = idata_alloc (factor->n_vars);
 
-  struct covariance *cov = covariance_1pass_create (factor->n_vars, factor->vars,
+  idata->cvm = covariance_1pass_create (factor->n_vars, factor->vars,
 					      factor->wv, factor->exclude);
 
   for ( ; (c = casereader_read (r) ); case_unref (c))
     {
-      covariance_accumulate (cov, c);
+      covariance_accumulate (idata->cvm, c);
     }
 
-  idata->cov = covariance_calculate (cov);
+  idata->mm.cov = covariance_calculate (idata->cvm);
 
-  if (idata->cov == NULL)
+  if (idata->mm.cov == NULL)
     {
       msg (MW, _("The dataset contains no complete observations. No analysis will be performed."));
-      covariance_destroy (cov);
+      covariance_destroy (idata->cvm);
       goto finish;
     }
 
-  var_matrix = covariance_moments (cov, MOMENT_VARIANCE);
-  mean_matrix = covariance_moments (cov, MOMENT_MEAN);
-  idata->n = covariance_moments (cov, MOMENT_NONE);
+  idata->mm.var_matrix = covariance_moments (idata->cvm, MOMENT_VARIANCE);
+  idata->mm.mean_matrix = covariance_moments (idata->cvm, MOMENT_MEAN);
+  idata->mm.n = covariance_moments (idata->cvm, MOMENT_NONE);
 
+  do_factor_by_matrix (factor, idata);
 
-  if ( factor->method == METHOD_CORR)
-    {
-      idata->corr = correlation_from_covariance (idata->cov, var_matrix);
+ finish:
+  idata_free (idata);
+  casereader_destroy (r);
+}
 
-      analysis_matrix = idata->corr;
-    }
+static void
+do_factor_by_matrix (const struct cmd_factor *factor, struct idata *idata)
+{
+  if (idata->mm.cov && !idata->mm.corr)
+    idata->mm.corr = correlation_from_covariance (idata->mm.cov, idata->mm.var_matrix);
+  if (idata->mm.corr && !idata->mm.cov)
+    idata->mm.cov = covariance_from_correlation (idata->mm.corr, idata->mm.var_matrix);
+  if (factor->method == METHOD_CORR)
+    idata->analysis_matrix = idata->mm.corr;
   else
-    analysis_matrix = idata->cov;
-
+    idata->analysis_matrix = idata->mm.cov;
 
   if (factor->print & PRINT_DETERMINANT
       || factor->print & PRINT_KMO)
     {
       int sign = 0;
 
-      const int size = idata->corr->size1;
+      const int size = idata->mm.corr->size1;
       gsl_permutation *p = gsl_permutation_calloc (size);
       gsl_matrix *tmp = gsl_matrix_calloc (size, size);
-      gsl_matrix_memcpy (tmp, idata->corr);
+      gsl_matrix_memcpy (tmp, idata->mm.corr);
 
       gsl_linalg_LU_decomp (tmp, p, &sign);
       idata->detR = gsl_linalg_LU_det (tmp, sign);
@@ -2121,9 +2206,9 @@ do_factor (const struct cmd_factor *factor, struct casereader *r)
 	  const struct variable *v = factor->vars[i];
 	  tab_text (t, 0, i + heading_rows, TAB_LEFT | TAT_TITLE, var_to_string (v));
 
-	  tab_double (t, 1, i + heading_rows, 0, gsl_matrix_get (mean_matrix, i, i), NULL, RC_OTHER);
-	  tab_double (t, 2, i + heading_rows, 0, sqrt (gsl_matrix_get (var_matrix, i, i)), NULL, RC_OTHER);
-	  tab_double (t, 3, i + heading_rows, 0, gsl_matrix_get (idata->n, i, i), NULL, RC_WEIGHT);
+	  tab_double (t, 1, i + heading_rows, 0, gsl_matrix_get (idata->mm.mean_matrix, i, i), NULL, RC_OTHER);
+	  tab_double (t, 2, i + heading_rows, 0, sqrt (gsl_matrix_get (idata->mm.var_matrix, i, i)), NULL, RC_OTHER);
+	  tab_double (t, 3, i + heading_rows, 0, gsl_matrix_get (idata->mm.n, i, i), NULL, RC_WEIGHT);
 	}
 
       tab_submit (t);
@@ -2135,7 +2220,7 @@ do_factor (const struct cmd_factor *factor, struct casereader *r)
       double sum_ssq_r = 0;
       double sum_ssq_a = 0;
 
-      double df = factor->n_vars * ( factor->n_vars - 1) / 2;
+      double df = factor->n_vars * (factor->n_vars - 1) / 2;
 
       double w = 0;
 
@@ -2153,7 +2238,7 @@ do_factor (const struct cmd_factor *factor, struct casereader *r)
       struct tab_table *t = tab_create (nc, nr);
       tab_title (t, _("KMO and Bartlett's Test"));
 
-      x  = clone_matrix (idata->corr);
+      x  = clone_matrix (idata->mm.corr);
       gsl_linalg_cholesky_decomp (x);
       gsl_linalg_cholesky_invert (x);
 
@@ -2194,9 +2279,9 @@ do_factor (const struct cmd_factor *factor, struct casereader *r)
 	 missing values are involved.  The best thing I can think of
 	 is to take the mean average. */
       w = 0;
-      for (i = 0; i < idata->n->size1; ++i)
-	w += gsl_matrix_get (idata->n, i, i);
-      w /= idata->n->size1;
+      for (i = 0; i < idata->mm.n->size1; ++i)
+	w += gsl_matrix_get (idata->mm.n, i, i);
+      w /= idata->mm.n->size1;
 
       xsq = w - 1 - (2 * factor->n_vars + 5) / 6.0;
       xsq *= -log (idata->detR);
@@ -2210,10 +2295,11 @@ do_factor (const struct cmd_factor *factor, struct casereader *r)
     }
 
   show_correlation_matrix (factor, idata);
-  covariance_destroy (cov);
+  if (idata->cvm)
+    covariance_destroy (idata->cvm);
 
   {
-    gsl_matrix *am = matrix_dup (analysis_matrix);
+    gsl_matrix *am = matrix_dup (idata->analysis_matrix);
     gsl_eigen_symmv_workspace *workspace = gsl_eigen_symmv_alloc (factor->n_vars);
 
     gsl_eigen_symmv (am, idata->eval, idata->evec, workspace);
@@ -2256,11 +2342,11 @@ do_factor (const struct cmd_factor *factor, struct casereader *r)
     if ( factor->extraction == EXTRACTION_PAF)
       {
 	gsl_vector *diff = gsl_vector_alloc (idata->msr->size);
-	struct smr_workspace *ws = ws_create (analysis_matrix);
+	struct smr_workspace *ws = ws_create (idata->analysis_matrix);
 
 	for (i = 0 ; i < factor->n_vars ; ++i)
 	  {
-	    double r2 = squared_multiple_correlation (analysis_matrix, i, ws);
+	    double r2 = squared_multiple_correlation (idata->analysis_matrix, i, ws);
 
 	    gsl_vector_set (idata->msr, i, r2);
 	  }
@@ -2273,7 +2359,7 @@ do_factor (const struct cmd_factor *factor, struct casereader *r)
 	    double min, max;
 	    gsl_vector_memcpy (diff, idata->msr);
 
-	    iterate_factor_matrix (analysis_matrix, idata->msr, factor_matrix, fmw);
+	    iterate_factor_matrix (idata->analysis_matrix, idata->msr, factor_matrix, fmw);
 
 	    gsl_vector_sub (diff, idata->msr);
 
@@ -2296,7 +2382,7 @@ do_factor (const struct cmd_factor *factor, struct casereader *r)
 
 	gsl_vector_memcpy (extracted_communalities, initial_communalities);
 
-	iterate_factor_matrix (analysis_matrix, extracted_communalities, factor_matrix, fmw);
+	iterate_factor_matrix (idata->analysis_matrix, extracted_communalities, factor_matrix, fmw);
 
 
 	extracted_eigenvalues = idata->eval;
@@ -2340,7 +2426,8 @@ do_factor (const struct cmd_factor *factor, struct casereader *r)
       {
 	show_factor_matrix (factor, idata,
 			    (factor->rotation == ROT_PROMAX) ? _("Structure Matrix") :
-			    (factor->extraction == EXTRACTION_PC ? _("Rotated Component Matrix") : _("Rotated Factor Matrix")),
+			    (factor->extraction == EXTRACTION_PC ? _("Rotated Component Matrix") :
+			     _("Rotated Factor Matrix")),
 			    rotated_factors);
 
 	gsl_matrix_free (rotated_factors);
@@ -2359,10 +2446,7 @@ do_factor (const struct cmd_factor *factor, struct casereader *r)
   }
 
  finish:
-
-  idata_free (idata);
-
-  casereader_destroy (r);
+  return;
 }
 
 
