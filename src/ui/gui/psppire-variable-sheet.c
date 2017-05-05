@@ -443,6 +443,8 @@ psppire_variable_sheet_class_init (PsppireVariableSheetClass *class)
 {
   GObjectClass *object_class = G_OBJECT_CLASS (class);
   object_class->dispose = psppire_variable_sheet_dispose;
+
+  parent_class = g_type_class_peek_parent (class);
 }
 
 GtkWidget*

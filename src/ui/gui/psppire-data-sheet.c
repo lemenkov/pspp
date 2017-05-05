@@ -346,6 +346,8 @@ psppire_data_sheet_class_init (PsppireDataSheetClass *class)
 {
   GObjectClass *object_class = G_OBJECT_CLASS (class);
   object_class->dispose = psppire_data_sheet_dispose;
+
+  parent_class = g_type_class_peek_parent (class);
 }
 
 GtkWidget*
