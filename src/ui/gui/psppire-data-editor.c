@@ -37,7 +37,7 @@
 #include "ui/gui/psppire-data-window.h"
 #include "ui/gui/psppire-value-entry.h"
 #include "ui/gui/psppire-conf.h"
-#include "ui/gui/psppire-var-sheet-header.h"
+#include "ui/gui/psppire-variable-sheet.h"
 
 #include "value-variant.h"
 
@@ -46,209 +46,6 @@
 
 #include <gettext.h>
 #define _(msgid) gettext (msgid)
-
-
-static GtkCellRenderer *
-create_spin_renderer (GType type)
-{
-  GtkCellRenderer *r = gtk_cell_renderer_spin_new ();
-
-  GtkAdjustment *adj = gtk_adjustment_new (0,
-					   0, G_MAXDOUBLE,
-					   1, 1,
-					   0);
-  g_object_set (r,
-		"adjustment", adj,
-		NULL);
-
-  return r;
-}
-
-static GtkCellRenderer *
-create_combo_renderer (GType type)
-{
-  GtkListStore *list_store = gtk_list_store_new (2, G_TYPE_INT, G_TYPE_STRING);
-
-  GEnumClass *ec = g_type_class_ref (type);
-
-  const GEnumValue *ev ;
-  for (ev = ec->values; ev->value_name; ++ev)
-    {
-      GtkTreeIter iter;
-
-      gtk_list_store_append (list_store, &iter);
-
-      gtk_list_store_set (list_store, &iter,
-			  0, ev->value,
-			  1, gettext (ev->value_nick),
-			  -1);
-    }
-
-  GtkCellRenderer *r = gtk_cell_renderer_combo_new ();
-
-  g_object_set (r,
-		"model", list_store,
-		"text-column", 1,
-		"has-entry", TRUE,
-		NULL);
-
-  return r;
-}
-
-static gchar *
-var_sheet_data_to_string (GtkTreeModel *m, gint col, gint row, const GValue *in)
-{
-  if (col >= n_DICT_COLS - 1) /* -1 because psppire-dict has an extra column */
-    return NULL;
-
-  const struct variable *var = psppire_dict_get_variable (PSPPIRE_DICT (m), row);
-  if (var == NULL)
-    return NULL;
-
-  if (col == DICT_TVM_COL_TYPE)
-    {
-      const struct fmt_spec *print = var_get_print_format (var);
-      return strdup (fmt_gui_name (print->type));
-    }
-  else if (col == DICT_TVM_COL_MISSING_VALUES)
-    return missing_values_to_string (var, NULL);
-  else if (col == DICT_TVM_COL_VALUE_LABELS)
-    {
-      const struct val_labs *vls = var_get_value_labels (var);
-      if (vls == NULL || val_labs_count (vls) == 0)
-	return strdup (_("None"));
-      const struct val_lab **labels = val_labs_sorted (vls);
-      const struct val_lab *vl = labels[0];
-      gchar *vstr = value_to_text (vl->value, var);
-      char *text = xasprintf (_("{%s, %s}..."), vstr,
-			      val_lab_get_escaped_label (vl));
-      free (vstr);
-      free (labels);
-      return text;
-    }
-
-  return jmd_sheet_default_forward_conversion (m, col, row, in);
-}
-
-static void
-set_var_type (GtkCellRenderer *renderer,
-     GtkCellEditable *editable,
-     gchar           *path,
-     gpointer         user_data)
-{
-  PsppireDataEditor *de = PSPPIRE_DATA_EDITOR (user_data);
-  gint row = -1, col = -1;
-  jmd_sheet_get_active_cell (JMD_SHEET (de->var_sheet), &col, &row);
-
-  struct variable *var =
-    psppire_dict_get_variable (PSPPIRE_DICT (de->dict), row);
-
-  const struct fmt_spec *format = var_get_write_format (var);
-  struct fmt_spec fmt = *format;
-  GtkWindow *win = GTK_WINDOW (gtk_widget_get_toplevel (GTK_WIDGET (de)));
-  if (GTK_RESPONSE_OK == psppire_var_type_dialog_run (win, &fmt))
-    {
-      var_set_width_and_formats (var, fmt_var_width (&fmt), &fmt, &fmt);
-    }
-}
-
-static void
-set_missing_values (GtkCellRenderer *renderer,
-     GtkCellEditable *editable,
-     gchar           *path,
-     gpointer         user_data)
-{
-  PsppireDataEditor *de = PSPPIRE_DATA_EDITOR (user_data);
-  gint row = -1, col = -1;
-  jmd_sheet_get_active_cell (JMD_SHEET (de->var_sheet), &col, &row);
-
-  struct variable *var =
-    psppire_dict_get_variable (PSPPIRE_DICT (de->dict), row);
-
-  struct missing_values mv;
-  if (GTK_RESPONSE_OK ==
-      psppire_missing_val_dialog_run (GTK_WINDOW (gtk_widget_get_toplevel (GTK_WIDGET (de))),
-				      var, &mv))
-    {
-      var_set_missing_values (var, &mv);
-    }
-
-  mv_destroy (&mv);
-}
-
-static void
-set_value_labels (GtkCellRenderer *renderer,
-     GtkCellEditable *editable,
-     gchar           *path,
-     gpointer         user_data)
-{
-  PsppireDataEditor *de = PSPPIRE_DATA_EDITOR (user_data);
-  gint row = -1, col = -1;
-  jmd_sheet_get_active_cell (JMD_SHEET (de->var_sheet), &col, &row);
-
-  struct variable *var =
-    psppire_dict_get_variable (PSPPIRE_DICT (de->dict), row);
-
-  struct val_labs *vls =
-    psppire_val_labs_dialog_run (GTK_WINDOW (gtk_widget_get_toplevel (GTK_WIDGET (de))), var);
-
-  if (vls)
-    {
-      var_set_value_labels (var, vls);
-      val_labs_destroy (vls);
-    }
-}
-
-
-static GtkCellRenderer *spin_renderer;
-static GtkCellRenderer *column_width_renderer;
-static GtkCellRenderer *measure_renderer;
-static GtkCellRenderer *alignment_renderer;
-
-static GtkCellRenderer *
-select_renderer_func (gint col, gint row, GType type, PsppireDataEditor *de)
-{
-  if (!spin_renderer)
-    spin_renderer = create_spin_renderer (type);
-
-  if (col == DICT_TVM_COL_ROLE && !column_width_renderer)
-    column_width_renderer = create_combo_renderer (type);
-
-  if (col == DICT_TVM_COL_MEASURE && !measure_renderer)
-    measure_renderer = create_combo_renderer (type);
-
-  if (col == DICT_TVM_COL_ALIGNMENT && !alignment_renderer)
-    alignment_renderer = create_combo_renderer (type);
-
-  switch  (col)
-    {
-    case DICT_TVM_COL_WIDTH:
-    case DICT_TVM_COL_DECIMAL:
-    case DICT_TVM_COL_COLUMNS:
-      return spin_renderer;
-
-    case DICT_TVM_COL_TYPE:
-      return de->var_type_renderer;
-
-    case DICT_TVM_COL_VALUE_LABELS:
-      return de->value_label_renderer;
-
-    case DICT_TVM_COL_MISSING_VALUES:
-      return de->missing_values_renderer;
-
-    case DICT_TVM_COL_ALIGNMENT:
-      return alignment_renderer;
-
-    case DICT_TVM_COL_MEASURE:
-      return measure_renderer;
-
-    case DICT_TVM_COL_ROLE:
-      return column_width_renderer;
-    }
-
-  return NULL;
-}
-
 
 static void psppire_data_editor_class_init          (PsppireDataEditorClass *klass);
 static void psppire_data_editor_init                (PsppireDataEditor      *de);
@@ -307,10 +104,6 @@ psppire_data_editor_dispose (GObject *obj)
       de->font = NULL;
     }
 
-  g_object_unref (de->value_label_renderer);
-  g_object_unref (de->missing_values_renderer);
-  g_object_unref (de->var_type_renderer);
-
   /* Chain up to the parent class */
   G_OBJECT_CLASS (parent_class)->dispose (obj);
 }
@@ -327,72 +120,6 @@ enum
 static void
 psppire_data_editor_refresh_model (PsppireDataEditor *de)
 {
-}
-
-static void
-change_var_property (PsppireDict *dict, gint col, gint row, const GValue *value)
-{
-  /* Return the IDXth variable */
-  struct variable *var =  psppire_dict_get_variable (dict, row);
-
-  if (NULL == var)
-    var = psppire_dict_insert_variable (dict, row, NULL);
-
-  switch (col)
-    {
-    case DICT_TVM_COL_NAME:
-      {
-	const char *name = g_value_get_string (value);
-	if (psppire_dict_check_name (dict, name, FALSE))
-	  dict_rename_var (dict->dict, var, g_value_get_string (value));
-      }
-      break;
-    case DICT_TVM_COL_WIDTH:
-      {
-      gint width = g_value_get_int (value);
-      if (var_is_numeric (var))
-        {
-          struct fmt_spec format = *var_get_print_format (var);
-	  fmt_change_width (&format, width, FMT_FOR_OUTPUT);
-          var_set_both_formats (var, &format);
-        }
-      else
-	{
-	  var_set_width (var, width);
-	}
-      }
-      break;
-    case DICT_TVM_COL_DECIMAL:
-      {
-      gint decimals = g_value_get_int (value);
-      if (decimals >= 0)
-        {
-          struct fmt_spec format = *var_get_print_format (var);
-	  fmt_change_decimals (&format, decimals, FMT_FOR_OUTPUT);
-          var_set_both_formats (var, &format);
-        }
-      }
-      break;
-    case DICT_TVM_COL_LABEL:
-      var_set_label (var, g_value_get_string (value));
-      break;
-    case DICT_TVM_COL_COLUMNS:
-      var_set_display_width (var, g_value_get_int (value));
-      break;
-    case DICT_TVM_COL_MEASURE:
-      var_set_measure (var, g_value_get_int (value));
-      break;
-    case DICT_TVM_COL_ALIGNMENT:
-      var_set_alignment (var, g_value_get_int (value));
-      break;
-    case DICT_TVM_COL_ROLE:
-      var_set_role (var, g_value_get_int (value));
-      break;
-    default:
-      g_warning ("Changing unknown column %d of variable sheet column not supported",
-		 col);
-      break;
-    }
 }
 
 static void
@@ -463,9 +190,6 @@ psppire_data_editor_set_property (GObject         *object,
 
       g_object_set (de->data_sheet, "hmodel", de->dict, NULL);
       g_object_set (de->var_sheet, "data-model", de->dict, NULL);
-      g_signal_connect_swapped (de->var_sheet, "value-changed",
-				G_CALLBACK (change_var_property), de->dict);
-
       break;
     case PROP_VALUE_LABELS:
       break;
@@ -807,57 +531,6 @@ psppire_data_editor_insert_new_variable_at_posn (PsppireDataEditor *de, gint pos
   gtk_widget_queue_draw (GTK_WIDGET (de));
 }
 
-static void
-insert_new_variable_data (PsppireDataEditor *de)
-{
-  gint posn = GPOINTER_TO_INT (g_object_get_data
-				(G_OBJECT (de->data_sheet_cases_column_popup),
-				 "item"));
-
-  psppire_data_editor_insert_new_variable_at_posn (de, posn);
-}
-
-static void
-insert_new_variable_var (PsppireDataEditor *de)
-{
-  gint item = GPOINTER_TO_INT (g_object_get_data
-				(G_OBJECT (de->var_sheet_row_popup),
-				 "item"));
-
-  const struct variable *v = psppire_dict_insert_variable (de->dict, item, NULL);
-  psppire_data_store_insert_value (de->data_store, var_get_width(v),
-				   var_get_case_index (v));
-
-  gtk_widget_queue_draw (GTK_WIDGET (de));
-}
-
-
-static GtkWidget *
-create_var_row_header_popup_menu (PsppireDataEditor *de)
-{
-  GtkWidget *menu = gtk_menu_new ();
-
-  GtkWidget *item =
-    gtk_menu_item_new_with_mnemonic  (_("_Insert Variable"));
-  g_signal_connect_swapped (item, "activate", G_CALLBACK (insert_new_variable_var),
-			    de);
-  gtk_menu_shell_append (GTK_MENU_SHELL (menu), item);
-
-  item = gtk_separator_menu_item_new ();
-  gtk_menu_shell_append (GTK_MENU_SHELL (menu), item);
-
-  de->var_clear_variables_menu_item =
-    gtk_menu_item_new_with_mnemonic (_("Cl_ear Variables"));
-  g_signal_connect_swapped (de->var_clear_variables_menu_item, "activate",
-			    G_CALLBACK (psppire_data_editor_var_delete_variables),
-			    de);
-  gtk_widget_set_sensitive (de->var_clear_variables_menu_item, FALSE);
-  gtk_menu_shell_append (GTK_MENU_SHELL (menu), de->var_clear_variables_menu_item);
-
-  gtk_widget_show_all (menu);
-  return menu;
-}
-
 static GtkWidget *
 create_data_row_header_popup_menu (PsppireDataEditor *de)
 {
@@ -880,6 +553,16 @@ create_data_row_header_popup_menu (PsppireDataEditor *de)
 
   gtk_widget_show_all (menu);
   return menu;
+}
+
+static void
+insert_new_variable_data (PsppireDataEditor *de)
+{
+  gint posn = GPOINTER_TO_INT (g_object_get_data
+				(G_OBJECT (de->data_sheet_cases_column_popup),
+				 "item"));
+
+  psppire_data_editor_insert_new_variable_at_posn (de, posn);
 }
 
 static GtkWidget *
@@ -926,20 +609,6 @@ create_data_column_header_popup_menu (PsppireDataEditor *de)
 }
 
 static void
-set_var_popup_sensitivity (JmdSheet *sheet, gpointer selection, gpointer p)
-{
-
-  JmdRange *range = selection;
-  PsppireDataEditor *de = PSPPIRE_DATA_EDITOR (p);
-  gint width = gtk_tree_model_get_n_columns (sheet->data_model);
-
-  gboolean whole_row_selected = (range->start_x == 0 &&
-				 range->end_x == width - 1 - 1);
-  /*  PsppireDict has an "extra" column: TVM_COL_VAR   ^^^ */
-  gtk_widget_set_sensitive (de->var_clear_variables_menu_item, whole_row_selected);
-}
-
-static void
 set_menu_items_sensitivity (JmdSheet *sheet, gpointer selection, gpointer p)
 {
   JmdRange *range = selection;
@@ -960,30 +629,6 @@ set_menu_items_sensitivity (JmdSheet *sheet, gpointer selection, gpointer p)
 			    whole_column_selected);
   gtk_widget_set_sensitive (de->data_sort_descending_menu_item,
 			    whole_column_selected);
-}
-
-static void
-show_variables_row_popup (JmdSheet *sheet, int row, uint button,
-			  uint state, gpointer p)
-{
-  PsppireDataEditor *de = PSPPIRE_DATA_EDITOR (p);
-  GListModel *vmodel = NULL;
-  g_object_get (sheet, "vmodel", &vmodel, NULL);
-  if (vmodel == NULL)
-    return;
-
-  guint n_items = g_list_model_get_n_items (vmodel);
-
-  if (row >= n_items)
-    return;
-
-  if (button != 3)
-    return;
-
-  g_object_set_data (G_OBJECT (de->var_sheet_row_popup), "item",
-		     GINT_TO_POINTER (row));
-
-  gtk_menu_popup_at_pointer (GTK_MENU (de->var_sheet_row_popup), NULL);
 }
 
 static void
@@ -1034,6 +679,12 @@ show_cases_column_popup (JmdSheet *sheet, int column, uint button, uint state,
 }
 
 
+static gchar *
+data_store_value_to_string (JmdSheet *data_sheet, PsppireDataStore *store, gint col, gint row, const GValue *v)
+{
+  return psppire_data_store_value_to_string (store, col, row, v);
+}
+
 static void
 psppire_data_editor_init (PsppireDataEditor *de)
 {
@@ -1064,7 +715,6 @@ psppire_data_editor_init (PsppireDataEditor *de)
 
   de->data_sheet_cases_column_popup = create_data_column_header_popup_menu (de);
   de->data_sheet_cases_row_popup = create_data_row_header_popup_menu (de);
-  de->var_sheet_row_popup = create_var_row_header_popup_menu (de);
 
   g_signal_connect (de->data_sheet, "row-header-pressed",
 		    G_CALLBACK (show_cases_row_popup), de);
@@ -1076,7 +726,7 @@ psppire_data_editor_init (PsppireDataEditor *de)
 		    G_CALLBACK (set_menu_items_sensitivity), de);
 
   g_object_set (de->data_sheet,
-		"forward-conversion", psppire_data_store_value_to_string,
+		"forward-conversion", data_store_value_to_string,
 		"reverse-conversion", myreversefunc,
 		NULL);
 
@@ -1095,26 +745,7 @@ psppire_data_editor_init (PsppireDataEditor *de)
 
   gtk_widget_show_all (de->vbox);
 
-  de->var_sheet = g_object_new (JMD_TYPE_SHEET, NULL);
-
-  PsppireVarSheetHeader *vsh = g_object_new (PSPPIRE_TYPE_VAR_SHEET_HEADER, NULL);
-
-  g_object_set (de->var_sheet,
-		"hmodel", vsh,
-		"select-renderer-func", select_renderer_func,
-		"select-renderer-datum", de,
-		NULL);
-
-  g_object_set (de->var_sheet,
-		"forward-conversion", var_sheet_data_to_string,
-		NULL);
-
-  g_signal_connect (de->var_sheet, "row-header-pressed",
-		    G_CALLBACK (show_variables_row_popup), de);
-
-  g_signal_connect (de->var_sheet, "selection-changed",
-		    G_CALLBACK (set_var_popup_sensitivity), de);
-
+  de->var_sheet = psppire_variable_sheet_new ();
 
   GtkWidget *var_button = jmd_sheet_get_button (JMD_SHEET (de->var_sheet));
   gtk_button_set_label (GTK_BUTTON (var_button), _("Variable"));
@@ -1141,20 +772,6 @@ psppire_data_editor_init (PsppireDataEditor *de)
       set_font_recursively (GTK_WIDGET (de), de->font);
     }
 
-  de->value_label_renderer = gtk_cell_renderer_text_new ();
-  g_signal_connect (de->value_label_renderer,
-		    "editing-started", G_CALLBACK (set_value_labels),
-		    de);
-
-  de->missing_values_renderer = gtk_cell_renderer_text_new ();
-  g_signal_connect (de->missing_values_renderer,
-		    "editing-started", G_CALLBACK (set_missing_values),
-		    de);
-
-  de->var_type_renderer = gtk_cell_renderer_text_new ();
-  g_signal_connect (de->var_type_renderer,
-		    "editing-started", G_CALLBACK (set_var_type),
-		    de);
 }
 
 GtkWidget*

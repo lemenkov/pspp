@@ -72,10 +72,6 @@ struct _PsppireDataEditor
   GtkWidget *data_sort_ascending_menu_item;
   GtkWidget *data_sort_descending_menu_item;
 
-  /* Var sheet popup menu */
-  GtkWidget *var_sheet_row_popup;
-  GtkWidget *var_clear_variables_menu_item;
-
   /* Data sheet tab. */
   GtkWidget *vbox;             /* Top-level widget in tab. */
   GtkWidget *cell_ref_label;   /* GtkLabel that shows selected case and var. */
@@ -83,9 +79,6 @@ struct _PsppireDataEditor
 
   gboolean split;              /* True if the sheets are in split view. */
 
-  GtkCellRenderer *value_label_renderer;
-  GtkCellRenderer *missing_values_renderer;
-  GtkCellRenderer *var_type_renderer;
 };
 
 struct _PsppireDataEditorClass
