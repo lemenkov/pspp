@@ -71,11 +71,11 @@ EXTRA_DIST += \
 src_ui_gui_psppire_CPPFLAGS=
 
 if HAVE_GUI
-bin_PROGRAMS += src/ui/gui/psppire 
-noinst_PROGRAMS += src/ui/gui/spreadsheet-test 
+bin_PROGRAMS += src/ui/gui/psppire
+noinst_PROGRAMS += src/ui/gui/spreadsheet-test
 
-src_ui_gui_psppire_CFLAGS = $(GTK_CFLAGS) $(GTKSOURCEVIEW_CFLAGS) -Wall -DGDK_MULTIHEAD_SAFE=1 
-src_ui_gui_spreadsheet_test_CFLAGS = $(GTK_CFLAGS) -Wall -DGDK_MULTIHEAD_SAFE=1 
+src_ui_gui_psppire_CFLAGS = $(GTK_CFLAGS) $(GTKSOURCEVIEW_CFLAGS) -Wall -DGDK_MULTIHEAD_SAFE=1
+src_ui_gui_spreadsheet_test_CFLAGS = $(GTK_CFLAGS) -Wall -DGDK_MULTIHEAD_SAFE=1
 
 
 src_ui_gui_psppire_LDFLAGS = \
@@ -293,6 +293,8 @@ src_ui_gui_psppire_SOURCES = \
 	src/ui/gui/psppire-value-entry.h \
 	src/ui/gui/psppire-var-ptr.c \
 	src/ui/gui/psppire-var-ptr.h \
+	src/ui/gui/psppire-data-sheet.c \
+	src/ui/gui/psppire-data-sheet.h \
 	src/ui/gui/psppire-variable-sheet.c \
 	src/ui/gui/psppire-variable-sheet.h \
 	src/ui/gui/psppire-var-sheet-header.h \
@@ -385,7 +387,7 @@ dist_appdata_DATA = src/ui/gui/pspp.appdata.xml
 BUILT_SOURCES += src/ui/gui/psppire-marshal.c src/ui/gui/psppire-marshal.h src/ui/gui/resources.c
 
 CLEANFILES += src/ui/gui/psppire-marshal.c src/ui/gui/psppire-marshal.h \
-	src/ui/gui/resources.c $(nodist_src_ui_gui_psppire_DATA) 
+	src/ui/gui/resources.c $(nodist_src_ui_gui_psppire_DATA)
 
 include $(top_srcdir)/src/ui/gui/efficient-sheet.mk
 endif HAVE_GUI

@@ -62,16 +62,6 @@ struct _PsppireDataEditor
   GtkWidget *var_sheet;
   GtkWidget *data_sheet;
 
-  /* Data sheet popup menu */
-  GtkWidget *data_sheet_cases_row_popup;
-  GtkWidget *data_clear_cases_menu_item;
-
-
-  GtkWidget *data_sheet_cases_column_popup;
-  GtkWidget *data_clear_variables_menu_item;
-  GtkWidget *data_sort_ascending_menu_item;
-  GtkWidget *data_sort_descending_menu_item;
-
   /* Data sheet tab. */
   GtkWidget *vbox;             /* Top-level widget in tab. */
   GtkWidget *cell_ref_label;   /* GtkLabel that shows selected case and var. */
