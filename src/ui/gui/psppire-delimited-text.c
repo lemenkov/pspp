@@ -312,41 +312,42 @@ __iter_nth_child (GtkTreeModel *tree_model,
 static void
 split_row_into_fields (PsppireDelimitedText *file, gint n)
 {
-  if (n != file->cache_row)
+  if (n == file->cache_row)  /* Cache hit */
+    return;
+
+  /* Cache miss */
+  if (file->const_cache.string)
     {
-      if (file->const_cache.string)
+      ss_dealloc (&file->const_cache);
+    }
+  ss_alloc_substring (&file->const_cache, PSPPIRE_TEXT_FILE (file->child)->lines[n]);
+  struct substring cs = file->const_cache;
+  int field = 0;
+  file->cache_starts[0] = cs.string;
+  for (;
+       UINT32_MAX != ss_first_mb (cs);
+       ss_get_mb (&cs))
+    {
+      ucs4_t xx = ss_first_mb (cs);
+      GSList *del;
+      for (del = file->delimiters; del; del = g_slist_next (del))
 	{
-	  ss_dealloc (&file->const_cache);
-	}
-      ss_alloc_substring (&file->const_cache, PSPPIRE_TEXT_FILE (file->child)->lines[n]);
-      file->cache = file->const_cache;
-      int field = 0;
-      file->cache_starts[0] = file->cache.string;
-      for (;
-	   UINT32_MAX != ss_first_mb (file->cache);
-	   ss_get_mb (&file->cache))
-	{
-	  ucs4_t xx = ss_first_mb (file->cache);
-	  GSList *del;
-	  for (del = file->delimiters; del; del = g_slist_next (del))
+	  if (xx == GPOINTER_TO_INT (del->data))
 	    {
-	      if (xx == GPOINTER_TO_INT (del->data))
+	      field++;
+	      int char_len = ss_first_mblen (cs);
+	      file->cache_starts[field] = cs.string + char_len;
+	      while (char_len > 0)
 		{
-		  field++;
-		  int char_len = ss_first_mblen (file->cache);
-		  file->cache_starts[field] = file->cache.string + char_len;
-		  while (char_len > 0)
-		    {
-		      file->cache.string[char_len - 1] = '\0';
-		      char_len--;
-		    }
-		  break;
+		  cs.string[char_len - 1] = '\0';
+		  char_len--;
 		}
+	      break;
 	    }
 	}
-
-      file->cache_row = n;
     }
+
+  file->cache_row = n;
 }
 
 const gchar *

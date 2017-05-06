@@ -67,7 +67,6 @@ struct _PsppireDelimitedText
 
   /* caching */
   const char *cache_starts[512];
-  struct substring cache;
   struct substring const_cache;
   int cache_row;
 };
