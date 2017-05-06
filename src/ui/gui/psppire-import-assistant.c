@@ -1799,6 +1799,8 @@ on_variable_change (PsppireDict *dict, int dict_idx,
 static void
 prepare_formats_page (PsppireImportAssistant *ia)
 {
+  PsppireDict *dict = psppire_dict_new_from_dict (ia->dict);
+  g_object_set (ia->var_sheet, "data-model", dict, NULL);
 }
 
 static void
@@ -1806,10 +1808,21 @@ formats_page_create (PsppireImportAssistant *ia)
 {
   GtkBuilder *builder = ia->builder;
 
-
   GtkWidget *w = get_widget_assert (builder, "Formats");
   g_object_set_data (G_OBJECT (w), "on-entering", prepare_formats_page);
   g_object_set_data (G_OBJECT (w), "on-reset", reset_formats_page);
+
+  GtkWidget *vars_scroller = get_widget_assert (builder, "vars-scroller");
+  if (ia->var_sheet == NULL)
+    {
+      ia->var_sheet = psppire_variable_sheet_new ();
+
+      gtk_container_add (GTK_CONTAINER (vars_scroller), ia->var_sheet);
+
+      ia->dict = dict_create (get_default_encoding ());
+
+      gtk_widget_show_all (vars_scroller);
+    }
 
   add_page_to_assistant (ia, w,
 			 GTK_ASSISTANT_PAGE_CONFIRM, _("Adjust Variable Formats"));

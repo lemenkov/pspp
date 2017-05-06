@@ -136,6 +136,8 @@ struct _PsppireImportAssistant
   gboolean variable_names;        /* Variable names above first line of data? */
   struct dictionary *dict;
 
+  GtkWidget *var_sheet;
+
   struct spreadsheet *spreadsheet;
 };
 
