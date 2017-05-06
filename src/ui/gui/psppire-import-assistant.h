@@ -137,6 +137,7 @@ struct _PsppireImportAssistant
   struct dictionary *dict;
 
   GtkWidget *var_sheet;
+  GtkWidget *data_sheet;
 
   struct spreadsheet *spreadsheet;
 };

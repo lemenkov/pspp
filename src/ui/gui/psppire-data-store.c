@@ -81,6 +81,9 @@ __tree_model_iter_n_children (GtkTreeModel *tree_model,
 {
   PsppireDataStore *store  = PSPPIRE_DATA_STORE (tree_model);
 
+  if (store->datasheet == NULL)
+    return 0;
+
   gint n =  datasheet_get_n_rows (store->datasheet);
 
   return n;
@@ -112,11 +115,9 @@ __iter_nth_child (GtkTreeModel *tree_model,
   PsppireDataStore *store  = PSPPIRE_DATA_STORE (tree_model);
 
   g_assert (parent == NULL);
-
   g_return_val_if_fail (store, FALSE);
-  g_return_val_if_fail (store->datasheet, FALSE);
 
-  if (n >= datasheet_get_n_rows (store->datasheet))
+  if (!store->datasheet || n >= datasheet_get_n_rows (store->datasheet))
     {
       iter->stamp = -1;
       iter->user_data = NULL;

@@ -50,6 +50,10 @@
 #include "psppire-spreadsheet-model.h"
 #include "psppire-text-file.h"
 #include "psppire-delimited-text.h"
+#include "psppire-data-sheet.h"
+#include "psppire-data-store.h"
+#include "psppire-dict.h"
+#include "psppire-variable-sheet.h"
 
 #include "ui/syntax-gen.h"
 
@@ -1801,6 +1805,9 @@ prepare_formats_page (PsppireImportAssistant *ia)
 {
   PsppireDict *dict = psppire_dict_new_from_dict (ia->dict);
   g_object_set (ia->var_sheet, "data-model", dict, NULL);
+
+  PsppireDataStore *store = psppire_data_store_new (dict);
+  g_object_set (ia->data_sheet, "data-model", store, NULL);
 }
 
 static void
@@ -1822,6 +1829,15 @@ formats_page_create (PsppireImportAssistant *ia)
       ia->dict = dict_create (get_default_encoding ());
 
       gtk_widget_show_all (vars_scroller);
+    }
+  GtkWidget *data_scroller = get_widget_assert (builder, "data-scroller");
+  if (ia->data_sheet == NULL)
+    {
+      ia->data_sheet = psppire_data_sheet_new ();
+
+      gtk_container_add (GTK_CONTAINER (data_scroller), ia->data_sheet);
+
+      gtk_widget_show_all (data_scroller);
     }
 
   add_page_to_assistant (ia, w,
