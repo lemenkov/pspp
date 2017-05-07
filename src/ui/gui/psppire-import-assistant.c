@@ -976,7 +976,8 @@ reset_first_line_page (PsppireImportAssistant *ia)
 static void
 on_treeview_selection_change (PsppireImportAssistant *ia)
 {
-  GtkTreeSelection *selection = gtk_tree_view_get_selection (GTK_TREE_VIEW (ia->first_line_tree_view));
+  GtkTreeSelection *selection =
+    gtk_tree_view_get_selection (GTK_TREE_VIEW (ia->first_line_tree_view));
   GtkTreeModel *model = NULL;
   GtkTreeIter iter;
   if (gtk_tree_selection_get_selected (selection, &model, &iter))
@@ -995,6 +996,8 @@ on_treeview_selection_change (PsppireImportAssistant *ia)
       ia->delimiters_model
 	= psppire_delimited_text_new (GTK_TREE_MODEL (ia->text_file));
       g_object_set (ia->delimiters_model, "first-line", n, NULL);
+
+      ia->skip_lines = n;
     }
 }
 
@@ -1050,7 +1053,6 @@ first_line_page_create (PsppireImportAssistant *ia)
 
   g_signal_connect_swapped (ia->variable_names_cb, "toggled",
 			    G_CALLBACK (set_first_line_options), ia);
-
 
   g_object_set_data (G_OBJECT (w), "on-reset", reset_first_line_page);
 #endif
@@ -1620,25 +1622,20 @@ split_fields (PsppireImportAssistant *ia)
 static void
 choose_column_names (PsppireImportAssistant *ia)
 {
-  struct dictionary *dict;
-  unsigned long int generated_name_count = 0;
-  struct column *col;
-  size_t name_row;
-
-  dict = dict_create (get_default_encoding ());
-  name_row = ia->variable_names && ia->skip_lines ? ia->skip_lines : 0;
-  for (col = ia->columns; col < &ia->columns[ia->column_cnt]; col++)
+  if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (ia->variable_names_cb)))
     {
-      char *hint, *name;
+      int i;
+      unsigned long int generated_name_count = 0;
+      for (i = 0; i < gtk_tree_model_get_n_columns (ia->delimiters_model) - 1; ++i)
+	{
+	  const gchar *candidate_name =
+	    psppire_delimited_text_get_header_title (PSPPIRE_DELIMITED_TEXT (ia->delimiters_model), i);
 
-      hint = name_row ? ss_xstrdup (col->contents[name_row - 1]) : NULL;
-      name = dict_make_unique_var_name (dict, hint, &generated_name_count);
-      free (hint);
-
-      col->name = name;
-      dict_create_var_assert (dict, name, 0);
+	  char *name = dict_make_unique_var_name (ia->dict, candidate_name, &generated_name_count);
+	  dict_create_var_assert (ia->dict, name, 0);
+	  free (name);
+	}
     }
-  dict_destroy (dict);
 }
 
 
