@@ -143,7 +143,7 @@ psppire_import_assistant_finalize (GObject *object)
   if (ia->spreadsheet)
     spreadsheet_unref (ia->spreadsheet);
 
-  destroy_columns (ia);
+  //  destroy_columns (ia);
 
   ds_destroy (&ia->separators);
   ds_destroy (&ia->quotes);
@@ -753,17 +753,18 @@ static void
 chooser_page_leave (PsppireImportAssistant *ia, GtkWidget *page)
 {
   g_print ("%s:%d %s\n", __FILE__, __LINE__, __FUNCTION__);
-  gchar *file_name = gtk_file_chooser_get_filename (GTK_FILE_CHOOSER (page));
+  g_free (ia->file_name);
+  ia->file_name = gtk_file_chooser_get_filename (GTK_FILE_CHOOSER (page));
   gchar *encoding = psppire_encoding_selector_get_encoding (ia->encoding_selector);
 
   if (!ia->spreadsheet)
     {
-      ia->text_file = psppire_text_file_new (file_name, encoding);
+      ia->text_file = psppire_text_file_new (ia->file_name, encoding);
       gtk_tree_view_set_model (GTK_TREE_VIEW (ia->first_line_tree_view),
 			       GTK_TREE_MODEL (ia->text_file));
     }
 
-  g_free (file_name);
+
   g_free (encoding);
 }
 
@@ -861,8 +862,10 @@ psppire_import_assistant_init (PsppireImportAssistant *ia)
   ia->builder = builder_new ("text-data-import.ui");
 
   ia->current_page = -1 ;
-  ia->column_cnt = 0;
-  ia->columns = NULL;
+  /* ia->column_cnt = 0; */
+  /* ia->columns = NULL; */
+
+  ia->file_name = NULL;
 
   ia->spreadsheet = NULL;
   ia->watch_cursor = 0;
@@ -997,7 +1000,7 @@ on_treeview_selection_change (PsppireImportAssistant *ia)
 	= psppire_delimited_text_new (GTK_TREE_MODEL (ia->text_file));
       g_object_set (ia->delimiters_model, "first-line", n, NULL);
 
-      ia->skip_lines = n;
+      //      ia->skip_lines = n;
     }
 }
 
@@ -1222,6 +1225,7 @@ struct column
   struct substring *contents;
 };
 
+#if SHEET_MERGE
 
 static void
 destroy_columns (PsppireImportAssistant *ia)
@@ -1236,7 +1240,7 @@ destroy_columns (PsppireImportAssistant *ia)
   free (ia->columns);
 }
 
-#if SHEET_MERGE
+
 
 /* Called to render one of the cells in the fields preview tree
    view. */
@@ -1270,8 +1274,6 @@ render_input_cell (PsppSheetViewColumn *tree_column, GtkCellRenderer *cell,
                   "background-set", TRUE,
                   (void *) NULL);
 }
-
-#endif
 
 /* Parses the contents of the field at (ROW,COLUMN) according to
    its variable format.  If OUTPUTP is non-null, then *OUTPUTP
@@ -1330,8 +1332,6 @@ parse_field (PsppireImportAssistant *ia,
     free (tooltip);
   return ok;
 }
-
-#if SHEET_MERGE
 
 /* Called to render one of the cells in the data preview tree
    view. */
@@ -1806,6 +1806,8 @@ prepare_formats_page (PsppireImportAssistant *ia)
 
   PsppireDataStore *store = psppire_data_store_new (dict);
   g_object_set (ia->data_sheet, "data-model", store, NULL);
+
+  gtk_widget_show (ia->paste_button);
 }
 
 static void
@@ -1894,14 +1896,15 @@ formats_append_syntax (const PsppireImportAssistant *ia, struct string *s)
     }
 }
 
-
 static void
 first_line_append_syntax (const PsppireImportAssistant *ia, struct string *s)
 {
-  if (ia->skip_lines > 0)
-    ds_put_format (s, "  /FIRSTCASE=%d\n", ia->skip_lines + 1);
-}
+  gint first_case = 0;
+  g_object_get (ia->delimiters_model, "first-line", &first_case, NULL);
 
+  if (first_case > 0)
+    ds_put_format (s, "  /FIRSTCASE=%d\n", first_case + 1);
+}
 
 static void
 intro_append_syntax (const PsppireImportAssistant *ia, struct string *s)
@@ -2052,7 +2055,7 @@ psppire_import_assistant_generate_syntax (PsppireImportAssistant *ia)
       gchar *file_name = NULL;
       gchar *encoding = NULL;
       g_object_get (ia->text_file,
-		    "filename", &file_name,
+		    "file-name", &file_name,
 		    "encoding", &encoding,
 		    NULL);
 

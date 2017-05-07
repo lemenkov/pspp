@@ -69,6 +69,8 @@ struct _PsppireImportAssistant
 
   gint current_page;
 
+  gchar *file_name;
+
   /* START The chooser page of the assistant. */
   GtkWidget *encoding_selector;
   GtkFileFilter *default_filter;
@@ -125,15 +127,18 @@ struct _PsppireImportAssistant
   PsppireTextFile *text_file;
 
   GtkTreeModel *delimiters_model;
-  
+
   struct sheet_spec_page *sheet_spec;
 
+#if MERGE_SHEET
   /* The columns produced. */
   struct column *columns;     /* Information about each column. */
   size_t column_cnt;          /* Number of columns. */
 
   int skip_lines;             /* Number of initial lines to skip? */
   gboolean variable_names;        /* Variable names above first line of data? */
+#endif
+
   struct dictionary *dict;
 
   GtkWidget *var_sheet;
