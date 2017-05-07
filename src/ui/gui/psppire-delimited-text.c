@@ -526,7 +526,7 @@ psppire_delimited_text_init (PsppireDelimitedText *text_file)
 }
 
 
-PsppireDelimitedText *
+GtkTreeModel *
 psppire_delimited_text_new (GtkTreeModel *child)
 {
   PsppireDelimitedText *retval =
