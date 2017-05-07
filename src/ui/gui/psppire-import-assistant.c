@@ -1626,6 +1626,7 @@ choose_column_names (PsppireImportAssistant *ia)
     {
       int i;
       unsigned long int generated_name_count = 0;
+      dict_clear (ia->dict);
       for (i = 0; i < gtk_tree_model_get_n_columns (ia->delimiters_model) - 1; ++i)
 	{
 	  const gchar *candidate_name =
