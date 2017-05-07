@@ -166,7 +166,6 @@ psppire_data_editor_set_property (GObject         *object,
       de->dict = g_value_get_pointer (value);
       g_object_ref (de->dict);
 
-      g_object_set (de->data_sheet, "hmodel", de->dict, NULL);
       g_object_set (de->var_sheet, "data-model", de->dict, NULL);
       break;
     case PROP_VALUE_LABELS:

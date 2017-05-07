@@ -362,6 +362,15 @@ psppire_data_sheet_new (void)
   return GTK_WIDGET (obj);
 }
 
+static void
+set_dictionary (PsppireDataSheet *sheet)
+{
+  GtkTreeModel *data_model = NULL;
+  g_object_get (sheet, "data-model", &data_model, NULL);
+
+  PsppireDataStore *store = PSPPIRE_DATA_STORE (data_model);
+  g_object_set (sheet, "hmodel", store->dict, NULL);
+}
 
 static void
 psppire_data_sheet_init (PsppireDataSheet *sheet)
@@ -383,4 +392,7 @@ psppire_data_sheet_init (PsppireDataSheet *sheet)
 
   g_signal_connect (sheet, "value-changed",
 		    G_CALLBACK (change_data_value), NULL);
+
+  g_signal_connect (sheet, "notify::data-model",
+		    G_CALLBACK (set_dictionary), NULL);
 }
