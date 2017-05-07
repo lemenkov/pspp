@@ -72,6 +72,18 @@ count_delims (PsppireDelimitedText *tf)
 }
 
 static void
+cache_invalidate (PsppireDelimitedText *tf)
+{
+  memset (tf->cache_starts, 0, 512);
+  if (tf->const_cache.string)
+    {
+      ss_dealloc (&tf->const_cache);
+      tf->const_cache.string = NULL;
+      tf->cache_row = -1;
+    }
+}
+
+static void
 psppire_delimited_text_set_property (GObject         *object,
 				guint            prop_id,
 				const GValue    *value,
@@ -83,11 +95,6 @@ psppire_delimited_text_set_property (GObject         *object,
     {
     case PROP_FIRST_LINE:
       tf->first_line = g_value_get_int (value);
-      if (tf->const_cache.string)
-	{
-	  ss_dealloc (&tf->const_cache);
-	  tf->cache_row = -1;
-	}
       break;
     case PROP_CHILD:
       tf->child = g_value_get_object (value);
@@ -101,8 +108,8 @@ psppire_delimited_text_set_property (GObject         *object,
       break;
     };
 
-  if (tf->child)
-    count_delims (tf);
+  cache_invalidate (tf);
+  count_delims (tf);
 }
 
 static void
@@ -313,14 +320,18 @@ static void
 split_row_into_fields (PsppireDelimitedText *file, gint n)
 {
   if (n == file->cache_row)  /* Cache hit */
-    return;
+    {
+      return;
+    }
 
+  memset (file->cache_starts, 0, 512);
   /* Cache miss */
   if (file->const_cache.string)
     {
       ss_dealloc (&file->const_cache);
     }
-  ss_alloc_substring (&file->const_cache, PSPPIRE_TEXT_FILE (file->child)->lines[n]);
+  ss_alloc_substring_pool (&file->const_cache,
+			   PSPPIRE_TEXT_FILE (file->child)->lines[n], NULL);
   struct substring cs = file->const_cache;
   int field = 0;
   file->cache_starts[0] = cs.string;
@@ -506,6 +517,7 @@ psppire_delimited_text_init (PsppireDelimitedText *text_file)
   text_file->const_cache.string = NULL;
   text_file->const_cache.length = 0;
   text_file->cache_row = -1;
+  memset (text_file->cache_starts, 0, 512);
 
   text_file->max_delimiters = 0;
 
