@@ -330,7 +330,7 @@ static gboolean dispose_has_run = FALSE;
 static void
 psppire_data_sheet_dispose (GObject *obj)
 {
-  PsppireDataSheet *sheet = PSPPIRE_DATA_SHEET (obj);
+  //  PsppireDataSheet *sheet = PSPPIRE_DATA_SHEET (obj);
 
   if (dispose_has_run)
     return;
@@ -373,6 +373,29 @@ set_dictionary (PsppireDataSheet *sheet)
 }
 
 static void
+move_variable (PsppireDataSheet *sheet, gint from, gint to, gpointer ud)
+{
+  PsppireDataStore *data_store = NULL;
+  g_object_get (sheet, "data-model", &data_store, NULL);
+
+  if (data_store == NULL)
+    return;
+
+  PsppireDict *dict = data_store->dict;
+  struct variable *var = psppire_dict_get_variable (dict, from);
+
+  if (var == NULL)
+    return;
+  gint new_pos = to;
+  /* The index refers to the final position, so if the source
+     is less than the destination, then we must subtract 1, to
+     account for the position vacated by the source */
+  if (from < to)
+    new_pos--;
+  dict_reorder_var (dict->dict, var, new_pos);
+}
+
+static void
 psppire_data_sheet_init (PsppireDataSheet *sheet)
 {
   sheet->data_sheet_cases_column_popup =
@@ -395,4 +418,6 @@ psppire_data_sheet_init (PsppireDataSheet *sheet)
 
   g_signal_connect (sheet, "notify::data-model",
 		    G_CALLBACK (set_dictionary), NULL);
+
+  g_signal_connect (sheet, "column-moved", G_CALLBACK (move_variable), NULL);
 }

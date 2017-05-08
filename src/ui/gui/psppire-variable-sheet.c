@@ -464,6 +464,28 @@ psppire_variable_sheet_new (void)
 }
 
 static void
+move_variable (PsppireVariableSheet *sheet, gint from, gint to, gpointer ud)
+{
+  PsppireDict *dict = NULL;
+  g_object_get (sheet, "data-model", &dict, NULL);
+
+  if (dict == NULL)
+    return;
+
+  struct variable *var = psppire_dict_get_variable (dict, from);
+
+  if (var == NULL)
+    return;
+  gint new_pos = to;
+  /* The index refers to the final position, so if the source
+     is less than the destination, then we must subtract 1, to
+     account for the position vacated by the source */
+  if (from < to)
+    new_pos--;
+  dict_reorder_var (dict->dict, var, new_pos);
+}
+
+static void
 psppire_variable_sheet_init (PsppireVariableSheet *sheet)
 {
   sheet->dispose_has_run = FALSE;
@@ -494,4 +516,7 @@ psppire_variable_sheet_init (PsppireVariableSheet *sheet)
 
   g_signal_connect_swapped (sheet, "value-changed",
 			    G_CALLBACK (change_var_property), sheet);
+
+  g_signal_connect (sheet, "row-moved",
+		    G_CALLBACK (move_variable), NULL);
 }
