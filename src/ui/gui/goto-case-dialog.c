@@ -21,20 +21,23 @@
 #include "psppire-dialog.h"
 #include "psppire-data-window.h"
 #include "psppire-data-store.h"
-#include "ui/gui/efficient-sheet/jmd-sheet.h"
+#include "psppire-data-sheet.h"
 
 
 static void
-refresh (JmdSheet *ds, GtkBuilder *xml)
+refresh (PsppireDataSheet *ds, GtkBuilder *xml)
 {
+  PsppireDataStore *store = NULL;
+  g_object_get (ds, "data-model", &store, NULL);
+
   GtkWidget *case_num_entry = get_widget_assert (xml, "goto-case-case-num-entry");
-  casenumber case_count =  gtk_tree_model_iter_n_children (ds->data_model, NULL);
+  casenumber case_count =  gtk_tree_model_iter_n_children (GTK_TREE_MODEL (store), NULL);
 
   gtk_spin_button_set_range (GTK_SPIN_BUTTON (case_num_entry), 1, case_count);
 }
 
 void
-goto_case_dialog (JmdSheet *ds)
+goto_case_dialog (PsppireDataSheet *ds)
 {
   GtkWindow *top_level;
   gint response;
@@ -50,6 +53,9 @@ goto_case_dialog (JmdSheet *ds)
 
   if (response == PSPPIRE_RESPONSE_GOTO)
     {
+      PsppireDataStore *store = NULL;
+      g_object_get (ds, "data-model", &store, NULL);
+
       GtkWidget *case_num_entry =
   	get_widget_assert (xml, "goto-case-case-num-entry");
 
@@ -58,7 +64,7 @@ goto_case_dialog (JmdSheet *ds)
   	- FIRST_CASE_NUMBER ;
 
       if (case_num >= 0 &&
-	  case_num < gtk_tree_model_iter_n_children (ds->data_model, NULL))
+	  case_num < gtk_tree_model_iter_n_children (GTK_TREE_MODEL (ds), NULL))
       {
 	jmd_sheet_scroll_to (ds, -1, case_num);
 	jmd_sheet_set_active_cell (ds, -1, case_num, 0);

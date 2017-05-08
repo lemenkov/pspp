@@ -41,7 +41,7 @@
 #include "ui/gui/psppire-data-sheet.h"
 
 
-#include "ui/gui/efficient-sheet/jmd-sheet.h"
+#include "ui/gui/efficient-sheet/src/jmd-sheet.h"
 
 #include <gettext.h>
 #define _(msgid) gettext (msgid)

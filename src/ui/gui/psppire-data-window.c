@@ -47,7 +47,7 @@
 #include "gl/c-strcasestr.h"
 #include "gl/xvasprintf.h"
 
-#include "ui/gui/efficient-sheet/jmd-sheet.h"
+#include "ui/gui/efficient-sheet/src/jmd-sheet.h"
 
 #include "find-dialog.h"
 #include "options-dialog.h"
@@ -1204,7 +1204,7 @@ goto_case (PsppireDataWindow *dw)
   int p = gtk_notebook_get_current_page (GTK_NOTEBOOK (de));
   if (p == PSPPIRE_DATA_EDITOR_DATA_VIEW)
     {
-      goto_case_dialog (JMD_SHEET (de->data_sheet));
+      goto_case_dialog (PSPPIRE_DATA_SHEET (de->data_sheet));
     }
 }
 

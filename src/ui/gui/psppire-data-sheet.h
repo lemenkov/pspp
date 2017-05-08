@@ -19,7 +19,7 @@
 #define _PSPPIRE_DATA_SHEET_H
 
 #include <gtk/gtk.h>
-#include "ui/gui/efficient-sheet/jmd-sheet.h"
+#include "ui/gui/efficient-sheet/src/jmd-sheet.h"
 
 struct _PsppireDataSheet
 {

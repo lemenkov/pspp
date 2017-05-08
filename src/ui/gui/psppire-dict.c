@@ -34,7 +34,7 @@
 #include "ui/gui/psppire-marshal.h"
 #include "ui/gui/psppire-var-ptr.h"
 
-#include "ui/gui/efficient-sheet/jmd-datum.h"
+#include "ui/gui/efficient-sheet/src/jmd-datum.h"
 
 #include <gobject/genums.h>
 

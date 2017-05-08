@@ -17,9 +17,9 @@
 #ifndef __GOTO_CASE_DIALOG_H
 #define __GOTO_CASE_DIALOG_H
 
-#include "ui/gui/efficient-sheet/jmd-sheet.h"
+#include "psppire-data-sheet.h"
 
 
-void goto_case_dialog (JmdSheet *ds);
+void goto_case_dialog (PsppireDataSheet *ds);
 
 #endif

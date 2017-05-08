@@ -21,8 +21,8 @@
 
 #include "psppire-var-sheet-header.h"
 
-#include "efficient-sheet/jmd-axis-model.h"
-#include "efficient-sheet/jmd-datum.h"
+#include "efficient-sheet/src/jmd-axis-model.h"
+#include "efficient-sheet/src/jmd-datum.h"
 
 enum  {CHANGED,
        n_SIGNALS};
