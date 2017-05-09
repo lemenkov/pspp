@@ -205,26 +205,36 @@ cmd_regression (struct lexer *lexer, struct dataset *ds)
 
   regression.ds = ds;
 
-  /* Accept an optional, completely pointless "/VARIABLES=" */
-  lex_match (lexer, T_SLASH);
-  if (lex_match_id (lexer, "VARIABLES"))
-    {
-      if (!lex_force_match (lexer, T_EQUALS))
-        goto error;
-    }
-
-  if (!parse_variables_const (lexer, dict,
-                              &regression.vars, &regression.n_vars,
-                              PV_NO_DUPLICATE | PV_NUMERIC))
-    goto error;
-
-
+  bool variables_seen = false;
+  bool method_seen = false;
+  bool dependent_seen = false;
   while (lex_token (lexer) != T_ENDCMD)
     {
       lex_match (lexer, T_SLASH);
 
-      if (lex_match_id (lexer, "DEPENDENT"))
+      if (lex_match_id (lexer, "VARIABLES"))
         {
+	  if (method_seen)
+	    {
+	      msg (SE, _("VARIABLES may not appear after %s"), "METHOD");
+	      goto error;
+	    }
+	  if (dependent_seen)
+	    {
+	      msg (SE, _("VARIABLES may not appear after %s"), "DEPENDENT");
+	      goto error;
+	    }
+	  variables_seen = true;
+	  lex_match (lexer, T_EQUALS);
+
+	  if (!parse_variables_const (lexer, dict,
+				      &regression.vars, &regression.n_vars,
+				      PV_NO_DUPLICATE | PV_NUMERIC))
+	    goto error;
+	}
+      else if (lex_match_id (lexer, "DEPENDENT"))
+        {
+	  dependent_seen = true;
           lex_match (lexer, T_EQUALS);
 
 	  free (regression.dep_vars);
@@ -238,12 +248,21 @@ cmd_regression (struct lexer *lexer, struct dataset *ds)
         }
       else if (lex_match_id (lexer, "METHOD"))
         {
+	  method_seen = true;
           lex_match (lexer, T_EQUALS);
 
           if (!lex_force_match_id (lexer, "ENTER"))
             {
               goto error;
             }
+
+	  if (! variables_seen)
+	    {
+	      if (!parse_variables_const (lexer, dict,
+					  &regression.vars, &regression.n_vars,
+					  PV_NO_DUPLICATE | PV_NUMERIC))
+		goto error;
+	    }
         }
       else if (lex_match_id (lexer, "STATISTICS"))
         {
