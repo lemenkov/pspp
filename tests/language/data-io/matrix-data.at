@@ -275,3 +275,39 @@ matrix-data.pspp:6: error: Stopping syntax file processing here to avoid a casca
 ])
 
 AT_CLEANUP
+
+
+
+AT_SETUP([Matrix data - long variable names])
+
+AT_DATA([matrix-data.pspp], [dnl
+matrix data
+    variables = rowtype_  var01 var_two variable_number_three variableFour
+    /format = upper diagonal.
+
+begin data
+mean         34  35  36  37
+sd           22  11  55  66
+n_vector    100 101 102 103
+corr          1   9   8   7
+corr              1   6   5
+corr                  1   4
+corr                      1
+end data.
+
+list.
+])
+
+AT_CHECK([pspp -O format=csv matrix-data.pspp], [0], [dnl
+Table: Data List
+ROWTYPE_,VARNAME_,var01,var_two,variable_number_three,variableFour
+mean    ,,34.0000,35.0000,36.0000,37.0000
+STDDEV  ,,22.0000,11.0000,55.0000,66.0000
+N       ,,100.0000,101.0000,102.0000,103.0000
+corr    ,var01,1.0000,9.0000,8.0000,7.0000
+corr    ,var_two,9.0000,1.0000,6.0000,5.0000
+corr    ,variable_number_three,8.0000,6.0000,1.0000,4.0000
+corr    ,variableFour,7.0000,5.0000,4.0000,1.0000
+])
+
+AT_CLEANUP

@@ -34,6 +34,7 @@
 #include "language/lexer/variable-parser.h"
 #include "libpspp/i18n.h"
 #include "libpspp/message.h"
+#include "libpspp/misc.h"
 
 #include "gl/xsize.h"
 #include "gl/xalloc.h"
@@ -65,6 +66,8 @@ enum triangle
     FULL
   };
 
+static const int ROWTYPE_WIDTH = 8;
+
 struct matrix_format
 {
   enum triangle triangle;
@@ -94,19 +97,27 @@ valid rowtype_ values:
   PROX.
 */
 
-/* Sets the value of OUTCASE which corresponds to MFORMAT's varname variable
-   to the string STR. VAR must be of type string.
+/* Sets the value of OUTCASE which corresponds to VNAME
+   to the value STR.  VNAME must be of type string.
  */
 static void
-set_varname_column (struct ccase *outcase, const struct matrix_format *mformat,
-     const char *str, int len)
+set_varname_column (struct ccase *outcase, const struct variable *vname,
+     const char *str)
 {
-  const struct variable *var = mformat->varname;
-  uint8_t *s = value_str_rw (case_data_rw (outcase, var), len);
+  int len = var_get_width (vname);
+  uint8_t *s = value_str_rw (case_data_rw (outcase, vname), len);
 
   strncpy ((char *) s, str, len);
 }
 
+static void
+blank_varname_column (struct ccase *outcase, const struct variable *vname)
+{
+  int len = var_get_width (vname);
+  uint8_t *s = value_str_rw (case_data_rw (outcase, vname), len);
+
+  memset (s, ' ', len);
+}
 
 static struct casereader *
 preprocess (struct casereader *casereader0, const struct dictionary *dict, void *aux)
@@ -155,9 +166,9 @@ preprocess (struct casereader *casereader0, const struct dictionary *dict, void 
       if (mformat->triangle == UPPER && mformat->diagonal == NO_DIAGONAL)
 	c_offset++;
       const union value *v = case_data (c, mformat->rowtype);
-      const char *val = (const char *) value_str (v, 8);
-      if (0 == strncasecmp (val, "corr    ", 8) ||
-	  0 == strncasecmp (val, "cov     ", 8))
+      const char *val = (const char *) value_str (v, ROWTYPE_WIDTH);
+      if (0 == strncasecmp (val, "corr    ", ROWTYPE_WIDTH) ||
+	  0 == strncasecmp (val, "cov     ", ROWTYPE_WIDTH))
 	{
 	  int col;
 	  for (col = c_offset; col < mformat->n_continuous_vars; ++col)
@@ -209,14 +220,14 @@ preprocess (struct casereader *casereader0, const struct dictionary *dict, void 
       struct ccase *outcase = case_create (proto);
       case_copy (outcase, 0, c, 0, caseproto_get_n_widths (proto));
       const union value *v = case_data (c, mformat->rowtype);
-      const char *val = (const char *) value_str (v, 8);
-      if (0 == strncasecmp (val, "corr    ", 8) ||
-	  0 == strncasecmp (val, "cov     ", 8))
+      const char *val = (const char *) value_str (v, ROWTYPE_WIDTH);
+      if (0 == strncasecmp (val, "corr    ", ROWTYPE_WIDTH) ||
+	  0 == strncasecmp (val, "cov     ", ROWTYPE_WIDTH))
 	{
 	  int col;
 	  const struct variable *var = dict_get_var (dict, idx + 1 + row);
-	  set_varname_column (outcase, mformat, var_get_name (var), 8);
-	  value_copy (case_data_rw (outcase, mformat->rowtype), v, 8);
+	  set_varname_column (outcase, mformat->varname, var_get_name (var));
+	  value_copy (case_data_rw (outcase, mformat->rowtype), v, ROWTYPE_WIDTH);
 
 	  for (col = 0; col < mformat->n_continuous_vars; ++col)
 	    {
@@ -231,18 +242,18 @@ preprocess (struct casereader *casereader0, const struct dictionary *dict, void 
 	}
       else
 	{
-	  set_varname_column (outcase, mformat, "        ", 8);
+	  blank_varname_column (outcase, mformat->varname);
 	}
 
       /* Special case for SD and N_VECTOR: Rewrite as STDDEV and N respectively */
-      if (0 == strncasecmp (val, "sd      ", 8))
+      if (0 == strncasecmp (val, "sd      ", ROWTYPE_WIDTH))
 	{
-	  value_copy_buf_rpad (case_data_rw (outcase, mformat->rowtype), 8,
+	  value_copy_buf_rpad (case_data_rw (outcase, mformat->rowtype), ROWTYPE_WIDTH,
 			       (uint8_t *) "STDDEV", 6, ' ');
 	}
-      else if (0 == strncasecmp (val, "n_vector", 8))
+      else if (0 == strncasecmp (val, "n_vector", ROWTYPE_WIDTH))
 	{
-	  value_copy_buf_rpad (case_data_rw (outcase, mformat->rowtype), 8,
+	  value_copy_buf_rpad (case_data_rw (outcase, mformat->rowtype), ROWTYPE_WIDTH,
 			       (uint8_t *) "N", 1, ' ');
 	}
 
@@ -260,7 +271,7 @@ preprocess (struct casereader *casereader0, const struct dictionary *dict, void 
 
 
       const struct variable *var = dict_get_var (dict, idx + 1 + row);
-      set_varname_column (outcase, mformat, var_get_name (var), 8);
+      set_varname_column (outcase, mformat->varname, var_get_name (var));
 
       for (col = 0; col < mformat->n_continuous_vars; ++col)
 	{
@@ -315,8 +326,7 @@ cmd_matrix (struct lexer *lexer, struct dataset *ds)
   data_parser_set_warn_missing_fields (parser, false);
   data_parser_set_span (parser, false);
 
-  mformat.rowtype = dict_create_var (dict, "ROWTYPE_", 8);
-  mformat.varname = dict_create_var (dict, "VARNAME_", 8);
+  mformat.rowtype = dict_create_var (dict, "ROWTYPE_", ROWTYPE_WIDTH);
 
   mformat.n_continuous_vars = 0;
   mformat.n_split_vars = 0;
@@ -334,6 +344,15 @@ cmd_matrix (struct lexer *lexer, struct dataset *ds)
       free (names);
       goto error;
     }
+
+  int longest_name = 0;
+  for (i = 0; i < n_names; ++i)
+    {
+      maximize_int (&longest_name, strlen (names[i]));
+    }
+
+  mformat.varname = dict_create_var (dict, "VARNAME_",
+				     8 * DIV_RND_UP (longest_name, 8));
 
   for (i = 0; i < n_names; ++i)
     {
