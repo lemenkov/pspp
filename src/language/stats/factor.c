@@ -1057,6 +1057,7 @@ cmd_factor (struct lexer *lexer, struct dataset *ds)
     }
   else if (lex_match_id (lexer, "MATRIX"))
     {
+      lex_match (lexer, T_EQUALS);
       if (! lex_force_match_id (lexer, "IN"))
 	goto error;
       if (!lex_force_match (lexer, T_LPAREN))
