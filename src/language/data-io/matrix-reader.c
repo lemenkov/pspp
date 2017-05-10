@@ -42,8 +42,9 @@ v_0, v_1 ... v_n are the continuous variables.
 
 m >= 0; n >= 0
 
-The variables ROWTYPE_ and VARNAME_ are of type A8,
-the variables s_x are of type F4.0 (although this reader accepts any type),
+The ROWTYPE_ variable is of type A8.
+The VARNAME_ variable is a string type whose width is not predetermined.
+The variables s_x are of type F4.0 (although this reader accepts any type),
 and v_x are of any numeric type.
 
 The values of the ROWTYPE_ variable are in the set {MEAN, STDDEV, N, CORR, COV}
