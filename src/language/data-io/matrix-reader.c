@@ -186,8 +186,6 @@ next_matrix_from_reader (struct matrix_material *mm,
   gsl_matrix_free (mr->n_vectors);
   gsl_matrix_free (mr->mean_vectors);
   gsl_matrix_free (mr->var_vectors);
-  gsl_matrix_free (mr->correlation);
-  gsl_matrix_free (mr->covariance);
 
   if (!casegrouper_get_next_group (mr->grouper, &group))
     return false;
@@ -199,9 +197,6 @@ next_matrix_from_reader (struct matrix_material *mm,
   mm->n = mr->n_vectors;
   mm->mean_matrix = mr->mean_vectors;
   mm->var_matrix = mr->var_vectors;
-
-  mr->correlation  = NULL;
-  mr->covariance   = NULL;
 
   // FIXME: Make this into a hash table.
   unsigned long *table = xmalloc (sizeof (*table) * n_vars);

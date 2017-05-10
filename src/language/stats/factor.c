@@ -266,10 +266,6 @@ idata_free (struct idata *id)
   gsl_vector_free (id->msr);
   gsl_vector_free (id->eval);
   gsl_matrix_free (id->evec);
-  if (id->mm.cov != NULL)
-    gsl_matrix_free (id->mm.cov);
-  if (id->mm.corr != NULL)
-    gsl_matrix_free (CONST_CAST (gsl_matrix *, id->mm.corr));
 
   free (id);
 }
@@ -1480,7 +1476,9 @@ cmd_factor (struct lexer *lexer, struct dataset *ds)
 	{
 	  do_factor_by_matrix (&factor, id);
 
+	  gsl_matrix_free (id->mm.corr);
 	  id->mm.corr = NULL;
+	  gsl_matrix_free (id->mm.cov);
 	  id->mm.cov = NULL;
 	}
 
@@ -2215,6 +2213,9 @@ do_factor (const struct cmd_factor *factor, struct casereader *r)
   do_factor_by_matrix (factor, idata);
 
  finish:
+  gsl_matrix_free (idata->mm.corr);
+  gsl_matrix_free (idata->mm.cov);
+
   idata_free (idata);
   casereader_destroy (r);
 }
