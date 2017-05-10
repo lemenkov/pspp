@@ -182,9 +182,12 @@ preprocess (struct casereader *casereader0, const struct dictionary *dict, void 
 	      if (e == SYSMIS)
 	      	continue;
 
-
+	      /* Fill in the lower triangle */
 	      (matrices[n_splits-1])[col + mformat->n_continuous_vars * row] = e;
-	      (matrices[n_splits-1]) [row + mformat->n_continuous_vars * col] = e;
+
+	      if (mformat->triangle != FULL)
+		/* Fill in the upper triangle */
+		(matrices[n_splits-1]) [row + mformat->n_continuous_vars * col] = e;
 	    }
 	  row++;
 	}
@@ -268,7 +271,6 @@ preprocess (struct casereader *casereader0, const struct dictionary *dict, void 
 
       if (prev_case)
 	case_copy (outcase, 0, prev_case, 0, caseproto_get_n_widths (proto));
-
 
       const struct variable *var = dict_get_var (dict, idx + 1 + row);
       set_varname_column (outcase, mformat->varname, var_get_name (var));
