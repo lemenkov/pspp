@@ -1969,7 +1969,7 @@ show_factor_correlation (const struct cmd_factor * factor, const gsl_matrix *fcm
   for (i = 0 ; i < fcm->size1; ++i)
     {
       for (j = 0 ; j < fcm->size2; ++j)
-	tab_double (t, heading_columns + i,  heading_rows +j, 0,
+	tab_double (t, heading_columns + j,  heading_rows + i, 0,
 		    gsl_matrix_get (fcm, i, j), NULL, RC_OTHER);
     }
 
@@ -2065,7 +2065,7 @@ show_correlation_matrix (const struct cmd_factor *factor, const struct idata *id
 	  for (i = 0; i < factor->n_vars; ++i)
 	    {
 	      for (j = 0; j < factor->n_vars; ++j)
-		tab_double (t, heading_columns + i,  y + j, 0, gsl_matrix_get (idata->mm.corr, i, j), NULL, RC_OTHER);
+		tab_double (t, heading_columns + j,  y + i, 0, gsl_matrix_get (idata->mm.corr, i, j), NULL, RC_OTHER);
 	    }
 	}
 
@@ -2084,7 +2084,7 @@ show_correlation_matrix (const struct cmd_factor *factor, const struct idata *id
 		  if (i == j)
 		    continue;
 
-		  tab_double (t, heading_columns + i,  y + j, 0, significance_of_correlation (rho, w), NULL, RC_PVALUE);
+		  tab_double (t, heading_columns + j,  y + i, 0, significance_of_correlation (rho, w), NULL, RC_PVALUE);
 		}
 	    }
 	}
@@ -2177,7 +2177,7 @@ show_covariance_matrix (const struct cmd_factor *factor, const struct idata *ida
 	  for (i = 0; i < factor->n_vars; ++i)
 	    {
 	      for (j = 0; j < factor->n_vars; ++j)
-		tab_double (t, heading_columns + i,  y + j, 0, gsl_matrix_get (idata->mm.cov, i, j), NULL, RC_OTHER);
+		tab_double (t, heading_columns + j,  y + i, 0, gsl_matrix_get (idata->mm.cov, i, j), NULL, RC_OTHER);
 	    }
 	}
     }
