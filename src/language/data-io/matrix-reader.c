@@ -20,6 +20,7 @@
 
 #include <stdbool.h>
 
+#include <libpspp/hash-functions.h>
 #include <libpspp/message.h>
 #include <data/casegrouper.h>
 #include <data/casereader.h>
@@ -149,12 +150,38 @@ destroy_matrix_reader (struct matrix_reader *mr)
 }
 
 
+/*
+   Allocates MATRIX if necessary,
+   and populates row MROW, from the data in C corresponding to
+   variables in VARS. N_VARS is the length of VARS.
+*/
+static void
+matrix_fill_row (gsl_matrix **matrix,
+      const struct ccase *c, int mrow,
+      const struct variable **vars, size_t n_vars)
+{
+  int col;
+  if (*matrix == NULL)
+    *matrix = gsl_matrix_alloc (n_vars, n_vars);
+
+  for (col = 0; col < n_vars; ++col)
+    {
+      const struct variable *cv = vars [col];
+      double x = case_data (c, cv)->f;
+      assert (col  < (*matrix)->size2);
+      assert (mrow < (*matrix)->size1);
+      gsl_matrix_set (*matrix, mrow, col, x);
+    }
+}
+
 bool
 next_matrix_from_reader (struct matrix_material *mm,
 			 struct matrix_reader *mr,
 			 const struct variable **vars, int n_vars)
 {
   struct casereader *group;
+
+  assert (vars);
 
   gsl_matrix_free (mr->n_vectors);
   gsl_matrix_free (mr->mean_vectors);
@@ -176,8 +203,21 @@ next_matrix_from_reader (struct matrix_material *mm,
   mr->correlation  = NULL;
   mr->covariance   = NULL;
 
+  // FIXME: Make this into a hash table.
+  unsigned long *table = xmalloc (sizeof (*table) * n_vars);
+  int i;
+  for (i = 0; i < n_vars; ++i)
+    {
+      const int w = var_get_width (mr->varname);
+      uint8_t s[w];
+      memset (s, 0, w);
+      const char *name = var_get_name (vars[i]);
+      strcpy (s, name);
+      unsigned long h = hash_bytes (s, w, 0);
+      table[i] = h;
+    }
+
   struct ccase *c;
-  int crow = 0;
   for ( ; (c = casereader_read (group) ); case_unref (c))
     {
       const union value *uv  = case_data (c, mr->rowtype);
@@ -197,31 +237,33 @@ next_matrix_from_reader (struct matrix_material *mm,
 	    for (row = 0; row < n_vars; ++row)
 	      gsl_matrix_set (mr->var_vectors, row, col, x * x);
 	}
+
+      const union value *uvv  = case_data (c, mr->varname);
+      const uint8_t *vs = value_str (uvv, var_get_width (mr->varname));
+      int w = var_get_width (mr->varname);
+      unsigned long h = hash_bytes (vs, w, 0);
+
+      int mrow = -1;
+      for (i = 0; i < n_vars; ++i)
+	{
+	  if (table[i] == h)
+	    {
+	      mrow = i;
+	      break;
+	    }
+	}
+
+      if (mrow == -1)
+	continue;
+
+
       if (0 == strncasecmp ((char *) value_str (uv, 8), "CORR    ", 8))
 	{
-	  if (mr->correlation == NULL)
-	    mr->correlation  = gsl_matrix_alloc (n_vars, n_vars);
-	  for (col = 0; col < n_vars; ++col)
-	    {
-	      const struct variable *cv
-		= vars ? vars[col] : dict_get_var (mr->dict, var_get_dict_index (mr->varname) + 1 + col);
-	      double x = case_data (c, cv)->f;
-	      gsl_matrix_set (mr->correlation, crow, col, x);
-	    }
-	  crow++;
+	  matrix_fill_row (&mr->correlation, c, mrow, vars, n_vars);
 	}
       else if (0 == strncasecmp ((char *) value_str (uv, 8), "COV     ", 8))
 	{
-	  if (mr->covariance == NULL)
-	    mr->covariance   = gsl_matrix_alloc (n_vars, n_vars);
-	  for (col = 0; col < n_vars; ++col)
-	    {
-	      const struct variable *cv
-		= vars ? vars[col] : dict_get_var (mr->dict, var_get_dict_index (mr->varname) + 1 + col);
-	      double x = case_data (c, cv)->f;
-	      gsl_matrix_set (mr->covariance, crow, col, x);
-	    }
-	  crow++;
+	  matrix_fill_row (&mr->covariance, c, mrow, vars, n_vars);
 	}
     }
 
@@ -229,6 +271,8 @@ next_matrix_from_reader (struct matrix_material *mm,
 
   mm->cov = mr->covariance;
   mm->corr = mr->correlation;
+
+  free (table);
 
   return true;
 }

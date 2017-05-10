@@ -311,3 +311,54 @@ corr    ,variableFour,7.0000,5.0000,4.0000,1.0000
 ])
 
 AT_CLEANUP
+
+
+
+AT_SETUP([Matrix reader - read integrity])
+
+dnl Check that matrices presented are read correctly.
+dnl The example below is an unlikely one since all
+dnl covariance/correlation matrices must be symetrical
+dnl but it serves a purpose for this test.
+AT_DATA([matrix-reader.pspp], [dnl
+matrix data
+    variables = rowtype_  var01 to var9
+    /format = full.
+
+begin data
+n    1  2  3  4  5  6  7  8  9
+sd   100 200 300 400 500 600 700 800 900
+corr 11 12 13 14 15 16 17 18 19
+corr 21 22 23 24 25 26 27 28 29
+corr 31 32 33 34 35 36 37 38 39
+corr 41 42 43 44 45 46 47 48 49
+corr 51 52 53 54 55 56 57 58 59
+corr 61 62 63 64 65 66 67 68 69
+corr 71 72 73 74 75 76 77 78 79
+corr 81 82 83 84 85 86 87 88 89
+corr 91 92 93 94 95 96 97 98 99
+end data.
+
+factor  /matrix = in (corr = *)
+	/analysis var02 var04 var06
+	/method = correlation
+	/rotation = norotate
+	/print correlation.
+])
+
+AT_CHECK([pspp -O format=csv matrix-reader.pspp], [0], [dnl
+Table: Correlation Matrix
+,,var02,var04,var06
+Correlations,var02,22.00,24.00,26.00
+,var04,42.00,44.00,46.00
+,var06,62.00,64.00,66.00
+
+Table: Component Matrix
+,Component,
+,1,2
+var02,6.73,-2.23
+var04,6.95,2.15
+var06,9.22,.01
+])
+
+AT_CLEANUP
