@@ -2106,7 +2106,6 @@ show_covariance_matrix (const struct cmd_factor *factor, const struct idata *ida
   struct tab_table *t ;
   size_t i, j;
   int y_pos_corr = -1;
-  int y_pos_sig = -1;
   int suffix_rows = 0;
 
   const int heading_rows = 1;
