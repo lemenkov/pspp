@@ -126,7 +126,7 @@ preprocess (struct casereader *casereader0, const struct dictionary *dict, void 
   const struct caseproto *proto = casereader_get_proto (casereader0);
   struct casewriter *writer;
   writer = autopaging_writer_create (proto);
-
+  struct ccase *prev_case = NULL;
   double **matrices = NULL;
   size_t n_splits = 0;
 
@@ -170,6 +170,13 @@ preprocess (struct casereader *casereader0, const struct dictionary *dict, void 
       if (0 == strncasecmp (val, "corr    ", ROWTYPE_WIDTH) ||
 	  0 == strncasecmp (val, "cov     ", ROWTYPE_WIDTH))
 	{
+	  if (row >= mformat->n_continuous_vars)
+	    {
+	      msg (SE,
+		   _("There are %d variable declared but the data has at least %d matrix rows."),
+		   mformat->n_continuous_vars, row + 1);
+	      goto error;
+	    }
 	  int col;
 	  for (col = c_offset; col < mformat->n_continuous_vars; ++col)
 	    {
@@ -198,7 +205,7 @@ preprocess (struct casereader *casereader0, const struct dictionary *dict, void 
      temporary matrix */
   const int idx = var_get_dict_index (mformat->varname);
   row = 0;
-  struct ccase *prev_case = NULL;
+
   prev_split_hash = 1;
   n_splits = 0;
   for (; (c = casereader_read (casereader0)) != NULL; prev_case = c)
@@ -288,6 +295,7 @@ preprocess (struct casereader *casereader0, const struct dictionary *dict, void 
       casewriter_write (writer, outcase);
     }
 
+
   if (prev_case)
     case_unref (prev_case);
 
@@ -298,6 +306,17 @@ preprocess (struct casereader *casereader0, const struct dictionary *dict, void 
   struct casereader *reader1 = casewriter_make_reader (writer);
   casereader_destroy (casereader0);
   return reader1;
+
+
+error:
+  if (prev_case)
+    case_unref (prev_case);
+
+  for (i = 0 ; i < n_splits; ++i)
+    free (matrices[i]);
+  free (matrices);
+  casereader_destroy (casereader0);
+  return NULL;
 }
 
 int

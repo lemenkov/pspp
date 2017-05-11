@@ -362,3 +362,41 @@ var06,9.22,.01
 ])
 
 AT_CLEANUP
+
+
+AT_SETUP([Matrix data - too many rows])
+
+dnl Test for a crash which occurred when the matrix had more rows declared
+dnl than variables to hold them.
+AT_DATA([matrix-data.pspp], [dnl
+matrix data
+    variables = rowtype_
+    var01 var02 var03 var04
+    / format = upper diagonal .
+begin data
+    mean     21.4  5.0  72.9  17.4
+    sd       6.5  1.6  22.8  5.7
+    n       106  106  106  106
+    corr    1.00  .32  .48  .28
+    corr    1.00  .72  .54  .44
+    corr    1.00  .50  .59  .64
+    corr    1.00  .62  .49  -.30
+    corr    1.00  .56  -.38  .52
+    corr    1.00  -.73  .91  .80
+    corr    1.00  -.65  -.60
+    corr    1.00  .70
+    corr    1.00
+end data .
+
+execute.
+])
+
+
+AT_CHECK([pspp -O format=csv matrix-data.pspp], [1], [dnl
+matrix-data.pspp:13: error: MATRIX DATA: There are 4 variable declared but the data has at least 5 matrix rows.
+
+matrix-data.pspp:20: error: EXECUTE: EXECUTE is allowed only after the active dataset has been defined.
+])
+
+
+AT_CLEANUP
