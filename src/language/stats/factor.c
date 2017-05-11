@@ -1005,7 +1005,7 @@ iterate_factor_matrix (const gsl_matrix *r, gsl_vector *communalities, gsl_matri
 
 static bool run_factor (struct dataset *ds, const struct cmd_factor *factor);
 
-static void do_factor_by_matrix (const struct cmd_factor *factor, struct idata *idata);
+static bool do_factor_by_matrix (const struct cmd_factor *factor, struct idata *idata);
 
 
 
@@ -2221,9 +2221,15 @@ do_factor (const struct cmd_factor *factor, struct casereader *r)
   casereader_destroy (r);
 }
 
-static void
+static bool
 do_factor_by_matrix (const struct cmd_factor *factor, struct idata *idata)
 {
+  if (!idata->mm.cov && !idata->mm.corr)
+    {
+      msg (ME, _("The dataset has no complete covariance or correlation matrix."));
+      return false;
+    }
+
   if (idata->mm.cov && !idata->mm.corr)
     idata->mm.corr = correlation_from_covariance (idata->mm.cov, idata->mm.var_matrix);
   if (idata->mm.corr && !idata->mm.cov)
