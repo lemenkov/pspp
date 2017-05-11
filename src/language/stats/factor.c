@@ -1467,6 +1467,12 @@ cmd_factor (struct lexer *lexer, struct dataset *ds)
   if (factor.n_vars < 2)
     msg (MW, _("Factor analysis on a single variable is not useful."));
 
+  if (factor.n_vars < 1)
+    {
+      msg (ME, _("Factor analysis without variables is not possible."));
+      goto error;
+    }
+
   if (matrix_reader)
     {
       struct idata *id = idata_alloc (factor.n_vars);
