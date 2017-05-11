@@ -284,7 +284,15 @@ cmd_descriptives (struct lexer *lexer, struct dataset *ds)
               else if (lex_match_id (lexer, "DEFAULT"))
                 dsc->show_stats |= DEFAULT_STATS;
               else
-		dsc->show_stats |= 1ul << (match_statistic (lexer));
+		{
+		  enum dsc_statistic s = match_statistic (lexer);
+		  if (s == DSC_NONE )
+		    {
+		      lex_error (lexer, NULL);
+		      goto error;
+		    }
+		  dsc->show_stats |= 1ul << s;
+		}
               lex_match (lexer, T_COMMA);
             }
           if (dsc->show_stats == 0)
