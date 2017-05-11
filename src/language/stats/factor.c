@@ -1554,14 +1554,14 @@ the_communality (const gsl_matrix *evec, const gsl_vector *eval, int n, int n_fa
 
 /* Return the communality of variable N, calculated to N_FACTORS */
 static double
-communality (struct idata *idata, int n, int n_factors)
+communality (const struct idata *idata, int n, int n_factors)
 {
   return the_communality (idata->evec, idata->eval, n, n_factors);
 }
 
 
 static void
-show_scree (const struct cmd_factor *f, struct idata *idata)
+show_scree (const struct cmd_factor *f, const struct idata *idata)
 {
   struct scree *s;
   const char *label ;
@@ -1646,7 +1646,7 @@ show_communalities (const struct cmd_factor * factor,
 
 
 static void
-show_factor_matrix (const struct cmd_factor *factor, struct idata *idata, const char *title, const gsl_matrix *fm)
+show_factor_matrix (const struct cmd_factor *factor, const struct idata *idata, const char *title, const gsl_matrix *fm)
 {
   int i;
 
@@ -1739,7 +1739,8 @@ show_factor_matrix (const struct cmd_factor *factor, struct idata *idata, const 
 
 
 static void
-show_explained_variance (const struct cmd_factor * factor, struct idata *idata,
+show_explained_variance (const struct cmd_factor * factor,
+			 const struct idata *idata,
 			 const gsl_vector *initial_eigenvalues,
 			 const gsl_vector *extracted_eigenvalues,
 			 const gsl_vector *rotated_loadings)
