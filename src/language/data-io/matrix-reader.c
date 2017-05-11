@@ -86,8 +86,8 @@ struct matrix_reader
   gsl_matrix *mean_vectors;
   gsl_matrix *var_vectors;
 
-  gsl_matrix *correlation;
-  gsl_matrix *covariance;
+  //  gsl_matrix *correlation;
+  //  gsl_matrix *covariance;
 };
 
 struct matrix_reader *
@@ -251,21 +251,17 @@ next_matrix_from_reader (struct matrix_material *mm,
       if (mrow == -1)
 	continue;
 
-
       if (0 == strncasecmp ((char *) value_str (uv, 8), "CORR    ", 8))
 	{
-	  matrix_fill_row (&mr->correlation, c, mrow, vars, n_vars);
+	  matrix_fill_row (&mm->corr, c, mrow, vars, n_vars);
 	}
       else if (0 == strncasecmp ((char *) value_str (uv, 8), "COV     ", 8))
 	{
-	  matrix_fill_row (&mr->covariance, c, mrow, vars, n_vars);
+	  matrix_fill_row (&mm->cov, c, mrow, vars, n_vars);
 	}
     }
 
   casereader_destroy (group);
-
-  mm->cov = mr->covariance;
-  mm->corr = mr->correlation;
 
   free (table);
 

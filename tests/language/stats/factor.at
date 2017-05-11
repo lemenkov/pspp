@@ -2252,3 +2252,40 @@ bnt_actws_56,.562
 ])
 
 AT_CLEANUP
+
+
+
+
+
+
+AT_SETUP([FACTOR bad input])
+
+dnl Test for a crash 
+AT_DATA([bad-input.sps], [dnl
+set format = F10.3.
+MATRIX DATA VARIABLES S1 ROWTYPE_ V1 TO V3 /SPLIT=S1.
+BEGIN DATA
+0 MEAN 2 4 3
+0 SD 1 2 3
+0 N 9 9 9
+0 KORR 1
+0 CORV .6 1
+0 CORR .7 .8 1
+1 MEAN 9 8 7
+1 SD 5 6 7
+1 N 9 9 9
+1 CORR 1
+X CORR .4 1
+1 CORR .3 .2 1
+END DATA.
+
+EXECUTE.
+
+FACTOR MATRIX IN (CORR =!*)
+       /PRINT = CORRELATION
+       .
+])
+
+AT_CHECK([pspp -O format=csv bad-input.sps], [1], [ignore])
+
+AT_CLEANUP
