@@ -599,7 +599,13 @@ parse_get_txt (struct lexer *lexer, struct dataset *ds)
           lex_get (lexer);
         }
 
-      name = xstrdup (lex_tokcstr (lexer));
+      const char * tstr = lex_tokcstr (lexer);
+      if (tstr == NULL)
+	{
+	  lex_error (lexer, NULL);
+	  goto error;
+	}
+      name = xstrdup (tstr);
       if (!lex_force_id (lexer)
           || !dict_id_is_valid (dict, name, true))
 	{
