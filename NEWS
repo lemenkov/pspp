@@ -6,6 +6,9 @@ Please send PSPP bug reports to bug-gnu-pspp@gnu.org.
 
 Changes from 0.10.2 to 0.10.4:
 
+ * The REGRESSION command now has a /ORIGIN subcommand to perform
+   regression through the origin.
+
  * The FACTOR command can now analyse matrix files prepared with MATRIX DATA.
 
  * The MATRIX DATA command has been added.

@@ -1,5 +1,5 @@
 /* PSPP - a program for statistical analysis.
-   Copyright (C) 2005, 2010, 2011 Free Software Foundation, Inc.
+   Copyright (C) 2005, 2010, 2011, 2017 Free Software Foundation, Inc.
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -70,7 +70,7 @@ linreg_get_vars (const linreg *c)
  */
 linreg *
 linreg_alloc (const struct variable *depvar, const struct variable **indep_vars,
-	      double n, size_t p)
+	      double n, size_t p, bool origin)
 {
   linreg *c;
   size_t i;
@@ -91,7 +91,10 @@ linreg_alloc (const struct variable *depvar, const struct variable **indep_vars,
   c->n_coeffs = p;
   c->coeff = xnmalloc (p, sizeof (*c->coeff));
   c->cov = gsl_matrix_calloc (c->n_coeffs + 1, c->n_coeffs + 1);
-  c->dft = n - 1;
+  c->dft = n;
+  if (!origin)
+    c->dft--;
+
   c->dfm = p;
   c->dfe = c->dft - c->dfm;
   c->intercept = 0.0;
@@ -102,6 +105,8 @@ linreg_alloc (const struct variable *depvar, const struct variable **indep_vars,
   c->method = LINREG_SWEEP;
 
   c->refcnt = 1;
+
+  c->origin = origin;
 
   return c;
 }
@@ -130,9 +135,6 @@ linreg_unref (linreg *c)
 static void
 post_sweep_computations (linreg *l, gsl_matrix *sw)
 {
-  gsl_matrix *xm;
-  gsl_matrix_view xtx;
-  gsl_matrix_view xmxtx;
   double m;
   size_t i;
   size_t j;
@@ -168,37 +170,44 @@ post_sweep_computations (linreg *l, gsl_matrix *sw)
 	double tmp = -1.0 * l->mse * gsl_matrix_get (sw, i, j);
 	gsl_matrix_set (l->cov, i + 1, j + 1, tmp);
       }
-  /*
-    Get the covariances related to the intercept.
-  */
-  xtx = gsl_matrix_submatrix (sw, 0, 0, l->n_indeps, l->n_indeps);
-  xmxtx = gsl_matrix_submatrix (l->cov, 0, 1, 1, l->n_indeps);
-  xm = gsl_matrix_calloc (1, l->n_indeps);
-  for (i = 0; i < xm->size2; i++)
-    {
-      gsl_matrix_set (xm, 0, i,
-		      linreg_get_indep_variable_mean (l, i));
-    }
-  rc = gsl_blas_dsymm (CblasRight, CblasUpper, l->mse,
-		       &xtx.matrix, xm, 0.0, &xmxtx.matrix);
-  gsl_matrix_free (xm);
-  if (rc == GSL_SUCCESS)
-    {
-      double tmp = l->mse / l->n_obs;
-      for (i = 1; i < 1 + l->n_indeps; i++)
-	{
-	  tmp -= gsl_matrix_get (l->cov, 0, i)
-	    * linreg_get_indep_variable_mean (l, i - 1);
-	}
-      gsl_matrix_set (l->cov, 0, 0, tmp);
 
-      l->intercept = m;
-    }
-  else
+  if (! l->origin)
     {
-      fprintf (stderr, "%s:%d:gsl_blas_dsymm: %s\n",
-	       __FILE__, __LINE__, gsl_strerror (rc));
-      exit (rc);
+      gsl_matrix *xm;
+      gsl_matrix_view xtx;
+      gsl_matrix_view xmxtx;
+      /*
+	Get the covariances related to the intercept.
+      */
+      xtx = gsl_matrix_submatrix (sw, 0, 0, l->n_indeps, l->n_indeps);
+      xmxtx = gsl_matrix_submatrix (l->cov, 0, 1, 1, l->n_indeps);
+      xm = gsl_matrix_calloc (1, l->n_indeps);
+      for (i = 0; i < xm->size2; i++)
+	{
+	  gsl_matrix_set (xm, 0, i,
+			  linreg_get_indep_variable_mean (l, i));
+	}
+      rc = gsl_blas_dsymm (CblasRight, CblasUpper, l->mse,
+			   &xtx.matrix, xm, 0.0, &xmxtx.matrix);
+      gsl_matrix_free (xm);
+      if (rc == GSL_SUCCESS)
+	{
+	  double tmp = l->mse / l->n_obs;
+	  for (i = 1; i < 1 + l->n_indeps; i++)
+	    {
+	      tmp -= gsl_matrix_get (l->cov, 0, i)
+		* linreg_get_indep_variable_mean (l, i - 1);
+	    }
+	  gsl_matrix_set (l->cov, 0, 0, tmp);
+
+	  l->intercept = m;
+	}
+      else
+	{
+	  fprintf (stderr, "%s:%d:gsl_blas_dsymm: %s\n",
+		   __FILE__, __LINE__, gsl_strerror (rc));
+	  exit (rc);
+	}
     }
 }
 

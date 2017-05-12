@@ -70,6 +70,9 @@ resize_matrix (gsl_matrix *in, size_t new_size)
 
 struct covariance
 {
+  /* True if the covariances are centerered. (ie Real covariances) */
+  bool centered;
+  
   /* The variables for which the covariance matrix is to be calculated. */
   size_t n_vars;
   const struct variable *const *vars;
@@ -138,11 +141,13 @@ covariance_moments (const struct covariance *cov, int m)
  */
 struct covariance *
 covariance_1pass_create (size_t n_vars, const struct variable *const *vars,
-			 const struct variable *weight, enum mv_class exclude)
+			 const struct variable *weight, enum mv_class exclude,
+			 bool centered)
 {
   size_t i;
   struct covariance *cov = xzalloc (sizeof *cov);
 
+  cov->centered = centered;
   cov->passes = 1;
   cov->state = 0;
   cov->pass_one_first_case_seen = cov->pass_two_first_case_seen = false;
@@ -178,11 +183,13 @@ covariance_1pass_create (size_t n_vars, const struct variable *const *vars,
 struct covariance *
 covariance_2pass_create (size_t n_vars, const struct variable *const *vars,
 			 struct categoricals *cats,
-			 const struct variable *wv, enum mv_class exclude)
+			 const struct variable *wv, enum mv_class exclude,
+			 bool centered)
 {
   size_t i;
   struct covariance *cov = xmalloc (sizeof *cov);
 
+  cov->centered = centered;
   cov->passes = 2;
   cov->state = 0;
   cov->pass_one_first_case_seen = cov->pass_two_first_case_seen = false;
@@ -584,19 +591,22 @@ covariance_calculate_single_pass (struct covariance *cov)
 	}
     }
 
-  /* Centre the moments */
-  for ( j = 0 ; j < cov->dim - 1; ++j)
+  if (cov->centered)
     {
-      for (i = j + 1 ; i < cov->dim; ++i)
+      /* Centre the moments */
+      for ( j = 0 ; j < cov->dim - 1; ++j)
 	{
-	  double *x = &cov->cm [cm_idx (cov, i, j)];
+	  for (i = j + 1 ; i < cov->dim; ++i)
+	    {
+	      double *x = &cov->cm [cm_idx (cov, i, j)];
 
-	  *x /= gsl_matrix_get (cov->moments[0], i, j);
+	      *x /= gsl_matrix_get (cov->moments[0], i, j);
 
-	  *x -=
-	    gsl_matrix_get (cov->moments[MOMENT_MEAN], i, j)
-	    *
-	    gsl_matrix_get (cov->moments[MOMENT_MEAN], j, i);
+	      *x -=
+		gsl_matrix_get (cov->moments[MOMENT_MEAN], i, j)
+		*
+		gsl_matrix_get (cov->moments[MOMENT_MEAN], j, i);
+	    }
 	}
     }
 
@@ -642,29 +652,33 @@ covariance_calculate_single_pass_unnormalized (struct covariance *cov)
 {
   size_t i, j;
 
-  for (i = 0 ; i < cov->dim; ++i)
+  if (cov->centered)
     {
-      for (j = 0 ; j < cov->dim; ++j)
+      for (i = 0 ; i < cov->dim; ++i)
 	{
-	  double *x = gsl_matrix_ptr (cov->moments[MOMENT_VARIANCE], i, j);
-	  *x -= pow2 (gsl_matrix_get (cov->moments[MOMENT_MEAN], i, j))
-	    / gsl_matrix_get (cov->moments[MOMENT_NONE], i, j);
+	  for (j = 0 ; j < cov->dim; ++j)
+	    {
+	      double *x = gsl_matrix_ptr (cov->moments[MOMENT_VARIANCE], i, j);
+	      *x -= pow2 (gsl_matrix_get (cov->moments[MOMENT_MEAN], i, j))
+		/ gsl_matrix_get (cov->moments[MOMENT_NONE], i, j);
+	    }
+	}
+
+      for ( j = 0 ; j < cov->dim - 1; ++j)
+	{
+	  for (i = j + 1 ; i < cov->dim; ++i)
+	    {
+	      double *x = &cov->cm [cm_idx (cov, i, j)];
+
+	      *x -=
+		gsl_matrix_get (cov->moments[MOMENT_MEAN], i, j)
+		*
+		gsl_matrix_get (cov->moments[MOMENT_MEAN], j, i)
+		/ gsl_matrix_get (cov->moments[MOMENT_NONE], i, j);
+	    }
 	}
     }
-  for ( j = 0 ; j < cov->dim - 1; ++j)
-    {
-      for (i = j + 1 ; i < cov->dim; ++i)
-	{
-	  double *x = &cov->cm [cm_idx (cov, i, j)];
-
-	  *x -=
-	    gsl_matrix_get (cov->moments[MOMENT_MEAN], i, j)
-	    *
-	    gsl_matrix_get (cov->moments[MOMENT_MEAN], j, i)
-	  / gsl_matrix_get (cov->moments[MOMENT_NONE], i, j);
-	}
-    }
-
+  
   return cm_to_gsl (cov);
 }
 

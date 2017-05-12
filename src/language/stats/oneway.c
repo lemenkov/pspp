@@ -728,7 +728,7 @@ run_oneway (const struct oneway_spec *cmd,
 
       ws.vws[v].cov = covariance_2pass_create (1, &cmd->vars[v],
 					       ws.vws[v].cat,
-					       cmd->wv, cmd->exclude);
+					       cmd->wv, cmd->exclude, true);
       ws.vws[v].nl = levene_create (var_get_width (cmd->indep_var), NULL);
     }
 

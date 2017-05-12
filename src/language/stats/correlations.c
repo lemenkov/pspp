@@ -290,7 +290,8 @@ run_corr (struct casereader *r, const struct corr_opts *opts, const struct corr 
   gsl_matrix *corr_matrix = NULL;
   struct covariance *cov = covariance_2pass_create (corr->n_vars_total, corr->vars,
 						    NULL,
-						    opts->wv, opts->exclude);
+						    opts->wv, opts->exclude,
+						    true);
 
   struct casereader *rc = casereader_clone (r);
   for ( ; (c = casereader_read (r) ); case_unref (c))

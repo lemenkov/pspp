@@ -140,6 +140,8 @@ struct linreg_struct
 
   int dependent_column; /* Column containing the dependent variable. Defaults to last column. */
   int refcnt;
+
+  bool origin;
 };
 
 typedef struct linreg_struct linreg;
@@ -147,7 +149,7 @@ typedef struct linreg_struct linreg;
 
 
 linreg *linreg_alloc (const struct variable *, const struct variable **,
-		      double, size_t);
+		      double, size_t, bool);
 
 void linreg_unref (linreg *);
 void linreg_ref (linreg *);

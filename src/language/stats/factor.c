@@ -2197,7 +2197,7 @@ do_factor (const struct cmd_factor *factor, struct casereader *r)
   struct idata *idata = idata_alloc (factor->n_vars);
 
   idata->cvm = covariance_1pass_create (factor->n_vars, factor->vars,
-					      factor->wv, factor->exclude);
+					factor->wv, factor->exclude, true);
 
   for ( ; (c = casereader_read (r) ); case_unref (c))
     {
