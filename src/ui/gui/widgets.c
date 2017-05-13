@@ -33,6 +33,7 @@
 #include "psppire-dialog-action-histogram.h"
 #include "psppire-dialog-action-indep-samps.h"
 #include "psppire-dialog-action-k-related.h"
+#include "psppire-dialog-action-k-independent.h"
 #include "psppire-dialog-action-1sks.h"
 #include "psppire-dialog-action-kmeans.h"
 #include "psppire-dialog-action-logistic.h"
@@ -84,6 +85,7 @@ static const get_type_func dialog_action_types[]=
   psppire_dialog_action_histogram_get_type,
   psppire_dialog_action_logistic_get_type,
   psppire_dialog_action_kmeans_get_type,
+  psppire_dialog_action_k_independent_get_type,
   psppire_dialog_action_k_related_get_type,
   psppire_dialog_action_means_get_type,
   psppire_dialog_action_oneway_get_type,

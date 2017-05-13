@@ -442,6 +442,10 @@ psppire_value_entry_set_value (PsppireValueEntry *obj,
   gchar *string;
 
   obj->cur_value = NULL;
+
+  if (value == NULL)
+    return;
+
   if (obj->show_value_label)
     {
       struct val_lab *vl = val_labs_lookup (obj->val_labs, value);

@@ -15,8 +15,6 @@ Changes from 0.10.2 to 0.10.4:
 
  * Some inappropriate properties in selection dialogs have been corrected.
 
- * The graphical user interface has a new menu: Edit|Options
-
  * A bug which could cause the HTML driver to go into a tight loop
    has been fixed.
 
@@ -30,6 +28,12 @@ Changes from 0.10.2 to 0.10.4:
    has been fixed.
 
  * Gtk+3.14.5 or later must now be used when building.
+
+ * Graphical user interface changes:
+
+ ** There is a new menu: Edit|Options
+
+ ** The Non Parametric Statistics Menu has a new item: "K Independent Samples".
 
  * The AUTORECODE command now accepts an optional / before INTO.
 
