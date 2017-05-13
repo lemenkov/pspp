@@ -84,7 +84,7 @@ inflate_init (struct zip_member *zm)
 
   if ( Z_OK != r)
     {
-      ds_put_format (zm->errs, _("Cannot initialize inflator: %s"), zError (r));
+      ds_put_format (zm->errmsgs, _("Cannot initialize inflator: %s"), zError (r));
       return false;
     }
 
@@ -139,7 +139,7 @@ inflate_read (struct zip_member *zm, void *buf, size_t n)
       return n - inf->zss.avail_out;
     }
 
-  ds_put_format (zm->errs, _("Error inflating: %s"), zError (r));
+  ds_put_format (zm->errmsgs, _("Error inflating: %s"), zError (r));
 
   return -1;
 }

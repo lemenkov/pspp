@@ -73,6 +73,7 @@ static enum compression
 comp_code (struct zip_member *zm, uint16_t c)
 {
   enum compression which;
+  assert (zm->errmsgs);
   switch (c)
     {
     case 0:
@@ -82,7 +83,7 @@ comp_code (struct zip_member *zm, uint16_t c)
       which = COMPRESSION_INFLATE;
       break;
     default:
-      ds_put_format (zm->errs, _("Unsupported compression type (%d)"), c);
+      ds_put_format (zm->errmsgs, _("Unsupported compression type (%d)"), c);
       which = n_COMPRESSION;
       break;
     }
@@ -103,7 +104,7 @@ struct zip_reader
 void
 zip_member_finish (struct zip_member *zm)
 {
-  ds_clear (zm->errs);
+  ds_clear (zm->errmsgs);
   /*  Probably not useful, because we would have to read right to the end of the member
   if (zm->expected_crc != zm->crc)
     {
@@ -224,7 +225,7 @@ zip_member_read (struct zip_member *zm, void *buf, size_t bytes)
 {
   int bytes_read = 0;
 
-  ds_clear (zm->errs);
+  ds_clear (zm->errmsgs);
 
   if ( bytes > zm->bytes_unread)
     bytes = zm->bytes_unread;
@@ -260,6 +261,7 @@ zip_header_read_next (struct zip_reader *zr)
   uint16_t comp_type;
 
   ds_clear (zr->errs);
+  zm->errmsgs = zr->errs;
 
   if ( ! check_magic (zr->fr, MAGIC_SOCD, zr->errs))
     return NULL;
@@ -294,7 +296,7 @@ zip_header_read_next (struct zip_reader *zr)
 
   zm->fp = fopen (zr->filename, "rb");
   zm->ref_cnt = 1;
-  zm->errs = zr->errs;
+
 
   return zm;
 }
@@ -422,7 +424,7 @@ zip_member_open (struct zip_reader *zr, const char *member)
   if ( 0 != fseeko (zm->fp, zm->offset, SEEK_SET))
     {
       const char *mm = strerror (errno);
-      ds_put_format (zm->errs, _("Failed to seek to start of member `%s': %s"), zm->name, mm);
+      ds_put_format (zm->errmsgs, _("Failed to seek to start of member `%s': %s"), zm->name, mm);
       return NULL;
     }
 
@@ -452,7 +454,7 @@ zip_member_open (struct zip_reader *zr, const char *member)
 
   if (strcmp (name, zm->name) != 0)
     {
-      ds_put_format (zm->errs,
+      ds_put_format (zm->errmsgs,
 		     _("Name mismatch in zip archive. Central directory says `%s'; local file header says `%s'"),
 		     zm->name, name);
       free (name);
