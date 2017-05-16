@@ -400,3 +400,30 @@ matrix-data.pspp:20: error: EXECUTE: EXECUTE is allowed only after the active da
 
 
 AT_CLEANUP
+
+
+
+
+AT_SETUP([Matrix data (badly formed)])
+
+AT_DATA([data.pspp], [dnl
+data list list /ROWTYPE_ (a8) VARNAME_(a4) v1 v2 v3 v4xxxxxxxxxxxxxxxxxxxxxzzzzzzzzzzzzzxxxxxxxxx.
+begin data
+mean ""                          1 2 3 4
+sd   ""                          5 6 7 8
+n    ""                          2 3 4 5
+corr v1                          11 22 33 44
+corr v2                          55 66 77 88
+corr v3                          111 222 333 444
+corr v4                           4 3 21 1
+end data.
+
+list.
+
+factor matrix=in(corr = *)
+	.
+])
+
+AT_CHECK([pspp -O format=csv data.pspp], [1], [ignore])
+
+AT_CLEANUP

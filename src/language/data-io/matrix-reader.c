@@ -77,7 +77,6 @@ s_0 ROWTYPE_   VARNAME_   v_0         v_1         v_2
 
 struct matrix_reader
 {
-  const struct dictionary *dict;
   const struct variable *varname;
   const struct variable *rowtype;
   struct casegrouper *grouper;
@@ -96,7 +95,6 @@ create_matrix_reader_from_case_reader (const struct dictionary *dict, struct cas
 {
   struct matrix_reader *mr = xzalloc (sizeof *mr);
 
-  mr->dict = dict;
   mr->varname = dict_lookup_var (dict, "varname_");
   if (mr->varname == NULL)
     {
@@ -207,7 +205,7 @@ next_matrix_from_reader (struct matrix_material *mm,
       char s[w];
       memset (s, 0, w);
       const char *name = var_get_name (vars[i]);
-      strcpy (s, name);
+      strncpy (s, name, w);
       unsigned long h = hash_bytes (s, w, 0);
       table[i] = h;
     }
