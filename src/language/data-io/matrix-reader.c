@@ -219,8 +219,7 @@ next_matrix_from_reader (struct matrix_material *mm,
       int col, row;
       for (col = 0; col < n_vars; ++col)
 	{
-	  const struct variable *cv
-	    = vars ? vars[col] : dict_get_var (mr->dict, var_get_dict_index (mr->varname) + 1 + col);
+	  const struct variable *cv = vars[col];
 	  double x = case_data (c, cv)->f;
 	  if (0 == strncasecmp ((char *)value_str (uv, 8), "N       ", 8))
 	    for (row = 0; row < n_vars; ++row)
