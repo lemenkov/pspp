@@ -84,9 +84,6 @@ struct matrix_reader
   gsl_matrix *n_vectors;
   gsl_matrix *mean_vectors;
   gsl_matrix *var_vectors;
-
-  //  gsl_matrix *correlation;
-  //  gsl_matrix *covariance;
 };
 
 struct matrix_reader *
