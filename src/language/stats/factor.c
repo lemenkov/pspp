@@ -1005,7 +1005,7 @@ iterate_factor_matrix (const gsl_matrix *r, gsl_vector *communalities, gsl_matri
 
 static bool run_factor (struct dataset *ds, const struct cmd_factor *factor);
 
-static bool do_factor_by_matrix (const struct cmd_factor *factor, struct idata *idata);
+static void do_factor_by_matrix (const struct cmd_factor *factor, struct idata *idata);
 
 
 
@@ -2227,13 +2227,13 @@ do_factor (const struct cmd_factor *factor, struct casereader *r)
   casereader_destroy (r);
 }
 
-static bool
+static void
 do_factor_by_matrix (const struct cmd_factor *factor, struct idata *idata)
 {
   if (!idata->mm.cov && !idata->mm.corr)
     {
       msg (ME, _("The dataset has no complete covariance or correlation matrix."));
-      return false;
+      return;
     }
 
   if (idata->mm.cov && !idata->mm.corr)
@@ -2414,7 +2414,7 @@ do_factor_by_matrix (const struct cmd_factor *factor, struct idata *idata)
   if (idata->n_extractions == 0)
     {
       msg (MW, _("The %s criteria result in zero factors extracted. Therefore no analysis will be performed."), "FACTOR");
-      goto finish;
+      return;
     }
 
   if (idata->n_extractions > factor->n_vars)
@@ -2422,7 +2422,7 @@ do_factor_by_matrix (const struct cmd_factor *factor, struct idata *idata)
       msg (MW,
 	   _("The %s criteria result in more factors than variables, which is not meaningful. No analysis will be performed."),
 	   "FACTOR");
-      goto finish;
+      return;
     }
 
   {
@@ -2543,9 +2543,6 @@ do_factor_by_matrix (const struct cmd_factor *factor, struct idata *idata)
     gsl_vector_free (initial_communalities);
     gsl_vector_free (extracted_communalities);
   }
-
- finish:
-  return;
 }
 
 
