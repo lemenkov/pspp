@@ -204,7 +204,7 @@ next_matrix_from_reader (struct matrix_material *mm,
   for (i = 0; i < n_vars; ++i)
     {
       const int w = var_get_width (mr->varname);
-      uint8_t s[w];
+      char s[w];
       memset (s, 0, w);
       const char *name = var_get_name (vars[i]);
       strcpy (s, name);
