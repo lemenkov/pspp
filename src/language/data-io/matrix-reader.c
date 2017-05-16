@@ -103,10 +103,26 @@ create_matrix_reader_from_case_reader (const struct dictionary *dict, struct cas
       return NULL;
     }
 
+  if (!var_is_alpha (mr->varname))
+    {
+      msg (ME, _("Matrix dataset variable %s should be of string type."),
+	   "VARNAME_");
+      free (mr);
+      return NULL;
+    }
+
   mr->rowtype = dict_lookup_var (dict, "rowtype_");
   if (mr->rowtype == NULL)
     {
       msg (ME, _("Matrix dataset lacks a variable called %s."), "ROWTYPE_");
+      free (mr);
+      return NULL;
+    }
+
+  if (!var_is_alpha (mr->rowtype))
+    {
+      msg (ME, _("Matrix dataset variable %s should be of string type."),
+	   "ROWTYPE_");
       free (mr);
       return NULL;
     }
