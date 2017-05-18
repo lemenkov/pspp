@@ -380,3 +380,24 @@ foo,title,last
 AT_CLEANUP
 
 
+
+AT_SETUP([GET DATA /TYPE=txt another bug])
+
+AT_DATA([crash.sps], [dnl
+get data /type=txt /file=inline /variables=C f7.2 D f7>2.
+begin data.
+3 2
+4 2
+5 2
+end data.
+])
+
+AT_CHECK([pspp -O format=csv crash.sps], [1], [ignore])
+
+AT_CLEANUP
+
+
+
+
+
+

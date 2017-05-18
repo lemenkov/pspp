@@ -20,6 +20,7 @@ UI_FILES = \
 	src/ui/gui/frequencies.ui \
 	src/ui/gui/histogram.ui \
 	src/ui/gui/indep-samples.ui \
+	src/ui/gui/k-independent.ui \
 	src/ui/gui/k-means.ui \
 	src/ui/gui/k-related.ui \
 	src/ui/gui/ks-one-sample.ui \
@@ -213,6 +214,8 @@ src_ui_gui_psppire_SOURCES = \
 	src/ui/gui/psppire-dialog-action-kmeans.h \
 	src/ui/gui/psppire-dialog-action-logistic.c \
 	src/ui/gui/psppire-dialog-action-logistic.h \
+	src/ui/gui/psppire-dialog-action-k-independent.c \
+	src/ui/gui/psppire-dialog-action-k-independent.h \
 	src/ui/gui/psppire-dialog-action-k-related.c \
 	src/ui/gui/psppire-dialog-action-k-related.h \
 	src/ui/gui/psppire-dialog-action-means.c \

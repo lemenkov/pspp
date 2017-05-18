@@ -16,6 +16,7 @@
 
 #include <config.h>
 
+#include <assert.h>
 #include "math/correlation.h"
 
 #include <gsl/gsl_matrix.h>
@@ -67,4 +68,29 @@ correlation_from_covariance (const gsl_matrix *cv, const gsl_matrix *v)
     }
 
   return corr;
+}
+
+gsl_matrix *
+covariance_from_correlation (const gsl_matrix *corr, const gsl_matrix *v)
+{
+  size_t i, j;
+  assert (corr->size1 == corr->size2);
+
+  gsl_matrix *output = gsl_matrix_calloc (corr->size1, corr->size2);
+
+  for (i = 0 ; i < corr->size1; ++i)
+    {
+      for (j = 0 ; j < corr->size2; ++j)
+	{
+	  double r = gsl_matrix_get (corr, i, j);
+
+	  r *= sqrt (gsl_matrix_get (v, i, j))
+	    *
+	    sqrt (gsl_matrix_get (v, j, i));
+
+	  gsl_matrix_set (output, i, j, r);
+	}
+    }
+
+  return output;
 }

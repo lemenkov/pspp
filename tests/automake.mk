@@ -304,6 +304,7 @@ TESTSUITE_AT = \
 	tests/language/data-io/inpt-pgm.at \
 	tests/language/data-io/list.at \
 	tests/language/data-io/match-files.at \
+	tests/language/data-io/matrix-data.at \
 	tests/language/data-io/print-space.at \
 	tests/language/data-io/print.at \
 	tests/language/data-io/save.at \

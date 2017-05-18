@@ -306,7 +306,7 @@ cmd_data_list (struct lexer *lexer, struct dataset *ds)
       add_transformation (ds, data_list_trns_proc, data_list_trns_free, trns);
     }
   else
-    data_parser_make_active_file (parser, ds, reader, dict);
+    data_parser_make_active_file (parser, ds, reader, dict, NULL, NULL);
 
   fh_unref (fh);
   free (encoding);

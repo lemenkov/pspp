@@ -511,23 +511,19 @@ parse_means_table_syntax (struct lexer *lexer, const struct means *cmd, struct m
     return false;
 
   /* Factor variable (s) */
-  while (lex_token (lexer) != T_ENDCMD && lex_token (lexer) != T_SLASH)
+  while (lex_match (lexer, T_BY))
     {
-      if (lex_match (lexer, T_BY))
-	{
-	  table->n_layers++;
-          table->layers =
-	    pool_realloc (cmd->pool, table->layers,
-			  sizeof (*table->layers) * table->n_layers);
+      table->n_layers++;
+      table->layers =
+	pool_realloc (cmd->pool, table->layers,
+		      sizeof (*table->layers) * table->n_layers);
 
-	  if (!parse_variables_const_pool
-              (lexer, cmd->pool, cmd->dict,
-               &table->layers[table->n_layers - 1].factor_vars,
-               &table->layers[table->n_layers - 1].n_factor_vars,
-               PV_NO_DUPLICATE))
-	    return false;
-
-	}
+      if (!parse_variables_const_pool
+	  (lexer, cmd->pool, cmd->dict,
+	   &table->layers[table->n_layers - 1].factor_vars,
+	   &table->layers[table->n_layers - 1].n_factor_vars,
+	   PV_NO_DUPLICATE))
+	return false;
     }
 
   /* There is always at least one layer.

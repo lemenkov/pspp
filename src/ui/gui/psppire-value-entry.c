@@ -154,6 +154,26 @@ on_realize (GtkWidget *w)
   GTK_WIDGET_CLASS (psppire_value_entry_parent_class)->realize (w);
 }
 
+
+/*
+ The "has-entry" property for the parent class (GTK_COMBO_BOX) is
+ a) Construct-only ; and b) defaults to FALSE.
+ We want it to default to TRUE.  So we override it here.
+*/
+static  GObject*
+my_constructor (GType                  type,
+		guint                  n_construct_properties,
+		GObjectConstructParam *construct_properties)
+{
+  GObject *o =
+    G_OBJECT_CLASS (psppire_value_entry_parent_class)->constructor
+    (type, n_construct_properties, construct_properties);
+
+  g_object_set (o, "has-entry", TRUE, NULL);
+
+  return o;
+}
+
 static void
 psppire_value_entry_class_init (PsppireValueEntryClass *class)
 {
@@ -164,6 +184,7 @@ psppire_value_entry_class_init (PsppireValueEntryClass *class)
   gobject_class->finalize = psppire_value_entry_finalize;
   gobject_class->set_property = psppire_value_entry_set_property;
   gobject_class->get_property = psppire_value_entry_get_property;
+  gobject_class->constructor = my_constructor;
   widget_class->realize = on_realize;
 
   g_object_class_install_property (
@@ -248,7 +269,7 @@ psppire_value_entry_finalize (GObject *gobject)
 GtkWidget *
 psppire_value_entry_new (void)
 {
-  return GTK_WIDGET (g_object_new (PSPPIRE_TYPE_VALUE_ENTRY, "has-entry", TRUE, NULL));
+  return GTK_WIDGET (g_object_new (PSPPIRE_TYPE_VALUE_ENTRY, NULL));
 }
 
 static void
@@ -421,6 +442,10 @@ psppire_value_entry_set_value (PsppireValueEntry *obj,
   gchar *string;
 
   obj->cur_value = NULL;
+
+  if (value == NULL)
+    return;
+
   if (obj->show_value_label)
     {
       struct val_lab *vl = val_labs_lookup (obj->val_labs, value);

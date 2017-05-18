@@ -46,6 +46,7 @@ REGRESSION
         /VARIABLES=@var{var_list}
         /DEPENDENT=@var{var_list}
         /STATISTICS=@{ALL, DEFAULTS, R, COEFF, ANOVA, BCOV, CI[@var{conf}]@}
+        @{ /ORIGIN | /NOORIGIN @}
         /SAVE=@{PRED, RESID@}
 @end display
 
@@ -85,6 +86,13 @@ The same as if R, COEFF, and ANOVA had been selected.
 This is what you get if the /STATISTICS command is not specified,
 or if it is specified without any parameters.
 @end table
+
+The @subcmd{ORIGIN} and @subcmd{NOORIGIN} subcommands are mutually
+exclusive.  @subcmd{ORIGIN} indicates that the regression should be
+performed through the origin.  You should use this option if, and
+only if you have reason to believe that the regression does indeed
+pass through the origin --- that is to say, the value @math{b_0} above,
+is zero.  The default is @subcmd{NOORIGIN}.
 
 The @subcmd{SAVE} subcommand causes @pspp{} to save the residuals or predicted
 values from the fitted

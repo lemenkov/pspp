@@ -342,6 +342,10 @@
 	      <attribute name="label" translatable="yes">_K Related Samples...</attribute>
 	      <attribute name="action">win.PsppireDialogActionKRelated</attribute>
 	    </item>
+	    <item>
+	      <attribute name="label" translatable="yes">K _Independent Samples...</attribute>
+	      <attribute name="action">win.PsppireDialogActionKIndependent</attribute>
+	    </item>
 	  </section>
 	</submenu>
 	<item>

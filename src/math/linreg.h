@@ -17,49 +17,8 @@
 #ifndef LINREG_H
 #define LINREG_H
 
-#include <gsl/gsl_math.h>
 #include <gsl/gsl_matrix.h>
-#include <gsl/gsl_vector.h>
 #include <stdbool.h>
-
-enum
-{
-  LINREG_CONDITIONAL_INVERSE,
-  LINREG_QR,
-  LINREG_SWEEP,
-};
-
-
-
-/*
-  Options describing what special values should be computed.
- */
-struct pspp_linreg_opts_struct
-{
-  int get_depvar_mean_std;
-  int *get_indep_mean_std;	/* Array of booleans
-				   dictating which
-				   independent variables need
-				   their means and standard
-				   deviations computed within
-				   pspp_linreg. This array
-				   MUST be of length
-				   n_indeps. If element i is
-				   1, pspp_linreg will
-				   compute the mean and
-				   variance of indpendent
-				   variable i. If element i
-				   is 0, it will not compute
-				   the mean and standard
-				   deviation, and assume the
-				   values are stored.
-				   cache->indep_mean[i] is
-				   the mean and
-				   cache->indep_std[i] is the
-				   sample standard deviation. */
-};
-typedef struct pspp_linreg_opts_struct pspp_linreg_opts;
-
 
 /*
   Find the least-squares estimate of b for the linear model:
@@ -87,101 +46,48 @@ typedef struct pspp_linreg_opts_struct pspp_linreg_opts;
   Springer. 1998. ISBN 0-387-98542-5.
 */
 
+struct variable;
 
-struct linreg_struct
-{
-  double n_obs;			/* Number of observations. */
-  int n_indeps;			/* Number of independent variables. */
-  int n_coeffs;                 /* The intercept is not considered a
-				   coefficient here. */
+struct linreg *linreg_alloc (const struct variable *, const struct variable **,
+			     double, size_t, bool);
 
-  /*
-    Pointers to the variables.
-   */
-  const struct variable *depvar;
-  const struct variable **indep_vars;
+void linreg_unref (struct linreg *);
+void linreg_ref (struct linreg *);
 
-  double *coeff;
-  double intercept;
-  int method;			/* Method to use to estimate parameters. */
-  /*
-     Means and standard deviations of the variables.
-     If these pointers are null when pspp_linreg() is
-     called, pspp_linreg() will compute their values.
-
-     Entry i of indep_means is the mean of independent
-     variable i, whose observations are stored in the ith
-     column of the design matrix.
-   */
-  double depvar_mean;
-  gsl_vector *indep_means;
-  gsl_vector *indep_std;
-
-  /*
-     Sums of squares.
-   */
-  double ssm;			/* Sums of squares for the overall model. */
-  double sst;			/* Sum of squares total. */
-  double sse;			/* Sum of squares error. */
-  double mse;			/* Mean squared error. This is just sse /
-				   dfe, but since it is the best unbiased
-				   estimate of the population variance, it
-				   has its own entry here. */
-  /*
-     Covariance matrix of the parameter estimates.
-   */
-  gsl_matrix *cov;
-  /*
-     Degrees of freedom.
-   */
-  double dft;
-  double dfe;
-  double dfm;
-
-  int dependent_column; /* Column containing the dependent variable. Defaults to last column. */
-  int refcnt;
-};
-
-typedef struct linreg_struct linreg;
-
-
-
-linreg *linreg_alloc (const struct variable *, const struct variable **,
-		      double, size_t);
-
-void linreg_unref (linreg *);
-void linreg_ref (linreg *);
+int linreg_n_indeps (const struct linreg *c);
 
 /*
-  Fit the linear model via least squares. All pointers passed to pspp_linreg
-  are assumed to be allocated to the correct size and initialized to the
-  values as indicated by opts.
- */
-void linreg_fit (const gsl_matrix *, linreg *);
+  Fit the linear model via least squares.
+*/
+void linreg_fit (const gsl_matrix *, struct linreg *);
 
-double linreg_predict (const linreg *, const double *, size_t);
-double linreg_residual (const linreg *, double, const double *, size_t);
-const struct variable ** linreg_get_vars (const linreg *);
+double linreg_predict (const struct linreg *, const double *, size_t);
+double linreg_residual (const struct linreg *, double, const double *, size_t);
+const struct variable ** linreg_get_vars (const struct linreg *);
 
 /*
   Mean of the independent variable.
  */
-double linreg_get_indep_variable_mean (const linreg *, size_t);
-void linreg_set_indep_variable_mean (linreg *, size_t, double);
+double linreg_get_indep_variable_mean (const struct linreg *, size_t);
+void linreg_set_indep_variable_mean (struct linreg *, size_t, double);
 
-double linreg_mse (const linreg *);
+double linreg_mse (const struct linreg *);
 
-double linreg_intercept (const linreg *);
+double linreg_intercept (const struct linreg *);
 
-const gsl_matrix * linreg_cov (const linreg *);
-double linreg_coeff (const linreg *, size_t);
-const struct variable * linreg_indep_var (const linreg *, size_t);
-size_t linreg_n_coeffs (const linreg *);
-double linreg_n_obs (const linreg *);
-double linreg_sse (const linreg *);
-double linreg_ssreg (const linreg *);
-double linreg_dfmodel (const linreg *);
-double linreg_sst (const linreg *);
-void linreg_set_depvar_mean (linreg *, double);
-double linreg_get_depvar_mean (const linreg *);
+const gsl_matrix * linreg_cov (const struct linreg *);
+double linreg_coeff (const struct linreg *, size_t);
+const struct variable * linreg_indep_var (const struct linreg *, size_t);
+const struct variable * linreg_dep_var (const struct linreg *);
+size_t linreg_n_coeffs (const struct linreg *);
+double linreg_n_obs (const struct linreg *);
+double linreg_sse (const struct linreg *);
+double linreg_ssreg (const struct linreg *);
+double linreg_dfmodel (const struct linreg *);
+double linreg_dferror (const struct linreg *);
+double linreg_dftotal (const struct linreg *);
+double linreg_sst (const struct linreg *);
+void linreg_set_depvar_mean (struct linreg *, double);
+double linreg_get_depvar_mean (const struct linreg *);
+
 #endif

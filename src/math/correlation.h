@@ -20,7 +20,9 @@
 
 #include <gsl/gsl_matrix.h>
 
-gsl_matrix * correlation_from_covariance (const gsl_matrix *cv, const gsl_matrix *v);
+gsl_matrix *correlation_from_covariance (const gsl_matrix *cv, const gsl_matrix *v);
+
+gsl_matrix *covariance_from_correlation (const gsl_matrix *corr, const gsl_matrix *v);
 
 double significance_of_correlation (double rho, double w);
 

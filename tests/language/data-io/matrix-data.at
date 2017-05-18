@@ -1,0 +1,429 @@
+AT_BANNER([MATRIX DATA])
+
+AT_SETUP([Matrix data (lower file)])
+
+AT_DATA([matrix-data.pspp], [dnl
+matrix data
+    variables = rowtype_
+    var01 TO var08
+    /format = lower diagonal
+    /file = 'matrix.dat'
+    .
+
+list.
+])
+
+AT_DATA([matrix.dat], [dnl
+mean  24.3  5.4  69.7  20.1  13.4  2.7  27.9  3.7
+sd    5.7   1.5  23.5  5.8   2.8   4.5  5.4   1.5
+n     92    92   92    92    92    92   92    92
+corr 1.00
+corr .18  1.00
+corr -.22  -.17  1.00
+corr .36  .31  -.14  1.00
+corr .27  .16  -.12  .22  1.00
+corr .33  .15  -.17  .24  .21  1.00
+corr .50  .29  -.20  .32  .12  .38  1.00
+corr .17  .29  -.05  .20  .27  .20  .04  1.00
+])
+
+
+AT_CHECK([pspp -O format=csv matrix-data.pspp], [0], [dnl
+Table: Data List
+ROWTYPE_,VARNAME_,var01,var02,var03,var04,var05,var06,var07,var08
+mean    ,,24.3000,5.4000,69.7000,20.1000,13.4000,2.7000,27.9000,3.7000
+STDDEV  ,,5.7000,1.5000,23.5000,5.8000,2.8000,4.5000,5.4000,1.5000
+n       ,,92.0000,92.0000,92.0000,92.0000,92.0000,92.0000,92.0000,92.0000
+corr    ,var01,1.0000,.1800,-.2200,.3600,.2700,.3300,.5000,.1700
+corr    ,var02,.1800,1.0000,-.1700,.3100,.1600,.1500,.2900,.2900
+corr    ,var03,-.2200,-.1700,1.0000,-.1400,-.1200,-.1700,-.2000,-.0500
+corr    ,var04,.3600,.3100,-.1400,1.0000,.2200,.2400,.3200,.2000
+corr    ,var05,.2700,.1600,-.1200,.2200,1.0000,.2100,.1200,.2700
+corr    ,var06,.3300,.1500,-.1700,.2400,.2100,1.0000,.3800,.2000
+corr    ,var07,.5000,.2900,-.2000,.3200,.1200,.3800,1.0000,.0400
+corr    ,var08,.1700,.2900,-.0500,.2000,.2700,.2000,.0400,1.0000
+])
+AT_CLEANUP
+
+
+
+AT_SETUP([Matrix data (upper)])
+
+AT_DATA([matrix-data.pspp], [dnl
+matrix data
+    variables = rowtype_  var01 var02 var03 var04
+    /format = upper diagonal.
+
+begin data
+mean        34 35 36 37
+sd          22 11 55 66
+n_vector    100 101 102 103
+corr        1 9 8 7
+corr        1 6 5
+corr        1 4
+corr        1
+end data.
+
+list.
+])
+
+AT_CHECK([pspp -O format=csv matrix-data.pspp], [0], [dnl
+Table: Data List
+ROWTYPE_,VARNAME_,var01,var02,var03,var04
+mean    ,,34.0000,35.0000,36.0000,37.0000
+STDDEV  ,,22.0000,11.0000,55.0000,66.0000
+N       ,,100.0000,101.0000,102.0000,103.0000
+corr    ,var01,1.0000,9.0000,8.0000,7.0000
+corr    ,var02,9.0000,1.0000,6.0000,5.0000
+corr    ,var03,8.0000,6.0000,1.0000,4.0000
+corr    ,var04,7.0000,5.0000,4.0000,1.0000
+])
+
+AT_CLEANUP
+
+AT_SETUP([Matrix data (full)])
+
+dnl Just for fun, this one is in a different case.
+AT_DATA([matrix-data.pspp], [dnl
+matrix data
+    variables = ROWTYPE_  var01 var02 var03 var04
+    /format = full diagonal.
+
+begin data
+MEAN 34 35 36 37
+SD   22 11 55 66
+N    100 101 102 103
+CORR 1 9 8 7
+CORR 9 1 6 5
+CORR 8 6 1 4
+CORR 7 5 4 1
+end data.
+
+list.
+])
+
+
+AT_CHECK([pspp -O format=csv matrix-data.pspp], [0], [dnl
+Table: Data List
+ROWTYPE_,VARNAME_,var01,var02,var03,var04
+MEAN    ,,34.0000,35.0000,36.0000,37.0000
+STDDEV  ,,22.0000,11.0000,55.0000,66.0000
+N       ,,100.0000,101.0000,102.0000,103.0000
+CORR    ,var01,1.0000,9.0000,8.0000,7.0000
+CORR    ,var02,9.0000,1.0000,6.0000,5.0000
+CORR    ,var03,8.0000,6.0000,1.0000,4.0000
+CORR    ,var04,7.0000,5.0000,4.0000,1.0000
+])
+
+AT_CLEANUP
+
+
+AT_SETUP([Matrix data (upper nodiagonal)])
+
+AT_DATA([matrix-data.pspp], [dnl
+matrix data
+    variables = rowtype_  var01 var02 var03 var04
+    /format = upper nodiagonal.
+
+begin data
+mean 34 35 36 37
+sd   22 11 55 66
+n    100 101 102 103
+corr  9 8 7
+corr  6 5
+corr  4
+end data.
+
+list.
+])
+
+AT_CHECK([pspp -O format=csv matrix-data.pspp], [0], [dnl
+Table: Data List
+ROWTYPE_,VARNAME_,var01,var02,var03,var04
+mean    ,,34.0000,35.0000,36.0000,37.0000
+STDDEV  ,,22.0000,11.0000,55.0000,66.0000
+n       ,,100.0000,101.0000,102.0000,103.0000
+corr    ,var01,1.0000,9.0000,8.0000,7.0000
+corr    ,var02,9.0000,1.0000,6.0000,5.0000
+corr    ,var03,8.0000,6.0000,1.0000,4.0000
+corr    ,var04,7.0000,5.0000,4.0000,1.0000
+])
+
+AT_CLEANUP
+
+
+AT_SETUP([Matrix data (lower nodiagonal)])
+
+AT_DATA([matrix-data.pspp], [dnl
+matrix data
+    variables = rowtype_  var01 var02 var03 var04
+    /format = lower nodiagonal.
+
+begin data
+mean 34 35 36 37
+sd   22 11 55 66
+n    100 101 102 103
+corr  9
+corr  8 6
+corr  7 5 4
+end data.
+
+list.
+])
+
+AT_CHECK([pspp -O format=csv matrix-data.pspp], [0], [dnl
+Table: Data List
+ROWTYPE_,VARNAME_,var01,var02,var03,var04
+mean    ,,34.0000,35.0000,36.0000,37.0000
+STDDEV  ,,22.0000,11.0000,55.0000,66.0000
+n       ,,100.0000,101.0000,102.0000,103.0000
+corr    ,var01,1.0000,9.0000,8.0000,7.0000
+corr    ,var02,9.0000,1.0000,6.0000,5.0000
+corr    ,var03,8.0000,6.0000,1.0000,4.0000
+corr    ,var04,7.0000,5.0000,4.0000,1.0000
+])
+
+AT_CLEANUP
+
+
+
+AT_SETUP([Matrix data split data])
+
+AT_DATA([matrix-data.pspp], [dnl
+matrix data
+    variables = s1 s2 rowtype_  var01 var02 var03
+    /split=s1 s2.
+
+begin data
+8 0   mean     21.4  5.0  72.9
+8 0   sd       6.5   1.6  22.8
+8 0   n        106   106  106
+8 0   corr     1
+8 0   corr    .41  1
+8 0   corr    -.16  -.22  1
+8 1   mean     11.4  1.0  52.9
+8 1   sd       9.5   8.6  12.8
+8 1   n        10   11  12
+8 1   corr     1
+8 1   corr    .51  1
+8 1   corr    .36  -.41  1
+end data.
+
+display dictionary.
+
+list.
+])
+
+
+AT_CHECK([pspp -O format=csv matrix-data.pspp], [0], [dnl
+Variable,Description,Position
+s1,Format: F4.0,1
+s2,Format: F4.0,2
+ROWTYPE_,Format: A8,3
+VARNAME_,Format: A8,4
+var01,Format: F10.4,5
+var02,Format: F10.4,6
+var03,Format: F10.4,7
+
+Table: Data List
+s1,s2,ROWTYPE_,VARNAME_,var01,var02,var03
+8,0,mean    ,,21.4000,5.0000,72.9000
+8,0,STDDEV  ,,6.5000,1.6000,22.8000
+8,0,n       ,,106.0000,106.0000,106.0000
+8,0,corr    ,var01,1.0000,.4100,-.1600
+8,0,corr    ,var02,.4100,1.0000,-.2200
+8,0,corr    ,var03,-.1600,-.2200,1.0000
+8,1,mean    ,,11.4000,1.0000,52.9000
+8,1,STDDEV  ,,9.5000,8.6000,12.8000
+8,1,n       ,,10.0000,11.0000,12.0000
+8,1,corr    ,var01,1.0000,.5100,.3600
+8,1,corr    ,var02,.5100,1.0000,-.4100
+8,1,corr    ,var03,.3600,-.4100,1.0000
+])
+
+AT_CLEANUP
+
+
+
+
+AT_SETUP([Matrix data duplicate variable])
+
+dnl Negative test to check for sane behaviour in the face of bad syntax
+AT_DATA([matrix-data.pspp], [dnl
+set decimal = dot .
+matrix data
+    variables = s1 s1 rowtype_  var01 var02 var03
+    /split=s1.
+
+begin data
+0   mean     21.4  5.0  72.9
+0   sd       6.5   1.6  22.8
+0   n        106   106  106
+0   corr     1
+0   corr    .41  1
+0   corr    -.16  -.22  1
+end data .
+
+list.
+])
+
+
+AT_CHECK([pspp -O format=csv matrix-data.pspp], [1], [dnl
+matrix-data.pspp:3: error: MATRIX DATA: Variable s1 appears twice in variable list.
+
+matrix-data.pspp:6: error: Stopping syntax file processing here to avoid a cascade of dependent command failures.
+])
+
+AT_CLEANUP
+
+
+
+AT_SETUP([Matrix data - long variable names])
+
+AT_DATA([matrix-data.pspp], [dnl
+matrix data
+    variables = rowtype_  var01 var_two variable_number_three variableFour
+    /format = upper diagonal.
+
+begin data
+mean         34  35  36  37
+sd           22  11  55  66
+n_vector    100 101 102 103
+corr          1   9   8   7
+corr              1   6   5
+corr                  1   4
+corr                      1
+end data.
+
+list.
+])
+
+AT_CHECK([pspp -O format=csv matrix-data.pspp], [0], [dnl
+Table: Data List
+ROWTYPE_,VARNAME_,var01,var_two,variable_number_three,variableFour
+mean    ,,34.0000,35.0000,36.0000,37.0000
+STDDEV  ,,22.0000,11.0000,55.0000,66.0000
+N       ,,100.0000,101.0000,102.0000,103.0000
+corr    ,var01,1.0000,9.0000,8.0000,7.0000
+corr    ,var_two,9.0000,1.0000,6.0000,5.0000
+corr    ,variable_number_three,8.0000,6.0000,1.0000,4.0000
+corr    ,variableFour,7.0000,5.0000,4.0000,1.0000
+])
+
+AT_CLEANUP
+
+
+
+AT_SETUP([Matrix reader - read integrity])
+
+dnl Check that matrices presented are read correctly.
+dnl The example below is an unlikely one since all
+dnl covariance/correlation matrices must be symetrical
+dnl but it serves a purpose for this test.
+AT_DATA([matrix-reader.pspp], [dnl
+matrix data
+    variables = rowtype_  var01 to var9
+    /format = full.
+
+begin data
+n    1  2  3  4  5  6  7  8  9
+sd   100 200 300 400 500 600 700 800 900
+corr 11 12 13 14 15 16 17 18 19
+corr 21 22 23 24 25 26 27 28 29
+corr 31 32 33 34 35 36 37 38 39
+corr 41 42 43 44 45 46 47 48 49
+corr 51 52 53 54 55 56 57 58 59
+corr 61 62 63 64 65 66 67 68 69
+corr 71 72 73 74 75 76 77 78 79
+corr 81 82 83 84 85 86 87 88 89
+corr 91 92 93 94 95 96 97 98 99
+end data.
+
+factor  /matrix = in (corr = *)
+	/analysis var02 var04 var06
+	/method = correlation
+	/rotation = norotate
+	/print correlation.
+])
+
+AT_CHECK([pspp -O format=csv matrix-reader.pspp], [0], [dnl
+Table: Correlation Matrix
+,,var02,var04,var06
+Correlations,var02,22.00,24.00,26.00
+,var04,42.00,44.00,46.00
+,var06,62.00,64.00,66.00
+
+Table: Component Matrix
+,Component,
+,1,2
+var02,6.73,-2.23
+var04,6.95,2.15
+var06,9.22,.01
+])
+
+AT_CLEANUP
+
+
+AT_SETUP([Matrix data - too many rows])
+
+dnl Test for a crash which occurred when the matrix had more rows declared
+dnl than variables to hold them.
+AT_DATA([matrix-data.pspp], [dnl
+matrix data
+    variables = rowtype_
+    var01 var02 var03 var04
+    / format = upper diagonal .
+begin data
+    mean     21.4  5.0  72.9  17.4
+    sd       6.5  1.6  22.8  5.7
+    n       106  106  106  106
+    corr    1.00  .32  .48  .28
+    corr    1.00  .72  .54  .44
+    corr    1.00  .50  .59  .64
+    corr    1.00  .62  .49  -.30
+    corr    1.00  .56  -.38  .52
+    corr    1.00  -.73  .91  .80
+    corr    1.00  -.65  -.60
+    corr    1.00  .70
+    corr    1.00
+end data .
+
+execute.
+])
+
+
+AT_CHECK([pspp -O format=csv matrix-data.pspp], [1], [dnl
+matrix-data.pspp:13: error: MATRIX DATA: There are 4 variable declared but the data has at least 5 matrix rows.
+
+matrix-data.pspp:20: error: EXECUTE: EXECUTE is allowed only after the active dataset has been defined.
+])
+
+
+AT_CLEANUP
+
+
+
+
+AT_SETUP([Matrix data (badly formed)])
+
+AT_DATA([data.pspp], [dnl
+data list list /ROWTYPE_ (a8) VARNAME_(a4) v1 v2 v3 v4xxxxxxxxxxxxxxxxxxxxxzzzzzzzzzzzzzxxxxxxxxx.
+begin data
+mean ""                          1 2 3 4
+sd   ""                          5 6 7 8
+n    ""                          2 3 4 5
+corr v1                          11 22 33 44
+corr v2                          55 66 77 88
+corr v3                          111 222 333 444
+corr v4                           4 3 21 1
+end data.
+
+list.
+
+factor matrix=in(corr = *)
+	.
+])
+
+AT_CHECK([pspp -O format=csv data.pspp], [1], [ignore])
+
+AT_CLEANUP

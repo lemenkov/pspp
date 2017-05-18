@@ -601,7 +601,7 @@ run_glm (struct glm_spec *cmd, struct casereader *input,
 				 cmd->wv, cmd->exclude, MV_ANY);
 
   cov = covariance_2pass_create (cmd->n_dep_vars, cmd->dep_vars,
-				 ws.cats, cmd->wv, cmd->exclude);
+				 ws.cats, cmd->wv, cmd->exclude, true);
 
 
   c = casereader_peek (input, 0);

@@ -2204,3 +2204,117 @@ regression
 AT_CHECK([pspp -o pspp.csv empty-parens.sps], [1], [ignore])
 
 AT_CLEANUP 
+
+
+
+
+AT_SETUP([LINEAR REGRESSION varibles on ENTER subcommand])
+AT_DATA([regression.sps], [dnl
+SET FORMAT=F10.3.
+
+DATA LIST notable LIST /number * value *.
+BEGIN DATA
+ 16 7.25 
+  0  .00 
+  1  .10 
+  9 27.9 
+  0  .00 
+  7 3.65 
+ 14 16.8 
+ 24 9.15 
+  0  .00 
+ 24 19.0 
+  7 4.05 
+ 12 7.90 
+  6  .75 
+ 11 1.40 
+  0  .00 
+  3 2.30 
+ 12 7.60 
+ 11 6.80 
+ 16 8.65 
+END DATA.
+
+REGRESSION
+  /STATISTICS COEFF R ANOVA
+  /DEPENDENT value
+  /METHOD=ENTER number.
+])
+
+
+AT_CHECK([pspp -O format=csv regression.sps], [0], [dnl
+Table: Model Summary (value)
+,R,R Square,Adjusted R Square,Std. Error of the Estimate
+,.612,.374,.338,6.176
+
+Table: ANOVA (value)
+,,Sum of Squares,df,Mean Square,F,Sig.
+,Regression,388.065,1,388.065,10.173,.005
+,Residual,648.498,17,38.147,,
+,Total,1036.563,18,,,
+
+Table: Coefficients (value)
+,,Unstandardized Coefficients,,Standardized Coefficients,,
+,,B,Std. Error,Beta,t,Sig.
+,(Constant),.927,2.247,.000,.413,.685
+,number,.611,.192,.612,3.189,.005
+])
+
+AT_CLEANUP 
+
+
+
+AT_SETUP([LINEAR REGRESSION /ORIGIN])
+AT_DATA([regression-origin.sps], [dnl
+SET FORMAT=F10.3.
+
+DATA LIST notable LIST /number * value *.
+BEGIN DATA
+ 16 7.25 
+  0  .00 
+  1  .10 
+  9 27.9 
+  0  .00 
+  7 3.65 
+ 14 16.8 
+ 24 9.15 
+  0  .00 
+ 24 19.0 
+  7 4.05 
+ 12 7.90 
+  6  .75 
+ 11 1.40 
+  0  .00 
+  3 2.30 
+ 12 7.60 
+ 11 6.80 
+ 16 8.65 
+END DATA.
+
+REGRESSION
+  /STATISTICS COEFF R ANOVA
+  /DEPENDENT value
+  /ORIGIN
+  /METHOD=ENTER number.
+])
+
+
+AT_CHECK([pspp -O format=csv regression-origin.sps], [0], [dnl
+Table: Model Summary (value)
+,R,R Square,Adjusted R Square,Std. Error of the Estimate
+,.802,.643,.622,6.032
+
+Table: ANOVA (value)
+,,Sum of Squares,df,Mean Square,F,Sig.
+,Regression,1181.726,1,1181.726,32.475,.000
+,Residual,654.989,18,36.388,,
+,Total,1836.715,19,,,
+
+Table: Coefficients (value)
+,,Unstandardized Coefficients,,Standardized Coefficients,,
+,,B,Std. Error,Beta,t,Sig.
+,number,.672,.118,.802,5.699,.000
+,,,,,,
+])
+
+AT_CLEANUP 

@@ -1,5 +1,5 @@
 /* PSPP - a program for statistical analysis.
-   Copyright (C) 2005, 2010, 2011 Free Software Foundation, Inc.
+   Copyright (C) 2005, 2010, 2011, 2017 Free Software Foundation, Inc.
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -57,9 +57,63 @@
   Springer. 1998. ISBN 0-387-98542-5.
 */
 
+struct linreg
+{
+  double n_obs;			/* Number of observations. */
+  int n_indeps;			/* Number of independent variables. */
+  int n_coeffs;                 /* The intercept is not considered a
+				   coefficient here. */
+
+  /*
+    Pointers to the variables.
+   */
+  const struct variable *depvar;
+  const struct variable **indep_vars;
+
+  double *coeff;
+  double intercept;
+  /*
+     Means and standard deviations of the variables.
+     If these pointers are null when pspp_linreg() is
+     called, pspp_linreg() will compute their values.
+
+     Entry i of indep_means is the mean of independent
+     variable i, whose observations are stored in the ith
+     column of the design matrix.
+   */
+  double depvar_mean;
+  gsl_vector *indep_means;
+  gsl_vector *indep_std;
+
+  /*
+     Sums of squares.
+   */
+  double ssm;			/* Sums of squares for the overall model. */
+  double sst;			/* Sum of squares total. */
+  double sse;			/* Sum of squares error. */
+  double mse;			/* Mean squared error. This is just sse /
+				   dfe, but since it is the best unbiased
+				   estimate of the population variance, it
+				   has its own entry here. */
+  /*
+     Covariance matrix of the parameter estimates.
+   */
+  gsl_matrix *cov;
+  /*
+     Degrees of freedom.
+   */
+  double dft;
+  double dfe;
+  double dfm;
+
+  int dependent_column; /* Column containing the dependent variable. Defaults to last column. */
+  int refcnt;
+
+  bool origin;
+};
 
 const struct variable **
-linreg_get_vars (const linreg *c)
+linreg_get_vars (const struct linreg *c)
 {
   return c->indep_vars;
 }
@@ -68,11 +122,11 @@ linreg_get_vars (const linreg *c)
   Allocate a linreg and return a pointer to it. n is the number of
   cases, p is the number of independent variables.
  */
-linreg *
+struct linreg *
 linreg_alloc (const struct variable *depvar, const struct variable **indep_vars,
-	      double n, size_t p)
+	      double n, size_t p, bool origin)
 {
-  linreg *c;
+  struct linreg *c;
   size_t i;
 
   c = xmalloc (sizeof (*c));
@@ -91,7 +145,10 @@ linreg_alloc (const struct variable *depvar, const struct variable **indep_vars,
   c->n_coeffs = p;
   c->coeff = xnmalloc (p, sizeof (*c->coeff));
   c->cov = gsl_matrix_calloc (c->n_coeffs + 1, c->n_coeffs + 1);
-  c->dft = n - 1;
+  c->dft = n;
+  if (!origin)
+    c->dft--;
+
   c->dfm = p;
   c->dfe = c->dft - c->dfm;
   c->intercept = 0.0;
@@ -99,22 +156,23 @@ linreg_alloc (const struct variable *depvar, const struct variable **indep_vars,
   /*
      Default settings.
    */
-  c->method = LINREG_SWEEP;
 
   c->refcnt = 1;
+
+  c->origin = origin;
 
   return c;
 }
 
 
 void
-linreg_ref (linreg *c)
+linreg_ref (struct linreg *c)
 {
   c->refcnt++;
 }
 
 void
-linreg_unref (linreg *c)
+linreg_unref (struct linreg *c)
 {
   if (--c->refcnt == 0)
     {
@@ -128,11 +186,8 @@ linreg_unref (linreg *c)
 }
 
 static void
-post_sweep_computations (linreg *l, gsl_matrix *sw)
+post_sweep_computations (struct linreg *l, gsl_matrix *sw)
 {
-  gsl_matrix *xm;
-  gsl_matrix_view xtx;
-  gsl_matrix_view xmxtx;
   double m;
   size_t i;
   size_t j;
@@ -168,37 +223,44 @@ post_sweep_computations (linreg *l, gsl_matrix *sw)
 	double tmp = -1.0 * l->mse * gsl_matrix_get (sw, i, j);
 	gsl_matrix_set (l->cov, i + 1, j + 1, tmp);
       }
-  /*
-    Get the covariances related to the intercept.
-  */
-  xtx = gsl_matrix_submatrix (sw, 0, 0, l->n_indeps, l->n_indeps);
-  xmxtx = gsl_matrix_submatrix (l->cov, 0, 1, 1, l->n_indeps);
-  xm = gsl_matrix_calloc (1, l->n_indeps);
-  for (i = 0; i < xm->size2; i++)
-    {
-      gsl_matrix_set (xm, 0, i,
-		      linreg_get_indep_variable_mean (l, i));
-    }
-  rc = gsl_blas_dsymm (CblasRight, CblasUpper, l->mse,
-		       &xtx.matrix, xm, 0.0, &xmxtx.matrix);
-  gsl_matrix_free (xm);
-  if (rc == GSL_SUCCESS)
-    {
-      double tmp = l->mse / l->n_obs;
-      for (i = 1; i < 1 + l->n_indeps; i++)
-	{
-	  tmp -= gsl_matrix_get (l->cov, 0, i)
-	    * linreg_get_indep_variable_mean (l, i - 1);
-	}
-      gsl_matrix_set (l->cov, 0, 0, tmp);
 
-      l->intercept = m;
-    }
-  else
+  if (! l->origin)
     {
-      fprintf (stderr, "%s:%d:gsl_blas_dsymm: %s\n",
-	       __FILE__, __LINE__, gsl_strerror (rc));
-      exit (rc);
+      gsl_matrix *xm;
+      gsl_matrix_view xtx;
+      gsl_matrix_view xmxtx;
+      /*
+	Get the covariances related to the intercept.
+      */
+      xtx = gsl_matrix_submatrix (sw, 0, 0, l->n_indeps, l->n_indeps);
+      xmxtx = gsl_matrix_submatrix (l->cov, 0, 1, 1, l->n_indeps);
+      xm = gsl_matrix_calloc (1, l->n_indeps);
+      for (i = 0; i < xm->size2; i++)
+	{
+	  gsl_matrix_set (xm, 0, i,
+			  linreg_get_indep_variable_mean (l, i));
+	}
+      rc = gsl_blas_dsymm (CblasRight, CblasUpper, l->mse,
+			   &xtx.matrix, xm, 0.0, &xmxtx.matrix);
+      gsl_matrix_free (xm);
+      if (rc == GSL_SUCCESS)
+	{
+	  double tmp = l->mse / l->n_obs;
+	  for (i = 1; i < 1 + l->n_indeps; i++)
+	    {
+	      tmp -= gsl_matrix_get (l->cov, 0, i)
+		* linreg_get_indep_variable_mean (l, i - 1);
+	    }
+	  gsl_matrix_set (l->cov, 0, 0, tmp);
+
+	  l->intercept = m;
+	}
+      else
+	{
+	  fprintf (stderr, "%s:%d:gsl_blas_dsymm: %s\n",
+		   __FILE__, __LINE__, gsl_strerror (rc));
+	  exit (rc);
+	}
     }
 }
 
@@ -208,7 +270,7 @@ post_sweep_computations (linreg *l, gsl_matrix *sw)
   order of the coefficients in the linreg struct.
  */
 double
-linreg_predict (const linreg *c, const double *vals, size_t n_vals)
+linreg_predict (const struct linreg *c, const double *vals, size_t n_vals)
 {
   size_t j;
   double result;
@@ -234,7 +296,7 @@ linreg_predict (const linreg *c, const double *vals, size_t n_vals)
 }
 
 double
-linreg_residual (const linreg *c, double obs, const double *vals, size_t n_vals)
+linreg_residual (const struct linreg *c, double obs, const double *vals, size_t n_vals)
 {
   if (vals == NULL || c == NULL)
     {
@@ -246,20 +308,22 @@ linreg_residual (const linreg *c, double obs, const double *vals, size_t n_vals)
 /*
   Mean of the independent variable.
  */
-double linreg_get_indep_variable_mean (const linreg *c, size_t j)
+double
+linreg_get_indep_variable_mean (const struct linreg *c, size_t j)
 {
   assert (c != NULL);
   return gsl_vector_get (c->indep_means, j);
 }
 
-void linreg_set_indep_variable_mean (linreg *c, size_t j, double m)
+void
+linreg_set_indep_variable_mean (struct linreg *c, size_t j, double m)
 {
   assert (c != NULL);
   gsl_vector_set (c->indep_means, j, m);
 }
 
 static void
-linreg_fit_qr (const gsl_matrix *cov, linreg *l)
+linreg_fit_qr (const gsl_matrix *cov, struct linreg *l)
 {
   double intcpt_coef = 0.0;
   double intercept_variance = 0.0;
@@ -317,27 +381,31 @@ linreg_fit_qr (const gsl_matrix *cov, linreg *l)
 	  gsl_matrix_set (q, i, j, gsl_matrix_get (q, j, i));
 	}
     }
-  l->intercept = linreg_get_depvar_mean (l);
-  for (i = 0; i < l->n_indeps; i++)
-    {
-      double tmp = linreg_get_indep_variable_mean (l, i);
-      l->intercept -= l->coeff[i] * tmp;
-      intercept_variance += tmp * tmp * gsl_matrix_get (q, i, i);
-    }
 
-  /* Covariances related to the intercept. */
-  intercept_variance += linreg_mse (l) / linreg_n_obs (l);
-  gsl_matrix_set (l->cov, 0, 0, intercept_variance);
-  for (i = 0; i < q->size1; i++)
+  if (!l->origin)
     {
-      for (j = 0; j < q->size2; j++)
+      l->intercept = linreg_get_depvar_mean (l);
+      for (i = 0; i < l->n_indeps; i++)
 	{
-	  intcpt_coef -= gsl_matrix_get (q, i, j)
-	    * linreg_get_indep_variable_mean (l, j);
+	  double tmp = linreg_get_indep_variable_mean (l, i);
+	  l->intercept -= l->coeff[i] * tmp;
+	  intercept_variance += tmp * tmp * gsl_matrix_get (q, i, i);
 	}
-      gsl_matrix_set (l->cov, 0, i + 1, intcpt_coef);
-      gsl_matrix_set (l->cov, i + 1, 0, intcpt_coef);
-      intcpt_coef = 0.0;
+
+      /* Covariances related to the intercept. */
+      intercept_variance += linreg_mse (l) / linreg_n_obs (l);
+      gsl_matrix_set (l->cov, 0, 0, intercept_variance);
+      for (i = 0; i < q->size1; i++)
+	{
+	  for (j = 0; j < q->size2; j++)
+	    {
+	      intcpt_coef -= gsl_matrix_get (q, i, j)
+		* linreg_get_indep_variable_mean (l, j);
+	    }
+	  gsl_matrix_set (l->cov, 0, i + 1, intcpt_coef);
+	  gsl_matrix_set (l->cov, i + 1, 0, intcpt_coef);
+	  intcpt_coef = 0.0;
+	}
     }
 
   gsl_matrix_free (q);
@@ -348,6 +416,8 @@ linreg_fit_qr (const gsl_matrix *cov, linreg *l)
   gsl_vector_free (params);
 }
 
+#define REG_LARGE_DATA 1000
+
 /*
   Estimate the model parameters from the covariance matrix. This
   function assumes the covariance entries corresponding to the
@@ -355,99 +425,130 @@ linreg_fit_qr (const gsl_matrix *cov, linreg *l)
   matrix.
 */
 void
-linreg_fit (const gsl_matrix *cov, linreg *l)
+linreg_fit (const gsl_matrix *cov, struct linreg *l)
 {
   assert (l != NULL);
   assert (cov != NULL);
 
   l->sst = gsl_matrix_get (cov, cov->size1 - 1, cov->size2 - 1);
-  if (l->method == LINREG_SWEEP)
+
+  if ((l->n_obs * l->n_obs > l->n_indeps) && (l->n_obs > REG_LARGE_DATA))
     {
-      gsl_matrix *params;
-      params = gsl_matrix_calloc (cov->size1, cov->size2);
+      /*
+	For large data sets, use QR decomposition.
+      */
+      linreg_fit_qr (cov, l);
+    }
+  else
+    {
+      gsl_matrix *params = gsl_matrix_calloc (cov->size1, cov->size2);
       gsl_matrix_memcpy (params, cov);
       reg_sweep (params, l->dependent_column);
       post_sweep_computations (l, params);
       gsl_matrix_free (params);
     }
-  else if (l->method == LINREG_QR)
-    {
-      linreg_fit_qr (cov, l);
-    }
 }
 
-double linreg_mse (const linreg *c)
+double
+linreg_mse (const struct linreg *c)
 {
   assert (c != NULL);
   return (c->sse / c->dfe);
 }
 
-double linreg_intercept (const linreg *c)
+double
+linreg_intercept (const struct linreg *c)
 {
   return c->intercept;
 }
 
 const gsl_matrix *
-linreg_cov (const linreg *c)
+linreg_cov (const struct linreg *c)
 {
   return c->cov;
 }
 
 double
-linreg_coeff (const linreg *c, size_t i)
+linreg_coeff (const struct linreg *c, size_t i)
 {
   return (c->coeff[i]);
 }
 
 const struct variable *
-linreg_indep_var (const linreg *c, size_t i)
+linreg_indep_var (const struct linreg *c, size_t i)
 {
   return (c->indep_vars[i]);
 }
 
+int
+linreg_n_indeps (const struct linreg *c)
+{
+  return c->n_indeps;
+}
+
+
+const struct variable *
+linreg_dep_var (const struct linreg *c)
+{
+  return c->depvar;
+}
+
+
 size_t
-linreg_n_coeffs (const linreg *c)
+linreg_n_coeffs (const struct linreg *c)
 {
   return c->n_coeffs;
 }
 
 double
-linreg_n_obs (const linreg *c)
+linreg_n_obs (const struct linreg *c)
 {
   return c->n_obs;
 }
 
 double
-linreg_sse (const linreg *c)
+linreg_sse (const struct linreg *c)
 {
   return c->sse;
 }
 
 double
-linreg_ssreg (const linreg *c)
+linreg_ssreg (const struct linreg *c)
 {
   return (c->sst - c->sse);
 }
 
-double linreg_sst (const linreg *c)
+double linreg_sst (const struct linreg *c)
 {
   return c->sst;
 }
 
 double
-linreg_dfmodel ( const linreg *c)
+linreg_dfmodel ( const struct linreg *c)
 {
   return c->dfm;
 }
 
+double
+linreg_dferror ( const struct linreg *c)
+{
+  return c->dfe;
+}
+
+double
+linreg_dftotal ( const struct linreg *c)
+{
+  return c->dft;
+}
+
 void
-linreg_set_depvar_mean (linreg *c, double x)
+linreg_set_depvar_mean (struct linreg *c, double x)
 {
   c->depvar_mean = x;
 }
 
 double
-linreg_get_depvar_mean (const linreg *c)
+linreg_get_depvar_mean (const struct linreg *c)
 {
   return c->depvar_mean;
 }

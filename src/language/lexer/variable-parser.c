@@ -428,7 +428,7 @@ parse_DATA_LIST_vars (struct lexer *lexer, const struct dictionary *dict,
   struct stringi_set set;
 
   char *name1 = NULL;
-  char *name2 = NULL;
+
   bool ok = false;
 
   assert ((pv_opts & ~(PV_APPEND | PV_SINGLE
@@ -472,7 +472,8 @@ parse_DATA_LIST_vars (struct lexer *lexer, const struct dictionary *dict,
       lex_get (lexer);
       if (lex_token (lexer) == T_TO)
 	{
-          unsigned long int num1, num2;
+	  char *name2 = NULL;
+	  unsigned long int num1, num2;
           int n_digits1, n_digits2;
           int root_len1, root_len2;
           unsigned long int number;
@@ -522,7 +523,6 @@ parse_DATA_LIST_vars (struct lexer *lexer, const struct dictionary *dict,
           free (name1);
           name1 = NULL;
           free (name2);
-          name2 = NULL;
 	}
       else
 	{
@@ -557,7 +557,6 @@ exit:
       *n_varsp = 0;
 
       free (name1);
-      free (name2);
     }
   return ok;
 }
@@ -608,7 +607,6 @@ parse_mixed_vars (struct lexer *lexer, const struct dictionary *dict,
 
   assert (names != NULL);
   assert (nnames != NULL);
-  assert ((pv_opts & ~PV_APPEND) == 0);
 
   if (!(pv_opts & PV_APPEND))
     {
@@ -622,7 +620,7 @@ parse_mixed_vars (struct lexer *lexer, const struct dictionary *dict,
 	  struct variable **v;
 	  size_t nv;
 
-	  if (!parse_variables (lexer, dict, &v, &nv, PV_NONE))
+	  if (!parse_variables (lexer, dict, &v, &nv, pv_opts))
 	    goto fail;
 	  *names = xnrealloc (*names, *nnames + nv, sizeof **names);
 	  for (i = 0; i < nv; i++)
@@ -630,7 +628,7 @@ parse_mixed_vars (struct lexer *lexer, const struct dictionary *dict,
 	  free (v);
 	  *nnames += nv;
 	}
-      else if (!parse_DATA_LIST_vars (lexer, dict, names, nnames, PV_APPEND))
+      else if (!parse_DATA_LIST_vars (lexer, dict, names, nnames, PV_APPEND | pv_opts))
 	goto fail;
     }
   if (*nnames == 0)

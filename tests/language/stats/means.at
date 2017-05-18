@@ -571,3 +571,25 @@ MEANS TABLES =  outcome
 AT_CHECK([pspp -O format=csv means-bad.sps], [1], [ignore])
 
 AT_CLEANUP
+
+
+
+AT_SETUP([MEANS parser bug])
+
+dnl This bug caused an infinite loop
+AT_DATA([means-bad.sps], [dnl
+DATA LIST notable LIST /a1 a2 a3 a4 a5 a6 a7 a8 a9 a10 fylo *.
+begin data.
+1 2 3 4 5 6 7 8 9 0 11
+end data.
+
+MEANS TABLES = a1 a2 a3 a4 a5 a6 a7 a8 a9 a10a BY fylo.
+])
+
+AT_CHECK([pspp -O format=csv means-bad.sps], [1], [ignore])
+
+AT_CLEANUP
+
+
+
+

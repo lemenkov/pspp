@@ -69,6 +69,7 @@
 #include "psppire-dialog-action-frequencies.h"
 #include "psppire-dialog-action-histogram.h"
 #include "psppire-dialog-action-indep-samps.h"
+#include "psppire-dialog-action-k-independent.h"
 #include "psppire-dialog-action-k-related.h"
 #include "psppire-dialog-action-kmeans.h"
 #include "psppire-dialog-action-logistic.h"
@@ -1543,6 +1544,7 @@ psppire_data_window_finish_init (PsppireDataWindow *de,
   connect_dialog_action (PSPPIRE_TYPE_DIALOG_ACTION_1SKS, de);
   connect_dialog_action (PSPPIRE_TYPE_DIALOG_ACTION_TWO_SAMPLE, de);
   connect_dialog_action (PSPPIRE_TYPE_DIALOG_ACTION_K_RELATED, de);
+  connect_dialog_action (PSPPIRE_TYPE_DIALOG_ACTION_K_INDEPENDENT, de);
 
   {
     GSimpleAction *file_import_action = g_simple_action_new ("file-import", NULL);

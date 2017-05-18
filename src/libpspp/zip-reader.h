@@ -43,7 +43,8 @@ struct zip_member
 
   size_t bytes_unread;       /* Number of bytes left in the member available for reading */
   int ref_cnt;
-  struct string *errs;
+  struct string *errmsgs;    /* A string to hold error messages.
+				This string is NOT owned by this object. */
   void *aux;
 };
 

@@ -1,5 +1,6 @@
 /* PSPP - a program for statistical analysis.
-   Copyright (C) 2005, 2009, 2010, 2011, 2012, 2013, 2014, 2016 Free Software Foundation, Inc.
+   Copyright (C) 2005, 2009, 2010, 2011, 2012, 2013, 2014,
+   2016, 2017 Free Software Foundation, Inc.
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -19,6 +20,7 @@
 #include <float.h>
 #include <stdbool.h>
 
+#include <gsl/gsl_math.h>
 #include <gsl/gsl_cdf.h>
 #include <gsl/gsl_matrix.h>
 
@@ -51,8 +53,6 @@
 
 #include <gl/intprops.h>
 
-#define REG_LARGE_DATA 1000
-
 #define STATS_R      1
 #define STATS_COEFF  2
 #define STATS_ANOVA  4
@@ -79,6 +79,8 @@ struct regression
 
   bool resid;
   bool pred;
+
+  bool origin;
 };
 
 struct regression_workspace
@@ -204,27 +206,38 @@ cmd_regression (struct lexer *lexer, struct dataset *ds)
   regression.resid = false;
 
   regression.ds = ds;
+  regression.origin = false;
 
-  /* Accept an optional, completely pointless "/VARIABLES=" */
-  lex_match (lexer, T_SLASH);
-  if (lex_match_id (lexer, "VARIABLES"))
-    {
-      if (!lex_force_match (lexer, T_EQUALS))
-        goto error;
-    }
-
-  if (!parse_variables_const (lexer, dict,
-                              &regression.vars, &regression.n_vars,
-                              PV_NO_DUPLICATE | PV_NUMERIC))
-    goto error;
-
-
+  bool variables_seen = false;
+  bool method_seen = false;
+  bool dependent_seen = false;
   while (lex_token (lexer) != T_ENDCMD)
     {
       lex_match (lexer, T_SLASH);
 
-      if (lex_match_id (lexer, "DEPENDENT"))
+      if (lex_match_id (lexer, "VARIABLES"))
         {
+	  if (method_seen)
+	    {
+	      msg (SE, _("VARIABLES may not appear after %s"), "METHOD");
+	      goto error;
+	    }
+	  if (dependent_seen)
+	    {
+	      msg (SE, _("VARIABLES may not appear after %s"), "DEPENDENT");
+	      goto error;
+	    }
+	  variables_seen = true;
+	  lex_match (lexer, T_EQUALS);
+
+	  if (!parse_variables_const (lexer, dict,
+				      &regression.vars, &regression.n_vars,
+				      PV_NO_DUPLICATE | PV_NUMERIC))
+	    goto error;
+	}
+      else if (lex_match_id (lexer, "DEPENDENT"))
+        {
+	  dependent_seen = true;
           lex_match (lexer, T_EQUALS);
 
 	  free (regression.dep_vars);
@@ -236,14 +249,31 @@ cmd_regression (struct lexer *lexer, struct dataset *ds)
                                       PV_NO_DUPLICATE | PV_NUMERIC))
             goto error;
         }
+      else if (lex_match_id (lexer, "ORIGIN"))
+        {
+	  regression.origin = true;
+	}
+      else if (lex_match_id (lexer, "NOORIGIN"))
+        {
+	  regression.origin = false;
+	}
       else if (lex_match_id (lexer, "METHOD"))
         {
+	  method_seen = true;
           lex_match (lexer, T_EQUALS);
 
           if (!lex_force_match_id (lexer, "ENTER"))
             {
               goto error;
             }
+
+	  if (! variables_seen)
+	    {
+	      if (!parse_variables_const (lexer, dict,
+					  &regression.vars, &regression.n_vars,
+					  PV_NO_DUPLICATE | PV_NUMERIC))
+		goto error;
+	    }
         }
       else if (lex_match_id (lexer, "STATISTICS"))
         {
@@ -521,7 +551,6 @@ identify_indep_vars (const struct regression *cmd,
   return n_indep_vars;
 }
 
-
 static double
 fill_covariance (gsl_matrix * cov, struct covariance *all_cov,
                  const struct variable **vars,
@@ -597,14 +626,14 @@ fill_covariance (gsl_matrix * cov, struct covariance *all_cov,
 /*
   STATISTICS subcommand output functions.
 */
-static void reg_stats_r (const linreg *,     const struct variable *);
-static void reg_stats_coeff (const linreg *, const gsl_matrix *, const struct variable *, const struct regression *);
-static void reg_stats_anova (const linreg *, const struct variable *);
-static void reg_stats_bcov (const linreg *,  const struct variable *);
+static void reg_stats_r (const struct linreg *,     const struct variable *);
+static void reg_stats_coeff (const struct linreg *, const gsl_matrix *, const struct variable *, const struct regression *);
+static void reg_stats_anova (const struct linreg *, const struct variable *);
+static void reg_stats_bcov (const struct linreg *,  const struct variable *);
 
 
 static void
-subcommand_statistics (const struct regression *cmd, const linreg * c, const gsl_matrix * cm,
+subcommand_statistics (const struct regression *cmd, const struct linreg * c, const gsl_matrix * cm,
                        const struct variable *var)
 {
   if (cmd->stats & STATS_R)
@@ -627,7 +656,7 @@ run_regression (const struct regression *cmd,
                 struct casereader *input)
 {
   size_t i;
-  linreg **models;
+  struct linreg **models;
 
   int k;
   struct ccase *c;
@@ -641,7 +670,7 @@ run_regression (const struct regression *cmd,
   fill_all_vars (all_vars, cmd);
   cov = covariance_1pass_create (n_all_vars, all_vars,
                                  dict_get_weight (dataset_dict (cmd->ds)),
-                                 MV_ANY);
+                                 MV_ANY, cmd->origin == false);
 
   reader = casereader_clone (input);
   reader = casereader_create_filter_missing (reader, all_vars, n_all_vars,
@@ -667,21 +696,12 @@ run_regression (const struct regression *cmd,
       gsl_matrix *this_cm = gsl_matrix_alloc (n_indep + 1, n_indep + 1);
       double n_data = fill_covariance (this_cm, cov, vars, n_indep,
                                 dep_var, all_vars, n_all_vars, means);
-      models[k] = linreg_alloc (dep_var, vars,  n_data, n_indep);
-      models[k]->depvar = dep_var;
+      models[k] = linreg_alloc (dep_var, vars,  n_data, n_indep, cmd->origin);
       for (i = 0; i < n_indep; i++)
         {
           linreg_set_indep_variable_mean (models[k], i, means[i]);
         }
       linreg_set_depvar_mean (models[k], means[i]);
-      /*
-         For large data sets, use QR decomposition.
-       */
-      if (n_data > sqrt (n_indep) && n_data > REG_LARGE_DATA)
-        {
-          models[k]->method = LINREG_QR;
-        }
-
       if (n_data > 0)
         {
           /*
@@ -730,7 +750,7 @@ run_regression (const struct regression *cmd,
 
               if (cmd->resid)
                 {
-                  double obs = case_data (c, models[k]->depvar)->f;
+                  double obs = case_data (c, linreg_dep_var (models[k]))->f;
                   double res = linreg_residual (models[k], obs,  vals, n_indep);
                   case_data_rw_idx (outc, k * ws->extras + ws->res_idx)->f = res;
                 }
@@ -760,7 +780,7 @@ run_regression (const struct regression *cmd,
 
 
 static void
-reg_stats_r (const linreg * c, const struct variable *var)
+reg_stats_r (const struct linreg * c, const struct variable *var)
 {
   struct tab_table *t;
   int n_rows = 2;
@@ -797,14 +817,13 @@ reg_stats_r (const linreg * c, const struct variable *var)
   Table showing estimated regression coefficients.
 */
 static void
-reg_stats_coeff (const linreg * c, const gsl_matrix *cov, const struct variable *var, const struct regression *cmd)
+reg_stats_coeff (const struct linreg * c, const gsl_matrix *cov, const struct variable *var, const struct regression *cmd)
 {
   size_t j;
   int n_cols = 7;
   const int heading_rows = 2;
   int n_rows;
-  int this_row;
-  double t_stat;
+  int this_row = heading_rows;
   double pval;
   double std_err;
   double beta;
@@ -839,8 +858,7 @@ reg_stats_coeff (const linreg * c, const gsl_matrix *cov, const struct variable 
   tab_text (t, 4, 1, TAB_CENTER | TAT_TITLE, _("Beta"));
   tab_text (t, 5, 1, TAB_CENTER | TAT_TITLE, _("t"));
   tab_text (t, 6, 1, TAB_CENTER | TAT_TITLE, _("Sig."));
-  tab_text (t, 1, heading_rows, TAB_LEFT | TAT_TITLE, _("(Constant)"));
-  tab_double (t, 2, heading_rows, 0, linreg_intercept (c), NULL, RC_OTHER);
+
   std_err = sqrt (gsl_matrix_get (linreg_cov (c), 0, 0));
 
   if (cmd->stats & STATS_CI)
@@ -855,20 +873,27 @@ reg_stats_coeff (const linreg * c, const gsl_matrix *cov, const struct variable 
       tab_text (t, 7, 1, TAB_CENTER | TAT_TITLE, _("Lower Bound"));
       tab_text (t, 8, 1, TAB_CENTER | TAT_TITLE, _("Upper Bound"));
     }
-  tab_double (t, 3, heading_rows, 0, std_err, NULL, RC_OTHER);
-  tab_double (t, 4, heading_rows, 0, 0.0, NULL, RC_OTHER);
-  t_stat = linreg_intercept (c) / std_err;
-  tab_double (t, 5, heading_rows, 0, t_stat, NULL, RC_OTHER);
-  pval =
-    2 * gsl_cdf_tdist_Q (fabs (t_stat),
-                         (double) (linreg_n_obs (c) - linreg_n_coeffs (c)));
-  tab_double (t, 6, heading_rows, 0, pval, NULL, RC_PVALUE);
 
-  for (j = 0; j < linreg_n_coeffs (c); j++)
+  if (!cmd->origin)
+    {
+      tab_text (t, 1, this_row, TAB_LEFT | TAT_TITLE, _("(Constant)"));
+      tab_double (t, 2, this_row, 0, linreg_intercept (c), NULL, RC_OTHER);
+      tab_double (t, 3, this_row, 0, std_err, NULL, RC_OTHER);
+      tab_double (t, 4, this_row, 0, 0.0, NULL, RC_OTHER);
+      double t_stat = linreg_intercept (c) / std_err;
+      tab_double (t, 5, this_row, 0, t_stat, NULL, RC_OTHER);
+
+      double pval =
+	2 * gsl_cdf_tdist_Q (fabs (t_stat),
+			     (double) (linreg_n_obs (c) - linreg_n_coeffs (c)));
+      tab_double (t, 6, this_row, 0, pval, NULL, RC_PVALUE);
+      this_row++;
+    }
+
+  for (j = 0; j < linreg_n_coeffs (c); j++, this_row++)
     {
       struct string tstr;
       ds_init_empty (&tstr);
-      this_row = j + heading_rows + 1;
 
       v = linreg_indep_var (c, j);
       label = var_to_string (v);
@@ -896,7 +921,7 @@ reg_stats_coeff (const linreg * c, const gsl_matrix *cov, const struct variable 
       /*
          Test statistic for H0: coefficient is 0.
        */
-      t_stat = linreg_coeff (c, j) / std_err;
+      double t_stat = linreg_coeff (c, j) / std_err;
       tab_double (t, 5, this_row, 0, t_stat, NULL, RC_OTHER);
       /*
          P values for the test statistic above.
@@ -922,14 +947,15 @@ reg_stats_coeff (const linreg * c, const gsl_matrix *cov, const struct variable 
   Display the ANOVA table.
 */
 static void
-reg_stats_anova (const linreg * c, const struct variable *var)
+reg_stats_anova (const struct linreg * c, const struct variable *var)
 {
   int n_cols = 7;
   int n_rows = 4;
   const double msm = linreg_ssreg (c) / linreg_dfmodel (c);
   const double mse = linreg_mse (c);
   const double F = msm / mse;
-  const double pval = gsl_cdf_fdist_Q (F, c->dfm, c->dfe);
+  const double pval = gsl_cdf_fdist_Q (F, linreg_dfmodel (c),
+				       linreg_dferror (c));
 
   struct tab_table *t;
 
@@ -960,9 +986,9 @@ reg_stats_anova (const linreg * c, const struct variable *var)
 
 
   /* Degrees of freedom */
-  tab_text_format (t, 3, 1, TAB_RIGHT, "%.*g", DBL_DIG + 1, c->dfm);
-  tab_text_format (t, 3, 2, TAB_RIGHT, "%.*g", DBL_DIG + 1, c->dfe);
-  tab_text_format (t, 3, 3, TAB_RIGHT, "%.*g", DBL_DIG + 1, c->dft);
+  tab_text_format (t, 3, 1, TAB_RIGHT, "%.*g", DBL_DIG + 1, linreg_dfmodel (c));
+  tab_text_format (t, 3, 2, TAB_RIGHT, "%.*g", DBL_DIG + 1, linreg_dferror (c));
+  tab_text_format (t, 3, 3, TAB_RIGHT, "%.*g", DBL_DIG + 1, linreg_dftotal (c));
 
   /* Mean Squares */
   tab_double (t, 4, 1, TAB_RIGHT, msm, NULL, RC_OTHER);
@@ -978,7 +1004,7 @@ reg_stats_anova (const linreg * c, const struct variable *var)
 
 
 static void
-reg_stats_bcov (const linreg * c, const struct variable *var)
+reg_stats_bcov (const struct linreg * c, const struct variable *var)
 {
   int n_cols;
   int n_rows;
@@ -990,8 +1016,8 @@ reg_stats_bcov (const linreg * c, const struct variable *var)
   struct tab_table *t;
 
   assert (c != NULL);
-  n_cols = c->n_indeps + 1 + 2;
-  n_rows = 2 * (c->n_indeps + 1);
+  n_cols = linreg_n_indeps (c) + 1 + 2;
+  n_rows = 2 * (linreg_n_indeps (c) + 1);
   t = tab_create (n_cols, n_rows);
   tab_headers (t, 2, 0, 1, 0);
   tab_box (t, TAL_2, TAL_2, -1, TAL_1, 0, 0, n_cols - 1, n_rows - 1);
@@ -1011,7 +1037,7 @@ reg_stats_bcov (const linreg * c, const struct variable *var)
           col = (i <= k) ? k : i;
           row = (i <= k) ? i : k;
           tab_double (t, k + 2, i, TAB_CENTER,
-                      gsl_matrix_get (c->cov, row, col), NULL, RC_OTHER);
+                      gsl_matrix_get (linreg_cov (c), row, col), NULL, RC_OTHER);
         }
     }
   tab_title (t, _("Coefficient Correlations (%s)"), var_to_string (var));

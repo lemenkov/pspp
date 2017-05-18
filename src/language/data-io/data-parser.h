@@ -52,6 +52,9 @@ void data_parser_set_span (struct data_parser *, bool may_cases_span_records);
 
 void data_parser_set_empty_line_has_field (struct data_parser *,
                                            bool empty_line_has_field);
+void data_parser_set_warn_missing_fields (struct data_parser *parser,
+					  bool warn_missing_fields);
+
 void data_parser_set_quotes (struct data_parser *, struct substring);
 void data_parser_set_quote_escape (struct data_parser *, bool escape);
 void data_parser_set_soft_delimiters (struct data_parser *, struct substring);
@@ -76,7 +79,13 @@ bool data_parser_parse (struct data_parser *,
 /* Uses for a configured parser. */
 void data_parser_output_description (struct data_parser *,
                                      const struct file_handle *);
+struct casereader;
 void data_parser_make_active_file (struct data_parser *, struct dataset *,
-                                   struct dfm_reader *, struct dictionary *);
+                                   struct dfm_reader *, struct dictionary *,
+				   struct casereader* (*func)(struct casereader *,
+							      const struct dictionary *,
+							      void *),
+				   void *ud);
+
 
 #endif /* language/data-io/data-parser.h */
