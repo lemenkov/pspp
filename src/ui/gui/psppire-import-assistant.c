@@ -32,6 +32,7 @@
 #include "data/ods-reader.h"
 #include "data/spreadsheet-reader.h"
 #include "data/value-labels.h"
+#include "data/casereader-provider.h"
 
 #include "gl/intprops.h"
 
@@ -1796,6 +1797,65 @@ on_variable_change (PsppireDict *dict, int dict_idx,
 #endif
 
 
+static struct casereader_random_class my_casereader_class;
+
+static struct ccase *
+my_read (struct casereader *reader, void *aux, casenumber idx)
+{
+  PsppireImportAssistant *ia = PSPPIRE_IMPORT_ASSISTANT (aux);
+  GtkTreeModel *tm = GTK_TREE_MODEL (ia->delimiters_model);
+
+  GtkTreePath *tp = gtk_tree_path_new_from_indices (idx, -1);
+
+  const struct caseproto *proto = casereader_get_proto (reader);
+
+  GtkTreeIter iter;
+  struct ccase *c = NULL;
+  if (gtk_tree_model_get_iter (tm, &iter, tp))
+    {
+      c = case_create (proto);
+      int i;
+      for (i = 0 ; i < caseproto_get_n_widths (proto); ++i)
+	{
+	  GValue value = {0};
+	  gtk_tree_model_get_value (tm, &iter, i + 1, &value);
+
+	  const struct variable *var = dict_get_var (ia->dict, i);
+
+	  const gchar *ss = g_value_get_string (&value);
+
+	  union value *v = case_data_rw (c, var);
+	  char *xx = data_in (ss_cstr (ss),
+			      "UTF-8",
+			      var_get_write_format (var)->type,
+			      v, var_get_width (var), "UTF-8");
+
+	  /* if (xx) */
+	  /*   g_print ("%s:%d Err %s\n", __FILE__, __LINE__, xx); */
+	  free (xx);
+	  g_value_unset (&value);
+	}
+    }
+
+  gtk_tree_path_free (tp);
+
+  return c;
+}
+
+static void
+my_destroy (struct casereader *reader, void *aux)
+{
+  PsppireImportAssistant *ia = PSPPIRE_IMPORT_ASSISTANT (aux);
+  g_print ("%s:%d\n", __FILE__, __LINE__);
+}
+
+static void
+my_advance (struct casereader *reader, void *aux, casenumber cnt)
+{
+  g_print ("%s:%d\n", __FILE__, __LINE__);
+}
+
+
 /* Called just before the formats page of the assistant is
    displayed. */
 static void
@@ -1804,7 +1864,27 @@ prepare_formats_page (PsppireImportAssistant *ia)
   PsppireDict *dict = psppire_dict_new_from_dict (ia->dict);
   g_object_set (ia->var_sheet, "data-model", dict, NULL);
 
+  my_casereader_class.read = my_read;
+  my_casereader_class.destroy = my_destroy;
+  my_casereader_class.advance = my_advance;
+
+  struct caseproto *proto = caseproto_create ();
+
+  int i;
+  for (i = 0 ; i < dict_get_var_cnt (ia->dict); ++i)
+    {
+      const struct variable *var = dict_get_var (ia->dict, i);
+      proto = caseproto_add_width (proto, var_get_width (var));
+    }
+
+  gint n_rows = gtk_tree_model_iter_n_children (ia->delimiters_model, NULL);
+
+  struct casereader *reader =
+    casereader_create_random (proto, n_rows, &my_casereader_class,  ia);
+
   PsppireDataStore *store = psppire_data_store_new (dict);
+  psppire_data_store_set_reader (store, reader);
+
   g_object_set (ia->data_sheet, "data-model", store, NULL);
 
   gtk_widget_show (ia->paste_button);

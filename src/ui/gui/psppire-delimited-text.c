@@ -260,9 +260,13 @@ static gint
 __tree_model_iter_n_children (GtkTreeModel *tree_model,
 			      GtkTreeIter *iter)
 {
-  g_print ("%s:%d %s\n", __FILE__, __LINE__, __FUNCTION__);
+  PsppireDelimitedText *file  = PSPPIRE_DELIMITED_TEXT (tree_model);
+  //  g_print ("%s:%d %s\n", __FILE__, __LINE__, __FUNCTION__);
   g_assert (iter == NULL);
-  return 0;
+
+  gint children = gtk_tree_model_iter_n_children (file->child, NULL);
+
+  return children - file->first_line;
 }
 
 static GtkTreeModelFlags
