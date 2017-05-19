@@ -103,10 +103,8 @@ struct _PsppireImportAssistant
 
 
 /* START Page where the user verifies and adjusts input formats. */
-  GtkWidget *data_tree_view;
-  PsppireDict *psppire_dict;
-  struct variable **modified_vars;
-  size_t modified_var_cnt;
+   struct variable **modified_vars;
+   size_t modified_var_cnt;
 /* END Page where the user verifies and adjusts input formats. */
 
 

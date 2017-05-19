@@ -1958,7 +1958,6 @@ formats_page_create (PsppireImportAssistant *ia)
   add_page_to_assistant (ia, w,
 			 GTK_ASSISTANT_PAGE_CONFIRM, _("Adjust Variable Formats"));
 
-  ia->data_tree_view = NULL;
   ia->modified_vars = NULL;
   ia->modified_var_cnt = 0;
 }
