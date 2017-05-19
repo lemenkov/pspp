@@ -1883,9 +1883,9 @@ foo (struct dictionary *dict, void *aux)
 
 
   PsppireDataStore *store = NULL;
-    
+
   g_object_get (ia->data_sheet, "data-model", &store, NULL);
-  
+
   psppire_data_store_set_reader (store, reader);
 }
 
@@ -1921,6 +1921,15 @@ prepare_formats_page (PsppireImportAssistant *ia)
   psppire_data_store_set_reader (store, reader);
 
   g_object_set (ia->data_sheet, "data-model", store, NULL);
+
+
+  gint pmax;
+  g_object_get (get_widget_assert (ia->builder, "vpaned1"),
+		"max-position", &pmax, NULL);
+
+
+  g_object_set (get_widget_assert (ia->builder, "vpaned1"),
+		"position", pmax / 2, NULL);
 
   gtk_widget_show (ia->paste_button);
 }
