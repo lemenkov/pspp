@@ -1298,7 +1298,7 @@ parse_field (PsppireImportAssistant *ia,
   bool ok;
 
   struct substring field = ia->columns[column].contents[row];
-  struct variable *var = dict_get_var (ia->dict, column);
+  const struct variable *var = dict_get_var (ia->dict, column);
   union value val;
 
   value_init (&val, var_get_width (var));
