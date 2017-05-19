@@ -1194,7 +1194,11 @@ GtkWidget *
 psppire_import_assistant_new (GtkWindow *toplevel)
 {
   return GTK_WIDGET (g_object_new (PSPPIRE_TYPE_IMPORT_ASSISTANT,
-				   "transient-for", toplevel,
+				   /* Some window managers (notably ratpoison)
+				      ignore the maximise command when a window is
+				      transient.  This causes problems for this
+				      window. */
+				   /* "transient-for", toplevel, */
 				   NULL));
 }
 
