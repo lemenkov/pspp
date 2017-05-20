@@ -89,13 +89,14 @@ struct _PsppireImportAssistant
 /* START Page where the user chooses field separators. */
 
   /* How to break lines into columns. */
-  struct string separators;   /* Field separators. */
+  //  struct string separators;   /* Field separators. */
   struct string quotes;       /* Quote characters. */
 
   GtkWidget *custom_cb;
   GtkWidget *custom_entry;
   GtkWidget *quote_cb;
   GtkWidget *quote_combo;
+
   GtkEntry *quote_entry;
   GtkWidget *fields_tree_view;
 

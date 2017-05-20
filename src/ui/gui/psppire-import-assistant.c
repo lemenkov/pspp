@@ -141,7 +141,6 @@ psppire_import_assistant_finalize (GObject *object)
   if (ia->spreadsheet)
     spreadsheet_unref (ia->spreadsheet);
 
-  ds_destroy (&ia->separators);
   ds_destroy (&ia->quotes);
 
   g_object_unref (ia->builder);
@@ -195,12 +194,15 @@ revise_fields_preview (PsppireImportAssistant *ia)
 {
   push_watch_cursor (ia);
 
-  get_separators (ia);
+  //  get_separators (ia);
   //  split_fields (ia);
   choose_column_names (ia);
 
   pop_watch_cursor (ia);
 }
+
+
+#if SHEET_MERGE
 
 /* Chooses the most common character among those in TARGETS,
    based on the frequency data in HISTOGRAM, and stores it in
@@ -264,6 +266,7 @@ choose_likely_separators (PsppireImportAssistant *ia)
   find_commonest_chars (histogram, ",;:/|!\t-", ",", &ia->separators);
 }
 
+#endif
 
 static void set_separators (PsppireImportAssistant *ia);
 
@@ -347,8 +350,8 @@ prepare_separators_page (PsppireImportAssistant *ia, GtkWidget *page)
   repopulate_delimiter_columns (ia);
 
   revise_fields_preview (ia);
-  choose_likely_separators (ia);
-  set_separators (ia);
+  //  choose_likely_separators (ia);
+  //  set_separators (ia);
 }
 
 struct separator
@@ -373,6 +376,7 @@ static const struct separator separators[] =
 #define SEPARATOR_CNT (sizeof separators / sizeof *separators)
 
 
+#if SHEET_MERGE
 
 /* Sets the widgets to match IA's separators substructure. */
 static void
@@ -428,6 +432,7 @@ set_separators (PsppireImportAssistant *ia)
   gtk_widget_set_sensitive (ia->quote_combo, any_quotes);
 }
 
+#endif
 
 /* Resets IA's intro page to its initial state. */
 static void
@@ -1466,7 +1471,7 @@ set_quote_list (GtkComboBox *cb)
 }
 
 
-
+#if SHEET_MERGE
 
 /* Sets IA's separators substructure to match the widgets. */
 static void
@@ -1499,7 +1504,7 @@ get_separators (PsppireImportAssistant *ia)
 
 
 
-#if SHEET_MERGE
+
 
 /* Breaks the file data in IA into columns based on the
    separators set in IA's separators substructure. */
@@ -1991,24 +1996,27 @@ static void
 separators_append_syntax (const PsppireImportAssistant *ia, struct string *s)
 {
   int i;
+
   ds_put_cstr (s, "  /DELIMITERS=\"");
-  if (ds_find_byte (&ia->separators, '\t') != SIZE_MAX)
+
+  if (gtk_toggle_button_get_active (get_widget_assert (ia->builder, "tab")))
     ds_put_cstr (s, "\\t");
-  if (ds_find_byte (&ia->separators, '\\') != SIZE_MAX)
-    ds_put_cstr (s, "\\\\");
-  for (i = 0; i < ds_length (&ia->separators); i++)
+  for (i = 0; i < SEPARATOR_CNT; i++)
     {
-      char c = ds_at (&ia->separators, i);
-      if (c == '"')
-	ds_put_cstr (s, "\"\"");
-      else if (c != '\t' && c != '\\')
-	ds_put_byte (s, c);
+      const struct separator *seps = &separators[i];
+      GtkWidget *button = get_widget_assert (ia->builder, seps->name);
+      if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (button)))
+	{
+	  if (seps->c == '\t')
+	    continue;
+
+	  ds_put_byte (s, seps->c);
+	}
     }
   ds_put_cstr (s, "\"\n");
   if (!ds_is_empty (&ia->quotes))
     syntax_gen_pspp (s, "  /QUALIFIER=%sq\n", ds_cstr (&ia->quotes));
 }
-
 
 static void
 formats_append_syntax (const PsppireImportAssistant *ia, struct string *s)
