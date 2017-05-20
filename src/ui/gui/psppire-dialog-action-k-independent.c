@@ -143,7 +143,8 @@ run_define_groups_dialog (PsppireDialogActionKIndependent *kid)
     psppire_value_entry_set_value (PSPPIRE_VALUE_ENTRY (kid->upper_limit_entry),
 				   &kid->upper_limit_value, 0);
 
-  if (PSPPIRE_RESPONSE_CONTINUE == psppire_dialog_run (kid->subdialog))
+  if (PSPPIRE_RESPONSE_CONTINUE ==
+      psppire_dialog_run (PSPPIRE_DIALOG (kid->subdialog)))
     {
       psppire_value_entry_get_value (PSPPIRE_VALUE_ENTRY (kid->lower_limit_entry),
 				     &kid->lower_limit_value, 0);
@@ -163,8 +164,8 @@ set_value_entry_variable (PsppireDialogActionKIndependent *kid, GtkEntry *entry)
   const struct variable *v = da->dict ?
     psppire_dict_lookup_var (da->dict, text) : NULL;
 
-  psppire_value_entry_set_variable (kid->lower_limit_entry, v);
-  psppire_value_entry_set_variable (kid->upper_limit_entry, v);
+  psppire_value_entry_set_variable (PSPPIRE_VALUE_ENTRY (kid->lower_limit_entry), v);
+  psppire_value_entry_set_variable (PSPPIRE_VALUE_ENTRY (kid->upper_limit_entry), v);
 }
 
 
