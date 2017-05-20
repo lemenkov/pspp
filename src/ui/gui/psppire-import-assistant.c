@@ -38,6 +38,8 @@
 #include "libpspp/i18n.h"
 #include "libpspp/line-reader.h"
 #include "libpspp/message.h"
+#include "libpspp/hmap.h"
+#include "libpspp/hash-functions.h"
 #include "libpspp/str.h"
 
 #include "builder-wrapper.h"
@@ -65,7 +67,6 @@ enum { MAX_LINE_LEN = 16384 }; /* Max length of an acceptable line. */
 
 
 /* Sets IA's separators substructure to match the widgets. */
-static void get_separators (PsppireImportAssistant *ia);
 static void split_fields (PsppireImportAssistant *ia);
 
 /* Chooses a name for each column on the separators page */
@@ -194,7 +195,6 @@ revise_fields_preview (PsppireImportAssistant *ia)
 {
   push_watch_cursor (ia);
 
-  //  get_separators (ia);
   //  split_fields (ia);
   choose_column_names (ia);
 
@@ -237,39 +237,125 @@ find_commonest_chars (unsigned long int histogram[UCHAR_MAX + 1],
     ds_assign_cstr (result, def);
 }
 
+#endif
+
+struct separator
+{
+  const char *name;           /* Name (for use with get_widget_assert). */
+  gunichar c;                 /* Separator character. */
+};
+
+/* All the separators in the dialog box. */
+static const struct separator separators[] =
+  {
+    {"space", ' '},
+    {"tab", '\t'},
+    {"bang", '!'},
+    {"colon", ':'},
+    {"comma", ','},
+    {"hyphen", '-'},
+    {"pipe", '|'},
+    {"semicolon", ';'},
+    {"slash", '/'},
+  };
+#define SEPARATOR_CNT (sizeof separators / sizeof *separators)
+
+struct separator_count_node
+{
+  struct hmap_node node;
+  int occurance; /* The number of times the separator occurs in a line */
+  int quantity;  /* The number of lines with this occurance */
+};
+
+
 /* Picks the most likely separator and quote characters based on
    IA's file data. */
 static void
 choose_likely_separators (PsppireImportAssistant *ia)
 {
-  unsigned long int histogram[UCHAR_MAX + 1] = { 0 };
+  gint first_line = 0;
+  g_object_get (ia->delimiters_model, "first-line", &first_line, NULL);
 
-  /* Construct a histogram of all the characters used in the
-     file. */
   gboolean valid;
   GtkTreeIter iter;
-  for (valid = gtk_tree_model_get_iter_first (GTK_TREE_MODEL (ia->text_file), &iter);
+  int i = 0;
+
+  int j;
+
+  struct hmap count_map[SEPARATOR_CNT];
+  for (j = 0; j < SEPARATOR_CNT; ++j)
+    hmap_init (count_map + j);
+
+  GtkTreePath *p = gtk_tree_path_new_from_indices (first_line, -1);
+
+  for (valid = gtk_tree_model_get_iter (GTK_TREE_MODEL (ia->text_file), &iter, p);
        valid;
        valid = gtk_tree_model_iter_next (GTK_TREE_MODEL (ia->text_file), &iter))
     {
-      gchar *xxx = 0;
-      gtk_tree_model_get (GTK_TREE_MODEL (ia->text_file), &iter, 1, &xxx, -1);
-      struct substring line = ss_cstr (xxx);
-      size_t length = ss_length (line);
-      size_t i;
-      for (i = 0; i < length; i++)
-        histogram[(unsigned char) line.string[i]]++;
-      g_free (xxx);
+      int j;
+
+      gchar *line_text = NULL;
+      gtk_tree_model_get (GTK_TREE_MODEL (ia->text_file), &iter, 1, &line_text, -1);
+
+      gint *counts = xzalloc (sizeof *counts * SEPARATOR_CNT);
+      for (j = 0; j < strlen (line_text); ++j)
+	{
+	  int s;
+	  for (s = 0; s < SEPARATOR_CNT; ++s)
+	    {
+	      // FIXME do this in UTF8 encoding
+	      if (line_text[j] == separators[s].c)
+		counts[s]++;
+	    }
+	}
+
+      for (j = 0; j < SEPARATOR_CNT; ++j)
+	{
+	  if (counts[j] > 0)
+	    {
+	      struct separator_count_node *cn = NULL;
+	      unsigned int hash = hash_int (counts[j], 0);
+	      HMAP_FOR_EACH_WITH_HASH (cn, struct separator_count_node, node, hash, &count_map[j])
+		{
+		  if (cn->occurance == counts[j])
+		    break;
+		}
+
+	      if (cn == NULL)
+		{
+		  struct separator_count_node *new_cn = xzalloc (sizeof *new_cn);
+		  new_cn->occurance = counts[j];
+		  new_cn->quantity = 1;
+		  hmap_insert (&count_map[j], &new_cn->node, hash);
+		}
+	      else
+		cn->quantity++;
+	    }
+	}
+
+      free (line_text);
+      free (counts);
+    }
+  gtk_tree_path_free (p);
+
+  int most_frequent = -1;
+  int largest = 0;
+  for (j = 0; j < SEPARATOR_CNT; ++j)
+    {
+      struct separator_count_node *cn;
+      HMAP_FOR_EACH (cn, struct separator_count_node, node, &count_map[j])
+	{
+	  if (largest < cn->quantity)
+	    {
+	      largest = cn->quantity;
+	      most_frequent = j;
+	    }
+	}
+      hmap_destroy (&count_map[j]);
     }
 
-  find_commonest_chars (histogram, "\"'", "", &ia->quotes);
-  find_commonest_chars (histogram, ",;:/|!\t-", ",", &ia->separators);
+  gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (get_widget_assert (ia->builder, separators[most_frequent].name)), TRUE);
 }
-
-#endif
-
-static void set_separators (PsppireImportAssistant *ia);
-
 
 static void
 repopulate_delimiter_columns (PsppireImportAssistant *ia)
@@ -350,89 +436,8 @@ prepare_separators_page (PsppireImportAssistant *ia, GtkWidget *page)
   repopulate_delimiter_columns (ia);
 
   revise_fields_preview (ia);
-  //  choose_likely_separators (ia);
-  //  set_separators (ia);
+  choose_likely_separators (ia);
 }
-
-struct separator
-{
-  const char *name;           /* Name (for use with get_widget_assert). */
-  gunichar c;                 /* Separator character. */
-};
-
-/* All the separators in the dialog box. */
-static const struct separator separators[] =
-  {
-    {"space", ' '},
-    {"tab", '\t'},
-    {"bang", '!'},
-    {"colon", ':'},
-    {"comma", ','},
-    {"hyphen", '-'},
-    {"pipe", '|'},
-    {"semicolon", ';'},
-    {"slash", '/'},
-  };
-#define SEPARATOR_CNT (sizeof separators / sizeof *separators)
-
-
-#if SHEET_MERGE
-
-/* Sets the widgets to match IA's separators substructure. */
-static void
-set_separators (PsppireImportAssistant *ia)
-{
-  unsigned int seps;
-  struct string custom;
-  bool any_custom;
-  bool any_quotes;
-  size_t i;
-
-  ds_init_empty (&custom);
-  seps = 0;
-  for (i = 0; i < ds_length (&ia->separators); i++)
-    {
-      unsigned char c = ds_at (&ia->separators, i);
-      int j;
-
-      for (j = 0; j < SEPARATOR_CNT; j++)
-        {
-          const struct separator *s = &separators[j];
-          if (s->c == c)
-            {
-              seps += 1u << j;
-              goto next;
-            }
-        }
-
-      ds_put_byte (&custom, c);
-    next:;
-    }
-
-  for (i = 0; i < SEPARATOR_CNT; i++)
-    {
-      const struct separator *s = &separators[i];
-      GtkWidget *button = get_widget_assert (ia->builder, s->name);
-      gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (button),
-                                    (seps & (1u << i)) != 0);
-    }
-  any_custom = !ds_is_empty (&custom);
-  gtk_entry_set_text (GTK_ENTRY (ia->custom_entry), ds_cstr (&custom));
-  gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (ia->custom_cb),
-                                any_custom);
-  gtk_widget_set_sensitive (ia->custom_entry, any_custom);
-  ds_destroy (&custom);
-
-  any_quotes = !ds_is_empty (&ia->quotes);
-
-  gtk_entry_set_text (ia->quote_entry,
-                      any_quotes ? ds_cstr (&ia->quotes) : "\"");
-  gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (ia->quote_cb),
-                                any_quotes);
-  gtk_widget_set_sensitive (ia->quote_combo, any_quotes);
-}
-
-#endif
 
 /* Resets IA's intro page to its initial state. */
 static void
@@ -600,19 +605,6 @@ get_monospace_width (GtkWidget *treeview, GtkCellRenderer *renderer,
   ds_destroy (&s);
 
   return width;
-}
-
-static void
-set_model_on_treeview (PsppireImportAssistant *ia, GtkWidget *tree_view, size_t first_line)
-{
-  GtkTreeModel *model = GTK_TREE_MODEL (psppire_empty_list_store_new (ia->line_cnt - first_line));
-
-  g_object_set_data (G_OBJECT (model), "lines", &ia->lines + first_line);
-  g_object_set_data (G_OBJECT (model), "first-line", GINT_TO_POINTER (first_line));
-
-  pspp_sheet_view_set_model (PSPP_SHEET_VIEW (tree_view), model);
-
-  g_object_unref (model);
 }
 
 static GtkWidget *
@@ -1450,11 +1442,11 @@ set_quote_list (GtkComboBox *cb)
   GtkListStore *list =  gtk_list_store_new (1, G_TYPE_STRING);
   GtkTreeIter iter;
   gint i;
-  const gchar *seperator[3] = {"'\"", "\'", "\""};
+  const gchar *separator[3] = {"'\"", "\'", "\""};
 
   for (i = 0; i < 3; i++)
     {
-      const gchar *s = seperator[i];
+      const gchar *s = separator[i];
 
       /* Add a new row to the model */
       gtk_list_store_append (list, &iter);
@@ -1530,10 +1522,10 @@ split_fields (PsppireImportAssistant *ia)
   while (gtk_tree_model_iter_next (GTK_TREE_MODEL (ia->text_file), &iter))
     {
       row++;
-      gchar *xxx;
-      gtk_tree_model_get (GTK_TREE_MODEL (ia->text_file), &iter, 1, &xxx, -1);
-      struct substring text = ss_cstr (xxx);
-      g_free (xxx);
+      gchar *line_text;
+      gtk_tree_model_get (GTK_TREE_MODEL (ia->text_file), &iter, 1, &line_text, -1);
+      struct substring text = ss_cstr (line_text);
+      g_free (line_text);
       size_t column_idx;
 
       for (column_idx = 0; ;column_idx++)
@@ -1842,7 +1834,6 @@ my_advance (struct casereader *reader, void *aux, casenumber cnt)
   g_print ("%s:%d\n", __FILE__, __LINE__);
 }
 
-
 static void
 foo (struct dictionary *dict, void *aux)
 {
@@ -1999,7 +1990,7 @@ separators_append_syntax (const PsppireImportAssistant *ia, struct string *s)
 
   ds_put_cstr (s, "  /DELIMITERS=\"");
 
-  if (gtk_toggle_button_get_active (get_widget_assert (ia->builder, "tab")))
+  if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (get_widget_assert (ia->builder, "tab"))))
     ds_put_cstr (s, "\\t");
   for (i = 0; i < SEPARATOR_CNT; i++)
     {
