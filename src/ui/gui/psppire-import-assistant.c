@@ -1902,17 +1902,52 @@ prepare_formats_page (PsppireImportAssistant *ia)
   my_casereader_class.advance = my_advance;
 
   struct caseproto *proto = caseproto_create ();
-
-  dict_set_change_callback (ia->dict, foo, ia);
-
   int i;
+
+  struct fmt_guesser **fg = xcalloc (sizeof *fg, dict_get_var_cnt (ia->dict));
   for (i = 0 ; i < dict_get_var_cnt (ia->dict); ++i)
     {
-      const struct variable *var = dict_get_var (ia->dict, i);
-      proto = caseproto_add_width (proto, var_get_width (var));
+      fg[i] = fmt_guesser_create ();
     }
 
   gint n_rows = gtk_tree_model_iter_n_children (ia->delimiters_model, NULL);
+
+  GtkTreeIter iter;
+  gboolean ok;
+  for (ok = gtk_tree_model_get_iter_first (ia->delimiters_model, &iter);
+       ok;
+       ok = gtk_tree_model_iter_next (ia->delimiters_model, &iter))
+    {
+      for (i = 0 ; i < dict_get_var_cnt (ia->dict); ++i)
+	{
+	  gchar *s = NULL;
+	  gtk_tree_model_get (ia->delimiters_model, &iter, i+1, &s, -1);
+	  fmt_guesser_add (fg[i], ss_cstr (s));
+	  free (s);
+	}
+    }
+
+  for (i = 0 ; i < dict_get_var_cnt (ia->dict); ++i)
+    {
+      struct fmt_spec fs;
+      fmt_guesser_guess (fg[i], &fs);
+
+      fmt_fix (&fs, FMT_FOR_INPUT);
+
+      struct variable *var = dict_get_var (ia->dict, i);
+
+      int width = fmt_var_width (&fs);
+
+      var_set_width_and_formats (var, width,
+				 &fs, &fs);
+
+      proto = caseproto_add_width (proto, width);
+      fmt_guesser_destroy (fg[i]);
+    }
+
+  free (fg);
+
+  //  dict_set_change_callback (ia->dict, foo, ia);
 
   struct casereader *reader =
     casereader_create_random (proto, n_rows, &my_casereader_class,  ia);
