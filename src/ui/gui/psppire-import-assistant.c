@@ -14,7 +14,6 @@
    You should have received a copy of the GNU General Public License
    along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 
-
 #include <config.h>
 
 #include <errno.h>
@@ -133,8 +132,6 @@ psppire_import_assistant_get_property (GObject    *object,
 static GObjectClass * parent_class = NULL;
 
 
-static void destroy_columns (PsppireImportAssistant *ia);
-
 static void
 psppire_import_assistant_finalize (GObject *object)
 {
@@ -143,8 +140,6 @@ psppire_import_assistant_finalize (GObject *object)
 
   if (ia->spreadsheet)
     spreadsheet_unref (ia->spreadsheet);
-
-  //  destroy_columns (ia);
 
   ds_destroy (&ia->separators);
   ds_destroy (&ia->quotes);
@@ -733,9 +728,9 @@ on_chosen (PsppireImportAssistant *ia, GtkWidget *page)
 static void
 on_map (PsppireImportAssistant *ia, GtkWidget *page)
 {
+#if TEXT_FILE
   GtkFileChooser *fc = GTK_FILE_CHOOSER (page);
 
-#if TEXT_FILE
   if (ia->file_name)
     gtk_file_chooser_set_filename (fc, ia->file_name);
 #endif
@@ -987,7 +982,6 @@ on_treeview_selection_change (PsppireImportAssistant *ia)
   if (gtk_tree_selection_get_selected (selection, &model, &iter))
     {
       int n;
-      PsppireTextFile *tf = PSPPIRE_TEXT_FILE (model);
       GtkTreePath *path = gtk_tree_model_get_path (model, &iter);
       gint *index = gtk_tree_path_get_indices (path);
 
@@ -1231,21 +1225,6 @@ struct column
 };
 
 #if SHEET_MERGE
-
-static void
-destroy_columns (PsppireImportAssistant *ia)
-{
-  struct column *col;
-  for (col = ia->columns; col < &ia->columns[ia->column_cnt]; col++)
-    {
-      free (col->name);
-      free (col->contents);
-    }
-
-  free (ia->columns);
-}
-
-
 
 /* Called to render one of the cells in the fields preview tree
    view. */
@@ -1849,8 +1828,7 @@ my_read (struct casereader *reader, void *aux, casenumber idx)
 static void
 my_destroy (struct casereader *reader, void *aux)
 {
-  PsppireImportAssistant *ia = PSPPIRE_IMPORT_ASSISTANT (aux);
-  g_print ("%s:%d\n", __FILE__, __LINE__);
+  g_print ("%s:%d %p\n", __FILE__, __LINE__, reader);
 }
 
 static void
