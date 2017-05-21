@@ -47,7 +47,6 @@
 #include "psppire-import-assistant.h"
 #include "psppire-scanf.h"
 #include "psppire-dialog.h"
-#include "psppire-empty-list-store.h"
 #include "psppire-encoding-selector.h"
 #include "psppire-spreadsheet-model.h"
 #include "psppire-text-file.h"
