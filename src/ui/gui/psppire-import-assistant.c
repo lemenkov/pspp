@@ -1011,31 +1011,6 @@ psppire_import_assistant_new (GtkWindow *toplevel)
 
 
 
-struct column
-{
-  /* Variable name for this column.  This is the variable name
-     used on the separators page; it can be overridden by the
-     user on the formats page. */
-  char *name;
-
-  /* Maximum length of any row in this column. */
-  size_t width;
-
-  /* Contents of this column: contents[row] is the contents for
-     the given row.
-
-     A null substring indicates a missing column for that row
-     (because the line contains an insufficient number of
-     separators).
-
-     contents[] elements may be substrings of the lines[]
-     strings that represent the whole lines of the file, to
-     save memory.  Other elements are dynamically allocated
-     with ss_alloc_substring. */
-  struct substring *contents;
-};
-
-
 static void
 set_quote_list (GtkComboBox *cb)
 {
