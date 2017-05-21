@@ -146,9 +146,6 @@ psppire_import_assistant_finalize (GObject *object)
 
   g_object_unref (ia->builder);
 
-  g_object_unref (ia->prop_renderer);
-  g_object_unref (ia->fixed_renderer);
-
   if (G_OBJECT_CLASS (parent_class)->finalize)
     G_OBJECT_CLASS (parent_class)->finalize (object);
 }
@@ -193,51 +190,9 @@ on_paste (GtkButton *button, PsppireImportAssistant *ia)
 static void
 revise_fields_preview (PsppireImportAssistant *ia)
 {
-  push_watch_cursor (ia);
-
-  //  split_fields (ia);
   choose_column_names (ia);
-
-  pop_watch_cursor (ia);
 }
 
-
-#if SHEET_MERGE
-
-/* Chooses the most common character among those in TARGETS,
-   based on the frequency data in HISTOGRAM, and stores it in
-   RESULT.  If there is a tie for the most common character among
-   those in TARGETS, the earliest character is chosen.  If none
-   of the TARGETS appear at all, then DEF is used as a
-   fallback. */
-static void
-find_commonest_chars (unsigned long int histogram[UCHAR_MAX + 1],
-                      const char *targets, const char *def,
-                      struct string *result)
-{
-  unsigned char max = 0;
-  unsigned long int max_count = 0;
-
-  for (; *targets != '\0'; targets++)
-    {
-      unsigned char c = *targets;
-      unsigned long int count = histogram[c];
-      if (count > max_count)
-        {
-          max = c;
-          max_count = count;
-        }
-    }
-  if (max_count > 0)
-    {
-      ds_clear (result);
-      ds_put_byte (result, max);
-    }
-  else
-    ds_assign_cstr (result, def);
-}
-
-#endif
 
 struct separator
 {
@@ -456,13 +411,6 @@ reset_intro_page (PsppireImportAssistant *ia)
 static void
 reset_formats_page (PsppireImportAssistant *ia, GtkWidget *page)
 {
-  size_t i;
-
-  for (i = 0; i < ia->modified_var_cnt; i++)
-    var_destroy (ia->modified_vars[i]);
-  free (ia->modified_vars);
-  ia->modified_vars = NULL;
-  ia->modified_var_cnt = 0;
 }
 
 static void prepare_formats_page (PsppireImportAssistant *ia);
@@ -549,75 +497,6 @@ on_close (GtkAssistant *assistant, PsppireImportAssistant *ia)
   close_assistant (ia, GTK_RESPONSE_APPLY);
 }
 
-
-/* Increments the "watch cursor" level, setting the cursor for
-   the assistant window to a watch face to indicate to the user
-   that the ongoing operation may take some time. */
-static void
-push_watch_cursor (PsppireImportAssistant *ia)
-{
-  if (++ia->watch_cursor == 1)
-    {
-      GtkWidget *widget = GTK_WIDGET (ia);
-      GdkDisplay *display = gtk_widget_get_display (widget);
-      GdkCursor *cursor = gdk_cursor_new_for_display (display, GDK_WATCH);
-      gdk_window_set_cursor (gtk_widget_get_window (widget), cursor);
-      g_object_unref (cursor);
-      gdk_display_flush (display);
-    }
-}
-
-/* Decrements the "watch cursor" level.  If the level reaches
-   zero, the cursor is reset to its default shape. */
-static void
-pop_watch_cursor (PsppireImportAssistant *ia)
-{
-  if (--ia->watch_cursor == 0)
-    {
-      GtkWidget *widget = GTK_WIDGET (ia);
-      gdk_window_set_cursor (gtk_widget_get_window (widget), NULL);
-    }
-}
-
-#if SHEET_MERGE
-static gint
-get_string_width (GtkWidget *treeview, GtkCellRenderer *renderer,
-		  const char *string)
-{
-  gint width;
-  g_object_set (G_OBJECT (renderer), "text", string, (void *) NULL);
-  gtk_cell_renderer_get_preferred_width (renderer, treeview,
-					 NULL, &width);
-  return width;
-}
-
-static gint
-get_monospace_width (GtkWidget *treeview, GtkCellRenderer *renderer,
-                     size_t char_cnt)
-{
-  struct string s;
-  gint width;
-
-  ds_init_empty (&s);
-  ds_put_byte_multiple (&s, '0', char_cnt);
-  ds_put_byte (&s, ' ');
-  width = get_string_width (treeview, renderer, ds_cstr (&s));
-  ds_destroy (&s);
-
-  return width;
-}
-
-static GtkWidget *
-make_tree_view (const PsppireImportAssistant *ia)
-{
-  GtkWidget *tree_view = pspp_sheet_view_new ();
-  pspp_sheet_view_set_grid_lines (PSPP_SHEET_VIEW (tree_view), PSPP_SHEET_VIEW_GRID_LINES_BOTH);
-
-  add_line_number_column (ia, tree_view);
-
-  return tree_view;
-}
-#endif
 
 static GtkWidget *
 add_page_to_assistant (PsppireImportAssistant *ia,
@@ -855,21 +734,9 @@ psppire_import_assistant_init (PsppireImportAssistant *ia)
   ia->builder = builder_new ("text-data-import.ui");
 
   ia->current_page = -1 ;
-  /* ia->column_cnt = 0; */
-  /* ia->columns = NULL; */
-
   ia->file_name = NULL;
 
   ia->spreadsheet = NULL;
-  ia->watch_cursor = 0;
-
-  ia->prop_renderer = gtk_cell_renderer_text_new ();
-  g_object_ref_sink (ia->prop_renderer);
-  ia->fixed_renderer = gtk_cell_renderer_text_new ();
-  g_object_ref_sink (ia->fixed_renderer);
-  g_object_set (G_OBJECT (ia->fixed_renderer),
-                "family", "Monospace",
-                (void *) NULL);
 
   g_signal_connect (ia, "prepare", G_CALLBACK (on_prepare), ia);
   g_signal_connect (ia, "cancel", G_CALLBACK (on_cancel), ia);
@@ -930,44 +797,6 @@ on_intro_amount_changed (PsppireImportAssistant *p)
 }
 
 
-#if SHEET_MERGE
-
-
-/* Sets IA's first_line substructure to match the widgets. */
-static void
-set_first_line_options (PsppireImportAssistant *ia)
-{
-  GtkTreeIter iter;
-  GtkTreeModel *model;
-
-  PsppSheetSelection *selection = pspp_sheet_view_get_selection (PSPP_SHEET_VIEW (ia->tree_view));
-  if (pspp_sheet_selection_get_selected (selection, &model, &iter))
-    {
-      GtkTreePath *path = gtk_tree_model_get_path (model, &iter);
-      int row = gtk_tree_path_get_indices (path)[0];
-      gtk_tree_path_free (path);
-
-      ia->skip_lines = row;
-      ia->variable_names =
-        (ia->skip_lines > 0
-         && gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (ia->variable_names_cb)));
-    }
-
-  gtk_widget_set_sensitive (ia->variable_names_cb, ia->skip_lines > 0);
-}
-
-
-
-static void
-reset_first_line_page (PsppireImportAssistant *ia)
-{
-  gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (ia->variable_names_cb), FALSE);
-  PsppSheetSelection *selection = pspp_sheet_view_get_selection (PSPP_SHEET_VIEW (ia->tree_view));
-  pspp_sheet_selection_unselect_all (selection);
-  gtk_widget_set_sensitive (ia->variable_names_cb, FALSE);
-}
-
-#endif
 
 static void
 on_treeview_selection_change (PsppireImportAssistant *ia)
@@ -992,7 +821,7 @@ on_treeview_selection_change (PsppireImportAssistant *ia)
 	= psppire_delimited_text_new (GTK_TREE_MODEL (ia->text_file));
       g_object_set (ia->delimiters_model, "first-line", n, NULL);
 
-      //      ia->skip_lines = n;
+      g_print ("%s:%d DT %p first line %d\n", __FILE__, __LINE__, ia->delimiters_model, n);
     }
 }
 
@@ -1036,21 +865,6 @@ first_line_page_create (PsppireImportAssistant *ia)
 
   ia->variable_names_cb = get_widget_assert (ia->builder, "variable-names");
 
-#if SHEET_MERGE
-  pspp_sheet_selection_set_mode (
-				 pspp_sheet_view_get_selection (PSPP_SHEET_VIEW (ia->tree_view)),
-				 PSPP_SHEET_SELECTION_BROWSE);
-  pspp_sheet_view_set_rubber_banding (PSPP_SHEET_VIEW (ia->tree_view), TRUE);
-
-
-  g_signal_connect_swapped (pspp_sheet_view_get_selection (PSPP_SHEET_VIEW (ia->tree_view)),
-			    "changed", G_CALLBACK (set_first_line_options), ia);
-
-  g_signal_connect_swapped (ia->variable_names_cb, "toggled",
-			    G_CALLBACK (set_first_line_options), ia);
-
-  g_object_set_data (G_OBJECT (w), "on-reset", reset_first_line_page);
-#endif
 }
 
 
@@ -1221,220 +1035,6 @@ struct column
   struct substring *contents;
 };
 
-#if SHEET_MERGE
-
-/* Called to render one of the cells in the fields preview tree
-   view. */
-static void
-render_input_cell (PsppSheetViewColumn *tree_column, GtkCellRenderer *cell,
-                   GtkTreeModel *model, GtkTreeIter *iter,
-                   gpointer ia_)
-{
-  PsppireImportAssistant *ia = ia_;
-  struct substring field;
-  size_t row;
-  gint column;
-
-  column = GPOINTER_TO_INT (g_object_get_data (G_OBJECT (tree_column),
-                                               "column-number"));
-  row = empty_list_store_iter_to_row (iter) + ia->skip_lines;
-  field = ia->columns[column].contents[row];
-  if (field.string != NULL)
-    {
-      GValue text = {0, };
-      g_value_init (&text, G_TYPE_STRING);
-      g_value_take_string (&text, ss_xstrdup (field));
-      g_object_set_property (G_OBJECT (cell), "text", &text);
-      g_value_unset (&text);
-      g_object_set (cell, "background-set", FALSE, (void *) NULL);
-    }
-  else
-    g_object_set (cell,
-                  "text", "",
-                  "background", "red",
-                  "background-set", TRUE,
-                  (void *) NULL);
-}
-
-/* Parses the contents of the field at (ROW,COLUMN) according to
-   its variable format.  If OUTPUTP is non-null, then *OUTPUTP
-   receives the formatted output for that field (which must be
-   freed with free).  If TOOLTIPP is non-null, then *TOOLTIPP
-   receives a message suitable for use in a tooltip, if one is
-   needed, or a null pointer otherwise.  Returns TRUE if a
-   tooltip message is needed, otherwise FALSE. */
-static bool
-parse_field (PsppireImportAssistant *ia,
-             size_t row, size_t column,
-             char **outputp, char **tooltipp)
-{
-  const struct fmt_spec *in;
-  struct fmt_spec out;
-  char *tooltip;
-  bool ok;
-
-  struct substring field = ia->columns[column].contents[row];
-  const struct variable *var = dict_get_var (ia->dict, column);
-  union value val;
-
-  value_init (&val, var_get_width (var));
-  in = var_get_print_format (var);
-  out = fmt_for_output_from_input (in);
-  tooltip = NULL;
-  if (field.string != NULL)
-    {
-      char *error = data_in (field, "UTF-8", in->type, &val, var_get_width (var),
-			     dict_get_encoding (ia->dict));
-      if (error != NULL)
-        {
-          tooltip = xasprintf (_("Cannot parse field content `%.*s' as "
-                                 "format %s: %s"),
-                               (int) field.length, field.string,
-                               fmt_name (in->type), error);
-          free (error);
-        }
-    }
-  else
-    {
-      tooltip = xstrdup (_("This input line has too few separators "
-                           "to fill in this field."));
-      value_set_missing (&val, var_get_width (var));
-    }
-  if (outputp != NULL)
-    {
-      *outputp = data_out (&val, dict_get_encoding (ia->dict),  &out);
-    }
-  value_destroy (&val, var_get_width (var));
-
-  ok = tooltip == NULL;
-  if (tooltipp != NULL)
-    *tooltipp = tooltip;
-  else
-    free (tooltip);
-  return ok;
-}
-
-/* Called to render one of the cells in the data preview tree
-   view. */
-static void
-render_output_cell (PsppSheetViewColumn *tree_column,
-                    GtkCellRenderer *cell,
-                    GtkTreeModel *model,
-                    GtkTreeIter *iter,
-                    gpointer ia_)
-{
-  PsppireImportAssistant *ia = ia_;
-  char *output;
-  GValue gvalue = { 0, };
-  bool ok = parse_field (ia,
-			 (empty_list_store_iter_to_row (iter)
-			  + ia->skip_lines),
-			 GPOINTER_TO_INT (g_object_get_data (G_OBJECT (tree_column),
-							     "column-number")),
-			 &output, NULL);
-
-  g_value_init (&gvalue, G_TYPE_STRING);
-  g_value_take_string (&gvalue, output);
-  g_object_set_property (G_OBJECT (cell), "text", &gvalue);
-  g_value_unset (&gvalue);
-
-  if (ok)
-    g_object_set (cell, "background-set", FALSE, (void *) NULL);
-  else
-    g_object_set (cell,
-                  "background", "red",
-                  "background-set", TRUE,
-                  (void *) NULL);
-}
-
-
-/* Utility functions used by multiple pages of the assistant. */
-
-static gboolean
-get_tooltip_location (GtkWidget *widget, gint wx, gint wy,
-                      const PsppireImportAssistant *ia,
-                      size_t *row, size_t *column)
-{
-  PsppSheetView *tree_view = PSPP_SHEET_VIEW (widget);
-  gint bx, by;
-  GtkTreePath *path;
-  GtkTreeIter iter;
-  PsppSheetViewColumn *tree_column;
-  GtkTreeModel *tree_model;
-  bool ok;
-
-  pspp_sheet_view_convert_widget_to_bin_window_coords (tree_view,
-                                                       wx, wy, &bx, &by);
-  if (!pspp_sheet_view_get_path_at_pos (tree_view, bx, by,
-					&path, &tree_column, NULL, NULL))
-    return FALSE;
-
-  *column = GPOINTER_TO_INT (g_object_get_data (G_OBJECT (tree_column),
-                                                "column-number"));
-
-  tree_model = pspp_sheet_view_get_model (tree_view);
-  ok = gtk_tree_model_get_iter (tree_model, &iter, path);
-  gtk_tree_path_free (path);
-  if (!ok)
-    return FALSE;
-
-  *row = empty_list_store_iter_to_row (&iter) + ia->skip_lines;
-  return TRUE;
-}
-
-
-
-
-
-
-/* Called to render a tooltip on one of the cells in the fields
-   preview tree view. */
-static gboolean
-on_query_input_tooltip (GtkWidget *widget, gint wx, gint wy,
-                        gboolean keyboard_mode UNUSED,
-                        GtkTooltip *tooltip, PsppireImportAssistant *ia)
-{
-  size_t row, column;
-
-  if (!get_tooltip_location (widget, wx, wy, ia, &row, &column))
-    return FALSE;
-
-  if (ia->columns[column].contents[row].string != NULL)
-    return FALSE;
-
-  gtk_tooltip_set_text (tooltip,
-                        _("This input line has too few separators "
-                          "to fill in this field."));
-  return TRUE;
-}
-
-
-/* Called to render a tooltip for one of the cells in the data
-   preview tree view. */
-static gboolean
-on_query_output_tooltip (GtkWidget *widget, gint wx, gint wy,
-			 gboolean keyboard_mode UNUSED,
-			 GtkTooltip *tooltip, PsppireImportAssistant *ia)
-{
-  size_t row, column;
-  char *text;
-
-  if (!gtk_widget_get_mapped (widget))
-    return FALSE;
-
-  if (!get_tooltip_location (widget, wx, wy, ia, &row, &column))
-    return FALSE;
-
-  if (parse_field (ia, row, column, NULL, &text))
-    return FALSE;
-
-  gtk_tooltip_set_text (tooltip, text);
-  free (text);
-  return TRUE;
-}
-#endif
-
-
 
 static void
 set_quote_list (GtkComboBox *cb)
@@ -1463,141 +1063,6 @@ set_quote_list (GtkComboBox *cb)
 }
 
 
-#if SHEET_MERGE
-
-/* Sets IA's separators substructure to match the widgets. */
-static void
-get_separators (PsppireImportAssistant *ia)
-{
-  int i;
-
-  ds_clear (&ia->separators);
-  for (i = 0; i < SEPARATOR_CNT; i++)
-    {
-      const struct separator *sep = &separators[i];
-      GtkWidget *button = get_widget_assert (ia->builder, sep->name);
-      if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (button)))
-        ds_put_byte (&ia->separators, sep->c);
-    }
-
-  if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (ia->custom_cb)))
-    ds_put_cstr (&ia->separators,
-                 gtk_entry_get_text (GTK_ENTRY (ia->custom_entry)));
-
-  if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (ia->quote_cb)))
-    {
-      const gchar *text = gtk_entry_get_text (GTK_ENTRY (gtk_bin_get_child (GTK_BIN (ia->quote_combo))));
-      ds_assign_cstr (&ia->quotes, text);
-    }
-  else
-    ds_clear (&ia->quotes);
-}
-
-
-
-
-
-
-/* Breaks the file data in IA into columns based on the
-   separators set in IA's separators substructure. */
-static void
-split_fields (PsppireImportAssistant *ia)
-{
-  size_t columns_allocated;
-  bool space_sep;
-  size_t row = 0;
-
-  /* Is space in the set of separators? */
-  space_sep = ss_find_byte (ds_ss (&ia->separators), ' ') != SIZE_MAX;
-
-  /* Split all the lines, not just those from
-     ia->first_line.skip_lines on, so that we split the line that
-     contains variables names if ia->first_line.variable_names is
-     TRUE. */
-  columns_allocated = 0;
-
-  gint n_lines = gtk_tree_model_iter_n_children (GTK_TREE_MODEL (ia->text_file), NULL);
-  GtkTreeIter iter;
-  gtk_tree_model_get_iter_first (GTK_TREE_MODEL (ia->text_file), &iter);
-  while (gtk_tree_model_iter_next (GTK_TREE_MODEL (ia->text_file), &iter))
-    {
-      row++;
-      gchar *line_text;
-      gtk_tree_model_get (GTK_TREE_MODEL (ia->text_file), &iter, 1, &line_text, -1);
-      struct substring text = ss_cstr (line_text);
-      g_free (line_text);
-      size_t column_idx;
-
-      for (column_idx = 0; ;column_idx++)
-        {
-          struct substring field = SS_EMPTY_INITIALIZER;
-          struct column *column;
-
-          if (space_sep)
-	    {
-	      ss_ltrim (&text, ss_cstr (" "));
-	    }
-          if (ss_is_empty (text))
-            {
-              if (column_idx != 0)
-                break;
-              field = text;
-            }
-          else if (!ds_is_empty (&ia->quotes)
-                   && ds_find_byte (&ia->quotes, text.string[0]) != SIZE_MAX)
-            {
-              int quote = ss_get_byte (&text);
-              struct string s;
-              int c;
-
-              ds_init_empty (&s);
-              while ((c = ss_get_byte (&text)) != EOF)
-                if (c != quote)
-                  ds_put_byte (&s, c);
-                else if (ss_match_byte (&text, quote))
-                  ds_put_byte (&s, quote);
-                else
-                  break;
-              field = ds_ss (&s);
-            }
-          else
-	    {
-	      ss_get_bytes (&text, ss_cspan (text, ds_ss (&ia->separators)),
-			    &field);
-	    }
-
-          if (column_idx >= ia->column_cnt)
-            {
-              struct column *column;
-
-              if (ia->column_cnt >= columns_allocated)
-		{
-		  ia->columns = x2nrealloc (ia->columns, &columns_allocated,
-					    sizeof *ia->columns);
-		}
-              column = &ia->columns[ia->column_cnt++];
-              column->name = NULL;
-              column->width = 0;
-              column->contents = xcalloc (n_lines,
-                                          sizeof *column->contents);
-            }
-          column = &ia->columns[column_idx];
-          column->contents[row] = field;
-          if (ss_length (field) > column->width)
-            column->width = ss_length (field);
-
-          if (space_sep)
-            ss_ltrim (&text, ss_cstr (" "));
-          if (ss_is_empty (text))
-            break;
-          if (ss_find_byte (ds_ss (&ia->separators), ss_first (text))
-              != SIZE_MAX)
-            ss_advance (&text, 1);
-        }
-    }
-}
-
-#endif
 
 /* Chooses a name for each column on the separators page */
 static void
@@ -1608,12 +1073,21 @@ choose_column_names (PsppireImportAssistant *ia)
       int i;
       unsigned long int generated_name_count = 0;
       dict_clear (ia->dict);
+
+      g_print ("%s:%d XXX %d\n", __FILE__, __LINE__, gtk_tree_model_get_n_columns (ia->delimiters_model));
+      
       for (i = 0; i < gtk_tree_model_get_n_columns (ia->delimiters_model) - 1; ++i)
 	{
 	  const gchar *candidate_name =
-	    psppire_delimited_text_get_header_title (PSPPIRE_DELIMITED_TEXT (ia->delimiters_model), i);
+	    psppire_delimited_text_get_header_title
+	    (PSPPIRE_DELIMITED_TEXT (ia->delimiters_model), i);
 
-	  char *name = dict_make_unique_var_name (ia->dict, candidate_name, &generated_name_count);
+	  g_print ("%s:%d CN is %s\n", __FILE__, __LINE__, candidate_name);
+
+	  char *name = dict_make_unique_var_name (ia->dict,
+						  candidate_name,
+						  &generated_name_count);
+	  
 	  dict_create_var_assert (ia->dict, name, 0);
 	  free (name);
 	}
@@ -1642,7 +1116,7 @@ on_separator_toggle (GtkToggleButton *toggle UNUSED,
 
   g_object_set (ia->delimiters_model, "delimiters", delimiters, NULL);
 
-  //  revise_fields_preview (ia);
+  revise_fields_preview (ia);
 }
 
 
@@ -1733,48 +1207,6 @@ separators_page_create (PsppireImportAssistant *ia)
 
 
 
-
-#if SHEET_MERGE
-
-/* Called when the user changes one of the variables in the
-   dictionary. */
-static void
-on_variable_change (PsppireDict *dict, int dict_idx,
-		    unsigned int what, const struct variable *oldvar,
-                    PsppireImportAssistant *ia)
-{
-  PsppSheetView *tv = PSPP_SHEET_VIEW (ia->data_tree_view);
-  gint column_idx = dict_idx + 1;
-
-  push_watch_cursor (ia);
-
-  /* Remove previous column and replace with new column. */
-  pspp_sheet_view_remove_column (tv, pspp_sheet_view_get_column (PSPP_SHEET_VIEW (ia->data_tree_view), column_idx));
-  pspp_sheet_view_insert_column (tv, PSPP_SHEET_VIEW_COLUMN (make_data_column (ia, ia->data_tree_view, FALSE, dict_idx)),
-                                 column_idx);
-
-  /* Save a copy of the modified variable in modified_vars, so
-     that its attributes will be preserved if we back up to the
-     previous page with the Prev button and then come back
-     here. */
-  if (dict_idx >= ia->modified_var_cnt)
-    {
-      size_t i;
-      ia->modified_vars = xnrealloc (ia->modified_vars, dict_idx + 1,
-				     sizeof *ia->modified_vars);
-      for (i = 0; i <= dict_idx; i++)
-        ia->modified_vars[i] = NULL;
-      ia->modified_var_cnt = dict_idx + 1;
-    }
-  if (ia->modified_vars[dict_idx])
-    var_destroy (ia->modified_vars[dict_idx]);
-  ia->modified_vars[dict_idx]
-    = var_clone (psppire_dict_get_variable (dict, dict_idx));
-
-  pop_watch_cursor (ia);
-}
-
-#endif
 
 
 static struct casereader_random_class my_casereader_class;
@@ -1975,9 +1407,6 @@ formats_page_create (PsppireImportAssistant *ia)
 
   add_page_to_assistant (ia, w,
 			 GTK_ASSISTANT_PAGE_CONFIRM, _("Adjust Variable Formats"));
-
-  ia->modified_vars = NULL;
-  ia->modified_var_cnt = 0;
 }
 
 

@@ -103,12 +103,6 @@ struct _PsppireImportAssistant
 /* END Page where the user chooses field separators. */
 
 
-/* START Page where the user verifies and adjusts input formats. */
-   struct variable **modified_vars;
-   size_t modified_var_cnt;
-/* END Page where the user verifies and adjusts input formats. */
-
-
   /* START first line page */
   GtkWidget *first_line_tree_view;
   GtkWidget *variable_names_cb;
@@ -118,25 +112,12 @@ struct _PsppireImportAssistant
   GtkWidget *paste_button;
   GtkWidget *reset_button;
   int response;
-  int watch_cursor;
-
-  GtkCellRenderer *prop_renderer;
-  GtkCellRenderer *fixed_renderer;
 
   PsppireTextFile *text_file;
 
   GtkTreeModel *delimiters_model;
 
   struct sheet_spec_page *sheet_spec;
-
-#if MERGE_SHEET
-  /* The columns produced. */
-  struct column *columns;     /* Information about each column. */
-  size_t column_cnt;          /* Number of columns. */
-
-  int skip_lines;             /* Number of initial lines to skip? */
-  gboolean variable_names;        /* Variable names above first line of data? */
-#endif
 
   struct dictionary *dict;
 
