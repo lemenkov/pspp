@@ -232,8 +232,6 @@ choose_likely_separators (PsppireImportAssistant *ia)
 
   gboolean valid;
   GtkTreeIter iter;
-  int i = 0;
-
   int j;
 
   struct hmap count_map[SEPARATOR_CNT];
@@ -246,23 +244,27 @@ choose_likely_separators (PsppireImportAssistant *ia)
        valid;
        valid = gtk_tree_model_iter_next (GTK_TREE_MODEL (ia->text_file), &iter))
     {
-      int j;
-
       gchar *line_text = NULL;
       gtk_tree_model_get (GTK_TREE_MODEL (ia->text_file), &iter, 1, &line_text, -1);
 
       gint *counts = xzalloc (sizeof *counts * SEPARATOR_CNT);
-      for (j = 0; j < strlen (line_text); ++j)
+
+      struct substring cs = ss_cstr (line_text);
+      for (;
+	   UINT32_MAX != ss_first_mb (cs);
+	   ss_get_mb (&cs))
 	{
+	  ucs4_t character = ss_first_mb (cs);
+
 	  int s;
 	  for (s = 0; s < SEPARATOR_CNT; ++s)
 	    {
-	      // FIXME do this in UTF8 encoding
-	      if (line_text[j] == separators[s].c)
+	      if (character == separators[s].c)
 		counts[s]++;
 	    }
 	}
 
+      int j;
       for (j = 0; j < SEPARATOR_CNT; ++j)
 	{
 	  if (counts[j] > 0)
