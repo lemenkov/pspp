@@ -65,24 +65,14 @@
 enum { MAX_LINE_LEN = 16384 }; /* Max length of an acceptable line. */
 
 
-/* Sets IA's separators substructure to match the widgets. */
-static void split_fields (PsppireImportAssistant *ia);
-
 /* Chooses a name for each column on the separators page */
 static void choose_column_names (PsppireImportAssistant *ia);
-
-
 
 static void intro_page_create (PsppireImportAssistant *ia);
 static void first_line_page_create (PsppireImportAssistant *ia);
 
 static void separators_page_create (PsppireImportAssistant *ia);
 static void formats_page_create (PsppireImportAssistant *ia);
-
-static void push_watch_cursor (PsppireImportAssistant *ia);
-static void pop_watch_cursor (PsppireImportAssistant *ia);
-
-
 
 static void psppire_import_assistant_init            (PsppireImportAssistant      *act);
 static void psppire_import_assistant_class_init      (PsppireImportAssistantClass *class);
