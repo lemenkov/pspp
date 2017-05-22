@@ -1042,29 +1042,29 @@ set_quote_list (GtkComboBox *cb)
 static void
 choose_column_names (PsppireImportAssistant *ia)
 {
-  if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (ia->variable_names_cb)))
-    {
-      int i;
-      unsigned long int generated_name_count = 0;
-      dict_clear (ia->dict);
+  int i;
+  unsigned long int generated_name_count = 0;
+  dict_clear (ia->dict);
 
-      g_print ("%s:%d XXX %d\n", __FILE__, __LINE__, gtk_tree_model_get_n_columns (ia->delimiters_model));
+  g_print ("%s:%d XXX %d\n", __FILE__, __LINE__, gtk_tree_model_get_n_columns (ia->delimiters_model));
       
-      for (i = 0; i < gtk_tree_model_get_n_columns (ia->delimiters_model) - 1; ++i)
+  for (i = 0; i < gtk_tree_model_get_n_columns (ia->delimiters_model) - 1; ++i)
+    {
+      const gchar *candidate_name = NULL;
+
+      if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (ia->variable_names_cb)))
 	{
-	  const gchar *candidate_name =
-	    psppire_delimited_text_get_header_title
-	    (PSPPIRE_DELIMITED_TEXT (ia->delimiters_model), i);
-
-	  g_print ("%s:%d CN is %s\n", __FILE__, __LINE__, candidate_name);
-
-	  char *name = dict_make_unique_var_name (ia->dict,
-						  candidate_name,
-						  &generated_name_count);
-	  
-	  dict_create_var_assert (ia->dict, name, 0);
-	  free (name);
+	  candidate_name = psppire_delimited_text_get_header_title (PSPPIRE_DELIMITED_TEXT (ia->delimiters_model), i);
 	}
+
+      g_print ("%s:%d CN is %s\n", __FILE__, __LINE__, candidate_name);
+
+      char *name = dict_make_unique_var_name (ia->dict,
+					      candidate_name,
+					      &generated_name_count);
+	  
+      dict_create_var_assert (ia->dict, name, 0);
+      free (name);
     }
 }
 
