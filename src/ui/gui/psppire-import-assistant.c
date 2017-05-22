@@ -16,10 +16,7 @@
 
 #include <config.h>
 
-#include <errno.h>
-#include <fcntl.h>
 #include <gtk/gtk.h>
-#include <sys/stat.h>
 
 #include "data/casereader.h"
 #include "data/data-in.h"
@@ -33,8 +30,6 @@
 #include "data/value-labels.h"
 #include "data/casereader-provider.h"
 
-#include "gl/intprops.h"
-
 #include "libpspp/i18n.h"
 #include "libpspp/line-reader.h"
 #include "libpspp/message.h"
@@ -43,17 +38,17 @@
 #include "libpspp/str.h"
 
 #include "builder-wrapper.h"
-#include "helper.h"
-#include "psppire-import-assistant.h"
-#include "psppire-scanf.h"
-#include "psppire-dialog.h"
-#include "psppire-encoding-selector.h"
-#include "psppire-spreadsheet-model.h"
-#include "psppire-text-file.h"
-#include "psppire-delimited-text.h"
+
 #include "psppire-data-sheet.h"
 #include "psppire-data-store.h"
+#include "psppire-dialog.h"
+#include "psppire-delimited-text.h"
 #include "psppire-dict.h"
+#include "psppire-encoding-selector.h"
+#include "psppire-import-assistant.h"
+#include "psppire-scanf.h"
+#include "psppire-spreadsheet-model.h"
+#include "psppire-text-file.h"
 #include "psppire-variable-sheet.h"
 
 #include "ui/syntax-gen.h"
