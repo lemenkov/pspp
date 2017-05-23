@@ -278,7 +278,7 @@
 	    <attribute name="action">win.PsppireDialogActionPaired</attribute>
 	  </item>
 	  <item>
-	    <attribute name="label" translatable="yes">_One Way _ANOVA...</attribute>
+	    <attribute name="label" translatable="yes">One Way _ANOVA...</attribute>
 	    <attribute name="action">win.PsppireDialogActionOneway</attribute>
 	  </item>
 	</submenu>
