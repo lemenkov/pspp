@@ -122,13 +122,15 @@ psppire_import_assistant_finalize (GObject *object)
 {
   PsppireImportAssistant *ia = PSPPIRE_IMPORT_ASSISTANT (object);
 
-
   if (ia->spreadsheet)
     spreadsheet_unref (ia->spreadsheet);
 
   ds_destroy (&ia->quotes);
 
   g_object_unref (ia->builder);
+
+  ia->response = -1;
+  g_main_loop_unref (ia->main_loop);
 
   if (G_OBJECT_CLASS (parent_class)->finalize)
     G_OBJECT_CLASS (parent_class)->finalize (object);
@@ -724,6 +726,8 @@ psppire_import_assistant_init (PsppireImportAssistant *ia)
 
   ia->spreadsheet = NULL;
 
+  ia->main_loop = g_main_loop_new (NULL, TRUE);
+
   g_signal_connect (ia, "prepare", G_CALLBACK (on_prepare), ia);
   g_signal_connect (ia, "cancel", G_CALLBACK (on_cancel), ia);
   g_signal_connect (ia, "close", G_CALLBACK (on_close), ia);
@@ -1033,8 +1037,6 @@ choose_column_names (PsppireImportAssistant *ia)
   unsigned long int generated_name_count = 0;
   dict_clear (ia->dict);
 
-  g_print ("%s:%d XXX %d\n", __FILE__, __LINE__, gtk_tree_model_get_n_columns (ia->delimiters_model));
-      
   for (i = 0; i < gtk_tree_model_get_n_columns (ia->delimiters_model) - 1; ++i)
     {
       const gchar *candidate_name = NULL;
@@ -1044,12 +1046,10 @@ choose_column_names (PsppireImportAssistant *ia)
 	  candidate_name = psppire_delimited_text_get_header_title (PSPPIRE_DELIMITED_TEXT (ia->delimiters_model), i);
 	}
 
-      g_print ("%s:%d CN is %s\n", __FILE__, __LINE__, candidate_name);
-
       char *name = dict_make_unique_var_name (ia->dict,
 					      candidate_name,
 					      &generated_name_count);
-	  
+
       dict_create_var_assert (ia->dict, name, 0);
       free (name);
     }
@@ -1613,3 +1613,12 @@ psppire_import_assistant_generate_syntax (PsppireImportAssistant *ia)
 
   return ds_cstr (&s);
 }
+
+
+int
+psppire_import_assistant_run (PsppireImportAssistant *asst)
+{
+  g_main_loop_run (asst->main_loop);
+  return asst->response;
+}
+

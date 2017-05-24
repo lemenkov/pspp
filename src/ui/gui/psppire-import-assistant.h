@@ -89,7 +89,6 @@ struct _PsppireImportAssistant
 /* START Page where the user chooses field separators. */
 
   /* How to break lines into columns. */
-  //  struct string separators;   /* Field separators. */
   struct string quotes;       /* Quote characters. */
 
   GtkWidget *custom_cb;
@@ -138,6 +137,8 @@ GType psppire_import_assistant_get_type (void) ;
 GtkWidget *psppire_import_assistant_new (GtkWindow *toplevel);
 
 gchar *psppire_import_assistant_generate_syntax (PsppireImportAssistant *);
+
+int psppire_import_assistant_run (PsppireImportAssistant *asst);
 
 G_END_DECLS
 

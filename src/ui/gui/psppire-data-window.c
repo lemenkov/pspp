@@ -971,14 +971,9 @@ file_import (PsppireDataWindow *dw)
   PsppireImportAssistant *asst = PSPPIRE_IMPORT_ASSISTANT (w);
   gtk_widget_show_all (w);
 
-  asst->main_loop = g_main_loop_new (NULL, TRUE);
-  g_main_loop_run (asst->main_loop);
-  g_main_loop_unref (asst->main_loop);
+  int response = psppire_import_assistant_run (asst);
 
-  if (!asst->file_name)
-    goto end;
-
-  switch (asst->response)
+  switch (response)
     {
     case GTK_RESPONSE_APPLY:
       {
@@ -994,7 +989,6 @@ file_import (PsppireDataWindow *dw)
       break;
     }
 
- end:
   gtk_widget_destroy (GTK_WIDGET (asst));
 }
 
