@@ -47,7 +47,7 @@
 #include "gl/c-strcasestr.h"
 #include "gl/xvasprintf.h"
 
-#include "ui/gui/efficient-sheet/src/ssw-sheet.h"
+#include <ssw-sheet.h>
 
 #include "find-dialog.h"
 #include "options-dialog.h"

@@ -19,7 +19,7 @@
 #define _PSPPIRE_VARIABLE_SHEET_H
 
 #include <gtk/gtk.h>
-#include "ui/gui/efficient-sheet/src/ssw-sheet.h"
+#include <ssw-sheet.h>
 
 
 struct _PsppireVariableSheet

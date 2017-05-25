@@ -41,7 +41,7 @@
 #include "ui/gui/psppire-data-sheet.h"
 
 
-#include "ui/gui/efficient-sheet/src/ssw-sheet.h"
+#include <ssw-sheet.h>
 
 #include <gettext.h>
 #define _(msgid) gettext (msgid)

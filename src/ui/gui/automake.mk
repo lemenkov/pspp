@@ -99,6 +99,7 @@ src_ui_gui_psppire_LDADD = \
 	$(GTK_LIBS) \
 	$(GTHREAD_LIBS) \
 	$(GTKSOURCEVIEW_LIBS) \
+	$(SPREAD_SHEET_WIDGET_LIBS) \
 	$(CAIRO_LIBS) \
 	$(LIBINTL) \
 	$(GSL_LIBS)
@@ -390,7 +391,6 @@ BUILT_SOURCES += src/ui/gui/psppire-marshal.c src/ui/gui/psppire-marshal.h src/u
 CLEANFILES += src/ui/gui/psppire-marshal.c src/ui/gui/psppire-marshal.h \
 	src/ui/gui/resources.c $(nodist_src_ui_gui_psppire_DATA)
 
-include $(top_srcdir)/src/ui/gui/efficient-sheet.mk
 endif HAVE_GUI
 
 #ensure the installcheck passes even if there is no X server available

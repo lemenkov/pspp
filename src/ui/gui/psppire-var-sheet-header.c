@@ -21,8 +21,8 @@
 
 #include "psppire-var-sheet-header.h"
 
-#include "efficient-sheet/src/ssw-axis-model.h"
-#include "efficient-sheet/src/ssw-datum.h"
+#include <ssw-axis-model.h>
+#include <ssw-datum.h>
 
 enum  {CHANGED,
        n_SIGNALS};
