@@ -47,7 +47,7 @@
 #include "gl/c-strcasestr.h"
 #include "gl/xvasprintf.h"
 
-#include "ui/gui/efficient-sheet/src/jmd-sheet.h"
+#include "ui/gui/efficient-sheet/src/ssw-sheet.h"
 
 #include "find-dialog.h"
 #include "options-dialog.h"
@@ -1070,8 +1070,8 @@ on_cut (PsppireDataWindow *dw)
       g_object_get (dw->data_editor, "dictionary", &dict, NULL);
 
       gint x, y;
-      JmdSheet *sheet = JMD_SHEET (dw->data_editor->data_sheet);
-      JmdRange sel = *sheet->selection;
+      SswSheet *sheet = SSW_SHEET (dw->data_editor->data_sheet);
+      SswRange sel = *sheet->selection;
 
       GtkClipboard *clip =
 	gtk_clipboard_get_for_display (gtk_widget_get_display (GTK_WIDGET (dw)),
@@ -1123,7 +1123,7 @@ on_copy (PsppireDataWindow *dw)
 	gtk_clipboard_get_for_display (gtk_widget_get_display (GTK_WIDGET (dw)),
 				   GDK_SELECTION_CLIPBOARD);
 
-      jmd_sheet_set_clip (JMD_SHEET (dw->data_editor->data_sheet), clip);
+      ssw_sheet_set_clip (SSW_SHEET (dw->data_editor->data_sheet), clip);
     }
 }
 
@@ -1144,7 +1144,7 @@ on_clear_cases (PsppireDataWindow *dw)
   int p = gtk_notebook_get_current_page (GTK_NOTEBOOK (de));
   if (p == PSPPIRE_DATA_EDITOR_DATA_VIEW)
     {
-      JmdRange *range = JMD_SHEET(de->data_sheet)->selection;
+      SswRange *range = SSW_SHEET(de->data_sheet)->selection;
       psppire_data_store_delete_cases (de->data_store, range->start_y,
 				       range->end_y - range->start_y + 1);
       gtk_widget_queue_draw (GTK_WIDGET (de->data_sheet));
@@ -1174,12 +1174,12 @@ insert_variable (PsppireDataWindow *dw)
 
   if (p == PSPPIRE_DATA_EDITOR_DATA_VIEW)
     {
-      JmdRange *range = JMD_SHEET(de->data_sheet)->selection;
+      SswRange *range = SSW_SHEET(de->data_sheet)->selection;
       psppire_data_editor_insert_new_variable_at_posn (de, range->start_x);
     }
   else
     {
-      JmdRange *range = JMD_SHEET(de->var_sheet)->selection;
+      SswRange *range = SSW_SHEET(de->var_sheet)->selection;
       psppire_data_editor_insert_new_variable_at_posn (de, range->start_y);
     }
 }
@@ -1188,7 +1188,7 @@ static void
 insert_case_at_row (PsppireDataWindow *dw)
 {
   PsppireDataEditor *de = dw->data_editor;
-  JmdRange *range = JMD_SHEET(de->data_sheet)->selection;
+  SswRange *range = SSW_SHEET(de->data_sheet)->selection;
   psppire_data_editor_insert_new_case_at_posn (de, range->start_y);
 }
 

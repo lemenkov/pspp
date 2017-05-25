@@ -21,8 +21,8 @@
 
 #include "psppire-var-sheet-header.h"
 
-#include "efficient-sheet/src/jmd-axis-model.h"
-#include "efficient-sheet/src/jmd-datum.h"
+#include "efficient-sheet/src/ssw-axis-model.h"
+#include "efficient-sheet/src/ssw-datum.h"
 
 enum  {CHANGED,
        n_SIGNALS};
@@ -38,13 +38,13 @@ gni (GListModel *list)
 static GType
 git (GListModel *list)
 {
-  return JMD_TYPE_DATUM;
+  return SSW_TYPE_DATUM;
 }
 
 static gpointer
 gi (GListModel *list, guint position)
 {
-  JmdDatum *gd = JMD_DATUM (g_object_new (JMD_TYPE_DATUM, NULL));
+  SswDatum *gd = SSW_DATUM (g_object_new (SSW_TYPE_DATUM, NULL));
 
   switch (position)
     {

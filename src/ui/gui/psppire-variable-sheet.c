@@ -34,7 +34,7 @@
 #define P_(X) (X)
 
 
-G_DEFINE_TYPE (PsppireVariableSheet, psppire_variable_sheet, JMD_TYPE_SHEET)
+G_DEFINE_TYPE (PsppireVariableSheet, psppire_variable_sheet, SSW_TYPE_SHEET)
 
 static void
 set_var_type (GtkCellRenderer *renderer,
@@ -44,7 +44,7 @@ set_var_type (GtkCellRenderer *renderer,
 {
   PsppireVariableSheet *sheet = PSPPIRE_VARIABLE_SHEET (user_data);
   gint row = -1, col = -1;
-  jmd_sheet_get_active_cell (JMD_SHEET (sheet), &col, &row);
+  ssw_sheet_get_active_cell (SSW_SHEET (sheet), &col, &row);
 
   PsppireDict *dict = NULL;
   g_object_get (sheet, "data-model", &dict, NULL);
@@ -69,7 +69,7 @@ set_missing_values (GtkCellRenderer *renderer,
 {
   PsppireVariableSheet *sheet = PSPPIRE_VARIABLE_SHEET (user_data);
   gint row = -1, col = -1;
-  jmd_sheet_get_active_cell (JMD_SHEET (sheet), &col, &row);
+  ssw_sheet_get_active_cell (SSW_SHEET (sheet), &col, &row);
 
   PsppireDict *dict = NULL;
   g_object_get (sheet, "data-model", &dict, NULL);
@@ -96,7 +96,7 @@ set_value_labels (GtkCellRenderer *renderer,
 {
   PsppireVariableSheet *sheet = PSPPIRE_VARIABLE_SHEET (user_data);
   gint row = -1, col = -1;
-  jmd_sheet_get_active_cell (JMD_SHEET (sheet), &col, &row);
+  ssw_sheet_get_active_cell (SSW_SHEET (sheet), &col, &row);
 
   PsppireDict *dict = NULL;
   g_object_get (sheet, "data-model", &dict, NULL);
@@ -213,7 +213,7 @@ select_renderer_func (PsppireVariableSheet *sheet, gint col, gint row, GType typ
 
 
 static void
-show_variables_row_popup (JmdSheet *sheet, int row, uint button,
+show_variables_row_popup (SswSheet *sheet, int row, uint button,
 			  uint state, gpointer p)
 {
   PsppireVariableSheet *var_sheet = PSPPIRE_VARIABLE_SHEET (sheet);
@@ -253,9 +253,9 @@ insert_new_variable_var (PsppireVariableSheet *var_sheet)
 
 
 static void
-delete_variables (JmdSheet *sheet)
+delete_variables (SswSheet *sheet)
 {
-  JmdRange *range = sheet->selection;
+  SswRange *range = sheet->selection;
 
   PsppireDict *dict = NULL;
   g_object_get (sheet, "data-model", &dict, NULL);
@@ -296,10 +296,10 @@ create_var_row_header_popup_menu (PsppireVariableSheet *var_sheet)
 
 
 static void
-set_var_popup_sensitivity (JmdSheet *sheet, gpointer selection, gpointer p)
+set_var_popup_sensitivity (SswSheet *sheet, gpointer selection, gpointer p)
 {
   PsppireVariableSheet *var_sheet = PSPPIRE_VARIABLE_SHEET (sheet);
-  JmdRange *range = selection;
+  SswRange *range = selection;
   gint width = gtk_tree_model_get_n_columns (sheet->data_model);
 
   gboolean whole_row_selected = (range->start_x == 0 &&
@@ -381,7 +381,7 @@ change_var_property (PsppireVariableSheet *var_sheet, gint col, gint row, const 
 }
 
 static gchar *
-var_sheet_data_to_string (JmdSheet *sheet, GtkTreeModel *m,
+var_sheet_data_to_string (SswSheet *sheet, GtkTreeModel *m,
 			  gint col, gint row, const GValue *in)
 {
   if (col >= n_DICT_COLS - 1) /* -1 because psppire-dict has an extra column */
@@ -413,7 +413,7 @@ var_sheet_data_to_string (JmdSheet *sheet, GtkTreeModel *m,
       return text;
     }
 
-  return jmd_sheet_default_forward_conversion (sheet, m, col, row, in);
+  return ssw_sheet_default_forward_conversion (sheet, m, col, row, in);
 }
 
 

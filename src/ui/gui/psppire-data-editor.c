@@ -41,7 +41,7 @@
 #include "ui/gui/psppire-data-sheet.h"
 
 
-#include "ui/gui/efficient-sheet/src/jmd-sheet.h"
+#include "ui/gui/efficient-sheet/src/ssw-sheet.h"
 
 #include <gettext.h>
 #define _(msgid) gettext (msgid)
@@ -295,19 +295,19 @@ on_var_sheet_var_double_clicked (void *var_sheet, gint dict_index,
   gtk_notebook_set_current_page (GTK_NOTEBOOK (de),
                                  PSPPIRE_DATA_EDITOR_DATA_VIEW);
 
-  jmd_sheet_scroll_to (JMD_SHEET (de->data_sheet), dict_index, -1);
+  ssw_sheet_scroll_to (SSW_SHEET (de->data_sheet), dict_index, -1);
 }
 
 
 static void
-on_data_sheet_var_double_clicked (JmdSheet *data_sheet, gint dict_index,
+on_data_sheet_var_double_clicked (SswSheet *data_sheet, gint dict_index,
                                  PsppireDataEditor *de)
 {
 
   gtk_notebook_set_current_page (GTK_NOTEBOOK (de),
                                  PSPPIRE_DATA_EDITOR_VARIABLE_VIEW);
 
-  jmd_sheet_scroll_to (JMD_SHEET (de->var_sheet), -1, dict_index);
+  ssw_sheet_scroll_to (SSW_SHEET (de->var_sheet), -1, dict_index);
 }
 
 
@@ -318,7 +318,7 @@ static void
 refresh_entry (PsppireDataEditor *de)
 {
   gint row, col;
-  if (jmd_sheet_get_active_cell (JMD_SHEET (de->data_sheet), &col, &row))
+  if (ssw_sheet_get_active_cell (SSW_SHEET (de->data_sheet), &col, &row))
     {
       union value val;
       const struct variable *var = psppire_dict_get_variable (de->dict, col);
@@ -346,7 +346,7 @@ on_datum_entry_activate (PsppireValueEntry *entry, PsppireDataEditor *de)
 
 /* Called when the active cell or the selection in the data sheet changes */
 static void
-on_data_selection_change (PsppireDataEditor *de, JmdRange *sel)
+on_data_selection_change (PsppireDataEditor *de, SswRange *sel)
 {
   gchar *ref_cell_text = NULL;
 
@@ -395,7 +395,7 @@ static void set_font_recursively (GtkWidget *w, gpointer data);
 void
 psppire_data_editor_data_delete_variables (PsppireDataEditor *de)
 {
-  JmdRange *range = JMD_SHEET(de->data_sheet)->selection;
+  SswRange *range = SSW_SHEET(de->data_sheet)->selection;
 
   psppire_dict_delete_variables (de->dict, range->start_x,
 				 (range->end_x - range->start_x + 1));
@@ -406,7 +406,7 @@ psppire_data_editor_data_delete_variables (PsppireDataEditor *de)
 void
 psppire_data_editor_var_delete_variables (PsppireDataEditor *de)
 {
-  JmdRange *range = JMD_SHEET(de->var_sheet)->selection;
+  SswRange *range = SSW_SHEET(de->var_sheet)->selection;
 
   psppire_dict_delete_variables (de->dict, range->start_y,
 				 (range->end_y - range->start_y + 1));
@@ -460,7 +460,7 @@ psppire_data_editor_init (PsppireDataEditor *de)
   de->split = FALSE;
   de->data_sheet = psppire_data_sheet_new ();
 
-  GtkWidget *data_button = jmd_sheet_get_button (JMD_SHEET (de->data_sheet));
+  GtkWidget *data_button = ssw_sheet_get_button (SSW_SHEET (de->data_sheet));
   gtk_button_set_label (GTK_BUTTON (data_button), _("Case"));
   de->vbox = gtk_box_new (GTK_ORIENTATION_VERTICAL, 0);
   gtk_box_pack_start (GTK_BOX (de->vbox), hbox, FALSE, FALSE, 0);
@@ -477,7 +477,7 @@ psppire_data_editor_init (PsppireDataEditor *de)
 
   de->var_sheet = psppire_variable_sheet_new ();
 
-  GtkWidget *var_button = jmd_sheet_get_button (JMD_SHEET (de->var_sheet));
+  GtkWidget *var_button = ssw_sheet_get_button (SSW_SHEET (de->var_sheet));
   gtk_button_set_label (GTK_BUTTON (var_button), _("Variable"));
 
   gtk_notebook_append_page (GTK_NOTEBOOK (de), de->var_sheet,
@@ -519,8 +519,8 @@ psppire_data_editor_new (PsppireDict *dict,
 void
 psppire_data_editor_show_grid (PsppireDataEditor *de, gboolean grid_visible)
 {
-  g_object_set (JMD_SHEET (de->var_sheet), "gridlines", grid_visible, NULL);
-  g_object_set (JMD_SHEET (de->data_sheet), "gridlines", grid_visible, NULL);
+  g_object_set (SSW_SHEET (de->var_sheet), "gridlines", grid_visible, NULL);
+  g_object_set (SSW_SHEET (de->data_sheet), "gridlines", grid_visible, NULL);
 }
 
 
@@ -592,12 +592,12 @@ psppire_data_editor_goto_variable (PsppireDataEditor *de, gint dict_index)
   switch (page)
     {
       case PSPPIRE_DATA_EDITOR_DATA_VIEW:
-	jmd_sheet_scroll_to (JMD_SHEET (de->data_sheet), dict_index, -1);
-	jmd_sheet_set_active_cell (JMD_SHEET (de->data_sheet), dict_index, -1, NULL);
+	ssw_sheet_scroll_to (SSW_SHEET (de->data_sheet), dict_index, -1);
+	ssw_sheet_set_active_cell (SSW_SHEET (de->data_sheet), dict_index, -1, NULL);
 	break;
       case PSPPIRE_DATA_EDITOR_VARIABLE_VIEW:
-	jmd_sheet_scroll_to (JMD_SHEET (de->var_sheet), -1, dict_index);
-	jmd_sheet_set_active_cell (JMD_SHEET (de->var_sheet), -1, dict_index, NULL);
+	ssw_sheet_scroll_to (SSW_SHEET (de->var_sheet), -1, dict_index);
+	ssw_sheet_set_active_cell (SSW_SHEET (de->var_sheet), -1, dict_index, NULL);
 	break;
     }
 }
@@ -620,10 +620,10 @@ store_set_datum (GtkTreeModel *model, gint col, gint row,
 void
 psppire_data_editor_paste (PsppireDataEditor *de)
 {
-  JmdSheet *sheet = JMD_SHEET (de->data_sheet);
+  SswSheet *sheet = SSW_SHEET (de->data_sheet);
   GtkClipboard *clip =
     gtk_clipboard_get_for_display (gtk_widget_get_display (GTK_WIDGET (sheet)),
 				   GDK_SELECTION_CLIPBOARD);
 
-  jmd_sheet_paste (sheet, clip, store_set_datum);
+  ssw_sheet_paste (sheet, clip, store_set_datum);
 }

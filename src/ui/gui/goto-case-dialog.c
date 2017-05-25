@@ -66,8 +66,8 @@ goto_case_dialog (PsppireDataSheet *ds)
       if (case_num >= 0 &&
 	  case_num < gtk_tree_model_iter_n_children (GTK_TREE_MODEL (ds), NULL))
       {
-	jmd_sheet_scroll_to (ds, -1, case_num);
-	jmd_sheet_set_active_cell (ds, -1, case_num, 0);
+	ssw_sheet_scroll_to (ds, -1, case_num);
+	ssw_sheet_set_active_cell (ds, -1, case_num, 0);
       }
     }
 }

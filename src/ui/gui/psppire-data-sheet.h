@@ -19,11 +19,11 @@
 #define _PSPPIRE_DATA_SHEET_H
 
 #include <gtk/gtk.h>
-#include "ui/gui/efficient-sheet/src/jmd-sheet.h"
+#include "ui/gui/efficient-sheet/src/ssw-sheet.h"
 
 struct _PsppireDataSheet
 {
-  JmdSheet parent_instance;
+  SswSheet parent_instance;
 
   GtkWidget *data_sheet_cases_column_popup;
 
@@ -38,12 +38,12 @@ struct _PsppireDataSheet
 
 struct _PsppireDataSheetClass
 {
-  JmdSheetClass parent_class;
+  SswSheetClass parent_class;
 };
 
 #define PSPPIRE_TYPE_DATA_SHEET psppire_data_sheet_get_type ()
 
-G_DECLARE_FINAL_TYPE (PsppireDataSheet, psppire_data_sheet, PSPPIRE, DATA_SHEET, JmdSheet)
+G_DECLARE_FINAL_TYPE (PsppireDataSheet, psppire_data_sheet, PSPPIRE, DATA_SHEET, SswSheet)
 
 GtkWidget *psppire_data_sheet_new (void);
 

@@ -34,7 +34,7 @@
 #include "ui/gui/psppire-marshal.h"
 #include "ui/gui/psppire-var-ptr.h"
 
-#include "ui/gui/efficient-sheet/src/jmd-datum.h"
+#include "ui/gui/efficient-sheet/src/ssw-datum.h"
 
 #include <gobject/genums.h>
 
@@ -81,13 +81,13 @@ gni (GListModel *list)
 static GType
 git (GListModel *list)
 {
-  return JMD_TYPE_DATUM;
+  return SSW_TYPE_DATUM;
 }
 
 static gpointer
 gi (GListModel *list, guint id)
 {
-  JmdDatum *gd = JMD_DATUM (g_object_new (JMD_TYPE_DATUM, NULL));
+  SswDatum *gd = SSW_DATUM (g_object_new (SSW_TYPE_DATUM, NULL));
 
   PsppireDict *dict = PSPPIRE_DICT (list);
 
@@ -108,7 +108,7 @@ gi (GListModel *list, guint id)
 
 
 static void
-jmd_init_iface (GListModelInterface *iface)
+ssw_init_iface (GListModelInterface *iface)
 {
   iface->get_n_items = gni;
   iface->get_item = gi;
@@ -152,7 +152,7 @@ psppire_dict_get_type (void)
       };
 
       static const GInterfaceInfo list_model_info = {
-	(GInterfaceInitFunc) jmd_init_iface,
+	(GInterfaceInitFunc) ssw_init_iface,
 	NULL,
 	NULL
       };

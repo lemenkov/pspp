@@ -19,12 +19,12 @@
 #define _PSPPIRE_VARIABLE_SHEET_H
 
 #include <gtk/gtk.h>
-#include "ui/gui/efficient-sheet/src/jmd-sheet.h"
+#include "ui/gui/efficient-sheet/src/ssw-sheet.h"
 
 
 struct _PsppireVariableSheet
 {
-  JmdSheet parent_instance;
+  SswSheet parent_instance;
 
   GtkCellRenderer *value_label_renderer;
   GtkCellRenderer *missing_values_renderer;
@@ -39,12 +39,12 @@ struct _PsppireVariableSheet
 
 struct _PsppireVariableSheetClass
 {
-  JmdSheetClass parent_class;
+  SswSheetClass parent_class;
 };
 
 #define PSPPIRE_TYPE_VARIABLE_SHEET psppire_variable_sheet_get_type ()
 
-G_DECLARE_FINAL_TYPE (PsppireVariableSheet, psppire_variable_sheet, PSPPIRE, VARIABLE_SHEET, JmdSheet)
+G_DECLARE_FINAL_TYPE (PsppireVariableSheet, psppire_variable_sheet, PSPPIRE, VARIABLE_SHEET, SswSheet)
 
 GtkWidget *psppire_variable_sheet_new (void);
 

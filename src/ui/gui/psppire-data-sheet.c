@@ -30,7 +30,7 @@
 static void
 do_sort (PsppireDataSheet *sheet, GtkSortType order)
 {
-  JmdRange *range = JMD_SHEET(sheet)->selection;
+  SswRange *range = SSW_SHEET(sheet)->selection;
 
   PsppireDataStore *data_store = NULL;
   g_object_get (sheet, "data-model", &data_store, NULL);
@@ -103,7 +103,7 @@ change_data_value (PsppireDataSheet *sheet, gint col, gint row, GValue *value)
 }
 
 static gchar *
-data_store_value_to_string (JmdSheet *data_sheet, PsppireDataStore *store, gint col, gint row, const GValue *v)
+data_store_value_to_string (SswSheet *data_sheet, PsppireDataStore *store, gint col, gint row, const GValue *v)
 {
   return psppire_data_store_value_to_string (store, col, row, v);
 }
@@ -155,7 +155,7 @@ insert_new_case (PsppireDataSheet *sheet)
 static void
 delete_cases (PsppireDataSheet *sheet)
 {
-  JmdRange *range = JMD_SHEET(sheet)->selection;
+  SswRange *range = SSW_SHEET(sheet)->selection;
 
   PsppireDataStore *data_store = NULL;
   g_object_get (sheet, "data-model", &data_store, NULL);
@@ -236,7 +236,7 @@ insert_new_variable (PsppireDataSheet *sheet)
 static void
 set_menu_items_sensitivity (PsppireDataSheet *sheet, gpointer selection, gpointer p)
 {
-  JmdRange *range = selection;
+  SswRange *range = selection;
 
   PsppireDataStore *data_store = NULL;
   g_object_get (sheet, "data-model", &data_store, NULL);
@@ -262,7 +262,7 @@ set_menu_items_sensitivity (PsppireDataSheet *sheet, gpointer selection, gpointe
 static void
 delete_variables (PsppireDataSheet *sheet)
 {
-  JmdRange *range = JMD_SHEET(sheet)->selection;
+  SswRange *range = SSW_SHEET(sheet)->selection;
 
   PsppireDataStore *data_store = NULL;
   g_object_get (sheet, "data-model", &data_store, NULL);
@@ -322,7 +322,7 @@ create_data_column_header_popup_menu (PsppireDataSheet *sheet)
 
 
 
-G_DEFINE_TYPE (PsppireDataSheet, psppire_data_sheet, JMD_TYPE_SHEET)
+G_DEFINE_TYPE (PsppireDataSheet, psppire_data_sheet, SSW_TYPE_SHEET)
 
 static GObjectClass * parent_class = NULL;
 static gboolean dispose_has_run = FALSE;
