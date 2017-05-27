@@ -92,6 +92,8 @@ use the GUI, you must run `configure' with --without-gui.
     * GtkSourceView (http://projects.gnome.org/gtksourceview/) 
       version 3.4.0 or later.
 
+    * GNU Spread Sheet Widget (http://www.gnu.org/software/ssw)
+
 The following packages are optional:
 
 Installing the following packages will allow your PSPP program to read
