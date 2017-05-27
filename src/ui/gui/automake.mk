@@ -92,7 +92,6 @@ endif
 
 
 src_ui_gui_psppire_LDADD = \
-	lib/gtk-contrib/libxpaned.a \
 	src/ui/libuicommon.la \
 	src/libpspp.la \
 	src/libpspp-core.la \

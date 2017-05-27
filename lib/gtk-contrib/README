@@ -1,5 +1,0 @@
-This is not part of the GNU PSPP program, but is used with GNU PSPP.
-
-This directory contains a version of the GtkXPaned widget.  It includes
-minor modifications. GtkXPaned is licensed under the GNU Lesser
-General Public License.  See COPYING.LESSER. 

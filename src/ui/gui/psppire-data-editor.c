@@ -20,7 +20,6 @@
 #include "ui/gui/psppire-data-editor.h"
 
 #include <gtk/gtk.h>
-#include <gtk-contrib/gtkxpaned.h>
 
 #include "data/datasheet.h"
 #include "data/value-labels.h"
