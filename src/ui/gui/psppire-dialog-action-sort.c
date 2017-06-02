@@ -89,19 +89,13 @@ dialog_state_valid (gpointer act)
 }
 
 
-static void
-psppire_dialog_action_sort_activate (PsppireDialogAction *a)
+static GtkBuilder *
+psppire_dialog_action_sort_activate (PsppireDialogAction *a, GVariant *param)
 {
   PsppireDialogAction *pda = PSPPIRE_DIALOG_ACTION (a);
   PsppireDialogActionSort *act = PSPPIRE_DIALOG_ACTION_SORT (a);
 
-  GHashTable *thing = psppire_dialog_action_get_hash_table (pda);
-  GtkBuilder *xml = g_hash_table_lookup (thing, a);
-  if (!xml)
-    {
-      xml = builder_new ("sort.ui");
-      g_hash_table_insert (thing, a, xml);
-    }
+  GtkBuilder *xml = builder_new ( "sort.ui");
 
   pda->dialog = get_widget_assert (xml, "sort-cases-dialog");
   pda->source = get_widget_assert (xml, "sort-cases-treeview1");
@@ -113,16 +107,16 @@ psppire_dialog_action_sort_activate (PsppireDialogAction *a)
 
   psppire_dialog_action_set_valid_predicate (pda,
 				      dialog_state_valid);
-
+  return xml;
 }
 
 static void
 psppire_dialog_action_sort_class_init (PsppireDialogActionSortClass *class)
 {
  PsppireDialogActionClass *pdac = PSPPIRE_DIALOG_ACTION_CLASS (class);
-  psppire_dialog_action_set_activation (class, psppire_dialog_action_sort_activate);
+  PSPPIRE_DIALOG_ACTION_CLASS (class)->initial_activate = psppire_dialog_action_sort_activate;
 
-  pdac->generate_syntax = generate_syntax;
+ pdac->generate_syntax = generate_syntax;
 }
 
 

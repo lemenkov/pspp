@@ -102,20 +102,13 @@ refresh (PsppireDialogAction *rd_)
   gtk_list_store_clear (GTK_LIST_STORE (model));
 }
 
-static void
-psppire_dialog_action_tt1s_activate (PsppireDialogAction *a)
+static GtkBuilder *
+psppire_dialog_action_tt1s_activate (PsppireDialogAction *a, GVariant *param)
 {
   PsppireDialogAction *pda = PSPPIRE_DIALOG_ACTION (a);
   PsppireDialogActionTt1s *act = PSPPIRE_DIALOG_ACTION_TT1S (a);
 
-  GHashTable *thing = psppire_dialog_action_get_hash_table (pda);
-  GtkBuilder *xml = g_hash_table_lookup (thing, a);
-  if (!xml)
-    {
-      xml = builder_new ("t-test.ui");
-      g_hash_table_insert (thing, a, xml);
-    }
-
+  GtkBuilder *xml = builder_new ( "t-test.ui");
   GtkWidget *options_button = get_widget_assert (xml, "button1");
 
   pda->dialog = get_widget_assert (xml, "t-test-one-sample-dialog");
@@ -134,7 +127,7 @@ psppire_dialog_action_tt1s_activate (PsppireDialogAction *a)
 
   g_signal_connect_swapped (options_button, "clicked",
 			    G_CALLBACK (tt_options_dialog_run), act->opt);
-
+  return xml;
 }
 
 static void
@@ -148,7 +141,7 @@ static void
 psppire_dialog_action_tt1s_class_init (PsppireDialogActionTt1sClass *class)
 {
   GObjectClass *object_class = G_OBJECT_CLASS (class);
-  psppire_dialog_action_set_activation (class, psppire_dialog_action_tt1s_activate);
+  PSPPIRE_DIALOG_ACTION_CLASS (class)->initial_activate = psppire_dialog_action_tt1s_activate;
 
   object_class->finalize = psppire_dialog_action_tt1s_finalize;
   PSPPIRE_DIALOG_ACTION_CLASS (class)->generate_syntax = generate_syntax;

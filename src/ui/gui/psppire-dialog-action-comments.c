@@ -167,100 +167,94 @@ wrap_line (GtkTextBuffer *buffer,
 }
 
 
-static void
-psppire_dialog_action_comments_activate (PsppireDialogAction *pda)
+static GtkBuilder *
+psppire_dialog_action_comments_activate (PsppireDialogAction *pda, GVariant *param)
 {
   PsppireDialogActionComments *act = PSPPIRE_DIALOG_ACTION_COMMENTS (pda);
 
-  GHashTable *thing = psppire_dialog_action_get_hash_table (pda);
-  GtkBuilder *xml = g_hash_table_lookup (thing, pda);
-  if (!xml)
+  GtkBuilder *xml = builder_new ( "comments.ui");
+
+  pda->dialog = get_widget_assert (xml, "comments-dialog");
+  act->textview = get_widget_assert (xml, "comments-textview1");
+  GtkWidget *label = get_widget_assert (xml, "column-number-label");
+  GtkTextBuffer *buffer = gtk_text_view_get_buffer (GTK_TEXT_VIEW (act->textview));
+  act->check = get_widget_assert (xml, "comments-checkbutton1");
+
+  g_signal_connect_swapped (pda->dialog, "show", G_CALLBACK (retrieve_comments), pda);
+
+  {
+    PangoContext * context ;
+    PangoLayout *  layout ;
+    PangoRectangle rect;
+
+
+    /* Since we're going to truncate lines to 80 chars,
+       we need a monospaced font otherwise it'll look silly */
+    PangoFontDescription *font_desc =
+      pango_font_description_from_string ("monospace");
     {
-      GtkTextIter iter;
+      GtkStyleContext *style = gtk_widget_get_style_context (GTK_WIDGET (act->textview));
+      GtkCssProvider *cssp = gtk_css_provider_new ();
 
-      xml = builder_new ("comments.ui");
-      g_hash_table_insert (thing, pda, xml);
+      gchar *str = pango_font_description_to_string (font_desc);
+      gchar *css =
+	g_strdup_printf ("* {font: %s}", str);
+      g_free (str);
 
-      pda->dialog = get_widget_assert (xml, "comments-dialog");
-      act->textview = get_widget_assert (xml, "comments-textview1");
-      GtkWidget *label = get_widget_assert (xml, "column-number-label");
-      GtkTextBuffer *buffer = gtk_text_view_get_buffer (GTK_TEXT_VIEW (act->textview));
-      act->check = get_widget_assert (xml, "comments-checkbutton1");
-
-      g_signal_connect_swapped (pda->dialog, "show", G_CALLBACK (retrieve_comments), pda);
-
-      {
-	PangoContext * context ;
-	PangoLayout *  layout ;
-	PangoRectangle rect;
-
-
-	/* Since we're going to truncate lines to 80 chars,
-	   we need a monospaced font otherwise it'll look silly */
-	PangoFontDescription *font_desc =
-	  pango_font_description_from_string ("monospace");
+      GError *err = NULL;
+      gtk_css_provider_load_from_data (cssp, css, -1, &err);
+      if (err)
 	{
-	  GtkStyleContext *style = gtk_widget_get_style_context (GTK_WIDGET (act->textview));
-	  GtkCssProvider *cssp = gtk_css_provider_new ();
-
-	  gchar *str = pango_font_description_to_string (font_desc);
-	  gchar *css =
-	    g_strdup_printf ("* {font: %s}", str);
-	  g_free (str);
-
-	  GError *err = NULL;
-	  gtk_css_provider_load_from_data (cssp, css, -1, &err);
-	  if (err)
-	    {
-	      g_warning ("Failed to load font css \"%s\": %s", css, err->message);
-	      g_error_free (err);
-	    }
-	  g_free (css);
-
-	  gtk_style_context_add_provider (style,
-					  GTK_STYLE_PROVIDER (cssp),
-					  GTK_STYLE_PROVIDER_PRIORITY_APPLICATION);
-	  g_object_unref (cssp);
+	  g_warning ("Failed to load font css \"%s\": %s", css, err->message);
+	  g_error_free (err);
 	}
+      g_free (css);
 
-	/* And let's just make sure that a complete line fits into the
-	   widget's width */
-	context = gtk_widget_create_pango_context (act->textview);
-	layout = pango_layout_new (context);
-
-	pango_layout_set_text (layout, "M", 1);
-
-	pango_layout_set_font_description (layout, font_desc);
-
-	pango_layout_get_extents (layout, NULL, &rect);
-
-	g_object_set (act->textview, "width-request",
-		      PANGO_PIXELS (rect.width) * DOC_LINE_LENGTH + 20, NULL);
-
-	g_object_unref (G_OBJECT (layout));
-	g_object_unref (G_OBJECT (context));
-
-	pango_font_description_free (font_desc);
-      }
-
-      g_signal_connect (buffer, "mark-set",
-			G_CALLBACK (set_column_number), label);
-
-      g_signal_connect_after (buffer, "insert-text",
-			      G_CALLBACK (wrap_line), NULL);
-
-      gtk_text_buffer_get_iter_at_offset (buffer, &iter, 0);
-      gtk_text_buffer_place_cursor (buffer, &iter);
+      gtk_style_context_add_provider (style,
+				      GTK_STYLE_PROVIDER (cssp),
+				      GTK_STYLE_PROVIDER_PRIORITY_APPLICATION);
+      g_object_unref (cssp);
     }
+
+    /* And let's just make sure that a complete line fits into the
+       widget's width */
+    context = gtk_widget_create_pango_context (act->textview);
+    layout = pango_layout_new (context);
+
+    pango_layout_set_text (layout, "M", 1);
+
+    pango_layout_set_font_description (layout, font_desc);
+
+    pango_layout_get_extents (layout, NULL, &rect);
+
+    g_object_set (act->textview, "width-request",
+		  PANGO_PIXELS (rect.width) * DOC_LINE_LENGTH + 20, NULL);
+
+    g_object_unref (G_OBJECT (layout));
+    g_object_unref (G_OBJECT (context));
+
+    pango_font_description_free (font_desc);
+  }
+  GtkTextIter iter;
+  g_signal_connect (buffer, "mark-set",
+		    G_CALLBACK (set_column_number), label);
+
+  g_signal_connect_after (buffer, "insert-text",
+			  G_CALLBACK (wrap_line), NULL);
+
+  gtk_text_buffer_get_iter_at_offset (buffer, &iter, 0);
+  gtk_text_buffer_place_cursor (buffer, &iter);
 
   psppire_dialog_action_set_valid_predicate (pda, dialog_state_valid);
   psppire_dialog_action_set_refresh (pda, refresh);
+
+  return xml;
 }
 
 static void
 psppire_dialog_action_comments_class_init (PsppireDialogActionCommentsClass *class)
 {
-  psppire_dialog_action_set_activation (class, psppire_dialog_action_comments_activate);
+  PSPPIRE_DIALOG_ACTION_CLASS (class)->initial_activate  = psppire_dialog_action_comments_activate;
   PSPPIRE_DIALOG_ACTION_CLASS (class)->generate_syntax = generate_syntax;
 }
 

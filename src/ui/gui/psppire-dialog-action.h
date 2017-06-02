@@ -83,6 +83,7 @@ struct _PsppireDialogAction
 struct _PsppireDialogActionClass
 {
   GObjectClass parent_class;
+  GtkBuilder * (*initial_activate) (PsppireDialogAction *, GVariant *);
   void   (*activate) (PsppireDialogAction *, GVariant *);
   char * (*generate_syntax) (const PsppireDialogAction *);
 };
@@ -97,14 +98,10 @@ void psppire_dialog_action_set_refresh (PsppireDialogAction *pda,
 void psppire_dialog_action_set_valid_predicate (PsppireDialogAction *act,
 						ContentsAreValid dialog_state_valid);
 
-typedef void (*activation) (PsppireDialogAction *);
+GtkBuilder * psppire_dialog_action_get_xml (PsppireDialogAction *da);
 
-void psppire_dialog_action_set_activation (gpointer class, activation a);
-
-GHashTable *psppire_dialog_action_get_hash_table (PsppireDialogAction *act);
 
 void psppire_dialog_action_activate_null (PsppireDialogAction *act);
-
 
 G_END_DECLS
 

@@ -169,51 +169,47 @@ set_value_entry_variable (PsppireDialogActionKIndependent *kid, GtkEntry *entry)
 }
 
 
-static void
-psppire_dialog_action_k_independent_activate (PsppireDialogAction *a)
+static GtkBuilder *
+psppire_dialog_action_k_independent_activate (PsppireDialogAction *a, GVariant *param)
 {
   PsppireDialogAction *pda = PSPPIRE_DIALOG_ACTION (a);
   PsppireDialogActionKIndependent *kid = PSPPIRE_DIALOG_ACTION_K_INDEPENDENT (a);
 
-  GHashTable *thing = psppire_dialog_action_get_hash_table (pda);
-  GtkBuilder *xml = g_hash_table_lookup (thing, a);
-  if (!xml)
-    {
-      xml = builder_new ("k-independent.ui");
-      g_hash_table_insert (thing, a, xml);
+  GtkBuilder *xml = builder_new ( "k-independent.ui");
 
-      pda->dialog = get_widget_assert   (xml, "k-independent-dialog");
-      pda->source = get_widget_assert   (xml, "k-independent-treeview1");
+  pda->dialog = get_widget_assert   (xml, "k-independent-dialog");
+  pda->source = get_widget_assert   (xml, "k-independent-treeview1");
 
-      kid->vars_treeview =  get_widget_assert (xml, "k-independent-treeview2");
-      kid->groupvar_entry = get_widget_assert (xml, "k-independent-entry");
+  kid->vars_treeview =  get_widget_assert (xml, "k-independent-treeview2");
+  kid->groupvar_entry = get_widget_assert (xml, "k-independent-entry");
 
-      kid->subdialog = get_widget_assert (xml, "define-groups-dialog");
+  kid->subdialog = get_widget_assert (xml, "define-groups-dialog");
 
-      kid->lower_limit_entry = get_widget_assert (xml, "lower-limit-entry");
-      kid->upper_limit_entry = get_widget_assert (xml, "upper-limit-entry");
+  kid->lower_limit_entry = get_widget_assert (xml, "lower-limit-entry");
+  kid->upper_limit_entry = get_widget_assert (xml, "upper-limit-entry");
 
-      kid->checkbutton[KID_KRUSKAL_WALLIS] = get_widget_assert (xml,
-								"kruskal-wallis");
+  kid->checkbutton[KID_KRUSKAL_WALLIS] = get_widget_assert (xml,
+							    "kruskal-wallis");
 
-      kid->checkbutton[KID_MEDIAN] = get_widget_assert (xml, "median");
+  kid->checkbutton[KID_MEDIAN] = get_widget_assert (xml, "median");
 
-      g_signal_connect_swapped (get_widget_assert (xml, "define-groups-button"),
-				"clicked",
-				G_CALLBACK (run_define_groups_dialog), kid);
+  g_signal_connect_swapped (get_widget_assert (xml, "define-groups-button"),
+			    "clicked",
+			    G_CALLBACK (run_define_groups_dialog), kid);
 
-      g_signal_connect_swapped (kid->groupvar_entry, "changed",
-				G_CALLBACK (set_value_entry_variable), kid);
-    }
+  g_signal_connect_swapped (kid->groupvar_entry, "changed",
+			    G_CALLBACK (set_value_entry_variable), kid);
 
   psppire_dialog_action_set_valid_predicate (pda, dialog_state_valid);
   psppire_dialog_action_set_refresh (pda, refresh);
+
+  return xml;
 }
 
 static void
 psppire_dialog_action_k_independent_class_init (PsppireDialogActionKIndependentClass *class)
 {
-  psppire_dialog_action_set_activation (class, psppire_dialog_action_k_independent_activate);
+  PSPPIRE_DIALOG_ACTION_CLASS (class)->initial_activate = psppire_dialog_action_k_independent_activate;
   PSPPIRE_DIALOG_ACTION_CLASS (class)->generate_syntax = generate_syntax;
 }
 

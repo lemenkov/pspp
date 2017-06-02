@@ -197,29 +197,23 @@ dialog_refresh (PsppireDialogAction *da)
   dae->opts = OPT_LISTWISE;
 }
 
-static void
-psppire_dialog_action_examine_activate (PsppireDialogAction *a)
+static GtkBuilder *
+psppire_dialog_action_examine_activate (PsppireDialogAction *a, GVariant *param)
 {
   PsppireDialogAction *pda = PSPPIRE_DIALOG_ACTION (a);
   PsppireDialogActionExamine *act = PSPPIRE_DIALOG_ACTION_EXAMINE (a);
 
-  GHashTable *thing = psppire_dialog_action_get_hash_table (pda);
-  GtkBuilder *xml = g_hash_table_lookup (thing, a);
-  if (!xml)
-    {
-      xml = builder_new ("examine.ui");
-      g_hash_table_insert (thing, a, xml);
+  GtkBuilder *xml = builder_new ("examine.ui");
 
-      GtkWidget *stats_button = get_widget_assert (xml, "stats-button");
-      GtkWidget *opts_button = get_widget_assert (xml, "opts-button");
-
-      g_signal_connect_swapped (stats_button, "clicked",
-				G_CALLBACK (run_stats_dialog), act);
-
-      g_signal_connect_swapped (opts_button, "clicked",
-				G_CALLBACK (run_opts_dialog), act);
-    }
-
+  GtkWidget *stats_button = get_widget_assert (xml, "stats-button");
+  GtkWidget *opts_button = get_widget_assert (xml, "opts-button");
+  
+  g_signal_connect_swapped (stats_button, "clicked",
+			    G_CALLBACK (run_stats_dialog), act);
+  
+  g_signal_connect_swapped (opts_button, "clicked",
+			    G_CALLBACK (run_opts_dialog), act);
+  
   GtkWidget *dep_sel = get_widget_assert (xml, "psppire-selector1");
   GtkWidget *dep_sel2 = get_widget_assert (xml, "psppire-selector2");
   GtkWidget *dep_sel3 = get_widget_assert (xml, "psppire-selector3");
@@ -259,13 +253,13 @@ psppire_dialog_action_examine_activate (PsppireDialogAction *a)
 
   psppire_dialog_action_set_valid_predicate (pda, (void *) dialog_state_valid);
   psppire_dialog_action_set_refresh (pda, dialog_refresh);
-
+  return xml;
 }
 
 static void
 psppire_dialog_action_examine_class_init (PsppireDialogActionExamineClass *class)
 {
-  psppire_dialog_action_set_activation (class, psppire_dialog_action_examine_activate);
+  PSPPIRE_DIALOG_ACTION_CLASS (class)->initial_activate = psppire_dialog_action_examine_activate;
 
   PSPPIRE_DIALOG_ACTION_CLASS (class)->generate_syntax = generate_syntax;
 }

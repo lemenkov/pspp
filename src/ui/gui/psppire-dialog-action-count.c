@@ -144,19 +144,13 @@ refresh (PsppireDialogAction *rd_)
   gtk_list_store_clear (GTK_LIST_STORE (cnt->value_list));
 }
 
-static void
-psppire_dialog_action_count_activate (PsppireDialogAction *a)
+static GtkBuilder *
+psppire_dialog_action_count_activate (PsppireDialogAction *a, GVariant *param)
 {
   PsppireDialogAction *pda = PSPPIRE_DIALOG_ACTION (a);
   PsppireDialogActionCount *act = PSPPIRE_DIALOG_ACTION_COUNT (a);
 
-  GHashTable *thing = psppire_dialog_action_get_hash_table (pda);
-  GtkBuilder *xml = g_hash_table_lookup (thing, a);
-  if (!xml)
-    {
-      xml = builder_new ("count.ui");
-      g_hash_table_insert (thing, a, xml);
-    }
+  GtkBuilder *xml = builder_new ( "count.ui");
 
   GtkWidget *selector = get_widget_assert (xml, "count-selector1");
   GtkWidget *button = get_widget_assert (xml, "button1");
@@ -178,12 +172,13 @@ psppire_dialog_action_count_activate (PsppireDialogAction *a)
   psppire_dialog_action_set_valid_predicate (pda, dialog_state_valid);
   psppire_dialog_action_set_refresh (pda, refresh);
 
+  return xml;
 }
 
 static void
 psppire_dialog_action_count_class_init (PsppireDialogActionCountClass *class)
 {
-  psppire_dialog_action_set_activation (class,psppire_dialog_action_count_activate);
+  PSPPIRE_DIALOG_ACTION_CLASS (class)->initial_activate = psppire_dialog_action_count_activate;
   PSPPIRE_DIALOG_ACTION_CLASS (class)->generate_syntax = generate_syntax;
 }
 

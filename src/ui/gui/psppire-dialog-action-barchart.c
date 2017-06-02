@@ -114,45 +114,40 @@ populate_combo_model (GtkComboBox *cb)
 }
 
 
-static void
-psppire_dialog_action_barchart_activate (PsppireDialogAction *a)
+static GtkBuilder *
+psppire_dialog_action_barchart_activate (PsppireDialogAction *a, GVariant *param)
 {
   PsppireDialogActionBarchart *act = PSPPIRE_DIALOG_ACTION_BARCHART (a);
   PsppireDialogAction *pda = PSPPIRE_DIALOG_ACTION (a);
 
-  GHashTable *thing = psppire_dialog_action_get_hash_table (pda);
-  GtkBuilder *xml = g_hash_table_lookup (thing, a);
-  if (!xml)
-    {
-      xml = builder_new ("barchart.ui");
-      g_hash_table_insert (thing, a, xml);
+  GtkBuilder *xml = builder_new ( "barchart.ui");
 
-      pda->dialog = get_widget_assert (xml, "barchart-dialog");
-      pda->source = get_widget_assert (xml, "dict-view");
+  pda->dialog = get_widget_assert (xml, "barchart-dialog");
+  pda->source = get_widget_assert (xml, "dict-view");
 
-      act->variable_xaxis = get_widget_assert (xml, "entry1");
-      act->variable_cluster = get_widget_assert (xml, "entry3");
-      act->var = get_widget_assert (xml, "entry2");
-      act->button_freq_func[0] = get_widget_assert (xml, "radiobutton-count");
-      act->button_freq_func[1] = get_widget_assert (xml, "radiobutton-percent");
-      act->button_freq_func[2] = get_widget_assert (xml, "radiobutton-cum-count");
-      act->button_freq_func[3] = get_widget_assert (xml, "radiobutton-cum-percent");
+  act->variable_xaxis = get_widget_assert (xml, "entry1");
+  act->variable_cluster = get_widget_assert (xml, "entry3");
+  act->var = get_widget_assert (xml, "entry2");
+  act->button_freq_func[0] = get_widget_assert (xml, "radiobutton-count");
+  act->button_freq_func[1] = get_widget_assert (xml, "radiobutton-percent");
+  act->button_freq_func[2] = get_widget_assert (xml, "radiobutton-cum-count");
+  act->button_freq_func[3] = get_widget_assert (xml, "radiobutton-cum-percent");
 
-      act->button_summary_func = get_widget_assert (xml, "radiobutton3");
-      act->summary_variables = get_widget_assert (xml, "hbox1");
-      act->combobox = get_widget_assert (xml, "combobox1");
+  act->button_summary_func = get_widget_assert (xml, "radiobutton3");
+  act->summary_variables = get_widget_assert (xml, "hbox1");
+  act->combobox = get_widget_assert (xml, "combobox1");
 
-      populate_combo_model (GTK_COMBO_BOX(act->combobox));
+  populate_combo_model (GTK_COMBO_BOX(act->combobox));
 
-      g_signal_connect_swapped (act->button_summary_func, "toggled",
-				G_CALLBACK (on_summary_toggle), act);
+  g_signal_connect_swapped (act->button_summary_func, "toggled",
+			    G_CALLBACK (on_summary_toggle), act);
 
-      psppire_dialog_action_set_refresh (pda, refresh);
+  psppire_dialog_action_set_refresh (pda, refresh);
 
-      psppire_dialog_action_set_valid_predicate (pda,
-						 dialog_state_valid);
-    }
+  psppire_dialog_action_set_valid_predicate (pda,
+					     dialog_state_valid);
 
+  return xml;
 }
 
 static char *
@@ -229,7 +224,7 @@ generate_syntax (const PsppireDialogAction *a)
 static void
 psppire_dialog_action_barchart_class_init (PsppireDialogActionBarchartClass *class)
 {
-  psppire_dialog_action_set_activation (class, psppire_dialog_action_barchart_activate);
+  PSPPIRE_DIALOG_ACTION_CLASS (class)->initial_activate = psppire_dialog_action_barchart_activate;
 
   PSPPIRE_DIALOG_ACTION_CLASS (class)->generate_syntax = generate_syntax;
 }

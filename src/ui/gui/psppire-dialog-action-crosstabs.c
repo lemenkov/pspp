@@ -202,70 +202,65 @@ on_statistics_clicked (PsppireDialogActionCrosstabs *cd)
 }
 
 
-static void
-psppire_dialog_action_crosstabs_activate (PsppireDialogAction *a)
+static GtkBuilder *
+psppire_dialog_action_crosstabs_activate (PsppireDialogAction *a, GVariant *param)
 {
   PsppireDialogActionCrosstabs *act = PSPPIRE_DIALOG_ACTION_CROSSTABS (a);
   PsppireDialogAction *pda = PSPPIRE_DIALOG_ACTION (a);
 
-  GHashTable *thing = psppire_dialog_action_get_hash_table (pda);
-  GtkBuilder *xml = g_hash_table_lookup (thing, a);
-  if (!xml)
-    {
-      xml = builder_new ("crosstabs.ui");
-      g_hash_table_insert (thing, a, xml);
+  GtkBuilder *xml = builder_new ( "crosstabs.ui");
 
-      pda->dialog = get_widget_assert   (xml, "crosstabs-dialog");
-      pda->source = get_widget_assert   (xml, "dict-treeview");
+  pda->dialog = get_widget_assert   (xml, "crosstabs-dialog");
+  pda->source = get_widget_assert   (xml, "dict-treeview");
 
-      act->dest_rows =   get_widget_assert   (xml, "rows");
-      act->dest_cols =   get_widget_assert   (xml, "cols");
-      act->format_button = get_widget_assert (xml, "format-button");
-      act->stat_button = get_widget_assert (xml, "stats-button");
-      act->cell_button = get_widget_assert (xml, "cell-button");
-      act->stat_view =   get_widget_assert (xml, "stats-view");
-      act->cell_view =   get_widget_assert (xml, "cell-view");
-      act->cell_dialog = get_widget_assert (xml, "cell-dialog");
-      act->stat_dialog = get_widget_assert (xml, "stat-dialog");
-      act->format_dialog = get_widget_assert (xml, "format-dialog");
+  act->dest_rows =   get_widget_assert   (xml, "rows");
+  act->dest_cols =   get_widget_assert   (xml, "cols");
+  act->format_button = get_widget_assert (xml, "format-button");
+  act->stat_button = get_widget_assert (xml, "stats-button");
+  act->cell_button = get_widget_assert (xml, "cell-button");
+  act->stat_view =   get_widget_assert (xml, "stats-view");
+  act->cell_view =   get_widget_assert (xml, "cell-view");
+  act->cell_dialog = get_widget_assert (xml, "cell-dialog");
+  act->stat_dialog = get_widget_assert (xml, "stat-dialog");
+  act->format_dialog = get_widget_assert (xml, "format-dialog");
 
-      act->avalue_button = get_widget_assert (xml, "ascending");
-      act->table_button = get_widget_assert (xml, "print-tables");
-      act->pivot_button = get_widget_assert (xml, "pivot");
+  act->avalue_button = get_widget_assert (xml, "ascending");
+  act->table_button = get_widget_assert (xml, "print-tables");
+  act->pivot_button = get_widget_assert (xml, "pivot");
 
-      act->format_options_avalue = TRUE;
-      act->format_options_table = TRUE;
-      act->format_options_pivot = TRUE;
+  act->format_options_avalue = TRUE;
+  act->format_options_table = TRUE;
+  act->format_options_pivot = TRUE;
 
-      psppire_checkbox_treeview_populate (PSPPIRE_CHECKBOX_TREEVIEW (act->cell_view),
-					  B_CS_CELL_DEFAULT,
-					  N_CROSSTABS_CELLS,
-					  cells);
+  psppire_checkbox_treeview_populate (PSPPIRE_CHECKBOX_TREEVIEW (act->cell_view),
+				      B_CS_CELL_DEFAULT,
+				      N_CROSSTABS_CELLS,
+				      cells);
 
-      act->cell = gtk_tree_view_get_model (GTK_TREE_VIEW (act->cell_view));
+  act->cell = gtk_tree_view_get_model (GTK_TREE_VIEW (act->cell_view));
 
-      psppire_checkbox_treeview_populate (PSPPIRE_CHECKBOX_TREEVIEW (act->stat_view),
-					  B_CS_STATS_DEFAULT,
-					  N_CROSSTABS_STATS,
-					  stats);
+  psppire_checkbox_treeview_populate (PSPPIRE_CHECKBOX_TREEVIEW (act->stat_view),
+				      B_CS_STATS_DEFAULT,
+				      N_CROSSTABS_STATS,
+				      stats);
 
-      act->stat = gtk_tree_view_get_model (GTK_TREE_VIEW (act->stat_view));
+  act->stat = gtk_tree_view_get_model (GTK_TREE_VIEW (act->stat_view));
 
-      psppire_dialog_action_set_refresh (pda, refresh);
+  psppire_dialog_action_set_refresh (pda, refresh);
 
-      psppire_dialog_action_set_valid_predicate (pda,
-						 dialog_state_valid);
+  psppire_dialog_action_set_valid_predicate (pda,
+					     dialog_state_valid);
 
-      g_signal_connect_swapped (act->cell_button, "clicked",
-				G_CALLBACK (on_cell_clicked), act);
+  g_signal_connect_swapped (act->cell_button, "clicked",
+			    G_CALLBACK (on_cell_clicked), act);
 
-      g_signal_connect_swapped (act->stat_button, "clicked",
-				G_CALLBACK (on_statistics_clicked), act);
+  g_signal_connect_swapped (act->stat_button, "clicked",
+			    G_CALLBACK (on_statistics_clicked), act);
 
-      g_signal_connect_swapped (act->format_button, "clicked",
-				G_CALLBACK (on_format_clicked), act);
+  g_signal_connect_swapped (act->format_button, "clicked",
+			    G_CALLBACK (on_format_clicked), act);
 
-    }
+  return xml;
 }
 
 
@@ -378,7 +373,7 @@ generate_syntax (const PsppireDialogAction *a)
 static void
 psppire_dialog_action_crosstabs_class_init (PsppireDialogActionCrosstabsClass *class)
 {
-  psppire_dialog_action_set_activation (class, psppire_dialog_action_crosstabs_activate);
+  PSPPIRE_DIALOG_ACTION_CLASS (class)->initial_activate = psppire_dialog_action_crosstabs_activate;
   PSPPIRE_DIALOG_ACTION_CLASS (class)->generate_syntax = generate_syntax;
 }
 
@@ -387,4 +382,3 @@ static void
 psppire_dialog_action_crosstabs_init (PsppireDialogActionCrosstabs *act)
 {
 }
-

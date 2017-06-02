@@ -482,124 +482,116 @@ update_arguments (PsppireDialogActionAggregate *agg)
 
 
 
-static void
-psppire_dialog_action_aggregate_activate (PsppireDialogAction *a)
+static GtkBuilder *
+psppire_dialog_action_aggregate_activate (PsppireDialogAction *a, GVariant *param)
 {
   PsppireDialogActionAggregate *act = PSPPIRE_DIALOG_ACTION_AGGREGATE (a);
   PsppireDialogAction *pda = PSPPIRE_DIALOG_ACTION (a);
 
-  GHashTable *thing = psppire_dialog_action_get_hash_table (pda);
-  GtkBuilder *xml = g_hash_table_lookup (thing, a);
-  if (!xml)
-    {
-      xml = builder_new ("aggregate.ui");
-      g_hash_table_insert (thing, a, xml);
+  GtkBuilder *xml = builder_new ("aggregate.ui");
+
+  pda->dialog = get_widget_assert (xml, "aggregate-dialog");
+  pda->source = get_widget_assert (xml, "dict-view");
+
+  GtkWidget *break_selector = get_widget_assert   (xml, "break-selector");
+
+  act->pane = get_widget_assert (xml, "hbox1");
+
+  act->break_variables = get_widget_assert (xml, "psppire-var-view1");
+  act->filename_radiobutton = get_widget_assert (xml, "filename-radiobutton");
+  act->filename_button = get_widget_assert (xml, "filename-button");
+  act->filename_box = get_widget_assert (xml, "filename-box");
+  act->filename_label = get_widget_assert (xml, "filename-label");
+  act->replace_radiobutton = get_widget_assert (xml, "replace-radiobutton");
+  act->add_radiobutton = get_widget_assert (xml, "add-radiobutton");
+  act->function_combo = get_widget_assert (xml, "function-combo");
+
+  act->summary_acr = get_widget_assert (xml, "psppire-acr1");
+  act->summary_var_name_entry = get_widget_assert (xml, "summary-var-name-entry");
+
+  act->summary_arg1 = get_widget_assert (xml, "summary-arg1");
+  act->summary_arg2 = get_widget_assert (xml, "summary-arg2");
+
+  act->summary_arg1_entry = get_widget_assert (xml, "summary-arg-entry1");
+  act->summary_arg2_entry = get_widget_assert (xml, "summary-arg-entry2");
+
+  act->summary_var_label_entry = get_widget_assert (xml, "summary-var-label-entry");
+
+  act->summary_sv = get_widget_assert (xml, "source-var");
+  act->summary_sv_entry = get_widget_assert (xml, "source-var-entry");
+
+  act->sorted_button = get_widget_assert (xml, "sorted-radiobutton");
+  act->needs_sort_button = get_widget_assert (xml, "needs-sort-radiobutton");
+
+  {
+    GtkTreeViewColumn *column ;
+
+    GList *l ;
+
+    GtkCellRenderer *cell_renderer ;
+
+    GtkListStore *list = gtk_list_store_new (6,
+					     G_TYPE_STRING,
+					     G_TYPE_STRING,
+					     G_TYPE_INT,
+					     G_TYPE_STRING,
+					     G_TYPE_DOUBLE,
+					     G_TYPE_DOUBLE);
+
+    psppire_acr_set_model (PSPPIRE_ACR (act->summary_acr), list);
+    g_object_unref (list);
+
+    psppire_acr_set_get_value_func (PSPPIRE_ACR (act->summary_acr),
+				    get_summary_spec, act);
+
+    column = gtk_tree_view_get_column (PSPPIRE_ACR (act->summary_acr)->tv, 0);
+
+    l = gtk_cell_layout_get_cells (GTK_CELL_LAYOUT (column));
+
+    cell_renderer = l->data;
+
+    gtk_tree_view_column_set_cell_data_func (column,
+					     cell_renderer,
+					     render_summary,
+					     act,
+					     NULL);
+
+    g_signal_connect_swapped (PSPPIRE_ACR (act->summary_acr)->tv,
+			      "cursor-changed", G_CALLBACK (on_acr_change), act);
+  }
+
+  g_signal_connect_swapped (act->summary_var_name_entry, "changed", G_CALLBACK (update_acr),  act);
+  g_signal_connect_swapped (act->function_combo, "changed", G_CALLBACK (update_acr),  act);
+  g_signal_connect_swapped (act->summary_sv_entry, "changed", G_CALLBACK (update_acr),  act);
+  g_signal_connect_swapped (act->summary_arg1_entry, "changed", G_CALLBACK (update_acr),  act);
+  g_signal_connect_swapped (act->summary_arg2_entry, "changed", G_CALLBACK (update_acr),  act);
 
 
-      pda->dialog = get_widget_assert (xml, "aggregate-dialog");
-      pda->source = get_widget_assert (xml, "dict-view");
+  g_signal_connect_swapped (act->function_combo, "changed",
+			    G_CALLBACK (update_arguments),  act);
+
+  populate_combo_model (GTK_COMBO_BOX (act->function_combo));
 
 
-
-      GtkWidget *break_selector = get_widget_assert   (xml, "break-selector");
-
-      act->pane = get_widget_assert (xml, "hbox1");
-
-      act->break_variables = get_widget_assert (xml, "psppire-var-view1");
-      act->filename_radiobutton = get_widget_assert (xml, "filename-radiobutton");
-      act->filename_button = get_widget_assert (xml, "filename-button");
-      act->filename_box = get_widget_assert (xml, "filename-box");
-      act->filename_label = get_widget_assert (xml, "filename-label");
-      act->replace_radiobutton = get_widget_assert (xml, "replace-radiobutton");
-      act->add_radiobutton = get_widget_assert (xml, "add-radiobutton");
-      act->function_combo = get_widget_assert (xml, "function-combo");
-
-      act->summary_acr = get_widget_assert (xml, "psppire-acr1");
-      act->summary_var_name_entry = get_widget_assert (xml, "summary-var-name-entry");
-
-      act->summary_arg1 = get_widget_assert (xml, "summary-arg1");
-      act->summary_arg2 = get_widget_assert (xml, "summary-arg2");
-
-      act->summary_arg1_entry = get_widget_assert (xml, "summary-arg-entry1");
-      act->summary_arg2_entry = get_widget_assert (xml, "summary-arg-entry2");
-
-      act->summary_var_label_entry = get_widget_assert (xml, "summary-var-label-entry");
-
-      act->summary_sv = get_widget_assert (xml, "source-var");
-      act->summary_sv_entry = get_widget_assert (xml, "source-var-entry");
-
-      act->sorted_button = get_widget_assert (xml, "sorted-radiobutton");
-      act->needs_sort_button = get_widget_assert (xml, "needs-sort-radiobutton");
-
-      {
-	GtkTreeViewColumn *column ;
-
-	GList *l ;
-
-	GtkCellRenderer *cell_renderer ;
-
-	GtkListStore *list = gtk_list_store_new (6,
-						 G_TYPE_STRING,
-						 G_TYPE_STRING,
-						 G_TYPE_INT,
-						 G_TYPE_STRING,
-						 G_TYPE_DOUBLE,
-						 G_TYPE_DOUBLE);
-
-	psppire_acr_set_model (PSPPIRE_ACR (act->summary_acr), list);
-	g_object_unref (list);
-
-	psppire_acr_set_get_value_func (PSPPIRE_ACR (act->summary_acr),
-					get_summary_spec, act);
-
-	column = gtk_tree_view_get_column (PSPPIRE_ACR (act->summary_acr)->tv, 0);
-
-	l = gtk_cell_layout_get_cells (GTK_CELL_LAYOUT (column));
-
-	cell_renderer = l->data;
-
-	gtk_tree_view_column_set_cell_data_func (column,
-						 cell_renderer,
-						 render_summary,
-						 act,
-						 NULL);
-
-	g_signal_connect_swapped (PSPPIRE_ACR (act->summary_acr)->tv,
-				  "cursor-changed", G_CALLBACK (on_acr_change), act);
-      }
-
-      g_signal_connect_swapped (act->summary_var_name_entry, "changed", G_CALLBACK (update_acr),  act);
-      g_signal_connect_swapped (act->function_combo, "changed", G_CALLBACK (update_acr),  act);
-      g_signal_connect_swapped (act->summary_sv_entry, "changed", G_CALLBACK (update_acr),  act);
-      g_signal_connect_swapped (act->summary_arg1_entry, "changed", G_CALLBACK (update_acr),  act);
-      g_signal_connect_swapped (act->summary_arg2_entry, "changed", G_CALLBACK (update_acr),  act);
+  psppire_selector_set_filter_func (PSPPIRE_SELECTOR (break_selector), NULL);
 
 
-      g_signal_connect_swapped (act->function_combo, "changed",
-      				G_CALLBACK (update_arguments),  act);
+  g_signal_connect (act->filename_radiobutton, "toggled",
+		    G_CALLBACK (set_sensitivity_from_toggle), act->filename_box );
 
-      populate_combo_model (GTK_COMBO_BOX (act->function_combo));
+  g_signal_connect_swapped (act->filename_button, "clicked",
+			    G_CALLBACK (choose_filename), act);
 
+  psppire_dialog_action_set_refresh (pda, refresh);
+  psppire_dialog_action_set_valid_predicate (pda, dialog_state_valid);
 
-      psppire_selector_set_filter_func (PSPPIRE_SELECTOR (break_selector), NULL);
-
-
-      g_signal_connect (act->filename_radiobutton, "toggled",
-      			G_CALLBACK (set_sensitivity_from_toggle), act->filename_box );
-
-      g_signal_connect_swapped (act->filename_button, "clicked",
-      				G_CALLBACK (choose_filename), act);
-
-      psppire_dialog_action_set_refresh (pda, refresh);
-      psppire_dialog_action_set_valid_predicate (pda, dialog_state_valid);
-    }
-
+  return xml;
 }
 
 static void
 psppire_dialog_action_aggregate_class_init (PsppireDialogActionAggregateClass *class)
 {
-  psppire_dialog_action_set_activation (class, psppire_dialog_action_aggregate_activate);
+  PSPPIRE_DIALOG_ACTION_CLASS (class)->initial_activate = psppire_dialog_action_aggregate_activate;
   PSPPIRE_DIALOG_ACTION_CLASS (class)->generate_syntax = generate_syntax;
 }
 

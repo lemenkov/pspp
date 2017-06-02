@@ -120,20 +120,13 @@ on_state_var_changed (PsppireDialogAction *a)
   psppire_value_entry_set_variable (PSPPIRE_VALUE_ENTRY (act->state_value), var);
 }
 
-static void
-psppire_dialog_action_roc_activate (PsppireDialogAction *a)
+static GtkBuilder *
+psppire_dialog_action_roc_activate (PsppireDialogAction *a, GVariant *param)
 {
   PsppireDialogActionRoc *act = PSPPIRE_DIALOG_ACTION_ROC (a);
   PsppireDialogAction *pda = PSPPIRE_DIALOG_ACTION (a);
 
-  GHashTable *thing = psppire_dialog_action_get_hash_table (pda);
-  GtkBuilder *xml = g_hash_table_lookup (thing, a);
-  if (!xml)
-    {
-      xml = builder_new ("roc.ui");
-      g_hash_table_insert (thing, a, xml);
-    }
-
+  GtkBuilder *xml = builder_new ( "roc.ui");
 
   pda->dialog = get_widget_assert   (xml, "roc-dialog");
   pda->source = get_widget_assert   (xml, "dict-view");
@@ -157,7 +150,7 @@ psppire_dialog_action_roc_activate (PsppireDialogAction *a)
 
   psppire_dialog_action_set_valid_predicate (pda,
 					dialog_state_valid);
-
+  return xml;
 }
 
 
@@ -242,7 +235,7 @@ generate_syntax (const PsppireDialogAction *a)
 static void
 psppire_dialog_action_roc_class_init (PsppireDialogActionRocClass *class)
 {
-  psppire_dialog_action_set_activation (class, psppire_dialog_action_roc_activate);
+  PSPPIRE_DIALOG_ACTION_CLASS (class)->initial_activate = psppire_dialog_action_roc_activate;
 
   PSPPIRE_DIALOG_ACTION_CLASS (class)->generate_syntax = generate_syntax;
 }

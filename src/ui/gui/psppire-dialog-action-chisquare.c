@@ -128,19 +128,13 @@ refresh (PsppireDialogAction *rd_)
   gtk_entry_set_text (GTK_ENTRY (csd->value_upper), "");
 }
 
-static void
-psppire_dialog_action_chisquare_activate (PsppireDialogAction *a)
+static GtkBuilder *
+psppire_dialog_action_chisquare_activate (PsppireDialogAction *a, GVariant *param)
 {
   PsppireDialogAction *pda = PSPPIRE_DIALOG_ACTION (a);
   PsppireDialogActionChisquare *act = PSPPIRE_DIALOG_ACTION_CHISQUARE (a);
 
-  GHashTable *thing = psppire_dialog_action_get_hash_table (pda);
-  GtkBuilder *xml = g_hash_table_lookup (thing, a);
-  if (!xml)
-    {
-      xml = builder_new ("chi-square.ui");
-      g_hash_table_insert (thing, a, xml);
-    }
+  GtkBuilder *xml = builder_new ( "chi-square.ui");
 
   GtkWidget *range_table = get_widget_assert   (xml, "range-table");
   GtkWidget *values_acr = get_widget_assert   (xml, "psppire-acr1");
@@ -183,13 +177,13 @@ psppire_dialog_action_chisquare_activate (PsppireDialogAction *a)
 
   psppire_acr_set_model(PSPPIRE_ACR (values_acr), act->expected_list);
 
-
+  return xml;
 }
 
 static void
 psppire_dialog_action_chisquare_class_init (PsppireDialogActionChisquareClass *class)
 {
-  psppire_dialog_action_set_activation (class,  psppire_dialog_action_chisquare_activate);
+  PSPPIRE_DIALOG_ACTION_CLASS (class)->initial_activate = psppire_dialog_action_chisquare_activate;
   PSPPIRE_DIALOG_ACTION_CLASS (class)->generate_syntax = generate_syntax;
 }
 

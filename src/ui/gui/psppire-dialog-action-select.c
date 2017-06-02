@@ -255,111 +255,103 @@ consistency (GtkSpinButton *spin, PsppireDialogActionSelect *act)
     }
 }
 
-static void
-psppire_dialog_action_select_activate (PsppireDialogAction *a)
+static GtkBuilder *
+psppire_dialog_action_select_activate (PsppireDialogAction *a, GVariant *param)
 {
   PsppireDialogActionSelect *act = PSPPIRE_DIALOG_ACTION_SELECT (a);
   PsppireDialogAction *pda = PSPPIRE_DIALOG_ACTION (a);
+  
+  GtkBuilder *xml = builder_new ( "select-cases.ui");
 
-  GHashTable *thing = psppire_dialog_action_get_hash_table (pda);
-  GtkBuilder *xml = g_hash_table_lookup (thing, a);
-  if (!xml)
-    {
-      xml = builder_new ("select-cases.ui");
-      g_hash_table_insert (thing, a, xml);
+  pda->dialog = get_widget_assert (xml, "select-cases-dialog");
+  pda->source = get_widget_assert   (xml, "select-cases-treeview");
 
+  g_object_set (pda->source,
+		"selection-mode", GTK_SELECTION_SINGLE,
+		NULL);
 
-      pda->dialog = get_widget_assert (xml, "select-cases-dialog");
-      pda->source = get_widget_assert   (xml, "select-cases-treeview");
+  act->entry = get_widget_assert (xml, "filter-variable-entry");
 
-      g_object_set (pda->source,
-		    "selection-mode", GTK_SELECTION_SINGLE,
-		    NULL);
+  GtkWidget *selector = get_widget_assert (xml, "psppire-selector-filter");
+  psppire_selector_set_filter_func (PSPPIRE_SELECTOR (selector),
+				    is_currently_in_entry);
 
-      act->entry = get_widget_assert (xml, "filter-variable-entry");
+  act->rsample_dialog = get_widget_assert (xml, "select-cases-random-sample-dialog");
+  act->percent = get_widget_assert (xml, "radiobutton-sample-percent");
+  act->sample_n_cases = get_widget_assert (xml, "radiobutton-sample-n-cases");
+  act->table = get_widget_assert (xml, "select-cases-random-sample-table");
 
-      GtkWidget *selector = get_widget_assert (xml, "psppire-selector-filter");
-      psppire_selector_set_filter_func (PSPPIRE_SELECTOR (selector),
-					is_currently_in_entry);
+  act->l0 = get_widget_assert (xml, "random-sample-label");;
 
-      act->rsample_dialog = get_widget_assert (xml, "select-cases-random-sample-dialog");
-      act->percent = get_widget_assert (xml, "radiobutton-sample-percent");
-      act->sample_n_cases = get_widget_assert (xml, "radiobutton-sample-n-cases");
-      act->table = get_widget_assert (xml, "select-cases-random-sample-table");
+  act->radiobutton_range = get_widget_assert (xml, "radiobutton-range");
+  act->range_subdialog = get_widget_assert (xml, "select-cases-range-dialog");
 
-      act->l0 = get_widget_assert (xml, "random-sample-label");;
+  act->first = get_widget_assert (xml, "range-dialog-first");
+  act->last = get_widget_assert (xml, "range-dialog-last");
 
-      act->radiobutton_range = get_widget_assert (xml, "radiobutton-range");
-      act->range_subdialog = get_widget_assert (xml, "select-cases-range-dialog");
+  g_signal_connect (act->first, "value-changed", G_CALLBACK (consistency), act);
+  g_signal_connect (act->last, "value-changed", G_CALLBACK (consistency), act);
 
-      act->first = get_widget_assert (xml, "range-dialog-first");
-      act->last = get_widget_assert (xml, "range-dialog-last");
+  act->l1 = get_widget_assert (xml, "range-sample-label");
+  act->radiobutton_sample =  get_widget_assert (xml, "radiobutton-sample");
 
-      g_signal_connect (act->first, "value-changed", G_CALLBACK (consistency), act);
-      g_signal_connect (act->last, "value-changed", G_CALLBACK (consistency), act);
+  act->radiobutton_all = get_widget_assert (xml, "radiobutton-all");
+  act->radiobutton_filter_variable =  get_widget_assert (xml, "radiobutton-filter-variable");
 
-      act->l1 = get_widget_assert (xml, "range-sample-label");
-      act->radiobutton_sample =  get_widget_assert (xml, "radiobutton-sample");
-
-      act->radiobutton_all = get_widget_assert (xml, "radiobutton-all");
-      act->radiobutton_filter_variable =  get_widget_assert (xml, "radiobutton-filter-variable");
-
-      act->radiobutton_filter =  get_widget_assert (xml, "radiobutton-filter");
-      act->radiobutton_delete = get_widget_assert (xml,   "radiobutton-delete");
+  act->radiobutton_filter =  get_widget_assert (xml, "radiobutton-filter");
+  act->radiobutton_delete = get_widget_assert (xml,   "radiobutton-delete");
 
 
-      GtkWidget	*button_range = get_widget_assert (xml, "button-range");
-      GtkWidget *button_sample = get_widget_assert (xml, "button-sample");
+  GtkWidget	*button_range = get_widget_assert (xml, "button-range");
+  GtkWidget *button_sample = get_widget_assert (xml, "button-sample");
 
-      GtkWidget *button_if =get_widget_assert (xml, "button-if");
+  GtkWidget *button_if =get_widget_assert (xml, "button-if");
 
-      GtkWidget *radiobutton_if = get_widget_assert (xml, "radiobutton-if");
+  GtkWidget *radiobutton_if = get_widget_assert (xml, "radiobutton-if");
 
-      GtkWidget *sample_label = get_widget_assert (xml, "random-sample-label");
+  GtkWidget *sample_label = get_widget_assert (xml, "random-sample-label");
 
-      g_signal_connect (act->radiobutton_all, "toggled",
-			G_CALLBACK (set_sensitivity_from_toggle_invert),
-			get_widget_assert (xml, "filter-delete-button-box"));
+  g_signal_connect (act->radiobutton_all, "toggled",
+		    G_CALLBACK (set_sensitivity_from_toggle_invert),
+		    get_widget_assert (xml, "filter-delete-button-box"));
 
-      g_signal_connect (button_if, "clicked",
-			G_CALLBACK (set_radiobutton), radiobutton_if);
+  g_signal_connect (button_if, "clicked",
+		    G_CALLBACK (set_radiobutton), radiobutton_if);
 
-      g_signal_connect (button_sample, "clicked",
-			G_CALLBACK (set_radiobutton), act->radiobutton_sample);
+  g_signal_connect (button_sample, "clicked",
+		    G_CALLBACK (set_radiobutton), act->radiobutton_sample);
 
-      g_signal_connect (button_range,  "clicked",
-			G_CALLBACK (set_radiobutton), act->radiobutton_range);
+  g_signal_connect (button_range,  "clicked",
+		    G_CALLBACK (set_radiobutton), act->radiobutton_range);
 
-      g_signal_connect (selector, "clicked",
-			G_CALLBACK (set_radiobutton), act->radiobutton_filter_variable);
+  g_signal_connect (selector, "clicked",
+		    G_CALLBACK (set_radiobutton), act->radiobutton_filter_variable);
 
-      g_signal_connect (selector, "selected",
-			G_CALLBACK (set_radiobutton), act->radiobutton_filter_variable);
+  g_signal_connect (selector, "selected",
+		    G_CALLBACK (set_radiobutton), act->radiobutton_filter_variable);
 
-      g_signal_connect (act->radiobutton_range, "toggled",
-			G_CALLBACK (set_sensitivity_from_toggle),
-			act->l1);
+  g_signal_connect (act->radiobutton_range, "toggled",
+		    G_CALLBACK (set_sensitivity_from_toggle),
+		    act->l1);
 
-      g_signal_connect (act->radiobutton_sample, "toggled",
-			G_CALLBACK (set_sensitivity_from_toggle),
-			sample_label);
+  g_signal_connect (act->radiobutton_sample, "toggled",
+		    G_CALLBACK (set_sensitivity_from_toggle),
+		    sample_label);
 
-      g_signal_connect (act->radiobutton_filter_variable, "toggled",
-			G_CALLBACK (set_sensitivity_from_toggle),
-			act->entry);
+  g_signal_connect (act->radiobutton_filter_variable, "toggled",
+		    G_CALLBACK (set_sensitivity_from_toggle),
+		    act->entry);
 
-      g_signal_connect (button_range,
-			"clicked", G_CALLBACK (range_subdialog), act);
+  g_signal_connect (button_range,
+		    "clicked", G_CALLBACK (range_subdialog), act);
 
-      g_signal_connect (button_sample,
-			"clicked", G_CALLBACK (sample_subdialog), act);
-    }
-
+  g_signal_connect (button_sample,
+		    "clicked", G_CALLBACK (sample_subdialog), act);
   psppire_dialog_action_set_refresh (pda, refresh);
 
   psppire_dialog_action_set_valid_predicate (pda,
-					dialog_state_valid);
-
+					     dialog_state_valid);
+  return xml;
 }
 
 
@@ -560,7 +552,7 @@ generate_syntax (const PsppireDialogAction *a)
 static void
 psppire_dialog_action_select_class_init (PsppireDialogActionSelectClass *class)
 {
-  psppire_dialog_action_set_activation (class, psppire_dialog_action_select_activate);
+  PSPPIRE_DIALOG_ACTION_CLASS (class)->initial_activate = psppire_dialog_action_select_activate;
 
   PSPPIRE_DIALOG_ACTION_CLASS (class)->generate_syntax = generate_syntax;
 }

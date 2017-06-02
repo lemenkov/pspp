@@ -23,10 +23,7 @@
 #include "relocatable.h"
 #include "gl/configmake.h"
 
-
 GtkBuilder *builder_new_real (const gchar *name);
-
-GtkBuilder * builder_new_x (const gchar *obj_name);
 
 #define builder_new(NAME) (builder_new_real (relocate (PKGDATADIR "/" NAME)))
 

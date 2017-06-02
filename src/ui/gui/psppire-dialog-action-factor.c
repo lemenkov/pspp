@@ -293,89 +293,82 @@ run_rotations_subdialog (PsppireDialogActionFactor *act)
     }
 }
 
-static void
-psppire_dialog_action_factor_activate (PsppireDialogAction *a)
+static GtkBuilder *
+psppire_dialog_action_factor_activate (PsppireDialogAction *a, GVariant *param)
 {
   PsppireDialogAction *pda = PSPPIRE_DIALOG_ACTION (a);
   PsppireDialogActionFactor *act = PSPPIRE_DIALOG_ACTION_FACTOR (a);
   GtkWidget *extraction_button ;
   GtkWidget *rotation_button ;
 
-  GHashTable *thing = psppire_dialog_action_get_hash_table (pda);
-  GtkBuilder *xml = g_hash_table_lookup (thing, a);
-  if (!xml)
-    {
-      xml = builder_new ("factor.ui");
-      g_hash_table_insert (thing, a, xml);
+  GtkBuilder *xml = builder_new ( "factor.ui");
 
+  pda->dialog = get_widget_assert   (xml, "factor-dialog");
+  pda->source = get_widget_assert   (xml, "dict-view");
 
-      pda->dialog = get_widget_assert   (xml, "factor-dialog");
-      pda->source = get_widget_assert   (xml, "dict-view");
+  extraction_button = get_widget_assert (xml, "button-extractions");
+  rotation_button = get_widget_assert (xml, "button-rotations");
 
-      extraction_button = get_widget_assert (xml, "button-extractions");
-      rotation_button = get_widget_assert (xml, "button-rotations");
+  act->extraction_dialog = get_widget_assert (xml, "extractions-dialog");
+  act->rotation_dialog = get_widget_assert (xml, "rotations-dialog");
 
-      act->extraction_dialog = get_widget_assert (xml, "extractions-dialog");
-      act->rotation_dialog = get_widget_assert (xml, "rotations-dialog");
+  act->variables = get_widget_assert   (xml, "psppire-var-view1");
 
-      act->variables = get_widget_assert   (xml, "psppire-var-view1");
+  {
+    GtkWidget *hbox = get_widget_assert (xml, "hbox6");
+    GtkWidget *eigenvalue_extraction ;
 
-      {
-	GtkWidget *hbox = get_widget_assert (xml, "hbox6");
-	GtkWidget *eigenvalue_extraction ;
+    act->mineigen_toggle = get_widget_assert (xml, "mineigen-radiobutton");
 
-	act->mineigen_toggle = get_widget_assert (xml, "mineigen-radiobutton");
+    eigenvalue_extraction = psppire_scanf_new (_("_Eigenvalues over %4.2f times the mean eigenvalue"), &act->mineigen);
 
-	eigenvalue_extraction = psppire_scanf_new (_("_Eigenvalues over %4.2f times the mean eigenvalue"), &act->mineigen);
+    g_object_set (eigenvalue_extraction,
+		  "use-underline", TRUE,
+		  "mnemonic-widget", act->mineigen_toggle,
+		  NULL);
 
-	g_object_set (eigenvalue_extraction,
-		      "use-underline", TRUE,
-		      "mnemonic-widget", act->mineigen_toggle,
-		      NULL);
+    act->nfactors_toggle = get_widget_assert (xml, "nfactors-radiobutton");
+    act->n_factors = get_widget_assert (xml, "spinbutton-nfactors");
+    act->extract_iterations = get_widget_assert (xml, "spinbutton-extract-iterations");
+    act->covariance_toggle = get_widget_assert (xml,  "covariance-radiobutton");
+    act->correlation_toggle = get_widget_assert (xml, "correlations-radiobutton");
 
-	act->nfactors_toggle = get_widget_assert (xml, "nfactors-radiobutton");
-	act->n_factors = get_widget_assert (xml, "spinbutton-nfactors");
-	act->extract_iterations = get_widget_assert (xml, "spinbutton-extract-iterations");
-	act->covariance_toggle = get_widget_assert (xml,  "covariance-radiobutton");
-	act->correlation_toggle = get_widget_assert (xml, "correlations-radiobutton");
+    act->scree_button = get_widget_assert (xml, "scree-button");
+    act->unrotated_button = get_widget_assert (xml, "unrotated-button");
+    act->extraction_combo = get_widget_assert (xml, "combobox1");
 
-	act->scree_button = get_widget_assert (xml, "scree-button");
-	act->unrotated_button = get_widget_assert (xml, "unrotated-button");
-	act->extraction_combo = get_widget_assert (xml, "combobox1");
+    gtk_container_add (GTK_CONTAINER (hbox), eigenvalue_extraction);
 
-	gtk_container_add (GTK_CONTAINER (hbox), eigenvalue_extraction);
+    g_signal_connect (act->nfactors_toggle, "toggled", G_CALLBACK (on_extract_toggle), act);
 
-	g_signal_connect (act->nfactors_toggle, "toggled", G_CALLBACK (on_extract_toggle), act);
+    gtk_widget_show_all (eigenvalue_extraction);
+  }
 
-	gtk_widget_show_all (eigenvalue_extraction);
-      }
+  {
+    act->rotate_iterations = get_widget_assert (xml, "spinbutton-rot-iterations");
 
-      {
-	act->rotate_iterations = get_widget_assert (xml, "spinbutton-rot-iterations");
+    act->display_rotated_solution = get_widget_assert (xml, "checkbutton-rotated-solution");
 
-	act->display_rotated_solution = get_widget_assert (xml, "checkbutton-rotated-solution");
+    act->rotation_none      = get_widget_assert (xml, "radiobutton-none");
+    act->rotation_varimax   = get_widget_assert (xml, "radiobutton-varimax");
+    act->rotation_quartimax = get_widget_assert (xml, "radiobutton-quartimax");
+    act->rotation_equimax   = get_widget_assert (xml, "radiobutton-equimax");
+  }
 
-	act->rotation_none      = get_widget_assert (xml, "radiobutton-none");
-	act->rotation_varimax   = get_widget_assert (xml, "radiobutton-varimax");
-	act->rotation_quartimax = get_widget_assert (xml, "radiobutton-quartimax");
-	act->rotation_equimax   = get_widget_assert (xml, "radiobutton-equimax");
-      }
-
-      g_signal_connect_swapped (extraction_button, "clicked",
-				G_CALLBACK (run_extractions_subdialog), act);
-      g_signal_connect_swapped (rotation_button, "clicked", G_CALLBACK (run_rotations_subdialog), act);
-
-    }
+  g_signal_connect_swapped (extraction_button, "clicked",
+			    G_CALLBACK (run_extractions_subdialog), act);
+  g_signal_connect_swapped (rotation_button, "clicked", G_CALLBACK (run_rotations_subdialog), act);
 
   psppire_dialog_action_set_valid_predicate (pda, (void *) dialog_state_valid);
   psppire_dialog_action_set_refresh (pda, dialog_refresh);
 
+  return xml;
 }
 
 static void
 psppire_dialog_action_factor_class_init (PsppireDialogActionFactorClass *class)
 {
-  psppire_dialog_action_set_activation (class, psppire_dialog_action_factor_activate);
+  PSPPIRE_DIALOG_ACTION_CLASS (class)->initial_activate = psppire_dialog_action_factor_activate;
 
   PSPPIRE_DIALOG_ACTION_CLASS (class)->generate_syntax = generate_syntax;
 }

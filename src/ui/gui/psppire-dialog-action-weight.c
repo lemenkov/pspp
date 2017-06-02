@@ -119,49 +119,43 @@ on_toggle (GtkToggleButton *off, gpointer data)
 }
 
 
-static void
-psppire_dialog_action_weight_activate (PsppireDialogAction *pda)
+static GtkBuilder *
+psppire_dialog_action_weight_activate (PsppireDialogAction *pda, GVariant *param)
 {
   PsppireDialogActionWeight *act = PSPPIRE_DIALOG_ACTION_WEIGHT (pda);
 
-  GHashTable *thing = psppire_dialog_action_get_hash_table (pda);
-  GtkBuilder *xml = g_hash_table_lookup (thing, pda);
-  if (!xml)
-    {
-      xml = builder_new ("weight.ui");
-      g_hash_table_insert (thing, pda, xml);
+  GtkBuilder *xml = builder_new ( "weight.ui");
 
-      pda->dialog = get_widget_assert   (xml, "weight-cases-dialog");
-      pda->source = get_widget_assert   (xml, "weight-cases-treeview");
+  pda->dialog = get_widget_assert   (xml, "weight-cases-dialog");
+  pda->source = get_widget_assert   (xml, "weight-cases-treeview");
 
-      act->entry = get_widget_assert (xml, "weight-cases-entry");
-      act->off = get_widget_assert (xml,"weight-cases-radiobutton1");
-      act->on = get_widget_assert (xml, "radiobutton2");
-      act->status  = get_widget_assert (xml, "weight-status-label");
-      GtkWidget *selector = get_widget_assert (xml, "weight-cases-selector");
+  act->entry = get_widget_assert (xml, "weight-cases-entry");
+  act->off = get_widget_assert (xml,"weight-cases-radiobutton1");
+  act->on = get_widget_assert (xml, "radiobutton2");
+  act->status  = get_widget_assert (xml, "weight-status-label");
+  GtkWidget *selector = get_widget_assert (xml, "weight-cases-selector");
 
-      g_signal_connect (selector, "selected", G_CALLBACK (on_select), act);
-      g_signal_connect (selector, "de-selected", G_CALLBACK (on_deselect), act);
-      g_signal_connect (act->off, "toggled", G_CALLBACK (on_toggle), act);
+  g_signal_connect (selector, "selected", G_CALLBACK (on_select), act);
+  g_signal_connect (selector, "de-selected", G_CALLBACK (on_deselect), act);
+  g_signal_connect (act->off, "toggled", G_CALLBACK (on_toggle), act);
 
-      g_object_set (pda->source,
-		    "selection-mode", GTK_SELECTION_SINGLE,
-		    "predicate", var_is_numeric,
-		    NULL);
+  g_object_set (pda->source,
+		"selection-mode", GTK_SELECTION_SINGLE,
+		"predicate", var_is_numeric,
+		NULL);
 
-      psppire_selector_set_filter_func (PSPPIRE_SELECTOR (selector),
-					is_currently_in_entry);
-    }
+  psppire_selector_set_filter_func (PSPPIRE_SELECTOR (selector),
+				    is_currently_in_entry);
 
   psppire_dialog_action_set_valid_predicate (pda, dialog_state_valid);
   psppire_dialog_action_set_refresh (pda, refresh);
-
+  return xml;
 }
 
 static void
 psppire_dialog_action_weight_class_init (PsppireDialogActionWeightClass *class)
 {
-  psppire_dialog_action_set_activation (class, psppire_dialog_action_weight_activate);
+  PSPPIRE_DIALOG_ACTION_CLASS (class)->initial_activate = psppire_dialog_action_weight_activate;
   PSPPIRE_DIALOG_ACTION_CLASS (class)->generate_syntax = generate_syntax;
 }
 
