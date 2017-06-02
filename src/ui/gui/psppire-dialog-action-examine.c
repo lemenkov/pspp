@@ -209,10 +209,16 @@ psppire_dialog_action_examine_activate (PsppireDialogAction *a)
     {
       xml = builder_new ("examine.ui");
       g_hash_table_insert (thing, a, xml);
-    }
 
-  GtkWidget *stats_button = get_widget_assert (xml, "stats-button");
-  GtkWidget *opts_button = get_widget_assert (xml, "opts-button");
+      GtkWidget *stats_button = get_widget_assert (xml, "stats-button");
+      GtkWidget *opts_button = get_widget_assert (xml, "opts-button");
+
+      g_signal_connect_swapped (stats_button, "clicked",
+				G_CALLBACK (run_stats_dialog), act);
+
+      g_signal_connect_swapped (opts_button, "clicked",
+				G_CALLBACK (run_opts_dialog), act);
+    }
 
   GtkWidget *dep_sel = get_widget_assert (xml, "psppire-selector1");
   GtkWidget *dep_sel2 = get_widget_assert (xml, "psppire-selector2");
@@ -236,6 +242,7 @@ psppire_dialog_action_examine_activate (PsppireDialogAction *a)
   list = g_list_append (list, dep_sel3);
   list = g_list_append (list, get_widget_assert (xml, "frame3"));
   gtk_container_set_focus_chain (GTK_CONTAINER (table), list);
+  g_list_free (list);
 
 
   act->stats_dialog        = get_widget_assert (xml, "statistics-dialog");
@@ -253,13 +260,6 @@ psppire_dialog_action_examine_activate (PsppireDialogAction *a)
   psppire_dialog_action_set_valid_predicate (pda, (void *) dialog_state_valid);
   psppire_dialog_action_set_refresh (pda, dialog_refresh);
 
-  g_signal_connect_swapped (stats_button, "clicked",
-		    G_CALLBACK (run_stats_dialog), act);
-
-  g_signal_connect_swapped (opts_button, "clicked",
-			    G_CALLBACK (run_opts_dialog), act);
-
-  g_list_free (list);
 }
 
 static void
