@@ -127,19 +127,13 @@ refresh (PsppireDialogAction *rd_)
     gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (rd->cb[i]), FALSE);
 }
 
-static void
-psppire_dialog_action_runs_activate (PsppireDialogAction *a)
+static GtkBuilder *
+psppire_dialog_action_runs_activate (PsppireDialogAction *a, GVariant *param)
 {
   PsppireDialogAction *pda = PSPPIRE_DIALOG_ACTION (a);
   PsppireDialogActionRuns *act = PSPPIRE_DIALOG_ACTION_RUNS (a);
 
-  GHashTable *thing = psppire_dialog_action_get_hash_table (pda);
-  GtkBuilder *xml = g_hash_table_lookup (thing, a);
-  if (!xml)
-    {
-      xml = builder_new ("runs.ui");
-      g_hash_table_insert (thing, a, xml);
-    }
+  GtkBuilder *xml = builder_new ( "runs.ui");
 
   pda->dialog = get_widget_assert   (xml, "runs-dialog");
   pda->source = get_widget_assert   (xml, "dict-view");
@@ -153,13 +147,13 @@ psppire_dialog_action_runs_activate (PsppireDialogAction *a)
 
   psppire_dialog_action_set_valid_predicate (pda, dialog_state_valid);
   psppire_dialog_action_set_refresh (pda, refresh);
-
+  return xml;
 }
 
 static void
 psppire_dialog_action_runs_class_init (PsppireDialogActionRunsClass *class)
 {
-  psppire_dialog_action_set_activation (class, psppire_dialog_action_runs_activate);
+  PSPPIRE_DIALOG_ACTION_CLASS (class)->initial_activate = psppire_dialog_action_runs_activate;
   PSPPIRE_DIALOG_ACTION_CLASS (class)->generate_syntax = generate_syntax;
 }
 

@@ -440,123 +440,119 @@ psppire_dialog_action_recode_refresh (PsppireDialogAction *rd_)
 }
 
 
-void
-psppire_dialog_action_recode_pre_activate (PsppireDialogActionRecode *act, void (*populate_treeview) (PsppireDialogActionRecode *))
+GtkBuilder *
+psppire_dialog_action_recode_pre_activate (PsppireDialogActionRecode *act,
+					   void (*populate_treeview) (PsppireDialogActionRecode *))
 {
   PsppireDialogAction *pda = PSPPIRE_DIALOG_ACTION (act);
 
-  GHashTable *thing = psppire_dialog_action_get_hash_table (pda);
-  GtkBuilder *xml = g_hash_table_lookup (thing, act);
-  if (!xml)
+  GtkBuilder *xml = builder_new ("recode.ui");
+  
+  pda->dialog = get_widget_assert   (xml, "recode-dialog");
+  pda->source = get_widget_assert   (xml, "treeview1");
+
+
+  GtkWidget *selector = get_widget_assert (xml, "psppire-selector1");
+  GtkWidget *oldandnew = get_widget_assert (xml, "button1");
+
+
+  act->output_variable_box = get_widget_assert (xml,"frame4");
+
+  act->change_button = get_widget_assert (xml, "change-button");
+  act->variable_treeview =   get_widget_assert (xml, "treeview2");
+  act->new_name_entry = get_widget_assert (xml, "dest-name-entry");
+  act->new_label_entry = get_widget_assert (xml, "dest-label-entry");
+
+  act->value_map = gtk_list_store_new (2,
+				       old_value_get_type (),
+				       new_value_get_type ());
+
+  if (populate_treeview)
+    populate_treeview (act);
+
+  psppire_selector_set_allow (PSPPIRE_SELECTOR (selector), homogeneous_types);
+
+  /* Set up the Old & New Values subdialog */
+  {
+    act->string_button = get_widget_assert (xml, "checkbutton1");
+    act->width_entry   = get_widget_assert (xml, "spinbutton1");
+
+    act->convert_button = get_widget_assert (xml, "checkbutton2");
+
+    act->old_value_chooser = get_widget_assert (xml, "val-chooser");
+
+    act->new_value_entry = get_widget_assert (xml, "entry1");
+
+
+    act->toggle[BUTTON_NEW_VALUE]  = get_widget_assert (xml, "radiobutton1");
+    act->toggle[BUTTON_NEW_SYSMIS] = get_widget_assert (xml, "radiobutton2");
+    act->toggle[BUTTON_NEW_COPY]   = get_widget_assert (xml, "radiobutton3");
+
+    act->new_copy_label = get_widget_assert (xml, "label3");
+    act->strings_box    = get_widget_assert (xml, "table3");
+
+    act->old_and_new_dialog =
+      PSPPIRE_DIALOG (get_widget_assert (xml, "old-new-values-dialog"));
+
+    act->acr = get_widget_assert (xml, "psppire-acr1");
+
+    g_signal_connect_swapped (act->toggle[BUTTON_NEW_VALUE], "toggled",
+			      G_CALLBACK (set_acr), act);
+
+    g_signal_connect_after (act->toggle[BUTTON_NEW_VALUE], "toggled",
+			    G_CALLBACK (focus_value_entry), act);
+
+    g_signal_connect_swapped (act->new_value_entry, "changed",
+			      G_CALLBACK (set_acr), act);
+
     {
-      xml = builder_new ("recode.ui");
-      g_hash_table_insert (thing, act, xml);
-
-      pda->dialog = get_widget_assert   (xml, "recode-dialog");
-      pda->source = get_widget_assert   (xml, "treeview1");
-
-
-      GtkWidget *selector = get_widget_assert (xml, "psppire-selector1");
-      GtkWidget *oldandnew = get_widget_assert (xml, "button1");
+      GtkTreeSelection *sel;
+      /* Remove the ACR's default column.  We don't like it */
+      GtkTreeViewColumn *column = gtk_tree_view_get_column (PSPPIRE_ACR(act->acr)->tv, 0);
+      gtk_tree_view_remove_column (PSPPIRE_ACR (act->acr)->tv, column);
 
 
-      act->output_variable_box = get_widget_assert (xml,"frame4");
+      column =
+	gtk_tree_view_column_new_with_attributes (_("Old"),
+						  gtk_cell_renderer_text_new (),
+						  "text", 0,
+						  NULL);
 
-      act->change_button = get_widget_assert (xml, "change-button");
-      act->variable_treeview =   get_widget_assert (xml, "treeview2");
-      act->new_name_entry = get_widget_assert (xml, "dest-name-entry");
-      act->new_label_entry = get_widget_assert (xml, "dest-label-entry");
+      gtk_tree_view_append_column (PSPPIRE_ACR (act->acr)->tv, column);
 
-      act->value_map = gtk_list_store_new (2,
-					   old_value_get_type (),
-					   new_value_get_type ());
+      column =
+	gtk_tree_view_column_new_with_attributes (_("New"),
+						  gtk_cell_renderer_text_new (),
+						  "text", 1,
+						  NULL);
 
-      if (populate_treeview)
-	populate_treeview (act);
-
-      psppire_selector_set_allow (PSPPIRE_SELECTOR (selector), homogeneous_types);
-
-      /* Set up the Old & New Values subdialog */
-      {
-	act->string_button = get_widget_assert (xml, "checkbutton1");
-	act->width_entry   = get_widget_assert (xml, "spinbutton1");
-
-	act->convert_button = get_widget_assert (xml, "checkbutton2");
-
-	act->old_value_chooser = get_widget_assert (xml, "val-chooser");
-
-	act->new_value_entry = get_widget_assert (xml, "entry1");
+      gtk_tree_view_append_column (PSPPIRE_ACR(act->acr)->tv, column);
+      g_object_set (PSPPIRE_ACR (act->acr)->tv, "headers-visible", TRUE, NULL);
 
 
-	act->toggle[BUTTON_NEW_VALUE]  = get_widget_assert (xml, "radiobutton1");
-	act->toggle[BUTTON_NEW_SYSMIS] = get_widget_assert (xml, "radiobutton2");
-	act->toggle[BUTTON_NEW_COPY]   = get_widget_assert (xml, "radiobutton3");
-
-	act->new_copy_label = get_widget_assert (xml, "label3");
-	act->strings_box    = get_widget_assert (xml, "table3");
-
-	act->old_and_new_dialog =
-	  PSPPIRE_DIALOG (get_widget_assert (xml, "old-new-values-dialog"));
-
-	act->acr = get_widget_assert (xml, "psppire-acr1");
-
-	g_signal_connect_swapped (act->toggle[BUTTON_NEW_VALUE], "toggled",
-				  G_CALLBACK (set_acr), act);
-
-	g_signal_connect_after (act->toggle[BUTTON_NEW_VALUE], "toggled",
-				G_CALLBACK (focus_value_entry), act);
-
-	g_signal_connect_swapped (act->new_value_entry, "changed",
-				  G_CALLBACK (set_acr), act);
-
-	{
-	  GtkTreeSelection *sel;
-	  /* Remove the ACR's default column.  We don't like it */
-	  GtkTreeViewColumn *column = gtk_tree_view_get_column (PSPPIRE_ACR(act->acr)->tv, 0);
-	  gtk_tree_view_remove_column (PSPPIRE_ACR (act->acr)->tv, column);
-
-
-	  column =
-	    gtk_tree_view_column_new_with_attributes (_("Old"),
-						      gtk_cell_renderer_text_new (),
-						      "text", 0,
-						      NULL);
-
-	  gtk_tree_view_append_column (PSPPIRE_ACR (act->acr)->tv, column);
-
-	  column =
-	    gtk_tree_view_column_new_with_attributes (_("New"),
-						      gtk_cell_renderer_text_new (),
-						      "text", 1,
-						      NULL);
-
-	  gtk_tree_view_append_column (PSPPIRE_ACR(act->acr)->tv, column);
-	  g_object_set (PSPPIRE_ACR (act->acr)->tv, "headers-visible", TRUE, NULL);
-
-
-	  sel = gtk_tree_view_get_selection (GTK_TREE_VIEW (PSPPIRE_ACR(act->acr)->tv));
-	  g_signal_connect (sel, "changed",
-			    G_CALLBACK (on_acr_selection_change), act);
-	}
-
-
-	g_signal_connect_swapped (oldandnew, "clicked",
-				  G_CALLBACK (run_old_and_new_dialog), act);
-
-
-	g_signal_connect (act->toggle[BUTTON_NEW_VALUE], "toggled",
-			  G_CALLBACK (toggle_sensitivity), act->new_value_entry);
-
-	g_signal_connect (act->string_button, "toggled",
-			  G_CALLBACK (toggle_sensitivity), act->width_entry);
-
-	g_signal_connect (act->string_button, "toggled",
-			  G_CALLBACK (on_string_toggled), act);
-
-	g_signal_connect (act->convert_button, "toggled",
-			  G_CALLBACK (on_convert_toggled), act);
-      }
+      sel = gtk_tree_view_get_selection (GTK_TREE_VIEW (PSPPIRE_ACR(act->acr)->tv));
+      g_signal_connect (sel, "changed",
+			G_CALLBACK (on_acr_selection_change), act);
     }
+
+
+    g_signal_connect_swapped (oldandnew, "clicked",
+			      G_CALLBACK (run_old_and_new_dialog), act);
+
+
+    g_signal_connect (act->toggle[BUTTON_NEW_VALUE], "toggled",
+		      G_CALLBACK (toggle_sensitivity), act->new_value_entry);
+
+    g_signal_connect (act->string_button, "toggled",
+		      G_CALLBACK (toggle_sensitivity), act->width_entry);
+
+    g_signal_connect (act->string_button, "toggled",
+		      G_CALLBACK (on_string_toggled), act);
+
+    g_signal_connect (act->convert_button, "toggled",
+		      G_CALLBACK (on_convert_toggled), act);
+    }
+  return xml;
 }
 
 /* Generate a syntax fragment for NV and append it to STR */

@@ -149,54 +149,48 @@ generate_syntax (const PsppireDialogAction *pda)
   return text;
 }
 
-static void
-psppire_dialog_action_paired_activate (PsppireDialogAction *a)
+static GtkBuilder *
+psppire_dialog_action_paired_activate (PsppireDialogAction *a, GVariant *param)
 {
   PsppireDialogAction *pda = PSPPIRE_DIALOG_ACTION (a);
   PsppireDialogActionPaired *act = PSPPIRE_DIALOG_ACTION_PAIRED (a);
 
-  GHashTable *thing = psppire_dialog_action_get_hash_table (pda);
-  GtkBuilder *xml = g_hash_table_lookup (thing, a);
-  if (!xml)
-    {
-      xml = builder_new ("paired-samples.ui");
-      g_hash_table_insert (thing, a, xml);
+  GtkBuilder *xml = builder_new ( "paired-samples.ui");
+  
+  GtkWidget *selector = get_widget_assert (xml, "psppire-selector3");
+  GtkWidget *bb = gtk_button_box_new (GTK_ORIENTATION_HORIZONTAL);
+  GtkWidget *button = gtk_button_new_with_mnemonic (_("O_ptions..."));
+  GtkWidget *box = get_widget_assert (xml, "dynamic-populate");
 
-      GtkWidget *selector = get_widget_assert (xml, "psppire-selector3");
-      GtkWidget *bb = gtk_button_box_new (GTK_ORIENTATION_HORIZONTAL);
-      GtkWidget *button = gtk_button_new_with_mnemonic (_("O_ptions..."));
-      GtkWidget *box = get_widget_assert (xml, "dynamic-populate");
+  pda->dialog = get_widget_assert   (xml, "t-test-paired-samples-dialog");
+  pda->source = get_widget_assert   (xml, "paired-samples-t-test-treeview1");
 
-      pda->dialog = get_widget_assert   (xml, "t-test-paired-samples-dialog");
-      pda->source = get_widget_assert   (xml, "paired-samples-t-test-treeview1");
+  gtk_window_set_title (GTK_WINDOW (pda->dialog), _("Paired Samples T Test"));
 
-      gtk_window_set_title (GTK_WINDOW (pda->dialog), _("Paired Samples T Test"));
+  act->pairs_treeview = get_widget_assert (xml, "paired-samples-t-test-treeview2");
+  act->list_store = GTK_LIST_STORE (gtk_tree_view_get_model (GTK_TREE_VIEW (act->pairs_treeview)));
 
-      act->pairs_treeview = get_widget_assert (xml, "paired-samples-t-test-treeview2");
-      act->list_store = GTK_LIST_STORE (gtk_tree_view_get_model (GTK_TREE_VIEW (act->pairs_treeview)));
+  act->opt = tt_options_dialog_create (GTK_WINDOW (pda->toplevel));
 
-      act->opt = tt_options_dialog_create (GTK_WINDOW (pda->toplevel));
-
-      g_signal_connect_swapped (button, "clicked", G_CALLBACK (tt_options_dialog_run), act->opt);
+  g_signal_connect_swapped (button, "clicked", G_CALLBACK (tt_options_dialog_run), act->opt);
 
 
-      gtk_box_pack_start (GTK_BOX (bb), button, TRUE, TRUE, 5);
-      gtk_box_pack_start (GTK_BOX (box), bb, FALSE, FALSE, 5);
-      gtk_widget_show_all (box);
+  gtk_box_pack_start (GTK_BOX (bb), button, TRUE, TRUE, 5);
+  gtk_box_pack_start (GTK_BOX (box), bb, FALSE, FALSE, 5);
+  gtk_widget_show_all (box);
 
 
-      psppire_dialog_action_set_valid_predicate (pda, dialog_state_valid);
-      psppire_dialog_action_set_refresh (pda, refresh);
+  psppire_dialog_action_set_valid_predicate (pda, dialog_state_valid);
+  psppire_dialog_action_set_refresh (pda, refresh);
 
-      g_object_set (pda->source,
-		    "predicate", var_is_numeric,
-		    NULL);
+  g_object_set (pda->source,
+		"predicate", var_is_numeric,
+		NULL);
 
-      psppire_selector_set_select_func (PSPPIRE_SELECTOR (selector),
-					select_as_pair_member,
-					act);
-    }
-
+  psppire_selector_set_select_func (PSPPIRE_SELECTOR (selector),
+				    select_as_pair_member,
+				    act);
+  return xml;
 }
 
 static void
@@ -210,7 +204,7 @@ static void
 psppire_dialog_action_paired_class_init (PsppireDialogActionPairedClass *class)
 {
   GObjectClass *object_class = G_OBJECT_CLASS (class);
-  psppire_dialog_action_set_activation (class, psppire_dialog_action_paired_activate);
+  PSPPIRE_DIALOG_ACTION_CLASS (class)->initial_activate = psppire_dialog_action_paired_activate;
   PSPPIRE_DIALOG_ACTION_CLASS (class)->generate_syntax = generate_syntax;
 
   object_class->finalize = psppire_dialog_action_paired_finalize;

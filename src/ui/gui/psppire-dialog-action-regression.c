@@ -141,20 +141,14 @@ on_save_clicked (PsppireDialogActionRegression *rd)
 }
 
 
-static void
-psppire_dialog_action_regression_activate (PsppireDialogAction *a)
+static GtkBuilder *
+psppire_dialog_action_regression_activate (PsppireDialogAction *a, GVariant *param)
 {
   PsppireDialogActionRegression *act = PSPPIRE_DIALOG_ACTION_REGRESSION (a);
   PsppireDialogAction *pda = PSPPIRE_DIALOG_ACTION (a);
 
-  GHashTable *thing = psppire_dialog_action_get_hash_table (pda);
-  GtkBuilder *xml = g_hash_table_lookup (thing, a);
-  if (!xml)
-    {
-      xml = builder_new ("regression.ui");
-      g_hash_table_insert (thing, a, xml);
-    }
-
+  GtkBuilder *xml = builder_new ( "regression.ui");
+  
   GtkWidget *stat_button = get_widget_assert (xml, "stat-button");
   GtkWidget *save_button = get_widget_assert (xml, "save-button");
 
@@ -185,7 +179,7 @@ psppire_dialog_action_regression_activate (PsppireDialogAction *a)
   g_signal_connect_swapped (save_button, "clicked",
 			    G_CALLBACK (on_save_clicked),  act);
 
-
+  return xml;
 }
 
 
@@ -259,7 +253,7 @@ generate_syntax (const PsppireDialogAction *a)
 static void
 psppire_dialog_action_regression_class_init (PsppireDialogActionRegressionClass *class)
 {
-  psppire_dialog_action_set_activation (class, psppire_dialog_action_regression_activate);
+  PSPPIRE_DIALOG_ACTION_CLASS (class)->initial_activate = psppire_dialog_action_regression_activate;
 
   PSPPIRE_DIALOG_ACTION_CLASS (class)->generate_syntax = generate_syntax;
 }

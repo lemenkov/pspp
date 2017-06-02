@@ -193,26 +193,20 @@ dialog_refresh (PsppireDialogAction *scd_)
 }
 
 
-static void
-psppire_dialog_action_descriptives_activate (PsppireDialogAction *a)
+static GtkBuilder *
+psppire_dialog_action_descriptives_activate (PsppireDialogAction *a, GVariant *param)
 {
   PsppireDialogAction *pda = PSPPIRE_DIALOG_ACTION (a);
   PsppireDialogActionDescriptives *act = PSPPIRE_DIALOG_ACTION_DESCRIPTIVES (a);
 
-  GHashTable *thing = psppire_dialog_action_get_hash_table (pda);
-  GtkBuilder *xml = g_hash_table_lookup (thing, a);
-  if (!xml)
-    {
-      xml = builder_new ("descriptives.ui");
-      g_hash_table_insert (thing, a, xml);
+  GtkBuilder *xml = builder_new ( "descriptives.ui");
 
-      GtkWidget *stats_treeview = get_widget_assert (xml, "statistics");
-      psppire_checkbox_treeview_populate (PSPPIRE_CHECKBOX_TREEVIEW (stats_treeview),
-					  B_DS_DEFAULT,
-					  N_DESCRIPTIVE_STATS, stats);
-      act->stats = gtk_tree_view_get_model (GTK_TREE_VIEW (stats_treeview));
-    }
-
+  GtkWidget *stats_treeview = get_widget_assert (xml, "statistics");
+  psppire_checkbox_treeview_populate (PSPPIRE_CHECKBOX_TREEVIEW (stats_treeview),
+				      B_DS_DEFAULT,
+				      N_DESCRIPTIVE_STATS, stats);
+  act->stats = gtk_tree_view_get_model (GTK_TREE_VIEW (stats_treeview));
+  
   pda->dialog = get_widget_assert   (xml, "descriptives-dialog");
   pda->source = get_widget_assert   (xml, "all-variables");
   act->variables =   get_widget_assert   (xml, "stat-variables");
@@ -231,12 +225,14 @@ psppire_dialog_action_descriptives_activate (PsppireDialogAction *a)
 
   psppire_dialog_action_set_valid_predicate (pda, dialog_state_valid);
   psppire_dialog_action_set_refresh (pda, dialog_refresh);
+
+  return xml;
 }
 
 static void
 psppire_dialog_action_descriptives_class_init (PsppireDialogActionDescriptivesClass *class)
 {
-  psppire_dialog_action_set_activation (class, psppire_dialog_action_descriptives_activate);
+  PSPPIRE_DIALOG_ACTION_CLASS (class)->initial_activate = psppire_dialog_action_descriptives_activate;
 
   PSPPIRE_DIALOG_ACTION_CLASS (class)->generate_syntax = generate_syntax;
 }

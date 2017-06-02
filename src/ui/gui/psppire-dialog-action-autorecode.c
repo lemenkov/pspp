@@ -308,84 +308,75 @@ render_new_var_name (GtkTreeViewColumn *tree_column,
 }
 
 
-static void
-psppire_dialog_action_autorecode_activate (PsppireDialogAction *a)
+static GtkBuilder *
+psppire_dialog_action_autorecode_activate (PsppireDialogAction *a, GVariant *param)
 {
   PsppireDialogActionAutorecode *act = PSPPIRE_DIALOG_ACTION_AUTORECODE (a);
   PsppireDialogAction *pda = PSPPIRE_DIALOG_ACTION (a);
 
-  GHashTable *thing = psppire_dialog_action_get_hash_table (pda);
-  GtkBuilder *xml = g_hash_table_lookup (thing, a);
-  if (!xml)
-    {
-      xml = builder_new ("autorecode.ui");
-      g_hash_table_insert (thing, a, xml);
+  GtkBuilder *xml = builder_new ("autorecode.ui");
 
-      pda->dialog = get_widget_assert   (xml, "autorecode-dialog");
-      pda->source = get_widget_assert   (xml, "dict-view");
+  pda->dialog = get_widget_assert   (xml, "autorecode-dialog");
+  pda->source = get_widget_assert   (xml, "dict-view");
 
+  act->var_view = get_widget_assert   (xml, "var-view");
 
+  act->new_name_entry = get_widget_assert (xml, "entry1");
+  act->change_button = get_widget_assert (xml, "button1");
+  act->ascending = get_widget_assert (xml, "radiobutton1");
+  act->group = get_widget_assert (xml, "checkbutton1");
+  act->blank = get_widget_assert (xml, "checkbutton2");
 
+  {
+    GtkTreeSelection *sel;
 
-      act->var_view = get_widget_assert   (xml, "var-view");
+    GtkCellRenderer *renderer = gtk_cell_renderer_text_new ();
 
-      act->new_name_entry = get_widget_assert (xml, "entry1");
-      act->change_button = get_widget_assert (xml, "button1");
-      act->ascending = get_widget_assert (xml, "radiobutton1");
-      act->group = get_widget_assert (xml, "checkbutton1");
-      act->blank = get_widget_assert (xml, "checkbutton2");
+    GtkTreeViewColumn *col = gtk_tree_view_column_new_with_attributes (_("New"),
+								       renderer,
+								       "text", NULL,
+								       NULL);
 
-      {
-	GtkTreeSelection *sel;
+    gtk_tree_view_column_set_cell_data_func (col, renderer,
+					     render_new_var_name,
+					     act, NULL);
 
-	GtkCellRenderer *renderer = gtk_cell_renderer_text_new ();
-
-	GtkTreeViewColumn *col = gtk_tree_view_column_new_with_attributes (_("New"),
-									   renderer,
-									   "text", NULL,
-									   NULL);
-
-	gtk_tree_view_column_set_cell_data_func (col, renderer,
-						 render_new_var_name,
-						 act, NULL);
-
-	gtk_tree_view_append_column (GTK_TREE_VIEW (act->var_view), col);
+    gtk_tree_view_append_column (GTK_TREE_VIEW (act->var_view), col);
 
 
-	col = gtk_tree_view_get_column (GTK_TREE_VIEW (act->var_view), 0);
+    col = gtk_tree_view_get_column (GTK_TREE_VIEW (act->var_view), 0);
 
-	g_object_set (col, "title", _("Old"), NULL);
+    g_object_set (col, "title", _("Old"), NULL);
 
-	g_object_set (act->var_view, "headers-visible", TRUE, NULL);
+    g_object_set (act->var_view, "headers-visible", TRUE, NULL);
 
-	act->varmap = g_hash_table_new_full (g_direct_hash, g_direct_equal, NULL, nlp_destroy);
-
-
-	sel = gtk_tree_view_get_selection (GTK_TREE_VIEW (act->var_view));
+    act->varmap = g_hash_table_new_full (g_direct_hash, g_direct_equal, NULL, nlp_destroy);
 
 
-	g_signal_connect (sel, "changed",
-			  G_CALLBACK (on_selection_change), act);
+    sel = gtk_tree_view_get_selection (GTK_TREE_VIEW (act->var_view));
 
-	g_signal_connect (act->change_button, "clicked",
-			  G_CALLBACK (on_change_clicked),  act);
 
-	g_signal_connect_swapped (act->new_name_entry, "changed",
-				  G_CALLBACK (on_entry_change),  act);
+    g_signal_connect (sel, "changed",
+		      G_CALLBACK (on_selection_change), act);
 
-      }
+    g_signal_connect (act->change_button, "clicked",
+		      G_CALLBACK (on_change_clicked),  act);
 
-    }
+    g_signal_connect_swapped (act->new_name_entry, "changed",
+			      G_CALLBACK (on_entry_change),  act);
+
+  }
 
   psppire_dialog_action_set_refresh (pda, refresh);
   psppire_dialog_action_set_valid_predicate (pda, dialog_state_valid);
 
+  return xml;
 }
 
 static void
 psppire_dialog_action_autorecode_class_init (PsppireDialogActionAutorecodeClass *class)
 {
-  psppire_dialog_action_set_activation (class, psppire_dialog_action_autorecode_activate);
+  PSPPIRE_DIALOG_ACTION_CLASS (class)->initial_activate = psppire_dialog_action_autorecode_activate;
   PSPPIRE_DIALOG_ACTION_CLASS (class)->generate_syntax = generate_syntax;
 }
 

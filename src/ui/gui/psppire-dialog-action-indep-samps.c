@@ -293,19 +293,13 @@ set_group_criterion_type (GtkToggleButton *button,
 }
 
 
-static void
-psppire_dialog_action_indep_samps_activate (PsppireDialogAction *a)
+static GtkBuilder *
+psppire_dialog_action_indep_samps_activate (PsppireDialogAction *a, GVariant *param)
 {
   PsppireDialogActionIndepSamps *act = PSPPIRE_DIALOG_ACTION_INDEP_SAMPS (a);
   PsppireDialogAction *pda = PSPPIRE_DIALOG_ACTION (a);
 
-  GHashTable *thing = psppire_dialog_action_get_hash_table (pda);
-  GtkBuilder *xml = g_hash_table_lookup (thing, a);
-  if (!xml)
-    {
-      xml = builder_new ("indep-samples.ui");
-      g_hash_table_insert (thing, a, xml);
-    }
+  GtkBuilder *xml = builder_new ( "indep-samples.ui");
 
   pda->dialog = get_widget_assert (xml,"independent-samples-dialog");
   pda->source = get_widget_assert (xml, "indep-samples-treeview1");
@@ -353,6 +347,8 @@ psppire_dialog_action_indep_samps_activate (PsppireDialogAction *a)
 		    G_CALLBACK (on_grp_var_change), act);
 
   on_grp_var_change (GTK_ENTRY (act->group_var_entry), act);
+
+  return xml;
 }
 
 
@@ -423,7 +419,7 @@ generate_syntax (const PsppireDialogAction *a)
 static void
 psppire_dialog_action_indep_samps_class_init (PsppireDialogActionIndepSampsClass *class)
 {
-  psppire_dialog_action_set_activation (class, psppire_dialog_action_indep_samps_activate);
+  PSPPIRE_DIALOG_ACTION_CLASS (class)->initial_activate = psppire_dialog_action_indep_samps_activate;
 
   PSPPIRE_DIALOG_ACTION_CLASS (class)->generate_syntax = generate_syntax;
 }

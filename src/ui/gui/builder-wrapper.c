@@ -36,24 +36,6 @@ builder_new_real (const gchar *name)
   return builder;
 }
 
-
-GtkBuilder *
-builder_new_x (const gchar *obj_name)
-{
-  GtkBuilder *b;
-  GString *str = g_string_new (PKGDATADIR);
-  g_string_append (str, "/");
-  g_string_append (str, obj_name);
-
-  b = builder_new_real (relocate (str->str));
-
-  g_string_free (str, TRUE);
-
-  return b;
-}
-
-
-
 GObject *
 get_object_assert (GtkBuilder *builder, const gchar *name, GType type)
 {

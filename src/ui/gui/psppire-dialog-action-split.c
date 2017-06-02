@@ -136,47 +136,40 @@ on_off_toggled (GtkToggleButton *togglebutton,
   gtk_widget_set_sensitive (act->source, state);
 }
 
-static void
-psppire_dialog_action_split_activate (PsppireDialogAction *pda)
+static GtkBuilder *
+psppire_dialog_action_split_activate (PsppireDialogAction *pda, GVariant *param)
 {
   PsppireDialogActionSplit *act = PSPPIRE_DIALOG_ACTION_SPLIT (pda);
 
-  GHashTable *thing = psppire_dialog_action_get_hash_table (pda);
-  GtkBuilder *xml = g_hash_table_lookup (thing, pda);
-  if (!xml)
-    {
-      xml = builder_new ("split-file.ui");
-      g_hash_table_insert (thing, pda, xml);
+  GtkBuilder *xml = builder_new ( "split-file.ui");
 
-      pda->dialog = get_widget_assert   (xml, "split-file-dialog");
-      pda->source = get_widget_assert   (xml, "split-file-dict-treeview");
-      act->selector = get_widget_assert (xml, "split-file-selector");
+  pda->dialog = get_widget_assert   (xml, "split-file-dialog");
+  pda->source = get_widget_assert   (xml, "split-file-dict-treeview");
+  act->selector = get_widget_assert (xml, "split-file-selector");
 
-      act->dest =   get_widget_assert (xml, "split-file-grouping-vars");
-      act->source = get_widget_assert (xml, "split-file-dict-treeview");
-      act->sort = get_widget_assert (xml, "split-sort");
+  act->dest =   get_widget_assert (xml, "split-file-grouping-vars");
+  act->source = get_widget_assert (xml, "split-file-dict-treeview");
+  act->sort = get_widget_assert (xml, "split-sort");
 
-      act->off = get_widget_assert   (xml, "split-off");
-      act->layered = get_widget_assert   (xml, "split-layered");
+  act->off = get_widget_assert   (xml, "split-off");
+  act->layered = get_widget_assert   (xml, "split-layered");
 
-      act->tv = get_widget_assert (xml, "split-file-grouping-vars");
+  act->tv = get_widget_assert (xml, "split-file-grouping-vars");
 
-      g_signal_connect (act->off, "toggled", G_CALLBACK (on_off_toggled), pda);
-      g_signal_connect_swapped (pda->dialog, "show", G_CALLBACK (refresh), pda);
-    }
+  g_signal_connect (act->off, "toggled", G_CALLBACK (on_off_toggled), pda);
+  g_signal_connect_swapped (pda->dialog, "show", G_CALLBACK (refresh), pda);
 
   psppire_dialog_action_set_valid_predicate (pda, dialog_state_valid);
   psppire_dialog_action_set_refresh (pda, refresh);
-
+  return xml;
 }
 
 static void
 psppire_dialog_action_split_class_init (PsppireDialogActionSplitClass *class)
 {
-  psppire_dialog_action_set_activation (class, psppire_dialog_action_split_activate);
+  PSPPIRE_DIALOG_ACTION_CLASS (class)->initial_activate = psppire_dialog_action_split_activate;
   PSPPIRE_DIALOG_ACTION_CLASS (class)->generate_syntax = generate_syntax;
 }
-
 
 static void
 psppire_dialog_action_split_init (PsppireDialogActionSplit *act)

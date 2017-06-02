@@ -454,85 +454,79 @@ insert_function_into_syntax_area (GtkTreeIter iter,
 }
 
 
-
-static void
-psppire_dialog_action_compute_activate (PsppireDialogAction *a)
+static GtkBuilder *
+psppire_dialog_action_compute_activate (PsppireDialogAction *a, GVariant *param)
 {
   PsppireDialogAction *pda = PSPPIRE_DIALOG_ACTION (a);
   PsppireDialogActionCompute *act = PSPPIRE_DIALOG_ACTION_COMPUTE (a);
 
-  GHashTable *thing = psppire_dialog_action_get_hash_table (pda);
-  GtkBuilder *xml = g_hash_table_lookup (thing, a);
-  if (!xml)
-    {
-      xml = builder_new ("compute.ui");
-      g_hash_table_insert (thing, a, xml);
+  GtkBuilder *xml = builder_new ( "compute.ui");
 
-      pda->dialog = get_widget_assert   (xml, "compute-variable-dialog");
-      pda->source = get_widget_assert   (xml, "compute-treeview1");
+  pda->dialog = get_widget_assert   (xml, "compute-variable-dialog");
+  pda->source = get_widget_assert   (xml, "compute-treeview1");
 
-      act->textview = get_widget_assert (xml, "compute-textview1");
-      act->entry =
-	get_widget_assert (xml, "type-and-label-label-entry");
+  act->textview = get_widget_assert (xml, "compute-textview1");
+  act->entry =
+    get_widget_assert (xml, "type-and-label-label-entry");
 
-      act->width_entry =
-	get_widget_assert (xml, "type-and-label-width");
+  act->width_entry =
+    get_widget_assert (xml, "type-and-label-width");
 
-      act->functions = get_widget_assert (xml, "compute-treeview2");
-      act->keypad    = get_widget_assert (xml, "psppire-keypad1");
-      act->target    = get_widget_assert (xml, "compute-entry1");
-      act->var_selector = get_widget_assert (xml, "compute-selector1");
-      act->func_selector = get_widget_assert (xml, "compute-selector2");
-      act->type_and_label = get_widget_assert (xml, "compute-button1");
+  act->functions = get_widget_assert (xml, "compute-treeview2");
+  act->keypad    = get_widget_assert (xml, "psppire-keypad1");
+  act->target    = get_widget_assert (xml, "compute-entry1");
+  act->var_selector = get_widget_assert (xml, "compute-selector1");
+  act->func_selector = get_widget_assert (xml, "compute-selector2");
+  act->type_and_label = get_widget_assert (xml, "compute-button1");
 
-      act->subdialog = get_widget_assert (xml, "type-and-label-dialog");
+  act->subdialog = get_widget_assert (xml, "type-and-label-dialog");
 
-      act->numeric_target = get_widget_assert (xml, "radio-button-numeric");
-      act->expression = get_widget_assert (xml, "radio-button-expression-label");
-      act->user_label  = get_widget_assert (xml, "radio-button-user-label");
-      act->str_btn    = get_widget_assert (xml, "radio-button-string");
+  act->numeric_target = get_widget_assert (xml, "radio-button-numeric");
+  act->expression = get_widget_assert (xml, "radio-button-expression-label");
+  act->user_label  = get_widget_assert (xml, "radio-button-user-label");
+  act->str_btn    = get_widget_assert (xml, "radio-button-string");
 
-      g_signal_connect (act->expression, "toggled",
-			G_CALLBACK (on_expression_toggle), pda);
+  g_signal_connect (act->expression, "toggled",
+		    G_CALLBACK (on_expression_toggle), pda);
 
-      g_signal_connect (act->str_btn, "toggled",
-			G_CALLBACK (on_type_toggled), pda);
+  g_signal_connect (act->str_btn, "toggled",
+		    G_CALLBACK (on_type_toggled), pda);
 
 
-      g_object_set (pda->source,
-		    "selection-mode", GTK_SELECTION_SINGLE,
-		    NULL);
+  g_object_set (pda->source,
+		"selection-mode", GTK_SELECTION_SINGLE,
+		NULL);
 
-      psppire_selector_set_select_func (PSPPIRE_SELECTOR (act->var_selector),
-					insert_source_row_into_text_view, NULL);
+  psppire_selector_set_select_func (PSPPIRE_SELECTOR (act->var_selector),
+				    insert_source_row_into_text_view, NULL);
 
 
-      function_list_populate (GTK_TREE_VIEW (act->functions));
+  function_list_populate (GTK_TREE_VIEW (act->functions));
 
-      psppire_selector_set_select_func (PSPPIRE_SELECTOR (act->func_selector),
-					insert_function_into_syntax_area, NULL);
+  psppire_selector_set_select_func (PSPPIRE_SELECTOR (act->func_selector),
+				    insert_function_into_syntax_area, NULL);
 
-      g_signal_connect (act->target, "changed", G_CALLBACK (on_target_change), act);
+  g_signal_connect (act->target, "changed", G_CALLBACK (on_target_change), act);
 
-      g_signal_connect (act->keypad, "insert-syntax",
-			G_CALLBACK (on_keypad_button),  act);
+  g_signal_connect (act->keypad, "insert-syntax",
+		    G_CALLBACK (on_keypad_button),  act);
 
-      g_signal_connect (act->keypad, "erase",
-			G_CALLBACK (erase),  act);
+  g_signal_connect (act->keypad, "erase",
+		    G_CALLBACK (erase),  act);
 
-      g_signal_connect (act->type_and_label, "clicked",
-			G_CALLBACK (run_type_label_dialog),  pda);
+  g_signal_connect (act->type_and_label, "clicked",
+		    G_CALLBACK (run_type_label_dialog),  pda);
 
-      psppire_dialog_action_set_valid_predicate (pda, dialog_state_valid);
-      psppire_dialog_action_set_refresh (pda, refresh);
-    }
+  psppire_dialog_action_set_valid_predicate (pda, dialog_state_valid);
+  psppire_dialog_action_set_refresh (pda, refresh);
 
+  return xml;
 }
 
 static void
 psppire_dialog_action_compute_class_init (PsppireDialogActionComputeClass *class)
 {
-  psppire_dialog_action_set_activation (class, psppire_dialog_action_compute_activate);
+  PSPPIRE_DIALOG_ACTION_CLASS (class)->initial_activate = psppire_dialog_action_compute_activate;
 
   PSPPIRE_DIALOG_ACTION_CLASS (class)->generate_syntax = generate_syntax;
 }

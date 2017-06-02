@@ -165,46 +165,42 @@ jump_to (PsppireDialog *d, gint response, gpointer data)
   g_free (vars);
 }
 
-static void
-psppire_dialog_action_var_info_activate (PsppireDialogAction *a)
+static GtkBuilder *
+psppire_dialog_action_var_info_activate (PsppireDialogAction *a, GVariant *param)
 {
   PsppireDialogAction *pda = PSPPIRE_DIALOG_ACTION (a);
   PsppireDialogActionVarInfo *act = PSPPIRE_DIALOG_ACTION_VAR_INFO (pda);
 
-  GHashTable *thing = psppire_dialog_action_get_hash_table (pda);
-  GtkBuilder *xml = g_hash_table_lookup (thing, a);
-  if (!xml)
-    {
-      xml = builder_new ("variable-info.ui");
-      g_hash_table_insert (thing, a, xml);
+  GtkBuilder *xml = builder_new ( "variable-info.ui");
 
-      act->output =
-	psppire_output_view_new (GTK_LAYOUT (get_widget_assert (xml, "layout1")),
-				 NULL);
+  act->output =
+    psppire_output_view_new (GTK_LAYOUT (get_widget_assert (xml, "layout1")),
+			     NULL);
 
-      pda->dialog = get_widget_assert (xml, "variable-info-dialog");
-      pda->source = get_widget_assert (xml, "treeview2");
+  pda->dialog = get_widget_assert (xml, "variable-info-dialog");
+  pda->source = get_widget_assert (xml, "treeview2");
 
-      g_object_set (pda->source,
-		    "selection-mode", GTK_SELECTION_MULTIPLE,
-		    NULL);
+  g_object_set (pda->source,
+		"selection-mode", GTK_SELECTION_MULTIPLE,
+		NULL);
 
-      g_signal_connect (gtk_tree_view_get_selection (GTK_TREE_VIEW (pda->source)),
-			"changed", G_CALLBACK (populate_output),
-			act);
+  g_signal_connect (gtk_tree_view_get_selection (GTK_TREE_VIEW (pda->source)),
+		    "changed", G_CALLBACK (populate_output),
+		    act);
 
-      g_signal_connect (pda->dialog, "response", G_CALLBACK (jump_to),
-			pda);
+  g_signal_connect (pda->dialog, "response", G_CALLBACK (jump_to),
+		    pda);
 
-      psppire_dialog_action_set_valid_predicate (pda,
-						 treeview_item_selected);
-    }
+  psppire_dialog_action_set_valid_predicate (pda,
+					     treeview_item_selected);
+
+  return xml;
 }
 
 static void
 psppire_dialog_action_var_info_class_init (PsppireDialogActionVarInfoClass *class)
 {
-  psppire_dialog_action_set_activation (class, psppire_dialog_action_var_info_activate);
+  PSPPIRE_DIALOG_ACTION_CLASS (class)->initial_activate =  psppire_dialog_action_var_info_activate;
   PSPPIRE_DIALOG_ACTION_CLASS (class)->generate_syntax = generate_syntax;
 }
 

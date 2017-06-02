@@ -104,19 +104,13 @@ refresh (PsppireDialogAction *rd_)
   gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (krd->cochran), FALSE);
 }
 
-static void
-psppire_dialog_action_k_related_activate (PsppireDialogAction *a)
+static GtkBuilder *
+psppire_dialog_action_k_related_activate (PsppireDialogAction *a, GVariant *param)
 {
   PsppireDialogAction *pda = PSPPIRE_DIALOG_ACTION (a);
   PsppireDialogActionKRelated *act = PSPPIRE_DIALOG_ACTION_K_RELATED (a);
 
-  GHashTable *thing = psppire_dialog_action_get_hash_table (pda);
-  GtkBuilder *xml = g_hash_table_lookup (thing, a);
-  if (!xml)
-    {
-      xml = builder_new ("k-related.ui");
-      g_hash_table_insert (thing, a, xml);
-    }
+  GtkBuilder *xml = builder_new ( "k-related.ui");
 
   pda->dialog = get_widget_assert   (xml, "k-related-dialog");
   pda->source = get_widget_assert   (xml, "dict-view");
@@ -133,12 +127,13 @@ psppire_dialog_action_k_related_activate (PsppireDialogAction *a)
 		"predicate", var_is_numeric,
 		NULL);
 
+  return xml;
 }
 
 static void
 psppire_dialog_action_k_related_class_init (PsppireDialogActionKRelatedClass *class)
 {
-  psppire_dialog_action_set_activation (class, psppire_dialog_action_k_related_activate);
+  PSPPIRE_DIALOG_ACTION_CLASS (class)->initial_activate = psppire_dialog_action_k_related_activate;
   PSPPIRE_DIALOG_ACTION_CLASS (class)->generate_syntax = generate_syntax;
 }
 

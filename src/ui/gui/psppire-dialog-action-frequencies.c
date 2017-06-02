@@ -251,103 +251,94 @@ refresh (PsppireDialogAction * fdx)
                         (B_FS_DEFAULT & (1u << i)) ? true : false, -1);
 }
 
-
-
-static void
-psppire_dialog_action_frequencies_activate (PsppireDialogAction * a)
+static GtkBuilder *
+psppire_dialog_action_frequencies_activate (PsppireDialogAction *a, GVariant *param)
 {
   PsppireDialogActionFrequencies *act = PSPPIRE_DIALOG_ACTION_FREQUENCIES (a);
   PsppireDialogAction *pda = PSPPIRE_DIALOG_ACTION (a);
 
-  GHashTable *thing = psppire_dialog_action_get_hash_table (pda);
-  GtkBuilder *xml = g_hash_table_lookup (thing, a);
-  if (!xml)
-    {
-      xml = builder_new ("frequencies.ui");
-      g_hash_table_insert (thing, a, xml);
+  GtkBuilder *xml = builder_new ( "frequencies.ui");
 
-      GtkWidget *stats_treeview = get_widget_assert (xml, "stats-treeview");
+  GtkWidget *stats_treeview = get_widget_assert (xml, "stats-treeview");
 
-      psppire_checkbox_treeview_populate (PSPPIRE_CHECKBOX_TREEVIEW (stats_treeview),
-					  B_FS_DEFAULT, N_FREQUENCY_STATS, stats);
+  psppire_checkbox_treeview_populate (PSPPIRE_CHECKBOX_TREEVIEW (stats_treeview),
+				      B_FS_DEFAULT, N_FREQUENCY_STATS, stats);
 
-      act->stats = gtk_tree_view_get_model (GTK_TREE_VIEW (stats_treeview));
+  act->stats = gtk_tree_view_get_model (GTK_TREE_VIEW (stats_treeview));
 
-      GtkWidget *tables_button = get_widget_assert (xml, "tables-button");
-      GtkWidget *charts_button = get_widget_assert (xml, "charts-button");
+  GtkWidget *tables_button = get_widget_assert (xml, "tables-button");
+  GtkWidget *charts_button = get_widget_assert (xml, "charts-button");
 
-      pda->dialog = get_widget_assert (xml, "frequencies-dialog");
-      pda->source = get_widget_assert (xml, "dict-treeview");
+  pda->dialog = get_widget_assert (xml, "frequencies-dialog");
+  pda->source = get_widget_assert (xml, "dict-treeview");
 
-      act->stat_vars = get_widget_assert (xml, "var-treeview");
+  act->stat_vars = get_widget_assert (xml, "var-treeview");
 
+  act->include_missing = get_widget_assert (xml, "include_missing");
+  act->tables_dialog = get_widget_assert (xml, "tables-dialog");
+  act->charts_dialog = get_widget_assert (xml, "charts-dialog");
+  act->always = get_widget_assert (xml, "always");
+  act->never = get_widget_assert (xml, "never");
+  act->limit = get_widget_assert (xml, "limit");
+  act->limit_spinbutton = get_widget_assert (xml, "limit-spin");
 
-      act->include_missing = get_widget_assert (xml, "include_missing");
+  g_signal_connect (act->limit, "toggled",
+		    G_CALLBACK (set_sensitivity_from_toggle),
+		    act->limit_spinbutton);
 
+  act->avalue = get_widget_assert (xml, "avalue");
+  act->dvalue = get_widget_assert (xml, "dvalue");
+  act->afreq = get_widget_assert (xml, "afreq");
+  act->dfreq = get_widget_assert (xml, "dfreq");
 
-      act->tables_dialog = get_widget_assert (xml, "tables-dialog");
-      act->charts_dialog = get_widget_assert (xml, "charts-dialog");
-      act->always = get_widget_assert (xml, "always");
-      act->never = get_widget_assert (xml, "never");
-      act->limit = get_widget_assert (xml, "limit");
-      act->limit_spinbutton = get_widget_assert (xml, "limit-spin");
+  act->charts_opts_use_min = false;
+  act->charts_opts_min = 0;
+  act->charts_opts_use_max = false;
+  act->charts_opts_max = 100;
+  act->charts_opts_draw_hist = false;
+  act->charts_opts_draw_normal = false;
+  act->charts_opts_scale = FRQ_FREQ;
+  act->charts_opts_draw_pie = false;
+  act->charts_opts_draw_bar = false;
+  act->charts_opts_pie_include_missing = false;
 
-      g_signal_connect (act->limit, "toggled",
-			G_CALLBACK (set_sensitivity_from_toggle),
-			act->limit_spinbutton);
+  act->freqs = get_widget_assert (xml, "freqs");
+  act->percents = get_widget_assert (xml, "percents");
 
-      act->avalue = get_widget_assert (xml, "avalue");
-      act->dvalue = get_widget_assert (xml, "dvalue");
-      act->afreq = get_widget_assert (xml, "afreq");
-      act->dfreq = get_widget_assert (xml, "dfreq");
+  act->min = get_widget_assert (xml, "min");
+  act->min_spin = get_widget_assert (xml, "min-spin");
+  g_signal_connect (act->min, "toggled",
+		    G_CALLBACK (set_sensitivity_from_toggle), act->min_spin);
+  act->max = get_widget_assert (xml, "max");
+  act->max_spin = get_widget_assert (xml, "max-spin");
+  g_signal_connect (act->max, "toggled",
+		    G_CALLBACK (set_sensitivity_from_toggle), act->max_spin);
 
-      act->charts_opts_use_min = false;
-      act->charts_opts_min = 0;
-      act->charts_opts_use_max = false;
-      act->charts_opts_max = 100;
-      act->charts_opts_draw_hist = false;
-      act->charts_opts_draw_normal = false;
-      act->charts_opts_scale = FRQ_FREQ;
-      act->charts_opts_draw_pie = false;
-      act->charts_opts_draw_bar = false;
-      act->charts_opts_pie_include_missing = false;
+  act->hist = get_widget_assert (xml, "hist");
+  act->normal = get_widget_assert (xml, "normal");
+  g_signal_connect (act->hist, "toggled",
+		    G_CALLBACK (set_sensitivity_from_toggle), act->normal);
 
-      act->freqs = get_widget_assert (xml, "freqs");
-      act->percents = get_widget_assert (xml, "percents");
+  act->pie =  (get_widget_assert (xml, "pie"));
+  act->pie_include_missing = get_widget_assert (xml, "pie-include-missing");
 
-      act->min = get_widget_assert (xml, "min");
-      act->min_spin = get_widget_assert (xml, "min-spin");
-      g_signal_connect (act->min, "toggled",
-			G_CALLBACK (set_sensitivity_from_toggle), act->min_spin);
-      act->max = get_widget_assert (xml, "max");
-      act->max_spin = get_widget_assert (xml, "max-spin");
-      g_signal_connect (act->max, "toggled",
-			G_CALLBACK (set_sensitivity_from_toggle), act->max_spin);
+  act->bar =  (get_widget_assert (xml, "bar"));
 
-      act->hist = get_widget_assert (xml, "hist");
-      act->normal = get_widget_assert (xml, "normal");
-      g_signal_connect (act->hist, "toggled",
-			G_CALLBACK (set_sensitivity_from_toggle), act->normal);
+  act->tables_opts_order = FRQ_AVALUE;
+  act->tables_opts_table = FRQ_TABLE;
+  act->tables_opts_limit = 50;
 
-      act->pie =  (get_widget_assert (xml, "pie"));
-      act->pie_include_missing = get_widget_assert (xml, "pie-include-missing");
+  g_signal_connect_swapped (tables_button, "clicked",
+			    G_CALLBACK (on_tables_clicked),  act);
 
-      act->bar =  (get_widget_assert (xml, "bar"));
+  g_signal_connect_swapped (charts_button, "clicked",
+			    G_CALLBACK (on_charts_clicked),  act);
 
-      act->tables_opts_order = FRQ_AVALUE;
-      act->tables_opts_table = FRQ_TABLE;
-      act->tables_opts_limit = 50;
+  psppire_dialog_action_set_refresh (pda, refresh);
 
-      g_signal_connect_swapped (tables_button, "clicked",
-				G_CALLBACK (on_tables_clicked),  act);
+  psppire_dialog_action_set_valid_predicate (pda, dialog_state_valid);
 
-      g_signal_connect_swapped (charts_button, "clicked",
-				G_CALLBACK (on_charts_clicked),  act);
-
-      psppire_dialog_action_set_refresh (pda, refresh);
-
-      psppire_dialog_action_set_valid_predicate (pda, dialog_state_valid);
-    }
+  return xml;
 }
 
 static char *
@@ -497,12 +488,12 @@ generate_syntax (const PsppireDialogAction * a)
 static void
 psppire_dialog_action_frequencies_class_init (PsppireDialogActionFrequenciesClass *class)
 {
-  psppire_dialog_action_set_activation (class, psppire_dialog_action_frequencies_activate);
+  PSPPIRE_DIALOG_ACTION_CLASS (class)->initial_activate = psppire_dialog_action_frequencies_activate;
   PSPPIRE_DIALOG_ACTION_CLASS (class)->generate_syntax = generate_syntax;
 }
 
 
 static void
-psppire_dialog_action_frequencies_init (PsppireDialogActionFrequencies * act)
+psppire_dialog_action_frequencies_init (PsppireDialogActionFrequencies *act)
 {
 }

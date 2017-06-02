@@ -89,20 +89,14 @@ refresh (PsppireDialogAction *rd_)
   gtk_entry_set_text (GTK_ENTRY (rd->entry), "");
 }
 
-static void
-psppire_dialog_action_flip_activate (PsppireDialogAction *a)
+static GtkBuilder *
+psppire_dialog_action_flip_activate (PsppireDialogAction *a, GVariant *param)
 {
   PsppireDialogAction *pda = PSPPIRE_DIALOG_ACTION (a);
   PsppireDialogActionFlip *act = PSPPIRE_DIALOG_ACTION_FLIP (a);
 
-  GHashTable *thing = psppire_dialog_action_get_hash_table (pda);
-  GtkBuilder *xml = g_hash_table_lookup (thing, a);
-  if (!xml)
-    {
-      xml = builder_new ("transpose.ui");
-      g_hash_table_insert (thing, a, xml);
-    }
-
+  GtkBuilder *xml = builder_new ( "transpose.ui");
+  
   pda->dialog = get_widget_assert   (xml, "transpose-dialog");
   pda->source = get_widget_assert   (xml, "source-treeview");
 
@@ -112,12 +106,13 @@ psppire_dialog_action_flip_activate (PsppireDialogAction *a)
   psppire_dialog_action_set_valid_predicate (pda, dialog_state_valid);
   psppire_dialog_action_set_refresh (pda, refresh);
 
+  return xml;
 }
 
 static void
 psppire_dialog_action_flip_class_init (PsppireDialogActionFlipClass *class)
 {
-  psppire_dialog_action_set_activation (class, psppire_dialog_action_flip_activate);
+  PSPPIRE_DIALOG_ACTION_CLASS (class)->initial_activate = psppire_dialog_action_flip_activate;
   PSPPIRE_DIALOG_ACTION_CLASS (class)->generate_syntax = generate_syntax;
 }
 

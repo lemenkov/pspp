@@ -96,13 +96,13 @@ on_old_new_show (PsppireDialogActionRecode *rd)
   gtk_widget_hide (rd->strings_box);
 }
 
-static void
-psppire_dialog_action_recode_same_activate (PsppireDialogAction *a)
+static GtkBuilder *
+psppire_dialog_action_recode_same_activate (PsppireDialogAction *a, GVariant *param)
 {
   PsppireDialogActionRecode *act = PSPPIRE_DIALOG_ACTION_RECODE (a);
   PsppireDialogAction *pda = PSPPIRE_DIALOG_ACTION (a);
 
-  psppire_dialog_action_recode_pre_activate (act, NULL);
+  GtkBuilder *xml = psppire_dialog_action_recode_pre_activate (act, NULL);
 
   gtk_window_set_title (GTK_WINDOW (pda->dialog),
 			_("Recode into Same Variables"));
@@ -119,6 +119,8 @@ psppire_dialog_action_recode_same_activate (PsppireDialogAction *a)
 
   psppire_dialog_action_set_valid_predicate (pda,
 					dialog_state_valid);
+
+  return xml;
 }
 
 static void
@@ -142,7 +144,7 @@ target_is_string (const PsppireDialogActionRecode *rd)
 static void
 psppire_dialog_action_recode_same_class_init (PsppireDialogActionRecodeSameClass *class)
 {
-  psppire_dialog_action_set_activation (class, psppire_dialog_action_recode_same_activate);
+  PSPPIRE_DIALOG_ACTION_CLASS (class)->initial_activate = psppire_dialog_action_recode_same_activate;
 
   PSPPIRE_DIALOG_ACTION_CLASS (class)->generate_syntax = same_generate_syntax;
   PSPPIRE_DIALOG_ACTION_RECODE_CLASS (class)->target_is_string = target_is_string;

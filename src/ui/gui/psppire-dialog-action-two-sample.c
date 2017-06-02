@@ -168,44 +168,38 @@ generate_syntax (const PsppireDialogAction *pda)
   return text;
 }
 
-static void
-psppire_dialog_action_two_sample_activate (PsppireDialogAction *a)
+static GtkBuilder *
+psppire_dialog_action_two_sample_activate (PsppireDialogAction *a, GVariant *param)
 {
   PsppireDialogAction *pda = PSPPIRE_DIALOG_ACTION (a);
   PsppireDialogActionTwoSample *act = PSPPIRE_DIALOG_ACTION_TWO_SAMPLE (a);
 
-  GHashTable *thing = psppire_dialog_action_get_hash_table (pda);
-  GtkBuilder *xml = g_hash_table_lookup (thing, a);
-  if (!xml)
-    {
-      xml = builder_new ("paired-samples.ui");
-      g_hash_table_insert (thing, a, xml);
+  GtkBuilder *xml = builder_new ( "paired-samples.ui");
+
+  /* NPAR Specific options */
+  GtkWidget *frame = gtk_frame_new (_("Test Type"));
+  GtkWidget *bb = gtk_button_box_new (GTK_ORIENTATION_VERTICAL);
+  GtkWidget *box = get_widget_assert (xml, "dynamic-populate");
 
 
-      /* NPAR Specific options */
-      GtkWidget *frame = gtk_frame_new (_("Test Type"));
-      GtkWidget *bb = gtk_button_box_new (GTK_ORIENTATION_VERTICAL);
-      GtkWidget *box = get_widget_assert (xml, "dynamic-populate");
+  strcpy (act->nts[NT_WILCOXON].syntax, "/WILCOXON");
+  strcpy (act->nts[NT_SIGN].syntax, "/SIGN");
+  strcpy (act->nts[NT_MCNEMAR].syntax, "/MCNEMAR");
 
+  act->nts[NT_WILCOXON].button = gtk_check_button_new_with_mnemonic (_("_Wilcoxon"));
+  act->nts[NT_SIGN].button = gtk_check_button_new_with_mnemonic (_("_Sign"));
+  act->nts[NT_MCNEMAR].button = gtk_check_button_new_with_mnemonic (_("_McNemar"));
 
-      strcpy (act->nts[NT_WILCOXON].syntax, "/WILCOXON");
-      strcpy (act->nts[NT_SIGN].syntax, "/SIGN");
-      strcpy (act->nts[NT_MCNEMAR].syntax, "/MCNEMAR");
+  gtk_box_pack_start (GTK_BOX (bb), act->nts[NT_WILCOXON].button, FALSE, FALSE, 5);
+  gtk_box_pack_start (GTK_BOX (bb), act->nts[NT_SIGN].button,     FALSE, FALSE, 5);
+  gtk_box_pack_start (GTK_BOX (bb), act->nts[NT_MCNEMAR].button,  FALSE, FALSE, 5);
 
-      act->nts[NT_WILCOXON].button = gtk_check_button_new_with_mnemonic (_("_Wilcoxon"));
-      act->nts[NT_SIGN].button = gtk_check_button_new_with_mnemonic (_("_Sign"));
-      act->nts[NT_MCNEMAR].button = gtk_check_button_new_with_mnemonic (_("_McNemar"));
+  gtk_container_add (GTK_CONTAINER (frame), bb);
 
-      gtk_box_pack_start (GTK_BOX (bb), act->nts[NT_WILCOXON].button, FALSE, FALSE, 5);
-      gtk_box_pack_start (GTK_BOX (bb), act->nts[NT_SIGN].button,     FALSE, FALSE, 5);
-      gtk_box_pack_start (GTK_BOX (bb), act->nts[NT_MCNEMAR].button,  FALSE, FALSE, 5);
+  gtk_widget_show_all (frame);
 
-      gtk_container_add (GTK_CONTAINER (frame), bb);
+  gtk_box_pack_start (GTK_BOX (box), frame, FALSE, FALSE,  5);
 
-      gtk_widget_show_all (frame);
-
-      gtk_box_pack_start (GTK_BOX (box), frame, FALSE, FALSE,  5);
-    }
 
   GtkWidget *selector = get_widget_assert (xml, "psppire-selector3");
 
@@ -228,13 +222,13 @@ psppire_dialog_action_two_sample_activate (PsppireDialogAction *a)
   psppire_selector_set_select_func (PSPPIRE_SELECTOR (selector),
 				    select_as_pair_member,
 				    act);
-
+  return xml;
 }
 
 static void
 psppire_dialog_action_two_sample_class_init (PsppireDialogActionTwoSampleClass *class)
 {
-  psppire_dialog_action_set_activation (class, psppire_dialog_action_two_sample_activate);
+  PSPPIRE_DIALOG_ACTION_CLASS (class)->initial_activate = psppire_dialog_action_two_sample_activate;
   PSPPIRE_DIALOG_ACTION_CLASS (class)->generate_syntax = generate_syntax;
 }
 

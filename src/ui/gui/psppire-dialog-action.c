@@ -22,6 +22,7 @@
 #include "executor.h"
 #include "helper.h"
 #include "psppire-data-window.h"
+#include "builder-wrapper.h"
 
 static void psppire_dialog_action_init            (PsppireDialogAction      *act);
 static void psppire_dialog_action_class_init      (PsppireDialogActionClass *class);
@@ -216,6 +217,14 @@ psppire_dialog_action_get_hash_table (PsppireDialogAction *act)
   return t;
 }
 
+GtkBuilder *
+psppire_dialog_action_get_xml (PsppireDialogAction *da)
+{
+  GHashTable *thing = psppire_dialog_action_get_hash_table (da);
+  GtkBuilder *xml = g_hash_table_lookup (thing, da);
+  return xml;
+}
+
 
 static void
 psppire_dialog_action_activate (PsppireDialogAction *act, GVariant *parameter)
@@ -230,9 +239,25 @@ psppire_dialog_action_activate (PsppireDialogAction *act, GVariant *parameter)
   wl = g_slist_prepend (wl, act->dialog);
   g_object_set_data (G_OBJECT (act->toplevel), "widget-list", wl);
 
-  if (class->activate)
-    class->activate (act, parameter);
+  if (class->initial_activate)
+    {
+      GHashTable *thing = psppire_dialog_action_get_hash_table (act);
+      GtkBuilder *xml = g_hash_table_lookup (thing, act);
+      if (xml == NULL)
+	{
+	  xml = class->initial_activate (act, parameter);
+	  g_hash_table_insert (thing, act, xml);
+	}
+    }
 
+  if (class->activate)
+    {
+      GHashTable *thing = psppire_dialog_action_get_hash_table (act);
+      GtkBuilder *xml = g_hash_table_lookup (thing, act);
+      if (xml != NULL)
+	class->activate (act, parameter);
+    }
+  
   gtk_window_set_transient_for (GTK_WINDOW (act->dialog),
 				GTK_WINDOW (act->toplevel));
 
@@ -285,8 +310,6 @@ psppire_dialog_action_class_init (PsppireDialogActionClass *class)
 
   class->generate_syntax = NULL;
 
-  class->activate = psppire_dialog_action_activate;
-
   g_object_class_install_property (object_class,
                                    PROP_TOPLEVEL,
                                    toplevel_spec);
@@ -322,11 +345,3 @@ psppire_dialog_action_set_refresh (PsppireDialogAction *pda,
 {
   g_signal_connect_swapped (pda->dialog, "refresh", G_CALLBACK (refresh),  pda);
 }
-
-
-void
-psppire_dialog_action_set_activation (gpointer class, activation activate)
-{
-  PSPPIRE_DIALOG_ACTION_CLASS (class)->activate = (void (*)(PsppireDialogAction *, GVariant *)) activate;
-}
-
