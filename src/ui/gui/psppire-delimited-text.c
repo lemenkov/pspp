@@ -98,6 +98,7 @@ psppire_delimited_text_set_property (GObject         *object,
       break;
     case PROP_CHILD:
       tf->child = g_value_get_object (value);
+      g_return_if_fail (PSPPIRE_IS_TEXT_FILE (tf->child));
       break;
     case PROP_DELIMITERS:
       g_slist_free (tf->delimiters);
@@ -143,6 +144,13 @@ static void psppire_delimited_text_dispose        (GObject           *object);
 
 static GObjectClass *parent_class = NULL;
 
+static gint
+n_lines (PsppireDelimitedText *file)
+{
+  PsppireTextFile *child = PSPPIRE_TEXT_FILE (file->child);
+
+  return child->maximum_lines;
+}
 
 static gboolean
 __tree_get_iter (GtkTreeModel *tree_model,
@@ -162,7 +170,7 @@ __tree_get_iter (GtkTreeModel *tree_model,
 
   gint n = *indices;
 
-  gint children = gtk_tree_model_iter_n_children (file->child, NULL);
+  gint children = n_lines (file);
 
   if (n >= children - file->first_line)
     return FALSE;
@@ -187,7 +195,7 @@ __tree_iter_next (GtkTreeModel *tree_model,
 
   //  g_print ("%s:%d %s %d\n", __FILE__, __LINE__, __FUNCTION__, n);
 
-  gint children = gtk_tree_model_iter_n_children (file->child, NULL);
+  gint children = n_lines (file);
 
   if (n + 1 >= children - file->first_line)
     return FALSE;
@@ -237,7 +245,7 @@ __tree_get_path (GtkTreeModel *tree_model,
 
   gint n = GPOINTER_TO_INT (iter->user_data);
 
-  gint children = gtk_tree_model_iter_n_children (file->child, NULL);
+  gint children = n_lines (file);
 
   if (n >= children - file->first_line)
     return NULL;
@@ -264,7 +272,7 @@ __tree_model_iter_n_children (GtkTreeModel *tree_model,
   //  g_print ("%s:%d %s\n", __FILE__, __LINE__, __FUNCTION__);
   g_assert (iter == NULL);
 
-  gint children = gtk_tree_model_iter_n_children (file->child, NULL);
+  gint children = n_lines (file);
 
   return children - file->first_line;
 }
