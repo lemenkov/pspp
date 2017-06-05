@@ -68,7 +68,6 @@ count_delims (PsppireDelimitedText *tf)
 	  g_free (foo);
 	}
     }
-  //  g_print ("Max Number of delimiters per row: %d\n", tf->max_delimiters);
 }
 
 static void
@@ -161,7 +160,6 @@ __tree_get_iter (GtkTreeModel *tree_model,
   if (path == NULL)
     return FALSE;
 
-  //  g_print ("%s:%d %s %s\n", __FILE__, __LINE__, __FUNCTION__, gtk_tree_path_to_string (path));
 
   gint *indices = gtk_tree_path_get_indices (path);
 
@@ -175,7 +173,6 @@ __tree_get_iter (GtkTreeModel *tree_model,
   if (n >= children - file->first_line)
     return FALSE;
 
-  //  g_print ("%s:%d %s  %d Children: %d\n", __FILE__, __LINE__, __FUNCTION__, n, children);
 
   iter->user_data = GINT_TO_POINTER (n);
   iter->stamp = file->stamp;
@@ -193,7 +190,6 @@ __tree_iter_next (GtkTreeModel *tree_model,
 
   gint n = GPOINTER_TO_INT (iter->user_data);
 
-  //  g_print ("%s:%d %s %d\n", __FILE__, __LINE__, __FUNCTION__, n);
 
   gint children = n_lines (file);
 
@@ -210,7 +206,6 @@ static GType
 __tree_get_column_type (GtkTreeModel *tree_model,
 			gint          index)
 {
-  //  g_print ("%s:%d %s\n", __FILE__, __LINE__, __FUNCTION__);
   if (index == 0)
     return G_TYPE_INT;
 
@@ -221,7 +216,6 @@ static gboolean
 __iter_has_child (GtkTreeModel *tree_model,
 		  GtkTreeIter  *iter)
 {
-  g_print ("%s:%d %s\n", __FILE__, __LINE__, __FUNCTION__);
   return 0;
 }
 
@@ -231,7 +225,6 @@ __iter_parent     (GtkTreeModel *tree_model,
 		   GtkTreeIter  *iter,
 		   GtkTreeIter  *child)
 {
-  g_print ("%s:%d %s\n", __FILE__, __LINE__, __FUNCTION__);
   return 0;
 }
 
@@ -239,7 +232,6 @@ static GtkTreePath *
 __tree_get_path (GtkTreeModel *tree_model,
 		 GtkTreeIter  *iter)
 {
-  //  g_print ("%s:%d %s\n", __FILE__, __LINE__, __FUNCTION__);
   PsppireDelimitedText *file  = PSPPIRE_DELIMITED_TEXT (tree_model);
   g_return_val_if_fail (file->stamp == iter->stamp, FALSE);
 
@@ -259,7 +251,6 @@ __iter_children (GtkTreeModel *tree_model,
                               GtkTreeIter *iter,
                               GtkTreeIter *parent)
 {
-  g_print ("%s:%d %s\n", __FILE__, __LINE__, __FUNCTION__);
   return 0;
 }
 
@@ -269,7 +260,6 @@ __tree_model_iter_n_children (GtkTreeModel *tree_model,
 			      GtkTreeIter *iter)
 {
   PsppireDelimitedText *file  = PSPPIRE_DELIMITED_TEXT (tree_model);
-  //  g_print ("%s:%d %s\n", __FILE__, __LINE__, __FUNCTION__);
   g_assert (iter == NULL);
 
   gint children = n_lines (file);
@@ -280,7 +270,6 @@ __tree_model_iter_n_children (GtkTreeModel *tree_model,
 static GtkTreeModelFlags
 __tree_model_get_flags (GtkTreeModel *model)
 {
-  //  g_print ("%s:%d %s\n", __FILE__, __LINE__, __FUNCTION__);
   g_return_val_if_fail (PSPPIRE_IS_DELIMITED_TEXT (model), (GtkTreeModelFlags) 0);
 
   return GTK_TREE_MODEL_LIST_ONLY;
@@ -289,7 +278,6 @@ __tree_model_get_flags (GtkTreeModel *model)
 static gint
 __tree_model_get_n_columns (GtkTreeModel *tree_model)
 {
-  //  g_print ("%s:%d %s\n", __FILE__, __LINE__, __FUNCTION__);
   PsppireDelimitedText *tf  = PSPPIRE_DELIMITED_TEXT (tree_model);
 
   /* + 1 for the trailing field and +1 for the leading line number column */
@@ -303,7 +291,6 @@ __iter_nth_child (GtkTreeModel *tree_model,
 		  GtkTreeIter *parent,
 		  gint n)
 {
-  //  g_print ("%s:%d %s %d\n", __FILE__, __LINE__, __FUNCTION__, n);
   PsppireDelimitedText *file  = PSPPIRE_DELIMITED_TEXT (tree_model);
 
   g_assert (parent == NULL);
@@ -390,14 +377,12 @@ __get_value (GtkTreeModel *tree_model,
 	     gint column,
 	     GValue *value)
 {
-  //  g_print ("%s:%d %s Col: %d\n", __FILE__, __LINE__, __FUNCTION__, column);
   PsppireDelimitedText *file  = PSPPIRE_DELIMITED_TEXT (tree_model);
 
   g_return_if_fail (iter->stamp == file->stamp);
 
   gint n = GPOINTER_TO_INT (iter->user_data) + file->first_line;
 
-  //  g_print ("%s:%d Row: %d\n", __FILE__, __LINE__, n);
 
   if (column == 0)
     {
