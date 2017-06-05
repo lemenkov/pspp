@@ -1452,9 +1452,12 @@ first_line_append_syntax (const PsppireImportAssistant *ia, struct string *s)
 static void
 intro_append_syntax (const PsppireImportAssistant *ia, struct string *s)
 {
+  gint first_line = 0;
+  g_object_get (ia->delimiters_model, "first-line", &first_line, NULL);
+
   if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (ia->n_cases_button)))
-    ds_put_format (s, "N OF CASES %d.\n",
-		   gtk_spin_button_get_value_as_int (GTK_SPIN_BUTTON (ia->n_cases_spin)));
+    ds_put_format (s, "SELECT IF ($CASENUM <= %d).\n",
+		   gtk_spin_button_get_value_as_int (GTK_SPIN_BUTTON (ia->n_cases_spin)) - first_line);
   else if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (ia->percent_button)))
     ds_put_format (s, "SAMPLE %.4g.\n",
 		   gtk_spin_button_get_value (GTK_SPIN_BUTTON (ia->percent_spin)) / 100.0);
