@@ -113,7 +113,6 @@ struct _PsppireImportAssistant
   int response;
 
   PsppireTextFile *text_file;
-
   GtkTreeModel *delimiters_model;
 
   struct sheet_spec_page *sheet_spec;

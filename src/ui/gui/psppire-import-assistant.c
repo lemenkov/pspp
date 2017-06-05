@@ -612,7 +612,6 @@ chooser_page_enter (PsppireImportAssistant *ia, GtkWidget *page)
 static void
 chooser_page_leave (PsppireImportAssistant *ia, GtkWidget *page)
 {
-  g_print ("%s:%d %s\n", __FILE__, __LINE__, __FUNCTION__);
   g_free (ia->file_name);
   ia->file_name = gtk_file_chooser_get_filename (GTK_FILE_CHOOSER (page));
   gchar *encoding = psppire_encoding_selector_get_encoding (ia->encoding_selector);
@@ -778,15 +777,13 @@ static void
 on_intro_amount_changed (PsppireImportAssistant *p)
 {
   gtk_widget_set_sensitive (p->n_cases_spin,
-                            gtk_toggle_button_get_active (
-							  GTK_TOGGLE_BUTTON (p->n_cases_button)));
+			    gtk_toggle_button_get_active
+			    (GTK_TOGGLE_BUTTON (p->n_cases_button)));
 
   gtk_widget_set_sensitive (p->percent_spin,
-                            gtk_toggle_button_get_active (
-							  GTK_TOGGLE_BUTTON (p->percent_button)));
+			    gtk_toggle_button_get_active
+			    (GTK_TOGGLE_BUTTON (p->percent_button)));
 }
-
-
 
 static void
 on_treeview_selection_change (PsppireImportAssistant *ia)
@@ -797,30 +794,45 @@ on_treeview_selection_change (PsppireImportAssistant *ia)
   GtkTreeIter iter;
   if (gtk_tree_selection_get_selected (selection, &model, &iter))
     {
+      gint max_lines;
       int n;
       GtkTreePath *path = gtk_tree_model_get_path (model, &iter);
       gint *index = gtk_tree_path_get_indices (path);
-
       n = *index;
-
       gtk_tree_path_free (path);
-
-      gtk_widget_set_sensitive (ia->variable_names_cb, n > 0);
-
-      ia->delimiters_model
-	= psppire_delimited_text_new (GTK_TREE_MODEL (ia->text_file));
+      g_object_get (model, "maximum-lines", &max_lines, NULL);
+      gtk_widget_set_sensitive (ia->variable_names_cb,
+				(n > 0 && n < max_lines));
+      ia->delimiters_model =
+	psppire_delimited_text_new (GTK_TREE_MODEL (ia->text_file));
       g_object_set (ia->delimiters_model, "first-line", n, NULL);
-
-      g_print ("%s:%d DT %p first line %d\n", __FILE__, __LINE__, ia->delimiters_model, n);
     }
 }
 
+static void
+render_text_preview_line (GtkTreeViewColumn *tree_column,
+		GtkCellRenderer *cell,
+		GtkTreeModel *tree_model,
+		GtkTreeIter *iter,
+		gpointer data)
+{
+  /*
+     Set the text  to a "insensitive" state if the row
+     is greater than what the user declared to be the maximum.
+  */
+  PsppireImportAssistant *ia = PSPPIRE_IMPORT_ASSISTANT (data);
+  GtkTreePath *path = gtk_tree_model_get_path (tree_model, iter);
+  gint *ii = gtk_tree_path_get_indices (path);
+  gint max_lines;
+  g_object_get (tree_model, "maximum-lines", &max_lines, NULL);
+  g_object_set (cell, "sensitive", (*ii < max_lines), NULL);
+  gtk_tree_path_free (path);
+}
 
 /* Initializes IA's first_line substructure. */
 static void
 first_line_page_create (PsppireImportAssistant *ia)
 {
-  g_print ("%s:%d %s\n", __FILE__, __LINE__, __FUNCTION__);
   GtkWidget *w =  get_widget_assert (ia->builder, "FirstLine");
 
   g_object_set_data (G_OBJECT (w), "on-entering", on_treeview_selection_change);
@@ -840,24 +852,46 @@ first_line_page_create (PsppireImportAssistant *ia)
       GtkTreeViewColumn *column = gtk_tree_view_column_new_with_attributes (_("Line"), renderer,
 									    "text", 0,
 									    NULL);
+
+      gtk_tree_view_column_set_cell_data_func (column, renderer, render_text_preview_line, ia, 0);
       gtk_tree_view_append_column (GTK_TREE_VIEW (ia->first_line_tree_view), column);
 
       renderer = gtk_cell_renderer_text_new ();
       column = gtk_tree_view_column_new_with_attributes (_("Text"), renderer, "text", 1, NULL);
+      gtk_tree_view_column_set_cell_data_func (column, renderer, render_text_preview_line, ia, 0);
+
       gtk_tree_view_append_column (GTK_TREE_VIEW (ia->first_line_tree_view), column);
 
-      gtk_container_add (GTK_CONTAINER (scrolled_window), ia->first_line_tree_view);
-
       g_signal_connect_swapped (ia->first_line_tree_view, "cursor-changed",
-			G_CALLBACK (on_treeview_selection_change), ia);
+				G_CALLBACK (on_treeview_selection_change), ia);
+      gtk_container_add (GTK_CONTAINER (scrolled_window), ia->first_line_tree_view);
     }
+
   gtk_widget_show_all (scrolled_window);
 
   ia->variable_names_cb = get_widget_assert (ia->builder, "variable-names");
-
 }
 
-
+static void
+intro_on_leave (PsppireImportAssistant *ia)
+{
+  gint lc = 0;
+  g_object_get (ia->text_file, "line-count", &lc, NULL);
+  if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (ia->n_cases_button)))
+    {
+      gint max_lines = gtk_spin_button_get_value_as_int (GTK_SPIN_BUTTON (ia->n_cases_spin));
+      g_object_set (ia->text_file, "maximum-lines", max_lines, NULL);
+    }
+  else if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (ia->percent_button)))
+    {
+      gdouble percent = gtk_spin_button_get_value (GTK_SPIN_BUTTON (ia->percent_spin));
+      g_object_set (ia->text_file, "maximum-lines", (gint) (lc * percent / 100.0), NULL);
+    }
+  else
+    {
+      g_object_set (ia->text_file, "maximum-lines", lc, NULL);
+    }
+}
 
 
 static void
@@ -963,6 +997,7 @@ intro_page_create (PsppireImportAssistant *ia)
 			    G_CALLBACK (on_intro_amount_changed), ia);
 
 
+  g_object_set_data (G_OBJECT (w), "on-forward", intro_on_leave);
   g_object_set_data (G_OBJECT (w), "on-entering", intro_on_enter);
   g_object_set_data (G_OBJECT (w), "on-reset", reset_intro_page);
 }

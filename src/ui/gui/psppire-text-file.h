@@ -57,6 +57,8 @@ struct _PsppireTextFile
   gchar *file_name;
   gchar *encoding;
 
+  gint maximum_lines;
+
   /* The first several lines of the file.   These copies which are UTF8 encoded,
      regardless of the file encoding.  */
   struct substring lines[MAX_PREVIEW_LINES];

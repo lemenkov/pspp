@@ -36,7 +36,9 @@ enum
   {
     PROP_0,
     PROP_FILE_NAME,
-    PROP_ENCODING
+    PROP_ENCODING,
+    PROP_MAXIMUM_LINES,
+    PROP_LINE_COUNT
   };
 
 enum {MAX_LINE_LEN = 16384};  /* Max length of an acceptable line. */
@@ -124,7 +126,6 @@ read_lines (PsppireTextFile *tf)
     done:
       line_reader_close (reader);
     }
-
 }
 
 static void
@@ -137,6 +138,9 @@ psppire_text_file_set_property (GObject         *object,
 
   switch (prop_id)
     {
+    case PROP_MAXIMUM_LINES:
+      tf->maximum_lines = g_value_get_int (value);
+      break;
     case PROP_FILE_NAME:
       tf->file_name = g_value_dup_string (value);
       read_lines (tf);
@@ -163,6 +167,12 @@ psppire_text_file_get_property (GObject         *object,
 
   switch (prop_id)
     {
+    case PROP_MAXIMUM_LINES:
+      g_value_set_int (value, text_file->maximum_lines);
+      break;
+    case PROP_LINE_COUNT:
+      g_value_set_int (value, text_file->line_cnt);
+      break;
     case PROP_FILE_NAME:
       g_value_set_string (value, text_file->file_name);
       break;
@@ -183,7 +193,6 @@ static void psppire_text_file_finalize        (GObject           *object);
 static void psppire_text_file_dispose        (GObject           *object);
 
 static GObjectClass *parent_class = NULL;
-
 
 static gboolean
 __tree_get_iter (GtkTreeModel *tree_model,
@@ -426,6 +435,20 @@ psppire_text_file_class_init (PsppireTextFileClass *class)
   parent_class = g_type_class_peek_parent (class);
   object_class = (GObjectClass*) class;
 
+  GParamSpec *maximum_lines_spec =
+    g_param_spec_int ("maximum-lines",
+		      "Maximum Lines",
+		      P_("An upper limit on the number of lines to consider"),
+		      0, G_MAXINT, G_MAXINT,
+		      G_PARAM_READWRITE);
+
+  GParamSpec *line_count_spec =
+    g_param_spec_int ("line-count",
+		      "Line Count",
+		      P_("The number of lines in the file"),
+		      0, G_MAXINT, G_MAXINT,
+		      G_PARAM_READABLE);
+
   GParamSpec *file_name_spec =
     g_param_spec_string ("file-name",
 			 "File Name",
@@ -444,6 +467,14 @@ psppire_text_file_class_init (PsppireTextFileClass *class)
   object_class->get_property = psppire_text_file_get_property;
 
   g_object_class_install_property (object_class,
+                                   PROP_MAXIMUM_LINES,
+                                   maximum_lines_spec);
+
+  g_object_class_install_property (object_class,
+                                   PROP_LINE_COUNT,
+                                   line_count_spec);
+
+  g_object_class_install_property (object_class,
                                    PROP_FILE_NAME,
                                    file_name_spec);
 
@@ -454,7 +485,6 @@ psppire_text_file_class_init (PsppireTextFileClass *class)
   object_class->finalize = psppire_text_file_finalize;
   object_class->dispose = psppire_text_file_dispose;
 }
-
 
 static void
 psppire_text_file_init (PsppireTextFile *text_file)
