@@ -558,7 +558,7 @@ on_chosen (PsppireImportAssistant *ia, GtkWidget *page)
 
   gtk_assistant_set_page_complete (GTK_ASSISTANT(ia), GTK_WIDGET (fc), FALSE);
 
-  if (f && !g_file_test (f, G_FILE_TEST_IS_DIR))
+  if (f && g_file_test (f, G_FILE_TEST_IS_REGULAR))
     {
       gtk_assistant_set_page_complete (GTK_ASSISTANT(ia), GTK_WIDGET (fc), TRUE);
 
@@ -570,15 +570,15 @@ on_chosen (PsppireImportAssistant *ia, GtkWidget *page)
       if (!ia->spreadsheet)
 	ia->spreadsheet = ods_probe (f, FALSE);
 
-      if (!ia->spreadsheet)
+      if (ia->spreadsheet)
+	{
+	  sheet_spec_page_create (ia);
+	}
+      else
 	{
 	  intro_page_create (ia);
 	  first_line_page_create (ia);
 	  separators_page_create (ia);
-	}
-      else
-	{
-	  sheet_spec_page_create (ia);
 	}
 
       formats_page_create (ia);
@@ -920,7 +920,6 @@ intro_on_enter (PsppireImportAssistant *ia)
 
   GtkAdjustment *adj = gtk_spin_button_get_adjustment (GTK_SPIN_BUTTON (ia->n_cases_spin));
   gtk_adjustment_set_lower (adj, 1.0);
-
 
   if (gtk_grid_get_child_at (GTK_GRID (table), 1, 2) == NULL)
     {
