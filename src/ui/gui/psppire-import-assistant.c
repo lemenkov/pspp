@@ -910,43 +910,27 @@ intro_on_enter (PsppireImportAssistant *ia)
                       ds_cstr (&s));
   ds_destroy (&s);
 
-  GtkWidget *w  =  gtk_grid_get_child_at (GTK_GRID (table), 1, 1);
-  int old_value = w ? gtk_spin_button_get_value_as_int (GTK_SPIN_BUTTON (ia->n_cases_spin)) : 1;
-  if (w)
-    gtk_container_remove (GTK_CONTAINER (table), w);
-
-  w  =  gtk_grid_get_child_at (GTK_GRID (table), 1, 2);
-  if (w)
-    gtk_container_remove (GTK_CONTAINER (table), w);
-
-
-  GtkWidget *hbox_n_cases = psppire_scanf_new (_("Only the first %4d cases"), &ia->n_cases_spin);
+  if (gtk_grid_get_child_at (GTK_GRID (table), 1, 1) == NULL)
+    {
+      GtkWidget *hbox_n_cases = psppire_scanf_new (_("Only the first %4d cases"), &ia->n_cases_spin);
+      gtk_grid_attach (GTK_GRID (table), hbox_n_cases,
+		       1, 1,
+		       1, 1);
+    }
 
   GtkAdjustment *adj = gtk_spin_button_get_adjustment (GTK_SPIN_BUTTON (ia->n_cases_spin));
   gtk_adjustment_set_lower (adj, 1.0);
 
-  if (ia->text_file)
+
+  if (gtk_grid_get_child_at (GTK_GRID (table), 1, 2) == NULL)
     {
-      if (psppire_text_file_get_total_exact (ia->text_file))
-	{
-	  gulong total_lines = psppire_text_file_get_n_lines (ia->text_file);
-	  gtk_adjustment_set_upper (adj, total_lines);
-	  gtk_adjustment_set_value (adj, old_value);
-	}
-      else
-	gtk_adjustment_set_upper (adj, DBL_MAX);
+      GtkWidget *hbox_percent = psppire_scanf_new (_("Only the first %3d %% of file (approximately)"),
+						   &ia->percent_spin);
+
+      gtk_grid_attach (GTK_GRID (table), hbox_percent,
+		       1, 2,
+		       1, 1);
     }
-  gtk_grid_attach (GTK_GRID (table), hbox_n_cases,
-		   1, 1,
-		   1, 1);
-
-
-  GtkWidget *hbox_percent = psppire_scanf_new (_("Only the first %3d %% of file (approximately)"),
-					       &ia->percent_spin);
-
-  gtk_grid_attach (GTK_GRID (table), hbox_percent,
-		   1, 2,
-		   1, 1);
 
   gtk_widget_show_all (table);
 
