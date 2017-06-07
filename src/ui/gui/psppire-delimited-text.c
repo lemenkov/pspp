@@ -51,56 +51,56 @@ static const struct enclosure enclosures[3] =
 static void
 count_delims (PsppireDelimitedText *tf)
 {
-  if (tf->child)
+  if (tf->child == NULL)
+    return;
+
+  tf->max_delimiters = 0;
+  GtkTreeIter iter;
+  gboolean valid;
+  for (valid = gtk_tree_model_get_iter_first (tf->child, &iter);
+       valid;
+       valid = gtk_tree_model_iter_next (tf->child, &iter))
     {
-      tf->max_delimiters = 0;
-      GtkTreeIter iter;
-      gboolean valid;
-      for (valid = gtk_tree_model_get_iter_first (tf->child, &iter);
-	   valid;
-	   valid = gtk_tree_model_iter_next (tf->child, &iter))
-	{
-	  gint enc = -1;
-	  // FIXME: Box these lines to avoid constant allocation/deallocation
-	  gchar *foo = 0;
-	  gtk_tree_model_get (tf->child, &iter, 1, &foo, -1);
+      gint enc = -1;
+      // FIXME: Box these lines to avoid constant allocation/deallocation
+      gchar *foo = 0;
+      gtk_tree_model_get (tf->child, &iter, 1, &foo, -1);
+      {
+	char *line = foo;
+	gint count = 0;
+	while (*line)
 	  {
-	    char *line = foo;
-	    gint count = 0;
-	    while (*line)
+	    const gunichar c = *line; //FIXME: Not multibyte safe!
+	    if (enc == -1)
 	      {
-		const gunichar c = *line; //FIXME: Not multibyte safe!
-		if (enc == -1)
+		gint i;
+		for (i = 0; i < 3; ++i)
 		  {
-		    gint i;
-		    for (i = 0; i < 3; ++i)
+		    if (c == enclosures[i].opening)
 		      {
-			if (c == enclosures[i].opening)
-			  {
-			    enc = i;
-			    break;
-			  }
+			enc = i;
+			break;
 		      }
 		  }
-		else if (c == enclosures[enc].closing)
-		  {
-		    enc = -1;
-		  }
-		if (enc == -1)
-		  {
-		    GSList *del;
-		    for (del = tf->delimiters; del; del = g_slist_next (del))
-		      {
-			if (c == GPOINTER_TO_INT (del->data))
-			  count++;
-		      }
-		  }
-		line++;
 	      }
-	    tf->max_delimiters = MAX (tf->max_delimiters, count);
+	    else if (c == enclosures[enc].closing)
+	      {
+		enc = -1;
+	      }
+	    if (enc == -1)
+	      {
+		GSList *del;
+		for (del = tf->delimiters; del; del = g_slist_next (del))
+		  {
+		    if (c == GPOINTER_TO_INT (del->data))
+		      count++;
+		  }
+	      }
+	    line++;
 	  }
-	  g_free (foo);
-	}
+	tf->max_delimiters = MAX (tf->max_delimiters, count);
+      }
+      g_free (foo);
     }
 }
 
