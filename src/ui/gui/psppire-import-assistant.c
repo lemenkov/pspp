@@ -846,6 +846,7 @@ first_line_page_create (PsppireImportAssistant *ia)
   if (ia->first_line_tree_view == NULL)
     {
       ia->first_line_tree_view = gtk_tree_view_new ();
+      g_object_set (ia->first_line_tree_view, "enable-search", FALSE, NULL);
 
       gtk_tree_view_set_headers_visible (GTK_TREE_VIEW (ia->first_line_tree_view), TRUE);
 
@@ -1166,6 +1167,7 @@ separators_page_create (PsppireImportAssistant *ia)
     {
       GtkWidget *scroller = get_widget_assert (ia->builder, "fields-scroller");
       ia->fields_tree_view = gtk_tree_view_new ();
+      g_object_set (ia->fields_tree_view, "enable-search", FALSE, NULL);
       gtk_container_add (GTK_CONTAINER (scroller), GTK_WIDGET (ia->fields_tree_view));
       gtk_widget_show_all (scroller);
     }
