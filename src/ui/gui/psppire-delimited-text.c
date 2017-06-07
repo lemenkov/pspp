@@ -63,14 +63,16 @@ count_delims (PsppireDelimitedText *tf)
     {
       gint enc = -1;
       // FIXME: Box these lines to avoid constant allocation/deallocation
-      gchar *foo = 0;
-      gtk_tree_model_get (tf->child, &iter, 1, &foo, -1);
+      gchar *line = NULL;
+      gtk_tree_model_get (tf->child, &iter, 1, &line, -1);
       {
-	char *line = foo;
+	char *p;
 	gint count = 0;
-	while (*line)
+	for (p = line; ; p = g_utf8_find_next_char (p, NULL))
 	  {
-	    const gunichar c = *line; //FIXME: Not multibyte safe!
+	    const gunichar c = g_utf8_get_char (p);
+	    if (c == NULL)
+	      break;
 	    if (enc == -1)
 	      {
 		gint i;
@@ -96,11 +98,10 @@ count_delims (PsppireDelimitedText *tf)
 		      count++;
 		  }
 	      }
-	    line++;
 	  }
 	tf->max_delimiters = MAX (tf->max_delimiters, count);
       }
-      g_free (foo);
+      g_free (line);
     }
 }
 
