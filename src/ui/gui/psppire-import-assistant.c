@@ -1214,16 +1214,18 @@ my_read (struct casereader *reader, void *aux, casenumber idx)
 	  const struct variable *var = dict_get_var (ia->dict, i);
 
 	  const gchar *ss = g_value_get_string (&value);
+	  if (ss)
+	    {
+	      union value *v = case_data_rw (c, var);
+	      char *xx = data_in (ss_cstr (ss),
+				  "UTF-8",
+				  var_get_write_format (var)->type,
+				  v, var_get_width (var), "UTF-8");
 
-	  union value *v = case_data_rw (c, var);
-	  char *xx = data_in (ss_cstr (ss),
-			      "UTF-8",
-			      var_get_write_format (var)->type,
-			      v, var_get_width (var), "UTF-8");
-
-	  /* if (xx) */
-	  /*   g_print ("%s:%d Err %s\n", __FILE__, __LINE__, xx); */
-	  free (xx);
+	      /* if (xx) */
+	      /*   g_print ("%s:%d Err %s\n", __FILE__, __LINE__, xx); */
+	      free (xx);
+	    }
 	  g_value_unset (&value);
 	}
     }
@@ -1307,7 +1309,8 @@ prepare_formats_page (PsppireImportAssistant *ia)
 	{
 	  gchar *s = NULL;
 	  gtk_tree_model_get (ia->delimiters_model, &iter, i+1, &s, -1);
-	  fmt_guesser_add (fg[i], ss_cstr (s));
+	  if (s)
+	    fmt_guesser_add (fg[i], ss_cstr (s));
 	  free (s);
 	}
     }
