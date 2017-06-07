@@ -189,16 +189,17 @@ struct separator
 /* All the separators in the dialog box. */
 static const struct separator separators[] =
   {
-    {"space", ' '},
-    {"tab", '\t'},
-    {"bang", '!'},
-    {"colon", ':'},
-    {"comma", ','},
-    {"hyphen", '-'},
-    {"pipe", '|'},
+    {"space",     ' '},
+    {"tab",       '\t'},
+    {"bang",      '!'},
+    {"colon",     ':'},
+    {"comma",     ','},
+    {"hyphen",    '-'},
+    {"pipe",      '|'},
     {"semicolon", ';'},
-    {"slash", '/'},
+    {"slash",     '/'},
   };
+
 #define SEPARATOR_CNT (sizeof separators / sizeof *separators)
 
 struct separator_count_node
