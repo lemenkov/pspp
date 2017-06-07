@@ -35,6 +35,19 @@ enum
     PROP_FIRST_LINE
   };
 
+struct enclosure
+{
+  gunichar opening;
+  gunichar closing;
+};
+
+static const struct enclosure enclosures[3] =
+  {
+    {'(',   ')'},
+    {'"',   '"'},
+    {'\'',  '\''}
+  };
+
 static void
 count_delims (PsppireDelimitedText *tf)
 {
@@ -47,6 +60,7 @@ count_delims (PsppireDelimitedText *tf)
 	   valid;
 	   valid = gtk_tree_model_iter_next (tf->child, &iter))
 	{
+	  gint enc = -1;
 	  // FIXME: Box these lines to avoid constant allocation/deallocation
 	  gchar *foo = 0;
 	  gtk_tree_model_get (tf->child, &iter, 1, &foo, -1);
@@ -55,11 +69,31 @@ count_delims (PsppireDelimitedText *tf)
 	    gint count = 0;
 	    while (*line)
 	      {
-		GSList *del;
-		for (del = tf->delimiters; del; del = g_slist_next (del))
+		const gunichar c = *line; //FIXME: Not multibyte safe!
+		if (enc == -1)
 		  {
-		    if (*line == GPOINTER_TO_INT (del->data))
-		      count++;
+		    gint i;
+		    for (i = 0; i < 3; ++i)
+		      {
+			if (c == enclosures[i].opening)
+			  {
+			    enc = i;
+			    break;
+			  }
+		      }
+		  }
+		else if (c == enclosures[enc].closing)
+		  {
+		    enc = -1;
+		  }
+		if (enc == -1)
+		  {
+		    GSList *del;
+		    for (del = tf->delimiters; del; del = g_slist_next (del))
+		      {
+			if (c == GPOINTER_TO_INT (del->data))
+			  count++;
+		      }
 		  }
 		line++;
 	      }
@@ -313,6 +347,18 @@ __iter_nth_child (GtkTreeModel *tree_model,
 }
 
 
+static void
+nullify_char (struct substring cs)
+{
+  int char_len = ss_first_mblen (cs);
+  while (char_len > 0)
+    {
+      cs.string[char_len - 1] = '\0';
+      char_len--;
+    }
+}
+
+
 /* Split row N into it's delimited fields (if it is not already cached)
    and set this row as the current cache. */
 static void
@@ -334,25 +380,47 @@ split_row_into_fields (PsppireDelimitedText *file, gint n)
   struct substring cs = file->const_cache;
   int field = 0;
   file->cache_starts[0] = cs.string;
+  gint enc = -1;
   for (;
        UINT32_MAX != ss_first_mb (cs);
        ss_get_mb (&cs))
     {
-      ucs4_t xx = ss_first_mb (cs);
-      GSList *del;
-      for (del = file->delimiters; del; del = g_slist_next (del))
+      ucs4_t character = ss_first_mb (cs);
+      gboolean char_is_quote = FALSE;
+      if (enc == -1)
 	{
-	  if (xx == GPOINTER_TO_INT (del->data))
+	  gint i;
+	  for (i = 0; i < 3; ++i)
 	    {
-	      field++;
-	      int char_len = ss_first_mblen (cs);
-	      file->cache_starts[field] = cs.string + char_len;
-	      while (char_len > 0)
+	      if (character == enclosures[i].opening)
 		{
-		  cs.string[char_len - 1] = '\0';
-		  char_len--;
+		  enc = i;
+		  char_is_quote = TRUE;
+		  file->cache_starts[field] += ss_first_mblen (cs);
+		  break;
 		}
-	      break;
+	    }
+	}
+      else if (character == enclosures[enc].closing)
+	{
+	  char_is_quote = TRUE;
+	  nullify_char (cs);
+	  enc = -1;
+	}
+
+      if (enc == -1 && char_is_quote == FALSE)
+	{
+	  GSList *del;
+	  for (del = file->delimiters; del; del = g_slist_next (del))
+	    {
+	      if (character == GPOINTER_TO_INT (del->data))
+		{
+		  field++;
+		  int char_len = ss_first_mblen (cs);
+		  file->cache_starts[field] = cs.string + char_len;
+		  nullify_char (cs);
+		  break;
+		}
 	    }
 	}
     }
@@ -531,7 +599,7 @@ psppire_delimited_text_new (GtkTreeModel *child)
 		  "child", child,
 		  NULL);
 
-  return retval;
+  return GTK_TREE_MODEL (retval);
 }
 
 static void
