@@ -71,7 +71,7 @@ count_delims (PsppireDelimitedText *tf)
 	for (p = line; ; p = g_utf8_find_next_char (p, NULL))
 	  {
 	    const gunichar c = g_utf8_get_char (p);
-	    if (c == NULL)
+	    if (c == 0)
 	      break;
 	    if (enc == -1)
 	      {
@@ -592,15 +592,13 @@ psppire_delimited_text_init (PsppireDelimitedText *text_file)
 }
 
 
-GtkTreeModel *
+PsppireDelimitedText *
 psppire_delimited_text_new (GtkTreeModel *child)
 {
-  PsppireDelimitedText *retval =
+  return
     g_object_new (PSPPIRE_TYPE_DELIMITED_TEXT,
 		  "child", child,
 		  NULL);
-
-  return GTK_TREE_MODEL (retval);
 }
 
 static void

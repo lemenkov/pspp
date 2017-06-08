@@ -311,7 +311,8 @@ repopulate_delimiter_columns (PsppireImportAssistant *ia)
       gtk_tree_view_remove_column (GTK_TREE_VIEW (ia->fields_tree_view), tvc);
     }
 
-  gint n_fields = gtk_tree_model_get_n_columns (ia->delimiters_model);
+  gint n_fields =
+    gtk_tree_model_get_n_columns (GTK_TREE_MODEL (ia->delimiters_model));
 
   /* ... and put them back again. */
   gint f;
@@ -371,9 +372,10 @@ reset_tree_view_model (PsppireImportAssistant *ia)
 static void
 prepare_separators_page (PsppireImportAssistant *ia, GtkWidget *page)
 {
-  gtk_tree_view_set_model (GTK_TREE_VIEW (ia->fields_tree_view), ia->delimiters_model);
+  gtk_tree_view_set_model (GTK_TREE_VIEW (ia->fields_tree_view),
+			   GTK_TREE_MODEL (ia->delimiters_model));
 
-  g_signal_connect_swapped (ia->delimiters_model, "notify::delimiters",
+  g_signal_connect_swapped (GTK_TREE_MODEL (ia->delimiters_model), "notify::delimiters",
   			G_CALLBACK (reset_tree_view_model), ia);
 
 
@@ -821,7 +823,6 @@ render_text_preview_line (GtkTreeViewColumn *tree_column,
      Set the text  to a "insensitive" state if the row
      is greater than what the user declared to be the maximum.
   */
-  PsppireImportAssistant *ia = PSPPIRE_IMPORT_ASSISTANT (data);
   GtkTreePath *path = gtk_tree_model_get_path (tree_model, iter);
   gint *ii = gtk_tree_path_get_indices (path);
   gint max_lines;
@@ -1047,8 +1048,6 @@ set_quote_list (GtkComboBox *cb)
   gtk_combo_box_set_entry_text_column (cb, 0);
 }
 
-
-
 /* Chooses a name for each column on the separators page */
 static void
 choose_column_names (PsppireImportAssistant *ia)
@@ -1057,7 +1056,9 @@ choose_column_names (PsppireImportAssistant *ia)
   unsigned long int generated_name_count = 0;
   dict_clear (ia->dict);
 
-  for (i = 0; i < gtk_tree_model_get_n_columns (ia->delimiters_model) - 1; ++i)
+  for (i = 0;
+       i < gtk_tree_model_get_n_columns (GTK_TREE_MODEL (ia->delimiters_model)) - 1;
+       ++i)
     {
       const gchar *candidate_name = NULL;
 
@@ -1074,8 +1075,6 @@ choose_column_names (PsppireImportAssistant *ia)
       free (name);
     }
 }
-
-
 
 /* Called when the user toggles one of the separators
    checkboxes. */
@@ -1266,7 +1265,7 @@ foo (struct dictionary *dict, void *aux)
     }
 
 
-  gint n_rows = gtk_tree_model_iter_n_children (ia->delimiters_model, NULL);
+  gint n_rows = gtk_tree_model_iter_n_children (GTK_TREE_MODEL (ia->delimiters_model), NULL);
 
   struct casereader *reader =
     casereader_create_random (proto, n_rows, &my_casereader_class,  ia);
@@ -1300,18 +1299,18 @@ prepare_formats_page (PsppireImportAssistant *ia)
       fg[i] = fmt_guesser_create ();
     }
 
-  gint n_rows = gtk_tree_model_iter_n_children (ia->delimiters_model, NULL);
+  gint n_rows = gtk_tree_model_iter_n_children (GTK_TREE_MODEL (ia->delimiters_model), NULL);
 
   GtkTreeIter iter;
   gboolean ok;
-  for (ok = gtk_tree_model_get_iter_first (ia->delimiters_model, &iter);
+  for (ok = gtk_tree_model_get_iter_first (GTK_TREE_MODEL (ia->delimiters_model), &iter);
        ok;
-       ok = gtk_tree_model_iter_next (ia->delimiters_model, &iter))
+       ok = gtk_tree_model_iter_next (GTK_TREE_MODEL (ia->delimiters_model), &iter))
     {
       for (i = 0 ; i < dict_get_var_cnt (ia->dict); ++i)
 	{
 	  gchar *s = NULL;
-	  gtk_tree_model_get (ia->delimiters_model, &iter, i+1, &s, -1);
+	  gtk_tree_model_get (GTK_TREE_MODEL (ia->delimiters_model), &iter, i+1, &s, -1);
 	  if (s)
 	    fmt_guesser_add (fg[i], ss_cstr (s));
 	  free (s);

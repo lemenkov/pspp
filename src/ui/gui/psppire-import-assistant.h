@@ -1,5 +1,5 @@
 /* PSPPIRE - a graphical user interface for PSPP.
-   Copyright (C) 2015  Free Software Foundation
+   Copyright (C) 2015, 2017  Free Software Foundation
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -23,10 +23,10 @@
 
 #include <gtk/gtk.h>
 
-#include "libpspp/str.h"
 #include "psppire-dict.h"
 #include "data/spreadsheet-reader.h"
 #include "psppire-text-file.h"
+#include "psppire-delimited-text.h"
 
 G_BEGIN_DECLS
 
@@ -113,7 +113,7 @@ struct _PsppireImportAssistant
   int response;
 
   PsppireTextFile *text_file;
-  GtkTreeModel *delimiters_model;
+  PsppireDelimitedText *delimiters_model;
 
   struct sheet_spec_page *sheet_spec;
 

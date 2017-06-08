@@ -81,7 +81,7 @@ typedef struct _PsppireDelimitedText       PsppireDelimitedText;
 typedef struct _PsppireDelimitedTextClass  PsppireDelimitedTextClass;
 
 GType psppire_delimited_text_get_type (void) G_GNUC_CONST;
-GtkTreeModel *psppire_delimited_text_new (GtkTreeModel *);
+PsppireDelimitedText *psppire_delimited_text_new (GtkTreeModel *);
 
 const gchar *psppire_delimited_text_get_header_title (PsppireDelimitedText *file, gint column);
 
