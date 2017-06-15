@@ -35,6 +35,8 @@ Changes from 0.10.2 to 0.10.5pre1:
 
  ** The Non Parametric Statistics Menu has a new item: "K Independent Samples".
 
+ ** Dialog boxes can now be canceled using the <Escape> key.
+
  * The AUTORECODE command now accepts an optional / before INTO.
 
  * The short form of the VECTOR command can now create string variables.
