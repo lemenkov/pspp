@@ -77,6 +77,7 @@ struct matrix_format
   int n_continuous_vars;
   struct variable **split_vars;
   size_t n_split_vars;
+  long n;
 };
 
 /*
@@ -206,6 +207,24 @@ preprocess (struct casereader *casereader0, const struct dictionary *dict, void 
   const int idx = var_get_dict_index (mformat->varname);
   row = 0;
 
+  if (mformat->n >= 0)
+    {
+      int col;
+      struct ccase *outcase = case_create (proto);
+      union value *v = case_data_rw (outcase, mformat->rowtype);
+      uint8_t *n = value_str_rw (v, ROWTYPE_WIDTH);
+      strncpy ((char *) n, "N        ", ROWTYPE_WIDTH);
+      blank_varname_column (outcase, mformat->varname);
+      for (col = 0; col < mformat->n_continuous_vars; ++col)
+	{
+	  union value *dest_val =
+	    case_data_rw_idx (outcase,
+			      1 + col + var_get_dict_index (mformat->varname));
+	  dest_val->f = mformat->n;
+	}
+      casewriter_write (writer, outcase);
+    }
+
   prev_split_hash = 1;
   n_splits = 0;
   for (; (c = casereader_read (casereader0)) != NULL; prev_case = c)
@@ -225,12 +244,23 @@ preprocess (struct casereader *casereader0, const struct dictionary *dict, void 
 	}
 
       prev_split_hash = split_hash;
-
       case_unref (prev_case);
-      struct ccase *outcase = case_create (proto);
-      case_copy (outcase, 0, c, 0, caseproto_get_n_widths (proto));
       const union value *v = case_data (c, mformat->rowtype);
       const char *val = (const char *) value_str (v, ROWTYPE_WIDTH);
+      if (mformat->n >= 0)
+	{
+	  if (0 == strncasecmp (val, "n       ", ROWTYPE_WIDTH) ||
+	      0 == strncasecmp (val, "n_vector", ROWTYPE_WIDTH))
+	    {
+	      msg (SW,
+		   _("The N subcommand was specified, but a N record was also found in the data.  The N record will be ignored."));
+	      continue;
+	    }
+	}
+
+      struct ccase *outcase = case_create (proto);
+      case_copy (outcase, 0, c, 0, caseproto_get_n_widths (proto));
+
       if (0 == strncasecmp (val, "corr    ", ROWTYPE_WIDTH) ||
 	  0 == strncasecmp (val, "cov     ", ROWTYPE_WIDTH))
 	{
@@ -336,6 +366,7 @@ cmd_matrix (struct lexer *lexer, struct dataset *ds)
   mformat.diagonal = DIAGONAL;
   mformat.n_split_vars = 0;
   mformat.split_vars = NULL;
+  mformat.n = -1;
 
   dict = (in_input_program ()
           ? dataset_dict (ds)
@@ -406,7 +437,22 @@ cmd_matrix (struct lexer *lexer, struct dataset *ds)
       if (! lex_force_match (lexer, T_SLASH))
 	goto error;
 
-      if (lex_match_id (lexer, "FORMAT"))
+      if (lex_match_id (lexer, "N"))
+	{
+	  lex_match (lexer, T_EQUALS);
+
+	  if (! lex_force_int (lexer))
+	    goto error;
+
+	  mformat.n = lex_integer (lexer);
+	  if (mformat.n < 0)
+	    {
+	      msg (SE, _("%s must not be negative."), "N");
+	      goto error;
+	    }
+	  lex_get (lexer);
+	}
+      else if (lex_match_id (lexer, "FORMAT"))
 	{
 	  lex_match (lexer, T_EQUALS);
 
