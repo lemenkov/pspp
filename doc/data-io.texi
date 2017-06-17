@@ -966,10 +966,11 @@ active dataset.
 @display
 MATRIX DATA
         VARIABLES = @var{columns}
-        [eFILE='@var{file_name}'| INLINE @}
+        [FILE='@var{file_name}'| INLINE @}
         [/FORMAT= [@{LIST | FREE@}]
                   [@{UPPER | LOWER | FULL@}]
                   [@{DIAGONAL | NODIAGONAL@}]]
+        [/N= @var{n}]
         [/SPLIT= @var{split_variables}].
 @end display
 
@@ -1048,6 +1049,40 @@ In the preceding examples, each matrix row has been specified on a
 single line.  If you pass the keyword @var{FREE} to @subcmd{FORMAT}
 then the data may be data for several matrix rows may be specified on
 the same line, or a single row may be split across lines.
+
+The @subcmd{N} subcommand may be used to specify the number
+of valid cases for each variable.  It should not be used if the
+data contains a record whose ROWTYPE_ column is @samp{N} or @samp{N_VECTOR}.
+It implies a @samp{N} record whose values are all @var{n}.
+That is to say,
+@example
+matrix data
+    variables = rowtype_  var01 TO var04
+    /format = upper nodiagonal
+    /n = 99.
+begin data
+mean 34 35 36 37
+sd   22 11 55 66
+corr 9 8 7
+corr 6 5
+corr 4
+end data.
+@end example
+produces an effect identical to
+@example
+matrix data
+    variables = rowtype_  var01 TO var04
+    /format = upper nodiagonal
+begin data
+n    99 99 99 99
+mean 34 35 36 37
+sd   22 11 55 66
+corr 9 8 7
+corr 6 5
+corr 4
+end data.
+@end example
+
 
 The @subcmd{SPLIT} is used to indicate that variables are to be
 considered as split variables.  For example, the following
