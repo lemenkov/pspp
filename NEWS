@@ -11,6 +11,8 @@ Changes from 0.10.2 to 0.10.5pre1:
 
  * The FACTOR command can now analyse matrix files prepared with MATRIX DATA.
 
+ * The FACTOR command can now print the anti-image matrices.
+
  * The MATRIX DATA command has been added.
 
  * Some inappropriate properties in selection dialogs have been corrected.

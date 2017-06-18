@@ -798,7 +798,7 @@ FACTOR  @{
 
         [ /ROTATION=@{VARIMAX, EQUAMAX, QUARTIMAX, PROMAX[(@var{k})], NOROTATE@}]
 
-        [ /PRINT=[INITIAL] [EXTRACTION] [ROTATION] [UNIVARIATE] [CORRELATION] [COVARIANCE] [DET] [KMO] [SIG] [ALL] [DEFAULT] ]
+        [ /PRINT=[INITIAL] [EXTRACTION] [ROTATION] [UNIVARIATE] [CORRELATION] [COVARIANCE] [DET] [KMO] [AIC] [SIG] [ALL] [DEFAULT] ]
 
         [ /PLOT=[EIGEN] ]
 
@@ -862,6 +862,8 @@ The @subcmd{/PRINT} subcommand may be used to select which features of the analy
       The covariance matrix is printed.
 @item @subcmd{DET}
       The determinant of the correlation or covariance matrix is printed.
+@item @subcmd{AIC}
+      The anti-image covariance and anti-image correlation matrices are printed.
 @item @subcmd{KMO}
       The Kaiser-Meyer-Olkin measure of sampling adequacy and the Bartlett test of sphericity is printed.
 @item @subcmd{SIG}
