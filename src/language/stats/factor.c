@@ -293,7 +293,7 @@ ssq_row_od_n (const gsl_matrix *m, int j)
   return ss;
 }
 
-/* Return the sum of all the elements excluding row N */
+/* Return the sum of squares of all the elements excluding row N */
 static double
 ssq_od_n (const gsl_matrix *m, int n)
 {
@@ -305,9 +305,9 @@ ssq_od_n (const gsl_matrix *m, int n)
 
   for (i = 0; i < m->size1; ++i)
     {
-      if (i == n ) continue;
       for (j = 0; j < m->size2; ++j)
 	{
+	  if (i == j) continue;
 	  ss += pow2 (gsl_matrix_get (m, i, j));
 	}
     }
@@ -2384,8 +2384,8 @@ do_factor_by_matrix (const struct cmd_factor *factor, struct idata *idata)
   double sum_ssq_a = 0;
   for (i = 0; i < r_inv->size1; ++i)
     {
-      sum_ssq_r += ssq_od_n (r_inv, i);
-      sum_ssq_a += ssq_od_n (idata->ai_cov, i);
+      sum_ssq_r += ssq_od_n (idata->mm.corr, i);
+      sum_ssq_a += ssq_od_n (idata->ai_cor, i);
     }
 
   gsl_matrix_free (r_inv);

@@ -2094,18 +2094,12 @@ end data.
 
 factor matrix in (cov = *)
     / method = covariance
-    / print = initial covariance kmo
+    / print = initial covariance
     / extraction = pc
     / rotation = norotate.
 ])
 
 AT_CHECK([pspp -O format=csv covariance-matrix.sps], [0], [dnl
-Table: KMO and Bartlett's Test
-Kaiser-Meyer-Olkin Measure of Sampling Adequacy,,.741
-Bartlett's Test of Sphericity,Approx. Chi-Square,104.810
-,df,28
-,Sig.,.000
-
 Table: Covariance Matrix
 ,var01,var02,var03,var04,var05,var06,var07,var08
 var01,32.490,1.539,-29.469,11.902,4.309,8.464,15.390,1.454
@@ -2339,6 +2333,53 @@ pa,.707,.124,-.117,-.161,.256
 piq,.456,-.733,.122,-.289,-.377
 viq,.589,-.539,.033,.298,.457
 ran,.592,.262,-.069,-.638,.096
+])
+
+AT_CLEANUP
+
+
+AT_SETUP([FACTOR Kaiser-Meyer-Olkin])
+
+AT_DATA([kmo.sps], [dnl
+SET FORMAT=F20.3 .
+matrix data
+ variables = rowtype_ viq piq pa ran piatwr  piatc
+ / n = 476
+ / format = lower diagonal .
+begin data
+mean  96.88  100.51  -1.73  -0.94  -2.52 -1.85
+sd    10.97   11.19   1.19   0.88   0.85  0.97
+corr    1.00
+corr    0.38  1.00
+corr    0.26  0.24  1.00
+corr    0.16  0.17  0.34  1.00
+corr    0.25  0.07  0.46  0.38  1.00
+corr    0.37  0.22  0.39  0.30  0.59   1.00
+end data.
+
+factor matrix = in (cor = *) 
+ / analysis = viq piq pa ran piatwr piatc
+ / extraction = pc
+ / rotation = norotate
+ / print = kmo
+])
+
+AT_CHECK([pspp -O format=csv kmo.sps], [0], [dnl
+Table: KMO and Bartlett's Test
+Kaiser-Meyer-Olkin Measure of Sampling Adequacy,,.730
+Bartlett's Test of Sphericity,Approx. Chi-Square,602.673
+,df,15
+,Sig.,.000
+
+Table: Component Matrix
+,Component,,,,
+,1,2,3,4,5
+viq,.589,-.539,.033,.298,.457
+piq,.456,-.733,.122,-.289,-.377
+pa,.707,.124,-.117,-.161,.256
+ran,.592,.262,-.069,-.638,.096
+piatwr,.754,.418,.442,.219,-.115
+piatc,.774,.122,-.368,.365,-.322
 ])
 
 AT_CLEANUP
