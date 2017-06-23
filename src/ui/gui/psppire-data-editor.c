@@ -167,7 +167,16 @@ psppire_data_editor_set_property (GObject         *object,
 
       g_object_set (de->var_sheet, "data-model", de->dict, NULL);
       break;
+
     case PROP_VALUE_LABELS:
+      {
+	gboolean l = g_value_get_boolean (value);
+	g_object_set (de->data_sheet, "forward-conversion",
+		      l ?
+		      psppire_data_store_value_to_string_with_labels :
+		      psppire_data_store_value_to_string,
+		      NULL);
+      }
       break;
 
     default:

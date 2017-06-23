@@ -20,7 +20,7 @@
 #include <stdlib.h>
 #include <gettext.h>
 #define _(msgid) gettext (msgid)
-#define N_(msgid) msgid
+#define P_(msgid) msgid
 
 #include <data/datasheet.h>
 #include <data/data-out.h>
@@ -158,8 +158,15 @@ myreversefunc (GtkTreeModel *model, gint col, gint row,
   return TRUE;
 }
 
+static char *
+unlabeled_value (PsppireDataStore *store, const struct variable *variable, const union value *val)
+{
+  const struct fmt_spec *fmt = var_get_print_format (variable);
+  return data_out (val, psppire_dict_encoding (store->dict),  fmt);
+}
+
 gchar *
-psppire_data_store_value_to_string (PsppireDataStore *store, gint col, gint row, const GValue *v)
+psppire_data_store_value_to_string (gpointer unused, PsppireDataStore *store, gint col, gint row, const GValue *v)
 {
   const struct variable *variable = psppire_dict_get_variable (store->dict, col);
   g_return_val_if_fail (variable, g_strdup ("???"));
@@ -168,8 +175,32 @@ psppire_data_store_value_to_string (PsppireDataStore *store, gint col, gint row,
   union value val;
   value_variant_get (&val, vrnt);
 
-  const struct fmt_spec *fmt = var_get_print_format (variable);
-  char *out =  data_out (&val, psppire_dict_encoding (store->dict),  fmt);
+  char *out = unlabeled_value (store, variable, &val);
+
+  value_destroy_from_variant (&val, vrnt);
+
+  return out;
+}
+
+gchar *
+psppire_data_store_value_to_string_with_labels (gpointer unused, PsppireDataStore *store, gint col, gint row, const GValue *v)
+{
+  const struct variable *variable = psppire_dict_get_variable (store->dict, col);
+  g_return_val_if_fail (variable, g_strdup ("???"));
+
+  GVariant *vrnt = g_value_get_variant (v);
+  union value val;
+  value_variant_get (&val, vrnt);
+
+  char *out = NULL;
+
+  const struct val_labs *vls = var_get_value_labels (variable);
+  struct val_lab *vl = val_labs_lookup (vls, &val);
+  if (vl != NULL)
+    out = strdup (val_lab_get_label (vl));
+  else
+    out = unlabeled_value (store, variable, &val);
+
   value_destroy_from_variant (&val, vrnt);
 
   return out;

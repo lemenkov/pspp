@@ -102,15 +102,8 @@ change_data_value (PsppireDataSheet *sheet, gint col, gint row, GValue *value)
   value_destroy_from_variant (&v, vrnt);
 }
 
-static gchar *
-data_store_value_to_string (SswSheet *data_sheet, PsppireDataStore *store, gint col, gint row, const GValue *v)
-{
-  return psppire_data_store_value_to_string (store, col, row, v);
-}
-
 gboolean myreversefunc (GtkTreeModel *model, gint col, gint row, const gchar *in,
 		    GValue *out);
-
 
 
 
@@ -355,7 +348,7 @@ psppire_data_sheet_new (void)
 {
   GObject *obj =
     g_object_new (PSPPIRE_TYPE_DATA_SHEET,
-		  "forward-conversion", data_store_value_to_string,
+		  "forward-conversion", psppire_data_store_value_to_string,
 		  "reverse-conversion", myreversefunc,
 		  NULL);
 

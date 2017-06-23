@@ -109,7 +109,11 @@ gchar *psppire_data_store_get_string (PsppireDataStore *,
                                       glong row, const struct variable *,
                                       bool use_value_label);
 
-gchar * psppire_data_store_value_to_string (PsppireDataStore *store,
+gchar * psppire_data_store_value_to_string (gpointer unused, PsppireDataStore *store,
+					    gint col, gint row,
+					    const GValue *v);
+
+gchar * psppire_data_store_value_to_string_with_labels (gpointer unused, PsppireDataStore *store,
 					    gint col, gint row,
 					    const GValue *v);
 
