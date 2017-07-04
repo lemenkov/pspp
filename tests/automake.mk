@@ -245,6 +245,8 @@ tests_ui_syntax_gen_test_LDADD = \
 
 EXTRA_DIST += \
 	tests/coverage.sh \
+	tests/data/CVE-2017-10791.sav \
+	tests/data/CVE-2017-10792.sav \
 	tests/data/bcd-in.expected.cmp.gz \
 	tests/data/binhex-in.expected.cmp.gz \
 	tests/data/binhex-out.expected.gz \
