@@ -2463,7 +2463,8 @@ parse_long_string_value_labels (struct sfm_reader *r,
       ofs += 4;
 
       /* Parse variable name, width, and number of labels. */
-      if (!check_overflow (r, record, ofs, var_name_len + 8))
+      if (!check_overflow (r, record, ofs, var_name_len)
+          || !check_overflow (r, record, ofs, var_name_len + 8))
         return;
       var_name = recode_string_pool ("UTF-8", dict_encoding,
                                      (const char *) record->data + ofs,
@@ -2581,7 +2582,8 @@ parse_long_string_missing_values (struct sfm_reader *r,
       ofs += 4;
 
       /* Parse variable name. */
-      if (!check_overflow (r, record, ofs, var_name_len + 1))
+      if (!check_overflow (r, record, ofs, var_name_len)
+          || !check_overflow (r, record, ofs, var_name_len + 1))
         return;
       var_name = recode_string_pool ("UTF-8", dict_encoding,
                                      (const char *) record->data + ofs,
