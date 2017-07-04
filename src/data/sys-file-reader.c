@@ -523,7 +523,7 @@ read_record (struct sfm_reader *r, int type,
              18.  I'm surprised that SPSS puts up with this. */
           struct sfm_extension_record *ext;
           bool ok = read_extension_record (r, subtype, &ext);
-          if (ok)
+          if (ok && ext)
             ll_push_tail (&r->var_attrs, &ext->ll);
           return ok;
         }
