@@ -13,7 +13,8 @@ dnl GNU General Public License for more details.
 dnl 
 dnl You should have received a copy of the GNU General Public License
 dnl along with this program.  If not, see <http://www.gnu.org/licenses/>.
-dnl AT_BANNER([MISSING VALUES])
+dnl
+AT_BANNER([MISSING VALUES])
 
 AT_SETUP([MISSING VALUES valid cases])
 AT_DATA([missing-values.sps], [dnl

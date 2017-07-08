@@ -13,7 +13,8 @@ dnl GNU General Public License for more details.
 dnl 
 dnl You should have received a copy of the GNU General Public License
 dnl along with this program.  If not, see <http://www.gnu.org/licenses/>.
-dnl AT_BANNER([q2c])
+dnl
+AT_BANNER([q2c])
 
 AT_SETUP([q2c enforces mandatory subcommands])
 AT_DATA([q2c.sps], [dnl

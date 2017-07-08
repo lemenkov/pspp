@@ -13,7 +13,8 @@ dnl GNU General Public License for more details.
 dnl 
 dnl You should have received a copy of the GNU General Public License
 dnl along with this program.  If not, see <http://www.gnu.org/licenses/>.
-dnl AT_BANNER([calculating moments])
+dnl
+AT_BANNER([calculating moments])
 
 m4_define([MOMENTS_TESTCASES],
   [[[1 2 3 4], [W=4.000 M1=2.500 M2=1.667 M3=0.000 M4=-1.200]],

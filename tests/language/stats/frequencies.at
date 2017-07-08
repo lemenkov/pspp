@@ -13,7 +13,8 @@ dnl GNU General Public License for more details.
 dnl 
 dnl You should have received a copy of the GNU General Public License
 dnl along with this program.  If not, see <http://www.gnu.org/licenses/>.
-dnl AT_BANNER([FREQUENCIES procedure])
+dnl
+AT_BANNER([FREQUENCIES procedure])
 
 AT_SETUP([FREQUENCIES string variable])
 AT_DATA([frequencies.sps],

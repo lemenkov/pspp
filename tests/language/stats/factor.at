@@ -13,7 +13,8 @@ dnl GNU General Public License for more details.
 dnl 
 dnl You should have received a copy of the GNU General Public License
 dnl along with this program.  If not, see <http://www.gnu.org/licenses/>.
-dnl AT_BANNER([FACTOR procedure])
+dnl
+AT_BANNER([FACTOR procedure])
 
 AT_SETUP([FACTOR extraction=paf method=correlation])
 dnl This example is based on data from http://www.ats.ucla.edu/stat/Spss/output/factor1.htm

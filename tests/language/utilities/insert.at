@@ -13,7 +13,8 @@ dnl GNU General Public License for more details.
 dnl 
 dnl You should have received a copy of the GNU General Public License
 dnl along with this program.  If not, see <http://www.gnu.org/licenses/>.
-dnl AT_BANNER([INSERT])
+dnl
+AT_BANNER([INSERT])
 
 dnl Create a file "batch.sps" that is valid syntax only in batch mode.
 m4_define([CREATE_BATCH_SPS], 

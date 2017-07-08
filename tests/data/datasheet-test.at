@@ -13,7 +13,8 @@ dnl GNU General Public License for more details.
 dnl 
 dnl You should have received a copy of the GNU General Public License
 dnl along with this program.  If not, see <http://www.gnu.org/licenses/>.
-dnl AT_BANNER([datasheet])
+dnl
+AT_BANNER([datasheet])
 
 m4_define([DATASHEET_TEST],
   [AT_SETUP([$1x$2, $3 backing rows, backing widths $4])

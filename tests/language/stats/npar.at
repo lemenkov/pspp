@@ -13,7 +13,8 @@ dnl GNU General Public License for more details.
 dnl 
 dnl You should have received a copy of the GNU General Public License
 dnl along with this program.  If not, see <http://www.gnu.org/licenses/>.
-dnl AT_BANNER([NPAR TESTS])
+dnl
+AT_BANNER([NPAR TESTS])
 
 AT_SETUP([NPAR TESTS BINOMIAL P < 0.5; N1/N2 < 1])
 AT_DATA([npar.sps], [dnl

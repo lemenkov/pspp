@@ -13,7 +13,8 @@ dnl GNU General Public License for more details.
 dnl 
 dnl You should have received a copy of the GNU General Public License
 dnl along with this program.  If not, see <http://www.gnu.org/licenses/>.
-dnl AT_BANNER([BEGIN DATA])
+dnl
+AT_BANNER([BEGIN DATA])
 
 # BEGIN DATA can run as a command in itself, or it can appear as part
 # of the first procedure.  First, test it after a procedure.
