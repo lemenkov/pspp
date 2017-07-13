@@ -3896,9 +3896,9 @@ AT_CLEANUP
 # See also https://security-tracker.debian.org/tracker/CVE-2017-10791.
 # Found by team OWL337, using the collAFL fuzzer.
 AT_SETUP([integer overflows in long string missing values])
+AT_KEYWORDS([system file negative])
 cp $top_srcdir/tests/data/CVE-2017-10791.sav .
-AT_CHECK([pspp-convert -O csv CVE-2017-10791.sav -], [0], [], [dnl
-`CVE-2017-10791.sav': This system file does not indicate its own character encoding.  Using default encoding ANSI_X3.4-1968.  For best results, specify an encoding explicitly.  Use SYSFILE INFO with ENCODING="DETECT" to analyze the possible encodings.
+AT_CHECK([pspp-convert -O csv -e ASCII CVE-2017-10791.sav -], [0], [], [dnl
 `CVE-2017-10791.sav' near offset 0x217: Extension record subtype 21 ends unexpectedly.
 ])
 AT_CLEANUP
@@ -3909,9 +3909,9 @@ AT_CLEANUP
 # See also https://security-tracker.debian.org/tracker/CVE-2017-10792.
 # Reported by team OWL337, with fuzzer collAFL.
 AT_SETUP([null dereference skipping bad extension record 18])
+AT_KEYWORDS([system file negative])
 cp $top_srcdir/tests/data/CVE-2017-10792.sav .
-AT_CHECK([pspp-convert -O csv CVE-2017-10792.sav -], [0], [], [dnl
+AT_CHECK([pspp-convert -O csv -e ASCII CVE-2017-10792.sav -], [0], [], [dnl
 `CVE-2017-10792.sav' near offset 0x1c0: Record type 7, subtype 18 has bad size 4 (expected 1).
-`CVE-2017-10792.sav': This system file does not indicate its own character encoding.  Using default encoding ANSI_X3.4-1968.  For best results, specify an encoding explicitly.  Use SYSFILE INFO with ENCODING="DETECT" to analyze the possible encodings.
 ])
 AT_CLEANUP
