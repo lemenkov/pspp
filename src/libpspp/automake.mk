@@ -48,8 +48,6 @@ src_libpspp_liblibpspp_la_SOURCES = \
 	src/libpspp/freaderror.h \
 	src/libpspp/hash-functions.c \
 	src/libpspp/hash-functions.h \
-	src/libpspp/inflate.c \
-	src/libpspp/inflate.h \
 	src/libpspp/heap.c \
 	src/libpspp/heap.h \
 	src/libpspp/hmap.c \

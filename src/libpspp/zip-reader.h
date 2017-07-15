@@ -18,43 +18,9 @@
 #ifndef ZIP_READER_H
 #define ZIP_READER_H 1
 
-#include <inttypes.h>
-
+struct zip_member;
 struct zip_reader;
 struct string;
-
-enum compression
-  {
-    COMPRESSION_STORED = 0,
-    COMPRESSION_INFLATE,
-    n_COMPRESSION
-  };
-
-struct zip_member
-{
-  FILE *fp;                   /* The stream from which the data is read */
-  uint32_t offset;            /* Starting offset in file. */
-  uint32_t comp_size;         /* Length of member file data, in bytes. */
-  uint32_t ucomp_size;        /* Uncompressed length of member file data, in bytes. */
-  uint32_t expected_crc;      /* CRC-32 of member file data.. */
-  char *name;                 /* Name of member file. */
-  uint32_t crc;
-  enum compression compression;
-
-  size_t bytes_unread;       /* Number of bytes left in the member available for reading */
-  int ref_cnt;
-  struct string *errmsgs;    /* A string to hold error messages.
-				This string is NOT owned by this object. */
-  void *aux;
-};
-
-struct decompressor
-{
-  bool (*init) (struct zip_member *);
-  int  (*read) (struct zip_member *, void *, size_t);
-  void (*finish) (struct zip_member *);
-};
-
 
 void zm_dump (const struct zip_member *zm);
 

@@ -16,7 +16,7 @@
 
 #include <config.h>
 
-
+#include <inttypes.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -30,8 +30,6 @@
 #include <byteswap.h>
 #include <crc.h>
 
-#include "inflate.h"
-
 #include "str.h"
 
 #include "zip-reader.h"
@@ -41,53 +39,51 @@
 #define _(msgid) gettext (msgid)
 #define N_(msgid) (msgid)
 
+struct zip_member
+{
+  FILE *fp;                   /* The stream from which the data is read */
+  uint32_t offset;            /* Starting offset in file. */
+  uint32_t comp_size;         /* Length of member file data, in bytes. */
+  uint32_t ucomp_size;        /* Uncompressed length of member file data, in bytes. */
+  uint32_t expected_crc;      /* CRC-32 of member file data.. */
+  char *name;                 /* Name of member file. */
+  uint32_t crc;
+  const struct decompressor *decompressor;
+
+  size_t bytes_unread;       /* Number of bytes left in the member available for reading */
+  int ref_cnt;
+  struct string *errmsgs;    /* A string to hold error messages.
+				This string is NOT owned by this object. */
+  void *aux;
+};
+
+struct decompressor
+{
+  bool (*init) (struct zip_member *);
+  int  (*read) (struct zip_member *, void *, size_t);
+  void (*finish) (struct zip_member *);
+};
+static const struct decompressor stored_decompressor;
+static const struct decompressor inflate_decompressor;
 
 static bool find_eocd (FILE *fp, off_t *off);
 
-static int
-stored_read (struct zip_member *zm, void *buf, size_t n)
+static const struct decompressor *
+get_decompressor (struct zip_member *zm, uint16_t c)
 {
-  return fread (buf, 1, n, zm->fp);
-}
-
-static bool
-stored_init (struct zip_member *zm UNUSED)
-{
-  return true;
-}
-
-static void
-stored_finish (struct zip_member *zm UNUSED)
-{
-  /* Nothing required */
-}
-
-
-static struct decompressor decompressors[n_COMPRESSION] =
-  {
-    {stored_init, stored_read, stored_finish},
-    {inflate_init, inflate_read, inflate_finish}
-  };
-
-static enum compression
-comp_code (struct zip_member *zm, uint16_t c)
-{
-  enum compression which;
   assert (zm->errmsgs);
   switch (c)
     {
     case 0:
-      which = COMPRESSION_STORED;
-      break;
+      return &stored_decompressor;
+
     case 8:
-      which = COMPRESSION_INFLATE;
-      break;
+      return &inflate_decompressor;
+
     default:
       ds_put_format (zm->errmsgs, _("Unsupported compression type (%d)"), c);
-      which = n_COMPRESSION;
-      break;
+      return NULL;
     }
-  return which;
 }
 
 
@@ -230,7 +226,7 @@ zip_member_read (struct zip_member *zm, void *buf, size_t bytes)
   if ( bytes > zm->bytes_unread)
     bytes = zm->bytes_unread;
 
-  bytes_read  = decompressors[zm->compression].read (zm, buf, bytes);
+  bytes_read  = zm->decompressor->read (zm, buf, bytes);
   if ( bytes_read < 0)
     return bytes_read;
 
@@ -272,7 +268,8 @@ zip_header_read_next (struct zip_reader *zr)
   if (! get_u16 (zr->fr, &gp)) return NULL;
   if (! get_u16 (zr->fr, &comp_type)) return NULL;
 
-  zm->compression = comp_code (zm, comp_type);
+  zm->decompressor = get_decompressor (zm, comp_type);
+  if (! zm->decompressor) return NULL;
 
   if (! get_u16 (zr->fr, &time)) return NULL;
   if (! get_u16 (zr->fr, &date)) return NULL;
@@ -436,7 +433,8 @@ zip_member_open (struct zip_reader *zr, const char *member)
   if (! get_u16 (zm->fp, &v)) return NULL;
   if (! get_u16 (zm->fp, &gp)) return NULL;
   if (! get_u16 (zm->fp, &comp_type)) return NULL;
-  zm->compression = comp_code (zm, comp_type);
+  zm->decompressor = get_decompressor (zm, comp_type);
+  if (! zm->decompressor) return NULL;
   if (! get_u16 (zm->fp, &time)) return NULL;
   if (! get_u16 (zm->fp, &date)) return NULL;
   if (! get_u32 (zm->fp, &crc)) return NULL;
@@ -467,9 +465,9 @@ zip_member_open (struct zip_reader *zr, const char *member)
   zm->bytes_unread = zm->ucomp_size;
 
   if ( !new_member)
-    decompressors[zm->compression].finish (zm);
+    zm->decompressor->finish (zm);
 
-  if (!decompressors[zm->compression].init (zm) )
+  if (!zm->decompressor->init (zm) )
     return NULL;
 
   return zm;
@@ -492,7 +490,7 @@ zip_member_unref (struct zip_member *zm)
 
   if (--zm->ref_cnt == 0)
     {
-      decompressors[zm->compression].finish (zm);
+      zm->decompressor->finish (zm);
       if (zm->fp)
 	fclose (zm->fp);
       free (zm->name);
@@ -588,4 +586,147 @@ probe_magic (FILE *fp, uint32_t magic, off_t start, off_t stop, off_t *off)
 
   return false;
 }
+
+/* Null decompressor. */
+
+static int
+stored_read (struct zip_member *zm, void *buf, size_t n)
+{
+  return fread (buf, 1, n, zm->fp);
+}
+
+static bool
+stored_init (struct zip_member *zm UNUSED)
+{
+  return true;
+}
+
+static void
+stored_finish (struct zip_member *zm UNUSED)
+{
+  /* Nothing required */
+}
+
+static const struct decompressor stored_decompressor =
+  {stored_init, stored_read, stored_finish};
+
+/* Inflate decompressor. */
+
+#undef crc32
+#include <zlib.h>
+
+#define UCOMPSIZE 4096
+
+struct inflator
+{
+  z_stream zss;
+  int state;
+  unsigned char ucomp[UCOMPSIZE];
+  size_t bytes_uncomp;
+  size_t ucomp_bytes_read;
+
+  /* Two bitfields as defined by RFC1950 */
+  uint16_t cmf_flg ;
+};
+
+static void
+inflate_finish (struct zip_member *zm)
+{
+  struct inflator *inf = zm->aux;
+
+  inflateEnd (&inf->zss);
+
+  free (inf);
+}
+
+static bool
+inflate_init (struct zip_member *zm)
+{
+  int r;
+  struct inflator *inf = xzalloc (sizeof *inf);
+
+  uint16_t flg = 0 ;
+  uint16_t cmf = 0x8; /* Always 8 for inflate */
+
+  const uint16_t cinfo = 7;  /* log_2(Window size) - 8 */
+
+  cmf |= cinfo << 4;     /* Put cinfo into the high nibble */
+
+  /* make these into a 16 bit word */
+  inf->cmf_flg = (cmf << 8 ) | flg;
+
+  /* Set the check bits */
+  inf->cmf_flg += 31 - (inf->cmf_flg % 31);
+  assert (inf->cmf_flg % 31 == 0);
+
+  inf->zss.next_in = Z_NULL;
+  inf->zss.avail_in = 0;
+  inf->zss.zalloc = Z_NULL;
+  inf->zss.zfree  = Z_NULL;
+  inf->zss.opaque = Z_NULL;
+  r = inflateInit (&inf->zss);
+
+  if ( Z_OK != r)
+    {
+      ds_put_format (zm->errmsgs, _("Cannot initialize inflator: %s"), zError (r));
+      return false;
+    }
+
+  zm->aux = inf;
+
+  return true;
+}
+
+static int
+inflate_read (struct zip_member *zm, void *buf, size_t n)
+{
+  int r;
+  struct inflator *inf = zm->aux;
+
+  if (inf->zss.avail_in == 0)
+    {
+      int bytes_read;
+      int bytes_to_read;
+      int pad = 0;
+
+      if ( inf->state == 0)
+	{
+	  inf->ucomp[1] = inf->cmf_flg ;
+      	  inf->ucomp[0] = inf->cmf_flg >> 8 ;
+
+	  pad = 2;
+	  inf->state++;
+	}
+
+      bytes_to_read = zm->comp_size - inf->ucomp_bytes_read;
+
+      if (bytes_to_read == 0)
+	return 0;
+
+      if (bytes_to_read > UCOMPSIZE)
+	bytes_to_read = UCOMPSIZE;
+
+      bytes_read = fread (inf->ucomp + pad, 1, bytes_to_read - pad, zm->fp);
+
+      inf->ucomp_bytes_read += bytes_read;
+
+      inf->zss.avail_in = bytes_read + pad;
+      inf->zss.next_in = inf->ucomp;
+    }
+  inf->zss.avail_out = n;
+  inf->zss.next_out = buf;
+
+  r = inflate (&inf->zss, Z_NO_FLUSH);
+  if ( Z_OK == r)
+    {
+      return n - inf->zss.avail_out;
+    }
+
+  ds_put_format (zm->errmsgs, _("Error inflating: %s"), zError (r));
+
+  return -1;
+}
+
+static const struct decompressor inflate_decompressor =
+  {inflate_init, inflate_read, inflate_finish};
 
