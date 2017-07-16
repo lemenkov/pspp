@@ -85,6 +85,7 @@ enum reader_state
 struct state_data
 {
   xmlTextReaderPtr xtr;
+  struct zip_member *zm;
   int node_type;
   enum reader_state state;
   int row;
@@ -103,6 +104,9 @@ state_data_destroy (struct state_data *sd)
 
   xmlFreeTextReader (sd->xtr);
   sd->xtr = NULL;
+
+  zip_member_finish (sd->zm);
+  sd->zm = NULL;
 }
 
 struct ods_reader
@@ -538,6 +542,7 @@ get_sheet_count (struct zip_reader *zreader)
 	    {
 	      int s = _xmlchar_to_int (attr);
 	      xmlFreeTextReader (mxtr);
+              zip_member_finish (meta);
 	      xmlFree (name);
 	      xmlFree (attr);
 	      return s;
@@ -548,6 +553,7 @@ get_sheet_count (struct zip_reader *zreader)
     }
 
   xmlFreeTextReader (mxtr);
+  zip_member_finish (meta);
   return -1;
 }
 
@@ -566,8 +572,9 @@ ods_error_handler (void *ctx, const char *mesg,
 }
 
 
-static xmlTextReaderPtr
-init_reader (struct ods_reader *r, bool report_errors)
+static bool
+init_reader (struct ods_reader *r, bool report_errors,
+             struct state_data *state)
 {
   struct zip_member *content = zip_member_open (r->zreader, "content.xml");
   xmlTextReaderPtr xtr;
@@ -579,15 +586,18 @@ init_reader (struct ods_reader *r, bool report_errors)
 			report_errors ? 0 : (XML_PARSE_NOERROR | XML_PARSE_NOWARNING) );
 
   if ( xtr == NULL)
-    return false;
+      return false;
 
+  *state = (struct state_data) { .xtr = xtr,
+                                 .zm = content,
+                                 .state = STATE_INIT };
 
   r->spreadsheet.type = SPREADSHEET_ODS;
 
   if (report_errors)
     xmlTextReaderSetErrorHandler (xtr, ods_error_handler, r);
 
-  return xtr;
+  return true;
 }
 
 
@@ -597,7 +607,6 @@ ods_probe (const char *filename, bool report_errors)
 {
   int sheet_count;
   struct ods_reader *r = xzalloc (sizeof *r);
-  xmlTextReaderPtr xtr;
   struct zip_reader *zr;
 
   ds_init_empty (&r->zip_errs);
@@ -621,17 +630,8 @@ ods_probe (const char *filename, bool report_errors)
   r->zreader = zr;
   r->spreadsheet.ref_cnt = 1;
 
-  xtr = init_reader (r, report_errors);
-  if (xtr == NULL)
-    {
-      goto error;
-    }
-  r->msd.xtr = xtr;
-  r->msd.row = 0;
-  r->msd.col = 0;
-  r->msd.current_sheet = 0;
-  r->msd.state = STATE_INIT;
-
+  if (!init_reader (r, report_errors, &r->msd))
+    goto error;
 
   r->spreadsheet.n_sheets = sheet_count;
   r->n_allocated_sheets = 0;
@@ -658,7 +658,6 @@ ods_make_reader (struct spreadsheet *spreadsheet,
   int i;
   struct var_spec *var_spec = NULL;
   int n_var_specs = 0;
-  xmlTextReaderPtr xtr;
 
   struct ods_reader *r = (struct ods_reader *) spreadsheet;
   xmlChar *val_string = NULL;
@@ -668,15 +667,8 @@ ods_make_reader (struct spreadsheet *spreadsheet,
   ds_init_empty (&r->ods_errs);
   ++r->spreadsheet.ref_cnt;
 
-  xtr = init_reader (r, true);
-  if ( xtr == NULL)
+  if (!init_reader (r, true, &r->rsd))
     goto error;
-
-  r->rsd.xtr = xtr;
-  r->rsd.row = 0;
-  r->rsd.col = 0;
-  r->rsd.current_sheet = 0;
-  r->rsd.state = STATE_INIT;
 
   r->used_first_case = false;
   r->first_case = NULL;
@@ -895,7 +887,7 @@ ods_make_reader (struct spreadsheet *spreadsheet,
      &ods_file_casereader_class, r);
 
  error:
-
+  
   for ( i = 0 ; i < n_var_specs ; ++i )
     {
       free (var_spec[i].firstval.type);

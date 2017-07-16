@@ -22,8 +22,6 @@ struct zip_member;
 struct zip_reader;
 struct string;
 
-void zm_dump (const struct zip_member *zm);
-
 /* Create zip reader to read the file called FILENAME.
    If ERRS is non-null if will be used to contain any error messages
    which the reader wishes to report.
@@ -39,12 +37,6 @@ struct zip_member *zip_member_open (struct zip_reader *zr, const char *member);
 /* Read up to N bytes from ZM, storing them in BUF.
    Returns the number of bytes read, or -1 on error */
 int zip_member_read (struct zip_member *zm, void *buf, size_t n);
-
-/* Unref (and possibly destroy) the zip member ZM */
-void zip_member_unref (struct zip_member *zm);
-
-/* Ref the zip member */
-void zip_member_ref (struct zip_member *zm);
 
 void zip_member_finish (struct zip_member *zm);
 

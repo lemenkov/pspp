@@ -96,6 +96,7 @@ main (int argc, char **argv)
 	    {
 	      fwrite (buf, x, 1, fp);
 	    }
+          zip_member_finish (zm);
 	  fclose (fp);
 	  if ( x < 0)
 	    {

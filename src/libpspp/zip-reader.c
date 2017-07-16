@@ -28,7 +28,6 @@
 #include <libpspp/compiler.h>
 
 #include <byteswap.h>
-#include <crc.h>
 
 #include "str.h"
 
@@ -45,13 +44,9 @@ struct zip_member
   uint32_t offset;            /* Starting offset in file. */
   uint32_t comp_size;         /* Length of member file data, in bytes. */
   uint32_t ucomp_size;        /* Uncompressed length of member file data, in bytes. */
-  uint32_t expected_crc;      /* CRC-32 of member file data.. */
-  char *name;                 /* Name of member file. */
-  uint32_t crc;
   const struct decompressor *decompressor;
 
   size_t bytes_unread;       /* Number of bytes left in the member available for reading */
-  int ref_cnt;
   struct string *errmsgs;    /* A string to hold error messages.
 				This string is NOT owned by this object. */
   void *aux;
@@ -69,9 +64,8 @@ static const struct decompressor inflate_decompressor;
 static bool find_eocd (FILE *fp, off_t *off);
 
 static const struct decompressor *
-get_decompressor (struct zip_member *zm, uint16_t c)
+get_decompressor (uint16_t c)
 {
-  assert (zm->errmsgs);
   switch (c)
     {
     case 0:
@@ -81,36 +75,38 @@ get_decompressor (struct zip_member *zm, uint16_t c)
       return &inflate_decompressor;
 
     default:
-      ds_put_format (zm->errmsgs, _("Unsupported compression type (%d)"), c);
       return NULL;
     }
 }
-
 
 struct zip_reader
 {
   char *filename;                  /* The name of the file from which the data is read */
   FILE *fr;                        /* The stream from which the meta data is read */
-  uint16_t n_members;              /* The number of members in this archive */
-  struct zip_member **members;     /* The members (may be null pointers until the headers have been read */
-  int nm;
+  uint16_t n_entries;              /* Number of directory entries. */
+  struct zip_entry *entries;       /* Directory entries. */
   struct string *errs;
+};
+
+struct zip_entry
+{
+  uint32_t offset;            /* Starting offset in file. */
+  uint32_t comp_size;         /* Length of member file data, in bytes. */
+  uint32_t ucomp_size;        /* Uncompressed length of member file data, in bytes. */
+  char *name;                 /* Name of member file. */
 };
 
 void
 zip_member_finish (struct zip_member *zm)
 {
-  ds_clear (zm->errmsgs);
-  /*  Probably not useful, because we would have to read right to the end of the member
-  if (zm->expected_crc != zm->crc)
+  if (zm)
     {
-      ds_put_cstr (zm->errs, _("CRC error reading zip"));
+      ds_clear (zm->errmsgs);
+      zm->decompressor->finish (zm);
+      fclose (zm->fp);
+      free (zm);
     }
-  */
-  zip_member_unref (zm);
 }
-
-
 
 /* Destroy the zip reader */
 void
@@ -123,19 +119,13 @@ zip_reader_destroy (struct zip_reader *zr)
   fclose (zr->fr);
   free (zr->filename);
 
-  for (i = 0; i < zr->n_members; ++i)
+  for (i = 0; i < zr->n_entries; ++i)
     {
-      zip_member_unref (zr->members[i]);
+      struct zip_entry *ze = &zr->entries[i];
+      free (ze->name);
     }
-  free (zr->members);
+  free (zr->entries);
   free (zr);
-}
-
-
-void
-zm_dump (const struct zip_member *zm)
-{
-  printf ("%d\t%08x\t %s\n", zm->ucomp_size, zm->expected_crc, zm->name);
 }
 
 
@@ -230,72 +220,51 @@ zip_member_read (struct zip_member *zm, void *buf, size_t bytes)
   if ( bytes_read < 0)
     return bytes_read;
 
-  zm->crc = crc32_update (zm->crc, buf, bytes_read);
-
   zm->bytes_unread -= bytes_read;
 
   return bytes_read;
 }
 
 
-/*
-  Read a local file header from ZR and add it to ZR's internal array.
-  Returns a pointer to the member read.  This pointer belongs to ZR.
-  If the caller wishes to control it, she should ref it with
-  zip_member_ref.
-*/
-static struct zip_member *
-zip_header_read_next (struct zip_reader *zr)
+/* Read a central directory header from ZR and initializes ZE with it.
+   Returns true if successful, false otherwise. */
+static bool
+zip_header_read_next (struct zip_reader *zr, struct zip_entry *ze)
 {
-  struct zip_member *zm = xzalloc (sizeof *zm);
-
   uint16_t v, nlen, extralen;
   uint16_t gp, time, date;
+  uint32_t expected_crc;
 
   uint16_t clen, diskstart, iattr;
   uint32_t eattr;
   uint16_t comp_type;
 
-  ds_clear (zr->errs);
-  zm->errmsgs = zr->errs;
-
   if ( ! check_magic (zr->fr, MAGIC_SOCD, zr->errs))
-    return NULL;
+    return false;
 
-  if (! get_u16 (zr->fr, &v)) return NULL;
+  if (! get_u16 (zr->fr, &v)) return false;
+  if (! get_u16 (zr->fr, &v)) return false;
+  if (! get_u16 (zr->fr, &gp)) return false;
+  if (! get_u16 (zr->fr, &comp_type)) return false;
+  if (! get_u16 (zr->fr, &time)) return false;
+  if (! get_u16 (zr->fr, &date)) return false;
+  if (! get_u32 (zr->fr, &expected_crc)) return false;
+  if (! get_u32 (zr->fr, &ze->comp_size)) return false;
+  if (! get_u32 (zr->fr, &ze->ucomp_size)) return false;
+  if (! get_u16 (zr->fr, &nlen)) return false;
+  if (! get_u16 (zr->fr, &extralen)) return false;
+  if (! get_u16 (zr->fr, &clen)) return false;
+  if (! get_u16 (zr->fr, &diskstart)) return false;
+  if (! get_u16 (zr->fr, &iattr)) return false;
+  if (! get_u32 (zr->fr, &eattr)) return false;
+  if (! get_u32 (zr->fr, &ze->offset)) return false;
 
-  if (! get_u16 (zr->fr, &v)) return NULL;
-  if (! get_u16 (zr->fr, &gp)) return NULL;
-  if (! get_u16 (zr->fr, &comp_type)) return NULL;
-
-  zm->decompressor = get_decompressor (zm, comp_type);
-  if (! zm->decompressor) return NULL;
-
-  if (! get_u16 (zr->fr, &time)) return NULL;
-  if (! get_u16 (zr->fr, &date)) return NULL;
-  if (! get_u32 (zr->fr, &zm->expected_crc)) return NULL;
-  if (! get_u32 (zr->fr, &zm->comp_size)) return NULL;
-  if (! get_u32 (zr->fr, &zm->ucomp_size)) return NULL;
-  if (! get_u16 (zr->fr, &nlen)) return NULL;
-  if (! get_u16 (zr->fr, &extralen)) return NULL;
-  if (! get_u16 (zr->fr, &clen)) return NULL;
-  if (! get_u16 (zr->fr, &diskstart)) return NULL;
-  if (! get_u16 (zr->fr, &iattr)) return NULL;
-  if (! get_u32 (zr->fr, &eattr)) return NULL;
-  if (! get_u32 (zr->fr, &zm->offset)) return NULL;
-
-  zm->name = xzalloc (nlen + 1);
-  if (! get_bytes (zr->fr, zm->name, nlen)) return NULL;
+  ze->name = xzalloc (nlen + 1);
+  if (! get_bytes (zr->fr, ze->name, nlen)) return false;
 
   skip_bytes (zr->fr, extralen);
 
-  zr->members[zr->nm++] = zm;
-
-  zm->fp = fopen (zr->filename, "rb");
-  zm->ref_cnt = 1;
-
-
-  return zm;
+  return true;
 }
 
 
@@ -303,7 +272,7 @@ zip_header_read_next (struct zip_reader *zr)
 struct zip_reader *
 zip_reader_create (const char *filename, struct string *errs)
 {
-  uint16_t disknum, total_members;
+  uint16_t disknum, n_members, total_members;
   off_t offset = 0;
   uint32_t central_dir_start, central_dir_length;
 
@@ -311,8 +280,6 @@ zip_reader_create (const char *filename, struct string *errs)
   zr->errs = errs;
   if ( zr->errs)
     ds_init_empty (zr->errs);
-
-  zr->nm = 0;
 
   zr->fr = fopen (filename, "rb");
   if (NULL == zr->fr)
@@ -357,7 +324,7 @@ zip_reader_create (const char *filename, struct string *errs)
   if (! get_u16 (zr->fr, &disknum)
       || ! get_u16 (zr->fr, &disknum)
 
-      || ! get_u16 (zr->fr, &zr->n_members)
+      || ! get_u16 (zr->fr, &n_members)
       || ! get_u16 (zr->fr, &total_members)
 
       || ! get_u32 (zr->fr, &central_dir_length)
@@ -377,132 +344,119 @@ zip_reader_create (const char *filename, struct string *errs)
       return NULL;
     }
 
-  zr->members = xcalloc (zr->n_members, sizeof (*zr->members));
-  memset (zr->members, 0, zr->n_members * sizeof (*zr->members));
-
   zr->filename = xstrdup (filename);
+
+  zr->entries = xcalloc (n_members, sizeof *zr->entries);
+  for (int i = 0; i < n_members; i++)
+    {
+      if (!zip_header_read_next (zr, &zr->entries[zr->n_entries]))
+        {
+          zip_reader_destroy (zr);
+          return NULL;
+        }
+      zr->n_entries++;
+    }
 
   return zr;
 }
 
-
+static struct zip_entry *
+zip_entry_find (struct zip_reader *zr, const char *member)
+{
+  for (int i = 0; i < zr->n_entries; ++i)
+    {
+      struct zip_entry *ze = &zr->entries[i];
+      if (0 == strcmp (ze->name, member))
+        return ze;
+    }
+  return NULL;
+}
 
 /* Return the member called MEMBER from the reader ZR  */
 struct zip_member *
 zip_member_open (struct zip_reader *zr, const char *member)
 {
-  uint16_t v, nlen, extra_len;
-  uint16_t gp, comp_type, time, date;
-  uint32_t ucomp_size, comp_size;
+  struct zip_entry *ze = zip_entry_find (zr, member);
+  if ( ze == NULL)
+    {
+      ds_put_format (zr->errs, _("%s: unknown member"), member);
+      return NULL;
+    }
 
-  uint32_t crc;
-  bool new_member = false;
-  char *name = NULL;
+  FILE *fp = fopen (zr->filename, "rb");
+  if (!fp)
+    {
+      ds_put_cstr (zr->errs, strerror (errno));
+      return NULL;
+    }
 
-  int i;
-  struct zip_member *zm = NULL;
-
-  if ( zr == NULL)
-    return NULL;
-
-  for (i = 0; i < zr->n_members; ++i)
-  {
-    zm = zr->members[i];
-
-    if (zm == NULL)
-      {
-	zm = zr->members[i] = zip_header_read_next (zr);
-	new_member = true;
-      }
-    if (zm && 0 == strcmp (zm->name, member))
-      break;
-    else
-      zm = NULL;
-  }
-
-  if ( zm == NULL)
-    return NULL;
+  struct zip_member *zm = xmalloc (sizeof *zm);
+  zm->fp = fp;
+  zm->offset = ze->offset;
+  zm->comp_size = ze->comp_size;
+  zm->ucomp_size = ze->ucomp_size;
+  zm->decompressor = NULL;
+  zm->bytes_unread = ze->ucomp_size;
+  zm->errmsgs = zr->errs;
+  zm->aux = NULL;
 
   if ( 0 != fseeko (zm->fp, zm->offset, SEEK_SET))
     {
-      const char *mm = strerror (errno);
-      ds_put_format (zm->errmsgs, _("Failed to seek to start of member `%s': %s"), zm->name, mm);
-      return NULL;
+      ds_put_format (zr->errs, _("Failed to seek to start of member `%s': %s"),
+                     ze->name, strerror (errno));
+      goto error;
     }
 
   if ( ! check_magic (zm->fp, MAGIC_LHDR, zr->errs))
+    goto error;
+
+  uint16_t v, nlen, extra_len;
+  uint16_t gp, comp_type, time, date;
+  uint32_t ucomp_size, comp_size;
+  uint32_t crc;
+  if (! get_u16 (zm->fp, &v)) goto error;
+  if (! get_u16 (zm->fp, &gp)) goto error;
+  if (! get_u16 (zm->fp, &comp_type)) goto error;
+  zm->decompressor = get_decompressor (comp_type);
+  if (! zm->decompressor) goto error;
+  if (! get_u16 (zm->fp, &time)) goto error;
+  if (! get_u16 (zm->fp, &date)) goto error;
+  if (! get_u32 (zm->fp, &crc)) goto error;
+  if (! get_u32 (zm->fp, &comp_size)) goto error;
+
+  if (! get_u32 (zm->fp, &ucomp_size)) goto error;
+  if (! get_u16 (zm->fp, &nlen)) goto error;
+  if (! get_u16 (zm->fp, &extra_len)) goto error;
+
+  char *name = xzalloc (nlen + 1);
+  if (! get_bytes (zm->fp, name, nlen))
     {
-      return NULL;
+      free (name);
+      goto error;
     }
-
-  if (! get_u16 (zm->fp, &v)) return NULL;
-  if (! get_u16 (zm->fp, &gp)) return NULL;
-  if (! get_u16 (zm->fp, &comp_type)) return NULL;
-  zm->decompressor = get_decompressor (zm, comp_type);
-  if (! zm->decompressor) return NULL;
-  if (! get_u16 (zm->fp, &time)) return NULL;
-  if (! get_u16 (zm->fp, &date)) return NULL;
-  if (! get_u32 (zm->fp, &crc)) return NULL;
-  if (! get_u32 (zm->fp, &comp_size)) return NULL;
-
-  if (! get_u32 (zm->fp, &ucomp_size)) return NULL;
-  if (! get_u16 (zm->fp, &nlen)) return NULL;
-  if (! get_u16 (zm->fp, &extra_len)) return NULL;
-
-  name = xzalloc (nlen + 1);
-
-  if (! get_bytes (zm->fp, name, nlen)) return NULL;
+  if (strcmp (name, ze->name) != 0)
+    {
+      ds_put_format (zm->errmsgs,
+		     _("Name mismatch in zip archive. Central directory "
+                       "says `%s'; local file header says `%s'"),
+		     ze->name, name);
+      free (name);
+      goto error;
+    }
+  free (name);
 
   skip_bytes (zm->fp, extra_len);
 
-  if (strcmp (name, zm->name) != 0)
-    {
-      ds_put_format (zm->errmsgs,
-		     _("Name mismatch in zip archive. Central directory says `%s'; local file header says `%s'"),
-		     zm->name, name);
-      free (name);
-      free (zm);
-      return NULL;
-    }
-
-  free (name);
-
-  zm->bytes_unread = zm->ucomp_size;
-
-  if ( !new_member)
-    zm->decompressor->finish (zm);
-
   if (!zm->decompressor->init (zm) )
-    return NULL;
+    goto error;
 
   return zm;
+
+error:
+  fclose (zm->fp);
+  free (zm);
+  return NULL;
 }
-
-void
-zip_member_ref (struct zip_member *zm)
-{
-  zm->ref_cnt++;
-}
-
-
-
-
-void
-zip_member_unref (struct zip_member *zm)
-{
-  if ( zm == NULL)
-    return;
-
-  if (--zm->ref_cnt == 0)
-    {
-      zm->decompressor->finish (zm);
-      if (zm->fp)
-	fclose (zm->fp);
-      free (zm->name);
-      free (zm);
-    }
-}
-
 
 
 
