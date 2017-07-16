@@ -80,13 +80,18 @@ their exact names do not matter to readers as long as they are unique.
 @node SPV Structure Member Format
 @section Structure Member Format
 
+A structure member lays out the high-level structure for a group of
+output items such as heading, tables, and charts.  Structure members
+do not include the details of tables and charts but instead refer to
+them by their member names.
+
 Structure members' XML files claim conformance with a collection of
 XML Schemas.  These schemas are distributed, under a nonfree license,
 with SPSS binaries.  Fortunately, the schemas are not necessary to
-understand the structure members.  To a degree, the schemas can even
+understand the structure members.  The schemas can even
 be deceptive because they document elements and attributes that are
 not in the corpus and do not document elements and attributes that are
-commonly found there.
+commonly found in the corpus.
 
 Structure members use a different XML namespace for each schema, but
 these namespaces are not entirely consistent.  In some SPV files, for
@@ -98,7 +103,26 @@ not resolvable to obtain the schemas themselves.
 
 One may ignore all of the above in interpreting a structure member.
 The actual XML has a simple and straightforward form that does not
-require a reader to take schemas or namespaces into account.
+require a reader to take schemas or namespaces into account.  A
+structure member's root is @code{heading} element, which contains
+@code{heading} or @code{container} elements (or a mix), forming a
+tree.  In turn, @code{container} holds a single @code{text} or
+@code{table} element.
+
+@ifnottex
+For a diagram illustrating the hierarchy of elements within an SPV
+structure member, please refer to a PDF version of the manual.
+@end ifnottex
+
+@iftex
+The following diagram shows the hierarchy within an SPV structure
+member more precisely.  Oval nodes are elements and <text> and <cdata>
+are plain text and CDATA within elements.  Edges point from parent to
+child.  Unlabeled edges indicate that the child appears exactly once;
+edges labeled with *, zero or more times; edges labeled with ?, zero
+or one times.
+@center @image{dev/spv-structure, 5in}
+@end iftex
 
 The elements found in structure members are documented below.  For
 each element, we note the possible parent elements and the element's
@@ -128,19 +152,45 @@ A choice between @var{a} and @var{b}.
 Zero or more @var{x}.
 @end table
 
-@ifnottex
-For a diagram illustrating the hierarchy of elements within an SPV
-structure member, please refer to a PDF version of the manual.
-@end ifnottex
+The following example shows the contents of a typical structure member
+for a @cmd{DESCRIPTIVES} procedure.  A real structure member is not
+indented.  This example also omits most attributes, all XML namespace
+information, and the CSS from the embedded HTML:
 
-@iftex
-The following diagram shows the hierarchy of elements within an SPV
-structure member.  Edges point from parent to child elements.
-Unlabeled edges indicate that the child appears exactly once; edges
-labeled with *, zero or more times; edges labeled with ?, zero or one
-times.
-@center @image{dev/spv-structure, 5in}
-@end iftex
+@example
+<?xml version="1.0" encoding="utf-8"?>
+<heading>
+  <label>Output</label>
+  <heading commandName="Descriptives">
+    <label>Descriptives</label>
+    <container>
+      <label>Title</label>
+      <text commandName="Descriptives" type="title">
+        <html lang="en">
+<![CDATA[<head><style type="text/css">...</style></head><BR>Descriptives]]>
+        </html>
+      </text>
+    </container>
+    <container visibility="hidden">
+      <label>Notes</label>
+      <table commandName="Descriptives" subType="Notes" type="note">
+        <tableStructure>
+          <dataPath>00000000001_lightNotesData.bin</dataPath>
+        </tableStructure>
+      </table>
+    </container>
+    <container>
+      <label>Descriptive Statistics</label>
+      <table commandName="Descriptives" subType="Descriptive Statistics"
+             type="table">
+        <tableStructure>
+          <dataPath>00000000002_lightTableData.bin</dataPath>
+        </tableStructure>
+      </table>
+    </container>
+  </heading>
+</heading>
+@end example
 
 @menu
 * SPV Structure heading Element::
@@ -166,7 +216,9 @@ Contents: @code{pageSetup}? @code{label} (@code{container} @math{|} @code{headin
 The root of a structure member is a @code{heading}, which represents a
 section of output beginning with a title (the @code{label}) and
 ordinarily followed by content containers or further nested
-(sub)-sections of output.
+(sub)-sections of output.  Unlike heading elements in HTML and other
+common document formats, which precede the content that they head,
+@code{heading} contains the elements that appear below the heading.
 
 The document root heading, only, may also contain a @code{pageSetup}
 element.
@@ -250,7 +302,7 @@ often very generic, especially within a @code{container}, e.g.@:
 according to the output language, e.g.@: in Italian a frequency table
 procedure is labeled ``Frequenze''.
 
-The corpus contains one example of an empty label, one that contains
+The corpus contains a few examples of empty labels, ones that contain
 no text.
 
 This element has no attributes.
@@ -315,7 +367,7 @@ Parent: @code{text} @*
 Contents: CDATA
 
 The CDATA contains an HTML document.  In some cases, the document
-starts with @code{<html>} and ends with @code{</html}; in others the
+starts with @code{<html>} and ends with @code{</html>}; in others the
 @code{html} element is implied.  Generally the HTML includes a
 @code{head} element with a CSS stylesheet.  The HTML body often begins
 with @code{<BR>}.  The actual content ranges from trivial to simple:
@@ -440,7 +492,7 @@ This element has no attributes.
 @node SPV Structure @code{text} Element (Inside @code{pageParagraph})
 @subsection The @code{text} Element (Inside @code{pageParagraph})
 
-Parent: @code{pageParagraph}
+Parent: @code{pageParagraph} @*
 Contents: CDATA?
 
 This @code{text} element is nested inside a @code{pageParagraph}.  There
@@ -451,7 +503,7 @@ The element is either empty, or contains CDATA that holds almost-XHTML
 text: in the corpus, either an @code{html} or @code{p} element.  It is
 @emph{almost}-XHTML because the @code{html} element designates the
 default namespace as
-@code{http://xml.spss.com/spss/viewer/viewer-tree} instead of an XHTML
+@indicateurl{http://xml.spss.com/spss/viewer/viewer-tree} instead of an XHTML
 namespace, and because the CDATA can contain substitution variables:
 @code{&[Page]} for the page number and @code{&[PageTitle]} for the
 page title.

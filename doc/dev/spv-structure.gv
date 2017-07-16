@@ -5,21 +5,33 @@ digraph spv_structure {
    "heading" -> "heading" [label="*"];
 
    "container" -> "label";
-   "container" -> "table" [label="*"];
-   "container" -> "text" [label="*"];
+   "container" -> "table" [label="?"];
+   "container" -> "text" [label="?"];
+
+   "label" -> ptext1 [label="?"];
+   ptext1 [label="<text>", shape=plaintext];
 
    "text" -> "html";
+
+   "text" -> cdata1;
+   cdata1 [label="<cdata>", shape=plaintext];
+
+   "html" -> cdata2;
+   cdata2 [label="<cdata>", shape=plaintext];
 
    "table" -> "tableStructure";
 
    "tableStructure" -> "dataPath";
 
+   "dataPath" -> ptext2;
+   ptext2 [label="<text>", shape=plaintext];
+
    "pageSetup" -> "pageHeader";
    "pageSetup" -> "pageFooter";
 
-   "pageHeader" -> "pageParagraph" [label="*"];
+   "pageHeader" -> "pageParagraph";
 
-   "pageFooter" -> "pageParagraph" [label="*"];
+   "pageFooter" -> "pageParagraph";
 
    "pageParagraph" -> "text";
 }
