@@ -82,7 +82,6 @@ get_decompressor (uint16_t c)
 struct zip_reader
 {
   char *filename;                  /* The name of the file from which the data is read */
-  FILE *fr;                        /* The stream from which the meta data is read */
   uint16_t n_entries;              /* Number of directory entries. */
   struct zip_entry *entries;       /* Directory entries. */
   struct string *errs;
@@ -116,7 +115,6 @@ zip_reader_destroy (struct zip_reader *zr)
   if (zr == NULL)
     return;
 
-  fclose (zr->fr);
   free (zr->filename);
 
   for (i = 0; i < zr->n_entries; ++i)
@@ -226,10 +224,11 @@ zip_member_read (struct zip_member *zm, void *buf, size_t bytes)
 }
 
 
-/* Read a central directory header from ZR and initializes ZE with it.
-   Returns true if successful, false otherwise. */
+/* Read a central directory header from FILE and initializes ZE with it.
+   Returns true if successful, false otherwise.  On error, appends error
+   messages to ERRS. */
 static bool
-zip_header_read_next (struct zip_reader *zr, struct zip_entry *ze)
+zip_header_read_next (FILE *file, struct zip_entry *ze, struct string *errs)
 {
   uint16_t v, nlen, extralen;
   uint16_t gp, time, date;
@@ -239,30 +238,30 @@ zip_header_read_next (struct zip_reader *zr, struct zip_entry *ze)
   uint32_t eattr;
   uint16_t comp_type;
 
-  if ( ! check_magic (zr->fr, MAGIC_SOCD, zr->errs))
+  if ( ! check_magic (file, MAGIC_SOCD, errs))
     return false;
 
-  if (! get_u16 (zr->fr, &v)) return false;
-  if (! get_u16 (zr->fr, &v)) return false;
-  if (! get_u16 (zr->fr, &gp)) return false;
-  if (! get_u16 (zr->fr, &comp_type)) return false;
-  if (! get_u16 (zr->fr, &time)) return false;
-  if (! get_u16 (zr->fr, &date)) return false;
-  if (! get_u32 (zr->fr, &expected_crc)) return false;
-  if (! get_u32 (zr->fr, &ze->comp_size)) return false;
-  if (! get_u32 (zr->fr, &ze->ucomp_size)) return false;
-  if (! get_u16 (zr->fr, &nlen)) return false;
-  if (! get_u16 (zr->fr, &extralen)) return false;
-  if (! get_u16 (zr->fr, &clen)) return false;
-  if (! get_u16 (zr->fr, &diskstart)) return false;
-  if (! get_u16 (zr->fr, &iattr)) return false;
-  if (! get_u32 (zr->fr, &eattr)) return false;
-  if (! get_u32 (zr->fr, &ze->offset)) return false;
+  if (! get_u16 (file, &v)) return false;
+  if (! get_u16 (file, &v)) return false;
+  if (! get_u16 (file, &gp)) return false;
+  if (! get_u16 (file, &comp_type)) return false;
+  if (! get_u16 (file, &time)) return false;
+  if (! get_u16 (file, &date)) return false;
+  if (! get_u32 (file, &expected_crc)) return false;
+  if (! get_u32 (file, &ze->comp_size)) return false;
+  if (! get_u32 (file, &ze->ucomp_size)) return false;
+  if (! get_u16 (file, &nlen)) return false;
+  if (! get_u16 (file, &extralen)) return false;
+  if (! get_u16 (file, &clen)) return false;
+  if (! get_u16 (file, &diskstart)) return false;
+  if (! get_u16 (file, &iattr)) return false;
+  if (! get_u32 (file, &eattr)) return false;
+  if (! get_u32 (file, &ze->offset)) return false;
 
   ze->name = xzalloc (nlen + 1);
-  if (! get_bytes (zr->fr, ze->name, nlen)) return false;
+  if (! get_bytes (file, ze->name, nlen)) return false;
 
-  skip_bytes (zr->fr, extralen);
+  skip_bytes (file, extralen);
 
   return true;
 }
@@ -281,65 +280,65 @@ zip_reader_create (const char *filename, struct string *errs)
   if ( zr->errs)
     ds_init_empty (zr->errs);
 
-  zr->fr = fopen (filename, "rb");
-  if (NULL == zr->fr)
+  FILE *file = fopen (filename, "rb");
+  if (!file)
     {
       ds_put_cstr (zr->errs, strerror (errno));
       free (zr);
       return NULL;
     }
 
-  if ( ! check_magic (zr->fr, MAGIC_LHDR, zr->errs))
+  if ( ! check_magic (file, MAGIC_LHDR, zr->errs))
     {
-      fclose (zr->fr);
+      fclose (file);
       free (zr);
       return NULL;
     }
 
-  if ( ! find_eocd (zr->fr, &offset))
+  if ( ! find_eocd (file, &offset))
     {
       ds_put_format (zr->errs, _("Cannot find central directory"));
-      fclose (zr->fr);
+      fclose (file);
       free (zr);
       return NULL;
     }
 
-  if ( 0 != fseeko (zr->fr, offset, SEEK_SET))
+  if ( 0 != fseeko (file, offset, SEEK_SET))
     {
       const char *mm = strerror (errno);
       ds_put_format (zr->errs, _("Failed to seek to end of central directory record: %s"), mm);
-      fclose (zr->fr);
+      fclose (file);
       free (zr);
       return NULL;
     }
 
 
-  if ( ! check_magic (zr->fr, MAGIC_EOCD, zr->errs))
+  if ( ! check_magic (file, MAGIC_EOCD, zr->errs))
     {
-      fclose (zr->fr);
+      fclose (file);
       free (zr);
       return NULL;
     }
 
-  if (! get_u16 (zr->fr, &disknum)
-      || ! get_u16 (zr->fr, &disknum)
+  if (! get_u16 (file, &disknum)
+      || ! get_u16 (file, &disknum)
 
-      || ! get_u16 (zr->fr, &n_members)
-      || ! get_u16 (zr->fr, &total_members)
+      || ! get_u16 (file, &n_members)
+      || ! get_u16 (file, &total_members)
 
-      || ! get_u32 (zr->fr, &central_dir_length)
-      || ! get_u32 (zr->fr, &central_dir_start))
+      || ! get_u32 (file, &central_dir_length)
+      || ! get_u32 (file, &central_dir_start))
     {
-      fclose (zr->fr);
+      fclose (file);
       free (zr);
       return NULL;
     }
 
-  if ( 0 != fseeko (zr->fr, central_dir_start, SEEK_SET))
+  if ( 0 != fseeko (file, central_dir_start, SEEK_SET))
     {
       const char *mm = strerror (errno);
       ds_put_format (zr->errs, _("Failed to seek to central directory: %s"), mm);
-      fclose (zr->fr);
+      fclose (file);
       free (zr);
       return NULL;
     }
@@ -349,8 +348,9 @@ zip_reader_create (const char *filename, struct string *errs)
   zr->entries = xcalloc (n_members, sizeof *zr->entries);
   for (int i = 0; i < n_members; i++)
     {
-      if (!zip_header_read_next (zr, &zr->entries[zr->n_entries]))
+      if (!zip_header_read_next (file, &zr->entries[zr->n_entries], errs))
         {
+          fclose (file);
           zip_reader_destroy (zr);
           return NULL;
         }
