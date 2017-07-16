@@ -31,6 +31,11 @@ struct zip_reader *zip_reader_create (const char *filename, struct string *errs)
 /* Destroy the zip reader */
 void zip_reader_destroy (struct zip_reader *zr);
 
+/* Returns the name of ZR's member IDX, IDX >= 0.  Returns NULL if ZR has fewer
+   than (IDX + 1) members. */
+const char *zip_reader_get_member_name(const struct zip_reader *zr,
+                                       size_t idx);
+
 /* Return the zip member in the reader ZR, called MEMBER */
 struct zip_member *zip_member_open (struct zip_reader *zr, const char *member);
 
@@ -39,6 +44,7 @@ struct zip_member *zip_member_open (struct zip_reader *zr, const char *member);
 int zip_member_read (struct zip_member *zm, void *buf, size_t n);
 
 void zip_member_finish (struct zip_member *zm);
+
 
 
 #endif

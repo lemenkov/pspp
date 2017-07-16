@@ -372,6 +372,12 @@ zip_entry_find (struct zip_reader *zr, const char *member)
   return NULL;
 }
 
+const char *
+zip_reader_get_member_name(const struct zip_reader *zr, size_t idx)
+{
+  return idx < zr->n_entries ? zr->entries[idx].name : NULL;
+}
+
 /* Return the member called MEMBER from the reader ZR  */
 struct zip_member *
 zip_member_open (struct zip_reader *zr, const char *member)
