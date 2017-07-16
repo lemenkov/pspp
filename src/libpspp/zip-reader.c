@@ -354,14 +354,19 @@ zip_reader_create (const char *filename, struct string *errs)
       return NULL;
     }
 
-  if (! get_u16 (zr->fr, &disknum)) return NULL;
-  if (! get_u16 (zr->fr, &disknum)) return NULL;
+  if (! get_u16 (zr->fr, &disknum)
+      || ! get_u16 (zr->fr, &disknum)
 
-  if (! get_u16 (zr->fr, &zr->n_members)) return NULL;
-  if (! get_u16 (zr->fr, &total_members)) return NULL;
+      || ! get_u16 (zr->fr, &zr->n_members)
+      || ! get_u16 (zr->fr, &total_members)
 
-  if (! get_u32 (zr->fr, &central_dir_length)) return NULL;
-  if (! get_u32 (zr->fr, &central_dir_start)) return NULL;
+      || ! get_u32 (zr->fr, &central_dir_length)
+      || ! get_u32 (zr->fr, &central_dir_start))
+    {
+      fclose (zr->fr);
+      free (zr);
+      return NULL;
+    }
 
   if ( 0 != fseeko (zr->fr, central_dir_start, SEEK_SET))
     {
