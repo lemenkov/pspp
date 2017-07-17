@@ -40,6 +40,8 @@
 
 struct zip_member
 {
+  char *file_name;             /* File name. */
+  char *member_name;          /* Member name. */
   FILE *fp;                   /* The stream from which the data is read */
   uint32_t offset;            /* Starting offset in file. */
   uint32_t comp_size;         /* Length of member file data, in bytes. */
@@ -81,10 +83,11 @@ get_decompressor (uint16_t c)
 
 struct zip_reader
 {
-  char *filename;                  /* The name of the file from which the data is read */
+  char *file_name;                  /* The name of the file from which the data is read */
   uint16_t n_entries;              /* Number of directory entries. */
   struct zip_entry *entries;       /* Directory entries. */
-  struct string *errs;
+  struct string *errs;             /* A string to hold error messages.  This
+                                      string is NOT owned by this object. */
 };
 
 struct zip_entry
@@ -100,6 +103,8 @@ zip_member_finish (struct zip_member *zm)
 {
   if (zm)
     {
+      free (zm->file_name);
+      free (zm->member_name);
       ds_clear (zm->errmsgs);
       zm->decompressor->finish (zm);
       fclose (zm->fp);
@@ -115,7 +120,7 @@ zip_reader_destroy (struct zip_reader *zr)
   if (zr == NULL)
     return;
 
-  free (zr->filename);
+  free (zr->file_name);
 
   for (i = 0; i < zr->n_entries; ++i)
     {
@@ -184,7 +189,8 @@ get_u16 (FILE *f, uint16_t *v)
 /* Read 32 bit integer and compare it with EXPECTED.
    place an error string in ERR if necessary. */
 static bool
-check_magic (FILE *f, uint32_t expected, struct string *err)
+check_magic (FILE *f, const char *file_name,
+             uint32_t expected, struct string *err)
 {
   uint32_t magic;
 
@@ -193,8 +199,11 @@ check_magic (FILE *f, uint32_t expected, struct string *err)
   if ((expected != magic))
     {
       ds_put_format (err,
-		     _("Corrupt file at 0x%llx: Expected %"PRIx32"; got %"PRIx32),
-		     (long long int) ftello (f) - sizeof (uint32_t), expected, magic);
+		     _("%s: corrupt archive at 0x%llx: "
+                       "expected %#"PRIx32" but got %#"PRIx32),
+                     file_name,
+		     (long long int) ftello (f) - sizeof (uint32_t),
+                     expected, magic);
 
       return false;
     }
@@ -228,7 +237,8 @@ zip_member_read (struct zip_member *zm, void *buf, size_t bytes)
    Returns true if successful, false otherwise.  On error, appends error
    messages to ERRS. */
 static bool
-zip_header_read_next (FILE *file, struct zip_entry *ze, struct string *errs)
+zip_header_read_next (FILE *file, const char *file_name,
+                      struct zip_entry *ze, struct string *errs)
 {
   uint16_t v, nlen, extralen;
   uint16_t gp, time, date;
@@ -238,7 +248,7 @@ zip_header_read_next (FILE *file, struct zip_entry *ze, struct string *errs)
   uint32_t eattr;
   uint16_t comp_type;
 
-  if ( ! check_magic (file, MAGIC_SOCD, errs))
+  if ( ! check_magic (file, file_name, MAGIC_SOCD, errs))
     return false;
 
   if (! get_u16 (file, &v)) return false;
@@ -267,9 +277,9 @@ zip_header_read_next (FILE *file, struct zip_entry *ze, struct string *errs)
 }
 
 
-/* Create a reader from the zip called FILENAME */
+/* Create a reader from the zip called FILE_NAME */
 struct zip_reader *
-zip_reader_create (const char *filename, struct string *errs)
+zip_reader_create (const char *file_name, struct string *errs)
 {
   uint16_t disknum, n_members, total_members;
   off_t offset = 0;
@@ -280,15 +290,16 @@ zip_reader_create (const char *filename, struct string *errs)
   if ( zr->errs)
     ds_init_empty (zr->errs);
 
-  FILE *file = fopen (filename, "rb");
+  FILE *file = fopen (file_name, "rb");
   if (!file)
     {
-      ds_put_cstr (zr->errs, strerror (errno));
+      ds_put_format (zr->errs, _("%s: open failed (%s)"),
+                     file_name, strerror (errno));
       free (zr);
       return NULL;
     }
 
-  if ( ! check_magic (file, MAGIC_LHDR, zr->errs))
+  if ( ! check_magic (file, file_name, MAGIC_LHDR, zr->errs))
     {
       fclose (file);
       free (zr);
@@ -297,7 +308,8 @@ zip_reader_create (const char *filename, struct string *errs)
 
   if ( ! find_eocd (file, &offset))
     {
-      ds_put_format (zr->errs, _("Cannot find central directory"));
+      ds_put_format (zr->errs, _("%s: cannot find central directory"),
+                     file_name);
       fclose (file);
       free (zr);
       return NULL;
@@ -305,15 +317,15 @@ zip_reader_create (const char *filename, struct string *errs)
 
   if ( 0 != fseeko (file, offset, SEEK_SET))
     {
-      const char *mm = strerror (errno);
-      ds_put_format (zr->errs, _("Failed to seek to end of central directory record: %s"), mm);
+      ds_put_format (zr->errs, _("%s: seek failed (%s)"),
+                     file_name, strerror (errno));
       fclose (file);
       free (zr);
       return NULL;
     }
 
 
-  if ( ! check_magic (file, MAGIC_EOCD, zr->errs))
+  if ( ! check_magic (file, file_name, MAGIC_EOCD, zr->errs))
     {
       fclose (file);
       free (zr);
@@ -336,19 +348,20 @@ zip_reader_create (const char *filename, struct string *errs)
 
   if ( 0 != fseeko (file, central_dir_start, SEEK_SET))
     {
-      const char *mm = strerror (errno);
-      ds_put_format (zr->errs, _("Failed to seek to central directory: %s"), mm);
+      ds_put_format (zr->errs, _("%s: seek failed (%s)"),
+                     file_name, strerror (errno));
       fclose (file);
       free (zr);
       return NULL;
     }
 
-  zr->filename = xstrdup (filename);
+  zr->file_name = xstrdup (file_name);
 
   zr->entries = xcalloc (n_members, sizeof *zr->entries);
   for (int i = 0; i < n_members; i++)
     {
-      if (!zip_header_read_next (file, &zr->entries[zr->n_entries], errs))
+      if (!zip_header_read_next (file, file_name,
+                                 &zr->entries[zr->n_entries], errs))
         {
           fclose (file);
           zip_reader_destroy (zr);
@@ -385,18 +398,22 @@ zip_member_open (struct zip_reader *zr, const char *member)
   struct zip_entry *ze = zip_entry_find (zr, member);
   if ( ze == NULL)
     {
-      ds_put_format (zr->errs, _("%s: unknown member"), member);
+      ds_put_format (zr->errs, _("%s: unknown member \"%s\""),
+                     zr->file_name, member);
       return NULL;
     }
 
-  FILE *fp = fopen (zr->filename, "rb");
+  FILE *fp = fopen (zr->file_name, "rb");
   if (!fp)
     {
-      ds_put_cstr (zr->errs, strerror (errno));
+      ds_put_format (zr->errs, _("%s: open failed (%s)"),
+                     zr->file_name, strerror (errno));
       return NULL;
     }
 
   struct zip_member *zm = xmalloc (sizeof *zm);
+  zm->file_name = xstrdup (zr->file_name);
+  zm->member_name = xstrdup (member);
   zm->fp = fp;
   zm->offset = ze->offset;
   zm->comp_size = ze->comp_size;
@@ -408,12 +425,12 @@ zip_member_open (struct zip_reader *zr, const char *member)
 
   if ( 0 != fseeko (zm->fp, zm->offset, SEEK_SET))
     {
-      ds_put_format (zr->errs, _("Failed to seek to start of member `%s': %s"),
+      ds_put_format (zr->errs, _("%s: seek failed (%s)"),
                      ze->name, strerror (errno));
       goto error;
     }
 
-  if ( ! check_magic (zm->fp, MAGIC_LHDR, zr->errs))
+  if ( ! check_magic (zm->fp, zr->file_name, MAGIC_LHDR, zr->errs))
     goto error;
 
   uint16_t v, nlen, extra_len;
@@ -443,9 +460,9 @@ zip_member_open (struct zip_reader *zr, const char *member)
   if (strcmp (name, ze->name) != 0)
     {
       ds_put_format (zm->errmsgs,
-		     _("Name mismatch in zip archive. Central directory "
-                       "says `%s'; local file header says `%s'"),
-		     ze->name, name);
+		     _("%s: name mismatch betwen central directory (%s) "
+                       "and local file header (%s)"),
+                     zm->file_name, ze->name, name);
       free (name);
       goto error;
     }
@@ -460,6 +477,8 @@ zip_member_open (struct zip_reader *zr, const char *member)
 
 error:
   fclose (zm->fp);
+  free (zm->file_name);
+  free (zm->member_name);
   free (zm);
   return NULL;
 }
@@ -633,7 +652,9 @@ inflate_init (struct zip_member *zm)
 
   if ( Z_OK != r)
     {
-      ds_put_format (zm->errmsgs, _("Cannot initialize inflator: %s"), zError (r));
+      ds_put_format (zm->errmsgs,
+                     _("%s: cannot initialize inflator (%s)"),
+                     zm->file_name, zError (r));
       return false;
     }
 
@@ -687,7 +708,8 @@ inflate_read (struct zip_member *zm, void *buf, size_t n)
       return n - inf->zss.avail_out;
     }
 
-  ds_put_format (zm->errmsgs, _("Error inflating: %s"), zError (r));
+  ds_put_format (zm->errmsgs, _("%s: error inflating \"%s\" (%s)"),
+                 zm->file_name, zm->member_name, zError (r));
 
   return -1;
 }
