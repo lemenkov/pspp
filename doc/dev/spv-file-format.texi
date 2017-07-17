@@ -106,23 +106,75 @@ The actual XML has a simple and straightforward form that does not
 require a reader to take schemas or namespaces into account.  A
 structure member's root is @code{heading} element, which contains
 @code{heading} or @code{container} elements (or a mix), forming a
-tree.  In turn, @code{container} holds a single @code{text} or
-@code{table} element.
+tree.  In turn, @code{container} holds a @code{label} and one more
+child, usually @code{text} or @code{table}.
 
-@ifnottex
-For a diagram illustrating the hierarchy of elements within an SPV
-structure member, please refer to a PDF version of the manual.
-@end ifnottex
-
-@iftex
 The following diagram shows the hierarchy within an SPV structure
-member more precisely.  Oval nodes are elements and <text> and <cdata>
-are plain text and CDATA within elements.  Edges point from parent to
-child.  Unlabeled edges indicate that the child appears exactly once;
-edges labeled with *, zero or more times; edges labeled with ?, zero
-or one times.
-@center @image{dev/spv-structure, 5in}
-@end iftex
+member more precisely.  Names represent elements and <text> and
+<cdata> represent plain text and CDATA, respectively.  Edges point
+from parent to child.  Unlabeled edges indicate that the child appears
+exactly once; edges labeled with *, zero or more times; edges labeled
+with ?, zero or one times.  Where possible, child elements are shown
+in the order they actually appear within a parent element.
+
+@example
+@group
+heading
+  +--?--> pageSetup
+  |         +--> pageHeader +--> pageParagraph --> text --> <cdata>
+  |         +--> pageFooter +--> pageParagraph --> text --> <cdata>
+  +-----> label --?--> <text>
+  +--*--> heading
+  +--*--> container
+             +-----> label --?--> <text>
+             +--?--> text ---> html --> <cdata>
+             +--?--> table
+             |         +--?-- tableProperties
+             |         |        +--> generalProperties
+             |         |        +--> footnoteProperties
+             |         |        +--> cellFormatProperties
+             |         |        |      +--> caption -------> style
+             |         |        |      +--> footnotes -----> style
+             |         |        |      +--> rowLabelse ----> style
+             |         |        |      +--> columnLabels --> style
+             |         |        |      +--> data ----------> style
+             |         |        |      +--> layers --------> style
+             |         |        |      +--> title ---------> style
+             |         |        |      +--> cornerLabels --> style
+             |         |        +--> borderProperties
+             |         |        |      +--> topInnerFrame
+             |         |        |      +--> rightInnerFrame
+             |         |        |      +--> horizontalDimensionBorderColumns
+             |         |        |      +--> horizontalDimensionBorderRows
+             |         |        |      +--> horizontalCategoryBorderColumns
+             |         |        |      +--> leftInnerFrame
+             |         |        |      +--> verticalDimensionBorderRows
+             |         |        |      +--> titleLayerSeparator
+             |         |        |      +--> verticalCategoryBorderRows
+             |         |        |      +--> topOuterFrame
+             |         |        |      +--> bottomInnerFrame
+             |         |        |      +--> leftOuterFrame
+             |         |        |      +--> dataAreaTop
+             |         |        |      +--> verticalDimensionBorderColumns
+             |         |        |      +--> dataAreaLeft
+             |         |        |      +--> horizontalCategoryBorderRows
+             |         |        |      +--> bottomOuterFrame
+             |         |        |      +--> rightOuterFrame
+             |         |        |      +--> verticalCategoryBorderColumns
+             |         |        +--> printingProperties
+             |         +----- tableStructure
+             |                  +--?--> path ------> <text>
+             |                  +-----> dataPath --> <text>
+             +--?--> graph
+             |         +--?--> dataPath --> <text>
+             |         +-----> path ------> <text>
+             +--?--> model
+                       +--?--> ViZml --> <text>
+                       +--?--> path ---> <text>
+                       +--?--> pmmlContainerPath ---> <text>
+                       +--?--> statsContainerPath --> <text>
+@end group
+@end example
 
 The elements found in structure members are documented below.  For
 each element, we note the possible parent elements and the element's
@@ -200,7 +252,9 @@ information, and the CSS from the embedded HTML:
 * SPV Structure html Element::
 * SPV Structure table Element::
 * SPV Structure tableStructure Element::
-* SPV Structure dataPath Element::
+* SPV Structure graph Element::
+* SPV Structure model Element::
+* SPV Structure dataPath and path Elements::
 * SPV Structure pageSetup Element::
 * SPV Structure pageHeader and pageFooter Elements::
 * SPV Structure pageParagraph Element::
@@ -311,7 +365,7 @@ This element has no attributes.
 @subsection The @code{container} Element
 
 Parent: @code{heading} @*
-Contents: @code{label} (@code{table} @math{|} @code{text})?
+Contents: @code{label} (@code{table} @math{|} @code{text} @math{|} @code{graph} @math{|} @code{model})
 
 A @code{container} serves to label a @code{table} or a @code{text}
 item.
@@ -421,16 +475,66 @@ Contents: @code{dataPath}
 
 This element has no attributes.
 
-@node SPV Structure dataPath Element
-@subsection The @code{dataPath} Element
+@node SPV Structure graph Element
+@subsection The @code{graph} Element
 
-Parent: @code{tableStructure} @*
+Parent: @code{container} @*
+Contents: @code{dataPath}? @code{path}
+
+This element represents a graph.  The @code{dataPath} and @code{path}
+elements name the Zip members that give the details of the graph.
+Normally, both elements are present; there is only one counterexample
+in the corpus.
+
+@node SPV Structure model Element
+@subsection The @code{model} Element
+
+Parent: @code{container} @*
+Contents: (@code{ViZml}? @code{path}) @math{|} (@code{pmmlContainerPath} @code{statsContainerPath})
+
+This element represents a model.  The @code{dataPath} and @code{path}
+elements name the Zip members that give the details of the model.
+Normally, both elements are present; there is only one counterexample
+in the corpus.
+
+The details are unexplored.  The @code{ViZml} element contains base-64
+encoded text, that decodes to a binary format with some embedded text
+strings, and @code{path} names an Zip member that contains XML.
+Alternatively, @code{pmmlContainerPath} and @code{statsContainerPath}
+name Zip members with @file{.scf} extension.
+
+@node SPV Structure dataPath and path Elements
+@subsection The @code{dataPath} and @code{path} Elements
+
+Parent: @code{tableStructure} or @code{graph} or @code{model} @*
 Contents: text
 
-Contains the name of the Zip member that holds the table details,
-e.g.@: @code{0000000001437_lightTableData.bin}.
+These element contain the name of the Zip members that hold details
+for a container.  For tables:
 
-This element has no attributes.
+@itemize @bullet
+@item
+When a ``light'' format is used, only @code{dataPath} is present, and
+it names a @file{.bin} member of the Zip file that has @code{light} in
+its name, e.g.@: @code{0000000001437_lightTableData.bin} (@pxref{SPV
+Light Detail Member Format}).
+
+@item
+When the legacy format is used, both are present.  In this case,
+@code{dataPath} names a Zip member with a legacy binary format that
+contains relevant data (@pxref{SPV Legacy Detail Member Binary
+Format}), and @code{path} names a Zip member that uses an XML format
+(@pxref{SPV Legacy Detail Member XML Format}).
+@end itemize
+
+Graphs normally follow the legacy approach described above.  The
+corpus contains one example of a graph with @code{path} but not
+@code{dataPath}.  The reason is unexplored.
+
+Models use @code{path} but not @code{dataPath}.  @xref{SPV Structure
+graph Element}, for more information.
+
+These elements have no attributes.
 
 @node SPV Structure pageSetup Element
 @subsection The @code{pageSetup} Element
