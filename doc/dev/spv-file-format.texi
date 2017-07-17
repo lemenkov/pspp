@@ -1,5 +1,5 @@
 @node SPSS Viewer File Format
-@chapter SPSS Viewer File Format
+@appendix SPSS Viewer File Format
 
 SPSS Viewer or @file{.spv} files, here called SPV files, are written
 by SPSS 16 and later to represent the contents of its output editor.
