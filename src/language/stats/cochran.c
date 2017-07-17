@@ -32,9 +32,10 @@
 #include "libpspp/cast.h"
 #include "libpspp/message.h"
 #include "libpspp/misc.h"
-#include "output/tab.h"
+#include "output/pivot-table.h"
 
 #include "gettext.h"
+#define N_(msgid) msgid
 #define _(msgid) gettext (msgid)
 
 struct cochran
@@ -146,103 +147,53 @@ cochran_execute (const struct dataset *ds,
 static void
 show_freqs_box (const struct one_sample_test *ost, const struct cochran *ct)
 {
-  int i;
-  const struct fmt_spec *wfmt = dict_get_weight_format (ct->dict);
+  struct pivot_table *table = pivot_table_create (N_("Frequencies"));
+  pivot_table_set_weight_var (table, dict_get_weight (ct->dict));
 
-  const int row_headers = 1;
-  const int column_headers = 2;
-  struct tab_table *table =
-    tab_create (row_headers + 2, column_headers + ost->n_vars);
-  tab_set_format (table, RC_WEIGHT, wfmt);
+  char *success = xasprintf (_("Success (%.*g)"), DBL_DIG + 1, ct->success);
+  char *failure = xasprintf (_("Failure (%.*g)"), DBL_DIG + 1, ct->failure);
+  struct pivot_dimension *values = pivot_dimension_create (
+    table, PIVOT_AXIS_COLUMN, N_("Value"),
+    success, PIVOT_RC_COUNT,
+    failure, PIVOT_RC_COUNT);
+  values->root->show_label = true;
+  free (failure);
+  free (success);
 
-  tab_headers (table, row_headers, 0, column_headers, 0);
+  struct pivot_dimension *variables = pivot_dimension_create (
+    table, PIVOT_AXIS_ROW, N_("Variable"));
 
-  tab_title (table, _("Frequencies"));
-
-  /* Vertical lines inside the box */
-  tab_box (table, 1, 0, -1, TAL_1,
-	   row_headers, 0, tab_nc (table) - 1, tab_nr (table) - 1 );
-
-  /* Box around the table */
-  tab_box (table, TAL_2, TAL_2, -1, -1,
-	   0,  0, tab_nc (table) - 1, tab_nr (table) - 1 );
-
-  tab_joint_text (table, 1, 0, 2, 0,
-		  TAT_TITLE | TAB_CENTER, _("Value"));
-
-  tab_text_format (table, 1, 1, 0, _("Success (%.*g)"),
-                   DBL_DIG + 1, ct->success);
-  tab_text_format (table, 2, 1, 0, _("Failure (%.*g)"),
-                   DBL_DIG + 1, ct->failure);
-
-  tab_hline (table, TAL_2, 0, tab_nc (table) - 1, column_headers);
-  tab_vline (table, TAL_2, row_headers, 0, tab_nr (table) - 1);
-
-  for (i = 0 ; i < ost->n_vars ; ++i)
+  for (size_t i = 0 ; i < ost->n_vars ; ++i)
     {
-      tab_text (table, 0, column_headers + i,
-		TAB_LEFT, var_to_string (ost->vars[i]));
+      int row = pivot_category_create_leaf (
+        variables->root, pivot_value_new_variable (ost->vars[i]));
 
-      tab_double (table, 1, column_headers + i, 0,
-		  ct->hits[i], NULL, RC_WEIGHT);
-
-      tab_double (table, 2, column_headers + i, 0,
-		  ct->misses[i], NULL, RC_WEIGHT);
+      pivot_table_put2 (table, 0, row, pivot_value_new_number (ct->hits[i]));
+      pivot_table_put2 (table, 1, row, pivot_value_new_number (ct->misses[i]));
     }
 
-  tab_submit (table);
+  pivot_table_submit (table);
 }
-
-
 
 static void
 show_sig_box (const struct cochran *ch)
 {
-  const struct fmt_spec *wfmt = dict_get_weight_format (ch->dict);
+  struct pivot_table *table = pivot_table_create (N_("Test Statistics"));
 
-  const int row_headers = 1;
-  const int column_headers = 0;
-  struct tab_table *table =
-    tab_create (row_headers + 1, column_headers + 4);
+  pivot_table_set_weight_format (table, dict_get_weight_format (ch->dict));
 
+  pivot_dimension_create (table, PIVOT_AXIS_COLUMN, N_("Value"), N_("Value"));
 
-  tab_set_format (table, RC_WEIGHT, wfmt);
+  pivot_dimension_create (
+    table, PIVOT_AXIS_ROW, N_("Statistics"),
+    N_("N"), PIVOT_RC_COUNT,
+    N_("Cochran's Q"), PIVOT_RC_SIGNIFICANCE,
+    N_("df"), PIVOT_RC_INTEGER,
+    N_("Asymp. Sig."), PIVOT_RC_SIGNIFICANCE);
 
-  tab_headers (table, row_headers, 0, column_headers, 0);
-
-  tab_title (table, _("Test Statistics"));
-
-  tab_text (table,  0, column_headers,
-	    TAT_TITLE | TAB_LEFT , _("N"));
-
-  tab_text (table,  0, 1 + column_headers,
-	    TAT_TITLE | TAB_LEFT , _("Cochran's Q"));
-
-  tab_text (table,  0, 2 + column_headers,
-	    TAT_TITLE | TAB_LEFT, _("df"));
-
-  tab_text (table,  0, 3 + column_headers,
-	    TAT_TITLE | TAB_LEFT, _("Asymp. Sig."));
-
-  /* Box around the table */
-  tab_box (table, TAL_2, TAL_2, -1, -1,
-	   0,  0, tab_nc (table) - 1, tab_nr (table) - 1 );
-
-  tab_hline (table, TAL_2, 0, tab_nc (table) -1, column_headers);
-  tab_vline (table, TAL_2, row_headers, 0, tab_nr (table) - 1);
-
-  tab_double (table, 1, column_headers,
-	      0, ch->cc, NULL, RC_WEIGHT);
-
-  tab_double (table, 1, column_headers + 1,
-	      0, ch->q, NULL, RC_OTHER);
-
-  tab_double (table, 1, column_headers + 2,
-	      0, ch->df, NULL, RC_INTEGER);
-
-  tab_double (table, 1, column_headers + 3,
-	      0, gsl_cdf_chisq_Q (ch->q, ch->df),
-	      NULL, RC_PVALUE);
-
-  tab_submit (table);
+  double sig = gsl_cdf_chisq_Q (ch->q, ch->df);
+  double entries[] = { ch->cc, ch->q, ch->df, sig };
+  for (size_t i = 0; i < sizeof entries / sizeof *entries; i++)
+    pivot_table_put2 (table, 0, i, pivot_value_new_number (entries[i]));
+  pivot_table_submit (table);
 }

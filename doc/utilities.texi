@@ -353,7 +353,7 @@ otherwise it is @code{Auto}.
 @display
 OUTPUT MODIFY
        /SELECT TABLES
-       /TABLECELLS SELECT = [ @{SIGNIFICANCE, COUNT@} ]
+       /TABLECELLS SELECT = [ @var{class}... ]
                    FORMAT = @var{fmt_spec}.
 @end display
 @note{In the above synopsis the characters @samp{[} and @samp{]} are literals.
@@ -370,12 +370,26 @@ brackets.  This list determines the classes of values should be selected for mod
 Each class can be:
 
 @table @asis
+@item RESIDUAL
+Residual values.  Default: @t{F40.2}.
+
+@item CORRELATION
+Correlations.  Default: @t{F40.3}.
+
+@item PERCENT
+Percentages.  Default: @t{PCT40.1}.
+
 @item SIGNIFICANCE
-Significance of tests (p-values).
+Significance of tests (p-values).  Default: @t{F40.3}.
 
 @item COUNT
-Counts or sums of weights.
+Counts or sums of weights.  For a weighted data set, the default is
+the weight variable's print format.  For an unweighted data set, the
+default is F40.0.
 @end table
+
+For most other numeric values that appear in tables, @code{SET FORMAT}
+may be used to specify the format (@pxref{SET FORMAT}).
 
 The value of @var{fmt_spec} must be a valid output format (@pxref{Input and Output Formats}).
 Note that not all possible formats are meaningful for all classes.
@@ -531,6 +545,7 @@ as a field separator in the @cmd{DATA LIST} command (@pxref{DATA LIST}).
 The default value is determined from the system locale.
 
 @item FORMAT
+@anchor{SET FORMAT}
 Allows the default numeric input/output format to be specified.  The
 default is F8.2.  @xref{Input and Output Formats}.
 

@@ -29,12 +29,13 @@
 #include "data/variable.h"
 #include "language/stats/npar.h"
 #include "libpspp/str.h"
-#include "output/tab.h"
+#include "output/pivot-table.h"
 
 #include "gl/minmax.h"
 #include "gl/xalloc.h"
 
 #include "gettext.h"
+#define N_(msgid) msgid
 #define _(msgid) gettext (msgid)
 
 struct sign_test_params
@@ -47,117 +48,80 @@ struct sign_test_params
   double point_prob;
 };
 
+static int
+add_pair_leaf (struct pivot_dimension *dimension, variable_pair *pair)
+{
+  char *label = xasprintf ("%s - %s", var_to_string ((*pair)[0]),
+                           var_to_string ((*pair)[1]));
+  return pivot_category_create_leaf (
+    dimension->root,
+    pivot_value_new_user_text_nocopy (label));
+}
 
 static void
 output_frequency_table (const struct two_sample_test *t2s,
 			const struct sign_test_params *param,
 			const struct dictionary *dict)
 {
-  int i;
-  struct tab_table *table = tab_create (3, 1 + 4 * t2s->n_pairs);
+  struct pivot_table *table = pivot_table_create (N_("Frequencies"));
+  pivot_table_set_weight_var (table, dict_get_weight (dict));
 
-  const struct fmt_spec *wfmt = dict_get_weight_format (dict);
+  pivot_dimension_create (table, PIVOT_AXIS_COLUMN, N_("N"),
+                          N_("N"), PIVOT_RC_COUNT);
 
-  tab_set_format (table, RC_WEIGHT, wfmt);
-  tab_title (table, _("Frequencies"));
+  pivot_dimension_create (table, PIVOT_AXIS_ROW, N_("Differences"),
+                          N_("Negative Differences"),
+                          N_("Positive Differences"),
+                          N_("Ties"), N_("Total"));
 
-  tab_headers (table, 2, 0, 1, 0);
+  struct pivot_dimension *pairs = pivot_dimension_create (
+    table, PIVOT_AXIS_ROW, N_("Pairs"));
 
-  /* Vertical lines inside the box */
-  tab_box (table, 0, 0, -1, TAL_1,
-	   1, 0, tab_nc (table) - 1, tab_nr (table) - 1 );
-
-  /* Box around entire table */
-  tab_box (table, TAL_2, TAL_2, -1, -1,
-	   0, 0, tab_nc (table) - 1, tab_nr (table) - 1 );
-
-  tab_text (table,  2, 0,  TAB_CENTER, _("N"));
-
-  for (i = 0 ; i < t2s->n_pairs; ++i)
+  for (size_t i = 0 ; i < t2s->n_pairs; ++i)
     {
       variable_pair *vp = &t2s->pairs[i];
 
-      struct string pair_name;
-      ds_init_cstr (&pair_name, var_to_string ((*vp)[0]));
-      ds_put_cstr (&pair_name, " - ");
-      ds_put_cstr (&pair_name, var_to_string ((*vp)[1]));
+      int pair_idx = add_pair_leaf (pairs, vp);
 
-
-      tab_text (table, 0, 1 + i * 4, TAB_LEFT, ds_cstr (&pair_name));
-
-      ds_destroy (&pair_name);
-
-      tab_hline (table, TAL_1, 0, tab_nc (table) - 1, 1 + i * 4);
-
-      tab_text (table,  1, 1 + i * 4,  TAB_LEFT, _("Negative Differences"));
-      tab_text (table,  1, 2 + i * 4,  TAB_LEFT, _("Positive Differences"));
-      tab_text (table,  1, 3 + i * 4,  TAB_LEFT, _("Ties"));
-      tab_text (table,  1, 4 + i * 4,  TAB_LEFT, _("Total"));
-
-      tab_double (table, 2, 1 + i * 4, TAB_RIGHT, param[i].neg, NULL, RC_WEIGHT);
-      tab_double (table, 2, 2 + i * 4, TAB_RIGHT, param[i].pos, NULL, RC_WEIGHT);
-      tab_double (table, 2, 3 + i * 4, TAB_RIGHT, param[i].ties, NULL, RC_WEIGHT);
-      tab_double (table, 2, 4 + i * 4, TAB_RIGHT,
-		  param[i].ties + param[i].neg + param[i].pos, NULL, RC_WEIGHT);
+      const struct sign_test_params *p = &param[i];
+      double values[] = { p->neg, p->pos, p->ties, p->ties + p->neg + p->pos };
+      for (size_t j = 0; j < sizeof values / sizeof *values; j++)
+        pivot_table_put3 (table, 0, j, pair_idx,
+                          pivot_value_new_number (values[j]));
     }
 
-  tab_submit (table);
+  pivot_table_submit (table);
 }
 
 static void
 output_statistics_table (const struct two_sample_test *t2s,
 			 const struct sign_test_params *param)
 {
-  int i;
-  struct tab_table *table = tab_create (1 + t2s->n_pairs, 4);
+  struct pivot_table *table = pivot_table_create (N_("Test Statistics"));
 
-  tab_title (table, _("Test Statistics"));
+  pivot_dimension_create (table, PIVOT_AXIS_ROW, N_("Statistics"),
+                          N_("Exact Sig. (2-tailed)"), PIVOT_RC_SIGNIFICANCE,
+                          N_("Exact Sig. (1-tailed)"), PIVOT_RC_SIGNIFICANCE,
+                          N_("Point Probability"), PIVOT_RC_SIGNIFICANCE);
 
-  tab_headers (table, 0, 1,  0, 1);
+  struct pivot_dimension *pairs = pivot_dimension_create (
+    table, PIVOT_AXIS_COLUMN, N_("Pairs"));
 
-  tab_hline (table, TAL_2, 0, tab_nc (table) - 1, 1);
-  tab_vline (table, TAL_2, 1, 0, tab_nr (table) - 1);
-
-
-  /* Vertical lines inside the box */
-  tab_box (table, -1, -1, -1, TAL_1,
-	   0, 0,
-	   tab_nc (table) - 1, tab_nr (table) - 1);
-
-  /* Box around entire table */
-  tab_box (table, TAL_2, TAL_2, -1, -1,
-	   0, 0, tab_nc (table) - 1,
-	   tab_nr (table) - 1);
-
-  tab_text (table,  0, 1, TAT_TITLE | TAB_LEFT,
-	    _("Exact Sig. (2-tailed)"));
-
-  tab_text (table,  0, 2, TAT_TITLE | TAB_LEFT,
-	    _("Exact Sig. (1-tailed)"));
-
-  tab_text (table,  0, 3, TAT_TITLE | TAB_LEFT,
-	    _("Point Probability"));
-
-  for (i = 0 ; i < t2s->n_pairs; ++i)
+  for (size_t i = 0 ; i < t2s->n_pairs; ++i)
     {
       variable_pair *vp = &t2s->pairs[i];
+      int pair_idx = add_pair_leaf (pairs, vp);
 
-      struct string pair_name;
-      ds_init_cstr (&pair_name, var_to_string ((*vp)[0]));
-      ds_put_cstr (&pair_name, " - ");
-      ds_put_cstr (&pair_name, var_to_string ((*vp)[1]));
-
-      tab_text (table,  1 + i, 0, TAB_LEFT, ds_cstr (&pair_name));
-      ds_destroy (&pair_name);
-
-      tab_double (table, 1 + i, 1, TAB_RIGHT,
-		  param[i].one_tailed_sig * 2, NULL, RC_PVALUE);
-
-      tab_double (table, 1 + i, 2, TAB_RIGHT, param[i].one_tailed_sig, NULL, RC_PVALUE);
-      tab_double (table, 1 + i, 3, TAB_RIGHT, param[i].point_prob, NULL, RC_PVALUE);
+      const struct sign_test_params *p = &param[i];
+      double values[] = { p->one_tailed_sig * 2,
+                          p->one_tailed_sig,
+                          p->point_prob };
+      for (size_t j = 0; j < sizeof values / sizeof *values; j++)
+        pivot_table_put2 (table, j, pair_idx,
+                          pivot_value_new_number (values[j]));
     }
 
-  tab_submit (table);
+  pivot_table_submit (table);
 }
 
 void

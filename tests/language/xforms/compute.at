@@ -58,8 +58,8 @@ B,A3
 
 Table: Data List
 A,B
-ABC                                                                                                                                                              ,def
-GHI                                                                                                                                                              ,jkl
+ABC,def
+GHI,jkl
 ])
 AT_CLEANUP
 

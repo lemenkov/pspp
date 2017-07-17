@@ -137,7 +137,7 @@ interaction_to_string (const struct interaction *iact, struct string *str)
     {
       ds_put_cstr (str, var_to_string (iact->vars[v]));
       if (v + 1 < iact->n_vars)
-        ds_put_cstr (str, " * ");
+        ds_put_cstr (str, " × ");
     }
 }
 

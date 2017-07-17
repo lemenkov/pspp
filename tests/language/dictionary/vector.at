@@ -24,7 +24,8 @@ display vector.
 ])
 AT_CHECK([pspp -o pspp.csv vector.sps])
 AT_CHECK([cat pspp.csv], [0], [dnl
-Vector,Position,Variable,Print Format
+Table: Vectors
+Vector and Position,,Variable,Print Format
 v,1,v1,F8.2
 ,2,v2,F8.2
 ,3,v3,F8.2
@@ -41,7 +42,8 @@ display vector.
 ])
 AT_CHECK([pspp -o pspp.csv vector.sps])
 AT_CHECK([cat pspp.csv], [0], [dnl
-Vector,Position,Variable,Print Format
+Table: Vectors
+Vector and Position,,Variable,Print Format
 #vec,1,#vec1,COMMA10.2
 ,2,#vec2,COMMA10.2
 ,3,#vec3,COMMA10.2
@@ -62,7 +64,8 @@ display vector.
 ])
 AT_CHECK([pspp -o pspp.csv vector.sps])
 AT_CHECK([cat pspp.csv], [0], [dnl
-Vector,Position,Variable,Print Format
+Table: Vectors
+Vector and Position,,Variable,Print Format
 x,1,x1,F8.2
 ,2,x2,F8.2
 ,3,x3,F8.2
@@ -81,7 +84,8 @@ display vector.
 ])
 AT_CHECK([pspp -o pspp.csv vector.sps])
 AT_CHECK([cat pspp.csv], [0], [dnl
-Vector,Position,Variable,Print Format
+Table: Vectors
+Vector and Position,,Variable,Print Format
 a,1,u,F1.0
 ,2,w,F1.0
 ,3,x,F1.0

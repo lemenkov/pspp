@@ -32,7 +32,6 @@
 #include "output/driver-provider.h"
 #include "output/message-item.h"
 #include "output/output-item.h"
-#include "output/tab.h"
 #include "output/table-item.h"
 #include "output/text-item.h"
 #include "ui/gui/help-menu.h"

@@ -26,11 +26,12 @@
 #include "data/format.h"
 #include "data/variable.h"
 #include "math/moments.h"
-#include "output/tab.h"
+#include "output/pivot-table.h"
 
 #include "gl/minmax.h"
 
 #include "gettext.h"
+#define N_(msgid) msgid
 #define _(msgid) gettext (msgid)
 
 
@@ -91,87 +92,42 @@ npar_summary_calc_descriptives (struct descriptives *desc,
 void
 do_summary_box (const struct descriptives *desc,
 		const struct variable *const *vv,
-		int n_vars)
+		int n_vars,
+                const struct fmt_spec *wfmt)
 {
-  int v;
-  bool quartiles = false;
+  if (!desc)
+    return;
 
-  int col;
-  int columns = 1 ;
-  struct tab_table *table ;
+  struct pivot_table *table = pivot_table_create (
+    N_("Descriptive Statistics"));
+  pivot_table_set_weight_format (table, wfmt);
 
-  if ( desc ) columns += 5;
-  if ( quartiles ) columns += 3;
+  pivot_dimension_create (
+    table, PIVOT_AXIS_COLUMN, N_("Statistics"),
+    N_("N"), PIVOT_RC_COUNT,
+    N_("Mean"), PIVOT_RC_OTHER,
+    N_("Std. Deviation"), PIVOT_RC_OTHER,
+    N_("Minimum"), N_("Maximum"));
 
-  table = tab_create (columns, 2 + n_vars);
+  struct pivot_dimension *variables = pivot_dimension_create (
+    table, PIVOT_AXIS_ROW, N_("Variable"));
 
-
-  tab_title (table, _("Descriptive Statistics"));
-
-  tab_headers (table, 1, 0, 1, 0);
-
-  tab_box (table, TAL_1, TAL_1, -1, TAL_1,
-	   0, 0, tab_nc (table) - 1, tab_nr(table) - 1 );
-
-  tab_hline (table, TAL_2, 0, tab_nc (table) -1, 2);
-  tab_vline (table, TAL_2, 1, 0, tab_nr (table) - 1);
-
-  col = 1;
-  if ( desc )
-    {
-      tab_joint_text (table, col, 0, col, 1, TAT_TITLE | TAB_CENTER,
-		      _("N"));
-      col++;
-      tab_joint_text (table, col, 0, col, 1, TAT_TITLE | TAB_CENTER,
-		      _("Mean"));
-      col++;
-      tab_joint_text (table, col, 0, col, 1, TAT_TITLE | TAB_CENTER,
-		      _("Std. Deviation"));
-      col++;
-      tab_joint_text (table, col, 0, col, 1, TAT_TITLE | TAB_CENTER,
-		      _("Minimum"));
-      col++;
-      tab_joint_text (table, col, 0, col, 1, TAT_TITLE | TAB_CENTER,
-		      _("Maximum"));
-      col++;
-    }
-
-  if ( quartiles )
-    {
-      tab_joint_text (table, col, 0, col + 2, 0, TAT_TITLE | TAB_CENTER,
-		      _("Percentiles"));
-      tab_hline (table, TAL_1, col, col + 2, 1);
-
-      tab_text (table, col, 1, TAT_TITLE | TAB_CENTER,
-		_("25th"));
-      col++;
-      tab_text (table, col, 1, TAT_TITLE | TAB_CENTER,
-		_("50th (Median)"));
-      col++;
-      tab_text (table, col, 1, TAT_TITLE | TAB_CENTER,
-		_("75th"));
-      col++;
-    }
-
-
-  for ( v = 0 ; v < n_vars ; ++v )
+  for (int v = 0; v < n_vars; ++v)
     {
       const struct variable *var = vv[v];
-      const struct fmt_spec *fmt = var_get_print_format (var);
 
-      tab_text (table, 0, 2 + v, 0, var_to_string (var));
+      int row = pivot_category_create_leaf (variables->root,
+                                            pivot_value_new_variable (var));
 
-      col = 1;
-      if (desc != NULL)
-        {
-          tab_double (table, col++, 2 + v, 0, desc[v].n, fmt, RC_OTHER);
-          tab_double (table, col++, 2 + v, 0, desc[v].mean, fmt, RC_OTHER);
-          tab_double (table, col++, 2 + v, 0, desc[v].std_dev, fmt, RC_OTHER);
-          tab_double (table, col++, 2 + v, 0, desc[v].min, fmt, RC_OTHER);
-          tab_double (table, col++, 2 + v, 0, desc[v].max, fmt, RC_OTHER);
-        }
+      double entries[] = { desc[v].n, desc[v].mean, desc[v].std_dev };
+      for (size_t j = 0; j < sizeof entries / sizeof *entries; j++)
+        pivot_table_put2 (table, j, row, pivot_value_new_number (entries[j]));
+
+      union value extrema[2] = { { .f = desc[v].min }, { .f = desc[v].max } };
+      for (size_t j = 0; j < 2; j++)
+        pivot_table_put2 (table, 3 + j, row,
+                          pivot_value_new_var_value (var, &extrema[j]));
     }
 
-
-  tab_submit (table);
+  pivot_table_submit (table);
 }

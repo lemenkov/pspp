@@ -147,7 +147,8 @@ LIST.
 ])
   AT_CHECK([pspp -o pspp.csv sys-file.sps])
   AT_CHECK([cat pspp.csv], [0], [dnl
-File label: PSPP synthetic test file: ôõöø
+Table: File Label
+Label,PSPP synthetic test file: ôõöø
 
 Table: Variables
 Name,Position,Label,Measurement Level,Role,Width,Alignment,Print Format,Write Format,Missing Values
@@ -427,7 +428,7 @@ str16,16,,Nominal,Input,16,Left,A16,A16,
 str17,17,,Nominal,Input,17,Left,A17,A17,
 
 Table: Value Labels
-Variable,Value,Label
+Variable Value,,Label
 num1,1,один (in Russian)
 num2,1,one
 ,2,two
@@ -515,17 +516,12 @@ LIST.
 ])
   AT_CHECK([pspp -o pspp.csv sys-file.sps])
   AT_CHECK([cat pspp.csv], [0], [dnl
-Documents in the active dataset:
-
-First line of documents
-
+Table: Documents
+"First line of documents
 Second line of documents
-
 abbé appliqué attaché blasé café canapé cliché consommé
 
-
-
-Last line of documents
+Last line of documents"
 
 Table: Data List
 num1
@@ -651,47 +647,23 @@ MRSETS /DISPLAY NAME=ALL.
   AT_CHECK([pspp -o pspp.csv sys-file.sps])
   AT_CHECK([cat pspp.csv], [0], [dnl
 Table: Multiple Response Sets
-Name,Variables,Details
-$a,"あ
+Name,Label,Encoding,Counted Value,Member Variables
+$a,my mcgroup,Categories,,"あ
 b
-c
-","Multiple category set
-Label: my mcgroup
-"
-$b,"g
+c"
+$b,,Dichotomies,55,"g
 e
 f
-d
-","Multiple dichotomy set
-Counted value: 55
-Category label source: Variable labels
-"
-$c,"h
+d"
+$c,mdgroup #2,Dichotomies,はい,"h
 i
-j
-","Multiple dichotomy set
-Label: mdgroup #2
-Label source: Provided by user
-Counted value: `はい'
-Category label source: Variable labels
-"
-$d,"k
+j"
+$d,third mdgroup,Dichotomies,34,"k
 l
-m
-","Multiple dichotomy set
-Label: third mdgroup
-Label source: Provided by user
-Counted value: 34
-Category label source: Value labels of counted value
-"
-$e,"n
+m"
+$e,,Dichotomies,choice,"n
 o
-p
-","Multiple dichotomy set
-Label source: First variable label among variables
-Counted value: `choice'
-Category label source: Value labels of counted value
-"
+p"
 ])
 done
 AT_CLEANUP
@@ -733,12 +705,13 @@ for variant in be le; do
 SYSFILE INFO FILE='sys-file.sav'.
 ])
   AT_CHECK([pspp -o pspp.csv sys-file.sps])
-  AT_CHECK([sed 7q pspp.csv], [0], [dnl
-File:,sys-file.sav
-Label:,"PSPP synthetic
+  AT_CHECK([sed 8q pspp.csv], [0], [dnl
+Table: File Information
+File,sys-file.sav
+Label,"PSPP synthetic
 test file"
-Created:,01 Jan 11 20:53:52 by $(@%:@) SPSS DATA FILE PSPP synthetic test file
-Product:,"Extra product info
+Created,01 Jan 11 20:53:52 by $(@%:@) SPSS DATA FILE PSPP synthetic test file
+Product,"Extra product info
 another line
 blah"
 ])
@@ -1112,7 +1085,7 @@ DISPLAY @ATTRIBUTES.
   AT_CHECK([pspp -o pspp.csv sys-file.sps])
   AT_CHECK([cat pspp.csv], [0],
 [[Table: Variable and Dataset Attributes
-Variable,Name,Value
+Variable and Name,,Value
 (dataset),Attr1[1],Value1
 ,Attr1[2],'déclaration'
 ,SécondAttr[1],123
@@ -1263,8 +1236,8 @@ str15,5,,Nominal,Input,15,Left,A15,A15,
 
 Table: Data List
 num1,num2,str4,str8,str15
--99,0,,abcdefgh,0123   @&t@
-.,151,jklm,nopqrstu,vwxyzABC       @&t@
+-99,0,,abcdefgh,0123
+.,151,jklm,nopqrstu,vwxyzABC
 1,2,DEFG,HIJKLMNO,PQRSTUV
 ])
 done
@@ -1326,8 +1299,8 @@ str15,5,,Nominal,Input,15,Left,A15,A15,
 
 Table: Data List
 num1,num2,str4,str8,str15
-1,100,,abcdefgh,0123   @&t@
-.,251,jklm,nopqrstu,vwxyzABC       @&t@
+1,100,,abcdefgh,0123
+.,251,jklm,nopqrstu,vwxyzABC
 101,102,DEFG,HIJKLMNO,PQRSTUV
 ])
 done
@@ -1393,8 +1366,8 @@ str15,5,,Nominal,Input,15,Left,A15,A15,
 
 Table: Data List
 num1,num2,str4,str8,str15
--49,50,,abcdefgh,0123   @&t@
-.,201,jklm,nopqrstu,vwxyzABC       @&t@
+-49,50,,abcdefgh,0123
+.,201,jklm,nopqrstu,vwxyzABC
 51,52,DEFG,HIJKLMNO,PQRSTUV
 ])
 done
@@ -1491,8 +1464,8 @@ str15,5,,Nominal,Input,15,Left,A15,A15,
 
 Table: Data List
 num1,num2,str4,str8,str15
--99,0,,abcdefgh,0123   @&t@
-.,151,jklm,nopqrstu,vwxyzABC       @&t@
+-99,0,,abcdefgh,0123
+.,151,jklm,nopqrstu,vwxyzABC
 1,2,DEFG,HIJKLMNO,PQRSTUV
 ])
 done
@@ -2414,31 +2387,16 @@ warning: `sys-file.sav': Invalid multiple response set name `b'.
 warning: `sys-file.sav': Invalid multiple response set name `e'.
 
 Table: Multiple Response Sets
-Name,Variables,Details
-$a,"あ
+Name,Label,Encoding,Counted Value,Member Variables
+$a,my mcgroup,Categories,,"あ
 b
-c
-","Multiple category set
-Label: my mcgroup
-"
-$c,"h
+c"
+$c,mdgroup #2,Dichotomies,はい,"h
 i
-j
-","Multiple dichotomy set
-Label: mdgroup #2
-Label source: Provided by user
-Counted value: `はい'
-Category label source: Variable labels
-"
-$d,"k
+j"
+$d,third mdgroup,Dichotomies,34,"k
 l
-m
-","Multiple dichotomy set
-Label: third mdgroup
-Label source: Provided by user
-Counted value: 34
-Category label source: Value labels of counted value
-"
+m"
 ])
 done
 AT_CLEANUP
@@ -3569,7 +3527,7 @@ LIST.
 
 Table: Data List
 str14
-one data item @&t@
+one data item
 ])
 done
 AT_CLEANUP
@@ -3617,7 +3575,7 @@ LIST.
 
 Table: Data List
 num1,num2,str4,str8,str15
--99,0,,abcdefgh,0123   @&t@
+-99,0,,abcdefgh,0123
 ])
 done
 AT_CLEANUP

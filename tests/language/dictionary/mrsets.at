@@ -82,56 +82,31 @@ mrsets.sps:38: warning: MRSETS: MDGROUP subcommand for group $d specifies LABELS
 "mrsets.sps:42: warning: MRSETS: Variables specified on MCGROUP should have the same categories, but a and c (and possibly others) in multiple category group $f have different value labels for value b."
 ])
 
-m4_define([MRSETS_DISPLAY_OUTPUT],
-  [Table: Multiple Response Sets
-Name,Variables,Details
-$a,"w
+m4_define([MRSETS_DISPLAY_OUTPUT], [dnl
+Table: Multiple Response Sets
+Name,Label,Encoding,Counted Value,Member Variables
+$a,First multiple dichotomy group,Dichotomies,5,"w
 x
 y
-z
-","Multiple dichotomy set
-Label: First multiple dichotomy group
-Label source: Provided by user
-Counted value: 5
-Category label source: Variable labels
-"
-$b,"z
-y
-","Multiple dichotomy set
-Counted value: 123
-Category label source: Value labels of counted value
-"
-$c,"w
+z"
+$b,,Dichotomies,123,"z
+y"
+$c,duplicate variable label,Dichotomies,1,"w
 x
 y
-z
-","Multiple dichotomy set
-Label: duplicate variable label
-Label source: First variable label among variables
-Counted value: 1
-Category label source: Value labels of counted value
-"
-$d,"a
+z"
+$d,,Dichotomies,c,"a
 b
 c
-d
-","Multiple dichotomy set
-Counted value: `c'
-Category label source: Variable labels
-"
-$e,"w
+d"
+$e,First multiple category group,Categories,,"w
 x
 y
-z
-","Multiple category set
-Label: First multiple category group
-"
-$f,"a
+z"
+$f,,Categories,,"a
 b
 c
-d
-","Multiple category set
-"
+d"
 ])
 
 AT_SETUP([MRSETS add, display, delete])
@@ -145,61 +120,60 @@ AT_DATA([mrsets.sps],
     /DELETE NAME=ALL
     /DISPLAY NAME=ALL.
 ]])
-AT_CHECK([pspp -O format=csv mrsets.sps], [0],
+AT_CHECK([pspp -o - -O format=csv -o mrsets.csv -o mrsets.txt -o mrsets.pdf mrsets.sps], [0],
   [DEFINE_MRSETS_OUTPUT
 Table: Multiple Response Sets
-Name,Variables,Details
-$a,"w
+Name,Label,Encoding,Counted Value,Member Variables
+$a,First multiple dichotomy group,Dichotomies,5,"w
 x
 y
-z
-","Multiple dichotomy set
-Label: First multiple dichotomy group
-Label source: Provided by user
-Counted value: 5
-Category label source: Variable labels
-"
+z"
 
-MRSETS_DISPLAY_OUTPUT
 Table: Multiple Response Sets
-Name,Variables,Details
-$a,"w
+Name,Label,Encoding,Counted Value,Member Variables
+$a,First multiple dichotomy group,Dichotomies,5,"w
 x
 y
-z
-","Multiple dichotomy set
-Label: First multiple dichotomy group
-Label source: Provided by user
-Counted value: 5
-Category label source: Variable labels
-"
-$b,"z
-y
-","Multiple dichotomy set
-Counted value: 123
-Category label source: Value labels of counted value
-"
-$d,"a
-b
-c
-d
-","Multiple dichotomy set
-Counted value: `c'
-Category label source: Variable labels
-"
-$e,"w
+z"
+$b,,Dichotomies,123,"z
+y"
+$c,duplicate variable label,Dichotomies,1,"w
 x
 y
-z
-","Multiple category set
-Label: First multiple category group
-"
-$f,"a
+z"
+$d,,Dichotomies,c,"a
 b
 c
-d
-","Multiple category set
-"
+d"
+$e,First multiple category group,Categories,,"w
+x
+y
+z"
+$f,,Categories,,"a
+b
+c
+d"
+
+Table: Multiple Response Sets
+Name,Label,Encoding,Counted Value,Member Variables
+$a,First multiple dichotomy group,Dichotomies,5,"w
+x
+y
+z"
+$b,,Dichotomies,123,"z
+y"
+$d,,Dichotomies,c,"a
+b
+c
+d"
+$e,First multiple category group,Categories,,"w
+x
+y
+z"
+$f,,Categories,,"a
+b
+c
+d"
 
 mrsets.sps:50: note: MRSETS: The active dataset dictionary does not contain any multiple response sets.
 ])

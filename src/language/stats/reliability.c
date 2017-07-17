@@ -31,7 +31,7 @@
 #include "libpspp/misc.h"
 #include "libpspp/str.h"
 #include "math/moments.h"
-#include "output/tab.h"
+#include "output/pivot-table.h"
 #include "output/text-item.h"
 
 #include "gettext.h"
@@ -536,345 +536,161 @@ static void
 case_processing_summary (casenumber n_valid, casenumber n_missing,
 			 const struct dictionary *dict)
 {
-  const struct fmt_spec *wfmt = dict_get_weight_format (dict);
+  struct pivot_table *table = pivot_table_create (
+    N_("Case Processing Summary"));
+  pivot_table_set_weight_var (table, dict_get_weight (dict));
 
-  casenumber total;
-  int n_cols = 4;
-  int n_rows = 4;
-  int heading_columns = 2;
-  int heading_rows = 1;
-  struct tab_table *tbl;
-  tbl = tab_create (n_cols, n_rows);
-  tab_set_format (tbl, RC_WEIGHT, wfmt);
-  tab_headers (tbl, heading_columns, 0, heading_rows, 0);
+  pivot_dimension_create (table, PIVOT_AXIS_COLUMN, N_("Statistics"),
+                          N_("N"), PIVOT_RC_COUNT,
+                          N_("Percent"), PIVOT_RC_PERCENT);
 
-  tab_title (tbl, _("Case Processing Summary"));
+  struct pivot_dimension *cases = pivot_dimension_create (
+    table, PIVOT_AXIS_ROW, N_("Cases"), N_("Valid"), N_("Excluded"),
+    N_("Total"));
+  cases->root->show_label = true;
 
-  /* Vertical lines for the data only */
-  tab_box (tbl,
-	   -1, -1,
-	   -1, TAL_1,
-	   heading_columns, 0,
-	   n_cols - 1, n_rows - 1);
+  casenumber total = n_missing + n_valid;
 
-  /* Box around table */
-  tab_box (tbl,
-	   TAL_2, TAL_2,
-	   -1, -1,
-	   0, 0,
-	   n_cols - 1, n_rows - 1);
+  struct entry
+    {
+      int stat_idx;
+      int case_idx;
+      double x;
+    }
+  entries[] = {
+    { 0, 0, n_valid },
+    { 0, 1, n_missing },
+    { 0, 2, total },
+    { 1, 0, 100.0 * n_valid / total },
+    { 1, 1, 100.0 * n_missing / total },
+    { 1, 2, 100.0 }
+  };
 
+  for (size_t i = 0; i < sizeof entries / sizeof *entries; i++)
+    {
+      const struct entry *e = &entries[i];
+      pivot_table_put2 (table, e->stat_idx, e->case_idx,
+                        pivot_value_new_number (e->x));
+    }
 
-  tab_hline (tbl, TAL_2, 0, n_cols - 1, heading_rows);
-
-  tab_vline (tbl, TAL_2, heading_columns, 0, n_rows - 1);
-
-
-  tab_text (tbl, 0, heading_rows, TAB_LEFT | TAT_TITLE,
-		_("Cases"));
-
-  tab_text (tbl, 1, heading_rows, TAB_LEFT | TAT_TITLE,
-		_("Valid"));
-
-  tab_text (tbl, 1, heading_rows + 1, TAB_LEFT | TAT_TITLE,
-		_("Excluded"));
-
-  tab_text (tbl, 1, heading_rows + 2, TAB_LEFT | TAT_TITLE,
-		_("Total"));
-
-  tab_text (tbl, heading_columns, 0, TAB_CENTER | TAT_TITLE,
-		_("N"));
-
-  tab_text (tbl, heading_columns + 1, 0, TAB_CENTER | TAT_TITLE, _("%"));
-
-  total = n_missing + n_valid;
-
-  tab_double (tbl, 2, heading_rows, TAB_RIGHT,
-	     n_valid, NULL, RC_WEIGHT);
-
-
-  tab_double (tbl, 2, heading_rows + 1, TAB_RIGHT,
-	     n_missing, NULL, RC_WEIGHT);
-
-
-  tab_double (tbl, 2, heading_rows + 2, TAB_RIGHT,
-	     total, NULL, RC_WEIGHT);
-
-
-  tab_double (tbl, 3, heading_rows, TAB_RIGHT,
-	      100 * n_valid / (double) total, NULL, RC_OTHER);
-
-
-  tab_double (tbl, 3, heading_rows + 1, TAB_RIGHT,
-	      100 * n_missing / (double) total, NULL, RC_OTHER);
-
-
-  tab_double (tbl, 3, heading_rows + 2, TAB_RIGHT,
-	      100 * total / (double) total, NULL, RC_OTHER);
-
-
-  tab_submit (tbl);
+  pivot_table_submit (table);
 }
-
-
 
 static void
 reliability_summary_total (const struct reliability *rel)
 {
-  int i;
-  const int n_cols = 5;
-  const int heading_columns = 1;
-  const int heading_rows = 1;
-  const int n_rows = rel->sc[0].n_items + heading_rows ;
-  const struct variable *wv = rel->wv;
-  const struct fmt_spec *wfmt = wv ? var_get_print_format (wv) : & F_8_0;
-  struct tab_table *tbl = tab_create (n_cols, n_rows);
-  tab_set_format (tbl, RC_WEIGHT, wfmt);
-  tab_headers (tbl, heading_columns, 0, heading_rows, 0);
+  struct pivot_table *table = pivot_table_create (N_("Item-Total Statistics"));
 
-  tab_title (tbl, _("Item-Total Statistics"));
+  pivot_dimension_create (table, PIVOT_AXIS_COLUMN, N_("Statistics"),
+                          N_("Scale Mean if Item Deleted"),
+                          N_("Scale Variance if Item Deleted"),
+                          N_("Corrected Item-Total Correlation"),
+                          N_("Cronbach's Alpha if Item Deleted"));
 
-  /* Vertical lines for the data only */
-  tab_box (tbl,
-	   -1, -1,
-	   -1, TAL_1,
-	   heading_columns, 0,
-	   n_cols - 1, n_rows - 1);
+  struct pivot_dimension *variables = pivot_dimension_create (
+    table, PIVOT_AXIS_ROW, N_("Variables"));
 
-  /* Box around table */
-  tab_box (tbl,
-	   TAL_2, TAL_2,
-	   -1, -1,
-	   0, 0,
-	   n_cols - 1, n_rows - 1);
-
-
-  tab_hline (tbl, TAL_2, 0, n_cols - 1, heading_rows);
-
-  tab_vline (tbl, TAL_2, heading_columns, 0, n_rows - 1);
-
-  tab_text (tbl, 1, 0, TAB_CENTER | TAT_TITLE,
-	    _("Scale Mean if Item Deleted"));
-
-  tab_text (tbl, 2, 0, TAB_CENTER | TAT_TITLE,
-	    _("Scale Variance if Item Deleted"));
-
-  tab_text (tbl, 3, 0, TAB_CENTER | TAT_TITLE,
-	    _("Corrected Item-Total Correlation"));
-
-  tab_text (tbl, 4, 0, TAB_CENTER | TAT_TITLE,
-	    _("Cronbach's Alpha if Item Deleted"));
-
-
-  for (i = 0 ; i < rel->sc[0].n_items; ++i)
+  for (size_t i = 0 ; i < rel->sc[0].n_items; ++i)
     {
-      double cov, item_to_total_r;
-      double mean, weight, var;
-
       const struct cronbach *s = &rel->sc[rel->total_start + i];
-      tab_text (tbl, 0, heading_rows + i, TAB_LEFT| TAT_TITLE,
-		var_to_string (rel->sc[0].items[i]));
 
-      moments1_calculate (s->total, &weight, &mean, &var, 0, 0);
+      int var_idx = pivot_category_create_leaf (
+        variables->root, pivot_value_new_variable (rel->sc[0].items[i]));
 
-      tab_double (tbl, 1, heading_rows + i, TAB_RIGHT,
-		  mean, NULL, RC_OTHER);
+      double mean;
+      moments1_calculate (s->total, NULL, &mean, NULL, NULL, NULL);
 
-      tab_double (tbl, 2, heading_rows + i, TAB_RIGHT,
-		  s->variance_of_sums, NULL, RC_OTHER);
+      double var;
+      moments1_calculate (rel->sc[0].m[i], NULL, NULL, &var, NULL, NULL);
+      double cov
+        = (rel->sc[0].variance_of_sums + var - s->variance_of_sums) / 2.0;
 
-      tab_double (tbl, 4, heading_rows + i, TAB_RIGHT,
-		  s->alpha, NULL, RC_OTHER);
-
-
-      moments1_calculate (rel->sc[0].m[i], &weight, &mean, &var, 0,0);
-      cov = rel->sc[0].variance_of_sums + var - s->variance_of_sums;
-      cov /= 2.0;
-
-      item_to_total_r = (cov - var) / (sqrt(var) * sqrt (s->variance_of_sums));
-
-
-      tab_double (tbl, 3, heading_rows + i, TAB_RIGHT,
-		  item_to_total_r, NULL, RC_OTHER);
+      double entries[] = {
+        mean,
+        s->variance_of_sums,
+        (cov - var) / sqrt (var * s->variance_of_sums),
+        s->alpha,
+      };
+      for (size_t i = 0; i < sizeof entries / sizeof *entries; i++)
+        pivot_table_put2 (table, i, var_idx,
+                          pivot_value_new_number (entries[i]));
     }
 
-
-  tab_submit (tbl);
+  pivot_table_submit (table);
 }
 
-
-static void reliability_statistics_model_alpha (struct tab_table *tbl,
-						const struct reliability *rel);
-
-static void reliability_statistics_model_split (struct tab_table *tbl,
-						const struct reliability *rel);
-
-
-struct reliability_output_table
-{
-  int n_cols;
-  int n_rows;
-  int heading_cols;
-  int heading_rows;
-  void (*populate) (struct tab_table *, const struct reliability *);
-};
-
-
-static struct reliability_output_table rol[2] =
-  {
-    { 2, 2, 1, 1, reliability_statistics_model_alpha},
-    { 4, 9, 3, 0, reliability_statistics_model_split}
-  };
 
 static void
 reliability_statistics (const struct reliability *rel)
 {
-  int n_cols = rol[rel->model].n_cols;
-  int n_rows = rol[rel->model].n_rows;
-  int heading_columns = rol[rel->model].heading_cols;
-  int heading_rows = rol[rel->model].heading_rows;
-  const struct variable *wv = rel->wv;
-  const struct fmt_spec *wfmt = wv ? var_get_print_format (wv) : & F_8_0;
-  struct tab_table *tbl = tab_create (n_cols, n_rows);
-  tab_set_format (tbl, RC_WEIGHT, wfmt);
+  struct pivot_table *table = pivot_table_create (
+    N_("Reliability Statistics"));
+  pivot_table_set_weight_var (table, rel->wv);
 
-  tab_headers (tbl, heading_columns, 0, heading_rows, 0);
+  if (rel->model == MODEL_ALPHA)
+    {
+      pivot_dimension_create (table, PIVOT_AXIS_COLUMN,
+                              N_("Statistics"),
+                              N_("Cronbach's Alpha"), PIVOT_RC_OTHER,
+                              N_("N of Items"), PIVOT_RC_COUNT);
 
-  tab_title (tbl, _("Reliability Statistics"));
+      const struct cronbach *s = &rel->sc[0];
+      pivot_table_put1 (table, 0, pivot_value_new_number (s->alpha));
+      pivot_table_put1 (table, 1, pivot_value_new_number (s->n_items));
+    }
+  else
+    {
+      struct pivot_dimension *statistics = pivot_dimension_create (
+        table, PIVOT_AXIS_ROW, N_("Statistics"));
+      struct pivot_category *alpha = pivot_category_create_group (
+        statistics->root, N_("Cronbach's Alpha"));
+      pivot_category_create_group (alpha, N_("Part 1"),
+                                   N_("Value"), PIVOT_RC_OTHER,
+                                   N_("N of Items"), PIVOT_RC_COUNT);
+      pivot_category_create_group (alpha, N_("Part 2"),
+                                   N_("Value"), PIVOT_RC_OTHER,
+                                   N_("N of Items"), PIVOT_RC_COUNT);
+      pivot_category_create_leaves (alpha,
+                                    N_("Total N of Items"), PIVOT_RC_COUNT);
+      pivot_category_create_leaves (statistics->root,
+                                    N_("Correlation Between Forms"),
+                                    PIVOT_RC_OTHER);
+      pivot_category_create_group (statistics->root,
+                                   N_("Spearman-Brown Coefficient"),
+                                   N_("Equal Length"), PIVOT_RC_OTHER,
+                                   N_("Unequal Length"), PIVOT_RC_OTHER);
+      pivot_category_create_leaves (statistics->root,
+                                    N_("Guttman Split-Half Coefficient"),
+                                    PIVOT_RC_OTHER);
 
-  /* Vertical lines for the data only */
-  tab_box (tbl,
-	   -1, -1,
-	   -1, TAL_1,
-	   heading_columns, 0,
-	   n_cols - 1, n_rows - 1);
+      /* R is the correlation between the two parts */
+      double r0 = rel->sc[0].variance_of_sums -
+        rel->sc[1].variance_of_sums -
+        rel->sc[2].variance_of_sums ;
+      double r1 = (r0 / sqrt (rel->sc[1].variance_of_sums)
+                   / sqrt (rel->sc[2].variance_of_sums)
+                   / 2.0);
 
-  /* Box around table */
-  tab_box (tbl,
-	   TAL_2, TAL_2,
-	   -1, -1,
-	   0, 0,
-	   n_cols - 1, n_rows - 1);
+      /* Guttman Split Half Coefficient */
+      double g = 2 * r0 / rel->sc[0].variance_of_sums;
 
+      double tmp = (1.0 - r1*r1) * rel->sc[1].n_items * rel->sc[2].n_items /
+        pow2 (rel->sc[0].n_items);
 
-  tab_hline (tbl, TAL_2, 0, n_cols - 1, heading_rows);
+      double entries[] = {
+        rel->sc[1].alpha,
+        rel->sc[1].n_items,
+        rel->sc[2].alpha,
+        rel->sc[2].n_items,
+        rel->sc[1].n_items + rel->sc[2].n_items,
+        r1,
+        2 * r1 / (1.0 + r1),
+        (sqrt ( pow4 (r1) + 4 * pow2 (r1) * tmp) - pow2 (r1)) / (2 * tmp),
+        g,
+      };
+      for (size_t i = 0; i < sizeof entries / sizeof *entries; i++)
+        pivot_table_put1 (table, i, pivot_value_new_number (entries[i]));
+    }
 
-  tab_vline (tbl, TAL_2, heading_columns, 0, n_rows - 1);
-
-  if ( rel->model == MODEL_ALPHA )
-    reliability_statistics_model_alpha (tbl, rel);
-  else if (rel->model == MODEL_SPLIT )
-    reliability_statistics_model_split (tbl, rel);
-
-  tab_submit (tbl);
+  pivot_table_submit (table);
 }
-
-
-static void
-reliability_statistics_model_alpha (struct tab_table *tbl,
-				    const struct reliability *rel)
-{
-  const struct cronbach *s = &rel->sc[0];
-
-  tab_text (tbl, 0, 0, TAB_CENTER | TAT_TITLE,
-		_("Cronbach's Alpha"));
-
-  tab_text (tbl, 1, 0, TAB_CENTER | TAT_TITLE,
-		_("N of Items"));
-
-  tab_double (tbl, 0, 1, TAB_RIGHT, s->alpha, NULL, RC_OTHER);
-
-  tab_double (tbl, 1, 1, TAB_RIGHT, s->n_items, NULL, RC_WEIGHT);
-}
-
-
-static void
-reliability_statistics_model_split (struct tab_table *tbl,
-				    const struct reliability *rel)
-{
-  tab_text (tbl, 0, 0, TAB_LEFT,
-	    _("Cronbach's Alpha"));
-
-  tab_text (tbl, 1, 0, TAB_LEFT,
-	    _("Part 1"));
-
-  tab_text (tbl, 2, 0, TAB_LEFT,
-	    _("Value"));
-
-  tab_text (tbl, 2, 1, TAB_LEFT,
-	    _("N of Items"));
-
-  tab_text (tbl, 1, 2, TAB_LEFT,
-	    _("Part 2"));
-
-  tab_text (tbl, 2, 2, TAB_LEFT,
-	    _("Value"));
-
-  tab_text (tbl, 2, 3, TAB_LEFT,
-	    _("N of Items"));
-
-  tab_text (tbl, 1, 4, TAB_LEFT,
-	    _("Total N of Items"));
-
-  tab_text (tbl, 0, 5, TAB_LEFT,
-	    _("Correlation Between Forms"));
-
-  tab_text (tbl, 0, 6, TAB_LEFT,
-	    _("Spearman-Brown Coefficient"));
-
-  tab_text (tbl, 1, 6, TAB_LEFT,
-	    _("Equal Length"));
-
-  tab_text (tbl, 1, 7, TAB_LEFT,
-	    _("Unequal Length"));
-
-
-  tab_text (tbl, 0, 8, TAB_LEFT,
-	    _("Guttman Split-Half Coefficient"));
-
-
-
-  tab_double (tbl, 3, 0, TAB_RIGHT, rel->sc[1].alpha, NULL, RC_OTHER);
-  tab_double (tbl, 3, 2, TAB_RIGHT, rel->sc[2].alpha, NULL, RC_OTHER);
-
-  tab_double (tbl, 3, 1, TAB_RIGHT, rel->sc[1].n_items, NULL, RC_WEIGHT);
-  tab_double (tbl, 3, 3, TAB_RIGHT, rel->sc[2].n_items, NULL, RC_WEIGHT);
-
-  tab_double (tbl, 3, 4, TAB_RIGHT,
-	     rel->sc[1].n_items + rel->sc[2].n_items, NULL, RC_WEIGHT);
-
-  {
-    /* R is the correlation between the two parts */
-    double r = rel->sc[0].variance_of_sums -
-      rel->sc[1].variance_of_sums -
-      rel->sc[2].variance_of_sums ;
-
-    /* Guttman Split Half Coefficient */
-    double g = 2 * r / rel->sc[0].variance_of_sums;
-
-    /* Unequal Length Spearman Brown Coefficient, and
-     intermediate value used in the computation thereof */
-    double uly, tmp;
-
-    r /= sqrt (rel->sc[1].variance_of_sums);
-    r /= sqrt (rel->sc[2].variance_of_sums);
-    r /= 2.0;
-
-    tab_double (tbl, 3, 5, TAB_RIGHT, r, NULL, RC_OTHER);
-
-    /* Equal length Spearman-Brown Coefficient */
-    tab_double (tbl, 3, 6, TAB_RIGHT, 2 * r / (1.0 + r), NULL, RC_OTHER);
-
-    tab_double (tbl, 3, 8, TAB_RIGHT, g, NULL, RC_OTHER);
-
-    tmp = (1.0 - r*r) * rel->sc[1].n_items * rel->sc[2].n_items /
-      pow2 (rel->sc[0].n_items);
-
-    uly = sqrt( pow4 (r) + 4 * pow2 (r) * tmp);
-    uly -= pow2 (r);
-    uly /= 2 * tmp;
-
-    tab_double (tbl, 3, 7, TAB_RIGHT, uly, NULL, RC_OTHER);
-  }
-}
-

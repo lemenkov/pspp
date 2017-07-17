@@ -30,7 +30,8 @@ end data.
 t-test /PAIRS a with b (PAIRED).
 ])
 
-AT_CHECK([pspp -O format=csv t-test.sps], [0], [dnl
+AT_CHECK([pspp -o pspp.csv -o pspp.txt t-test.sps])
+AT_CHECK([cat pspp.csv], [0], [dnl
 Table: Reading free-form data from INLINE.
 Variable,Format
 ID,F8.0
@@ -38,21 +39,20 @@ A,F8.0
 B,F8.0
 
 Table: Paired Sample Statistics
-,,Mean,N,Std. Deviation,S.E. Mean
-Pair 1,A,2.00,5,.71,.32
-,B,4.00,5,1.54,.69
+,,N,Mean,Std. Deviation,S.E. Mean
+Pair 1,A,5,2.00,.71,.32
+,B,5,4.00,1.54,.69
 
 Table: Paired Samples Correlations
 ,,N,Correlation,Sig.
-Pair 1,A & B,5,.92,.028
+Pair 1,A & B,5,.918,.028
 
 Table: Paired Samples Test
-,,Paired Differences,,,,,,,
-,,,,,95% Confidence Interval of the Difference,,,,
-,,Mean,Std. Deviation,Std. Error Mean,Lower,Upper,t,df,Sig. (2-tailed)
+,,Paired Differences,,,,,t,df,Sig. (2-tailed)
+,,Mean,Std. Deviation,S.E. Mean,95% Confidence Interval of the Difference,,,,
+,,,,,Lower,Upper,,,
 Pair 1,A - B,-2.00,.94,.42,-3.16,-.84,-4.78,4,.009
 ])
-
 AT_CLEANUP
 
 
@@ -81,21 +81,21 @@ c,F8.0
 d,F8.0
 
 Table: Paired Sample Statistics
-,,Mean,N,Std. Deviation,S.E. Mean
-Pair 1,a,2.00,5,.71,.32
-,b,4.00,5,1.54,.69
-Pair 2,c,5.10,5,.69,.31
-,d,3.80,5,.16,.07
+,,N,Mean,Std. Deviation,S.E. Mean
+Pair 1,a,5,2.00,.71,.32
+,b,5,4.00,1.54,.69
+Pair 2,c,5,5.10,.69,.31
+,d,5,3.80,.16,.07
 
 Table: Paired Samples Correlations
 ,,N,Correlation,Sig.
-Pair 1,a & b,5,.92,.028
-Pair 2,c & d,5,-.92,.028
+Pair 1,a & b,5,.918,.028
+Pair 2,c & d,5,-.918,.028
 
 Table: Paired Samples Test
-,,Paired Differences,,,,,,,
-,,,,,95% Confidence Interval of the Difference,,,,
-,,Mean,Std. Deviation,Std. Error Mean,Lower,Upper,t,df,Sig. (2-tailed)
+,,Paired Differences,,,,,t,df,Sig. (2-tailed)
+,,Mean,Std. Deviation,S.E. Mean,95% Confidence Interval of the Difference,,,,
+,,,,,Lower,Upper,,,
 Pair 1,a - b,-2.00,.94,.42,-3.16,-.84,-4.78,4,.009
 Pair 2,c - d,1.30,.84,.37,.26,2.34,3.47,4,.025
 ])
@@ -145,21 +145,21 @@ c,F8.0
 d,F8.0
 
 Table: Paired Sample Statistics
-,,Mean,N,Std. Deviation,S.E. Mean
-Pair 1,a,2.00,5,.71,.32
-,c,5.10,5,.69,.31
-Pair 2,b,4.00,5,1.54,.69
-,d,3.80,5,.16,.07
+,,N,Mean,Std. Deviation,S.E. Mean
+Pair 1,a,5,2.00,.71,.32
+,c,5,5.10,.69,.31
+Pair 2,b,5,4.00,1.54,.69
+,d,5,3.80,.16,.07
 
 Table: Paired Samples Correlations
 ,,N,Correlation,Sig.
-Pair 1,a & c,5,.41,.493
-Pair 2,b & d,5,-.87,.054
+Pair 1,a & c,5,.410,.493
+Pair 2,b & d,5,-.872,.054
 
 Table: Paired Samples Test
-,,Paired Differences,,,,,,,
-,,,,,95% Confidence Interval of the Difference,,,,
-,,Mean,Std. Deviation,Std. Error Mean,Lower,Upper,t,df,Sig. (2-tailed)
+,,Paired Differences,,,,,t,df,Sig. (2-tailed)
+,,Mean,Std. Deviation,S.E. Mean,95% Confidence Interval of the Difference,,,,
+,,,,,Lower,Upper,,,
 Pair 1,a - c,-3.10,.76,.34,-4.04,-2.16,-9.14,4,.001
 Pair 2,b - d,.20,1.68,.75,-1.89,2.29,.27,4,.803
 ])
@@ -209,23 +209,23 @@ T-TEST
         /CRITERIA=CI(0.95).
 ])
 
-AT_CHECK([pspp -O format=csv t-test.sps], [0], [dnl
+AT_CHECK([pspp -o pspp.csv -o pspp.txt t-test.sps])
+AT_CHECK([cat pspp.csv], [0], [dnl
 Table: Paired Sample Statistics
-,,Mean,N,Std. Deviation,S.E. Mean
-Pair 1,y,1.94,530.00,.96,.04
-,x,1.03,530.00,.17,.01
+,,N,Mean,Std. Deviation,S.E. Mean
+Pair 1,y,530.00,1.94,.96,.04
+,x,530.00,1.03,.17,.01
 
 Table: Paired Samples Correlations
 ,,N,Correlation,Sig.
-Pair 1,y & x,530.00,.11,.008
+Pair 1,y & x,530.00,.114,.008
 
 Table: Paired Samples Test
-,,Paired Differences,,,,,,,
-,,,,,95% Confidence Interval of the Difference,,,,
-,,Mean,Std. Deviation,Std. Error Mean,Lower,Upper,t,df,Sig. (2-tailed)
+,,Paired Differences,,,,,t,df,Sig. (2-tailed)
+,,Mean,Std. Deviation,S.E. Mean,95% Confidence Interval of the Difference,,,,
+,,,,,Lower,Upper,,,
 Pair 1,y - x,.91,.95,.04,.83,.99,22.07,529.00,.000
 ])
-
 AT_CLEANUP
 
 
@@ -251,18 +251,18 @@ A,F8.0
 B,F8.0
 
 Table: Paired Sample Statistics
-,,Mean,N,Std. Deviation,S.E. Mean
-Pair 1,A,4.333,3,5.774,3.333
-,B,1.333,3,.577,.333
+,,N,Mean,Std. Deviation,S.E. Mean
+Pair 1,A,3,4.333,5.774,3.333
+,B,3,1.333,.577,.333
 
 Table: Paired Samples Correlations
 ,,N,Correlation,Sig.
 Pair 1,A & B,3,1.000,.000
 
 Table: Paired Samples Test
-,,Paired Differences,,,,,,,
-,,,,,95% Confidence Interval of the Difference,,,,
-,,Mean,Std. Deviation,Std. Error Mean,Lower,Upper,t,df,Sig. (2-tailed)
+,,Paired Differences,,,,,t,df,Sig. (2-tailed)
+,,Mean,Std. Deviation,S.E. Mean,95% Confidence Interval of the Difference,,,,
+,,,,,Lower,Upper,,,
 Pair 1,A - B,3.000,5.196,3.000,-9.908,15.908,1.000,2,.423
 ])
 AT_CLEANUP
@@ -290,7 +290,8 @@ end data.
 t-test /GROUPS=indep(1.1,2.1) /var=dep1 dep2.
 ])
 
-AT_CHECK([pspp -O format=csv t-test.sps], [0], [dnl
+AT_CHECK([pspp -o pspp.csv -o pspp.txt t-test.sps])
+AT_CHECK([cat pspp.csv], [0], [dnl
 Table: Reading free-form data from INLINE.
 Variable,Format
 ID,F8.0
@@ -299,22 +300,21 @@ DEP1,F8.0
 DEP2,F8.0
 
 Table: Group Statistics
-,INDEP,N,Mean,Std. Deviation,S.E. Mean
+,Group,N,Mean,Std. Deviation,S.E. Mean
 DEP1,1.10,5,2.00,.71,.32
 ,2.10,5,4.00,.71,.32
 DEP2,1.10,5,4.00,.71,.32
 ,2.10,5,2.00,.71,.32
 
 Table: Independent Samples Test
-,,Levene's Test for Equality of Variances,,t-test for Equality of Means,,,,,,
-,,,,,,,,,95% Confidence Interval of the Difference,
-,,F,Sig.,t,df,Sig. (2-tailed),Mean Difference,Std. Error Difference,Lower,Upper
+,,Levene's Test for Equality of Variances,,T-Test for Equality of Means,,,,,,
+,,F,Sig.,t,df,Sig. (2-tailed),Mean Difference,Std. Error Difference,95% Confidence Interval of the Difference,
+,,,,,,,,,Lower,Upper
 DEP1,Equal variances assumed,.00,1.000,-4.47,8.00,.002,-2.00,.45,-3.03,-.97
 ,Equal variances not assumed,,,-4.47,8.00,.002,-2.00,.45,-3.03,-.97
 DEP2,Equal variances assumed,.00,1.000,4.47,8.00,.002,2.00,.45,.97,3.03
 ,Equal variances not assumed,,,4.47,8.00,.002,2.00,.45,.97,3.03
 ])
-
 AT_CLEANUP
 
 AT_SETUP([T-TEST /GROUPS with one value for independent variable])
@@ -347,21 +347,22 @@ end data.
 t-test /groups=indep(1.514) /var=dep.
 ])
 
-AT_CHECK([pspp -O format=csv t-test.sps], [0], [dnl
+AT_CHECK([pspp -o pspp.csv -o pspp.txt t-test.sps])
+AT_CHECK([cat pspp.csv], [0], [dnl
 Table: Reading free-form data from INLINE.
 Variable,Format
 INDEP,F8.0
 DEP,F8.0
 
 Table: Group Statistics
-,INDEP,N,Mean,Std. Deviation,S.E. Mean
+,Group,N,Mean,Std. Deviation,S.E. Mean
 DEP,≥    1.51,11,9.00,3.82,1.15
 ,<    1.51,11,8.00,2.86,.86
 
 Table: Independent Samples Test
-,,Levene's Test for Equality of Variances,,t-test for Equality of Means,,,,,,
-,,,,,,,,,95% Confidence Interval of the Difference,
-,,F,Sig.,t,df,Sig. (2-tailed),Mean Difference,Std. Error Difference,Lower,Upper
+,,Levene's Test for Equality of Variances,,T-Test for Equality of Means,,,,,,
+,,F,Sig.,t,df,Sig. (2-tailed),Mean Difference,Std. Error Difference,95% Confidence Interval of the Difference,
+,,,,,,,,,Lower,Upper
 DEP,Equal variances assumed,.17,.683,.69,20.00,.495,1.00,1.44,-2.00,4.00
 ,Equal variances not assumed,,,.69,18.54,.496,1.00,1.44,-2.02,4.02
 ])
@@ -389,16 +390,16 @@ dep1,F8.0
 dep2,F8.0
 
 Table: Group Statistics
-,indep,N,Mean,Std. Deviation,S.E. Mean
+,Group,N,Mean,Std. Deviation,S.E. Mean
 dep1,1.00,3,2.50,.87,.50
 ,2.00,2,3.25,.35,.25
 dep2,1.00,3,5.00,1.00,.58
 ,2.00,2,2.00,1.41,1.00
 
 Table: Independent Samples Test
-,,Levene's Test for Equality of Variances,,t-test for Equality of Means,,,,,,
-,,,,,,,,,95% Confidence Interval of the Difference,
-,,F,Sig.,t,df,Sig. (2-tailed),Mean Difference,Std. Error Difference,Lower,Upper
+,,Levene's Test for Equality of Variances,,T-Test for Equality of Means,,,,,,
+,,F,Sig.,t,df,Sig. (2-tailed),Mean Difference,Std. Error Difference,95% Confidence Interval of the Difference,
+,,,,,,,,,Lower,Upper
 dep1,Equal variances assumed,3.75,.148,-1.12,3.00,.346,-.75,.67,-2.89,1.39
 ,Equal variances not assumed,,,-1.34,2.78,.279,-.75,.56,-2.61,1.11
 dep2,Equal variances assumed,.60,.495,2.85,3.00,.065,3.00,1.05,-.35,6.35
@@ -451,16 +452,16 @@ dep1,F8.0
 dep2,F8.0
 
 Table: Group Statistics
-,indep,N,Mean,Std. Deviation,S.E. Mean
+,Group,N,Mean,Std. Deviation,S.E. Mean
 dep1,1.00,3,2.50,.87,.50
 ,2.00,3,3.50,.50,.29
 dep2,1.00,3,5.00,1.00,.58
 ,2.00,3,2.00,1.00,.58
 
 Table: Independent Samples Test
-,,Levene's Test for Equality of Variances,,t-test for Equality of Means,,,,,,
-,,,,,,,,,95% Confidence Interval of the Difference,
-,,F,Sig.,t,df,Sig. (2-tailed),Mean Difference,Std. Error Difference,Lower,Upper
+,,Levene's Test for Equality of Variances,,T-Test for Equality of Means,,,,,,
+,,F,Sig.,t,df,Sig. (2-tailed),Mean Difference,Std. Error Difference,95% Confidence Interval of the Difference,
+,,,,,,,,,Lower,Upper
 dep1,Equal variances assumed,2.00,.230,-1.73,4.00,.158,-1.00,.58,-2.60,.60
 ,Equal variances not assumed,,,-1.73,3.20,.176,-1.00,.58,-2.77,.77
 dep2,Equal variances assumed,.00,1.000,3.67,4.00,.021,3.00,.82,.73,5.27
@@ -501,7 +502,8 @@ end data.
 
 t-test /testval=2.0 /var=abc.
 ])
-AT_CHECK([pspp -O format=csv t-test.sps], [0], [dnl
+AT_CHECK([pspp -o pspp.csv -o pspp.txt t-test.sps])
+AT_CHECK([cat pspp.csv], [0], [dnl
 Table: Reading free-form data from INLINE.
 Variable,Format
 ID,F8.0
@@ -512,9 +514,9 @@ Table: One-Sample Statistics
 ABC,6,3.00,.84,.34
 
 Table: One-Sample Test
-,Test Value = 2.000000,,,,,
-,,,,,95% Confidence Interval of the Difference,
-,t,df,Sig. (2-tailed),Mean Difference,Lower,Upper
+,Test Value = 2,,,,,
+,t,df,Sig. (2-tailed),Mean Difference,95% Confidence Interval of the Difference,
+,,,,,Lower,Upper
 ABC,2.93,5,.033,1.00,.12,1.88
 ])
 AT_CLEANUP
@@ -546,9 +548,9 @@ x1,6,3.00,.84,.34
 x2,6,32.67,33.40,13.64
 
 Table: One-Sample Test
-,Test Value = 3.000000,,,,,
-,,,,,95% Confidence Interval of the Difference,
-,t,df,Sig. (2-tailed),Mean Difference,Lower,Upper
+,Test Value = 3,,,,,
+,t,df,Sig. (2-tailed),Mean Difference,95% Confidence Interval of the Difference,
+,,,,,Lower,Upper
 x1,.00,5,1.000,.00,-.88,.88
 x2,2.18,5,.082,29.67,-5.39,64.72
 ])
@@ -598,9 +600,9 @@ x1,5,2.80,.76,.34
 x2,5,37.60,34.82,15.57
 
 Table: One-Sample Test
-,Test Value = 3.000000,,,,,
-,,,,,95% Confidence Interval of the Difference,
-,t,df,Sig. (2-tailed),Mean Difference,Lower,Upper
+,Test Value = 3,,,,,
+,t,df,Sig. (2-tailed),Mean Difference,95% Confidence Interval of the Difference,
+,,,,,Lower,Upper
 x1,-.59,4,.587,-.20,-1.14,.74
 x2,2.22,4,.090,34.60,-8.63,77.83
 ])
@@ -646,14 +648,14 @@ ind,F8.0
 x,F8.0
 
 Table: Group Statistics
-,ind,N,Mean,Std. Deviation,S.E. Mean
+,Group,N,Mean,Std. Deviation,S.E. Mean
 x,1.00,3,2.50,.87,.50
 ,2.00,3,3.50,.50,.29
 
 Table: Independent Samples Test
-,,Levene's Test for Equality of Variances,,t-test for Equality of Means,,,,,,
-,,,,,,,,,95% Confidence Interval of the Difference,
-,,F,Sig.,t,df,Sig. (2-tailed),Mean Difference,Std. Error Difference,Lower,Upper
+,,Levene's Test for Equality of Variances,,T-Test for Equality of Means,,,,,,
+,,F,Sig.,t,df,Sig. (2-tailed),Mean Difference,Std. Error Difference,95% Confidence Interval of the Difference,
+,,,,,,,,,Lower,Upper
 x,Equal variances assumed,2.00,.230,-1.73,4.00,.158,-1.00,.58,-2.60,.60
 ,Equal variances not assumed,,,-1.73,3.20,.176,-1.00,.58,-2.77,.77
 ])
@@ -678,6 +680,36 @@ t-test /groups=ind(1 2) /var x.
 ])
 AT_CHECK([pspp -o temporary.csv temporary.sps])
 AT_CHECK([cat temporary.csv], [0], [expout])
+AT_CLEANUP
+
+dnl This is an example from doc/tutorial.texi
+dnl So if the results of this have to be changed in any way,
+dnl make sure to update that file.
+AT_SETUP([T-TEST tutorial example])
+cp $top_srcdir/examples/physiology.sav .
+AT_DATA([t-test.sps], [dnl
+GET FILE='physiology.sav'.
+RECODE height (179 = SYSMIS).
+T-TEST GROUP=sex(0,1) /VARIABLES=height temperature.
+])
+AT_CHECK([pspp -o pspp.csv -o pspp.txt t-test.sps])
+AT_CHECK([cat pspp.csv], [0], [dnl
+Table: Group Statistics
+,Group,N,Mean,Std. Deviation,S.E. Mean
+Height in millimeters   ,Male,22,1796.49,49.71,10.60
+,Female,17,1610.77,25.43,6.17
+Internal body temperature in degrees Celcius,Male,22,36.68,1.95,.42
+,Female,18,37.43,1.61,.38
+
+Table: Independent Samples Test
+,,Levene's Test for Equality of Variances,,T-Test for Equality of Means,,,,,,
+,,F,Sig.,t,df,Sig. (2-tailed),Mean Difference,Std. Error Difference,95% Confidence Interval of the Difference,
+,,,,,,,,,Lower,Upper
+Height in millimeters   ,Equal variances assumed,.97,.331,14.02,37.00,.000,185.72,13.24,158.88,212.55
+,Equal variances not assumed,,,15.15,32.71,.000,185.72,12.26,160.76,210.67
+Internal body temperature in degrees Celcius,Equal variances assumed,.31,.581,-1.31,38.00,.198,-.75,.57,-1.91,.41
+,Equal variances not assumed,,,-1.33,37.99,.190,-.75,.56,-1.89,.39
+])
 AT_CLEANUP
 
 dnl Tests for a bug which caused T-TEST to crash when given invalid syntax.
@@ -725,7 +757,8 @@ end data.
 t-test /GROUPS=indep('a','b') /var=dep1 dep2.
 ])
 
-AT_CHECK([pspp -O format=csv t-test.sps], [0], [dnl
+AT_CHECK([pspp -o pspp.csv -o pspp.txt t-test.sps])
+AT_CHECK([cat pspp.csv], [0], [dnl
 Table: Reading free-form data from INLINE.
 Variable,Format
 ID,F8.0
@@ -734,16 +767,16 @@ DEP1,F8.0
 DEP2,F8.0
 
 Table: Group Statistics
-,INDEP,N,Mean,Std. Deviation,S.E. Mean
+,Group,N,Mean,Std. Deviation,S.E. Mean
 DEP1,a,5,2.00,.71,.32
 ,b,5,4.00,.71,.32
 DEP2,a,5,4.00,.71,.32
 ,b,5,2.00,.71,.32
 
 Table: Independent Samples Test
-,,Levene's Test for Equality of Variances,,t-test for Equality of Means,,,,,,
-,,,,,,,,,95% Confidence Interval of the Difference,
-,,F,Sig.,t,df,Sig. (2-tailed),Mean Difference,Std. Error Difference,Lower,Upper
+,,Levene's Test for Equality of Variances,,T-Test for Equality of Means,,,,,,
+,,F,Sig.,t,df,Sig. (2-tailed),Mean Difference,Std. Error Difference,95% Confidence Interval of the Difference,
+,,,,,,,,,Lower,Upper
 DEP1,Equal variances assumed,.00,1.000,-4.47,8.00,.002,-2.00,.45,-3.03,-.97
 ,Equal variances not assumed,,,-4.47,8.00,.002,-2.00,.45,-3.03,-.97
 DEP2,Equal variances assumed,.00,1.000,4.47,8.00,.002,2.00,.45,.97,3.03
@@ -795,21 +828,22 @@ t-test group=gv('One', 'Two')
 	/variables = x.
 ])
 
-AT_CHECK([pspp -O format=csv t-test.sps], [0], [dnl
+AT_CHECK([pspp -o pspp.csv -o pspp.txt t-test.sps])
+AT_CHECK([cat pspp.csv], [0], [dnl
 Table: Reading free-form data from INLINE.
 Variable,Format
 x,F8.0
 gv,A8
 
 Table: Group Statistics
-,gv,N,Mean,Std. Deviation,S.E. Mean
-x,One     ,5,2.60,.55,.24
-,Two     ,3,3.50,.50,.29
+,Group,N,Mean,Std. Deviation,S.E. Mean
+x,One,5,2.60,.55,.24
+,Two,3,3.50,.50,.29
 
 Table: Independent Samples Test
-,,Levene's Test for Equality of Variances,,t-test for Equality of Means,,,,,,
-,,,,,,,,,95% Confidence Interval of the Difference,
-,,F,Sig.,t,df,Sig. (2-tailed),Mean Difference,Std. Error Difference,Lower,Upper
+,,Levene's Test for Equality of Variances,,T-Test for Equality of Means,,,,,,
+,,F,Sig.,t,df,Sig. (2-tailed),Mean Difference,Std. Error Difference,95% Confidence Interval of the Difference,
+,,,,,,,,,Lower,Upper
 x,Equal variances assumed,1.13,.329,-2.32,6.00,.060,-.90,.39,-1.85,.05
 ,Equal variances not assumed,,,-2.38,4.70,.067,-.90,.38,-1.89,.09
 ])
@@ -877,7 +911,3 @@ t-test /MISSING=listwise /PAIRS a"b with c d (PA	RED).
 AT_CHECK([pspp t.sps],[1],[ignore],[ignore])
 
 AT_CLEANUP
-
-
-
-

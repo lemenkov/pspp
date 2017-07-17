@@ -620,7 +620,7 @@ DATA LIST LIST /x * y * a (a23).
 Reading free-form data from INLINE.
 +--------+------+
 |Variable|Format|
-#========#======#
++--------+------+
 |x       |F8.0  |
 |y       |F8.0  |
 |a       |A23   |
@@ -660,12 +660,14 @@ DESCRIPTIVES X.
 
 
 AT_CHECK([pspp -O box=unicode uc.sps], [0], [dnl
-Valid cases = 3; cases with missing value(s) = 0.
-╭────────╥─┬──────┬───────┬───────┬───────╮
-│Variable║N│ Mean │Std Dev│Minimum│Maximum│
-╞════════╬═╪══════╪═══════╪═══════╪═══════╡
-│x       ║3│2.0000│ 1.0000│ 1.0000│ 3.0000│
-╰────────╨─┴──────┴───────┴───────┴───────╯
+                 Descriptive Statistics
+╭────────────────────┬─┬──────┬───────┬───────┬───────╮
+│                    │N│ Mean │Std Dev│Minimum│Maximum│
+├────────────────────┼─┼──────┼───────┼───────┼───────┤
+│x                   │3│2.0000│ 1.0000│ 1.0000│ 3.0000│
+│Valid N (listwise)  │3│      │       │       │       │
+│Missing N (listwise)│0│      │       │       │       │
+╰────────────────────┴─┴──────┴───────┴───────┴───────╯
 ])
 
 AT_CLEANUP

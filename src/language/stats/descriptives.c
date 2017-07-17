@@ -38,7 +38,7 @@
 #include "libpspp/i18n.h"
 #include "libpspp/message.h"
 #include "math/moments.h"
-#include "output/tab.h"
+#include "output/pivot-table.h"
 
 #include "gl/xalloc.h"
 
@@ -136,26 +136,17 @@ struct dsc_var
     double stats[DSC_N_STATS];	/* All the stats' values. */
   };
 
-/* Output format. */
-enum dsc_format
-  {
-    DSC_LINE,           /* Abbreviated format. */
-    DSC_SERIAL          /* Long format. */
-  };
-
 /* A DESCRIPTIVES procedure. */
 struct dsc_proc
   {
     /* Per-variable info. */
+    struct dictionary *dict;    /* Dictionary. */
     struct dsc_var *vars;       /* Variables. */
     size_t var_cnt;             /* Number of variables. */
 
     /* User options. */
     enum dsc_missing_type missing_type; /* Treatment of missing values. */
     enum mv_class exclude;      /* Classes of missing values to exclude. */
-    int show_var_labels;        /* Nonzero to show variable labels. */
-    int show_index;             /* Nonzero to show variable index. */
-    enum dsc_format format;     /* Output format. */
 
     /* Accumulated results. */
     double missing_listwise;    /* Sum of weights of cases missing listwise. */
@@ -209,13 +200,11 @@ cmd_descriptives (struct lexer *lexer, struct dataset *ds)
 
   /* Create and initialize dsc. */
   dsc = xmalloc (sizeof *dsc);
+  dsc->dict = dict;
   dsc->vars = NULL;
   dsc->var_cnt = 0;
   dsc->missing_type = DSC_VARIABLE;
   dsc->exclude = MV_ANY;
-  dsc->show_var_labels = 1;
-  dsc->show_index = 0;
-  dsc->format = DSC_LINE;
   dsc->missing_listwise = 0.;
   dsc->valid = 0.;
   dsc->bad_warn = 1;
@@ -253,18 +242,15 @@ cmd_descriptives (struct lexer *lexer, struct dataset *ds)
           lex_match (lexer, T_EQUALS);
           while (lex_token (lexer) != T_ENDCMD && lex_token (lexer) != T_SLASH)
             {
-              if (lex_match_id (lexer, "LABELS"))
-                dsc->show_var_labels = 1;
-              else if (lex_match_id (lexer, "NOLABELS"))
-                dsc->show_var_labels = 0;
-              else if (lex_match_id (lexer, "INDEX"))
-                dsc->show_index = 1;
-              else if (lex_match_id (lexer, "NOINDEX"))
-                dsc->show_index = 0;
-              else if (lex_match_id (lexer, "LINE"))
-                dsc->format = DSC_LINE;
-              else if (lex_match_id (lexer, "SERIAL"))
-                dsc->format = DSC_SERIAL;
+              if (lex_match_id (lexer, "LABELS")
+                  || lex_match_id (lexer, "NOLABELS")
+                  || lex_match_id (lexer, "INDEX")
+                  || lex_match_id (lexer, "NOINDEX")
+                  || lex_match_id (lexer, "LINE")
+                  || lex_match_id (lexer, "SERIAL"))
+                {
+                  /* Ignore. */
+                }
               else
                 {
                   lex_error (lexer, NULL);
@@ -589,37 +575,29 @@ generate_z_varname (const struct dictionary *dict, struct dsc_proc *dsc,
 static void
 dump_z_table (struct dsc_proc *dsc)
 {
-  size_t cnt = 0;
-  struct tab_table *t;
+  struct pivot_table *table = pivot_table_create (
+    N_("Mapping of Variables to Z-scores"));
 
-  {
-    size_t i;
+  pivot_dimension_create (table, PIVOT_AXIS_COLUMN, N_("Names"),
+                          N_("Source"), N_("Target"));
 
-    for (i = 0; i < dsc->var_cnt; i++)
-      if (dsc->vars[i].z_name != NULL)
-	cnt++;
-  }
+  struct pivot_dimension *names = pivot_dimension_create (
+    table, PIVOT_AXIS_ROW, N_("Variables"));
+  names->hide_all_labels = true;
 
-  t = tab_create (2, cnt + 1);
-  tab_title (t, _("Mapping of variables to corresponding Z-scores."));
-  tab_headers (t, 0, 0, 1, 0);
-  tab_box (t, TAL_1, TAL_1, TAL_0, TAL_1, 0, 0, 1, cnt);
-  tab_hline (t, TAL_2, 0, 1, 1);
-  tab_text (t, 0, 0, TAB_CENTER | TAT_TITLE, _("Source"));
-  tab_text (t, 1, 0, TAB_CENTER | TAT_TITLE, _("Target"));
+  for (size_t i = 0; i < dsc->var_cnt; i++)
+    if (dsc->vars[i].z_name != NULL)
+      {
+        int row = pivot_category_create_leaf (names->root,
+                                              pivot_value_new_number (i));
 
-  {
-    size_t i, y;
+        pivot_table_put2 (table, 0, row,
+                          pivot_value_new_variable (dsc->vars[i].v));
+        pivot_table_put2 (table, 1, row,
+                          pivot_value_new_user_text (dsc->vars[i].z_name, -1));
+      }
 
-    for (i = 0, y = 1; i < dsc->var_cnt; i++)
-      if (dsc->vars[i].z_name != NULL)
-	{
-	  tab_text (t, 0, y, TAB_LEFT, var_to_string (dsc->vars[i].v));
-	  tab_text (t, 1, y++, TAB_LEFT, dsc->vars[i].z_name);
-	}
-  }
-
-  tab_submit (t);
+  pivot_table_submit (table);
 }
 
 static void
@@ -1003,64 +981,53 @@ static algo_compare_func descriptives_compare_dsc_vars;
 static void
 display (struct dsc_proc *dsc)
 {
-  size_t i;
-  int nc;
-  struct tab_table *t;
+  struct pivot_table *table = pivot_table_create (
+    N_("Descriptive Statistics"));
+  pivot_table_set_weight_var (table, dict_get_weight (dsc->dict));
 
-  nc = 1 + (dsc->format == DSC_SERIAL ? 2 : 1);
-  for (i = 0; i < DSC_N_STATS; i++)
+  struct pivot_dimension *statistics = pivot_dimension_create (
+    table, PIVOT_AXIS_COLUMN, N_("Statistics"));
+  pivot_category_create_leaf_rc (
+    statistics->root, pivot_value_new_text (N_("N")), PIVOT_RC_COUNT);
+  for (int i = 0; i < DSC_N_STATS; i++)
     if (dsc->show_stats & (1ul << i))
-      nc++;
+      pivot_category_create_leaf (statistics->root,
+                                  pivot_value_new_text (dsc_info[i].name));
 
   if (dsc->sort_by_stat != DSC_NONE)
     sort (dsc->vars, dsc->var_cnt, sizeof *dsc->vars,
           descriptives_compare_dsc_vars, dsc);
 
-  t = tab_create (nc, dsc->var_cnt + 1);
-  tab_headers (t, 1, 0, 1, 0);
-  tab_box (t, TAL_1, TAL_1, -1, -1, 0, 0, nc - 1, dsc->var_cnt);
-  tab_box (t, -1, -1, -1, TAL_1, 1, 0, nc - 1, dsc->var_cnt);
-  tab_hline (t, TAL_2, 0, nc - 1, 1);
-  tab_vline (t, TAL_2, 1, 0, dsc->var_cnt);
-
-  nc = 0;
-  tab_text (t, nc++, 0, TAB_LEFT | TAT_TITLE, _("Variable"));
-  if (dsc->format == DSC_SERIAL)
-    {
-      tab_text (t, nc++, 0, TAB_CENTER | TAT_TITLE, _("Valid N"));
-      tab_text (t, nc++, 0, TAB_CENTER | TAT_TITLE, _("Missing N"));
-    }
-  else
-    tab_text (t, nc++, 0, TAB_CENTER | TAT_TITLE, "N");
-
-  for (i = 0; i < DSC_N_STATS; i++)
-    if (dsc->show_stats & (1ul << i))
-      {
-	const char *title = gettext (dsc_info[i].name);
-	tab_text (t, nc++, 0, TAB_CENTER | TAT_TITLE, title);
-      }
-
-  for (i = 0; i < dsc->var_cnt; i++)
+  struct pivot_dimension *variables = pivot_dimension_create (
+    table, PIVOT_AXIS_ROW, N_("Variable"));
+  for (size_t i = 0; i < dsc->var_cnt; i++)
     {
       struct dsc_var *dv = &dsc->vars[i];
-      size_t j;
 
-      nc = 0;
-      tab_text (t, nc++, i + 1, TAB_LEFT, var_to_string (dv->v));
-      tab_text_format (t, nc++, i + 1, 0, "%.*g", DBL_DIG + 1, dv->valid);
-      if (dsc->format == DSC_SERIAL)
-	tab_text_format (t, nc++, i + 1, 0, "%.*g", DBL_DIG + 1, dv->missing);
+      int row = pivot_category_create_leaf (variables->root,
+                                            pivot_value_new_variable (dv->v));
 
-      for (j = 0; j < DSC_N_STATS; j++)
+      int column = 0;
+      pivot_table_put2 (table, column++, row,
+                        pivot_value_new_number (dv->valid));
+
+      for (int j = 0; j < DSC_N_STATS; j++)
 	if (dsc->show_stats & (1ul << j))
-	  tab_double (t, nc++, i + 1, TAB_NONE, dv->stats[j], NULL, RC_OTHER);
+          {
+            union value v = { .f = dv->stats[j] };
+            struct pivot_value *pv = (j == DSC_MIN || j == DSC_MAX
+                                      ? pivot_value_new_var_value (dv->v, &v)
+                                      : pivot_value_new_number (dv->stats[j]));
+            pivot_table_put2 (table, column++, row, pv);
+          }
     }
 
-  tab_title (t, _("Valid cases = %.*g; cases with missing value(s) = %.*g."),
-	     DBL_DIG + 1, dsc->valid,
-             DBL_DIG + 1, dsc->missing_listwise);
-
-  tab_submit (t);
+  int row = pivot_category_create_leaves (
+    variables->root, N_("Valid N (listwise)"), N_("Missing N (listwise)"));
+  pivot_table_put2 (table, 0, row, pivot_value_new_number (dsc->valid));
+  pivot_table_put2 (table, 0, row + 1,
+                    pivot_value_new_number (dsc->missing_listwise));
+  pivot_table_submit (table);
 }
 
 /* Compares `struct dsc_var's A and B according to the ordering

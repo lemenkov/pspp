@@ -38,12 +38,12 @@ FREQUENCIES /VAR = name/ORDER=ANALYSIS.
 ])
 AT_CHECK([pspp -O format=csv frequencies.sps], [0], [dnl
 Table: name
-Value Label,Value,Frequency,Percent,Valid Percent,Cum Percent
-,bar     ,2,20.00,20.00,20.00
-,baz     ,4,40.00,40.00,60.00
-,foo     ,2,20.00,20.00,80.00
-,quux    ,2,20.00,20.00,100.00
-Total,,10,100.0,100.0,
+,,Frequency,Percent,Valid Percent,Cumulative Percent
+Valid,bar,2,20.0%,20.0%,20.0%
+,baz,4,40.0%,40.0%,60.0%
+,foo,2,20.0%,20.0%,80.0%
+,quux,2,20.0%,20.0%,100.0%
+Total,,10,100.0%,,
 ])
 AT_CLEANUP
 
@@ -62,38 +62,38 @@ end data.
 frequencies v1 v2/statistics=none/ORDER=VARIABLE.
 frequencies v1 v2/statistics=none.
 ])
-AT_CHECK([pspp -O format=csv frequencies.sps], [0],
-  [Table: v1
-Value Label,Value,Frequency,Percent,Valid Percent,Cum Percent
-,.00,1,25.00,25.00,25.00
-,2.00,1,25.00,25.00,50.00
-,3.00,1,25.00,25.00,75.00
-,4.00,1,25.00,25.00,100.00
-Total,,4,100.0,100.0,
+AT_CHECK([pspp -O format=csv frequencies.sps], [0], [dnl
+Table: v1
+,,Frequency,Percent,Valid Percent,Cumulative Percent
+Valid,.00,1,25.0%,25.0%,25.0%
+,2.00,1,25.0%,25.0%,50.0%
+,3.00,1,25.0%,25.0%,75.0%
+,4.00,1,25.0%,25.0%,100.0%
+Total,,4,100.0%,,
 
 Table: v2
-Value Label,Value,Frequency,Percent,Valid Percent,Cum Percent
-,1.00,1,25.00,25.00,25.00
-,3.00,1,25.00,25.00,50.00
-,4.00,1,25.00,25.00,75.00
-,5.00,1,25.00,25.00,100.00
-Total,,4,100.0,100.0,
+,,Frequency,Percent,Valid Percent,Cumulative Percent
+Valid,1.00,1,25.0%,25.0%,25.0%
+,3.00,1,25.0%,25.0%,50.0%
+,4.00,1,25.0%,25.0%,75.0%
+,5.00,1,25.0%,25.0%,100.0%
+Total,,4,100.0%,,
 
 Table: v1
-Value Label,Value,Frequency,Percent,Valid Percent,Cum Percent
-,.00,1,25.00,25.00,25.00
-,2.00,1,25.00,25.00,50.00
-,3.00,1,25.00,25.00,75.00
-,4.00,1,25.00,25.00,100.00
-Total,,4,100.0,100.0,
+,,Frequency,Percent,Valid Percent,Cumulative Percent
+Valid,.00,1,25.0%,25.0%,25.0%
+,2.00,1,25.0%,25.0%,50.0%
+,3.00,1,25.0%,25.0%,75.0%
+,4.00,1,25.0%,25.0%,100.0%
+Total,,4,100.0%,,
 
 Table: v2
-Value Label,Value,Frequency,Percent,Valid Percent,Cum Percent
-,1.00,1,25.00,25.00,25.00
-,3.00,1,25.00,25.00,50.00
-,4.00,1,25.00,25.00,75.00
-,5.00,1,25.00,25.00,100.00
-Total,,4,100.0,100.0,
+,,Frequency,Percent,Valid Percent,Cumulative Percent
+Valid,1.00,1,25.0%,25.0%,25.0%
+,3.00,1,25.0%,25.0%,50.0%
+,4.00,1,25.0%,25.0%,75.0%
+,5.00,1,25.0%,25.0%,100.0%
+Total,,4,100.0%,,
 ])
 AT_CLEANUP
 
@@ -112,11 +112,11 @@ frequencies v1 v2/statistics=none/FORMAT=LIMIT(3).
 ])
 AT_CHECK([pspp -O format=csv frequencies.sps], [0], [dnl
 Table: v2
-Value Label,Value,Frequency,Percent,Valid Percent,Cum Percent
-,1.00,1,25.00,25.00,25.00
-,3.00,1,25.00,25.00,50.00
-,5.00,2,50.00,50.00,100.00
-Total,,4,100.0,100.0,
+,,Frequency,Percent,Valid Percent,Cumulative Percent
+Valid,1.00,1,25.0%,25.0%,25.0%
+,3.00,1,25.0%,25.0%,50.0%
+,5.00,2,50.0%,50.0%,100.0%
+Total,,4,100.0%,,
 ])
 AT_CLEANUP
 
@@ -145,12 +145,12 @@ v1,v2
 3.00,4.00
 
 Table: v1
-Value Label,Value,Frequency,Percent,Valid Percent,Cum Percent
-,.00,1,25.00,25.00,25.00
-,2.00,1,25.00,25.00,50.00
-,3.00,1,25.00,25.00,75.00
-,4.00,1,25.00,25.00,100.00
-Total,,4,100.0,100.0,
+,,Frequency,Percent,Valid Percent,Cumulative Percent
+Valid,.00,1,25.0%,25.0%,25.0%
+,2.00,1,25.0%,25.0%,50.0%
+,3.00,1,25.0%,25.0%,75.0%
+,4.00,1,25.0%,25.0%,100.0%
+Total,,4,100.0%,,
 ])
 AT_CHECK([test -s pspp.html])
 AT_CLEANUP
@@ -185,7 +185,7 @@ AT_CHECK([pspp frequencies.sps], [0], [dnl
 Reading free-form data from INLINE.
 +--------+------+
 |Variable|Format|
-#========#======#
++--------+------+
 |x       |F8.0  |
 |w       |F8.0  |
 +--------+------+
@@ -260,32 +260,35 @@ FREQUENCIES /X .
 
 FINISH
 ])
-AT_CHECK([pspp -O format=csv frequencies.sps], [0],
-  [Table: Reading free-form data from INLINE.
+AT_CHECK([pspp -o pspp.csv -o pspp.txt frequencies.sps])
+AT_CHECK([cat pspp.csv], [0], [dnl
+Table: Reading free-form data from INLINE.
 Variable,Format
 SEX,A1
 X,F8.0
 
-Table: X
-Value Label,Value,Frequency,Percent,Valid Percent,Cum Percent
-,12.00,1,25.00,25.00,25.00
-,13.00,1,25.00,25.00,50.00
-,21.00,1,25.00,25.00,75.00
-,31.00,1,25.00,25.00,100.00
-Total,,4,100.0,100.0,
-
-Table: X
+Table: Statistics
+,,X
 N,Valid,4
 ,Missing,0
 Mean,,19.25
 Std Dev,,8.81
 Minimum,,12.00
 Maximum,,31.00
+
+Table: X
+,,Frequency,Percent,Valid Percent,Cumulative Percent
+Valid,12.00,1,25.0%,25.0%,25.0%
+,13.00,1,25.0%,25.0%,50.0%
+,21.00,1,25.0%,25.0%,75.0%
+,31.00,1,25.0%,25.0%,100.0%
+Total,,4,100.0%,,
 ])
 AT_CLEANUP
 
-m4_define([FREQUENCIES_NTILES_OUTPUT],
-  [Table: x
+m4_define([FREQUENCIES_NTILES_OUTPUT], [dnl
+Table: Statistics
+,,x
 N,Valid,5
 ,Missing,0
 Mean,,3.00
@@ -295,7 +298,7 @@ Maximum,,5.00
 Percentiles,0,1.00
 ,25,2.00
 ,33,2.33
-,50 (Median),3.00
+,50,3.00
 ,67,3.67
 ,75,4.00
 ,100,5.00
@@ -357,17 +360,9 @@ FREQUENCIES
 	/ALGORITHM=COMPATIBLE
 	/PERCENTILES = 0 25 50 75 100.
 ])
-AT_CHECK([pspp -O format=csv frequencies.sps], [0],
-  [Table: X
-Value Label,Value,Frequency,Percent,Valid Percent,Cum Percent
-,1.00,1,20.00,20.00,20.00
-,2.00,1,20.00,20.00,40.00
-,3.00,1,20.00,20.00,60.00
-,4.00,1,20.00,20.00,80.00
-,5.00,1,20.00,20.00,100.00
-Total,,5,100.0,100.0,
-
-Table: X
+AT_CHECK([pspp -O format=csv frequencies.sps], [0], [dnl
+Table: Statistics
+,,X
 N,Valid,5
 ,Missing,0
 Mean,,3.00
@@ -376,9 +371,18 @@ Minimum,,1.00
 Maximum,,5.00
 Percentiles,0,1.00
 ,25,1.50
-,50 (Median),3.00
+,50,3.00
 ,75,4.50
 ,100,5.00
+
+Table: X
+,,Frequency,Percent,Valid Percent,Cumulative Percent
+Valid,1.00,1,20.0%,20.0%,20.0%
+,2.00,1,20.0%,20.0%,40.0%
+,3.00,1,20.0%,20.0%,60.0%
+,4.00,1,20.0%,20.0%,80.0%
+,5.00,1,20.0%,20.0%,100.0%
+Total,,5,100.0%,,
 ])
 AT_CLEANUP
 
@@ -397,17 +401,9 @@ FREQUENCIES
 	VAR=x
 	/PERCENTILES = 0 25 50 75 100.
 ])
-AT_CHECK([pspp -O format=csv frequencies.sps], [0],
-  [Table: X
-Value Label,Value,Frequency,Percent,Valid Percent,Cum Percent
-,1.00,1,20.00,20.00,20.00
-,2.00,1,20.00,20.00,40.00
-,3.00,1,20.00,20.00,60.00
-,4.00,1,20.00,20.00,80.00
-,5.00,1,20.00,20.00,100.00
-Total,,5,100.0,100.0,
-
-Table: X
+AT_CHECK([pspp -O format=csv frequencies.sps], [0], [dnl
+Table: Statistics
+,,X
 N,Valid,5
 ,Missing,0
 Mean,,3.00
@@ -416,9 +412,18 @@ Minimum,,1.00
 Maximum,,5.00
 Percentiles,0,1.00
 ,25,2.00
-,50 (Median),3.00
+,50,3.00
 ,75,4.00
 ,100,5.00
+
+Table: X
+,,Frequency,Percent,Valid Percent,Cumulative Percent
+Valid,1.00,1,20.0%,20.0%,20.0%
+,2.00,1,20.0%,20.0%,40.0%
+,3.00,1,20.0%,20.0%,60.0%
+,4.00,1,20.0%,20.0%,80.0%
+,5.00,1,20.0%,20.0%,100.0%
+Total,,5,100.0%,,
 ])
 AT_CLEANUP
 
@@ -441,17 +446,9 @@ FREQUENCIES
 	VAR=x
 	/PERCENTILES = 0 25 50 75 100.
 ])
-AT_CHECK([pspp -O format=csv frequencies.sps], [0],
-  [Table: X
-Value Label,Value,Frequency,Percent,Valid Percent,Cum Percent
-,1.00,2.00,20.00,20.00,20.00
-,2.00,2.00,20.00,20.00,40.00
-,3.00,2.00,20.00,20.00,60.00
-,4.00,2.00,20.00,20.00,80.00
-,5.00,2.00,20.00,20.00,100.00
-Total,,10.00,100.0,100.0,
-
-Table: X
+AT_CHECK([pspp -O format=csv frequencies.sps], [0], [dnl
+Table: Statistics
+,,X
 N,Valid,10.00
 ,Missing,.00
 Mean,,3.00
@@ -460,9 +457,18 @@ Minimum,,1.00
 Maximum,,5.00
 Percentiles,0,1.00
 ,25,2.00
-,50 (Median),3.00
+,50,3.00
 ,75,4.00
 ,100,5.00
+
+Table: X
+,,Frequency,Percent,Valid Percent,Cumulative Percent
+Valid,1.00,2.00,20.0%,20.0%,20.0%
+,2.00,2.00,20.0%,20.0%,40.0%
+,3.00,2.00,20.0%,20.0%,60.0%
+,4.00,2.00,20.0%,20.0%,80.0%
+,5.00,2.00,20.0%,20.0%,100.0%
+Total,,10.00,100.0%,,
 ])
 AT_CLEANUP
 
@@ -483,16 +489,9 @@ FREQUENCIES
 	VAR=x
 	/PERCENTILES = 0 25 50 75 100.
 ])
-AT_CHECK([pspp -O format=csv frequencies.sps], [0],
-  [Table: X
-Value Label,Value,Frequency,Percent,Valid Percent,Cum Percent
-,1.00,1.00,16.67,16.67,16.67
-,3.00,2.00,33.33,33.33,50.00
-,4.00,1.00,16.67,16.67,66.67
-,5.00,2.00,33.33,33.33,100.00
-Total,,6.00,100.0,100.0,
-
-Table: X
+AT_CHECK([pspp -O format=csv frequencies.sps], [0], [dnl
+Table: Statistics
+,,X
 N,Valid,6.00
 ,Missing,.00
 Mean,,3.50
@@ -501,9 +500,17 @@ Minimum,,1.00
 Maximum,,5.00
 Percentiles,0,1.00
 ,25,3.00
-,50 (Median),3.50
+,50,3.50
 ,75,4.75
 ,100,5.00
+
+Table: X
+,,Frequency,Percent,Valid Percent,Cumulative Percent
+Valid,1.00,1.00,16.7%,16.7%,16.7%
+,3.00,2.00,33.3%,33.3%,50.0%
+,4.00,1.00,16.7%,16.7%,66.7%
+,5.00,2.00,33.3%,33.3%,100.0%
+Total,,6.00,100.0%,,
 ])
 AT_CLEANUP
 
@@ -525,15 +532,8 @@ FREQUENCIES
 	/PERCENTILES = 0 25 50 75 100.
 ])
 AT_CHECK([pspp -O format=csv frequencies.sps], [0], [dnl
-Table: X
-Value Label,Value,Frequency,Percent,Valid Percent,Cum Percent
-,1.00,7.00,17.50,17.50,17.50
-,2.00,16.00,40.00,40.00,57.50
-,3.00,12.00,30.00,30.00,87.50
-,4.00,5.00,12.50,12.50,100.00
-Total,,40.00,100.0,100.0,
-
-Table: X
+Table: Statistics
+,,X
 N,Valid,40.00
 ,Missing,.00
 Mean,,2.38
@@ -542,9 +542,17 @@ Minimum,,1.00
 Maximum,,4.00
 Percentiles,0,1.00
 ,25,2.00
-,50 (Median),2.00
+,50,2.00
 ,75,3.00
 ,100,4.00
+
+Table: X
+,,Frequency,Percent,Valid Percent,Cumulative Percent
+Valid,1.00,7.00,17.5%,17.5%,17.5%
+,2.00,16.00,40.0%,40.0%,57.5%
+,3.00,12.00,30.0%,30.0%,87.5%
+,4.00,5.00,12.5%,12.5%,100.0%
+Total,,40.00,100.0%,,
 ])
 AT_CLEANUP
 
@@ -568,17 +576,9 @@ FREQUENCIES
 	/PERCENTILES = 0 25 50 75 100.
 ])
 
-AT_CHECK([pspp -O format=csv frequencies.sps], [0],
-  [Table: X
-Value Label,Value,Frequency,Percent,Valid Percent,Cum Percent
-,1.00,1.00,10.00,16.67,16.67
-,3.00,2.00,20.00,33.33,50.00
-,4.00,1.00,10.00,16.67,66.67
-,5.00,2.00,20.00,33.33,100.00
-,99.00,4.00,40.00,Missing,
-Total,,10.00,100.0,100.0,
-
-Table: X
+AT_CHECK([pspp -O format=csv frequencies.sps], [0], [dnl
+Table: Statistics
+,,X
 N,Valid,6.00
 ,Missing,4.00
 Mean,,3.50
@@ -587,9 +587,18 @@ Minimum,,1.00
 Maximum,,5.00
 Percentiles,0,1.00
 ,25,3.00
-,50 (Median),3.50
+,50,3.50
 ,75,4.75
 ,100,5.00
+
+Table: X
+,,Frequency,Percent,Valid Percent,Cumulative Percent
+Valid,1.00,1.00,10.0%,16.7%,16.7%
+,3.00,2.00,20.0%,33.3%,50.0%
+,4.00,1.00,10.0%,16.7%,66.7%
+,5.00,2.00,20.0%,33.3%,100.0%
+Missing,99.00,4.00,40.0%,,
+Total,,10.00,100.0%,,
 ])
 AT_CLEANUP
 
@@ -642,18 +651,19 @@ FREQUENCIES
 	.
 ])
 
-AT_CHECK([pspp median.sps -O format=csv], [0],  [dnl
-Table: x
-Value Label,Value,Frequency,Percent,Valid Percent,Cum Percent
-,1.00,1,33.33,33.33,33.33
-,2.00,1,33.33,33.33,66.67
-,3000000.00,1,33.33,33.33,100.00
-Total,,3,100.0,100.0,
-
-Table: x
+AT_CHECK([pspp median.sps -O format=csv], [0], [dnl
+Table: Statistics
+,,x
 N,Valid,3
 ,Missing,0
-Percentiles,50 (Median),2.00
+Median,,2.00
+
+Table: x
+,,Frequency,Percent,Valid Percent,Cumulative Percent
+Valid,1.00,1,33.3%,33.3%,33.3%
+,2.00,1,33.3%,33.3%,66.7%
+,3000000,1,33.3%,33.3%,100.0%
+Total,,3,100.0%,,
 ])
 AT_CLEANUP
 
@@ -672,19 +682,20 @@ FREQUENCIES
    /STATISTICS = VARIANCE.
 ])
 
-AT_CHECK([pspp variance.sps -O format=csv], [0],  [dnl
-Table: height
-Value Label,Value,Frequency,Percent,Valid Percent,Cum Percent
-,109.00,1,25.00,25.00,25.00
-,134.00,1,25.00,25.00,50.00
-,167.00,1,25.00,25.00,75.00
-,188.00,1,25.00,25.00,100.00
-Total,,4,100.0,100.0,
-
-Table: height
+AT_CHECK([pspp variance.sps -O format=csv], [0], [dnl
+Table: Statistics
+,,height
 N,Valid,4
 ,Missing,0
 Variance,,1223.00
+
+Table: height
+,,Frequency,Percent,Valid Percent,Cumulative Percent
+Valid,109.00,1,25.0%,25.0%,25.0%
+,134.00,1,25.0%,25.0%,50.0%
+,167.00,1,25.0%,25.0%,75.0%
+,188.00,1,25.0%,25.0%,100.0%
+Total,,4,100.0%,,
 ])
 AT_CLEANUP
 
@@ -708,36 +719,39 @@ FREQUENCIES
 	.
 ])
 
-AT_CHECK([pspp median.sps -O format=csv], [0],  [dnl
-Table: x
-Value Label,Value,Frequency,Percent,Valid Percent,Cum Percent
-,10.00,1,33.33,33.33,33.33
-,20.00,1,33.33,33.33,66.67
-,3000000.00,1,33.33,33.33,100.00
-Total,,3,100.0,100.0,
-
-Table: x
+AT_CHECK([pspp median.sps -o pspp.csv -o pspp.txt])
+AT_CHECK([cat pspp.csv], [0], [dnl
+Table: Statistics
+,,x
 N,Valid,3
 ,Missing,0
-Mean,,1000010.00
-Std Dev,,1732042.15
+Mean,,1000010
+Std Dev,,1732042
 Minimum,,10.00
-Maximum,,3000000.00
+Maximum,,3000000
 
 Table: x
-Value Label,Value,Frequency,Percent,Valid Percent,Cum Percent
-,10.00,1,33.33,33.33,33.33
-,20.00,1,33.33,33.33,66.67
-,3000000.00,1,33.33,33.33,100.00
-Total,,3,100.0,100.0,
+,,Frequency,Percent,Valid Percent,Cumulative Percent
+Valid,10.00,1,33.3%,33.3%,33.3%
+,20.00,1,33.3%,33.3%,66.7%
+,3000000,1,33.3%,33.3%,100.0%
+Total,,3,100.0%,,
 
-Table: x
+Table: Statistics
+,,x
 N,Valid,3
 ,Missing,0
-Mean,,1000010.00
-Std Dev,,1732042.15
+Mean,,1000010
+Std Dev,,1732042
 Minimum,,10.00
-Maximum,,3000000.00
+Maximum,,3000000
+
+Table: x
+,,Frequency,Percent,Valid Percent,Cumulative Percent
+Valid,10.00,1,33.3%,33.3%,33.3%
+,20.00,1,33.3%,33.3%,66.7%
+,3000000,1,33.3%,33.3%,100.0%
+Total,,3,100.0%,,
 ])
 AT_CLEANUP
 
@@ -759,28 +773,29 @@ FREQUENCIES
 ])
 
 AT_CHECK([pspp empty.sps -O format=csv], [0],  [dnl
-Table: x
-Value Label,Value,Frequency,Percent,Valid Percent,Cum Percent
-,.  ,3,100.00,Missing,
-Total,,3,100.0,100.0,
-
-Table: x
+Table: Statistics
+,,x
 N,Valid,0
 ,Missing,3
-Mean,,.
-S.E. Mean,,.
-Mode,,.
-Std Dev,,.
-Variance,,.
-Kurtosis,,.
-S.E. Kurt,,.
-Skewness,,.
-S.E. Skew,,.
-Range,,.
-Minimum,,.
-Maximum,,.
-Sum,,.
-Percentiles,,.
+Mean,,.  @&t@
+S.E. Mean,,.  @&t@
+Median,,.  @&t@
+Mode,,.  @&t@
+Std Dev,,.  @&t@
+Variance,,.  @&t@
+Kurtosis,,.  @&t@
+S.E. Kurt,,.  @&t@
+Skewness,,.  @&t@
+S.E. Skew,,.  @&t@
+Range,,.  @&t@
+Minimum,,.  @&t@
+Maximum,,.  @&t@
+Sum,,.  @&t@
+
+Table: x
+,,Frequency,Percent,Valid Percent,Cumulative Percent
+Missing,.  ,3,100.0%,,
+Total,,3,.0%,,
 ])
 
 AT_CLEANUP

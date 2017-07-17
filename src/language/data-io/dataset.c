@@ -22,9 +22,10 @@
 #include "data/session.h"
 #include "language/lexer/lexer.h"
 #include "libpspp/message.h"
-#include "output/tab.h"
+#include "output/pivot-table.h"
 
 #include "gettext.h"
+#define N_(msgid) msgid
 #define _(msgid) gettext (msgid)
 
 static int
@@ -240,22 +241,19 @@ int
 cmd_dataset_display (struct lexer *lexer UNUSED, struct dataset *ds)
 {
   struct session *session = dataset_session (ds);
-  struct dataset **datasets, **p;
-  struct tab_table *t;
-  size_t i, n;
-
-  n = session_n_datasets (session);
-  datasets = xmalloc (n * sizeof *datasets);
-  p = datasets;
+  size_t n = session_n_datasets (session);
+  struct dataset **datasets = xmalloc (n * sizeof *datasets);
+  struct dataset **p = datasets;
   session_for_each_dataset (session, dataset_display_cb, &p);
   qsort (datasets, n, sizeof *datasets, sort_datasets);
 
-  t = tab_create (1, n + 1);
-  tab_headers (t, 0, 0, 1, 0);
-  tab_box (t, TAL_1, TAL_1, -1, TAL_1, 0, 0, tab_nc (t) - 1, tab_nr (t) - 1);
-  tab_hline (t, TAL_2, 0, 0, 1);
-  tab_text (t, 0, 0, TAB_LEFT | TAT_TITLE, _("Dataset"));
-  for (i = 0; i < n; i++)
+  struct pivot_table *table = pivot_table_create (N_("Datasets"));
+
+  struct pivot_dimension *datasets_dim = pivot_dimension_create (
+    table, PIVOT_AXIS_ROW, N_("Dataset"));
+  datasets_dim->hide_all_labels = true;
+
+  for (size_t i = 0; i < n; i++)
     {
       struct dataset *ds = datasets[i];
       const char *name;
@@ -264,16 +262,18 @@ cmd_dataset_display (struct lexer *lexer UNUSED, struct dataset *ds)
       if (name[0] == '\0')
         name = _("unnamed dataset");
 
-      if (ds == session_active_dataset (session))
-        tab_text_format (t, 0, i + 1, TAB_LEFT, "%s %s",
-                         name, _("(active dataset)"));
-      else
-        tab_text (t, 0, i + 1, TAB_LEFT, name);
-    }
-  tab_title (t, "Open datasets.");
-  tab_submit (t);
+      char *text = (ds == session_active_dataset (session)
+                    ? xasprintf ("%s (%s)", name, _("active dataset"))
+                    : xstrdup (name));
 
-  free (datasets);
+      int dataset_idx = pivot_category_create_leaf (
+        datasets_dim->root, pivot_value_new_integer (i));
+
+      pivot_table_put1 (table, dataset_idx,
+                        pivot_value_new_user_text_nocopy (text));
+    }
+
+  pivot_table_submit (table);
 
   return CMD_SUCCESS;
 }

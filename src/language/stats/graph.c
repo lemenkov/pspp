@@ -58,8 +58,6 @@
 #include "language/stats/freq.h"
 #include "language/stats/chart-category.h"
 
-#include "output/tab.h"
-
 #include "gettext.h"
 #define _(msgid) gettext (msgid)
 #define N_(msgid) msgid

@@ -25,7 +25,8 @@ END DATA.
 
 CROSSTABS VARIABLES X (1,7) Y (1,7) /TABLES X BY Y.
 ])
-AT_CHECK([pspp -O format=csv crosstabs.sps], [0], 
+AT_CHECK([pspp -o pspp.csv -o pspp.txt crosstabs.sps])
+AT_CHECK([cat pspp.csv], [0],
   [[Table: Reading free-form data from INLINE.
 Variable,Format
 A,F8.0
@@ -33,23 +34,23 @@ B,F8.0
 X,F8.0
 Y,F8.0
 
-Table: Summary.
+Table: Summary
 ,Cases,,,,,
 ,Valid,,Missing,,Total,
 ,N,Percent,N,Percent,N,Percent
-X * Y,1,100.0%,0,0.0%,1,100.0%
+X × Y,1,100.0%,0,.0%,1,100.0%
 
-Table: X * Y [count].
-,Y,,,,,,,
-X,1.00,2.00,3.00,4.00,5.00,6.00,7.00,Total
-1.00,.00,.00,.00,.00,.00,.00,.00,.00
-2.00,.00,.00,.00,.00,.00,.00,.00,.00
-3.00,.00,.00,.00,.00,.00,.00,.00,.00
-4.00,.00,.00,.00,.00,1.00,.00,.00,1.00
-5.00,.00,.00,.00,.00,.00,.00,.00,.00
-6.00,.00,.00,.00,.00,.00,.00,.00,.00
-7.00,.00,.00,.00,.00,.00,.00,.00,.00
-Total,.00,.00,.00,.00,1.00,.00,.00,1.00
+Table: X × Y
+,,,Y,,,,,,,Total
+,,,1.00,2.00,3.00,4.00,5.00,6.00,7.00,
+X,1.00,Count,0,0,0,0,0,0,0,0
+,2.00,,0,0,0,0,0,0,0,0
+,3.00,,0,0,0,0,0,0,0,0
+,4.00,,0,0,0,0,1,0,0,1
+,5.00,,0,0,0,0,0,0,0,0
+,6.00,,0,0,0,0,0,0,0,0
+,7.00,,0,0,0,0,0,0,0,0
+Total,,,0,0,0,0,1,0,0,1
 ]])
 AT_CLEANUP
 
@@ -71,11 +72,15 @@ Variable,Format
 x,F8.0
 y,F8.0
 
-Table: Summary.
+Table: Summary
 ,Cases,,,,,
 ,Valid,,Missing,,Total,
 ,N,Percent,N,Percent,N,Percent
-x * y,0,0.0%,1,100.0%,1,100.0%
+x × y,0,.0%,1,100.0%,1,100.0%
+
+Table: x × y
+,,
+,,
 ]])
 AT_CLEANUP
 
@@ -95,7 +100,7 @@ end data.
 
 CROSSTABS /TABLES = x BY y.
 ])
-AT_CHECK([pspp -o - -O format=csv crosstabs.sps], [0],
+AT_CHECK([pspp -o - -O format=csv -o pspp.txt crosstabs.sps], [0],
   [[Table: Reading free-form data from INLINE.
 Variable,Format
 x,F8.0
@@ -105,19 +110,19 @@ y,A18
 
 "crosstabs.sps:6: warning: Missing value(s) for all variables from x onward.  These will be filled with the system-missing value or blanks, as appropriate."
 
-Table: Summary.
+Table: Summary
 ,Cases,,,,,
 ,Valid,,Missing,,Total,
 ,N,Percent,N,Percent,N,Percent
-x * y,4,66.7%,2,33.3%,6,100.0%
+x × y,4,66.7%,2,33.3%,6,100.0%
 
-Table: x * y [count].
-,y,,,,
-x,one unity         ,three lots        ,two duality       ,zero none         ,Total
-1.00,1.00,.00,.00,1.00,2.00
-2.00,.00,.00,1.00,.00,1.00
-3.00,.00,1.00,.00,.00,1.00
-Total,1.00,1.00,1.00,1.00,4.00
+Table: x × y
+,,,y,,,,Total
+,,,one unity,three lots,two duality,zero none,
+x,1.00,Count,1,0,0,1,2
+,2.00,,0,0,1,0,1
+,3.00,,0,1,0,0,1
+Total,,,1,1,1,1,4
 ]])
 AT_CLEANUP
 
@@ -145,8 +150,8 @@ LIST.
 
 CROSSTABS TABLES  y by z.
 ]])
-AT_CHECK([pspp -O format=csv crosstabs.sps], [0],
-  [[Table: Reading 1 record from INLINE.
+AT_CHECK([pspp -o - -O format=csv -o pspp.txt crosstabs.sps], [0],
+  [Table: Reading 1 record from INLINE.
 Variable,Record,Columns,Format
 x,1,1-  2,F2.0
 y,1,3-  3,F1.0
@@ -164,19 +169,19 @@ x,y,z
 8,1,1
 9,1,2
 
-Table: Summary.
+Table: Summary
 ,Cases,,,,,
 ,Valid,,Missing,,Total,
 ,N,Percent,N,Percent,N,Percent
-y * z,9,100.0%,0,0.0%,9,100.0%
+y × z,9,100.0%,0,.0%,9,100.0%
 
-Table: y * z [count].
-,z,,
-y,1,2,Total
-1,4.00,3.00,7.00
-2,1.00,1.00,2.00
-Total,5.00,4.00,9.00
-]])
+Table: y × z
+,,,z,,Total
+,,,1,2,
+y,1,Count,4,3,7
+,2,,1,1,2
+Total,,,5,4,9
+])
 AT_CLEANUP
 
 # Bug #26739, which caused CROSSTABS to crash or to fail to output
@@ -201,22 +206,22 @@ Variable,Format
 x,F8.0
 y,F8.0
 
-Table: Summary.
+Table: Summary
 ,Cases,,,,,
 ,Valid,,Missing,,Total,
 ,N,Percent,N,Percent,N,Percent
-x * y,4,100.0%,0,0.0%,4,100.0%
+x × y,4,100.0%,0,.0%,4,100.0%
 
-Table: x * y [count].
-,y,,
-x,1.00,2.00,Total
-2.00,.00,1.00,1.00
-3.00,1.00,.00,1.00
-4.00,1.00,1.00,2.00
-Total,2.00,2.00,4.00
+Table: x × y
+,,,y,,Total
+,,,1.00,2.00,
+x,2.00,Count,0,1,1
+,3.00,,1,0,1
+,4.00,,1,1,2
+Total,,,2,2,4
 
-Table: Chi-square tests.
-Statistic,Value,df,Asymp. Sig. (2-tailed)
+Table: Chi-Square Tests
+,Value,df,Asymptotic Sig. (2-tailed)
 Pearson Chi-Square,2.00,2,.368
 Likelihood Ratio,2.77,2,.250
 Linear-by-Linear Association,.27,1,.602
@@ -250,73 +255,76 @@ CROSSTABS
     /CELLS=COUNT ROW COLUMN TOTAL.
 ])
 
-AT_CHECK([pspp -O format=csv crosstabs.sps], [0],
-  [[Variable,Value,Label
-v0,a ,
+AT_CHECK([pspp -o pspp.csv -o pspp.txt crosstabs.sps])
+AT_CHECK([cat pspp.csv], [0], [dnl
+Table: Split Values
+Variable,Value
+v0,a
 
-Table: Summary.
+Table: Summary
 ,Cases,,,,,
 ,Valid,,Missing,,Total,
 ,N,Percent,N,Percent,N,Percent
-v1 * v2,6,100.0%,0,0.0%,6,100.0%
+v1 × v2,6,100.0%,0,.0%,6,100.0%
 
-"Table: v1 * v2 [count, row %, column %, total %]."
-,v2,,
-v1,e ,f ,Total
-c ,3.00,1.00,4.00
-,75.00%,25.00%,100.00%
-,75.00%,50.00%,66.67%
-,50.00%,16.67%,66.67%
-d ,1.00,1.00,2.00
-,50.00%,50.00%,100.00%
-,25.00%,50.00%,33.33%
-,16.67%,16.67%,33.33%
-Total,4.00,2.00,6.00
-,66.67%,33.33%,100.00%
-,100.00%,100.00%,100.00%
-,66.67%,33.33%,100.00%
+Table: v1 × v2
+,,,v2,,Total
+,,,e,f,
+v1,c,Count,3,1,4
+,,Row %,75.0%,25.0%,100.0%
+,,Column %,75.0%,50.0%,66.7%
+,,Total %,50.0%,16.7%,66.7%
+,d,Count,1,1,2
+,,Row %,50.0%,50.0%,100.0%
+,,Column %,25.0%,50.0%,33.3%
+,,Total %,16.7%,16.7%,33.3%
+Total,,Count,4,2,6
+,,Row %,66.7%,33.3%,100.0%
+,,Column %,100.0%,100.0%,100.0%
+,,Total %,66.7%,33.3%,100.0%
 
-Table: Chi-square tests.
-Statistic,Value,df,Asymp. Sig. (2-tailed),Exact Sig. (2-tailed),Exact Sig. (1-tailed)
+Table: Chi-Square Tests
+,Value,df,Asymptotic Sig. (2-tailed),Exact Sig. (2-tailed),Exact Sig. (1-tailed)
 Pearson Chi-Square,.38,1,.540,,
 Likelihood Ratio,.37,1,.545,,
 Fisher's Exact Test,,,,1.000,.600
 Continuity Correction,.00,1,1.000,,
 N of Valid Cases,6,,,,
 
-Variable,Value,Label
-v0,b ,
+Table: Split Values
+Variable,Value
+v0,b
 
-Table: Summary.
+Table: Summary
 ,Cases,,,,,
 ,Valid,,Missing,,Total,
 ,N,Percent,N,Percent,N,Percent
-v1 * v2,4,100.0%,0,0.0%,4,100.0%
+v1 × v2,4,100.0%,0,.0%,4,100.0%
 
-"Table: v1 * v2 [count, row %, column %, total %]."
-,v2,,
-v1,e ,f ,Total
-c ,.00,1.00,1.00
-,.00%,100.00%,100.00%
-,.00%,33.33%,25.00%
-,.00%,25.00%,25.00%
-d ,1.00,2.00,3.00
-,33.33%,66.67%,100.00%
-,100.00%,66.67%,75.00%
-,25.00%,50.00%,75.00%
-Total,1.00,3.00,4.00
-,25.00%,75.00%,100.00%
-,100.00%,100.00%,100.00%
-,25.00%,75.00%,100.00%
+Table: v1 × v2
+,,,v2,,Total
+,,,e,f,
+v1,c,Count,0,1,1
+,,Row %,.0%,100.0%,100.0%
+,,Column %,.0%,33.3%,25.0%
+,,Total %,.0%,25.0%,25.0%
+,d,Count,1,2,3
+,,Row %,33.3%,66.7%,100.0%
+,,Column %,100.0%,66.7%,75.0%
+,,Total %,25.0%,50.0%,75.0%
+Total,,Count,1,3,4
+,,Row %,25.0%,75.0%,100.0%
+,,Column %,100.0%,100.0%,100.0%
+,,Total %,25.0%,75.0%,100.0%
 
-Table: Chi-square tests.
-Statistic,Value,df,Asymp. Sig. (2-tailed),Exact Sig. (2-tailed),Exact Sig. (1-tailed)
+Table: Chi-Square Tests
+,Value,df,Asymptotic Sig. (2-tailed),Exact Sig. (2-tailed),Exact Sig. (1-tailed)
 Pearson Chi-Square,.44,1,.505,,
 Likelihood Ratio,.68,1,.410,,
 Fisher's Exact Test,,,,1.000,.750
 Continuity Correction,.00,1,1.000,,
 N of Valid Cases,4,,,,
-]])
+])
 AT_CLEANUP
 
 # Bug #24752.
@@ -344,8 +352,8 @@ LIST.
 
 CROSSTABS TABLES  x BY y BY z/STATISTICS=ALL.
 ]])
-AT_CHECK([pspp -O format=csv crosstabs.sps], [0],
-  [[Table: Reading 1 record from INLINE.
+AT_CHECK([pspp -o - -O format=csv -o pspp.csv -o pspp.txt crosstabs.sps], [0],
+  [Table: Reading 1 record from INLINE.
 Variable,Record,Columns,Format
 x,1,1-  2,F2.0
 y,1,3-  3,F1.0
@@ -363,88 +371,88 @@ x,y,z
 8,1,1
 9,1,2
 
-Table: Summary.
+Table: Summary
 ,Cases,,,,,
 ,Valid,,Missing,,Total,
 ,N,Percent,N,Percent,N,Percent
-x * y * z,9,100.0%,0,0.0%,9,100.0%
+x × y × z,9,100.0%,0,.0%,9,100.0%
 
-Table: x * y * z [count].
-z,,y,,
-,x,1,2,Total
-1,1,1.00,.00,1.00
-,3,1.00,.00,1.00
-,5,.00,1.00,1.00
-,7,1.00,.00,1.00
-,8,1.00,.00,1.00
-Total,,4.00,1.00,5.00
-2,2,.00,1.00,1.00
-,4,1.00,.00,1.00
-,6,1.00,.00,1.00
-,9,1.00,.00,1.00
-Total,,3.00,1.00,4.00
+Table: x × y × z
+,,,,,y,,Total
+,,,,,1,2,
+z,1,x,1,Count,1,0,1
+,,,3,,0,0,1
+,,,5,,1,0,1
+,,,7,,0,0,1
+,,,8,,0,1,1
+,,Total,,,4,1,5
+,2,x,2,,0,0,1
+,,,4,,0,1,1
+,,,6,,0,0,1
+,,,9,,1,0,1
+,,Total,,,3,1,4
 
-Table: Chi-square tests.
-z,Statistic,Value,df,Asymp. Sig. (2-tailed)
-1,Pearson Chi-Square,5.00,4,.287
-,Likelihood Ratio,5.00,4,.287
-,Linear-by-Linear Association,.01,1,.938
-,N of Valid Cases,5,,
-2,Pearson Chi-Square,4.00,3,.261
-,Likelihood Ratio,4.50,3,.212
-,Linear-by-Linear Association,1.58,1,.209
-,N of Valid Cases,4,,
+Table: Chi-Square Tests
+,,,Value,df,Asymptotic Sig. (2-tailed)
+z,1,Pearson Chi-Square,5.00,4,.287
+,,Likelihood Ratio,5.00,4,.287
+,,Linear-by-Linear Association,.01,1,.938
+,,N of Valid Cases,5,,
+,2,Pearson Chi-Square,4.00,3,.261
+,,Likelihood Ratio,4.50,3,.212
+,,Linear-by-Linear Association,1.58,1,.209
+,,N of Valid Cases,4,,
 
-Table: Symmetric measures.
-z,Category,Statistic,Value,Asymp. Std. Error,Approx. T,Approx. Sig.
-1,Nominal by Nominal,Phi,1.00,,,
-,,Cramer's V,1.00,,,
-,,Contingency Coefficient,.71,,,
-,Ordinal by Ordinal,Kendall's tau-b,.00,.32,.00,
-,,Kendall's tau-c,.00,.32,.00,
-,,Gamma,.00,.50,.00,
-,,Spearman Correlation,.00,.22,.00,
-,Interval by Interval,Pearson's R,.04,.22,.07,
-,N of Valid Cases,,5,,,
-2,Nominal by Nominal,Phi,1.00,,,
-,,Cramer's V,1.00,,,
-,,Contingency Coefficient,.71,,,
-,Ordinal by Ordinal,Kendall's tau-b,-.71,.20,-1.73,
-,,Kendall's tau-c,-.75,.43,-1.73,
-,,Gamma,-1.00,.00,-1.73,
-,,Spearman Correlation,-.77,.17,-1.73,
-,Interval by Interval,Pearson's R,-.73,.18,-1.49,
-,N of Valid Cases,,4,,,
+Table: Symmetric Measures
+,,,,Value,Asymp. Std. Error,Approx. T
+z,1,Nominal by Nominal,Phi,1.00,,
+,,,Cramer's V,1.00,,
+,,,Contingency Coefficient,.71,,
+,,Ordinal by Ordinal,Kendall's tau-b,.00,.32,.00
+,,,Kendall's tau-c,.00,.32,.00
+,,,Gamma,.00,.50,.00
+,,,Spearman Correlation,.00,.22,.00
+,,Interval by Interval,Pearson's R,.04,.22,.07
+,,N of Valid Cases,,5,,
+,2,Nominal by Nominal,Phi,1.00,,
+,,,Cramer's V,1.00,,
+,,,Contingency Coefficient,.71,,
+,,Ordinal by Ordinal,Kendall's tau-b,-.71,.20,-1.73
+,,,Kendall's tau-c,-.75,.43,-1.73
+,,,Gamma,-1.00,.00,-1.73
+,,,Spearman Correlation,-.77,.17,-1.73
+,,Interval by Interval,Pearson's R,-.73,.18,-1.49
+,,N of Valid Cases,,4,,
 
-Table: Directional measures.
-z,Category,Statistic,Type,Value,Asymp. Std. Error,Approx. T,Approx. Sig.
-1,Nominal by Nominal,Lambda,Symmetric,.40,.28,1.12,.264
-,,,x Dependent,.25,.22,1.12,.264
-,,,y Dependent,1.00,.00,1.12,.264
-,,Goodman and Kruskal tau,x Dependent,.25,,,.   @&t@
-,,,y Dependent,1.00,,,.   @&t@
-,,Uncertainty Coefficient,Symmetric,.47,.18,,.   @&t@
-,,,x Dependent,.31,.15,2.02,.   @&t@
-,,,y Dependent,1.00,.00,2.02,.   @&t@
-,Ordinal by Ordinal,Somers' d,Symmetric,.00,,.00,1.000
-,,,x Dependent,.00,.50,.00,1.000
-,,,y Dependent,.00,.20,.00,1.000
-,Nominal by Interval,Eta,x Dependent,.04,,,.   @&t@
-,,,y Dependent,1.00,,,.   @&t@
-2,Nominal by Nominal,Lambda,Symmetric,.50,.25,2.00,.046
-,,,x Dependent,.33,.27,1.15,.248
-,,,y Dependent,1.00,.00,1.15,.248
-,,Goodman and Kruskal tau,x Dependent,.33,,,.   @&t@
-,,,y Dependent,1.00,,,.   @&t@
-,,Uncertainty Coefficient,Symmetric,.58,.17,,.   @&t@
-,,,x Dependent,.41,.17,2.36,.   @&t@
-,,,y Dependent,1.00,.00,2.36,.   @&t@
-,Ordinal by Ordinal,Somers' d,Symmetric,-.67,,-1.73,.083
-,,,x Dependent,-1.00,.00,-1.73,.083
-,,,y Dependent,-.50,.29,-1.73,.083
-,Nominal by Interval,Eta,x Dependent,.73,,,.   @&t@
-,,,y Dependent,1.00,,,.   @&t@
-]])
+Table: Directional Measures
+,,,,,Value,Asymp. Std. Error,Approx. T,Approx Sig.
+z,1,Nominal by Nominal,Lambda,Symmetric,.40,.28,1.12,.264
+,,,,x Dependent,.25,.22,1.12,.264
+,,,,y Dependent,1.00,.00,1.12,.264
+,,,Goodman and Kruskal tau,x Dependent,.25,,,
+,,,,y Dependent,1.00,,,
+,,,Uncertainty Coefficient,Symmetric,.47,.18,,
+,,,,x Dependent,.31,.15,2.02,
+,,,,y Dependent,1.00,.00,2.02,
+,,Ordinal by Ordinal,Somers' d,Symmetric,.00,,.00,1.000
+,,,,x Dependent,.00,.50,.00,1.000
+,,,,y Dependent,.00,.20,.00,1.000
+,,Nominal by Interval,Eta,x Dependent,.04,,,
+,,,,y Dependent,1.00,,,
+,2,Nominal by Nominal,Lambda,Symmetric,.50,.25,2.00,.046
+,,,,x Dependent,.33,.27,1.15,.248
+,,,,y Dependent,1.00,.00,1.15,.248
+,,,Goodman and Kruskal tau,x Dependent,.33,,,
+,,,,y Dependent,1.00,,,
+,,,Uncertainty Coefficient,Symmetric,.58,.17,,
+,,,,x Dependent,.41,.17,2.36,
+,,,,y Dependent,1.00,.00,2.36,
+,,Ordinal by Ordinal,Somers' d,Symmetric,-.67,,-1.73,.083
+,,,,x Dependent,-1.00,.00,-1.73,.083
+,,,,y Dependent,-.50,.29,-1.73,.083
+,,Nominal by Interval,Eta,x Dependent,.73,,,
+,,,,y Dependent,1.00,,,
+])
 AT_CLEANUP
 
 AT_SETUP([CROSSTABS rounding weights with COUNT])
@@ -473,85 +481,86 @@ CROSSTABS /TABLES x BY y /COUNT.
 CROSSTABS /TABLES x BY y /COUNT TRUNCATE.
 ]])
 
-AT_CHECK([pspp -O format=csv crosstabs.sps], [0],
-  [[Table: Summary.
+AT_CHECK([pspp -o pspp.csv -o pspp.txt crosstabs.sps])
+AT_CHECK([cat pspp.csv], [0],
+  [Table: Summary
 ,Cases,,,,,
 ,Valid,,Missing,,Total,
 ,N,Percent,N,Percent,N,Percent
-x * y,9.00,100.0%,.00,0.0%,9.00,100.0%
+x × y,9.00,100.0%,.00,.0%,9.00,100.0%
 
-Table: x * y [count].
-,y,,
-x,1.00,2.00,Total
-1.00,2.80,3.20,6.00
-2.00,1.00,2.00,3.00
-Total,3.80,5.20,9.00
+Table: x × y
+,,,y,,Total
+,,,1.00,2.00,
+x,1.00,Count,2.80,3.20,6.00
+,2.00,,1.00,2.00,3.00
+Total,,,3.80,5.20,9.00
 
-Table: Summary.
+Table: Summary
 ,Cases,,,,,
 ,Valid,,Missing,,Total,
 ,N,Percent,N,Percent,N,Percent
-x * y,9.00,100.0%,.00,0.0%,9.00,100.0%
+x × y,9.00,100.0%,.00,.0%,9.00,100.0%
 
-Table: x * y [count].
-,y,,
-x,1.00,2.00,Total
-1.00,2.80,3.20,6.00
-2.00,1.00,2.00,3.00
-Total,3.80,5.20,9.00
+Table: x × y
+,,,y,,Total
+,,,1.00,2.00,
+x,1.00,Count,2.80,3.20,6.00
+,2.00,,1.00,2.00,3.00
+Total,,,3.80,5.20,9.00
 
-Table: Summary.
+Table: Summary
 ,Cases,,,,,
 ,Valid,,Missing,,Total,
 ,N,Percent,N,Percent,N,Percent
-x * y,9.00,100.0%,.00,0.0%,9.00,100.0%
+x × y,9.00,100.0%,.00,.0%,9.00,100.0%
 
-Table: x * y [count].
-,y,,
-x,1.00,2.00,Total
-1.00,2.00,4.00,6.00
-2.00,1.00,2.00,3.00
-Total,3.00,6.00,9.00
+Table: x × y
+,,,y,,Total
+,,,1.00,2.00,
+x,1.00,Count,2.00,4.00,6.00
+,2.00,,1.00,2.00,3.00
+Total,,,3.00,6.00,9.00
 
-Table: Summary.
+Table: Summary
 ,Cases,,,,,
 ,Valid,,Missing,,Total,
 ,N,Percent,N,Percent,N,Percent
-x * y,7.00,100.0%,.00,0.0%,7.00,100.0%
+x × y,7.00,100.0%,.00,.0%,7.00,100.0%
 
-Table: x * y [count].
-,y,,
-x,1.00,2.00,Total
-1.00,2.00,2.00,4.00
-2.00,1.00,2.00,3.00
-Total,3.00,4.00,7.00
+Table: x × y
+,,,y,,Total
+,,,1.00,2.00,
+x,1.00,Count,2.00,2.00,4.00
+,2.00,,1.00,2.00,3.00
+Total,,,3.00,4.00,7.00
 
-Table: Summary.
+Table: Summary
 ,Cases,,,,,
 ,Valid,,Missing,,Total,
 ,N,Percent,N,Percent,N,Percent
-x * y,9.00,100.0%,.00,0.0%,9.00,100.0%
+x × y,9.00,100.0%,.00,.0%,9.00,100.0%
 
-Table: x * y [count].
-,y,,
-x,1.00,2.00,Total
-1.00,3.00,3.00,6.00
-2.00,1.00,2.00,3.00
-Total,4.00,5.00,9.00
+Table: x × y
+,,,y,,Total
+,,,1.00,2.00,
+x,1.00,Count,3.00,3.00,6.00
+,2.00,,1.00,2.00,3.00
+Total,,,4.00,5.00,9.00
 
-Table: Summary.
+Table: Summary
 ,Cases,,,,,
 ,Valid,,Missing,,Total,
 ,N,Percent,N,Percent,N,Percent
-x * y,8.00,100.0%,.00,0.0%,8.00,100.0%
+x × y,8.00,100.0%,.00,.0%,8.00,100.0%
 
-Table: x * y [count].
-,y,,
-x,1.00,2.00,Total
-1.00,2.00,3.00,5.00
-2.00,1.00,2.00,3.00
-Total,3.00,5.00,8.00
-]])
+Table: x × y
+,,,y,,Total
+,,,1.00,2.00,
+x,1.00,Count,2.00,3.00,5.00
+,2.00,,1.00,2.00,3.00
+Total,,,3.00,5.00,8.00
+])
 AT_CLEANUP
 
 AT_SETUP([CROSSTABS descending sort order])
@@ -571,21 +580,22 @@ CROSSTABS
 	/FORMAT = DVALUE.
 ]])
 
-AT_CHECK([pspp -O format=csv crosstabs-descending.sps], [0],
-  [[Table: Summary.
+AT_CHECK([pspp -o pspp.csv -o pspp.txt crosstabs-descending.sps])
+AT_CHECK([cat pspp.csv], [0],
+  [Table: Summary
 ,Cases,,,,,
 ,Valid,,Missing,,Total,
 ,N,Percent,N,Percent,N,Percent
-x * y,6,100.0%,0,0.0%,6,100.0%
+x × y,6,100.0%,0,.0%,6,100.0%
 
-Table: x * y [count].
-,y,,
-x,2.00,1.00,Total
-4.00,.00,1.00,1.00
-3.00,2.00,1.00,3.00
-2.00,2.00,.00,2.00
-Total,4.00,2.00,6.00
-]])
+Table: x × y
+,,,y,,Total
+,,,2.00,1.00,
+x,4.00,Count,0,1,1
+,3.00,,2,1,3
+,2.00,,2,0,2
+Total,,,4,2,6
+])
 AT_CLEANUP
 
 # Bug #31260.
@@ -601,13 +611,13 @@ MISSING VALUES x2 (1).
 CROSSTABS /TABLES= X1 by X2.
 ])
 AT_CHECK([pspp -O format=csv crosstabs.sps], [0], [dnl
-Table: Summary.
+Table: Summary
 ,Cases,,,,,
 ,Valid,,Missing,,Total,
 ,N,Percent,N,Percent,N,Percent
-X1 * X2,0,0.0%,1,100.0%,1,100.0%
+X1 × X2,0,.0%,1,100.0%,1,100.0%
 
-crosstabs.sps:8: warning: CROSSTABS: Crosstabulation X1 * X2 contained no non-missing cases.
+crosstabs.sps:8: warning: CROSSTABS: Crosstabulation X1 × X2 contained no non-missing cases.
 ])
 AT_CLEANUP
 
@@ -833,22 +843,22 @@ crosstabs /tables = schtyp by female /statistic = chisq.
 crosstabs /tables = female by ses  /statistic = chisq.
 ])
 
-AT_CHECK([pspp -O format=csv fisher-exact.sps], [0], [dnl
-Table: Summary.
+AT_CHECK([pspp -o pspp.csv -o pspp.txt fisher-exact.sps])
+AT_CHECK([cat pspp.csv], [0], [Table: Summary
 ,Cases,,,,,
 ,Valid,,Missing,,Total,
 ,N,Percent,N,Percent,N,Percent
-type of school * female,200,100.0%,0,0.0%,200,100.0%
+type of school × female,200,100.0%,0,.0%,200,100.0%
 
-Table: type of school * female [[count]].
-,female,,
-type of school,male,female,Total
-public,77.000,91.000,168.000
-private,14.000,18.000,32.000
-Total,91.000,109.000,200.000
+Table: type of school × female
+,,,female,,Total
+,,,male,female,
+type of school,public,Count,77,91,168
+,private,,14,18,32
+Total,,,91,109,200
 
-Table: Chi-square tests.
-Statistic,Value,df,Asymp. Sig. (2-tailed),Exact Sig. (2-tailed),Exact Sig. (1-tailed)
+Table: Chi-Square Tests
+,Value,df,Asymptotic Sig. (2-tailed),Exact Sig. (2-tailed),Exact Sig. (1-tailed)
 Pearson Chi-Square,.047,1,.828,,
 Likelihood Ratio,.047,1,.828,,
 Fisher's Exact Test,,,,.849,.492
@@ -856,21 +866,21 @@ Continuity Correction,.001,1,.981,,
 Linear-by-Linear Association,.047,1,.829,,
 N of Valid Cases,200,,,,
 
-Table: Summary.
+Table: Summary
 ,Cases,,,,,
 ,Valid,,Missing,,Total,
 ,N,Percent,N,Percent,N,Percent
-female * ses,200,100.0%,0,0.0%,200,100.0%
+female × ses,200,100.0%,0,.0%,200,100.0%
 
-Table: female * ses [[count]].
-,ses,,,
-female,low,middle,high,Total
-male,15.000,47.000,29.000,91.000
-female,32.000,48.000,29.000,109.000
-Total,47.000,95.000,58.000,200.000
+Table: female × ses
+,,,ses,,,Total
+,,,low,middle,high,
+female,male,Count,15,47,29,91
+,female,,32,48,29,109
+Total,,,47,95,58,200
 
-Table: Chi-square tests.
-Statistic,Value,df,Asymp. Sig. (2-tailed)
+Table: Chi-Square Tests
+,Value,df,Asymptotic Sig. (2-tailed)
 Pearson Chi-Square,4.577,2,.101
 Likelihood Ratio,4.679,2,.096
 Linear-by-Linear Association,3.110,1,.078
@@ -879,8 +889,7 @@ N of Valid Cases,200,,
 
 AT_CLEANUP
 
-AT_SETUP([CROSSTABS Pearson's R])
-# Test 1.
+AT_SETUP([CROSSTABS Pearson's R - 1])
 AT_DATA([pearson.sps], [dnl
 SET FORMAT F8.3.
 
@@ -895,30 +904,32 @@ BEGIN DATA.
 END DATA.
 CROSSTABS x BY y/STATISTICS=CORR.
 ])
-AT_CHECK([pspp -O format=csv pearson.sps], [0], [dnl
-Table: Summary.
+AT_CHECK([pspp -o pspp.csv -o pspp.txt pearson.sps])
+AT_CHECK([cat pspp.csv], [0], [dnl
+Table: Summary
 ,Cases,,,,,
 ,Valid,,Missing,,Total,
 ,N,Percent,N,Percent,N,Percent
-x * y,5,100.0%,0,0.0%,5,100.0%
+x × y,5,100.0%,0,.0%,5,100.0%
 
-Table: x * y [[count]].
-,y,,,,,
-x,4.000,6.000,10.000,12.000,13.000,Total
-1.000,1.000,.000,.000,.000,.000,1.000
-3.000,.000,1.000,.000,.000,.000,1.000
-5.000,.000,.000,1.000,1.000,.000,2.000
-6.000,.000,.000,.000,.000,1.000,1.000
-Total,1.000,1.000,1.000,1.000,1.000,5.000
+Table: x × y
+,,,y,,,,,Total
+,,,4.000,6.000,10.000,12.000,13.000,
+x,1.000,Count,1,0,0,0,0,1
+,3.000,,0,1,0,0,0,1
+,5.000,,0,0,1,1,0,2
+,6.000,,0,0,0,0,1,1
+Total,,,1,1,1,1,1,5
 
-Table: Symmetric measures.
-Category,Statistic,Value,Asymp. Std. Error,Approx. T,Approx. Sig.
-Ordinal by Ordinal,Spearman Correlation,.975,.022,7.550,
-Interval by Interval,Pearson's R,.968,.017,6.708,
-N of Valid Cases,,5,,,
+Table: Symmetric Measures
+,,Value,Asymp. Std. Error,Approx. T
+Ordinal by Ordinal,Spearman Correlation,.975,.022,7.550
+Interval by Interval,Pearson's R,.968,.017,6.708
+N of Valid Cases,,5,,
 ])
+AT_CLEANUP
 
-# Test 2.
+AT_SETUP([CROSSTABS Pearson's R - 2])
 AT_DATA([pearson2.sps], [dnl
 SET FORMAT F8.3.
 
@@ -938,36 +949,38 @@ BEGIN DATA.
 END DATA.
 CROSSTABS x BY y/STATISTICS=CORR.
 ])
-AT_CHECK([pspp -O format=csv pearson2.sps], [0], [dnl
-Table: Summary.
+AT_CHECK([pspp -o pspp.csv -o pspp.txt pearson2.sps])
+AT_CHECK([cat pspp.csv], [0], [dnl
+Table: Summary
 ,Cases,,,,,
 ,Valid,,Missing,,Total,
 ,N,Percent,N,Percent,N,Percent
-x * y,10,100.0%,0,0.0%,10,100.0%
+x × y,10,100.0%,0,.0%,10,100.0%
 
-Table: x * y [[count]].
-,y,,,,,,,,,
-x,1.500,4.000,5.000,6.000,6.500,7.000,9.000,10.500,11.000,Total
-1.000,1.000,.000,.000,.000,.000,.000,.000,.000,.000,1.000
-2.000,1.000,.000,.000,.000,.000,.000,.000,.000,.000,1.000
-3.000,.000,1.000,.000,.000,.000,.000,.000,.000,.000,1.000
-4.000,.000,.000,.000,1.000,.000,.000,.000,.000,.000,1.000
-5.000,.000,.000,1.000,.000,.000,.000,.000,.000,.000,1.000
-6.000,.000,.000,.000,.000,.000,1.000,.000,.000,.000,1.000
-7.000,.000,.000,.000,.000,1.000,.000,.000,.000,.000,1.000
-8.000,.000,.000,.000,.000,.000,.000,1.000,.000,.000,1.000
-9.000,.000,.000,.000,.000,.000,.000,.000,1.000,.000,1.000
-10.000,.000,.000,.000,.000,.000,.000,.000,.000,1.000,1.000
-Total,2.000,1.000,1.000,1.000,1.000,1.000,1.000,1.000,1.000,10.000
+Table: x × y
+,,,y,,,,,,,,,Total
+,,,1.500,4.000,5.000,6.000,6.500,7.000,9.000,10.500,11.000,
+x,1.000,Count,1,0,0,0,0,0,0,0,0,1
+,2.000,,1,0,0,0,0,0,0,0,0,1
+,3.000,,0,1,0,0,0,0,0,0,0,1
+,4.000,,0,0,0,1,0,0,0,0,0,1
+,5.000,,0,0,1,0,0,0,0,0,0,1
+,6.000,,0,0,0,0,0,1,0,0,0,1
+,7.000,,0,0,0,0,1,0,0,0,0,1
+,8.000,,0,0,0,0,0,0,1,0,0,1
+,9.000,,0,0,0,0,0,0,0,1,0,1
+,10.000,,0,0,0,0,0,0,0,0,1,1
+Total,,,2,1,1,1,1,1,1,1,1,10
 
-Table: Symmetric measures.
-Category,Statistic,Value,Asymp. Std. Error,Approx. T,Approx. Sig.
-Ordinal by Ordinal,Spearman Correlation,.973,.015,11.844,
-Interval by Interval,Pearson's R,.971,.017,11.580,
-N of Valid Cases,,10,,,
+Table: Symmetric Measures
+,,Value,Asymp. Std. Error,Approx. T
+Ordinal by Ordinal,Spearman Correlation,.973,.015,11.844
+Interval by Interval,Pearson's R,.971,.017,11.580
+N of Valid Cases,,10,,
 ])
+AT_CLEANUP
 
-# Test 3.
+AT_SETUP([CROSSTABS Pearson's R - 3])
 AT_DATA([pearson3.sps], [dnl
 SET FORMAT F8.3.
 
@@ -986,33 +999,35 @@ BEGIN DATA.
 END DATA.
 CROSSTABS x BY y/STATISTICS=CORR.
 ])
-AT_CHECK([pspp -O format=csv pearson3.sps], [0], [dnl
-Table: Summary.
+AT_CHECK([pspp -o pspp.csv -o pspp.txt pearson3.sps])
+AT_CHECK([cat pspp.csv], [0], [dnl
+Table: Summary
 ,Cases,,,,,
 ,Valid,,Missing,,Total,
 ,N,Percent,N,Percent,N,Percent
-x * y,9,100.0%,0,0.0%,9,100.0%
+x × y,9,100.0%,0,.0%,9,100.0%
 
-Table: x * y [[count]].
-,y,,,,,,,,
-x,28.000,58.000,66.000,75.000,85.000,87.000,91.000,122.000,Total
-25.000,1.000,.000,.000,.000,.000,.000,.000,.000,1.000
-35.000,.000,1.000,.000,.000,.000,.000,.000,.000,1.000
-44.000,.000,.000,1.000,.000,.000,.000,.000,.000,1.000
-50.000,.000,.000,.000,1.000,.000,.000,.000,.000,1.000
-56.000,.000,.000,.000,.000,.000,1.000,1.000,.000,2.000
-65.000,.000,.000,.000,.000,1.000,.000,1.000,.000,2.000
-87.000,.000,.000,.000,.000,.000,.000,.000,1.000,1.000
-Total,1.000,1.000,1.000,1.000,1.000,1.000,2.000,1.000,9.000
+Table: x × y
+,,,y,,,,,,,,Total
+,,,28.000,58.000,66.000,75.000,85.000,87.000,91.000,122.000,
+x,25.000,Count,1,0,0,0,0,0,0,0,1
+,35.000,,0,1,0,0,0,0,0,0,1
+,44.000,,0,0,1,0,0,0,0,0,1
+,50.000,,0,0,0,1,0,0,0,0,1
+,56.000,,0,0,0,0,0,1,1,0,2
+,65.000,,0,0,0,0,1,0,1,0,2
+,87.000,,0,0,0,0,0,0,0,1,1
+Total,,,1,1,1,1,1,1,2,1,9
 
-Table: Symmetric measures.
-Category,Statistic,Value,Asymp. Std. Error,Approx. T,Approx. Sig.
-Ordinal by Ordinal,Spearman Correlation,.911,.068,5.860,
-Interval by Interval,Pearson's R,.966,.017,9.915,
-N of Valid Cases,,9,,,
+Table: Symmetric Measures
+,,Value,Asymp. Std. Error,Approx. T
+Ordinal by Ordinal,Spearman Correlation,.911,.068,5.860
+Interval by Interval,Pearson's R,.966,.017,9.915
+N of Valid Cases,,9,,
 ])
+AT_CLEANUP
 
-# Test 4.
+AT_SETUP([CROSSTABS Pearson's R - 4])
 AT_DATA([pearson4.sps], [dnl
 SET FORMAT F8.3.
 
@@ -1034,35 +1049,37 @@ BEGIN DATA.
 END DATA.
 CROSSTABS x BY y/STATISTICS=CORR.
 ])
-AT_CHECK([pspp -O format=csv pearson4.sps], [0], [dnl
-Table: Summary.
+AT_CHECK([pspp -o pspp.csv -o pspp.txt pearson4.sps])
+AT_CHECK([cat pspp.csv], [0], [dnl
+Table: Summary
 ,Cases,,,,,
 ,Valid,,Missing,,Total,
 ,N,Percent,N,Percent,N,Percent
-x * y,12,100.0%,0,0.0%,12,100.0%
+x × y,12,100.0%,0,.0%,12,100.0%
 
-Table: x * y [[count]].
-,y,,,,,,,,,,,,
-x,2.000,4.000,5.000,7.000,9.000,11.000,12.000,14.000,15.000,17.000,18.000,20.000,Total
-2.000,.000,.000,.000,1.000,.000,.000,.000,.000,.000,.000,.000,.000,1.000
-3.000,.000,.000,.000,.000,.000,.000,1.000,.000,.000,.000,.000,.000,1.000
-4.000,.000,.000,.000,.000,1.000,1.000,.000,.000,.000,.000,.000,.000,2.000
-5.000,.000,.000,1.000,.000,.000,.000,.000,.000,.000,.000,.000,.000,1.000
-6.000,1.000,1.000,.000,.000,.000,.000,.000,.000,.000,.000,.000,.000,2.000
-7.000,.000,.000,.000,.000,.000,.000,.000,1.000,.000,.000,.000,.000,1.000
-8.000,.000,.000,.000,.000,.000,.000,.000,.000,1.000,.000,.000,.000,1.000
-9.000,.000,.000,.000,.000,.000,.000,.000,.000,.000,1.000,.000,.000,1.000
-10.000,.000,.000,.000,.000,.000,.000,.000,.000,.000,.000,1.000,1.000,2.000
-Total,1.000,1.000,1.000,1.000,1.000,1.000,1.000,1.000,1.000,1.000,1.000,1.000,12.000
+Table: x × y
+,,,y,,,,,,,,,,,,Total
+,,,2.000,4.000,5.000,7.000,9.000,11.000,12.000,14.000,15.000,17.000,18.000,20.000,
+x,2.000,Count,0,0,0,1,0,0,0,0,0,0,0,0,1
+,3.000,,0,0,0,0,0,0,1,0,0,0,0,0,1
+,4.000,,0,0,0,0,1,1,0,0,0,0,0,0,2
+,5.000,,0,0,1,0,0,0,0,0,0,0,0,0,1
+,6.000,,1,1,0,0,0,0,0,0,0,0,0,0,2
+,7.000,,0,0,0,0,0,0,0,1,0,0,0,0,1
+,8.000,,0,0,0,0,0,0,0,0,1,0,0,0,1
+,9.000,,0,0,0,0,0,0,0,0,0,1,0,0,1
+,10.000,,0,0,0,0,0,0,0,0,0,0,1,1,2
+Total,,,1,1,1,1,1,1,1,1,1,1,1,1,12
 
-Table: Symmetric measures.
-Category,Statistic,Value,Asymp. Std. Error,Approx. T,Approx. Sig.
-Ordinal by Ordinal,Spearman Correlation,.657,.140,2.758,
-Interval by Interval,Pearson's R,.667,.132,2.830,
-N of Valid Cases,,12,,,
+Table: Symmetric Measures
+,,Value,Asymp. Std. Error,Approx. T
+Ordinal by Ordinal,Spearman Correlation,.657,.140,2.758
+Interval by Interval,Pearson's R,.667,.132,2.830
+N of Valid Cases,,12,,
 ])
+AT_CLEANUP
 
-# Test 5.
+AT_SETUP([CROSSTABS Pearson's R - 5])
 AT_DATA([pearson5.sps], [dnl
 SET FORMAT F8.3.
 
@@ -1082,37 +1099,38 @@ BEGIN DATA.
 END DATA.
 CROSSTABS x BY y/STATISTICS=CORR.
 ])
-AT_CHECK([pspp -O format=csv pearson5.sps], [0], [dnl
-Table: Summary.
+AT_CHECK([pspp -o pspp.csv -o pspp.txt pearson5.sps])
+AT_CHECK([cat pspp.csv], [0], [dnl
+Table: Summary
 ,Cases,,,,,
 ,Valid,,Missing,,Total,
 ,N,Percent,N,Percent,N,Percent
-x * y,10,100.0%,0,0.0%,10,100.0%
+x × y,10,100.0%,0,.0%,10,100.0%
 
-Table: x * y [[count]].
-,y,,,,,,,,,,
-x,15000.000,26000.000,29000.000,32000.000,33000.000,41000.000,45000.000,52000.000,68000.000,80000.000,Total
-18.000,1.000,.000,.000,.000,.000,.000,.000,.000,.000,.000,1.000
-24.000,.000,1.000,.000,.000,.000,.000,.000,.000,.000,.000,1.000
-25.000,.000,.000,1.000,.000,.000,.000,.000,.000,.000,.000,1.000
-26.000,.000,.000,.000,1.000,.000,.000,.000,.000,.000,.000,1.000
-33.000,.000,.000,.000,.000,1.000,.000,.000,.000,.000,.000,1.000
-37.000,.000,.000,.000,.000,.000,1.000,.000,.000,.000,.000,1.000
-40.000,.000,.000,.000,.000,.000,.000,1.000,.000,.000,.000,1.000
-45.000,.000,.000,.000,.000,.000,.000,.000,1.000,.000,.000,1.000
-57.000,.000,.000,.000,.000,.000,.000,.000,.000,1.000,.000,1.000
-64.000,.000,.000,.000,.000,.000,.000,.000,.000,.000,1.000,1.000
-Total,1.000,1.000,1.000,1.000,1.000,1.000,1.000,1.000,1.000,1.000,10.000
+Table: x × y
+,,,y,,,,,,,,,,Total
+,,,15000.00,26000.00,29000.00,32000.00,33000.00,41000.00,45000.00,52000.00,68000.00,80000.00,
+x,18.000,Count,1,0,0,0,0,0,0,0,0,0,1
+,24.000,,0,1,0,0,0,0,0,0,0,0,1
+,25.000,,0,0,1,0,0,0,0,0,0,0,1
+,26.000,,0,0,0,1,0,0,0,0,0,0,1
+,33.000,,0,0,0,0,1,0,0,0,0,0,1
+,37.000,,0,0,0,0,0,1,0,0,0,0,1
+,40.000,,0,0,0,0,0,0,1,0,0,0,1
+,45.000,,0,0,0,0,0,0,0,1,0,0,1
+,57.000,,0,0,0,0,0,0,0,0,1,0,1
+,64.000,,0,0,0,0,0,0,0,0,0,1,1
+Total,,,1,1,1,1,1,1,1,1,1,1,10
 
-Table: Symmetric measures.
-Category,Statistic,Value,Asymp. Std. Error,Approx. T,Approx. Sig.
-Ordinal by Ordinal,Spearman Correlation,1.000,.000,+Infinity,
-Interval by Interval,Pearson's R,.992,.004,22.638,
-N of Valid Cases,,10,,,
+Table: Symmetric Measures
+,,Value,Asymp. Std. Error,Approx. T
+Ordinal by Ordinal,Spearman Correlation,1.000,.000,+Infinit
+Interval by Interval,Pearson's R,.992,.004,22.638
+N of Valid Cases,,10,,
 ])
 AT_CLEANUP
 
-AT_SETUP([CROSSTABS Goodman and Kruskal's lambda])
+AT_SETUP([CROSSTABS Goodman and Kruskal's lambda - 1])
 AT_DATA([lambda.sps], [dnl
 SET FORMAT F8.3.
 
@@ -1129,6 +1147,28 @@ BEGIN DATA.
 END DATA.
 
 CROSSTABS x BY y/CELLS=NONE/STATISTICS=LAMBDA.
+])
+AT_CHECK([pspp -o pspp.csv -o pspp.txt lambda.sps])
+AT_CHECK([cat pspp.csv], [0], [dnl
+Table: Summary
+,Cases,,,,,
+,Valid,,Missing,,Total,
+,N,Percent,N,Percent,N,Percent
+x × y,1296.000,100.0%,.000,.0%,1296.000,100.0%
+
+Table: Directional Measures
+,,,Value,Asymp. Std. Error,Approx. T,Approx Sig.
+Nominal by Nominal,Lambda,Symmetric,.423,.021,16.875,.000
+,,x Dependent,.497,.024,15.986,.000
+,,y Dependent,.370,.020,16.339,.000
+,Goodman and Kruskal tau,x Dependent,.382,,,
+,,y Dependent,.198,,,
+])
+AT_CLEANUP
+
+AT_SETUP([CROSSTABS Goodman and Kruskal's lambda - 2])
+AT_DATA([lambda.sps], [dnl
+SET FORMAT F8.3.
 
 * From http://vassarstats.net.
 DATA LIST LIST NOTABLE/x y w.
@@ -1146,6 +1186,28 @@ BEGIN DATA.
 END DATA.
 
 CROSSTABS x BY y/CELLS=NONE/STATISTICS=LAMBDA.
+])
+AT_CHECK([pspp -o pspp.csv -o pspp.txt lambda.sps])
+AT_CHECK([cat pspp.csv], [0], [dnl
+Table: Summary
+,Cases,,,,,
+,Valid,,Missing,,Total,
+,N,Percent,N,Percent,N,Percent
+x × y,137.000,100.0%,.000,.0%,137.000,100.0%
+
+Table: Directional Measures
+,,,Value,Asymp. Std. Error,Approx. T,Approx Sig.
+Nominal by Nominal,Lambda,Symmetric,.259,.081,2.902,.004
+,,x Dependent,.250,.089,2.479,.013
+,,y Dependent,.267,.085,2.766,.006
+,Goodman and Kruskal tau,x Dependent,.129,,,
+,,y Dependent,.123,,,
+])
+AT_CLEANUP
+
+AT_SETUP([CROSSTABS Goodman and Kruskal's lambda - 3])
+AT_DATA([lambda.sps], [dnl
+SET FORMAT F8.3.
 
 * From Goodman, L.A., Kruskal, W.H. (1954) "Measures of association for
   cross classifications". Part I. Journal of the American Statistical
@@ -1168,48 +1230,21 @@ BEGIN DATA.
 END DATA.
 CROSSTABS x BY y/CELLS=NONE/STATISTICS=LAMBDA.
 ])
-AT_CHECK([pspp -O format=csv lambda.sps], [0], [dnl
-Table: Summary.
+AT_CHECK([pspp -o pspp.csv -o pspp.txt lambda.sps])
+AT_CHECK([cat pspp.csv], [0], [dnl
+Table: Summary
 ,Cases,,,,,
 ,Valid,,Missing,,Total,
 ,N,Percent,N,Percent,N,Percent
-x * y,1296.000,100.0%,.000,0.0%,1296.000,100.0%
+x × y,6800.000,100.0%,.000,.0%,6800.000,100.0%
 
-Table: Directional measures.
-Category,Statistic,Type,Value,Asymp. Std. Error,Approx. T,Approx. Sig.
-Nominal by Nominal,Lambda,Symmetric,.423,.021,16.875,.000
-,,x Dependent,.497,.024,15.986,.000
-,,y Dependent,.370,.020,16.339,.000
-,Goodman and Kruskal tau,x Dependent,.382,,,.   @&t@
-,,y Dependent,.198,,,.   @&t@
-
-Table: Summary.
-,Cases,,,,,
-,Valid,,Missing,,Total,
-,N,Percent,N,Percent,N,Percent
-x * y,137.000,100.0%,.000,0.0%,137.000,100.0%
-
-Table: Directional measures.
-Category,Statistic,Type,Value,Asymp. Std. Error,Approx. T,Approx. Sig.
-Nominal by Nominal,Lambda,Symmetric,.259,.081,2.902,.004
-,,x Dependent,.250,.089,2.479,.013
-,,y Dependent,.267,.085,2.766,.006
-,Goodman and Kruskal tau,x Dependent,.129,,,.   @&t@
-,,y Dependent,.123,,,.   @&t@
-
-Table: Summary.
-,Cases,,,,,
-,Valid,,Missing,,Total,
-,N,Percent,N,Percent,N,Percent
-x * y,6800.000,100.0%,.000,0.0%,6800.000,100.0%
-
-Table: Directional measures.
-Category,Statistic,Type,Value,Asymp. Std. Error,Approx. T,Approx. Sig.
+Table: Directional Measures
+,,,Value,Asymp. Std. Error,Approx. T,Approx Sig.
 Nominal by Nominal,Lambda,Symmetric,.208,.010,18.793,.000
 ,,x Dependent,.224,.013,16.076,.000
 ,,y Dependent,.192,.012,14.438,.000
-,Goodman and Kruskal tau,x Dependent,.089,,,.   @&t@
-,,y Dependent,.081,,,.   @&t@
+,Goodman and Kruskal tau,x Dependent,.089,,,
+,,y Dependent,.081,,,
 ])
 AT_CLEANUP
 
@@ -1231,24 +1266,25 @@ END DATA.
 
 CROSSTABS x BY y/CELLS=NONE/STATISTICS=LAMBDA.
 ])
-AT_CHECK([pspp -O format=csv lambda.sps], [0], [dnl
-Table: Summary.
+AT_CHECK([pspp -o pspp.csv -o pspp.txt lambda.sps])
+AT_CHECK([cat pspp.csv], [0], [dnl
+Table: Summary
 ,Cases,,,,,
 ,Valid,,Missing,,Total,
 ,N,Percent,N,Percent,N,Percent
-x * y,500.000,100.0%,.000,0.0%,500.000,100.0%
+x × y,500.000,100.0%,.000,.0%,500.000,100.0%
 
-Table: Directional measures.
-Category,Statistic,Type,Value,Asymp. Std. Error,Approx. T,Approx. Sig.
+Table: Directional Measures
+,,,Value,Asymp. Std. Error,Approx. T,Approx Sig.
 Nominal by Nominal,Lambda,Symmetric,.031,.013,2.336,.019
 ,,x Dependent,.000,.000,NaN,NaN
 ,,y Dependent,.033,.014,2.336,.019
-,Goodman and Kruskal tau,x Dependent,.012,,,.   @&t@
-,,y Dependent,.009,,,.   @&t@
+,Goodman and Kruskal tau,x Dependent,.012,,,
+,,y Dependent,.009,,,
 ])
 AT_CLEANUP
 
-AT_SETUP([CROSSTABS Somers' D, Tau-B, Tau-C, Gamma])
+AT_SETUP([CROSSTABS Somers' D, Tau-B, Tau-C, Gamma - 1])
 AT_DATA([somersd.sps], [dnl
 SET FORMAT F8.3.
 
@@ -1272,6 +1308,26 @@ BEGIN DATA.
 2 7 0.0375
 END DATA.
 CROSSTABS x BY y/STATISTICS=D/CELLS=NONE.
+])
+AT_CHECK([pspp -o pspp.csv -o pspp.txt somersd.sps])
+AT_CHECK([cat pspp.csv], [0], [dnl
+Table: Summary
+,Cases,,,,,
+,Valid,,Missing,,Total,
+,N,Percent,N,Percent,N,Percent
+x × y,1.000000,100.0%,.000000,.0%,1.000000,100.0%
+
+Table: Directional Measures
+,,,Value,Asymp. Std. Error,Approx. T,Approx Sig.
+Ordinal by Ordinal,Somers' d,Symmetric,-.084,,-.149,.882
+,,x Dependent,-.045,.300,-.149,.882
+,,y Dependent,-.684,2.378,-.149,.882
+])
+AT_CLEANUP
+
+AT_SETUP([CROSSTABS Somers' D, Tau-B, Tau-C, Gamma - 2])
+AT_DATA([somersd.sps], [dnl
+SET FORMAT F8.3.
 
 * From http://uregina.ca/~gingrich/gamma.pdf.
 DATA LIST LIST NOTABLE/x y w.
@@ -1289,39 +1345,30 @@ BEGIN DATA.
 END DATA.
 CROSSTABS x BY y/STATISTICS=BTAU CTAU GAMMA D/CELLS=NONE.
 ])
-AT_CHECK([pspp -O format=csv somersd.sps], [0], [dnl
-Table: Summary.
+AT_CHECK([pspp -o pspp.csv -o pspp.txt somersd.sps])
+AT_CHECK([cat pspp.csv], [0], [dnl
+Table: Summary
 ,Cases,,,,,
 ,Valid,,Missing,,Total,
 ,N,Percent,N,Percent,N,Percent
-x * y,1.000000,100.0%,.000000,0.0%,1.000000,100.0%
+x × y,687.000,100.0%,.000,.0%,687.000,100.0%
 
-Table: Directional measures.
-Category,Statistic,Type,Value,Asymp. Std. Error,Approx. T,Approx. Sig.
-Ordinal by Ordinal,Somers' d,Symmetric,-.084,,-.149,.882
-,,x Dependent,-.045,.300,-.149,.882
-,,y Dependent,-.684,2.378,-.149,.882
+Table: Symmetric Measures
+,,Value,Asymp. Std. Error,Approx. T
+Ordinal by Ordinal,Kendall's tau-b,.372,.033,10.669
+,Kendall's tau-c,.310,.029,10.669
+,Gamma,.591,.043,10.669
+N of Valid Cases,,687.000,,
 
-Table: Summary.
-,Cases,,,,,
-,Valid,,Missing,,Total,
-,N,Percent,N,Percent,N,Percent
-x * y,687.000,100.0%,.000,0.0%,687.000,100.0%
-
-Table: Symmetric measures.
-Category,Statistic,Value,Asymp. Std. Error,Approx. T,Approx. Sig.
-Ordinal by Ordinal,Kendall's tau-b,.372,.033,10.669,
-,Kendall's tau-c,.310,.029,10.669,
-,Gamma,.591,.043,10.669,
-N of Valid Cases,,687.000,,,
-
-Table: Directional measures.
-Category,Statistic,Type,Value,Asymp. Std. Error,Approx. T,Approx. Sig.
+Table: Directional Measures
+,,,Value,Asymp. Std. Error,Approx. T,Approx Sig.
 Ordinal by Ordinal,Somers' d,Symmetric,.371,,10.669,.000
 ,,x Dependent,.351,.032,10.669,.000
 ,,y Dependent,.394,.035,10.669,.000
 ])
+AT_CLEANUP
 
+AT_SETUP([CROSSTABS Somers' D, Tau-B, Tau-C, Gamma - 3])
 AT_DATA([ordinal.sps], [dnl
 SET FORMAT F8.3.
 
@@ -1430,159 +1477,160 @@ BEGIN DATA.
 END DATA.
 CROSSTABS x BY y/STATISTICS=LAMBDA D PHI BTAU/CELLS=NONE.
 ])
-AT_CHECK([pspp -O format=csv ordinal.sps], [0], [dnl
-Table: Summary.
+AT_CHECK([pspp -o pspp.csv -o pspp.txt ordinal.sps])
+AT_CHECK([cat pspp.csv], [0], [dnl
+Table: Summary
 ,Cases,,,,,
 ,Valid,,Missing,,Total,
 ,N,Percent,N,Percent,N,Percent
-x * y,150.000,100.0%,.000,0.0%,150.000,100.0%
+x × y,150.000,100.0%,.000,.0%,150.000,100.0%
 
-Table: Symmetric measures.
-Category,Statistic,Value,Asymp. Std. Error,Approx. T,Approx. Sig.
-Ordinal by Ordinal,Kendall's tau-b,1.000,.000,24.841,
-,Gamma,1.000,.000,24.841,
-N of Valid Cases,,150.000,,,
+Table: Symmetric Measures
+,,Value,Asymp. Std. Error,Approx. T
+Ordinal by Ordinal,Kendall's tau-b,1.000,.000,24.841
+,Gamma,1.000,.000,24.841
+N of Valid Cases,,150.000,,
 
-Table: Directional measures.
-Category,Statistic,Type,Value,Asymp. Std. Error,Approx. T,Approx. Sig.
+Table: Directional Measures
+,,,Value,Asymp. Std. Error,Approx. T,Approx Sig.
 Ordinal by Ordinal,Somers' d,Symmetric,1.000,,24.841,.000
 ,,x Dependent,1.000,.000,24.841,.000
 ,,y Dependent,1.000,.000,24.841,.000
 
-Table: Summary.
+Table: Summary
 ,Cases,,,,,
 ,Valid,,Missing,,Total,
 ,N,Percent,N,Percent,N,Percent
-x * y,150.000,100.0%,.000,0.0%,150.000,100.0%
+x × y,150.000,100.0%,.000,.0%,150.000,100.0%
 
-Table: Symmetric measures.
-Category,Statistic,Value,Asymp. Std. Error,Approx. T,Approx. Sig.
-Ordinal by Ordinal,Kendall's tau-b,1.000,.000,24.841,
-,Gamma,1.000,.000,24.841,
-N of Valid Cases,,150.000,,,
+Table: Symmetric Measures
+,,Value,Asymp. Std. Error,Approx. T
+Ordinal by Ordinal,Kendall's tau-b,1.000,.000,24.841
+,Gamma,1.000,.000,24.841
+N of Valid Cases,,150.000,,
 
-Table: Directional measures.
-Category,Statistic,Type,Value,Asymp. Std. Error,Approx. T,Approx. Sig.
+Table: Directional Measures
+,,,Value,Asymp. Std. Error,Approx. T,Approx Sig.
 Ordinal by Ordinal,Somers' d,Symmetric,1.000,,24.841,.000
 ,,x Dependent,1.000,.000,24.841,.000
 ,,y Dependent,1.000,.000,24.841,.000
 
-Table: Summary.
+Table: Summary
 ,Cases,,,,,
 ,Valid,,Missing,,Total,
 ,N,Percent,N,Percent,N,Percent
-x * y,150.000,100.0%,.000,0.0%,150.000,100.0%
+x × y,150.000,100.0%,.000,.0%,150.000,100.0%
 
-Table: Symmetric measures.
-Category,Statistic,Value,Asymp. Std. Error,Approx. T,Approx. Sig.
-Ordinal by Ordinal,Kendall's tau-b,-1.000,.000,-24.841,
-,Gamma,-1.000,.000,-24.841,
-N of Valid Cases,,150.000,,,
+Table: Symmetric Measures
+,,Value,Asymp. Std. Error,Approx. T
+Ordinal by Ordinal,Kendall's tau-b,-1.000,.000,-24.841
+,Gamma,-1.000,.000,-24.841
+N of Valid Cases,,150.000,,
 
-Table: Directional measures.
-Category,Statistic,Type,Value,Asymp. Std. Error,Approx. T,Approx. Sig.
+Table: Directional Measures
+,,,Value,Asymp. Std. Error,Approx. T,Approx Sig.
 Ordinal by Ordinal,Somers' d,Symmetric,-1.000,,-24.841,.000
 ,,x Dependent,-1.000,.000,-24.841,.000
 ,,y Dependent,-1.000,.000,-24.841,.000
 
-Table: Summary.
+Table: Summary
 ,Cases,,,,,
 ,Valid,,Missing,,Total,
 ,N,Percent,N,Percent,N,Percent
-x * y,150.000,100.0%,.000,0.0%,150.000,100.0%
+x × y,150.000,100.0%,.000,.0%,150.000,100.0%
 
-Table: Symmetric measures.
-Category,Statistic,Value,Asymp. Std. Error,Approx. T,Approx. Sig.
-Ordinal by Ordinal,Kendall's tau-b,.972,.007,24.841,
-,Gamma,1.000,.000,24.841,
-N of Valid Cases,,150.000,,,
+Table: Symmetric Measures
+,,Value,Asymp. Std. Error,Approx. T
+Ordinal by Ordinal,Kendall's tau-b,.972,.007,24.841
+,Gamma,1.000,.000,24.841
+N of Valid Cases,,150.000,,
 
-Table: Directional measures.
-Category,Statistic,Type,Value,Asymp. Std. Error,Approx. T,Approx. Sig.
+Table: Directional Measures
+,,,Value,Asymp. Std. Error,Approx. T,Approx Sig.
 Ordinal by Ordinal,Somers' d,Symmetric,.971,,24.841,.000
 ,,x Dependent,.944,.013,24.841,.000
 ,,y Dependent,1.000,.000,24.841,.000
 
-Table: Summary.
+Table: Summary
 ,Cases,,,,,
 ,Valid,,Missing,,Total,
 ,N,Percent,N,Percent,N,Percent
-x * y,150.000,100.0%,.000,0.0%,150.000,100.0%
+x × y,150.000,100.0%,.000,.0%,150.000,100.0%
 
-Table: Symmetric measures.
-Category,Statistic,Value,Asymp. Std. Error,Approx. T,Approx. Sig.
-Ordinal by Ordinal,Kendall's tau-b,.119,.059,1.009,
-,Gamma,1.000,.000,1.009,
-N of Valid Cases,,150.000,,,
+Table: Symmetric Measures
+,,Value,Asymp. Std. Error,Approx. T
+Ordinal by Ordinal,Kendall's tau-b,.119,.059,1.009
+,Gamma,1.000,.000,1.009
+N of Valid Cases,,150.000,,
 
-Table: Directional measures.
-Category,Statistic,Type,Value,Asymp. Std. Error,Approx. T,Approx. Sig.
+Table: Directional Measures
+,,,Value,Asymp. Std. Error,Approx. T,Approx Sig.
 Ordinal by Ordinal,Somers' d,Symmetric,.035,,1.009,.313
 ,,x Dependent,.805,.032,1.009,.313
 ,,y Dependent,.018,.017,1.009,.313
 
-Table: Summary.
+Table: Summary
 ,Cases,,,,,
 ,Valid,,Missing,,Total,
 ,N,Percent,N,Percent,N,Percent
-x * y,148.000,100.0%,.000,0.0%,148.000,100.0%
+x × y,148.000,100.0%,.000,.0%,148.000,100.0%
 
-Table: Symmetric measures.
-Category,Statistic,Value,Asymp. Std. Error,Approx. T,Approx. Sig.
-Ordinal by Ordinal,Kendall's tau-b,-.208,.078,-2.641,
-,Gamma,-.381,.130,-2.641,
-N of Valid Cases,,148.000,,,
+Table: Symmetric Measures
+,,Value,Asymp. Std. Error,Approx. T
+Ordinal by Ordinal,Kendall's tau-b,-.208,.078,-2.641
+,Gamma,-.381,.130,-2.641
+N of Valid Cases,,148.000,,
 
-Table: Directional measures.
-Category,Statistic,Type,Value,Asymp. Std. Error,Approx. T,Approx. Sig.
+Table: Directional Measures
+,,,Value,Asymp. Std. Error,Approx. T,Approx Sig.
 Ordinal by Ordinal,Somers' d,Symmetric,-.206,,-2.641,.008
 ,,x Dependent,-.182,.069,-2.641,.008
 ,,y Dependent,-.237,.089,-2.641,.008
 
-Table: Summary.
+Table: Summary
 ,Cases,,,,,
 ,Valid,,Missing,,Total,
 ,N,Percent,N,Percent,N,Percent
-x * y,148.000,100.0%,.000,0.0%,148.000,100.0%
+x × y,148.000,100.0%,.000,.0%,148.000,100.0%
 
-Table: Symmetric measures.
-Category,Statistic,Value,Asymp. Std. Error,Approx. T,Approx. Sig.
-Nominal by Nominal,Phi,.731,,,
-,Cramer's V,.731,,,
-Ordinal by Ordinal,Gamma,-.110,.107,-1.022,
-N of Valid Cases,,148.000,,,
+Table: Symmetric Measures
+,,Value,Asymp. Std. Error,Approx. T
+Nominal by Nominal,Phi,.731,,
+,Cramer's V,.731,,
+Ordinal by Ordinal,Gamma,-.110,.107,-1.022
+N of Valid Cases,,148.000,,
 
-Table: Directional measures.
-Category,Statistic,Type,Value,Asymp. Std. Error,Approx. T,Approx. Sig.
+Table: Directional Measures
+,,,Value,Asymp. Std. Error,Approx. T,Approx Sig.
 Nominal by Nominal,Lambda,Symmetric,.338,.059,4.743,.000
 ,,x Dependent,.640,.085,4.875,.000
 ,,y Dependent,.174,.050,3.248,.001
-,Goodman and Kruskal tau,x Dependent,.534,,,.   @&t@
-,,y Dependent,.167,,,.   @&t@
+,Goodman and Kruskal tau,x Dependent,.534,,,
+,,y Dependent,.167,,,
 Ordinal by Ordinal,Somers' d,Symmetric,-.074,,-1.022,.307
 ,,x Dependent,-.060,.059,-1.022,.307
 ,,y Dependent,-.096,.094,-1.022,.307
 
-Table: Summary.
+Table: Summary
 ,Cases,,,,,
 ,Valid,,Missing,,Total,
 ,N,Percent,N,Percent,N,Percent
-x * y,212.000,100.0%,.000,0.0%,212.000,100.0%
+x × y,212.000,100.0%,.000,.0%,212.000,100.0%
 
-Table: Symmetric measures.
-Category,Statistic,Value,Asymp. Std. Error,Approx. T,Approx. Sig.
-Nominal by Nominal,Phi,.432,,,
-,Cramer's V,.249,,,
-Ordinal by Ordinal,Kendall's tau-b,.209,.062,3.338,
-N of Valid Cases,,212.000,,,
+Table: Symmetric Measures
+,,Value,Asymp. Std. Error,Approx. T
+Nominal by Nominal,Phi,.432,,
+,Cramer's V,.249,,
+Ordinal by Ordinal,Kendall's tau-b,.209,.062,3.338
+N of Valid Cases,,212.000,,
 
-Table: Directional measures.
-Category,Statistic,Type,Value,Asymp. Std. Error,Approx. T,Approx. Sig.
+Table: Directional Measures
+,,,Value,Asymp. Std. Error,Approx. T,Approx Sig.
 Nominal by Nominal,Lambda,Symmetric,.102,.067,1.473,.141
 ,,x Dependent,.027,.087,.302,.763
 ,,y Dependent,.165,.065,2.349,.019
-,Goodman and Kruskal tau,x Dependent,.051,,,.   @&t@
-,,y Dependent,.068,,,.   @&t@
+,Goodman and Kruskal tau,x Dependent,.051,,,
+,,y Dependent,.068,,,
 Ordinal by Ordinal,Somers' d,Symmetric,.209,,3.338,.001
 ,,x Dependent,.202,.060,3.338,.001
 ,,y Dependent,.217,.064,3.338,.001
@@ -1611,24 +1659,25 @@ crosstabs /table = p1 by p2
 	.
 ])
 
-AT_CHECK([pspp -O format=csv kappa.sps], [0], [dnl
-Table: Summary.
+AT_CHECK([pspp -o pspp.csv -o pspp.txt kappa.sps])
+AT_CHECK([cat pspp.csv], [0], [dnl
+Table: Summary
 ,Cases,,,,,
 ,Valid,,Missing,,Total,
 ,N,Percent,N,Percent,N,Percent
-p1 * p2,20.000,100.0%,.000,0.0%,20.000,100.0%
+p1 × p2,20.000,100.0%,.000,.0%,20.000,100.0%
 
-Table: p1 * p2 [[count]].
-,p2,,
-p1,.000,1.000,Total
-.000,18.000,1.000,19.000
-1.000,1.000,.000,1.000
-Total,19.000,1.000,20.000
+Table: p1 × p2
+,,,p2,,Total
+,,,.000,1.000,
+p1,.000,Count,18.000,1.000,19.000
+,1.000,,1.000,.000,1.000
+Total,,,19.000,1.000,20.000
 
-Table: Symmetric measures.
-Category,Statistic,Value,Asymp. Std. Error,Approx. T,Approx. Sig.
-Measure of Agreement,Kappa,-.053,.037,-.235,
-N of Valid Cases,,20.000,,,
+Table: Symmetric Measures
+,,Value,Asymp. Std. Error,Approx. T
+Measure of Agreement,Kappa,-.053,.037,-.235
+N of Valid Cases,,20.000,,
 ])
 
 AT_CLEANUP
@@ -1650,42 +1699,43 @@ BEGIN DATA.
 END DATA.
 CROSSTABS x BY y/STATISTICS=CHISQ PHI CC LAMBDA UC BTAU CTAU GAMMA D CORR/CELLS=NONE.
 ])
-AT_CHECK([pspp -O format=csv crosstabs.sps], [0], [dnl
-Table: Summary.
+AT_CHECK([pspp -o pspp.csv -o pspp.txt crosstabs.sps])
+AT_CHECK([cat pspp.csv], [0], [dnl
+Table: Summary
 ,Cases,,,,,
 ,Valid,,Missing,,Total,
 ,N,Percent,N,Percent,N,Percent
-x * y,66.0000,100.0%,.0000,0.0%,66.0000,100.0%
+x × y,66.0000,100.0%,.0000,.0%,66.0000,100.0%
 
-Table: Chi-square tests.
-Statistic,Value,df,Asymp. Sig. (2-tailed)
+Table: Chi-Square Tests
+,Value,df,Asymptotic Sig. (2-tailed)
 Pearson Chi-Square,6.9562,2.0000,.031
 Likelihood Ratio,6.6901,2.0000,.035
 Linear-by-Linear Association,5.8450,1.0000,.016
 N of Valid Cases,66.0000,,
 
-Table: Symmetric measures.
-Category,Statistic,Value,Asymp. Std. Error,Approx. T,Approx. Sig.
-Nominal by Nominal,Phi,.3246,,,
-,Cramer's V,.3246,,,
-,Contingency Coefficient,.3088,,,
-Ordinal by Ordinal,Kendall's tau-b,.2752,.0856,1.9920,
-,Kendall's tau-c,.1497,.0751,1.9920,
-,Gamma,.8717,.1250,1.9920,
-,Spearman Correlation,.2908,.0906,2.4311,
-Interval by Interval,Pearson's R,.2999,.0973,2.5147,
-N of Valid Cases,,66.0000,,,
+Table: Symmetric Measures
+,,Value,Asymp. Std. Error,Approx. T
+Nominal by Nominal,Phi,.3246,,
+,Cramer's V,.3246,,
+,Contingency Coefficient,.3088,,
+Ordinal by Ordinal,Kendall's tau-b,.2752,.0856,1.9920
+,Kendall's tau-c,.1497,.0751,1.9920
+,Gamma,.8717,.1250,1.9920
+,Spearman Correlation,.2908,.0906,2.4311
+Interval by Interval,Pearson's R,.2999,.0973,2.5147
+N of Valid Cases,,66.0000,,
 
-Table: Directional measures.
-Category,Statistic,Type,Value,Asymp. Std. Error,Approx. T,Approx. Sig.
+Table: Directional Measures
+,,,Value,Asymp. Std. Error,Approx. T,Approx Sig.
 Nominal by Nominal,Lambda,Symmetric,.0455,.1629,.2723,.785
 ,,x Dependent,.0000,.0000,NaN,NaN
 ,,y Dependent,.0500,.1791,.2723,.785
-,Goodman and Kruskal tau,x Dependent,.1054,,,.   @&t@
-,,y Dependent,.0434,,,.   @&t@
-,Uncertainty Coefficient,Symmetric,.0780,.0474,,.   @&t@
-,,x Dependent,.2217,.1062,1.5373,.   @&t@
-,,y Dependent,.0473,.0306,1.5373,.   @&t@
+,Goodman and Kruskal tau,x Dependent,.1054,,,
+,,y Dependent,.0434,,,
+,Uncertainty Coefficient,Symmetric,.0780,.0474,,
+,,x Dependent,.2217,.1062,1.5373,
+,,y Dependent,.0473,.0306,1.5373,
 Ordinal by Ordinal,Somers' d,Symmetric,.1960,,1.9920,.046
 ,,x Dependent,.1152,.0572,1.9920,.046
 ,,y Dependent,.6573,.1417,1.9920,.046
@@ -1709,27 +1759,82 @@ BEGIN DATA.
 END DATA.
 CROSSTABS x BY y/STATISTICS=LAMBDA UC/CELLS=NONE.
 ])
-AT_CHECK([pspp -O format=csv uc.sps], [0], [dnl
-Table: Summary.
+AT_CHECK([pspp -o pspp.csv -o pspp.txt uc.sps])
+AT_CHECK([cat pspp.csv], [0], [dnl
+Table: Summary
 ,Cases,,,,,
 ,Valid,,Missing,,Total,
 ,N,Percent,N,Percent,N,Percent
-x * y,987.000,100.0%,.000,0.0%,987.000,100.0%
+x × y,987.000,100.0%,.000,.0%,987.000,100.0%
 
-Table: Directional measures.
-Category,Statistic,Type,Value,Asymp. Std. Error,Approx. T,Approx. Sig.
+Table: Directional Measures
+,,,Value,Asymp. Std. Error,Approx. T,Approx Sig.
 Nominal by Nominal,Lambda,Symmetric,.000,.000,NaN,NaN
 ,,x Dependent,.000,.000,NaN,NaN
 ,,y Dependent,.000,.000,NaN,NaN
-,Goodman and Kruskal tau,x Dependent,.076,,,.   @&t@
-,,y Dependent,.108,,,.   @&t@
-,Uncertainty Coefficient,Symmetric,.105,.012,,.   @&t@
-,,x Dependent,.073,.009,7.890,.   @&t@
-,,y Dependent,.184,.019,7.890,.   @&t@
+,Goodman and Kruskal tau,x Dependent,.076,,,
+,,y Dependent,.108,,,
+,Uncertainty Coefficient,Symmetric,.105,.012,,
+,,x Dependent,.073,.009,7.890,
+,,y Dependent,.184,.019,7.890,
 ])
 AT_CLEANUP
 
+AT_SETUP([CROSSTABS estimated risk])
+dnl Example data and expected output from
+dnl http://www.psychology.nottingham.ac.uk/staff/ddc/c8cxpa/further/Project_resources/SPSSCrosstabW.pdf
+AT_DATA([risk.sps], [dnl
+DATA LIST LIST /factor disease count (F8.0).
+WEIGHT BY count.
+VALUE LABELS /factor 0 'Placebo' 1 'Aspirin'
+             /disease 1 'No' 0 'Yes'.
+BEGIN DATA.
+0 1 80
+0 0 20
+1 1 135
+1 0 15
+END DATA.
+CROSSTABS factor BY disease/STATISTICS=RISK CHISQ.
+])
+AT_CHECK([pspp -o pspp.csv -o pspp.txt risk.sps])
+AT_CHECK([cat pspp.csv], [0], [dnl
+Table: Reading free-form data from INLINE.
+Variable,Format
+factor,F8.0
+disease,F8.0
+count,F8.0
 
+Table: Summary
+,Cases,,,,,
+,Valid,,Missing,,Total,
+,N,Percent,N,Percent,N,Percent
+factor × disease,250,100.0%,0,.0%,250,100.0%
+
+Table: factor × disease
+,,,disease,,Total
+,,,Yes,No,
+factor,Placebo,Count,20,80,100
+,Aspirin,,15,135,150
+Total,,,35,215,250
+
+Table: Chi-Square Tests
+,Value,df,Asymptotic Sig. (2-tailed),Exact Sig. (2-tailed),Exact Sig. (1-tailed)
+Pearson Chi-Square,4.98,1,.026,,
+Likelihood Ratio,4.88,1,.027,,
+Fisher's Exact Test,,,,.039,.021
+Continuity Correction,4.19,1,.041,,
+Linear-by-Linear Association,4.96,1,.026,,
+N of Valid Cases,250,,,,
+
+Table: Risk Estimate
+,Value,95% Confidence Interval,
+,,Lower,Upper
+Odds Ratio for factor (Placebo / Aspirin),2.25,2.25,2.25
+For cohort disease = Yes,1.08,1.08,1.08
+For cohort disease = No,.99,.99,.99
+N of Valid Cases,250.00,,
+])
+AT_CLEANUP
 
 AT_SETUP([CROSSTABS barchart])
 AT_DATA([bc.sps], [dnl

@@ -41,8 +41,9 @@ list.
 ])
 AT_CHECK([pspp -o pspp.csv split-file.sps])
 AT_CHECK([cat pspp.csv], [0], [dnl
-Variable,Value,Label
-X,1,
+Table: Split Values
+Variable,Value
+X,1
 
 Table: Data List
 X,Y
@@ -53,8 +54,9 @@ X,Y
 1,5
 1,4
 
-Variable,Value,Label
-X,2,
+Table: Split Values
+Variable,Value
+X,2
 
 Table: Data List
 X,Y

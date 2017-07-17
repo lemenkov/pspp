@@ -44,7 +44,7 @@
 #include "math/covariance.h"
 #include "math/levene.h"
 #include "math/moments.h"
-#include "output/tab.h"
+#include "output/pivot-table.h"
 
 #include "gettext.h"
 #define _(msgid) gettext (msgid)
@@ -143,6 +143,7 @@ struct oneway_spec
 
   /* The weight variable */
   const struct variable *wv;
+  const struct fmt_spec *wfmt;
 
   /* The confidence level for multiple comparisons */
   double alpha;
@@ -429,6 +430,7 @@ cmd_oneway (struct lexer *lexer, struct dataset *ds)
   oneway.missing_type = MISS_ANALYSIS;
   oneway.exclude = MV_ANY;
   oneway.wv = dict_get_weight (dict);
+  oneway.wfmt = dict_get_weight_format (dict);
   oneway.alpha = 0.05;
   oneway.posthoc = NULL;
   oneway.n_posthoc = 0;
@@ -963,306 +965,220 @@ output_oneway (const struct oneway_spec *cmd, struct oneway_workspace *ws)
 static void
 show_anova_table (const struct oneway_spec *cmd, const struct oneway_workspace *ws)
 {
-  size_t i;
-  int n_cols =7;
-  size_t n_rows = cmd->n_vars * 3 + 1;
+  struct pivot_table *table = pivot_table_create (N_("ANOVA"));
 
-  struct tab_table *t = tab_create (n_cols, n_rows);
+  pivot_dimension_create (table, PIVOT_AXIS_COLUMN, N_("Statistics"),
+                          N_("Sum of Squares"), PIVOT_RC_OTHER,
+                          N_("df"), PIVOT_RC_INTEGER,
+                          N_("Mean Square"), PIVOT_RC_OTHER,
+                          N_("F"), PIVOT_RC_OTHER,
+                          N_("Sig."), PIVOT_RC_SIGNIFICANCE);
 
-  tab_headers (t, 2, 0, 1, 0);
+  pivot_dimension_create (table, PIVOT_AXIS_ROW, N_("Type"),
+                          N_("Between Groups"), N_("Within Groups"),
+                          N_("Total"));
 
-  tab_box (t,
-	   TAL_2, TAL_2,
-	   -1, TAL_1,
-	   0, 0,
-	   n_cols - 1, n_rows - 1);
+  struct pivot_dimension *variables = pivot_dimension_create (
+    table, PIVOT_AXIS_ROW, N_("Variables"));
 
-  tab_hline (t, TAL_2, 0, n_cols - 1, 1 );
-  tab_vline (t, TAL_2, 2, 0, n_rows - 1);
-  tab_vline (t, TAL_0, 1, 0, 0);
-
-  tab_text (t, 2, 0, TAB_CENTER | TAT_TITLE, _("Sum of Squares"));
-  tab_text (t, 3, 0, TAB_CENTER | TAT_TITLE, _("df"));
-  tab_text (t, 4, 0, TAB_CENTER | TAT_TITLE, _("Mean Square"));
-  tab_text (t, 5, 0, TAB_CENTER | TAT_TITLE, _("F"));
-  tab_text (t, 6, 0, TAB_CENTER | TAT_TITLE, _("Sig."));
-
-
-  for (i = 0; i < cmd->n_vars; ++i)
+  for (size_t i = 0; i < cmd->n_vars; ++i)
     {
-      double n;
-      double df1, df2;
-      double msa;
-      const char *s = var_to_string (cmd->vars[i]);
+      int var_idx = pivot_category_create_leaf (
+        variables->root, pivot_value_new_variable (cmd->vars[i]));
+
       const struct per_var_ws *pvw = &ws->vws[i];
 
+      double n;
       moments1_calculate (ws->dd_total[i]->mom, &n, NULL, NULL, NULL, NULL);
 
-      df1 = pvw->n_groups - 1;
-      df2 = n - pvw->n_groups;
-      msa = pvw->ssa / df1;
+      double df1 = pvw->n_groups - 1;
+      double df2 = n - pvw->n_groups;
+      double msa = pvw->ssa / df1;
+      double F = msa / pvw->mse ;
 
-      tab_text (t, 0, i * 3 + 1, TAB_LEFT | TAT_TITLE, s);
-      tab_text (t, 1, i * 3 + 1, TAB_LEFT | TAT_TITLE, _("Between Groups"));
-      tab_text (t, 1, i * 3 + 2, TAB_LEFT | TAT_TITLE, _("Within Groups"));
-      tab_text (t, 1, i * 3 + 3, TAB_LEFT | TAT_TITLE, _("Total"));
-
-      if (i > 0)
-	tab_hline (t, TAL_1, 0, n_cols - 1, i * 3 + 1);
-
-
-      /* Sums of Squares */
-      tab_double (t, 2, i * 3 + 1, 0, pvw->ssa, NULL, RC_OTHER);
-      tab_double (t, 2, i * 3 + 3, 0, pvw->sst, NULL, RC_OTHER);
-      tab_double (t, 2, i * 3 + 2, 0, pvw->sse, NULL, RC_OTHER);
-
-
-      /* Degrees of freedom */
-      tab_double (t, 3, i * 3 + 1, 0, df1, NULL, RC_INTEGER);
-      tab_double (t, 3, i * 3 + 2, 0, df2,  NULL, RC_INTEGER);
-      tab_double (t, 3, i * 3 + 3, 0, n - 1, NULL, RC_INTEGER);
-
-      /* Mean Squares */
-      tab_double (t, 4, i * 3 + 1, TAB_RIGHT, msa, NULL, RC_OTHER);
-      tab_double (t, 4, i * 3 + 2, TAB_RIGHT, pvw->mse, NULL, RC_OTHER);
-
-      {
-	const double F = msa / pvw->mse ;
-
-	/* The F value */
-	tab_double (t, 5, i * 3 + 1, 0,  F, NULL, RC_OTHER);
-
-	/* The significance */
-	tab_double (t, 6, i * 3 + 1, 0, gsl_cdf_fdist_Q (F, df1, df2), NULL, RC_PVALUE);
-      }
+      struct entry
+        {
+          int stat_idx;
+          int type_idx;
+          double x;
+        }
+      entries[] = {
+        /* Sums of Squares. */
+        { 0, 0, pvw->ssa },
+        { 0, 1, pvw->sse },
+        { 0, 2, pvw->sst },
+        /* Degrees of Freedom. */
+        { 1, 0, df1 },
+        { 1, 1, df2 },
+        { 1, 2, n - 1 },
+        /* Mean Squares. */
+        { 2, 0, msa },
+        { 2, 1, pvw->mse },
+        /* F. */
+        { 3, 0, F },
+        /* Significance. */
+        { 4, 0, gsl_cdf_fdist_Q (F, df1, df2) },
+      };
+      for (size_t j = 0; j < sizeof entries / sizeof *entries; j++)
+        {
+          const struct entry *e = &entries[j];
+          pivot_table_put3 (table, e->stat_idx, e->type_idx, var_idx,
+                            pivot_value_new_number (e->x));
+        }
     }
 
-  tab_title (t, _("ANOVA"));
-  tab_submit (t);
+  pivot_table_submit (table);
 }
-
 
 /* Show the descriptives table */
 static void
 show_descriptives (const struct oneway_spec *cmd, const struct oneway_workspace *ws)
 {
-  size_t v;
-  int n_cols = 10;
-  struct tab_table *t;
-  int row;
+  if (!cmd->n_vars)
+    return;
+  const struct categoricals *cats = covariance_get_categoricals (
+    ws->vws[0].cov);
+
+  struct pivot_table *table = pivot_table_create (N_("Descriptives"));
+  pivot_table_set_weight_format (table, cmd->wfmt);
 
   const double confidence = 0.95;
+
+  struct pivot_dimension *statistics = pivot_dimension_create (
+    table, PIVOT_AXIS_COLUMN, N_("Statistics"),
+    N_("N"), PIVOT_RC_COUNT, N_("Mean"), N_("Std. Deviation"),
+    N_("Std. Error"));
+  struct pivot_category *interval = pivot_category_create_group__ (
+    statistics->root,
+    pivot_value_new_text_format (N_("%g%% Confidence Interval for Mean"),
+                                 confidence * 100.0));
+  pivot_category_create_leaves (interval, N_("Lower Bound"),
+                                N_("Upper Bound"));
+  pivot_category_create_leaves (statistics->root,
+                                N_("Minimum"), N_("Maximum"));
+
+  struct pivot_dimension *indep_var = pivot_dimension_create__ (
+    table, PIVOT_AXIS_ROW, pivot_value_new_variable (cmd->indep_var));
+  indep_var->root->show_label = true;
+  size_t n;
+  union value *values = categoricals_get_var_values (cats, cmd->indep_var, &n);
+  for (size_t j = 0; j < n; j++)
+    pivot_category_create_leaf (
+      indep_var->root, pivot_value_new_var_value (cmd->indep_var, &values[j]));
+  pivot_category_create_leaf (
+    indep_var->root, pivot_value_new_text_format (N_("Total")));
+
+  struct pivot_dimension *dep_var = pivot_dimension_create (
+    table, PIVOT_AXIS_ROW, N_("Dependent Variable"));
+
   const double q = (1.0 - confidence) / 2.0;
-
-  const struct fmt_spec *wfmt = cmd->wv ? var_get_print_format (cmd->wv) : &F_8_0;
-
-  int n_rows = 2;
-
-  for (v = 0; v < cmd->n_vars; ++v)
-    n_rows += ws->actual_number_of_groups + 1;
-
-  t = tab_create (n_cols, n_rows);
-  tab_set_format (t, RC_WEIGHT, wfmt);
-  tab_headers (t, 2, 0, 2, 0);
-
-  /* Put a frame around the entire box, and vertical lines inside */
-  tab_box (t,
-	   TAL_2, TAL_2,
-	   -1, TAL_1,
-	   0, 0,
-	   n_cols - 1, n_rows - 1);
-
-  /* Underline headers */
-  tab_hline (t, TAL_2, 0, n_cols - 1, 2);
-  tab_vline (t, TAL_2, 2, 0, n_rows - 1);
-
-  tab_text (t, 2, 1, TAB_CENTER | TAT_TITLE, _("N"));
-  tab_text (t, 3, 1, TAB_CENTER | TAT_TITLE, _("Mean"));
-  tab_text (t, 4, 1, TAB_CENTER | TAT_TITLE, _("Std. Deviation"));
-  tab_text (t, 5, 1, TAB_CENTER | TAT_TITLE, _("Std. Error"));
-
-
-  tab_vline (t, TAL_0, 7, 0, 0);
-  tab_hline (t, TAL_1, 6, 7, 1);
-  tab_joint_text_format (t, 6, 0, 7, 0, TAB_CENTER | TAT_TITLE,
-                         _("%g%% Confidence Interval for Mean"),
-                         confidence*100.0);
-
-  tab_text (t, 6, 1, TAB_CENTER | TAT_TITLE, _("Lower Bound"));
-  tab_text (t, 7, 1, TAB_CENTER | TAT_TITLE, _("Upper Bound"));
-
-  tab_text (t, 8, 1, TAB_CENTER | TAT_TITLE, _("Minimum"));
-  tab_text (t, 9, 1, TAB_CENTER | TAT_TITLE, _("Maximum"));
-
-  tab_title (t, _("Descriptives"));
-
-  row = 2;
-  for (v = 0; v < cmd->n_vars; ++v)
+  for (int v = 0; v < cmd->n_vars; ++v)
     {
-      const char *s = var_to_string (cmd->vars[v]);
-      const struct fmt_spec *fmt = var_get_print_format (cmd->vars[v]);
-
-      int count = 0;
+      int dep_var_idx = pivot_category_create_leaf (
+        dep_var->root, pivot_value_new_variable (cmd->vars[v]));
 
       struct per_var_ws *pvw = &ws->vws[v];
       const struct categoricals *cats = covariance_get_categoricals (pvw->cov);
 
-      tab_text (t, 0, row, TAB_LEFT | TAT_TITLE, s);
-      if ( v > 0)
-	tab_hline (t, TAL_1, 0, n_cols - 1, row);
-
+      int count;
       for (count = 0; count < categoricals_n_total (cats); ++count)
 	{
-	  double T;
+	  const struct descriptive_data *dd
+            = categoricals_get_user_data_by_category (cats, count);
+
 	  double n, mean, variance;
-	  double std_dev, std_error ;
-
-	  struct string vstr;
-
-	  const struct ccase *gcc = categoricals_get_case_by_category (cats, count);
-	  const struct descriptive_data *dd = categoricals_get_user_data_by_category (cats, count);
-
 	  moments1_calculate (dd->mom, &n, &mean, &variance, NULL, NULL);
 
-	  std_dev = sqrt (variance);
-	  std_error = std_dev / sqrt (n) ;
+	  double std_dev = sqrt (variance);
+	  double std_error = std_dev / sqrt (n) ;
+	  double T = gsl_cdf_tdist_Qinv (q, n - 1);
 
-	  ds_init_empty (&vstr);
-
-	  var_append_value_name (cmd->indep_var, case_data (gcc, cmd->indep_var), &vstr);
-
-	  tab_text (t, 1, row + count,
-		    TAB_LEFT | TAT_TITLE,
-		    ds_cstr (&vstr));
-
-	  ds_destroy (&vstr);
-
-	  /* Now fill in the numbers ... */
-
-	  tab_double (t, 2, row + count, 0, n, NULL, RC_WEIGHT);
-
-	  tab_double (t, 3, row + count, 0, mean, NULL, RC_OTHER);
-
-	  tab_double (t, 4, row + count, 0, std_dev, NULL, RC_OTHER);
-
-
-	  tab_double (t, 5, row + count, 0, std_error, NULL, RC_OTHER);
-
-	  /* Now the confidence interval */
-
-	  T = gsl_cdf_tdist_Qinv (q, n - 1);
-
-	  tab_double (t, 6, row + count, 0,
-		      mean - T * std_error, NULL, RC_OTHER);
-
-	  tab_double (t, 7, row + count, 0,
-		      mean + T * std_error, NULL, RC_OTHER);
-
-	  /* Min and Max */
-
-	  tab_double (t, 8, row + count, 0,  dd->minimum, fmt, RC_OTHER);
-	  tab_double (t, 9, row + count, 0,  dd->maximum, fmt, RC_OTHER);
+          double entries[] = {
+            n,
+            mean,
+            std_dev,
+            std_error,
+            mean - T * std_error,
+            mean + T * std_error,
+            dd->minimum,
+            dd->maximum,
+          };
+          for (size_t i = 0; i < sizeof entries / sizeof *entries; i++)
+            pivot_table_put3 (table, i, count, dep_var_idx,
+                              pivot_value_new_number (entries[i]));
 	}
 
       if (categoricals_is_complete (cats))
-      {
-	double T;
-	double n, mean, variance;
-	double std_dev;
-	double std_error;
+        {
+          double n, mean, variance;
+          moments1_calculate (ws->dd_total[v]->mom, &n, &mean, &variance,
+                              NULL, NULL);
 
-	moments1_calculate (ws->dd_total[v]->mom, &n, &mean, &variance, NULL, NULL);
+          double std_dev = sqrt (variance);
+          double std_error = std_dev / sqrt (n) ;
+          double T = gsl_cdf_tdist_Qinv (q, n - 1);
 
-	std_dev = sqrt (variance);
-	std_error = std_dev / sqrt (n) ;
-
-	tab_text (t, 1, row + count,
-		  TAB_LEFT | TAT_TITLE, _("Total"));
-
-	tab_double (t, 2, row + count, 0, n, NULL, RC_WEIGHT);
-
-	tab_double (t, 3, row + count, 0, mean, NULL, RC_OTHER);
-
-	tab_double (t, 4, row + count, 0, std_dev, NULL, RC_OTHER);
-
-	tab_double (t, 5, row + count, 0, std_error, NULL, RC_OTHER);
-
-	/* Now the confidence interval */
-	T = gsl_cdf_tdist_Qinv (q, n - 1);
-
-	tab_double (t, 6, row + count, 0,
-		    mean - T * std_error, NULL, RC_OTHER);
-
-	tab_double (t, 7, row + count, 0,
-		    mean + T * std_error, NULL, RC_OTHER);
-
-
-	/* Min and Max */
-	tab_double (t, 8, row + count, 0,  ws->dd_total[v]->minimum, fmt, RC_OTHER);
-	tab_double (t, 9, row + count, 0,  ws->dd_total[v]->maximum, fmt, RC_OTHER);
-      }
-
-      row += categoricals_n_total (cats) + 1;
+          double entries[] = {
+            n,
+            mean,
+            std_dev,
+            std_error,
+            mean - T * std_error,
+            mean + T * std_error,
+            ws->dd_total[v]->minimum,
+            ws->dd_total[v]->maximum,
+          };
+          for (size_t i = 0; i < sizeof entries / sizeof *entries; i++)
+            pivot_table_put3 (table, i, count, dep_var_idx,
+                              pivot_value_new_number (entries[i]));
+        }
     }
 
-  tab_submit (t);
+  pivot_table_submit (table);
 }
 
 /* Show the homogeneity table */
 static void
 show_homogeneity (const struct oneway_spec *cmd, const struct oneway_workspace *ws)
 {
-  size_t v;
-  int n_cols = 5;
-  size_t n_rows = cmd->n_vars + 1;
+  struct pivot_table *table = pivot_table_create (
+    N_("Test of Homogeneity of Variances"));
 
-  struct tab_table *t = tab_create (n_cols, n_rows);
-  tab_headers (t, 1, 0, 1, 0);
+  pivot_dimension_create (table, PIVOT_AXIS_COLUMN, N_("Statistics"),
+                          N_("Levene Statistic"), PIVOT_RC_OTHER,
+                          N_("df1"), PIVOT_RC_INTEGER,
+                          N_("df2"), PIVOT_RC_INTEGER,
+                          N_("Sig."), PIVOT_RC_SIGNIFICANCE);
 
-  /* Put a frame around the entire box, and vertical lines inside */
-  tab_box (t,
-	   TAL_2, TAL_2,
-	   -1, TAL_1,
-	   0, 0,
-	   n_cols - 1, n_rows - 1);
+  struct pivot_dimension *variables = pivot_dimension_create (
+    table, PIVOT_AXIS_ROW, N_("Variables"));
 
-
-  tab_hline (t, TAL_2, 0, n_cols - 1, 1);
-  tab_vline (t, TAL_2, 1, 0, n_rows - 1);
-
-  tab_text (t, 1, 0, TAB_CENTER | TAT_TITLE, _("Levene Statistic"));
-  tab_text (t, 2, 0, TAB_CENTER | TAT_TITLE, _("df1"));
-  tab_text (t, 3, 0, TAB_CENTER | TAT_TITLE, _("df2"));
-  tab_text (t, 4, 0, TAB_CENTER | TAT_TITLE, _("Sig."));
-
-  tab_title (t, _("Test of Homogeneity of Variances"));
-
-  for (v = 0; v < cmd->n_vars; ++v)
+  for (int v = 0; v < cmd->n_vars; ++v)
     {
+      int var_idx = pivot_category_create_leaf (
+        variables->root, pivot_value_new_variable (cmd->vars[v]));
+
       double n;
-      const struct per_var_ws *pvw = &ws->vws[v];
-      double F = levene_calculate (pvw->nl);
-
-      const struct variable *var = cmd->vars[v];
-      const char *s = var_to_string (var);
-      double df1, df2;
-
       moments1_calculate (ws->dd_total[v]->mom, &n, NULL, NULL, NULL, NULL);
 
-      df1 = pvw->n_groups - 1;
-      df2 = n - pvw->n_groups;
+      const struct per_var_ws *pvw = &ws->vws[v];
+      double df1 = pvw->n_groups - 1;
+      double df2 = n - pvw->n_groups;
+      double F = levene_calculate (pvw->nl);
 
-      tab_text (t, 0, v + 1, TAB_LEFT | TAT_TITLE, s);
-
-      tab_double (t, 1, v + 1, TAB_RIGHT, F, NULL, RC_OTHER);
-      tab_double (t, 2, v + 1, TAB_RIGHT, df1, NULL, RC_INTEGER);
-      tab_double (t, 3, v + 1, TAB_RIGHT, df2, NULL, RC_INTEGER);
-
-      /* Now the significance */
-      tab_double (t, 4, v + 1, TAB_RIGHT, gsl_cdf_fdist_Q (F, df1, df2), NULL, RC_PVALUE);
+      double entries[] =
+        {
+          F,
+          df1,
+          df2,
+          gsl_cdf_fdist_Q (F, df1, df2),
+        };
+      for (size_t i = 0; i < sizeof entries / sizeof *entries; i++)
+        pivot_table_put2 (table, i, var_idx,
+                          pivot_value_new_number (entries[i]));
     }
 
-  tab_submit (t);
+  pivot_table_submit (table);
 }
 
 
@@ -1270,155 +1186,87 @@ show_homogeneity (const struct oneway_spec *cmd, const struct oneway_workspace *
 static void
 show_contrast_coeffs (const struct oneway_spec *cmd, const struct oneway_workspace *ws)
 {
-  int c_num = 0;
-  struct ll *cli;
+  struct pivot_table *table = pivot_table_create (N_("Contrast Coefficients"));
 
-  int n_contrasts = ll_count (&cmd->contrast_list);
-  int n_cols = 2 + ws->actual_number_of_groups;
-  int n_rows = 2 + n_contrasts;
+  struct pivot_dimension *indep_var = pivot_dimension_create__ (
+    table, PIVOT_AXIS_COLUMN, pivot_value_new_variable (cmd->indep_var));
+  indep_var->root->show_label = true;
 
-  struct tab_table *t;
+  struct pivot_dimension *contrast = pivot_dimension_create (
+    table, PIVOT_AXIS_ROW, N_("Contrast"));
+  contrast->root->show_label = true;
 
-  const struct covariance *cov = ws->vws[0].cov ;
+  const struct covariance *cov = ws->vws[0].cov;
 
-  t = tab_create (n_cols, n_rows);
-  tab_headers (t, 2, 0, 2, 0);
-
-  /* Put a frame around the entire box, and vertical lines inside */
-  tab_box (t,
-	   TAL_2, TAL_2,
-	   -1, TAL_1,
-	   0, 0,
-	   n_cols - 1, n_rows - 1);
-
-  tab_box (t,
-	   -1, -1,
-	   TAL_0, TAL_0,
-	   2, 0,
-	   n_cols - 1, 0);
-
-  tab_box (t,
-	   -1, -1,
-	   TAL_0, TAL_0,
-	   0, 0,
-	   1, 1);
-
-  tab_hline (t, TAL_1, 2, n_cols - 1, 1);
-  tab_hline (t, TAL_2, 0, n_cols - 1, 2);
-
-  tab_vline (t, TAL_2, 2, 0, n_rows - 1);
-
-  tab_title (t, _("Contrast Coefficients"));
-
-  tab_text (t,  0, 2, TAB_LEFT | TAT_TITLE, _("Contrast"));
-
-
-  tab_joint_text (t, 2, 0, n_cols - 1, 0, TAB_CENTER | TAT_TITLE,
-		  var_to_string (cmd->indep_var));
-
-  for ( cli = ll_head (&cmd->contrast_list);
-	cli != ll_null (&cmd->contrast_list);
-	cli = ll_next (cli))
+  const struct contrasts_node *cn;
+  int c_num = 1;
+  ll_for_each (cn, struct contrasts_node, ll, &cmd->contrast_list)
     {
-      int count = 0;
-      struct contrasts_node *cn = ll_data (cli, struct contrasts_node, ll);
-      struct ll *coeffi ;
+      int contrast_idx = pivot_category_create_leaf (
+        contrast->root, pivot_value_new_integer (c_num++));
 
-      tab_text_format (t, 1, c_num + 2, TAB_CENTER, "%d", c_num + 1);
-
-      for (coeffi = ll_head (&cn->coefficient_list);
-	   coeffi != ll_null (&cn->coefficient_list);
-	   ++count, coeffi = ll_next (coeffi))
+      const struct coeff_node *coeffn;
+      int indep_idx = 0;
+      ll_for_each (coeffn, struct coeff_node, ll, &cn->coefficient_list)
 	{
 	  const struct categoricals *cats = covariance_get_categoricals (cov);
-	  const struct ccase *gcc = categoricals_get_case_by_category (cats, count);
-	  struct coeff_node *coeffn = ll_data (coeffi, struct coeff_node, ll);
-	  struct string vstr;
+	  const struct ccase *gcc = categoricals_get_case_by_category (
+            cats, indep_idx);
 
-	  ds_init_empty (&vstr);
+          if (!contrast_idx)
+            pivot_category_create_leaf (
+              indep_var->root, pivot_value_new_var_value (
+                cmd->indep_var, case_data (gcc, cmd->indep_var)));
 
-	  var_append_value_name (cmd->indep_var, case_data (gcc, cmd->indep_var), &vstr);
-
-	  tab_text (t, count + 2, 1, TAB_CENTER | TAT_TITLE, ds_cstr (&vstr));
-
-	  ds_destroy (&vstr);
-
-	  tab_text_format (t, count + 2, c_num + 2, TAB_RIGHT, "%.*g",
-                           DBL_DIG + 1, coeffn->coeff);
+          pivot_table_put2 (table, indep_idx++, contrast_idx,
+                            pivot_value_new_integer (coeffn->coeff));
 	}
-      ++c_num;
     }
 
-  tab_submit (t);
+  pivot_table_submit (table);
 }
-
 
 /* Show the results of the contrast tests */
 static void
 show_contrast_tests (const struct oneway_spec *cmd, const struct oneway_workspace *ws)
 {
+  struct pivot_table *table = pivot_table_create (N_("Contrast Tests"));
+
+  pivot_dimension_create (table, PIVOT_AXIS_COLUMN, N_("Statistics"),
+                          N_("Value of Contrast"), PIVOT_RC_OTHER,
+                          N_("Std. Error"), PIVOT_RC_OTHER,
+                          N_("t"), PIVOT_RC_OTHER,
+                          N_("df"), PIVOT_RC_OTHER,
+                          N_("Sig. (2-tailed)"), PIVOT_RC_SIGNIFICANCE);
+
+  struct pivot_dimension *contrasts = pivot_dimension_create (
+    table, PIVOT_AXIS_ROW, N_("Contrast"));
+  contrasts->root->show_label = true;
   int n_contrasts = ll_count (&cmd->contrast_list);
-  size_t v;
-  int n_cols = 8;
-  size_t n_rows = 1 + cmd->n_vars * 2 * n_contrasts;
+  for (int i = 1; i <= n_contrasts; i++)
+    pivot_category_create_leaf (contrasts->root, pivot_value_new_integer (i));
 
-  struct tab_table *t;
+  pivot_dimension_create (table, PIVOT_AXIS_ROW, N_("Assumption"),
+                          N_("Assume equal variances"),
+                          N_("Does not assume equal variances"));
 
-  t = tab_create (n_cols, n_rows);
-  tab_headers (t, 3, 0, 1, 0);
+  struct pivot_dimension *variables = pivot_dimension_create (
+    table, PIVOT_AXIS_ROW, N_("Dependent Variable"));
 
-  /* Put a frame around the entire box, and vertical lines inside */
-  tab_box (t,
-	   TAL_2, TAL_2,
-	   -1, TAL_1,
-	   0, 0,
-	   n_cols - 1, n_rows - 1);
-
-  tab_box (t,
-	   -1, -1,
-	   TAL_0, TAL_0,
-	   0, 0,
-	   2, 0);
-
-  tab_hline (t, TAL_2, 0, n_cols - 1, 1);
-  tab_vline (t, TAL_2, 3, 0, n_rows - 1);
-
-  tab_title (t, _("Contrast Tests"));
-
-  tab_text (t, 2, 0, TAB_CENTER | TAT_TITLE, _("Contrast"));
-  tab_text (t, 3, 0, TAB_CENTER | TAT_TITLE, _("Value of Contrast"));
-  tab_text (t,  4, 0, TAB_CENTER | TAT_TITLE, _("Std. Error"));
-  tab_text (t,  5, 0, TAB_CENTER | TAT_TITLE, _("t"));
-  tab_text (t,  6, 0, TAB_CENTER | TAT_TITLE, _("df"));
-  tab_text (t,  7, 0, TAB_CENTER | TAT_TITLE, _("Sig. (2-tailed)"));
-
-  for (v = 0; v < cmd->n_vars; ++v)
+  for (int v = 0; v < cmd->n_vars; ++v)
     {
       const struct per_var_ws *pvw = &ws->vws[v];
       const struct categoricals *cats = covariance_get_categoricals (pvw->cov);
       if (!categoricals_is_complete (cats))
 	continue;
-      struct ll *cli;
-      int i = 0;
-      int lines_per_variable = 2 * n_contrasts;
 
-      tab_text (t,  0, (v * lines_per_variable) + 1, TAB_LEFT | TAT_TITLE,
-		var_to_string (cmd->vars[v]));
+      int var_idx = pivot_category_create_leaf (
+        variables->root, pivot_value_new_variable (cmd->vars[v]));
 
-      for ( cli = ll_head (&cmd->contrast_list);
-	    cli != ll_null (&cmd->contrast_list);
-	    ++i, cli = ll_next (cli))
+      struct contrasts_node *cn;
+      int contrast_idx = 0;
+      ll_for_each (cn, struct contrasts_node, ll, &cmd->contrast_list)
 	{
-	  struct contrasts_node *cn = ll_data (cli, struct contrasts_node, ll);
-	  struct ll *coeffi ;
-	  int ci = 0;
-	  double contrast_value = 0.0;
-	  double coef_msq = 0.0;
-
-	  double T;
-	  double std_error_contrast;
-	  double df;
-	  double sec_vneq = 0.0;
 
 	  /* Note: The calculation of the degrees of freedom in the
 	     "variances not equal" case is painfull!!
@@ -1431,254 +1279,174 @@ show_contrast_tests (const struct oneway_spec *cmd, const struct oneway_workspac
 	     }
 	  */
 
+	  double grand_n;
+	  moments1_calculate (ws->dd_total[v]->mom, &grand_n, NULL, NULL,
+                              NULL, NULL);
+	  double df = grand_n - pvw->n_groups;
+
+	  double contrast_value = 0.0;
+	  double coef_msq = 0.0;
+	  double sec_vneq = 0.0;
 	  double df_denominator = 0.0;
 	  double df_numerator = 0.0;
-
-	  double grand_n;
-	  moments1_calculate (ws->dd_total[v]->mom, &grand_n, NULL, NULL, NULL, NULL);
-	  df = grand_n - pvw->n_groups;
-
-	  if ( i == 0 )
+          struct coeff_node *coeffn;
+	  int ci = 0;
+          ll_for_each (coeffn, struct coeff_node, ll, &cn->coefficient_list)
 	    {
-	      tab_text (t,  1, (v * lines_per_variable) + i + 1,
-			TAB_LEFT | TAT_TITLE,
-			_("Assume equal variances"));
+	      const struct descriptive_data *dd
+                = categoricals_get_user_data_by_category (cats, ci);
+	      const double coef = coeffn->coeff;
 
-	      tab_text (t,  1, (v * lines_per_variable) + i + 1 + n_contrasts,
-			TAB_LEFT | TAT_TITLE,
-			_("Does not assume equal"));
-	    }
-
-	  tab_text_format (t,  2, (v * lines_per_variable) + i + 1,
-                           TAB_CENTER | TAT_TITLE, "%d", i + 1);
-
-
-	  tab_text_format (t,  2,
-                           (v * lines_per_variable) + i + 1 + n_contrasts,
-                           TAB_CENTER | TAT_TITLE, "%d", i + 1);
-
-	  for (coeffi = ll_head (&cn->coefficient_list);
-	       coeffi != ll_null (&cn->coefficient_list);
-	       ++ci, coeffi = ll_next (coeffi))
-	    {
 	      double n, mean, variance;
-	      const struct descriptive_data *dd = categoricals_get_user_data_by_category (cats, ci);
-	      struct coeff_node *cn = ll_data (coeffi, struct coeff_node, ll);
-	      const double coef = cn->coeff;
-	      double winv ;
-
 	      moments1_calculate (dd->mom, &n, &mean, &variance, NULL, NULL);
 
-	      winv = variance / n;
-
+	      double winv = variance / n;
 	      contrast_value += coef * mean;
+	      coef_msq += pow2 (coef) / n;
+	      sec_vneq += pow2 (coef) * variance / n;
+	      df_numerator += pow2 (coef) * winv;
+	      df_denominator += pow2(pow2 (coef) * winv) / (n - 1);
 
-	      coef_msq += (pow2 (coef)) / n;
-
-	      sec_vneq += (pow2 (coef)) * variance / n;
-
-	      df_numerator += (pow2 (coef)) * winv;
-	      df_denominator += pow2((pow2 (coef)) * winv) / (n - 1);
+              ci++;
 	    }
-
 	  sec_vneq = sqrt (sec_vneq);
-
 	  df_numerator = pow2 (df_numerator);
 
-	  tab_double (t,  3, (v * lines_per_variable) + i + 1,
-		      TAB_RIGHT, contrast_value, NULL, RC_OTHER);
+	  double std_error_contrast = sqrt (pvw->mse * coef_msq);
+	  double T = fabs (contrast_value / std_error_contrast);
+	  double T_ne = contrast_value / sec_vneq;
+	  double df_ne = df_numerator / df_denominator;
+          double p_ne = gsl_cdf_tdist_P (T_ne, df_ne);
+          double q_ne = gsl_cdf_tdist_Q (T_ne, df_ne);
 
-	  tab_double (t,  3, (v * lines_per_variable) + i + 1 +
-		      n_contrasts,
-		      TAB_RIGHT, contrast_value, NULL, RC_OTHER);
+          struct entry
+            {
+              int stat_idx;
+              int assumption_idx;
+              double x;
+            }
+          entries[] =
+            {
+              /* Assume equal. */
+              { 0, 0, contrast_value },
+              { 1, 0, std_error_contrast },
+              { 2, 0, T },
+              { 3, 0, df },
+              { 4, 0, 2 * gsl_cdf_tdist_Q (T, df) },
+              /* Do not assume equal. */
+              { 0, 1, contrast_value },
+              { 1, 1, sec_vneq },
+              { 2, 1, T_ne },
+              { 3, 1, df_ne },
+              { 4, 1, 2 * (T > 0 ? q_ne : p_ne) },
+            };
 
-	  std_error_contrast = sqrt (pvw->mse * coef_msq);
+          for (size_t i = 0; i < sizeof entries / sizeof *entries; i++)
+            {
+              const struct entry *e = &entries[i];
+              pivot_table_put4 (
+                table, e->stat_idx, contrast_idx, e->assumption_idx, var_idx,
+                pivot_value_new_number (e->x));
+            }
 
-	  /* Std. Error */
-	  tab_double (t,  4, (v * lines_per_variable) + i + 1,
-		      TAB_RIGHT, std_error_contrast,
-		      NULL, RC_OTHER);
-
-	  T = fabs (contrast_value / std_error_contrast);
-
-	  /* T Statistic */
-
-	  tab_double (t,  5, (v * lines_per_variable) + i + 1,
-		      TAB_RIGHT, T,
-		      NULL, RC_OTHER);
-
-
-	  /* Degrees of Freedom */
-	  tab_double (t,  6, (v * lines_per_variable) + i + 1,
-		     TAB_RIGHT,  df, NULL, RC_INTEGER);
-
-
-	  /* Significance TWO TAILED !!*/
-	  tab_double (t,  7, (v * lines_per_variable) + i + 1,
-		      TAB_RIGHT,  2 * gsl_cdf_tdist_Q (T, df),
-		      NULL, RC_PVALUE);
-
-	  /* Now for the Variances NOT Equal case */
-
-	  /* Std. Error */
-	  tab_double (t,  4,
-		      (v * lines_per_variable) + i + 1 + n_contrasts,
-		      TAB_RIGHT, sec_vneq,
-		      NULL, RC_OTHER);
-
-	  T = contrast_value / sec_vneq;
-	  tab_double (t,  5,
-		      (v * lines_per_variable) + i + 1 + n_contrasts,
-		      TAB_RIGHT, T,
-		      NULL, RC_OTHER);
-
-	  df = df_numerator / df_denominator;
-
-	  tab_double (t,  6,
-		      (v * lines_per_variable) + i + 1 + n_contrasts,
-		      TAB_RIGHT, df,
-		      NULL, RC_OTHER);
-
-	  {
-	    double p = gsl_cdf_tdist_P (T, df);
-	    double q = gsl_cdf_tdist_Q (T, df);
-
-	    /* The Significance */
-	    tab_double (t, 7, (v * lines_per_variable) + i + 1 + n_contrasts,
-			TAB_RIGHT,  2 * ((T > 0) ? q : p),
-			NULL, RC_PVALUE);
-	  }
+          contrast_idx++;
 	}
-
-      if ( v > 0 )
-	tab_hline (t, TAL_1, 0, n_cols - 1, (v * lines_per_variable) + 1);
     }
 
-  tab_submit (t);
+  pivot_table_submit (table);
 }
-
-
 
 static void
 show_comparisons (const struct oneway_spec *cmd, const struct oneway_workspace *ws, int v)
 {
-  const int n_cols = 8;
-  const int heading_rows = 2;
-  const int heading_cols = 3;
+  struct pivot_table *table = pivot_table_create__ (
+    pivot_value_new_user_text_nocopy (xasprintf (
+                                        _("Multiple Comparisons (%s)"),
+                                        var_to_string (cmd->vars[v]))));
+  table->omit_empty = true;
 
-  int p;
-  int r = heading_rows ;
+  struct pivot_dimension *statistics = pivot_dimension_create (
+    table, PIVOT_AXIS_COLUMN, N_("Statistics"),
+    N_("Mean Difference (I - J)"), PIVOT_RC_OTHER,
+    N_("Std. Error"), PIVOT_RC_OTHER,
+    N_("Sig."), PIVOT_RC_SIGNIFICANCE);
+  struct pivot_category *interval = pivot_category_create_group__ (
+    statistics->root,
+    pivot_value_new_text_format (N_("%g%% Confidence Interval"),
+                                 (1 - cmd->alpha) * 100.0));
+  pivot_category_create_leaves (interval,
+                                N_("Lower Bound"), PIVOT_RC_OTHER,
+                                N_("Upper Bound"), PIVOT_RC_OTHER);
+
+  struct pivot_dimension *j_family = pivot_dimension_create (
+    table, PIVOT_AXIS_ROW, N_("(J) Family"));
+  j_family->root->show_label = true;
+
+  struct pivot_dimension *i_family = pivot_dimension_create (
+    table, PIVOT_AXIS_ROW, N_("(J) Family"));
+  i_family->root->show_label = true;
 
   const struct per_var_ws *pvw = &ws->vws[v];
   const struct categoricals *cat = pvw->cat;
-  const int n_rows = heading_rows + cmd->n_posthoc * pvw->n_groups * (pvw->n_groups - 1);
-
-  struct tab_table *t = tab_create (n_cols, n_rows);
-
-  tab_headers (t, heading_cols, 0, heading_rows, 0);
-
-  /* Put a frame around the entire box, and vertical lines inside */
-  tab_box (t,
-	   TAL_2, TAL_2,
-	   -1, -1,
-	   0, 0,
-	   n_cols - 1, n_rows - 1);
-
-  tab_box (t,
-	   -1, -1,
-	   -1, TAL_1,
-	   heading_cols, 0,
-	   n_cols - 1, n_rows - 1);
-
-  tab_vline (t, TAL_2, heading_cols, 0, n_rows - 1);
-
-  tab_title (t, _("Multiple Comparisons (%s)"), var_to_string (cmd->vars[v]));
-
-  tab_text_format (t,  1, 1, TAB_LEFT | TAT_TITLE, _("(I) %s"), var_to_string (cmd->indep_var));
-  tab_text_format (t,  2, 1, TAB_LEFT | TAT_TITLE, _("(J) %s"), var_to_string (cmd->indep_var));
-  tab_text (t,  3, 0, TAB_CENTER | TAT_TITLE, _("Mean Difference"));
-  tab_text (t,  3, 1, TAB_CENTER | TAT_TITLE, _("(I - J)"));
-  tab_text (t,  4, 1, TAB_CENTER | TAT_TITLE, _("Std. Error"));
-  tab_text (t,  5, 1, TAB_CENTER | TAT_TITLE, _("Sig."));
-
-  tab_joint_text_format (t, 6, 0, 7, 0, TAB_CENTER | TAT_TITLE,
-                         _("%g%% Confidence Interval"),
-                         (1 - cmd->alpha) * 100.0);
-
-  tab_text (t,  6, 1, TAB_CENTER | TAT_TITLE, _("Lower Bound"));
-  tab_text (t,  7, 1, TAB_CENTER | TAT_TITLE, _("Upper Bound"));
-
-
-  for (p = 0; p < cmd->n_posthoc; ++p)
+  for (int i = 0; i < pvw->n_groups; i++)
     {
-      int i;
+      const struct ccase *gcc = categoricals_get_case_by_category (cat, i);
+      for (int j = 0; j < 2; j++)
+        pivot_category_create_leaf (
+          j ? j_family->root : i_family->root,
+          pivot_value_new_var_value (cmd->indep_var,
+                                     case_data (gcc, cmd->indep_var)));
+    }
+
+  struct pivot_dimension *test = pivot_dimension_create (
+    table, PIVOT_AXIS_ROW, N_("Test"));
+
+  for (int p = 0; p < cmd->n_posthoc; ++p)
+    {
       const struct posthoc *ph = &ph_tests[cmd->posthoc[p]];
 
-      tab_hline (t, TAL_2, 0, n_cols - 1, r);
+      int test_idx = pivot_category_create_leaf (
+        test->root, pivot_value_new_text (ph->label));
 
-      tab_text (t, 0, r, TAB_LEFT | TAT_TITLE, gettext (ph->label));
-
-      for (i = 0; i < pvw->n_groups ; ++i)
+      for (int i = 0; i < pvw->n_groups ; ++i)
 	{
+	  struct descriptive_data *dd_i
+            = categoricals_get_user_data_by_category (cat, i);
 	  double weight_i, mean_i, var_i;
-	  int rx = 0;
-	  struct string vstr;
-	  int j;
-	  struct descriptive_data *dd_i = categoricals_get_user_data_by_category (cat, i);
-	  const struct ccase *gcc = categoricals_get_case_by_category (cat, i);
-
-
-	  ds_init_empty (&vstr);
-	  var_append_value_name (cmd->indep_var, case_data (gcc, cmd->indep_var), &vstr);
-
-	  if ( i != 0)
-	    tab_hline (t, TAL_1, 1, n_cols - 1, r);
-	  tab_text (t, 1, r, TAB_LEFT | TAT_TITLE, ds_cstr (&vstr));
-
 	  moments1_calculate (dd_i->mom, &weight_i, &mean_i, &var_i, 0, 0);
 
-	  for (j = 0 ; j < pvw->n_groups; ++j)
+	  for (int j = 0 ; j < pvw->n_groups; ++j)
 	    {
-	      double std_err;
-	      double weight_j, mean_j, var_j;
-	      double half_range;
-	      const struct ccase *cc;
-	      struct descriptive_data *dd_j = categoricals_get_user_data_by_category (cat, j);
 	      if (j == i)
 		continue;
 
-	      ds_clear (&vstr);
-	      cc = categoricals_get_case_by_category (cat, j);
-	      var_append_value_name (cmd->indep_var, case_data (cc, cmd->indep_var), &vstr);
-	      tab_text (t, 2, r + rx, TAB_LEFT | TAT_TITLE, ds_cstr (&vstr));
-
+	      struct descriptive_data *dd_j
+                = categoricals_get_user_data_by_category (cat, j);
+	      double weight_j, mean_j, var_j;
 	      moments1_calculate (dd_j->mom, &weight_j, &mean_j, &var_j, 0, 0);
 
-	      tab_double  (t, 3, r + rx, 0, mean_i - mean_j, NULL, RC_OTHER);
-
-	      std_err = pvw->mse;
+	      double std_err = pvw->mse;
 	      std_err *= weight_i + weight_j;
 	      std_err /= weight_i * weight_j;
 	      std_err = sqrt (std_err);
 
-	      tab_double  (t, 4, r + rx, 0, std_err, NULL, RC_OTHER);
-
-	      tab_double (t, 5, r + rx, 0, 2 * multiple_comparison_sig (std_err, pvw, dd_i, dd_j, ph), NULL, RC_PVALUE);
-
-	      half_range = mc_half_range (cmd, pvw, std_err, dd_i, dd_j, ph);
-
-	      tab_double (t, 6, r + rx, 0,
-			  (mean_i - mean_j) - half_range, NULL, RC_OTHER);
-
-	      tab_double (t, 7, r + rx, 0,
-			  (mean_i - mean_j) + half_range, NULL, RC_OTHER);
-
-	      rx++;
+              double sig = 2 * multiple_comparison_sig (std_err, pvw,
+                                                        dd_i, dd_j, ph);
+	      double half_range = mc_half_range (cmd, pvw, std_err,
+                                                 dd_i, dd_j, ph);
+              double entries[] = {
+                mean_i - mean_j,
+                std_err,
+                sig,
+                (mean_i - mean_j) - half_range,
+                (mean_i - mean_j) + half_range,
+              };
+              for (size_t k = 0; k < sizeof entries / sizeof *entries; k++)
+                pivot_table_put4 (table, k, j, i, test_idx,
+                                  pivot_value_new_number (entries[k]));
 	    }
-	  ds_destroy (&vstr);
-	  r += pvw->n_groups - 1;
 	}
     }
 
-  tab_submit (t);
+  pivot_table_submit (table);
 }

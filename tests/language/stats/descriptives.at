@@ -57,25 +57,27 @@ V14,1,15- 15,F1.0
 V15,1,16- 16,F1.0
 V16,1,17- 17,F1.0
 
-Table: Valid cases = 10; cases with missing value(s) = 0.
-Variable,Valid N,Missing N,Mean,S.E. Mean,Std Dev,Variance,Kurtosis,S.E. Kurt,Skewness,S.E. Skew,Range,Minimum,Maximum,Sum
-V0,10,0,3.80,.84,2.66,7.07,-.03,1.33,.89,.69,8.00,1.00,9.00,38.00
-V1,10,0,4.60,.96,3.03,9.16,-1.39,1.33,-.03,.69,9.00,.00,9.00,46.00
-V2,10,0,4.10,1.16,3.67,13.43,-2.02,1.33,.48,.69,8.00,1.00,9.00,41.00
-V3,10,0,4.10,.87,2.77,7.66,-2.05,1.33,.42,.69,7.00,1.00,8.00,41.00
-V4,10,0,7.00,.47,1.49,2.22,7.15,1.33,-2.52,.69,5.00,3.00,8.00,70.00
-V5,10,0,4.90,1.03,3.25,10.54,-1.40,1.33,-.20,.69,9.00,.00,9.00,49.00
-V6,10,0,5.90,.80,2.51,6.32,-.29,1.33,-.96,.69,7.00,1.00,8.00,59.00
-V7,10,0,4.70,1.10,3.47,12.01,-1.99,1.33,-.16,.69,9.00,.00,9.00,47.00
-V8,10,0,4.10,1.10,3.48,12.10,-1.93,1.33,.37,.69,9.00,.00,9.00,41.00
-V9,10,0,4.30,.87,2.75,7.57,-.87,1.33,.73,.69,8.00,1.00,9.00,43.00
-V10,10,0,5.50,.85,2.68,7.17,-1.84,1.33,-.33,.69,7.00,2.00,9.00,55.00
-V11,10,0,6.50,.78,2.46,6.06,-1.28,1.33,-.89,.69,6.00,3.00,9.00,65.00
-V12,10,0,7.90,.60,1.91,3.66,5.24,1.33,-2.21,.69,6.00,3.00,9.00,79.00
-V13,10,0,4.30,.99,3.13,9.79,-1.25,1.33,.33,.69,9.00,.00,9.00,43.00
-V14,10,0,3.60,1.01,3.20,10.27,-.96,1.33,.81,.69,9.00,.00,9.00,36.00
-V15,10,0,3.70,.92,2.91,8.46,-1.35,1.33,.71,.69,7.00,1.00,8.00,37.00
-V16,10,0,6.40,.91,2.88,8.27,-1.14,1.33,-.92,.69,7.00,2.00,9.00,64.00
+Table: Descriptive Statistics
+,N,Mean,S.E. Mean,Std Dev,Variance,Kurtosis,S.E. Kurt,Skewness,S.E. Skew,Range,Minimum,Maximum,Sum
+V0,10,3.80,.84,2.66,7.07,-.03,1.33,.89,.69,8.00,1,9,38.00
+V1,10,4.60,.96,3.03,9.16,-1.39,1.33,-.03,.69,9.00,0,9,46.00
+V2,10,4.10,1.16,3.67,13.43,-2.02,1.33,.48,.69,8.00,1,9,41.00
+V3,10,4.10,.87,2.77,7.66,-2.05,1.33,.42,.69,7.00,1,8,41.00
+V4,10,7.00,.47,1.49,2.22,7.15,1.33,-2.52,.69,5.00,3,8,70.00
+V5,10,4.90,1.03,3.25,10.54,-1.40,1.33,-.20,.69,9.00,0,9,49.00
+V6,10,5.90,.80,2.51,6.32,-.29,1.33,-.96,.69,7.00,1,8,59.00
+V7,10,4.70,1.10,3.47,12.01,-1.99,1.33,-.16,.69,9.00,0,9,47.00
+V8,10,4.10,1.10,3.48,12.10,-1.93,1.33,.37,.69,9.00,0,9,41.00
+V9,10,4.30,.87,2.75,7.57,-.87,1.33,.73,.69,8.00,1,9,43.00
+V10,10,5.50,.85,2.68,7.17,-1.84,1.33,-.33,.69,7.00,2,9,55.00
+V11,10,6.50,.78,2.46,6.06,-1.28,1.33,-.89,.69,6.00,3,9,65.00
+V12,10,7.90,.60,1.91,3.66,5.24,1.33,-2.21,.69,6.00,3,9,79.00
+V13,10,4.30,.99,3.13,9.79,-1.25,1.33,.33,.69,9.00,0,9,43.00
+V14,10,3.60,1.01,3.20,10.27,-.96,1.33,.81,.69,9.00,0,9,36.00
+V15,10,3.70,.92,2.91,8.46,-1.35,1.33,.71,.69,7.00,1,8,37.00
+V16,10,6.40,.91,2.88,8.27,-1.14,1.33,-.92,.69,7.00,2,9,64.00
+Valid N (listwise),10,,,,,,,,,,,,
+Missing N (listwise),0,,,,,,,,,,,,
 ])
 AT_CLEANUP
 
@@ -98,12 +100,14 @@ AT_DATA([descriptives.sps],
   [DESCRIPTIVES_MISSING_DATA
 descript all/stat=all/format=serial.
 ])
-AT_CHECK([pspp -O format=csv descriptives.sps], [0],
-  [Table: Valid cases = 7; cases with missing value(s) = 6.
-Variable,Valid N,Missing N,Mean,S.E. Mean,Std Dev,Variance,Kurtosis,S.E. Kurt,Skewness,S.E. Skew,Range,Minimum,Maximum,Sum
-V1,1,6,2.00,.  ,.  ,.  ,.  ,.  ,.  ,.  ,.00,2.00,2.00,2.00
-V2,2,5,2.50,.50,.71,.50,.  ,.  ,.  ,.  ,1.00,2.00,3.00,5.00
-V3,3,4,3.00,.58,1.00,1.00,.  ,.  ,.00,1.22,2.00,2.00,4.00,9.00
+AT_CHECK([pspp -O format=csv descriptives.sps], [0], [dnl
+Table: Descriptive Statistics
+,N,Mean,S.E. Mean,Std Dev,Variance,Kurtosis,S.E. Kurt,Skewness,S.E. Skew,Range,Minimum,Maximum,Sum
+V1,1,2.00,.  ,.  ,.  ,.  ,.  ,.  ,.  ,.00,2,2,2.00
+V2,2,2.50,.50,.71,.50,.  ,.  ,.  ,.  ,1.00,2,3,5.00
+V3,3,3.00,.58,1.00,1.00,.  ,.  ,.00,1.22,2.00,2,4,9.00
+Valid N (listwise),7,,,,,,,,,,,,
+Missing N (listwise),6,,,,,,,,,,,,
 ])
 AT_CLEANUP
 
@@ -112,12 +116,14 @@ AT_DATA([descriptives.sps],
   [DESCRIPTIVES_MISSING_DATA
 descript all/stat=all/format=serial/missing=include.
 ])
-AT_CHECK([pspp -O format=csv descriptives.sps], [0],
-  [Table: Valid cases = 7; cases with missing value(s) = 3.
-Variable,Valid N,Missing N,Mean,S.E. Mean,Std Dev,Variance,Kurtosis,S.E. Kurt,Skewness,S.E. Skew,Range,Minimum,Maximum,Sum
-V1,5,2,1.20,.20,.45,.20,5.00,2.00,2.24,.91,1.00,1.00,2.00,6.00
-V2,5,2,1.60,.40,.89,.80,.31,2.00,1.26,.91,2.00,1.00,3.00,8.00
-V3,5,2,2.20,.58,1.30,1.70,-1.49,2.00,.54,.91,3.00,1.00,4.00,11.00
+AT_CHECK([pspp -O format=csv descriptives.sps], [0], [dnl
+Table: Descriptive Statistics
+,N,Mean,S.E. Mean,Std Dev,Variance,Kurtosis,S.E. Kurt,Skewness,S.E. Skew,Range,Minimum,Maximum,Sum
+V1,5,1.20,.20,.45,.20,5.00,2.00,2.24,.91,1.00,1,2,6.00
+V2,5,1.60,.40,.89,.80,.31,2.00,1.26,.91,2.00,1,3,8.00
+V3,5,2.20,.58,1.30,1.70,-1.49,2.00,.54,.91,3.00,1,4,11.00
+Valid N (listwise),7,,,,,,,,,,,,
+Missing N (listwise),3,,,,,,,,,,,,
 ])
 AT_CLEANUP
 
@@ -126,12 +132,14 @@ AT_DATA([descriptives.sps],
   [DESCRIPTIVES_MISSING_DATA
 descript all/stat=all/format=serial/missing=listwise.
 ])
-AT_CHECK([pspp -O format=csv descriptives.sps], [0],
-  [Table: Valid cases = 1; cases with missing value(s) = 6.
-Variable,Valid N,Missing N,Mean,S.E. Mean,Std Dev,Variance,Kurtosis,S.E. Kurt,Skewness,S.E. Skew,Range,Minimum,Maximum,Sum
-V1,1,0,2.00,.  ,.  ,.  ,.  ,.  ,.  ,.  ,.00,2.00,2.00,2.00
-V2,1,0,3.00,.  ,.  ,.  ,.  ,.  ,.  ,.  ,.00,3.00,3.00,3.00
-V3,1,0,4.00,.  ,.  ,.  ,.  ,.  ,.  ,.  ,.00,4.00,4.00,4.00
+AT_CHECK([pspp -O format=csv descriptives.sps], [0], [dnl
+Table: Descriptive Statistics
+,N,Mean,S.E. Mean,Std Dev,Variance,Kurtosis,S.E. Kurt,Skewness,S.E. Skew,Range,Minimum,Maximum,Sum
+V1,1,2.00,.  ,.  ,.  ,.  ,.  ,.  ,.  ,.00,2,2,2.00
+V2,1,3.00,.  ,.  ,.  ,.  ,.  ,.  ,.  ,.00,3,3,3.00
+V3,1,4.00,.  ,.  ,.  ,.  ,.  ,.  ,.  ,.00,4,4,4.00
+Valid N (listwise),1,,,,,,,,,,,,
+Missing N (listwise),6,,,,,,,,,,,,
 ])
 AT_CLEANUP
 
@@ -140,12 +148,14 @@ AT_DATA([descriptives.sps],
   [DESCRIPTIVES_MISSING_DATA
 descript all/stat=all/format=serial/missing=listwise include.
 ])
-AT_CHECK([pspp -O format=csv descriptives.sps], [0],
-  [Table: Valid cases = 4; cases with missing value(s) = 3.
-Variable,Valid N,Missing N,Mean,S.E. Mean,Std Dev,Variance,Kurtosis,S.E. Kurt,Skewness,S.E. Skew,Range,Minimum,Maximum,Sum
-V1,4,0,1.25,.25,.50,.25,4.00,2.62,2.00,1.01,1.00,1.00,2.00,5.00
-V2,4,0,1.75,.48,.96,.92,-1.29,2.62,.85,1.01,2.00,1.00,3.00,7.00
-V3,4,0,2.50,.65,1.29,1.67,-1.20,2.62,.00,1.01,3.00,1.00,4.00,10.00
+AT_CHECK([pspp -O format=csv descriptives.sps], [0], [dnl
+Table: Descriptive Statistics
+,N,Mean,S.E. Mean,Std Dev,Variance,Kurtosis,S.E. Kurt,Skewness,S.E. Skew,Range,Minimum,Maximum,Sum
+V1,4,1.25,.25,.50,.25,4.00,2.62,2.00,1.01,1.00,1,2,5.00
+V2,4,1.75,.48,.96,.92,-1.29,2.62,.85,1.01,2.00,1,3,7.00
+V3,4,2.50,.65,1.29,1.67,-1.20,2.62,.00,1.01,3.00,1,4,10.00
+Valid N (listwise),4,,,,,,,,,,,,
+Missing N (listwise),3,,,,,,,,,,,,
 ])
 AT_CLEANUP
 
@@ -165,10 +175,12 @@ end data.
 
 descript all/stat=mean.
 ])
-AT_CHECK([pspp -O format=csv descriptives.sps], [0],
-  [Table: Valid cases = 6; cases with missing value(s) = 0.
-Variable,N,Mean
+AT_CHECK([pspp -O format=csv descriptives.sps], [0], [dnl
+Table: Descriptive Statistics
+,N,Mean
 X,6,2.500
+Valid N (listwise),6,
+Missing N (listwise),0,
 ])
 AT_CLEANUP
 
@@ -194,9 +206,11 @@ SELECT IF id < 7 .
 DESCRIPTIVES /VAR=abc.
 ])
 AT_CHECK([pspp -O format=csv descriptives.sps], [0], [dnl
-Table: Valid cases = 6; cases with missing value(s) = 0.
-Variable,N,Mean,Std Dev,Minimum,Maximum
+Table: Descriptive Statistics
+,N,Mean,Std Dev,Minimum,Maximum
 abc,6,3.00,.84,2.00,4.00
+Valid N (listwise),6,,,,
+Missing N (listwise),0,,,,
 ])
 AT_CLEANUP
 
@@ -213,15 +227,17 @@ DESCRIPTIVES /VAR=a b /SAVE.
 LIST.
 ])
 AT_CHECK([pspp -O format=csv descriptives.sps], [0], [dnl
-Table: Mapping of variables to corresponding Z-scores.
+Table: Mapping of Variables to Z-scores
 Source,Target
 a,Za
 b,Zb
 
-Table: Valid cases = 3; cases with missing value(s) = 0.
-Variable,N,Mean,Std Dev,Minimum,Maximum
+Table: Descriptive Statistics
+,N,Mean,Std Dev,Minimum,Maximum
 a,3,2.00,1.00,1.00,3.00
 b,3,60.00,10.00,50.00,70.00
+Valid N (listwise),3,,,,
+Missing N (listwise),0,,,,
 
 Table: Data List
 a,b,Za,Zb
@@ -248,30 +264,38 @@ SPLIT FILE BY group.
 DESCRIPTIVES /VAR=a b /SAVE.
 LIST.
 ])
-AT_CHECK([pspp -O format=csv descriptives.sps], [0], [dnl
-Table: Mapping of variables to corresponding Z-scores.
+AT_CHECK([pspp -o pspp.csv -o pspp.txt descriptives.sps])
+AT_CHECK([cat pspp.csv], [0], [dnl
+Table: Mapping of Variables to Z-scores
 Source,Target
 a,Za
 b,Zb
 
-Variable,Value,Label
-group,1.00,
+Table: Split Values
+Variable,Value
+group,1.00
 
-Table: Valid cases = 3; cases with missing value(s) = 0.
-Variable,N,Mean,Std Dev,Minimum,Maximum
+Table: Descriptive Statistics
+,N,Mean,Std Dev,Minimum,Maximum
 a,3,2.00,1.00,1.00,3.00
 b,3,60.00,10.00,50.00,70.00
+Valid N (listwise),3,,,,
+Missing N (listwise),0,,,,
 
-Variable,Value,Label
-group,2.00,
+Table: Split Values
+Variable,Value
+group,2.00
 
-Table: Valid cases = 4; cases with missing value(s) = 0.
-Variable,N,Mean,Std Dev,Minimum,Maximum
+Table: Descriptive Statistics
+,N,Mean,Std Dev,Minimum,Maximum
 a,4,300.00,182.57,100.00,500.00
 b,4,8000.00,1825.74,6000.00,10000.00
+Valid N (listwise),4,,,,
+Missing N (listwise),0,,,,
 
-Variable,Value,Label
-group,1.00,
+Table: Split Values
+Variable,Value
+group,1.00
 
 Table: Data List
 group,a,b,Za,Zb
@@ -279,8 +303,9 @@ group,a,b,Za,Zb
 1.00,2.00,60.00,.00,.00
 1.00,3.00,70.00,1.00,1.00
 
-Variable,Value,Label
-group,2.00,
+Table: Split Values
+Variable,Value
+group,2.00
 
 Table: Data List
 group,a,b,Za,Zb
@@ -314,16 +339,21 @@ SELECT IF id < 7 .
 DESCRIPTIVES /VAR=abc/SAVE.
 LIST.
 ])
-AT_CHECK([pspp -O format=csv descriptives.sps], [0], [dnl
+AT_CHECK([pspp -o pspp.csv -o pspp.txt descriptives.sps], [0], [dnl
+descriptives.sps:15: warning: DESCRIPTIVES: DESCRIPTIVES with Z scores ignores TEMPORARY.  Temporary transformations will be made permanent.
+])
+AT_CHECK([cat pspp.csv], [0], [dnl
 descriptives.sps:15: warning: DESCRIPTIVES: DESCRIPTIVES with Z scores ignores TEMPORARY.  Temporary transformations will be made permanent.
 
-Table: Mapping of variables to corresponding Z-scores.
+Table: Mapping of Variables to Z-scores
 Source,Target
 abc,Zabc
 
-Table: Valid cases = 6; cases with missing value(s) = 0.
-Variable,N,Mean,Std Dev,Minimum,Maximum
+Table: Descriptive Statistics
+,N,Mean,Std Dev,Minimum,Maximum
 abc,6,3.00,.84,2.00,4.00
+Valid N (listwise),6,,,,
+Missing N (listwise),0,,,,
 
 Table: Data List
 id,abc,Zabc
@@ -389,5 +419,26 @@ filter1,filter2,x,Zx,ZSC001,ZSC002,ZSC003,ZSC004
 1.00,1.00,3.00,-.64,.00,.00,1.00,1.00
 1.00,1.00,2.00,-.65,-.63,-.63,.00,.00
 1.00,1.00,1.00,-.66,-1.26,-1.26,-1.00,-1.00
+])
+AT_CLEANUP
+
+dnl This is an example from doc/tutorial.texi
+dnl So if the results of this have to be changed in any way,
+dnl make sure to update that file.
+AT_SETUP([DESCRIPTIVES tutorial example])
+cp $top_srcdir/examples/physiology.sav .
+AT_DATA([descriptives.sps], [dnl
+GET FILE='physiology.sav'.
+DESCRIPTIVES sex, weight, height.
+])
+AT_CHECK([pspp -o pspp.csv -o pspp.txt descriptives.sps])
+AT_CHECK([cat pspp.csv], [0], [dnl
+Table: Descriptive Statistics
+,N,Mean,Std Dev,Minimum,Maximum
+Sex of subject  ,40,.45,.50,Male,Female
+Weight in kilograms ,40,72.12,26.70,-55.6,92.1
+Height in millimeters   ,40,1677.12,262.87,179,1903
+Valid N (listwise),40,,,,
+Missing N (listwise),0,,,,
 ])
 AT_CLEANUP

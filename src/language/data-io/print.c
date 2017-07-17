@@ -40,12 +40,14 @@
 #include "libpspp/misc.h"
 #include "libpspp/pool.h"
 #include "libpspp/u8-line.h"
+#include "output/pivot-table.h"
 #include "output/tab.h"
 #include "output/text-item.h"
 
 #include "gl/xalloc.h"
 
 #include "gettext.h"
+#define N_(msgid) msgid
 #define _(msgid) gettext (msgid)
 
 /* Describes what to do when an output field is encountered. */
@@ -99,7 +101,7 @@ static trns_proc_func print_text_trns_proc, print_binary_trns_proc;
 static trns_free_func print_trns_free;
 static bool parse_specs (struct lexer *, struct pool *tmp_pool, struct print_trns *,
 			 struct dictionary *dict, enum which_formats);
-static void dump_table (struct print_trns *, const struct file_handle *);
+static void dump_table (struct print_trns *);
 
 /* Basic parsing. */
 
@@ -233,7 +235,7 @@ internal_cmd_print (struct lexer *lexer, struct dataset *ds,
 
   /* Output the variable table if requested. */
   if (print_table)
-    dump_table (trns, fh);
+    dump_table (trns);
 
   /* Put the transformation in the queue. */
   add_transformation (ds,
@@ -425,59 +427,43 @@ parse_variable_argument (struct lexer *lexer, const struct dictionary *dict,
 /* Prints the table produced by the TABLE subcommand to the listing
    file. */
 static void
-dump_table (struct print_trns *trns, const struct file_handle *fh)
+dump_table (struct print_trns *trns)
 {
-  struct prt_out_spec *spec;
-  struct tab_table *t;
-  int spec_cnt;
-  int row;
+  struct pivot_table *table = pivot_table_create (N_("Print Summary"));
 
-  spec_cnt = ll_count (&trns->specs);
-  t = tab_create (4, spec_cnt + 1);
-  tab_box (t, TAL_1, TAL_1, TAL_0, TAL_1, 0, 0, 3, spec_cnt);
-  tab_hline (t, TAL_2, 0, 3, 1);
-  tab_headers (t, 0, 0, 1, 0);
-  tab_text (t, 0, 0, TAB_CENTER | TAT_TITLE, _("Variable"));
-  tab_text (t, 1, 0, TAB_CENTER | TAT_TITLE, _("Record"));
-  tab_text (t, 2, 0, TAB_CENTER | TAT_TITLE, _("Columns"));
-  tab_text (t, 3, 0, TAB_CENTER | TAT_TITLE, _("Format"));
-  row = 1;
+  pivot_dimension_create (table, PIVOT_AXIS_COLUMN, N_("Attributes"),
+                          N_("Record"), N_("Columns"), N_("Format"));
+
+  struct pivot_dimension *variables = pivot_dimension_create (
+    table, PIVOT_AXIS_ROW, N_("Variable"));
+
+  struct prt_out_spec *spec;
   ll_for_each (spec, struct prt_out_spec, ll, &trns->specs)
     {
+      if (spec->type != PRT_VAR)
+        continue;
+
+      int row = pivot_category_create_leaf (
+        variables->root, pivot_value_new_variable (spec->var));
+
+      pivot_table_put2 (table, 0, row,
+                        pivot_value_new_integer (spec->record));
+      int last_column = spec->first_column + spec->format.w - 1;
+      pivot_table_put2 (table, 1, row, pivot_value_new_user_text_nocopy (
+                          xasprintf ("%3d-%3d",
+                                     spec->first_column, last_column)));
+
       char fmt_string[FMT_STRING_LEN_MAX + 1];
-      int width;
-      switch (spec->type)
-        {
-        case PRT_LITERAL:
-          tab_text_format (t, 0, row, TAB_LEFT | TAB_FIX, "`%.*s'",
-                           (int) ds_length (&spec->string),
-                           ds_data (&spec->string));
-          width = ds_length (&spec->string);
-          break;
-        case PRT_VAR:
-          tab_text (t, 0, row, TAB_LEFT, var_get_name (spec->var));
-          tab_text (t, 3, row, TAB_LEFT | TAB_FIX,
-                    fmt_to_string (&spec->format, fmt_string));
-          width = spec->format.w;
-          break;
-        default:
-          NOT_REACHED ();
-	}
-      tab_text_format (t, 1, row, 0, "%d", spec->record);
-      tab_text_format (t, 2, row, 0, "%3d-%3d",
-                       spec->first_column, spec->first_column + width - 1);
-      row++;
+      pivot_table_put2 (table, 2, row, pivot_value_new_user_text (
+                          fmt_to_string (&spec->format, fmt_string), -1));
     }
 
-  if (fh != NULL)
-    tab_title (t, ngettext ("Writing %zu record to %s.",
-                            "Writing %zu records to %s.", trns->record_cnt),
-               trns->record_cnt, fh_get_name (fh));
-  else
-    tab_title (t, ngettext ("Writing %zu record.",
-                            "Writing %zu records.", trns->record_cnt),
-               trns->record_cnt);
-  tab_submit (t);
+  int row = pivot_category_create_leaf (
+    variables->root, pivot_value_new_text (N_("N of Records")));
+  pivot_table_put2 (table, 0, row,
+                    pivot_value_new_integer (trns->record_cnt));
+
+  pivot_table_submit (table);
 }
 
 /* Transformation, for all-text output. */

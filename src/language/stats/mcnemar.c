@@ -29,7 +29,7 @@
 #include "data/variable.h"
 #include "language/stats/npar.h"
 #include "libpspp/str.h"
-#include "output/tab.h"
+#include "output/pivot-table.h"
 #include "libpspp/message.h"
 
 #include "gl/minmax.h"
@@ -38,6 +38,7 @@
 #include "data/value.h"
 
 #include "gettext.h"
+#define N_(msgid) msgid
 #define _(msgid) gettext (msgid)
 
 
@@ -155,142 +156,93 @@ mcnemar_execute (const struct dataset *ds,
   free (mc);
 }
 
+static char *
+make_pair_name (const variable_pair *pair)
+{
+  return xasprintf ("%s & %s", var_to_string ((*pair)[0]),
+                    var_to_string ((*pair)[1]));
+}
 
 static void
 output_freq_table (variable_pair *vp,
 		   const struct mcnemar *param,
 		   const struct dictionary *dict)
 {
-  const int header_rows = 2;
-  const int header_cols = 1;
+  struct pivot_table *table = pivot_table_create__ (
+    pivot_value_new_user_text_nocopy (make_pair_name (vp)));
+  pivot_table_set_weight_var (table, dict_get_weight (dict));
 
-  struct tab_table *table = tab_create (header_cols + 2, header_rows + 2);
+  struct pivot_dimension *vars[2];
+  for (int i = 0; i < 2; i++)
+    {
+      vars[i] = pivot_dimension_create__ (
+        table, i ? PIVOT_AXIS_COLUMN : PIVOT_AXIS_ROW,
+        pivot_value_new_variable ((*vp)[i]));
+      vars[i]->root->show_label = true;
 
-  const struct fmt_spec *wfmt = dict_get_weight_format (dict);
+      for (int j = 0; j < 2; j++)
+        {
+          const union value *val = j ? &param->val1 : &param->val0;
+          pivot_category_create_leaf_rc (
+            vars[i]->root, pivot_value_new_var_value ((*vp)[0], val),
+            PIVOT_RC_COUNT);
+        }
+    }
 
+  struct entry
+    {
+      int idx0;
+      int idx1;
+      double x;
+    }
+  entries[] = {
+    { 0, 0, param->n00 },
+    { 1, 0, param->n01 },
+    { 0, 1, param->n10 },
+    { 1, 1, param->n11 },
+  };
+  for (size_t i = 0; i < sizeof entries / sizeof *entries; i++)
+    {
+      const struct entry *e = &entries[i];
+      pivot_table_put2 (table, e->idx0, e->idx1,
+                        pivot_value_new_number (e->x));
+    }
 
-  struct string pair_name;
-  struct string val1str ;
-  struct string val0str ;
-
-  tab_set_format (table, RC_WEIGHT, wfmt);
-
-  ds_init_empty (&val0str);
-  ds_init_empty (&val1str);
-
-  var_append_value_name ((*vp)[0], &param->val0, &val0str);
-  var_append_value_name ((*vp)[1], &param->val1, &val1str);
-
-  ds_init_cstr (&pair_name, var_to_string ((*vp)[0]));
-  ds_put_cstr (&pair_name, " & ");
-  ds_put_cstr (&pair_name, var_to_string ((*vp)[1]));
-
-  tab_title (table, "%s", ds_cstr (&pair_name));
-
-  ds_destroy (&pair_name);
-
-  tab_headers (table, header_cols, 0, header_rows, 0);
-
-  /* Vertical lines inside the box */
-  tab_box (table, 0, 0, -1, TAL_1,
-	   1, 0, tab_nc (table) - 1, tab_nr (table) - 1 );
-
-  /* Box around entire table */
-  tab_box (table, TAL_2, TAL_2, -1, -1,
-	   0, 0, tab_nc (table) - 1, tab_nr (table) - 1 );
-
-  tab_vline (table, TAL_2, header_cols, 0, tab_nr (table) - 1);
-  tab_hline (table, TAL_2, 0, tab_nc (table) - 1, header_rows);
-
-  tab_text (table,  0, 0,  TAB_CENTER, var_to_string ((*vp)[0]));
-
-  tab_joint_text (table,  1, 0,  2, 0, TAB_CENTER, var_to_string ((*vp)[1]));
-  tab_hline (table, TAL_1, 1, tab_nc (table) - 1, 1);
-
-
-  tab_text (table, 0, header_rows + 0, TAB_LEFT, ds_cstr (&val0str));
-  tab_text (table, 0, header_rows + 1, TAB_LEFT, ds_cstr (&val1str));
-
-  tab_text (table, header_cols + 0, 1, TAB_LEFT, ds_cstr (&val0str));
-  tab_text (table, header_cols + 1, 1, TAB_LEFT, ds_cstr (&val1str));
-
-  tab_double (table, header_cols + 0, header_rows + 0, TAB_RIGHT, param->n00, NULL, RC_WEIGHT);
-  tab_double (table, header_cols + 0, header_rows + 1, TAB_RIGHT, param->n01, NULL, RC_WEIGHT);
-  tab_double (table, header_cols + 1, header_rows + 0, TAB_RIGHT, param->n10, NULL, RC_WEIGHT);
-  tab_double (table, header_cols + 1, header_rows + 1, TAB_RIGHT, param->n11, NULL, RC_WEIGHT);
-
-  tab_submit (table);
-
-  ds_destroy (&val0str);
-  ds_destroy (&val1str);
+  pivot_table_submit (table);
 }
-
 
 static void
 output_statistics_table (const struct two_sample_test *t2s,
 			 const struct mcnemar *mc,
 			 const struct dictionary *dict)
 {
-  int i;
+  struct pivot_table *table = pivot_table_create (N_("Test Statistics"));
+  pivot_table_set_weight_var (table, dict_get_weight (dict));
 
-  struct tab_table *table = tab_create (5, t2s->n_pairs + 1);
+  pivot_dimension_create (table, PIVOT_AXIS_COLUMN, N_("Statistics"),
+                          N_("N"), PIVOT_RC_COUNT,
+                          N_("Exact Sig. (2-tailed)"), PIVOT_RC_SIGNIFICANCE,
+                          N_("Exact Sig. (1-tailed)"), PIVOT_RC_SIGNIFICANCE,
+                          N_("Point Probability"), PIVOT_RC_OTHER);
 
-  const struct fmt_spec *wfmt = dict_get_weight_format (dict);
+  struct pivot_dimension *pairs = pivot_dimension_create (
+    table, PIVOT_AXIS_ROW, N_("Pairs"));
 
-  tab_title (table, _("Test Statistics"));
-  tab_set_format (table, RC_WEIGHT, wfmt);
-
-  tab_headers (table, 0, 1,  0, 1);
-
-  tab_hline (table, TAL_2, 0, tab_nc (table) - 1, 1);
-  tab_vline (table, TAL_2, 1, 0, tab_nr (table) - 1);
-
-
-  /* Vertical lines inside the box */
-  tab_box (table, -1, -1, -1, TAL_1,
-	   0, 0,
-	   tab_nc (table) - 1, tab_nr (table) - 1);
-
-  /* Box around entire table */
-  tab_box (table, TAL_2, TAL_2, -1, -1,
-	   0, 0, tab_nc (table) - 1,
-	   tab_nr (table) - 1);
-
-  tab_text (table,  1, 0, TAT_TITLE | TAB_CENTER,
-	    _("N"));
-
-  tab_text (table,  2, 0, TAT_TITLE | TAB_CENTER,
-	    _("Exact Sig. (2-tailed)"));
-
-  tab_text (table,  3, 0, TAT_TITLE | TAB_CENTER,
-	    _("Exact Sig. (1-tailed)"));
-
-  tab_text (table,  4, 0, TAT_TITLE | TAB_CENTER,
-	    _("Point Probability"));
-
-  for (i = 0 ; i < t2s->n_pairs; ++i)
+  for (size_t i = 0 ; i < t2s->n_pairs; ++i)
     {
-      double sig;
       variable_pair *vp = &t2s->pairs[i];
+      int pair_idx = pivot_category_create_leaf (
+        pairs->root, pivot_value_new_user_text_nocopy (make_pair_name (vp)));
 
-      struct string pair_name;
-      ds_init_cstr (&pair_name, var_to_string ((*vp)[0]));
-      ds_put_cstr (&pair_name, " & ");
-      ds_put_cstr (&pair_name, var_to_string ((*vp)[1]));
-
-      tab_text (table,  0, 1 + i, TAB_LEFT, ds_cstr (&pair_name));
-      ds_destroy (&pair_name);
-
-      tab_double (table, 1, 1 + i, TAB_RIGHT, mc[i].n00 + mc[i].n01 + mc[i].n10 + mc[i].n11, NULL, RC_WEIGHT);
-
-      sig = gsl_cdf_binomial_P (mc[i].n01,  0.5,  mc[i].n01 + mc[i].n10);
-
-      tab_double (table, 2, 1 + i, TAB_RIGHT, 2 * sig, NULL, RC_PVALUE);
-      tab_double (table, 3, 1 + i, TAB_RIGHT, sig, NULL, RC_PVALUE);
-
-      tab_double (table, 4, 1 + i, TAB_RIGHT, gsl_ran_binomial_pdf (mc[i].n01, 0.5, mc[i].n01 + mc[i].n10),
-		  NULL, RC_OTHER);
+      double n = mc[i].n00 + mc[i].n01 + mc[i].n10 + mc[i].n11;
+      double sig = gsl_cdf_binomial_P (mc[i].n01, 0.5, mc[i].n01 + mc[i].n10);
+      double point = gsl_ran_binomial_pdf (mc[i].n01, 0.5,
+                                           mc[i].n01 + mc[i].n10);
+      double entries[] = { n, 2.0 * sig, sig, point };
+      for (size_t j = 0; j < sizeof entries / sizeof *entries; j++)
+        pivot_table_put2 (table, j, pair_idx,
+                          pivot_value_new_number (entries[j]));
     }
 
-  tab_submit (table);
+  pivot_table_submit (table);
 }

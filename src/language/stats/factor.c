@@ -47,7 +47,7 @@
 #include "math/moments.h"
 #include "output/chart-item.h"
 #include "output/charts/scree.h"
-#include "output/tab.h"
+#include "output/pivot-table.h"
 
 
 #include "gettext.h"
@@ -1638,162 +1638,101 @@ static void
 show_communalities (const struct cmd_factor * factor,
 		    const gsl_vector *initial, const gsl_vector *extracted)
 {
-  int i;
-  int c = 0;
-  const int heading_columns = 1;
-  int nc = heading_columns;
-  const int heading_rows = 1;
-  const int nr = heading_rows + factor->n_vars;
-  struct tab_table *t;
-
-  if (factor->print & PRINT_EXTRACTION)
-    nc++;
-
-  if (factor->print & PRINT_INITIAL)
-    nc++;
-
-  /* No point having a table with only headings */
-  if (nc <= 1)
+  if (!(factor->print & (PRINT_INITIAL | PRINT_EXTRACTION)))
     return;
 
-  t = tab_create (nc, nr);
+  struct pivot_table *table = pivot_table_create (N_("Communalities"));
 
-  tab_title (t, _("Communalities"));
-
-  tab_headers (t, heading_columns, 0, heading_rows, 0);
-
-  c = 1;
+  struct pivot_dimension *communalities = pivot_dimension_create (
+    table, PIVOT_AXIS_COLUMN, N_("Communalities"));
   if (factor->print & PRINT_INITIAL)
-    tab_text (t, c++, 0, TAB_CENTER | TAT_TITLE, _("Initial"));
-
+    pivot_category_create_leaves (communalities->root, N_("Initial"));
   if (factor->print & PRINT_EXTRACTION)
-    tab_text (t, c++, 0, TAB_CENTER | TAT_TITLE, _("Extraction"));
+    pivot_category_create_leaves (communalities->root, N_("Extraction"));
 
-  /* Outline the box */
-  tab_box (t,
-	   TAL_2, TAL_2,
-	   -1, -1,
-	   0, 0,
-	   nc - 1, nr - 1);
+  struct pivot_dimension *variables = pivot_dimension_create (
+    table, PIVOT_AXIS_ROW, N_("Variables"));
 
-  /* Vertical lines */
-  tab_box (t,
-	   -1, -1,
-	   -1, TAL_1,
-	   heading_columns, 0,
-	   nc - 1, nr - 1);
-
-  tab_hline (t, TAL_1, 0, nc - 1, heading_rows);
-  tab_vline (t, TAL_2, heading_columns, 0, nr - 1);
-
-  for (i = 0 ; i < factor->n_vars; ++i)
+  for (size_t i = 0 ; i < factor->n_vars; ++i)
     {
-      c = 0;
-      tab_text (t, c++, i + heading_rows, TAT_TITLE, var_to_string (factor->vars[i]));
+      int row = pivot_category_create_leaf (
+        variables->root, pivot_value_new_variable (factor->vars[i]));
 
+      int col = 0;
       if (factor->print & PRINT_INITIAL)
-	tab_double (t, c++, i + heading_rows, 0, gsl_vector_get (initial, i), NULL, RC_OTHER);
-
+        pivot_table_put2 (table, col++, row, pivot_value_new_number (
+                            gsl_vector_get (initial, i)));
       if (factor->print & PRINT_EXTRACTION)
-	tab_double (t, c++, i + heading_rows, 0, gsl_vector_get (extracted, i), NULL, RC_OTHER);
+        pivot_table_put2 (table, col++, row, pivot_value_new_number (
+                            gsl_vector_get (extracted, i)));
     }
 
-  tab_submit (t);
+  pivot_table_submit (table);
 }
 
+static struct pivot_dimension *
+create_numeric_dimension (struct pivot_table *table,
+                          enum pivot_axis_type axis_type, const char *name,
+                          size_t n, bool show_label)
+{
+  struct pivot_dimension *d = pivot_dimension_create (table, axis_type, name);
+  d->root->show_label = show_label;
+  for (int i = 0 ; i < n; ++i)
+    pivot_category_create_leaf (d->root, pivot_value_new_integer (i + 1));
+  return d;
+}
 
 static void
 show_factor_matrix (const struct cmd_factor *factor, const struct idata *idata, const char *title, const gsl_matrix *fm)
 {
-  int i;
+  struct pivot_table *table = pivot_table_create (title);
 
   const int n_factors = idata->n_extractions;
+  create_numeric_dimension (
+    table, PIVOT_AXIS_COLUMN,
+    factor->extraction == EXTRACTION_PC ? N_("Component") : N_("Factor"),
+    n_factors, true);
 
-  const int heading_columns = 1;
-  const int heading_rows = 2;
-  const int nr = heading_rows + factor->n_vars;
-  const int nc = heading_columns + n_factors;
-  gsl_permutation *perm;
-
-  struct tab_table *t = tab_create (nc, nr);
-
-  /*
-  if ( factor->extraction == EXTRACTION_PC )
-    tab_title (t, _("Component Matrix"));
-  else
-    tab_title (t, _("Factor Matrix"));
-  */
-
-  tab_title (t, "%s", title);
-
-  tab_headers (t, heading_columns, 0, heading_rows, 0);
-
-  if ( factor->extraction == EXTRACTION_PC )
-    tab_joint_text (t,
-		    1, 0,
-		    nc - 1, 0,
-		    TAB_CENTER | TAT_TITLE, _("Component"));
-  else
-    tab_joint_text (t,
-		    1, 0,
-		    nc - 1, 0,
-		    TAB_CENTER | TAT_TITLE, _("Factor"));
-
-
-  tab_hline (t, TAL_1, heading_columns, nc - 1, 1);
-
-
-  /* Outline the box */
-  tab_box (t,
-	   TAL_2, TAL_2,
-	   -1, -1,
-	   0, 0,
-	   nc - 1, nr - 1);
-
-  /* Vertical lines */
-  tab_box (t,
-	   -1, -1,
-	   -1, TAL_1,
-	   heading_columns, 1,
-	   nc - 1, nr - 1);
-
-  tab_hline (t, TAL_1, 0, nc - 1, heading_rows);
-  tab_vline (t, TAL_2, heading_columns, 0, nr - 1);
-
+  struct pivot_dimension *variables = pivot_dimension_create (
+    table, PIVOT_AXIS_ROW, N_("Variables"));
 
   /* Initialise to the identity permutation */
-  perm = gsl_permutation_calloc (factor->n_vars);
+  gsl_permutation *perm = gsl_permutation_calloc (factor->n_vars);
 
   if ( factor->sort)
     sort_matrix_indirect (fm, perm);
 
-  for (i = 0 ; i < n_factors; ++i)
+  for (size_t i = 0 ; i < factor->n_vars; ++i)
     {
-      tab_text_format (t, heading_columns + i, 1, TAB_CENTER | TAT_TITLE, _("%d"), i + 1);
-    }
-
-  for (i = 0 ; i < factor->n_vars; ++i)
-    {
-      int j;
       const int matrix_row = perm->data[i];
-      tab_text (t, 0, i + heading_rows, TAT_TITLE, var_to_string (factor->vars[matrix_row]));
 
-      for (j = 0 ; j < n_factors; ++j)
+      int var_idx = pivot_category_create_leaf (
+        variables->root, pivot_value_new_variable (factor->vars[matrix_row]));
+
+      for (size_t j = 0 ; j < n_factors; ++j)
 	{
 	  double x = gsl_matrix_get (fm, matrix_row, j);
-
 	  if ( fabs (x) < factor->blank)
 	    continue;
 
-	  tab_double (t, heading_columns + j, heading_rows + i, 0, x, NULL, RC_OTHER);
+          pivot_table_put2 (table, j, var_idx, pivot_value_new_number (x));
 	}
     }
 
   gsl_permutation_free (perm);
 
-  tab_submit (t);
+  pivot_table_submit (table);
 }
 
+static void
+put_variance (struct pivot_table *table, int row, int phase_idx,
+              double lambda, double percent, double cum)
+{
+  double entries[] = { lambda, percent, cum };
+  for (size_t i = 0; i < sizeof entries / sizeof *entries; i++)
+    pivot_table_put3 (table, i, phase_idx, row,
+                      pivot_value_new_number (entries[i]));
+}
 
 static void
 show_explained_variance (const struct cmd_factor * factor,
@@ -1802,517 +1741,226 @@ show_explained_variance (const struct cmd_factor * factor,
 			 const gsl_vector *extracted_eigenvalues,
 			 const gsl_vector *rotated_loadings)
 {
-  size_t i;
-  int c = 0;
-  const int heading_columns = 1;
-  const int heading_rows = 2;
-  const int nr = heading_rows + factor->n_vars;
-
-  struct tab_table *t ;
-
-  double i_total = 0.0;
-  double i_cum = 0.0;
-
-  double e_total = 0.0;
-  double e_cum = 0.0;
-
-  double r_cum = 0.0;
-
-  int nc = heading_columns;
-
-  if (factor->print & PRINT_EXTRACTION)
-    nc += 3;
-
-  if (factor->print & PRINT_INITIAL)
-    nc += 3;
-
-  if (factor->print & PRINT_ROTATION)
-    {
-      nc += factor->rotation == ROT_PROMAX ? 1 : 3;
-    }
-
-  /* No point having a table with only headings */
-  if ( nc <= heading_columns)
+  if (!(factor->print & (PRINT_INITIAL | PRINT_EXTRACTION | PRINT_ROTATION)))
     return;
 
-  t = tab_create (nc, nr);
+  struct pivot_table *table = pivot_table_create (
+    N_("Total Variance Explained"));
+  table->omit_empty = true;
 
-  tab_title (t, _("Total Variance Explained"));
+  /* xgettext:no-c-format */
+  pivot_dimension_create (table, PIVOT_AXIS_COLUMN, N_("Statistics"),
+                          N_("Total"), PIVOT_RC_OTHER,
+                          N_("% of Variance"), PIVOT_RC_PERCENT,
+                          N_("Cumulative %"), PIVOT_RC_PERCENT);
 
-  tab_headers (t, heading_columns, 0, heading_rows, 0);
-
-  /* Outline the box */
-  tab_box (t,
-	   TAL_2, TAL_2,
-	   -1, -1,
-	   0, 0,
-	   nc - 1, nr - 1);
-
-  /* Vertical lines */
-  tab_box (t,
-	   -1, -1,
-	   -1, TAL_1,
-	   heading_columns, 0,
-	   nc - 1, nr - 1);
-
-  tab_hline (t, TAL_1, 0, nc - 1, heading_rows);
-  tab_hline (t, TAL_1, 1, nc - 1, 1);
-
-  tab_vline (t, TAL_2, heading_columns, 0, nr - 1);
-
-
-  if ( factor->extraction == EXTRACTION_PC)
-    tab_text (t, 0, 1, TAB_LEFT | TAT_TITLE, _("Component"));
-  else
-    tab_text (t, 0, 1, TAB_LEFT | TAT_TITLE, _("Factor"));
-
-  c = 1;
+  struct pivot_dimension *phase = pivot_dimension_create (
+    table, PIVOT_AXIS_COLUMN, N_("Phase"));
   if (factor->print & PRINT_INITIAL)
-    {
-      tab_joint_text (t, c, 0, c + 2, 0, TAB_CENTER | TAT_TITLE, _("Initial Eigenvalues"));
-      c += 3;
-    }
+    pivot_category_create_leaves (phase->root, N_("Initial Eigenvalues"));
 
   if (factor->print & PRINT_EXTRACTION)
-    {
-      tab_joint_text (t, c, 0, c + 2, 0, TAB_CENTER | TAT_TITLE, _("Extraction Sums of Squared Loadings"));
-      c += 3;
-    }
+    pivot_category_create_leaves (phase->root,
+                                  N_("Extraction Sums of Squared Loadings"));
 
   if (factor->print & PRINT_ROTATION)
-    {
-      const int width = factor->rotation == ROT_PROMAX ? 0 : 2;
-      tab_joint_text (t, c, 0, c + width, 0, TAB_CENTER | TAT_TITLE, _("Rotation Sums of Squared Loadings"));
-      c += width + 1;
-    }
+    pivot_category_create_leaves (phase->root,
+                                  N_("Rotation Sums of Squared Loadings"));
 
-  for (i = 0; i < (nc - heading_columns + 2) / 3 ; ++i)
-    {
-      tab_text (t, i * 3 + 1, 1, TAB_CENTER | TAT_TITLE, _("Total"));
+  struct pivot_dimension *components = pivot_dimension_create (
+    table, PIVOT_AXIS_ROW,
+    factor->extraction == EXTRACTION_PC ? N_("Component") : N_("Factor"));
 
-      tab_vline (t, TAL_2, heading_columns + i * 3, 0, nr - 1);
-
-      if (i == 2 && factor->rotation == ROT_PROMAX)
-	continue;
-
-      /* xgettext:no-c-format */
-      tab_text (t, i * 3 + 2, 1, TAB_CENTER | TAT_TITLE, _("% of Variance"));
-      tab_text (t, i * 3 + 3, 1, TAB_CENTER | TAT_TITLE, _("Cumulative %"));
-    }
-
-  for (i = 0 ; i < initial_eigenvalues->size; ++i)
+  double i_total = 0.0;
+  for (size_t i = 0 ; i < initial_eigenvalues->size; ++i)
     i_total += gsl_vector_get (initial_eigenvalues, i);
 
-  if ( factor->extraction == EXTRACTION_PAF)
-    {
-      e_total = factor->n_vars;
-    }
-  else
-    {
-      e_total = i_total;
-    }
+  double e_total = (factor->extraction == EXTRACTION_PAF
+                    ? factor->n_vars
+                    : i_total);
 
-  for (i = 0 ; i < factor->n_vars; ++i)
+  double i_cum = 0.0;
+  double e_cum = 0.0;
+  double r_cum = 0.0;
+  for (size_t i = 0 ; i < factor->n_vars; ++i)
     {
       const double i_lambda = gsl_vector_get (initial_eigenvalues, i);
       double i_percent = 100.0 * i_lambda / i_total ;
+      i_cum += i_percent;
 
       const double e_lambda = gsl_vector_get (extracted_eigenvalues, i);
       double e_percent = 100.0 * e_lambda / e_total ;
-
-      c = 0;
-
-      tab_text_format (t, c++, i + heading_rows, TAB_LEFT | TAT_TITLE, _("%zu"), i + 1);
-
-      i_cum += i_percent;
       e_cum += e_percent;
+
+      int row = pivot_category_create_leaf (
+        components->root, pivot_value_new_integer (i + 1));
+
+      int phase_idx = 0;
 
       /* Initial Eigenvalues */
       if (factor->print & PRINT_INITIAL)
-      {
-	tab_double (t, c++, i + heading_rows, 0, i_lambda, NULL, RC_OTHER);
-	tab_double (t, c++, i + heading_rows, 0, i_percent, NULL, RC_OTHER);
-	tab_double (t, c++, i + heading_rows, 0, i_cum, NULL, RC_OTHER);
-      }
+        put_variance (table, row, phase_idx++, i_lambda, i_percent, i_cum);
 
-
-      if (factor->print & PRINT_EXTRACTION)
-	{
-	  if (i < idata->n_extractions)
-	    {
-	      /* Sums of squared loadings */
-	      tab_double (t, c++, i + heading_rows, 0, e_lambda, NULL, RC_OTHER);
-	      tab_double (t, c++, i + heading_rows, 0, e_percent, NULL, RC_OTHER);
-	      tab_double (t, c++, i + heading_rows, 0, e_cum, NULL, RC_OTHER);
-	    }
-	}
-
-      if (rotated_loadings != NULL)
+      if (i < idata->n_extractions)
         {
-          const double r_lambda = gsl_vector_get (rotated_loadings, i);
-          double r_percent = 100.0 * r_lambda / e_total ;
+          if (factor->print & PRINT_EXTRACTION)
+            put_variance (table, row, phase_idx++, e_lambda, e_percent, e_cum);
 
-          if (factor->print & PRINT_ROTATION)
+          if (rotated_loadings != NULL && factor->print & PRINT_ROTATION)
             {
-              if (i < idata->n_extractions)
-                {
-                  r_cum += r_percent;
-                  tab_double (t, c++, i + heading_rows, 0, r_lambda, NULL, RC_OTHER);
-		  if (factor->rotation != ROT_PROMAX)
-		    {
-		      tab_double (t, c++, i + heading_rows, 0, r_percent, NULL, RC_OTHER);
-		      tab_double (t, c++, i + heading_rows, 0, r_cum, NULL, RC_OTHER);
-		    }
-                }
+              double r_lambda = gsl_vector_get (rotated_loadings, i);
+              double r_percent = 100.0 * r_lambda / e_total ;
+              if (factor->rotation == ROT_PROMAX)
+                r_lambda = r_percent = SYSMIS;
+
+              r_cum += r_percent;
+              put_variance (table, row, phase_idx++, r_lambda, r_percent,
+                            r_cum);
             }
         }
     }
 
-  tab_submit (t);
+  pivot_table_submit (table);
 }
-
 
 static void
 show_factor_correlation (const struct cmd_factor * factor, const gsl_matrix *fcm)
 {
-  size_t i, j;
-  const int heading_columns = 1;
-  const int heading_rows = 1;
-  const int nr = heading_rows + fcm->size2;
-  const int nc = heading_columns + fcm->size1;
-  struct tab_table *t = tab_create (nc, nr);
+  struct pivot_table *table = pivot_table_create (
+    N_("Factor Correlation Matrix"));
 
-  tab_title (t, _("Factor Correlation Matrix"));
+  create_numeric_dimension (
+    table, PIVOT_AXIS_ROW,
+    factor->extraction == EXTRACTION_PC ? N_("Component") : N_("Factor"),
+    fcm->size2, true);
 
-  tab_headers (t, heading_columns, 0, heading_rows, 0);
+  create_numeric_dimension (table, PIVOT_AXIS_COLUMN, N_("Factor 2"),
+                            fcm->size1, false);
 
-  /* Outline the box */
-  tab_box (t,
-	   TAL_2, TAL_2,
-	   -1, -1,
-	   0, 0,
-	   nc - 1, nr - 1);
+  for (size_t i = 0 ; i < fcm->size1; ++i)
+    for (size_t j = 0 ; j < fcm->size2; ++j)
+      pivot_table_put2 (table, j, i,
+                        pivot_value_new_number (gsl_matrix_get (fcm, i, j)));
 
-  /* Vertical lines */
-  tab_box (t,
-	   -1, -1,
-	   -1, TAL_1,
-	   heading_columns, 0,
-	   nc - 1, nr - 1);
+  pivot_table_submit (table);
+}
 
-  tab_hline (t, TAL_1, 0, nc - 1, heading_rows);
-  tab_hline (t, TAL_1, 1, nc - 1, 1);
-
-  tab_vline (t, TAL_2, heading_columns, 0, nr - 1);
-
-
-  if ( factor->extraction == EXTRACTION_PC)
-    tab_text (t, 0, 0, TAB_LEFT | TAT_TITLE, _("Component"));
-  else
-    tab_text (t, 0, 0, TAB_LEFT | TAT_TITLE, _("Factor"));
-
-  for (i = 0 ; i < fcm->size1; ++i)
+static void
+add_var_dims (struct pivot_table *table, const struct cmd_factor *factor)
+{
+  for (int i = 0; i < 2; i++)
     {
-      tab_text_format (t, heading_columns + i, 0, TAB_CENTER | TAT_TITLE, _("%zu"), i + 1);
+      struct pivot_dimension *d = pivot_dimension_create (
+        table, i ? PIVOT_AXIS_ROW : PIVOT_AXIS_COLUMN,
+        N_("Variables"));
+
+      for (size_t j = 0; j < factor->n_vars; j++)
+        pivot_category_create_leaf (
+          d->root, pivot_value_new_variable (factor->vars[j]));
     }
-
-  for (i = 0 ; i < fcm->size2; ++i)
-    {
-      tab_text_format (t, 0, heading_rows + i, TAB_CENTER | TAT_TITLE, _("%zu"), i + 1);
-    }
-
-
-  for (i = 0 ; i < fcm->size1; ++i)
-    {
-      for (j = 0 ; j < fcm->size2; ++j)
-	tab_double (t, heading_columns + j,  heading_rows + i, 0,
-		    gsl_matrix_get (fcm, i, j), NULL, RC_OTHER);
-    }
-
-  tab_submit (t);
 }
 
 static void
 show_aic (const struct cmd_factor *factor, const struct idata *idata)
 {
-  struct tab_table *t ;
-  size_t i;
-
-  const int heading_rows = 1;
-  const int heading_columns = 2;
-
-  const int nc = heading_columns + factor->n_vars;
-  const int nr = heading_rows + 2 * factor->n_vars;
-
   if ((factor->print & PRINT_AIC) == 0)
     return;
 
-  t = tab_create (nc, nr);
+  struct pivot_table *table = pivot_table_create (N_("Anti-Image Matrices"));
 
-  tab_title (t, _("Anti-Image Matrices"));
+  add_var_dims (table, factor);
 
-  tab_hline (t, TAL_1, 0, nc - 1, heading_rows);
+  pivot_dimension_create (table, PIVOT_AXIS_ROW, N_("Statistics"),
+                          N_("Anti-image Covariance"),
+                          N_("Anti-image Correlation"));
 
-  tab_headers (t, heading_columns, 0, heading_rows, 0);
+  for (size_t i = 0; i < factor->n_vars; ++i)
+    for (size_t j = 0; j < factor->n_vars; ++j)
+      {
+        double cov = gsl_matrix_get (idata->ai_cov, i, j);
+        pivot_table_put3 (table, i, j, 0, pivot_value_new_number (cov));
 
-  tab_vline (t, TAL_2, 2, 0, nr - 1);
+        double corr = gsl_matrix_get (idata->ai_cor, i, j);
+        pivot_table_put3 (table, i, j, 1, pivot_value_new_number (corr));
+      }
 
-  /* Outline the box */
-  tab_box (t,
-	   TAL_2, TAL_2,
-	   -1, -1,
-	   0, 0,
-	   nc - 1, nr - 1);
-
-  /* Vertical lines */
-  tab_box (t,
-	   -1, -1,
-	   -1, TAL_1,
-	   heading_columns, 0,
-	   nc - 1, nr - 1);
-
-
-  for (i = 0; i < factor->n_vars; ++i)
-    tab_text (t, heading_columns + i, 0, TAT_TITLE, var_to_string (factor->vars[i]));
-
-  tab_text (t, 0, heading_rows, TAT_TITLE, _("Anti-image Covariance"));
-  tab_hline (t, TAL_1, 0, nc - 1, heading_rows + factor->n_vars);
-  tab_text (t, 0, heading_rows + factor->n_vars, TAT_TITLE, _("Anti-image Correlation"));
-
-  for (i = 0; i < factor->n_vars; ++i)
-    {
-      tab_text (t, 1, i + heading_rows, TAT_TITLE,
-		var_to_string (factor->vars[i]));
-
-      tab_text (t, 1, factor->n_vars + i + heading_rows, TAT_TITLE,
-		var_to_string (factor->vars[i]));
-    }
-
-  for (i = 0; i < factor->n_vars; ++i)
-    {
-      int j;
-      for (j = 0; j < factor->n_vars; ++j)
-	{
-	  tab_double (t, heading_columns + i, heading_rows + j, 0,
-		      gsl_matrix_get (idata->ai_cov, i, j), NULL, RC_OTHER);
-	}
-
-
-      for (j = 0; j < factor->n_vars; ++j)
-	{
-	  tab_double (t, heading_columns + i, factor->n_vars + heading_rows + j, 0,
-		      gsl_matrix_get (idata->ai_cor, i, j), NULL, RC_OTHER);
-	}
-    }
-
-  tab_submit (t);
+  pivot_table_submit (table);
 }
 
 static void
 show_correlation_matrix (const struct cmd_factor *factor, const struct idata *idata)
 {
-  struct tab_table *t ;
-  size_t i, j;
-  int y_pos_corr = -1;
-  int y_pos_sig = -1;
-  int suffix_rows = 0;
-
-  const int heading_rows = 1;
-  const int heading_columns = 2;
-
-  int nc = heading_columns ;
-  int nr = heading_rows ;
-  int n_data_sets = 0;
-
-  if (factor->print & PRINT_CORRELATION)
-    {
-      y_pos_corr = n_data_sets;
-      n_data_sets++;
-      nc = heading_columns + factor->n_vars;
-    }
-
-  if (factor->print & PRINT_SIG)
-    {
-      y_pos_sig = n_data_sets;
-      n_data_sets++;
-      nc = heading_columns + factor->n_vars;
-    }
-
-  nr += n_data_sets * factor->n_vars;
-
-  if (factor->print & PRINT_DETERMINANT)
-    suffix_rows = 1;
-
-  /* If the table would contain only headings, don't bother rendering it */
-  if (nr <= heading_rows && suffix_rows == 0)
+  if (!(factor->print & (PRINT_CORRELATION | PRINT_SIG | PRINT_DETERMINANT)))
     return;
 
-  t = tab_create (nc, nr + suffix_rows);
+  struct pivot_table *table = pivot_table_create (N_("Correlation Matrix"));
 
-  tab_title (t, _("Correlation Matrix"));
-
-  tab_hline (t, TAL_1, 0, nc - 1, heading_rows);
-
-  if (nr > heading_rows)
+  if (factor->print & (PRINT_CORRELATION | PRINT_SIG))
     {
-      tab_headers (t, heading_columns, 0, heading_rows, 0);
+      add_var_dims (table, factor);
 
-      tab_vline (t, TAL_2, 2, 0, nr - 1);
-
-      /* Outline the box */
-      tab_box (t,
-	       TAL_2, TAL_2,
-	       -1, -1,
-	       0, 0,
-	       nc - 1, nr - 1);
-
-      /* Vertical lines */
-      tab_box (t,
-	       -1, -1,
-	       -1, TAL_1,
-	       heading_columns, 0,
-	       nc - 1, nr - 1);
-
-
-      for (i = 0; i < factor->n_vars; ++i)
-	tab_text (t, heading_columns + i, 0, TAT_TITLE, var_to_string (factor->vars[i]));
-
-
-      for (i = 0 ; i < n_data_sets; ++i)
-	{
-	  int y = heading_rows + i * factor->n_vars;
-	  size_t v;
-	  for (v = 0; v < factor->n_vars; ++v)
-	    tab_text (t, 1, y + v, TAT_TITLE, var_to_string (factor->vars[v]));
-
-	  tab_hline (t, TAL_1, 0, nc - 1, y);
-	}
-
+      struct pivot_dimension *statistics = pivot_dimension_create (
+        table, PIVOT_AXIS_ROW, N_("Statistics"));
       if (factor->print & PRINT_CORRELATION)
-	{
-	  const double y = heading_rows + y_pos_corr;
-	  tab_text (t, 0, y, TAT_TITLE, _("Correlations"));
+        pivot_category_create_leaves (statistics->root, N_("Correlation"),
+                                      PIVOT_RC_CORRELATION);
+      if (factor->print & PRINT_SIG)
+        pivot_category_create_leaves (statistics->root, N_("Sig. (1-tailed)"),
+                                      PIVOT_RC_SIGNIFICANCE);
 
-	  for (i = 0; i < factor->n_vars; ++i)
-	    {
-	      for (j = 0; j < factor->n_vars; ++j)
-		tab_double (t, heading_columns + j,  y + i, 0, gsl_matrix_get (idata->mm.corr, i, j), NULL, RC_OTHER);
-	    }
-	}
+      int stat_idx = 0;
+      if (factor->print & PRINT_CORRELATION)
+        {
+          for (int i = 0; i < factor->n_vars; ++i)
+            for (int j = 0; j < factor->n_vars; ++j)
+              {
+                double corr = gsl_matrix_get (idata->mm.corr, i, j);
+                pivot_table_put3 (table, j, i, stat_idx,
+                                  pivot_value_new_number (corr));
+              }
+          stat_idx++;
+        }
 
       if (factor->print & PRINT_SIG)
-	{
-	  const double y = heading_rows + y_pos_sig * factor->n_vars;
-	  tab_text (t, 0, y, TAT_TITLE, _("Sig. (1-tailed)"));
-
-	  for (i = 0; i < factor->n_vars; ++i)
-	    {
-	      for (j = 0; j < factor->n_vars; ++j)
-		{
-		  double rho = gsl_matrix_get (idata->mm.corr, i, j);
-		  double w = gsl_matrix_get (idata->mm.n, i, j);
-
-		  if (i == j)
-		    continue;
-
-		  tab_double (t, heading_columns + j,  y + i, 0, significance_of_correlation (rho, w), NULL, RC_PVALUE);
-		}
-	    }
-	}
+        {
+          for (int i = 0; i < factor->n_vars; ++i)
+            for (int j = 0; j < factor->n_vars; ++j)
+              if (i != j)
+                {
+                  double rho = gsl_matrix_get (idata->mm.corr, i, j);
+                  double w = gsl_matrix_get (idata->mm.n, i, j);
+                  double sig = significance_of_correlation (rho, w);
+                  pivot_table_put3 (table, j, i, stat_idx,
+                                    pivot_value_new_number (sig));
+                }
+          stat_idx++;
+        }
     }
 
   if (factor->print & PRINT_DETERMINANT)
-    {
-      tab_text (t, 0, nr, TAB_LEFT | TAT_TITLE, _("Determinant"));
+    table->caption = pivot_value_new_user_text_nocopy (
+      xasprintf ("%s: %.2f", _("Determinant"), idata->detR));
 
-      tab_double (t, 1, nr, 0, idata->detR, NULL, RC_OTHER);
-    }
-
-  tab_submit (t);
+  pivot_table_submit (table);
 }
 
 static void
 show_covariance_matrix (const struct cmd_factor *factor, const struct idata *idata)
 {
-  struct tab_table *t ;
-  size_t i, j;
-  int y_pos_corr = -1;
-  int suffix_rows = 0;
-
-  const int heading_rows = 1;
-  const int heading_columns = 1;
-
-  int nc = heading_columns ;
-  int nr = heading_rows ;
-  int n_data_sets = 0;
-
-  if (factor->print & PRINT_COVARIANCE)
-    {
-      y_pos_corr = n_data_sets;
-      n_data_sets++;
-      nc = heading_columns + factor->n_vars;
-    }
-
-  nr += n_data_sets * factor->n_vars;
-
-  /* If the table would contain only headings, don't bother rendering it */
-  if (nr <= heading_rows && suffix_rows == 0)
+  if (!(factor->print & PRINT_COVARIANCE))
     return;
 
-  t = tab_create (nc, nr + suffix_rows);
+  struct pivot_table *table = pivot_table_create (N_("Covariance Matrix"));
+  add_var_dims (table, factor);
 
-  tab_title (t, _("Covariance Matrix"));
+  for (int i = 0; i < factor->n_vars; ++i)
+    for (int j = 0; j < factor->n_vars; ++j)
+      {
+        double cov = gsl_matrix_get (idata->mm.cov, i, j);
+        pivot_table_put2 (table, j, i, pivot_value_new_number (cov));
+      }
 
-  tab_hline (t, TAL_1, 0, nc - 1, heading_rows);
-
-  if (nr > heading_rows)
-    {
-      tab_headers (t, heading_columns, 0, heading_rows, 0);
-
-      tab_vline (t, TAL_2, heading_columns, 0, nr - 1);
-
-      /* Outline the box */
-      tab_box (t,
-	       TAL_2, TAL_2,
-	       -1, -1,
-	       0, 0,
-	       nc - 1, nr - 1);
-
-      /* Vertical lines */
-      tab_box (t,
-	       -1, -1,
-	       -1, TAL_1,
-	       heading_columns, 0,
-	       nc - 1, nr - 1);
-
-
-      for (i = 0; i < factor->n_vars; ++i)
-	tab_text (t, heading_columns + i, 0, TAT_TITLE, var_to_string (factor->vars[i]));
-
-
-      for (i = 0 ; i < n_data_sets; ++i)
-	{
-	  int y = heading_rows + i * factor->n_vars;
-	  size_t v;
-	  for (v = 0; v < factor->n_vars; ++v)
-	    tab_text (t, heading_columns -1, y + v, TAT_TITLE, var_to_string (factor->vars[v]));
-
-	  tab_hline (t, TAL_1, 0, nc - 1, y);
-	}
-
-      if (factor->print & PRINT_COVARIANCE)
-	{
-	  const double y = heading_rows + y_pos_corr;
-
-	  for (i = 0; i < factor->n_vars; ++i)
-	    {
-	      for (j = 0; j < factor->n_vars; ++j)
-		tab_double (t, heading_columns + j,  y + i, 0, gsl_matrix_get (idata->mm.cov, i, j), NULL, RC_OTHER);
-	    }
-	}
-    }
-
-  tab_submit (t);
+  pivot_table_submit (table);
 }
 
 
@@ -2408,116 +2056,73 @@ do_factor_by_matrix (const struct cmd_factor *factor, struct idata *idata)
 
   if ( factor->print & PRINT_UNIVARIATE)
     {
-      const struct fmt_spec *wfmt = factor->wv ? var_get_print_format (factor->wv) : & F_8_0;
-      const int nc = 4;
-      int i;
+      struct pivot_table *table = pivot_table_create (
+        N_("Descriptive Statistics"));
+      pivot_table_set_weight_var (table, factor->wv);
 
-      const int heading_columns = 1;
-      const int heading_rows = 1;
+      pivot_dimension_create (table, PIVOT_AXIS_COLUMN, N_("Statistics"),
+                              N_("Mean"), PIVOT_RC_OTHER,
+                              N_("Std. Deviation"), PIVOT_RC_OTHER,
+                              N_("Analysis N"), PIVOT_RC_COUNT);
 
-      const int nr = heading_rows + factor->n_vars;
-
-      struct tab_table *t = tab_create (nc, nr);
-      tab_set_format (t, RC_WEIGHT, wfmt);
-      tab_title (t, _("Descriptive Statistics"));
-
-      tab_headers (t, heading_columns, 0, heading_rows, 0);
-
-      /* Outline the box */
-      tab_box (t,
-	       TAL_2, TAL_2,
-	       -1, -1,
-	       0, 0,
-	       nc - 1, nr - 1);
-
-      /* Vertical lines */
-      tab_box (t,
-	       -1, -1,
-	       -1, TAL_1,
-	       heading_columns, 0,
-	       nc - 1, nr - 1);
-
-      tab_hline (t, TAL_1, 0, nc - 1, heading_rows);
-      tab_vline (t, TAL_2, heading_columns, 0, nr - 1);
-
-      tab_text (t, 1, 0, TAB_CENTER | TAT_TITLE, _("Mean"));
-      tab_text (t, 2, 0, TAB_CENTER | TAT_TITLE, _("Std. Deviation"));
-      tab_text (t, 3, 0, TAB_CENTER | TAT_TITLE, _("Analysis N"));
+      struct pivot_dimension *variables = pivot_dimension_create (
+        table, PIVOT_AXIS_ROW, N_("Variables"));
 
       for (i = 0 ; i < factor->n_vars; ++i)
 	{
 	  const struct variable *v = factor->vars[i];
-	  tab_text (t, 0, i + heading_rows, TAB_LEFT | TAT_TITLE, var_to_string (v));
 
-	  tab_double (t, 1, i + heading_rows, 0, gsl_matrix_get (idata->mm.mean_matrix, i, i), NULL, RC_OTHER);
-	  tab_double (t, 2, i + heading_rows, 0, sqrt (gsl_matrix_get (idata->mm.var_matrix, i, i)), NULL, RC_OTHER);
-	  tab_double (t, 3, i + heading_rows, 0, gsl_matrix_get (idata->mm.n, i, i), NULL, RC_WEIGHT);
+          int row = pivot_category_create_leaf (
+            variables->root, pivot_value_new_variable (v));
+
+          double entries[] = {
+            gsl_matrix_get (idata->mm.mean_matrix, i, i),
+            sqrt (gsl_matrix_get (idata->mm.var_matrix, i, i)),
+            gsl_matrix_get (idata->mm.n, i, i),
+          };
+          for (size_t j = 0; j < sizeof entries / sizeof *entries; j++)
+            pivot_table_put2 (table, j, row,
+                              pivot_value_new_number (entries[j]));
 	}
 
-      tab_submit (t);
+      pivot_table_submit (table);
     }
 
   if (factor->print & PRINT_KMO)
     {
-      int i;
-      double df = factor->n_vars * (factor->n_vars - 1) / 2;
+      struct pivot_table *table = pivot_table_create (
+        N_("KMO and Bartlett's Test"));
 
-      double w = 0;
-
-
-      double xsq;
-
-      const int heading_columns = 2;
-      const int heading_rows = 0;
-
-      const int nr = heading_rows + 4;
-      const int nc = heading_columns + 1;
-
-
-
-      struct tab_table *t = tab_create (nc, nr);
-      tab_title (t, _("KMO and Bartlett's Test"));
-
-
-      tab_headers (t, heading_columns, 0, heading_rows, 0);
-
-      /* Outline the box */
-      tab_box (t,
-	       TAL_2, TAL_2,
-	       -1, -1,
-	       0, 0,
-	       nc - 1, nr - 1);
-
-      tab_vline (t, TAL_2, heading_columns, 0, nr - 1);
-
-      tab_text (t, 0, 0, TAT_TITLE | TAB_LEFT, _("Kaiser-Meyer-Olkin Measure of Sampling Adequacy"));
-
-      tab_double (t, 2, 0, 0, sum_ssq_r /  (sum_ssq_r + sum_ssq_a), NULL, RC_OTHER);
-
-      tab_text (t, 0, 1, TAT_TITLE | TAB_LEFT, _("Bartlett's Test of Sphericity"));
-
-      tab_text (t, 1, 1, TAT_TITLE, _("Approx. Chi-Square"));
-      tab_text (t, 1, 2, TAT_TITLE, _("df"));
-      tab_text (t, 1, 3, TAT_TITLE, _("Sig."));
-
+      struct pivot_dimension *statistics = pivot_dimension_create (
+        table, PIVOT_AXIS_ROW, N_("Statistics"),
+        N_("Kaiser-Meyer-Olkin Measure of Sampling Adequacy"), PIVOT_RC_OTHER);
+      pivot_category_create_group (
+        statistics->root, N_("Bartlett's Test of Sphericity"),
+        N_("Approx. Chi-Square"), PIVOT_RC_OTHER,
+        N_("df"), PIVOT_RC_INTEGER,
+        N_("Sig."), PIVOT_RC_SIGNIFICANCE);
 
       /* The literature doesn't say what to do for the value of W when
 	 missing values are involved.  The best thing I can think of
 	 is to take the mean average. */
-      w = 0;
+      double w = 0;
       for (i = 0; i < idata->mm.n->size1; ++i)
 	w += gsl_matrix_get (idata->mm.n, i, i);
       w /= idata->mm.n->size1;
 
-      xsq = w - 1 - (2 * factor->n_vars + 5) / 6.0;
-      xsq *= -log (idata->detR);
+      double xsq = ((w - 1 - (2 * factor->n_vars + 5) / 6.0)
+                    * -log (idata->detR));
+      double df = factor->n_vars * (factor->n_vars - 1) / 2;
+      double entries[] = {
+        sum_ssq_r / (sum_ssq_r + sum_ssq_a),
+        xsq,
+        df,
+        gsl_cdf_chisq_Q (xsq, df)
+      };
+      for (size_t i = 0; i < sizeof entries / sizeof *entries; i++)
+        pivot_table_put1 (table, i, pivot_value_new_number (entries[i]));
 
-      tab_double (t, 2, 1, 0, xsq, NULL, RC_OTHER);
-      tab_double (t, 2, 2, 0, df, NULL, RC_INTEGER);
-      tab_double (t, 2, 3, 0, gsl_cdf_chisq_Q (xsq, df), NULL, RC_PVALUE);
-
-
-      tab_submit (t);
+      pivot_table_submit (table);
     }
 
   show_correlation_matrix (factor, idata);
@@ -2640,21 +2245,25 @@ do_factor_by_matrix (const struct cmd_factor *factor, struct idata *idata)
     show_scree (factor, idata);
 
     show_factor_matrix (factor, idata,
-			factor->extraction == EXTRACTION_PC ? _("Component Matrix") : _("Factor Matrix"),
+			(factor->extraction == EXTRACTION_PC
+                         ? N_("Component Matrix") : N_("Factor Matrix")),
 			factor_matrix);
 
     if ( factor->rotation == ROT_PROMAX)
       {
-	show_factor_matrix (factor, idata, _("Pattern Matrix"),  pattern_matrix);
+	show_factor_matrix (factor, idata, N_("Pattern Matrix"),
+                            pattern_matrix);
 	gsl_matrix_free (pattern_matrix);
       }
 
     if ( factor->rotation != ROT_NONE)
       {
 	show_factor_matrix (factor, idata,
-			    (factor->rotation == ROT_PROMAX) ? _("Structure Matrix") :
-			    (factor->extraction == EXTRACTION_PC ? _("Rotated Component Matrix") :
-			     _("Rotated Factor Matrix")),
+			    (factor->rotation == ROT_PROMAX
+                             ? N_("Structure Matrix")
+                             : factor->extraction == EXTRACTION_PC
+                             ? N_("Rotated Component Matrix")
+			     : N_("Rotated Factor Matrix")),
 			    rotated_factors);
 
 	gsl_matrix_free (rotated_factors);

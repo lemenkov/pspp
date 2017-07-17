@@ -31,11 +31,12 @@
 #include "language/lexer/variable-parser.h"
 #include "libpspp/message.h"
 #include "libpspp/str.h"
-#include "output/tab.h"
+#include "output/pivot-table.h"
 
 #include "gl/xalloc.h"
 
 #include "gettext.h"
+#define N_(msgid) msgid
 #define _(msgid) gettext (msgid)
 
 int
@@ -67,38 +68,26 @@ void
 output_split_file_values (const struct dataset *ds, const struct ccase *c)
 {
   const struct dictionary *dict = dataset_dict (ds);
-  const struct variable *const *split;
-  struct tab_table *t;
-  size_t split_cnt;
-  int i;
-
-  split_cnt = dict_get_split_cnt (dict);
-  if (split_cnt == 0)
+  size_t n_vars = dict_get_split_cnt (dict);
+  if (n_vars == 0)
     return;
 
-  t = tab_create (3, split_cnt + 1);
-  tab_text (t, 0, 0, TAB_NONE, _("Variable"));
-  tab_text (t, 1, 0, TAB_LEFT, _("Value"));
-  tab_text (t, 2, 0, TAB_LEFT, _("Label"));
-  split = dict_get_split_vars (dict);
-  for (i = 0; i < split_cnt; i++)
+  struct pivot_table *table = pivot_table_create (N_("Split Values"));
+  pivot_dimension_create (table, PIVOT_AXIS_COLUMN, N_("Value"),
+                          N_("Value"));
+  struct pivot_dimension *variables = pivot_dimension_create (
+    table, PIVOT_AXIS_ROW, N_("Variable"));
+  variables->root->show_label = true;
+
+  for (size_t i = 0; i < n_vars; i++)
     {
-      const struct variable *v = split[i];
-      char *s;
-      const char *val_lab;
-      const struct fmt_spec *print = var_get_print_format (v);
+      const struct variable *v = dict_get_split_vars (dict)[i];
+      int row = pivot_category_create_leaf (variables->root,
+                                            pivot_value_new_variable (v));
 
-      tab_text_format (t, 0, i + 1, TAB_LEFT, "%s", var_get_name (v));
-
-      s = data_out (case_data (c, v), dict_get_encoding (dict), print);
-
-      tab_text_format (t, 1, i + 1, 0, "%.*s", print->w, s);
-
-      free (s);
-
-      val_lab = var_lookup_value_label (v, case_data (c, v));
-      if (val_lab)
-	tab_text (t, 2, i + 1, TAB_LEFT, val_lab);
+      pivot_table_put2 (table, 0, row,
+                        pivot_value_new_var_value (v, case_data (c, v)));
     }
-  tab_submit (t);
+
+  pivot_table_submit (table);
 }

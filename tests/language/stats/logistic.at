@@ -110,41 +110,39 @@ logistic regression
 	.
 ])
 
-AT_CHECK([pspp -O format=csv lr-data.sps], [0],
-  [dnl
-Table: Dependent Variable Encoding
+AT_CHECK([pspp -o pspp.csv -o pspp.txt lr-data.sps], [0], [dnl
+note: Estimation terminated at iteration number 6 because parameter estimates changed by less than 0.001
+])
+AT_CHECK([cat pspp.csv], [0], [Table: Dependent Variable Encoding
 Original Value,Internal Value
-1.000,0
-2.000,1
+1.000,.000
+2.000,1.000
 
 Table: Case Processing Summary
 Unweighted Cases,N,Percent
-Included in Analysis,66,100.000
-Missing Cases,0,.000
-Total,66,100.000
+Included in Analysis,66,100.0%
+Missing Cases,0,.0%
+Total,66,100.0%
 
 note: Estimation terminated at iteration number 6 because parameter estimates changed by less than 0.001
 
 Table: Model Summary
-Step 1,-2 Log likelihood,Cox & Snell R Square,Nagelkerke R Square
-,37.323,.455,.659
+Step,-2 Log likelihood,Cox & Snell R Square,Nagelkerke R Square
+1,37.323,.455,.659
 
 Table: Classification Table
 ,,,Predicted,,
-,,,outcome,,"Percentage
-Correct"
+,,,outcome,,Percentage Correct
 ,Observed,,1.000,2.000,
-Step 1,outcome,1.000,43,5,89.583
-,,2.000,4,14,77.778
-,Overall Percentage,,,,86.364
+Step 1,outcome,1.000,43,5,89.6%
+,,2.000,4,14,77.8%
+,Overall Percentage,,,,86.4%
 
 Table: Variables in the Equation
 ,,B,S.E.,Wald,df,Sig.,Exp(B)
 Step 1,survrate,-.081,.019,17.756,1,.000,.922
 ,Constant,2.684,.811,10.941,1,.001,14.639
 ])
-
-
 AT_CLEANUP
 
 AT_SETUP([LOGISTIC REGRESSION missing values])
@@ -180,13 +178,13 @@ AT_CHECK([pspp -O format=csv lr-data.sps > run1], [0], [ignore])
 dnl Only the summary information should be different
 AT_CHECK([diff run0 run1], [1], [dnl
 8,10c8,10
-< Included in Analysis,66,100.000
-< Missing Cases,0,.000
-< Total,66,100.000
+< Included in Analysis,66,100.0%
+< Missing Cases,0,.0%
+< Total,66,100.0%
 ---
-> Included in Analysis,66,94.286
-> Missing Cases,4,5.714
-> Total,70,100.000
+> Included in Analysis,66,94.3%
+> Missing Cases,4,5.7%
+> Total,70,100.0%
 ])
 
 AT_CLEANUP
@@ -236,19 +234,19 @@ dnl The only difference should be the summary information, since
 dnl this displays the unweighted totals.
 AT_CHECK([diff unweighted-result weighted-result], [1], [dnl
 8c8
-< Included in Analysis,66,100.000
+< Included in Analysis,66,100.0%
 ---
-> Included in Analysis,63,100.000
+> Included in Analysis,63,100.0%
 10c10
-< Total,66,100.000
+< Total,66,100.0%
 ---
-> Total,63,100.000
-23,24c23,24
-< Step 1,outcome,1.000,43,5,89.583
-< ,,2.000,4,14,77.778
+> Total,63,100.0%
+22,23c22,23
+< Step 1,outcome,1.000,43,5,89.6%
+< ,,2.000,4,14,77.8%
 ---
-> Step 1,outcome,1.000,43.000,5.000,89.583
-> ,,2.000,4.000,14.000,77.778
+> Step 1,outcome,1.000,43.000,5.000,89.6%
+> ,,2.000,4.000,14.000,77.8%
 ])
 
 
@@ -277,33 +275,31 @@ compute constant = 1.
 logistic regression female with constant /noconst.
 ])
 
-AT_CHECK([pspp -O format=csv non-const.sps], [0],
- [dnl
+AT_CHECK([pspp -O format=csv non-const.sps], [0], [dnl
 Table: Dependent Variable Encoding
 Original Value,Internal Value
-.00,0
-1.00,1
+.00,.000
+1.00,1.000
 
 Table: Case Processing Summary
 Unweighted Cases,N,Percent
-Included in Analysis,200,100.000
-Missing Cases,0,.000
-Total,200,100.000
+Included in Analysis,200,100.0%
+Missing Cases,0,.0%
+Total,200,100.0%
 
 note: Estimation terminated at iteration number 2 because parameter estimates changed by less than 0.001
 
 Table: Model Summary
-Step 1,-2 Log likelihood,Cox & Snell R Square,Nagelkerke R Square
-,275.637,.008,.011
+Step,-2 Log likelihood,Cox & Snell R Square,Nagelkerke R Square
+1,275.637,.008,.011
 
 Table: Classification Table
 ,,,Predicted,,
-,,,female,,"Percentage
-Correct"
+,,,female,,Percentage Correct
 ,Observed,,.00,1.00,
-Step 1,female,.00,0,91,.000
-,,1.00,0,109,100.000
-,Overall Percentage,,,,54.500
+Step 1,female,.00,0,91,.0%
+,,1.00,0,109,100.0%
+,Overall Percentage,,,,54.5%
 
 Table: Variables in the Equation
 ,,B,S.E.,Wald,df,Sig.,Exp(B)
@@ -759,28 +755,27 @@ logistic regression
 	   .
 ])
 
-AT_CHECK([pspp -O format=csv lr-cat.sps], [0],
- [dnl
+AT_CHECK([pspp -O format=csv lr-cat.sps], [0], [dnl
 Table: Dependent Variable Encoding
 Original Value,Internal Value
-4.000,0
-9.000,1
+4.000,.000
+9.000,1.000
 
 Table: Case Processing Summary
 Unweighted Cases,N,Percent
-Included in Analysis,400,100.000
-Missing Cases,0,.000
-Total,400,100.000
+Included in Analysis,400,100.0%
+Missing Cases,0,.0%
+Total,400,100.0%
 
 note: Estimation terminated at iteration number 4 because parameter estimates changed by less than 0.001
 
 Table: Model Summary
-Step 1,-2 Log likelihood,Cox & Snell R Square,Nagelkerke R Square
-,458.517,.098,.138
+Step,-2 Log likelihood,Cox & Snell R Square,Nagelkerke R Square
+1,458.517,.098,.138
 
 Table: Categorical Variables' Codings
-,,,Parameter coding,,
-,,Frequency,(1),(2),(3)
+,,Frequency,Parameter coding,,
+,,,(1),(2),(3)
 bcat,1.000,61,1,0,0
 ,2.000,151,0,1,0
 ,3.000,121,0,0,1
@@ -788,12 +783,11 @@ bcat,1.000,61,1,0,0
 
 Table: Classification Table
 ,,,Predicted,,
-,,,y,,"Percentage
-Correct"
+,,,y,,Percentage Correct
 ,Observed,,4.000,9.000,
-Step 1,y,4.000,254,19,93.040
-,,9.000,97,30,23.622
-,Overall Percentage,,,,71.000
+Step 1,y,4.000,254,19,93.0%
+,,9.000,97,30,23.6%
+,Overall Percentage,,,,71.0%
 
 Table: Variables in the Equation
 ,,B,S.E.,Wald,df,Sig.,Exp(B)
@@ -805,7 +799,6 @@ Step 1,b1,.002,.001,4.284,1,.038,1.002
 ,bcat(3),.211,.393,.289,1,.591,1.235
 ,Constant,-5.541,1.138,23.709,1,.000,.004
 ])
-
 AT_CLEANUP
 
 
@@ -1029,40 +1022,38 @@ logistic regression honcomp with read science ses
 
 ])
 
-AT_CHECK([pspp -O format=csv stringcat.sps], [0],
- [dnl
+AT_CHECK([pspp -O format=csv stringcat.sps], [0], [dnl
 Table: Dependent Variable Encoding
 Original Value,Internal Value
-.000,0
-1.000,1
+.000,.000
+1.000,1.000
 
 Table: Case Processing Summary
 Unweighted Cases,N,Percent
-Included in Analysis,200,100.000
-Missing Cases,0,.000
-Total,200,100.000
+Included in Analysis,200,100.0%
+Missing Cases,0,.0%
+Total,200,100.0%
 
 note: Estimation terminated at iteration number 5 because parameter estimates changed by less than 0.001
 
 Table: Model Summary
-Step 1,-2 Log likelihood,Cox & Snell R Square,Nagelkerke R Square
-,165.701,.280,.408
+Step,-2 Log likelihood,Cox & Snell R Square,Nagelkerke R Square
+1,165.701,.280,.408
 
 Table: Categorical Variables' Codings
-,,,Parameter coding,
-,,Frequency,(1),(2)
+,,Frequency,Parameter coding,
+,,,(1),(2)
 ses,a,47,1,0
 ,b,95,0,1
 ,c,58,0,0
 
 Table: Classification Table
 ,,,Predicted,,
-,,,honcomp,,"Percentage
-Correct"
+,,,honcomp,,Percentage Correct
 ,Observed,,.000,1.000,
-Step 1,honcomp,.000,132,15,89.796
-,,1.000,26,27,50.943
-,Overall Percentage,,,,79.500
+Step 1,honcomp,.000,132,15,89.8%
+,,1.000,26,27,50.9%
+,Overall Percentage,,,,79.5%
 
 Table: Variables in the Equation
 ,,B,S.E.,Wald,df,Sig.,Exp(B)
@@ -1222,13 +1213,13 @@ AT_CHECK([pspp -O format=csv miss.sps > file2], [0], [ignore])
 
 AT_CHECK([diff file1 file2], [1], [dnl
 8,10c8,10
-< Included in Analysis,100,100.00
-< Missing Cases,0,.00
-< Total,100,100.00
+< Included in Analysis,100,100.0%
+< Missing Cases,0,.0%
+< Total,100,100.0%
 ---
-> Included in Analysis,100,99.01
-> Missing Cases,1,.99
-> Total,101,100.00
+> Included in Analysis,100,99.0%
+> Missing Cases,1,1.0%
+> Total,101,100.0%
 ])
 
 AT_CLEANUP
@@ -1452,24 +1443,24 @@ logistic regression
 AT_CHECK([pspp -O format=csv ci.sps], [0], [dnl
 Table: Dependent Variable Encoding
 Original Value,Internal Value
-.000,0
-1.000,1
+.000,.000
+1.000,1.000
 
 Table: Case Processing Summary
 Unweighted Cases,N,Percent
-Included in Analysis,196,100.000
-Missing Cases,0,.000
-Total,196,100.000
+Included in Analysis,196,100.0%
+Missing Cases,0,.0%
+Total,196,100.0%
 
 note: Estimation terminated at iteration number 4 because parameter estimates changed by less than 0.001
 
 Table: Model Summary
-Step 1,-2 Log likelihood,Cox & Snell R Square,Nagelkerke R Square
-,211.195,.120,.172
+Step,-2 Log likelihood,Cox & Snell R Square,Nagelkerke R Square
+1,211.195,.120,.172
 
 Table: Categorical Variables' Codings
-,,,Parameter coding,
-,,Frequency,(1),(2)
+,,Frequency,Parameter coding,
+,,,(1),(2)
 sciostat,1.000,77,1,0
 ,2.000,49,0,1
 ,3.000,70,0,0
@@ -1478,16 +1469,15 @@ sector,1.000,117,1,
 
 Table: Classification Table
 ,,,Predicted,,
-,,,disease,,"Percentage
-Correct"
+,,,disease,,Percentage Correct
 ,Observed,,.000,1.000,
-Step 1,disease,.000,131,8,94.245
-,,1.000,41,16,28.070
-,Overall Percentage,,,,75.000
+Step 1,disease,.000,131,8,94.2%
+,,1.000,41,16,28.1%
+,Overall Percentage,,,,75.0%
 
 Table: Variables in the Equation
-,,,,,,,,95% CI for Exp(B),
-,,B,S.E.,Wald,df,Sig.,Exp(B),Lower,Upper
+,,B,S.E.,Wald,df,Sig.,Exp(B),95% CI for Exp(B),
+,,,,,,,,Lower,Upper
 Step 1,age,.027,.009,8.647,1,.003,1.027,1.009,1.045
 ,savings,.061,.386,.025,1,.874,1.063,.499,2.264
 ,sciostat,,,.440,2,.803,,,

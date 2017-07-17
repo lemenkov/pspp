@@ -113,7 +113,7 @@ VAR4,4,,Scale,Input,8,Right,F1.0,F1.0,
 VAR5,5,,Scale,Input,8,Right,F1.0,F1.0,
 
 Table: Value Labels
-Variable,Value,Label
+Variable Value,,Label
 VAR1,1,one
 VAR2,2,two
 VAR3,3,three
@@ -132,13 +132,14 @@ AT_CHECK([pspp -O format=csv sys-file-info.sps | sed '/Encoding/d
 /Created/d
 /Product/d
 '], [0], [dnl
-File:,data.por
-Label:,No label.
-Variables:,5
-Cases:,Unknown
-Type:,SPSS Portable File
-Weight:,Not weighted.
-Compression:,None
+Table: File Information
+File,data.por
+Label,
+Variables,5
+Cases,Unknown
+Type,SPSS Portable File
+Weight,Not weighted
+Compression,None
 
 Table: Variables
 Name,Position,Label,Measurement Level,Role,Width,Alignment,Print Format,Write Format,Missing Values
@@ -149,7 +150,7 @@ VAR4,4,,Scale,Input,8,Right,F1.0,F1.0,
 VAR5,5,,Scale,Input,8,Right,F1.0,F1.0,
 
 Table: Value Labels
-Variable,Value,Label
+Variable Value,,Label
 VAR1,1,one
 VAR2,2,two
 VAR3,3,three

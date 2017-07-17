@@ -51,10 +51,11 @@ ONEWAY
 	.
 ])
 
-AT_CHECK([pspp -O format=csv oneway.sps], [0], [dnl
+AT_CHECK([pspp -o pspp.csv -o pspp.txt oneway.sps])
+AT_CHECK([cat pspp.csv], [0], [dnl
 Table: Descriptives
-,,,,,,95% Confidence Interval for Mean,,,
-,,N,Mean,Std. Deviation,Std. Error,Lower Bound,Upper Bound,Minimum,Maximum
+,,N,Mean,Std. Deviation,Std. Error,95% Confidence Interval for Mean,,Minimum,Maximum
+,Manufacturer,,,,,Lower Bound,Upper Bound,,
 Breaking Strain,Aspeger,5,2.20,1.30,.58,.58,3.82,1.00,4.00
 ,Bloggs,5,3.20,1.30,.58,1.58,4.82,2.00,5.00
 ,Charlies,5,5.00,1.58,.71,3.04,6.96,3.00,7.00
@@ -71,16 +72,16 @@ Breaking Strain,Between Groups,20.13,2,10.07,5.12,.025
 ,Total,43.73,14,,,
 
 Table: Contrast Coefficients
-,,Manufacturer,,
-,,Aspeger,Bloggs,Charlies
-Contrast,1,-2,1,1
-,2,0,-1,1
+,Manufacturer,,
+Contrast,Aspeger,Bloggs,Charlies
+1,-2,1,1
+2,0,-1,1
 
 Table: Contrast Tests
 ,,Contrast,Value of Contrast,Std. Error,t,df,Sig. (2-tailed)
-Breaking Strain,Assume equal variances,1,3.80,1.54,2.47,12,.029
-,,2,1.80,.89,2.03,12,.065
-,Does not assume equal,1,3.80,1.48,2.56,8.74,.031
+Breaking Strain,Assume equal variances,1,3.80,1.54,2.47,12.00,.029
+,,2,1.80,.89,2.03,12.00,.065
+,Does not assume equal variances,1,3.80,1.48,2.56,8.74,.031
 ,,2,1.80,.92,1.96,7.72,.086
 ])
 AT_CLEANUP
@@ -123,13 +124,15 @@ ONEWAY
 	.
 ])
 
-AT_CHECK([pspp -O format=csv oneway-splits.sps], [0], 
-[Variable,Value,Label
-S,1.00,
+AT_CHECK([pspp -o pspp.csv -o pspp.txt oneway-splits.sps])
+AT_CHECK([cat pspp.csv], [0], [dnl
+Table: Split Values
+Variable,Value
+S,1.00
 
 Table: Descriptives
-,,,,,,95% Confidence Interval for Mean,,,
-,,N,Mean,Std. Deviation,Std. Error,Lower Bound,Upper Bound,Minimum,Maximum
+,,N,Mean,Std. Deviation,Std. Error,95% Confidence Interval for Mean,,Minimum,Maximum
+,Manufacturer,,,,,Lower Bound,Upper Bound,,
 Breaking Strain,Aspeger,5,2.20,1.30,.58,.58,3.82,1.00,4.00
 ,Bloggs,2,3.50,2.12,1.50,-15.56,22.56,2.00,5.00
 ,Total,7,2.57,1.51,.57,1.17,3.97,1.00,5.00
@@ -145,24 +148,25 @@ Breaking Strain,Between Groups,2.41,1,2.41,1.07,.349
 ,Total,13.71,6,,,
 
 Table: Contrast Coefficients
-,,Manufacturer,
-,,Aspeger,Bloggs
-Contrast,1,-2,2
-,2,-1,1
+,Manufacturer,
+Contrast,Aspeger,Bloggs
+1,-2,2
+2,-1,1
 
 Table: Contrast Tests
 ,,Contrast,Value of Contrast,Std. Error,t,df,Sig. (2-tailed)
-Breaking Strain,Assume equal variances,1,2.60,2.52,1.03,5,.349
-,,2,1.30,1.26,1.03,5,.349
-,Does not assume equal,1,2.60,3.22,.81,1.32,.539
+Breaking Strain,Assume equal variances,1,2.60,2.52,1.03,5.00,.349
+,,2,1.30,1.26,1.03,5.00,.349
+,Does not assume equal variances,1,2.60,3.22,.81,1.32,.539
 ,,2,1.30,1.61,.81,1.32,.539
 
-Variable,Value,Label
-S,2.00,
+Table: Split Values
+Variable,Value
+S,2.00
 
 Table: Descriptives
-,,,,,,95% Confidence Interval for Mean,,,
-,,N,Mean,Std. Deviation,Std. Error,Lower Bound,Upper Bound,Minimum,Maximum
+,,N,Mean,Std. Deviation,Std. Error,95% Confidence Interval for Mean,,Minimum,Maximum
+,Manufacturer,,,,,Lower Bound,Upper Bound,,
 Breaking Strain,Bloggs,3,3.00,1.00,.58,.52,5.48,2.00,4.00
 ,Charlies,5,5.00,1.58,.71,3.04,6.96,3.00,7.00
 ,Total,8,4.25,1.67,.59,2.85,5.65,2.00,7.00
@@ -178,19 +182,18 @@ Breaking Strain,Between Groups,7.50,1,7.50,3.75,.101
 ,Total,19.50,7,,,
 
 Table: Contrast Coefficients
-,,Manufacturer,
-,,Bloggs,Charlies
-Contrast,1,-2,2
-,2,-1,1
+,Manufacturer,
+Contrast,Bloggs,Charlies
+1,-2,2
+2,-1,1
 
 Table: Contrast Tests
 ,,Contrast,Value of Contrast,Std. Error,t,df,Sig. (2-tailed)
-Breaking Strain,Assume equal variances,1,4.00,2.07,1.94,6,.101
-,,2,2.00,1.03,1.94,6,.101
-,Does not assume equal,1,4.00,1.83,2.19,5.88,.072
+Breaking Strain,Assume equal variances,1,4.00,2.07,1.94,6.00,.101
+,,2,2.00,1.03,1.94,6.00,.101
+,Does not assume equal variances,1,4.00,1.83,2.19,5.88,.072
 ,,2,2.00,.91,2.19,5.88,.072
 ])
-
 AT_CLEANUP
 
 
@@ -332,8 +335,8 @@ ONEWAY
 
 AT_CHECK([pspp -O format=csv oneway-descriptives.sps], [0], 
 [Table: Descriptives
-,,,,,,95% Confidence Interval for Mean,,,
-,,N,Mean,Std. Deviation,Std. Error,Lower Bound,Upper Bound,Minimum,Maximum
+,,N,Mean,Std. Deviation,Std. Error,95% Confidence Interval for Mean,,Minimum,Maximum
+,BRAND,,,,,Lower Bound,Upper Bound,,
 QUALITY,11.00,5,12.20,1.30,.58,10.58,13.82,11.00,14.00
 ,25.00,5,13.20,1.30,.58,11.58,14.82,12.00,15.00
 ,301.00,5,15.00,1.58,.71,13.04,16.96,13.00,17.00
@@ -437,13 +440,13 @@ ONEWAY x y z by g
 	.
 ])
 
-AT_CHECK([pspp -o pspp.csv multivar.sps])
+AT_CHECK([pspp -o pspp.csv -o pspp.txt multivar.sps])
 
 dnl Some machines return 3.88 instead of 3.87 below (see bug #31611).
-AT_CHECK([sed 's/^,Within Groups,3.88/,Within Groups,3.87/' pspp.csv], [0], [dnl
-Table: Descriptives
-,,,,,,95% Confidence Interval for Mean,,,
-,,N,Mean,Std. Deviation,Std. Error,Lower Bound,Upper Bound,Minimum,Maximum
+AT_CHECK([sed 's/^,Within Groups,3.88/,Within Groups,3.87/' pspp.csv], [0],
+  [Table: Descriptives
+,,N,Mean,Std. Deviation,Std. Error,95% Confidence Interval for Mean,,Minimum,Maximum
+,g,,,,,Lower Bound,Upper Bound,,
 x,10.00,3,3.67,4.62,2.67,-7.81,15.14,1.00,9.00
 ,20.00,5,.80,.45,.20,.24,1.36,.00,1.00
 ,30.00,8,.88,.64,.23,.34,1.41,.00,2.00
@@ -479,24 +482,24 @@ z,Between Groups,17.47,3,5.82,.62,.610
 ,Total,205.33,23,,,
 
 Table: Contrast Coefficients
-,,g,,,
-,,10.00,20.00,30.00,40.00
-Contrast,1,3,2,0,-5
-,2,2,-9,7,0
+,g,,,
+Contrast,10.00,20.00,30.00,40.00
+1,3,2,0,-5
+2,2,-9,7,0
 
 Table: Contrast Tests
 ,,Contrast,Value of Contrast,Std. Error,t,df,Sig. (2-tailed)
-x,Assume equal variances,1,-7.40,6.67,1.11,20,.280
-,,2,6.26,12.32,.51,20,.617
-,Does not assume equal,1,-7.40,10.04,-.74,4.53,.497
+x,Assume equal variances,1,-7.40,6.67,1.11,20.00,.280
+,,2,6.26,12.32,.51,20.00,.617
+,Does not assume equal variances,1,-7.40,10.04,-.74,4.53,1.503
 ,,2,6.26,5.85,1.07,2.87,.366
-y,Assume equal variances,1,-6.88,1.16,5.94,20,.000
-,,2,3.50,2.14,1.63,20,.118
-,Does not assume equal,1,-6.88,.91,-7.51,7.00,.000
+y,Assume equal variances,1,-6.88,1.16,5.94,20.00,.000
+,,2,3.50,2.14,1.63,20.00,.118
+,Does not assume equal variances,1,-6.88,.91,-7.51,7.00,2.000
 ,,2,3.50,1.32,2.65,7.00,.033
-z,Assume equal variances,1,-9.70,8.07,1.20,20,.243
-,,2,11.73,14.91,.79,20,.440
-,Does not assume equal,1,-9.70,9.57,-1.01,3.64,.373
+z,Assume equal variances,1,-9.70,8.07,1.20,20.00,.243
+,,2,11.73,14.91,.79,20.00,.440
+,Does not assume equal variances,1,-9.70,9.57,-1.01,3.64,1.627
 ,,2,11.73,14.53,.81,9.88,.438
 ])
 
@@ -612,10 +615,11 @@ oneway pigmentation by family
 	 .
 ])
 
-AT_CHECK([pspp -O format=csv oneway-pig.sps], [0], 
-[Table: Descriptives
-,,,,,,95% Confidence Interval for Mean,,,
-,,N,Mean,Std. Deviation,Std. Error,Lower Bound,Upper Bound,Minimum,Maximum
+AT_CHECK([pspp -o pspp.csv -o pspp.txt oneway-pig.sps])
+AT_CHECK([cat pspp.csv], [0], [dnl
+Table: Descriptives
+,,N,Mean,Std. Deviation,Std. Error,95% Confidence Interval for Mean,,Minimum,Maximum
+,family,,,,,Lower Bound,Upper Bound,,
 pigmentation,1.000,5,38.600,2.702,1.208,35.245,41.955,36.000,43.000
 ,2.000,5,46.000,1.732,.775,43.849,48.151,43.000,47.000
 ,3.000,5,46.400,4.336,1.939,41.016,51.784,40.000,50.000
@@ -629,8 +633,8 @@ pigmentation,Between Groups,478.950,3,159.650,12.927,.000
 ,Total,676.550,19,,,
 
 Table: Multiple Comparisons (pigmentation)
-,,,Mean Difference,,,95% Confidence Interval,
-,(I) family,(J) family,(I - J),Std. Error,Sig.,Lower Bound,Upper Bound
+,,,Mean Difference (I - J),Std. Error,Sig.,95% Confidence Interval,
+,(J) Family,(J) Family,,,,Lower Bound,Upper Bound
 LSD,1.000,2.000,-7.400,2.223,.004,-12.112,-2.688
 ,,3.000,-7.800,2.223,.003,-12.512,-3.088
 ,,4.000,-13.800,2.223,.000,-18.512,-9.088
@@ -656,7 +660,6 @@ Bonferroni,1.000,2.000,-7.400,2.223,.025,-14.086,-.714
 ,,2.000,6.400,2.223,.065,-.286,13.086
 ,,3.000,6.000,2.223,.095,-.686,12.686
 ])
-
 AT_CLEANUP
 
 
@@ -691,23 +694,24 @@ oneway libido by dose
 	/posthoc tukey gh.
 ])
 
-AT_CHECK([pspp -O format=csv oneway-tukey.sps], [0], 
-[Table: ANOVA
+AT_CHECK([pspp -o pspp.csv -o pspp.txt oneway-tukey.sps])
+AT_CHECK([cat pspp.csv], [0], [dnl
+Table: ANOVA
 ,,Sum of Squares,df,Mean Square,F,Sig.
 libido,Between Groups,20.133,2,10.067,5.119,.025
 ,Within Groups,23.600,12,1.967,,
 ,Total,43.733,14,,,
 
 Table: Multiple Comparisons (libido)
-,,,Mean Difference,,,95% Confidence Interval,
-,(I) Dose of Viagra,(J) Dose of Viagra,(I - J),Std. Error,Sig.,Lower Bound,Upper Bound
+,,,Mean Difference (I - J),Std. Error,Sig.,95% Confidence Interval,
+,(J) Family,(J) Family,,,,Lower Bound,Upper Bound
 Tukey HSD,Placebo,1 Dose,-1.000,.887,.516,-3.366,1.366
 ,,2 Doses,-2.800,.887,.021,-5.166,-.434
 ,1 Dose,Placebo,1.000,.887,.516,-1.366,3.366
 ,,2 Doses,-1.800,.887,.147,-4.166,.566
 ,2 Doses,Placebo,2.800,.887,.021,.434,5.166
 ,,1 Dose,1.800,.887,.147,-.566,4.166
-Games-Howell,Placebo,1 Dose,-1.000,.887,.479,-3.356,1.356
+Games-Howell,Placebo,,-1.000,.887,.479,-3.356,1.356
 ,,2 Doses,-2.800,.887,.039,-5.439,-.161
 ,1 Dose,Placebo,1.000,.887,.479,-1.356,3.356
 ,,2 Doses,-1.800,.887,.185,-4.439,.839
@@ -760,8 +764,8 @@ score,Between Groups,54.9500,3,18.3167,7.0449,.003
 ,Total,96.5500,19,,,
 
 Table: Multiple Comparisons (score)
-,,,Mean Difference,,,95% Confidence Interval,
-,(I) program,(J) program,(I - J),Std. Error,Sig.,Lower Bound,Upper Bound
+,,,Mean Difference (I - J),Std. Error,Sig.,95% Confidence Interval,
+,(J) Family,(J) Family,,,,Lower Bound,Upper Bound
 Šidák,1.0000,2.0000,3.0000,1.0198,.056,-.0575,6.0575
 ,,3.0000,-.4000,1.0198,.999,-3.4575,2.6575
 ,,4.0000,3.2000,1.0198,.038,.1425,6.2575
@@ -842,8 +846,8 @@ Days of Use,Between Groups,555.275,3,185.092,6.663,.001
 ,Total,1555.375,39,,,
 
 Table: Multiple Comparisons (Days of Use)
-,,,Mean Difference,,,95% Confidence Interval,
-,(I) group,(J) group,(I - J),Std. Error,Sig.,Lower Bound,Upper Bound
+,,,Mean Difference (I - J),Std. Error,Sig.,95% Confidence Interval,
+,(J) Family,(J) Family,,,,Lower Bound,Upper Bound
 Scheffé,one,two,3.800,2.357,.467,-3.112,10.712
 ,,three,10.300,2.357,.001,3.388,17.212
 ,,four,6.000,2.357,.110,-.912,12.912
@@ -886,7 +890,10 @@ ONEWAY /VARIABLES= height weight temperature BY sex
 ])
 
 
-AT_CHECK([pspp -O format=csv oneway-bad-contrast.sps], [0], [dnl
+AT_CHECK([pspp -o pspp.csv -o pspp.txt oneway-bad-contrast.sps], [0], [dnl
+oneway-bad-contrast.sps:18: warning: ONEWAY: In contrast list 3, the number of coefficients (3) does not equal the number of groups (2). This contrast list will be ignored.
+])
+AT_CHECK([cat pspp.csv], [0], [dnl
 "oneway-bad-contrast.sps:18: warning: ONEWAY: In contrast list 3, the number of coefficients (3) does not equal the number of groups (2). This contrast list will be ignored."
 
 Table: ANOVA
@@ -902,34 +909,33 @@ temperature,Between Groups,1.80,1,1.80,.13,.733
 ,Total,86.36,7,,,
 
 Table: Contrast Coefficients
-,,sex,
-,,.00,1.00
-Contrast,1,-1,1
-,2,-3,3
-,3,-9,9
+,sex,
+Contrast,.00,1.00
+1,-1,1
+2,-3,3
+3,-9,9
 
 Table: Contrast Tests
 ,,Contrast,Value of Contrast,Std. Error,t,df,Sig. (2-tailed)
-height,Assume equal variances,1,-222.27,20.23,10.99,6,.000
-,,2,-666.80,60.68,10.99,6,.000
-,,3,-2000.40,182.03,10.99,6,.000
-,Does not assume equal,1,-222.27,27.67,-8.03,2.00,.015
-,,2,-666.80,83.02,-8.03,2.00,.015
-,,3,-2000.40,249.07,-8.03,2.00,.015
-weight,Assume equal variances,1,-36.16,2.74,13.21,6,.000
-,,2,-108.48,8.21,13.21,6,.000
-,,3,-325.44,24.63,13.21,6,.000
-,Does not assume equal,1,-36.16,2.19,-16.48,5.42,.000
-,,2,-108.48,6.58,-16.48,5.42,.000
-,,3,-325.44,19.75,-16.48,5.42,.000
-temperature,Assume equal variances,1,-.98,2.74,.36,6,.733
-,,2,-2.94,8.22,.36,6,.733
-,,3,-8.83,24.67,.36,6,.733
-,Does not assume equal,1,-.98,2.07,-.47,4.19,.660
-,,2,-2.94,6.22,-.47,4.19,.660
-,,3,-8.83,18.66,-.47,4.19,.660
+height,Assume equal variances,1,-222.27,20.23,10.99,6.00,.000
+,,2,-666.80,60.68,10.99,6.00,.000
+,,3,-2000.40,182.03,10.99,6.00,.000
+,Does not assume equal variances,1,-222.27,27.67,-8.03,2.00,1.985
+,,2,-666.80,83.02,-8.03,2.00,1.985
+,,3,-2000.40,249.07,-8.03,2.00,1.985
+weight,Assume equal variances,1,-36.16,2.74,13.21,6.00,.000
+,,2,-108.48,8.21,13.21,6.00,.000
+,,3,-325.44,24.63,13.21,6.00,.000
+,Does not assume equal variances,1,-36.16,2.19,-16.48,5.42,2.000
+,,2,-108.48,6.58,-16.48,5.42,2.000
+,,3,-325.44,19.75,-16.48,5.42,2.000
+temperature,Assume equal variances,1,-.98,2.74,.36,6.00,.733
+,,2,-2.94,8.22,.36,6.00,.733
+,,3,-8.83,24.67,.36,6.00,.733
+,Does not assume equal variances,1,-.98,2.07,-.47,4.19,1.340
+,,2,-2.94,6.22,-.47,4.19,1.340
+,,3,-8.83,18.66,-.47,4.19,1.340
 ])
-
 AT_CLEANUP
 
 

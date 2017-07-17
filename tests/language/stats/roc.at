@@ -51,19 +51,19 @@ a,Unweighted,Weighted
 Positive,5,50.000
 Negative,5,50.000
 
-Table: Area Under the Curve (x)
-,,,Asymp. 99% Confidence Interval,
-Area,Std. Error,Asymptotic Sig.,Lower Bound,Upper Bound
-.910,.030,.000,.839,.981
+Table: Area Under the Curve
+,Area,Std. Error,Asymptotic Sig.,Asymp. 99% Confidence Interval,
+Variable under test,,,,Lower Bound,Upper Bound
+x,.910,.030,.000,.839,.981
 
-Table: Coordinates of the Curve (x)
-Positive if greater than or equal to,Sensitivity,1 - Specificity
-.000,1.000,1.000
-1.500,.960,.440
-2.500,.880,.160
-3.500,.680,.060
-4.500,.400,.020
-6.000,.000,.000
+Table: Coordinates of the Curve
+Test variable,Positive if greater than or equal to,Sensitivity,1 - Specificity
+x,.000,1.000,1.000
+,1.500,.960,.440
+,2.500,.880,.160
+,3.500,.680,.060
+,4.500,.400,.020
+,6.000,.000,.000
 ])
 AT_CLEANUP
 
@@ -103,8 +103,8 @@ Positive,5,50.000
 Negative,5,50.000
 
 Table: Area Under the Curve
-,,,,Asymp. 95% Confidence Interval,
-Variable under test,Area,Std. Error,Asymptotic Sig.,Lower Bound,Upper Bound
+,Area,Std. Error,Asymptotic Sig.,Asymp. 95% Confidence Interval,
+Variable under test,,,,Lower Bound,Upper Bound
 x,.910,.030,.000,.860,.960
 y,.697,.052,.001,.611,.783
 
@@ -166,7 +166,7 @@ roc x by a (1)
 	print = se 
 	.
 ])
-AT_CHECK([pspp -o pspp.csv roc.sps])
+AT_CHECK([pspp -o pspp.csv -o pspp.txt roc.sps])
 AT_CHECK([cat pspp.csv], [0], [dnl
 Table: Case Summary
 ,Valid N (listwise),
@@ -174,10 +174,10 @@ a,Unweighted,Weighted
 Positive,14,14.000
 Negative,14,14.000
 
-Table: Area Under the Curve (x)
-,,,Asymp. 95% Confidence Interval,
-Area,Std. Error,Asymptotic Sig.,Lower Bound,Upper Bound
-.490,.111,.927,.307,.673
+Table: Area Under the Curve
+,Area,Std. Error,Asymptotic Sig.,Asymp. 95% Confidence Interval,
+Variable under test,,,,Lower Bound,Upper Bound
+x,.490,.111,.927,.307,.673
 ])
 AT_CLEANUP
 

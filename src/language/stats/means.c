@@ -35,7 +35,7 @@
 #include "math/interaction.h"
 #include "math/moments.h"
 
-#include "output/tab.h"
+#include "output/pivot-table.h"
 
 #include <math.h>
 
@@ -834,7 +834,8 @@ is_missing (const struct means *cmd,
   return false;
 }
 
-static void output_case_processing_summary (const struct mtable *);
+static void output_case_processing_summary (const struct mtable *,
+                                            const struct variable *wv);
 
 static void output_report (const struct means *, int, const struct mtable *);
 
@@ -1033,7 +1034,7 @@ run_means (struct means *cmd, struct casereader *input,
       int i;
       const struct mtable *table = &cmd->table[t];
 
-      output_case_processing_summary (table);
+      output_case_processing_summary (table, wv);
 
       for (i = 0; i < table->n_layers; ++i)
 	{
@@ -1047,201 +1048,143 @@ run_means (struct means *cmd, struct casereader *input,
 
 
 static void
-output_case_processing_summary (const struct mtable *table)
+output_case_processing_summary (const struct mtable *mt,
+                                const struct variable *wv)
 {
-  int i, v;
-  const int heading_columns = 1;
-  const int heading_rows = 3;
-  struct tab_table *t;
+  struct pivot_table *table = pivot_table_create (
+    N_("Case Processing Summary"));
+  pivot_table_set_weight_var (table, wv);
 
-  const int nr = heading_rows + table->n_layers * table->n_dep_vars;
-  const int nc = 7;
+  pivot_dimension_create (table, PIVOT_AXIS_COLUMN, N_("Statistics"),
+                          N_("N"), PIVOT_RC_COUNT,
+                          N_("Percent"), PIVOT_RC_PERCENT);
+  pivot_dimension_create (table, PIVOT_AXIS_COLUMN, N_("Cases"),
+                          N_("Included"), N_("Excluded"), N_("Total"))
+    ->root->show_label = true;
 
-  t = tab_create (nc, nr);
-  tab_title (t, _("Case Processing Summary"));
+  struct pivot_dimension *tables = pivot_dimension_create (
+    table, PIVOT_AXIS_ROW, N_("Tables"));
 
-  tab_headers (t, heading_columns, 0, heading_rows, 0);
-
-  tab_box (t, TAL_2, TAL_2, -1, TAL_1, 0, 0, nc - 1, nr - 1);
-
-  tab_hline (t, TAL_2, 0, nc - 1, heading_rows);
-  tab_vline (t, TAL_2, heading_columns, 0, nr - 1);
-
-
-  tab_joint_text (t, heading_columns, 0,
-		  nc - 1, 0, TAB_CENTER | TAT_TITLE, _("Cases"));
-
-  tab_joint_text (t, 1, 1, 2, 1, TAB_CENTER | TAT_TITLE, _("Included"));
-  tab_joint_text (t, 3, 1, 4, 1, TAB_CENTER | TAT_TITLE, _("Excluded"));
-  tab_joint_text (t, 5, 1, 6, 1, TAB_CENTER | TAT_TITLE, _("Total"));
-
-  tab_hline (t, TAL_1, heading_columns, nc - 1, 1);
-  tab_hline (t, TAL_1, heading_columns, nc - 1, 2);
-
-
-  for (i = 0; i < 3; ++i)
+  for (size_t v = 0; v < mt->n_dep_vars; ++v)
     {
-      tab_text (t, heading_columns + i * 2, 2, TAB_CENTER | TAT_TITLE,
-		_("N"));
-      tab_text (t, heading_columns + i * 2 + 1, 2, TAB_CENTER | TAT_TITLE,
-		_("Percent"));
-    }
-
-  for (v = 0; v < table->n_dep_vars; ++v)
-    {
-      const struct variable *var = table->dep_vars[v];
-      const char *dv_name = var_to_string (var);
-      for (i = 0; i < table->n_layers; ++i)
+      const struct variable *var = mt->dep_vars[v];
+      for (size_t i = 0; i < mt->n_layers; ++i)
 	{
-	  const int row = v * table->n_layers + i;
-	  const struct interaction *iact = table->interactions[i];
-	  casenumber n_total;
+	  const int row = v * mt->n_layers + i;
+	  const struct interaction *iact = mt->interactions[i];
 
-	  struct string str;
-	  ds_init_cstr (&str, dv_name);
-	  ds_put_cstr (&str, ": ");
-
+	  struct string str = DS_EMPTY_INITIALIZER;
+          ds_put_format (&str, "%s: ", var_to_string (var));
 	  interaction_to_string (iact, &str);
+          int table_idx = pivot_category_create_leaf (
+            tables->root, pivot_value_new_user_text_nocopy (
+              ds_steal_cstr (&str)));
 
-	  tab_text (t, 0, row + heading_rows,
-		    TAB_LEFT | TAT_TITLE, ds_cstr (&str));
+          const struct summary *s = &mt->summary[row];
+	  double n_total = s->missing + s->non_missing;
+          struct entry
+            {
+              int stat_idx;
+              int case_idx;
+              double x;
+            }
+          entries[] =
+            {
+              { 0, 0, s->non_missing },
+              { 1, 0, s->non_missing / n_total * 100.0 },
+              { 0, 1, s->missing },
+              { 1, 1, s->missing / n_total * 100.0 },
+              { 0, 2, n_total },
+              { 1, 2, 100.0 },
+            };
 
-
-	  n_total = table->summary[row].missing +
-	    table->summary[row].non_missing;
-
-	  tab_double (t, 1, row + heading_rows,
-		      0, table->summary[row].non_missing, NULL, RC_INTEGER);
-
-	  tab_text_format (t, 2, row + heading_rows,
-			   0, _("%g%%"),
-			   table->summary[row].non_missing / (double) n_total * 100.0);
-
-
-	  tab_double (t, 3, row + heading_rows,
-		      0, table->summary[row].missing, NULL, RC_INTEGER);
-
-
-	  tab_text_format (t, 4, row + heading_rows,
-			   0, _("%g%%"),
-			   table->summary[row].missing / (double) n_total * 100.0);
-
-
-	  tab_double (t, 5, row + heading_rows,
-		      0, table->summary[row].missing +
-		      table->summary[row].non_missing, NULL, RC_INTEGER);
-
-	  tab_text_format (t, 6, row + heading_rows,
-			   0, _("%g%%"),
-			   n_total / (double) n_total * 100.0);
-
-
-	  ds_destroy (&str);
+          for (size_t j = 0; j < sizeof entries / sizeof *entries; j++)
+            {
+              const struct entry *e = &entries[j];
+              pivot_table_put3 (table, e->stat_idx, e->case_idx, table_idx,
+                                pivot_value_new_number (e->x));
+            }
 	}
     }
 
-  tab_submit (t);
+  pivot_table_submit (table);
 }
 
+static void
+create_interaction_dimensions (struct pivot_table *table,
+                               const struct categoricals *cats,
+                               const struct interaction *iact)
+{
+  for (size_t i = iact->n_vars; i-- > 0; )
+    {
+      const struct variable *var = iact->vars[i];
+      struct pivot_dimension *d = pivot_dimension_create__ (
+        table, PIVOT_AXIS_ROW, pivot_value_new_variable (var));
+      d->root->show_label = true;
+
+      size_t n;
+      union value *values = categoricals_get_var_values (cats, var, &n);
+      for (size_t j = 0; j < n; j++)
+        pivot_category_create_leaf (
+          d->root, pivot_value_new_var_value (var, &values[j]));
+    }
+}
 
 static void
 output_report (const struct means *cmd,  int iact_idx,
-	       const struct mtable *table)
+	       const struct mtable *mt)
 {
-  int grp;
-  int i;
+  struct pivot_table *table = pivot_table_create (N_("Report"));
+  table->omit_empty = true;
 
-  const struct interaction *iact = table->interactions[iact_idx];
+  struct pivot_dimension *statistics = pivot_dimension_create (
+    table, PIVOT_AXIS_COLUMN, N_("Statistics"));
+  for (int i = 0; i < cmd->n_cells; ++i)
+    pivot_category_create_leaf (
+      statistics->root, pivot_value_new_text (cell_spec[cmd->cells[i]].title));
 
-  const int heading_columns = 1 + iact->n_vars;
-  const int heading_rows = 1;
-  struct tab_table *t;
+  const struct interaction *iact = mt->interactions[iact_idx];
+  create_interaction_dimensions (table, mt->cats, iact);
 
-  const int n_cats = categoricals_n_count (table->cats, iact_idx);
+  struct pivot_dimension *dep_dim = pivot_dimension_create (
+    table, PIVOT_AXIS_ROW, N_("Dependent Variables"));
 
-  const int nr = n_cats * table->n_dep_vars + heading_rows;
+  size_t *indexes = xnmalloc (table->n_dimensions, sizeof *indexes);
 
-  const int nc = heading_columns + cmd->n_cells;
-
-  t = tab_create (nc, nr);
-  tab_title (t, _("Report"));
-
-  tab_headers (t, heading_columns, 0, heading_rows, 0);
-
-  tab_box (t, TAL_2, TAL_2, -1, TAL_1, 0, 0, nc - 1, nr - 1);
-
-  tab_hline (t, TAL_2, 0, nc - 1, heading_rows);
-  tab_vline (t, TAL_2, heading_columns, 0, nr - 1);
-
-  for (i = 0; i < iact->n_vars; ++i)
+  size_t n_cats = categoricals_n_count (mt->cats, iact_idx);
+  for (size_t v = 0; v < mt->n_dep_vars; ++v)
     {
-      tab_text (t, 1 + i, 0, TAB_CENTER | TAT_TITLE,
-		var_to_string (iact->vars[i]));
+      indexes[table->n_dimensions - 1] = pivot_category_create_leaf (
+        dep_dim->root, pivot_value_new_variable (mt->dep_vars[v]));
+
+      for (size_t i = 0; i < n_cats; ++i)
+        {
+          for (size_t j = 0; j < iact->n_vars; j++)
+            {
+              int idx = categoricals_get_value_index_by_category_real (
+                mt->cats, iact_idx, i, j);
+              indexes[table->n_dimensions - 2 - j] = idx;
+            }
+
+          struct per_cat_data *per_cat_data
+            = categoricals_get_user_data_by_category_real (
+              mt->cats, iact_idx, i);
+
+          const struct per_var_data *pvd = &per_cat_data->pvd[v];
+          for (int stat_idx = 0; stat_idx < cmd->n_cells; ++stat_idx)
+            {
+              indexes[0] = stat_idx;
+              const int csi = cmd->cells[stat_idx];
+              const struct cell_spec *cs = &cell_spec[csi];
+
+              double result = cs->sd (pvd, pvd->cell_stats[stat_idx]);
+              pivot_table_put (table, indexes, table->n_dimensions,
+                               pivot_value_new_number (result));
+            }
+        }
     }
+  free (indexes);
 
-  for (i = 0; i < cmd->n_cells; ++i)
-    {
-      tab_text (t, heading_columns + i, 0,
-		TAB_CENTER | TAT_TITLE,
-		gettext (cell_spec[cmd->cells[i]].title));
-    }
-
-
-  for (i = 0; i < n_cats; ++i)
-    {
-      int v, dv;
-      const struct ccase *c =
-	categoricals_get_case_by_category_real (table->cats, iact_idx, i);
-
-      for (dv = 0; dv < table->n_dep_vars; ++dv)
-	{
-	  tab_text (t, 0,
-		    heading_rows + dv * n_cats,
-		    TAB_RIGHT | TAT_TITLE,
-		    var_to_string (table->dep_vars[dv])
-		    );
-
-	  if ( dv > 0)
-	    tab_hline (t, TAL_1, 0, nc - 1, heading_rows + dv * n_cats);
-
-	  for (v = 0; v < iact->n_vars; ++v)
-	    {
-	      const struct variable *var = iact->vars[v];
-	      const union value *val = case_data (c, var);
-	      struct string str;
-	      ds_init_empty (&str);
-	      var_append_value_name (var, val, &str);
-
-	      tab_text (t, 1 + v, heading_rows + dv * n_cats + i,
-			TAB_RIGHT | TAT_TITLE, ds_cstr (&str));
-
-	      ds_destroy (&str);
-	    }
-	}
-    }
-
-  for (grp = 0; grp < n_cats; ++grp)
-    {
-      int dv;
-      struct per_cat_data *per_cat_data =
-	categoricals_get_user_data_by_category_real (table->cats, iact_idx, grp);
-
-      for (dv = 0; dv < table->n_dep_vars; ++dv)
-	{
-	  const struct per_var_data *pvd = &per_cat_data->pvd[dv];
-	  for (i = 0; i < cmd->n_cells; ++i)
-	    {
-	      const int csi = cmd->cells[i];
-	      const struct cell_spec *cs = &cell_spec[csi];
-
-	      double result = cs->sd (pvd, pvd->cell_stats[i]);
-
-	      tab_double (t, heading_columns + i,
-			  heading_rows + grp + dv * n_cats,
-			  0, result, NULL, RC_OTHER);
-	    }
-	}
-    }
-
-  tab_submit (t);
+  pivot_table_submit (table);
 }
+

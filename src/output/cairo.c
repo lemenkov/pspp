@@ -44,7 +44,6 @@
 #include "output/options.h"
 #include "output/page-setup-item.h"
 #include "output/render.h"
-#include "output/tab.h"
 #include "output/table-item.h"
 #include "output/table.h"
 #include "output/text-item.h"
@@ -1233,7 +1232,6 @@ xr_layout_cell_text (struct xr_driver *xr, const struct table_cell *cell,
   int R = options & TAB_ROTATE ? 0 : 1;
 
   struct xr_font *font = (options & TAB_FIX ? &xr->fonts[XR_FONT_FIXED]
-                          : options & TAB_EMPH ? &xr->fonts[XR_FONT_EMPHASIS]
                           : &xr->fonts[XR_FONT_PROPORTIONAL]);
   struct xr_font local_font;
   if (font_style->typeface)
@@ -1485,7 +1483,7 @@ xr_layout_cell_text (struct xr_driver *xr, const struct table_cell *cell,
             dump_line (xr, -xr->left_margin, best,
                        xr->width + xr->right_margin, best,
                        RENDER_LINE_SINGLE,
-                       &(struct cell_color) CELL_COLOR (0, 255, 0));
+                       &CELL_COLOR (0, 255, 0));
         }
     }
 

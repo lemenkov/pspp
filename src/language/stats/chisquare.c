@@ -38,11 +38,12 @@
 #include "libpspp/hash-functions.h"
 #include "libpspp/message.h"
 #include "libpspp/taint.h"
-#include "output/tab.h"
+#include "output/pivot-table.h"
 
 #include "gl/xalloc.h"
 
 #include "gettext.h"
+#define N_(msgid) msgid
 #define _(msgid) gettext (msgid)
 
 /* Adds frequency counts of each value of VAR in INPUT between LO and HI to
@@ -125,158 +126,6 @@ create_freq_hash (const struct dictionary *dict,
   return casereader_destroy (input);
 }
 
-static struct tab_table *
-create_variable_frequency_table (const struct dictionary *dict,
-				 struct casereader *input,
-				 const struct chisquare_test *test,
-				 int v, struct hmap *freq_hash)
-
-{
-  int i;
-  const struct one_sample_test *ost = (const struct one_sample_test*)test;
-  int n_cells;
-  struct tab_table *table ;
-  const struct variable *var =  ost->vars[v];
-
-  const struct variable *wvar = dict_get_weight (dict);
-  const struct fmt_spec *wfmt = wvar ? var_get_print_format (wvar) : & F_8_0;
-
-  hmap_init (freq_hash);
-  if (!create_freq_hash (dict, input, var, freq_hash))
-    {
-      freq_hmap_destroy (freq_hash, var_get_width (var));
-      return NULL;
-    }
-
-  n_cells = hmap_count (freq_hash);
-
-  if ( test->n_expected > 0 && n_cells != test->n_expected )
-    {
-      msg(ME, _("CHISQUARE test specified %d expected values, but"
-		" %d distinct values were encountered in variable %s."),
-	  test->n_expected, n_cells,
-	  var_get_name (var)
-	  );
-      freq_hmap_destroy (freq_hash, var_get_width (var));
-      return NULL;
-    }
-
-  table = tab_create(4, n_cells + 2);
-  tab_set_format (table, RC_WEIGHT, wfmt);
-
-  tab_title (table, "%s", var_to_string(var));
-  tab_text (table, 1, 0, TAB_LEFT, _("Observed N"));
-  tab_text (table, 2, 0, TAB_LEFT, _("Expected N"));
-  tab_text (table, 3, 0, TAB_LEFT, _("Residual"));
-
-  tab_headers (table, 1, 0, 1, 0);
-
-  tab_box (table, TAL_1, TAL_1, -1, -1,
-	   0, 0, tab_nc (table) - 1, tab_nr(table) - 1 );
-
-  tab_hline (table, TAL_1, 0, tab_nc(table) - 1, 1);
-
-  tab_vline (table, TAL_2, 1, 0, tab_nr(table) - 1);
-  for ( i = 2 ; i < 4 ; ++i )
-    tab_vline (table, TAL_1, i, 0, tab_nr(table) - 1);
-
-
-  tab_text (table, 0, tab_nr (table) - 1, TAB_LEFT, _("Total"));
-
-  return table;
-}
-
-
-static struct tab_table *
-create_combo_frequency_table (const struct dictionary *dict, const struct chisquare_test *test)
-{
-  int i;
-  const struct one_sample_test *ost = (const struct one_sample_test*)test;
-
-  struct tab_table *table ;
-
-  const struct fmt_spec *wfmt = dict_get_weight_format (dict);
-
-  int n_cells = test->hi - test->lo + 1;
-
-  table = tab_create(1 + ost->n_vars * 4, n_cells + 3);
-  tab_set_format (table, RC_WEIGHT, wfmt);
-
-  tab_title (table, _("Frequencies"));
-  for ( i = 0 ; i < ost->n_vars ; ++i )
-    {
-      const struct variable *var = ost->vars[i];
-      tab_text (table, i * 4 + 1, 1, TAB_LEFT, _("Category"));
-      tab_text (table, i * 4 + 2, 1, TAB_LEFT, _("Observed N"));
-      tab_text (table, i * 4 + 3, 1, TAB_LEFT, _("Expected N"));
-      tab_text (table, i * 4 + 4, 1, TAB_LEFT, _("Residual"));
-
-      tab_vline (table, TAL_2, i * 4 + 1,
-		 0, tab_nr (table) - 1);
-
-      tab_vline (table, TAL_1, i * 4 + 2,
-		 0, tab_nr (table) - 1);
-
-      tab_vline (table, TAL_1, i * 4 + 3,
-		 1, tab_nr (table) - 1);
-
-      tab_vline (table, TAL_1, i * 4 + 4,
-		 1, tab_nr (table) - 1);
-
-
-      tab_joint_text (table,
-		      i * 4 + 1, 0,
-		      i * 4 + 4, 0,
-		      TAB_CENTER,
-		      var_to_string (var));
-    }
-
-  for ( i = test->lo ; i <= test->hi ; ++i )
-    tab_double (table, 0, 2 + i - test->lo, TAB_LEFT, 1 + i - test->lo, NULL, RC_INTEGER);
-
-  tab_headers (table, 1, 0, 2, 0);
-
-  tab_box (table, TAL_1, TAL_1, -1, -1,
-	   0, 0, tab_nc (table) - 1, tab_nr(table) - 1 );
-
-  tab_hline (table, TAL_1, 1, tab_nc(table) - 1, 1);
-  tab_hline (table, TAL_1, 0, tab_nc(table) - 1, 2);
-
-  tab_text (table, 0, tab_nr (table) - 1, TAB_LEFT, _("Total"));
-
-  return table;
-}
-
-
-static struct tab_table *
-create_stats_table (const struct chisquare_test *test)
-{
-  const struct one_sample_test *ost = (const struct one_sample_test*) test;
-
-  struct tab_table *table;
-  table = tab_create (1 + ost->n_vars, 4);
-  tab_title (table, _("Test Statistics"));
-  tab_headers (table, 1, 0, 1, 0);
-
-  tab_box (table, TAL_1, TAL_1, -1, -1,
-	   0, 0, tab_nc(table) - 1, tab_nr(table) - 1 );
-
-  tab_box (table, -1, -1, -1, TAL_1,
-	   1, 0, tab_nc(table) - 1, tab_nr(table) - 1 );
-
-
-  tab_vline (table, TAL_2, 1, 0, tab_nr (table) - 1);
-  tab_hline (table, TAL_1, 0, tab_nc (table) - 1, 1);
-
-
-  tab_text (table, 0, 1, TAB_LEFT, _("Chi-Square"));
-  tab_text (table, 0, 2, TAB_LEFT, _("df"));
-  tab_text (table, 0, 3, TAB_LEFT, _("Asymp. Sig."));
-
-  return table;
-}
-
-
 void
 chisquare_execute (const struct dataset *ds,
 		   struct casereader *input,
@@ -290,7 +139,6 @@ chisquare_execute (const struct dataset *ds,
   struct chisquare_test *cst = UP_CAST (test, struct chisquare_test,
                                         parent.parent);
   struct one_sample_test *ost = &cst->parent;
-  int n_cells = 0;
   double total_expected = 0.0;
 
   double *df = xzalloc (sizeof (*df) * ost->n_vars);
@@ -305,66 +153,78 @@ chisquare_execute (const struct dataset *ds,
       for ( v = 0 ; v < ost->n_vars ; ++v )
 	{
           const struct variable *var = ost->vars[v];
-	  double total_obs = 0.0;
-	  struct hmap freq_hash;
+
+	  struct hmap freq_hash = HMAP_INITIALIZER (freq_hash);
           struct casereader *reader =
             casereader_create_filter_missing (casereader_clone (input),
                                               &var, 1, exclude,
 					      NULL, NULL);
-	  struct tab_table *freq_table =
-            create_variable_frequency_table (dict, reader, cst, v, &freq_hash);
+          if (!create_freq_hash (dict, reader, var, &freq_hash))
+            {
+              freq_hmap_destroy (&freq_hash, var_get_width (var));
+              return;
+            }
 
-	  struct freq **ff;
+	  size_t n_cells = hmap_count (&freq_hash);
+          if (cst->n_expected > 0 && n_cells != cst->n_expected)
+            {
+              msg (ME, _("CHISQUARE test specified %d expected values, but "
+                         "variable %s has %d distinct values."),
+                   cst->n_expected, var_get_name (var), n_cells);
+              freq_hmap_destroy (&freq_hash, var_get_width (var));
+              continue;
+            }
 
-	  if ( NULL == freq_table )
-            continue;
-          ff = freq_hmap_sort (&freq_hash, var_get_width (var));
+          struct pivot_table *table = pivot_table_create__ (
+            pivot_value_new_variable (var));
+          pivot_table_set_weight_var (table, dict_get_weight (dict));
 
-	  n_cells = hmap_count (&freq_hash);
+          pivot_dimension_create (
+            table, PIVOT_AXIS_COLUMN, N_("Statistics"),
+            N_("Observed N"), PIVOT_RC_COUNT,
+            N_("Expected N"), PIVOT_RC_OTHER,
+            N_("Residual"), PIVOT_RC_RESIDUAL);
 
-	  for ( i = 0 ; i < n_cells ; ++i )
+          struct freq **ff = freq_hmap_sort (&freq_hash, var_get_width (var));
+
+	  double total_obs = 0.0;
+	  for (size_t i = 0; i < n_cells; i++)
 	    total_obs += ff[i]->count;
 
+          struct pivot_dimension *values = pivot_dimension_create (
+            table, PIVOT_AXIS_ROW, N_("Value"));
+          values->root->show_label = true;
+
 	  xsq[v] = 0.0;
-	  for ( i = 0 ; i < n_cells ; ++i )
+	  for (size_t i = 0; i < n_cells; i++)
 	    {
-	      struct string str;
-	      double exp;
-	      const union value *observed_value = &ff[i]->values[0];
+              int row = pivot_category_create_leaf (
+                values->root, pivot_value_new_var_value (
+                  var, &ff[i]->values[0]));
 
-	      ds_init_empty (&str);
-	      var_append_value_name (var, observed_value, &str);
-
-	      /* The key */
-	      tab_text (freq_table, 0, i + 1, TAB_LEFT, ds_cstr (&str));
-	      ds_destroy (&str);
-
-
-	      /* The observed N */
-	      tab_double (freq_table, 1, i + 1, TAB_NONE,
-			  ff[i]->count, NULL, RC_WEIGHT);
-
-	      if ( cst->n_expected > 0 )
-		exp = cst->expected[i] * total_obs / total_expected ;
-	      else
-		exp = total_obs / (double) n_cells;
-
-	      tab_double (freq_table, 2, i + 1, TAB_NONE,
-			  exp, NULL, RC_OTHER);
-
-	      /* The residual */
-	      tab_double (freq_table, 3, i + 1, TAB_NONE,
-			  ff[i]->count - exp, NULL, RC_OTHER);
+              double exp = (cst->n_expected > 0
+                            ? cst->expected[i] * total_obs / total_expected
+                            : total_obs / (double) n_cells);
+              double entries[] = {
+                ff[i]->count,
+                exp,
+                ff[i]->count - exp,
+              };
+              for (size_t j = 0; j < sizeof entries / sizeof *entries; j++)
+                pivot_table_put2 (
+                  table, j, row, pivot_value_new_number (entries[j]));
 
 	      xsq[v] += (ff[i]->count - exp) * (ff[i]->count - exp) / exp;
 	    }
 
 	  df[v] = n_cells - 1.0;
 
-	  tab_double (freq_table, 1, i + 1, TAB_NONE,
-		      total_obs, NULL, RC_WEIGHT);
+          int row = pivot_category_create_leaf (
+            values->root, pivot_value_new_text (N_("Total")));
+          pivot_table_put2 (table, 0, row,
+                            pivot_value_new_number (total_obs));
 
-	  tab_submit (freq_table);
+          pivot_table_submit (table);
 
           freq_hmap_destroy (&freq_hash, var_get_width (var));
           free (ff);
@@ -372,22 +232,38 @@ chisquare_execute (const struct dataset *ds,
     }
   else  /* ranged == true */
     {
-      struct tab_table *freq_table = create_combo_frequency_table (dict, cst);
+      struct pivot_table *table = pivot_table_create (N_("Frequencies"));
+      pivot_table_set_weight_var (table, dict_get_weight (dict));
 
-      n_cells = cst->hi - cst->lo + 1;
+      pivot_dimension_create (
+        table, PIVOT_AXIS_COLUMN, N_("Statistics"),
+        N_("Category"),
+        N_("Observed N"), PIVOT_RC_COUNT,
+        N_("Expected N"), PIVOT_RC_OTHER,
+        N_("Residual"), PIVOT_RC_RESIDUAL);
 
-      for ( v = 0 ; v < ost->n_vars ; ++v )
+      struct pivot_dimension *var_dim
+        = pivot_dimension_create (table, PIVOT_AXIS_COLUMN, N_("Variable"));
+      for ( size_t i = 0 ; i < ost->n_vars ; ++i )
+        pivot_category_create_leaf (var_dim->root,
+                                    pivot_value_new_variable (ost->vars[i]));
+
+      struct pivot_dimension *category_dim
+        = pivot_dimension_create (table, PIVOT_AXIS_ROW, N_("Category"));
+      size_t n_cells = cst->hi - cst->lo + 1;
+      for (size_t i = 0 ; i < n_cells; ++i )
+        pivot_category_create_leaf (category_dim->root,
+                                    pivot_value_new_integer (i + 1));
+      pivot_category_create_leaves (category_dim->root, N_("Total"));
+
+      for ( size_t v = 0 ; v < ost->n_vars ; ++v )
 	{
           const struct variable *var = ost->vars[v];
-	  double total_obs = 0.0;
           struct casereader *reader =
             casereader_create_filter_missing (casereader_clone (input),
                                               &var, 1, exclude,
 					      NULL, NULL);
-	  struct hmap freq_hash;
-	  struct freq **ff;
-
-          hmap_init (&freq_hash);
+	  struct hmap freq_hash = HMAP_INITIALIZER (freq_hash);
           if (!create_freq_hash_with_range (dict, reader, var,
                                             cst->lo, cst->hi, &freq_hash))
             {
@@ -395,79 +271,76 @@ chisquare_execute (const struct dataset *ds,
               continue;
             }
 
-          ff = freq_hmap_sort (&freq_hash, var_get_width (var));
+	  struct freq **ff = freq_hmap_sort (&freq_hash, var_get_width (var));
 
-	  for ( i = 0 ; i < hmap_count (&freq_hash) ; ++i )
+          double total_obs = 0.0;
+	  for ( size_t i = 0 ; i < hmap_count (&freq_hash) ; ++i )
 	    total_obs += ff[i]->count;
 
 	  xsq[v] = 0.0;
-	  for ( i = 0 ; i < hmap_count (&freq_hash) ; ++i )
+	  for ( size_t i = 0 ; i < hmap_count (&freq_hash) ; ++i )
 	    {
-	      struct string str;
-	      double exp;
+              /* Category. */
+              pivot_table_put3 (table, 0, v, i,
+                                pivot_value_new_var_value (
+                                  var, &ff[i]->values[0]));
 
-	      const union value *observed_value = &ff[i]->values[0];
+              double exp = (cst->n_expected > 0
+                            ? cst->expected[i] * total_obs / total_expected
+                            : total_obs / (double) hmap_count (&freq_hash));
+              double entries[] = {
+                ff[i]->count,
+                exp,
+                ff[i]->count - exp,
+              };
+              for (size_t j = 0; j < sizeof entries / sizeof *entries; j++)
+                pivot_table_put3 (table, j + 1, v, i,
+                                  pivot_value_new_number (entries[j]));
 
-	      ds_init_empty (&str);
-	      var_append_value_name (ost->vars[v], observed_value, &str);
-	      /* The key */
-	      tab_text  (freq_table, v * 4 + 1, i + 2 , TAB_LEFT,
-			 ds_cstr (&str));
-	      ds_destroy (&str);
-
-	      /* The observed N */
-	      tab_double (freq_table, v * 4 + 2, i + 2 , TAB_NONE,
-			  ff[i]->count, NULL, RC_WEIGHT);
-
-	      if ( cst->n_expected > 0 )
-		exp = cst->expected[i] * total_obs / total_expected ;
-	      else
-		exp = total_obs / (double) hmap_count (&freq_hash);
-
-	      /* The expected N */
-	      tab_double (freq_table, v * 4 + 3, i + 2 , TAB_NONE,
-			  exp, NULL, RC_OTHER);
-
-	      /* The residual */
-	      tab_double (freq_table, v * 4 + 4, i + 2 , TAB_NONE,
-			  ff[i]->count - exp, NULL, RC_OTHER);
 
 	      xsq[v] += (ff[i]->count - exp) * (ff[i]->count - exp) / exp;
 	    }
-
-
-	  tab_double (freq_table, v * 4 + 2, tab_nr (freq_table) - 1, TAB_NONE,
-		      total_obs, NULL, RC_WEIGHT);
 
 	  df[v] = n_cells - 1.0;
 
 	  freq_hmap_destroy (&freq_hash, var_get_width (var));
           free (ff);
+
+          pivot_table_put3 (table, 1, v, n_cells,
+                            pivot_value_new_number (total_obs));
 	}
 
-      tab_submit (freq_table);
+      pivot_table_submit (table);
     }
   ok = !taint_has_tainted_successor (casereader_get_taint (input));
   casereader_destroy (input);
 
   if (ok)
     {
-      struct tab_table *stats_table = create_stats_table (cst);
+      struct pivot_table *table = pivot_table_create (N_("Test Statistics"));
 
-      /* Populate the summary statistics table */
-      for ( v = 0 ; v < ost->n_vars ; ++v )
+      pivot_dimension_create (table, PIVOT_AXIS_COLUMN, N_("Statistics"),
+                              N_("Chi-square"), PIVOT_RC_OTHER,
+                              N_("df"), PIVOT_RC_INTEGER,
+                              N_("Asymp. Sig."), PIVOT_RC_SIGNIFICANCE);
+
+      struct pivot_dimension *variables = pivot_dimension_create (
+        table, PIVOT_AXIS_ROW, N_("Variable"));
+
+      for ( size_t v = 0 ; v < ost->n_vars ; ++v )
         {
           const struct variable *var = ost->vars[v];
 
-          tab_text (stats_table, 1 + v, 0, TAB_CENTER, var_get_name (var));
+          int row = pivot_category_create_leaf (
+            variables->root, pivot_value_new_variable (var));
 
-          tab_double (stats_table, 1 + v, 1, TAB_NONE, xsq[v], NULL, RC_OTHER);
-          tab_double (stats_table, 1 + v, 2, TAB_NONE, df[v], NULL, RC_INTEGER);
-
-          tab_double (stats_table, 1 + v, 3, TAB_NONE,
-		      gsl_cdf_chisq_Q (xsq[v], df[v]), NULL, RC_PVALUE);
+          double sig = gsl_cdf_chisq_Q (xsq[v], df[v]);
+          double entries[] = { xsq[v], df[v], sig };
+          for (size_t i = 0; i < sizeof entries / sizeof *entries; i++)
+            pivot_table_put2 (table, i, row,
+                              pivot_value_new_number (entries[i]));
         }
-      tab_submit (stats_table);
+      pivot_table_submit (table);
     }
 
   free (xsq);

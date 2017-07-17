@@ -67,7 +67,7 @@ AT_CHECK([pspp -O format=csv save.pspp])
 AT_CHECK([pspp -O format=csv get.pspp], [0], [dnl
 Table: Data List
 number,time,date,datetime,string,filter
-.   ,-0 05:17,10/31/2010,09-APR-2008 09:29:00,xxx    ,1
-1.625,0 12:00:00,.,.,xyzzy   ,1
+.   ,-0 05:17,10/31/2010,09-APR-2008 09:29:00,xxx,1
+1.625,0 12:00:00,.,.,xyzzy,1
 ])
 AT_CLEANUP

@@ -35,8 +35,8 @@ NPAR TESTS
 AT_CHECK([pspp -O format=csv npar.sps], [0], [dnl
 Table: Binomial Test
 ,,Category,N,Observed Prop.,Test Prop.,Exact Sig. (1-tailed)
-x,Group1,1.000,6.000,.286,.300,.551
-,Group2,2.000,15.000,.714,,
+x,Group 1,1.000,6.000,.286,.300,.551
+,Group 2,2.000,15.000,.714,,
 ,Total,,21.000,1.000,,
 ])
 AT_CLEANUP
@@ -60,8 +60,8 @@ NPAR TESTS
 AT_CHECK([pspp -O format=csv npar.sps], [0], [dnl
 Table: Binomial Test
 ,,Category,N,Observed Prop.,Test Prop.,Exact Sig. (1-tailed)
-x,Group1,1,7,.538,.400,.229
-,Group2,2,6,.462,,
+x,Group 1,1,7,.538,.400,.229
+,Group 2,2,6,.462,,
 ,Total,,13,1.000,,
 ])
 AT_CLEANUP
@@ -85,8 +85,8 @@ NPAR TESTS
 AT_CHECK([pspp -O format=csv npar.sps], [0], [dnl
 Table: Binomial Test
 ,,Category,N,Observed Prop.,Test Prop.,Exact Sig. (1-tailed)
-x,Group1,1,8,.500,.400,.284
-,Group2,2,8,.500,,
+x,Group 1,1,8,.500,.400,.284
+,Group 2,2,8,.500,,
 ,Total,,16,1.000,,
 ])
 AT_CLEANUP
@@ -110,8 +110,8 @@ NPAR TESTS
 AT_CHECK([pspp -O format=csv npar.sps], [0], [dnl
 Table: Binomial Test
 ,,Category,N,Observed Prop.,Test Prop.,Exact Sig. (1-tailed)
-x,Group1,1,11,.478,.600,.164
-,Group2,2,12,.522,,
+x,Group 1,1,11,.478,.600,.164
+,Group 2,2,12,.522,,
 ,Total,,23,1.000,,
 ])
 AT_CLEANUP
@@ -134,8 +134,8 @@ NPAR TESTS
 AT_CHECK([pspp -O format=csv npar.sps], [0], [dnl
 Table: Binomial Test
 ,,Category,N,Observed Prop.,Test Prop.,Exact Sig. (1-tailed)
-x,Group1,1,11,.550,.600,.404
-,Group2,2,9,.450,,
+x,Group 1,1,11,.550,.600,.404
+,Group 2,2,9,.450,,
 ,Total,,20,1.000,,
 ])
 AT_CLEANUP
@@ -158,8 +158,8 @@ NPAR TESTS
 AT_CHECK([pspp -O format=csv npar.sps], [0], [dnl
 Table: Binomial Test
 ,,Category,N,Observed Prop.,Test Prop.,Exact Sig. (1-tailed)
-x,Group1,1,11,.500,.600,.228
-,Group2,2,11,.500,,
+x,Group 1,1,11,.500,.600,.228
+,Group 2,2,11,.500,,
 ,Total,,22,1.000,,
 ])
 AT_CLEANUP
@@ -183,8 +183,8 @@ NPAR TESTS
 AT_CHECK([pspp -O format=csv npar.sps], [0], [dnl
 Table: Binomial Test
 ,,Category,N,Observed Prop.,Test Prop.,Exact Sig. (2-tailed)
-x,Group1,1,8,.348,.500,.210
-,Group2,2,15,.652,,
+x,Group 1,1,8,.348,.500,.210
+,Group 2,2,15,.652,,
 ,Total,,23,1.000,,
 ])
 AT_CLEANUP
@@ -207,8 +207,8 @@ NPAR TESTS
 AT_CHECK([pspp -O format=csv npar.sps], [0], [dnl
 Table: Binomial Test
 ,,Category,N,Observed Prop.,Test Prop.,Exact Sig. (2-tailed)
-x,Group1,1,12,.667,.500,.238
-,Group2,2,6,.333,,
+x,Group 1,1,12,.667,.500,.238
+,Group 2,2,6,.333,,
 ,Total,,18,1.000,,
 ])
 AT_CLEANUP
@@ -232,8 +232,8 @@ NPAR TESTS
 AT_CHECK([pspp -O format=csv npar.sps], [0], [dnl
 Table: Binomial Test
 ,,Category,N,Observed Prop.,Test Prop.,Exact Sig. (2-tailed)
-x,Group1,1,10,.500,.500,1.000
-,Group2,2,10,.500,,
+x,Group 1,1,10,.500,.500,1.000
+,Group 2,2,10,.500,,
 ,Total,,20,1.000,,
 ])
 AT_CLEANUP
@@ -258,8 +258,8 @@ NPAR TESTS
 AT_CHECK([pspp -O format=csv npar.sps], [0], [dnl
 Table: Binomial Test
 ,,Category,N,Observed Prop.,Test Prop.,Exact Sig. (2-tailed)
-x,Group1,<= 10,10.000,.385,.500,.327
-,Group2,,16.000,.615,,
+x,Group 1,<= 10,10.000,.385,.500,.327
+,Group 2,,16.000,.615,,
 ,Total,,26.000,1.000,,
 ])
 AT_CLEANUP
@@ -284,8 +284,8 @@ NPAR TESTS
 AT_CHECK([pspp -O format=csv npar.sps], [0], [dnl
 Table: Binomial Test
 ,,Category,N,Observed Prop.,Test Prop.,Exact Sig. (2-tailed)
-x,Group1,10.000,10.000,.435,.500,.678
-,Group2,20.000,13.000,.565,,
+x,Group 1,10.000,10.000,.435,.500,.678
+,Group 2,20.000,13.000,.565,,
 ,Total,,23.000,1.000,,
 ])
 AT_CLEANUP
@@ -344,7 +344,7 @@ NPAR TESTS
 
 AT_CHECK([pspp -O format=csv npar.sps], [0], [dnl
 Table: x
-,Observed N,Expected N,Residual
+Value,Observed N,Expected N,Residual
 1.00,3.00,2.33,.67
 2.00,3.00,2.33,.67
 3.10,4.00,2.33,1.67
@@ -354,7 +354,7 @@ Table: x
 Total,14.00,,
 
 Table: y
-,Observed N,Expected N,Residual
+Value,Observed N,Expected N,Residual
 1.00,7.00,3.50,3.50
 2.00,4.00,3.50,.50
 3.00,1.00,3.50,-2.50
@@ -362,13 +362,12 @@ Table: y
 Total,14.00,,
 
 Table: Test Statistics
-,x,y
-Chi-Square,3.14,6.00
-df,5,3
-Asymp. Sig.,.678,.112
+,Chi-square,df,Asymp. Sig.
+x,3.14,5,.678
+y,6.00,3,.112
 
 Table: y
-,Observed N,Expected N,Residual
+Value,Observed N,Expected N,Residual
 1.00,7.00,2.63,4.38
 2.00,4.00,3.50,.50
 3.00,1.00,4.38,-3.38
@@ -376,10 +375,8 @@ Table: y
 Total,14.00,,
 
 Table: Test Statistics
-,y
-Chi-Square,10.61
-df,3
-Asymp. Sig.,.014
+,Chi-square,df,Asymp. Sig.
+y,10.61,3,.014
 
 Table: Frequencies
 ,x,,,,y,,,
@@ -390,10 +387,9 @@ Table: Frequencies
 Total,,10.00,,,,7.00,,
 
 Table: Test Statistics
-,x,y
-Chi-Square,.13,4.13
-df,2,2
-Asymp. Sig.,.936,.127
+,Chi-square,df,Asymp. Sig.
+x,.13,2,.936
+y,4.13,2,.127
 ])
 
 AT_CLEANUP
@@ -420,13 +416,11 @@ NPAR TESTS
 ])
 
 AT_CHECK([pspp -O format=csv npar.sps], [1], [dnl
-"error: CHISQUARE test specified 6 expected values, but 4 distinct values were encountered in variable y."
+"error: CHISQUARE test specified 6 expected values, but variable y has 4 distinct values."
 
 Table: Test Statistics
-,y
-Chi-Square,.00
-df,0
-Asymp. Sig.,1.000
+,Chi-square,df,Asymp. Sig.
+y,.00,0,1.000
 ])
 
 AT_CLEANUP
@@ -471,14 +465,12 @@ Table: Frequencies
 Total,,12.00,,,,15.00,,
 
 Table: Test Statistics
-,x,y
-Chi-Square,17.33,22.87
-df,7,7
-Asymp. Sig.,.015,.002
+,Chi-square,df,Asymp. Sig.
+x,17.33,7,.015
+y,22.87,7,.002
 
 Table: Descriptive Statistics
 ,N,Mean,Std. Deviation,Minimum,Maximum
-,,,,,
 x,12.00,2.47,1.19,1.00,5.00
 y,15.00,2.07,1.33,1.00,5.00
 ])
@@ -524,14 +516,12 @@ Table: Frequencies
 Total,,14.00,,,,14.00,,
 
 Table: Test Statistics
-,x,y
-Chi-Square,13.43,26.00
-df,7,7
-Asymp. Sig.,.062,.001
+,Chi-square,df,Asymp. Sig.
+x,13.43,7,.062
+y,26.00,7,.001
 
 Table: Descriptive Statistics
 ,N,Mean,Std. Deviation,Minimum,Maximum
-,,,,,
 x,14.00,2.69,1.23,1.00,5.00
 y,14.00,1.86,1.10,1.00,4.00
 ])
@@ -711,20 +701,20 @@ npar tests
 	.
 ])
 
-AT_CHECK([pspp -o pspp.csv kw-simple.sps])
+AT_CHECK([pspp -o pspp.csv -o pspp.txt kw-simple.sps])
 AT_CHECK([cat pspp.csv], [0], [dnl
 Table: Ranks
-,gv,N,Mean Rank
+,,N,Mean Rank
 xscore,timed out,5,4.400
 ,hit wicket,5,7.400
 ,handled the ball,4,11.500
 ,Total,14,
 
 Table: Test Statistics
-,,xscore
-Chi-Square,,6.406
-df,,2
-Asymp. Sig.,,.041
+,xscore
+Chi-Square,6.406
+df,2
+Asymp. Sig.,.041
 ])
 
 
@@ -818,7 +808,7 @@ npar tests
 AT_CHECK([pspp -o pspp.csv kw-multi.sps])
 AT_CHECK([cat pspp.csv], [0], [dnl
 Table: Ranks
-,gv,N,Mean Rank
+,,N,Mean Rank
 xscore,timed out,5,4.400
 ,hit wicket,5,7.400
 ,handled the ball,4,11.500
@@ -829,10 +819,10 @@ yscore,hit wicket,5,7.400
 ,Total,14,
 
 Table: Test Statistics
-,,xscore,yscore,
-Chi-Square,,6.406,6.406,
-df,,2,2,
-Asymp. Sig.,,.041,.041,
+,xscore,yscore
+Chi-Square,6.406,6.406
+df,2,2
+Asymp. Sig.,.041,.041
 ])
 
 AT_CLEANUP
@@ -1037,9 +1027,10 @@ NPAR TESTS
 
 AT_CHECK([pspp -O format=csv npar-mann-whitney.sps], [0], [dnl
 Table: Ranks
-,N,,,Mean Rank,,Sum of Ranks,
-,0,1,Total,0,1,0,1
-height,15.0000,15.0000,30.0000,14.5333,16.4667,218.0000,247.0000
+,,N,Mean Rank,Sum of Ranks
+height,0,15,14.5333,218.0000
+,1,15,16.4667,247.0000
+,Total,30,,
 
 Table: Test Statistics
 ,Mann-Whitney U,Wilcoxon W,Z,Asymp. Sig. (2-tailed)
@@ -1077,12 +1068,19 @@ NPAR TESTS
 
 AT_CHECK([pspp -O format=csv npar-mann-whitney.sps], [0], [dnl
 Table: Ranks
-,N,,,Mean Rank,,Sum of Ranks,
-,.000,1.000,Total,.000,1.000,.000,1.000
-IOS: Familie,114.000,115.000,229.000,110.018,119.939,12542.000,13793.000
-IOS: Freunde,115.000,115.000,230.000,108.339,122.661,12459.000,14106.000
-IOS: Partner*in,97.000,91.000,188.000,95.351,93.593,9249.000,8517.000
-IOS: Bekannte,115.000,115.000,230.000,111.065,119.935,12772.500,13792.500
+,,N,Mean Rank,Sum of Ranks
+IOS: Familie,.000,114,110.018,12542.000
+,1.000,115,119.939,13793.000
+,Total,229,,
+IOS: Freunde,.000,115,108.339,12459.000
+,1.000,115,122.661,14106.000
+,Total,230,,
+IOS: Partner*in,.000,97,95.351,9249.000
+,1.000,91,93.593,8517.000
+,Total,188,,
+IOS: Bekannte,.000,115,111.065,12772.500
+,1.000,115,119.935,13792.500
+,Total,230,,
 
 Table: Test Statistics
 ,Mann-Whitney U,Wilcoxon W,Z,Asymp. Sig. (2-tailed)
@@ -1133,6 +1131,7 @@ v6,2,7
 v7,5,4
 
 Table: Test Statistics
+,Value
 N,9
 Cochran's Q,12.735
 df,6
@@ -1242,14 +1241,14 @@ npar tests
 
 AT_CHECK([pspp -O format=csv mcnemar.sps], [0], [dnl
 Table: v1 & v2
-v1,v2,
-,.000,1.000
+,v2,
+v1,.000,1.000
 .000,4,9
 1.000,2,5
 
 Table: v1 & junk
-v1,junk,
-,.000,1.000
+,junk,
+v1,.000,1.000
 .000,8,5
 1.000,2,5
 

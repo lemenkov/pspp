@@ -180,15 +180,15 @@ Name,Position,Label,Measurement Level,Role,Width,Alignment,Print Format,Write Fo
 id,1,,Scale,Input,8,Right,F2.0,F2.0,
 name,2,,Nominal,Input,20,Left,A20,A20,
 
-File label: This is the file label
+Table: File Label
+Label,This is the file label
 
-Documents in the active dataset:
-
+Table: Documents
 This is a document line
 
 Table: Data List
 id,name
-21,wheelbarrow         
+21,wheelbarrow
 RESULT
 
 
@@ -251,13 +251,13 @@ string,2,My String,Nominal,Input,8,Left,A8,A8,"""this    ""; ""that    """
 longstring,3,My Long String,Nominal,Input,9,Left,A9,A9,
 
 Table: Value Labels
-Variable,Value,Label
-integer,0,Zero
+Variable Value,,Label
+My Integer,0,Zero
 ,1,Unity
 ,2,Duality
-string,xx      ,foo
-,yy      ,bar
-longstring,xxx      ,xfoo
+My String,xx,foo
+,yy,bar
+My Long String,xxx,xfoo
 RESULT
 
   }

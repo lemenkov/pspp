@@ -35,10 +35,15 @@
 #include "libpspp/message.h"
 #include "libpspp/misc.h"
 #include "math/sort.h"
-#include "output/tab.h"
+#include "output/pivot-table.h"
 
 #include "gl/minmax.h"
 #include "gl/xalloc.h"
+
+#include "gettext.h"
+#define N_(msgid) msgid
+#define _(msgid) gettext (msgid)
+
 
 /* Returns true iff the independent variable lies in the
    between val1 and val2. Regardless of which is the greater value.
@@ -216,7 +221,8 @@ struct jt
   double stddev;
 };
 
-static void show_jt (const struct n_sample_test *nst, const struct jt *jt, const struct variable *wv);
+static void show_jt (const struct n_sample_test *, const struct jt *,
+                     const struct fmt_spec *wfmt);
 
 
 void
@@ -336,85 +342,61 @@ jonckheere_terpstra_execute (const struct dataset *ds,
 
     jt.mean = (pow2 (jt.n) - ccsq_sum) / 4.0;
 
-    show_jt (nst, &jt, dict_get_weight (dict));
+    show_jt (nst, &jt, dict_get_weight_format (dict));
   }
 
   casereader_destroy (input);
   caseproto_unref (proto);
 }
-
 
-
-#include "gettext.h"
-#define _(msgid) gettext (msgid)
-
 static void
-show_jt (const struct n_sample_test *nst, const struct jt *jt, const struct variable *wv)
+show_jt (const struct n_sample_test *nst, const struct jt *jt,
+         const struct fmt_spec *wfmt)
 {
-  int i;
-  const int row_headers = 1;
-  const int column_headers = 1;
-  const struct fmt_spec *wfmt = wv ? var_get_print_format (wv) : & F_8_0;
+  struct pivot_table *table = pivot_table_create (
+    N_("Jonckheere-Terpstra Test"));
+  pivot_table_set_weight_format (table, wfmt);
 
-  struct tab_table *table =
-    tab_create (row_headers + 7, column_headers + nst->n_vars);
-  tab_set_format (table, RC_WEIGHT, wfmt);
+  struct pivot_dimension *statistics = pivot_dimension_create (
+    table, PIVOT_AXIS_COLUMN, N_("Statistics"));
+  pivot_category_create_leaf_rc (
+    statistics->root,
+    pivot_value_new_text_format (N_("Number of levels in %s"),
+                                 var_to_string (nst->indep_var)),
+    PIVOT_RC_INTEGER);
+  pivot_category_create_leaves (
+    statistics->root,
+    N_("N"), PIVOT_RC_COUNT,
+    N_("Observed J-T Statistic"), PIVOT_RC_OTHER,
+    N_("Mean J-T Statistic"), PIVOT_RC_OTHER,
+    N_("Std. Deviation of J-T Statistic"), PIVOT_RC_OTHER,
+    N_("Std. J-T Statistic"), PIVOT_RC_OTHER,
+    N_("Asymp. Sig. (2-tailed)"), PIVOT_RC_SIGNIFICANCE);
 
-  tab_headers (table, row_headers, 0, column_headers, 0);
+  struct pivot_dimension *variables = pivot_dimension_create (
+    table, PIVOT_AXIS_ROW, N_("Variable"));
 
-  tab_title (table, _("Jonckheere-Terpstra Test"));
-
-  /* Vertical lines inside the box */
-  tab_box (table, 1, 0, -1, TAL_1,
-	   row_headers, 0, tab_nc (table) - 1, tab_nr (table) - 1 );
-
-  /* Box around the table */
-  tab_box (table, TAL_2, TAL_2, -1, -1,
-	   0,  0, tab_nc (table) - 1, tab_nr (table) - 1 );
-
-  tab_hline (table, TAL_2, 0, tab_nc (table) -1, column_headers);
-  tab_vline (table, TAL_2, row_headers, 0, tab_nr (table) - 1);
-
-  tab_text_format (table, 1, 0, TAT_TITLE | TAB_CENTER,
-                   _("Number of levels in %s"),
-                   var_to_string (nst->indep_var));
-  tab_text (table, 2, 0, TAT_TITLE | TAB_CENTER, _("N"));
-  tab_text (table, 3, 0, TAT_TITLE | TAB_CENTER, _("Observed J-T Statistic"));
-  tab_text (table, 4, 0, TAT_TITLE | TAB_CENTER, _("Mean J-T Statistic"));
-  tab_text (table, 5, 0, TAT_TITLE | TAB_CENTER, _("Std. Deviation of J-T Statistic"));
-  tab_text (table, 6, 0, TAT_TITLE | TAB_CENTER, _("Std. J-T Statistic"));
-  tab_text (table, 7, 0, TAT_TITLE | TAB_CENTER, _("Asymp. Sig. (2-tailed)"));
-
-
-  for (i = 0; i < nst->n_vars; ++i)
+  for (size_t i = 0; i < nst->n_vars; ++i)
     {
-      double std_jt;
+      int row = pivot_category_create_leaf (
+        variables->root, pivot_value_new_variable (nst->vars[i]));
 
-      tab_text (table, 0, i + row_headers, TAT_TITLE,
-                var_to_string (nst->vars[i]) );
-
-      tab_double (table, 1, i + row_headers, TAT_TITLE,
-                  jt[0].levels, NULL, RC_INTEGER);
-
-      tab_double (table, 2, i + row_headers, TAT_TITLE,
-                  jt[0].n, NULL, RC_WEIGHT);
-
-      tab_double (table, 3, i + row_headers, TAT_TITLE,
-                  jt[0].obs, NULL, RC_OTHER);
-
-      tab_double (table, 4, i + row_headers, TAT_TITLE,
-                  jt[0].mean, NULL, RC_OTHER);
-
-      tab_double (table, 5, i + row_headers, TAT_TITLE,
-                  jt[0].stddev, NULL, RC_OTHER);
-
-      std_jt = (jt[0].obs - jt[0].mean) / jt[0].stddev;
-      tab_double (table, 6, i + row_headers, TAT_TITLE,
-                  std_jt, NULL, RC_OTHER);
-
-      tab_double (table, 7, i + row_headers, TAT_TITLE,
-                  2.0 * ((std_jt > 0) ? gsl_cdf_ugaussian_Q (std_jt) : gsl_cdf_ugaussian_P (std_jt)), NULL, RC_PVALUE);
+      double std_jt = (jt[0].obs - jt[0].mean) / jt[0].stddev;
+      double sig = (2.0 * (std_jt > 0
+                           ? gsl_cdf_ugaussian_Q (std_jt)
+                           : gsl_cdf_ugaussian_P (std_jt)));
+      double entries[] = {
+        jt[0].levels,
+        jt[0].n,
+        jt[0].obs,
+        jt[0].mean,
+        jt[0].stddev,
+        std_jt,
+        sig,
+      };
+      for (size_t j = 0; j < sizeof entries / sizeof *entries; j++)
+        pivot_table_put2 (table, j, row, pivot_value_new_number (entries[j]));
     }
 
-  tab_submit (table);
+  pivot_table_submit (table);
 }

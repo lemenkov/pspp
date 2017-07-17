@@ -561,8 +561,6 @@ html_output_table (struct html_driver *html, const struct table_item *item)
 
           /* Output cell contents. */
           const char *s = cell.text;
-          if (cell.options & TAB_EMPH)
-            fputs ("<EM>", html->file);
           if (cell.options & TAB_FIX)
             {
               fputs ("<TT>", html->file);
@@ -574,8 +572,6 @@ html_output_table (struct html_driver *html, const struct table_item *item)
               s += strspn (s, CC_SPACES);
               escape_string (html->file, s, strlen (s), " ", "<BR>");
             }
-          if (cell.options & TAB_EMPH)
-            fputs ("</EM>", html->file);
 
           html_put_footnote_markers (html, cell.footnotes, cell.n_footnotes);
 

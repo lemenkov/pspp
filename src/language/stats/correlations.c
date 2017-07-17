@@ -36,7 +36,7 @@
 #include "math/correlation.h"
 #include "math/covariance.h"
 #include "math/moments.h"
-#include "output/tab.h"
+#include "output/pivot-table.h"
 
 #include "gl/xalloc.h"
 #include "gl/minmax.h"
@@ -83,77 +83,39 @@ struct corr_opts
 
 
 static void
-output_descriptives (const struct corr *corr, const gsl_matrix *means,
+output_descriptives (const struct corr *corr, const struct corr_opts *opts,
+                     const gsl_matrix *means,
 		     const gsl_matrix *vars, const gsl_matrix *ns)
 {
-  const int nr = corr->n_vars_total + 1;
-  const int nc = 4;
-  int c, r;
+  struct pivot_table *table = pivot_table_create (
+    N_("Descriptive Statistics"));
+  pivot_table_set_weight_var (table, opts->wv);
 
-  const int heading_columns = 1;
-  const int heading_rows = 1;
+  pivot_dimension_create (table, PIVOT_AXIS_COLUMN, N_("Statistics"),
+                          N_("Mean"), PIVOT_RC_OTHER,
+                          N_("Std. Deviation"), PIVOT_RC_OTHER,
+                          N_("N"), PIVOT_RC_COUNT);
 
-  struct tab_table *t = tab_create (nc, nr);
-  tab_title (t, _("Descriptive Statistics"));
+  struct pivot_dimension *variables = pivot_dimension_create (
+    table, PIVOT_AXIS_ROW, N_("Variable"));
 
-  tab_headers (t, heading_columns, 0, heading_rows, 0);
-
-  /* Outline the box */
-  tab_box (t,
-	   TAL_2, TAL_2,
-	   -1, -1,
-	   0, 0,
-	   nc - 1, nr - 1);
-
-  /* Vertical lines */
-  tab_box (t,
-	   -1, -1,
-	   -1, TAL_1,
-	   heading_columns, 0,
-	   nc - 1, nr - 1);
-
-  tab_vline (t, TAL_2, heading_columns, 0, nr - 1);
-  tab_hline (t, TAL_1, 0, nc - 1, heading_rows);
-
-  tab_text (t, 1, 0, TAB_CENTER | TAT_TITLE, _("Mean"));
-  tab_text (t, 2, 0, TAB_CENTER | TAT_TITLE, _("Std. Deviation"));
-  tab_text (t, 3, 0, TAB_CENTER | TAT_TITLE, _("N"));
-
-  for (r = 0 ; r < corr->n_vars_total ; ++r)
+  for (size_t r = 0 ; r < corr->n_vars_total ; ++r)
     {
       const struct variable *v = corr->vars[r];
-      tab_text (t, 0, r + heading_rows, TAB_LEFT | TAT_TITLE, var_to_string (v));
 
-      for (c = 1 ; c < nc ; ++c)
-	{
-	  double x ;
-	  double n;
-	  switch (c)
-	    {
-	    case 1:
-	      x = gsl_matrix_get (means, r, 0);
-	      break;
-	    case 2:
-	      x = gsl_matrix_get (vars, r, 0);
+      int row = pivot_category_create_leaf (variables->root,
+                                            pivot_value_new_variable (v));
 
-	      /* Here we want to display the non-biased estimator */
-	      n = gsl_matrix_get (ns, r, 0);
-	      x *= n / (n -1);
-
-	      x = sqrt (x);
-	      break;
-	    case 3:
-	      x = gsl_matrix_get (ns, r, 0);
-	      break;
-	    default:
-	      NOT_REACHED ();
-	    };
-
-	  tab_double (t, c, r + heading_rows, 0, x, NULL, RC_OTHER);
-	}
+      double mean = gsl_matrix_get (means, r, 0);
+      /* Here we want to display the non-biased estimator */
+      double n = gsl_matrix_get (ns, r, 0);
+      double stddev = sqrt (gsl_matrix_get (vars, r, 0) * n / (n - 1));
+      double entries[] = { mean, stddev, n };
+      for (size_t i = 0; i < sizeof entries / sizeof *entries; i++)
+        pivot_table_put2 (table, i, row, pivot_value_new_number (entries[i]));
     }
 
-  tab_submit (t);
+  pivot_table_submit (table);
 }
 
 static void
@@ -161,123 +123,84 @@ output_correlation (const struct corr *corr, const struct corr_opts *opts,
 		    const gsl_matrix *cm, const gsl_matrix *samples,
 		    const gsl_matrix *cv)
 {
-  int r, c;
-  struct tab_table *t;
-  int matrix_cols;
-  int nr = corr->n_vars1;
-  int nc = matrix_cols = corr->n_vars_total > corr->n_vars1 ?
-    corr->n_vars_total - corr->n_vars1 : corr->n_vars1;
+  struct pivot_table *table = pivot_table_create (N_("Correlations"));
+  pivot_table_set_weight_var (table, opts->wv);
 
-  const struct fmt_spec *wfmt = opts->wv ? var_get_print_format (opts->wv) : & F_8_0;
+  /* Column variable dimension. */
+  struct pivot_dimension *columns = pivot_dimension_create (
+    table, PIVOT_AXIS_COLUMN, N_("Variables"));
 
-  const int heading_columns = 2;
-  const int heading_rows = 1;
-
-  int rows_per_variable = opts->missing_type == CORR_LISTWISE ? 2 : 3;
-
-  if (opts->statistics & STATS_XPROD)
-    rows_per_variable += 2;
-
-  /* Two header columns */
-  nc += heading_columns;
-
-  /* Three data per variable */
-  nr *= rows_per_variable;
-
-  /* One header row */
-  nr += heading_rows;
-
-  t = tab_create (nc, nr);
-  tab_set_format (t, RC_WEIGHT, wfmt);
-  tab_title (t, _("Correlations"));
-
-  tab_headers (t, heading_columns, 0, heading_rows, 0);
-
-  /* Outline the box */
-  tab_box (t,
-	   TAL_2, TAL_2,
-	   -1, -1,
-	   0, 0,
-	   nc - 1, nr - 1);
-
-  /* Vertical lines */
-  tab_box (t,
-	   -1, -1,
-	   -1, TAL_1,
-	   heading_columns, 0,
-	   nc - 1, nr - 1);
-
-  tab_vline (t, TAL_2, heading_columns, 0, nr - 1);
-
-  tab_vline (t, TAL_1, 1, heading_rows, nr - 1);
-
-  /* Row Headers */
-  for (r = 0 ; r < corr->n_vars1 ; ++r)
-    {
-      tab_text (t, 0, 1 + r * rows_per_variable, TAB_LEFT | TAT_TITLE,
-		var_to_string (corr->vars[r]));
-
-      tab_text (t, 1, 1 + r * rows_per_variable, TAB_LEFT | TAT_TITLE, _("Pearson Correlation"));
-      tab_text (t, 1, 2 + r * rows_per_variable, TAB_LEFT | TAT_TITLE,
-		(opts->tails == 2) ? _("Sig. (2-tailed)") : _("Sig. (1-tailed)"));
-
-      if (opts->statistics & STATS_XPROD)
-	{
-	  tab_text (t, 1, 3 + r * rows_per_variable, TAB_LEFT | TAT_TITLE, _("Cross-products"));
-	  tab_text (t, 1, 4 + r * rows_per_variable, TAB_LEFT | TAT_TITLE, _("Covariance"));
-	}
-
-      if ( opts->missing_type != CORR_LISTWISE )
-	tab_text (t, 1, rows_per_variable + r * rows_per_variable, TAB_LEFT | TAT_TITLE, _("N"));
-
-      tab_hline (t, TAL_1, 0, nc - 1, r * rows_per_variable + 1);
-    }
-
-  /* Column Headers */
-  for (c = 0 ; c < matrix_cols ; ++c)
+  int matrix_cols = (corr->n_vars_total > corr->n_vars1
+                     ? corr->n_vars_total - corr->n_vars1
+                     : corr->n_vars1);
+  for (int c = 0; c < matrix_cols; c++)
     {
       const struct variable *v = corr->n_vars_total > corr->n_vars1 ?
 	corr->vars[corr->n_vars1 + c] : corr->vars[c];
-      tab_text (t, heading_columns + c, 0, TAB_LEFT | TAT_TITLE, var_to_string (v));
+      pivot_category_create_leaf (columns->root, pivot_value_new_variable (v));
     }
 
-  for (r = 0 ; r < corr->n_vars1 ; ++r)
-    {
-      const int row = r * rows_per_variable + heading_rows;
-      for (c = 0 ; c < matrix_cols ; ++c)
-	{
-	  unsigned char flags = 0;
-	  const int col_index = corr->n_vars_total > corr->n_vars1 ?
-	    corr->n_vars1 + c :
-	    c;
-	  double pearson = gsl_matrix_get (cm, r, col_index);
-	  double w = gsl_matrix_get (samples, r, col_index);
-	  double sig = opts->tails * significance_of_correlation (pearson, w);
+  /* Statistics dimension. */
+  struct pivot_dimension *statistics = pivot_dimension_create (
+    table, PIVOT_AXIS_ROW, N_("Statistics"),
+    N_("Pearson Correlation"), PIVOT_RC_CORRELATION,
+    opts->tails == 2 ? N_("Sig. (2-tailed)") : N_("Sig. (1-tailed)"),
+    PIVOT_RC_SIGNIFICANCE);
 
-	  if ( opts->missing_type != CORR_LISTWISE )
-	    tab_double (t, c + heading_columns, row + rows_per_variable - 1, 0, w, NULL, RC_WEIGHT);
+  if (opts->statistics & STATS_XPROD)
+    pivot_category_create_leaves (statistics->root, N_("Cross-products"),
+                                  N_("Covariance"));
 
-	  if ( col_index != r)
-	    tab_double (t, c + heading_columns, row + 1, 0,  sig, NULL, RC_PVALUE);
+  if (opts->missing_type != CORR_LISTWISE)
+    pivot_category_create_leaves (statistics->root, N_("N"), PIVOT_RC_COUNT);
 
-	  if ( opts->sig && col_index != r && sig < 0.05)
-	    flags = TAB_EMPH;
+  /* Row variable dimension. */
+  struct pivot_dimension *rows = pivot_dimension_create (
+    table, PIVOT_AXIS_ROW, N_("Variables"));
+  for (size_t r = 0; r < corr->n_vars1; r++)
+    pivot_category_create_leaf (rows->root,
+                                pivot_value_new_variable (corr->vars[r]));
 
-	  tab_double (t, c + heading_columns, row, flags, pearson, NULL, RC_OTHER);
+  struct pivot_footnote *sig_footnote = pivot_table_create_footnote (
+    table, pivot_value_new_text (N_("Significant at .05 level")));
 
-	  if (opts->statistics & STATS_XPROD)
-	    {
-	      double cov = gsl_matrix_get (cv, r, col_index);
-	      const double xprod_dev = cov * w;
-	      cov *= w / (w - 1.0);
+  for (int r = 0; r < corr->n_vars1; r++)
+    for (int c = 0; c < matrix_cols; c++)
+      {
+        const int col_index = (corr->n_vars_total > corr->n_vars1
+                               ? corr->n_vars1 + c
+                               : c);
+        double pearson = gsl_matrix_get (cm, r, col_index);
+        double w = gsl_matrix_get (samples, r, col_index);
+        double sig = opts->tails * significance_of_correlation (pearson, w);
 
-	      tab_double (t, c + heading_columns, row + 2, 0, xprod_dev, NULL, RC_OTHER);
-	      tab_double (t, c + heading_columns, row + 3, 0, cov, NULL, RC_OTHER);
-	    }
-	}
-    }
+        double entries[5];
+        int n = 0;
+        entries[n++] = pearson;
+        entries[n++] = col_index != r ? sig : SYSMIS;
+        if (opts->statistics & STATS_XPROD)
+          {
+            double cov = gsl_matrix_get (cv, r, col_index);
+            const double xprod_dev = cov * w;
+            cov *= w / (w - 1.0);
 
-  tab_submit (t);
+            entries[n++] = xprod_dev;
+            entries[n++] = cov;
+          }
+        if (opts->missing_type != CORR_LISTWISE)
+          entries[n++] = w;
+
+        for (int i = 0; i < n; i++)
+          if (entries[i] != SYSMIS)
+            {
+              struct pivot_value *v = pivot_value_new_number (entries[i]);
+              if (!i && opts->sig && col_index != r && sig < 0.05)
+                pivot_value_add_footnote (v, sig_footnote);
+              pivot_table_put3 (table, c, i, r, v);
+            }
+      }
+
+  pivot_table_submit (table);
 }
 
 
@@ -319,7 +242,7 @@ run_corr (struct casereader *r, const struct corr_opts *opts, const struct corr 
   corr_matrix = correlation_from_covariance (cov_matrix, var_matrix);
 
   if ( opts->statistics & STATS_DESCRIPTIVES)
-    output_descriptives (corr, mean_matrix, var_matrix, samples_matrix);
+    output_descriptives (corr, opts, mean_matrix, var_matrix, samples_matrix);
 
   output_correlation (corr, opts, corr_matrix,
 		      samples_matrix, cov_matrix);

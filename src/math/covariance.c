@@ -754,62 +754,46 @@ covariance_dim (const struct covariance * cov)
 */
 
 #include "libpspp/str.h"
-#include "output/tab.h"
+#include "output/pivot-table.h"
 #include "data/format.h"
 
 
 /* Create a table which can be populated with the encodings for
    the covariance matrix COV */
-struct tab_table *
-covariance_dump_enc_header (const struct covariance *cov, int length)
+struct pivot_table *
+covariance_dump_enc_header (const struct covariance *cov)
 {
-  struct tab_table *t = tab_create (cov->dim,  length);
-  int n;
-  int i;
+  struct pivot_table *table = pivot_table_create ("Covariance Encoding");
 
-  tab_title (t, "Covariance Encoding");
-
-  tab_box (t,
-	   TAL_2, TAL_2, 0, 0,
-	   0, 0,   tab_nc (t) - 1,   tab_nr (t) - 1);
-
-  tab_hline (t, TAL_2, 0, tab_nc (t) - 1, 1);
-
-
-  for (i = 0 ; i < cov->n_vars; ++i)
+  struct pivot_dimension *factors = pivot_dimension_create (
+    table, PIVOT_AXIS_COLUMN, "Factor");
+  for (size_t i = 0 ; i < cov->n_vars; ++i)
+    pivot_category_create_leaf (factors->root,
+                                pivot_value_new_variable (cov->vars[i]));
+  for (size_t i = 0, n = 0; i < cov->dim - cov->n_vars; n++)
     {
-      tab_text (t, i, 0, TAT_TITLE, var_get_name (cov->vars[i]));
-      tab_vline (t, TAL_1, i + 1, 0, tab_nr (t) - 1);
-    }
-
-  n = 0;
-  while (i < cov->dim)
-    {
-      struct string str;
-      int idx = i - cov->n_vars;
       const struct interaction *iact =
-	categoricals_get_interaction_by_subscript (cov->categoricals, idx);
-      int df;
+	categoricals_get_interaction_by_subscript (cov->categoricals, i);
 
-      ds_init_empty (&str);
+      struct string str = DS_EMPTY_INITIALIZER;
       interaction_to_string (iact, &str);
+      struct pivot_category *group = pivot_category_create_group__ (
+        factors->root,
+        pivot_value_new_user_text_nocopy (ds_steal_cstr (&str)));
 
-      df = categoricals_df (cov->categoricals, n);
-
-      tab_joint_text (t,
-		      i, 0,
-		      i + df - 1, 0,
-		      TAT_TITLE, ds_cstr (&str));
-
-      if (i + df < tab_nr (t) - 1)
-	tab_vline (t, TAL_1, i + df, 0, tab_nr (t) - 1);
+      int df = categoricals_df (cov->categoricals, n);
+      for (int j = 0; j < df; j++)
+        pivot_category_create_leaf_rc (group, pivot_value_new_integer (j),
+                                       PIVOT_RC_INTEGER);
 
       i += df;
-      n++;
-      ds_destroy (&str);
     }
 
-  return t;
+  struct pivot_dimension *matrix = pivot_dimension_create (
+    table, PIVOT_AXIS_ROW, "Matrix", "Matrix");
+  matrix->hide_all_labels = true;
+
+  return table;
 }
 
 
@@ -819,14 +803,13 @@ covariance_dump_enc_header (const struct covariance *cov, int length)
  */
 void
 covariance_dump_enc (const struct covariance *cov, const struct ccase *c,
-		     struct tab_table *t)
+		     struct pivot_table *table)
 {
-  static int row = 0;
-  int i;
-  ++row;
-  for (i = 0 ; i < cov->dim; ++i)
-    {
-      double v = get_val (cov, i, c);
-      tab_double (t, i, row, 0, v, i < cov->n_vars ? NULL : &F_8_0, RC_OTHER);
-    }
+  int row = pivot_category_create_leaf (
+    table->dimensions[1]->root,
+    pivot_value_new_integer (table->dimensions[1]->n_leaves));
+
+  for (int i = 0 ; i < cov->dim; ++i)
+    pivot_table_put2 (
+      table, i, row, pivot_value_new_number (get_val (cov, i, c)));
 }

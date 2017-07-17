@@ -571,33 +571,28 @@ void
 var_append_value_name (const struct variable *v, const union value *value,
 		       struct string *str)
 {
-  enum settings_value_style style = settings_get_value_style ();
-  const char *name = var_lookup_value_label (v, value);
+  const char *label = var_lookup_value_label (v, value);
 
-  switch (style)
+  switch (settings_get_show_values ())
     {
-    case SETTINGS_VAL_STYLE_VALUES:
+    case SETTINGS_VALUE_SHOW_VALUE:
       append_value (v, value, str);
       break;
 
-    case SETTINGS_VAL_STYLE_LABELS:
-      if (name == NULL)
-	append_value (v, value, str);
-      else
-	ds_put_cstr (str, name);
-      break;
-
-    case SETTINGS_VAL_STYLE_BOTH:
     default:
-      append_value (v, value, str);
-      if (name != NULL)
-	{
-	  ds_put_cstr (str, " (");
-	  ds_put_cstr (str, name);
-	  ds_put_cstr (str, ")");
-	}
+    case SETTINGS_VALUE_SHOW_LABEL:
+      if (label)
+	ds_put_cstr (str, label);
+      else
+	append_value (v, value, str);
       break;
-    };
+
+    case SETTINGS_VALUE_SHOW_BOTH:
+      append_value (v, value, str);
+      if (label != NULL)
+        ds_put_format (str, " %s", label);
+      break;
+    }
 }
 
 /* Print and write formats. */
@@ -720,24 +715,19 @@ update_vl_string (const struct variable *v)
 const char *
 var_to_string (const struct variable *v)
 {
-  enum settings_var_style style = settings_get_var_style ();
-
-  switch (style)
-  {
-    case SETTINGS_VAR_STYLE_NAMES:
+  switch (settings_get_show_variables ())
+    {
+    case SETTINGS_VALUE_SHOW_VALUE:
       return v->name;
-      break;
-    case SETTINGS_VAR_STYLE_LABELS:
+
+    case SETTINGS_VALUE_SHOW_LABEL:
+    default:
       return v->label != NULL ? v->label : v->name;
-      break;
-    case SETTINGS_VAR_STYLE_BOTH:
+
+    case SETTINGS_VALUE_SHOW_BOTH:
       update_vl_string (v);
       return ds_cstr (&v->name_and_label);
-      break;
-    default:
-      NOT_REACHED ();
-      break;
-  };
+    }
 }
 
 /* Returns V's variable label, or a null pointer if it has none. */

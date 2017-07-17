@@ -213,10 +213,10 @@ AT_CHECK([pspp -o pspp.csv passwd.sps])
 AT_CHECK([cat pspp.csv], [0], [dnl
 Table: Data List
 username,password,uid,gid,gecos,home,shell
-root                ,$1$nyeSP5gD$pDq/                        ,0,0,",,,                                     ",/root                                   ,/bin/bash                               @&t@
-blp                 ,$1$BrP/pFg4$g7OG                        ,1000,1000,"Ben Pfaff,,,                            ",/home/blp                               ,/bin/bash                               @&t@
-john                ,$1$JBuq/Fioq$g4A                        ,1001,1001,"John Darrington,,,                      ",/home/john                              ,/bin/bash                               @&t@
-jhs                 ,$1$D3li4hPL$88X1                        ,1002,1002,"Jason Stover,,,                         ",/home/jhs                               ,/bin/csh                                @&t@
+root,$1$nyeSP5gD$pDq/,0,0,",,,",/root,/bin/bash
+blp,$1$BrP/pFg4$g7OG,1000,1000,"Ben Pfaff,,,",/home/blp,/bin/bash
+john,$1$JBuq/Fioq$g4A,1001,1001,"John Darrington,,,",/home/john,/bin/bash
+jhs,$1$D3li4hPL$88X1,1002,1002,"Jason Stover,,,",/home/jhs,/bin/csh
 ])
 AT_CLEANUP
 
@@ -253,17 +253,17 @@ AT_CHECK([pspp -o pspp.csv cars.sps])
 AT_CHECK([cat pspp.csv], [0], [dnl
 Table: Data List
 model,year,mileage,price,type,age
-Civic   ,2002,29883,15900,Si  ,2
-Civic   ,2003,13415,15900,EX  ,1
-Civic   ,1992,107000,3800,n/a ,12
-Accord  ,2002,26613,17900,EX  ,1
+Civic,2002,29883,15900,Si,2
+Civic,2003,13415,15900,EX,1
+Civic,1992,107000,3800,n/a,12
+Accord,2002,26613,17900,EX,1
 
 Table: Data List
 model,year,mileage,price,type,age
-Civic   ,2002,29883,15900,Si      ,2
-Civic   ,2003,13415,15900,EX      ,1
-Civic   ,1992,107000,3800,n/a     ,12
-Accord  ,2002,26613,17900,EX      ,1
+Civic,2002,29883,15900,Si,2
+Civic,2003,13415,15900,EX,1
+Civic,1992,107000,3800,n/a,12
+Accord,2002,26613,17900,EX,1
 ])
 AT_CLEANUP
 
@@ -294,10 +294,10 @@ AT_CHECK([pspp -o pspp.csv pets.sps])
 AT_CHECK([cat pspp.csv], [0], [dnl
 Table: Data List
 name,age,color,received,price,height,type
-Rover     ,4.5,Brown,12.02.2004,80.00,"1'4"" ",Dog       @&t@
-Charlie   ,. ,Gold ,05.04.2007,12.30,"3""   ",Fish      @&t@
-Molly     ,2.0,Black,12.12.2006,25.00,"5""   ",Cat       @&t@
-Gilly     ,. ,White,10.04.2007,10.00,"3""   ",Guinea Pig
+Rover,4.5,Brown,12.02.2004,80.00,"1'4""",Dog
+Charlie,. ,Gold,05.04.2007,12.30,"3""",Fish
+Molly,2.0,Black,12.12.2006,25.00,"5""",Cat
+Gilly,. ,White,10.04.2007,10.00,"3""",Guinea Pig
 ])
 AT_CLEANUP
 dnl " (fixes Emacs highlighting)
@@ -342,7 +342,7 @@ AT_CHECK([pspp -o pspp.csv get-data.sps])
 AT_CHECK([cat pspp.csv], [0], [dnl
 Table: Data List
 s
-é      @&t@
+é
 ])
 AT_CLEANUP
 
@@ -388,9 +388,9 @@ list.
 AT_CHECK([pspp -O format=csv x.sps], [0], [dnl
 Table: Data List
 foo,title,last
-1,this   ,1
-2,that   ,2
-3,other  ,3
+1,this,1
+2,that,2
+3,other,3
 ])
 
 AT_CLEANUP

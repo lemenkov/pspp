@@ -155,17 +155,17 @@ LIST s t s0 TO s3 t0 TO t3.
 AT_CHECK([pspp -O format=csv recode.sps], [0],
   [Table: Data List
 s,t,s0,s1,s2,s3,t0,t1,t2,t3
-,,,,xyz ,,,,xyz       ,
-a   ,a         ,b   ,,xyz ,,b         ,,xyz       ,b         @&t@
-ab  ,ab        ,bc  ,,xyz ,,bc        ,,xyz       ,
-abc ,abc       ,,,def ,,,,def       ,
-abcd,abcd      ,,xyzw,xyz ,,,xyzw      ,xyz       ,
-123 ,123       ,,,xyz ,,,,xyz       ,
-123,123      ,,,xyz ,,,,xyz       ,
-+1  ,+1        ,,,xyz ,,,,xyz       ,
-1x  ,1x        ,,,xyz ,,,,xyz       ,
-abcd,abcdefghi ,,xyzw,xyz ,,,,xyz       ,xyz       @&t@
-xxx ,abcdefghij,,,xyz ,gone,,,xyz       ,jklmnopqr @&t@
+,,,,xyz,,,,xyz,
+a,a,b,,xyz,,b,,xyz,b
+ab,ab,bc,,xyz,,bc,,xyz,
+abc,abc,,,def,,,,def,
+abcd,abcd,,xyzw,xyz,,,xyzw,xyz,
+123,123,,,xyz,,,,xyz,
+123,123,,,xyz,,,,xyz,
++1,+1,,,xyz,,,,xyz,
+1x,1x,,,xyz,,,,xyz,
+abcd,abcdefghi,,xyzw,xyz,,,,xyz,xyz
+xxx,abcdefghij,,,xyz,gone,,,xyz,jklmnopqr
 ])
 AT_CLEANUP
 
@@ -183,17 +183,17 @@ LIST s t cs0 TO cs2 ct0 TO ct3.
 AT_CHECK([pspp -O format=csv recode.sps], [0],
   [Table: Data List
 s,t,cs0,cs1,cs2,ct0,ct1,ct2,ct3
-,,,,xyz ,,,xyz       ,
-a   ,a         ,b   ,a   ,xyz ,b         ,a         ,xyz       ,b         @&t@
-ab  ,ab        ,bc  ,ab  ,xyz ,bc        ,ab        ,xyz       ,ab        @&t@
-abc ,abc       ,abc ,abc ,def ,abc       ,abc       ,def       ,abc       @&t@
-abcd,abcd      ,abcd,xyzw,xyz ,abcd      ,xyzw      ,xyz       ,abcd      @&t@
-123 ,123       ,123 ,123 ,xyz ,123       ,123       ,xyz       ,123       @&t@
-123,123      ,123,123,xyz ,123      ,123      ,xyz       ,123      @&t@
-+1  ,+1        ,+1  ,+1  ,xyz ,+1        ,+1        ,xyz       ,+1        @&t@
-1x  ,1x        ,1x  ,1x  ,xyz ,1x        ,1x        ,xyz       ,1x        @&t@
-abcd,abcdefghi ,abcd,xyzw,xyz ,abcdefghi ,abcdefghi ,xyz       ,xyz       @&t@
-xxx ,abcdefghij,xxx ,xxx ,xyz ,abcdefghij,abcdefghij,xyz       ,jklmnopqr @&t@
+,,,,xyz,,,xyz,
+a,a,b,a,xyz,b,a,xyz,b
+ab,ab,bc,ab,xyz,bc,ab,xyz,ab
+abc,abc,abc,abc,def,abc,abc,def,abc
+abcd,abcd,abcd,xyzw,xyz,abcd,xyzw,xyz,abcd
+123,123,123,123,xyz,123,123,xyz,123
+123,123,123,123,xyz,123,123,xyz,123
++1,+1,+1,+1,xyz,+1,+1,xyz,+1
+1x,1x,1x,1x,xyz,1x,1x,xyz,1x
+abcd,abcdefghi,abcd,xyzw,xyz,abcdefghi,abcdefghi,xyz,xyz
+xxx,abcdefghij,xxx,xxx,xyz,abcdefghij,abcdefghij,xyz,jklmnopqr
 ])
 AT_CLEANUP
 
@@ -210,16 +210,16 @@ AT_CHECK([pspp -O format=csv recode.sps], [0],
   [Table: Data List
 s,t,ns0,ns1,ns2,nt0,nt1,nt2
 ,,.,0,3,.,0,3
-a   ,a         ,.,.,3,.,.,3
-ab  ,ab        ,.,.,3,.,.,3
-abc ,abc       ,.,.,3,.,.,3
-abcd,abcd      ,1,1,2,1,1,2
-123 ,123       ,123,123,3,123,123,3
-123,123      ,123,123,3,123,123,3
-+1  ,+1        ,1,1,3,1,1,3
-1x  ,1x        ,.,.,1,.,.,1
-abcd,abcdefghi ,1,1,2,.,.,3
-xxx ,abcdefghij,.,.,3,.,.,3
+a,a,.,.,3,.,.,3
+ab,ab,.,.,3,.,.,3
+abc,abc,.,.,3,.,.,3
+abcd,abcd,1,1,2,1,1,2
+123,123,123,123,3,123,123,3
+123,123,123,123,3,123,123,3
++1,+1,1,1,3,1,1,3
+1x,1x,.,.,1,.,.,1
+abcd,abcdefghi,1,1,2,.,.,3
+xxx,abcdefghij,.,.,3,.,.,3
 ])
 AT_CLEANUP
 
@@ -235,17 +235,17 @@ LIST x sx0 TO sx2.
 AT_CHECK([pspp -O format=csv recode.sps], [0],
   [Table: Data List
 x,sx0,sx1,sx2
-0,,xxx       ,foobar    @&t@
-1,abcdefghij,xxx       ,foobar    @&t@
-2,abcdefghij,,xyz       @&t@
-3,abcdefghij,xxx       ,xyz       @&t@
-4,abcdefghij,,xyz       @&t@
-5,abcdefghij,xxx       ,xyz       @&t@
-6,abcdefghij,,xyz       @&t@
-7,abcdefghij,xxx       ,foobar    @&t@
-8,abcdefghij,,foobar    @&t@
-9,abcdefghij,xxx       ,foobar    @&t@
-.,,xxx       ,xyz       @&t@
+0,,xxx,foobar
+1,abcdefghij,xxx,foobar
+2,abcdefghij,,xyz
+3,abcdefghij,xxx,xyz
+4,abcdefghij,,xyz
+5,abcdefghij,xxx,xyz
+6,abcdefghij,,xyz
+7,abcdefghij,xxx,foobar
+8,abcdefghij,,foobar
+9,abcdefghij,xxx,foobar
+.,,xxx,xyz
 ])
 AT_CLEANUP
 
@@ -334,10 +334,10 @@ AT_CHECK([pspp -O format=csv recode.sps], [1], [dnl
 
 Table: Data List
 x,y,z
-a,a       ,2.00
-a,two     ,2.00
-b,three   ,2.00
-c,b       ,2.00
+a,a,2.00
+a,two,2.00
+b,three,2.00
+c,b,2.00
 ])
 
 AT_CLEANUP

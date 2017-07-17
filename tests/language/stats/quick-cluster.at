@@ -45,14 +45,13 @@ z,F8.0
 
 Table: Final Cluster Centers
 ,Cluster,
-,,
 ,1,2
-,,
 x,6.50,19.20
 y,7.50,3250.00
 z,6.50,5058.00
 
 Table: Number of Cases in each Cluster
+,,Count
 Cluster,1,6
 ,2,5
 Valid,,11
@@ -75,12 +74,11 @@ AT_CHECK([pspp -o pspp.csv quick-cluster.sps])
 AT_CHECK([cat pspp.csv], [0], [dnl
 Table: Final Cluster Centers
 ,Cluster,,,
-,,,,
 ,1,2,3,4
-,,,,
 x,NaN,NaN,NaN,3.00
 
 Table: Number of Cases in each Cluster
+,,Count
 Cluster,1,0
 ,2,0
 ,3,0
@@ -228,8 +226,8 @@ QUICK CLUSTER x y
 
 AT_CHECK([pspp -O format=csv quick-pw.sps  > pspp-pw.csv])
 
-AT_CHECK([head -n 18  pspp-s.csv > top-s.csv])
-AT_CHECK([head -n 18  pspp-pw.csv > top-pw.csv])
+AT_CHECK([head -n 13  pspp-s.csv > top-s.csv])
+AT_CHECK([head -n 13  pspp-pw.csv > top-pw.csv])
 AT_CHECK([diff top-s.csv top-pw.csv])
 
 
@@ -280,7 +278,7 @@ AT_CLEANUP
 
 AT_SETUP([QUICK CLUSTER /PRINT subcommand])
 AT_DATA([quick-cluster.sps], [dnl
-data list notable list /cluster (A8) x (F) y (F).
+data list notable list /cluster (A8) x y (F8.0).
 begin data.
 A 10.45 9.38
 A 10.67 9.17
@@ -349,21 +347,18 @@ QUICK CLUSTER x y
 AT_CHECK([pspp -O format=csv quick-cluster.sps], [0], [dnl
 Table: Initial Cluster Centers
 ,Cluster,,
-,,,
 ,1,2,3
-,,,
 x,-11,-12,11
 y,-12,11,11
 
 Table: Final Cluster Centers
 ,Cluster,,
-,,,
 ,1,2,3
-,,,
 x,-10,-10,10
 y,-10,10,10
 
 Table: Number of Cases in each Cluster
+,,Count
 Cluster,1,20
 ,2,19
 ,3,18

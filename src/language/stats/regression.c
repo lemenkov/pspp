@@ -44,14 +44,15 @@
 #include "libpspp/message.h"
 #include "libpspp/taint.h"
 
-#include "output/tab.h"
+#include "output/pivot-table.h"
+
+#include "gl/intprops.h"
+#include "gl/minmax.h"
 
 #include "gettext.h"
 #define _(msgid) gettext (msgid)
 #define N_(msgid) msgid
 
-
-#include <gl/intprops.h>
 
 #define STATS_R      1
 #define STATS_COEFF  2
@@ -782,35 +783,27 @@ run_regression (const struct regression *cmd,
 static void
 reg_stats_r (const struct linreg * c, const struct variable *var)
 {
-  struct tab_table *t;
-  int n_rows = 2;
-  int n_cols = 5;
-  double rsq;
-  double adjrsq;
-  double std_error;
+  struct pivot_table *table = pivot_table_create__ (
+    pivot_value_new_text_format (N_("Model Summary (%s)"),
+                                 var_to_string (var)));
 
-  assert (c != NULL);
-  rsq = linreg_ssreg (c) / linreg_sst (c);
-  adjrsq = rsq -
-    (1.0 - rsq) * linreg_n_coeffs (c) / (linreg_n_obs (c) -
-                                         linreg_n_coeffs (c) - 1);
-  std_error = sqrt (linreg_mse (c));
-  t = tab_create (n_cols, n_rows);
-  tab_box (t, TAL_2, TAL_2, -1, TAL_1, 0, 0, n_cols - 1, n_rows - 1);
-  tab_hline (t, TAL_2, 0, n_cols - 1, 1);
-  tab_vline (t, TAL_2, 2, 0, n_rows - 1);
-  tab_vline (t, TAL_0, 1, 0, 0);
+  pivot_dimension_create (table, PIVOT_AXIS_COLUMN, N_("Statistics"),
+                          N_("R"), N_("R Square"), N_("Adjusted R Square"),
+                          N_("Std. Error of the Estimate"));
 
-  tab_text (t, 1, 0, TAB_CENTER | TAT_TITLE, _("R"));
-  tab_text (t, 2, 0, TAB_CENTER | TAT_TITLE, _("R Square"));
-  tab_text (t, 3, 0, TAB_CENTER | TAT_TITLE, _("Adjusted R Square"));
-  tab_text (t, 4, 0, TAB_CENTER | TAT_TITLE, _("Std. Error of the Estimate"));
-  tab_double (t, 1, 1, TAB_RIGHT, sqrt (rsq), NULL, RC_OTHER);
-  tab_double (t, 2, 1, TAB_RIGHT, rsq, NULL, RC_OTHER);
-  tab_double (t, 3, 1, TAB_RIGHT, adjrsq, NULL, RC_OTHER);
-  tab_double (t, 4, 1, TAB_RIGHT, std_error, NULL, RC_OTHER);
-  tab_title (t, _("Model Summary (%s)"), var_to_string (var));
-  tab_submit (t);
+  double rsq = linreg_ssreg (c) / linreg_sst (c);
+  double adjrsq = (rsq -
+                   (1.0 - rsq) * linreg_n_coeffs (c)
+                   / (linreg_n_obs (c) - linreg_n_coeffs (c) - 1));
+  double std_error = sqrt (linreg_mse (c));
+
+  double entries[] = {
+    sqrt (rsq), rsq, adjrsq, std_error
+  };
+  for (size_t i = 0; i < sizeof entries / sizeof *entries; i++)
+    pivot_table_put1 (table, i, pivot_value_new_number (entries[i]));
+
+  pivot_table_submit (table);
 }
 
 /*
@@ -819,128 +812,82 @@ reg_stats_r (const struct linreg * c, const struct variable *var)
 static void
 reg_stats_coeff (const struct linreg * c, const gsl_matrix *cov, const struct variable *var, const struct regression *cmd)
 {
-  size_t j;
-  int n_cols = 7;
-  const int heading_rows = 2;
-  int n_rows;
-  int this_row = heading_rows;
-  double pval;
-  double std_err;
-  double beta;
-  const char *label;
+  struct pivot_table *table = pivot_table_create__ (
+    pivot_value_new_text_format (N_("Coefficients (%s)"),
+                                 var_to_string (var)));
 
-  const struct variable *v;
-  struct tab_table *t;
+  struct pivot_dimension *statistics = pivot_dimension_create (
+    table, PIVOT_AXIS_COLUMN, N_("Statistics"));
+  pivot_category_create_group (statistics->root,
+                               N_("Unstandardized Coefficients"),
+                               N_("B"), N_("Std. Error"));
+  pivot_category_create_group (statistics->root,
+                               N_("Standardized Coefficients"), N_("Beta"));
+  pivot_category_create_leaves (statistics->root, N_("t"),
+                                N_("Sig."), PIVOT_RC_SIGNIFICANCE);
+  if (cmd->stats & STATS_CI)
+    {
+      struct pivot_category *interval = pivot_category_create_group__ (
+        statistics->root, pivot_value_new_text_format (
+          N_("%g%% Confidence Interval for B"),
+          cmd->ci * 100.0));
+      pivot_category_create_leaves (interval, N_("Lower Bound"),
+                                    N_("Upper Bound"));
+    }
 
-  const double df = linreg_n_obs (c) - linreg_n_coeffs (c) - 1;
+  struct pivot_dimension *variables = pivot_dimension_create (
+    table, PIVOT_AXIS_ROW, N_("Variables"));
+
+  double df = linreg_n_obs (c) - linreg_n_coeffs (c) - 1;
   double q = (1 - cmd->ci) / 2.0;  /* 2-tailed test */
   double tval = gsl_cdf_tdist_Qinv (q, df);
 
-  assert (c != NULL);
-  n_rows = linreg_n_coeffs (c) + heading_rows + 1;
-
-  if (cmd->stats & STATS_CI)
-    n_cols += 2;
-
-  t = tab_create (n_cols, n_rows);
-  tab_headers (t, 2, 0, 1, 0);
-  tab_box (t, TAL_2, TAL_2, -1, TAL_1, 0, 0, n_cols - 1, n_rows - 1);
-  tab_hline (t, TAL_2, 0, n_cols - 1, heading_rows);
-  tab_vline (t, TAL_2, 2, 0, n_rows - 1);
-  tab_vline (t, TAL_0, 1, 0, 0);
-
-
-  tab_hline (t, TAL_1, 2, 4, 1);
-  tab_joint_text (t, 2, 0, 3, 0, TAB_CENTER | TAT_TITLE, _("Unstandardized Coefficients"));
-  tab_text (t, 2, 1, TAB_CENTER | TAT_TITLE, _("B"));
-  tab_text (t, 3, 1, TAB_CENTER | TAT_TITLE, _("Std. Error"));
-  tab_text (t, 4, 0, TAB_CENTER | TAT_TITLE, _("Standardized Coefficients"));
-  tab_text (t, 4, 1, TAB_CENTER | TAT_TITLE, _("Beta"));
-  tab_text (t, 5, 1, TAB_CENTER | TAT_TITLE, _("t"));
-  tab_text (t, 6, 1, TAB_CENTER | TAT_TITLE, _("Sig."));
-
-  std_err = sqrt (gsl_matrix_get (linreg_cov (c), 0, 0));
-
-  if (cmd->stats & STATS_CI)
-    {
-      double lower = linreg_intercept (c) - tval * std_err ;
-      double upper = linreg_intercept (c) + tval * std_err ;
-      tab_double (t, 7, heading_rows, 0, lower, NULL, RC_OTHER);
-      tab_double (t, 8, heading_rows, 0, upper, NULL, RC_OTHER);
-
-      tab_joint_text_format (t, 7, 0, 8, 0, TAB_CENTER | TAT_TITLE, _("%g%% Confidence Interval for B"), cmd->ci * 100);
-      tab_hline (t, TAL_1, 7, 8, 1);
-      tab_text (t, 7, 1, TAB_CENTER | TAT_TITLE, _("Lower Bound"));
-      tab_text (t, 8, 1, TAB_CENTER | TAT_TITLE, _("Upper Bound"));
-    }
-
   if (!cmd->origin)
     {
-      tab_text (t, 1, this_row, TAB_LEFT | TAT_TITLE, _("(Constant)"));
-      tab_double (t, 2, this_row, 0, linreg_intercept (c), NULL, RC_OTHER);
-      tab_double (t, 3, this_row, 0, std_err, NULL, RC_OTHER);
-      tab_double (t, 4, this_row, 0, 0.0, NULL, RC_OTHER);
+      int var_idx = pivot_category_create_leaf (
+        variables->root, pivot_value_new_text (N_("(Constant)")));
+
+      double std_err = sqrt (gsl_matrix_get (linreg_cov (c), 0, 0));
       double t_stat = linreg_intercept (c) / std_err;
-      tab_double (t, 5, this_row, 0, t_stat, NULL, RC_OTHER);
-
-      double pval =
-	2 * gsl_cdf_tdist_Q (fabs (t_stat),
-			     (double) (linreg_n_obs (c) - linreg_n_coeffs (c)));
-      tab_double (t, 6, this_row, 0, pval, NULL, RC_PVALUE);
-      this_row++;
+      double entries[] = {
+        linreg_intercept (c),
+        std_err,
+        0.0,
+        t_stat,
+        2.0 * gsl_cdf_tdist_Q (fabs (t_stat),
+                               linreg_n_obs (c) - linreg_n_coeffs (c)),
+        linreg_intercept (c) - tval * std_err,
+        linreg_intercept (c) + tval * std_err,
+      };
+      for (size_t i = 0; i < sizeof entries / sizeof *entries; i++)
+        pivot_table_put2 (table, i, var_idx,
+                          pivot_value_new_number (entries[i]));
     }
 
-  for (j = 0; j < linreg_n_coeffs (c); j++, this_row++)
+  for (size_t j = 0; j < linreg_n_coeffs (c); j++)
     {
-      struct string tstr;
-      ds_init_empty (&tstr);
+      const struct variable *v = linreg_indep_var (c, j);
+      int var_idx = pivot_category_create_leaf (
+        variables->root, pivot_value_new_variable (v));
 
-      v = linreg_indep_var (c, j);
-      label = var_to_string (v);
-      /* Do not overwrite the variable's name. */
-      ds_put_cstr (&tstr, label);
-      tab_text (t, 1, this_row, TAB_LEFT, ds_cstr (&tstr));
-      /*
-         Regression coefficients.
-       */
-      tab_double (t, 2, this_row, 0, linreg_coeff (c, j), NULL, RC_OTHER);
-      /*
-         Standard error of the coefficients.
-       */
-      std_err = sqrt (gsl_matrix_get (linreg_cov (c), j + 1, j + 1));
-      tab_double (t, 3, this_row, 0, std_err, NULL, RC_OTHER);
-      /*
-         Standardized coefficient, i.e., regression coefficient
-         if all variables had unit variance.
-       */
-      beta = sqrt (gsl_matrix_get (cov, j, j));
-      beta *= linreg_coeff (c, j) /
-        sqrt (gsl_matrix_get (cov, cov->size1 - 1, cov->size2 - 1));
-      tab_double (t, 4, this_row, 0, beta, NULL, RC_OTHER);
-
-      /*
-         Test statistic for H0: coefficient is 0.
-       */
+      double std_err = sqrt (gsl_matrix_get (linreg_cov (c), j + 1, j + 1));
       double t_stat = linreg_coeff (c, j) / std_err;
-      tab_double (t, 5, this_row, 0, t_stat, NULL, RC_OTHER);
-      /*
-         P values for the test statistic above.
-       */
-      pval = 2 * gsl_cdf_tdist_Q (fabs (t_stat), df);
-      tab_double (t, 6, this_row, 0, pval, NULL, RC_PVALUE);
-      ds_destroy (&tstr);
-
-      if (cmd->stats & STATS_CI)
-	{
-	  double lower = linreg_coeff (c, j)  - tval * std_err ;
-	  double upper = linreg_coeff (c, j)  + tval * std_err ;
-
-	  tab_double (t, 7, this_row, 0, lower, NULL, RC_OTHER);
-	  tab_double (t, 8, this_row, 0, upper, NULL, RC_OTHER);
-	}
+      double entries[] = {
+        linreg_coeff (c, j),
+        sqrt (gsl_matrix_get (linreg_cov (c), j + 1, j + 1)),
+        (sqrt (gsl_matrix_get (cov, j, j)) * linreg_coeff (c, j) /
+         sqrt (gsl_matrix_get (cov, cov->size1 - 1, cov->size2 - 1))),
+        t_stat,
+        2 * gsl_cdf_tdist_Q (fabs (t_stat), df),
+        linreg_coeff (c, j)  - tval * std_err,
+        linreg_coeff (c, j)  + tval * std_err,
+      };
+      for (size_t i = 0; i < sizeof entries / sizeof *entries; i++)
+        pivot_table_put2 (table, i, var_idx,
+                          pivot_value_new_number (entries[i]));
     }
-  tab_title (t, _("Coefficients (%s)"), var_to_string (var));
-  tab_submit (t);
+
+  pivot_table_submit (table);
 }
 
 /*
@@ -949,98 +896,84 @@ reg_stats_coeff (const struct linreg * c, const gsl_matrix *cov, const struct va
 static void
 reg_stats_anova (const struct linreg * c, const struct variable *var)
 {
-  int n_cols = 7;
-  int n_rows = 4;
-  const double msm = linreg_ssreg (c) / linreg_dfmodel (c);
-  const double mse = linreg_mse (c);
-  const double F = msm / mse;
-  const double pval = gsl_cdf_fdist_Q (F, linreg_dfmodel (c),
-				       linreg_dferror (c));
+  struct pivot_table *table = pivot_table_create__ (
+    pivot_value_new_text_format (N_("ANOVA (%s)"), var_to_string (var)));
 
-  struct tab_table *t;
+  pivot_dimension_create (table, PIVOT_AXIS_COLUMN, N_("Statistics"),
+                          N_("Sum of Squares"), PIVOT_RC_OTHER,
+                          N_("df"), PIVOT_RC_INTEGER,
+                          N_("Mean Square"), PIVOT_RC_OTHER,
+                          N_("F"), PIVOT_RC_OTHER,
+                          N_("Sig."), PIVOT_RC_SIGNIFICANCE);
 
-  assert (c != NULL);
-  t = tab_create (n_cols, n_rows);
-  tab_headers (t, 2, 0, 1, 0);
+  pivot_dimension_create (table, PIVOT_AXIS_ROW, N_("Source"),
+                          N_("Regression"), N_("Residual"), N_("Total"));
 
-  tab_box (t, TAL_2, TAL_2, -1, TAL_1, 0, 0, n_cols - 1, n_rows - 1);
+  double msm = linreg_ssreg (c) / linreg_dfmodel (c);
+  double mse = linreg_mse (c);
+  double F = msm / mse;
 
-  tab_hline (t, TAL_2, 0, n_cols - 1, 1);
-  tab_vline (t, TAL_2, 2, 0, n_rows - 1);
-  tab_vline (t, TAL_0, 1, 0, 0);
+  struct entry
+    {
+      int stat_idx;
+      int source_idx;
+      double x;
+    }
+  entries[] = {
+    /* Sums of Squares. */
+    { 0, 0, linreg_ssreg (c) },
+    { 0, 1, linreg_sse (c) },
+    { 0, 2, linreg_sst (c) },
+    /* Degrees of freedom. */
+    { 1, 0, linreg_dfmodel (c) },
+    { 1, 1, linreg_dferror (c) },
+    { 1, 2, linreg_dftotal (c) },
+    /* Mean Squares. */
+    { 2, 0, msm },
+    { 2, 1, mse },
+    /* F */
+    { 3, 0, F },
+    /* Significance. */
+    { 4, 0, gsl_cdf_fdist_Q (F, linreg_dfmodel (c), linreg_dferror (c)) },
+  };
+  for (size_t i = 0; i < sizeof entries / sizeof *entries; i++)
+    {
+      const struct entry *e = &entries[i];
+      pivot_table_put2 (table, e->stat_idx, e->source_idx,
+                        pivot_value_new_number (e->x));
+    }
 
-  tab_text (t, 2, 0, TAB_CENTER | TAT_TITLE, _("Sum of Squares"));
-  tab_text (t, 3, 0, TAB_CENTER | TAT_TITLE, _("df"));
-  tab_text (t, 4, 0, TAB_CENTER | TAT_TITLE, _("Mean Square"));
-  tab_text (t, 5, 0, TAB_CENTER | TAT_TITLE, _("F"));
-  tab_text (t, 6, 0, TAB_CENTER | TAT_TITLE, _("Sig."));
-
-  tab_text (t, 1, 1, TAB_LEFT | TAT_TITLE, _("Regression"));
-  tab_text (t, 1, 2, TAB_LEFT | TAT_TITLE, _("Residual"));
-  tab_text (t, 1, 3, TAB_LEFT | TAT_TITLE, _("Total"));
-
-  /* Sums of Squares */
-  tab_double (t, 2, 1, 0, linreg_ssreg (c), NULL, RC_OTHER);
-  tab_double (t, 2, 3, 0, linreg_sst (c), NULL, RC_OTHER);
-  tab_double (t, 2, 2, 0, linreg_sse (c), NULL, RC_OTHER);
-
-
-  /* Degrees of freedom */
-  tab_text_format (t, 3, 1, TAB_RIGHT, "%.*g", DBL_DIG + 1, linreg_dfmodel (c));
-  tab_text_format (t, 3, 2, TAB_RIGHT, "%.*g", DBL_DIG + 1, linreg_dferror (c));
-  tab_text_format (t, 3, 3, TAB_RIGHT, "%.*g", DBL_DIG + 1, linreg_dftotal (c));
-
-  /* Mean Squares */
-  tab_double (t, 4, 1, TAB_RIGHT, msm, NULL, RC_OTHER);
-  tab_double (t, 4, 2, TAB_RIGHT, mse, NULL, RC_OTHER);
-
-  tab_double (t, 5, 1, 0, F, NULL, RC_OTHER);
-
-  tab_double (t, 6, 1, 0, pval, NULL, RC_PVALUE);
-
-  tab_title (t, _("ANOVA (%s)"), var_to_string (var));
-  tab_submit (t);
+  pivot_table_submit (table);
 }
 
 
 static void
 reg_stats_bcov (const struct linreg * c, const struct variable *var)
 {
-  int n_cols;
-  int n_rows;
-  int i;
-  int k;
-  int row;
-  int col;
-  const char *label;
-  struct tab_table *t;
+  struct pivot_table *table = pivot_table_create__ (
+    pivot_value_new_text_format (N_("Coefficient Correlations (%s)"),
+                                 var_to_string (var)));
 
-  assert (c != NULL);
-  n_cols = linreg_n_indeps (c) + 1 + 2;
-  n_rows = 2 * (linreg_n_indeps (c) + 1);
-  t = tab_create (n_cols, n_rows);
-  tab_headers (t, 2, 0, 1, 0);
-  tab_box (t, TAL_2, TAL_2, -1, TAL_1, 0, 0, n_cols - 1, n_rows - 1);
-  tab_hline (t, TAL_2, 0, n_cols - 1, 1);
-  tab_vline (t, TAL_2, 2, 0, n_rows - 1);
-  tab_vline (t, TAL_0, 1, 0, 0);
-  tab_text (t, 0, 0, TAB_CENTER | TAT_TITLE, _("Model"));
-  tab_text (t, 1, 1, TAB_CENTER | TAT_TITLE, _("Covariances"));
-  for (i = 0; i < linreg_n_coeffs (c); i++)
+  for (size_t i = 0; i < 2; i++)
     {
-      const struct variable *v = linreg_indep_var (c, i);
-      label = var_to_string (v);
-      tab_text (t, 2, i, TAB_CENTER, label);
-      tab_text (t, i + 2, 0, TAB_CENTER, label);
-      for (k = 1; k < linreg_n_coeffs (c); k++)
-        {
-          col = (i <= k) ? k : i;
-          row = (i <= k) ? i : k;
-          tab_double (t, k + 2, i, TAB_CENTER,
-                      gsl_matrix_get (linreg_cov (c), row, col), NULL, RC_OTHER);
-        }
+      struct pivot_dimension *models = pivot_dimension_create (
+        table, i ? PIVOT_AXIS_ROW : PIVOT_AXIS_COLUMN, N_("Models"));
+      for (size_t j = 0; j < linreg_n_coeffs (c); j++)
+        pivot_category_create_leaf (
+          models->root, pivot_value_new_variable (
+            linreg_indep_var (c, j)));
     }
-  tab_title (t, _("Coefficient Correlations (%s)"), var_to_string (var));
-  tab_submit (t);
+
+  pivot_dimension_create (table, PIVOT_AXIS_ROW, N_("Statistics"),
+                          N_("Covariances"));
+
+  for (size_t i = 0; i < linreg_n_coeffs (c); i++)
+    for (size_t k = 0; k < linreg_n_coeffs (c); k++)
+      {
+        double cov = gsl_matrix_get (linreg_cov (c), MIN (i, k), MAX (i, k));
+        pivot_table_put3 (table, k, i, 0, pivot_value_new_number (cov));
+      }
+
+  pivot_table_submit (table);
 }
 

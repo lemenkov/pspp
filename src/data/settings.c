@@ -76,8 +76,8 @@ struct settings
 
   enum settings_output_devices output_routing[SETTINGS_N_OUTPUT_TYPES];
 
-  enum settings_var_style var_output_style;
-  enum settings_value_style value_output_style;
+  enum settings_value_show show_values;
+  enum settings_value_show show_variables;
 };
 
 static struct settings the_settings = {
@@ -121,8 +121,8 @@ static struct settings the_settings = {
    0,
    SETTINGS_DEVICE_LISTING | SETTINGS_DEVICE_TERMINAL},
 
-  SETTINGS_VAR_STYLE_LABELS,
-  SETTINGS_VAL_STYLE_LABELS
+  SETTINGS_VALUE_SHOW_LABEL,
+  SETTINGS_VALUE_SHOW_LABEL
 };
 
 /* Initializes the settings module. */
@@ -707,29 +707,27 @@ settings_get_output_routing (enum settings_output_type type)
   return the_settings.output_routing[type] | SETTINGS_DEVICE_UNFILTERED;
 }
 
-enum settings_value_style
-settings_get_value_style (void)
+enum settings_value_show
+settings_get_show_values (void)
 {
-  return the_settings.value_output_style;
+  return the_settings.show_values;
 }
 
 void
-settings_set_value_style (enum settings_value_style s)
+settings_set_show_values (enum settings_value_show s)
 {
-  the_settings.value_output_style = s;
+  the_settings.show_values = s;
 }
 
 
-
-enum settings_var_style
-settings_get_var_style (void)
+enum settings_value_show
+settings_get_show_variables (void)
 {
-  return the_settings.var_output_style;
+  return the_settings.show_variables;
 }
-
 
 void
-settings_set_var_style (enum settings_var_style s)
+settings_set_show_variables (enum settings_value_show s)
 {
-  the_settings.var_output_style = s;
+  the_settings.show_variables = s;
 }

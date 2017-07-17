@@ -67,11 +67,13 @@ src_output_liboutput_la_SOURCES = \
 	src/output/output-item.h \
 	src/output/page-setup-item.c \
 	src/output/page-setup-item.h \
+	src/output/pivot-output.c \
+	src/output/pivot-table.c \
+	src/output/pivot-table.h \
 	src/output/render.c \
 	src/output/render.h \
 	src/output/tab.c \
 	src/output/tab.h \
-	src/output/table-casereader.c \
 	src/output/table-item.c \
 	src/output/table-item.h \
 	src/output/table-paste.c \

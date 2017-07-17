@@ -40,7 +40,6 @@
 #include "output/driver-provider.h"
 #include "output/message-item.h"
 #include "output/options.h"
-#include "output/tab.h"
 #include "output/table-item.h"
 #include "output/table-provider.h"
 #include "output/text-item.h"

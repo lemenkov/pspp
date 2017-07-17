@@ -75,7 +75,7 @@ glm y by   b a c
 AT_CHECK([pspp -O format=csv latin.sps | sed 's/329.62[[678]]/329.62/'], [0],
   [dnl
 Table: Tests of Between-Subjects Effects
-Source,Type III Sum of Squares,df,Mean Square,F,Sig.
+,Type III Sum Of Squares,df,Mean Square,F,Sig.
 Corrected Model,263.064,15,17.538,5.269,.000
 Intercept,815.103,1,815.103,244.910,.000
 Factor A,78.869,5,15.774,4.739,.005
@@ -127,12 +127,12 @@ glm points by Factor0 Factor1
 AT_CHECK([pspp -O format=csv 2by2.sps ], [0],
   [dnl
 Table: Tests of Between-Subjects Effects
-Source,Type III Sum of Squares,df,Mean Square,F,Sig.
+,Type III Sum Of Squares,df,Mean Square,F,Sig.
 Corrected Model,8667.053,3,2889.018,5.043,.012
 Intercept,2256018.640,1,2256018.640,3937.693,.000
 Factor0,313.394,1,313.394,.547,.470
 Factor1,5157.508,1,5157.508,9.002,.008
-Factor0 * Factor1,3196.150,1,3196.150,5.579,.031
+Factor0 × Factor1,3196.150,1,3196.150,5.579,.031
 Error,9166.865,16,572.929,,
 Total,2273852.559,20,,,
 Corrected Total,17833.918,19,,,
@@ -225,23 +225,23 @@ glm dv by Agrp Bgrp
 AT_CHECK([pspp -O format=csv type1.sps], [0],
   [dnl
 Table: Tests of Between-Subjects Effects
-Source,Type I Sum of Squares,df,Mean Square,F,Sig.
+,Type I Sum Of Squares,df,Mean Square,F,Sig.
 Corrected Model,216.017,7,30.860,5.046,.001
 Intercept,,,,,
 Agrp,9.579,1,9.579,1.566,.220
 Bgrp,186.225,3,62.075,10.151,.000
-Agrp * Bgrp,20.212,3,6.737,1.102,.364
+Agrp × Bgrp,20.212,3,6.737,1.102,.364
 Error,183.457,30,6.115,,
 Total,3810.000,38,,,
 Corrected Total,399.474,37,,,
 
 Table: Tests of Between-Subjects Effects
-Source,Type I Sum of Squares,df,Mean Square,F,Sig.
+,Type I Sum Of Squares,df,Mean Square,F,Sig.
 Corrected Model,216.017,7,30.860,5.046,.001
 Intercept,,,,,
 Bgrp,193.251,3,64.417,10.534,.000
 Agrp,2.553,1,2.553,.418,.523
-Bgrp * Agrp,20.212,3,6.737,1.102,.364
+Bgrp × Agrp,20.212,3,6.737,1.102,.364
 Error,183.457,30,6.115,,
 Total,3810.000,38,,,
 Corrected Total,399.474,37,,,
@@ -260,12 +260,12 @@ glm dv by Agrp Bgrp
 AT_CHECK([pspp -O format=csv type2.sps], [0],
   [dnl
 Table: Tests of Between-Subjects Effects
-Source,Type II Sum of Squares,df,Mean Square,F,Sig.
+,Type II Sum Of Squares,df,Mean Square,F,Sig.
 Corrected Model,216.017,7,30.860,5.046,.001
 Intercept,,,,,
 Agrp,2.553,1,2.553,.418,.523
 Bgrp,186.225,3,62.075,10.151,.000
-Agrp * Bgrp,20.212,3,6.737,1.102,.364
+Agrp × Bgrp,20.212,3,6.737,1.102,.364
 Error,183.457,30,6.115,,
 Total,3810.000,38,,,
 Corrected Total,399.474,37,,,
@@ -328,14 +328,14 @@ GLM depvar by A
 AT_CHECK([pspp -O format=csv intercept-exclude.sps], [0],
   [dnl
 Table: Tests of Between-Subjects Effects
-Source,Type III Sum of Squares,df,Mean Square,F,Sig.
+,Type III Sum Of Squares,df,Mean Square,F,Sig.
 Model,1636.826,2,818.413,43.556,.000
 A,1636.826,2,818.413,43.556,.000
 Error,338.216,18,18.790,,
 Total,1975.042,20,,,
 
 Table: Tests of Between-Subjects Effects
-Source,Type III Sum of Squares,df,Mean Square,F,Sig.
+,Type III Sum Of Squares,df,Mean Square,F,Sig.
 Corrected Model,98.568,1,98.568,5.246,.034
 Intercept,1538.258,1,1538.258,81.867,.000
 A,98.568,1,98.568,5.246,.034
@@ -405,7 +405,7 @@ glm y by   b a c
 
 AT_CHECK([pspp -O format=csv glm-miss.sps], [0],  [dnl
 Table: Tests of Between-Subjects Effects
-Source,Type III Sum of Squares,df,Mean Square,F,Sig.
+,Type III Sum Of Squares,df,Mean Square,F,Sig.
 Corrected Model,251.621,14,17.973,4.969,.002
 Intercept,628.376,1,628.376,173.737,.000
 a,72.929,4,18.232,5.041,.009
@@ -432,7 +432,7 @@ glm y by   b a c
 
 AT_CHECK([pspp -O format=csv glm-miss2.sps], [0],  [dnl
 Table: Tests of Between-Subjects Effects
-Source,Type III Sum of Squares,df,Mean Square,F,Sig.
+,Type III Sum Of Squares,df,Mean Square,F,Sig.
 Corrected Model,251.621,14,17.973,4.969,.002
 Intercept,628.376,1,628.376,173.737,.000
 a,72.929,4,18.232,5.041,.009
@@ -462,7 +462,7 @@ glm y by   b a c
 
 AT_CHECK([pspp -O format=csv glm-miss3.sps], [0],  [dnl
 Table: Tests of Between-Subjects Effects
-Source,Type III Sum of Squares,df,Mean Square,F,Sig.
+,Type III Sum Of Squares,df,Mean Square,F,Sig.
 Corrected Model,251.621,14,17.973,4.969,.002
 Intercept,628.376,1,628.376,173.737,.000
 a,72.929,4,18.232,5.041,.009

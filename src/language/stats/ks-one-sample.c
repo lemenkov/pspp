@@ -40,11 +40,12 @@
 #include "libpspp/hash-functions.h"
 #include "libpspp/message.h"
 #include "libpspp/misc.h"
-#include "output/tab.h"
+#include "output/pivot-table.h"
 
 #include "gl/xalloc.h"
 
 #include "gettext.h"
+#define N_(msgid) msgid
 #define _(msgid) gettext (msgid)
 
 
@@ -269,133 +270,96 @@ show_results (const struct ks *ks,
 	      const struct ks_one_sample_test *kst,
 	      const struct fmt_spec *wfmt)
 {
-  int i;
-  const int row_headers = 1;
-  const int column_headers = 2;
-  const int nc = kst->parent.n_vars + column_headers;
-  const int nr = 8 + row_headers;
-  struct tab_table *table = tab_create (nc, nr);
-  tab_set_format (table, RC_WEIGHT, wfmt);
-  tab_headers (table, row_headers, 0, column_headers, 0);
+  struct pivot_table *table = pivot_table_create (
+    N_("One-Sample Kolmogorov-Smirnov Test"));
+  pivot_table_set_weight_format (table, wfmt);
 
-  tab_title (table, _("One-Sample Kolmogorov-Smirnov Test"));
-
-  /* Box around the table */
-  tab_box (table, TAL_2, TAL_2, -1, -1,
-	   0,  0, nc - 1, nr - 1 );
-
-  tab_hline (table, TAL_2, 0, nc - 1, row_headers);
-
-  tab_vline (table, TAL_1, column_headers, 0, nr - 1);
-
-  tab_text (table,  0, 1,
-	    TAT_TITLE | TAB_LEFT , _("N"));
+  struct pivot_dimension *statistics = pivot_dimension_create (
+    table, PIVOT_AXIS_ROW, N_("Statistics"),
+    N_("N"), PIVOT_RC_COUNT);
 
   switch (kst->dist)
     {
-    case KS_NORMAL:
-      tab_text (table,  0, 2,
-		TAT_TITLE | TAB_LEFT , _("Normal Parameters"));
-
-      tab_text (table,  1, 2,
-		TAT_TITLE | TAB_LEFT , _("Mean"));
-      tab_text (table,  1, 3,
-		TAT_TITLE | TAB_LEFT , _("Std. Deviation"));
-      break;
     case KS_UNIFORM:
-      tab_text (table,  0, 2,
-		TAT_TITLE | TAB_LEFT , _("Uniform Parameters"));
-
-      tab_text (table,  1, 2,
-		TAT_TITLE | TAB_LEFT , _("Minimum"));
-      tab_text (table,  1, 3,
-		TAT_TITLE | TAB_LEFT , _("Maximum"));
+      pivot_category_create_group (statistics->root, N_("Uniform Parameters"),
+                                   N_("Minimum"), N_("Maximum"));
       break;
+
+    case KS_NORMAL:
+      pivot_category_create_group (statistics->root, N_("Normal Parameters"),
+                                   N_("Mean"), N_("Std. Deviation"));
+      break;
+
     case KS_POISSON:
-      tab_text (table,  0, 2,
-		TAT_TITLE | TAB_LEFT , _("Poisson Parameters"));
-
-      tab_text (table,  1, 2,
-		TAT_TITLE | TAB_LEFT , _("Lambda"));
+      pivot_category_create_group (statistics->root, N_("Poisson Parameters"),
+                                   N_("Lambda"));
       break;
-    case KS_EXPONENTIAL:
-      tab_text (table,  0, 2,
-		TAT_TITLE | TAB_LEFT , _("Exponential Parameters"));
 
-      tab_text (table,  1, 2,
-		TAT_TITLE | TAB_LEFT , _("Scale"));
+    case KS_EXPONENTIAL:
+      pivot_category_create_group (statistics->root,
+                                   N_("Exponential Parameters"), N_("Scale"));
       break;
 
     default:
       NOT_REACHED ();
     }
 
-  /* The variable columns */
-  for (i = 0; i < kst->parent.n_vars; ++i)
+  pivot_category_create_group (
+    statistics->root, N_("Most Extreme Differences"),
+    N_("Absolute"), N_("Positive"), N_("Negative"));
+
+  pivot_category_create_leaves (
+    statistics->root, N_("Kolmogorov-Smirnov Z"),
+    _("Asymp. Sig. (2-tailed)"), PIVOT_RC_SIGNIFICANCE);
+
+  struct pivot_dimension *variables = pivot_dimension_create (
+    table, PIVOT_AXIS_COLUMN, N_("Variables"));
+
+  for (size_t i = 0; i < kst->parent.n_vars; ++i)
     {
-      double abs = 0;
-      double z = 0;
-      const int col = 2 + i;
-      tab_text (table, col, 0,
-		TAT_TITLE | TAB_CENTER ,
-		var_to_string (kst->parent.vars[i]));
+      int col = pivot_category_create_leaf (
+        variables->root, pivot_value_new_variable (kst->parent.vars[i]));
+
+      double values[10];
+      size_t n = 0;
+
+      values[n++] = ks[i].obs_cc;
 
       switch (kst->dist)
 	{
 	case KS_UNIFORM:
-	  tab_double (table, col, 1, 0, ks[i].obs_cc, NULL, RC_WEIGHT);
-	  tab_double (table, col, 2, 0, ks[i].test_min, NULL, RC_OTHER);
-	  tab_double (table, col, 3, 0, ks[i].test_max, NULL, RC_OTHER);
+          values[n++] = ks[i].test_min;
+          values[n++] = ks[i].test_max;
 	  break;
 
 	case KS_NORMAL:
-	  tab_double (table, col, 1, 0, ks[i].obs_cc, NULL, RC_WEIGHT);
-	  tab_double (table, col, 2, 0, ks[i].mu, NULL, RC_OTHER);
-	  tab_double (table, col, 3, 0, ks[i].sigma, NULL, RC_OTHER);
+          values[n++] = ks[i].mu;
+          values[n++] = ks[i].sigma;
 	  break;
 
 	case KS_POISSON:
 	case KS_EXPONENTIAL:
-	  tab_double (table, col, 1, 0, ks[i].obs_cc, NULL, RC_WEIGHT);
-	  tab_double (table, col, 2, 0, ks[i].mu, NULL, RC_OTHER);
+          values[n++] = ks[i].mu;
 	  break;
 
 	default:
 	  NOT_REACHED ();
 	}
 
-      abs = ks[i].diff_pos;
+      double abs = ks[i].diff_pos;
       maximize (&abs, -ks[i].diff_neg);
 
-      z = sqrt (ks[i].obs_cc) * abs;
+      double z = sqrt (ks[i].obs_cc) * abs;
 
-      tab_double (table, col, 5, 0, ks[i].diff_pos, NULL, RC_OTHER);
-      tab_double (table, col, 6, 0, ks[i].diff_neg, NULL, RC_OTHER);
+      values[n++] = abs;
+      values[n++] = ks[i].diff_pos;
+      values[n++] = ks[i].diff_neg;
+      values[n++] = z;
+      values[n++] = ks_asymp_sig (z);
 
-      tab_double (table, col, 4, 0, abs, NULL, RC_OTHER);
-
-      tab_double (table, col, 7, 0, z, NULL, RC_OTHER);
-      tab_double (table, col, 8, 0, ks_asymp_sig (z), NULL, RC_PVALUE);
+      for (size_t j = 0; j < n; j++)
+        pivot_table_put2 (table, j, col, pivot_value_new_number (values[j]));
     }
 
-
-  tab_text (table,  0, 4,
-	    TAT_TITLE | TAB_LEFT , _("Most Extreme Differences"));
-
-  tab_text (table,  1, 4,
-	    TAT_TITLE | TAB_LEFT , _("Absolute"));
-
-  tab_text (table,  1, 5,
-	    TAT_TITLE | TAB_LEFT , _("Positive"));
-
-  tab_text (table,  1, 6,
-	    TAT_TITLE | TAB_LEFT , _("Negative"));
-
-  tab_text (table,  0, 7,
-	    TAT_TITLE | TAB_LEFT , _("Kolmogorov-Smirnov Z"));
-
-  tab_text (table,  0, 8,
-	    TAT_TITLE | TAB_LEFT , _("Asymp. Sig. (2-tailed)"));
-
-  tab_submit (table);
+  pivot_table_submit (table);
 }

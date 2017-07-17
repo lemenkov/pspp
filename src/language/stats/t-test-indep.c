@@ -27,12 +27,12 @@
 #include "data/dictionary.h"
 #include "data/format.h"
 #include "data/variable.h"
-
 #include "math/moments.h"
 #include "math/levene.h"
+#include "output/pivot-table.h"
 
-#include <output/tab.h>
 #include "gettext.h"
+#define N_(msgid) msgid
 #define _(msgid) gettext (msgid)
 
 
@@ -187,207 +187,170 @@ indep_run (struct tt *tt, const struct variable *gvar,
 static void
 indep_summary (const struct tt *tt, struct indep_samples *is, const struct pair_stats *ps)
 {
-  const struct fmt_spec *wfmt = tt->wv ? var_get_print_format (tt->wv) : & F_8_0;
+  struct pivot_table *table = pivot_table_create (N_("Group Statistics"));
+  pivot_table_set_weight_var (table, tt->wv);
 
-  int v;
-  int cols = 6;
-  const int heading_rows = 1;
-  int rows = tt->n_vars * 2 + heading_rows;
+  pivot_dimension_create (table, PIVOT_AXIS_COLUMN, N_("Statistics"),
+                          N_("N"), PIVOT_RC_COUNT,
+                          N_("Mean"), PIVOT_RC_OTHER,
+                          N_("Std. Deviation"), PIVOT_RC_OTHER,
+                          N_("S.E. Mean"), PIVOT_RC_OTHER);
 
-  struct string vallab0 ;
-  struct string vallab1 ;
-  struct tab_table *t = tab_create (cols, rows);
-  tab_set_format (t, RC_WEIGHT, wfmt);
-  ds_init_empty (&vallab0);
-  ds_init_empty (&vallab1);
-
-  tab_headers (t, 0, 0, 1, 0);
-  tab_box (t, TAL_2, TAL_2, TAL_0, TAL_1, 0, 0, cols - 1, rows - 1);
-  tab_hline (t, TAL_2, 0, cols - 1, 1);
-
-  tab_title (t, _("Group Statistics"));
-  tab_text  (t, 1, 0, TAB_CENTER | TAT_TITLE, var_to_string (is->gvar));
-  tab_text  (t, 2, 0, TAB_CENTER | TAT_TITLE, _("N"));
-  tab_text  (t, 3, 0, TAB_CENTER | TAT_TITLE, _("Mean"));
-  tab_text  (t, 4, 0, TAB_CENTER | TAT_TITLE, _("Std. Deviation"));
-  tab_text  (t, 5, 0, TAB_CENTER | TAT_TITLE, _("S.E. Mean"));
-
+  struct pivot_dimension *group = pivot_dimension_create (
+    table, PIVOT_AXIS_ROW, N_("Group"));
+  group->root->show_label = true;
   if (is->cut)
     {
+      struct string vallab0 = DS_EMPTY_INITIALIZER;
       ds_put_cstr (&vallab0, "≥");
-      ds_put_cstr (&vallab1, "<");
-
       var_append_value_name (is->gvar, is->gval0, &vallab0);
+      pivot_category_create_leaf (group->root,
+                                  pivot_value_new_user_text_nocopy (
+                                    ds_steal_cstr (&vallab0)));
+
+      struct string vallab1 = DS_EMPTY_INITIALIZER;
+      ds_put_cstr (&vallab1, "<");
       var_append_value_name (is->gvar, is->gval0, &vallab1);
+      pivot_category_create_leaf (group->root,
+                                  pivot_value_new_user_text_nocopy (
+                                    ds_steal_cstr (&vallab1)));
     }
   else
     {
-      var_append_value_name (is->gvar, is->gval0, &vallab0);
-      var_append_value_name (is->gvar, is->gval1, &vallab1);
+      pivot_category_create_leaf (
+        group->root, pivot_value_new_var_value (is->gvar, is->gval0));
+      pivot_category_create_leaf (
+        group->root, pivot_value_new_var_value (is->gvar, is->gval1));
     }
 
-  tab_vline (t, TAL_1, 1, heading_rows,  rows - 1);
+  struct pivot_dimension *dep_vars = pivot_dimension_create (
+    table, PIVOT_AXIS_ROW, N_("Dependent Variables"));
 
-  for (v = 0; v < tt->n_vars; ++v)
+  for (size_t v = 0; v < tt->n_vars; ++v)
     {
-      int i;
       const struct variable *var = tt->vars[v];
 
-      tab_text (t, 0, v * 2 + heading_rows, TAB_LEFT,
-                var_to_string (var));
+      int dep_var_idx = pivot_category_create_leaf (
+        dep_vars->root, pivot_value_new_variable (var));
 
-      tab_text (t, 1, v * 2 + heading_rows, TAB_LEFT,
-                       ds_cstr (&vallab0));
-
-      tab_text (t, 1, v * 2 + 1 + heading_rows, TAB_LEFT,
-                       ds_cstr (&vallab1));
-
-      for (i = 0 ; i < 2; ++i)
+      for (int i = 0 ; i < 2; ++i)
 	{
 	  double cc, mean, sigma;
 	  moments_calculate (ps[v].mom[i], &cc, &mean, &sigma, NULL, NULL);
 
-	  tab_double (t, 2, v * 2 + i + heading_rows, TAB_RIGHT, cc, NULL, RC_WEIGHT);
-	  tab_double (t, 3, v * 2 + i + heading_rows, TAB_RIGHT, mean, NULL, RC_OTHER);
-	  tab_double (t, 4, v * 2 + i + heading_rows, TAB_RIGHT, sqrt (sigma), NULL, RC_OTHER);
-	  tab_double (t, 5, v * 2 + i + heading_rows, TAB_RIGHT, sqrt (sigma / cc), NULL, RC_OTHER);
+          double entries[] = { cc, mean, sqrt (sigma), sqrt (sigma / cc) };
+          for (size_t j = 0; j < sizeof entries / sizeof *entries; j++)
+            pivot_table_put3 (table, j, i, dep_var_idx,
+                              pivot_value_new_number (entries[j]));
 	}
     }
 
-  tab_submit (t);
-
-  ds_destroy (&vallab0);
-  ds_destroy (&vallab1);
+  pivot_table_submit (table);
 }
 
 
 static void
 indep_test (const struct tt *tt, const struct pair_stats *ps)
 {
-  int v;
-  const int heading_rows = 3;
-  const int rows= tt->n_vars * 2 + heading_rows;
+  struct pivot_table *table = pivot_table_create (
+    N_("Independent Samples Test"));
 
-  const size_t cols = 11;
+  struct pivot_dimension *statistics = pivot_dimension_create (
+    table, PIVOT_AXIS_COLUMN, N_("Statistics"));
+  pivot_category_create_group (
+    statistics->root, N_("Levene's Test for Equality of Variances"),
+    N_("F"), PIVOT_RC_OTHER,
+    N_("Sig."), PIVOT_RC_SIGNIFICANCE);
+  struct pivot_category *group = pivot_category_create_group (
+    statistics->root, N_("T-Test for Equality of Means"),
+    N_("t"), PIVOT_RC_OTHER,
+    N_("df"), PIVOT_RC_OTHER,
+    N_("Sig. (2-tailed)"), PIVOT_RC_SIGNIFICANCE,
+    N_("Mean Difference"), PIVOT_RC_OTHER,
+    N_("Std. Error Difference"), PIVOT_RC_OTHER);
+  pivot_category_create_group (
+    group, N_("95% Confidence Interval of the Difference"),
+    N_("Lower"), PIVOT_RC_OTHER,
+    N_("Upper"), PIVOT_RC_OTHER);
 
-  struct tab_table *t = tab_create (cols, rows);
-  tab_headers (t, 0, 0, 3, 0);
-  tab_box (t, TAL_2, TAL_2, TAL_0, TAL_0, 0, 0, cols - 1, rows - 1);
-  tab_hline (t, TAL_2, 0, cols - 1, 3);
+  pivot_dimension_create (table, PIVOT_AXIS_ROW, N_("Assumptions"),
+                          N_("Equal variances assumed"),
+                          N_("Equal variances not assumed"));
 
-  tab_title (t, _("Independent Samples Test"));
+  struct pivot_dimension *dep_vars = pivot_dimension_create (
+    table, PIVOT_AXIS_ROW, N_("Dependent Variables"));
 
-  tab_hline (t, TAL_1, 2, cols - 1, 1);
-  tab_vline (t, TAL_2, 2, 0, rows - 1);
-  tab_vline (t, TAL_1, 4, 0, rows - 1);
-  tab_box (t, -1, -1, -1, TAL_1, 2, 1, cols - 2, rows - 1);
-  tab_hline (t, TAL_1, cols - 2, cols - 1, 2);
-  tab_box (t, -1, -1, -1, TAL_1, cols - 2, 2, cols - 1, rows - 1);
-  tab_joint_text (t, 2, 0, 3, 0, TAB_CENTER, _("Levene's Test for Equality of Variances"));
-  tab_joint_text (t, 4, 0, cols - 1, 0, TAB_CENTER, _("t-test for Equality of Means"));
-
-  tab_text (t, 2, 2, TAB_CENTER | TAT_TITLE, _("F"));
-  tab_text (t, 3, 2, TAB_CENTER | TAT_TITLE, _("Sig."));
-  tab_text (t, 4, 2, TAB_CENTER | TAT_TITLE, _("t"));
-  tab_text (t, 5, 2, TAB_CENTER | TAT_TITLE, _("df"));
-  tab_text (t, 6, 2, TAB_CENTER | TAT_TITLE, _("Sig. (2-tailed)"));
-  tab_text (t, 7, 2, TAB_CENTER | TAT_TITLE, _("Mean Difference"));
-  tab_text (t, 8, 2, TAB_CENTER | TAT_TITLE, _("Std. Error Difference"));
-  tab_text (t, 9, 2, TAB_CENTER | TAT_TITLE, _("Lower"));
-  tab_text (t, 10, 2, TAB_CENTER | TAT_TITLE, _("Upper"));
-
-  tab_joint_text_format (t, 9, 1, 10, 1, TAB_CENTER,
-                         _("%g%% Confidence Interval of the Difference"),
-                         tt->confidence * 100.0);
-
-  tab_vline (t, TAL_1, 1, heading_rows,  rows - 1);
-
-  for (v = 0; v < tt->n_vars; ++v)
+  for (size_t v = 0; v < tt->n_vars; ++v)
   {
-    double df, pooled_variance, mean_diff, tval;
-    double se2, std_err_diff;
-    double p, q;
+    int dep_var_idx = pivot_category_create_leaf (
+      dep_vars->root, pivot_value_new_variable (tt->vars[v]));
+
     double cc0, mean0, sigma0;
     double cc1, mean1, sigma1;
     moments_calculate (ps[v].mom[0], &cc0, &mean0, &sigma0, NULL, NULL);
     moments_calculate (ps[v].mom[1], &cc1, &mean1, &sigma1, NULL, NULL);
 
-    tab_text (t, 0, v * 2 + heading_rows, TAB_LEFT, var_to_string (tt->vars[v]));
-    tab_text (t, 1, v * 2 + heading_rows, TAB_LEFT, _("Equal variances assumed"));
-
-    df = cc0 + cc1 - 2.0;
-    tab_double (t, 5, v * 2 + heading_rows, TAB_RIGHT, df, NULL, RC_OTHER);
-
-    pooled_variance = ((cc0 - 1)* sigma0 + (cc1 - 1) * sigma1) / df ;
-
-    tval = (mean0 - mean1) / sqrt (pooled_variance);
-    tval /= sqrt ((cc0 + cc1) / (cc0 * cc1));
-
-    tab_double (t, 4, v * 2 + heading_rows, TAB_RIGHT, tval, NULL, RC_OTHER);
-
-    p = gsl_cdf_tdist_P (tval, df);
-    q = gsl_cdf_tdist_Q (tval, df);
-
-    mean_diff = mean0 - mean1;
-
-    tab_double (t, 6, v * 2 + heading_rows, TAB_RIGHT, 2.0 * (tval > 0 ? q : p),   NULL, RC_PVALUE);
-    tab_double (t, 7, v * 2 + heading_rows, TAB_RIGHT, mean_diff, NULL, RC_OTHER);
-
-    std_err_diff = sqrt (pooled_variance * (1.0/cc0 + 1.0/cc1));
-    tab_double (t, 8, v * 2 + heading_rows, TAB_RIGHT, std_err_diff, NULL, RC_OTHER);
+    double mean_diff = mean0 - mean1;
 
 
-    /* Now work out the confidence interval */
-    q = (1 - tt->confidence)/2.0;  /* 2-tailed test */
-
-    tval = gsl_cdf_tdist_Qinv (q, df);
-    tab_double (t,  9, v * 2 + heading_rows, TAB_RIGHT, mean_diff - tval * std_err_diff, NULL, RC_OTHER);
-    tab_double (t, 10, v * 2 + heading_rows, TAB_RIGHT, mean_diff + tval * std_err_diff, NULL, RC_OTHER);
+    /* Equal variances assumed. */
+    double e_df = cc0 + cc1 - 2.0;
+    double e_pooled_variance = ((cc0 - 1)* sigma0 + (cc1 - 1) * sigma1) / e_df;
+    double e_tval = ((mean0 - mean1) / sqrt (e_pooled_variance)
+                     / sqrt ((cc0 + cc1) / (cc0 * cc1)));
+    double e_p = gsl_cdf_tdist_P (e_tval, e_df);
+    double e_q = gsl_cdf_tdist_Q (e_tval, e_df);
+    double e_sig = 2.0 * (e_tval > 0 ? e_q : e_p);
+    double e_std_err_diff = sqrt (e_pooled_variance * (1.0/cc0 + 1.0/cc1));
+    double e_tval_qinv = gsl_cdf_tdist_Qinv ((1 - tt->confidence) / 2.0, e_df);
 
     /* Equal variances not assumed */
-    tab_text (t, 1, v * 2 + heading_rows + 1,  TAB_LEFT, _("Equal variances not assumed"));
-    std_err_diff = sqrt ((sigma0 / cc0) + (sigma1 / cc1));
+    const double s0 = sigma0 / cc0;
+    const double s1 = sigma1 / cc1;
+    double d_df = (pow2 (s0 + s1) / (pow2 (s0) / (cc0 - 1)
+                                   + pow2 (s1) / (cc1 - 1)));
+    double d_tval = mean_diff / sqrt (sigma0 / cc0 + sigma1 / cc1);
+    double d_p = gsl_cdf_tdist_P (d_tval, d_df);
+    double d_q = gsl_cdf_tdist_Q (d_tval, d_df);
+    double d_sig = 2.0 * (d_tval > 0 ? d_q : d_p);
+    double d_std_err_diff = sqrt ((sigma0 / cc0) + (sigma1 / cc1));
+    double d_tval_qinv = gsl_cdf_tdist_Qinv ((1 - tt->confidence) / 2.0, d_df);
 
-    se2 = sigma0 / cc0 + sigma1 / cc1;
-    tval = mean_diff / sqrt (se2);
-    tab_double (t, 4, v * 2 + heading_rows + 1, TAB_RIGHT, tval, NULL, RC_OTHER);
+    struct entry
+      {
+        int assumption_idx;
+        int stat_idx;
+        double x;
+      }
+    entries[] =
+      {
+        { 0, 0, ps[v].lev },
+        { 0, 1, gsl_cdf_fdist_Q (ps[v].lev, 1, cc0 + cc1 - 2) },
 
-    {
-      double p, q;
-      const double s0 = sigma0 / (cc0);
-      const double s1 = sigma1 / (cc1);
-      double df = pow2 (s0 + s1) ;
-      df /= pow2 (s0) / (cc0 - 1) + pow2 (s1) / (cc1 - 1);
+        { 0, 2, e_tval },
+        { 0, 3, e_df },
+        { 0, 4, e_sig },
+        { 0, 5, mean_diff },
+        { 0, 6, e_std_err_diff },
+        { 0, 7, mean_diff - e_tval_qinv * e_std_err_diff },
+        { 0, 8, mean_diff + e_tval_qinv * e_std_err_diff },
 
-      tab_double (t, 5, v * 2 + heading_rows + 1, TAB_RIGHT, df, NULL, RC_OTHER);
+        { 1, 2, d_tval },
+        { 1, 3, d_df },
+        { 1, 4, d_sig },
+        { 1, 5, mean_diff },
+        { 1, 6, d_std_err_diff },
+        { 1, 7, mean_diff - d_tval_qinv * d_std_err_diff },
+        { 1, 8, mean_diff + d_tval_qinv * d_std_err_diff },
+      };
 
-      p = gsl_cdf_tdist_P (tval, df);
-      q = gsl_cdf_tdist_Q (tval, df);
-
-      tab_double (t, 6, v * 2 + heading_rows + 1, TAB_RIGHT, 2.0 * (tval > 0 ? q : p), NULL, RC_PVALUE);
-
-      /* Now work out the confidence interval */
-      q = (1 - tt->confidence) / 2.0;  /* 2-tailed test */
-
-      tval = gsl_cdf_tdist_Qinv (q, df);
-    }
-
-    tab_double (t, 7, v * 2 + heading_rows + 1, TAB_RIGHT, mean_diff, NULL, RC_OTHER);
-    tab_double (t, 8, v * 2 + heading_rows + 1, TAB_RIGHT, std_err_diff, NULL, RC_OTHER);
-    tab_double (t, 9, v * 2 + heading_rows + 1, TAB_RIGHT,  mean_diff - tval * std_err_diff, NULL, RC_OTHER);
-    tab_double (t, 10, v * 2 + heading_rows + 1, TAB_RIGHT, mean_diff + tval * std_err_diff, NULL, RC_OTHER);
-
-    tab_double (t, 2, v * 2 + heading_rows, TAB_CENTER, ps[v].lev, NULL, RC_OTHER);
-
-
-    {
-      /* Now work out the significance of the Levene test */
-      double df1 = 1;
-      double df2 = cc0 + cc1 - 2;
-      double q = gsl_cdf_fdist_Q (ps[v].lev, df1, df2);
-      tab_double (t, 3, v * 2 + heading_rows, TAB_CENTER, q, NULL, RC_PVALUE);
-    }
+    for (size_t i = 0; i < sizeof entries / sizeof *entries; i++)
+      {
+        const struct entry *e = &entries[i];
+        pivot_table_put3 (table, e->stat_idx, e->assumption_idx,
+                          dep_var_idx, pivot_value_new_number (e->x));
+      }
   }
 
-  tab_submit (t);
+  pivot_table_submit (table);
 }

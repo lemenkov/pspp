@@ -35,12 +35,13 @@
 #include "libpspp/compiler.h"
 #include "libpspp/message.h"
 #include "libpspp/misc.h"
-#include "output/tab.h"
+#include "output/pivot-table.h"
 
 #include "gl/xalloc.h"
 #include "gl/minmax.h"
 
 #include "gettext.h"
+#define N_(msgid) msgid
 #define _(msgid) gettext (msgid)
 
 static double calculate_binomial_internal (double n1, double n2,
@@ -151,7 +152,6 @@ binomial_execute (const struct dataset *ds,
 		  bool exact UNUSED,
 		  double timer UNUSED)
 {
-  int v;
   const struct dictionary *dict = dataset_dict (ds);
   const struct one_sample_test *ost = UP_CAST (test, const struct one_sample_test, parent);
   const struct binomial_test *bst = UP_CAST (ost, const struct binomial_test, parent);
@@ -170,7 +170,7 @@ binomial_execute (const struct dataset *ds,
         value = bst->category2;
 
       cat[i] = xnmalloc (ost->n_vars, sizeof *cat[i]);
-      for (v = 0; v < ost->n_vars; v++)
+      for (size_t v = 0; v < ost->n_vars; v++)
         {
           cat[i][v].values[0].f = value;
           cat[i][v].count = 0;
@@ -179,88 +179,76 @@ binomial_execute (const struct dataset *ds,
 
   if (do_binomial (dataset_dict (ds), input, ost, cat[0], cat[1], exclude))
     {
-      const struct fmt_spec *wfmt = dict_get_weight_format (dict);
+      struct pivot_table *table = pivot_table_create (N_("Binomial Test"));
+      pivot_table_set_weight_var (table, dict_get_weight (dict));
 
-      struct tab_table *table = tab_create (7, ost->n_vars * 3 + 1);
-      tab_set_format (table, RC_WEIGHT, wfmt);
+      pivot_dimension_create (
+        table, PIVOT_AXIS_COLUMN, N_("Statistics"),
+        N_("Category"),
+        N_("N"), PIVOT_RC_COUNT,
+        N_("Observed Prop."), PIVOT_RC_OTHER,
+        N_("Test Prop."), PIVOT_RC_OTHER,
+        (bst->p == 0.5
+         ? N_("Exact Sig. (2-tailed)")
+         : N_("Exact Sig. (1-tailed)")), PIVOT_RC_SIGNIFICANCE);
 
-      tab_title (table, _("Binomial Test"));
+      pivot_dimension_create (table, PIVOT_AXIS_ROW, N_("Groups"),
+                              N_("Group 1"), N_("Group 2"), N_("Total"));
 
-      tab_headers (table, 2, 0, 1, 0);
+      struct pivot_dimension *variables = pivot_dimension_create (
+        table, PIVOT_AXIS_ROW, N_("Variables"));
 
-      tab_box (table, TAL_1, TAL_1, -1, TAL_1,
-               0, 0, tab_nc (table) - 1, tab_nr(table) - 1 );
-
-      for (v = 0 ; v < ost->n_vars; ++v)
+      for (size_t v = 0; v < ost->n_vars; ++v)
         {
-          double n_total, sig;
-	  struct string catstr[2];
           const struct variable *var = ost->vars[v];
 
-	  ds_init_empty (&catstr[0]);
-	  ds_init_empty (&catstr[1]);
+          int var_idx = pivot_category_create_leaf (
+            variables->root, pivot_value_new_variable (var));
 
-	  if ( bst->cutpoint != SYSMIS)
-	    {
-	      ds_put_format (&catstr[0], "<= %.*g",
-                             DBL_DIG + 1, bst->cutpoint);
-	    }
+          /* Category. */
+          if (bst->cutpoint != SYSMIS)
+            pivot_table_put3 (
+              table, 0, 0, var_idx,
+              pivot_value_new_user_text_nocopy (
+                xasprintf ("<= %.*g", DBL_DIG + 1, bst->cutpoint)));
           else
+            for (int i = 0; i < 2; i++)
+              pivot_table_put3 (
+                table, 0, i, var_idx,
+                pivot_value_new_var_value (var, cat[i][v].values));
+
+          double n_total = cat[0][v].count + cat[1][v].count;
+          double sig = calculate_binomial (cat[0][v].count, cat[1][v].count,
+                                           bst->p);
+          struct entry
             {
-              var_append_value_name (var, cat[0][v].values, &catstr[0]);
-              var_append_value_name (var, cat[1][v].values, &catstr[1]);
+              int stat_idx;
+              int group_idx;
+              double x;
             }
-
-          tab_hline (table, TAL_1, 0, tab_nc (table) -1, 1 + v * 3);
-
-          /* Titles */
-          tab_text (table, 0, 1 + v * 3, TAB_LEFT, var_to_string (var));
-          tab_text (table, 1, 1 + v * 3, TAB_LEFT, _("Group1"));
-          tab_text (table, 1, 2 + v * 3, TAB_LEFT, _("Group2"));
-          tab_text (table, 1, 3 + v * 3, TAB_LEFT, _("Total"));
-
-          /* Test Prop */
-          tab_double (table, 5, 1 + v * 3, TAB_NONE, bst->p, NULL, RC_OTHER);
-
-          /* Category labels */
-          tab_text (table, 2, 1 + v * 3, TAB_NONE, ds_cstr (&catstr[0]));
-	  tab_text (table, 2, 2 + v * 3, TAB_NONE, ds_cstr (&catstr[1]));
-
-          /* Observed N */
-          tab_double (table, 3, 1 + v * 3, TAB_NONE, cat[0][v].count, NULL, RC_WEIGHT);
-          tab_double (table, 3, 2 + v * 3, TAB_NONE, cat[1][v].count, NULL, RC_WEIGHT);
-
-          n_total = cat[0][v].count + cat[1][v].count;
-          tab_double (table, 3, 3 + v * 3, TAB_NONE, n_total, NULL, RC_WEIGHT);
-
-          /* Observed Proportions */
-          tab_double (table, 4, 1 + v * 3, TAB_NONE,
-		      cat[0][v].count / n_total, NULL, RC_OTHER);
-          tab_double (table, 4, 2 + v * 3, TAB_NONE,
-		      cat[1][v].count / n_total, NULL, RC_OTHER);
-
-          tab_double (table, 4, 3 + v * 3, TAB_NONE,
-		      (cat[0][v].count + cat[1][v].count) / n_total, NULL, RC_OTHER);
-
-          /* Significance */
-          sig = calculate_binomial (cat[0][v].count, cat[1][v].count, bst->p);
-          tab_double (table, 6, 1 + v * 3, TAB_NONE, sig, NULL, RC_PVALUE);
-
-	  ds_destroy (&catstr[0]);
-	  ds_destroy (&catstr[1]);
+          entries[] = {
+            /* N. */
+            { 1, 0, cat[0][v].count },
+            { 1, 1, cat[1][v].count },
+            { 1, 2, n_total },
+            /* Observed Prop. */
+            { 2, 0, cat[0][v].count / n_total },
+            { 2, 1, cat[1][v].count / n_total },
+            { 2, 2, 1.0 },
+            /* Test Prop. */
+            { 3, 0, bst->p },
+            /* Significance. */
+            { 4, 0, sig }
+          };
+          for (size_t i = 0; i < sizeof entries / sizeof *entries; i++)
+            {
+              const struct entry *e = &entries[i];
+              pivot_table_put3 (table, e->stat_idx, e->group_idx,
+                                var_idx, pivot_value_new_number (e->x));
+            }
         }
 
-      tab_text (table,  2, 0,  TAB_CENTER, _("Category"));
-      tab_text (table,  3, 0,  TAB_CENTER, _("N"));
-      tab_text (table,  4, 0,  TAB_CENTER, _("Observed Prop."));
-      tab_text (table,  5, 0,  TAB_CENTER, _("Test Prop."));
-
-      tab_text_format (table,  6, 0,  TAB_CENTER,
-                       _("Exact Sig. (%d-tailed)"),
-                       bst->p == 0.5 ? 2 : 1);
-
-      tab_vline (table, TAL_2, 2, 0, tab_nr (table) -1);
-      tab_submit (table);
+      pivot_table_submit (table);
     }
 
   for (i = 0; i < 2; i++)

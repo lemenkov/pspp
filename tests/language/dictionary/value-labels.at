@@ -32,7 +32,7 @@ ad,1,,Scale,Input,8,Right,ADATE10,ADATE10,
 dt,2,,Scale,Input,8,Right,DATETIME20.0,DATETIME20.0,
 
 Table: Value Labels
-Variable,Value,Label
+Variable Value,,Label
 ad,07/10/1982,label 1
 ,01/02/1993,label 2
 ,05/04/2003,label 3
@@ -52,24 +52,25 @@ END DATA.
 DISPLAY DICTIONARY.
 FREQUENCIES x/STAT=NONE.
 ])
-AT_CHECK([pspp -O format=csv value-labels.sps], [0], [dnl
+AT_CHECK([pspp -o pspp.csv -o pspp.txt value-labels.sps])
+AT_CHECK([cat pspp.csv], [0], [dnl
 Table: Variables
 Name,Position,Label,Measurement Level,Role,Width,Alignment,Print Format,Write Format,Missing Values
 x,1,,Scale,Input,8,Right,F8.2,F8.2,
 
 Table: Value Labels
-Variable,Value,Label
+Variable Value,,Label
 x,1.00,one
 ,2.00,first line\nsecond line
 ,3.00,three
 
 Table: x
-Value Label,Value,Frequency,Percent,Valid Percent,Cum Percent
-one,1.00,1,33.33,33.33,33.33
-"first line
-second line",2.00,1,33.33,33.33,66.67
-three,3.00,1,33.33,33.33,100.00
-Total,,3,100.0,100.0,
+,,Frequency,Percent,Valid Percent,Cumulative Percent
+Valid,one,1,33.3%,33.3%,33.3%
+,"first line
+second line",1,33.3%,33.3%,66.7%
+,three,1,33.3%,33.3%,100.0%
+Total,,3,100.0%,,
 ])
 AT_CLEANUP
 
@@ -90,24 +91,25 @@ GET FILE='value-labels.sav'.
 DISPLAY DICTIONARY.
 FREQUENCIES x/STAT=NONE.
 ])
-AT_CHECK([pspp -O format=csv get.sps], [0], [dnl
+AT_CHECK([pspp -o pspp.csv -o pspp.txt get.sps])
+AT_CHECK([cat pspp.csv], [0], [dnl
 Table: Variables
 Name,Position,Label,Measurement Level,Role,Width,Alignment,Print Format,Write Format,Missing Values
 x,1,,Scale,Input,8,Right,F8.2,F8.2,
 
 Table: Value Labels
-Variable,Value,Label
+Variable Value,,Label
 x,1.00,one
 ,2.00,first line\nsecond line
 ,3.00,three
 
 Table: x
-Value Label,Value,Frequency,Percent,Valid Percent,Cum Percent
-one,1.00,1,33.33,33.33,33.33
-"first line
-second line",2.00,1,33.33,33.33,66.67
-three,3.00,1,33.33,33.33,100.00
-Total,,3,100.0,100.0,
+,,Frequency,Percent,Valid Percent,Cumulative Percent
+Valid,one,1,33.3%,33.3%,33.3%
+,"first line
+second line",1,33.3%,33.3%,66.7%
+,three,1,33.3%,33.3%,100.0%
+Total,,3,100.0%,,
 ])
 AT_CLEANUP
 

@@ -49,18 +49,21 @@ correlations
 	/missing = pairwise
 	.
 ])
-AT_CHECK([pspp -o pspp.csv correlations.sps])
-AT_CHECK([cat pspp.csv], [0], [dnl
-Table: Correlations
+AT_CHECK([pspp -o pspp.csv -o pspp.txt correlations.sps])
+AT_CHECK([cat pspp.csv], [0],
+[[Table: Correlations
 ,,foo,bar,wiz,bang
-foo,Pearson Correlation,1.000,.802,.890,-.308
+foo,Pearson Correlation,1.000,.802,.890[a],-.308
 ,Sig. (2-tailed),,.055,.017,.553
 bar,Pearson Correlation,.802,1.000,.519,.118
 ,Sig. (2-tailed),.055,,.291,.824
-wiz,Pearson Correlation,.890,.519,1.000,-.344
+wiz,Pearson Correlation,.890[a],.519,1.000,-.344
 ,Sig. (2-tailed),.017,.291,,.505
 bang,Pearson Correlation,-.308,.118,-.344,1.000
 ,Sig. (2-tailed),.553,.824,.505,
+
+Footnotes:
+a,Significant at .05 level
 
 Table: Correlations
 ,,bar,wiz
@@ -71,19 +74,22 @@ wiz,Pearson Correlation,.497,1.000
 
 Table: Correlations
 ,,foo,bar,wiz,bang
-foo,Pearson Correlation,1.000,.805,.883,-.308
+foo,Pearson Correlation,1.000,.805[a],.883[a],-.308
 ,Sig. (2-tailed),,.029,.008,.553
 ,N,7,7,7,6
-bar,Pearson Correlation,.805,1.000,.497,.164
+bar,Pearson Correlation,.805[a],1.000,.497,.164
 ,Sig. (2-tailed),.029,,.210,.725
 ,N,7,8,8,7
-wiz,Pearson Correlation,.883,.497,1.000,-.337
+wiz,Pearson Correlation,.883[a],.497,1.000,-.337
 ,Sig. (2-tailed),.008,.210,,.460
 ,N,7,8,8,7
 bang,Pearson Correlation,-.308,.164,-.337,1.000
 ,Sig. (2-tailed),.553,.725,.460,
 ,N,6,7,7,7
-])
+
+Footnotes:
+a,Significant at .05 level
+]])
 AT_CLEANUP
 
 AT_SETUP([CORRELATIONS -- weighted])
@@ -192,15 +198,15 @@ AT_CHECK([pspp -o pspp.csv correlations.sps])
 AT_CHECK([sed '/a,Pearson/,$s/,\([[^,]]*\),.*/,\1,.../' pspp.csv], [0], [dnl
 Table: Descriptive Statistics
 ,Mean,Std. Deviation,N
-a,24.00,8.93,14.00
-f,4.73,.85,12.00
-b,14.50,6.41,14.00
-c,21.71,4.98,14.00
-g,24.86,6.09,14.00
-h,23.57,6.30,14.00
-i,27.79,6.73,14.00
-e,27.21,4.95,14.00
-d,27.93,5.23,14.00
+a,24.00,8.93,14
+f,4.73,.85,12
+b,14.50,6.41,14
+c,21.71,4.98,14
+g,24.86,6.09,14
+h,23.57,6.30,14
+i,27.79,6.73,14
+e,27.21,4.95,14
+d,27.93,5.23,14
 
 Table: Correlations
 ,,c,g,h,i,e,d
@@ -222,6 +228,7 @@ dnl Checks for bug #40661
 AT_SETUP([CORRELATIONS -- incorrect subtable selection])
 AT_DATA([correlations.sps], [dnl
 set format = F12.4.
+OUTPUT MODIFY /SELECT TABLES /TABLECELLS SELECT = [[CORRELATIONS]] FORMAT=F12.4.
 set decimal = dot.
 data list notable list /var1 var2 var3 var4 var5 *.
 begin data.
@@ -337,31 +344,38 @@ CORRELATION
 
 ])
 
-AT_CHECK([pspp -O format=csv  correlations.sps], [0],
-[Table: Correlations
+AT_CHECK([pspp -o pspp.csv -o pspp.txt correlations.sps])
+AT_CHECK([cat pspp.csv], [0],
+[[Table: Correlations
 ,,var4,var5
-var1,Pearson Correlation,.5693,-.0519
+var1,Pearson Correlation,.5693[a],-.0519
 ,Sig. (2-tailed),.000,.623
 ,N,93,92
-var2,Pearson Correlation,.3792,-.0407
+var2,Pearson Correlation,.3792[a],-.0407
 ,Sig. (2-tailed),.000,.698
 ,N,95,93
-var3,Pearson Correlation,.3699,-.0543
+var3,Pearson Correlation,.3699[a],-.0543
 ,Sig. (2-tailed),.000,.603
 ,N,95,94
 
+Footnotes:
+a,Significant at .05 level
+
 Table: Correlations
 ,,var1,var2
-var3,Pearson Correlation,.6964,.5615
+var3,Pearson Correlation,.6964[a],.5615[a]
 ,Sig. (2-tailed),.000,.000
 ,N,96,97
-var4,Pearson Correlation,.5693,.3792
+var4,Pearson Correlation,.5693[a],.3792[a]
 ,Sig. (2-tailed),.000,.000
 ,N,93,95
 var5,Pearson Correlation,-.0519,-.0407
 ,Sig. (2-tailed),.623,.698
 ,N,92,93
-])
+
+Footnotes:
+a,Significant at .05 level
+]])
 
 AT_CLEANUP
 

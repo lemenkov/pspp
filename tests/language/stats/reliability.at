@@ -199,17 +199,17 @@ RELIABILITY
   /VARIABLES=var6 var8 var15 var17 
   .
 ])
-AT_CHECK([pspp -o pspp.csv reliability.sps], [0],
+AT_CHECK([pspp -o pspp.csv -o pspp.txt reliability.sps], [0],
   [reliability.sps:174: warning: RELIABILITY: The STATISTICS subcommand is not yet implemented.  No statistics will be produced.
 ])
 AT_CHECK([cat pspp.csv], [0], [dnl
 Scale: Everything
 
 Table: Case Processing Summary
-,,N,%
-Cases,Valid,131,92.91
-,Excluded,10,7.09
-,Total,141,100.00
+Cases,N,Percent
+Valid,131,92.9%
+Excluded,10,7.1%
+Total,141,100.0%
 
 Table: Reliability Statistics
 Cronbach's Alpha,N of Items
@@ -218,10 +218,10 @@ Cronbach's Alpha,N of Items
 Scale: Nothing
 
 Table: Case Processing Summary
-,,N,%
-Cases,Valid,131,92.91
-,Excluded,10,7.09
-,Total,141,100.00
+Cases,N,Percent
+Valid,131,92.9%
+Excluded,10,7.1%
+Total,141,100.0%
 
 Table: Reliability Statistics
 Cronbach's Alpha,Part 1,Value,.55
@@ -239,10 +239,10 @@ reliability.sps:174: warning: RELIABILITY: The STATISTICS subcommand is not yet 
 Scale: Totals
 
 Table: Case Processing Summary
-,,N,%
-Cases,Valid,131,92.91
-,Excluded,10,7.09
-,Total,141,100.00
+Cases,N,Percent
+Valid,131,92.9%
+Excluded,10,7.1%
+Total,141,100.0%
 
 Table: Reliability Statistics
 Cronbach's Alpha,N of Items
@@ -258,10 +258,10 @@ var17,16.60,8.00,.57,.67
 Scale: ANY
 
 Table: Case Processing Summary
-,,N,%
-Cases,Valid,131,92.91
-,Excluded,10,7.09
-,Total,141,100.00
+Cases,N,Percent
+Valid,131,92.9%
+Excluded,10,7.1%
+Total,141,100.0%
 
 Table: Reliability Statistics
 Cronbach's Alpha,N of Items
@@ -335,18 +335,18 @@ reliability variables = v1 v3 v4.
 ])
 
 AT_CHECK([ln -s $top_srcdir/examples/hotel.sav .], [0])
-AT_CHECK([pspp -O format=csv tut-example.sps], [0], [dnl 
+AT_CHECK([pspp -o pspp.csv -o pspp.txt tut-example.sps])
+AT_CHECK([cat pspp.csv], [0], [dnl
 Scale: ANY
 
 Table: Case Processing Summary
-,,N,%
-Cases,Valid,17,100.00
-,Excluded,0,.00
-,Total,17,100.00
+Cases,N,Percent
+Valid,17,100.0%
+Excluded,0,.0%
+Total,17,100.0%
 
 Table: Reliability Statistics
 Cronbach's Alpha,N of Items
 .81,3
 ])
-
 AT_CLEANUP

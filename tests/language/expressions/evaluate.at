@@ -2120,10 +2120,10 @@ Table: Data List
 n,s,nlabel,slabel
 .,,,
 0,a,Very dissa,Wouldn't b
-1,b,Dissatisfi,Unhappy   @&t@
-2,c,Neutral   ,Bored     @&t@
-3,d,Satisfied ,Satiated  @&t@
-4,e,Very satis,Elated    @&t@
+1,b,Dissatisfi,Unhappy
+2,c,Neutral,Bored
+3,d,Satisfied,Satiated
+4,e,Very satis,Elated
 5,f,,
 6,g,,
 ])

@@ -31,11 +31,12 @@
 #include "language/data-io/data-reader.h"
 #include "libpspp/message.h"
 #include "libpspp/str.h"
-#include "output/tab.h"
+#include "output/pivot-table.h"
 
 #include "gl/xalloc.h"
 
 #include "gettext.h"
+#define N_(msgid) msgid
 #define _(msgid) gettext (msgid)
 
 /* Data parser for textual data like that read by DATA LIST. */
@@ -664,37 +665,48 @@ static void
 dump_fixed_table (const struct data_parser *parser,
                   const struct file_handle *fh)
 {
-  struct tab_table *t;
-  size_t i;
+  /* XXX This should not be preformatted. */
+  char *title = xasprintf (ngettext ("Reading %d record from %s.",
+                                     "Reading %d records from %s.",
+                                     parser->records_per_case),
+                           parser->records_per_case, fh_get_name (fh));
+  struct pivot_table *table = pivot_table_create__ (
+    pivot_value_new_user_text (title, -1));
+  free (title);
 
-  t = tab_create (4, parser->field_cnt + 1);
-  tab_headers (t, 0, 0, 1, 0);
-  tab_text (t, 0, 0, TAB_CENTER | TAT_TITLE, _("Variable"));
-  tab_text (t, 1, 0, TAB_CENTER | TAT_TITLE, _("Record"));
-  tab_text (t, 2, 0, TAB_CENTER | TAT_TITLE, _("Columns"));
-  tab_text (t, 3, 0, TAB_CENTER | TAT_TITLE, _("Format"));
-  tab_box (t, TAL_1, TAL_1, TAL_0, TAL_1, 0, 0, 3, parser->field_cnt);
-  tab_hline (t, TAL_2, 0, 3, 1);
+  pivot_dimension_create (
+    table, PIVOT_AXIS_COLUMN, N_("Attributes"),
+    N_("Record"), N_("Columns"), N_("Format"));
 
-  for (i = 0; i < parser->field_cnt; i++)
+  struct pivot_dimension *variables = pivot_dimension_create (
+    table, PIVOT_AXIS_ROW, N_("Variable"));
+  variables->root->show_label = true;
+  for (size_t i = 0; i < parser->field_cnt; i++)
     {
       struct field *f = &parser->fields[i];
-      char fmt_string[FMT_STRING_LEN_MAX + 1];
-      int row = i + 1;
 
-      tab_text (t, 0, row, TAB_LEFT, f->name);
-      tab_text_format (t, 1, row, 0, "%d", f->record);
-      tab_text_format (t, 2, row, 0, "%3d-%3d",
-                       f->first_column, f->first_column + f->format.w - 1);
-      tab_text (t, 3, row, TAB_LEFT | TAB_FIX,
-                fmt_to_string (&f->format, fmt_string));
+      /* XXX It would be better to have the actual variable here. */
+      int variable_idx = pivot_category_create_leaf (
+        variables->root, pivot_value_new_user_text (f->name, -1));
+
+      pivot_table_put2 (table, 0, variable_idx,
+                        pivot_value_new_integer (f->record));
+
+      int first_column = f->first_column;
+      int last_column = f->first_column + f->format.w - 1;
+      char *columns = xasprintf ("%3d-%3d", first_column, last_column);
+      pivot_table_put2 (table, 1, variable_idx,
+                        pivot_value_new_user_text (columns, -1));
+      free (columns);
+
+      char str[FMT_STRING_LEN_MAX + 1];
+      pivot_table_put2 (table, 2, variable_idx,
+                        pivot_value_new_user_text (
+                          fmt_to_string (&f->format, str), -1));
+
     }
 
-  tab_title (t, ngettext ("Reading %d record from %s.",
-                          "Reading %d records from %s.",
-                          parser->records_per_case),
-             parser->records_per_case, fh_get_name (fh));
-  tab_submit (t);
+  pivot_table_submit (table);
 }
 
 /* Displays a table giving information on free-format variable parsing
@@ -703,30 +715,31 @@ static void
 dump_delimited_table (const struct data_parser *parser,
                       const struct file_handle *fh)
 {
-  struct tab_table *t;
-  size_t i;
+  struct pivot_table *table = pivot_table_create__ (
+    pivot_value_new_text_format (N_("Reading free-form data from %s."),
+                                 fh_get_name (fh)));
 
-  t = tab_create (2, parser->field_cnt + 1);
-  tab_headers (t, 0, 0, 1, 0);
-  tab_text (t, 0, 0, TAB_CENTER | TAT_TITLE, _("Variable"));
-  tab_text (t, 1, 0, TAB_CENTER | TAT_TITLE, _("Format"));
-  tab_box (t, TAL_1, TAL_1, TAL_0, TAL_1, 0, 0, 1, parser->field_cnt);
-  tab_hline (t, TAL_2, 0, 1, 1);
+  pivot_dimension_create (
+    table, PIVOT_AXIS_COLUMN, N_("Attributes"), N_("Format"));
 
-  for (i = 0; i < parser->field_cnt; i++)
+  struct pivot_dimension *variables = pivot_dimension_create (
+    table, PIVOT_AXIS_ROW, N_("Variable"));
+  variables->root->show_label = true;
+  for (size_t i = 0; i < parser->field_cnt; i++)
     {
       struct field *f = &parser->fields[i];
-      char str[FMT_STRING_LEN_MAX + 1];
-      int row = i + 1;
 
-      tab_text (t, 0, row, TAB_LEFT, f->name);
-      tab_text (t, 1, row, TAB_LEFT | TAB_FIX,
-                fmt_to_string (&f->format, str));
+      /* XXX It would be better to have the actual variable here. */
+      int variable_idx = pivot_category_create_leaf (
+        variables->root, pivot_value_new_user_text (f->name, -1));
+
+      char str[FMT_STRING_LEN_MAX + 1];
+      pivot_table_put2 (table, 0, variable_idx,
+                        pivot_value_new_user_text (
+                          fmt_to_string (&f->format, str), -1));
     }
 
-  tab_title (t, _("Reading free-form data from %s."), fh_get_name (fh));
-
-  tab_submit (t);
+  pivot_table_submit (table);
 }
 
 /* Displays a table giving information on how PARSER will read

@@ -36,7 +36,7 @@
 #include "libpspp/ll.h"
 #include "libpspp/message.h"
 #include "libpspp/misc.h"
-#include "output/tab.h"
+#include "output/pivot-table.h"
 #include "output/table-item.h"
 
 #include "gl/intprops.h"
@@ -45,6 +45,7 @@
 #include "gl/xmalloca.h"
 
 #include "gettext.h"
+#define N_(msgid) msgid
 #define _(msgid) gettext (msgid)
 
 enum numbering
@@ -84,52 +85,48 @@ list_execute (const struct lst_cmd *lcmd, struct dataset *ds)
   grouper = casegrouper_create_splits (proc_open (ds), dict);
   while (casegrouper_get_next_group (grouper, &group))
     {
-      struct ccase *ccase;
-      struct table *t = NULL;
-
-      ccase = casereader_peek (group, 0);
-      if (ccase != NULL)
+      struct ccase *c = casereader_peek (group, 0);
+      if (c != NULL)
         {
-          output_split_file_values (ds, ccase);
-          case_unref (ccase);
+          output_split_file_values (ds, c);
+          case_unref (c);
         }
 
       group = casereader_project (group, &sc);
-      if (lcmd->numbering == format_numbered)
-        group = casereader_create_arithmetic_sequence (group, 1, 1);
       group = casereader_select (group, lcmd->first - 1,
                                  (lcmd->last != LONG_MAX ? lcmd->last
                                   : CASENUMBER_MAX), lcmd->step);
 
+      struct pivot_table *table = pivot_table_create (N_("Data List"));
+      table->show_values = table->show_variables = SETTINGS_VALUE_SHOW_VALUE;
+
+      struct pivot_dimension *variables = pivot_dimension_create (
+        table, PIVOT_AXIS_COLUMN, N_("Variables"));
+      for (int i = 0; i < lcmd->n_variables; i++)
+        pivot_category_create_leaf (
+          variables->root, pivot_value_new_variable (lcmd->v_variables[i]));
+
+      struct pivot_dimension *cases = pivot_dimension_create (
+        table, PIVOT_AXIS_ROW, N_("Case Number"));
       if (lcmd->numbering == format_numbered)
-        {
-          struct fmt_spec fmt;
-          size_t col;
-          int width;
-
-          width = lcmd->last == LONG_MAX ? 5 : intlog10 (lcmd->last);
-          fmt = fmt_for_output (FMT_F, width, 0);
-          col = caseproto_get_n_widths (casereader_get_proto (group)) - 1;
-
-          t = table_from_casereader (group, col, _("Case Number"), &fmt);
-        }
+        cases->root->show_label = true;
       else
-        t = NULL;
+        cases->hide_all_labels = true;
 
-      for (i = 0; i < lcmd->n_variables; i++)
+      casenumber case_num = 1;
+      for (; (c = casereader_read (group)) != NULL; case_unref (c))
         {
-          const struct variable *var = lcmd->v_variables[i];
-          struct table *c;
+          int case_idx = pivot_category_create_leaf (
+            cases->root, pivot_value_new_integer (case_num++));
 
-          c = table_from_casereader (group, i, var_get_name (var),
-                                     var_get_print_format (var));
-          t = table_hpaste (t, c);
+          for (int i = 0; i < lcmd->n_variables; i++)
+            pivot_table_put2 (table, i, case_idx,
+                              pivot_value_new_var_value (
+                                lcmd->v_variables[i], case_data_idx (c, i)));
         }
-
       casereader_destroy (group);
 
-      if (t)
-	table_item_submit (table_item_create (t, "Data List", NULL));
+      pivot_table_submit (table);
     }
   ok = casegrouper_destroy (grouper);
   ok = proc_commit (ds) && ok;

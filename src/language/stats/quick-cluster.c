@@ -39,7 +39,7 @@
 #include "libpspp/assertion.h"
 #include "libpspp/str.h"
 #include "math/random.h"
-#include "output/tab.h"
+#include "output/pivot-table.h"
 #include "output/text-item.h"
 
 #include "gettext.h"
@@ -514,97 +514,69 @@ kmeans_cluster (struct Kmeans *kmeans, struct casereader *reader, const struct q
 static void
 quick_cluster_show_centers (struct Kmeans *kmeans, bool initial, const struct qc *qc)
 {
-  struct tab_table *t;
-  int nc, nr, currow;
-  int i, j;
-  nc = qc->ngroups + 1;
-  nr = qc->n_vars + 4;
-  t = tab_create (nc, nr);
-  tab_headers (t, 0, nc - 1, 0, 1);
-  currow = 0;
-  if (!initial)
-    {
-      tab_title (t, _("Final Cluster Centers"));
-    }
-  else
-    {
-      tab_title (t, _("Initial Cluster Centers"));
-    }
-  tab_box (t, TAL_2, TAL_2, TAL_0, TAL_1, 0, 0, nc - 1, nr - 1);
-  tab_joint_text (t, 1, 0, nc - 1, 0, TAB_CENTER, _("Cluster"));
-  tab_hline (t, TAL_1, 1, nc - 1, 2);
-  currow += 2;
+  struct pivot_table *table = pivot_table_create (
+    initial ? N_("Initial Cluster Centers") : N_("Final Cluster Centers"));
 
-  for (i = 0; i < qc->ngroups; i++)
-    {
-      tab_text_format (t, (i + 1), currow, TAB_CENTER, "%d", (i + 1));
-    }
-  currow++;
-  tab_hline (t, TAL_1, 1, nc - 1, currow);
-  currow++;
-  for (i = 0; i < qc->n_vars; i++)
-    {
-      tab_text (t, 0, currow + i, TAB_LEFT,
-		var_to_string (qc->vars[i]));
+  struct pivot_dimension *clusters = pivot_dimension_create (
+    table, PIVOT_AXIS_COLUMN, N_("Cluster"));
+  clusters->root->show_label = true;
+  for (size_t i = 0; i < qc->ngroups; i++)
+    pivot_category_create_leaf (clusters->root,
+                                pivot_value_new_integer (i + 1));
+
+  struct pivot_dimension *variables = pivot_dimension_create (
+    table, PIVOT_AXIS_ROW, N_("Variable"));
+  for (size_t i = 0; i < qc->n_vars; i++)
+    pivot_category_create_leaf (variables->root,
+                                pivot_value_new_variable (qc->vars[i]));
+
+  const gsl_matrix *matrix = (initial
+                              ? kmeans->initial_centers
+                              : kmeans->centers);
+  for (size_t i = 0; i < qc->ngroups; i++)
+    for (size_t j = 0; j < qc->n_vars; j++)
+      {
+        double x = gsl_matrix_get (matrix, kmeans->group_order->data[i], j);
+        union value v = { .f = x };
+        pivot_table_put2 (table, i, j,
+                          pivot_value_new_var_value (qc->vars[j], &v));
     }
 
-  for (i = 0; i < qc->ngroups; i++)
-    {
-      for (j = 0; j < qc->n_vars; j++)
-	{
-	  if (!initial)
-	    {
-	      tab_double (t, i + 1, j + 4, TAB_CENTER,
-			  gsl_matrix_get (kmeans->centers,
-					  kmeans->group_order->data[i], j),
-			  var_get_print_format (qc->vars[j]), RC_OTHER);
-	    }
-	  else
-	    {
-	      tab_double (t, i + 1, j + 4, TAB_CENTER,
-			  gsl_matrix_get (kmeans->initial_centers,
-					  kmeans->group_order->data[i], j),
-			  var_get_print_format (qc->vars[j]), RC_OTHER);
-	    }
-	}
-    }
-  tab_submit (t);
+  pivot_table_submit (table);
 }
 
 /* Reports cluster membership for each case. */
 static void
 quick_cluster_show_membership (struct Kmeans *kmeans, const struct casereader *reader, const struct qc *qc)
 {
-  struct tab_table *t;
-  int nc, nr, i;
+  struct pivot_table *table = pivot_table_create (N_("Cluster Membership"));
 
-  struct ccase *c;
-  struct casereader *cs = casereader_clone (reader);
-  nc = 2;
-  nr = kmeans->n + 1;
-  t = tab_create (nc, nr);
-  tab_headers (t, 0, nc - 1, 0, 0);
-  tab_title (t, _("Cluster Membership"));
-  tab_text (t, 0, 0, TAB_CENTER, _("Case Number"));
-  tab_text (t, 1, 0, TAB_CENTER, _("Cluster"));
-  tab_box (t, TAL_2, TAL_2, TAL_0, TAL_1, 0, 0, nc - 1, nr - 1);
-  tab_hline (t, TAL_1, 0, nc - 1, 1);
+  pivot_dimension_create (table, PIVOT_AXIS_COLUMN, N_("Cluster"),
+                          N_("Cluster"));
+
+  struct pivot_dimension *cases = pivot_dimension_create (
+    table, PIVOT_AXIS_ROW, N_("Case Number"));
+  cases->root->show_label = true;
 
   gsl_permutation *ip = gsl_permutation_alloc (qc->ngroups);
   gsl_permutation_inverse (ip, kmeans->group_order);
 
-  for (i = 0; (c = casereader_read (cs)) != NULL; i++, case_unref (c))
+  struct casereader *cs = casereader_clone (reader);
+  struct ccase *c;
+  for (int i = 0; (c = casereader_read (cs)) != NULL; i++, case_unref (c))
     {
-      int clust = -1;
       assert (i < kmeans->n);
+      int clust;
       kmeans_get_nearest_group (kmeans, c, qc, &clust, NULL, NULL, NULL);
-      clust = ip->data[clust];
-      tab_text_format (t, 0, i+1, TAB_CENTER, "%d", (i + 1));
-      tab_text_format (t, 1, i+1, TAB_CENTER, "%d", (clust + 1));
+      int cluster = ip->data[clust];
+
+      int case_idx = pivot_category_create_leaf (
+        cases->root, pivot_value_new_integer (i + 1));
+      pivot_table_put2 (table, 0, case_idx,
+                        pivot_value_new_integer (cluster + 1));
     }
   gsl_permutation_free (ip);
-  assert (i == kmeans->n);
-  tab_submit (t);
+  pivot_table_submit (table);
   casereader_destroy (cs);
 }
 
@@ -613,31 +585,33 @@ quick_cluster_show_membership (struct Kmeans *kmeans, const struct casereader *r
 static void
 quick_cluster_show_number_cases (struct Kmeans *kmeans, const struct qc *qc)
 {
-  struct tab_table *t;
-  int nc, nr;
-  int i, numelem;
-  long int total;
-  nc = 3;
-  nr = qc->ngroups + 1;
-  t = tab_create (nc, nr);
-  tab_headers (t, 0, nc - 1, 0, 0);
-  tab_title (t, _("Number of Cases in each Cluster"));
-  tab_box (t, TAL_2, TAL_2, TAL_0, TAL_1, 0, 0, nc - 1, nr - 1);
-  tab_text (t, 0, 0, TAB_LEFT, _("Cluster"));
+  struct pivot_table *table = pivot_table_create (
+    N_("Number of Cases in each Cluster"));
 
-  total = 0;
-  for (i = 0; i < qc->ngroups; i++)
+  pivot_dimension_create (table, PIVOT_AXIS_COLUMN, N_("Statistics"),
+                          N_("Count"));
+
+  struct pivot_dimension *clusters = pivot_dimension_create (
+    table, PIVOT_AXIS_ROW, N_("Clusters"));
+  struct pivot_category *group = pivot_category_create_group (
+    clusters->root, N_("Cluster"));
+
+  long int total = 0;
+  for (int i = 0; i < qc->ngroups; i++)
     {
-      tab_text_format (t, 1, i, TAB_CENTER, "%d", (i + 1));
-      numelem =
-	kmeans->num_elements_groups->data[kmeans->group_order->data[i]];
-      tab_text_format (t, 2, i, TAB_CENTER, "%d", numelem);
-      total += numelem;
+      int cluster_idx = pivot_category_create_leaf (
+        group, pivot_value_new_integer (i + 1));
+      int count = kmeans->num_elements_groups->data[
+        kmeans->group_order->data[i]];
+      pivot_table_put2 (table, 0, cluster_idx,
+                        pivot_value_new_integer (count));
+      total += count;
     }
 
-  tab_text (t, 0, qc->ngroups, TAB_LEFT, _("Valid"));
-  tab_text_format (t, 2, qc->ngroups, TAB_LEFT, "%ld", total);
-  tab_submit (t);
+  int cluster_idx = pivot_category_create_leaf (
+    clusters->root, pivot_value_new_text (N_("Valid")));
+  pivot_table_put2 (table, 0, cluster_idx, pivot_value_new_integer (total));
+  pivot_table_submit (table);
 }
 
 /* Reports. */

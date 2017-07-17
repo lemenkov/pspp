@@ -41,21 +41,21 @@ AT_CHECK([pspp -O format=csv regression.sps], [0], [dnl
 regression.sps:16: warning: REGRESSION: REGRESSION with SAVE ignores FILTER.  All cases will be processed.
 
 Table: Model Summary (v2)
-,R,R Square,Adjusted R Square,Std. Error of the Estimate
-,.971,.942,.925,1.337
+R,R Square,Adjusted R Square,Std. Error of the Estimate
+.971,.942,.925,1.337
 
 Table: ANOVA (v2)
-,,Sum of Squares,df,Mean Square,F,Sig.
-,Regression,202.753,2,101.376,56.754,.000
-,Residual,12.504,7,1.786,,
-,Total,215.256,9,,,
+,Sum of Squares,df,Mean Square,F,Sig.
+Regression,202.753,2,101.376,56.754,.000
+Residual,12.504,7,1.786,,
+Total,215.256,9,,,
 
 Table: Coefficients (v2)
-,,Unstandardized Coefficients,,Standardized Coefficients,,
-,,B,Std. Error,Beta,t,Sig.
-,(Constant),2.191,2.357,.000,.930,.380
-,v0,1.813,1.053,.171,1.722,.129
-,v1,-3.427,.332,-1.026,-10.334,.000
+,Unstandardized Coefficients,,Standardized Coefficients,t,Sig.
+,B,Std. Error,Beta,,
+(Constant),2.191,2.357,.000,.930,.380
+v0,1.813,1.053,.171,1.722,.129
+v1,-3.427,.332,-1.026,-10.334,.000
 
 Table: Data List
 v0,v1,v2,RES1,PRED1
@@ -96,38 +96,38 @@ list.
 
 AT_CHECK([pspp -O format=csv regression.sps], [0], [dnl
 Table: Model Summary (v2)
-,R,R Square,Adjusted R Square,Std. Error of the Estimate
-,.971,.942,.925,1.337
+R,R Square,Adjusted R Square,Std. Error of the Estimate
+.971,.942,.925,1.337
 
 Table: ANOVA (v2)
-,,Sum of Squares,df,Mean Square,F,Sig.
-,Regression,202.753,2,101.376,56.754,.000
-,Residual,12.504,7,1.786,,
-,Total,215.256,9,,,
+,Sum of Squares,df,Mean Square,F,Sig.
+Regression,202.753,2,101.376,56.754,.000
+Residual,12.504,7,1.786,,
+Total,215.256,9,,,
 
 Table: Coefficients (v2)
-,,Unstandardized Coefficients,,Standardized Coefficients,,
-,,B,Std. Error,Beta,t,Sig.
-,(Constant),2.191,2.357,.000,.930,.380
-,v0,1.813,1.053,.171,1.722,.129
-,v1,-3.427,.332,-1.026,-10.334,.000
+,Unstandardized Coefficients,,Standardized Coefficients,t,Sig.
+,B,Std. Error,Beta,,
+(Constant),2.191,2.357,.000,.930,.380
+v0,1.813,1.053,.171,1.722,.129
+v1,-3.427,.332,-1.026,-10.334,.000
 
 Table: Model Summary (v2)
-,R,R Square,Adjusted R Square,Std. Error of the Estimate
-,.971,.942,.925,1.337
+R,R Square,Adjusted R Square,Std. Error of the Estimate
+.971,.942,.925,1.337
 
 Table: ANOVA (v2)
-,,Sum of Squares,df,Mean Square,F,Sig.
-,Regression,202.753,2,101.376,56.754,.000
-,Residual,12.504,7,1.786,,
-,Total,215.256,9,,,
+,Sum of Squares,df,Mean Square,F,Sig.
+Regression,202.753,2,101.376,56.754,.000
+Residual,12.504,7,1.786,,
+Total,215.256,9,,,
 
 Table: Coefficients (v2)
-,,Unstandardized Coefficients,,Standardized Coefficients,,
-,,B,Std. Error,Beta,t,Sig.
-,(Constant),2.191,2.357,.000,.930,.380
-,v0,1.813,1.053,.171,1.722,.129
-,v1,-3.427,.332,-1.026,-10.334,.000
+,Unstandardized Coefficients,,Standardized Coefficients,t,Sig.
+,B,Std. Error,Beta,,
+(Constant),2.191,2.357,.000,.930,.380
+v0,1.813,1.053,.171,1.722,.129
+v1,-3.427,.332,-1.026,-10.334,.000
 
 Table: Data List
 v0,v1,v2,RES1,PRED1
@@ -1786,20 +1786,20 @@ v0,F8.0
 v1,F8.0
 
 Table: Model Summary (v0)
-,R,R Square,Adjusted R Square,Std. Error of the Estimate
-,.05,.00,.00,8.11
+R,R Square,Adjusted R Square,Std. Error of the Estimate
+.05,.00,.00,8.11
 
 Table: ANOVA (v0)
-,,Sum of Squares,df,Mean Square,F,Sig.
-,Regression,235.23,1,235.23,3.58,.059
-,Residual,98438.40,1498,65.71,,
-,Total,98673.63,1499,,,
+,Sum of Squares,df,Mean Square,F,Sig.
+Regression,235.23,1,235.23,3.58,.059
+Residual,98438.40,1498,65.71,,
+Total,98673.63,1499,,,
 
 Table: Coefficients (v0)
-,,Unstandardized Coefficients,,Standardized Coefficients,,
-,,B,Std. Error,Beta,t,Sig.
-,(Constant),1.24,.42,.00,2.95,.003
-,v1,1.37,.72,.05,1.89,.059
+,Unstandardized Coefficients,,Standardized Coefficients,t,Sig.
+,B,Std. Error,Beta,,
+(Constant),1.24,.42,.00,2.95,.003
+v1,1.37,.72,.05,1.89,.059
 ])
 
 AT_CLEANUP
@@ -2125,23 +2125,23 @@ regression
 
 AT_CHECK([pspp -O format=csv conf.sps], [0], [dnl
 Table: Model Summary (science)
-,R,R Square,Adjusted R Square,Std. Error of the Estimate
-,.699,.489,.479,7.148
+R,R Square,Adjusted R Square,Std. Error of the Estimate
+.699,.489,.479,7.148
 
 Table: ANOVA (science)
-,,Sum of Squares,df,Mean Square,F,Sig.
-,Regression,9543.721,4,2385.930,46.695,.000
-,Residual,9963.779,195,51.096,,
-,Total,19507.500,199,,,
+,Sum of Squares,df,Mean Square,F,Sig.
+Regression,9543.721,4,2385.930,46.695,.000
+Residual,9963.779,195,51.096,,
+Total,19507.500,199,,,
 
 Table: Coefficients (science)
-,,Unstandardized Coefficients,,Standardized Coefficients,,,95% Confidence Interval for B,
-,,B,Std. Error,Beta,t,Sig.,Lower Bound,Upper Bound
-,(Constant),12.325,3.194,.000,3.859,.000,6.027,18.624
-,math,.389,.074,.368,5.252,.000,.243,.535
-,female,-2.010,1.023,-.101,-1.965,.051,-4.027,.007
-,socst,.050,.062,.054,.801,.424,-.073,.173
-,read,.335,.073,.347,4.607,.000,.192,.479
+,Unstandardized Coefficients,,Standardized Coefficients,t,Sig.,95% Confidence Interval for B,
+,B,Std. Error,Beta,,,Lower Bound,Upper Bound
+(Constant),12.325,3.194,.000,3.859,.000,6.027,18.624
+math,.389,.074,.368,5.252,.000,.243,.535
+female,-2.010,1.023,-.101,-1.965,.051,-4.027,.007
+socst,.050,.062,.054,.801,.424,-.073,.173
+read,.335,.073,.347,4.607,.000,.192,.479
 ])
 
 
@@ -2173,27 +2173,27 @@ LIST.
 AT_CHECK([pspp -o pspp.csv regression.sps])
 AT_CHECK([cat pspp.csv], [0], [dnl
 Table: Model Summary (X1)
-,R,R Square,Adjusted R Square,Std. Error of the Estimate
-,.95,.89,.84,15.08
+R,R Square,Adjusted R Square,Std. Error of the Estimate
+.95,.89,.84,15.08
 
 Table: ANOVA (X1)
-,,Sum of Squares,df,Mean Square,F,Sig.
-,Regression,3820.45,1,3820.45,16.81,.055
-,Residual,454.55,2,227.27,,
-,Total,4275.00,3,,,
+,Sum of Squares,df,Mean Square,F,Sig.
+Regression,3820.45,1,3820.45,16.81,.055
+Residual,454.55,2,227.27,,
+Total,4275.00,3,,,
 
 Table: Coefficients (X1)
-,,Unstandardized Coefficients,,Standardized Coefficients,,
-,,B,Std. Error,Beta,t,Sig.
-,(Constant),85.45,10.16,.00,8.41,.004
-,Y,-3.73,.91,-.95,-4.10,.055
+,Unstandardized Coefficients,,Standardized Coefficients,t,Sig.
+,B,Std. Error,Beta,,
+(Constant),85.45,10.16,.00,8.41,.004
+Y,-3.73,.91,-.95,-4.10,.055
 
 Table: Data List
 text,Y,X1,RES1
-V00276601               ,.00,90.00,4.55
-V00292909               ,10.00,30.00,-18.18
-V00291204               ,20.00,20.00,9.09
-V00300070               ,.00,90.00,4.55
+V00276601,.00,90.00,4.55
+V00292909,10.00,30.00,-18.18
+V00291204,20.00,20.00,9.09
+V00300070,.00,90.00,4.55
 ])
 AT_CLEANUP
 
@@ -2260,20 +2260,20 @@ REGRESSION
 
 AT_CHECK([pspp -O format=csv regression.sps], [0], [dnl
 Table: Model Summary (value)
-,R,R Square,Adjusted R Square,Std. Error of the Estimate
-,.612,.374,.338,6.176
+R,R Square,Adjusted R Square,Std. Error of the Estimate
+.612,.374,.338,6.176
 
 Table: ANOVA (value)
-,,Sum of Squares,df,Mean Square,F,Sig.
-,Regression,388.065,1,388.065,10.173,.005
-,Residual,648.498,17,38.147,,
-,Total,1036.563,18,,,
+,Sum of Squares,df,Mean Square,F,Sig.
+Regression,388.065,1,388.065,10.173,.005
+Residual,648.498,17,38.147,,
+Total,1036.563,18,,,
 
 Table: Coefficients (value)
-,,Unstandardized Coefficients,,Standardized Coefficients,,
-,,B,Std. Error,Beta,t,Sig.
-,(Constant),.927,2.247,.000,.413,.685
-,number,.611,.192,.612,3.189,.005
+,Unstandardized Coefficients,,Standardized Coefficients,t,Sig.
+,B,Std. Error,Beta,,
+(Constant),.927,2.247,.000,.413,.685
+number,.611,.192,.612,3.189,.005
 ])
 
 AT_CLEANUP 
@@ -2317,20 +2317,66 @@ REGRESSION
 
 AT_CHECK([pspp -O format=csv regression-origin.sps], [0], [dnl
 Table: Model Summary (value)
-,R,R Square,Adjusted R Square,Std. Error of the Estimate
-,.802,.643,.622,6.032
+R,R Square,Adjusted R Square,Std. Error of the Estimate
+.802,.643,.622,6.032
 
 Table: ANOVA (value)
-,,Sum of Squares,df,Mean Square,F,Sig.
-,Regression,1181.726,1,1181.726,32.475,.000
-,Residual,654.989,18,36.388,,
-,Total,1836.715,19,,,
+,Sum of Squares,df,Mean Square,F,Sig.
+Regression,1181.726,1,1181.726,32.475,.000
+Residual,654.989,18,36.388,,
+Total,1836.715,19,,,
 
 Table: Coefficients (value)
-,,Unstandardized Coefficients,,Standardized Coefficients,,
-,,B,Std. Error,Beta,t,Sig.
-,number,.672,.118,.802,5.699,.000
-,,,,,,
+,Unstandardized Coefficients,,Standardized Coefficients,t,Sig.
+,B,Std. Error,Beta,,
+number,.672,.118,.802,5.699,.000
 ])
 
 AT_CLEANUP 
+
+dnl This is an example from doc/tutorial.texi
+dnl So if the results of this have to be changed in any way,
+dnl make sure to update that file.
+AT_SETUP([REGRESSION tutorial example])
+cp $top_srcdir/examples/repairs.sav .
+AT_DATA([regression.sps], [dnl
+GET FILE='repairs.sav'.
+REGRESSION /VARIABLES=mtbf duty_cycle /DEPENDENT=mttr.
+REGRESSION /VARIABLES=mtbf /DEPENDENT=mttr.
+])
+AT_CHECK([pspp -o pspp.csv -o pspp.txt regression.sps])
+AT_CHECK([cat pspp.csv], [0], [dnl
+Table: Model Summary (Mean time to repair (hours) )
+R,R Square,Adjusted R Square,Std. Error of the Estimate
+.99,.99,.99,2.24
+
+Table: ANOVA (Mean time to repair (hours) )
+,Sum of Squares,df,Mean Square,F,Sig.
+Regression,5308.87,2,2654.44,530.75,.000
+Residual,60.02,12,5.00,,
+Total,5368.89,14,,,
+
+Table: Coefficients (Mean time to repair (hours) )
+,Unstandardized Coefficients,,Standardized Coefficients,t,Sig.
+,B,Std. Error,Beta,,
+(Constant),9.81,1.50,.00,6.54,.000
+Mean time between failures (months) ,3.10,.10,.99,32.43,.000
+Ratio of working to non-working time,1.09,1.78,.02,.61,.552
+
+Table: Model Summary (Mean time to repair (hours) )
+R,R Square,Adjusted R Square,Std. Error of the Estimate
+.99,.99,.99,2.18
+
+Table: ANOVA (Mean time to repair (hours) )
+,Sum of Squares,df,Mean Square,F,Sig.
+Regression,5307.00,1,5307.00,1114.73,.000
+Residual,61.89,13,4.76,,
+Total,5368.89,14,,,
+
+Table: Coefficients (Mean time to repair (hours) )
+,Unstandardized Coefficients,,Standardized Coefficients,t,Sig.
+,B,Std. Error,Beta,,
+(Constant),10.50,.96,.00,10.96,.000
+Mean time between failures (months) ,3.11,.09,.99,33.39,.000
+])
+AT_CLEANUP

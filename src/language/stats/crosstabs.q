@@ -55,7 +55,7 @@
 #include "libpspp/misc.h"
 #include "libpspp/pool.h"
 #include "libpspp/str.h"
-#include "output/tab.h"
+#include "output/pivot-table.h"
 #include "output/chart-item.h"
 #include "output/charts/barchart.h"
 
@@ -131,6 +131,7 @@ struct crosstabulation
     /* Constants (0 or more). */
     int n_consts;
     struct xtab_var *const_vars;
+    size_t *const_indexes;
 
     /* Data. */
     struct hmap data;
@@ -203,12 +204,38 @@ static void tabulate_general_case (struct crosstabulation *, const struct ccase 
 static void tabulate_integer_case (struct crosstabulation *, const struct ccase *,
                                    double weight);
 static void postcalc (struct crosstabs_proc *);
-static void submit (struct crosstabulation *, struct tab_table *);
 
 static double
 round_weight (const struct crosstabs_proc *proc, double weight)
 {
   return proc->round_down ? floor (weight) : floor (weight + 0.5);
+}
+
+#define FOR_EACH_POPULATED_COLUMN(C, XT) \
+  for (int C = next_populated_column (0, XT); \
+       C < (XT)->vars[COL_VAR].n_values;      \
+       C = next_populated_column (C + 1, XT))
+static int
+next_populated_column (int c, const struct crosstabulation *xt)
+{
+  int n_columns = xt->vars[COL_VAR].n_values;
+  for (; c < n_columns; c++)
+    if (xt->col_tot[c])
+      break;
+  return c;
+}
+
+#define FOR_EACH_POPULATED_ROW(R, XT) \
+  for (int R = next_populated_row (0, XT); R < (XT)->vars[ROW_VAR].n_values; \
+       R = next_populated_row (R + 1, XT))
+static int
+next_populated_row (int r, const struct crosstabulation *xt)
+{
+  int n_rows = xt->vars[ROW_VAR].n_values;
+  for (; r < n_rows; r++)
+    if (xt->row_tot[r])
+      break;
+  return r;
 }
 
 /* Parses and executes the CROSSTABS procedure. */
@@ -806,16 +833,26 @@ make_crosstabulation_subset (struct crosstabulation *xt, size_t row0,
   if (xt->n_vars > 2)
     {
       assert (xt->n_consts == 0);
-      subset->missing = xt->missing;
       subset->n_vars = 2;
       subset->vars = xt->vars;
 
       subset->n_consts = xt->n_vars - 2;
       subset->const_vars = xt->vars + 2;
+      subset->const_indexes = xcalloc (subset->n_consts,
+                                       sizeof *subset->const_indexes);
       for (size_t i = 0; i < subset->n_consts; i++)
         {
-          subset->const_vars[i].n_values = 1;
-          subset->const_vars[i].values = &xt->entries[row0]->values[2 + i];
+          const union value *value = &xt->entries[row0]->values[2 + i];
+
+          for (size_t j = 0; j < xt->vars[2 + i].n_values; j++)
+            if (value_equal (&xt->vars[2 + i].values[j], value,
+                             var_get_width (xt->vars[2 + i].var)))
+              {
+                subset->const_indexes[i] = j;
+                goto found;
+              }
+          NOT_REACHED ();
+        found: ;
         }
     }
   subset->entries = &xt->entries[row0];
@@ -879,115 +916,80 @@ compare_table_entry_3way_inv (const void *ap_, const void *bp_, const void *xt_)
   return -compare_table_entry_3way (ap_, bp_, xt_);
 }
 
-static int
-find_first_difference (const struct crosstabulation *xt, size_t row)
-{
-  if (row == 0)
-    return xt->n_vars - 1;
-  else
-    {
-      const struct freq *a = xt->entries[row];
-      const struct freq *b = xt->entries[row - 1];
-      int col;
-
-      for (col = xt->n_vars - 1; col >= 0; col--)
-        if (compare_table_entry_var_3way (a, b, xt, col))
-          return col;
-      NOT_REACHED ();
-    }
-}
-
 /* Output a table summarizing the cases processed. */
 static void
 make_summary_table (struct crosstabs_proc *proc)
 {
-  struct tab_table *summary;
-  struct crosstabulation *xt;
-  struct string name;
-  int i;
+  struct pivot_table *table = pivot_table_create (N_("Summary"));
+  pivot_table_set_weight_var (table, dict_get_weight (proc->dict));
 
-  summary = tab_create (7, 3 + proc->n_pivots);
-  tab_set_format (summary, RC_WEIGHT, &proc->weight_format);
-  tab_title (summary, _("Summary."));
-  tab_headers (summary, 1, 0, 3, 0);
-  tab_joint_text (summary, 1, 0, 6, 0, TAB_CENTER, _("Cases"));
-  tab_joint_text (summary, 1, 1, 2, 1, TAB_CENTER, _("Valid"));
-  tab_joint_text (summary, 3, 1, 4, 1, TAB_CENTER, _("Missing"));
-  tab_joint_text (summary, 5, 1, 6, 1, TAB_CENTER, _("Total"));
-  tab_hline (summary, TAL_1, 1, 6, 1);
-  tab_hline (summary, TAL_1, 1, 6, 2);
-  tab_vline (summary, TAL_1, 3, 1, 1);
-  tab_vline (summary, TAL_1, 5, 1, 1);
-  for (i = 0; i < 3; i++)
+  pivot_dimension_create (table, PIVOT_AXIS_COLUMN, N_("Statistics"),
+                          N_("N"), PIVOT_RC_COUNT,
+                          N_("Percent"), PIVOT_RC_PERCENT);
+
+  struct pivot_dimension *cases = pivot_dimension_create (
+    table, PIVOT_AXIS_COLUMN, N_("Cases"),
+    N_("Valid"), N_("Missing"), N_("Total"));
+  cases->root->show_label = true;
+
+  struct pivot_dimension *tables = pivot_dimension_create (
+    table, PIVOT_AXIS_ROW, N_("Crosstabulation"));
+  for (struct crosstabulation *xt = &proc->pivots[0];
+       xt < &proc->pivots[proc->n_pivots]; xt++)
     {
-      tab_text (summary, 1 + i * 2, 2, TAB_RIGHT, _("N"));
-      tab_text (summary, 2 + i * 2, 2, TAB_RIGHT, _("Percent"));
-    }
-  tab_offset (summary, 0, 3);
-
-  ds_init_empty (&name);
-  for (xt = &proc->pivots[0]; xt < &proc->pivots[proc->n_pivots]; xt++)
-    {
-      double valid;
-      double n[3];
-      size_t i;
-
-      tab_hline (summary, TAL_1, 0, 6, 0);
-
-      ds_clear (&name);
-      for (i = 0; i < xt->n_vars; i++)
+      struct string name = DS_EMPTY_INITIALIZER;
+      for (size_t i = 0; i < xt->n_vars; i++)
         {
           if (i > 0)
-            ds_put_cstr (&name, " * ");
+            ds_put_cstr (&name, " × ");
           ds_put_cstr (&name, var_to_string (xt->vars[i].var));
         }
-      tab_text (summary, 0, 0, TAB_LEFT, ds_cstr (&name));
 
-      valid = 0.;
-      for (i = 0; i < xt->n_entries; i++)
+      int row = pivot_category_create_leaf (
+        tables->root,
+        pivot_value_new_user_text_nocopy (ds_steal_cstr (&name)));
+
+      double valid = 0.;
+      for (size_t i = 0; i < xt->n_entries; i++)
         valid += xt->entries[i]->count;
 
+      double n[3];
       n[0] = valid;
       n[1] = xt->missing;
       n[2] = n[0] + n[1];
-      for (i = 0; i < 3; i++)
+      for (int i = 0; i < 3; i++)
         {
-          tab_double (summary, i * 2 + 1, 0, TAB_RIGHT, n[i], NULL, RC_WEIGHT);
-          tab_text_format (summary, i * 2 + 2, 0, TAB_RIGHT, "%.1f%%",
-                           n[i] / n[2] * 100.);
+          pivot_table_put3 (table, 0, i, row, pivot_value_new_number (n[i]));
+          pivot_table_put3 (table, 1, i, row,
+                            pivot_value_new_number (n[i] / n[2] * 100.0));
         }
-
-      tab_next_row (summary);
     }
-  ds_destroy (&name);
 
-  submit (NULL, summary);
+  pivot_table_submit (table);
 }
 
 /* Output. */
 
-static struct tab_table *create_crosstab_table (struct crosstabs_proc *,
-                                                struct crosstabulation *);
-static struct tab_table *create_chisq_table (struct crosstabs_proc *proc, struct crosstabulation *);
-static struct tab_table *create_sym_table (struct crosstabs_proc *proc, struct crosstabulation *);
-static struct tab_table *create_risk_table (struct crosstabs_proc *proc, struct crosstabulation *);
-static struct tab_table *create_direct_table (struct crosstabs_proc *proc, struct crosstabulation *);
-static void display_dimensions (struct crosstabs_proc *, struct crosstabulation *,
-                                struct tab_table *, int first_difference);
+static struct pivot_table *create_crosstab_table (
+  struct crosstabs_proc *, struct crosstabulation *,
+  size_t crs_leaves[CRS_CL_count]);
+static struct pivot_table *create_chisq_table (struct crosstabulation *);
+static struct pivot_table *create_sym_table (struct crosstabulation *);
+static struct pivot_table *create_risk_table (
+  struct crosstabulation *, struct pivot_dimension **risk_statistics);
+static struct pivot_table *create_direct_table (struct crosstabulation *);
 static void display_crosstabulation (struct crosstabs_proc *,
                                      struct crosstabulation *,
-                                     struct tab_table *);
-static void display_chisq (struct crosstabulation *, struct tab_table *,
-                           bool *showed_fisher);
-static void display_symmetric (struct crosstabs_proc *, struct crosstabulation *,
-                               struct tab_table *);
-static void display_risk (struct crosstabulation *, struct tab_table *);
-static void display_directional (struct crosstabs_proc *, struct crosstabulation *,
-                                 struct tab_table *);
-static void table_value_missing (struct crosstabs_proc *proc,
-                                 struct tab_table *table, int c, int r,
-				 unsigned char opt, const union value *v,
-				 const struct variable *var);
+                                     struct pivot_table *,
+                                     size_t crs_leaves[CRS_CL_count]);
+static void display_chisq (struct crosstabulation *, struct pivot_table *);
+static void display_symmetric (struct crosstabs_proc *,
+                               struct crosstabulation *, struct pivot_table *);
+static void display_risk (struct crosstabulation *, struct pivot_table *,
+                          struct pivot_dimension *risk_statistics);
+static void display_directional (struct crosstabs_proc *,
+                                 struct crosstabulation *,
+                                 struct pivot_table *);
 static void delete_missing (struct crosstabulation *);
 static void build_matrix (struct crosstabulation *);
 
@@ -995,15 +997,8 @@ static void build_matrix (struct crosstabulation *);
 static void
 output_crosstabulation (struct crosstabs_proc *proc, struct crosstabulation *xt)
 {
-  struct tab_table *table = NULL; /* Crosstabulation table. */
-  struct tab_table *chisq = NULL; /* Chi-square table. */
-  bool showed_fisher = false;
-  struct tab_table *sym = NULL;   /* Symmetric measures table. */
-  struct tab_table *risk = NULL;  /* Risk estimate table. */
-  struct tab_table *direct = NULL; /* Directional measures table. */
-  size_t row0, row1;
-
-  enum_var_values (xt, COL_VAR, proc->descending);
+  for (size_t i = 0; i < xt->n_vars; i++)
+    enum_var_values (xt, i, proc->descending);
 
   if (xt->vars[COL_VAR].n_values == 0)
     {
@@ -1012,7 +1007,7 @@ output_crosstabulation (struct crosstabs_proc *proc, struct crosstabulation *xt)
 
       ds_init_cstr (&vars, var_to_string (xt->vars[0].var));
       for (i = 1; i < xt->n_vars; i++)
-        ds_put_format (&vars, " * %s", var_to_string (xt->vars[i].var));
+        ds_put_format (&vars, " × %s", var_to_string (xt->vars[i].var));
 
       /* TRANSLATORS: The %s here describes a crosstabulation.  It takes the
          form "var1 * var2 * var3 * ...".  */
@@ -1024,31 +1019,37 @@ output_crosstabulation (struct crosstabs_proc *proc, struct crosstabulation *xt)
       return;
     }
 
-  if (proc->cells)
-    table = create_crosstab_table (proc, xt);
-  if (proc->statistics & (1u << CRS_ST_CHISQ))
-    chisq = create_chisq_table (proc, xt);
-  if (proc->statistics & ((1u << CRS_ST_PHI) | (1u << CRS_ST_CC)
-                          | (1u << CRS_ST_BTAU) | (1u << CRS_ST_CTAU)
-                          | (1u << CRS_ST_GAMMA) | (1u << CRS_ST_CORR)
-                          | (1u << CRS_ST_KAPPA)))
-    sym = create_sym_table (proc, xt);
-  if (proc->statistics & (1u << CRS_ST_RISK))
-    risk = create_risk_table (proc, xt);
-  if (proc->statistics & ((1u << CRS_ST_LAMBDA) | (1u << CRS_ST_UC)
-                          | (1u << CRS_ST_D) | (1u << CRS_ST_ETA)))
-    direct = create_direct_table (proc, xt);
+  size_t crs_leaves[CRS_CL_count];
+  struct pivot_table *table = (proc->cells
+                               ? create_crosstab_table (proc, xt, crs_leaves)
+                               : NULL);
+  struct pivot_table *chisq = (proc->statistics & (1u << CRS_ST_CHISQ)
+                               ? create_chisq_table (xt)
+                               : NULL);
+  struct pivot_table *sym
+    = (proc->statistics & ((1u << CRS_ST_PHI) | (1u << CRS_ST_CC)
+                           | (1u << CRS_ST_BTAU) | (1u << CRS_ST_CTAU)
+                           | (1u << CRS_ST_GAMMA) | (1u << CRS_ST_CORR)
+                           | (1u << CRS_ST_KAPPA))
+       ? create_sym_table (xt)
+       : NULL);
+  struct pivot_dimension *risk_statistics = NULL;
+  struct pivot_table *risk = (proc->statistics & (1u << CRS_ST_RISK)
+                              ? create_risk_table (xt, &risk_statistics)
+                              : NULL);
+  struct pivot_table *direct
+    = (proc->statistics & ((1u << CRS_ST_LAMBDA) | (1u << CRS_ST_UC)
+                           | (1u << CRS_ST_D) | (1u << CRS_ST_ETA))
+       ? create_direct_table (xt)
+       : NULL);
 
-  row0 = row1 = 0;
+  size_t row0 = 0;
+  size_t row1 = 0;
   while (find_crosstab (xt, &row0, &row1))
     {
       struct crosstabulation x;
-      int first_difference;
 
       make_crosstabulation_subset (xt, row0, row1, &x);
-
-      /* Find all the row variable values. */
-      enum_var_values (&x, ROW_VAR, proc->descending);
 
       size_t n_rows = x.vars[ROW_VAR].n_values;
       size_t n_cols = x.vars[COL_VAR].n_values;
@@ -1058,71 +1059,52 @@ output_crosstabulation (struct crosstabs_proc *proc, struct crosstabulation *xt)
       x.col_tot = xmalloc (n_cols * sizeof *x.col_tot);
       x.mat = xmalloc (n_rows * n_cols * sizeof *x.mat);
 
-      /* Allocate table space for the matrix. */
-      if (table
-          && tab_row (table) + (n_rows + 1) * proc->n_cells > tab_nr (table))
-	tab_realloc (table, -1,
-		     MAX (tab_nr (table) + (n_rows + 1) * proc->n_cells,
-			  tab_nr (table) * xt->n_entries / x.n_entries));
-
       build_matrix (&x);
 
       /* Find the first variable that differs from the last subtable. */
-      first_difference = find_first_difference (xt, row0);
       if (table)
-        {
-          display_dimensions (proc, &x, table, first_difference);
-          display_crosstabulation (proc, &x, table);
-        }
+        display_crosstabulation (proc, &x, table, crs_leaves);
 
       if (proc->exclude == MV_NEVER)
 	delete_missing (&x);
 
       if (chisq)
-        {
-          display_dimensions (proc, &x, chisq, first_difference);
-          display_chisq (&x, chisq, &showed_fisher);
-        }
-      if (sym)
-        {
-          display_dimensions (proc, &x, sym, first_difference);
-          display_symmetric (proc, &x, sym);
-        }
-      if (risk)
-        {
-          display_dimensions (proc, &x, risk, first_difference);
-          display_risk (&x, risk);
-        }
-      if (direct)
-        {
-          display_dimensions (proc, &x, direct, first_difference);
-          display_directional (proc, &x, direct);
-        }
+        display_chisq (&x, chisq);
 
-      /* Free the parts of x that are not owned by xt.  In
-         particular we must not free x.cols, which is the same as
-         xt->cols, which is freed at the end of this function. */
-      free_var_values (&x, ROW_VAR);
+      if (sym)
+        display_symmetric (proc, &x, sym);
+      if (risk)
+        display_risk (&x, risk, risk_statistics);
+      if (direct)
+        display_directional (proc, &x, direct);
 
       free (x.mat);
       free (x.row_tot);
       free (x.col_tot);
     }
 
-  submit (NULL, table);
+  if (table)
+    pivot_table_submit (table);
 
   if (chisq)
+    pivot_table_submit (chisq);
+
+  if (sym)
+    pivot_table_submit (sym);
+
+  if (risk)
     {
-      if (!showed_fisher)
-	tab_resize (chisq, 4 + (xt->n_vars - 2), -1);
-      submit (xt, chisq);
+      if (!pivot_table_is_empty (risk))
+        pivot_table_submit (risk);
+      else
+        pivot_table_destroy (risk);
     }
 
-  submit (xt, sym);
-  submit (xt, risk);
-  submit (xt, direct);
+  if (direct)
+    pivot_table_submit (direct);
 
-  free_var_values (xt, COL_VAR);
+  for (size_t i = 0; i < xt->n_vars; i++)
+    free_var_values (xt, i);
 }
 
 static void
@@ -1210,212 +1192,244 @@ build_matrix (struct crosstabulation *x)
     x->total += x->col_tot[col];
 }
 
-static struct tab_table *
-create_crosstab_table (struct crosstabs_proc *proc, struct crosstabulation *xt)
+static void
+add_var_dimension (struct pivot_table *table, const struct xtab_var *var,
+                   enum pivot_axis_type axis_type, bool total)
 {
-  struct tuple
+  struct pivot_dimension *d = pivot_dimension_create__ (
+    table, axis_type, pivot_value_new_variable (var->var));
+
+  struct pivot_footnote *missing_footnote = pivot_table_create_footnote (
+    table, pivot_value_new_text (N_("Missing value")));
+
+  struct pivot_category *group = pivot_category_create_group__ (
+    d->root, pivot_value_new_variable (var->var));
+  for (size_t j = 0; j < var->n_values; j++)
     {
-      int value;
-      const char *name;
-    };
-  static const struct tuple names[] =
-    {
-      {CRS_CL_COUNT, N_("count")},
-      {CRS_CL_ROW, N_("row %")},
-      {CRS_CL_COLUMN, N_("column %")},
-      {CRS_CL_TOTAL, N_("total %")},
-      {CRS_CL_EXPECTED, N_("expected")},
-      {CRS_CL_RESIDUAL, N_("residual")},
-      {CRS_CL_SRESIDUAL, N_("std. resid.")},
-      {CRS_CL_ASRESIDUAL, N_("adj. resid.")},
-    };
-  const int n_names = sizeof names / sizeof *names;
-  const struct tuple *t;
+      struct pivot_value *value = pivot_value_new_var_value (
+        var->var, &var->values[j]);
+      if (var_is_value_missing (var->var, &var->values[j], MV_ANY))
+        pivot_value_add_footnote (value, missing_footnote);
+      pivot_category_create_leaf (group, value);
+    }
 
-  struct tab_table *table;
-  struct string title;
-  struct crosstabulation x;
+  if (total)
+    pivot_category_create_leaf (d->root, pivot_value_new_text (N_("Total")));
+}
 
-  int i;
-
-  make_crosstabulation_subset (xt, 0, 0, &x);
-
-  size_t n_cols = x.vars[COL_VAR].n_values;
-  table = tab_create (x.n_consts + 1 + n_cols + 1,
-                      (x.n_entries / n_cols) * 3 / 2 * proc->n_cells + 10);
-  tab_headers (table, x.n_consts + 1, 0, 2, 0);
-  tab_set_format (table, RC_WEIGHT, &proc->weight_format);
-
-  /* First header line. */
-  tab_joint_text (table, x.n_consts + 1, 0,
-                  (x.n_consts + 1) + (n_cols - 1), 0,
-                  TAB_CENTER | TAT_TITLE, var_to_string (x.vars[COL_VAR].var));
-
-  tab_hline (table, TAL_1, x.n_consts + 1,
-             x.n_consts + 2 + n_cols - 2, 1);
-
-  /* Second header line. */
-  for (i = 2; i < x.n_consts + 2; i++)
-    tab_joint_text (table, x.n_consts + 2 - i - 1, 0,
-                    x.n_consts + 2 - i - 1, 1,
-                    TAB_RIGHT | TAT_TITLE, var_to_string (x.vars[i].var));
-  tab_text (table, x.n_consts + 2 - 2, 1, TAB_RIGHT | TAT_TITLE,
-            var_to_string (x.vars[ROW_VAR].var));
-  for (i = 0; i < n_cols; i++)
-    table_value_missing (proc, table, x.n_consts + 2 + i - 1, 1, TAB_RIGHT,
-                         &x.vars[COL_VAR].values[i], x.vars[COL_VAR].var);
-  tab_text (table, x.n_consts + 2 + n_cols - 1, 1, TAB_CENTER, _("Total"));
-
-  tab_hline (table, TAL_1, 0, x.n_consts + 2 + n_cols - 1, 2);
-  tab_vline (table, TAL_1, x.n_consts + 2 + n_cols - 1, 0, 1);
-
+static struct pivot_table *
+create_crosstab_table (struct crosstabs_proc *proc, struct crosstabulation *xt,
+                       size_t crs_leaves[CRS_CL_count])
+{
   /* Title. */
-  ds_init_empty (&title);
-  for (i = 0; i < x.n_consts + 2; i++)
+  struct string title = DS_EMPTY_INITIALIZER;
+  for (size_t i = 0; i < xt->n_vars; i++)
     {
       if (i)
-        ds_put_cstr (&title, " * ");
-      ds_put_cstr (&title, var_to_string (x.vars[i].var));
+        ds_put_cstr (&title, " × ");
+      ds_put_cstr (&title, var_to_string (xt->vars[i].var));
     }
-  for (i = 0; i < xt->n_consts; i++)
+  for (size_t i = 0; i < xt->n_consts; i++)
     {
       const struct variable *var = xt->const_vars[i].var;
+      const union value *value = &xt->entries[0]->values[2 + i];
       char *s;
 
       ds_put_format (&title, ", %s=", var_to_string (var));
 
       /* Insert the formatted value of VAR without any leading spaces. */
-      s = data_out (&xt->const_vars[i].values[0], var_get_encoding (var),
-                    var_get_print_format (var));
+      s = data_out (value, var_get_encoding (var), var_get_print_format (var));
       ds_put_cstr (&title, s + strspn (s, " "));
       free (s);
     }
+  struct pivot_table *table = pivot_table_create__ (
+    pivot_value_new_user_text_nocopy (ds_steal_cstr (&title)));
+  pivot_table_set_weight_format (table, &proc->weight_format);
+  table->omit_empty = true;
 
-  ds_put_cstr (&title, " [");
-  i = 0;
-  for (t = names; t < &names[n_names]; t++)
-    if (proc->cells & (1u << t->value))
-      {
-        if (i++)
-          ds_put_cstr (&title, ", ");
-        ds_put_cstr (&title, gettext (t->name));
-      }
-  ds_put_cstr (&title, "].");
+  struct pivot_dimension *statistics = pivot_dimension_create (
+    table, PIVOT_AXIS_ROW, N_("Statistics"));
 
-  tab_title (table, "%s", ds_cstr (&title));
-  ds_destroy (&title);
+  struct statistic
+    {
+      const char *label;
+      const char *rc;
+    };
+  static const struct statistic stats[CRS_CL_count] =
+    {
+      [CRS_CL_COUNT] = { N_("Count"), PIVOT_RC_COUNT },
+      [CRS_CL_ROW] = { N_("Row %"), PIVOT_RC_PERCENT },
+      [CRS_CL_COLUMN] = { N_("Column %"), PIVOT_RC_PERCENT },
+      [CRS_CL_TOTAL] = { N_("Total %"), PIVOT_RC_PERCENT },
+      [CRS_CL_EXPECTED] = { N_("Expected"), PIVOT_RC_OTHER },
+      [CRS_CL_RESIDUAL] = { N_("Residual"), PIVOT_RC_RESIDUAL },
+      [CRS_CL_SRESIDUAL] = { N_("Std. Residual"), PIVOT_RC_RESIDUAL },
+      [CRS_CL_ASRESIDUAL] = { N_("Adjusted Residual"), PIVOT_RC_RESIDUAL },
+    };
+  for (size_t i = 0; i < CRS_CL_count; i++)
+    if (proc->cells & (1u << i) && stats[i].label)
+        crs_leaves[i] = pivot_category_create_leaf_rc (
+          statistics->root, pivot_value_new_text (stats[i].label),
+          stats[i].rc);
 
-  tab_offset (table, 0, 2);
+  for (size_t i = 0; i < xt->n_vars; i++)
+    add_var_dimension (table, &xt->vars[i],
+                       i == COL_VAR ? PIVOT_AXIS_COLUMN : PIVOT_AXIS_ROW,
+                       true);
+
   return table;
 }
 
-static struct tab_table *
-create_chisq_table (struct crosstabs_proc *proc, struct crosstabulation *xt)
+static struct pivot_table *
+create_chisq_table (struct crosstabulation *xt)
 {
-  struct tab_table *chisq;
+  struct pivot_table *chisq = pivot_table_create (N_("Chi-Square Tests"));
+  pivot_table_set_weight_format (chisq, &xt->weight_format);
+  chisq->omit_empty = true;
 
-  size_t n_cols = xt->vars[COL_VAR].n_values;
-  chisq = tab_create (6 + (xt->n_vars - 2),
-                      xt->n_entries / n_cols * 3 / 2 * N_CHISQ + 10);
-  tab_headers (chisq, 1 + (xt->n_vars - 2), 0, 1, 0);
-  tab_set_format (chisq, RC_WEIGHT, &proc->weight_format);
+  pivot_dimension_create (
+    chisq, PIVOT_AXIS_ROW, N_("Statistics"),
+    N_("Pearson Chi-Square"),
+    N_("Likelihood Ratio"),
+    N_("Fisher's Exact Test"),
+    N_("Continuity Correction"),
+    N_("Linear-by-Linear Association"),
+    N_("N of Valid Cases"), PIVOT_RC_COUNT);
 
-  tab_title (chisq, _("Chi-square tests."));
+  pivot_dimension_create (
+    chisq, PIVOT_AXIS_COLUMN, N_("Statistics"),
+    N_("Value"), PIVOT_RC_OTHER,
+    N_("df"), PIVOT_RC_COUNT,
+    N_("Asymptotic Sig. (2-tailed)"), PIVOT_RC_SIGNIFICANCE,
+    N_("Exact Sig. (2-tailed)"), PIVOT_RC_SIGNIFICANCE,
+    N_("Exact Sig. (1-tailed)"), PIVOT_RC_SIGNIFICANCE);
 
-  tab_offset (chisq, xt->n_vars - 2, 0);
-  tab_text (chisq, 0, 0, TAB_LEFT | TAT_TITLE, _("Statistic"));
-  tab_text (chisq, 1, 0, TAB_RIGHT | TAT_TITLE, _("Value"));
-  tab_text (chisq, 2, 0, TAB_RIGHT | TAT_TITLE, _("df"));
-  tab_text (chisq, 3, 0, TAB_RIGHT | TAT_TITLE,
-            _("Asymp. Sig. (2-tailed)"));
-  tab_text_format (chisq, 4, 0, TAB_RIGHT | TAT_TITLE,
-            _("Exact Sig. (%d-tailed)"), 2);
-  tab_text_format (chisq, 5, 0, TAB_RIGHT | TAT_TITLE,
-            _("Exact Sig. (%d-tailed)"), 1);
-  tab_offset (chisq, 0, 1);
+  for (size_t i = 2; i < xt->n_vars; i++)
+    add_var_dimension (chisq, &xt->vars[i], PIVOT_AXIS_ROW, false);
 
   return chisq;
 }
 
 /* Symmetric measures. */
-static struct tab_table *
-create_sym_table (struct crosstabs_proc *proc, struct crosstabulation *xt)
+static struct pivot_table *
+create_sym_table (struct crosstabulation *xt)
 {
-  struct tab_table *sym;
+  struct pivot_table *sym = pivot_table_create (N_("Symmetric Measures"));
+  pivot_table_set_weight_format (sym, &xt->weight_format);
+  sym->omit_empty = true;
 
-  size_t n_cols = xt->vars[COL_VAR].n_values;
-  sym = tab_create (6 + (xt->n_vars - 2),
-                    xt->n_entries / n_cols * 7 + 10);
+  pivot_dimension_create (
+    sym, PIVOT_AXIS_COLUMN, N_("Values"),
+    N_("Value"), PIVOT_RC_OTHER,
+    N_("Asymp. Std. Error"), PIVOT_RC_OTHER,
+    N_("Approx. T"), PIVOT_RC_OTHER,
+    N_("Approx. Sig."), PIVOT_RC_SIGNIFICANCE);
 
-  tab_set_format (sym, RC_WEIGHT, &proc->weight_format);
+  struct pivot_dimension *statistics = pivot_dimension_create (
+    sym, PIVOT_AXIS_ROW, N_("Statistics"));
+  pivot_category_create_group (
+    statistics->root, N_("Nominal by Nominal"),
+    N_("Phi"), N_("Cramer's V"), N_("Contingency Coefficient"));
+  pivot_category_create_group (
+    statistics->root, N_("Ordinal by Ordinal"),
+    N_("Kendall's tau-b"), N_("Kendall's tau-c"),
+    N_("Gamma"), N_("Spearman Correlation"));
+  pivot_category_create_group (
+    statistics->root, N_("Interval by Interval"),
+    N_("Pearson's R"));
+  pivot_category_create_group (
+    statistics->root, N_("Measure of Agreement"),
+    N_("Kappa"));
+  pivot_category_create_leaves (statistics->root, N_("N of Valid Cases"),
+                                PIVOT_RC_COUNT);
 
-  tab_headers (sym, 2 + (xt->n_vars - 2), 0, 1, 0);
-  tab_title (sym, _("Symmetric measures."));
-
-  tab_offset (sym, xt->n_vars - 2, 0);
-  tab_text (sym, 0, 0, TAB_LEFT | TAT_TITLE, _("Category"));
-  tab_text (sym, 1, 0, TAB_LEFT | TAT_TITLE, _("Statistic"));
-  tab_text (sym, 2, 0, TAB_RIGHT | TAT_TITLE, _("Value"));
-  tab_text (sym, 3, 0, TAB_RIGHT | TAT_TITLE, _("Asymp. Std. Error"));
-  tab_text (sym, 4, 0, TAB_RIGHT | TAT_TITLE, _("Approx. T"));
-  tab_text (sym, 5, 0, TAB_RIGHT | TAT_TITLE, _("Approx. Sig."));
-  tab_offset (sym, 0, 1);
+  for (size_t i = 2; i < xt->n_vars; i++)
+    add_var_dimension (sym, &xt->vars[i], PIVOT_AXIS_ROW, false);
 
   return sym;
 }
 
 /* Risk estimate. */
-static struct tab_table *
-create_risk_table (struct crosstabs_proc *proc, struct crosstabulation *xt)
+static struct pivot_table *
+create_risk_table (struct crosstabulation *xt,
+                   struct pivot_dimension **risk_statistics)
 {
-  struct tab_table *risk;
+  struct pivot_table *risk = pivot_table_create (N_("Risk Estimate"));
+  pivot_table_set_weight_format (risk, &xt->weight_format);
+  risk->omit_empty = true;
 
-  size_t n_cols = xt->vars[COL_VAR].n_values;
-  risk = tab_create (4 + (xt->n_vars - 2), xt->n_entries / n_cols * 4 + 10);
-  tab_headers (risk, 1 + xt->n_vars - 2, 0, 2, 0);
-  tab_title (risk, _("Risk estimate."));
-  tab_set_format (risk, RC_WEIGHT, &proc->weight_format);
+  struct pivot_dimension *values = pivot_dimension_create (
+    risk, PIVOT_AXIS_COLUMN, N_("Values"),
+    N_("Value"), PIVOT_RC_OTHER);
+  pivot_category_create_group (
+    values->root, N_("95% Confidence Interval"),
+    N_("Lower"), PIVOT_RC_OTHER,
+    N_("Upper"), PIVOT_RC_OTHER);
 
-  tab_offset (risk, xt->n_vars - 2, 0);
-  tab_joint_text_format (risk, 2, 0, 3, 0, TAB_CENTER | TAT_TITLE,
-                         _("95%% Confidence Interval"));
-  tab_text (risk, 0, 1, TAB_LEFT | TAT_TITLE, _("Statistic"));
-  tab_text (risk, 1, 1, TAB_RIGHT | TAT_TITLE, _("Value"));
-  tab_text (risk, 2, 1, TAB_RIGHT | TAT_TITLE, _("Lower"));
-  tab_text (risk, 3, 1, TAB_RIGHT | TAT_TITLE, _("Upper"));
-  tab_hline (risk, TAL_1, 2, 3, 1);
-  tab_vline (risk, TAL_1, 2, 0, 1);
-  tab_offset (risk, 0, 2);
+  *risk_statistics = pivot_dimension_create (
+    risk, PIVOT_AXIS_ROW, N_("Statistics"));
+
+  for (size_t i = 2; i < xt->n_vars; i++)
+    add_var_dimension (risk, &xt->vars[i], PIVOT_AXIS_ROW, false);
 
   return risk;
 }
 
-/* Directional measures. */
-static struct tab_table *
-create_direct_table (struct crosstabs_proc *proc, struct crosstabulation *xt)
+static void
+create_direct_stat (struct pivot_category *parent,
+                    const struct crosstabulation *xt,
+                    const char *name, bool symmetric)
 {
-  struct tab_table *direct;
+  struct pivot_category *group = pivot_category_create_group (
+    parent, name);
+  if (symmetric)
+    pivot_category_create_leaf (group, pivot_value_new_text (N_("Symmetric")));
 
-  size_t n_cols = xt->vars[COL_VAR].n_values;
-  direct = tab_create (7 + (xt->n_vars - 2),
-                       xt->n_entries / n_cols * 7 + 10);
-  tab_headers (direct, 3 + (xt->n_vars - 2), 0, 1, 0);
-  tab_title (direct, _("Directional measures."));
-  tab_set_format (direct, RC_WEIGHT, &proc->weight_format);
+  char *row_label = xasprintf (_("%s Dependent"),
+                               var_to_string (xt->vars[ROW_VAR].var));
+  pivot_category_create_leaf (group, pivot_value_new_user_text_nocopy (
+                                row_label));
 
-  tab_offset (direct, xt->n_vars - 2, 0);
-  tab_text (direct, 0, 0, TAB_LEFT | TAT_TITLE, _("Category"));
-  tab_text (direct, 1, 0, TAB_LEFT | TAT_TITLE, _("Statistic"));
-  tab_text (direct, 2, 0, TAB_LEFT | TAT_TITLE, _("Type"));
-  tab_text (direct, 3, 0, TAB_RIGHT | TAT_TITLE, _("Value"));
-  tab_text (direct, 4, 0, TAB_RIGHT | TAT_TITLE, _("Asymp. Std. Error"));
-  tab_text (direct, 5, 0, TAB_RIGHT | TAT_TITLE, _("Approx. T"));
-  tab_text (direct, 6, 0, TAB_RIGHT | TAT_TITLE, _("Approx. Sig."));
-  tab_offset (direct, 0, 1);
+  char *col_label = xasprintf (_("%s Dependent"),
+                               var_to_string (xt->vars[COL_VAR].var));
+  pivot_category_create_leaf (group, pivot_value_new_user_text_nocopy (
+                                col_label));
+}
+
+/* Directional measures. */
+static struct pivot_table *
+create_direct_table (struct crosstabulation *xt)
+{
+  struct pivot_table *direct = pivot_table_create (N_("Directional Measures"));
+  pivot_table_set_weight_format (direct, &xt->weight_format);
+  direct->omit_empty = true;
+
+  pivot_dimension_create (
+    direct, PIVOT_AXIS_COLUMN, N_("Values"),
+    N_("Value"), PIVOT_RC_OTHER,
+    N_("Asymp. Std. Error"), PIVOT_RC_OTHER,
+    N_("Approx. T"), PIVOT_RC_OTHER,
+    N_("Approx Sig."), PIVOT_RC_SIGNIFICANCE);
+
+  struct pivot_dimension *statistics = pivot_dimension_create (
+    direct, PIVOT_AXIS_ROW, N_("Statistics"));
+  struct pivot_category *nn = pivot_category_create_group (
+    statistics->root, N_("Nominal by Nominal"));
+  create_direct_stat (nn, xt, N_("Lambda"), true);
+  create_direct_stat (nn, xt, N_("Goodman and Kruskal tau"), false);
+  create_direct_stat (nn, xt, N_("Uncertainty Coefficient"), true);
+  struct pivot_category *oo = pivot_category_create_group (
+    statistics->root, N_("Ordinal by Ordinal"));
+  create_direct_stat (oo, xt, N_("Somers' d"), true);
+  struct pivot_category *ni = pivot_category_create_group (
+    statistics->root, N_("Nominal by Interval"));
+  create_direct_stat (ni, xt, N_("Eta"), false);
+
+  for (size_t i = 2; i < xt->n_vars; i++)
+    add_var_dimension (direct, &xt->vars[i], PIVOT_AXIS_ROW, false);
 
   return direct;
 }
-
 
 /* Delete missing rows and columns for statistical analysis when
    /MISSING=REPORT. */
@@ -1444,34 +1458,6 @@ delete_missing (struct crosstabulation *xt)
           xt->mat[c + r * n_cols] = 0.;
         xt->ns_cols--;
       }
-}
-
-/* Prepare table T for submission, and submit it. */
-static void
-submit (struct crosstabulation *xt, struct tab_table *t)
-{
-  int i;
-
-  if (t == NULL)
-    return;
-
-  tab_resize (t, -1, 0);
-  if (tab_nr (t) == tab_t (t))
-    {
-      table_unref (&t->table);
-      return;
-    }
-  tab_offset (t, 0, 0);
-  if (xt != NULL)
-    for (i = 2; i < xt->n_vars; i++)
-      tab_text (t, xt->n_vars - i - 1, 0, TAB_RIGHT | TAT_TITLE,
-                var_to_string (xt->vars[i].var));
-  tab_box (t, TAL_2, TAL_2, -1, -1, 0, 0, tab_nc (t) - 1, tab_nr (t) - 1);
-  tab_box (t, -1, -1, -1, TAL_1, tab_l (t), tab_t (t) - 1, tab_nc (t) - 1,
-	   tab_nr (t) - 1);
-  tab_vline (t, TAL_2, tab_l (t), 0, tab_nr (t) - 1);
-
-  tab_submit (t);
 }
 
 static bool
@@ -1578,269 +1564,131 @@ static void
 free_var_values (const struct crosstabulation *xt, int var_idx)
 {
   struct xtab_var *xv = &xt->vars[var_idx];
-  free (xv->values);
+  //free (xv->values);
   xv->values = NULL;
   xv->n_values = 0;
-}
-
-/* Sets cell (C,R) in TABLE, with options OPT, to have a value taken
-   from V, displayed with print format spec from variable VAR.  When
-   in REPORT missing-value mode, missing values have an M appended. */
-static void
-table_value_missing (struct crosstabs_proc *proc,
-                     struct tab_table *table, int c, int r, unsigned char opt,
-		     const union value *v, const struct variable *var)
-{
-  const char *label = var_lookup_value_label (var, v);
-  if (label != NULL)
-    tab_text (table, c, r, TAB_LEFT, label);
-  else
-    {
-      const struct fmt_spec *print = var_get_print_format (var);
-      if (proc->exclude == MV_NEVER && var_is_value_missing (var, v, MV_USER))
-        {
-          char *s = data_out (v, dict_get_encoding (proc->dict), print);
-          tab_text_format (table, c, r, opt, "%sM", s + strspn (s, " "));
-          free (s);
-        }
-      else
-        tab_value (table, c, r, opt, v, var, print);
-    }
-}
-
-/* Draws a line across TABLE at the current row to indicate the most
-   major dimension variable with index FIRST_DIFFERENCE out of N_VARS
-   that changed, and puts the values that changed into the table.  TB
-   and XT must be the corresponding table_entry and crosstab,
-   respectively. */
-static void
-display_dimensions (struct crosstabs_proc *proc, struct crosstabulation *xt,
-                    struct tab_table *table, int first_difference)
-{
-  tab_hline (table, TAL_1, xt->n_consts + xt->n_vars - first_difference - 1, tab_nc (table) - 1, 0);
-
-  for (; first_difference >= 2; first_difference--)
-    table_value_missing (proc, table, xt->n_consts + xt->n_vars - first_difference - 1, 0,
-			 TAB_RIGHT, &xt->entries[0]->values[first_difference],
-			 xt->vars[first_difference].var);
-}
-
-/* Put VALUE into cell (C,R) of TABLE, suffixed with character
-   SUFFIX if nonzero.  If MARK_MISSING is true the entry is
-   additionally suffixed with a letter `M'. */
-static void
-format_cell_entry (struct tab_table *table, int c, int r, double value,
-                   char suffix, bool mark_missing, const struct dictionary *dict)
-{
-  union value v;
-  char suffixes[3];
-  int suffix_len;
-  char *s;
-
-  v.f = value;
-  s = data_out (&v, dict_get_encoding (dict), settings_get_format ());
-
-  suffix_len = 0;
-  if (suffix != 0)
-    suffixes[suffix_len++] = suffix;
-  if (mark_missing)
-    suffixes[suffix_len++] = 'M';
-  suffixes[suffix_len] = '\0';
-
-  tab_text_format (table, c, r, TAB_RIGHT, "%s%s",
-                   s + strspn (s, " "), suffixes);
-
-  free (s);
 }
 
 /* Displays the crosstabulation table. */
 static void
 display_crosstabulation (struct crosstabs_proc *proc,
-                         struct crosstabulation *xt, struct tab_table *table)
+                         struct crosstabulation *xt, struct pivot_table *table,
+                         size_t crs_leaves[CRS_CL_count])
 {
   size_t n_rows = xt->vars[ROW_VAR].n_values;
   size_t n_cols = xt->vars[COL_VAR].n_values;
-  int last_row;
-  int r, c, i;
-  double *mp;
 
-  for (r = 0; r < n_rows; r++)
-    table_value_missing (proc, table, xt->n_consts + xt->n_vars - 2,
-                         r * proc->n_cells, TAB_RIGHT,
-                         &xt->vars[ROW_VAR].values[r],
-                         xt->vars[ROW_VAR].var);
-
-  tab_text (table, xt->n_vars - 2, n_rows * proc->n_cells,
-	    TAB_LEFT, _("Total"));
+  size_t *indexes = xnmalloc (table->n_dimensions, sizeof *indexes);
+  assert (xt->n_vars == 2);
+  for (size_t i = 0; i < xt->n_consts; i++)
+    indexes[i + 3] = xt->const_indexes[i];
 
   /* Put in the actual cells. */
-  mp = xt->mat;
-  tab_offset (table, xt->n_consts + xt->n_vars - 1, -1);
-  for (r = 0; r < n_rows; r++)
+  double *mp = xt->mat;
+  for (size_t r = 0; r < n_rows; r++)
     {
-      if (proc->n_cells > 1)
-        tab_hline (table, TAL_1, -1, n_cols, 0);
-      for (c = 0; c < n_cols; c++)
-        {
-          bool mark_missing = false;
-          double expected_value = xt->row_tot[r] * xt->col_tot[c] / xt->total;
-          if (proc->exclude == MV_NEVER
-              && (var_is_num_missing (xt->vars[COL_VAR].var,
-                                      xt->vars[COL_VAR].values[c].f, MV_USER)
-                  || var_is_num_missing (xt->vars[ROW_VAR].var,
-                                         xt->vars[ROW_VAR].values[r].f,
-                                         MV_USER)))
-            mark_missing = true;
-          for (i = 0; i < proc->n_cells; i++)
-            {
-              double v;
-              int suffix = 0;
+      if (!xt->row_tot[r] && proc->mode != INTEGER)
+        continue;
 
-              switch (proc->a_cells[i])
-                {
-                case CRS_CL_COUNT:
-                  v = *mp;
-                  break;
-                case CRS_CL_ROW:
-                  v = *mp / xt->row_tot[r] * 100.;
-                  suffix = '%';
-                  break;
-                case CRS_CL_COLUMN:
-                  v = *mp / xt->col_tot[c] * 100.;
-                  suffix = '%';
-                  break;
-                case CRS_CL_TOTAL:
-                  v = *mp / xt->total * 100.;
-                  suffix = '%';
-                  break;
-                case CRS_CL_EXPECTED:
-                  v = expected_value;
-                  break;
-                case CRS_CL_RESIDUAL:
-                  v = *mp - expected_value;
-                  break;
-                case CRS_CL_SRESIDUAL:
-                  v = (*mp - expected_value) / sqrt (expected_value);
-                  break;
-                case CRS_CL_ASRESIDUAL:
-                  v = ((*mp - expected_value)
-                       / sqrt (expected_value
+      indexes[ROW_VAR + 1] = r;
+      for (size_t c = 0; c < n_cols; c++)
+        {
+          if (!xt->col_tot[c] && proc->mode != INTEGER)
+            continue;
+
+          indexes[COL_VAR + 1] = c;
+
+          double expected_value = xt->row_tot[r] * xt->col_tot[c] / xt->total;
+          double residual = *mp - expected_value;
+          double sresidual = residual / sqrt (expected_value);
+          double asresidual = (sresidual
                                * (1. - xt->row_tot[r] / xt->total)
-                               * (1. - xt->col_tot[c] / xt->total)));
-                  break;
-                default:
-                  NOT_REACHED ();
-                }
-              format_cell_entry (table, c, i, v, suffix, mark_missing, proc->dict);
+                               * (1. - xt->col_tot[c] / xt->total));
+          double entries[] = {
+            [CRS_CL_COUNT] = *mp,
+            [CRS_CL_ROW] = *mp / xt->row_tot[r] * 100.,
+            [CRS_CL_COLUMN] = *mp / xt->col_tot[c] * 100.,
+            [CRS_CL_TOTAL] = *mp / xt->total * 100.,
+            [CRS_CL_EXPECTED] = expected_value,
+            [CRS_CL_RESIDUAL] = residual,
+            [CRS_CL_SRESIDUAL] = sresidual,
+            [CRS_CL_ASRESIDUAL] = asresidual,
+          };
+          for (size_t i = 0; i < proc->n_cells; i++)
+            {
+              int cell = proc->a_cells[i];
+              indexes[0] = crs_leaves[cell];
+              pivot_table_put (table, indexes, table->n_dimensions,
+                               pivot_value_new_number (entries[cell]));
             }
 
           mp++;
         }
-
-      tab_offset (table, -1, tab_row (table) + proc->n_cells);
     }
 
   /* Row totals. */
-  tab_offset (table, -1, tab_row (table) - proc->n_cells * n_rows);
-  for (r = 0; r < n_rows; r++)
+  for (size_t r = 0; r < n_rows; r++)
     {
-      bool mark_missing = false;
+      if (!xt->row_tot[r] && proc->mode != INTEGER)
+        continue;
 
-      if (proc->exclude == MV_NEVER
-          && var_is_num_missing (xt->vars[ROW_VAR].var,
-                                 xt->vars[ROW_VAR].values[r].f, MV_USER))
-        mark_missing = true;
-
-      for (i = 0; i < proc->n_cells; i++)
+      double expected_value = xt->row_tot[r] / xt->total;
+      double entries[] = {
+        [CRS_CL_COUNT] = xt->row_tot[r],
+        [CRS_CL_ROW] = 100.0,
+        [CRS_CL_COLUMN] = expected_value * 100.,
+        [CRS_CL_TOTAL] = expected_value * 100.,
+        [CRS_CL_EXPECTED] = expected_value,
+        [CRS_CL_RESIDUAL] = SYSMIS,
+        [CRS_CL_SRESIDUAL] = SYSMIS,
+        [CRS_CL_ASRESIDUAL] = SYSMIS,
+      };
+      for (size_t i = 0; i < proc->n_cells; i++)
         {
-          char suffix = 0;
-          double v;
-
-          switch (proc->a_cells[i])
+          int cell = proc->a_cells[i];
+          double entry = entries[cell];
+          if (entry != SYSMIS)
             {
-            case CRS_CL_COUNT:
-              v = xt->row_tot[r];
-              break;
-            case CRS_CL_ROW:
-              v = 100.0;
-              suffix = '%';
-              break;
-            case CRS_CL_COLUMN:
-              v = xt->row_tot[r] / xt->total * 100.;
-              suffix = '%';
-              break;
-            case CRS_CL_TOTAL:
-              v = xt->row_tot[r] / xt->total * 100.;
-              suffix = '%';
-              break;
-            case CRS_CL_EXPECTED:
-            case CRS_CL_RESIDUAL:
-            case CRS_CL_SRESIDUAL:
-            case CRS_CL_ASRESIDUAL:
-              v = 0.;
-              break;
-            default:
-              NOT_REACHED ();
+              indexes[ROW_VAR + 1] = r;
+              indexes[COL_VAR + 1] = n_cols;
+              indexes[0] = crs_leaves[cell];
+              pivot_table_put (table, indexes, table->n_dimensions,
+                               pivot_value_new_number (entry));
             }
-
-          format_cell_entry (table, n_cols, 0, v, suffix, mark_missing, proc->dict);
-          tab_next_row (table);
         }
     }
 
-  /* Column totals, grand total. */
-  last_row = 0;
-  if (proc->n_cells > 1)
-    tab_hline (table, TAL_1, -1, n_cols, 0);
-  for (c = 0; c <= n_cols; c++)
+  for (size_t c = 0; c <= n_cols; c++)
     {
+      if (c < n_cols && !xt->col_tot[c] && proc->mode != INTEGER)
+        continue;
+
       double ct = c < n_cols ? xt->col_tot[c] : xt->total;
-      bool mark_missing = false;
-      int i;
-
-      if (proc->exclude == MV_NEVER && c < n_cols
-          && var_is_num_missing (xt->vars[COL_VAR].var,
-                                 xt->vars[COL_VAR].values[c].f, MV_USER))
-        mark_missing = true;
-
-      for (i = 0; i < proc->n_cells; i++)
+      double expected_value = ct / xt->total;
+      double entries[] = {
+        [CRS_CL_COUNT] = ct,
+        [CRS_CL_ROW] = expected_value * 100.0,
+        [CRS_CL_COLUMN] = 100.0,
+        [CRS_CL_TOTAL] = expected_value * 100.,
+        [CRS_CL_EXPECTED] = expected_value,
+        [CRS_CL_RESIDUAL] = SYSMIS,
+        [CRS_CL_SRESIDUAL] = SYSMIS,
+        [CRS_CL_ASRESIDUAL] = SYSMIS,
+      };
+      for (size_t i = 0; i < proc->n_cells; i++)
         {
-          char suffix = 0;
-          double v;
-
-          switch (proc->a_cells[i])
+          int cell = proc->a_cells[i];
+          double entry = entries[cell];
+          if (entry != SYSMIS)
             {
-            case CRS_CL_COUNT:
-              v = ct;
-              break;
-            case CRS_CL_ROW:
-              v = ct / xt->total * 100.;
-              suffix = '%';
-              break;
-            case CRS_CL_COLUMN:
-              v = 100.;
-              suffix = '%';
-              break;
-            case CRS_CL_TOTAL:
-              v = ct / xt->total * 100.;
-              suffix = '%';
-              break;
-            case CRS_CL_EXPECTED:
-            case CRS_CL_RESIDUAL:
-            case CRS_CL_SRESIDUAL:
-            case CRS_CL_ASRESIDUAL:
-              continue;
-            default:
-              NOT_REACHED ();
+              indexes[ROW_VAR + 1] = n_rows;
+              indexes[COL_VAR + 1] = c;
+              indexes[0] = crs_leaves[cell];
+              pivot_table_put (table, indexes, table->n_dimensions,
+                               pivot_value_new_number (entry));
             }
-
-          format_cell_entry (table, c, i, v, suffix, mark_missing, proc->dict);
         }
-      last_row = i;
     }
-
-  tab_offset (table, -1, tab_row (table) + last_row);
-  tab_offset (table, 0, -1);
 }
 
 static void calc_r (struct crosstabulation *,
@@ -1850,55 +1698,49 @@ static void calc_chisq (struct crosstabulation *,
 
 /* Display chi-square statistics. */
 static void
-display_chisq (struct crosstabulation *xt, struct tab_table *chisq,
-               bool *showed_fisher)
+display_chisq (struct crosstabulation *xt, struct pivot_table *chisq)
 {
-  static const char *chisq_stats[N_CHISQ] =
-    {
-      N_("Pearson Chi-Square"),
-      N_("Likelihood Ratio"),
-      N_("Fisher's Exact Test"),
-      N_("Continuity Correction"),
-      N_("Linear-by-Linear Association"),
-    };
   double chisq_v[N_CHISQ];
   double fisher1, fisher2;
   int df[N_CHISQ];
-
-  int i;
-
   calc_chisq (xt, chisq_v, df, &fisher1, &fisher2);
 
-  tab_offset (chisq, xt->n_consts + xt->n_vars - 2, -1);
-
-  for (i = 0; i < N_CHISQ; i++)
+  size_t *indexes = xnmalloc (chisq->n_dimensions, sizeof *indexes);
+  assert (xt->n_vars == 2);
+  for (size_t i = 0; i < xt->n_consts; i++)
+    indexes[i + 2] = xt->const_indexes[i];
+  for (int i = 0; i < N_CHISQ; i++)
     {
-      if ((i != 2 && chisq_v[i] == SYSMIS)
-	  || (i == 2 && fisher1 == SYSMIS))
-	continue;
+      indexes[0] = i;
 
-      tab_text (chisq, 0, 0, TAB_LEFT, gettext (chisq_stats[i]));
-      if (i != 2)
-	{
-	  tab_double (chisq, 1, 0, TAB_RIGHT, chisq_v[i], NULL, RC_OTHER);
-	  tab_double (chisq, 2, 0, TAB_RIGHT, df[i], NULL, RC_WEIGHT);
-	  tab_double (chisq, 3, 0, TAB_RIGHT,
-		      gsl_cdf_chisq_Q (chisq_v[i], df[i]), NULL, RC_PVALUE);
-	}
-      else
-	{
-	  *showed_fisher = true;
-	  tab_double (chisq, 4, 0, TAB_RIGHT, fisher2, NULL, RC_PVALUE);
-	  tab_double (chisq, 5, 0, TAB_RIGHT, fisher1, NULL, RC_PVALUE);
-	}
-      tab_next_row (chisq);
+      double entries[5] = { SYSMIS, SYSMIS, SYSMIS, SYSMIS, SYSMIS };
+      if (i == 2)
+        {
+          entries[3] = fisher2;
+          entries[4] = fisher1;
+        }
+      else if (chisq_v[i] != SYSMIS)
+        {
+          entries[0] = chisq_v[i];
+          entries[1] = df[i];
+          entries[2] = gsl_cdf_chisq_Q (chisq_v[i], df[i]);
+        }
+
+      for (size_t j = 0; j < sizeof entries / sizeof *entries; j++)
+        if (entries[j] != SYSMIS)
+          {
+            indexes[1] = j;
+            pivot_table_put (chisq, indexes, chisq->n_dimensions,
+                             pivot_value_new_number (entries[j]));
+        }
     }
 
-  tab_text (chisq, 0, 0, TAB_LEFT, _("N of Valid Cases"));
-  tab_double (chisq, 1, 0, TAB_RIGHT, xt->total, NULL, RC_WEIGHT);
-  tab_next_row (chisq);
+  indexes[0] = 5;
+  indexes[1] = 0;
+  pivot_table_put (chisq, indexes, chisq->n_dimensions,
+                   pivot_value_new_number (xt->total));
 
-  tab_offset (chisq, 0, -1);
+  free (indexes);
 }
 
 static int calc_symmetric (struct crosstabs_proc *, struct crosstabulation *,
@@ -1909,137 +1751,108 @@ static int calc_symmetric (struct crosstabs_proc *, struct crosstabulation *,
 /* Display symmetric measures. */
 static void
 display_symmetric (struct crosstabs_proc *proc, struct crosstabulation *xt,
-                   struct tab_table *sym)
+                   struct pivot_table *sym)
 {
-  static const char *categories[] =
-    {
-      N_("Nominal by Nominal"),
-      N_("Ordinal by Ordinal"),
-      N_("Interval by Interval"),
-      N_("Measure of Agreement"),
-    };
-
-  static const char *stats[N_SYMMETRIC] =
-    {
-      N_("Phi"),
-      N_("Cramer's V"),
-      N_("Contingency Coefficient"),
-      N_("Kendall's tau-b"),
-      N_("Kendall's tau-c"),
-      N_("Gamma"),
-      N_("Spearman Correlation"),
-      N_("Pearson's R"),
-      N_("Kappa"),
-    };
-
-  static const int stats_categories[N_SYMMETRIC] =
-    {
-      0, 0, 0, 1, 1, 1, 1, 2, 3,
-    };
-
-  int last_cat = -1;
   double sym_v[N_SYMMETRIC], sym_ase[N_SYMMETRIC], sym_t[N_SYMMETRIC];
   double somers_d_v[3], somers_d_ase[3], somers_d_t[3];
-  int i;
 
   if (!calc_symmetric (proc, xt, sym_v, sym_ase, sym_t,
                        somers_d_v, somers_d_ase, somers_d_t))
     return;
 
-  tab_offset (sym, xt->n_consts + xt->n_vars - 2, -1);
+  size_t *indexes = xnmalloc (sym->n_dimensions, sizeof *indexes);
+  assert (xt->n_vars == 2);
+  for (size_t i = 0; i < xt->n_consts; i++)
+    indexes[i + 2] = xt->const_indexes[i];
 
-  for (i = 0; i < N_SYMMETRIC; i++)
+  for (int i = 0; i < N_SYMMETRIC; i++)
     {
       if (sym_v[i] == SYSMIS)
 	continue;
 
-      if (stats_categories[i] != last_cat)
-	{
-	  last_cat = stats_categories[i];
-	  tab_text (sym, 0, 0, TAB_LEFT, gettext (categories[last_cat]));
-	}
+      indexes[1] = i;
 
-      tab_text (sym, 1, 0, TAB_LEFT, gettext (stats[i]));
-      tab_double (sym, 2, 0, TAB_RIGHT, sym_v[i], NULL, RC_OTHER);
-      if (sym_ase[i] != SYSMIS)
-	tab_double (sym, 3, 0, TAB_RIGHT, sym_ase[i], NULL, RC_OTHER);
-      if (sym_t[i] != SYSMIS)
-	tab_double (sym, 4, 0, TAB_RIGHT, sym_t[i], NULL, RC_OTHER);
-      /*tab_double (sym, 5, 0, TAB_RIGHT, normal_sig (sym_v[i]), NULL, RC_PVALUE);*/
-      tab_next_row (sym);
+      double entries[] = { sym_v[i], sym_ase[i], sym_t[i] };
+      for (size_t j = 0; j < sizeof entries / sizeof *entries; j++)
+        if (entries[j] != SYSMIS)
+          {
+            indexes[0] = j;
+            pivot_table_put (sym, indexes, sym->n_dimensions,
+                             pivot_value_new_number (entries[j]));
+          }
     }
 
-  tab_text (sym, 0, 0, TAB_LEFT, _("N of Valid Cases"));
-  tab_double (sym, 2, 0, TAB_RIGHT, xt->total, NULL, RC_WEIGHT);
-  tab_next_row (sym);
-
-  tab_offset (sym, 0, -1);
+  indexes[1] = N_SYMMETRIC;
+  indexes[0] = 0;
+  struct pivot_value *total = pivot_value_new_number (xt->total);
+  pivot_value_set_rc (sym, total, PIVOT_RC_COUNT);
+  pivot_table_put (sym, indexes, sym->n_dimensions, total);
 }
 
-static int calc_risk (struct crosstabulation *,
-                      double[], double[], double[], union value *);
+static bool calc_risk (struct crosstabulation *,
+                       double[], double[], double[], union value *,
+                       double *);
 
 /* Display risk estimate. */
 static void
-display_risk (struct crosstabulation *xt, struct tab_table *risk)
+display_risk (struct crosstabulation *xt, struct pivot_table *risk,
+              struct pivot_dimension *risk_statistics)
 {
-  char buf[256];
-  double risk_v[3], lower[3], upper[3];
+  double risk_v[3], lower[3], upper[3], n_valid;
   union value c[2];
-  int i;
-
-  if (!calc_risk (xt, risk_v, upper, lower, c))
+  if (!calc_risk (xt, risk_v, upper, lower, c, &n_valid))
     return;
 
-  tab_offset (risk, xt->n_consts + xt->n_vars - 2, -1);
+  size_t *indexes = xnmalloc (risk->n_dimensions, sizeof *indexes);
+  assert (xt->n_vars == 2);
+  for (size_t i = 0; i < xt->n_consts; i++)
+    indexes[i + 2] = xt->const_indexes[i];
 
-  for (i = 0; i < 3; i++)
+  for (int i = 0; i < 3; i++)
     {
       const struct variable *cv = xt->vars[COL_VAR].var;
       const struct variable *rv = xt->vars[ROW_VAR].var;
-      int cvw = var_get_width (cv);
-      int rvw = var_get_width (rv);
 
       if (risk_v[i] == SYSMIS)
 	continue;
 
+      struct string label = DS_EMPTY_INITIALIZER;
       switch (i)
 	{
 	case 0:
-	  if (var_is_numeric (cv))
-	    sprintf (buf, _("Odds Ratio for %s (%g / %g)"),
-		     var_to_string (cv), c[0].f, c[1].f);
-	  else
-	    sprintf (buf, _("Odds Ratio for %s (%.*s / %.*s)"),
-		     var_to_string (cv),
-		     cvw, value_str (&c[0], cvw),
-		     cvw, value_str (&c[1], cvw));
+          ds_put_format (&label, _("Odds Ratio for %s"), var_to_string (rv));
+          ds_put_cstr (&label, " (");
+          var_append_value_name (rv, &c[0], &label);
+          ds_put_cstr (&label, " / ");
+          var_append_value_name (rv, &c[1], &label);
+          ds_put_cstr (&label, ")");
 	  break;
 	case 1:
 	case 2:
-	  if (var_is_numeric (rv))
-	    sprintf (buf, _("For cohort %s = %.*g"),
-		     var_to_string (rv), DBL_DIG + 1,
-                     xt->vars[ROW_VAR].values[i - 1].f);
-	  else
-	    sprintf (buf, _("For cohort %s = %.*s"),
-		     var_to_string (rv),
-		     rvw, value_str (&xt->vars[ROW_VAR].values[i - 1], rvw));
+          ds_put_format (&label, _("For cohort %s = "), var_to_string (cv));
+          var_append_value_name (cv, &xt->vars[ROW_VAR].values[i - 1], &label);
 	  break;
 	}
 
-      tab_text (risk, 0, 0, TAB_LEFT, buf);
-      tab_double (risk, 1, 0, TAB_RIGHT, risk_v[i], NULL, RC_OTHER);
-      tab_double (risk, 2, 0, TAB_RIGHT, lower[i], NULL, RC_OTHER);
-      tab_double (risk, 3, 0, TAB_RIGHT, upper[i], NULL, RC_OTHER);
-      tab_next_row (risk);
+      indexes[1] = pivot_category_create_leaf (
+        risk_statistics->root,
+        pivot_value_new_user_text_nocopy (ds_steal_cstr (&label)));
+
+      double entries[] = { risk_v[i], lower[i], upper[i] };
+      for (size_t j = 0; j < sizeof entries / sizeof *entries; j++)
+        {
+          indexes[0] = j;
+          pivot_table_put (risk, indexes, risk->n_dimensions,
+                           pivot_value_new_number (entries[i]));
+        }
     }
-
-  tab_text (risk, 0, 0, TAB_LEFT, _("N of Valid Cases"));
-  tab_double (risk, 1, 0, TAB_RIGHT, xt->total, NULL, RC_WEIGHT);
-  tab_next_row (risk);
-
-  tab_offset (risk, 0, -1);
+  indexes[1] = pivot_category_create_leaf (
+    risk_statistics->root,
+    pivot_value_new_text (N_("N of Valid Cases")));
+  indexes[0] = 0;
+  pivot_table_put (risk, indexes, risk->n_dimensions,
+                   pivot_value_new_number (n_valid));
+  free (indexes);
 }
 
 static int calc_directional (struct crosstabs_proc *, struct crosstabulation *,
@@ -2048,120 +1861,39 @@ static int calc_directional (struct crosstabs_proc *, struct crosstabulation *,
 
 /* Display directional measures. */
 static void
-display_directional (struct crosstabs_proc *proc, struct crosstabulation *xt,
-                     struct tab_table *direct)
+display_directional (struct crosstabs_proc *proc,
+                     struct crosstabulation *xt, struct pivot_table *direct)
 {
-  static const char *categories[] =
-    {
-      N_("Nominal by Nominal"),
-      N_("Ordinal by Ordinal"),
-      N_("Nominal by Interval"),
-    };
-
-  static const char *stats[] =
-    {
-      N_("Lambda"),
-      N_("Goodman and Kruskal tau"),
-      N_("Uncertainty Coefficient"),
-      N_("Somers' d"),
-      N_("Eta"),
-    };
-
-  static const char *types[] =
-    {
-      N_("Symmetric"),
-      N_("%s Dependent"),
-      N_("%s Dependent"),
-    };
-
-  static const int stats_categories[N_DIRECTIONAL] =
-    {
-      0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 2, 2,
-    };
-
-  static const int stats_stats[N_DIRECTIONAL] =
-    {
-      0, 0, 0, 1, 1, 2, 2, 2, 3, 3, 3, 4, 4,
-    };
-
-  static const int stats_types[N_DIRECTIONAL] =
-    {
-      0, 1, 2, 1, 2, 0, 1, 2, 0, 1, 2, 1, 2,
-    };
-
-  static const int *stats_lookup[] =
-    {
-      stats_categories,
-      stats_stats,
-      stats_types,
-    };
-
-  static const char **stats_names[] =
-    {
-      categories,
-      stats,
-      types,
-    };
-
-  int last[3] =
-    {
-      -1, -1, -1,
-    };
-
   double direct_v[N_DIRECTIONAL];
   double direct_ase[N_DIRECTIONAL];
   double direct_t[N_DIRECTIONAL];
   double sig[N_DIRECTIONAL];
-
-  int i;
-
   if (!calc_directional (proc, xt, direct_v, direct_ase, direct_t, sig))
     return;
 
-  tab_offset (direct, xt->n_consts + xt->n_vars - 2, -1);
+  size_t *indexes = xnmalloc (direct->n_dimensions, sizeof *indexes);
+  assert (xt->n_vars == 2);
+  for (size_t i = 0; i < xt->n_consts; i++)
+    indexes[i + 2] = xt->const_indexes[i];
 
-  for (i = 0; i < N_DIRECTIONAL; i++)
+  for (int i = 0; i < N_DIRECTIONAL; i++)
     {
       if (direct_v[i] == SYSMIS)
 	continue;
 
-      {
-	int j;
+      indexes[1] = i;
 
-	for (j = 0; j < 3; j++)
-	  if (last[j] != stats_lookup[j][i])
-	    {
-	      if (j < 2)
-		tab_hline (direct, TAL_1, j, 6, 0);
-
-	      for (; j < 3; j++)
-		{
-		  const char *string;
-		  int k = last[j] = stats_lookup[j][i];
-
-		  if (k == 0)
-		    string = NULL;
-		  else if (k == 1)
-		    string = var_to_string (xt->vars[0].var);
-		  else
-		    string = var_to_string (xt->vars[1].var);
-
-		  tab_text_format (direct, j, 0, TAB_LEFT,
-                                   gettext (stats_names[j][k]), string);
-		}
-	    }
-      }
-
-      tab_double (direct, 3, 0, TAB_RIGHT, direct_v[i], NULL, RC_OTHER);
-      if (direct_ase[i] != SYSMIS)
-	tab_double (direct, 4, 0, TAB_RIGHT, direct_ase[i], NULL, RC_OTHER);
-      if (direct_t[i] != SYSMIS)
-	tab_double (direct, 5, 0, TAB_RIGHT, direct_t[i], NULL, RC_OTHER);
-      tab_double (direct, 6, 0, TAB_RIGHT, sig[i], NULL, RC_PVALUE);
-      tab_next_row (direct);
+      double entries[] = {
+        direct_v[i], direct_ase[i], direct_t[i], sig[i],
+      };
+      for (size_t j = 0; j < sizeof entries / sizeof *entries; j++)
+        if (entries[j] != SYSMIS)
+          {
+            indexes[0] = j;
+            pivot_table_put (direct, indexes, direct->n_dimensions,
+                             pivot_value_new_number (entries[j]));
+          }
     }
-
-  tab_offset (direct, 0, -1);
 }
 
 /* Statistical calculations. */
@@ -2246,8 +1978,6 @@ calc_chisq (struct crosstabulation *xt,
             double chisq[N_CHISQ], int df[N_CHISQ],
 	    double *fisher1, double *fisher2)
 {
-  int r, c;
-
   chisq[0] = chisq[1] = 0.;
   chisq[2] = chisq[3] = chisq[4] = SYSMIS;
   *fisher1 = *fisher2 = SYSMIS;
@@ -2260,18 +1990,17 @@ calc_chisq (struct crosstabulation *xt,
       return;
     }
 
-  size_t n_rows = xt->vars[ROW_VAR].n_values;
   size_t n_cols = xt->vars[COL_VAR].n_values;
-  for (r = 0; r < n_rows; r++)
-    for (c = 0; c < n_cols; c++)
+  FOR_EACH_POPULATED_ROW (r, xt)
+    FOR_EACH_POPULATED_COLUMN (c, xt)
       {
-	const double expected = xt->row_tot[r] * xt->col_tot[c] / xt->total;
-	const double freq = xt->mat[n_cols * r + c];
-	const double residual = freq - expected;
+        const double expected = xt->row_tot[r] * xt->col_tot[c] / xt->total;
+        const double freq = xt->mat[n_cols * r + c];
+        const double residual = freq - expected;
 
         chisq[0] += residual * residual / expected;
-	if (freq)
-	  chisq[1] += freq * log (expected / freq);
+        if (freq)
+          chisq[1] += freq * log (expected / freq);
       }
 
   if (chisq[0] == 0.)
@@ -2289,16 +2018,14 @@ calc_chisq (struct crosstabulation *xt,
 
       {
 	int nz_cols[2];
-	int i, j;
 
-	for (i = j = 0; i < n_cols; i++)
-	  if (xt->col_tot[i] != 0.)
-	    {
-	      nz_cols[j++] = i;
-	      if (j == 2)
-		break;
-	    }
-
+        int j = 0;
+        FOR_EACH_POPULATED_COLUMN (c, xt)
+          {
+            nz_cols[j++] = c;
+            if (j == 2)
+              break;
+          }
 	assert (j == 2);
 
 	f11 = xt->mat[nz_cols[0]];
@@ -2433,14 +2160,13 @@ calc_symmetric (struct crosstabs_proc *proc, struct crosstabulation *xt,
   if (proc->statistics & ((1u << CRS_ST_PHI) | (1u << CRS_ST_CC)))
     {
       double Xp = 0.;	/* Pearson chi-square. */
-      int r, c;
 
-      for (r = 0; r < n_rows; r++)
-        for (c = 0; c < n_cols; c++)
+      FOR_EACH_POPULATED_ROW (r, xt)
+        FOR_EACH_POPULATED_COLUMN (c, xt)
           {
-            const double expected = xt->row_tot[r] * xt->col_tot[c] / xt->total;
-            const double freq = xt->mat[n_cols * r + c];
-            const double residual = freq - expected;
+            double expected = xt->row_tot[r] * xt->col_tot[c] / xt->total;
+            double freq = xt->mat[n_cols * r + c];
+            double residual = freq - expected;
 
             Xp += residual * residual / expected;
           }
@@ -2738,42 +2464,41 @@ calc_symmetric (struct crosstabs_proc *proc, struct crosstabulation *xt,
 }
 
 /* Calculate risk estimate. */
-static int
+static bool
 calc_risk (struct crosstabulation *xt,
-           double *value, double *upper, double *lower, union value *c)
+           double *value, double *upper, double *lower, union value *c,
+           double *n_valid)
 {
   size_t n_cols = xt->vars[COL_VAR].n_values;
   double f11, f12, f21, f22;
   double v;
 
-  {
-    int i;
-
-    for (i = 0; i < 3; i++)
-      value[i] = upper[i] = lower[i] = SYSMIS;
-  }
+  for (int i = 0; i < 3; i++)
+    value[i] = upper[i] = lower[i] = SYSMIS;
 
   if (xt->ns_rows != 2 || xt->ns_cols != 2)
-    return 0;
+    return false;
 
   {
+    /* Find populated columns. */
     int nz_cols[2];
-    int i, j;
+    int n = 0;
+    FOR_EACH_POPULATED_COLUMN (c, xt)
+      nz_cols[n++] = c;
+    assert (n == 2);
 
-    for (i = j = 0; i < n_cols; i++)
-      if (xt->col_tot[i] != 0.)
-	{
-	  nz_cols[j++] = i;
-	  if (j == 2)
-	    break;
-	}
+    /* Find populated rows. */
+    int nz_rows[2];
+    n = 0;
+    FOR_EACH_POPULATED_ROW (r, xt)
+      nz_rows[n++] = r;
+    assert (n == 2);
 
-    assert (j == 2);
-
-    f11 = xt->mat[nz_cols[0]];
-    f12 = xt->mat[nz_cols[1]];
-    f21 = xt->mat[nz_cols[0] + n_cols];
-    f22 = xt->mat[nz_cols[1] + n_cols];
+    f11 = xt->mat[nz_cols[0] + n_cols * nz_rows[0]];
+    f12 = xt->mat[nz_cols[1] + n_cols * nz_rows[0]];
+    f21 = xt->mat[nz_cols[0] + n_cols * nz_rows[1]];
+    f22 = xt->mat[nz_cols[1] + n_cols * nz_rows[1]];
+    *n_valid = f11 + f12 + f21 + f22;
 
     c[0] = xt->vars[COL_VAR].values[nz_cols[0]];
     c[1] = xt->vars[COL_VAR].values[nz_cols[1]];
@@ -2796,7 +2521,7 @@ calc_risk (struct crosstabulation *xt,
   lower[2] = value[2] * exp (-1.960 * v);
   upper[2] = value[2] * exp (1.960 * v);
 
-  return 1;
+  return true;
 }
 
 /* Calculate directional measures. */
@@ -2807,63 +2532,58 @@ calc_directional (struct crosstabs_proc *proc, struct crosstabulation *xt,
 {
   size_t n_rows = xt->vars[ROW_VAR].n_values;
   size_t n_cols = xt->vars[COL_VAR].n_values;
-  {
-    int i;
-
-    for (i = 0; i < N_DIRECTIONAL; i++)
-      v[i] = ase[i] = t[i] = sig[i] = SYSMIS;
-  }
+  for (int i = 0; i < N_DIRECTIONAL; i++)
+    v[i] = ase[i] = t[i] = sig[i] = SYSMIS;
 
   /* Lambda. */
   if (proc->statistics & (1u << CRS_ST_LAMBDA))
     {
+      /* Find maximum for each row and their sum. */
       double *fim = xnmalloc (n_rows, sizeof *fim);
       int *fim_index = xnmalloc (n_rows, sizeof *fim_index);
-      double *fmj = xnmalloc (n_cols, sizeof *fmj);
-      int *fmj_index = xnmalloc (n_cols, sizeof *fmj_index);
-      double sum_fim, sum_fmj;
-      double rm, cm;
-      int rm_index, cm_index;
-      int i, j;
-
-      /* Find maximum for each row and their sum. */
-      for (sum_fim = 0., i = 0; i < n_rows; i++)
+      double sum_fim = 0.0;
+      for (int i = 0; i < n_rows; i++)
 	{
 	  double max = xt->mat[i * n_cols];
 	  int index = 0;
 
-	  for (j = 1; j < n_cols; j++)
+	  for (int j = 1; j < n_cols; j++)
 	    if (xt->mat[j + i * n_cols] > max)
 	      {
 		max = xt->mat[j + i * n_cols];
 		index = j;
 	      }
 
-	  sum_fim += fim[i] = max;
+          fim[i] = max;
+	  sum_fim += max;
 	  fim_index[i] = index;
 	}
 
       /* Find maximum for each column. */
-      for (sum_fmj = 0., j = 0; j < n_cols; j++)
+      double *fmj = xnmalloc (n_cols, sizeof *fmj);
+      int *fmj_index = xnmalloc (n_cols, sizeof *fmj_index);
+      double sum_fmj = 0.0;
+      for (int j = 0; j < n_cols; j++)
 	{
 	  double max = xt->mat[j];
 	  int index = 0;
 
-	  for (i = 1; i < n_rows; i++)
+	  for (int i = 1; i < n_rows; i++)
 	    if (xt->mat[j + i * n_cols] > max)
 	      {
 		max = xt->mat[j + i * n_cols];
 		index = i;
 	      }
 
-	  sum_fmj += fmj[j] = max;
+          fmj[j] = max;
+	  sum_fmj += max;
 	  fmj_index[j] = index;
 	}
 
       /* Find maximum row total. */
-      rm = xt->row_tot[0];
-      rm_index = 0;
-      for (i = 1; i < n_rows; i++)
+      double rm = xt->row_tot[0];
+      int rm_index = 0;
+      for (int i = 1; i < n_rows; i++)
 	if (xt->row_tot[i] > rm)
 	  {
 	    rm = xt->row_tot[i];
@@ -2871,9 +2591,9 @@ calc_directional (struct crosstabs_proc *proc, struct crosstabulation *xt,
 	  }
 
       /* Find maximum column total. */
-      cm = xt->col_tot[0];
-      cm_index = 0;
-      for (j = 1; j < n_cols; j++)
+      double cm = xt->col_tot[0];
+      int cm_index = 0;
+      for (int j = 1; j < n_cols; j++)
 	if (xt->col_tot[j] > cm)
 	  {
 	    cm = xt->col_tot[j];
@@ -2886,10 +2606,8 @@ calc_directional (struct crosstabs_proc *proc, struct crosstabulation *xt,
 
       /* ASE1 for Y given XT. */
       {
-        double accum;
-
-        accum = 0.;
-	for (i = 0; i < n_rows; i++)
+        double accum = 0.0;
+	for (int i = 0; i < n_rows; i++)
           if (cm_index == fim_index[i])
             accum += fim[i];
         ase[2] = sqrt ((xt->total - sum_fim) * (sum_fim + cm - 2. * accum)
@@ -2898,9 +2616,8 @@ calc_directional (struct crosstabs_proc *proc, struct crosstabulation *xt,
 
       /* ASE0 for Y given XT. */
       {
-	double accum;
-
-	for (accum = 0., i = 0; i < n_rows; i++)
+	double accum = 0.0;
+	for (int i = 0; i < n_rows; i++)
 	  if (cm_index != fim_index[i])
 	    accum += (xt->mat[i * n_cols + fim_index[i]]
 		      + xt->mat[i * n_cols + cm_index]);
@@ -2909,10 +2626,8 @@ calc_directional (struct crosstabs_proc *proc, struct crosstabulation *xt,
 
       /* ASE1 for XT given Y. */
       {
-        double accum;
-
-        accum = 0.;
-	for (j = 0; j < n_cols; j++)
+        double accum = 0.0;
+	for (int j = 0; j < n_cols; j++)
           if (rm_index == fmj_index[j])
             accum += fmj[j];
         ase[1] = sqrt ((xt->total - sum_fmj) * (sum_fmj + rm - 2. * accum)
@@ -2921,9 +2636,8 @@ calc_directional (struct crosstabs_proc *proc, struct crosstabulation *xt,
 
       /* ASE0 for XT given Y. */
       {
-	double accum;
-
-	for (accum = 0., j = 0; j < n_cols; j++)
+	double accum = 0.0;
+	for (int j = 0; j < n_cols; j++)
 	  if (rm_index != fmj_index[j])
 	    accum += (xt->mat[j + n_cols * fmj_index[j]]
 		      + xt->mat[j + n_cols * rm_index]);
@@ -2932,11 +2646,10 @@ calc_directional (struct crosstabs_proc *proc, struct crosstabulation *xt,
 
       /* Symmetric ASE0 and ASE1. */
       {
-	double accum0;
-	double accum1;
-
-	for (accum0 = accum1 = 0., i = 0; i < n_rows; i++)
-	  for (j = 0; j < n_cols; j++)
+	double accum0 = 0.0;
+	double accum1 = 0.0;
+	for (int i = 0; i < n_rows; i++)
+	  for (int j = 0; j < n_cols; j++)
 	    {
 	      int temp0 = (fmj_index[j] == i) + (fim_index[i] == j);
 	      int temp1 = (i == rm_index) + (j == cm_index);
@@ -2949,7 +2662,7 @@ calc_directional (struct crosstabs_proc *proc, struct crosstabulation *xt,
 		       / (2. * xt->total - rm - cm));
       }
 
-      for (i = 0; i < 3; i++)
+      for (int i = 0; i < 3; i++)
         sig[i] = 2 * gsl_cdf_ugaussian_Q (t[i]);
 
       free (fim);
@@ -2959,21 +2672,22 @@ calc_directional (struct crosstabs_proc *proc, struct crosstabulation *xt,
 
       /* Tau. */
       {
-	double sum_fij2_ri, sum_fij2_ci;
-	double sum_ri2, sum_cj2;
-
-	for (sum_fij2_ri = sum_fij2_ci = 0., i = 0; i < n_rows; i++)
-	  for (j = 0; j < n_cols; j++)
+	double sum_fij2_ri = 0.0;
+        double sum_fij2_ci = 0.0;
+        FOR_EACH_POPULATED_ROW (i, xt)
+          FOR_EACH_POPULATED_COLUMN (j, xt)
 	    {
 	      double temp = pow2 (xt->mat[j + i * n_cols]);
 	      sum_fij2_ri += temp / xt->row_tot[i];
 	      sum_fij2_ci += temp / xt->col_tot[j];
 	    }
 
-	for (sum_ri2 = 0., i = 0; i < n_rows; i++)
+	double sum_ri2 = 0.0;
+	for (int i = 0; i < n_rows; i++)
 	  sum_ri2 += pow2 (xt->row_tot[i]);
 
-	for (sum_cj2 = 0., j = 0; j < n_cols; j++)
+        double sum_cj2 = 0.0;
+	for (int j = 0; j < n_cols; j++)
 	  sum_cj2 += pow2 (xt->col_tot[j]);
 
 	v[3] = (xt->total * sum_fij2_ci - sum_ri2) / (pow2 (xt->total) - sum_ri2);
@@ -2983,20 +2697,18 @@ calc_directional (struct crosstabs_proc *proc, struct crosstabulation *xt,
 
   if (proc->statistics & (1u << CRS_ST_UC))
     {
-      double UX, UY, UXY, P;
-      double ase1_yx, ase1_xy, ase1_sym;
-      int i, j;
+      double UX = 0.0;
+      FOR_EACH_POPULATED_ROW (i, xt)
+        UX -= xt->row_tot[i] / xt->total * log (xt->row_tot[i] / xt->total);
 
-      for (UX = 0., i = 0; i < n_rows; i++)
-	if (xt->row_tot[i] > 0.)
-	  UX -= xt->row_tot[i] / xt->total * log (xt->row_tot[i] / xt->total);
+      double UY = 0.0;
+      FOR_EACH_POPULATED_COLUMN (j, xt)
+        UY -= xt->col_tot[j] / xt->total * log (xt->col_tot[j] / xt->total);
 
-      for (UY = 0., j = 0; j < n_cols; j++)
-	if (xt->col_tot[j] > 0.)
-	  UY -= xt->col_tot[j] / xt->total * log (xt->col_tot[j] / xt->total);
-
-      for (UXY = P = 0., i = 0; i < n_rows; i++)
-	for (j = 0; j < n_cols; j++)
+      double UXY = 0.0;
+      double P = 0.0;
+      for (int i = 0; i < n_rows; i++)
+	for (int j = 0; j < n_cols; j++)
 	  {
 	    double entry = xt->mat[j + i * n_cols];
 
@@ -3007,8 +2719,11 @@ calc_directional (struct crosstabs_proc *proc, struct crosstabulation *xt,
 	    UXY -= entry / xt->total * log (entry / xt->total);
 	  }
 
-      for (ase1_yx = ase1_xy = ase1_sym = 0., i = 0; i < n_rows; i++)
-	for (j = 0; j < n_cols; j++)
+      double ase1_yx = 0.0;
+      double ase1_xy = 0.0;
+      double ase1_sym = 0.0;
+      for (int i = 0; i < n_rows; i++)
+	for (int j = 0; j < n_cols; j++)
 	  {
 	    double entry = xt->mat[j + i * n_cols];
 
@@ -3050,8 +2765,7 @@ calc_directional (struct crosstabs_proc *proc, struct crosstabulation *xt,
       if (calc_symmetric (proc, xt, v_dummy, ase_dummy, t_dummy,
                           somers_d_v, somers_d_ase, somers_d_t))
         {
-          int i;
-          for (i = 0; i < 3; i++)
+          for (int i = 0; i < 3; i++)
             {
               v[8 + i] = somers_d_v[i];
               ase[8 + i] = somers_d_ase[i];
@@ -3064,63 +2778,58 @@ calc_directional (struct crosstabs_proc *proc, struct crosstabulation *xt,
   /* Eta. */
   if (proc->statistics & (1u << CRS_ST_ETA))
     {
-      {
-	double sum_Xr, sum_X2r;
-	double SX, SXW;
-	int i, j;
+      /* X dependent. */
+      double sum_Xr = 0.0;
+      double sum_X2r = 0.0;
+      for (int i = 0; i < n_rows; i++)
+        {
+          sum_Xr += xt->vars[ROW_VAR].values[i].f * xt->row_tot[i];
+          sum_X2r += pow2 (xt->vars[ROW_VAR].values[i].f) * xt->row_tot[i];
+        }
+      double SX = sum_X2r - pow2 (sum_Xr) / xt->total;
 
-	for (sum_Xr = sum_X2r = 0., i = 0; i < n_rows; i++)
-	  {
-	    sum_Xr += xt->vars[ROW_VAR].values[i].f * xt->row_tot[i];
-	    sum_X2r += pow2 (xt->vars[ROW_VAR].values[i].f) * xt->row_tot[i];
-	  }
-	SX = sum_X2r - pow2 (sum_Xr) / xt->total;
+      double SXW = 0.0;
+      FOR_EACH_POPULATED_COLUMN (j, xt)
+        {
+          double cum = 0.0;
 
-	for (SXW = 0., j = 0; j < n_cols; j++)
-	  {
-	    double cum;
+          for (int i = 0; i < n_rows; i++)
+            {
+              SXW += (pow2 (xt->vars[ROW_VAR].values[i].f)
+                      * xt->mat[j + i * n_cols]);
+              cum += (xt->vars[ROW_VAR].values[i].f
+                      * xt->mat[j + i * n_cols]);
+            }
 
-	    for (cum = 0., i = 0; i < n_rows; i++)
-	      {
-		SXW += (pow2 (xt->vars[ROW_VAR].values[i].f)
-                        * xt->mat[j + i * n_cols]);
-		cum += (xt->vars[ROW_VAR].values[i].f
-                        * xt->mat[j + i * n_cols]);
-	      }
+          SXW -= cum * cum / xt->col_tot[j];
+        }
+      v[11] = sqrt (1. - SXW / SX);
 
-	    SXW -= cum * cum / xt->col_tot[j];
-	  }
-	v[11] = sqrt (1. - SXW / SX);
-      }
+      /* Y dependent. */
+      double sum_Yc = 0.0;
+      double sum_Y2c = 0.0;
+      for (int i = 0; i < n_cols; i++)
+        {
+          sum_Yc += xt->vars[COL_VAR].values[i].f * xt->col_tot[i];
+          sum_Y2c += pow2 (xt->vars[COL_VAR].values[i].f) * xt->col_tot[i];
+        }
+      double SY = sum_Y2c - pow2 (sum_Yc) / xt->total;
 
-      {
-	double sum_Yc, sum_Y2c;
-	double SY, SYW;
-	int i, j;
+      double SYW = 0.0;
+      FOR_EACH_POPULATED_ROW (i, xt)
+        {
+          double cum = 0.0;
+          for (int j = 0; j < n_cols; j++)
+            {
+              SYW += (pow2 (xt->vars[COL_VAR].values[j].f)
+                      * xt->mat[j + i * n_cols]);
+              cum += (xt->vars[COL_VAR].values[j].f
+                      * xt->mat[j + i * n_cols]);
+            }
 
-	for (sum_Yc = sum_Y2c = 0., i = 0; i < n_cols; i++)
-	  {
-	    sum_Yc += xt->vars[COL_VAR].values[i].f * xt->col_tot[i];
-	    sum_Y2c += pow2 (xt->vars[COL_VAR].values[i].f) * xt->col_tot[i];
-	  }
-	SY = sum_Y2c - sum_Yc * sum_Yc / xt->total;
-
-	for (SYW = 0., i = 0; i < n_rows; i++)
-	  {
-	    double cum;
-
-	    for (cum = 0., j = 0; j < n_cols; j++)
-	      {
-		SYW += (pow2 (xt->vars[COL_VAR].values[j].f)
-                        * xt->mat[j + i * n_cols]);
-		cum += (xt->vars[COL_VAR].values[j].f
-                        * xt->mat[j + i * n_cols]);
-	      }
-
-	    SYW -= cum * cum / xt->row_tot[i];
-	  }
-	v[12] = sqrt (1. - SYW / SY);
-      }
+          SYW -= cum * cum / xt->row_tot[i];
+        }
+      v[12] = sqrt (1. - SYW / SY);
     }
 
   return 1;

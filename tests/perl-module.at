@@ -76,11 +76,11 @@ DISPLAY DOCUMENTS.
 DISPLAY DICTIONARY.
 SHOW WEIGHT.
 ])
-AT_CHECK([pspp -O format=csv dump-dict.sps], [0],
-  [File label: My Dictionary
+AT_CHECK([pspp -O format=csv dump-dict.sps], [0], [dnl
+Table: File Label
+Label,My Dictionary
 
-Documents in the active dataset:
-
+Table: Documents
 These Documents
 
 Table: Variables
@@ -160,30 +160,30 @@ Name,Position,Label,Measurement Level,Role,Width,Alignment,Print Format,Write Fo
 id,1,,Scale,Input,8,Right,F2.0,F2.0,
 name,2,,Nominal,Input,20,Left,A20,A20,
 
-File label: This is the file label
+Table: File Label
+Label,This is the file label
 
-Documents in the active dataset:
-
+Table: Documents
 This is a document line
 
 Table: Data List
 id,name
-34,frederick           @&t@
+34,frederick
 
 Table: Variables
 Name,Position,Label,Measurement Level,Role,Width,Alignment,Print Format,Write Format,Missing Values
 id,1,,Scale,Input,8,Right,F2.0,F2.0,
 name,2,,Nominal,Input,20,Left,A20,A20,
 
-File label: This is the file label
+Table: File Label
+Label,This is the file label
 
-Documents in the active dataset:
-
+Table: Documents
 This is a document line
 
 Table: Data List
 id,name
-21,wheelbarrow         @&t@
+21,wheelbarrow
 ])
 AT_CLEANUP
 
@@ -246,13 +246,13 @@ string,2,My String,Nominal,Input,8,Left,A8,A8,"""this    ""; ""that    """
 longstring,3,My Long String,Nominal,Input,9,Left,A9,A9,
 
 Table: Value Labels
-Variable,Value,Label
-integer,0,Zero
+Variable Value,,Label
+My Integer,0,Zero
 ,1,Unity
 ,2,Duality
-string,xx      ,foo
-,yy      ,bar
-longstring,xxx      ,xfoo
+My String,xx,foo
+,yy,bar
+My Long String,xxx,xfoo
 ])
 AT_CLEANUP
 
@@ -461,17 +461,20 @@ dollar,5,A Dollar Variable,Scale,Input,8,Right,DOLLAR11.2,DOLLAR11.2,
 datetime,6,A Datetime Variable,Scale,Input,8,Right,DATETIME17.0,DATETIME17.0,
 
 Table: Value Labels
-Variable,Value,Label
-string,1111    ,ones
-,2222    ,twos
-,3333    ,threes
-numeric,1,Unity
+Variable Value,,Label
+A Short String Variable,1111,ones
+,2222,twos
+,3333[a],threes
+A Numeric Variable,1,Unity
 ,2,Duality
 ,3,Thripality
 
+Footnotes:
+a,User-missing value
+
 Table: Variable and Dataset Attributes
-Variable,Name,Value
-numeric,colour[1],blue
+Variable and Name,,Value
+A Numeric Variable,colour[1],blue
 ,colour[2],pink
 ,colour[3],violet
 ,nationality,foreign
@@ -479,11 +482,11 @@ numeric,colour[1],blue
 
 Table: Data List
 string,longstring,numeric,date,dollar,datetime
-1111    ,One         ,1,01-JAN-2001,$1.00,01-JAN-2001 01:01
-2222    ,Two         ,2,02-FEB-2002,$2.00,02-FEB-2002 02:02
-3333    ,Three       ,3,03-MAR-2003,$3.00,03-MAR-2003 03:03
-.       ,.           ,.,.,.  ,.
-5555    ,Five        ,5,05-MAY-2005,$5.00,05-MAY-2005 05:05
+1111,One,1,01-JAN-2001,$1.00,01-JAN-2001 01:01
+2222,Two,2,02-FEB-2002,$2.00,02-FEB-2002 02:02
+3333,Three,3,03-MAR-2003,$3.00,03-MAR-2003 03:03
+.,.,.,.,.  ,.
+5555,Five,5,05-MAY-2005,$5.00,05-MAY-2005 05:05
 
 Table: Variables
 Name,Position,Label,Measurement Level,Role,Width,Alignment,Print Format,Write Format,Missing Values
@@ -495,17 +498,20 @@ dollar,5,A Dollar Variable,Scale,Input,8,Right,DOLLAR11.2,DOLLAR11.2,
 datetime,6,A Datetime Variable,Scale,Input,8,Right,DATETIME17.0,DATETIME17.0,
 
 Table: Value Labels
-Variable,Value,Label
-string,1111    ,ones
-,2222    ,twos
-,3333    ,threes
-numeric,1,Unity
+Variable Value,,Label
+A Short String Variable,1111,ones
+,2222,twos
+,3333[a],threes
+A Numeric Variable,1,Unity
 ,2,Duality
 ,3,Thripality
 
+Footnotes:
+a,User-missing value
+
 Table: Variable and Dataset Attributes
-Variable,Name,Value
-numeric,colour[1],blue
+Variable and Name,,Value
+A Numeric Variable,colour[1],blue
 ,colour[2],pink
 ,colour[3],violet
 ,nationality,foreign
@@ -513,11 +519,11 @@ numeric,colour[1],blue
 
 Table: Data List
 string,longstring,numeric,date,dollar,datetime
-1111    ,One         ,1,01-JAN-2001,$1.00,01-JAN-2001 01:01
-2222    ,Two         ,2,02-FEB-2002,$2.00,02-FEB-2002 02:02
-3333    ,Three       ,3,03-MAR-2003,$3.00,03-MAR-2003 03:03
-.       ,.           ,.,.,.  ,.
-5555    ,Five        ,5,05-MAY-2005,$5.00,05-MAY-2005 05:05
+1111,One,1,01-JAN-2001,$1.00,01-JAN-2001 01:01
+2222,Two,2,02-FEB-2002,$2.00,02-FEB-2002 02:02
+3333,Three,3,03-MAR-2003,$3.00,03-MAR-2003 03:03
+.,.,.,.,.  ,.
+5555,Five,5,05-MAY-2005,$5.00,05-MAY-2005 05:05
 ]])
 AT_CLEANUP
 

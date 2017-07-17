@@ -31,18 +31,16 @@
 #include "libpspp/hmapx.h"
 #include "math/moments.h"
 
-#include "output/tab.h"
+#include "output/pivot-table.h"
 
 #include "gettext.h"
+#define N_(msgid) msgid
 #define _(msgid) gettext (msgid)
 
 
 struct per_var_stats
 {
   const struct variable *var;
-
-  /* The position for reporting purposes */
-  int posn;
 
   /* N, Mean, Variance */
   struct moments *mom;
@@ -54,7 +52,8 @@ struct per_var_stats
 
 struct one_samp
 {
-  struct hmapx hmap;
+  struct per_var_stats *stats;
+  size_t n_stats;
   double testval;
 };
 
@@ -62,154 +61,118 @@ struct one_samp
 static void
 one_sample_test (const struct tt *tt, const struct one_samp *os)
 {
-  struct hmapx_node *node;
-  struct per_var_stats *per_var_stats;
+  struct pivot_table *table = pivot_table_create (N_("One-Sample Test"));
+  pivot_table_set_weight_var (table, tt->wv);
 
-  const int heading_rows = 3;
-  const size_t rows = heading_rows + tt->n_vars;
-  const size_t cols = 7;
-  const struct fmt_spec *wfmt = tt->wv ? var_get_print_format (tt->wv) : & F_8_0;
+  struct pivot_dimension *statistics = pivot_dimension_create (
+    table, PIVOT_AXIS_COLUMN, N_("Statistics"));
+  struct pivot_category *group = pivot_category_create_group__ (
+    statistics->root, pivot_value_new_user_text_nocopy (
+      xasprintf (_("Test Value = %.*g"), DBL_DIG + 1, os->testval)));
+  pivot_category_create_leaves (
+    group,
+    N_("t"), PIVOT_RC_OTHER,
+    N_("df"), PIVOT_RC_COUNT,
+    N_("Sig. (2-tailed)"), PIVOT_RC_SIGNIFICANCE,
+    N_("Mean Difference"), PIVOT_RC_OTHER);
+  struct pivot_category *subgroup = pivot_category_create_group__ (
+    group, pivot_value_new_user_text_nocopy (
+      xasprintf (_("%g%% Confidence Interval of the Difference"),
+                 tt->confidence * 100.0)));
+  pivot_category_create_leaves (subgroup,
+                                N_("Lower"), PIVOT_RC_OTHER,
+                                N_("Upper"), PIVOT_RC_OTHER);
 
-  struct tab_table *t = tab_create (cols, rows);
-  tab_set_format (t, RC_WEIGHT, wfmt);
+  struct pivot_dimension *dep_vars = pivot_dimension_create (
+    table, PIVOT_AXIS_ROW, N_("Dependent Variables"));
 
-  tab_headers (t, 0, 0, heading_rows, 0);
-  tab_box (t, TAL_2, TAL_2, TAL_0, TAL_0, 0, 0, cols - 1, rows - 1);
-  tab_hline (t, TAL_2, 0, cols - 1, 3);
-
-  tab_title (t, _("One-Sample Test"));
-  tab_hline (t, TAL_1, 1, cols - 1, 1);
-  tab_vline (t, TAL_2, 1, 0, rows - 1);
-
-  tab_joint_text_format (t, 1, 0, cols - 1, 0, TAB_CENTER,
-                         _("Test Value = %f"), os->testval);
-
-  tab_box (t, -1, -1, -1, TAL_1, 1, 1, cols - 1, rows - 1);
-
-  tab_joint_text_format (t, 5, 1, 6, 1, TAB_CENTER,
-                         _("%g%% Confidence Interval of the Difference"),
-                         tt->confidence * 100.0);
-
-  tab_hline (t, TAL_1, 5, 6, 2);
-  tab_text (t, 1, 2, TAB_CENTER | TAT_TITLE, _("t"));
-  tab_text (t, 2, 2, TAB_CENTER | TAT_TITLE, _("df"));
-  tab_text (t, 3, 2, TAB_CENTER | TAT_TITLE, _("Sig. (2-tailed)"));
-  tab_text (t, 4, 2, TAB_CENTER | TAT_TITLE, _("Mean Difference"));
-  tab_text (t, 5, 2, TAB_CENTER | TAT_TITLE, _("Lower"));
-  tab_text (t, 6, 2, TAB_CENTER | TAT_TITLE, _("Upper"));
-
-  HMAPX_FOR_EACH (per_var_stats, node, &os->hmap)
+  for (size_t i = 0; i < os->n_stats; i++)
     {
+      const struct per_var_stats *per_var_stats = &os->stats[i];
       const struct moments *m = per_var_stats->mom;
+
+      int dep_var_idx = pivot_category_create_leaf (
+        dep_vars->root, pivot_value_new_variable (per_var_stats->var));
+
       double cc, mean, sigma;
-      double tval, df;
-      double p, q;
-      double mean_diff;
-      double se_mean ;
-      const int v = per_var_stats->posn;
-
       moments_calculate (m, &cc, &mean, &sigma, NULL, NULL);
+      double tval = (mean - os->testval) * sqrt (cc / sigma);
+      double mean_diff = per_var_stats->sum_diff / cc;
+      double se_mean = sqrt (sigma / cc);
+      double df = cc - 1.0;
+      double p = gsl_cdf_tdist_P (tval, df);
+      double q = gsl_cdf_tdist_Q (tval, df);
+      double sig = 2.0 * (tval > 0 ? q : p);
+      double tval_qinv = gsl_cdf_tdist_Qinv ((1.0 - tt->confidence) / 2.0, df);
+      double lower = mean_diff - tval_qinv * se_mean;
+      double upper = mean_diff + tval_qinv * se_mean;
 
-      tval = (mean - os->testval) * sqrt (cc / sigma);
-
-      mean_diff = per_var_stats->sum_diff / cc;
-      se_mean = sqrt (sigma / cc);
-      df = cc - 1.0;
-      p = gsl_cdf_tdist_P (tval, df);
-      q = gsl_cdf_tdist_Q (tval, df);
-
-      tab_text (t, 0, v + heading_rows, TAB_LEFT, var_to_string (per_var_stats->var));
-      tab_double (t, 1, v + heading_rows, TAB_RIGHT, tval, NULL, RC_OTHER);
-      tab_double (t, 2, v + heading_rows, TAB_RIGHT, df, NULL, RC_WEIGHT);
-
-      /* Multiply by 2 to get 2-tailed significance, makeing sure we've got
-	 the correct tail*/
-      tab_double (t, 3, v + heading_rows, TAB_RIGHT, 2.0 * (tval > 0 ? q : p), NULL, RC_PVALUE);
-
-      tab_double (t, 4, v + heading_rows, TAB_RIGHT, mean_diff,  NULL, RC_OTHER);
-
-      tval = gsl_cdf_tdist_Qinv ( (1.0 - tt->confidence) / 2.0, df);
-
-      tab_double (t, 5, v + heading_rows, TAB_RIGHT, mean_diff - tval * se_mean, NULL, RC_OTHER);
-      tab_double (t, 6, v + heading_rows, TAB_RIGHT, mean_diff + tval * se_mean, NULL, RC_OTHER);
+      double entries[] = { tval, df, sig, mean_diff, lower, upper };
+      for (size_t j = 0; j < sizeof entries / sizeof *entries; j++)
+        pivot_table_put2 (table, j, dep_var_idx,
+                          pivot_value_new_number (entries[j]));
     }
 
-  tab_submit (t);
+  pivot_table_submit (table);
 }
 
 static void
 one_sample_summary (const struct tt *tt, const struct one_samp *os)
 {
-  struct hmapx_node *node;
-  struct per_var_stats *per_var_stats;
+  struct pivot_table *table = pivot_table_create (N_("One-Sample Statistics"));
+  pivot_table_set_weight_var (table, tt->wv);
 
-  const int cols = 5;
-  const int heading_rows = 1;
-  const int rows = tt->n_vars + heading_rows;
-  struct tab_table *t = tab_create (cols, rows);
-  const struct fmt_spec *wfmt = tt->wv ? var_get_print_format (tt->wv) : & F_8_0;
-  tab_set_format (t, RC_WEIGHT, wfmt);
-  tab_headers (t, 0, 0, heading_rows, 0);
-  tab_box (t, TAL_2, TAL_2, TAL_0, TAL_1, 0, 0, cols - 1, rows - 1);
-  tab_hline (t, TAL_2, 0, cols - 1, 1);
+  pivot_dimension_create (table, PIVOT_AXIS_COLUMN, N_("Statistics"),
+                          N_("N"), PIVOT_RC_COUNT,
+                          N_("Mean"), PIVOT_RC_OTHER,
+                          N_("Std. Deviation"), PIVOT_RC_OTHER,
+                          N_("S.E. Mean"), PIVOT_RC_OTHER);
 
-  tab_title (t, _("One-Sample Statistics"));
-  tab_vline (t, TAL_2, 1, 0, rows - 1);
-  tab_text (t, 1, 0, TAB_CENTER | TAT_TITLE, _("N"));
-  tab_text (t, 2, 0, TAB_CENTER | TAT_TITLE, _("Mean"));
-  tab_text (t, 3, 0, TAB_CENTER | TAT_TITLE, _("Std. Deviation"));
-  tab_text (t, 4, 0, TAB_CENTER | TAT_TITLE, _("S.E. Mean"));
+  struct pivot_dimension *variables = pivot_dimension_create (
+    table, PIVOT_AXIS_ROW, N_("Variables"));
 
-  HMAPX_FOR_EACH (per_var_stats, node, &os->hmap)
+  for (size_t i = 0; i < os->n_stats; i++)
     {
+      const struct per_var_stats *per_var_stats = &os->stats[i];
       const struct moments *m = per_var_stats->mom;
-      const int v = per_var_stats->posn;
+
+      int var_idx = pivot_category_create_leaf (
+        variables->root, pivot_value_new_variable (per_var_stats->var));
+
       double cc, mean, sigma;
       moments_calculate (m, &cc, &mean, &sigma, NULL, NULL);
 
-      tab_text (t, 0, v + heading_rows, TAB_LEFT, var_to_string (per_var_stats->var));
-      tab_double (t, 1, v + heading_rows, TAB_RIGHT, cc, NULL, RC_WEIGHT);
-      tab_double (t, 2, v + heading_rows, TAB_RIGHT, mean, NULL, RC_OTHER);
-      tab_double (t, 3, v + heading_rows, TAB_RIGHT, sqrt (sigma), NULL, RC_OTHER);
-      tab_double (t, 4, v + heading_rows, TAB_RIGHT, sqrt (sigma / cc), NULL, RC_OTHER);
+      double entries[] = { cc, mean, sqrt (sigma), sqrt (sigma / cc) };
+      for (size_t j = 0; j < sizeof entries / sizeof *entries; j++)
+        pivot_table_put2 (table, j, var_idx,
+                          pivot_value_new_number (entries[j]));
     }
 
-  tab_submit (t);
+  pivot_table_submit (table);
 }
 
 void
 one_sample_run (const struct tt *tt, double testval, struct casereader *reader)
 {
-  int i;
-  struct ccase *c;
   struct one_samp os;
-  struct casereader *r;
-  struct hmapx_node *node;
-  struct per_var_stats *per_var_stats;
-
   os.testval = testval;
-  hmapx_init (&os.hmap);
-
-  /* Insert all the variables into the map */
-  for (i = 0; i < tt->n_vars; ++i)
+  os.stats = xcalloc (tt->n_vars, sizeof *os.stats);
+  os.n_stats = tt->n_vars;
+  for (size_t i = 0; i < tt->n_vars; ++i)
     {
-      struct per_var_stats *per_var_stats = xzalloc (sizeof (*per_var_stats));
-
-      per_var_stats->posn = i;
+      struct per_var_stats *per_var_stats = &os.stats[i];
       per_var_stats->var = tt->vars[i];
       per_var_stats->mom = moments_create (MOMENT_VARIANCE);
-
-      hmapx_insert (&os.hmap, per_var_stats, hash_pointer (per_var_stats->var, 0));
     }
 
-  r = casereader_clone (reader);
+  struct casereader *r = casereader_clone (reader);
+  struct ccase *c;
   for ( ; (c = casereader_read (r) ); case_unref (c))
     {
       double w = dict_get_case_weight (tt->dict, c, NULL);
-      struct hmapx_node *node;
-      struct per_var_stats *per_var_stats;
-      HMAPX_FOR_EACH (per_var_stats, node, &os.hmap)
-	{
+      for (size_t i = 0; i < os.n_stats; i++)
+        {
+          const struct per_var_stats *per_var_stats = &os.stats[i];
 	  const struct variable *var = per_var_stats->var;
 	  const union value *val = case_data (c, var);
 	  if (var_is_value_missing (var, val, tt->exclude))
@@ -224,10 +187,9 @@ one_sample_run (const struct tt *tt, double testval, struct casereader *reader)
   for ( ; (c = casereader_read (r) ); case_unref (c))
     {
       double w = dict_get_case_weight (tt->dict, c, NULL);
-      struct hmapx_node *node;
-      struct per_var_stats *per_var_stats;
-      HMAPX_FOR_EACH (per_var_stats, node, &os.hmap)
-	{
+      for (size_t i = 0; i < os.n_stats; i++)
+        {
+          struct per_var_stats *per_var_stats = &os.stats[i];
 	  const struct variable *var = per_var_stats->var;
 	  const union value *val = case_data (c, var);
 	  if (var_is_value_missing (var, val, tt->exclude))
@@ -242,12 +204,11 @@ one_sample_run (const struct tt *tt, double testval, struct casereader *reader)
   one_sample_summary (tt, &os);
   one_sample_test (tt, &os);
 
-  HMAPX_FOR_EACH (per_var_stats, node, &os.hmap)
+  for (size_t i = 0; i < os.n_stats; i++)
     {
+      const struct per_var_stats *per_var_stats = &os.stats[i];
       moments_destroy (per_var_stats->mom);
-      free (per_var_stats);
     }
-
-  hmapx_destroy (&os.hmap);
+  free (os.stats);
 }
 

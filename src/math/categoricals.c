@@ -59,6 +59,7 @@ struct variable_node
     struct hmap_node node;      /* In struct categorical's 'varmap'. */
     const struct variable *var; /* The variable. */
     struct hmap valmap;         /* Contains "struct value_node"s. */
+    union value *values;        /* Values in valmap, as a sorted array. */
   };
 
 static int
@@ -74,10 +75,11 @@ compare_value_node_3way (const void *vn1_, const void *vn2_, const void *aux)
 }
 
 static struct variable_node *
-lookup_variable (const struct hmap *map, const struct variable *var, unsigned int hash)
+lookup_variable (const struct hmap *map, const struct variable *var)
 {
   struct variable_node *vn;
-  HMAP_FOR_EACH_WITH_HASH (vn, struct variable_node, node, hash, map)
+  HMAP_FOR_EACH_WITH_HASH (vn, struct variable_node, node,
+                           hash_pointer (var, 0), map)
     if (vn->var == var)
       return vn;
   return NULL;
@@ -339,14 +341,14 @@ categoricals_create (struct interaction *const *inter, size_t n_inter,
       for (size_t v = 0; v < inter[i]->n_vars; ++v)
         {
           const struct variable *var = inter[i]->vars[v];
-          unsigned int hash = hash_pointer (var, 0);
-          struct variable_node *vn = lookup_variable (&cat->varmap, var, hash);
+          struct variable_node *vn = lookup_variable (&cat->varmap, var);
           if (!vn)
             {
               vn = pool_malloc (cat->pool, sizeof *vn);
               vn->var = var;
+              vn->values = NULL;
               hmap_init (&vn->valmap);
-              hmap_insert (&cat->varmap, &vn->node,  hash);
+              hmap_insert (&cat->varmap, &vn->node, hash_pointer (var, 0));
             }
           iap->varnodes[v] = vn;
         }
@@ -577,6 +579,23 @@ categoricals_done (const struct categoricals *cat_)
   cat->sane = true;
 }
 
+union value *
+categoricals_get_var_values (const struct categoricals *cat,
+                             const struct variable *var, size_t *np)
+{
+  struct variable_node *vn = lookup_variable (&cat->varmap, var);
+  *np = hmap_count (&vn->valmap);
+  if (!vn->values)
+    {
+      vn->values = pool_nalloc (cat->pool, *np, sizeof *vn->values);
+
+      struct value_node *valnd;
+      HMAP_FOR_EACH (valnd, struct value_node, node, &vn->valmap)
+        vn->values[valnd->index] = valnd->val;
+    }
+  return vn->values;
+}
+
 static struct interact_params *
 df_to_iap (const struct categoricals *cat, int subscript)
 {
@@ -702,6 +721,21 @@ categoricals_get_user_data_by_category_real (const struct categoricals *cat,
 {
   const struct interact_params *iap = &cat->iap[iact];
   return n < hmap_count (&iap->ivmap) ? iap->ivs[n]->user_data : NULL;
+}
+
+int
+categoricals_get_value_index_by_category_real (const struct categoricals *cat,
+                                               int iact_idx, int cat_idx,
+                                               int var_idx)
+{
+  const struct interact_params *iap = &cat->iap[iact_idx];
+  const struct interaction_value *ivn = iap->ivs[cat_idx];
+  const struct variable *var = iap->iact->vars[var_idx];
+  const struct variable_node *vn = iap->varnodes[var_idx];
+  const union value *val = case_data (ivn->ccase, var);
+  int width = var_get_width (var);
+  unsigned int hash = value_hash (val, width, 0);
+  return lookup_value (&vn->valmap, val, hash, width)->index;
 }
 
 /* Return a case containing the set of values corresponding to CAT_INDEX. */

@@ -21,35 +21,11 @@
 
    This is a type of table (see output/table.h) whose content is composed
    manually by the code that generates it, by filling in cells one by one.
-
-   Some of the features of this type of table are obsolete but have not yet
-   been removed, because some code still uses them.  These features are:
-
-       - The title and caption.  These are properties of the table_item (see
-         output/table-item.h) in which a table is embedded, not properties of
-         the table itself.
-
-       - Row and columns offsets (via tab_offset(), tab_next_row()).  This
-         feature simply isn't used enough to justify keeping it.
-
-       - Table resizing.  The code that does use this feature is just as well
-         served by creating multiple tables and pasting them together with
-         table_paste().  Eliminating this feature would also slightly simplify
-         the table code here.
 */
 
 #include "libpspp/compiler.h"
 #include "output/table.h"
 #include "data/format.h"
-
-enum result_class
-  {
-    RC_INTEGER,
-    RC_WEIGHT,
-    RC_PVALUE,
-    RC_OTHER,
-    n_RC
-  };
 
 #define TAB_STYLE_MASK (7u << (TAB_FIRST_AVAILABLE + 1))
 #define TAB_STYLE_SHIFT (TAB_FIRST_AVAILABLE + 1)
@@ -82,7 +58,6 @@ struct tab_table
     struct pool *container;
 
     /* Table title and caption, or null. */
-    char *title, *caption;
     int cf;			/* Column factor for indexing purposes. */
 
     /* Table contents.
@@ -99,11 +74,6 @@ struct tab_table
     unsigned char *rh;		/* Horiz rules; unsigned char[nr+1][nc]. */
     unsigned char *rv;		/* Vert rules; unsigned char[nr][nc+1]. */
     struct cell_color *rule_colors[32];
-
-    /* X and Y offsets. */
-    int col_ofs, row_ofs;
-
-    struct fmt_spec fmtmap [n_RC];
   };
 
 struct tab_table *tab_cast (const struct table *);
@@ -126,14 +96,7 @@ static inline int tab_b (const struct tab_table *table)
 
 /* Tables. */
 struct tab_table *tab_create (int nc, int nr);
-void tab_resize (struct tab_table *, int nc, int nr);
-void tab_realloc (struct tab_table *, int nc, int nr);
 void tab_headers (struct tab_table *, int l, int r, int t, int b);
-void tab_title (struct tab_table *, const char *, ...)
-     PRINTF_FORMAT (2, 3);
-void tab_caption (struct tab_table *, const char *, ...)
-     PRINTF_FORMAT (2, 3);
-void tab_submit (struct tab_table *);
 
 /* Rules. */
 void tab_hline (struct tab_table *, int style, int x1, int x2, int y);
@@ -141,23 +104,7 @@ void tab_vline (struct tab_table *, int style, int x, int y1, int y2);
 void tab_box (struct tab_table *, int f_h, int f_v, int i_h, int i_v,
 	      int x1, int y1, int x2, int y2);
 
-/* Obsolete cell options. */
-#define TAT_TITLE TAB_EMPH      /* Title attributes. */
-
-void tab_set_format (struct tab_table *, enum result_class, const struct fmt_spec *);
-
-
 /* Cells. */
-struct fmt_spec;
-struct dictionary;
-union value;
-void tab_value (struct tab_table *, int c, int r, unsigned short opt,
-		const union value *, const struct variable *,
-		const struct fmt_spec *);
-
-void tab_double (struct tab_table *, int c, int r, unsigned short opt,
-		 double v, const struct fmt_spec *, enum result_class );
-
 void tab_text (struct tab_table *, int c, int r, unsigned opt, const char *);
 void tab_text_format (struct tab_table *, int c, int r, unsigned opt,
                       const char *, ...)
@@ -165,9 +112,6 @@ void tab_text_format (struct tab_table *, int c, int r, unsigned opt,
 
 void tab_joint_text (struct tab_table *, int x1, int y1, int x2, int y2,
 		     unsigned opt, const char *);
-void tab_joint_text_format (struct tab_table *, int x1, int y1, int x2, int y2,
-                            unsigned opt, const char *, ...)
-     PRINTF_FORMAT (7, 8);
 
 struct footnote *tab_create_footnote (struct tab_table *, size_t idx,
                                       const char *content, const char *marker,
@@ -179,14 +123,6 @@ void tab_add_style (struct tab_table *, int x, int y,
                     const struct area_style *);
 
 bool tab_cell_is_empty (const struct tab_table *, int c, int r);
-
-/* Editing. */
-void tab_offset (struct tab_table *, int col, int row);
-void tab_next_row (struct tab_table *);
-
-/* Current row/column offset. */
-#define tab_row(TABLE) ((TABLE)->row_ofs)
-#define tab_col(TABLE) ((TABLE)->col_ofs)
 
 /* Simple output. */
 void tab_output_text (int options, const char *string);

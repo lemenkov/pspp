@@ -56,7 +56,7 @@
 #include "output/charts/barchart.h"
 #include "output/charts/piechart.h"
 #include "output/charts/plot-hist.h"
-#include "output/tab.h"
+#include "output/pivot-table.h"
 
 #include "gl/minmax.h"
 #include "gl/xalloc.h"
@@ -211,7 +211,8 @@ struct frq_proc
 
     /* Percentiles to calculate and possibly display. */
     struct percentile *percentiles;
-    int n_percentiles, n_show_percentiles;
+    const struct percentile *median;
+    int n_percentiles;
 
     /* Frequency table display. */
     long int max_categories;         /* Maximum categories to show. */
@@ -236,7 +237,8 @@ struct freq_compare_aux
     bool ascending_value;
   };
 
-static void calc_stats (const struct var_freqs *vf, double d[FRQ_ST_count]);
+static void calc_stats (const struct frq_proc *,
+                        const struct var_freqs *, double d[FRQ_ST_count]);
 
 static void do_piechart(const struct frq_chart *pie,
 			const struct variable *var,
@@ -247,7 +249,6 @@ static void do_barchart(const struct frq_chart *bar,
 			const struct freq_tab *frq_tab);
 
 static void dump_statistics (const struct frq_proc *frq,
-			     const struct var_freqs *vf,
 			     const struct variable *wv);
 
 static int
@@ -274,89 +275,74 @@ static struct histogram *
 freq_tab_to_hist (const struct frq_proc *frq, const struct freq_tab *ft,
                   const struct variable *var);
 
+static void
+put_freq_row (struct pivot_table *table, int var_idx,
+              double frequency, double percent,
+              double valid_percent, double cum_percent)
+{
+  double entries[] = { frequency, percent, valid_percent, cum_percent };
+  for (size_t i = 0; i < sizeof entries / sizeof *entries; i++)
+    if (entries[i] != SYSMIS)
+      pivot_table_put2 (table, i, var_idx,
+                        pivot_value_new_number (entries[i]));
+}
 
 /* Displays a full frequency table for variable V. */
 static void
 dump_freq_table (const struct var_freqs *vf, const struct variable *wv)
 {
-  const struct fmt_spec *wfmt = wv ? var_get_print_format (wv) : &F_8_0;
   const struct freq_tab *ft = &vf->tab;
-  int n_categories;
-  struct freq *f;
-  struct tab_table *t;
-  int r, x;
-  double cum_total = 0.0;
+
+  struct pivot_table *table = pivot_table_create__ (pivot_value_new_variable (
+                                                      vf->var));
+  pivot_table_set_weight_var (table, wv);
+
+  pivot_dimension_create (table, PIVOT_AXIS_COLUMN, N_("Statistics"),
+                          N_("Frequency"), PIVOT_RC_COUNT,
+                          N_("Percent"), PIVOT_RC_PERCENT,
+                          N_("Valid Percent"), PIVOT_RC_PERCENT,
+                          N_("Cumulative Percent"), PIVOT_RC_PERCENT);
+
+  struct pivot_dimension *variable = pivot_dimension_create__ (
+    table, PIVOT_AXIS_ROW, pivot_value_new_variable (vf->var));
+
   double cum_freq = 0.0;
-
-  static const char *headings[] = {
-    N_("Value Label"),
-    N_("Value"),
-    N_("Frequency"),
-    N_("Percent"),
-    N_("Valid Percent"),
-    N_("Cum Percent")
-  };
-
-  n_categories = ft->n_valid + ft->n_missing;
-  t = tab_create (6, n_categories + 2);
-  tab_set_format (t, RC_WEIGHT, wfmt);
-  tab_headers (t, 0, 0, 1, 0);
-
-  for (x = 0; x < 6; x++)
-    tab_text (t, x, 0, TAB_CENTER | TAT_TITLE, gettext (headings[x]));
-
-  r = 1;
-  for (f = ft->valid; f < ft->missing; f++)
+  double cum_percent = 0.0;
+  struct pivot_category *valid = NULL;
+  for (const struct freq *f = ft->valid; f < ft->missing; f++)
     {
-      const char *label;
-      double percent, valid_percent;
-
       cum_freq += f->count;
+      double valid_percent = f->count / ft->valid_cases * 100.0;
+      cum_percent += valid_percent;
 
-      percent = f->count / ft->total_cases * 100.0;
-      valid_percent = f->count / ft->valid_cases * 100.0;
-      cum_total += valid_percent;
-
-      label = var_lookup_value_label (vf->var, f->values);
-      if (label != NULL)
-        tab_text (t, 0, r, TAB_LEFT, label);
-
-      tab_value (t, 1, r, TAB_NONE, f->values, vf->var, NULL);
-      tab_double (t, 2, r, TAB_NONE, f->count, NULL, RC_WEIGHT);
-      tab_double (t, 3, r, TAB_NONE, percent, NULL, RC_OTHER);
-      tab_double (t, 4, r, TAB_NONE, valid_percent, NULL, RC_OTHER);
-      tab_double (t, 5, r, TAB_NONE, cum_total, NULL, RC_OTHER);
-      r++;
-    }
-  for (; f < &ft->valid[n_categories]; f++)
-    {
-      const char *label;
-
-      cum_freq += f->count;
-
-      label = var_lookup_value_label (vf->var, f->values);
-      if (label != NULL)
-        tab_text (t, 0, r, TAB_LEFT, label);
-
-      tab_value (t, 1, r, TAB_NONE, f->values, vf->var, NULL);
-      tab_double (t, 2, r, TAB_NONE, f->count, NULL, RC_WEIGHT);
-      tab_double (t, 3, r, TAB_NONE,
-		  f->count / ft->total_cases * 100.0, NULL, RC_OTHER);
-      tab_text (t, 4, r, TAB_NONE, _("Missing"));
-      r++;
+      if (!valid)
+        valid = pivot_category_create_group (variable->root, N_("Valid"));
+      int var_idx = pivot_category_create_leaf (
+        valid, pivot_value_new_var_value (vf->var, &f->values[0]));
+      put_freq_row (table, var_idx, f->count,
+                    f->count / ft->total_cases * 100.0,
+                    valid_percent, cum_percent);
     }
 
-  tab_box (t, TAL_1, TAL_1, -1, TAL_1, 0, 0, 5, r);
-  tab_hline (t, TAL_2, 0, 5, 1);
-  tab_hline (t, TAL_2, 0, 5, r);
-  tab_joint_text (t, 0, r, 1, r, TAB_RIGHT | TAT_TITLE, _("Total"));
-  tab_vline (t, TAL_0, 1, r, r);
-  tab_double (t, 2, r, TAB_NONE, cum_freq, NULL, RC_WEIGHT);
-  tab_double (t, 3, r, TAB_NONE, 100.0, &F_5_1, RC_OTHER);
-  tab_double (t, 4, r, TAB_NONE, 100.0, &F_5_1, RC_OTHER);
+  struct pivot_category *missing = NULL;
+  size_t n_categories = ft->n_valid + ft->n_missing;
+  for (const struct freq *f = ft->missing; f < &ft->valid[n_categories]; f++)
+    {
+      cum_freq += f->count;
 
-  tab_title (t, "%s", var_to_string (vf->var));
-  tab_submit (t);
+      if (!missing)
+        missing = pivot_category_create_group (variable->root, N_("Missing"));
+      int var_idx = pivot_category_create_leaf (
+        missing, pivot_value_new_var_value (vf->var, &f->values[0]));
+      put_freq_row (table, var_idx, f->count,
+                    f->count / ft->total_cases * 100.0, SYSMIS, SYSMIS);
+    }
+
+  int var_idx = pivot_category_create_leaf (
+    variable->root, pivot_value_new_text (N_("Total")));
+  put_freq_row (table, var_idx, cum_freq, cum_percent, SYSMIS, SYSMIS);
+
+  pivot_table_submit (table);
 }
 
 /* Statistical display. */
@@ -532,25 +518,28 @@ postcalc (struct frq_proc *frq, const struct dataset *ds)
   for (i = 0; i < frq->n_vars; i++)
     {
       struct var_freqs *vf = &frq->vars[i];
-
       postprocess_freq_tab (frq, vf);
+      calc_percentiles (frq, vf);
+    }
+
+  if (frq->n_stats)
+    dump_statistics (frq, wv);
+
+  for (i = 0; i < frq->n_vars; i++)
+    {
+      struct var_freqs *vf = &frq->vars[i];
 
       /* Frequencies tables. */
       if (vf->tab.n_valid + vf->tab.n_missing <= frq->max_categories)
         dump_freq_table (vf, wv);
 
-      calc_percentiles (frq, vf);
-
-      /* Statistics. */
-      if (frq->n_stats)
-	dump_statistics (frq, vf, wv);
 
       if (frq->hist && var_is_numeric (vf->var) && vf->tab.n_valid > 0)
 	{
 	  double d[FRQ_ST_count];
 	  struct histogram *histogram;
 
-	  calc_stats (vf, d);
+	  calc_stats (frq, vf, d);
 
 	  histogram = freq_tab_to_hist (frq, &vf->tab, vf->var);
 
@@ -620,7 +609,6 @@ cmd_frequencies (struct lexer *lexer, struct dataset *ds)
 
   frq.percentiles = NULL;
   frq.n_percentiles = 0;
-  frq.n_show_percentiles = 0;
 
   frq.hist = NULL;
   frq.pie = NULL;
@@ -782,7 +770,6 @@ cmd_frequencies (struct lexer *lexer, struct dataset *ds)
 		  frq.percentiles[frq.n_percentiles].show = true;
 		  lex_get (lexer);
 		  frq.n_percentiles++;
-		  frq.n_show_percentiles++;
 		}
 	      else
 		{
@@ -860,7 +847,6 @@ cmd_frequencies (struct lexer *lexer, struct dataset *ds)
 		  frq.percentiles[frq.n_percentiles].show = true;
 
 		  frq.n_percentiles++;
-		  frq.n_show_percentiles++;
 		}
 	    }
 	  else
@@ -1123,10 +1109,9 @@ cmd_frequencies (struct lexer *lexer, struct dataset *ds)
 		    * sizeof (*frq.percentiles));
 
 	frq.percentiles[frq.n_percentiles].p = 0.50;
-	frq.percentiles[frq.n_percentiles].show = true;
+	frq.percentiles[frq.n_percentiles].show = false;
 
 	frq.n_percentiles++;
-        frq.n_show_percentiles++;
     }
 
 
@@ -1212,27 +1197,31 @@ cmd_frequencies (struct lexer *lexer, struct dataset *ds)
 	   sizeof (*frq.percentiles),
 	   ptile_3way);
 
-    frq.n_show_percentiles = 0;
     for (i = o = 0; i < frq.n_percentiles; ++i)
       {
         if (frq.percentiles[i].p != previous_p)
           {
             frq.percentiles[o].p = frq.percentiles[i].p;
             frq.percentiles[o].show = frq.percentiles[i].show;
-            if (frq.percentiles[i].show)
-              frq.n_show_percentiles++;
             o++;
           }
         else if (frq.percentiles[i].show &&
                  !frq.percentiles[o].show)
           {
             frq.percentiles[o].show = true;
-            frq.n_show_percentiles++;
           }
 	previous_p = frq.percentiles[i].p;
       }
 
     frq.n_percentiles = o;
+
+    frq.median = NULL;
+    for (i = 0; i < frq.n_percentiles; i++)
+      if (frq.percentiles[i].p == 0.5)
+        {
+          frq.median = &frq.percentiles[i];
+          break;
+        }
   }
 
   {
@@ -1509,7 +1498,8 @@ do_barchart(const struct frq_chart *bar, const struct variable **var,
 /* Calculates all the pertinent statistics for VF, putting them in array
    D[]. */
 static void
-calc_stats (const struct var_freqs *vf, double d[FRQ_ST_count])
+calc_stats (const struct frq_proc *frq, const struct var_freqs *vf,
+            double d[FRQ_ST_count])
 {
   const struct freq_tab *ft = &vf->tab;
   double W = ft->valid_cases;
@@ -1563,88 +1553,102 @@ calc_stats (const struct var_freqs *vf, double d[FRQ_ST_count])
   d[FRQ_ST_SEMEAN] = d[FRQ_ST_STDDEV] / sqrt (W);
   d[FRQ_ST_SESKEWNESS] = calc_seskew (W);
   d[FRQ_ST_SEKURTOSIS] = calc_sekurt (W);
+  d[FRQ_ST_MEDIAN] = frq->median ? frq->median->value : SYSMIS;
 }
 
-/* Displays a table of all the statistics requested for variable V. */
-static void
-dump_statistics (const struct frq_proc *frq, const struct var_freqs *vf,
-                 const struct variable *wv)
+static bool
+all_string_variables (const struct frq_proc *frq)
 {
-  const struct fmt_spec *wfmt = wv ? var_get_print_format (wv) : &F_8_0;
-  const struct freq_tab *ft = &vf->tab;
-  double stat_value[FRQ_ST_count];
-  struct tab_table *t;
-  int i, r = 2; /* N missing and N valid are always dumped */
+  for (size_t i = 0; i < frq->n_vars; i++)
+    if (var_is_numeric (frq->vars[i].var))
+      return false;
 
-  if (var_is_alpha (vf->var))
+  return true;
+}
+
+/* Displays a table of all the statistics requested. */
+static void
+dump_statistics (const struct frq_proc *frq, const struct variable *wv)
+{
+  if (all_string_variables (frq))
     return;
 
-  calc_stats (vf, stat_value);
+  struct pivot_table *table = pivot_table_create (N_("Statistics"));
+  pivot_table_set_weight_var (table, wv);
 
-  t = tab_create (3, ((frq->stats & BIT_INDEX (FRQ_ST_MEDIAN)) ? frq->n_stats - 1 : frq->n_stats)
-		                + frq->n_show_percentiles + 2);
+  struct pivot_dimension *variables
+    = pivot_dimension_create (table, PIVOT_AXIS_COLUMN, N_("Variables"));
 
-  tab_set_format (t, RC_WEIGHT, wfmt);
-  tab_box (t, TAL_1, TAL_1, -1, -1 , 0 , 0 , 2, tab_nr(t) - 1) ;
-
-  tab_vline (t, TAL_1 , 2, 0, tab_nr(t) - 1);
-
-  for (i = 0; i < FRQ_ST_count; i++)
-    {
-      if (FRQ_ST_MEDIAN == i)
-	continue;
-
-      if (frq->stats & BIT_INDEX (i))
-      {
-	tab_text (t, 0, r, TAB_LEFT | TAT_TITLE,
-		      gettext (st_name[i]));
-
-	if (vf->tab.n_valid <= 0 && r >= 2)
-	  tab_text (t, 2, r, 0,   ".");
-	else
-	  tab_double (t, 2, r, TAB_NONE, stat_value[i], NULL, RC_OTHER);
-	r++;
-      }
-    }
-
-  tab_text (t, 0, 0, TAB_LEFT | TAT_TITLE, _("N"));
-  tab_text (t, 1, 0, TAB_LEFT | TAT_TITLE, _("Valid"));
-  tab_text (t, 1, 1, TAB_LEFT | TAT_TITLE, _("Missing"));
-
-  tab_double (t, 2, 0, TAB_NONE, ft->valid_cases, NULL, RC_WEIGHT);
-  tab_double (t, 2, 1, TAB_NONE, ft->total_cases - ft->valid_cases, NULL, RC_WEIGHT);
-
-  for (i = 0; i < frq->n_percentiles; i++)
+  struct pivot_dimension *statistics = pivot_dimension_create (
+    table, PIVOT_AXIS_ROW, N_("Statistics"));
+  struct pivot_category *n = pivot_category_create_group (
+    statistics->root, N_("N"));
+  pivot_category_create_leaves (n,
+                                N_("Valid"), PIVOT_RC_COUNT,
+                                N_("Missing"), PIVOT_RC_COUNT);
+  for (int i = 0; i < FRQ_ST_count; i++)
+    if (frq->stats & BIT_INDEX (i))
+      pivot_category_create_leaf (statistics->root,
+                                  pivot_value_new_text (st_name[i]));
+  struct pivot_category *percentiles = NULL;
+  for (size_t i = 0; i < frq->n_percentiles; i++)
     {
       const struct percentile *pc = &frq->percentiles[i];
 
       if (!pc->show)
         continue;
 
-      if ( i == 0 )
-	{
-	  tab_text (t, 0, r, TAB_LEFT | TAT_TITLE, _("Percentiles"));
-	}
-
-      if (vf->tab.n_valid <= 0)
-	{
-	  tab_text (t, 2, r, 0,   ".");
-	  ++r;
-	  continue;
-	}
-
-      if (pc->p == 0.5)
-        tab_text (t, 1, r, TAB_LEFT, _("50 (Median)"));
-      else
-        tab_double (t, 1, r, TAB_LEFT, pc->p * 100, NULL, RC_INTEGER);
-      tab_double (t, 2, r, TAB_NONE, pc->value,
-                  var_get_print_format (vf->var), RC_OTHER);
-
-      ++r;
+      if (!percentiles)
+        percentiles = pivot_category_create_group (
+          statistics->root, N_("Percentiles"));
+      pivot_category_create_leaf (percentiles, pivot_value_new_integer (
+                                    pc->p * 100.0));
     }
 
-  tab_title (t, "%s", var_to_string (vf->var));
+  for (size_t i = 0; i < frq->n_vars; i++)
+    {
+      struct var_freqs *vf = &frq->vars[i];
+      if (var_is_alpha (vf->var))
+        continue;
 
-  tab_submit (t);
+      const struct freq_tab *ft = &vf->tab;
+
+      int var_idx = pivot_category_create_leaf (
+        variables->root, pivot_value_new_variable (vf->var));
+
+      int row = 0;
+      pivot_table_put2 (table, var_idx, row++,
+                        pivot_value_new_number (ft->valid_cases));
+      pivot_table_put2 (table, var_idx, row++,
+                        pivot_value_new_number (
+                          ft->total_cases - ft->valid_cases));
+
+      double stat_values[FRQ_ST_count];
+      calc_stats (frq, vf, stat_values);
+      for (int j = 0; j < FRQ_ST_count; j++)
+        {
+          if (!(frq->stats & BIT_INDEX (j)))
+            continue;
+
+          union value v = { .f = vf->tab.n_valid ? stat_values[j] : SYSMIS };
+          struct pivot_value *pv
+            = (j == FRQ_ST_MODE || j == FRQ_ST_MINIMUM || j == FRQ_ST_MAXIMUM
+               ? pivot_value_new_var_value (vf->var, &v)
+               : pivot_value_new_number (v.f));
+          pivot_table_put2 (table, var_idx, row++, pv);
+        }
+
+      for (size_t j = 0; j < frq->n_percentiles; j++)
+        {
+          const struct percentile *pc = &frq->percentiles[j];
+          if (!pc->show)
+            continue;
+
+          union value v = { .f = vf->tab.n_valid ? pc->value : SYSMIS };
+          pivot_table_put2 (table, var_idx, row++,
+                            pivot_value_new_var_value (vf->var, &v));
+        }
+    }
+
+  pivot_table_submit (table);
 }
-

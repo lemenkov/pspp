@@ -29,9 +29,10 @@
 #include "data/variable.h"
 #include "libpspp/message.h"
 #include "libpspp/misc.h"
-#include "output/tab.h"
+#include "output/pivot-table.h"
 
 #include "gettext.h"
+#define N_(msgid) msgid
 #define _(msgid) gettext (msgid)
 
 
@@ -216,40 +217,24 @@ friedman_execute (const struct dataset *ds,
 static void
 show_ranks_box (const struct one_sample_test *ost, const struct friedman *fr)
 {
-  int i;
-  const int row_headers = 1;
-  const int column_headers = 1;
-  struct tab_table *table =
-    tab_create (row_headers + 1, column_headers + ost->n_vars);
+  struct pivot_table *table = pivot_table_create (N_("Ranks"));
 
-  tab_headers (table, row_headers, 0, column_headers, 0);
+  pivot_dimension_create (table, PIVOT_AXIS_COLUMN, N_("Mean Rank"),
+                          N_("Mean Rank"), PIVOT_RC_OTHER);
 
-  tab_title (table, _("Ranks"));
+  struct pivot_dimension *variables = pivot_dimension_create (
+    table, PIVOT_AXIS_ROW, N_("Variable"));
 
-  /* Vertical lines inside the box */
-  tab_box (table, 1, 0, -1, TAL_1,
-	   row_headers, 0, tab_nc (table) - 1, tab_nr (table) - 1 );
-
-  /* Box around the table */
-  tab_box (table, TAL_2, TAL_2, -1, -1,
-	   0,  0, tab_nc (table) - 1, tab_nr (table) - 1 );
-
-
-  tab_text (table, 1, 0, 0, _("Mean Rank"));
-
-  tab_hline (table, TAL_2, 0, tab_nc (table) - 1, column_headers);
-  tab_vline (table, TAL_2, row_headers, 0, tab_nr (table) - 1);
-
-  for (i = 0 ; i < ost->n_vars ; ++i)
+  for (size_t i = 0 ; i < ost->n_vars ; ++i)
     {
-      tab_text (table, 0, row_headers + i,
-		TAB_LEFT, var_to_string (ost->vars[i]));
+      int row = pivot_category_create_leaf (
+        variables->root, pivot_value_new_variable (ost->vars[i]));
 
-      tab_double (table, 1, row_headers + i,
-		  0, fr->rank_sum[i] / fr->cc, NULL, RC_OTHER);
+      pivot_table_put2 (table, 0, row,
+                        pivot_value_new_number (fr->rank_sum[i] / fr->cc));
     }
 
-  tab_submit (table);
+  pivot_table_submit (table);
 }
 
 
@@ -258,60 +243,33 @@ show_sig_box (const struct one_sample_test *ost, const struct friedman *fr)
 {
   const struct friedman_test *ft = UP_CAST (ost, const struct friedman_test, parent);
 
-  int row = 0;
-  const struct fmt_spec *wfmt = dict_get_weight_format (fr->dict);
+  struct pivot_table *table = pivot_table_create (N_("Test Statistics"));
+  pivot_table_set_weight_var (table, dict_get_weight (fr->dict));
 
-  const int row_headers = 1;
-  const int column_headers = 0;
-  struct tab_table *table =
-    tab_create (row_headers + 1, column_headers + (ft->kendalls_w ? 5 : 4));
-  tab_set_format (table, RC_WEIGHT, wfmt);
-
-  tab_headers (table, row_headers, 0, column_headers, 0);
-
-  tab_title (table, _("Test Statistics"));
-
-  tab_text (table,  0, column_headers + row++,
-	    TAT_TITLE | TAB_LEFT , _("N"));
-
-  if ( ft->kendalls_w)
-    tab_text (table,  0, column_headers + row++,
-	      TAT_TITLE | TAB_LEFT , _("Kendall's W"));
-
-  tab_text (table,  0, column_headers + row++,
-	    TAT_TITLE | TAB_LEFT , _("Chi-Square"));
-
-  tab_text (table,  0, column_headers + row++,
-	    TAT_TITLE | TAB_LEFT, _("df"));
-
-  tab_text (table,  0, column_headers + row++,
-	    TAT_TITLE | TAB_LEFT, _("Asymp. Sig."));
-
-  /* Box around the table */
-  tab_box (table, TAL_2, TAL_2, -1, -1,
-	   0,  0, tab_nc (table) - 1, tab_nr (table) - 1 );
-
-
-  tab_hline (table, TAL_2, 0, tab_nc (table) -1, column_headers);
-  tab_vline (table, TAL_2, row_headers, 0, tab_nr (table) - 1);
-
-  row = 0;
-  tab_double (table, 1, column_headers + row++,
-	      0, fr->cc, NULL, RC_WEIGHT);
-
+  struct pivot_dimension *statistics = pivot_dimension_create (
+    table, PIVOT_AXIS_ROW, N_("Statistics"),
+    N_("N"), PIVOT_RC_COUNT);
   if (ft->kendalls_w)
-    tab_double (table, 1, column_headers + row++,
-		0, fr->w, NULL, RC_OTHER);
+    pivot_category_create_leaves (statistics->root, N_("Kendall's W"),
+                                  PIVOT_RC_OTHER);
+  pivot_category_create_leaves (statistics->root,
+                                N_("Chi-Square"), PIVOT_RC_OTHER,
+                                N_("df"), PIVOT_RC_INTEGER,
+                                N_("Asymp. Sig."), PIVOT_RC_SIGNIFICANCE);
 
-  tab_double (table, 1, column_headers + row++,
-	      0, fr->chi_sq, NULL, RC_OTHER);
+  double entries[5];
+  int n = 0;
 
-  tab_double (table, 1, column_headers + row++,
-	      0, ost->n_vars - 1, NULL, RC_INTEGER);
+  entries[n++] = fr->cc;
+  if (ft->kendalls_w)
+    entries[n++] = fr->w;
+  entries[n++] = fr->chi_sq;
+  entries[n++] = ost->n_vars - 1;
+  entries[n++] = gsl_cdf_chisq_Q (fr->chi_sq, ost->n_vars - 1);
+  assert (n <= sizeof entries / sizeof *entries);
 
-  tab_double (table, 1, column_headers + row++,
-	      0, gsl_cdf_chisq_Q (fr->chi_sq, ost->n_vars - 1),
-	      NULL, RC_PVALUE);
+  for (size_t i = 0; i < n; i++)
+    pivot_table_put1 (table, i, pivot_value_new_number (entries[i]));
 
-  tab_submit (table);
+  pivot_table_submit (table);
 }

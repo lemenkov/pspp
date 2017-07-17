@@ -80,76 +80,50 @@ Variable,Record,Columns,Format
 X,1,1-  1,F1.0
 Y,1,2-  2,F1.0
 
-Documents in the active dataset:
-
-document First line of a document
-
+Table: Documents
+"document First line of a document
 Second line of a document
-
 The last line should end with a period: .
+   (Entered <date>)"
 
-(Entered <date>)
+Table: File Label
+Label,This is a test file label
 
-File label: This is a test file label
-
-Documents in the active dataset:
-
-document First line of a document
-
+Table: Documents
+"document First line of a document
 Second line of a document
-
 The last line should end with a period: .
-
-(Entered <date>)
-
+   (Entered <date>)
 Line one
-
 Line two
+   (Entered <date>)"
 
-(Entered <date>)
+Table: File Label
+Label,This is a test file label
 
-File label: This is a test file label
-
-Documents in the active dataset:
-
-document First line of a document
-
+Table: Documents
+"document First line of a document
 Second line of a document
-
 The last line should end with a period: .
-
-(Entered <date>)
-
+   (Entered <date>)
 Line one
-
 Line two
-
-(Entered <date>)
-
+   (Entered <date>)
 document There should be another document now.
+   (Entered <date>)"
 
-(Entered <date>)
-
-Documents in the active dataset:
-
-document First line of a document
-
+Table: Documents
+"document First line of a document
 Second line of a document
-
 The last line should end with a period: .
-
-(Entered <date>)
-
+   (Entered <date>)
 Line one
-
 Line two
-
-(Entered <date>)
-
+   (Entered <date>)
 document There should be another document now.
+   (Entered <date>)"
 
-(Entered <date>)
-
-File label: This is a test file label
+Table: File Label
+Label,This is a test file label
 ])
 AT_CLEANUP

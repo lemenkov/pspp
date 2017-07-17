@@ -171,7 +171,6 @@ void area_style_free (struct area_style *);
 enum
   {
     TAB_NONE = 0,
-    TAB_EMPH       = 1 << 0,    /* Emphasize cell contents. */
     TAB_FIX        = 1 << 1,    /* Use fixed font. */
     TAB_MARKUP     = 1 << 2,    /* Text contains Pango markup. */
     TAB_NUMERIC    = 1 << 3,    /* Cell contents are numeric. */
@@ -271,12 +270,6 @@ void table_set_hb (struct table *, int hb);
 
 /* Simple kinds of tables. */
 struct table *table_from_string (enum table_halign, const char *);
-struct table *table_from_variables (unsigned int options,
-                                    struct variable **, size_t);
-struct table *table_from_casereader (const struct casereader *,
-                                     size_t column,
-                                     const char *heading,
-                                     const struct fmt_spec *);
 
 /* Combining tables. */
 struct table *table_paste (struct table *, struct table *,

@@ -45,7 +45,6 @@
 #include "output/message-item.h"
 #include "output/options.h"
 #include "output/render.h"
-#include "output/tab.h"
 #include "output/table-item.h"
 #include "output/text-item.h"
 
@@ -909,11 +908,11 @@ ascii_test_write (struct output_driver *driver,
     return;
 
   struct area_style style = {
+    .cell_style.halign = TABLE_HALIGN_LEFT,
     .font_style.bold = bold,
     .font_style.underline = underline,
   };
   struct table_cell cell = {
-    .options = TAB_LEFT,
     .text = CONST_CAST (char *, s),
     .style = &style,
   };

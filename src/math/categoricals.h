@@ -62,7 +62,7 @@ void categoricals_update (struct categoricals *, const struct ccase *);
 void categoricals_done (const struct categoricals *);
 bool categoricals_is_complete (const struct categoricals *);
 
-/* Counting categories.
+/* Categories.
 
    A variable's number of categories is the number of unique values observed in
    the data passed to categoricals_update().
@@ -75,6 +75,9 @@ bool categoricals_is_complete (const struct categoricals *);
    categories. */
 size_t categoricals_n_count (const struct categoricals *, size_t idx);
 size_t categoricals_n_total (const struct categoricals *);
+
+union value *categoricals_get_var_values (const struct categoricals *,
+                                          const struct variable *, size_t *n);
 
 /* Degrees of freedom.
 
@@ -141,6 +144,9 @@ const struct ccase *categoricals_get_case_by_category_real (
   const struct categoricals *, int iact, int n);
 void *categoricals_get_user_data_by_category_real (
   const struct categoricals *, int iact, int n);
+
+int categoricals_get_value_index_by_category_real (
+  const struct categoricals *, int iact_idx, int cat_idx, int var_idx);
 
 void *categoricals_get_user_data_by_category (const struct categoricals *,
                                               int category);

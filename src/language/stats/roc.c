@@ -35,7 +35,7 @@
 #include "math/sort.h"
 #include "output/chart-item.h"
 #include "output/charts/roc-chart.h"
-#include "output/tab.h"
+#include "output/pivot-table.h"
 
 #include "gettext.h"
 #define _(msgid) gettext (msgid)
@@ -963,229 +963,161 @@ do_roc (struct cmd_roc *roc, struct casereader *reader, struct dictionary *dict)
 static void
 show_auc  (struct roc_state *rs, const struct cmd_roc *roc)
 {
-  int i;
-  const int n_fields = roc->print_se ? 5 : 1;
-  const int n_cols = roc->n_vars > 1 ? n_fields + 1: n_fields;
-  const int n_rows = 2 + roc->n_vars;
-  struct tab_table *tbl = tab_create (n_cols, n_rows);
+  struct pivot_table *table = pivot_table_create (N_("Area Under the Curve"));
 
-  if ( roc->n_vars > 1)
-    tab_title (tbl, _("Area Under the Curve"));
-  else
-    tab_title (tbl, _("Area Under the Curve (%s)"), var_to_string (roc->vars[0]));
-
-  tab_headers (tbl, n_cols - n_fields, 0, 1, 0);
-
-
-  tab_text (tbl, n_cols - n_fields, 1, TAT_TITLE, _("Area"));
-
-  tab_hline (tbl, TAL_2, 0, n_cols - 1, 2);
-
-  tab_box (tbl,
-	   TAL_2, TAL_2,
-	   -1, TAL_1,
-	   0, 0,
-	   n_cols - 1,
-	   n_rows - 1);
-
-  if ( roc->print_se )
+  struct pivot_dimension *statistics = pivot_dimension_create (
+    table, PIVOT_AXIS_COLUMN, N_("Statistics"),
+    N_("Area"), PIVOT_RC_OTHER);
+  if (roc->print_se)
     {
-      tab_text (tbl, n_cols - 4, 1, TAT_TITLE, _("Std. Error"));
-      tab_text (tbl, n_cols - 3, 1, TAT_TITLE, _("Asymptotic Sig."));
-
-      tab_text (tbl, n_cols - 2, 1, TAT_TITLE, _("Lower Bound"));
-      tab_text (tbl, n_cols - 1, 1, TAT_TITLE, _("Upper Bound"));
-
-      tab_joint_text_format (tbl, n_cols - 2, 0, 4, 0,
-			     TAT_TITLE | TAB_CENTER,
-			     _("Asymp. %g%% Confidence Interval"), roc->ci);
-      tab_vline (tbl, 0, n_cols - 1, 0, 0);
-      tab_hline (tbl, TAL_1, n_cols - 2, n_cols - 1, 1);
+      pivot_category_create_leaves (
+        statistics->root,
+        N_("Std. Error"), PIVOT_RC_OTHER,
+        N_("Asymptotic Sig."), PIVOT_RC_SIGNIFICANCE);
+      struct pivot_category *interval = pivot_category_create_group__ (
+        statistics->root,
+        pivot_value_new_text_format (N_("Asymp. %g%% Confidence Interval"),
+                                     roc->ci));
+      pivot_category_create_leaves (interval,
+                                    N_("Lower Bound"), PIVOT_RC_OTHER,
+                                    N_("Upper Bound"), PIVOT_RC_OTHER);
     }
 
-  if ( roc->n_vars > 1)
-    tab_text (tbl, 0, 1, TAT_TITLE, _("Variable under test"));
+  struct pivot_dimension *variables = pivot_dimension_create (
+    table, PIVOT_AXIS_ROW, N_("Variable under test"));
+  variables->root->show_label = true;
 
-  if ( roc->n_vars > 1)
-    tab_vline (tbl, TAL_2, 1, 0, n_rows - 1);
-
-
-  for ( i = 0 ; i < roc->n_vars ; ++i )
+  for (size_t i = 0 ; i < roc->n_vars ; ++i )
     {
-      tab_text (tbl, 0, 2 + i, TAT_TITLE, var_to_string (roc->vars[i]));
+      int var_idx = pivot_category_create_leaf (
+        variables->root, pivot_value_new_variable (roc->vars[i]));
 
-      tab_double (tbl, n_cols - n_fields, 2 + i, 0, rs[i].auc, NULL, RC_OTHER);
+      pivot_table_put2 (table, 0, var_idx, pivot_value_new_number (rs[i].auc));
 
       if ( roc->print_se )
 	{
-	  double se ;
-	  const double sd_0_5 = sqrt ((rs[i].n1 + rs[i].n2 + 1) /
-				      (12 * rs[i].n1 * rs[i].n2));
-	  double ci ;
-	  double yy ;
-
-	  se = rs[i].auc * (1 - rs[i].auc) + (rs[i].n1 - 1) * (rs[i].q1hat - pow2 (rs[i].auc)) +
-	    (rs[i].n2 - 1) * (rs[i].q2hat - pow2 (rs[i].auc));
-
+	  double se = (rs[i].auc * (1 - rs[i].auc)
+                       + (rs[i].n1 - 1) * (rs[i].q1hat - pow2 (rs[i].auc))
+                       + (rs[i].n2 - 1) * (rs[i].q2hat - pow2 (rs[i].auc)));
 	  se /= rs[i].n1 * rs[i].n2;
-
 	  se = sqrt (se);
 
-	  tab_double (tbl, n_cols - 4, 2 + i, 0,
-		      se,
-		      NULL, RC_OTHER);
+	  double ci = 1 - roc->ci / 100.0;
+	  double yy = gsl_cdf_gaussian_Qinv (ci, se);
 
-	  ci = 1 - roc->ci / 100.0;
-	  yy = gsl_cdf_gaussian_Qinv (ci, se) ;
-
-	  tab_double (tbl, n_cols - 2, 2 + i, 0,
-		      rs[i].auc - yy,
-		      NULL, RC_OTHER);
-
-	  tab_double (tbl, n_cols - 1, 2 + i, 0,
-		      rs[i].auc + yy,
-		      NULL, RC_OTHER);
-
-	  tab_double (tbl, n_cols - 3, 2 + i, 0,
-		      2.0 * gsl_cdf_ugaussian_Q (fabs ((rs[i].auc - 0.5 ) / sd_0_5)),
-		      NULL, RC_PVALUE);
+	  double sd_0_5 = sqrt ((rs[i].n1 + rs[i].n2 + 1) /
+                                (12 * rs[i].n1 * rs[i].n2));
+          double sig = 2.0 * gsl_cdf_ugaussian_Q (fabs ((rs[i].auc - 0.5)
+                                                        / sd_0_5));
+          double entries[] = { se, sig, rs[i].auc - yy, rs[i].auc + yy };
+          for (size_t i = 0; i < sizeof entries / sizeof *entries; i++)
+            pivot_table_put2 (table, i + 1, var_idx,
+                              pivot_value_new_number (entries[i]));
 	}
     }
 
-  tab_submit (tbl);
+  pivot_table_submit (table);
 }
 
 
 static void
 show_summary (const struct cmd_roc *roc)
 {
-  const int n_cols = 3;
-  const int n_rows = 4;
-  struct tab_table *tbl = tab_create (n_cols, n_rows);
+  struct pivot_table *table = pivot_table_create (N_("Case Summary"));
 
-  tab_title (tbl, _("Case Summary"));
+  struct pivot_dimension *statistics = pivot_dimension_create (
+    table, PIVOT_AXIS_COLUMN, N_("Valid N (listwise)"),
+    N_("Unweighted"), PIVOT_RC_INTEGER,
+    N_("Weighted"), PIVOT_RC_OTHER);
+  statistics->root->show_label = true;
 
-  tab_headers (tbl, 1, 0, 2, 0);
+  struct pivot_dimension *cases = pivot_dimension_create__ (
+    table, PIVOT_AXIS_ROW, pivot_value_new_variable (roc->state_var));
+  cases->root->show_label = true;
+  pivot_category_create_leaves (cases->root, N_("Positive"), N_("Negative"));
 
-  tab_box (tbl,
-	   TAL_2, TAL_2,
-	   -1, -1,
-	   0, 0,
-	   n_cols - 1,
-	   n_rows - 1);
-
-  tab_hline (tbl, TAL_2, 0, n_cols - 1, 2);
-  tab_vline (tbl, TAL_2, 1, 0, n_rows - 1);
-
-
-  tab_hline (tbl, TAL_2, 1, n_cols - 1, 1);
-  tab_vline (tbl, TAL_1, 2, 1, n_rows - 1);
-
-
-  tab_text (tbl, 0, 1, TAT_TITLE | TAB_LEFT, var_to_string (roc->state_var));
-  tab_text (tbl, 1, 1, TAT_TITLE, _("Unweighted"));
-  tab_text (tbl, 2, 1, TAT_TITLE, _("Weighted"));
-
-  tab_joint_text (tbl, 1, 0, 2, 0,
-		  TAT_TITLE | TAB_CENTER,
-		  _("Valid N (listwise)"));
-
-
-  tab_text (tbl, 0, 2, TAB_LEFT, _("Positive"));
-  tab_text (tbl, 0, 3, TAB_LEFT, _("Negative"));
-
-
-  tab_double (tbl, 1, 2, 0, roc->pos, NULL, RC_INTEGER);
-  tab_double (tbl, 1, 3, 0, roc->neg, NULL, RC_INTEGER);
-
-  tab_double (tbl, 2, 2, 0, roc->pos_weighted, NULL, RC_OTHER);
-  tab_double (tbl, 2, 3, 0, roc->neg_weighted, NULL, RC_OTHER);
-
-  tab_submit (tbl);
+  struct entry
+    {
+      int stat_idx;
+      int case_idx;
+      double x;
+    }
+  entries[] = {
+    { 0, 0, roc->pos },
+    { 0, 1, roc->neg },
+    { 1, 0, roc->pos_weighted },
+    { 1, 1, roc->neg_weighted },
+  };
+  for (size_t i = 0; i < sizeof entries / sizeof *entries; i++)
+    {
+      const struct entry *e = &entries[i];
+      pivot_table_put2 (table, e->stat_idx, e->case_idx,
+                        pivot_value_new_number (e->x));
+    }
+  pivot_table_submit (table);
 }
-
 
 static void
 show_coords (struct roc_state *rs, const struct cmd_roc *roc)
 {
-  int x = 1;
-  int i;
-  const int n_cols = roc->n_vars > 1 ? 4 : 3;
-  int n_rows = 1;
-  struct tab_table *tbl ;
+  struct pivot_table *table = pivot_table_create (
+    N_("Coordinates of the Curve"));
+  table->omit_empty = true;
 
-  for (i = 0; i < roc->n_vars; ++i)
-    n_rows += casereader_count_cases (rs[i].cutpoint_rdr);
+  pivot_dimension_create (table, PIVOT_AXIS_COLUMN, N_("Statistics"),
+                          N_("Positive if greater than or equal to"),
+                          N_("Sensitivity"), N_("1 - Specificity"));
 
-  tbl = tab_create (n_cols, n_rows);
+  struct pivot_dimension *coordinates = pivot_dimension_create (
+    table, PIVOT_AXIS_ROW, N_("Coordinates"));
+  coordinates->hide_all_labels = true;
 
-  if ( roc->n_vars > 1)
-    tab_title (tbl, _("Coordinates of the Curve"));
-  else
-    tab_title (tbl, _("Coordinates of the Curve (%s)"), var_to_string (roc->vars[0]));
+  struct pivot_dimension *variables = pivot_dimension_create (
+    table, PIVOT_AXIS_ROW, N_("Test variable"));
+  variables->root->show_label = true;
 
 
-  tab_headers (tbl, 1, 0, 1, 0);
-
-  tab_hline (tbl, TAL_2, 0, n_cols - 1, 1);
-
-  if ( roc->n_vars > 1)
-    tab_text (tbl, 0, 0, TAT_TITLE, _("Test variable"));
-
-  tab_text (tbl, n_cols - 3, 0, TAT_TITLE, _("Positive if greater than or equal to"));
-  tab_text (tbl, n_cols - 2, 0, TAT_TITLE, _("Sensitivity"));
-  tab_text (tbl, n_cols - 1, 0, TAT_TITLE, _("1 - Specificity"));
-
-  tab_box (tbl,
-	   TAL_2, TAL_2,
-	   -1, TAL_1,
-	   0, 0,
-	   n_cols - 1,
-	   n_rows - 1);
-
-  if ( roc->n_vars > 1)
-    tab_vline (tbl, TAL_2, 1, 0, n_rows - 1);
-
-  for (i = 0; i < roc->n_vars; ++i)
+  int n_coords = 0;
+  for (size_t i = 0; i < roc->n_vars; ++i)
     {
-      struct ccase *cc;
       struct casereader *r = casereader_clone (rs[i].cutpoint_rdr);
 
-      if ( roc->n_vars > 1)
-	tab_text (tbl, 0, x, TAT_TITLE, var_to_string (roc->vars[i]));
+      int var_idx = pivot_category_create_leaf (
+        variables->root, pivot_value_new_variable (roc->vars[i]));
 
-      if ( i > 0)
-	tab_hline (tbl, TAL_1, 0, n_cols - 1, x);
-
-
-      for (; (cc = casereader_read (r)) != NULL;
-	   case_unref (cc), x++)
+      struct ccase *cc;
+      int coord_idx = 0;
+      for (; (cc = casereader_read (r)) != NULL; case_unref (cc))
 	{
 	  const double se = case_data_idx (cc, ROC_TP)->f /
-	    (
-	     case_data_idx (cc, ROC_TP)->f
-	     +
-	     case_data_idx (cc, ROC_FN)->f
-	     );
+	    (case_data_idx (cc, ROC_TP)->f + case_data_idx (cc, ROC_FN)->f);
 
 	  const double sp = case_data_idx (cc, ROC_TN)->f /
-	    (
-	     case_data_idx (cc, ROC_TN)->f
-	     +
-	     case_data_idx (cc, ROC_FP)->f
-	     );
+	    (case_data_idx (cc, ROC_TN)->f + case_data_idx (cc, ROC_FP)->f);
 
-	  tab_double (tbl, n_cols - 3, x, 0, case_data_idx (cc, ROC_CUTPOINT)->f,
-		      var_get_print_format (roc->vars[i]), RC_OTHER);
+          pivot_table_put3 (
+            table, 0, coord_idx, var_idx,
+            pivot_value_new_var_value (roc->vars[i],
+                                       case_data_idx (cc, ROC_CUTPOINT)));
 
-	  tab_double (tbl, n_cols - 2, x, 0, se, NULL, RC_OTHER);
-	  tab_double (tbl, n_cols - 1, x, 0, 1 - sp, NULL, RC_OTHER);
+          pivot_table_put3 (table, 1, coord_idx, var_idx,
+                            pivot_value_new_number (se));
+          pivot_table_put3 (table, 2, coord_idx, var_idx,
+                            pivot_value_new_number (1 - sp));
+          coord_idx++;
 	}
+
+      if (coord_idx > n_coords)
+        n_coords = coord_idx;
 
       casereader_destroy (r);
     }
 
-  tab_submit (tbl);
+  for (size_t i = 0; i < n_coords; i++)
+    pivot_category_create_leaf (coordinates->root,
+                                pivot_value_new_integer (i + 1));
+
+  pivot_table_submit (table);
 }
 
 

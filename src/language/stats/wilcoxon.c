@@ -35,10 +35,14 @@
 #include "libpspp/misc.h"
 #include "math/sort.h"
 #include "math/wilcoxon-sig.h"
-#include "output/tab.h"
+#include "output/pivot-table.h"
 
 #include "gl/minmax.h"
 #include "gl/xalloc.h"
+
+#include "gettext.h"
+#define N_(msgid) msgid
+#define _(msgid) gettext (msgid)
 
 static double
 append_difference (const struct ccase *c, casenumber n UNUSED, void *aux)
@@ -203,91 +207,65 @@ wilcoxon_execute (const struct dataset *ds,
 
   free (ws);
 }
-
-
 
+static void
+put_row (struct pivot_table *table, int var_idx, int sign_idx,
+         double n, double sum)
+{
+  pivot_table_put3 (table, 0, sign_idx, var_idx, pivot_value_new_number (n));
+  if (sum != SYSMIS)
+    {
+      pivot_table_put3 (table, 1, sign_idx, var_idx,
+                        pivot_value_new_number (sum / n));
+      pivot_table_put3 (table, 2, sign_idx, var_idx,
+                        pivot_value_new_number (sum));
+    }
+}
 
-#include "gettext.h"
-#define _(msgid) gettext (msgid)
+static int
+add_pair_leaf (struct pivot_dimension *dimension, variable_pair *pair)
+{
+  char *label = xasprintf ("%s - %s", var_to_string ((*pair)[0]),
+                           var_to_string ((*pair)[1]));
+  return pivot_category_create_leaf (
+    dimension->root,
+    pivot_value_new_user_text_nocopy (label));
+}
 
 static void
 show_ranks_box (const struct wilcoxon_state *ws,
 		const struct two_sample_test *t2s,
 		const struct dictionary *dict)
 {
-  size_t i;
+  struct pivot_table *table = pivot_table_create (N_("Ranks"));
+  pivot_table_set_weight_var (table, dict_get_weight (dict));
 
-  const struct fmt_spec *wfmt = dict_get_weight_format (dict);
+  pivot_dimension_create (table, PIVOT_AXIS_COLUMN, N_("Statistics"),
+                          N_("N"), PIVOT_RC_COUNT,
+                          N_("Mean Rank"), PIVOT_RC_OTHER,
+                          N_("Sum of Ranks"), PIVOT_RC_OTHER);
 
-  struct tab_table *table = tab_create (5, 1 + 4 * t2s->n_pairs);
-  tab_set_format (table, RC_WEIGHT, wfmt);
+  pivot_dimension_create (table, PIVOT_AXIS_ROW, N_("Sign"),
+                          N_("Negative Ranks"), N_("Positive Ranks"),
+                          N_("Ties"), N_("Total"));
 
-  tab_title (table, _("Ranks"));
+  struct pivot_dimension *pairs = pivot_dimension_create (
+    table, PIVOT_AXIS_ROW, N_("Pairs"));
 
-  tab_headers (table, 2, 0, 1, 0);
-
-  /* Vertical lines inside the box */
-  tab_box (table, 0, 0, -1, TAL_1,
-	   1, 0, tab_nc (table) - 1, tab_nr (table) - 1 );
-
-  /* Box around entire table */
-  tab_box (table, TAL_2, TAL_2, -1, -1,
-	   0, 0, tab_nc (table) - 1, tab_nr (table) - 1 );
-
-
-  tab_text (table,  2, 0,  TAB_CENTER, _("N"));
-  tab_text (table,  3, 0,  TAB_CENTER, _("Mean Rank"));
-  tab_text (table,  4, 0,  TAB_CENTER, _("Sum of Ranks"));
-
-
-  for (i = 0 ; i < t2s->n_pairs; ++i)
+  for (size_t i = 0 ; i < t2s->n_pairs; ++i)
     {
       variable_pair *vp = &t2s->pairs[i];
+      int pair_idx = add_pair_leaf (pairs, vp);
 
-      struct string pair_name;
-      ds_init_cstr (&pair_name, var_to_string ((*vp)[0]));
-      ds_put_cstr (&pair_name, " - ");
-      ds_put_cstr (&pair_name, var_to_string ((*vp)[1]));
-
-      tab_text (table, 1, 1 + i * 4, TAB_LEFT, _("Negative Ranks"));
-      tab_text (table, 1, 2 + i * 4, TAB_LEFT, _("Positive Ranks"));
-      tab_text (table, 1, 3 + i * 4, TAB_LEFT, _("Ties"));
-      tab_text (table, 1, 4 + i * 4, TAB_LEFT, _("Total"));
-
-      tab_hline (table, TAL_1, 0, tab_nc (table) - 1, 1 + i * 4);
-
-
-      tab_text (table, 0, 1 + i * 4, TAB_LEFT, ds_cstr (&pair_name));
-      ds_destroy (&pair_name);
-
-
-      /* N */
-      tab_double (table, 2, 1 + i * 4, TAB_RIGHT, ws[i].negatives.n, NULL, RC_WEIGHT);
-      tab_double (table, 2, 2 + i * 4, TAB_RIGHT, ws[i].positives.n, NULL, RC_WEIGHT);
-      tab_double (table, 2, 3 + i * 4, TAB_RIGHT, ws[i].n_zeros, NULL, RC_WEIGHT);
-
-      tab_double (table, 2, 4 + i * 4, TAB_RIGHT,
-		  ws[i].n_zeros + ws[i].positives.n + ws[i].negatives.n, NULL, RC_WEIGHT);
-
-      /* Sums */
-      tab_double (table, 4, 1 + i * 4, TAB_RIGHT, ws[i].negatives.sum, NULL, RC_OTHER);
-      tab_double (table, 4, 2 + i * 4, TAB_RIGHT, ws[i].positives.sum, NULL, RC_OTHER);
-
-
-      /* Means */
-      tab_double (table, 3, 1 + i * 4, TAB_RIGHT,
-		  ws[i].negatives.sum / (double) ws[i].negatives.n, NULL, RC_OTHER);
-
-      tab_double (table, 3, 2 + i * 4, TAB_RIGHT,
-		  ws[i].positives.sum / (double) ws[i].positives.n, NULL, RC_OTHER);
-
+      const struct wilcoxon_state *w = &ws[i];
+      put_row (table, pair_idx, 0, w->negatives.n, w->negatives.sum);
+      put_row (table, pair_idx, 1, w->positives.n, w->positives.sum);
+      put_row (table, pair_idx, 2, w->n_zeros, SYSMIS);
+      put_row (table, pair_idx, 3,
+               w->n_zeros + w->positives.n + w->negatives.n, SYSMIS);
     }
 
-  tab_hline (table, TAL_2, 0, tab_nc (table) - 1, 1);
-  tab_vline (table, TAL_2, 2, 0, tab_nr (table) - 1);
-
-
-  tab_submit (table);
+  pivot_table_submit (table);
 }
 
 
@@ -298,79 +276,64 @@ show_tests_box (const struct wilcoxon_state *ws,
 		double timer UNUSED
 		)
 {
-  size_t i;
-  struct tab_table *table = tab_create (1 + t2s->n_pairs, exact ? 5 : 3);
+  struct pivot_table *table = pivot_table_create (N_("Test Statistics"));
 
-  tab_title (table, _("Test Statistics"));
+  struct pivot_dimension *statistics = pivot_dimension_create (
+    table, PIVOT_AXIS_ROW, N_("Statistics"),
+    N_("Z"), PIVOT_RC_OTHER,
+    N_("Asymp. Sig. (2-tailed)"), PIVOT_RC_SIGNIFICANCE);
+  if (exact)
+    pivot_category_create_leaves (
+      statistics->root,
+      N_("Exact Sig. (2-tailed)"), PIVOT_RC_SIGNIFICANCE,
+      N_("Exact Sig. (1-tailed)"), PIVOT_RC_SIGNIFICANCE);
 
-  tab_headers (table, 1, 0, 1, 0);
+  struct pivot_dimension *pairs = pivot_dimension_create (
+    table, PIVOT_AXIS_COLUMN, N_("Pairs"));
 
-  /* Vertical lines inside the box */
-  tab_box (table, 0, 0, -1, TAL_1,
-	   0, 0, tab_nc (table) - 1, tab_nr (table) - 1 );
+  struct pivot_footnote *too_many_pairs = pivot_table_create_footnote (
+    table, pivot_value_new_text (
+      N_("Too many pairs to calculate exact significance")));
 
-  /* Box around entire table */
-  tab_box (table, TAL_2, TAL_2, -1, -1,
-	   0, 0, tab_nc (table) - 1, tab_nr (table) - 1 );
-
-
-  tab_text (table,  0, 1,  TAB_LEFT, _("Z"));
-  tab_text (table,  0, 2,  TAB_LEFT, _("Asymp. Sig. (2-tailed)"));
-
-  if ( exact )
+  for (size_t i = 0 ; i < t2s->n_pairs; ++i)
     {
-      tab_text (table,  0, 3,  TAB_LEFT, _("Exact Sig. (2-tailed)"));
-      tab_text (table,  0, 4,  TAB_LEFT, _("Exact Sig. (1-tailed)"));
-
-#if 0
-      tab_text (table,  0, 5,  TAB_LEFT, _("Point Probability"));
-#endif
-    }
-
-  for (i = 0 ; i < t2s->n_pairs; ++i)
-    {
-      double z;
-      double n = ws[i].positives.n + ws[i].negatives.n;
       variable_pair *vp = &t2s->pairs[i];
+      int pair_idx = add_pair_leaf (pairs, vp);
 
-      struct string pair_name;
-      ds_init_cstr (&pair_name, var_to_string ((*vp)[0]));
-      ds_put_cstr (&pair_name, " - ");
-      ds_put_cstr (&pair_name, var_to_string ((*vp)[1]));
-
-
-      tab_text (table, 1 + i, 0, TAB_CENTER, ds_cstr (&pair_name));
-      ds_destroy (&pair_name);
-
-      z = MIN (ws[i].positives.sum, ws[i].negatives.sum);
+      double n = ws[i].positives.n + ws[i].negatives.n;
+      double z = MIN (ws[i].positives.sum, ws[i].negatives.sum);
       z -= n * (n + 1)/ 4.0;
-
       z /= sqrt (n * (n + 1) * (2*n + 1)/24.0 - ws[i].tiebreaker / 48.0);
 
-      tab_double (table, 1 + i, 1, TAB_RIGHT, z, NULL, RC_OTHER);
+      double entries[4];
+      int n_entries = 0;
+      entries[n_entries++] = z;
+      entries[n_entries++] = 2.0 * gsl_cdf_ugaussian_P (z);
 
-      tab_double (table, 1 + i, 2, TAB_RIGHT,
-		 2.0 * gsl_cdf_ugaussian_P (z),
-		  NULL, RC_PVALUE);
-
+      int footnote_idx = -1;
       if (exact)
 	{
 	  double p = LevelOfSignificanceWXMPSR (ws[i].positives.sum, n);
 	  if (p < 0)
 	    {
-	      msg (MW, _("Too many pairs to calculate exact significance."));
+              footnote_idx = n_entries;
+              entries[n_entries++] = SYSMIS;
 	    }
 	  else
-	    {
-	      tab_double (table, 1 + i, 3, TAB_RIGHT, p, NULL, RC_PVALUE);
-	      tab_double (table, 1 + i, 4, TAB_RIGHT, p / 2.0, NULL, RC_PVALUE);
-	    }
-	}
+            {
+              entries[n_entries++] = p;
+              entries[n_entries++] = p / 2.0;
+            }
+        }
+
+      for (int j = 0; j < n_entries; j++)
+        {
+          struct pivot_value *value = pivot_value_new_number (entries[j]);
+          if (j == footnote_idx)
+            pivot_value_add_footnote (value, too_many_pairs);
+          pivot_table_put2 (table, j, pair_idx, value);
+        }
     }
 
-  tab_hline (table, TAL_2, 0, tab_nc (table) - 1, 1);
-  tab_vline (table, TAL_2, 1, 0, tab_nr (table) - 1);
-
-
-  tab_submit (table);
+  pivot_table_submit (table);
 }

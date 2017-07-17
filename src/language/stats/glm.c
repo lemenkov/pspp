@@ -43,9 +43,10 @@
 #include "math/covariance.h"
 #include "math/interaction.h"
 #include "math/moments.h"
-#include "output/tab.h"
+#include "output/pivot-table.h"
 
 #include "gettext.h"
+#define N_(msgid) msgid
 #define _(msgid) gettext (msgid)
 
 struct glm_spec
@@ -651,16 +652,14 @@ run_glm (struct glm_spec *cmd, struct casereader *input,
 
   if (cmd->dump_coding)
     {
-      struct tab_table *t =
-	covariance_dump_enc_header (cov,
-				    1 + casereader_count_cases (input));
+      struct pivot_table *t = covariance_dump_enc_header (cov);
       for (reader = input;
 	   (c = casereader_read (reader)) != NULL; case_unref (c))
 	{
 	  covariance_dump_enc (cov, c, t);
 	}
-      casereader_destroy (reader);
-      tab_submit (t);
+
+      pivot_table_submit (t);
     }
 
   {
@@ -709,174 +708,120 @@ run_glm (struct glm_spec *cmd, struct casereader *input,
   taint_destroy (taint);
 }
 
-static const char *roman[] =
-  {
-    "", /* The Romans had no concept of zero */
-    "I",
-    "II",
-    "III",
-    "IV"
-  };
+static void
+put_glm_row (struct pivot_table *table, int row,
+             double a, double b, double c, double d, double e)
+{
+  double entries[] = { a, b, c, d, e };
+
+  for (size_t col = 0; col < sizeof entries / sizeof *entries; col++)
+    if (entries[col] != SYSMIS)
+      pivot_table_put2 (table, col, row,
+                        pivot_value_new_number (entries[col]));
+}
 
 static void
 output_glm (const struct glm_spec *cmd, const struct glm_workspace *ws)
 {
-  const struct fmt_spec *wfmt =
-    cmd->wv ? var_get_print_format (cmd->wv) : &F_8_0;
+  struct pivot_table *table = pivot_table_create (
+    N_("Tests of Between-Subjects Effects"));
 
-  double intercept_ssq;
-  double ssq_effects;
+  pivot_dimension_create (table, PIVOT_AXIS_COLUMN, N_("Statistics"),
+                          (cmd->ss_type == 1 ? N_("Type I Sum Of Squares")
+                           : cmd->ss_type == 2 ? N_("Type II Sum Of Squares")
+                           : N_("Type III Sum Of Squares")), PIVOT_RC_OTHER,
+                          N_("df"), PIVOT_RC_COUNT,
+                          N_("Mean Square"), PIVOT_RC_OTHER,
+                          N_("F"), PIVOT_RC_OTHER,
+                          N_("Sig."), PIVOT_RC_SIGNIFICANCE);
+
+  struct pivot_dimension *source = pivot_dimension_create (
+    table, PIVOT_AXIS_ROW, N_("Source"),
+    cmd->intercept ? N_("Corrected Model") : N_("Model"));
+
   double n_total, mean;
-  double df_corr = 1.0;
-  double mse = 0;
-
-  int f;
-  int r;
-  const int heading_columns = 1;
-  const int heading_rows = 1;
-  struct tab_table *t;
-
-  const int nc = 6;
-  int nr = heading_rows + 3 + cmd->n_interactions;
-  if (cmd->intercept)
-    nr += 2;
-
-  t = tab_create (nc, nr);
-  tab_set_format (t, RC_WEIGHT, wfmt);
-  tab_title (t, _("Tests of Between-Subjects Effects"));
-
-  tab_headers (t, heading_columns, 0, heading_rows, 0);
-
-  tab_box (t, TAL_2, TAL_2, -1, TAL_1, 0, 0, nc - 1, nr - 1);
-
-  tab_hline (t, TAL_2, 0, nc - 1, heading_rows);
-  tab_vline (t, TAL_2, heading_columns, 0, nr - 1);
-
-  tab_text (t, 0, 0, TAB_CENTER | TAT_TITLE, _("Source"));
-
-  /* TRANSLATORS: The parameter is a roman numeral */
-  tab_text_format (t, 1, 0, TAB_CENTER | TAT_TITLE,
-		   _("Type %s Sum of Squares"),
-		   roman[cmd->ss_type]);
-  tab_text (t, 2, 0, TAB_CENTER | TAT_TITLE, _("df"));
-  tab_text (t, 3, 0, TAB_CENTER | TAT_TITLE, _("Mean Square"));
-  tab_text (t, 4, 0, TAB_CENTER | TAT_TITLE, _("F"));
-  tab_text (t, 5, 0, TAB_CENTER | TAT_TITLE, _("Sig."));
-
   moments_calculate (ws->totals, &n_total, &mean, NULL, NULL, NULL);
 
-  df_corr += categoricals_df_total (ws->cats);
+  double df_corr = 1.0 + categoricals_df_total (ws->cats);
 
-  r = heading_rows;
-  if (cmd->intercept)
-    tab_text (t, 0, r, TAB_LEFT | TAT_TITLE, _("Corrected Model"));
-  else
-    tab_text (t, 0, r, TAB_LEFT | TAT_TITLE, _("Model"));
-
-  r++;
-
-  mse = gsl_vector_get (ws->ssq, 0) / (n_total - df_corr);
-
-  intercept_ssq = pow2 (mean * n_total) / n_total;
-
-  ssq_effects = 0.0;
+  double mse = gsl_vector_get (ws->ssq, 0) / (n_total - df_corr);
+  double intercept_ssq = pow2 (mean * n_total) / n_total;
   if (cmd->intercept)
     {
-      const double df = 1.0;
-      const double F = intercept_ssq / df / mse;
-      tab_text (t, 0, r, TAB_LEFT | TAT_TITLE, _("Intercept"));
+      int row = pivot_category_create_leaf (
+        source->root, pivot_value_new_text (N_("Intercept")));
+
       /* The intercept for unbalanced models is of limited use and
 	 nobody knows how to calculate it properly */
       if (categoricals_isbalanced (ws->cats))
-	{
-	  tab_double (t, 1, r, 0, intercept_ssq, NULL, RC_OTHER);
-	  tab_double (t, 2, r, 0, 1.00, NULL, RC_WEIGHT);
-	  tab_double (t, 3, r, 0, intercept_ssq / df, NULL, RC_OTHER);
-	  tab_double (t, 4, r, 0, F, NULL, RC_OTHER);
-	  tab_double (t, 5, r, 0, gsl_cdf_fdist_Q (F, df, n_total - df_corr),
-		      NULL, RC_PVALUE);
-	}
-      r++;
+        {
+          const double df = 1.0;
+          const double F = intercept_ssq / df / mse;
+          put_glm_row (table, row, intercept_ssq, 1.0, intercept_ssq / df,
+                       F, gsl_cdf_fdist_Q (F, df, n_total - df_corr));
+        }
     }
 
-  for (f = 0; f < cmd->n_interactions; ++f)
+  double ssq_effects = 0.0;
+  for (int f = 0; f < cmd->n_interactions; ++f)
     {
-      struct string str = DS_EMPTY_INITIALIZER;
       double df = categoricals_df (ws->cats, f);
-
       double ssq = gsl_vector_get (ws->ssq, f + 1);
-      double F;
-
       ssq_effects += ssq;
-
-      if (! cmd->intercept)
+      if (!cmd->intercept)
 	{
 	  df++;
 	  ssq += intercept_ssq;
 	}
+      double F = ssq / df / mse;
 
-      F = ssq / df / mse;
+      struct string str = DS_EMPTY_INITIALIZER;
       interaction_to_string (cmd->interactions[f], &str);
-      tab_text (t, 0, r, TAB_LEFT | TAT_TITLE, ds_cstr (&str));
-      ds_destroy (&str);
+      int row = pivot_category_create_leaf (
+        source->root, pivot_value_new_user_text_nocopy (ds_steal_cstr (&str)));
 
-      tab_double (t, 1, r, 0, ssq, NULL, RC_OTHER);
-      tab_double (t, 2, r, 0, df, NULL, RC_WEIGHT);
-      tab_double (t, 3, r, 0, ssq / df, NULL, RC_OTHER);
-      tab_double (t, 4, r, 0, F, NULL, RC_OTHER);
-
-      tab_double (t, 5, r, 0, gsl_cdf_fdist_Q (F, df, n_total - df_corr),
-		  NULL, RC_PVALUE);
-      r++;
+      put_glm_row (table, row, ssq, df, ssq / df, F,
+                   gsl_cdf_fdist_Q (F, df, n_total - df_corr));
     }
 
   {
     /* Model / Corrected Model */
     double df = df_corr;
     double ssq = ws->total_ssq - gsl_vector_get (ws->ssq, 0);
-    double F;
-
-    if ( cmd->intercept )
-      df --;
+    if (cmd->intercept)
+      df--;
     else
       ssq += intercept_ssq;
-
-    F = ssq / df / mse;
-    tab_double (t, 1, heading_rows, 0, ssq, NULL, RC_OTHER);
-    tab_double (t, 2, heading_rows, 0, df, NULL, RC_WEIGHT);
-    tab_double (t, 3, heading_rows, 0, ssq / df, NULL, RC_OTHER);
-    tab_double (t, 4, heading_rows, 0, F, NULL, RC_OTHER);
-
-    tab_double (t, 5, heading_rows, 0,
-		gsl_cdf_fdist_Q (F, df, n_total - df_corr), NULL, RC_PVALUE);
+    double F = ssq / df / mse;
+    put_glm_row (table, 0, ssq, df, ssq / df, F,
+                 gsl_cdf_fdist_Q (F, df, n_total - df_corr));
   }
 
   {
+    int row = pivot_category_create_leaf (source->root,
+                                          pivot_value_new_text (N_("Error")));
     const double df = n_total - df_corr;
     const double ssq = gsl_vector_get (ws->ssq, 0);
     const double mse = ssq / df;
-    tab_text (t, 0, r, TAB_LEFT | TAT_TITLE, _("Error"));
-    tab_double (t, 1, r, 0, ssq, NULL, RC_OTHER);
-    tab_double (t, 2, r, 0, df, NULL, RC_WEIGHT);
-    tab_double (t, 3, r++, 0, mse, NULL, RC_OTHER);
+    put_glm_row (table, row, ssq, df, mse, SYSMIS, SYSMIS);
   }
 
   {
-    tab_text (t, 0, r, TAB_LEFT | TAT_TITLE, _("Total"));
-    tab_double (t, 1, r, 0, ws->total_ssq + intercept_ssq, NULL, RC_OTHER);
-    tab_double (t, 2, r, 0, n_total, NULL, RC_WEIGHT);
-
-    r++;
+    int row = pivot_category_create_leaf (source->root,
+                                          pivot_value_new_text (N_("Total")));
+    put_glm_row (table, row, ws->total_ssq + intercept_ssq, n_total,
+                 SYSMIS, SYSMIS, SYSMIS);
   }
 
   if (cmd->intercept)
     {
-      tab_text (t, 0, r, TAB_LEFT | TAT_TITLE, _("Corrected Total"));
-      tab_double (t, 1, r, 0, ws->total_ssq, NULL, RC_OTHER);
-      tab_double (t, 2, r, 0, n_total - 1.0, NULL, RC_WEIGHT);
+      int row = pivot_category_create_leaf (
+        source->root, pivot_value_new_text (N_("Corrected Total")));
+      put_glm_row (table, row, ws->total_ssq, n_total - 1.0, SYSMIS,
+                   SYSMIS, SYSMIS);
     }
 
-  tab_submit (t);
+  pivot_table_submit (table);
 }
 
 #if 0

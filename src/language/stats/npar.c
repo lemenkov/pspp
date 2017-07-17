@@ -553,7 +553,8 @@ npar_execute (struct casereader *input,
 
   if ( (specs->descriptives || specs->quartiles)
        && !taint_has_tainted_successor (casereader_get_taint (input)) )
-    do_summary_box (summary_descriptives, specs->vv, specs->n_vars );
+    do_summary_box (summary_descriptives, specs->vv, specs->n_vars,
+                    dict_get_weight_format (dataset_dict (ds)));
 
   free (summary_descriptives);
   casereader_destroy (input);

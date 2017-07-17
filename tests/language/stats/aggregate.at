@@ -208,8 +208,8 @@ Y,A25
 
 Table: Data List
 X,Y
-87.34,bar                      @&t@
-87.50,foo                      @&t@
+87.34,bar
+87.50,foo
 ])
 AT_CLEANUP
 

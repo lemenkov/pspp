@@ -349,8 +349,8 @@ data-list.sps:4: warning: Missing delimiter following quoted string.
 
 Table: Data List
 s
-y         @&t@
-z         @&t@
+y
+z
 ])
 AT_CLEANUP
 

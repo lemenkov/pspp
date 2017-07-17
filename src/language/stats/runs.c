@@ -35,9 +35,10 @@
 #include "libpspp/misc.h"
 #include "math/percentiles.h"
 #include "math/sort.h"
-#include "output/tab.h"
+#include "output/pivot-table.h"
 
 #include "gettext.h"
+#define N_(msgid) msgid
 #define _(msgid) gettext (msgid)
 
 
@@ -308,99 +309,49 @@ runs_execute (const struct dataset *ds,
 static void
 show_runs_result (const struct runs_test *rt, const struct run_state *rs, const struct dictionary *dict)
 {
-  const struct fmt_spec *wfmt = dict_get_weight_format (dict);
-
   const struct one_sample_test *otp = &rt->parent;
 
-  int i;
-  const int row_headers = 1;
-  const int column_headers = 1;
-  struct tab_table *table =
-    tab_create (row_headers + otp->n_vars, column_headers + 7);
-  tab_set_format (table, RC_WEIGHT, wfmt);
+  struct pivot_table *table = pivot_table_create (N_("Runs Test"));
+  pivot_table_set_weight_var (table, dict_get_weight (dict));
 
-  tab_headers (table, row_headers, 0, column_headers, 0);
+  pivot_dimension_create (
+    table, PIVOT_AXIS_ROW, N_("Statistics"),
+    (rt->cp_mode == CP_CUSTOM ? N_("Test Value")
+     : rt->cp_mode == CP_MODE ? N_("Test Value (mode)")
+     : rt->cp_mode == CP_MEAN ? N_("Test Value (mean)")
+     : N_("Test Value (median)")), PIVOT_RC_OTHER,
+    N_("Cases < Test Value"), PIVOT_RC_COUNT,
+    N_("Cases ≥ Test Value"), PIVOT_RC_COUNT,
+    N_("Total Cases"), PIVOT_RC_COUNT,
+    N_("Number of Runs"), PIVOT_RC_INTEGER,
+    N_("Z"), PIVOT_RC_OTHER,
+    N_("Asymp. Sig. (2-tailed)"), PIVOT_RC_SIGNIFICANCE);
 
-  tab_title (table, _("Runs Test"));
+  struct pivot_dimension *variables = pivot_dimension_create (
+    table, PIVOT_AXIS_COLUMN, N_("Variable"));
 
-  /* Box around the table and vertical lines inside*/
-  tab_box (table, TAL_2, TAL_2, -1, TAL_1,
-	   0,  0, tab_nc (table) - 1, tab_nr (table) - 1 );
-
-  tab_hline (table, TAL_2, 0, tab_nc (table) -1, column_headers);
-  tab_vline (table, TAL_2, row_headers, 0, tab_nr (table) - 1);
-
-  for (i = 0 ; i < otp->n_vars; ++i)
+  for (size_t i = 0 ; i < otp->n_vars; ++i)
     {
       const struct run_state *run = &rs[i];
 
+      int col = pivot_category_create_leaf (
+        variables->root, pivot_value_new_variable (otp->vars[i]));
+
       double z = runs_statistic (run);
 
-      tab_text (table,  row_headers + i, 0,
-		TAT_TITLE | TAB_CENTER ,
-		var_to_string (otp->vars[i]));
+      double rows[] = {
+        run->cutpoint,
+        run->nn,
+        run->np,
+        run->n,
+        run->runs,
+        z,
+        2.0 * (1.0 - gsl_cdf_ugaussian_P (z)),
+      };
 
-      tab_double (table, row_headers +i, 1, 0,
-		  run->cutpoint, NULL, RC_OTHER);
-
-      tab_double (table, row_headers +i, 2, 0,
-		  run->nn, NULL, RC_WEIGHT);
-
-      tab_double (table, row_headers +i, 3, 0,
-		  run->np, NULL, RC_WEIGHT);
-
-      tab_double (table, row_headers +i, 4, 0,
-		  run->n, NULL, RC_WEIGHT);
-
-      tab_double (table, row_headers +i, 5, 0,
-		  run->runs, NULL, RC_INTEGER);
-
-      tab_double (table, row_headers +i, 6, 0,
-		  z, NULL, RC_OTHER);
-
-      tab_double (table, row_headers +i, 7, 0,
-		  2.0 * (1.0 - gsl_cdf_ugaussian_P (z)), NULL, RC_PVALUE);
+      for (int row = 0; row < sizeof rows / sizeof *rows; row++)
+        pivot_table_put2 (table, row, col, pivot_value_new_number (rows[row]));
     }
 
-  switch  ( rt->cp_mode)
-    {
-    case CP_CUSTOM:
-      tab_text (table,  0, column_headers ,
-		TAT_TITLE | TAB_LEFT , _("Test Value"));
-      break;
-    case CP_MODE:
-      tab_text (table,  0, column_headers ,
-		TAT_TITLE | TAB_LEFT , _("Test Value (mode)"));
-      break;
-    case CP_MEAN:
-      tab_text (table,  0, column_headers ,
-		TAT_TITLE | TAB_LEFT , _("Test Value (mean)"));
-      break;
-    case CP_MEDIAN:
-      tab_text (table,  0, column_headers ,
-		TAT_TITLE | TAB_LEFT , _("Test Value (median)"));
-      break;
-    }
-
-  tab_text (table,  0, column_headers + 1,
-	    TAT_TITLE | TAB_LEFT , _("Cases < Test Value"));
-
-  tab_text (table,  0, column_headers + 2,
-	    TAT_TITLE | TAB_LEFT , _("Cases ≥ Test Value"));
-
-  tab_text (table,  0, column_headers + 3,
-	    TAT_TITLE | TAB_LEFT , _("Total Cases"));
-
-  tab_text (table,  0, column_headers + 4,
-	    TAT_TITLE | TAB_LEFT , _("Number of Runs"));
-
-  tab_text (table,  0, column_headers + 5,
-	    TAT_TITLE | TAB_LEFT , _("Z"));
-
-  tab_text (table,  0, column_headers + 6,
-	    TAT_TITLE | TAB_LEFT , _("Asymp. Sig. (2-tailed)"));
-
-  tab_submit (table);
+  pivot_table_submit (table);
 }
-
-

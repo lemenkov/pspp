@@ -41,9 +41,10 @@
 #include "libpspp/str.h"
 #include "libpspp/misc.h"
 
-#include "output/tab.h"
+#include "output/pivot-table.h"
 
 #include "gettext.h"
+#define N_(msgid) msgid
 #define _(msgid) gettext (msgid)
 
 
@@ -301,88 +302,41 @@ median_execute (const struct dataset *ds,
 static void
 show_frequencies (const struct n_sample_test *nst, const struct results *results,  int n_vals, const struct dictionary *dict)
 {
-  const struct fmt_spec *wfmt = dict_get_weight_format (dict);
+  struct pivot_table *table = pivot_table_create (N_("Frequencies"));
+  pivot_table_set_weight_var (table, dict_get_weight (dict));
 
-  int i;
-  int v;
+  struct pivot_dimension *indep = pivot_dimension_create__ (
+    table, PIVOT_AXIS_COLUMN, pivot_value_new_variable (nst->indep_var));
+  indep->root->show_label = true;
+  for (int i = 0; i < n_vals; ++i)
+    pivot_category_create_leaf_rc (
+      indep->root, pivot_value_new_var_value (
+        nst->indep_var, &results->sorted_array[i]->val), PIVOT_RC_COUNT);
+  pivot_dimension_create (table, PIVOT_AXIS_ROW, N_("Statistics"),
+                          N_("> Median"), N_("≤ Median"));
 
-  const int row_headers = 2;
-  const int column_headers = 2;
-  const int nc = row_headers + n_vals;
-  const int nr = column_headers + nst->n_vars * 2;
+  struct pivot_dimension *dep = pivot_dimension_create (
+    table, PIVOT_AXIS_ROW, N_("Dependent Variables"));
 
-  struct tab_table *table = tab_create (nc, nr);
-  tab_set_format (table, RC_WEIGHT, wfmt);
-
-  tab_headers (table, row_headers, 0, column_headers, 0);
-
-  tab_title (table, _("Frequencies"));
-
-  /* Box around the table and vertical lines inside*/
-  tab_box (table, TAL_2, TAL_2, -1, TAL_1,
-	   0,  0, tab_nc (table) - 1, tab_nr (table) - 1 );
-
-  tab_hline (table, TAL_2, 0, tab_nc (table) -1, column_headers);
-  tab_vline (table, TAL_2, row_headers, 0, tab_nr (table) - 1);
-
-  tab_joint_text (table,
-		  row_headers, 0, row_headers + n_vals - 1, 0,
-		  TAT_TITLE | TAB_CENTER, var_to_string (nst->indep_var));
-
-
-  tab_hline (table, TAL_1, row_headers, tab_nc (table) - 1, 1);
-
-
-  for (i = 0; i < n_vals; ++i)
-    {
-      const struct results *rs = results + 0;
-      struct string label;
-      ds_init_empty (&label);
-
-      var_append_value_name (nst->indep_var, &rs->sorted_array[i]->val,
-			    &label);
-
-      tab_text (table, row_headers + i, 1,
-		TAT_TITLE | TAB_LEFT, ds_cstr (&label));
-
-      ds_destroy (&label);
-    }
-
-  for (v = 0; v < nst->n_vars; ++v)
+  for (int v = 0; v < nst->n_vars; ++v)
     {
       const struct results *rs = &results[v];
-      tab_text (table,  0, column_headers + v * 2,
-		TAT_TITLE | TAB_LEFT, var_to_string (rs->var) );
 
-      tab_text (table,  1, column_headers + v * 2,
-		TAT_TITLE | TAB_LEFT, _("> Median") );
+      int dep_idx = pivot_category_create_leaf (
+        dep->root, pivot_value_new_variable (rs->var));
 
-      tab_text (table,  1, column_headers + v * 2 + 1,
-		TAT_TITLE | TAB_LEFT, _("≤ Median") );
-
-      if ( v > 0)
-	tab_hline (table, TAL_1, 0, tab_nc (table) - 1, column_headers + v * 2);
-    }
-
-  for (v = 0; v < nst->n_vars; ++v)
-    {
-      int i;
-      const struct results *rs = &results[v];
-
-      for (i = 0; i < n_vals; ++i)
+      for (int indep_idx = 0; indep_idx < n_vals; indep_idx++)
 	{
-	  const struct val_node *vn = rs->sorted_array[i];
-	  tab_double (table, row_headers + i, column_headers + v * 2,
-		      0, vn->gt, NULL, RC_WEIGHT);
-
-	  tab_double (table, row_headers + i, column_headers + v * 2 + 1,
-		      0, vn->le, NULL, RC_WEIGHT);
+	  const struct val_node *vn = rs->sorted_array[indep_idx];
+          pivot_table_put3 (table, indep_idx, 0, dep_idx,
+                            pivot_value_new_number (vn->gt));
+          pivot_table_put3 (table, indep_idx, 1, dep_idx,
+                            pivot_value_new_number (vn->le));
 	}
     }
 
-  tab_submit (table);
+  pivot_table_submit (table);
 }
-
 
 static void
 show_test_statistics (const struct n_sample_test *nst,
@@ -390,68 +344,43 @@ show_test_statistics (const struct n_sample_test *nst,
 		      int n_vals,
 		      const struct dictionary *dict)
 {
-  const struct fmt_spec *wfmt = dict_get_weight_format (dict);
+  struct pivot_table *table = pivot_table_create (N_("Test Statistics"));
+  pivot_table_set_weight_var (table, dict_get_weight (dict));
 
-  int v;
+  pivot_dimension_create (table, PIVOT_AXIS_COLUMN, N_("Statistics"),
+                          N_("N"), PIVOT_RC_COUNT,
+                          N_("Median"),
+                          N_("Chi-Square"), PIVOT_RC_OTHER,
+                          N_("df"), PIVOT_RC_COUNT,
+                          N_("Asymp. Sig."), PIVOT_RC_SIGNIFICANCE);
 
-  const int row_headers = 1;
-  const int column_headers = 1;
-  const int nc = row_headers + 5;
-  const int nr = column_headers + nst->n_vars;
+  struct pivot_dimension *variables = pivot_dimension_create (
+    table, PIVOT_AXIS_ROW, N_("Variables"));
 
-  struct tab_table *table = tab_create (nc, nr);
-  tab_set_format (table, RC_WEIGHT, wfmt);
-
-  tab_headers (table, row_headers, 0, column_headers, 0);
-
-  tab_title (table, _("Test Statistics"));
-
-
-  tab_box (table, TAL_2, TAL_2, -1, TAL_1,
-	   0,  0, tab_nc (table) - 1, tab_nr (table) - 1 );
-
-  tab_hline (table, TAL_2, 0, tab_nc (table) -1, column_headers);
-  tab_vline (table, TAL_2, row_headers, 0, tab_nr (table) - 1);
-
-  tab_text (table, row_headers + 0, 0,
-	    TAT_TITLE | TAB_CENTER, _("N"));
-
-  tab_text (table, row_headers + 1, 0,
-	    TAT_TITLE | TAB_CENTER, _("Median"));
-
-  tab_text (table, row_headers + 2, 0,
-	    TAT_TITLE | TAB_CENTER, _("Chi-Square"));
-
-  tab_text (table, row_headers + 3, 0,
-	    TAT_TITLE | TAB_CENTER, _("df"));
-
-  tab_text (table, row_headers + 4, 0,
-	    TAT_TITLE | TAB_CENTER, _("Asymp. Sig."));
-
-
-  for (v = 0; v < nst->n_vars; ++v)
+  for (int v = 0; v < nst->n_vars; ++v)
     {
       double df = n_vals - 1;
       const struct results *rs = &results[v];
-      tab_text (table,  0, column_headers + v,
-		TAT_TITLE | TAB_LEFT, var_to_string (rs->var));
 
+      int var_idx = pivot_category_create_leaf (
+        variables->root, pivot_value_new_variable (rs->var));
 
-      tab_double (table, row_headers + 0, column_headers + v,
-		  0, rs->n, NULL, RC_WEIGHT);
-
-      tab_double (table, row_headers + 1, column_headers + v,
-		  0, rs->median, NULL, RC_OTHER);
-
-      tab_double (table, row_headers + 2, column_headers + v,
-		  0, rs->chisq, NULL, RC_OTHER);
-
-      tab_double (table, row_headers + 3, column_headers + v,
-		  0, df, NULL, RC_WEIGHT);
-
-      tab_double (table, row_headers + 4, column_headers + v,
-		  0, gsl_cdf_chisq_Q (rs->chisq, df), NULL, RC_PVALUE);
+      double entries[] = {
+        rs->n,
+        rs->median,
+        rs->chisq,
+        df,
+        gsl_cdf_chisq_Q (rs->chisq, df),
+      };
+      for (size_t i = 0; i < sizeof entries / sizeof *entries; i++)
+        {
+          struct pivot_value *value
+            = pivot_value_new_number (entries[i]);
+          if (i == 1)
+            value->numeric.format = *var_get_print_format (rs->var);
+          pivot_table_put2 (table, i, var_idx, value);
+        }
     }
 
-  tab_submit (table);
+  pivot_table_submit (table);
 }

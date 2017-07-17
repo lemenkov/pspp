@@ -118,8 +118,9 @@ LIST n.
 ])
 AT_CHECK([pspp -o pspp.csv list.sps])
 AT_CHECK([cat pspp.csv], [0], [dnl
-Variable,Value,Label
-s,a,
+Table: Split Values
+Variable,Value
+s,a
 
 Table: Data List
 n
@@ -127,15 +128,17 @@ n
 2.00
 3.00
 
-Variable,Value,Label
-s,b,
+Table: Split Values
+Variable,Value
+s,b
 
 Table: Data List
 n
 1.00
 
-Variable,Value,Label
-s,c,
+Table: Split Values
+Variable,Value
+s,c
 
 Table: Data List
 n
@@ -282,4 +285,35 @@ LIST.
 
 AT_CHECK([pspp -o pspp.csv list.sps], [1], [ignore])
 
+AT_CLEANUP
+
+dnl This is an example from doc/tutorial.texi
+dnl So if the results of this have to be changed in any way,
+dnl make sure to update that file.
+AT_SETUP([LIST tutorial example])
+AT_DATA([list.sps], [dnl
+data list list /forename (A12) height.
+begin data.
+Ahmed 188
+Bertram 167
+Catherine 134.231
+David 109.1
+end data
+
+list /format=numbered.
+])
+AT_CHECK([pspp -o pspp.csv -o pspp.txt list.sps])
+AT_CHECK([cat pspp.csv], [0], [dnl
+Table: Reading free-form data from INLINE.
+Variable,Format
+forename,A12
+height,F8.0
+
+Table: Data List
+Case Number,forename,height
+1,Ahmed,188.00
+2,Bertram,167.00
+3,Catherine,134.23
+4,David,109.10
+])
 AT_CLEANUP

@@ -22,6 +22,7 @@
 struct variable ;
 struct casereader ;
 struct dictionary;
+struct fmt_spec;
 
 struct descriptives
 {
@@ -35,7 +36,8 @@ struct descriptives
 void
 do_summary_box (const struct descriptives *desc,
 		const struct variable *const *vv,
-		int n_vars);
+		int n_vars,
+                const struct fmt_spec *wfmt);
 
 void npar_summary_calc_descriptives (struct descriptives *desc,
 				     struct casereader *input,

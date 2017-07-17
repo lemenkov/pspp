@@ -61,8 +61,8 @@ Table: Case Processing Summary
 ,Cases,,,,,
 ,Included,,Excluded,,Total,
 ,N,Percent,N,Percent,N,Percent
-score: factor,26,100%,0,0%,26,100%
-score: ,26,100%,0,0%,26,100%
+score: factor,26,100.0%,0,.0%,26,100.0%
+score: ,26,100.0%,0,.0%,26,100.0%
 
 Table: Report
 ,factor,Mean,N,Std. Deviation
@@ -101,7 +101,7 @@ Table: Case Processing Summary
 ,Cases,,,,,
 ,Included,,Excluded,,Total,
 ,N,Percent,N,Percent,N,Percent
-score: ,4,100%,0,0%,4,100%
+score: ,4,100.0%,0,.0%,4,100.0%
 
 Table: Report
 ,Mean,N,Std. Deviation
@@ -143,16 +143,16 @@ Table: Case Processing Summary
 ,Cases,,,,,
 ,Included,,Excluded,,Total,
 ,N,Percent,N,Percent,N,Percent
-a: g1 * g2,6,75%,2,25%,8,100%
-a: g2,6,75%,2,25%,8,100%
-a: ,7,87.5%,1,12.5%,8,100%
+a: g1 × g2,6,75.0%,2,25.0%,8,100.0%
+a: g2,6,75.0%,2,25.0%,8,100.0%
+a: ,7,87.5%,1,12.5%,8,100.0%
 
 Table: Report
 ,g1,g2,Mean,N
 a,1.00,11.00,4.00,1.00
-,1.00,21.00,3.00,1.00
-,2.00,21.00,6.00,1.00
-,2.00,31.00,5.67,3.00
+,,21.00,3.00,1.00
+,2.00,,6.00,1.00
+,,31.00,5.67,3.00
 
 Table: Report
 ,g2,Mean,N
@@ -202,8 +202,8 @@ Table: Case Processing Summary
 ,Cases,,,,,
 ,Included,,Excluded,,Total,
 ,N,Percent,N,Percent,N,Percent
-test1: group,10,100%,0,0%,10,100%
-test1: ,10,100%,0,0%,10,100%
+test1: group,10,100.0%,0,.0%,10,100.0%
+test1: ,10,100.0%,0,.0%,10,100.0%
 
 Table: Report
 ,group,Mean,N,Std. Deviation,Sum,Min,Max,Range,Variance,Kurtosis,Skewness
@@ -248,8 +248,8 @@ Table: Case Processing Summary
 ,Cases,,,,,
 ,Included,,Excluded,,Total,
 ,N,Percent,N,Percent,N,Percent
-test1: group,10,100%,0,0%,10,100%
-test1: ,10,100%,0,0%,10,100%
+test1: group,10,100.0%,0,.0%,10,100.0%
+test1: ,10,100.0%,0,.0%,10,100.0%
 
 Table: Report
 ,group,Mean,N,S.E. Mean,S.E. Skew,S.E. Kurt
@@ -292,8 +292,8 @@ Table: Case Processing Summary
 ,Cases,,,,,
 ,Included,,Excluded,,Total,
 ,N,Percent,N,Percent,N,Percent
-x: ,5,100%,0,0%,5,100%
-y: ,5,100%,0,0%,5,100%
+x: ,5,100.0%,0,.0%,5,100.0%
+y: ,5,100.0%,0,.0%,5,100.0%
 
 Table: Report
 ,Mean,Harmonic Mean,Geom. Mean
@@ -337,7 +337,7 @@ Table: Case Processing Summary
 ,Cases,,,,,
 ,Included,,Excluded,,Total,
 ,N,Percent,N,Percent,N,Percent
-score: ,5,100%,0,0%,5,100%
+score: ,5,100.0%,0,.0%,5,100.0%
 
 Table: Report
 ,Mean,N,Std. Deviation,S.E. Mean,Sum,Min,Max,Range,Variance,Kurtosis,S.E. Kurt,Skewness,S.E. Skew,First,Last,Harmonic Mean,Geom. Mean
@@ -347,7 +347,7 @@ Table: Case Processing Summary
 ,Cases,,,,,
 ,Included,,Excluded,,Total,
 ,N,Percent,N,Percent,N,Percent
-score: ,5,100%,0,0%,5,100%
+score: ,5,100.0%,0,.0%,5,100.0%
 
 Table: Report
 ,Mean,N,Std. Deviation
@@ -357,11 +357,9 @@ Table: Case Processing Summary
 ,Cases,,,,,
 ,Included,,Excluded,,Total,
 ,N,Percent,N,Percent,N,Percent
-score: ,5,100%,0,0%,5,100%
+score: ,5,100.0%,0,.0%,5,100.0%
 
 Table: Report
-
-score
 ])
 
 AT_CLEANUP
@@ -397,16 +395,16 @@ MEANS a b BY g1
 ])
 
 
-AT_CHECK([pspp -O format=csv means-miss-table.sps], [0],
-  [dnl
+AT_CHECK([pspp -o pspp.csv -o pspp.txt means-miss-table.sps])
+AT_CHECK([cat pspp.csv], [0], [dnl
 Table: Case Processing Summary
 ,Cases,,,,,
 ,Included,,Excluded,,Total,
 ,N,Percent,N,Percent,N,Percent
-a: g1,7,100%,0,0%,7,100%
-a: ,7,100%,0,0%,7,100%
-b: g1,6,85.7143%,1,14.2857%,7,100%
-b: ,6,85.7143%,1,14.2857%,7,100%
+a: g1,7,100.0%,0,.0%,7,100.0%
+a: ,7,100.0%,0,.0%,7,100.0%
+b: g1,6,85.7%,1,14.3%,7,100.0%
+b: ,6,85.7%,1,14.3%,7,100.0%
 
 Table: Report
 ,g1,N
@@ -424,8 +422,8 @@ Table: Case Processing Summary
 ,Cases,,,,,
 ,Included,,Excluded,,Total,
 ,N,Percent,N,Percent,N,Percent
-a: g1,7,100%,0,0%,7,100%
-a: ,7,100%,0,0%,7,100%
+a: g1,7,100.0%,0,.0%,7,100.0%
+a: ,7,100.0%,0,.0%,7,100.0%
 
 Table: Report
 ,g1,N
@@ -440,10 +438,10 @@ Table: Case Processing Summary
 ,Cases,,,,,
 ,Included,,Excluded,,Total,
 ,N,Percent,N,Percent,N,Percent
-a: g1,7,100%,0,0%,7,100%
-a: ,7,100%,0,0%,7,100%
-b: g1,6,85.7143%,1,14.2857%,7,100%
-b: ,6,85.7143%,1,14.2857%,7,100%
+a: g1,7,100.0%,0,.0%,7,100.0%
+a: ,7,100.0%,0,.0%,7,100.0%
+b: g1,6,85.7%,1,14.3%,7,100.0%
+b: ,6,85.7%,1,14.3%,7,100.0%
 
 Table: Report
 ,g1,N
@@ -461,8 +459,8 @@ Table: Case Processing Summary
 ,Cases,,,,,
 ,Included,,Excluded,,Total,
 ,N,Percent,N,Percent,N,Percent
-a: g1,7,100%,0,0%,7,100%
-a: ,7,100%,0,0%,7,100%
+a: g1,7,100.0%,0,.0%,7,100.0%
+a: ,7,100.0%,0,.0%,7,100.0%
 
 Table: Report
 ,g1,N
@@ -473,12 +471,7 @@ Table: Report
 ,N
 a,7.00
 ])
-
 AT_CLEANUP
-
-
-
-
 
 AT_SETUP([MEANS user missing values])
 AT_KEYWORDS([categorical categoricals])
@@ -505,16 +498,16 @@ MEANS a b BY g1 /cells =  COUNT /missing = dependent .
 ])
 
 
-AT_CHECK([pspp -O format=csv means-missing.sps], [0],
-  [dnl
+AT_CHECK([pspp -o pspp.csv -o pspp.txt means-missing.sps])
+AT_CHECK([cat pspp.csv], [0], [dnl
 Table: Case Processing Summary
 ,Cases,,,,,
 ,Included,,Excluded,,Total,
 ,N,Percent,N,Percent,N,Percent
-a: g1,6,85.7143%,1,14.2857%,7,100%
-a: ,7,100%,0,0%,7,100%
-b: g1,5,71.4286%,2,28.5714%,7,100%
-b: ,6,85.7143%,1,14.2857%,7,100%
+a: g1,6,85.7%,1,14.3%,7,100.0%
+a: ,7,100.0%,0,.0%,7,100.0%
+b: g1,5,71.4%,2,28.6%,7,100.0%
+b: ,6,85.7%,1,14.3%,7,100.0%
 
 Table: Report
 ,g1,N
@@ -532,10 +525,10 @@ Table: Case Processing Summary
 ,Cases,,,,,
 ,Included,,Excluded,,Total,
 ,N,Percent,N,Percent,N,Percent
-a: g1,7,100%,0,0%,7,100%
-a: ,7,100%,0,0%,7,100%
-b: g1,7,100%,0,0%,7,100%
-b: ,7,100%,0,0%,7,100%
+a: g1,7,100.0%,0,.0%,7,100.0%
+a: ,7,100.0%,0,.0%,7,100.0%
+b: g1,7,100.0%,0,.0%,7,100.0%
+b: ,7,100.0%,0,.0%,7,100.0%
 
 Table: Report
 ,g1,N
@@ -555,10 +548,10 @@ Table: Case Processing Summary
 ,Cases,,,,,
 ,Included,,Excluded,,Total,
 ,N,Percent,N,Percent,N,Percent
-a: g1,7,100%,0,0%,7,100%
-a: ,7,100%,0,0%,7,100%
-b: g1,6,85.7143%,1,14.2857%,7,100%
-b: ,6,85.7143%,1,14.2857%,7,100%
+a: g1,7,100.0%,0,.0%,7,100.0%
+a: ,7,100.0%,0,.0%,7,100.0%
+b: g1,6,85.7%,1,14.3%,7,100.0%
+b: ,6,85.7%,1,14.3%,7,100.0%
 
 Table: Report
 ,g1,N
@@ -574,7 +567,6 @@ Table: Report
 a,7.00
 b,6.00
 ])
-
 AT_CLEANUP
 
 

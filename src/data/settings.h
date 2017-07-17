@@ -105,26 +105,26 @@ void settings_set_testing_mode (bool);
 int settings_get_fuzzbits (void);
 void settings_set_fuzzbits (int);
 
-enum settings_var_style
+/* Whether to show variable or value labels or the underlying value or variable
+   name. */
+enum settings_value_show
   {
-    SETTINGS_VAR_STYLE_NAMES,
-    SETTINGS_VAR_STYLE_LABELS,
-    SETTINGS_VAR_STYLE_BOTH
+    /* Use higher-level default.
+       In a pivot_value, the default is taken from the pivot_table.
+       In a pivot_table, the default is a global default.
+       As a global default, this is invalid. */
+    SETTINGS_VALUE_SHOW_DEFAULT = 0,
+
+    SETTINGS_VALUE_SHOW_VALUE = 1, /* Show value or variable name only. */
+    SETTINGS_VALUE_SHOW_LABEL = 2, /* Show label only. */
+    SETTINGS_VALUE_SHOW_BOTH = 3,  /* Show both value/name and label. */
   };
 
-enum settings_value_style
-  {
-    SETTINGS_VAL_STYLE_VALUES,
-    SETTINGS_VAL_STYLE_LABELS,
-    SETTINGS_VAL_STYLE_BOTH
-  };
+enum settings_value_show settings_get_show_values (void);
+enum settings_value_show settings_get_show_variables (void);
 
-
-enum settings_value_style settings_get_value_style (void);
-enum settings_var_style settings_get_var_style (void);
-
-void settings_set_value_style (enum settings_value_style s);
-void settings_set_var_style (enum settings_var_style s);
+void settings_set_show_values (enum settings_value_show);
+void settings_set_show_variables (enum settings_value_show);
 
 
 enum behavior_mode {

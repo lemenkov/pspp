@@ -250,7 +250,6 @@ tests_output_render_test_LDADD = \
 	src/libpspp-core.la \
 	$(CAIRO_LIBS)
 
-
 check_PROGRAMS += tests/ui/syntax-gen-test
 tests_ui_syntax_gen_test_SOURCES = tests/ui/syntax-gen-test.c
 tests_ui_syntax_gen_test_LDADD = \

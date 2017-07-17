@@ -66,13 +66,11 @@ y
 7
 8
 
-Table: Open datasets.
-Dataset
+Table: Datasets
 clone
 initial (active dataset)
 
-Table: Open datasets.
-Dataset
+Table: Datasets
 clone (active dataset)
 initial
 
@@ -84,8 +82,7 @@ x
 5
 6
 
-Table: Open datasets.
-Dataset
+Table: Datasets
 clone
 initial (active dataset)
 
@@ -101,13 +98,11 @@ y,z
 7,7.00
 8,8.00
 
-Table: Open datasets.
-Dataset
+Table: Datasets
 unnamed dataset (active dataset)
 initial
 
-Table: Open datasets.
-Dataset
+Table: Datasets
 unnamed dataset (active dataset)
 ])
 AT_CLEANUP
@@ -126,8 +121,7 @@ DATASET DISPLAY.
 LIST.
 ])
 AT_CHECK([pspp -O format=csv dataset.pspp], [1], [dnl
-Table: Open datasets.
-Dataset
+Table: Datasets
 unnamed dataset (active dataset)
 second
 
@@ -135,8 +129,7 @@ Table: Data List
 x
 1
 
-Table: Open datasets.
-Dataset
+Table: Datasets
 second (active dataset)
 
 dataset.pspp:10: error: LIST: LIST is allowed only after the active dataset has been defined.
@@ -155,14 +148,12 @@ DATASET NAME c.
 DATASET DISPLAY.
 ])
 AT_CHECK([pspp -O format=csv dataset.pspp], [0], [dnl
-Table: Open datasets.
-Dataset
+Table: Datasets
 a (active dataset)
 b
 c
 
-Table: Open datasets.
-Dataset
+Table: Datasets
 c (active dataset)
 ])
 AT_CLEANUP
@@ -176,13 +167,11 @@ DATASET ACTIVATE x.
 DATASET DISPLAY.
 ])
 AT_CHECK([pspp -O format=csv dataset.pspp], [0], [dnl
-Table: Open datasets.
-Dataset
+Table: Datasets
 unnamed dataset (active dataset)
 x
 
-Table: Open datasets.
-Dataset
+Table: Datasets
 x (active dataset)
 ])
 AT_CLEANUP
@@ -210,8 +199,7 @@ DATASET ACTIVATE one.
 LIST.
 ])
 AT_CHECK([pspp -O format=csv dataset.pspp], [1], [dnl
-Table: Open datasets.
-Dataset
+Table: Datasets
 another
 one (active dataset)
 
@@ -269,50 +257,40 @@ DATASET CLOSE ALL.
 DATASET DISPLAY.
 ])
 AT_CHECK([pspp -O format=csv dataset.pspp], [0], [dnl
-Table: Open datasets.
-Dataset
+Table: Datasets
 unnamed dataset (active dataset)
 
-Table: Open datasets.
-Dataset
+Table: Datasets
 unnamed dataset (active dataset)
 
-Table: Open datasets.
-Dataset
+Table: Datasets
 this (active dataset)
 
-Table: Open datasets.
-Dataset
+Table: Datasets
 unnamed dataset (active dataset)
 
-Table: Open datasets.
-Dataset
+Table: Datasets
 this (active dataset)
 
-Table: Open datasets.
-Dataset
+Table: Datasets
 unnamed dataset (active dataset)
 
-Table: Open datasets.
-Dataset
+Table: Datasets
 unnamed dataset (active dataset)
 that
 theother
 yetanother
 
-Table: Open datasets.
-Dataset
+Table: Datasets
 unnamed dataset (active dataset)
 
-Table: Open datasets.
-Dataset
+Table: Datasets
 that
 theother
 this (active dataset)
 yetanother
 
-Table: Open datasets.
-Dataset
+Table: Datasets
 unnamed dataset (active dataset)
 ])
 AT_CLEANUP

@@ -197,12 +197,15 @@ shown along with the data.
 It should show the following output:
 @example
 @group
-Case#     forename   height
------ ------------ --------
-    1 Ahmed          188.00 
-    2 Bertram        167.00 
-    3 Catherine      134.23 
-    4 David          109.10 
+           Data List
++-----------+---------+------+
+|Case Number| forename|height|
++-----------+---------+------+
+|1          |Ahmed    |188.00|
+|2          |Bertram  |167.00|
+|3          |Catherine|134.23|
+|4          |David    |109.10|
++-----------+---------+------+
 @end group
 @end example
 @noindent
@@ -350,14 +353,16 @@ data and identify the erroneous values.
 
 Output:
 @example
-DESCRIPTIVES.  Valid cases = 40; cases with missing value(s) = 0.
-+--------#--+-------+-------+-------+-------+
-|Variable# N|  Mean |Std Dev|Minimum|Maximum|
-#========#==#=======#=======#=======#=======#
-|sex     #40|    .45|    .50|    .00|   1.00|
-|height  #40|1677.12| 262.87| 179.00|1903.00|
-|weight  #40|  72.12|  26.70| -55.60|  92.07|
-+--------#--+-------+-------+-------+-------+
+                  Descriptive Statistics
++---------------------+--+-------+-------+-------+-------+
+|                     | N|  Mean |Std Dev|Minimum|Maximum|
++---------------------+--+-------+-------+-------+-------+
+|Sex of subject       |40|    .45|    .50|Male   |Female |
+|Weight in kilograms  |40|  72.12|  26.70|  -55.6|   92.1|
+|Height in millimeters|40|1677.12| 262.87|    179|   1903|
+|Valid N (listwise)   |40|       |       |       |       |
+|Missing N (listwise) | 0|       |       |       |       |
++---------------------+--+-------+-------+-------+-------+
 @end example
 @end cartouche
 @caption{Using the @cmd{DESCRIPTIVES} command to display simple 
@@ -395,25 +400,24 @@ represent data entry errors.
 
 Output:
 @example
-#===============================#===========#=======#
-#                               #Case Number| Value #
-#===============================#===========#=======#
-#Height in millimetres Highest 1#         14|1903.00#
-#                              2#         15|1884.00#
-#                              3#         12|1801.65#
-#                     ----------#-----------+-------#
-#                       Lowest 1#         30| 179.00#
-#                              2#         31|1598.00#
-#                              3#         28|1601.00#
-#                     ----------#-----------+-------#
-#Weight in kilograms   Highest 1#         13|  92.07#
-#                              2#          5|  92.07#
-#                              3#         17|  91.74#
-#                     ----------#-----------+-------#
-#                       Lowest 1#         38| -55.60#
-#                              2#         39|  54.48#
-#                              3#         33|  55.45#
-#===============================#===========#=======#
+                   Extreme Values
++-------------------------------+-----------+-----+
+|                               |Case Number|Value|
++-------------------------------+-----------+-----+
+|Height in millimeters Highest 1|         14| 1903|
+|                              2|         15| 1884|
+|                              3|         12| 1802|
+|                      Lowest  1|         30|  179|
+|                              2|         31| 1598|
+|                              3|         28| 1601|
++-------------------------------+-----------+-----+
+|Weight in kilograms   Highest 1|         13| 92.1|
+|                              2|          5| 92.1|
+|                              3|         17| 91.7|
+|                      Lowest  1|         38|-55.6|
+|                              2|         39| 54.5|
+|                              3|         33| 55.4|
++-------------------------------+-----------+-----+
 @end example
 @end cartouche
 @caption{Using the @cmd{EXAMINE} command to see the extremities of the data
@@ -523,21 +527,23 @@ negatively scaled variables) requests reliability statistics for
 
 Output (dictionary information omitted for clarity):
 @example
-1.1 RELIABILITY.  Case Processing Summary
-#==============#==#======#
-#              # N|   %  #
-#==============#==#======#
-#Cases Valid   #17|100.00#
-#      Excluded# 0|   .00#
-#      Total   #17|100.00#
-#==============#==#======#
+Scale: ANY
 
-1.2 RELIABILITY.  Reliability Statistics
-#================#==========#
-#Cronbach's Alpha#N of Items#
-#================#==========#
-#             .81#         3#
-#================#==========#
+Case Processing Summary
++--------+--+-------+
+|Cases   | N|Percent|
++--------+--+-------+
+|Valid   |17| 100.0%|
+|Excluded| 0|    .0%|
+|Total   |17| 100.0%|
++--------+--+-------+
+
+    Reliability Statistics
++----------------+----------+
+|Cronbach's Alpha|N of Items|
++----------------+----------+
+|             .81|         3|
++----------------+----------+
 @end example
 @end cartouche
 @caption{Recoding negatively scaled variables, and testing for
@@ -606,43 +612,66 @@ an appropriate non-parametric test instead of a linear one.
 
 Output:
 @example
-1.2 EXAMINE.  Descriptives
-#====================================================#=========#==========#
-#                                                    #Statistic|Std. Error#
-#====================================================#=========#==========#
-#mtbf    Mean                                        #   8.32  |   1.62   #
-#        95% Confidence Interval for Mean Lower Bound#   4.85  |          #
-#                                         Upper Bound#  11.79  |          #
-#        5% Trimmed Mean                             #   7.69  |          #
-#        Median                                      #   8.12  |          #
-#        Variance                                    #  39.21  |          #
-#        Std. Deviation                              #   6.26  |          #
-#        Minimum                                     #   1.63  |          #
-#        Maximum                                     #  26.47  |          #
-#        Range                                       #  24.84  |          #
-#        Interquartile Range                         #   5.83  |          #
-#        Skewness                                    #   1.85  |    .58   #
-#        Kurtosis                                    #   4.49  |   1.12   #
-#====================================================#=========#==========#
+                       Case Processing Summary
++-----------------------------------+-------------------------------+
+|                                   |             Cases             |
+|                                   +----------+---------+----------+
+|                                   |   Valid  | Missing |   Total  |
+|                                   | N|Percent|N|Percent| N|Percent|
++-----------------------------------+--+-------+-+-------+--+-------+
+|Mean time between failures (months)|15| 100.0%|0|    .0%|15| 100.0%|
++-----------------------------------+--+-------+-+-------+--+-------+
 
-2.2 EXAMINE.  Descriptives
-#====================================================#=========#==========#
-#                                                    #Statistic|Std. Error#
-#====================================================#=========#==========#
-#mtbf_ln Mean                                        #   1.88  |    .19   #
-#        95% Confidence Interval for Mean Lower Bound#   1.47  |          #
-#                                         Upper Bound#   2.29  |          #
-#        5% Trimmed Mean                             #   1.88  |          #
-#        Median                                      #   2.09  |          #
-#        Variance                                    #   .54   |          #
-#        Std. Deviation                              #   .74   |          #
-#        Minimum                                     #   .49   |          #
-#        Maximum                                     #   3.28  |          #
-#        Range                                       #   2.79  |          #
-#        Interquartile Range                         #   .92   |          #
-#        Skewness                                    #   -.16  |    .58   #
-#        Kurtosis                                    #   -.09  |   1.12   #
-#====================================================#=========#==========#
+                                  Descriptives
++----------------------------------------------------------+---------+--------+
+|                                                          |         |  Std.  |
+|                                                          |Statistic|  Error |
++----------------------------------------------------------+---------+--------+
+|Mean time between        Mean                             |     8.32|    1.62|
+|failures (months)        95% Confidence Interval Lower    |     4.85|        |
+|                         for Mean                Bound    |         |        |
+|                                                 Upper    |    11.79|        |
+|                                                 Bound    |         |        |
+|                         5% Trimmed Mean                  |     7.69|        |
+|                         Median                           |     8.12|        |
+|                         Variance                         |    39.21|        |
+|                         Std. Deviation                   |     6.26|        |
+|                         Minimum                          |     1.63|        |
+|                         Maximum                          |    26.47|        |
+|                         Range                            |    24.84|        |
+|                         Interquartile Range              |     5.83|        |
+|                         Skewness                         |     1.85|     .58|
+|                         Kurtosis                         |     4.49|    1.12|
++----------------------------------------------------------+---------+--------+
+
+         Case Processing Summary
++-------+-------------------------------+
+|       |             Cases             |
+|       +----------+---------+----------+
+|       |   Valid  | Missing |   Total  |
+|       | N|Percent|N|Percent| N|Percent|
++-------+--+-------+-+-------+--+-------+
+|mtbf_ln|15| 100.0%|0|    .0%|15| 100.0%|
++-------+--+-------+-+-------+--+-------+
+
+                                Descriptives
++----------------------------------------------------+---------+----------+
+|                                                    |Statistic|Std. Error|
++----------------------------------------------------+---------+----------+
+|mtbf_ln Mean                                        |     1.88|       .19|
+|        95% Confidence Interval for Mean Lower Bound|     1.47|          |
+|                                         Upper Bound|     2.29|          |
+|        5% Trimmed Mean                             |     1.88|          |
+|        Median                                      |     2.09|          |
+|        Variance                                    |      .54|          |
+|        Std. Deviation                              |      .74|          |
+|        Minimum                                     |      .49|          |
+|        Maximum                                     |     3.28|          |
+|        Range                                       |     2.79|          |
+|        Interquartile Range                         |      .92|          |
+|        Skewness                                    |     -.16|       .58|
+|        Kurtosis                                    |     -.09|      1.12|
++----------------------------------------------------+---------+----------+
 @end example
 @end cartouche
 @caption{Testing for normality using the @cmd{EXAMINE} command and applying
@@ -752,28 +781,82 @@ suggest that the body temperature of male and female persons are different.
 @end example
 Output:
 @example
-1.1 T-TEST.  Group Statistics
-#==================#==#=======#==============#========#
-#              sex | N|  Mean |Std. Deviation|SE. Mean#
-#==================#==#=======#==============#========#
-#height      Male  |22|1796.49|         49.71|   10.60#
-#            Female|17|1610.77|         25.43|    6.17#
-#temperature Male  |22|  36.68|          1.95|     .42#
-#            Female|18|  37.43|          1.61|     .38#
-#==================#==#=======#==============#========#
-1.2 T-TEST.  Independent Samples Test
-#===========================#=========#===============================   =#
-#                           # Levene's| t-test for Equality of Means      #
-#                           #----+----+------+-----+------+---------+-   -#
-#                           #    |    |      |     |      |         |     #
-#                           #    |    |      |     |Sig. 2|         |     #
-#                           #  F |Sig.|   t  |  df |tailed|Mean Diff|     #
-#===========================#====#====#======#=====#======#=========#=   =#
-#height      Equal variances# .97| .33| 14.02|37.00|   .00|   185.72| ... #
-#          Unequal variances#    |    | 15.15|32.71|   .00|   185.72| ... #
-#temperature Equal variances# .31| .58| -1.31|38.00|   .20|     -.75| ... #
-#          Unequal variances#    |    | -1.33|37.99|   .19|     -.75| ... #
-#===========================#====#====#======#=====#======#=========#=   =#
+                                Group Statistics
++-------------------------------------------+--+-------+-------------+--------+
+|                                           |  |       |     Std.    |  S.E.  |
+|                                     Group | N|  Mean |  Deviation  |  Mean  |
++-------------------------------------------+--+-------+-------------+--------+
+|Height in millimeters                Male  |22|1796.49|        49.71|   10.60|
+|                                     Female|17|1610.77|        25.43|    6.17|
++-------------------------------------------+--+-------+-------------+--------+
+|Internal body temperature in degrees Male  |22|  36.68|         1.95|     .42|
+|Celcius                              Female|18|  37.43|         1.61|     .38|
++-------------------------------------------+--+-------+-------------+--------+
+
+                          Independent Samples Test
++---------------------+-----------------------------------------------------
+|                     | Levene's
+|                     | Test for
+|                     | Equality
+|                     |    of
+|                     | Variances               T-Test for Equality of Means
+|                     +----+-----+-----+-----+-------+----------+----------+
+|                     |    |     |     |     |       |          |          |
+|                     |    |     |     |     |       |          |          |
+|                     |    |     |     |     |       |          |          |
+|                     |    |     |     |     |       |          |          |
+|                     |    |     |     |     |  Sig. |          |          |
+|                     |    |     |     |     |  (2-  |   Mean   |Std. Error|
+|                     |  F | Sig.|  t  |  df |tailed)|Difference|Difference|
++---------------------+----+-----+-----+-----+-------+----------+----------+
+|Height in   Equal    | .97| .331|14.02|37.00|   .000|    185.72|     13.24|
+|millimeters variances|    |     |     |     |       |          |          |
+|            assumed  |    |     |     |     |       |          |          |
+|            Equal    |    |     |15.15|32.71|   .000|    185.72|     12.26|
+|            variances|    |     |     |     |       |          |          |
+|            not      |    |     |     |     |       |          |          |
+|            assumed  |    |     |     |     |       |          |          |
++---------------------+----+-----+-----+-----+-------+----------+----------+
+|Internal    Equal    | .31| .581|-1.31|38.00|   .198|      -.75|       .57|
+|body        variances|    |     |     |     |       |          |          |
+|temperature assumed  |    |     |     |     |       |          |          |
+|in degrees  Equal    |    |     |-1.33|37.99|   .190|      -.75|       .56|
+|Celcius     variances|    |     |     |     |       |          |          |
+|            not      |    |     |     |     |       |          |          |
+|            assumed  |    |     |     |     |       |          |          |
++---------------------+----+-----+-----+-----+-------+----------+----------+
+
++---------------------+-------------+
+|                     |             |
+|                     |             |
+|                     |             |
+|                     |             |
+|                     |             |
+|                     +-------------+
+|                     |     95%     |
+|                     |  Confidence |
+|                     | Interval of |
+|                     |     the     |
+|                     |  Difference |
+|                     +------+------+
+|                     | Lower| Upper|
++---------------------+------+------+
+|Height in   Equal    |158.88|212.55|
+|millimeters variances|      |      |
+|            assumed  |      |      |
+|            Equal    |160.76|210.67|
+|            variances|      |      |
+|            not      |      |      |
+|            assumed  |      |      |
++---------------------+------+------+
+|Internal    Equal    | -1.91|   .41|
+|body        variances|      |      |
+|temperature assumed  |      |      |
+|in degrees  Equal    | -1.89|   .39|
+|Celcius     variances|      |      |
+|            not      |      |      |
+|            assumed  |      |      |
++---------------------+------+------+
 @end example                                                          
 @end cartouche
 @caption{The @cmd{T-TEST} command tests for differences of means. 
@@ -816,44 +899,33 @@ identifies the potential linear relationship. @xref{REGRESSION}.
 @prompt{PSPP>} regression /variables = mtbf duty_cycle /dependent = mttr.
 @prompt{PSPP>} regression /variables = mtbf /dependent = mttr.
 @end example
-Output:
+Output (excerpts):
 @example
-1.3(1) REGRESSION.  Coefficients
-#=============================================#====#==========#====#=====#
-#                                             #  B |Std. Error|Beta|  t  #
-#========#====================================#====#==========#====#=====#
-#        |(Constant)                          #9.81|      1.50| .00| 6.54#
-#        |Mean time between failures (months) #3.10|       .10| .99|32.43#
-#        |Ratio of working to non-working time#1.09|      1.78| .02|  .61#
-#        |                                    #    |          |    |     #
-#========#====================================#====#==========#====#=====#
+                  Coefficients (Mean time to repair (hours) )
++------------------------+-----------------------------------------+-----+----+
+|                        |    Unstandardized        Standardized   |     |    |
+|                        |     Coefficients         Coefficients   |     |    |
+|                        +---------+-----------+-------------------+     |    |
+|                        |    B    | Std. Error|        Beta       |  t  |Sig.|
++------------------------+---------+-----------+-------------------+-----+----+
+|(Constant)              |     9.81|       1.50|                .00| 6.54|.000|
+|Mean time between       |     3.10|        .10|                .99|32.43|.000|
+|failures (months)       |         |           |                   |     |    |
+|Ratio of working to non-|     1.09|       1.78|                .02|  .61|.552|
+|working time            |         |           |                   |     |    |
++------------------------+---------+-----------+-------------------+-----+----+
 
-1.3(2) REGRESSION.  Coefficients
-#=============================================#============#
-#                                             #Significance#
-#========#====================================#============#
-#        |(Constant)                          #         .10#
-#        |Mean time between failures (months) #         .00#
-#        |Ratio of working to non-working time#         .55#
-#        |                                    #            #
-#========#====================================#============#
-2.3(1) REGRESSION.  Coefficients
-#============================================#=====#==========#====#=====#
-#                                            #  B  |Std. Error|Beta|  t  #
-#========#===================================#=====#==========#====#=====#
-#        |(Constant)                         #10.50|       .96| .00|10.96#
-#        |Mean time between failures (months)# 3.11|       .09| .99|33.39#
-#        |                                   #     |          |    |     #
-#========#===================================#=====#==========#====#=====#
-
-2.3(2) REGRESSION.  Coefficients
-#============================================#============#
-#                                            #Significance#
-#========#===================================#============#
-#        |(Constant)                         #         .06#
-#        |Mean time between failures (months)#         .00#
-#        |                                   #            #
-#========#===================================#============#
+                  Coefficients (Mean time to repair (hours) )
++-----------------------+------------------------------------------+-----+----+
+|                       |    Unstandardized         Standardized   |     |    |
+|                       |     Coefficients          Coefficients   |     |    |
+|                       +---------+------------+-------------------+     |    |
+|                       |    B    | Std. Error |        Beta       |  t  |Sig.|
++-----------------------+---------+------------+-------------------+-----+----+
+|(Constant)             |    10.50|         .96|                .00|10.96|.000|
+|Mean time between      |     3.11|         .09|                .99|33.39|.000|
+|failures (months)      |         |            |                   |     |    |
++-----------------------+---------+------------+-------------------+-----+----+
 @end example
 @end cartouche
 @caption{Linear regression analysis to find a predictor for

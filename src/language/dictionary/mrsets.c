@@ -32,11 +32,12 @@
 #include "libpspp/str.h"
 #include "libpspp/stringi-map.h"
 #include "libpspp/stringi-set.h"
-#include "output/tab.h"
+#include "output/pivot-table.h"
 
 #include "gl/xalloc.h"
 
 #include "gettext.h"
+#define N_(msgid) msgid
 #define _(msgid) gettext (msgid)
 
 static bool parse_group (struct lexer *, struct dictionary *, enum mrset_type);
@@ -521,16 +522,11 @@ parse_delete (struct lexer *lexer, struct dictionary *dict)
 static bool
 parse_display (struct lexer *lexer, struct dictionary *dict)
 {
-  struct string details, var_names;
   struct stringi_set mrset_names_set;
-  char **mrset_names;
-  struct tab_table *table;
-  size_t i, n;
-
   if (!parse_mrset_names (lexer, dict, &mrset_names_set))
     return false;
 
-  n = stringi_set_count (&mrset_names_set);
+  size_t n = stringi_set_count (&mrset_names_set);
   if (n == 0)
     {
       if (dict_get_n_mrsets (dict) == 0)
@@ -540,71 +536,53 @@ parse_display (struct lexer *lexer, struct dictionary *dict)
       return true;
     }
 
-  table = tab_create (3, n + 1);
-  tab_headers (table, 0, 0, 1, 0);
-  tab_box (table, TAL_1, TAL_1, TAL_1, TAL_1, 0, 0, 2, n);
-  tab_hline (table, TAL_2, 0, 2, 1);
-  tab_title (table, "%s", _("Multiple Response Sets"));
-  tab_text (table, 0, 0, TAB_EMPH | TAB_LEFT, _("Name"));
-  tab_text (table, 1, 0, TAB_EMPH | TAB_LEFT, _("Variables"));
-  tab_text (table, 2, 0, TAB_EMPH | TAB_LEFT, _("Details"));
+  struct pivot_table *table = pivot_table_create (
+    N_("Multiple Response Sets"));
 
-  ds_init_empty (&details);
-  ds_init_empty (&var_names);
-  mrset_names = stringi_set_get_sorted_array (&mrset_names_set);
-  for (i = 0; i < n; i++)
+  pivot_dimension_create (
+    table, PIVOT_AXIS_COLUMN, N_("Attributes"),
+    N_("Label"), N_("Encoding"), N_("Counted Value"), N_("Member Variables"));
+
+  struct pivot_dimension *mrsets = pivot_dimension_create (
+    table, PIVOT_AXIS_ROW, N_("Name"));
+  mrsets->root->show_label = true;
+
+  char **mrset_names = stringi_set_get_sorted_array (&mrset_names_set);
+  for (size_t i = 0; i < n; i++)
     {
       const struct mrset *mrset = dict_lookup_mrset (dict, mrset_names[i]);
-      const int row = i + 1;
-      size_t j;
 
-      /* Details. */
-      ds_clear (&details);
-      ds_put_format (&details, "%s\n", (mrset->type == MRSET_MD
-                                        ? _("Multiple dichotomy set")
-                                        : _("Multiple category set")));
+      int row = pivot_category_create_leaf (
+        mrsets->root, pivot_value_new_user_text (mrset->name, -1));
+
       if (mrset->label != NULL)
-        ds_put_format (&details, "%s: %s\n", _("Label"), mrset->label);
+        pivot_table_put2 (table, 0, row,
+                          pivot_value_new_user_text (mrset->label, -1));
+
+      pivot_table_put2 (table, 1, row,
+                        pivot_value_new_text (mrset->type == MRSET_MD
+                                              ? _("Dichotomies")
+                                              : _("Categories")));
+
       if (mrset->type == MRSET_MD)
-        {
-          if (mrset->label != NULL || mrset->label_from_var_label)
-            ds_put_format (&details, "%s: %s\n", _("Label source"),
-                           (mrset->label_from_var_label
-                            ? _("First variable label among variables")
-                            : _("Provided by user")));
-          ds_put_format (&details, "%s: ", _("Counted value"));
-          if (mrset->width == 0)
-            ds_put_format (&details, "%.0f\n", mrset->counted.f);
-          else
-            {
-              const uint8_t *raw = value_str (&mrset->counted, mrset->width);
-              char *utf8 = recode_string ("UTF-8", dict_get_encoding (dict),
-                                          CHAR_CAST (const char *, raw),
-                                          mrset->width);
-              ds_put_format (&details, "`%s'\n", utf8);
-              free (utf8);
-            }
-          ds_put_format (&details, "%s: %s\n", _("Category label source"),
-                         (mrset->cat_source == MRSET_VARLABELS
-                          ? _("Variable labels")
-                          : _("Value labels of counted value")));
-        }
+        pivot_table_put2 (table, 2, row,
+                          pivot_value_new_value (
+                            &mrset->counted, mrset->width,
+                            &F_8_0, dict_get_encoding (dict)));
 
       /* Variable names. */
-      ds_clear (&var_names);
-      for (j = 0; j < mrset->n_vars; j++)
+      struct string var_names = DS_EMPTY_INITIALIZER;
+      for (size_t j = 0; j < mrset->n_vars; j++)
         ds_put_format (&var_names, "%s\n", var_get_name (mrset->vars[j]));
-
-      tab_text (table, 0, row, TAB_LEFT, mrset_names[i]);
-      tab_text (table, 1, row, TAB_LEFT, ds_cstr (&var_names));
-      tab_text (table, 2, row, TAB_LEFT, ds_cstr (&details));
+      ds_chomp_byte (&var_names, '\n');
+      pivot_table_put2 (table, 3, row,
+                        pivot_value_new_user_text_nocopy (
+                          ds_steal_cstr (&var_names)));
     }
   free (mrset_names);
-  ds_destroy (&var_names);
-  ds_destroy (&details);
   stringi_set_destroy (&mrset_names_set);
 
-  tab_submit (table);
+  pivot_table_submit (table);
 
   return true;
 }

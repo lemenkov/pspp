@@ -105,7 +105,8 @@ LIST.
 ])
 AT_CHECK([pspp -o pspp.csv pc+-file.sps])
 AT_CHECK([cat pspp.csv], [0], [dnl
-File label: PSPP synthetic test file
+Table: File Label
+Label,PSPP synthetic test file
 
 Table: Variables
 Name,Position,Label,Measurement Level,Role,Width,Alignment,Print Format,Write Format,Missing Values
@@ -122,7 +123,7 @@ STR6,10,Another string variable's label,Nominal,Input,11,Left,A11,A11,
 
 Table: Data List
 NUM1,NUM2,NUM3,NUM4,STR1,STR2,STR3,STR4,STR5,STR6
-0,1,2,.,abcdefgh,ijkl,mnopq,r,stuvwxyzAB ,CDEFGHIJKLM
+0,1,2,.,abcdefgh,ijkl,mnopq,r,stuvwxyzAB,CDEFGHIJKLM
 ])
 AT_CLEANUP
 
@@ -217,7 +218,8 @@ LIST.
 ])
 AT_CHECK([pspp -o pspp.csv pc+-file.sps])
 AT_CHECK([cat pspp.csv], [0], [dnl
-File label: PSPP synthetic test file
+Table: File Label
+Label,PSPP synthetic test file
 
 Table: Variables
 Name,Position,Label,Measurement Level,Role,Width,Alignment,Print Format,Write Format,Missing Values
@@ -236,7 +238,7 @@ STR7,12,,Nominal,Input,7,Left,A7,A7,
 STR8,13,,Nominal,Input,8,Left,A8,A8,
 
 Table: Value Labels
-Variable,Value,Label
+Variable Value,,Label
 NUM1,1,one
 NUM2,2,two
 ,3,three
@@ -330,7 +332,8 @@ LIST.
 ])
 AT_CHECK([pspp -o pspp.csv pc+-file.sps])
 AT_CHECK([cat pspp.csv], [0], [dnl
-File label: PSPP synthetic test file
+Table: File Label
+Label,PSPP synthetic test file
 
 Table: Variables
 Name,Position,Label,Measurement Level,Role,Width,Alignment,Print Format,Write Format,Missing Values
@@ -342,7 +345,7 @@ STR15,5,,Nominal,Input,15,Left,A15,A15,
 
 Table: Data List
 NUM1,NUM2,STR4,STR8,STR15
--5,150,abcd,efghj   ,efghijklABCDEFG
+-5,150,abcd,efghj,efghijklABCDEFG
 1000,.,PQRS,TUVWXYZa,bcdefghijklmnop
 ])
 AT_CLEANUP
@@ -395,17 +398,18 @@ AT_DATA([pc+-file.sps], [dnl
 SYSFILE INFO FILE='pc+-file.sav' ENCODING='us-ascii'.
 ])
 AT_CHECK([pspp -O format=csv pc+-file.sps], [0], [dnl
-File:,pc+-file.sav
-Label:,PSPP synthetic test file
-Created:,11/28/14 15:11:00 by PCSPSS PSPP synthetic test product
-Integer Format:,Little Endian
-Real Format:,IEEE 754 LE.
-Variables:,4
-Cases:,1
-Type:,SPSS/PC+ System File
-Weight:,NUM3
-Compression:,None
-Encoding:,us-ascii
+Table: File Information
+File,pc+-file.sav
+Label,PSPP synthetic test file
+Created,11/28/14 15:11:00 by PCSPSS PSPP synthetic test product
+Integer Format,Little Endian
+Real Format,IEEE 754 LE.
+Variables,4
+Cases,1
+Type,SPSS/PC+ System File
+Weight,NUM3
+Compression,None
+Encoding,us-ascii
 
 Table: Variables
 Name,Position,Label,Measurement Level,Role,Width,Alignment,Print Format,Write Format,Missing Values
@@ -474,7 +478,8 @@ AT_CHECK([pspp -O format=csv pc+-file.sps], [0], [stdout], [])
 AT_CHECK([sed 's/default encoding.*For/default encoding.  For/' stdout], [0], [dnl
 "warning: `pc+-file.sav': Using default encoding.  For best results, specify an encoding explicitly.  Use SYSFILE INFO with ENCODING=""DETECT"" to analyze the possible encodings."
 
-File label: PSPP synthetic test file
+Table: File Label
+Label,PSPP synthetic test file
 
 Table: Variables
 Name,Position,Label,Measurement Level,Role,Width,Alignment,Print Format,Write Format,Missing Values
@@ -487,17 +492,18 @@ Table: Data List
 NUM1,NUM2,NUM3,NUM4
 2,3,4,5
 
-File:,pc+-file.sav
-Label:,PSPP synthetic test file
-Created:,11/28/14 15:11:00 by PCSPSS PSPP synthetic test product
-Integer Format:,Little Endian
-Real Format:,IEEE 754 LE.
-Variables:,4
-Cases:,1
-Type:,SPSS/PC+ System File
-Weight:,Not weighted.
-Compression:,None
-Encoding:,us-ascii
+Table: File Information
+File,pc+-file.sav
+Label,PSPP synthetic test file
+Created,11/28/14 15:11:00 by PCSPSS PSPP synthetic test product
+Integer Format,Little Endian
+Real Format,IEEE 754 LE.
+Variables,4
+Cases,1
+Type,SPSS/PC+ System File
+Weight,Not weighted
+Compression,None
+Encoding,us-ascii
 
 Table: Variables
 Name,Position,Label,Measurement Level,Role,Width,Alignment,Print Format,Write Format,Missing Values
@@ -1240,7 +1246,8 @@ DISPLAY DICTIONARY.
 LIST.
 ])
 AT_CHECK([pspp -O format=csv pc+-file.sps], [0], [dnl
-File label: PSPP synthetic test file
+Table: File Label
+Label,PSPP synthetic test file
 
 Table: Variables
 Name,Position,Label,Measurement Level,Role,Width,Alignment,Print Format,Write Format,Missing Values
@@ -1254,7 +1261,7 @@ warning: `pc+-file.sav' near offset 0x308: Possible compressed data corruption: 
 
 Table: Data List
 NUM1,NUM2,STR4,STR8,STR15
--5,150,abcd,efghj   ,efghijklABCDEFG
+-5,150,abcd,efghj,efghijklABCDEFG
 1000,.,PQRS,TUVWXYZa,bcdefghijklmnop
 ])
 AT_CLEANUP

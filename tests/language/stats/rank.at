@@ -35,11 +35,9 @@ LIST.
 ])
 AT_CHECK([pspp -o pspp.csv rank.sps])
 AT_CHECK([cat pspp.csv], [0], [dnl
-Variables Created By RANK
-
-
-
-x into Rx(RANK of x)
+Table: Variables Created by RANK
+Existing Variable,New Variable,Function
+x,Rx,RANK
 
 Table: Data List
 x,Rx
@@ -70,15 +68,11 @@ LIST.
 ])
 AT_CHECK([pspp -o pspp.csv rank.sps])
 AT_CHECK([cat pspp.csv], [0], [dnl
-Variables Created By RANK
-
-
-
-x into Rx(RANK of x)
-
-y into Ry(RANK of y)
-
-z into Rz(RANK of z)
+Table: Variables Created by RANK
+Existing Variable,New Variable,Function
+x,Rx,RANK
+y,Ry,RANK
+z,Rz,RANK
 
 Table: Data List
 x,y,z,Rx,Ry,Rz
@@ -117,21 +111,14 @@ LIST.
 ])
 AT_CHECK([pspp -o pspp.csv rank.sps])
 AT_CHECK([cat pspp.csv], [0], [dnl
-Variables Created By RANK
-
-
-
-a into Ra(RANK of a)
-
-b into Rb(RANK of b)
-
-a into RFR001(RFRACTION of a)
-
-b into RFR002(RFRACTION of b)
-
-a into count(N of a)
-
-b into Nb(N of b)
+Table: Variables Created by RANK
+Existing Variable,New Variable,Function
+a,Ra,RANK
+b,Rb,RANK
+a,RFR001,RFRACTION
+b,RFR002,RFRACTION
+a,count,N
+b,Nb,N
 
 Table: Variables
 Name,Position,Label,Measurement Level,Role,Width,Alignment,Print Format,Write Format,Missing Values
@@ -189,19 +176,13 @@ LIST.
 ])
 AT_CHECK([pspp -o pspp.csv rank.sps])
 AT_CHECK([cat pspp.csv], [0], [dnl
-Variables Created By RANK
-
-
-
-a into Sa(SAVAGE of a)
-
-a into Pa(PERCENT of a)
-
-a into PRO001(PROPORTION of a using BLOM)
-
-a into Na(NTILES of a)
-
-a into NOR001(NORMAL of a using BLOM)
+Table: Variables Created by RANK
+Existing Variable,New Variable,Function,Fraction
+a,Sa,SAVAGE,
+a,Pa,PERCENT,
+a,PRO001,PROPORTION,BLOM
+a,Na,NTILES,
+a,NOR001,NORMAL,BLOM
 
 Table: Data List
 a,b,Sa,Pa,PRO001,Na,NOR001
@@ -268,21 +249,15 @@ LIST.
 ])
 AT_CHECK([pspp -o pspp.csv rank.sps])
 AT_CHECK([cat pspp.csv], [0], [dnl
-Variables Created By RANK
+Table: Variables Created by RANK
+Existing Variable,New Variable,Function,Fraction,Grouping Variables
+a,Ra,RANK,,g2 g1
+a,Na,NORMAL,RANKIT,g2 g1
 
-
-
-a into Ra(RANK of a BY g2 g1)
-
-a into Na(NORMAL of a using RANKIT BY g2 g1)
-
-Variables Created By RANK
-
-
-
-a into RAN001(RANK of a BY g2)
-
-a into NOR001(NORMAL of a using RANKIT BY g2)
+Table: Variables Created by RANK
+Existing Variable,New Variable,Function,Fraction,Grouping Variables
+a,RAN001,RANK,,g2
+a,NOR001,NORMAL,RANKIT,g2
 
 Table: Data List
 a,g1,g2,Ra,Na,RAN001,NOR001
@@ -334,13 +309,10 @@ LIST.
 ])
 AT_CHECK([pspp -o pspp.csv rank.sps])
 AT_CHECK([cat pspp.csv], [0], [dnl
-Variables Created By RANK
-
-
-
-a into Pa(PROPORTION of a using TUKEY)
-
-a into Sa(SAVAGE of a)
+Table: Variables Created by RANK
+Existing Variable,New Variable,Function,Fraction
+a,Pa,PROPORTION,TUKEY
+a,Sa,SAVAGE,
 
 Table: Data List
 a,w,Pa,Sa
@@ -395,29 +367,21 @@ LIST.
 ])
 AT_CHECK([pspp -o pspp.csv rank.sps])
 AT_CHECK([cat pspp.csv], [0], [dnl
-Variables Created By RANK
+Table: Variables Created by RANK
+Existing Variable,New Variable,Function
+x,xl,RANK
 
+Table: Variables Created by RANK
+Existing Variable,New Variable,Function
+x,xh,RANK
 
+Table: Variables Created by RANK
+Existing Variable,New Variable,Function
+x,xc,RANK
 
-x into xl(RANK of x)
-
-Variables Created By RANK
-
-
-
-x into xh(RANK of x)
-
-Variables Created By RANK
-
-
-
-x into xc(RANK of x)
-
-Variables Created By RANK
-
-
-
-x into Nx(NORMAL of x using VW)
+Table: Variables Created by RANK
+Existing Variable,New Variable,Function,Fraction
+x,Nx,NORMAL,VW
 
 Table: Data List
 x,w,xl,xh,xc,Nx
@@ -460,17 +424,13 @@ RANK age /RANK INTO Rf.
 LIST.
 ])
 AT_CHECK([pspp -O format=csv rank.sps], [0], [dnl
-Variables Created By RANK
+Table: Variables Created by RANK
+Existing Variable,New Variable,Function
+age,Rm,RANK
 
-
-
-age into Rm(RANK of age)
-
-Variables Created By RANK
-
-
-
-age into Rf(RANK of age)
+Table: Variables Created by RANK
+Existing Variable,New Variable,Function
+age,Rf,RANK
 
 Table: Data List
 age,gender,Rm,Rf
@@ -511,11 +471,9 @@ DISPLAY DICTIONARY.
 ])
 AT_CHECK([pspp -o pspp.csv rank.sps])
 AT_CHECK([cat pspp.csv], [0], [dnl
-Variables Created By RANK
-
-
-
-foo into RAN001(RANK of foo)
+Table: Variables Created by RANK
+Existing Variable,New Variable,Function
+foo,RAN001,RANK
 
 Table: Variables
 Name,Position,Label,Measurement Level,Role,Width,Alignment,Print Format,Write Format,Missing Values
@@ -560,11 +518,9 @@ AT_CHECK([pspp -O format=csv rank.sps], [0], [dnl
 
 "rank.sps:9: warning: Missing value(s) for all variables from rx onward.  These will be filled with the system-missing value or blanks, as appropriate."
 
-Variables Created By RANK
-
-
-
-x into RNKRA01(RANK of x)
+Table: Variables Created by RANK
+Existing Variable,New Variable,Function
+x,RNKRA01,RANK
 
 Table: Data List
 x,rx,RNKRA01
@@ -597,11 +553,9 @@ DEBUG XFORM FAIL.
 RANK x.
 ])
 AT_CHECK([pspp -O format=csv --testing-mode rank.sps], [1], [dnl
-Variables Created By RANK
-
-
-
-x into Rx(RANK of x)
+Table: Variables Created by RANK
+Existing Variable,New Variable,Function
+x,Rx,RANK
 
 rank.sps:14: error: RANK: DEBUG XFORM FAIL transformation executed
 ])

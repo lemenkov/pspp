@@ -41,8 +41,7 @@
 #include "libpspp/pool.h"
 #include "libpspp/string-set.h"
 #include "libpspp/taint.h"
-
-#include "output/tab.h"
+#include "output/pivot-table.h"
 
 #include "gettext.h"
 #define _(msgid) gettext (msgid)
@@ -650,7 +649,6 @@ cmd_rank (struct lexer *lexer, struct dataset *ds)
   struct string_set new_names;
   struct rank rank;
   struct rank_spec *rs;
-  int i;
 
   subcase_init_empty (&rank.sc);
 
@@ -802,11 +800,9 @@ cmd_rank (struct lexer *lexer, struct dataset *ds)
      created with INTO. */
   for (rs = rank.rs; rs < &rank.rs[rank.n_rs]; rs++)
     {
-      int v;
-
       rs->dest_labels = pool_calloc (rank.pool, rank.n_vars,
                                      sizeof *rs->dest_labels);
-      for ( v = 0 ; v < rank.n_vars ;  v ++ )
+      for (int v = 0 ; v < rank.n_vars ;  v ++ )
         {
           const char **dst_name = &rs->dest_names[v];
           if ( *dst_name == NULL )
@@ -825,72 +821,54 @@ cmd_rank (struct lexer *lexer, struct dataset *ds)
 
   if ( rank.print )
     {
-      int v;
+      struct pivot_table *table = pivot_table_create (
+        N_("Variables Created by RANK"));
+      table->omit_empty = true;
 
-      tab_output_text_format (0, _("Variables Created By %s"), "RANK");
-      tab_output_text (0, "");
+      pivot_dimension_create (table, PIVOT_AXIS_COLUMN, N_("New Variable"),
+                              N_("New Variable"), N_("Function"),
+                              N_("Fraction"), N_("Grouping Variables"));
 
-      for (i = 0 ; i <  rank.n_rs ; ++i )
+      struct pivot_dimension *variables = pivot_dimension_create (
+        table, PIVOT_AXIS_ROW, N_("Existing Variable"),
+        N_("Existing Variable"));
+      variables->root->show_label = true;
+
+      for (size_t i = 0 ; i <  rank.n_rs ; ++i )
 	{
-	  for ( v = 0 ; v < rank.n_vars ;  v ++ )
+	  for (size_t v = 0 ; v < rank.n_vars ;  v ++ )
 	    {
-	      if ( rank.n_group_vars > 0 )
-		{
-		  struct string varlist;
-		  int g;
+              int row_idx = pivot_category_create_leaf (
+                variables->root, pivot_value_new_variable (rank.vars[v]));
 
-		  ds_init_empty (&varlist);
-		  for ( g = 0 ; g < rank.n_group_vars ; ++g )
-		    {
-		      ds_put_cstr (&varlist, var_get_name (rank.group_vars[g]));
+              struct string group_vars = DS_EMPTY_INITIALIZER;
+              for (int g = 0 ; g < rank.n_group_vars ; ++g )
+                {
+                  if (g)
+                    ds_put_byte (&group_vars, ' ');
+                  ds_put_cstr (&group_vars, var_get_name (rank.group_vars[g]));
+                }
 
-		      if ( g < rank.n_group_vars - 1)
-			ds_put_cstr (&varlist, " ");
-		    }
-
-		  if ( rank.rs[i].rfunc == NORMAL ||
-		       rank.rs[i].rfunc == PROPORTION )
-		    tab_output_text_format (0,
-                                            _("%s into %s(%s of %s using %s BY %s)"),
-                                            var_get_name (rank.vars[v]),
-                                            rank.rs[i].dest_names[v],
-                                            function_name[rank.rs[i].rfunc],
-                                            var_get_name (rank.vars[v]),
-                                            fraction_name (&rank),
-                                            ds_cstr (&varlist));
-
-		  else
-		    tab_output_text_format (0,
-                                            _("%s into %s(%s of %s BY %s)"),
-                                            var_get_name (rank.vars[v]),
-                                            rank.rs[i].dest_names[v],
-                                            function_name[rank.rs[i].rfunc],
-                                            var_get_name (rank.vars[v]),
-                                            ds_cstr (&varlist));
-		  ds_destroy (&varlist);
-		}
-	      else
-		{
-		  if ( rank.rs[i].rfunc == NORMAL ||
-		       rank.rs[i].rfunc == PROPORTION )
-		    tab_output_text_format (0,
-                                            _("%s into %s(%s of %s using %s)"),
-                                            var_get_name (rank.vars[v]),
-                                            rank.rs[i].dest_names[v],
-                                            function_name[rank.rs[i].rfunc],
-                                            var_get_name (rank.vars[v]),
-                                            fraction_name (&rank));
-
-		  else
-		    tab_output_text_format (0,
-                                            _("%s into %s(%s of %s)"),
-                                            var_get_name (rank.vars[v]),
-                                            rank.rs[i].dest_names[v],
-                                            function_name[rank.rs[i].rfunc],
-                                            var_get_name (rank.vars[v]));
-		}
+              enum rank_func rfunc = rank.rs[i].rfunc;
+              bool has_fraction = rfunc == NORMAL || rfunc == PROPORTION;
+              const char *entries[] =
+                {
+                  rank.rs[i].dest_names[v],
+                  function_name[rank.rs[i].rfunc],
+                  has_fraction ? fraction_name (&rank) : NULL,
+                  rank.n_group_vars ? ds_cstr (&group_vars) : NULL,
+                };
+              for (size_t j = 0; j < sizeof entries / sizeof *entries; j++)
+                {
+                  const char *entry = entries[j];
+                  if (entry)
+                    pivot_table_put2 (table, j, row_idx,
+                                      pivot_value_new_user_text (entry, -1));
+                }
 	    }
 	}
+
+      pivot_table_submit (table);
     }
 
   /* Do the ranking */

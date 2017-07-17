@@ -44,11 +44,11 @@ VAR003,3,F8.2,F8.2,
 
 Table: Data List
 VAR001,VAR002,VAR003
-.00,fred    ,20.00
-1.00,11      ,21.00
-2.00,twelve  ,22.00
-3.00,13      ,23.00
-4.00,14      ,24.00
+.00,fred,20.00
+1.00,11,21.00
+2.00,twelve,22.00
+3.00,13,23.00
+4.00,14,24.00
 ])
 AT_CLEANUP
 
@@ -69,11 +69,11 @@ VAR001,3,F8.2,F8.2,
 
 Table: Data List
 V1,V2,VAR001
-.00,fred    ,20.00
-1.00,11      ,21.00
-2.00,twelve  ,22.00
-3.00,13      ,23.00
-4.00,14      ,24.00
+.00,fred,20.00
+1.00,11,21.00
+2.00,twelve,22.00
+3.00,13,23.00
+4.00,14,24.00
 ])
 AT_CLEANUP
 
@@ -95,10 +95,10 @@ warning: Cannot convert the value in the spreadsheet cell C4 to format (F8.2): F
 
 Table: Data List
 name,id,height
-fred    ,.00,23.40
-bert    ,1.00,.56
-charlie ,2.00,.  @&t@
-dick    ,3.00,-34.09
+fred,.00,23.40
+bert,1.00,.56
+charlie,2.00,.  @&t@
+dick,3.00,-34.09
 ])
 AT_CLEANUP
 
@@ -309,9 +309,9 @@ LIST.
 AT_CHECK([pspp -O format=csv gnum.sps], [0], [dnl
 Table: Data List
 VAR001,VAR002,VAR003
-3       ,4.00,5.00
-6       ,7.00,8.00
-9       ,10.00,11.00
+3,4.00,5.00
+6,7.00,8.00
+9,10.00,11.00
 ])
 
 

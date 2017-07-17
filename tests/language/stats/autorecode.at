@@ -95,13 +95,13 @@ display dictionary.
 AT_CHECK([pspp -O format=csv ar.sps], [0],
   [Table: Data List
 s,x,new
-widgets         ,1.00,4.00
-thingummies     ,2.00,3.00
-oojars          ,3.00,1.00
-widgets         ,4.00,4.00
-oojars          ,5.00,1.00
-thingummies     ,6.00,3.00
-oojimiflips     ,7.00,2.00
+widgets,1.00,4.00
+thingummies,2.00,3.00
+oojars,3.00,1.00
+widgets,4.00,4.00
+oojars,5.00,1.00
+thingummies,6.00,3.00
+oojimiflips,7.00,2.00
 
 Table: Variables
 Name,Position,Label,Measurement Level,Role,Width,Alignment,Print Format,Write Format,Missing Values
@@ -110,7 +110,7 @@ x,2,,Scale,Input,8,Right,F8.2,F8.2,
 new,3,,Scale,Input,8,Right,F8.2,F8.2,
 
 Table: Value Labels
-Variable,Value,Label
+Variable Value,,Label
 new,1.00,oojars
 ,2.00,oojimiflips
 ,3.00,thingummies
@@ -210,10 +210,10 @@ AT_CHECK([pspp -O format=csv ar-strings.sps], [0],
 [dnl
 Table: Data List
 a,b,x,y
-one         ,nine  ,5.00,3.00
-two         ,ten   ,8.00,6.00
-three       ,eleven,7.00,1.00
-four        ,nought,2.00,4.00
+one,nine,5.00,3.00
+two,ten,8.00,6.00
+three,eleven,7.00,1.00
+four,nought,2.00,4.00
 ])
 
 AT_CLEANUP

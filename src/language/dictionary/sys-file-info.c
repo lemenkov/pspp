@@ -42,7 +42,7 @@
 #include "libpspp/misc.h"
 #include "libpspp/pool.h"
 #include "libpspp/string-array.h"
-#include "output/tab.h"
+#include "output/pivot-table.h"
 #include "output/text-item.h"
 #include "output/table-item.h"
 
@@ -89,6 +89,16 @@ static void report_encodings (const struct file_handle *, struct pool *,
                               char **titles, bool *ids,
                               char **strings, size_t n_strings);
 
+static void
+add_row (struct pivot_table *table, const char *attribute,
+         struct pivot_value *value)
+{
+  int row = pivot_category_create_leaf (table->dimensions[0]->root,
+                                        pivot_value_new_text (attribute));
+  if (value)
+    pivot_table_put1 (table, row, value);
+}
+
 /* SYSFILE INFO utility. */
 int
 cmd_sysfile_info (struct lexer *lexer, struct dataset *ds UNUSED)
@@ -96,11 +106,9 @@ cmd_sysfile_info (struct lexer *lexer, struct dataset *ds UNUSED)
   struct any_reader *any_reader;
   struct file_handle *h;
   struct dictionary *d;
-  struct tab_table *t;
   struct casereader *reader;
   struct any_read_info info;
   char *encoding;
-  int r;
 
   h = NULL;
   encoding = NULL;
@@ -171,76 +179,67 @@ cmd_sysfile_info (struct lexer *lexer, struct dataset *ds UNUSED)
     goto error;
   casereader_destroy (reader);
 
-  t = tab_create (2, 11 + (info.product_ext != NULL));
-  r = 0;
-  
-  tab_text (t, 0, r, TAB_LEFT, _("File:"));
-  tab_text (t, 1, r++, TAB_LEFT, fh_get_file_name (h));
+  struct pivot_table *table = pivot_table_create (N_("File Information"));
+  pivot_dimension_create (table, PIVOT_AXIS_ROW, N_("Attribute"));
 
-  tab_text (t, 0, r, TAB_LEFT, _("Label:"));
-  {
-    const char *label = dict_get_label (d);
-    if (label == NULL)
-      label = _("No label.");
-    tab_text (t, 1, r++, TAB_LEFT, label);
-  }
+  add_row (table, N_("File"),
+           pivot_value_new_user_text (fh_get_file_name (h), -1));
 
-  tab_text (t, 0, r, TAB_LEFT, _("Created:"));
-  tab_text_format (t, 1, r++, TAB_LEFT, "%s %s by %s",
-                   info.creation_date, info.creation_time, info.product);
+  const char *label = dict_get_label (d);
+  add_row (table, N_("Label"),
+           label ? pivot_value_new_user_text (label, -1) : NULL);
+
+  add_row (table, N_("Created"),
+           pivot_value_new_user_text_nocopy (
+             xasprintf ("%s %s by %s", info.creation_date,
+                        info.creation_time, info.product)));
 
   if (info.product_ext)
-    {
-      tab_text (t, 0, r, TAB_LEFT, _("Product:"));
-      tab_text (t, 1, r++, TAB_LEFT, info.product_ext);
-    }
+    add_row (table, N_("Product"),
+             pivot_value_new_user_text (info.product_ext, -1));
 
-  tab_text (t, 0, r, TAB_LEFT, _("Integer Format:"));
-  tab_text (t, 1, r++, TAB_LEFT,
-            info.integer_format == INTEGER_MSB_FIRST ? _("Big Endian")
-            : info.integer_format == INTEGER_LSB_FIRST ? _("Little Endian")
-            : _("Unknown"));
+  add_row (table, N_("Integer Format"),
+           pivot_value_new_text (
+             info.integer_format == INTEGER_MSB_FIRST ? N_("Big Endian")
+             : info.integer_format == INTEGER_LSB_FIRST ? N_("Little Endian")
+             : N_("Unknown")));
 
-  tab_text (t, 0, r, TAB_LEFT, _("Real Format:"));
-  tab_text (t, 1, r++, TAB_LEFT,
-            info.float_format == FLOAT_IEEE_DOUBLE_LE ? _("IEEE 754 LE.")
-            : info.float_format == FLOAT_IEEE_DOUBLE_BE ? _("IEEE 754 BE.")
-            : info.float_format == FLOAT_VAX_D ? _("VAX D.")
-            : info.float_format == FLOAT_VAX_G ? _("VAX G.")
-            : info.float_format == FLOAT_Z_LONG ? _("IBM 390 Hex Long.")
-            : _("Unknown"));
+  add_row (table, N_("Real Format"),
+           pivot_value_new_text (
+             info.float_format == FLOAT_IEEE_DOUBLE_LE ? N_("IEEE 754 LE.")
+             : info.float_format == FLOAT_IEEE_DOUBLE_BE ? N_("IEEE 754 BE.")
+             : info.float_format == FLOAT_VAX_D ? N_("VAX D.")
+             : info.float_format == FLOAT_VAX_G ? N_("VAX G.")
+             : info.float_format == FLOAT_Z_LONG ? N_("IBM 390 Hex Long.")
+             : N_("Unknown")));
 
-  tab_text (t, 0, r, TAB_LEFT, _("Variables:"));
-  tab_text_format (t, 1, r++, TAB_LEFT, "%zu", dict_get_var_cnt (d));
+  add_row (table, N_("Variables"),
+           pivot_value_new_integer (dict_get_var_cnt (d)));
 
-  tab_text (t, 0, r, TAB_LEFT, _("Cases:"));
-  if (info.case_cnt == -1)
-    tab_text (t, 1, r, TAB_LEFT, _("Unknown"));
-  else
-    tab_text_format (t, 1, r, TAB_LEFT, "%ld", (long int) info.case_cnt);
-  r++;
+  add_row (table, N_("Cases"),
+           (info.case_cnt == -1
+            ? pivot_value_new_text (N_("Unknown"))
+            : pivot_value_new_integer (info.case_cnt)));
 
-  tab_text (t, 0, r, TAB_LEFT, _("Type:"));
-  tab_text (t, 1, r++, TAB_LEFT, gettext (info.klass->name));
+  add_row (table, N_("Type"),
+           pivot_value_new_text (info.klass->name));
 
-  tab_text (t, 0, r, TAB_LEFT, _("Weight:"));
-  {
-    struct variable *weight_var = dict_get_weight (d);
-    tab_text (t, 1, r++, TAB_LEFT,
-              (weight_var != NULL
-               ? var_get_name (weight_var) : _("Not weighted.")));
-  }
+  struct variable *weight_var = dict_get_weight (d);
+  add_row (table, N_("Weight"),
+           (weight_var
+            ? pivot_value_new_variable (weight_var)
+            : pivot_value_new_text (N_("Not weighted"))));
 
-  tab_text (t, 0, r, TAB_LEFT, _("Compression:"));
-  tab_text_format (t, 1, r++, TAB_LEFT,
-                   info.compression == ANY_COMP_NONE ? _("None")
-                   : info.compression == ANY_COMP_SIMPLE ? "SAV"
-                   : "ZSAV");
+  add_row (table, N_("Compression"),
+           (info.compression == ANY_COMP_NONE
+            ? pivot_value_new_text (N_("None"))
+            : pivot_value_new_user_text (
+              info.compression == ANY_COMP_SIMPLE ? "SAV" : "ZSAV", -1)));
 
-  tab_text (t, 0, r, TAB_LEFT, _("Encoding:"));
-  tab_text (t, 1, r++, TAB_LEFT, dict_get_encoding (d));
+  add_row (table, N_("Encoding"),
+           pivot_value_new_user_text (dict_get_encoding (d), -1));
 
-  tab_submit (t);
+  pivot_table_submit (table);
 
   size_t n_vars = dict_get_var_cnt (d);
   const struct variable **vars = xnmalloc (n_vars, sizeof *vars);
@@ -288,12 +287,16 @@ cmd_display (struct lexer *lexer, struct dataset *ds)
     {
       if (!lex_force_match_id (lexer, "LABEL"))
 	return CMD_FAILURE;
-      if (dict_get_label (dataset_dict (ds)) == NULL)
-	tab_output_text (TAB_LEFT,
-			 _("The active dataset does not have a file label."));
-      else
-        tab_output_text_format (TAB_LEFT, _("File label: %s"),
-                                dict_get_label (dataset_dict (ds)));
+
+      const char *label = dict_get_label (dataset_dict (ds));
+
+      struct pivot_table *table = pivot_table_create (N_("File Label"));
+      pivot_dimension_create (table, PIVOT_AXIS_ROW, N_("Label"),
+                              N_("Label"));
+      pivot_table_put1 (table, 0,
+                        (label ? pivot_value_new_user_text (label, -1)
+                         : pivot_value_new_text (N_("(none)"))));
+      pivot_table_submit (table);
     }
   else
     {
@@ -391,36 +394,43 @@ cmd_display (struct lexer *lexer, struct dataset *ds)
 static void
 display_macros (void)
 {
-  tab_output_text (TAB_LEFT, _("Macros not supported."));
+  msg (SW, _("Macros not supported."));
 }
 
 static void
 display_documents (const struct dictionary *dict)
 {
-  const struct string_array *documents = dict_get_documents (dict);
+  struct pivot_table *table = pivot_table_create (N_("Documents"));
+  struct pivot_dimension *d = pivot_dimension_create (
+    table, PIVOT_AXIS_COLUMN, N_("Documents"), N_("Document"));
+  d->hide_all_labels = true;
 
-  if (string_array_is_empty (documents))
-    tab_output_text (TAB_LEFT, _("The active dataset dictionary does not "
-                                 "contain any documents."));
+  const struct string_array *documents = dict_get_documents (dict);
+  if (!documents->n)
+    pivot_table_put1 (table, 0, pivot_value_new_text (N_("(none)")));
   else
     {
-      size_t i;
-
-      tab_output_text (TAB_LEFT | TAT_TITLE,
-		       _("Documents in the active dataset:"));
-      for (i = 0; i < dict_get_document_line_cnt (dict); i++)
-        tab_output_text (TAB_LEFT | TAB_FIX, dict_get_document_line (dict, i));
+      struct string s = DS_EMPTY_INITIALIZER;
+      for (size_t i = 0; i < documents->n; i++)
+        {
+          if (i)
+            ds_put_byte (&s, '\n');
+          ds_put_cstr (&s, documents->strings[i]);
+        }
+      pivot_table_put1 (table, 0,
+                        pivot_value_new_user_text_nocopy (ds_steal_cstr (&s)));
     }
+
+  pivot_table_submit (table);
 }
 
 static void
 display_variables (const struct variable **vl, size_t n, int flags)
 {
-  int nc = count_one_bits (flags);
-  struct tab_table *t = tab_create (nc, n + 1);
-  tab_title (t, "%s", _("Variables"));
-  tab_headers (t, 0, 0, 1, 0);
-  tab_hline (t, TAL_2, 0, nc - 1, 1);
+  struct pivot_table *table = pivot_table_create (N_("Variables"));
+
+  struct pivot_dimension *attributes = pivot_dimension_create (
+    table, PIVOT_AXIS_COLUMN, N_("Attributes"));
 
   struct heading
     {
@@ -428,7 +438,6 @@ display_variables (const struct variable **vl, size_t n, int flags)
       const char *title;
     };
   static const struct heading headings[] = {
-    { DF_NAME, N_("Name") },
     { DF_POSITION, N_("Position") },
     { DF_LABEL, N_("Label") },
     { DF_MEASUREMENT_LEVEL, N_("Measurement Level") },
@@ -439,97 +448,121 @@ display_variables (const struct variable **vl, size_t n, int flags)
     { DF_WRITE_FORMAT, N_("Write Format") },
     { DF_MISSING_VALUES, N_("Missing Values") },
   };
-  for (size_t i = 0, x = 0; i < sizeof headings / sizeof *headings; i++)
+  for (size_t i = 0; i < sizeof headings / sizeof *headings; i++)
     if (flags & headings[i].flag)
-      tab_text (t, x++, 0, TAB_LEFT | TAT_TITLE, gettext (headings[i].title));
+      pivot_category_create_leaf (attributes->root,
+                                  pivot_value_new_text (headings[i].title));
+
+  struct pivot_dimension *names = pivot_dimension_create (
+    table, PIVOT_AXIS_ROW, N_("Name"));
+  names->root->show_label = true;
 
   for (size_t i = 0; i < n; i++)
     {
       const struct variable *v = vl[i];
-      size_t y = i + 1;
-      size_t x = 0;
-      if (flags & DF_NAME)
-        tab_text (t, x++, y, TAB_LEFT, var_get_name (v));
-      if (flags & DF_POSITION)
-        {
-          char s[INT_BUFSIZE_BOUND (size_t)];
 
-          sprintf (s, "%zu", var_get_dict_index (v) + 1);
-          tab_text (t, x++, y, TAB_LEFT, s);
-        }
+      struct pivot_value *name = pivot_value_new_variable (v);
+      name->variable.show = SETTINGS_VALUE_SHOW_VALUE;
+      int row = pivot_category_create_leaf (names->root, name);
+
+      int x = 0;
+      if (flags & DF_POSITION)
+        pivot_table_put2 (table, x++, row, pivot_value_new_integer (
+                            var_get_dict_index (v) + 1));
+
       if (flags & DF_LABEL)
         {
           const char *label = var_get_label (v);
           if (label)
-            tab_text (t, x, y, TAB_LEFT, label);
+            pivot_table_put2 (table, x, row,
+                              pivot_value_new_user_text (label, -1));
           x++;
         }
+
       if (flags & DF_MEASUREMENT_LEVEL)
-        tab_text (t, x++, y, TAB_LEFT,
-                  gettext (measure_to_string (var_get_measure (v))));
+        pivot_table_put2 (
+          table, x++, row,
+          pivot_value_new_text (measure_to_string (var_get_measure (v))));
+
       if (flags & DF_ROLE)
-        tab_text (t, x++, y, TAB_LEFT,
-                  gettext (var_role_to_string (var_get_role (v))));
+        pivot_table_put2 (
+          table, x++, row,
+          pivot_value_new_text (var_role_to_string (var_get_role (v))));
+
       if (flags & DF_WIDTH)
-        {
-          char s[INT_BUFSIZE_BOUND (int)];
-          sprintf (s, "%d", var_get_display_width (v));
-          tab_text (t, x++, y, TAB_RIGHT, s);
-        }
+        pivot_table_put2 (
+          table, x++, row,
+          pivot_value_new_integer (var_get_display_width (v)));
+
       if (flags & DF_ALIGNMENT)
-        tab_text (t, x++, y, TAB_LEFT,
-                  gettext (alignment_to_string (var_get_alignment (v))));
+        pivot_table_put2 (
+          table, x++, row,
+          pivot_value_new_text (alignment_to_string (
+                                  var_get_alignment (v))));
+
       if (flags & DF_PRINT_FORMAT)
         {
           const struct fmt_spec *print = var_get_print_format (v);
           char s[FMT_STRING_LEN_MAX + 1];
 
-          tab_text (t, x++, y, TAB_LEFT, fmt_to_string (print, s));
+          pivot_table_put2 (
+            table, x++, row,
+            pivot_value_new_user_text (fmt_to_string (print, s), -1));
         }
+
       if (flags & DF_WRITE_FORMAT)
         {
           const struct fmt_spec *write = var_get_write_format (v);
           char s[FMT_STRING_LEN_MAX + 1];
 
-          tab_text (t, x++, y, TAB_LEFT, fmt_to_string (write, s));
+          pivot_table_put2 (
+            table, x++, row,
+            pivot_value_new_user_text (fmt_to_string (write, s), -1));
         }
+
       if (flags & DF_MISSING_VALUES)
         {
-          const struct missing_values *mv = var_get_missing_values (v);
-
-          char *s = mv_to_string (mv, var_get_encoding (v));
+          char *s = mv_to_string (var_get_missing_values (v),
+                                  var_get_encoding (v));
           if (s)
-            {
-              tab_text (t, x, y, TAB_LEFT, s);
-              free (s);
-            }
-          x++;
+            pivot_table_put2 (
+              table, x, row,
+              pivot_value_new_user_text_nocopy (s));
 
-          assert (x == nc);
+          x++;
         }
     }
 
-  tab_submit (t);
+  pivot_table_submit (table);
+}
+
+static bool
+any_value_labels (const struct variable **vars, size_t n_vars)
+{
+  for (size_t i = 0; i < n_vars; i++)
+    if (val_labs_count (var_get_value_labels (vars[i])))
+      return true;
+  return false;
 }
 
 static void
 display_value_labels (const struct variable **vars, size_t n_vars)
 {
-  size_t n_value_labels = 0;
-  for (size_t i = 0; i < n_vars; i++)
-    n_value_labels += val_labs_count (var_get_value_labels (vars[i]));
-  if (!n_value_labels)
+  if (!any_value_labels (vars, n_vars))
     return;
 
-  struct tab_table *t = tab_create (3, n_value_labels + 1);
-  tab_title (t, "%s", _("Value Labels"));
-  tab_headers (t, 0, 0, 1, 0);
-  tab_hline (t, TAL_2, 0, 2, 1);
-  tab_text (t, 0, 0, TAB_LEFT | TAT_TITLE, _("Variable"));
-  tab_text (t, 1, 0, TAB_LEFT | TAT_TITLE, _("Value"));
-  tab_text (t, 2, 0, TAB_LEFT | TAT_TITLE, _("Label"));
+  struct pivot_table *table = pivot_table_create (N_("Value Labels"));
 
-  int y = 1;
+  pivot_dimension_create (table, PIVOT_AXIS_COLUMN,
+                          N_("Label"), N_("Label"));
+
+  struct pivot_dimension *values = pivot_dimension_create (
+    table, PIVOT_AXIS_ROW, N_("Variable Value"));
+  values->root->show_label = true;
+
+  struct pivot_footnote *missing_footnote = pivot_table_create_footnote (
+    table, pivot_value_new_text (N_("User-missing value")));
+
   for (size_t i = 0; i < n_vars; i++)
     {
       const struct val_labs *val_labs = var_get_value_labels (vars[i]);
@@ -537,21 +570,44 @@ display_value_labels (const struct variable **vars, size_t n_vars)
       if (!n_labels)
         continue;
 
-      tab_joint_text (t, 0, y, 0, y + (n_labels - 1), TAB_LEFT,
-                      var_get_name (vars[i]));
+      struct pivot_category *group = pivot_category_create_group__ (
+        values->root, pivot_value_new_variable (vars[i]));
 
       const struct val_lab **labels = val_labs_sorted (val_labs);
       for (size_t j = 0; j < n_labels; j++)
         {
           const struct val_lab *vl = labels[j];
 
-          tab_value (t, 1, y, TAB_NONE, &vl->value, vars[i], NULL);
-          tab_text (t, 2, y, TAB_LEFT, val_lab_get_escaped_label (vl));
-          y++;
+          struct pivot_value *value = pivot_value_new_var_value (
+            vars[i], &vl->value);
+          if (value->type == PIVOT_VALUE_NUMERIC)
+            value->numeric.show = SETTINGS_VALUE_SHOW_VALUE;
+          else
+            value->string.show = SETTINGS_VALUE_SHOW_VALUE;
+          if (var_is_value_missing (vars[i], &vl->value, MV_USER))
+            pivot_value_add_footnote (value, missing_footnote);
+          int row = pivot_category_create_leaf (group, value);
+
+          struct pivot_value *label = pivot_value_new_var_value (
+            vars[i], &vl->value);
+          char *escaped_label = xstrdup (val_lab_get_escaped_label (vl));
+          if (label->type == PIVOT_VALUE_NUMERIC)
+            {
+              free (label->numeric.value_label);
+              label->numeric.value_label = escaped_label;
+              label->numeric.show = SETTINGS_VALUE_SHOW_LABEL;
+            }
+          else
+            {
+              free (label->string.value_label);
+              label->string.value_label = escaped_label;
+              label->string.show = SETTINGS_VALUE_SHOW_LABEL;
+            }
+          pivot_table_put2 (table, 0, row, label);
         }
       free (labels);
     }
-  tab_submit (t);
+  pivot_table_submit (table);
 }
 
 static bool
@@ -575,15 +631,19 @@ count_attributes (const struct attrset *set, int flags)
   return n_attrs;
 }
 
-static int
-display_attrset (const char *name, const struct attrset *set, int flags,
-                 struct tab_table *t, int y)
+static void
+display_attrset (struct pivot_table *table, struct pivot_value *set_name,
+                 const struct attrset *set, int flags)
 {
   size_t n_total = count_attributes (set, flags);
   if (!n_total)
-    return y;
+    {
+      pivot_value_destroy (set_name);
+      return;
+    }
 
-  tab_joint_text (t, 0, y, 0, y + (n_total - 1), TAB_LEFT, name);
+  struct pivot_category *group = pivot_category_create_group__ (
+    table->dimensions[1]->root, set_name);
 
   size_t n_attrs = attrset_count (set);
   struct attribute **attrs = attrset_sorted (set);
@@ -598,43 +658,44 @@ display_attrset (const char *name, const struct attrset *set, int flags,
       size_t n_values = attribute_get_n_values (attr);
       for (size_t j = 0; j < n_values; j++)
         {
-          if (n_values > 1)
-            tab_text_format (t, 1, y, TAB_LEFT, "%s[%zu]", name, j + 1);
-          else
-            tab_text (t, 1, y, TAB_LEFT, name);
-          tab_text (t, 2, y, TAB_LEFT, attribute_get_value (attr, j));
-          y++;
+          int row = pivot_category_create_leaf (
+            group,
+            (n_values > 1
+             ? pivot_value_new_user_text_nocopy (xasprintf (
+                                                   "%s[%zu]", name, j + 1))
+             : pivot_value_new_user_text (name, -1)));
+          pivot_table_put2 (table, 0, row,
+                            pivot_value_new_user_text (
+                              attribute_get_value (attr, j), -1));
         }
     }
   free (attrs);
-
-  return y;
 }
 
 static void
 display_attributes (const struct attrset *dict_attrset,
                     const struct variable **vars, size_t n_vars, int flags)
 {
-  size_t n_attributes = count_attributes (dict_attrset, flags);
+  struct pivot_table *table = pivot_table_create (
+    N_("Variable and Dataset Attributes"));
+
+  pivot_dimension_create (table, PIVOT_AXIS_COLUMN,
+                          N_("Value"), N_("Value"));
+
+  struct pivot_dimension *variables = pivot_dimension_create (
+    table, PIVOT_AXIS_ROW, N_("Variable and Name"));
+  variables->root->show_label = true;
+
+  display_attrset (table, pivot_value_new_text (N_("(dataset)")),
+                   dict_attrset, flags);
   for (size_t i = 0; i < n_vars; i++)
-    n_attributes += count_attributes (var_get_attributes (vars[i]), flags);
-  if (!n_attributes)
-    return;
+    display_attrset (table, pivot_value_new_variable (vars[i]),
+                     var_get_attributes (vars[i]), flags);
 
-  struct tab_table *t = tab_create (3, n_attributes + 1);
-  tab_title (t, "%s", _("Variable and Dataset Attributes"));
-  tab_headers (t, 0, 0, 1, 0);
-  tab_hline (t, TAL_2, 0, 2, 1);
-  tab_text (t, 0, 0, TAB_LEFT | TAT_TITLE, _("Variable"));
-  tab_text (t, 1, 0, TAB_LEFT | TAT_TITLE, _("Name"));
-  tab_text (t, 2, 0, TAB_LEFT | TAT_TITLE, _("Value"));
-
-  int y = display_attrset (_("(dataset)"), dict_attrset, flags, t, 1);
-  for (size_t i = 0; i < n_vars; i++)
-    y = display_attrset (var_get_name (vars[i]), var_get_attributes (vars[i]),
-                         flags, t, y);
-
-  tab_submit (t);
+  if (pivot_table_is_empty (table))
+    pivot_table_destroy (table);
+  else
+    pivot_table_submit (table);
 }
 
 /* Display a list of vectors.  If SORTED is nonzero then they are
@@ -642,66 +703,52 @@ display_attributes (const struct attrset *dict_attrset,
 static void
 display_vectors (const struct dictionary *dict, int sorted)
 {
-  const struct vector **vl;
-  int i;
-  struct tab_table *t;
-  size_t nvec;
-  size_t nrow;
-  size_t row;
-
-  nvec = dict_get_vector_cnt (dict);
-  if (nvec == 0)
+  size_t n_vectors = dict_get_vector_cnt (dict);
+  if (n_vectors == 0)
     {
       msg (SW, _("No vectors defined."));
       return;
     }
 
-  vl = xnmalloc (nvec, sizeof *vl);
-  nrow = 0;
-  for (i = 0; i < nvec; i++)
-    {
-      vl[i] = dict_get_vector (dict, i);
-      nrow += vector_get_var_cnt (vl[i]);
-    }
+  const struct vector **vectors = xnmalloc (n_vectors, sizeof *vectors);
+  for (size_t i = 0; i < n_vectors; i++)
+    vectors[i] = dict_get_vector (dict, i);
   if (sorted)
-    qsort (vl, nvec, sizeof *vl, compare_vector_ptrs_by_name);
+    qsort (vectors, n_vectors, sizeof *vectors, compare_vector_ptrs_by_name);
 
-  t = tab_create (4, nrow + 1);
-  tab_headers (t, 0, 0, 1, 0);
-  tab_box (t, TAL_1, TAL_1, -1, -1, 0, 0, 3, nrow);
-  tab_box (t, -1, -1, -1, TAL_1, 0, 0, 3, nrow);
-  tab_hline (t, TAL_2, 0, 3, 1);
-  tab_text (t, 0, 0, TAT_TITLE | TAB_LEFT, _("Vector"));
-  tab_text (t, 1, 0, TAT_TITLE | TAB_LEFT, _("Position"));
-  tab_text (t, 2, 0, TAT_TITLE | TAB_LEFT, _("Variable"));
-  tab_text (t, 3, 0, TAT_TITLE | TAB_LEFT, _("Print Format"));
+  struct pivot_table *table = pivot_table_create (N_("Vectors"));
+  pivot_dimension_create (table, PIVOT_AXIS_COLUMN, N_("Attributes"),
+                          N_("Variable"), N_("Print Format"));
+  struct pivot_dimension *vector_dim = pivot_dimension_create (
+    table, PIVOT_AXIS_ROW, N_("Vector and Position"));
+  vector_dim->root->show_label = true;
 
-  row = 1;
-  for (i = 0; i < nvec; i++)
+  for (size_t i = 0; i < n_vectors; i++)
     {
-      const struct vector *vec = vl[i];
-      size_t j;
+      const struct vector *vec = vectors[i];
 
-      tab_joint_text (t, 0, row, 0, row + vector_get_var_cnt (vec) - 1,
-                      TAB_LEFT, vector_get_name (vl[i]));
+      struct pivot_category *group = pivot_category_create_group__ (
+        vector_dim->root, pivot_value_new_user_text (
+          vector_get_name (vectors[i]), -1));
 
-      for (j = 0; j < vector_get_var_cnt (vec); j++)
+      for (size_t j = 0; j < vector_get_var_cnt (vec); j++)
         {
           struct variable *var = vector_get_var (vec, j);
+
+          int row = pivot_category_create_leaf (
+            group, pivot_value_new_integer (j + 1));
+
+          pivot_table_put2 (table, 0, row, pivot_value_new_variable (var));
           char fmt_string[FMT_STRING_LEN_MAX + 1];
           fmt_to_string (var_get_print_format (var), fmt_string);
-
-          tab_text_format (t, 1, row, TAB_RIGHT, "%zu", j + 1);
-          tab_text (t, 2, row, TAB_LEFT, var_get_name (var));
-          tab_text (t, 3, row, TAB_LEFT, fmt_string);
-          row++;
+          pivot_table_put2 (table, 1, row,
+                            pivot_value_new_user_text (fmt_string, -1));
         }
-      tab_hline (t, TAL_1, 0, 3, row);
     }
 
-  tab_submit (t);
+  pivot_table_submit (table);
 
-  free (vl);
+  free (vectors);
 }
 
 /* Encoding analysis. */
@@ -901,12 +948,9 @@ report_encodings (const struct file_handle *h, struct pool *pool,
 {
   struct encoding encodings[N_ENCODING_NAMES];
   size_t n_encodings, n_unique_strings;
-  size_t i, j;
-  struct tab_table *t;
-  size_t row;
 
   n_encodings = 0;
-  for (i = 0; i < N_ENCODING_NAMES; i++)
+  for (size_t i = 0; i < N_ENCODING_NAMES; i++)
     {
       char **utf8_strings;
       struct encoding *e;
@@ -919,7 +963,7 @@ report_encodings (const struct file_handle *h, struct pool *pool,
 
       /* Hash utf8_strings. */
       hash = 0;
-      for (j = 0; j < n_strings; j++)
+      for (size_t j = 0; j < n_strings; j++)
         hash = hash_string (utf8_strings[j], hash);
 
       /* If there's a duplicate encoding, just mark it. */
@@ -942,68 +986,78 @@ report_encodings (const struct file_handle *h, struct pool *pool,
       return;
     }
 
-  t = tab_create (2, n_encodings + 1);
-  tab_title (t, _("Usable encodings for %s."), fh_get_name (h));
-  tab_caption (t, _("Encodings that can successfully read %s (by specifying "
-                    "the encoding name on the GET command's ENCODING "
-                    "subcommand).  Encodings that yield identical text are "
-                    "listed together."), fh_get_name (h));
-  tab_headers (t, 1, 0, 1, 0);
-  tab_box (t, TAL_1, TAL_1, -1, -1, 0, 0, 1, n_encodings);
-  tab_hline (t, TAL_1, 0, 1, 1);
-  tab_text (t, 0, 0, TAB_RIGHT, "#");
-  tab_text (t, 1, 0, TAB_LEFT, _("Encodings"));
-  for (i = 0; i < n_encodings; i++)
-    {
-      struct string s;
+  /* Table of valid encodings. */
+  struct pivot_table *table = pivot_table_create__ (
+    pivot_value_new_text_format (N_("Usable encodings for %s."),
+                                 fh_get_name (h)));
+  table->caption = pivot_value_new_text_format (
+    N_("Encodings that can successfully read %s (by specifying the encoding "
+       "name on the GET command's ENCODING subcommand).  Encodings that "
+       "yield identical text are listed together."),
+    fh_get_name (h));
 
-      ds_init_empty (&s);
-      for (j = 0; j < 64; j++)
+  pivot_dimension_create (table, PIVOT_AXIS_COLUMN, N_("Encodings"),
+                          N_("Encodings"));
+  struct pivot_dimension *number = pivot_dimension_create__ (
+    table, PIVOT_AXIS_ROW, pivot_value_new_user_text ("#", -1));
+  number->root->show_label = true;
+
+  for (size_t i = 0; i < n_encodings; i++)
+    {
+      struct string s = DS_EMPTY_INITIALIZER;
+      for (size_t j = 0; j < 64; j++)
         if (encodings[i].encodings & (UINT64_C (1) << j))
           ds_put_format (&s, "%s, ", encoding_names[j]);
       ds_chomp (&s, ss_cstr (", "));
 
-      tab_text_format (t, 0, i + 1, TAB_RIGHT, "%zu", i + 1);
-      tab_text (t, 1, i + 1, TAB_LEFT, ds_cstr (&s));
-      ds_destroy (&s);
+      int row = pivot_category_create_leaf (number->root,
+                                            pivot_value_new_integer (i + 1));
+      pivot_table_put2 (
+        table, 0, row, pivot_value_new_user_text_nocopy (ds_steal_cstr (&s)));
     }
-  tab_submit (t);
+  pivot_table_submit (table);
 
   n_unique_strings = 0;
-  for (i = 0; i < n_strings; i++)
+  for (size_t i = 0; i < n_strings; i++)
     if (!all_equal (encodings, n_encodings, i))
       n_unique_strings++;
   if (!n_unique_strings)
     return;
 
-  t = tab_create (3, (n_encodings * n_unique_strings) + 1);
-  tab_title (t, _("%s encoded text strings."), fh_get_name (h));
-  tab_caption (t, _("Text strings in the file dictionary that the previously "
-                    "listed encodings interpret differently, along with the "
-                    "interpretations."));
-  tab_headers (t, 1, 0, 1, 0);
-  tab_box (t, TAL_1, TAL_1, -1, -1, 0, 0, 2, n_encodings * n_unique_strings);
-  tab_hline (t, TAL_1, 0, 2, 1);
+  /* Table of alternative interpretations. */
+  table = pivot_table_create__ (
+    pivot_value_new_text_format (N_("%s Encoded Text Strings"),
+                                 fh_get_name (h)));
+  table->caption = pivot_value_new_text (
+    N_("Text strings in the file dictionary that the previously listed "
+       "encodings interpret differently, along with the interpretations."));
 
-  tab_text (t, 0, 0, TAB_LEFT, _("Purpose"));
-  tab_text (t, 1, 0, TAB_RIGHT, "#");
-  tab_text (t, 2, 0, TAB_LEFT, _("Text"));
+  pivot_dimension_create (table, PIVOT_AXIS_COLUMN, N_("Text"), N_("Text"));
 
-  row = 1;
-  for (i = 0; i < n_strings; i++)
+  number = pivot_dimension_create__ (table, PIVOT_AXIS_ROW,
+                                     pivot_value_new_user_text ("#", -1));
+  number->root->show_label = true;
+  for (size_t i = 0; i < n_encodings; i++)
+    pivot_category_create_leaf (number->root,
+                                pivot_value_new_integer (i + 1));
+
+  struct pivot_dimension *purpose = pivot_dimension_create (
+    table, PIVOT_AXIS_ROW, N_("Purpose"));
+  purpose->root->show_label = true;
+
+  for (size_t i = 0; i < n_strings; i++)
     if (!all_equal (encodings, n_encodings, i))
       {
         int prefix = equal_prefix (encodings, n_encodings, i);
         int suffix = equal_suffix (encodings, n_encodings, i);
 
-        tab_joint_text (t, 0, row, 0, row + n_encodings - 1,
-                        TAB_LEFT, titles[i]);
-        tab_hline (t, TAL_1, 0, 2, row);
-        for (j = 0; j < n_encodings; j++)
+        int purpose_idx = pivot_category_create_leaf (
+          purpose->root, pivot_value_new_user_text (titles[i], -1));
+
+        for (size_t j = 0; j < n_encodings; j++)
           {
             const char *s = encodings[j].utf8_strings[i] + prefix;
 
-            tab_text_format (t, 1, row, TAB_RIGHT, "%zu", j + 1);
             if (prefix || suffix)
               {
                 size_t len = strlen (s) - suffix;
@@ -1015,12 +1069,16 @@ report_encodings (const struct file_handle *h, struct pool *pool,
                 ds_put_substring (&entry, ss_buffer (s, len));
                 if (suffix)
                   ds_put_cstr (&entry, "...");
-                tab_text (t, 2, row, TAB_LEFT, ds_cstr (&entry));
+
+                pivot_table_put3 (table, 0, j, purpose_idx,
+                                  pivot_value_new_user_text_nocopy (
+                                    ds_steal_cstr (&entry)));
               }
             else
-              tab_text (t, 2, row, TAB_LEFT, s);
-            row++;
+              pivot_table_put3 (table, 0, j, purpose_idx,
+                                pivot_value_new_user_text (s, -1));
           }
       }
-  tab_submit (t);
+
+  pivot_table_submit (table);
 }

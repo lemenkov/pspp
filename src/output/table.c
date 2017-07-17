@@ -23,6 +23,7 @@
 #include <inttypes.h>
 #include <stdlib.h>
 
+#include "data/format.h"
 #include "libpspp/assertion.h"
 #include "libpspp/cast.h"
 #include "libpspp/compiler.h"

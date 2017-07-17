@@ -52,7 +52,7 @@ DISPLAY ATTRIBUTES.
 ]])
 AT_CHECK([pspp -O format=csv save-attrs.pspp], [0],
   [[Table: Variable and Dataset Attributes
-Variable,Name,Value
+Variable and Name,,Value
 (dataset),array[1],array element 1
 ,array[2],array element 2
 ,key,value
@@ -64,7 +64,7 @@ c,QuestionWording,X or Y?
 ]])
 AT_CHECK([pspp -O format=csv get-attrs.pspp], [0], [dnl
 Table: Variable and Dataset Attributes
-Variable,Name,Value
+Variable and Name,,Value
 (dataset),array,array element 2
 ,key,value
 b,ValidationRule,a * b > 3

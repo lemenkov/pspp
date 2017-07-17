@@ -60,7 +60,7 @@
 #include "language/lexer/value-parser.h"
 #include "language/lexer/variable-parser.h"
 
-#include "output/tab.h"
+#include "output/pivot-table.h"
 
 #include "gettext.h"
 #define _(msgid) gettext (msgid)
@@ -195,54 +195,6 @@ struct exploratory_stats
   /* The minimum weight */
   double cmin;
 };
-
-
-/* Returns an array of (iact->n_vars) pointers to union value initialised to NULL.
-   The caller must free this array when no longer required. */
-static const union value **
-previous_value_alloc (const struct interaction *iact)
-{
-  int ivar_idx;
-
-  const union value **prev_val = xcalloc (iact->n_vars, sizeof (*prev_val));
-
-  for (ivar_idx = 0; ivar_idx < iact->n_vars; ++ivar_idx)
-    prev_val[ivar_idx] = NULL;
-
-  return prev_val;
-}
-
-/* Set the contents of PREV_VAL to the values of C indexed by the variables of IACT */
-static int
-previous_value_record (const struct interaction *iact, const struct ccase *c, const union value **prev_val)
-{
-  int ivar_idx;
-  int diff_idx = -1;
-
-  for (ivar_idx = 0; ivar_idx < iact->n_vars; ++ivar_idx)
-    {
-      const struct variable *ivar = iact->vars[ivar_idx];
-      const int width = var_get_width (ivar);
-      const union value *val = case_data (c, ivar);
-
-      if (prev_val[ivar_idx])
-        if (! value_equal (prev_val[ivar_idx], val, width))
-          {
-            diff_idx = ivar_idx;
-            break;
-          }
-    }
-
-  for (ivar_idx = 0; ivar_idx < iact->n_vars; ++ivar_idx)
-    {
-      const struct variable *ivar = iact->vars[ivar_idx];
-      const union value *val = case_data (c, ivar);
-
-      prev_val[ivar_idx] = val;
-    }
-  return diff_idx;
-}
-
 
 static void
 show_boxplot_grouped (const struct examine *cmd, int iact_idx)
@@ -589,888 +541,380 @@ show_histogram (const struct examine *cmd, int iact_idx)
     }
 }
 
+static struct pivot_value *
+new_value_with_missing_footnote (const struct variable *var,
+                                 const union value *value,
+                                 struct pivot_footnote *missing_footnote)
+{
+  struct pivot_value *pv = pivot_value_new_var_value (var, value);
+  if (var_is_value_missing (var, value, MV_USER))
+    pivot_value_add_footnote (pv, missing_footnote);
+  return pv;
+}
+
+static void
+create_interaction_dimensions (struct pivot_table *table,
+                               const struct categoricals *cats,
+                               const struct interaction *iact,
+                               struct pivot_footnote *missing_footnote)
+{
+  for (size_t i = iact->n_vars; i-- > 0; )
+    {
+      const struct variable *var = iact->vars[i];
+      struct pivot_dimension *d = pivot_dimension_create__ (
+        table, PIVOT_AXIS_ROW, pivot_value_new_variable (var));
+      d->root->show_label = true;
+
+      size_t n;
+      union value *values = categoricals_get_var_values (cats, var, &n);
+      for (size_t j = 0; j < n; j++)
+        pivot_category_create_leaf (
+          d->root, new_value_with_missing_footnote (var, &values[j],
+                                                    missing_footnote));
+    }
+}
+
+static struct pivot_footnote *
+create_missing_footnote (struct pivot_table *table)
+{
+  return pivot_table_create_footnote (
+    table, pivot_value_new_text (N_("User-missing value.")));
+}
+
 static void
 percentiles_report (const struct examine *cmd, int iact_idx)
 {
+  struct pivot_table *table = pivot_table_create (N_("Percentiles"));
+  table->omit_empty = true;
+
+  struct pivot_dimension *percentiles = pivot_dimension_create (
+    table, PIVOT_AXIS_COLUMN, N_("Percentiles"));
+  percentiles->root->show_label = true;
+  for (int i = 0; i < cmd->n_percentiles; ++i)
+    pivot_category_create_leaf (
+      percentiles->root,
+      pivot_value_new_user_text_nocopy (xasprintf ("%g", cmd->ptiles[i])));
+
+  pivot_dimension_create (table, PIVOT_AXIS_ROW, N_("Statistics"),
+                          N_("Weighted Average"), N_("Tukey's Hinges"));
+
   const struct interaction *iact = cmd->iacts[iact_idx];
-  int i, v;
-  const int heading_columns = 1 + iact->n_vars + 1;
-  const int heading_rows = 2;
-  struct tab_table *t;
+  struct pivot_footnote *missing_footnote = create_missing_footnote (table);
+  create_interaction_dimensions (table, cmd->cats, iact, missing_footnote);
 
-  const size_t n_cats =  categoricals_n_count (cmd->cats, iact_idx);
+  struct pivot_dimension *dep_dim = pivot_dimension_create (
+    table, PIVOT_AXIS_ROW, N_("Dependent Variables"));
 
-  const int rows_per_cat = 2;
-  const int rows_per_var = n_cats * rows_per_cat;
+  size_t *indexes = xnmalloc (table->n_dimensions, sizeof *indexes);
 
-  const int nr = heading_rows + cmd->n_dep_vars * rows_per_var;
-  const int nc = heading_columns + cmd->n_percentiles;
-
-  t = tab_create (nc, nr);
-
-  tab_title (t, _("Percentiles"));
-
-  tab_headers (t, heading_columns, 0, heading_rows, 0);
-
-  /* Internal Vertical lines */
-  tab_box (t, -1, -1, -1, TAL_1,
-           heading_columns, 0, nc - 1, nr - 1);
-
-  /* External Frame */
-  tab_box (t, TAL_2, TAL_2, -1, -1,
-           0, 0, nc - 1, nr - 1);
-
-  tab_hline (t, TAL_2, 0, nc - 1, heading_rows);
-  tab_vline (t, TAL_2, heading_columns, 0, nr - 1);
-
-  tab_joint_text (t, heading_columns, 0,
-                  nc - 1, 0,
-                  TAT_TITLE | TAB_CENTER,
-                  _("Percentiles")
-                  );
-
-  tab_hline (t, TAL_1, heading_columns, nc - 1, 1);
-
-
-  for (i = 0; i < cmd->n_percentiles; ++i)
+  size_t n_cats = categoricals_n_count (cmd->cats, iact_idx);
+  for (size_t v = 0; v < cmd->n_dep_vars; ++v)
     {
-      tab_text_format (t, heading_columns + i, 1,
-                       TAT_TITLE | TAB_CENTER,
-                       _("%g"), cmd->ptiles[i]);
+      indexes[table->n_dimensions - 1] = pivot_category_create_leaf (
+        dep_dim->root, pivot_value_new_variable (cmd->dep_vars[v]));
+
+      for (size_t i = 0; i < n_cats; ++i)
+        {
+          for (size_t j = 0; j < iact->n_vars; j++)
+            {
+              int idx = categoricals_get_value_index_by_category_real (
+                cmd->cats, iact_idx, i, j);
+              indexes[table->n_dimensions - 2 - j] = idx;
+            }
+
+          const struct exploratory_stats *ess
+            = categoricals_get_user_data_by_category_real (
+              cmd->cats, iact_idx, i);
+          const struct exploratory_stats *es = ess + v;
+
+          double hinges[3];
+          tukey_hinges_calculate (es->hinges, hinges);
+
+          for (size_t pc_idx = 0; pc_idx < cmd->n_percentiles; ++pc_idx)
+            {
+              indexes[0] = pc_idx;
+
+              indexes[1] = 0;
+              double value = percentile_calculate (es->percentiles[pc_idx],
+                                                   cmd->pc_alg);
+              pivot_table_put (table, indexes, table->n_dimensions,
+                               pivot_value_new_number (value));
+
+              double hinge = (cmd->ptiles[pc_idx] == 25.0 ? hinges[0]
+                              : cmd->ptiles[pc_idx] == 50.0 ? hinges[1]
+                              : cmd->ptiles[pc_idx] == 75.0 ? hinges[2]
+                              : SYSMIS);
+              if (hinge != SYSMIS)
+                {
+                  indexes[1] = 1;
+                  pivot_table_put (table, indexes, table->n_dimensions,
+                                   pivot_value_new_number (hinge));
+                }
+            }
+        }
+
     }
+  free (indexes);
 
-  for (i = 0; i < iact->n_vars; ++i)
-    {
-      tab_text (t,
-                1 + i, 1,
-                TAT_TITLE,
-                var_to_string (iact->vars[i])
-                );
-    }
-
-
-
-  if (n_cats > 0)
-    {
-      tab_vline (t, TAL_1, heading_columns - 1, heading_rows, nr - 1);
-
-      for (v = 0; v < cmd->n_dep_vars; ++v)
-	{
-	  const union value **prev_vals = previous_value_alloc (iact);
-
-	  int ivar_idx;
-	  if ( v > 0 )
-	    tab_hline (t, TAL_1, 0, nc - 1, heading_rows + v * rows_per_var);
-
-	  tab_text (t,
-		    0, heading_rows + v * rows_per_var,
-		    TAT_TITLE | TAB_LEFT,
-		    var_to_string (cmd->dep_vars[v])
-		    );
-
-	  for (i = 0; i < n_cats; ++i)
-	    {
-	      const struct ccase *c =
-		categoricals_get_case_by_category_real (cmd->cats,
-							iact_idx, i);
-
-	      const struct exploratory_stats *ess =
-		categoricals_get_user_data_by_category_real (cmd->cats, iact_idx, i);
-
-	      const struct exploratory_stats *es = ess + v;
-
-	      int diff_idx = previous_value_record (iact, c, prev_vals);
-
-	      double hinges[3];
-	      int p;
-
-	      for (ivar_idx = 0; ivar_idx < iact->n_vars; ++ivar_idx)
-		{
-		  const struct variable *ivar = iact->vars[ivar_idx];
-		  const union value *val = case_data (c, ivar);
-
-		  if (( diff_idx != -1 && diff_idx <= ivar_idx)
-		      || i == 0)
-		    {
-		      struct string str;
-		      ds_init_empty (&str);
-		      append_value_name (ivar, val, &str);
-
-		      tab_text (t,
-				1 + ivar_idx,
-				heading_rows + v * rows_per_var + i * rows_per_cat,
-				TAT_TITLE | TAB_LEFT,
-				ds_cstr (&str)
-				);
-
-		      ds_destroy (&str);
-		    }
-		}
-
-	      if ( diff_idx != -1 && diff_idx < iact->n_vars)
-		{
-		  tab_hline (t, TAL_1, 1 + diff_idx, nc - 1,
-			     heading_rows + v * rows_per_var + i * rows_per_cat
-			     );
-		}
-
-	      tab_text (t, heading_columns - 1,
-			heading_rows + v * rows_per_var + i * rows_per_cat,
-			TAT_TITLE | TAB_LEFT,
-			gettext (ptile_alg_desc [cmd->pc_alg]));
-
-	      tukey_hinges_calculate (es->hinges, hinges);
-
-	      for (p = 0; p < cmd->n_percentiles; ++p)
-		{
-		  tab_double (t, heading_columns + p,
-			      heading_rows + v * rows_per_var + i * rows_per_cat,
-			      0,
-			      percentile_calculate (es->percentiles[p], cmd->pc_alg),
-			      NULL, RC_OTHER);
-
-		  if (cmd->ptiles[p] == 25.0)
-		    {
-		      tab_double (t, heading_columns + p,
-				  heading_rows + v * rows_per_var + i * rows_per_cat + 1,
-				  0,
-				  hinges[0],
-				  NULL, RC_OTHER);
-		    }
-		  else if (cmd->ptiles[p] == 50.0)
-		    {
-		      tab_double (t, heading_columns + p,
-				  heading_rows + v * rows_per_var + i * rows_per_cat + 1,
-				  0,
-				  hinges[1],
-				  NULL, RC_OTHER);
-		    }
-		  else if (cmd->ptiles[p] == 75.0)
-		    {
-		      tab_double (t, heading_columns + p,
-				  heading_rows + v * rows_per_var + i * rows_per_cat + 1,
-				  0,
-				  hinges[2],
-				  NULL, RC_OTHER);
-		    }
-		}
-
-
-	      tab_text (t, heading_columns - 1,
-			heading_rows + v * rows_per_var + i * rows_per_cat + 1,
-			TAT_TITLE | TAB_LEFT,
-			_("Tukey's Hinges"));
-
-	    }
-
-	  free (prev_vals);
-	}
-    }
-  tab_submit (t);
+  pivot_table_submit (table);
 }
 
 static void
 descriptives_report (const struct examine *cmd, int iact_idx)
 {
+  struct pivot_table *table = pivot_table_create (N_("Descriptives"));
+  table->omit_empty = true;
+
+  pivot_dimension_create (table, PIVOT_AXIS_COLUMN, N_("Aspect"),
+                          N_("Statistic"), N_("Std. Error"));
+
+  struct pivot_dimension *statistics = pivot_dimension_create (
+    table, PIVOT_AXIS_ROW, N_("Statistics"), N_("Mean"));
+  struct pivot_category *interval = pivot_category_create_group__ (
+    statistics->root,
+    pivot_value_new_text_format (N_("%g%% Confidence Interval for Mean"),
+                                 cmd->conf * 100.0));
+  pivot_category_create_leaves (interval, N_("Lower Bound"),
+                                N_("Upper Bound"));
+  pivot_category_create_leaves (
+    statistics->root, N_("5% Trimmed Mean"), N_("Median"), N_("Variance"),
+    N_("Std. Deviation"), N_("Minimum"), N_("Maximum"), N_("Range"),
+    N_("Interquartile Range"), N_("Skewness"), N_("Kurtosis"));
+
   const struct interaction *iact = cmd->iacts[iact_idx];
-  int i, v;
-  const int heading_columns = 1 + iact->n_vars + 2;
-  const int heading_rows = 1;
-  struct tab_table *t;
+  struct pivot_footnote *missing_footnote = create_missing_footnote (table);
+  create_interaction_dimensions (table, cmd->cats, iact, missing_footnote);
 
-  size_t n_cats =  categoricals_n_count (cmd->cats, iact_idx);
+  struct pivot_dimension *dep_dim = pivot_dimension_create (
+    table, PIVOT_AXIS_ROW, N_("Dependent Variables"));
 
-  const int rows_per_cat = 13;
-  const int rows_per_var = n_cats * rows_per_cat;
+  size_t *indexes = xnmalloc (table->n_dimensions, sizeof *indexes);
 
-  const int nr = heading_rows + cmd->n_dep_vars * rows_per_var;
-  const int nc = 2 + heading_columns;
-
-  t = tab_create (nc, nr);
-
-  tab_title (t, _("Descriptives"));
-
-  tab_headers (t, heading_columns, 0, heading_rows, 0);
-
-  /* Internal Vertical lines */
-  tab_box (t, -1, -1, -1, TAL_1,
-           heading_columns, 0, nc - 1, nr - 1);
-
-  /* External Frame */
-  tab_box (t, TAL_2, TAL_2, -1, -1,
-           0, 0, nc - 1, nr - 1);
-
-  tab_hline (t, TAL_2, 0, nc - 1, heading_rows);
-  tab_vline (t, TAL_2, heading_columns, 0, nr - 1);
-
-
-  tab_text (t, heading_columns, 0, TAB_CENTER | TAT_TITLE,
-            _("Statistic"));
-
-  tab_text (t, heading_columns + 1, 0, TAB_CENTER | TAT_TITLE,
-            _("Std. Error"));
-
-  for (i = 0; i < iact->n_vars; ++i)
+  size_t n_cats = categoricals_n_count (cmd->cats, iact_idx);
+  for (size_t v = 0; v < cmd->n_dep_vars; ++v)
     {
-      tab_text (t,
-                1 + i, 0,
-                TAT_TITLE,
-                var_to_string (iact->vars[i])
-                );
-    }
+      indexes[table->n_dimensions - 1] = pivot_category_create_leaf (
+        dep_dim->root, pivot_value_new_variable (cmd->dep_vars[v]));
 
-  for (v = 0; v < cmd->n_dep_vars; ++v)
-    {
-      const union value **prev_val = previous_value_alloc (iact);
-
-      int ivar_idx;
-      if ( v > 0 )
-        tab_hline (t, TAL_1, 0, nc - 1, heading_rows + v * rows_per_var);
-
-      tab_text (t,
-                0, heading_rows + v * rows_per_var,
-                TAT_TITLE | TAB_LEFT,
-                var_to_string (cmd->dep_vars[v])
-                );
-
-      for (i = 0; i < n_cats; ++i)
+      for (size_t i = 0; i < n_cats; ++i)
         {
-          const struct ccase *c =
-            categoricals_get_case_by_category_real (cmd->cats,
-                                                    iact_idx, i);
+          for (size_t j = 0; j < iact->n_vars; j++)
+            {
+              int idx = categoricals_get_value_index_by_category_real (
+                cmd->cats, iact_idx, i, j);
+              indexes[table->n_dimensions - 2 - j] = idx;
+            }
 
-          const struct exploratory_stats *ess =
-            categoricals_get_user_data_by_category_real (cmd->cats, iact_idx, i);
-
+          const struct exploratory_stats *ess
+            = categoricals_get_user_data_by_category_real (cmd->cats,
+                                                           iact_idx, i);
           const struct exploratory_stats *es = ess + v;
 
-          const int diff_idx = previous_value_record (iact, c, prev_val);
-
           double m0, m1, m2, m3, m4;
-	  double tval;
-
           moments_calculate (es->mom, &m0, &m1, &m2, &m3, &m4);
+          double tval = gsl_cdf_tdist_Qinv ((1.0 - cmd->conf) / 2.0, m0 - 1.0);
 
-          tval = gsl_cdf_tdist_Qinv ((1.0 - cmd->conf) / 2.0, m0 - 1.0);
-
-          for (ivar_idx = 0; ivar_idx < iact->n_vars; ++ivar_idx)
+          struct entry
             {
-              const struct variable *ivar = iact->vars[ivar_idx];
-              const union value *val = case_data (c, ivar);
-
-              if (( diff_idx != -1 && diff_idx <= ivar_idx)
-                  || i == 0)
-                {
-                  struct string str;
-                  ds_init_empty (&str);
-                  append_value_name (ivar, val, &str);
-
-                  tab_text (t,
-                            1 + ivar_idx,
-                            heading_rows + v * rows_per_var + i * rows_per_cat,
-                            TAT_TITLE | TAB_LEFT,
-                            ds_cstr (&str)
-                            );
-
-                  ds_destroy (&str);
-                }
+              int stat_idx;
+              int aspect_idx;
+              double x;
             }
-
-          if ( diff_idx != -1 && diff_idx < iact->n_vars)
+          entries[] = {
+            { 0, 0, m1 },
+            { 0, 1, calc_semean (m2, m0) },
+            { 1, 0, m1 - tval * calc_semean (m2, m0) },
+            { 2, 0, m1 + tval * calc_semean (m2, m0) },
+            { 3, 0, trimmed_mean_calculate (es->trimmed_mean) },
+            { 4, 0, percentile_calculate (es->quartiles[1], cmd->pc_alg) },
+            { 5, 0, m2 },
+            { 6, 0, sqrt (m2) },
+            { 7, 0, es->minima[0].val },
+            { 8, 0, es->maxima[0].val },
+            { 9, 0, es->maxima[0].val - es->minima[0].val },
+            { 10, 0, (percentile_calculate (es->quartiles[2], cmd->pc_alg) -
+                      percentile_calculate (es->quartiles[0], cmd->pc_alg)) },
+            { 11, 0, m3 },
+            { 11, 1, calc_seskew (m0) },
+            { 12, 0, m4 },
+            { 12, 1, calc_sekurt (m0) },
+          };
+          for (size_t j = 0; j < sizeof entries / sizeof *entries; j++)
             {
-              tab_hline (t, TAL_1, 1 + diff_idx, nc - 1,
-                         heading_rows + v * rows_per_var + i * rows_per_cat
-                         );
+              const struct entry *e = &entries[j];
+              indexes[0] = e->aspect_idx;
+              indexes[1] = e->stat_idx;
+              pivot_table_put (table, indexes, table->n_dimensions,
+                               pivot_value_new_number (e->x));
             }
-
-          tab_text (t,
-                    1 + iact->n_vars,
-                    heading_rows + v * rows_per_var + i * rows_per_cat,
-                    TAB_LEFT,
-                    _("Mean")
-                    );
-
-          tab_double (t,
-                      1 + iact->n_vars + 2,
-                      heading_rows + v * rows_per_var + i * rows_per_cat,
-                      0, m1, NULL, RC_OTHER);
-
-          tab_double (t,
-                      1 + iact->n_vars + 3,
-                      heading_rows + v * rows_per_var + i * rows_per_cat,
-                      0, calc_semean (m2, m0), NULL, RC_OTHER);
-
-          tab_text_format (t,
-                           1 + iact->n_vars,
-                           heading_rows + v * rows_per_var + i * rows_per_cat + 1,
-                           TAB_LEFT,
-                           _("%g%% Confidence Interval for Mean"),
-                           cmd->conf * 100.0
-                           );
-
-          tab_text (t,
-                    1 + iact->n_vars + 1,
-                    heading_rows + v * rows_per_var + i * rows_per_cat + 1,
-                    TAB_LEFT,
-                    _("Lower Bound")
-                    );
-
-          tab_double (t,
-                      1 + iact->n_vars + 2,
-                      heading_rows + v * rows_per_var + i * rows_per_cat + 1,
-                      0, m1 - tval * calc_semean (m2, m0), NULL, RC_OTHER);
-
-
-          tab_text (t,
-                    1 + iact->n_vars + 1,
-                    heading_rows + v * rows_per_var + i * rows_per_cat + 2,
-                    TAB_LEFT,
-                    _("Upper Bound")
-                    );
-
-          tab_double (t,
-                      1 + iact->n_vars + 2,
-                      heading_rows + v * rows_per_var + i * rows_per_cat + 2,
-                      0, m1 + tval * calc_semean (m2, m0), NULL, RC_OTHER);
-
-
-          tab_text (t,
-                    1 + iact->n_vars,
-                    heading_rows + v * rows_per_var + i * rows_per_cat + 3,
-                    TAB_LEFT,
-                    _("5% Trimmed Mean")
-                    );
-
-          tab_double (t,
-                      1 + iact->n_vars + 2,
-                      heading_rows + v * rows_per_var + i * rows_per_cat + 3,
-                      0,
-                      trimmed_mean_calculate (es->trimmed_mean),
-                      NULL, RC_OTHER);
-
-          tab_text (t,
-                    1 + iact->n_vars,
-                    heading_rows + v * rows_per_var + i * rows_per_cat + 4,
-                    TAB_LEFT,
-                    _("Median")
-                    );
-
-          tab_double (t,
-                      1 + iact->n_vars + 2,
-                      heading_rows + v * rows_per_var + i * rows_per_cat + 4,
-                      0,
-                      percentile_calculate (es->quartiles[1], cmd->pc_alg),
-                      NULL, RC_OTHER);
-
-
-          tab_text (t,
-                    1 + iact->n_vars,
-                    heading_rows + v * rows_per_var + i * rows_per_cat + 5,
-                    TAB_LEFT,
-                    _("Variance")
-                    );
-
-          tab_double (t,
-                      1 + iact->n_vars + 2,
-                      heading_rows + v * rows_per_var + i * rows_per_cat + 5,
-                      0, m2, NULL, RC_OTHER);
-
-          tab_text (t,
-                    1 + iact->n_vars,
-                    heading_rows + v * rows_per_var + i * rows_per_cat + 6,
-                    TAB_LEFT,
-                    _("Std. Deviation")
-                    );
-
-          tab_double (t,
-                      1 + iact->n_vars + 2,
-                      heading_rows + v * rows_per_var + i * rows_per_cat + 6,
-                      0, sqrt (m2), NULL, RC_OTHER);
-
-          tab_text (t,
-                    1 + iact->n_vars,
-                    heading_rows + v * rows_per_var + i * rows_per_cat + 7,
-                    TAB_LEFT,
-                    _("Minimum")
-                    );
-
-          tab_double (t,
-                      1 + iact->n_vars + 2,
-                      heading_rows + v * rows_per_var + i * rows_per_cat + 7,
-                      0,
-                      es->minima[0].val,
-                      NULL, RC_OTHER);
-
-          tab_text (t,
-                    1 + iact->n_vars,
-                    heading_rows + v * rows_per_var + i * rows_per_cat + 8,
-                    TAB_LEFT,
-                    _("Maximum")
-                    );
-
-          tab_double (t,
-                      1 + iact->n_vars + 2,
-                      heading_rows + v * rows_per_var + i * rows_per_cat + 8,
-                      0,
-                      es->maxima[0].val,
-                      NULL, RC_OTHER);
-
-          tab_text (t,
-                    1 + iact->n_vars,
-                    heading_rows + v * rows_per_var + i * rows_per_cat + 9,
-                    TAB_LEFT,
-                    _("Range")
-                    );
-
-          tab_double (t,
-                      1 + iact->n_vars + 2,
-                      heading_rows + v * rows_per_var + i * rows_per_cat + 9,
-                      0,
-                      es->maxima[0].val - es->minima[0].val,
-                      NULL, RC_OTHER);
-
-          tab_text (t,
-                    1 + iact->n_vars,
-                    heading_rows + v * rows_per_var + i * rows_per_cat + 10,
-                    TAB_LEFT,
-                    _("Interquartile Range")
-                    );
-
-
-          tab_double (t,
-                      1 + iact->n_vars + 2,
-                      heading_rows + v * rows_per_var + i * rows_per_cat + 10,
-                      0,
-                      percentile_calculate (es->quartiles[2], cmd->pc_alg) -
-                      percentile_calculate (es->quartiles[0], cmd->pc_alg),
-                      NULL, RC_OTHER);
-
-
-
-
-          tab_text (t,
-                    1 + iact->n_vars,
-                    heading_rows + v * rows_per_var + i * rows_per_cat + 11,
-                    TAB_LEFT,
-                    _("Skewness")
-                    );
-
-          tab_double (t,
-                      1 + iact->n_vars + 2,
-                      heading_rows + v * rows_per_var + i * rows_per_cat + 11,
-                      0, m3, NULL, RC_OTHER);
-
-          tab_double (t,
-                      1 + iact->n_vars + 3,
-                      heading_rows + v * rows_per_var + i * rows_per_cat + 11,
-                      0, calc_seskew (m0), NULL, RC_OTHER);
-
-          tab_text (t,
-                    1 + iact->n_vars,
-                    heading_rows + v * rows_per_var + i * rows_per_cat + 12,
-                    TAB_LEFT,
-                    _("Kurtosis")
-                    );
-
-          tab_double (t,
-                      1 + iact->n_vars + 2,
-                      heading_rows + v * rows_per_var + i * rows_per_cat + 12,
-                      0, m4, NULL, RC_OTHER);
-
-          tab_double (t,
-                      1 + iact->n_vars + 3,
-                      heading_rows + v * rows_per_var + i * rows_per_cat + 12,
-                      0, calc_sekurt (m0), NULL, RC_OTHER);
         }
-
-      free (prev_val);
     }
-  tab_submit (t);
+
+  free (indexes);
+
+  pivot_table_submit (table);
 }
 
 
 static void
 extremes_report (const struct examine *cmd, int iact_idx)
 {
+  struct pivot_table *table = pivot_table_create (N_("Extreme Values"));
+  table->omit_empty = true;
+
+  struct pivot_dimension *statistics = pivot_dimension_create (
+    table, PIVOT_AXIS_COLUMN, N_("Statistics"));
+  pivot_category_create_leaf (statistics->root,
+                              (cmd->id_var
+                               ? pivot_value_new_variable (cmd->id_var)
+                               : pivot_value_new_text (N_("Case Number"))));
+  pivot_category_create_leaves (statistics->root, N_("Value"));
+
+  struct pivot_dimension *order = pivot_dimension_create (
+    table, PIVOT_AXIS_ROW, N_("Order"));
+  for (size_t i = 0; i < cmd->disp_extremes; i++)
+    pivot_category_create_leaf (order->root, pivot_value_new_integer (i + 1));
+
+  pivot_dimension_create (table, PIVOT_AXIS_ROW, N_("Extreme"),
+                          N_("Highest"), N_("Lowest"));
+
   const struct interaction *iact = cmd->iacts[iact_idx];
-  int i, v;
-  const int heading_columns = 1 + iact->n_vars + 2;
-  const int heading_rows = 1;
-  struct tab_table *t;
+  struct pivot_footnote *missing_footnote = create_missing_footnote (table);
+  create_interaction_dimensions (table, cmd->cats, iact, missing_footnote);
 
-  size_t n_cats =  categoricals_n_count (cmd->cats, iact_idx);
+  struct pivot_dimension *dep_dim = pivot_dimension_create (
+    table, PIVOT_AXIS_ROW, N_("Dependent Variables"));
 
-  const int rows_per_cat = 2 * cmd->disp_extremes;
-  const int rows_per_var = n_cats * rows_per_cat;
+  size_t *indexes = xnmalloc (table->n_dimensions, sizeof *indexes);
 
-  const int nr = heading_rows + cmd->n_dep_vars * rows_per_var;
-  const int nc = 2 + heading_columns;
-
-  t = tab_create (nc, nr);
-
-  tab_title (t, _("Extreme Values"));
-
-  tab_headers (t, heading_columns, 0, heading_rows, 0);
-
-  /* Internal Vertical lines */
-  tab_box (t, -1, -1, -1, TAL_1,
-           heading_columns, 0, nc - 1, nr - 1);
-
-  /* External Frame */
-  tab_box (t, TAL_2, TAL_2, -1, -1,
-           0, 0, nc - 1, nr - 1);
-
-  tab_hline (t, TAL_2, 0, nc - 1, heading_rows);
-  tab_vline (t, TAL_2, heading_columns, 0, nr - 1);
-
-
-  if ( cmd->id_var )
-    tab_text (t, heading_columns, 0, TAB_CENTER | TAT_TITLE,
-              var_to_string (cmd->id_var));
-  else
-    tab_text (t, heading_columns, 0, TAB_CENTER | TAT_TITLE,
-              _("Case Number"));
-
-  tab_text (t, heading_columns + 1, 0, TAB_CENTER | TAT_TITLE,
-            _("Value"));
-
-  for (i = 0; i < iact->n_vars; ++i)
+  size_t n_cats = categoricals_n_count (cmd->cats, iact_idx);
+  for (size_t v = 0; v < cmd->n_dep_vars; ++v)
     {
-      tab_text (t,
-                1 + i, 0,
-                TAT_TITLE,
-                var_to_string (iact->vars[i])
-                );
-    }
+      indexes[table->n_dimensions - 1] = pivot_category_create_leaf (
+        dep_dim->root, pivot_value_new_variable (cmd->dep_vars[v]));
 
-  for (v = 0; v < cmd->n_dep_vars; ++v)
-    {
-      const union value **prev_val = previous_value_alloc (iact);
-
-      int ivar_idx;
-      if ( v > 0 )
-        tab_hline (t, TAL_1, 0, nc - 1, heading_rows + v * rows_per_var);
-
-      tab_text (t,
-                0, heading_rows + v * rows_per_var,
-                TAT_TITLE,
-                var_to_string (cmd->dep_vars[v])
-                );
-
-      for (i = 0; i < n_cats; ++i)
+      for (size_t i = 0; i < n_cats; ++i)
         {
-          int e;
-          const struct ccase *c =
-            categoricals_get_case_by_category_real (cmd->cats, iact_idx, i);
+          for (size_t j = 0; j < iact->n_vars; j++)
+            {
+              int idx = categoricals_get_value_index_by_category_real (
+                cmd->cats, iact_idx, i, j);
+              indexes[table->n_dimensions - 2 - j] = idx;
+            }
 
-          const struct exploratory_stats *ess =
-            categoricals_get_user_data_by_category_real (cmd->cats, iact_idx, i);
-
+          const struct exploratory_stats *ess
+            = categoricals_get_user_data_by_category_real (cmd->cats,
+                                                           iact_idx, i);
           const struct exploratory_stats *es = ess + v;
 
-          int diff_idx = previous_value_record (iact, c, prev_val);
-
-          for (ivar_idx = 0; ivar_idx < iact->n_vars; ++ivar_idx)
+          for (int e = 0 ; e < cmd->disp_extremes; ++e)
             {
-              const struct variable *ivar = iact->vars[ivar_idx];
-              const union value *val = case_data (c, ivar);
+              indexes[1] = e;
 
-              if (( diff_idx != -1 && diff_idx <= ivar_idx)
-                  || i == 0)
+              for (size_t j = 0; j < 2; j++)
                 {
-                  struct string str;
-                  ds_init_empty (&str);
-                  append_value_name (ivar, val, &str);
+                  const struct extremity *extremity
+                    = j ? &es->minima[e] : &es->maxima[e];
+                  indexes[2] = j;
 
-                  tab_text (t,
-                            1 + ivar_idx,
-                            heading_rows + v * rows_per_var + i * rows_per_cat,
-                            TAT_TITLE | TAB_LEFT,
-                            ds_cstr (&str)
-                            );
+                  indexes[0] = 0;
+                  pivot_table_put (
+                    table, indexes, table->n_dimensions,
+                    (cmd->id_var
+                     ? new_value_with_missing_footnote (cmd->id_var,
+                                                        &extremity->identity,
+                                                        missing_footnote)
+                     : pivot_value_new_integer (extremity->identity.f)));
 
-                  ds_destroy (&str);
+                  indexes[0] = 1;
+                  union value val = { .f = extremity->val };
+                  pivot_table_put (
+                    table, indexes, table->n_dimensions,
+                    new_value_with_missing_footnote (cmd->dep_vars[v], &val,
+                                                     missing_footnote));
                 }
             }
-
-          if ( diff_idx != -1 && diff_idx < iact->n_vars)
-            {
-              tab_hline (t, TAL_1, 1 + diff_idx, nc - 1,
-                         heading_rows + v * rows_per_var + i * rows_per_cat
-                         );
-            }
-
-	  tab_text (t,
-                    heading_columns - 2,
-		    heading_rows + v * rows_per_var + i * rows_per_cat,
-		    TAB_RIGHT,
-		    _("Highest"));
-
-
-          tab_hline (t, TAL_1, heading_columns - 2, nc - 1,
-                     heading_rows + v * rows_per_var + i * rows_per_cat + cmd->disp_extremes
-                     );
-
-	  tab_text (t,
-                    heading_columns - 2,
-		    heading_rows + v * rows_per_var + i * rows_per_cat + cmd->disp_extremes,
-		    TAB_RIGHT,
-		    _("Lowest"));
-
-          for (e = 0 ; e < cmd->disp_extremes; ++e)
-            {
-              tab_double (t,
-                          heading_columns - 1,
-                          heading_rows + v * rows_per_var + i * rows_per_cat + e,
-                          TAB_RIGHT,
-                          e + 1,
-                          NULL, RC_INTEGER);
-
-              /* The casenumber */
-              if (cmd->id_var)
-                tab_value (t,
-                           heading_columns,
-                           heading_rows + v * rows_per_var + i * rows_per_cat + e,
-                           TAB_RIGHT,
-                           &es->maxima[e].identity,
-                           cmd->id_var,
-                           NULL);
-              else
-                tab_double (t,
-                          heading_columns,
-                            heading_rows + v * rows_per_var + i * rows_per_cat + e,
-                            TAB_RIGHT,
-                            es->maxima[e].identity.f,
-                            NULL, RC_INTEGER);
-
-              tab_double (t,
-                         heading_columns + 1,
-                         heading_rows + v * rows_per_var + i * rows_per_cat + e,
-                         0,
-                         es->maxima[e].val,
-			  var_get_print_format (cmd->dep_vars[v]), RC_OTHER);
-
-
-              tab_double (t,
-                          heading_columns - 1,
-                          heading_rows + v * rows_per_var + i * rows_per_cat + cmd->disp_extremes + e,
-                          TAB_RIGHT,
-                          e + 1,
-                          NULL, RC_INTEGER);
-
-              /* The casenumber */
-              if (cmd->id_var)
-                tab_value (t,
-                           heading_columns,
-                           heading_rows + v * rows_per_var + i * rows_per_cat + cmd->disp_extremes + e,
-                           TAB_RIGHT,
-                           &es->minima[e].identity,
-                           cmd->id_var,
-                           NULL);
-              else
-                tab_double (t,
-                            heading_columns,
-                            heading_rows + v * rows_per_var + i * rows_per_cat + cmd->disp_extremes + e,
-                            TAB_RIGHT,
-                            es->minima[e].identity.f,
-                            NULL, RC_INTEGER);
-
-              tab_double (t,
-                          heading_columns + 1,
-                          heading_rows + v * rows_per_var + i * rows_per_cat + cmd->disp_extremes + e,
-                          0,
-                          es->minima[e].val,
-                          var_get_print_format (cmd->dep_vars[v]), RC_OTHER);
-            }
         }
-      free (prev_val);
     }
+  free (indexes);
 
-  tab_submit (t);
+  pivot_table_submit (table);
 }
 
 
 static void
 summary_report (const struct examine *cmd, int iact_idx)
 {
+  struct pivot_table *table = pivot_table_create (
+    N_("Case Processing Summary"));
+  table->omit_empty = true;
+  pivot_table_set_weight_var (table, dict_get_weight (cmd->dict));
+
+  pivot_dimension_create (table, PIVOT_AXIS_COLUMN, N_("Statistics"),
+                          N_("N"), PIVOT_RC_COUNT,
+                          N_("Percent"), PIVOT_RC_PERCENT);
+  struct pivot_dimension *cases = pivot_dimension_create (
+    table, PIVOT_AXIS_COLUMN, N_("Cases"), N_("Valid"), N_("Missing"),
+    N_("Total"));
+  cases->root->show_label = true;
+
   const struct interaction *iact = cmd->iacts[iact_idx];
-  int i, v;
-  const int heading_columns = 1 + iact->n_vars;
-  const int heading_rows = 3;
-  struct tab_table *t;
+  struct pivot_footnote *missing_footnote = create_missing_footnote (table);
+  create_interaction_dimensions (table, cmd->cats, iact, missing_footnote);
 
-  const struct fmt_spec *wfmt = cmd->wv ? var_get_print_format (cmd->wv) : &F_8_0;
+  struct pivot_dimension *dep_dim = pivot_dimension_create (
+    table, PIVOT_AXIS_ROW, N_("Dependent Variables"));
 
-  size_t n_cats =  categoricals_n_count (cmd->cats, iact_idx);
+  size_t *indexes = xnmalloc (table->n_dimensions, sizeof *indexes);
 
-  const int nr = heading_rows + n_cats * cmd->n_dep_vars;
-  const int nc = 6 + heading_columns;
-
-  t = tab_create (nc, nr);
-  tab_set_format (t, RC_WEIGHT, wfmt);
-  tab_title (t, _("Case Processing Summary"));
-
-  tab_headers (t, heading_columns, 0, heading_rows, 0);
-
-  /* Internal Vertical lines */
-  tab_box (t, -1, -1, -1, TAL_1,
-           heading_columns, 0, nc - 1, nr - 1);
-
-  /* External Frame */
-  tab_box (t, TAL_2, TAL_2, -1, -1,
-           0, 0, nc - 1, nr - 1);
-
-  tab_hline (t, TAL_2, 0, nc - 1, heading_rows);
-  tab_vline (t, TAL_2, heading_columns, 0, nr - 1);
-
-  tab_joint_text (t, heading_columns, 0,
-		  nc - 1, 0, TAB_CENTER | TAT_TITLE, _("Cases"));
-  tab_joint_text (t,
-                  heading_columns, 1,
-                  heading_columns + 1, 1,
-                  TAB_CENTER | TAT_TITLE, _("Valid"));
-
-  tab_joint_text (t,
-                  heading_columns + 2, 1,
-                  heading_columns + 3, 1,
-                  TAB_CENTER | TAT_TITLE, _("Missing"));
-
-  tab_joint_text (t,
-                  heading_columns + 4, 1,
-                  heading_columns + 5, 1,
-                  TAB_CENTER | TAT_TITLE, _("Total"));
-
-  for (i = 0; i < 3; ++i)
+  size_t n_cats = categoricals_n_count (cmd->cats, iact_idx);
+  for (size_t v = 0; v < cmd->n_dep_vars; ++v)
     {
-      tab_text (t, heading_columns + i * 2, 2, TAB_CENTER | TAT_TITLE,
-		_("N"));
-      tab_text (t, heading_columns + i * 2 + 1, 2, TAB_CENTER | TAT_TITLE,
-		_("Percent"));
+      indexes[table->n_dimensions - 1] = pivot_category_create_leaf (
+        dep_dim->root, pivot_value_new_variable (cmd->dep_vars[v]));
+
+      for (size_t i = 0; i < n_cats; ++i)
+        {
+          for (size_t j = 0; j < iact->n_vars; j++)
+            {
+              int idx = categoricals_get_value_index_by_category_real (
+                cmd->cats, iact_idx, i, j);
+              indexes[table->n_dimensions - 2 - j] = idx;
+            }
+
+          const struct exploratory_stats *es
+            = categoricals_get_user_data_by_category_real (
+              cmd->cats, iact_idx, i);
+
+          double total = es[v].missing + es[v].non_missing;
+          struct entry
+            {
+              int stat_idx;
+              int case_idx;
+              double x;
+            }
+          entries[] = {
+            { 0, 0, es[v].non_missing },
+            { 1, 0, 100.0 * es[v].non_missing / total },
+            { 0, 1, es[v].missing },
+            { 1, 1, 100.0 * es[v].missing / total },
+            { 0, 2, total },
+            { 1, 2, 100.0 },
+          };
+          for (size_t j = 0; j < sizeof entries / sizeof *entries; j++)
+            {
+              const struct entry *e = &entries[j];
+              indexes[0] = e->stat_idx;
+              indexes[1] = e->case_idx;
+              pivot_table_put (table, indexes, table->n_dimensions,
+                               pivot_value_new_number (e->x));
+            }
+        }
     }
 
-  for (i = 0; i < iact->n_vars; ++i)
-    {
-      tab_text (t,
-                1 + i, 2,
-                TAT_TITLE,
-                var_to_string (iact->vars[i])
-                );
-    }
+  free (indexes);
 
-  if (n_cats > 0)
-    for (v = 0; v < cmd->n_dep_vars; ++v)
-      {
-	int ivar_idx;
-	const union value **prev_values = previous_value_alloc (iact);
-
-	if ( v > 0 )
-	  tab_hline (t, TAL_1, 0, nc - 1, heading_rows + v * n_cats);
-
-	tab_text (t,
-		  0, heading_rows + n_cats * v,
-		  TAT_TITLE,
-		  var_to_string (cmd->dep_vars[v])
-		  );
-
-
-	for (i = 0; i < n_cats; ++i)
-	  {
-	    double total;
-	    const struct exploratory_stats *es;
-
-	    const struct ccase *c =
-	      categoricals_get_case_by_category_real (cmd->cats,
-						      iact_idx, i);
-	    if (c)
-	      {
-		int diff_idx = previous_value_record (iact, c, prev_values);
-
-		if ( diff_idx != -1 && diff_idx < iact->n_vars - 1)
-		  tab_hline (t, TAL_1, 1 + diff_idx, nc - 1,
-			     heading_rows + n_cats * v + i );
-
-		for (ivar_idx = 0; ivar_idx < iact->n_vars; ++ivar_idx)
-		  {
-		    const struct variable *ivar = iact->vars[ivar_idx];
-		    const union value *val = case_data (c, ivar);
-
-		    if (( diff_idx != -1 && diff_idx <= ivar_idx)
-			|| i == 0)
-		      {
-			struct string str;
-			ds_init_empty (&str);
-			append_value_name (ivar, val, &str);
-
-			tab_text (t,
-				  1 + ivar_idx, heading_rows + n_cats * v + i,
-				  TAT_TITLE | TAB_LEFT,
-				  ds_cstr (&str)
-				  );
-
-			ds_destroy (&str);
-		      }
-		  }
-	      }
-
-
-	    es = categoricals_get_user_data_by_category_real (cmd->cats, iact_idx, i);
-
-
-	    total = es[v].missing + es[v].non_missing;
-	    tab_double (t,
-			heading_columns + 0,
-			heading_rows + n_cats * v + i,
-			0,
-			es[v].non_missing,
-			NULL, RC_WEIGHT);
-
-
-	    tab_text_format (t,
-			     heading_columns + 1,
-			     heading_rows + n_cats * v + i,
-			     0,
-			     "%g%%",
-			     100.0 * es[v].non_missing / total
-			     );
-
-
-	    tab_double (t,
-			heading_columns + 2,
-			heading_rows + n_cats * v + i,
-			0,
-			es[v].missing,
-			NULL, RC_WEIGHT);
-
-	    tab_text_format (t,
-			     heading_columns + 3,
-			     heading_rows + n_cats * v + i,
-			     0,
-			     "%g%%",
-			     100.0 * es[v].missing / total
-			     );
-	    tab_double (t,
-			heading_columns + 4,
-			heading_rows + n_cats * v + i,
-			0,
-			total,
-			NULL, RC_WEIGHT);
-
-	    /* This can only be 100% can't it? */
-	    tab_text_format (t,
-			     heading_columns + 5,
-			     heading_rows + n_cats * v + i,
-			     0,
-			     "%g%%",
-			     100.0 * (es[v].missing + es[v].non_missing)/ total
-			     );
-	  }
-	free (prev_values);
-      }
-
-  tab_hline (t, TAL_1, heading_columns, nc - 1, 1);
-  tab_hline (t, TAL_1, heading_columns, nc - 1, 2);
-
-  tab_submit (t);
+  pivot_table_submit (table);
 }
 
 /* Attempt to parse an interaction from LEXER */

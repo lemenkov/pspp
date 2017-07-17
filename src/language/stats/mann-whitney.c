@@ -29,7 +29,11 @@
 #include "libpspp/cast.h"
 #include "libpspp/misc.h"
 #include "math/sort.h"
-#include "output/tab.h"
+#include "output/pivot-table.h"
+
+#include "gettext.h"
+#define N_(msgid) msgid
+#define _(msgid) gettext (msgid)
 
 /* Calculates the adjustment necessary for tie compensation */
 static void
@@ -50,8 +54,9 @@ struct mw
   double z;
 };
 
-static void show_ranks_box (const struct n_sample_test *nst, const struct mw *mw);
-static void show_statistics_box (const struct n_sample_test *nst, const struct mw *mw, bool exact);
+static void show_ranks_box (const struct n_sample_test *, const struct mw *);
+static void show_statistics_box (const struct n_sample_test *,
+                                 const struct mw *);
 
 
 
@@ -79,7 +84,7 @@ mann_whitney_execute (const struct dataset *ds,
 		      struct casereader *input,
 		      enum mv_class exclude,
 		      const struct npar_test *test,
-		      bool exact,
+		      bool exact UNUSED,
 		      double timer UNUSED)
 {
   int i;
@@ -166,157 +171,104 @@ mann_whitney_execute (const struct dataset *ds,
   casereader_destroy (input);
 
   show_ranks_box (nst, mw);
-  show_statistics_box (nst, mw, exact);
+  show_statistics_box (nst, mw);
 
   free (mw);
 }
-
 
-
-#include "gettext.h"
-#define _(msgid) gettext (msgid)
-
 static void
 show_ranks_box (const struct n_sample_test *nst, const struct mw *mwv)
 {
-  int i;
-  const int row_headers = 1;
-  const int column_headers = 2;
-  struct tab_table *table =
-    tab_create (row_headers + 7, column_headers + nst->n_vars);
+  struct pivot_table *table = pivot_table_create (N_("Ranks"));
 
-  struct string g1str, g2str;;
-  ds_init_empty (&g1str);
-  var_append_value_name (nst->indep_var, &nst->val1, &g1str);
+  pivot_dimension_create (table, PIVOT_AXIS_COLUMN, N_("Statistics"),
+                          N_("N"), PIVOT_RC_COUNT,
+                          N_("Mean Rank"), PIVOT_RC_OTHER,
+                          N_("Sum of Ranks"), PIVOT_RC_OTHER);
 
-  ds_init_empty (&g2str);
-  var_append_value_name (nst->indep_var, &nst->val2, &g2str);
+  struct pivot_dimension *indep = pivot_dimension_create__ (
+    table, PIVOT_AXIS_ROW, pivot_value_new_variable (nst->indep_var));
+  pivot_category_create_leaf (indep->root,
+                              pivot_value_new_var_value (nst->indep_var,
+                                                         &nst->val1));
+  pivot_category_create_leaf (indep->root,
+                              pivot_value_new_var_value (nst->indep_var,
+                                                         &nst->val2));
+  pivot_category_create_leaves (indep->root, N_("Total"));
 
-  tab_headers (table, row_headers, 0, column_headers, 0);
+  struct pivot_dimension *dep = pivot_dimension_create (
+    table, PIVOT_AXIS_ROW, N_("Dependent Variables"));
 
-  tab_title (table, _("Ranks"));
-
-  /* Vertical lines inside the box */
-  tab_box (table, 1, 0, -1, TAL_1,
-	   row_headers, 0, tab_nc (table) - 1, tab_nr (table) - 1 );
-
-  /* Box around the table */
-  tab_box (table, TAL_2, TAL_2, -1, -1,
-	   0,  0, tab_nc (table) - 1, tab_nr (table) - 1 );
-
-  tab_hline (table, TAL_2, 0, tab_nc (table) -1, column_headers);
-  tab_vline (table, TAL_2, row_headers, 0, tab_nr (table) - 1);
-
-  tab_hline (table, TAL_1, row_headers, tab_nc (table) -1, 1);
-
-  tab_text (table, 1, 1, TAT_TITLE | TAB_CENTER, ds_cstr (&g1str));
-  tab_text (table, 2, 1, TAT_TITLE | TAB_CENTER, ds_cstr (&g2str));
-  tab_text (table, 3, 1, TAT_TITLE | TAB_CENTER, _("Total"));
-  tab_joint_text (table, 1, 0, 3, 0,
-		  TAT_TITLE | TAB_CENTER, _("N"));
-  tab_vline (table, TAL_2, 4, 0, tab_nr (table) - 1);
-
-  tab_text (table, 4, 1, TAT_TITLE | TAB_CENTER, ds_cstr (&g1str));
-  tab_text (table, 5, 1, TAT_TITLE | TAB_CENTER, ds_cstr (&g2str));
-  tab_joint_text (table, 4, 0, 5, 0,
-		  TAT_TITLE | TAB_CENTER, _("Mean Rank"));
-  tab_vline (table, TAL_2, 6, 0, tab_nr (table) - 1);
-
-  tab_text (table, 6, 1, TAT_TITLE | TAB_CENTER, ds_cstr (&g1str));
-  tab_text (table, 7, 1, TAT_TITLE | TAB_CENTER, ds_cstr (&g2str));
-  tab_joint_text (table, 6, 0, 7, 0,
-		  TAT_TITLE | TAB_CENTER, _("Sum of Ranks"));
-
-  ds_destroy (&g1str);
-  ds_destroy (&g2str);
-
-  for (i = 0 ; i < nst->n_vars ; ++i)
+  for (size_t i = 0 ; i < nst->n_vars ; ++i)
     {
       const struct mw *mw = &mwv[i];
-      tab_text (table, 0, column_headers + i, TAT_TITLE,
-		var_to_string (nst->vars[i]));
 
-      tab_double (table, 1, column_headers + i, 0,
-		  mw->n[0], NULL, RC_OTHER);
+      int dep_idx = pivot_category_create_leaf (
+        dep->root, pivot_value_new_variable (nst->vars[i]));
 
-      tab_double (table, 2, column_headers + i, 0,
-		  mw->n[1], NULL, RC_OTHER);
+      struct entry
+        {
+          int stat_idx;
+          int indep_idx;
+          double x;
+        }
+      entries[] = {
+        /* N. */
+        { 0, 0, mw->n[0] },
+        { 0, 1, mw->n[1] },
+        { 0, 2, mw->n[0] + mw->n[1] },
 
-      tab_double (table, 3, column_headers + i, 0,
-		  mw->n[1] + mw->n[0], NULL, RC_OTHER);
+        /* Mean Rank. */
+        { 1, 0, mw->rank_sum[0] / mw->n[0] },
+        { 1, 1, mw->rank_sum[1] / mw->n[1] },
 
-      /* Mean Ranks */
-      tab_double (table, 4, column_headers + i, 0,
-		  mw->rank_sum[0] / mw->n[0], NULL, RC_OTHER);
+        /* Sum of Ranks. */
+        { 2, 0, mw->rank_sum[0] },
+        { 2, 1, mw->rank_sum[1] },
+      };
 
-      tab_double (table, 5, column_headers + i, 0,
-		  mw->rank_sum[1] / mw->n[1], NULL, RC_OTHER);
-
-      /* Sum of Ranks */
-      tab_double (table, 6, column_headers + i, 0,
-		  mw->rank_sum[0], NULL, RC_OTHER);
-
-      tab_double (table, 7, column_headers + i, 0,
-		  mw->rank_sum[1], NULL, RC_OTHER);
+      for (size_t j = 0; j < sizeof entries / sizeof *entries; j++)
+        {
+          const struct entry *e = &entries[j];
+          pivot_table_put3 (table, e->stat_idx, e->indep_idx, dep_idx,
+                            pivot_value_new_number (e->x));
+        }
     }
 
-  tab_submit (table);
+  pivot_table_submit (table);
 }
 
 static void
-show_statistics_box (const struct n_sample_test *nst, const struct mw *mwv, bool exact)
+show_statistics_box (const struct n_sample_test *nst, const struct mw *mwv)
 {
-  int i;
-  const int row_headers = 1;
-  const int column_headers = 1;
-  struct tab_table *table =
-    tab_create (row_headers + (exact ? 6 : 4), column_headers + nst->n_vars);
+  struct pivot_table *table = pivot_table_create (N_("Test Statistics"));
 
-  tab_headers (table, row_headers, 0, column_headers, 0);
+  pivot_dimension_create (
+    table, PIVOT_AXIS_COLUMN, N_("Statistics"),
+    _("Mann-Whitney U"), PIVOT_RC_OTHER,
+    _("Wilcoxon W"), PIVOT_RC_OTHER,
+    _("Z"), PIVOT_RC_OTHER,
+    _("Asymp. Sig. (2-tailed)"), PIVOT_RC_SIGNIFICANCE);
 
-  tab_title (table, _("Test Statistics"));
+  struct pivot_dimension *variables = pivot_dimension_create (
+    table, PIVOT_AXIS_ROW, N_("Variables"));
 
-  /* Vertical lines inside the box */
-  tab_box (table, 1, 0, -1, TAL_1,
-	   row_headers, 0, tab_nc (table) - 1, tab_nr (table) - 1 );
-
-  /* Box around the table */
-  tab_box (table, TAL_2, TAL_2, -1, -1,
-	   0,  0, tab_nc (table) - 1, tab_nr (table) - 1 );
-
-  tab_hline (table, TAL_2, 0, tab_nc (table) -1, column_headers);
-  tab_vline (table, TAL_2, row_headers, 0, tab_nr (table) - 1);
-
-  tab_text (table, 1, 0, TAT_TITLE | TAB_CENTER, _("Mann-Whitney U"));
-  tab_text (table, 2, 0, TAT_TITLE | TAB_CENTER, _("Wilcoxon W"));
-  tab_text (table, 3, 0, TAT_TITLE | TAB_CENTER, _("Z"));
-  tab_text (table, 4, 0, TAT_TITLE | TAB_CENTER, _("Asymp. Sig. (2-tailed)"));
-
-  if (exact)
-    {
-      tab_text (table, 5, 0, TAT_TITLE | TAB_CENTER, _("Exact Sig. (2-tailed)"));
-      tab_text (table, 6, 0, TAT_TITLE | TAB_CENTER, _("Point Probability"));
-    }
-
-  for (i = 0 ; i < nst->n_vars ; ++i)
+  for (size_t i = 0 ; i < nst->n_vars ; ++i)
     {
       const struct mw *mw = &mwv[i];
 
-      tab_text (table, 0, column_headers + i, TAT_TITLE,
-		var_to_string (nst->vars[i]));
+      int row = pivot_category_create_leaf (
+        variables->root, pivot_value_new_variable (nst->vars[i]));
 
-      tab_double (table, 1, column_headers + i, 0,
-		  mw->u, NULL, RC_OTHER);
-
-      tab_double (table, 2, column_headers + i, 0,
-		  mw->w, NULL, RC_OTHER);
-
-      tab_double (table, 3, column_headers + i, 0,
-		  mw->z, NULL, RC_OTHER);
-
-      tab_double (table, 4, column_headers + i, 0,
-		  2.0 * gsl_cdf_ugaussian_P (mw->z), NULL, RC_PVALUE);
+      double entries[] = {
+        mw->u,
+        mw->w,
+        mw->z,
+        2.0 * gsl_cdf_ugaussian_P (mw->z),
+      };
+      for (size_t i = 0; i < sizeof entries / sizeof *entries; i++)
+        pivot_table_put2 (table, i, row, pivot_value_new_number (entries[i]));
     }
 
-  tab_submit (table);
+  pivot_table_submit (table);
 }

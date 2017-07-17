@@ -346,17 +346,11 @@ stc_custom_tnumbers (struct lexer *lexer,
   lex_match (lexer, T_EQUALS);
 
   if (lex_match_id (lexer, "VALUES"))
-    {
-      settings_set_value_style (SETTINGS_VAL_STYLE_VALUES);
-    }
+    settings_set_show_values (SETTINGS_VALUE_SHOW_VALUE);
   else if (lex_match_id (lexer, "LABELS"))
-    {
-      settings_set_value_style (SETTINGS_VAL_STYLE_LABELS);
-    }
+    settings_set_show_values (SETTINGS_VALUE_SHOW_LABEL);
   else if (lex_match_id (lexer, "BOTH"))
-    {
-      settings_set_value_style (SETTINGS_VAL_STYLE_BOTH);
-    }
+    settings_set_show_values (SETTINGS_VALUE_SHOW_BOTH);
   else
     {
       lex_error_expecting (lexer, "VALUES", "LABELS", "BOTH", NULL_SENTINEL);
@@ -375,17 +369,11 @@ stc_custom_tvars (struct lexer *lexer,
   lex_match (lexer, T_EQUALS);
 
   if (lex_match_id (lexer, "NAMES"))
-    {
-      settings_set_var_style (SETTINGS_VAR_STYLE_NAMES);
-    }
+    settings_set_show_variables (SETTINGS_VALUE_SHOW_VALUE);
   else if (lex_match_id (lexer, "LABELS"))
-    {
-      settings_set_var_style (SETTINGS_VAR_STYLE_LABELS);
-    }
+    settings_set_show_variables (SETTINGS_VALUE_SHOW_LABEL);
   else if (lex_match_id (lexer, "BOTH"))
-    {
-      settings_set_var_style (SETTINGS_VAR_STYLE_BOTH);
-    }
+    settings_set_show_variables (SETTINGS_VALUE_SHOW_BOTH);
   else
     {
       lex_error_expecting (lexer, "NAMES", "LABELS", "BOTH", NULL_SENTINEL);

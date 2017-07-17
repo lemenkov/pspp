@@ -70,11 +70,8 @@ excluded on a variable by variable basis; if @subcmd{LISTWISE} is set, then
 the entire case is excluded whenever any value in that case has a
 system-missing or, if @subcmd{INCLUDE} is set, user-missing value.
 
-The @subcmd{FORMAT} subcommand affects the output format.  Currently the
-@subcmd{LABELS/NOLABELS} and @subcmd{NOINDEX/INDEX} settings are not used.
-When @subcmd{SERIAL} is
-set, both valid and missing number of cases are listed in the output;
-when @subcmd{NOSERIAL} is set, only valid cases are listed.
+The @subcmd{FORMAT} subcommand has no effect.  It is accepted for
+backward compatibility.
 
 The @subcmd{SAVE} subcommand causes @cmd{DESCRIPTIVES} to calculate Z scores for all
 the specified variables.  The Z scores are saved to new variables.
@@ -646,8 +643,7 @@ When set to @subcmd{TABLE}, the default, missing values are dropped on a table b
 table basis.  When set to @subcmd{INCLUDE}, user-missing values are included in
 tables and statistics.  When set to @subcmd{REPORT}, which is allowed only in
 integer mode, user-missing values are included in tables but marked with
-an @samp{M} (for ``missing'') and excluded from statistical
-calculations.
+a footnote and excluded from statistical calculations.
 
 Currently the @subcmd{WRITE} subcommand is ignored.
 

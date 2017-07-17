@@ -75,36 +75,49 @@ SET TVARS=BOTH.
 DESCRIPTIVES ALL.
 ])
 
-AT_CHECK([pspp -O format=csv var-labels.sps], [0],[dnl
-Table: Valid cases = 4; cases with missing value(s) = 0.
-Variable,N,Mean,Std Dev,Minimum,Maximum
+AT_CHECK([pspp -o pspp.csv -o pspp.txt var-labels.sps])
+AT_CHECK([cat pspp.csv], [0],[dnl
+Table: Descriptive Statistics
+,N,Mean,Std Dev,Minimum,Maximum
 x,4,2.50,1.29,1.00,4.00
 y,4,250.00,129.10,100.00,400.00
+Valid N (listwise),4,,,,
+Missing N (listwise),0,,,,
 
-Table: Valid cases = 4; cases with missing value(s) = 0.
-Variable,N,Mean,Std Dev,Minimum,Maximum
+Table: Descriptive Statistics
+,N,Mean,Std Dev,Minimum,Maximum
 x,4,2.50,1.29,1.00,4.00
 y,4,250.00,129.10,100.00,400.00
+Valid N (listwise),4,,,,
+Missing N (listwise),0,,,,
 
-Table: Valid cases = 4; cases with missing value(s) = 0.
-Variable,N,Mean,Std Dev,Minimum,Maximum
+Table: Descriptive Statistics
+,N,Mean,Std Dev,Minimum,Maximum
 x,4,2.50,1.29,1.00,4.00
 y,4,250.00,129.10,100.00,400.00
+Valid N (listwise),4,,,,
+Missing N (listwise),0,,,,
 
-Table: Valid cases = 4; cases with missing value(s) = 0.
-Variable,N,Mean,Std Dev,Minimum,Maximum
+Table: Descriptive Statistics
+,N,Mean,Std Dev,Minimum,Maximum
 x,4,2.50,1.29,1.00,4.00
 y,4,250.00,129.10,100.00,400.00
+Valid N (listwise),4,,,,
+Missing N (listwise),0,,,,
 
-Table: Valid cases = 4; cases with missing value(s) = 0.
-Variable,N,Mean,Std Dev,Minimum,Maximum
+Table: Descriptive Statistics
+,N,Mean,Std Dev,Minimum,Maximum
 foo,4,2.50,1.29,1.00,4.00
 bar,4,250.00,129.10,100.00,400.00
+Valid N (listwise),4,,,,
+Missing N (listwise),0,,,,
 
-Table: Valid cases = 4; cases with missing value(s) = 0.
-Variable,N,Mean,Std Dev,Minimum,Maximum
-foo (x),4,2.50,1.29,1.00,4.00
-bar (y),4,250.00,129.10,100.00,400.00
+Table: Descriptive Statistics
+,N,Mean,Std Dev,Minimum,Maximum
+x foo,4,2.50,1.29,1.00,4.00
+y bar,4,250.00,129.10,100.00,400.00
+Valid N (listwise),4,,,,
+Missing N (listwise),0,,,,
 ])
 
 AT_CLEANUP

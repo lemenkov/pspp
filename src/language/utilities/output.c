@@ -26,47 +26,19 @@
 #include "language/lexer/lexer.h"
 #include "language/lexer/format-parser.h"
 #include "libpspp/message.h"
+#include "libpspp/string-set.h"
 #include "libpspp/version.h"
-#include "output/tab.h"
+#include "output/pivot-table.h"
 
 #include "gl/xalloc.h"
 
 #include "gettext.h"
 #define _(msgid) gettext (msgid)
 
-struct thing
-{
-  const char *identifier;
-  enum result_class rc;
-};
-
-extern struct fmt_spec ugly [n_RC];
-
-static const struct thing things[] =
-  {
-    {"SIGNIFICANCE", RC_PVALUE},
-    {"COUNT" ,RC_WEIGHT}
-  };
-
-#define N_THINGS (sizeof (things) / sizeof (struct thing))
-
-struct output_spec
-{
-  /* An array of classes */
-  enum result_class *rc;
-
-  int n_rc;
-
-  /* The format to be applied to these classes */
-  struct fmt_spec fmt;
-};
-
 int
 cmd_output (struct lexer *lexer, struct dataset *ds UNUSED)
 {
-  int j, i;
-  struct output_spec *output_specs = NULL;
-  int n_os = 0;
+  struct string_set rc_names = STRING_SET_INITIALIZER (rc_names);
 
   if (!lex_force_match_id (lexer, "MODIFY"))
     {
@@ -88,12 +60,8 @@ cmd_output (struct lexer *lexer, struct dataset *ds UNUSED)
 	}
       else if (lex_match_id (lexer, "TABLECELLS"))
 	{
-	  struct output_spec *os;
-	  output_specs = xrealloc (output_specs, sizeof (*output_specs) * ++n_os);
-	  os = &output_specs[n_os - 1];
-	  os->n_rc = 0;
-	  os->rc = NULL;
-	  bool format = false;
+          string_set_clear (&rc_names);
+	  struct fmt_spec fmt = { 0, 0, 0 };
 
 	  while (lex_token (lexer) != T_SLASH &&
 		 lex_token (lexer) != T_ENDCMD)
@@ -106,31 +74,17 @@ cmd_output (struct lexer *lexer, struct dataset *ds UNUSED)
 		  if (! lex_force_match (lexer, T_LBRACK))
 		    goto error;
 
-		  while (lex_token (lexer) != T_RBRACK &&
-			 lex_token (lexer) != T_ENDCMD)
-		    {
-		      int i;
-		      for (i = 0 ; i < N_THINGS; ++i)
-			{
-			  if (lex_match_id (lexer, things[i].identifier))
-			    {
-			      os->rc = xrealloc (os->rc, sizeof (*os->rc) * ++os->n_rc);
-			      os->rc[os->n_rc - 1] = things[i].rc;
-			      break;
-			    }
-			}
-		      if (i >= N_THINGS)
-			{
-			  lex_error (lexer, _("Unknown TABLECELLS class"));
-			  goto error;
-			}
-		    }
+		  while (lex_token (lexer) == T_ID)
+                    {
+                      string_set_insert (&rc_names, lex_tokcstr (lexer));
+                      lex_get (lexer);
+                    }
+
 		  if (! lex_force_match (lexer, T_RBRACK))
 		    goto error;
 		}
 	      else if (lex_match_id (lexer, "FORMAT"))
 		{
-		  struct fmt_spec fmt;
 		  char type[FMT_TYPE_LEN_MAX + 1];
 		  int width = -1;
 		  int decimals = -1;
@@ -157,9 +111,6 @@ cmd_output (struct lexer *lexer, struct dataset *ds UNUSED)
 
 		  fmt.w = width;
 		  fmt.d = decimals;
-
-		  os->fmt = fmt;
-		  format = true;
 		}
 	      else
 		{
@@ -167,8 +118,15 @@ cmd_output (struct lexer *lexer, struct dataset *ds UNUSED)
 		  goto error;
 		}
 	    }
-	  if (!format)
-	    goto error;
+
+          if (fmt.w)
+            {
+              const struct string_set_node *node;
+              const char *s;
+              STRING_SET_FOR_EACH (s, node, &rc_names)
+                if (!pivot_result_class_change (s, &fmt))
+                  lex_error (lexer, _("Unknown cell class %s."), s);
+            }
 	}
       else
 	{
@@ -177,23 +135,9 @@ cmd_output (struct lexer *lexer, struct dataset *ds UNUSED)
 	}
     }
 
-  /* Populate the global table, with the values we parsed */
-  for (i = 0; i < n_os; ++i)
-    {
-      for (j = 0; j < output_specs[i].n_rc;  ++j)
-	{
-	  ugly [output_specs[i].rc[j]] = output_specs[i].fmt;
-	}
-    }
-
-  for (j = 0; j < n_os;  ++j)
-    free (output_specs[j].rc);
-  free (output_specs);
   return CMD_SUCCESS;
- error:
 
-  for (j = 0; j < n_os;  ++j)
-    free (output_specs[j].rc);
-  free (output_specs);
+ error:
+  string_set_destroy (&rc_names);
   return CMD_SUCCESS;
 }
