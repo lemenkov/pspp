@@ -423,7 +423,11 @@ functions.  In particular, user-missing values for numeric variables
 are converted to system-missing values.
 
 @deftypefn {Function} {} MISSING (@var{expr})
-Returns 1 if @var{expr} has the system-missing value, 0 otherwise.
+When @var{expr} is simply the name of a numeric variable, returns 1 if
+the variable has the system-missing value or if it is user-missing.
+For any other value 0 is returned.
+If @var{expr} takes another form, the function returns 1 if the value is
+system-missing, 0 otherwise.
 @end deftypefn
 
 @deftypefn {Function} {} NMISS (@var{expr} [, @var{expr}]@dots{})
@@ -439,10 +443,7 @@ variable ranges using the @code{@var{var1} TO @var{var2}} syntax.
 @end deftypefn
 
 @deftypefn {Function} {} SYSMIS (@var{expr})
-When @var{expr} is simply the name of a numeric variable, returns 1 if
-the variable has the system-missing value, 0 if it is user-missing or
-not missing.  If given @var{expr} takes another form, results in 1 if
-the value is system-missing, 0 otherwise.
+Returns 1 if @var{expr} has the system-missing value, 0 otherwise.
 @end deftypefn
 
 @deftypefn {Function} {} VALUE (@var{variable})
