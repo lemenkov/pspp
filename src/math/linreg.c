@@ -432,6 +432,9 @@ linreg_fit (const gsl_matrix *cov, struct linreg *l)
 
   l->sst = gsl_matrix_get (cov, cov->size1 - 1, cov->size2 - 1);
 
+#if 0
+  /*  This QR decomposition path seems to produce the incorrect
+      values.  See https://savannah.gnu.org/bugs/?51373  */
   if ((l->n_obs * l->n_obs > l->n_indeps) && (l->n_obs > REG_LARGE_DATA))
     {
       /*
@@ -440,6 +443,7 @@ linreg_fit (const gsl_matrix *cov, struct linreg *l)
       linreg_fit_qr (cov, l);
     }
   else
+#endif    
     {
       gsl_matrix *params = gsl_matrix_calloc (cov->size1, cov->size2);
       gsl_matrix_memcpy (params, cov);
