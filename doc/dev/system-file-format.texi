@@ -232,8 +232,8 @@ file's integer endianness (@pxref{System File Format}).
 Number of data elements per case.  This is the number of variables,
 except that long string variables add extra data elements (one for every
 8 characters after the first 8).  However, string variables do not
-contribute to this value beyond the first 255 bytes.   Further, system
-files written by some systems set this value to -1.  In general, it is
+contribute to this value beyond the first 255 bytes.   Further, some
+software always writes -1 or 0 in this field.  In general, it is
 unsafe for systems reading system files to rely upon this value.
 
 @item int32 compression;

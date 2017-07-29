@@ -861,7 +861,7 @@ sfm_decode (struct any_reader *r_, const char *encoding,
      amount that the header claims.  SPSS version 13 gets this
      wrong when very long strings are involved, so don't warn in
      that case. */
-  if (r->header.nominal_case_size != -1
+  if (r->header.nominal_case_size > 0
       && r->header.nominal_case_size != r->n_vars
       && r->info.version_major != 13)
     sys_warn (r, -1, _("File header claims %d variable positions but "
