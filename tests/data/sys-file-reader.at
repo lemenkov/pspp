@@ -584,6 +584,53 @@ num1
 done
 AT_CLEANUP
 
+AT_SETUP([empty document record])
+AT_KEYWORDS([sack synthetic system file positive])
+AT_DATA([sys-file.sack], [dnl
+dnl File header.
+"$FL2"; s60 "$(#) SPSS DATA FILE PSPP synthetic test file";
+2; dnl Layout code
+1; dnl Nominal case size
+0; dnl Not compressed
+0; dnl Not weighted 
+1; dnl 1 case.
+100.0; dnl Bias.
+"01 Jan 11"; "20:53:52"; s64 "PSPP synthetic test file";
+i8 0 *3;
+
+dnl Numeric variable, no label or missing values.
+2; 0; 0; 0; 0x050800 *2; s8 "NUM1";
+
+dnl Machine integer info record.
+7; 3; 4; 8; 1; 2; 3; -1; 1; 1; ENDIAN; 1252;
+
+dnl Document record.
+6; 0;
+
+dnl Character encoding record.
+7; 20; 1; 12; "windows-1252";
+
+dnl Dictionary termination record.
+999; 0;
+
+dnl Data.
+1.0;
+])
+for variant in be le; do
+  AT_CHECK([sack --$variant sys-file.sack > sys-file.sav])
+  AT_DATA([sys-file.sps], [dnl
+GET FILE='sys-file.sav'.
+LIST.
+])
+  AT_CHECK([pspp -o pspp.csv sys-file.sps])
+  AT_CHECK([cat pspp.csv], [0], [dnl
+Table: Data List
+num1
+1
+])
+done
+AT_CLEANUP
+
 AT_SETUP([multiple response sets])
 AT_KEYWORDS([sack synthetic system file positive])
 AT_DATA([sys-file.sack], [dnl
@@ -2212,36 +2259,6 @@ error: `sys-file.sav' near offset 0x12c: Duplicate type 6 (document) record.
 done
 AT_CLEANUP
 
-
-AT_SETUP([empty document record])
-AT_KEYWORDS([sack synthetic system file negative])
-AT_DATA([sys-file.sack], [dnl
-dnl File header.
-"$FL2"; s60 "$(#) SPSS DATA FILE PSPP synthetic test file";
-2; 2; 1; 0; -1; 100.0; "01 Jan 11"; "20:53:52"; s64 ""; i8 0 *3;
-
-dnl Numeric variable, no label or missing values.
-2; 0; 0; 0; 0x050800 *2; s8 "NUM1";
-
-dnl Empty document record.
-6; >>0<<;
-
-dnl Dictionary termination record.
-999; 0;
-
-dnl Data.
-1.0;
-])
-for variant in be le; do
-  AT_CHECK([sack --$variant sys-file.sack > sys-file.sav])
-  AT_DATA([sys-file.sps], [dnl
-GET FILE='sys-file.sav'.
-])
-  AT_CHECK([pspp -O format=csv sys-file.sps], [1], [dnl
-error: `sys-file.sav' near offset 0xd4: Number of document lines (0) must be greater than 0 and less than 26843545.
-])
-done
-AT_CLEANUP
 
 AT_SETUP([extension record too large])
 AT_KEYWORDS([sack synthetic system file negative])

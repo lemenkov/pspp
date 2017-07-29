@@ -282,7 +282,7 @@ static bool read_variable_record (struct sfm_reader *,
                                   struct sfm_var_record *);
 static bool read_value_label_record (struct sfm_reader *,
                                      struct sfm_value_label_record *);
-static struct sfm_document_record *read_document_record (struct sfm_reader *);
+static bool read_document_record (struct sfm_reader *);
 static bool read_extension_record (struct sfm_reader *, int subtype,
                                    struct sfm_extension_record **);
 static bool skip_extension_record (struct sfm_reader *, int subtype);
@@ -500,8 +500,7 @@ read_record (struct sfm_reader *r, int type,
           sys_error (r, r->pos, _("Duplicate type 6 (document) record."));
           return false;
         }
-      r->document = read_document_record (r);
-      return r->document != NULL;
+      return read_document_record (r);
 
     case 7:
       if (!read_int (r, &subtype))
@@ -1229,33 +1228,35 @@ read_value_label_record (struct sfm_reader *r,
   return true;
 }
 
-/* Reads a document record from R and returns it. */
-static struct sfm_document_record *
+/* Reads a document record from R.  Returns true if successful, false on
+   error. */
+static bool
 read_document_record (struct sfm_reader *r)
 {
-  struct sfm_document_record *record;
   int n_lines;
-
-  record = pool_malloc (r->pool, sizeof *record);
-  record->pos = r->pos;
-
   if (!read_int (r, &n_lines))
-    return NULL;
-  if (n_lines <= 0 || n_lines >= INT_MAX / DOC_LINE_LENGTH)
+    return false;
+  else if (n_lines == 0)
+    return true;
+  else if (n_lines < 0 || n_lines >= INT_MAX / DOC_LINE_LENGTH)
     {
-      sys_error (r, record->pos,
+      sys_error (r, r->pos,
                  _("Number of document lines (%d) "
                    "must be greater than 0 and less than %d."),
                  n_lines, INT_MAX / DOC_LINE_LENGTH);
-      return NULL;
+      return false;
     }
 
+  struct sfm_document_record *record;
+  record = pool_malloc (r->pool, sizeof *record);
+  record->pos = r->pos;
   record->n_lines = n_lines;
   record->documents = pool_malloc (r->pool, DOC_LINE_LENGTH * n_lines);
   if (!read_bytes (r, record->documents, DOC_LINE_LENGTH * n_lines))
-    return NULL;
+    return false;
 
-  return record;
+  r->document = record;
+  return true;
 }
 
 static bool

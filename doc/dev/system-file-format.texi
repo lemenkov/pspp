@@ -605,7 +605,10 @@ char                lines[][80];
 Record type.  Always set to 6.
 
 @item int32 n_lines;
-Number of lines of documents present.
+Number of lines of documents present.  This should be greater than
+zero, but the system file writer that identifies itself as
+@url{https://github.com/WizardMac/ReadStat} writes document records
+with zero @code{n_lines}.
 
 @item char lines[][80];
 Document lines.  The number of elements is defined by @code{n_lines}.
