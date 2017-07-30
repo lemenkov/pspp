@@ -222,6 +222,12 @@ pspp 0.1.4 - sparc-sun-solaris2.5.2}.  The string is truncated if it
 would be longer than 60 characters; otherwise it is padded on the right
 with spaces.
 
+The product name field allow readers to behave differently based on
+quirks in the way that particular software writes system files.
+@xref{Value Labels Records}, for the detail of the quirk that the PSPP
+system file reader tolerates in files written by ReadStat, which has
+@code{https://github.com/WizardMac/ReadStat} in @code{prod_name}.
+
 @anchor{layout_code}
 @item int32 layout_code;
 Normally set to 2, although a few system files have been spotted in
@@ -524,6 +530,14 @@ numeric and short string variables only.  Long string variables may
 have value labels, but their value labels are recorded using a
 different record type (@pxref{Long String Value Labels Record}).
 
+ReadStat (@pxref{File Header Record}) writes value labels that label a
+single value more than once.  In more detail, it emits value labels
+whose values are longer than string variables' widths, that are
+identical in the actual width of the variable, e.g.@: labels for
+values @code{ABC123} and @code{ABC456} for a string variable with
+width 3.  For files written by this software, PSPP ignores such
+labels.
+
 The value label record has the following format:
 
 @example
@@ -606,9 +620,7 @@ Record type.  Always set to 6.
 
 @item int32 n_lines;
 Number of lines of documents present.  This should be greater than
-zero, but the system file writer that identifies itself as
-@url{https://github.com/WizardMac/ReadStat} writes document records
-with zero @code{n_lines}.
+zero, but ReadStats writes system files with zero @code{n_lines}.
 
 @item char lines[][80];
 Document lines.  The number of elements is defined by @code{n_lines}.

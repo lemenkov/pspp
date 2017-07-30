@@ -203,6 +203,7 @@ struct sfm_reader
     size_t sfm_var_cnt;         /* Number of variables. */
     int case_cnt;               /* Number of cases */
     const char *encoding;       /* String encoding. */
+    bool written_by_readstat; /* From https://github.com/WizardMac/ReadStat? */
 
     /* Decompression. */
     enum any_compression compression;
@@ -967,6 +968,8 @@ read_header (struct sfm_reader *r, struct any_read_info *info,
   if (!read_string (r, header->magic, sizeof header->magic)
       || !read_string (r, header->eye_catcher, sizeof header->eye_catcher))
     return false;
+  r->written_by_readstat = strstr (header->eye_catcher,
+                                   "https://github.com/WizardMac/ReadStat");
 
   if (!strcmp (ASCII_MAGIC, header->magic)
       || !strcmp (EBCDIC_MAGIC, header->magic))
@@ -2228,7 +2231,15 @@ parse_value_labels (struct sfm_reader *r, struct dictionary *dict,
 
           if (!var_add_value_label (var, &value, utf8_labels[j]))
             {
-              if (var_is_numeric (var))
+              if (r->written_by_readstat)
+                {
+                  /* Ignore the problem.  ReadStat is buggy and emits value
+                     labels whose values are longer than string variables'
+                     widths, that are identical in the actual width of the
+                     variable, e.g. both values "ABC123" and "ABC456" for a
+                     string variable with width 3. */
+                }
+              else if (var_is_numeric (var))
                 sys_warn (r, record->pos,
                           _("Duplicate value label for %g on %s."),
                           value.f, var_get_name (var));
