@@ -322,6 +322,7 @@ linreg_set_indep_variable_mean (struct linreg *c, size_t j, double m)
   gsl_vector_set (c->indep_means, j, m);
 }
 
+#if 0
 static void
 linreg_fit_qr (const gsl_matrix *cov, struct linreg *l)
 {
@@ -415,6 +416,7 @@ linreg_fit_qr (const gsl_matrix *cov, struct linreg *l)
   gsl_matrix_free (xtx);
   gsl_vector_free (params);
 }
+#endif
 
 #define REG_LARGE_DATA 1000
 
