@@ -4,7 +4,7 @@ See the end for copying conditions.
 
 Please send PSPP bug reports to bug-gnu-pspp@gnu.org.
 
-Changes from 0.10.2 to 0.10.5-pre2:
+Changes from 0.10.2 to 0.10.5-pre3:
 
  * The REGRESSION command now has a /ORIGIN subcommand to perform
    regression through the origin.
@@ -42,6 +42,8 @@ Changes from 0.10.2 to 0.10.5-pre2:
  * The AUTORECODE command now accepts an optional / before INTO.
 
  * The short form of the VECTOR command can now create string variables.
+
+ * Bug fixes, including fixes for CVE-2017-10791 and CVE-2017-10792.
 
 Changes from 0.10.1 to 0.10.2:
 
