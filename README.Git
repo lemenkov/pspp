@@ -36,11 +36,14 @@ This version of PSPP should work with the Gnulib commit shown below.
 Gnulib does not maintain a stable API or ABI, so it is possible that
 PSPP will not work with older or newer versions of Gnulib.
 
-	commit baef0a4b9433d00e59c586b9eaad67d8461d7324
-	Author: Karl Berry <karl@freefriends.org>
-	Date:   Tue Jun 14 09:05:27 2016 -0700
+	commit 418a494eaac2dbec290de5991059bc9b33dc7df1
+	Author: John E. Malmberg <wb8tyw@gmail.com>
+	Date:   Sat Jul 15 23:11:44 2017 +0200
 
-	    autoupdate
+	    sys_socket: Add support for OpenVMS.
+
+	    * lib/sys_socket.in.h [__VMS]: Define CMSG_SPACE, CMSG_LEN.
+	    * doc/posix-headers/sys_socket.texi: Mention OpenVMS issues.
 
 To clone Gnulib into a directory named "gnulib" using Git, and then
 check out this particular commit, run these commands:

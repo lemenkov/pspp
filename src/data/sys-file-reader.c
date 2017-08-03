@@ -203,6 +203,7 @@ struct sfm_reader
     size_t sfm_var_cnt;         /* Number of variables. */
     int case_cnt;               /* Number of cases */
     const char *encoding;       /* String encoding. */
+    bool written_by_readstat; /* From https://github.com/WizardMac/ReadStat? */
 
     /* Decompression. */
     enum any_compression compression;
@@ -282,7 +283,7 @@ static bool read_variable_record (struct sfm_reader *,
                                   struct sfm_var_record *);
 static bool read_value_label_record (struct sfm_reader *,
                                      struct sfm_value_label_record *);
-static struct sfm_document_record *read_document_record (struct sfm_reader *);
+static bool read_document_record (struct sfm_reader *);
 static bool read_extension_record (struct sfm_reader *, int subtype,
                                    struct sfm_extension_record **);
 static bool skip_extension_record (struct sfm_reader *, int subtype);
@@ -500,8 +501,7 @@ read_record (struct sfm_reader *r, int type,
           sys_error (r, r->pos, _("Duplicate type 6 (document) record."));
           return false;
         }
-      r->document = read_document_record (r);
-      return r->document != NULL;
+      return read_document_record (r);
 
     case 7:
       if (!read_int (r, &subtype))
@@ -523,7 +523,7 @@ read_record (struct sfm_reader *r, int type,
              18.  I'm surprised that SPSS puts up with this. */
           struct sfm_extension_record *ext;
           bool ok = read_extension_record (r, subtype, &ext);
-          if (ok)
+          if (ok && ext)
             ll_push_tail (&r->var_attrs, &ext->ll);
           return ok;
         }
@@ -862,7 +862,7 @@ sfm_decode (struct any_reader *r_, const char *encoding,
      amount that the header claims.  SPSS version 13 gets this
      wrong when very long strings are involved, so don't warn in
      that case. */
-  if (r->header.nominal_case_size != -1
+  if (r->header.nominal_case_size > 0
       && r->header.nominal_case_size != r->n_vars
       && r->info.version_major != 13)
     sys_warn (r, -1, _("File header claims %d variable positions but "
@@ -968,6 +968,8 @@ read_header (struct sfm_reader *r, struct any_read_info *info,
   if (!read_string (r, header->magic, sizeof header->magic)
       || !read_string (r, header->eye_catcher, sizeof header->eye_catcher))
     return false;
+  r->written_by_readstat = strstr (header->eye_catcher,
+                                   "https://github.com/WizardMac/ReadStat");
 
   if (!strcmp (ASCII_MAGIC, header->magic)
       || !strcmp (EBCDIC_MAGIC, header->magic))
@@ -1229,33 +1231,35 @@ read_value_label_record (struct sfm_reader *r,
   return true;
 }
 
-/* Reads a document record from R and returns it. */
-static struct sfm_document_record *
+/* Reads a document record from R.  Returns true if successful, false on
+   error. */
+static bool
 read_document_record (struct sfm_reader *r)
 {
-  struct sfm_document_record *record;
   int n_lines;
-
-  record = pool_malloc (r->pool, sizeof *record);
-  record->pos = r->pos;
-
   if (!read_int (r, &n_lines))
-    return NULL;
-  if (n_lines <= 0 || n_lines >= INT_MAX / DOC_LINE_LENGTH)
+    return false;
+  else if (n_lines == 0)
+    return true;
+  else if (n_lines < 0 || n_lines >= INT_MAX / DOC_LINE_LENGTH)
     {
-      sys_error (r, record->pos,
+      sys_error (r, r->pos,
                  _("Number of document lines (%d) "
                    "must be greater than 0 and less than %d."),
                  n_lines, INT_MAX / DOC_LINE_LENGTH);
-      return NULL;
+      return false;
     }
 
+  struct sfm_document_record *record;
+  record = pool_malloc (r->pool, sizeof *record);
+  record->pos = r->pos;
   record->n_lines = n_lines;
   record->documents = pool_malloc (r->pool, DOC_LINE_LENGTH * n_lines);
   if (!read_bytes (r, record->documents, DOC_LINE_LENGTH * n_lines))
-    return NULL;
+    return false;
 
-  return record;
+  r->document = record;
+  return true;
 }
 
 static bool
@@ -2227,7 +2231,15 @@ parse_value_labels (struct sfm_reader *r, struct dictionary *dict,
 
           if (!var_add_value_label (var, &value, utf8_labels[j]))
             {
-              if (var_is_numeric (var))
+              if (r->written_by_readstat)
+                {
+                  /* Ignore the problem.  ReadStat is buggy and emits value
+                     labels whose values are longer than string variables'
+                     widths, that are identical in the actual width of the
+                     variable, e.g. both values "ABC123" and "ABC456" for a
+                     string variable with width 3. */
+                }
+              else if (var_is_numeric (var))
                 sys_warn (r, record->pos,
                           _("Duplicate value label for %g on %s."),
                           value.f, var_get_name (var));
@@ -2463,7 +2475,8 @@ parse_long_string_value_labels (struct sfm_reader *r,
       ofs += 4;
 
       /* Parse variable name, width, and number of labels. */
-      if (!check_overflow (r, record, ofs, var_name_len + 8))
+      if (!check_overflow (r, record, ofs, var_name_len)
+          || !check_overflow (r, record, ofs, var_name_len + 8))
         return;
       var_name = recode_string_pool ("UTF-8", dict_encoding,
                                      (const char *) record->data + ofs,
@@ -2581,7 +2594,8 @@ parse_long_string_missing_values (struct sfm_reader *r,
       ofs += 4;
 
       /* Parse variable name. */
-      if (!check_overflow (r, record, ofs, var_name_len + 1))
+      if (!check_overflow (r, record, ofs, var_name_len)
+          || !check_overflow (r, record, ofs, var_name_len + 1))
         return;
       var_name = recode_string_pool ("UTF-8", dict_encoding,
                                      (const char *) record->data + ofs,

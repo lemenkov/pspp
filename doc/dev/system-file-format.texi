@@ -222,6 +222,12 @@ pspp 0.1.4 - sparc-sun-solaris2.5.2}.  The string is truncated if it
 would be longer than 60 characters; otherwise it is padded on the right
 with spaces.
 
+The product name field allow readers to behave differently based on
+quirks in the way that particular software writes system files.
+@xref{Value Labels Records}, for the detail of the quirk that the PSPP
+system file reader tolerates in files written by ReadStat, which has
+@code{https://github.com/WizardMac/ReadStat} in @code{prod_name}.
+
 @anchor{layout_code}
 @item int32 layout_code;
 Normally set to 2, although a few system files have been spotted in
@@ -232,8 +238,8 @@ file's integer endianness (@pxref{System File Format}).
 Number of data elements per case.  This is the number of variables,
 except that long string variables add extra data elements (one for every
 8 characters after the first 8).  However, string variables do not
-contribute to this value beyond the first 255 bytes.   Further, system
-files written by some systems set this value to -1.  In general, it is
+contribute to this value beyond the first 255 bytes.   Further, some
+software always writes -1 or 0 in this field.  In general, it is
 unsafe for systems reading system files to rely upon this value.
 
 @item int32 compression;
@@ -524,6 +530,14 @@ numeric and short string variables only.  Long string variables may
 have value labels, but their value labels are recorded using a
 different record type (@pxref{Long String Value Labels Record}).
 
+ReadStat (@pxref{File Header Record}) writes value labels that label a
+single value more than once.  In more detail, it emits value labels
+whose values are longer than string variables' widths, that are
+identical in the actual width of the variable, e.g.@: labels for
+values @code{ABC123} and @code{ABC456} for a string variable with
+width 3.  For files written by this software, PSPP ignores such
+labels.
+
 The value label record has the following format:
 
 @example
@@ -605,7 +619,8 @@ char                lines[][80];
 Record type.  Always set to 6.
 
 @item int32 n_lines;
-Number of lines of documents present.
+Number of lines of documents present.  This should be greater than
+zero, but ReadStats writes system files with zero @code{n_lines}.
 
 @item char lines[][80];
 Document lines.  The number of elements is defined by @code{n_lines}.
@@ -1557,9 +1572,10 @@ value @var{code} - @var{bias}, where
 variable @code{bias} from the file header.  For example,
 code 105 with bias 100.0 (the normal value) indicates a numeric variable
 of value 5.
-One file has been seen written by SPSS 14 that contained such a code
-in a @emph{string} field with the value 0 (after the bias is
-subtracted) as a way of encoding null bytes.
+
+A code of 0 (after subtracting the bias) in a string field encodes
+null bytes.  This is unusual, since a string field normally encodes
+text data, but it exists in real system files.
 
 @item 252
 End of file.  This code may or may not appear at the end of the data

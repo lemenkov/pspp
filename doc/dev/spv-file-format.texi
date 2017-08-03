@@ -1,5 +1,5 @@
 @node SPSS Viewer File Format
-@chapter SPSS Viewer File Format
+@appendix SPSS Viewer File Format
 
 SPSS Viewer or @file{.spv} files, here called SPV files, are written
 by SPSS 16 and later to represent the contents of its output editor.
@@ -80,13 +80,18 @@ their exact names do not matter to readers as long as they are unique.
 @node SPV Structure Member Format
 @section Structure Member Format
 
+A structure member lays out the high-level structure for a group of
+output items such as heading, tables, and charts.  Structure members
+do not include the details of tables and charts but instead refer to
+them by their member names.
+
 Structure members' XML files claim conformance with a collection of
 XML Schemas.  These schemas are distributed, under a nonfree license,
 with SPSS binaries.  Fortunately, the schemas are not necessary to
-understand the structure members.  To a degree, the schemas can even
+understand the structure members.  The schemas can even
 be deceptive because they document elements and attributes that are
 not in the corpus and do not document elements and attributes that are
-commonly found there.
+commonly found in the corpus.
 
 Structure members use a different XML namespace for each schema, but
 these namespaces are not entirely consistent.  In some SPV files, for
@@ -98,7 +103,78 @@ not resolvable to obtain the schemas themselves.
 
 One may ignore all of the above in interpreting a structure member.
 The actual XML has a simple and straightforward form that does not
-require a reader to take schemas or namespaces into account.
+require a reader to take schemas or namespaces into account.  A
+structure member's root is @code{heading} element, which contains
+@code{heading} or @code{container} elements (or a mix), forming a
+tree.  In turn, @code{container} holds a @code{label} and one more
+child, usually @code{text} or @code{table}.
+
+The following diagram shows the hierarchy within an SPV structure
+member more precisely.  Names represent elements and <text> and
+<cdata> represent plain text and CDATA, respectively.  Edges point
+from parent to child.  Unlabeled edges indicate that the child appears
+exactly once; edges labeled with *, zero or more times; edges labeled
+with ?, zero or one times.  Where possible, child elements are shown
+in the order they actually appear within a parent element.
+
+@example
+@group
+heading
+  +--?--> pageSetup
+  |         +--> pageHeader +--> pageParagraph --> text --> <cdata>
+  |         +--> pageFooter +--> pageParagraph --> text --> <cdata>
+  +-----> label --?--> <text>
+  +--*--> heading
+  +--*--> container
+             +-----> label --?--> <text>
+             +--?--> text ---> html --> <cdata>
+             +--?--> table
+             |         +--?-- tableProperties
+             |         |        +--> generalProperties
+             |         |        +--> footnoteProperties
+             |         |        +--> cellFormatProperties
+             |         |        |      +--> caption -------> style
+             |         |        |      +--> footnotes -----> style
+             |         |        |      +--> rowLabelse ----> style
+             |         |        |      +--> columnLabels --> style
+             |         |        |      +--> data ----------> style
+             |         |        |      +--> layers --------> style
+             |         |        |      +--> title ---------> style
+             |         |        |      +--> cornerLabels --> style
+             |         |        +--> borderProperties
+             |         |        |      +--> topInnerFrame
+             |         |        |      +--> rightInnerFrame
+             |         |        |      +--> horizontalDimensionBorderColumns
+             |         |        |      +--> horizontalDimensionBorderRows
+             |         |        |      +--> horizontalCategoryBorderColumns
+             |         |        |      +--> leftInnerFrame
+             |         |        |      +--> verticalDimensionBorderRows
+             |         |        |      +--> titleLayerSeparator
+             |         |        |      +--> verticalCategoryBorderRows
+             |         |        |      +--> topOuterFrame
+             |         |        |      +--> bottomInnerFrame
+             |         |        |      +--> leftOuterFrame
+             |         |        |      +--> dataAreaTop
+             |         |        |      +--> verticalDimensionBorderColumns
+             |         |        |      +--> dataAreaLeft
+             |         |        |      +--> horizontalCategoryBorderRows
+             |         |        |      +--> bottomOuterFrame
+             |         |        |      +--> rightOuterFrame
+             |         |        |      +--> verticalCategoryBorderColumns
+             |         |        +--> printingProperties
+             |         +----- tableStructure
+             |                  +--?--> path ------> <text>
+             |                  +-----> dataPath --> <text>
+             +--?--> graph
+             |         +--?--> dataPath --> <text>
+             |         +-----> path ------> <text>
+             +--?--> model
+                       +--?--> ViZml --> <text>
+                       +--?--> path ---> <text>
+                       +--?--> pmmlContainerPath ---> <text>
+                       +--?--> statsContainerPath --> <text>
+@end group
+@end example
 
 The elements found in structure members are documented below.  For
 each element, we note the possible parent elements and the element's
@@ -128,45 +204,75 @@ A choice between @var{a} and @var{b}.
 Zero or more @var{x}.
 @end table
 
-@ifnottex
-For a diagram illustrating the hierarchy of elements within an SPV
-structure member, please refer to a PDF version of the manual.
-@end ifnottex
+The following example shows the contents of a typical structure member
+for a @cmd{DESCRIPTIVES} procedure.  A real structure member is not
+indented.  This example also omits most attributes, all XML namespace
+information, and the CSS from the embedded HTML:
 
-@iftex
-The following diagram shows the hierarchy of elements within an SPV
-structure member.  Edges point from parent to child elements.
-Unlabeled edges indicate that the child appears exactly once; edges
-labeled with *, zero or more times; edges labeled with ?, zero or one
-times.
-@center @image{dev/spv-structure, 5in}
-@end iftex
+@example
+<?xml version="1.0" encoding="utf-8"?>
+<heading>
+  <label>Output</label>
+  <heading commandName="Descriptives">
+    <label>Descriptives</label>
+    <container>
+      <label>Title</label>
+      <text commandName="Descriptives" type="title">
+        <html lang="en">
+<![CDATA[<head><style type="text/css">...</style></head><BR>Descriptives]]>
+        </html>
+      </text>
+    </container>
+    <container visibility="hidden">
+      <label>Notes</label>
+      <table commandName="Descriptives" subType="Notes" type="note">
+        <tableStructure>
+          <dataPath>00000000001_lightNotesData.bin</dataPath>
+        </tableStructure>
+      </table>
+    </container>
+    <container>
+      <label>Descriptive Statistics</label>
+      <table commandName="Descriptives" subType="Descriptive Statistics"
+             type="table">
+        <tableStructure>
+          <dataPath>00000000002_lightTableData.bin</dataPath>
+        </tableStructure>
+      </table>
+    </container>
+  </heading>
+</heading>
+@end example
 
 @menu
-* SPV heading Element::
-* SPV label Element::
-* SPV container Element::
-* SPV text Element (Inside @code{container})::
-* SPV html Element::
-* SPV table Element::
-* SPV tableStructure Element::
-* SPV dataPath Element::
-* SPV pageSetup Element::
-* SPV pageHeader and pageFooter Elements::
-* SPV pageParagraph Element::
-* SPV @code{text} Element (Inside @code{pageParagraph})::
+* SPV Structure heading Element::
+* SPV Structure label Element::
+* SPV Structure container Element::
+* SPV Structure text Element (Inside @code{container})::
+* SPV Structure html Element::
+* SPV Structure table Element::
+* SPV Structure tableStructure Element::
+* SPV Structure graph Element::
+* SPV Structure model Element::
+* SPV Structure dataPath and path Elements::
+* SPV Structure pageSetup Element::
+* SPV Structure pageHeader and pageFooter Elements::
+* SPV Structure pageParagraph Element::
+* SPV Structure @code{text} Element (Inside @code{pageParagraph})::
 @end menu
 
-@node SPV heading Element
+@node SPV Structure heading Element
 @subsection The @code{heading} Element
 
 Parent: Document root or @code{heading} @*
-Contents: [@code{pageSetup}] @code{label} (@code{container} @math{|} @code{heading})*
+Contents: @code{pageSetup}? @code{label} (@code{container} @math{|} @code{heading})*
 
 The root of a structure member is a @code{heading}, which represents a
 section of output beginning with a title (the @code{label}) and
 ordinarily followed by content containers or further nested
-(sub)-sections of output.
+(sub)-sections of output.  Unlike heading elements in HTML and other
+common document formats, which precede the content that they head,
+@code{heading} contains the elements that appear below the heading.
 
 The document root heading, only, may also contain a @code{pageSetup}
 element.
@@ -194,7 +300,7 @@ file.
 
 @defvr {Optional} @code{creation-date-time}
 The date and time at which the SPV file was written, in a
-locale-specific format, e.g. @code{Friday, May 16, 2014 6:47:37 PM
+locale-specific format, e.g.@: @code{Friday, May 16, 2014 6:47:37 PM
 PDT} or @code{lunedì 17 marzo 2014 3.15.48 CET} or even @code{Friday,
 December 5, 2014 5:00:19 o'clock PM EST}.
 @end defvr
@@ -234,7 +340,7 @@ The output language, e.g.@: @code{en}, @code{it}, @code{es},
 @code{de}, @code{pt-BR}.
 @end defvr
 
-@node SPV label Element
+@node SPV Structure label Element
 @subsection The @code{label} Element
 
 Parent: @code{heading} or @code{container} @*
@@ -250,16 +356,16 @@ often very generic, especially within a @code{container}, e.g.@:
 according to the output language, e.g.@: in Italian a frequency table
 procedure is labeled ``Frequenze''.
 
-The corpus contains one example of an empty label, one that contains
+The corpus contains a few examples of empty labels, ones that contain
 no text.
 
 This element has no attributes.
 
-@node SPV container Element
+@node SPV Structure container Element
 @subsection The @code{container} Element
 
 Parent: @code{heading} @*
-Contents: @code{label} [@code{table} @math{|} @code{text}]
+Contents: @code{label} (@code{table} @math{|} @code{text} @math{|} @code{graph} @math{|} @code{model})
 
 A @code{container} serves to label a @code{table} or a @code{text}
 item.
@@ -282,7 +388,7 @@ The width of the container in the form @code{@var{n}px}, e.g.@:
 @code{1097px}.
 @end defvr
 
-@node SPV text Element (Inside @code{container})
+@node SPV Structure text Element (Inside @code{container})
 @subsection The @code{text} Element (Inside @code{container})
 
 Parent: @code{container} @*
@@ -308,14 +414,14 @@ of where @code{commandName} is present but set to the empty string.
 As on the @code{heading} element.
 @end defvr
 
-@node SPV html Element
+@node SPV Structure html Element
 @subsection The @code{html} Element
 
 Parent: @code{text} @*
 Contents: CDATA
 
 The CDATA contains an HTML document.  In some cases, the document
-starts with @code{<html>} and ends with @code{</html}; in others the
+starts with @code{<html>} and ends with @code{</html>}; in others the
 @code{html} element is implied.  Generally the HTML includes a
 @code{head} element with a CSS stylesheet.  The HTML body often begins
 with @code{<BR>}.  The actual content ranges from trivial to simple:
@@ -327,7 +433,7 @@ This element has the following attributes.
 This always contains @code{en} in the corpus.
 @end defvr
 
-@node SPV table Element
+@node SPV Structure table Element
 @subsection The @code{table} Element
 
 Parent: @code{container} @*
@@ -361,7 +467,7 @@ As on the @code{heading} element.  In the corpus, this is only present
 for version 21 and up and always includes all 8 digits.
 @end defvr
 
-@node SPV tableStructure Element
+@node SPV Structure tableStructure Element
 @subsection The @code{tableStructure} Element
 
 Parent: @code{table} @*
@@ -369,18 +475,68 @@ Contents: @code{dataPath}
 
 This element has no attributes.
 
-@node SPV dataPath Element
-@subsection The @code{dataPath} Element
+@node SPV Structure graph Element
+@subsection The @code{graph} Element
 
-Parent: @code{tableStructure} @*
+Parent: @code{container} @*
+Contents: @code{dataPath}? @code{path}
+
+This element represents a graph.  The @code{dataPath} and @code{path}
+elements name the Zip members that give the details of the graph.
+Normally, both elements are present; there is only one counterexample
+in the corpus.
+
+@node SPV Structure model Element
+@subsection The @code{model} Element
+
+Parent: @code{container} @*
+Contents: (@code{ViZml}? @code{path}) @math{|} (@code{pmmlContainerPath} @code{statsContainerPath})
+
+This element represents a model.  The @code{dataPath} and @code{path}
+elements name the Zip members that give the details of the model.
+Normally, both elements are present; there is only one counterexample
+in the corpus.
+
+The details are unexplored.  The @code{ViZml} element contains base-64
+encoded text, that decodes to a binary format with some embedded text
+strings, and @code{path} names an Zip member that contains XML.
+Alternatively, @code{pmmlContainerPath} and @code{statsContainerPath}
+name Zip members with @file{.scf} extension.
+
+@node SPV Structure dataPath and path Elements
+@subsection The @code{dataPath} and @code{path} Elements
+
+Parent: @code{tableStructure} or @code{graph} or @code{model} @*
 Contents: text
 
-Contains the name of the Zip member that holds the table details,
-e.g.@: @code{0000000001437_lightTableData.bin}.
+These element contain the name of the Zip members that hold details
+for a container.  For tables:
 
-This element has no attributes.
+@itemize @bullet
+@item
+When a ``light'' format is used, only @code{dataPath} is present, and
+it names a @file{.bin} member of the Zip file that has @code{light} in
+its name, e.g.@: @code{0000000001437_lightTableData.bin} (@pxref{SPV
+Light Detail Member Format}).
 
-@node SPV pageSetup Element
+@item
+When the legacy format is used, both are present.  In this case,
+@code{dataPath} names a Zip member with a legacy binary format that
+contains relevant data (@pxref{SPV Legacy Detail Member Binary
+Format}), and @code{path} names a Zip member that uses an XML format
+(@pxref{SPV Legacy Detail Member XML Format}).
+@end itemize
+
+Graphs normally follow the legacy approach described above.  The
+corpus contains one example of a graph with @code{path} but not
+@code{dataPath}.  The reason is unexplored.
+
+Models use @code{path} but not @code{dataPath}.  @xref{SPV Structure
+graph Element}, for more information.
+
+These elements have no attributes.
+
+@node SPV Structure pageSetup Element
 @subsection The @code{pageSetup} Element
 
 Parent: @code{heading} @*
@@ -419,7 +575,7 @@ Always @code{0deg}.
 Always @code{12pt}.
 @end defvr
 
-@node SPV pageHeader and pageFooter Elements
+@node SPV Structure pageHeader and pageFooter Elements
 @subsection The @code{pageHeader} and @code{pageFooter} Elements
 
 Parent: @code{pageSetup} @*
@@ -427,7 +583,7 @@ Contents: @code{pageParagraph}*
 
 This element has no attributes.
 
-@node SPV pageParagraph Element
+@node SPV Structure pageParagraph Element
 @subsection The @code{pageParagraph} Element
 
 Parent: @code{pageHeader} or @code{pageFooter} @*
@@ -437,11 +593,11 @@ Text to go at the top or bottom of a page, respectively.
 
 This element has no attributes.
 
-@node SPV @code{text} Element (Inside @code{pageParagraph})
+@node SPV Structure @code{text} Element (Inside @code{pageParagraph})
 @subsection The @code{text} Element (Inside @code{pageParagraph})
 
 Parent: @code{pageParagraph} @*
-Contents: [CDATA]
+Contents: CDATA?
 
 This @code{text} element is nested inside a @code{pageParagraph}.  There
 is a different @code{text} element that is nested inside a
@@ -451,7 +607,7 @@ The element is either empty, or contains CDATA that holds almost-XHTML
 text: in the corpus, either an @code{html} or @code{p} element.  It is
 @emph{almost}-XHTML because the @code{html} element designates the
 default namespace as
-@code{http://xml.spss.com/spss/viewer/viewer-tree} instead of an XHTML
+@indicateurl{http://xml.spss.com/spss/viewer/viewer-tree} instead of an XHTML
 namespace, and because the CDATA can contain substitution variables:
 @code{&[Page]} for the page number and @code{&[PageTitle]} for the
 page title.
@@ -488,25 +644,46 @@ across multiple lines.  Break points are chosen for aesthetics only
 and have no semantic significance.
 
 @item 00, 01, @dots{}, ff.
-Bytes with fixed values are written in hexadecimal:
+A bytes with a fixed value, written as a pair of hexadecimal digits.
 
 @item i0, i1, @dots{}, i9, i10, i11, @dots{}
-32-bit integers with fixed values are written in decimal, prefixed by
+@itemx b0, b1, @dots{}, b9, b10, b11, @dots{}
+A 32-bit integer in little-endian or big-endian byte order,
+respectively, with a fixed value, written in decimal, prefixed by
 @samp{i}.
 
 @item byte
-An arbitrary byte.
+A byte.
+
+@item bool
+A byte with value 0 or 1.
+
+@item int16
+@itemx be16
+A 16-bit integer in little-endian or big-endian byte order,
+respectively.
 
 @item int
-An arbitrary 32-bit integer.
+@itemx be32
+A 32-bit integer in little-endian or big-endian byte order,
+respectively.
+
+@item int64
+@itemx be64
+A 64-bit integer in little-endian or big-endian byte order,
+respectively.
 
 @item double
-An arbitrary 64-bit IEEE floating-point number.
+A 64-bit IEEE floating-point number.
+
+@item float
+A 32-bit IEEE floating-point number.
 
 @item string
-A 32-bit integer followed by the specified number of bytes of
-character data.  (The encoding is indicated by the Formats
-nonterminal.)
+@itemx bestring
+A 32-bit integer, in little-endian or big-endian byte order,
+respectively, followed by the specified number of bytes of character
+data.  (The encoding is indicated by the Formats nonterminal.)
 
 @item @var{x}?
 @var{x} is optional, e.g.@: 00? is an optional zero byte.
@@ -540,15 +717,20 @@ In a version 1 @file{.bin} member, @var{x}; in version 3, nothing.
 In a version 3 @file{.bin} member, @var{x}; in version 1, nothing.
 @end table
 
-All integer and floating-point values in this format use little-endian
-byte order.
+Little-endian byte order is far more common in this format, but a few
+pieces of the format use big-endian byte order.
 
 A ``light'' detail member @file{.bin} consists of a number of sections
 concatenated together, terminated by a byte 01:
 
 @cartouche
 @format
-LightMember @result{} Header Title Caption Footnotes Fonts Formats Dimensions Data 01
+LightMember @result{}
+    Header Title
+    Caption Footnotes
+    Fonts Borders PrintSettings TableSettings Formats
+    Dimensions Data
+    01
 @end format
 @end cartouche
 
@@ -557,9 +739,12 @@ The following sections go into more detail.
 @menu
 * SPV Light Member Header::
 * SPV Light Member Title::
-* PSV Light Member Caption::
+* SPV Light Member Caption::
 * SPV Light Member Footnotes::
 * SPV Light Member Fonts::
+* SPV Light Member Borders::
+* SPV Light Member Print Settings::
+* SPV Light Member Table Settings::
 * SPV Light Member Formats::
 * SPV Light Member Dimensions::
 * SPV Light Member Categories::
@@ -571,15 +756,22 @@ The following sections go into more detail.
 @node SPV Light Member Header
 @subsection Header
 
-An SPV file begins with an 39-byte header:
+An SPV light member begins with a 39-byte header:
 
 @cartouche
 @format
 Header @result{}
     01 00
     (i1 @math{|} i3)[@t{version}]
-    01 (00 @math{|} 01) byte*21 00 00
-    int[@t{table-id}] byte*4
+    bool
+    bool[@t{show-numeric-markers}]
+    bool[@t{rotate-inner-column-labels}]
+    bool[@t{rotate-outer-row-labels}]
+    bool
+    int
+    int[@t{min-column-width}] int[@t{max-column-width}]
+    int[@t{min-row-width}] int[@t{max-row-width}]
+    int64[@t{table-id}]
 @end format
 @end cartouche
 
@@ -588,10 +780,29 @@ some of the other data in the member.  We will refer to ``version 1''
 and ``version 3'' later on and use v1(@dots{}) and v3(@dots{}) for
 version-specific formatting (as described previously).
 
+If @code{show-numeric-markers} is 1, footnote markers are shown as
+numbers, starting from 1; otherwise, they are shown as letters,
+starting from @samp{a}.
+
+If @code{rotate-inner-column-labels} is 1, then column labels closest
+to the data are rotated to be vertical; otherwise, they are shown
+in the normal way.
+
+If @code{rotate-outer-row-labels} is 1, then row labels farthest from
+the data are rotated to be vertical; otherwise, they are shown in the
+normal way.
+
 @code{table-id} is a binary version of the @code{tableId} attribute in
 the structure member that refers to the detail member.  For example,
-if @code{tableId} is @code{-4154297861994971133}, then @code{table-id}
-would be 0xdca00003.
+if @code{tableId} is @code{-4122591256483201023}, then @code{table-id}
+would be 0xc6c99d183b300001.
+
+@code{min-column-width} is the minimum width that a column will be
+assigned automatically.  @code{max-column-width} is the maximum width
+that a column will be assigned to accommodate a long column label.
+@code{min-row-width} and @code{max-row-width} are a similar range for
+the width of row labels.  All of these measurements are in 1/96 inch
+units.
 
 The meaning of the other variable parts of the header is not known.
 
@@ -603,7 +814,7 @@ The meaning of the other variable parts of the header is not known.
 Title @result{}
     Value[@t{title1}] 01?
     Value[@t{c}] 01? 31
-    Value[@t{title2}] 01? 00? 58
+    Value[@t{title2}] 01?
 @end format
 @end cartouche
 
@@ -617,16 +828,20 @@ appropriate for presentation, and localized to the user's language,
 well formatted.  For example, for a frequency table, @code{title1} and
 @code{title2} name the variable and @code{c} is simply ``Frequencies''.
 
-@node PSV Light Member Caption
+@node SPV Light Member Caption
 @subsection Caption
 
 @cartouche
 @format
-Caption @result{} 58 @math{|} 31 Value[@t{caption}]
+Caption @result{} Caption1 Caption2
+Caption1 @result{} 31 Value @math{|} 58
+Caption2 @result{} 31 Value @math{|} 58
 @end format
 @end cartouche
 
-The @code{caption}, if presented, is shown below the table.
+The Caption, if present, is shown below the table.  Caption2 is
+normally present.  Caption1 is only rarely nonempty; it might reflect
+user editing of the caption.
 
 @node SPV Light Member Footnotes
 @subsection Footnotes
@@ -648,19 +863,18 @@ Each footnote has @code{text} and an optional customer @code{marker}
 @format
 Fonts @result{} 00 Font*8
 Font @result{}
-    byte[@t{index}] 31 string[@t{typeface}] 00 00
-    (10 @math{|} 20 @math{|} 40 @math{|} 50 @math{|} 70 @math{|} 80)[@t{f1}] 41
-    (i0 @math{|} i1 @math{|} i2)[@t{f2}] 00
-    (i0 @math{|} i2 @math{|} i64173)[@t{f3}]
-    (i0 @math{|} i1 @math{|} i2 @math{|} i3)[@t{f4}]
-    string[@t{fgcolor}] string[@t{bgcolor}] i0 i0 00
-    v3(int[@t{f5}] int[@t{f6}] int[@t{f7}] int[@t{f8}]))
+    byte[@t{index}] 31
+    string[@t{typeface}] float[@t{size}] int[@t{style}] bool[@t{underline}]
+    int[@t{halign}] int[@t{valign}]
+    string[@t{fgcolor}] string[@t{bgcolor}]
+    byte[@t{alternate}] string[@t{altfg}] string[@t{altbg}]
+    v3(int[@t{left-margin}] int[@t{right-margin}] int[@t{top-margin}] int[@t{bottom-margin}])
 @end format
 @end cartouche
 
 Each Font represents the font style for a different element, in the
-following order: title, caption, footnote, row labels, column labels,
-corner labels, data, and layers.
+following order: title, caption, footer, corner, column
+labels, row labels, data, and layers.
 
 @code{index} is the 1-based index of the Font, i.e. 1 for the first
 Font, through 8 for the final Font.
@@ -669,34 +883,217 @@ Font, through 8 for the final Font.
 is @code{SansSerif} in over 99% of instances and @code{Times New
 Roman} in the rest.
 
+@code{size} is the size of the font, in points.  The most common size
+in the corpus is 12 points.
+
+@code{style} is a bit mask.  Bit 0 (with value 1) is set for bold, bit
+1 (with value 2) is set for italic.
+
+@code{underline} is 1 if the font is underlined, 0 otherwise.
+
+@code{halign} specifies horizontal alignment: 0 for center, 2 for
+left, 4 for right, 61453 for decimal, 64173 for mixed.  Mixed
+alignment varies according to type: string data is left-justified,
+numbers and most other formats are right-justified.
+
+@code{valign} specifies vertical alignment: 0 for center, 1 for top, 3
+for bottom.
+
 @code{fgcolor} and @code{bgcolor} are the foreground color and
 background color, respectively.  In the corpus, these are always
 @code{#000000} and @code{#ffffff}, respectively.
 
-The meaning of the remaining data is unknown.  It seems likely to
-include font sizes, horizontal and vertical alignment, attributes such
-as bold or italic, and margins.
+@code{alternate} is 01 if rows should alternate colors, 00 if all rows
+should be the same color.  When @code{alternate} is 01, @code{altfg}
+and @code{altbg} specify the colors for the alternate rows.
 
-The table below lists the values observed in the corpus.  When a cell
-contains a single value, then 99@math{+}% of the corpus contains that value.
-When a cell contains a pair of values, then the first value is seen in
-about two-thirds of the corpus and the second value in about the
-remaining one-third.  In fonts that include multiple pairs, values are
-correlated, that is, for font 3, f5 = 24, f6 = 24, f7 = 2 appears
-about two-thirds of the time, as does the combination of f4 = 0, f6 =
-10 for font 7.
+@code{left-margin}, @code{right-margin}, @code{top-margin}, and
+@code{bottom-margin} are measured in multiples of 1/96 inch.
 
-@multitable {font} {40} {f2} {64173} {0/1} {24/11} {10/11} {2/3} {f8}
-@headitem font @tab f1 @tab f2 @tab f3 @tab f4 @tab f5 @tab f6 @tab f7 @tab f8
-@item 1 @tab 40 @tab 1 @tab     0 @tab   0 @tab 8 @tab 10/11 @tab   1 @tab 8
-@item 2 @tab 40 @tab 0 @tab     2 @tab   1 @tab 8 @tab 10/11 @tab   1 @tab 1
-@item 3 @tab 40 @tab 0 @tab     2 @tab 1 @tab 24/11 @tab 24/ 8 @tab 2/3 @tab 4
-@item 4 @tab 40 @tab 0 @tab     2 @tab   3 @tab 8 @tab 10/11 @tab   1 @tab 1
-@item 5 @tab 40 @tab 0 @tab     0 @tab   1 @tab 8 @tab 10/11 @tab   1 @tab 4
-@item 6 @tab 40 @tab 0 @tab     2 @tab   1 @tab 8 @tab 10/11 @tab   1 @tab 4
-@item 7 @tab 40 @tab 0 @tab 64173 @tab 0/1 @tab 8 @tab 10/11 @tab   1 @tab 1
-@item 8 @tab 40 @tab 0 @tab     2 @tab   3 @tab 8 @tab 10/11 @tab   1  @tab 4
-@end multitable
+@node SPV Light Member Borders
+@subsection Borders
+
+@cartouche
+@format
+Borders @result{}
+    b1[@t{endian}]
+    be32[@t{n-borders}] Border*[@t{n-borders}]
+    bool[@t{show-grid-lines}]
+    00 00 00
+
+Border @result{}
+    be32[@t{border-type}]
+    be32[@t{stroke-type}]
+    be32[@t{color}]
+@end format
+@end cartouche
+
+The Borders reflect how borders between regions are drawn.
+
+The fixed value of @code{endian} can be used to validate the
+endianness.
+
+@code{show-grid-lines} is 1 to draw grid lines, otherwise 0.
+
+Each Border describes one kind of border.  @code{n-borders} seems to
+always be 19.  Each @code{border-type} appears once (although in an
+unpredictable order) and correspond to the following borders:
+
+@table @asis
+@item 0
+Title.
+@item 1@dots{}4
+Left, top, right, and bottom outer frame.
+@item 5@dots{}8
+Left, top, right, and bottom inner frame.
+@item 9, 10
+Left and top of data area.
+@item 11, 12
+Horizontal and vertical dimension rows.
+@item 13, 14
+Horizontal and vertical dimension columns.
+@item 15, 16
+Horizontal and vertical category rows.
+@item 17, 18
+Horizontal and vertical category columns.
+@end table
+
+@code{stroke-type} describes how a border is drawn, as one of:
+
+@table @asis
+@item 0
+No line.
+@item 1
+Solid line.
+@item 2
+Dashed line.
+@item 3
+Thick line.
+@item 4
+Thin line.
+@item 5
+Double line.
+@end table
+
+@code{color} is an RGB color.  Bits 24--31 are alpha, bits 16--23 are
+red, 8--15 are green, 0--7 are blue.  An alpha of 255 indicates an
+opaque color, therefore opaque black is 0xff000000.
+
+@node SPV Light Member Print Settings
+@subsection Print Settings
+
+@cartouche
+@format
+PrintSettings @result{}
+    b1[@t{endian}]
+    bool[@t{all-layers}]
+    bool[@t{paginate-layers}]
+    bool[@t{fit-width}]
+    bool[@t{fit-length}]
+    bool[@t{top-continuation}]
+    bool[@t{bottom-continuation}]
+    be32[@t{n-orphan-lines}]
+    bestring[@t{continuation-string}]
+@end format
+@end cartouche
+
+The PrintSettings reflect settings for printing.  The fixed value of
+@code{endian} can be used to validate the endianness.
+
+@code{all-layers} is 1 to print all layers, 0 to print only the
+visible layers.
+
+@code{paginate-layers} is 1 to print each layer at the start of a new
+page, 0 otherwise.  (This setting is honored only @code{all-layers} is
+1, since otherwise only one layer is printed.)
+
+@code{fit-width} and @code{fit-length} control whether the table is
+shrunk to fit within a page's width or length, respectively.
+
+@code{n-orphan-lines} is the minimum number of rows or columns to put
+in one part of a table that is broken across pages.
+
+If @code{top-continuation} is 1, then @code{continuation-string} is
+printed at the top of a page when a table is broken across pages for
+printing; similarly for @code{bottom-continuation} and the bottom of a
+page.  Usually, @code{continuation-string} is empty.
+
+@node SPV Light Member Table Settings
+@subsection Table Settings
+
+@cartouche
+@format
+TableSettings @result{}
+    be32[@t{endian}]
+    be32
+    be32[@t{current-layer}]
+    bool[@t{omit-empty}]
+    bool[@t{show-row-labels-in-corner}]
+    bool[@t{show-alphabetic-markers}]
+    bool[@t{footnote-marker-position}]
+    v3(
+      byte
+      count(
+        Breakpoints[@t{row-breaks}] Breakpoints[@t{column-breaks}]
+        Keeps[@t{row-keeps}] Keeps[@t{column-keeps}]
+        PointKeeps[@t{row-keeps}] PointKeeps[@t{column-keeps}]
+      )
+      bestring[@t{notes}]
+      bestring[@t{table-look}]
+      00...
+    )
+
+Breakpoints @result{} be32[@t{n-breaks}] be32*[@t{n-breaks}]
+
+Keeps @result{} be32[@t{n-keeps}] Keep*@t{n-keeps}
+Keep @result{} be32[@t{offset}] be[@t{n}]
+
+PointKeeps @result{} be32[@t{n-point-keeps}] PointKeep*@t{n-point-keeps}
+PointKeep @result{} be32[@t{offset}] be32 be32
+
+@end format
+@end cartouche
+
+The TableSettings reflect display settings.  The fixed value of
+@code{endian} can be used to validate the endianness.
+
+@code{current-layer} is the displayed layer.
+
+If @code{omit-empty} is 1, empty rows or columns (ones with nothing in
+any cell) are hidden; otherwise, they are shown.
+
+If @code{show-row-labels-in-corner} is 1, then row labels are shown in
+the upper left corner; otherwise, they are shown nested.
+
+If @code{show-alphabetic-markers} is 1, markers are shown as letters
+(e.g. @samp{a}, @samp{b}, @samp{c}, @dots{}); otherwise, they are
+shown as numbers starting from 1.
+
+When @code{footnote-marker-position} is 1, footnote markers are shown
+as superscripts, otherwise as subscripts.
+
+The Breakpoints are rows or columns after which there is a page break;
+for example, a row break of 1 requests a page break after the second
+row.  Usually no breakpoints are specified, indicating that page
+breaks should be selected automatically.
+
+The Keeps are ranges of rows or columns to be kept together without a
+page break; for example, a row Keep with @code{offset} 1 and @code{n}
+10 requests that the 10 rows starting with the second row be kept
+together.  Usually no Keeps are specified.
+
+The PointKeeps seem to be generated automatically based on
+user-specified Keeps.  They seems to indicate a conversion from rows
+or columns to pixel or point offsets.
+
+@code{notes} is a text string that contains user-specified notes.  It
+is displayed when the user hovers the cursor over the table, like
+``alt text'' on a webpage.  It is not printed.  It is usually empty.
+
+@code{table-look} is the name of a SPSS ``TableLook'' table style,
+such as ``Default'' or ``Academic''; it is often empty.
+
+TableSettings ends with an arbitrary number of null bytes.
 
 @node SPV Light Member Formats
 @subsection Formats
@@ -704,54 +1101,72 @@ about two-thirds of the time, as does the combination of f4 = 0, f6 =
 @cartouche
 @format
 Formats @result{}
-    int[@t{n1}] byte*[@t{n1}]
-    int[@t{n2}] byte*[@t{n2}]
-    int[@t{n3}] byte*[@t{n3}]
-    int[@t{n4}] int*[@t{n4}]
+    int[@t{n-widths}] int*[@t{n-widths}]
     string[@t{encoding}]
-    (i0 @math{|} i-1) (00 @math{|} 01) 00 (00 @math{|} 01)
-    int
+    int[@t{current-layer}]
+    bool[@t{digit-grouping}] bool[@t{leading-zero}] bool
+    int[@t{epoch}]
     byte[@t{decimal}] byte[@t{grouping}]
-    int[@t{n-ccs}] string*[@t{n-ccs}]
-    v1(i0)
-    v3(count(count(X5) count(X6)))
+    CustomCurrency
+    count(
+      v1(X0?)
+      v3(count(X1 count(X2)) count(X3))
 
-X5 @result{} byte*33 int[@t{n}] int*[@t{n}]
-X6 @result{}
-    01 00 (03 @math{|} 04) 00 00 00
-    string[@t{command}] string[@t{subcommand}]
+X0 @result{}
+    byte*14
+    string[@t{command}] string[@t{command-local}]
     string[@t{language}] string[@t{charset}] string[@t{locale}]
-    (00 @math{|} 01) 00 (00 @math{|} 01) (00 @math{|} 01)
-    int
+    bool 00 bool bool
+    int[@t{epoch}]
     byte[@t{decimal}] byte[@t{grouping}]
-    byte*8 01
-    (string[@t{dataset}] string[@t{datafile}] i0 int i0)?
-    int[@t{n-ccs}] string*[@t{n-ccs}]
-    2e (00 @math{|} 01) (i2000000 i0)?
+    CustomCurrency
+    byte[@t{missing}] bool
+
+X1 @result{}
+    byte*2
+    byte[@t{lang}]
+    byte[@t{variable-mode}]
+    byte[@t{value-mode}]
+    int*2
+    00*17
+    bool
+    01
+X2 @result{}
+    int[@t{n-heights}] int*[@t{n-heights}]
+    int[@t{n-style-map}] BlankMap*[@t{n-style-map}]
+    int[@t{n-styles}] StylePair*[@t{n-styles}]
+    count((i0 i0)?)
+StyleMap @result{} int64[@t{cell-index}] int16[@t{style-index}]
+X3 @result{}
+    01 00 (03 @math{|} 04) 00 00 00
+    string[@t{command}] string[@t{command-local}]
+    string[@t{language}] string[@t{charset}] string[@t{locale}]
+    bool 00 bool bool
+    int[@t{epoch}]
+    byte[@t{decimal}] byte[@t{grouping}]
+    double[@t{small}] 01
+    (string[@t{dataset}] string[@t{datafile}] i0 int[@t{date}] i0)?
+    CustomCurrency
+    byte[@t{missing}] bool (i2000000 i0)?
+
+CustomCurrency @result{} int[@t{n-ccs}] string*[@t{n-ccs}]
 @end format
 @end cartouche
 
-In every example in the corpus, @code{n1} is 240.  The meaning of the
-bytes that follow it is unknown.
-
-In every example in the corpus, @code{n2} is 18 and the bytes that
-follow it are @code{00 00 00 01 00 00 00 00 00 00 00 00 00 02 00 00 00
-00}.  The meaning of these bytes is unknown.
-
-In every example in the corpus for version 1, @code{n3} is 16 and the
-bytes that follow it are @code{00 00 00 01 00 00 00 01 00 00 00 00 01
-01 01 01}.  In version 3, observed @code{n3} varies from 117 to 150,
-and its bytes include a 1-byte count at offset 0x34.  When the count
-is nonzero, a text string of that length at offset 0x35 is the name of
-a ``TableLook'', e.g. ``Default'' or ``Academic''.
-
-Observed values of @code{n4} vary from 0 to 17.  Out of 7,060 examples
-in the corpus, it is nonzero only 36 times.
+If @code{n-widths} is nonzero, then the accompanying integers are
+column widths as manually adjusted by the user.  (Row heights are
+computed automatically based on the widths.)
 
 @code{encoding} is a character encoding, usually a Windows code page
 such as @code{en_US.windows-1252} or @code{it_IT.windows-1252}.  The
 rest of the character strings in the member use this encoding.  The
 encoding string is itself encoded in US-ASCII.
+
+@code{epoch} is the year that starts the epoch.  A 2-digit year is
+interpreted as belonging to the 100 years beginning at the epoch.  The
+default epoch year is 69 years prior to the current year; thus, in
+2017 this field by default contains 1948.  In the corpus, @code{epoch}
+ranges from 1943 to 1948, plus some contain -1.
 
 @code{decimal} is the decimal point character.  The observed values
 are @samp{.} and @samp{,}.
@@ -761,10 +1176,36 @@ are @samp{.} and @samp{,}.
 @samp{'} (apostrophe), @samp{ } (space), and zero (presumably
 indicating that digits should not be grouped).
 
+@code{command} describes the statistical procedure that generated the
+output, in English.  It is not necessarily the literal syntax name of
+the procedure: for example, NPAR TESTS becomes ``Nonparametric
+Tests.''  @code{command-local} is the procedure's name, translated
+into the output language; it is often empty and, when it is not,
+sometimes the same as @code{command}.
+
+@code{dataset} is the name of the dataset analyzed to produce the
+output, e.g.@: @code{DataSet1}, and @code{datafile} the name of the
+file it was read from, e.g.@: @file{C:\Users\foo\bar.sav}.  The latter
+is sometimes the empty string.
+
+@code{date} is a date, as seconds since the epoch, i.e.@: since
+January 1, 1970.  Pivot tables within an SPV files often have dates a
+few minutes apart, so this is probably a creation date for the tables
+rather than for the file.
+
+Sometimes @code{dataset}, @code{datafile}, and @code{date} are present
+and other times they are absent.  The reader can distinguish by
+assuming that they are present and then checking whether the
+presumptive @code{dataset} contains a null byte (a valid string never
+will).
+
 @code{n-ccs} is observed as either 0 or 5.  When it is 5, the
 following strings are CCA through CCE format strings.  @xref{Custom
 Currency Formats,,, pspp, PSPP}.  Most commonly these are all
 @code{-,,,} but other strings occur.
+
+@code{missing} is the character used to indicate that a cell contains
+a missing value.  It is always observed as @samp{.}.
 
 @node SPV Light Member Dimensions
 @subsection Dimensions
@@ -775,30 +1216,34 @@ the categories associated with each dimension.
 @cartouche
 @format
 Dimensions @result{} int[@t{n-dims}] Dimension*[@t{n-dims}]
-Dimension @result{} Value[@t{name}] DimUnknown int[@t{n-categories}] Category*[@t{n-categories}]
-DimUnknown @result{}
+Dimension @result{} Value[@t{name}] DimProperties int[@t{n-categories}] Category*[@t{n-categories}]
+DimProperties @result{}
     byte[@t{d1}]
     (00 @math{|} 01 @math{|} 02)[@t{d2}]
     (i0 @math{|} i2)[@t{d3}]
-    (00 @math{|} 01)[@t{d4}]
-    (00 @math{|} 01)[@t{d5}]
-    01
-    int[@t{d6}]
+    bool[@t{show-dim-label}]
+    bool[@t{hide-all-labels}]
+    01 int[@t{dim-index}]
 @end format
 @end cartouche
 
 @code{name} is the name of the dimension, e.g. @code{Variables},
 @code{Statistics}, or a variable name.
 
+The meanings of @code{d1}, @code{d2}, and @code{d3} are unknown.
 @code{d1} is usually 0 but many other values have been observed.
 
-@code{d3} is 2 over 99% of the time.
+If @code{show-dim-label} is 01, the pivot table displays a label for
+the dimension itself.  Because usually the group and category labels
+are enough explanation, it is usually 00.
 
-@code{d5} is 0 over 99% of the time.
+If @code{hide-all-labels} is 01, the pivot table omits all labels for
+the dimension, including group and category labels.  It is usually 00.
+When @code{hide-all-labels} is 01, @code{show-dim-label} is ignored.
 
-@code{d6} is either -1 or the 0-based index of the dimension, e.g.@: 0
-for the first dimension, 1 for the second, and so on.  The latter is
-the case 98% of the time in the corpus.
+@code{dim-index} is usually the 0-based index of the dimension, e.g.@:
+0 for the first dimension, 1 for the second, and so on.  Sometimes it
+is -1.  There is no visible difference.
 
 @node SPV Light Member Categories
 @subsection Categories
@@ -809,23 +1254,26 @@ are really categories; the others just serve as grouping constructs.
 @cartouche
 @format
 Category @result{} Value[@t{name}] (Leaf @math{|} Group)
-Leaf @result{} 00 00 00 i2 int[@t{index}] i0
+Leaf @result{} 00 00 00 i2 int[@t{cat-index}] i0
 Group @result{}
-    (00 @math{|} 01)[@t{merge}] 00 01 (i0 @math{|} i2)[@t{data}]
+    bool[@t{merge}] 00 01 (i0 @math{|} i2)[@t{data}]
     i-1 int[@t{n-subcategories}] Category*[@t{n-subcategories}]
 @end format
 @end cartouche
 
 @code{name} is the name of the category (or group).
 
-A Leaf represents a leaf category.  The Leaf's @code{index} is a
+A Leaf represents a leaf category.  The Leaf's @code{cat-index} is a
 nonnegative integer less than @code{n-categories} in the Dimension in
-which the Category is nested (directly or indirectly).
+which the Category is nested (directly or indirectly).  These
+categories represent the original order in which the categories were
+sorted; if the user sorted or rearranged the categories, then the
+order of categories in the file reflects that without changing the
+@code{cat-index} values.
 
-A Group represents a Group of nested categories.  Usually a Group
-contains at least one Category, so that @code{n-subcategories} is
-positive, but a few Groups with @code{n-subcategories} 0 has been
-observed.
+A Group is a group of nested categories.  Usually a Group contains at
+least one Category, so that @code{n-subcategories} is positive, but a
+few Groups with @code{n-subcategories} 0 has been observed.
 
 If a Group's @code{merge} is 00, the most common value, then the group
 is really a distinct group that should be represented as such in the
@@ -851,23 +1299,23 @@ The final part of an SPV light member contains the actual data.
 Data @result{}
     int[@t{layers}] int[@t{rows}] int[@t{columns}] int*[@t{n-dimensions}]
     int[@t{n-data}] Datum*[@t{n-data}]
-Datum @result{} int64[@t{index}] v3(00?) Value
+Datum @result{} int64[@t{index}] v1(00?) Value
 @end format
 @end cartouche
 
-The values of @code{layers}, @code{rows}, and @code{columns} each
-specifies the number of dimensions displayed in layers, rows, and
+The values of @code{n-layers}, @code{n-rows}, and @code{n-columns}
+each specifies the number of dimensions displayed in layers, rows, and
 columns, respectively.  Any of them may be zero.  Their values sum to
 @code{n-dimensions} from Dimensions (@pxref{SPV Light Member
 Dimensions}).
 
 The @code{n-dimensions} integers are a permutation of the 0-based
-dimension numbers.  The first @code{layers} integers specify each of
-the dimensions represented by layers, the next @code{rows} integers
+dimension numbers.  The first @code{n-layers} integers specify each of
+the dimensions represented by layers, the next @code{n-rows} integers
 specify the dimensions represented by rows, and the final
-@code{columns} integers specify the dimensions represented by columns.
-When there is more than one dimension of a given kind, the inner
-dimensions are given first.
+@code{n-columns} integers specify the dimensions represented by
+columns.  When there is more than one dimension of a given kind, the
+inner dimensions are given first.
 
 The format of a Datum varies slightly from version 1 to version 3: in
 version 1 it allows for an extra optional 00 byte.
@@ -887,6 +1335,7 @@ for each @math{i} from 0 to @math{d - 1}:
 For example, suppose there are 3 dimensions with 3, 4, and 5
 categories, respectively.  The datum at coordinates (1, 2, 3) has
 index @math{5 \times (4 \times (3 \times 0 + 1) + 2) + 3 = 33}.
+Within a given dimension, the index is the @code{cat-index} in a Leaf.
 
 @node SPV Light Member Value
 @subsection Value
@@ -901,7 +1350,7 @@ RawValue @result{}
     01 ValueMod int[@t{format}] double[@t{x}]
   @math{|} 02 ValueMod int[@t{format}] double[@t{x}]
     string[@t{varname}] string[@t{vallab}] (01 @math{|} 02 @math{|} 03)
-  @math{|} 03 string[@t{local}] ValueMod string[@t{id}] string[@t{c}] (00 @math{|} 01)[@t{type}]
+  @math{|} 03 string[@t{local}] ValueMod string[@t{id}] string[@t{c}] bool[@t{type}]
   @math{|} 04 ValueMod int[@t{format}] string[@t{vallab}] string[@t{varname}]
     (01 @math{|} 02 @math{|} 03) string[@t{s}]
   @math{|} 05 ValueMod string[@t{varname}] string[@t{varlabel}] (01 @math{|} 02 @math{|} 03)
@@ -1056,35 +1505,61 @@ A ValueMod can specify special modifications to a Value.
 ValueMod @result{}
     31 i0 (i0 @math{|} i1 string[@t{subscript}])
     v1(00 (i1 @math{|} i2) 00 00 int 00 00)
-    v3(count(FormatString Style ValueModUnknown))
-  @math{|} 31 i1 int[@t{footnote-number}] Format
-  @math{|} 31 i2 (00 @math{|} 01 @math{|} 02) 00 (i1 @math{|} i2 @math{|} i3) Format
-  @math{|} 31 i3 00 00 01 00 i2 Format
+    v3(count(FormatString StylePair))
+  @math{|} 31 int[@t{n-refs}] int16*[@t{n-refs}] Format
   @math{|} 58
-Style @result{} 58 @math{|} 31 01? 00? 00? 00? 01 string[@t{fgcolor}] string[@t{bgcolor}] string[@t{typeface}] byte
+
 Format @result{} 00 00 count(FormatString Style 58)
-FormatString @result{} count((i0 (58 @math{|} 31 string))?)
-ValueModUnknown @result{} 58 @math{|} 31 i0 i0 i0 i0 01 00 (01 @math{|} 02 @math{|} 08) 00 08 00 0a 00)
+FormatString @result{} count((count((i0 58)?) (58 @math{|} 31 string))?)
+
+StylePair @result{}
+    (31 Style | 58)
+    (31 Style2 | 58)
+
+Style @result{}
+    bool[@t{bold}] bool[@t{italic}] bool[@t{underline}] bool[@t{show}]
+    string[@t{fgcolor}] string[@t{bgcolor}]
+    string[@t{typeface}] byte[@t{size}]
+
+Style2 @result{}
+    int[@t{halign}] int[@t{valign}] double[@t{offset}]
+    int16[@t{left-margin}] int16[@t{right-margin}]
+    int16[@t{top-margin}] int16[@t{bottom-margin}]
 @end format
 @end cartouche
 
-The @code{footnote-number}, if present, specifies a footnote that the
-Value references.  The footnote's marker is shown appended to the main
-text of the Value, as a superscript.
+A ValueMod that begins with ``31 i0'' specifies a string to append to
+the main text of the Value, as a subscript.  The subscript text is a
+brief indicator, e.g.@: @samp{a} or @samp{a,b}, with its meaning
+indicated by the table caption.  In this usage, subscripts are similar
+to footnotes.  One apparent difference is that a Value can only
+reference one footnote but a subscript can list more than one letter.
 
-The @code{subscript}, if present, specifies a string to append to the
-main text of the Value, as a subscript.  The subscript text is a brief
-indicator, e.g.@: @samp{a} or @samp{a,b}, with its meaning indicated
-by the table caption.  In this usage, subscripts are similar to
-footnotes; one apparent difference is that a Value can only reference
-one footnote but a subscript can list more than one letter.
+A ValueMod that begins with 31 followed by a nonzero ``int'' specifies
+a footnote or footnotes that the Value references.  Footnote markers
+are shown appended to the main text of the Value, as superscripts.
 
 The Format, if present, is a format string for substitutions using the
 syntax explained previously.  It appears to be an English-language
 version of the localized format string in the Value in which the
 Format is nested.
 
-The Style, if present, changes the style for this individual Value.
+Style and Style2, if present, change the style for this individual
+Value.  @code{bold}, @code{italic}, and @code{underline} control the
+particular style.  @code{fgcolor} and @code{bgcolor} are strings, such
+as @code{#ffffff}.  The @code{size} is a font size in units of 1/96
+inch.
+
+@code{halign} is 0 for center, 2 for left, 4 for right, 6 for decimal,
+0xffffffad for mixed.  For decimal alignment, @code{offset} is the
+decimal point's offset from the right side of the cell, in units of
+1/72 inch.
+
+@code{valign} specifies vertical alignment: 0 for center, 1 for top, 3
+for bottom.
+
+@code{left-margin}, @code{right-margin}, @code{top-margin}, and
+@code{bottom-margin} are in units of 1/72 inch.
 
 @node SPV Legacy Detail Member Binary Format
 @section Legacy Detail Member Binary Format
@@ -1092,8 +1567,9 @@ The Style, if present, changes the style for this individual Value.
 Whereas the light binary format represents everything about a given
 pivot table, the legacy binary format conceptually consists of a
 number of named sources, each of which consists of a number of named
-series, each of which is a 1-dimensional array of numbers or strings
-or a mix.  Thus, the legacy binary member format is quite simple.
+variables, each of which is a 1-dimensional array of numbers or
+strings or a mix.  Thus, the legacy binary member format is quite
+simple.
 
 This section uses the same context-free grammar notation as in the
 previous section, with the following additions:
@@ -1140,18 +1616,19 @@ The following sections go into more detail.
 @cartouche
 @format
 Metadata @result{}
-    int[@t{per-series}] int[@t{n-series}] int[@t{offset}]
+    int[@t{n-data}] int[@t{n-variables}] int[@t{offset}]
     vAF(byte*32[@t{source-name}])
     vB0(byte*64[@t{source-name}] int[@t{x}])
 @end format
 @end cartouche
 
-A data source consists of @code{n-series} series of data, with
-@code{per-series} data values per series.
+A data source has @code{n-variables} variables, each with
+@code{n-data} data values.
 
 @code{source-name} is a 32- or 64-byte string padded on the right with
-zero bytes.  The names that appear in the corpus are very generic,
-usually @code{tableData} or @code{source0}.
+zero bytes.  The names that appear in the corpus are very generic:
+usually @code{tableData} for pivot table data or @code{source0} for
+chart data.
 
 A given Metadata's @code{offset} is the offset, in bytes, from the
 beginning of the member to the start of the corresponding Data.  This
@@ -1166,26 +1643,25 @@ The meaning of @code{x} in version 0xb0 is unknown.
 
 @cartouche
 @format
-Data @result{} NumericData StringData?
-NumericData @result{} NumericSeries*[@t{n-series}]
-NumericSeries @result{} byte*288[@t{series-name}] double*[@t{per-series}]
+Data @result{} NumericData*[@t{n-variables}] StringData?
+NumericData @result{} byte*288[@t{variable-name}] double*[@t{n-data}]
 @end format
 @end cartouche
 
 Data follow the Metadata in the legacy binary format, with sources in
-the same order.  Each NumericSeries begins with a @code{series-name}
+the same order.  Each NumericSeries begins with a @code{variable-name}
 that generally indicates its role in the pivot table, e.g.@: ``cell'',
 ``cellFormat'', ``dimension0categories'', ``dimension0group0'',
-followed by the numeric data, one double per element in the series.  A
-double with the maximum negative double @code{-DBL_MAX} represents the
-system-missing value SYSMIS.
+followed by the numeric data, one double per datum.  A double with the
+maximum negative double @code{-DBL_MAX} represents the system-missing
+value SYSMIS.
 
 @cartouche
 @format
 StringData @result{} i1 string[@t{source-name}] Pairs Labels
 
-Pairs @result{} int[@t{n-string-series}] PairSeries*[@t{n-string-series}]
-PairSeries @result{} string[@t{pair-series-name}] int[@t{n-pairs}] Pair*[@t{n-pairs}]
+Pairs @result{} int[@t{n-string-vars}] PairSeries*[@t{n-string-vars}]
+PairVar @result{} string[@t{pair-var-name}] int[@t{n-pairs}] Pair*[@t{n-pairs}]
 Pair @result{} int[@t{i}] int[@t{j}]
 
 Labels @result{} int[@t{n-labels}] Label*[@t{n-labels}]
@@ -1195,23 +1671,23 @@ Label @result{} int[@t{frequency}] int[@t{s}]
 
 A source may include a mix of numeric and string data values.  When a
 source includes any string data, the data values that are strings are
-set to SYSMIS in the NumericSeries, and StringData follows the
+set to SYSMIS in the NumericData, and StringData follows the
 NumericData.  A source that contains no string data omits the
 StringData.  To reliably determine whether a source includes
 StringData, the reader should check whether the offset following the
-NumericData is the offset of the next series, as indicated by its
+NumericData is the offset of the next source, as indicated by its
 Metadata (or the end of the member, in the case of the last source).
 
 StringData repeats the name of the source (from Metadata).
 
-The string data overlays the numeric data.  @code{n-string-series} is
-the number of series within the source that include string data.  More
-precisely, it is the 1-based index of the last series in the source
+The string data overlays the numeric data.  @code{n-string-vars} is
+the number of variables in the source that include string data.  More
+precisely, it is the 1-based index of the last variable in the source
 that includes any string data; thus, it would be 4 if there are 5
-series and only the fourth one includes string data.
+variables and only the fourth one includes string data.
 
-Each PairSeries consists a sequence of 0 or more Pair nonterminals,
-each of which maps from a 0-based index within series @code{i} to a
+Each PairVar consists a sequence of 0 or more Pair nonterminals, each
+of which maps from a 0-based index within variable @code{i} to a
 0-based label index @code{j}, e.g.@: pair @code{i} = 2, @code{j} = 3,
 means that the third data value (with value SYSMIS) is to be replaced
 by the string of the fourth Label.
@@ -1225,3 +1701,1270 @@ label is the string @code{s}.  Each label also includes a
 @section Legacy Detail Member XML Format
 
 This format is still under investigation.
+
+The design of the detail XML format is not what one would end up with
+for describing pivot tables.  This is because it is a special case
+of a much more general format (``visualization XML'' or ``VizML'')
+that can describe a wide range of visualizations.  Most of this
+generality is overkill for tables, and so we end up with a funny
+subset of a general-purpose format.
+
+The important elements of the detail XML format are:
+
+@itemize @bullet
+@item
+Variables.  Variables in detail XML roughly correspond to the
+dimensions in a light detail member.  There is one variable for each
+dimension, plus one variable for each level of labeling along an axis.
+
+The bulk of variables are defined with @code{sourceVariable} elements.
+The data for these variables comes from the associated
+@code{tableData.bin} member.  Some variables are defined, with
+@code{derivedVariable} elements, as a constant or in terms of a
+mapping function from a source variable.
+
+@item
+Assignment of variables to axes.  A variable can appear as columns, or
+rows, or layers.  The @code{faceting} element and its sub-elements
+describe this assignment.
+@end itemize
+
+All elements have an optional @code{id} attribute.  In practice many
+elements are assigned @code{id} attributes that are never referenced.
+
+@menu
+* SPV Detail visualization Element::
+* SPV Detail userSource Element::
+* SPV Detail sourceVariable Element::
+* SPV Detail derivedVariable Element::
+* SPV Detail extension Element::
+* SPV Detail graph Element::
+* SPV Detail location Element::
+* SPV Detail coordinates Element::
+* SPV Detail faceting Element::
+* SPV Detail facetLayout Element::
+* SPV Detail style Element::
+@end menu
+
+@node SPV Detail visualization Element
+@subsection The @code{visualization} Element
+
+@format
+Parent: Document root
+Contents:
+     extension?
+     userSource
+     (sourceVariable @math{|} derivedVariable)@math{+}
+     graph
+     labelFrame@math{+}
+     container?
+     style@math{+}
+     layerController?
+@end format
+
+This element has the following attributes.
+
+@defvr {Required} creator
+The version of the software that created this SPV file, as a string of
+the form @code{xxyyzz}, which represents software version xx.yy.zz,
+e.g.@: @code{160001} is version 16.0.1.  The corpus includes major
+versions 16 through 19.
+@end defvr
+
+@defvr {Required} date
+The date on the which the file was created, as a string of the form
+@code{YYYY-MM-DD}.
+@end defvr
+
+@defvr {Required} lang
+The locale used for output, in Windows format, which is similar to the
+format used in Unix with the underscore replaced by a hyphen, e.g.@:
+@code{en-US}, @code{en-GB}, @code{el-GR}, @code{sr-Cryl-RS}.
+@end defvr
+
+@defvr {Required} name
+The title of the pivot table, localized to the output language.
+@end defvr
+
+@defvr {Required} style
+The @code{id} of a @code{style} element (@pxref{SPV Detail style
+Element}).  This is the base style for the entire pivot table.  In
+every example in the corpus, the value is @code{visualizationStyle}
+and the corresponding @code{style} element has no attributes other
+than @code{id}.
+@end defvr
+
+@defvr {Required} type
+A floating-point number.  The meaning is unknown.
+@end defvr
+
+@defvr {Required} version
+The visualization schema version number.  In the corpus, the value is
+one of 2.4, 2.5, 2.7, and 2.8.
+@end defvr
+
+@node SPV Detail userSource Element
+@subsection The @code{userSource} Element
+
+Parent: @code{visualization} @*
+Contents:
+
+This element has the following attributes.
+
+@defvr {Optional} missing
+Always @code{listwise}.
+@end defvr
+
+@node SPV Detail sourceVariable Element
+@subsection The @code{sourceVariable} Element
+
+Parent: @code{visualization} @*
+Contents: @code{extension}* (@code{format} @math{|} @code{stringFormat})?
+
+This element defines a variable whose values can be used elsewhere in
+the visualization.  It ties this element's @code{id} to a variable
+from the @file{tableData.bin} member that corresponds to this
+@file{.xml}.
+
+This element has the following attributes.
+
+@defvr {Required} categorical
+Always set to @code{true}.
+@end defvr
+
+@defvr {Required} source
+Always set to @code{tableData}, the @code{source-name} in the
+corresponding @file{tableData.bin} member (@pxref{SPV Legacy Member
+Metadata}).
+@end defvr
+
+@defvr {Required} sourceName
+The name of a variable within the source, the @code{variable-name} in
+the corresponding @file{tableData.bin} member (@pxref{SPV Legacy
+Member Data}).
+@end defvr
+
+@defvr {Optional} dependsOn
+The @code{variable-name} of a variable linked to this one, so that a
+viewer can work with them together.  For a group variable, this is the
+name of the corresponding categorical variable.
+@end defvr
+
+@defvr {Optional} label
+The variable label, if any
+@end defvr
+
+@defvr {Optional} labelVariable
+The @code{variable-name} of a variable whose string values correspond
+one-to-one with the values of this variable and are suitable for use
+as value labels.
+@end defvr
+
+@node SPV Detail derivedVariable Element
+@subsection The @code{derivedVariable} Element
+
+Parent: @code{visualization} @*
+Contents: @code{extension}* (@code{format} @math{|} @code{stringFormat} @code{valueMapEntry}*)
+
+Like @code{sourceVariable}, this element defines a variable whose
+values can be used elsewhere in the visualization.  Instead of being
+read from a data source, the variable's data are defined by a
+mathematical expression.
+
+This element has the following attributes.
+
+@defvr {Required} categorical
+Always set to @code{true}.
+@end defvr
+
+@defvr {Required} value
+An expression that defines the variable's value.  In theory this could
+be an arbitrary expression in terms of constants, functions, and other
+variables, e.g.@: @math{(@var{var1} + @var{var2}) / 2}.  In practice,
+the corpus contains only the following forms of expressions:
+
+@table @code
+@item constant(@var{number})
+@itemx constant(@var{variable})
+A constant.  The meaning when a variable is named is unknown.
+Sometimes the ``variable name'' has spaces in it.
+
+@item map(@var{variable})
+Transforms the values in the named @var{variable} using the
+@code{valueMapEntry}s contained within the element.
+@end table
+@end defvr
+
+@defvr {Optional} dependsOn
+The @code{variable-name} of a variable linked to this one, so that a
+viewer can work with them together.  For a group variable, this is the
+name of the corresponding categorical variable.
+@end defvr
+
+@menu
+* SPV Detail valueMapEntry Element::
+@end menu
+
+@node SPV Detail valueMapEntry Element
+@subsubsection The @code{valueMapEntry} Element
+
+Parent: @code{derivedVariable} @*
+Contents: empty
+
+A @code{valueMapEntry} element defines a mapping from one or more
+values of a source expression to a target value.  (In the corpus, the
+source expression is always just the name of a variable.)  Each target
+value requires a separate @code{valueMapEntry}.  If multiple source
+values map to the same target value, they can be combined or separate.
+
+@code{valueMapEntry} has the following attributes.
+
+@defvr {Required} from
+A source value, or multiple source values separated by semicolons,
+e.g.@: @code{0} or @code{13;14;15;16}.
+@end defvr
+
+@defvr {Required} to
+The target value.
+@end defvr
+
+@node SPV Detail extension Element
+@subsection The @code{extension} Element
+
+This is a general-purpose ``extension'' element.  Readers that don't
+understand a given extension should be able to safely ignore it.  The
+attributes on this element, and their meanings, vary based on the
+context.  Each known usage is described separately below.  The current
+extensions use attributes exclusively, without any nested elements.
+
+@subsubheading @code{visualization} Parent Element
+
+With @code{visualization} as its parent element, @code{extension} has
+the following attributes.
+
+@defvr {Optional} numRows
+An integer that presumably defines the number of rows in the displayed
+pivot table.
+@end defvr
+
+@defvr {Optional} showGridline
+Always set to @code{false} in the corpus.
+@end defvr
+
+@defvr {Optional} minWidthSet
+@defvrx {Optional} maxWidthSet
+Always set to @code{true} in the corpus.
+@end defvr
+
+@subsubheading @code{container} Parent Element
+
+With @code{container} as its parent element, @code{extension} has the
+following attributes.
+
+@defvr {Required} combinedFootnotes
+Always set to @code{true} in the corpus.
+@end defvr
+
+@subsubheading @code{sourceVariable} and @code{derivedVariable} Parent Element
+
+With @code{sourceVariable} or @code{derivedVariable} as its parent
+element, @code{extension} has the following attributes.  A given
+parent element often contains several @code{extension} elements that
+specify the meaning of the source data's variables or sources, e.g.@:
+
+@example
+<extension from="0" helpId="corrected_model"/>
+<extension from="3" helpId="error"/>
+<extension from="4" helpId="total_9"/>
+<extension from="5" helpId="corrected_total"/>
+@end example
+
+@defvr {Required} from
+An integer or a name like ``dimension0''.
+@end defvr
+
+@defvr {Required} helpId
+An identifier.
+@end defvr
+
+@node SPV Detail graph Element
+@subsection The @code{graph} Element
+
+Parent: @code{visualization} @*
+Contents: @code{location}@math{+} @code{coordinates} @code{faceting} @code{facetLayout} @code{interval}
+
+@code{graph} has the following attributes.
+
+@defvr {Required} cellStyle
+@defvrx {Required} style
+Each of these is the @code{id} of a @code{style} element (@pxref{SPV
+Detail style Element}).  The former is the default style for
+individual cells, the latter for the entire table.
+@end defvr
+
+@node SPV Detail location Element
+@subsection The @code{location} Element
+
+Parent: @code{graph} @*
+Contents: empty
+
+Each instance of this element specifies where some part of the table
+frame is located.  All the examples in the corpus have four instances
+of this element, one for each of the parts @code{height},
+@code{width}, @code{left}, and @code{top}.  Some examples in the
+corpus add a fifth for part @code{bottom}, even though it is not clear
+how all of @code{top}, @code{bottom}, and @code{heigth} can be honored
+at the same time.  In any case, @code{location} seems to have little
+importance in representing tables; a reader can safely ignore it.
+
+@defvr {Required} part
+One of @code{height}, @code{width}, @code{top}, @code{bottom}, or
+@code{left}.  Presumably @code{right} is acceptable as well but the
+corpus contains no examples.
+@end defvr
+
+@defvr {Required} method
+How the location is determined:
+
+@table @code
+@item sizeToContent
+Based on the natural size of the table.  Observed only for
+parts @code{height} and @code{width}.
+
+@item attach
+Based on the location specified in @code{target}.  Observed only for
+parts @code{top} and @code{bottom}.
+
+@item fixed
+Using the value in @code{value}.  Observed only for parts @code{top},
+@code{bottom}, and @code{left}.
+
+@item same
+Same as the specified @code{target}.  Observed only for part
+@code{left}.
+@end table
+@end defvr
+
+@defvr {Optional} min
+Minimum size.  Only observed with value @code{100pt}.  Only observed
+for part @code{width}.
+@end defvr
+
+@defvr {Dependent} target
+Required when @code{method} is @code{attach} or @code{same}, not
+observed otherwise.  This is the ID of an element to attach to.
+Observed with the ID of @code{title}, @code{footnote}, @code{graph},
+and other elements.
+@end defvr
+
+@defvr {Dependent} value
+Required when @code{method} is @code{fixed}, not observed otherwise.
+Observed values are @code{0%}, @code{0px}, @code{1px}, and @code{3px}
+on parts @code{top} and @code{left}, and @code{100%} on part
+@code{bottom}.
+@end defvr
+
+@node SPV Detail coordinates Element
+@subsection The @code{coordinates} Element
+
+Parent: @code{graph} @*
+Contents: empty
+
+This element is always present and always empty, with no attributes
+(except @code{id}).
+
+@node SPV Detail faceting Element
+@subsection The @code{faceting} Element
+
+Parent: @code{graph} @*
+Contents: @code{cross} @code{layer}*
+
+The @code{faceting} element describes the row, column, and layer
+structure of the table.  Its @code{cross} child determines the row and
+column structure, and each @code{layer} child (if any) represents a
+layer.
+
+@code{faceting} has no attributes (other than @code{id}).
+
+@subsubheading The @code{cross} Element
+
+Parent: @code{faceting} @*
+Contents: @code{nest} @code{nest}
+
+The @code{cross} element describes the row and column structure of the
+table.  It has exactly two @code{nest} children, the first of which
+describes the table's rows and the second the table's columns.
+
+@code{cross} has no attributes (other than @code{id}).
+
+@subsubheading The @code{nest} Element
+
+Parent: @code{cross} @*
+Contents: @code{variableReference}@math{+}
+
+A given @code{nest} usually consists of one or more dimensions, each
+of which is represented by @code{variableReference} child elements.
+Minimally, a dimension has two @code{variableReference} children, one
+for the categories, one for the data, e.g.:
+
+@example
+<nest>
+  <variableReference ref="dimension0categories"/>
+  <variableReference ref="dimension0"/>
+</nest>
+@end example
+
+@noindent
+Groups of categories introduce additional variable references, e.g.@:
+
+@example
+<nest>
+  <variableReference ref="dimension0categories"/>
+  <variableReference ref="dimension0group0"/>
+  <variableReference ref="dimension0"/>
+</nest>
+@end example
+
+@noindent
+Grouping can be hierarchical, e.g.@:
+
+@example
+<nest>
+  <variableReference ref="dimension0categories"/>
+  <variableReference ref="dimension0group1"/>
+  <variableReference ref="dimension0group0"/>
+  <variableReference ref="dimension0"/>
+</nest>
+@end example
+
+@noindent
+XXX what are group maps?
+
+@example
+<nest id="nest_1973">
+  <variableReference ref="dimension1categories"/>
+  <variableReference ref="dimension1group1map"/>
+  <variableReference ref="dimension1group0map"/>
+  <variableReference ref="dimension1"/>
+</nest>
+<nest>
+  <variableReference ref="dimension0categories"/>
+  <variableReference ref="dimension0group0map"/>
+  <variableReference ref="dimension0"/>
+</nest>
+@end example
+
+@noindent
+A @code{nest} can contain multiple dimensions:
+
+@example
+<nest>
+  <variableReference ref="dimension1categories"/>
+  <variableReference ref="dimension1group0"/>
+  <variableReference ref="dimension1"/>
+  <variableReference ref="dimension0categories"/>
+  <variableReference ref="dimension0"/>
+</nest>
+@end example
+
+One @code{nest} within a given @code{cross} may have no dimensions, in
+which case it still has one @code{variableReference} child, which
+references a @code{derivedVariable} whose @code{value} attribute is
+@code{constant(0)}.  In the corpus, such a @code{derivedVariable} has
+@code{row} or @code{column}, respectively, as its @code{id}.
+
+@code{nest} has no attributes (other than @code{id}).
+
+@subsubheading The @code{variableReference} Element
+
+Parent: @code{nest} @*
+Contents: empty
+
+@code{variableReference} has one attribute.
+
+@defvr {Required} ref
+The @code{id} of a @code{sourceVariable} or @code{derivedVariable}
+element.
+@end defvr
+
+@subsubheading The @code{layer} Element
+
+Parent: @code{faceting} @*
+Contents: empty
+
+Each layer is represented by a pair of @code{layer} elements.  The
+first of this pair is for a category variable, the second for the data
+variable, e.g.:
+
+@example
+<layer value="0" variable="dimension0categories" visible="true"/>
+<layer value="dimension0" variable="dimension0" visible="false"/>
+@end example
+
+@noindent
+@code{layer} has the following attributes.
+
+@defvr {Required} variable
+The @code{id} of a @code{sourceVariable} or @code{derivedVariable}
+element.
+@end defvr
+
+@defvr {Required} value
+The value to select.  For a category variable, this is always
+@code{0}; for a data variable, it is the same as the @code{variable}
+attribute.
+@end defvr
+
+@defvr {Optional} visible
+Whether the layer is visible.  Generally, category layers are visible
+and data layers are not, but sometimes this attribute is omitted.
+@end defvr
+
+@defvr {Optional} method
+When present, this is always @code{nest}.
+@end defvr
+
+@node SPV Detail facetLayout Element
+@subsection The @code{facetLayout} Element
+
+Parent: @code{graph} @*
+Contents: @code{tableLayout} @code{facetLevel}@math{+} @code{setCellProperties}*
+
+@subsubheading The @code{tableLayout} Element
+
+Parent: @code{facetLayout} @*
+Contents: empty
+
+@defvr {Required} verticalTitlesInCorner
+Always set to @code{true}.
+@end defvr
+
+@defvr {Optional} style
+The @code{id} of a @code{style} element.
+@end defvr
+
+@defvr {Optional} fitCells
+Always set to @code{ticks}.
+@end defvr
+
+@subsubheading The @code{facetLevel} Element
+
+Parent: @code{facetLayout} @*
+Contents: @code{axis}
+
+Each @code{facetLevel} describes a @code{variableReference} or
+@code{layer}, and a table has one @code{facetLevel} element for
+each such element.  For example, an SPV detail member that contains
+four @code{variableReference} elements and two @code{layer} elements
+will contain six @code{facetLevel} elements.
+
+In the corpus, @code{facetLevel} elements and the elements that they
+describe are always in the same order.  The correspondence may also be
+observed in two other ways.  First, one may use the @code{level}
+attribute, described below.  Second, in the corpus, a
+@code{facetLevel} always has an @code{id} that is the same as the
+@code{id} of the element it describes with @code{_facetLevel}
+appended.  One should not formally rely on this, of course, but it is
+usefully indicative.
+
+@defvr {Required} level
+A 1-based index into the @code{variableReference} and @code{layer}
+elements, e.g.@: a @code{facetLayout} with a @code{level} of 1
+describes the first @code{variableReference} in the SPV detail member,
+and in a member with four @code{variableReference} elements, a
+@code{facetLayout} with a @code{level} of 5 describes the first
+@code{layer} in the member.
+@end defvr
+
+@defvr {Required} gap
+Always observed as @code{0pt}.
+@end defvr
+
+@subsubheading The @code{axis} Element
+
+Parent: @code{facetLevel} @*
+Contents: @code{label}? @code{majorTicks}
+
+@defvr {Attribute} style
+The @code{id} of a @code{style} element.
+@end defvr
+
+@subsubheading The @code{label} Element
+
+Parent: @code{axis} or @code{labelFrame} @*
+Contents: @code{text}@math{+} @math{|} @code{descriptionGroup}
+
+This element represents a label on some aspect of the table.  For example,
+the table's title is a @code{label}.
+
+The contents of the label can be one or more @code{text} elements or a
+@code{descriptionGroup}.
+
+@defvr {Attribute} style
+@defvrx {Optional} textFrameStyle
+Each of these is the @code{id} of a @code{style} element.
+@code{style} is the style of the label text, @code{textFrameStyle} the
+style for the frame around the label.
+@end defvr
+
+@defvr {Optional} purpose
+The kind of entity being labeled, one of @code{title},
+@code{subTitle}, @code{layer}, or @code{footnote}.
+@end defvr
+
+@subsubheading The @code{descriptionGroup} Element
+
+Parent: @code{label} @*
+Contents: (@code{description} @math{|} @code{text})@math{+}
+
+A @code{descriptionGroup} concatenates one or more elements to form a
+label.  Each element can be a @code{text} element, which contains
+literal text, or a @code{description} element that substitutes a value
+or a variable name.
+
+@defvr {Attribute} target
+The @code{id} of an element being described.  In the corpus, this is
+always @code{faceting}.
+@end defvr
+
+@defvr {Attribute} separator
+A string to separate the description of multiple groups, if the
+@code{target} has more than one.  In the corpus, this is always a
+new-line.
+@end defvr
+
+Typical contents for a @code{descriptionGroup} are a value by itself:
+@example
+<description name="value"/>
+@end example
+@noindent or a variable and its value, separated by a colon:
+@example
+<description name="variable"/><text>:</text><description name="value"/>
+@end example
+
+@subsubheading The @code{description} Element
+
+Parent: @code{descriptionGroup} @*
+Contents: empty
+
+A @code{description} is like a macro that expands to some property of
+the target of its parent @code{descriptionGroup}.
+
+@defvr {Attribute} name
+The name of the property.  Only @code{variable} and @code{value}
+appear in the corpus.
+@end defvr
+
+@subsubheading The @code{majorTicks} Element
+
+Parent: @code{axis} @*
+Contents: @code{gridline}?
+
+@defvr {Attribute} labelAngle
+@defvrx {Attribute} length
+Both always defined to @code{0}.
+@end defvr
+
+@defvr {Attribute} style
+@defvrx {Attribute} tickFrameStyle
+Each of these is the @code{id} of a @code{style} element.
+@code{style} is the style of the tick labels, @code{tickFrameStyle}
+the style for the frames around the labels.
+@end defvr
+
+@subsubheading The @code{gridline} Element
+
+Parent: @code{majorTicks} @*
+Contents: empty
+
+Represents ``gridlines,'' which for a table represents the lines
+between the rows or columns of a table (XXX?).
+
+@defvr {Attribute} style
+The style for the gridline.
+@end defvr
+
+@defvr {Attribute} zOrder
+Observed as a number between 28 and 31.  Does not seem to be
+important.
+@end defvr
+
+@subsubheading The @code{setCellProperties} Element
+
+Parent: @code{facetLayout} @*
+Contents: @code{setMetaData} @code{setStyle}* @code{setFormat}@math{+} @code{union}?
+
+This element sets style properties of cells designated by the
+@code{target} attribute of its child elements, as further restricted
+by the optional @code{union} element if present.  The @code{target}
+values often used, e.g.@: @code{graph} or @code{labeling}, actually
+affect every cell, so the @code{union} element is a useful
+restriction.
+
+@defvr {Optional} applyToConverse
+If present, always @code{true}.  This appears to invert the meaning of
+the @code{target} of sub-elements: the selected cells are the ones
+@emph{not} designated by @code{target}.  This is confusing, given the
+additional restrictions of @code{union}, but in the corpus
+@code{applyToConverse} is never present along with @code{union}.
+@end defvr
+
+@subsubheading The @code{setMetaData} Element
+
+Parent: @code{setCellProperties} @*
+Contents: empty
+
+This element is not known to have any visible effect.
+
+@defvr {Required} target
+The @code{id} of an element whose metadata is to be set.  In the
+corpus, this is always @code{graph}, the @code{id} used for the
+@code{graph} element.
+@end defvr
+
+@defvr {Required} key
+@defvrx {Required} value
+A key-value pair to set for the target.
+
+In the corpus, @code{key} is @code{cellPropId} or, rarely,
+@code{diagProps}, and @code{value} is always the @code{id} of the
+parent @code{setCellProperties}.
+@end defvr
+
+@subsubheading The @code{setStyle} Element
+
+Parent: @code{setCellProperties} @*
+Contents: empty
+
+This element associates a style with the target.
+
+@defvr {Required} target
+The @code{id} of an element whose style is to be set.  In the corpus,
+this is always the @code{id} of an @code{interval}, @code{labeling},
+or, rarely, @code{graph} element.
+@end defvr
+
+@defvr {Required} style
+The @code{id} of a @code{style} element that identifies the style to
+set on the target.
+@end defvr
+
+@subsubheading The @code{setFormat} Element
+
+@format
+Parent: @code{setCellProperties}
+Contents:
+    @code{format}
+  @math{|} @code{numberFormat}
+  @math{|} @code{stringFormat}@math{+}
+  @math{|} @code{dateTimeFormat}
+@end format
+
+This element sets the format of the target, ``format'' in this case
+meaning the SPSS print format for a variable.
+
+The details of this element vary depending on the schema version, as
+declared in the root @code{visualization} element's @code{version}
+attribute (@pxref{SPV Detail visualization Element}).  In version 2.5
+and earlier, @code{setFormat} contains one of a number of child
+elements that correspond to the different varieties of print formats.
+In version 2.7 and later, @code{setFormat} instead always contains a
+@code{format} element.
+
+XXX reinvestigate the above claim about versions: it appears to be
+incorrect.
+
+The @code{setFormat} element itself has the following attributes.
+
+@defvr {Required} target
+The @code{id} of an element whose style is to be set.  In the corpus,
+this is always the @code{id} of an @code{majorTicks} or
+@code{labeling} element.
+@end defvr
+
+@defvr {Optional} reset
+If this is @code{true}, this format overrides the target's previous
+format.  If it is @code{false}, the adds to the previous format.  In
+the corpus this is always @code{true}.  The default behavior is
+unknown.
+@end defvr
+
+@menu
+* SPV Detail format Element::
+* SPV Detail numberFormat Element::
+* SPV Detail stringFormat Element::
+* SPV Detail dateTimeFormat Element::
+* SPV Detail affix Element::
+* SPV Detail relabel Element::
+* SPV Detail union Element::
+@end menu
+
+@node SPV Detail format Element
+@subsubsection The @code{format} Element
+
+Parent: @code{sourceVariable}, @code{derivedVariable}, @code{formatMapping}, @code{labeling}, @code{formatMapping}, @code{setFormat} @*
+Contents: (@code{affix}@math{+} @math{|} @code{relabel}@math{+})?
+
+This element appears only in schema version 2.7 (@pxref{SPV Detail
+visualization Element}).
+
+This element determines a format, equivalent to an SPSS print format.
+
+@subsubheading Attributes for All Formats
+
+These attributes apply to all kinds of formats.  The most important of
+these attributes determines the high-level kind of formatting in use:
+
+@defvr {Optional} baseFormat
+Either @code{dateTime} or @code{elapsedTime}.  When this attribute is
+omitted, this element is a numeric or string format.
+@end defvr
+
+@noindent
+Whether, in the corpus, other attributes are always present (``yes''),
+never present (``no''), or sometimes present (``opt'') depends on
+@code{baseFormat}:
+
+@multitable {maximumFractionDigits} {@code{dateTime}} {@code{elapsedTime}} {number} {string}
+@headitem Attribute @tab @code{dateTime} @tab @code{elapsedTime} @tab number @tab string
+@item errorCharacter        @tab yes @tab yes @tab yes @tab opt
+@item @w{ }
+@item separatorChars        @tab yes @tab  no @tab  no @tab no
+@item @w{ }
+@item mdyOrder              @tab yes @tab  no @tab  no @tab no
+@item @w{ }
+@item showYear              @tab yes @tab  no @tab  no @tab no
+@item yearAbbreviation      @tab yes @tab  no @tab  no @tab no
+@item @w{ }
+@item showMonth             @tab yes @tab  no @tab  no @tab no
+@item monthFormat           @tab yes @tab  no @tab  no @tab no
+@item @w{ }
+@item showDay               @tab yes @tab opt @tab  no @tab no
+@item dayPadding            @tab yes @tab opt @tab  no @tab no
+@item dayOfMonthPadding     @tab yes @tab  no @tab  no @tab no
+@item dayType               @tab yes @tab  no @tab  no @tab no
+@item @w{ }
+@item showHour              @tab yes @tab opt @tab  no @tab no
+@item hourFormat            @tab yes @tab opt @tab  no @tab no
+@item hourPadding           @tab yes @tab yes @tab  no @tab no
+@item @w{ }
+@item showMinute            @tab yes @tab yes @tab  no @tab no
+@item minutePadding         @tab yes @tab yes @tab  no @tab no
+@item @w{ }
+@item showSecond            @tab yes @tab yes @tab  no @tab no
+@item secondPadding         @tab  no @tab yes @tab  no @tab no
+@item @w{ }
+@item showMillis            @tab  no @tab yes @tab  no @tab no
+@item @w{ }
+@item minimumIntegerDigits  @tab  no @tab  no @tab yes @tab no
+@item maximumFractionDigits @tab  no @tab yes @tab yes @tab no
+@item minimumFractionDigits @tab  no @tab yes @tab yes @tab no
+@item useGrouping           @tab  no @tab opt @tab yes @tab no
+@item scientific            @tab  no @tab  no @tab yes @tab no
+@item small                 @tab  no @tab  no @tab opt @tab no
+@item suffix                @tab  no @tab  no @tab opt @tab no
+@item @w{ }
+@item tryStringsAsNumbers   @tab  no @tab  no @tab  no @tab yes
+@item @w{ }
+@end multitable
+
+@defvr {Attribute} errorCharacter
+A character that replaces the formatted value when it cannot otherwise
+be represented in the given format.  Always @samp{*}.
+@end defvr
+
+@subsubheading Date and Time Attributes
+
+These attributes are used with @code{dateTime} and @code{elapsedTime}
+formats or both.
+
+@defvr {Attribute} separatorChars
+Exactly four characters.  In order, these are used for: decimal point,
+grouping, date separator, time separator.  Always @samp{.,-:}.
+@end defvr
+
+@defvr {Attribute} mdyOrder
+Within a date, the order of the days, months, and years.
+@code{dayMonthYear} is the only observed value, but one would expect
+that @code{monthDayYear} and @code{yearMonthDay} to be reasonable as
+well.
+@end defvr
+
+@defvr {Attribute} showYear
+@defvrx {Attribute} yearAbbreviation
+Whether to include the year and, if so, whether the year should be
+shown abbreviated, that is, with only 2 digits.  Each is @code{true}
+or @code{false}; only values of @code{true} and @code{false},
+respectively, have been observed.
+@end defvr
+
+@defvr {Attribute} showMonth
+@defvrx {Attribute} monthFormat
+Whether to include the month (@code{true} or @code{false}) and, if so,
+how to format it.  @code{monthFormat} is one of the following:
+
+@table @code
+@item long
+The full name of the month, e.g.@: in an English locale,
+@code{September}.
+
+@item short
+The abbreviated name of the month, e.g.@: in an English locale,
+@code{Sep}.
+
+@item number
+The number representing the month, e.g.@: 9 for September.
+
+@item paddedNumber
+A two-digit number representing the month, e.g.@: 09 for September.
+@end table
+
+Only values of @code{true} and @code{short}, respectively, have been
+observed.
+@end defvr
+
+@defvr {Attribute} dayPadding
+@defvrx {Attribute} dayOfMonthPadding
+@defvrx {Attribute} hourPadding
+@defvrx {Attribute} minutePadding
+@defvrx {Attribute} secondPadding
+These attributes presumably control whether each field in the output
+is padded with spaces to its maximum width, but the details are not
+understood.  The only observed value for any of these attributes is
+@code{true}.
+@end defvr
+
+@defvr {Attribute} showDay
+@defvrx {Attribute} showHour
+@defvrx {Attribute} showMinute
+@defvrx {Attribute} showSecond
+@defvrx {Attribute} showMillis
+These attributes presumably control whether each field is displayed
+in the output, but the details are not understood.  The only
+observed value for any of these attributes is @code{true}.
+@end defvr
+
+@defvr {Attribute} dayType
+This attribute is always @code{month} in the corpus, specifying that
+the day of the month is to be displayed; a value of @code{year} is
+supposed to indicate that the day of the year, where 1 is January 1,
+is to be displayed instead.
+@end defvr
+
+@defvr {Attribute} hourFormat
+@code{hourFormat}, if present, is one of:
+
+@table @code
+@item AMPM
+The time is displayed with an @code{am} or @code{pm} suffix, e.g.@:
+@code{10:15pm}.
+
+@item AS_24
+The time is displayed in a 24-hour format, e.g.@: @code{22:15}.
+
+This is the only value observed in the corpus.
+
+@item AS_12
+The time is displayed in a 12-hour format, without distinguishing
+morning or evening, e.g.@: @code{10;15}.
+@end table
+
+@code{hourFormat} is sometimes present for @code{elapsedTime} formats,
+which is confusing since a time duration does not have a concept of AM
+or PM.  This might indicate a bug in the code that generated the XML
+in the corpus, or it might indicate that @code{elapsedTime} is
+sometimes used to format a time of day.
+@end defvr
+
+@subsubheading Numeric Attributes
+
+These attributes are used for formats when @code{baseFormat} is
+@code{number}.  Attributes @code{maximumFractionDigits}, and
+@code{minimumFractionDigits}, and @code{useGrouping} are also used
+when @code{baseFormat} is @code{elapsedTime}.
+
+@defvr {Attribute} minimumIntegerDigits
+Minimum number of digits to display before the decimal point.  Always
+observed as @code{0}.
+@end defvr
+
+@defvr {Attribute} maximumFractionDigits
+@defvrx {Attribute} maximumFractionDigits
+Maximum or minimum, respectively, number of digits to display after
+the decimal point.  The observed values of each attribute range from 0
+to 9.
+@end defvr
+
+@defvr {Attribute} useGrouping
+Whether to use the grouping character to group digits in large
+numbers.  It would make sense for the grouping character to come from
+the @code{separatorChars} attribute, but that attribute is only
+present when @code{baseFormat} is @code{dateTime} or
+@code{elapsedTime}, in the corpus at least.  Perhaps that is because
+this attribute has only been observed as @code{false}.
+@end defvr
+
+@defvr {Attribute} scientific
+This attribute controls when and whether the number is formatted in
+scientific notation.  It takes the following values:
+
+@table @code
+@item onlyForSmall
+Use scientific notation only when the number's magnitude is smaller
+than the value of the @code{small} attribute.
+
+@item whenNeeded
+Use scientific notation when the number will not otherwise fit in the
+available space.
+
+@item true
+Always use scientific notation.  Not observed in the corpus.
+
+@item false
+Never use scientific notation.  A number that won't otherwise fit will
+be replaced by an error indication (see the @code{errorCharacter}
+attribute).  Not observed in the corpus.
+@end table
+@end defvr
+
+@defvr {Optional} small
+Only present when the @code{scientific} attribute is
+@code{onlyForSmall}, this is a numeric magnitude below which the
+number will be formatted in scientific notation.  The values @code{0}
+and @code{0.0001} have been observed.  The value @code{0} seems like a
+pathological choice, since no real number has a magnitude less than 0;
+perhaps in practice such a choice is equivalent to setting
+@code{scientific} to @code{false}.
+@end defvr
+
+@defvr {Optional} prefix
+@defvrx {Optional} suffix
+Specifies a prefix or a suffix to apply to the formatted number.  Only
+@code{suffix} has been observed, with value @samp{%}.
+@end defvr
+
+@subsubheading String Attributes
+
+These attributes are used for formats when @code{baseFormat} is
+@code{string}.
+
+@defvr {Attribute} tryStringsAsNumbers
+When this is @code{true}, it is supposed to indicate that string
+values should be parsed as numbers and then displayed according to
+numeric formatting rules.  However, in the corpus it is always
+@code{false}.
+@end defvr
+
+@node SPV Detail numberFormat Element
+@subsubsection The @code{numberFormat} Element
+
+Parent: @code{setFormat} @*
+Contents: @code{affix}@math{+}
+
+This element appears only in schema version 2.5 and earlier
+(@pxref{SPV Detail visualization Element}).  Possibly this element
+could also contain @code{relabel} elements in a more diverse corpus.
+
+This element has the following attributes.
+
+@defvr {Attribute} maximumFractionDigits
+@defvrx {Attribute} minimumFractionDigits
+@defvrx {Attribute} minimumIntegerDigits
+@defvrx {Optional} scientific
+@defvrx {Optional} small
+@defvrx {Optional} suffix
+@defvrx {Optional} useGroupging
+The syntax and meaning of these attributes is the same as on the
+@code{format} element for a numeric format.  @pxref{SPV Detail format
+Element}.
+@end defvr
+
+@node SPV Detail stringFormat Element
+@subsubsection The @code{stringFormat} Element
+
+Parent: @code{setFormat} @*
+Contents: (@code{affix}@math{+} @math{|} @code{relabel}@math{+})?
+
+This element appears only in schema version 2.5 and earlier
+(@pxref{SPV Detail visualization Element}).
+
+This element has no attributes.
+
+@node SPV Detail dateTimeFormat Element
+@subsubsection The @code{dateTimeFormat} Element
+
+Parent: @code{setFormat} @*
+Contents: empty
+
+This element appears only in schema version 2.5 and earlier
+(@pxref{SPV Detail visualization Element}).  Possibly this element
+could also contain @code{affix} and @code{relabel} elements in a more
+diverse corpus.
+
+The following attribute is required.
+
+@defvr {Attribute} baseFormat
+Either @code{dateTime} or @code{time}.
+@end defvr
+
+When @code{baseFormat} is @code{dateTime}, the following attributes
+are available.
+
+@defvr {Attribute} dayOfMonthPadding
+@defvrx {Attribute} dayPadding
+@defvrx {Attribute} dayType
+@defvrx {Attribute} hourFormat
+@defvrx {Attribute} hourPadding
+@defvrx {Attribute} mdyOrder
+@defvrx {Attribute} minutePadding
+@defvrx {Attribute} monthFormat
+@defvrx {Attribute} separatorChars
+@defvrx {Attribute} showDay
+@defvrx {Attribute} showHour
+@defvrx {Attribute} showMinute
+@defvrx {Attribute} showMonth
+@defvrx {Attribute} showSecond
+@defvrx {Attribute} showYear
+@defvrx {Attribute} yearAbbreviation
+The syntax and meaning of these attributes is the same as on the
+@code{format} element when that element's @code{baseFormat} is
+@code{dateTime}.  @pxref{SPV Detail format Element}.
+@end defvr
+
+When @code{baseFormat} is @code{time}, the following attributes are
+available.
+
+@defvr {Attribute} hourFormat
+@defvrx {Attribute} hourPadding
+@defvrx {Attribute} minutePadding
+@defvrx {Attribute} monthFormat
+@defvrx {Attribute} separatorChars
+@defvrx {Attribute} showDay
+@defvrx {Attribute} showHour
+@defvrx {Attribute} showMinute
+@defvrx {Attribute} showMonth
+@defvrx {Attribute} showSecond
+@defvrx {Attribute} showYear
+@defvrx {Attribute} yearAbbreviation
+The syntax and meaning of these attributes is the same as on the
+@code{format} element when that element's @code{baseFormat} is
+@code{elapsedTime}.  @pxref{SPV Detail format Element}.
+@end defvr
+
+@node SPV Detail affix Element
+@subsubsection The @code{affix} Element
+
+Parent: @code{format} or @code{numberFormat} or @code{stringFormat} @*
+Contents: empty
+
+Possibly this element could have @code{dateTimeFormat} as a parent in
+a more diverse corpus.
+
+This defines a suffix (or, theoretically, a prefix) for a formatted
+value.  It is used to insert a reference to a footnote.  It has the
+following attributes:
+
+@defvr {Attribute} definesReference
+This specifies the footnote number as a natural number: 1 for the
+first footnote, 2 for the second, and so on.
+@end defvr
+
+@defvr {Attribute} position
+Position for the footnote label.  Always @code{superscript}.
+@end defvr
+
+@defvr {Attribute} suffix
+Whether the affix is a suffix (@code{true}) or a prefix
+(@code{false}).  Always @code{true}.
+@end defvr
+
+@defvr {Attribute} value
+The text of the suffix or prefix.  Typically a letter, e.g.@: @code{a}
+for footnote 1, @code{b} for footnote 2, @enddots{}  The corpus
+contains other values: @code{*}, @code{**}, and a few that begin with
+at least one comma: @code{,b}, @code{,c}, @code{,,b}, and @code{,,c}.
+@end defvr
+
+@node SPV Detail relabel Element
+@subsubsection The @code{relabel} Element
+
+Parent: @code{format} or @code{stringFormat} @*
+Contents: empty
+
+Possibly this element could have @code{numberFormat} or
+@code{dateTimeFormat} as a parent in a more diverse corpus.
+
+This specifies how to display a given value.  It is used to implement
+value labels and to display the system-missing value in a
+human-readable way.  It has the following attributes:
+
+@defvr {Attribute} from
+The value to map.  In the corpus this is an integer or the
+system-missing value @code{-1.797693134862316E300}.
+@end defvr
+
+@defvr {Attribute} to
+The string to display in place of the value of @code{from}.  In the
+corpus this is a wide variety of value labels; the system-missing
+value is mapped to @samp{.}.
+@end defvr
+
+@node SPV Detail union Element
+@subsubsection The @code{union} Element
+
+Parent: @code{setCellProperties} @*
+Contents: @code{intersect}@math{+}
+
+This element represents a set of cells, computed as the union of the
+sets represented by each of its children.
+
+@subsubheading The @code{intersect} Element
+
+Parent: @code{union} @*
+Contents: @code{where}@math{+} @math{|} @code{intersectWhere}?
+
+This element represents a set of cells, computed as the intersection
+of the sets represented by each of its children.
+
+Of the two possible children, in the corpus @code{where} is far more
+common, appearing thousands of times, whereas @code{intersectWhere}
+only appears 4 times.
+
+Most @code{intersect} elements have two or more children.
+
+@subsubheading The @code{where} Element
+
+Parent: @code{intersect} @*
+Contents: empty
+
+This element represents the set of cells in which the value of a
+specified variable falls within a specified set.
+
+@defvr {Attribute} variable
+The @code{id} of a variable, e.g.@: @code{dimension0categories} or
+@code{dimension0group0map}.
+@end defvr
+
+@defvr {Attribute} include
+A value, or multiple values separated by semicolons,
+e.g.@: @code{0} or @code{13;14;15;16}.
+@end defvr
+
+@subsubheading The @code{intersectWhere} Element
+
+Parent: @code{intersect} @*
+Contents: empty
+
+The meaning of this element is unknown.
+
+@defvr {Attribute} variable
+@defvrx {Attribute} variable2
+The meaning of these attributes is unknown.  In the four examples in
+the corpus they always take the values @code{dimension2categories} and
+@code{dimension0categories}, respectively.
+@end defvr
+
+@node SPV Detail style Element
+@subsection The @code{style} Element
+
+TBD.

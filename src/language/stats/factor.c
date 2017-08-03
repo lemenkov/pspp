@@ -243,6 +243,8 @@ struct idata
 
   double detR;  /* The determinant of the correlation matrix */
 
+  gsl_matrix *ai_cov; /* The anti-image covariance matrix */
+  gsl_matrix *ai_cor; /* The anti-image correlation matrix */
   struct covariance *cvm;
 };
 
@@ -266,13 +268,86 @@ idata_free (struct idata *id)
   gsl_vector_free (id->msr);
   gsl_vector_free (id->eval);
   gsl_matrix_free (id->evec);
+  gsl_matrix_free (id->ai_cov);
+  gsl_matrix_free (id->ai_cor);
 
   free (id);
 }
 
+/* Return the sum of squares of all the elements in row J excluding column J */
+static double
+ssq_row_od_n (const gsl_matrix *m, int j)
+{
+  int i;
+  double ss = 0;
+  assert (m->size1 == m->size2);
+
+  assert (j < m->size1);
+
+  for (i = 0; i < m->size1; ++i)
+    {
+      if (i == j ) continue;
+      ss += pow2 (gsl_matrix_get (m, i, j));
+    }
+
+  return ss;
+}
+
+/* Return the sum of squares of all the elements excluding row N */
+static double
+ssq_od_n (const gsl_matrix *m, int n)
+{
+  int i, j;
+  double ss = 0;
+  assert (m->size1 == m->size2);
+
+  assert (n < m->size1);
+
+  for (i = 0; i < m->size1; ++i)
+    {
+      for (j = 0; j < m->size2; ++j)
+	{
+	  if (i == j) continue;
+	  ss += pow2 (gsl_matrix_get (m, i, j));
+	}
+    }
+
+  return ss;
+}
+
 
 static gsl_matrix *
-anti_image (const gsl_matrix *m)
+anti_image_corr (const gsl_matrix *m, const struct idata *idata)
+{
+  int i, j;
+  gsl_matrix *a;
+  assert (m->size1 == m->size2);
+
+  a = gsl_matrix_alloc (m->size1, m->size2);
+
+  for (i = 0; i < m->size1; ++i)
+    {
+      for (j = 0; j < m->size2; ++j)
+        {
+          double *p = gsl_matrix_ptr (a, i, j);
+          *p = gsl_matrix_get (m, i, j);
+          *p /= sqrt (gsl_matrix_get (m, i, i) *
+                      gsl_matrix_get (m, j, j));
+        }
+    }
+
+  for (i = 0; i < m->size1; ++i)
+    {
+      double r = ssq_row_od_n (idata->mm.corr, i);
+      double u = ssq_row_od_n (a, i);
+      gsl_matrix_set (a, i, i, r / (r + u));
+    }
+
+  return a;
+}
+
+static gsl_matrix *
+anti_image_cov (const gsl_matrix *m)
 {
   int i, j;
   gsl_matrix *a;
@@ -293,31 +368,6 @@ anti_image (const gsl_matrix *m)
 
   return a;
 }
-
-
-/* Return the sum of all the elements excluding row N */
-static double
-ssq_od_n (const gsl_matrix *m, int n)
-{
-  int i, j;
-  double ss = 0;
-  assert (m->size1 == m->size2);
-
-  assert (n < m->size1);
-
-  for (i = 0; i < m->size1; ++i)
-    {
-      if (i == n ) continue;
-      for (j = 0; j < m->size2; ++j)
-	{
-	  ss += pow2 (gsl_matrix_get (m, i, j));
-	}
-    }
-
-  return ss;
-}
-
-
 
 #if 0
 static void
@@ -1365,10 +1415,11 @@ cmd_factor (struct lexer *lexer, struct dataset *ds)
 	      else if (lex_match_id (lexer, "INV"))
 		{
 		}
+#endif
 	      else if (lex_match_id (lexer, "AIC"))
 		{
+		  factor.print |= PRINT_AIC;
 		}
-#endif
 	      else if (lex_match_id (lexer, "SIG"))
 		{
 		  factor.print |= PRINT_SIG;
@@ -1981,6 +2032,81 @@ show_factor_correlation (const struct cmd_factor * factor, const gsl_matrix *fcm
   tab_submit (t);
 }
 
+static void
+show_aic (const struct cmd_factor *factor, const struct idata *idata)
+{
+  struct tab_table *t ;
+  size_t i;
+
+  const int heading_rows = 1;
+  const int heading_columns = 2;
+
+  const int nc = heading_columns + factor->n_vars;
+  const int nr = heading_rows + 2 * factor->n_vars;
+
+  if ((factor->print & PRINT_AIC) == 0)
+    return;
+
+  t = tab_create (nc, nr);
+
+  tab_title (t, _("Anti-Image Matrices"));
+
+  tab_hline (t, TAL_1, 0, nc - 1, heading_rows);
+
+  tab_headers (t, heading_columns, 0, heading_rows, 0);
+
+  tab_vline (t, TAL_2, 2, 0, nr - 1);
+
+  /* Outline the box */
+  tab_box (t,
+	   TAL_2, TAL_2,
+	   -1, -1,
+	   0, 0,
+	   nc - 1, nr - 1);
+
+  /* Vertical lines */
+  tab_box (t,
+	   -1, -1,
+	   -1, TAL_1,
+	   heading_columns, 0,
+	   nc - 1, nr - 1);
+
+
+  for (i = 0; i < factor->n_vars; ++i)
+    tab_text (t, heading_columns + i, 0, TAT_TITLE, var_to_string (factor->vars[i]));
+
+  tab_text (t, 0, heading_rows, TAT_TITLE, _("Anti-image Covariance"));
+  tab_hline (t, TAL_1, 0, nc - 1, heading_rows + factor->n_vars);
+  tab_text (t, 0, heading_rows + factor->n_vars, TAT_TITLE, _("Anti-image Correlation"));
+
+  for (i = 0; i < factor->n_vars; ++i)
+    {
+      tab_text (t, 1, i + heading_rows, TAT_TITLE,
+		var_to_string (factor->vars[i]));
+
+      tab_text (t, 1, factor->n_vars + i + heading_rows, TAT_TITLE,
+		var_to_string (factor->vars[i]));
+    }
+
+  for (i = 0; i < factor->n_vars; ++i)
+    {
+      int j;
+      for (j = 0; j < factor->n_vars; ++j)
+	{
+	  tab_double (t, heading_columns + i, heading_rows + j, 0,
+		      gsl_matrix_get (idata->ai_cov, i, j), NULL, RC_OTHER);
+	}
+
+
+      for (j = 0; j < factor->n_vars; ++j)
+	{
+	  tab_double (t, heading_columns + i, factor->n_vars + heading_rows + j, 0,
+		      gsl_matrix_get (idata->ai_cor, i, j), NULL, RC_OTHER);
+	}
+    }
+
+  tab_submit (t);
+}
 
 static void
 show_correlation_matrix (const struct cmd_factor *factor, const struct idata *idata)
@@ -2245,6 +2371,25 @@ do_factor_by_matrix (const struct cmd_factor *factor, struct idata *idata)
   else
     idata->analysis_matrix = idata->mm.cov;
 
+  gsl_matrix *r_inv;
+  r_inv  = clone_matrix (idata->mm.corr);
+  gsl_linalg_cholesky_decomp (r_inv);
+  gsl_linalg_cholesky_invert (r_inv);
+
+  idata->ai_cov = anti_image_cov (r_inv);
+  idata->ai_cor = anti_image_corr (r_inv, idata);
+
+  int i;
+  double sum_ssq_r = 0;
+  double sum_ssq_a = 0;
+  for (i = 0; i < r_inv->size1; ++i)
+    {
+      sum_ssq_r += ssq_od_n (idata->mm.corr, i);
+      sum_ssq_a += ssq_od_n (idata->ai_cor, i);
+    }
+
+  gsl_matrix_free (r_inv);
+
   if (factor->print & PRINT_DETERMINANT
       || factor->print & PRINT_KMO)
     {
@@ -2315,9 +2460,6 @@ do_factor_by_matrix (const struct cmd_factor *factor, struct idata *idata)
   if (factor->print & PRINT_KMO)
     {
       int i;
-      double sum_ssq_r = 0;
-      double sum_ssq_a = 0;
-
       double df = factor->n_vars * (factor->n_vars - 1) / 2;
 
       double w = 0;
@@ -2331,25 +2473,11 @@ do_factor_by_matrix (const struct cmd_factor *factor, struct idata *idata)
       const int nr = heading_rows + 4;
       const int nc = heading_columns + 1;
 
-      gsl_matrix *a, *x;
+
 
       struct tab_table *t = tab_create (nc, nr);
       tab_title (t, _("KMO and Bartlett's Test"));
 
-      x  = clone_matrix (idata->mm.corr);
-      gsl_linalg_cholesky_decomp (x);
-      gsl_linalg_cholesky_invert (x);
-
-      a = anti_image (x);
-
-      for (i = 0; i < x->size1; ++i)
-	{
-	  sum_ssq_r += ssq_od_n (x, i);
-	  sum_ssq_a += ssq_od_n (a, i);
-	}
-
-      gsl_matrix_free (a);
-      gsl_matrix_free (x);
 
       tab_headers (t, heading_columns, 0, heading_rows, 0);
 
@@ -2488,8 +2616,8 @@ do_factor_by_matrix (const struct cmd_factor *factor, struct idata *idata)
       }
 
 
+    show_aic (factor, idata);
     show_communalities (factor, initial_communalities, extracted_communalities);
-
 
     if ( factor->rotation != ROT_NONE)
       {

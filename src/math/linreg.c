@@ -275,7 +275,7 @@ linreg_predict (const struct linreg *c, const double *vals, size_t n_vals)
   size_t j;
   double result;
 
-  assert (n_vals = c->n_coeffs);
+  assert (n_vals == c->n_coeffs);
   if (vals == NULL || c == NULL)
     {
       return GSL_NAN;
@@ -322,6 +322,7 @@ linreg_set_indep_variable_mean (struct linreg *c, size_t j, double m)
   gsl_vector_set (c->indep_means, j, m);
 }
 
+#if 0
 static void
 linreg_fit_qr (const gsl_matrix *cov, struct linreg *l)
 {
@@ -415,6 +416,7 @@ linreg_fit_qr (const gsl_matrix *cov, struct linreg *l)
   gsl_matrix_free (xtx);
   gsl_vector_free (params);
 }
+#endif
 
 #define REG_LARGE_DATA 1000
 
@@ -432,6 +434,9 @@ linreg_fit (const gsl_matrix *cov, struct linreg *l)
 
   l->sst = gsl_matrix_get (cov, cov->size1 - 1, cov->size2 - 1);
 
+#if 0
+  /*  This QR decomposition path seems to produce the incorrect
+      values.  See https://savannah.gnu.org/bugs/?51373  */
   if ((l->n_obs * l->n_obs > l->n_indeps) && (l->n_obs > REG_LARGE_DATA))
     {
       /*
@@ -440,6 +445,7 @@ linreg_fit (const gsl_matrix *cov, struct linreg *l)
       linreg_fit_qr (cov, l);
     }
   else
+#endif    
     {
       gsl_matrix *params = gsl_matrix_calloc (cov->size1, cov->size2);
       gsl_matrix_memcpy (params, cov);

@@ -17,6 +17,7 @@
    02110-1301, USA. */
 
 
+#undef VERSION
 #include <config.h>
 
 /* The Gnulib "strftime" module defines my_strftime in <config.h> for use by

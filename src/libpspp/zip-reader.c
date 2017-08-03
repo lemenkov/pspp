@@ -378,7 +378,7 @@ zip_reader_create (const char *filename, struct string *errs)
   zr->members = xcalloc (zr->n_members, sizeof (*zr->members));
   memset (zr->members, 0, zr->n_members * sizeof (*zr->members));
 
-  zr->filename = strdup (filename);
+  zr->filename = xstrdup (filename);
 
   return zr;
 }

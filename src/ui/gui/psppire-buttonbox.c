@@ -301,18 +301,36 @@ on_validity_change (GtkWidget *toplevel, gboolean valid, gpointer data)
   gtk_widget_set_sensitive (GTK_WIDGET (bb->button[PSPPIRE_BUTTON_CONTINUE]), valid);
 }
 
+static gboolean
+on_key_press (GtkWidget *w, GdkEventKey *e, gpointer ud)
+{
+  PsppireButtonbox *bb = PSPPIRE_BUTTONBOX (ud);
+  if (e->keyval == GDK_KEY_Escape)
+    {
+      g_signal_emit_by_name (bb->button[PSPPIRE_BUTTON_CANCEL], "activate");
+      g_signal_emit_by_name (bb->button[PSPPIRE_BUTTON_CLOSE], "activate");
+    }
+  return FALSE;
+}
+
+
 static void
 on_realize (GtkWidget *buttonbox, gpointer data)
 {
   GtkWidget *toplevel = gtk_widget_get_toplevel (buttonbox);
 
-  if ( PSPPIRE_IS_DIALOG (toplevel))
+  if (PSPPIRE_IS_DIALOG (toplevel))
     {
       g_signal_connect (toplevel, "validity-changed",
 			G_CALLBACK (on_validity_change), buttonbox);
+
+      g_signal_connect (toplevel, "key-press-event",
+			G_CALLBACK (on_key_press), buttonbox);
     }
+
   set_default (PSPPIRE_BUTTONBOX (buttonbox));
 }
+
 
 static void
 psppire_button_box_init (PsppireButtonbox *bb)

@@ -1,3 +1,19 @@
+dnl PSPP - a program for statistical analysis.
+dnl Copyright (C) 2017 Free Software Foundation, Inc.
+dnl 
+dnl This program is free software: you can redistribute it and/or modify
+dnl it under the terms of the GNU General Public License as published by
+dnl the Free Software Foundation, either version 3 of the License, or
+dnl (at your option) any later version.
+dnl 
+dnl This program is distributed in the hope that it will be useful,
+dnl but WITHOUT ANY WARRANTY; without even the implied warranty of
+dnl MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+dnl GNU General Public License for more details.
+dnl 
+dnl You should have received a copy of the GNU General Public License
+dnl along with this program.  If not, see <http://www.gnu.org/licenses/>.
+dnl
 AT_BANNER([FACTOR procedure])
 
 AT_SETUP([FACTOR extraction=paf method=correlation])
@@ -2094,18 +2110,12 @@ end data.
 
 factor matrix in (cov = *)
     / method = covariance
-    / print = initial covariance kmo
+    / print = initial covariance
     / extraction = pc
     / rotation = norotate.
 ])
 
 AT_CHECK([pspp -O format=csv covariance-matrix.sps], [0], [dnl
-Table: KMO and Bartlett's Test
-Kaiser-Meyer-Olkin Measure of Sampling Adequacy,,.741
-Bartlett's Test of Sphericity,Approx. Chi-Square,104.810
-,df,28
-,Sig.,.000
-
 Table: Covariance Matrix
 ,var01,var02,var03,var04,var05,var06,var07,var08
 var01,32.490,1.539,-29.469,11.902,4.309,8.464,15.390,1.454
@@ -2254,10 +2264,6 @@ bnt_actws_56,.562
 AT_CLEANUP
 
 
-
-
-
-
 AT_SETUP([FACTOR bad input])
 
 dnl Test for a crash 
@@ -2287,5 +2293,109 @@ FACTOR MATRIX IN (CORR =!*)
 ])
 
 AT_CHECK([pspp -O format=csv bad-input.sps], [1], [ignore])
+
+AT_CLEANUP
+
+
+AT_SETUP([FACTOR anti-image matrix])
+
+AT_DATA([anti-image-matrix.sps], [dnl
+SET FORMAT=F20.3 .
+matrix data
+ variables = rowtype_ viq piq pa ran piatwr  piatc
+ / n = 476
+ / format = lower diagonal .
+begin data
+mean  96.88  100.51  -1.73  -0.94  -2.52 -1.85
+sd    10.97   11.19   1.19   0.88   0.85  0.97
+corr    1.00
+corr    0.38  1.00
+corr    0.26  0.24  1.00
+corr    0.16  0.17  0.34  1.00
+corr    0.25  0.07  0.46  0.38  1.00
+corr    0.37  0.22  0.39  0.30  0.59   1.00
+end data.
+
+factor matrix = in (cor = *) 
+ / analysis = viq piq pa ran piatwr piatc
+ / format = sort 
+ / extraction = pc
+ / rotation = norotate
+ / print = aic
+])
+
+AT_CHECK([pspp -O format=csv anti-image-matrix.sps], [0], [dnl
+Table: Anti-Image Matrices
+,,viq,piq,pa,ran,piatwr,piatc
+Anti-image Covariance,viq,.762,-.248,-.048,.008,-.031,-.143
+,piq,-.248,.807,-.117,-.081,.108,-.071
+,pa,-.048,-.117,.711,-.125,-.173,-.060
+,ran,.008,-.081,-.125,.808,-.143,-.035
+,piatwr,-.031,.108,-.173,-.143,.551,-.265
+,piatc,-.143,-.071,-.060,-.035,-.265,.581
+Anti-image Correlation,viq,.741,-.316,-.066,.011,-.048,-.215
+,piq,-.316,.624,-.154,-.100,.163,-.103
+,pa,-.066,-.154,.811,-.165,-.277,-.093
+,ran,.011,-.100,-.165,.825,-.214,-.051
+,piatwr,-.048,.163,-.277,-.214,.675,-.469
+,piatc,-.215,-.103,-.093,-.051,-.469,.729
+
+Table: Component Matrix
+,Component,,,,
+,1,2,3,4,5
+piatc,.774,.122,-.368,.365,-.322
+piatwr,.754,.418,.442,.219,-.115
+pa,.707,.124,-.117,-.161,.256
+piq,.456,-.733,.122,-.289,-.377
+viq,.589,-.539,.033,.298,.457
+ran,.592,.262,-.069,-.638,.096
+])
+
+AT_CLEANUP
+
+
+AT_SETUP([FACTOR Kaiser-Meyer-Olkin])
+
+AT_DATA([kmo.sps], [dnl
+SET FORMAT=F20.3 .
+matrix data
+ variables = rowtype_ viq piq pa ran piatwr  piatc
+ / n = 476
+ / format = lower diagonal .
+begin data
+mean  96.88  100.51  -1.73  -0.94  -2.52 -1.85
+sd    10.97   11.19   1.19   0.88   0.85  0.97
+corr    1.00
+corr    0.38  1.00
+corr    0.26  0.24  1.00
+corr    0.16  0.17  0.34  1.00
+corr    0.25  0.07  0.46  0.38  1.00
+corr    0.37  0.22  0.39  0.30  0.59   1.00
+end data.
+
+factor matrix = in (cor = *) 
+ / analysis = viq piq pa ran piatwr piatc
+ / extraction = pc
+ / rotation = norotate
+ / print = kmo
+])
+
+AT_CHECK([pspp -O format=csv kmo.sps], [0], [dnl
+Table: KMO and Bartlett's Test
+Kaiser-Meyer-Olkin Measure of Sampling Adequacy,,.730
+Bartlett's Test of Sphericity,Approx. Chi-Square,602.673
+,df,15
+,Sig.,.000
+
+Table: Component Matrix
+,Component,,,,
+,1,2,3,4,5
+viq,.589,-.539,.033,.298,.457
+piq,.456,-.733,.122,-.289,-.377
+pa,.707,.124,-.117,-.161,.256
+ran,.592,.262,-.069,-.638,.096
+piatwr,.754,.418,.442,.219,-.115
+piatc,.774,.122,-.368,.365,-.322
+])
 
 AT_CLEANUP

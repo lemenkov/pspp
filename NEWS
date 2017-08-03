@@ -11,6 +11,8 @@ Changes from 0.10.2 to 0.10.4
 
  * The FACTOR command can now analyse matrix files prepared with MATRIX DATA.
 
+ * The FACTOR command can now print the anti-image matrices.
+
  * The MATRIX DATA command has been added.
 
  * Some inappropriate properties in selection dialogs have been corrected.
@@ -38,9 +40,13 @@ Changes from 0.10.2 to 0.10.4
 
  ** The Non Parametric Statistics Menu has a new item: "K Independent Samples".
 
+ ** Dialog boxes can now be canceled using the <Escape> key.
+
  * The AUTORECODE command now accepts an optional / before INTO.
 
  * The short form of the VECTOR command can now create string variables.
+
+ * Bug fixes, including fixes for CVE-2017-10791 and CVE-2017-10792.
 
 Changes from 0.10.1 to 0.10.2:
 

@@ -1,3 +1,19 @@
+dnl PSPP - a program for statistical analysis.
+dnl Copyright (C) 2017 Free Software Foundation, Inc.
+dnl 
+dnl This program is free software: you can redistribute it and/or modify
+dnl it under the terms of the GNU General Public License as published by
+dnl the Free Software Foundation, either version 3 of the License, or
+dnl (at your option) any later version.
+dnl 
+dnl This program is distributed in the hope that it will be useful,
+dnl but WITHOUT ANY WARRANTY; without even the implied warranty of
+dnl MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+dnl GNU General Public License for more details.
+dnl 
+dnl You should have received a copy of the GNU General Public License
+dnl along with this program.  If not, see <http://www.gnu.org/licenses/>.
+dnl
 AT_BANNER([MATRIX DATA])
 
 AT_SETUP([Matrix data (lower file)])
@@ -425,5 +441,43 @@ factor matrix=in(corr = *)
 ])
 
 AT_CHECK([pspp -O format=csv data.pspp], [1], [ignore])
+
+AT_CLEANUP
+
+
+
+
+AT_SETUP([Matrix data (N subcommand)])
+
+AT_DATA([matrix-data.pspp], [dnl
+matrix data
+    variables = rowtype_  var01 var02 var03 var04
+    /n = 99
+    /format = upper nodiagonal.
+begin data
+mean 34 35 36 37
+sd   22 11 55 66
+n_vector 1 2 3 4
+corr  9 8 7
+corr  6 5
+corr  4
+end data.
+
+list.
+])
+
+AT_CHECK([pspp -O format=csv matrix-data.pspp], [0], [dnl
+"matrix-data.pspp:12: warning: MATRIX DATA: The N subcommand was specified, but a N record was also found in the data.  The N record will be ignored."
+
+Table: Data List
+ROWTYPE_,VARNAME_,var01,var02,var03,var04
+N       ,,99.0000,99.0000,99.0000,99.0000
+mean    ,,34.0000,35.0000,36.0000,37.0000
+STDDEV  ,,22.0000,11.0000,55.0000,66.0000
+corr    ,var01,1.0000,9.0000,8.0000,7.0000
+corr    ,var02,9.0000,1.0000,6.0000,5.0000
+corr    ,var03,8.0000,6.0000,1.0000,4.0000
+corr    ,var04,7.0000,5.0000,4.0000,1.0000
+])
 
 AT_CLEANUP
