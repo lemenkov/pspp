@@ -25,16 +25,6 @@ m4/
 package.m4
 src/ui/gui/artwork/splash-r.svg
 src/ui/gui/artwork/splash-t.svg
-src/ui/gui/icons/16x16/
-src/ui/gui/icons/22x22/
-src/ui/gui/icons/24x24/
-src/ui/gui/icons/256x256/
-src/ui/gui/icons/32x32/
-src/ui/gui/icons/48x48/
-src/ui/gui/icons/manifest
-src/ui/gui/icons/scalable/
-src/ui/gui/icons/splash-r.png
-src/ui/gui/icons/splash-t.png
 src/ui/gui/resources.xml
 tests/testsuite
 tests/testsuite.at
