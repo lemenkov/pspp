@@ -172,7 +172,7 @@ Changes from 0.8.4 to 0.8.5:
  * SYSFILE INFO can now read SPSS/PC+ system files and SPSS portable
    files.
 
- * FREQUENCIES: A bug was fixed where an assertion failure occured
+ * FREQUENCIES: A bug was fixed where an assertion failure occurred
    when an empty dataset was presented.
 
  * The GRAPH command is now available.  Initially it supports

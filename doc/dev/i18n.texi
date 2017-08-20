@@ -27,7 +27,7 @@ It's rarely, if ever, necessary to interrogate the system to find out
 the values of the 3 locales.
 However it's important to be aware of the source (destination) locale
 when reading (writing) string data.
-When transfering data between a source and a destination, the appropriate
+When transferring data between a source and a destination, the appropriate
 recoding must be performed.
 
 

@@ -285,7 +285,7 @@ dict_destroy (struct dictionary *d)
 {
   if (d != NULL)
     {
-      /* In general, we don't want callbacks occuring, if the dictionary
+      /* In general, we don't want callbacks occurring, if the dictionary
 	 is being destroyed */
       d->callbacks  = NULL ;
 

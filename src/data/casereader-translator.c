@@ -357,7 +357,7 @@ static struct ccase *car_translate (struct ccase *input, void *car_);
 
    If DISTINCT_CALLBACK is non-null, then  it will be called exactly
    once for every case containing a distinct value of V.  AUX is
-   an auxilliary pointer passed to DISTINCT_CALLBACK.
+   an auxiliary pointer passed to DISTINCT_CALLBACK.
 
    After this function is called, SUBREADER must not ever again
    be referenced directly.  It will be destroyed automatically

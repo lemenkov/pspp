@@ -134,7 +134,7 @@ lex_match_variable (struct lexer *lexer, const struct dictionary *dict, const st
 struct interaction;
 
 /* Parse an interaction.
-   If not successfull return false.
+   If not successful return false.
    Otherwise, a newly created interaction will be placed in IACT.
    It is the caller's responsibility to destroy this interaction.
  */

@@ -2986,7 +2986,7 @@ open_text_record (struct sfm_reader *r,
 }
 
 /* Closes TEXT, frees its storage, and issues a final warning
-   about suppressed warnings if necesary. */
+   about suppressed warnings if necessary. */
 static void
 close_text_record (struct sfm_reader *r, struct text_record *text)
 {

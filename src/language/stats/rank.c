@@ -162,7 +162,7 @@ try_new_name (const char *new_name,
 }
 
 /* Returns a variable name for storing ranks of a variable named SRC_NAME
-   accoring to the rank function F.  The name chosen will not be one already in
+   according to the rank function F.  The name chosen will not be one already in
    DICT or NEW_NAMES.
 
    If successful, adds the new name to NEW_NAMES and returns the name added.

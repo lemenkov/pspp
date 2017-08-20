@@ -895,7 +895,7 @@ main (int argc, char *argv[])
   params.n_widths = 3;
   params.next_value = 1;
 
-  /* Parse comand line. */
+  /* Parse command line. */
   parser = argv_parser_create ();
   options = mc_options_create ();
   mc_options_register_argv_parser (options, parser);

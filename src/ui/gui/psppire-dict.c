@@ -327,7 +327,7 @@ psppire_dict_generate_name (const PsppireDict *dict, char *name, size_t size)
          - The string may not contain whitespace.
          - The first character may not be '$'
          - The first character may not be a digit
-         - The final charactor may not be '.' or '_'
+         - The final character may not be '.' or '_'
       */
       len = snprintf (name, size, _("Var%04d"), d);
       if (len + 1 >= size)

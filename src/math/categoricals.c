@@ -126,7 +126,7 @@ struct interact_params
 
   /* An array of integers df_n * df_{n-1} * df_{n-2} ...
      These are the products of the degrees of freedom for the current
-     variable and all preceeding variables */
+     variable and all preceding variables */
   int *df_prod;
 
   double *enc_sum;

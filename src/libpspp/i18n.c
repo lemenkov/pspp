@@ -667,7 +667,7 @@ set_default_encoding (const char *enc)
 
 
 /* Attempts to set the encoding from a locale name
-   returns true if successfull.
+   returns true if successful.
    This function does not (should not!) alter the current locale.
 */
 bool
@@ -747,7 +747,7 @@ valid_encoding (const char *enc)
 
 
 /* Return the system local's idea of the
-   decimal seperator character */
+   decimal separator character */
 char
 get_system_decimal (void)
 {

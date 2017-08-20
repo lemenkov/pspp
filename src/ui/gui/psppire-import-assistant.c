@@ -1523,11 +1523,11 @@ set_quote_list (GtkComboBox *cb)
   GtkListStore *list =  gtk_list_store_new (1, G_TYPE_STRING);
   GtkTreeIter iter;
   gint i;
-  const gchar *seperator[3] = {"'\"", "\'", "\""};
+  const gchar *separator[3] = {"'\"", "\'", "\""};
 
   for (i = 0; i < 3; i++)
     {
-      const gchar *s = seperator[i];
+      const gchar *s = separator[i];
 
       /* Add a new row to the model */
       gtk_list_store_append (list, &iter);

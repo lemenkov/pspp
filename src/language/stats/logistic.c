@@ -598,7 +598,7 @@ run_lr (const struct lr_spec *cmd, struct casereader *input,
   work.hessian = NULL;
 
   /* Get the initial estimates of \beta and their standard errors.
-     And perform other auxilliary initialisation.  */
+     And perform other auxiliary initialisation.  */
   if (! initial_pass (cmd, &work, input))
     goto error;
 

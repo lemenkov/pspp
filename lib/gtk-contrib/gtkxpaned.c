@@ -952,7 +952,7 @@ gtk_xpaned_size_allocate (GtkWidget * widget, GtkAllocation * allocation)
                                   xpaned->handle_pos_middle.height);
         }
 
-      /* Now allocate the childen, making sure, when resizing not to
+      /* Now allocate the children, making sure, when resizing not to
        * overlap the windows
        */
       if (gtk_widget_get_mapped (widget))

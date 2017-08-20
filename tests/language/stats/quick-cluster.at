@@ -173,7 +173,7 @@ AT_CLEANUP
 AT_SETUP([QUICK CLUSTER with pairwise missing])
 
 dnl This test runs two programs, which are identical except that one
-dnl has an extra case with one missing value. Becuase the syntax uses
+dnl has an extra case with one missing value. Because the syntax uses
 dnl NOINITIAL and NOUPDATE, the results should be identical except for
 dnl the final classification.
 

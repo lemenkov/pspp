@@ -137,7 +137,7 @@ create_aux_var (struct dataset *ds, const char *prefix)
   return var;
 }
 
-/* Auxilliary data for transformation when /SAVE is entered */
+/* Auxiliary data for transformation when /SAVE is entered */
 struct save_trans_data
 {
   int n_dep_vars;

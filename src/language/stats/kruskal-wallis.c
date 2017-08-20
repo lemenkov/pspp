@@ -193,7 +193,7 @@ kruskal_wallis_execute (const struct dataset *ds,
 	  rank->n += dict_get_case_weight (dict, c, &warn);
 
 	  /* If this assertion fires, then either the data wasn't sorted or some other
-	     problem occured */
+	     problem occurred */
 	  assert (rerr == 0);
 	}
 
