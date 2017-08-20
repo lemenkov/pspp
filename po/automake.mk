@@ -112,10 +112,6 @@ po_CLEAN:
 	fi
 CLEAN_LOCAL += po_CLEAN
 
-WGET = wget
+RSYNC = rsync
 po-update:
-	cd $(srcdir) && rm -f $(POFILES)
-	cd $(srcdir)/po && \
-	for po in `echo '$(POFILES)' | sed 's,po/,,g'`; do \
-	   $(WGET) https://translationproject.org/latest/pspp/$$po; \
-        done
+	$(RSYNC) -Lrtvz translationproject.org::tp/latest/pspp/ $(srcdir)/po
