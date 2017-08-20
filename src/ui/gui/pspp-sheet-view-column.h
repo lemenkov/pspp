@@ -61,55 +61,55 @@ struct _PsppSheetViewColumn
 {
   GObject parent;
 
-  GtkWidget *PSEAL (tree_view);
-  GtkWidget *PSEAL (button);
-  GtkWidget *PSEAL (child);
-  GtkWidget *PSEAL (bin);
-  GdkWindow *PSEAL (window);
-  GtkCellEditable *PSEAL (editable_widget);
-  GtkAlign PSEAL (halign);
-  guint PSEAL (property_changed_signal);
-  gint PSEAL (spacing);
-  GtkAllocation PSEAL (allocation);
+  GtkWidget *tree_view;
+  GtkWidget *button;
+  GtkWidget *child;
+  GtkWidget *bin;
+  GdkWindow *window;
+  GtkCellEditable *editable_widget;
+  GtkAlign halign;
+  guint property_changed_signal;
+  gint spacing;
+  GtkAllocation allocation;
 
   /* Sizing fields */
   /* see gtk+/doc/tree-column-sizing.txt for more information on them */
-  gint PSEAL (requested_width);
-  gint PSEAL (button_request);
-  gint PSEAL (resized_width);
-  gint PSEAL (width);
-  gint PSEAL (fixed_width);
-  gint PSEAL (min_width);
-  gint PSEAL (max_width);
+  gint requested_width;
+  gint button_request;
+  gint resized_width;
+  gint width;
+  gint fixed_width;
+  gint min_width;
+  gint max_width;
 
   /* dragging columns */
-  gint PSEAL (drag_x);
-  gint PSEAL (drag_y);
+  gint drag_x;
+  gint drag_y;
 
-  gchar *PSEAL (title);
-  GList *PSEAL (cell_list);
+  gchar *title;
+  GList *cell_list;
 
   /* Sorting */
-  guint PSEAL (sort_clicked_signal);
-  guint PSEAL (sort_column_changed_signal);
-  gint PSEAL (sort_column_id);
-  GtkSortType PSEAL (sort_order);
+  guint sort_clicked_signal;
+  guint sort_column_changed_signal;
+  gint sort_column_id;
+  GtkSortType sort_order;
 
   /* Flags */
-  guint PSEAL (visible)             : 1;
-  guint PSEAL (resizable)           : 1;
-  guint PSEAL (clickable)           : 1;
-  guint PSEAL (dirty)               : 1;
-  guint PSEAL (show_sort_indicator) : 1;
-  guint PSEAL (maybe_reordered)     : 1;
-  guint PSEAL (reorderable)         : 1;
-  guint PSEAL (use_resized_width)   : 1;
-  guint PSEAL (expand)              : 1;
-  guint PSEAL (quick_edit)          : 1;
-  guint PSEAL (selected)            : 1;
-  guint PSEAL (selectable)          : 1;
-  guint PSEAL (row_head)            : 1;
-  guint PSEAL (tabbable)            : 1;
+  guint visible             : 1;
+  guint resizable           : 1;
+  guint clickable           : 1;
+  guint dirty               : 1;
+  guint show_sort_indicator : 1;
+  guint maybe_reordered     : 1;
+  guint reorderable         : 1;
+  guint use_resized_width   : 1;
+  guint expand              : 1;
+  guint quick_edit          : 1;
+  guint selected            : 1;
+  guint selectable          : 1;
+  guint row_head            : 1;
+  guint tabbable            : 1;
 };
 
 struct _PsppSheetViewColumnClass

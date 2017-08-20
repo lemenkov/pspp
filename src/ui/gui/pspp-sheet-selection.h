@@ -77,8 +77,8 @@ struct _PsppSheetSelection
 
   /*< private >*/
 
-  PsppSheetView *PSEAL (tree_view);
-  PsppSheetSelectionMode PSEAL (type);
+  PsppSheetView *tree_view;
+  PsppSheetSelectionMode type;
 };
 
 struct _PsppSheetSelectionClass

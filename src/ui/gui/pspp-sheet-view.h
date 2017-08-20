@@ -108,7 +108,7 @@ struct _PsppSheetView
 {
   GtkContainer parent;
 
-  PsppSheetViewPrivate *PSEAL (priv);
+  PsppSheetViewPrivate *priv;
 
   gboolean dispose_has_run ;
 };

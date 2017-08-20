@@ -30,9 +30,6 @@
 #endif
 
 
-/* Like GSEAL but only used in PSPP */
-#define PSEAL(X) X
-
 #if (GTK_CHECK_VERSION(3,8,0) == 0)
 #define gtk_widget_register_window(widget, window) gdk_window_set_user_data (window, widget);
 #endif
