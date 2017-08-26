@@ -203,6 +203,8 @@ main (int argc, char *argv[])
              output_filename);
       NOT_REACHED ();
     }
+  if (!writer)
+    error (1, 0, _("%s: error opening output file"), output_filename);
 
   for (i = 0; i < max_cases; i++)
     {
