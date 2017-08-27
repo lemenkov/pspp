@@ -1831,10 +1831,9 @@ decode_mrsets (struct sfm_reader *r, struct dictionary *dict)
       size_t i;
 
       name = recode_string ("UTF-8", r->encoding, s->name, -1);
-      if (name[0] != '$')
+      if (!mrset_is_valid_name (name, dict_get_encoding (dict), false))
         {
-          sys_warn (r, -1, _("Multiple response set name `%s' does not begin "
-                             "with `$'."),
+          sys_warn (r, -1, _("Invalid multiple response set name `%s'."),
                     name);
           free (name);
           continue;

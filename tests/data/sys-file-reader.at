@@ -2539,9 +2539,9 @@ for variant in be le; do
 MRSETS /DISPLAY NAME=ALL.
 ])
   AT_CHECK([pspp -O format=csv sys-file.sps], [0], [dnl
-warning: `sys-file.sav': Multiple response set name `b' does not begin with `$'.
+warning: `sys-file.sav': Invalid multiple response set name `b'.
 
-warning: `sys-file.sav': Multiple response set name `e' does not begin with `$'.
+warning: `sys-file.sav': Invalid multiple response set name `e'.
 
 Table: Multiple Response Sets
 Name,Variables,Details
