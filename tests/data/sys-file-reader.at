@@ -3465,6 +3465,48 @@ warning: `sys-file.sav' near offset 0x106: Attribute value fred[[1]] is not quot
 done
 AT_CLEANUP
 
+AT_SETUP([duplicate attribute name])
+AT_KEYWORDS([sack synthetic system file negative])
+AT_DATA([sys-file.sack], [dnl
+dnl File header.
+"$FL2"; s60 "$(#) SPSS DATA FILE PSPP synthetic test file";
+2; 1; 1; 0; -1; 100.0; "01 Jan 11"; "20:53:52"; s64 ""; i8 0 *3;
+
+dnl Variables.
+2; 0; 0; 0; 0x050800 *2; s8 "FIRSTVAR";
+
+dnl Data file attributes record.
+7; 17; 1; COUNT (
+"Attr1('value'"; i8 10; ")";
+"Attr1('value'"; i8 10; ")";
+);
+
+dnl Variable attributes record.
+7; 18; 1; COUNT (
+"FIRSTVAR:";
+  "fred('23'"; i8 10; ")";
+  "fred('23'"; i8 10; ")";
+);
+
+dnl Character encoding record.
+7; 20; 1; 12; "windows-1252";
+
+dnl Dictionary termination record.
+999; 0;
+])
+for variant in be le; do
+  AT_CHECK([sack --$variant sys-file.sack > sys-file.sav])
+  AT_DATA([sys-file.sps], [dnl
+GET FILE='sys-file.sav'.
+])
+  AT_CHECK([pspp -O format=csv sys-file.sps], [0], [dnl
+warning: `sys-file.sav' near offset 0xf6: Duplicate attribute Attr1.
+
+warning: `sys-file.sav' near offset 0x125: Duplicate attribute fred.
+])
+done
+AT_CLEANUP
+
 AT_SETUP([bad variable name in long string value label])
 AT_KEYWORDS([sack synthetic system file negative])
 AT_DATA([sys-file.sack], [dnl

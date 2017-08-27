@@ -2335,7 +2335,14 @@ parse_attributes (struct sfm_reader *r, struct text_record *text,
             break;
         }
       if (attrs != NULL)
-        attrset_add (attrs, attr);
+        {
+          if (!attrset_try_add (attrs, attr))
+            {
+              text_warn (r, text, _("Duplicate attribute %s."),
+                         attribute_get_name (attr));
+              attribute_destroy (attr);
+            }
+        }
       else
         attribute_destroy (attr);
     }

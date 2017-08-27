@@ -6,8 +6,8 @@ Please send PSPP bug reports to bug-gnu-pspp@gnu.org.
 
 Changes since 1.0.0:
 
- * Bug fixes, including fixes for CVE-2017-12958, CVE-2017-12959, and
-   CVE-2017-12960.
+ * Bug fixes, including fixes for CVE-2017-12958, CVE-2017-12959,
+   CVE-2017-12960, and CVE-2017-12961.
 
 Changes from 0.11.0 to 1.0.0:
 
