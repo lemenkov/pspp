@@ -82,6 +82,8 @@ void dict_reorder_vars (struct dictionary *,
                         struct variable *const *, size_t count);
 
 /* Variable names. */
+bool dict_try_rename_var (struct dictionary *,
+                          struct variable *, const char *);
 void dict_rename_var (struct dictionary *, struct variable *, const char *);
 bool dict_rename_vars (struct dictionary *,
                        struct variable **, char **new_names,

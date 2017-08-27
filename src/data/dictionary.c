@@ -756,17 +756,18 @@ rename_var (struct variable *v, const char *new_name)
   var_set_vardict (v, vardict);
 }
 
-/* Changes the name of V in D to name NEW_NAME.  Assert-fails if
-   a variable named NEW_NAME is already in D, except that
-   NEW_NAME may be the same as V's existing name. */
-void
-dict_rename_var (struct dictionary *d, struct variable *v,
-                 const char *new_name)
+/* Tries to changes the name of V in D to name NEW_NAME.  Returns true if
+   successful, false if a variable (other than V) with the given name already
+   exists in D. */
+bool
+dict_try_rename_var (struct dictionary *d, struct variable *v,
+                     const char *new_name)
 {
-  struct variable *old = var_clone (v);
-  assert (!utf8_strcasecmp (var_get_name (v), new_name)
-          || dict_lookup_var (d, new_name) == NULL);
+  struct variable *conflict = dict_lookup_var (d, new_name);
+  if (conflict && v != conflict)
+    return false;
 
+  struct variable *old = var_clone (v);
   unindex_var (d, var_get_vardict (v));
   rename_var (v, new_name);
   reindex_var (d, var_get_vardict (v));
@@ -779,6 +780,19 @@ dict_rename_var (struct dictionary *d, struct variable *v,
     d->callbacks->var_changed (d, var_get_dict_index (v), VAR_TRAIT_NAME, old, d->cb_data);
 
   var_destroy (old);
+
+  return true;
+}
+
+/* Changes the name of V in D to name NEW_NAME.  Assert-fails if
+   a variable named NEW_NAME is already in D, except that
+   NEW_NAME may be the same as V's existing name. */
+void
+dict_rename_var (struct dictionary *d, struct variable *v,
+                 const char *new_name)
+{
+  bool ok UNUSED = dict_try_rename_var (d, v, new_name);
+  assert (ok);
 }
 
 /* Renames COUNT variables specified in VARS to the names given
