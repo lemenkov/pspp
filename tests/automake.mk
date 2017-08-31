@@ -420,6 +420,7 @@ TESTSUITE_AT = \
 	tests/output/tables.at \
 	tests/ui/terminal/main.at \
 	tests/ui/syntax-gen.at \
+	tests/utilities/pspp-convert.at \
 	tests/perl-module.at
 
 TESTSUITE = $(srcdir)/tests/testsuite

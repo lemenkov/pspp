@@ -187,7 +187,7 @@ hmap_moved (struct hmap *map,
 static size_t
 capacity_to_mask (size_t capacity)
 {
-  /* Calculate the minimum mask necesary to support the given
+  /* Calculate the minimum mask necessary to support the given
      capacity. */
   size_t mask = 0;
   while (hmap_mask_to_capacity__ (mask) < capacity)

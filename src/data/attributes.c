@@ -22,6 +22,7 @@
 #include <string.h>
 
 #include "libpspp/array.h"
+#include "libpspp/compiler.h"
 #include "libpspp/hash-functions.h"
 #include "libpspp/i18n.h"
 
@@ -230,15 +231,28 @@ attrset_lookup (const struct attrset *set, const char *name)
   return CONST_CAST (struct attribute *, attr);
 }
 
+/* Adds ATTR to SET.  Succeeds and returns true if SET does not already contain
+   an attribute with the same name (matched case insensitively); otherwise
+   fails and returns false.  On success only, ownership of ATTR is transferred
+   to SET. */
+bool
+attrset_try_add (struct attrset *set, struct attribute *attr)
+{
+  const char *name = attribute_get_name (attr);
+  if (attrset_lookup (set, name))
+    return false;
+  hmap_insert (&set->map, &attr->node, utf8_hash_case_string (name, 0));
+  return true;
+}
+
 /* Adds ATTR to SET, which must not already contain an attribute
    with the same name (matched case insensitively).  Ownership of
    ATTR is transferred to SET. */
 void
 attrset_add (struct attrset *set, struct attribute *attr)
 {
-  const char *name = attribute_get_name (attr);
-  assert (attrset_lookup (set, name) == NULL);
-  hmap_insert (&set->map, &attr->node, utf8_hash_case_string (name, 0));
+  bool ok UNUSED = attrset_try_add (set, attr);
+  assert (ok);
 }
 
 /* Deletes any attribute from SET that matches NAME

@@ -1,0 +1,19 @@
+AT_BANNER([pspp-convert])
+
+AT_SETUP([pspp-convert crash when output cannot be opened])
+dnl Create a small .sav file.
+AT_DATA([sysfile.sps], [dnl
+DATA LIST NOTABLE/x 1.
+BEGIN DATA.
+5
+END DATA.
+SAVE OUTFILE='data.sav'.
+])
+AT_CHECK([pspp -O format=csv sysfile.sps])
+
+AT_CHECK([pspp-convert data.sav nonexistent/output.sav], [1], [], [stderr])
+AT_CHECK([grep '[[eE]]rror opening' stderr], [0], [dnl
+Error opening `nonexistent/output.sav' for writing as a system file: No such file or directory.
+pspp-convert: nonexistent/output.sav: error opening output file
+])
+AT_CLEANUP

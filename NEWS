@@ -4,10 +4,20 @@ See the end for copying conditions.
 
 Please send PSPP bug reports to bug-gnu-pspp@gnu.org.
 
+Experimental 0.13.1:
  ** The code implementing the sheet rendering has been removed.  Instead we
     use a third party library: spread-sheet-widget.
 
-Changes from 0.10.2 to 0.10.4
+Changes from 1.0.0 to 1.0.1:
+
+ * Bug fixes, including fixes for CVE-2017-12958, CVE-2017-12959,
+   CVE-2017-12960, and CVE-2017-12961.
+
+Changes from 0.11.0 to 1.0.0:
+
+ * Translation updates.
+
+Changes from 0.10.2 to 0.11.0:
 
  * The REGRESSION command now has a /ORIGIN subcommand to perform
    regression through the origin.
@@ -171,7 +181,7 @@ Changes from 0.8.4 to 0.8.5:
  * SYSFILE INFO can now read SPSS/PC+ system files and SPSS portable
    files.
 
- * FREQUENCIES: A bug was fixed where an assertion failure occured
+ * FREQUENCIES: A bug was fixed where an assertion failure occurred
    when an empty dataset was presented.
 
  * The GRAPH command is now available.  Initially it supports

@@ -7,7 +7,7 @@
 @c A copy of the license is included in the section entitled "GNU
 @c Free Documentation License".
 @c
-@c Use @func when refering to a function.
+@c Use @func when referring to a function.
 @c Use @deftypefn for their definitions 
 @macro func{NAME}
 @code{\NAME\}

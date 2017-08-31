@@ -557,7 +557,7 @@ process_group (const struct variable *var, struct casereader *reader,
 
 /* Some more indeces into case data */
 #define N_POS_EQ 1  /* number of positive cases with values equal to n */
-#define N_POS_GT 2  /* number of postive cases with values greater than n */
+#define N_POS_GT 2  /* number of positive cases with values greater than n */
 #define N_NEG_EQ 3  /* number of negative cases with values equal to n */
 #define N_NEG_LT 4  /* number of negative cases with values less than n */
 

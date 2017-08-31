@@ -615,7 +615,7 @@ static void
 output_AHEX (const union value *input, const struct fmt_spec *format,
              char *output)
 {
-  output_hex (value_str (input, format->w), format->w / 2, output);
+  output_hex (value_str (input, format->w / 2), format->w / 2, output);
 }
 
 /* Decimal and scientific formatting. */

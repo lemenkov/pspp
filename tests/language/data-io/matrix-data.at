@@ -334,7 +334,7 @@ AT_SETUP([Matrix reader - read integrity])
 
 dnl Check that matrices presented are read correctly.
 dnl The example below is an unlikely one since all
-dnl covariance/correlation matrices must be symetrical
+dnl covariance/correlation matrices must be symmetrical
 dnl but it serves a purpose for this test.
 AT_DATA([matrix-reader.pspp], [dnl
 matrix data

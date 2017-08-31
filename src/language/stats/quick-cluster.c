@@ -237,7 +237,7 @@ min_dist_from (const struct Kmeans *kmeans, const struct qc *qc, int which)
 
 
 
-/* Calculate the intial cluster centers. */
+/* Calculate the initial cluster centers. */
 static void
 kmeans_initial_centers (struct Kmeans *kmeans, const struct casereader *reader, const struct qc *qc)
 {

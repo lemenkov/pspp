@@ -15689,3 +15689,22 @@ AT_CHECK([cat wkday-out.out], [0], [dnl
                                         .
 ])
 AT_CLEANUP
+
+dnl This checks for a regression where AHEX output would crash due to
+dnl dereferencing string data as a pointer, for string widths between
+dnl 5 and 8, inclusive.
+AT_SETUP([AHEX output bug])
+AT_DATA([ahex.sps], [
+DATA LIST NOTABLE /s (a8).
+BEGIN DATA.
+abcdefgh
+END DATA.
+FORMATS s (AHEX16).
+LIST.
+])
+AT_CHECK([pspp -O format=csv ahex.sps], [0], [dnl
+Table: Data List
+s
+6162636465666768
+])
+AT_CLEANUP

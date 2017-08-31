@@ -97,7 +97,7 @@ Then you need to run
 psppire uses some self defined widgets. To use glade these widgets have
 to be announced to glade such that you can view the interface.
 The install process will install the psppire glade library, icons and
-psppire.xml files in the appropiate system locations. You cannot override
+psppire.xml files in the appropriate system locations. You cannot override
 this with --prefix. After that you can run "glade" and open the ui files.
 
 Building from git on Mac OS

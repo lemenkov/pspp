@@ -70,7 +70,7 @@ void zip_reader_destroy (struct zip_reader *zr);
 /* Return the zip member in the reader ZR, called MEMBER */
 struct zip_member *zip_member_open (struct zip_reader *zr, const char *member);
 
-/* Read upto N bytes from ZM, storing them in BUF.
+/* Read up to N bytes from ZM, storing them in BUF.
    Returns the number of bytes read, or -1 on error */
 int zip_member_read (struct zip_member *zm, void *buf, size_t n);
 

@@ -53,6 +53,7 @@ void attrset_destroy (struct attrset *);
 size_t attrset_count (const struct attrset *);
 
 struct attribute *attrset_lookup (const struct attrset *, const char *);
+bool attrset_try_add (struct attrset *, struct attribute *);
 void attrset_add (struct attrset *, struct attribute *);
 void attrset_delete (struct attrset *, const char *);
 void attrset_clear (struct attrset *);

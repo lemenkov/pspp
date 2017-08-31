@@ -61,7 +61,7 @@ struct loop_trns
 
     /* Iteration limit. */
     int max_pass_count;         /* Maximum number of passes (-1=unlimited). */
-    int pass;			/* Number of passes thru the loop so far. */
+    int pass;			/* Number of passes through the loop so far. */
 
     /* a=a TO b [BY c]. */
     struct variable *index_var; /* Index variable. */

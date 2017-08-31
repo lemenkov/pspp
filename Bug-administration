@@ -3,7 +3,7 @@ at http://sv.gnu.org/bugs/?group=pspp
 
 We use the following conventions for classiying / ranking bugs:
 
-Relase: 
+Release:
 * Bugs which we think must be fixed before a release get their "Release" field set accordingly. 
 * Bugs which need not be fixed before any particular release, get their "Release" field set to "Future". 
 * Bugs where we have not get decided are left at "None". 

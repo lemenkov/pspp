@@ -1457,11 +1457,13 @@ parse_variable_records (struct sfm_reader *r, struct dictionary *dict,
                                    "`%s' to `%s'."),
                     name, new_name);
           var = rec->var = dict_create_var_assert (dict, new_name, rec->width);
+          var_set_short_name (var, 0, new_name);
           free (new_name);
         }
 
-      /* Set the short name the same as the long name. */
-      var_set_short_name (var, 0, name);
+      /* Set the short name the same as the long name (even if we renamed
+         it). */
+      var_set_short_name (var, 0, var_get_name (var));
 
       /* Get variable label, if any. */
       if (rec->label)
@@ -1831,10 +1833,9 @@ decode_mrsets (struct sfm_reader *r, struct dictionary *dict)
       size_t i;
 
       name = recode_string ("UTF-8", r->encoding, s->name, -1);
-      if (name[0] != '$')
+      if (!mrset_is_valid_name (name, dict_get_encoding (dict), false))
         {
-          sys_warn (r, -1, _("Multiple response set name `%s' does not begin "
-                             "with `$'."),
+          sys_warn (r, -1, _("Invalid multiple response set name `%s'."),
                     name);
           free (name);
           continue;
@@ -1996,8 +1997,9 @@ parse_display_parameters (struct sfm_reader *r,
 }
 
 static void
-rename_var_and_save_short_names (struct dictionary *dict, struct variable *var,
-                                 const char *new_name)
+rename_var_and_save_short_names (struct sfm_reader *r, off_t pos,
+                                 struct dictionary *dict,
+                                 struct variable *var, const char *new_name)
 {
   size_t n_short_names;
   char **short_names;
@@ -2015,7 +2017,8 @@ rename_var_and_save_short_names (struct dictionary *dict, struct variable *var,
     }
 
   /* Set long name. */
-  dict_rename_var (dict, var, new_name);
+  if (!dict_try_rename_var (dict, var, new_name))
+    sys_warn (r, pos, _("Duplicate long variable name `%s'."), new_name);
 
   /* Restore short names. */
   for (i = 0; i < n_short_names; i++)
@@ -2049,7 +2052,7 @@ parse_long_var_name_map (struct sfm_reader *r,
           char *new_name;
 
           new_name = utf8_to_lower (var_get_name (var));
-          rename_var_and_save_short_names (dict, var, new_name);
+          rename_var_and_save_short_names (r, -1, dict, var, new_name);
           free (new_name);
 	}
 
@@ -2074,16 +2077,7 @@ parse_long_var_name_map (struct sfm_reader *r,
           continue;
         }
 
-      /* Identify any duplicates. */
-      if (utf8_strcasecmp (var_get_short_name (var, 0), long_name)
-          && dict_lookup_var (dict, long_name) != NULL)
-        {
-          sys_warn (r, record->pos,
-                    _("Duplicate long variable name `%s'."), long_name);
-          continue;
-        }
-
-      rename_var_and_save_short_names (dict, var, long_name);
+      rename_var_and_save_short_names (r, record->pos, dict, var, long_name);
     }
   close_text_record (r, text);
 }
@@ -2341,7 +2335,14 @@ parse_attributes (struct sfm_reader *r, struct text_record *text,
             break;
         }
       if (attrs != NULL)
-        attrset_add (attrs, attr);
+        {
+          if (!attrset_try_add (attrs, attr))
+            {
+              text_warn (r, text, _("Duplicate attribute %s."),
+                         attribute_get_name (attr));
+              attribute_destroy (attr);
+            }
+        }
       else
         attribute_destroy (attr);
     }
@@ -2986,7 +2987,7 @@ open_text_record (struct sfm_reader *r,
 }
 
 /* Closes TEXT, frees its storage, and issues a final warning
-   about suppressed warnings if necesary. */
+   about suppressed warnings if necessary. */
 static void
 close_text_record (struct sfm_reader *r, struct text_record *text)
 {
