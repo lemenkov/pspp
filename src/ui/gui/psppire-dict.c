@@ -99,6 +99,22 @@ gi (GListModel *list, guint id)
 
       gtk_button_set_label (GTK_BUTTON (button),  var_get_name (v));
       gtk_widget_set_tooltip_text (button, var_get_label (v));
+
+      PangoRectangle rect;
+      
+      PangoContext *context = gtk_widget_create_pango_context (button);
+      PangoLayout *layout = pango_layout_new (context);
+      
+      pango_layout_set_text (layout, "M", 1);
+      
+      pango_layout_get_extents (layout, NULL, &rect);
+      
+      g_object_unref (G_OBJECT (layout));
+      g_object_unref (G_OBJECT (context));
+      
+      gtk_widget_set_size_request (button,
+				   var_get_display_width (v) * rect.width / PANGO_SCALE,
+				   -1);
     }
 
   return button;
