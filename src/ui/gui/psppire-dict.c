@@ -34,8 +34,6 @@
 #include "ui/gui/psppire-marshal.h"
 #include "ui/gui/psppire-var-ptr.h"
 
-#include <ssw-datum.h>
-
 #include <gobject/genums.h>
 
 #include <gettext.h>
@@ -81,29 +79,29 @@ gni (GListModel *list)
 static GType
 git (GListModel *list)
 {
-  return SSW_TYPE_DATUM;
+  return GTK_TYPE_BUTTON;
 }
 
 static gpointer
 gi (GListModel *list, guint id)
 {
-  SswDatum *gd = SSW_DATUM (g_object_new (SSW_TYPE_DATUM, NULL));
+  GtkWidget *button = gtk_button_new ();
 
   PsppireDict *dict = PSPPIRE_DICT (list);
 
   if (id >= psppire_dict_get_var_cnt (dict))
     {
-      gd->text = g_strdup (_("Var"));
+      gtk_button_set_label (GTK_BUTTON (button),  _("Var"));
     }
   else
     {
       const struct variable *v =  psppire_dict_get_variable (dict, id);
 
-      gd->text = g_strdup (var_get_name (v));
-      gd->label = g_strdup (var_get_label (v));
+      gtk_button_set_label (GTK_BUTTON (button),  var_get_name (v));
+      gtk_widget_set_tooltip_text (button, var_get_label (v));
     }
 
-  return gd;
+  return button;
 }
 
 

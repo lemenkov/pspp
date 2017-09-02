@@ -21,8 +21,10 @@
 
 #include "psppire-var-sheet-header.h"
 
-#include <ssw-axis-model.h>
-#include <ssw-datum.h>
+#include <gettext.h>
+
+#define _(msgid) gettext (msgid)
+#define N_(msgid) msgid
 
 enum  {CHANGED,
        n_SIGNALS};
@@ -38,56 +40,59 @@ gni (GListModel *list)
 static GType
 git (GListModel *list)
 {
-  return SSW_TYPE_DATUM;
+  return GTK_TYPE_BUTTON;
 }
+
 
 static gpointer
 gi (GListModel *list, guint position)
 {
-  SswDatum *gd = SSW_DATUM (g_object_new (SSW_TYPE_DATUM, NULL));
+  GtkWidget *button = gtk_button_new ();
+  gchar *text = NULL;
 
   switch (position)
     {
     case 0:
-      gd->text = g_strdup ("Name");
+      text = N_("Name");
       break;
     case 1:
-      gd->text = g_strdup ("Type");
+      text = N_("Type");
       break;
     case 2:
-      gd->text = g_strdup ("Width");
+      text = N_("Width");
       break;
     case 3:
-      gd->text = g_strdup ("Decimal");
+      text = N_("Decimal");
       break;
     case 4:
-      gd->text = g_strdup ("Label");
+      text = N_("Label");
       break;
     case 5:
-      gd->text = g_strdup ("Value Labels");
+      text = N_("Value Labels");
       break;
     case 6:
-      gd->text = g_strdup ("Missing Values");
+      text = N_("Missing Values");
       break;
     case 7:
-      gd->text = g_strdup ("Columns");
+      text = N_("Columns");
       break;
     case 8:
-      gd->text = g_strdup ("Align");
+      text = N_("Align");
       break;
     case 9:
-      gd->text = g_strdup ("Measure");
+      text = N_("Measure");
       break;
     case 10:
-      gd->text = g_strdup ("Role");
+      text = N_("Role");
       break;
     default:
-      //      g_assert_not_reached ();
-      g_print ("Bug: Request for item %d\n", position);
       break;
     }
 
-  return gd;
+  if (text)
+    gtk_button_set_label (GTK_BUTTON (button), gettext (text));
+  
+  return button;
 }
 
 
