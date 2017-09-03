@@ -113,7 +113,8 @@ gi (GListModel *list, guint id)
 	g_object_unref (G_OBJECT (context));
       
 	gtk_widget_set_size_request (button,
-				     var_get_display_width (v) * rect.width / PANGO_SCALE,
+				     (0.25 + var_get_display_width (v))
+				     * rect.width / PANGO_SCALE,
 				     -1);
       }
     }
