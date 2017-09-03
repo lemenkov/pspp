@@ -100,21 +100,22 @@ gi (GListModel *list, guint id)
       gtk_button_set_label (GTK_BUTTON (button),  var_get_name (v));
       gtk_widget_set_tooltip_text (button, var_get_label (v));
 
-      PangoRectangle rect;
+      {
+	PangoContext *context = gtk_widget_create_pango_context (button);
+	PangoLayout *layout = pango_layout_new (context);
+	PangoRectangle rect;
       
-      PangoContext *context = gtk_widget_create_pango_context (button);
-      PangoLayout *layout = pango_layout_new (context);
+	pango_layout_set_text (layout, "M", 1);
       
-      pango_layout_set_text (layout, "M", 1);
+	pango_layout_get_extents (layout, NULL, &rect);
       
-      pango_layout_get_extents (layout, NULL, &rect);
+	g_object_unref (G_OBJECT (layout));
+	g_object_unref (G_OBJECT (context));
       
-      g_object_unref (G_OBJECT (layout));
-      g_object_unref (G_OBJECT (context));
-      
-      gtk_widget_set_size_request (button,
-				   var_get_display_width (v) * rect.width / PANGO_SCALE,
-				   -1);
+	gtk_widget_set_size_request (button,
+				     var_get_display_width (v) * rect.width / PANGO_SCALE,
+				     -1);
+      }
     }
 
   return button;
@@ -206,10 +207,7 @@ psppire_dict_class_init (PsppireDictClass *class)
 		  3,
 		  G_TYPE_INT,
 		  G_TYPE_UINT,
-		  G_TYPE_POINTER
-		  );
-
-
+		  G_TYPE_POINTER);
 
   signals [VARIABLE_INSERTED] =
     g_signal_new ("variable-inserted",
@@ -221,7 +219,6 @@ psppire_dict_class_init (PsppireDictClass *class)
 		  G_TYPE_NONE,
 		  1,
 		  G_TYPE_INT);
-
 
   signals [VARIABLE_DELETED] =
     g_signal_new ("variable-deleted",
@@ -236,7 +233,6 @@ psppire_dict_class_init (PsppireDictClass *class)
 		  G_TYPE_INT,
 		  G_TYPE_INT);
 
-
   signals [WEIGHT_CHANGED] =
     g_signal_new ("weight-changed",
 		  G_TYPE_FROM_CLASS (class),
@@ -248,7 +244,6 @@ psppire_dict_class_init (PsppireDictClass *class)
 		  1,
 		  G_TYPE_INT);
 
-
   signals [FILTER_CHANGED] =
     g_signal_new ("filter-changed",
 		  G_TYPE_FROM_CLASS (class),
@@ -259,7 +254,6 @@ psppire_dict_class_init (PsppireDictClass *class)
 		  G_TYPE_NONE,
 		  1,
 		  G_TYPE_INT);
-
 
   signals [SPLIT_CHANGED] =
     g_signal_new ("split-changed",
@@ -960,8 +954,6 @@ psppire_dict_dump (const PsppireDict *dict)
     }
 }
 #endif
-
-
 
 
 const gchar *
