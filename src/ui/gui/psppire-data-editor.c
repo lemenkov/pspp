@@ -345,8 +345,23 @@ refresh_entry (PsppireDataEditor *de)
 }
 
 static void
-on_datum_entry_activate (PsppireValueEntry *entry, PsppireDataEditor *de)
+on_datum_entry_activate (GtkEntry *entry, PsppireDataEditor *de)
 {
+  gint row, col;
+  if (ssw_sheet_get_active_cell (SSW_SHEET (de->data_sheet), &col, &row))
+    {
+      union value val;
+      const struct variable *var = psppire_dict_get_variable (de->dict, col);
+      if (var == NULL)
+	return;
+
+      value_init (&val, var_get_width (var));
+
+      if (psppire_value_entry_get_value (de->datum_entry, &val, var_get_width (var)))
+	{
+	  psppire_data_store_set_value (de->data_store, row, var, &val);
+	}
+    }
 }
 
 
