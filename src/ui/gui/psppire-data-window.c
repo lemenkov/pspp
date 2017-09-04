@@ -1053,10 +1053,9 @@ connect_action_to_menuitem (GActionMap *map, const gchar *action_name, GtkWidget
 
 
 static void
-set_data_page (PsppireDataWindow *dw)
+on_realize (PsppireDataWindow *dw)
 {
   gtk_notebook_set_current_page (GTK_NOTEBOOK (dw->data_editor), 1);
-  gtk_notebook_set_current_page (GTK_NOTEBOOK (dw->data_editor), 0);
 }
 
 
@@ -1453,7 +1452,7 @@ psppire_data_window_finish_init (PsppireDataWindow *de,
     PSPPIRE_DATA_EDITOR (psppire_data_editor_new (de->dict, de->data_store));
 
   g_signal_connect (de, "realize",
-                    G_CALLBACK (set_data_page), de);
+                    G_CALLBACK (on_realize), de);
 
   g_signal_connect_swapped (de->data_store, "case-changed",
 			    G_CALLBACK (set_unsaved), de);
