@@ -218,7 +218,6 @@ psppire_data_editor_switch_page (GtkNotebook     *notebook,
                                  guint            page_num)
 {
   GTK_NOTEBOOK_CLASS (parent_class)->switch_page (notebook, w, page_num);
-
 }
 
 static void
@@ -226,7 +225,6 @@ psppire_data_editor_set_focus_child (GtkContainer *container,
                                      GtkWidget    *widget)
 {
   GTK_CONTAINER_CLASS (parent_class)->set_focus_child (container, widget);
-
 }
 
 static void
@@ -509,7 +507,6 @@ psppire_data_editor_init (PsppireDataEditor *de)
       g_free (fontname);
       set_font_recursively (GTK_WIDGET (de), de->font);
     }
-
 }
 
 GtkWidget*
