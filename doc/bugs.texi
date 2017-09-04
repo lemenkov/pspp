@@ -15,23 +15,32 @@
 
 Occasionally you may encounter a bug in @pspp{}.
 
-@section When to report bugs
-
-If you discover a bug, please first:
-@itemize @bullet
-@item Make sure that it really is a bug.  Sometimes, what may appear
+If you believe you have found a bug, please
+make sure that it really is a bug.  Sometimes, what may appear
 to be a bug, turns out to be a misunderstanding of how to use the program.
-If you are unsure, ask for advice on the pspp-users mailing list.  
+If you are unsure, ask for advice on the pspp-users mailing list.
 Information about the mailing list is at @uref{http://lists.gnu.org/mailman/listinfo/pspp-users}.
-@item Try an up to date version of @pspp{}; the problem 
- may have been recently fixed. 
-@item If the problem persists in the up to date version, check to see
- if it has already been reported.  Reported issues are listed 
- at @uref{http://savannah.gnu.org/bugs/?group=pspp}.
+
+It is also valuable to try the newest version of @pspp{}, since the
+problem may have already been fixed.  You can always find the newest
+version of PSPP by visiting @url{https://www.gnu.org/p/pspp, the PSPP
+website}.  You might have obtained PSPP from a downstream packager,
+such as a GNU/Linux distribution; if your downstream package is not
+up-to-date, please ask the distributor to update to the newest
+version.
+
+If the problem persists in the up-to-date version, check to see if it
+has already been reported.  Reported issues are listed at
+@uref{http://savannah.gnu.org/bugs/?group=pspp}.  If it has already
+been reported, you might consider adding a comment with additional
+information or even just to mention that you are also experiencing the
+problem, since the PSPP developers are often inclined to work on
+issues that are important to a large number of users.
+
  For known issues in individual language features, see the relevant section in @pxref{Language}.
-@item If the problem exists in a recent version and it has not already 
- been reported, then please report it.
-@end itemize
+
+If the problem exists in a recent version and it has not already
+been reported, then please report it.
 
 
 @section How to report bugs
@@ -41,26 +50,30 @@ The best way to send a bug report is using the web page at
 Alternatively, bug reports may be sent by email
 to @email{bug-gnu-pspp@@gnu.org}.
 
-In your bug report please include:
+A high-quality bug report allows the developers to understand,
+reproduce, and ultimately fix the problem.  We recommend
+including the following:
 @itemize @bullet
-@item The version of @pspp{} in which you encountered the problem.
-That means the precise version number.  Do not simply say ``the latest version'' ---
+@item The version of @pspp{} in which you encountered the problem
+That means the precise version number.  ``The latest version''
+is often too ambiguous because
 releases happen quickly, and bug reports are archived indefinitely.
-@item The operating system and type of computer on which it is running.  On a GNU 
-or other unix-like system, the output from the @cmd{uname} command is helpful.
+@item The operating system and type of computer on which it is running.
 @item A sample of the syntax which causes the problem or, if it is a user
  interface problem, the sequence of steps required to reproduce it.
- Screen shots are not usually helpful unless you are reporting a bug in
- the graphical user interface itself.
-@item A description of what you think is wrong: What happened that you 
+ Screenshots can be helpful for reporting bugs in the graphical user
+ interface, especially since GUI bugs can arise on some systems but
+ not others, but they do not usually help fixing other kinds of bugs.
+@item A description of what you think is wrong: What happened that you
   didn't expect, and what did you expect to happen?
 @end itemize
 
-The following is an example of a useful bug report:
+Here is one example of a bug report that includes all of the elements above:
+
+@cartouche
 @example
-When I run PSPP 0.8.4 on the system:
-"Linux knut 3.5.3-gnu #1 PREEMPT Tue Aug 28 10:49:41 UTC 2012 mips64 GNU/Linux"
-Executing the following syntax:
+When I run PSPP 0.8.4 on my GNU/Linux system, executing the following
+syntax:
 
  DATA LIST FREE /x *.
  BEGIN DATA.
@@ -74,33 +87,39 @@ results in:
  5
  6
 
-I think the output should be:
+but I think the output should be:
 
  1
  2
  3
 @end example
-@noindent Here, the developers have the necessary information to reproduce the circumstances of the bug report,
-and they understand what the reporter expected.
+@end cartouche
 
+The following bug report, on the other hand, does not provide enough
+information for PSPP developers to understand the problem.  This means
+that the developers cannot identify or fix the problem without
+additional rounds of questions, which is more work for both the
+reporter and the developer:
 
-Conversely, the following is a useless bug report:
-
+@cartouche
 @example
-I downloaded the latest version of PSPP and entered a sequence of numbers, 
+I downloaded the latest version of PSPP and entered a sequence of numbers,
 but when I analyse them it gives the wrong output.
 @end example
-@noindent In that example, it is impossible to reproduce, and there is no indication
-of why the reporter thought what he saw was wrong.
+@end cartouche
 
-Note that the purpose of bug reports is to help improve the quality of @pspp{} 
-for the benefit of all users.
-It is not a consultancy or support service.  If that is what you want, you are welcome to make
-private arrangements.  Since @pspp{} is free software, consultants have access to
+@pspp{} developers value all users' feedback, but cannot promise
+an immediate response.  The bug reporting is not a consultancy or
+support service, although you can make private arrangements for such
+services.  Since @pspp{} is free software, consultants have access to
 the information they need to provide such support.
-The @pspp{} developers appreciate all users' feedback, but cannot promise an immediate response.
 
-Please do not use the bug reporting address for general enquiries or to seek 
-help in using, installing or running the program.  
-For that, use the pspp-users mailing list mentioned above.
+For general enquiries or help, please use the
+@uref{http://lists.gnu.org/mailman/listinfo/pspp-users, pspp-users
+mailing list} instead of the bug mailing list or bug tracker.
 
+The PSPP bug tracker and bug reporting mailing list are public.  To
+privately report a security vulnerability in GNU PSPP, please send
+your report to the closed mailing list @email{pspp-security@@gnu.org}.
+The PSPP developers will help you assess your report and fix problems
+prior to public disclosure.

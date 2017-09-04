@@ -35,6 +35,12 @@ or emailed to bug-gnu-pspp@gnu.org.  We prefer the web-based system
 because it makes it more difficult for us to lose track of bugs, but we
 are happy to hear from users through any means.
 
+The PSPP bug tracker and bug reporting mailing list are public.  To
+privately report a security vulnerability in GNU PSPP, please send
+your report to the closed mailing list pspp-security@gnu.org.  The
+PSPP developers will help you assess your report and fix problems
+prior to public disclosure.
+
 The long term goals for PSPP are ambitious.  We wish to provide the
 following support to users:
 
