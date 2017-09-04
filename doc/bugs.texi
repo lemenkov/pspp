@@ -23,7 +23,7 @@ Information about the mailing list is at @uref{http://lists.gnu.org/mailman/list
 
 It is also valuable to try the newest version of @pspp{}, since the
 problem may have already been fixed.  You can always find the newest
-version of PSPP by visiting @url{https://www.gnu.org/p/pspp, the PSPP
+version of PSPP by visiting @url{https://www.gnu.org/s/pspp, the PSPP
 website}.  You might have obtained PSPP from a downstream packager,
 such as a GNU/Linux distribution; if your downstream package is not
 up-to-date, please ask the distributor to update to the newest
