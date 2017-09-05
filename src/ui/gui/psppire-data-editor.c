@@ -355,12 +355,14 @@ on_datum_entry_activate (GtkEntry *entry, PsppireDataEditor *de)
       if (var == NULL)
 	return;
 
-      value_init (&val, var_get_width (var));
-
-      if (psppire_value_entry_get_value (de->datum_entry, &val, var_get_width (var)))
+      int width = var_get_width (var);
+      value_init (&val, width);
+      if (psppire_value_entry_get_value (PSPPIRE_VALUE_ENTRY (de->datum_entry),
+					 &val, width))
 	{
 	  psppire_data_store_set_value (de->data_store, row, var, &val);
 	}
+      value_destroy (&val, width);
     }
 }
 
