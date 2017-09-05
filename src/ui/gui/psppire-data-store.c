@@ -810,7 +810,10 @@ psppire_data_store_set_value (PsppireDataStore *ds, casenumber casenum,
   ok = datasheet_put_value (ds->datasheet, casenum, var_get_case_index (var),
                             v);
   if (ok)
-    g_signal_emit (ds, signals [CASE_CHANGED], 0, casenum);
+    {
+      g_signal_emit (ds, signals [CASE_CHANGED], 0, casenum);
+      g_signal_emit (ds, signals [ITEMS_CHANGED], 0, casenum, 1, 1);
+    }
 
   return ok;
 }
