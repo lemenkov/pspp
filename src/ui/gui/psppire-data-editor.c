@@ -378,6 +378,9 @@ on_datum_entry_activate (GtkEntry *entry, PsppireDataEditor *de)
 	  psppire_data_store_set_value (de->data_store, row, var, &val);
 	}
       value_destroy (&val, width);
+
+      gtk_widget_grab_focus (de->data_sheet);
+      ssw_sheet_set_active_cell (de->data_sheet, col, row, NULL);
     }
 }
 
@@ -488,8 +491,8 @@ psppire_data_editor_init (PsppireDataEditor *de)
   gtk_widget_set_valign (de->cell_ref_label, GTK_ALIGN_CENTER);
 
   de->datum_entry = psppire_value_entry_new ();
-  g_signal_connect (GTK_ENTRY (gtk_bin_get_child (GTK_BIN (de->datum_entry))),
-                    "activate", G_CALLBACK (on_datum_entry_activate), de);
+  g_signal_connect (de->datum_entry, "edit-done",
+		    G_CALLBACK (on_datum_entry_activate), de);
 
   hbox = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 0);
   gtk_box_pack_start (GTK_BOX (hbox), de->cell_ref_label, FALSE, FALSE, 0);
