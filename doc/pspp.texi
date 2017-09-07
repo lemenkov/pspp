@@ -130,6 +130,7 @@ in the production of this manual.
 * Command Index::               Index of PSPP procedures.
 * Concept Index::               Index of concepts.
 
+* Installation::               Installing pspp
 * GNU Free Documentation License:: License for copying this manual.
 @end menu
 
@@ -159,6 +160,7 @@ in the production of this manual.
 @include command-index.texi
 @include concept-index.texi
 
+@include installing.texi
 @include fdl.texi
 
 @bye
