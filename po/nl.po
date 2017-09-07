@@ -7,10 +7,10 @@
 # Weet je een betere vertaling dan de huidige of een vertaling voor een nog niet vertaalde ingang, mail die dan naar Jaap alsjeblieft.
 msgid ""
 msgstr ""
-"Project-Id-Version: pspp-0.10.5-pre3\n"
+"Project-Id-Version: pspp-1.0.1\n"
 "Report-Msgid-Bugs-To: pspp-dev@gnu.org\n"
 "POT-Creation-Date: 2015-06-19 20:56-0700\n"
-"PO-Revision-Date: 2017-08-01 15:48+0200\n"
+"PO-Revision-Date: 2017-08-29 10:45+0200\n"
 "Last-Translator: Jaap Verhage <pspp.vertaler@gmail.com>\n"
 "Language-Team: Dutch <vertaling@vrijschrift.org>\n"
 "Language: nl\n"
@@ -85,8 +85,8 @@ msgstr "Alfanumeriek"
 msgid "Numeric"
 msgstr "Numeriek"
 
-#: src/data/format.c:416 src/data/sys-file-reader.c:2199
-#: src/data/sys-file-reader.c:2201 src/language/xforms/recode.c:512
+#: src/data/format.c:416 src/data/sys-file-reader.c:2193
+#: src/data/sys-file-reader.c:2195 src/language/xforms/recode.c:512
 #: src/language/xforms/recode.c:513 src/language/xforms/recode.c:525
 #: src/language/xforms/recode.c:526
 #: src/language/dictionary/apply-dictionary.c:77
@@ -94,8 +94,8 @@ msgstr "Numeriek"
 msgid "numeric"
 msgstr "numeriek"
 
-#: src/data/format.c:416 src/data/sys-file-reader.c:2199
-#: src/data/sys-file-reader.c:2201 src/language/xforms/recode.c:512
+#: src/data/format.c:416 src/data/sys-file-reader.c:2193
+#: src/data/sys-file-reader.c:2195 src/language/xforms/recode.c:512
 #: src/language/xforms/recode.c:513 src/language/xforms/recode.c:525
 #: src/language/xforms/recode.c:526
 #: src/language/dictionary/apply-dictionary.c:77
@@ -462,7 +462,7 @@ msgstr "systeem"
 msgid "scratch"
 msgstr "klad"
 
-#: src/data/dictionary.c:1336
+#: src/data/dictionary.c:1350
 #, c-format
 msgid "Truncating document line to %d bytes."
 msgstr "Documentregel wordt afgekapt tot %d bytes."
@@ -612,7 +612,7 @@ msgstr "SPSS/PC+-systeembestand"
 msgid "Error opening `%s' for reading as an SPSS/PC+ system file: %s."
 msgstr "Fout bij openen van `%s' voor lezen als een SPSS/PC+-systeembestand: %s."
 
-#: src/data/pc+-file-reader.c:224 src/data/sys-file-reader.c:3506
+#: src/data/pc+-file-reader.c:224 src/data/sys-file-reader.c:3507
 #, c-format
 msgid "%s: stat failed (%s)."
 msgstr "%s: stat mislukt (%s)."
@@ -767,7 +767,7 @@ msgstr "Variabele met eerder gebruikte naam `%s' wordt hernoemd tot `%s'."
 msgid "Cannot weight by string variable `%s'."
 msgstr "Kan niet wegen met alfanumerieke variabele `%s'."
 
-#: src/data/pc+-file-reader.c:975 src/data/sys-file-reader.c:2726
+#: src/data/pc+-file-reader.c:975 src/data/sys-file-reader.c:2727
 msgid "File ends in partial case."
 msgstr "Bestand eindigt in gedeeltelijke observatie."
 
@@ -776,36 +776,36 @@ msgstr "Bestand eindigt in gedeeltelijke observatie."
 msgid "Case beginning at offset 0x%08x extends past end of data record at offset 0x%08x."
 msgstr "Observatie beginnend op positie 0x%08x overschrijdt einde van gegevenskaart op positie 0x%08x."
 
-#: src/data/pc+-file-reader.c:1000 src/data/sys-file-reader.c:2734
+#: src/data/pc+-file-reader.c:1000 src/data/sys-file-reader.c:2735
 #, c-format
 msgid "Error reading case from file %s."
 msgstr "Fout tijdens lezen observatie van bestand %s."
 
-#: src/data/pc+-file-reader.c:1116 src/data/sys-file-reader.c:2897
+#: src/data/pc+-file-reader.c:1116 src/data/sys-file-reader.c:2898
 #, c-format
 msgid "Possible compressed data corruption: string contains compressed integer (opcode %d)."
 msgstr "Mogelijke fout in gecomprimeerde gegevens: tekenreeks bevat gecomprimeerd geheel getal (\"opcode\" %d)."
 
-#: src/data/pc+-file-reader.c:1160 src/data/sys-file-reader.c:3195
+#: src/data/pc+-file-reader.c:1160 src/data/sys-file-reader.c:3196
 #, c-format
 msgid "`%s' near offset 0x%llx: "
 msgstr "`%s' in de buurt van positie 0x%llx: "
 
-#: src/data/pc+-file-reader.c:1163 src/data/sys-file-reader.c:3198
+#: src/data/pc+-file-reader.c:1163 src/data/sys-file-reader.c:3199
 #, c-format
 msgid "`%s': "
 msgstr "`%s': "
 
-#: src/data/pc+-file-reader.c:1219 src/data/sys-file-reader.c:3253
+#: src/data/pc+-file-reader.c:1219 src/data/sys-file-reader.c:3254
 #, c-format
 msgid "System error: %s."
 msgstr "Systeemfout: %s."
 
-#: src/data/pc+-file-reader.c:1224 src/data/sys-file-reader.c:3258
+#: src/data/pc+-file-reader.c:1224 src/data/sys-file-reader.c:3259
 msgid "Unexpected end of file."
 msgstr "Onverwacht einde van bestand."
 
-#: src/data/pc+-file-reader.c:1309 src/data/sys-file-reader.c:3483
+#: src/data/pc+-file-reader.c:1309 src/data/sys-file-reader.c:3484
 #, c-format
 msgid "%s: seek failed (%s)."
 msgstr "%s: zoeken mislukt (%s)."
@@ -1147,352 +1147,357 @@ msgstr "Kaart type 7, subtype %d heeft foutieve lengte %u (verwacht %d)."
 msgid "Record type 7, subtype %d has bad count %u (expected %d)."
 msgstr "Kaart type 7, subtype %d heeft foutieve telling %u (verwacht %d)."
 
-#: src/data/sys-file-reader.c:1528
+#: src/data/sys-file-reader.c:1530
 msgid "Missing string continuation record."
 msgstr "Kaart met voortzetting van tekenreeks ontbreekt."
 
-#: src/data/sys-file-reader.c:1574
+#: src/data/sys-file-reader.c:1576
 #, c-format
 msgid "Variable %s with width %d has invalid print format 0x%x."
 msgstr "Variabele %s met breedte %d heeft ongeldige afdrukspecificatie 0x%x."
 
-#: src/data/sys-file-reader.c:1578
+#: src/data/sys-file-reader.c:1580
 #, c-format
 msgid "Variable %s with width %d has invalid write format 0x%x."
 msgstr "Variabele %s met breedte %d heeft ongeldige schrijfspecificatie  0x%x."
 
-#: src/data/sys-file-reader.c:1583
+#: src/data/sys-file-reader.c:1585
 msgid "Suppressing further invalid format warnings."
 msgstr "Verdere waarschuwingen over ongeldige specificaties onderdrukt."
 
-#: src/data/sys-file-reader.c:1637
+#: src/data/sys-file-reader.c:1639
 #, c-format
 msgid "Floating-point representation indicated by system file (%d) differs from expected (%d)."
 msgstr "Drijvende-kommarepresentatie aangegeven door systeembestand (%d) verschilt van wat verwacht werd (%d)."
 
-#: src/data/sys-file-reader.c:1653
+#: src/data/sys-file-reader.c:1655
 #, c-format
 msgid "Integer format indicated by system file (%d) differs from expected (%d)."
 msgstr "Integer-indeling aangegeven door systeembestand (%d) verschilt van wat verwacht werd (%d)."
 
-#: src/data/sys-file-reader.c:1671 src/data/sys-file-reader.c:1677
+#: src/data/sys-file-reader.c:1673 src/data/sys-file-reader.c:1679
 #, c-format
 msgid "File specifies unexpected value %g (%a) as %s, instead of %g (%a)."
 msgstr "Bestand specificeert onverwachte waarde %g (%a) als %s in plaats van %g (%a)."
 
-#: src/data/sys-file-reader.c:1686
+#: src/data/sys-file-reader.c:1688
 #, c-format
 msgid "File specifies unexpected value %g (%a) as %s, instead of %g (%a) or %g (%a)."
 msgstr "Bestand specificeert onverwachte waarde %g (%a) als %s inplaats van %g (%a) of %g (%a)."
 
-#: src/data/sys-file-reader.c:1738 src/data/sys-file-reader.c:1757
+#: src/data/sys-file-reader.c:1740 src/data/sys-file-reader.c:1759
 #, c-format
 msgid "Missing space following `%c' at offset %zu in MRSETS record."
 msgstr "Ontbrekende spatie achter `%c' op positie %zu in MRSETS-kaart."
 
-#: src/data/sys-file-reader.c:1767
+#: src/data/sys-file-reader.c:1769
 #, c-format
 msgid "Unexpected label source value following `E' at offset %zu in MRSETS record."
 msgstr "Onverwachte label-bronwaarde achter `E' op positie %zu in MRSETS-kaart."
 
-#: src/data/sys-file-reader.c:1774
+#: src/data/sys-file-reader.c:1776
 #, c-format
 msgid "Missing `C', `D', or `E' at offset %zu in MRSETS record."
 msgstr "Ontbrekende `C', `D', of `E' op positie %zu in MRSETS-kaart."
 
-#: src/data/sys-file-reader.c:1801
+#: src/data/sys-file-reader.c:1803
 #, c-format
 msgid "Missing new-line parsing variable names at offset %zu in MRSETS record."
 msgstr "Nieuwe-regel ontbreekt bij lezen variabelenamen op positie %zu in MRSETS-kaart."
 
-#: src/data/sys-file-reader.c:1836
+#: src/data/sys-file-reader.c:1838
 #, c-format
-msgid "Multiple response set name `%s' does not begin with `$'."
-msgstr "Naam van \"multiple response set\" `%s' begint niet met `$'."
+msgid "Invalid multiple response set name `%s'."
+msgstr "Ongeldige naam %s voor \"multiple response set\"."
 
-#: src/data/sys-file-reader.c:1870
+#: src/data/sys-file-reader.c:1871
 #, c-format
 msgid "MRSET %s contains duplicate variable name %s."
 msgstr "MRSET %s bevat eerder gebruikte variabelenaam %s."
 
-#: src/data/sys-file-reader.c:1885
+#: src/data/sys-file-reader.c:1886
 #, c-format
 msgid "MRSET %s contains both string and numeric variables."
 msgstr "MRSET %s bevat zowel alfanumerieke als numerieke variabelen."
 
-#: src/data/sys-file-reader.c:1897
+#: src/data/sys-file-reader.c:1898
 #, c-format
 msgid "MRSET %s has no variables."
 msgstr "MRSET %s heeft geen variabelen."
 
-#: src/data/sys-file-reader.c:1899
+#: src/data/sys-file-reader.c:1900
 #, c-format
 msgid "MRSET %s has only one variable."
 msgstr "MRSET %s heeft slechts één variabele."
 
-#: src/data/sys-file-reader.c:1943
+#: src/data/sys-file-reader.c:1944
 #, c-format
 msgid "Extension 11 has bad count %u (for %zu variables)."
 msgstr "Extensie 11 heeft foutief aantal %u (voor %zu variabelen)."
 
-#: src/data/sys-file-reader.c:1976
+#: src/data/sys-file-reader.c:1977
 #, c-format
 msgid "Invalid variable display parameters for variable %zu (%s).  Default parameters substituted."
 msgstr "Ongeldige parameters voor weergeven van variabele %zu (%s).  Vervangen door standaardparameters."
 
-#: src/data/sys-file-reader.c:2071
-#, c-format
-msgid "Long variable mapping from %s to invalid variable name `%s'."
-msgstr "\"Mapping\" van lange variabele van %s tot ongeldige variabelenaam `%s'."
-
-#: src/data/sys-file-reader.c:2082
+#: src/data/sys-file-reader.c:2021
 #, c-format
 msgid "Duplicate long variable name `%s'."
 msgstr "Al gebruikte lange variabelenaam `%s'."
 
-#: src/data/sys-file-reader.c:2115
+#: src/data/sys-file-reader.c:2074
+#, c-format
+msgid "Long variable mapping from %s to invalid variable name `%s'."
+msgstr "\"Mapping\" van lange variabele van %s tot ongeldige variabelenaam `%s'."
+
+#: src/data/sys-file-reader.c:2109
 #, c-format
 msgid "%s listed as string of invalid length %s in very long string record."
 msgstr "%s vermeld als tekenreeks van foutieve lengte %s in zeer lange alfanumerieke kaart."
 
-#: src/data/sys-file-reader.c:2126
+#: src/data/sys-file-reader.c:2120
 #, c-format
 msgid "%s listed in very long string record with width %s, which requires only one segment."
 msgstr "%s vermeld in zeer lange alfanumerieke kaart met breedte %s, die slechts één segment vereist."
 
-#: src/data/sys-file-reader.c:2134
+#: src/data/sys-file-reader.c:2128
 #, c-format
 msgid "Very long string %s overflows dictionary."
 msgstr "Zeer lange tekenreeks %s is te groot voor woordenboek."
 
-#: src/data/sys-file-reader.c:2152
+#: src/data/sys-file-reader.c:2146
 #, c-format
 msgid "Very long string with width %ld has segment %d of width %d (expected %d)."
 msgstr "Zeer lange tekenreeks met breedte %ld heeft segment %d van breedte %d (verwacht werd %d)."
 
-#: src/data/sys-file-reader.c:2195
+#: src/data/sys-file-reader.c:2189
 #, c-format
 msgid "Variables associated with value label are not all of identical type.  Variable %s is %s, but variable %s is %s."
 msgstr "Variabelen geassocieerd met waardelabel zijn niet alle van hetzelfde type.  Variabele %s is %s, maar variabele %s is %s."
 
-#: src/data/sys-file-reader.c:2215
+#: src/data/sys-file-reader.c:2209
 #, c-format
 msgid "Value labels may not be added to long string variables (e.g. %s) using records types 3 and 4."
 msgstr "Waardelabels mogen niet worden toegevoegd aan lange alfanumerieke variabelen (bijv. %s) door middel van kaarten van types 3 en 4."
 
-#: src/data/sys-file-reader.c:2244
+#: src/data/sys-file-reader.c:2238
 #, c-format
 msgid "Duplicate value label for %g on %s."
 msgstr "Eerder gebruikt waardelabel voor %g in %s."
 
-#: src/data/sys-file-reader.c:2248 src/data/sys-file-reader.c:2562
+#: src/data/sys-file-reader.c:2242 src/data/sys-file-reader.c:2563
 #, c-format
 msgid "Duplicate value label for `%.*s' on %s."
 msgstr "Eerder gebruikt waardelabel voor `%.*s' in %s."
 
-#: src/data/sys-file-reader.c:2275
+#: src/data/sys-file-reader.c:2269
 #, c-format
 msgid "Variable index %d not in valid range 1...%zu."
 msgstr "Variabele-index %d niet in geldig bereik 1...%zu."
 
-#: src/data/sys-file-reader.c:2284
+#: src/data/sys-file-reader.c:2278
 #, c-format
 msgid "Variable index %d refers to long string continuation."
 msgstr "Variabele-index %d verwijst naar voortzetting van lange tekenreeks."
 
-#: src/data/sys-file-reader.c:2320
+#: src/data/sys-file-reader.c:2314
 #, c-format
 msgid "Error parsing attribute value %s[%d]."
 msgstr "Fout tijdens lezen van eigenschapwaarde %s[%d]."
 
-#: src/data/sys-file-reader.c:2334
+#: src/data/sys-file-reader.c:2328
 #, c-format
 msgid "Attribute value %s[%d] is not quoted: %s."
 msgstr "Attribuutwaarde %s[%d] wordt niet geciteerd: %s."
 
-#: src/data/sys-file-reader.c:2424
+#: src/data/sys-file-reader.c:2341
+#, c-format
+msgid "Duplicate attribute %s."
+msgstr "Reeds gebruikt kenmerk %s."
+
+#: src/data/sys-file-reader.c:2425
 #, c-format
 msgid "Invalid role for variable %s."
 msgstr "Ongeldige rol voor variabele %s."
 
-#: src/data/sys-file-reader.c:2433
+#: src/data/sys-file-reader.c:2434
 #, c-format
 msgid "%zu other variables had invalid roles."
 msgstr "%zu andere variabelen hadden ongeldige rollen."
 
-#: src/data/sys-file-reader.c:2446
+#: src/data/sys-file-reader.c:2447
 #, c-format
 msgid "Extension record subtype %d ends unexpectedly."
 msgstr "Uitbreidingskaart van subtype %d eindigt onverwacht."
 
-#: src/data/sys-file-reader.c:2492
+#: src/data/sys-file-reader.c:2493
 #, c-format
 msgid "Ignoring long string value label record for unknown variable %s."
 msgstr "Kaart met lange alfanumerieke waardelabels voor onbekende variabele %s wordt genegeerd."
 
-#: src/data/sys-file-reader.c:2497
+#: src/data/sys-file-reader.c:2498
 #, c-format
 msgid "Ignoring long string value label record for numeric variable %s."
 msgstr "Kaart met lange alfanumerieke waardelabels voor numerieke variabele %s wordt genegeerd."
 
-#: src/data/sys-file-reader.c:2504
+#: src/data/sys-file-reader.c:2505
 #, c-format
 msgid "Ignoring long string value label record for variable %s because the record's width (%d) does not match the variable's width (%d)."
 msgstr "Kaart met lange alfanumerieke waardelabels voor variabele %s wordt genegeerd omdat de breedte van de kaart (%d) niet overeenkomt met de breedte van de variabele (%d)."
 
-#: src/data/sys-file-reader.c:2535
+#: src/data/sys-file-reader.c:2536
 #, c-format
 msgid "Ignoring long string value label %zu for variable %s, with width %d, that has bad value width %zu."
 msgstr "Lang alfanumeriek waardelabel %zu voor variabele %s met breedte %d, dat een foutieve breedtewaarde %zu heeft, wordt genegeerd."
 
-#: src/data/sys-file-reader.c:2609
+#: src/data/sys-file-reader.c:2610
 #, c-format
 msgid "Long string missing values record says variable %s has %d missing values, but only 1 to 3 missing values are allowed."
 msgstr "Volgens kaart met lange alfanumerieke ontbrekende waarden heeft variabele %s %d ontbrekende waarden, maar slechts 1 tot en met 3 ontbrekende waarden zijn toegestaan."
 
-#: src/data/sys-file-reader.c:2619
+#: src/data/sys-file-reader.c:2620
 #, c-format
 msgid "Ignoring long string missing value record for unknown variable %s."
 msgstr "Kaart met lange alfanumerieke ontbrekende waarden voor onbekende variabele %s wordt genegeerd."
 
-#: src/data/sys-file-reader.c:2624
+#: src/data/sys-file-reader.c:2625
 #, c-format
 msgid "Ignoring long string missing value record for numeric variable %s."
 msgstr "Kaart met lange alfanumerieke ontbrekende waarden voor numerieke variabele %s wordt genegeerd."
 
-#: src/data/sys-file-reader.c:2649
+#: src/data/sys-file-reader.c:2650
 #, c-format
 msgid "Ignoring long string missing value %zu for variable %s, with width %d, that has bad value width %zu."
 msgstr "Lange alfanumerieke ontbrekende waarde %zu voor variabele %s met breedte %d, die een foutieve breedtewaarde %zu heeft, wordt genegeerd."
 
-#: src/data/sys-file-reader.c:2704
+#: src/data/sys-file-reader.c:2705
 msgid "File ends in partial string value."
 msgstr "Bestand eindigt in gedeeltelijke alfanumerieke waarde."
 
-#: src/data/sys-file-reader.c:2843
+#: src/data/sys-file-reader.c:2844
 msgid "Possible compressed data corruption: compressed spaces appear in numeric field."
 msgstr "Mogelijke fout in gecomprimeerde gegevens: gecomprimeerde spaties verschijnen in numeriek veld."
 
-#: src/data/sys-file-reader.c:2994
+#: src/data/sys-file-reader.c:2995
 #, c-format
 msgid "Suppressed %d additional related warnings."
 msgstr "%d bijkomende gerelateerde waarschuwingen zijn onderdrukt."
 
-#: src/data/sys-file-reader.c:3040 src/data/sys-file-reader.c:3057
+#: src/data/sys-file-reader.c:3041 src/data/sys-file-reader.c:3058
 #, c-format
 msgid "Dictionary record refers to unknown variable %s."
 msgstr "Woordenboekkaart verwijst naar onbekende variabele %s."
 
-#: src/data/sys-file-reader.c:3119
+#: src/data/sys-file-reader.c:3120
 #, c-format
 msgid "Expecting digit at offset %zu in MRSETS record."
 msgstr "Op positie %zu in MRSETS-kaart wordt een cijfer verwacht."
 
-#: src/data/sys-file-reader.c:3127
+#: src/data/sys-file-reader.c:3128
 #, c-format
 msgid "Expecting space at offset %zu in MRSETS record."
 msgstr "Op positie %zu in MRSETS-kaart wordt een spatie verwacht."
 
-#: src/data/sys-file-reader.c:3135
+#: src/data/sys-file-reader.c:3136
 #, c-format
 msgid "%zu-byte string starting at offset %zu exceeds record length %zu."
 msgstr "Tekenreeks van %zu bytes, beginnend op positie %zu, overschrijdt kaartlengte %zu."
 
-#: src/data/sys-file-reader.c:3145
+#: src/data/sys-file-reader.c:3146
 #, c-format
 msgid "Expecting space at offset %zu following %zu-byte string."
 msgstr "Op positie %zu, volgend op tekenreeks van %zu bytes, wordt spatie verwacht."
 
-#: src/data/sys-file-reader.c:3441
+#: src/data/sys-file-reader.c:3442
 #, c-format
 msgid "Wrong ZLIB data header offset %#llx (expected %#llx)."
 msgstr "Onjuiste positie %#llx van ZLIB gegevens-header (verwacht werd %#llx)."
 
-#: src/data/sys-file-reader.c:3449
+#: src/data/sys-file-reader.c:3450
 #, c-format
 msgid "Impossible ZLIB trailer offset 0x%llx."
 msgstr "Onmogelijke positie 0x%llx van ZLIB-trailer."
 
-#: src/data/sys-file-reader.c:3456
+#: src/data/sys-file-reader.c:3457
 #, c-format
 msgid "Invalid ZLIB trailer length %lld."
 msgstr "Ongeldige lengte %lld van ZLIB-trailer."
 
-#: src/data/sys-file-reader.c:3520
+#: src/data/sys-file-reader.c:3521
 #, c-format
 msgid "End of ZLIB trailer (0x%llx) is not file size (0x%llx)."
 msgstr "Einde van ZLIB-trailer (0x%llx) is ongelijk aan bestandsgrootte (0x%llx)."
 
-#: src/data/sys-file-reader.c:3530
+#: src/data/sys-file-reader.c:3531
 #, c-format
 msgid "ZLIB trailer bias (%lld) differs from file header bias (%.2f)."
 msgstr "Afwijking ZLIB-trailer (%lld) verschilt van afwijking bestandsheader (%.2f)."
 
-#: src/data/sys-file-reader.c:3540
+#: src/data/sys-file-reader.c:3541
 #, c-format
 msgid "ZLIB trailer \"zero\" field has nonzero value %lld."
 msgstr "\"Nul\"-veld van ZLIB-trailer heeft waarde %lld: ongelijk nul."
 
-#: src/data/sys-file-reader.c:3546
+#: src/data/sys-file-reader.c:3547
 #, c-format
 msgid "ZLIB trailer specifies unexpected %u-byte block size."
 msgstr "ZLIB-trailer specificeert onverwachte blokgrootte van %u bytes."
 
-#: src/data/sys-file-reader.c:3554
+#: src/data/sys-file-reader.c:3555
 #, c-format
 msgid "%lld-byte ZLIB trailer specifies %u data blocks (expected %lld)."
 msgstr "ZLIB-trailer van %lld-bytes specificeert %u gegevensblokken (%lld verwacht)."
 
-#: src/data/sys-file-reader.c:3579
+#: src/data/sys-file-reader.c:3580
 #, c-format
 msgid "ZLIB block descriptor %u reported uncompressed data offset %#llx, when %#llx was expected."
 msgstr "ZLIB-blokbeschrijving %u rapporteert ongecomprimeerde gegevens vanaf positie %#llx; verwacht werd %#llx."
 
-#: src/data/sys-file-reader.c:3588
+#: src/data/sys-file-reader.c:3589
 #, c-format
 msgid "ZLIB block descriptor %u reported compressed data offset %#llx, when %#llx was expected."
 msgstr "ZLIB-blokbeschrijving %u rapporteert gecomprimeerde gegevens vanaf positie %#llx; verwacht werd %#llx."
 
-#: src/data/sys-file-reader.c:3598
+#: src/data/sys-file-reader.c:3599
 #, c-format
 msgid "ZLIB block descriptor %u reported block size %#x, when %#x was expected."
 msgstr "ZLIB-blokbeschrijving %u rapporteert blokgrootte %#x; verwacht werd %#x."
 
-#: src/data/sys-file-reader.c:3606
+#: src/data/sys-file-reader.c:3607
 #, c-format
 msgid "ZLIB block descriptor %u reported block size %#x, when at most %#x was expected."
 msgstr "ZLIB-blokbeschrijving %u rapporteert blokgrootte %#x; verwacht werd ten hoogste %#x."
 
-#: src/data/sys-file-reader.c:3618
+#: src/data/sys-file-reader.c:3619
 #, c-format
 msgid "ZLIB block descriptor %u reports compressed size %u and uncompressed size %u."
 msgstr "ZLIB-blokbeschrijving %u rapporteert gecomprimeerde grootte %u en ongecomprimeerde grootte %u."
 
-#: src/data/sys-file-reader.c:3630
+#: src/data/sys-file-reader.c:3631
 #, c-format
 msgid "ZLIB trailer is at offset %#llx but %#llx would be expected from block descriptors."
 msgstr "ZLIB-trailer begint op positie %#llx, maar uit blokbeschrijvingen werd %#llx verwacht."
 
-#: src/data/sys-file-reader.c:3649
+#: src/data/sys-file-reader.c:3650
 #, c-format
 msgid "ZLIB initialization failed (%s)."
 msgstr "ZLIB-initialisatie mislukt (%s)."
 
-#: src/data/sys-file-reader.c:3664
+#: src/data/sys-file-reader.c:3665
 #, c-format
 msgid "Inconsistency at end of ZLIB stream (%s)."
 msgstr "Inconsistentie aan einde van ZLIB-stroom (%s)."
 
-#: src/data/sys-file-reader.c:3723
+#: src/data/sys-file-reader.c:3724
 #, c-format
 msgid "ZLIB stream inconsistency (%s)."
 msgstr "ZLIB-stroom inconsistent (%s)."
 
-#: src/data/sys-file-reader.c:3747
+#: src/data/sys-file-reader.c:3748
 msgid "Unexpected end of ZLIB compressed data."
 msgstr "Onverwacht einde van ZLIB-gecomprimeerde data."
 
-#: src/data/sys-file-reader.c:3785
+#: src/data/sys-file-reader.c:3786
 msgid "SPSS System File"
 msgstr "SPSS-systeembestand"
 
@@ -5502,7 +5507,7 @@ msgstr "Zoeken naar begin van lid `%s' is mislukt: %s"
 msgid "Name mismatch in zip archive. Central directory says `%s'; local file header says `%s'"
 msgstr "Namen in zip-archief komen niet overeen: volgens \"central directory\" `%s', volgens lokale betands\"header\" `%s'"
 
-#: src/libpspp/zip-writer.c:96
+#: src/libpspp/zip-writer.c:96 utilities/pspp-convert.c:207
 #, c-format
 msgid "%s: error opening output file"
 msgstr "%s: fout bij openen uitvoerbestand"
@@ -6661,7 +6666,7 @@ msgstr "Weeg observaties met %s"
 #. - The string may not contain whitespace.
 #. - The first character may not be '$'
 #. - The first character may not be a digit
-#. - The final charactor may not be '.' or '_'
+#. - The final character may not be '.' or '_'
 #.
 #: src/ui/gui/psppire-dict.c:332
 #, c-format
@@ -6907,17 +6912,17 @@ msgstr "kan versleuteld syntaxbestand alleen omzetten naar sps-indeling"
 msgid "%s: unknown output format (use -O option)"
 msgstr "%s: onbekende uitvoerindeling (gebruik optie -O)"
 
-#: utilities/pspp-convert.c:219
+#: utilities/pspp-convert.c:221
 #, c-format
 msgid "%s: error reading input file"
 msgstr "%s: fout bij lezen invoerbestand"
 
-#: utilities/pspp-convert.c:221
+#: utilities/pspp-convert.c:223
 #, c-format
 msgid "%s: error writing output file"
 msgstr "%s: fout bij schrijven uitvoerbestand"
 
-#: utilities/pspp-convert.c:261
+#: utilities/pspp-convert.c:263
 msgid "sorry, wrong password"
 msgstr "sorry, verkeerd wachtwoord"
 
@@ -9130,6 +9135,9 @@ msgstr "Statistische software"
 #: src/ui/gui/gen-dot-desktop.sh:15
 msgid "Analyze statistical data with a free alternative to SPSS"
 msgstr "Analyseer statistische data met een gratis alternatief voor SPSS"
+
+#~ msgid "Multiple response set name `%s' does not begin with `$'."
+#~ msgstr "Naam van \"multiple response set\" `%s' begint niet met `$'."
 
 #~ msgid "could not access definition for terminal `%s'"
 #~ msgstr "kon geen toegang krijgen tot definitie voor terminal `%s'"

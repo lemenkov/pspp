@@ -6,10 +6,10 @@
 # Bob Earl <Bob.Earl@gmx.net>, 2014 - 2017
 msgid ""
 msgstr ""
-"Project-Id-Version: pspp 0.10.5-pre3\n"
+"Project-Id-Version: pspp 1.0.1\n"
 "Report-Msgid-Bugs-To: pspp-dev@gnu.org\n"
 "POT-Creation-Date: 2015-06-19 20:56-0700\n"
-"PO-Revision-Date: 2017-08-08 14:01+0200\n"
+"PO-Revision-Date: 2017-08-29 08:07+0200\n"
 "Last-Translator: Bob Earl <Bob.Earl@gmx.net>\n"
 "Language-Team: German <translation-team-de@lists.sourceforge.net>\n"
 "Language: de_DE\n"
@@ -84,8 +84,8 @@ msgstr "String"
 msgid "Numeric"
 msgstr "Numerisch"
 
-#: src/data/format.c:416 src/data/sys-file-reader.c:2199
-#: src/data/sys-file-reader.c:2201 src/language/xforms/recode.c:512
+#: src/data/format.c:416 src/data/sys-file-reader.c:2193
+#: src/data/sys-file-reader.c:2195 src/language/xforms/recode.c:512
 #: src/language/xforms/recode.c:513 src/language/xforms/recode.c:525
 #: src/language/xforms/recode.c:526
 #: src/language/dictionary/apply-dictionary.c:77
@@ -93,8 +93,8 @@ msgstr "Numerisch"
 msgid "numeric"
 msgstr "numerisch"
 
-#: src/data/format.c:416 src/data/sys-file-reader.c:2199
-#: src/data/sys-file-reader.c:2201 src/language/xforms/recode.c:512
+#: src/data/format.c:416 src/data/sys-file-reader.c:2193
+#: src/data/sys-file-reader.c:2195 src/language/xforms/recode.c:512
 #: src/language/xforms/recode.c:513 src/language/xforms/recode.c:525
 #: src/language/xforms/recode.c:526
 #: src/language/dictionary/apply-dictionary.c:77
@@ -460,7 +460,7 @@ msgstr "System"
 msgid "scratch"
 msgstr "temporär"
 
-#: src/data/dictionary.c:1336
+#: src/data/dictionary.c:1350
 #, c-format
 msgid "Truncating document line to %d bytes."
 msgstr "Schneide Beschreibungszeile nach %d Zeichen ab."
@@ -610,7 +610,7 @@ msgstr "SPSS/PC+ Systemdatei"
 msgid "Error opening `%s' for reading as an SPSS/PC+ system file: %s."
 msgstr "Beim Öffnen von `%s'  als SPSS/PC+ System-Datei ist ein Fehler aufgetreten: %s."
 
-#: src/data/pc+-file-reader.c:224 src/data/sys-file-reader.c:3506
+#: src/data/pc+-file-reader.c:224 src/data/sys-file-reader.c:3507
 #, c-format
 msgid "%s: stat failed (%s)."
 msgstr "%s: Stat ist fehlgeschlagen (%s)."
@@ -765,7 +765,7 @@ msgstr "Variable mit doppeltem Namen wird von `%s' zu `%s' umbenannt."
 msgid "Cannot weight by string variable `%s'."
 msgstr "Gewichtung mit der Stringvariablen `%s' ist nicht möglich."
 
-#: src/data/pc+-file-reader.c:975 src/data/sys-file-reader.c:2726
+#: src/data/pc+-file-reader.c:975 src/data/sys-file-reader.c:2727
 msgid "File ends in partial case."
 msgstr "Datei endet in einem Fall."
 
@@ -774,36 +774,36 @@ msgstr "Datei endet in einem Fall."
 msgid "Case beginning at offset 0x%08x extends past end of data record at offset 0x%08x."
 msgstr "Der Fall, der am Offset 0x%08x beginnt, überschreitet das Ende des Dateneintrags am Offset 0x%08x."
 
-#: src/data/pc+-file-reader.c:1000 src/data/sys-file-reader.c:2734
+#: src/data/pc+-file-reader.c:1000 src/data/sys-file-reader.c:2735
 #, c-format
 msgid "Error reading case from file %s."
 msgstr "Fehler beim lesen eines Falls aus Datei %s."
 
-#: src/data/pc+-file-reader.c:1116 src/data/sys-file-reader.c:2897
+#: src/data/pc+-file-reader.c:1116 src/data/sys-file-reader.c:2898
 #, c-format
 msgid "Possible compressed data corruption: string contains compressed integer (opcode %d)."
 msgstr "Komprimierte Daten sind möglicherweise nicht lesbar: Zeichenfolge enthält eine Integerzahl (opcode %d)."
 
-#: src/data/pc+-file-reader.c:1160 src/data/sys-file-reader.c:3195
+#: src/data/pc+-file-reader.c:1160 src/data/sys-file-reader.c:3196
 #, c-format
 msgid "`%s' near offset 0x%llx: "
 msgstr "`%s' nahe Offset 0x%llx: "
 
-#: src/data/pc+-file-reader.c:1163 src/data/sys-file-reader.c:3198
+#: src/data/pc+-file-reader.c:1163 src/data/sys-file-reader.c:3199
 #, c-format
 msgid "`%s': "
 msgstr "`%s': "
 
-#: src/data/pc+-file-reader.c:1219 src/data/sys-file-reader.c:3253
+#: src/data/pc+-file-reader.c:1219 src/data/sys-file-reader.c:3254
 #, c-format
 msgid "System error: %s."
 msgstr "System Fehler: %s."
 
-#: src/data/pc+-file-reader.c:1224 src/data/sys-file-reader.c:3258
+#: src/data/pc+-file-reader.c:1224 src/data/sys-file-reader.c:3259
 msgid "Unexpected end of file."
 msgstr "Unerwartetes Dateiende."
 
-#: src/data/pc+-file-reader.c:1309 src/data/sys-file-reader.c:3483
+#: src/data/pc+-file-reader.c:1309 src/data/sys-file-reader.c:3484
 #, c-format
 msgid "%s: seek failed (%s)."
 msgstr "%s: Suche ist fehlgeschlagen (%s)."
@@ -1144,352 +1144,357 @@ msgstr "Eintrag vom Typ 7, Untertyp %d hat die falsche Größe %u (erwarteter We
 msgid "Record type 7, subtype %d has bad count %u (expected %d)."
 msgstr "Eintrag vom Typ 7, Untertyp %d hat die falsche Anzahl %u (erwarteter Wert %d)."
 
-#: src/data/sys-file-reader.c:1528
+#: src/data/sys-file-reader.c:1530
 msgid "Missing string continuation record."
 msgstr "Fehlender Eintrag zur Fortführung der Zeichenfolge."
 
-#: src/data/sys-file-reader.c:1574
+#: src/data/sys-file-reader.c:1576
 #, c-format
 msgid "Variable %s with width %d has invalid print format 0x%x."
 msgstr "Variable %s mit Breite %d hat ein ungültiges Ausgabeformat 0x%x."
 
-#: src/data/sys-file-reader.c:1578
+#: src/data/sys-file-reader.c:1580
 #, c-format
 msgid "Variable %s with width %d has invalid write format 0x%x."
 msgstr "Variable %s mit Breite %d hat ein ungültiges Schreibformat 0x%x."
 
-#: src/data/sys-file-reader.c:1583
+#: src/data/sys-file-reader.c:1585
 msgid "Suppressing further invalid format warnings."
 msgstr "Weitere Warnungen zu ungültigen Formaten werden unterdrückt."
 
-#: src/data/sys-file-reader.c:1637
+#: src/data/sys-file-reader.c:1639
 #, c-format
 msgid "Floating-point representation indicated by system file (%d) differs from expected (%d)."
 msgstr "Die in der Systemdatei (%d) angegebene Fließkommadarstellung weicht vom erwarteten Format (%d) ab."
 
-#: src/data/sys-file-reader.c:1653
+#: src/data/sys-file-reader.c:1655
 #, c-format
 msgid "Integer format indicated by system file (%d) differs from expected (%d)."
 msgstr "Das in der Systemdatei (%d) angegebene Integerformat weicht vom erwarteten Format (%d) ab."
 
-#: src/data/sys-file-reader.c:1671 src/data/sys-file-reader.c:1677
+#: src/data/sys-file-reader.c:1673 src/data/sys-file-reader.c:1679
 #, c-format
 msgid "File specifies unexpected value %g (%a) as %s, instead of %g (%a)."
 msgstr "Die Datei legt unerwarteter Weise den Wert %g (%a) als %s fest anstatt %g (%a)."
 
-#: src/data/sys-file-reader.c:1686
+#: src/data/sys-file-reader.c:1688
 #, c-format
 msgid "File specifies unexpected value %g (%a) as %s, instead of %g (%a) or %g (%a)."
 msgstr "Die Datei legt unerwarteter Weise den Wert %g (%a) als %s fest anstatt %g (%a) oder %g (%a)."
 
-#: src/data/sys-file-reader.c:1738 src/data/sys-file-reader.c:1757
+#: src/data/sys-file-reader.c:1740 src/data/sys-file-reader.c:1759
 #, c-format
 msgid "Missing space following `%c' at offset %zu in MRSETS record."
 msgstr "Fehlendes Leezeichen nach `%c' beim Offset %zu in MRSETS Eintrag."
 
-#: src/data/sys-file-reader.c:1767
+#: src/data/sys-file-reader.c:1769
 #, c-format
 msgid "Unexpected label source value following `E' at offset %zu in MRSETS record."
 msgstr "Unerwarteter Wert für LABELSOURCE nach `E' beim Offset %zu in MRSETS Eintrag."
 
-#: src/data/sys-file-reader.c:1774
+#: src/data/sys-file-reader.c:1776
 #, c-format
 msgid "Missing `C', `D', or `E' at offset %zu in MRSETS record."
 msgstr "Fehlendes `C', `D', or `E' beim Offset %zu in MRSETS Eintrag."
 
-#: src/data/sys-file-reader.c:1801
+#: src/data/sys-file-reader.c:1803
 #, c-format
 msgid "Missing new-line parsing variable names at offset %zu in MRSETS record."
 msgstr "Fehlender Zeilenumbruch beim Einlesen der Variablennamen beim Offset %zu in MRSETS Eintrag."
 
-#: src/data/sys-file-reader.c:1836
+#: src/data/sys-file-reader.c:1838
 #, c-format
-msgid "Multiple response set name `%s' does not begin with `$'."
-msgstr "Name des Mehrfachantwort-Sets `%s' beginnt nicht mit `$'."
+msgid "Invalid multiple response set name `%s'."
+msgstr "Ungültiger Name für das Mehrfachantworten-Set %s."
 
-#: src/data/sys-file-reader.c:1870
+#: src/data/sys-file-reader.c:1871
 #, c-format
 msgid "MRSET %s contains duplicate variable name %s."
 msgstr "MRSET %s enthält doppelten Variablennamen %s."
 
-#: src/data/sys-file-reader.c:1885
+#: src/data/sys-file-reader.c:1886
 #, c-format
 msgid "MRSET %s contains both string and numeric variables."
 msgstr "MRSET %s enthält sowohl Stringvariablen als auch numerische Variablen."
 
-#: src/data/sys-file-reader.c:1897
+#: src/data/sys-file-reader.c:1898
 #, c-format
 msgid "MRSET %s has no variables."
 msgstr "MRSET %s hat keine Variablen."
 
-#: src/data/sys-file-reader.c:1899
+#: src/data/sys-file-reader.c:1900
 #, c-format
 msgid "MRSET %s has only one variable."
 msgstr "MRSET %s hat nur eine Variable."
 
-#: src/data/sys-file-reader.c:1943
+#: src/data/sys-file-reader.c:1944
 #, c-format
 msgid "Extension 11 has bad count %u (for %zu variables)."
 msgstr "Erweiterung 11 hat die falsche Anzahl %u (für %zu Variablen)."
 
-#: src/data/sys-file-reader.c:1976
+#: src/data/sys-file-reader.c:1977
 #, c-format
 msgid "Invalid variable display parameters for variable %zu (%s).  Default parameters substituted."
 msgstr "Ungültige Parameter der Variablenanzeige für Variable %zu (%s). Voreingestellte Parameter werden eingesetzt."
 
-#: src/data/sys-file-reader.c:2071
-#, c-format
-msgid "Long variable mapping from %s to invalid variable name `%s'."
-msgstr "Zuordnung eines langen Variablennamens von %s zum ungültigen Namen `%s'."
-
-#: src/data/sys-file-reader.c:2082
+#: src/data/sys-file-reader.c:2021
 #, c-format
 msgid "Duplicate long variable name `%s'."
 msgstr "Doppelter langer Variablenname `%s'."
 
-#: src/data/sys-file-reader.c:2115
+#: src/data/sys-file-reader.c:2074
+#, c-format
+msgid "Long variable mapping from %s to invalid variable name `%s'."
+msgstr "Zuordnung eines langen Variablennamens von %s zum ungültigen Namen `%s'."
+
+#: src/data/sys-file-reader.c:2109
 #, c-format
 msgid "%s listed as string of invalid length %s in very long string record."
 msgstr "%s wird als String mit ungültiger Länge %s in einem sehr langen Stringeintrag verzeichnet."
 
-#: src/data/sys-file-reader.c:2126
+#: src/data/sys-file-reader.c:2120
 #, c-format
 msgid "%s listed in very long string record with width %s, which requires only one segment."
 msgstr "%s ist in einem sehr langen Stringeintrag mit Breite %s verzeichnet, welcher nur ein Segment benötigt."
 
-#: src/data/sys-file-reader.c:2134
+#: src/data/sys-file-reader.c:2128
 #, c-format
 msgid "Very long string %s overflows dictionary."
 msgstr "Sehr lange Zeichenfolge %s übersteigt das Codebuch."
 
-#: src/data/sys-file-reader.c:2152
+#: src/data/sys-file-reader.c:2146
 #, c-format
 msgid "Very long string with width %ld has segment %d of width %d (expected %d)."
 msgstr "Sehr lange Zeichenfolge mit Breite %ld hat das Segment %d der Breite %d (erwartet wurde %d)."
 
-#: src/data/sys-file-reader.c:2195
+#: src/data/sys-file-reader.c:2189
 #, c-format
 msgid "Variables associated with value label are not all of identical type.  Variable %s is %s, but variable %s is %s."
 msgstr "Die mit dem Wertelabel verbundenen Variablen haben nicht alle den gleichen Typ.  Die Variable %s ist %s, aber die Variable %s ist %s."
 
-#: src/data/sys-file-reader.c:2215
+#: src/data/sys-file-reader.c:2209
 #, c-format
 msgid "Value labels may not be added to long string variables (e.g. %s) using records types 3 and 4."
 msgstr "Wertelabels dürfen nicht zu langen Stringvariablen hinzugefügt werden (z.B. %s), wenn Einträge des Typs 3 und 4 verwendet werden."
 
-#: src/data/sys-file-reader.c:2244
+#: src/data/sys-file-reader.c:2238
 #, c-format
 msgid "Duplicate value label for %g on %s."
 msgstr "Doppelte Wertebeschriftung für %g in %s."
 
-#: src/data/sys-file-reader.c:2248 src/data/sys-file-reader.c:2562
+#: src/data/sys-file-reader.c:2242 src/data/sys-file-reader.c:2563
 #, c-format
 msgid "Duplicate value label for `%.*s' on %s."
 msgstr "Doppelte Wertebeschriftung für `%.*s'  in %s."
 
-#: src/data/sys-file-reader.c:2275
+#: src/data/sys-file-reader.c:2269
 #, c-format
 msgid "Variable index %d not in valid range 1...%zu."
 msgstr "Variablenindex %d liegt nicht im gültigen Bereich 1...%zu."
 
-#: src/data/sys-file-reader.c:2284
+#: src/data/sys-file-reader.c:2278
 #, c-format
 msgid "Variable index %d refers to long string continuation."
 msgstr "Der Variablenindex %d verweist auf die Forsetzung einer langen Zeichenfolge."
 
-#: src/data/sys-file-reader.c:2320
+#: src/data/sys-file-reader.c:2314
 #, c-format
 msgid "Error parsing attribute value %s[%d]."
 msgstr "Fehler beim bearbeiten des Attribut-Wertes %s[%d]."
 
-#: src/data/sys-file-reader.c:2334
+#: src/data/sys-file-reader.c:2328
 #, c-format
 msgid "Attribute value %s[%d] is not quoted: %s."
 msgstr "Der Wert des Attributs %s[%d] wurde nicht in Anführungszeichen gesetzt: %s."
 
-#: src/data/sys-file-reader.c:2424
+#: src/data/sys-file-reader.c:2341
+#, c-format
+msgid "Duplicate attribute %s."
+msgstr "Doppeltes Attribut %s."
+
+#: src/data/sys-file-reader.c:2425
 #, c-format
 msgid "Invalid role for variable %s."
 msgstr "Ungültige Rolle für Variable `%s'."
 
-#: src/data/sys-file-reader.c:2433
+#: src/data/sys-file-reader.c:2434
 #, c-format
 msgid "%zu other variables had invalid roles."
 msgstr "%zu weitere Variablen hatten ungültige Rollen."
 
-#: src/data/sys-file-reader.c:2446
+#: src/data/sys-file-reader.c:2447
 #, c-format
 msgid "Extension record subtype %d ends unexpectedly."
 msgstr "Erweiterungseintrag des Untertyps %d endet unerwartet."
 
-#: src/data/sys-file-reader.c:2492
+#: src/data/sys-file-reader.c:2493
 #, c-format
 msgid "Ignoring long string value label record for unknown variable %s."
 msgstr "Langer String im Eintrag der Wertebezeichnung für die Variable %s wird ignoriert."
 
-#: src/data/sys-file-reader.c:2497
+#: src/data/sys-file-reader.c:2498
 #, c-format
 msgid "Ignoring long string value label record for numeric variable %s."
 msgstr "Langer String im Eintrag der Wertebezeichnung für die numerische Variable %s wird ignoriert."
 
-#: src/data/sys-file-reader.c:2504
+#: src/data/sys-file-reader.c:2505
 #, c-format
 msgid "Ignoring long string value label record for variable %s because the record's width (%d) does not match the variable's width (%d)."
 msgstr "Langer String im Eintrag der Wertebezeichnung für Variable %s wird ignoriert, weil die Breite des Eintrags (%d) nicht mit der Breite der Variable (%d) übereinstimmt."
 
-#: src/data/sys-file-reader.c:2535
+#: src/data/sys-file-reader.c:2536
 #, c-format
 msgid "Ignoring long string value label %zu for variable %s, with width %d, that has bad value width %zu."
 msgstr "Langer String der Wertebezeichnung %zu für die Variable %s mit Breite %d hat die fehlerhafte Breite %zu und wird ignoriert."
 
-#: src/data/sys-file-reader.c:2609
+#: src/data/sys-file-reader.c:2610
 #, c-format
 msgid "Long string missing values record says variable %s has %d missing values, but only 1 to 3 missing values are allowed."
 msgstr "Langer String im Eintrag der fehlenden Werte besagt, dass die Variable %s %d fehlende Werte hat, es sind aber nur zwischen 1 und 3 fehlende Werte erlaubt."
 
-#: src/data/sys-file-reader.c:2619
+#: src/data/sys-file-reader.c:2620
 #, c-format
 msgid "Ignoring long string missing value record for unknown variable %s."
 msgstr "Langer String im Eintrag der fehlenden Werte für die unbekannte Variable %s wird ignoriert."
 
-#: src/data/sys-file-reader.c:2624
+#: src/data/sys-file-reader.c:2625
 #, c-format
 msgid "Ignoring long string missing value record for numeric variable %s."
 msgstr "Langer String im Eintrag der fehlenden Werte für die numerische Variable %s wird ignoriert."
 
-#: src/data/sys-file-reader.c:2649
+#: src/data/sys-file-reader.c:2650
 #, c-format
 msgid "Ignoring long string missing value %zu for variable %s, with width %d, that has bad value width %zu."
 msgstr "Langer String des fehlenden Wertes %zu für die Variable %s mit Breite %d hat die fehlerhafte Breite %zu und wird ignoriert."
 
-#: src/data/sys-file-reader.c:2704
+#: src/data/sys-file-reader.c:2705
 msgid "File ends in partial string value."
 msgstr "Datei endet innerhalb eines unvollständigen Falls."
 
-#: src/data/sys-file-reader.c:2843
+#: src/data/sys-file-reader.c:2844
 msgid "Possible compressed data corruption: compressed spaces appear in numeric field."
 msgstr "Komprimierte Daten sind möglicherweise nicht lesbar: kompriemierte Leerzeichen erscheinen in einem numerischen Feld."
 
-#: src/data/sys-file-reader.c:2994
+#: src/data/sys-file-reader.c:2995
 #, c-format
 msgid "Suppressed %d additional related warnings."
 msgstr "Weitere %d Warnungen, die damit in Verbindung stehen, werden unterdrückt."
 
-#: src/data/sys-file-reader.c:3040 src/data/sys-file-reader.c:3057
+#: src/data/sys-file-reader.c:3041 src/data/sys-file-reader.c:3058
 #, c-format
 msgid "Dictionary record refers to unknown variable %s."
 msgstr "Eintrag im Codebuch bezieht sich auf die unbekannte Variable %s."
 
-#: src/data/sys-file-reader.c:3119
+#: src/data/sys-file-reader.c:3120
 #, c-format
 msgid "Expecting digit at offset %zu in MRSETS record."
 msgstr "Beim Offset %zu im MRSETS Eintrag wurde eine Ziffer erwartet."
 
-#: src/data/sys-file-reader.c:3127
+#: src/data/sys-file-reader.c:3128
 #, c-format
 msgid "Expecting space at offset %zu in MRSETS record."
 msgstr "Beim Offset %zu im MRSETS Eintrag wurde ein Leerzeichen erwartet."
 
-#: src/data/sys-file-reader.c:3135
+#: src/data/sys-file-reader.c:3136
 #, c-format
 msgid "%zu-byte string starting at offset %zu exceeds record length %zu."
 msgstr "Die %zu-byte lange Zeichenfolge, die beim Offset %zu  beginnt, überschreitet die Länge %zu."
 
-#: src/data/sys-file-reader.c:3145
+#: src/data/sys-file-reader.c:3146
 #, c-format
 msgid "Expecting space at offset %zu following %zu-byte string."
 msgstr "Beim Offset %zu nach der %zu-byte langen Zeichenfolge wurde ein Leerzeichen erwartet."
 
-#: src/data/sys-file-reader.c:3441
+#: src/data/sys-file-reader.c:3442
 #, c-format
 msgid "Wrong ZLIB data header offset %#llx (expected %#llx)."
 msgstr "Fehlerhafter Offset %#llx (erwartet wurde %#llx) im Kopf der ZLIB-Daten."
 
-#: src/data/sys-file-reader.c:3449
+#: src/data/sys-file-reader.c:3450
 #, c-format
 msgid "Impossible ZLIB trailer offset 0x%llx."
 msgstr "Offset 0x%llx im Nachspann der ZLIB-Daten ist nicht möglich."
 
-#: src/data/sys-file-reader.c:3456
+#: src/data/sys-file-reader.c:3457
 #, c-format
 msgid "Invalid ZLIB trailer length %lld."
 msgstr "Länge %lld des Nachspanns der ZLIB-Daten ist ungültig."
 
-#: src/data/sys-file-reader.c:3520
+#: src/data/sys-file-reader.c:3521
 #, c-format
 msgid "End of ZLIB trailer (0x%llx) is not file size (0x%llx)."
 msgstr "Das Ende des Nachspanns der ZLIB-Daten (0x%llx) stimmt nicht mit der Dateigröße (0x%llx) überein."
 
-#: src/data/sys-file-reader.c:3530
+#: src/data/sys-file-reader.c:3531
 #, c-format
 msgid "ZLIB trailer bias (%lld) differs from file header bias (%.2f)."
 msgstr "Der Bias im Nachspann der ZLIB-Daten (%lld) unterscheidet sich vom Bias im Kopf der Datei (%.2f)."
 
-#: src/data/sys-file-reader.c:3540
+#: src/data/sys-file-reader.c:3541
 #, c-format
 msgid "ZLIB trailer \"zero\" field has nonzero value %lld."
 msgstr "Das Feld \"zero\" im Nachspann der ZLIB-Daten hat den von Null verschiedenen Wert %lld."
 
-#: src/data/sys-file-reader.c:3546
+#: src/data/sys-file-reader.c:3547
 #, c-format
 msgid "ZLIB trailer specifies unexpected %u-byte block size."
 msgstr "Der Nachspann der ZLIB-Daten legt die unerwartete Blockgröße von %u Bytes fest."
 
-#: src/data/sys-file-reader.c:3554
+#: src/data/sys-file-reader.c:3555
 #, c-format
 msgid "%lld-byte ZLIB trailer specifies %u data blocks (expected %lld)."
 msgstr "Der Nachspann der ZLIB-Daten der Größe %lld Bytes legt %u Datenblocks fest (erwartet wurde %lld)."
 
-#: src/data/sys-file-reader.c:3579
+#: src/data/sys-file-reader.c:3580
 #, c-format
 msgid "ZLIB block descriptor %u reported uncompressed data offset %#llx, when %#llx was expected."
 msgstr "Die Blockbeschreibung %u der ZLIB-Daten berichtet ein Offset der unkomprimierten Daten von %#llx, wobei %#llx erwartet wurde."
 
-#: src/data/sys-file-reader.c:3588
+#: src/data/sys-file-reader.c:3589
 #, c-format
 msgid "ZLIB block descriptor %u reported compressed data offset %#llx, when %#llx was expected."
 msgstr "Die Blockbeschreibung %u der ZLIB-Daten berichtet ein Offset der komprimierten Daten von %#llx, wobei %#llx erwartet wurde."
 
-#: src/data/sys-file-reader.c:3598
+#: src/data/sys-file-reader.c:3599
 #, c-format
 msgid "ZLIB block descriptor %u reported block size %#x, when %#x was expected."
 msgstr "Die Blockbeschreibung %u der ZLIB-Daten berichtet eine Blockgröße von %#x, wobei %#x erwartet wurde."
 
-#: src/data/sys-file-reader.c:3606
+#: src/data/sys-file-reader.c:3607
 #, c-format
 msgid "ZLIB block descriptor %u reported block size %#x, when at most %#x was expected."
 msgstr "Die Blockbeschreibung %u der ZLIB-Daten berichtet eine Blockgröße von %#x, wobei höchstens %#x erwartet wurde."
 
-#: src/data/sys-file-reader.c:3618
+#: src/data/sys-file-reader.c:3619
 #, c-format
 msgid "ZLIB block descriptor %u reports compressed size %u and uncompressed size %u."
 msgstr "Die Blockbeschreibung %u der ZLIB-Daten berichtet eine komprimierte Größe von %u und eine unkomprimierte Größe von %u."
 
-#: src/data/sys-file-reader.c:3630
+#: src/data/sys-file-reader.c:3631
 #, c-format
 msgid "ZLIB trailer is at offset %#llx but %#llx would be expected from block descriptors."
 msgstr "Der Nachspann der ZLIB-Daten liegt beim Offset %#llx, aber auf Grund der Blockbeschreibungen wurde %#llx erwartet."
 
-#: src/data/sys-file-reader.c:3649
+#: src/data/sys-file-reader.c:3650
 #, c-format
 msgid "ZLIB initialization failed (%s)."
 msgstr "Initialisierung von ZLIB ist fehlgeschlagen (%s)."
 
-#: src/data/sys-file-reader.c:3664
+#: src/data/sys-file-reader.c:3665
 #, c-format
 msgid "Inconsistency at end of ZLIB stream (%s)."
 msgstr "Am Ende des ZLIB-Datenstroms ist eine Inkonsistenz aufgetreten (%s)."
 
-#: src/data/sys-file-reader.c:3723
+#: src/data/sys-file-reader.c:3724
 #, c-format
 msgid "ZLIB stream inconsistency (%s)."
 msgstr "Im ZLIB-Datenstrom ist eine Inkonsistenz aufgetreten (%s)."
 
-#: src/data/sys-file-reader.c:3747
+#: src/data/sys-file-reader.c:3748
 msgid "Unexpected end of ZLIB compressed data."
 msgstr "Unerwartetes Ende der komprimierten ZLIB-Daten."
 
-#: src/data/sys-file-reader.c:3785
+#: src/data/sys-file-reader.c:3786
 msgid "SPSS System File"
 msgstr "SPSS Systemdatei"
 
@@ -5499,7 +5504,7 @@ msgstr "Fehler bei der Suche des Anfangs des Elements `%s': %s"
 msgid "Name mismatch in zip archive. Central directory says `%s'; local file header says `%s'"
 msgstr "Diskrepanz zwischen den Namen im Zip-Archiv. Das Hauptverzeichnis besagt `%s'; der lokale Dateikopf besagt `%s'"
 
-#: src/libpspp/zip-writer.c:96
+#: src/libpspp/zip-writer.c:96 utilities/pspp-convert.c:207
 #, c-format
 msgid "%s: error opening output file"
 msgstr "%s: Fehler beim Öffnen der Ausgabedatei"
@@ -6660,7 +6665,7 @@ msgstr "Fälle gewichten mit %s"
 #. - The string may not contain whitespace.
 #. - The first character may not be '$'
 #. - The first character may not be a digit
-#. - The final charactor may not be '.' or '_'
+#. - The final character may not be '.' or '_'
 #.
 #: src/ui/gui/psppire-dict.c:332
 #, c-format
@@ -6906,17 +6911,17 @@ msgstr "nur verschlüsselte Syntaxdateien können nur ins .sps Format konvertier
 msgid "%s: unknown output format (use -O option)"
 msgstr "%s: unbekanntes Ausgabeformat (verwenden Sie die Option -O)"
 
-#: utilities/pspp-convert.c:219
+#: utilities/pspp-convert.c:221
 #, c-format
 msgid "%s: error reading input file"
 msgstr "%s: Fehler beim Lesen der Datei"
 
-#: utilities/pspp-convert.c:221
+#: utilities/pspp-convert.c:223
 #, c-format
 msgid "%s: error writing output file"
 msgstr "%s: Fehler beim Schreiben der Datei"
 
-#: utilities/pspp-convert.c:261
+#: utilities/pspp-convert.c:263
 msgid "sorry, wrong password"
 msgstr "Passwort ist leider falsch"
 
@@ -9129,6 +9134,9 @@ msgstr "Statistische Software"
 #: src/ui/gui/gen-dot-desktop.sh:15
 msgid "Analyze statistical data with a free alternative to SPSS"
 msgstr "Analyse statistischer Daten mit einer freien Alternative zu SPSS"
+
+#~ msgid "Multiple response set name `%s' does not begin with `$'."
+#~ msgstr "Name des Mehrfachantwort-Sets `%s' beginnt nicht mit `$'."
 
 #~ msgid "could not access definition for terminal `%s'"
 #~ msgstr "Auf die Eigenschaften des Terminals `%s' konnte nicht zugegriffen werden."
