@@ -1542,7 +1542,7 @@ xr_chart_render (struct xr_render_fsm *fsm, struct xr_driver *xr)
 {
   struct xr_chart_state *cs = UP_CAST (fsm, struct xr_chart_state, fsm);
 
-  const int chart_height = xr->length;
+  const int chart_height = 0.8 * (xr->length < xr->width ? xr->length : xr->width);
 
   if (xr->y > xr->length - chart_height)
     return true;
