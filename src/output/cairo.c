@@ -1542,13 +1542,20 @@ xr_chart_render (struct xr_render_fsm *fsm, struct xr_driver *xr)
 {
   struct xr_chart_state *cs = UP_CAST (fsm, struct xr_chart_state, fsm);
 
-  if (xr->y > 0)
+  const int chart_height = xr->length;
+
+  if (xr->y > xr->length - chart_height)
     return true;
 
   if (xr->cairo != NULL)
-    xr_draw_chart (cs->chart_item, xr->cairo, 0.0, 0.0,
-                   xr_to_pt (xr->width), xr_to_pt (xr->length));
-  xr->y = xr->length;
+    {
+      xr_draw_chart (cs->chart_item, xr->cairo,
+		     0.0,
+		     xr_to_pt (xr->y),
+		     xr_to_pt (xr->width),
+		     xr_to_pt (chart_height));
+    }
+  xr->y += chart_height;
 
   return false;
 }
