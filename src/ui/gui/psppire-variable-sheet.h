@@ -15,36 +15,37 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef _PSPPIRE_DATA_SHEET_H
-#define _PSPPIRE_DATA_SHEET_H
+#ifndef _PSPPIRE_VARIABLE_SHEET_H
+#define _PSPPIRE_VARIABLE_SHEET_H
 
 #include <gtk/gtk.h>
 #include <ssw-sheet.h>
 
-struct _PsppireDataSheet
+
+struct _PsppireVariableSheet
 {
   SswSheet parent_instance;
 
-  GtkWidget *data_sheet_cases_column_popup;
+  GtkCellRenderer *value_label_renderer;
+  GtkCellRenderer *missing_values_renderer;
+  GtkCellRenderer *var_type_renderer;
 
-  GtkWidget *data_clear_variables_menu_item;
-  GtkWidget *data_clear_cases_menu_item;
-  GtkWidget *data_sheet_cases_row_popup;
+  /* Row header popup menu */
+  GtkWidget *row_popup;
+  GtkWidget *clear_variables_menu_item;
 
-  /* Data sheet popup menu */
-  GtkWidget *data_sort_ascending_menu_item;
-  GtkWidget *data_sort_descending_menu_item;
+  gboolean dispose_has_run;
 };
 
-struct _PsppireDataSheetClass
+struct _PsppireVariableSheetClass
 {
   SswSheetClass parent_class;
 };
 
-#define PSPPIRE_TYPE_DATA_SHEET psppire_data_sheet_get_type ()
+#define PSPPIRE_TYPE_VARIABLE_SHEET psppire_variable_sheet_get_type ()
 
-G_DECLARE_FINAL_TYPE (PsppireDataSheet, psppire_data_sheet, PSPPIRE, DATA_SHEET, SswSheet)
+G_DECLARE_FINAL_TYPE (PsppireVariableSheet, psppire_variable_sheet, PSPPIRE, VARIABLE_SHEET, SswSheet)
 
-GtkWidget *psppire_data_sheet_new (void);
+GtkWidget *psppire_variable_sheet_new (void);
 
 #endif

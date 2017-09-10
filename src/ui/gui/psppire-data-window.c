@@ -1,5 +1,6 @@
 /* PSPPIRE - a graphical user interface for PSPP.
-   Copyright (C) 2008, 2009, 2010, 2011, 2012, 2013, 2014, 2016  Free Software Foundation
+   Copyright (C) 2008, 2009, 2010, 2011, 2012, 2013, 2014,
+   2016, 2017  Free Software Foundation
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -32,12 +33,11 @@
 #include "ui/gui/helper.h"
 #include "ui/gui/psppire-import-assistant.h"
 #include "ui/gui/psppire-data-window.h"
+#include "ui/gui/psppire-data-editor.h"
 #include "ui/gui/psppire-dialog-action.h"
 #include "ui/gui/psppire-encoding-selector.h"
 #include "ui/gui/psppire-syntax-window.h"
 #include "ui/gui/psppire-window.h"
-#include "ui/gui/psppire-data-sheet.h"
-#include "ui/gui/psppire-var-sheet.h"
 #include "ui/gui/windows-menu.h"
 #include "ui/gui/goto-case-dialog.h"
 #include "ui/gui/psppire.h"
@@ -46,6 +46,8 @@
 #include "gl/c-strcase.h"
 #include "gl/c-strcasestr.h"
 #include "gl/xvasprintf.h"
+
+#include <ssw-sheet.h>
 
 #include "find-dialog.h"
 #include "options-dialog.h"
@@ -969,14 +971,9 @@ file_import (PsppireDataWindow *dw)
   PsppireImportAssistant *asst = PSPPIRE_IMPORT_ASSISTANT (w);
   gtk_widget_show_all (w);
 
-  asst->main_loop = g_main_loop_new (NULL, TRUE);
-  g_main_loop_run (asst->main_loop);
-  g_main_loop_unref (asst->main_loop);
+  int response = psppire_import_assistant_run (asst);
 
-  if (!asst->file_name)
-    goto end;
-
-  switch (asst->response)
+  switch (response)
     {
     case GTK_RESPONSE_APPLY:
       {
@@ -992,7 +989,6 @@ file_import (PsppireDataWindow *dw)
       break;
     }
 
- end:
   gtk_widget_destroy (GTK_WIDGET (asst));
 }
 
@@ -1057,10 +1053,9 @@ connect_action_to_menuitem (GActionMap *map, const gchar *action_name, GtkWidget
 
 
 static void
-set_data_page (PsppireDataWindow *dw)
+on_realize (PsppireDataWindow *dw)
 {
   gtk_notebook_set_current_page (GTK_NOTEBOOK (dw->data_editor), 1);
-  gtk_notebook_set_current_page (GTK_NOTEBOOK (dw->data_editor), 0);
 }
 
 
@@ -1068,10 +1063,52 @@ static void
 on_cut (PsppireDataWindow *dw)
 {
   int p = gtk_notebook_get_current_page (GTK_NOTEBOOK (dw->data_editor));
-  if (p == 0)
-    {
-      PsppireDataSheet *ds = psppire_data_editor_get_active_data_sheet (dw->data_editor);
-      psppire_data_sheet_edit_cut (ds);
+  if (p == PSPPIRE_DATA_EDITOR_DATA_VIEW)
+  {
+      PsppireDict *dict = NULL;
+      g_object_get (dw->data_editor, "dictionary", &dict, NULL);
+
+      gint x, y;
+      SswSheet *sheet = SSW_SHEET (dw->data_editor->data_sheet);
+      SswRange sel = *sheet->selection;
+
+      GtkClipboard *clip =
+	gtk_clipboard_get_for_display (gtk_widget_get_display (GTK_WIDGET (dw)),
+				       GDK_SELECTION_CLIPBOARD);
+
+      /* Save the selected area to a string */
+      GString *str = g_string_new ("");
+      for (y = sel.start_y ; y <= sel.end_y; ++y)
+	{
+	  for (x = sel.start_x ; x <= sel.end_x; ++x)
+	    {
+	      const struct variable * var = psppire_dict_get_variable (dict, x);
+	      gchar *s = psppire_data_store_get_string (dw->data_editor->data_store,
+							  y, var, FALSE);
+	      g_string_append (str, s);
+	      g_string_append (str, "\t");
+	      g_free (s);
+	    }
+	  g_string_append (str, "\n");
+	}
+
+      gtk_clipboard_set_text (clip, str->str, str->len);
+      g_string_free (str, TRUE);
+
+      /* Now fill the selected area with SYSMIS */
+      union value sm ;
+      sm.f = SYSMIS;
+      for (x = sel.start_x ; x <= sel.end_x; ++x)
+	{
+	  const struct variable * var = psppire_dict_get_variable (dict, x);
+	  for (y = sel.start_y ; y <= sel.end_y; ++y)
+	    {
+	      psppire_data_store_set_value (dw->data_editor->data_store,
+					    y,
+					    var, &sm);
+	    }
+	}
+
     }
 }
 
@@ -1079,10 +1116,13 @@ static void
 on_copy (PsppireDataWindow *dw)
 {
   int p = gtk_notebook_get_current_page (GTK_NOTEBOOK (dw->data_editor));
-  if (p == 0)
+  if (p == PSPPIRE_DATA_EDITOR_DATA_VIEW)
     {
-      PsppireDataSheet *ds = psppire_data_editor_get_active_data_sheet (dw->data_editor);
-      psppire_data_sheet_edit_copy (ds);
+      GtkClipboard *clip =
+	gtk_clipboard_get_for_display (gtk_widget_get_display (GTK_WIDGET (dw)),
+				   GDK_SELECTION_CLIPBOARD);
+
+      ssw_sheet_set_clip (SSW_SHEET (dw->data_editor->data_sheet), clip);
     }
 }
 
@@ -1090,74 +1130,77 @@ static void
 on_paste (PsppireDataWindow *dw)
 {
   int p = gtk_notebook_get_current_page (GTK_NOTEBOOK (dw->data_editor));
-  if (p == 0)
+  if (p == PSPPIRE_DATA_EDITOR_DATA_VIEW)
     {
-      PsppireDataSheet *ds = psppire_data_editor_get_active_data_sheet (dw->data_editor);
-      psppire_data_sheet_edit_paste (ds);
+      psppire_data_editor_paste (dw->data_editor);
     }
 }
-
 
 static void
 on_clear_cases (PsppireDataWindow *dw)
 {
-  int p = gtk_notebook_get_current_page (GTK_NOTEBOOK (dw->data_editor));
-  if (p == 0)
+  PsppireDataEditor *de = dw->data_editor;
+  int p = gtk_notebook_get_current_page (GTK_NOTEBOOK (de));
+  if (p == PSPPIRE_DATA_EDITOR_DATA_VIEW)
     {
-      PsppireDataSheet *ds = psppire_data_editor_get_active_data_sheet (dw->data_editor);
-      psppire_data_sheet_edit_clear_cases (ds);
+      SswRange *range = SSW_SHEET(de->data_sheet)->selection;
+      psppire_data_store_delete_cases (de->data_store, range->start_y,
+				       range->end_y - range->start_y + 1);
+      gtk_widget_queue_draw (GTK_WIDGET (de->data_sheet));
     }
 }
 
 static void
 on_clear_variables (PsppireDataWindow *dw)
 {
-  int p = gtk_notebook_get_current_page (GTK_NOTEBOOK (dw->data_editor));
-  if (p == 0)
+  PsppireDataEditor *de = dw->data_editor;
+  int p = gtk_notebook_get_current_page (GTK_NOTEBOOK (de));
+  if (p == PSPPIRE_DATA_EDITOR_DATA_VIEW)
     {
-      PsppireDataSheet *ds = psppire_data_editor_get_active_data_sheet (dw->data_editor);
-      psppire_data_sheet_edit_clear_variables (ds);
+      psppire_data_editor_data_delete_variables (de);
     }
   else
     {
-      psppire_var_sheet_clear_variables (PSPPIRE_VAR_SHEET (dw->data_editor->var_sheet));
+      psppire_data_editor_var_delete_variables (de);
     }
 }
-
 
 static void
 insert_variable (PsppireDataWindow *dw)
 {
-  int p = gtk_notebook_get_current_page (GTK_NOTEBOOK (dw->data_editor));
-  if (p == 0)
+  PsppireDataEditor *de = dw->data_editor;
+  int p = gtk_notebook_get_current_page (GTK_NOTEBOOK (de));
+
+  if (p == PSPPIRE_DATA_EDITOR_DATA_VIEW)
     {
-      PsppireDataSheet *ds = psppire_data_editor_get_active_data_sheet (dw->data_editor);
-      psppire_data_sheet_insert_variable (ds);
+      SswRange *range = SSW_SHEET(de->data_sheet)->selection;
+      psppire_data_editor_insert_new_variable_at_posn (de, range->start_x);
     }
   else
     {
-      psppire_var_sheet_insert_variable (PSPPIRE_VAR_SHEET (dw->data_editor->var_sheet));
+      SswRange *range = SSW_SHEET(de->var_sheet)->selection;
+      psppire_data_editor_insert_new_variable_at_posn (de, range->start_y);
     }
 }
-
 
 static void
 insert_case_at_row (PsppireDataWindow *dw)
 {
-  PsppireDataSheet *ds = psppire_data_editor_get_active_data_sheet (dw->data_editor);
-
-  psppire_data_sheet_insert_case (ds);
+  PsppireDataEditor *de = dw->data_editor;
+  SswRange *range = SSW_SHEET(de->data_sheet)->selection;
+  psppire_data_editor_insert_new_case_at_posn (de, range->start_y);
 }
 
 static void
 goto_case (PsppireDataWindow *dw)
 {
-  PsppireDataSheet *ds = psppire_data_editor_get_active_data_sheet (dw->data_editor);
-
-  goto_case_dialog (ds);
+  PsppireDataEditor *de = dw->data_editor;
+  int p = gtk_notebook_get_current_page (GTK_NOTEBOOK (de));
+  if (p == PSPPIRE_DATA_EDITOR_DATA_VIEW)
+    {
+      goto_case_dialog (PSPPIRE_DATA_SHEET (de->data_sheet));
+    }
 }
-
-
 
 static GtkWidget *
 create_file_menu (PsppireDataWindow *dw)
@@ -1291,6 +1334,7 @@ create_file_menu (PsppireDataWindow *dw)
   return menuitem;
 }
 
+
 static GtkWidget *
 create_edit_menu (PsppireDataWindow *dw)
 {
@@ -1376,7 +1420,6 @@ create_edit_menu (PsppireDataWindow *dw)
   return menuitem;
 }
 
-
 static void
 psppire_data_window_finish_init (PsppireDataWindow *de,
                                  struct dataset *ds)
@@ -1409,15 +1452,9 @@ psppire_data_window_finish_init (PsppireDataWindow *de,
     PSPPIRE_DATA_EDITOR (psppire_data_editor_new (de->dict, de->data_store));
 
   g_signal_connect (de, "realize",
-                    G_CALLBACK (set_data_page), de);
+                    G_CALLBACK (on_realize), de);
 
   g_signal_connect_swapped (de->data_store, "case-changed",
-			    G_CALLBACK (set_unsaved), de);
-
-  g_signal_connect_swapped (de->data_store, "case-inserted",
-			    G_CALLBACK (set_unsaved), de);
-
-  g_signal_connect_swapped (de->data_store, "cases-deleted",
 			    G_CALLBACK (set_unsaved), de);
 
   dataset_set_callbacks (de->dataset, &cbs, de);
@@ -1443,7 +1480,7 @@ psppire_data_window_finish_init (PsppireDataWindow *de,
 		    G_CALLBACK (on_split_change),
 		    de);
 
-  g_signal_connect_swapped (de->dict, "backend-changed",
+  g_signal_connect_swapped (de->dict, "items-changed",
                             G_CALLBACK (enable_save), de);
   g_signal_connect_swapped (de->dict, "variable-inserted",
                             G_CALLBACK (enable_save), de);
@@ -1751,6 +1788,7 @@ psppire_data_window_finish_init (PsppireDataWindow *de,
   ll_push_head (&all_data_windows, &de->ll);
 }
 
+
 static void
 psppire_data_window_dispose (GObject *object)
 {
@@ -1853,6 +1891,7 @@ psppire_data_window_get_property (GObject         *object,
 }
 
 
+
 GtkWidget*
 psppire_data_window_new (struct dataset *ds)
 {
@@ -1886,11 +1925,14 @@ psppire_data_window_new (struct dataset *ds)
   return dw;
 }
 
+
+
 bool
 psppire_data_window_is_empty (PsppireDataWindow *dw)
 {
   return psppire_dict_get_var_cnt (dw->dict) == 0;
 }
+
 
 static void
 psppire_data_window_iface_init (PsppireWindowIface *iface)
@@ -1902,6 +1944,7 @@ psppire_data_window_iface_init (PsppireWindowIface *iface)
 
 
 
+
 PsppireDataWindow *
 psppire_default_data_window (void)
 {
@@ -1909,6 +1952,8 @@ psppire_default_data_window (void)
     create_data_window ();
   return ll_data (ll_head (&all_data_windows), PsppireDataWindow, ll);
 }
+
+
 
 void
 psppire_data_window_set_default (PsppireDataWindow *pdw)
@@ -1923,6 +1968,8 @@ psppire_data_window_undefault (PsppireDataWindow *pdw)
   ll_remove (&pdw->ll);
   ll_push_tail (&all_data_windows, &pdw->ll);
 }
+
+
 
 PsppireDataWindow *
 psppire_data_window_for_dataset (struct dataset *ds)

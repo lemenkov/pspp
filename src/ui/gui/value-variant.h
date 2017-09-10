@@ -1,5 +1,5 @@
 /* PSPPIRE - a graphical user interface for PSPP.
-   Copyright (C) 2007, 2010, 2011, 2012  Free Software Foundation
+   Copyright (C) 2016 Free Software Foundation, Inc.
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -14,12 +14,15 @@
    You should have received a copy of the GNU General Public License
    along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 
-#ifndef __GOTO_CASE_DIALOG_H
-#define __GOTO_CASE_DIALOG_H
+#ifndef VALUE_VARIANT_H
+#define VALUE_VARIANT_H
 
-#include "psppire-data-sheet.h"
+union value;
 
+GVariant *value_variant_new (const union value *in, int width);
 
-void goto_case_dialog (PsppireDataSheet *ds);
+void value_variant_get (union value *val, GVariant *v);
+
+void value_destroy_from_variant (union value *val, GVariant *v);
 
 #endif

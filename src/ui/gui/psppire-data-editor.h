@@ -33,7 +33,6 @@
 #include <gtk/gtk.h>
 
 #include "psppire-data-store.h"
-#include "ui/gui/pspp-sheet-view.h"
 
 G_BEGIN_DECLS
 
@@ -61,17 +60,14 @@ struct _PsppireDataEditor
 
   /* Variable sheet tab. */
   GtkWidget *var_sheet;
+  GtkWidget *data_sheet;
 
   /* Data sheet tab. */
   GtkWidget *vbox;             /* Top-level widget in tab. */
   GtkWidget *cell_ref_label;   /* GtkLabel that shows selected case and var. */
   GtkWidget *datum_entry;      /* PsppireValueEntry for editing current cell. */
-  GtkWidget *datasheet_vbox_widget; /* ->vbox child that holds data sheets. */
-  GtkWidget *data_sheets[4];   /* Normally one data sheet; four, if split. */
-  gboolean split;              /* True if data sheets are split. */
 
-  /* UI manager for whichever var or data sheet is currently in use. */
-  GtkWidget *old_vbox_widget;
+  gboolean split;              /* True if the sheets are in split view. */
 };
 
 struct _PsppireDataEditorClass
@@ -86,11 +82,17 @@ void           psppire_data_editor_show_grid       (PsppireDataEditor *, gboolea
 void           psppire_data_editor_set_font        (PsppireDataEditor *, PangoFontDescription *);
 void           psppire_data_editor_split_window    (PsppireDataEditor *, gboolean );
 
-void           psppire_data_editor_goto_variable   (PsppireDataEditor *, gint dict_index);
+void psppire_data_editor_goto_variable               (PsppireDataEditor *, gint dict_index);
+void psppire_data_editor_data_delete_variables       (PsppireDataEditor *de);
+void psppire_data_editor_var_delete_variables        (PsppireDataEditor *de);
+void psppire_data_editor_insert_new_case_at_posn     (PsppireDataEditor *de, gint posn);
+void psppire_data_editor_insert_new_variable_at_posn (PsppireDataEditor *de, gint posn);
 
 struct _PsppireDataSheet *psppire_data_editor_get_active_data_sheet (PsppireDataEditor *);
 
 enum {PSPPIRE_DATA_EDITOR_DATA_VIEW = 0, PSPPIRE_DATA_EDITOR_VARIABLE_VIEW};
+
+void psppire_data_editor_paste (PsppireDataEditor *de);
 
 G_END_DECLS
 

@@ -1,5 +1,5 @@
 /* PSPPIRE - a graphical user interface for PSPP.
-   Copyright (C) 2015  Free Software Foundation
+   Copyright (C) 2015, 2017  Free Software Foundation
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -23,9 +23,10 @@
 
 #include <gtk/gtk.h>
 
-#include "libpspp/str.h"
 #include "psppire-dict.h"
 #include "data/spreadsheet-reader.h"
+#include "psppire-text-file.h"
+#include "psppire-delimited-text.h"
 
 G_BEGIN_DECLS
 
@@ -58,11 +59,7 @@ typedef struct _PsppireImportAssistant       PsppireImportAssistant;
 typedef struct _PsppireImportAssistantClass  PsppireImportAssistantClass;
 
 
-struct first_line_page;
-
 typedef void page_func (PsppireImportAssistant *, GtkWidget *page);
-
-enum { MAX_PREVIEW_LINES = 1000 }; /* Max number of lines to read. */
 
 struct _PsppireImportAssistant
 {
@@ -71,6 +68,8 @@ struct _PsppireImportAssistant
   GtkBuilder *builder;
 
   gint current_page;
+
+  gchar *file_name;
 
   /* START The chooser page of the assistant. */
   GtkWidget *encoding_selector;
@@ -90,29 +89,21 @@ struct _PsppireImportAssistant
 /* START Page where the user chooses field separators. */
 
   /* How to break lines into columns. */
-  struct string separators;   /* Field separators. */
   struct string quotes;       /* Quote characters. */
 
   GtkWidget *custom_cb;
   GtkWidget *custom_entry;
   GtkWidget *quote_cb;
   GtkWidget *quote_combo;
+
   GtkEntry *quote_entry;
   GtkWidget *fields_tree_view;
 
 /* END Page where the user chooses field separators. */
 
 
-/* START Page where the user verifies and adjusts input formats. */
-  GtkWidget *data_tree_view;
-  PsppireDict *psppire_dict;
-  struct variable **modified_vars;
-  size_t modified_var_cnt;
-/* END Page where the user verifies and adjusts input formats. */
-
-
   /* START first line page */
-  GtkWidget *tree_view;
+  GtkWidget *first_line_tree_view;
   GtkWidget *variable_names_cb;
   /* END first line page */
 
@@ -120,36 +111,16 @@ struct _PsppireImportAssistant
   GtkWidget *paste_button;
   GtkWidget *reset_button;
   int response;
-  int watch_cursor;
 
-  GtkCellRenderer *prop_renderer;
-  GtkCellRenderer *fixed_renderer;
-
-  // START     struct file file;
-  char *file_name;        /* File name. */
-
-  /* Relevant only for text files */
-
-  gchar *encoding;        /* Encoding. */
-  unsigned long int total_lines; /* Number of lines in file. */
-  gboolean total_is_exact;    /* Is total_lines exact (or an estimate)? */
-
-  /* The first several lines of the file. */
-  struct string lines[MAX_PREVIEW_LINES];
-  size_t line_cnt;
-
-  // END     struct file file;
+  PsppireTextFile *text_file;
+  PsppireDelimitedText *delimiters_model;
 
   struct sheet_spec_page *sheet_spec;
-  struct first_line_page *first_line;
 
-  /* The columns produced. */
-  struct column *columns;     /* Information about each column. */
-  size_t column_cnt;          /* Number of columns. */
-
-  int skip_lines;             /* Number of initial lines to skip? */
-  gboolean variable_names;        /* Variable names above first line of data? */
   struct dictionary *dict;
+
+  GtkWidget *var_sheet;
+  GtkWidget *data_sheet;
 
   struct spreadsheet *spreadsheet;
 };
@@ -165,6 +136,8 @@ GType psppire_import_assistant_get_type (void) ;
 GtkWidget *psppire_import_assistant_new (GtkWindow *toplevel);
 
 gchar *psppire_import_assistant_generate_syntax (PsppireImportAssistant *);
+
+int psppire_import_assistant_run (PsppireImportAssistant *asst);
 
 G_END_DECLS
 

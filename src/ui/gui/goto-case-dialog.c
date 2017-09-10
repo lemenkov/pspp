@@ -1,5 +1,5 @@
 /* PSPPIRE - a graphical user interface for PSPP.
-   Copyright (C) 2007, 2011, 2012  Free Software Foundation
+   Copyright (C) 2007, 2011, 2012, 2016  Free Software Foundation
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -21,17 +21,17 @@
 #include "psppire-dialog.h"
 #include "psppire-data-window.h"
 #include "psppire-data-store.h"
+#include "psppire-data-sheet.h"
 
 
 static void
 refresh (PsppireDataSheet *ds, GtkBuilder *xml)
 {
-  PsppireDataStore *data_store = psppire_data_sheet_get_data_store (ds);
-  casenumber case_count ;
+  PsppireDataStore *store = NULL;
+  g_object_get (ds, "data-model", &store, NULL);
 
   GtkWidget *case_num_entry = get_widget_assert (xml, "goto-case-case-num-entry");
-
-  case_count =  psppire_data_store_get_case_count (data_store);
+  casenumber case_count =  gtk_tree_model_iter_n_children (GTK_TREE_MODEL (store), NULL);
 
   gtk_spin_button_set_range (GTK_SPIN_BUTTON (case_num_entry), 1, case_count);
 }
@@ -51,18 +51,23 @@ goto_case_dialog (PsppireDataSheet *ds)
 
   response = psppire_dialog_run (PSPPIRE_DIALOG (dialog));
 
-  if ( response == PSPPIRE_RESPONSE_GOTO )
+  if (response == PSPPIRE_RESPONSE_GOTO)
     {
-      PsppireDataStore *data_store = psppire_data_sheet_get_data_store (ds);
-      glong case_num;
+      PsppireDataStore *store = NULL;
+      g_object_get (ds, "data-model", &store, NULL);
+
       GtkWidget *case_num_entry =
-	get_widget_assert (xml, "goto-case-case-num-entry");
+  	get_widget_assert (xml, "goto-case-case-num-entry");
 
-      case_num = gtk_spin_button_get_value_as_int (GTK_SPIN_BUTTON (case_num_entry))
-	- FIRST_CASE_NUMBER ;
+      glong case_num =
+	gtk_spin_button_get_value_as_int (GTK_SPIN_BUTTON (case_num_entry))
+  	- FIRST_CASE_NUMBER ;
 
-      if (case_num >= 0
-          && case_num < psppire_data_store_get_case_count (data_store))
-        psppire_data_sheet_goto_case (ds, case_num);
+      if (case_num >= 0 &&
+	  case_num < gtk_tree_model_iter_n_children (GTK_TREE_MODEL (ds), NULL))
+      {
+	ssw_sheet_scroll_to (ds, -1, case_num);
+	ssw_sheet_set_active_cell (ds, -1, case_num, 0);
+      }
     }
 }

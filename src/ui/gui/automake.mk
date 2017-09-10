@@ -85,13 +85,14 @@ EXTRA_DIST += \
 	src/ui/gui/marshaller-list \
 	src/ui/gui/pspplogo.svg
 
+src_ui_gui_psppire_CPPFLAGS=
 
 if HAVE_GUI
-bin_PROGRAMS += src/ui/gui/psppire 
-noinst_PROGRAMS += src/ui/gui/spreadsheet-test 
+bin_PROGRAMS += src/ui/gui/psppire
+noinst_PROGRAMS += src/ui/gui/spreadsheet-test
 
-src_ui_gui_psppire_CFLAGS = $(GTK_CFLAGS) $(GTKSOURCEVIEW_CFLAGS) -Wall -DGDK_MULTIHEAD_SAFE=1 
-src_ui_gui_spreadsheet_test_CFLAGS = $(GTK_CFLAGS) -Wall -DGDK_MULTIHEAD_SAFE=1 
+src_ui_gui_psppire_CFLAGS = $(GTK_CFLAGS) $(GTKSOURCEVIEW_CFLAGS) $(SPREAD_SHEET_WIDGET_CFLAGS) -Wall -DGDK_MULTIHEAD_SAFE=1
+src_ui_gui_spreadsheet_test_CFLAGS = $(GTK_CFLAGS) -Wall -DGDK_MULTIHEAD_SAFE=1
 
 
 src_ui_gui_psppire_LDFLAGS = \
@@ -107,13 +108,13 @@ endif
 
 
 src_ui_gui_psppire_LDADD = \
-	lib/gtk-contrib/libxpaned.a \
 	src/ui/libuicommon.la \
 	src/libpspp.la \
 	src/libpspp-core.la \
 	$(GTK_LIBS) \
 	$(GTHREAD_LIBS) \
 	$(GTKSOURCEVIEW_LIBS) \
+	$(SPREAD_SHEET_WIDGET_LIBS) \
 	$(CAIRO_LIBS) \
 	$(LIBINTL) \
 	$(GSL_LIBS)
@@ -137,23 +138,9 @@ INSTALL_DATA_HOOKS += install-lang
 
 dist_src_ui_gui_psppire_DATA = \
 	$(UI_FILES) \
-	$(top_srcdir)/src/ui/gui/pspp.lang \
-	$(top_srcdir)/src/ui/gui/psppire.gtkrc
+	$(top_srcdir)/src/ui/gui/pspp.lang
 
 src_ui_gui_psppire_SOURCES = \
-	src/ui/gui/pspp-sheet-private.h \
-	src/ui/gui/pspp-sheet-selection.c \
-	src/ui/gui/pspp-sheet-selection.h \
-	src/ui/gui/pspp-sheet-view-column.c \
-	src/ui/gui/pspp-sheet-view-column.h \
-	src/ui/gui/pspp-sheet-view.c \
-	src/ui/gui/pspp-sheet-view.h \
-	src/ui/gui/pspp-widget-facade.c \
-	src/ui/gui/pspp-widget-facade.h \
-	src/ui/gui/psppire-button-editable.c \
-	src/ui/gui/psppire-button-editable.h \
-	src/ui/gui/psppire-cell-renderer-button.c \
-	src/ui/gui/psppire-cell-renderer-button.h \
 	src/ui/gui/psppire-dialog.c \
 	src/ui/gui/psppire-keypad.c \
 	src/ui/gui/psppire-selector.c \
@@ -196,8 +183,6 @@ src_ui_gui_psppire_SOURCES = \
 	src/ui/gui/psppire-conf.h \
 	src/ui/gui/psppire-data-editor.c \
 	src/ui/gui/psppire-data-editor.h \
-	src/ui/gui/psppire-data-sheet.c \
-	src/ui/gui/psppire-data-sheet.h \
 	src/ui/gui/psppire-data-store.c \
 	src/ui/gui/psppire-data-store.h \
 	src/ui/gui/psppire-data-window.c \
@@ -293,8 +278,6 @@ src_ui_gui_psppire_SOURCES = \
 	src/ui/gui/psppire-dict.h \
 	src/ui/gui/psppire-dictview.c \
 	src/ui/gui/psppire-dictview.h \
-	src/ui/gui/psppire-empty-list-store.c \
-	src/ui/gui/psppire-empty-list-store.h \
 	src/ui/gui/psppire-encoding-selector.c \
 	src/ui/gui/psppire-encoding-selector.h \
 	src/ui/gui/psppire-format.c \
@@ -317,14 +300,22 @@ src_ui_gui_psppire_SOURCES = \
 	src/ui/gui/psppire-select-dest.h \
 	src/ui/gui/psppire-syntax-window.c \
 	src/ui/gui/psppire-syntax-window.h \
+	src/ui/gui/psppire-delimited-text.c \
+	src/ui/gui/psppire-delimited-text.h \
+	src/ui/gui/psppire-text-file.c \
+	src/ui/gui/psppire-text-file.h \
 	src/ui/gui/psppire-val-chooser.c \
 	src/ui/gui/psppire-val-chooser.h \
 	src/ui/gui/psppire-value-entry.c \
 	src/ui/gui/psppire-value-entry.h \
 	src/ui/gui/psppire-var-ptr.c \
 	src/ui/gui/psppire-var-ptr.h \
-	src/ui/gui/psppire-var-sheet.c \
-	src/ui/gui/psppire-var-sheet.h \
+	src/ui/gui/psppire-data-sheet.c \
+	src/ui/gui/psppire-data-sheet.h \
+	src/ui/gui/psppire-variable-sheet.c \
+	src/ui/gui/psppire-variable-sheet.h \
+	src/ui/gui/psppire-var-sheet-header.h \
+	src/ui/gui/psppire-var-sheet-header.c \
 	src/ui/gui/psppire-window.c \
 	src/ui/gui/psppire-window.h \
 	src/ui/gui/psppire-window-base.c \
@@ -339,6 +330,8 @@ src_ui_gui_psppire_SOURCES = \
 	src/ui/gui/var-display.h \
 	src/ui/gui/var-type-dialog.c \
 	src/ui/gui/var-type-dialog.h \
+	src/ui/gui/value-variant.c \
+	src/ui/gui/value-variant.h \
 	src/ui/gui/widget-io.c \
 	src/ui/gui/widget-io.h \
 	src/ui/gui/widgets.c \
@@ -412,6 +405,7 @@ BUILT_SOURCES += src/ui/gui/psppire-marshal.c src/ui/gui/psppire-marshal.h src/u
 
 CLEANFILES += src/ui/gui/psppire-marshal.c src/ui/gui/psppire-marshal.h \
 	src/ui/gui/resources.c $(nodist_src_ui_gui_psppire_DATA)
+
 endif HAVE_GUI
 
 #ensure the installcheck passes even if there is no X server available
@@ -419,7 +413,7 @@ installcheck-local:
 	DISPLAY=/invalid/port $(MAKE) $(AM_MAKEFLAGS) installcheck-binPROGRAMS
 
 # <gtk/gtk.h> wrapper
-src_ui_gui_psppire_CPPFLAGS = $(AM_CPPFLAGS) -Isrc/ui/gui/include
+src_ui_gui_psppire_CPPFLAGS += $(AM_CPPFLAGS) -Isrc/ui/gui/include
 BUILT_SOURCES += src/ui/gui/include/gtk/gtk.h
 src/ui/gui/include/gtk/gtk.h: src/ui/gui/include/gtk/gtk.in.h
 	@$(MKDIR_P) src/ui/gui/include/gtk

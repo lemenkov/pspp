@@ -39,7 +39,7 @@
 #endif
 
 static size_t case_size (const struct caseproto *);
-static bool variable_matches_case (const struct ccase *,
+static void assert_variable_matches_case (const struct ccase *,
                                    const struct variable *);
 static void copy_forward (struct ccase *dst, size_t dst_idx,
                           const struct ccase *src, size_t src_idx,
@@ -264,7 +264,7 @@ case_copy_in (struct ccase *c,
 const union value *
 case_data (const struct ccase *c, const struct variable *v)
 {
-  assert (variable_matches_case (c, v));
+  assert_variable_matches_case (c, v);
   return &c->values[var_get_case_index (v)];
 }
 
@@ -286,7 +286,7 @@ case_data_idx (const struct ccase *c, size_t idx)
 union value *
 case_data_rw (struct ccase *c, const struct variable *v)
 {
-  assert (variable_matches_case (c, v));
+  assert_variable_matches_case (c, v);
   assert (!case_is_shared (c));
   return &c->values[var_get_case_index (v)];
 }
@@ -310,7 +310,7 @@ case_data_rw_idx (struct ccase *c, size_t idx)
 double
 case_num (const struct ccase *c, const struct variable *v)
 {
-  assert (variable_matches_case (c, v));
+  assert_variable_matches_case (c, v);
   return c->values[var_get_case_index (v)].f;
 }
 
@@ -332,8 +332,8 @@ case_num_idx (const struct ccase *c, size_t idx)
 const uint8_t *
 case_str (const struct ccase *c, const struct variable *v)
 {
+  assert_variable_matches_case (c, v);
   size_t idx = var_get_case_index (v);
-  assert (variable_matches_case (c, v));
   return value_str (&c->values[idx], caseproto_get_width (c->proto, idx));
 }
 
@@ -360,8 +360,8 @@ case_str_idx (const struct ccase *c, size_t idx)
 uint8_t *
 case_str_rw (struct ccase *c, const struct variable *v)
 {
+  assert_variable_matches_case (c, v);
   size_t idx = var_get_case_index (v);
-  assert (variable_matches_case (c, v));
   assert (!case_is_shared (c));
   return value_str_rw (&c->values[idx], caseproto_get_width (c->proto, idx));
 }
@@ -468,12 +468,12 @@ case_size (const struct caseproto *proto)
    or write data in C.
 
    Useful in assertions. */
-static bool UNUSED
-variable_matches_case (const struct ccase *c, const struct variable *v)
+static void
+assert_variable_matches_case (const struct ccase *c, const struct variable *v)
 {
   size_t case_idx = var_get_case_index (v);
-  return (case_idx < caseproto_get_n_widths (c->proto)
-          && caseproto_get_width (c->proto, case_idx) == var_get_width (v));
+  assert (case_idx < caseproto_get_n_widths (c->proto));
+  assert (caseproto_get_width (c->proto, case_idx) == var_get_width (v));
 }
 
 /* Internal helper function for case_copy(). */

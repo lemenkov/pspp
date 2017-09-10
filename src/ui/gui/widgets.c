@@ -22,6 +22,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "widgets.h"
 
+#include "gettext.h"
 
 #include "psppire-dialog.h"
 #include "psppire-selector.h"
@@ -140,6 +141,62 @@ preregister_actions (void)
 }
 
 
+static void
+tx_string_to_double (const GValue *src, GValue *dest)
+{
+  const gchar *str = g_value_get_string (src);
+  gdouble dble = g_strtod (str, NULL);
+  g_value_set_double (dest, dble);
+}
+
+
+static void
+tx_string_to_int (const GValue *src, GValue *dest)
+{
+  const gchar *str = g_value_get_string (src);
+  gint x = atoi (str);
+  g_value_set_int (dest, x);
+}
+
+static void
+enum_to_string (const GValue *src, GValue *dest)
+{
+  gint n = g_value_get_enum (src);
+  GType t = G_VALUE_TYPE (src);
+  GEnumClass *ec = g_type_class_ref (t);
+  GEnumValue *ev = g_enum_get_value (ec, n);
+
+  g_value_set_string (dest, gettext (ev->value_nick));
+}
+
+
+
+GType align_enum_type;
+GType measure_enum_type;
+GType role_enum_type;
+
+
+extern const GEnumValue align[];
+extern const GEnumValue measure[];
+extern const GEnumValue role[];
+
+
+
+static void
+preregister_misc (void)
+{
+  align_enum_type = g_enum_register_static ("PsppAlignment", align);
+  measure_enum_type = g_enum_register_static ("PsppMeasure", measure);
+  role_enum_type = g_enum_register_static ("PsppRole", role);
+
+  g_value_register_transform_func (G_TYPE_STRING, G_TYPE_DOUBLE, tx_string_to_double);
+  g_value_register_transform_func (G_TYPE_STRING, G_TYPE_INT, tx_string_to_int);
+
+  g_value_register_transform_func (measure_enum_type, G_TYPE_STRING, enum_to_string);
+  g_value_register_transform_func (align_enum_type, G_TYPE_STRING, enum_to_string);
+  g_value_register_transform_func (role_enum_type, G_TYPE_STRING, enum_to_string);
+}
+
 
 /* Any custom widgets which are to be used in GtkBuilder ui files
    need to be preregistered, otherwise GtkBuilder refuses to
@@ -160,6 +217,7 @@ preregister_widgets (void)
   psppire_means_layer_get_type ();
 
   preregister_actions ();
+  preregister_misc ();
 
   /* This seems to be necessary on Cygwin.
      It ought not to be necessary.  Having it here can't do any harm. */

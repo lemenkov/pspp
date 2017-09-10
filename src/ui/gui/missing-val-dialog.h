@@ -71,7 +71,7 @@ void psppire_missing_val_dialog_set_variable (PsppireMissingValDialog *,
 const struct missing_values *psppire_missing_val_dialog_get_missing_values (
   const PsppireMissingValDialog *);
 
-void psppire_missing_val_dialog_run (GtkWindow *parent_window,
+gint psppire_missing_val_dialog_run (GtkWindow *parent_window,
                                      const struct variable *,
                                      struct missing_values *);
 

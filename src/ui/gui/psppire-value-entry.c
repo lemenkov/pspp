@@ -48,6 +48,12 @@ enum
     PROP_WIDTH
   };
 
+enum  {EDIT_DONE, /* Emitted when the entry has changed and is ready to be fetched */
+       n_SIGNALS};
+
+static guint signals [n_SIGNALS];
+
+
 static void
 psppire_value_entry_set_property (GObject      *object,
                                   guint         prop_id,
@@ -137,6 +143,12 @@ psppire_value_entry_text_changed (GtkEntryBuffer *buffer,
   obj->cur_value = NULL;
 }
 
+static void
+on_entry_activate (GtkWidget *w)
+{
+  PsppireValueEntry *ve = PSPPIRE_VALUE_ENTRY (w);
+  g_signal_emit (w, signals [EDIT_DONE], 0);
+}
 
 static void
 on_realize (GtkWidget *w)
@@ -148,6 +160,9 @@ on_realize (GtkWidget *w)
 
   g_signal_connect (buffer, "notify::text",
                     G_CALLBACK (psppire_value_entry_text_changed), w);
+
+  g_signal_connect_swapped (entry, "activate",
+                    G_CALLBACK (on_entry_activate), w);
 
   gtk_widget_set_can_focus (GTK_WIDGET (entry), TRUE);
 
@@ -243,6 +258,16 @@ psppire_value_entry_class_init (PsppireValueEntryClass *class)
                       0, MAX_STRING,
                       0,
                       G_PARAM_READABLE | G_PARAM_WRITABLE));
+
+  signals [EDIT_DONE] =
+    g_signal_new ("edit-done",
+		  G_TYPE_FROM_CLASS (class),
+		  G_SIGNAL_RUN_FIRST,
+		  0,
+		  NULL, NULL,
+		  g_cclosure_marshal_VOID__VOID,
+		  G_TYPE_NONE,
+		  0);
 }
 
 static void

@@ -18,7 +18,7 @@ dnl Process this file with autoconf to produce a configure script.
 
 dnl Initialize.
 AC_PREREQ(2.63)
-AC_INIT([GNU PSPP], [1.0.1], [bug-gnu-pspp@gnu.org], [pspp])
+AC_INIT([GNU PSPP], [1.1.0], [bug-gnu-pspp@gnu.org], [pspp])
 AC_CONFIG_AUX_DIR([build-aux])
 AC_CONFIG_HEADERS([config.h])
 AC_CONFIG_TESTDIR([tests])
@@ -112,8 +112,11 @@ if test "$with_cairo" != no && test "$with_gui" != "no"; then
   PKG_CHECK_MODULES([GTKSOURCEVIEW], [gtksourceview-3.0 >= 3.4.2], [],
     [PSPP_REQUIRED_PREREQ([gtksourceview 3.0 version 3.4.2 or later (or use --without-gui)])])
 
-  PKG_CHECK_MODULES([GLIB], [glib-2.0 >= 2.32], [],
-    [PSPP_REQUIRED_PREREQ([glib 2.0 version 2.32 or later (or use --without-gui)])])
+  PKG_CHECK_MODULES([GLIB], [glib-2.0 >= 2.44], [],
+    [PSPP_REQUIRED_PREREQ([glib 2.0 version 2.44 or later (or use --without-gui)])])
+
+  PKG_CHECK_MODULES([SPREAD_SHEET_WIDGET], [spread-sheet-widget >= 0.1], [],
+    [PSPP_REQUIRED_PREREQ([spread-sheet-widget 0.1 (or use --without-gui)])])
 
   AC_ARG_VAR([GLIB_GENMARSHAL])
   AC_CHECK_PROGS([GLIB_GENMARSHAL], [glib-genmarshal])

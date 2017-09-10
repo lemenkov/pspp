@@ -72,6 +72,7 @@ struct _PsppireDataStore
   gboolean dispose_has_run ;
   PsppireDict *dict;
   struct datasheet *datasheet;
+  gint stamp;
 
   gint dict_handler_id [n_dict_signals];
 };
@@ -96,6 +97,8 @@ void psppire_data_store_clear (PsppireDataStore *data_store);
 
 gboolean psppire_data_store_insert_new_case (PsppireDataStore *ds, casenumber posn);
 
+gboolean psppire_data_store_insert_value (PsppireDataStore *ds,
+					  gint width, gint where);
 
 gboolean psppire_data_store_delete_cases (PsppireDataStore *ds, casenumber first, casenumber count);
 
@@ -105,10 +108,26 @@ struct casereader * psppire_data_store_get_reader (PsppireDataStore *ds);
 gchar *psppire_data_store_get_string (PsppireDataStore *,
                                       glong row, const struct variable *,
                                       bool use_value_label);
+
+gchar * psppire_data_store_value_to_string (gpointer unused, PsppireDataStore *store,
+					    gint col, gint row,
+					    const GValue *v);
+
+gchar * psppire_data_store_value_to_string_with_labels (gpointer unused, PsppireDataStore *store,
+					    gint col, gint row,
+					    const GValue *v);
+
+
+gboolean psppire_data_store_get_value (PsppireDataStore *store,
+				       glong row, const struct variable *var,
+				       union value *val);
+
 gboolean psppire_data_store_set_value (PsppireDataStore *,
                                        casenumber casenum,
                                        const struct variable *,
                                        const union value *);
+
+
 gboolean psppire_data_store_set_string (PsppireDataStore *ds,
 					const gchar *text,
 					glong row, const struct variable *,

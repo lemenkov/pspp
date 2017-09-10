@@ -1,5 +1,6 @@
 /* PSPPIRE - a graphical user interface for PSPP.
-   Copyright (C) 2004, 2006, 2007, 2009, 2010, 2011, 2012  Free Software Foundation
+   Copyright (C) 2004, 2006, 2007, 2009, 2010, 2011, 2012,
+   2016, 2017  Free Software Foundation
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -33,13 +34,20 @@
 #include "ui/gui/psppire-marshal.h"
 #include "ui/gui/psppire-var-ptr.h"
 
+#include <gobject/genums.h>
+
 #include <gettext.h>
 #define _(msgid) gettext (msgid)
 #define N_(msgid) msgid
 
-enum  {
-  BACKEND_CHANGED,
 
+
+GType align_enum_type;
+GType measure_enum_type;
+GType role_enum_type;
+
+
+enum  {
   VARIABLE_CHANGED,
   VARIABLE_INSERTED,
   VARIABLE_DELETED,
@@ -57,6 +65,71 @@ static void psppire_dict_init	(PsppireDict		*dict);
 static void psppire_dict_dispose	(GObject		*object);
 
 static void dictionary_tree_model_init (GtkTreeModelIface *iface);
+
+
+
+static guint
+gni (GListModel *list)
+{
+  PsppireDict *dict = PSPPIRE_DICT (list);
+
+  return psppire_dict_get_var_cnt (dict);
+}
+
+static GType
+git (GListModel *list)
+{
+  return GTK_TYPE_BUTTON;
+}
+
+static gpointer
+gi (GListModel *list, guint id)
+{
+  GtkWidget *button = gtk_button_new ();
+
+  PsppireDict *dict = PSPPIRE_DICT (list);
+
+  if (id >= psppire_dict_get_var_cnt (dict))
+    {
+      gtk_button_set_label (GTK_BUTTON (button),  _("Var"));
+    }
+  else
+    {
+      const struct variable *v =  psppire_dict_get_variable (dict, id);
+
+      gtk_button_set_label (GTK_BUTTON (button),  var_get_name (v));
+      gtk_widget_set_tooltip_text (button, var_get_label (v));
+
+      {
+	PangoContext *context = gtk_widget_create_pango_context (button);
+	PangoLayout *layout = pango_layout_new (context);
+	PangoRectangle rect;
+      
+	pango_layout_set_text (layout, "M", 1);
+      
+	pango_layout_get_extents (layout, NULL, &rect);
+      
+	g_object_unref (G_OBJECT (layout));
+	g_object_unref (G_OBJECT (context));
+      
+	gtk_widget_set_size_request (button,
+				     (0.25 + var_get_display_width (v))
+				     * rect.width / PANGO_SCALE,
+				     -1);
+      }
+    }
+
+  return button;
+}
+
+
+static void
+ssw_init_iface (GListModelInterface *iface)
+{
+  iface->get_n_items = gni;
+  iface->get_item = gi;
+  iface->get_item_type = git;
+}
 
 
 /* --- variables --- */
@@ -94,12 +167,21 @@ psppire_dict_get_type (void)
 	NULL
       };
 
+      static const GInterfaceInfo list_model_info = {
+	(GInterfaceInitFunc) ssw_init_iface,
+	NULL,
+	NULL
+      };
+
       object_type = g_type_register_static (G_TYPE_OBJECT,
 					    "PsppireDict",
 					    &object_info, 0);
 
       g_type_add_interface_static (object_type, GTK_TYPE_TREE_MODEL,
 				   &tree_model_info);
+
+      g_type_add_interface_static (object_type, G_TYPE_LIST_MODEL,
+				   &list_model_info);
     }
 
   return object_type;
@@ -115,17 +197,6 @@ psppire_dict_class_init (PsppireDictClass *class)
 
   object_class->dispose = psppire_dict_dispose;
 
-  signals [BACKEND_CHANGED] =
-    g_signal_new ("backend-changed",
-		  G_TYPE_FROM_CLASS (class),
-		  G_SIGNAL_RUN_FIRST,
-		  0,
-		  NULL, NULL,
-		  g_cclosure_marshal_VOID__VOID,
-		  G_TYPE_NONE,
-		  0);
-
-
   signals [VARIABLE_CHANGED] =
     g_signal_new ("variable-changed",
 		  G_TYPE_FROM_CLASS (class),
@@ -137,10 +208,7 @@ psppire_dict_class_init (PsppireDictClass *class)
 		  3,
 		  G_TYPE_INT,
 		  G_TYPE_UINT,
-		  G_TYPE_POINTER
-		  );
-
-
+		  G_TYPE_POINTER);
 
   signals [VARIABLE_INSERTED] =
     g_signal_new ("variable-inserted",
@@ -152,7 +220,6 @@ psppire_dict_class_init (PsppireDictClass *class)
 		  G_TYPE_NONE,
 		  1,
 		  G_TYPE_INT);
-
 
   signals [VARIABLE_DELETED] =
     g_signal_new ("variable-deleted",
@@ -167,7 +234,6 @@ psppire_dict_class_init (PsppireDictClass *class)
 		  G_TYPE_INT,
 		  G_TYPE_INT);
 
-
   signals [WEIGHT_CHANGED] =
     g_signal_new ("weight-changed",
 		  G_TYPE_FROM_CLASS (class),
@@ -179,7 +245,6 @@ psppire_dict_class_init (PsppireDictClass *class)
 		  1,
 		  G_TYPE_INT);
 
-
   signals [FILTER_CHANGED] =
     g_signal_new ("filter-changed",
 		  G_TYPE_FROM_CLASS (class),
@@ -190,7 +255,6 @@ psppire_dict_class_init (PsppireDictClass *class)
 		  G_TYPE_NONE,
 		  1,
 		  G_TYPE_INT);
-
 
   signals [SPLIT_CHANGED] =
     g_signal_new ("split-changed",
@@ -221,7 +285,10 @@ addcb (struct dictionary *d, int idx, void *pd)
   PsppireDict *dict = PSPPIRE_DICT (pd);
 
   if ( ! dict->disable_insert_signal)
-    g_signal_emit (dict, signals [VARIABLE_INSERTED], 0, idx);
+    {
+      g_signal_emit (dict, signals [VARIABLE_INSERTED], 0, idx);
+      g_signal_emit_by_name (dict, "items-changed", idx, 1, 1);
+    }
 }
 
 static void
@@ -230,12 +297,14 @@ delcb (struct dictionary *d, const struct variable *var,
 {
   g_signal_emit (pd, signals [VARIABLE_DELETED], 0,
                  var, dict_idx, case_idx);
+  g_signal_emit_by_name (pd, "items-changed",  dict_idx, 1, 0);
 }
 
 static void
 mutcb (struct dictionary *d, int idx, unsigned int what, const struct variable *oldvar, void *pd)
 {
   g_signal_emit (pd, signals [VARIABLE_CHANGED], 0, idx, what, oldvar);
+  g_signal_emit_by_name (pd, "items-changed", idx, 1, 1);
 }
 
 static void
@@ -296,6 +365,9 @@ psppire_dict_replace_dictionary (PsppireDict *dict, struct dictionary *d)
 {
   struct variable *var =  dict_get_weight (d);
 
+  guint old_n = dict_get_var_cnt (dict->dict);
+  guint new_n = dict_get_var_cnt (d);
+
   dict->dict = d;
 
   weight_changed_callback (d, var ? var_get_dict_index (var) : -1, dict);
@@ -307,7 +379,7 @@ psppire_dict_replace_dictionary (PsppireDict *dict, struct dictionary *d)
 
   dict_set_callbacks (dict->dict, &gui_callbacks, dict);
 
-  g_signal_emit (dict, signals [BACKEND_CHANGED], 0);
+  g_signal_emit_by_name (dict, "items-changed", 0, old_n, new_n);
 }
 
 
@@ -371,6 +443,7 @@ psppire_dict_insert_variable (PsppireDict *d, gint idx, const gchar *name)
   d->disable_insert_signal = FALSE;
 
   g_signal_emit (d, signals[VARIABLE_INSERTED], 0, idx);
+  g_signal_emit_by_name (d, "items-changed", idx, 0, 1);
 
   return var;
 }
@@ -499,7 +572,7 @@ psppire_dict_clear (PsppireDict *d)
 }
 
 
-/* Return true is NAME would be a valid name of a variable to add to the
+/* Return true if NAME would be a valid name of a variable to add to the
    dictionary.  False otherwise.
    If REPORT is true, then invalid names will be reported as such as errors
 */
@@ -617,24 +690,34 @@ tree_model_column_type (GtkTreeModel *model, gint index)
 {
   g_return_val_if_fail (PSPPIRE_IS_DICT (model), (GType) 0);
 
+  GType t = 0;
+
   switch (index)
     {
     case DICT_TVM_COL_NAME:
-      return G_TYPE_STRING;
+    case DICT_TVM_COL_LABEL:
+      t = G_TYPE_STRING;
+      break;
+    case DICT_TVM_COL_DECIMAL:
+    case DICT_TVM_COL_WIDTH:
+    case DICT_TVM_COL_COLUMNS:
+      t = G_TYPE_INT;
       break;
     case DICT_TVM_COL_VAR:
-      return PSPPIRE_VAR_PTR_TYPE;
+      t = PSPPIRE_VAR_PTR_TYPE;
       break;
-    case DICT_TVM_COL_LABEL:
-      return G_TYPE_STRING;
+    case DICT_TVM_COL_ALIGNMENT:
+      t = align_enum_type;
       break;
-    default:
-      g_return_val_if_reached ((GType)0);
+    case DICT_TVM_COL_MEASURE:
+      t = measure_enum_type;
+      break;
+    case DICT_TVM_COL_ROLE:
+      t = role_enum_type;
       break;
     }
 
-  g_assert_not_reached ();
-  return ((GType)0);
+  return t;
 }
 
 static gboolean
@@ -722,6 +805,7 @@ tree_model_get_path (GtkTreeModel *model, GtkTreeIter *iter)
   return path;
 }
 
+const struct fmt_spec *var_get_write_format (const struct variable *);
 
 static void
 tree_model_get_value (GtkTreeModel *model, GtkTreeIter *iter,
@@ -732,22 +816,51 @@ tree_model_get_value (GtkTreeModel *model, GtkTreeIter *iter,
 
   g_return_if_fail (iter->stamp == dict->stamp);
 
-  var =  iter->user_data;
+  var = iter->user_data;
+
+  const struct fmt_spec *fs = var_get_write_format (var);
 
   switch (column)
     {
     case DICT_TVM_COL_NAME:
-      {
-	g_value_init (value, G_TYPE_STRING);
-	g_value_set_string (value, var_get_name (var));
-      }
+      g_value_init (value, G_TYPE_STRING);
+      g_value_set_string (value, var_get_name (var));
+      break;
+    case DICT_TVM_COL_WIDTH:
+      g_value_init (value, G_TYPE_INT);
+      g_value_set_int (value, fs->w);
+      break;
+    case DICT_TVM_COL_DECIMAL:
+      g_value_init (value, G_TYPE_INT);
+      g_value_set_int (value, fs->d);
+      break;
+    case DICT_TVM_COL_LABEL:
+      g_value_init (value, G_TYPE_STRING);
+      g_value_set_string (value, var_get_label (var));
+      break;
+    case DICT_TVM_COL_COLUMNS:
+      g_value_init (value, G_TYPE_INT);
+      g_value_set_int (value, var_get_display_width (var));
+      break;
+    case DICT_TVM_COL_ALIGNMENT:
+      g_value_init (value, align_enum_type);
+      g_value_set_enum (value, var_get_alignment (var));
+      break;
+    case DICT_TVM_COL_MEASURE:
+      g_value_init (value, measure_enum_type);
+      g_value_set_enum (value, var_get_measure (var));
+      break;
+    case DICT_TVM_COL_ROLE:
+      g_value_init (value, role_enum_type);
+      g_value_set_enum (value, var_get_role (var));
       break;
     case DICT_TVM_COL_VAR:
       g_value_init (value, PSPPIRE_VAR_PTR_TYPE);
       g_value_set_boxed (value, var);
       break;
     default:
-      g_return_if_reached ();
+      g_value_init (value, G_TYPE_STRING);
+      g_value_set_string (value, "????");
       break;
     }
 }
@@ -766,7 +879,7 @@ tree_model_n_children (GtkTreeModel *model,
 {
   PsppireDict *dict = PSPPIRE_DICT (model);
 
-  if ( iter == NULL )
+  if (iter == NULL)
     return psppire_dict_get_var_cnt (dict);
 
   return 0;
@@ -842,8 +955,6 @@ psppire_dict_dump (const PsppireDict *dict)
     }
 }
 #endif
-
-
 
 
 const gchar *

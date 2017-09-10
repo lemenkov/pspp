@@ -1,5 +1,6 @@
 /* PSPPIRE - a graphical user interface for PSPP.
-   Copyright (C) 2006, 2008, 2009, 2010, 2011, 2012, 2013, 2016  Free Software Foundation
+   Copyright (C) 2006, 2008, 2009, 2010, 2011, 2012,
+   2013, 2016, 2017  Free Software Foundation
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -19,7 +20,7 @@
 #include <stdlib.h>
 #include <gettext.h>
 #define _(msgid) gettext (msgid)
-#define N_(msgid) msgid
+#define P_(msgid) msgid
 
 #include <data/datasheet.h>
 #include <data/data-out.h>
@@ -44,7 +45,7 @@
 #include "xalloc.h"
 #include "xmalloca.h"
 
-
+#include "value-variant.h"
 
 static void psppire_data_store_init            (PsppireDataStore      *data_store);
 static void psppire_data_store_class_init      (PsppireDataStoreClass *class);
@@ -67,14 +68,191 @@ static GObjectClass *parent_class = NULL;
 
 enum
   {
-    BACKEND_CHANGED,
-    CASES_DELETED,
-    CASE_INSERTED,
+    ITEMS_CHANGED,
     CASE_CHANGED,
     n_SIGNALS
   };
 
 static guint signals [n_SIGNALS];
+
+static gint
+__tree_model_iter_n_children (GtkTreeModel *tree_model,
+			     GtkTreeIter *iter)
+{
+  PsppireDataStore *store  = PSPPIRE_DATA_STORE (tree_model);
+
+  if (store->datasheet == NULL)
+    return 0;
+
+  gint n =  datasheet_get_n_rows (store->datasheet);
+
+  return n;
+}
+
+static GtkTreeModelFlags
+__tree_model_get_flags (GtkTreeModel *model)
+{
+  g_return_val_if_fail (PSPPIRE_IS_DATA_STORE (model), (GtkTreeModelFlags) 0);
+
+  return GTK_TREE_MODEL_LIST_ONLY;
+}
+
+static gint
+__tree_model_get_n_columns (GtkTreeModel *tree_model)
+{
+  PsppireDataStore *store  = PSPPIRE_DATA_STORE (tree_model);
+
+  return psppire_dict_get_var_cnt (store->dict);
+}
+
+
+static gboolean
+__iter_nth_child (GtkTreeModel *tree_model,
+		  GtkTreeIter *iter,
+		  GtkTreeIter *parent,
+		  gint n)
+{
+  PsppireDataStore *store  = PSPPIRE_DATA_STORE (tree_model);
+
+  g_assert (parent == NULL);
+  g_return_val_if_fail (store, FALSE);
+
+  if (!store->datasheet || n >= datasheet_get_n_rows (store->datasheet))
+    {
+      iter->stamp = -1;
+      iter->user_data = NULL;
+      return FALSE;
+    }
+
+  iter->user_data = GINT_TO_POINTER (n);
+  iter->stamp = store->stamp;
+
+  return TRUE;
+}
+
+gboolean
+myreversefunc (GtkTreeModel *model, gint col, gint row,
+	       const gchar *in, GValue *out)
+{
+  PsppireDataStore *store  = PSPPIRE_DATA_STORE (model);
+
+  const struct variable *variable = psppire_dict_get_variable (store->dict, col);
+  g_return_val_if_fail (variable, FALSE);
+
+  const struct fmt_spec *fmt = var_get_print_format (variable);
+
+  int width = var_get_width (variable);
+
+  union value val;
+  value_init (&val, width);
+  char *xx =
+    data_in (ss_cstr (in), psppire_dict_encoding (store->dict),
+	     fmt->type, &val, width, "UTF-8");
+
+  GVariant *vrnt = value_variant_new (&val, width);
+  value_destroy (&val, width);
+
+  g_value_init (out, G_TYPE_VARIANT);
+  g_value_set_variant (out, vrnt);
+  free (xx);
+  return TRUE;
+}
+
+static char *
+unlabeled_value (PsppireDataStore *store, const struct variable *variable, const union value *val)
+{
+  const struct fmt_spec *fmt = var_get_print_format (variable);
+  return data_out (val, psppire_dict_encoding (store->dict),  fmt);
+}
+
+gchar *
+psppire_data_store_value_to_string (gpointer unused, PsppireDataStore *store, gint col, gint row, const GValue *v)
+{
+  const struct variable *variable = psppire_dict_get_variable (store->dict, col);
+  g_return_val_if_fail (variable, g_strdup ("???"));
+
+  GVariant *vrnt = g_value_get_variant (v);
+  union value val;
+  value_variant_get (&val, vrnt);
+
+  char *out = unlabeled_value (store, variable, &val);
+
+  value_destroy_from_variant (&val, vrnt);
+
+  return out;
+}
+
+gchar *
+psppire_data_store_value_to_string_with_labels (gpointer unused, PsppireDataStore *store, gint col, gint row, const GValue *v)
+{
+  const struct variable *variable = psppire_dict_get_variable (store->dict, col);
+  g_return_val_if_fail (variable, g_strdup ("???"));
+
+  GVariant *vrnt = g_value_get_variant (v);
+  union value val;
+  value_variant_get (&val, vrnt);
+
+  char *out = NULL;
+
+  const struct val_labs *vls = var_get_value_labels (variable);
+  struct val_lab *vl = val_labs_lookup (vls, &val);
+  if (vl != NULL)
+    out = strdup (val_lab_get_label (vl));
+  else
+    out = unlabeled_value (store, variable, &val);
+
+  value_destroy_from_variant (&val, vrnt);
+
+  return out;
+}
+
+static void
+__get_value (GtkTreeModel *tree_model,
+	     GtkTreeIter *iter,
+	     gint column,
+	     GValue *value)
+{
+  PsppireDataStore *store  = PSPPIRE_DATA_STORE (tree_model);
+
+  g_return_if_fail (iter->stamp == store->stamp);
+
+  const struct variable *variable = psppire_dict_get_variable (store->dict, column);
+  if (NULL == variable)
+    return;
+
+  g_value_init (value, G_TYPE_VARIANT);
+
+  gint row = GPOINTER_TO_INT (iter->user_data);
+
+  struct ccase *cc = datasheet_get_row (store->datasheet, row);
+
+  const union value *val = case_data_idx (cc, var_get_case_index (variable));
+
+  GVariant *vv = value_variant_new (val, var_get_width (variable));
+
+  g_value_set_variant (value, vv);
+
+  case_unref (cc);
+}
+
+
+static void
+__tree_model_init (GtkTreeModelIface *iface)
+{
+  iface->get_flags       = __tree_model_get_flags;
+  iface->get_n_columns   = __tree_model_get_n_columns ;
+  iface->get_column_type = NULL;
+  iface->get_iter        = NULL;
+  iface->iter_next       = NULL;
+  iface->get_path        = NULL;
+  iface->get_value       = __get_value;
+
+  iface->iter_children   = NULL;
+  iface->iter_has_child  = NULL;
+  iface->iter_n_children = __tree_model_iter_n_children;
+  iface->iter_nth_child  = __iter_nth_child;
+  iface->iter_parent     = NULL;
+}
 
 
 GType
@@ -97,9 +275,18 @@ psppire_data_store_get_type (void)
         (GInstanceInitFunc) psppire_data_store_init,
       };
 
+      static const GInterfaceInfo tree_model_info = {
+	(GInterfaceInitFunc) __tree_model_init,
+	NULL,
+	NULL
+      };
+
       data_store_type = g_type_register_static (G_TYPE_OBJECT,
 						"PsppireDataStore",
 						&data_store_info, 0);
+
+      g_type_add_interface_static (data_store_type, GTK_TYPE_TREE_MODEL,
+				   &tree_model_info);
     }
 
   return data_store_type;
@@ -117,27 +304,18 @@ psppire_data_store_class_init (PsppireDataStoreClass *class)
   object_class->finalize = psppire_data_store_finalize;
   object_class->dispose = psppire_data_store_dispose;
 
-  signals [BACKEND_CHANGED] =
-    g_signal_new ("backend-changed",
+  signals [ITEMS_CHANGED] =
+    g_signal_new ("items-changed",
 		  G_TYPE_FROM_CLASS (class),
 		  G_SIGNAL_RUN_FIRST,
 		  0,
 		  NULL, NULL,
-		  g_cclosure_marshal_VOID__VOID,
+		  psppire_marshal_VOID__UINT_UINT_UINT,
 		  G_TYPE_NONE,
-		  0);
-
-  signals [CASE_INSERTED] =
-    g_signal_new ("case-inserted",
-		  G_TYPE_FROM_CLASS (class),
-		  G_SIGNAL_RUN_FIRST,
-		  0,
-		  NULL, NULL,
-		  g_cclosure_marshal_VOID__INT,
-		  G_TYPE_NONE,
-		  1,
-		  G_TYPE_INT);
-
+		  3,
+		  G_TYPE_UINT,  /* Index of the start of the change */
+		  G_TYPE_UINT,  /* The number of items deleted */
+		  G_TYPE_UINT); /* The number of items inserted */
 
   signals [CASE_CHANGED] =
     g_signal_new ("case-changed",
@@ -149,25 +327,9 @@ psppire_data_store_class_init (PsppireDataStoreClass *class)
 		  G_TYPE_NONE,
 		  1,
 		  G_TYPE_INT);
-
-  signals [CASES_DELETED] =
-    g_signal_new ("cases-deleted",
-		  G_TYPE_FROM_CLASS (class),
-		  G_SIGNAL_RUN_FIRST,
-		  0,
-		  NULL, NULL,
-		  psppire_marshal_VOID__INT_INT,
-		  G_TYPE_NONE,
-		  2,
-		  G_TYPE_INT,
-		  G_TYPE_INT);
 }
 
 
-
-static gboolean
-psppire_data_store_insert_value (PsppireDataStore *ds,
-				  gint width, gint where);
 
 casenumber
 psppire_data_store_get_case_count (const PsppireDataStore *store)
@@ -193,7 +355,18 @@ psppire_data_store_init (PsppireDataStore *data_store)
   data_store->dict = NULL;
   data_store->datasheet = NULL;
   data_store->dispose_has_run = FALSE;
+  data_store->stamp = g_random_int ();
 }
+
+
+static void
+psppire_data_store_delete_value (PsppireDataStore *store, gint case_index)
+{
+  g_return_if_fail (store->datasheet);
+  datasheet_delete_columns (store->datasheet, case_index, 1);
+  datasheet_insert_column (store->datasheet, NULL, -1, case_index);
+}
+
 
 /*
    A callback which occurs after a variable has been deleted.
@@ -205,10 +378,7 @@ delete_variable_callback (GObject *obj, const struct variable *var UNUSED,
 {
   PsppireDataStore *store  = PSPPIRE_DATA_STORE (data);
 
-  g_return_if_fail (store->datasheet);
-
-  datasheet_delete_columns (store->datasheet, case_index, 1);
-  datasheet_insert_column (store->datasheet, NULL, -1, case_index);
+  psppire_data_store_delete_value (store, case_index);
 }
 
 struct resize_datum_aux
@@ -292,11 +462,16 @@ psppire_data_store_set_reader (PsppireDataStore *ds,
 			       struct casereader *reader)
 {
   gint i;
-
+  gint old_n = 0;
   if ( ds->datasheet)
-    datasheet_destroy (ds->datasheet);
+    {
+      old_n = datasheet_get_n_rows (ds->datasheet);
+      datasheet_destroy (ds->datasheet);
+    }
 
   ds->datasheet = datasheet_create (reader);
+
+  gint new_n = datasheet_get_n_rows (ds->datasheet);
 
   if ( ds->dict )
     for (i = 0 ; i < n_dict_signals; ++i )
@@ -308,7 +483,7 @@ psppire_data_store_set_reader (PsppireDataStore *ds,
 	  }
       }
 
-  g_signal_emit (ds, signals[BACKEND_CHANGED], 0);
+  g_signal_emit (ds, signals[ITEMS_CHANGED], 0, 0, old_n, new_n);
 }
 
 
@@ -426,6 +601,27 @@ psppire_data_store_insert_new_case (PsppireDataStore *ds, casenumber posn)
   return result;
 }
 
+gboolean
+psppire_data_store_get_value (PsppireDataStore *store,
+			      glong row, const struct variable *var,
+			      union value *val)
+{
+  g_return_val_if_fail (store != NULL, FALSE);
+  g_return_val_if_fail (store->datasheet != NULL, FALSE);
+  g_return_val_if_fail (var != NULL, FALSE);
+
+  if (row < 0 || row >= datasheet_get_n_rows (store->datasheet))
+    return FALSE;
+
+  int width = var_get_width (var);
+  value_init (val, width);
+  datasheet_get_value (store->datasheet, row, var_get_case_index (var), val);
+
+  return TRUE;
+}
+
+
+
 gchar *
 psppire_data_store_get_string (PsppireDataStore *store,
                                glong row, const struct variable *var,
@@ -433,18 +629,9 @@ psppire_data_store_get_string (PsppireDataStore *store,
 {
   gchar *string;
   union value v;
-  int width;
-
-  g_return_val_if_fail (store != NULL, NULL);
-  g_return_val_if_fail (store->datasheet != NULL, NULL);
-  g_return_val_if_fail (var != NULL, NULL);
-
-  if (row < 0 || row >= datasheet_get_n_rows (store->datasheet))
+  int width = var_get_width (var);
+  if (! psppire_data_store_get_value (store, row, var, &v))
     return NULL;
-
-  width = var_get_width (var);
-  value_init (&v, width);
-  datasheet_get_value (store->datasheet, row, var_get_case_index (var), &v);
 
   string = NULL;
   if (use_value_label)
@@ -515,7 +702,7 @@ psppire_data_store_clear (PsppireDataStore *ds)
 
   psppire_dict_clear (ds->dict);
 
-  g_signal_emit (ds, signals [CASES_DELETED], 0, 0, -1);
+  g_signal_emit (ds, signals [ITEMS_CHANGED], 0, 0, -1, 0);
 }
 
 
@@ -568,7 +755,7 @@ psppire_data_store_delete_cases (PsppireDataStore *ds, casenumber first,
 
   datasheet_delete_rows (ds->datasheet, first, n_cases);
 
-  g_signal_emit (ds, signals [CASES_DELETED], 0, first, n_cases);
+  g_signal_emit (ds, signals[ITEMS_CHANGED], 0, first, n_cases, 0);
 
   return TRUE;
 }
@@ -590,7 +777,9 @@ psppire_data_store_insert_case (PsppireDataStore *ds,
   result = datasheet_insert_rows (ds->datasheet, posn, &cc, 1);
 
   if ( result )
-    g_signal_emit (ds, signals [CASE_INSERTED], 0, posn);
+    {
+      g_signal_emit (ds, signals[ITEMS_CHANGED], 0, posn, 0, 1);
+    }
   else
     g_warning ("Cannot insert case at position %ld\n", posn);
 
@@ -621,7 +810,10 @@ psppire_data_store_set_value (PsppireDataStore *ds, casenumber casenum,
   ok = datasheet_put_value (ds->datasheet, casenum, var_get_case_index (var),
                             v);
   if (ok)
-    g_signal_emit (ds, signals [CASE_CHANGED], 0, casenum);
+    {
+      g_signal_emit (ds, signals [CASE_CHANGED], 0, casenum);
+      g_signal_emit (ds, signals [ITEMS_CHANGED], 0, casenum, 1, 1);
+    }
 
   return ok;
 }
@@ -665,7 +857,7 @@ psppire_data_store_data_in (PsppireDataStore *ds, casenumber casenum, gint idx,
    given WIDTH into every one of them at the position immediately
    preceding WHERE.
 */
-static gboolean
+gboolean
 psppire_data_store_insert_value (PsppireDataStore *ds,
                                  gint width, gint where)
 {

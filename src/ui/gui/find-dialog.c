@@ -36,7 +36,6 @@ which match particular strings */
 #include "ui/gui/dict-display.h"
 #include "ui/gui/find-dialog.h"
 #include "ui/gui/helper.h"
-#include "ui/gui/psppire-data-sheet.h"
 #include "ui/gui/psppire-data-store.h"
 #include "ui/gui/psppire-data-window.h"
 #include "ui/gui/psppire-dialog.h"
@@ -100,13 +99,12 @@ refresh (GObject *obj, const struct find_dialog *fd)
 static void
 do_find (GObject *obj, const struct find_dialog *fd)
 {
-  PsppireDataSheet *data_sheet;
   casenumber x = -1;
   gint column = -1;
   glong row;
 
-  data_sheet = psppire_data_editor_get_active_data_sheet (fd->de->data_editor);
-  row = psppire_data_sheet_get_selected_case (data_sheet);
+
+  row = 10;
 
   find_value (fd, row, &x, &column);
 
@@ -115,8 +113,6 @@ do_find (GObject *obj, const struct find_dialog *fd)
       gtk_notebook_set_current_page (GTK_NOTEBOOK (fd->de->data_editor),
 				     PSPPIRE_DATA_EDITOR_DATA_VIEW);
 
-      psppire_data_sheet_goto_case (data_sheet, x);
-      psppire_data_sheet_goto_variable (data_sheet, column);
     }
 }
 
