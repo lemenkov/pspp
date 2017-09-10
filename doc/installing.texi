@@ -78,18 +78,19 @@ More detailed instructions for building from source including the
 installation of required libraries can be found here:
 @uref{http://git.savannah.gnu.org/cgit/pspp.git/plain/INSTALL}.
 
-@section Updating the pspp package in GNU/Linux distributions
-GNU/Linux distributions like Debian make a release by taking the
+@section Updating the pspp package in Linux distributions
+Linux distributions like Debian or Ubuntu make a release by taking the
 pspp package version which is in the rolling testing (sid) stage at the
-time of freezing the GNU/Linux release. The pspp version which is the default
-version for a specific GNU/Linux distribution release are listed here:
+time of freezing the linux release. The pspp versions which are the default
+version for a specific linux distribution release are listed here:
 
 @itemize
 @item Debian:  @uref{https://packages.debian.org/pspp}
+@item Ubuntu: @uref{https://packages.ubuntu.com/pspp}
 @end itemize
 
 Debian stretch for example contains pspp 0.10.2. There are a number of
-possibilities to update the pspp version inside a GNU/Linux distribution.
+possibilities to update the pspp version inside a linux distribution.
 
 @subsection Backports
 
@@ -98,17 +99,22 @@ distribution. Instructions how to install backports
 can be found here @uref{https://backports.debian.org/Instructions} for
 Debian. This is the easiest way to have an updated version.
 
+@subsection Ubuntu PPA
+For Ubuntu Adam Zammit maintains a PPA with several updates of pspp.
+Installation via a PPA is similar to a backports install. See:
+@uref{https://launchpad.net/~adamzammit/+archive/ubuntu/pspp}.
+
 @subsection Building an updated pspp package
 
 If you wish to use a newer pspp version than the one provided with
-the GNU/Linux distribution or possibly a backport, then there is a good chance
-that you can generate a new updated pspp package for your GNU/Linux distribution release
-from the package source of a later GNU/Linux distribution release. The latest
+the distribution or possibly a backport, then there is a good chance
+that you can generate a new updated pspp package for your linux distribution release
+from the package source of a later distribution release. The latest
 pspp package for Debian is in sid (unstable). It is not advisable to
 take a binary package from a later distribution because the interface to
 the required libraries may have changed. Therefore you take the package
 source instead of the package binary and then compile a new pspp package for your
-GNU/Linux distribution.
+linux distribution.
 
 Assume you want to create a new pspp package for Debian jessie. Jessie
 has pspp version 0.8.4 as the default version. Assume that Debian unstable
