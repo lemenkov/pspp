@@ -26,6 +26,7 @@
 
 #include "ui/gui/executor.h"
 #include "psppire-data-window.h"
+#include "ssw-axis-model.h"
 
 static void
 do_sort (PsppireDataSheet *sheet, GtkSortType order)
@@ -355,6 +356,34 @@ psppire_data_sheet_new (void)
   return GTK_WIDGET (obj);
 }
 
+
+static gboolean
+indicate_filtered_case (GtkWidget *widget, cairo_t *cr, PsppireDataStore *store)
+{
+  guint row = g_object_get_data (widget, "row");
+
+  if (!psppire_data_store_filtered (store, row))
+    return FALSE;
+
+  /* Draw a diagonal line through the widget */
+  guint width = gtk_widget_get_allocated_width (widget);
+  guint height = gtk_widget_get_allocated_height (widget);
+
+  GtkStyleContext *sc = gtk_widget_get_style_context (widget);
+  gtk_render_line (sc, cr, 0, 0, width, height);
+
+  return FALSE;
+}
+
+static void
+button_post_create (GtkWidget *button, uint i, gpointer user_data)
+{
+  PsppireDataStore *data_store = PSPPIRE_DATA_STORE (user_data);
+
+  g_object_set_data (button, "row", GUINT_TO_POINTER (i));
+  g_signal_connect_after (button, "draw", indicate_filtered_case, data_store);
+}
+
 static void
 set_dictionary (PsppireDataSheet *sheet)
 {
@@ -363,6 +392,16 @@ set_dictionary (PsppireDataSheet *sheet)
 
   PsppireDataStore *store = PSPPIRE_DATA_STORE (data_model);
   g_object_set (sheet, "hmodel", store->dict, NULL);
+
+
+  SswAxisModel *vmodel = NULL;
+  g_object_get (sheet, "vmodel", &vmodel, NULL);
+  g_assert (SSW_IS_AXIS_MODEL (vmodel));
+
+  g_object_set (vmodel,
+		"post-button-create-func", button_post_create,
+		"post-button-create-func-data", store,
+		NULL);
 }
 
 static void
