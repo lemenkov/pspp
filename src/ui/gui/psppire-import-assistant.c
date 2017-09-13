@@ -1249,35 +1249,6 @@ my_advance (struct casereader *reader, void *aux, casenumber cnt)
   g_print ("%s:%d\n", __FILE__, __LINE__);
 }
 
-static void
-foo (struct dictionary *dict, void *aux)
-{
-  PsppireImportAssistant *ia = PSPPIRE_IMPORT_ASSISTANT (aux);
-  g_print ("%s:%d\n", __FILE__, __LINE__);
-
-  struct caseproto *proto = caseproto_create ();
-
-  int i;
-  for (i = 0 ; i < dict_get_var_cnt (ia->dict); ++i)
-    {
-      const struct variable *var = dict_get_var (ia->dict, i);
-      proto = caseproto_add_width (proto, var_get_width (var));
-    }
-
-
-  gint n_rows = gtk_tree_model_iter_n_children (GTK_TREE_MODEL (ia->delimiters_model), NULL);
-
-  struct casereader *reader =
-    casereader_create_random (proto, n_rows, &my_casereader_class,  ia);
-
-
-  PsppireDataStore *store = NULL;
-
-  g_object_get (ia->data_sheet, "data-model", &store, NULL);
-
-  psppire_data_store_set_reader (store, reader);
-}
-
 /* Called just before the formats page of the assistant is
    displayed. */
 static void
@@ -1336,8 +1307,6 @@ prepare_formats_page (PsppireImportAssistant *ia)
     }
 
   free (fg);
-
-  //  dict_set_change_callback (ia->dict, foo, ia);
 
   struct casereader *reader =
     casereader_create_random (proto, n_rows, &my_casereader_class,  ia);
