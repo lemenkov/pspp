@@ -304,7 +304,6 @@ __tree_model_get_flags (GtkTreeModel *model)
 static gint
 __tree_model_get_n_columns (GtkTreeModel *tree_model)
 {
-  PsppireTextFile *tf  = PSPPIRE_TEXT_FILE (tree_model);
   return 2;
 }
 

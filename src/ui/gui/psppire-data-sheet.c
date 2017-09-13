@@ -360,7 +360,7 @@ psppire_data_sheet_new (void)
 static gboolean
 indicate_filtered_case (GtkWidget *widget, cairo_t *cr, PsppireDataStore *store)
 {
-  guint row = g_object_get_data (widget, "row");
+  guint row = GPOINTER_TO_INT (g_object_get_data (G_OBJECT (widget), "row"));
 
   if (!psppire_data_store_filtered (store, row))
     return FALSE;
@@ -380,8 +380,8 @@ button_post_create (GtkWidget *button, uint i, gpointer user_data)
 {
   PsppireDataStore *data_store = PSPPIRE_DATA_STORE (user_data);
 
-  g_object_set_data (button, "row", GUINT_TO_POINTER (i));
-  g_signal_connect_after (button, "draw", indicate_filtered_case, data_store);
+  g_object_set_data (G_OBJECT (button), "row", GUINT_TO_POINTER (i));
+  g_signal_connect_after (button, "draw", G_CALLBACK (indicate_filtered_case), data_store);
 }
 
 static void

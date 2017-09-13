@@ -31,6 +31,7 @@
 #include "ui/gui/val-labs-dialog.h"
 #include "ui/gui/missing-val-dialog.h"
 #include "ui/gui/var-type-dialog.h"
+#include "ui/gui/value-variant.h"
 #include "ui/gui/psppire-dict.h"
 #include "ui/gui/psppire-data-store.h"
 #include "ui/gui/psppire-data-window.h"
@@ -380,7 +381,7 @@ on_datum_entry_activate (GtkEntry *entry, PsppireDataEditor *de)
       value_destroy (&val, width);
 
       gtk_widget_grab_focus (de->data_sheet);
-      ssw_sheet_set_active_cell (de->data_sheet, col, row, NULL);
+      ssw_sheet_set_active_cell (SSW_SHEET (de->data_sheet), col, row, NULL);
     }
 }
 

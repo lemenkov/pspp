@@ -146,7 +146,6 @@ psppire_value_entry_text_changed (GtkEntryBuffer *buffer,
 static void
 on_entry_activate (GtkWidget *w)
 {
-  PsppireValueEntry *ve = PSPPIRE_VALUE_ENTRY (w);
   g_signal_emit (w, signals [EDIT_DONE], 0);
 }
 
