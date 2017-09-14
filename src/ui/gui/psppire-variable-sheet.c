@@ -458,6 +458,7 @@ psppire_variable_sheet_new (void)
 		  "select-renderer-func", select_renderer_func,
 		  "hmodel", vsh,
 		  "forward-conversion", var_sheet_data_to_string,
+		  "editable", TRUE,
 		  NULL);
 
   return GTK_WIDGET (obj);
