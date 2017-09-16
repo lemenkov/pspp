@@ -459,6 +459,7 @@ psppire_variable_sheet_new (void)
 		  "hmodel", vsh,
 		  "forward-conversion", var_sheet_data_to_string,
 		  "editable", TRUE,
+		  "vertical-draggable", TRUE,
 		  NULL);
 
   return GTK_WIDGET (obj);

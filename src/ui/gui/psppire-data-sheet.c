@@ -352,6 +352,7 @@ psppire_data_sheet_new (void)
 		  "forward-conversion", psppire_data_store_value_to_string,
 		  "reverse-conversion", myreversefunc,
 		  "editable", TRUE,
+		  "horizontal-draggable", TRUE,
 		  NULL);
 
   return GTK_WIDGET (obj);
