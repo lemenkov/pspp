@@ -36,7 +36,7 @@ extern const char build_system[];
 extern const char locale_dir[];
 
 /* The Examples directory */
-extern const char const examples_dir[];
+extern const char examples_dir[];
 
 /* From the AUTHORS file */
 extern const char *const authors[];
