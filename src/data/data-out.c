@@ -805,7 +805,7 @@ output_scientific (double number, const struct fmt_spec *format,
   {
     char *cp = strchr (p, 'E') + 1;
     long int exponent = strtol (cp, NULL, 10);
-    if (abs (exponent) > 999)
+    if (labs (exponent) > 999)
       return false;
     sprintf (cp, "%+04ld", exponent);
   }
