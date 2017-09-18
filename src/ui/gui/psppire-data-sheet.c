@@ -110,7 +110,7 @@ gboolean myreversefunc (GtkTreeModel *model, gint col, gint row, const gchar *in
 
 static void
 show_cases_row_popup (PsppireDataSheet *sheet, int row,
-		      uint button, uint state, gpointer p)
+		      guint button, guint state, gpointer p)
 {
   GListModel *vmodel = NULL;
   g_object_get (sheet, "vmodel", &vmodel, NULL);
@@ -186,7 +186,7 @@ create_data_row_header_popup_menu (PsppireDataSheet *sheet)
 
 
 static void
-show_cases_column_popup (PsppireDataSheet *sheet, int column, uint button, uint state,
+show_cases_column_popup (PsppireDataSheet *sheet, int column, guint button, guint state,
 			 gpointer p)
 {
   GListModel *hmodel = NULL;
@@ -378,7 +378,7 @@ indicate_filtered_case (GtkWidget *widget, cairo_t *cr, PsppireDataStore *store)
 }
 
 static void
-button_post_create (GtkWidget *button, uint i, gpointer user_data)
+button_post_create (GtkWidget *button, guint i, gpointer user_data)
 {
   PsppireDataStore *data_store = PSPPIRE_DATA_STORE (user_data);
 

@@ -213,8 +213,8 @@ select_renderer_func (PsppireVariableSheet *sheet, gint col, gint row, GType typ
 
 
 static void
-show_variables_row_popup (SswSheet *sheet, int row, uint button,
-			  uint state, gpointer p)
+show_variables_row_popup (SswSheet *sheet, int row, guint button,
+			  guint state, gpointer p)
 {
   PsppireVariableSheet *var_sheet = PSPPIRE_VARIABLE_SHEET (sheet);
   GListModel *vmodel = NULL;
