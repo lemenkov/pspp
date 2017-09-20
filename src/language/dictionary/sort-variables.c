@@ -190,7 +190,11 @@ compare_vars (const void *a_, const void *b_, const void *c_)
 
   /* Make this a stable sort. */
   if (!retval)
-    retval = a < b ? -1 : a > b;
+    {
+      size_t a_index = var_get_dict_index (a);
+      size_t b_index = var_get_dict_index (b);
+      retval = a_index < b_index ? -1 : a_index > b_index;
+    }
 
   if (c->descending)
     retval = -retval;
