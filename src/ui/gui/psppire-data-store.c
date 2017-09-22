@@ -136,6 +136,15 @@ myreversefunc (GtkTreeModel *model, gint col, gint row,
 {
   PsppireDataStore *store  = PSPPIRE_DATA_STORE (model);
 
+  while (col >= psppire_dict_get_var_cnt (store->dict))
+    {
+      const struct variable *var =
+	psppire_dict_insert_variable (store->dict,
+				      psppire_dict_get_var_cnt (store->dict),
+				      NULL);
+      g_return_val_if_fail (var, FALSE);
+    }
+
   const struct variable *variable = psppire_dict_get_variable (store->dict, col);
   g_return_val_if_fail (variable, FALSE);
 
