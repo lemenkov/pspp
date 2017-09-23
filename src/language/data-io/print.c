@@ -75,12 +75,6 @@ struct prt_out_spec
     int width;                  /* Width of 'string', in display columns. */
   };
 
-static inline struct prt_out_spec *
-ll_to_prt_out_spec (struct ll *ll)
-{
-  return ll_data (ll, struct prt_out_spec, ll);
-}
-
 /* PRINT, PRINT EJECT, WRITE private data structure. */
 struct print_trns
   {
