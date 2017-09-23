@@ -221,13 +221,13 @@ pcp_open (struct file_handle *fh)
   /* Fetch file size. */
   if (fstat (fileno (r->file), &s))
     {
-      pcp_error (ME, 0, _("%s: stat failed (%s)."),
+      pcp_error (r, 0, _("%s: stat failed (%s)."),
                  fh_get_file_name (r->fh), strerror (errno));
       goto error;
     }
   if (s.st_size > UINT_MAX)
     {
-      pcp_error (ME, 0, _("%s: file too large."), fh_get_file_name (r->fh));
+      pcp_error (r, 0, _("%s: file too large."), fh_get_file_name (r->fh));
       goto error;
     }
   r->file_size = s.st_size;

@@ -3504,7 +3504,7 @@ read_ztrailer (struct sfm_reader *r,
 
   if (fstat (fileno (r->file), &s))
     {
-      sys_error (ME, 0, _("%s: stat failed (%s)."),
+      sys_error (r, 0, _("%s: stat failed (%s)."),
                  fh_get_file_name (r->fh), strerror (errno));
       return false;
     }
