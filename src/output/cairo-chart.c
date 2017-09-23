@@ -389,8 +389,9 @@ xrchart_write_scale (cairo_t *cr, struct xrchart_geometry *geom,
   geom->axis[orient].max = upper;
   geom->axis[orient].min = lower;
 
-  geom->axis[orient].scale = (fabs (geom->axis[orient].data_max - geom->axis[orient].data_min)
-			      / fabs (geom->axis[orient].max - geom->axis[orient].min));
+  struct xrchart_axis *axis = &geom->axis[orient];
+  geom->axis[orient].scale = (fabs ((double) axis->data_max - axis->data_min)
+			      / fabs (axis->max - axis->min));
 
   if (orient == SCALE_ABSCISSA)
     {
