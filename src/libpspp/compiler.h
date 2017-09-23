@@ -91,7 +91,7 @@
 /* This attribute indicates that the function should be compiled
    with the specified LEVEL, regardless of what has been specified
    on the command line */
-#if __GNUC__ > 3
+#if __GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR >= 4)
 #define OPTIMIZE(LEVEL) ATTRIBUTE ((optimize(LEVEL)))
 #else
 #define OPTIMIZE(LEVEL)
