@@ -183,9 +183,10 @@ create_drawing_area (struct psppire_output_view *view,
     {
       GdkRGBA green = {0, 1, 0, 1};
       gtk_widget_override_background_color (GTK_WIDGET (view->output),
-					    GTK_STATE_NORMAL, &green);
+					    GTK_STATE_FLAG_NORMAL, &green);
       GdkRGBA red = {1, 0, 0, 1};
-      gtk_widget_override_background_color (drawing_area, GTK_STATE_NORMAL, &red);
+      gtk_widget_override_background_color (drawing_area,
+                                            GTK_STATE_FLAG_NORMAL, &red);
     }
 
   g_object_set_data_full (G_OBJECT (drawing_area),
