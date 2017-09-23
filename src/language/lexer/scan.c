@@ -410,7 +410,7 @@ scan_type_to_string (enum scan_type type)
 #undef SCAN_TYPE
 
     default:
-      return token_type_to_name (type);
+      return token_type_to_name ((enum token_type) type);
     }
 }
 
