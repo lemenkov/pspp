@@ -365,8 +365,6 @@ write_header (struct sfm_writer *w, const struct dictionary *d)
 {
   const char *dict_encoding = dict_get_encoding (d);
   char prod_name[61];
-  char creation_date[10];
-  char creation_time[9];
   const char *file_label;
   struct variable *weight;
 
@@ -409,10 +407,11 @@ write_header (struct sfm_writer *w, const struct dictionary *d)
   write_float (w, COMPRESSION_BIAS);
 
   /* Creation date and time. */
+  char *creation_date, *creation_time;
   if (time (&t) == (time_t) -1)
     {
-      strcpy (creation_date, "01 Jan 70");
-      strcpy (creation_time, "00:00:00");
+      creation_date = xstrdup ("01 Jan 70");
+      creation_time = xstrdup ( "00:00:00");
     }
   else
     {
@@ -429,13 +428,14 @@ write_header (struct sfm_writer *w, const struct dictionary *d)
       int min = rerange (tmp->tm_min + 1);
       int sec = rerange (tmp->tm_sec + 1);
 
-      snprintf (creation_date, sizeof creation_date,
-                "%02d %s %02d", day, month_name[mon - 1], year);
-      snprintf (creation_time, sizeof creation_time,
-                "%02d:%02d:%02d", hour - 1, min - 1, sec - 1);
+      creation_date = xasprintf ("%02d %s %02d",
+                                 day, month_name[mon - 1], year);
+      creation_time = xasprintf ("%02d:%02d:%02d", hour - 1, min - 1, sec - 1);
     }
   write_utf8_string (w, dict_encoding, creation_date, 9);
   write_utf8_string (w, dict_encoding, creation_time, 8);
+  free (creation_time);
+  free (creation_date);
 
   /* File label. */
   file_label = dict_get_label (d);

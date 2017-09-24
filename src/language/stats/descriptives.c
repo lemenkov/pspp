@@ -558,7 +558,7 @@ generate_z_varname (const struct dictionary *dict, struct dsc_proc *dsc,
   /* Generate a synthetic name. */
   for (;;)
     {
-      char name[8];
+      char name[16];
 
       (*z_cnt)++;
 
