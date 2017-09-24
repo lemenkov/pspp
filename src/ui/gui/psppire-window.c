@@ -99,7 +99,7 @@ psppire_window_set_title (PsppireWindow *window)
       if (window->basename)
         g_string_append_printf (title, "%s ", window->basename);
 
-      if (window->id != '\0')
+      if (window->id)
         g_string_append_printf (title, "[%s] ", window->id);
 
       g_string_append_unichar (title, 0x2014); /* em dash */
