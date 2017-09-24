@@ -17,6 +17,7 @@
 
 #include <config.h>
 #include "psppire-data-sheet.h"
+#include <math.h>
 
 #include <gettext.h>
 #define _(msgid) gettext (msgid)
@@ -386,6 +387,33 @@ button_post_create (GtkWidget *button, guint i, gpointer user_data)
   g_signal_connect_after (button, "draw", G_CALLBACK (indicate_filtered_case), data_store);
 }
 
+
+static gboolean
+resize_display_width (PsppireDict *dict, gint pos, gint size, gpointer user_data)
+{
+  if (pos < 0)
+    return FALSE;
+
+  PsppireDataSheet *sheet = PSPPIRE_DATA_SHEET (user_data);
+  PangoContext *context = gtk_widget_create_pango_context (GTK_WIDGET (sheet));
+  PangoLayout *layout = pango_layout_new (context);
+  PangoRectangle rect;
+  
+  pango_layout_set_text (layout, "M", 1);
+  pango_layout_get_extents (layout, NULL, &rect);
+  
+  gdouble width_of_M = rect.width / (gdouble) PANGO_SCALE;
+  
+  g_object_unref (G_OBJECT (layout));
+  g_object_unref (G_OBJECT (context));
+  
+  gint Ms = round ((size / width_of_M) - 0.25);
+  struct variable *var = psppire_dict_get_variable (dict, pos);
+  g_return_val_if_fail (var, TRUE);
+  var_set_display_width (var, Ms);
+  return TRUE;
+}
+
 static void
 set_dictionary (PsppireDataSheet *sheet)
 {
@@ -395,6 +423,8 @@ set_dictionary (PsppireDataSheet *sheet)
   PsppireDataStore *store = PSPPIRE_DATA_STORE (data_model);
   g_object_set (sheet, "hmodel", store->dict, NULL);
 
+  g_signal_connect (store->dict, "resize-item", G_CALLBACK (resize_display_width),
+		    sheet);
 
   SswAxisModel *vmodel = NULL;
   g_object_get (sheet, "vmodel", &vmodel, NULL);

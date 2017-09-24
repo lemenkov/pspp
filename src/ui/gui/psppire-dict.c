@@ -55,6 +55,9 @@ enum  {
   WEIGHT_CHANGED,
   FILTER_CHANGED,
   SPLIT_CHANGED,
+
+  RESIZE_ITEM,
+
   n_SIGNALS
 };
 
@@ -196,6 +199,18 @@ psppire_dict_class_init (PsppireDictClass *class)
   parent_class = g_type_class_peek_parent (class);
 
   object_class->dispose = psppire_dict_dispose;
+
+  signals [RESIZE_ITEM] =
+    g_signal_new ("resize-item",
+		  G_TYPE_FROM_CLASS (class),
+		  G_SIGNAL_RUN_LAST,
+		  0,
+		  NULL, NULL,
+		  psppire_marshal_BOOLEAN__INT_INT,
+		  G_TYPE_BOOLEAN,
+		  2,
+		  G_TYPE_INT,
+		  G_TYPE_INT);
 
   signals [VARIABLE_CHANGED] =
     g_signal_new ("variable-changed",
