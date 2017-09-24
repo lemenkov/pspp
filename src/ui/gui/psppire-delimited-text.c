@@ -108,7 +108,7 @@ count_delims (PsppireDelimitedText *tf)
 static void
 cache_invalidate (PsppireDelimitedText *tf)
 {
-  memset (tf->cache_starts, 0, 512);
+  memset (tf->cache_starts, 0, sizeof tf->cache_starts);
   if (tf->const_cache.string)
     {
       ss_dealloc (&tf->const_cache);
@@ -370,7 +370,7 @@ split_row_into_fields (PsppireDelimitedText *file, gint n)
       return;
     }
 
-  memset (file->cache_starts, 0, 512);
+  memset (file->cache_starts, 0, sizeof file->cache_starts);
   /* Cache miss */
   if (file->const_cache.string)
     {
@@ -583,7 +583,7 @@ psppire_delimited_text_init (PsppireDelimitedText *text_file)
   text_file->const_cache.string = NULL;
   text_file->const_cache.length = 0;
   text_file->cache_row = -1;
-  memset (text_file->cache_starts, 0, 512);
+  memset (text_file->cache_starts, 0, sizeof text_file->cache_starts);
 
   text_file->max_delimiters = 0;
 
