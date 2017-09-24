@@ -1185,6 +1185,7 @@ parse_date (struct data_in *i)
           break;
         case ':':
           error = parse_time_delimiter (i);
+          break;
         case ' ':
           if (i->format != FMT_MOYR)
             {
