@@ -22,6 +22,8 @@
 #include <ssw-sheet.h>
 
 
+struct dispatch;
+
 struct _PsppireVariableSheet
 {
   SswSheet parent_instance;
@@ -29,6 +31,10 @@ struct _PsppireVariableSheet
   GtkCellRenderer *value_label_renderer;
   GtkCellRenderer *missing_values_renderer;
   GtkCellRenderer *var_type_renderer;
+
+  struct dispatch *value_label_dispatch;
+  struct dispatch *missing_values_dispatch;
+  struct dispatch *var_type_dispatch;
 
   /* Row header popup menu */
   GtkWidget *row_popup;
@@ -41,6 +47,7 @@ struct _PsppireVariableSheetClass
 {
   SswSheetClass parent_class;
 };
+
 
 #define PSPPIRE_TYPE_VARIABLE_SHEET psppire_variable_sheet_get_type ()
 

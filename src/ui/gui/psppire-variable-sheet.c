@@ -37,12 +37,8 @@
 G_DEFINE_TYPE (PsppireVariableSheet, psppire_variable_sheet, SSW_TYPE_SHEET)
 
 static void
-set_var_type (GtkCellRenderer *renderer,
-     GtkCellEditable *editable,
-     gchar           *path,
-     gpointer         user_data)
+set_var_type (PsppireVariableSheet *sheet)
 {
-  PsppireVariableSheet *sheet = PSPPIRE_VARIABLE_SHEET (user_data);
   gint row = -1, col = -1;
   ssw_sheet_get_active_cell (SSW_SHEET (sheet), &col, &row);
 
@@ -62,12 +58,8 @@ set_var_type (GtkCellRenderer *renderer,
 }
 
 static void
-set_missing_values (GtkCellRenderer *renderer,
-     GtkCellEditable *editable,
-     gchar           *path,
-     gpointer         user_data)
+set_missing_values (PsppireVariableSheet *sheet)
 {
-  PsppireVariableSheet *sheet = PSPPIRE_VARIABLE_SHEET (user_data);
   gint row = -1, col = -1;
   ssw_sheet_get_active_cell (SSW_SHEET (sheet), &col, &row);
 
@@ -89,12 +81,8 @@ set_missing_values (GtkCellRenderer *renderer,
 }
 
 static void
-set_value_labels (GtkCellRenderer *renderer,
-     GtkCellEditable *editable,
-     gchar           *path,
-     gpointer         user_data)
+set_value_labels (PsppireVariableSheet *sheet)
 {
-  PsppireVariableSheet *sheet = PSPPIRE_VARIABLE_SHEET (user_data);
   gint row = -1, col = -1;
   ssw_sheet_get_active_cell (SSW_SHEET (sheet), &col, &row);
 
@@ -439,12 +427,27 @@ psppire_variable_sheet_dispose (GObject *obj)
 }
 
 static void
+psppire_variable_sheet_finalize (GObject *object)
+{
+  PsppireVariableSheet *sheet = PSPPIRE_VARIABLE_SHEET (object);
+
+  g_free (sheet->value_label_dispatch);
+  g_free (sheet->missing_values_dispatch);
+  g_free (sheet->var_type_dispatch);
+  
+  if (G_OBJECT_CLASS (parent_class)->finalize)
+    (*G_OBJECT_CLASS (parent_class)->finalize) (object);
+}
+
+static void
 psppire_variable_sheet_class_init (PsppireVariableSheetClass *class)
 {
   GObjectClass *object_class = G_OBJECT_CLASS (class);
   object_class->dispose = psppire_variable_sheet_dispose;
 
   parent_class = g_type_class_peek_parent (class);
+
+  object_class->finalize = psppire_variable_sheet_finalize;
 }
 
 GtkWidget*
@@ -487,26 +490,96 @@ move_variable (PsppireVariableSheet *sheet, gint from, gint to, gpointer ud)
   dict_reorder_var (dict->dict, var, new_pos);
 }
 
+
+static gboolean
+is_printable_key (gint keyval)
+{
+  switch (keyval)
+    {
+    case GDK_KEY_Return:
+    case GDK_KEY_ISO_Left_Tab:
+    case GDK_KEY_Tab:
+      return FALSE;
+      break;
+    }
+  
+  return (0 != gdk_keyval_to_unicode (keyval));
+}
+
+struct dispatch
+{
+  PsppireVariableSheet *sheet;
+  void (*payload) (PsppireVariableSheet *);
+};
+
+
+static gboolean
+on_key_press (GtkWidget *w, GdkEventKey *e, gpointer user_data)
+{
+  const struct dispatch *d = user_data;
+  if (is_printable_key (e->keyval))
+    {
+      d->payload (d->sheet);
+      return TRUE;
+    }
+
+  return FALSE;
+}
+
+static gboolean
+on_button_press (GtkWidget *w, GdkEventButton *e, gpointer user_data)
+{
+  const struct dispatch *d = user_data;
+  if (e->button != 1)
+    return TRUE;
+
+  d->payload (d->sheet);
+  return TRUE;
+}
+  
+static void
+on_edit_start (GtkCellRenderer *renderer,
+     GtkCellEditable *editable,
+     gchar           *path,
+     gpointer         user_data)
+{
+  gtk_widget_grab_focus (GTK_WIDGET (editable));
+  g_signal_connect (editable, "key-press-event",
+		    G_CALLBACK (on_key_press), user_data);
+  g_signal_connect (editable, "button-press-event",
+		    G_CALLBACK (on_button_press), user_data);
+  
+}
+
 static void
 psppire_variable_sheet_init (PsppireVariableSheet *sheet)
 {
   sheet->dispose_has_run = FALSE;
 
   sheet->value_label_renderer = gtk_cell_renderer_text_new ();
-  g_signal_connect (sheet->value_label_renderer,
-		    "editing-started", G_CALLBACK (set_value_labels),
-		    sheet);
+  sheet->value_label_dispatch = g_malloc (sizeof *sheet->value_label_dispatch);
+  sheet->value_label_dispatch->sheet = sheet;
+  sheet->value_label_dispatch->payload = set_value_labels;
+  g_signal_connect_after (sheet->value_label_renderer,
+			  "editing-started", G_CALLBACK (on_edit_start),
+			  sheet->value_label_dispatch);
 
   sheet->missing_values_renderer = gtk_cell_renderer_text_new ();
-  g_signal_connect (sheet->missing_values_renderer,
-		    "editing-started", G_CALLBACK (set_missing_values),
-		    sheet);
+  sheet->missing_values_dispatch = g_malloc (sizeof *sheet->missing_values_dispatch);
+  sheet->missing_values_dispatch->sheet = sheet;
+  sheet->missing_values_dispatch->payload = set_missing_values;
+  g_signal_connect_after (sheet->missing_values_renderer,
+			  "editing-started", G_CALLBACK (on_edit_start),
+			  sheet->missing_values_dispatch);
 
   sheet->var_type_renderer = gtk_cell_renderer_text_new ();
-  g_signal_connect (sheet->var_type_renderer,
-		    "editing-started", G_CALLBACK (set_var_type),
-		    sheet);
-
+  sheet->var_type_dispatch = g_malloc (sizeof *sheet->var_type_dispatch);
+  sheet->var_type_dispatch->sheet = sheet;
+  sheet->var_type_dispatch->payload = set_var_type;
+  g_signal_connect_after (sheet->var_type_renderer,
+			  "editing-started", G_CALLBACK (on_edit_start),
+			  sheet->var_type_dispatch);
+  
   sheet->row_popup = create_var_row_header_popup_menu (sheet);
 
 
