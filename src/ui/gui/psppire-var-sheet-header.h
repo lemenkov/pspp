@@ -1,5 +1,4 @@
-/*
-    A candidate replacement for Pspp's sheet
+/*  PSPPIRE - a graphical user interface for PSPP.
     Copyright (C) 2016  John Darrington
 
     This program is free software: you can redistribute it and/or modify
