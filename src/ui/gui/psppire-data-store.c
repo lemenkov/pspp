@@ -130,11 +130,13 @@ __iter_nth_child (GtkTreeModel *tree_model,
   return TRUE;
 }
 
+/* Set the contents of OUT to reflect the information provided by IN, COL, and
+   ROW, for MODEL.  Returns TRUE if successful. */
 gboolean
-myreversefunc (GtkTreeModel *model, gint col, gint row,
-	       const gchar *in, GValue *out)
+psppire_data_store_string_to_value (GtkTreeModel *model, gint col, gint row,
+				    const gchar *in, GValue *out)
 {
-  PsppireDataStore *store  = PSPPIRE_DATA_STORE (model);
+  PsppireDataStore *store = PSPPIRE_DATA_STORE (model);
 
   while (col >= psppire_dict_get_var_cnt (store->dict))
     {

@@ -17,6 +17,7 @@
 #ifndef __PSPPIRE_DATA_STORE_H__
 #define __PSPPIRE_DATA_STORE_H__
 
+#include <gtk/gtk.h>
 #include "psppire-dict.h"
 
 #define FIRST_CASE_NUMBER 1
@@ -113,10 +114,13 @@ gchar * psppire_data_store_value_to_string (gpointer unused, PsppireDataStore *s
 					    gint col, gint row,
 					    const GValue *v);
 
-gchar * psppire_data_store_value_to_string_with_labels (gpointer unused, PsppireDataStore *store,
-					    gint col, gint row,
-					    const GValue *v);
+gchar * psppire_data_store_value_to_string_with_labels (gpointer unused,
+							PsppireDataStore *store,
+							gint col, gint row,
+							const GValue *v);
 
+gboolean psppire_data_store_string_to_value (GtkTreeModel *model, gint col, gint row,
+					     const gchar *in, GValue *out);
 
 gboolean psppire_data_store_get_value (PsppireDataStore *store,
 				       glong row, const struct variable *var,
