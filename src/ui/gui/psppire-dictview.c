@@ -517,8 +517,7 @@ show_menu (PsppireDictView *dv, GdkEventButton *event, gpointer data)
   if (event->button != 3)
     return FALSE;
 
-  gtk_menu_popup (GTK_MENU (dv->menu), NULL, NULL, NULL, NULL,
-		  event->button, event->time);
+  gtk_menu_popup_at_pointer (GTK_MENU (dv->menu), event);
 
   return TRUE;
 }

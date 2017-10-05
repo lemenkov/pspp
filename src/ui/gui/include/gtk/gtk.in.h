@@ -1,5 +1,5 @@
 /* Wrapper for <gtk/gtk.h>.
-   Copyright (C) 2011, 2012 Free Software Foundation, Inc.
+   Copyright (C) 2011, 2012, 2017 Free Software Foundation, Inc.
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -31,8 +31,18 @@
 
 
 #if (GTK_CHECK_VERSION(3,8,0) == 0)
-#define gtk_widget_register_window(widget, window) gdk_window_set_user_data (window, widget);
+#define gtk_widget_register_window(widget, window) gdk_window_set_user_data (window, widget)
 #endif
+
+#if (GTK_CHECK_VERSION(3,22,0) == 0)
+static inline void
+gtk_menu_popup_at_pointer (GtkMenu *menu, const GdkEvent *trigger)
+{
+  const GdkEventButton *be = trigger;
+  gtk_menu_popup (menu, NULL, NULL, NULL, NULL, be ? be->button : 0, be ?  be->time : 0);
+}
+#endif
+
 
 
 #endif /* PSPP_GTK_GTK_H */
