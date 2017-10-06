@@ -512,9 +512,9 @@ set_tooltip_for_variable (GtkTreeView  *treeview,
 }
 
 static gboolean
-show_menu (PsppireDictView *dv, GdkEventButton *event, gpointer data)
+show_menu (PsppireDictView *dv, GdkEvent *event, gpointer data)
 {
-  if (event->button != 3)
+  if (((GdkEventButton *) event)->button != 3)
     return FALSE;
 
   gtk_menu_popup_at_pointer (GTK_MENU (dv->menu), event);
