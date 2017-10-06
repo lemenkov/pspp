@@ -38,7 +38,6 @@ static const bool have_readline = true;
 
 #else
 static const bool have_readline = false;
-static int rl_end;
 #endif
 
 
@@ -251,10 +250,10 @@ readline_prompt (enum prompt_style style)
 }
 
 
+#if HAVE_READLINE
 
 static int pfd[2];
 static bool sigint_received ;
-
 
 /*
    A function similar to getc from stdio.
@@ -305,10 +304,6 @@ interruptible_getc (FILE *fp)
 
   return c;
 }
-
-
-
-#if HAVE_READLINE
 
 static void
 handler (int sig)
