@@ -454,6 +454,8 @@ generate_syntax (const PsppireDialogAction * a)
 
       if (fd->charts_opts_pie_include_missing)
         ds_put_cstr (&str, " MISSING");
+      else
+        ds_put_cstr (&str, " NOMISSING");
 
       if (fd->charts_opts_use_min)
         ds_put_c_format (&str, " MIN(%.15g)", fd->charts_opts_min);
