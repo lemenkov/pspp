@@ -1144,6 +1144,7 @@ on_clear_cases (PsppireDataWindow *dw)
   if (p == PSPPIRE_DATA_EDITOR_DATA_VIEW)
     {
       SswRange *range = SSW_SHEET(de->data_sheet)->selection;
+      g_return_if_fail (range->start_y >= 0);
       psppire_data_store_delete_cases (de->data_store, range->start_y,
 				       range->end_y - range->start_y + 1);
       gtk_widget_queue_draw (GTK_WIDGET (de->data_sheet));
