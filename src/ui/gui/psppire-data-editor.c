@@ -459,6 +459,8 @@ psppire_data_editor_var_delete_variables (PsppireDataEditor *de)
 void
 psppire_data_editor_insert_new_case_at_posn  (PsppireDataEditor *de, gint posn)
 {
+  g_return_if_fail (posn >= 0);
+
   psppire_data_store_insert_new_case (de->data_store, posn);
 
   gtk_widget_queue_draw (GTK_WIDGET (de->data_sheet));
@@ -467,7 +469,9 @@ psppire_data_editor_insert_new_case_at_posn  (PsppireDataEditor *de, gint posn)
 void
 psppire_data_editor_insert_new_variable_at_posn (PsppireDataEditor *de, gint posn)
 {
+  g_return_if_fail (posn >= 0);
   const struct variable *v = psppire_dict_insert_variable (de->dict, posn, NULL);
+  g_return_if_fail (v);
   psppire_data_store_insert_value (de->data_store, var_get_width(v),
 				   var_get_case_index (v));
 
