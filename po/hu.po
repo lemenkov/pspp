@@ -2,13 +2,13 @@
 # Copyright (C) 2016, 2017 Free Software Foundation, Inc.
 # This file is distributed under the same license as the pspp package.
 #
-# Meskó Balázs <meskobalazs@gmail.com>, 2016, 2017.
+# Balázs Meskó <meskobalazs@gmail.com>, 2016, 2017.
 msgid ""
 msgstr ""
 "Project-Id-Version: pspp 1.0.1\n"
 "Report-Msgid-Bugs-To: pspp-dev@gnu.org\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2017-08-29 20:43+0200\n"
+"PO-Revision-Date: 2017-12-23 13:20+0100\n"
 "Last-Translator: Balázs Meskó <meskobalazs@gmail.com>\n"
 "Language-Team: Hungarian <translation-team-hu@lists.sourceforge.net>\n"
 "Language: hu\n"
@@ -17,7 +17,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "X-Bugs: Report translation errors to the Language-Team address.\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
-"X-Generator: Poedit 2.0.3\n"
+"X-Generator: Poedit 2.0.5\n"
 
 #: src/ui/gui/helper.c:210
 msgid "Sorry. The help system hasn't yet been implemented."
@@ -6136,7 +6136,7 @@ msgstr "Ne jelenítse meg az indítóképet"
 
 #: src/ui/gui/main.c:297
 msgid "Do not attempt single instance negotiation"
-msgstr ""
+msgstr "Ne próbáljon meg csak egy példányban futni"
 
 #: src/ui/gui/missing-val-dialog.c:214
 msgid "The maximum length of a missing value for a string variable is 8 in UTF-8."
@@ -6368,7 +6368,7 @@ msgstr "_Kilépés"
 #: src/ui/gui/psppire-data-window.c:1298 src/ui/gui/output-window.ui:89
 #: src/ui/gui/syntax-editor.ui:66
 msgid "_Edit"
-msgstr "S_zerkesztés"
+msgstr "Sz_erkesztés"
 
 #: src/ui/gui/psppire-data-window.c:1304
 msgid "_Go To Variable..."
@@ -6892,7 +6892,7 @@ msgstr "_Felosztás"
 
 #: src/ui/gui/windows-menu.c:133
 msgid "_Windows"
-msgstr "_Ablakok"
+msgstr "Abla_kok"
 
 #: utilities/pspp-convert.c:134
 msgid "exactly two non-option arguments are required; use --help for help"
@@ -7820,7 +7820,7 @@ msgstr "Reguláris kifejezés illesztés"
 
 #: src/ui/gui/find.ui:227
 msgid "Search substrings"
-msgstr "Alkarekterláncok keresése"
+msgstr "Részkarekterláncok keresése"
 
 #: src/ui/gui/find.ui:244
 msgid "Wrap around"
@@ -8179,9 +8179,8 @@ msgid "_Contrasts..."
 msgstr "_Kontrasztok…"
 
 #: src/ui/gui/options.ui:25
-#, fuzzy
 msgid "Options Case"
-msgstr "Beállítások eset"
+msgstr "Beállítások"
 
 #: src/ui/gui/options.ui:55
 msgid "Display _Labels"
@@ -8213,7 +8212,7 @@ msgstr "Ma_ximalizálás"
 
 #: src/ui/gui/options.ui:199
 msgid "_Raise"
-msgstr ""
+msgstr "_Feldobás"
 
 #: src/ui/gui/options.ui:214
 msgid "Aler_t"
@@ -8221,7 +8220,7 @@ msgstr "_Riasztás"
 
 #: src/ui/gui/options.ui:233
 msgid "Output Window Action"
-msgstr "Kimeneti ablak művelete"
+msgstr "Kimenetablak művelete"
 
 #: src/ui/gui/paired-samples.ui:147
 msgid "_Test Pair(s):"
@@ -8855,7 +8854,7 @@ msgstr "Esetek _súlyozása…"
 
 #: src/ui/gui/data-editor.ui:220
 msgid "_Transform"
-msgstr "Át_alakítás"
+msgstr "Áta_lakítás"
 
 #: src/ui/gui/data-editor.ui:223
 msgid "_Compute..."
@@ -8887,7 +8886,7 @@ msgstr "Függőben lévő átalakítások _futtatása"
 
 #: src/ui/gui/data-editor.ui:257
 msgid "_Analyze"
-msgstr "_Elemzés"
+msgstr "Elem_zés"
 
 #: src/ui/gui/data-editor.ui:260
 msgid "_Descriptive Statistics"
@@ -9015,7 +9014,7 @@ msgstr "_Oszlopdiagram"
 
 #: src/ui/gui/data-editor.ui:391
 msgid "_Utilities"
-msgstr "_Segédfunkciók"
+msgstr "Segédf_unkciók"
 
 #: src/ui/gui/data-editor.ui:394
 msgid "_Variables..."
