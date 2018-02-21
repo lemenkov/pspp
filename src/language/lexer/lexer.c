@@ -644,7 +644,7 @@ lex_force_string (struct lexer *lexer)
 bool
 lex_force_string_or_id (struct lexer *lexer)
 {
-  return lex_is_integer (lexer) || lex_force_string (lexer);
+  return lex_token (lexer) == T_ID || lex_force_string (lexer);
 }
 
 /* If the current token is an integer, does nothing and returns true.

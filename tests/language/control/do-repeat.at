@@ -88,7 +88,7 @@ END FILE.
 END INPUT PROGRAM.
 
 DO REPEAT x = 1 2 3.
-INCLUDE 'include.sps'.
+INCLUDE include.sps.
 END REPEAT.
 
 LIST.
