@@ -87,9 +87,9 @@ AT_CLEANUP
 
 AT_SETUP([CSV output -- KEEP, RENAME])
 PREPARE_SAVE_TRANSLATE_CSV(
-  [/FIELDNAMES /KEEP=time string /RENAME string=name /UNSELECTED=DELETE])
+  [/FIELDNAMES /KEEP=time string /RENAME string='long name with spaces' /UNSELECTED=DELETE])
 AT_CHECK([cat data.csv], [0], [dnl
-time,name
+time,long name with spaces
 -05:17:00, xxx
 12:00:00,xyzzy
 ])

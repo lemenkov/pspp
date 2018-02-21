@@ -74,6 +74,11 @@ struct dictionary
     struct mrset **mrsets;      /* Multiple response sets. */
     size_t n_mrsets;            /* Number of multiple response sets. */
 
+    /* Whether variable names must be valid identifiers.  Normally, this is
+       true, but sometimes a dictionary is prepared for external use
+       (e.g. output to a CSV file) where names don't have to be valid. */
+    bool names_must_be_ids;
+
     char *encoding;             /* Character encoding of string data */
 
     const struct dict_callbacks *callbacks; /* Callbacks on dictionary
@@ -102,7 +107,8 @@ bool
 dict_id_is_valid (const struct dictionary *dict, const char *id,
                   bool issue_error)
 {
-  return id_is_valid (id, dict->encoding, issue_error);
+  return (!dict->names_must_be_ids
+          || id_is_valid (id, dict->encoding, issue_error));
 }
 
 void
@@ -170,6 +176,7 @@ dict_create (const char *encoding)
   struct dictionary *d = xzalloc (sizeof *d);
 
   d->encoding = xstrdup (encoding);
+  d->names_must_be_ids = true;
   hmap_init (&d->name_map);
   attrset_init (&d->attributes);
 
@@ -193,6 +200,7 @@ dict_clone (const struct dictionary *s)
   size_t i;
 
   d = dict_create (s->encoding);
+  dict_set_names_must_be_ids (d, dict_get_names_must_be_ids (s));
 
   for (i = 0; i < s->var_cnt; i++)
     {
@@ -992,6 +1000,27 @@ dict_make_unique_var_name (const struct dictionary *dict, const char *hint,
         return hinted_name;
     }
   return make_numeric_name (dict, num_start);
+}
+
+/* Returns whether variable names must be valid identifiers.  Normally, this is
+   true, but sometimes a dictionary is prepared for external use (e.g. output
+   to a CSV file) where names don't have to be valid. */
+bool
+dict_get_names_must_be_ids (const struct dictionary *d)
+{
+  return d->names_must_be_ids;
+}
+
+/* Sets whether variable names must be valid identifiers.  Normally, this is
+   true, but sometimes a dictionary is prepared for external use (e.g. output
+   to a CSV file) where names don't have to be valid.
+
+   Changing this setting from false to true doesn't make the dictionary check
+   all the existing variable names, so it can cause an invariant violation. */
+void
+dict_set_names_must_be_ids (struct dictionary *d, bool names_must_be_ids)
+{
+  d->names_must_be_ids = names_must_be_ids;
 }
 
 /* Returns the weighting variable in dictionary D, or a null

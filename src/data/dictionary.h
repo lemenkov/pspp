@@ -91,6 +91,9 @@ bool dict_rename_vars (struct dictionary *,
 char *dict_make_unique_var_name (const struct dictionary *, const char *hint,
                                  unsigned long int *num_start);
 
+bool dict_get_names_must_be_ids (const struct dictionary *);
+void dict_set_names_must_be_ids (struct dictionary *, bool);
+
 /* Weight variable. */
 double dict_get_case_weight (const struct dictionary *,
 			     const struct ccase *, bool *);

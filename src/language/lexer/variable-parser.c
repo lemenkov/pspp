@@ -46,26 +46,42 @@
 #include "gettext.h"
 #define _(msgid) gettext (msgid)
 
-static struct variable * var_set_get_var (const struct var_set *, size_t );
-
+static struct variable *var_set_get_var (const struct var_set *, size_t);
 static struct variable *var_set_lookup_var (const struct var_set *,
 					    const char *);
-
 static bool var_set_lookup_var_idx (const struct var_set *, const char *,
 				    size_t *);
+static bool var_set_get_names_must_be_ids (const struct var_set *);
 
+static bool
+is_name_token (const struct lexer *lexer, bool names_must_be_ids)
+{
+  return (lex_token (lexer) == T_ID
+          || (!names_must_be_ids && lex_token (lexer) == T_STRING));
+}
 
+static bool
+is_vs_name_token (const struct lexer *lexer, const struct var_set *vs)
+{
+  return is_name_token (lexer, var_set_get_names_must_be_ids (vs));
+}
+
+static bool
+is_dict_name_token (const struct lexer *lexer, const struct dictionary *d)
+{
+  return is_name_token (lexer, dict_get_names_must_be_ids (d));
+}
 
 /* Parses a name as a variable within VS.  Sets *IDX to the
    variable's index and returns true if successful.  On failure
    emits an error message and returns false. */
 static bool
 parse_vs_variable_idx (struct lexer *lexer, const struct var_set *vs,
-		size_t *idx)
+                       size_t *idx)
 {
   assert (idx != NULL);
 
-  if (lex_token (lexer) != T_ID)
+  if (!is_vs_name_token (lexer, vs))
     {
       lex_error (lexer, _("expecting variable name"));
       return false;
@@ -344,7 +360,8 @@ parse_var_set_vars (struct lexer *lexer, const struct var_set *vs,
       lex_match (lexer, T_COMMA);
     }
   while (lex_token (lexer) == T_ALL
-         || (lex_token (lexer) == T_ID && var_set_lookup_var (vs, lex_tokcstr (lexer)) != NULL));
+         || (is_vs_name_token (lexer, vs)
+             && var_set_lookup_var (vs, lex_tokcstr (lexer)) != NULL));
 
   if (*nv == 0)
     goto fail;
@@ -358,6 +375,22 @@ fail:
   *v = NULL;
   *nv = 0;
   return 0;
+}
+
+char *
+parse_DATA_LIST_var (struct lexer *lexer, const struct dictionary *d)
+{
+  if (!is_dict_name_token (lexer, d))
+    {
+      lex_error (lexer, "expecting variable name");
+      return NULL;
+    }
+  if (!dict_id_is_valid (d, lex_tokcstr (lexer), true))
+    return NULL;
+
+  char *name = xstrdup (lex_tokcstr (lexer));
+  lex_get (lexer);
+  return name;
 }
 
 /* Attempts to break UTF-8 encoded NAME into a root (whose contents are
@@ -456,37 +489,22 @@ parse_DATA_LIST_vars (struct lexer *lexer, const struct dictionary *dict,
 
   do
     {
-      if (lex_token (lexer) != T_ID
-          || !dict_id_is_valid (dict, lex_tokcstr (lexer), true))
-	{
-	  lex_error (lexer, "expecting variable name");
-	  goto exit;
-	}
-      if (dict_class_from_id (lex_tokcstr (lexer)) == DC_SCRATCH
-          && (pv_opts & PV_NO_SCRATCH))
+      name1 = parse_DATA_LIST_var (lexer, dict);
+      if (!name1)
+        goto exit;
+      if (dict_class_from_id (name1) == DC_SCRATCH && pv_opts & PV_NO_SCRATCH)
 	{
 	  msg (SE, _("Scratch variables not allowed here."));
 	  goto exit;
 	}
-      name1 = xstrdup (lex_tokcstr (lexer));
-      lex_get (lexer);
-      if (lex_token (lexer) == T_TO)
+      if (lex_match (lexer, T_TO))
 	{
-	  char *name2 = NULL;
 	  unsigned long int num1, num2;
           int n_digits1, n_digits2;
           int root_len1, root_len2;
           unsigned long int number;
 
-	  lex_get (lexer);
-	  if (lex_token (lexer) != T_ID
-              || !dict_id_is_valid (dict, lex_tokcstr (lexer), true))
-	    {
-	      lex_error (lexer, "expecting variable name");
-	      goto exit;
-	    }
-          name2 = xstrdup (lex_tokcstr (lexer));
-	  lex_get (lexer);
+          char *name2 = parse_DATA_LIST_var (lexer, dict);
 
           root_len1 = extract_numeric_suffix (name1, &num1, &n_digits1);
           if (root_len1 == 0)
@@ -613,7 +631,7 @@ parse_mixed_vars (struct lexer *lexer, const struct dictionary *dict,
       *names = NULL;
       *nnames = 0;
     }
-  while (lex_token (lexer) == T_ID || lex_token (lexer) == T_ALL)
+  while (is_dict_name_token (lexer, dict) || lex_token (lexer) == T_ALL)
     {
       if (lex_token (lexer) == T_ALL || dict_lookup_var (dict, lex_tokcstr (lexer)) != NULL)
 	{
@@ -670,6 +688,7 @@ parse_mixed_vars_pool (struct lexer *lexer, const struct dictionary *dict, struc
 /* A set of variables. */
 struct var_set
   {
+    bool names_must_be_ids;
     size_t (*get_cnt) (const struct var_set *);
     struct variable *(*get_var) (const struct var_set *, size_t idx);
     bool (*lookup_var_idx) (const struct var_set *, const char *, size_t *);
@@ -727,6 +746,12 @@ var_set_destroy (struct var_set *vs)
   if (vs != NULL)
     vs->destroy (vs);
 }
+
+static bool
+var_set_get_names_must_be_ids (const struct var_set *vs)
+{
+  return vs->names_must_be_ids;
+}
 
 /* Returns the number of variables in VS. */
 static size_t
@@ -776,6 +801,7 @@ struct var_set *
 var_set_create_from_dict (const struct dictionary *d)
 {
   struct var_set *vs = xmalloc (sizeof *vs);
+  vs->names_must_be_ids = dict_get_names_must_be_ids (d);
   vs->get_cnt = dict_var_set_get_cnt;
   vs->get_var = dict_var_set_get_var;
   vs->lookup_var_idx = dict_var_set_lookup_var_idx;
@@ -852,6 +878,7 @@ var_set_create_from_array (struct variable *const *var, size_t var_cnt)
   size_t i;
 
   vs = xmalloc (sizeof *vs);
+  vs->names_must_be_ids = true;
   vs->get_cnt = array_var_set_get_cnt;
   vs->get_var = array_var_set_get_var;
   vs->lookup_var_idx = array_var_set_lookup_var_idx;

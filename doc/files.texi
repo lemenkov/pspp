@@ -814,13 +814,15 @@ values as if they were not missing.  Specify MISSING=RECODE to output
 numeric user-missing values like system-missing values and string
 user-missing values as all spaces.
 
-By default, all the variables in the active dataset dictionary are saved
-to the system file, but @subcmd{DROP} or @subcmd{KEEP} can select a subset of variable
-to save.  The @subcmd{RENAME} subcommand can also be used to change the names
-under which variables are saved.  @subcmd{UNSELECTED} determines whether cases
-filtered out by the @cmd{FILTER} command are written to the output file.
-These subcommands have the same syntax and meaning as on the
-@cmd{SAVE} command (@pxref{SAVE}).
+By default, all the variables in the active dataset dictionary are
+saved to the system file, but @subcmd{DROP} or @subcmd{KEEP} can
+select a subset of variable to save.  The @subcmd{RENAME} subcommand
+can also be used to change the names under which variables are saved;
+because they are used only in the output, these names do not have to
+conform to the usual PSPP variable naming rules.  @subcmd{UNSELECTED}
+determines whether cases filtered out by the @cmd{FILTER} command are
+written to the output file.  These subcommands have the same syntax
+and meaning as on the @cmd{SAVE} command (@pxref{SAVE}).
 
 Each supported file type has additional subcommands, explained in
 separate sections below.

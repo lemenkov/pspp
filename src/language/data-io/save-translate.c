@@ -68,6 +68,7 @@ cmd_save_translate (struct lexer *lexer, struct dataset *ds)
   type = 0;
 
   dict = dict_clone (dataset_dict (ds));
+  dict_set_names_must_be_ids (dict, false);
   stage = NULL;
   map = NULL;
 

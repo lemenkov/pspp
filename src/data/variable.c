@@ -186,7 +186,6 @@ static void
 var_set_name_quiet (struct variable *v, const char *name)
 {
   assert (!var_has_vardict (v));
-  assert (id_is_plausible (name, false));
 
   free (v->name);
   v->name = xstrdup (name);
@@ -1131,8 +1130,6 @@ void
 var_set_short_name (struct variable *var, size_t idx, const char *short_name)
 {
   struct variable *ov = var_clone (var);
-
-  assert (short_name == NULL || id_is_plausible (short_name, false));
 
   /* Clear old short name numbered IDX, if any. */
   if (idx < var->short_name_cnt)
