@@ -25,6 +25,7 @@
 #include "data/casewriter.h"
 #include "data/dataset.h"
 #include "data/dictionary.h"
+#include "data/mdd-writer.h"
 #include "data/por-file-writer.h"
 #include "data/sys-file-writer.h"
 #include "data/transformations.h"
@@ -64,6 +65,12 @@ static int parse_output_trns (struct lexer *, struct dataset *,
 
 int
 cmd_save (struct lexer *lexer, struct dataset *ds)
+{
+  return parse_output_proc (lexer, ds, SYSFILE_WRITER);
+}
+
+int
+cmd_save_data_collection (struct lexer *lexer, struct dataset *ds)
 {
   return parse_output_proc (lexer, ds, SYSFILE_WRITER);
 }
@@ -154,6 +161,7 @@ parse_write_command (struct lexer *lexer, struct dataset *ds,
 {
   /* Common data. */
   struct file_handle *handle; /* Output file. */
+  struct file_handle *metadata; /* MDD output file. */
   struct dictionary *dict;    /* Dictionary for output file. */
   struct casewriter *writer;  /* Writer. */
   struct case_map_stage *stage; /* Preparation for 'map'. */
@@ -171,6 +179,7 @@ parse_write_command (struct lexer *lexer, struct dataset *ds,
     *retain_unselected = true;
 
   handle = NULL;
+  metadata = NULL;
   dict = dict_clone (dataset_dict (ds));
   writer = NULL;
   stage = NULL;
@@ -196,6 +205,20 @@ parse_write_command (struct lexer *lexer, struct dataset *ds,
 
 	  handle = fh_parse (lexer, FH_REF_FILE, NULL);
 	  if (handle == NULL)
+	    goto error;
+	}
+      else if (lex_match_id (lexer, "METADATA"))
+	{
+          if (metadata != NULL)
+            {
+              lex_sbc_only_once ("METADATA");
+              goto error;
+            }
+
+	  lex_match (lexer, T_EQUALS);
+
+	  metadata = fh_parse (lexer, FH_REF_FILE, NULL);
+	  if (metadata == NULL)
 	    goto error;
 	}
       else if (lex_match_id (lexer, "NAMES"))
@@ -306,6 +329,15 @@ parse_write_command (struct lexer *lexer, struct dataset *ds,
   if (writer == NULL)
     goto error;
 
+  if (metadata)
+    {
+      const char *sav_name = (fh_get_referent (handle) == FH_REF_FILE
+                              ? fh_get_file_name (handle)
+                              : fh_get_name (handle));
+      if (!mdd_write (metadata, dict, sav_name))
+        goto error;
+    }
+
   map = case_map_stage_get_case_map (stage);
   case_map_stage_destroy (stage);
   if (map != NULL)
@@ -313,11 +345,13 @@ parse_write_command (struct lexer *lexer, struct dataset *ds,
   dict_destroy (dict);
 
   fh_unref (handle);
+  fh_unref (metadata);
   return writer;
 
  error:
   case_map_stage_destroy (stage);
   fh_unref (handle);
+  fh_unref (metadata);
   casewriter_destroy (writer);
   dict_destroy (dict);
   case_map_destroy (map);

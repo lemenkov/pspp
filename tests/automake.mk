@@ -300,6 +300,7 @@ TESTSUITE_AT = \
 	tests/data/dictionary.at \
 	tests/data/file.at \
 	tests/data/format-guesser.at \
+	tests/data/mdd-file.at \
 	tests/data/pc+-file-reader.at \
 	tests/data/por-file.at \
 	tests/data/sys-file-reader.at \

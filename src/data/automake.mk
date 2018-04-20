@@ -92,6 +92,8 @@ src_data_libdata_la_SOURCES = \
 	src/data/identifier.h \
 	src/data/lazy-casereader.c \
 	src/data/lazy-casereader.h \
+	src/data/mdd-writer.c \
+	src/data/mdd-writer.h \
 	src/data/missing-values.c \
 	src/data/missing-values.h \
 	src/data/make-file.c \

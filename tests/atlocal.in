@@ -26,6 +26,13 @@ host='@host@'
 PACKAGE_STRING='@PACKAGE_STRING@'
 PACKAGE_BUGREPORT='@PACKAGE_BUGREPORT@'
 
+XMLLINT='@XMLLINT@'
+if echo | $XMLLINT - >/dev/null 2>&1; then
+    HAVE_XMLLINT=no
+else
+    HAVE_XMLLINT=yes
+fi
+
 PSQL_SUPPORT='@PSQL_SUPPORT@'
 if test "$PSQL_SUPPORT" = yes; then
     : ${PG_CONFIG:='@PG_CONFIG@'}

@@ -6,6 +6,8 @@ Please send PSPP bug reports to bug-gnu-pspp@gnu.org.
 
 Changes from 1.0.1 to 1.1.0:
 
+ * New experimental command SAVE DATA COLLECTION to save MDD files.
+
  * Build changes:
 
    - zlib is now a required dependency.  (Previously it was optional.)

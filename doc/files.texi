@@ -20,6 +20,7 @@ portable files.
 * GET DATA::                    Read from foreign files.
 * IMPORT::                      Read from a portable file.
 * SAVE::                        Write to a system file.
+* SAVE DATA COLLECTION::        Write to a system file and metadata file.
 * SAVE TRANSLATE::              Write data in foreign file formats.
 * SYSFILE INFO::                Display system file dictionary.
 * XEXPORT::                     Write to a portable file, as a transformation.
@@ -769,6 +770,45 @@ versions are otherwise identical.
 The @subcmd{NAMES} and @subcmd{MAP} subcommands are currently ignored.
 
 @cmd{SAVE} causes the data to be read.  It is a procedure.
+
+@node SAVE DATA COLLECTION
+@section SAVE DATA COLLECTION
+@vindex SAVE DATA COLLECTION
+
+@display
+SAVE DATA COLLECTION
+        /OUTFILE=@{'@var{file_name}',@var{file_handle}@}
+        /METADATA=@{'@var{file_name}',@var{file_handle}@}
+        /@{UNCOMPRESSED,COMPRESSED,ZCOMPRESSED@}
+        /PERMISSIONS=@{WRITEABLE,READONLY@}
+        /DROP=@var{var_list}
+        /KEEP=@var{var_list}
+        /VERSION=@var{version}
+        /RENAME=(@var{src_names}=@var{target_names})@dots{}
+        /NAMES
+        /MAP
+@end display
+
+Like @cmd{SAVE}, @cmd{SAVE DATA COLLECTION} writes the dictionary and
+data in the active dataset to a system file.  In addition, it writes
+metadata to an additional XML metadata file.
+
+OUTFILE is required.  Specify the system file to be written as a
+string file name or a file handle (@pxref{File Handles}).
+
+METADATA is also required.  Specify the metadata file to be written as
+a string file name or a file handle.  Metadata files customarily use a
+@file{.mdd} extension.
+
+The current implementation of this command is experimental.  It only
+outputs an approximation of the metadata file format.  Please report
+bugs.
+
+Other subcommands are optional.  They have the same meanings as in the
+@cmd{SAVE} command.
+
+@cmd{SAVE DATA COLLECTION} causes the data to be read.  It is a
+procedure.
 
 @node SAVE TRANSLATE
 @section SAVE TRANSLATE
