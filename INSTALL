@@ -70,6 +70,8 @@ The following packages are required to install PSPP:
 
     * zlib (http://www.zlib.net/).
 
+    * libxml2 (http://xmlsoft.org/).  
+
 The following packages are required to enable PSPP's graphing
 features.  If you cannot arrange to install them, you must run
 `configure' with --without-cairo (in which case you will get no graphing
@@ -95,16 +97,6 @@ use the GUI, you must run `configure' with --without-gui.
     * GNU Spread Sheet Widget (http://www.gnu.org/software/ssw)
 
 The following packages are optional:
-
-Installing the following packages will allow your PSPP program to read
-Gnumeric files.
-
-    * libxml2 (http://xmlsoft.org/).  
-
-Installing the following packages will allow your PSPP program to write
-OpenDocument text (ODT) files:
-
-    * libxml2 (http://xmlsoft.org/).  
 
 Other optional packages:
 

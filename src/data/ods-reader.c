@@ -16,62 +16,8 @@
 
 #include <config.h>
 
-#include "libpspp/message.h"
-#include "libpspp/misc.h"
-#include "libpspp/assertion.h"
-
-#include "data/data-in.h"
-
-#include "gl/c-strtod.h"
-#include "gl/minmax.h"
-
-#include "gettext.h"
-#define _(msgid) gettext (msgid)
-#define N_(msgid) (msgid)
-
 #include "ods-reader.h"
 #include "spreadsheet-reader.h"
-
-#if !ODF_READ_SUPPORT
-
-struct spreadsheet *
-ods_probe (const char *filename, bool report_errors)
-{
-  if (report_errors)
-    msg (ME, _("Support for %s files was not compiled into this installation of PSPP"), "OpenDocument");
-
-  return NULL;
-}
-
-const char *
-ods_get_sheet_name (struct spreadsheet *s, int n)
-{
-  return NULL;
-}
-
-char *
-ods_get_sheet_range (struct spreadsheet *s, int n)
-{
-  return NULL;
-}
-
-struct casereader *
-ods_make_reader (struct spreadsheet *spreadsheet,
-		 const struct spreadsheet_read_options *opts)
-{
-  return NULL;
-}
-
-
-void
-ods_unref (struct spreadsheet *r)
-{
-}
-
-#else
-
-#include "libpspp/zip-reader.h"
-
 
 #include <assert.h>
 #include <stdbool.h>
@@ -79,17 +25,28 @@ ods_unref (struct spreadsheet *r)
 #include <libxml/xmlreader.h>
 #include <zlib.h>
 
-#include "data/format.h"
 #include "data/case.h"
 #include "data/casereader-provider.h"
+#include "data/data-in.h"
 #include "data/dictionary.h"
+#include "data/format.h"
 #include "data/identifier.h"
 #include "data/value.h"
 #include "data/variable.h"
+#include "libpspp/assertion.h"
 #include "libpspp/i18n.h"
+#include "libpspp/message.h"
+#include "libpspp/misc.h"
 #include "libpspp/str.h"
+#include "libpspp/zip-reader.h"
 
+#include "gl/c-strtod.h"
+#include "gl/minmax.h"
 #include "gl/xalloc.h"
+
+#include "gettext.h"
+#define _(msgid) gettext (msgid)
+#define N_(msgid) (msgid)
 
 static void ods_file_casereader_destroy (struct casereader *, void *);
 static struct ccase *ods_file_casereader_read (struct casereader *, void *);
@@ -1044,4 +1001,3 @@ ods_file_casereader_read (struct casereader *reader UNUSED, void *r_)
 
   return c;
 }
-#endif

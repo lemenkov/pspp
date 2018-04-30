@@ -6,11 +6,15 @@ Please send PSPP bug reports to bug-gnu-pspp@gnu.org.
 
 Changes from 1.0.1 to 1.1.0:
 
- ** The code implementing the sheet rendering has been removed.  Instead we
-    use a third party library: spread-sheet-widget.
+ * Build changes:
 
- ** The "NOMISSING" keyword when generating syntax for piecharts in the frequencies
-    command was omitted.  This has been corrected.
+   - zlib is now a required dependency.  (Previously it was optional.)
+
+ * The code implementing the sheet rendering has been removed.  Instead we
+   use a third party library: spread-sheet-widget.
+
+ * The "NOMISSING" keyword when generating syntax for piecharts in the
+   frequencies command was omitted.  This has been corrected.
 
 Changes from 1.0.0 to 1.0.1:
 

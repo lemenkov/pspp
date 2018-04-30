@@ -216,10 +216,7 @@ AC_SUBST([PSQL_SUPPORT])
 
 dnl Check for libxml2
 PKG_CHECK_MODULES(
-  [LIBXML2], [libxml-2.0], 
-  [HAVE_LIBXML2=yes],
-  [HAVE_LIBXML2=no
-   PSPP_OPTIONAL_PREREQ([libxml2])])
+  [LIBXML2], [libxml-2.0], [], [PSPP_REQUIRED_PREREQ([libxml2])])
 
 dnl Check for zlib.
 AC_SEARCH_LIBS([gzopen], [z], [], [PSPP_REQUIRED_PREREQ([zlib])])
@@ -236,31 +233,6 @@ dnl sometimes use zlib themselves.)
 AC_DEFINE(
   [crc32], [gl_crc32],
   [Avoid making zlib call gnulib's crc32() instead of its own.])
-
-dnl Gnumeric and OpenDocument (read) support requires libxml2 and zlib.
-if test $HAVE_LIBXML2 = yes; then
-  GNM_READ_SUPPORT=yes
-  ODF_READ_SUPPORT=yes
-  AC_DEFINE(
-    [GNM_READ_SUPPORT], [1],
-    [Define to 1 if building in support for reading Gnumeric files.])
-  AC_DEFINE(
-    [ODF_READ_SUPPORT], [1],
-    [Define to 1 if building in support for reading OpenDocument files.])
-else
-  GNM_READ_SUPPORT=no
-  ODF_READ_SUPPORT=no
-fi
-AC_SUBST([GNM_READ_SUPPORT])
-AC_SUBST([ODF_READ_SUPPORT])
-
-dnl ODF support requires libxml2 (zlib is optional).
-if test $HAVE_LIBXML2 = yes; then
-  AC_DEFINE(
-    [ODF_WRITE_SUPPORT], [1],
-    [Define to 1 if building in support for writing OpenDocument files.])
-fi
-AM_CONDITIONAL([ODF_WRITE_SUPPORT], [test $HAVE_LIBXML2 = yes])
 
 AC_ARG_WITH(
   gui_tools,

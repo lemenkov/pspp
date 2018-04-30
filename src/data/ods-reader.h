@@ -17,6 +17,8 @@
 #ifndef ODS_READ_H
 #define ODS_READ_H 1
 
+#include <stdbool.h>
+
 struct casereader;
 struct dictionary;
 

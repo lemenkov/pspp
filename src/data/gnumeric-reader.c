@@ -16,57 +16,8 @@
 
 #include <config.h>
 
-#include "libpspp/message.h"
-#include "libpspp/misc.h"
-
-#include "gl/minmax.h"
-#include "gl/c-strtod.h"
-
-#include "gettext.h"
-#define _(msgid) gettext (msgid)
-#define N_(msgid) (msgid)
-
-#include "spreadsheet-reader.h"
-
-#if !GNM_READ_SUPPORT
-
-struct spreadsheet *
-gnumeric_probe (const char *filename, bool report_errors)
-{
-  if (report_errors)
-    msg (ME, _("Support for %s files was not compiled into this installation of PSPP"), "Gnumeric");
-
-  return NULL;
-}
-
-const char *
-gnumeric_get_sheet_name (struct spreadsheet *s, int n)
-{
-  return NULL;
-}
-
-char *
-gnumeric_get_sheet_range (struct spreadsheet *s, int n)
-{
-  return NULL;
-}
-
-struct casereader *
-gnumeric_make_reader (struct spreadsheet *spreadsheet,
-		      const struct spreadsheet_read_options *opts)
-{
-  return NULL;
-}
-
-void
-gnumeric_unref (struct spreadsheet *r)
-{
-}
-
-
-#else
-
 #include "data/gnumeric-reader.h"
+#include "spreadsheet-reader.h"
 
 #include <assert.h>
 #include <stdbool.h>
@@ -74,19 +25,26 @@ gnumeric_unref (struct spreadsheet *r)
 #include <libxml/xmlreader.h>
 #include <zlib.h>
 
-#include "data/format.h"
-#include "data/data-in.h"
 #include "data/case.h"
 #include "data/casereader-provider.h"
+#include "data/data-in.h"
 #include "data/dictionary.h"
+#include "data/format.h"
 #include "data/identifier.h"
 #include "data/value.h"
 #include "data/variable.h"
 #include "libpspp/i18n.h"
+#include "libpspp/message.h"
+#include "libpspp/misc.h"
 #include "libpspp/str.h"
 
+#include "gl/c-strtod.h"
+#include "gl/minmax.h"
 #include "gl/xalloc.h"
 
+#include "gettext.h"
+#define _(msgid) gettext (msgid)
+#define N_(msgid) (msgid)
 
 /* Shamelessly lifted from the Gnumeric sources:
    https://git.gnome.org/browse/gnumeric/tree/src/value.h
@@ -979,6 +937,3 @@ gnm_file_casereader_read (struct casereader *reader UNUSED, void *r_)
       return NULL;
     }
 }
-
-
-#endif /* GNM_READ_SUPPORT */
