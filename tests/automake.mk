@@ -271,6 +271,8 @@ EXTRA_DIST += \
 	tests/data/num-in.expected.gz \
 	tests/data/num-out-cmp.pl \
 	tests/data/num-out.expected.cmp.gz \
+	tests/data/test-date-input.py \
+	tests/data/test-time-input.py \
 	tests/data/v13.sav \
 	tests/data/v14.sav \
 	tests/data/test-encrypted.sps \
