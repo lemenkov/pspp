@@ -326,6 +326,23 @@ AT_CHECK([pspp -O format=csv datetime.sps])
 AT_CHECK([cat datetime.output], [0], [expout])
 AT_CLEANUP
 
+AT_SETUP([YMDHMS input format])
+AT_KEYWORDS([data-in])
+AT_CHECK([python $top_srcdir/tests/data/test-date-input.py ymdhms "y-m-d +H:M" "y-m-d +H:M:S"])
+AT_FAIL_IF([test ! -s ymdhms.sps || test ! -s ymdhms.input || \
+            test ! -s expout])
+AT_CHECK([pspp -O format=csv ymdhms.sps])
+AT_CHECK([cat ymdhms.output], [0], [expout])
+AT_CLEANUP
+
+AT_SETUP([MTIME input format])
+AT_KEYWORDS([data-in])
+AT_CHECK([python $top_srcdir/tests/data/test-time-input.py mtime +M:S])
+AT_FAIL_IF([test ! -s mtime.sps || test ! -s mtime.input || test ! -s expout])
+AT_CHECK([pspp -O format=csv mtime.sps])
+AT_CHECK([cat mtime.output], [0], [expout])
+AT_CLEANUP
+
 AT_SETUP([TIME input format])
 AT_KEYWORDS([data-in])
 AT_CHECK([python $top_srcdir/tests/data/test-time-input.py time +H:M +H:M:S])

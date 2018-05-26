@@ -514,6 +514,10 @@ Format types are defined as follows:
 @tab @code{EDATE}
 @item 39
 @tab @code{SDATE}
+@item 40
+@tab @code{MTIME}
+@item 41
+@tab @code{YMDHMS}
 @end multitable
 @end quotation
 

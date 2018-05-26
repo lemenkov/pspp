@@ -82,6 +82,8 @@ AT_DATA([format-guesser.txt], [dnl
 "1-1-01 1:02:03.1" => DATETIME20.1 (DATETIME22.1)
 "1-1-01 +1:02:03.1" => DATETIME20.1 (DATETIME22.1)
 "1-1-01 -1:02:03.1" => DATETIME20.1 (DATETIME22.1)
+# XXX YMDHMS formats
+# XXX MTIME formats
 "1:30" => TIME4.0 (TIME5.0)
 "1:30:05" => TIME8.0
 "-1:30" => TIME5.0

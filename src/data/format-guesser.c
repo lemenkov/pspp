@@ -120,6 +120,15 @@ static struct date_syntax syntax[] =
       11, {DT_DAY, DT_DELIM, DT_MONTH, DT_DELIM, DT_YEAR, DT_SPACE, DT_HOUR,
            DT_COLON, DT_MINUTE, DT_COLON, DT_SECOND} },
 
+    /* yyyy-dd-mmm HH:MM */
+    { FMT_YMDHMS,
+      9, {DT_YEAR, DT_DELIM, DT_MONTH, DT_DELIM, DT_DAY, DT_SPACE, DT_HOUR,
+          DT_COLON, DT_MINUTE} },
+    /* yyyy-dd-mmm HH:MM:SS */
+    { FMT_YMDHMS,
+      11, {DT_YEAR, DT_DELIM, DT_MONTH, DT_DELIM, DT_DAY, DT_SPACE, DT_HOUR,
+           DT_COLON, DT_MINUTE, DT_COLON, DT_SECOND} },
+
     /* HH:MM */
     { FMT_TIME, 3, {DT_HOUR, DT_COLON, DT_MINUTE} },
     /* HH:MM:SS */
@@ -457,11 +466,15 @@ guess_numeric (struct fmt_guesser *g, struct fmt_spec *f)
 }
 
 /* Tries to parse S as a date (DATE, ADATE, EDATE, SDATE, QYR,
-   MOYR, WKYR, or DATETIME), time (TIME or DTIME), or date
-   component (WKDAY or MONTH) format.  If successful, increments
-   G's any_date counter and the counter or counters for the
-   specific format(s) that S matches.  On failure, does not
-   modify G.
+   MOYR, WKYR, DATETIME, or YMDHMS), time (TIME or DTIME), or
+   date component (WKDAY or MONTH) format.  If successful,
+   increments G's any_date counter and the counter or counters
+   for the specific format(s) that S matches.  On failure, does
+   not modify G.
+
+   XXX How can we distinguish MTIME from TIME?  One way might be
+   that TIME can have three parts (HH:MM:SS) but MTIME only ever
+   has two (MM:SS).
 
    Does not attempt to recognize JDATE format: it looks just like
    F format and will thus be caught by the numeric parser.
@@ -571,8 +584,8 @@ guess_date_time (struct fmt_guesser *g, struct fmt_spec *f)
      (We use the minimum input width, but an output width would
      be equally appropriate, since all the time formats have the
      same minimum widths for input and output.)  */
-  if (f->type == FMT_DATETIME || f->type == FMT_TIME
-      || f->type == FMT_DTIME)
+  if (f->type == FMT_DATETIME || f->type == FMT_YMDHMS
+      || f->type == FMT_MTIME || f->type == FMT_TIME || f->type == FMT_DTIME)
     {
       for (i = 0; i < DATE_SYNTAX_CNT; i++)
         if (g->date[i]

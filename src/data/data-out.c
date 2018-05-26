@@ -473,7 +473,8 @@ output_date (const union value *input, const struct fmt_spec *format,
             {
               if (year <= 9999)
                 p += sprintf (p, "%04d", year);
-              else if (format->type == FMT_DATETIME)
+              else if (format->type == FMT_DATETIME
+                       || format->type == FMT_YMDHMS)
                 p = stpcpy (p, "****");
               else
                 goto overflow;
@@ -508,10 +509,14 @@ output_date (const union value *input, const struct fmt_spec *format,
           number = fmod (number, 60. * 60.);
           break;
         case 'M':
+          if (number < 0)
+            *p++ = '-';
+          number = fabs (number);
           p += sprintf (p, "%02d", (int) floor (number / 60.));
           number = fmod (number, 60.);
           excess_width = format->w - (p - tmp);
-          if (excess_width < 0)
+          if (excess_width < 0
+              || (format->type == FMT_MTIME && excess_width < 3))
             goto overflow;
           if (excess_width == 3 || excess_width == 4
               || (excess_width >= 5 && format->d == 0))

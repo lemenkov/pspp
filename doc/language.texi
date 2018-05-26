@@ -1085,12 +1085,13 @@ with half the given width.
 In @pspp{}, a @dfn{time} is an interval.  The time formats translate
 between human-friendly descriptions of time intervals and @pspp{}'s
 internal representation of time intervals, which is simply the number of
-seconds in the interval.  @pspp{} has two time formats:
+seconds in the interval.  @pspp{} has three time formats:
 
 @float
-@multitable {Time Format} {@code{dd-mmm-yyyy HH:MM:SS.ss}} {@code{01-OCT-1978 04:31:17.01}}
+@multitable {Time Format} {@code{dd-mmm-yyyy HH:MM:SS.ss}} {@code{01-OCT-1978 01:31:17.01}}
 @headitem Time Format @tab Template                  @tab Example
-@item TIME     @tab @code{hh:MM:SS.ss}          @tab @code{04:31:17.01}
+@item MTIME    @tab @code{MM:SS.ss}             @tab @code{91:17.01}
+@item TIME     @tab @code{hh:MM:SS.ss}          @tab @code{01:31:17.01}
 @item DTIME    @tab @code{DD HH:MM:SS.ss}       @tab @code{00 04:31:17.01}
 @end multitable
 @end float
@@ -1113,6 +1114,7 @@ times.  @pspp{} has several date formats:
 @item MOYR     @tab @code{mmm yyyy}             @tab @code{OCT 1978}
 @item WKYR     @tab @code{ww WK yyyy}           @tab @code{40 WK 1978}
 @item DATETIME @tab @code{dd-mmm-yyyy HH:MM:SS.ss} @tab @code{01-OCT-1978 04:31:17.01}
+@item YMDHMS   @tab @code{yyyy-mm-dd HH:MM:SS.ss} @tab @code{1978-01-OCT 04:31:17.01}
 @end multitable
 @end float
 
@@ -1131,11 +1133,11 @@ first three letters of an English month name (January, February,
 accepted.
 
 @item yyyy
-Year.  In output, DATETIME always produces a 4-digit year; other
-formats can produce a 2- or 4-digit year.  The century assumed for
-2-digit years depends on the EPOCH setting (@pxref{SET EPOCH}).  In
-output, a year outside the epoch causes the whole field to be filled
-with asterisks (@samp{*}).
+Year.  In output, DATETIME and YMDHMS always produce 4-digit years;
+other formats can produce a 2- or 4-digit year.  The century assumed
+for 2-digit years depends on the EPOCH setting (@pxref{SET EPOCH}).
+In output, a year outside the epoch causes the whole field to be
+filled with asterisks (@samp{*}).
 
 @item jjj
 Day of year (Julian day), from 1 to 366.  This is exactly three digits
@@ -1162,7 +1164,11 @@ two digits.
 Hour of day, from 0 to 23.  Output as exactly two digits.
 
 @item MM
-Minute of hour, from 0 to 59.  Output as exactly two digits.
+In MTIME, count of minutes, which may be positive or negative.  Output
+as at least two digits.
+
+In other formats, minute of hour, from 0 to 59.  Output as exactly two
+digits.
 
 @item SS.ss
 Seconds within minute, from 0 to 59.  The integer part is output as
@@ -1200,6 +1206,8 @@ below:
 @item MOYR @tab 6 @tab 6 @tab 4-digit year
 @item WKYR @tab 6 @tab 8 @tab 4-digit year
 @item DATETIME @tab 17 @tab 17 @tab seconds
+@item YMDHMS @tab 12 @tab 16 @tab seconds
+@item MTIME @tab 4 @tab 5
 @item TIME @tab 5 @tab 5 @tab seconds
 @item DTIME @tab 8 @tab 8 @tab seconds
 @end multitable
@@ -1210,7 +1218,7 @@ In the table, ``Option'' describes what increased output width enables:
 @table @asis
 @item 4-digit year
 A field 2 columns wider than minimum will include a 4-digit year.
-(DATETIME format always includes a 4-digit year.)
+(DATETIME and YMDHMS formats always include a 4-digit year.)
 
 @item seconds
 A field 3 columns wider than minimum will include seconds as well as
@@ -1229,7 +1237,7 @@ the field.
 When a time or date exceeds the field width, characters are trimmed from
 the end until it fits.  This can occur in an unusual situation, e.g.@:
 with a year greater than 9999 (which adds an extra digit), or for a
-negative value on TIME or DTIME (which adds a leading minus sign).
+negative value on MTIME, TIME, or DTIME (which adds a leading minus sign).
 
 @c What about out-of-range values?
 

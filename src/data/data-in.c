@@ -783,20 +783,11 @@ parse_day (struct data_in *i, long *day)
   return xasprintf (_("Day (%ld) must be between 1 and 31."), *day);
 }
 
-/* Parses an integer from the beginning of I.
-   Adds SECONDS_PER_UNIT times the absolute value of the integer
-   to *TIME.
-   If *TIME_SIGN is SIGN_NO_TIME, allows a sign to precede the
-   time and sets *TIME_SIGN.  Otherwise, does not allow a sign.
-   Returns true if successful, false if no integer was present. */
-static char *
-parse_time_units (struct data_in *i, double seconds_per_unit,
-                  enum time_sign *time_sign, double *time)
-
+/* If *TIME_SIGN is SIGN_NO_TIME, allows a sign to precede the
+   time and sets *TIME_SIGN.  Otherwise, does not allow a sign. */
+static void
+parse_time_sign (struct data_in *i, enum time_sign *time_sign)
 {
-  char *error;
-  long units;
-
   if (*time_sign == SIGN_NO_TIME)
     {
       if (ss_match_byte (&i->input, '-'))
@@ -807,6 +798,19 @@ parse_time_units (struct data_in *i, double seconds_per_unit,
           *time_sign = SIGN_POSITIVE;
         }
     }
+}
+
+/* Parses an integer from the beginning of I.
+   Adds SECONDS_PER_UNIT times the absolute value of the integer
+   to *TIME.
+   Returns true if successful, false if no integer was present. */
+static char *
+parse_time_units (struct data_in *i, double seconds_per_unit, double *time)
+
+{
+  char *error;
+  long units;
+
   error = parse_int (i, &units, SIZE_MAX);
   if (error != NULL)
     return error;
@@ -1029,7 +1033,7 @@ parse_minute_second (struct data_in *i, double *time)
   error = parse_int (i, &minute, SIZE_MAX);
   if (error != NULL)
     return error;
-  if (minute < 0 || minute > 59)
+  if (i->format != FMT_MTIME && (minute < 0 || minute > 59))
     return xasprintf (_("Minute (%ld) must be between 0 and 59."), minute);
   *time += 60. * minute;
 
@@ -1113,7 +1117,7 @@ parse_MONTH (struct data_in *i)
 }
 
 /* Parses DATE, ADATE, EDATE, JDATE, SDATE, QYR, MOYR, KWYR,
-   DATETIME, TIME and DTIME formats. */
+   DATETIME, YMDHMS, MTIME, TIME, and DTIME formats. */
 static char *
 parse_date (struct data_in *i)
 {
@@ -1170,12 +1174,16 @@ parse_date (struct data_in *i)
           error = parse_week (i, &yday);
           break;
         case 'D':
-          error = parse_time_units (i, 60. * 60. * 24., &time_sign, &time);
+          parse_time_sign (i, &time_sign);
+          error = parse_time_units (i, 60. * 60. * 24., &time);
           break;
         case 'H':
-          error = parse_time_units (i, 60. * 60., &time_sign, &time);
+          parse_time_sign (i, &time_sign);
+          error = parse_time_units (i, 60. * 60., &time);
           break;
         case 'M':
+          if (i->format == FMT_MTIME)
+            parse_time_sign (i, &time_sign);
           error = parse_minute_second (i, &time);
           break;
         case '-':

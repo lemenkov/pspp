@@ -51,7 +51,9 @@ static const struct fmt_spec date_format[] =
     {FMT_WKYR, 10, 0},
     {FMT_WKYR, 8, 0},
     {FMT_DATETIME, 17, 0},
-    {FMT_DATETIME, 20, 0}
+    {FMT_DATETIME, 20, 0},
+    {FMT_YMDHMS, 16, 0},
+    {FMT_YMDHMS, 20, 0}
   };
 
 
@@ -829,6 +831,8 @@ psppire_var_type_dialog_set_state (PsppireVarTypeDialog *dialog)
     case FMT_MOYR:
     case FMT_WKYR:
     case FMT_DATETIME:
+    case FMT_YMDHMS:
+    case FMT_MTIME:
     case FMT_TIME:
     case FMT_DTIME:
     case FMT_WKDAY:

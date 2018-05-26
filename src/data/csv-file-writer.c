@@ -337,6 +337,7 @@ csv_write_var__ (struct csv_writer *w, const struct csv_var *cv,
           break;
 
         case FMT_DATETIME:
+        case FMT_YMDHMS:
           if (value->f < 0)
             strcpy (s, " ");
           else
@@ -350,6 +351,7 @@ csv_write_var__ (struct csv_writer *w, const struct csv_var *cv,
             }
           break;
 
+        case FMT_MTIME:
         case FMT_TIME:
         case FMT_DTIME:
           {

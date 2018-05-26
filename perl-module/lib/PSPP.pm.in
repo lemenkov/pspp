@@ -179,12 +179,14 @@ use constant {
     MOYR =>     26, 
     WKYR =>     27, 
     DATETIME => 28, 
-    TIME =>     29, 
-    DTIME =>    30, 
-    WKDAY =>    31, 
-    MONTH =>    32, 
-    A =>        33, 
-    AHEX =>     34
+    YMDHMS =>   29, 
+    MTIME =>    30, 
+    TIME =>     31, 
+    DTIME =>    32, 
+    WKDAY =>    33, 
+    MONTH =>    34, 
+    A =>        35, 
+    AHEX =>     36
 };
 
 

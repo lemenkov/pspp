@@ -8,6 +8,8 @@ Changes from 1.0.1 to 1.1.0:
 
  * New experimental command SAVE DATA COLLECTION to save MDD files.
 
+ * MTIME and YMDHMS variable formats now supported.
+
  * Build changes:
 
    - zlib is now a required dependency.  (Previously it was optional.)

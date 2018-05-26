@@ -379,6 +379,8 @@ format_name (int format)
     case 37: return "CCE";
     case 38: return "EDATE";
     case 39: return "SDATE";
+    case 40: return "MTIME";
+    case 41: return "YMDHMS";
     default: return "invalid";
     }
 }

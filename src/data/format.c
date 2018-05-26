@@ -293,6 +293,16 @@ fmt_for_output_from_input (const struct fmt_spec *input)
     case FMT_MONTH:
       break;
 
+    case FMT_MTIME:
+      if (input->d)
+        output.w = MAX (input->w, input->d + 6);
+      break;
+
+    case FMT_YMDHMS:
+      if (input->w)
+        output.w = MAX (input->w, input->d + 20);
+      break;
+
     default:
       NOT_REACHED ();
     }
@@ -719,6 +729,14 @@ fmt_max_decimals (enum fmt_type type, int width, enum fmt_use use)
       max_d = width - 21;
       break;
 
+    case FMT_YMDHMS:
+      max_d = width - 20;
+      break;
+
+    case FMT_MTIME:
+      max_d = width - 6;
+      break;
+
     case FMT_TIME:
       max_d = width - 9;
       break;
@@ -946,6 +964,16 @@ fmt_date_template (enum fmt_type type, int width)
       s2 = "dd-mmm-yyyy HH:MM:SS";
       break;
 
+    case FMT_YMDHMS:
+      s1 = "yyyy-mm-dd HH:MM";
+      s2 = "yyyy-mm-dd HH:MM:SS";
+      break;
+
+    case FMT_MTIME:
+      s1 = "MM";
+      s2 = "MM:SS";
+      break;
+
     case FMT_TIME:
       s1 = "H:MM";
       s2 = "H:MM:SS";
@@ -990,6 +1018,8 @@ fmt_gui_name (enum fmt_type type)
     case FMT_MOYR:
     case FMT_WKYR:
     case FMT_DATETIME:
+    case FMT_YMDHMS:
+    case FMT_MTIME:
     case FMT_TIME:
     case FMT_DTIME:
     case FMT_WKDAY:
