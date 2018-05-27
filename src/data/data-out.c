@@ -157,21 +157,21 @@ binary_to_utf8 (const char *in, struct pool *pool)
    VALUE must be the correct width for FORMAT, that is, its width must be
    fmt_var_width(FORMAT).
 
-   ENCODING must be the encoding of INPUT.  Normally this can be obtained by
-   calling dict_get_encoding() on the dictionary with which INPUT is
-   associated.  ENCODING is only important when FORMAT's type is FMT_A.
+   INPUT_ENCODING must be the encoding of INPUT.  Normally this can be obtained
+   by calling dict_get_encoding() on the dictionary with which INPUT is
+   associated.  INPUT_ENCODING is only important when FORMAT's type is FMT_A.
 
    The return value is dynamically allocated, and must be freed by the caller.
    If POOL is non-null, then the return value is allocated on that pool.  */
 char *
-data_out_pool (const union value *input, const char *encoding,
+data_out_pool (const union value *input, const char *input_encoding,
 	       const struct fmt_spec *format, struct pool *pool)
 {
   assert (fmt_check_output (format));
   if (format->type == FMT_A)
     {
       char *in = CHAR_CAST (char *, value_str (input, format->w));
-      return recode_string_pool (UTF8, encoding, in, format->w, pool);
+      return recode_string_pool (UTF8, input_encoding, in, format->w, pool);
     }
   else if (fmt_get_category (format->type) == FMT_CAT_BINARY)
     {
@@ -224,9 +224,10 @@ data_out_stretchy (const union value *input, const char *encoding,
 }
 
 char *
-data_out (const union value *input, const char *encoding, const struct fmt_spec *format)
+data_out (const union value *input, const char *input_encoding,
+          const struct fmt_spec *format)
 {
-  return data_out_pool (input, encoding, format, NULL);
+  return data_out_pool (input, input_encoding, format, NULL);
 }
 
 

@@ -25,11 +25,14 @@ struct fmt_spec;
 struct string;
 union value;
 
-char * data_out (const union value *, const char *encoding, const struct fmt_spec *);
+char *data_out (const union value *input, const char *input_encoding,
+                const struct fmt_spec *);
 
-char * data_out_pool (const union value *, const char *encoding, const struct fmt_spec *, struct pool *pool);
+char *data_out_pool (const union value *input, const char *input_encoding,
+                     const struct fmt_spec *, struct pool *pool);
 
-char *data_out_stretchy (const union value *, const char *encoding, const struct fmt_spec *, struct pool *);
+char *data_out_stretchy (const union value *input, const char *input_encoding,
+                         const struct fmt_spec *, struct pool *);
 
 void data_out_recode (const union value *input, const char *input_encoding,
                       const struct fmt_spec *,
