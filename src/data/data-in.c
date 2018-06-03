@@ -113,7 +113,7 @@ data_in (struct substring input, const char *input_encoding,
     }
 
   cat = fmt_get_category (format);
-  if (cat & (FMT_CAT_BASIC | FMT_CAT_HEXADECIMAL
+  if (cat & (FMT_CAT_BASIC | FMT_CAT_HEXADECIMAL | FMT_CAT_CUSTOM
              | FMT_CAT_DATE | FMT_CAT_TIME | FMT_CAT_DATE_COMPONENT))
     {
       /* We're going to parse these into numbers.  For this purpose we want to
