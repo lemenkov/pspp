@@ -59,7 +59,7 @@ enum {DICT_TVM_COL_NAME=0,
 struct _PsppireDict
 {
   GObject             parent;
-  struct dictionary *dict;
+  struct dictionary   *dict;
 
   gboolean disable_insert_signal;
   /* For GtkTreeModelIface */

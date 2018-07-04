@@ -151,9 +151,6 @@ const struct caseproto *psppire_data_store_get_proto (const PsppireDataStore *);
 struct ccase *psppire_data_store_get_case (const PsppireDataStore *ds,
                                            casenumber casenum);
 
-
-
-
 G_END_DECLS
 
 #endif /* __PSPPIRE_DATA_STORE_H__ */
