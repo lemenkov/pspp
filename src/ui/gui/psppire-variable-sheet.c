@@ -305,6 +305,10 @@ change_var_property (PsppireVariableSheet *var_sheet, gint col, gint row, const 
   PsppireDict *dict = NULL;
   g_object_get (var_sheet, "data-model", &dict, NULL);
 
+  int n_rows = psppire_dict_get_var_cnt (dict);
+  if (row > n_rows)
+    return;
+
   /* Return the IDXth variable */
   struct variable *var =  psppire_dict_get_variable (dict, row);
 
