@@ -5,10 +5,10 @@
 # Yuri Chornoivan <yurchor@ukr.net>, 2013, 2014, 2015, 2016, 2017.
 msgid ""
 msgstr ""
-"Project-Id-Version: pspp 0.10.5-pre3\n"
+"Project-Id-Version: pspp 1.0.1\n"
 "Report-Msgid-Bugs-To: pspp-dev@gnu.org\n"
 "POT-Creation-Date: 2015-06-19 20:56-0700\n"
-"PO-Revision-Date: 2017-07-31 23:23+0200\n"
+"PO-Revision-Date: 2017-12-31 10:56+0200\n"
 "Last-Translator: Yuri Chornoivan <yurchor@ukr.net>\n"
 "Language-Team: Ukrainian <translation-team-uk@lists.sourceforge.net>\n"
 "Language: uk\n"
@@ -88,8 +88,8 @@ msgstr "Рядок"
 msgid "Numeric"
 msgstr "Число"
 
-#: src/data/format.c:416 src/data/sys-file-reader.c:2199
-#: src/data/sys-file-reader.c:2201 src/language/xforms/recode.c:512
+#: src/data/format.c:416 src/data/sys-file-reader.c:2193
+#: src/data/sys-file-reader.c:2195 src/language/xforms/recode.c:512
 #: src/language/xforms/recode.c:513 src/language/xforms/recode.c:525
 #: src/language/xforms/recode.c:526
 #: src/language/dictionary/apply-dictionary.c:77
@@ -97,8 +97,8 @@ msgstr "Число"
 msgid "numeric"
 msgstr "число"
 
-#: src/data/format.c:416 src/data/sys-file-reader.c:2199
-#: src/data/sys-file-reader.c:2201 src/language/xforms/recode.c:512
+#: src/data/format.c:416 src/data/sys-file-reader.c:2193
+#: src/data/sys-file-reader.c:2195 src/language/xforms/recode.c:512
 #: src/language/xforms/recode.c:513 src/language/xforms/recode.c:525
 #: src/language/xforms/recode.c:526
 #: src/language/dictionary/apply-dictionary.c:77
@@ -464,7 +464,7 @@ msgstr "системний"
 msgid "scratch"
 msgstr "октоторпні"
 
-#: src/data/dictionary.c:1336
+#: src/data/dictionary.c:1350
 #, c-format
 msgid "Truncating document line to %d bytes."
 msgstr "Обрізаємо рядок документа до %d байтів."
@@ -614,7 +614,7 @@ msgstr "системний файл SPSS/PC+"
 msgid "Error opening `%s' for reading as an SPSS/PC+ system file: %s."
 msgstr "Помилка під час відкриття «%s» для читання у форматі системного файла SPSS/PC+: %s."
 
-#: src/data/pc+-file-reader.c:224 src/data/sys-file-reader.c:3506
+#: src/data/pc+-file-reader.c:224 src/data/sys-file-reader.c:3507
 #, c-format
 msgid "%s: stat failed (%s)."
 msgstr "%s: помилка stat (%s)."
@@ -769,7 +769,7 @@ msgstr "Перейменовуємо зміну з дубльованою наз
 msgid "Cannot weight by string variable `%s'."
 msgstr "Зважування за рядковою змінною «%s» неможливе."
 
-#: src/data/pc+-file-reader.c:975 src/data/sys-file-reader.c:2726
+#: src/data/pc+-file-reader.c:975 src/data/sys-file-reader.c:2727
 msgid "File ends in partial case."
 msgstr "Файл завершено на незавершеному записі спостереження."
 
@@ -778,36 +778,36 @@ msgstr "Файл завершено на незавершеному записі
 msgid "Case beginning at offset 0x%08x extends past end of data record at offset 0x%08x."
 msgstr "Спостереження, що починається із відступом 0x%08x, продовжується за кінцем запису даних із відступом 0x%08x."
 
-#: src/data/pc+-file-reader.c:1000 src/data/sys-file-reader.c:2734
+#: src/data/pc+-file-reader.c:1000 src/data/sys-file-reader.c:2735
 #, c-format
 msgid "Error reading case from file %s."
 msgstr "Помилка під час читання спостереження з файла %s."
 
-#: src/data/pc+-file-reader.c:1116 src/data/sys-file-reader.c:2897
+#: src/data/pc+-file-reader.c:1116 src/data/sys-file-reader.c:2898
 #, c-format
 msgid "Possible compressed data corruption: string contains compressed integer (opcode %d)."
 msgstr "Ймовірне пошкодження стиснених даних: рядок містить стиснене ціле значення (код операції %d)."
 
-#: src/data/pc+-file-reader.c:1160 src/data/sys-file-reader.c:3195
+#: src/data/pc+-file-reader.c:1160 src/data/sys-file-reader.c:3196
 #, c-format
 msgid "`%s' near offset 0x%llx: "
 msgstr "«%s» поряд з позицією 0x%llx: "
 
-#: src/data/pc+-file-reader.c:1163 src/data/sys-file-reader.c:3198
+#: src/data/pc+-file-reader.c:1163 src/data/sys-file-reader.c:3199
 #, c-format
 msgid "`%s': "
 msgstr "«%s»: "
 
-#: src/data/pc+-file-reader.c:1219 src/data/sys-file-reader.c:3253
+#: src/data/pc+-file-reader.c:1219 src/data/sys-file-reader.c:3254
 #, c-format
 msgid "System error: %s."
 msgstr "Системна помилка: %s."
 
-#: src/data/pc+-file-reader.c:1224 src/data/sys-file-reader.c:3258
+#: src/data/pc+-file-reader.c:1224 src/data/sys-file-reader.c:3259
 msgid "Unexpected end of file."
 msgstr "Неочікуваний символ кінця файла."
 
-#: src/data/pc+-file-reader.c:1309 src/data/sys-file-reader.c:3483
+#: src/data/pc+-file-reader.c:1309 src/data/sys-file-reader.c:3484
 #, c-format
 msgid "%s: seek failed (%s)."
 msgstr "%s: помилка позиціювання (%s)."
@@ -1148,352 +1148,357 @@ msgstr "Запис типу 7, підтип %d, має розмірність %u
 msgid "Record type 7, subtype %d has bad count %u (expected %d)."
 msgstr "Запис типу 7, підтип %d has bad count %u (expected %d)."
 
-#: src/data/sys-file-reader.c:1528
+#: src/data/sys-file-reader.c:1530
 msgid "Missing string continuation record."
 msgstr "Пропущено запис продовження рядка."
 
-#: src/data/sys-file-reader.c:1574
+#: src/data/sys-file-reader.c:1576
 #, c-format
 msgid "Variable %s with width %d has invalid print format 0x%x."
 msgstr "Змінна %s з шириною %d має некоректний формат друку 0x%x."
 
-#: src/data/sys-file-reader.c:1578
+#: src/data/sys-file-reader.c:1580
 #, c-format
 msgid "Variable %s with width %d has invalid write format 0x%x."
 msgstr "Змінна %s з шириною %d має некоректний формат запису 0x%x."
 
-#: src/data/sys-file-reader.c:1583
+#: src/data/sys-file-reader.c:1585
 msgid "Suppressing further invalid format warnings."
 msgstr "Подальші попередження щодо некоректного форматування придушено."
 
-#: src/data/sys-file-reader.c:1637
+#: src/data/sys-file-reader.c:1639
 #, c-format
 msgid "Floating-point representation indicated by system file (%d) differs from expected (%d)."
 msgstr "Представлення чисел з рухомою крапкою, визначене у системному файлі, (%d) відрізняється від очікуваного (%d)."
 
-#: src/data/sys-file-reader.c:1653
+#: src/data/sys-file-reader.c:1655
 #, c-format
 msgid "Integer format indicated by system file (%d) differs from expected (%d)."
 msgstr "Формат запису цілого числа, визначений у системному файлі, (%d) відрізняється від очікуваного (%d)."
 
-#: src/data/sys-file-reader.c:1671 src/data/sys-file-reader.c:1677
+#: src/data/sys-file-reader.c:1673 src/data/sys-file-reader.c:1679
 #, c-format
 msgid "File specifies unexpected value %g (%a) as %s, instead of %g (%a)."
 msgstr "Файл визначає неочікуване значення %g (%a) як %s замість %g (%a)."
 
-#: src/data/sys-file-reader.c:1686
+#: src/data/sys-file-reader.c:1688
 #, c-format
 msgid "File specifies unexpected value %g (%a) as %s, instead of %g (%a) or %g (%a)."
 msgstr "Файл визначає неочікуване значення %g (%a) як %s замість %g (%a) або %g (%a)."
 
-#: src/data/sys-file-reader.c:1738 src/data/sys-file-reader.c:1757
+#: src/data/sys-file-reader.c:1740 src/data/sys-file-reader.c:1759
 #, c-format
 msgid "Missing space following `%c' at offset %zu in MRSETS record."
 msgstr "Пропущено пробіл з наступним «%c» на позиції %zu у записі MRSETS."
 
-#: src/data/sys-file-reader.c:1767
+#: src/data/sys-file-reader.c:1769
 #, c-format
 msgid "Unexpected label source value following `E' at offset %zu in MRSETS record."
 msgstr "Неочікуване значення джерела мітки з наступним «E» на позиції %zu у записі MRSETS."
 
-#: src/data/sys-file-reader.c:1774
+#: src/data/sys-file-reader.c:1776
 #, c-format
 msgid "Missing `C', `D', or `E' at offset %zu in MRSETS record."
 msgstr "Пропущено «C», «D» або «E» на позиції %zu у записі MRSETS."
 
-#: src/data/sys-file-reader.c:1801
+#: src/data/sys-file-reader.c:1803
 #, c-format
 msgid "Missing new-line parsing variable names at offset %zu in MRSETS record."
 msgstr "Пропущено назви змінних відокремлених символами розриву рядків на позиції %zu у записі MRSETS."
 
-#: src/data/sys-file-reader.c:1836
+#: src/data/sys-file-reader.c:1838
 #, c-format
-msgid "Multiple response set name `%s' does not begin with `$'."
-msgstr "Назва набору множини відповідей, «%s», не починається з «$»."
+msgid "Invalid multiple response set name `%s'."
+msgstr "Некоректна назва набору множини відповідей, «%s»."
 
-#: src/data/sys-file-reader.c:1870
+#: src/data/sys-file-reader.c:1871
 #, c-format
 msgid "MRSET %s contains duplicate variable name %s."
 msgstr "MRSET %s містить дублювання назви змінної, %s."
 
-#: src/data/sys-file-reader.c:1885
+#: src/data/sys-file-reader.c:1886
 #, c-format
 msgid "MRSET %s contains both string and numeric variables."
 msgstr "MRSET %s містить одразу рядкові і числові змінні."
 
-#: src/data/sys-file-reader.c:1897
+#: src/data/sys-file-reader.c:1898
 #, c-format
 msgid "MRSET %s has no variables."
 msgstr "MRSET %s не містить змінних."
 
-#: src/data/sys-file-reader.c:1899
+#: src/data/sys-file-reader.c:1900
 #, c-format
 msgid "MRSET %s has only one variable."
 msgstr "MRSET %s містить лише одну змінну."
 
-#: src/data/sys-file-reader.c:1943
+#: src/data/sys-file-reader.c:1944
 #, c-format
 msgid "Extension 11 has bad count %u (for %zu variables)."
 msgstr "Розширення 11 містило значення лічильника %u (для %zu змінних)."
 
-#: src/data/sys-file-reader.c:1976
+#: src/data/sys-file-reader.c:1977
 #, c-format
 msgid "Invalid variable display parameters for variable %zu (%s).  Default parameters substituted."
 msgstr "Некоректні параметри показу змінної %zu (%s). Буде використано типові параметри."
 
-#: src/data/sys-file-reader.c:2071
-#, c-format
-msgid "Long variable mapping from %s to invalid variable name `%s'."
-msgstr "Довга прив’язка змінної з %s до назви некоректної змінної, «%s»."
-
-#: src/data/sys-file-reader.c:2082
+#: src/data/sys-file-reader.c:2021
 #, c-format
 msgid "Duplicate long variable name `%s'."
 msgstr "Дублювання довгої назви змінної, «%s»."
 
-#: src/data/sys-file-reader.c:2115
+#: src/data/sys-file-reader.c:2074
+#, c-format
+msgid "Long variable mapping from %s to invalid variable name `%s'."
+msgstr "Довга прив’язка змінної з %s до назви некоректної змінної, «%s»."
+
+#: src/data/sys-file-reader.c:2109
 #, c-format
 msgid "%s listed as string of invalid length %s in very long string record."
 msgstr "%s показано у списку як рядок некоректної довжини %s у записі дуже довгого рядка."
 
-#: src/data/sys-file-reader.c:2126
+#: src/data/sys-file-reader.c:2120
 #, c-format
 msgid "%s listed in very long string record with width %s, which requires only one segment."
 msgstr "%s використано у записі дуже довгого рядка з шириною %s, який потребує лише одного сегмента."
 
-#: src/data/sys-file-reader.c:2134
+#: src/data/sys-file-reader.c:2128
 #, c-format
 msgid "Very long string %s overflows dictionary."
 msgstr "Дуже довгий рядок %s виходить за межі словника."
 
-#: src/data/sys-file-reader.c:2152
+#: src/data/sys-file-reader.c:2146
 #, c-format
 msgid "Very long string with width %ld has segment %d of width %d (expected %d)."
 msgstr "Дуже довгий рядок з шириною %ld містить сегмент %d довжини %d (мало бути %d)."
 
-#: src/data/sys-file-reader.c:2195
+#: src/data/sys-file-reader.c:2189
 #, c-format
 msgid "Variables associated with value label are not all of identical type.  Variable %s is %s, but variable %s is %s."
 msgstr "Змінні, пов’язані з міткою значення, не усі належать до того самого типу. Змінна %s належить до типу %s, а змінна %s — до типу %s."
 
-#: src/data/sys-file-reader.c:2215
+#: src/data/sys-file-reader.c:2209
 #, c-format
 msgid "Value labels may not be added to long string variables (e.g. %s) using records types 3 and 4."
 msgstr "Мітки значень не можна додавати до змінних довгих рядків (наприклад %s) за допомогою записів типів 3 і 4."
 
-#: src/data/sys-file-reader.c:2244
+#: src/data/sys-file-reader.c:2238
 #, c-format
 msgid "Duplicate value label for %g on %s."
 msgstr "Дублювання мітки значення для %g у %s."
 
-#: src/data/sys-file-reader.c:2248 src/data/sys-file-reader.c:2562
+#: src/data/sys-file-reader.c:2242 src/data/sys-file-reader.c:2563
 #, c-format
 msgid "Duplicate value label for `%.*s' on %s."
 msgstr "Дублювання мітки значення для «%.*s» у %s."
 
-#: src/data/sys-file-reader.c:2275
+#: src/data/sys-file-reader.c:2269
 #, c-format
 msgid "Variable index %d not in valid range 1...%zu."
 msgstr "Індекс змінної %d не належить коректному діапазону 1...%zu."
 
-#: src/data/sys-file-reader.c:2284
+#: src/data/sys-file-reader.c:2278
 #, c-format
 msgid "Variable index %d refers to long string continuation."
 msgstr "Індекс змінної %d вказує на продовження довгого рядка."
 
-#: src/data/sys-file-reader.c:2320
+#: src/data/sys-file-reader.c:2314
 #, c-format
 msgid "Error parsing attribute value %s[%d]."
 msgstr "Помилка під час спроби обробити значення атрибута %s[%d]."
 
-#: src/data/sys-file-reader.c:2334
+#: src/data/sys-file-reader.c:2328
 #, c-format
 msgid "Attribute value %s[%d] is not quoted: %s."
 msgstr "Значення атрибута %s[%d] вказано не у лапках: %s."
 
-#: src/data/sys-file-reader.c:2424
+#: src/data/sys-file-reader.c:2341
+#, c-format
+msgid "Duplicate attribute %s."
+msgstr "Дублювання атрибута, %s."
+
+#: src/data/sys-file-reader.c:2425
 #, c-format
 msgid "Invalid role for variable %s."
 msgstr "Некоректна роль змінної %s."
 
-#: src/data/sys-file-reader.c:2433
+#: src/data/sys-file-reader.c:2434
 #, c-format
 msgid "%zu other variables had invalid roles."
 msgstr "%zu інші змінні належать до некоректних ролей."
 
-#: src/data/sys-file-reader.c:2446
+#: src/data/sys-file-reader.c:2447
 #, c-format
 msgid "Extension record subtype %d ends unexpectedly."
 msgstr "Неочікуване завершення запису розширення, підтип %d."
 
-#: src/data/sys-file-reader.c:2492
+#: src/data/sys-file-reader.c:2493
 #, c-format
 msgid "Ignoring long string value label record for unknown variable %s."
 msgstr "Ігноруємо запис мітки довгого рядкового значення для невідомої змінної %s."
 
-#: src/data/sys-file-reader.c:2497
+#: src/data/sys-file-reader.c:2498
 #, c-format
 msgid "Ignoring long string value label record for numeric variable %s."
 msgstr "Ігноруємо запис мітки довгого рядкового значення для числової змінної %s."
 
-#: src/data/sys-file-reader.c:2504
+#: src/data/sys-file-reader.c:2505
 #, c-format
 msgid "Ignoring long string value label record for variable %s because the record's width (%d) does not match the variable's width (%d)."
 msgstr "Ігноруємо запис мітки довгого рядкового значення для змінної %s, оскільки довжина запису (%d) не відповідає ширині змінної (%d)."
 
-#: src/data/sys-file-reader.c:2535
+#: src/data/sys-file-reader.c:2536
 #, c-format
 msgid "Ignoring long string value label %zu for variable %s, with width %d, that has bad value width %zu."
 msgstr "Ігноруємо мітку значення довгого рядка %zu для змінної %s з шириною %d, оскільки значення має помилкову ширину %zu."
 
-#: src/data/sys-file-reader.c:2609
+#: src/data/sys-file-reader.c:2610
 #, c-format
 msgid "Long string missing values record says variable %s has %d missing values, but only 1 to 3 missing values are allowed."
 msgstr "Запис щодо пропущених значень довгого рядка повідомляє, що змінна %s має %d пропущених значень, втім, дозволено використовувати лише від 1 до 3 пропущених значень."
 
-#: src/data/sys-file-reader.c:2619
+#: src/data/sys-file-reader.c:2620
 #, c-format
 msgid "Ignoring long string missing value record for unknown variable %s."
 msgstr "Ігноруємо запис довгого рядкового пропущеного значення для невідомої змінної %s."
 
-#: src/data/sys-file-reader.c:2624
+#: src/data/sys-file-reader.c:2625
 #, c-format
 msgid "Ignoring long string missing value record for numeric variable %s."
 msgstr "Ігноруємо запис довгого рядкового пропущеного значення для числової змінної %s."
 
-#: src/data/sys-file-reader.c:2649
+#: src/data/sys-file-reader.c:2650
 #, c-format
 msgid "Ignoring long string missing value %zu for variable %s, with width %d, that has bad value width %zu."
 msgstr "Ігноруємо пропущене значення довгого рядка %zu для змінної %s з шириною %d, оскільки значення має помилкову ширину %zu."
 
-#: src/data/sys-file-reader.c:2704
+#: src/data/sys-file-reader.c:2705
 msgid "File ends in partial string value."
 msgstr "Файл завершено на незавершеному рядковому значенні."
 
-#: src/data/sys-file-reader.c:2843
+#: src/data/sys-file-reader.c:2844
 msgid "Possible compressed data corruption: compressed spaces appear in numeric field."
 msgstr "Ймовірне пошкодження стиснених даних: стиснені пробіли у числовому полі."
 
-#: src/data/sys-file-reader.c:2994
+#: src/data/sys-file-reader.c:2995
 #, c-format
 msgid "Suppressed %d additional related warnings."
 msgstr "Придушено %d додаткових пов’язаних попереджень."
 
-#: src/data/sys-file-reader.c:3040 src/data/sys-file-reader.c:3057
+#: src/data/sys-file-reader.c:3041 src/data/sys-file-reader.c:3058
 #, c-format
 msgid "Dictionary record refers to unknown variable %s."
 msgstr "Запис словника посилається на невідому змінну %s."
 
-#: src/data/sys-file-reader.c:3119
+#: src/data/sys-file-reader.c:3120
 #, c-format
 msgid "Expecting digit at offset %zu in MRSETS record."
 msgstr "На позиції %zu у записі MRSETS мало бути використано цифру."
 
-#: src/data/sys-file-reader.c:3127
+#: src/data/sys-file-reader.c:3128
 #, c-format
 msgid "Expecting space at offset %zu in MRSETS record."
 msgstr "На позиції %zu у записі MRSETS мало бути використано пробіл."
 
-#: src/data/sys-file-reader.c:3135
+#: src/data/sys-file-reader.c:3136
 #, c-format
 msgid "%zu-byte string starting at offset %zu exceeds record length %zu."
 msgstr "%zu-байтове рядкове значення, що починається з позиції %zu, виходить за межі довжини запису, %zu."
 
-#: src/data/sys-file-reader.c:3145
+#: src/data/sys-file-reader.c:3146
 #, c-format
 msgid "Expecting space at offset %zu following %zu-byte string."
 msgstr "На позиції %zu мало бути використано пробіл з наступним %zu-байтовим рядком."
 
-#: src/data/sys-file-reader.c:3441
+#: src/data/sys-file-reader.c:3442
 #, c-format
 msgid "Wrong ZLIB data header offset %#llx (expected %#llx)."
 msgstr "Помилковий заголовок даних ZLIB на позиції %#llx (мало бути %#llx)."
 
-#: src/data/sys-file-reader.c:3449
+#: src/data/sys-file-reader.c:3450
 #, c-format
 msgid "Impossible ZLIB trailer offset 0x%llx."
 msgstr "Некоректна кінцівка ZLIB на позиції 0x%llx."
 
-#: src/data/sys-file-reader.c:3456
+#: src/data/sys-file-reader.c:3457
 #, c-format
 msgid "Invalid ZLIB trailer length %lld."
 msgstr "Некоректна довжина закінчення ZLIB, %lld."
 
-#: src/data/sys-file-reader.c:3520
+#: src/data/sys-file-reader.c:3521
 #, c-format
 msgid "End of ZLIB trailer (0x%llx) is not file size (0x%llx)."
 msgstr "Завершення кінцівки ZLIB (0x%llx) перебуває за межами розміру файла (0x%llx)."
 
-#: src/data/sys-file-reader.c:3530
+#: src/data/sys-file-reader.c:3531
 #, c-format
 msgid "ZLIB trailer bias (%lld) differs from file header bias (%.2f)."
 msgstr "Рівень кінцівки ZLIB (%lld) відрізняється від рівня заголовка файла (%.2f)."
 
-#: src/data/sys-file-reader.c:3540
+#: src/data/sys-file-reader.c:3541
 #, c-format
 msgid "ZLIB trailer \"zero\" field has nonzero value %lld."
 msgstr "Поле «zero» кінцівки ZLIB містить ненульове значення %lld."
 
-#: src/data/sys-file-reader.c:3546
+#: src/data/sys-file-reader.c:3547
 #, c-format
 msgid "ZLIB trailer specifies unexpected %u-byte block size."
 msgstr "У кінцівці ZLIB вказано неочікуваний розмір блоку у %u байтів."
 
-#: src/data/sys-file-reader.c:3554
+#: src/data/sys-file-reader.c:3555
 #, c-format
 msgid "%lld-byte ZLIB trailer specifies %u data blocks (expected %lld)."
 msgstr "%lld-байтова кінцівка ZLIB визначає %u блоків даних (мало бути %lld)."
 
-#: src/data/sys-file-reader.c:3579
+#: src/data/sys-file-reader.c:3580
 #, c-format
 msgid "ZLIB block descriptor %u reported uncompressed data offset %#llx, when %#llx was expected."
 msgstr "У дескрипторі блоку ZLIB %u повідомляється про позицію нестиснених даних %#llx, але мало бути вказано позицію %#llx."
 
-#: src/data/sys-file-reader.c:3588
+#: src/data/sys-file-reader.c:3589
 #, c-format
 msgid "ZLIB block descriptor %u reported compressed data offset %#llx, when %#llx was expected."
 msgstr "У дескрипторі блоку ZLIB %u повідомляється про позицію стиснених даних %#llx, але мало бути вказано позицію %#llx."
 
-#: src/data/sys-file-reader.c:3598
+#: src/data/sys-file-reader.c:3599
 #, c-format
 msgid "ZLIB block descriptor %u reported block size %#x, when %#x was expected."
 msgstr "У дескрипторі блоку ZLIB %u повідомляється про розмір блоку %#x, але мало бути вказано розмір %#x."
 
-#: src/data/sys-file-reader.c:3606
+#: src/data/sys-file-reader.c:3607
 #, c-format
 msgid "ZLIB block descriptor %u reported block size %#x, when at most %#x was expected."
 msgstr "У дескрипторі блоку ZLIB %u повідомляється про розмір блоку %#x, але мало бути вказано розмір, що не перевищує %#x."
 
-#: src/data/sys-file-reader.c:3618
+#: src/data/sys-file-reader.c:3619
 #, c-format
 msgid "ZLIB block descriptor %u reports compressed size %u and uncompressed size %u."
 msgstr "У дескрипторі блоку ZLIB %u повідомляється про розмір стиснених даних %u та розмір нестиснених даних %u."
 
-#: src/data/sys-file-reader.c:3630
+#: src/data/sys-file-reader.c:3631
 #, c-format
 msgid "ZLIB trailer is at offset %#llx but %#llx would be expected from block descriptors."
 msgstr "Кінцівку ZLIB розташовано на позиції %#llx, але якщо брати до уваги дескриптори блоків, мало бути %#llx."
 
-#: src/data/sys-file-reader.c:3649
+#: src/data/sys-file-reader.c:3650
 #, c-format
 msgid "ZLIB initialization failed (%s)."
 msgstr "Помилка під час спроби ініціалізувати ZLIB (%s)."
 
-#: src/data/sys-file-reader.c:3664
+#: src/data/sys-file-reader.c:3665
 #, c-format
 msgid "Inconsistency at end of ZLIB stream (%s)."
 msgstr "Непослідовність наприкінці потоку даних ZLIB (%s)."
 
-#: src/data/sys-file-reader.c:3723
+#: src/data/sys-file-reader.c:3724
 #, c-format
 msgid "ZLIB stream inconsistency (%s)."
 msgstr "Непослідовність у потоці даних ZLIB (%s)."
 
-#: src/data/sys-file-reader.c:3747
+#: src/data/sys-file-reader.c:3748
 msgid "Unexpected end of ZLIB compressed data."
 msgstr "Неочікуване завершення стиснених даних ZLIB."
 
-#: src/data/sys-file-reader.c:3785
+#: src/data/sys-file-reader.c:3786
 msgid "SPSS System File"
 msgstr "системний файл SPSS"
 
@@ -5509,7 +5514,7 @@ msgstr "Не вдалося виконати позиціювання на по�
 msgid "Name mismatch in zip archive. Central directory says `%s'; local file header says `%s'"
 msgstr "Невідповідність назви у архіві zip. У центральному каталозі вказано «%s», втім, заголовок локального файла визначає «%s»."
 
-#: src/libpspp/zip-writer.c:96
+#: src/libpspp/zip-writer.c:96 utilities/pspp-convert.c:207
 #, c-format
 msgid "%s: error opening output file"
 msgstr "%s: помилка під час спроби відкрити файл результатів"
@@ -6684,7 +6689,7 @@ msgstr "Зважити спостереження за %s"
 #. - The string may not contain whitespace.
 #. - The first character may not be '$'
 #. - The first character may not be a digit
-#. - The final charactor may not be '.' or '_'
+#. - The final character may not be '.' or '_'
 #.
 #: src/ui/gui/psppire-dict.c:332
 #, c-format
@@ -6930,17 +6935,17 @@ msgstr "може лише перетворити зашифрований фай
 msgid "%s: unknown output format (use -O option)"
 msgstr "%s: невідомий формат виведення даних (скористайтеся параметром -O)"
 
-#: utilities/pspp-convert.c:219
+#: utilities/pspp-convert.c:221
 #, c-format
 msgid "%s: error reading input file"
 msgstr "%s: помилка під час спроби читання файла вхідних даних"
 
-#: utilities/pspp-convert.c:221
+#: utilities/pspp-convert.c:223
 #, c-format
 msgid "%s: error writing output file"
 msgstr "%s: помилка під час спроби запису файла результатів"
 
-#: utilities/pspp-convert.c:261
+#: utilities/pspp-convert.c:263
 msgid "sorry, wrong password"
 msgstr "вибачте, помилковий пароль"
 
@@ -9153,6 +9158,9 @@ msgstr "Статистичне програмне забезпечення"
 #: src/ui/gui/gen-dot-desktop.sh:15
 msgid "Analyze statistical data with a free alternative to SPSS"
 msgstr "Аналіз статистичних даних у вільній альтернативі SPSS"
+
+#~ msgid "Multiple response set name `%s' does not begin with `$'."
+#~ msgstr "Назва набору множини відповідей, «%s», не починається з «$»."
 
 #~ msgid "could not access definition for terminal `%s'"
 #~ msgstr "не вдалося отримати доступ до визначення термінала «%s»"
