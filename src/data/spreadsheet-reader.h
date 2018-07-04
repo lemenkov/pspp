@@ -32,7 +32,8 @@ struct casereeader;
 struct spreadsheet_read_options
 {
   char *sheet_name ;       /* The name of the sheet to open (in UTF-8) */
-  int sheet_index ;        /* The index of the sheet to open (only used if sheet_name is NULL) */
+  int sheet_index ;        /* The index of the sheet to open (only used if sheet_name is NULL).
+			      The first index is 1 NOT 0 */
   char *cell_range ;       /* The cell range (in UTF-8) */
   bool read_names ;        /* True if the first row is to be used as the names of the variables */
   int asw ;                /* The width of string variables in the created dictionary */
