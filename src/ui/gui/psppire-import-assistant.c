@@ -1377,6 +1377,7 @@ formats_page_create (PsppireImportAssistant *ia)
   if (ia->data_sheet == NULL)
     {
       ia->data_sheet = psppire_data_sheet_new ();
+      g_object_set (ia->data_sheet, "editable", FALSE, NULL);
 
       gtk_container_add (GTK_CONTAINER (data_scroller), ia->data_sheet);
 
