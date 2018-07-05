@@ -1546,8 +1546,8 @@ apply_dict (const struct dictionary *dict, struct string *s)
 
 
 
-static char *
-sheet_spec_gen_syntax (PsppireImportAssistant *ia)
+static void
+sheet_spec_gen_syntax (PsppireImportAssistant *ia, struct string *s)
 {
   GtkBuilder *builder = ia->builder;
   GtkWidget *range_entry = get_widget_assert (builder, "cell-range-entry");
@@ -1557,14 +1557,13 @@ sheet_spec_gen_syntax (PsppireImportAssistant *ia)
   int sheet_index = 1 + gtk_combo_box_get_active (GTK_COMBO_BOX (sheet_entry));
   gboolean read_names = gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (rnc));
 
-  struct string s = DS_EMPTY_INITIALIZER;
 
   char *filename;
   if (ia->spreadsheet)
     filename = ia->spreadsheet->file_name;
   else
     g_object_get (ia->text_file, "file-name", &filename, NULL);
-  syntax_gen_pspp (&s,
+  syntax_gen_pspp (s,
 		   "GET DATA"
 		   "\n  /TYPE=%ss"
 		   "\n  /FILE=%sq"
@@ -1577,20 +1576,17 @@ sheet_spec_gen_syntax (PsppireImportAssistant *ia)
 
   if (range && 0 != strcmp ("", range))
     {
-      syntax_gen_pspp (&s,
+      syntax_gen_pspp (s,
 		       "\n  /CELLRANGE=RANGE %sq", range);
     }
   else
     {
-      syntax_gen_pspp (&s,
+      syntax_gen_pspp (s,
 		       "\n  /CELLRANGE=FULL");
     }
 
 
-  syntax_gen_pspp (&s, ".");
-
-
-  return ds_cstr (&s);
+  syntax_gen_pspp (s, ".");
 }
 
 
@@ -1632,7 +1628,7 @@ psppire_import_assistant_generate_syntax (PsppireImportAssistant *ia)
     }
   else
     {
-      return sheet_spec_gen_syntax (ia);
+      sheet_spec_gen_syntax (ia, &s);
     }
 
   return ds_cstr (&s);
