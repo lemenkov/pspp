@@ -1,5 +1,5 @@
 /* PSPPIRE - a graphical user interface for PSPP.
-   Copyright (C) 2015, 2016, 2017  Free Software Foundation
+   Copyright (C) 2015, 2016, 2017, 2018  Free Software Foundation
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -1254,70 +1254,93 @@ my_advance (struct casereader *reader, void *aux, casenumber cnt)
 static void
 prepare_formats_page (PsppireImportAssistant *ia)
 {
-  PsppireDict *dict = psppire_dict_new_from_dict (ia->dict);
-  g_object_set (ia->var_sheet, "data-model", dict, NULL);
-
   my_casereader_class.read = my_read;
   my_casereader_class.destroy = my_destroy;
   my_casereader_class.advance = my_advance;
 
-  {
-    int i;
+  if (ia->spreadsheet)
+    {
+      GtkBuilder *builder = ia->builder;
+      GtkWidget *range_entry = get_widget_assert (builder, "cell-range-entry");
+      GtkWidget *rnc = get_widget_assert (builder, "readnames-checkbox");
+      GtkWidget *combo_box = get_widget_assert (builder, "sheet-entry");
 
-    struct fmt_guesser **fg = xcalloc (sizeof *fg, dict_get_var_cnt (ia->dict));
-    for (i = 0 ; i < dict_get_var_cnt (ia->dict); ++i)
-      {
-	fg[i] = fmt_guesser_create ();
-      }
+      struct spreadsheet_read_options opts;
+      opts.sheet_name = NULL;
+      opts.sheet_index = gtk_combo_box_get_active (GTK_COMBO_BOX (combo_box)) + 1;
+      opts.read_names = gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (rnc));
+      opts.cell_range = g_strdup (gtk_entry_get_text (GTK_ENTRY (range_entry)));
+      opts.asw = 8;
 
-    gint n_rows = gtk_tree_model_iter_n_children (GTK_TREE_MODEL (ia->delimiters_model), NULL);
+      struct casereader *reader = spreadsheet_make_reader (ia->spreadsheet, &opts);
 
-    GtkTreeIter iter;
-    gboolean ok;
-    for (ok = gtk_tree_model_get_iter_first (GTK_TREE_MODEL (ia->delimiters_model), &iter);
-	 ok;
-	 ok = gtk_tree_model_iter_next (GTK_TREE_MODEL (ia->delimiters_model), &iter))
-      {
-	for (i = 0 ; i < dict_get_var_cnt (ia->dict); ++i)
-	  {
-	    gchar *s = NULL;
-	    gtk_tree_model_get (GTK_TREE_MODEL (ia->delimiters_model), &iter, i+1, &s, -1);
-	    if (s)
-	      fmt_guesser_add (fg[i], ss_cstr (s));
-	    free (s);
-	  }
-      }
+      PsppireDict *dict = psppire_dict_new_from_dict (dict_clone (ia->spreadsheet->dict));
+      PsppireDataStore *store = psppire_data_store_new (dict);
+      psppire_data_store_set_reader (store, reader);
+      g_object_set (ia->data_sheet, "data-model", store, NULL);
+      g_object_set (ia->var_sheet, "data-model", dict, NULL);
+    }
+  else
+    {
+      PsppireDict *dict = psppire_dict_new_from_dict (ia->dict);
+      g_object_set (ia->var_sheet, "data-model", dict, NULL);
 
-    struct caseproto *proto = caseproto_create ();
-    for (i = 0 ; i < dict_get_var_cnt (ia->dict); ++i)
-      {
-	struct fmt_spec fs;
-	fmt_guesser_guess (fg[i], &fs);
+      int i;
 
-	fmt_fix (&fs, FMT_FOR_INPUT);
+      struct fmt_guesser **fg = xcalloc (sizeof *fg, dict_get_var_cnt (ia->dict));
+      for (i = 0 ; i < dict_get_var_cnt (ia->dict); ++i)
+	{
+	  fg[i] = fmt_guesser_create ();
+	}
 
-	struct variable *var = dict_get_var (ia->dict, i);
+      gint n_rows = gtk_tree_model_iter_n_children (GTK_TREE_MODEL (ia->delimiters_model), NULL);
 
-	int width = fmt_var_width (&fs);
+      GtkTreeIter iter;
+      gboolean ok;
+      for (ok = gtk_tree_model_get_iter_first (GTK_TREE_MODEL (ia->delimiters_model), &iter);
+	   ok;
+	   ok = gtk_tree_model_iter_next (GTK_TREE_MODEL (ia->delimiters_model), &iter))
+	{
+	  for (i = 0 ; i < dict_get_var_cnt (ia->dict); ++i)
+	    {
+	      gchar *s = NULL;
+	      gtk_tree_model_get (GTK_TREE_MODEL (ia->delimiters_model), &iter, i+1, &s, -1);
+	      if (s)
+		fmt_guesser_add (fg[i], ss_cstr (s));
+	      free (s);
+	    }
+	}
 
-	var_set_width_and_formats (var, width,
-				   &fs, &fs);
+      struct caseproto *proto = caseproto_create ();
+      for (i = 0 ; i < dict_get_var_cnt (ia->dict); ++i)
+	{
+	  struct fmt_spec fs;
+	  fmt_guesser_guess (fg[i], &fs);
 
-	proto = caseproto_add_width (proto, width);
-	fmt_guesser_destroy (fg[i]);
-      }
+	  fmt_fix (&fs, FMT_FOR_INPUT);
 
-    free (fg);
+	  struct variable *var = dict_get_var (ia->dict, i);
 
-    struct casereader *reader =
-      casereader_create_random (proto, n_rows, &my_casereader_class,  ia);
+	  int width = fmt_var_width (&fs);
 
-    PsppireDataStore *store = psppire_data_store_new (dict);
-    psppire_data_store_set_reader (store, reader);
+	  var_set_width_and_formats (var, width,
+				     &fs, &fs);
 
-    g_object_set (ia->data_sheet, "data-model", store, NULL);
-    caseproto_unref (proto);
-  }
+	  proto = caseproto_add_width (proto, width);
+	  fmt_guesser_destroy (fg[i]);
+	}
+
+      free (fg);
+
+      struct casereader *reader =
+	casereader_create_random (proto, n_rows, &my_casereader_class,  ia);
+
+      PsppireDataStore *store = psppire_data_store_new (dict);
+      psppire_data_store_set_reader (store, reader);
+
+      g_object_set (ia->data_sheet, "data-model", store, NULL);
+      caseproto_unref (proto);
+    }
 
   gint pmax;
   g_object_get (get_widget_assert (ia->builder, "vpaned1"),
@@ -1536,7 +1559,10 @@ sheet_spec_gen_syntax (PsppireImportAssistant *ia)
   struct string s = DS_EMPTY_INITIALIZER;
 
   char *filename;
-  g_object_get (ia->text_file, "file-name", &filename, NULL);
+  if (ia->spreadsheet)
+    filename = ia->spreadsheet->file_name;
+  else
+    g_object_get (ia->text_file, "file-name", &filename, NULL);
   syntax_gen_pspp (&s,
 		   "GET DATA"
 		   "\n  /TYPE=%ss"
