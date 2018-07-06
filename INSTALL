@@ -90,6 +90,8 @@ use the GUI, you must run `configure' with --without-gui.
       but other versions should be fine.
 
     * GTK+ (http://www.gtk.org/), version 3.14.5 or later.
+      It has been reported that versions prior to 3.22.x give problems,
+      so a recent version is recommended.
 
     * GtkSourceView (http://projects.gnome.org/gtksourceview/) 
       version 3.4.0 or later.
