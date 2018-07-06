@@ -401,7 +401,7 @@ process_node (struct ods_reader *or, struct state_data *r)
 
       or->sheets[r->current_sheet].stop_row = r->row - 1;
 
-      if ( or->sheets[r->current_sheet].stop_col <  r->col - 1)
+      if ( or->sheets[r->current_sheet].stop_col < r->col - 1)
 	or->sheets[r->current_sheet].stop_col = r->col - 1;
 
       if (XML_READER_TYPE_END_ELEMENT  == r->node_type)
@@ -721,17 +721,15 @@ ods_make_reader (struct spreadsheet *spreadsheet,
     {
       while (1 == xmlTextReaderRead (r->rsd.xtr))
 	{
-	  int idx;
-
 	  process_node (r, &r->rsd);
 
 	  /* If the row is finished then stop for now */
 	  if (r->rsd.state == STATE_TABLE && r->rsd.row > r->start_row)
 	    break;
 
-	  idx = r->rsd.col - r->start_col -1 ;
+	  int idx = r->rsd.col - r->start_col - 1;
 
-	  if ( idx < 0)
+	  if (idx < 0)
 	    continue;
 
 	  if (r->stop_col != -1 && idx > r->stop_col - r->start_col)
@@ -742,8 +740,7 @@ ods_make_reader (struct spreadsheet *spreadsheet,
 	      XML_READER_TYPE_TEXT  == r->rsd.node_type)
 	    {
 	      xmlChar *value = xmlTextReaderValue (r->rsd.xtr);
-
-	      if ( idx >= n_var_specs)
+	      if (idx >= n_var_specs)
 		{
 		  var_spec = xrealloc (var_spec, sizeof (*var_spec) * (idx + 1));
 
@@ -753,11 +750,14 @@ ods_make_reader (struct spreadsheet *spreadsheet,
 			  (idx - n_var_specs + 1) * sizeof (*var_spec));
 		  n_var_specs = idx + 1;
 		}
-	      var_spec[idx].firstval.text = 0;
-	      var_spec[idx].firstval.value = 0;
-	      var_spec[idx].firstval.type = 0;
-
-	      var_spec [idx].name = strdup (CHAR_CAST (const char *, value));
+	      for (int i = 0; i < r->rsd.col_span; ++i)
+		{
+		  var_spec[idx - i].firstval.text = 0;
+		  var_spec[idx - i].firstval.value = 0;
+		  var_spec[idx - i].firstval.type = 0;
+		  var_spec[idx - i].name =
+		    strdup (CHAR_CAST (const char *, value));
+		}
 
 	      xmlFree (value);
 	    }

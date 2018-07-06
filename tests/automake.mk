@@ -278,6 +278,7 @@ EXTRA_DIST += \
 	tests/language/data-io/Book1.gnm.unzipped \
 	tests/language/data-io/test.ods \
 	tests/language/data-io/newone.ods \
+	tests/language/data-io/readnames.ods \
 	tests/language/stats/llz.zsav
 
 CLEANFILES += *.save pspp.* foo*

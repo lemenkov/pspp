@@ -385,3 +385,35 @@ AT_CHECK([pspp -O format=csv crash.sps], [0], [ignore])
 
 AT_CLEANUP
 
+
+AT_SETUP([GET DATA /TYPE=ODS readnames])
+
+dnl Check for a bug where in the ODS reader /READNAMES incorrectly
+dnl dealt with repeated names.
+AT_CHECK([cp $top_srcdir/tests/language/data-io/readnames.ods this.ods])dnl
+
+AT_DATA([readnames.sps],[dnl
+GET DATA /TYPE=ODS /FILE='this.ods' /CELLRANGE=RANGE 'A1:H8' /READNAMES=ON
+DISPLAY DICTIONARY.
+LIST.
+])
+
+
+AT_CHECK([pspp -O format=csv readnames.sps], [0],
+[Variable,Description,Position
+freda,Format: F8.2,1
+fred,Format: F8.2,2
+fred_A,Format: F8.2,3
+fred_B,Format: F8.2,4
+fred_C,Format: F8.2,5
+fred_D,Format: F8.2,6
+fred_E,Format: F8.2,7
+
+Table: Data List
+freda,fred,fred_A,fred_B,fred_C,fred_D,fred_E
+1.00,2.00,3.00,4.00,5.00,6.00,7.00
+8.00,9.00,10.00,11.00,12.00,13.00,14.00
+])
+
+AT_CLEANUP
+
