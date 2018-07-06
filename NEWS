@@ -12,8 +12,10 @@ Changes from 1.0.1 to 1.1.0:
 
    - zlib is now a required dependency.  (Previously it was optional.)
 
- * The code implementing the sheet rendering has been removed.  Instead we
-   use a third party library: spread-sheet-widget.
+   - Gtk+3.18.0 or later must now be used when building.
+
+   - The code implementing the sheet rendering has been removed.  Instead we
+     use a third party library: spread-sheet-widget.
 
  * The "NOMISSING" keyword when generating syntax for piecharts in the
    frequencies command was omitted.  This has been corrected.
