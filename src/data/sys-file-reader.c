@@ -2334,7 +2334,7 @@ parse_attributes (struct sfm_reader *r, struct text_record *text,
           if (text_match (text, ')'))
             break;
         }
-      if (attrs != NULL)
+      if (attrs != NULL && attribute_get_n_values (attr) > 0)
         {
           if (!attrset_try_add (attrs, attr))
             {
@@ -2388,7 +2388,7 @@ assign_variable_roles (struct sfm_reader *r, struct dictionary *dict)
       struct variable *var = dict_get_var (dict, i);
       struct attrset *attrs = var_get_attributes (var);
       const struct attribute *attr = attrset_lookup (attrs, "$@Role");
-      if (attr != NULL)
+      if (attr != NULL && attribute_get_n_values (attr) > 0)
         {
           int value = atoi (attribute_get_value (attr, 0));
           enum var_role role;
