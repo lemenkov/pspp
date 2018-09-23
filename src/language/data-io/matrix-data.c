@@ -125,8 +125,7 @@ preprocess (struct casereader *casereader0, const struct dictionary *dict, void 
 {
   struct matrix_format *mformat = aux;
   const struct caseproto *proto = casereader_get_proto (casereader0);
-  struct casewriter *writer;
-  writer = autopaging_writer_create (proto);
+  struct casewriter *writer = autopaging_writer_create (proto);
   struct ccase *prev_case = NULL;
   double **matrices = NULL;
   size_t n_splits = 0;
@@ -176,6 +175,8 @@ preprocess (struct casereader *casereader0, const struct dictionary *dict, void 
 	      msg (SE,
 		   _("There are %d variable declared but the data has at least %d matrix rows."),
 		   mformat->n_continuous_vars, row + 1);
+	      case_unref (c);
+	      casereader_destroy (pass0);
 	      goto error;
 	    }
 	  int col;
@@ -346,6 +347,7 @@ error:
     free (matrices[i]);
   free (matrices);
   casereader_destroy (casereader0);
+  casewriter_destroy (writer);
   return NULL;
 }
 
@@ -558,7 +560,8 @@ cmd_matrix (struct lexer *lexer, struct dataset *ds)
     }
   else
     {
-      data_parser_make_active_file (parser, ds, reader, dict, preprocess, &mformat);
+      data_parser_make_active_file (parser, ds, reader, dict, preprocess,
+				    &mformat);
     }
 
   fh_unref (fh);
