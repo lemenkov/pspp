@@ -60,7 +60,7 @@ find_word (struct substring *s, struct substring *word)
     }
   else if (c_isdigit (c))
     {
-      while (c_isdigit (s->string[ofs]))
+      while (ofs < s->length && c_isdigit (s->string[ofs]))
         ofs++;
     }
   ss_get_bytes (s, ofs, word);
