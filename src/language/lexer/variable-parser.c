@@ -461,6 +461,7 @@ parse_DATA_LIST_vars (struct lexer *lexer, const struct dictionary *dict,
   struct stringi_set set;
 
   char *name1 = NULL;
+  char *name2 = NULL;
 
   bool ok = false;
 
@@ -504,7 +505,9 @@ parse_DATA_LIST_vars (struct lexer *lexer, const struct dictionary *dict,
           int root_len1, root_len2;
           unsigned long int number;
 
-          char *name2 = parse_DATA_LIST_var (lexer, dict);
+          name2 = parse_DATA_LIST_var (lexer, dict);
+          if (!name2)
+            goto exit;
 
           root_len1 = extract_numeric_suffix (name1, &num1, &n_digits1);
           if (root_len1 == 0)
@@ -541,6 +544,7 @@ parse_DATA_LIST_vars (struct lexer *lexer, const struct dictionary *dict,
           free (name1);
           name1 = NULL;
           free (name2);
+          name2 = NULL;
 	}
       else
 	{
@@ -575,6 +579,7 @@ exit:
       *n_varsp = 0;
 
       free (name1);
+      free (name2);
     }
   return ok;
 }
