@@ -38,6 +38,7 @@
 #include "gl/ftoastr.h"
 #include "gl/minmax.h"
 #include "gl/xalloc.h"
+#include "gl/xmemdup0.h"
 
 #include "gettext.h"
 #define _(msgid) gettext (msgid)
@@ -46,6 +47,7 @@ struct dummy_var
   {
     struct hmap_node hmap_node;
     char *name;
+    size_t name_len;
     char **values;
     size_t n_values;
   };
@@ -89,7 +91,7 @@ find_dummy_var (struct hmap *hmap, const char *name, size_t name_len)
 
   HMAP_FOR_EACH_WITH_HASH (dv, struct dummy_var, hmap_node,
                            hash_dummy (name, name_len), hmap)
-    if (utf8_strcasecmp (dv->name, name))
+    if (!utf8_strncasecmp (dv->name, dv->name_len, name, name_len))
       return dv;
 
   return NULL;
@@ -117,7 +119,9 @@ parse_specification (struct lexer *lexer, struct dictionary *dict,
       if (dict_lookup_var (dict, name))
         msg (SW, _("Dummy variable name `%s' hides dictionary variable `%s'."),
              name, name);
-      if (find_dummy_var (dummies, name, strlen (name)))
+
+      size_t name_len = strlen (name);
+      if (find_dummy_var (dummies, name, name_len))
         {
           msg (SE, _("Dummy variable name `%s' is given twice."), name);
           goto error;
@@ -125,7 +129,8 @@ parse_specification (struct lexer *lexer, struct dictionary *dict,
 
       /* Make a new macro. */
       dv = xmalloc (sizeof *dv);
-      dv->name = xstrdup (name);
+      dv->name = xmemdup0 (name, name_len);
+      dv->name_len = name_len;
       dv->values = NULL;
       dv->n_values = 0;
       hmap_insert (dummies, &dv->hmap_node, hash_dummy (name, strlen (name)));
