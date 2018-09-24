@@ -16,7 +16,11 @@ dnl along with this program.  If not, see <http://www.gnu.org/licenses/>.
 dnl
 AT_BANNER([syntax scanning])
 m4_define([PSPP_CHECK_SCAN],
-  [AT_CHECK([scan-test $1 input], [0], [expout])])
+  [sed 's/^-//' < expout-base > expout
+   AT_CHECK([scan-test $1 input], [0], [expout])
+
+   sed '/^-/d' < expout-base > expout
+   AT_CHECK([scan-test -s $1 input], [0], [expout])])
 
 AT_SETUP([identifiers])
 AT_KEYWORDS([scan])
@@ -28,7 +32,7 @@ QrStUv./* end of line comment */ @&t@
 WXYZ. /* unterminated end of line comment
 �. /* U+FFFD is not valid in an identifier
 ])
-AT_DATA([expout], [dnl
+AT_DATA([expout-base], [dnl
 ID "a"
 SKIP
 ID "aB"
@@ -73,7 +77,7 @@ UNEXPECTED_CHAR 65533
 ENDCMD
 SKIP
 SKIP
-SKIP
+-SKIP
 STOP
 ])
 PSPP_CHECK_SCAN([-i])
@@ -87,7 +91,7 @@ AND OR NOT EQ GE GT LE LT NE ALL BY TO WITH
 andx orx notx eqx gex gtx lex ltx nex allx byx tox withx
 and. with.
 ])
-AT_DATA([expout], [dnl
+AT_DATA([expout-base], [dnl
 AND
 SKIP
 OR
@@ -170,7 +174,7 @@ ID "and."
 SKIP
 WITH
 ENDCMD
-SKIP
+-SKIP
 STOP
 ])
 PSPP_CHECK_SCAN([-i])
@@ -182,7 +186,7 @@ AT_DATA([input], [dnl
 ~ & | = >= > <= < ~= <> ( ) , - + * / [[ ]] **
 ~&|=>=><=<~=<>(),-+*/[[]]**
 ])
-AT_DATA([expout], [dnl
+AT_DATA([expout-base], [dnl
 NOT
 SKIP
 AND
@@ -243,7 +247,7 @@ SLASH
 LBRACK
 RBRACK
 EXP
-SKIP
+-SKIP
 STOP
 ])
 PSPP_CHECK_SCAN([-i])
@@ -260,7 +264,7 @@ AT_DATA([input], [dnl
 1.23e1 45.6E-1 78.9e+1 99.9E+01 11.2e-03
 . 1e e1 1e+ 1e-
 ])
-AT_DATA([expout], [dnl
+AT_DATA([expout-base], [dnl
 POS_NUM
 SKIP
 POS_NUM 1
@@ -328,7 +332,7 @@ SKIP
 EXPECTED_EXPONENT "1e+"
 SKIP
 EXPECTED_EXPONENT "1e-"
-SKIP
+-SKIP
 STOP
 ])
 PSPP_CHECK_SCAN([-i])
@@ -367,7 +371,7 @@ x"4142"
 "�あいうえお"
 "abc"+U"FFFD"+u'3048'+"xyz"
 ])
-AT_DATA([expout], [dnl
+AT_DATA([expout-base], [dnl
 STRING "x"
 SKIP
 STRING "y"
@@ -423,7 +427,7 @@ SKIP
 STRING "�あいうえお"
 SKIP
 STRING "abc�えxyz"
-SKIP
+-SKIP
 STOP
 ])
 PSPP_CHECK_SCAN([-i])
@@ -435,7 +439,7 @@ AT_DATA([input], [dnl
 #! /usr/bin/pspp
 #! /usr/bin/pspp
 ])
-AT_DATA([expout], [dnl
+AT_DATA([expout-base], [dnl
 SKIP
 SKIP
 ID "#"
@@ -447,7 +451,7 @@ SLASH
 ID "bin"
 SLASH
 ID "pspp"
-SKIP
+-SKIP
 STOP
 ])
 PSPP_CHECK_SCAN([-i])
@@ -473,7 +477,7 @@ com is ambiguous with COMPUTE.
 next command.
 
 ])
-AT_DATA([expout], [dnl
+AT_DATA([expout-base], [dnl
 SKIP
 SKIP
 SKIP
@@ -523,8 +527,8 @@ SKIP
 ID "command"
 ENDCMD
 SKIP
-ENDCMD
-SKIP
+-ENDCMD
+-SKIP
 STOP
 ])
 PSPP_CHECK_SCAN([-i])
@@ -544,7 +548,7 @@ isn't parsed as tokens
 
 second paragraph.
 ])
-AT_DATA([expout], [dnl
+AT_DATA([expout-base], [dnl
 ID "DOCUMENT"
 STRING "DOCUMENT one line."
 ENDCMD
@@ -571,9 +575,9 @@ SKIP
 STRING ""
 SKIP
 STRING "second paragraph."
-ENDCMD
-ENDCMD
-SKIP
+-ENDCMD
+-ENDCMD
+-SKIP
 STOP
 ])
 PSPP_CHECK_SCAN([-i])
@@ -598,7 +602,7 @@ FILE /*
 /**/  lab not quoted here either
 
 ])
-AT_DATA([expout], [dnl
+AT_DATA([expout-base], [dnl
 ID "title"
 SKIP
 STRING "Quoted string title"
@@ -656,8 +660,8 @@ ID "lab"
 SKIP
 STRING "not quoted here either"
 SKIP
-ENDCMD
-SKIP
+-ENDCMD
+-SKIP
 STOP
 ])
 PSPP_CHECK_SCAN([-i])
@@ -678,7 +682,7 @@ end  data
 end data
 .
 ])
-AT_DATA([expout], [dnl
+AT_DATA([expout-base], [dnl
 ID "begin"
 SKIP
 ID "data"
@@ -714,7 +718,7 @@ SKIP
 ID "data"
 SKIP
 ENDCMD
-SKIP
+-SKIP
 STOP
 ])
 PSPP_CHECK_SCAN([-i])
@@ -733,7 +737,7 @@ end /* x */ /* y */ repeat print.
 end
  repeat.
 ])
-AT_DATA([expout], [dnl
+AT_DATA([expout-base], [dnl
 ID "do"
 SKIP
 ID "repeat"
@@ -771,7 +775,7 @@ SKIP
 SKIP
 ID "repeat"
 ENDCMD
-SKIP
+-SKIP
 STOP
 ])
 PSPP_CHECK_SCAN([-i])
@@ -788,7 +792,7 @@ third command
 fourth command.
    fifth command.
 ])
-AT_DATA([expout], [dnl
+AT_DATA([expout-base], [dnl
 ID "first"
 SKIP
 ID "command"
@@ -827,7 +831,7 @@ ID "fifth"
 SKIP
 ID "command"
 ENDCMD
-SKIP
+-SKIP
 STOP
 ])
 PSPP_CHECK_SCAN([-b])

@@ -50,6 +50,10 @@ static bool one_byte;
 /* -0, --truncations: Check that every truncation of input yields a result. */
 static bool check_truncations;
 
+/* -s, --strip-trailing-newline: Strip trailing newline from last line of
+    input. */
+static bool strip_trailing_newline;
+
 static const char *parse_options (int argc, char **argv);
 static void usage (void) NO_RETURN;
 
@@ -74,23 +78,23 @@ main (int argc, char *argv[])
   if (input == NULL)
     error (EXIT_FAILURE, errno, "reading %s failed", file_name);
 
-  if (!check_truncations)
+  if (strip_trailing_newline && length && input[length - 1] == '\n')
     {
-      input = xrealloc (input, length + 3);
-      if (length == 0 || input[length - 1] != '\n')
-        input[length++] = '\n';
-      input[length++] = '\0';
-
-      check_segmentation (input, length, true);
+      length--;
+      if (length && input[length - 1] == '\r')
+        length--;
     }
+
+  if (!check_truncations)
+    check_segmentation (input, length, true);
   else
     {
       size_t test_len;
 
       for (test_len = 0; test_len <= length; test_len++)
         {
-          char *copy = xmemdup0 (input, test_len);
-          check_segmentation (copy, test_len + 1, false);
+          char *copy = xmemdup (input, test_len);
+          check_segmentation (copy, test_len, false);
           free (copy);
         }
     }
@@ -102,18 +106,16 @@ main (int argc, char *argv[])
 static void
 check_segmentation (const char *input, size_t length, bool print_segments)
 {
-  size_t offset, line_number, line_offset;
   struct segmenter s;
-  int prev_type;
-
   segmenter_init (&s, mode);
 
-  line_number = 1;
-  line_offset = 0;
-  prev_type = -1;
-  for (offset = 0; offset < length; )
+  size_t line_number = 1;
+  size_t line_offset = 0;
+  int prev_type = -1;
+  size_t offset = 0;
+  enum segment_type type;
+  do
     {
-      enum segment_type type;
       const char *type_name, *p;
       int n;
 
@@ -132,7 +134,7 @@ check_segmentation (const char *input, size_t length, bool print_segments)
                 n_newlines++;
 
               copy = xmemdup (input + offset, i);
-              n = segmenter_push (&s, copy, i, &type);
+              n = segmenter_push (&s, copy, i, i + offset >= length, &type);
               free (copy);
 
               if (n >= 0)
@@ -141,17 +143,24 @@ check_segmentation (const char *input, size_t length, bool print_segments)
           assert (n_newlines <= 2);
         }
       else
-        n = segmenter_push (&s, input + offset, length - offset, &type);
+        n = segmenter_push (&s, input + offset, length - offset, true, &type);
 
       if (n < 0)
-        error (EXIT_FAILURE, 0, "segmenter_push returned -1 at offset %zu",
-               offset);
+        {
+          if (!print_segments)
+            check_segmentation (input, length, true);
+          else
+            error (EXIT_FAILURE, 0, "segmenter_push returned -1 at offset %zu",
+                   offset);
+        }
       assert (offset + n <= length);
 
       if (type == SEG_NEWLINE)
-        assert ((n == 1 && input[offset] == '\n')
-                || (n == 2
-                    && input[offset] == '\r' && input[offset + 1] == '\n'));
+        {
+          assert ((n == 1 && input[offset] == '\n')
+                  || (n == 2
+                      && input[offset] == '\r' && input[offset + 1] == '\n'));
+        }
       else
         assert (memchr (&input[offset], '\n', n) == NULL);
 
@@ -266,6 +275,7 @@ check_segmentation (const char *input, size_t length, bool print_segments)
           printf (" (%s)\n", prompt_style_to_string (prompt));
         }
     }
+  while (type != SEG_END);
 
   if (print_segments)
     putchar ('\n');
@@ -280,6 +290,7 @@ parse_options (int argc, char **argv)
         {
           {"one-byte", no_argument, NULL, '1'},
           {"truncations", no_argument, NULL, '0'},
+          {"strip-trailing-newline", no_argument, NULL, 's'},
           {"auto", no_argument, NULL, 'a'},
           {"batch", no_argument, NULL, 'b'},
           {"interactive", no_argument, NULL, 'i'},
@@ -288,7 +299,7 @@ parse_options (int argc, char **argv)
           {NULL, 0, NULL, 0},
         };
 
-      int c = getopt_long (argc, argv, "01abivh", options, NULL);
+      int c = getopt_long (argc, argv, "01abivhs", options, NULL);
       if (c == -1)
         break;
 
@@ -300,6 +311,10 @@ parse_options (int argc, char **argv)
 
         case '0':
           check_truncations = true;
+          break;
+
+        case 's':
+          strip_trailing_newline = true;
           break;
 
         case 'a':
@@ -350,6 +365,7 @@ usage: %s [OPTIONS] INPUT\n\
 Options:\n\
   -1, --one-byte      feed one byte at a time\n\
   -0, --truncations   check null truncation of each prefix of input\n\
+  -s, --strip-trailing-newline  remove newline from end of input\n\
   -a, --auto          use \"auto\" syntax mode\n\
   -b, --batch         use \"batch\" syntax mode\n\
   -i, --interactive   use \"interactive\" syntax mode (default)\n\

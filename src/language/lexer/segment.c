@@ -28,7 +28,6 @@
 
 #include "gl/c-ctype.h"
 #include "gl/c-strcase.h"
-#include "gl/memchr2.h"
 
 enum segmenter_state
   {
@@ -55,108 +54,122 @@ enum segmenter_state
 #define SS_START_OF_COMMAND (1u << 1)
 
 static int segmenter_detect_command_name__ (const char *input,
-                                            size_t n, int ofs);
+                                            size_t n, bool eof, int ofs);
 
 static int
-segmenter_u8_to_uc__ (ucs4_t *puc, const char *input_, size_t n)
+segmenter_u8_to_uc__ (ucs4_t *puc, const char *input_, size_t n, bool eof,
+                      size_t ofs)
 {
   const uint8_t *input = CHAR_CAST (const uint8_t *, input_);
   int mblen;
 
-  assert (n > 0);
+  assert (n > ofs);
+
+  input += ofs;
+  n -= ofs;
 
   mblen = u8_mbtoucr (puc, input, n);
-  return (mblen >= 0 ? mblen
-          : mblen == -2 ? -1
-          : u8_mbtouc (puc, input, n));
+  if (mblen >= 0)
+    return mblen;
+  else if (mblen != -2)
+    return u8_mbtouc (puc, input, n);
+  else if (eof)
+    {
+      *puc = 0xfffd;
+      return n;
+    }
+  else
+    return -1;
 }
 
 static int
 segmenter_parse_shbang__ (struct segmenter *s, const char *input, size_t n,
-                          enum segment_type *type)
+                          bool eof, enum segment_type *type)
 {
   if (input[0] == '#')
     {
-      if (n < 2)
-        return -1;
-      else if (input[1] == '!')
+      if (n >= 2)
         {
-          int ofs;
+          if (input[1] == '!')
+            {
+              int ofs;
 
-          for (ofs = 2; ofs < n; ofs++)
-            if (input[ofs] == '\n' || input[ofs] == '\0')
-              {
-                if (input[ofs] == '\n' && input[ofs - 1] == '\r')
-                  ofs--;
+              for (ofs = 2; ofs < n; ofs++)
+                if (input[ofs] == '\n')
+                  {
+                    if (input[ofs] == '\n' && input[ofs - 1] == '\r')
+                      ofs--;
 
-                s->state = S_GENERAL;
-                s->substate = SS_START_OF_COMMAND;
-                *type = SEG_SHBANG;
-                return ofs;
-              }
+                    s->state = S_GENERAL;
+                    s->substate = SS_START_OF_COMMAND;
+                    *type = SEG_SHBANG;
+                    return ofs;
+                  }
 
-          return -1;
+              return eof ? ofs : -1;
+            }
         }
+      else if (!eof)
+        return -1;
     }
 
   s->state = S_GENERAL;
   s->substate = SS_START_OF_LINE | SS_START_OF_COMMAND;
-  return segmenter_push (s, input, n, type);
+  return segmenter_push (s, input, n, eof, type);
 }
 
 static int
 segmenter_parse_digraph__ (const char *seconds, struct segmenter *s,
-                           const char *input, size_t n,
+                           const char *input, size_t n, bool eof,
                            enum segment_type *type)
 {
   assert (s->state == S_GENERAL);
 
-  if (n < 2)
-    return -1;
-
   *type = SEG_PUNCT;
   s->substate = 0;
-  return input[1] != '\0' && strchr (seconds, input[1]) != NULL ? 2 : 1;
+  return (n < 2
+          ? (eof ? 1 : -1)
+          : (strchr (seconds, input[1]) != NULL ? 2 : 1));
 }
 
 static int
-skip_comment (const char *input, size_t n, size_t ofs)
+skip_comment (const char *input, size_t n, bool eof, size_t ofs)
 {
   for (; ofs < n; ofs++)
     {
-      if (input[ofs] == '\n' || input[ofs] == '\0')
+      if (input[ofs] == '\n')
         return ofs;
       else if (input[ofs] == '*')
         {
           if (ofs + 1 >= n)
-            return -1;
+            return eof ? ofs + 1 : -1;
           else if (input[ofs + 1] == '/')
             return ofs + 2;
         }
     }
-  return -1;
+  return eof ? ofs : -1;
 }
 
 static int
-skip_spaces_and_comments (const char *input, size_t n, int ofs)
+skip_spaces_and_comments (const char *input, size_t n, bool eof, int ofs)
 {
   while (ofs < n)
     {
       ucs4_t uc;
       int mblen;
 
-      mblen = segmenter_u8_to_uc__ (&uc, input + ofs, n - ofs);
+      mblen = segmenter_u8_to_uc__ (&uc, input, n, eof, ofs);
       if (mblen < 0)
         return -1;
 
       if (uc == '/')
         {
           if (ofs + 1 >= n)
-            return -1;
+            return eof ? ofs : -1;
           else if (input[ofs + 1] != '*')
             return ofs;
 
-          ofs = skip_comment (input, n, ofs + 2);
+          ofs = skip_comment (input, n, eof, ofs + 2);
           if (ofs < 0)
             return -1;
         }
@@ -166,18 +179,20 @@ skip_spaces_and_comments (const char *input, size_t n, int ofs)
         return ofs;
     }
 
-  return -1;
+  return eof ? ofs : -1;
 }
 
 static int
-is_end_of_line (const char *input, size_t n, int ofs)
+is_end_of_line (const char *input, size_t n, bool eof, int ofs)
 {
-  if (input[ofs] == '\n' || input[ofs] == '\0')
+  if (ofs >= n)
+    return eof ? 1 : -1;
+  else if (input[ofs] == '\n')
     return 1;
   else if (input[ofs] == '\r')
     {
       if (ofs + 1 >= n)
-        return -1;
+        return eof ? 1 : -1;
       return input[ofs + 1] == '\n';
     }
   else
@@ -185,17 +200,17 @@ is_end_of_line (const char *input, size_t n, int ofs)
 }
 
 static int
-at_end_of_line (const char *input, size_t n, int ofs)
+at_end_of_line (const char *input, size_t n, bool eof, int ofs)
 {
-  ofs = skip_spaces_and_comments (input, n, ofs);
+  ofs = skip_spaces_and_comments (input, n, eof, ofs);
   if (ofs < 0)
     return -1;
 
-  return is_end_of_line (input, n, ofs);
+  return is_end_of_line (input, n, eof, ofs);
 }
 
 static int
-segmenter_parse_newline__ (const char *input, size_t n,
+segmenter_parse_newline__ (const char *input, size_t n, bool eof,
                            enum segment_type *type)
 {
   int ofs;
@@ -205,7 +220,10 @@ segmenter_parse_newline__ (const char *input, size_t n,
   else
     {
       if (n < 2)
-        return -1;
+        {
+          assert (!eof);
+          return -1;
+        }
 
       assert (input[0] == '\r');
       assert (input[1] == '\n');
@@ -217,91 +235,111 @@ segmenter_parse_newline__ (const char *input, size_t n,
 }
 
 static int
-skip_spaces (const char *input, size_t n, size_t ofs)
+skip_spaces (const char *input, size_t n, bool eof, size_t ofs)
 {
   while (ofs < n)
     {
       ucs4_t uc;
       int mblen;
 
-      mblen = segmenter_u8_to_uc__ (&uc, input + ofs, n - ofs);
+      mblen = segmenter_u8_to_uc__ (&uc, input, n, eof, ofs);
       if (mblen < 0)
         return -1;
 
-      if (!lex_uc_is_space (uc) || uc == '\n' || uc == '\0')
+      if (!lex_uc_is_space (uc) || uc == '\n')
         return ofs;
 
       ofs += mblen;
     }
 
-  return -1;
+  return eof ? ofs : -1;
 }
 
 static int
-skip_digits (const char *input, size_t n, int ofs)
+skip_digits (const char *input, size_t n, bool eof, int ofs)
 {
   for (; ofs < n; ofs++)
     if (!c_isdigit (input[ofs]))
       return ofs;
-  return -1;
+  return eof ? ofs : -1;
 }
 
 static int
 segmenter_parse_number__ (struct segmenter *s, const char *input, size_t n,
-                          enum segment_type *type)
+                          bool eof, enum segment_type *type)
 {
   int ofs;
 
   assert (s->state == S_GENERAL);
 
-  ofs = skip_digits (input, n, 0);
+  ofs = skip_digits (input, n, eof, 0);
   if (ofs < 0)
     return -1;
 
+  if (ofs >= n)
+    {
+      if (!eof)
+        return -1;
+      goto number;
+    };
   if (input[ofs] == '.')
     {
-      ofs = skip_digits (input, n, ofs + 1);
+      ofs = skip_digits (input, n, eof, ofs + 1);
       if (ofs < 0)
         return -1;
     }
 
   if (ofs >= n)
-    return -1;
+    {
+      if (!eof)
+        return -1;
+      goto number;
+    }
   if (input[ofs] == 'e' || input[ofs] == 'E')
     {
       ofs++;
       if (ofs >= n)
-        return -1;
+        {
+          if (!eof)
+            return -1;
+          goto expected_exponent;
+        }
 
       if (input[ofs] == '+' || input[ofs] == '-')
         {
           ofs++;
           if (ofs >= n)
-            return -1;
+            {
+              if (!eof)
+                return -1;
+              goto expected_exponent;
+            }
         }
 
       if (!c_isdigit (input[ofs]))
-        {
-          *type = SEG_EXPECTED_EXPONENT;
-          s->substate = 0;
-          return ofs;
-        }
+        goto expected_exponent;
 
-      ofs = skip_digits (input, n, ofs);
+      ofs = skip_digits (input, n, eof, ofs);
       if (ofs < 0)
         return -1;
     }
 
   if (input[ofs - 1] == '.')
     {
-      int eol = at_end_of_line (input, n, ofs);
+      int eol = at_end_of_line (input, n, eof, ofs);
       if (eol < 0)
         return -1;
       else if (eol)
         ofs--;
     }
 
+number:
   *type = SEG_NUMBER;
+  s->substate = 0;
+  return ofs;
+
+expected_exponent:
+  *type = SEG_EXPECTED_EXPONENT;
   s->substate = 0;
   return ofs;
 }
@@ -344,7 +382,7 @@ is_reserved_word (const char *s, int n)
 
 static int
 segmenter_parse_comment_1__ (struct segmenter *s,
-                             const char *input, size_t n,
+                             const char *input, size_t n, bool eof,
                              enum segment_type *type)
 {
   int endcmd;
@@ -357,7 +395,7 @@ segmenter_parse_comment_1__ (struct segmenter *s,
       ucs4_t uc;
       int mblen;
 
-      mblen = segmenter_u8_to_uc__ (&uc, input + ofs, n - ofs);
+      mblen = segmenter_u8_to_uc__ (&uc, input, n, eof, ofs);
       if (mblen < 0)
         return -1;
 
@@ -370,9 +408,7 @@ segmenter_parse_comment_1__ (struct segmenter *s,
         case '\n':
           if (ofs > 1 && input[ofs - 1] == '\r')
             ofs--;
-          /* Fall through. */
-        case '\0':
-          if (endcmd == -2 || uc == '\0')
+          if (endcmd == -2)
             {
               /* Blank line ends comment command. */
               s->state = S_GENERAL;
@@ -405,50 +441,66 @@ segmenter_parse_comment_1__ (struct segmenter *s,
 
       ofs += mblen;
     }
+
+  if (eof)
+    {
+      /* End of file. */
+      s->state = S_GENERAL;
+      s->substate = SS_START_OF_COMMAND;
+      *type = SEG_SEPARATE_COMMANDS;
+      return ofs;
+    }
+
   return -1;
 }
 
 static int
-segmenter_parse_comment_2__ (struct segmenter *s, const char *input, size_t n,
-                             enum segment_type *type)
+segmenter_parse_comment_2__ (struct segmenter *s, const char *input,
+                             size_t n, bool eof, enum segment_type *type)
 {
+  int ofs = segmenter_parse_newline__ (input, n, eof, type);
+  if (ofs < 0)
+    return -1;
+
   int new_cmd;
-  ucs4_t uc;
-  int mblen;
-  int ofs;
-
-  ofs = segmenter_parse_newline__ (input, n, type);
-  if (ofs < 0 || ofs >= n)
-    return -1;
-
-  mblen = segmenter_u8_to_uc__ (&uc, input + ofs, n - ofs);
-  if (mblen < 0)
-    return -1;
-
-  if (uc == '+' || uc == '-' || uc == '.')
-    new_cmd = true;
-  else if (!lex_uc_is_space (uc))
-    switch (s->mode)
-      {
-      case SEG_MODE_INTERACTIVE:
-        new_cmd = false;
-        break;
-
-      case SEG_MODE_BATCH:
-        new_cmd = true;
-        break;
-
-      case SEG_MODE_AUTO:
-        new_cmd = segmenter_detect_command_name__ (input, n, ofs);
-        if (new_cmd < 0)
-          return -1;
-        break;
-
-      default:
-        NOT_REACHED ();
-      }
+  if (ofs >= n)
+    {
+      if (!eof)
+        return -1;
+      new_cmd = false;
+    }
   else
-    new_cmd = false;
+    {
+      ucs4_t uc;
+      int mblen = segmenter_u8_to_uc__ (&uc, input, n, eof, ofs);
+      if (mblen < 0)
+        return -1;
+
+      if (uc == '+' || uc == '-' || uc == '.')
+        new_cmd = true;
+      else if (!lex_uc_is_space (uc))
+        switch (s->mode)
+          {
+          case SEG_MODE_INTERACTIVE:
+            new_cmd = false;
+            break;
+
+          case SEG_MODE_BATCH:
+            new_cmd = true;
+            break;
+
+          case SEG_MODE_AUTO:
+            new_cmd = segmenter_detect_command_name__ (input, n, eof, ofs);
+            if (new_cmd < 0)
+              return -1;
+            break;
+
+          default:
+            NOT_REACHED ();
+          }
+      else
+        new_cmd = false;
+    }
 
   if (new_cmd)
     {
@@ -462,7 +514,7 @@ segmenter_parse_comment_2__ (struct segmenter *s, const char *input, size_t n,
 
 static int
 segmenter_parse_document_1__ (struct segmenter *s, const char *input, size_t n,
-                              enum segment_type *type)
+                              bool eof, enum segment_type *type)
 {
   bool end_cmd;
   int ofs;
@@ -474,7 +526,7 @@ segmenter_parse_document_1__ (struct segmenter *s, const char *input, size_t n,
       ucs4_t uc;
       int mblen;
 
-      mblen = segmenter_u8_to_uc__ (&uc, input + ofs, n - ofs);
+      mblen = segmenter_u8_to_uc__ (&uc, input, n, eof, ofs);
       if (mblen < 0)
         return -1;
 
@@ -492,11 +544,6 @@ segmenter_parse_document_1__ (struct segmenter *s, const char *input, size_t n,
           s->state = end_cmd ? S_DOCUMENT_3 : S_DOCUMENT_2;
           return ofs;
 
-        case '\0':
-          *type = SEG_DOCUMENT;
-          s->state = S_DOCUMENT_3;
-          return ofs;
-
         default:
           if (!lex_uc_is_space (uc))
             end_cmd = false;
@@ -505,16 +552,22 @@ segmenter_parse_document_1__ (struct segmenter *s, const char *input, size_t n,
 
       ofs += mblen;
     }
+  if (eof)
+    {
+      *type = SEG_DOCUMENT;
+      s->state = S_DOCUMENT_3;
+      return ofs;
+    }
   return -1;
 }
 
 static int
 segmenter_parse_document_2__ (struct segmenter *s, const char *input, size_t n,
-                              enum segment_type *type)
+                              bool eof, enum segment_type *type)
 {
   int ofs;
 
-  ofs = segmenter_parse_newline__ (input, n, type);
+  ofs = segmenter_parse_newline__ (input, n, eof, type);
   if (ofs < 0)
     return -1;
 
@@ -532,22 +585,27 @@ segmenter_parse_document_3__ (struct segmenter *s, enum segment_type *type)
 }
 
 static int
-segmenter_unquoted (const char *input, size_t n, int ofs)
+segmenter_unquoted (const char *input, size_t n, bool eof, int ofs)
 
 {
-  char c;
-
-  ofs = skip_spaces_and_comments (input, n, ofs);
+  ofs = skip_spaces_and_comments (input, n, eof, ofs);
   if (ofs < 0)
     return -1;
-
-  c = input[ofs];
-  return c != '\'' && c != '"' && c != '\n' && c != '\0';
+  else if (ofs < n)
+    {
+      char c = input[ofs];
+      return c != '\'' && c != '"' && c != '\n';
+    }
+  else
+    {
+      assert (eof);
+      return 0;
+    }
 }
 
 static int
 next_id_in_command (const struct segmenter *s, const char *input, size_t n,
-                    int ofs, char id[], size_t id_size)
+                    bool eof, int ofs, char id[], size_t id_size)
 {
   struct segmenter sub;
 
@@ -561,7 +619,7 @@ next_id_in_command (const struct segmenter *s, const char *input, size_t n,
       enum segment_type type;
       int retval;
 
-      retval = segmenter_push (&sub, input + ofs, n - ofs, &type);
+      retval = segmenter_push (&sub, input + ofs, n - ofs, eof, &type);
       if (retval < 0)
         {
           id[0] = '\0';
@@ -612,13 +670,15 @@ next_id_in_command (const struct segmenter *s, const char *input, size_t n,
     }
 }
 
+/* Called when INPUT begins with a character that can start off an ID token. */
 static int
 segmenter_parse_id__ (struct segmenter *s, const char *input, size_t n,
-                      enum segment_type *type)
+                      bool eof, enum segment_type *type)
 {
   ucs4_t uc;
   int ofs;
 
+  assert (n > 0);
   assert (s->state == S_GENERAL);
 
   ofs = u8_mbtouc (&uc, CHAR_CAST (const uint8_t *, input), n);
@@ -627,9 +687,13 @@ segmenter_parse_id__ (struct segmenter *s, const char *input, size_t n,
       int mblen;
 
       if (ofs >= n)
-        return -1;
+        {
+          if (eof)
+            break;
+          return -1;
+        }
 
-      mblen = segmenter_u8_to_uc__ (&uc, input + ofs, n - ofs);
+      mblen = segmenter_u8_to_uc__ (&uc, input, n, eof, ofs);
       if (mblen < 0)
         return -1;
       else if (!lex_uc_is_idn (uc))
@@ -640,7 +704,7 @@ segmenter_parse_id__ (struct segmenter *s, const char *input, size_t n,
 
   if (input[ofs - 1] == '.')
     {
-      int eol = at_end_of_line (input, n, ofs);
+      int eol = at_end_of_line (input, n, eof, ofs);
       if (eol < 0)
         return -1;
       else if (eol)
@@ -659,7 +723,7 @@ segmenter_parse_id__ (struct segmenter *s, const char *input, size_t n,
       if (lex_id_match_n (ss_cstr ("COMMENT"), word, 4))
         {
           s->state = S_COMMENT_1;
-          return segmenter_parse_comment_1__ (s, input, n, type);
+          return segmenter_parse_comment_1__ (s, input, n, eof, type);
         }
       else if (lex_id_match (ss_cstr ("DOCUMENT"), word))
         {
@@ -670,7 +734,7 @@ segmenter_parse_id__ (struct segmenter *s, const char *input, size_t n,
       else if (lex_id_match (ss_cstr ("TITLE"), word)
                || lex_id_match (ss_cstr ("SUBTITLE"), word))
         {
-          int result = segmenter_unquoted (input, n, ofs);
+          int result = segmenter_unquoted (input, n, eof, ofs);
           if (result < 0)
             return -1;
           else if (result)
@@ -683,7 +747,7 @@ segmenter_parse_id__ (struct segmenter *s, const char *input, size_t n,
         {
           char id[16];
 
-          if (next_id_in_command (s, input, n, ofs, id, sizeof id) < 0)
+          if (next_id_in_command (s, input, n, eof, ofs, id, sizeof id) < 0)
             return -1;
           else if (lex_id_match (ss_cstr ("LABEL"), ss_cstr (id)))
             {
@@ -696,7 +760,7 @@ segmenter_parse_id__ (struct segmenter *s, const char *input, size_t n,
         {
           char id[16];
 
-          if (next_id_in_command (s, input, n, ofs, id, sizeof id) < 0)
+          if (next_id_in_command (s, input, n, eof, ofs, id, sizeof id) < 0)
             return -1;
           else if (lex_id_match (ss_cstr ("REPEAT"), ss_cstr (id)))
             {
@@ -710,25 +774,27 @@ segmenter_parse_id__ (struct segmenter *s, const char *input, size_t n,
           char id[16];
           int ofs2;
 
-          ofs2 = next_id_in_command (s, input, n, ofs, id, sizeof id);
+          ofs2 = next_id_in_command (s, input, n, eof, ofs, id, sizeof id);
           if (ofs2 < 0)
             return -1;
           else if (lex_id_match (ss_cstr ("DATA"), ss_cstr (id)))
             {
               int eol;
 
-              ofs2 = skip_spaces_and_comments (input, n, ofs2);
+              ofs2 = skip_spaces_and_comments (input, n, eof, ofs2);
               if (ofs2 < 0)
                 return -1;
 
-              if (input[ofs2] == '.')
+              if (ofs2 >= n)
+                assert (eof);
+              else if (input[ofs2] == '.')
                 {
-                  ofs2 = skip_spaces_and_comments (input, n, ofs2 + 1);
+                  ofs2 = skip_spaces_and_comments (input, n, eof, ofs2 + 1);
                   if (ofs2 < 0)
                     return -1;
                 }
 
-              eol = is_end_of_line (input, n, ofs2);
+              eol = is_end_of_line (input, n, eof, ofs2);
               if (eol < 0)
                 return -1;
               else if (eol)
@@ -751,7 +817,8 @@ segmenter_parse_id__ (struct segmenter *s, const char *input, size_t n,
 static int
 segmenter_parse_string__ (enum segment_type string_type,
                           int ofs, struct segmenter *s,
-                          const char *input, size_t n, enum segment_type *type)
+                          const char *input, size_t n, bool eof,
+                          enum segment_type *type)
 {
   int quote = input[ofs];
 
@@ -760,46 +827,57 @@ segmenter_parse_string__ (enum segment_type string_type,
     if (input[ofs] == quote)
       {
         ofs++;
-        if (ofs >= n)
-          return -1;
-        else if (input[ofs] == quote)
-          ofs++;
-        else
+        if (ofs < n)
           {
-            *type = string_type;
-            s->substate = 0;
-            return ofs;
+            if (input[ofs] == quote)
+              {
+                ofs++;
+                continue;
+              }
           }
-      }
-    else if (input[ofs] == '\n' || input[ofs] == '\0')
-      {
-        *type = SEG_EXPECTED_QUOTE;
+        else if (!eof)
+          return -1;
+
+        *type = string_type;
         s->substate = 0;
         return ofs;
       }
+    else if (input[ofs] == '\n')
+      goto expected_quote;
     else
       ofs++;
 
+  if (eof)
+    goto expected_quote;
+
   return -1;
+
+expected_quote:
+  *type = SEG_EXPECTED_QUOTE;
+  s->substate = 0;
+  return ofs;
 }
 
 static int
 segmenter_maybe_parse_string__ (enum segment_type string_type,
                                 struct segmenter *s,
-                                const char *input, size_t n,
+                                const char *input, size_t n, bool eof,
                                 enum segment_type *type)
 {
   if (n < 2)
-    return -1;
+    {
+      if (!eof)
+        return -1;
+    }
   else if (input[1] == '\'' || input[1] == '"')
-    return segmenter_parse_string__ (string_type, 1, s, input, n, type);
-  else
-    return segmenter_parse_id__ (s, input, n, type);
+    return segmenter_parse_string__ (string_type, 1, s, input, n, eof, type);
+
+  return segmenter_parse_id__ (s, input, n, eof, type);
 }
 
 static int
 segmenter_parse_mid_command__ (struct segmenter *s,
-                               const char *input, size_t n,
+                               const char *input, size_t n, bool eof,
                                enum segment_type *type)
 {
   ucs4_t uc;
@@ -809,7 +887,7 @@ segmenter_parse_mid_command__ (struct segmenter *s,
   assert (s->state == S_GENERAL);
   assert (!(s->substate & SS_START_OF_LINE));
 
-  mblen = segmenter_u8_to_uc__ (&uc, input, n);
+  mblen = segmenter_u8_to_uc__ (&uc, input, n, eof, 0);
   if (mblen < 0)
     return -1;
 
@@ -821,23 +899,24 @@ segmenter_parse_mid_command__ (struct segmenter *s,
       return 1;
 
     case '/':
-      if (n == 1)
-        return -1;
+      if (n < 2)
+        {
+          if (!eof)
+            return -1;
+        }
       else if (input[1] == '*')
         {
-          ofs = skip_comment (input, n, 2);
+          ofs = skip_comment (input, n, eof, 2);
           if (ofs < 0)
             return -1;
 
           *type = SEG_COMMENT;
           return ofs;
         }
-      else
-        {
-          s->substate = 0;
-          *type = SEG_PUNCT;
-          return 1;
-        }
+
+      s->substate = 0;
+      *type = SEG_PUNCT;
+      return 1;
 
     case '(': case ')': case ',': case '=': case '-':
     case '[': case ']': case '&': case '|': case '+':
@@ -850,62 +929,62 @@ segmenter_parse_mid_command__ (struct segmenter *s,
         {
           /* '*' at the beginning of a command begins a comment. */
           s->state = S_COMMENT_1;
-          return segmenter_parse_comment_1__ (s, input, n, type);
+          return segmenter_parse_comment_1__ (s, input, n, eof, type);
         }
       else
-        return segmenter_parse_digraph__ ("*", s, input, n, type);
+        return segmenter_parse_digraph__ ("*", s, input, n, eof, type);
 
     case '<':
-      return segmenter_parse_digraph__ ("=>", s, input, n, type);
+      return segmenter_parse_digraph__ ("=>", s, input, n, eof, type);
 
     case '>':
-      return segmenter_parse_digraph__ ("=", s, input, n, type);
+      return segmenter_parse_digraph__ ("=", s, input, n, eof, type);
 
     case '~':
-      return segmenter_parse_digraph__ ("=", s, input, n, type);
+      return segmenter_parse_digraph__ ("=", s, input, n, eof, type);
 
     case '.':
       if (n < 2)
-        return -1;
-      else if (c_isdigit (input[1]))
-        return segmenter_parse_number__ (s, input, n, type);
-      else
         {
-          int eol = at_end_of_line (input, n, 1);
-          if (eol < 0)
+          if (!eof)
             return -1;
-
-          if (eol)
-            {
-              *type = SEG_END_COMMAND;
-              s->substate = SS_START_OF_COMMAND;
-            }
-          else
-            *type = SEG_UNEXPECTED_DOT;
-          return 1;
         }
-      NOT_REACHED ();
+      else if (c_isdigit (input[1]))
+        return segmenter_parse_number__ (s, input, n, eof, type);
+
+      int eol = at_end_of_line (input, n, eof, 1);
+      if (eol < 0)
+        return -1;
+
+      if (eol)
+        {
+          *type = SEG_END_COMMAND;
+          s->substate = SS_START_OF_COMMAND;
+        }
+      else
+        *type = SEG_UNEXPECTED_DOT;
+      return 1;
 
     case '0': case '1': case '2': case '3': case '4':
     case '5': case '6': case '7': case '8': case '9':
-      return segmenter_parse_number__ (s, input, n, type);
+      return segmenter_parse_number__ (s, input, n, eof, type);
 
     case 'u': case 'U':
       return segmenter_maybe_parse_string__ (SEG_UNICODE_STRING,
-                                           s, input, n, type);
+                                             s, input, n, eof, type);
 
     case 'x': case 'X':
       return segmenter_maybe_parse_string__ (SEG_HEX_STRING,
-                                             s, input, n, type);
+                                             s, input, n, eof, type);
 
     case '\'': case '"':
       return segmenter_parse_string__ (SEG_QUOTED_STRING, 0,
-                                       s, input, n, type);
+                                       s, input, n, eof, type);
 
     default:
       if (lex_uc_is_space (uc))
         {
-          ofs = skip_spaces (input, n, mblen);
+          ofs = skip_spaces (input, n, eof, mblen);
           if (ofs < 0)
             return -1;
 
@@ -924,7 +1003,7 @@ segmenter_parse_mid_command__ (struct segmenter *s,
           return ofs;
         }
       else if (lex_uc_is_id1 (uc))
-        return segmenter_parse_id__ (s, input, n, type);
+        return segmenter_parse_id__ (s, input, n, eof, type);
       else
         {
           *type = SEG_UNEXPECTED_CHAR;
@@ -985,7 +1064,8 @@ segmenter_get_command_name_candidates (unsigned char first)
 }
 
 static int
-segmenter_detect_command_name__ (const char *input, size_t n, int ofs)
+segmenter_detect_command_name__ (const char *input, size_t n, bool eof,
+                                 int ofs)
 {
   const char **commands;
 
@@ -998,13 +1078,17 @@ segmenter_detect_command_name__ (const char *input, size_t n, int ofs)
       int mblen;
 
       if (ofs >= n)
-        return -1;
+        {
+          if (eof)
+            break;
+          return -1;
+        }
 
-      mblen = segmenter_u8_to_uc__ (&uc, input + ofs, n - ofs);
+      mblen = segmenter_u8_to_uc__ (&uc, input, n, eof, ofs);
       if (mblen < 0)
         return -1;
 
-      if (uc == '\n' || uc == '\0'
+      if (uc == '\n'
           || !(lex_uc_is_space (uc) || lex_uc_is_idn (uc) || uc == '-'))
         break;
 
@@ -1033,15 +1117,16 @@ segmenter_detect_command_name__ (const char *input, size_t n, int ofs)
 }
 
 static int
-is_start_of_string__ (const char *input, size_t n, int ofs)
+is_start_of_string__ (const char *input, size_t n, bool eof, int ofs)
 {
-  int c;
+  if (ofs >= n)
+    return eof ? 0 : -1;
 
-  c = input[ofs];
+  int c = input[ofs];
   if (c == 'x' || c == 'X' || c == 'u' || c == 'U')
     {
       if (ofs + 1 >= n)
-        return -1;
+        return eof ? 0 : -1;
 
       return input[ofs + 1] == '\'' || input[ofs + 1] == '"';
     }
@@ -1051,7 +1136,7 @@ is_start_of_string__ (const char *input, size_t n, int ofs)
 
 static int
 segmenter_parse_start_of_line__ (struct segmenter *s,
-                                 const char *input, size_t n,
+                                 const char *input, size_t n, bool eof,
                                  enum segment_type *type)
 {
   ucs4_t uc;
@@ -1061,19 +1146,19 @@ segmenter_parse_start_of_line__ (struct segmenter *s,
   assert (s->state == S_GENERAL);
   assert (s->substate & SS_START_OF_LINE);
 
-  mblen = segmenter_u8_to_uc__ (&uc, input, n);
+  mblen = segmenter_u8_to_uc__ (&uc, input, n, eof, 0);
   if (mblen < 0)
     return -1;
 
   switch (uc)
     {
     case '+':
-      ofs = skip_spaces_and_comments (input, n, 1);
+      ofs = skip_spaces_and_comments (input, n, eof, 1);
       if (ofs < 0)
         return -1;
       else
         {
-          int is_string = is_start_of_string__ (input, n, ofs);
+          int is_string = is_start_of_string__ (input, n, eof, ofs);
           if (is_string < 0)
             return -1;
           else if (is_string)
@@ -1095,7 +1180,7 @@ segmenter_parse_start_of_line__ (struct segmenter *s,
     default:
       if (lex_uc_is_space (uc))
         {
-          int eol = at_end_of_line (input, n, 0);
+          int eol = at_end_of_line (input, n, eof, 0);
           if (eol < 0)
             return -1;
           else if (eol)
@@ -1111,7 +1196,7 @@ segmenter_parse_start_of_line__ (struct segmenter *s,
         break;
       else if (s->mode == SEG_MODE_AUTO)
         {
-          int cmd = segmenter_detect_command_name__ (input, n, 0);
+          int cmd = segmenter_detect_command_name__ (input, n, eof, 0);
           if (cmd < 0)
             return -1;
           else if (cmd == 0)
@@ -1126,12 +1211,12 @@ segmenter_parse_start_of_line__ (struct segmenter *s,
     }
 
   s->substate = SS_START_OF_COMMAND;
-  return segmenter_parse_mid_command__ (s, input, n, type);
+  return segmenter_parse_mid_command__ (s, input, n, eof, type);
 }
 
 static int
 segmenter_parse_file_label__ (struct segmenter *s,
-                              const char *input, size_t n,
+                              const char *input, size_t n, bool eof,
                               enum segment_type *type)
 {
   struct segmenter sub;
@@ -1139,7 +1224,7 @@ segmenter_parse_file_label__ (struct segmenter *s,
 
   sub = *s;
   sub.state = S_GENERAL;
-  ofs = segmenter_push (&sub, input, n, type);
+  ofs = segmenter_push (&sub, input, n, eof, type);
 
   if (ofs < 0)
     return -1;
@@ -1149,7 +1234,7 @@ segmenter_parse_file_label__ (struct segmenter *s,
 
       assert (lex_id_match (ss_cstr ("LABEL"),
                             ss_buffer ((char *) input, ofs)));
-      result = segmenter_unquoted (input, n, ofs);
+      result = segmenter_unquoted (input, n, eof, ofs);
       if (result < 0)
         return -1;
       else
@@ -1170,7 +1255,8 @@ segmenter_parse_file_label__ (struct segmenter *s,
 
 static int
 segmenter_subparse (struct segmenter *s,
-                    const char *input, size_t n, enum segment_type *type)
+                    const char *input, size_t n, bool eof,
+                    enum segment_type *type)
 {
   struct segmenter sub;
   int ofs;
@@ -1178,17 +1264,17 @@ segmenter_subparse (struct segmenter *s,
   sub.mode = s->mode;
   sub.state = S_GENERAL;
   sub.substate = s->substate;
-  ofs = segmenter_push (&sub, input, n, type);
+  ofs = segmenter_push (&sub, input, n, eof, type);
   s->substate = sub.substate;
   return ofs;
 }
 
 static int
 segmenter_parse_do_repeat_1__ (struct segmenter *s,
-                               const char *input, size_t n,
+                               const char *input, size_t n, bool eof,
                                enum segment_type *type)
 {
-  int ofs = segmenter_subparse (s, input, n, type);
+  int ofs = segmenter_subparse (s, input, n, eof, type);
   if (ofs < 0)
     return -1;
 
@@ -1205,10 +1291,10 @@ segmenter_parse_do_repeat_1__ (struct segmenter *s,
 
 static int
 segmenter_parse_do_repeat_2__ (struct segmenter *s,
-                               const char *input, size_t n,
+                               const char *input, size_t n, bool eof,
                                enum segment_type *type)
 {
-  int ofs = segmenter_subparse (s, input, n, type);
+  int ofs = segmenter_subparse (s, input, n, eof, type);
   if (ofs < 0)
     return -1;
 
@@ -1223,7 +1309,7 @@ segmenter_parse_do_repeat_2__ (struct segmenter *s,
 
 static bool
 check_repeat_command (struct segmenter *s,
-                      const char *input, size_t n)
+                      const char *input, size_t n, bool eof)
 {
   int direction;
   char id[16];
@@ -1233,7 +1319,7 @@ check_repeat_command (struct segmenter *s,
   if (input[ofs] == '+' || input[ofs] == '-')
     ofs++;
 
-  ofs = next_id_in_command (s, input, n, ofs, id, sizeof id);
+  ofs = next_id_in_command (s, input, n, eof, ofs, id, sizeof id);
   if (ofs < 0)
     return false;
   else if (lex_id_match (ss_cstr ("DO"), ss_cstr (id)))
@@ -1243,7 +1329,7 @@ check_repeat_command (struct segmenter *s,
   else
     return true;
 
-  ofs = next_id_in_command (s, input, n, ofs, id, sizeof id);
+  ofs = next_id_in_command (s, input, n, eof, ofs, id, sizeof id);
   if (ofs < 0)
     return false;
 
@@ -1253,48 +1339,40 @@ check_repeat_command (struct segmenter *s,
 }
 
 static int
-segmenter_parse_full_line__ (const char *input, size_t n,
+segmenter_parse_full_line__ (const char *input, size_t n, bool eof,
                              enum segment_type *type)
 {
-  const char *newline = memchr2 (input, '\n', '\0', n);
+  const char *newline = memchr (input, '\n', n);
+  if (!newline)
+    return eof ? n : -1;
 
-  if (newline == NULL)
-    return -1;
-  else
+  ptrdiff_t ofs = newline - input;
+  if (ofs == 0 || (ofs == 1 && input[0] == '\r'))
     {
-      int ofs = newline - input;
-      if (*newline == '\0')
-        {
-          assert (ofs > 0);
-          return ofs;
-        }
-      else if (ofs == 0 || (ofs == 1 && input[0] == '\r'))
-        {
-          *type = SEG_NEWLINE;
-          return ofs + 1;
-        }
-      else
-        return ofs - (input[ofs - 1] == '\r');
+      *type = SEG_NEWLINE;
+      return ofs + 1;
     }
+  else
+    return ofs - (input[ofs - 1] == '\r');
 }
 
 static int
 segmenter_parse_do_repeat_3__ (struct segmenter *s,
-                               const char *input, size_t n,
+                               const char *input, size_t n, bool eof,
                                enum segment_type *type)
 {
   int ofs;
 
-  ofs = segmenter_parse_full_line__ (input, n, type);
-  if (ofs < 0 || input[ofs - 1] == '\n')
+  ofs = segmenter_parse_full_line__ (input, n, eof, type);
+  if (ofs < 0 || (ofs > 0 && input[ofs - 1] == '\n'))
     return ofs;
-  else if (!check_repeat_command (s, input, n))
+  else if (!check_repeat_command (s, input, n, eof) && !eof)
     return -1;
   else if (s->substate == 0)
     {
       s->state = S_GENERAL;
       s->substate = SS_START_OF_COMMAND | SS_START_OF_LINE;
-      return segmenter_push (s, input, n, type);
+      return segmenter_push (s, input, n, eof, type);
     }
   else
     {
@@ -1305,10 +1383,10 @@ segmenter_parse_do_repeat_3__ (struct segmenter *s,
 
 static int
 segmenter_parse_begin_data_1__ (struct segmenter *s,
-                                const char *input, size_t n,
+                                const char *input, size_t n, bool eof,
                                 enum segment_type *type)
 {
-  int ofs = segmenter_subparse (s, input, n, type);
+  int ofs = segmenter_subparse (s, input, n, eof, type);
   if (ofs < 0)
     return -1;
 
@@ -1320,10 +1398,10 @@ segmenter_parse_begin_data_1__ (struct segmenter *s,
 
 static int
 segmenter_parse_begin_data_2__ (struct segmenter *s,
-                                const char *input, size_t n,
+                                const char *input, size_t n, bool eof,
                                 enum segment_type *type)
 {
-  int ofs = segmenter_subparse (s, input, n, type);
+  int ofs = segmenter_subparse (s, input, n, eof, type);
   if (ofs < 0)
     return -1;
 
@@ -1342,7 +1420,7 @@ is_end_data (const char *input, size_t n)
   int mblen;
   int ofs;
 
-  if (n < 3 || c_strncasecmp (input, "END", 3))
+  if (n < 4 || c_strncasecmp (input, "END", 3))
     return false;
 
   ofs = 3;
@@ -1375,19 +1453,19 @@ is_end_data (const char *input, size_t n)
 
 static int
 segmenter_parse_begin_data_3__ (struct segmenter *s,
-                                const char *input, size_t n,
+                                const char *input, size_t n, bool eof,
                                 enum segment_type *type)
 {
   int ofs;
 
-  ofs = segmenter_parse_full_line__ (input, n, type);
+  ofs = segmenter_parse_full_line__ (input, n, eof, type);
   if (ofs < 0)
     return -1;
   else if (is_end_data (input, ofs))
     {
       s->state = S_GENERAL;
       s->substate = SS_START_OF_COMMAND | SS_START_OF_LINE;
-      return segmenter_push (s, input, n, type);
+      return segmenter_push (s, input, n, eof, type);
     }
   else
     {
@@ -1399,12 +1477,12 @@ segmenter_parse_begin_data_3__ (struct segmenter *s,
 
 static int
 segmenter_parse_begin_data_4__ (struct segmenter *s,
-                                const char *input, size_t n,
+                                const char *input, size_t n, bool eof,
                                 enum segment_type *type)
 {
   int ofs;
 
-  ofs = segmenter_parse_newline__ (input, n, type);
+  ofs = segmenter_parse_newline__ (input, n, eof, type);
   if (ofs < 0)
     return -1;
 
@@ -1414,12 +1492,12 @@ segmenter_parse_begin_data_4__ (struct segmenter *s,
 
 static int
 segmenter_parse_title_1__ (struct segmenter *s,
-                           const char *input, size_t n,
+                           const char *input, size_t n, bool eof,
                            enum segment_type *type)
 {
   int ofs;
 
-  ofs = skip_spaces (input, n, 0);
+  ofs = skip_spaces (input, n, eof, 0);
   if (ofs < 0)
     return -1;
   s->state = S_TITLE_2;
@@ -1429,7 +1507,7 @@ segmenter_parse_title_1__ (struct segmenter *s,
 
 static int
 segmenter_parse_title_2__ (struct segmenter *s,
-                           const char *input, size_t n,
+                           const char *input, size_t n, bool eof,
                            enum segment_type *type)
 {
   int endcmd;
@@ -1442,18 +1520,14 @@ segmenter_parse_title_2__ (struct segmenter *s,
       ucs4_t uc;
       int mblen;
 
-      mblen = segmenter_u8_to_uc__ (&uc, input + ofs, n - ofs);
+      mblen = segmenter_u8_to_uc__ (&uc, input, n, eof, ofs);
       if (mblen < 0)
         return -1;
 
       switch (uc)
         {
         case '\n':
-        case '\0':
-          s->state = S_GENERAL;
-          s->substate = 0;
-          *type = SEG_UNQUOTED_STRING;
-          return endcmd >= 0 ? endcmd : ofs;
+          goto end_of_line;
 
         case '.':
           endcmd = ofs;
@@ -1466,6 +1540,15 @@ segmenter_parse_title_2__ (struct segmenter *s,
         }
 
       ofs += mblen;
+    }
+
+  if (eof)
+    {
+    end_of_line:
+      s->state = S_GENERAL;
+      s->substate = 0;
+      *type = SEG_UNQUOTED_STRING;
+      return endcmd >= 0 ? endcmd : ofs;
     }
 
   return -1;
@@ -1510,9 +1593,9 @@ segmenter_get_mode (const struct segmenter *s)
 
 /* Attempts to label a prefix of S's remaining input with a segment type.  The
    caller supplies the first N bytes of the remaining input as INPUT, which
-   must be a UTF-8 encoded string.  The end of the input stream must be
-   indicated by a null byte at the beginning of a line, that is, immediately
-   following a new-line (or as the first byte of the input stream).
+   must be a UTF-8 encoded string.  If EOF is true, then the N bytes supplied
+   are the entire (remainder) of the input; if EOF is false, then further input
+   is potentially available.
 
    The input may contain '\n' or '\r\n' line ends in any combination.
 
@@ -1523,11 +1606,11 @@ segmenter_get_mode (const struct segmenter *s)
    the segmenter.
 
    Failure occurs only if the segment type of the N bytes in INPUT cannot yet
-   be determined.  In this case segmenter_push() returns -1.  The caller should
-   obtain more input and then call segmenter_push() again with a larger N and
-   repeat until the input is exhausted (which must be indicated as described
-   above) or until a valid segment is returned.  segmenter_push() will never
-   return -1 when the end of input is visible within INPUT.
+   be determined.  In this case segmenter_push() returns -1.  If more input is
+   available, the caller should obtain some more, then call again with a larger
+   N.  If this is not enough, the process might need to repeat again and agin.
+   If input is exhausted, then the caller may call again setting EOF to true.
+   segmenter_push() will never return -1 when EOF is true.
 
    The caller must not, in a sequence of calls, supply contradictory input.
    That is, bytes provided as part of INPUT in one call, but not consumed, must
@@ -1535,63 +1618,65 @@ segmenter_get_mode (const struct segmenter *s)
    because segmenter_push() must often make decisions based on looking ahead
    beyond the bytes that it consumes. */
 int
-segmenter_push (struct segmenter *s, const char *input, size_t n,
+segmenter_push (struct segmenter *s, const char *input, size_t n, bool eof,
                 enum segment_type *type)
 {
-  if (n == 0)
-    return -1;
-
-  if (input[0] == '\0')
+  if (!n)
     {
-      *type = SEG_END;
-      return 1;
+      if (eof)
+        {
+          *type = SEG_END;
+          return 0;
+        }
+      else
+        return -1;
     }
 
   switch (s->state)
     {
     case S_SHBANG:
-      return segmenter_parse_shbang__ (s, input, n, type);
+      return segmenter_parse_shbang__ (s, input, n, eof, type);
 
     case S_GENERAL:
       return (s->substate & SS_START_OF_LINE
-              ? segmenter_parse_start_of_line__ (s, input, n, type)
-              : segmenter_parse_mid_command__ (s, input, n, type));
+              ? segmenter_parse_start_of_line__ (s, input, n, eof, type)
+              : segmenter_parse_mid_command__ (s, input, n, eof, type));
 
     case S_COMMENT_1:
-      return segmenter_parse_comment_1__ (s, input, n, type);
+      return segmenter_parse_comment_1__ (s, input, n, eof, type);
     case S_COMMENT_2:
-      return segmenter_parse_comment_2__ (s, input, n, type);
+      return segmenter_parse_comment_2__ (s, input, n, eof, type);
 
     case S_DOCUMENT_1:
-      return segmenter_parse_document_1__ (s, input, n, type);
+      return segmenter_parse_document_1__ (s, input, n, eof, type);
     case S_DOCUMENT_2:
-      return segmenter_parse_document_2__ (s, input, n, type);
+      return segmenter_parse_document_2__ (s, input, n, eof, type);
     case S_DOCUMENT_3:
       return segmenter_parse_document_3__ (s, type);
 
     case S_FILE_LABEL:
-      return segmenter_parse_file_label__ (s, input, n, type);
+      return segmenter_parse_file_label__ (s, input, n, eof, type);
 
     case S_DO_REPEAT_1:
-      return segmenter_parse_do_repeat_1__ (s, input, n, type);
+      return segmenter_parse_do_repeat_1__ (s, input, n, eof, type);
     case S_DO_REPEAT_2:
-      return segmenter_parse_do_repeat_2__ (s, input, n, type);
+      return segmenter_parse_do_repeat_2__ (s, input, n, eof, type);
     case S_DO_REPEAT_3:
-      return segmenter_parse_do_repeat_3__ (s, input, n, type);
+      return segmenter_parse_do_repeat_3__ (s, input, n, eof, type);
 
     case S_BEGIN_DATA_1:
-      return segmenter_parse_begin_data_1__ (s, input, n, type);
+      return segmenter_parse_begin_data_1__ (s, input, n, eof, type);
     case S_BEGIN_DATA_2:
-      return segmenter_parse_begin_data_2__ (s, input, n, type);
+      return segmenter_parse_begin_data_2__ (s, input, n, eof, type);
     case S_BEGIN_DATA_3:
-      return segmenter_parse_begin_data_3__ (s, input, n, type);
+      return segmenter_parse_begin_data_3__ (s, input, n, eof, type);
     case S_BEGIN_DATA_4:
-      return segmenter_parse_begin_data_4__ (s, input, n, type);
+      return segmenter_parse_begin_data_4__ (s, input, n, eof, type);
 
     case S_TITLE_1:
-      return segmenter_parse_title_1__ (s, input, n, type);
+      return segmenter_parse_title_1__ (s, input, n, eof, type);
     case S_TITLE_2:
-      return segmenter_parse_title_2__ (s, input, n, type);
+      return segmenter_parse_title_2__ (s, input, n, eof, type);
     }
 
   NOT_REACHED ();

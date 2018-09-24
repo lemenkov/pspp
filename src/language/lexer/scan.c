@@ -593,16 +593,17 @@ scanner_push (struct scanner *scanner, enum segment_type type,
   NOT_REACHED ();
 }
 
-/* Initializes SLEX for parsing INPUT in the specified MODE.
+/* Initializes SLEX for parsing INPUT, which is LENGTH bytes long, in the
+   specified MODE.
 
    SLEX has no internal state to free, but it retains a reference to INPUT, so
    INPUT must not be modified or freed while SLEX is still in use. */
 void
-string_lexer_init (struct string_lexer *slex, const char *input,
+string_lexer_init (struct string_lexer *slex, const char *input, size_t length,
                    enum segmenter_mode mode)
 {
   slex->input = input;
-  slex->length = strlen (input) + 1;
+  slex->length = length;
   slex->offset = 0;
   segmenter_init (&slex->segmenter, mode);
 }
@@ -624,7 +625,7 @@ string_lexer_next (struct string_lexer *slex, struct token *token)
       enum segment_type type;
       int n;
 
-      n = segmenter_push (&slex->segmenter, s, left, &type);
+      n = segmenter_push (&slex->segmenter, s, left, true, &type);
       assert (n >= 0);
 
       slex->offset += n;

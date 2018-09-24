@@ -118,7 +118,7 @@ void segmenter_init (struct segmenter *, enum segmenter_mode);
 
 enum segmenter_mode segmenter_get_mode (const struct segmenter *);
 
-int segmenter_push (struct segmenter *, const char *input, size_t n,
+int segmenter_push (struct segmenter *, const char *input, size_t n, bool eof,
                     enum segment_type *);
 
 enum prompt_style segmenter_get_prompt (const struct segmenter *);

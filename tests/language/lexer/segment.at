@@ -16,10 +16,16 @@ dnl along with this program.  If not, see <http://www.gnu.org/licenses/>.
 dnl
 AT_BANNER([syntax segmentation])
 m4_define([PSPP_CHECK_SEGMENT],
-  [AT_CHECK([segment-test $1 input], [0], [expout])
-   AT_CHECK([segment-test -1 $1 input], [0], [expout])
-   AT_CHECK([segment-test -0 $1 input])
-   AT_CHECK([segment-test -01 $1 input])])
+  [for strip in "" "-s"; do
+     case $strip in # (
+        '') sed 's/^-//' < expout-base > expout ;; # (
+	-s) sed '/^-/d' < expout-base > expout ;;
+     esac
+     AT_CHECK([segment-test $1 $strip input], [0], [expout])
+     AT_CHECK([segment-test -1 $strip $1 input], [0], [expout])
+     AT_CHECK([segment-test -0 $strip $1 input])
+     AT_CHECK([segment-test -01 $strip $1 input])
+   done])
 
 AT_SETUP([identifiers])
 AT_KEYWORDS([segment])
@@ -36,7 +42,7 @@ f@#_.#6
 GhIjK
 .x 1y _z
 ])
-AT_DATA([expout], [dnl
+AT_DATA([expout-base], [dnl
 identifier      a    space
 identifier      ab    space
 identifier      abc    space
@@ -97,9 +103,9 @@ number          1
 identifier      y    space
 unexpected_char \_
 identifier      z
-newline         \n (later)
-
-end             <U+0000>
+-newline         \n (later)
+-
+end
 ])
 PSPP_CHECK_SEGMENT([-i])
 AT_CLEANUP
@@ -125,7 +131,7 @@ wxyz./* unterminated end of line comment
 WXYZ. /* unterminated end of line comment
 WxYz./* unterminated end of line comment @&t@
 ])
-AT_DATA([expout], [dnl
+AT_DATA([expout-base], [dnl
 identifier      abcd.    space
 identifier      abcd
 end_command     .
@@ -203,9 +209,9 @@ newline         \n (first)
 identifier      WxYz
 end_command     .
 comment         /*_unterminated_end_of_line_comment_
-newline         \n (first)
-
-end             <U+0000>
+-newline         \n (first)
+-
+end
 ])
 PSPP_CHECK_SEGMENT([-i])
 AT_CLEANUP
@@ -218,7 +224,7 @@ AND OR NOT EQ GE GT LE LT NE ALL BY TO WITH
 andx orx notx eqx gex gtx lex ltx nex allx byx tox withx
 and. with.
 ])
-AT_DATA([expout], [dnl
+AT_DATA([expout-base], [dnl
 reserved_word   and    space
 reserved_word   or    space
 reserved_word   not    space
@@ -267,9 +273,9 @@ newline         \n (later)
 identifier      and.    space
 reserved_word   with
 end_command     .
-newline         \n (first)
-
-end             <U+0000>
+-newline         \n (first)
+-
+end
 ])
 PSPP_CHECK_SEGMENT([-i])
 AT_CLEANUP
@@ -280,7 +286,7 @@ AT_DATA([input], [dnl
 ~ & | = >= > <= < ~= <> ( ) , - + * / [[ ]] **
 ~&|=>=><=<~=<>(),-+*/[[]]**
 ])
-AT_DATA([expout], [dnl
+AT_DATA([expout-base], [dnl
 punct           ~    space
 punct           &    space
 punct           |    space
@@ -323,9 +329,9 @@ punct           /
 punct           [[
 punct           ]]
 punct           **
-newline         \n (later)
-
-end             <U+0000>
+-newline         \n (later)
+-
+end
 ])
 PSPP_CHECK_SEGMENT([-i])
 AT_CLEANUP
@@ -341,7 +347,7 @@ AT_DATA([input], [dnl
 1.23e1 45.6E-1 78.9e+1 99.9E+01 11.2e-03
 . 1e e1 1e+ 1e-
 ])
-AT_DATA([expout], [dnl
+AT_DATA([expout-base], [dnl
 number          0    space
 number          1    space
 number          01    space
@@ -390,9 +396,9 @@ expected_exponent 1e    space
 identifier      e1    space
 expected_exponent 1e+    space
 expected_exponent 1e-
-newline         \n (later)
-
-end             <U+0000>
+-newline         \n (later)
+-
+end
 ])
 PSPP_CHECK_SEGMENT([-i])
 AT_CLEANUP
@@ -413,7 +419,7 @@ u'fffd' U"041"
 + /* also a punctuator on blank line
 - 'new command'
 ])
-AT_DATA([expout], [dnl
+AT_DATA([expout-base], [dnl
 quoted_string   'x'    space
 quoted_string   "y"    space
 quoted_string   'abc'
@@ -462,9 +468,9 @@ newline         \n (later)
 
 start_command   -    space
 quoted_string   'new_command'
-newline         \n (later)
-
-end             <U+0000>
+-newline         \n (later)
+-
+end
 ])
 PSPP_CHECK_SEGMENT([-i])
 AT_CLEANUP
@@ -476,7 +482,7 @@ AT_DATA([input], [dnl
 title my title.
 #! /usr/bin/pspp
 ])
-AT_DATA([expout], [dnl
+AT_DATA([expout-base], [dnl
 shbang          #!_/usr/bin/pspp
 newline         \n (first)
 
@@ -493,9 +499,9 @@ punct           /
 identifier      bin
 punct           /
 identifier      pspp
-newline         \n (later)
-
-end             <U+0000>
+-newline         \n (later)
+-
+end
 ])
 PSPP_CHECK_SEGMENT([-i])
 AT_CLEANUP
@@ -520,7 +526,7 @@ com is ambiguous with COMPUTE.
 next command.
 
 ])
-AT_DATA([expout], [dnl
+AT_DATA([expout-base], [dnl
 comment_command *_Comment_commands_"don't
 newline         \n (COMMENT)
 
@@ -580,10 +586,10 @@ identifier      command
 end_command     .
 newline         \n (first)
 
-separate_commands
-newline         \n (first)
-
-end             <U+0000>
+-separate_commands
+-newline         \n (first)
+-
+end
 ])
 PSPP_CHECK_SEGMENT([-i])
 AT_CLEANUP
@@ -602,7 +608,7 @@ isn't parsed as tokens
 
 second paragraph.
 ])
-AT_DATA([expout], [dnl
+AT_DATA([expout-base], [dnl
 start_document
 document        DOCUMENT_one_line.
 end_command     
@@ -638,11 +644,11 @@ document
 newline         \n (DOCUMENT)
 
 document        second_paragraph.
-end_command     
-separate_commands
-newline         \n (first)
- 
-end             <U+0000>
+-end_command
+-separate_commands
+-newline         \n (first)
+-
+end
 ])
 PSPP_CHECK_SEGMENT([-i])
 AT_CLEANUP
@@ -666,7 +672,7 @@ FILE /*
 /**/  lab not quoted here either
 
 ])
-AT_DATA([expout], [dnl
+AT_DATA([expout-base], [dnl
 identifier      title
 comment         /**/
 quoted_string   'Quoted_string_title'
@@ -728,10 +734,10 @@ identifier      lab    space
 unquoted_string not_quoted_here_either
 newline         \n (later)
 
-separate_commands
-newline         \n (first)
-
-end             <U+0000>
+-separate_commands
+-newline         \n (first)
+-
+end
 ])
 PSPP_CHECK_SEGMENT([-i])
 AT_CLEANUP
@@ -763,7 +769,7 @@ begin data "xxx".
 begin data 123.
 not data
 ])
-AT_DATA([expout], [dnl
+AT_DATA([expout-base], [dnl
 identifier      begin    space
 identifier      data
 end_command     .
@@ -854,9 +860,9 @@ newline         \n (first)
 
 reserved_word   not    space
 identifier      data
-newline         \n (later)
-
-end             <U+0000>
+-newline         \n (later)
+-
+end
 ])
 PSPP_CHECK_SEGMENT([-i])
 AT_CLEANUP
@@ -878,7 +884,7 @@ do
   inner command.
 end repeat.
 ])
-AT_DATA([expout], [dnl
+AT_DATA([expout-base], [dnl
 identifier      do    space
 identifier      repeat    space
 identifier      x
@@ -936,9 +942,9 @@ newline         \n (DO REPEAT)
 identifier      end    space
 identifier      repeat
 end_command     .
-newline         \n (first)
-
-end             <U+0000>
+-newline         \n (first)
+-
+end
 ])
 PSPP_CHECK_SEGMENT([-i])
 AT_CLEANUP
@@ -954,7 +960,7 @@ third command
 fourth command.
    fifth command.
 ])
-AT_DATA([expout], [dnl
+AT_DATA([expout-base], [dnl
 identifier      first    space
 identifier      command
 newline         \n (later)
@@ -990,9 +996,9 @@ spaces          ___
 identifier      fifth    space
 identifier      command
 end_command     .
-newline         \n (first)
-
-end             <U+0000>
+-newline         \n (first)
+-
+end
 ])
 PSPP_CHECK_SEGMENT([-b])
 AT_CLEANUP
@@ -1014,7 +1020,7 @@ twostep cluster
 fourth command.
    fifth command.
 ])
-AT_DATA([expout], [dnl
+AT_DATA([expout-base], [dnl
 identifier      command
 newline         \n (later)
 
@@ -1080,9 +1086,9 @@ spaces          ___
 identifier      fifth    space
 identifier      command
 end_command     .
-newline         \n (first)
-
-end             <U+0000>
+-newline         \n (first)
+-
+end
 ])
 PSPP_CHECK_SEGMENT([-a])
 AT_CLEANUP

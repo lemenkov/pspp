@@ -39,6 +39,10 @@
 /* -a/--auto, -b/--batch, -i/--interactive: syntax mode. */
 static enum segmenter_mode mode = SEG_MODE_AUTO;
 
+/* -s, --strip-trailing-newline: Strip trailing newline from last line of
+    input. */
+static bool strip_trailing_newline;
+
 static const char *parse_options (int argc, char **argv);
 static void usage (void) NO_RETURN;
 
@@ -55,19 +59,21 @@ main (int argc, char *argv[])
   set_program_name (argv[0]);
   file_name = parse_options (argc, argv);
 
-  /* Read from stdin into 'input'.  Ensure that 'input' ends in a new-line
-     followed by a null byte. */
+  /* Read from stdin into 'input'. */
   input = (!strcmp (file_name, "-")
            ? fread_file (stdin, &length)
            : read_file (file_name, &length));
   if (input == NULL)
     error (EXIT_FAILURE, errno, "reading %s failed", file_name);
-  input = xrealloc (input, length + 3);
-  if (length == 0 || input[length - 1] != '\n')
-    input[length++] = '\n';
-  input[length++] = '\0';
 
-  string_lexer_init (&slex, input, mode);
+  if (strip_trailing_newline && length && input[length - 1] == '\n')
+    {
+      length--;
+      if (length && input[length - 1] == '\r')
+        length--;
+    }
+
+  string_lexer_init (&slex, input, length, mode);
   do
     {
       struct token token;
@@ -107,11 +113,12 @@ parse_options (int argc, char **argv)
           {"auto", no_argument, NULL, 'a'},
           {"batch", no_argument, NULL, 'b'},
           {"interactive", no_argument, NULL, 'i'},
+          {"strip-trailing-newline", no_argument, NULL, 's'},
           {"help", no_argument, NULL, 'h'},
           {NULL, 0, NULL, 0},
         };
 
-      int c = getopt_long (argc, argv, "abih", options, NULL);
+      int c = getopt_long (argc, argv, "sabih", options, NULL);
       if (c == -1)
         break;
 
@@ -127,6 +134,10 @@ parse_options (int argc, char **argv)
 
         case 'i':
           mode = SEG_MODE_INTERACTIVE;
+          break;
+
+        case 's':
+          strip_trailing_newline = true;
           break;
 
         case 'h':
@@ -159,10 +170,10 @@ usage (void)
 usage: %s [OPTIONS] INPUT\n\
 \n\
 Options:\n\
-  -1, --one-segment   feed one segment at a time\n\
   -a, --auto          use \"auto\" syntax mode\n\
   -b, --batch         use \"batch\" syntax mode\n\
   -i, --interactive   use \"interactive\" syntax mode (default)\n\
+  -s, --strip-trailing-newline  remove newline from end of input\n\
   -v, --verbose       include rows and column numbers in output\n\
   -h, --help          print this help message\n",
           program_name, program_name);

@@ -132,6 +132,7 @@ lex_reader_init (struct lex_reader *reader,
   reader->file_name = NULL;
   reader->encoding = NULL;
   reader->line_number = 0;
+  reader->eof = false;
 }
 
 /* Frees any file name already in READER and replaces it by a copy of
@@ -876,7 +877,7 @@ lex_match_phrase (struct lexer *lexer, const char *s)
   int i;
 
   i = 0;
-  string_lexer_init (&slex, s, SEG_MODE_INTERACTIVE);
+  string_lexer_init (&slex, s, strlen (s), SEG_MODE_INTERACTIVE);
   while (string_lexer_next (&slex, &token))
     if (token.type != SCAN_SKIP)
       {
@@ -1190,38 +1191,11 @@ lex_source_read__ (struct lex_source *src)
                                            space, prompt);
       assert (n <= space);
 
-      for (char *p = &src->buffer[head_ofs]; p < &src->buffer[head_ofs + n];
-           p++)
-        if (*p == '\0')
-          {
-            struct msg m;
-            m.category = MSG_C_SYNTAX;
-            m.severity = MSG_S_ERROR;
-            m.file_name = src->reader->file_name;
-            m.first_line = 0;
-            m.last_line = 0;
-            m.first_column = 0;
-            m.last_column = 0;
-            m.text = xstrdup ("Bad character U+0000 in input.");
-            msg_emit (&m);
-
-            *p = ' ';
-          }
-
       if (n == 0)
         {
-          /* End of input.
-
-             Ensure that the input always ends in a new-line followed by a null
-             byte, as required by the segmenter library. */
-
-          if (src->head == src->tail
-              || src->buffer[src->head - src->tail - 1] != '\n')
-            src->buffer[src->head++ - src->tail] = '\n';
-
+          /* End of input. */
+          src->reader->eof = true;
           lex_source_expand__ (src);
-          src->buffer[src->head++ - src->tail] = '\0';
-
           return;
         }
 
@@ -1261,6 +1235,7 @@ lex_ellipsize__ (struct substring in, char *out, size_t out_size)
   for (out_len = 0; out_len < in.length; out_len += mblen)
     {
       if (in.string[out_len] == '\n'
+          || in.string[out_len] == '\0'
           || (in.string[out_len] == '\r'
               && out_len + 1 < in.length
               && in.string[out_len + 1] == '\n'))
@@ -1391,10 +1366,11 @@ lex_source_get__ (const struct lex_source *src_)
       size_t seg_maxlen = src->head - state.seg_pos;
       enum segment_type type;
       int seg_len = segmenter_push (&state.segmenter, segment, seg_maxlen,
-                                    &type);
+                                    src->reader->eof, &type);
       if (seg_len < 0)
         {
           /* The segmenter needs more input to produce a segment. */
+          assert (!src->reader->eof);
           lex_source_read__ (src);
           continue;
         }

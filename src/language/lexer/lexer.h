@@ -56,6 +56,7 @@ struct lex_reader
     char *encoding;
     char *file_name;            /* NULL if not associated with a file. */
     int line_number;            /* 1-based initial line number, 0 if none. */
+    bool eof;
   };
 
 /* An implementation of a lex_reader. */

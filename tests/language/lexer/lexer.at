@@ -84,16 +84,13 @@ AT_SETUP([lexer crash due to null byte])
 printf "datA dist list notable file='input.txt'/a b c.
 lis|.\0" > lexer.sps
 
-# We sort the output into a predictable order because the lexer finds
-# and reports null bytes as soon as it reads them into its input
-# buffer, as opposed to when it encounters them during tokenization.
-# This also means that null bytes might be reported as part of one
-# command or another or none, hence removing the LIST: prefix.
-AT_CHECK([pspp -O format=csv lexer.sps > lexer.csv], [1])
-AT_CHECK([sed '/^$/d
-s/LIST: //' lexer.csv | sort], [0], [dnl
-lexer.sps: error: Bad character U+0000 in input.
+AT_CHECK([pspp -O format=csv lexer.sps], [1], [dnl
 lexer.sps:1: error: Unknown command `datA dist'.
-lexer.sps:2: error: LIST is allowed only after the active dataset has been defined.
+
+lexer.sps:2: error: LIST: LIST is allowed only after the active dataset has been defined.
+
+lexer.sps:2.5: error: LIST: Syntax error at `.': Unexpected `.' in middle of command.
+
+lexer.sps:2.6: error: LIST: Syntax error at `...': Bad character U+0000 in input.
 ])
 AT_CLEANUP

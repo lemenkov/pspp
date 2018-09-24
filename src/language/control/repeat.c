@@ -210,7 +210,7 @@ do_parse_commands (struct substring s, enum segmenter_mode mode,
       enum segment_type type;
       int n;
 
-      n = segmenter_push (&segmenter, s.string, s.length, &type);
+      n = segmenter_push (&segmenter, s.string, s.length, true, &type);
       assert (n >= 0);
 
       if (type == SEG_DO_REPEAT_COMMAND)
@@ -220,7 +220,7 @@ do_parse_commands (struct substring s, enum segmenter_mode mode,
               int k;
 
               k = segmenter_push (&segmenter, s.string + n, s.length - n,
-                                  &type);
+                                  true, &type);
               if (type != SEG_NEWLINE && type != SEG_DO_REPEAT_COMMAND)
                 break;
 
@@ -275,9 +275,6 @@ parse_commands (struct lexer *lexer, struct hmap *dummies)
       ds_put_byte (&input, '\n');
       lex_get (lexer);
     }
-  if (ds_is_empty (&input))
-    ds_put_byte (&input, '\n');
-  ds_put_byte (&input, '\0');
 
   n_values = count_values (dummies);
   outputs = xmalloc (n_values * sizeof *outputs);
