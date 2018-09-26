@@ -1762,7 +1762,12 @@ parse_mrsets (struct sfm_reader *r, const struct sfm_extension_record *record,
             }
 
           number = text_get_token (text, ss_cstr (" "), NULL);
-          if (!strcmp (number, "11"))
+          if (!number)
+            sys_warn (r, record->pos,
+                      _("Missing label source value "
+                        "following `E' at offset %zu in MRSETS record."),
+                      text_pos (text));
+          else if (!strcmp (number, "11"))
             mrset->label_from_var_label = true;
           else if (strcmp (number, "1"))
             sys_warn (r, record->pos,

@@ -2629,6 +2629,36 @@ warning: `sys-file.sav' near offset 0xd8: Missing space following `E' at offset 
 done
 AT_CLEANUP
 
+AT_SETUP([missing label source in mrsets])
+AT_KEYWORDS([sack synthetic system file negative multiple response])
+AT_DATA([sys-file.sack], [dnl
+dnl File header.
+"$FL2"; s60 "$(#) SPSS DATA FILE PSPP synthetic test file";
+2; 1; 1; 0; -1; 100.0; "01 Jan 11"; "20:53:52"; s64 ""; i8 0 *3;
+
+dnl Numeric variable, no label or missing values.
+2; 0; 0; 0; 0x050800 *2; s8 "NUM1";
+
+dnl Multiple response sets.
+7; 7; 1; COUNT("$a=E ");
+
+dnl Character encoding record.
+7; 20; 1; 12; "windows-1252";
+
+999; 0;
+])
+for variant in be le; do
+  AT_CHECK([sack --$variant sys-file.sack > sys-file.sav])
+  AT_DATA([sys-file.sps], [GET FILE='sys-file.sav'.
+])
+  AT_CHECK([pspp -O format=csv sys-file.sps], [0], [dnl
+warning: `sys-file.sav' near offset 0xd8: Missing label source value following `E' at offset 5 in MRSETS record.
+
+warning: `sys-file.sav' near offset 0xd8: Expecting digit at offset 5 in MRSETS record.
+])
+done
+AT_CLEANUP
+
 AT_SETUP([unexpected label source in mrsets])
 AT_KEYWORDS([sack synthetic system file negative multiple response])
 AT_DATA([sys-file.sack], [dnl

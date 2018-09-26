@@ -795,7 +795,11 @@ read_mrsets (struct sfm_reader *r, size_t size, size_t count)
             }
 
           number = text_tokenize (text, ' ');
-          if (!strcmp (number, "11"))
+          if (!number)
+            sys_warn (r, "Missing label source value "
+                      "following `E' at offset %zu in MRSETS record",
+                      text_pos (text));
+          else if (!strcmp (number, "11"))
             label_from_var_label = true;
           else if (strcmp (number, "1"))
             sys_warn (r, "Unexpected label source value `%s' "
