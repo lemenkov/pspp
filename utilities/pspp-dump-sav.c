@@ -444,14 +444,12 @@ read_variable_record (struct sfm_reader *r)
   if (has_variable_label == 1)
     {
       long long int offset = ftello (r->file);
-      size_t len;
-      char *label;
+      enum { MAX_LABEL_LEN = 65536 };
 
-      len = read_int (r);
-
-      /* Read up to 255 bytes of label. */
-      label = xmalloc (len + 1);
-      read_string (r, label, len + 1);
+      size_t len = read_int (r);
+      size_t read_len = MIN (MAX_LABEL_LEN, len);
+      char *label = xmalloc (read_len + 1);
+      read_string (r, label, read_len + 1);
       printf("\t%08llx Variable label: \"%s\"\n", offset, label);
       free (label);
 
