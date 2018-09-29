@@ -1586,7 +1586,7 @@ sheet_spec_gen_syntax (PsppireImportAssistant *ia, struct string *s)
     }
 
 
-  syntax_gen_pspp (s, ".");
+  syntax_gen_pspp (s, ".\n");
 }
 
 
