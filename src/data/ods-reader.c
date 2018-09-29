@@ -153,7 +153,7 @@ ods_unref (struct spreadsheet *s)
 	  xmlFree (r->sheets[i].name);
 	}
 
-      dict_destroy (r->dict);
+      dict_unref (r->dict);
 
       zip_reader_destroy (r->zreader);
       free (r->sheets);

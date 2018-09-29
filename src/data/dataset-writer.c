@@ -115,7 +115,7 @@ dataset_writer_casewriter_destroy (struct casewriter *w UNUSED, void *writer_)
   else
     {
       casereader_destroy (reader);
-      dict_destroy (writer->dict);
+      dict_unref (writer->dict);
     }
 
   fh_unlock (writer->lock);

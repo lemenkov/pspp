@@ -166,7 +166,7 @@ pfm_close (struct any_reader *r_)
   struct pfm_reader *r = pfm_reader_cast (r_);
   bool ok;
 
-  dict_destroy (r->dict);
+  dict_unref (r->dict);
   any_read_info_destroy (&r->info);
   if (r->file)
     {

@@ -127,6 +127,8 @@ psppire_import_assistant_finalize (GObject *object)
 
   ds_destroy (&ia->quotes);
 
+  dict_unref (ia->dict);
+
   g_object_unref (ia->builder);
 
   ia->response = -1;
@@ -1274,7 +1276,7 @@ prepare_formats_page (PsppireImportAssistant *ia)
 
       struct casereader *reader = spreadsheet_make_reader (ia->spreadsheet, &opts);
 
-      PsppireDict *dict = psppire_dict_new_from_dict (dict_clone (ia->spreadsheet->dict));
+      PsppireDict *dict = psppire_dict_new_from_dict (ia->spreadsheet->dict);
       PsppireDataStore *store = psppire_data_store_new (dict);
       psppire_data_store_set_reader (store, reader);
       g_object_set (ia->data_sheet, "data-model", store, NULL);

@@ -69,8 +69,8 @@ struct spreadsheet
   int n_sheets;
 
   /* The dictionary for client's reference.
-     Client must clone if it needs a permanent or modifiable copy. */
-  const struct dictionary *dict;
+     Client must ref or clone it if it needs a permanent or modifiable copy. */
+  struct dictionary *dict;
 
   int ref_cnt;
 };

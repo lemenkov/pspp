@@ -686,7 +686,7 @@ parse_get_txt (struct lexer *lexer, struct dataset *ds)
 
  error:
   data_parser_destroy (parser);
-  dict_destroy (dict);
+  dict_unref (dict);
   fh_unref (fh);
   free (name);
   free (encoding);

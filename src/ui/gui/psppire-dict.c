@@ -288,6 +288,7 @@ psppire_dict_dispose (GObject *object)
   PsppireDict *d = PSPPIRE_DICT (object);
 
   dict_set_callbacks (d->dict, NULL, NULL);
+  dict_unref (d->dict);
 
   G_OBJECT_CLASS (parent_class)->dispose (object);
 }
@@ -367,7 +368,7 @@ PsppireDict*
 psppire_dict_new_from_dict (struct dictionary *d)
 {
   PsppireDict *new_dict = g_object_new (PSPPIRE_TYPE_DICT, NULL);
-  new_dict->dict = d;
+  new_dict->dict = dict_ref (d);
 
   dict_set_callbacks (new_dict->dict, &gui_callbacks, new_dict);
 
@@ -380,10 +381,13 @@ psppire_dict_replace_dictionary (PsppireDict *dict, struct dictionary *d)
 {
   struct variable *var =  dict_get_weight (d);
 
+  struct dictionary *old_dict = dict->dict;
+
   guint old_n = dict_get_var_cnt (dict->dict);
   guint new_n = dict_get_var_cnt (d);
 
-  dict->dict = d;
+  dict->dict = dict_ref (d);
+  dict_unref (old_dict);
 
   weight_changed_callback (d, var ? var_get_dict_index (var) : -1, dict);
 

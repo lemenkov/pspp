@@ -55,6 +55,7 @@
 /* A dictionary. */
 struct dictionary
   {
+    int ref_cnt;
     struct vardict_info *var;	/* Variables. */
     size_t var_cnt, var_cap;    /* Number of variables, capacity. */
     struct caseproto *proto;    /* Prototype for dictionary cases
@@ -179,8 +180,16 @@ dict_create (const char *encoding)
   d->names_must_be_ids = true;
   hmap_init (&d->name_map);
   attrset_init (&d->attributes);
+  d->ref_cnt = 1;
 
   return d;
+}
+
+struct dictionary *
+dict_ref (struct dictionary *s)
+{
+  s->ref_cnt++;
+  return s;
 }
 
 /* Creates and returns a (deep) copy of an existing
@@ -219,7 +228,7 @@ dict_clone (const struct dictionary *s)
   d->split_cnt = s->split_cnt;
   if (d->split_cnt > 0)
     {
-      d->split = xnmalloc (d->split_cnt, sizeof *d->split);
+       d->split = xnmalloc (d->split_cnt, sizeof *d->split);
       for (i = 0; i < d->split_cnt; i++)
         d->split[i] = dict_lookup_var_assert (d, var_get_name (s->split[i]));
     }
@@ -288,23 +297,31 @@ dict_clear (struct dictionary *d)
 }
 
 /* Clears a dictionary and destroys it. */
-void
-dict_destroy (struct dictionary *d)
+static void
+_dict_destroy (struct dictionary *d)
 {
-  if (d != NULL)
-    {
-      /* In general, we don't want callbacks occurring, if the dictionary
-	 is being destroyed */
-      d->callbacks  = NULL ;
+  /* In general, we don't want callbacks occurring, if the dictionary
+     is being destroyed */
+  d->callbacks  = NULL ;
 
-      dict_clear (d);
-      string_array_destroy (&d->documents);
-      hmap_destroy (&d->name_map);
-      attrset_destroy (&d->attributes);
-      dict_clear_mrsets (d);
-      free (d->encoding);
-      free (d);
-    }
+  dict_clear (d);
+  string_array_destroy (&d->documents);
+  hmap_destroy (&d->name_map);
+  attrset_destroy (&d->attributes);
+  dict_clear_mrsets (d);
+  free (d->encoding);
+  free (d);
+}
+
+void
+dict_unref (struct dictionary *d)
+{
+  if (d == NULL)
+    return;
+  d->ref_cnt--;
+  assert (d->ref_cnt >= 0);
+  if (d->ref_cnt == 0)
+    _dict_destroy (d);
 }
 
 /* Returns the number of variables in D. */
@@ -1703,7 +1720,7 @@ dict_destroy_internal_var (struct variable *var)
          valgrind --leak-check --show-reachable won't show internal_dict. */
       if (dict_get_var_cnt (internal_dict) == 0)
         {
-          dict_destroy (internal_dict);
+          dict_unref (internal_dict);
           internal_dict = NULL;
         }
     }

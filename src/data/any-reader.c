@@ -222,7 +222,7 @@ static bool
 dataset_reader_close (struct any_reader *r_)
 {
   struct dataset_reader *r = dataset_reader_cast (r_);
-  dict_destroy (r->dict);
+  dict_unref (r->dict);
   casereader_destroy (r->reader);
   free (r);
 

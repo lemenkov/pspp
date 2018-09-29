@@ -461,7 +461,7 @@ pcp_decode (struct any_reader *r_, const char *encoding,
 
 error:
   pcp_close (&r->any_reader);
-  dict_destroy (dict);
+  dict_unref (dict);
   *dictp = NULL;
   return NULL;
 }

@@ -199,7 +199,7 @@ dataset_destroy (struct dataset *ds)
     {
       dataset_set_session (ds, NULL);
       dataset_clear (ds);
-      dict_destroy (ds->dict);
+      dict_unref (ds->dict);
       caseinit_destroy (ds->caseinit);
       trns_chain_destroy (ds->permanent_trns_chain);
       dataset_transformations_changed__ (ds, false);
@@ -292,7 +292,7 @@ dataset_set_dict (struct dataset *ds, struct dictionary *dict)
 
   dataset_clear (ds);
 
-  dict_destroy (ds->dict);
+  dict_unref (ds->dict);
   ds->dict = dict;
   dict_set_change_callback (ds->dict, dict_callback, ds);
 }
@@ -765,7 +765,7 @@ proc_make_temporary_transformations_permanent (struct dataset *ds)
 
       ds->cur_trns_chain = ds->permanent_trns_chain;
 
-      dict_destroy (ds->permanent_dict);
+      dict_unref (ds->permanent_dict);
       ds->permanent_dict = NULL;
 
       return true;
@@ -782,7 +782,7 @@ proc_cancel_temporary_transformations (struct dataset *ds)
 {
   if (proc_in_temporary_transformations (ds))
     {
-      dict_destroy (ds->dict);
+      dict_unref (ds->dict);
       ds->dict = ds->permanent_dict;
       ds->permanent_dict = NULL;
 

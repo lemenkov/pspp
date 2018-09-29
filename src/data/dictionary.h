@@ -27,12 +27,13 @@ struct ccase;
 
 /* Creating dictionaries. */
 struct dictionary *dict_create (const char *encoding);
-struct dictionary *dict_clone (const struct dictionary *);
+struct dictionary *dict_clone (const struct dictionary *) WARN_UNUSED_RESULT;
+struct dictionary *dict_ref (struct dictionary *s) WARN_UNUSED_RESULT;
 
 
 /* Clearing and destroying dictionaries. */
 void dict_clear (struct dictionary *);
-void dict_destroy (struct dictionary *);
+void dict_unref (struct dictionary *);
 
 /* Common ways to access variables. */
 struct variable *dict_lookup_var (const struct dictionary *, const char *);

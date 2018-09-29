@@ -231,7 +231,7 @@ cmd_flip (struct lexer *lexer, struct dataset *ds)
   return CMD_SUCCESS;
 
  error:
-  dict_destroy (new_dict);
+  dict_unref (new_dict);
   destroy_flip_pgm (flip);
   return CMD_CASCADING_FAILURE;
 }

@@ -274,7 +274,7 @@ CODE:
 	 free (input_format);
        }
      hmap_destroy (&dict->input_formats);
-     dict_destroy (dict->dict);
+     dict_unref (dict->dict);
      free (dict);
    }
 

@@ -644,7 +644,7 @@ close_all_comb_files (struct comb_proc *proc)
       subcase_destroy (&file->dst);
       free (file->mv);
       fh_unref (file->handle);
-      dict_destroy (file->dict);
+      dict_unref (file->dict);
       casereader_destroy (file->reader);
       case_unref (file->data);
       free (file->in_name);
@@ -659,7 +659,7 @@ static void
 free_comb_proc (struct comb_proc *proc)
 {
   close_all_comb_files (proc);
-  dict_destroy (proc->dict);
+  dict_unref (proc->dict);
   casewriter_destroy (proc->output);
   case_matcher_destroy (proc->matcher);
   if (proc->prev_BY)

@@ -342,7 +342,7 @@ parse_write_command (struct lexer *lexer, struct dataset *ds,
   case_map_stage_destroy (stage);
   if (map != NULL)
     writer = case_map_create_output_translator (map, writer);
-  dict_destroy (dict);
+  dict_unref (dict);
 
   fh_unref (handle);
   fh_unref (metadata);
@@ -353,7 +353,7 @@ parse_write_command (struct lexer *lexer, struct dataset *ds,
   fh_unref (handle);
   fh_unref (metadata);
   casewriter_destroy (writer);
-  dict_destroy (dict);
+  dict_unref (dict);
   case_map_destroy (map);
   return NULL;
 }

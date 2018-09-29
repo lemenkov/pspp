@@ -573,7 +573,7 @@ cmd_matrix (struct lexer *lexer, struct dataset *ds)
  error:
   data_parser_destroy (parser);
   if (!in_input_program ())
-    dict_destroy (dict);
+    dict_unref (dict);
   fh_unref (fh);
   free (encoding);
   free (mformat.split_vars);

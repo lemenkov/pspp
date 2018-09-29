@@ -161,7 +161,7 @@ parse_read_command (struct lexer *lexer, struct dataset *ds,
   fh_unref (fh);
   casereader_destroy (reader);
   if (dict != NULL)
-    dict_destroy (dict);
+    dict_unref (dict);
   free (encoding);
   return CMD_CASCADING_FAILURE;
 }

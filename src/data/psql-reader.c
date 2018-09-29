@@ -544,7 +544,7 @@ psql_open_reader (struct psql_read_info *info, struct dictionary **dict)
      &psql_casereader_class, r);
 
  error:
-  dict_destroy (*dict);
+  dict_unref (*dict);
 
   psql_casereader_destroy (NULL, r);
   return NULL;

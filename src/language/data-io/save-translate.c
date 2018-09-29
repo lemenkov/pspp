@@ -279,7 +279,7 @@ cmd_save_translate (struct lexer *lexer, struct dataset *ds)
   case_map_stage_destroy (stage);
   if (map != NULL)
     writer = case_map_create_output_translator (map, writer);
-  dict_destroy (dict);
+  dict_unref (dict);
 
   casereader_transfer (proc_open_filtering (ds, !retain_unselected), writer);
   ok = casewriter_destroy (writer);
@@ -290,7 +290,7 @@ cmd_save_translate (struct lexer *lexer, struct dataset *ds)
 error:
   case_map_stage_destroy (stage);
   fh_unref (handle);
-  dict_destroy (dict);
+  dict_unref (dict);
   case_map_destroy (map);
   return CMD_FAILURE;
 }

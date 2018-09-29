@@ -733,7 +733,7 @@ agr_destroy (struct agr_proc *agr)
       free (iter);
     }
   if (agr->dict != NULL)
-    dict_destroy (agr->dict);
+    dict_unref (agr->dict);
 }
 
 /* Execution. */

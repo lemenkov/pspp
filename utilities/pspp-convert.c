@@ -223,7 +223,7 @@ main (int argc, char *argv[])
     error (1, 0, _("%s: error writing output file"), output_filename);
 
 exit:
-  dict_destroy (dict);
+  dict_unref (dict);
   fh_unref (output_fh);
   fh_unref (input_fh);
   fh_done ();
@@ -232,7 +232,7 @@ exit:
   return 0;
 
 error:
-  dict_destroy (dict);
+  dict_unref (dict);
   fh_unref (output_fh);
   fh_unref (input_fh);
   fh_done ();

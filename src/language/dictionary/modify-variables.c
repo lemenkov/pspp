@@ -296,7 +296,7 @@ cmd_modify_vars (struct lexer *lexer, struct dataset *ds)
             {
               /* FIXME: display new dictionary. */
             }
-          dict_destroy (temp);
+          dict_unref (temp);
 	}
       else
 	{

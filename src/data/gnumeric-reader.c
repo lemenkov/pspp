@@ -174,7 +174,7 @@ gnumeric_unref (struct spreadsheet *s)
       free (r->sheets);
       state_data_destroy (&r->msd);
 
-      dict_destroy (r->dict);
+      dict_unref (r->dict);
 
       free (s->file_name);
 

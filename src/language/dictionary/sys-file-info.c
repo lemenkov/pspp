@@ -250,7 +250,7 @@ cmd_sysfile_info (struct lexer *lexer, struct dataset *ds UNUSED)
 
   table_item_submit (table_item_create (table, NULL /* XXX */, NULL));
 
-  dict_destroy (d);
+  dict_unref (d);
 
   fh_unref (h);
   free (encoding);

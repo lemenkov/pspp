@@ -891,7 +891,7 @@ sfm_decode (struct any_reader *r_, const char *encoding,
 
 error:
   sfm_close (r_);
-  dict_destroy (dict);
+  dict_unref (dict);
   *dictp = NULL;
   return NULL;
 }
