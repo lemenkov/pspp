@@ -1414,20 +1414,30 @@ lex_source_get__ (const struct lex_source *src_)
     }
   for (int i = 0; i < n_lines; i++)
     {
+      /* Beginning of line. */
       const char *line = &src->buffer[src->journal_pos - src->tail];
-      const char *newline = rawmemchr (line, '\n');
-      size_t line_len = newline - line;
-      if (line_len > 0 && line[line_len - 1] == '\r')
-        line_len--;
 
-      char *syntax = malloc (line_len + 2);
-      memcpy (syntax, line, line_len);
-      syntax[line_len] = '\n';
-      syntax[line_len + 1] = '\0';
+      /* Calculate line length, including \n or \r\n end-of-line if present. */
+      size_t max_len = state.line_pos - src->journal_pos;
+      const char *newline = memchr (line, '\n', max_len);
+      size_t line_len = newline ? newline - line + 1 : max_len;
+
+      /* Calculate line length excluding end-of-line. */
+      size_t copy_len = line_len;
+      if (copy_len > 0 && line[copy_len - 1] == '\n')
+        copy_len--;
+      if (copy_len > 0 && line[copy_len - 1] == '\r')
+        copy_len--;
+
+      /* Make a copy of the line with \n end-of-line and null terminator. */
+      char *syntax = xmalloc (copy_len + 2);
+      memcpy (syntax, line, copy_len);
+      syntax[copy_len] = '\n';
+      syntax[copy_len + 1] = '\0';
 
       text_item_submit (text_item_create_nocopy (TEXT_ITEM_SYNTAX, syntax));
 
-      src->journal_pos += newline - line + 1;
+      src->journal_pos += line_len;
     }
 
   token->token_len = state.seg_pos - src->seg_pos;
