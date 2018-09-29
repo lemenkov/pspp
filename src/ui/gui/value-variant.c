@@ -87,12 +87,11 @@ value_variant_get (union value *val, GVariant *v)
   else
     {
       const gchar *data = g_variant_get_bytestring (vdata);
+      size_t len = strlen (data);
       if (width <= MAX_SHORT_STRING)
-	memcpy (val->short_string, data, MAX_SHORT_STRING);
+	memcpy (val->short_string, data, MIN (MAX_SHORT_STRING, len));
       else
-	{
-	  val->long_string = xmemdup (data, width);
-	}
+	val->long_string = xmemdup (data, MIN (width, len));
     }
 
   g_variant_unref (vdata);
