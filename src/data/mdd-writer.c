@@ -434,10 +434,10 @@ mdd_write (struct file_handle *fh, struct dictionary *dict,
       const struct variable *var = dict_get_var (dict, i);
       xmlTextWriterStartElement (w->writer, _xml ("variable"));
       xmlTextWriterWriteFormatAttribute (w->writer, _xml ("id"),
-                                         "_%d", i + 1);
+                                         "_%zu", i + 1);
       write_attr (w->writer, "name", var_get_name (var));
       xmlTextWriterWriteFormatAttribute (w->writer, _xml ("ref"),
-                                         "%d", i + 1);
+                                         "%zu", i + 1);
       xmlTextWriterEndElement (w->writer);
     }
   write_empty_element (w->writer, "deleted");
@@ -522,7 +522,7 @@ mdd_write (struct file_handle *fh, struct dictionary *dict,
                   write_attr (w->writer, "name", label);
                   xmlTextWriterWriteFormatAttribute (
                     w->writer, _xml ("value"),
-                    "%d", string_set_count (&categories));
+                    "%zu", string_set_count (&categories));
                   xmlTextWriterEndElement (w->writer);
                 }
             }
