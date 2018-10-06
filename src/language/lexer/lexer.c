@@ -1417,8 +1417,13 @@ lex_source_get__ (const struct lex_source *src_)
       /* Beginning of line. */
       const char *line = &src->buffer[src->journal_pos - src->tail];
 
-      /* Calculate line length, including \n or \r\n end-of-line if present. */
-      size_t max_len = state.line_pos - src->journal_pos;
+      /* Calculate line length, including \n or \r\n end-of-line if present.
+
+         We use src->head even though that may be beyond what we've actually
+         converted to tokens (which is only through state.line_pos).  That's
+         because, if we're emitting the line due to SEG_END_COMMAND, we want to
+         take the whole line through the newline, not just through the '.'. */
+      size_t max_len = src->head - src->journal_pos;
       const char *newline = memchr (line, '\n', max_len);
       size_t line_len = newline ? newline - line + 1 : max_len;
 
