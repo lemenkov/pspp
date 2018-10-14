@@ -275,11 +275,11 @@ linreg_predict (const struct linreg *c, const double *vals, size_t n_vals)
   size_t j;
   double result;
 
-  assert (n_vals == c->n_coeffs);
   if (vals == NULL || c == NULL)
     {
       return GSL_NAN;
     }
+  assert (n_vals == c->n_coeffs);
   if (c->coeff == NULL)
     {
       /* The stupid model: just guess the mean. */
