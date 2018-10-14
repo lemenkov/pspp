@@ -229,12 +229,9 @@ tree_model_get_iter (GtkTreeModel * model, GtkTreeIter * iter,
 static gboolean
 tree_model_iter_next (GtkTreeModel *model, GtkTreeIter *iter)
 {
-  PsppireSpreadsheetModel *spreadsheetModel =
-    PSPPIRE_SPREADSHEET_MODEL (model);
+  PsppireSpreadsheetModel *spreadsheetModel = PSPPIRE_SPREADSHEET_MODEL (model);
+  g_assert (iter);
   g_return_val_if_fail (iter->stamp == spreadsheetModel->stamp, FALSE);
-
-  if (iter == NULL)
-    return FALSE;
 
   if ((intptr_t) iter->user_data >= spreadsheetModel->spreadsheet->n_sheets - 1)
     {
