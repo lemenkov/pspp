@@ -125,7 +125,7 @@ hash_double (double d, unsigned int basis)
       uint32_t tmp[2];
       uint32_t a, b, c;
 
-      a = b = c = 0xdeadbeef + 8 + basis;
+      a = b = c = 0xdeadbeefU + 8 + basis;
 
       memcpy (tmp, &d, 8);
       a += tmp[0];
