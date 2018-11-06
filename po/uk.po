@@ -2,13 +2,13 @@
 # Copyright (C) 2013 Free Software Foundation, Inc.
 # This file is distributed under the same license as the pspp package.
 #
-# Yuri Chornoivan <yurchor@ukr.net>, 2013, 2014, 2015, 2016, 2017.
+# Yuri Chornoivan <yurchor@ukr.net>, 2013, 2014, 2015, 2016, 2017, 2018.
 msgid ""
 msgstr ""
-"Project-Id-Version: pspp 1.0.1\n"
+"Project-Id-Version: pspp 1.2.0\n"
 "Report-Msgid-Bugs-To: pspp-dev@gnu.org\n"
 "POT-Creation-Date: 2015-06-19 20:56-0700\n"
-"PO-Revision-Date: 2017-12-31 10:56+0200\n"
+"PO-Revision-Date: 2018-11-06 18:48+0200\n"
 "Last-Translator: Yuri Chornoivan <yurchor@ukr.net>\n"
 "Language-Team: Ukrainian <translation-team-uk@lists.sourceforge.net>\n"
 "Language: uk\n"
@@ -23,30 +23,30 @@ msgstr ""
 msgid "Sorry. The help system hasn't yet been implemented."
 msgstr "Вибачте. Систему довідки ще не реалізовано."
 
-#: src/data/format.c:329
+#: src/data/format.c:339
 msgid "Input format"
 msgstr "Вхідний формат"
 
-#: src/data/format.c:329
+#: src/data/format.c:339
 msgid "Output format"
 msgstr "Вихідний формат"
 
-#: src/data/format.c:332
+#: src/data/format.c:342
 #, c-format
 msgid "Format %s may not be used for input."
 msgstr "Формат %s не можна використовувати для вхідних даних."
 
-#: src/data/format.c:339
+#: src/data/format.c:349
 #, c-format
 msgid "%s specifies width %d, but %s requires an even width."
 msgstr "%s визначає ширину %d, але для %s потрібне парне значення ширини."
 
-#: src/data/format.c:348
+#: src/data/format.c:358
 #, c-format
 msgid "%s %s specifies width %d, but %s requires a width between %d and %d."
 msgstr "%s %s визначає ширину %d, але для %s потрібна ширина у межах від %d до %d."
 
-#: src/data/format.c:357
+#: src/data/format.c:367
 #, c-format
 msgid "%s %s specifies %d decimal place, but %s does not allow any decimals."
 msgid_plural "%s %s specifies %d decimal places, but %s does not allow any decimals."
@@ -55,7 +55,7 @@ msgstr[1] "%s %s визначає %d десяткові позиції, але %
 msgstr[2] "%s %s визначає %d десяткових позицій, але %s забороняє будь-які десяткові позиції."
 msgstr[3] "%s %s визначає %d десяткову позицію, але %s забороняє будь-які десяткові позиції."
 
-#: src/data/format.c:368
+#: src/data/format.c:378
 #, c-format
 msgid "%s %s specifies %d decimal place, but the given width allows at most %d decimals."
 msgid_plural "%s %s specifies %d decimal places, but the given width allows at most %d decimals."
@@ -64,7 +64,7 @@ msgstr[1] "%s %s визначає %d десяткові позиції, але �
 msgstr[2] "%s %s визначає %d десяткових позицій, але за вказаного значення ширини можна використовувати не більше %d десяткових позицій."
 msgstr[3] "%s %s визначає %d десяткову позицію, але за вказаного значення ширини можна використовувати не більше %d десяткових позицій."
 
-#: src/data/format.c:375
+#: src/data/format.c:385
 #, c-format
 msgid "%s %s specifies %d decimal place, but the given width does not allow for any decimals."
 msgid_plural "%s %s specifies %d decimal places, but the given width does not allow for any decimals."
@@ -73,23 +73,23 @@ msgstr[1] "%s %s визначає %d десяткові позиції, але �
 msgstr[2] "%s %s визначає %d десяткових позицій, але за вказаного значення ширини не можна використовувати жодної."
 msgstr[3] "%s %s визначає %d десяткову позицію, але за вказаного значення ширини не можна використовувати жодної."
 
-#: src/data/format.c:414
+#: src/data/format.c:424
 #, c-format
 msgid "%s variables are not compatible with %s format %s."
 msgstr "Змінні %s несумісні з форматом %s %s."
 
-#: src/data/format.c:415 src/data/format.c:1010
+#: src/data/format.c:425 src/data/format.c:1040
 #: src/ui/gui/var-type-dialog.ui:167
 msgid "String"
 msgstr "Рядок"
 
-#: src/data/format.c:415 src/data/format.c:973
+#: src/data/format.c:425 src/data/format.c:1001
 #: src/ui/gui/var-type-dialog.ui:48
 msgid "Numeric"
 msgstr "Число"
 
-#: src/data/format.c:416 src/data/sys-file-reader.c:2193
-#: src/data/sys-file-reader.c:2195 src/language/xforms/recode.c:512
+#: src/data/format.c:426 src/data/sys-file-reader.c:2198
+#: src/data/sys-file-reader.c:2200 src/language/xforms/recode.c:512
 #: src/language/xforms/recode.c:513 src/language/xforms/recode.c:525
 #: src/language/xforms/recode.c:526
 #: src/language/dictionary/apply-dictionary.c:77
@@ -97,8 +97,8 @@ msgstr "Число"
 msgid "numeric"
 msgstr "число"
 
-#: src/data/format.c:416 src/data/sys-file-reader.c:2193
-#: src/data/sys-file-reader.c:2195 src/language/xforms/recode.c:512
+#: src/data/format.c:426 src/data/sys-file-reader.c:2198
+#: src/data/sys-file-reader.c:2200 src/language/xforms/recode.c:512
 #: src/language/xforms/recode.c:513 src/language/xforms/recode.c:525
 #: src/language/xforms/recode.c:526
 #: src/language/dictionary/apply-dictionary.c:77
@@ -106,32 +106,32 @@ msgstr "число"
 msgid "string"
 msgstr "рядок"
 
-#: src/data/format.c:434
+#: src/data/format.c:444
 #, c-format
 msgid "String variable with width %d is not compatible with format %s."
 msgstr "Рядкова змінна з шириною %d є несумісною з форматом %s."
 
-#: src/data/format.c:976 src/ui/gui/var-type-dialog.ui:65
+#: src/data/format.c:1004 src/ui/gui/var-type-dialog.ui:65
 msgid "Comma"
 msgstr "Кома"
 
-#: src/data/format.c:979 src/ui/gui/var-type-dialog.ui:82
+#: src/data/format.c:1007 src/ui/gui/var-type-dialog.ui:82
 msgid "Dot"
 msgstr "Крапка"
 
-#: src/data/format.c:982
+#: src/data/format.c:1010
 msgid "Scientific"
 msgstr "Інженерний"
 
-#: src/data/format.c:997 src/ui/gui/var-type-dialog.ui:116
+#: src/data/format.c:1027 src/ui/gui/var-type-dialog.ui:116
 msgid "Date"
 msgstr "Дата"
 
-#: src/data/format.c:1000 src/ui/gui/var-type-dialog.ui:133
+#: src/data/format.c:1030 src/ui/gui/var-type-dialog.ui:133
 msgid "Dollar"
 msgstr "Долар"
 
-#: src/data/format.c:1007
+#: src/data/format.c:1037
 msgid "Custom"
 msgstr "Нетиповий"
 
@@ -160,12 +160,12 @@ msgid "Continue"
 msgstr "Продовжити"
 
 #: src/ui/gui/psppire-buttonbox.c:368
-#: src/ui/gui/psppire-import-assistant.c:938
+#: src/ui/gui/psppire-import-assistant.c:739
 msgid "Paste"
 msgstr "Вставити"
 
-#: src/ui/gui/psppire-buttonbox.c:374 src/ui/gui/psppire-data-window.c:533
-#: src/ui/gui/psppire-data-window.c:661
+#: src/ui/gui/psppire-buttonbox.c:374 src/ui/gui/psppire-data-window.c:535
+#: src/ui/gui/psppire-data-window.c:663
 #: src/ui/gui/psppire-dialog-action-aggregate.c:216
 #: src/ui/gui/psppire-output-window.c:381
 #: src/ui/gui/psppire-syntax-window.c:559 src/ui/gui/psppire-window.c:472
@@ -178,7 +178,7 @@ msgid "Close"
 msgstr "Закрити"
 
 #: src/ui/gui/psppire-buttonbox.c:387
-#: src/ui/gui/psppire-import-assistant.c:939
+#: src/ui/gui/psppire-import-assistant.c:740
 msgid "Reset"
 msgstr "Скинути"
 
@@ -186,34 +186,34 @@ msgstr "Скинути"
 msgid "Help"
 msgstr "Довідка"
 
-#: src/ui/gui/psppire-dictview.c:603 src/language/dictionary/split-file.c:82
+#: src/ui/gui/psppire-dictview.c:602 src/language/dictionary/split-file.c:82
 #: src/language/dictionary/sys-file-info.c:240
 #: src/language/dictionary/sys-file-info.c:440
 #: src/language/dictionary/sys-file-info.c:738
 #: src/language/stats/descriptives.c:1027
 #: src/language/data-io/data-parser.c:672
-#: src/language/data-io/data-parser.c:711 src/language/data-io/print.c:446
-#: src/ui/gui/psppire-var-sheet.c:1243
+#: src/language/data-io/data-parser.c:711 src/language/data-io/print.c:440
+#: src/ui/gui/psppire-data-editor.c:527
 msgid "Variable"
 msgstr "Змінна"
 
-#: src/ui/gui/psppire-dictview.c:640
+#: src/ui/gui/psppire-dictview.c:639
 msgid "Prefer variable labels"
 msgstr "Перевага змінних міток"
 
-#: src/ui/gui/psppire-dictview.c:654
+#: src/ui/gui/psppire-dictview.c:653
 msgid "Default sort order"
 msgstr "Типове упорядкування"
 
-#: src/ui/gui/psppire-dictview.c:660
+#: src/ui/gui/psppire-dictview.c:659
 msgid "Unsorted (dictionary order)"
 msgstr "Без впорядковування (порядок словника)"
 
-#: src/ui/gui/psppire-dictview.c:665
+#: src/ui/gui/psppire-dictview.c:664
 msgid "Sort by name"
 msgstr "Упорядкувати за назвою"
 
-#: src/ui/gui/psppire-dictview.c:670
+#: src/ui/gui/psppire-dictview.c:669
 msgid "Sort by label"
 msgstr "Упорядкувати за міткою"
 
@@ -265,7 +265,7 @@ msgstr "_Усі інші значення"
 msgid "An error occurred while opening `%s': %s."
 msgstr "Під час спроби відкрити «%s» сталася помилка: %s."
 
-#: src/data/any-reader.c:93 src/language/lexer/lexer.c:1638
+#: src/data/any-reader.c:93 src/language/lexer/lexer.c:1629
 #, c-format
 msgid "Error reading `%s': %s."
 msgstr "Помилка під час читання «%s»: %s."
@@ -318,7 +318,7 @@ msgstr "файл CSV"
 msgid "Error opening `%s' for writing as a system file: %s."
 msgstr "Помилка під час спроби відкрити «%s» для запису у форматі системного файла: %s."
 
-#: src/data/csv-file-writer.c:464
+#: src/data/csv-file-writer.c:466
 #, c-format
 msgid "An I/O error occurred writing CSV file `%s'."
 msgstr "Під час спроби записати файл CSV «%s» сталася помилка."
@@ -372,7 +372,7 @@ msgstr "Некоректний синтаксичний запис зонова�
 msgid "Invalid syntax for P field."
 msgstr "Некоректний синтаксис поля P."
 
-#: src/data/data-in.c:768 src/data/data-in.c:814
+#: src/data/data-in.c:768 src/data/data-in.c:818
 msgid "Syntax error in date field."
 msgstr "Синтаксична помилка у полі даних."
 
@@ -381,67 +381,67 @@ msgstr "Синтаксична помилка у полі даних."
 msgid "Day (%ld) must be between 1 and 31."
 msgstr "День (%ld) має бути цілим числом від 1 до 31."
 
-#: src/data/data-in.c:828
+#: src/data/data-in.c:832
 msgid "Delimiter expected between fields in date."
 msgstr "Між полями у даті мало бути вказано роздільник."
 
-#: src/data/data-in.c:902
+#: src/data/data-in.c:906
 msgid "Unrecognized month format.  Months may be specified as Arabic or Roman numerals or as at least 3 letters of their English names."
 msgstr "Невідомий формат запису місяця. Місяці слід вказувати або у форматі арабських чи римських цифр або за допомогою перших трьох літер англійської назви місяця."
 
-#: src/data/data-in.c:929
+#: src/data/data-in.c:933
 #, c-format
 msgid "Year (%ld) must be between 1582 and 19999."
 msgstr "Рік (%ld) має бути цілим числом від 1582 до 19999."
 
-#: src/data/data-in.c:940
+#: src/data/data-in.c:944
 #, c-format
 msgid "Trailing garbage `%.*s' following date."
 msgstr "Зайві дані «%.*s» після дати."
 
-#: src/data/data-in.c:954
+#: src/data/data-in.c:958
 msgid "Julian day must have exactly three digits."
 msgstr "Запис юліанського дня має складатися точно з трьох цифр."
 
-#: src/data/data-in.c:956
+#: src/data/data-in.c:960
 #, c-format
 msgid "Julian day (%ld) must be between 1 and 366."
 msgstr "Юліанський день (%ld) має бути цілим числом від 1 до 366."
 
-#: src/data/data-in.c:980
+#: src/data/data-in.c:984
 #, c-format
 msgid "Quarter (%ld) must be between 1 and 4."
 msgstr "Квартал (%ld) має бути цілим числом від 1 до 4."
 
-#: src/data/data-in.c:1001
+#: src/data/data-in.c:1005
 #, c-format
 msgid "Week (%ld) must be between 1 and 53."
 msgstr "Тиждень (%ld) має бути цілим числом від 1 до 53."
 
-#: src/data/data-in.c:1013
+#: src/data/data-in.c:1017
 msgid "Delimiter expected between fields in time."
 msgstr "Між полями у записі часу мало бути вказано роздільник."
 
-#: src/data/data-in.c:1033
+#: src/data/data-in.c:1037
 #, c-format
 msgid "Minute (%ld) must be between 0 and 59."
 msgstr "Хвилини (%ld) мають бути цілим числом від 0 до 59."
 
-#: src/data/data-in.c:1071
+#: src/data/data-in.c:1075
 msgid "Unrecognized weekday name.  At least the first two letters of an English weekday name must be specified."
 msgstr "Нерозпізнана назва дня тижня. Слід вказати принаймні дві перших літери назви дня тижня англійською."
 
-#: src/data/data-in.c:1201
+#: src/data/data-in.c:1210
 #, c-format
 msgid "`%c' expected in date field."
 msgstr "У полі дати мав бути символ «%c»."
 
-#: src/data/data-out.c:574
+#: src/data/data-out.c:579
 #, c-format
 msgid "Weekday number %f is not between 1 and 7."
 msgstr "День тижня %f не є цілими числом від 1 до 7."
 
-#: src/data/data-out.c:599
+#: src/data/data-out.c:604
 #, c-format
 msgid "Month number %f is not between 1 and 12."
 msgstr "Місяць %f не є цілими числом від 1 до 12."
@@ -464,7 +464,7 @@ msgstr "системний"
 msgid "scratch"
 msgstr "октоторпні"
 
-#: src/data/dictionary.c:1350
+#: src/data/dictionary.c:1396
 #, c-format
 msgid "Truncating document line to %d bytes."
 msgstr "Обрізаємо рядок документа до %d байтів."
@@ -498,33 +498,28 @@ msgstr "Не вдалося повторно відкрити %s як %s."
 msgid "Not opening pipe file `%s' because %s option set."
 msgstr "Файл каналу «%s» не відкрито, оскільки встановлено параметр %s."
 
-#: src/data/gnumeric-reader.c:37 src/data/ods-reader.c:41
-#, c-format
-msgid "Support for %s files was not compiled into this installation of PSPP"
-msgstr "Підтримку файлів %s не було зібрано у цьому варіанті PSPP"
-
-#: src/data/gnumeric-reader.c:520 src/data/ods-reader.c:544
+#: src/data/gnumeric-reader.c:478 src/data/ods-reader.c:501
 #, c-format
 msgid "Cannot convert the value in the spreadsheet cell %s to format (%s): %s"
 msgstr "Не вдалося перетворити значення у комірці електронної таблиці %s до формату (%s): %s"
 
-#: src/data/gnumeric-reader.c:543 src/data/ods-reader.c:599
+#: src/data/gnumeric-reader.c:501 src/data/ods-reader.c:556
 #, c-format
 msgid "There was a problem whilst reading the %s file `%s' (near line %d): `%s'"
 msgstr "Під час читання файла %s «%s» виникли проблеми (у околі рядка %d): «%s»"
 
-#: src/data/gnumeric-reader.c:638
+#: src/data/gnumeric-reader.c:596
 #, c-format
 msgid "The gnumeric file `%s' is encoded as %s instead of the usual UTF-8 encoding. Any non-ascii characters will be incorrectly imported."
 msgstr "Кодуванням даних у файлі gnumeric «%s» є %s замість звичного кодування UTF-8. Усі символи, які не належать до набору ASCII, буде імпортовано з помилками."
 
-#: src/data/gnumeric-reader.c:682 src/data/ods-reader.c:730
+#: src/data/gnumeric-reader.c:640 src/data/ods-reader.c:687
 #, c-format
 msgid "Invalid cell range `%s'"
 msgstr "Некоректний діапазон комірок «%s»"
 
-#: src/data/gnumeric-reader.c:854 src/data/ods-reader.c:758
-#: src/data/ods-reader.c:891
+#: src/data/gnumeric-reader.c:812 src/data/ods-reader.c:715
+#: src/data/ods-reader.c:848
 #, c-format
 msgid "Selected sheet or range of spreadsheet `%s' is empty."
 msgstr "Вибраний аркуш або діапазон комірок електронної таблиці «%s» є порожнім."
@@ -557,6 +552,26 @@ msgstr "Символ %s (у «%s») не можна використовуват
 #, c-format
 msgid "Character %s (in `%s') may not appear in an identifier."
 msgstr "Символ %s (у «%s») не можна використовувати у ідентифікаторі."
+
+#: src/data/mdd-writer.c:87
+#, c-format
+msgid "An I/O error occurred writing metadata file `%s'."
+msgstr "Під час запису файла метаданих «%s» сталася помилка введення-виведення."
+
+#. TRANSLATORS: this fragment will be interpolated into
+#. messages in fh_lock() that identify types of files.
+#: src/data/mdd-writer.c:205
+msgid "metadata file"
+msgstr "файл метаданих"
+
+#: src/data/mdd-writer.c:213
+#, c-format
+msgid "Error opening `%s' for writing as a metadata file: %s."
+msgstr "Помилка під час спроби відкрити «%s» для запису у форматі файла метаданих: %s."
+
+#: src/data/mdd-writer.c:221
+msgid "Internal error creating xmlTextWriter."
+msgstr "Внутрішня помилка під час спроби створити xmlTextWriter."
 
 #: src/data/make-file.c:218
 #, c-format
@@ -598,7 +613,7 @@ msgstr "Вилучаємо %s: %s."
 msgid "%s is not a valid name for a multiple response set.  Multiple response set names must begin with `$'."
 msgstr "%s не є коректною назвою для набору множини відповідей. Назви наборів множин відповідей мають починатися з «$»."
 
-#: src/data/ods-reader.c:651
+#: src/data/ods-reader.c:608
 #, c-format
 msgid "Cannot open %s as a OpenDocument file: %s"
 msgstr "Не вдалося відкрити %s як файл OpenDocument: %s"
@@ -614,7 +629,7 @@ msgstr "системний файл SPSS/PC+"
 msgid "Error opening `%s' for reading as an SPSS/PC+ system file: %s."
 msgstr "Помилка під час відкриття «%s» для читання у форматі системного файла SPSS/PC+: %s."
 
-#: src/data/pc+-file-reader.c:224 src/data/sys-file-reader.c:3507
+#: src/data/pc+-file-reader.c:224 src/data/sys-file-reader.c:3512
 #, c-format
 msgid "%s: stat failed (%s)."
 msgstr "%s: помилка stat (%s)."
@@ -769,7 +784,7 @@ msgstr "Перейменовуємо зміну з дубльованою наз
 msgid "Cannot weight by string variable `%s'."
 msgstr "Зважування за рядковою змінною «%s» неможливе."
 
-#: src/data/pc+-file-reader.c:975 src/data/sys-file-reader.c:2727
+#: src/data/pc+-file-reader.c:975 src/data/sys-file-reader.c:2732
 msgid "File ends in partial case."
 msgstr "Файл завершено на незавершеному записі спостереження."
 
@@ -778,36 +793,36 @@ msgstr "Файл завершено на незавершеному записі
 msgid "Case beginning at offset 0x%08x extends past end of data record at offset 0x%08x."
 msgstr "Спостереження, що починається із відступом 0x%08x, продовжується за кінцем запису даних із відступом 0x%08x."
 
-#: src/data/pc+-file-reader.c:1000 src/data/sys-file-reader.c:2735
+#: src/data/pc+-file-reader.c:1000 src/data/sys-file-reader.c:2740
 #, c-format
 msgid "Error reading case from file %s."
 msgstr "Помилка під час читання спостереження з файла %s."
 
-#: src/data/pc+-file-reader.c:1116 src/data/sys-file-reader.c:2898
+#: src/data/pc+-file-reader.c:1116 src/data/sys-file-reader.c:2903
 #, c-format
 msgid "Possible compressed data corruption: string contains compressed integer (opcode %d)."
 msgstr "Ймовірне пошкодження стиснених даних: рядок містить стиснене ціле значення (код операції %d)."
 
-#: src/data/pc+-file-reader.c:1160 src/data/sys-file-reader.c:3196
+#: src/data/pc+-file-reader.c:1160 src/data/sys-file-reader.c:3201
 #, c-format
 msgid "`%s' near offset 0x%llx: "
 msgstr "«%s» поряд з позицією 0x%llx: "
 
-#: src/data/pc+-file-reader.c:1163 src/data/sys-file-reader.c:3199
+#: src/data/pc+-file-reader.c:1163 src/data/sys-file-reader.c:3204
 #, c-format
 msgid "`%s': "
 msgstr "«%s»: "
 
-#: src/data/pc+-file-reader.c:1219 src/data/sys-file-reader.c:3254
+#: src/data/pc+-file-reader.c:1219 src/data/sys-file-reader.c:3259
 #, c-format
 msgid "System error: %s."
 msgstr "Системна помилка: %s."
 
-#: src/data/pc+-file-reader.c:1224 src/data/sys-file-reader.c:3259
+#: src/data/pc+-file-reader.c:1224 src/data/sys-file-reader.c:3264
 msgid "Unexpected end of file."
 msgstr "Неочікуваний символ кінця файла."
 
-#: src/data/pc+-file-reader.c:1309 src/data/sys-file-reader.c:3484
+#: src/data/pc+-file-reader.c:1309 src/data/sys-file-reader.c:3489
 #, c-format
 msgid "%s: seek failed (%s)."
 msgstr "%s: помилка позиціювання (%s)."
@@ -1191,314 +1206,319 @@ msgstr "Файл визначає неочікуване значення %g (%a
 msgid "Missing space following `%c' at offset %zu in MRSETS record."
 msgstr "Пропущено пробіл з наступним «%c» на позиції %zu у записі MRSETS."
 
-#: src/data/sys-file-reader.c:1769
+#: src/data/sys-file-reader.c:1767
+#, c-format
+msgid "Missing label source value following `E' at offset %zu in MRSETS record."
+msgstr "Не вказано значення джерела мітки з наступним «E» на позиції %zu у записі MRSETS."
+
+#: src/data/sys-file-reader.c:1774
 #, c-format
 msgid "Unexpected label source value following `E' at offset %zu in MRSETS record."
 msgstr "Неочікуване значення джерела мітки з наступним «E» на позиції %zu у записі MRSETS."
 
-#: src/data/sys-file-reader.c:1776
+#: src/data/sys-file-reader.c:1781
 #, c-format
 msgid "Missing `C', `D', or `E' at offset %zu in MRSETS record."
 msgstr "Пропущено «C», «D» або «E» на позиції %zu у записі MRSETS."
 
-#: src/data/sys-file-reader.c:1803
+#: src/data/sys-file-reader.c:1808
 #, c-format
 msgid "Missing new-line parsing variable names at offset %zu in MRSETS record."
 msgstr "Пропущено назви змінних відокремлених символами розриву рядків на позиції %zu у записі MRSETS."
 
-#: src/data/sys-file-reader.c:1838
+#: src/data/sys-file-reader.c:1843
 #, c-format
 msgid "Invalid multiple response set name `%s'."
 msgstr "Некоректна назва набору множини відповідей, «%s»."
 
-#: src/data/sys-file-reader.c:1871
+#: src/data/sys-file-reader.c:1876
 #, c-format
 msgid "MRSET %s contains duplicate variable name %s."
 msgstr "MRSET %s містить дублювання назви змінної, %s."
 
-#: src/data/sys-file-reader.c:1886
+#: src/data/sys-file-reader.c:1891
 #, c-format
 msgid "MRSET %s contains both string and numeric variables."
 msgstr "MRSET %s містить одразу рядкові і числові змінні."
 
-#: src/data/sys-file-reader.c:1898
+#: src/data/sys-file-reader.c:1903
 #, c-format
 msgid "MRSET %s has no variables."
 msgstr "MRSET %s не містить змінних."
 
-#: src/data/sys-file-reader.c:1900
+#: src/data/sys-file-reader.c:1905
 #, c-format
 msgid "MRSET %s has only one variable."
 msgstr "MRSET %s містить лише одну змінну."
 
-#: src/data/sys-file-reader.c:1944
+#: src/data/sys-file-reader.c:1949
 #, c-format
 msgid "Extension 11 has bad count %u (for %zu variables)."
 msgstr "Розширення 11 містило значення лічильника %u (для %zu змінних)."
 
-#: src/data/sys-file-reader.c:1977
+#: src/data/sys-file-reader.c:1982
 #, c-format
 msgid "Invalid variable display parameters for variable %zu (%s).  Default parameters substituted."
 msgstr "Некоректні параметри показу змінної %zu (%s). Буде використано типові параметри."
 
-#: src/data/sys-file-reader.c:2021
+#: src/data/sys-file-reader.c:2026
 #, c-format
 msgid "Duplicate long variable name `%s'."
 msgstr "Дублювання довгої назви змінної, «%s»."
 
-#: src/data/sys-file-reader.c:2074
+#: src/data/sys-file-reader.c:2079
 #, c-format
 msgid "Long variable mapping from %s to invalid variable name `%s'."
 msgstr "Довга прив’язка змінної з %s до назви некоректної змінної, «%s»."
 
-#: src/data/sys-file-reader.c:2109
+#: src/data/sys-file-reader.c:2114
 #, c-format
 msgid "%s listed as string of invalid length %s in very long string record."
 msgstr "%s показано у списку як рядок некоректної довжини %s у записі дуже довгого рядка."
 
-#: src/data/sys-file-reader.c:2120
+#: src/data/sys-file-reader.c:2125
 #, c-format
 msgid "%s listed in very long string record with width %s, which requires only one segment."
 msgstr "%s використано у записі дуже довгого рядка з шириною %s, який потребує лише одного сегмента."
 
-#: src/data/sys-file-reader.c:2128
+#: src/data/sys-file-reader.c:2133
 #, c-format
 msgid "Very long string %s overflows dictionary."
 msgstr "Дуже довгий рядок %s виходить за межі словника."
 
-#: src/data/sys-file-reader.c:2146
+#: src/data/sys-file-reader.c:2151
 #, c-format
 msgid "Very long string with width %ld has segment %d of width %d (expected %d)."
 msgstr "Дуже довгий рядок з шириною %ld містить сегмент %d довжини %d (мало бути %d)."
 
-#: src/data/sys-file-reader.c:2189
+#: src/data/sys-file-reader.c:2194
 #, c-format
 msgid "Variables associated with value label are not all of identical type.  Variable %s is %s, but variable %s is %s."
 msgstr "Змінні, пов’язані з міткою значення, не усі належать до того самого типу. Змінна %s належить до типу %s, а змінна %s — до типу %s."
 
-#: src/data/sys-file-reader.c:2209
+#: src/data/sys-file-reader.c:2214
 #, c-format
 msgid "Value labels may not be added to long string variables (e.g. %s) using records types 3 and 4."
 msgstr "Мітки значень не можна додавати до змінних довгих рядків (наприклад %s) за допомогою записів типів 3 і 4."
 
-#: src/data/sys-file-reader.c:2238
+#: src/data/sys-file-reader.c:2243
 #, c-format
 msgid "Duplicate value label for %g on %s."
 msgstr "Дублювання мітки значення для %g у %s."
 
-#: src/data/sys-file-reader.c:2242 src/data/sys-file-reader.c:2563
+#: src/data/sys-file-reader.c:2247 src/data/sys-file-reader.c:2568
 #, c-format
 msgid "Duplicate value label for `%.*s' on %s."
 msgstr "Дублювання мітки значення для «%.*s» у %s."
 
-#: src/data/sys-file-reader.c:2269
+#: src/data/sys-file-reader.c:2274
 #, c-format
 msgid "Variable index %d not in valid range 1...%zu."
 msgstr "Індекс змінної %d не належить коректному діапазону 1...%zu."
 
-#: src/data/sys-file-reader.c:2278
+#: src/data/sys-file-reader.c:2283
 #, c-format
 msgid "Variable index %d refers to long string continuation."
 msgstr "Індекс змінної %d вказує на продовження довгого рядка."
 
-#: src/data/sys-file-reader.c:2314
+#: src/data/sys-file-reader.c:2319
 #, c-format
 msgid "Error parsing attribute value %s[%d]."
 msgstr "Помилка під час спроби обробити значення атрибута %s[%d]."
 
-#: src/data/sys-file-reader.c:2328
+#: src/data/sys-file-reader.c:2333
 #, c-format
 msgid "Attribute value %s[%d] is not quoted: %s."
 msgstr "Значення атрибута %s[%d] вказано не у лапках: %s."
 
-#: src/data/sys-file-reader.c:2341
+#: src/data/sys-file-reader.c:2346
 #, c-format
 msgid "Duplicate attribute %s."
 msgstr "Дублювання атрибута, %s."
 
-#: src/data/sys-file-reader.c:2425
+#: src/data/sys-file-reader.c:2430
 #, c-format
 msgid "Invalid role for variable %s."
 msgstr "Некоректна роль змінної %s."
 
-#: src/data/sys-file-reader.c:2434
+#: src/data/sys-file-reader.c:2439
 #, c-format
 msgid "%zu other variables had invalid roles."
 msgstr "%zu інші змінні належать до некоректних ролей."
 
-#: src/data/sys-file-reader.c:2447
+#: src/data/sys-file-reader.c:2452
 #, c-format
 msgid "Extension record subtype %d ends unexpectedly."
 msgstr "Неочікуване завершення запису розширення, підтип %d."
 
-#: src/data/sys-file-reader.c:2493
+#: src/data/sys-file-reader.c:2498
 #, c-format
 msgid "Ignoring long string value label record for unknown variable %s."
 msgstr "Ігноруємо запис мітки довгого рядкового значення для невідомої змінної %s."
 
-#: src/data/sys-file-reader.c:2498
+#: src/data/sys-file-reader.c:2503
 #, c-format
 msgid "Ignoring long string value label record for numeric variable %s."
 msgstr "Ігноруємо запис мітки довгого рядкового значення для числової змінної %s."
 
-#: src/data/sys-file-reader.c:2505
+#: src/data/sys-file-reader.c:2510
 #, c-format
 msgid "Ignoring long string value label record for variable %s because the record's width (%d) does not match the variable's width (%d)."
 msgstr "Ігноруємо запис мітки довгого рядкового значення для змінної %s, оскільки довжина запису (%d) не відповідає ширині змінної (%d)."
 
-#: src/data/sys-file-reader.c:2536
+#: src/data/sys-file-reader.c:2541
 #, c-format
 msgid "Ignoring long string value label %zu for variable %s, with width %d, that has bad value width %zu."
 msgstr "Ігноруємо мітку значення довгого рядка %zu для змінної %s з шириною %d, оскільки значення має помилкову ширину %zu."
 
-#: src/data/sys-file-reader.c:2610
+#: src/data/sys-file-reader.c:2615
 #, c-format
 msgid "Long string missing values record says variable %s has %d missing values, but only 1 to 3 missing values are allowed."
 msgstr "Запис щодо пропущених значень довгого рядка повідомляє, що змінна %s має %d пропущених значень, втім, дозволено використовувати лише від 1 до 3 пропущених значень."
 
-#: src/data/sys-file-reader.c:2620
+#: src/data/sys-file-reader.c:2625
 #, c-format
 msgid "Ignoring long string missing value record for unknown variable %s."
 msgstr "Ігноруємо запис довгого рядкового пропущеного значення для невідомої змінної %s."
 
-#: src/data/sys-file-reader.c:2625
+#: src/data/sys-file-reader.c:2630
 #, c-format
 msgid "Ignoring long string missing value record for numeric variable %s."
 msgstr "Ігноруємо запис довгого рядкового пропущеного значення для числової змінної %s."
 
-#: src/data/sys-file-reader.c:2650
+#: src/data/sys-file-reader.c:2655
 #, c-format
 msgid "Ignoring long string missing value %zu for variable %s, with width %d, that has bad value width %zu."
 msgstr "Ігноруємо пропущене значення довгого рядка %zu для змінної %s з шириною %d, оскільки значення має помилкову ширину %zu."
 
-#: src/data/sys-file-reader.c:2705
+#: src/data/sys-file-reader.c:2710
 msgid "File ends in partial string value."
 msgstr "Файл завершено на незавершеному рядковому значенні."
 
-#: src/data/sys-file-reader.c:2844
+#: src/data/sys-file-reader.c:2849
 msgid "Possible compressed data corruption: compressed spaces appear in numeric field."
 msgstr "Ймовірне пошкодження стиснених даних: стиснені пробіли у числовому полі."
 
-#: src/data/sys-file-reader.c:2995
+#: src/data/sys-file-reader.c:3000
 #, c-format
 msgid "Suppressed %d additional related warnings."
 msgstr "Придушено %d додаткових пов’язаних попереджень."
 
-#: src/data/sys-file-reader.c:3041 src/data/sys-file-reader.c:3058
+#: src/data/sys-file-reader.c:3046 src/data/sys-file-reader.c:3063
 #, c-format
 msgid "Dictionary record refers to unknown variable %s."
 msgstr "Запис словника посилається на невідому змінну %s."
 
-#: src/data/sys-file-reader.c:3120
+#: src/data/sys-file-reader.c:3125
 #, c-format
 msgid "Expecting digit at offset %zu in MRSETS record."
 msgstr "На позиції %zu у записі MRSETS мало бути використано цифру."
 
-#: src/data/sys-file-reader.c:3128
+#: src/data/sys-file-reader.c:3133
 #, c-format
 msgid "Expecting space at offset %zu in MRSETS record."
 msgstr "На позиції %zu у записі MRSETS мало бути використано пробіл."
 
-#: src/data/sys-file-reader.c:3136
+#: src/data/sys-file-reader.c:3141
 #, c-format
 msgid "%zu-byte string starting at offset %zu exceeds record length %zu."
 msgstr "%zu-байтове рядкове значення, що починається з позиції %zu, виходить за межі довжини запису, %zu."
 
-#: src/data/sys-file-reader.c:3146
+#: src/data/sys-file-reader.c:3151
 #, c-format
 msgid "Expecting space at offset %zu following %zu-byte string."
 msgstr "На позиції %zu мало бути використано пробіл з наступним %zu-байтовим рядком."
 
-#: src/data/sys-file-reader.c:3442
+#: src/data/sys-file-reader.c:3447
 #, c-format
 msgid "Wrong ZLIB data header offset %#llx (expected %#llx)."
 msgstr "Помилковий заголовок даних ZLIB на позиції %#llx (мало бути %#llx)."
 
-#: src/data/sys-file-reader.c:3450
+#: src/data/sys-file-reader.c:3455
 #, c-format
 msgid "Impossible ZLIB trailer offset 0x%llx."
 msgstr "Некоректна кінцівка ZLIB на позиції 0x%llx."
 
-#: src/data/sys-file-reader.c:3457
+#: src/data/sys-file-reader.c:3462
 #, c-format
 msgid "Invalid ZLIB trailer length %lld."
 msgstr "Некоректна довжина закінчення ZLIB, %lld."
 
-#: src/data/sys-file-reader.c:3521
+#: src/data/sys-file-reader.c:3526
 #, c-format
 msgid "End of ZLIB trailer (0x%llx) is not file size (0x%llx)."
 msgstr "Завершення кінцівки ZLIB (0x%llx) перебуває за межами розміру файла (0x%llx)."
 
-#: src/data/sys-file-reader.c:3531
+#: src/data/sys-file-reader.c:3536
 #, c-format
 msgid "ZLIB trailer bias (%lld) differs from file header bias (%.2f)."
 msgstr "Рівень кінцівки ZLIB (%lld) відрізняється від рівня заголовка файла (%.2f)."
 
-#: src/data/sys-file-reader.c:3541
+#: src/data/sys-file-reader.c:3546
 #, c-format
 msgid "ZLIB trailer \"zero\" field has nonzero value %lld."
 msgstr "Поле «zero» кінцівки ZLIB містить ненульове значення %lld."
 
-#: src/data/sys-file-reader.c:3547
+#: src/data/sys-file-reader.c:3552
 #, c-format
 msgid "ZLIB trailer specifies unexpected %u-byte block size."
 msgstr "У кінцівці ZLIB вказано неочікуваний розмір блоку у %u байтів."
 
-#: src/data/sys-file-reader.c:3555
+#: src/data/sys-file-reader.c:3560
 #, c-format
 msgid "%lld-byte ZLIB trailer specifies %u data blocks (expected %lld)."
 msgstr "%lld-байтова кінцівка ZLIB визначає %u блоків даних (мало бути %lld)."
 
-#: src/data/sys-file-reader.c:3580
+#: src/data/sys-file-reader.c:3585
 #, c-format
 msgid "ZLIB block descriptor %u reported uncompressed data offset %#llx, when %#llx was expected."
 msgstr "У дескрипторі блоку ZLIB %u повідомляється про позицію нестиснених даних %#llx, але мало бути вказано позицію %#llx."
 
-#: src/data/sys-file-reader.c:3589
+#: src/data/sys-file-reader.c:3594
 #, c-format
 msgid "ZLIB block descriptor %u reported compressed data offset %#llx, when %#llx was expected."
 msgstr "У дескрипторі блоку ZLIB %u повідомляється про позицію стиснених даних %#llx, але мало бути вказано позицію %#llx."
 
-#: src/data/sys-file-reader.c:3599
+#: src/data/sys-file-reader.c:3604
 #, c-format
 msgid "ZLIB block descriptor %u reported block size %#x, when %#x was expected."
 msgstr "У дескрипторі блоку ZLIB %u повідомляється про розмір блоку %#x, але мало бути вказано розмір %#x."
 
-#: src/data/sys-file-reader.c:3607
+#: src/data/sys-file-reader.c:3612
 #, c-format
 msgid "ZLIB block descriptor %u reported block size %#x, when at most %#x was expected."
 msgstr "У дескрипторі блоку ZLIB %u повідомляється про розмір блоку %#x, але мало бути вказано розмір, що не перевищує %#x."
 
-#: src/data/sys-file-reader.c:3619
+#: src/data/sys-file-reader.c:3624
 #, c-format
 msgid "ZLIB block descriptor %u reports compressed size %u and uncompressed size %u."
 msgstr "У дескрипторі блоку ZLIB %u повідомляється про розмір стиснених даних %u та розмір нестиснених даних %u."
 
-#: src/data/sys-file-reader.c:3631
+#: src/data/sys-file-reader.c:3636
 #, c-format
 msgid "ZLIB trailer is at offset %#llx but %#llx would be expected from block descriptors."
 msgstr "Кінцівку ZLIB розташовано на позиції %#llx, але якщо брати до уваги дескриптори блоків, мало бути %#llx."
 
-#: src/data/sys-file-reader.c:3650
+#: src/data/sys-file-reader.c:3655
 #, c-format
 msgid "ZLIB initialization failed (%s)."
 msgstr "Помилка під час спроби ініціалізувати ZLIB (%s)."
 
-#: src/data/sys-file-reader.c:3665
+#: src/data/sys-file-reader.c:3670
 #, c-format
 msgid "Inconsistency at end of ZLIB stream (%s)."
 msgstr "Непослідовність наприкінці потоку даних ZLIB (%s)."
 
-#: src/data/sys-file-reader.c:3724
+#: src/data/sys-file-reader.c:3729
 #, c-format
 msgid "ZLIB stream inconsistency (%s)."
 msgstr "Непослідовність у потоці даних ZLIB (%s)."
 
-#: src/data/sys-file-reader.c:3748
+#: src/data/sys-file-reader.c:3753
 msgid "Unexpected end of ZLIB compressed data."
 msgstr "Неочікуване завершення стиснених даних ZLIB."
 
-#: src/data/sys-file-reader.c:3786
+#: src/data/sys-file-reader.c:3791
 msgid "SPSS System File"
 msgstr "системний файл SPSS"
 
@@ -1532,66 +1552,66 @@ msgstr "Помилка під час спроби стискання поток�
 msgid "%s: Seek failed (%s)."
 msgstr "%s: помилка позиціювання (%s)."
 
-#: src/data/variable.c:675
-#, c-format
-msgid "%s (%s)"
-msgstr "%s (%s)"
+#: src/data/variable.c:57
+msgid "Left"
+msgstr "Ліворуч"
 
-#: src/data/variable.c:777
+#: src/data/variable.c:58
+msgid "Right"
+msgstr "Праворуч"
+
+#: src/data/variable.c:59
+msgid "Center"
+msgstr "За центром"
+
+#: src/data/variable.c:65
 msgid "Nominal"
 msgstr "Іменна"
 
-#: src/data/variable.c:780
+#: src/data/variable.c:66
 msgid "Ordinal"
 msgstr "Порядкова"
 
-#: src/data/variable.c:783 src/language/stats/ks-one-sample.c:327
+#: src/data/variable.c:67 src/language/stats/ks-one-sample.c:327
 msgid "Scale"
 msgstr "Масштаб"
 
-#: src/data/variable.c:874
+#: src/data/variable.c:73
 msgid "Input"
 msgstr "Ввід"
 
 #. TRANSLATORS: This will be part of a filename.  Please avoid whitespace.
-#: src/data/variable.c:877 src/ui/gui/psppire-output-window.c:581
+#: src/data/variable.c:74 src/ui/gui/psppire-output-window.c:581
 msgid "Output"
 msgstr "Вивід"
 
-#: src/data/variable.c:880
+#: src/data/variable.c:75
 msgid "Both"
 msgstr "Обидва"
 
-#: src/data/variable.c:883 src/language/dictionary/sys-file-info.c:229
+#: src/data/variable.c:76 src/language/dictionary/sys-file-info.c:229
 #: src/ui/gui/psppire-dialog-action-crosstabs.c:84
 #: src/ui/gui/psppire-dialog-action-crosstabs.c:96
 #: src/ui/gui/psppire-dialog-action-crosstabs.c:131
 #: src/ui/gui/psppire-dialog-action-crosstabs.c:139
-#: src/ui/gui/psppire-var-sheet.c:438 src/ui/gui/var-display.c:34
+#: src/ui/gui/psppire-variable-sheet.c:397 src/ui/gui/var-display.c:34
 msgid "None"
 msgstr "Немає"
 
-#: src/data/variable.c:886
+#: src/data/variable.c:77
 msgid "Partition"
 msgstr "Поділ"
 
-#: src/data/variable.c:889 src/ui/gui/reliability.ui:37
+#: src/data/variable.c:78 src/ui/gui/reliability.ui:37
 msgid "Split"
 msgstr "Поділ"
 
-#: src/data/variable.c:1002
-msgid "Left"
-msgstr "Ліворуч"
+#: src/data/variable.c:710
+#, c-format
+msgid "%s (%s)"
+msgstr "%s (%s)"
 
-#: src/data/variable.c:1005
-msgid "Right"
-msgstr "Праворуч"
-
-#: src/data/variable.c:1008
-msgid "Center"
-msgstr "За центром"
-
-#: src/data/variable.c:1334
+#: src/data/variable.c:1322
 msgid "At least one case in the data file had a weight value that was user-missing, system-missing, zero, or negative.  These case(s) were ignored."
 msgstr "Значення ваги принаймні одного зі спостережень у файлі даних є пропущеним користувачем, пропущеним системою, нулем або від’ємним значенням. Такі спостереження буде проігноровано."
 
@@ -1681,149 +1701,149 @@ msgstr "Цю команду не можна використовувати, як
 msgid "Error removing `%s': %s."
 msgstr "Помилка під час спроби вилучити «%s»: %s."
 
-#: src/language/lexer/lexer.c:295
+#: src/language/lexer/lexer.c:296
 #, c-format
 msgid "expecting %s"
 msgstr "мало бути %s"
 
-#: src/language/lexer/lexer.c:299
+#: src/language/lexer/lexer.c:300
 #, c-format
 msgid "expecting %s or %s"
 msgstr "мало бути %s або %s"
 
-#: src/language/lexer/lexer.c:303
+#: src/language/lexer/lexer.c:304
 #, c-format
 msgid "expecting %s, %s, or %s"
 msgstr "мало бути %s, %s або %s"
 
-#: src/language/lexer/lexer.c:308
+#: src/language/lexer/lexer.c:309
 #, c-format
 msgid "expecting %s, %s, %s, or %s"
 msgstr "мало бути %s, %s, %s або %s"
 
-#: src/language/lexer/lexer.c:313
+#: src/language/lexer/lexer.c:314
 #, c-format
 msgid "expecting %s, %s, %s, %s, or %s"
 msgstr "мало бути %s, %s, %s, %s або %s"
 
-#: src/language/lexer/lexer.c:318
+#: src/language/lexer/lexer.c:319
 #, c-format
 msgid "expecting %s, %s, %s, %s, %s, or %s"
 msgstr "мало бути %s, %s, %s, %s, %s або %s"
 
-#: src/language/lexer/lexer.c:324
+#: src/language/lexer/lexer.c:325
 #, c-format
 msgid "expecting %s, %s, %s, %s, %s, %s, or %s"
 msgstr "мало бути %s, %s, %s, %s, %s, %s або %s"
 
-#: src/language/lexer/lexer.c:330
+#: src/language/lexer/lexer.c:331
 #, c-format
 msgid "expecting %s, %s, %s, %s, %s, %s, %s, or %s"
 msgstr "мало бути %s, %s, %s, %s, %s, %s, %s або %s"
 
-#: src/language/lexer/lexer.c:350
+#: src/language/lexer/lexer.c:351
 #, c-format
 msgid "Subcommand %s may only be specified once."
 msgstr "Підкоманду %s можна вказувати лише раз."
 
-#: src/language/lexer/lexer.c:362
+#: src/language/lexer/lexer.c:363
 #, c-format
 msgid "Required subcommand %s was not specified."
 msgstr "Обов’язкову підкоманду %s не було вказано."
 
-#: src/language/lexer/lexer.c:370
+#: src/language/lexer/lexer.c:371
 #, c-format
 msgid "%s may only be specified once within subcommand %s"
 msgstr "%s можна вказувати лише один раз у межах підкоманди %s"
 
-#: src/language/lexer/lexer.c:379
+#: src/language/lexer/lexer.c:380
 #, c-format
 msgid "Required %s specification missing from %s subcommand"
 msgstr "У підкоманді %2$s пропущено специфікацію %1$s"
 
-#: src/language/lexer/lexer.c:398
+#: src/language/lexer/lexer.c:399
 msgid "Syntax error at end of input"
 msgstr "Синтаксична помилка наприкінці вхідних даних"
 
-#: src/language/lexer/lexer.c:419 src/language/xforms/select-if.c:60
+#: src/language/lexer/lexer.c:420 src/language/xforms/select-if.c:60
 #: src/language/stats/autorecode.c:218 src/language/stats/npar.c:503
 #: src/language/data-io/print-space.c:83
 msgid "expecting end of command"
 msgstr "команду мало бути завершено"
 
-#: src/language/lexer/lexer.c:630
+#: src/language/lexer/lexer.c:631
 msgid "expecting string"
 msgstr "мало бути вказано рядок"
 
-#: src/language/lexer/lexer.c:659
+#: src/language/lexer/lexer.c:660
 msgid "expecting integer"
 msgstr "мало бути вказано ціле число"
 
-#: src/language/lexer/lexer.c:672
+#: src/language/lexer/lexer.c:673
 msgid "expecting number"
 msgstr "мало бути вказано число"
 
-#: src/language/lexer/lexer.c:684
+#: src/language/lexer/lexer.c:685
 msgid "expecting identifier"
 msgstr "мало бути вказано ідентифікатор"
 
-#: src/language/lexer/lexer.c:1291
+#: src/language/lexer/lexer.c:1266
 msgid "Syntax error at end of command"
 msgstr "Синтаксична помилка наприкінці команди"
 
-#: src/language/lexer/lexer.c:1300
+#: src/language/lexer/lexer.c:1275
 #, c-format
 msgid "Syntax error at `%s'"
 msgstr "Синтаксична помилка у «%s»"
 
-#: src/language/lexer/lexer.c:1303
+#: src/language/lexer/lexer.c:1278
 msgid "Syntax error"
 msgstr "Синтаксична помилка"
 
-#: src/language/lexer/lexer.c:1475
+#: src/language/lexer/lexer.c:1466
 #, c-format
 msgid "String of hex digits has %d characters, which is not a multiple of 2"
 msgstr "Рядок шістнадцяткових цифр складається з %d символів. Кількість символів не є кратною до 2."
 
-#: src/language/lexer/lexer.c:1482
+#: src/language/lexer/lexer.c:1473
 #, c-format
 msgid "`%c' is not a valid hex digit"
 msgstr "«%c» не є коректною шістнадцятковою цифрою"
 
-#: src/language/lexer/lexer.c:1487
+#: src/language/lexer/lexer.c:1478
 #, c-format
 msgid "Unicode string contains %d bytes, which is not in the valid range of 1 to 8 bytes"
 msgstr "У рядку Unicode міститься %d байтів, що не є коректним діапазоном від 1 до 8 байтів"
 
-#: src/language/lexer/lexer.c:1493
+#: src/language/lexer/lexer.c:1484
 #, c-format
 msgid "U+%04X is not a valid Unicode code point"
 msgstr "U+%04X не є коректним пунктом у таблиці Unicode"
 
-#: src/language/lexer/lexer.c:1498
+#: src/language/lexer/lexer.c:1489
 msgid "Unterminated string constant"
 msgstr "Незавершена рядкова константа"
 
-#: src/language/lexer/lexer.c:1502
+#: src/language/lexer/lexer.c:1493
 #, c-format
 msgid "Missing exponent following `%s'"
 msgstr "Пропущено E з наступним «%s»"
 
-#: src/language/lexer/lexer.c:1507
+#: src/language/lexer/lexer.c:1498
 msgid "Unexpected `.' in middle of command"
 msgstr "Посеред команди мало бути вказано «.»"
 
-#: src/language/lexer/lexer.c:1513
+#: src/language/lexer/lexer.c:1504
 #, c-format
 msgid "Bad character %s in input"
 msgstr "Помилковий символ %s у вхідних даних"
 
-#: src/language/lexer/lexer.c:1608
+#: src/language/lexer/lexer.c:1599
 #, c-format
 msgid "Opening `%s': %s."
 msgstr "Відкриваємо «%s»: %s."
 
-#: src/language/lexer/lexer.c:1652
+#: src/language/lexer/lexer.c:1643
 #, c-format
 msgid "Error closing `%s': %s."
 msgstr "Помилка під час спроби закрити «%s»: %s."
@@ -1873,75 +1893,75 @@ msgstr "%s або %s має бути частиною діапазону."
 msgid "System-missing value is not valid here."
 msgstr "Тут не можна використовувати пропущене системою значення."
 
-#: src/language/lexer/variable-parser.c:70
+#: src/language/lexer/variable-parser.c:86
 msgid "expecting variable name"
 msgstr "мало бути вказано назву змінної"
 
-#: src/language/lexer/variable-parser.c:80
+#: src/language/lexer/variable-parser.c:96
 #, c-format
 msgid "%s is not a variable name."
 msgstr "%s не є назвою змінної."
 
-#: src/language/lexer/variable-parser.c:183
+#: src/language/lexer/variable-parser.c:199
 #, c-format
 msgid "%s is not a numeric variable.  It will not be included in the variable list."
 msgstr "%s не є числовою змінною. Її не буде включено до списку змінних."
 
-#: src/language/lexer/variable-parser.c:186
+#: src/language/lexer/variable-parser.c:202
 #, c-format
 msgid "%s is not a string variable.  It will not be included in the variable list."
 msgstr "%s не є рядковою змінною. Її не буде включено до списку змінних."
 
-#: src/language/lexer/variable-parser.c:190
+#: src/language/lexer/variable-parser.c:206
 #, c-format
 msgid "Scratch variables (such as %s) are not allowed here."
 msgstr "Тут не можна використовувати ортоторпні змінні (зокрема %s)."
 
-#: src/language/lexer/variable-parser.c:194
+#: src/language/lexer/variable-parser.c:210
 #, c-format
 msgid "%s and %s are not the same type.  All variables in this variable list must be of the same type.  %s will be omitted from the list."
 msgstr "%s і %s не належать до одного типу. Усі змінні у цьому списку змінних мають належати до одного типу. %s буде вилучено зі списку."
 
-#: src/language/lexer/variable-parser.c:200
+#: src/language/lexer/variable-parser.c:216
 #, c-format
 msgid "%s and %s are string variables with different widths.  All variables in this variable list must have the same width.  %s will be omitted from the list."
 msgstr "Рядкові змінні %s і %s мають різну довжину. Довжина усіх змінних у списку змінних має бути рівною. %s буде викинуто зі списку."
 
-#: src/language/lexer/variable-parser.c:205
-#: src/language/lexer/variable-parser.c:407
+#: src/language/lexer/variable-parser.c:221
+#: src/language/lexer/variable-parser.c:440
 #, c-format
 msgid "Variable %s appears twice in variable list."
 msgstr "Змінну %s вказано у списку змінних двічі."
 
-#: src/language/lexer/variable-parser.c:318
+#: src/language/lexer/variable-parser.c:334
 #, c-format
 msgid "%s TO %s is not valid syntax since %s precedes %s in the dictionary."
 msgstr "%s TO %s є некоректною синтаксичною конструкцією, оскільки %s передує %s у словнику."
 
-#: src/language/lexer/variable-parser.c:326
+#: src/language/lexer/variable-parser.c:342
 #, c-format
 msgid "When using the TO keyword to specify several variables, both variables must be from the same variable dictionaries, of either ordinary, scratch, or system variables.  %s is a %s variable, whereas %s is %s."
 msgstr "Якщо використовується ключове слово TO для визначення декількох змінних, обидві змінні мають належати до одного словника порядкових, октоторпних або системних змінних. %s є змінною %s, а %s — %s."
 
-#: src/language/lexer/variable-parser.c:384
+#: src/language/lexer/variable-parser.c:417
 #, c-format
 msgid "`%s' cannot be used with TO because it does not end in a digit."
 msgstr "«%s» не можна використовувати з TO, оскільки назва змінної не завершується на цифру."
 
-#: src/language/lexer/variable-parser.c:392
+#: src/language/lexer/variable-parser.c:425
 #, c-format
 msgid "Numeric suffix on `%s' is larger than supported with TO."
 msgstr "Числовий суфікс «%s» перевищує підтримуваний для TO."
 
-#: src/language/lexer/variable-parser.c:468
+#: src/language/lexer/variable-parser.c:498
 msgid "Scratch variables not allowed here."
 msgstr "Тут не можна використовувати октоторпні змінні."
 
-#: src/language/lexer/variable-parser.c:501
+#: src/language/lexer/variable-parser.c:522
 msgid "Prefixes don't match in use of TO convention."
 msgstr "Префікси не узгоджуються з синтаксисом TO."
 
-#: src/language/lexer/variable-parser.c:506
+#: src/language/lexer/variable-parser.c:527
 msgid "Bad bounds in use of TO convention."
 msgstr "У TO використано помилкові межі."
 
@@ -2051,31 +2071,31 @@ msgstr "Після цієї команди у %2$s...%3$s не може бути
 msgid "Only one index clause may be specified."
 msgstr "Можна використовувати лише один вираз індексу."
 
-#: src/language/control/repeat.c:118
+#: src/language/control/repeat.c:120
 #, c-format
 msgid "Dummy variable name `%s' hides dictionary variable `%s'."
 msgstr "Назва фіктивною змінної, «%s», маскує змінну зі словника, «%s»."
 
-#: src/language/control/repeat.c:122
+#: src/language/control/repeat.c:126
 #, c-format
 msgid "Dummy variable name `%s' is given twice."
 msgstr "Назву фіктивної змінної «%s» вказано двічі."
 
-#: src/language/control/repeat.c:165
+#: src/language/control/repeat.c:170
 #, c-format
 msgid "Dummy variable `%s' had %zu substitutions, so `%s' must also, but %zu were specified."
 msgstr "Фіктивна змінна «%s» мала %zu підставлянь, отже «%s» повинна мати стільки ж, але було вказано лише %zu."
 
-#: src/language/control/repeat.c:377
+#: src/language/control/repeat.c:379
 msgid "Ranges may only have integer bounds."
 msgstr "Межами діапазону можуть бути лише цілі числа."
 
-#: src/language/control/repeat.c:391
+#: src/language/control/repeat.c:393
 #, c-format
 msgid "%ld TO %ld is an invalid range."
 msgstr "%ld TO %ld не є коректним визначенням діапазону."
 
-#: src/language/control/repeat.c:441
+#: src/language/control/repeat.c:443
 #, c-format
 msgid "No matching %s."
 msgstr "Немає відповідного %s."
@@ -2219,7 +2239,8 @@ msgstr "У активному словнику набору даних не мі
 msgid "Multiple Response Sets"
 msgstr "Набори множин відповідей"
 
-#: src/language/dictionary/mrsets.c:548 src/ui/gui/psppire-var-sheet.c:1359
+#: src/language/dictionary/mrsets.c:548
+#: src/ui/gui/psppire-var-sheet-header.c:55
 msgid "Name"
 msgstr "Назва"
 
@@ -2243,7 +2264,7 @@ msgstr "Набір множини категорій"
 #: src/language/dictionary/split-file.c:84
 #: src/language/dictionary/sys-file-info.c:444
 #: src/language/dictionary/sys-file-info.c:543
-#: src/ui/gui/psppire-var-sheet.c:1372 src/ui/gui/compute.ui:157
+#: src/ui/gui/psppire-var-sheet-header.c:67 src/ui/gui/compute.ui:157
 msgid "Label"
 msgstr "Мітка"
 
@@ -2529,7 +2550,7 @@ msgid "Purpose"
 msgstr "Призначення"
 
 #: src/language/dictionary/sys-file-info.c:1052
-#: src/ui/gui/psppire-import-assistant.c:1038
+#: src/ui/gui/psppire-import-assistant.c:865
 msgid "Text"
 msgstr "Текст"
 
@@ -4740,7 +4761,7 @@ msgstr "У вбудованих даних не слід вказувати ко
 msgid "The %s subcommand may be used only with %s."
 msgstr "Підкоманду %s можна використовувати лише з %s."
 
-#: src/language/data-io/data-list.c:284 src/language/data-io/matrix-data.c:540
+#: src/language/data-io/data-list.c:284 src/language/data-io/matrix-data.c:542
 msgid "At least one variable must be specified."
 msgstr "Має бути вказано принаймні одну змінну."
 
@@ -4798,17 +4819,17 @@ msgstr "Немає значень для усіх змінних, починаю
 msgid "Record ends in data not part of any field."
 msgstr "Запис завершується у даних, які не є частиною жодного поля."
 
-#: src/language/data-io/data-parser.c:673 src/language/data-io/print.c:447
+#: src/language/data-io/data-parser.c:673 src/language/data-io/print.c:441
 msgid "Record"
 msgstr "Запис"
 
-#: src/language/data-io/data-parser.c:674 src/language/data-io/print.c:448
-#: src/ui/gui/psppire-var-sheet.c:1380
+#: src/language/data-io/data-parser.c:674 src/language/data-io/print.c:442
+#: src/ui/gui/psppire-var-sheet-header.c:76
 msgid "Columns"
 msgstr "Стовпчики"
 
 #: src/language/data-io/data-parser.c:675
-#: src/language/data-io/data-parser.c:712 src/language/data-io/print.c:449
+#: src/language/data-io/data-parser.c:712 src/language/data-io/print.c:443
 msgid "Format"
 msgstr "Формат"
 
@@ -5080,21 +5101,21 @@ msgstr "Результатом обчислення виразу %s є знач�
 msgid "The expression on %s evaluated to %g."
 msgstr "Обчислене значення виразу для %s: %g."
 
-#: src/language/data-io/print.c:193 src/language/data-io/trim.c:54
+#: src/language/data-io/print.c:187 src/language/data-io/trim.c:54
 msgid "expecting a valid subcommand"
 msgstr "мало бути вказано коректну підкоманду."
 
-#: src/language/data-io/print.c:223
+#: src/language/data-io/print.c:217
 #, c-format
 msgid "%s is required when binary formats are specified."
 msgstr "Слід використовувати %s, якщо вказано бінарні формати."
 
-#: src/language/data-io/print.c:306
+#: src/language/data-io/print.c:300
 #, c-format
 msgid "Output calls for %d records but %zu specified on RECORDS subcommand."
 msgstr "Для виведення даних потрібно %d записів, але у підкоманді RECORDS вказано кількість записів %zu."
 
-#: src/language/data-io/print.c:479
+#: src/language/data-io/print.c:473
 #, c-format
 msgid "Writing %zu record to %s."
 msgid_plural "Writing %zu records to %s."
@@ -5103,7 +5124,7 @@ msgstr[1] "Записуємо %zu записи до %s."
 msgstr[2] "Записуємо %zu записів до %s."
 msgstr[3] "Записуємо %zu запис до %s."
 
-#: src/language/data-io/print.c:483
+#: src/language/data-io/print.c:477
 #, c-format
 msgid "Writing %zu record."
 msgid_plural "Writing %zu records."
@@ -5112,21 +5133,21 @@ msgstr[1] "Записуємо %zu записи."
 msgstr[2] "Записуємо %zu записів."
 msgstr[3] "Записуємо один запис."
 
-#: src/language/data-io/matrix-data.c:177
+#: src/language/data-io/matrix-data.c:176
 #, c-format
 msgid "There are %d variable declared but the data has at least %d matrix rows."
 msgstr "Оголошено %d змінних, але у даних є принаймні %d рядків матриці."
 
-#: src/language/data-io/matrix-data.c:256
+#: src/language/data-io/matrix-data.c:257
 msgid "The N subcommand was specified, but a N record was also found in the data.  The N record will be ignored."
 msgstr "Було вказано підкоманду N, але у даних знайдено і запис N. Запис N буде проігноровано."
 
-#: src/language/data-io/matrix-data.c:450 src/language/utilities/set.q:186
+#: src/language/data-io/matrix-data.c:452 src/language/utilities/set.q:186
 #, c-format
 msgid "%s must not be negative."
 msgstr "%s має бути невід’ємним."
 
-#: src/language/data-io/matrix-data.c:530
+#: src/language/data-io/matrix-data.c:532
 msgid "FORMAT = FULL and FORMAT = NODIAGONAL are mutually exclusive."
 msgstr "FORMAT = FULL та FORMAT = NODIAGONAL є взаємно виключними."
 
@@ -5142,33 +5163,33 @@ msgstr "У матричному наборі даних немає змінно�
 msgid "Matrix dataset variable %s should be of string type."
 msgstr "Змінна матричного набору даних %s має належати до рядкового типу даних."
 
-#: src/language/data-io/save-translate.c:170
-#: src/language/data-io/save-translate.c:185
+#: src/language/data-io/save-translate.c:171
+#: src/language/data-io/save-translate.c:186
 #, c-format
 msgid "The %s string must contain exactly one character."
 msgstr "Рядок %s має містити точно один символ."
 
-#: src/language/data-io/save-translate.c:253
+#: src/language/data-io/save-translate.c:254
 #, c-format
 msgid "Output file `%s' exists but %s was not specified."
 msgstr "Файл виведених даних «%s» вже існує, але %s не вказано."
 
-#: src/language/data-io/trim.c:89
+#: src/language/data-io/trim.c:87
 #, c-format
 msgid "Cannot rename %s as %s because there already exists a variable named %s.  To rename variables with overlapping names, use a single RENAME subcommand such as `/RENAME (A=B)(B=C)(C=A)', or equivalently, `/RENAME (A B C=B C A)'."
 msgstr "Перейменування %s на %s неможливе, оскільки змінна з назвою %s вже існує. Щоб перейменувати змінні без конфліктів назв, скористайтеся окремою підкомандою RENAME так: /RENAME (A=B)(B=C)(C=A) або так: /RENAME (A B C=B C A)."
 
-#: src/language/data-io/trim.c:123
+#: src/language/data-io/trim.c:122
 #, c-format
 msgid "Number of variables on left side of `=' (%zu) does not match number of variables on right side (%zu), in parenthesized group %d of RENAME subcommand."
 msgstr "Кількість змінних ліворуч від «=» (%zu) не збігається з кількістю змінних праворуч від знаку рівності (%zu) (група %d у дужках підкоманди RENAME)."
 
-#: src/language/data-io/trim.c:136
+#: src/language/data-io/trim.c:135
 #, c-format
 msgid "Requested renaming duplicates variable name %s."
 msgstr "Під час бажаного перейменування буде здубльовано назву змінної %s."
 
-#: src/language/data-io/trim.c:167
+#: src/language/data-io/trim.c:166
 msgid "Cannot DROP all variables from dictionary."
 msgstr "Неможливо виконати DROP для усіх змінних зі словника."
 
@@ -5619,12 +5640,12 @@ msgstr "*НЕМАЄ*"
 msgid "error opening output file `%s'"
 msgstr "помилка під час спроби відкрити файл виведених даних «%s»"
 
-#: src/output/driver.c:377
+#: src/output/driver.c:373
 #, c-format
 msgid "%s is not a valid device type (the choices are `%s' and `%s')"
 msgstr "%s не є коректним типом пристрою (можливі варіанти: «%s» і «%s»)"
 
-#: src/output/driver.c:391
+#: src/output/driver.c:387
 #, c-format
 msgid "%s: unknown option `%s'"
 msgstr "%s: невідомий параметр «%s»"
@@ -5666,6 +5687,10 @@ msgstr "помилка під час спроби відкрити файл вх
 #, c-format
 msgid "file `%s' does not state a paper size"
 msgstr "файл «%s» не визначає розміру аркуша"
+
+#: src/output/odt.c:98
+msgid "error creating temporary file"
+msgstr "помилка під час створення тимчасового файла"
 
 #: src/output/options.c:112
 #, c-format
@@ -5835,10 +5860,6 @@ msgstr "Розсіювання"
 msgid "Scatterplot %s"
 msgstr "Точкова діаграма %s"
 
-#: src/output/odt.c:98
-msgid "error creating temporary file"
-msgstr "помилка під час створення тимчасового файла"
-
 #: src/ui/source-init-opts.c:72
 #, c-format
 msgid "Algorithm must be either `%s' or `%s'."
@@ -5947,85 +5968,73 @@ msgstr ""
 "Аргументи, які не є параметрами, вважаються файлами синтаксичних конструкцій, які\n"
 "слід виконати.\n"
 
-#: src/ui/gui/psppire-import-assistant.c:535
-#, c-format
-msgid "Could not open `%s'"
-msgstr "Не вдалося відкрити «%s»"
+#: src/ui/gui/psppire-import-assistant.c:329
+msgid "line"
+msgstr "рядок"
 
-#: src/ui/gui/psppire-import-assistant.c:550
-#, c-format
-msgid "Error reading `%s': %s"
-msgstr "Помилка під час читання «%s»: %s"
+#: src/ui/gui/psppire-import-assistant.c:339
+msgid "var"
+msgstr "змін"
 
-#: src/ui/gui/psppire-import-assistant.c:553
-#, c-format
-msgid "Failed to read `%s', because it contains a line over %d bytes long and therefore appears not to be a text file."
-msgstr "Не вдалося прочитати дані з «%s», оскільки у файлі міститься рядок об’ємом у понад %d байтів, тому, ймовірно, цей файл не є текстовим."
-
-#: src/ui/gui/psppire-import-assistant.c:570
-#, c-format
-msgid "`%s' is empty."
-msgstr "«%s» є порожнім."
-
-#: src/ui/gui/psppire-import-assistant.c:652
-msgid "Line"
-msgstr "Рядок"
-
-#: src/ui/gui/psppire-import-assistant.c:746
+#: src/ui/gui/psppire-import-assistant.c:549
 msgid "Importing Spreadsheet Data"
 msgstr "Імпортування даних з електронної таблиці"
 
-#: src/ui/gui/psppire-import-assistant.c:853
-#: src/ui/gui/psppire-data-window.c:555 src/ui/gui/psppire-syntax-window.c:572
+#: src/ui/gui/psppire-import-assistant.c:663
+#: src/ui/gui/psppire-data-window.c:557 src/ui/gui/psppire-syntax-window.c:572
 #: src/ui/gui/psppire-window.c:683
 msgid "All Files"
 msgstr "усі файли"
 
-#: src/ui/gui/psppire-import-assistant.c:858
+#: src/ui/gui/psppire-import-assistant.c:668
 msgid "Text Files"
 msgstr "текстові файли"
 
-#: src/ui/gui/psppire-import-assistant.c:863
+#: src/ui/gui/psppire-import-assistant.c:673
 msgid "Text (*.txt) Files"
 msgstr "текстові файли (*.txt)"
 
-#: src/ui/gui/psppire-import-assistant.c:869
+#: src/ui/gui/psppire-import-assistant.c:679
 msgid "Plain Text (ASCII) Files"
 msgstr "звичайні текстові файли (ASCII)"
 
-#: src/ui/gui/psppire-import-assistant.c:874
+#: src/ui/gui/psppire-import-assistant.c:684
 msgid "Comma Separated Value Files"
 msgstr "файли значень, відокремлених комами"
 
-#: src/ui/gui/psppire-import-assistant.c:881
+#: src/ui/gui/psppire-import-assistant.c:691
 msgid "Tab Separated Value Files"
 msgstr "файли значень, відокремлених табуляціями"
 
-#: src/ui/gui/psppire-import-assistant.c:886
+#: src/ui/gui/psppire-import-assistant.c:696
 msgid "Gnumeric Spreadsheet Files"
 msgstr "файли електронних таблиць Gnumeric"
 
-#: src/ui/gui/psppire-import-assistant.c:891
+#: src/ui/gui/psppire-import-assistant.c:701
 msgid "OpenDocument Spreadsheet Files"
 msgstr "файли електронних таблиць OpenDocument"
 
-#: src/ui/gui/psppire-import-assistant.c:896
+#: src/ui/gui/psppire-import-assistant.c:706
 msgid "All Spreadsheet Files"
 msgstr "усі файли електронних таблиць"
 
-#: src/ui/gui/psppire-import-assistant.c:905
+#: src/ui/gui/psppire-import-assistant.c:715
 msgid "Select File to Import"
 msgstr "Виберіть файл для імпортування"
 
-#: src/ui/gui/psppire-import-assistant.c:949
+#: src/ui/gui/psppire-import-assistant.c:750
 msgid "Importing Delimited Text Data"
 msgstr "Імпортуємо розділені текстові дані"
 
-#: src/ui/gui/psppire-import-assistant.c:1116
+#: src/ui/gui/psppire-import-assistant.c:845
 msgid "Select the First Line"
 msgstr "Виберіть перший рядок"
 
-#: src/ui/gui/psppire-import-assistant.c:1150
+#: src/ui/gui/psppire-import-assistant.c:857
+msgid "Line"
+msgstr "Рядок"
+
+#: src/ui/gui/psppire-import-assistant.c:911
 msgid ""
 "This assistant will guide you through the process of importing data into PSPP from a text file with one line per case,  in which fields are separated by tabs, commas, or other delimiters.\n"
 "\n"
@@ -6033,7 +6042,7 @@ msgstr ""
 "За допомогою цієї допоміжної програми ви зможете виконати процедуру імпортування до PSPP даних з текстового файла, у якому кожне спостереження записано у окремому рядку, а поля відокремлено символами табуляції, комами або іншими роздільниками.\n"
 "\n"
 
-#: src/ui/gui/psppire-import-assistant.c:1158
+#: src/ui/gui/psppire-import-assistant.c:921
 #, c-format
 msgid "The selected file contains %'lu line of text.  "
 msgid_plural "The selected file contains %'lu lines of text.  "
@@ -6042,7 +6051,7 @@ msgstr[1] "У позначеному файлі міститься %'lu рядк
 msgstr[2] "У позначеному файлі міститься %'lu рядків тексту. "
 msgstr[3] "У позначеному файлі міститься %'lu рядок тексту. "
 
-#: src/ui/gui/psppire-import-assistant.c:1167
+#: src/ui/gui/psppire-import-assistant.c:930
 #, c-format
 msgid "The selected file contains approximately %'lu line of text.  "
 msgid_plural "The selected file contains approximately %'lu lines of text.  "
@@ -6051,7 +6060,7 @@ msgstr[1] "У позначеному файлі міститься прибли�
 msgstr[2] "У позначеному файлі міститься приблизно %'lu рядків тексту. "
 msgstr[3] "У позначеному файлі міститься приблизно %'lu рядок тексту. "
 
-#: src/ui/gui/psppire-import-assistant.c:1173
+#: src/ui/gui/psppire-import-assistant.c:936
 #, c-format
 msgid "Only the first %zu line of the file will be shown for preview purposes in the following screens.  "
 msgid_plural "Only the first %zu lines of the file will be shown for preview purposes in the following screens.  "
@@ -6060,51 +6069,37 @@ msgstr[1] "На наступних сторінках, з метою попер�
 msgstr[2] "На наступних сторінках, з метою попереднього перегляду, буде показано лише перші %zu рядків файла. "
 msgstr[3] "На наступних сторінках, з метою попереднього перегляду, буде показано лише перший %zu рядок файла. "
 
-#: src/ui/gui/psppire-import-assistant.c:1181
+#: src/ui/gui/psppire-import-assistant.c:945
 msgid "You may choose below how much of the file should actually be imported."
 msgstr "Нижче ви можете вказати частину файла, яку слід імпортувати."
 
-#: src/ui/gui/psppire-import-assistant.c:1198
+#: src/ui/gui/psppire-import-assistant.c:954
 #, c-format
 msgid "Only the first %4d cases"
 msgstr "Лише перші %4d спостережень"
 
-#: src/ui/gui/psppire-import-assistant.c:1214
+#: src/ui/gui/psppire-import-assistant.c:965
 #, c-format
 msgid "Only the first %3d %% of file (approximately)"
 msgstr "Лише перші %3d%% файла (приблизно)"
 
-#: src/ui/gui/psppire-import-assistant.c:1237
+#: src/ui/gui/psppire-import-assistant.c:989
 msgid "Select the Lines to Import"
 msgstr "Виберіть рядки для імпортування"
 
-#: src/ui/gui/psppire-import-assistant.c:1371
-#, c-format
-msgid "Cannot parse field content `%.*s' as format %s: %s"
-msgstr "Не вдалося обробити вміст поля «%.*s» як дані у форматі %s: %s"
-
-#: src/ui/gui/psppire-import-assistant.c:1380
-#: src/ui/gui/psppire-import-assistant.c:1487
-msgid "This input line has too few separators to fill in this field."
-msgstr "У рядку вхідних даних надто мало роздільників для заповнення цього поля."
-
-#: src/ui/gui/psppire-import-assistant.c:1887
+#: src/ui/gui/psppire-import-assistant.c:1157
 msgid "Choose Separators"
 msgstr "Виберіть роздільник"
 
-#: src/ui/gui/psppire-import-assistant.c:2112
-msgid "An error occurred reading the spreadsheet file."
-msgstr "Під час спроби виконати читання файла електронної таблиці сталася помилка."
-
-#: src/ui/gui/psppire-import-assistant.c:2167
+#: src/ui/gui/psppire-import-assistant.c:1398
 msgid "Adjust Variable Formats"
 msgstr "Коригування форматів змінних"
 
-#: src/ui/gui/find-dialog.c:197
+#: src/ui/gui/find-dialog.c:193
 msgid "Find"
 msgstr "Знайти"
 
-#: src/ui/gui/find-dialog.c:649
+#: src/ui/gui/find-dialog.c:645
 #, c-format
 msgid "Bad regular expression: %s"
 msgstr "Помилковий формальний вираз: %s"
@@ -6153,19 +6148,24 @@ msgstr "Не показувати вікно вітання"
 msgid "Do not attempt single instance negotiation"
 msgstr "Не намагатися виконати узгодження для єдиності екземпляра програми"
 
-#: src/ui/gui/missing-val-dialog.c:214
+#: src/ui/gui/missing-val-dialog.c:216
 msgid "The maximum length of a missing value for a string variable is 8 in UTF-8."
 msgstr "Максимальною довжиною пропущеного значення для рядкової змінної є 8 у кодуванні UTF-8."
 
-#: src/ui/gui/missing-val-dialog.c:265
+#: src/ui/gui/missing-val-dialog.c:267
 msgid "At least one value must be specified"
 msgstr "Слід вказати принаймні одне значення"
 
-#: src/ui/gui/missing-val-dialog.c:295
+#: src/ui/gui/missing-val-dialog.c:297
 msgid "Incorrect range specification"
 msgstr "Некоректне визначення діапазону"
 
-#: src/ui/gui/psppire-data-editor.c:417
+#: src/ui/gui/psppire-data-editor.c:404
+#, c-format
+msgid "%d : %s"
+msgstr "%d: %s"
+
+#: src/ui/gui/psppire-data-editor.c:415
 #, c-format
 msgid "%'d case"
 msgid_plural "%'d cases"
@@ -6174,7 +6174,7 @@ msgstr[1] "%'d спостереження"
 msgstr[2] "%'d спостережень"
 msgstr[3] "%'d спостереження"
 
-#: src/ui/gui/psppire-data-editor.c:422
+#: src/ui/gui/psppire-data-editor.c:420
 #, c-format
 msgid "%'d variable"
 msgid_plural "%'d variables"
@@ -6183,82 +6183,49 @@ msgstr[1] "%'d змінні"
 msgstr[2] "%'d змінних"
 msgstr[3] "%'d змінна"
 
-#: src/ui/gui/psppire-data-editor.c:715
-msgid "Data View"
-msgstr "Перегляд даних"
-
-#: src/ui/gui/psppire-data-editor.c:728
-msgid "Variable View"
-msgstr "Перегляд змінних"
-
-#: src/ui/gui/psppire-data-sheet.c:139
-msgid "Enter a number to add a new variable."
-msgstr "Введіть число, щоб додати нову змінну."
-
-#: src/ui/gui/psppire-data-sheet.c:144
-msgid "Enter a number to add a new case."
-msgstr "Введіть число, щоб додати нове спостереження."
-
-#: src/ui/gui/psppire-data-sheet.c:230
+#: src/ui/gui/psppire-data-editor.c:510
 msgid "Case"
 msgstr "Спостереження"
 
-#: src/ui/gui/psppire-data-sheet.c:1662 src/ui/gui/psppire-data-window.c:1303
-msgid "_Insert Case"
-msgstr "Вс_тавити спостереження"
+#: src/ui/gui/psppire-data-editor.c:520
+msgid "Data View"
+msgstr "Перегляд даних"
 
-#: src/ui/gui/psppire-data-sheet.c:1663 src/ui/gui/psppire-data-window.c:1351
-msgid "Cl_ear Cases"
-msgstr "С_порожнити спостереження"
+#: src/ui/gui/psppire-data-editor.c:530
+msgid "Variable View"
+msgstr "Перегляд змінних"
 
-#: src/ui/gui/psppire-data-sheet.c:1678 src/ui/gui/psppire-data-window.c:1302
-#: src/ui/gui/psppire-var-sheet.c:944
-msgid "_Insert Variable"
-msgstr "Вс_тавити змінну"
-
-#: src/ui/gui/psppire-data-sheet.c:1679 src/ui/gui/psppire-var-sheet.c:945
-msgid "Cl_ear Variables"
-msgstr "Споро_жнити змінні"
-
-#: src/ui/gui/psppire-data-sheet.c:1680
-msgid "Sort _Ascending"
-msgstr "Впорядкувати за з_ростанням"
-
-#: src/ui/gui/psppire-data-sheet.c:1681
-msgid "Sort _Descending"
-msgstr "Впорядкувати за сп_аданням"
-
-#: src/ui/gui/psppire-data-window.c:212
+#: src/ui/gui/psppire-data-window.c:214
 msgid "Transformations Pending"
 msgstr "Перетворення у черзі"
 
-#: src/ui/gui/psppire-data-window.c:228
+#: src/ui/gui/psppire-data-window.c:230
 msgid "Filter off"
 msgstr "Фільтр. вимкн."
 
-#: src/ui/gui/psppire-data-window.c:240
+#: src/ui/gui/psppire-data-window.c:242
 #, c-format
 msgid "Filter by %s"
 msgstr "Фільтрування за %s"
 
-#: src/ui/gui/psppire-data-window.c:261
+#: src/ui/gui/psppire-data-window.c:263
 msgid "No Split"
 msgstr "Без поділу"
 
-#: src/ui/gui/psppire-data-window.c:270
+#: src/ui/gui/psppire-data-window.c:272
 msgid "Split by "
 msgstr "Критерій поділу: "
 
-#: src/ui/gui/psppire-data-window.c:298
+#: src/ui/gui/psppire-data-window.c:300
 msgid "Weights off"
 msgstr "Зваж. вимкн."
 
-#: src/ui/gui/psppire-data-window.c:310
+#: src/ui/gui/psppire-data-window.c:312
 #, c-format
 msgid "Weight by %s"
 msgstr "Вага за %s"
 
-#: src/ui/gui/psppire-data-window.c:530 src/ui/gui/psppire-data-window.c:534
+#: src/ui/gui/psppire-data-window.c:532 src/ui/gui/psppire-data-window.c:536
 #: src/ui/gui/psppire-dialog-action-aggregate.c:217
 #: src/ui/gui/psppire-output-window.c:382
 #: src/ui/gui/psppire-syntax-window.c:560 src/ui/gui/psppire-window.c:476
@@ -6266,195 +6233,208 @@ msgstr "Вага за %s"
 msgid "Save"
 msgstr "Зберегти"
 
-#: src/ui/gui/psppire-data-window.c:540
+#: src/ui/gui/psppire-data-window.c:542
 #: src/ui/gui/psppire-dialog-action-aggregate.c:226
 msgid "System Files (*.sav)"
 msgstr "системні файли (*.sav)"
 
-#: src/ui/gui/psppire-data-window.c:545
+#: src/ui/gui/psppire-data-window.c:547
 #: src/ui/gui/psppire-dialog-action-aggregate.c:231
 msgid "Compressed System Files (*.zsav)"
 msgstr "стиснені системні файли (*.zsav)"
 
-#: src/ui/gui/psppire-data-window.c:550
+#: src/ui/gui/psppire-data-window.c:552
 #: src/ui/gui/psppire-dialog-action-aggregate.c:236
 #: src/ui/gui/psppire-window.c:672
 msgid "Portable Files (*.por) "
 msgstr "портативні файли (*.por) "
 
-#: src/ui/gui/psppire-data-window.c:572
+#: src/ui/gui/psppire-data-window.c:574
 msgid "System File"
 msgstr "Системний файл"
 
-#: src/ui/gui/psppire-data-window.c:579
+#: src/ui/gui/psppire-data-window.c:581
 msgid "Compressed System File"
 msgstr "Стиснений системний файл"
 
-#: src/ui/gui/psppire-data-window.c:585
+#: src/ui/gui/psppire-data-window.c:587
 msgid "Portable File"
 msgstr "Портативний файл"
 
-#: src/ui/gui/psppire-data-window.c:588
+#: src/ui/gui/psppire-data-window.c:590
 msgid "Format:"
 msgstr "Формат:"
 
-#: src/ui/gui/psppire-data-window.c:652
+#: src/ui/gui/psppire-data-window.c:654
 msgid "Delete Existing Dataset?"
 msgstr "Вилучити наявний набір даних?"
 
-#: src/ui/gui/psppire-data-window.c:656
+#: src/ui/gui/psppire-data-window.c:658
 #, c-format
 msgid "Renaming \"%s\" to \"%s\" will destroy the existing dataset named \"%s\".  Are you sure that you want to do this?"
 msgstr "Перейменування «%s» на «%s» призведе до знищення наявного набору даних з назвою «%s». Ви справді цього хочете?"
 
-#: src/ui/gui/psppire-data-window.c:662
+#: src/ui/gui/psppire-data-window.c:664
 msgid "Delete"
 msgstr "Вилучити"
 
-#: src/ui/gui/psppire-data-window.c:684
+#: src/ui/gui/psppire-data-window.c:686
 #, c-format
 msgid "Please enter a new name for dataset \"%s\":"
 msgstr "Вкажіть нову назву набору даних «%s»:"
 
-#: src/ui/gui/psppire-data-window.c:686
+#: src/ui/gui/psppire-data-window.c:688
 msgid "Rename Dataset"
 msgstr "Перейменувати набір даних"
 
-#: src/ui/gui/psppire-data-window.c:1165 src/ui/gui/output-window.ui:68
+#: src/ui/gui/psppire-data-window.c:1209 src/ui/gui/output-window.ui:68
 #: src/ui/gui/syntax-editor.ui:22
 msgid "_File"
 msgstr "_Файл"
 
-#: src/ui/gui/psppire-data-window.c:1169 src/ui/gui/syntax-editor.ui:25
+#: src/ui/gui/psppire-data-window.c:1213 src/ui/gui/syntax-editor.ui:25
 msgid "_New"
 msgstr "С_творити"
 
-#: src/ui/gui/psppire-data-window.c:1176
+#: src/ui/gui/psppire-data-window.c:1220
 msgid "_Syntax"
 msgstr "Си_нтаксис"
 
-#: src/ui/gui/psppire-data-window.c:1179 src/ui/gui/data-editor.ui:177
+#: src/ui/gui/psppire-data-window.c:1223 src/ui/gui/data-editor.ui:177
 #: src/ui/gui/data-editor.ui:189
 msgid "_Data"
 msgstr "_Дані"
 
-#: src/ui/gui/psppire-data-window.c:1186 src/ui/gui/syntax-editor.ui:36
+#: src/ui/gui/psppire-data-window.c:1230 src/ui/gui/syntax-editor.ui:36
 msgid "_Open"
 msgstr "_Відкрити"
 
-#: src/ui/gui/psppire-data-window.c:1189
+#: src/ui/gui/psppire-data-window.c:1233
 msgid "_Import Data..."
 msgstr "І_мпортувати дані…"
 
-#: src/ui/gui/psppire-data-window.c:1197 src/ui/gui/logistic.ui:260
+#: src/ui/gui/psppire-data-window.c:1241 src/ui/gui/logistic.ui:260
 #: src/ui/gui/regression.ui:66
 msgid "_Save..."
 msgstr "З_берегти…"
 
-#: src/ui/gui/psppire-data-window.c:1200
+#: src/ui/gui/psppire-data-window.c:1244
 msgid "Save _As..."
 msgstr "Зберегти _як…"
 
-#: src/ui/gui/psppire-data-window.c:1203
+#: src/ui/gui/psppire-data-window.c:1247
 msgid "_Rename Dataset..."
 msgstr "П_ерейменувати набір даних…"
 
-#: src/ui/gui/psppire-data-window.c:1214
+#: src/ui/gui/psppire-data-window.c:1258
 msgid "_Display Data File Information"
 msgstr "_Показати відомості щодо файла даних"
 
-#: src/ui/gui/psppire-data-window.c:1221
+#: src/ui/gui/psppire-data-window.c:1265
 msgid "Working File"
 msgstr "Поточного файла"
 
-#: src/ui/gui/psppire-data-window.c:1223
+#: src/ui/gui/psppire-data-window.c:1267
 msgid "_External File..."
 msgstr "Зов_нішнього файла…"
 
-#: src/ui/gui/psppire-data-window.c:1233
+#: src/ui/gui/psppire-data-window.c:1277
 msgid "_Recently Used Data"
 msgstr "Не_щодавно використані дані"
 
-#: src/ui/gui/psppire-data-window.c:1234
+#: src/ui/gui/psppire-data-window.c:1278
 msgid "Recently Used _Files"
 msgstr "Нещодавно використані _файли"
 
-#: src/ui/gui/psppire-data-window.c:1281 src/ui/gui/output-window.ui:82
+#: src/ui/gui/psppire-data-window.c:1325 src/ui/gui/output-window.ui:82
 #: src/ui/gui/syntax-editor.ui:59
 msgid "_Quit"
 msgstr "Ви_йти"
 
-#: src/ui/gui/psppire-data-window.c:1298 src/ui/gui/output-window.ui:89
+#: src/ui/gui/psppire-data-window.c:1343 src/ui/gui/output-window.ui:89
 #: src/ui/gui/syntax-editor.ui:66
 msgid "_Edit"
 msgstr "З_міни"
 
-#: src/ui/gui/psppire-data-window.c:1304
+#: src/ui/gui/psppire-data-window.c:1347 src/ui/gui/psppire-data-sheet.c:276
+#: src/ui/gui/psppire-variable-sheet.c:263
+msgid "_Insert Variable"
+msgstr "Вс_тавити змінну"
+
+#: src/ui/gui/psppire-data-window.c:1348 src/ui/gui/psppire-data-sheet.c:167
+msgid "_Insert Case"
+msgstr "Вс_тавити спостереження"
+
+#: src/ui/gui/psppire-data-window.c:1349
 msgid "_Go To Variable..."
 msgstr "Пере_йти до змінної…"
 
-#: src/ui/gui/psppire-data-window.c:1305
+#: src/ui/gui/psppire-data-window.c:1350
 msgid "_Go To Case..."
 msgstr "П_ерейти до спостереження…"
 
-#: src/ui/gui/psppire-data-window.c:1327 src/ui/gui/syntax-editor.ui:69
+#: src/ui/gui/psppire-data-window.c:1372 src/ui/gui/syntax-editor.ui:69
 msgid "Cu_t"
 msgstr "Ви_різати"
 
-#: src/ui/gui/psppire-data-window.c:1335 src/ui/gui/output-window.ui:96
+#: src/ui/gui/psppire-data-window.c:1380 src/ui/gui/output-window.ui:96
 #: src/ui/gui/syntax-editor.ui:74
 msgid "_Copy"
 msgstr "_Копіювати"
 
-#: src/ui/gui/psppire-data-window.c:1341 src/ui/gui/syntax-editor.ui:79
+#: src/ui/gui/psppire-data-window.c:1386 src/ui/gui/syntax-editor.ui:79
 msgid "_Paste"
 msgstr "Вст_авити"
 
-#: src/ui/gui/psppire-data-window.c:1347
+#: src/ui/gui/psppire-data-window.c:1392
 msgid "Clear _Variables"
 msgstr "Споро_жнити змінні"
 
-#: src/ui/gui/psppire-data-window.c:1360
+#: src/ui/gui/psppire-data-window.c:1396 src/ui/gui/psppire-data-sheet.c:175
+msgid "Cl_ear Cases"
+msgstr "С_порожнити спостереження"
+
+#: src/ui/gui/psppire-data-window.c:1405
 msgid "_Find..."
 msgstr "З_найти…"
 
-#: src/ui/gui/psppire-data-window.c:1366 src/ui/gui/logistic.ui:245
+#: src/ui/gui/psppire-data-window.c:1411 src/ui/gui/logistic.ui:245
 msgid "_Options..."
 msgstr "П_араметри…"
 
-#: src/ui/gui/psppire-data-window.c:1644
+#: src/ui/gui/psppire-data-window.c:1682
 msgid "Jump to variable"
 msgstr "Перейти до змінної"
 
-#: src/ui/gui/psppire-data-window.c:1657
+#: src/ui/gui/psppire-data-window.c:1695
 msgid "Jump to a case in the data sheet"
 msgstr "Перейти до спостереження у таблиці даних"
 
-#: src/ui/gui/psppire-data-window.c:1671
+#: src/ui/gui/psppire-data-window.c:1709
 msgid "Search for values in the data"
 msgstr "Шукати значення у даних"
 
-#: src/ui/gui/psppire-data-window.c:1683
+#: src/ui/gui/psppire-data-window.c:1721
 msgid "Create a new case at the current position"
 msgstr "Створити запис спостереження у поточній позиції"
 
-#: src/ui/gui/psppire-data-window.c:1695
+#: src/ui/gui/psppire-data-window.c:1733
 msgid "Create a new variable at the current position"
 msgstr "Створити запис нової змінної у поточній позиції"
 
-#: src/ui/gui/psppire-data-window.c:1709
+#: src/ui/gui/psppire-data-window.c:1747
 msgid "Split the active dataset"
 msgstr "Поділити поточний набір даних"
 
-#: src/ui/gui/psppire-data-window.c:1721
+#: src/ui/gui/psppire-data-window.c:1759
 msgid "Weight cases by variable"
 msgstr "Зважити спостереження за змінною"
 
-#: src/ui/gui/psppire-data-window.c:1732
+#: src/ui/gui/psppire-data-window.c:1770
 msgid "Show/hide value labels"
 msgstr "Показати або сховати мітки значень"
 
-#: src/ui/gui/psppire-data-window.c:1875
+#: src/ui/gui/psppire-data-window.c:1915
 msgid "Data Editor"
 msgstr "Редактор даних"
 
@@ -6684,6 +6664,10 @@ msgstr "Не зважувати спостереження"
 msgid "Weight cases by %s"
 msgstr "Зважити спостереження за %s"
 
+#: src/ui/gui/psppire-dict.c:97
+msgid "Var"
+msgstr "Змін"
+
 #. TRANSLATORS: This string must be a valid variable name.  That means:
 #. - The string must be at most 64 bytes (not characters) long.
 #. - The string may not contain whitespace.
@@ -6691,12 +6675,12 @@ msgstr "Зважити спостереження за %s"
 #. - The first character may not be a digit
 #. - The final character may not be '.' or '_'
 #.
-#: src/ui/gui/psppire-dict.c:332
+#: src/ui/gui/psppire-dict.c:423
 #, c-format
 msgid "Var%04d"
 msgstr "Змін%04d"
 
-#: src/ui/gui/psppire-dict.c:516
+#: src/ui/gui/psppire-dict.c:608
 msgid "Duplicate variable name."
 msgstr "Дублювання назви змінної."
 
@@ -6725,11 +6709,11 @@ msgstr "Вперед"
 msgid "Back"
 msgstr "Назад"
 
-#: src/ui/gui/psppire-output-view.c:366
+#: src/ui/gui/psppire-output-view.c:367
 msgid "Message"
 msgstr "Повідомлення"
 
-#: src/ui/gui/psppire-output-view.c:488
+#: src/ui/gui/psppire-output-view.c:489
 msgid "failed to create temporary directory during clipboard operation"
 msgstr "не вдалося створити каталог тимчасових даних під час дій з буфером обміну даними"
 
@@ -6773,7 +6757,7 @@ msgstr "Експортувати виведені дані"
 msgid "Output Viewer"
 msgstr "Перегляд виведених даних"
 
-#: src/ui/gui/psppire-spreadsheet-model.c:279
+#: src/ui/gui/psppire-spreadsheet-model.c:276
 msgid "(empty)"
 msgstr "(порожньо)"
 
@@ -6799,69 +6783,74 @@ msgstr "Редактор синтаксису"
 msgid "Cannot load syntax file `%s'"
 msgstr "Не вдалося завантажити файл синтаксису «%s»"
 
-#: src/ui/gui/psppire-var-sheet.c:182 src/ui/gui/psppire-var-sheet.c:187
-msgid "Cannot create variable."
-msgstr "Не вдалося створити змінну."
-
-#: src/ui/gui/psppire-var-sheet.c:183 src/ui/gui/psppire-var-sheet.c:212
+#: src/ui/gui/psppire-text-file.c:56
 #, c-format
-msgid "\"%s\" is not a valid variable name."
-msgstr "«%s» не є коректною назвою змінної."
+msgid "Could not open `%s'"
+msgstr "Не вдалося відкрити «%s»"
 
-#: src/ui/gui/psppire-var-sheet.c:188 src/ui/gui/psppire-var-sheet.c:218
+#: src/ui/gui/psppire-text-file.c:72
 #, c-format
-msgid "This dictionary already contains a variable named \"%s\"."
-msgstr "У цьому словнику вже міститься змінна з назвою «%s»."
+msgid "Error reading `%s': %s"
+msgstr "Помилка під час читання «%s»: %s"
 
-#: src/ui/gui/psppire-var-sheet.c:211 src/ui/gui/psppire-var-sheet.c:217
-msgid "Cannot rename variable."
-msgstr "Не вдалося перейменувати змінну."
+#: src/ui/gui/psppire-text-file.c:75
+#, c-format
+msgid "Failed to read `%s', because it contains a line over %d bytes long and therefore appears not to be a text file."
+msgstr "Не вдалося прочитати дані з «%s», оскільки у файлі міститься рядок об’ємом у понад %d байтів, тому, ймовірно, цей файл не є текстовим."
 
-#: src/ui/gui/psppire-var-sheet.c:445
+#: src/ui/gui/psppire-text-file.c:97
+#, c-format
+msgid "`%s' is empty."
+msgstr "«%s» є порожнім."
+
+#: src/ui/gui/psppire-data-sheet.c:285 src/ui/gui/psppire-variable-sheet.c:272
+msgid "Cl_ear Variables"
+msgstr "Споро_жнити змінні"
+
+#: src/ui/gui/psppire-data-sheet.c:297
+msgid "Sort _Ascending"
+msgstr "Впорядкувати за з_ростанням"
+
+#: src/ui/gui/psppire-data-sheet.c:304
+msgid "Sort _Descending"
+msgstr "Впорядкувати за сп_аданням"
+
+#: src/ui/gui/psppire-variable-sheet.c:401
 #, c-format
 msgid "{%s, %s}..."
 msgstr "{%s, %s}…"
 
-#: src/ui/gui/psppire-var-sheet.c:878
-msgid "Enter a variable name to add a new variable."
-msgstr "Щоб додати нову змінну, вкажіть її назву."
-
-#: src/ui/gui/psppire-var-sheet.c:918
-#, c-format
-msgid "{%s, %s}\n"
-msgstr "{%s, %s}\n"
-
-#: src/ui/gui/psppire-var-sheet.c:1365 src/language/stats/crosstabs.q:1390
-#: src/ui/gui/compute.ui:303
+#: src/ui/gui/psppire-var-sheet-header.c:58
+#: src/language/stats/crosstabs.q:1390 src/ui/gui/compute.ui:303
 msgid "Type"
 msgstr "Тип"
 
-#: src/ui/gui/psppire-var-sheet.c:1368 src/ui/gui/compute.ui:215
+#: src/ui/gui/psppire-var-sheet-header.c:61 src/ui/gui/compute.ui:215
 msgid "Width"
 msgstr "Ширина"
 
-#: src/ui/gui/psppire-var-sheet.c:1370
-msgid "Decimals"
+#: src/ui/gui/psppire-var-sheet-header.c:64
+msgid "Decimal"
 msgstr "Знаків після коми"
 
-#: src/ui/gui/psppire-var-sheet.c:1374 src/ui/gui/val-labs-dialog.ui:194
+#: src/ui/gui/psppire-var-sheet-header.c:70 src/ui/gui/val-labs-dialog.ui:194
 msgid "Value Labels"
 msgstr "Мітки значень"
 
-#: src/ui/gui/psppire-var-sheet.c:1377 src/ui/gui/examine.ui:415
+#: src/ui/gui/psppire-var-sheet-header.c:73 src/ui/gui/examine.ui:415
 #: src/ui/gui/t-test.ui:105
 msgid "Missing Values"
 msgstr "Пропущені значення"
 
-#: src/ui/gui/psppire-var-sheet.c:1382
+#: src/ui/gui/psppire-var-sheet-header.c:79
 msgid "Align"
 msgstr "Вирівняти"
 
-#: src/ui/gui/psppire-var-sheet.c:1388
+#: src/ui/gui/psppire-var-sheet-header.c:82
 msgid "Measure"
 msgstr "Міра"
 
-#: src/ui/gui/psppire-var-sheet.c:1394
+#: src/ui/gui/psppire-var-sheet-header.c:85
 msgid "Role"
 msgstr "Роль"
 
@@ -8665,15 +8654,15 @@ msgstr "У рядку над вибраним рядком містяться н
 msgid "Check the data formats displayed below and fix any that are incorrect.  You may set other variable properties now or later."
 msgstr "Ознайомтеся з переліком форматів даних, наведеним нижче, і виправте помилки у форматуванні, якщо вони є. Ви можете визначити властивості інших змінних зараз або пізніше."
 
-#: src/ui/gui/text-data-import.ui:119
+#: src/ui/gui/text-data-import.ui:121
 msgid "<b>Variables</b>"
 msgstr "<b>Змінні</b>"
 
-#: src/ui/gui/text-data-import.ui:149
+#: src/ui/gui/text-data-import.ui:152
 msgid "<b>Data Preview</b>"
 msgstr "<b>Попередній перегляд даних</b>"
 
-#: src/ui/gui/text-data-import.ui:178
+#: src/ui/gui/text-data-import.ui:181
 msgid ""
 "This assistant will guide you through the process of importing data into PSPP from a text file with one line per case,  in which fields are separated by tabs, commas, or other delimiters.\n"
 "\n"
@@ -8683,87 +8672,87 @@ msgstr ""
 "\n"
 "\tУ позначеному файлі міститься N рядків тексту. На наступних сторінках майстра буде показано лише перші M записів з метою попереднього перегляду. Нижче ви можете вибрати об’єм даних, які буде імпортовано."
 
-#: src/ui/gui/text-data-import.ui:249
+#: src/ui/gui/text-data-import.ui:252
 msgid "All cases"
 msgstr "Усі спостереження"
 
-#: src/ui/gui/text-data-import.ui:269
+#: src/ui/gui/text-data-import.ui:272
 msgid "<b>Amount to Import</b>"
 msgstr "<b>Величина, яку слід імпортувати</b>"
 
-#: src/ui/gui/text-data-import.ui:322
+#: src/ui/gui/text-data-import.ui:325
 msgid "C_ustom"
 msgstr "Н_етиповий"
 
-#: src/ui/gui/text-data-import.ui:338
+#: src/ui/gui/text-data-import.ui:341
 msgid "Slas_h (/)"
 msgstr "По_хила риска (/)"
 
-#: src/ui/gui/text-data-import.ui:354
+#: src/ui/gui/text-data-import.ui:357
 msgid "Semicolo_n (;)"
 msgstr "К_рапка з комою (;)"
 
-#: src/ui/gui/text-data-import.ui:370
+#: src/ui/gui/text-data-import.ui:373
 msgid "P_ipe (|)"
 msgstr "_Риска (|)"
 
-#: src/ui/gui/text-data-import.ui:386
+#: src/ui/gui/text-data-import.ui:389
 msgid "H_yphen (-)"
 msgstr "_Дефіс (-)"
 
-#: src/ui/gui/text-data-import.ui:402
+#: src/ui/gui/text-data-import.ui:405
 msgid "Co_mma (,)"
 msgstr "К_ома (,)"
 
-#: src/ui/gui/text-data-import.ui:418
+#: src/ui/gui/text-data-import.ui:421
 msgid "_Colon (:)"
 msgstr "Д_вокрапка (:)"
 
-#: src/ui/gui/text-data-import.ui:434
+#: src/ui/gui/text-data-import.ui:437
 msgid "Ban_g (!)"
 msgstr "З_нак оклику (!)"
 
-#: src/ui/gui/text-data-import.ui:450
+#: src/ui/gui/text-data-import.ui:453
 msgid "Ta_b"
 msgstr "_Табуляція"
 
-#: src/ui/gui/text-data-import.ui:466
+#: src/ui/gui/text-data-import.ui:469
 msgid "_Space"
 msgstr "_Пробіл"
 
-#: src/ui/gui/text-data-import.ui:487
+#: src/ui/gui/text-data-import.ui:490
 msgid "<b>Separators</b>"
 msgstr "<b>Роздільники</b>"
 
-#: src/ui/gui/text-data-import.ui:533
+#: src/ui/gui/text-data-import.ui:536
 msgid "Quote separator characters with"
 msgstr "Позначати символи роздільника"
 
-#: src/ui/gui/text-data-import.ui:553
+#: src/ui/gui/text-data-import.ui:556
 msgid "<b>Quoting</b>"
 msgstr "<b>Лапки</b>"
 
-#: src/ui/gui/text-data-import.ui:591
+#: src/ui/gui/text-data-import.ui:594
 msgid "<b>Fields Preview</b>"
 msgstr "<b>Попередній перегляд полів</b>"
 
-#: src/ui/gui/text-data-import.ui:614
+#: src/ui/gui/text-data-import.ui:617
 msgid "Enter below the sheet number and the cell range which you wish to import."
 msgstr "Нижче вкажіть номер аркуша та діапазон комірок, дані з яких слід імпортувати."
 
-#: src/ui/gui/text-data-import.ui:662
+#: src/ui/gui/text-data-import.ui:665
 msgid "_Cells: "
 msgstr "_Комірки: "
 
-#: src/ui/gui/text-data-import.ui:676
+#: src/ui/gui/text-data-import.ui:679
 msgid "_Sheet Index: "
 msgstr "Індекс _аркуша: "
 
-#: src/ui/gui/text-data-import.ui:687
+#: src/ui/gui/text-data-import.ui:690
 msgid "Use first row as _variable names"
 msgstr "Вважати перший рядок рядком _назв змінних"
 
-#: src/ui/gui/text-data-import.ui:709
+#: src/ui/gui/text-data-import.ui:712
 msgid "<b>Cells to Import</b>"
 msgstr "<b>Комірки для імпортування</b>"
 
@@ -9159,6 +9148,42 @@ msgstr "Статистичне програмне забезпечення"
 msgid "Analyze statistical data with a free alternative to SPSS"
 msgstr "Аналіз статистичних даних у вільній альтернативі SPSS"
 
+#~ msgid "Support for %s files was not compiled into this installation of PSPP"
+#~ msgstr "Підтримку файлів %s не було зібрано у цьому варіанті PSPP"
+
+#~ msgid "Cannot parse field content `%.*s' as format %s: %s"
+#~ msgstr "Не вдалося обробити вміст поля «%.*s» як дані у форматі %s: %s"
+
+#~ msgid "This input line has too few separators to fill in this field."
+#~ msgstr "У рядку вхідних даних надто мало роздільників для заповнення цього поля."
+
+#~ msgid "An error occurred reading the spreadsheet file."
+#~ msgstr "Під час спроби виконати читання файла електронної таблиці сталася помилка."
+
+#~ msgid "Enter a number to add a new variable."
+#~ msgstr "Введіть число, щоб додати нову змінну."
+
+#~ msgid "Enter a number to add a new case."
+#~ msgstr "Введіть число, щоб додати нове спостереження."
+
+#~ msgid "Cannot create variable."
+#~ msgstr "Не вдалося створити змінну."
+
+#~ msgid "\"%s\" is not a valid variable name."
+#~ msgstr "«%s» не є коректною назвою змінної."
+
+#~ msgid "This dictionary already contains a variable named \"%s\"."
+#~ msgstr "У цьому словнику вже міститься змінна з назвою «%s»."
+
+#~ msgid "Cannot rename variable."
+#~ msgstr "Не вдалося перейменувати змінну."
+
+#~ msgid "Enter a variable name to add a new variable."
+#~ msgstr "Щоб додати нову змінну, вкажіть її назву."
+
+#~ msgid "{%s, %s}\n"
+#~ msgstr "{%s, %s}\n"
+
 #~ msgid "Multiple response set name `%s' does not begin with `$'."
 #~ msgstr "Назва набору множини відповідей, «%s», не починається з «$»."
 
@@ -9228,9 +9253,6 @@ msgstr "Аналіз статистичних даних у вільній ал�
 
 #~ msgid "_Select"
 #~ msgstr "По_значити"
-
-#~ msgid "var"
-#~ msgstr "змін"
 
 #~ msgid "Delete the variables at the selected position(s)"
 #~ msgstr "Вилучити змінні на позначених позиціях"
