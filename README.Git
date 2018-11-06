@@ -36,14 +36,14 @@ This version of PSPP should work with the Gnulib commit shown below.
 Gnulib does not maintain a stable API or ABI, so it is possible that
 PSPP will not work with older or newer versions of Gnulib.
 
-	commit 418a494eaac2dbec290de5991059bc9b33dc7df1
-	Author: John E. Malmberg <wb8tyw@gmail.com>
-	Date:   Sat Jul 15 23:11:44 2017 +0200
+	commit 6ccfbb4ce5d4fa79f7afb48f3648f2e0401523c3
+	Author: Paul Eggert <eggert@cs.ucla.edu>
+	Date:   Sat Nov 3 23:31:33 2018 -0700
 
-	    sys_socket: Add support for OpenVMS.
+	    parse-datetime: simplify test for mktime failure
 
-	    * lib/sys_socket.in.h [__VMS]: Define CMSG_SPACE, CMSG_LEN.
-	    * doc/posix-headers/sys_socket.texi: Mention OpenVMS issues.
+	    * lib/parse-datetime.y (mktime_ok): Simplify.
+	    Remove args TZ and T; no longer needed.  Callers changed.
 
 To clone Gnulib into a directory named "gnulib" using Git, and then
 check out this particular commit, run these commands:
