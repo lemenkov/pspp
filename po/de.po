@@ -1,15 +1,15 @@
 # German translation for PSPP
 # Copyright (C) 2012 Free Software Foundation, Inc.
 # This file is distributed under the same license as the pspp package.
-# Matthias Keil <matthias.keil@ymail.com>, 2012 - 2017
+# Matthias Keil <matthias.keil@ymail.com>, 2012 - 2018
 # Olaf Noehring <noehring@datenbank-projekt.de>, 2013 - 2016
-# Bob Earl <Bob.Earl@gmx.net>, 2014 - 2017
+# Bob Earl <Bob.Earl@gmx.net>, 2014 - 2018
 msgid ""
 msgstr ""
-"Project-Id-Version: pspp 1.0.1\n"
+"Project-Id-Version: pspp 1.2.0\n"
 "Report-Msgid-Bugs-To: pspp-dev@gnu.org\n"
 "POT-Creation-Date: 2015-06-19 20:56-0700\n"
-"PO-Revision-Date: 2017-08-29 08:07+0200\n"
+"PO-Revision-Date: 2018-11-08 15:28+0100\n"
 "Last-Translator: Bob Earl <Bob.Earl@gmx.net>\n"
 "Language-Team: German <translation-team-de@lists.sourceforge.net>\n"
 "Language: de_DE\n"
@@ -19,73 +19,73 @@ msgstr ""
 "X-Bugs: Report translation errors to the Language-Team address.\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 "X-Poedit-SourceCharset: UTF-8\n"
-"X-Generator: Poedit 2.0.3\n"
+"X-Generator: Poedit 2.2\n"
 
 #: src/ui/gui/helper.c:210
 msgid "Sorry. The help system hasn't yet been implemented."
 msgstr "Entschuldigung. Das Hilfesystem wurde noch nicht implementiert."
 
-#: src/data/format.c:329
+#: src/data/format.c:339
 msgid "Input format"
 msgstr "Eingabeformat"
 
-#: src/data/format.c:329
+#: src/data/format.c:339
 msgid "Output format"
 msgstr "Ausgabeformat"
 
-#: src/data/format.c:332
+#: src/data/format.c:342
 #, c-format
 msgid "Format %s may not be used for input."
 msgstr "Format %s kann nicht für Eingaben verwendet werden."
 
-#: src/data/format.c:339
+#: src/data/format.c:349
 #, c-format
 msgid "%s specifies width %d, but %s requires an even width."
 msgstr "%s spezifiziert breite %d, aber %s benötigt eine gerade/gleiche Breite"
 
-#: src/data/format.c:348
+#: src/data/format.c:358
 #, c-format
 msgid "%s %s specifies width %d, but %s requires a width between %d and %d."
 msgstr "%s %s legt eine Breite von %d fest, aber %s erfordert eine Breite zwischen %d und %d."
 
-#: src/data/format.c:357
+#: src/data/format.c:367
 #, c-format
 msgid "%s %s specifies %d decimal place, but %s does not allow any decimals."
 msgid_plural "%s %s specifies %d decimal places, but %s does not allow any decimals."
 msgstr[0] "%s %s legt %d Dezimalstelle fest, aber %s erlaubt keine Dezimalstellen."
 msgstr[1] "%s %s legt %d Dezimalstellen fest, aber %s erlaubt keine Dezimalstellen."
 
-#: src/data/format.c:368
+#: src/data/format.c:378
 #, c-format
 msgid "%s %s specifies %d decimal place, but the given width allows at most %d decimals."
 msgid_plural "%s %s specifies %d decimal places, but the given width allows at most %d decimals."
 msgstr[0] "%s %s legt %d Dezimalstelle fest, aber die vorgegebene Breite erlaubt höchstens %d Dezimalstellen."
 msgstr[1] "%s %s legt %d Dezimalstellen fest, aber die vorgegebene Breite erlaubt höchstens %d Dezimalstellen."
 
-#: src/data/format.c:375
+#: src/data/format.c:385
 #, c-format
 msgid "%s %s specifies %d decimal place, but the given width does not allow for any decimals."
 msgid_plural "%s %s specifies %d decimal places, but the given width does not allow for any decimals."
 msgstr[0] "%s %s legt %d Dezimalstelle fest, aber die vorgegebene Breite erlaubt keine Dezimalstellen."
 msgstr[1] "%s %s legt %d Dezimalstellen fest, aber die vorgegebene Breite erlaubt keine Dezimalstellen."
 
-#: src/data/format.c:414
+#: src/data/format.c:424
 #, c-format
 msgid "%s variables are not compatible with %s format %s."
 msgstr "%s Variablen sind nicht kompatibel mit %s Format %s."
 
-#: src/data/format.c:415 src/data/format.c:1010
+#: src/data/format.c:425 src/data/format.c:1040
 #: src/ui/gui/var-type-dialog.ui:167
 msgid "String"
 msgstr "String"
 
-#: src/data/format.c:415 src/data/format.c:973
+#: src/data/format.c:425 src/data/format.c:1001
 #: src/ui/gui/var-type-dialog.ui:48
 msgid "Numeric"
 msgstr "Numerisch"
 
-#: src/data/format.c:416 src/data/sys-file-reader.c:2193
-#: src/data/sys-file-reader.c:2195 src/language/xforms/recode.c:512
+#: src/data/format.c:426 src/data/sys-file-reader.c:2198
+#: src/data/sys-file-reader.c:2200 src/language/xforms/recode.c:512
 #: src/language/xforms/recode.c:513 src/language/xforms/recode.c:525
 #: src/language/xforms/recode.c:526
 #: src/language/dictionary/apply-dictionary.c:77
@@ -93,8 +93,8 @@ msgstr "Numerisch"
 msgid "numeric"
 msgstr "numerisch"
 
-#: src/data/format.c:416 src/data/sys-file-reader.c:2193
-#: src/data/sys-file-reader.c:2195 src/language/xforms/recode.c:512
+#: src/data/format.c:426 src/data/sys-file-reader.c:2198
+#: src/data/sys-file-reader.c:2200 src/language/xforms/recode.c:512
 #: src/language/xforms/recode.c:513 src/language/xforms/recode.c:525
 #: src/language/xforms/recode.c:526
 #: src/language/dictionary/apply-dictionary.c:77
@@ -102,32 +102,32 @@ msgstr "numerisch"
 msgid "string"
 msgstr "String"
 
-#: src/data/format.c:434
+#: src/data/format.c:444
 #, c-format
 msgid "String variable with width %d is not compatible with format %s."
 msgstr "String-Variable mit Breite %d ist nicht mit dem Format %s kompatibel."
 
-#: src/data/format.c:976 src/ui/gui/var-type-dialog.ui:65
+#: src/data/format.c:1004 src/ui/gui/var-type-dialog.ui:65
 msgid "Comma"
 msgstr "Komma"
 
-#: src/data/format.c:979 src/ui/gui/var-type-dialog.ui:82
+#: src/data/format.c:1007 src/ui/gui/var-type-dialog.ui:82
 msgid "Dot"
 msgstr "Punkt"
 
-#: src/data/format.c:982
+#: src/data/format.c:1010
 msgid "Scientific"
 msgstr "Wissenschaftlich"
 
-#: src/data/format.c:997 src/ui/gui/var-type-dialog.ui:116
+#: src/data/format.c:1027 src/ui/gui/var-type-dialog.ui:116
 msgid "Date"
 msgstr "Datum"
 
-#: src/data/format.c:1000 src/ui/gui/var-type-dialog.ui:133
+#: src/data/format.c:1030 src/ui/gui/var-type-dialog.ui:133
 msgid "Dollar"
 msgstr "Dollar"
 
-#: src/data/format.c:1007
+#: src/data/format.c:1037
 msgid "Custom"
 msgstr "Benutzerdefiniert"
 
@@ -156,12 +156,12 @@ msgid "Continue"
 msgstr "Weiter"
 
 #: src/ui/gui/psppire-buttonbox.c:368
-#: src/ui/gui/psppire-import-assistant.c:938
+#: src/ui/gui/psppire-import-assistant.c:739
 msgid "Paste"
 msgstr "Einfügen"
 
-#: src/ui/gui/psppire-buttonbox.c:374 src/ui/gui/psppire-data-window.c:533
-#: src/ui/gui/psppire-data-window.c:661
+#: src/ui/gui/psppire-buttonbox.c:374 src/ui/gui/psppire-data-window.c:535
+#: src/ui/gui/psppire-data-window.c:663
 #: src/ui/gui/psppire-dialog-action-aggregate.c:216
 #: src/ui/gui/psppire-output-window.c:381
 #: src/ui/gui/psppire-syntax-window.c:559 src/ui/gui/psppire-window.c:472
@@ -174,7 +174,7 @@ msgid "Close"
 msgstr "Schließen"
 
 #: src/ui/gui/psppire-buttonbox.c:387
-#: src/ui/gui/psppire-import-assistant.c:939
+#: src/ui/gui/psppire-import-assistant.c:740
 msgid "Reset"
 msgstr "Zurücksetzen"
 
@@ -182,34 +182,34 @@ msgstr "Zurücksetzen"
 msgid "Help"
 msgstr "Hilfe"
 
-#: src/ui/gui/psppire-dictview.c:603 src/language/dictionary/split-file.c:82
+#: src/ui/gui/psppire-dictview.c:602 src/language/dictionary/split-file.c:82
 #: src/language/dictionary/sys-file-info.c:240
 #: src/language/dictionary/sys-file-info.c:440
 #: src/language/dictionary/sys-file-info.c:738
 #: src/language/stats/descriptives.c:1027
 #: src/language/data-io/data-parser.c:672
-#: src/language/data-io/data-parser.c:711 src/language/data-io/print.c:446
-#: src/ui/gui/psppire-var-sheet.c:1243
+#: src/language/data-io/data-parser.c:711 src/language/data-io/print.c:440
+#: src/ui/gui/psppire-data-editor.c:527
 msgid "Variable"
 msgstr "Variable"
 
-#: src/ui/gui/psppire-dictview.c:640
+#: src/ui/gui/psppire-dictview.c:639
 msgid "Prefer variable labels"
 msgstr "Variablenlabel verwenden"
 
-#: src/ui/gui/psppire-dictview.c:654
+#: src/ui/gui/psppire-dictview.c:653
 msgid "Default sort order"
 msgstr "Voreingestellte Sortierung"
 
-#: src/ui/gui/psppire-dictview.c:660
+#: src/ui/gui/psppire-dictview.c:659
 msgid "Unsorted (dictionary order)"
 msgstr "Unsortiert (Codebuch)"
 
-#: src/ui/gui/psppire-dictview.c:665
+#: src/ui/gui/psppire-dictview.c:664
 msgid "Sort by name"
 msgstr "Sortieren nach Name"
 
-#: src/ui/gui/psppire-dictview.c:670
+#: src/ui/gui/psppire-dictview.c:669
 msgid "Sort by label"
 msgstr "Sortieren nach Label"
 
@@ -261,7 +261,7 @@ msgstr "A_lle anderen Werte"
 msgid "An error occurred while opening `%s': %s."
 msgstr "Beim Öffnen von `%s' ist ein Fehler aufgetreten: %s."
 
-#: src/data/any-reader.c:93 src/language/lexer/lexer.c:1638
+#: src/data/any-reader.c:93 src/language/lexer/lexer.c:1629
 #, c-format
 msgid "Error reading `%s': %s."
 msgstr "Fehler beim Lesen von `%s': %s."
@@ -314,7 +314,7 @@ msgstr "CSV Datei"
 msgid "Error opening `%s' for writing as a system file: %s."
 msgstr "Fehler beim öffnen `%s' um dies als Systemdatei zu speichern: %s."
 
-#: src/data/csv-file-writer.c:464
+#: src/data/csv-file-writer.c:466
 #, c-format
 msgid "An I/O error occurred writing CSV file `%s'."
 msgstr "Ein I/O Fehler ist beim Schreiben von CSV Datei `%s' aufgetreten."
@@ -368,7 +368,7 @@ msgstr "Fehlerhaft aufgeteilte Syntax der Dezimalen."
 msgid "Invalid syntax for P field."
 msgstr "Ungültige Syntax für P Feld."
 
-#: src/data/data-in.c:768 src/data/data-in.c:814
+#: src/data/data-in.c:768 src/data/data-in.c:818
 msgid "Syntax error in date field."
 msgstr "Syntaxfehler in Datum-Feld."
 
@@ -377,67 +377,67 @@ msgstr "Syntaxfehler in Datum-Feld."
 msgid "Day (%ld) must be between 1 and 31."
 msgstr "Tag (%ld) muss zwischen 1 und 31 liegen."
 
-#: src/data/data-in.c:828
+#: src/data/data-in.c:832
 msgid "Delimiter expected between fields in date."
 msgstr "Trennzeichen zwischen Feldern in Datum-Feld erwartet."
 
-#: src/data/data-in.c:902
+#: src/data/data-in.c:906
 msgid "Unrecognized month format.  Months may be specified as Arabic or Roman numerals or as at least 3 letters of their English names."
 msgstr "Unbekanntes Monatsformat. Monate müssen mit arabischen oder romanischen Zahlen oder mindestens den ersten 3 Buchstaben ihrer englischen Namen bezeichnet werden."
 
-#: src/data/data-in.c:929
+#: src/data/data-in.c:933
 #, c-format
 msgid "Year (%ld) must be between 1582 and 19999."
 msgstr "Jahr (%ld) muss zwischen 1582 und 19999 liegen."
 
-#: src/data/data-in.c:940
+#: src/data/data-in.c:944
 #, c-format
 msgid "Trailing garbage `%.*s' following date."
 msgstr "Nach dem Datum folgt Müll `%.*s'."
 
-#: src/data/data-in.c:954
+#: src/data/data-in.c:958
 msgid "Julian day must have exactly three digits."
 msgstr "Julianischer Tag muss exakt drei Ziffern haben."
 
-#: src/data/data-in.c:956
+#: src/data/data-in.c:960
 #, c-format
 msgid "Julian day (%ld) must be between 1 and 366."
 msgstr "Julianischer Tag (%ld) muss zwischen 1 und 366 liegen."
 
-#: src/data/data-in.c:980
+#: src/data/data-in.c:984
 #, c-format
 msgid "Quarter (%ld) must be between 1 and 4."
 msgstr "Quartal (%ld) muss zwischen 1 und 4 liegen."
 
-#: src/data/data-in.c:1001
+#: src/data/data-in.c:1005
 #, c-format
 msgid "Week (%ld) must be between 1 and 53."
 msgstr "Woche (%ld) muss zwischen 1 und 53 liegen."
 
-#: src/data/data-in.c:1013
+#: src/data/data-in.c:1017
 msgid "Delimiter expected between fields in time."
 msgstr "Trennzeichen zwischen Feldern in Zeit erwartet."
 
-#: src/data/data-in.c:1033
+#: src/data/data-in.c:1037
 #, c-format
 msgid "Minute (%ld) must be between 0 and 59."
 msgstr "Minute (%ld) muss zwischen 0 und 59 liegen."
 
-#: src/data/data-in.c:1071
+#: src/data/data-in.c:1075
 msgid "Unrecognized weekday name.  At least the first two letters of an English weekday name must be specified."
 msgstr "Wochentagsname nicht erkannt. Mindestens die ersten zwei Buchstaben einer englischen Wochentagsbezeichnung müssen angegeben sein."
 
-#: src/data/data-in.c:1201
+#: src/data/data-in.c:1210
 #, c-format
 msgid "`%c' expected in date field."
 msgstr "`%c' erwartet im Datum-Feld."
 
-#: src/data/data-out.c:574
+#: src/data/data-out.c:579
 #, c-format
 msgid "Weekday number %f is not between 1 and 7."
 msgstr "Die Nummer des Wochentages %f ist nicht zwischen 1 und 7."
 
-#: src/data/data-out.c:599
+#: src/data/data-out.c:604
 #, c-format
 msgid "Month number %f is not between 1 and 12."
 msgstr "Die Nummer des Monats %f  ist nicht zwischen 1 und 12."
@@ -460,7 +460,7 @@ msgstr "System"
 msgid "scratch"
 msgstr "temporär"
 
-#: src/data/dictionary.c:1350
+#: src/data/dictionary.c:1396
 #, c-format
 msgid "Truncating document line to %d bytes."
 msgstr "Schneide Beschreibungszeile nach %d Zeichen ab."
@@ -494,33 +494,28 @@ msgstr "Kann %s nicht als %s neu öffnen."
 msgid "Not opening pipe file `%s' because %s option set."
 msgstr "Die Ausgabedatei (pipe) `%s' wurde nicht geöffnet, weil die Option %s gesetzt ist."
 
-#: src/data/gnumeric-reader.c:37 src/data/ods-reader.c:41
-#, c-format
-msgid "Support for %s files was not compiled into this installation of PSPP"
-msgstr "Unterstützung für %s Dateien ist nicht in dieser PSPP Installation enthalten."
-
-#: src/data/gnumeric-reader.c:520 src/data/ods-reader.c:544
+#: src/data/gnumeric-reader.c:478 src/data/ods-reader.c:501
 #, c-format
 msgid "Cannot convert the value in the spreadsheet cell %s to format (%s): %s"
 msgstr "Der Wert in der Tabellenzelle %s kann nicht ins Format konvertiert werden (%s): %s"
 
-#: src/data/gnumeric-reader.c:543 src/data/ods-reader.c:599
+#: src/data/gnumeric-reader.c:501 src/data/ods-reader.c:556
 #, c-format
 msgid "There was a problem whilst reading the %s file `%s' (near line %d): `%s'"
 msgstr "Beim Lesen der %s Datei `%s' (ungefähr bei Zeile %d): `%s'"
 
-#: src/data/gnumeric-reader.c:638
+#: src/data/gnumeric-reader.c:596
 #, c-format
 msgid "The gnumeric file `%s' is encoded as %s instead of the usual UTF-8 encoding. Any non-ascii characters will be incorrectly imported."
 msgstr "Die Gnumeric-Datei `%s' ist mit %s kodiert, statt mit der üblichen UTF-8 Kodierung. Alle Nicht-ASCII-Zeichen werden fehlerhaft improtiert."
 
-#: src/data/gnumeric-reader.c:682 src/data/ods-reader.c:730
+#: src/data/gnumeric-reader.c:640 src/data/ods-reader.c:687
 #, c-format
 msgid "Invalid cell range `%s'"
 msgstr "Ungültiger Zellbereich `%s'"
 
-#: src/data/gnumeric-reader.c:854 src/data/ods-reader.c:758
-#: src/data/ods-reader.c:891
+#: src/data/gnumeric-reader.c:812 src/data/ods-reader.c:715
+#: src/data/ods-reader.c:848
 #, c-format
 msgid "Selected sheet or range of spreadsheet `%s' is empty."
 msgstr "Ausgewähltes Blatt oder Bereich der Tabelle `%s'  ist leer."
@@ -553,6 +548,26 @@ msgstr "Das Zeichen %s (in `%s') darf nicht als erstes Zeichen eines Identifiers
 #, c-format
 msgid "Character %s (in `%s') may not appear in an identifier."
 msgstr "Das Zeichen %s (in `%s') darf nicht als in einem Identifier verwendet werden."
+
+#: src/data/mdd-writer.c:87
+#, c-format
+msgid "An I/O error occurred writing metadata file `%s'."
+msgstr "Ein I/O Fehler ist beim Schreiben der Metadaten-Datei `%s' aufgetreten."
+
+#. TRANSLATORS: this fragment will be interpolated into
+#. messages in fh_lock() that identify types of files.
+#: src/data/mdd-writer.c:205
+msgid "metadata file"
+msgstr "Metadaten-Datei"
+
+#: src/data/mdd-writer.c:213
+#, c-format
+msgid "Error opening `%s' for writing as a metadata file: %s."
+msgstr "Fehler beim Öffnen von `%s' zum Schreiben als Metadaten-Datei: %s."
+
+#: src/data/mdd-writer.c:221
+msgid "Internal error creating xmlTextWriter."
+msgstr "Interner Fehler beim Erstellen des xmlTextWriter."
 
 #: src/data/make-file.c:218
 #, c-format
@@ -594,7 +609,7 @@ msgstr "Entferne %s: %s."
 msgid "%s is not a valid name for a multiple response set.  Multiple response set names must begin with `$'."
 msgstr "%s ist kein gültiger Name für ein Set von Mehrfachantworten.  Die Namen von Mehrfachantwort-Sets müssen mit `$' beginnen."
 
-#: src/data/ods-reader.c:651
+#: src/data/ods-reader.c:608
 #, c-format
 msgid "Cannot open %s as a OpenDocument file: %s"
 msgstr "Kann %s nicht als OpenDocument Datei öffnen: %s"
@@ -610,7 +625,7 @@ msgstr "SPSS/PC+ Systemdatei"
 msgid "Error opening `%s' for reading as an SPSS/PC+ system file: %s."
 msgstr "Beim Öffnen von `%s'  als SPSS/PC+ System-Datei ist ein Fehler aufgetreten: %s."
 
-#: src/data/pc+-file-reader.c:224 src/data/sys-file-reader.c:3507
+#: src/data/pc+-file-reader.c:224 src/data/sys-file-reader.c:3512
 #, c-format
 msgid "%s: stat failed (%s)."
 msgstr "%s: Stat ist fehlgeschlagen (%s)."
@@ -765,7 +780,7 @@ msgstr "Variable mit doppeltem Namen wird von `%s' zu `%s' umbenannt."
 msgid "Cannot weight by string variable `%s'."
 msgstr "Gewichtung mit der Stringvariablen `%s' ist nicht möglich."
 
-#: src/data/pc+-file-reader.c:975 src/data/sys-file-reader.c:2727
+#: src/data/pc+-file-reader.c:975 src/data/sys-file-reader.c:2732
 msgid "File ends in partial case."
 msgstr "Datei endet in einem Fall."
 
@@ -774,36 +789,36 @@ msgstr "Datei endet in einem Fall."
 msgid "Case beginning at offset 0x%08x extends past end of data record at offset 0x%08x."
 msgstr "Der Fall, der am Offset 0x%08x beginnt, überschreitet das Ende des Dateneintrags am Offset 0x%08x."
 
-#: src/data/pc+-file-reader.c:1000 src/data/sys-file-reader.c:2735
+#: src/data/pc+-file-reader.c:1000 src/data/sys-file-reader.c:2740
 #, c-format
 msgid "Error reading case from file %s."
 msgstr "Fehler beim lesen eines Falls aus Datei %s."
 
-#: src/data/pc+-file-reader.c:1116 src/data/sys-file-reader.c:2898
+#: src/data/pc+-file-reader.c:1116 src/data/sys-file-reader.c:2903
 #, c-format
 msgid "Possible compressed data corruption: string contains compressed integer (opcode %d)."
 msgstr "Komprimierte Daten sind möglicherweise nicht lesbar: Zeichenfolge enthält eine Integerzahl (opcode %d)."
 
-#: src/data/pc+-file-reader.c:1160 src/data/sys-file-reader.c:3196
+#: src/data/pc+-file-reader.c:1160 src/data/sys-file-reader.c:3201
 #, c-format
 msgid "`%s' near offset 0x%llx: "
 msgstr "`%s' nahe Offset 0x%llx: "
 
-#: src/data/pc+-file-reader.c:1163 src/data/sys-file-reader.c:3199
+#: src/data/pc+-file-reader.c:1163 src/data/sys-file-reader.c:3204
 #, c-format
 msgid "`%s': "
 msgstr "`%s': "
 
-#: src/data/pc+-file-reader.c:1219 src/data/sys-file-reader.c:3254
+#: src/data/pc+-file-reader.c:1219 src/data/sys-file-reader.c:3259
 #, c-format
 msgid "System error: %s."
 msgstr "System Fehler: %s."
 
-#: src/data/pc+-file-reader.c:1224 src/data/sys-file-reader.c:3259
+#: src/data/pc+-file-reader.c:1224 src/data/sys-file-reader.c:3264
 msgid "Unexpected end of file."
 msgstr "Unerwartetes Dateiende."
 
-#: src/data/pc+-file-reader.c:1309 src/data/sys-file-reader.c:3484
+#: src/data/pc+-file-reader.c:1309 src/data/sys-file-reader.c:3489
 #, c-format
 msgid "%s: seek failed (%s)."
 msgstr "%s: Suche ist fehlgeschlagen (%s)."
@@ -1187,314 +1202,319 @@ msgstr "Die Datei legt unerwarteter Weise den Wert %g (%a) als %s fest anstatt %
 msgid "Missing space following `%c' at offset %zu in MRSETS record."
 msgstr "Fehlendes Leezeichen nach `%c' beim Offset %zu in MRSETS Eintrag."
 
-#: src/data/sys-file-reader.c:1769
+#: src/data/sys-file-reader.c:1767
+#, c-format
+msgid "Missing label source value following `E' at offset %zu in MRSETS record."
+msgstr "Fehlender Wert für LABELSOURCE nach `E' beim Offset %zu in MRSETS Eintrag."
+
+#: src/data/sys-file-reader.c:1774
 #, c-format
 msgid "Unexpected label source value following `E' at offset %zu in MRSETS record."
 msgstr "Unerwarteter Wert für LABELSOURCE nach `E' beim Offset %zu in MRSETS Eintrag."
 
-#: src/data/sys-file-reader.c:1776
+#: src/data/sys-file-reader.c:1781
 #, c-format
 msgid "Missing `C', `D', or `E' at offset %zu in MRSETS record."
 msgstr "Fehlendes `C', `D', or `E' beim Offset %zu in MRSETS Eintrag."
 
-#: src/data/sys-file-reader.c:1803
+#: src/data/sys-file-reader.c:1808
 #, c-format
 msgid "Missing new-line parsing variable names at offset %zu in MRSETS record."
 msgstr "Fehlender Zeilenumbruch beim Einlesen der Variablennamen beim Offset %zu in MRSETS Eintrag."
 
-#: src/data/sys-file-reader.c:1838
+#: src/data/sys-file-reader.c:1843
 #, c-format
 msgid "Invalid multiple response set name `%s'."
 msgstr "Ungültiger Name für das Mehrfachantworten-Set %s."
 
-#: src/data/sys-file-reader.c:1871
+#: src/data/sys-file-reader.c:1876
 #, c-format
 msgid "MRSET %s contains duplicate variable name %s."
 msgstr "MRSET %s enthält doppelten Variablennamen %s."
 
-#: src/data/sys-file-reader.c:1886
+#: src/data/sys-file-reader.c:1891
 #, c-format
 msgid "MRSET %s contains both string and numeric variables."
 msgstr "MRSET %s enthält sowohl Stringvariablen als auch numerische Variablen."
 
-#: src/data/sys-file-reader.c:1898
+#: src/data/sys-file-reader.c:1903
 #, c-format
 msgid "MRSET %s has no variables."
 msgstr "MRSET %s hat keine Variablen."
 
-#: src/data/sys-file-reader.c:1900
+#: src/data/sys-file-reader.c:1905
 #, c-format
 msgid "MRSET %s has only one variable."
 msgstr "MRSET %s hat nur eine Variable."
 
-#: src/data/sys-file-reader.c:1944
+#: src/data/sys-file-reader.c:1949
 #, c-format
 msgid "Extension 11 has bad count %u (for %zu variables)."
 msgstr "Erweiterung 11 hat die falsche Anzahl %u (für %zu Variablen)."
 
-#: src/data/sys-file-reader.c:1977
+#: src/data/sys-file-reader.c:1982
 #, c-format
 msgid "Invalid variable display parameters for variable %zu (%s).  Default parameters substituted."
 msgstr "Ungültige Parameter der Variablenanzeige für Variable %zu (%s). Voreingestellte Parameter werden eingesetzt."
 
-#: src/data/sys-file-reader.c:2021
+#: src/data/sys-file-reader.c:2026
 #, c-format
 msgid "Duplicate long variable name `%s'."
 msgstr "Doppelter langer Variablenname `%s'."
 
-#: src/data/sys-file-reader.c:2074
+#: src/data/sys-file-reader.c:2079
 #, c-format
 msgid "Long variable mapping from %s to invalid variable name `%s'."
 msgstr "Zuordnung eines langen Variablennamens von %s zum ungültigen Namen `%s'."
 
-#: src/data/sys-file-reader.c:2109
+#: src/data/sys-file-reader.c:2114
 #, c-format
 msgid "%s listed as string of invalid length %s in very long string record."
 msgstr "%s wird als String mit ungültiger Länge %s in einem sehr langen Stringeintrag verzeichnet."
 
-#: src/data/sys-file-reader.c:2120
+#: src/data/sys-file-reader.c:2125
 #, c-format
 msgid "%s listed in very long string record with width %s, which requires only one segment."
 msgstr "%s ist in einem sehr langen Stringeintrag mit Breite %s verzeichnet, welcher nur ein Segment benötigt."
 
-#: src/data/sys-file-reader.c:2128
+#: src/data/sys-file-reader.c:2133
 #, c-format
 msgid "Very long string %s overflows dictionary."
 msgstr "Sehr lange Zeichenfolge %s übersteigt das Codebuch."
 
-#: src/data/sys-file-reader.c:2146
+#: src/data/sys-file-reader.c:2151
 #, c-format
 msgid "Very long string with width %ld has segment %d of width %d (expected %d)."
 msgstr "Sehr lange Zeichenfolge mit Breite %ld hat das Segment %d der Breite %d (erwartet wurde %d)."
 
-#: src/data/sys-file-reader.c:2189
+#: src/data/sys-file-reader.c:2194
 #, c-format
 msgid "Variables associated with value label are not all of identical type.  Variable %s is %s, but variable %s is %s."
 msgstr "Die mit dem Wertelabel verbundenen Variablen haben nicht alle den gleichen Typ.  Die Variable %s ist %s, aber die Variable %s ist %s."
 
-#: src/data/sys-file-reader.c:2209
+#: src/data/sys-file-reader.c:2214
 #, c-format
 msgid "Value labels may not be added to long string variables (e.g. %s) using records types 3 and 4."
 msgstr "Wertelabels dürfen nicht zu langen Stringvariablen hinzugefügt werden (z.B. %s), wenn Einträge des Typs 3 und 4 verwendet werden."
 
-#: src/data/sys-file-reader.c:2238
+#: src/data/sys-file-reader.c:2243
 #, c-format
 msgid "Duplicate value label for %g on %s."
 msgstr "Doppelte Wertebeschriftung für %g in %s."
 
-#: src/data/sys-file-reader.c:2242 src/data/sys-file-reader.c:2563
+#: src/data/sys-file-reader.c:2247 src/data/sys-file-reader.c:2568
 #, c-format
 msgid "Duplicate value label for `%.*s' on %s."
 msgstr "Doppelte Wertebeschriftung für `%.*s'  in %s."
 
-#: src/data/sys-file-reader.c:2269
+#: src/data/sys-file-reader.c:2274
 #, c-format
 msgid "Variable index %d not in valid range 1...%zu."
 msgstr "Variablenindex %d liegt nicht im gültigen Bereich 1...%zu."
 
-#: src/data/sys-file-reader.c:2278
+#: src/data/sys-file-reader.c:2283
 #, c-format
 msgid "Variable index %d refers to long string continuation."
 msgstr "Der Variablenindex %d verweist auf die Forsetzung einer langen Zeichenfolge."
 
-#: src/data/sys-file-reader.c:2314
+#: src/data/sys-file-reader.c:2319
 #, c-format
 msgid "Error parsing attribute value %s[%d]."
 msgstr "Fehler beim bearbeiten des Attribut-Wertes %s[%d]."
 
-#: src/data/sys-file-reader.c:2328
+#: src/data/sys-file-reader.c:2333
 #, c-format
 msgid "Attribute value %s[%d] is not quoted: %s."
 msgstr "Der Wert des Attributs %s[%d] wurde nicht in Anführungszeichen gesetzt: %s."
 
-#: src/data/sys-file-reader.c:2341
+#: src/data/sys-file-reader.c:2346
 #, c-format
 msgid "Duplicate attribute %s."
 msgstr "Doppeltes Attribut %s."
 
-#: src/data/sys-file-reader.c:2425
+#: src/data/sys-file-reader.c:2430
 #, c-format
 msgid "Invalid role for variable %s."
 msgstr "Ungültige Rolle für Variable `%s'."
 
-#: src/data/sys-file-reader.c:2434
+#: src/data/sys-file-reader.c:2439
 #, c-format
 msgid "%zu other variables had invalid roles."
 msgstr "%zu weitere Variablen hatten ungültige Rollen."
 
-#: src/data/sys-file-reader.c:2447
+#: src/data/sys-file-reader.c:2452
 #, c-format
 msgid "Extension record subtype %d ends unexpectedly."
 msgstr "Erweiterungseintrag des Untertyps %d endet unerwartet."
 
-#: src/data/sys-file-reader.c:2493
+#: src/data/sys-file-reader.c:2498
 #, c-format
 msgid "Ignoring long string value label record for unknown variable %s."
 msgstr "Langer String im Eintrag der Wertebezeichnung für die Variable %s wird ignoriert."
 
-#: src/data/sys-file-reader.c:2498
+#: src/data/sys-file-reader.c:2503
 #, c-format
 msgid "Ignoring long string value label record for numeric variable %s."
 msgstr "Langer String im Eintrag der Wertebezeichnung für die numerische Variable %s wird ignoriert."
 
-#: src/data/sys-file-reader.c:2505
+#: src/data/sys-file-reader.c:2510
 #, c-format
 msgid "Ignoring long string value label record for variable %s because the record's width (%d) does not match the variable's width (%d)."
 msgstr "Langer String im Eintrag der Wertebezeichnung für Variable %s wird ignoriert, weil die Breite des Eintrags (%d) nicht mit der Breite der Variable (%d) übereinstimmt."
 
-#: src/data/sys-file-reader.c:2536
+#: src/data/sys-file-reader.c:2541
 #, c-format
 msgid "Ignoring long string value label %zu for variable %s, with width %d, that has bad value width %zu."
 msgstr "Langer String der Wertebezeichnung %zu für die Variable %s mit Breite %d hat die fehlerhafte Breite %zu und wird ignoriert."
 
-#: src/data/sys-file-reader.c:2610
+#: src/data/sys-file-reader.c:2615
 #, c-format
 msgid "Long string missing values record says variable %s has %d missing values, but only 1 to 3 missing values are allowed."
 msgstr "Langer String im Eintrag der fehlenden Werte besagt, dass die Variable %s %d fehlende Werte hat, es sind aber nur zwischen 1 und 3 fehlende Werte erlaubt."
 
-#: src/data/sys-file-reader.c:2620
+#: src/data/sys-file-reader.c:2625
 #, c-format
 msgid "Ignoring long string missing value record for unknown variable %s."
 msgstr "Langer String im Eintrag der fehlenden Werte für die unbekannte Variable %s wird ignoriert."
 
-#: src/data/sys-file-reader.c:2625
+#: src/data/sys-file-reader.c:2630
 #, c-format
 msgid "Ignoring long string missing value record for numeric variable %s."
 msgstr "Langer String im Eintrag der fehlenden Werte für die numerische Variable %s wird ignoriert."
 
-#: src/data/sys-file-reader.c:2650
+#: src/data/sys-file-reader.c:2655
 #, c-format
 msgid "Ignoring long string missing value %zu for variable %s, with width %d, that has bad value width %zu."
 msgstr "Langer String des fehlenden Wertes %zu für die Variable %s mit Breite %d hat die fehlerhafte Breite %zu und wird ignoriert."
 
-#: src/data/sys-file-reader.c:2705
+#: src/data/sys-file-reader.c:2710
 msgid "File ends in partial string value."
 msgstr "Datei endet innerhalb eines unvollständigen Falls."
 
-#: src/data/sys-file-reader.c:2844
+#: src/data/sys-file-reader.c:2849
 msgid "Possible compressed data corruption: compressed spaces appear in numeric field."
 msgstr "Komprimierte Daten sind möglicherweise nicht lesbar: kompriemierte Leerzeichen erscheinen in einem numerischen Feld."
 
-#: src/data/sys-file-reader.c:2995
+#: src/data/sys-file-reader.c:3000
 #, c-format
 msgid "Suppressed %d additional related warnings."
 msgstr "Weitere %d Warnungen, die damit in Verbindung stehen, werden unterdrückt."
 
-#: src/data/sys-file-reader.c:3041 src/data/sys-file-reader.c:3058
+#: src/data/sys-file-reader.c:3046 src/data/sys-file-reader.c:3063
 #, c-format
 msgid "Dictionary record refers to unknown variable %s."
 msgstr "Eintrag im Codebuch bezieht sich auf die unbekannte Variable %s."
 
-#: src/data/sys-file-reader.c:3120
+#: src/data/sys-file-reader.c:3125
 #, c-format
 msgid "Expecting digit at offset %zu in MRSETS record."
 msgstr "Beim Offset %zu im MRSETS Eintrag wurde eine Ziffer erwartet."
 
-#: src/data/sys-file-reader.c:3128
+#: src/data/sys-file-reader.c:3133
 #, c-format
 msgid "Expecting space at offset %zu in MRSETS record."
 msgstr "Beim Offset %zu im MRSETS Eintrag wurde ein Leerzeichen erwartet."
 
-#: src/data/sys-file-reader.c:3136
+#: src/data/sys-file-reader.c:3141
 #, c-format
 msgid "%zu-byte string starting at offset %zu exceeds record length %zu."
 msgstr "Die %zu-byte lange Zeichenfolge, die beim Offset %zu  beginnt, überschreitet die Länge %zu."
 
-#: src/data/sys-file-reader.c:3146
+#: src/data/sys-file-reader.c:3151
 #, c-format
 msgid "Expecting space at offset %zu following %zu-byte string."
 msgstr "Beim Offset %zu nach der %zu-byte langen Zeichenfolge wurde ein Leerzeichen erwartet."
 
-#: src/data/sys-file-reader.c:3442
+#: src/data/sys-file-reader.c:3447
 #, c-format
 msgid "Wrong ZLIB data header offset %#llx (expected %#llx)."
 msgstr "Fehlerhafter Offset %#llx (erwartet wurde %#llx) im Kopf der ZLIB-Daten."
 
-#: src/data/sys-file-reader.c:3450
+#: src/data/sys-file-reader.c:3455
 #, c-format
 msgid "Impossible ZLIB trailer offset 0x%llx."
 msgstr "Offset 0x%llx im Nachspann der ZLIB-Daten ist nicht möglich."
 
-#: src/data/sys-file-reader.c:3457
+#: src/data/sys-file-reader.c:3462
 #, c-format
 msgid "Invalid ZLIB trailer length %lld."
 msgstr "Länge %lld des Nachspanns der ZLIB-Daten ist ungültig."
 
-#: src/data/sys-file-reader.c:3521
+#: src/data/sys-file-reader.c:3526
 #, c-format
 msgid "End of ZLIB trailer (0x%llx) is not file size (0x%llx)."
 msgstr "Das Ende des Nachspanns der ZLIB-Daten (0x%llx) stimmt nicht mit der Dateigröße (0x%llx) überein."
 
-#: src/data/sys-file-reader.c:3531
+#: src/data/sys-file-reader.c:3536
 #, c-format
 msgid "ZLIB trailer bias (%lld) differs from file header bias (%.2f)."
 msgstr "Der Bias im Nachspann der ZLIB-Daten (%lld) unterscheidet sich vom Bias im Kopf der Datei (%.2f)."
 
-#: src/data/sys-file-reader.c:3541
+#: src/data/sys-file-reader.c:3546
 #, c-format
 msgid "ZLIB trailer \"zero\" field has nonzero value %lld."
 msgstr "Das Feld \"zero\" im Nachspann der ZLIB-Daten hat den von Null verschiedenen Wert %lld."
 
-#: src/data/sys-file-reader.c:3547
+#: src/data/sys-file-reader.c:3552
 #, c-format
 msgid "ZLIB trailer specifies unexpected %u-byte block size."
 msgstr "Der Nachspann der ZLIB-Daten legt die unerwartete Blockgröße von %u Bytes fest."
 
-#: src/data/sys-file-reader.c:3555
+#: src/data/sys-file-reader.c:3560
 #, c-format
 msgid "%lld-byte ZLIB trailer specifies %u data blocks (expected %lld)."
 msgstr "Der Nachspann der ZLIB-Daten der Größe %lld Bytes legt %u Datenblocks fest (erwartet wurde %lld)."
 
-#: src/data/sys-file-reader.c:3580
+#: src/data/sys-file-reader.c:3585
 #, c-format
 msgid "ZLIB block descriptor %u reported uncompressed data offset %#llx, when %#llx was expected."
 msgstr "Die Blockbeschreibung %u der ZLIB-Daten berichtet ein Offset der unkomprimierten Daten von %#llx, wobei %#llx erwartet wurde."
 
-#: src/data/sys-file-reader.c:3589
+#: src/data/sys-file-reader.c:3594
 #, c-format
 msgid "ZLIB block descriptor %u reported compressed data offset %#llx, when %#llx was expected."
 msgstr "Die Blockbeschreibung %u der ZLIB-Daten berichtet ein Offset der komprimierten Daten von %#llx, wobei %#llx erwartet wurde."
 
-#: src/data/sys-file-reader.c:3599
+#: src/data/sys-file-reader.c:3604
 #, c-format
 msgid "ZLIB block descriptor %u reported block size %#x, when %#x was expected."
 msgstr "Die Blockbeschreibung %u der ZLIB-Daten berichtet eine Blockgröße von %#x, wobei %#x erwartet wurde."
 
-#: src/data/sys-file-reader.c:3607
+#: src/data/sys-file-reader.c:3612
 #, c-format
 msgid "ZLIB block descriptor %u reported block size %#x, when at most %#x was expected."
 msgstr "Die Blockbeschreibung %u der ZLIB-Daten berichtet eine Blockgröße von %#x, wobei höchstens %#x erwartet wurde."
 
-#: src/data/sys-file-reader.c:3619
+#: src/data/sys-file-reader.c:3624
 #, c-format
 msgid "ZLIB block descriptor %u reports compressed size %u and uncompressed size %u."
 msgstr "Die Blockbeschreibung %u der ZLIB-Daten berichtet eine komprimierte Größe von %u und eine unkomprimierte Größe von %u."
 
-#: src/data/sys-file-reader.c:3631
+#: src/data/sys-file-reader.c:3636
 #, c-format
 msgid "ZLIB trailer is at offset %#llx but %#llx would be expected from block descriptors."
 msgstr "Der Nachspann der ZLIB-Daten liegt beim Offset %#llx, aber auf Grund der Blockbeschreibungen wurde %#llx erwartet."
 
-#: src/data/sys-file-reader.c:3650
+#: src/data/sys-file-reader.c:3655
 #, c-format
 msgid "ZLIB initialization failed (%s)."
 msgstr "Initialisierung von ZLIB ist fehlgeschlagen (%s)."
 
-#: src/data/sys-file-reader.c:3665
+#: src/data/sys-file-reader.c:3670
 #, c-format
 msgid "Inconsistency at end of ZLIB stream (%s)."
 msgstr "Am Ende des ZLIB-Datenstroms ist eine Inkonsistenz aufgetreten (%s)."
 
-#: src/data/sys-file-reader.c:3724
+#: src/data/sys-file-reader.c:3729
 #, c-format
 msgid "ZLIB stream inconsistency (%s)."
 msgstr "Im ZLIB-Datenstrom ist eine Inkonsistenz aufgetreten (%s)."
 
-#: src/data/sys-file-reader.c:3748
+#: src/data/sys-file-reader.c:3753
 msgid "Unexpected end of ZLIB compressed data."
 msgstr "Unerwartetes Ende der komprimierten ZLIB-Daten."
 
-#: src/data/sys-file-reader.c:3786
+#: src/data/sys-file-reader.c:3791
 msgid "SPSS System File"
 msgstr "SPSS Systemdatei"
 
@@ -1528,66 +1548,66 @@ msgstr "Die Komprimierung des ZLIB-Datenstroms ist fehlgeschlagen (%s)."
 msgid "%s: Seek failed (%s)."
 msgstr "%s: Suche fehlgeschlagen (%s)."
 
-#: src/data/variable.c:675
-#, c-format
-msgid "%s (%s)"
-msgstr "%s (%s)"
+#: src/data/variable.c:57
+msgid "Left"
+msgstr "Links"
 
-#: src/data/variable.c:777
+#: src/data/variable.c:58
+msgid "Right"
+msgstr "Rechts"
+
+#: src/data/variable.c:59
+msgid "Center"
+msgstr "Zentriert"
+
+#: src/data/variable.c:65
 msgid "Nominal"
 msgstr "Nominal"
 
-#: src/data/variable.c:780
+#: src/data/variable.c:66
 msgid "Ordinal"
 msgstr "Ordinal"
 
-#: src/data/variable.c:783 src/language/stats/ks-one-sample.c:327
+#: src/data/variable.c:67 src/language/stats/ks-one-sample.c:327
 msgid "Scale"
 msgstr "Skala"
 
-#: src/data/variable.c:874
+#: src/data/variable.c:73
 msgid "Input"
 msgstr "Eingabe"
 
 #. TRANSLATORS: This will be part of a filename.  Please avoid whitespace.
-#: src/data/variable.c:877 src/ui/gui/psppire-output-window.c:581
+#: src/data/variable.c:74 src/ui/gui/psppire-output-window.c:581
 msgid "Output"
 msgstr "Ziel"
 
-#: src/data/variable.c:880
+#: src/data/variable.c:75
 msgid "Both"
 msgstr "Beides"
 
-#: src/data/variable.c:883 src/language/dictionary/sys-file-info.c:229
+#: src/data/variable.c:76 src/language/dictionary/sys-file-info.c:229
 #: src/ui/gui/psppire-dialog-action-crosstabs.c:84
 #: src/ui/gui/psppire-dialog-action-crosstabs.c:96
 #: src/ui/gui/psppire-dialog-action-crosstabs.c:131
 #: src/ui/gui/psppire-dialog-action-crosstabs.c:139
-#: src/ui/gui/psppire-var-sheet.c:438 src/ui/gui/var-display.c:34
+#: src/ui/gui/psppire-variable-sheet.c:397 src/ui/gui/var-display.c:34
 msgid "None"
 msgstr "Keine"
 
-#: src/data/variable.c:886
+#: src/data/variable.c:77
 msgid "Partition"
 msgstr "Partitionieren"
 
-#: src/data/variable.c:889 src/ui/gui/reliability.ui:37
+#: src/data/variable.c:78 src/ui/gui/reliability.ui:37
 msgid "Split"
 msgstr "Aufteilen"
 
-#: src/data/variable.c:1002
-msgid "Left"
-msgstr "Links"
+#: src/data/variable.c:710
+#, c-format
+msgid "%s (%s)"
+msgstr "%s (%s)"
 
-#: src/data/variable.c:1005
-msgid "Right"
-msgstr "Rechts"
-
-#: src/data/variable.c:1008
-msgid "Center"
-msgstr "Zentriert"
-
-#: src/data/variable.c:1334
+#: src/data/variable.c:1322
 msgid "At least one case in the data file had a weight value that was user-missing, system-missing, zero, or negative.  These case(s) were ignored."
 msgstr "Mindestens ein Wert in der Datendatei hatte ein Gewicht das Benutzer-Fehlend, System-Fehlend, Null oder negativ war. Diese Fälle wurden ignoriert."
 
@@ -1677,149 +1697,149 @@ msgstr "Dieser Befehl ist nicht erlaubt, wenn die Option %s gesetzt wurde."
 msgid "Error removing `%s': %s."
 msgstr "Fehler beim Entfernen `%s': %s."
 
-#: src/language/lexer/lexer.c:295
+#: src/language/lexer/lexer.c:296
 #, c-format
 msgid "expecting %s"
 msgstr "erwarte %s"
 
-#: src/language/lexer/lexer.c:299
+#: src/language/lexer/lexer.c:300
 #, c-format
 msgid "expecting %s or %s"
 msgstr "erwarte %s oder %s"
 
-#: src/language/lexer/lexer.c:303
+#: src/language/lexer/lexer.c:304
 #, c-format
 msgid "expecting %s, %s, or %s"
 msgstr "erwarte %s, %s oder %s"
 
-#: src/language/lexer/lexer.c:308
+#: src/language/lexer/lexer.c:309
 #, c-format
 msgid "expecting %s, %s, %s, or %s"
 msgstr "erwarte %s, %s, %s oder %s"
 
-#: src/language/lexer/lexer.c:313
+#: src/language/lexer/lexer.c:314
 #, c-format
 msgid "expecting %s, %s, %s, %s, or %s"
 msgstr "erwarte %s, %s, %s, %s oder %s"
 
-#: src/language/lexer/lexer.c:318
+#: src/language/lexer/lexer.c:319
 #, c-format
 msgid "expecting %s, %s, %s, %s, %s, or %s"
 msgstr "erwarte %s, %s, %s, %s, %s oder %s"
 
-#: src/language/lexer/lexer.c:324
+#: src/language/lexer/lexer.c:325
 #, c-format
 msgid "expecting %s, %s, %s, %s, %s, %s, or %s"
 msgstr "erwarte %s, %s, %s, %s, %s, %s oder %s"
 
-#: src/language/lexer/lexer.c:330
+#: src/language/lexer/lexer.c:331
 #, c-format
 msgid "expecting %s, %s, %s, %s, %s, %s, %s, or %s"
 msgstr "erwarte %s, %s, %s, %s, %s, %s, %s oder %s"
 
-#: src/language/lexer/lexer.c:350
+#: src/language/lexer/lexer.c:351
 #, c-format
 msgid "Subcommand %s may only be specified once."
 msgstr "Unterbefehl %s darf nur einmal verwendet werden."
 
-#: src/language/lexer/lexer.c:362
+#: src/language/lexer/lexer.c:363
 #, c-format
 msgid "Required subcommand %s was not specified."
 msgstr "Der erforderliche Unterbefehl %s wurde nicht angegeben."
 
-#: src/language/lexer/lexer.c:370
+#: src/language/lexer/lexer.c:371
 #, c-format
 msgid "%s may only be specified once within subcommand %s"
 msgstr "%s darf nur einmal innerhalb des Unterbefehls %s verwendet werden"
 
-#: src/language/lexer/lexer.c:379
+#: src/language/lexer/lexer.c:380
 #, c-format
 msgid "Required %s specification missing from %s subcommand"
 msgstr "Erforderliche Angabe %s fehlt im Unterbefehl %s"
 
-#: src/language/lexer/lexer.c:398
+#: src/language/lexer/lexer.c:399
 msgid "Syntax error at end of input"
 msgstr "Syntax Fehler am ende der Eingabe"
 
-#: src/language/lexer/lexer.c:419 src/language/xforms/select-if.c:60
+#: src/language/lexer/lexer.c:420 src/language/xforms/select-if.c:60
 #: src/language/stats/autorecode.c:218 src/language/stats/npar.c:503
 #: src/language/data-io/print-space.c:83
 msgid "expecting end of command"
 msgstr "erwarte Befehlsende"
 
-#: src/language/lexer/lexer.c:630
+#: src/language/lexer/lexer.c:631
 msgid "expecting string"
 msgstr "erwarte Zeichenkette"
 
-#: src/language/lexer/lexer.c:659
+#: src/language/lexer/lexer.c:660
 msgid "expecting integer"
 msgstr "erwarte Integer"
 
-#: src/language/lexer/lexer.c:672
+#: src/language/lexer/lexer.c:673
 msgid "expecting number"
 msgstr "erwarte Zahl"
 
-#: src/language/lexer/lexer.c:684
+#: src/language/lexer/lexer.c:685
 msgid "expecting identifier"
 msgstr "erwarte Identifier"
 
-#: src/language/lexer/lexer.c:1291
+#: src/language/lexer/lexer.c:1266
 msgid "Syntax error at end of command"
 msgstr "Syntax Fehler am Ende des Befehls"
 
-#: src/language/lexer/lexer.c:1300
+#: src/language/lexer/lexer.c:1275
 #, c-format
 msgid "Syntax error at `%s'"
 msgstr "Syntax Fehler bei `%s'"
 
-#: src/language/lexer/lexer.c:1303
+#: src/language/lexer/lexer.c:1278
 msgid "Syntax error"
 msgstr "Syntax Fehler"
 
-#: src/language/lexer/lexer.c:1475
+#: src/language/lexer/lexer.c:1466
 #, c-format
 msgid "String of hex digits has %d characters, which is not a multiple of 2"
 msgstr "String der Hexadezimalziffern hat %d Zeichen, was nicht ein Vielfaches von 2 ist"
 
-#: src/language/lexer/lexer.c:1482
+#: src/language/lexer/lexer.c:1473
 #, c-format
 msgid "`%c' is not a valid hex digit"
 msgstr "`%c' ist keine gültige Hexadezimalziffer"
 
-#: src/language/lexer/lexer.c:1487
+#: src/language/lexer/lexer.c:1478
 #, c-format
 msgid "Unicode string contains %d bytes, which is not in the valid range of 1 to 8 bytes"
 msgstr "Unicode String enthält %d Bytes, was nicht im gültigen Bereich von 1 bis 8 Bytes liegt"
 
-#: src/language/lexer/lexer.c:1493
+#: src/language/lexer/lexer.c:1484
 #, c-format
 msgid "U+%04X is not a valid Unicode code point"
 msgstr "U+%04X ist kein gültiger Unicode Codepoint"
 
-#: src/language/lexer/lexer.c:1498
+#: src/language/lexer/lexer.c:1489
 msgid "Unterminated string constant"
 msgstr "Nicht abgeschlossene Stringkonstante"
 
-#: src/language/lexer/lexer.c:1502
+#: src/language/lexer/lexer.c:1493
 #, c-format
 msgid "Missing exponent following `%s'"
 msgstr "Nach `%s' fehlt der Exponent"
 
-#: src/language/lexer/lexer.c:1507
+#: src/language/lexer/lexer.c:1498
 msgid "Unexpected `.' in middle of command"
 msgstr "Unerwarteter Punkt  `.' in der Mitte des Befehls."
 
-#: src/language/lexer/lexer.c:1513
+#: src/language/lexer/lexer.c:1504
 #, c-format
 msgid "Bad character %s in input"
 msgstr "Ungültiges Zeichen %s in der Eingabe"
 
-#: src/language/lexer/lexer.c:1608
+#: src/language/lexer/lexer.c:1599
 #, c-format
 msgid "Opening `%s': %s."
 msgstr "Öffne `%s': %s."
 
-#: src/language/lexer/lexer.c:1652
+#: src/language/lexer/lexer.c:1643
 #, c-format
 msgid "Error closing `%s': %s."
 msgstr "Fehler beim Schließen von `%s': %s."
@@ -1869,75 +1889,75 @@ msgstr "%s oder %s müssen innerhalb eines Bereichs liegen."
 msgid "System-missing value is not valid here."
 msgstr "System-definierter fehlender Wert ist hier nicht gültig."
 
-#: src/language/lexer/variable-parser.c:70
+#: src/language/lexer/variable-parser.c:86
 msgid "expecting variable name"
 msgstr "erwarte Variablenname"
 
-#: src/language/lexer/variable-parser.c:80
+#: src/language/lexer/variable-parser.c:96
 #, c-format
 msgid "%s is not a variable name."
 msgstr "%s ist kein Variablenname"
 
-#: src/language/lexer/variable-parser.c:183
+#: src/language/lexer/variable-parser.c:199
 #, c-format
 msgid "%s is not a numeric variable.  It will not be included in the variable list."
 msgstr "%s ist keine numerische Variable. Sie wird nicht in die Variablenliste eingefügt."
 
-#: src/language/lexer/variable-parser.c:186
+#: src/language/lexer/variable-parser.c:202
 #, c-format
 msgid "%s is not a string variable.  It will not be included in the variable list."
 msgstr "%s ist keine String-Variable. Sie wird nicht in die Variablenliste eingefügt."
 
-#: src/language/lexer/variable-parser.c:190
+#: src/language/lexer/variable-parser.c:206
 #, c-format
 msgid "Scratch variables (such as %s) are not allowed here."
 msgstr "Temporäre Variablen (wie z.B. %s) sind hier nicht erlaubt."
 
-#: src/language/lexer/variable-parser.c:194
+#: src/language/lexer/variable-parser.c:210
 #, c-format
 msgid "%s and %s are not the same type.  All variables in this variable list must be of the same type.  %s will be omitted from the list."
 msgstr "%s und %s haben nicht den gleichen Variablentyp. Alle Variablen in dieser Liste müssen vom selben Typ sein.  %s wird nicht übernommen."
 
-#: src/language/lexer/variable-parser.c:200
+#: src/language/lexer/variable-parser.c:216
 #, c-format
 msgid "%s and %s are string variables with different widths.  All variables in this variable list must have the same width.  %s will be omitted from the list."
 msgstr "%s und %s sind String-Variablen mit unterschiedlichen Breiten.  Alle Variablen in dieser Liste müssen die selbe Breite haben.  %s wird nicht aus der Liste übernommen."
 
-#: src/language/lexer/variable-parser.c:205
-#: src/language/lexer/variable-parser.c:407
+#: src/language/lexer/variable-parser.c:221
+#: src/language/lexer/variable-parser.c:440
 #, c-format
 msgid "Variable %s appears twice in variable list."
 msgstr "Variable %s taucht zwei Mal in der Variablenliste auf."
 
-#: src/language/lexer/variable-parser.c:318
+#: src/language/lexer/variable-parser.c:334
 #, c-format
 msgid "%s TO %s is not valid syntax since %s precedes %s in the dictionary."
 msgstr "%s TO %s ist keine gültige Syntax, weil %s im Codebuch vor %s liegt."
 
-#: src/language/lexer/variable-parser.c:326
+#: src/language/lexer/variable-parser.c:342
 #, c-format
 msgid "When using the TO keyword to specify several variables, both variables must be from the same variable dictionaries, of either ordinary, scratch, or system variables.  %s is a %s variable, whereas %s is %s."
 msgstr "Bei der Verwendung des TO Schlüsselwortes für die Spezifikation mehrerer Variablen müssen beide Variablen aus dem selben Codebuch von normalen, temporären oder Systemvariablen stammen.  %s ist eine %s Variable, aber %s ist %s."
 
-#: src/language/lexer/variable-parser.c:384
+#: src/language/lexer/variable-parser.c:417
 #, c-format
 msgid "`%s' cannot be used with TO because it does not end in a digit."
 msgstr "`%s' kann nicht in Kombination mit TO verwendet werden, weil es nicht mit einer Ziffer endet."
 
-#: src/language/lexer/variable-parser.c:392
+#: src/language/lexer/variable-parser.c:425
 #, c-format
 msgid "Numeric suffix on `%s' is larger than supported with TO."
 msgstr "Der numerische Suffix von `%s' ist größer als von TO unterstützt wird."
 
-#: src/language/lexer/variable-parser.c:468
+#: src/language/lexer/variable-parser.c:498
 msgid "Scratch variables not allowed here."
 msgstr "Temporäre Variablen sind hier nicht erlaubt."
 
-#: src/language/lexer/variable-parser.c:501
+#: src/language/lexer/variable-parser.c:522
 msgid "Prefixes don't match in use of TO convention."
 msgstr "Die Prefixes stimmen nicht überein, wie für den TO Befehl erforderlich."
 
-#: src/language/lexer/variable-parser.c:506
+#: src/language/lexer/variable-parser.c:527
 msgid "Bad bounds in use of TO convention."
 msgstr "Die Grenzen bei der Verwendung des TO Befehls sind nicht richtig angegeben."
 
@@ -2047,31 +2067,31 @@ msgstr "Dieser Befehl kann nicht nach %s innerhalb von %s ... %s verwendet werde
 msgid "Only one index clause may be specified."
 msgstr "Es darf nur eine Index Anweisung verwendet werden."
 
-#: src/language/control/repeat.c:118
+#: src/language/control/repeat.c:120
 #, c-format
 msgid "Dummy variable name `%s' hides dictionary variable `%s'."
 msgstr "Name der Dummyvariable `%s' verdeckt die Variable `%s' im Codebuch."
 
-#: src/language/control/repeat.c:122
+#: src/language/control/repeat.c:126
 #, c-format
 msgid "Dummy variable name `%s' is given twice."
 msgstr "Der Name der Dummyvariable `%s'  wurde doppelt vergeben."
 
-#: src/language/control/repeat.c:165
+#: src/language/control/repeat.c:170
 #, c-format
 msgid "Dummy variable `%s' had %zu substitutions, so `%s' must also, but %zu were specified."
 msgstr "Die Dummyvariable `%s' hatte %zu Ersetzungen, daher sollte dies auch für `%s' der Fall sein, aber es wurden %zu Ersetzungen angegeben."
 
-#: src/language/control/repeat.c:377
+#: src/language/control/repeat.c:379
 msgid "Ranges may only have integer bounds."
 msgstr "Bereiche dürfen nur ganze Zahlen als Grenzen haben."
 
-#: src/language/control/repeat.c:391
+#: src/language/control/repeat.c:393
 #, c-format
 msgid "%ld TO %ld is an invalid range."
 msgstr "%ld TO %ld ist ein ungültiger Bereich."
 
-#: src/language/control/repeat.c:441
+#: src/language/control/repeat.c:443
 #, c-format
 msgid "No matching %s."
 msgstr "Keine Übereinstimmungen mit %s."
@@ -2215,7 +2235,8 @@ msgstr "Das Codebuch des aktiven Datenblatts enthält keine Mehrfachantworten."
 msgid "Multiple Response Sets"
 msgstr "Mehrfachantworten-Sets"
 
-#: src/language/dictionary/mrsets.c:548 src/ui/gui/psppire-var-sheet.c:1359
+#: src/language/dictionary/mrsets.c:548
+#: src/ui/gui/psppire-var-sheet-header.c:55
 msgid "Name"
 msgstr "Name"
 
@@ -2239,7 +2260,7 @@ msgstr "Mehrfachantworten-Set für kategoriale Daten"
 #: src/language/dictionary/split-file.c:84
 #: src/language/dictionary/sys-file-info.c:444
 #: src/language/dictionary/sys-file-info.c:543
-#: src/ui/gui/psppire-var-sheet.c:1372 src/ui/gui/compute.ui:157
+#: src/ui/gui/psppire-var-sheet-header.c:67 src/ui/gui/compute.ui:157
 msgid "Label"
 msgstr "Beschriftung"
 
@@ -2525,7 +2546,7 @@ msgid "Purpose"
 msgstr "Zweck"
 
 #: src/language/dictionary/sys-file-info.c:1052
-#: src/ui/gui/psppire-import-assistant.c:1038
+#: src/ui/gui/psppire-import-assistant.c:865
 msgid "Text"
 msgstr "Text"
 
@@ -4736,7 +4757,7 @@ msgstr "Kodierung sollte bei Inline-Daten nicht angegeben werden. Diese wird üb
 msgid "The %s subcommand may be used only with %s."
 msgstr "Der Unterbefehl %s darf nur mit %s verwendet werden."
 
-#: src/language/data-io/data-list.c:284 src/language/data-io/matrix-data.c:540
+#: src/language/data-io/data-list.c:284 src/language/data-io/matrix-data.c:542
 msgid "At least one variable must be specified."
 msgstr "Es muss mindestens eine Variable angegeben werden."
 
@@ -4794,17 +4815,17 @@ msgstr "Fehlender Wert oder Werte für alle Variablen ab %s.  Diese werden mit s
 msgid "Record ends in data not part of any field."
 msgstr "Eintrag endet mit Daten nicht nicht Teil eines Feldes sind."
 
-#: src/language/data-io/data-parser.c:673 src/language/data-io/print.c:447
+#: src/language/data-io/data-parser.c:673 src/language/data-io/print.c:441
 msgid "Record"
 msgstr "Datensatz"
 
-#: src/language/data-io/data-parser.c:674 src/language/data-io/print.c:448
-#: src/ui/gui/psppire-var-sheet.c:1380
+#: src/language/data-io/data-parser.c:674 src/language/data-io/print.c:442
+#: src/ui/gui/psppire-var-sheet-header.c:76
 msgid "Columns"
 msgstr "Spalten"
 
 #: src/language/data-io/data-parser.c:675
-#: src/language/data-io/data-parser.c:712 src/language/data-io/print.c:449
+#: src/language/data-io/data-parser.c:712 src/language/data-io/print.c:443
 msgid "Format"
 msgstr "Format"
 
@@ -5074,49 +5095,49 @@ msgstr "Der Ausdruck in %s wurde als system-fehlender Wert ausgewertet."
 msgid "The expression on %s evaluated to %g."
 msgstr "Der Ausdruck in %s wurde als %g ausgewertet."
 
-#: src/language/data-io/print.c:193 src/language/data-io/trim.c:54
+#: src/language/data-io/print.c:187 src/language/data-io/trim.c:54
 msgid "expecting a valid subcommand"
 msgstr "es wurde ein gültiger Unterbefehl erwartet"
 
-#: src/language/data-io/print.c:223
+#: src/language/data-io/print.c:217
 #, c-format
 msgid "%s is required when binary formats are specified."
 msgstr "Bei der Angabe von Binärformaten ist %s erforderlich."
 
-#: src/language/data-io/print.c:306
+#: src/language/data-io/print.c:300
 #, c-format
 msgid "Output calls for %d records but %zu specified on RECORDS subcommand."
 msgstr "Die Ausgabe erfordert %d Einträge, es wurden aber mit den Unterbefehl RECORDS %zu Einträge angegeben."
 
-#: src/language/data-io/print.c:479
+#: src/language/data-io/print.c:473
 #, c-format
 msgid "Writing %zu record to %s."
 msgid_plural "Writing %zu records to %s."
 msgstr[0] "%zu Eintrag wird in %s geschrieben."
 msgstr[1] "%zu Einträge werden in %s geschrieben."
 
-#: src/language/data-io/print.c:483
+#: src/language/data-io/print.c:477
 #, c-format
 msgid "Writing %zu record."
 msgid_plural "Writing %zu records."
 msgstr[0] "%zu Eintrag wird geschrieben."
 msgstr[1] "%zu Einträge werden geschrieben."
 
-#: src/language/data-io/matrix-data.c:177
+#: src/language/data-io/matrix-data.c:176
 #, c-format
 msgid "There are %d variable declared but the data has at least %d matrix rows."
 msgstr "Es wurden %d Variablen spezifiziert, in den Daten sind aber mindestens %d Matrix-Zeilen enthalten."
 
-#: src/language/data-io/matrix-data.c:256
+#: src/language/data-io/matrix-data.c:257
 msgid "The N subcommand was specified, but a N record was also found in the data.  The N record will be ignored."
 msgstr "Der Unterbefehl N wurde angegeben, aber es wurde auch ein Eintrag für N in den Daten gefunden.  Der N-Eintrag wird ignoriert."
 
-#: src/language/data-io/matrix-data.c:450 src/language/utilities/set.q:186
+#: src/language/data-io/matrix-data.c:452 src/language/utilities/set.q:186
 #, c-format
 msgid "%s must not be negative."
 msgstr "%s darf nicht negativ sein."
 
-#: src/language/data-io/matrix-data.c:530
+#: src/language/data-io/matrix-data.c:532
 msgid "FORMAT = FULL and FORMAT = NODIAGONAL are mutually exclusive."
 msgstr "FORMAT = FULL und FORMAT = NODIAGONAL schließen sich gegeseitig aus."
 
@@ -5132,33 +5153,33 @@ msgstr "Im Matrix-Datensatz fehlt die Variable %s."
 msgid "Matrix dataset variable %s should be of string type."
 msgstr "Die Variable %s im Matrix-Datensatz sollte vom Typ String sein."
 
-#: src/language/data-io/save-translate.c:170
-#: src/language/data-io/save-translate.c:185
+#: src/language/data-io/save-translate.c:171
+#: src/language/data-io/save-translate.c:186
 #, c-format
 msgid "The %s string must contain exactly one character."
 msgstr "Der %s String muss genau ein Zeichen enthalten."
 
-#: src/language/data-io/save-translate.c:253
+#: src/language/data-io/save-translate.c:254
 #, c-format
 msgid "Output file `%s' exists but %s was not specified."
 msgstr "Die Ausgabedatei `%s' existiert, aber %s wurde nicht angegeben."
 
-#: src/language/data-io/trim.c:89
+#: src/language/data-io/trim.c:87
 #, c-format
 msgid "Cannot rename %s as %s because there already exists a variable named %s.  To rename variables with overlapping names, use a single RENAME subcommand such as `/RENAME (A=B)(B=C)(C=A)', or equivalently, `/RENAME (A B C=B C A)'."
 msgstr "%s kann nicht zu %s umbenannt werden, weil eine Variable mit dem Namen %s bereits existiert. Um mehrere Variablen mit sich gegenseitig überlappenden Namen umzubenennen, verwenden Sie den Unterbefehl RENAME, wie z.B. in `/RENAME (A=B)(B=C)(C=A)' oder auch gleichbedeutend in `/RENAME (A B C=B C A)'."
 
-#: src/language/data-io/trim.c:123
+#: src/language/data-io/trim.c:122
 #, c-format
 msgid "Number of variables on left side of `=' (%zu) does not match number of variables on right side (%zu), in parenthesized group %d of RENAME subcommand."
 msgstr "Die Anzahl der Variablen auf der linken Seite von `=' (%zu) stimmt nicht mit der Anzahl der Variablen auf der rechten Seite (%zu) in der eingeklammerten Gruppe %d des Befehls RENAME überein."
 
-#: src/language/data-io/trim.c:136
+#: src/language/data-io/trim.c:135
 #, c-format
 msgid "Requested renaming duplicates variable name %s."
 msgstr "Es wurde angefragt, ob der doppelte Variablenname %s umbenannt werden soll."
 
-#: src/language/data-io/trim.c:167
+#: src/language/data-io/trim.c:166
 msgid "Cannot DROP all variables from dictionary."
 msgstr "Mit DROP können nicht alle Variablen aus dem Codebuch gelöscht werden."
 
@@ -5609,12 +5630,12 @@ msgstr "*FEHLEND*"
 msgid "error opening output file `%s'"
 msgstr "Fehler beim Öffnen der Ausgabedatei `%s'"
 
-#: src/output/driver.c:377
+#: src/output/driver.c:373
 #, c-format
 msgid "%s is not a valid device type (the choices are `%s' and `%s')"
 msgstr "%s ist kein gültiger Gerätetyp (zur Auswahl stehen `%s' und `%s')"
 
-#: src/output/driver.c:391
+#: src/output/driver.c:387
 #, c-format
 msgid "%s: unknown option `%s'"
 msgstr "%s: unbekannte Option `%s'"
@@ -5656,6 +5677,10 @@ msgstr "Fehler beim Öffnen der Eingabedatei `%s'"
 #, c-format
 msgid "file `%s' does not state a paper size"
 msgstr "Datei `%s' legt keine Papiergröße fest"
+
+#: src/output/odt.c:98
+msgid "error creating temporary file"
+msgstr "Fehler beim Lesen der temporären Datei"
 
 #: src/output/options.c:112
 #, c-format
@@ -5825,10 +5850,6 @@ msgstr "Streubreite"
 msgid "Scatterplot %s"
 msgstr "Scatterplot %s"
 
-#: src/output/odt.c:98
-msgid "error creating temporary file"
-msgstr "Fehler beim Lesen der temporären Datei"
-
 #: src/ui/source-init-opts.c:72
 #, c-format
 msgid "Algorithm must be either `%s' or `%s'."
@@ -5930,85 +5951,73 @@ msgstr ""
 "\n"
 "Argumente ohne Optionen werden als Syntaxdateien interpretiert und ausgeführt.\n"
 
-#: src/ui/gui/psppire-import-assistant.c:535
-#, c-format
-msgid "Could not open `%s'"
-msgstr "`%s' konnte nicht geöffnet werden"
-
-#: src/ui/gui/psppire-import-assistant.c:550
-#, c-format
-msgid "Error reading `%s': %s"
-msgstr "Fehler beim Lesen von `%s': %s"
-
-#: src/ui/gui/psppire-import-assistant.c:553
-#, c-format
-msgid "Failed to read `%s', because it contains a line over %d bytes long and therefore appears not to be a text file."
-msgstr "Fehler beim Einlesen der Datei `%s', weil sie eine Zeile enthält, die über %d Bytes lang ist. Dies deutet darauf hin, dass es sich nicht um eine Textdatei handelt. "
-
-#: src/ui/gui/psppire-import-assistant.c:570
-#, c-format
-msgid "`%s' is empty."
-msgstr "`%s' ist leer."
-
-#: src/ui/gui/psppire-import-assistant.c:652
-msgid "Line"
+#: src/ui/gui/psppire-import-assistant.c:329
+msgid "line"
 msgstr "Zeile"
 
-#: src/ui/gui/psppire-import-assistant.c:746
+#: src/ui/gui/psppire-import-assistant.c:339
+msgid "var"
+msgstr "var"
+
+#: src/ui/gui/psppire-import-assistant.c:549
 msgid "Importing Spreadsheet Data"
 msgstr "Einlesen von Tabellendokumenten"
 
-#: src/ui/gui/psppire-import-assistant.c:853
-#: src/ui/gui/psppire-data-window.c:555 src/ui/gui/psppire-syntax-window.c:572
+#: src/ui/gui/psppire-import-assistant.c:663
+#: src/ui/gui/psppire-data-window.c:557 src/ui/gui/psppire-syntax-window.c:572
 #: src/ui/gui/psppire-window.c:683
 msgid "All Files"
 msgstr "Alle Dateien"
 
-#: src/ui/gui/psppire-import-assistant.c:858
+#: src/ui/gui/psppire-import-assistant.c:668
 msgid "Text Files"
 msgstr "Text-Dateien"
 
-#: src/ui/gui/psppire-import-assistant.c:863
+#: src/ui/gui/psppire-import-assistant.c:673
 msgid "Text (*.txt) Files"
 msgstr "Text-Dateien (*.txt)"
 
-#: src/ui/gui/psppire-import-assistant.c:869
+#: src/ui/gui/psppire-import-assistant.c:679
 msgid "Plain Text (ASCII) Files"
 msgstr "Text-Dateien (ASCII)"
 
-#: src/ui/gui/psppire-import-assistant.c:874
+#: src/ui/gui/psppire-import-assistant.c:684
 msgid "Comma Separated Value Files"
 msgstr "Komma-getrennte Datendatei (CVS)"
 
-#: src/ui/gui/psppire-import-assistant.c:881
+#: src/ui/gui/psppire-import-assistant.c:691
 msgid "Tab Separated Value Files"
 msgstr "Tabulator-getrennte Datendatei"
 
-#: src/ui/gui/psppire-import-assistant.c:886
+#: src/ui/gui/psppire-import-assistant.c:696
 msgid "Gnumeric Spreadsheet Files"
 msgstr "Gnumeric Tabellendokument"
 
-#: src/ui/gui/psppire-import-assistant.c:891
+#: src/ui/gui/psppire-import-assistant.c:701
 msgid "OpenDocument Spreadsheet Files"
 msgstr "OpenDocument Tabellendokument"
 
-#: src/ui/gui/psppire-import-assistant.c:896
+#: src/ui/gui/psppire-import-assistant.c:706
 msgid "All Spreadsheet Files"
 msgstr "Alle Tabellendokumente"
 
-#: src/ui/gui/psppire-import-assistant.c:905
+#: src/ui/gui/psppire-import-assistant.c:715
 msgid "Select File to Import"
 msgstr "Wählen Sie eine Importdatei"
 
-#: src/ui/gui/psppire-import-assistant.c:949
+#: src/ui/gui/psppire-import-assistant.c:750
 msgid "Importing Delimited Text Data"
 msgstr "Importieren von Textdaten"
 
-#: src/ui/gui/psppire-import-assistant.c:1116
+#: src/ui/gui/psppire-import-assistant.c:845
 msgid "Select the First Line"
 msgstr "Wählen Sie die erste Zeile aus"
 
-#: src/ui/gui/psppire-import-assistant.c:1150
+#: src/ui/gui/psppire-import-assistant.c:857
+msgid "Line"
+msgstr "Zeile"
+
+#: src/ui/gui/psppire-import-assistant.c:911
 msgid ""
 "This assistant will guide you through the process of importing data into PSPP from a text file with one line per case,  in which fields are separated by tabs, commas, or other delimiters.\n"
 "\n"
@@ -6016,72 +6025,58 @@ msgstr ""
 "Dieser Assistent führt Sie durch den Einlesevorgang von Daten in PSPP, die aus einer Textdatei stammen, in der jede Zeile einen Fall darstellt und in der Datenfelder durch Tabulatoren, Kommas oder andere Trennzeichen separiert sind.\n"
 "\n"
 
-#: src/ui/gui/psppire-import-assistant.c:1158
+#: src/ui/gui/psppire-import-assistant.c:921
 #, c-format
 msgid "The selected file contains %'lu line of text.  "
 msgid_plural "The selected file contains %'lu lines of text.  "
 msgstr[0] "Die gewählte Datei enthält ungefähr %'lu Textzeile.  "
 msgstr[1] "Die gewählte Datei enthält ungefähr %'lu Textzeilen.  "
 
-#: src/ui/gui/psppire-import-assistant.c:1167
+#: src/ui/gui/psppire-import-assistant.c:930
 #, c-format
 msgid "The selected file contains approximately %'lu line of text.  "
 msgid_plural "The selected file contains approximately %'lu lines of text.  "
 msgstr[0] "Die gewählte Datei enthält ungefähr %lu Textzeile.  "
 msgstr[1] "Die gewählte Datei enthält ungefähr %lu Textzeilen.  "
 
-#: src/ui/gui/psppire-import-assistant.c:1173
+#: src/ui/gui/psppire-import-assistant.c:936
 #, c-format
 msgid "Only the first %zu line of the file will be shown for preview purposes in the following screens.  "
 msgid_plural "Only the first %zu lines of the file will be shown for preview purposes in the following screens.  "
 msgstr[0] "Nur die erste Zeile wird in den folgenden Vorschaufenstern gezeigt. "
 msgstr[1] "Nur die ersten %zu  Zeilen werden in den folgenden Vorschaufenstern gezeigt. "
 
-#: src/ui/gui/psppire-import-assistant.c:1181
+#: src/ui/gui/psppire-import-assistant.c:945
 msgid "You may choose below how much of the file should actually be imported."
 msgstr "Sie können unten wählen, wie viele Zeilen der Datei tatsächlich eingelesen werden."
 
-#: src/ui/gui/psppire-import-assistant.c:1198
+#: src/ui/gui/psppire-import-assistant.c:954
 #, c-format
 msgid "Only the first %4d cases"
 msgstr "Nur die ersten %4d Fälle"
 
-#: src/ui/gui/psppire-import-assistant.c:1214
+#: src/ui/gui/psppire-import-assistant.c:965
 #, c-format
 msgid "Only the first %3d %% of file (approximately)"
 msgstr "Nur die ersten %3d %% der Datei (schätzungsweise)"
 
-#: src/ui/gui/psppire-import-assistant.c:1237
+#: src/ui/gui/psppire-import-assistant.c:989
 msgid "Select the Lines to Import"
 msgstr "Wählen Sie die zu importierenden Zeilen aus"
 
-#: src/ui/gui/psppire-import-assistant.c:1371
-#, c-format
-msgid "Cannot parse field content `%.*s' as format %s: %s"
-msgstr "Der Feldinhalt `%.*s' kann nicht als Format %s geparst werden: %s"
-
-#: src/ui/gui/psppire-import-assistant.c:1380
-#: src/ui/gui/psppire-import-assistant.c:1487
-msgid "This input line has too few separators to fill in this field."
-msgstr "Diese Datenzeile besitzt zu wenig Trennzeichen um dieses Feld zu füllen."
-
-#: src/ui/gui/psppire-import-assistant.c:1887
+#: src/ui/gui/psppire-import-assistant.c:1157
 msgid "Choose Separators"
 msgstr "Trennzeichen auswählen"
 
-#: src/ui/gui/psppire-import-assistant.c:2112
-msgid "An error occurred reading the spreadsheet file."
-msgstr "Beim Schreiben des Tabellendokuments ist ein Fehler aufgetreten."
-
-#: src/ui/gui/psppire-import-assistant.c:2167
+#: src/ui/gui/psppire-import-assistant.c:1398
 msgid "Adjust Variable Formats"
 msgstr "Einstellen des Variablenformates"
 
-#: src/ui/gui/find-dialog.c:197
+#: src/ui/gui/find-dialog.c:193
 msgid "Find"
 msgstr "Suchen"
 
-#: src/ui/gui/find-dialog.c:649
+#: src/ui/gui/find-dialog.c:645
 #, c-format
 msgid "Bad regular expression: %s"
 msgstr "Ungültiger regulärer Ausdruck: %s"
@@ -6133,108 +6128,80 @@ msgstr "Zeige den Startbildschirm nicht an"
 msgid "Do not attempt single instance negotiation"
 msgstr "Versuche keine Aushandlung einer Single Instance"
 
-#: src/ui/gui/missing-val-dialog.c:214
+#: src/ui/gui/missing-val-dialog.c:216
 msgid "The maximum length of a missing value for a string variable is 8 in UTF-8."
 msgstr "Die maximale Länge eines fehlenden Wertes für eine String-Variable beträgt 8 in UTF-8."
 
-#: src/ui/gui/missing-val-dialog.c:265
+#: src/ui/gui/missing-val-dialog.c:267
 msgid "At least one value must be specified"
 msgstr "Es muss mindestens ein Wert angegeben werden."
 
-#: src/ui/gui/missing-val-dialog.c:295
+#: src/ui/gui/missing-val-dialog.c:297
 msgid "Incorrect range specification"
 msgstr "Ungültige Bereichsspezifikation"
 
-#: src/ui/gui/psppire-data-editor.c:417
+#: src/ui/gui/psppire-data-editor.c:404
+#, c-format
+msgid "%d : %s"
+msgstr "%d: %s"
+
+#: src/ui/gui/psppire-data-editor.c:415
 #, c-format
 msgid "%'d case"
 msgid_plural "%'d cases"
 msgstr[0] "%'d Fall"
 msgstr[1] "%'d Fälle"
 
-#: src/ui/gui/psppire-data-editor.c:422
+#: src/ui/gui/psppire-data-editor.c:420
 #, c-format
 msgid "%'d variable"
 msgid_plural "%'d variables"
 msgstr[0] "%'d Variable"
 msgstr[1] "%'d Variablen"
 
-#: src/ui/gui/psppire-data-editor.c:715
-msgid "Data View"
-msgstr "Datenansicht"
-
-#: src/ui/gui/psppire-data-editor.c:728
-msgid "Variable View"
-msgstr "Variablenansicht"
-
-#: src/ui/gui/psppire-data-sheet.c:139
-msgid "Enter a number to add a new variable."
-msgstr "Geben Sie eine Zahl ein, um eine neue Variable hinzuzufügen."
-
-#: src/ui/gui/psppire-data-sheet.c:144
-msgid "Enter a number to add a new case."
-msgstr "Geben Sie eine Zahl ein, um einen neuen Fall hinzuzufügen."
-
-#: src/ui/gui/psppire-data-sheet.c:230
+#: src/ui/gui/psppire-data-editor.c:510
 msgid "Case"
 msgstr "Fall"
 
-#: src/ui/gui/psppire-data-sheet.c:1662 src/ui/gui/psppire-data-window.c:1303
-msgid "_Insert Case"
-msgstr "_Fall einfügen"
+#: src/ui/gui/psppire-data-editor.c:520
+msgid "Data View"
+msgstr "Datenansicht"
 
-#: src/ui/gui/psppire-data-sheet.c:1663 src/ui/gui/psppire-data-window.c:1351
-msgid "Cl_ear Cases"
-msgstr "Fälle lös_chen"
+#: src/ui/gui/psppire-data-editor.c:530
+msgid "Variable View"
+msgstr "Variablenansicht"
 
-#: src/ui/gui/psppire-data-sheet.c:1678 src/ui/gui/psppire-data-window.c:1302
-#: src/ui/gui/psppire-var-sheet.c:944
-msgid "_Insert Variable"
-msgstr "Variable _einfügen"
-
-#: src/ui/gui/psppire-data-sheet.c:1679 src/ui/gui/psppire-var-sheet.c:945
-msgid "Cl_ear Variables"
-msgstr "Variabl_e löschen"
-
-#: src/ui/gui/psppire-data-sheet.c:1680
-msgid "Sort _Ascending"
-msgstr "_Aufsteigend"
-
-#: src/ui/gui/psppire-data-sheet.c:1681
-msgid "Sort _Descending"
-msgstr "A_bsteigend"
-
-#: src/ui/gui/psppire-data-window.c:212
+#: src/ui/gui/psppire-data-window.c:214
 msgid "Transformations Pending"
 msgstr "Offene Transformationen werden ausgeführt"
 
-#: src/ui/gui/psppire-data-window.c:228
+#: src/ui/gui/psppire-data-window.c:230
 msgid "Filter off"
 msgstr "Keine Auswahl"
 
-#: src/ui/gui/psppire-data-window.c:240
+#: src/ui/gui/psppire-data-window.c:242
 #, c-format
 msgid "Filter by %s"
 msgstr "Ausgewählt nach %s"
 
-#: src/ui/gui/psppire-data-window.c:261
+#: src/ui/gui/psppire-data-window.c:263
 msgid "No Split"
 msgstr "Keine Aufteilung"
 
-#: src/ui/gui/psppire-data-window.c:270
+#: src/ui/gui/psppire-data-window.c:272
 msgid "Split by "
 msgstr "Aufgeteilt nach"
 
-#: src/ui/gui/psppire-data-window.c:298
+#: src/ui/gui/psppire-data-window.c:300
 msgid "Weights off"
 msgstr "Keine Gewichtung"
 
-#: src/ui/gui/psppire-data-window.c:310
+#: src/ui/gui/psppire-data-window.c:312
 #, c-format
 msgid "Weight by %s"
 msgstr "Gewichtet nach %s"
 
-#: src/ui/gui/psppire-data-window.c:530 src/ui/gui/psppire-data-window.c:534
+#: src/ui/gui/psppire-data-window.c:532 src/ui/gui/psppire-data-window.c:536
 #: src/ui/gui/psppire-dialog-action-aggregate.c:217
 #: src/ui/gui/psppire-output-window.c:382
 #: src/ui/gui/psppire-syntax-window.c:560 src/ui/gui/psppire-window.c:476
@@ -6242,195 +6209,208 @@ msgstr "Gewichtet nach %s"
 msgid "Save"
 msgstr "Speichern"
 
-#: src/ui/gui/psppire-data-window.c:540
+#: src/ui/gui/psppire-data-window.c:542
 #: src/ui/gui/psppire-dialog-action-aggregate.c:226
 msgid "System Files (*.sav)"
 msgstr "PSPP Systemdateien (*.sav)"
 
-#: src/ui/gui/psppire-data-window.c:545
+#: src/ui/gui/psppire-data-window.c:547
 #: src/ui/gui/psppire-dialog-action-aggregate.c:231
 msgid "Compressed System Files (*.zsav)"
 msgstr "Komprimierte PSPP Systemdateien (*.zsav)"
 
-#: src/ui/gui/psppire-data-window.c:550
+#: src/ui/gui/psppire-data-window.c:552
 #: src/ui/gui/psppire-dialog-action-aggregate.c:236
 #: src/ui/gui/psppire-window.c:672
 msgid "Portable Files (*.por) "
 msgstr "Portable Dateien (*.por) "
 
-#: src/ui/gui/psppire-data-window.c:572
+#: src/ui/gui/psppire-data-window.c:574
 msgid "System File"
 msgstr "PSPP Systemdatei"
 
-#: src/ui/gui/psppire-data-window.c:579
+#: src/ui/gui/psppire-data-window.c:581
 msgid "Compressed System File"
 msgstr "Komprimierte PSPP Systemdatei"
 
-#: src/ui/gui/psppire-data-window.c:585
+#: src/ui/gui/psppire-data-window.c:587
 msgid "Portable File"
 msgstr "Portable Datei"
 
-#: src/ui/gui/psppire-data-window.c:588
+#: src/ui/gui/psppire-data-window.c:590
 msgid "Format:"
 msgstr "Format:"
 
-#: src/ui/gui/psppire-data-window.c:652
+#: src/ui/gui/psppire-data-window.c:654
 msgid "Delete Existing Dataset?"
 msgstr "Vorhandenes Datenblatt löschen?"
 
-#: src/ui/gui/psppire-data-window.c:656
+#: src/ui/gui/psppire-data-window.c:658
 #, c-format
 msgid "Renaming \"%s\" to \"%s\" will destroy the existing dataset named \"%s\".  Are you sure that you want to do this?"
 msgstr "Umbenennen von \"%s\" nach \"%s\" löscht das vorhandene Datenblatt \"%s\".  Sind Sie sicher, dass Sie das tun wollen?"
 
-#: src/ui/gui/psppire-data-window.c:662
+#: src/ui/gui/psppire-data-window.c:664
 msgid "Delete"
 msgstr "Löschen"
 
-#: src/ui/gui/psppire-data-window.c:684
+#: src/ui/gui/psppire-data-window.c:686
 #, c-format
 msgid "Please enter a new name for dataset \"%s\":"
 msgstr "Geben sie einen neuen Namen für das Datenblatt \"%s\" ein:"
 
-#: src/ui/gui/psppire-data-window.c:686
+#: src/ui/gui/psppire-data-window.c:688
 msgid "Rename Dataset"
 msgstr "Datenblatt umbenennen"
 
-#: src/ui/gui/psppire-data-window.c:1165 src/ui/gui/output-window.ui:68
+#: src/ui/gui/psppire-data-window.c:1209 src/ui/gui/output-window.ui:68
 #: src/ui/gui/syntax-editor.ui:22
 msgid "_File"
 msgstr "_Datei"
 
-#: src/ui/gui/psppire-data-window.c:1169 src/ui/gui/syntax-editor.ui:25
+#: src/ui/gui/psppire-data-window.c:1213 src/ui/gui/syntax-editor.ui:25
 msgid "_New"
 msgstr "_Neu"
 
-#: src/ui/gui/psppire-data-window.c:1176
+#: src/ui/gui/psppire-data-window.c:1220
 msgid "_Syntax"
 msgstr "_Syntax"
 
-#: src/ui/gui/psppire-data-window.c:1179 src/ui/gui/data-editor.ui:177
+#: src/ui/gui/psppire-data-window.c:1223 src/ui/gui/data-editor.ui:177
 #: src/ui/gui/data-editor.ui:189
 msgid "_Data"
 msgstr "_Daten"
 
-#: src/ui/gui/psppire-data-window.c:1186 src/ui/gui/syntax-editor.ui:36
+#: src/ui/gui/psppire-data-window.c:1230 src/ui/gui/syntax-editor.ui:36
 msgid "_Open"
 msgstr "_Öffnen"
 
-#: src/ui/gui/psppire-data-window.c:1189
+#: src/ui/gui/psppire-data-window.c:1233
 msgid "_Import Data..."
 msgstr "Daten _importieren..."
 
-#: src/ui/gui/psppire-data-window.c:1197 src/ui/gui/logistic.ui:260
+#: src/ui/gui/psppire-data-window.c:1241 src/ui/gui/logistic.ui:260
 #: src/ui/gui/regression.ui:66
 msgid "_Save..."
 msgstr "Speichern..."
 
-#: src/ui/gui/psppire-data-window.c:1200
+#: src/ui/gui/psppire-data-window.c:1244
 msgid "Save _As..."
 msgstr "Speichern _unter..."
 
-#: src/ui/gui/psppire-data-window.c:1203
+#: src/ui/gui/psppire-data-window.c:1247
 msgid "_Rename Dataset..."
 msgstr "_Datenblatt umbenennen..."
 
-#: src/ui/gui/psppire-data-window.c:1214
+#: src/ui/gui/psppire-data-window.c:1258
 msgid "_Display Data File Information"
 msgstr "_Informationen zur Arbeitsdatei anzeigen"
 
-#: src/ui/gui/psppire-data-window.c:1221
+#: src/ui/gui/psppire-data-window.c:1265
 msgid "Working File"
 msgstr "Arbeitsdatei"
 
-#: src/ui/gui/psppire-data-window.c:1223
+#: src/ui/gui/psppire-data-window.c:1267
 msgid "_External File..."
 msgstr "_Externe Datei..."
 
-#: src/ui/gui/psppire-data-window.c:1233
+#: src/ui/gui/psppire-data-window.c:1277
 msgid "_Recently Used Data"
 msgstr "_Zuletzt verwendete Daten"
 
-#: src/ui/gui/psppire-data-window.c:1234
+#: src/ui/gui/psppire-data-window.c:1278
 msgid "Recently Used _Files"
 msgstr "Z_uletzt verwendete Dateien"
 
-#: src/ui/gui/psppire-data-window.c:1281 src/ui/gui/output-window.ui:82
+#: src/ui/gui/psppire-data-window.c:1325 src/ui/gui/output-window.ui:82
 #: src/ui/gui/syntax-editor.ui:59
 msgid "_Quit"
 msgstr "_Beenden"
 
-#: src/ui/gui/psppire-data-window.c:1298 src/ui/gui/output-window.ui:89
+#: src/ui/gui/psppire-data-window.c:1343 src/ui/gui/output-window.ui:89
 #: src/ui/gui/syntax-editor.ui:66
 msgid "_Edit"
 msgstr "_Bearbeiten"
 
-#: src/ui/gui/psppire-data-window.c:1304
+#: src/ui/gui/psppire-data-window.c:1347 src/ui/gui/psppire-data-sheet.c:276
+#: src/ui/gui/psppire-variable-sheet.c:263
+msgid "_Insert Variable"
+msgstr "Variable _einfügen"
+
+#: src/ui/gui/psppire-data-window.c:1348 src/ui/gui/psppire-data-sheet.c:167
+msgid "_Insert Case"
+msgstr "_Fall einfügen"
+
+#: src/ui/gui/psppire-data-window.c:1349
 msgid "_Go To Variable..."
 msgstr "_Gehe zu Variable..."
 
-#: src/ui/gui/psppire-data-window.c:1305
+#: src/ui/gui/psppire-data-window.c:1350
 msgid "_Go To Case..."
 msgstr "Gehe zu _Fall..."
 
-#: src/ui/gui/psppire-data-window.c:1327 src/ui/gui/syntax-editor.ui:69
+#: src/ui/gui/psppire-data-window.c:1372 src/ui/gui/syntax-editor.ui:69
 msgid "Cu_t"
 msgstr "_Schnittpunkt"
 
-#: src/ui/gui/psppire-data-window.c:1335 src/ui/gui/output-window.ui:96
+#: src/ui/gui/psppire-data-window.c:1380 src/ui/gui/output-window.ui:96
 #: src/ui/gui/syntax-editor.ui:74
 msgid "_Copy"
 msgstr "_Kopieren"
 
-#: src/ui/gui/psppire-data-window.c:1341 src/ui/gui/syntax-editor.ui:79
+#: src/ui/gui/psppire-data-window.c:1386 src/ui/gui/syntax-editor.ui:79
 msgid "_Paste"
 msgstr "_Einfügen"
 
-#: src/ui/gui/psppire-data-window.c:1347
+#: src/ui/gui/psppire-data-window.c:1392
 msgid "Clear _Variables"
 msgstr "Variabl_e löschen"
 
-#: src/ui/gui/psppire-data-window.c:1360
+#: src/ui/gui/psppire-data-window.c:1396 src/ui/gui/psppire-data-sheet.c:175
+msgid "Cl_ear Cases"
+msgstr "Fälle lös_chen"
+
+#: src/ui/gui/psppire-data-window.c:1405
 msgid "_Find..."
 msgstr "_Suchen..."
 
-#: src/ui/gui/psppire-data-window.c:1366 src/ui/gui/logistic.ui:245
+#: src/ui/gui/psppire-data-window.c:1411 src/ui/gui/logistic.ui:245
 msgid "_Options..."
 msgstr "_Optionen..."
 
-#: src/ui/gui/psppire-data-window.c:1644
+#: src/ui/gui/psppire-data-window.c:1682
 msgid "Jump to variable"
 msgstr "Zu Variable springen"
 
-#: src/ui/gui/psppire-data-window.c:1657
+#: src/ui/gui/psppire-data-window.c:1695
 msgid "Jump to a case in the data sheet"
 msgstr "Gehe zu Fall"
 
-#: src/ui/gui/psppire-data-window.c:1671
+#: src/ui/gui/psppire-data-window.c:1709
 msgid "Search for values in the data"
 msgstr "Suche nach Werten im Datensatz"
 
-#: src/ui/gui/psppire-data-window.c:1683
+#: src/ui/gui/psppire-data-window.c:1721
 msgid "Create a new case at the current position"
 msgstr "An der aktuellen Stelle einen neuen Fall einfügen"
 
-#: src/ui/gui/psppire-data-window.c:1695
+#: src/ui/gui/psppire-data-window.c:1733
 msgid "Create a new variable at the current position"
 msgstr "An der aktuellen Stelle eine neue Variable einfügen"
 
-#: src/ui/gui/psppire-data-window.c:1709
+#: src/ui/gui/psppire-data-window.c:1747
 msgid "Split the active dataset"
 msgstr "Datei aufteilen"
 
-#: src/ui/gui/psppire-data-window.c:1721
+#: src/ui/gui/psppire-data-window.c:1759
 msgid "Weight cases by variable"
 msgstr "Fälle anhand einer Variable gewichten"
 
-#: src/ui/gui/psppire-data-window.c:1732
+#: src/ui/gui/psppire-data-window.c:1770
 msgid "Show/hide value labels"
 msgstr "Ein- / Ausblenden der Wertelabels"
 
-#: src/ui/gui/psppire-data-window.c:1875
+#: src/ui/gui/psppire-data-window.c:1915
 msgid "Data Editor"
 msgstr "Dateneditor"
 
@@ -6660,6 +6640,10 @@ msgstr "Fälle nicht gewichten"
 msgid "Weight cases by %s"
 msgstr "Fälle gewichten mit %s"
 
+#: src/ui/gui/psppire-dict.c:97
+msgid "Var"
+msgstr "Var"
+
 #. TRANSLATORS: This string must be a valid variable name.  That means:
 #. - The string must be at most 64 bytes (not characters) long.
 #. - The string may not contain whitespace.
@@ -6667,12 +6651,12 @@ msgstr "Fälle gewichten mit %s"
 #. - The first character may not be a digit
 #. - The final character may not be '.' or '_'
 #.
-#: src/ui/gui/psppire-dict.c:332
+#: src/ui/gui/psppire-dict.c:423
 #, c-format
 msgid "Var%04d"
 msgstr "Var%04d"
 
-#: src/ui/gui/psppire-dict.c:516
+#: src/ui/gui/psppire-dict.c:608
 msgid "Duplicate variable name."
 msgstr "Doppelter Variablenname."
 
@@ -6701,11 +6685,11 @@ msgstr "Weiter"
 msgid "Back"
 msgstr "Zurück"
 
-#: src/ui/gui/psppire-output-view.c:366
+#: src/ui/gui/psppire-output-view.c:367
 msgid "Message"
 msgstr "Nachricht"
 
-#: src/ui/gui/psppire-output-view.c:488
+#: src/ui/gui/psppire-output-view.c:489
 msgid "failed to create temporary directory during clipboard operation"
 msgstr "Erstellung eines temporären Verzeichnisses während einer Operation der Zwischenablage fehlgeschlagen"
 
@@ -6749,7 +6733,7 @@ msgstr "Ausgabe exportieren"
 msgid "Output Viewer"
 msgstr "Ausgabeanzeige"
 
-#: src/ui/gui/psppire-spreadsheet-model.c:279
+#: src/ui/gui/psppire-spreadsheet-model.c:276
 msgid "(empty)"
 msgstr "(leer)"
 
@@ -6775,69 +6759,74 @@ msgstr "Syntax Editor"
 msgid "Cannot load syntax file `%s'"
 msgstr "Die Syntax-Datei `%s' kann nicht geladen werden"
 
-#: src/ui/gui/psppire-var-sheet.c:182 src/ui/gui/psppire-var-sheet.c:187
-msgid "Cannot create variable."
-msgstr "Variable kann nicht erstellt werden."
-
-#: src/ui/gui/psppire-var-sheet.c:183 src/ui/gui/psppire-var-sheet.c:212
+#: src/ui/gui/psppire-text-file.c:56
 #, c-format
-msgid "\"%s\" is not a valid variable name."
-msgstr "\"%s\" ist kein gültiger Variablenname"
+msgid "Could not open `%s'"
+msgstr "`%s' konnte nicht geöffnet werden"
 
-#: src/ui/gui/psppire-var-sheet.c:188 src/ui/gui/psppire-var-sheet.c:218
+#: src/ui/gui/psppire-text-file.c:72
 #, c-format
-msgid "This dictionary already contains a variable named \"%s\"."
-msgstr "Das Codebuch enthält bereits eine Variable mit dem Namen \"%s\"."
+msgid "Error reading `%s': %s"
+msgstr "Fehler beim Lesen von `%s': %s"
 
-#: src/ui/gui/psppire-var-sheet.c:211 src/ui/gui/psppire-var-sheet.c:217
-msgid "Cannot rename variable."
-msgstr "Änderung des Variablennamens nicht möglich."
+#: src/ui/gui/psppire-text-file.c:75
+#, c-format
+msgid "Failed to read `%s', because it contains a line over %d bytes long and therefore appears not to be a text file."
+msgstr "Fehler beim Einlesen der Datei `%s', weil sie eine Zeile enthält, die über %d Bytes lang ist. Dies deutet darauf hin, dass es sich nicht um eine Textdatei handelt. "
 
-#: src/ui/gui/psppire-var-sheet.c:445
+#: src/ui/gui/psppire-text-file.c:97
+#, c-format
+msgid "`%s' is empty."
+msgstr "`%s' ist leer."
+
+#: src/ui/gui/psppire-data-sheet.c:285 src/ui/gui/psppire-variable-sheet.c:272
+msgid "Cl_ear Variables"
+msgstr "Variabl_e löschen"
+
+#: src/ui/gui/psppire-data-sheet.c:297
+msgid "Sort _Ascending"
+msgstr "_Aufsteigend"
+
+#: src/ui/gui/psppire-data-sheet.c:304
+msgid "Sort _Descending"
+msgstr "A_bsteigend"
+
+#: src/ui/gui/psppire-variable-sheet.c:401
 #, c-format
 msgid "{%s, %s}..."
 msgstr "{%s,%s}..."
 
-#: src/ui/gui/psppire-var-sheet.c:878
-msgid "Enter a variable name to add a new variable."
-msgstr "Geben Sie einen Variablennamen ein, um eine neue Variable hinzuzufügen"
-
-#: src/ui/gui/psppire-var-sheet.c:918
-#, c-format
-msgid "{%s, %s}\n"
-msgstr "{%s,%s}\n"
-
-#: src/ui/gui/psppire-var-sheet.c:1365 src/language/stats/crosstabs.q:1390
-#: src/ui/gui/compute.ui:303
+#: src/ui/gui/psppire-var-sheet-header.c:58
+#: src/language/stats/crosstabs.q:1390 src/ui/gui/compute.ui:303
 msgid "Type"
 msgstr "Typ"
 
-#: src/ui/gui/psppire-var-sheet.c:1368 src/ui/gui/compute.ui:215
+#: src/ui/gui/psppire-var-sheet-header.c:61 src/ui/gui/compute.ui:215
 msgid "Width"
 msgstr "Spaltenbreite"
 
-#: src/ui/gui/psppire-var-sheet.c:1370
-msgid "Decimals"
+#: src/ui/gui/psppire-var-sheet-header.c:64
+msgid "Decimal"
 msgstr "Dezimalstellen"
 
-#: src/ui/gui/psppire-var-sheet.c:1374 src/ui/gui/val-labs-dialog.ui:194
+#: src/ui/gui/psppire-var-sheet-header.c:70 src/ui/gui/val-labs-dialog.ui:194
 msgid "Value Labels"
 msgstr "Wertelabels"
 
-#: src/ui/gui/psppire-var-sheet.c:1377 src/ui/gui/examine.ui:415
+#: src/ui/gui/psppire-var-sheet-header.c:73 src/ui/gui/examine.ui:415
 #: src/ui/gui/t-test.ui:105
 msgid "Missing Values"
 msgstr "Fehlende Werte"
 
-#: src/ui/gui/psppire-var-sheet.c:1382
+#: src/ui/gui/psppire-var-sheet-header.c:79
 msgid "Align"
 msgstr "Ausrichtung"
 
-#: src/ui/gui/psppire-var-sheet.c:1388
+#: src/ui/gui/psppire-var-sheet-header.c:82
 msgid "Measure"
 msgstr "Messniveau"
 
-#: src/ui/gui/psppire-var-sheet.c:1394
+#: src/ui/gui/psppire-var-sheet-header.c:85
 msgid "Role"
 msgstr "Rolle"
 
@@ -8641,15 +8630,15 @@ msgstr "Die Zeile oberhalb der ausgewählte Zeilen enthält die Variablennamen"
 msgid "Check the data formats displayed below and fix any that are incorrect.  You may set other variable properties now or later."
 msgstr "Überprüfen sie die unten angezeigten Datenformate und korrigieren sie die inkorrekten. Sie können die anderen Eigenschaften der Variablen jetzt oder später festlegen."
 
-#: src/ui/gui/text-data-import.ui:119
+#: src/ui/gui/text-data-import.ui:121
 msgid "<b>Variables</b>"
 msgstr "<b>Variablen</b>"
 
-#: src/ui/gui/text-data-import.ui:149
+#: src/ui/gui/text-data-import.ui:152
 msgid "<b>Data Preview</b>"
 msgstr "<b>Datenvorschau</b>"
 
-#: src/ui/gui/text-data-import.ui:178
+#: src/ui/gui/text-data-import.ui:181
 msgid ""
 "This assistant will guide you through the process of importing data into PSPP from a text file with one line per case,  in which fields are separated by tabs, commas, or other delimiters.\n"
 "\n"
@@ -8659,87 +8648,87 @@ msgstr ""
 " \n"
 "Die gewählte Datei enthält N Textzeilen.  Nur die ersten M Zeilen werden in den folgenden Vorschaufenstern gezeigt.  Sie können unten wählen, wie viele Zeilen der Datei tatsächlich eingelesen werden."
 
-#: src/ui/gui/text-data-import.ui:249
+#: src/ui/gui/text-data-import.ui:252
 msgid "All cases"
 msgstr "Alle Fälle"
 
-#: src/ui/gui/text-data-import.ui:269
+#: src/ui/gui/text-data-import.ui:272
 msgid "<b>Amount to Import</b>"
 msgstr "<b>Einzulesende Menge</b>"
 
-#: src/ui/gui/text-data-import.ui:322
+#: src/ui/gui/text-data-import.ui:325
 msgid "C_ustom"
 msgstr "A_ndere"
 
-#: src/ui/gui/text-data-import.ui:338
+#: src/ui/gui/text-data-import.ui:341
 msgid "Slas_h (/)"
 msgstr "Slas_h (/)"
 
-#: src/ui/gui/text-data-import.ui:354
+#: src/ui/gui/text-data-import.ui:357
 msgid "Semicolo_n (;)"
 msgstr "_Semikolon (;)"
 
-#: src/ui/gui/text-data-import.ui:370
+#: src/ui/gui/text-data-import.ui:373
 msgid "P_ipe (|)"
 msgstr "_Pipe (|)"
 
-#: src/ui/gui/text-data-import.ui:386
+#: src/ui/gui/text-data-import.ui:389
 msgid "H_yphen (-)"
 msgstr "_Bindestrich (-)"
 
-#: src/ui/gui/text-data-import.ui:402
+#: src/ui/gui/text-data-import.ui:405
 msgid "Co_mma (,)"
 msgstr "_Komma (,)"
 
-#: src/ui/gui/text-data-import.ui:418
+#: src/ui/gui/text-data-import.ui:421
 msgid "_Colon (:)"
 msgstr "_Doppelpunkt (:)"
 
-#: src/ui/gui/text-data-import.ui:434
+#: src/ui/gui/text-data-import.ui:437
 msgid "Ban_g (!)"
 msgstr "_Ausrufezeichen (!)"
 
-#: src/ui/gui/text-data-import.ui:450
+#: src/ui/gui/text-data-import.ui:453
 msgid "Ta_b"
 msgstr "_Tabstopp"
 
-#: src/ui/gui/text-data-import.ui:466
+#: src/ui/gui/text-data-import.ui:469
 msgid "_Space"
 msgstr "_Leerzeichen"
 
-#: src/ui/gui/text-data-import.ui:487
+#: src/ui/gui/text-data-import.ui:490
 msgid "<b>Separators</b>"
 msgstr "<b>Trennzeichen</b>"
 
-#: src/ui/gui/text-data-import.ui:533
+#: src/ui/gui/text-data-import.ui:536
 msgid "Quote separator characters with"
 msgstr "Texterkennungzeichen"
 
-#: src/ui/gui/text-data-import.ui:553
+#: src/ui/gui/text-data-import.ui:556
 msgid "<b>Quoting</b>"
 msgstr "<b>Texterkennungszeichen</b>"
 
-#: src/ui/gui/text-data-import.ui:591
+#: src/ui/gui/text-data-import.ui:594
 msgid "<b>Fields Preview</b>"
 msgstr "<b>Vorschau der Datenfelder</b>"
 
-#: src/ui/gui/text-data-import.ui:614
+#: src/ui/gui/text-data-import.ui:617
 msgid "Enter below the sheet number and the cell range which you wish to import."
 msgstr "Geben Sie unten die Nummer des Arbeitsblatts und den Zellenbereich an, den Sie importieren möchten."
 
-#: src/ui/gui/text-data-import.ui:662
+#: src/ui/gui/text-data-import.ui:665
 msgid "_Cells: "
 msgstr "_Zellen:"
 
-#: src/ui/gui/text-data-import.ui:676
+#: src/ui/gui/text-data-import.ui:679
 msgid "_Sheet Index: "
 msgstr "_Arbeitsblattnummer"
 
-#: src/ui/gui/text-data-import.ui:687
+#: src/ui/gui/text-data-import.ui:690
 msgid "Use first row as _variable names"
 msgstr "Die _erste Zeile als Variablennamen verwenden"
 
-#: src/ui/gui/text-data-import.ui:709
+#: src/ui/gui/text-data-import.ui:712
 msgid "<b>Cells to Import</b>"
 msgstr "<b>Einzulesende Zellen</b>"
 
@@ -9135,6 +9124,42 @@ msgstr "Statistische Software"
 msgid "Analyze statistical data with a free alternative to SPSS"
 msgstr "Analyse statistischer Daten mit einer freien Alternative zu SPSS"
 
+#~ msgid "Support for %s files was not compiled into this installation of PSPP"
+#~ msgstr "Unterstützung für %s Dateien ist nicht in dieser PSPP Installation enthalten."
+
+#~ msgid "Cannot parse field content `%.*s' as format %s: %s"
+#~ msgstr "Der Feldinhalt `%.*s' kann nicht als Format %s geparst werden: %s"
+
+#~ msgid "This input line has too few separators to fill in this field."
+#~ msgstr "Diese Datenzeile besitzt zu wenig Trennzeichen um dieses Feld zu füllen."
+
+#~ msgid "An error occurred reading the spreadsheet file."
+#~ msgstr "Beim Schreiben des Tabellendokuments ist ein Fehler aufgetreten."
+
+#~ msgid "Enter a number to add a new variable."
+#~ msgstr "Geben Sie eine Zahl ein, um eine neue Variable hinzuzufügen."
+
+#~ msgid "Enter a number to add a new case."
+#~ msgstr "Geben Sie eine Zahl ein, um einen neuen Fall hinzuzufügen."
+
+#~ msgid "Cannot create variable."
+#~ msgstr "Variable kann nicht erstellt werden."
+
+#~ msgid "\"%s\" is not a valid variable name."
+#~ msgstr "\"%s\" ist kein gültiger Variablenname"
+
+#~ msgid "This dictionary already contains a variable named \"%s\"."
+#~ msgstr "Das Codebuch enthält bereits eine Variable mit dem Namen \"%s\"."
+
+#~ msgid "Cannot rename variable."
+#~ msgstr "Änderung des Variablennamens nicht möglich."
+
+#~ msgid "Enter a variable name to add a new variable."
+#~ msgstr "Geben Sie einen Variablennamen ein, um eine neue Variable hinzuzufügen"
+
+#~ msgid "{%s, %s}\n"
+#~ msgstr "{%s,%s}\n"
+
 #~ msgid "Multiple response set name `%s' does not begin with `$'."
 #~ msgstr "Name des Mehrfachantwort-Sets `%s' beginnt nicht mit `$'."
 
@@ -9202,9 +9227,6 @@ msgstr "Analyse statistischer Daten mit einer freien Alternative zu SPSS"
 
 #~ msgid "_Select"
 #~ msgstr "A_swählen"
-
-#~ msgid "var"
-#~ msgstr "var"
 
 #~ msgid "Delete the variables at the selected position(s)"
 #~ msgstr "Die ausgewählte(n) Variable(n) löschen"
