@@ -398,7 +398,7 @@ src/ui/gui/psppire-marshal.h: src/ui/gui/marshaller-list
 desktopdir = $(datadir)/applications
 desktop_DATA = src/ui/gui/pspp.desktop
 
-appdatadir = $(datadir)/appdata
+appdatadir = $(datadir)/metainfo
 dist_appdata_DATA = src/ui/gui/pspp.appdata.xml
 
 BUILT_SOURCES += src/ui/gui/psppire-marshal.c src/ui/gui/psppire-marshal.h src/ui/gui/resources.c
