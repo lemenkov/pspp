@@ -1,13 +1,14 @@
-;;; pspp-mode-el -- Major mode for editing PSPP files
+;;; pspp-mode.el --- Major mode for editing PSPP files
 
-;; Copyright (C) 2005 Free Software Foundation
-;; Created: 05 March 2005
-;; Keywords: PSPP major-mode
-
-
-
-;; Based on the example wpdl-mode.el by Scott Borton
+;; Copyright (C) 2005,2018 Free Software Foundation
 ;; Author: Scott Andrew Borton <scott@pp.htv.fi>
+;; Created: 05 March 2005
+;; Version: 1.0
+;; Keywords: PSPP major-mode
+;; This file is not part of GNU Emacs.
+
+;;; Commentary:
+;; Based on the example wpdl-mode.el by Scott Borton
 
 ;; Copyright (C) 2000, 2003 Scott Andrew Borton <scott@pp.htv.fi>
 
@@ -32,6 +33,7 @@
     pspp-mode-map)
   "Keymap for PSPP major mode")
 
+;;;+++autoload
 (add-to-list 'auto-mode-alist '("\\.sps\\'" . pspp-mode))
 
 
@@ -255,7 +257,7 @@
 
     ;; String delimiters
       (modify-syntax-entry ?'  "\"" x-pspp-mode-syntax-table)
-      (modify-syntax-entry ?"  "\"" x-pspp-mode-syntax-table)
+      (modify-syntax-entry ?\"  "\"" x-pspp-mode-syntax-table)
       
     x-pspp-mode-syntax-table)
   
@@ -675,7 +677,7 @@
   )
 "Highlighting expressions for PSPP mode.")
 
-
+;;;+++autoload
 (defun pspp-mode ()
   (interactive)
   (kill-all-local-variables)
