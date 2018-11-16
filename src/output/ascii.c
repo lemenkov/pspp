@@ -354,9 +354,15 @@ update_page_size (struct ascii_driver *a, bool issue_error)
   enum { MIN_WIDTH = 6, MIN_LENGTH = 6 };
 
   if (a->auto_width)
-    a->width = settings_get_viewwidth ();
+    {
+      a->width = settings_get_viewwidth ();
+      a->min_break[H] = a->width / 2;
+    }
   if (a->auto_length)
-    a->length = settings_get_viewlength () - vertical_margins (a);
+    {
+      a->length = settings_get_viewlength () - vertical_margins (a);
+      a->min_break[V] = a->length / 2;
+    }
 
   if (a->width < MIN_WIDTH || a->length < MIN_LENGTH)
     {
