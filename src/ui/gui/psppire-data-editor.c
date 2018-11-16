@@ -579,10 +579,15 @@ set_font_recursively (GtkWidget *w, gpointer data)
   GtkStyleContext *style = gtk_widget_get_style_context (w);
   GtkCssProvider *cssp = gtk_css_provider_new ();
 
-  gchar *str = pango_font_description_to_string (font_desc);
+  /* The Pango font description as string has a different syntax than the
+     css style description:
+     Pango: Courier Italic 12
+     CSS: italic 12pt Courier
+     I ignore Weight, Style and Variant and just take family and size */
+  const gchar *str = pango_font_description_get_family (font_desc);
+  gint size = pango_font_description_get_size (font_desc);
   gchar *css =
-    g_strdup_printf ("* {font: %s}", str);
-  g_free (str);
+    g_strdup_printf ("* {font: %dpt %s}", size/PANGO_SCALE, str);
 
   GError *err = NULL;
   gtk_css_provider_load_from_data (cssp, css, -1, &err);
