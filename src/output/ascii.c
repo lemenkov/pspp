@@ -627,7 +627,7 @@ text_draw (struct ascii_driver *a, unsigned int options,
   if (y < y0 || y >= y1)
     return;
 
-  switch (options & TAB_ALIGNMENT)
+  switch (options & TAB_HALIGN)
     {
     case TAB_LEFT:
       x = bb[H][0];

@@ -466,7 +466,7 @@ html_output_table (struct html_driver *html, const struct table_item *item)
           struct table_cell cell;
           const char *tag;
           bool is_header;
-          int alignment, colspan, rowspan;
+          int colspan, rowspan;
           int top, left, right, bottom, n_borders;
 
           table_get_cell (t, x, y, &cell);
@@ -481,12 +481,19 @@ html_output_table (struct html_driver *html, const struct table_item *item)
           tag = is_header ? "TH" : "TD";
           fprintf (html->file, "    <%s", tag);
 
-          alignment = (cell.n_contents > 0
-                       ? cell.contents[0].options & TAB_ALIGNMENT
-                       : TAB_LEFT);
-          if (alignment != TAB_LEFT)
+          int halign = (cell.n_contents > 0
+                        ? cell.contents[0].options & TAB_HALIGN
+                        : TAB_LEFT);
+          if (halign != TAB_LEFT)
             fprintf (html->file, " ALIGN=\"%s\"",
-                     alignment == TAB_RIGHT ? "RIGHT" : "CENTER");
+                     halign == TAB_RIGHT ? "RIGHT" : "CENTER");
+
+          int valign = (cell.n_contents > 0
+                        ? cell.contents[0].options & TAB_VALIGN
+                        : TAB_LEFT);
+          if (valign != TAB_TOP)
+            fprintf (html->file, " ALIGN=\"%s\"",
+                     valign == TAB_BOTTOM ? "BOTTOM" : "MIDDLE");
 
           colspan = table_cell_colspan (&cell);
           if (colspan > 1)

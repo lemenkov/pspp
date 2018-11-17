@@ -48,20 +48,26 @@ enum
   {
     TAB_NONE = 0,
 
-    /* Alignment of cell contents. */
-    TAB_RIGHT      = 0 << 0,    /* Right justify. */
-    TAB_LEFT       = 1 << 0,    /* Left justify. */
-    TAB_CENTER     = 2 << 0,    /* Centered. */
-    TAB_ALIGNMENT  = 3 << 0,	/* Alignment mask. */
+    /* Horizontal alignment of cell contents. */
+    TAB_RIGHT      = 0 << 0,
+    TAB_LEFT       = 1 << 0,
+    TAB_CENTER     = 2 << 0,
+    TAB_HALIGN     = 3 << 0,	/* Alignment mask. */
+
+    /* Vertical alignment of cell contents. */
+    TAB_TOP        = 0 << 2,
+    TAB_MIDDLE     = 1 << 2,
+    TAB_BOTTOM     = 2 << 2,
+    TAB_VALIGN     = 3 << 2,	/* Alignment mask. */
 
     /* These flags may be combined with any alignment. */
-    TAB_EMPH       = 1 << 2,    /* Emphasize cell contents. */
-    TAB_FIX        = 1 << 3,    /* Use fixed font. */
+    TAB_EMPH       = 1 << 4,    /* Emphasize cell contents. */
+    TAB_FIX        = 1 << 5,    /* Use fixed font. */
 
     /* Bits with values (1 << TAB_FIRST_AVAILABLE) and higher are
        not used, so they are available for subclasses to use as
        they wish. */
-    TAB_FIRST_AVAILABLE = 4
+    TAB_FIRST_AVAILABLE = 6
   };
 
 /* Styles for the rules around table cells. */

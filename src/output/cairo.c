@@ -926,7 +926,7 @@ xr_layout_cell_text (struct xr_driver *xr,
 
   if (contents->n_footnotes == 0)
     merge_footnotes = false;
-  else if (contents->n_footnotes == 1 && (options & TAB_ALIGNMENT) == TAB_RIGHT)
+  else if (contents->n_footnotes == 1 && (options & TAB_HALIGN) == TAB_RIGHT)
     {
       PangoAttrList *attrs;
 
@@ -991,8 +991,8 @@ xr_layout_cell_text (struct xr_driver *xr,
 
   pango_layout_set_alignment (
     font->layout,
-    ((options & TAB_ALIGNMENT) == TAB_RIGHT ? PANGO_ALIGN_RIGHT
-     : (options & TAB_ALIGNMENT) == TAB_LEFT ? PANGO_ALIGN_LEFT
+    ((options & TAB_HALIGN) == TAB_RIGHT ? PANGO_ALIGN_RIGHT
+     : (options & TAB_HALIGN) == TAB_LEFT ? PANGO_ALIGN_LEFT
      : PANGO_ALIGN_CENTER));
   pango_layout_set_width (
     font->layout,

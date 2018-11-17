@@ -426,17 +426,17 @@ read_table (FILE *stream)
                 break;
 
               case '(':
-                opt &= ~TAB_ALIGNMENT;
+                opt &= ~TAB_HALIGN;
                 opt |= TAB_LEFT;
                 break;
 
               case ')':
-                opt &= ~TAB_ALIGNMENT;
+                opt &= ~TAB_HALIGN;
                 opt |= TAB_RIGHT;
                 break;
 
               case '|':
-                opt &= ~TAB_ALIGNMENT;
+                opt &= ~TAB_HALIGN;
                 opt |= TAB_CENTER;
                 break;
 

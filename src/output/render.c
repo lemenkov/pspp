@@ -59,7 +59,9 @@ struct render_page
     int n[TABLE_N_AXES];
     int h[TABLE_N_AXES][2];
 
-    /* cp[H] represents x positions within the table.
+    /* "Cell positions".
+
+       cp[H] represents x positions within the table.
        cp[H][0] = 0.
        cp[H][1] = the width of the leftmost vertical rule.
        cp[H][2] = cp[H][1] + the width of the leftmost column.
@@ -966,6 +968,22 @@ render_cell (const struct render_page *page, const int ofs[TABLE_N_AXES],
     }
   bb[V][0] = clip[V][0] = ofs[V] + page->cp[V][cell->d[V][0] * 2 + 1];
   bb[V][1] = clip[V][1] = ofs[V] + page->cp[V][cell->d[V][1] * 2];
+
+  int valign = (cell->n_contents
+                ? cell->contents->options & TAB_VALIGN
+                : TAB_TOP);
+  if (valign != TAB_TOP)
+    {
+      int height = page->params->measure_cell_height (
+        page->params->aux, cell, bb[H][1] - bb[H][0]);
+      int extra = bb[V][1] - bb[V][0] - height;
+      if (extra > 0)
+        {
+          if (valign == TAB_MIDDLE)
+            extra /= 2;
+          bb[V][0] += extra;
+        }
+    }
 
   of = find_overflow (page, cell->d[H][0], cell->d[V][0]);
   if (of)
