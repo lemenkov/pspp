@@ -24,6 +24,7 @@
 
 #include "libpspp/cast.h"
 #include "libpspp/compiler.h"
+#include "libpspp/str.h"
 #include "output/table-item.h"
 
 #include "gl/xalloc.h"
@@ -194,6 +195,80 @@ table_get_rule (const struct table *table, enum table_axis axis, int x, int y)
   assert (x >= 0 && x < table->n[TABLE_HORZ] + (axis == TABLE_HORZ));
   assert (y >= 0 && y < table->n[TABLE_VERT] + (axis == TABLE_VERT));
   return table->klass->get_rule (table, axis, x, y);
+}
+
+void
+cell_contents_format_footnote_markers (const struct cell_contents *c,
+                                       struct string *s)
+{
+  for (size_t i = 0; i < c->n_footnotes; i++)
+    {
+      if (i)
+        ds_put_byte (s, ',');
+      ds_put_cstr (s, c->footnotes[i]->marker);
+    }
+}
+
+static const struct footnote **
+add_footnotes (const struct footnote **refs, size_t n_refs,
+               const struct footnote **footnotes, size_t *allocated, size_t *n)
+{
+  for (size_t i = 0; i < n_refs; i++)
+    {
+      const struct footnote *f = refs[i];
+      if (f->idx >= *allocated)
+        {
+          size_t new_allocated = (f->idx + 1) * 2;
+          footnotes = xrealloc (footnotes, new_allocated * sizeof *footnotes);
+          while (*allocated < new_allocated)
+            footnotes[(*allocated)++] = NULL;
+        }
+      footnotes[f->idx] = f;
+      if (f->idx >= *n)
+        *n = f->idx + 1;
+    }
+  return footnotes;
+}
+
+size_t
+table_collect_footnotes (const struct table_item *item,
+                         const struct footnote ***footnotesp)
+{
+  const struct footnote **footnotes = NULL;
+  size_t allocated = 0;
+  size_t n = 0;
+
+  struct table *t = item->table;
+  for (int y = 0; y < table_nr (t); y++)
+    {
+      struct table_cell cell;
+      for (int x = 0; x < table_nc (t); x = cell.d[TABLE_HORZ][1])
+        {
+          table_get_cell (t, x, y, &cell);
+
+          if (x == cell.d[TABLE_HORZ][0] && y == cell.d[TABLE_VERT][0])
+            for (size_t i = 0; i < cell.n_contents; i++)
+              {
+                const struct cell_contents *c = &cell.contents[i];
+                footnotes = add_footnotes (c->footnotes, c->n_footnotes,
+                                           footnotes, &allocated, &n);
+              }
+          table_cell_free (&cell);
+        }
+    }
+
+  const struct table_item_text *title = table_item_get_title (item);
+  if (title)
+    footnotes = add_footnotes (title->footnotes, title->n_footnotes,
+                               footnotes, &allocated, &n);
+
+  const struct table_item_text *caption = table_item_get_caption (item);
+  if (caption)
+    footnotes = add_footnotes (caption->footnotes, caption->n_footnotes,
+                               footnotes, &allocated, &n);
+
+  *footnotesp = footnotes;
+  return n;
 }
 
 struct table_unshared

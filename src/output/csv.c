@@ -33,6 +33,7 @@
 #include "output/table-item.h"
 #include "output/table-provider.h"
 
+#include "gl/minmax.h"
 #include "gl/xalloc.h"
 #include "gl/xvasprintf.h"
 
@@ -164,6 +165,29 @@ csv_output_field_format (struct csv_driver *csv, const char *format, ...)
 }
 
 static void
+csv_format_footnotes (const struct footnote **f, size_t n, struct string *s)
+{
+  for (size_t i = 0; i < n; i++)
+    ds_put_format (s, "[%s]", f[i]->marker);
+}
+
+static void
+csv_output_table_item_text (struct csv_driver *csv,
+                            const struct table_item_text *text,
+                            const char *leader)
+{
+  if (!text)
+    return;
+
+  struct string s = DS_EMPTY_INITIALIZER;
+  ds_put_format (&s, "%s: %s", leader, text->content);
+  csv_format_footnotes (text->footnotes, text->n_footnotes, &s);
+  csv_output_field (csv, ds_cstr (&s));
+  ds_destroy (&s);
+  putc ('\n', csv->file);
+}
+
+static void
 csv_put_separator (struct csv_driver *csv)
 {
   if (csv->n_items++ > 0)
@@ -179,21 +203,15 @@ csv_submit (struct output_driver *driver,
   if (is_table_item (output_item))
     {
       struct table_item *table_item = to_table_item (output_item);
-      const char *title = table_item_get_title (table_item);
-      const char *caption = table_item_get_caption (table_item);
       const struct table *t = table_item_get_table (table_item);
-      int footnote_idx;
       int x, y;
 
       csv_put_separator (csv);
 
-      if (csv->titles && title != NULL)
-        {
-          csv_output_field_format (csv, "Table: %s", title);
-          putc ('\n', csv->file);
-        }
+      if (csv->titles)
+        csv_output_table_item_text (csv, table_item_get_title (table_item),
+                                    "Table");
 
-      footnote_idx = 0;
       for (y = 0; y < table_nr (t); y++)
         {
           for (x = 0; x < table_nc (t); x++)
@@ -220,21 +238,12 @@ csv_submit (struct output_driver *driver,
                   for (i = 0; i < cell.n_contents; i++)
                     {
                       const struct cell_contents *c = &cell.contents[i];
-                      int j;
 
                       if (i > 0)
                         ds_put_cstr (&s, "\n\n");
 
                       ds_put_cstr (&s, c->text);
-
-                      for (j = 0; j < c->n_footnotes; j++)
-                        {
-                          char marker[16];
-
-                          str_format_26adic (++footnote_idx, false,
-                                             marker, sizeof marker);
-                          ds_put_format (&s, "[%s]", marker);
-                        }
+                      csv_format_footnotes (c->footnotes, c->n_footnotes, &s);
                     }
                   csv_output_field (csv, ds_cstr (&s));
                   ds_destroy (&s);
@@ -245,47 +254,26 @@ csv_submit (struct output_driver *driver,
           putc ('\n', csv->file);
         }
 
-      if (csv->captions && caption != NULL)
-        {
-          csv_output_field_format (csv, "Caption: %s", caption);
-          putc ('\n', csv->file);
-        }
+      if (csv->captions)
+        csv_output_table_item_text (csv, table_item_get_caption (table_item),
+                                    "Caption");
 
-      if (footnote_idx)
+      const struct footnote **f;
+      size_t n_footnotes = table_collect_footnotes (table_item, &f);
+      if (n_footnotes)
         {
-          size_t i;
-
           fputs ("\nFootnotes:\n", csv->file);
 
-          footnote_idx = 0;
-          for (y = 0; y < table_nr (t); y++)
-            {
-              struct table_cell cell;
-              for (x = 0; x < table_nc (t); x = cell.d[TABLE_HORZ][1])
-                {
-                  table_get_cell (t, x, y, &cell);
+          for (size_t i = 0; i < n_footnotes; i++)
+            if (f[i])
+              {
+                csv_output_field (csv, f[i]->marker);
+                fputs (csv->separator, csv->file);
+                csv_output_field (csv, f[i]->content);
+                putc ('\n', csv->file);
+              }
 
-                  if (x == cell.d[TABLE_HORZ][0] && y == cell.d[TABLE_VERT][0])
-                    for (i = 0; i < cell.n_contents; i++)
-                      {
-                        const struct cell_contents *c = &cell.contents[i];
-                        int j;
-
-                        for (j = 0; j < c->n_footnotes; j++)
-                          {
-                            char marker[16];
-
-                            str_format_26adic (++footnote_idx, false,
-                                               marker, sizeof marker);
-                            csv_output_field (csv, marker);
-                            fputs (csv->separator, csv->file);
-                            csv_output_field (csv, c->footnotes[j]);
-                            putc ('\n', csv->file);
-                          }
-                      }
-                  table_cell_free (&cell);
-                }
-            }
+          free (f);
         }
     }
   else if (is_text_item (output_item))

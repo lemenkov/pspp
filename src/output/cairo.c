@@ -163,13 +163,13 @@ static void xr_driver_run_fsm (struct xr_driver *);
 static void xr_draw_line (void *, int bb[TABLE_N_AXES][2],
                           enum render_line_style styles[TABLE_N_AXES][2]);
 static void xr_measure_cell_width (void *, const struct table_cell *,
-                                   int footnote_idx, int *min, int *max);
+                                   int *min, int *max);
 static int xr_measure_cell_height (void *, const struct table_cell *,
-                                   int footnote_idx, int width);
-static void xr_draw_cell (void *, const struct table_cell *, int footnote_idx,
+                                   int width);
+static void xr_draw_cell (void *, const struct table_cell *,
                           int bb[TABLE_N_AXES][2],
                           int clip[TABLE_N_AXES][2]);
-static int xr_adjust_break (void *, const struct table_cell *, int footnote_idx,
+static int xr_adjust_break (void *, const struct table_cell *,
                             int width, int height);
 
 static struct xr_render_fsm *xr_render_output_item (
@@ -635,7 +635,7 @@ xr_driver_run_fsm (struct xr_driver *xr)
 }
 
 static void
-xr_layout_cell (struct xr_driver *, const struct table_cell *, int footnote_idx,
+xr_layout_cell (struct xr_driver *, const struct table_cell *,
                 int bb[TABLE_N_AXES][2], int clip[TABLE_N_AXES][2],
                 int *width, int *height, int *brk);
 
@@ -813,7 +813,7 @@ xr_draw_line (void *xr_, int bb[TABLE_N_AXES][2],
 
 static void
 xr_measure_cell_width (void *xr_, const struct table_cell *cell,
-                       int footnote_idx, int *min_width, int *max_width)
+                       int *min_width, int *max_width)
 {
   struct xr_driver *xr = xr_;
   int bb[TABLE_N_AXES][2];
@@ -825,10 +825,10 @@ xr_measure_cell_width (void *xr_, const struct table_cell *cell,
   bb[V][0] = 0;
   bb[V][1] = INT_MAX;
   clip[H][0] = clip[H][1] = clip[V][0] = clip[V][1] = 0;
-  xr_layout_cell (xr, cell, footnote_idx, bb, clip, max_width, &h, NULL);
+  xr_layout_cell (xr, cell, bb, clip, max_width, &h, NULL);
 
   bb[H][1] = 1;
-  xr_layout_cell (xr, cell, footnote_idx, bb, clip, min_width, &h, NULL);
+  xr_layout_cell (xr, cell, bb, clip, min_width, &h, NULL);
 
   if (*min_width > 0)
     *min_width += xr->cell_margin * 2;
@@ -837,8 +837,7 @@ xr_measure_cell_width (void *xr_, const struct table_cell *cell,
 }
 
 static int
-xr_measure_cell_height (void *xr_, const struct table_cell *cell,
-                        int footnote_idx, int width)
+xr_measure_cell_height (void *xr_, const struct table_cell *cell, int width)
 {
   struct xr_driver *xr = xr_;
   int bb[TABLE_N_AXES][2];
@@ -850,12 +849,12 @@ xr_measure_cell_height (void *xr_, const struct table_cell *cell,
   bb[V][0] = 0;
   bb[V][1] = INT_MAX;
   clip[H][0] = clip[H][1] = clip[V][0] = clip[V][1] = 0;
-  xr_layout_cell (xr, cell, footnote_idx, bb, clip, &w, &h, NULL);
+  xr_layout_cell (xr, cell, bb, clip, &w, &h, NULL);
   return h;
 }
 
 static void
-xr_draw_cell (void *xr_, const struct table_cell *cell, int footnote_idx,
+xr_draw_cell (void *xr_, const struct table_cell *cell,
               int bb[TABLE_N_AXES][2], int clip[TABLE_N_AXES][2])
 {
   struct xr_driver *xr = xr_;
@@ -865,11 +864,11 @@ xr_draw_cell (void *xr_, const struct table_cell *cell, int footnote_idx,
   bb[H][1] -= xr->cell_margin;
   if (bb[H][0] >= bb[H][1])
     return;
-  xr_layout_cell (xr, cell, footnote_idx, bb, clip, &w, &h, &brk);
+  xr_layout_cell (xr, cell, bb, clip, &w, &h, &brk);
 }
 
 static int
-xr_adjust_break (void *xr_, const struct table_cell *cell, int footnote_idx,
+xr_adjust_break (void *xr_, const struct table_cell *cell,
                  int width, int height)
 {
   struct xr_driver *xr = xr_;
@@ -877,7 +876,7 @@ xr_adjust_break (void *xr_, const struct table_cell *cell, int footnote_idx,
   int clip[TABLE_N_AXES][2];
   int w, h, brk;
 
-  if (xr_measure_cell_height (xr_, cell, footnote_idx, width) < height)
+  if (xr_measure_cell_height (xr_, cell, width) < height)
     return -1;
 
   bb[H][0] = 0;
@@ -887,7 +886,7 @@ xr_adjust_break (void *xr_, const struct table_cell *cell, int footnote_idx,
   bb[V][0] = 0;
   bb[V][1] = height;
   clip[H][0] = clip[H][1] = clip[V][0] = clip[V][1] = 0;
-  xr_layout_cell (xr, cell, footnote_idx, bb, clip, &w, &h, &brk);
+  xr_layout_cell (xr, cell, bb, clip, &w, &h, &brk);
   return brk;
 }
 
@@ -915,7 +914,7 @@ add_attr_with_start (PangoAttrList *list, PangoAttribute *attr, guint start_inde
 
 static int
 xr_layout_cell_text (struct xr_driver *xr,
-                     const struct cell_contents *contents, int footnote_idx,
+                     const struct cell_contents *contents,
                      int bb[TABLE_N_AXES][2], int clip[TABLE_N_AXES][2],
                      int *widthp, int *brk)
 {
@@ -930,11 +929,10 @@ xr_layout_cell_text (struct xr_driver *xr,
   else if (contents->n_footnotes == 1 && (options & TAB_ALIGNMENT) == TAB_RIGHT)
     {
       PangoAttrList *attrs;
-      char marker[16];
 
       font = &xr->fonts[XR_FONT_MARKER];
 
-      str_format_26adic (footnote_idx + 1, false, marker, sizeof marker);
+      const char *marker = contents->footnotes[0]->marker;
       pango_layout_set_text (font->layout, marker, strlen (marker));
 
       attrs = pango_attr_list_new ();
@@ -971,22 +969,13 @@ xr_layout_cell_text (struct xr_driver *xr,
     {
       PangoAttrList *attrs;
       struct string s;
-      size_t i;
 
       bb[H][1] += xr->cell_margin;
 
       ds_init_empty (&s);
       ds_extend (&s, length + contents->n_footnotes * 10);
       ds_put_cstr (&s, contents->text);
-      for (i = 0; i < contents->n_footnotes; i++)
-        {
-          char marker[16];
-
-          if (i > 0)
-            ds_put_byte (&s, ',');
-          str_format_26adic (footnote_idx + i + 1, false, marker, sizeof marker);
-          ds_put_cstr (&s, marker);
-        }
+      cell_contents_format_footnote_markers (contents, &s);
       pango_layout_set_text (font->layout, ds_cstr (&s), ds_length (&s));
       ds_destroy (&s);
 
@@ -1105,7 +1094,6 @@ xr_layout_cell_text (struct xr_driver *xr,
 
 static void
 xr_layout_cell (struct xr_driver *xr, const struct table_cell *cell,
-                int footnote_idx,
                 int bb_[TABLE_N_AXES][2], int clip[TABLE_N_AXES][2],
                 int *width, int *height, int *brk)
 {
@@ -1151,9 +1139,7 @@ xr_layout_cell (struct xr_driver *xr, const struct table_cell *cell,
             *brk = bb[V][0];
         }
 
-      bb[V][0] = xr_layout_cell_text (xr, contents, footnote_idx, bb, clip,
-                                      width, brk);
-      footnote_idx += contents->n_footnotes;
+      bb[V][0] = xr_layout_cell_text (xr, contents, bb, clip, width, brk);
     }
   *height = bb[V][0] - bb_[V][0];
 }

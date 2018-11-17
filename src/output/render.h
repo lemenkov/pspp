@@ -51,14 +51,6 @@ enum render_line_style
 
    For each of the callback functions, AUX is passed as the 'aux' member of the
    render_params structure.
-
-   The device is expected to transform numerical footnote index numbers into
-   footnote markers.  The existing drivers use str_format_26adic() to transform
-   index 0 to "a", index 1 to "b", and so on.  The FOOTNOTE_IDX supplied to
-   each function is the footnote index number for the first footnote in the
-   cell.  If a cell contains more than one footnote, then the additional
-   footnote indexes increase sequentially, e.g. the second footnote has index
-   FOOTNOTE_IDX + 1.
 */
 struct render_params
   {
@@ -68,12 +60,11 @@ struct render_params
        minimum width required to avoid line breaks other than at new-lines.
        */
     void (*measure_cell_width) (void *aux, const struct table_cell *cell,
-                                int footnote_idx,
                                 int *min_width, int *max_width);
 
     /* Returns the height required to render CELL given a width of WIDTH. */
     int (*measure_cell_height) (void *aux, const struct table_cell *cell,
-                                int footnote_idx, int width);
+                                int width);
 
     /* Given that there is space measuring WIDTH by HEIGHT to render CELL,
        where HEIGHT is insufficient to render the entire height of the cell,
@@ -86,7 +77,7 @@ struct render_params
        Optional.  If NULL, the rendering engine assumes that all breakpoints
        are acceptable. */
     int (*adjust_break) (void *aux, const struct table_cell *cell,
-                         int footnote_idx, int width, int height);
+                         int width, int height);
 
     /* Draws a generalized intersection of lines in the rectangle whose
        top-left corner is (BB[TABLE_HORZ][0], BB[TABLE_VERT][0]) and whose
@@ -106,7 +97,6 @@ struct render_params
        of the cell that lies within CLIP should actually be drawn, although BB
        should used to determine the layout of the cell. */
     void (*draw_cell) (void *aux, const struct table_cell *cell,
-                       int footnote_idx,
                        int bb[TABLE_N_AXES][2], int clip[TABLE_N_AXES][2]);
 
     /* Auxiliary data passed to each of the above functions. */

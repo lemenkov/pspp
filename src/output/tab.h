@@ -143,8 +143,10 @@ void tab_joint_text_format (struct tab_table *, int x1, int y1, int x2, int y2,
                             unsigned opt, const char *, ...)
      PRINTF_FORMAT (7, 8);
 
-void tab_footnote (struct tab_table *, int x, int y, const char *format, ...)
-  PRINTF_FORMAT (4, 5);
+struct footnote *tab_create_footnote (struct tab_table *, size_t idx,
+                                      const char *content, const char *marker);
+void tab_add_footnote (struct tab_table *, int x, int y,
+                       const struct footnote *);
 
 bool tab_cell_is_empty (const struct tab_table *, int c, int r);
 

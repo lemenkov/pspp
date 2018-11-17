@@ -66,7 +66,7 @@ struct tab_joined_cell
     u;
 
   size_t n_footnotes;
-  char **footnotes;
+  const struct footnote **footnotes;
 };
 
 static const struct table_class tab_table_class;
@@ -593,7 +593,10 @@ tab_joint_text (struct tab_table *table, int x1, int y1, int x2, int y2,
                 unsigned opt, const char *text)
 {
   char *s = pool_strdup (table->container, text);
-  add_joined_cell (table, x1, y1, x2, y2, opt)->u.text = s;
+  if (x1 == x2 && y1 == y2)
+    do_tab_text (table, x1, y1, opt, s);
+  else
+    add_joined_cell (table, x1, y1, x2, y2, opt)->u.text = s;
 }
 
 /* Joins cells (X1,X2)-(Y1,Y2) inclusive in TABLE, and sets them
@@ -613,13 +616,24 @@ tab_joint_text_format (struct tab_table *table, int x1, int y1, int x2,
   add_joined_cell (table, x1, y1, x2, y2, opt)->u.text = s;
 }
 
+struct footnote *
+tab_create_footnote (struct tab_table *table, size_t idx, const char *content,
+                     const char *marker)
+{
+  struct footnote *f = pool_alloc (table->container, sizeof *f);
+  f->idx = idx;
+  f->content = pool_strdup (table->container, content);
+  f->marker = pool_strdup (table->container, marker);
+  return f;
+}
+
 void
-tab_footnote (struct tab_table *table, int x, int y, const char *format, ...)
+tab_add_footnote (struct tab_table *table, int x, int y,
+                  const struct footnote *f)
 {
   int index = x + y * table->cf;
   unsigned char opt = table->ct[index];
   struct tab_joined_cell *j;
-  va_list args;
 
   if (opt & TAB_JOIN)
     j = table->cc[index];
@@ -631,13 +645,10 @@ tab_footnote (struct tab_table *table, int x, int y, const char *format, ...)
       j->u.text = text ? text : xstrdup ("");
     }
 
-  j->footnotes = xrealloc (j->footnotes,
-                           (j->n_footnotes + 1) * sizeof *j->footnotes);
+  j->footnotes = pool_realloc (table->container, j->footnotes,
+                               (j->n_footnotes + 1) * sizeof *j->footnotes);
 
-  va_start (args, format);
-  j->footnotes[j->n_footnotes++] =
-    pool_vasprintf (table->container, format, args);
-  va_end (args);
+  j->footnotes[j->n_footnotes++] = f;
 }
 
 bool

@@ -369,9 +369,10 @@ psppire_output_view_put (struct psppire_output_view *view,
         }
       else if (is_table_item (item))
         {
-          const char *title = table_item_get_title (to_table_item (item));
+          const struct table_item_text *title
+            = table_item_get_title (to_table_item (item));
           if (title != NULL)
-            ds_put_format (&name, "Table: %s", title);
+            ds_put_format (&name, "Table: %s", title->content);
           else
             ds_put_cstr (&name, "Table");
         }

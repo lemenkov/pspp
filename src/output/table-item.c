@@ -28,6 +28,44 @@
 
 #include "gl/xalloc.h"
 
+struct table_item_text *
+table_item_text_create (const char *content)
+{
+  if (!content)
+    return NULL;
+
+  struct table_item_text *text = xmalloc (sizeof *text);
+  *text = (struct table_item_text) { .content = xstrdup (content) };
+  return text;
+}
+
+struct table_item_text *
+table_item_text_clone (const struct table_item_text *old)
+{
+  if (!old)
+    return NULL;
+
+  struct table_item_text *new = xmalloc (sizeof *new);
+  *new = (struct table_item_text) {
+    .content = xstrdup (old->content),
+    .footnotes = xmemdup (old->footnotes,
+                          old->n_footnotes * sizeof *old->footnotes),
+    .n_footnotes = old->n_footnotes,
+  };
+  return new;
+}
+
+void
+table_item_text_destroy (struct table_item_text *text)
+{
+  if (text)
+    {
+      free (text->content);
+      free (text->footnotes);
+      free (text);
+    }
+}
+
 /* Initializes ITEM as a table item for rendering TABLE.  The new table item
    initially has the specified TITLE and CAPTION, which may each be NULL.  The
    caller retains ownership of TITLE and CAPTION. */
@@ -37,8 +75,8 @@ table_item_create (struct table *table, const char *title, const char *caption)
   struct table_item *item = xmalloc (sizeof *item);
   output_item_init (&item->output_item, &table_item_class);
   item->table = table;
-  item->title = title != NULL ? xstrdup (title) : NULL;
-  item->caption = caption != NULL ? xstrdup (caption) : NULL;
+  item->title = table_item_text_create (title);
+  item->caption = table_item_text_create (caption);
   return item;
 }
 
@@ -52,7 +90,7 @@ table_item_get_table (const struct table_item *table_item)
 
 /* Returns ITEM's title, which is a null pointer if no title has been
    set. */
-const char *
+const struct table_item_text *
 table_item_get_title (const struct table_item *item)
 {
   return item->title;
@@ -63,16 +101,17 @@ table_item_get_title (const struct table_item *item)
 
    This function may only be used on a table_item that is unshared. */
 void
-table_item_set_title (struct table_item *item, const char *title)
+table_item_set_title (struct table_item *item,
+                      const struct table_item_text *title)
 {
   assert (!table_item_is_shared (item));
-  free (item->title);
-  item->title = title != NULL ? xstrdup (title) : NULL;
+  table_item_text_destroy (item->title);
+  item->title = table_item_text_clone (title);
 }
 
 /* Returns ITEM's caption, which is a null pointer if no caption has been
    set. */
-const char *
+const struct table_item_text *
 table_item_get_caption (const struct table_item *item)
 {
   return item->caption;
@@ -84,11 +123,12 @@ table_item_get_caption (const struct table_item *item)
 
    This function may only be used on a table_item that is unshared. */
 void
-table_item_set_caption (struct table_item *item, const char *caption)
+table_item_set_caption (struct table_item *item,
+                        const struct table_item_text *caption)
 {
   assert (!table_item_is_shared (item));
-  free (item->caption);
-  item->caption = caption != NULL ? xstrdup (caption) : NULL;
+  table_item_text_destroy (item->caption);
+  item->caption = table_item_text_clone (caption);
 }
 
 /* Submits TABLE_ITEM to the configured output drivers, and transfers ownership

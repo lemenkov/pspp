@@ -69,9 +69,6 @@ struct odt_driver
 
   /* Number of tables so far. */
   int table_num;
-
-  /* Number of footnotes so far. */
-  int n_footnotes;
 };
 
 static const struct output_driver_class odt_driver_class;
@@ -422,27 +419,24 @@ write_xml_with_line_breaks (struct odt_driver *odt, const char *line_)
 }
 
 static void
-write_footnote (struct odt_driver *odt, const char *footnote)
+write_footnote (struct odt_driver *odt, const struct footnote *f)
 {
-  char marker[16];
-
   xmlTextWriterStartElement (odt->content_wtr, _xml("text:note"));
   xmlTextWriterWriteAttribute (odt->content_wtr, _xml("text:note-class"),
                                _xml("footnote"));
 
   xmlTextWriterStartElement (odt->content_wtr, _xml("text:note-citation"));
-  str_format_26adic (++odt->n_footnotes, false, marker, sizeof marker);
-  if (strlen (marker) > 1)
+  if (strlen (f->marker) > 1)
     xmlTextWriterWriteFormatAttribute (odt->content_wtr, _xml("text:label"),
-                                       "(%s)", marker);
+                                       "(%s)", f->marker);
   else
     xmlTextWriterWriteAttribute (odt->content_wtr, _xml("text:label"),
-                                 _xml(marker));
+                                 _xml(f->marker));
   xmlTextWriterEndElement (odt->content_wtr);
 
   xmlTextWriterStartElement (odt->content_wtr, _xml("text:note-body"));
   xmlTextWriterStartElement (odt->content_wtr, _xml("text:p"));
-  write_xml_with_line_breaks (odt, footnote);
+  write_xml_with_line_breaks (odt, f->content);
   xmlTextWriterEndElement (odt->content_wtr);
   xmlTextWriterEndElement (odt->content_wtr);
 
@@ -450,23 +444,29 @@ write_footnote (struct odt_driver *odt, const char *footnote)
 }
 
 static void
+write_table_item_text (struct odt_driver *odt,
+                       const struct table_item_text *text)
+{
+  if (!text)
+    return;
+
+  xmlTextWriterStartElement (odt->content_wtr, _xml("text:h"));
+  xmlTextWriterWriteFormatAttribute (odt->content_wtr,
+                                     _xml("text:outline-level"), "%d", 2);
+  xmlTextWriterWriteString (odt->content_wtr, _xml (text->content) );
+  for (size_t i = 0; i < text->n_footnotes; i++)
+    write_footnote (odt, text->footnotes[i]);
+  xmlTextWriterEndElement (odt->content_wtr);
+}
+
+static void
 write_table (struct odt_driver *odt, const struct table_item *item)
 {
   const struct table *tab = table_item_get_table (item);
-  const char *caption = table_item_get_caption (item);
-  const char *title = table_item_get_title (item);
   int r, c;
 
   /* Write a heading for the table */
-  if (title != NULL)
-    {
-      xmlTextWriterStartElement (odt->content_wtr, _xml("text:h"));
-      xmlTextWriterWriteFormatAttribute (odt->content_wtr,
-                                         _xml("text:outline-level"), "%d", 2);
-      xmlTextWriterWriteString (odt->content_wtr,
-                                _xml (table_item_get_title (item)) );
-      xmlTextWriterEndElement (odt->content_wtr);
-    }
+  write_table_item_text (odt, table_item_get_title (item));
 
   /* Start table */
   xmlTextWriterStartElement (odt->content_wtr, _xml("table:table"));
@@ -556,16 +556,7 @@ write_table (struct odt_driver *odt, const struct table_item *item)
   xmlTextWriterEndElement (odt->content_wtr); /* table */
 
   /* Write a caption for the table */
-  if (caption != NULL)
-    {
-      xmlTextWriterStartElement (odt->content_wtr, _xml("text:h"));
-      xmlTextWriterWriteFormatAttribute (odt->content_wtr,
-                                         _xml("text:outline-level"), "%d", 2);
-      xmlTextWriterWriteString (odt->content_wtr,
-                                _xml (table_item_get_caption (item)) );
-      xmlTextWriterEndElement (odt->content_wtr);
-    }
-
+  write_table_item_text (odt, table_item_get_caption (item));
 }
 
 static void

@@ -353,6 +353,7 @@ read_table (FILE *stream)
   int n_input = 0;
   int nr, nc, hl, hr, ht, hb;
   int r, c;
+  size_t n_footnotes = 0;
 
   if (fgets (buffer, sizeof buffer, stream) == NULL
       || (n_input = sscanf (buffer, "%d %d %d %d %d %d",
@@ -454,7 +455,13 @@ read_table (FILE *stream)
               tab_joint_text (tab, c, r, c + cs - 1, r + rs - 1, opt,
                               content);
             else
-              tab_footnote (tab, c, r, "%s", content);
+              {
+                char marker[2] = { 'a' + n_footnotes, '\0' };
+                struct footnote *f = tab_create_footnote (
+                  tab, n_footnotes, content, marker);
+                tab_add_footnote (tab, c, r, f);
+                n_footnotes++;
+              }
         }
 
   return &tab->table;

@@ -383,66 +383,75 @@ put_tfoot (struct html_driver *html, const struct table *t, bool *tfoot)
 }
 
 static void
+html_put_footnote_markers (struct html_driver *html,
+                           const struct footnote **footnotes,
+                           size_t n_footnotes)
+{
+  if (n_footnotes > 0)
+    {
+      fputs ("<SUP>", html->file);
+      for (size_t i = 0; i < n_footnotes; i++)
+        {
+          const struct footnote *f = footnotes[i];
+
+          if (i > 0)
+            putc (',', html->file);
+          escape_string (html->file, f->marker,
+                         strlen (f->marker), " ", "<BR>");
+        }
+      fputs ("</SUP>", html->file);
+    }
+}
+
+static void
+html_put_table_item_text (struct html_driver *html,
+                          const struct table_item_text *text)
+{
+  escape_string (html->file, text->content, strlen (text->content),
+                 " ", "<BR>");
+  html_put_footnote_markers (html, text->footnotes, text->n_footnotes);
+}
+
+static void
 html_output_table (struct html_driver *html, const struct table_item *item)
 {
   const struct table *t = table_item_get_table (item);
-  const char *title = table_item_get_title (item);
-  const char *caption = table_item_get_caption (item);
-  int footnote_idx = 0;
   bool tfoot = false;
   int y;
 
   fputs ("<TABLE>", html->file);
 
+  const struct table_item_text *caption = table_item_get_caption (item);
   if (caption)
     {
       put_tfoot (html, t, &tfoot);
-      escape_string (html->file, caption, strlen (caption), " ", "<BR>");
+      html_put_table_item_text (html, caption);
     }
-  footnote_idx = 0;
-  for (y = 0; y < table_nr (t); y++)
-    {
-      int x;
-      for (x = 0; x < table_nc (t); )
-        {
-          const struct cell_contents *c;
-          struct table_cell cell;
+  const struct footnote **f;
+  size_t n_footnotes = table_collect_footnotes (item, &f);
 
-          table_get_cell (t, x, y, &cell);
-          if (y != cell.d[TABLE_VERT][0])
-            goto next_0;
-
-          for (c = cell.contents; c < &cell.contents[cell.n_contents]; c++)
-            {
-              int i;
-
-              for (i = 0; i < c->n_footnotes; i++)
-                {
-                  char marker[16];
-
-                  put_tfoot (html, t, &tfoot);
-                  str_format_26adic (++footnote_idx, false, marker, sizeof marker);
-                  fprintf (html->file, "<SUP>%s</SUP> ", marker);
-                  escape_string (html->file, c->footnotes[i],
-                                 strlen (c->footnotes[i]), " ", "<BR>");
-                }
-            }
-
-	next_0:
-          x = cell.d[TABLE_HORZ][1];
-          table_cell_free (&cell);
-        }
-    }
+  for (size_t i = 0; i < n_footnotes; i++)
+    if (f[i])
+      {
+        put_tfoot (html, t, &tfoot);
+        fputs ("<SUP>", html->file);
+        escape_string (html->file, f[i]->marker, strlen (f[i]->marker),
+                       " ", "<BR>");
+        fputs ("</SUP> ", html->file);
+        escape_string (html->file, f[i]->content, strlen (f[i]->content),
+                       " ", "<BR>");
+      }
+  free (f);
   if (tfoot)
     fputs ("</TD></TR></TFOOT>\n", html->file);
-  footnote_idx = 0;
 
   fputs ("<TBODY VALIGN=\"TOP\">\n", html->file);
 
-  if (title != NULL)
+  const struct table_item_text *title = table_item_get_title (item);
+  if (title)
     {
       fputs ("  <CAPTION>", html->file);
-      escape_string (html->file, title, strlen (title), " ", "<BR>");
+      html_put_table_item_text (html, title);
       fputs ("</CAPTION>\n", html->file);
     }
 
@@ -524,7 +533,6 @@ html_output_table (struct html_driver *html, const struct table_item *item)
           for (c = cell.contents; c < &cell.contents[cell.n_contents]; c++)
             {
               const char *s = c->text;
-              int i;
 
               if (c->options & TAB_EMPH)
                 fputs ("<EM>", html->file);
@@ -542,21 +550,7 @@ html_output_table (struct html_driver *html, const struct table_item *item)
               if (c->options & TAB_EMPH)
                 fputs ("</EM>", html->file);
 
-              if (c->n_footnotes > 0)
-                {
-                  fputs ("<SUP>", html->file);
-                  for (i = 0; i < c->n_footnotes; i++)
-                    {
-                      char marker[16];
-
-                      if (i > 0)
-                        putc (',', html->file);
-                      str_format_26adic (++footnote_idx, false,
-                                         marker, sizeof marker);
-                      fputs (marker, html->file);
-                    }
-                  fputs ("</SUP>", html->file);
-                }
+              html_put_footnote_markers (html, c->footnotes, c->n_footnotes);
             }
 
           /* Output </TH> or </TD>. */

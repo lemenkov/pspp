@@ -19,6 +19,15 @@
 
 #include "output/table.h"
 
+struct string;
+
+struct footnote
+  {
+    size_t idx;
+    char *content;
+    char *marker;
+  };
+
 /* An item of contents within a table cell. */
 struct cell_contents
   {
@@ -26,9 +35,12 @@ struct cell_contents
     char *text;                 /* A paragraph of text. */
 
     /* Optional footnote(s). */
-    char **footnotes;
+    const struct footnote **footnotes;
     size_t n_footnotes;
   };
+
+void cell_contents_format_footnote_markers (const struct cell_contents *,
+                                            struct string *);
 
 /* A cell in a table. */
 struct table_cell
@@ -194,5 +206,7 @@ void table_set_nr (struct table *, int nr);
 
 void table_get_cell (const struct table *, int x, int y, struct table_cell *);
 int table_get_rule (const struct table *, enum table_axis, int x, int y);
+size_t table_collect_footnotes (const struct table_item *,
+                                const struct footnote ***);
 
 #endif /* output/table-provider.h */
