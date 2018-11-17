@@ -361,13 +361,45 @@ escape_string (FILE *file,
     }
 }
 
-static void
-put_border (FILE *file, int n_borders, int style, const char *border_name)
+static const char *
+border_to_css (int border)
 {
-  fprintf (file, "%sborder-%s: %s",
-           n_borders == 0 ? " STYLE=\"" : "; ",
-           border_name,
-           style == TAL_1 ? "thin solid" : "double");
+  switch (border)
+    {
+    case TAL_NONE:
+      return NULL;
+
+    case TAL_SOLID:
+      return "solid";
+
+    case TAL_DASHED:
+      return "dashed";
+
+    case TAL_THICK:
+      return "thick solid";
+
+    case TAL_THIN:
+      return "thin solid";
+
+    case TAL_DOUBLE:
+      return "double";
+
+    default:
+      return NULL;
+    }
+
+}
+
+static void
+put_border (FILE *file, int *n_borders, int style, const char *border_name)
+{
+  const char *css = border_to_css (style);
+  if (css)
+    {
+      fprintf (file, "%sborder-%s: %s",
+               (*n_borders)++ == 0 ? " STYLE=\"" : "; ",
+               border_name, css);
+    }
 }
 
 static void
@@ -467,7 +499,7 @@ html_output_table (struct html_driver *html, const struct table_item *item)
           const char *tag;
           bool is_header;
           int colspan, rowspan;
-          int top, left, right, bottom, n_borders;
+          int top, left, right, bottom;
 
           table_get_cell (t, x, y, &cell);
           if (x != cell.d[TABLE_HORZ][0] || y != cell.d[TABLE_VERT][0])
@@ -506,28 +538,24 @@ html_output_table (struct html_driver *html, const struct table_item *item)
 	  if (html->borders)
 	    {
 	      /* Cell borders. */
-	      n_borders = 0;
+	      int n_borders = 0;
 
 	      top = table_get_rule (t, TABLE_VERT, x, y);
-	      if (top > TAL_0)
-		put_border (html->file, n_borders++, top, "top");
+              put_border (html->file, &n_borders, top, "top");
 
 	      if (y + rowspan == table_nr (t))
 		{
 		  bottom = table_get_rule (t, TABLE_VERT, x, y + rowspan);
-		  if (bottom > TAL_0)
-		    put_border (html->file, n_borders++, bottom, "bottom");
+                  put_border (html->file, &n_borders, bottom, "bottom");
 		}
 
 	      left = table_get_rule (t, TABLE_HORZ, x, y);
-	      if (left > TAL_0)
-		put_border (html->file, n_borders++, left, "left");
+              put_border (html->file, &n_borders, left, "left");
 
 	      if (x + colspan == table_nc (t))
 		{
 		  right = table_get_rule (t, TABLE_HORZ, x + colspan, y);
-		  if (right > TAL_0)
-		    put_border (html->file, n_borders++, right, "right");
+                  put_border (html->file, &n_borders, right, "right");
 		}
 
 	      if (n_borders > 0)

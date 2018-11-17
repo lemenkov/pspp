@@ -458,11 +458,17 @@ rule_to_render_type (unsigned char type)
 {
   switch (type)
     {
-    case TAL_0:
+    case TAL_NONE:
       return RENDER_LINE_NONE;
-    case TAL_1:
+    case TAL_SOLID:
       return RENDER_LINE_SINGLE;
-    case TAL_2:
+    case TAL_DASHED:
+      return RENDER_LINE_DASHED;
+    case TAL_THICK:
+      return RENDER_LINE_THICK;
+    case TAL_THIN:
+      return RENDER_LINE_THIN;
+    case TAL_DOUBLE:
       return RENDER_LINE_DOUBLE;
     default:
       NOT_REACHED ();
@@ -478,7 +484,6 @@ measure_rule (const struct render_params *params, const struct table *table,
   enum table_axis b = !a;
   unsigned int rules;
   int d[TABLE_N_AXES];
-  int width;
 
   /* Determine all types of rules that are present, as a bitmap in 'rules'
      where rule type 't' is present if bit 2**t is set. */
@@ -491,20 +496,18 @@ measure_rule (const struct render_params *params, const struct table *table,
      if the device doesn't support margins, make sure that there is at least a
      small gap between cells (but we don't need any at the left or right edge
      of the table). */
-  if (rules & (1u << TAL_0))
+  if (rules & (1u << TAL_NONE))
     {
-      rules &= ~(1u << TAL_0);
+      rules &= ~(1u << TAL_NONE);
       if (z > 0 && z < table->n[a] && !params->supports_margins && a == H)
-        rules |= 1u << TAL_1;
+        rules |= 1u << TAL_SOLID;
     }
 
   /* Calculate maximum width of the rules that are present. */
-  width = 0;
-  if (rules & (1u << TAL_1)
-      || (z > 0 && z < table->n[a] && rules & (1u << TAL_0)))
-    width = params->line_widths[a][RENDER_LINE_SINGLE];
-  if (rules & (1u << TAL_2))
-    width = MAX (width, params->line_widths[a][RENDER_LINE_DOUBLE]);
+  int width = 0;
+  for (size_t i = 0; i < N_LINES; i++)
+    if (rules & (1u << i))
+      width = MAX (width, params->line_widths[a][rule_to_render_type (i)]);
   return width;
 }
 

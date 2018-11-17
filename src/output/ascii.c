@@ -60,8 +60,16 @@
 #define H TABLE_HORZ
 #define V TABLE_VERT
 
-#define N_BOX (RENDER_N_LINES * RENDER_N_LINES \
-               * RENDER_N_LINES * RENDER_N_LINES)
+enum
+  {
+    ASCII_LINE_NONE,
+    ASCII_LINE_SINGLE,
+    ASCII_LINE_DOUBLE,
+    ASCII_N_LINES
+  };
+
+#define N_BOX (ASCII_N_LINES * ASCII_N_LINES \
+               * ASCII_N_LINES * ASCII_N_LINES)
 
 static const ucs4_t ascii_box_chars[N_BOX] =
   {
@@ -125,18 +133,43 @@ static const ucs4_t unicode_box_chars[N_BOX] =
     0x2566, 0x256c, 0x256c,
   };
 
-static inline int
-make_box_index (int left, int right, int top, int bottom)
+static int
+ascii_line_from_render_line (int render_line)
 {
-  int start_side = left;
-  int end_side = right;
-  if (render_direction_rtl ())
+  switch (render_line)
     {
-      start_side = right;
-      end_side = left;
+    case RENDER_LINE_NONE:
+      return ASCII_LINE_NONE;
+
+    case RENDER_LINE_SINGLE:
+    case RENDER_LINE_DASHED:
+    case RENDER_LINE_THICK:
+    case RENDER_LINE_THIN:
+      return ASCII_LINE_SINGLE;
+
+    case RENDER_LINE_DOUBLE:
+      return ASCII_LINE_DOUBLE;
+
+    default:
+      return ASCII_LINE_NONE;
     }
 
-  return ((end_side * RENDER_N_LINES + bottom) * RENDER_N_LINES + start_side) * RENDER_N_LINES + top;
+}
+
+static int
+make_box_index (int left_, int right_, int top_, int bottom_)
+{
+  bool rtl = render_direction_rtl ();
+  int left = ascii_line_from_render_line (rtl ? right_ : left_);
+  int right = ascii_line_from_render_line (rtl ? left_ : right_);
+  int top = ascii_line_from_render_line (top_);
+  int bottom = ascii_line_from_render_line (bottom_);
+
+  int idx = right;
+  idx = idx * ASCII_N_LINES + bottom;
+  idx = idx * ASCII_N_LINES + left;
+  idx = idx * ASCII_N_LINES + top;
+  return idx;
 }
 
 /* How to emphasize text. */

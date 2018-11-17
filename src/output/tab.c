@@ -45,11 +45,8 @@
 #define _(msgid) gettext (msgid)
 
 
-#if DEBUGGING
 static const bool debugging = true;
-#else
-static const bool debugging = false;
-#endif
+
 
 /* Cell options. */
 #define TAB_JOIN     (1u << TAB_FIRST_AVAILABLE)

@@ -283,10 +283,10 @@ apply_options (struct xr_driver *xr, struct string_map *o)
   xr->fonts[XR_FONT_FIXED].desc = parse_font (d, o, "fixed-font", "monospace",
                                               font_size);
   xr->fonts[XR_FONT_PROPORTIONAL].desc = parse_font (d, o, "prop-font",
-                                                     "serif", font_size);
+                                                     "sans serif", font_size);
   xr->fonts[XR_FONT_EMPHASIS].desc = parse_font (d, o, "emph-font",
-                                                 "serif italic", font_size);
-  xr->fonts[XR_FONT_MARKER].desc = parse_font (d, o, "marker-font", "serif",
+                                                 "sans serif italic", font_size);
+  xr->fonts[XR_FONT_MARKER].desc = parse_font (d, o, "marker-font", "sans serif",
                                                font_size * PANGO_SCALE_X_SMALL);
 
   xr->line_gutter = XR_POINT / 2;
@@ -375,8 +375,6 @@ xr_set_cairo (struct xr_driver *xr, cairo_t *cairo)
 
   if (xr->params == NULL)
     {
-      int single_width, double_width;
-
       xr->params = xmalloc (sizeof *xr->params);
       xr->params->draw_line = xr_draw_line;
       xr->params->measure_cell_width = xr_measure_cell_width;
@@ -389,13 +387,17 @@ xr_set_cairo (struct xr_driver *xr, cairo_t *cairo)
       xr->params->font_size[H] = xr->char_width;
       xr->params->font_size[V] = xr->char_height;
 
-      single_width = 2 * xr->line_gutter + xr->line_width;
-      double_width = 2 * xr->line_gutter + xr->line_space + 2 * xr->line_width;
+      int lg = xr->line_gutter;
+      int lw = xr->line_width;
+      int ls = xr->line_space;
       for (i = 0; i < TABLE_N_AXES; i++)
         {
           xr->params->line_widths[i][RENDER_LINE_NONE] = 0;
-          xr->params->line_widths[i][RENDER_LINE_SINGLE] = single_width;
-          xr->params->line_widths[i][RENDER_LINE_DOUBLE] = double_width;
+          xr->params->line_widths[i][RENDER_LINE_SINGLE] = 2 * lg + lw;
+          xr->params->line_widths[i][RENDER_LINE_DASHED] = 2 * lg + lw;
+          xr->params->line_widths[i][RENDER_LINE_THICK] = 2 * lg + lw * 3;
+          xr->params->line_widths[i][RENDER_LINE_THIN] = 2 * lg + lw / 2;
+          xr->params->line_widths[i][RENDER_LINE_DOUBLE] = 2 * (lg + lw) + ls;
         }
 
       for (i = 0; i < TABLE_N_AXES; i++)
@@ -640,9 +642,14 @@ xr_layout_cell (struct xr_driver *, const struct table_cell *,
                 int *width, int *height, int *brk);
 
 static void
-dump_line (struct xr_driver *xr, int x0, int y0, int x1, int y1)
+dump_line (struct xr_driver *xr, int x0, int y0, int x1, int y1, int style)
 {
   cairo_new_path (xr->cairo);
+  cairo_set_line_width (
+    xr->cairo,
+    xr_to_pt (style == RENDER_LINE_THICK ? xr->line_width * 3
+              : style == RENDER_LINE_THIN ? xr->line_width / 2
+              : xr->line_width));
   cairo_move_to (xr->cairo, xr_to_pt (x0 + xr->x), xr_to_pt (y0 + xr->y));
   cairo_line_to (xr->cairo, xr_to_pt (x1 + xr->x), xr_to_pt (y1 + xr->y));
   cairo_stroke (xr->cairo);
@@ -652,6 +659,7 @@ static void UNUSED
 dump_rectangle (struct xr_driver *xr, int x0, int y0, int x1, int y1)
 {
   cairo_new_path (xr->cairo);
+  cairo_set_line_width (xr->cairo, xr_to_pt (xr->line_width));
   cairo_move_to (xr->cairo, xr_to_pt (x0 + xr->x), xr_to_pt (y0 + xr->y));
   cairo_line_to (xr->cairo, xr_to_pt (x1 + xr->x), xr_to_pt (y0 + xr->y));
   cairo_line_to (xr->cairo, xr_to_pt (x1 + xr->x), xr_to_pt (y1 + xr->y));
@@ -670,13 +678,13 @@ horz_line (struct xr_driver *xr, int x0, int x1, int x2, int x3, int y,
            bool shorten)
 {
   if (left != RENDER_LINE_NONE && right != RENDER_LINE_NONE && !shorten)
-    dump_line (xr, x0, y, x3, y);
+    dump_line (xr, x0, y, x3, y, left);
   else
     {
       if (left != RENDER_LINE_NONE)
-        dump_line (xr, x0, y, shorten ? x1 : x2, y);
+        dump_line (xr, x0, y, shorten ? x1 : x2, y, left);
       if (right != RENDER_LINE_NONE)
-        dump_line (xr, shorten ? x2 : x1, y, x3, y);
+        dump_line (xr, shorten ? x2 : x1, y, x3, y, right);
     }
 }
 
@@ -690,13 +698,13 @@ vert_line (struct xr_driver *xr, int y0, int y1, int y2, int y3, int x,
            bool shorten)
 {
   if (top != RENDER_LINE_NONE && bottom != RENDER_LINE_NONE && !shorten)
-    dump_line (xr, x, y0, x, y3);
+    dump_line (xr, x, y0, x, y3, top);
   else
     {
       if (top != RENDER_LINE_NONE)
-        dump_line (xr, x, y0, x, shorten ? y1 : y2);
+        dump_line (xr, x, y0, x, shorten ? y1 : y2, top);
       if (bottom != RENDER_LINE_NONE)
-        dump_line (xr, x, shorten ? y2 : y1, x, y3);
+        dump_line (xr, x, shorten ? y2 : y1, x, y3, bottom);
     }
 }
 
@@ -1082,7 +1090,9 @@ xr_layout_cell_text (struct xr_driver *xr,
             {
               cairo_save (xr->cairo);
               cairo_set_source_rgb (xr->cairo, 0, 1, 0);
-              dump_line (xr, -xr->left_margin, best, xr->width + xr->right_margin, best);
+              dump_line (xr, -xr->left_margin, best,
+                         xr->width + xr->right_margin, best,
+                         RENDER_LINE_SINGLE);
               cairo_restore (xr->cairo);
             }
         }

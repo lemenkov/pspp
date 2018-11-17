@@ -25,9 +25,12 @@ struct table_item;
 
 enum render_line_style
   {
-    RENDER_LINE_NONE,           /* No line. */
-    RENDER_LINE_SINGLE,         /* Single line. */
-    RENDER_LINE_DOUBLE,         /* Double line. */
+    RENDER_LINE_NONE,
+    RENDER_LINE_SINGLE,
+    RENDER_LINE_DASHED,
+    RENDER_LINE_THICK,
+    RENDER_LINE_THIN,
+    RENDER_LINE_DOUBLE,
     RENDER_N_LINES
   };
 

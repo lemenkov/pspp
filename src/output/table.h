@@ -73,9 +73,15 @@ enum
 /* Styles for the rules around table cells. */
 enum
   {
-    TAL_0,			/* No line. */
-    TAL_1,			/* Single line. */
-    TAL_2,			/* Double line. */
+    TAL_NONE,			/* No spacing. */
+#define TAL_0 TAL_NONE
+    TAL_SOLID,
+#define TAL_1 TAL_SOLID
+    TAL_DASHED,
+    TAL_THICK,
+    TAL_THIN,
+    TAL_DOUBLE,
+#define TAL_2 TAL_DOUBLE
     N_LINES
   };
 
