@@ -171,9 +171,9 @@ enum_to_string (const GValue *src, GValue *dest)
 
 
 
-GType align_enum_type;
-GType measure_enum_type;
-GType role_enum_type;
+extern GType align_enum_type;
+extern GType measure_enum_type;
+extern GType role_enum_type;
 
 
 extern const GEnumValue align[];
