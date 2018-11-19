@@ -255,7 +255,8 @@ AT_CLEANUP
 
 AT_SETUP([DATE input format])
 AT_KEYWORDS([data-in])
-AT_CHECK([python $top_srcdir/tests/data/test-date-input.py date d-m-y])
+AT_SKIP_IF([test "$PYTHON" = none])
+AT_CHECK([$PYTHON $top_srcdir/tests/data/test-date-input.py date d-m-y])
 AT_FAIL_IF([test ! -s date.sps || test ! -s date.input || test ! -s expout])
 AT_CHECK([pspp -O format=csv date.sps])
 AT_CHECK([cat date.output], [0], [expout])
@@ -263,7 +264,8 @@ AT_CLEANUP
 
 AT_SETUP([ADATE input format])
 AT_KEYWORDS([data-in])
-AT_CHECK([python $top_srcdir/tests/data/test-date-input.py adate m-d-y])
+AT_SKIP_IF([test "$PYTHON" = none])
+AT_CHECK([$PYTHON $top_srcdir/tests/data/test-date-input.py adate m-d-y])
 AT_FAIL_IF([test ! -s adate.sps || test ! -s adate.input || test ! -s expout])
 AT_CHECK([pspp -O format=csv adate.sps])
 AT_CHECK([cat adate.output], [0], [expout])
@@ -271,7 +273,8 @@ AT_CLEANUP
 
 AT_SETUP([EDATE input format])
 AT_KEYWORDS([data-in])
-AT_CHECK([python $top_srcdir/tests/data/test-date-input.py edate d-m-y])
+AT_SKIP_IF([test "$PYTHON" = none])
+AT_CHECK([$PYTHON $top_srcdir/tests/data/test-date-input.py edate d-m-y])
 AT_FAIL_IF([test ! -s edate.sps || test ! -s edate.input || test ! -s expout])
 AT_CHECK([pspp -O format=csv edate.sps])
 AT_CHECK([cat edate.output], [0], [expout])
@@ -279,7 +282,8 @@ AT_CLEANUP
 
 AT_SETUP([JDATE input format])
 AT_KEYWORDS([data-in])
-AT_CHECK([python $top_srcdir/tests/data/test-date-input.py jdate j])
+AT_SKIP_IF([test "$PYTHON" = none])
+AT_CHECK([$PYTHON $top_srcdir/tests/data/test-date-input.py jdate j])
 AT_FAIL_IF([test ! -s jdate.sps || test ! -s jdate.input || test ! -s expout])
 AT_CHECK([pspp -O format=csv jdate.sps])
 AT_CHECK([cat jdate.output], [0], [expout])
@@ -287,7 +291,8 @@ AT_CLEANUP
 
 AT_SETUP([SDATE input format])
 AT_KEYWORDS([data-in])
-AT_CHECK([python $top_srcdir/tests/data/test-date-input.py sdate y-m-d])
+AT_SKIP_IF([test "$PYTHON" = none])
+AT_CHECK([$PYTHON $top_srcdir/tests/data/test-date-input.py sdate y-m-d])
 AT_FAIL_IF([test ! -s sdate.sps || test ! -s sdate.input || test ! -s expout])
 AT_CHECK([pspp -O format=csv sdate.sps])
 AT_CHECK([cat sdate.output], [0], [expout])
@@ -295,7 +300,8 @@ AT_CLEANUP
 
 AT_SETUP([QYR input format])
 AT_KEYWORDS([data-in])
-AT_CHECK([python $top_srcdir/tests/data/test-date-input.py qyr qQy])
+AT_SKIP_IF([test "$PYTHON" = none])
+AT_CHECK([$PYTHON $top_srcdir/tests/data/test-date-input.py qyr qQy])
 AT_FAIL_IF([test ! -s qyr.sps || test ! -s qyr.input || test ! -s expout])
 AT_CHECK([pspp -O format=csv qyr.sps])
 AT_CHECK([cat qyr.output], [0], [expout])
@@ -303,7 +309,8 @@ AT_CLEANUP
 
 AT_SETUP([MOYR input format])
 AT_KEYWORDS([data-in])
-AT_CHECK([python $top_srcdir/tests/data/test-date-input.py moyr m-y])
+AT_SKIP_IF([test "$PYTHON" = none])
+AT_CHECK([$PYTHON $top_srcdir/tests/data/test-date-input.py moyr m-y])
 AT_FAIL_IF([test ! -s moyr.sps || test ! -s moyr.input || test ! -s expout])
 AT_CHECK([pspp -O format=csv moyr.sps])
 AT_CHECK([cat moyr.output], [0], [expout])
@@ -311,7 +318,8 @@ AT_CLEANUP
 
 AT_SETUP([WKYR input format])
 AT_KEYWORDS([data-in])
-AT_CHECK([python $top_srcdir/tests/data/test-date-input.py wkyr wWy])
+AT_SKIP_IF([test "$PYTHON" = none])
+AT_CHECK([$PYTHON $top_srcdir/tests/data/test-date-input.py wkyr wWy])
 AT_FAIL_IF([test ! -s wkyr.sps || test ! -s wkyr.input || test ! -s expout])
 AT_CHECK([pspp -O format=csv wkyr.sps])
 AT_CHECK([cat wkyr.output], [0], [expout])
@@ -319,7 +327,8 @@ AT_CLEANUP
 
 AT_SETUP([DATETIME input format])
 AT_KEYWORDS([data-in])
-AT_CHECK([python $top_srcdir/tests/data/test-date-input.py datetime "d-m-y +H:M" "d-m-y +H:M:S"])
+AT_SKIP_IF([test "$PYTHON" = none])
+AT_CHECK([$PYTHON $top_srcdir/tests/data/test-date-input.py datetime "d-m-y +H:M" "d-m-y +H:M:S"])
 AT_FAIL_IF([test ! -s datetime.sps || test ! -s datetime.input || \
             test ! -s expout])
 AT_CHECK([pspp -O format=csv datetime.sps])
@@ -328,7 +337,8 @@ AT_CLEANUP
 
 AT_SETUP([YMDHMS input format])
 AT_KEYWORDS([data-in])
-AT_CHECK([python $top_srcdir/tests/data/test-date-input.py ymdhms "y-m-d +H:M" "y-m-d +H:M:S"])
+AT_SKIP_IF([test "$PYTHON" = none])
+AT_CHECK([$PYTHON $top_srcdir/tests/data/test-date-input.py ymdhms "y-m-d +H:M" "y-m-d +H:M:S"])
 AT_FAIL_IF([test ! -s ymdhms.sps || test ! -s ymdhms.input || \
             test ! -s expout])
 AT_CHECK([pspp -O format=csv ymdhms.sps])
@@ -337,7 +347,8 @@ AT_CLEANUP
 
 AT_SETUP([MTIME input format])
 AT_KEYWORDS([data-in])
-AT_CHECK([python $top_srcdir/tests/data/test-time-input.py mtime +M:S])
+AT_SKIP_IF([test "$PYTHON" = none])
+AT_CHECK([$PYTHON $top_srcdir/tests/data/test-time-input.py mtime +M:S])
 AT_FAIL_IF([test ! -s mtime.sps || test ! -s mtime.input || test ! -s expout])
 AT_CHECK([pspp -O format=csv mtime.sps])
 AT_CHECK([cat mtime.output], [0], [expout])
@@ -345,7 +356,8 @@ AT_CLEANUP
 
 AT_SETUP([TIME input format])
 AT_KEYWORDS([data-in])
-AT_CHECK([python $top_srcdir/tests/data/test-time-input.py time +H:M +H:M:S])
+AT_SKIP_IF([test "$PYTHON" = none])
+AT_CHECK([$PYTHON $top_srcdir/tests/data/test-time-input.py time +H:M +H:M:S])
 AT_FAIL_IF([test ! -s time.sps || test ! -s time.input || test ! -s expout])
 AT_CHECK([pspp -O format=csv time.sps])
 AT_CHECK([cat time.output], [0], [expout])
@@ -353,7 +365,8 @@ AT_CLEANUP
 
 AT_SETUP([DTIME input format])
 AT_KEYWORDS([data-in])
-AT_CHECK([python $top_srcdir/tests/data/test-time-input.py dtime  '+D H:M' '+D H:M:S'])
+AT_SKIP_IF([test "$PYTHON" = none])
+AT_CHECK([$PYTHON $top_srcdir/tests/data/test-time-input.py dtime  '+D H:M' '+D H:M:S'])
 AT_FAIL_IF([test ! -s dtime.sps || test ! -s dtime.input || test ! -s expout])
 AT_CHECK([pspp -O format=csv dtime.sps])
 AT_CHECK([cat dtime.output], [0], [expout])

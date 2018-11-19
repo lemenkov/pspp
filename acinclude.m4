@@ -43,6 +43,11 @@ AC_DEFUN([PSPP_PERL],
   AC_SUBST([VERSION_FOR_PERL])
 ])
 
+dnl Check that Python 2 or 3 is available.
+AC_DEFUN([PSPP_PYTHON],
+  [AC_ARG_VAR([PYTHON], [Python 2 or 3 interpreter])
+   AC_CHECK_PROGS([PYTHON], [python python2 python3], [none])])
+
 dnl PSPP_CHECK_CC_OPTION([OPTION], [ACTION-IF-ACCEPTED], [ACTION-IF-REJECTED])
 dnl Check whether the given C compiler OPTION is accepted.
 dnl If so, execute ACTION-IF-ACCEPTED, otherwise ACTION-IF-REJECTED.

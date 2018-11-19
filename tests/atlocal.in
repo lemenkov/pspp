@@ -21,6 +21,7 @@
 # Variables used internally by the testsuite.
 EXEEXT='@EXEEXT@'
 PERL='@PERL@'
+PYTHON='@PYTHON@'
 WITH_PERL_MODULE='@WITH_PERL_MODULE@'
 host='@host@'
 PACKAGE_STRING='@PACKAGE_STRING@'
