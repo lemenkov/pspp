@@ -68,7 +68,7 @@ struct tab_table
        however, it is a joined cell and the corresponding element of cc[]
        points to a struct tab_joined_cell. */
     void **cc;                  /* Cell contents; void *[nr][nc]. */
-    unsigned char *ct;		/* Cell types; unsigned char[nr][nc]. */
+    unsigned short *ct;		/* Cell types; unsigned short[nr][nc]. */
 
     /* Rules. */
     unsigned char *rh;		/* Horiz rules; unsigned char[nr+1][nc]. */
@@ -125,11 +125,11 @@ void tab_set_format (struct tab_table *, enum result_class, const struct fmt_spe
 struct fmt_spec;
 struct dictionary;
 union value;
-void tab_value (struct tab_table *, int c, int r, unsigned char opt,
+void tab_value (struct tab_table *, int c, int r, unsigned short opt,
 		const union value *, const struct variable *,
 		const struct fmt_spec *);
 
-void tab_double (struct tab_table *, int c, int r, unsigned char opt,
+void tab_double (struct tab_table *, int c, int r, unsigned short opt,
 		 double v, const struct fmt_spec *, enum result_class );
 
 void tab_text (struct tab_table *, int c, int r, unsigned opt, const char *);

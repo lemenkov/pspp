@@ -95,8 +95,7 @@ tab_create (int nc, int nr)
   t->caption = NULL;
   t->cf = nc;
   t->cc = pool_calloc (t->container, nr * nc, sizeof *t->cc);
-  t->ct = pool_malloc (t->container, nr * nc);
-  memset (t->ct, 0, nc * nr);
+  t->ct = pool_calloc (t->container, nr * nc, sizeof *t->ct);
 
   t->rh = pool_nmalloc (t->container, nc, nr + 1);
   memset (t->rh, TAL_0, nc * (nr + 1));
@@ -173,7 +172,7 @@ tab_realloc (struct tab_table *t, int nc, int nr)
       int mc1 = MIN (nc, tab_nc (t));
 
       void **new_cc;
-      unsigned char *new_ct;
+      unsigned short *new_ct;
       int r;
 
       new_cc = pool_calloc (t->container, nr * nc, sizeof *new_cc);
@@ -182,7 +181,8 @@ tab_realloc (struct tab_table *t, int nc, int nr)
         {
           memcpy (&new_cc[r * nc], &t->cc[r * tab_nc (t)],
                   mc1 * sizeof *t->cc);
-          memcpy (&new_ct[r * nc], &t->ct[r * tab_nc (t)], mc1);
+          memcpy (&new_ct[r * nc], &t->ct[r * tab_nc (t)],
+                  mc1 * sizeof *t->ct);
           memset (&new_ct[r * nc + tab_nc (t)], 0, nc - tab_nc (t));
         }
       pool_free (t->container, t->cc);
@@ -194,7 +194,7 @@ tab_realloc (struct tab_table *t, int nc, int nr)
   else if (nr != tab_nr (t))
     {
       t->cc = pool_nrealloc (t->container, t->cc, nr * nc, sizeof *t->cc);
-      t->ct = pool_realloc (t->container, t->ct, nr * nc);
+      t->ct = pool_nrealloc (t->container, t->ct, nr * nc, sizeof *t->ct);
 
       t->rh = pool_nrealloc (t->container, t->rh, nc, nr + 1);
       t->rv = pool_nrealloc (t->container, t->rv, nr, nc + 1);
@@ -208,7 +208,7 @@ tab_realloc (struct tab_table *t, int nc, int nr)
         }
     }
 
-  memset (&t->ct[nc * tab_nr (t)], 0, nc * (nr - tab_nr (t)));
+  memset (&t->ct[nc * tab_nr (t)], 0, nc * (nr - tab_nr (t)) * sizeof *t->ct);
   memset (&t->cc[nc * tab_nr (t)], 0, nc * (nr - tab_nr (t)) * sizeof *t->cc);
 
   table_set_nr (&t->table, nr);
@@ -398,7 +398,7 @@ tab_box (struct tab_table *t, int f_h, int f_v, int i_h, int i_v,
 /* Sets cell (C,R) in TABLE, with options OPT, to have a value taken
    from V, displayed with format spec F. */
 void
-tab_value (struct tab_table *table, int c, int r, unsigned char opt,
+tab_value (struct tab_table *table, int c, int r, unsigned short opt,
            const union value *v, const struct variable *var,
            const struct fmt_spec *f)
 {
@@ -432,7 +432,7 @@ tab_value (struct tab_table *table, int c, int r, unsigned char opt,
    If FMT is null, then the default print format will be used.
 */
 void
-tab_double (struct tab_table *table, int c, int r, unsigned char opt,
+tab_double (struct tab_table *table, int c, int r, unsigned short opt,
             double val, const struct fmt_spec *fmt, enum result_class rc)
 {
   union value double_value;
@@ -563,7 +563,7 @@ add_joined_cell (struct tab_table *table, int x1, int y1, int x2, int y2,
 
   {
     void **cc = &table->cc[x1 + y1 * table->cf];
-    unsigned char *ct = &table->ct[x1 + y1 * table->cf];
+    unsigned short *ct = &table->ct[x1 + y1 * table->cf];
     const int ofs = table->cf - (x2 - x1);
 
     int y;
@@ -632,7 +632,7 @@ tab_add_footnote (struct tab_table *table, int x, int y,
                   const struct footnote *f)
 {
   int index = x + y * table->cf;
-  unsigned char opt = table->ct[index];
+  unsigned short opt = table->ct[index];
   struct tab_joined_cell *j;
 
   if (opt & TAB_JOIN)
@@ -786,7 +786,7 @@ tab_get_cell (const struct table *table, int x, int y,
 {
   const struct tab_table *t = tab_cast (table);
   int index = x + y * t->cf;
-  unsigned char opt = t->ct[index];
+  unsigned short opt = t->ct[index];
   const void *cc = t->cc[index];
 
   cell->inline_contents.options = opt;
