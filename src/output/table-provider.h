@@ -17,6 +17,7 @@
 #ifndef OUTPUT_TABLE_PROVIDER
 #define OUTPUT_TABLE_PROVIDER 1
 
+#include <stdint.h>
 #include "output/table.h"
 
 struct string;
@@ -41,6 +42,26 @@ struct cell_contents
 
 void cell_contents_format_footnote_markers (const struct cell_contents *,
                                             struct string *);
+
+struct cell_color
+  {
+    uint8_t r, g, b;
+  };
+
+#define CELL_COLOR(r, g, b) (struct cell_color) { r, g, b }
+#define CELL_COLOR_BLACK CELL_COLOR (0, 0, 0)
+#define CELL_COLOR_WHITE CELL_COLOR (255, 255, 255)
+
+static inline bool
+cell_color_equal (const struct cell_color *a, const struct cell_color *b)
+{
+  return a->r == b->r && a->g == b->g && a->b == b->b;
+}
+
+struct cell_style
+  {
+    struct cell_color fg, bg;
+  };
 
 /* A cell in a table. */
 struct table_cell
@@ -74,6 +95,8 @@ struct table_cell
     const struct cell_contents *contents;
     size_t n_contents;
     struct cell_contents inline_contents;
+
+    const struct cell_style *style;
 
     /* Called to free the cell's data, if nonnull. */
     void (*destructor) (void *destructor_aux);

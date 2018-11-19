@@ -105,6 +105,8 @@ tab_create (int nc, int nr)
   t->fmtmap[RC_INTEGER] = ugly[RC_INTEGER];
   t->fmtmap[RC_OTHER] = *settings_get_format ();
 
+  memset (t->styles, 0, sizeof t->styles);
+
   t->col_ofs = t->row_ofs = 0;
 
   return t;
@@ -823,6 +825,11 @@ tab_get_cell (const struct table *table, int x, int y,
           cell->n_contents = 0;
         }
     }
+
+  int style_idx = (opt & TAB_STYLE_MASK) >> TAB_STYLE_SHIFT;
+  const struct cell_style *style = t->styles[style_idx];
+  if (style)
+    cell->style = style;
 }
 
 static int

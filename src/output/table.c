@@ -140,6 +140,14 @@ table_get_cell (const struct table *table, int x, int y,
 {
   assert (x >= 0 && x < table->n[TABLE_HORZ]);
   assert (y >= 0 && y < table->n[TABLE_VERT]);
+
+  static const struct cell_style default_style =
+    {
+      .fg = { 0, 0, 0 },
+      .bg = { 255, 255, 255 },
+    };
+  cell->style = &default_style;
+
   table->klass->get_cell (table, x, y, cell);
 }
 

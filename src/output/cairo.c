@@ -371,7 +371,7 @@ xr_set_cairo (struct xr_driver *xr, cairo_t *cairo)
       xr->char_width = MAX (xr->char_width, pango_to_xr (char_width));
       xr->char_height = MAX (xr->char_height, pango_to_xr (char_height));
     }
-  xr->cell_margin = xr->char_width;
+  xr->cell_margin = xr->char_width / 2;
 
   if (xr->params == NULL)
     {
@@ -668,6 +668,17 @@ dump_rectangle (struct xr_driver *xr, int x0, int y0, int x1, int y1)
   cairo_stroke (xr->cairo);
 }
 
+static void
+fill_rectangle (struct xr_driver *xr, int x0, int y0, int x1, int y1)
+{
+  cairo_new_path (xr->cairo);
+  cairo_set_line_width (xr->cairo, xr_to_pt (xr->line_width));
+  cairo_rectangle (xr->cairo,
+                   xr_to_pt (x0 + xr->x), xr_to_pt (y0 + xr->y),
+                   xr_to_pt (x1 - x0), xr_to_pt (y1 - y0));
+  cairo_fill (xr->cairo);
+}
+
 /* Draws a horizontal line X0...X2 at Y if LEFT says so,
    shortening it to X0...X1 if SHORTEN is true.
    Draws a horizontal line X1...X3 at Y if RIGHT says so,
@@ -861,6 +872,8 @@ xr_measure_cell_height (void *xr_, const struct table_cell *cell, int width)
   return h;
 }
 
+static void xr_clip (struct xr_driver *, int clip[TABLE_N_AXES][2]);
+
 static void
 xr_draw_cell (void *xr_, const struct table_cell *cell,
               int bb[TABLE_N_AXES][2], int clip[TABLE_N_AXES][2])
@@ -868,11 +881,26 @@ xr_draw_cell (void *xr_, const struct table_cell *cell,
   struct xr_driver *xr = xr_;
   int w, h, brk;
 
+  cairo_save (xr->cairo);
+  xr_clip (xr, clip);
+  cairo_set_source_rgb (xr->cairo,
+                        cell->style->bg.r / 255.,
+                        cell->style->bg.g / 255.,
+                        cell->style->bg.b / 255.);
+  fill_rectangle (xr, bb[H][0], bb[V][0], bb[H][1], bb[V][1]);
+  cairo_restore (xr->cairo);
+
+  cairo_save (xr->cairo);
+  cairo_set_source_rgb (xr->cairo,
+                        cell->style->fg.r / 255.,
+                        cell->style->fg.g / 255.,
+                        cell->style->fg.b / 255.);
+
   bb[H][0] += xr->cell_margin;
   bb[H][1] -= xr->cell_margin;
-  if (bb[H][0] >= bb[H][1])
-    return;
-  xr_layout_cell (xr, cell, bb, clip, &w, &h, &brk);
+  if (bb[H][0] < bb[H][1])
+    xr_layout_cell (xr, cell, bb, clip, &w, &h, &brk);
+  cairo_restore (xr->cairo);
 }
 
 static int
