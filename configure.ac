@@ -44,6 +44,7 @@ AM_CONDITIONAL(cc_is_gcc, test x"$GCC" = x"yes" )
 
 PSPP_CC_FOR_BUILD
 PSPP_PERL
+PSPP_PYTHON
 
 dnl Disable automatic po/ support, because PSPP provides its own po/ support.
 AC_PROVIDE([AM_PO_SUBDIRS])
