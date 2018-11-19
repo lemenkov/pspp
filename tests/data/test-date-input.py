@@ -50,8 +50,8 @@ def print_all_formats(date, template, formatted, exp_y, exp_m, exp_d,
         global n
         n += 1
         year, month, day, julian, hour, minute, second = date
-        quarter = (month - 1) / 3 + 1
-        week = (julian - 1) / 7 + 1
+        quarter = (month - 1) // 3 + 1
+        week = (julian - 1) // 7 + 1
         if year >= 1930 and year < 2030:
             years = ('%d' % year, '%d' % (year % 100))
         else:
@@ -163,10 +163,10 @@ def print_all_formats(date, template, formatted, exp_y, exp_m, exp_d,
         EPOCH = -577734         # 14 Oct 1582
         expected = (EPOCH - 1
                     + 365 * (exp_y - 1)
-                    + (exp_y - 1) / 4
-                    - (exp_y - 1) / 100
-                    + (exp_y - 1) / 400
-                    + (367 * exp_m - 362) / 12
+                    + (exp_y - 1) // 4
+                    - (exp_y - 1) // 100
+                    + (exp_y - 1) // 400
+                    + (367 * exp_m - 362) // 12
                     + (0 if exp_m <= 2
                        else -1 if exp_m >= 2 and is_leap_year(exp_y)
                        else -2)
