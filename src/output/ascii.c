@@ -172,14 +172,6 @@ make_box_index (int left_, int right_, int top_, int bottom_)
   return idx;
 }
 
-/* How to emphasize text. */
-enum emphasis_style
-  {
-    EMPH_BOLD,                  /* Overstrike for bold. */
-    EMPH_UNDERLINE,             /* Overstrike for underlining. */
-    EMPH_NONE                   /* No emphasis. */
-  };
-
 /* ASCII output driver. */
 struct ascii_driver
   {
@@ -187,7 +179,7 @@ struct ascii_driver
 
     /* User parameters. */
     bool append;                /* Append if output file already exists? */
-    enum emphasis_style emphasis; /* How to emphasize text. */
+    bool emphasis;              /* Enable bold and underline in output? */
     char *chart_file_name;      /* Name of files used for charts. */
 
 #ifdef HAVE_CAIRO
@@ -259,11 +251,7 @@ ascii_create (struct  file_handle *fh, enum settings_output_devices device_type,
   d = &a->driver;
   output_driver_init (&a->driver, &ascii_driver_class, fh_get_file_name (fh), device_type);
   a->append = parse_boolean (opt (d, o, "append", "false"));
-  a->emphasis = parse_enum (opt (d, o, "emphasis", "none"),
-                            "bold", EMPH_BOLD,
-                            "underline", EMPH_UNDERLINE,
-                            "none", EMPH_NONE,
-                            NULL_SENTINEL);
+  a->emphasis = parse_boolean (opt (d, o, "emphasis", "false"));
 
   a->chart_file_name = parse_chart_file_name (opt (d, o, "charts", fh_get_file_name (fh)));
   a->handle = fh;
@@ -651,6 +639,7 @@ ascii_reserve (struct ascii_driver *a, int y, int x0, int x1, int n)
 
 static void
 text_draw (struct ascii_driver *a, unsigned int options,
+           bool bold, bool underline,
            int bb[TABLE_N_AXES][2], int clip[TABLE_N_AXES][2],
            int y, const uint8_t *string, int n, size_t width)
 {
@@ -730,7 +719,7 @@ text_draw (struct ascii_driver *a, unsigned int options,
         return;
     }
 
-  if (!(options & TAB_EMPH) || a->emphasis == EMPH_NONE)
+  if (!a->emphasis || (!bold && !underline))
     memcpy (ascii_reserve (a, y, x, x + width, n), string, n);
   else
     {
@@ -750,7 +739,12 @@ text_draw (struct ascii_driver *a, unsigned int options,
           w = uc_width (uc, "UTF-8");
 
           if (w > 0)
-            n_out += a->emphasis == EMPH_UNDERLINE ? 2 : 1 + mblen;
+            {
+              if (bold)
+                n_out += 1 + mblen;
+              if (underline)
+                n_out += 2;
+            }
         }
 
       /* Then insert them. */
@@ -765,11 +759,16 @@ text_draw (struct ascii_driver *a, unsigned int options,
 
           if (w > 0)
             {
-              if (a->emphasis == EMPH_UNDERLINE)
-                *out++ = '_';
-              else
-                out = mempcpy (out, string + ofs, mblen);
-              *out++ = '\b';
+              if (bold)
+                {
+                  out = mempcpy (out, string + ofs, mblen);
+                  *out++ = '\b';
+                }
+              if (underline)
+                {
+                  *out++ = '_';
+                  *out++ = '\b';
+                }
             }
           out = mempcpy (out, string + ofs, mblen);
         }
@@ -779,6 +778,7 @@ text_draw (struct ascii_driver *a, unsigned int options,
 static int
 ascii_layout_cell_text (struct ascii_driver *a,
                         const struct cell_contents *contents,
+                        bool bold, bool underline,
                         int bb[TABLE_N_AXES][2], int clip[TABLE_N_AXES][2],
                         int *widthp)
 {
@@ -873,7 +873,8 @@ ascii_layout_cell_text (struct ascii_driver *a,
       width -= ofs - graph_ofs;
 
       /* Draw text. */
-      text_draw (a, contents->options, bb, clip, y, line, graph_ofs, width);
+      text_draw (a, contents->options, bold, underline,
+                 bb, clip, y, line, graph_ofs, width);
 
       /* If a new-line ended the line, just skip the new-line.  Otherwise, skip
          past any spaces past the end of the line (but not past a new-line). */
@@ -919,14 +920,16 @@ ascii_layout_cell (struct ascii_driver *a, const struct table_cell *cell,
             break;
         }
 
-      bb[V][0] = ascii_layout_cell_text (a, contents, bb, clip, widthp);
+      bb[V][0] = ascii_layout_cell_text (a, contents, cell->style->bold,
+                                         cell->style->underline,
+                                         bb, clip, widthp);
     }
   *heightp = bb[V][0] - bb_[V][0];
 }
 
 void
 ascii_test_write (struct output_driver *driver,
-                  const char *s, int x, int y, unsigned int options)
+                  const char *s, int x, int y, bool bold, bool underline)
 {
   struct ascii_driver *a = ascii_driver_cast (driver);
   int bb[TABLE_N_AXES][2];
@@ -936,13 +939,17 @@ ascii_test_write (struct output_driver *driver,
     return;
 
   struct cell_contents contents = {
-    .options = options | TAB_LEFT,
+    .options = TAB_LEFT,
     .text = CONST_CAST (char *, s),
   };
-
+  struct cell_style cell_style = {
+    .bold = bold,
+    .underline = underline,
+  };
   struct table_cell cell = {
     .contents = &contents,
     .n_contents = 1,
+    .style = &cell_style,
   };
 
   bb[TABLE_HORZ][0] = x;

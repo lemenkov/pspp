@@ -39,7 +39,8 @@
 static int transpose;
 
 /* --emphasis: ASCII driver emphasis option. */
-static char *emphasis;
+static bool bold;
+static bool underline;
 
 /* --box: ASCII driver box option. */
 static char *box;
@@ -143,8 +144,8 @@ configure_drivers (int width, int length, int min_break)
   if (min_break >= 0)
     string_map_insert_nocopy (&options, xstrdup ("min-hbreak"),
                               xasprintf ("%d", min_break));
-  if (emphasis != NULL)
-    string_map_insert (&options, "emphasis", emphasis);
+  if (bold || underline)
+    string_map_insert (&options, "emphasis", "true");
   if (box != NULL)
     string_map_insert (&options, "box", box);
 
@@ -281,7 +282,23 @@ parse_options (int argc, char **argv)
           break;
 
         case OPT_EMPHASIS:
-          emphasis = optarg;
+          if (!strcmp (optarg, "bold"))
+            {
+              bold = true;
+              underline = false;
+            }
+          else if (!strcmp (optarg, "underline"))
+            {
+              bold = false;
+              underline = true;
+            }
+          else if (!strcmp (optarg, "none"))
+            {
+              bold = underline = false;
+            }
+          else
+            error (1, 0, "argument to --emphasis must be \"bold\" or "
+                   "\"underline\" or \"none\"");
           break;
 
         case OPT_BOX:
@@ -485,7 +502,8 @@ draw (FILE *stream)
         continue;
 
       if (sscanf (buffer, "%d %d %d %[^\n]", &x, &y, &emph, text) == 4)
-        ascii_test_write (ascii_driver, text, x, y, emph ? TAB_EMPH : 0);
+        ascii_test_write (ascii_driver, text, x, y, emph ? bold : false,
+                          emph ? underline : false);
       else if (sscanf (buffer, "set-length %d %d", &y, &length) == 2)
         ascii_test_set_length (ascii_driver, y, length);
       else

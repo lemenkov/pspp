@@ -62,7 +62,26 @@ struct cell_style
   {
     struct cell_color fg, bg;
     int margin[TABLE_N_AXES][2];
+    char *font;
+    int font_size;
+    bool bold, italic, underline;
   };
+
+#define CELL_STYLE_INITIALIZER                                  \
+    {                                                           \
+      .fg = CELL_COLOR_BLACK,                                   \
+      .bg = CELL_COLOR_WHITE,                                   \
+      .margin = { [TABLE_HORZ][0] = 8, [TABLE_HORZ][1] = 11,    \
+                  [TABLE_VERT][0] = 1, [TABLE_VERT][1] = 1 },   \
+      .font = NULL,                                             \
+      .font_size = 0,                                           \
+      .bold = false,                                            \
+      .italic = false,                                          \
+      .underline = false,                                       \
+    }
+
+struct cell_style *cell_style_clone (const struct cell_style *);
+void cell_style_free (struct cell_style *);
 
 /* A cell in a table. */
 struct table_cell

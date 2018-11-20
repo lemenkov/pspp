@@ -25,6 +25,7 @@
 #include "libpspp/assertion.h"
 #include "libpspp/hash-functions.h"
 #include "libpspp/hmap.h"
+#include "libpspp/pool.h"
 #include "output/render.h"
 #include "output/tab.h"
 #include "output/table-item.h"
@@ -1434,6 +1435,12 @@ add_text_page (struct render_pager *p, const struct table_item_text *t)
   tab_text (tab, 0, 0, TAB_LEFT, t->content);
   for (size_t i = 0; i < t->n_footnotes; i++)
     tab_add_footnote (tab, 0, 0, t->footnotes[i]);
+  if (t->style)
+    {
+      tab->styles[0] = pool_clone (tab->container, t->style, sizeof *t->style);
+      if (t->style->font)
+        tab->styles[0]->font = pool_strdup (tab->container, t->style->font);
+    }
   render_pager_add_table (p, &tab->table);
 }
 

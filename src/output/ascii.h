@@ -20,7 +20,7 @@
 struct output_driver;
 
 void ascii_test_write (struct output_driver *,
-                       const char *s, int x, int y, unsigned int options);
+                       const char *s, int x, int y, bool bold, bool underline);
 void ascii_test_set_length (struct output_driver *, int y, int length);
 void ascii_test_flush (struct output_driver *);
 

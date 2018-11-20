@@ -51,6 +51,7 @@ table_item_text_clone (const struct table_item_text *old)
     .footnotes = xmemdup (old->footnotes,
                           old->n_footnotes * sizeof *old->footnotes),
     .n_footnotes = old->n_footnotes,
+    .style = cell_style_clone (old->style),
   };
   return new;
 }
@@ -62,6 +63,7 @@ table_item_text_destroy (struct table_item_text *text)
     {
       free (text->content);
       free (text->footnotes);
+      cell_style_free (text->style);
       free (text);
     }
 }

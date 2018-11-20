@@ -57,6 +57,7 @@
 #include <pango/pangocairo.h>
 #include <stdlib.h>
 
+#include "gl/c-strcase.h"
 #include "gl/intprops.h"
 #include "gl/minmax.h"
 #include "gl/xalloc.h"
@@ -99,7 +100,6 @@ enum xr_font_type
     XR_FONT_PROPORTIONAL,
     XR_FONT_EMPHASIS,
     XR_FONT_FIXED,
-    XR_FONT_MARKER,
     XR_N_FONTS
   };
 
@@ -228,26 +228,14 @@ parse_color (struct output_driver *d, struct string_map *options,
 }
 
 static PangoFontDescription *
-parse_font (struct output_driver *d, struct string_map *options,
-            const char *key, const char *default_value,
-            int default_size)
+parse_font (const char *font, int default_size, bool bold, bool italic)
 {
-  PangoFontDescription *desc;
-  char *string;
+  if (!c_strcasecmp (font, "Monospaced"))
+    font = "Monospace";
 
-  /* Parse KEY as a font description. */
-  string = parse_string (opt (d, options, key, default_value));
-  desc = pango_font_description_from_string (string);
+  PangoFontDescription *desc = pango_font_description_from_string (font);
   if (desc == NULL)
-    {
-      msg (MW, _("`%s': bad font specification"), string);
-
-      /* Fall back to DEFAULT_VALUE, which had better be a valid font
-         description. */
-      desc = pango_font_description_from_string (default_value);
-      assert (desc != NULL);
-    }
-  free (string);
+    return NULL;
 
   /* If the font description didn't include an explicit font size, then set it
      to DEFAULT_SIZE, which is in inch/72000 units. */
@@ -255,9 +243,36 @@ parse_font (struct output_driver *d, struct string_map *options,
     pango_font_description_set_size (desc,
                                      (default_size / 1000.0) * PANGO_SCALE);
 
+  pango_font_description_set_weight (desc, (bold
+                                            ? PANGO_WEIGHT_BOLD
+                                            : PANGO_WEIGHT_NORMAL));
+  pango_font_description_set_style (desc, (italic
+                                           ? PANGO_STYLE_ITALIC
+                                           : PANGO_STYLE_NORMAL));
+
   return desc;
 }
 
+static PangoFontDescription *
+parse_font_option (struct output_driver *d, struct string_map *options,
+                   const char *key, const char *default_value,
+                   int default_size, bool bold, bool italic)
+{
+  char *string = parse_string (opt (d, options, key, default_value));
+  PangoFontDescription *desc = parse_font (string, default_size, bold, italic);
+  if (!desc)
+    {
+      msg (MW, _("`%s': bad font specification"), string);
+
+      /* Fall back to DEFAULT_VALUE, which had better be a valid font
+         description. */
+      desc = parse_font (default_value, default_size, bold, italic);
+      assert (desc != NULL);
+    }
+  free (string);
+
+  return desc;
+}
 
 static void
 apply_options (struct xr_driver *xr, struct string_map *o)
@@ -285,14 +300,12 @@ apply_options (struct xr_driver *xr, struct string_map *o)
     }
 
   font_size = parse_int (opt (d, o, "font-size", "10000"), 1000, 1000000);
-  xr->fonts[XR_FONT_FIXED].desc = parse_font (d, o, "fixed-font", "monospace",
-                                              font_size);
-  xr->fonts[XR_FONT_PROPORTIONAL].desc = parse_font (d, o, "prop-font",
-                                                     "sans serif", font_size);
-  xr->fonts[XR_FONT_EMPHASIS].desc = parse_font (d, o, "emph-font",
-                                                 "sans serif italic", font_size);
-  xr->fonts[XR_FONT_MARKER].desc = parse_font (d, o, "marker-font", "sans serif",
-                                               font_size * PANGO_SCALE_X_SMALL);
+  xr->fonts[XR_FONT_FIXED].desc = parse_font_option
+    (d, o, "fixed-font", "monospace", font_size, false, false);
+  xr->fonts[XR_FONT_PROPORTIONAL].desc = parse_font_option (
+    d, o, "prop-font", "sans serif", font_size, false, false);
+  xr->fonts[XR_FONT_EMPHASIS].desc = parse_font_option (
+    d, o, "emph-font", "sans serif", font_size, false, true);
 
   xr->line_space = XR_POINT;
   xr->line_width = XR_POINT / 2;
@@ -397,7 +410,7 @@ xr_set_cairo (struct xr_driver *xr, cairo_t *cairo)
           xr->params->line_widths[i][RENDER_LINE_NONE] = 0;
           xr->params->line_widths[i][RENDER_LINE_SINGLE] = lw;
           xr->params->line_widths[i][RENDER_LINE_DASHED] = lw;
-          xr->params->line_widths[i][RENDER_LINE_THICK] = lw * 3;
+          xr->params->line_widths[i][RENDER_LINE_THICK] = lw * 2;
           xr->params->line_widths[i][RENDER_LINE_THIN] = lw / 2;
           xr->params->line_widths[i][RENDER_LINE_DOUBLE] = 2 * lw + ls;
         }
@@ -649,7 +662,7 @@ dump_line (struct xr_driver *xr, int x0, int y0, int x1, int y1, int style)
   cairo_new_path (xr->cairo);
   cairo_set_line_width (
     xr->cairo,
-    xr_to_pt (style == RENDER_LINE_THICK ? xr->line_width * 3
+    xr_to_pt (style == RENDER_LINE_THICK ? xr->line_width * 2
               : style == RENDER_LINE_THIN ? xr->line_width / 2
               : xr->line_width));
   cairo_move_to (xr->cairo, xr_to_pt (x0 + xr->x), xr_to_pt (y0 + xr->y));
@@ -984,18 +997,36 @@ xr_layout_cell_text (struct xr_driver *xr,
                      int *widthp, int *brk)
 {
   unsigned int options = contents->options;
-  struct xr_font *font;
-  bool merge_footnotes;
   size_t length;
   int w, h;
 
+  struct xr_font *font = (options & TAB_FIX ? &xr->fonts[XR_FONT_FIXED]
+                          : options & TAB_EMPH ? &xr->fonts[XR_FONT_EMPHASIS]
+                          : &xr->fonts[XR_FONT_PROPORTIONAL]);
+  struct xr_font local_font;
+  if (style->font)
+    {
+      PangoFontDescription *desc = parse_font (
+        style->font,
+        style->font_size ? style->font_size * 1000 * 72 / 128 : 10000,
+        style->bold, style->italic);
+      if (desc)
+        {
+          PangoLayout *layout = pango_cairo_create_layout (xr->cairo);
+          pango_layout_set_font_description (layout, desc);
+
+          local_font.desc = desc;
+          local_font.layout = layout;
+          font = &local_font;
+        }
+    }
+
+  int footnote_adjustment;
   if (contents->n_footnotes == 0)
-    merge_footnotes = false;
+    footnote_adjustment = 0;
   else if (contents->n_footnotes == 1 && (options & TAB_HALIGN) == TAB_RIGHT)
     {
       PangoAttrList *attrs;
-
-      font = &xr->fonts[XR_FONT_MARKER];
 
       const char *marker = contents->footnotes[0]->marker;
       pango_layout_set_text (font->layout, marker, strlen (marker));
@@ -1006,36 +1037,18 @@ xr_layout_cell_text (struct xr_driver *xr,
       pango_attr_list_unref (attrs);
 
       pango_layout_get_size (font->layout, &w, &h);
-      merge_footnotes = w > px_to_xr (style->margin[H][1]);
-      if (!merge_footnotes && clip[H][0] != clip[H][1])
-        {
-          cairo_save (xr->cairo);
-          xr_clip (xr, clip);
-          cairo_translate (xr->cairo,
-                           xr_to_pt (bb[H][1] + xr->x),
-                           xr_to_pt (bb[V][0] + xr->y));
-          pango_layout_set_alignment (font->layout, PANGO_ALIGN_LEFT);
-          pango_layout_set_width (font->layout, -1);
-          pango_cairo_show_layout (xr->cairo, font->layout);
-          cairo_restore (xr->cairo);
-        }
-
-      pango_layout_set_attributes (font->layout, NULL);
+      footnote_adjustment = MIN (w, px_to_xr (style->margin[H][1]));
     }
   else
-    merge_footnotes = true;
-
-  font = (options & TAB_FIX ? &xr->fonts[XR_FONT_FIXED]
-          : options & TAB_EMPH ? &xr->fonts[XR_FONT_EMPHASIS]
-          : &xr->fonts[XR_FONT_PROPORTIONAL]);
+    footnote_adjustment = px_to_xr (style->margin[H][1]);
 
   length = strlen (contents->text);
-  if (merge_footnotes)
+  if (footnote_adjustment)
     {
       PangoAttrList *attrs;
       struct string s;
 
-      bb[H][1] += px_to_xr (style->margin[H][1]);
+      bb[H][1] += footnote_adjustment;
 
       ds_init_empty (&s);
       ds_extend (&s, length + contents->n_footnotes * 10);
@@ -1045,14 +1058,28 @@ xr_layout_cell_text (struct xr_driver *xr,
       ds_destroy (&s);
 
       attrs = pango_attr_list_new ();
+      if (style->underline)
+        pango_attr_list_insert (attrs, pango_attr_underline_new (
+                               PANGO_UNDERLINE_SINGLE));
       add_attr_with_start (attrs, pango_attr_rise_new (7000), length);
       add_attr_with_start (
-        attrs, pango_attr_font_desc_new (xr->fonts[XR_FONT_MARKER].desc), length);
+        attrs, pango_attr_font_desc_new (font->desc), length);
       pango_layout_set_attributes (font->layout, attrs);
       pango_attr_list_unref (attrs);
     }
   else
-    pango_layout_set_text (font->layout, contents->text, -1);
+    {
+      pango_layout_set_text (font->layout, contents->text, -1);
+
+      if (style->underline)
+        {
+          PangoAttrList *attrs = pango_attr_list_new ();
+          pango_attr_list_insert (attrs, pango_attr_underline_new (
+                                    PANGO_UNDERLINE_SINGLE));
+          pango_layout_set_attributes (font->layout, attrs);
+          pango_attr_list_unref (attrs);
+        }
+    }
 
   pango_layout_set_alignment (
     font->layout,
@@ -1156,6 +1183,13 @@ xr_layout_cell_text (struct xr_driver *xr,
     }
 
   pango_layout_set_attributes (font->layout, NULL);
+
+  if (font == &local_font)
+    {
+      g_object_unref (G_OBJECT (font->layout));
+      pango_font_description_free (font->desc);
+    }
+
   return bb[V][0] + h;
 }
 

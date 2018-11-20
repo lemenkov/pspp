@@ -34,6 +34,7 @@ struct table_item_text
     char *content;
     const struct footnote **footnotes;
     size_t n_footnotes;
+    struct cell_style *style;
   };
 
 struct table_item_text *table_item_text_create (const char *);

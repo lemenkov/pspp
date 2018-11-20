@@ -129,6 +129,26 @@ table_set_nr (struct table *table, int nr)
   table->n[TABLE_VERT] = nr;
 }
 
+struct cell_style *
+cell_style_clone (const struct cell_style *old)
+{
+  struct cell_style *new = xmalloc (sizeof *new);
+  *new = *old;
+  if (new->font)
+    new->font = strdup (new->font);
+  return new;
+}
+
+void
+cell_style_free (struct cell_style *style)
+{
+  if (style)
+    {
+      free (style->font);
+      free (style);
+    }
+}
+
 /* Initializes CELL with the contents of the table cell at column X and row Y
    within TABLE.  When CELL is no longer needed, the caller is responsible for
    freeing it by calling table_cell_free(CELL).
@@ -141,13 +161,7 @@ table_get_cell (const struct table *table, int x, int y,
   assert (x >= 0 && x < table->n[TABLE_HORZ]);
   assert (y >= 0 && y < table->n[TABLE_VERT]);
 
-  static const struct cell_style default_style =
-    {
-      .fg = { 0, 0, 0 },
-      .bg = { 255, 255, 255 },
-      .margin = { [TABLE_HORZ][0] = 8, [TABLE_HORZ][1] = 11,
-                  [TABLE_VERT][0] = 1, [TABLE_VERT][1] = 1 },
-    };
+  static const struct cell_style default_style = CELL_STYLE_INITIALIZER;
   cell->style = &default_style;
 
   table->klass->get_cell (table, x, y, cell);
