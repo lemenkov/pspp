@@ -227,7 +227,8 @@ table_paste_get_cell (const struct table *t, int x, int y,
 
 static int
 table_paste_get_rule (const struct table *t,
-                      enum table_axis axis, int x, int y)
+                      enum table_axis axis, int x, int y,
+                      struct cell_color *color)
 {
   struct table_paste *tp = table_paste_cast (t);
   int h = tp->orientation == TABLE_HORZ ? x : y;
@@ -241,9 +242,9 @@ table_paste_get_rule (const struct table *t,
 
       ps = paste_subtable_lookup (tp, h == 0 ? 0 : h - 1, &start);
       if (tp->orientation == TABLE_HORZ) /* XXX */
-        r = table_get_rule (ps->table, axis, h - start, k);
+        r = table_get_rule (ps->table, axis, h - start, k, color);
       else
-        r = table_get_rule (ps->table, axis, k, h - start);
+        r = table_get_rule (ps->table, axis, k, h - start, color);
       if (h == start + tower_node_get_size (&ps->node))
         {
           struct tower_node *ps2_ = tower_next (&tp->subtables, &ps->node);
@@ -253,9 +254,9 @@ table_paste_get_rule (const struct table *t,
               int r2;
 
               if (tp->orientation == TABLE_HORZ) /* XXX */
-                r2 = table_get_rule (ps2->table, axis, 0, k);
+                r2 = table_get_rule (ps2->table, axis, 0, k, color);
               else
-                r2 = table_get_rule (ps2->table, axis, k, 0);
+                r2 = table_get_rule (ps2->table, axis, k, 0, color);
               return table_rule_combine (r, r2);
             }
         }
@@ -265,9 +266,9 @@ table_paste_get_rule (const struct table *t,
     {
       ps = paste_subtable_lookup (tp, h, &start);
       if (tp->orientation == TABLE_HORZ) /* XXX */
-        return table_get_rule (ps->table, axis, h - start, k);
+        return table_get_rule (ps->table, axis, h - start, k, color);
       else
-        return table_get_rule (ps->table, axis, k, h - start);
+        return table_get_rule (ps->table, axis, k, h - start, color);
     }
 }
 

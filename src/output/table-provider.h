@@ -192,7 +192,8 @@ struct table_class
        See table_get_rule() in table.c for a detailed explanation of the
        meaning of AXIS and X and Y, including a diagram. */
     int (*get_rule) (const struct table *table,
-                     enum table_axis axis, int x, int y);
+                     enum table_axis axis, int x, int y,
+                     struct cell_color *color);
 
     /* This function is optional and most table classes will not implement it.
 
@@ -248,7 +249,8 @@ void table_set_nr (struct table *, int nr);
 /* For use primarily by output drivers. */
 
 void table_get_cell (const struct table *, int x, int y, struct table_cell *);
-int table_get_rule (const struct table *, enum table_axis, int x, int y);
+int table_get_rule (const struct table *, enum table_axis, int x, int y,
+                    struct cell_color *);
 size_t table_collect_footnotes (const struct table_item *,
                                 const struct footnote ***);
 

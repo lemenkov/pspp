@@ -103,10 +103,10 @@ table_transpose_get_cell (const struct table *ti, int x, int y,
 static int
 table_transpose_get_rule (const struct table *ti,
                           enum table_axis axis,
-                          int x, int y)
+                          int x, int y, struct cell_color *color)
 {
   struct table_transpose *tt = table_transpose_cast (ti);
-  return table_get_rule (tt->subtable, !axis, y, x);
+  return table_get_rule (tt->subtable, !axis, y, x, color);
 }
 
 static const struct table_class table_transpose_class =

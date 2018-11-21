@@ -540,21 +540,24 @@ html_output_table (struct html_driver *html, const struct table_item *item)
 	      /* Cell borders. */
 	      int n_borders = 0;
 
-	      top = table_get_rule (t, TABLE_VERT, x, y);
+              struct cell_color color;
+	      top = table_get_rule (t, TABLE_VERT, x, y, &color);
               put_border (html->file, &n_borders, top, "top");
 
 	      if (y + rowspan == table_nr (t))
 		{
-		  bottom = table_get_rule (t, TABLE_VERT, x, y + rowspan);
+		  bottom = table_get_rule (t, TABLE_VERT, x, y + rowspan,
+                                           &color);
                   put_border (html->file, &n_borders, bottom, "bottom");
 		}
 
-	      left = table_get_rule (t, TABLE_HORZ, x, y);
+	      left = table_get_rule (t, TABLE_HORZ, x, y, &color);
               put_border (html->file, &n_borders, left, "left");
 
 	      if (x + colspan == table_nc (t))
 		{
-		  right = table_get_rule (t, TABLE_HORZ, x + colspan, y);
+		  right = table_get_rule (t, TABLE_HORZ, x + colspan, y,
+                                          &color);
                   put_border (html->file, &n_borders, right, "right");
 		}
 

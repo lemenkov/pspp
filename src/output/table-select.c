@@ -194,12 +194,12 @@ table_select_get_cell (const struct table *ti, int x, int y,
 static int
 table_select_get_rule (const struct table *ti,
                        enum table_axis axis,
-                       int x, int y)
+                       int x, int y, struct cell_color *color)
 {
   struct table_select *ts = table_select_cast (ti);
   return table_get_rule (ts->subtable, axis,
                          x + ts->ofs[TABLE_HORZ],
-                         y + ts->ofs[TABLE_VERT]);
+                         y + ts->ofs[TABLE_VERT], color);
 }
 
 static struct table *

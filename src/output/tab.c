@@ -106,6 +106,7 @@ tab_create (int nc, int nr)
   t->fmtmap[RC_OTHER] = *settings_get_format ();
 
   memset (t->styles, 0, sizeof t->styles);
+  memset (t->rule_colors, 0, sizeof t->rule_colors);
 
   t->col_ofs = t->row_ofs = 0;
 
@@ -833,11 +834,17 @@ tab_get_cell (const struct table *table, int x, int y,
 }
 
 static int
-tab_get_rule (const struct table *table, enum table_axis axis, int x, int y)
+tab_get_rule (const struct table *table, enum table_axis axis, int x, int y,
+              struct cell_color *color)
 {
   const struct tab_table *t = tab_cast (table);
-  return (axis == TABLE_VERT
-          ? t->rh[x + t->cf * y] : t->rv[x + (t->cf + 1) * y]);
+  uint8_t raw = (axis == TABLE_VERT
+                 ? t->rh[x + t->cf * y] : t->rv[x + (t->cf + 1) * y]);
+  struct cell_color *p = t->rule_colors[(raw & TAB_RULE_STYLE_MASK)
+                                        >> TAB_RULE_STYLE_SHIFT];
+  if (p)
+    *color = *p;
+  return (raw & TAB_RULE_TYPE_MASK) >> TAB_RULE_TYPE_SHIFT;
 }
 
 static const struct table_class tab_table_class = {

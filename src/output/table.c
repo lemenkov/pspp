@@ -214,11 +214,13 @@ table_cell_free (struct table_cell *cell)
    between that cell and cell (0,1); and so on, up to (0,NR), which runs
    horizontally below cell (0,NR-1). */
 int
-table_get_rule (const struct table *table, enum table_axis axis, int x, int y)
+table_get_rule (const struct table *table, enum table_axis axis, int x, int y,
+                struct cell_color *color)
 {
   assert (x >= 0 && x < table->n[TABLE_HORZ] + (axis == TABLE_HORZ));
   assert (y >= 0 && y < table->n[TABLE_VERT] + (axis == TABLE_VERT));
-  return table->klass->get_rule (table, axis, x, y);
+  *color = CELL_COLOR_BLACK;
+  return table->klass->get_rule (table, axis, x, y, color);
 }
 
 void
@@ -355,10 +357,11 @@ table_unshared_get_cell (const struct table *tiu_, int x, int y,
 
 static int
 table_unshared_get_rule (const struct table *tiu_,
-                              enum table_axis axis, int x, int y)
+                         enum table_axis axis, int x, int y,
+                         struct cell_color *color)
 {
   struct table_unshared *tiu = table_unshared_cast (tiu_);
-  return table_get_rule (tiu->subtable, axis, x, y);
+  return table_get_rule (tiu->subtable, axis, x, y, color);
 }
 
 static const struct table_class table_unshared_class =
@@ -427,7 +430,8 @@ table_string_get_cell (const struct table *ts_, int x UNUSED, int y UNUSED,
 
 static int
 table_string_get_rule (const struct table *ts UNUSED,
-                       enum table_axis axis UNUSED, int x UNUSED, int y UNUSED)
+                       enum table_axis axis UNUSED, int x UNUSED, int y UNUSED,
+                       struct cell_color *color UNUSED)
 {
   return TAL_0;
 }

@@ -488,10 +488,11 @@ measure_rule (const struct render_params *params, const struct table *table,
 
   /* Determine all types of rules that are present, as a bitmap in 'rules'
      where rule type 't' is present if bit 2**t is set. */
+  struct cell_color color;
   rules = 0;
   d[a] = z;
   for (d[b] = 0; d[b] < table->n[b]; d[b]++)
-    rules |= 1u << table_get_rule (table, a, d[H], d[V]);
+    rules |= 1u << table_get_rule (table, a, d[H], d[V], &color);
 
   /* Turn off TAL_NONE because it has width 0 and we needn't bother.  However,
      if the device doesn't support margins, make sure that there is at least a
@@ -870,10 +871,11 @@ render_page_get_best_breakpoint (const struct render_page *page, int height)
 
 static inline enum render_line_style
 get_rule (const struct render_page *page, enum table_axis axis,
-          const int d[TABLE_N_AXES])
+          const int d[TABLE_N_AXES], struct cell_color *color)
 {
   return rule_to_render_type (table_get_rule (page->table,
-                                              axis, d[H] / 2, d[V] / 2));
+                                              axis, d[H] / 2, d[V] / 2,
+                                              color));
 }
 
 static bool
@@ -904,6 +906,7 @@ render_rule (const struct render_page *page, const int ofs[TABLE_N_AXES],
              const int d[TABLE_N_AXES])
 {
   enum render_line_style styles[TABLE_N_AXES][2];
+  struct cell_color colors[TABLE_N_AXES][2];
   enum table_axis a;
 
   for (a = 0; a < TABLE_N_AXES; a++)
@@ -925,14 +928,17 @@ render_rule (const struct render_page *page, const int ofs[TABLE_N_AXES],
               e[H] = d[H];
               e[V] = d[V];
               e[b]--;
-              styles[a][0] = get_rule (page, a, e);
+              styles[a][0] = get_rule (page, a, e, &colors[a][0]);
             }
 
           if (d[b] / 2 < page->table->n[b])
-            styles[a][1] = get_rule (page, a, d);
+            styles[a][1] = get_rule (page, a, d, &colors[a][1]);
         }
       else
-        styles[a][0] = styles[a][1] = get_rule (page, a, d);
+        {
+          styles[a][0] = styles[a][1] = get_rule (page, a, d, &colors[a][0]);
+          colors[a][1] = colors[a][0];
+        }
     }
 
   if (styles[H][0] != RENDER_LINE_NONE || styles[H][1] != RENDER_LINE_NONE
@@ -950,7 +956,7 @@ render_rule (const struct render_page *page, const int ofs[TABLE_N_AXES],
 	}
       bb[V][0] = ofs[V] + page->cp[V][d[V]];
       bb[V][1] = ofs[V] + page->cp[V][d[V] + 1];
-      page->params->draw_line (page->params->aux, bb, styles);
+      page->params->draw_line (page->params->aux, bb, styles, colors);
     }
 }
 

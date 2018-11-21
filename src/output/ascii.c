@@ -214,7 +214,8 @@ static int parse_page_size (struct driver_option *);
 static bool ascii_open_page (struct ascii_driver *);
 
 static void ascii_draw_line (void *, int bb[TABLE_N_AXES][2],
-                             enum render_line_style styles[TABLE_N_AXES][2]);
+                             enum render_line_style styles[TABLE_N_AXES][2],
+                             struct cell_color colors[TABLE_N_AXES][2]);
 static void ascii_measure_cell_width (void *, const struct table_cell *,
                                       int *min, int *max);
 static int ascii_measure_cell_height (void *, const struct table_cell *,
@@ -533,7 +534,8 @@ static void ascii_layout_cell (struct ascii_driver *,
 
 static void
 ascii_draw_line (void *a_, int bb[TABLE_N_AXES][2],
-                 enum render_line_style styles[TABLE_N_AXES][2])
+                 enum render_line_style styles[TABLE_N_AXES][2],
+                 struct cell_color colors[TABLE_N_AXES][2] UNUSED)
 {
   struct ascii_driver *a = a_;
   char mbchar[6];

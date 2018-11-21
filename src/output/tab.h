@@ -54,6 +54,12 @@ enum result_class
 #define TAB_STYLE_MASK (7u << (TAB_FIRST_AVAILABLE + 3))
 #define TAB_STYLE_SHIFT (TAB_FIRST_AVAILABLE + 3)
 
+/* Rule masks. */
+#define TAB_RULE_TYPE_MASK   7
+#define TAB_RULE_TYPE_SHIFT  0
+#define TAB_RULE_STYLE_MASK  (31 << TAB_RULE_STYLE_SHIFT)
+#define TAB_RULE_STYLE_SHIFT 3
+
 /* A table. */
 struct tab_table
   {
@@ -72,13 +78,12 @@ struct tab_table
        points to a struct tab_joined_cell. */
     void **cc;                  /* Cell contents; void *[nr][nc]. */
     unsigned short *ct;		/* Cell types; unsigned short[nr][nc]. */
+    struct cell_style *styles[8];
 
     /* Rules. */
     unsigned char *rh;		/* Horiz rules; unsigned char[nr+1][nc]. */
     unsigned char *rv;		/* Vert rules; unsigned char[nr][nc+1]. */
-
-    /* Cell styles. */
-    struct cell_style *styles[8];
+    struct cell_color *rule_colors[32];
 
     /* X and Y offsets. */
     int col_ofs, row_ofs;

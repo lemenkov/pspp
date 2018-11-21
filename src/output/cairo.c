@@ -166,7 +166,8 @@ static void xr_driver_destroy_fsm (struct xr_driver *);
 static void xr_driver_run_fsm (struct xr_driver *);
 
 static void xr_draw_line (void *, int bb[TABLE_N_AXES][2],
-                          enum render_line_style styles[TABLE_N_AXES][2]);
+                          enum render_line_style styles[TABLE_N_AXES][2],
+                          struct cell_color colors[TABLE_N_AXES][2]);
 static void xr_measure_cell_width (void *, const struct table_cell *,
                                    int *min, int *max);
 static int xr_measure_cell_height (void *, const struct table_cell *,
@@ -658,9 +659,12 @@ xr_layout_cell (struct xr_driver *, const struct table_cell *,
                 int *width, int *height, int *brk);
 
 static void
-dump_line (struct xr_driver *xr, int x0, int y0, int x1, int y1, int style)
+dump_line (struct xr_driver *xr, int x0, int y0, int x1, int y1, int style,
+           const struct cell_color *color)
 {
   cairo_new_path (xr->cairo);
+  cairo_set_source_rgb (xr->cairo,
+                        color->r / 255.0, color->g / 255.0, color->b / 255.0);
   cairo_set_line_width (
     xr->cairo,
     xr_to_pt (style == RENDER_LINE_THICK ? xr->line_width * 2
@@ -702,16 +706,19 @@ fill_rectangle (struct xr_driver *xr, int x0, int y0, int x1, int y1)
 static void
 horz_line (struct xr_driver *xr, int x0, int x1, int x2, int x3, int y,
            enum render_line_style left, enum render_line_style right,
+           const struct cell_color *left_color,
+           const struct cell_color *right_color,
            bool shorten)
 {
-  if (left != RENDER_LINE_NONE && right != RENDER_LINE_NONE && !shorten)
-    dump_line (xr, x0, y, x3, y, left);
+  if (left != RENDER_LINE_NONE && right != RENDER_LINE_NONE && !shorten
+      && cell_color_equal (left_color, right_color))
+    dump_line (xr, x0, y, x3, y, left, left_color);
   else
     {
       if (left != RENDER_LINE_NONE)
-        dump_line (xr, x0, y, shorten ? x1 : x2, y, left);
+        dump_line (xr, x0, y, shorten ? x1 : x2, y, left, left_color);
       if (right != RENDER_LINE_NONE)
-        dump_line (xr, shorten ? x2 : x1, y, x3, y, right);
+        dump_line (xr, shorten ? x2 : x1, y, x3, y, right, right_color);
     }
 }
 
@@ -722,22 +729,26 @@ horz_line (struct xr_driver *xr, int x0, int x1, int x2, int x3, int y,
 static void
 vert_line (struct xr_driver *xr, int y0, int y1, int y2, int y3, int x,
            enum render_line_style top, enum render_line_style bottom,
+           const struct cell_color *top_color,
+           const struct cell_color *bottom_color,
            bool shorten)
 {
-  if (top != RENDER_LINE_NONE && bottom != RENDER_LINE_NONE && !shorten)
-    dump_line (xr, x, y0, x, y3, top);
+  if (top != RENDER_LINE_NONE && bottom != RENDER_LINE_NONE && !shorten
+      && cell_color_equal (top_color, bottom_color))
+    dump_line (xr, x, y0, x, y3, top, top_color);
   else
     {
       if (top != RENDER_LINE_NONE)
-        dump_line (xr, x, y0, x, shorten ? y1 : y2, top);
+        dump_line (xr, x, y0, x, shorten ? y1 : y2, top, top_color);
       if (bottom != RENDER_LINE_NONE)
-        dump_line (xr, x, shorten ? y2 : y1, x, y3, bottom);
+        dump_line (xr, x, shorten ? y2 : y1, x, y3, bottom, bottom_color);
     }
 }
 
 static void
 xr_draw_line (void *xr_, int bb[TABLE_N_AXES][2],
-              enum render_line_style styles[TABLE_N_AXES][2])
+              enum render_line_style styles[TABLE_N_AXES][2],
+              struct cell_color colors[TABLE_N_AXES][2])
 {
   const int x0 = bb[H][0];
   const int y0 = bb[V][0];
@@ -745,8 +756,15 @@ xr_draw_line (void *xr_, int bb[TABLE_N_AXES][2],
   const int y3 = bb[V][1];
   const int top = styles[H][0];
   const int bottom = styles[H][1];
-  const int start_of_line = render_direction_rtl() ? styles[V][1]: styles[V][0];
-  const int end_of_line   = render_direction_rtl() ? styles[V][0]: styles[V][1];
+
+  int start_side = render_direction_rtl();
+  int end_side = !start_side;
+  const int start_of_line = styles[V][start_side];
+  const int end_of_line   = styles[V][end_side];
+  const struct cell_color *top_color = &colors[H][0];
+  const struct cell_color *bottom_color = &colors[H][1];
+  const struct cell_color *start_color = &colors[V][start_side];
+  const struct cell_color *end_color = &colors[V][end_side];
 
   /* The algorithm here is somewhat subtle, to allow it to handle
      all the kinds of intersections that we need.
@@ -830,19 +848,25 @@ xr_draw_line (void *xr_, int bb[TABLE_N_AXES][2],
   int y2 = yc + vert_line_ofs;
 
   if (!double_horz)
-    horz_line (xr, x0, x1, x2, x3, yc, start_of_line, end_of_line, shorten_yc_line);
+    horz_line (xr, x0, x1, x2, x3, yc, start_of_line, end_of_line,
+               start_color, end_color, shorten_yc_line);
   else
     {
-      horz_line (xr, x0, x1, x2, x3, y1, start_of_line, end_of_line, shorten_y1_lines);
-      horz_line (xr, x0, x1, x2, x3, y2, start_of_line, end_of_line, shorten_y2_lines);
+      horz_line (xr, x0, x1, x2, x3, y1, start_of_line, end_of_line,
+                 start_color, end_color, shorten_y1_lines);
+      horz_line (xr, x0, x1, x2, x3, y2, start_of_line, end_of_line,
+                 start_color, end_color, shorten_y2_lines);
     }
 
   if (!double_vert)
-    vert_line (xr, y0, y1, y2, y3, xc, top, bottom, shorten_xc_line);
+    vert_line (xr, y0, y1, y2, y3, xc, top, bottom, top_color, bottom_color,
+               shorten_xc_line);
   else
     {
-      vert_line (xr, y0, y1, y2, y3, x1, top, bottom, shorten_x1_lines);
-      vert_line (xr, y0, y1, y2, y3, x2, top, bottom, shorten_x2_lines);
+      vert_line (xr, y0, y1, y2, y3, x1, top, bottom, top_color, bottom_color,
+                 shorten_x1_lines);
+      vert_line (xr, y0, y1, y2, y3, x2, top, bottom, top_color, bottom_color,
+                 shorten_x2_lines);
     }
 }
 
@@ -1172,14 +1196,9 @@ xr_layout_cell_text (struct xr_driver *xr,
       if (0)
         {
           if (best && !xr->nest)
-            {
-              cairo_save (xr->cairo);
-              cairo_set_source_rgb (xr->cairo, 0, 1, 0);
-              dump_line (xr, -xr->left_margin, best,
-                         xr->width + xr->right_margin, best,
-                         RENDER_LINE_SINGLE);
-              cairo_restore (xr->cairo);
-            }
+            dump_line (xr, -xr->left_margin, best,
+                       xr->width + xr->right_margin, best,
+                       RENDER_LINE_SINGLE, &CELL_COLOR (0, 255, 0));
         }
     }
 

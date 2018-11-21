@@ -142,7 +142,8 @@ table_casereader_get_cell (const struct table *t, int x, int y,
 
 static int
 table_casereader_get_rule (const struct table *t, enum table_axis axis,
-                           int x UNUSED, int y)
+                           int x UNUSED, int y,
+                           struct cell_color *color UNUSED)
 {
   struct table_casereader *tc = table_casereader_cast (t);
   if (axis == TABLE_VERT)

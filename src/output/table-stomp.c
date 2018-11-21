@@ -146,12 +146,14 @@ table_stomp_get_cell (const struct table *t, int x, int y UNUSED,
 
 static int
 table_stomp_get_rule (const struct table *t,
-                      enum table_axis axis, int x, int y)
+                      enum table_axis axis, int x, int y,
+                      struct cell_color *color)
 {
   struct table_stomp *ts = table_stomp_cast (t);
 
   return table_get_rule (ts->subtable, axis, x,
-                         axis == H || y == 0 ? y : ts->subtable->n[V]);
+                         axis == H || y == 0 ? y : ts->subtable->n[V],
+                         color);
 }
 
 static const struct table_class table_stomp_class =
