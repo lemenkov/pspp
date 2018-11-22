@@ -35,7 +35,8 @@ table_item_text_create (const char *content)
     return NULL;
 
   struct table_item_text *text = xmalloc (sizeof *text);
-  *text = (struct table_item_text) { .content = xstrdup (content) };
+  *text = (struct table_item_text) { .content = xstrdup (content),
+                                     .halign = TAB_LEFT };
   return text;
 }
 
@@ -51,7 +52,8 @@ table_item_text_clone (const struct table_item_text *old)
     .footnotes = xmemdup (old->footnotes,
                           old->n_footnotes * sizeof *old->footnotes),
     .n_footnotes = old->n_footnotes,
-    .style = cell_style_clone (old->style),
+    .style = cell_style_clone (NULL, old->style),
+    .halign = old->halign,
   };
   return new;
 }

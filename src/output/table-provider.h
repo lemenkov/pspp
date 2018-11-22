@@ -20,6 +20,7 @@
 #include <stdint.h>
 #include "output/table.h"
 
+struct pool;
 struct string;
 
 struct footnote
@@ -81,7 +82,7 @@ struct cell_style
       .underline = false,                                       \
     }
 
-struct cell_style *cell_style_clone (const struct cell_style *);
+struct cell_style *cell_style_clone (struct pool *, const struct cell_style *);
 void cell_style_free (struct cell_style *);
 
 /* A cell in a table. */

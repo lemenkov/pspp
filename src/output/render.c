@@ -134,7 +134,7 @@ struct render_page
   };
 
 static struct render_page *render_page_create (const struct render_params *,
-                                               struct table *);
+                                               struct table *, int min_width);
 
 struct render_page *render_page_ref (const struct render_page *page_);
 static void render_page_unref (struct render_page *);
@@ -622,7 +622,8 @@ set_join_crossings (struct render_page *page, enum table_axis axis,
    size is PARAMS->size, but the caller is responsible for actually breaking it
    up to fit on such a device, using the render_break abstraction.  */
 static struct render_page *
-render_page_create (const struct render_params *params, struct table *table)
+render_page_create (const struct render_params *params, struct table *table,
+                    int min_width)
 {
   struct render_page *page;
   enum { MIN, MAX };
@@ -699,6 +700,9 @@ render_page_create (const struct render_params *params, struct table *table)
         x = cell.d[H][1];
         table_cell_free (&cell);
       }
+  if (min_width > 0)
+    for (i = 0; i < 2; i++)
+      distribute_spanned_width (min_width, &columns[i][0], rules[H], nc);
 
   /* In pathological cases, spans can cause the minimum width of a column to
      exceed the maximum width.  This bollixes our interpolation algorithm
@@ -1392,13 +1396,15 @@ struct render_pager
   };
 
 static const struct render_page *
-render_pager_add_table (struct render_pager *p, struct table *table)
+render_pager_add_table (struct render_pager *p, struct table *table,
+                        int min_width)
 {
   struct render_page *page;
 
   if (p->n_pages >= p->allocated_pages)
     p->pages = x2nrealloc (p->pages, &p->allocated_pages, sizeof *p->pages);
-  page = p->pages[p->n_pages++] = render_page_create (p->params, table);
+  page = p->pages[p->n_pages++] = render_page_create (p->params, table,
+                                                      min_width);
   return page;
 }
 
@@ -1431,28 +1437,25 @@ add_footnote_page (struct render_pager *p, const struct table_item *item)
             tab_add_style (t, 1, i, f[i]->style);
           }
       }
-  render_pager_add_table (p, &t->table);
+  render_pager_add_table (p, &t->table, 0);
 
   free (f);
 }
 
 static void
-add_text_page (struct render_pager *p, const struct table_item_text *t)
+add_text_page (struct render_pager *p, const struct table_item_text *t,
+               int min_width)
 {
   if (!t)
     return;
 
   struct tab_table *tab = tab_create (1, 1);
-  tab_text (tab, 0, 0, TAB_LEFT, t->content);
+  tab_text (tab, 0, 0, t->halign, t->content);
   for (size_t i = 0; i < t->n_footnotes; i++)
     tab_add_footnote (tab, 0, 0, t->footnotes[i]);
   if (t->style)
-    {
-      tab->styles[0] = pool_clone (tab->container, t->style, sizeof *t->style);
-      if (t->style->font)
-        tab->styles[0]->font = pool_strdup (tab->container, t->style->font);
-    }
-  render_pager_add_table (p, &tab->table);
+    tab->styles[0] = cell_style_clone (tab->container, t->style);
+  render_pager_add_table (p, &tab->table, min_width);
 }
 
 /* Creates and returns a new render_pager for rendering TABLE_ITEM on the
@@ -1461,19 +1464,28 @@ struct render_pager *
 render_pager_create (const struct render_params *params,
                      const struct table_item *table_item)
 {
+  const struct table *table = table_item_get_table (table_item);
   struct render_pager *p;
 
   p = xzalloc (sizeof *p);
   p->params = params;
 
+  struct render_page *page = render_page_create (params, table_ref (table), 0);
+  struct render_break b;
+  render_break_init (&b, page, H);
+  struct render_page *subpage = render_break_next (&b, p->params->size[H]);
+  int title_width = subpage ? subpage->cp[H][2 * subpage->n[H] + 1] : 0;
+  render_page_unref (subpage);
+  render_break_destroy (&b);
+
   /* Title. */
-  add_text_page (p, table_item_get_title (table_item));
+  add_text_page (p, table_item_get_title (table_item), title_width);
 
   /* Body. */
-  render_pager_add_table (p, table_ref (table_item_get_table (table_item)));
+  render_pager_add_table (p, table_ref (table_item_get_table (table_item)), 0);
 
   /* Caption. */
-  add_text_page (p, table_item_get_caption (table_item));
+  add_text_page (p, table_item_get_caption (table_item), 0);
 
   /* Footnotes. */
   add_footnote_page (p, table_item);

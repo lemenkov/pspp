@@ -24,6 +24,7 @@
 
 #include "libpspp/cast.h"
 #include "libpspp/compiler.h"
+#include "libpspp/pool.h"
 #include "libpspp/str.h"
 #include "output/table-item.h"
 
@@ -130,12 +131,12 @@ table_set_nr (struct table *table, int nr)
 }
 
 struct cell_style *
-cell_style_clone (const struct cell_style *old)
+cell_style_clone (struct pool *pool, const struct cell_style *old)
 {
-  struct cell_style *new = xmalloc (sizeof *new);
+  struct cell_style *new = pool_malloc (pool, sizeof *new);
   *new = *old;
   if (new->font)
-    new->font = strdup (new->font);
+    new->font = pool_strdup (pool, new->font);
   return new;
 }
 
