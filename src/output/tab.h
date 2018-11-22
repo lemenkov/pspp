@@ -159,6 +159,9 @@ struct footnote *tab_create_footnote (struct tab_table *, size_t idx,
 void tab_add_footnote (struct tab_table *, int x, int y,
                        const struct footnote *);
 
+void tab_add_style (struct tab_table *, int x, int y,
+                    const struct cell_style *);
+
 bool tab_cell_is_empty (const struct tab_table *, int c, int r);
 
 /* Editing. */

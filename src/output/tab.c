@@ -64,6 +64,8 @@ struct tab_joined_cell
 
   size_t n_footnotes;
   const struct footnote **footnotes;
+
+  const struct cell_style *style;
 };
 
 static const struct table_class tab_table_class;
@@ -560,6 +562,7 @@ add_joined_cell (struct tab_table *table, int x1, int y1, int x2, int y2,
   j->d[TABLE_VERT][1] = ++y2 + table->row_ofs;
   j->n_footnotes = 0;
   j->footnotes = NULL;
+  j->style = NULL;
 
   {
     void **cc = &table->cc[x1 + y1 * table->cf];
@@ -649,6 +652,27 @@ tab_add_footnote (struct tab_table *table, int x, int y,
                                (j->n_footnotes + 1) * sizeof *j->footnotes);
 
   j->footnotes[j->n_footnotes++] = f;
+}
+
+void
+tab_add_style (struct tab_table *table, int x, int y,
+               const struct cell_style *style)
+{
+  int index = x + y * table->cf;
+  unsigned short opt = table->ct[index];
+  struct tab_joined_cell *j;
+
+  if (opt & TAB_JOIN)
+    j = table->cc[index];
+  else
+    {
+      char *text = table->cc[index];
+
+      j = add_joined_cell (table, x, y, x, y, table->ct[index]);
+      j->u.text = text ? text : xstrdup ("");
+    }
+
+  j->style = style;
 }
 
 bool
@@ -793,6 +817,11 @@ tab_get_cell (const struct table *table, int x, int y,
   cell->inline_contents.n_footnotes = 0;
   cell->destructor = NULL;
 
+  int style_idx = (opt & TAB_STYLE_MASK) >> TAB_STYLE_SHIFT;
+  const struct cell_style *style = t->styles[style_idx];
+  if (style)
+    cell->style = style;
+
   if (opt & TAB_JOIN)
     {
       const struct tab_joined_cell *jc = cc;
@@ -807,6 +836,9 @@ tab_get_cell (const struct table *table, int x, int y,
       cell->d[TABLE_HORZ][1] = jc->d[TABLE_HORZ][1];
       cell->d[TABLE_VERT][0] = jc->d[TABLE_VERT][0];
       cell->d[TABLE_VERT][1] = jc->d[TABLE_VERT][1];
+
+      if (jc->style)
+        cell->style = jc->style;
     }
   else
     {
@@ -826,11 +858,6 @@ tab_get_cell (const struct table *table, int x, int y,
           cell->n_contents = 0;
         }
     }
-
-  int style_idx = (opt & TAB_STYLE_MASK) >> TAB_STYLE_SHIFT;
-  const struct cell_style *style = t->styles[style_idx];
-  if (style)
-    cell->style = style;
 }
 
 static int
