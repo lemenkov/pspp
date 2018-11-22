@@ -27,6 +27,7 @@ struct footnote
     size_t idx;
     char *content;
     char *marker;
+    struct cell_style *style;
   };
 
 /* An item of contents within a table cell. */

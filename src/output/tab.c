@@ -621,12 +621,13 @@ tab_joint_text_format (struct tab_table *table, int x1, int y1, int x2,
 
 struct footnote *
 tab_create_footnote (struct tab_table *table, size_t idx, const char *content,
-                     const char *marker)
+                     const char *marker, struct cell_style *style)
 {
   struct footnote *f = pool_alloc (table->container, sizeof *f);
   f->idx = idx;
   f->content = pool_strdup (table->container, content);
   f->marker = pool_strdup (table->container, marker);
+  f->style = style;
   return f;
 }
 

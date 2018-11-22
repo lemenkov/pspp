@@ -1425,6 +1425,11 @@ add_footnote_page (struct render_pager *p, const struct table_item *item)
       {
         tab_text_format (t, 0, i, TAB_LEFT, "%s.", f[i]->marker);
         tab_text (t, 1, i, TAB_LEFT, f[i]->content);
+        if (f[i]->style)
+          {
+            tab_add_style (t, 0, i, f[i]->style);
+            tab_add_style (t, 1, i, f[i]->style);
+          }
       }
   render_pager_add_table (p, &t->table);
 
