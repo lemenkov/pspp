@@ -480,10 +480,16 @@ html_output_table (struct html_driver *html, const struct table_item *item)
   fputs ("<TBODY VALIGN=\"TOP\">\n", html->file);
 
   const struct table_item_text *title = table_item_get_title (item);
-  if (title)
+  const struct table_item_text *layers = table_item_get_layers (item);
+  if (title || layers)
     {
       fputs ("  <CAPTION>", html->file);
-      html_put_table_item_text (html, title);
+      if (title)
+        html_put_table_item_text (html, title);
+      if (title && layers)
+        fputs ("<BR>\n", html->file);
+      if (layers)
+        html_put_table_item_text (html, layers);
       fputs ("</CAPTION>\n", html->file);
     }
 

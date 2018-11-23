@@ -80,6 +80,7 @@ table_item_create (struct table *table, const char *title, const char *caption)
   output_item_init (&item->output_item, &table_item_class);
   item->table = table;
   item->title = table_item_text_create (title);
+  item->layers = NULL;
   item->caption = table_item_text_create (caption);
   return item;
 }
@@ -111,6 +112,28 @@ table_item_set_title (struct table_item *item,
   assert (!table_item_is_shared (item));
   table_item_text_destroy (item->title);
   item->title = table_item_text_clone (title);
+}
+
+/* Returns ITEM's layers, which will be a null pointer if no layers have been
+   set. */
+const struct table_item_text *
+table_item_get_layers (const struct table_item *item)
+{
+  return item->layers;
+}
+
+/* Sets ITEM's layers to LAYERS, replacing any previous layers.  Specify NULL
+   for LAYERS to clear any layers from ITEM.  The caller retains ownership of
+   LAYERS.
+
+   This function may only be used on a table_item that is unshared. */
+void
+table_item_set_layers (struct table_item *item,
+                      const struct table_item_text *layers)
+{
+  assert (!table_item_is_shared (item));
+  table_item_text_destroy (item->layers);
+  item->layers = table_item_text_clone (layers);
 }
 
 /* Returns ITEM's caption, which is a null pointer if no caption has been
@@ -147,8 +170,9 @@ static void
 table_item_destroy (struct output_item *output_item)
 {
   struct table_item *item = to_table_item (output_item);
-  free (item->title);
-  free (item->caption);
+  table_item_text_destroy (item->title);
+  table_item_text_destroy (item->layers);
+  table_item_text_destroy (item->caption);
   table_unref (item->table);
   free (item);
 }

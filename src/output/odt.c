@@ -467,6 +467,7 @@ write_table (struct odt_driver *odt, const struct table_item *item)
 
   /* Write a heading for the table */
   write_table_item_text (odt, table_item_get_title (item));
+  write_table_item_text (odt, table_item_get_layers (item));
 
   /* Start table */
   xmlTextWriterStartElement (odt->content_wtr, _xml("table:table"));

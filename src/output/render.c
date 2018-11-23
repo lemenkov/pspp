@@ -1481,6 +1481,9 @@ render_pager_create (const struct render_params *params,
   /* Title. */
   add_text_page (p, table_item_get_title (table_item), title_width);
 
+  /* Layers. */
+  add_text_page (p, table_item_get_layers (table_item), title_width);
+
   /* Body. */
   render_pager_add_table (p, table_ref (table_item_get_table (table_item)), 0);
 

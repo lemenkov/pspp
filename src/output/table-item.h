@@ -51,6 +51,7 @@ struct table_item
     struct output_item output_item;  /* Superclass. */
     struct table *table;             /* The table to be rendered. */
     struct table_item_text *title;   /* Null if there is no title. */
+    struct table_item_text *layers;  /* Null if there is no layer info. */
     struct table_item_text *caption; /* Null if there is no caption. */
   };
 
@@ -61,6 +62,11 @@ const struct table *table_item_get_table (const struct table_item *);
 
 const struct table_item_text *table_item_get_title (const struct table_item *);
 void table_item_set_title (struct table_item *,
+                           const struct table_item_text *);
+
+const struct table_item_text *table_item_get_layers (
+  const struct table_item *);
+void table_item_set_layers (struct table_item *,
                            const struct table_item_text *);
 
 const struct table_item_text *table_item_get_caption (
