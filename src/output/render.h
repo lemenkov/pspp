@@ -100,7 +100,7 @@ struct render_params
        case) or a subregion enclosed by BB.  In the latter case only the part
        of the cell that lies within CLIP should actually be drawn, although BB
        should used to determine the layout of the cell. */
-    void (*draw_cell) (void *aux, const struct table_cell *cell,
+    void (*draw_cell) (void *aux, const struct table_cell *cell, int color_idx,
                        int bb[TABLE_N_AXES][2],
                        int spill[TABLE_N_AXES][2],
                        int clip[TABLE_N_AXES][2]);

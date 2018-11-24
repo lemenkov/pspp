@@ -172,7 +172,7 @@ static void xr_measure_cell_width (void *, const struct table_cell *,
                                    int *min, int *max);
 static int xr_measure_cell_height (void *, const struct table_cell *,
                                    int width);
-static void xr_draw_cell (void *, const struct table_cell *,
+static void xr_draw_cell (void *, const struct table_cell *, int color_idx,
                           int bb[TABLE_N_AXES][2],
                           int spill[TABLE_N_AXES][2],
                           int clip[TABLE_N_AXES][2]);
@@ -919,7 +919,7 @@ xr_measure_cell_height (void *xr_, const struct table_cell *cell, int width)
 static void xr_clip (struct xr_driver *, int clip[TABLE_N_AXES][2]);
 
 static void
-xr_draw_cell (void *xr_, const struct table_cell *cell,
+xr_draw_cell (void *xr_, const struct table_cell *cell, int color_idx,
               int bb[TABLE_N_AXES][2],
               int spill[TABLE_N_AXES][2],
               int clip[TABLE_N_AXES][2])
@@ -941,9 +941,9 @@ xr_draw_cell (void *xr_, const struct table_cell *cell,
     }
   xr_clip (xr, bg_clip);
   cairo_set_source_rgb (xr->cairo,
-                        cell->style->bg.r / 255.,
-                        cell->style->bg.g / 255.,
-                        cell->style->bg.b / 255.);
+                        cell->style->bg[color_idx].r / 255.,
+                        cell->style->bg[color_idx].g / 255.,
+                        cell->style->bg[color_idx].b / 255.);
   fill_rectangle (xr,
                   bb[H][0] - spill[H][0],
                   bb[V][0] - spill[V][0],
@@ -953,9 +953,9 @@ xr_draw_cell (void *xr_, const struct table_cell *cell,
 
   cairo_save (xr->cairo);
   cairo_set_source_rgb (xr->cairo,
-                        cell->style->fg.r / 255.,
-                        cell->style->fg.g / 255.,
-                        cell->style->fg.b / 255.);
+                        cell->style->fg[color_idx].r / 255.,
+                        cell->style->fg[color_idx].g / 255.,
+                        cell->style->fg[color_idx].b / 255.);
 
   for (int axis = 0; axis < TABLE_N_AXES; axis++)
     {

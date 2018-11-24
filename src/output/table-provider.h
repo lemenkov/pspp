@@ -62,7 +62,7 @@ cell_color_equal (const struct cell_color *a, const struct cell_color *b)
 
 struct cell_style
   {
-    struct cell_color fg, bg;
+    struct cell_color fg[2], bg[2];
     int margin[TABLE_N_AXES][2];
     char *font;
     int font_size;
@@ -71,8 +71,8 @@ struct cell_style
 
 #define CELL_STYLE_INITIALIZER                                  \
     {                                                           \
-      .fg = CELL_COLOR_BLACK,                                   \
-      .bg = CELL_COLOR_WHITE,                                   \
+      .fg = { [0] = CELL_COLOR_BLACK, [1] = CELL_COLOR_BLACK},  \
+      .bg = { [0] = CELL_COLOR_WHITE, [1] = CELL_COLOR_WHITE},  \
       .margin = { [TABLE_HORZ][0] = 8, [TABLE_HORZ][1] = 11,    \
                   [TABLE_VERT][0] = 1, [TABLE_VERT][1] = 1 },   \
       .font = NULL,                                             \

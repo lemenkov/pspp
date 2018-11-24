@@ -1028,7 +1028,12 @@ render_cell (const struct render_page *page, const int ofs[TABLE_N_AXES],
       spill[axis][1] = rule_width (page, axis, cell->d[axis][1]) / 2;
     }
 
-  page->params->draw_cell (page->params->aux, cell, bb, spill, clip);
+  int color_idx = (cell->d[V][0] < page->h[V][0]
+                   || page->n[V] - (cell->d[V][0] + 1) < page->h[V][1]
+                   ? 0
+                   : (cell->d[V][0] - page->h[V][0]) & 1);
+  page->params->draw_cell (page->params->aux, cell, color_idx,
+                           bb, spill, clip);
 }
 
 /* Draws the cells of PAGE indicated in BB. */
