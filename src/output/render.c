@@ -784,6 +784,13 @@ render_page_create (const struct render_params *params, struct table *table)
         table_cell_free (&cell);
       }
 
+  /* In pathological cases, spans can cause the minimum width of a column to
+     exceed the maximum width.  This bollixes our interpolation algorithm
+     later, so fix it up. */
+  for (i = 0; i < nc; i++)
+    if (columns[MIN][i].width > columns[MAX][i].width)
+      columns[MAX][i].width = columns[MIN][i].width;
+
   /* Decide final column widths. */
   for (i = 0; i < 2; i++)
     table_widths[i] = calculate_table_width (table_nc (table),
