@@ -407,15 +407,11 @@ static void
 distribute_spanned_width (int width,
                           struct render_row *rows, const int *rules, int n)
 {
-  int total_unspanned;
-  double w, d0, d1, d;
-  int x;
-
   /* Sum up the unspanned widths of the N rows for use as weights. */
-  total_unspanned = 0;
-  for (x = 0; x < n; x++)
+  int total_unspanned = 0;
+  for (int x = 0; x < n; x++)
     total_unspanned += rows[x].unspanned;
-  for (x = 0; x < n - 1; x++)
+  for (int x = 0; x < n - 1; x++)
     total_unspanned += rules[x + 1];
   if (total_unspanned >= width)
     return;
@@ -433,11 +429,6 @@ distribute_spanned_width (int width,
      unspanned weights when 'total_unspanned' is 0 (because that would cause a
      division by zero).
 
-     This implementation uses floating-point types and operators, but all the
-     values involved are integers.  For integers smaller than 53 bits, this
-     should not lose any precision, and it should degrade gracefully for larger
-     values.
-
      The calculation we want to do is this:
 
         w0 = width / n
@@ -454,18 +445,18 @@ distribute_spanned_width (int width,
      the rule on the right.  That way each rule contributes to both the cell on
      its left and on its right.)
   */
-  d0 = n;
-  d1 = 2.0 * (total_unspanned > 0 ? total_unspanned : 1.0);
-  d = d0 * d1;
+  long long int d0 = n;
+  long long int d1 = 2LL * MAX (total_unspanned, 1);
+  long long int d = d0 * d1;
   if (total_unspanned > 0)
-    d *= 2.0;
-  w = floor (d / 2.0);
-  for (x = 0; x < n; x++)
+    d *= 2;
+  long long int w = d / 2;
+  for (int x = 0; x < n; x++)
     {
       w += width * d1;
       if (total_unspanned > 0)
         {
-          double unspanned = rows[x].unspanned * 2.0;
+          long long int unspanned = rows[x].unspanned * 2LL;
           if (x < n - 1)
             unspanned += rules[x + 1];
           if (x > 0)
@@ -629,31 +620,21 @@ create_page_with_interpolated_widths (const struct render_params *params,
                                       const struct render_row *rows_max,
                                       int w_min, int w_max, const int *rules)
 {
-  /* This implementation uses floating-point types and operators, but all the
-     values involved are integers.  For integers smaller than 53 bits, this
-     should not lose any precision, and it should degrade gracefully for larger
-     values. */
   const int n = table->n[H];
-  const double avail = params->size[H] - w_min;
-  const double wanted = w_max - w_min;
-  struct render_page *page;
-  double w;
-  int *cph;
-  int x;
+  const long long int avail = params->size[H] - w_min;
+  const long long int wanted = w_max - w_min;
 
   assert (wanted > 0);
 
-  page = render_page_allocate (params, table);
+  struct render_page *page = render_page_allocate (params, table);
 
-  cph = page->cp[H];
+  int *cph = page->cp[H];
   *cph = 0;
-  w = (int) wanted / 2;
-  for (x = 0; x < n; x++)
+  long long int w = wanted / 2;
+  for (int x = 0; x < n; x++)
     {
-      int extra;
-
       w += avail * (rows_max[x].width - rows_min[x].width);
-      extra = w / wanted;
+      int extra = w / wanted;
       w -= extra * wanted;
 
       cph[1] = cph[0] + rules[x];
