@@ -38,6 +38,10 @@ AT_CHECK([pspp main.sps & sleep 1; kill $!; wait $!], [143], [], [ignore])
 AT_CLEANUP
 
 AT_SETUP([SIGSEGV yields error report])
+
+# This test intentionally causes SIGSEGV, so make Address Sanitizer ignore it.
+ASAN_OPTIONS=$ASAN_OPTIONS:handle_segv=0; export ASAN_OPTIONS
+
 AT_CHECK([[echo 'host command=["kill -SEGV $PPID"].' | pspp -O format=csv]],
   [139], [], [stderr])
 
