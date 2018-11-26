@@ -64,6 +64,9 @@ struct text_item
     struct output_item output_item;
     char *text;                 /* The content. */
     enum text_item_type type;   /* Type. */
+    char *font;
+    int font_size;
+    bool bold, italic, underline;
   };
 
 struct text_item *text_item_create (enum text_item_type, const char *text);

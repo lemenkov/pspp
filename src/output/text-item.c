@@ -37,7 +37,7 @@
 struct text_item *
 text_item_create_nocopy (enum text_item_type type, char *text)
 {
-  struct text_item *item = xmalloc (sizeof *item);
+  struct text_item *item = xzalloc (sizeof *item);
   output_item_init (&item->output_item, &text_item_class);
   item->text = text;
   item->type = type;
@@ -95,6 +95,7 @@ text_item_destroy (struct output_item *output_item)
 {
   struct text_item *item = to_text_item (output_item);
   free (item->text);
+  free (item->font);
   free (item);
 }
 

@@ -21,6 +21,7 @@
 #include "libpspp/assertion.h"
 #include "libpspp/cast.h"
 #include "libpspp/message.h"
+#include "libpspp/pool.h"
 #include "libpspp/start-date.h"
 #include "libpspp/str.h"
 #include "libpspp/string-map.h"
@@ -1614,14 +1615,26 @@ xr_render_eject (void)
 }
 
 static struct xr_render_fsm *
-xr_create_text_renderer (struct xr_driver *xr, const char *text)
+xr_create_text_renderer (struct xr_driver *xr, const struct text_item *item)
 {
-  struct table_item *table_item;
-  struct xr_render_fsm *fsm;
+  struct tab_table *tab = tab_create (1, 1);
 
-  table_item = table_item_create (table_from_string (TAB_LEFT, text),
-                                  NULL, NULL);
-  fsm = xr_render_table (xr, table_item);
+  struct cell_style *style = pool_alloc (tab->container, sizeof *style);
+  *style = (struct cell_style) CELL_STYLE_INITIALIZER;
+  if (item->font)
+    {
+      puts (item->font);
+      style->font = pool_strdup (tab->container, item->font);
+    }
+  style->font_size = item->font_size;
+  style->bold = item->bold;
+  style->italic = item->italic;
+  style->underline = item->underline;
+  tab->styles[0] = style;
+
+  tab_text (tab, 0, 0, TAB_LEFT, text_item_get_text (item));
+  struct table_item *table_item = table_item_create (&tab->table, NULL, NULL);
+  struct xr_render_fsm *fsm = xr_render_table (xr, table_item);
   table_item_unref (table_item);
 
   return fsm;
@@ -1659,7 +1672,7 @@ xr_render_text (struct xr_driver *xr, const struct text_item *text_item)
       break;
 
     default:
-      return xr_create_text_renderer (xr, text);
+      return xr_create_text_renderer (xr, text_item);
     }
 
   return NULL;
@@ -1670,12 +1683,11 @@ xr_render_message (struct xr_driver *xr,
                    const struct message_item *message_item)
 {
   const struct msg *msg = message_item_get_msg (message_item);
-  struct xr_render_fsm *fsm;
-  char *s;
-
-  s = msg_to_string (msg, message_item->command_name);
-  fsm = xr_create_text_renderer (xr, s);
+  char *s = msg_to_string (msg, message_item->command_name);
+  struct text_item *item = text_item_create (TEXT_ITEM_PARAGRAPH, s);
   free (s);
+  struct xr_render_fsm *fsm = xr_create_text_renderer (xr, item);
+  text_item_unref (item);
 
   return fsm;
 }
