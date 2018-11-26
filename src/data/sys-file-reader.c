@@ -1544,22 +1544,9 @@ parse_format_spec (struct sfm_reader *r, off_t pos, unsigned int format,
                    int *n_warnings)
 {
   const int max_warnings = 8;
-  uint8_t raw_type = format >> 16;
-  uint8_t w = format >> 8;
-  uint8_t d = format;
   struct fmt_spec f;
-  bool ok;
 
-  f.w = w;
-  f.d = d;
-
-  msg_disable ();
-  ok = (fmt_from_io (raw_type, &f.type)
-        && fmt_check_output (&f)
-        && fmt_check_width_compat (&f, var_get_width (v)));
-  msg_enable ();
-
-  if (ok)
+  if (fmt_from_u32 (format, var_get_width (v), false, &f))
     {
       if (which == PRINT_FORMAT)
         var_set_print_format (v, &f);

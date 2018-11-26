@@ -895,6 +895,40 @@ fmt_from_io (int io, enum fmt_type *fmt_type)
     }
 }
 
+/* Translate U32, which is in the form found in SAV and SPV files, into a
+   format specification, and stores the new specification in *F.
+
+   If LOOSE is false, checks that the format specification is appropriate as an
+   output format for a variable with the given WIDTH and reports an error if
+   not.  If LOOSE is true, instead adjusts the format's width and decimals as
+   necessary to be suitable.
+
+   Return true if successful, false if there was an error.. */
+bool
+fmt_from_u32 (uint32_t u32, int width, bool loose, struct fmt_spec *f)
+{
+  uint8_t raw_type = u32 >> 16;
+  uint8_t w = u32 >> 8;
+  uint8_t d = u32;
+
+  msg_disable ();
+  f->w = w;
+  f->d = d;
+  bool ok = fmt_from_io (raw_type, &f->type);
+  if (ok)
+    {
+      if (loose)
+        fmt_fix_output (f);
+      else
+        ok = fmt_check_output (f);
+    }
+  if (ok)
+    ok = fmt_check_width_compat (f, width);
+  msg_enable ();
+
+  return ok;
+}
+
 /* Returns true if TYPE may be used as an input format,
    false otherwise. */
 bool

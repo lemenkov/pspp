@@ -20,6 +20,7 @@
 /* Display format types. */
 
 #include <stdbool.h>
+#include <stdint.h>
 #include "data/val-type.h"
 #include "libpspp/str.h"
 
@@ -133,6 +134,7 @@ bool fmt_usable_for_input (enum fmt_type) PURE_FUNCTION;
 
 int fmt_to_io (enum fmt_type) PURE_FUNCTION;
 bool fmt_from_io (int io, enum fmt_type *);
+bool fmt_from_u32 (uint32_t, int var_width, bool loose, struct fmt_spec *);
 
 const char *fmt_date_template (enum fmt_type, int width) PURE_FUNCTION;
 const char *fmt_gui_name (enum fmt_type);
