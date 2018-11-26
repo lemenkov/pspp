@@ -711,11 +711,13 @@ run_oneway (const struct oneway_spec *cmd,
 
   for (v = 0; v < cmd->n_vars; ++v)
     {
-      struct payload payload;
-      payload.create = makeit;
-      payload.update = updateit;
-      payload.calculate = NULL;
-      payload.destroy = killit;
+      static const struct payload payload =
+        {
+          .create = makeit,
+          .update = updateit,
+          .calculate = NULL,
+          .destroy = killit
+        };
 
       ws.vws[v].iact = interaction_create (cmd->indep_var);
       ws.vws[v].cat = categoricals_create (&ws.vws[v].iact, 1, cmd->wv,
