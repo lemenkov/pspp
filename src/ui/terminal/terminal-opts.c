@@ -112,31 +112,6 @@ register_output_driver (struct terminal_opts *to)
     }
 }
 
-static void
-parse_output_option (struct terminal_opts *to, const char *option)
-{
-  const char *equals;
-  char *key, *value;
-
-  equals = strchr (option, '=');
-  if (equals == NULL)
-    {
-      error (0, 0, _("%s: output option missing `='"), option);
-      return;
-    }
-
-  key = xmemdup0 (option, equals - option);
-  if (string_map_contains (&to->options, key))
-    {
-      error (0, 0, _("%s: output option specified more than once"), key);
-      free (key);
-      return;
-    }
-
-  value = xmemdup0 (equals + 1, strlen (equals + 1));
-  string_map_insert_nocopy (&to->options, key, value);
-}
-
 static char *
 get_supported_formats (void)
 {
@@ -235,7 +210,7 @@ terminal_option_callback (int id, void *to_)
       break;
 
     case OPT_OUTPUT_OPTION:
-      parse_output_option (to, optarg);
+      output_driver_parse_option (optarg, &to->options);
       break;
 
     case OPT_NO_OUTPUT:

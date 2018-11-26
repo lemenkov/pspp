@@ -38,6 +38,7 @@
 #include "output/output-item.h"
 #include "output/text-item.h"
 
+#include "gl/error.h"
 #include "gl/xalloc.h"
 #include "gl/xmemdup0.h"
 
@@ -402,4 +403,26 @@ output_driver_create (struct string_map *options)
   free (device_string);
 
   return driver;
+}
+
+void
+output_driver_parse_option (const char *option, struct string_map *options)
+{
+  const char *equals = strchr (option, '=');
+  if (equals == NULL)
+    {
+      error (0, 0, _("%s: output option missing `='"), option);
+      return;
+    }
+
+  char *key = xmemdup0 (option, equals - option);
+  if (string_map_contains (options, key))
+    {
+      error (0, 0, _("%s: output option specified more than once"), key);
+      free (key);
+      return;
+    }
+
+  char *value = xmemdup0 (equals + 1, strlen (equals + 1));
+  string_map_insert_nocopy (options, key, value);
 }

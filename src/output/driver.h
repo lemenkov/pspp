@@ -31,6 +31,8 @@ void output_engine_pop (void);
 void output_submit (struct output_item *);
 void output_flush (void);
 
+void output_driver_parse_option (const char *option,
+                                 struct string_map *options);
 struct output_driver *output_driver_create (struct string_map *options);
 bool output_driver_is_registered (const struct output_driver *);
 
