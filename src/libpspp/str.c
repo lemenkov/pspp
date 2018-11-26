@@ -691,6 +691,14 @@ ss_last (struct substring ss)
   return ss.length > 0 ? (unsigned char) ss.string[ss.length - 1] : EOF;
 }
 
+/* Returns true if SS starts with PREFIX, false otherwise. */
+bool
+ss_starts_with (struct substring ss, struct substring prefix)
+{
+  return (ss.length >= prefix.length
+          && !memcmp (ss.string, prefix.string, prefix.length));
+}
+
 /* Returns true if SS ends with SUFFIX, false otherwise. */
 bool
 ss_ends_with (struct substring ss, struct substring suffix)
@@ -731,6 +739,16 @@ ss_find_byte (struct substring ss, char c)
 {
   const char *p = memchr (ss.string, c, ss.length);
   return p != NULL ? p - ss.string : SIZE_MAX;
+}
+
+/* Returns the offset in HAYSTACK of the first instance of NEEDLE,
+   or SIZE_MAX if NEEDLE does not occur in HAYSTACK. */
+size_t
+ss_find_substring (struct substring haystack, struct substring needle)
+{
+  const char *p = memmem (haystack.string, haystack.length,
+                          needle.string, needle.length);
+  return p != NULL ? p - haystack.string : SIZE_MAX;
 }
 
 /* Compares A and B and returns a strcmp()-type comparison
