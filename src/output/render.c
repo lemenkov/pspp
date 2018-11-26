@@ -1010,7 +1010,14 @@ render_cell (const struct render_page *page, const int ofs[TABLE_N_AXES],
         }
     }
 
-  page->params->draw_cell (page->params->aux, cell, bb, clip);
+  int spill[TABLE_N_AXES][2];
+  for (enum table_axis axis = 0; axis < TABLE_N_AXES; axis++)
+    {
+      spill[axis][0] = rule_width (page, axis, cell->d[axis][0]) / 2;
+      spill[axis][1] = rule_width (page, axis, cell->d[axis][1]) / 2;
+    }
+
+  page->params->draw_cell (page->params->aux, cell, bb, spill, clip);
 }
 
 /* Draws the cells of PAGE indicated in BB. */
@@ -1018,19 +1025,9 @@ static void
 render_page_draw_cells (const struct render_page *page,
                         int ofs[TABLE_N_AXES], int bb[TABLE_N_AXES][2])
 {
-  int x, y;
-
-  for (y = bb[V][0]; y < bb[V][1]; y++)
-    for (x = bb[H][0]; x < bb[H][1]; )
-      if (is_rule (x) || is_rule (y))
-        {
-          int d[TABLE_N_AXES];
-          d[H] = x;
-          d[V] = y;
-          render_rule (page, ofs, d);
-          x++;
-        }
-      else
+  for (int y = bb[V][0]; y < bb[V][1]; y++)
+    for (int x = bb[H][0]; x < bb[H][1]; )
+      if (!is_rule (x) && !is_rule (y))
         {
           struct table_cell cell;
 
@@ -1039,6 +1036,18 @@ render_page_draw_cells (const struct render_page *page,
             render_cell (page, ofs, &cell);
           x = rule_ofs (cell.d[H][1]);
           table_cell_free (&cell);
+        }
+      else
+        x++;
+
+  for (int y = bb[V][0]; y < bb[V][1]; y++)
+    for (int x = bb[H][0]; x < bb[H][1]; x++)
+      if (is_rule (x) || is_rule (y))
+        {
+          int d[TABLE_N_AXES];
+          d[H] = x;
+          d[V] = y;
+          render_rule (page, ofs, d);
         }
 }
 

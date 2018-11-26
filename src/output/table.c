@@ -145,6 +145,8 @@ table_get_cell (const struct table *table, int x, int y,
     {
       .fg = { 0, 0, 0 },
       .bg = { 255, 255, 255 },
+      .margin = { [TABLE_HORZ][0] = 8, [TABLE_HORZ][1] = 11,
+                  [TABLE_VERT][0] = 1, [TABLE_VERT][1] = 1 },
     };
   cell->style = &default_style;
 

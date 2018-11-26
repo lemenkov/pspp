@@ -100,7 +100,9 @@ struct render_params
        of the cell that lies within CLIP should actually be drawn, although BB
        should used to determine the layout of the cell. */
     void (*draw_cell) (void *aux, const struct table_cell *cell,
-                       int bb[TABLE_N_AXES][2], int clip[TABLE_N_AXES][2]);
+                       int bb[TABLE_N_AXES][2],
+                       int spill[TABLE_N_AXES][2],
+                       int clip[TABLE_N_AXES][2]);
 
     /* Auxiliary data passed to each of the above functions. */
     void *aux;

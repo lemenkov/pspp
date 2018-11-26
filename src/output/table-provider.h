@@ -61,6 +61,7 @@ cell_color_equal (const struct cell_color *a, const struct cell_color *b)
 struct cell_style
   {
     struct cell_color fg, bg;
+    int margin[TABLE_N_AXES][2];
   };
 
 /* A cell in a table. */

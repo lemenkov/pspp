@@ -229,6 +229,7 @@ static int ascii_measure_cell_height (void *, const struct table_cell *,
                                       int width);
 static void ascii_draw_cell (void *, const struct table_cell *,
                              int bb[TABLE_N_AXES][2],
+                             int spill[TABLE_N_AXES][2],
                              int clip[TABLE_N_AXES][2]);
 
 static struct ascii_driver *
@@ -622,7 +623,9 @@ ascii_measure_cell_height (void *a_, const struct table_cell *cell, int width)
 
 static void
 ascii_draw_cell (void *a_, const struct table_cell *cell,
-                 int bb[TABLE_N_AXES][2], int clip[TABLE_N_AXES][2])
+                 int bb[TABLE_N_AXES][2],
+                 int spill[TABLE_N_AXES][2] UNUSED,
+                 int clip[TABLE_N_AXES][2])
 {
   struct ascii_driver *a = a_;
   int w, h;
