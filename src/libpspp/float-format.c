@@ -213,58 +213,6 @@ get_bits (uint64_t x, int ofs, int cnt)
   return (x >> ofs) & ((UINT64_C(1) << cnt) - 1);
 }
 
-/* Returns the 32-bit unsigned integer at P,
-   which need not be aligned. */
-static inline uint32_t
-get_uint32 (const void *p)
-{
-  uint32_t x;
-  memcpy (&x, p, sizeof x);
-  return x;
-}
-
-/* Returns the 64-bit unsigned integer at P,
-   which need not be aligned. */
-static inline uint64_t
-get_uint64 (const void *p)
-{
-  uint64_t x;
-  memcpy (&x, p, sizeof x);
-  return x;
-}
-
-/* Stores 32-bit unsigned integer X at P,
-   which need not be aligned. */
-static inline void
-put_uint32 (uint32_t x, void *p)
-{
-  memcpy (p, &x, sizeof x);
-}
-
-/* Stores 64-bit unsigned integer X at P,
-   which need not be aligned. */
-static inline void
-put_uint64 (uint64_t x, void *p)
-{
-  memcpy (p, &x, sizeof x);
-}
-
-/* Returns NATIVE converted to a form that, when stored in
-   memory, will be in little-endian byte order. */
-static inline uint32_t
-native_to_le32 (uint32_t native)
-{
-  return INTEGER_NATIVE == INTEGER_LSB_FIRST ? native : bswap_32 (native);
-}
-
-/* Returns NATIVE converted to a form that, when stored in
-   memory, will be in big-endian byte order. */
-static inline uint32_t
-native_to_be32 (uint32_t native)
-{
-  return INTEGER_NATIVE == INTEGER_MSB_FIRST ? native : bswap_32 (native);
-}
-
 /* Returns NATIVE converted to a form that, when stored in
    memory, will be in VAX-endian byte order. */
 static inline uint32_t
@@ -272,22 +220,6 @@ native_to_vax32 (uint32_t native)
 {
   return native_to_be32 (((native & 0xff00ff00) >> 8) |
                          ((native & 0x00ff00ff) << 8));
-}
-
-/* Returns NATIVE converted to a form that, when stored in
-   memory, will be in little-endian byte order. */
-static inline uint64_t
-native_to_le64 (uint64_t native)
-{
-  return INTEGER_NATIVE == INTEGER_LSB_FIRST ? native : bswap_64 (native);
-}
-
-/* Returns NATIVE converted to a form that, when stored in
-   memory, will be in big-endian byte order. */
-static inline uint64_t
-native_to_be64 (uint64_t native)
-{
-  return INTEGER_NATIVE == INTEGER_MSB_FIRST ? native : bswap_64 (native);
 }
 
 /* Returns NATIVE converted to a form that, when stored in
@@ -301,22 +233,6 @@ native_to_vax64 (uint64_t native)
                          ((native & UINT64_C(0x0000000000ff00ff)) << 40));
 }
 
-/* Given LE, obtained from memory in little-endian format,
-   returns its value. */
-static inline uint32_t
-le_to_native32 (uint32_t le)
-{
-  return INTEGER_NATIVE == INTEGER_LSB_FIRST ? le : bswap_32 (le);
-}
-
-/* Given BE, obtained from memory in big-endian format, returns
-   its value. */
-static inline uint32_t
-be_to_native32 (uint32_t be)
-{
-  return INTEGER_NATIVE == INTEGER_MSB_FIRST ? be : bswap_32 (be);
-}
-
 /* Given VAX, obtained from memory in VAX-endian format, returns
    its value. */
 static inline uint32_t
@@ -324,22 +240,6 @@ vax_to_native32 (uint32_t vax)
 {
   uint32_t be = be_to_native32 (vax);
   return ((be & 0xff00ff00) >> 8) | ((be & 0x00ff00ff) << 8);
-}
-
-/* Given LE, obtained from memory in little-endian format,
-   returns its value. */
-static inline uint64_t
-le_to_native64 (uint64_t le)
-{
-  return INTEGER_NATIVE == INTEGER_LSB_FIRST ? le : bswap_64 (le);
-}
-
-/* Given BE, obtained from memory in big-endian format, returns
-   its value. */
-static inline uint64_t
-be_to_native64 (uint64_t be)
-{
-  return INTEGER_NATIVE == INTEGER_MSB_FIRST ? be : bswap_64 (be);
 }
 
 /* Given VAX, obtained from memory in VAX-endian format, returns
