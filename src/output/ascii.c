@@ -463,7 +463,12 @@ ascii_output_table_item (struct ascii_driver *a,
       used = render_pager_draw_next (p, a->length - a->y);
       if (used == 0)
         {
-          assert (a->y >= 0);
+          /* Make sure that we're not in a loop where the table we're rendering
+             can't be broken to fit on a page.  (The check on
+             render_pager_has_next() allows for objects that turn out to be
+             empty when we try to render them.)  */
+          assert (a->y > 0 || !render_pager_has_next (p));
+
           ascii_close_page (a);
           if (!ascii_open_page (a))
             break;
