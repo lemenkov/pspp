@@ -92,21 +92,26 @@ segmenter_parse_shbang__ (struct segmenter *s, const char *input, size_t n,
         {
           if (input[1] == '!')
             {
-              int ofs;
+              for (int ofs = 2; ; ofs++)
+                {
+                  if (ofs >= n)
+                    {
+                      if (!eof)
+                        return -1;
+                    }
+                  else if (input[ofs] == '\n')
+                    {
+                      if (input[ofs - 1] == '\r')
+                        ofs--;
+                    }
+                  else
+                    continue;
 
-              for (ofs = 2; ofs < n; ofs++)
-                if (input[ofs] == '\n')
-                  {
-                    if (input[ofs] == '\n' && input[ofs - 1] == '\r')
-                      ofs--;
-
-                    s->state = S_GENERAL;
-                    s->substate = SS_START_OF_COMMAND;
-                    *type = SEG_SHBANG;
-                    return ofs;
-                  }
-
-              return eof ? ofs : -1;
+                  s->state = S_GENERAL;
+                  s->substate = SS_START_OF_COMMAND;
+                  *type = SEG_SHBANG;
+                  return ofs;
+                }
             }
         }
       else if (!eof)
