@@ -43,6 +43,12 @@ struct zip_member *zip_member_open (struct zip_reader *zr, const char *member);
    Returns the number of bytes read, or -1 on error */
 int zip_member_read (struct zip_member *zm, void *buf, size_t n);
 
+/* Read all of ZM into memory, storing the data in *DATAP and its size in *NP.
+   Returns NULL if successful, otherwise an error string that the caller
+   must eventually free(). */
+char *zip_member_read_all (struct zip_reader *, const char *member_name,
+                           void **datap, size_t *np) WARN_UNUSED_RESULT;
+
 void zip_member_finish (struct zip_member *zm);
 
 

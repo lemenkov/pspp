@@ -232,6 +232,39 @@ zip_member_read (struct zip_member *zm, void *buf, size_t bytes)
   return bytes_read;
 }
 
+/* Read all of ZM into memory, storing the data in *DATAP and its size in *NP.
+   Returns NULL if successful, otherwise an error string that the caller
+   must eventually free(). */
+char * WARN_UNUSED_RESULT
+zip_member_read_all (struct zip_reader *zr, const char *member_name,
+                     void **datap, size_t *np)
+{
+  struct zip_member *zm = zip_member_open (zr, member_name);
+  if (!zm)
+    {
+      *datap = NULL;
+      *np = 0;
+      return ds_steal_cstr (zr->errs);
+    }
+
+  *datap = xmalloc (zm->ucomp_size);
+  *np = zm->ucomp_size;
+
+  uint8_t *data = *datap;
+  while (zm->bytes_unread)
+    if (zip_member_read (zm, data + (zm->ucomp_size - zm->bytes_unread),
+                         zm->bytes_unread) == -1)
+      {
+        zip_member_finish (zm);
+        free (*datap);
+        *datap = NULL;
+        *np = 0;
+        return ds_steal_cstr (zr->errs);
+      }
+
+  zip_member_finish (zm);
+  return NULL;
+}
 
 /* Read a central directory header from FILE and initializes ZE with it.
    Returns true if successful, false otherwise.  On error, appends error
