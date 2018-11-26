@@ -407,7 +407,9 @@ calc_percentiles (const struct frq_proc *frq, const struct var_freqs *vf)
   for (; percentile_idx < frq->n_percentiles; percentile_idx++)
     {
       struct percentile *pc = &frq->percentiles[percentile_idx];
-      pc->value = ft->valid[ft->n_valid - 1].values[0].f;
+      pc->value = (ft->n_valid > 0
+                   ? ft->valid[ft->n_valid - 1].values[0].f
+                   : SYSMIS);
     }
 }
 
@@ -1543,10 +1545,19 @@ calc_stats (const struct var_freqs *vf, double d[FRQ_ST_count])
   moments_destroy (m);
 
   /* Formulae below are taken from _SPSS Statistical Algorithms_. */
-  d[FRQ_ST_MINIMUM] = ft->valid[0].values[0].f;
-  d[FRQ_ST_MAXIMUM] = ft->valid[ft->n_valid - 1].values[0].f;
+  if (ft->n_valid > 0)
+    {
+      d[FRQ_ST_MINIMUM] = ft->valid[0].values[0].f;
+      d[FRQ_ST_MAXIMUM] = ft->valid[ft->n_valid - 1].values[0].f;
+      d[FRQ_ST_RANGE] = d[FRQ_ST_MAXIMUM] - d[FRQ_ST_MINIMUM];
+    }
+  else
+    {
+      d[FRQ_ST_MINIMUM] = SYSMIS;
+      d[FRQ_ST_MAXIMUM] = SYSMIS;
+      d[FRQ_ST_RANGE] = SYSMIS;
+    }
   d[FRQ_ST_MODE] = X_mode;
-  d[FRQ_ST_RANGE] = d[FRQ_ST_MAXIMUM] - d[FRQ_ST_MINIMUM];
   d[FRQ_ST_SUM] = d[FRQ_ST_MEAN] * W;
   d[FRQ_ST_STDDEV] = sqrt (d[FRQ_ST_VARIANCE]);
   d[FRQ_ST_SEMEAN] = d[FRQ_ST_STDDEV] / sqrt (W);
