@@ -36,9 +36,7 @@ end data.
 
 descript all/stat=all/format=serial.
 ])
-AT_CHECK([pspp -O format=csv descriptives.sps], [0],
-  [Title: Test DESCRIPTIVES procedure
-
+AT_CHECK([pspp -O format=csv descriptives.sps], [0], [dnl
 Table: Reading 1 record from INLINE.
 Variable,Record,Columns,Format
 V0,1,1-  1,F1.0

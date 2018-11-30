@@ -50,6 +50,7 @@ struct output_engine
     struct llx_list drivers;       /* Contains "struct output_driver"s. */
     struct string deferred_syntax; /* TEXT_ITEM_SYNTAX being accumulated. */
     char *command_name;            /* Name of command being processed. */
+    char *title, *subtitle;        /* Components of page title. */
   };
 
 static const struct output_driver_factory *factories[];
@@ -78,6 +79,8 @@ output_engine_push (void)
   llx_init (&e->drivers);
   ds_init_empty (&e->deferred_syntax);
   e->command_name = NULL;
+  e->title = NULL;
+  e->subtitle = NULL;
 }
 
 void
@@ -94,6 +97,8 @@ output_engine_pop (void)
     }
   ds_destroy (&e->deferred_syntax);
   free (e->command_name);
+  free (e->title);
+  free (e->subtitle);
 }
 
 void
@@ -224,6 +229,37 @@ output_flush (void)
       if (d->device_type & SETTINGS_DEVICE_TERMINAL && d->class->flush != NULL)
         d->class->flush (d);
     }
+}
+
+static void
+output_set_title__ (struct output_engine *e, char **dst, const char *src)
+{
+  free (*dst);
+  *dst = src ? xstrdup (src) : NULL;
+
+  char *page_title
+    = (e->title && e->subtitle ? xasprintf ("%s\n%s", e->title, e->subtitle)
+       : e->title ? xstrdup (e->title)
+       : e->subtitle ? xstrdup (e->subtitle)
+       : xzalloc (1));
+  text_item_submit (text_item_create_nocopy (TEXT_ITEM_PAGE_TITLE,
+                                             page_title));
+}
+
+void
+output_set_title (const char *title)
+{
+  struct output_engine *e = engine_stack_top ();
+
+  output_set_title__ (e, &e->title, title);
+}
+
+void
+output_set_subtitle (const char *subtitle)
+{
+  struct output_engine *e = engine_stack_top ();
+
+  output_set_title__ (e, &e->subtitle, subtitle);
 }
 
 void

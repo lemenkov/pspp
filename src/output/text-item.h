@@ -39,8 +39,7 @@ enum text_item_type
     TEXT_ITEM_COMMAND_CLOSE,    /* Command completed. */
 
     /* Headings. */
-    TEXT_ITEM_TITLE,            /* TITLE command. */
-    TEXT_ITEM_SUBTITLE,         /* SUBTITLE command. */
+    TEXT_ITEM_PAGE_TITLE,       /* TITLE and SUBTITLE commands. */
     TEXT_ITEM_SUBHEAD,          /* Heading within a command's output.*/
 
     /* Syntax. */

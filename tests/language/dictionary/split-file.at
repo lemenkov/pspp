@@ -41,8 +41,6 @@ list.
 ])
 AT_CHECK([pspp -o pspp.csv split-file.sps])
 AT_CHECK([cat pspp.csv], [0], [dnl
-Title: Test SPLIT FILE utility
-
 Variable,Value,Label
 X,1,
 

@@ -73,8 +73,6 @@ COUNT c=v1 to v2('2',' 4','1').
 LIST.
 ])
 AT_CHECK([pspp -O format=csv count.sps], [0], [dnl
-Title: Test COUNT transformation
-
 Table: Reading 1 record from INLINE.
 Variable,Record,Columns,Format
 v1,1,1-  2,A2

@@ -484,8 +484,7 @@ ascii_submit (struct output_driver *driver,
 
       switch (type)
         {
-        case TEXT_ITEM_TITLE:
-        case TEXT_ITEM_SUBTITLE:
+        case TEXT_ITEM_PAGE_TITLE:
         case TEXT_ITEM_COMMAND_OPEN:
         case TEXT_ITEM_COMMAND_CLOSE:
           break;

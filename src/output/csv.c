@@ -150,20 +150,6 @@ csv_output_field (struct csv_driver *csv, const char *field)
     fputs (field, csv->file);
 }
 
-static void PRINTF_FORMAT (2, 3)
-csv_output_field_format (struct csv_driver *csv, const char *format, ...)
-{
-  va_list args;
-  char *s;
-
-  va_start (args, format);
-  s = xvasprintf (format, args);
-  va_end (args);
-
-  csv_output_field (csv, s);
-  free (s);
-}
-
 static void
 csv_format_footnotes (const struct footnote **f, size_t n, struct string *s)
 {
@@ -283,24 +269,11 @@ csv_submit (struct output_driver *driver,
       const char *text = text_item_get_text (text_item);
 
       if (type == TEXT_ITEM_COMMAND_OPEN || type == TEXT_ITEM_COMMAND_CLOSE
-          || type == TEXT_ITEM_SYNTAX)
+          || type == TEXT_ITEM_SYNTAX || type == TEXT_ITEM_PAGE_TITLE)
         return;
 
       csv_put_separator (csv);
-      switch (type)
-        {
-        case TEXT_ITEM_TITLE:
-          csv_output_field_format (csv, "Title: %s", text);
-          break;
-
-        case TEXT_ITEM_SUBTITLE:
-          csv_output_field_format (csv, "Subtitle: %s", text);
-          break;
-
-        default:
-          csv_output_field (csv, text);
-          break;
-        }
+      csv_output_field (csv, text);
       putc ('\n', csv->file);
     }
   else if (is_message_item (output_item))

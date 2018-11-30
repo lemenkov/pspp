@@ -27,42 +27,33 @@
 #include "libpspp/message.h"
 #include "libpspp/start-date.h"
 #include "libpspp/version.h"
-#include "output/text-item.h"
+#include "output/driver.h"
 
 #include "gl/xalloc.h"
 
 #include "gettext.h"
 #define _(msgid) gettext (msgid)
 
-static int parse_title (struct lexer *, enum text_item_type);
-static void set_title (const char *title, enum text_item_type);
+static int
+parse_title (struct lexer *lexer, void (*set_title) (const char *))
+{
+  if (!lex_force_string (lexer))
+    return CMD_FAILURE;
+  set_title (lex_tokcstr (lexer));
+  lex_get (lexer);
+  return CMD_SUCCESS;
+}
 
 int
 cmd_title (struct lexer *lexer, struct dataset *ds UNUSED)
 {
-  return parse_title (lexer, TEXT_ITEM_TITLE);
+  return parse_title (lexer, output_set_title);
 }
 
 int
 cmd_subtitle (struct lexer *lexer, struct dataset *ds UNUSED)
 {
-  return parse_title (lexer, TEXT_ITEM_SUBTITLE);
-}
-
-static int
-parse_title (struct lexer *lexer, enum text_item_type type)
-{
-  if (!lex_force_string (lexer))
-    return CMD_FAILURE;
-  set_title (lex_tokcstr (lexer), type);
-  lex_get (lexer);
-  return CMD_SUCCESS;
-}
-
-static void
-set_title (const char *title, enum text_item_type type)
-{
-  text_item_submit (text_item_create (type, title));
+  return parse_title (lexer, output_set_subtitle);
 }
 
 /* Performs the FILE LABEL command. */

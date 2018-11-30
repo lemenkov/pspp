@@ -261,12 +261,7 @@ html_submit (struct output_driver *driver,
 
       switch (text_item_get_type (text_item))
         {
-        case TEXT_ITEM_TITLE:
-          print_title_tag (html->file, "H1", s);
-          break;
-
-        case TEXT_ITEM_SUBTITLE:
-          print_title_tag (html->file, "H2", s);
+        case TEXT_ITEM_PAGE_TITLE:
           break;
 
         case TEXT_ITEM_COMMAND_OPEN:

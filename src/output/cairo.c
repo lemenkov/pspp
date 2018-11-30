@@ -1662,18 +1662,10 @@ static struct xr_render_fsm *
 xr_render_text (struct xr_driver *xr, const struct text_item *text_item)
 {
   enum text_item_type type = text_item_get_type (text_item);
-  const char *text = text_item_get_text (text_item);
 
   switch (type)
     {
-    case TEXT_ITEM_TITLE:
-      free (xr->title);
-      xr->title = xstrdup (text);
-      break;
-
-    case TEXT_ITEM_SUBTITLE:
-      free (xr->subtitle);
-      xr->subtitle = xstrdup (text);
+    case TEXT_ITEM_PAGE_TITLE:
       break;
 
     case TEXT_ITEM_COMMAND_CLOSE:
