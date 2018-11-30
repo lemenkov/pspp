@@ -89,8 +89,12 @@ static inline bool string_map_is_empty (const struct string_map *);
 
 bool string_map_contains (const struct string_map *, const char *);
 const char *string_map_find (const struct string_map *, const char *);
+const char *string_map_find__ (const struct string_map *, const char *,
+                               size_t length);
 struct string_map_node *string_map_find_node (const struct string_map *,
                                               const char *);
+struct string_map_node *string_map_find_node__ (const struct string_map *,
+                                                const char *, size_t length);
 char *string_map_find_and_delete (struct string_map *, const char *key);
 
 struct string_map_node *string_map_insert (struct string_map *,

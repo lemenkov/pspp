@@ -26,8 +26,9 @@
 
 #include "gl/xalloc.h"
 
-static struct string_map_node *string_map_find_node__ (
-  const struct string_map *, const char *key, unsigned int hash);
+static struct string_map_node *string_map_find_node_with_hash (
+  const struct string_map *, const char *key, size_t length,
+  unsigned int hash);
 static bool string_map_delete__ (struct string_map *, const char *key,
                                  unsigned int hash);
 static struct string_map_node *string_map_insert__ (struct string_map *,
@@ -132,6 +133,17 @@ string_map_contains (const struct string_map *map, const char *key)
   return string_map_find_node (map, key) != NULL;
 }
 
+/* If MAP contains KEY, which is LENGTH bytes long, as a key, returns the
+   corresponding value.  Otherwise, returns a null pointer. */
+const char *
+string_map_find__ (const struct string_map *map, const char *key,
+                   size_t length)
+{
+  const struct string_map_node *node = string_map_find_node__ (map, key,
+                                                               length);
+  return node != NULL ? node->value : NULL;
+}
+
 /* If MAP contains KEY as a key, returns the corresponding value.  Otherwise,
    returns a null pointer. */
 const char *
@@ -144,9 +156,19 @@ string_map_find (const struct string_map *map, const char *key)
 /* If MAP contains KEY as a key, returns the corresponding node.  Otherwise,
    returns a null pointer. */
 struct string_map_node *
+string_map_find_node__ (const struct string_map *map, const char *key,
+                        size_t length)
+{
+  return string_map_find_node_with_hash (map, key, length,
+                                         hash_bytes (key, length, 0));
+}
+
+/* If MAP contains KEY as a key, returns the corresponding node.  Otherwise,
+   returns a null pointer. */
+struct string_map_node *
 string_map_find_node (const struct string_map *map, const char *key)
 {
-  return string_map_find_node__ (map, key, hash_string (key, 0));
+  return string_map_find_node__ (map, key, strlen (key));
 }
 
 /* If MAP contains KEY as a key, deletes that key's node and returns its value,
@@ -172,8 +194,10 @@ string_map_find_and_delete (struct string_map *map, const char *key)
 struct string_map_node *
 string_map_insert (struct string_map *map, const char *key, const char *value)
 {
-  unsigned int hash = hash_string (key, 0);
-  struct string_map_node *node = string_map_find_node__ (map, key, hash);
+  size_t length = strlen (key);
+  unsigned int hash = hash_bytes (key, length, 0);
+  struct string_map_node *node = string_map_find_node_with_hash (map, key,
+                                                                 length, hash);
   if (node == NULL)
     node = string_map_insert__ (map, xstrdup (key), xstrdup (value), hash);
   return node;
@@ -186,8 +210,10 @@ string_map_insert (struct string_map *map, const char *key, const char *value)
 struct string_map_node *
 string_map_insert_nocopy (struct string_map *map, char *key, char *value)
 {
-  unsigned int hash = hash_string (key, 0);
-  struct string_map_node *node = string_map_find_node__ (map, key, hash);
+  size_t length = strlen (key);
+  unsigned int hash = hash_bytes (key, length, 0);
+  struct string_map_node *node = string_map_find_node_with_hash (map, key,
+                                                                 length, hash);
   if (node == NULL)
     node = string_map_insert__ (map, key, value, hash);
   else
@@ -204,8 +230,10 @@ string_map_insert_nocopy (struct string_map *map, char *key, char *value)
 struct string_map_node *
 string_map_replace (struct string_map *map, const char *key, const char *value)
 {
-  unsigned int hash = hash_string (key, 0);
-  struct string_map_node *node = string_map_find_node__ (map, key, hash);
+  size_t length = strlen (key);
+  unsigned int hash = hash_bytes (key, length, 0);
+  struct string_map_node *node = string_map_find_node_with_hash (map, key,
+                                                                 length, hash);
   if (node == NULL)
     node = string_map_insert__ (map, xstrdup (key), xstrdup (value), hash);
   else
@@ -219,8 +247,10 @@ string_map_replace (struct string_map *map, const char *key, const char *value)
 struct string_map_node *
 string_map_replace_nocopy (struct string_map *map, char *key, char *value)
 {
-  unsigned int hash = hash_string (key, 0);
-  struct string_map_node *node = string_map_find_node__ (map, key, hash);
+  size_t length = strlen (key);
+  unsigned int hash = hash_bytes (key, length, 0);
+  struct string_map_node *node = string_map_find_node_with_hash (map, key,
+                                                                 length, hash);
   if (node == NULL)
     node = string_map_insert__ (map, key, value, hash);
   else
@@ -275,7 +305,8 @@ string_map_insert_map (struct string_map *dst, const struct string_map *src)
 
   STRING_MAP_FOR_EACH_NODE (node, src)
     {
-      if (!string_map_find_node__ (dst, node->key, node->hmap_node.hash))
+      if (!string_map_find_node_with_hash (dst, node->key, strlen (node->key),
+                                           node->hmap_node.hash))
         string_map_insert__ (dst, xstrdup (node->key), xstrdup (node->value),
                              node->hmap_node.hash);
     }
@@ -292,7 +323,9 @@ string_map_replace_map (struct string_map *dst, const struct string_map *src)
   STRING_MAP_FOR_EACH_NODE (snode, src)
     {
       struct string_map_node *dnode;
-      dnode = string_map_find_node__ (dst, snode->key, snode->hmap_node.hash);
+      dnode = string_map_find_node_with_hash (dst, snode->key,
+                                              strlen (snode->key),
+                                              snode->hmap_node.hash);
       if (dnode != NULL)
         string_map_node_set_value (dnode, snode->value);
       else
@@ -326,14 +359,14 @@ string_map_get_values (const struct string_map *map, struct string_set *values)
 }
 
 static struct string_map_node *
-string_map_find_node__ (const struct string_map *map, const char *key,
-                        unsigned int hash)
+string_map_find_node_with_hash (const struct string_map *map, const char *key,
+                                size_t length, unsigned int hash)
 {
   struct string_map_node *node;
 
   HMAP_FOR_EACH_WITH_HASH (node, struct string_map_node, hmap_node,
                            hash, &map->hmap)
-    if (!strcmp (key, node->key))
+    if (!strncmp (key, node->key, length) && node->key[length] == '\0')
       return node;
 
   return NULL;
@@ -343,7 +376,8 @@ static bool
 string_map_delete__ (struct string_map *map, const char *key,
                      unsigned int hash)
 {
-  struct string_map_node *node = string_map_find_node__ (map, key, hash);
+  struct string_map_node *node
+    = string_map_find_node_with_hash (map, key, strlen (key), hash);
   if (node != NULL)
     {
       string_map_delete_node (map, node);
