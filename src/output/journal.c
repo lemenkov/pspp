@@ -41,7 +41,6 @@ struct journal_driver
   {
     struct output_driver driver;
     FILE *file;
-    char *command_name;
 
     /* Name of journal file. */
     char *file_name;
@@ -80,10 +79,7 @@ journal_destroy (struct output_driver *driver)
   struct journal_driver *j = journal_driver_cast (driver);
 
   if ( !j->destroyed)
-    {
-      journal_close ();
-      free (j->command_name);
-    }
+    journal_close ();
 
   j->destroyed = true;
 }
@@ -107,8 +103,6 @@ journal_submit (struct output_driver *driver, const struct output_item *item)
 {
   struct journal_driver *j = journal_driver_cast (driver);
 
-  output_driver_track_current_command (item, &j->command_name);
-
   if (is_text_item (item))
     {
       const struct text_item *text_item = to_text_item (item);
@@ -121,7 +115,7 @@ journal_submit (struct output_driver *driver, const struct output_item *item)
     {
       const struct message_item *message_item = to_message_item (item);
       const struct msg *msg = message_item_get_msg (message_item);
-      char *s = msg_to_string (msg, j->command_name);
+      char *s = msg_to_string (msg, message_item->command_name);
       journal_output (j, s);
       free (s);
     }
@@ -145,7 +139,6 @@ journal_init (void)
   output_driver_init (&journal.driver, &journal_class, "journal",
 		      SETTINGS_DEVICE_UNFILTERED);
   journal.file = NULL;
-  journal.command_name = NULL;
 
   /* Register journal driver. */
   output_driver_register (&journal.driver);

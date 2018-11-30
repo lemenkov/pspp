@@ -73,9 +73,7 @@ struct output_driver_class
     void (*flush) (struct output_driver *driver);
   };
 
-/* Useful for output driver implementation. */
-void output_driver_track_current_command (const struct output_item *, char **);
-
+
 /* An abstract way for the output subsystem to create an output driver. */
 struct output_driver_factory
   {

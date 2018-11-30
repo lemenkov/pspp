@@ -70,9 +70,6 @@ struct odt_driver
   /* Number of tables so far. */
   int table_num;
 
-  /* Name of current command. */
-  char *command_name;
-
   /* Number of footnotes so far. */
   int n_footnotes;
 };
@@ -387,7 +384,6 @@ odt_destroy (struct output_driver *driver)
     }
 
   free (odt->file_name);
-  free (odt->command_name);
   free (odt);
 }
 
@@ -587,8 +583,6 @@ odt_submit (struct output_driver *driver,
 {
   struct odt_driver *odt = odt_driver_cast (driver);
 
-  output_driver_track_current_command (output_item, &odt->command_name);
-
   if (is_table_item (output_item))
     write_table (odt, to_table_item (output_item));
   else if (is_text_item (output_item))
@@ -602,7 +596,7 @@ odt_submit (struct output_driver *driver,
     {
       const struct message_item *message_item = to_message_item (output_item);
       const struct msg *msg = message_item_get_msg (message_item);
-      char *s = msg_to_string (msg, odt->command_name);
+      char *s = msg_to_string (msg, message_item->command_name);
       odt_output_text (odt, s);
       free (s);
     }

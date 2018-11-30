@@ -48,6 +48,7 @@ struct output_engine
   {
     struct llx_list drivers;       /* Contains "struct output_driver"s. */
     struct string deferred_syntax; /* TEXT_ITEM_SYNTAX being accumulated. */
+    char *command_name;            /* Name of command being processed. */
   };
 
 static const struct output_driver_factory *factories[];
@@ -75,6 +76,7 @@ output_engine_push (void)
   e = &engine_stack[n_stack++];
   llx_init (&e->drivers);
   ds_init_empty (&e->deferred_syntax);
+  e->command_name = NULL;
 }
 
 void
@@ -90,6 +92,7 @@ output_engine_pop (void)
       output_driver_destroy (d);
     }
   ds_destroy (&e->deferred_syntax);
+  free (e->command_name);
 }
 
 void
@@ -174,6 +177,33 @@ output_submit (struct output_item *item)
     }
 
   flush_deferred_syntax (e);
+
+  if (is_text_item (item))
+    {
+      const struct text_item *text_item = to_text_item (item);
+      const char *text = text_item_get_text (text_item);
+      enum text_item_type type = text_item_get_type (text_item);
+
+      if (type == TEXT_ITEM_COMMAND_OPEN)
+        {
+          free (e->command_name);
+          e->command_name = xstrdup (text);
+        }
+      else if (type == TEXT_ITEM_COMMAND_CLOSE)
+        {
+          free (e->command_name);
+          e->command_name = NULL;
+        }
+    }
+  else if (is_message_item (item))
+    {
+      struct message_item *message_item = to_message_item (item);
+      free (message_item->command_name);
+      message_item->command_name = (e->command_name
+                                    ? xstrdup (e->command_name)
+                                    : NULL);
+    }
+
   output_submit__ (e, item);
 }
 
@@ -260,31 +290,6 @@ bool
 output_driver_is_registered (const struct output_driver *driver)
 {
   return output_driver_get_engine (driver) != NULL;
-}
-
-/* Useful functions for output driver implementation. */
-
-void
-output_driver_track_current_command (const struct output_item *output_item,
-                                     char **command_namep)
-{
-  if (is_text_item (output_item))
-    {
-      const struct text_item *item = to_text_item (output_item);
-      const char *text = text_item_get_text (item);
-      enum text_item_type type = text_item_get_type (item);
-
-      if (type == TEXT_ITEM_COMMAND_OPEN)
-        {
-          free (*command_namep);
-          *command_namep = xstrdup (text);
-        }
-      else if (type == TEXT_ITEM_COMMAND_CLOSE)
-        {
-          free (*command_namep);
-          *command_namep = NULL;
-        }
-    }
 }
 
 extern const struct output_driver_factory txt_driver_factory;

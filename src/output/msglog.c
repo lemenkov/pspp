@@ -42,7 +42,6 @@ struct msglog_driver
     struct output_driver driver;
     FILE *file;
     struct file_handle *handle;
-    char *command_name;
   };
 
 static const struct output_driver_class msglog_class;
@@ -78,7 +77,6 @@ msglog_create (const char *file_name)
   ml->handle = handle;
   output_driver_init (&ml->driver, &msglog_class, file_name, type);
   ml->file = file;
-  ml->command_name = NULL;
 
   output_driver_register (&ml->driver);
 
@@ -91,7 +89,6 @@ msglog_destroy (struct output_driver *driver)
   struct msglog_driver *ml = msglog_driver_cast (driver);
 
   fn_close (ml->handle, ml->file);
-  free (ml->command_name);
   fh_unref (ml->handle);
   free (ml);
 }
@@ -101,13 +98,11 @@ msglog_submit (struct output_driver *driver, const struct output_item *item)
 {
   struct msglog_driver *ml = msglog_driver_cast (driver);
 
-  output_driver_track_current_command (item, &ml->command_name);
-
   if (is_message_item (item))
     {
       const struct message_item *message_item = to_message_item (item);
       const struct msg *msg = message_item_get_msg (message_item);
-      char *s = msg_to_string (msg, ml->command_name);
+      char *s = msg_to_string (msg, message_item->command_name);
       fprintf (ml->file, "%s\n", s);
       free (s);
     }

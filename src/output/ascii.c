@@ -171,7 +171,6 @@ struct ascii_driver
     const ucs4_t *box;          /* Line & box drawing characters. */
 
     /* Internal state. */
-    char *command_name;
     struct file_handle *handle;
     FILE *file;                 /* Output file. */
     bool error;                 /* Output error? */
@@ -250,7 +249,6 @@ ascii_create (struct  file_handle *fh, enum settings_output_devices device_type,
                     NULL_SENTINEL);
   a->box = box == BOX_ASCII ? ascii_box_chars : unicode_box_chars;
 
-  a->command_name = NULL;
   a->file = NULL;
   a->error = false;
   a->lines = NULL;
@@ -334,7 +332,6 @@ ascii_destroy (struct output_driver *driver)
   if (a->file != NULL)
     fn_close (a->handle, a->file);
   fh_unref (a->handle);
-  free (a->command_name);
   free (a->chart_file_name);
   for (i = 0; i < a->allocated_lines; i++)
     u8_line_destroy (&a->lines[i]);
@@ -428,8 +425,6 @@ ascii_submit (struct output_driver *driver,
 {
   struct ascii_driver *a = ascii_driver_cast (driver);
 
-  output_driver_track_current_command (output_item, &a->command_name);
-
   if (a->error)
     return;
 
@@ -487,7 +482,7 @@ ascii_submit (struct output_driver *driver,
     {
       const struct message_item *message_item = to_message_item (output_item);
       const struct msg *msg = message_item_get_msg (message_item);
-      char *s = msg_to_string (msg, a->command_name);
+      char *s = msg_to_string (msg, message_item->command_name);
       ascii_output_text (a, s);
       free (s);
     }

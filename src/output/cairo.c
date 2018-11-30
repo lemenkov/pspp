@@ -524,7 +524,6 @@ xr_destroy (struct output_driver *driver)
       cairo_destroy (xr->cairo);
     }
 
-  free (xr->command_name);
   for (i = 0; i < XR_N_FONTS; i++)
     {
       struct xr_font *font = &xr->fonts[i];
@@ -551,8 +550,6 @@ static void
 xr_submit (struct output_driver *driver, const struct output_item *output_item)
 {
   struct xr_driver *xr = xr_driver_cast (driver);
-
-  output_driver_track_current_command (output_item, &xr->command_name);
 
   xr_driver_output_item (xr, output_item);
   while (xr_driver_need_new_page (xr))
@@ -1588,7 +1585,7 @@ xr_render_message (struct xr_driver *xr,
   struct xr_render_fsm *fsm;
   char *s;
 
-  s = msg_to_string (msg, xr->command_name);
+  s = msg_to_string (msg, message_item->command_name);
   fsm = xr_create_text_renderer (xr, s);
   free (s);
 

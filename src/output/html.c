@@ -55,7 +55,6 @@ struct html_driver
     struct file_handle *handle;
     char *chart_file_name;
 
-    char *command_name;
     FILE *file;
     size_t chart_cnt;
 
@@ -221,7 +220,6 @@ html_destroy (struct output_driver *driver)
     }
   free (html->chart_file_name);
   fh_unref (html->handle);
-  free (html->command_name);
   free (html);
 }
 
@@ -230,8 +228,6 @@ html_submit (struct output_driver *driver,
              const struct output_item *output_item)
 {
   struct html_driver *html = html_driver_cast (driver);
-
-  output_driver_track_current_command (output_item, &html->command_name);
 
   if (is_table_item (output_item))
     {
@@ -320,7 +316,7 @@ html_submit (struct output_driver *driver,
     {
       const struct message_item *message_item = to_message_item (output_item);
       const struct msg *msg = message_item_get_msg (message_item);
-      char *s = msg_to_string (msg, html->command_name);
+      char *s = msg_to_string (msg, message_item->command_name);
       print_title_tag (html->file, "P", s);
       free (s);
     }

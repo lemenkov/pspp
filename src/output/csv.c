@@ -51,7 +51,6 @@ struct csv_driver
     bool captions;              /* Print table captions? */
 
     struct file_handle *handle;
-    char *command_name;         /* Current command. */
     FILE *file;                 /* Output file. */
     int n_items;                /* Number of items output so far. */
   };
@@ -176,8 +175,6 @@ csv_submit (struct output_driver *driver,
             const struct output_item *output_item)
 {
   struct csv_driver *csv = csv_driver_cast (driver);
-
-  output_driver_track_current_command (output_item, &csv->command_name);
 
   if (is_table_item (output_item))
     {
@@ -322,7 +319,7 @@ csv_submit (struct output_driver *driver,
     {
       const struct message_item *message_item = to_message_item (output_item);
       const struct msg *msg = message_item_get_msg (message_item);
-      char *s = msg_to_string (msg, csv->command_name);
+      char *s = msg_to_string (msg, message_item->command_name);
       csv_put_separator (csv);
       csv_output_field (csv, s);
       free (s);
