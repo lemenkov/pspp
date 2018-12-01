@@ -87,6 +87,10 @@ px_to_xr (int x)
   return x * (PANGO_SCALE * 72 / 96);
 }
 
+/* Dimensions for drawing lines in tables. */
+#define XR_LINE_WIDTH (XR_POINT / 2) /* Width of an ordinary line. */
+#define XR_LINE_SPACE XR_POINT       /* Space between double lines. */
+
 /* Output types. */
 enum xr_output_type
   {
@@ -309,8 +313,6 @@ apply_options (struct xr_driver *xr, struct string_map *o)
   xr->fonts[XR_FONT_EMPHASIS].desc = parse_font_option (
     d, o, "emph-font", "sans serif", font_size, false, true);
 
-  xr->line_space = XR_POINT;
-  xr->line_width = XR_POINT / 2;
   xr->page_number = 0;
 
   parse_color (d, o, "background-color", "#FFFFFFFFFFFF", &xr->bg);
@@ -373,7 +375,7 @@ xr_set_cairo (struct xr_driver *xr, cairo_t *cairo)
 
   xr->cairo = cairo;
 
-  cairo_set_line_width (xr->cairo, xr_to_pt (xr->line_width));
+  cairo_set_line_width (xr->cairo, xr_to_pt (XR_LINE_WIDTH));
 
   xr->char_width = 0;
   xr->char_height = 0;
@@ -405,8 +407,8 @@ xr_set_cairo (struct xr_driver *xr, cairo_t *cairo)
       xr->params->font_size[H] = xr->char_width;
       xr->params->font_size[V] = xr->char_height;
 
-      int lw = xr->line_width;
-      int ls = xr->line_space;
+      int lw = XR_LINE_WIDTH;
+      int ls = XR_LINE_SPACE;
       for (i = 0; i < TABLE_N_AXES; i++)
         {
           xr->params->line_widths[i][RENDER_LINE_NONE] = 0;
@@ -667,9 +669,9 @@ dump_line (struct xr_driver *xr, int x0, int y0, int x1, int y1, int style,
                         color->r / 255.0, color->g / 255.0, color->b / 255.0);
   cairo_set_line_width (
     xr->cairo,
-    xr_to_pt (style == RENDER_LINE_THICK ? xr->line_width * 2
-              : style == RENDER_LINE_THIN ? xr->line_width / 2
-              : xr->line_width));
+    xr_to_pt (style == RENDER_LINE_THICK ? XR_LINE_WIDTH * 2
+              : style == RENDER_LINE_THIN ? XR_LINE_WIDTH / 2
+              : XR_LINE_WIDTH));
   cairo_move_to (xr->cairo, xr_to_pt (x0 + xr->x), xr_to_pt (y0 + xr->y));
   cairo_line_to (xr->cairo, xr_to_pt (x1 + xr->x), xr_to_pt (y1 + xr->y));
   cairo_stroke (xr->cairo);
@@ -679,7 +681,7 @@ static void UNUSED
 dump_rectangle (struct xr_driver *xr, int x0, int y0, int x1, int y1)
 {
   cairo_new_path (xr->cairo);
-  cairo_set_line_width (xr->cairo, xr_to_pt (xr->line_width));
+  cairo_set_line_width (xr->cairo, xr_to_pt (XR_LINE_WIDTH));
   cairo_move_to (xr->cairo, xr_to_pt (x0 + xr->x), xr_to_pt (y0 + xr->y));
   cairo_line_to (xr->cairo, xr_to_pt (x1 + xr->x), xr_to_pt (y0 + xr->y));
   cairo_line_to (xr->cairo, xr_to_pt (x1 + xr->x), xr_to_pt (y1 + xr->y));
@@ -692,7 +694,7 @@ static void
 fill_rectangle (struct xr_driver *xr, int x0, int y0, int x1, int y1)
 {
   cairo_new_path (xr->cairo);
-  cairo_set_line_width (xr->cairo, xr_to_pt (xr->line_width));
+  cairo_set_line_width (xr->cairo, xr_to_pt (XR_LINE_WIDTH));
   cairo_rectangle (xr->cairo,
                    xr_to_pt (x0 + xr->x), xr_to_pt (y0 + xr->y),
                    xr_to_pt (x1 - x0), xr_to_pt (y1 - y0));
@@ -798,7 +800,7 @@ xr_draw_line (void *xr_, int bb[TABLE_N_AXES][2],
   struct xr_driver *xr = xr_;
 
   /* Offset from center of each line in a pair of double lines. */
-  int double_line_ofs = (xr->line_space + xr->line_width) / 2;
+  int double_line_ofs = (XR_LINE_SPACE + XR_LINE_WIDTH) / 2;
 
   /* Are the lines along each axis single or double?
      (It doesn't make sense to have different kinds of line on the
