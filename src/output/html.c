@@ -527,45 +527,40 @@ html_output_table (struct html_driver *html, const struct table_item *item)
           /* Output cell contents. */
           for (c = cell.contents; c < &cell.contents[cell.n_contents]; c++)
             {
-              if (c->text)
+              const char *s = c->text;
+              int i;
+
+              if (c->options & TAB_EMPH)
+                fputs ("<EM>", html->file);
+              if (c->options & TAB_FIX)
                 {
-                  const char *s = c->text;
-                  int i;
-
-                  if (c->options & TAB_EMPH)
-                    fputs ("<EM>", html->file);
-                  if (c->options & TAB_FIX)
-                    {
-                      fputs ("<TT>", html->file);
-                      escape_string (html->file, s, strlen (s), "&nbsp;", "<BR>");
-                      fputs ("</TT>", html->file);
-                    }
-                  else
-                    {
-                      s += strspn (s, CC_SPACES);
-                      escape_string (html->file, s, strlen (s), " ", "<BR>");
-                    }
-                  if (c->options & TAB_EMPH)
-                    fputs ("</EM>", html->file);
-
-                  if (c->n_footnotes > 0)
-                    {
-                      fputs ("<SUP>", html->file);
-                      for (i = 0; i < c->n_footnotes; i++)
-                        {
-                          char marker[16];
-
-                          if (i > 0)
-                            putc (',', html->file);
-                          str_format_26adic (++footnote_idx, false,
-                                             marker, sizeof marker);
-                          fputs (marker, html->file);
-                        }
-                      fputs ("</SUP>", html->file);
-                    }
+                  fputs ("<TT>", html->file);
+                  escape_string (html->file, s, strlen (s), "&nbsp;", "<BR>");
+                  fputs ("</TT>", html->file);
                 }
               else
-                html_output_table (html, c->table);
+                {
+                  s += strspn (s, CC_SPACES);
+                  escape_string (html->file, s, strlen (s), " ", "<BR>");
+                }
+              if (c->options & TAB_EMPH)
+                fputs ("</EM>", html->file);
+
+              if (c->n_footnotes > 0)
+                {
+                  fputs ("<SUP>", html->file);
+                  for (i = 0; i < c->n_footnotes; i++)
+                    {
+                      char marker[16];
+
+                      if (i > 0)
+                        putc (',', html->file);
+                      str_format_26adic (++footnote_idx, false,
+                                         marker, sizeof marker);
+                      fputs (marker, html->file);
+                    }
+                  fputs ("</SUP>", html->file);
+                }
             }
 
           /* Output </TH> or </TD>. */

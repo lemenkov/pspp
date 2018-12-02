@@ -171,8 +171,6 @@ struct table *table_from_casereader (const struct casereader *,
                                      size_t column,
                                      const char *heading,
                                      const struct fmt_spec *);
-struct table *table_create_nested (struct table *);
-struct table *table_create_nested_item (struct table_item *);
 
 /* Combining tables. */
 struct table *table_paste (struct table *, struct table *,

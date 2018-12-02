@@ -29,8 +29,6 @@ SAVE OUTFILE='pro.sav'.
 sysfile info file='pro.sav'.
 ])
 AT_CHECK([pspp -o pspp.csv sysfile-info.sps])
-AT_CHECK([pspp -o pspp.pdf sysfile-info.sps])
-AT_CHECK([pspp -o pspp.txt sysfile-info.sps])
 AT_CHECK(
   [sed -e '/^Created:,/d' \
        -e '/^Endian:,/d' \

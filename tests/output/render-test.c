@@ -67,7 +67,7 @@ static const char *output_base = "render";
 
 static const char *parse_options (int argc, char **argv);
 static void usage (void) NO_RETURN;
-static struct table *read_table (FILE *, struct table **tables, size_t n_tables);
+static struct table *read_table (FILE *);
 static void draw (FILE *);
 
 int
@@ -103,7 +103,7 @@ main (int argc, char **argv)
           if (n_tables >= allocated_tables)
             tables = x2nrealloc (tables, &allocated_tables, sizeof *tables);
 
-          tables[n_tables] = read_table (input, tables, n_tables);
+          tables[n_tables] = read_table (input);
           n_tables++;
 
           ch = getc (input);
@@ -351,7 +351,7 @@ replace_newlines (char *p)
 }
 
 static struct table *
-read_table (FILE *stream, struct table **tables, size_t n_tables)
+read_table (FILE *stream)
 {
   struct tab_table *tab;
   char buffer[1024];
@@ -381,7 +381,6 @@ read_table (FILE *stream, struct table **tables, size_t n_tables)
         {
           unsigned int opt;
           char *new_line;
-          unsigned int i;
           char *text;
           int rs, cs;
 
@@ -452,45 +451,16 @@ read_table (FILE *stream, struct table **tables, size_t n_tables)
 
           replace_newlines (text);
 
-          if (sscanf (text, "{%u}", &i) == 1)
-            {
-              struct table *table;
+          char *pos = text;
+          char *content;
+          int i;
 
-              if (i >= n_tables)
-                error (1, 0, "bad table number %u", i);
-              table = table_ref (tables[i]);
-
-              text = strchr (text, '}') + 1;
-              while (*text)
-                switch (*text++)
-                  {
-                  case 's':
-                    table = table_stomp (table);
-                    break;
-
-                  case 't':
-                    table = table_transpose (table);
-                    break;
-
-                  default:
-                    error (1, 0, "unexpected subtable modifier \"%c\"", *text);
-                  }
-              tab_subtable (tab, c, r, c + cs - 1, r + rs - 1, opt,
-                            table_item_create (table, NULL, NULL));
-            }
-          else
-            {
-              char *pos = text;
-              char *content;
-              int i;
-
-              for (i = 0; (content = strsep (&pos, "#")) != NULL; i++)
-                if (!i)
-                  tab_joint_text (tab, c, r, c + cs - 1, r + rs - 1, opt,
-                                  content);
-                else
-                  tab_footnote (tab, c, r, "%s", content);
-            }
+          for (i = 0; (content = strsep (&pos, "#")) != NULL; i++)
+            if (!i)
+              tab_joint_text (tab, c, r, c + cs - 1, r + rs - 1, opt,
+                              content);
+            else
+              tab_footnote (tab, c, r, "%s", content);
         }
 
   return &tab->table;

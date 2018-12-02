@@ -1,5 +1,5 @@
 /* PSPP - a program for statistical analysis.
-   Copyright (C) 1997, 1998, 1999, 2000, 2009, 2011, 2013, 2014 Free Software Foundation, Inc.
+   Copyright (C) 1997, 1998, 1999, 2000, 2009, 2011, 2013, 2014, 2018 Free Software Foundation, Inc.
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -23,10 +23,7 @@
 struct cell_contents
   {
     unsigned int options;       /* TAB_*. */
-
-    /* Exactly one of these must be nonnull. */
     char *text;                 /* A paragraph of text. */
-    struct table_item *table;   /* A table nested within the cell. */
 
     /* Optional footnote(s). */
     char **footnotes;

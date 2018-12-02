@@ -53,8 +53,6 @@ static const bool debugging = false;
 
 /* Cell options. */
 #define TAB_JOIN     (1u << TAB_FIRST_AVAILABLE)
-#define TAB_SUBTABLE (1u << (TAB_FIRST_AVAILABLE + 1))
-#define TAB_BARE     (1u << (TAB_FIRST_AVAILABLE + 2))
 
 /* Joined cell. */
 struct tab_joined_cell
@@ -643,39 +641,6 @@ tab_footnote (struct tab_table *table, int x, int y, const char *format, ...)
   va_end (args);
 }
 
-static void
-subtable_unref (void *subtable)
-{
-  table_item_unref (subtable);
-}
-
-/* Places SUBTABLE as the content for cells (X1,X2)-(Y1,Y2) inclusive in TABLE
-   with options OPT. */
-void
-tab_subtable (struct tab_table *table, int x1, int y1, int x2, int y2,
-              unsigned opt, struct table_item *subtable)
-{
-  add_joined_cell (table, x1, y1, x2, y2, opt | TAB_SUBTABLE)->u.subtable
-    = subtable;
-  pool_register (table->container, subtable_unref, subtable);
-}
-
-/* Places the contents of SUBTABLE as the content for cells (X1,X2)-(Y1,Y2)
-   inclusive in TABLE with options OPT.
-
-   SUBTABLE must have exactly one row and column.  The contents of its single
-   cell are used as the contents of TABLE's cell; that is, SUBTABLE is not used
-   as a nested table but its contents become part of TABLE. */
-void
-tab_subtable_bare (struct tab_table *table, int x1, int y1, int x2, int y2,
-                   unsigned opt, struct table_item *subtable)
-{
-  const struct table *t UNUSED = table_item_get_table (subtable);
-  assert (table_nc (t) == 1);
-  assert (table_nr (t) == 1);
-  tab_subtable (table, x1, y1, x2, y2, opt | TAB_BARE, subtable);
-}
-
 bool
 tab_cell_is_empty (const struct tab_table *table, int c, int r)
 {
@@ -815,32 +780,15 @@ tab_get_cell (const struct table *table, int x, int y,
   const void *cc = t->cc[index];
 
   cell->inline_contents.options = opt;
-  cell->inline_contents.table = NULL;
   cell->inline_contents.n_footnotes = 0;
   cell->destructor = NULL;
 
   if (opt & TAB_JOIN)
     {
       const struct tab_joined_cell *jc = cc;
-      if (opt & TAB_BARE)
-        {
-          assert (opt & TAB_SUBTABLE);
-
-          /* This overwrites all of the members of CELL. */
-          table_get_cell (table_item_get_table (jc->u.subtable), 0, 0, cell);
-        }
-      else
-        {
-          cell->contents = &cell->inline_contents;
-          cell->n_contents = 1;
-          if (opt & TAB_SUBTABLE)
-            {
-              cell->inline_contents.table = jc->u.subtable;
-              cell->inline_contents.text = NULL;
-            }
-          else
-            cell->inline_contents.text = jc->u.text;
-        }
+      cell->contents = &cell->inline_contents;
+      cell->n_contents = 1;
+      cell->inline_contents.text = jc->u.text;
 
       cell->inline_contents.footnotes = jc->footnotes;
       cell->inline_contents.n_footnotes = jc->n_footnotes;

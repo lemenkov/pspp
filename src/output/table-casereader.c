@@ -113,7 +113,6 @@ table_casereader_get_cell (const struct table *t, int x, int y,
   cell->contents = &cell->inline_contents;
   cell->n_contents = 1;
   cell->inline_contents.options = TAB_RIGHT;
-  cell->inline_contents.table = NULL;
   cell->inline_contents.n_footnotes = 0;
   if (tc->heading != NULL)
     {

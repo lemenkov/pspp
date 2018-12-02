@@ -526,25 +526,19 @@ write_table (struct odt_driver *odt, const struct table_item *item)
                   const struct cell_contents *contents = &cell.contents[i];
                   int j;
 
-                  if (contents->text)
-                    {
-                      xmlTextWriterStartElement (odt->content_wtr, _xml("text:p"));
+                  xmlTextWriterStartElement (odt->content_wtr, _xml("text:p"));
 
-                      if ( r < table_ht (tab) || c < table_hl (tab) )
-                        xmlTextWriterWriteAttribute (odt->content_wtr, _xml("text:style-name"), _xml("Table_20_Heading"));
-                      else
-                        xmlTextWriterWriteAttribute (odt->content_wtr, _xml("text:style-name"), _xml("Table_20_Contents"));
+                  if ( r < table_ht (tab) || c < table_hl (tab) )
+                    xmlTextWriterWriteAttribute (odt->content_wtr, _xml("text:style-name"), _xml("Table_20_Heading"));
+                  else
+                    xmlTextWriterWriteAttribute (odt->content_wtr, _xml("text:style-name"), _xml("Table_20_Contents"));
 
-                      write_xml_with_line_breaks (odt, contents->text);
+                  write_xml_with_line_breaks (odt, contents->text);
 
-                      for (j = 0; j < contents->n_footnotes; j++)
-                        write_footnote (odt, contents->footnotes[j]);
+                  for (j = 0; j < contents->n_footnotes; j++)
+                    write_footnote (odt, contents->footnotes[j]);
 
-                      xmlTextWriterEndElement (odt->content_wtr); /* text:p */
-                    }
-                  else if (contents->table)
-                    write_table (odt, contents->table);
-
+                  xmlTextWriterEndElement (odt->content_wtr); /* text:p */
                 }
               xmlTextWriterEndElement (odt->content_wtr); /* table:table-cell */
 	    }

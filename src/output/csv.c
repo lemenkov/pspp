@@ -165,93 +165,6 @@ csv_output_field_format (struct csv_driver *csv, const char *format, ...)
 }
 
 static void
-csv_put_field (struct csv_driver *csv, struct string *s, const char *field)
-{
-  while (*field == ' ')
-    field++;
-
-  if (csv->quote && field[strcspn (field, csv->quote_set)])
-    {
-      const char *p;
-
-      ds_put_byte (s, csv->quote);
-      for (p = field; *p != '\0'; p++)
-        {
-          if (*p == csv->quote)
-            ds_put_byte (s, csv->quote);
-          ds_put_byte (s, *p);
-        }
-      ds_put_byte (s, csv->quote);
-    }
-  else
-    ds_put_cstr (s, field);
-}
-
-static void
-csv_output_subtable (struct csv_driver *csv, struct string *s,
-                     const struct table_item *item)
-{
-  const struct table *t = table_item_get_table (item);
-  const char *title = table_item_get_title (item);
-  const char *caption = table_item_get_caption (item);
-  int y, x;
-
-  if (csv->titles && title != NULL)
-    {
-      csv_output_field_format (csv, "Table: %s", title);
-      putc ('\n', csv->file);
-    }
-
-  for (y = 0; y < table_nr (t); y++)
-    {
-      if (y > 0)
-        ds_put_byte (s, '\n');
-
-      for (x = 0; x < table_nc (t); x++)
-        {
-          struct table_cell cell;
-
-          table_get_cell (t, x, y, &cell);
-
-          if (x > 0)
-            ds_put_cstr (s, csv->separator);
-
-          if (x != cell.d[TABLE_HORZ][0] || y != cell.d[TABLE_VERT][0])
-            csv_put_field (csv, s, "");
-          else if (cell.n_contents == 1 && cell.contents[0].text != NULL)
-            csv_put_field (csv, s, cell.contents[0].text);
-          else
-            {
-              struct string s2;
-              size_t i;
-
-              ds_init_empty (&s2);
-              for (i = 0; i < cell.n_contents; i++)
-                {
-                  if (i > 0)
-                    ds_put_cstr (&s2, "\n\n");
-
-                  if (cell.contents[i].text != NULL)
-                    ds_put_cstr (&s2, cell.contents[i].text);
-                  else
-                    csv_output_subtable (csv, &s2, cell.contents[i].table);
-                }
-              csv_put_field (csv, s, ds_cstr (&s2));
-              ds_destroy (&s2);
-            }
-
-          table_cell_free (&cell);
-        }
-    }
-
-  if (csv->captions && caption != NULL)
-    {
-      csv_output_field_format (csv, "Caption: %s", caption);
-      putc ('\n', csv->file);
-    }
-}
-
-static void
 csv_put_separator (struct csv_driver *csv)
 {
   if (csv->n_items++ > 0)
@@ -315,10 +228,7 @@ csv_submit (struct output_driver *driver,
                       if (i > 0)
                         ds_put_cstr (&s, "\n\n");
 
-                      if (c->text != NULL)
-                        ds_put_cstr (&s, c->text);
-                      else
-                        csv_output_subtable (csv, &s, c->table);
+                      ds_put_cstr (&s, c->text);
 
                       for (j = 0; j < c->n_footnotes; j++)
                         {

@@ -1105,81 +1105,6 @@ xr_layout_cell_text (struct xr_driver *xr,
   return y + h;
 }
 
-static int
-xr_layout_cell_subtable (struct xr_driver *xr,
-                         const struct cell_contents *contents,
-                         int footnote_idx UNUSED,
-                         int bb[TABLE_N_AXES][2],
-                         int clip[TABLE_N_AXES][2], int *widthp, int *brk)
-{
-  int single_width, double_width;
-  struct render_params params;
-  struct render_pager *p;
-  int r[TABLE_N_AXES][2];
-  int width, height;
-  int i;
-
-  params.draw_line = xr_draw_line;
-  params.measure_cell_width = xr_measure_cell_width;
-  params.measure_cell_height = xr_measure_cell_height;
-  params.adjust_break = NULL;
-  params.draw_cell = xr_draw_cell;
-  params.aux = xr;
-  params.size[H] = bb[H][1] - bb[H][0];
-  params.size[V] = bb[V][1] - bb[V][0];
-  params.font_size[H] = xr->char_width;
-  params.font_size[V] = xr->char_height;
-
-  single_width = 2 * xr->line_gutter + xr->line_width;
-  double_width = 2 * xr->line_gutter + xr->line_space + 2 * xr->line_width;
-  for (i = 0; i < TABLE_N_AXES; i++)
-    {
-      params.line_widths[i][RENDER_LINE_NONE] = 0;
-      params.line_widths[i][RENDER_LINE_SINGLE] = single_width;
-      params.line_widths[i][RENDER_LINE_DOUBLE] = double_width;
-    }
-
-  xr->nest++;
-  p = render_pager_create (&params, contents->table);
-  width = render_pager_get_size (p, H);
-  height = render_pager_get_size (p, V);
-  if (bb[V][0] + height >= bb[V][1])
-    *brk = bb[V][0] + render_pager_get_best_breakpoint (p, bb[V][1] - bb[V][0]);
-
-  /* r = intersect(bb, clip) - bb. */
-  for (i = 0; i < TABLE_N_AXES; i++)
-    {
-      r[i][0] = MAX (bb[i][0], clip[i][0]) - bb[i][0];
-      r[i][1] = MIN (bb[i][1], clip[i][1]) - bb[i][0];
-    }
-
-  if (r[H][0] < r[H][1] && r[V][0] < r[V][1])
-    {
-      unsigned int alignment = contents->options & TAB_ALIGNMENT;
-      int save_x = xr->x;
-
-      cairo_save (xr->cairo);
-      xr_clip (xr, clip);
-      xr->x += bb[H][0];
-      if (alignment == TAB_RIGHT)
-        xr->x += params.size[H] - width;
-      else if (alignment == TAB_CENTER)
-        xr->x += (params.size[H] - width) / 2;
-      xr->y += bb[V][0];
-      render_pager_draw_region (p, r[H][0], r[V][0],
-                                r[H][1] - r[H][0], r[V][1] - r[V][0]);
-      xr->y -= bb[V][0];
-      xr->x = save_x;
-      cairo_restore (xr->cairo);
-    }
-  render_pager_destroy (p);
-  xr->nest--;
-
-  if (width > *widthp)
-    *widthp = width;
-  return bb[V][0] + height;
-}
-
 static void
 xr_layout_cell (struct xr_driver *xr, const struct table_cell *cell,
                 int footnote_idx,
@@ -1228,12 +1153,8 @@ xr_layout_cell (struct xr_driver *xr, const struct table_cell *cell,
             *brk = bb[V][0];
         }
 
-      if (contents->text)
-        bb[V][0] = xr_layout_cell_text (xr, contents, footnote_idx, bb, clip,
-                                        bb[V][0], width, brk);
-      else
-        bb[V][0] = xr_layout_cell_subtable (xr, contents, footnote_idx,
-                                            bb, clip, width, brk);
+      bb[V][0] = xr_layout_cell_text (xr, contents, footnote_idx, bb, clip,
+                                      bb[V][0], width, brk);
       footnote_idx += contents->n_footnotes;
     }
   *height = bb[V][0] - bb_[V][0];

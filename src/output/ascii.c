@@ -646,7 +646,6 @@ ascii_measure_cell_width (void *a_, const struct table_cell *cell,
   ascii_layout_cell (a, cell, footnote_idx, bb, clip, max_width, &h);
 
   if (cell->n_contents != 1
-      || cell->contents[0].table
       || cell->contents[0].n_footnotes
       || strchr (cell->contents[0].text, ' '))
     {
@@ -945,69 +944,6 @@ ascii_layout_cell_text (struct ascii_driver *a,
   return y;
 }
 
-static int
-ascii_layout_subtable (struct ascii_driver *a,
-                       const struct cell_contents *contents,
-                       int *footnote_idx UNUSED /* XXX */,
-                       int bb[TABLE_N_AXES][2], int clip[TABLE_N_AXES][2] UNUSED,
-                       int *widthp)
-{
-  struct render_params params;
-  struct render_pager *p;
-  int r[TABLE_N_AXES][2];
-  int width, height;
-  int i;
-
-  params.draw_line = ascii_draw_line;
-  params.measure_cell_width = ascii_measure_cell_width;
-  params.measure_cell_height = ascii_measure_cell_height;
-  params.adjust_break = NULL;
-  params.draw_cell = ascii_draw_cell,
-  params.aux = a;
-  params.size[H] = bb[TABLE_HORZ][1] - bb[TABLE_HORZ][0];
-  params.size[V] = bb[TABLE_VERT][1] - bb[TABLE_VERT][0];
-  params.font_size[H] = 1;
-  params.font_size[V] = 1;
-  for (i = 0; i < RENDER_N_LINES; i++)
-    {
-      int width = i == RENDER_LINE_NONE ? 0 : 1;
-      params.line_widths[H][i] = width;
-      params.line_widths[V][i] = width;
-    }
-
-  p = render_pager_create (&params, contents->table);
-  width = render_pager_get_size (p, TABLE_HORZ);
-  height = render_pager_get_size (p, TABLE_VERT);
-
-  /* r = intersect(bb, clip) - bb. */
-  for (i = 0; i < TABLE_N_AXES; i++)
-    {
-      r[i][0] = MAX (bb[i][0], clip[i][0]) - bb[i][0];
-      r[i][1] = MIN (bb[i][1], clip[i][1]) - bb[i][0];
-    }
-
-  if (r[H][0] < r[H][1] && r[V][0] < r[V][1])
-    {
-      unsigned int alignment = contents->options & TAB_ALIGNMENT;
-      int save_x = a->x;
-
-      a->x += bb[TABLE_HORZ][0];
-      if (alignment == TAB_RIGHT)
-        a->x += params.size[H] - width;
-      else if (alignment == TAB_CENTER)
-        a->x += (params.size[H] - width) / 2;
-      a->y += bb[TABLE_VERT][0];
-      render_pager_draw (p);
-      a->y -= bb[TABLE_VERT][0];
-      a->x = save_x;
-    }
-  render_pager_destroy (p);
-
-  if (width > *widthp)
-    *widthp = width;
-  return bb[V][0] + height;
-}
-
 static void
 ascii_layout_cell (struct ascii_driver *a, const struct table_cell *cell,
                    int footnote_idx,
@@ -1033,12 +969,8 @@ ascii_layout_cell (struct ascii_driver *a, const struct table_cell *cell,
             break;
         }
 
-      if (contents->text)
-        bb[V][0] = ascii_layout_cell_text (a, contents, &footnote_idx,
-                                           bb, clip, widthp);
-      else
-        bb[V][0] = ascii_layout_subtable (a, contents, &footnote_idx,
-                                          bb, clip, widthp);
+      bb[V][0] = ascii_layout_cell_text (a, contents, &footnote_idx,
+                                         bb, clip, widthp);
     }
   *heightp = bb[V][0] - bb_[V][0];
 }
@@ -1059,7 +991,6 @@ ascii_test_write (struct output_driver *driver,
 
   contents.options = options | TAB_LEFT;
   contents.text = CONST_CAST (char *, s);
-  contents.table = NULL;
   contents.n_footnotes = 0;
 
   memset (&cell, 0, sizeof cell);

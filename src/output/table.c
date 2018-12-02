@@ -320,7 +320,6 @@ table_string_get_cell (const struct table *ts_, int x UNUSED, int y UNUSED,
   cell->contents = &cell->inline_contents;
   cell->inline_contents.options = ts->options;
   cell->inline_contents.text = ts->string;
-  cell->inline_contents.table = NULL;
   cell->inline_contents.n_footnotes = 0;
   cell->n_contents = 1;
   cell->destructor = NULL;
@@ -342,81 +341,3 @@ static const struct table_class table_string_class =
     NULL,                       /* paste */
     NULL,                       /* select */
   };
-
-struct table_nested
-  {
-    struct table table;
-    struct table_item *inner;
-  };
-
-static const struct table_class table_nested_class;
-
-/* Creates and returns a table with a single cell that contains INNER.
-   Takes ownership of INNER. */
-struct table *
-table_create_nested (struct table *inner)
-{
-  return table_create_nested_item (table_item_create (inner, NULL, NULL));
-}
-
-/* Creates and returns a table with a single cell that contains INNER.
-   Takes ownership of INNER. */
-struct table *
-table_create_nested_item (struct table_item *inner)
-{
-  struct table_nested *tn = xmalloc (sizeof *tn);
-  table_init (&tn->table, &table_nested_class);
-  tn->table.n[TABLE_HORZ] = tn->table.n[TABLE_VERT] = 1;
-  tn->inner = inner;
-  return &tn->table;
-}
-
-static struct table_nested *
-table_nested_cast (const struct table *table)
-{
-  assert (table->klass == &table_nested_class);
-  return UP_CAST (table, struct table_nested, table);
-}
-
-static void
-table_nested_destroy (struct table *tn_)
-{
-  struct table_nested *tn = table_nested_cast (tn_);
-  table_item_unref (tn->inner);
-  free (tn);
-}
-
-static void
-table_nested_get_cell (const struct table *tn_, int x UNUSED, int y UNUSED,
-                       struct table_cell *cell)
-{
-  struct table_nested *tn = table_nested_cast (tn_);
-  cell->d[TABLE_HORZ][0] = 0;
-  cell->d[TABLE_HORZ][1] = 1;
-  cell->d[TABLE_VERT][0] = 0;
-  cell->d[TABLE_VERT][1] = 1;
-  cell->contents = &cell->inline_contents;
-  cell->inline_contents.options = TAB_LEFT;
-  cell->inline_contents.text = NULL;
-  cell->inline_contents.table = tn->inner;
-  cell->inline_contents.n_footnotes = 0;
-  cell->n_contents = 1;
-  cell->destructor = NULL;
-}
-
-static int
-table_nested_get_rule (const struct table *tn UNUSED,
-                       enum table_axis axis UNUSED, int x UNUSED, int y UNUSED)
-{
-  return TAL_0;
-}
-
-static const struct table_class table_nested_class =
-  {
-    table_nested_destroy,
-    table_nested_get_cell,
-    table_nested_get_rule,
-    NULL,                       /* paste */
-    NULL,                       /* select */
-  };
-
