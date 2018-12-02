@@ -104,27 +104,21 @@ DISPLAY DICTIONARY.
 LIST.
 ])
 AT_CHECK([pspp -O format=csv import.sps], [0], [dnl
-Variable,Description,Position
-VAR1,"Format: F1.0
+Table: Variables
+Name,Position,Label,Measurement Level,Role,Width,Alignment,Print Format,Write Format,Missing Values
+VAR1,1,,Scale,Input,8,Right,F1.0,F1.0,
+VAR2,2,,Scale,Input,8,Right,F1.0,F1.0,
+VAR3,3,,Scale,Input,8,Right,F1.0,F1.0,
+VAR4,4,,Scale,Input,8,Right,F1.0,F1.0,
+VAR5,5,,Scale,Input,8,Right,F1.0,F1.0,
 
-Value,Label
-1,one",1
-VAR2,"Format: F1.0
-
-Value,Label
-2,two",2
-VAR3,"Format: F1.0
-
-Value,Label
-3,three",3
-VAR4,"Format: F1.0
-
-Value,Label
-4,four",4
-VAR5,"Format: F1.0
-
-Value,Label
-5,five",5
+Table: Value Labels
+Variable,Value,Label
+VAR1,1,one
+VAR2,2,two
+VAR3,3,three
+VAR4,4,four
+VAR5,5,five
 
 Table: Data List
 VAR1,VAR2,VAR3,VAR4,VAR5
@@ -146,46 +140,20 @@ Type:,SPSS Portable File
 Weight:,Not weighted.
 Compression:,None
 
-Variable,Description,Position
-VAR1,"Format: F1.0
-Measure: Scale
-Role: Input
-Display Alignment: Right
-Display Width: 8
+Table: Variables
+Name,Position,Label,Measurement Level,Role,Width,Alignment,Print Format,Write Format,Missing Values
+VAR1,1,,Scale,Input,8,Right,F1.0,F1.0,
+VAR2,2,,Scale,Input,8,Right,F1.0,F1.0,
+VAR3,3,,Scale,Input,8,Right,F1.0,F1.0,
+VAR4,4,,Scale,Input,8,Right,F1.0,F1.0,
+VAR5,5,,Scale,Input,8,Right,F1.0,F1.0,
 
-Value,Label
-1,one",1
-VAR2,"Format: F1.0
-Measure: Scale
-Role: Input
-Display Alignment: Right
-Display Width: 8
-
-Value,Label
-2,two",2
-VAR3,"Format: F1.0
-Measure: Scale
-Role: Input
-Display Alignment: Right
-Display Width: 8
-
-Value,Label
-3,three",3
-VAR4,"Format: F1.0
-Measure: Scale
-Role: Input
-Display Alignment: Right
-Display Width: 8
-
-Value,Label
-4,four",4
-VAR5,"Format: F1.0
-Measure: Scale
-Role: Input
-Display Alignment: Right
-Display Width: 8
-
-Value,Label
-5,five",5
+Table: Value Labels
+Variable,Value,Label
+VAR1,1,one
+VAR2,2,two
+VAR3,3,three
+VAR4,4,four
+VAR5,5,five
 ])
 AT_CLEANUP

@@ -133,21 +133,16 @@ a into count(N of a)
 
 b into Nb(N of b)
 
-Variable,Description,Position
-a,Format: F8.2,1
-b,Format: F8.2,2
-Ra,"Label: RANK of a
-Format: F9.3",3
-RFR001,"Label: RFRACTION of a
-Format: F6.4",4
-count,"Label: N of a
-Format: F6.0",5
-Rb,"Label: RANK of b
-Format: F9.3",6
-RFR002,"Label: RFRACTION of b
-Format: F6.4",7
-Nb,"Label: N of b
-Format: F6.0",8
+Table: Variables
+Name,Position,Label,Measurement Level,Role,Width,Alignment,Print Format,Write Format,Missing Values
+a,1,,Scale,Input,8,Right,F8.2,F8.2,
+b,2,,Scale,Input,8,Right,F8.2,F8.2,
+Ra,3,RANK of a,Scale,Input,8,Right,F9.3,F9.3,
+RFR001,4,RFRACTION of a,Scale,Input,8,Right,F6.4,F6.4,
+count,5,N of a,Scale,Input,8,Right,F6.0,F6.0,
+Rb,6,RANK of b,Scale,Input,8,Right,F9.3,F9.3,
+RFR002,7,RFRACTION of b,Scale,Input,8,Right,F6.4,F6.4,
+Nb,8,N of b,Scale,Input,8,Right,F6.0,F6.0,
 
 Table: Data List
 a,b,Ra,RFR001,count,Rb,RFR002,Nb
@@ -522,12 +517,12 @@ Variables Created By RANK
 
 foo into RAN001(RANK of foo)
 
-Variable,Description,Position
-foo,Format: F8.2,1
-rfoo,Format: F8.2,2
-ran003,Format: F8.2,3
-RAN001,"Label: RANK of foo
-Format: F9.3",4
+Table: Variables
+Name,Position,Label,Measurement Level,Role,Width,Alignment,Print Format,Write Format,Missing Values
+foo,1,,Scale,Input,8,Right,F8.2,F8.2,
+rfoo,2,,Scale,Input,8,Right,F8.2,F8.2,
+ran003,3,,Scale,Input,8,Right,F8.2,F8.2,
+RAN001,4,RANK of foo,Scale,Input,8,Right,F9.3,F9.3,
 ])
 AT_CLEANUP
 

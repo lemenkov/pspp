@@ -36,10 +36,11 @@ LIST.
 ])
 AT_CHECK([pspp -o pspp.csv get-data.sps])
 AT_CHECK([cat pspp.csv], [0], [dnl
-Variable,Description,Position
-VAR001,Format: F8.2,1
-VAR002,Format: A8,2
-VAR003,Format: F8.2,3
+Table: Variables
+Name,Position,Print Format,Write Format,Missing Values
+VAR001,1,F8.2,F8.2,
+VAR002,2,A8,A8,
+VAR003,3,F8.2,F8.2,
 
 Table: Data List
 VAR001,VAR002,VAR003
@@ -60,10 +61,11 @@ LIST.
 ])
 AT_CHECK([pspp -o pspp.csv get-data.sps])
 AT_CHECK([cat pspp.csv], [0], [dnl
-Variable,Description,Position
-V1,Format: F8.2,1
-V2,Format: A8,2
-VAR001,Format: F8.2,3
+Table: Variables
+Name,Position,Print Format,Write Format,Missing Values
+V1,1,F8.2,F8.2,
+V2,2,A8,A8,
+VAR001,3,F8.2,F8.2,
 
 Table: Data List
 V1,V2,VAR001
@@ -83,10 +85,11 @@ DISPLAY VARIABLES.
 LIST.
 ])
 AT_CHECK([pspp -O format=csv get-data.sps], [0], [dnl
-Variable,Description,Position
-name,Format: A8,1
-id,Format: F8.2,2
-height,Format: F8.2,3
+Table: Variables
+Name,Position,Print Format,Write Format,Missing Values
+name,1,A8,A8,
+id,2,F8.2,F8.2,
+height,3,F8.2,F8.2,
 
 warning: Cannot convert the value in the spreadsheet cell C4 to format (F8.2): Field contents are not numeric.
 
@@ -109,11 +112,12 @@ LIST.
 ])
 AT_CHECK([pspp -o pspp.csv get-data.sps])
 AT_CHECK([cat pspp.csv], [0], [dnl
-Variable,Description,Position
-vone,Format: F8.2,1
-vtwo,Format: F8.2,2
-vthree,Format: A8,3
-v4,Format: F8.2,4
+Table: Variables
+Name,Position,Print Format,Write Format,Missing Values
+vone,1,F8.2,F8.2,
+vtwo,2,F8.2,F8.2,
+vthree,3,A8,A8,
+v4,4,F8.2,F8.2,
 
 Table: Data List
 vone,vtwo,vthree,v4
@@ -399,15 +403,16 @@ LIST.
 ])
 
 
-AT_CHECK([pspp -O format=csv readnames.sps], [0],
-[Variable,Description,Position
-freda,Format: F8.2,1
-fred,Format: F8.2,2
-fred_A,Format: F8.2,3
-fred_B,Format: F8.2,4
-fred_C,Format: F8.2,5
-fred_D,Format: F8.2,6
-fred_E,Format: F8.2,7
+AT_CHECK([pspp -O format=csv readnames.sps], [0], [dnl
+Table: Variables
+Name,Position,Label,Measurement Level,Role,Width,Alignment,Print Format,Write Format,Missing Values
+freda,1,,Scale,Input,8,Right,F8.2,F8.2,
+fred,2,,Scale,Input,8,Right,F8.2,F8.2,
+fred_A,3,,Scale,Input,8,Right,F8.2,F8.2,
+fred_B,4,,Scale,Input,8,Right,F8.2,F8.2,
+fred_C,5,,Scale,Input,8,Right,F8.2,F8.2,
+fred_D,6,,Scale,Input,8,Right,F8.2,F8.2,
+fred_E,7,,Scale,Input,8,Right,F8.2,F8.2,
 
 Table: Data List
 freda,fred,fred_A,fred_B,fred_C,fred_D,fred_E

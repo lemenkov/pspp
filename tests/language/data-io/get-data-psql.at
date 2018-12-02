@@ -161,29 +161,30 @@ EOF
 ])
 AT_CHECK([pspp -o pspp.csv ordinary-query.sps])
 AT_CHECK([cat pspp.csv], [0], [dnl
-Variable,Description,Position
-bool,Format: F8.2,1
-bytea,Format: AHEX2,2
-char,Format: A8,3
-int8,Format: F8.2,4
-int2,Format: F8.2,5
-int4,Format: F8.2,6
-numeric,Format: E40.6,7
-text,Format: A16,8
-oid,Format: F8.2,9
-float4,Format: F8.2,10
-float8,Format: F8.2,11
-money,Format: DOLLAR8.2,12
-pbchar,Format: A8,13
-varchar,Format: A8,14
-date,Format: DATE11,15
-time,Format: TIME11.0,16
-timestamp,Format: DATETIME22.0,17
-timestamptz,Format: DATETIME22.0,18
-interval,Format: DTIME13.0,19
-interval_months,Format: F3.0,20
-timetz,Format: TIME11.0,21
-timetz_zone,Format: F8.2,22
+Table: Variables
+Name,Position,Label,Measurement Level,Role,Width,Alignment,Print Format,Write Format,Missing Values
+bool,1,,Scale,Input,8,Right,F8.2,F8.2,
+bytea,2,,Nominal,Input,1,Left,AHEX2,AHEX2,
+char,3,,Nominal,Input,8,Left,A8,A8,
+int8,4,,Scale,Input,8,Right,F8.2,F8.2,
+int2,5,,Scale,Input,8,Right,F8.2,F8.2,
+int4,6,,Scale,Input,8,Right,F8.2,F8.2,
+numeric,7,,Scale,Input,8,Right,E40.6,E40.6,
+text,8,,Nominal,Input,16,Left,A16,A16,
+oid,9,,Scale,Input,8,Right,F8.2,F8.2,
+float4,10,,Scale,Input,8,Right,F8.2,F8.2,
+float8,11,,Scale,Input,8,Right,F8.2,F8.2,
+money,12,,Scale,Input,8,Right,DOLLAR8.2,DOLLAR8.2,
+pbchar,13,,Nominal,Input,8,Left,A8,A8,
+varchar,14,,Nominal,Input,8,Left,A8,A8,
+date,15,,Scale,Input,8,Right,DATE11,DATE11,
+time,16,,Scale,Input,8,Right,TIME11.0,TIME11.0,
+timestamp,17,,Scale,Input,8,Right,DATETIME22.0,DATETIME22.0,
+timestamptz,18,,Scale,Input,8,Right,DATETIME22.0,DATETIME22.0,
+interval,19,,Scale,Input,8,Right,DTIME13.0,DTIME13.0,
+interval_months,20,,Scale,Input,8,Right,F3.0,F3.0,
+timetz,21,,Scale,Input,8,Right,TIME11.0,TIME11.0,
+timetz_zone,22,,Scale,Input,8,Right,F8.2,F8.2,
 
 Table: Data List
 bool,bytea,char,int8,int2,int4,numeric,text,oid,float4,float8,money,pbchar,varchar,date,time,timestamp,timestamptz,interval,interval_months,timetz,timetz_zone
@@ -206,10 +207,11 @@ EOF
 ])
 AT_CHECK([pspp -o pspp.csv empty-result.sps])
 AT_CHECK([cat pspp.csv], [0], [dnl
-Variable,Description,Position
-a,Format: F8.2,1
-b,Format: DATE11,2
-c,Format: E40.2,3
+Table: Variables
+Name,Position,Label,Measurement Level,Role,Width,Alignment,Print Format,Write Format,Missing Values
+a,1,,Scale,Input,8,Right,F8.2,F8.2,
+b,2,,Scale,Input,8,Right,DATE11,DATE11,
+c,3,,Scale,Input,8,Right,E40.2,E40.2,
 ])
 
 dnl Test query with large result set.

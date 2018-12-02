@@ -255,8 +255,9 @@ LIST.
 ])
 AT_CHECK([pspp -o pspp.csv list.sps])
 AT_CHECK([cat pspp.csv], [0], [dnl
-Variable,Description,Position
-foo,Format: A2000,1
+Table: Variables
+Name,Position,Print Format,Write Format,Missing Values
+foo,1,A2000,A2000,
 
 Table: Data List
 foo

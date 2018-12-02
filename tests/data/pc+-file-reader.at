@@ -107,26 +107,18 @@ AT_CHECK([pspp -o pspp.csv pc+-file.sps])
 AT_CHECK([cat pspp.csv], [0], [dnl
 File label: PSPP synthetic test file
 
-Variable,Description,Position
-NUM1,Format: F8.0,1
-NUM2,"Label: Numeric variable 2's label
-Format: F8.0",2
-NUM3,"Format: F8.0
-Missing Values: 1",3
-NUM4,"Label: Another numeric variable label
-Format: F8.0
-Missing Values: 2",4
-STR1,Format: A8,5
-STR2,"Label: STR2's variable label
-Format: A4",6
-STR3,"Format: A5
-Missing Values: ""MISS """,7
-STR4,"Label: STR4's variable label
-Format: A1
-Missing Values: ""O""",8
-STR5,Format: A11,9
-STR6,"Label: Another string variable's label
-Format: A11",10
+Table: Variables
+Name,Position,Label,Measurement Level,Role,Width,Alignment,Print Format,Write Format,Missing Values
+NUM1,1,,Scale,Input,8,Right,F8.0,F8.0,
+NUM2,2,Numeric variable 2's label,Scale,Input,8,Right,F8.0,F8.0,
+NUM3,3,,Scale,Input,8,Right,F8.0,F8.0,1
+NUM4,4,Another numeric variable label,Scale,Input,8,Right,F8.0,F8.0,2
+STR1,5,,Nominal,Input,8,Left,A8,A8,
+STR2,6,STR2's variable label,Nominal,Input,4,Left,A4,A4,
+STR3,7,,Nominal,Input,5,Left,A5,A5,"""MISS """
+STR4,8,STR4's variable label,Nominal,Input,1,Left,A1,A1,"""O"""
+STR5,9,,Nominal,Input,11,Left,A11,A11,
+STR6,10,Another string variable's label,Nominal,Input,11,Left,A11,A11,
 
 Table: Data List
 NUM1,NUM2,NUM3,NUM4,STR1,STR2,STR3,STR4,STR5,STR6
@@ -227,71 +219,49 @@ AT_CHECK([pspp -o pspp.csv pc+-file.sps])
 AT_CHECK([cat pspp.csv], [0], [dnl
 File label: PSPP synthetic test file
 
-Variable,Description,Position
-NUM1,"Format: F8.0
+Table: Variables
+Name,Position,Label,Measurement Level,Role,Width,Alignment,Print Format,Write Format,Missing Values
+NUM1,1,,Scale,Input,8,Right,F8.0,F8.0,
+NUM2,2,,Scale,Input,8,Right,F8.0,F8.0,
+NUM3,3,,Scale,Input,8,Right,F8.0,F8.0,
+NUM4,4,,Scale,Input,8,Right,F8.0,F8.0,
+NUM5,5,,Scale,Input,8,Right,F8.0,F8.0,
+STR1,6,,Nominal,Input,1,Left,A1,A1,
+STR2,7,,Nominal,Input,2,Left,A2,A2,
+STR3,8,,Nominal,Input,3,Left,A3,A3,
+STR4,9,,Nominal,Input,4,Left,A4,A4,
+STR5,10,,Nominal,Input,5,Left,A5,A5,
+STR6,11,,Nominal,Input,6,Left,A6,A6,
+STR7,12,,Nominal,Input,7,Left,A7,A7,
+STR8,13,,Nominal,Input,8,Left,A8,A8,
 
-Value,Label
-1,one",1
-NUM2,"Format: F8.0
-
-Value,Label
-2,two
-3,three",2
-NUM3,"Format: F8.0
-
-Value,Label
-3,three
-4,four",3
-NUM4,"Format: F8.0
-
-Value,Label
-4,four",4
-NUM5,"Format: F8.0
-
-Value,Label
-4,four
-5,five",5
-STR1,"Format: A1
-
-Value,Label
-a,value label for `a'",6
-STR2,"Format: A2
-
-Value,Label
-ab,value label for `ab'",7
-STR3,"Format: A3
-
-Value,Label
-abc,value label for `abc'",8
-STR4,"Format: A4
-
-Value,Label
-abcd,value label for abcdefgh",9
-STR5,"Format: A5
-
-Value,Label
-abcde,value label for abcdefgh
-ijklm,value label for ijklmnop",10
-STR6,"Format: A6
-
-Value,Label
-abcdef,value label for abcdefgh
-ijklmn,value label for ijklmnop
-qrstuv,value label for qrstuvwx",11
-STR7,"Format: A7
-
-Value,Label
-abcdefg,value label for abcdefgh
-ijklmno,value label for ijklmnop
-qrstuvw,value label for qrstuvwx
-yzABCDE,value label for yzABCDEF",12
-STR8,"Format: A8
-
-Value,Label
-GHIJKLMN,value label for GHIJKLMN
-ijklmnop,value label for ijklmnop
-qrstuvwx,value label for qrstuvwx
-yzABCDEF,value label for yzABCDEF",13
+Table: Value Labels
+Variable,Value,Label
+NUM1,1,one
+NUM2,2,two
+,3,three
+NUM3,3,three
+,4,four
+NUM4,4,four
+NUM5,4,four
+,5,five
+STR1,a,value label for `a'
+STR2,ab,value label for `ab'
+STR3,abc,value label for `abc'
+STR4,abcd,value label for abcdefgh
+STR5,abcde,value label for abcdefgh
+,ijklm,value label for ijklmnop
+STR6,abcdef,value label for abcdefgh
+,ijklmn,value label for ijklmnop
+,qrstuv,value label for qrstuvwx
+STR7,abcdefg,value label for abcdefgh
+,ijklmno,value label for ijklmnop
+,qrstuvw,value label for qrstuvwx
+,yzABCDE,value label for yzABCDEF
+STR8,GHIJKLMN,value label for GHIJKLMN
+,ijklmnop,value label for ijklmnop
+,qrstuvwx,value label for qrstuvwx
+,yzABCDEF,value label for yzABCDEF
 
 Table: Data List
 NUM1,NUM2,NUM3,NUM4,NUM5,STR1,STR2,STR3,STR4,STR5,STR6,STR7,STR8
@@ -362,12 +332,13 @@ AT_CHECK([pspp -o pspp.csv pc+-file.sps])
 AT_CHECK([cat pspp.csv], [0], [dnl
 File label: PSPP synthetic test file
 
-Variable,Description,Position
-NUM1,Format: F8.0,1
-NUM2,Format: F8.0,2
-STR4,Format: A4,3
-STR8,Format: A8,4
-STR15,Format: A15,5
+Table: Variables
+Name,Position,Label,Measurement Level,Role,Width,Alignment,Print Format,Write Format,Missing Values
+NUM1,1,,Scale,Input,8,Right,F8.0,F8.0,
+NUM2,2,,Scale,Input,8,Right,F8.0,F8.0,
+STR4,3,,Nominal,Input,4,Left,A4,A4,
+STR8,4,,Nominal,Input,8,Left,A8,A8,
+STR15,5,,Nominal,Input,15,Left,A15,A15,
 
 Table: Data List
 NUM1,NUM2,STR4,STR8,STR15
@@ -436,27 +407,12 @@ Weight:,NUM3
 Compression:,None
 Encoding:,us-ascii
 
-Variable,Description,Position
-NUM1,"Format: F8.0
-Measure: Scale
-Role: Input
-Display Alignment: Right
-Display Width: 8",1
-NUM2,"Format: F8.0
-Measure: Scale
-Role: Input
-Display Alignment: Right
-Display Width: 8",2
-NUM3,"Format: F8.0
-Measure: Scale
-Role: Input
-Display Alignment: Right
-Display Width: 8",3
-NUM4,"Format: F8.0
-Measure: Scale
-Role: Input
-Display Alignment: Right
-Display Width: 8",4
+Table: Variables
+Name,Position,Label,Measurement Level,Role,Width,Alignment,Print Format,Write Format,Missing Values
+NUM1,1,,Scale,Input,8,Right,F8.0,F8.0,
+NUM2,2,,Scale,Input,8,Right,F8.0,F8.0,
+NUM3,3,,Scale,Input,8,Right,F8.0,F8.0,
+NUM4,4,,Scale,Input,8,Right,F8.0,F8.0,
 ])
 AT_CLEANUP
 
@@ -520,11 +476,12 @@ AT_CHECK([sed 's/default encoding.*For/default encoding.  For/' stdout], [0], [d
 
 File label: PSPP synthetic test file
 
-Variable,Description,Position
-NUM1,Format: F8.0,1
-NUM2,Format: F8.0,2
-NUM3,Format: F8.0,3
-NUM4,Format: F8.0,4
+Table: Variables
+Name,Position,Label,Measurement Level,Role,Width,Alignment,Print Format,Write Format,Missing Values
+NUM1,1,,Scale,Input,8,Right,F8.0,F8.0,
+NUM2,2,,Scale,Input,8,Right,F8.0,F8.0,
+NUM3,3,,Scale,Input,8,Right,F8.0,F8.0,
+NUM4,4,,Scale,Input,8,Right,F8.0,F8.0,
 
 Table: Data List
 NUM1,NUM2,NUM3,NUM4
@@ -542,27 +499,12 @@ Weight:,Not weighted.
 Compression:,None
 Encoding:,us-ascii
 
-Variable,Description,Position
-NUM1,"Format: F8.0
-Measure: Scale
-Role: Input
-Display Alignment: Right
-Display Width: 8",1
-NUM2,"Format: F8.0
-Measure: Scale
-Role: Input
-Display Alignment: Right
-Display Width: 8",2
-NUM3,"Format: F8.0
-Measure: Scale
-Role: Input
-Display Alignment: Right
-Display Width: 8",3
-NUM4,"Format: F8.0
-Measure: Scale
-Role: Input
-Display Alignment: Right
-Display Width: 8",4
+Table: Variables
+Name,Position,Label,Measurement Level,Role,Width,Alignment,Print Format,Write Format,Missing Values
+NUM1,1,,Scale,Input,8,Right,F8.0,F8.0,
+NUM2,2,,Scale,Input,8,Right,F8.0,F8.0,
+NUM3,3,,Scale,Input,8,Right,F8.0,F8.0,
+NUM4,4,,Scale,Input,8,Right,F8.0,F8.0,
 ])
 AT_CLEANUP
 
@@ -1300,12 +1242,13 @@ LIST.
 AT_CHECK([pspp -O format=csv pc+-file.sps], [0], [dnl
 File label: PSPP synthetic test file
 
-Variable,Description,Position
-NUM1,Format: F8.0,1
-NUM2,Format: F8.0,2
-STR4,Format: A4,3
-STR8,Format: A8,4
-STR15,Format: A15,5
+Table: Variables
+Name,Position,Label,Measurement Level,Role,Width,Alignment,Print Format,Write Format,Missing Values
+NUM1,1,,Scale,Input,8,Right,F8.0,F8.0,
+NUM2,2,,Scale,Input,8,Right,F8.0,F8.0,
+STR4,3,,Nominal,Input,4,Left,A4,A4,
+STR8,4,,Nominal,Input,8,Left,A8,A8,
+STR15,5,,Nominal,Input,15,Left,A15,A15,
 
 warning: `pc+-file.sav' near offset 0x308: Possible compressed data corruption: string contains compressed integer (opcode 101).
 

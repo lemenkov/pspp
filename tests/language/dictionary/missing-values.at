@@ -78,8 +78,9 @@ MISSING VALUES ALL ().
 DISPLAY DICTIONARY
 ])
 AT_CHECK([pspp -o pspp.csv missing-values.sps])
-AT_CHECK([sed -n '/^$/p; /^@<:@^"@:>@*"@<:@^"@:>@*$/N; s/^\(@<:@a-z0-9@:>@*\),".*Missing Values: \(.*\)",@<:@0-9@:>@*$/\1: \2/p; s/^\(@<:@a-z0-9@:>@*\),Format: @<:@A-Z0-9.@:>@*,@<:@0-9@:>@*$/\1: none/p' pspp.csv
-], [0], [dnl
+AT_CHECK([cat pspp.csv | sed '/^Table/d
+/^Name/d
+s/^\([[a-z0-9]]*\),.*,\([[^,]]*\)$/\1: \2/'], [0], [dnl
 date1: 1
 num1: 1
 
@@ -130,15 +131,15 @@ num1: 1 THRU HIGHEST; -1
 
 num1: 1 THRU HIGHEST; -1
 
-str1: ""abc  ""; ""def  ""
-str2: ""abc""; ""def""
-longstr: ""abc     ""; ""def     ""
+str1: """abc  ""; ""def  """
+str2: """abc""; ""def"""
+longstr: """abc     ""; ""def     """
 
-str1: none
-str2: none
-date1: none
-num1: none
-longstr: none
+str1: @&t@
+str2: @&t@
+date1: @&t@
+num1: @&t@
+longstr: @&t@
 ])
 AT_CLEANUP
 

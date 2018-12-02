@@ -13,7 +13,6 @@
 
    You should have received a copy of the GNU General Public License
    along with this program.  If not, see <http://www.gnu.org/licenses/>. */
-
 #include <config.h>
 
 #include <ctype.h>
@@ -47,6 +46,7 @@
 #include "output/text-item.h"
 #include "output/table-item.h"
 
+#include "gl/count-one-bits.h"
 #include "gl/localcharset.h"
 #include "gl/intprops.h"
 #include "gl/minmax.h"
@@ -54,27 +54,36 @@
 
 #include "gettext.h"
 #define _(msgid) gettext (msgid)
+#define N_(msgid) (msgid)
 
 /* Information to include in displaying a dictionary. */
 enum
   {
-    DF_DICT_INDEX       = 1 << 0,
-    DF_FORMATS          = 1 << 1,
-    DF_VALUE_LABELS     = 1 << 2,
-    DF_VARIABLE_LABELS  = 1 << 3,
-    DF_MISSING_VALUES   = 1 << 4,
-    DF_AT_ATTRIBUTES    = 1 << 5, /* Attributes whose names begin with @. */
-    DF_ATTRIBUTES       = 1 << 6, /* All other attributes. */
-    DF_MEASURE          = 1 << 7,
-    DF_ROLE             = 1 << 8,
-    DF_ALIGNMENT        = 1 << 9,
-    DF_WIDTH            = 1 << 10,
-    DF_ALL              = (1 << 11) - 1
+    /* Variable table. */
+    DF_NAME              = 1 << 0,
+    DF_POSITION          = 1 << 1,
+    DF_LABEL             = 1 << 2,
+    DF_MEASUREMENT_LEVEL = 1 << 3,
+    DF_ROLE              = 1 << 4,
+    DF_WIDTH             = 1 << 5,
+    DF_ALIGNMENT         = 1 << 6,
+    DF_PRINT_FORMAT      = 1 << 7,
+    DF_WRITE_FORMAT      = 1 << 8,
+    DF_MISSING_VALUES    = 1 << 9,
+#define DF_ALL_VARIABLE ((1 << 10) - 1)
+
+    /* Value labels table. */
+    DF_VALUE_LABELS      = 1 << 10,
+
+    /* Attribute table. */
+    DF_AT_ATTRIBUTES     = 1 << 11, /* Attributes whose names begin with @. */
+    DF_ATTRIBUTES        = 1 << 12, /* All other attributes. */
   };
 
-static unsigned int dict_display_mask (const struct dictionary *);
-
-static struct table *describe_variable (const struct variable *v, int flags);
+static void display_variables (const struct variable **, size_t, int flags);
+static void display_value_labels (const struct variable **, size_t);
+static void display_attributes (const struct attrset *,
+                                const struct variable **, size_t, int flags);
 
 static void report_encodings (const struct file_handle *, struct pool *,
                               char **titles, bool *ids,
@@ -91,8 +100,7 @@ cmd_sysfile_info (struct lexer *lexer, struct dataset *ds UNUSED)
   struct casereader *reader;
   struct any_read_info info;
   char *encoding;
-  struct table *table;
-  int r, i;
+  int r;
 
   h = NULL;
   encoding = NULL;
@@ -235,20 +243,14 @@ cmd_sysfile_info (struct lexer *lexer, struct dataset *ds UNUSED)
 
   tab_submit (t);
 
-  t = tab_create (3, 1);
-  tab_headers (t, 0, 0, 1, 0);
-  tab_text (t, 0, 0, TAB_LEFT | TAT_TITLE, _("Variable"));
-  tab_text (t, 1, 0, TAB_LEFT | TAT_TITLE, _("Description"));
-  tab_text (t, 2, 0, TAB_LEFT | TAT_TITLE, _("Position"));
-  tab_hline (t, TAL_2, 0, 2, 1);
-
-  table = &t->table;
-  for (i = 0; i < dict_get_var_cnt (d); i++)
-    table = table_vpaste (table,
-                          describe_variable (dict_get_var (d, i),
-                                             DF_ALL & ~DF_AT_ATTRIBUTES));
-
-  table_item_submit (table_item_create (table, NULL /* XXX */, NULL));
+  size_t n_vars = dict_get_var_cnt (d);
+  const struct variable **vars = xnmalloc (n_vars, sizeof *vars);
+  for (size_t i = 0; i < dict_get_var_cnt (d); i++)
+    vars[i] = dict_get_var (d, i);
+  display_variables (vars, n_vars, DF_ALL_VARIABLE);
+  display_value_labels (vars, n_vars);
+  display_attributes (dict_get_attributes (dataset_dict (ds)),
+                      vars, n_vars, DF_ATTRIBUTES);
 
   dict_unref (d);
 
@@ -267,9 +269,7 @@ error:
 
 static void display_macros (void);
 static void display_documents (const struct dictionary *dict);
-static void display_variables (const struct variable **, size_t, int);
 static void display_vectors (const struct dictionary *dict, int sorted);
-static void display_data_file_attributes (struct attrset *, int flags);
 
 int
 cmd_display (struct lexer *lexer, struct dataset *ds)
@@ -310,7 +310,7 @@ cmd_display (struct lexer *lexer, struct dataset *ds)
       else if (lex_match_id (lexer, "SCRATCH"))
         {
           dict_get_vars (dataset_dict (ds), &vl, &n, DC_ORDINARY);
-          flags = 0;
+          flags = DF_NAME;
         }
       else
         {
@@ -323,13 +323,16 @@ cmd_display (struct lexer *lexer, struct dataset *ds)
             {
               {"@ATTRIBUTES", DF_ATTRIBUTES | DF_AT_ATTRIBUTES},
               {"ATTRIBUTES", DF_ATTRIBUTES},
-              {"DICTIONARY", DF_ALL & ~DF_AT_ATTRIBUTES},
-              {"INDEX", DF_DICT_INDEX},
-              {"LABELS", DF_DICT_INDEX | DF_VARIABLE_LABELS},
-              {"NAMES", 0},
-              {"VARIABLES",
-               DF_DICT_INDEX | DF_FORMATS | DF_MISSING_VALUES
-               | DF_MEASURE | DF_ROLE | DF_ALIGNMENT | DF_WIDTH},
+              {"DICTIONARY", (DF_NAME | DF_POSITION | DF_LABEL
+                              | DF_MEASUREMENT_LEVEL | DF_ROLE | DF_WIDTH
+                              | DF_ALIGNMENT | DF_PRINT_FORMAT
+                              | DF_WRITE_FORMAT | DF_MISSING_VALUES
+                              | DF_VALUE_LABELS)},
+              {"INDEX", DF_NAME | DF_POSITION},
+              {"LABELS", DF_NAME | DF_POSITION | DF_LABEL},
+              {"NAMES", DF_NAME},
+              {"VARIABLES", (DF_NAME | DF_POSITION | DF_PRINT_FORMAT
+                             | DF_WRITE_FORMAT | DF_MISSING_VALUES)},
               {NULL, 0},
             };
           const struct subcommand *sbc;
@@ -339,7 +342,7 @@ cmd_display (struct lexer *lexer, struct dataset *ds)
           for (sbc = subcommands; sbc->name != NULL; sbc++)
             if (lex_match_id (lexer, sbc->name))
               {
-                flags = sbc->flags & dict_display_mask (dict);
+                flags = sbc->flags;
                 break;
               }
 
@@ -361,19 +364,26 @@ cmd_display (struct lexer *lexer, struct dataset *ds)
 
       if (n > 0)
         {
-          sort (vl, n, sizeof *vl,
-                (sorted
-                 ? compare_var_ptrs_by_name
-                 : compare_var_ptrs_by_dict_index), NULL);
-          display_variables (vl, n, flags);
+          sort (vl, n, sizeof *vl, (sorted
+                                    ? compare_var_ptrs_by_name
+                                    : compare_var_ptrs_by_dict_index), NULL);
+
+          int variable_flags = flags & DF_ALL_VARIABLE;
+          if (variable_flags)
+            display_variables (vl, n, variable_flags);
+
+          if (flags & DF_VALUE_LABELS)
+            display_value_labels (vl, n);
+
+          int attribute_flags = flags & (DF_ATTRIBUTES | DF_AT_ATTRIBUTES);
+          if (attribute_flags)
+            display_attributes (dict_get_attributes (dataset_dict (ds)),
+                                vl, n, attribute_flags);
         }
       else
         msg (SW, _("No variables to display."));
-      free (vl);
 
-      if (flags & (DF_ATTRIBUTES | DF_AT_ATTRIBUTES))
-        display_data_file_attributes (dict_get_attributes (dataset_dict (ds)),
-                                      flags);
+      free (vl);
     }
 
   return CMD_SUCCESS;
@@ -404,53 +414,174 @@ display_documents (const struct dictionary *dict)
     }
 }
 
-static int
-count_columns (int flags)
-{
-  int nc = 1;
-  if (flags & ~DF_DICT_INDEX)
-    nc++;
-  if (flags & DF_DICT_INDEX)
-    nc++;
-
-  return nc;
-}
-
-static int
-position_column (int flags)
-{
-  int pc = 1;
-  if (flags & ~DF_DICT_INDEX)
-    pc++;
-  return pc;
-}
-
 static void
 display_variables (const struct variable **vl, size_t n, int flags)
 {
-  struct tab_table *t;
-  struct table *table;
-  size_t i;
-  int nc;
-
-  nc = count_columns (flags);
-  t = tab_create (nc, 1);
+  int nc = count_one_bits (flags);
+  struct tab_table *t = tab_create (nc, n + 1);
+  tab_title (t, "%s", _("Variables"));
   tab_headers (t, 0, 0, 1, 0);
   tab_hline (t, TAL_2, 0, nc - 1, 1);
+
+  struct heading
+    {
+      int flag;
+      const char *title;
+    };
+  static const struct heading headings[] = {
+    { DF_NAME, N_("Name") },
+    { DF_POSITION, N_("Position") },
+    { DF_LABEL, N_("Label") },
+    { DF_MEASUREMENT_LEVEL, N_("Measurement Level") },
+    { DF_ROLE, N_("Role") },
+    { DF_WIDTH, N_("Width") },
+    { DF_ALIGNMENT, N_("Alignment") },
+    { DF_PRINT_FORMAT, N_("Print Format") },
+    { DF_WRITE_FORMAT, N_("Write Format") },
+    { DF_MISSING_VALUES, N_("Missing Values") },
+  };
+  for (size_t i = 0, x = 0; i < sizeof headings / sizeof *headings; i++)
+    if (flags & headings[i].flag)
+      tab_text (t, x++, 0, TAB_LEFT | TAT_TITLE, gettext (headings[i].title));
+
+  for (size_t i = 0; i < n; i++)
+    {
+      const struct variable *v = vl[i];
+      size_t y = i + 1;
+      size_t x = 0;
+      if (flags & DF_NAME)
+        tab_text (t, x++, y, TAB_LEFT, var_get_name (v));
+      if (flags & DF_POSITION)
+        {
+          char s[INT_BUFSIZE_BOUND (size_t)];
+
+          sprintf (s, "%zu", var_get_dict_index (v) + 1);
+          tab_text (t, x++, y, TAB_LEFT, s);
+        }
+      if (flags & DF_LABEL)
+        {
+          const char *label = var_get_label (v);
+          if (label)
+            tab_text (t, x, y, TAB_LEFT, label);
+          x++;
+        }
+      if (flags & DF_MEASUREMENT_LEVEL)
+        tab_text (t, x++, y, TAB_LEFT,
+                  measure_to_string (var_get_measure (v)));
+      if (flags & DF_ROLE)
+        tab_text (t, x++, y, TAB_LEFT,
+                  var_role_to_string (var_get_role (v)));
+      if (flags & DF_WIDTH)
+        {
+          char s[INT_BUFSIZE_BOUND (int)];
+          sprintf (s, "%d", var_get_display_width (v));
+          tab_text (t, x++, y, TAB_RIGHT, s);
+        }
+      if (flags & DF_ALIGNMENT)
+        tab_text (t, x++, y, TAB_LEFT,
+                  alignment_to_string (var_get_alignment (v)));
+      if (flags & DF_PRINT_FORMAT)
+        {
+          const struct fmt_spec *print = var_get_print_format (v);
+          char s[FMT_STRING_LEN_MAX + 1];
+
+          tab_text (t, x++, y, TAB_LEFT, fmt_to_string (print, s));
+        }
+      if (flags & DF_WRITE_FORMAT)
+        {
+          const struct fmt_spec *write = var_get_write_format (v);
+          char s[FMT_STRING_LEN_MAX + 1];
+
+          tab_text (t, x++, y, TAB_LEFT, fmt_to_string (write, s));
+        }
+      if (flags & DF_MISSING_VALUES)
+        {
+          const struct missing_values *mv = var_get_missing_values (v);
+
+          struct string s = DS_EMPTY_INITIALIZER;
+          if (mv_has_range (mv))
+            {
+              double x, y;
+              mv_get_range (mv, &x, &y);
+              if (x == LOWEST)
+                ds_put_format (&s, "LOWEST THRU %.*g", DBL_DIG + 1, y);
+              else if (y == HIGHEST)
+                ds_put_format (&s, "%.*g THRU HIGHEST", DBL_DIG + 1, x);
+              else
+                ds_put_format (&s, "%.*g THRU %.*g",
+                               DBL_DIG + 1, x,
+                               DBL_DIG + 1, y);
+            }
+          for (size_t j = 0; j < mv_n_values (mv); j++)
+            {
+              const union value *value = mv_get_value (mv, j);
+              if (!ds_is_empty (&s))
+                ds_put_cstr (&s, "; ");
+              if (var_is_numeric (v))
+                ds_put_format (&s, "%.*g", DBL_DIG + 1, value->f);
+              else
+                {
+                  int width = var_get_width (v);
+                  int mv_width = MIN (width, MV_MAX_STRING);
+
+                  ds_put_byte (&s, '"');
+                  memcpy (ds_put_uninit (&s, mv_width),
+                          value_str (value, width), mv_width);
+                  ds_put_byte (&s, '"');
+                }
+            }
+          if (!ds_is_empty (&s))
+            tab_text (t, x, y, TAB_LEFT, ds_cstr (&s));
+          ds_destroy (&s);
+          x++;
+
+          assert (x == nc);
+        }
+    }
+
+  tab_submit (t);
+}
+
+static void
+display_value_labels (const struct variable **vars, size_t n_vars)
+{
+  size_t n_value_labels = 0;
+  for (size_t i = 0; i < n_vars; i++)
+    n_value_labels += val_labs_count (var_get_value_labels (vars[i]));
+  if (!n_value_labels)
+    return;
+
+  struct tab_table *t = tab_create (3, n_value_labels + 1);
+  tab_title (t, "%s", _("Value Labels"));
+  tab_headers (t, 0, 0, 1, 0);
+  tab_hline (t, TAL_2, 0, 2, 1);
   tab_text (t, 0, 0, TAB_LEFT | TAT_TITLE, _("Variable"));
-  if (flags & ~DF_DICT_INDEX)
-    tab_text (t, 1, 0, TAB_LEFT | TAT_TITLE,
-              (flags & ~(DF_DICT_INDEX | DF_VARIABLE_LABELS)
-               ? _("Description") : _("Label")));
-  if (flags & DF_DICT_INDEX)
-    tab_text (t, position_column (flags), 0, TAB_LEFT | TAT_TITLE,
-              _("Position"));
+  tab_text (t, 1, 0, TAB_LEFT | TAT_TITLE, _("Value"));
+  tab_text (t, 2, 0, TAB_LEFT | TAT_TITLE, _("Label"));
 
-  table = &t->table;
-  for (i = 0; i < n; i++)
-    table = table_vpaste (table, describe_variable (vl[i], flags));
+  int y = 1;
+  for (size_t i = 0; i < n_vars; i++)
+    {
+      const struct val_labs *val_labs = var_get_value_labels (vars[i]);
+      size_t n_labels = val_labs_count (val_labs);
+      if (!n_labels)
+        continue;
 
-  table_item_submit (table_item_create (table, NULL /* XXX */, NULL));
+      tab_joint_text (t, 0, y, 0, y + (n_labels - 1), TAB_LEFT,
+                      var_get_name (vars[i]));
+
+      const struct val_lab **labels = val_labs_sorted (val_labs);
+      for (size_t j = 0; j < n_labels; j++)
+        {
+          const struct val_lab *vl = labels[j];
+
+          tab_value (t, 1, y, TAB_NONE, &vl->value, vars[i], NULL);
+          tab_text (t, 2, y, TAB_LEFT, val_lab_get_escaped_label (vl));
+          y++;
+        }
+      free (labels);
+    }
+  tab_submit (t);
 }
 
 static bool
@@ -474,229 +605,66 @@ count_attributes (const struct attrset *set, int flags)
   return n_attrs;
 }
 
-static struct table *
-describe_attributes (const struct attrset *set, int flags)
+static int
+display_attrset (const char *name, const struct attrset *set, int flags,
+                 struct tab_table *t, int y)
 {
-  struct attribute **attrs;
-  struct tab_table *t;
-  size_t n_attrs;
-  size_t i;
-  int r = 1;
+  size_t n_total = count_attributes (set, flags);
+  if (!n_total)
+    return y;
 
-  t = tab_create (2, 1 + count_attributes (set, flags));
-  tab_headers (t, 0, 0, 1, 0);
-  tab_box (t, TAL_1, TAL_1, -1, TAL_1, 0, 0, tab_nc (t) - 1, tab_nr (t) - 1);
-  tab_hline (t, TAL_1, 0, 1, 1);
-  tab_text (t, 0, 0, TAB_LEFT | TAT_TITLE, _("Attribute"));
-  tab_text (t, 1, 0, TAB_LEFT | TAT_TITLE, _("Value"));
+  tab_joint_text (t, 0, y, 0, y + (n_total - 1), TAB_LEFT, name);
 
-  n_attrs = attrset_count (set);
-  attrs = attrset_sorted (set);
-  for (i = 0; i < n_attrs; i++)
+  size_t n_attrs = attrset_count (set);
+  struct attribute **attrs = attrset_sorted (set);
+  for (size_t i = 0; i < n_attrs; i++)
     {
       const struct attribute *attr = attrs[i];
       const char *name = attribute_get_name (attr);
-      size_t n_values;
-      size_t j;
 
       if (!(flags & DF_AT_ATTRIBUTES) && is_at_name (name))
         continue;
 
-      n_values = attribute_get_n_values (attr);
-      for (j = 0; j < n_values; j++)
+      size_t n_values = attribute_get_n_values (attr);
+      for (size_t j = 0; j < n_values; j++)
         {
           if (n_values > 1)
-            tab_text_format (t, 0, r, TAB_LEFT, "%s[%zu]", name, j + 1);
+            tab_text_format (t, 1, y, TAB_LEFT, "%s[%zu]", name, j + 1);
           else
-            tab_text (t, 0, r, TAB_LEFT, name);
-          tab_text (t, 1, r, TAB_LEFT, attribute_get_value (attr, j));
-          r++;
+            tab_text (t, 1, y, TAB_LEFT, name);
+          tab_text (t, 2, y, TAB_LEFT, attribute_get_value (attr, j));
+          y++;
         }
     }
   free (attrs);
 
-  return &t->table;
+  return y;
 }
 
 static void
-display_data_file_attributes (struct attrset *set, int flags)
+display_attributes (const struct attrset *dict_attrset,
+                    const struct variable **vars, size_t n_vars, int flags)
 {
-  if (count_attributes (set, flags))
-    table_item_submit (table_item_create (describe_attributes (set, flags),
-                                          _("Custom data file attributes."),
-                                          NULL));
-}
+  size_t n_attributes = count_attributes (dict_attrset, flags);
+  for (size_t i = 0; i < n_vars; i++)
+    n_attributes += count_attributes (var_get_attributes (vars[i]), flags);
+  if (!n_attributes)
+    return;
 
-static struct table *
-describe_value_labels (const struct variable *var)
-{
-  const struct val_labs *val_labs = var_get_value_labels (var);
-  size_t n_labels = val_labs_count (val_labs);
-  const struct val_lab **labels;
-  struct tab_table *t;
-  size_t i;
+  struct tab_table *t = tab_create (3, n_attributes + 1);
+  tab_title (t, "%s", _("Variable and Dataset Attributes"));
+  tab_headers (t, 0, 0, 1, 0);
+  tab_hline (t, TAL_2, 0, 2, 1);
+  tab_text (t, 0, 0, TAB_LEFT | TAT_TITLE, _("Variable"));
+  tab_text (t, 1, 0, TAB_LEFT | TAT_TITLE, _("Name"));
+  tab_text (t, 2, 0, TAB_LEFT | TAT_TITLE, _("Value"));
 
-  t = tab_create (2, n_labels + 1);
-  tab_box (t, TAL_1, TAL_1, -1, TAL_1, 0, 0, tab_nc (t) - 1, tab_nr (t) - 1);
+  int y = display_attrset (_("(dataset)"), dict_attrset, flags, t, 1);
+  for (size_t i = 0; i < n_vars; i++)
+    y = display_attrset (var_get_name (vars[i]), var_get_attributes (vars[i]),
+                         flags, t, y);
 
-  tab_text (t, 0, 0, TAB_LEFT | TAT_TITLE, _("Value"));
-  tab_text (t, 1, 0, TAB_LEFT | TAT_TITLE, _("Label"));
-
-  tab_hline (t, TAL_1, 0, 1, 1);
-  tab_vline (t, TAL_1, 1, 0, n_labels);
-
-  labels = val_labs_sorted (val_labs);
-  for (i = 0; i < n_labels; i++)
-    {
-      const struct val_lab *vl = labels[i];
-
-      tab_value (t, 0, i + 1, TAB_NONE, &vl->value, var, NULL);
-      tab_text (t, 1, i + 1, TAB_LEFT, val_lab_get_escaped_label (vl));
-    }
-  free (labels);
-
-  return &t->table;
-}
-
-static struct table *
-describe_variable_details (const struct variable *v, int flags)
-{
-  struct table *table;
-  struct string s;
-
-  ds_init_empty (&s);
-
-  /* Variable label. */
-  if (flags & DF_VARIABLE_LABELS && var_has_label (v))
-    {
-      if (flags & ~(DF_DICT_INDEX | DF_VARIABLE_LABELS))
-        ds_put_format (&s, _("Label: %s\n"), var_get_label (v));
-      else
-        ds_put_format (&s, "%s\n", var_get_label (v));
-    }
-
-  /* Print/write format, or print and write formats. */
-  if (flags & DF_FORMATS)
-    {
-      const struct fmt_spec *print = var_get_print_format (v);
-      const struct fmt_spec *write = var_get_write_format (v);
-      char str[FMT_STRING_LEN_MAX + 1];
-
-      if (fmt_equal (print, write))
-        ds_put_format (&s, _("Format: %s\n"), fmt_to_string (print, str));
-      else
-        {
-          ds_put_format (&s, _("Print Format: %s\n"),
-                         fmt_to_string (print, str));
-          ds_put_format (&s, _("Write Format: %s\n"),
-                         fmt_to_string (write, str));
-        }
-    }
-
-  /* Measurement level, role, display width, alignment. */
-  if (flags & DF_MEASURE)
-    ds_put_format (&s, _("Measure: %s\n"),
-                   measure_to_string (var_get_measure (v)));
-
-  if (flags & DF_ROLE)
-    ds_put_format (&s, _("Role: %s\n"), var_role_to_string (var_get_role (v)));
-
-
-  if (flags & DF_ALIGNMENT)
-    ds_put_format (&s, _("Display Alignment: %s\n"),
-                   alignment_to_string (var_get_alignment (v)));
-
-  if (flags & DF_WIDTH)
-    ds_put_format (&s, _("Display Width: %d\n"), var_get_display_width (v));
-
-  /* Missing values if any. */
-  if (flags & DF_MISSING_VALUES && var_has_missing_values (v))
-    {
-      const struct missing_values *mv = var_get_missing_values (v);
-      int cnt = 0;
-      int i;
-
-      ds_put_cstr (&s, _("Missing Values: "));
-
-      if (mv_has_range (mv))
-        {
-          double x, y;
-          mv_get_range (mv, &x, &y);
-          if (x == LOWEST)
-            ds_put_format (&s, "LOWEST THRU %.*g", DBL_DIG + 1, y);
-          else if (y == HIGHEST)
-            ds_put_format (&s, "%.*g THRU HIGHEST", DBL_DIG + 1, x);
-          else
-            ds_put_format (&s, "%.*g THRU %.*g",
-                           DBL_DIG + 1, x,
-                           DBL_DIG + 1, y);
-          cnt++;
-        }
-      for (i = 0; i < mv_n_values (mv); i++)
-        {
-          const union value *value = mv_get_value (mv, i);
-          if (cnt++ > 0)
-            ds_put_cstr (&s, "; ");
-          if (var_is_numeric (v))
-            ds_put_format (&s, "%.*g", DBL_DIG + 1, value->f);
-          else
-            {
-              int width = var_get_width (v);
-              int mv_width = MIN (width, MV_MAX_STRING);
-
-              ds_put_byte (&s, '"');
-              memcpy (ds_put_uninit (&s, mv_width),
-                      value_str (value, width), mv_width);
-              ds_put_byte (&s, '"');
-            }
-        }
-      ds_put_byte (&s, '\n');
-    }
-
-  ds_chomp_byte (&s, '\n');
-
-  table = (ds_is_empty (&s)
-           ? NULL
-           : table_from_string (TAB_LEFT, ds_cstr (&s)));
-  ds_destroy (&s);
-
-  /* Value labels. */
-  if (flags & DF_VALUE_LABELS && var_has_value_labels (v))
-    table = table_vpaste (table, table_create_nested (describe_value_labels (v)));
-
-  if (flags & (DF_ATTRIBUTES | DF_AT_ATTRIBUTES))
-    {
-      struct attrset *attrs = var_get_attributes (v);
-
-      if (count_attributes (attrs, flags))
-        table = table_vpaste (
-          table, table_create_nested (describe_attributes (attrs, flags)));
-    }
-
-  return table ? table : table_from_string (TAB_LEFT, "");
-}
-
-/* Puts a description of variable V into table T starting at row
-   R.  The variable will be described in the format given by
-   FLAGS.  Returns the next row available for use in the
-   table. */
-static struct table *
-describe_variable (const struct variable *v, int flags)
-{
-  struct table *table;
-
-  table = flags & ~DF_DICT_INDEX ? describe_variable_details (v, flags) : NULL;
-  table = table_hpaste (table_from_string (0, var_get_name (v)),
-                        table ? table_stomp (table) : NULL);
-  if (flags & DF_DICT_INDEX)
-    {
-      char s[INT_BUFSIZE_BOUND (size_t)];
-
-      sprintf (s, "%zu", var_get_dict_index (v) + 1);
-      table = table_hpaste (table, table_from_string (0, s));
-    }
-
-  return table;
+  tab_submit (t);
 }
 
 /* Display a list of vectors.  If SORTED is nonzero then they are
@@ -1085,34 +1053,4 @@ report_encodings (const struct file_handle *h, struct pool *pool,
           }
       }
   tab_submit (t);
-}
-
-static unsigned int
-dict_display_mask (const struct dictionary *d)
-{
-  size_t n_vars = dict_get_var_cnt (d);
-  unsigned int mask;
-  size_t i;
-
-  mask = DF_ALL & ~(DF_MEASURE | DF_ROLE | DF_ALIGNMENT | DF_WIDTH);
-  for (i = 0; i < n_vars; i++)
-    {
-      const struct variable *v = dict_get_var (d, i);
-      enum val_type val = var_get_type (v);
-      int width = var_get_width (v);
-
-      if (var_get_measure (v) != var_default_measure (val))
-        mask |= DF_MEASURE;
-
-      if (var_get_role (v) != ROLE_INPUT)
-        mask |= DF_ROLE;
-
-      if (var_get_alignment (v) != var_default_alignment (val))
-        mask |= DF_ALIGNMENT;
-
-      if (var_get_display_width (v) != var_default_display_width (width))
-        mask |= DF_WIDTH;
-    }
-
-  return mask;
 }

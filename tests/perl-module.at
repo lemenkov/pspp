@@ -26,6 +26,7 @@ dnl XXX "libtool --mode=execute" is probably better than setting
 dnl LD_LIBRARY_PATH.
 m4_define([RUN_PERL_MODULE],
   [LD_LIBRARY_PATH=$abs_top_builddir/src/.libs \
+   LD_PRELOAD=/usr/lib/i386-linux-gnu/libasan.so.4 \
    DYLD_LIBRARY_PATH=$abs_top_builddir/src/.libs \
    $PERL -I$abs_top_builddir/perl-module/blib/arch \
          -I$abs_top_builddir/perl-module/blib/lib])
@@ -82,9 +83,10 @@ Documents in the active dataset:
 
 These Documents
 
-Variable,Description,Position
-legal,Format: F9.2,1
-money,Format: DOLLAR6.2,2
+Table: Variables
+Name,Position,Label,Measurement Level,Role,Width,Alignment,Print Format,Write Format,Missing Values
+legal,1,,Scale,Input,8,Right,F9.2,F9.2,
+money,2,,Scale,Input,8,Right,DOLLAR6.2,DOLLAR6.2,
 
 dump-dict.sps:5: note: SHOW: WEIGHT is money.
 ])
@@ -152,10 +154,11 @@ DISPLAY FILE LABEL.
 DISPLAY DOCUMENTS.
 LIST.
 ])
-AT_CHECK([pspp -O format=csv dump-dicts.sps], [0],
-  [Variable,Description,Position
-id,Format: F2.0,1
-name,Format: A20,2
+AT_CHECK([pspp -O format=csv dump-dicts.sps], [0], [dnl
+Table: Variables
+Name,Position,Label,Measurement Level,Role,Width,Alignment,Print Format,Write Format,Missing Values
+id,1,,Scale,Input,8,Right,F2.0,F2.0,
+name,2,,Nominal,Input,20,Left,A20,A20,
 
 File label: This is the file label
 
@@ -167,9 +170,10 @@ Table: Data List
 id,name
 34,frederick           @&t@
 
-Variable,Description,Position
-id,Format: F2.0,1
-name,Format: A20,2
+Table: Variables
+Name,Position,Label,Measurement Level,Role,Width,Alignment,Print Format,Write Format,Missing Values
+id,1,,Scale,Input,8,Right,F2.0,F2.0,
+name,2,,Nominal,Input,20,Left,A20,A20,
 
 File label: This is the file label
 
@@ -228,33 +232,27 @@ AT_DATA([test.pl],
 
     $sysfile->close ();
 ]])
-AT_CHECK([RUN_PERL_MODULE test.pl])
+AT_CHECK([RUN_PERL_MODULE test.pl], [0], [], [stderr])
+cat stderr
 AT_DATA([dump-dict.sps],
   [GET FILE='testfile.sav'.
 DISPLAY DICTIONARY.
 ])
-AT_CHECK([pspp -O format=csv dump-dict.sps], [0],
-  [Variable,Description,Position
-integer,"Label: My Integer
-Format: F8.0
-Missing Values: 9; 99
+AT_CHECK([pspp -O format=csv dump-dict.sps], [0], [dnl
+Table: Variables
+Name,Position,Label,Measurement Level,Role,Width,Alignment,Print Format,Write Format,Missing Values
+integer,1,My Integer,Scale,Input,8,Right,F8.0,F8.0,9; 99
+string,2,My String,Nominal,Input,8,Left,A8,A8,"""this    ""; ""that    """
+longstring,3,My Long String,Nominal,Input,9,Left,A9,A9,
 
-Value,Label
-0,Zero
-1,Unity
-2,Duality",1
-string,"Label: My String
-Format: A8
-Missing Values: ""this    ""; ""that    ""
-
-Value,Label
-xx      ,foo
-yy      ,bar",2
-longstring,"Label: My Long String
-Format: A9
-
-Value,Label
-xxx      ,xfoo",3
+Table: Value Labels
+Variable,Value,Label
+integer,0,Zero
+,1,Unity
+,2,Duality
+string,xx      ,foo
+,yy      ,bar
+longstring,xxx      ,xfoo
 ])
 AT_CLEANUP
 
@@ -444,45 +442,40 @@ AT_CHECK([RUN_PERL_MODULE test.pl])
 AT_DATA([dump-dicts.sps],
   [GET FILE='sample.sav'.
 DISPLAY DICTIONARY.
+DISPLAY ATTRIBUTES
 LIST.
 
 GET FILE='copy.sav'.
 DISPLAY DICTIONARY.
+DISPLAY ATTRIBUTES
 LIST.
 ])
 AT_CHECK([pspp -O format=csv dump-dicts.sps], [0],
-  [[Variable,Description,Position
-string,"Label: A Short String Variable
-Format: A8
-Missing Values: ""3333    ""
+  [[Table: Variables
+Name,Position,Label,Measurement Level,Role,Width,Alignment,Print Format,Write Format,Missing Values
+string,1,A Short String Variable,Nominal,Input,8,Left,A8,A8,"""3333    """
+longstring,2,A Long String Variable,Nominal,Input,12,Left,A12,A12,
+numeric,3,A Numeric Variable,Scale,Input,8,Right,F10.0,F10.0,9; 5; 999
+date,4,A Date Variable,Scale,Input,8,Right,DATE11,DATE11,
+dollar,5,A Dollar Variable,Scale,Input,8,Right,DOLLAR11.2,DOLLAR11.2,
+datetime,6,A Datetime Variable,Scale,Input,8,Right,DATETIME17.0,DATETIME17.0,
 
-Value,Label
-1111    ,ones
-2222    ,twos
-3333    ,threes",1
-longstring,"Label: A Long String Variable
-Format: A12",2
-numeric,"Label: A Numeric Variable
-Format: F10.0
-Missing Values: 9; 5; 999
+Table: Value Labels
+Variable,Value,Label
+string,1111    ,ones
+,2222    ,twos
+,3333    ,threes
+numeric,1,Unity
+,2,Duality
+,3,Thripality
 
-Value,Label
-1,Unity
-2,Duality
-3,Thripality
-
-Attribute,Value
-colour[1],blue
-colour[2],pink
-colour[3],violet
-nationality,foreign
-size,large",3
-date,"Label: A Date Variable
-Format: DATE11",4
-dollar,"Label: A Dollar Variable
-Format: DOLLAR11.2",5
-datetime,"Label: A Datetime Variable
-Format: DATETIME17.0",6
+Table: Variable and Dataset Attributes
+Variable,Name,Value
+numeric,colour[1],blue
+,colour[2],pink
+,colour[3],violet
+,nationality,foreign
+,size,large
 
 Table: Data List
 string,longstring,numeric,date,dollar,datetime
@@ -492,38 +485,31 @@ string,longstring,numeric,date,dollar,datetime
 .       ,.           ,.,.,.  ,.
 5555    ,Five        ,5,05-MAY-2005,$5.00,05-MAY-2005 05:05
 
-Variable,Description,Position
-string,"Label: A Short String Variable
-Format: A8
-Missing Values: ""3333    ""
+Table: Variables
+Name,Position,Label,Measurement Level,Role,Width,Alignment,Print Format,Write Format,Missing Values
+string,1,A Short String Variable,Nominal,Input,8,Left,A8,A8,"""3333    """
+longstring,2,A Long String Variable,Nominal,Input,12,Left,A12,A12,
+numeric,3,A Numeric Variable,Scale,Input,8,Right,F10.0,F10.0,9; 5; 999
+date,4,A Date Variable,Scale,Input,8,Right,DATE11,DATE11,
+dollar,5,A Dollar Variable,Scale,Input,8,Right,DOLLAR11.2,DOLLAR11.2,
+datetime,6,A Datetime Variable,Scale,Input,8,Right,DATETIME17.0,DATETIME17.0,
 
-Value,Label
-1111    ,ones
-2222    ,twos
-3333    ,threes",1
-longstring,"Label: A Long String Variable
-Format: A12",2
-numeric,"Label: A Numeric Variable
-Format: F10.0
-Missing Values: 9; 5; 999
+Table: Value Labels
+Variable,Value,Label
+string,1111    ,ones
+,2222    ,twos
+,3333    ,threes
+numeric,1,Unity
+,2,Duality
+,3,Thripality
 
-Value,Label
-1,Unity
-2,Duality
-3,Thripality
-
-Attribute,Value
-colour[1],blue
-colour[2],pink
-colour[3],violet
-nationality,foreign
-size,large",3
-date,"Label: A Date Variable
-Format: DATE11",4
-dollar,"Label: A Dollar Variable
-Format: DOLLAR11.2",5
-datetime,"Label: A Datetime Variable
-Format: DATETIME17.0",6
+Table: Variable and Dataset Attributes
+Variable,Name,Value
+numeric,colour[1],blue
+,colour[2],pink
+,colour[3],violet
+,nationality,foreign
+,size,large
 
 Table: Data List
 string,longstring,numeric,date,dollar,datetime

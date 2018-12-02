@@ -35,10 +35,12 @@ SORT VARIABLES $3(D).
 DISPLAY NAMES.
 EOF
     AT_CHECK_UNQUOTED([pspp -O format=csv sort-variables.sps], [0],
-[Variable
+[Table: Variables
+Name
 `for var in $4; do echo $var; done`
 
-Variable
+Table: Variables
+Name
 `for var in $4; do echo $var; done | tac`
 ])
 }
