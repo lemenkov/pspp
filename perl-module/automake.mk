@@ -44,7 +44,7 @@ perl-module/pspp-module-config: Makefile
 perl-module/Makefile: perl-module/Makefile.PL perl-module/pspp-module-config $(module_sources)
 	$(AM_V_GEN)cd perl-module && $(PERL) Makefile.PL PREFIX=$(prefix) \
                                                          OPTIMIZE="$(CFLAGS) $(CPPFLAGS)" \
-                                                         LD="`$(PERL) -V::ld:` $(LDFLAGS)"
+                                                         LD="`$(PERL) -e 'use Config::Perl::V;print Config::Perl::V::myconfig()->{config}{ld};'` $(LDFLAGS)"
 
 perl-module/PSPP-Perl-$(VERSION_FOR_PERL).tar.gz: $(module_sources) perl-module/Makefile
 	$(AM_V_at)rm -f $@
