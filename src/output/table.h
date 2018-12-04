@@ -188,7 +188,6 @@ struct table *table_paste (struct table *, struct table *,
                            enum table_axis orientation);
 struct table *table_hpaste (struct table *left, struct table *right);
 struct table *table_vpaste (struct table *top, struct table *bottom);
-struct table *table_stomp (struct table *);
 
 /* Taking subsets of tables. */
 struct table *table_select (struct table *, int rect[TABLE_N_AXES][2]);
