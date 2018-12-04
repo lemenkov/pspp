@@ -1202,20 +1202,19 @@ markup_escape (const char *in, struct string *out)
 }
 
 static int
-xr_layout_cell_text (struct xr_driver *xr,
-                     const struct cell_contents *contents,
-                     const struct cell_style *style,
+xr_layout_cell_text (struct xr_driver *xr, const struct table_cell *cell,
                      int bb[TABLE_N_AXES][2], int clip[TABLE_N_AXES][2],
                      int *widthp, int *brk)
 {
-  unsigned int options = contents->options;
+  const struct cell_style *style = cell->style;
+  unsigned int options = cell->options;
   int w, h;
 
   struct xr_font *font = (options & TAB_FIX ? &xr->fonts[XR_FONT_FIXED]
                           : options & TAB_EMPH ? &xr->fonts[XR_FONT_EMPHASIS]
                           : &xr->fonts[XR_FONT_PROPORTIONAL]);
   struct xr_font local_font;
-  if (style->font)
+  if (cell->style->font)
     {
       PangoFontDescription *desc = parse_font (
         style->font,
@@ -1233,13 +1232,13 @@ xr_layout_cell_text (struct xr_driver *xr,
     }
 
   int footnote_adjustment;
-  if (contents->n_footnotes == 0)
+  if (cell->n_footnotes == 0)
     footnote_adjustment = 0;
-  else if (contents->n_footnotes == 1 && (options & TAB_HALIGN) == TAB_RIGHT)
+  else if (cell->n_footnotes == 1 && (options & TAB_HALIGN) == TAB_RIGHT)
     {
       PangoAttrList *attrs;
 
-      const char *marker = contents->footnotes[0]->marker;
+      const char *marker = cell->footnotes[0]->marker;
       pango_layout_set_text (font->layout, marker, strlen (marker));
 
       attrs = pango_attr_list_new ();
@@ -1254,7 +1253,7 @@ xr_layout_cell_text (struct xr_driver *xr,
     footnote_adjustment = px_to_xr (style->margin[H][1]);
 
   struct string tmp = DS_EMPTY_INITIALIZER;
-  const char *text = contents->text;
+  const char *text = cell->text;
 
   /* Deal with an oddity of the Unicode line-breaking algorithm (or perhaps in
      Pango's implementation of it): it will break after a period or a comma
@@ -1295,12 +1294,12 @@ xr_layout_cell_text (struct xr_driver *xr,
         }
       size_t initial_length = ds_length (&tmp);
 
-      for (size_t i = 0; i < contents->n_footnotes; i++)
+      for (size_t i = 0; i < cell->n_footnotes; i++)
         {
           if (i)
             ds_put_byte (&tmp, ',');
 
-          const char *marker = contents->footnotes[i]->marker;
+          const char *marker = cell->footnotes[i]->marker;
           if (options & TAB_MARKUP)
             markup_escape (marker, &tmp);
           else
@@ -1447,23 +1446,16 @@ xr_layout_cell_text (struct xr_driver *xr,
       pango_font_description_free (font->desc);
     }
 
-  return bb[V][0] + h;
+  return h;
 }
 
 static void
 xr_layout_cell (struct xr_driver *xr, const struct table_cell *cell,
-                int bb_[TABLE_N_AXES][2], int clip[TABLE_N_AXES][2],
+                int bb[TABLE_N_AXES][2], int clip[TABLE_N_AXES][2],
                 int *width, int *height, int *brk)
 {
-  int bb[TABLE_N_AXES][2];
-  size_t i;
-
   *width = 0;
   *height = 0;
-  if (brk)
-    *brk = 0;
-
-  memcpy (bb, bb_, sizeof bb);
 
   /* If enabled, draws a blue rectangle around the cell extents, which can be
      useful for debugging layout. */
@@ -1482,25 +1474,9 @@ xr_layout_cell (struct xr_driver *xr, const struct table_cell *cell,
         }
     }
 
-  for (i = 0; i < cell->n_contents && bb[V][0] < bb[V][1]; i++)
-    {
-      const struct cell_contents *contents = &cell->contents[i];
-
-      if (brk)
-        *brk = bb[V][0];
-      if (i > 0)
-        {
-          bb[V][0] += xr->char_height / 2;
-          if (bb[V][0] >= bb[V][1])
-            break;
-          if (brk)
-            *brk = bb[V][0];
-        }
-
-      bb[V][0] = xr_layout_cell_text (xr, contents, cell->style, bb, clip,
-                                      width, brk);
-    }
-  *height = bb[V][0] - bb_[V][0];
+  if (brk)
+    *brk = bb[V][0];
+  *height = xr_layout_cell_text (xr, cell, bb, clip, width, brk);
 }
 
 struct output_driver_factory pdf_driver_factory =

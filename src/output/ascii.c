@@ -576,9 +576,7 @@ ascii_measure_cell_width (void *a_, const struct table_cell *cell,
   clip[H][0] = clip[H][1] = clip[V][0] = clip[V][1] = 0;
   ascii_layout_cell (a, cell, bb, clip, max_width, &h);
 
-  if (cell->n_contents != 1
-      || cell->contents[0].n_footnotes
-      || strchr (cell->contents[0].text, ' '))
+  if (cell->n_footnotes || strchr (cell->text, ' '))
     {
       bb[H][1] = 1;
       ascii_layout_cell (a, cell, bb, clip, min_width, &h);
@@ -771,39 +769,34 @@ text_draw (struct ascii_driver *a, unsigned int options,
 }
 
 static char *
-add_footnote_markers (const char *text, const struct cell_contents *contents)
+add_footnote_markers (const char *text, const struct table_cell *cell)
 {
   struct string s = DS_EMPTY_INITIALIZER;
   ds_put_cstr (&s, text);
-  for (size_t i = 0; i < contents->n_footnotes; i++)
-    ds_put_format (&s, "[%s]", contents->footnotes[i]->marker);
+  for (size_t i = 0; i < cell->n_footnotes; i++)
+    ds_put_format (&s, "[%s]", cell->footnotes[i]->marker);
   return ds_steal_cstr (&s);
 }
 
-static int
-ascii_layout_cell_text (struct ascii_driver *a,
-                        const struct cell_contents *contents,
-                        bool bold, bool underline,
-                        int bb[TABLE_N_AXES][2], int clip[TABLE_N_AXES][2],
-                        int *widthp)
+static void
+ascii_layout_cell (struct ascii_driver *a, const struct table_cell *cell,
+                   int bb[TABLE_N_AXES][2], int clip[TABLE_N_AXES][2],
+                   int *widthp, int *heightp)
 {
-  char *breaks;
-  int bb_width;
-  size_t pos;
-
-  int y = bb[V][0];
+  *widthp = 0;
+  *heightp = 0;
 
   /* Get the basic textual contents. */
-  const char *plain_text = (contents->options & TAB_MARKUP
-                            ? output_get_text_from_markup (contents->text)
-                            : contents->text);
+  const char *plain_text = (cell->options & TAB_MARKUP
+                            ? output_get_text_from_markup (cell->text)
+                            : cell->text);
 
   /* Append footnote markers if any. */
   const char *text;
-  if (contents->n_footnotes)
+  if (cell->n_footnotes)
     {
-      text = add_footnote_markers (plain_text, contents);
-      if (plain_text != contents->text)
+      text = add_footnote_markers (plain_text, cell);
+      if (plain_text != cell->text)
         free (CONST_CAST (char *, plain_text));
     }
   else
@@ -813,20 +806,20 @@ ascii_layout_cell_text (struct ascii_driver *a,
   size_t length = strlen (text);
   if (!length)
     {
-      if (text != contents->text)
+      if (text != cell->text)
         free (CONST_CAST (char *, text));
-      return y;
+      return;
     }
 
-  breaks = xmalloc (length + 1);
+  char *breaks = xmalloc (length + 1);
   u8_possible_linebreaks (CHAR_CAST (const uint8_t *, text), length,
                           "UTF-8", breaks);
   breaks[length] = (breaks[length - 1] == UC_BREAK_MANDATORY
                     ? UC_BREAK_PROHIBITED : UC_BREAK_POSSIBLE);
 
-  pos = 0;
-  bb_width = bb[H][1] - bb[H][0];
-  for (y = bb[V][0]; y < bb[V][1] && pos < length; y++)
+  size_t pos = 0;
+  int bb_width = bb[H][1] - bb[H][0];
+  for (int y = bb[V][0]; y < bb[V][1] && pos < length; y++)
     {
       const uint8_t *line = CHAR_CAST (const uint8_t *, text + pos);
       const char *b = breaks + pos;
@@ -879,7 +872,7 @@ ascii_layout_cell_text (struct ascii_driver *a,
       width -= ofs - graph_ofs;
 
       /* Draw text. */
-      text_draw (a, contents->options, bold, underline,
+      text_draw (a, cell->options, cell->style->bold, cell->style->underline,
                  bb, clip, y, line, graph_ofs, width);
 
       /* If a new-line ended the line, just skip the new-line.  Otherwise, skip
@@ -892,45 +885,13 @@ ascii_layout_cell_text (struct ascii_driver *a,
 
       if (width > *widthp)
         *widthp = width;
+      ++*heightp;
       pos += ofs;
     }
 
   free (breaks);
-  if (text != contents->text)
+  if (text != cell->text)
     free (CONST_CAST (char *, text));
-
-  return y;
-}
-
-static void
-ascii_layout_cell (struct ascii_driver *a, const struct table_cell *cell,
-                   int bb_[TABLE_N_AXES][2], int clip[TABLE_N_AXES][2],
-                   int *widthp, int *heightp)
-{
-  int bb[TABLE_N_AXES][2];
-  size_t i;
-
-  *widthp = 0;
-  *heightp = 0;
-
-  memcpy (bb, bb_, sizeof bb);
-  for (i = 0; i < cell->n_contents && bb[V][0] < bb[V][1]; i++)
-    {
-      const struct cell_contents *contents = &cell->contents[i];
-
-      /* Put a blank line between contents. */
-      if (i > 0)
-        {
-          bb[V][0]++;
-          if (bb[V][0] >= bb[V][1])
-            break;
-        }
-
-      bb[V][0] = ascii_layout_cell_text (a, contents, cell->style->bold,
-                                         cell->style->underline,
-                                         bb, clip, widthp);
-    }
-  *heightp = bb[V][0] - bb_[V][0];
 }
 
 void
@@ -944,18 +905,14 @@ ascii_test_write (struct output_driver *driver,
   if (a->file == NULL && !ascii_open_page (a))
     return;
 
-  struct cell_contents contents = {
-    .options = TAB_LEFT,
-    .text = CONST_CAST (char *, s),
-  };
-  struct cell_style cell_style = {
+  struct cell_style style = {
     .bold = bold,
     .underline = underline,
   };
   struct table_cell cell = {
-    .contents = &contents,
-    .n_contents = 1,
-    .style = &cell_style,
+    .options = TAB_LEFT,
+    .text = CONST_CAST (char *, s),
+    .style = &style,
   };
 
   bb[TABLE_HORZ][0] = x;

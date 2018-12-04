@@ -483,7 +483,6 @@ html_output_table (struct html_driver *html, const struct table_item *item)
       fputs ("  <TR>\n", html->file);
       for (x = 0; x < table_nc (t); )
         {
-          const struct cell_contents *c;
           struct table_cell cell;
           const char *tag;
           bool is_header;
@@ -502,16 +501,12 @@ html_output_table (struct html_driver *html, const struct table_item *item)
           tag = is_header ? "TH" : "TD";
           fprintf (html->file, "    <%s", tag);
 
-          int halign = (cell.n_contents > 0
-                        ? cell.contents[0].options & TAB_HALIGN
-                        : TAB_LEFT);
+          int halign = cell.options & TAB_HALIGN;
           if (halign != TAB_LEFT)
             fprintf (html->file, " ALIGN=\"%s\"",
                      halign == TAB_RIGHT ? "RIGHT" : "CENTER");
 
-          int valign = (cell.n_contents > 0
-                        ? cell.contents[0].options & TAB_VALIGN
-                        : TAB_LEFT);
+          int valign = cell.options & TAB_VALIGN;
           if (valign != TAB_TOP)
             fprintf (html->file, " ALIGN=\"%s\"",
                      valign == TAB_BOTTOM ? "BOTTOM" : "MIDDLE");
@@ -557,28 +552,24 @@ html_output_table (struct html_driver *html, const struct table_item *item)
           putc ('>', html->file);
 
           /* Output cell contents. */
-          for (c = cell.contents; c < &cell.contents[cell.n_contents]; c++)
+          const char *s = cell.text;
+          if (cell.options & TAB_EMPH)
+            fputs ("<EM>", html->file);
+          if (cell.options & TAB_FIX)
             {
-              const char *s = c->text;
-
-              if (c->options & TAB_EMPH)
-                fputs ("<EM>", html->file);
-              if (c->options & TAB_FIX)
-                {
-                  fputs ("<TT>", html->file);
-                  escape_string (html->file, s, strlen (s), "&nbsp;", "<BR>");
-                  fputs ("</TT>", html->file);
-                }
-              else
-                {
-                  s += strspn (s, CC_SPACES);
-                  escape_string (html->file, s, strlen (s), " ", "<BR>");
-                }
-              if (c->options & TAB_EMPH)
-                fputs ("</EM>", html->file);
-
-              html_put_footnote_markers (html, c->footnotes, c->n_footnotes);
+              fputs ("<TT>", html->file);
+              escape_string (html->file, s, strlen (s), "&nbsp;", "<BR>");
+              fputs ("</TT>", html->file);
             }
+          else
+            {
+              s += strspn (s, CC_SPACES);
+              escape_string (html->file, s, strlen (s), " ", "<BR>");
+            }
+          if (cell.options & TAB_EMPH)
+            fputs ("</EM>", html->file);
+
+          html_put_footnote_markers (html, cell.footnotes, cell.n_footnotes);
 
           /* Output </TH> or </TD>. */
           fprintf (html->file, "</%s>\n", tag);

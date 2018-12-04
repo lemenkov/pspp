@@ -31,20 +31,6 @@ struct footnote
     struct cell_style *style;
   };
 
-/* An item of contents within a table cell. */
-struct cell_contents
-  {
-    unsigned int options;       /* TAB_*. */
-    char *text;                 /* A paragraph of text. */
-
-    /* Optional footnote(s). */
-    const struct footnote **footnotes;
-    size_t n_footnotes;
-  };
-
-void cell_contents_format_footnote_markers (const struct cell_contents *,
-                                            struct string *);
-
 struct cell_color
   {
     uint8_t r, g, b;
@@ -105,18 +91,12 @@ struct table_cell
        or both. */
     int d[TABLE_N_AXES][2];
 
-    /* The cell's contents.
+    unsigned int options;       /* TAB_*. */
+    char *text;                 /* A paragraph of text. */
 
-       Most table cells contain only one item (a paragraph of text), but cells
-       are allowed to be empty (n_contents == 0) or contain a nested table, or
-       multiple items.
-
-       'inline_contents' provides a place to store a single item to handle the
-       common case.
-    */
-    const struct cell_contents *contents;
-    size_t n_contents;
-    struct cell_contents inline_contents;
+    /* Optional footnote(s). */
+    const struct footnote **footnotes;
+    size_t n_footnotes;
 
     const struct cell_style *style;
 
@@ -126,6 +106,9 @@ struct table_cell
   };
 
 void table_cell_free (struct table_cell *);
+
+void table_cell_format_footnote_markers (const struct table_cell *,
+                                         struct string *);
 
 /* Returns the number of columns that CELL spans.  This is 1 for an ordinary
    cell and greater than one for a cell that joins multiple columns. */

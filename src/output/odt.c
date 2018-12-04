@@ -496,7 +496,6 @@ write_table (struct odt_driver *odt, const struct table_item *item)
       for (c = 0 ; c < table_nc (tab) ; ++c)
 	{
           struct table_cell cell;
-          size_t i;
 
           table_get_cell (tab, c, r, &cell);
 
@@ -518,34 +517,27 @@ write_table (struct odt_driver *odt, const struct table_item *item)
                   odt->content_wtr, _xml("table:number-rows-spanned"),
                   "%d", rowspan);
 
-              for (i = 0; i < cell.n_contents; i++)
+              xmlTextWriterStartElement (odt->content_wtr, _xml("text:p"));
+
+              if ( r < table_ht (tab) || c < table_hl (tab) )
+                xmlTextWriterWriteAttribute (odt->content_wtr, _xml("text:style-name"), _xml("Table_20_Heading"));
+              else
+                xmlTextWriterWriteAttribute (odt->content_wtr, _xml("text:style-name"), _xml("Table_20_Contents"));
+
+              if (cell.options & TAB_MARKUP)
                 {
-                  const struct cell_contents *contents = &cell.contents[i];
-                  int j;
-
-                  xmlTextWriterStartElement (odt->content_wtr, _xml("text:p"));
-
-                  if ( r < table_ht (tab) || c < table_hl (tab) )
-                    xmlTextWriterWriteAttribute (odt->content_wtr, _xml("text:style-name"), _xml("Table_20_Heading"));
-                  else
-                    xmlTextWriterWriteAttribute (odt->content_wtr, _xml("text:style-name"), _xml("Table_20_Contents"));
-
-                  if (contents->options & TAB_MARKUP)
-                    {
-                      /* XXX */
-                      char *s = output_get_text_from_markup (
-                        contents->text);
-                      write_xml_with_line_breaks (odt, s);
-                      free (s);
-                    }
-                  else
-                    write_xml_with_line_breaks (odt, contents->text);
-
-                  for (j = 0; j < contents->n_footnotes; j++)
-                    write_footnote (odt, contents->footnotes[j]);
-
-                  xmlTextWriterEndElement (odt->content_wtr); /* text:p */
+                  /* XXX */
+                  char *s = output_get_text_from_markup (cell.text);
+                  write_xml_with_line_breaks (odt, s);
+                  free (s);
                 }
+              else
+                write_xml_with_line_breaks (odt, cell.text);
+
+              for (int i = 0; i < cell.n_footnotes; i++)
+                write_footnote (odt, cell.footnotes[i]);
+
+              xmlTextWriterEndElement (odt->content_wtr); /* text:p */
               xmlTextWriterEndElement (odt->content_wtr); /* table:table-cell */
 	    }
 	  else

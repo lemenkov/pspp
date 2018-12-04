@@ -225,14 +225,14 @@ table_get_rule (const struct table *table, enum table_axis axis, int x, int y,
 }
 
 void
-cell_contents_format_footnote_markers (const struct cell_contents *c,
-                                       struct string *s)
+table_cell_format_footnote_markers (const struct table_cell *cell,
+                                    struct string *s)
 {
-  for (size_t i = 0; i < c->n_footnotes; i++)
+  for (size_t i = 0; i < cell->n_footnotes; i++)
     {
       if (i)
         ds_put_byte (s, ',');
-      ds_put_cstr (s, c->footnotes[i]->marker);
+      ds_put_cstr (s, cell->footnotes[i]->marker);
     }
 }
 
@@ -274,12 +274,8 @@ table_collect_footnotes (const struct table_item *item,
           table_get_cell (t, x, y, &cell);
 
           if (x == cell.d[TABLE_HORZ][0] && y == cell.d[TABLE_VERT][0])
-            for (size_t i = 0; i < cell.n_contents; i++)
-              {
-                const struct cell_contents *c = &cell.contents[i];
-                footnotes = add_footnotes (c->footnotes, c->n_footnotes,
-                                           footnotes, &allocated, &n);
-              }
+            footnotes = add_footnotes (cell.footnotes, cell.n_footnotes,
+                                       footnotes, &allocated, &n);
           table_cell_free (&cell);
         }
     }
@@ -420,11 +416,9 @@ table_string_get_cell (const struct table *ts_, int x UNUSED, int y UNUSED,
   cell->d[TABLE_HORZ][1] = 1;
   cell->d[TABLE_VERT][0] = 0;
   cell->d[TABLE_VERT][1] = 1;
-  cell->contents = &cell->inline_contents;
-  cell->inline_contents.options = ts->options;
-  cell->inline_contents.text = ts->string;
-  cell->inline_contents.n_footnotes = 0;
-  cell->n_contents = 1;
+  cell->options = ts->options;
+  cell->text = ts->string;
+  cell->n_footnotes = 0;
   cell->destructor = NULL;
 }
 

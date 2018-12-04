@@ -211,33 +211,22 @@ csv_submit (struct output_driver *driver,
 
               if (x != cell.d[TABLE_HORZ][0] || y != cell.d[TABLE_VERT][0])
                 csv_output_field (csv, "");
-              else if (cell.n_contents == 1
-                       && cell.contents[0].text != NULL
-                       && cell.contents[0].n_footnotes == 0)
-                csv_output_field (csv, cell.contents[0].text);
+              else if (!(cell.options & TAB_MARKUP) && !cell.n_footnotes)
+                csv_output_field (csv, cell.text);
               else
                 {
-                  struct string s;
-                  size_t i;
+                  struct string s = DS_EMPTY_INITIALIZER;
 
-                  ds_init_empty (&s);
-                  for (i = 0; i < cell.n_contents; i++)
+                  if (cell.options & TAB_MARKUP)
                     {
-                      const struct cell_contents *c = &cell.contents[i];
-
-                      if (i > 0)
-                        ds_put_cstr (&s, "\n\n");
-
-                      if (c->options & TAB_MARKUP)
-                        {
-                          char *t = output_get_text_from_markup (c->text);
-                          ds_put_cstr (&s, t);
-                          free (t);
-                        }
-                      else
-                        ds_put_cstr (&s, c->text);
-                      csv_format_footnotes (c->footnotes, c->n_footnotes, &s);
+                      char *t = output_get_text_from_markup (cell.text);
+                      ds_put_cstr (&s, t);
+                      free (t);
                     }
+                  else
+                    ds_put_cstr (&s, cell.text);
+
+                  csv_format_footnotes (cell.footnotes, cell.n_footnotes, &s);
                   csv_output_field (csv, ds_cstr (&s));
                   ds_destroy (&s);
                 }

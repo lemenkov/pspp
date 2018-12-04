@@ -983,9 +983,7 @@ render_cell (const struct render_page *page, const int ofs[TABLE_N_AXES],
   bb[V][0] = clip[V][0] = ofs[V] + page->cp[V][cell->d[V][0] * 2 + 1];
   bb[V][1] = clip[V][1] = ofs[V] + page->cp[V][cell->d[V][1] * 2];
 
-  int valign = (cell->n_contents
-                ? cell->contents->options & TAB_VALIGN
-                : TAB_TOP);
+  int valign = cell->options & TAB_VALIGN;
   if (valign != TAB_TOP)
     {
       int height = page->params->measure_cell_height (

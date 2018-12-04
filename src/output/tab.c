@@ -814,8 +814,8 @@ tab_get_cell (const struct table *table, int x, int y,
   unsigned short opt = t->ct[index];
   const void *cc = t->cc[index];
 
-  cell->inline_contents.options = opt;
-  cell->inline_contents.n_footnotes = 0;
+  cell->options = opt;
+  cell->n_footnotes = 0;
   cell->destructor = NULL;
 
   int style_idx = (opt & TAB_STYLE_MASK) >> TAB_STYLE_SHIFT;
@@ -826,12 +826,10 @@ tab_get_cell (const struct table *table, int x, int y,
   if (opt & TAB_JOIN)
     {
       const struct tab_joined_cell *jc = cc;
-      cell->contents = &cell->inline_contents;
-      cell->n_contents = 1;
-      cell->inline_contents.text = jc->u.text;
+      cell->text = jc->u.text;
 
-      cell->inline_contents.footnotes = jc->footnotes;
-      cell->inline_contents.n_footnotes = jc->n_footnotes;
+      cell->footnotes = jc->footnotes;
+      cell->n_footnotes = jc->n_footnotes;
 
       cell->d[TABLE_HORZ][0] = jc->d[TABLE_HORZ][0];
       cell->d[TABLE_HORZ][1] = jc->d[TABLE_HORZ][1];
@@ -847,17 +845,7 @@ tab_get_cell (const struct table *table, int x, int y,
       cell->d[TABLE_HORZ][1] = x + 1;
       cell->d[TABLE_VERT][0] = y;
       cell->d[TABLE_VERT][1] = y + 1;
-      if (cc != NULL)
-        {
-          cell->contents = &cell->inline_contents;
-          cell->n_contents = 1;
-          cell->inline_contents.text = CONST_CAST (char *, cc);
-        }
-      else
-        {
-          cell->contents = NULL;
-          cell->n_contents = 0;
-        }
+      cell->text = CONST_CAST (char *, cc ? cc : "");
     }
 }
 
