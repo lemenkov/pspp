@@ -919,7 +919,7 @@ static int
 xr_layout_cell_text (struct xr_driver *xr,
                      const struct cell_contents *contents, int footnote_idx,
                      int bb[TABLE_N_AXES][2], int clip[TABLE_N_AXES][2],
-                     int y, int *widthp, int *brk)
+                     int *widthp, int *brk)
 {
   unsigned int options = contents->options;
   struct xr_font *font;
@@ -952,7 +952,7 @@ xr_layout_cell_text (struct xr_driver *xr,
           xr_clip (xr, clip);
           cairo_translate (xr->cairo,
                            xr_to_pt (bb[H][1] + xr->x),
-                           xr_to_pt (y + xr->y));
+                           xr_to_pt (bb[V][0] + xr->y));
           pango_layout_set_alignment (font->layout, PANGO_ALIGN_LEFT);
           pango_layout_set_width (font->layout, -1);
           pango_cairo_show_layout (xr->cairo, font->layout);
@@ -1018,7 +1018,7 @@ xr_layout_cell_text (struct xr_driver *xr,
       xr_clip (xr, clip);
       cairo_translate (xr->cairo,
                        xr_to_pt (bb[H][0] + xr->x),
-                       xr_to_pt (y + xr->y));
+                       xr_to_pt (bb[V][0] + xr->y));
       pango_cairo_show_layout (xr->cairo, font->layout);
 
       /* If enabled, this draws a blue rectangle around the extents of each
@@ -1054,7 +1054,7 @@ xr_layout_cell_text (struct xr_driver *xr,
   h = pango_to_xr (h);
   if (w > *widthp)
     *widthp = w;
-  if (y + h >= bb[V][1])
+  if (bb[V][0] + h >= bb[V][1])
     {
       PangoLayoutIter *iter;
       int best UNUSED = 0;
@@ -1073,7 +1073,7 @@ xr_layout_cell_text (struct xr_driver *xr,
           extents.y = pango_to_xr (y0);
           extents.width = pango_to_xr (extents.width);
           extents.height = pango_to_xr (y1 - y0);
-          bottom = y + extents.y + extents.height;
+          bottom = bb[V][0] + extents.y + extents.height;
           if (bottom < bb[V][1])
             {
               if (brk && clip[H][0] != clip[H][1])
@@ -1102,7 +1102,7 @@ xr_layout_cell_text (struct xr_driver *xr,
     }
 
   pango_layout_set_attributes (font->layout, NULL);
-  return y + h;
+  return bb[V][0] + h;
 }
 
 static void
@@ -1154,7 +1154,7 @@ xr_layout_cell (struct xr_driver *xr, const struct table_cell *cell,
         }
 
       bb[V][0] = xr_layout_cell_text (xr, contents, footnote_idx, bb, clip,
-                                      bb[V][0], width, brk);
+                                      width, brk);
       footnote_idx += contents->n_footnotes;
     }
   *height = bb[V][0] - bb_[V][0];
