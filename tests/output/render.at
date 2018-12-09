@@ -401,11 +401,11 @@ AT_DATA([input], [2 2
 1*2 hij\nklm\nnop
 ])
 AT_CHECK([render-test input], [0], [dnl
-abc
-def
-hij
-klm
-nop
+ abc
+ def
+ hij
+ klm
+ nop
 ])
 AT_CLEANUP
 
@@ -2775,10 +2775,10 @@ AT_DATA([input], [dnl
 1*2 @shorter
 ])
 AT_CHECK([render-test --width=30 --length=15 input], [0], [dnl
-+-------------------+
-|A long text string.|
-+-------------------+
-|            shorter|
-+-------------------+
++--------------------+
+| A long text string.|
++--------------------+
+|             shorter|
++--------------------+
 ])
 AT_CLEANUP

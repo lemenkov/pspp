@@ -400,6 +400,7 @@ xr_set_cairo (struct xr_driver *xr, cairo_t *cairo)
 
       for (i = 0; i < TABLE_N_AXES; i++)
         xr->params->min_break[i] = xr->min_break[i];
+      xr->params->supports_margins = true;
     }
 
   cairo_set_source_rgb (xr->cairo, xr->fg.red, xr->fg.green, xr->fg.blue);

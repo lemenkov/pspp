@@ -148,7 +148,7 @@ table_casereader_get_rule (const struct table *t, enum table_axis axis,
   if (axis == TABLE_VERT)
     return tc->heading != NULL && y == 1 ? TAL_1 : TAL_0;
   else
-    return TAL_GAP;
+    return TAL_0;
 }
 
 static const struct table_class table_casereader_class =

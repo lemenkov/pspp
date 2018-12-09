@@ -449,6 +449,7 @@ ascii_output_table_item (struct ascii_driver *a,
     }
   for (i = 0; i < TABLE_N_AXES; i++)
     params.min_break[i] = a->min_break[i];
+  params.supports_margins = false;
 
   if (a->file == NULL && !ascii_open_page (a))
     return;

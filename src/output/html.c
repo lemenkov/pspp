@@ -497,24 +497,24 @@ html_output_table (struct html_driver *html, const struct table_item *item)
 	      n_borders = 0;
 
 	      top = table_get_rule (t, TABLE_VERT, x, y);
-	      if (top > TAL_GAP)
+	      if (top > TAL_0)
 		put_border (html->file, n_borders++, top, "top");
 
 	      if (y + rowspan == table_nr (t))
 		{
 		  bottom = table_get_rule (t, TABLE_VERT, x, y + rowspan);
-		  if (bottom > TAL_GAP)
+		  if (bottom > TAL_0)
 		    put_border (html->file, n_borders++, bottom, "bottom");
 		}
 
 	      left = table_get_rule (t, TABLE_HORZ, x, y);
-	      if (left > TAL_GAP)
+	      if (left > TAL_0)
 		put_border (html->file, n_borders++, left, "left");
 
 	      if (x + colspan == table_nc (t))
 		{
 		  right = table_get_rule (t, TABLE_HORZ, x + colspan, y);
-		  if (right > TAL_GAP)
+		  if (right > TAL_0)
 		    put_border (html->file, n_borders++, right, "right");
 		}
 

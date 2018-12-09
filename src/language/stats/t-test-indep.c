@@ -205,7 +205,6 @@ indep_summary (const struct tt *tt, struct indep_samples *is, const struct pair_
   tab_box (t, TAL_2, TAL_2, TAL_0, TAL_1, 0, 0, cols - 1, rows - 1);
   tab_hline (t, TAL_2, 0, cols - 1, 1);
 
-  tab_vline (t, TAL_GAP, 1, 0, rows - 1);
   tab_title (t, _("Group Statistics"));
   tab_text  (t, 1, 0, TAB_CENTER | TAT_TITLE, var_to_string (is->gvar));
   tab_text  (t, 2, 0, TAB_CENTER | TAT_TITLE, _("N"));

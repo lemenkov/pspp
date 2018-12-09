@@ -1588,7 +1588,6 @@ dump_statistics (const struct frq_proc *frq, const struct var_freqs *vf,
   tab_box (t, TAL_1, TAL_1, -1, -1 , 0 , 0 , 2, tab_nr(t) - 1) ;
 
   tab_vline (t, TAL_1 , 2, 0, tab_nr(t) - 1);
-  tab_vline (t, TAL_GAP , 1, 0, tab_nr(t) - 1 ) ;
 
   for (i = 0; i < FRQ_ST_count; i++)
     {

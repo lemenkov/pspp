@@ -77,8 +77,6 @@ output_split_file_values (const struct dataset *ds, const struct ccase *c)
     return;
 
   t = tab_create (3, split_cnt + 1);
-  tab_vline (t, TAL_GAP, 1, 0, split_cnt);
-  tab_vline (t, TAL_GAP, 2, 0, split_cnt);
   tab_text (t, 0, 0, TAB_NONE, _("Variable"));
   tab_text (t, 1, 0, TAB_LEFT, _("Value"));
   tab_text (t, 2, 0, TAB_LEFT, _("Label"));

@@ -68,7 +68,6 @@ enum
 enum
   {
     TAL_0,			/* No line. */
-    TAL_GAP,                    /* Spacing but no line. */
     TAL_1,			/* Single line. */
     TAL_2,			/* Double line. */
     N_LINES

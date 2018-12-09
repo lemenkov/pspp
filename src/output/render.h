@@ -128,6 +128,8 @@ struct render_params
        across two pages.  (Joined cells may always be broken at join
        points.) */
     int min_break[TABLE_N_AXES];
+
+    bool supports_margins;
   };
 
 /* An iterator for breaking render_pages into smaller chunks. */

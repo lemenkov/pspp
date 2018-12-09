@@ -99,13 +99,12 @@ tab_create (int nc, int nr)
   memset (t->ct, 0, nc * nr);
 
   t->rh = pool_nmalloc (t->container, nc, nr + 1);
-  memset (t->rh, 0, nc * (nr + 1));
+  memset (t->rh, TAL_0, nc * (nr + 1));
 
   t->rv = pool_nmalloc (t->container, nr, nc + 1);
+  memset (t->rv, TAL_0, nr * (nc + 1));
+
   memset (t->fmtmap, 0, sizeof (*t->fmtmap) * n_RC);
-
-  memset (t->rv, TAL_GAP, nr * (nc + 1));
-
   t->fmtmap[RC_PVALUE] = ugly[RC_PVALUE];
   t->fmtmap[RC_INTEGER] = ugly[RC_INTEGER];
   t->fmtmap[RC_OTHER] = *settings_get_format ();
@@ -204,7 +203,7 @@ tab_realloc (struct tab_table *t, int nc, int nr)
         {
           memset (&t->rh[nc * (tab_nr (t) + 1)], TAL_0,
                   (nr - tab_nr (t)) * nc);
-          memset (&t->rv[(nc + 1) * tab_nr (t)], TAL_GAP,
+          memset (&t->rv[(nc + 1) * tab_nr (t)], TAL_0,
                   (nr - tab_nr (t)) * (nc + 1));
         }
     }

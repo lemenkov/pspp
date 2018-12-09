@@ -515,7 +515,6 @@ rule_to_render_type (unsigned char type)
   switch (type)
     {
     case TAL_0:
-    case TAL_GAP:
       return RENDER_LINE_NONE;
     case TAL_1:
       return RENDER_LINE_SINGLE;
@@ -544,10 +543,21 @@ measure_rule (const struct render_params *params, const struct table *table,
   for (d[b] = 0; d[b] < table->n[b]; d[b]++)
     rules |= 1u << table_get_rule (table, a, d[H], d[V]);
 
+  /* Turn off TAL_NONE because it has width 0 and we needn't bother.  However,
+     if the device doesn't support margins, make sure that there is at least a
+     small gap between cells (but we don't need any at the left or right edge
+     of the table). */
+  if (rules & (1u << TAL_0))
+    {
+      rules &= ~(1u << TAL_0);
+      if (z > 0 && z < table->n[a] && !params->supports_margins && a == H)
+        rules |= 1u << TAL_1;
+    }
+
   /* Calculate maximum width of the rules that are present. */
   width = 0;
   if (rules & (1u << TAL_1)
-      || (z > 0 && z < table->n[a] && rules & (1u << TAL_GAP)))
+      || (z > 0 && z < table->n[a] && rules & (1u << TAL_0)))
     width = params->line_widths[a][RENDER_LINE_SINGLE];
   if (rules & (1u << TAL_2))
     width = MAX (width, params->line_widths[a][RENDER_LINE_DOUBLE]);

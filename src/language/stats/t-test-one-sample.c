@@ -90,7 +90,6 @@ one_sample_test (const struct tt *tt, const struct one_samp *os)
                          _("%g%% Confidence Interval of the Difference"),
                          tt->confidence * 100.0);
 
-  tab_vline (t, TAL_GAP, 6, 1, 1);
   tab_hline (t, TAL_1, 5, 6, 2);
   tab_text (t, 1, 2, TAB_CENTER | TAT_TITLE, _("t"));
   tab_text (t, 2, 2, TAB_CENTER | TAT_TITLE, _("df"));

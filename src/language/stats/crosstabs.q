@@ -1446,8 +1446,6 @@ submit (struct pivot_table *pt, struct tab_table *t)
   tab_box (t, TAL_2, TAL_2, -1, -1, 0, 0, tab_nc (t) - 1, tab_nr (t) - 1);
   tab_box (t, -1, -1, -1, TAL_1, tab_l (t), tab_t (t) - 1, tab_nc (t) - 1,
 	   tab_nr (t) - 1);
-  tab_box (t, -1, -1, -1, TAL_GAP, 0, tab_t (t), tab_l (t) - 1,
-	   tab_nr (t) - 1);
   tab_vline (t, TAL_2, tab_l (t), 0, tab_nr (t) - 1);
 
   tab_submit (t);
