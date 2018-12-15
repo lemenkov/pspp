@@ -320,36 +320,10 @@ where @var{RRRR}, @var{GGGG} and @var{BBBB} are 4 character hexadecimal
 representations of the red, green and blue components respectively.
 If charts are disabled, this option has no effect.
 
-
-@item @option{-O paginate=@var{boolean}}
-If set, @pspp{} writes an ASCII formfeed the end of every page.  Default:
-@code{off}.
-
-@item @option{-O headers=@var{boolean}}
-If enabled, @pspp{} prints two lines of header information giving title
-and subtitle, page number, date and time, and @pspp{} version are printed
-at the top of every page.  These two lines are in addition to any top
-margin requested.  Default: @code{off}.
-
-@item @option{-O length=@var{line-count}}
-Physical length of a page.  Headers and margins are subtracted from
-this value.  You may specify the number of lines as a number, or for
-screen output you may specify @code{auto} to track the height of the
-terminal as it changes.  Default: @code{66}.
-
 @item @option{-O width=@var{character-count}}
-Width of a page, in characters.  Margins are subtracted from this
-value.  For screen output you may specify @code{auto} in place of a
-number to track the width of the terminal as it changes.  Default:
-@code{79}.
-
-@item @option{-O top-margin=@var{top-margin-lines}}
-Length of the top margin, in lines.  @pspp{} subtracts this value from
-the page length.  Default: @code{0}.
-
-@item @option{-O bottom-margin=@var{bottom-margin-lines}}
-Length of the bottom margin, in lines.  @pspp{} subtracts this value from
-the page length.  Default: @code{0}.
+Width of a page, in characters.  For screen output you may specify
+@code{auto} in place of a number to track the width of the terminal as
+it changes.  Default: @code{79}.
 
 @item @option{-O box=@{ascii|unicode@}}
 Sets the characters used for lines in tables.  

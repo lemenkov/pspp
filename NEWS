@@ -4,6 +4,11 @@ See the end for copying conditions.
 
 Please send PSPP bug reports to bug-gnu-pspp@gnu.org.
 
+Changes since 1.2.0:
+
+ * Plain text output is no longer divided into pages, since it is now
+   rarely printed on paper.
+
 Changes from 1.0.1 to 1.2.0:
 
  * New experimental command SAVE DATA COLLECTION to save MDD files.

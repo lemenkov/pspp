@@ -140,15 +140,9 @@ configure_drivers (int width, int length, int min_break)
   string_map_insert (&options, "output-file", "-");
   string_map_insert_nocopy (&options, xstrdup ("width"),
                             xasprintf ("%d", width));
-  string_map_insert_nocopy (&options, xstrdup ("length"),
-                            xasprintf ("%d", length));
   if (min_break >= 0)
-    {
-      string_map_insert_nocopy (&options, xstrdup ("min-hbreak"),
-                                xasprintf ("%d", min_break));
-      string_map_insert_nocopy (&options, xstrdup ("min-vbreak"),
-                                xasprintf ("%d", min_break));
-    }
+    string_map_insert_nocopy (&options, xstrdup ("min-hbreak"),
+                              xasprintf ("%d", min_break));
   if (emphasis != NULL)
     string_map_insert (&options, "emphasis", emphasis);
   if (box != NULL)
@@ -490,4 +484,5 @@ draw (FILE *stream)
       else
         error (1, 0, "line %d has invalid format", line);
     }
+  ascii_test_flush (ascii_driver);
 }

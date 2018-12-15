@@ -550,18 +550,18 @@ set-length 2 2
 set-length 3 1
 set-length 4 0
 
+0 5 0 あい
 0 6 0 あい
 0 7 0 あい
 0 8 0 あい
 0 9 0 あい
 0 10 0 あい
-0 11 0 あい
-set-length 6 5
-set-length 7 4
-set-length 8 3
-set-length 9 2
-set-length 10 1
-set-length 11 0
+set-length 5 5
+set-length 6 4
+set-length 7 3
+set-length 8 2
+set-length 9 1
+set-length 10 0
 ])
 AT_CHECK([render-test --draw-mode input], [0], [dnl
 àéî

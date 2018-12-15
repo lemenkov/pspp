@@ -51,6 +51,7 @@
 
 #include "gl/minmax.h"
 #include "gl/xalloc.h"
+#include "gl/xsize.h"
 
 #include "gettext.h"
 #define _(msgid) gettext (msgid)
@@ -153,9 +154,6 @@ struct ascii_driver
 
     /* User parameters. */
     bool append;                /* Append if output file already exists? */
-    bool headers;		/* Print headers at top of page? */
-    bool paginate;		/* Insert formfeeds? */
-    bool squeeze_blank_lines;   /* Squeeze multiple blank lines into one? */
     enum emphasis_style emphasis; /* How to emphasize text. */
     char *chart_file_name;      /* Name of files used for charts. */
 
@@ -166,12 +164,7 @@ struct ascii_driver
 #endif
 
     int width;                  /* Page width. */
-    int length;                 /* Page length minus margins and header. */
     bool auto_width;            /* Use viewwidth as page width? */
-    bool auto_length;           /* Use viewlength as page width? */
-
-    int top_margin;		/* Top margin in lines. */
-    int bottom_margin;		/* Bottom margin in lines. */
 
     int min_break[TABLE_N_AXES]; /* Min cell size to break across pages. */
 
@@ -179,28 +172,21 @@ struct ascii_driver
 
     /* Internal state. */
     char *command_name;
-    char *title;
-    char *subtitle;
     struct file_handle *handle;
     FILE *file;                 /* Output file. */
     bool error;                 /* Output error? */
-    int page_number;		/* Current page number. */
     struct u8_line *lines;      /* Page content. */
     int allocated_lines;        /* Number of lines allocated. */
     int chart_cnt;              /* Number of charts so far. */
-    int x, y;
   };
 
 static const struct output_driver_class ascii_driver_class;
 
 static void ascii_submit (struct output_driver *, const struct output_item *);
 
-static int vertical_margins (const struct ascii_driver *);
-
 static bool update_page_size (struct ascii_driver *, bool issue_error);
 static int parse_page_size (struct driver_option *);
 
-static void ascii_close_page (struct ascii_driver *);
 static bool ascii_open_page (struct ascii_driver *);
 
 static void ascii_draw_line (void *, int bb[TABLE_N_AXES][2],
@@ -212,20 +198,6 @@ static int ascii_measure_cell_height (void *, const struct table_cell *,
 static void ascii_draw_cell (void *, const struct table_cell *,
                              int footnote_idx, int bb[TABLE_N_AXES][2],
                              int clip[TABLE_N_AXES][2]);
-
-static void
-reallocate_lines (struct ascii_driver *a)
-{
-  if (a->length > a->allocated_lines)
-    {
-      int i;
-      a->lines = xnrealloc (a->lines, a->length, sizeof *a->lines);
-      for (i = a->allocated_lines; i < a->length; i++)
-        u8_line_init (&a->lines[i]);
-      a->allocated_lines = a->length;
-    }
-}
-
 
 static struct ascii_driver *
 ascii_driver_cast (struct output_driver *driver)
@@ -249,15 +221,11 @@ ascii_create (struct  file_handle *fh, enum settings_output_devices device_type,
   int min_break[TABLE_N_AXES];
   struct output_driver *d;
   struct ascii_driver *a;
-  int paper_length;
 
   a = xzalloc (sizeof *a);
   d = &a->driver;
   output_driver_init (&a->driver, &ascii_driver_class, fh_get_file_name (fh), device_type);
   a->append = parse_boolean (opt (d, o, "append", "false"));
-  a->headers = parse_boolean (opt (d, o, "headers", "false"));
-  a->paginate = parse_boolean (opt (d, o, "paginate", "false"));
-  a->squeeze_blank_lines = parse_boolean (opt (d, o, "squeeze", "true"));
   a->emphasis = parse_enum (opt (d, o, "emphasis", "none"),
                             "bold", EMPH_BOLD,
                             "underline", EMPH_UNDERLINE,
@@ -267,19 +235,11 @@ ascii_create (struct  file_handle *fh, enum settings_output_devices device_type,
   a->chart_file_name = parse_chart_file_name (opt (d, o, "charts", fh_get_file_name (fh)));
   a->handle = fh;
 
-  a->top_margin = parse_int (opt (d, o, "top-margin", "0"), 0, INT_MAX);
-  a->bottom_margin = parse_int (opt (d, o, "bottom-margin", "0"), 0, INT_MAX);
-
   min_break[H] = parse_int (opt (d, o, "min-hbreak", "-1"), -1, INT_MAX);
-  min_break[V] = parse_int (opt (d, o, "min-vbreak", "-1"), -1, INT_MAX);
 
   a->width = parse_page_size (opt (d, o, "width", "79"));
-  paper_length = parse_page_size (opt (d, o, "length", "66"));
   a->auto_width = a->width < 0;
-  a->auto_length = paper_length < 0;
-  a->length = paper_length - vertical_margins (a);
   a->min_break[H] = min_break[H] >= 0 ? min_break[H] : a->width / 2;
-  a->min_break[V] = min_break[V] >= 0 ? min_break[V] : a->length / 2;
 #ifdef HAVE_CAIRO
   parse_color (d, o, "background-color", "#FFFFFFFFFFFF", &a->bg);
   parse_color (d, o, "foreground-color", "#000000000000", &a->fg);
@@ -291,11 +251,8 @@ ascii_create (struct  file_handle *fh, enum settings_output_devices device_type,
   a->box = box == BOX_ASCII ? ascii_box_chars : unicode_box_chars;
 
   a->command_name = NULL;
-  a->title = xstrdup ("");
-  a->subtitle = xstrdup ("");
   a->file = NULL;
   a->error = false;
-  a->page_number = 0;
   a->lines = NULL;
   a->allocated_lines = 0;
   a->chart_cnt = 1;
@@ -339,15 +296,8 @@ parse_page_size (struct driver_option *option)
   return dim;
 }
 
-static int
-vertical_margins (const struct ascii_driver *a)
-{
-  return a->top_margin + a->bottom_margin + (a->headers ? 3 : 0);
-}
-
-/* Re-calculates the page width and length based on settings,
-   margins, and, if "auto" is set, the size of the user's
-   terminal window or GUI output window. */
+/* Re-calculates the page width based on settings, margins, and, if "auto" is
+   set, the size of the user's terminal window or GUI output window. */
 static bool
 update_page_size (struct ascii_driver *a, bool issue_error)
 {
@@ -358,29 +308,19 @@ update_page_size (struct ascii_driver *a, bool issue_error)
       a->width = settings_get_viewwidth ();
       a->min_break[H] = a->width / 2;
     }
-  if (a->auto_length)
-    {
-      a->length = settings_get_viewlength () - vertical_margins (a);
-      a->min_break[V] = a->length / 2;
-    }
 
-  if (a->width < MIN_WIDTH || a->length < MIN_LENGTH)
+  if (a->width < MIN_WIDTH)
     {
       if (issue_error)
         msg (ME,
-               _("ascii: page excluding margins and headers "
-                 "must be at least %d characters wide by %d lines long, but "
-                 "as configured is only %d characters by %d lines"),
-               MIN_WIDTH, MIN_LENGTH,
-               a->width, a->length);
+               _("ascii: page must be at least %d characters wide, but "
+                 "as configured is only %d characters"),
+               MIN_WIDTH,
+               a->width);
       if (a->width < MIN_WIDTH)
         a->width = MIN_WIDTH;
-      if (a->length < MIN_LENGTH)
-        a->length = MIN_LENGTH;
       return false;
     }
-
-  reallocate_lines (a);
 
   return true;
 }
@@ -391,15 +331,10 @@ ascii_destroy (struct output_driver *driver)
   struct ascii_driver *a = ascii_driver_cast (driver);
   int i;
 
-  if (a->y > 0)
-    ascii_close_page (a);
-
   if (a->file != NULL)
     fn_close (a->handle, a->file);
   fh_unref (a->handle);
   free (a->command_name);
-  free (a->title);
-  free (a->subtitle);
   free (a->chart_file_name);
   for (i = 0; i < a->allocated_lines; i++)
     u8_line_destroy (&a->lines[i]);
@@ -411,13 +346,23 @@ static void
 ascii_flush (struct output_driver *driver)
 {
   struct ascii_driver *a = ascii_driver_cast (driver);
-  if (a->y > 0)
-    {
-      ascii_close_page (a);
+  if (a->file)
+    fflush (a->file);
+}
 
-      if (fn_close (a->handle, a->file) != 0)
-        msg_error (errno, _("ascii: closing output file `%s'"), fh_get_file_name (a->handle));
-      a->file = NULL;
+static void
+ascii_output_lines (struct ascii_driver *a, size_t n_lines)
+{
+  for (size_t y = 0; y < n_lines; y++)
+    {
+      struct u8_line *line = &a->lines[y];
+
+      while (ds_chomp_byte (&line->s, ' '))
+        continue;
+      fwrite (ds_data (&line->s), 1, ds_length (&line->s), a->file);
+      putc ('\n', a->file);
+
+      u8_line_clear (&a->lines[y]);
     }
 }
 
@@ -438,7 +383,7 @@ ascii_output_table_item (struct ascii_driver *a,
   params.draw_cell = ascii_draw_cell;
   params.aux = a;
   params.size[H] = a->width;
-  params.size[V] = a->length;
+  params.size[V] = INT_MAX;
   params.font_size[H] = 1;
   params.font_size[V] = 1;
   for (i = 0; i < RENDER_N_LINES; i++)
@@ -451,31 +396,17 @@ ascii_output_table_item (struct ascii_driver *a,
     params.min_break[i] = a->min_break[i];
   params.supports_margins = false;
 
-  if (a->file == NULL && !ascii_open_page (a))
+  if (a->file)
+    putc ('\n', a->file);
+  else if (!ascii_open_page (a))
     return;
 
   p = render_pager_create (&params, table_item);
-  while (render_pager_has_next (p))
+  for (int i = 0; render_pager_has_next (p); i++)
     {
-      int used;
-
-      if (a->y > 0)
-        a->y++;
-      used = render_pager_draw_next (p, a->length - a->y);
-      if (used == 0)
-        {
-          /* Make sure that we're not in a loop where the table we're rendering
-             can't be broken to fit on a page.  (The check on
-             render_pager_has_next() allows for objects that turn out to be
-             empty when we try to render them.)  */
-          assert (a->y > 0 || !render_pager_has_next (p));
-
-          ascii_close_page (a);
-          if (!ascii_open_page (a))
-            break;
-        }
-      else
-        a->y += used;
+      if (i)
+        putc ('\n', a->file);
+      ascii_output_lines (a, render_pager_draw_next (p, INT_MAX));
     }
   render_pager_destroy (p);
 }
@@ -536,27 +467,15 @@ ascii_submit (struct output_driver *driver,
       switch (type)
         {
         case TEXT_ITEM_TITLE:
-          free (a->title);
-          a->title = xstrdup (text);
-          break;
-
         case TEXT_ITEM_SUBTITLE:
-          free (a->subtitle);
-          a->subtitle = xstrdup (text);
-          break;
-
         case TEXT_ITEM_COMMAND_OPEN:
         case TEXT_ITEM_COMMAND_CLOSE:
           break;
 
         case TEXT_ITEM_BLANK_LINE:
-          if (a->y > 0)
-            a->y++;
           break;
 
         case TEXT_ITEM_EJECT_PAGE:
-          if (a->y > 0)
-            ascii_close_page (a);
           break;
 
         default:
@@ -608,11 +527,11 @@ ascii_draw_line (void *a_, int bb[TABLE_N_AXES][2],
   int x, y;
 
   /* Clip to the page. */
-  x0 = MAX (bb[H][0] + a->x, 0);
-  y0 = MAX (bb[V][0] + a->y, 0);
-  x1 = MIN (bb[H][1] + a->x, a->width);
-  y1 = MIN (bb[V][1] + a->y, a->length);
-  if (x1 <= 0 || y1 <= 0 || x0 >= a->width || y0 >= a->length)
+  x0 = MAX (bb[H][0], 0);
+  y0 = MAX (bb[V][0], 0);
+  x1 = MIN (bb[H][1], a->width);
+  y1 = bb[V][1];
+  if (x1 <= 0 || y1 <= 0 || x0 >= a->width)
     return;
 
   /* Draw. */
@@ -688,7 +607,16 @@ ascii_draw_cell (void *a_, const struct table_cell *cell, int footnote_idx,
 static char *
 ascii_reserve (struct ascii_driver *a, int y, int x0, int x1, int n)
 {
-  assert (y < a->allocated_lines);
+  if (y >= a->allocated_lines)
+    {
+      size_t new_alloc = MAX (25, a->allocated_lines);
+      while (new_alloc <= y)
+        new_alloc = xtimes (new_alloc, 2);
+      a->lines = xnrealloc (a->lines, new_alloc, sizeof *a->lines);
+      for (size_t i = a->allocated_lines; i < new_alloc; i++)
+        u8_line_init (&a->lines[i]);
+      a->allocated_lines = new_alloc;
+    }
   return u8_line_reserve (&a->lines[y], x0, x1, n);
 }
 
@@ -697,13 +625,12 @@ text_draw (struct ascii_driver *a, unsigned int options,
            int bb[TABLE_N_AXES][2], int clip[TABLE_N_AXES][2],
            int y, const uint8_t *string, int n, size_t width)
 {
-  int x0 = MAX (0, clip[H][0] + a->x);
-  int y0 = MAX (0, clip[V][0] + a->y);
-  int x1 = MIN (a->width, clip[H][1] + a->x);
-  int y1 = MIN (a->length, clip[V][1] + a->y);
+  int x0 = MAX (0, clip[H][0]);
+  int y0 = MAX (0, clip[V][0]);
+  int x1 = MIN (a->width, clip[H][1]);
+  int y1 = clip[V][1];
   int x;
 
-  y += a->y;
   if (y < y0 || y >= y1)
     return;
 
@@ -721,7 +648,6 @@ text_draw (struct ascii_driver *a, unsigned int options,
     default:
       NOT_REACHED ();
     }
-  x += a->x;
   if (x >= x1)
     return;
 
@@ -988,7 +914,6 @@ ascii_test_write (struct output_driver *driver,
 
   if (a->file == NULL && !ascii_open_page (a))
     return;
-  a->y = 0;
 
   contents.options = options | TAB_LEFT;
   contents.text = CONST_CAST (char *, s);
@@ -1001,11 +926,9 @@ ascii_test_write (struct output_driver *driver,
   bb[TABLE_HORZ][0] = x;
   bb[TABLE_HORZ][1] = a->width;
   bb[TABLE_VERT][0] = y;
-  bb[TABLE_VERT][1] = a->length;
+  bb[TABLE_VERT][1] = INT_MAX;
 
   ascii_layout_cell (a, &cell, 0, bb, bb, &width, &height);
-
-  a->y = 1;
 }
 
 void
@@ -1016,9 +939,22 @@ ascii_test_set_length (struct output_driver *driver, int y, int length)
   if (a->file == NULL && !ascii_open_page (a))
     return;
 
-  if (y < 0 || y >= a->length)
+  if (y < 0)
     return;
   u8_line_set_length (&a->lines[y], length);
+}
+
+void
+ascii_test_flush (struct output_driver *driver)
+{
+  struct ascii_driver *a = ascii_driver_cast (driver);
+
+  for (size_t i = a->allocated_lines; i-- > 0; )
+    if (a->lines[i].width)
+      {
+        ascii_output_lines (a, i + 1);
+        break;
+      }
 }
 
 /* ascii_close_page () and support routines. */
@@ -1036,8 +972,6 @@ winch_handler (int signum UNUSED)
 static bool
 ascii_open_page (struct ascii_driver *a)
 {
-  int i;
-
   if (a->error)
     return false;
 
@@ -1057,7 +991,6 @@ ascii_open_page (struct ascii_driver *a)
 	      sigaction (SIGWINCH, &action, NULL);
 #endif
 	      a->auto_width = true;
-	      a->auto_length = true;
 	    }
         }
       else
@@ -1069,94 +1002,5 @@ ascii_open_page (struct ascii_driver *a)
         }
     }
 
-  a->page_number++;
-
-  reallocate_lines (a);
-
-  for (i = 0; i < a->length; i++)
-    u8_line_clear (&a->lines[i]);
-
   return true;
-}
-
-static void
-output_title_line (FILE *out, int width, const char *left, const char *right)
-{
-  struct string s = DS_EMPTY_INITIALIZER;
-  ds_put_byte_multiple (&s, ' ', width);
-  if (left != NULL)
-    {
-      size_t length = MIN (strlen (left), width);
-      memcpy (ds_end (&s) - width, left, length);
-    }
-  if (right != NULL)
-    {
-      size_t length = MIN (strlen (right), width);
-      memcpy (ds_end (&s) - length, right, length);
-    }
-  ds_put_byte (&s, '\n');
-  fputs (ds_cstr (&s), out);
-  ds_destroy (&s);
-}
-
-static void
-ascii_close_page (struct ascii_driver *a)
-{
-  bool any_blank;
-  int i, y;
-
-  a->y = 0;
-  if (a->file == NULL)
-    return;
-
-  if (!a->top_margin && !a->bottom_margin && a->squeeze_blank_lines
-      && !a->paginate && a->page_number > 1)
-    putc ('\n', a->file);
-
-  for (i = 0; i < a->top_margin; i++)
-    putc ('\n', a->file);
-  if (a->headers)
-    {
-      char *r1, *r2;
-
-      r1 = xasprintf (_("%s - Page %d"), get_start_date (), a->page_number);
-      r2 = xasprintf ("%s - %s" , version, host_system);
-
-      output_title_line (a->file, a->width, a->title, r1);
-      output_title_line (a->file, a->width, a->subtitle, r2);
-      putc ('\n', a->file);
-
-      free (r1);
-      free (r2);
-    }
-
-  any_blank = false;
-  for (y = 0; y < a->allocated_lines; y++)
-    {
-      struct u8_line *line = &a->lines[y];
-
-      if (a->squeeze_blank_lines && y > 0 && line->width == 0)
-        any_blank = true;
-      else
-        {
-          if (any_blank)
-            {
-              putc ('\n', a->file);
-              any_blank = false;
-            }
-
-          while (ds_chomp_byte (&line->s, ' '))
-            continue;
-          fwrite (ds_data (&line->s), 1, ds_length (&line->s), a->file);
-          putc ('\n', a->file);
-        }
-    }
-  if (!a->squeeze_blank_lines)
-    for (y = a->allocated_lines; y < a->length; y++)
-      putc ('\n', a->file);
-
-  for (i = 0; i < a->bottom_margin; i++)
-    putc ('\n', a->file);
-  if (a->paginate)
-    putc ('\f', a->file);
 }

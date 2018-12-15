@@ -139,9 +139,13 @@ flush_deferred_syntax (struct output_engine *e)
 {
   if (!ds_is_empty (&e->deferred_syntax))
     {
-      char *syntax = ds_steal_cstr (&e->deferred_syntax);
-      output_submit__ (e, text_item_super (
-                         text_item_create_nocopy (TEXT_ITEM_SYNTAX, syntax)));
+      ds_trim (&e->deferred_syntax, ss_cstr ("\n"));
+      if (!ds_is_empty (&e->deferred_syntax))
+        {
+          char *syntax = ds_steal_cstr (&e->deferred_syntax);
+          output_submit__ (e, text_item_super (text_item_create_nocopy (
+                                                 TEXT_ITEM_SYNTAX, syntax)));
+        }
     }
 }
 
