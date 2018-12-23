@@ -17,6 +17,7 @@ dnl
 AT_BANNER([GLM procedure])
 
 AT_SETUP([GLM latin square design])
+AT_KEYWORDS([categorical categoricals])
 
 dnl This example comes from :
 dnl  http://ssnds.uwo.ca/statsexamples/spssanova/latinsquareresults.html
@@ -88,6 +89,7 @@ Corrected Total,329.62,35,,,
 AT_CLEANUP
 
 AT_SETUP([GLM 2 by 2 factorial design])
+AT_KEYWORDS([categorical categoricals])
 
 AT_DATA([2by2.sps], [dnl
 set format = F20.3.
@@ -140,6 +142,7 @@ AT_CLEANUP
 
 
 AT_SETUP([GLM Type I and II Sums of Squares])
+AT_KEYWORDS([categorical categoricals])
 
 dnl  The following example comes from 
 dnl  http://www.uvm.edu/~dhowell/StatPages/More_Stuff/Type1-3.pdf
@@ -273,6 +276,7 @@ AT_CLEANUP
 
 
 AT_SETUP([GLM excluded intercept])
+AT_KEYWORDS([categorical categoricals])
 
 dnl  The following example comes from 
 dnl
@@ -344,6 +348,7 @@ AT_CLEANUP
 
 
 AT_SETUP([GLM missing values])
+AT_KEYWORDS([categorical categoricals])
 
 AT_DATA([glm.data], [dnl
 1 1 6  3.5

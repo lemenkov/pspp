@@ -17,6 +17,7 @@ dnl
 AT_BANNER([ONEWAY procedure])
 
 AT_SETUP([ONEWAY basic operation])
+AT_KEYWORDS([categorical categoricals])
 AT_DATA([oneway.sps],
   [DATA LIST NOTABLE LIST /QUALITY * BRAND * .
 BEGIN DATA
@@ -86,6 +87,7 @@ AT_CLEANUP
 
 
 AT_SETUP([ONEWAY with splits])
+AT_KEYWORDS([categorical categoricals])
 AT_DATA([oneway-splits.sps],
 [DATA LIST NOTABLE LIST /QUALITY * BRAND * S *.
 BEGIN DATA
@@ -193,6 +195,7 @@ AT_CLEANUP
 
 
 AT_SETUP([ONEWAY with missing values])
+AT_KEYWORDS([categorical categoricals])
 dnl Check that missing are treated properly
 AT_DATA([oneway-missing1.sps],
 [DATA LIST NOTABLE LIST /v1 * v2 * dep * vn *.
@@ -298,6 +301,7 @@ AT_CLEANUP
 
 
 AT_SETUP([ONEWAY descriptives subcommand])
+AT_KEYWORDS([categorical categoricals])
 
 AT_DATA([oneway-descriptives.sps],
   [DATA LIST NOTABLE LIST /QUALITY * BRAND * .
@@ -347,6 +351,7 @@ AT_CLEANUP
 
 
 AT_SETUP([ONEWAY homogeneity subcommand])
+AT_KEYWORDS([categorical categoricals])
 
 AT_DATA([oneway-homogeneity.sps],
   [DATA LIST NOTABLE LIST /QUALITY * BRAND * .
@@ -392,6 +397,7 @@ AT_CLEANUP
 
 
 AT_SETUP([ONEWAY multiple variables])
+AT_KEYWORDS([categorical categoricals])
 dnl check that everything works ok when several different dependent variables are specified.
 dnl This of course does not mean that we're doing a multivariate analysis.  It's just like
 dnl running several tests at once.
@@ -500,6 +506,7 @@ AT_CLEANUP
 
 dnl Tests that everything treats weights properly
 AT_SETUP([ONEWAY vs. weights])
+AT_KEYWORDS([categorical categoricals])
 
 AT_DATA([oneway-unweighted.sps],
 [DATA LIST NOTABLE LIST /QUALITY * BRAND * W *.
@@ -571,6 +578,7 @@ AT_CLEANUP
 
 
 AT_SETUP([ONEWAY posthoc LSD and BONFERRONI])
+AT_KEYWORDS([categorical categoricals])
 AT_DATA([oneway-pig.sps],[dnl
 SET FORMAT F12.3.
 data list notable list /pigmentation * family *.
@@ -653,6 +661,7 @@ AT_CLEANUP
 
 
 AT_SETUP([ONEWAY posthoc Tukey HSD and Games-Howell])
+AT_KEYWORDS([categorical categoricals])
 AT_DATA([oneway-tukey.sps],[dnl
 set format = f11.3.
 data list notable list /libido * dose *.
@@ -709,6 +718,7 @@ Games-Howell,Placebo,1 Dose,-1.000,.887,.479,-3.356,1.356
 AT_CLEANUP
 
 AT_SETUP([ONEWAY posthoc Sidak])
+AT_KEYWORDS([categorical categoricals])
 AT_DATA([oneway-sidak.sps],[dnl
 SET FORMAT F20.4.
 
@@ -769,6 +779,7 @@ Table: Multiple Comparisons (score)
 AT_CLEANUP
 
 AT_SETUP([ONEWAY posthoc Scheffe])
+AT_KEYWORDS([categorical categoricals])
 AT_DATA([oneway-scheffe.sps],[dnl
 set format = f11.3.
 data list notable list /usage * group *.
@@ -851,6 +862,7 @@ AT_CLEANUP
 
 
 AT_SETUP([ONEWAY bad contrast count])
+AT_KEYWORDS([categorical categoricals])
 
 AT_DATA([oneway-bad-contrast.sps],[dnl
 DATA LIST NOTABLE LIST /height * weight * temperature * sex *.
@@ -922,6 +934,7 @@ AT_CLEANUP
 
 
 AT_SETUP([ONEWAY crash on single category independent variable])
+AT_KEYWORDS([categorical categoricals])
 AT_DATA([crash.sps],[
 input program.
 loop #i = 1 to 10.
@@ -943,6 +956,7 @@ AT_CLEANUP
 
 
 AT_SETUP([ONEWAY crash on missing dependent variable])
+AT_KEYWORDS([categorical categoricals])
 AT_DATA([crash2.sps],[dnl
 data list notable list /dv1 * dv2  *  y * .
 begin data.
@@ -971,6 +985,7 @@ AT_CLEANUP
 
 
 AT_SETUP([ONEWAY Games-Howell test with few cases])
+AT_KEYWORDS([categorical categoricals])
 AT_DATA([crash3.sps],[dnl
 data list notable list /dv * y * .
 begin data.
@@ -993,6 +1008,7 @@ AT_CLEANUP
 
 
 AT_SETUP([ONEWAY Crash on empty data])
+AT_KEYWORDS([categorical categoricals])
 AT_DATA([crash4.sps],[dnl
 DATA LIST NOTABLE LIST /height * weight * temperature * sex *.
 BEGIN DATA.
@@ -1015,6 +1031,7 @@ AT_CLEANUP
 
 
 AT_SETUP([ONEWAY Crash on invalid dependent variable])
+AT_KEYWORDS([categorical categoricals])
 AT_DATA([crash5.sps],[dnl
 data list notable list /a * b *.
 begin data.
@@ -1035,6 +1052,7 @@ AT_CLEANUP
 
 
 AT_SETUP([ONEWAY Crash on unterminated string])
+AT_KEYWORDS([categorical categoricals])
 
 AT_DATA([crash6.sps], [dnl
 DATA LIST NOTABLE LIST /height * weight * temperature * sex *.

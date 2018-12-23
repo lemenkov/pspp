@@ -95,6 +95,7 @@ dnl  Note: In the above data cases 305, 316 318 and 329 have identical values
 dnl of the 2nd and 3rd variables.  We use this for weight testing.
 
 AT_SETUP([LOGISTIC REGRESSION basic test])
+AT_KEYWORDS([categorical categoricals])
 
 LOGIT_TEST_DATA
 
@@ -147,6 +148,7 @@ Step 1,survrate,-.081,.019,17.756,1,.000,.922
 AT_CLEANUP
 
 AT_SETUP([LOGISTIC REGRESSION missing values])
+AT_KEYWORDS([categorical categoricals])
 
 LOGIT_TEST_DATA
 
@@ -195,6 +197,7 @@ dnl Check that a weighted dataset is interpreted correctly
 dnl To do this, the same data set is used, one weighted, one not.
 dnl The weighted dataset omits certain cases which are identical
 AT_SETUP([LOGISTIC REGRESSION weights])
+AT_KEYWORDS([categorical categoricals])
 
 LOGIT_TEST_DATA
 
@@ -256,6 +259,7 @@ dnl Check that the /NOCONST option works as intended.
 dnl The results this produces are very similar to those
 dnl at the example in http://www.ats.ucla.edu/stat/SPSS/faq/logregconst.htm
 AT_SETUP([LOGISTIC REGRESSION without constant])
+AT_KEYWORDS([categorical categoricals])
 
 AT_DATA([non-const.sps], [dnl
 set format=F20.3.
@@ -313,6 +317,7 @@ AT_CLEANUP
 dnl Check that if somebody passes a dependent variable which is not dichtomous,
 dnl then an error is raised.
 AT_SETUP([LOGISTIC REGRESSION non-dichotomous dep var])
+AT_KEYWORDS([categorical categoricals])
 
 AT_DATA([non-dich.sps], [dnl
 data list notable list /y x1 x2 x3 x4.
@@ -338,6 +343,7 @@ dnl An example to check the behaviour of LOGISTIC REGRESSION with a categorical
 dnl variable.  This examṕle was inspired from that at:
 dnl http://www.ats.ucla.edu/stat/spss/dae/logit.htm 
 AT_SETUP([LOGISTIC REGRESSION with categorical])
+AT_KEYWORDS([categorical categoricals])
 
 AT_DATA([lr-cat.data], [dnl
  620 3.07 2 4 
@@ -806,6 +812,7 @@ AT_CLEANUP
 
 dnl  This example is inspired by http://www.ats.ucla.edu/stat/spss/output/logistic.htm
 AT_SETUP([LOGISTIC REGRESSION with cat var 2])
+AT_KEYWORDS([categorical categoricals])
 
 AT_DATA([lr-cat2.data], [dnl
      60.00     1.00      8.00     50.00 
@@ -1073,6 +1080,7 @@ AT_CLEANUP
 dnl Check that it doesn't crash if a categorical variable
 dnl has only one distinct value
 AT_SETUP([LOGISTIC REGRESSION identical categories])
+AT_KEYWORDS([categorical categoricals])
 
 AT_DATA([crash.sps], [dnl
 data list notable list /y x1 x2*.
@@ -1093,6 +1101,7 @@ AT_CLEANUP
 dnl Test that missing values on the categorical predictors are treated
 dnl properly.
 AT_SETUP([LOGISTIC REGRESSION missing categoricals])
+AT_KEYWORDS([categorical categoricals])
 
 AT_DATA([data.txt], [dnl
       .00     3.69      .00 
@@ -1230,6 +1239,7 @@ dnl Use an example with categoricals, because that was buggy at
 dnl one point.  The data in this example comes from:
 dnl  http://people.ysu.edu/~gchang/SPSSE/SPSS_lab2Regression.pdf
 AT_SETUP([LOGISTIC REGRESSION confidence interval])
+AT_KEYWORDS([categorical categoricals])
 
 AT_DATA([ci.sps], [dnl
 set FORMAT=F20.3

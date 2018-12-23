@@ -17,6 +17,7 @@ dnl
 AT_BANNER([EXAMINE])
 
 AT_SETUP([EXAMINE])
+AT_KEYWORDS([categorical categoricals])
 AT_DATA([examine.sps], [
 DATA LIST LIST /QUALITY * W * BRAND * .
 BEGIN DATA
@@ -188,6 +189,7 @@ Breaking Strain,Aspeger,Mean,,2.25,.45
 AT_CLEANUP
 
 AT_SETUP([EXAMINE -- extremes])
+AT_KEYWORDS([categorical categoricals])
 AT_DATA([examine.sps], [dnl
 data list free /V1 W
 begin data.
@@ -249,6 +251,7 @@ AT_CLEANUP
 
 
 AT_SETUP([EXAMINE -- extremes with fractional weights])
+AT_KEYWORDS([categorical categoricals])
 AT_DATA([extreme.sps], [dnl
 set format=F20.3.
 data list notable list /w * x *.
@@ -325,6 +328,7 @@ dnl Test the PERCENTILES subcommand of the EXAMINE command.
 dnl In particular test that it behaves properly when there are only 
 dnl a few cases.
 AT_SETUP([EXAMINE -- percentiles])
+AT_KEYWORDS([categorical categoricals])
 AT_DATA([examine.sps], [dnl
 DATA LIST LIST /X *.
 BEGIN DATA.
@@ -417,6 +421,7 @@ X,Empirical with averaging,2.00,2.00,2.00,5.00,8.00,8.00,8.00
 AT_CLEANUP
 
 AT_SETUP([EXAMINE -- missing values])
+AT_KEYWORDS([categorical categoricals])
 AT_DATA([examine.sps], [dnl
 DATA LIST LIST /x * y *.
 BEGIN DATA.
@@ -457,6 +462,7 @@ AT_CLEANUP
 
 
 AT_SETUP([EXAMINE -- user missing values])
+AT_KEYWORDS([categorical categoricals])
 AT_DATA([examine-m.sps], [dnl
 DATA LIST notable LIST /x * y *.
 BEGIN DATA.
@@ -483,6 +489,7 @@ y,2,66.6667%,1,33.3333%,3,100%
 AT_CLEANUP
 
 AT_SETUP([EXAMINE -- missing values and percentiles])
+AT_KEYWORDS([categorical categoricals])
 AT_DATA([examine.sps], [dnl
 DATA LIST LIST /X *.
 BEGIN DATA.
@@ -503,6 +510,7 @@ AT_CLEANUP
 dnl Tests the trimmed mean calculation in the case
 dnl where the data is weighted towards the centre.
 AT_SETUP([EXAMINE -- trimmed mean])
+AT_KEYWORDS([categorical categoricals])
 AT_DATA([examine.sps], [dnl
 DATA LIST LIST /X * C *.
 BEGIN DATA.
@@ -550,6 +558,7 @@ X,Mean,,2.02,.03
 AT_CLEANUP
 
 AT_SETUP([EXAMINE -- crash bug])
+AT_KEYWORDS([categorical categoricals])
 AT_DATA([examine.sps], [dnl
 data list list /a * x * y *.
 begin data.
@@ -568,6 +577,7 @@ AT_CLEANUP
 
 dnl Test that two consecutive EXAMINE commands don't crash PSPP.
 AT_SETUP([EXAMINE -- consecutive runs don't crash])
+AT_KEYWORDS([categorical categoricals])
 AT_DATA([examine.sps], [dnl
 data list list /y * z *.
 begin data.
@@ -586,6 +596,7 @@ AT_CLEANUP
 
 dnl Test that /DESCRIPTIVES does not crash in presence of missing values.
 AT_SETUP([EXAMINE -- missing values don't crash])
+AT_KEYWORDS([categorical categoricals])
 AT_DATA([examine.sps], [dnl
 data list list /x * y *.
 begin data.
@@ -603,6 +614,7 @@ AT_CLEANUP
 
 dnl Test that having only a single case doesn't crash.
 AT_SETUP([EXAMINE -- single case doesn't crash])
+AT_KEYWORDS([categorical categoricals])
 AT_DATA([examine.sps], [dnl
 DATA LIST LIST /quality * .
 BEGIN DATA
@@ -622,6 +634,7 @@ AT_CLEANUP
 
 dnl Test that all-missing data doesn't crash.
 AT_SETUP([EXAMINE -- all-missing data doesn't crash])
+AT_KEYWORDS([categorical categoricals])
 AT_DATA([examine.sps], [dnl
 DATA LIST LIST /x *.
 BEGIN DATA.
@@ -644,6 +657,7 @@ AT_CLEANUP
 
 dnl Test that big input doesn't crash (bug 11307).
 AT_SETUP([EXAMINE -- big input doesn't crash])
+AT_KEYWORDS([categorical categoricals])
 AT_DATA([examine.sps], [dnl
 INPUT PROGRAM.
 	LOOP #I=1 TO 50000.
@@ -664,6 +678,7 @@ AT_CLEANUP
 dnl Another test that big input doesn't crash.
 dnl The actual bug that this checks for has been lost.
 AT_SETUP([EXAMINE -- big input doesn't crash 2])
+AT_KEYWORDS([categorical categoricals])
 AT_DATA([make-big-input.pl], 
   [for ($i=0; $i<100000; $i++) { print "AB12\n" };
    for ($i=0; $i<100000; $i++) { print "AB04\n" };
@@ -691,6 +706,7 @@ AT_CLEANUP
 
 dnl Test that the ID command works with non-numberic variables
 AT_SETUP([EXAMINE -- non-numeric ID])
+AT_KEYWORDS([categorical categoricals])
 
 AT_DATA([examine-id.sps], [dnl
 data list notable list /x * y (a12).
@@ -743,6 +759,7 @@ AT_CLEANUP
 
 dnl Test for a crash which happened on cleanup from a bad input syntax
 AT_SETUP([EXAMINE -- Bad Input])
+AT_KEYWORDS([categorical categoricals])
 
 AT_DATA([examine-bad.sps], [dnl
 data list list /h * g *.
@@ -773,7 +790,7 @@ AT_CLEANUP
 
 dnl Check the MISSING=REPORT option
 AT_SETUP([EXAMINE -- MISSING=REPORT])
-
+AT_KEYWORDS([categorical categoricals])
 
 AT_DATA([examine-report.sps], [dnl
 set format = F22.0.
@@ -901,6 +918,7 @@ dnl Run a test of the basic STATISTICS using a "real"
 dnl dataset and comparing with "real" results kindly
 dnl provided by Olaf Nöhring
 AT_SETUP([EXAMINE -- sample unweighted])
+AT_KEYWORDS([categorical categoricals])
 
 AT_DATA([sample.sps], [dnl
 set format = F22.4.
@@ -1044,6 +1062,7 @@ AT_CLEANUP
 
 dnl Test for a crash which happened on bad input syntax
 AT_SETUP([EXAMINE -- Empty Parentheses])
+AT_KEYWORDS([categorical categoricals])
 
 AT_DATA([examine-empty-parens.sps], [dnl
 DATA LIST notable LIST /X *
@@ -1068,6 +1087,7 @@ AT_CLEANUP
 
 dnl Test for another crash which happened on bad input syntax
 AT_SETUP([EXAMINE -- Bad variable])
+AT_KEYWORDS([categorical categoricals])
 
 AT_DATA([examine-bad-variable.sps], [dnl
 data list list /h * g *.
@@ -1091,6 +1111,7 @@ AT_CLEANUP
 
 dnl Test for yet another crash. This time for extremes vs. missing weight values. 
 AT_SETUP([EXAMINE -- Extremes vs. Missing Weights])
+AT_KEYWORDS([categorical categoricals])
 
 AT_DATA([examine-missing-weights.sps], [dnl
 data list notable list /h * g *.

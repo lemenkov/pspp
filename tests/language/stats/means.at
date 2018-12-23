@@ -17,6 +17,7 @@ dnl
 AT_BANNER([MEANS procedure])
 
 AT_SETUP([MEANS simple example])
+AT_KEYWORDS([categorical categoricals])
 
 AT_DATA([means-simple.sps], [dnl
 SET FORMAT=F12.5.
@@ -78,6 +79,7 @@ AT_CLEANUP
 
 
 AT_SETUP([MEANS very simple example])
+AT_KEYWORDS([categorical categoricals])
 
 AT_DATA([means-vsimple.sps], [dnl
 SET FORMAT=F12.5.
@@ -112,6 +114,7 @@ AT_CLEANUP
 
 
 AT_SETUP([MEANS default missing])
+AT_KEYWORDS([categorical categoricals])
 
 AT_DATA([means-dmiss.sps], [dnl
 SET FORMAT=F12.2.
@@ -166,6 +169,7 @@ AT_CLEANUP
 
 
 AT_SETUP([MEANS linear stats])
+AT_KEYWORDS([categorical categoricals])
 
 dnl Slightly more involved example to test the linear statistics
 AT_DATA([means-linear.sps], [dnl
@@ -215,6 +219,7 @@ AT_CLEANUP
 
 
 AT_SETUP([MEANS standard errors])
+AT_KEYWORDS([categorical categoricals])
 
 AT_DATA([means-stderr.sps], [dnl
 set format F12.4.
@@ -261,6 +266,7 @@ AT_CLEANUP
 
 
 AT_SETUP([MEANS harmonic and geometric means])
+AT_KEYWORDS([categorical categoricals])
 
 AT_DATA([means-hg.sps], [dnl
 set format F12.4.
@@ -303,6 +309,7 @@ AT_CLEANUP
 
 
 AT_SETUP([MEANS all/none/default])
+AT_KEYWORDS([categorical categoricals])
 
 dnl Make sure that /CELLS = {ALL,NONE,DEFAULT} work properly
 AT_DATA([means-stat-keywords.sps], [dnl
@@ -363,6 +370,7 @@ AT_CLEANUP
 
 
 AT_SETUP([MEANS missing=table ])
+AT_KEYWORDS([categorical categoricals])
 
 AT_DATA([means-miss-table.sps], [dnl
 data list notable list /a * b * g1.
@@ -473,6 +481,7 @@ AT_CLEANUP
 
 
 AT_SETUP([MEANS user missing values])
+AT_KEYWORDS([categorical categoricals])
 
 AT_DATA([means-missing.sps], [dnl
 data list notable list /a * b * g1.
@@ -571,6 +580,7 @@ AT_CLEANUP
 
 
 AT_SETUP([MEANS empty factor spec])
+AT_KEYWORDS([categorical categoricals])
 
 AT_DATA([means-bad.sps], [dnl
 data list list /outcome *.
@@ -591,6 +601,7 @@ AT_CLEANUP
 
 
 AT_SETUP([MEANS parser bug])
+AT_KEYWORDS([categorical categoricals])
 
 dnl This bug caused an infinite loop
 AT_DATA([means-bad.sps], [dnl
