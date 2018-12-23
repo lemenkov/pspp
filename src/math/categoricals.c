@@ -76,7 +76,6 @@ struct variable_node
   const struct variable *var; /* The variable */
 
   struct hmap valmap;         /* A map of value nodes */
-  int n_vals;                 /* Number of values for this variable */
 };
 
 
@@ -394,7 +393,6 @@ categoricals_create (struct interaction *const*inter, size_t n_inter,
 	    {
 	      vn = pool_malloc (cat->pool, sizeof *vn);
 	      vn->var = var;
-	      vn->n_vals = 0;
 	      hmap_init (&vn->valmap);
 
 	      hmap_insert (&cat->varmap, &vn->node,  hash);
@@ -437,7 +435,6 @@ categoricals_update (struct categoricals *cat, const struct ccase *c)
 	{
 	  valn = pool_malloc (cat->pool, sizeof *valn);
 	  valn->index = -1;
-	  vn->n_vals++;
 	  value_init (&valn->val, width);
 	  value_copy (&valn->val, val, width);
 	  hmap_insert (&vn->valmap, &valn->node, hash);
@@ -590,10 +587,11 @@ categoricals_done (const struct categoricals *cat_)
       for (v = 0 ; v < iact->n_vars; ++v)
 	{
 	  struct variable_node *vn = cat->iap[i].varnodes[v];
-	  cat->iap[i].df_prod[v] = df * (vn->n_vals - 1);
+          size_t n_vals = hmap_count (&vn->valmap);
+	  cat->iap[i].df_prod[v] = df * (n_vals - 1);
       	  df = cat->iap[i].df_prod[v];
 
-	  cat->iap[i].n_cats *= vn->n_vals;
+	  cat->iap[i].n_cats *= n_vals;
 	}
 
       if (v > 0)
