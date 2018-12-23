@@ -22,11 +22,10 @@
 #include "data/missing-values.h"
 
 struct categoricals;
-struct variable;
 struct ccase;
 struct interaction;
-
-union value ;
+struct variable;
+union value;
 
 /* Categoricals.
 
@@ -52,15 +51,16 @@ union value ;
 */
 
 /* Creating and destroying categoricals. */
-struct categoricals *categoricals_create (struct interaction *const*, size_t n_int,
+struct categoricals *categoricals_create (struct interaction *const *,
+                                          size_t n,
 					  const struct variable *wv,
 					  enum mv_class fctr_excl);
 void categoricals_destroy (struct categoricals *);
 
 /* Updating categoricals. */
-void categoricals_update (struct categoricals *cat, const struct ccase *c);
-void categoricals_done (const struct categoricals *cat);
-bool categoricals_is_complete (const struct categoricals *cat);
+void categoricals_update (struct categoricals *, const struct ccase *);
+void categoricals_done (const struct categoricals *);
+bool categoricals_is_complete (const struct categoricals *);
 
 /* Counting categories.
 
@@ -73,9 +73,8 @@ bool categoricals_is_complete (const struct categoricals *cat);
 
    A categorical object's number of categories is the sum of its interactions'
    categories. */
-/* Return the number of categories (distinct values) for variable N */
-size_t categoricals_n_count (const struct categoricals *cat, size_t n);
-size_t categoricals_n_total (const struct categoricals *cat);
+size_t categoricals_n_count (const struct categoricals *, size_t idx);
+size_t categoricals_n_total (const struct categoricals *);
 
 /* Degrees of freedom.
 
@@ -87,10 +86,8 @@ size_t categoricals_n_total (const struct categoricals *cat);
 
    A categorical object's degrees of freedom is the sum of its interactions'
    degrees of freedom. */
-size_t categoricals_df (const struct categoricals *cat, size_t n);
-size_t categoricals_df_total (const struct categoricals *cat);
-
-size_t categoricals_get_n_variables (const struct categoricals *cat);
+size_t categoricals_df (const struct categoricals *, size_t idx);
+size_t categoricals_df_total (const struct categoricals *);
 
 /* Sanity. */
 bool categoricals_sane (const struct categoricals *cat);
@@ -112,16 +109,18 @@ bool categoricals_sane (const struct categoricals *cat);
    These functions may be used on an object only after calling
    categoricals_done().
 */
-double categoricals_get_weight_by_subscript (const struct categoricals *cat, int subscript);
-const struct interaction *categoricals_get_interaction_by_subscript (const struct categoricals *cat, int subscript);
-
-double categoricals_get_sum_by_subscript (const struct categoricals *cat, int subscript);
-double
-categoricals_get_dummy_code_for_case (const struct categoricals *cat, int subscript,
-				     const struct ccase *c);
-double
-categoricals_get_effects_code_for_case (const struct categoricals *cat, int subscript,
-					const struct ccase *c);
+double categoricals_get_weight_by_subscript (const struct categoricals *,
+                                             int subscript);
+const struct interaction *categoricals_get_interaction_by_subscript (
+  const struct categoricals *, int subscript);
+double categoricals_get_sum_by_subscript (const struct categoricals *,
+                                          int subscript);
+double categoricals_get_dummy_code_for_case (const struct categoricals *,
+                                             int subscript,
+                                             const struct ccase *);
+double categoricals_get_effects_code_for_case (const struct categoricals *,
+                                               int subscript,
+                                               const struct ccase *);
 
 
 /* "Long map".
@@ -138,23 +137,27 @@ categoricals_get_effects_code_for_case (const struct categoricals *cat, int subs
    These functions may be used on an object only after calling
    categoricals_done().
 */
-const struct ccase *
-categoricals_get_case_by_category_real (const struct categoricals *cat, int iact, int n);
-void *
-categoricals_get_user_data_by_category_real (const struct categoricals *cat, int iact, int n);
-void * categoricals_get_user_data_by_category (const struct categoricals *cat, int category);
-const struct ccase * categoricals_get_case_by_category (const struct categoricals *cat, int subscript);
+const struct ccase *categoricals_get_case_by_category_real (
+  const struct categoricals *, int iact, int n);
+void *categoricals_get_user_data_by_category_real (
+  const struct categoricals *, int iact, int n);
+
+void *categoricals_get_user_data_by_category (const struct categoricals *,
+                                              int category);
+const struct ccase *categoricals_get_case_by_category (
+  const struct categoricals *cat, int subscript);
 
 struct payload
-{
-  void* (*create)  (const void *aux1, void *aux2);
-  void (*update)  (const void *aux1, void *aux2, void *user_data, const struct ccase *, double weight);
-  void (*calculate) (const void *aux1, void *aux2, void *user_data);
-  void (*destroy) (const void *aux1, void *aux2, void *user_data);
-};
+  {
+    void *(*create)  (const void *aux1, void *aux2);
+    void (*update)  (const void *aux1, void *aux2, void *user_data,
+                     const struct ccase *, double weight);
+    void (*calculate) (const void *aux1, void *aux2, void *user_data);
+    void (*destroy) (const void *aux1, void *aux2, void *user_data);
+  };
 
-void  categoricals_set_payload (struct categoricals *cats, const struct payload *p, const void *aux1, void *aux2);
-
-bool categoricals_isbalanced (const struct categoricals *cat);
+void categoricals_set_payload (struct categoricals *, const struct payload *,
+                               const void *aux1, void *aux2);
+bool categoricals_isbalanced (const struct categoricals *);
 
 #endif
