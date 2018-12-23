@@ -182,9 +182,6 @@ struct categoricals
 
   struct pool *pool;
 
-  /* Missing values in the dependent varirable to be excluded */
-  enum mv_class dep_excl;
-
   /* Missing values in the factor variables to be excluded */
   enum mv_class fctr_excl;
 
@@ -353,7 +350,7 @@ categoricals_sane (const struct categoricals *cat)
 
 struct categoricals *
 categoricals_create (struct interaction *const*inter, size_t n_inter,
-		     const struct variable *wv, enum mv_class dep_excl, enum mv_class fctr_excl)
+		     const struct variable *wv, enum mv_class fctr_excl)
 {
   size_t i;
   struct categoricals *cat = xmalloc (sizeof *cat);
@@ -365,7 +362,6 @@ categoricals_create (struct interaction *const*inter, size_t n_inter,
   cat->reverse_variable_map_short = NULL;
   cat->reverse_variable_map_long = NULL;
   cat->pool = pool_create ();
-  cat->dep_excl = dep_excl;
   cat->fctr_excl = fctr_excl;
   cat->payload = NULL;
   cat->aux2 = NULL;

@@ -1829,8 +1829,7 @@ run_examine (struct examine *cmd, struct casereader *input)
   cmd->wv = dict_get_weight (cmd->dict);
 
   cmd->cats
-    = categoricals_create (cmd->iacts, cmd->n_iacts,
-                           cmd->wv, cmd->dep_excl, cmd->fctr_excl);
+    = categoricals_create (cmd->iacts, cmd->n_iacts, cmd->wv, cmd->fctr_excl);
 
   categoricals_set_payload (cmd->cats, &payload, cmd, NULL);
 

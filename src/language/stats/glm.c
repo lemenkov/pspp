@@ -598,7 +598,7 @@ run_glm (struct glm_spec *cmd, struct casereader *input,
 					     NULL,  NULL);
 
   ws.cats = categoricals_create (cmd->interactions, cmd->n_interactions,
-				 cmd->wv, cmd->exclude, MV_ANY);
+				 cmd->wv, MV_ANY);
 
   cov = covariance_2pass_create (cmd->n_dep_vars, cmd->dep_vars,
 				 ws.cats, cmd->wv, cmd->exclude, true);

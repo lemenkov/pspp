@@ -464,7 +464,7 @@ initial_pass (const struct lr_spec *cmd, struct lr_result *res, struct casereade
       res->cp.destroy = frq_destroy;
 
       res->cats = categoricals_create (cmd->cat_predictors, cmd->n_cat_predictors,
-				       cmd->wv, cmd->exclude, MV_ANY);
+				       cmd->wv, MV_ANY);
 
       categoricals_set_payload (res->cats, &res->cp, cmd, res);
     }

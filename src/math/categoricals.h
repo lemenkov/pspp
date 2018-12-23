@@ -29,7 +29,7 @@ struct interaction;
 union value ;
 
 struct categoricals *categoricals_create (struct interaction *const*, size_t n_int,
-					  const struct variable *wv, enum mv_class dep_excl,
+					  const struct variable *wv,
 					  enum mv_class fctr_excl);
 
 void categoricals_destroy (struct categoricals *);
