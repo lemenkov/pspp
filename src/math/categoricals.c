@@ -111,6 +111,11 @@ lookup_variable (const struct hmap *map, const struct variable *var, unsigned in
 
 struct interact_params
 {
+  /* The interaction, and an array with iact->n_vars elements such that
+     varnodes[x] points to the variable_node for iact->vars[x]. */
+  const struct interaction *iact;
+  struct variable_node **varnodes;
+
   /* An example of each interaction that appears in the data, like a frequency
      table for 'iact'.  By construction, the number of elements must be less
      than or equal to 'n_cats'.
@@ -119,8 +124,6 @@ struct interact_params
      categoricals_done() dumps 'ivmap' into 'ivs' and sorts it. */
   struct hmap ivmap;
   struct interaction_value **ivs;
-
-  const struct interaction *iact;
 
   int base_df;
   int base_cats;
@@ -264,8 +267,7 @@ categoricals_dump (const struct categoricals *cat)
 		{
 		  const struct variable *var = iact->vars[vv];
 		  const union value *val = case_data (iv->ccase, var);
-		  unsigned int varhash = hash_pointer (var, 0);
-		  struct variable_node *vn = lookup_variable (&cat->varmap, var, varhash);
+		  struct variable_node *vn = iap->varnodes[vv];
 
 		  const int width = var_get_width (var);
 		  unsigned int valhash = value_hash (val, width, 0);
@@ -381,6 +383,8 @@ categoricals_create (struct interaction *const*inter, size_t n_inter,
       hmap_init (&cat->iap[i].ivmap);
       cat->iap[i].iact = inter[i];
       cat->iap[i].cc = 0.0;
+      cat->iap[i].varnodes = pool_nmalloc (cat->pool, cat->iap[i].iact->n_vars,
+                                           sizeof *cat->iap[i].varnodes);
       for (v = 0; v < inter[i]->n_vars; ++v)
 	{
 	  const struct variable *var = inter[i]->vars[v];
@@ -395,6 +399,7 @@ categoricals_create (struct interaction *const*inter, size_t n_inter,
 
 	      hmap_insert (&cat->varmap, &vn->node,  hash);
 	    }
+          cat->iap[i].varnodes[v] = vn;
 	}
     }
 
@@ -584,8 +589,7 @@ categoricals_done (const struct categoricals *cat_)
 
       for (v = 0 ; v < iact->n_vars; ++v)
 	{
-	  const struct variable *var = iact->vars[v];
-	  struct variable_node *vn = lookup_variable (&cat->varmap, var, hash_pointer (var, 0));
+	  struct variable_node *vn = cat->iap[i].varnodes[v];
 	  cat->iap[i].df_prod[v] = df * (vn->n_vals - 1);
       	  df = cat->iap[i].df_prod[v];
 
@@ -749,7 +753,7 @@ categoricals_get_code_for_case (const struct categoricals *cat, int subscript,
 
       const union value *val = case_data (c, var);
       const int width = var_get_width (var);
-      const struct variable_node *vn = lookup_variable (&cat->varmap, var, hash_pointer (var, 0));
+      const struct variable_node *vn = iap->varnodes[v];
 
       const unsigned int hash = value_hash (val, width, 0);
       const struct value_node *valn = lookup_value (&vn->valmap, val, hash, width);
