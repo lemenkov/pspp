@@ -113,15 +113,23 @@ lookup_variable (const struct hmap *map, const struct variable *var, unsigned in
 
 struct interact_params
 {
-  /* A map of cases indexed by a interaction_value */
+  /* An example of each interaction that appears in the data, like a frequency
+     table for 'iact'.  By construction, the number of elements must be less
+     than or equal to 'n_cats'.
+
+     categoricals_update() updates 'ivmap' case-by-case, then
+     categoricals_done() dumps 'ivmap' into 'reverse_interaction_value_map' and
+     sorts it. */
   struct hmap ivmap;
+  struct interaction_value **reverse_interaction_value_map;
 
   const struct interaction *iact;
 
   int base_subscript_short;
   int base_subscript_long;
 
-  /* The number of distinct values of this interaction */
+  /* Product of hmap_count(&varnodes[*]->valmap), that is, the maximum number
+     of distinct values of this interaction. */
   int n_cats;
 
   /* An array of integers df_n * df_{n-1} * df_{n-2} ...
@@ -131,9 +139,7 @@ struct interact_params
 
   double *enc_sum;
 
-  /* A map of interaction_values indexed by subscript */
-  struct interaction_value **reverse_interaction_value_map;
-
+  /* Sum of reverse_interaction_value_map[*]->cc. */
   double cc;
 };
 
@@ -157,27 +163,23 @@ struct categoricals
 
   /* An array of interact_params */
   struct interact_params *iap;
+  size_t n_iap;
 
   /* Map whose members are the union of the variables which comprise IAP */
   struct hmap varmap;
-
-  /* The size of IAP. (ie, the number of interactions involved.) */
-  size_t n_iap;
 
   /* The number of categorical variables which contain entries.
      In the absence of missing values, this will be equal to N_IAP */
   size_t n_vars;
 
-  size_t df_sum;
-
   /* A map to enable the lookup of variables indexed by subscript.
      This map considers only the N - 1 of the N variables.
   */
-  int *reverse_variable_map_short;
+  int *reverse_variable_map_short; /* 'df_sum' elements. */
+  size_t df_sum;
 
   /* Like the above, but uses all N variables */
-  int *reverse_variable_map_long;
-
+  int *reverse_variable_map_long; /* 'n_cats_total' elements. */
   size_t n_cats_total;
 
   struct pool *pool;
@@ -342,12 +344,21 @@ lookup_case (const struct hmap *map, const struct interaction *iact, const struc
   return iv;
 }
 
+/* Returns true iff CAT is sane, that is, if it is complete and has at least
+   one value. */
 bool
 categoricals_sane (const struct categoricals *cat)
 {
   return cat->sane;
 }
 
+/* Creates and returns a new categoricals object whose variables come from the
+   N_INTER interactions objects in the array starting at INTER.  (The INTER
+   objects must outlive the categoricals object because it uses them
+   internally.)
+
+   FCTR_EXCL determines which cases are listwise ignored by
+   categoricals_update(). */
 struct categoricals *
 categoricals_create (struct interaction *const*inter, size_t n_inter,
 		     const struct variable *wv, enum mv_class fctr_excl)
@@ -473,7 +484,8 @@ categoricals_update (struct categoricals *cat, const struct ccase *c)
     }
 }
 
-/* Return the number of categories (distinct values) for interction N */
+/* Return the number of categories (distinct values) for interaction IDX in
+   CAT. */
 size_t
 categoricals_n_count (const struct categoricals *cat, size_t n)
 {
@@ -481,6 +493,7 @@ categoricals_n_count (const struct categoricals *cat, size_t n)
 }
 
 
+/* Returns the number of degrees of freedom for interaction IDX within CAT. */
 size_t
 categoricals_df (const struct categoricals *cat, size_t n)
 {
@@ -489,7 +502,7 @@ categoricals_df (const struct categoricals *cat, size_t n)
 }
 
 
-/* Return the total number of categories */
+/* Return the total number of categories across all interactions in CAT. */
 size_t
 categoricals_n_total (const struct categoricals *cat)
 {
@@ -499,6 +512,7 @@ categoricals_n_total (const struct categoricals *cat)
   return cat->n_cats_total;
 }
 
+/* Returns the total degrees of freedom for CAT. */
 size_t
 categoricals_df_total (const struct categoricals *cat)
 {
@@ -508,6 +522,7 @@ categoricals_df_total (const struct categoricals *cat)
   return cat->df_sum;
 }
 
+/* Returns true iff categoricals_done() has been called for CAT. */
 bool
 categoricals_is_complete (const struct categoricals *cat)
 {
@@ -515,8 +530,10 @@ categoricals_is_complete (const struct categoricals *cat)
 }
 
 
-/* This function must be called *before* any call to categoricals_get_*_by subscript and
- *after* all calls to categoricals_update */
+/* This function must be called (once) before any call to the *_by_subscript or
+  *_by_category functions, but AFTER any calls to categoricals_update.  If this
+  function returns false, then no calls to _by_subscript or *_by_category are
+  allowed. */
 void
 categoricals_done (const struct categoricals *cat_)
 {
