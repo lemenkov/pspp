@@ -103,8 +103,6 @@ lookup_variable (const struct hmap *map, const struct variable *var, unsigned in
     {
       if (vn->var == var)
 	break;
-
-      fprintf (stderr, "%s:%d Warning: Hash table collision\n", __FILE__, __LINE__);
     }
 
   return vn;
@@ -337,8 +335,6 @@ lookup_case (const struct hmap *map, const struct interaction *iact, const struc
     {
       if (interaction_case_equal (iact, c, iv->ccase))
 	break;
-
-      fprintf (stderr, "Warning: Hash table collision\n");
     }
 
   return iv;
