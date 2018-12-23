@@ -180,13 +180,13 @@ categoricals_isbalanced (const struct categoricals *cat)
 
       double oval = -1.0;
       for (v = 0; v < hmap_count (&iap->ivmap); ++v)
-	{
-	  const struct interaction_value *iv = iap->ivs[v];
-	  if (oval == -1.0)
-	    oval = iv->cc;
-	  if (oval != iv->cc)
-	    return false;
-	}
+        {
+          const struct interaction_value *iv = iap->ivs[v];
+          if (oval == -1.0)
+            oval = iv->cc;
+          if (oval != iv->cc)
+            return false;
+        }
     }
   return true;
 }
@@ -211,46 +211,46 @@ categoricals_dump (const struct categoricals *cat)
 
       printf ("Number of interactions %zu\n", cat->n_iap);
       for (i = 0 ; i < cat->n_iap; ++i)
-	{
-	  int v;
-	  struct string str;
-	  const struct interact_params *iap = &cat->iap[i];
-	  const struct interaction *iact = iap->iact;
+        {
+          int v;
+          struct string str;
+          const struct interact_params *iap = &cat->iap[i];
+          const struct interaction *iact = iap->iact;
 
-	  ds_init_empty (&str);
-	  interaction_to_string (iact, &str);
+          ds_init_empty (&str);
+          interaction_to_string (iact, &str);
 
-	  printf ("\nInteraction: \"%s\" (number of categories: %d); ", ds_cstr (&str), iap->n_cats);
-	  ds_destroy (&str);
-	  printf ("Base index (df/categories): %d/%d\n", iap->base_df, iap->base_cats);
+          printf ("\nInteraction: \"%s\" (number of categories: %d); ", ds_cstr (&str), iap->n_cats);
+          ds_destroy (&str);
+          printf ("Base index (df/categories): %d/%d\n", iap->base_df, iap->base_cats);
 
-	  printf ("\t(");
-	  for (v = 0; v < hmap_count (&iap->ivmap); ++v)
-	    {
-	      int vv;
-	      const struct interaction_value *iv = iap->ivs[v];
+          printf ("\t(");
+          for (v = 0; v < hmap_count (&iap->ivmap); ++v)
+            {
+              int vv;
+              const struct interaction_value *iv = iap->ivs[v];
 
-	      if (v > 0)  printf ("   ");
-	      printf ("{");
-	      for (vv = 0; vv < iact->n_vars; ++vv)
-		{
-		  const struct variable *var = iact->vars[vv];
-		  const union value *val = case_data (iv->ccase, var);
-		  struct variable_node *vn = iap->varnodes[vv];
-		  const int width = var_get_width (var);
-		  unsigned int valhash = value_hash (val, width, 0);
-		  struct value_node *valn = lookup_value (&vn->valmap, val, valhash, width);
+              if (v > 0)  printf ("   ");
+              printf ("{");
+              for (vv = 0; vv < iact->n_vars; ++vv)
+                {
+                  const struct variable *var = iact->vars[vv];
+                  const union value *val = case_data (iv->ccase, var);
+                  struct variable_node *vn = iap->varnodes[vv];
+                  const int width = var_get_width (var);
+                  unsigned int valhash = value_hash (val, width, 0);
+                  struct value_node *valn = lookup_value (&vn->valmap, val, valhash, width);
 
-		  assert (vn->var == var);
+                  assert (vn->var == var);
 
-		  printf ("%.*g(%d)", DBL_DIG + 1, val->f, valn->index);
-		  if (vv < iact->n_vars - 1)
-		    printf (", ");
-		}
-	      printf ("}");
-	    }
-	  printf (")\n");
-	}
+                  printf ("%.*g(%d)", DBL_DIG + 1, val->f, valn->index);
+                  if (vv < iact->n_vars - 1)
+                    printf (", ");
+                }
+              printf ("}");
+            }
+          printf (")\n");
+        }
     }
 }
 
@@ -265,11 +265,11 @@ categoricals_destroy (struct categoricals *cat)
       /* Unref any cases that we reffed. */
       struct interaction_value *iv;
       HMAP_FOR_EACH (iv, struct interaction_value, node, &cat->iap[i].ivmap)
-	{
-	  if (cat->payload && cat->payload->destroy)
-	    cat->payload->destroy (cat->aux1, cat->aux2, iv->user_data);
-	  case_unref (iv->ccase);
-	}
+        {
+          if (cat->payload && cat->payload->destroy)
+            cat->payload->destroy (cat->aux1, cat->aux2, iv->user_data);
+          case_unref (iv->ccase);
+        }
 
       free (cat->iap[i].enc_sum);
       hmap_destroy (&cat->iap[i].ivmap);
@@ -318,7 +318,7 @@ categoricals_sane (const struct categoricals *cat)
    categoricals_update(). */
 struct categoricals *
 categoricals_create (struct interaction *const *inter, size_t n_inter,
-		     const struct variable *wv, enum mv_class fctr_excl)
+                     const struct variable *wv, enum mv_class fctr_excl)
 {
   struct categoricals *cat = xzalloc (sizeof *cat);
   cat->iap = pool_calloc (cat->pool, n_inter, sizeof *cat->iap);
@@ -337,19 +337,19 @@ categoricals_create (struct interaction *const *inter, size_t n_inter,
       iap->varnodes = pool_nmalloc (cat->pool, iap->iact->n_vars,
                                     sizeof *iap->varnodes);
       for (size_t v = 0; v < inter[i]->n_vars; ++v)
-	{
-	  const struct variable *var = inter[i]->vars[v];
-	  unsigned int hash = hash_pointer (var, 0);
-	  struct variable_node *vn = lookup_variable (&cat->varmap, var, hash);
-	  if (!vn)
-	    {
-	      vn = pool_malloc (cat->pool, sizeof *vn);
-	      vn->var = var;
-	      hmap_init (&vn->valmap);
-	      hmap_insert (&cat->varmap, &vn->node,  hash);
-	    }
+        {
+          const struct variable *var = inter[i]->vars[v];
+          unsigned int hash = hash_pointer (var, 0);
+          struct variable_node *vn = lookup_variable (&cat->varmap, var, hash);
+          if (!vn)
+            {
+              vn = pool_malloc (cat->pool, sizeof *vn);
+              vn->var = var;
+              hmap_init (&vn->valmap);
+              hmap_insert (&cat->varmap, &vn->node,  hash);
+            }
           iap->varnodes[v] = vn;
-	}
+        }
     }
 
   return cat;
@@ -377,13 +377,13 @@ categoricals_update (struct categoricals *cat, const struct ccase *c)
 
       struct value_node *valn = lookup_value (&vn->valmap, val, hash, width);
       if (valn == NULL)
-	{
-	  valn = pool_malloc (cat->pool, sizeof *valn);
-	  valn->index = -1;
-	  value_init (&valn->val, width);
-	  value_copy (&valn->val, val, width);
-	  hmap_insert (&vn->valmap, &valn->node, hash);
-	}
+        {
+          valn = pool_malloc (cat->pool, sizeof *valn);
+          valn->index = -1;
+          value_init (&valn->val, width);
+          value_copy (&valn->val, val, width);
+          hmap_insert (&vn->valmap, &valn->node, hash);
+        }
     }
 
   /* Update the frequency table for full interactions. */
@@ -392,21 +392,21 @@ categoricals_update (struct categoricals *cat, const struct ccase *c)
       struct interact_params *iap = &cat->iap[i];
       const struct interaction *iact = iap->iact;
       if (interaction_case_is_missing (iact, c, cat->fctr_excl))
-	continue;
+        continue;
 
       unsigned int hash = interaction_case_hash (iact, c, 0);
       struct interaction_value *node = lookup_case (&iap->ivmap, iact, c);
       if (!node)
-	{
-	  node = pool_malloc (cat->pool, sizeof *node);
-	  node->ccase = case_ref (c);
-	  node->cc = weight;
+        {
+          node = pool_malloc (cat->pool, sizeof *node);
+          node->ccase = case_ref (c);
+          node->cc = weight;
 
-	  hmap_insert (&iap->ivmap, &node->node, hash);
+          hmap_insert (&iap->ivmap, &node->node, hash);
 
-	  if (cat->payload)
+          if (cat->payload)
             node->user_data = cat->payload->create (cat->aux1, cat->aux2);
-	}
+        }
       else
         node->cc += weight;
       iap->cc += weight;
@@ -499,15 +499,15 @@ categoricals_done (const struct categoricals *cat_)
       iap->df_prod = 1;
       iap->n_cats = 1;
       for (int v = 0 ; v < iact->n_vars; ++v)
-	{
+        {
           size_t n_vals = hmap_count (&iap->varnodes[v]->valmap);
 
           iap->df_prod *= n_vals - 1;
-	  iap->n_cats *= n_vals;
-	}
+          iap->n_cats *= n_vals;
+        }
 
       if (iact->n_vars > 0)
-	cat->df_sum += iap->df_prod;
+        cat->df_sum += iap->df_prod;
       cat->n_cats_total += iap->n_cats;
     }
 
@@ -544,7 +544,7 @@ categoricals_done (const struct categoricals *cat_)
           cat->df_to_iact[idx_df++] = i;
 
       for (int j = 0; j < iap->n_cats; ++j)
-	cat->cat_to_iact[idx_cat++] = i;
+        cat->cat_to_iact[idx_cat++] = i;
     }
 
   categoricals_dump (cat);
@@ -560,18 +560,18 @@ categoricals_done (const struct categoricals *cat_)
       iap->enc_sum = xcalloc (df, sizeof *iap->enc_sum);
 
       for (int y = 0; y < hmap_count (&iap->ivmap); ++y)
-	{
-	  struct interaction_value *iv = iap->ivs[y];
-	  for (int x = iap->base_df;
+        {
+          struct interaction_value *iv = iap->ivs[y];
+          for (int x = iap->base_df;
                x < iap->base_df + df; ++x)
-	    {
-	      const double bin = categoricals_get_effects_code_for_case (
+            {
+              const double bin = categoricals_get_effects_code_for_case (
                 cat, x, iv->ccase);
-	      iap->enc_sum[x - iap->base_df] += bin * iv->cc;
-	    }
-	  if (cat->payload && cat->payload->calculate)
-	    cat->payload->calculate (cat->aux1, cat->aux2, iv->user_data);
-	}
+              iap->enc_sum[x - iap->base_df] += bin * iv->cc;
+            }
+          if (cat->payload && cat->payload->calculate)
+            cat->payload->calculate (cat->aux1, cat->aux2, iv->user_data);
+        }
     }
 
   cat->sane = true;
@@ -623,8 +623,8 @@ categoricals_get_sum_by_subscript (const struct categoricals *cat,
    for that subscript */
 static double
 categoricals_get_code_for_case (const struct categoricals *cat, int subscript,
-				const struct ccase *c,
-				bool effects_coding)
+                                const struct ccase *c,
+                                bool effects_coding)
 {
   const struct interaction *iact
     = categoricals_get_interaction_by_subscript (cat, subscript);
@@ -648,7 +648,7 @@ categoricals_get_code_for_case (const struct categoricals *cat, int subscript,
       const int dfpn = dfp * df;
 
       if (effects_coding && valn->index == df)
-	result = -result;
+        result = -result;
       else
         {
           /* Translate subscript into an index for the individual variable. */
@@ -725,7 +725,7 @@ categoricals_get_user_data_by_category (const struct categoricals *cat,
 
 void
 categoricals_set_payload (struct categoricals *cat, const struct payload *p,
-			  const void *aux1, void *aux2)
+                          const void *aux1, void *aux2)
 {
   cat->payload = p;
   cat->aux1 = aux1;

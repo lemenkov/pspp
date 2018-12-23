@@ -53,8 +53,8 @@ union value;
 /* Creating and destroying categoricals. */
 struct categoricals *categoricals_create (struct interaction *const *,
                                           size_t n,
-					  const struct variable *wv,
-					  enum mv_class fctr_excl);
+                                          const struct variable *wv,
+                                          enum mv_class fctr_excl);
 void categoricals_destroy (struct categoricals *);
 
 /* Updating categoricals. */
