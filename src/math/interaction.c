@@ -27,161 +27,128 @@
 
 #include <stdio.h>
 
-
-/*
-  An interaction is a structure containing a "product" of other
-  variables. The variables can be either string or numeric.
-
-  Interaction is commutative.  That means, that from a mathematical point of
-  view,  the order of the variables is irrelevant.  However, for display
-  purposes, and for matching with an interaction's value the order is
-  pertinent.
-
-  Therefore, when using these functions, make sure the orders of variables
-  and values match when appropriate.
-*/
-
-
+/* Creates and returns an interaction.  If V is nonnull, then the interaction
+   initially contains V, otherwise it is initially empty. */
 struct interaction *
 interaction_create (const struct variable *v)
 {
-  struct interaction  *i = xmalloc (sizeof *i);
-  i->vars = xmalloc (sizeof *i->vars);
-  i->n_vars = 0;
+  struct interaction *iact = xmalloc (sizeof *iact);
+  iact->vars = xmalloc (sizeof *iact->vars);
+  iact->n_vars = 0;
   if ( v )
     {
-      i->vars[0] = v;
-      i->n_vars = 1;
+      iact->vars[0] = v;
+      iact->n_vars = 1;
     }
-  return i;
+  return iact;
 }
 
-/* Deep copy an interaction */
+/* Returns a (deep) copy of interaction SRC. */
 struct interaction *
-interaction_clone (const struct interaction *iact)
+interaction_clone (const struct interaction *src)
 {
-  int v;
-  struct interaction  *i = xmalloc (sizeof *i);
-  i->vars = xcalloc (iact->n_vars, sizeof *i->vars);
-  i->n_vars = iact->n_vars;
-
-  for (v = 0; v < iact->n_vars; ++v)
-    {
-      i->vars[v] = iact->vars[v];
-    }
-
-  return i;
+  struct interaction *dst = xmalloc (sizeof *dst);
+  dst->vars = xmemdup (src->vars, src->n_vars * sizeof *src->vars);
+  dst->n_vars = src->n_vars;
+  return dst;
 }
 
-
+/* Frees IACT. */
 void
-interaction_destroy (struct interaction *i)
+interaction_destroy (struct interaction *iact)
 {
-  if (NULL == i)
-    return;
-
-  free (i->vars);
-  free (i);
-}
-
-void
-interaction_add_variable (struct interaction *i, const struct variable *v)
-{
-  i->vars = xrealloc (i->vars, sizeof (*i->vars) * ++i->n_vars);
-  i->vars[i->n_vars - 1] = v;
-}
-
-
-/*
-  Do the variables in X->VARS constitute a proper
-  subset of the variables in Y->VARS?
- */
-bool
-interaction_is_proper_subset (const struct interaction *x, const struct interaction *y)
-{
-  if (x->n_vars >= y->n_vars)
-    return false;
-
-  return interaction_is_subset (x, y);
-}
-
-/*
-  Do the variables in X->VARS constitute a
-  subset (proper or otherwise) of the variables in Y->VARS?
- */
-bool
-interaction_is_subset (const struct interaction *x, const struct interaction *y)
-{
-  size_t i;
-  size_t j;
-  size_t n = 0;
-
-  /* By definition, a subset cannot have more members than its superset */
-  if (x->n_vars > y->n_vars)
-    return false;
-
-  /* Count the number of values which are members of both sets */
-  for (i = 0; i < x->n_vars; i++)
+  if (iact)
     {
-      for (j = 0; j < y->n_vars; j++)
-	{
-	  if (x->vars [i] == y->vars [j])
-	    {
-	      n++;
-	    }
-	}
+      free (iact->vars);
+      free (iact);
     }
+}
 
-  /* If ALL the members of X were also found in Y, then this must be a subset */
-  if (n >= x->n_vars)
-    return true;
+/* Appends variable V to IACT.
 
+   V must not already be in IACT. */
+void
+interaction_add_variable (struct interaction *iact, const struct variable *v)
+{
+  iact->vars = xrealloc (iact->vars, (iact->n_vars + 1) * sizeof *iact->vars);
+  iact->vars[iact->n_vars++] = v;
+}
+
+/* Returns true iff the variables in X->VARS are a proper subset of the
+   variables in Y->VARS. */
+bool
+interaction_is_proper_subset (const struct interaction *x,
+                              const struct interaction *y)
+{
+  return x->n_vars >= y->n_vars && interaction_is_subset (x, y);
+}
+
+static bool
+interaction_contains (const struct interaction *iact, const struct variable *v)
+{
+  for (size_t i = 0; i < iact->n_vars; i++)
+    if (iact->vars[i] == v)
+      return true;
   return false;
 }
 
-
-
-
-void
-interaction_dump (const struct interaction *i)
+/* Returns true iff the variables in X->VARS are a subset (proper or otherwise)
+   of the variables in Y->VARS. */
+bool
+interaction_is_subset (const struct interaction *x,
+                       const struct interaction *y)
 {
-  int v = 0;
-  if ( i->n_vars == 0)
+  if (x->n_vars > y->n_vars)
+    return false;
+
+  for (size_t i = 0; i < x->n_vars; i++)
+    if (!interaction_contains (y, x->vars[i]))
+      return false;
+
+  return true;
+}
+
+/* Prints the variables in IACT on stdout, for debugging purposes. */
+void
+interaction_dump (const struct interaction *iact)
+{
+  if (iact->n_vars == 0)
+    printf ("(empty)\n");
+  else
     {
-      printf ("(empty)\n");
-      return;
+      for (size_t v = 0; v < iact->n_vars; ++v)
+        {
+          printf ("%s", var_get_name (iact->vars[v]));
+          if (v + 1 < iact->n_vars)
+            printf (" * ");
+        }
+      printf ("\n");
     }
-  printf ("%s", var_get_name (i->vars[v]));
-  for (v = 1; v < i->n_vars; ++v)
-    printf (" * %s", var_get_name (i->vars[v]));
-  printf ("\n");
 }
 
 /* Appends STR with a representation of the interaction, suitable for user
    display.
 
-   STR must have been initialised prior to calling this function.
-*/
+   STR must have been initialised prior to calling this function. */
 void
 interaction_to_string (const struct interaction *iact, struct string *str)
 {
-  int v = 0;
-  if ( iact->n_vars == 0)
-    return;
-  ds_put_cstr (str, var_to_string (iact->vars[v]));
-  for (v = 1; v < iact->n_vars; ++v)
+  for (size_t v = 0; v < iact->n_vars; ++v)
     {
-      ds_put_cstr (str, " * ");
       ds_put_cstr (str, var_to_string (iact->vars[v]));
+      if (v + 1 < iact->n_vars)
+        ds_put_cstr (str, " * ");
     }
 }
 
+/* Returns a hash of the values in C given by variables in IACT, using BASE as
+   a basis for the hash. */
 unsigned int
-interaction_case_hash (const struct interaction *iact, const struct ccase *c, unsigned int base)
+interaction_case_hash (const struct interaction *iact,
+                       const struct ccase *c, unsigned int base)
 {
-  int i;
   size_t hash = base;
-  for (i = 0; i < iact->n_vars; ++i)
+  for (size_t i = 0; i < iact->n_vars; ++i)
     {
       const struct variable *var = iact->vars[i];
       const union value *val = case_data (c, var);
@@ -190,59 +157,52 @@ interaction_case_hash (const struct interaction *iact, const struct ccase *c, un
   return hash;
 }
 
+/* Returns true iff all the variables in IACT have equal values in C1 and
+   C2. */
 bool
-interaction_case_equal (const struct interaction *iact, const struct ccase *c1, const struct ccase *c2)
+interaction_case_equal (const struct interaction *iact,
+                        const struct ccase *c1, const struct ccase *c2)
 {
-  int i;
-  bool same = true;
-
-  for (i = 0; i < iact->n_vars; ++i)
+  for (size_t i = 0; i < iact->n_vars; ++i)
     {
       const struct variable *var = iact->vars[i];
-      if ( ! value_equal (case_data (c1, var), case_data (c2, var), var_get_width (var)))
-	{
-	  same = false;
-	  break;
-	}
+      if (!value_equal (case_data (c1, var), case_data (c2, var),
+                        var_get_width (var)))
+        return false;
     }
 
-  return same;
+  return true;
 }
 
-
+/* Returns a strcmp()-like comparison result for the variables in IACT and
+   their values in C1 and C2. */
 int
-interaction_case_cmp_3way (const struct interaction *iact, const struct ccase *c1, const struct ccase *c2)
+interaction_case_cmp_3way (const struct interaction *iact,
+                           const struct ccase *c1, const struct ccase *c2)
 {
-  int i;
-  int result = 0;
-
-  for (i = 0; i < iact->n_vars; ++i)
+  for (size_t i = 0; i < iact->n_vars; ++i)
     {
       const struct variable *var = iact->vars[i];
-      result = value_compare_3way (case_data (c1, var), case_data (c2, var), var_get_width (var));
-      if (result != 0)
-	break;
+      int cmp = value_compare_3way (case_data (c1, var), case_data (c2, var),
+                                    var_get_width (var));
+      if (cmp)
+        return cmp;
     }
 
-  return result;
+  return 0;
 }
 
-
+/* Returns true iff any of the variables in IACT have a missing value in C,
+   using EXCLUDE to decide which kinds of missing values to count. */
 bool
-interaction_case_is_missing (const struct interaction *iact, const struct ccase *c, enum mv_class exclude)
+interaction_case_is_missing (const struct interaction *iact,
+                             const struct ccase *c, enum mv_class exclude)
 {
-  int i;
-  bool missing = false;
+  for (size_t i = 0; i < iact->n_vars; ++i)
+    if (var_is_value_missing (iact->vars[i], case_data (c, iact->vars[i]),
+                              exclude))
+      return true;
 
-  for (i = 0; i < iact->n_vars; ++i)
-    {
-      if ( var_is_value_missing (iact->vars[i], case_data (c, iact->vars[i]), exclude))
-	{
-	  missing = true;
-	  break;
-	}
-    }
-
-  return missing;
+  return false;
 }
 
