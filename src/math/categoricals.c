@@ -116,15 +116,14 @@ struct interact_params
      than or equal to 'n_cats'.
 
      categoricals_update() updates 'ivmap' case-by-case, then
-     categoricals_done() dumps 'ivmap' into 'reverse_interaction_value_map' and
-     sorts it. */
+     categoricals_done() dumps 'ivmap' into 'ivs' and sorts it. */
   struct hmap ivmap;
-  struct interaction_value **reverse_interaction_value_map;
+  struct interaction_value **ivs;
 
   const struct interaction *iact;
 
-  int base_subscript_short;
-  int base_subscript_long;
+  int base_df;
+  int base_cats;
 
   /* Product of hmap_count(&varnodes[*]->valmap), that is, the maximum number
      of distinct values of this interaction. */
@@ -137,12 +136,11 @@ struct interact_params
 
   double *enc_sum;
 
-  /* Sum of reverse_interaction_value_map[*]->cc. */
+  /* Sum of ivs[*]->cc. */
   double cc;
 };
 
 
-/* Comparison function to sort the reverse_value_map in ascending order */
 static int
 compare_interaction_value_3way (const void *vn1_, const void *vn2_, const void *aux)
 {
@@ -173,11 +171,11 @@ struct categoricals
   /* A map to enable the lookup of variables indexed by subscript.
      This map considers only the N - 1 of the N variables.
   */
-  int *reverse_variable_map_short; /* 'df_sum' elements. */
+  int *df_to_iact; /* 'df_sum' elements. */
   size_t df_sum;
 
   /* Like the above, but uses all N variables */
-  int *reverse_variable_map_long; /* 'n_cats_total' elements. */
+  int *cat_to_iact; /* 'n_cats_total' elements. */
   size_t n_cats_total;
 
   struct pool *pool;
@@ -207,7 +205,7 @@ categoricals_isbalanced (const struct categoricals *cat)
       double oval = -1.0;
       for (v = 0; v < hmap_count (&iap->ivmap); ++v)
 	{
-	  const struct interaction_value *iv = iap->reverse_interaction_value_map[v];
+	  const struct interaction_value *iv = iap->ivs[v];
 	  if (oval == -1.0)
 	    oval = iv->cc;
 	  if (oval != iv->cc)
@@ -225,17 +223,17 @@ categoricals_dump (const struct categoricals *cat)
     {
       int i;
 
-      printf ("Reverse Variable Map (short):\n");
+      printf ("df to interaction map:\n");
       for (i = 0; i < cat->df_sum; ++i)
 	{
-	  printf (" %d", cat->reverse_variable_map_short[i]);
+	  printf (" %d", cat->df_to_iact[i]);
 	}
       printf ("\n");
 
-      printf ("Reverse Variable Map (long):\n");
+      printf ("Category to interaction map:\n");
       for (i = 0; i < cat->n_cats_total; ++i)
 	{
-	  printf (" %d", cat->reverse_variable_map_long[i]);
+	  printf (" %d", cat->cat_to_iact[i]);
 	}
       printf ("\n");
 
@@ -252,13 +250,13 @@ categoricals_dump (const struct categoricals *cat)
 
 	  printf ("\nInteraction: \"%s\" (number of categories: %d); ", ds_cstr (&str), iap->n_cats);
 	  ds_destroy (&str);
-	  printf ("Base index (short/long): %d/%d\n", iap->base_subscript_short, iap->base_subscript_long);
+	  printf ("Base index (df/categories): %d/%d\n", iap->base_df, iap->base_cats);
 
 	  printf ("\t(");
 	  for (v = 0; v < hmap_count (&iap->ivmap); ++v)
 	    {
 	      int vv;
-	      const struct interaction_value *iv = iap->reverse_interaction_value_map[v];
+	      const struct interaction_value *iv = iap->ivs[v];
 
 	      if (v > 0)  printf ("   ");
 	      printf ("{");
@@ -366,8 +364,8 @@ categoricals_create (struct interaction *const*inter, size_t n_inter,
   cat->wv = wv;
   cat->n_cats_total = 0;
   cat->n_vars = 0;
-  cat->reverse_variable_map_short = NULL;
-  cat->reverse_variable_map_long = NULL;
+  cat->df_to_iact = NULL;
+  cat->cat_to_iact = NULL;
   cat->pool = pool_create ();
   cat->fctr_excl = fctr_excl;
   cat->payload = NULL;
@@ -418,8 +416,8 @@ categoricals_update (struct categoricals *cat, const struct ccase *c)
   weight = cat->wv ? case_data (c, cat->wv)->f : 1.0;
   weight = var_force_valid_weight (cat->wv, weight, NULL);
 
-  assert (NULL == cat->reverse_variable_map_short);
-  assert (NULL == cat->reverse_variable_map_long);
+  assert (NULL == cat->df_to_iact);
+  assert (NULL == cat->cat_to_iact);
 
   /* Interate over each variable, and add the value of that variable
      to the appropriate map, if it's not already present. */
@@ -522,7 +520,7 @@ categoricals_df_total (const struct categoricals *cat)
 bool
 categoricals_is_complete (const struct categoricals *cat)
 {
-  return (NULL != cat->reverse_variable_map_short);
+  return (NULL != cat->df_to_iact);
 }
 
 
@@ -542,8 +540,8 @@ categoricals_done (const struct categoricals *cat_)
   struct categoricals *cat = CONST_CAST (struct categoricals *, cat_);
   int v;
   int i;
-  int idx_short = 0;
-  int idx_long = 0;
+  int idx_df = 0;
+  int idx_cat = 0;
 
   if (NULL == cat)
     return;
@@ -612,13 +610,11 @@ categoricals_done (const struct categoricals *cat_)
     }
 
 
-  cat->reverse_variable_map_short = pool_calloc (cat->pool,
-						 cat->df_sum,
-						 sizeof *cat->reverse_variable_map_short);
+  cat->df_to_iact = pool_calloc (cat->pool, cat->df_sum,
+                                 sizeof *cat->df_to_iact);
 
-  cat->reverse_variable_map_long = pool_calloc (cat->pool,
-						cat->n_cats_total,
-						sizeof *cat->reverse_variable_map_long);
+  cat->cat_to_iact = pool_calloc (cat->pool, cat->n_cats_total,
+                                  sizeof *cat->cat_to_iact);
 
   for (i = 0 ; i < cat->n_iap; ++i)
     {
@@ -627,36 +623,35 @@ categoricals_done (const struct categoricals *cat_)
       int ii;
       struct interact_params *iap = &cat->iap[i];
 
-      iap->base_subscript_short = idx_short;
-      iap->base_subscript_long = idx_long;
+      iap->base_df = idx_df;
+      iap->base_cats = idx_cat;
 
-      iap->reverse_interaction_value_map = pool_calloc (cat->pool, iap->n_cats,
-							sizeof *iap->reverse_interaction_value_map);
+      iap->ivs = pool_calloc (cat->pool, iap->n_cats, sizeof *iap->ivs);
 
       HMAP_FOR_EACH (ivn, struct interaction_value, node, &iap->ivmap)
 	{
-	  iap->reverse_interaction_value_map[x++] = ivn;
+	  iap->ivs[x++] = ivn;
 	}
 
       assert (x <= iap->n_cats);
 
       /* For some purposes (eg CONTRASTS in ONEWAY) the values need to be sorted */
-      sort (iap->reverse_interaction_value_map, x, sizeof (*iap->reverse_interaction_value_map),
-	    compare_interaction_value_3way, iap);
+      sort (iap->ivs, x, sizeof *iap->ivs,
+            compare_interaction_value_3way, iap);
 
       /* Fill the remaining values with null */
       for (ii = x ; ii < iap->n_cats; ++ii)
-	iap->reverse_interaction_value_map[ii] = NULL;
+	iap->ivs[ii] = NULL;
 
-      /* Populate the reverse variable maps. */
+      /* Populate the variable maps. */
       if (iap->df_prod)
 	{
 	  for (ii = 0; ii < iap->df_prod [iap->iact->n_vars - 1]; ++ii)
-	    cat->reverse_variable_map_short[idx_short++] = i;
+	    cat->df_to_iact[idx_df++] = i;
 	}
 
       for (ii = 0; ii < iap->n_cats; ++ii)
-	cat->reverse_variable_map_long[idx_long++] = i;
+	cat->cat_to_iact[idx_cat++] = i;
     }
 
   assert (cat->n_vars <= cat->n_iap);
@@ -676,11 +671,11 @@ categoricals_done (const struct categoricals *cat_)
 
       for (y = 0; y < hmap_count (&iap->ivmap); ++y)
 	{
-	  struct interaction_value *iv = iap->reverse_interaction_value_map[y];
-	  for (x = iap->base_subscript_short; x < iap->base_subscript_short + df ;++x)
+	  struct interaction_value *iv = iap->ivs[y];
+	  for (x = iap->base_df; x < iap->base_df + df ;++x)
 	    {
 	      const double bin = categoricals_get_effects_code_for_case (cat, x, iv->ccase);
-	      iap->enc_sum [x - iap->base_subscript_short] += bin * iv->cc;
+	      iap->enc_sum [x - iap->base_df] += bin * iv->cc;
 	    }
 	  if (cat->payload && cat->payload->calculate)
 	    cat->payload->calculate (cat->aux1, cat->aux2, iv->user_data);
@@ -692,23 +687,23 @@ categoricals_done (const struct categoricals *cat_)
 
 
 static int
-reverse_variable_lookup_short (const struct categoricals *cat, int subscript)
+df_to_iap (const struct categoricals *cat, int subscript)
 {
-  assert (cat->reverse_variable_map_short);
+  assert (cat->df_to_iact);
   assert (subscript >= 0);
   assert (subscript < cat->df_sum);
 
-  return cat->reverse_variable_map_short[subscript];
+  return cat->df_to_iact[subscript];
 }
 
 static int
-reverse_variable_lookup_long (const struct categoricals *cat, int subscript)
+cat_index_to_iap (const struct categoricals *cat, int subscript)
 {
-  assert (cat->reverse_variable_map_long);
+  assert (cat->cat_to_iact);
   assert (subscript >= 0);
   assert (subscript < cat->n_cats_total);
 
-  return cat->reverse_variable_map_long[subscript];
+  return cat->cat_to_iact[subscript];
 }
 
 
@@ -716,7 +711,7 @@ reverse_variable_lookup_long (const struct categoricals *cat, int subscript)
 const struct interaction *
 categoricals_get_interaction_by_subscript (const struct categoricals *cat, int subscript)
 {
-  int index = reverse_variable_lookup_short (cat, subscript);
+  int index = df_to_iap (cat, subscript);
 
   return cat->iap[index].iact;
 }
@@ -724,7 +719,7 @@ categoricals_get_interaction_by_subscript (const struct categoricals *cat, int s
 double
 categoricals_get_weight_by_subscript (const struct categoricals *cat, int subscript)
 {
-  int vindex = reverse_variable_lookup_short (cat, subscript);
+  int vindex = df_to_iap (cat, subscript);
   const struct interact_params *vp = &cat->iap[vindex];
 
   return vp->cc;
@@ -733,10 +728,10 @@ categoricals_get_weight_by_subscript (const struct categoricals *cat, int subscr
 double
 categoricals_get_sum_by_subscript (const struct categoricals *cat, int subscript)
 {
-  int vindex = reverse_variable_lookup_short (cat, subscript);
+  int vindex = df_to_iap (cat, subscript);
   const struct interact_params *vp = &cat->iap[vindex];
 
-  return   vp->enc_sum[subscript - vp->base_subscript_short];
+  return   vp->enc_sum[subscript - vp->base_df];
 }
 
 
@@ -749,9 +744,9 @@ categoricals_get_code_for_case (const struct categoricals *cat, int subscript,
 {
   const struct interaction *iact = categoricals_get_interaction_by_subscript (cat, subscript);
 
-  const int i = reverse_variable_lookup_short (cat, subscript);
+  const int i = df_to_iap (cat, subscript);
 
-  const int base_index = cat->iap[i].base_subscript_short;
+  const int base_index = cat->iap[i].base_df;
 
   int v;
   double result = 1.0;
@@ -823,7 +818,7 @@ categoricals_get_case_by_category_real (const struct categoricals *cat, int iact
   if ( n >= hmap_count (&vp->ivmap))
     return NULL;
 
-  vn = vp->reverse_interaction_value_map [n];
+  vn = vp->ivs [n];
 
   return vn->ccase;
 }
@@ -838,7 +833,7 @@ categoricals_get_user_data_by_category_real (const struct categoricals *cat, int
   if ( n >= hmap_count (&vp->ivmap))
     return NULL;
 
-  iv = vp->reverse_interaction_value_map [n];
+  iv = vp->ivs [n];
 
   return iv->user_data;
 }
@@ -849,9 +844,9 @@ categoricals_get_user_data_by_category_real (const struct categoricals *cat, int
 const struct ccase *
 categoricals_get_case_by_category (const struct categoricals *cat, int subscript)
 {
-  int vindex = reverse_variable_lookup_long (cat, subscript);
+  int vindex = cat_index_to_iap (cat, subscript);
   const struct interact_params *vp = &cat->iap[vindex];
-  const struct interaction_value *vn = vp->reverse_interaction_value_map [subscript - vp->base_subscript_long];
+  const struct interaction_value *vn = vp->ivs [subscript - vp->base_cats];
 
   return vn->ccase;
 }
@@ -859,10 +854,10 @@ categoricals_get_case_by_category (const struct categoricals *cat, int subscript
 void *
 categoricals_get_user_data_by_category (const struct categoricals *cat, int subscript)
 {
-  int vindex = reverse_variable_lookup_long (cat, subscript);
+  int vindex = cat_index_to_iap (cat, subscript);
   const struct interact_params *vp = &cat->iap[vindex];
 
-  const struct interaction_value *iv = vp->reverse_interaction_value_map [subscript - vp->base_subscript_long];
+  const struct interaction_value *iv = vp->ivs [subscript - vp->base_cats];
   return iv->user_data;
 }
 
