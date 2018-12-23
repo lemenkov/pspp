@@ -131,10 +131,8 @@ struct interact_params
      of distinct values of this interaction. */
   int n_cats;
 
-  /* An array of integers df_n * df_{n-1} * df_{n-2} ...
-     These are the products of the degrees of freedom for the current
-     variable and all preceding variables */
-  int *df_prod;
+  /* Product of degrees of freedom of all the variables. */
+  int df_prod;
 
   double *enc_sum;
 
@@ -305,7 +303,6 @@ categoricals_destroy (struct categoricals *cat)
 	}
 
       free (cat->iap[i].enc_sum);
-      free (cat->iap[i].df_prod);
       hmap_destroy (&cat->iap[i].ivmap);
     }
 
@@ -494,7 +491,7 @@ size_t
 categoricals_df (const struct categoricals *cat, size_t n)
 {
   const struct interact_params *iap = &cat->iap[n];
-  return iap->df_prod[iap->iact->n_vars - 1];
+  return iap->df_prod;
 }
 
 
@@ -577,26 +574,21 @@ categoricals_done (const struct categoricals *cat_)
   /* Calculate the degrees of freedom, and the number of categories */
   for (i = 0 ; i < cat->n_iap; ++i)
     {
-      int df = 1;
       const struct interaction *iact = cat->iap[i].iact;
 
-      cat->iap[i].df_prod = iact->n_vars ? xcalloc (iact->n_vars, sizeof (int)) : NULL;
-
       cat->iap[i].n_cats = 1;
-
+      cat->iap[i].df_prod = 1;
       for (v = 0 ; v < iact->n_vars; ++v)
 	{
 	  struct variable_node *vn = cat->iap[i].varnodes[v];
           size_t n_vals = hmap_count (&vn->valmap);
-	  cat->iap[i].df_prod[v] = df * (n_vals - 1);
-      	  df = cat->iap[i].df_prod[v];
 
+          cat->iap[i].df_prod *= n_vals - 1;
 	  cat->iap[i].n_cats *= n_vals;
 	}
 
       if (v > 0)
-	cat->df_sum += cat->iap[i].df_prod [v - 1];
-
+	cat->df_sum += cat->iap[i].df_prod;
       cat->n_cats_total += cat->iap[i].n_cats;
     }
 
@@ -635,9 +627,9 @@ categoricals_done (const struct categoricals *cat_)
 	iap->ivs[ii] = NULL;
 
       /* Populate the variable maps. */
-      if (iap->df_prod)
+      if (iap->iact->n_vars)
 	{
-	  for (ii = 0; ii < iap->df_prod [iap->iact->n_vars - 1]; ++ii)
+	  for (ii = 0; ii < iap->df_prod; ++ii)
 	    cat->df_to_iact[idx_df++] = i;
 	}
 
@@ -656,7 +648,7 @@ categoricals_done (const struct categoricals *cat_)
       struct interact_params *iap = &cat->iap[i];
       const struct interaction *iact = iap->iact;
 
-      const int df = iap->df_prod ? iap->df_prod [iact->n_vars - 1] : 0;
+      const int df = iact->n_vars ? iap->df_prod : 0;
 
       iap->enc_sum = xcalloc (df, sizeof (*(iap->enc_sum)));
 
@@ -737,14 +729,12 @@ categoricals_get_code_for_case (const struct categoricals *cat, int subscript,
 
   const int i = df_to_iap (cat, subscript);
 
-  const int base_index = cat->iap[i].base_df;
-
   int v;
   double result = 1.0;
 
   const struct interact_params *iap = &cat->iap[i];
 
-  double dfp = 1.0;
+  int dfp = 1;
   for (v = 0; v < iact->n_vars; ++v)
     {
       const struct variable *var = iact->vars[v];
@@ -758,11 +748,10 @@ categoricals_get_code_for_case (const struct categoricals *cat, int subscript,
 
       double bin = 1.0;
 
-      const double df = iap->df_prod[v] / dfp;
-
-      /* Translate the subscript into an index for the individual variable */
-      const int index = ((subscript - base_index) % iap->df_prod[v] ) / dfp;
-      dfp = iap->df_prod [v];
+      const int df = hmap_count (&iap->varnodes[v]->valmap) - 1;
+      const int dfpn = dfp * df;
+      /* Translate subscript into an index for the individual variable. */
+      const int index = ((subscript - iap->base_df) % dfpn) / dfp;
 
       if (effects_coding && valn->index == df )
 	bin = -1.0;
@@ -770,6 +759,8 @@ categoricals_get_code_for_case (const struct categoricals *cat, int subscript,
 	bin = 0;
 
       result *= bin;
+
+      dfp = dfpn;
     }
 
   return result;
