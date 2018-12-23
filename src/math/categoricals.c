@@ -549,6 +549,29 @@ categoricals_done (const struct categoricals *cat_)
   cat->df_sum = 0;
   cat->n_cats_total = 0;
 
+  /* Assign 'index' to each variables' value_nodes, counting up from 0 in
+     ascending order by value. */
+  struct variable_node *vn;
+  HMAP_FOR_EACH (vn, struct variable_node, node, &cat->varmap)
+    {
+      size_t n_vals = hmap_count (&vn->valmap);
+      if (!n_vals)
+        {
+          cat->sane = false;
+          return;
+        }
+
+      struct value_node **nodes = xcalloc (sizeof *nodes, n_vals);
+      int x = 0;
+      struct value_node *valnd;
+      HMAP_FOR_EACH (valnd, struct value_node, node, &vn->valmap)
+        nodes[x++] = valnd;
+      sort (nodes, n_vals, sizeof *nodes, compare_value_node_3way, vn);
+      for (x = 0; x < n_vals; ++x)
+        nodes[x]->index = x;
+      free (nodes);
+    }
+
   /* Calculate the degrees of freedom, and the number of categories */
   for (i = 0 ; i < cat->n_iap; ++i)
     {
@@ -561,42 +584,8 @@ categoricals_done (const struct categoricals *cat_)
 
       for (v = 0 ; v < iact->n_vars; ++v)
 	{
-	  int x;
 	  const struct variable *var = iact->vars[v];
-
 	  struct variable_node *vn = lookup_variable (&cat->varmap, var, hash_pointer (var, 0));
-
-	  struct value_node *valnd = NULL;
-	  struct value_node **array ;
-
-	  assert (vn->n_vals == hmap_count (&vn->valmap));
-
-	  if  (vn->n_vals == 0)
-	    {
-	      cat->sane = false;
-	      return;
-	    }
-
-	  /* Sort the VALMAP here */
-	  array = xcalloc (sizeof *array, vn->n_vals);
-	  x = 0;
-	  HMAP_FOR_EACH (valnd, struct value_node, node, &vn->valmap)
-	    {
-	      /* Note: This loop is probably superfluous, it could be done in the
-	       update stage (at the expense of a realloc) */
-	      array[x++] = valnd;
-	    }
-
-	  sort (array, vn->n_vals, sizeof (*array),
-		compare_value_node_3way, vn);
-
-	  for (x = 0; x <  vn->n_vals; ++x)
-	    {
-	      struct value_node *vvv = array[x];
-	      vvv->index = x;
-	    }
-	  free (array);
-
 	  cat->iap[i].df_prod[v] = df * (vn->n_vals - 1);
       	  df = cat->iap[i].df_prod[v];
 
