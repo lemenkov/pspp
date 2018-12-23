@@ -811,15 +811,6 @@ categoricals_get_effects_code_for_case (const struct categoricals *cat, int subs
   return categoricals_get_code_for_case (cat, subscript, c, true);
 }
 
-
-size_t
-categoricals_get_n_variables (const struct categoricals *cat)
-{
-  printf ("%s\n", __FUNCTION__);
-  return cat->n_vars;
-}
-
-
 /* Return a case containing the set of values corresponding to
    the Nth Category of the IACTth interaction */
 const struct ccase *
