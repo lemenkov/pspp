@@ -497,41 +497,12 @@ display_variables (const struct variable **vl, size_t n, int flags)
         {
           const struct missing_values *mv = var_get_missing_values (v);
 
-          struct string s = DS_EMPTY_INITIALIZER;
-          if (mv_has_range (mv))
+          char *s = mv_to_string (mv, var_get_encoding (v));
+          if (s)
             {
-              double x, y;
-              mv_get_range (mv, &x, &y);
-              if (x == LOWEST)
-                ds_put_format (&s, "LOWEST THRU %.*g", DBL_DIG + 1, y);
-              else if (y == HIGHEST)
-                ds_put_format (&s, "%.*g THRU HIGHEST", DBL_DIG + 1, x);
-              else
-                ds_put_format (&s, "%.*g THRU %.*g",
-                               DBL_DIG + 1, x,
-                               DBL_DIG + 1, y);
+              tab_text (t, x, y, TAB_LEFT, s);
+              free (s);
             }
-          for (size_t j = 0; j < mv_n_values (mv); j++)
-            {
-              const union value *value = mv_get_value (mv, j);
-              if (!ds_is_empty (&s))
-                ds_put_cstr (&s, "; ");
-              if (var_is_numeric (v))
-                ds_put_format (&s, "%.*g", DBL_DIG + 1, value->f);
-              else
-                {
-                  int width = var_get_width (v);
-                  int mv_width = MIN (width, MV_MAX_STRING);
-
-                  ds_put_byte (&s, '"');
-                  memcpy (ds_put_uninit (&s, mv_width),
-                          value_str (value, width), mv_width);
-                  ds_put_byte (&s, '"');
-                }
-            }
-          if (!ds_is_empty (&s))
-            tab_text (t, x, y, TAB_LEFT, ds_cstr (&s));
-          ds_destroy (&s);
           x++;
 
           assert (x == nc);

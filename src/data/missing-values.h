@@ -103,4 +103,7 @@ bool mv_replace_value (struct missing_values *, const union value *, int idx);
 bool mv_add_range (struct missing_values *, double low, double high);
 void mv_pop_range (struct missing_values *, double *low, double *high);
 
+/* Formatting. */
+char *mv_to_string (const struct missing_values *, const char *encoding);
+
 #endif /* data/missing-values.h */

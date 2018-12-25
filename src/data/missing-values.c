@@ -24,7 +24,10 @@
 #include "data/variable.h"
 #include "libpspp/assertion.h"
 #include "libpspp/cast.h"
+#include "libpspp/i18n.h"
 #include "libpspp/str.h"
+
+#include "gl/minmax.h"
 
 /* Types of user-missing values.
    Invisible--use access functions defined below instead. */
@@ -469,4 +472,41 @@ mv_is_str_missing (const struct missing_values *mv, const uint8_t s[],
 {
   assert (mv->width > 0);
   return class & MV_USER && is_str_user_missing (mv, s);
+}
+
+char *
+mv_to_string (const struct missing_values *mv, const char *encoding)
+{
+  struct string s = DS_EMPTY_INITIALIZER;
+  if (mv_has_range (mv))
+    {
+      double x, y;
+      mv_get_range (mv, &x, &y);
+      if (x == LOWEST)
+        ds_put_format (&s, "LOWEST THRU %.*g", DBL_DIG + 1, y);
+      else if (y == HIGHEST)
+        ds_put_format (&s, "%.*g THRU HIGHEST", DBL_DIG + 1, x);
+      else
+        ds_put_format (&s, "%.*g THRU %.*g",
+                       DBL_DIG + 1, x,
+                       DBL_DIG + 1, y);
+    }
+  for (size_t j = 0; j < mv_n_values (mv); j++)
+    {
+      const union value *value = mv_get_value (mv, j);
+      if (!ds_is_empty (&s))
+        ds_put_cstr (&s, "; ");
+      if (!mv->width)
+        ds_put_format (&s, "%.*g", DBL_DIG + 1, value->f);
+      else
+        {
+          char *mvs = recode_string (
+            "UTF-8", encoding,
+            CHAR_CAST (char *, value_str (value, mv->width)),
+            MIN (mv->width, MV_MAX_STRING));
+          ds_put_format (&s, "\"%s\"", mvs);
+          free (mvs);
+        }
+    }
+  return ds_is_empty (&s) ? NULL : ds_steal_cstr (&s);
 }
