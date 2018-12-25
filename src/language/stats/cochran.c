@@ -147,8 +147,7 @@ static void
 show_freqs_box (const struct one_sample_test *ost, const struct cochran *ct)
 {
   int i;
-  const struct variable *weight = dict_get_weight (ct->dict);
-  const struct fmt_spec *wfmt = weight ? var_get_print_format (weight) : &F_8_0;
+  const struct fmt_spec *wfmt = dict_get_weight_format (ct->dict);
 
   const int row_headers = 1;
   const int column_headers = 2;
@@ -199,8 +198,7 @@ show_freqs_box (const struct one_sample_test *ost, const struct cochran *ct)
 static void
 show_sig_box (const struct cochran *ch)
 {
-  const struct variable *weight = dict_get_weight (ch->dict);
-  const struct fmt_spec *wfmt = weight ? var_get_print_format (weight) : &F_8_0;
+  const struct fmt_spec *wfmt = dict_get_weight_format (ch->dict);
 
   const int row_headers = 1;
   const int column_headers = 0;

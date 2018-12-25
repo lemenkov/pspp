@@ -301,8 +301,7 @@ median_execute (const struct dataset *ds,
 static void
 show_frequencies (const struct n_sample_test *nst, const struct results *results,  int n_vals, const struct dictionary *dict)
 {
-  const struct variable *weight = dict_get_weight (dict);
-  const struct fmt_spec *wfmt = weight ? var_get_print_format (weight) : &F_8_0;
+  const struct fmt_spec *wfmt = dict_get_weight_format (dict);
 
   int i;
   int v;
@@ -391,8 +390,7 @@ show_test_statistics (const struct n_sample_test *nst,
 		      int n_vals,
 		      const struct dictionary *dict)
 {
-  const struct variable *weight = dict_get_weight (dict);
-  const struct fmt_spec *wfmt = weight ? var_get_print_format (weight) : &F_8_0;
+  const struct fmt_spec *wfmt = dict_get_weight_format (dict);
 
   int v;
 

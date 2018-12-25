@@ -56,8 +56,7 @@ output_frequency_table (const struct two_sample_test *t2s,
   int i;
   struct tab_table *table = tab_create (3, 1 + 4 * t2s->n_pairs);
 
-  const struct variable *wv = dict_get_weight (dict);
-  const struct fmt_spec *wfmt = wv ? var_get_print_format (wv) : & F_8_0;
+  const struct fmt_spec *wfmt = dict_get_weight_format (dict);
 
   tab_set_format (table, RC_WEIGHT, wfmt);
   tab_title (table, _("Frequencies"));

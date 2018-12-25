@@ -536,8 +536,7 @@ static void
 case_processing_summary (casenumber n_valid, casenumber n_missing,
 			 const struct dictionary *dict)
 {
-  const struct variable *wv = dict_get_weight (dict);
-  const struct fmt_spec *wfmt = wv ? var_get_print_format (wv) : & F_8_0;
+  const struct fmt_spec *wfmt = dict_get_weight_format (dict);
 
   casenumber total;
   int n_cols = 4;

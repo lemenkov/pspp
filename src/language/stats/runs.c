@@ -308,8 +308,7 @@ runs_execute (const struct dataset *ds,
 static void
 show_runs_result (const struct runs_test *rt, const struct run_state *rs, const struct dictionary *dict)
 {
-  const struct variable *weight = dict_get_weight (dict);
-  const struct fmt_spec *wfmt = weight ? var_get_print_format (weight) : &F_8_0;
+  const struct fmt_spec *wfmt = dict_get_weight_format (dict);
 
   const struct one_sample_test *otp = &rt->parent;
 

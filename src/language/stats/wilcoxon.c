@@ -217,8 +217,7 @@ show_ranks_box (const struct wilcoxon_state *ws,
 {
   size_t i;
 
-  const struct variable *wv = dict_get_weight (dict);
-  const struct fmt_spec *wfmt = wv ? var_get_print_format (wv) : & F_8_0;
+  const struct fmt_spec *wfmt = dict_get_weight_format (dict);
 
   struct tab_table *table = tab_create (5, 1 + 4 * t2s->n_pairs);
   tab_set_format (table, RC_WEIGHT, wfmt);

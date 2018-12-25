@@ -195,8 +195,7 @@ create_combo_frequency_table (const struct dictionary *dict, const struct chisqu
 
   struct tab_table *table ;
 
-  const struct variable *wvar = dict_get_weight (dict);
-  const struct fmt_spec *wfmt = wvar ? var_get_print_format (wvar) : & F_8_0;
+  const struct fmt_spec *wfmt = dict_get_weight_format (dict);
 
   int n_cells = test->hi - test->lo + 1;
 

@@ -139,8 +139,7 @@ ks_one_sample_execute (const struct dataset *ds,
   const struct ks_one_sample_test *kst = UP_CAST (test, const struct ks_one_sample_test, parent.parent);
   const struct one_sample_test *ost = &kst->parent;
   struct ccase *c;
-  const struct variable *wvar = dict_get_weight (dict);
-  const struct fmt_spec *wfmt = wvar ? var_get_print_format (wvar) : & F_8_0;
+  const struct fmt_spec *wfmt = dict_get_weight_format (dict);
   bool warn = true;
   int v;
   struct casereader *r = casereader_clone (input);

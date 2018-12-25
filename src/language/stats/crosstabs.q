@@ -217,7 +217,6 @@ round_weight (const struct crosstabs_proc *proc, double weight)
 int
 cmd_crosstabs (struct lexer *lexer, struct dataset *ds)
 {
-  const struct variable *wv = dict_get_weight (dataset_dict (ds));
   struct var_range *range, *next_range;
   struct crosstabs_proc proc;
   struct casegrouper *grouper;
@@ -236,7 +235,7 @@ cmd_crosstabs (struct lexer *lexer, struct dataset *ds)
   proc.pivots = NULL;
   proc.n_pivots = 0;
   proc.descending = false;
-  proc.weight_format = wv ? *var_get_print_format (wv) : F_8_0;
+  proc.weight_format = *dict_get_weight_format (dataset_dict (ds));
 
   if (!parse_crosstabs (lexer, ds, &cmd, &proc))
     {

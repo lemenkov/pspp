@@ -259,8 +259,7 @@ show_sig_box (const struct one_sample_test *ost, const struct friedman *fr)
   const struct friedman_test *ft = UP_CAST (ost, const struct friedman_test, parent);
 
   int row = 0;
-  const struct variable *weight = dict_get_weight (fr->dict);
-  const struct fmt_spec *wfmt = weight ? var_get_print_format (weight) : &F_8_0;
+  const struct fmt_spec *wfmt = dict_get_weight_format (fr->dict);
 
   const int row_headers = 1;
   const int column_headers = 0;

@@ -100,6 +100,7 @@ double dict_get_case_weight (const struct dictionary *,
 			     const struct ccase *, bool *);
 struct variable *dict_get_weight (const struct dictionary *);
 void dict_set_weight (struct dictionary *, struct variable *);
+const struct fmt_spec *dict_get_weight_format (const struct dictionary *);
 
 /* Filter variable. */
 struct variable *dict_get_filter (const struct dictionary *);

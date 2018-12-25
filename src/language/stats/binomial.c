@@ -179,9 +179,7 @@ binomial_execute (const struct dataset *ds,
 
   if (do_binomial (dataset_dict (ds), input, ost, cat[0], cat[1], exclude))
     {
-      const struct variable *wvar = dict_get_weight (dict);
-      const struct fmt_spec *wfmt = wvar ?
-	var_get_print_format (wvar) : & F_8_0;
+      const struct fmt_spec *wfmt = dict_get_weight_format (dict);
 
       struct tab_table *table = tab_create (7, ost->n_vars * 3 + 1);
       tab_set_format (table, RC_WEIGHT, wfmt);
