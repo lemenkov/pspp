@@ -466,10 +466,10 @@ display_variables (const struct variable **vl, size_t n, int flags)
         }
       if (flags & DF_MEASUREMENT_LEVEL)
         tab_text (t, x++, y, TAB_LEFT,
-                  measure_to_string (var_get_measure (v)));
+                  gettext (measure_to_string (var_get_measure (v))));
       if (flags & DF_ROLE)
         tab_text (t, x++, y, TAB_LEFT,
-                  var_role_to_string (var_get_role (v)));
+                  gettext (var_role_to_string (var_get_role (v))));
       if (flags & DF_WIDTH)
         {
           char s[INT_BUFSIZE_BOUND (int)];
@@ -478,7 +478,7 @@ display_variables (const struct variable **vl, size_t n, int flags)
         }
       if (flags & DF_ALIGNMENT)
         tab_text (t, x++, y, TAB_LEFT,
-                  alignment_to_string (var_get_alignment (v)));
+                  gettext (alignment_to_string (var_get_alignment (v))));
       if (flags & DF_PRINT_FORMAT)
         {
           const struct fmt_spec *print = var_get_print_format (v);

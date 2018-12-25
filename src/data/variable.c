@@ -802,12 +802,13 @@ measure_is_valid (enum measure m)
   return m == MEASURE_NOMINAL || m == MEASURE_ORDINAL || m == MEASURE_SCALE;
 }
 
-/* Returns a string version of measurement level M, for display to a user. */
+/* Returns a string version of measurement level M, for display to a user.
+   The caller may translate the string by passing it to gettext(). */
 const char *
 measure_to_string (enum measure m)
 {
   assert (m == measure[m].value);
-  return gettext (measure[m].label);
+  return measure[m].label;
 }
 
 /* Returns a string version of measurement level M, for use in PSPP command
@@ -887,12 +888,13 @@ var_role_is_valid (enum var_role role)
     }
 }
 
-/* Returns a string version of ROLE, for display to a user. */
+/* Returns a string version of ROLE, for display to a user.
+   The caller may translate the string by passing it to gettext(). */
 const char *
 var_role_to_string (enum var_role r)
 {
   assert (r == role[r].value);
-  return gettext (role[r].label);
+  return role[r].label;
 }
 
 /* Returns a string version of ROLE, for use in PSPP comamnd syntax. */
@@ -994,12 +996,13 @@ alignment_is_valid (enum alignment a)
   return a == ALIGN_LEFT || a == ALIGN_RIGHT || a == ALIGN_CENTRE;
 }
 
-/* Returns a string version of alignment A, for display to a user. */
+/* Returns a string version of alignment A, for display to a user.
+   The caller may translate the string by passing it to gettext(). */
 const char *
 alignment_to_string (enum alignment a)
 {
   assert (a == align[a].value);
-  return gettext (align[a].label);
+  return align[a].label;
 }
 
 /* Returns a string version of alignment A, for use in PSPP command syntax. */
