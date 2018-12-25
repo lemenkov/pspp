@@ -1641,10 +1641,7 @@ xr_create_text_renderer (struct xr_driver *xr, const struct text_item *item)
   struct cell_style *style = pool_alloc (tab->container, sizeof *style);
   *style = (struct cell_style) CELL_STYLE_INITIALIZER;
   if (item->font)
-    {
-      puts (item->font);
-      style->font = pool_strdup (tab->container, item->font);
-    }
+    style->font = pool_strdup (tab->container, item->font);
   style->font_size = item->font_size;
   style->bold = item->bold;
   style->italic = item->italic;
