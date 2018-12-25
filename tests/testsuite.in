@@ -1,4 +1,4 @@
-dnl PSPP - a program for statistical analysis.
+dnl PSPP - a program for statistical analysis.   -*- autotest -*-
 dnl Copyright (C) 2017 Free Software Foundation, Inc.
 dnl 
 dnl This program is free software: you can redistribute it and/or modify
@@ -16,6 +16,8 @@ dnl along with this program.  If not, see <http://www.gnu.org/licenses/>.
 dnl 
 
 AT_INIT
+
+m4_ifdef([AT_COLOR_TESTS], [AT_COLOR_TESTS])
 
 # Define SKIP_IF for compatibility with Autotest before 2.64
 m4_ifndef([AT_SKIP_IF],
