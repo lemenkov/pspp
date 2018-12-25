@@ -52,14 +52,11 @@ static int messages_disabled;
 void
 vmsg (enum msg_class class, const char *format, va_list args)
 {
-  struct msg m;
-
-  m.category = msg_class_to_category (class);
-  m.severity = msg_class_to_severity (class);
-  m.text = xvasprintf (format, args);
-  m.file_name = NULL;
-  m.first_line = m.last_line = 0;
-  m.first_column = m.last_column = 0;
+  struct msg m = {
+    .category = msg_class_to_category (class),
+    .severity = msg_class_to_severity (class),
+    .text = xvasprintf (format, args),
+  };
 
   msg_emit (&m);
 }
@@ -81,23 +78,19 @@ void
 msg_error (int errnum, const char *format, ...)
 {
   va_list args;
-  char *e;
-  struct msg m;
-
-  m.category = MSG_C_GENERAL;
-  m.severity = MSG_S_ERROR;
-
   va_start (args, format);
-  e = xvasprintf (format, args);
+  char *e = xvasprintf (format, args);
   va_end (args);
 
-  m.file_name = NULL;
-  m.first_line = m.last_line = 0;
-  m.first_column = m.last_column = 0;
-  m.text = xasprintf (_("%s: %s"), e, strerror (errnum));
-  free (e);
-
+  struct msg m = {
+    .category = MSG_C_GENERAL,
+    .severity = MSG_S_ERROR,
+    .file_name = NULL,
+    .text = xasprintf (_("%s: %s"), e, strerror (errnum)),
+  };
   msg_emit (&m);
+
+  free (e);
 }
 
 
@@ -294,18 +287,11 @@ ship_message (struct msg *m)
 static void
 submit_note (char *s)
 {
-  struct msg m;
-
-  m.category = MSG_C_GENERAL;
-  m.severity = MSG_S_NOTE;
-  m.file_name = NULL;
-  m.first_line = 0;
-  m.last_line = 0;
-  m.first_column = 0;
-  m.last_column = 0;
-  m.text = s;
-  m.shipped = false;
-
+  struct msg m = {
+    .category = MSG_C_GENERAL,
+    .severity = MSG_S_NOTE,
+    .text = s,
+  };
   ship_message (&m);
 
   free (s);

@@ -1152,9 +1152,7 @@ static void
 pcp_msg (struct pcp_reader *r, off_t offset,
          int class, const char *format, va_list args)
 {
-  struct msg m;
   struct string text;
-
   ds_init_empty (&text);
   if (offset >= 0)
     ds_put_format (&text, _("`%s' near offset 0x%llx: "),
@@ -1163,15 +1161,11 @@ pcp_msg (struct pcp_reader *r, off_t offset,
     ds_put_format (&text, _("`%s': "), fh_get_file_name (r->fh));
   ds_put_vformat (&text, format, args);
 
-  m.category = msg_class_to_category (class);
-  m.severity = msg_class_to_severity (class);
-  m.file_name = NULL;
-  m.first_line = 0;
-  m.last_line = 0;
-  m.first_column = 0;
-  m.last_column = 0;
-  m.text = ds_cstr (&text);
-
+  struct msg m = {
+    .category = msg_class_to_category (class),
+    .severity = msg_class_to_severity (class),
+    .text = ds_cstr (&text),
+  };
   msg_emit (&m);
 }
 

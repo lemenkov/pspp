@@ -493,17 +493,17 @@ static void
 parse_error (const struct dfm_reader *reader, const struct field *field,
              int first_column, int last_column, char *error)
 {
-  struct msg m;
-
-  m.category = MSG_C_DATA;
-  m.severity = MSG_S_WARNING;
-  m.file_name = CONST_CAST (char *, dfm_get_file_name (reader));
-  m.first_line = dfm_get_line_number (reader);
-  m.last_line = m.first_line + 1;
-  m.first_column = first_column;
-  m.last_column = last_column;
-  m.text = xasprintf (_("Data for variable %s is not valid as format %s: %s"),
-                      field->name, fmt_name (field->format.type), error);
+  struct msg m = {
+    .category = MSG_C_DATA,
+    .severity = MSG_S_WARNING,
+    .file_name = CONST_CAST (char *, dfm_get_file_name (reader)),
+    .first_line = dfm_get_line_number (reader),
+    .last_line = m.first_line + 1,
+    .first_column = first_column,
+    .last_column = last_column,
+    .text = xasprintf (_("Data for variable %s is not valid as format %s: %s"),
+                       field->name, fmt_name (field->format.type), error),
+  };
   msg_emit (&m);
 
   free (error);

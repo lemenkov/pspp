@@ -1257,7 +1257,6 @@ lex_source_error_valist (struct lex_source *src, int n0, int n1,
 {
   const struct lex_token *token;
   struct string s;
-  struct msg m;
 
   ds_init_empty (&s);
 
@@ -1285,14 +1284,16 @@ lex_source_error_valist (struct lex_source *src, int n0, int n1,
     }
   ds_put_byte (&s, '.');
 
-  m.category = MSG_C_SYNTAX;
-  m.severity = MSG_S_ERROR;
-  m.file_name = src->reader->file_name;
-  m.first_line = lex_source_get_first_line_number (src, n0);
-  m.last_line = lex_source_get_last_line_number (src, n1);
-  m.first_column = lex_source_get_first_column (src, n0);
-  m.last_column = lex_source_get_last_column (src, n1);
-  m.text = ds_steal_cstr (&s);
+  struct msg m = {
+    .category = MSG_C_SYNTAX,
+    .severity = MSG_S_ERROR,
+    .file_name = src->reader->file_name,
+    .first_line = lex_source_get_first_line_number (src, n0),
+    .last_line = lex_source_get_last_line_number (src, n1),
+    .first_column = lex_source_get_first_column (src, n0),
+    .last_column = lex_source_get_last_column (src, n1),
+    .text = ds_steal_cstr (&s),
+  };
   msg_emit (&m);
 }
 

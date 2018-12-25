@@ -103,7 +103,6 @@ error (struct pfm_reader *r, const char *msg,...)
 static void
 error (struct pfm_reader *r, const char *msg, ...)
 {
-  struct msg m;
   struct string text;
   va_list args;
 
@@ -114,15 +113,11 @@ error (struct pfm_reader *r, const char *msg, ...)
   ds_put_vformat (&text, msg, args);
   va_end (args);
 
-  m.category = MSG_C_GENERAL;
-  m.severity = MSG_S_ERROR;
-  m.file_name = NULL;
-  m.first_line = 0;
-  m.last_line = 0;
-  m.first_column = 0;
-  m.last_column = 0;
-  m.text = ds_cstr (&text);
-
+  struct msg m = {
+    .category = MSG_C_GENERAL,
+    .severity = MSG_S_ERROR,
+    .text = ds_cstr (&text),
+  };
   msg_emit (&m);
 
   r->ok = false;
@@ -135,7 +130,6 @@ error (struct pfm_reader *r, const char *msg, ...)
 static void
 warning (struct pfm_reader *r, const char *msg, ...)
 {
-  struct msg m;
   struct string text;
   va_list args;
 
@@ -146,15 +140,11 @@ warning (struct pfm_reader *r, const char *msg, ...)
   ds_put_vformat (&text, msg, args);
   va_end (args);
 
-  m.category = MSG_C_GENERAL;
-  m.severity = MSG_S_WARNING;
-  m.file_name = NULL;
-  m.first_line = 0;
-  m.last_line = 0;
-  m.first_column = 0;
-  m.last_column = 0;
-  m.text = ds_cstr (&text);
-
+  struct msg m = {
+    .category = MSG_C_GENERAL,
+    .severity = MSG_S_WARNING,
+    .text = ds_cstr (&text),
+  };
   msg_emit (&m);
 }
 
