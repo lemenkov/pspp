@@ -268,8 +268,7 @@ csv_submit (struct output_driver *driver,
       enum text_item_type type = text_item_get_type (text_item);
       const char *text = text_item_get_text (text_item);
 
-      if (type == TEXT_ITEM_COMMAND_OPEN || type == TEXT_ITEM_COMMAND_CLOSE
-          || type == TEXT_ITEM_SYNTAX || type == TEXT_ITEM_PAGE_TITLE)
+      if (type == TEXT_ITEM_SYNTAX || type == TEXT_ITEM_PAGE_TITLE)
         return;
 
       csv_put_separator (csv);
@@ -279,8 +278,7 @@ csv_submit (struct output_driver *driver,
   else if (is_message_item (output_item))
     {
       const struct message_item *message_item = to_message_item (output_item);
-      const struct msg *msg = message_item_get_msg (message_item);
-      char *s = msg_to_string (msg, message_item->command_name);
+      char *s = msg_to_string (message_item_get_msg (message_item));
       csv_put_separator (csv);
       csv_output_field (csv, s);
       free (s);

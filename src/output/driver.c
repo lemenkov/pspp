@@ -34,6 +34,7 @@
 #include "libpspp/string-map.h"
 #include "libpspp/string-set.h"
 #include "libpspp/str.h"
+#include "output/group-item.h"
 #include "output/message-item.h"
 #include "output/output-item.h"
 #include "output/text-item.h"
@@ -51,6 +52,14 @@ struct output_engine
     struct string deferred_syntax; /* TEXT_ITEM_SYNTAX being accumulated. */
     char *command_name;            /* Name of command being processed. */
     char *title, *subtitle;        /* Components of page title. */
+
+    /* Output grouping stack.
+
+       TEXT_ITEM_GROUP_OPEN pushes a group on the stack and
+       TEXT_ITEM_GROUP_CLOSE pops one off. */
+    char **groups;               /* Command names of nested sections. */
+    size_t n_groups;
+    size_t allocated_groups;
   };
 
 static const struct output_driver_factory *factories[];
@@ -76,9 +85,9 @@ output_engine_push (void)
                                sizeof *engine_stack);
 
   e = &engine_stack[n_stack++];
+  memset (e, 0, sizeof *e);
   llx_init (&e->drivers);
   ds_init_empty (&e->deferred_syntax);
-  e->command_name = NULL;
   e->title = NULL;
   e->subtitle = NULL;
 }
@@ -99,6 +108,9 @@ output_engine_pop (void)
   free (e->command_name);
   free (e->title);
   free (e->subtitle);
+  for (size_t i = 0; i < e->n_groups; i++)
+    free (e->groups[i]);
+  free (e->groups);
 }
 
 void
@@ -184,33 +196,40 @@ output_submit (struct output_item *item)
 
   flush_deferred_syntax (e);
 
-  if (is_text_item (item))
+  if (is_group_open_item (item))
     {
-      const struct text_item *text_item = to_text_item (item);
-      const char *text = text_item_get_text (text_item);
-      enum text_item_type type = text_item_get_type (text_item);
-
-      if (type == TEXT_ITEM_COMMAND_OPEN)
-        {
-          free (e->command_name);
-          e->command_name = xstrdup (text);
-        }
-      else if (type == TEXT_ITEM_COMMAND_CLOSE)
-        {
-          free (e->command_name);
-          e->command_name = NULL;
-        }
+      const struct group_open_item *group_open_item
+        = to_group_open_item (item);
+      if (e->n_groups >= e->allocated_groups)
+        e->groups = x2nrealloc (e->groups, &e->allocated_groups,
+                                sizeof *e->groups);
+      e->groups[e->n_groups] = (group_open_item->command_name
+                                ? xstrdup (group_open_item->command_name)
+                                : NULL);
+      e->n_groups++;
     }
-  else if (is_message_item (item))
+  else if (is_group_close_item (item))
     {
-      struct message_item *message_item = to_message_item (item);
-      free (message_item->command_name);
-      message_item->command_name = (e->command_name
-                                    ? xstrdup (e->command_name)
-                                    : NULL);
-    }
+      assert (e->n_groups > 0);
 
+      size_t idx = --e->n_groups;
+      free (e->groups[idx]);
+    }
   output_submit__ (e, item);
+}
+
+const char *
+output_get_command_name (void)
+{
+  if (n_stack)
+    {
+      struct output_engine *e = engine_stack_top ();
+      for (size_t i = e->n_groups; i-- > 0; )
+        if (e->groups[i])
+          return e->groups[i];
+    }
+
+  return NULL;
 }
 
 /* Flushes output to screen devices, so that the user can see
@@ -260,6 +279,14 @@ output_set_subtitle (const char *subtitle)
   struct output_engine *e = engine_stack_top ();
 
   output_set_title__ (e, &e->subtitle, subtitle);
+}
+
+size_t
+output_get_group_level (void)
+{
+  struct output_engine *e = engine_stack_top ();
+
+  return e->n_groups;
 }
 
 void

@@ -226,6 +226,8 @@ output_msg (const struct msg *m_, void *lexer_)
       m.last_line = lex_get_last_line_number (lexer, 0);
     }
 
+  m.command_name = CONST_CAST (char *, output_get_command_name ());
+
   message_item_submit (message_item_create (&m));
 }
 

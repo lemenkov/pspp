@@ -128,6 +128,8 @@ msg_dup (const struct msg *m)
   new_msg = xmemdup (m, sizeof *m);
   if (m->file_name != NULL)
     new_msg->file_name = xstrdup (m->file_name);
+  if (m->command_name != NULL)
+    new_msg->command_name = xstrdup (m->command_name);
   new_msg->text = xstrdup (m->text);
 
   return new_msg;
@@ -143,11 +145,12 @@ msg_destroy (struct msg *m)
 {
   free (m->file_name);
   free (m->text);
+  free (m->command_name);
   free (m);
 }
 
 char *
-msg_to_string (const struct msg *m, const char *command_name)
+msg_to_string (const struct msg *m)
 {
   struct string s;
 
@@ -210,8 +213,8 @@ msg_to_string (const struct msg *m, const char *command_name)
 
   ds_put_format (&s, "%s: ", msg_severity_to_string (m->severity));
 
-  if (m->category == MSG_C_SYNTAX && command_name != NULL)
-    ds_put_format (&s, "%s: ", command_name);
+  if (m->category == MSG_C_SYNTAX && m->command_name != NULL)
+    ds_put_format (&s, "%s: ", m->command_name);
 
   ds_put_cstr (&s, m->text);
 
@@ -349,6 +352,7 @@ msg_emit (struct msg *m)
      process_msg (m);
 
   free (m->text);
+  free (m->command_name);
 }
 
 /* Disables message output until the next call to msg_enable.  If

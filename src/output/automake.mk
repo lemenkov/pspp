@@ -48,6 +48,8 @@ src_output_liboutput_la_SOURCES = \
 	src/output/driver-provider.h \
 	src/output/driver.c \
 	src/output/driver.h \
+	src/output/group-item.c \
+	src/output/group-item.h \
 	src/output/html.c \
 	src/output/journal.c \
 	src/output/journal.h \

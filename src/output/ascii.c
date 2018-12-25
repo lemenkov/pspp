@@ -485,10 +485,6 @@ ascii_submit (struct output_driver *driver,
       switch (type)
         {
         case TEXT_ITEM_PAGE_TITLE:
-        case TEXT_ITEM_COMMAND_OPEN:
-        case TEXT_ITEM_COMMAND_CLOSE:
-          break;
-
         case TEXT_ITEM_BLANK_LINE:
           break;
 
@@ -503,8 +499,7 @@ ascii_submit (struct output_driver *driver,
   else if (is_message_item (output_item))
     {
       const struct message_item *message_item = to_message_item (output_item);
-      const struct msg *msg = message_item_get_msg (message_item);
-      char *s = msg_to_string (msg, message_item->command_name);
+      char *s = msg_to_string (message_item_get_msg (message_item));
       ascii_output_text (a, s);
       free (s);
     }

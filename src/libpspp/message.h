@@ -75,6 +75,7 @@ struct msg
     enum msg_category category; /* Message category. */
     enum msg_severity severity; /* Message severity. */
     char *file_name;            /* Name of file containing error, or NULL. */
+    char *command_name;         /* Name of erroneous command, or NULL.  */
     int first_line;             /* 1-based line number, or 0 if none. */
     int last_line;             /* 1-based exclusive last line (0=none). */
     int first_column;           /* 1-based first column, or 0 if none. */
@@ -90,7 +91,7 @@ void msg_set_handler (void (*handler) (const struct msg *, void *lexer),
 /* Working with messages. */
 struct msg *msg_dup (const struct msg *);
 void msg_destroy(struct msg *);
-char *msg_to_string (const struct msg *, const char *command_name);
+char *msg_to_string (const struct msg *);
 
 /* Emitting messages. */
 void vmsg (enum msg_class class, const char *format, va_list args)

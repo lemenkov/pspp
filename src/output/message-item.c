@@ -34,7 +34,6 @@ message_item_create (const struct msg *msg)
   item = xmalloc (sizeof *msg);
   output_item_init (&item->output_item, &message_item_class);
   item->msg = msg_dup (msg);
-  item->command_name = NULL;
 
   return item;
 }
@@ -50,7 +49,6 @@ message_item_destroy (struct output_item *output_item)
 {
   struct message_item *item = to_message_item (output_item);
   msg_destroy (item->msg);
-  free (item->command_name);
   free (item);
 }
 

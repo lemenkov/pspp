@@ -27,6 +27,7 @@
 #include "output/driver-provider.h"
 #include "output/driver.h"
 #include "output/chart-item.h"
+#include "output/group-item.h"
 #include "output/message-item.h"
 #include "output/output-item.h"
 #include "output/table-item.h"
@@ -292,18 +293,19 @@ psppire_output_view_put (struct psppire_output_view *view,
   GtkTreeIter iter;
   int tw, th;
 
-  if (is_text_item (item))
+  if (is_group_close_item (item))
     {
-      const struct text_item *text_item = to_text_item (item);
-      enum text_item_type type = text_item_get_type (text_item);
-      const char *text = text_item_get_text (text_item);
-
-      if (type == TEXT_ITEM_COMMAND_CLOSE)
+      if (output_get_group_level () == 0)
         {
           view->in_command = false;
           return;
         }
-      else if (text[0] == '\0')
+    }
+  else if (is_text_item (item))
+    {
+      const struct text_item *text_item = to_text_item (item);
+      const char *text = text_item_get_text (text_item);
+      if (text[0] == '\0')
         return;
     }
 
@@ -344,8 +346,7 @@ psppire_output_view_put (struct psppire_output_view *view,
       store = GTK_TREE_STORE (gtk_tree_view_get_model (view->overview));
 
       ds_init_empty (&name);
-      if (is_text_item (item)
-          && text_item_get_type (to_text_item (item)) == TEXT_ITEM_COMMAND_OPEN)
+      if (is_group_open_item (item) && output_get_group_level () == 1)
         {
           gtk_tree_store_append (store, &iter, NULL);
           view->cur_command = iter; /* XXX shouldn't save a GtkTreeIter */

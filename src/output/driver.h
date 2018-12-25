@@ -18,6 +18,7 @@
 #define OUTPUT_DRIVER_H 1
 
 #include <stdbool.h>
+#include <stddef.h>
 
 struct output_item;
 struct string_set;
@@ -33,6 +34,9 @@ void output_flush (void);
 
 void output_set_title (const char *);
 void output_set_subtitle (const char *);
+const char *output_get_command_name (void);
+
+size_t output_get_group_level (void);
 
 void output_driver_parse_option (const char *option,
                                  struct string_map *options);

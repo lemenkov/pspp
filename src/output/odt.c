@@ -578,17 +578,11 @@ odt_submit (struct output_driver *driver,
   if (is_table_item (output_item))
     write_table (odt, to_table_item (output_item));
   else if (is_text_item (output_item))
-    {
-      struct text_item *text_item = to_text_item (output_item);
-
-      if (text_item_get_type (text_item) != TEXT_ITEM_COMMAND_CLOSE)
-        odt_output_text (odt, text_item_get_text (text_item));
-    }
+    odt_output_text (odt, text_item_get_text (to_text_item (output_item)));
   else if (is_message_item (output_item))
     {
       const struct message_item *message_item = to_message_item (output_item);
-      const struct msg *msg = message_item_get_msg (message_item);
-      char *s = msg_to_string (msg, message_item->command_name);
+      char *s = msg_to_string (message_item_get_msg (message_item));
       odt_output_text (odt, s);
       free (s);
     }

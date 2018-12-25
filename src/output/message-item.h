@@ -36,7 +36,6 @@ struct message_item
   {
     struct output_item output_item;
     struct msg *msg;
-    char *command_name;
   };
 
 struct message_item *message_item_create (const struct msg *);

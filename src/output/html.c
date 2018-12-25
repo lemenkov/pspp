@@ -264,17 +264,6 @@ html_submit (struct output_driver *driver,
         case TEXT_ITEM_PAGE_TITLE:
           break;
 
-        case TEXT_ITEM_COMMAND_OPEN:
-          fprintf (html->file, "<DIV class=\"");
-          escape_string (html->file, s, strlen (s), "_", "<BR>");
-          fprintf (html->file, "\">");
-          print_title_tag (html->file, "H3", s);
-          break;
-
-        case TEXT_ITEM_COMMAND_CLOSE:
-          fprintf (html->file, "</DIV>\n");
-          break;
-
         case TEXT_ITEM_SUBHEAD:
           print_title_tag (html->file, "H4", s);
           break;
@@ -310,8 +299,7 @@ html_submit (struct output_driver *driver,
   else if (is_message_item (output_item))
     {
       const struct message_item *message_item = to_message_item (output_item);
-      const struct msg *msg = message_item_get_msg (message_item);
-      char *s = msg_to_string (msg, message_item->command_name);
+      char *s = msg_to_string (message_item_get_msg (message_item));
       print_title_tag (html->file, "P", s);
       free (s);
     }

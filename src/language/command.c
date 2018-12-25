@@ -36,7 +36,7 @@
 #include "libpspp/i18n.h"
 #include "libpspp/message.h"
 #include "libpspp/str.h"
-#include "output/text-item.h"
+#include "output/group-item.h"
 
 #include "xalloc.h"
 #include "xmalloca.h"
@@ -199,7 +199,7 @@ do_parse_command (struct lexer *lexer,
       result = CMD_FAILURE;
       goto finish;
     }
-  text_item_submit (text_item_create (TEXT_ITEM_COMMAND_OPEN, command->name));
+  group_open_item_submit (group_open_item_create (command->name));
   opened = true;
 
   if (command->function == NULL)
@@ -247,8 +247,7 @@ finish:
       lex_get (lexer);
 
   if (opened)
-    text_item_submit (text_item_create (TEXT_ITEM_COMMAND_CLOSE,
-                                        command->name));
+    group_close_item_submit (group_close_item_create ());
 
   return result;
 }

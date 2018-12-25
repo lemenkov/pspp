@@ -1356,8 +1356,7 @@ xr_rendering_create (struct xr_driver *xr, const struct output_item *item,
   else if (is_message_item (item))
     {
       const struct message_item *message_item = to_message_item (item);
-      const struct msg *msg = message_item_get_msg (message_item);
-      char *s = msg_to_string (msg, NULL);
+      char *s = msg_to_string (message_item_get_msg (message_item));
       r = xr_rendering_create_text (xr, s, cr);
       free (s);
     }
@@ -1668,9 +1667,6 @@ xr_render_text (struct xr_driver *xr, const struct text_item *text_item)
     case TEXT_ITEM_PAGE_TITLE:
       break;
 
-    case TEXT_ITEM_COMMAND_CLOSE:
-      break;
-
     case TEXT_ITEM_BLANK_LINE:
       if (xr->y > 0)
         xr->y += xr->char_height;
@@ -1692,8 +1688,7 @@ static struct xr_render_fsm *
 xr_render_message (struct xr_driver *xr,
                    const struct message_item *message_item)
 {
-  const struct msg *msg = message_item_get_msg (message_item);
-  char *s = msg_to_string (msg, message_item->command_name);
+  char *s = msg_to_string (message_item_get_msg (message_item));
   struct text_item *item = text_item_create (TEXT_ITEM_PARAGRAPH, s);
   free (s);
   struct xr_render_fsm *fsm = xr_create_text_renderer (xr, item);

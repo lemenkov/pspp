@@ -114,8 +114,7 @@ journal_submit (struct output_driver *driver, const struct output_item *item)
   else if (is_message_item (item))
     {
       const struct message_item *message_item = to_message_item (item);
-      const struct msg *msg = message_item_get_msg (message_item);
-      char *s = msg_to_string (msg, message_item->command_name);
+      char *s = msg_to_string (message_item_get_msg (message_item));
       journal_output (j, s);
       free (s);
     }

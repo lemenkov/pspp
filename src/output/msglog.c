@@ -101,8 +101,7 @@ msglog_submit (struct output_driver *driver, const struct output_item *item)
   if (is_message_item (item))
     {
       const struct message_item *message_item = to_message_item (item);
-      const struct msg *msg = message_item_get_msg (message_item);
-      char *s = msg_to_string (msg, message_item->command_name);
+      char *s = msg_to_string (message_item_get_msg (message_item));
       fprintf (ml->file, "%s\n", s);
       free (s);
     }

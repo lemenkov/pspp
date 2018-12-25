@@ -30,14 +30,6 @@
 
 enum text_item_type
   {
-    /* Each PSPP command is bracketed between a pair of these text items.  The
-       text item's string is the full name of the command.  The syntax text
-       items associated with the command, as well as all output produced
-       directly by the command, are contained within the pair.  There is no
-       nesting. */
-    TEXT_ITEM_COMMAND_OPEN,     /* Command starting. */
-    TEXT_ITEM_COMMAND_CLOSE,    /* Command completed. */
-
     /* Headings. */
     TEXT_ITEM_PAGE_TITLE,       /* TITLE and SUBTITLE commands. */
     TEXT_ITEM_SUBHEAD,          /* Heading within a command's output.*/
