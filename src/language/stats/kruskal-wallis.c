@@ -74,8 +74,8 @@ compare_rank_entries_3way (const struct bt_node *a,
                            const void *aux)
 {
   const struct variable *var = aux;
-  const struct rank_entry *rea = bt_data (a, struct rank_entry, btn);
-  const struct rank_entry *reb = bt_data (b, struct rank_entry, btn);
+  const struct rank_entry *rea = BT_DATA (a, struct rank_entry, btn);
+  const struct rank_entry *reb = BT_DATA (b, struct rank_entry, btn);
 
   return value_compare_3way (&rea->group, &reb->group, var_get_width (var));
 }
@@ -281,7 +281,6 @@ show_ranks_box (const struct n_sample_test *nst, const struct kw *kw, int n_grou
     {
       int tot = 0;
       struct rank_entry *re_x;
-      struct bt_node *bt_n = NULL;
       struct bt bt;
 
       if (i > 0)
@@ -299,13 +298,9 @@ show_ranks_box (const struct n_sample_test *nst, const struct kw *kw, int n_grou
         }
 
       /* Report the rank entries in sorted order. */
-      for (bt_n = bt_first (&bt);
-           bt_n != NULL;
-           bt_n = bt_next (&bt, bt_n) )
+      const struct rank_entry *re;
+      BT_FOR_EACH (re, struct rank_entry, btn, &bt)
         {
-          const struct rank_entry *re =
-            bt_data (bt_n, const struct rank_entry, btn);
-
 	  struct string str;
 	  ds_init_empty (&str);
 

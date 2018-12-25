@@ -27,12 +27,16 @@
 #include <stddef.h>
 #include "libpspp/cast.h"
 
-/* Returns the data structure corresponding to the given NODE,
-   assuming that NODE is embedded as the given MEMBER name in
-   data type STRUCT. */
-#define bt_data(NODE, STRUCT, MEMBER)                           \
-        (CHECK_POINTER_HAS_TYPE (NODE, struct bt_node *),       \
-         UP_CAST (NODE, STRUCT, MEMBER))
+/* Returns the data structure corresponding to the given NODE, assuming that
+   NODE is embedded as the given MEMBER name in data type STRUCT.  NODE must
+   not be a null pointer. */
+#define BT_DATA(NODE, STRUCT, MEMBER)                   \
+  (CHECK_POINTER_HAS_TYPE (NODE, struct bt_node *),     \
+   UP_CAST (NODE, STRUCT, MEMBER))
+
+/* Like BT_DATA, except that a null NODE yields a null pointer result. */
+#define BT_NULLABLE_DATA(NODE, STRUCT, MEMBER) \
+  ((STRUCT *) bt_nullable_data__ (NODE, offsetof (STRUCT, MEMBER)))
 
 /* Node in a balanced binary tree. */
 struct bt_node
@@ -56,6 +60,7 @@ struct bt
     size_t size;                /* Current node count. */
     size_t max_size;            /* Max size since last complete rebalance. */
   };
+#define BT_INITIALIZER(COMPARE, AUX) { .compare = COMPARE, .aux = AUX }
 
 void bt_init (struct bt *, bt_compare_func *, const void *aux);
 
@@ -75,6 +80,28 @@ struct bt_node *bt_prev (const struct bt *, const struct bt_node *);
 struct bt_node *bt_changed (struct bt *, struct bt_node *);
 void bt_moved (struct bt *, struct bt_node *);
 
+/* Convenience macros for iteration.
+
+   These macros automatically use BT_DATA to obtain the data elements that
+   encapsulate bt nodes, which often saves typing and can make code easier to
+   read.  Refer to the large comment near the top of this file for an example.
+
+   These macros evaluate their arguments many times. */
+#define BT_FIRST(STRUCT, MEMBER, BT)                        \
+  BT_NULLABLE_DATA (bt_first (BT), STRUCT, MEMBER)
+#define BT_NEXT(DATA, STRUCT, MEMBER, BT)                           \
+  BT_NULLABLE_DATA (bt_next (BT, &(DATA)->MEMBER), STRUCT, MEMBER)
+#define BT_FOR_EACH(DATA, STRUCT, MEMBER, BT)       \
+  for ((DATA) = BT_FIRST (STRUCT, MEMBER, BT);      \
+       (DATA) != NULL;                                  \
+       (DATA) = BT_NEXT (DATA, STRUCT, MEMBER, BT))
+#define BT_FOR_EACH_SAFE(DATA, NEXT, STRUCT, MEMBER, BT)    \
+  for ((DATA) = BT_FIRST (STRUCT, MEMBER, BT);              \
+       ((DATA) != NULL                                          \
+        ? ((NEXT) = BT_NEXT (DATA, STRUCT, MEMBER, BT), 1)  \
+        : 0);                                                   \
+       (DATA) = (NEXT))
+
 /* Returns the number of nodes currently in BT. */
 static inline size_t bt_count (const struct bt *bt)
 {
@@ -86,6 +113,14 @@ static inline size_t bt_count (const struct bt *bt)
 static inline bool bt_is_empty (const struct bt *bt)
 {
   return bt->size == 0;
+}
+
+/* Helper for BT_NULLABLE_DATA (to avoid evaluating its NODE argument more than
+   once).  */
+static inline void *
+bt_nullable_data__ (struct bt_node *node, size_t member_offset)
+{
+  return node != NULL ? (char *) node - member_offset : NULL;
 }
 
 #endif /* libpspp/bt.h */

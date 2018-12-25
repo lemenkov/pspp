@@ -129,7 +129,7 @@ static inline bool
 range_tower_is_empty (const struct range_tower *rs)
 {
   const struct range_tower_node *node =
-    abt_data (rs->abt.root, struct range_tower_node, abt_node);
+    ABT_DATA (rs->abt.root, struct range_tower_node, abt_node);
 
   return node->n_zeros == ULONG_MAX;
 }
@@ -205,7 +205,7 @@ static inline struct range_tower_node *
 range_tower_node_from_abt__ (const struct abt_node *abt_node)
 {
   return (abt_node
-          ? abt_data (abt_node, struct range_tower_node, abt_node)
+          ? ABT_DATA (abt_node, struct range_tower_node, abt_node)
           : NULL);
 }
 

@@ -87,7 +87,7 @@
      static struct element *
      node_to_element (const struct abt_node *node)
      {
-       return abt_data (node, struct element, node);
+       return ABT_DATA (node, struct element, node);
      }
 
      // Compares the DATA values in A and B and returns a
@@ -149,12 +149,16 @@
 #include <stddef.h>
 #include "libpspp/cast.h"
 
-/* Returns the data structure corresponding to the given NODE,
-   assuming that NODE is embedded as the given MEMBER name in
-   data type STRUCT. */
-#define abt_data(NODE, STRUCT, MEMBER)                          \
-        (CHECK_POINTER_HAS_TYPE (NODE, struct abt_node *),      \
-         UP_CAST (NODE, STRUCT, MEMBER))
+/* Returns the data structure corresponding to the given NODE, assuming that
+   NODE is embedded as the given MEMBER name in data type STRUCT.  NODE must
+   not be a null pointer. */
+#define ABT_DATA(NODE, STRUCT, MEMBER)                   \
+  (CHECK_POINTER_HAS_TYPE (NODE, struct abt_node *),     \
+   UP_CAST (NODE, STRUCT, MEMBER))
+
+/* Like ABT_DATA, except that a null NODE yields a null pointer result. */
+#define ABT_NULLABLE_DATA(NODE, STRUCT, MEMBER) \
+  ((STRUCT *) abt_nullable_data__ (NODE, offsetof (STRUCT, MEMBER)))
 
 /* Node in an augmented binary tree. */
 struct abt_node
@@ -183,6 +187,8 @@ struct abt
     abt_reaugment_func *reaugment; /* To augment a node using its children. */
     const void *aux;               /* Auxiliary data. */
   };
+#define ABT_INITIALIZER(COMPARE, REAUGMENT, AUX) \
+  { .compare = COMPARE, .reaugment = REAUGMENT, .aux = AUX }
 
 void abt_init (struct abt *, abt_compare_func *, abt_reaugment_func *,
                const void *aux);
@@ -206,12 +212,42 @@ void abt_reaugmented (const struct abt *, struct abt_node *);
 struct abt_node *abt_changed (struct abt *, struct abt_node *);
 void abt_moved (struct abt *, struct abt_node *);
 
+/* Convenience macros for iteration.
+
+   These macros automatically use ABT_DATA to obtain the data elements that
+   encapsulate abt nodes, which often saves typing and can make code easier to
+   read.  Refer to the large comment near the top of this file for an example.
+
+   These macros evaluate their arguments many times. */
+#define ABT_FIRST(STRUCT, MEMBER, ABT)                        \
+  ABT_NULLABLE_DATA (abt_first (ABT), STRUCT, MEMBER)
+#define ABT_NEXT(DATA, STRUCT, MEMBER, ABT)                           \
+  ABT_NULLABLE_DATA (abt_next (ABT, &(DATA)->MEMBER), STRUCT, MEMBER)
+#define ABT_FOR_EACH(DATA, STRUCT, MEMBER, ABT)       \
+  for ((DATA) = ABT_FIRST (STRUCT, MEMBER, ABT);      \
+       (DATA) != NULL;                                  \
+       (DATA) = ABT_NEXT (DATA, STRUCT, MEMBER, ABT))
+#define ABT_FOR_EACH_SAFE(DATA, NEXT, STRUCT, MEMBER, ABT)    \
+  for ((DATA) = ABT_FIRST (STRUCT, MEMBER, ABT);              \
+       ((DATA) != NULL                                          \
+        ? ((NEXT) = ABT_NEXT (DATA, STRUCT, MEMBER, ABT), 1)  \
+        : 0);                                                   \
+       (DATA) = (NEXT))
+
 /* Returns true if ABT contains no nodes, false if ABT contains at least one
    node. */
 static inline bool
 abt_is_empty (const struct abt *abt)
 {
   return abt->root == NULL;
+}
+
+/* Helper for ABT_NULLABLE_DATA (to avoid evaluating its NODE argument more
+   than once).  */
+static inline void *
+abt_nullable_data__ (struct abt_node *node, size_t member_offset)
+{
+  return node != NULL ? (char *) node - member_offset : NULL;
 }
 
 #endif /* libpspp/abt.h */

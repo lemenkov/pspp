@@ -119,7 +119,7 @@ static int aux_data;
 static struct element *
 abt_node_to_element (const struct abt_node *node)
 {
-  return abt_data (node, struct element, node);
+  return ABT_DATA (node, struct element, node);
 }
 
 /* Compares the `x' values in A and B and returns a strcmp-type

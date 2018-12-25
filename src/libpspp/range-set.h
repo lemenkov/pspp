@@ -185,7 +185,7 @@ range_set_node_get_width (const struct range_set_node *node)
 static inline struct range_set_node *
 range_set_node_from_bt__ (const struct bt_node *bt_node)
 {
-  return bt_node ? bt_data (bt_node, struct range_set_node, bt_node) : NULL;
+  return bt_node ? BT_DATA (bt_node, struct range_set_node, bt_node) : NULL;
 }
 
 /* Returns the next range_set_node in RS after NODE,

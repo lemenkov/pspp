@@ -294,7 +294,7 @@ tower_prev (const struct tower *t, const struct tower_node *node)
 static struct tower_node *
 abt_to_tower_node (const struct abt_node *abt_node)
 {
-  return abt_data (abt_node, struct tower_node, abt_node);
+  return ABT_DATA (abt_node, struct tower_node, abt_node);
 }
 
 /* Returns the tower node corresponding to the given ABT_NODE. */

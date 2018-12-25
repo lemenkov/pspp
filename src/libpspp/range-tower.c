@@ -47,7 +47,7 @@ print_structure (const struct abt_node *node_)
 
   if (node_ == NULL)
     return;
-  node = abt_data (node_, struct range_tower_node, abt_node);
+  node = ABT_DATA (node_, struct range_tower_node, abt_node);
   printf ("%lu+%lu/%d", node->n_zeros, node->n_ones, node->abt_node.level);
   if (node->abt_node.down[0] || node->abt_node.down[1])
     {
@@ -78,7 +78,7 @@ print_regions (const char *title, const struct range_tower *rt)
 static struct range_tower_node *
 range_tower_node_from_abt_node (const struct abt_node *abt_node)
 {
-  return abt_data (abt_node, struct range_tower_node, abt_node);
+  return ABT_DATA (abt_node, struct range_tower_node, abt_node);
 }
 
 /* Returns the total width (zeros and ones) of the nodes in the subtree rooted

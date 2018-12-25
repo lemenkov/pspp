@@ -118,7 +118,7 @@ static int aux_data;
 static struct element *
 bt_node_to_element (const struct bt_node *node)
 {
-  return bt_data (node, struct element, node);
+  return BT_DATA (node, struct element, node);
 }
 
 /* Compares the `x' values in A and B and returns a strcmp-type

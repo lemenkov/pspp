@@ -114,7 +114,7 @@ static struct range_map_node *
 bt_to_range_map_node (const struct bt_node *bt_node)
 {
   return (bt_node != NULL
-          ? bt_data (bt_node, struct range_map_node, bt_node)
+          ? BT_DATA (bt_node, struct range_map_node, bt_node)
           : NULL);
 }
 
