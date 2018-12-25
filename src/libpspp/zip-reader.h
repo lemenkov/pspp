@@ -36,6 +36,10 @@ void zip_reader_destroy (struct zip_reader *zr);
 const char *zip_reader_get_member_name(const struct zip_reader *zr,
                                        size_t idx);
 
+/* Returns true if ZR contains a member named MEMBER, false otherwise. */
+bool zip_reader_contains_member (const struct zip_reader *zr,
+                                 const char *member);
+
 /* Return the zip member in the reader ZR, called MEMBER */
 struct zip_member *zip_member_open (struct zip_reader *zr, const char *member);
 

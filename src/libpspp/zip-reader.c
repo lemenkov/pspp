@@ -407,7 +407,7 @@ zip_reader_create (const char *file_name, struct string *errs)
 }
 
 static struct zip_entry *
-zip_entry_find (struct zip_reader *zr, const char *member)
+zip_entry_find (const struct zip_reader *zr, const char *member)
 {
   for (int i = 0; i < zr->n_entries; ++i)
     {
@@ -422,6 +422,13 @@ const char *
 zip_reader_get_member_name(const struct zip_reader *zr, size_t idx)
 {
   return idx < zr->n_entries ? zr->entries[idx].name : NULL;
+}
+
+/* Returns true if ZR contains a member named MEMBER, false otherwise. */
+bool
+zip_reader_contains_member (const struct zip_reader *zr, const char *member)
+{
+  return zip_entry_find (zr, member) != NULL;
 }
 
 /* Return the member called MEMBER from the reader ZR  */
