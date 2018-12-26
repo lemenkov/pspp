@@ -65,7 +65,7 @@ struct tab_joined_cell
   size_t n_footnotes;
   const struct footnote **footnotes;
 
-  const struct cell_style *style;
+  const struct area_style *style;
 };
 
 static const struct table_class tab_table_class;
@@ -621,7 +621,7 @@ tab_joint_text_format (struct tab_table *table, int x1, int y1, int x2,
 
 struct footnote *
 tab_create_footnote (struct tab_table *table, size_t idx, const char *content,
-                     const char *marker, struct cell_style *style)
+                     const char *marker, struct area_style *style)
 {
   struct footnote *f = pool_alloc (table->container, sizeof *f);
   f->idx = idx;
@@ -657,7 +657,7 @@ tab_add_footnote (struct tab_table *table, int x, int y,
 
 void
 tab_add_style (struct tab_table *table, int x, int y,
-               const struct cell_style *style)
+               const struct area_style *style)
 {
   int index = x + y * table->cf;
   unsigned short opt = table->ct[index];
@@ -819,9 +819,37 @@ tab_get_cell (const struct table *table, int x, int y,
   cell->destructor = NULL;
 
   int style_idx = (opt & TAB_STYLE_MASK) >> TAB_STYLE_SHIFT;
-  const struct cell_style *style = t->styles[style_idx];
+  const struct area_style *style = t->styles[style_idx];
   if (style)
     cell->style = style;
+  else
+    {
+      static const struct area_style styles[3][3] = {
+#define S(H,V) [H][V] = { AREA_STYLE_INITIALIZER__,     \
+                          .cell_style.halign = H,       \
+                          .cell_style.valign = V }
+        S(TABLE_HALIGN_LEFT, TABLE_VALIGN_TOP),
+        S(TABLE_HALIGN_LEFT, TABLE_VALIGN_CENTER),
+        S(TABLE_HALIGN_LEFT, TABLE_VALIGN_BOTTOM),
+        S(TABLE_HALIGN_CENTER, TABLE_VALIGN_TOP),
+        S(TABLE_HALIGN_CENTER, TABLE_VALIGN_CENTER),
+        S(TABLE_HALIGN_CENTER, TABLE_VALIGN_BOTTOM),
+        S(TABLE_HALIGN_RIGHT, TABLE_VALIGN_TOP),
+        S(TABLE_HALIGN_RIGHT, TABLE_VALIGN_CENTER),
+        S(TABLE_HALIGN_RIGHT, TABLE_VALIGN_BOTTOM),
+      };
+
+      enum table_halign halign
+        = ((opt & TAB_HALIGN) == TAB_LEFT ? TABLE_HALIGN_LEFT
+           : (opt & TAB_HALIGN) == TAB_CENTER ? TABLE_HALIGN_CENTER
+           : TABLE_HALIGN_RIGHT);
+      enum table_valign valign
+        = ((opt & TAB_VALIGN) == TAB_TOP ? TABLE_VALIGN_TOP
+           : (opt & TAB_VALIGN) == TAB_CENTER ? TABLE_VALIGN_CENTER
+           : TABLE_VALIGN_BOTTOM);
+
+      cell->style = &styles[halign][valign];
+    }
 
   if (opt & TAB_JOIN)
     {

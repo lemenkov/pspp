@@ -20,8 +20,10 @@
 #include "output/table-provider.h"
 
 #include <assert.h>
+#include <inttypes.h>
 #include <stdlib.h>
 
+#include "libpspp/assertion.h"
 #include "libpspp/cast.h"
 #include "libpspp/compiler.h"
 #include "libpspp/pool.h"
@@ -130,22 +132,22 @@ table_set_nr (struct table *table, int nr)
   table->n[TABLE_VERT] = nr;
 }
 
-struct cell_style *
-cell_style_clone (struct pool *pool, const struct cell_style *old)
+struct area_style *
+area_style_clone (struct pool *pool, const struct area_style *old)
 {
-  struct cell_style *new = pool_malloc (pool, sizeof *new);
+  struct area_style *new = pool_malloc (pool, sizeof *new);
   *new = *old;
-  if (new->typeface)
-    new->typeface = pool_strdup (pool, new->typeface);
+  if (new->font_style.typeface)
+    new->font_style.typeface = pool_strdup (pool, new->font_style.typeface);
   return new;
 }
 
 void
-cell_style_free (struct cell_style *style)
+area_style_free (struct area_style *style)
 {
   if (style)
     {
-      free (style->typeface);
+      free (style->font_style.typeface);
       free (style);
     }
 }
@@ -162,7 +164,7 @@ table_get_cell (const struct table *table, int x, int y,
   assert (x >= 0 && x < table->n[TABLE_HORZ]);
   assert (y >= 0 && y < table->n[TABLE_VERT]);
 
-  static const struct cell_style default_style = CELL_STYLE_INITIALIZER;
+  static const struct area_style default_style = AREA_STYLE_INITIALIZER;
   cell->style = &default_style;
 
   table->klass->get_cell (table, x, y, cell);
@@ -220,7 +222,7 @@ table_get_rule (const struct table *table, enum table_axis axis, int x, int y,
 {
   assert (x >= 0 && x < table->n[TABLE_HORZ] + (axis == TABLE_HORZ));
   assert (y >= 0 && y < table->n[TABLE_VERT] + (axis == TABLE_VERT));
-  *color = CELL_COLOR_BLACK;
+  *color = (struct cell_color) CELL_COLOR_BLACK;
   return table->klass->get_rule (table, axis, x, y, color);
 }
 
@@ -374,7 +376,7 @@ struct table_string
   {
     struct table table;
     char *string;
-    unsigned int options;
+    enum table_halign halign;
   };
 
 static const struct table_class table_string_class;
@@ -382,13 +384,13 @@ static const struct table_class table_string_class;
 /* Returns a table that contains a single cell, whose contents are S with
    options OPTIONS (a combination of TAB_* values).  */
 struct table *
-table_from_string (unsigned int options, const char *s)
+table_from_string (enum table_halign halign, const char *s)
 {
   struct table_string *ts = xmalloc (sizeof *ts);
   table_init (&ts->table, &table_string_class);
   ts->table.n[TABLE_HORZ] = ts->table.n[TABLE_VERT] = 1;
   ts->string = xstrdup (s);
-  ts->options = options;
+  ts->halign = halign;
   return &ts->table;
 }
 
@@ -411,12 +413,21 @@ static void
 table_string_get_cell (const struct table *ts_, int x UNUSED, int y UNUSED,
                        struct table_cell *cell)
 {
+  static const struct area_style styles[] = {
+#define S(H) [H] = { AREA_STYLE_INITIALIZER__, .cell_style.halign = H }
+    S(TABLE_HALIGN_LEFT),
+    S(TABLE_HALIGN_CENTER),
+    S(TABLE_HALIGN_RIGHT),
+    S(TABLE_HALIGN_MIXED),
+    S(TABLE_HALIGN_DECIMAL),
+  };
   struct table_string *ts = table_string_cast (ts_);
   cell->d[TABLE_HORZ][0] = 0;
   cell->d[TABLE_HORZ][1] = 1;
   cell->d[TABLE_VERT][0] = 0;
   cell->d[TABLE_VERT][1] = 1;
-  cell->options = ts->options;
+  cell->options = 0;
+  cell->style = &styles[table_halign_interpret (ts->halign, false)];
   cell->text = ts->string;
   cell->n_footnotes = 0;
   cell->destructor = NULL;
@@ -439,3 +450,139 @@ static const struct table_class table_string_class =
     NULL,                       /* paste */
     NULL,                       /* select */
   };
+
+const char *
+table_halign_to_string (enum table_halign halign)
+{
+  switch (halign)
+    {
+    case TABLE_HALIGN_LEFT: return "left";
+    case TABLE_HALIGN_CENTER: return "center";
+    case TABLE_HALIGN_RIGHT: return "right";
+    case TABLE_HALIGN_DECIMAL: return "decimal";
+    case TABLE_HALIGN_MIXED: return "mixed";
+    default: return "**error**";
+    }
+}
+
+const char *
+table_valign_to_string (enum table_valign valign)
+{
+  switch (valign)
+    {
+    case TABLE_VALIGN_TOP: return "top";
+    case TABLE_VALIGN_CENTER: return "center";
+    case TABLE_VALIGN_BOTTOM: return "bottom";
+    default: return "**error**";
+    }
+}
+
+enum table_halign
+table_halign_interpret (enum table_halign halign, bool numeric)
+{
+  switch (halign)
+    {
+    case TABLE_HALIGN_LEFT:
+    case TABLE_HALIGN_CENTER:
+    case TABLE_HALIGN_RIGHT:
+      return halign;
+
+    case TABLE_HALIGN_MIXED:
+      return numeric ? TABLE_HALIGN_RIGHT : TABLE_HALIGN_LEFT;
+
+    case TABLE_HALIGN_DECIMAL:
+      return TABLE_HALIGN_DECIMAL;
+
+    default:
+      NOT_REACHED ();
+    }
+}
+
+void
+font_style_copy (struct font_style *dst, const struct font_style *src)
+{
+  *dst = *src;
+  if (dst->typeface)
+    dst->typeface = xstrdup (dst->typeface);
+}
+
+void
+font_style_uninit (struct font_style *font)
+{
+  if (font)
+    free (font->typeface);
+}
+
+void
+area_style_copy (struct area_style *dst, const struct area_style *src)
+{
+  font_style_copy (&dst->font_style, &src->font_style);
+  dst->cell_style = src->cell_style;
+}
+
+void
+area_style_uninit (struct area_style *area)
+{
+  if (area)
+    font_style_uninit (&area->font_style);
+}
+
+const char *
+table_stroke_to_string (enum table_stroke stroke)
+{
+  switch (stroke)
+    {
+    case TABLE_STROKE_NONE: return "none";
+    case TABLE_STROKE_SOLID: return "solid";
+    case TABLE_STROKE_DASHED: return "dashed";
+    case TABLE_STROKE_THICK: return "thick";
+    case TABLE_STROKE_THIN: return "thin";
+    case TABLE_STROKE_DOUBLE: return "double";
+    default:
+      return "**error**";
+    }
+}
+
+void
+cell_color_dump (const struct cell_color *c)
+{
+  if (c->alpha != 255)
+    printf ("rgba(%d, %d, %d, %d)", c->r, c->g, c->b, c->alpha);
+  else
+    printf ("#%02"PRIx8"%02"PRIx8"%02"PRIx8, c->r, c->g, c->b);
+}
+
+void
+font_style_dump (const struct font_style *f)
+{
+  printf ("%s %dpx ", f->typeface, f->size);
+  cell_color_dump (&f->fg[0]);
+  putchar ('/');
+  cell_color_dump (&f->bg[0]);
+  if (!cell_color_equal (&f->fg[0], &f->fg[1])
+      || !cell_color_equal (&f->bg[0], &f->bg[1]))
+    {
+      printf (" alt=");
+      cell_color_dump (&f->fg[1]);
+      putchar ('/');
+      cell_color_dump (&f->bg[1]);
+    }
+  if (f->bold)
+    fputs (" bold", stdout);
+  if (f->italic)
+    fputs (" italic", stdout);
+  if (f->underline)
+    fputs (" underline", stdout);
+}
+
+void
+cell_style_dump (const struct cell_style *c)
+{
+  fputs (table_halign_to_string (c->halign), stdout);
+  if (c->halign == TABLE_HALIGN_DECIMAL)
+    printf ("(%.2gpx)", c->decimal_offset);
+  printf (" %s", table_valign_to_string (c->valign));
+  printf (" %d,%d,%d,%dpx",
+          c->margin[TABLE_HORZ][0], c->margin[TABLE_HORZ][1],
+          c->margin[TABLE_VERT][0], c->margin[TABLE_VERT][1]);
+}

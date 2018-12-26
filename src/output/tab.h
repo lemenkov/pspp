@@ -51,8 +51,23 @@ enum result_class
     n_RC
   };
 
-#define TAB_STYLE_MASK (7u << (TAB_FIRST_AVAILABLE + 3))
-#define TAB_STYLE_SHIFT (TAB_FIRST_AVAILABLE + 3)
+#define TAB_STYLE_MASK (7u << (TAB_FIRST_AVAILABLE + 1))
+#define TAB_STYLE_SHIFT (TAB_FIRST_AVAILABLE + 1)
+
+enum
+  {
+    /* Horizontal alignment of cell contents. */
+    TAB_RIGHT      = 0 << (TAB_FIRST_AVAILABLE + 2),
+    TAB_LEFT       = 1 << (TAB_FIRST_AVAILABLE + 2),
+    TAB_CENTER     = 2 << (TAB_FIRST_AVAILABLE + 2),
+    TAB_HALIGN     = 3 << (TAB_FIRST_AVAILABLE + 2), /* Alignment mask. */
+
+    /* Vertical alignment of cell contents. */
+    TAB_TOP        = 0 << (TAB_FIRST_AVAILABLE + 4),
+    TAB_MIDDLE     = 1 << (TAB_FIRST_AVAILABLE + 4),
+    TAB_BOTTOM     = 2 << (TAB_FIRST_AVAILABLE + 4),
+    TAB_VALIGN     = 3 << (TAB_FIRST_AVAILABLE + 4), /* Alignment mask. */
+  };
 
 /* Rule masks. */
 #define TAB_RULE_TYPE_MASK   7
@@ -78,7 +93,7 @@ struct tab_table
        points to a struct tab_joined_cell. */
     void **cc;                  /* Cell contents; void *[nr][nc]. */
     unsigned short *ct;		/* Cell types; unsigned short[nr][nc]. */
-    struct cell_style *styles[8];
+    struct area_style *styles[8];
 
     /* Rules. */
     unsigned char *rh;		/* Horiz rules; unsigned char[nr+1][nc]. */
@@ -156,12 +171,12 @@ void tab_joint_text_format (struct tab_table *, int x1, int y1, int x2, int y2,
 
 struct footnote *tab_create_footnote (struct tab_table *, size_t idx,
                                       const char *content, const char *marker,
-                                      struct cell_style *);
+                                      struct area_style *);
 void tab_add_footnote (struct tab_table *, int x, int y,
                        const struct footnote *);
 
 void tab_add_style (struct tab_table *, int x, int y,
-                    const struct cell_style *);
+                    const struct area_style *);
 
 bool tab_cell_is_empty (const struct tab_table *, int c, int r);
 

@@ -36,55 +36,165 @@
    table-item.h) for that purpose. */
 
 #include <stdbool.h>
+#include <stdint.h>
 #include <stddef.h>
 
 struct casereader;
 struct fmt_spec;
+struct pool;
 struct table_item;
 struct variable;
+
+/* A table axis.
+
+   Many table-related declarations use 2-element arrays in place of "x" and "y"
+   variables.  This reduces code duplication significantly, because much table
+   code treats rows and columns the same way.
+
+   A lot of code that uses these enumerations assumes that the two values are 0
+   and 1, so don't change them to other values. */
+enum table_axis
+  {
+    TABLE_HORZ,
+    TABLE_VERT,
+    TABLE_N_AXES
+  };
+
+struct cell_color
+  {
+    uint8_t alpha, r, g, b;
+  };
+
+#define CELL_COLOR(r, g, b) (struct cell_color) { 255, r, g, b }
+#define CELL_COLOR_BLACK CELL_COLOR (0, 0, 0)
+#define CELL_COLOR_WHITE CELL_COLOR (255, 255, 255)
+
+static inline bool
+cell_color_equal (const struct cell_color *a, const struct cell_color *b)
+{
+  return a->alpha == b->alpha && a->r == b->r && a->g == b->g && a->b == b->b;
+}
+
+void cell_color_dump (const struct cell_color *);
+
+enum table_stroke
+  {
+    TABLE_STROKE_NONE,
+    TABLE_STROKE_SOLID,
+    TABLE_STROKE_DASHED,
+    TABLE_STROKE_THICK,
+    TABLE_STROKE_THIN,
+    TABLE_STROKE_DOUBLE,
+    TABLE_N_STROKES,
+  };
+
+const char *table_stroke_to_string (enum table_stroke);
+
+struct table_border_style
+  {
+    enum table_stroke stroke;
+    struct cell_color color;
+  };
+
+#define TABLE_BORDER_STYLE_INITIALIZER { TABLE_STROKE_SOLID, CELL_COLOR_BLACK }
+
+enum table_halign
+  {
+    TABLE_HALIGN_RIGHT,
+    TABLE_HALIGN_LEFT,
+    TABLE_HALIGN_CENTER,
+    TABLE_HALIGN_MIXED,
+    TABLE_HALIGN_DECIMAL
+  };
+
+const char *table_halign_to_string (enum table_halign);
+
+enum table_valign
+  {
+    TABLE_VALIGN_TOP,
+    TABLE_VALIGN_CENTER,
+    TABLE_VALIGN_BOTTOM,
+  };
+
+const char *table_valign_to_string (enum table_valign);
+
+struct cell_style
+  {
+    enum table_halign halign;
+    enum table_valign valign;
+    double decimal_offset;       /* In 1/96" units. */
+    char decimal_char;           /* Either '.' or ','. */
+    int margin[TABLE_N_AXES][2]; /* In 1/96" units. */
+  };
+
+#define CELL_STYLE_INITIALIZER { CELL_STYLE_INITIALIZER__ }
+#define CELL_STYLE_INITIALIZER__                                \
+        .margin = { [TABLE_HORZ][0] = 8, [TABLE_HORZ][1] = 11,  \
+                    [TABLE_VERT][0] = 1, [TABLE_VERT][1] = 1 }
+
+void cell_style_dump (const struct cell_style *);
+
+struct font_style
+  {
+    bool bold, italic, underline, markup;
+    struct cell_color fg[2], bg[2];
+    char *typeface;
+    int size;
+  };
+
+#define FONT_STYLE_INITIALIZER { FONT_STYLE_INITIALIZER__ }
+#define FONT_STYLE_INITIALIZER__                                        \
+        .fg = { [0] = CELL_COLOR_BLACK, [1] = CELL_COLOR_BLACK},        \
+        .bg = { [0] = CELL_COLOR_WHITE, [1] = CELL_COLOR_WHITE},
+
+void font_style_copy (struct font_style *, const struct font_style *);
+void font_style_uninit (struct font_style *);
+void font_style_dump (const struct font_style *);
+
+struct area_style
+  {
+    struct cell_style cell_style;
+    struct font_style font_style;
+  };
+
+#define AREA_STYLE_INITIALIZER { AREA_STYLE_INITIALIZER__ }
+#define AREA_STYLE_INITIALIZER__                \
+       .cell_style = CELL_STYLE_INITIALIZER,    \
+       .font_style = FONT_STYLE_INITIALIZER
+
+struct area_style *area_style_clone (struct pool *, const struct area_style *);
+void area_style_copy (struct area_style *, const struct area_style *);
+void area_style_uninit (struct area_style *);
+void area_style_free (struct area_style *);
 
 /* Properties of a table cell. */
 enum
   {
     TAB_NONE = 0,
-
-    /* Horizontal alignment of cell contents. */
-    TAB_RIGHT      = 0 << 0,
-    TAB_LEFT       = 1 << 0,
-    TAB_CENTER     = 2 << 0,
-    TAB_HALIGN     = 3 << 0,	/* Alignment mask. */
-
-    /* Vertical alignment of cell contents. */
-    TAB_TOP        = 0 << 2,
-    TAB_MIDDLE     = 1 << 2,
-    TAB_BOTTOM     = 2 << 2,
-    TAB_VALIGN     = 3 << 2,	/* Alignment mask. */
-
-    /* These flags may be combined with any alignment. */
-    TAB_EMPH       = 1 << 4,    /* Emphasize cell contents. */
-    TAB_FIX        = 1 << 5,    /* Use fixed font. */
-    TAB_MARKUP     = 1 << 6,    /* Text contains Pango markup. */
-    TAB_ROTATE     = 1 << 7,    /* Rotate cell contents 90 degrees. */
+    TAB_EMPH       = 1 << 0,    /* Emphasize cell contents. */
+    TAB_FIX        = 1 << 1,    /* Use fixed font. */
+    TAB_MARKUP     = 1 << 2,    /* Text contains Pango markup. */
+    TAB_NUMERIC    = 1 << 3,    /* Cell contents are numeric. */
+    TAB_ROTATE     = 1 << 4,    /* Rotate cell contents 90 degrees. */
 
     /* Bits with values (1 << TAB_FIRST_AVAILABLE) and higher are
        not used, so they are available for subclasses to use as
        they wish. */
-    TAB_FIRST_AVAILABLE = 8
+    TAB_FIRST_AVAILABLE = 5
   };
 
 /* Styles for the rules around table cells. */
 enum
   {
-    TAL_NONE,			/* No spacing. */
+    TAL_NONE = TABLE_STROKE_NONE,
 #define TAL_0 TAL_NONE
-    TAL_SOLID,
+    TAL_SOLID = TABLE_STROKE_SOLID,
 #define TAL_1 TAL_SOLID
-    TAL_DASHED,
-    TAL_THICK,
-    TAL_THIN,
-    TAL_DOUBLE,
+    TAL_DASHED = TABLE_STROKE_DASHED,
+    TAL_THICK = TABLE_STROKE_THICK,
+    TAL_THIN = TABLE_STROKE_THIN,
+    TAL_DOUBLE = TABLE_STROKE_DOUBLE,
 #define TAL_2 TAL_DOUBLE
-    N_LINES
   };
 
 /* Given line styles A and B (each one of the TAL_* enumeration constants
@@ -97,21 +207,6 @@ static inline int table_rule_combine (int a, int b)
 {
   return a > b ? a : b;
 }
-
-/* A table axis.
-
-   Many table-related declarations use 2-element arrays in place of "x" and "y"
-   variables.  This reduces code duplication significantly, because much table
-   code has treat rows and columns the same way.
-
-   A lot of code that uses these enumerations assumes that the two values are 0
-   and 1, so don't change them to other values. */
-enum table_axis
-  {
-    TABLE_HORZ,
-    TABLE_VERT,
-    TABLE_N_AXES
-  };
 
 /* A table. */
 struct table
@@ -175,9 +270,7 @@ void table_set_hb (struct table *, int hb);
 /* Table classes. */
 
 /* Simple kinds of tables. */
-struct table *table_from_string (unsigned int options, const char *);
-struct table *table_from_string_span (unsigned int options, const char *,
-                                      int colspan, int rowspan);
+struct table *table_from_string (enum table_halign, const char *);
 struct table *table_from_variables (unsigned int options,
                                     struct variable **, size_t);
 struct table *table_from_casereader (const struct casereader *,

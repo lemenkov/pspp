@@ -436,7 +436,7 @@ ascii_output_text (struct ascii_driver *a, const char *text)
 {
   struct table_item *table_item;
 
-  table_item = table_item_create (table_from_string (TAB_LEFT, text),
+  table_item = table_item_create (table_from_string (TABLE_HALIGN_LEFT, text),
                                   NULL, NULL);
   ascii_output_table_item (a, table_item);
   table_item_unref (table_item);
@@ -631,7 +631,7 @@ ascii_reserve (struct ascii_driver *a, int y, int x0, int x1, int n)
 }
 
 static void
-text_draw (struct ascii_driver *a, unsigned int options,
+text_draw (struct ascii_driver *a, enum table_halign halign, int options,
            bool bold, bool underline,
            int bb[TABLE_N_AXES][2], int clip[TABLE_N_AXES][2],
            int y, const uint8_t *string, int n, size_t width)
@@ -645,15 +645,16 @@ text_draw (struct ascii_driver *a, unsigned int options,
   if (y < y0 || y >= y1)
     return;
 
-  switch (options & TAB_HALIGN)
+  switch (table_halign_interpret (halign, options & TAB_NUMERIC))
     {
-    case TAB_LEFT:
+    case TABLE_HALIGN_LEFT:
       x = bb[H][0];
       break;
-    case TAB_CENTER:
+    case TABLE_HALIGN_CENTER:
       x = (bb[H][0] + bb[H][1] - width + 1) / 2;
       break;
-    case TAB_RIGHT:
+    case TABLE_HALIGN_RIGHT:
+    case TABLE_HALIGN_DECIMAL:
       x = bb[H][1] - width;
       break;
     default:
@@ -872,7 +873,9 @@ ascii_layout_cell (struct ascii_driver *a, const struct table_cell *cell,
       width -= ofs - graph_ofs;
 
       /* Draw text. */
-      text_draw (a, cell->options, cell->style->bold, cell->style->underline,
+      text_draw (a, cell->style->cell_style.halign, cell->options,
+                 cell->style->font_style.bold,
+                 cell->style->font_style.underline,
                  bb, clip, y, line, graph_ofs, width);
 
       /* If a new-line ended the line, just skip the new-line.  Otherwise, skip
@@ -905,9 +908,9 @@ ascii_test_write (struct output_driver *driver,
   if (a->file == NULL && !ascii_open_page (a))
     return;
 
-  struct cell_style style = {
-    .bold = bold,
-    .underline = underline,
+  struct area_style style = {
+    .font_style.bold = bold,
+    .font_style.underline = underline,
   };
   struct table_cell cell = {
     .options = TAB_LEFT,

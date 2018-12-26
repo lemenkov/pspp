@@ -409,6 +409,14 @@ xr_measure_fonts (cairo_t *cairo, const struct xr_font fonts[XR_N_FONTS],
 }
 
 static int
+get_layout_height (PangoLayout *layout)
+{
+  int w, h;
+  pango_layout_get_size (layout, &w, &h);
+  return h;
+}
+
+static int
 xr_render_page_heading (cairo_t *cairo, const PangoFontDescription *font,
                         const struct page_heading *ph, int page_number,
                         int width, bool draw, int base_y)
@@ -426,10 +434,12 @@ xr_render_page_heading (cairo_t *cairo, const PangoFontDescription *font,
       pango_layout_set_markup (layout, markup, -1);
       free (markup);
 
-      pango_layout_set_alignment (layout,
-                                  (pp->halign == TAB_RIGHT ? PANGO_ALIGN_RIGHT
-                                   : pp->halign == TAB_LEFT ? PANGO_ALIGN_LEFT
-                                   : PANGO_ALIGN_CENTER));
+      pango_layout_set_alignment (
+        layout,
+        (pp->halign == TABLE_HALIGN_LEFT ? PANGO_ALIGN_LEFT
+         : pp->halign == TABLE_HALIGN_CENTER ? PANGO_ALIGN_CENTER
+         : pp->halign == TABLE_HALIGN_MIXED ? PANGO_ALIGN_LEFT
+         : PANGO_ALIGN_RIGHT));
       pango_layout_set_width (layout, xr_to_pango (width));
       if (draw)
         {
@@ -439,9 +449,7 @@ xr_render_page_heading (cairo_t *cairo, const PangoFontDescription *font,
           cairo_restore (cairo);
         }
 
-      int w, h;
-      pango_layout_get_size (layout, &w, &h);
-      y += pango_to_xr (h);
+      y += pango_to_xr (get_layout_height (layout));
     }
 
   g_object_unref (G_OBJECT (layout));
@@ -1056,11 +1064,11 @@ xr_measure_cell_width (void *xr_, const struct table_cell *cell,
   xr_layout_cell (xr, cell, bb, clip, min_width, &h, NULL);
 
   if (*min_width > 0)
-    *min_width += px_to_xr (cell->style->margin[H][0]
-                            + cell->style->margin[H][1]);
+    *min_width += px_to_xr (cell->style->cell_style.margin[H][0]
+                            + cell->style->cell_style.margin[H][1]);
   if (*max_width > 0)
-    *max_width += px_to_xr (cell->style->margin[H][0]
-                            + cell->style->margin[H][1]);
+    *max_width += px_to_xr (cell->style->cell_style.margin[H][0]
+                            + cell->style->cell_style.margin[H][1]);
 }
 
 static int
@@ -1072,13 +1080,14 @@ xr_measure_cell_height (void *xr_, const struct table_cell *cell, int width)
   int w, h;
 
   bb[H][0] = 0;
-  bb[H][1] = width - px_to_xr (cell->style->margin[H][0]
-                               + cell->style->margin[H][1]);
+  bb[H][1] = width - px_to_xr (cell->style->cell_style.margin[H][0]
+                               + cell->style->cell_style.margin[H][1]);
   bb[V][0] = 0;
   bb[V][1] = INT_MAX;
   clip[H][0] = clip[H][1] = clip[V][0] = clip[V][1] = 0;
   xr_layout_cell (xr, cell, bb, clip, &w, &h, NULL);
-  h += px_to_xr (cell->style->margin[V][0] + cell->style->margin[V][1]);
+  h += px_to_xr (cell->style->cell_style.margin[V][0]
+                 + cell->style->cell_style.margin[V][1]);
   return h;
 }
 
@@ -1107,9 +1116,9 @@ xr_draw_cell (void *xr_, const struct table_cell *cell, int color_idx,
     }
   xr_clip (xr, bg_clip);
   cairo_set_source_rgb (xr->cairo,
-                        cell->style->bg[color_idx].r / 255.,
-                        cell->style->bg[color_idx].g / 255.,
-                        cell->style->bg[color_idx].b / 255.);
+                        cell->style->font_style.bg[color_idx].r / 255.,
+                        cell->style->font_style.bg[color_idx].g / 255.,
+                        cell->style->font_style.bg[color_idx].b / 255.);
   fill_rectangle (xr,
                   bb[H][0] - spill[H][0],
                   bb[V][0] - spill[V][0],
@@ -1119,14 +1128,14 @@ xr_draw_cell (void *xr_, const struct table_cell *cell, int color_idx,
 
   cairo_save (xr->cairo);
   cairo_set_source_rgb (xr->cairo,
-                        cell->style->fg[color_idx].r / 255.,
-                        cell->style->fg[color_idx].g / 255.,
-                        cell->style->fg[color_idx].b / 255.);
+                        cell->style->font_style.fg[color_idx].r / 255.,
+                        cell->style->font_style.fg[color_idx].g / 255.,
+                        cell->style->font_style.fg[color_idx].b / 255.);
 
   for (int axis = 0; axis < TABLE_N_AXES; axis++)
     {
-      bb[axis][0] += px_to_xr (cell->style->margin[axis][0]);
-      bb[axis][1] -= px_to_xr (cell->style->margin[axis][1]);
+      bb[axis][0] += px_to_xr (cell->style->cell_style.margin[axis][0]);
+      bb[axis][1] -= px_to_xr (cell->style->cell_style.margin[axis][1]);
     }
   if (bb[H][0] < bb[H][1] && bb[V][0] < bb[V][1])
     xr_layout_cell (xr, cell, bb, clip, &w, &h, &brk);
@@ -1146,13 +1155,13 @@ xr_adjust_break (void *xr_, const struct table_cell *cell,
     return -1;
 
   bb[H][0] = 0;
-  bb[H][1] = width - px_to_xr (cell->style->margin[H][0]
-                               + cell->style->margin[H][1]);
+  bb[H][1] = width - px_to_xr (cell->style->cell_style.margin[H][0]
+                               + cell->style->cell_style.margin[H][1]);
   if (bb[H][1] <= 0)
     return 0;
   bb[V][0] = 0;
-  bb[V][1] = height - px_to_xr (cell->style->margin[V][0]
-                                + cell->style->margin[V][1]);
+  bb[V][1] = height - px_to_xr (cell->style->cell_style.margin[V][0]
+                                + cell->style->cell_style.margin[V][1]);
   clip[H][0] = clip[H][1] = clip[V][0] = clip[V][1] = 0;
   xr_layout_cell (xr, cell, bb, clip, &w, &h, &brk);
   return brk;
@@ -1214,7 +1223,8 @@ xr_layout_cell_text (struct xr_driver *xr, const struct table_cell *cell,
                      int bb[TABLE_N_AXES][2], int clip[TABLE_N_AXES][2],
                      int *widthp, int *brk)
 {
-  const struct cell_style *style = cell->style;
+  const struct font_style *font_style = &cell->style->font_style;
+  const struct cell_style *cell_style = &cell->style->cell_style;
   unsigned int options = cell->options;
 
   enum table_axis X = options & TAB_ROTATE ? V : H;
@@ -1225,12 +1235,12 @@ xr_layout_cell_text (struct xr_driver *xr, const struct table_cell *cell,
                           : options & TAB_EMPH ? &xr->fonts[XR_FONT_EMPHASIS]
                           : &xr->fonts[XR_FONT_PROPORTIONAL]);
   struct xr_font local_font;
-  if (cell->style->typeface)
+  if (font_style->typeface)
     {
       PangoFontDescription *desc = parse_font (
-        style->typeface,
-        style->size ? style->size * 1000 * 72 / 128 : 10000,
-        style->bold, style->italic);
+        font_style->typeface,
+        font_style->size ? font_style->size * 1000 * 72 / 128 : 10000,
+        font_style->bold, font_style->italic);
       if (desc)
         {
           PangoLayout *layout = pango_cairo_create_layout (xr->cairo);
@@ -1242,30 +1252,26 @@ xr_layout_cell_text (struct xr_driver *xr, const struct table_cell *cell,
         }
     }
 
-  int footnote_adjustment;
-  if (cell->n_footnotes == 0)
-    footnote_adjustment = 0;
-  else if (cell->n_footnotes == 1 && (options & TAB_HALIGN) == TAB_RIGHT)
+  const char *text = cell->text;
+  enum table_halign halign = table_halign_interpret (
+    cell_style->halign, cell->options & TAB_NUMERIC);
+  if (cell_style->halign == TABLE_HALIGN_DECIMAL && !(options & TAB_ROTATE))
     {
-      const char *marker = cell->footnotes[0]->marker;
-      pango_layout_set_text (font->layout, marker, strlen (marker));
+      int margin_adjustment = -px_to_xr (cell_style->decimal_offset);
 
-      PangoAttrList *attrs = pango_attr_list_new ();
-      pango_attr_list_insert (attrs, pango_attr_rise_new (7000));
-      pango_layout_set_attributes (font->layout, attrs);
-      pango_attr_list_unref (attrs);
+      const char *decimal = strrchr (text, cell_style->decimal_char);
+      if (decimal)
+        {
+          pango_layout_set_text (font->layout, decimal, strlen (decimal));
+          pango_layout_set_width (font->layout, -1);
+          margin_adjustment += get_layout_dimension (font->layout, H);
+        }
 
-      int w = get_layout_dimension (font->layout, X);
-      int right_margin = px_to_xr (cell->style->margin[X][R]);
-      footnote_adjustment = MIN (w, right_margin);
-
-      pango_layout_set_attributes (font->layout, NULL);
+      if (margin_adjustment < 0)
+        bb[H][1] += margin_adjustment;
     }
-  else
-    footnote_adjustment = px_to_xr (cell->style->margin[X][R]);
 
   struct string tmp = DS_EMPTY_INITIALIZER;
-  const char *text = cell->text;
 
   /* Deal with an oddity of the Unicode line-breaking algorithm (or perhaps in
      Pango's implementation of it): it will break after a period or a comma
@@ -1295,8 +1301,28 @@ xr_layout_cell_text (struct xr_driver *xr, const struct table_cell *cell,
         }
     }
 
-  if (footnote_adjustment)
+  if (cell->n_footnotes)
     {
+      int footnote_adjustment;
+      if (cell->n_footnotes == 1 && halign == TABLE_HALIGN_RIGHT)
+        {
+          const char *marker = cell->footnotes[0]->marker;
+          pango_layout_set_text (font->layout, marker, strlen (marker));
+
+          PangoAttrList *attrs = pango_attr_list_new ();
+          pango_attr_list_insert (attrs, pango_attr_rise_new (7000));
+          pango_layout_set_attributes (font->layout, attrs);
+          pango_attr_list_unref (attrs);
+
+          int w = get_layout_dimension (font->layout, X);
+          int right_margin = px_to_xr (cell_style->margin[X][R]);
+          footnote_adjustment = MIN (w, right_margin);
+
+          pango_layout_set_attributes (font->layout, NULL);
+        }
+      else
+        footnote_adjustment = px_to_xr (cell_style->margin[X][R]);
+
       if (R)
         bb[X][R] += footnote_adjustment;
       else
@@ -1328,7 +1354,7 @@ xr_layout_cell_text (struct xr_driver *xr, const struct table_cell *cell,
         pango_layout_set_text (font->layout, ds_cstr (&tmp), ds_length (&tmp));
 
       PangoAttrList *attrs = pango_attr_list_new ();
-      if (style->underline)
+      if (font_style->underline)
         pango_attr_list_insert (attrs, pango_attr_underline_new (
                                PANGO_UNDERLINE_SINGLE));
       add_attr_with_start (attrs, pango_attr_rise_new (7000), initial_length);
@@ -1345,7 +1371,7 @@ xr_layout_cell_text (struct xr_driver *xr, const struct table_cell *cell,
       else
         pango_layout_set_text (font->layout, content, -1);
 
-      if (style->underline)
+      if (font_style->underline)
         {
           PangoAttrList *attrs = pango_attr_list_new ();
           pango_attr_list_insert (attrs, pango_attr_underline_new (
@@ -1356,11 +1382,10 @@ xr_layout_cell_text (struct xr_driver *xr, const struct table_cell *cell,
     }
   ds_destroy (&tmp);
 
-  pango_layout_set_alignment (
-    font->layout,
-    ((options & TAB_HALIGN) == TAB_RIGHT ? PANGO_ALIGN_RIGHT
-     : (options & TAB_HALIGN) == TAB_LEFT ? PANGO_ALIGN_LEFT
-     : PANGO_ALIGN_CENTER));
+  pango_layout_set_alignment (font->layout,
+                              (halign == TABLE_HALIGN_RIGHT ? PANGO_ALIGN_RIGHT
+                               : halign == TABLE_HALIGN_LEFT ? PANGO_ALIGN_LEFT
+                               : PANGO_ALIGN_CENTER));
   pango_layout_set_width (
     font->layout,
     bb[X][1] == INT_MAX ? -1 : xr_to_pango (bb[X][1] - bb[X][0]));
@@ -1561,7 +1586,7 @@ xr_rendering_create_text (struct xr_driver *xr, const char *text, cairo_t *cr)
   struct table_item *table_item;
   struct xr_rendering *r;
 
-  table_item = table_item_create (table_from_string (TAB_LEFT, text),
+  table_item = table_item_create (table_from_string (TABLE_HALIGN_LEFT, text),
                                   NULL, NULL);
   r = xr_rendering_create (xr, &table_item->output_item, cr);
   table_item_unref (table_item);

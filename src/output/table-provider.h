@@ -23,53 +23,15 @@
 struct pool;
 struct string;
 
+enum table_halign table_halign_interpret (enum table_halign, bool numeric);
+
 struct footnote
   {
     size_t idx;
     char *content;
     char *marker;
-    struct cell_style *style;
+    struct area_style *style;
   };
-
-struct cell_color
-  {
-    uint8_t r, g, b;
-  };
-
-#define CELL_COLOR(r, g, b) (struct cell_color) { r, g, b }
-#define CELL_COLOR_BLACK CELL_COLOR (0, 0, 0)
-#define CELL_COLOR_WHITE CELL_COLOR (255, 255, 255)
-
-static inline bool
-cell_color_equal (const struct cell_color *a, const struct cell_color *b)
-{
-  return a->r == b->r && a->g == b->g && a->b == b->b;
-}
-
-struct cell_style
-  {
-    struct cell_color fg[2], bg[2];
-    int margin[TABLE_N_AXES][2];
-    char *typeface;
-    int size;
-    bool bold, italic, underline;
-  };
-
-#define CELL_STYLE_INITIALIZER                                  \
-    {                                                           \
-      .fg = { [0] = CELL_COLOR_BLACK, [1] = CELL_COLOR_BLACK},  \
-      .bg = { [0] = CELL_COLOR_WHITE, [1] = CELL_COLOR_WHITE},  \
-      .margin = { [TABLE_HORZ][0] = 8, [TABLE_HORZ][1] = 11,    \
-                  [TABLE_VERT][0] = 1, [TABLE_VERT][1] = 1 },   \
-      .typeface = NULL,                                         \
-      .size = 0,                                                \
-      .bold = false,                                            \
-      .italic = false,                                          \
-      .underline = false,                                       \
-    }
-
-struct cell_style *cell_style_clone (struct pool *, const struct cell_style *);
-void cell_style_free (struct cell_style *);
 
 /* A cell in a table. */
 struct table_cell
@@ -98,7 +60,7 @@ struct table_cell
     const struct footnote **footnotes;
     size_t n_footnotes;
 
-    const struct cell_style *style;
+    const struct area_style *style;
 
     /* Called to free the cell's data, if nonnull. */
     void (*destructor) (void *destructor_aux);

@@ -50,9 +50,10 @@ struct text_item
     struct output_item output_item;
     char *text;                 /* The content. */
     enum text_item_type type;   /* Type. */
+
+    bool bold, italic, underline, markup;
     char *typeface;
     int size;
-    bool bold, italic, underline, markup;
   };
 
 struct text_item *text_item_create (enum text_item_type, const char *text);

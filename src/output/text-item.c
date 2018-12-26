@@ -99,14 +99,16 @@ text_item_to_table_item (struct text_item *text_item)
 {
   struct tab_table *tab = tab_create (1, 1);
 
-  struct cell_style *style = pool_alloc (tab->container, sizeof *style);
-  *style = (struct cell_style) CELL_STYLE_INITIALIZER;
+  struct area_style *style = pool_alloc (tab->container, sizeof *style);
+  *style = (struct area_style) AREA_STYLE_INITIALIZER;
+  struct font_style *font_style = &style->font_style;
   if (text_item->typeface)
-    style->typeface = pool_strdup (tab->container, text_item->typeface);
-  style->size = text_item->size;
-  style->bold = text_item->bold;
-  style->italic = text_item->italic;
-  style->underline = text_item->underline;
+    font_style->typeface = pool_strdup (tab->container, text_item->typeface);
+  font_style->size = text_item->size;
+  font_style->bold = text_item->bold;
+  font_style->italic = text_item->italic;
+  font_style->underline = text_item->underline;
+  font_style->markup = text_item->markup;
   tab->styles[0] = style;
 
   int opts = TAB_LEFT;

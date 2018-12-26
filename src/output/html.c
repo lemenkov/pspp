@@ -501,15 +501,23 @@ html_output_table (struct html_driver *html, const struct table_item *item)
           tag = is_header ? "TH" : "TD";
           fprintf (html->file, "    <%s", tag);
 
-          int halign = cell.options & TAB_HALIGN;
-          if (halign != TAB_LEFT)
-            fprintf (html->file, " ALIGN=\"%s\"",
-                     halign == TAB_RIGHT ? "RIGHT" : "CENTER");
+          enum table_halign halign = table_halign_interpret (
+            cell.style->cell_style.halign, cell.options & TAB_NUMERIC);
+          if (halign != TABLE_HALIGN_LEFT)
+            {
+              fprintf (html->file, " ALIGN=\"%s\"",
+                       (halign == TABLE_HALIGN_RIGHT ? "RIGHT"
+                        : halign == TABLE_HALIGN_CENTER ? "CENTER"
+                        : "CHAR"));
+              if (cell.style->cell_style.decimal_char)
+                fprintf (html->file, " CHAR=\"%c\"",
+                         cell.style->cell_style.decimal_char);
+            }
 
-          int valign = cell.options & TAB_VALIGN;
-          if (valign != TAB_TOP)
+          if (cell.style->cell_style.valign != TABLE_VALIGN_TOP)
             fprintf (html->file, " ALIGN=\"%s\"",
-                     valign == TAB_BOTTOM ? "BOTTOM" : "MIDDLE");
+                     (cell.style->cell_style.valign == TABLE_VALIGN_BOTTOM
+                      ? "BOTTOM" : "MIDDLE"));
 
           colspan = table_cell_colspan (&cell);
           if (colspan > 1)

@@ -27,6 +27,7 @@
 
 #include "libpspp/compiler.h"
 #include "output/output-item.h"
+#include "output/table.h"
 
 /* Title or caption in a table item. */
 struct table_item_text
@@ -34,8 +35,7 @@ struct table_item_text
     char *content;
     const struct footnote **footnotes;
     size_t n_footnotes;
-    int halign;                 /* TAB_*. */
-    struct cell_style *style;
+    struct area_style *style;
   };
 
 struct table_item_text *table_item_text_create (const char *);

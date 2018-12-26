@@ -106,11 +106,17 @@ table_casereader_get_cell (const struct table *t, int x, int y,
   struct ccase *c;
   char *s;
 
+  static const struct area_style style = {
+    AREA_STYLE_INITIALIZER__,
+    .cell_style.halign = TABLE_HALIGN_RIGHT
+  };
+
   cell->d[TABLE_HORZ][0] = x;
   cell->d[TABLE_HORZ][1] = x + 1;
   cell->d[TABLE_VERT][0] = y;
   cell->d[TABLE_VERT][1] = y + 1;
-  cell->options = TAB_RIGHT;
+  cell->style = &style;
+  cell->options = 0;
   cell->n_footnotes = 0;
   if (tc->heading != NULL)
     {

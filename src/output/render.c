@@ -507,7 +507,7 @@ measure_rule (const struct render_params *params, const struct table *table,
 
   /* Calculate maximum width of the rules that are present. */
   int width = 0;
-  for (size_t i = 0; i < N_LINES; i++)
+  for (size_t i = 0; i < TABLE_N_STROKES; i++)
     if (rules & (1u << i))
       width = MAX (width, params->line_widths[a][rule_to_render_type (i)]);
   return width;
@@ -983,15 +983,15 @@ render_cell (const struct render_page *page, const int ofs[TABLE_N_AXES],
   bb[V][0] = clip[V][0] = ofs[V] + page->cp[V][cell->d[V][0] * 2 + 1];
   bb[V][1] = clip[V][1] = ofs[V] + page->cp[V][cell->d[V][1] * 2];
 
-  int valign = cell->options & TAB_VALIGN;
-  if (valign != TAB_TOP)
+  enum table_valign valign = cell->style->cell_style.valign;
+  if (valign != TABLE_VALIGN_TOP)
     {
       int height = page->params->measure_cell_height (
         page->params->aux, cell, bb[H][1] - bb[H][0]);
       int extra = bb[V][1] - bb[V][0] - height;
       if (extra > 0)
         {
-          if (valign == TAB_MIDDLE)
+          if (valign == TABLE_VALIGN_CENTER)
             extra /= 2;
           bb[V][0] += extra;
         }
@@ -1453,11 +1453,11 @@ add_text_page (struct render_pager *p, const struct table_item_text *t,
     return;
 
   struct tab_table *tab = tab_create (1, 1);
-  tab_text (tab, 0, 0, t->halign, t->content);
+  tab_text (tab, 0, 0, 0, t->content);
   for (size_t i = 0; i < t->n_footnotes; i++)
     tab_add_footnote (tab, 0, 0, t->footnotes[i]);
   if (t->style)
-    tab->styles[0] = cell_style_clone (tab->container, t->style);
+    tab->styles[0] = area_style_clone (tab->container, t->style);
   render_pager_add_table (p, &tab->table, min_width);
 }
 
