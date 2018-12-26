@@ -101,9 +101,9 @@ text_item_to_table_item (struct text_item *text_item)
 
   struct cell_style *style = pool_alloc (tab->container, sizeof *style);
   *style = (struct cell_style) CELL_STYLE_INITIALIZER;
-  if (text_item->font)
-    style->font = pool_strdup (tab->container, text_item->font);
-  style->font_size = text_item->font_size;
+  if (text_item->typeface)
+    style->typeface = pool_strdup (tab->container, text_item->typeface);
+  style->size = text_item->size;
   style->bold = text_item->bold;
   style->italic = text_item->italic;
   style->underline = text_item->underline;
@@ -118,13 +118,14 @@ text_item_to_table_item (struct text_item *text_item)
   struct table_item *table_item = table_item_create (&tab->table, NULL, NULL);
   text_item_unref (text_item);
   return table_item;
-}
+}
+
 static void
 text_item_destroy (struct output_item *output_item)
 {
   struct text_item *item = to_text_item (output_item);
   free (item->text);
-  free (item->font);
+  free (item->typeface);
   free (item);
 }
 

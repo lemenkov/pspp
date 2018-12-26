@@ -50,8 +50,8 @@ struct cell_style
   {
     struct cell_color fg[2], bg[2];
     int margin[TABLE_N_AXES][2];
-    char *font;
-    int font_size;
+    char *typeface;
+    int size;
     bool bold, italic, underline;
   };
 
@@ -61,8 +61,8 @@ struct cell_style
       .bg = { [0] = CELL_COLOR_WHITE, [1] = CELL_COLOR_WHITE},  \
       .margin = { [TABLE_HORZ][0] = 8, [TABLE_HORZ][1] = 11,    \
                   [TABLE_VERT][0] = 1, [TABLE_VERT][1] = 1 },   \
-      .font = NULL,                                             \
-      .font_size = 0,                                           \
+      .typeface = NULL,                                         \
+      .size = 0,                                                \
       .bold = false,                                            \
       .italic = false,                                          \
       .underline = false,                                       \

@@ -1225,11 +1225,11 @@ xr_layout_cell_text (struct xr_driver *xr, const struct table_cell *cell,
                           : options & TAB_EMPH ? &xr->fonts[XR_FONT_EMPHASIS]
                           : &xr->fonts[XR_FONT_PROPORTIONAL]);
   struct xr_font local_font;
-  if (cell->style->font)
+  if (cell->style->typeface)
     {
       PangoFontDescription *desc = parse_font (
-        style->font,
-        style->font_size ? style->font_size * 1000 * 72 / 128 : 10000,
+        style->typeface,
+        style->size ? style->size * 1000 * 72 / 128 : 10000,
         style->bold, style->italic);
       if (desc)
         {

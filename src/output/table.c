@@ -135,8 +135,8 @@ cell_style_clone (struct pool *pool, const struct cell_style *old)
 {
   struct cell_style *new = pool_malloc (pool, sizeof *new);
   *new = *old;
-  if (new->font)
-    new->font = pool_strdup (pool, new->font);
+  if (new->typeface)
+    new->typeface = pool_strdup (pool, new->typeface);
   return new;
 }
 
@@ -145,7 +145,7 @@ cell_style_free (struct cell_style *style)
 {
   if (style)
     {
-      free (style->font);
+      free (style->typeface);
       free (style);
     }
 }
