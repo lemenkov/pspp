@@ -65,6 +65,8 @@ src_output_liboutput_la_SOURCES = \
 	src/output/output-item-provider.h \
 	src/output/output-item.c \
 	src/output/output-item.h \
+	src/output/page-setup-item.c \
+	src/output/page-setup-item.h \
 	src/output/render.c \
 	src/output/render.h \
 	src/output/tab.c \

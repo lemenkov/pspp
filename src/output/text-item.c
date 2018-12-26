@@ -112,6 +112,8 @@ text_item_to_table_item (struct text_item *text_item)
   int opts = TAB_LEFT;
   if (text_item->markup)
     opts |= TAB_MARKUP;
+  if (text_item->type == TEXT_ITEM_SYNTAX || text_item->type == TEXT_ITEM_LOG)
+    opts |= TAB_FIX;
   tab_text (tab, 0, 0, opts, text_item_get_text (text_item));
   struct table_item *table_item = table_item_create (&tab->table, NULL, NULL);
   text_item_unref (text_item);

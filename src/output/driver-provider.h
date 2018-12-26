@@ -43,6 +43,8 @@ void output_driver_destroy (struct output_driver *);
 
 const char *output_driver_get_name (const struct output_driver *);
 
+char *output_driver_substitute_heading_vars (const char *, int page_number);
+
 /* One kind of output driver.
 
    Output driver implementations must not call msg() to report errors.  This

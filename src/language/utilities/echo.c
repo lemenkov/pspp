@@ -31,7 +31,7 @@ cmd_echo (struct lexer *lexer, struct dataset *ds UNUSED)
   if (!lex_force_string (lexer))
     return CMD_FAILURE;
 
-  text_item_submit (text_item_create (TEXT_ITEM_ECHO, lex_tokcstr (lexer)));
+  text_item_submit (text_item_create (TEXT_ITEM_LOG, lex_tokcstr (lexer)));
   lex_get (lexer);
 
   return CMD_SUCCESS;

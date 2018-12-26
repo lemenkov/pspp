@@ -769,8 +769,8 @@ tab_next_row (struct tab_table *t)
 void
 tab_output_text (int options, const char *string)
 {
-  enum text_item_type type = (options & TAB_EMPH ? TEXT_ITEM_SUBHEAD
-                              : options & TAB_FIX ? TEXT_ITEM_MONOSPACE
+  enum text_item_type type = (options & TAB_EMPH ? TEXT_ITEM_TITLE
+                              : options & TAB_FIX ? TEXT_ITEM_LOG
                               : TEXT_ITEM_PARAGRAPH);
   text_item_submit (text_item_create (type, string));
 }

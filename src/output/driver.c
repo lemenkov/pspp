@@ -26,6 +26,7 @@
 #include <limits.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
 
 #include "data/file-handle-def.h"
 #include "data/settings.h"
@@ -62,6 +63,8 @@ struct output_engine
     char **groups;               /* Command names of nested sections. */
     size_t n_groups;
     size_t allocated_groups;
+
+    struct string_map heading_vars;
   };
 
 static const struct output_driver_factory *factories[];
@@ -77,6 +80,18 @@ engine_stack_top (void)
   return &engine_stack[n_stack - 1];
 }
 
+static void
+put_strftime (const char *key, const char *format,
+              const struct tm *tm, struct string_map *vars)
+{
+  if (!string_map_find (vars, key))
+    {
+      char value[128];
+      strftime (value, sizeof value, format, tm);
+      string_map_insert (vars, key, value);
+    }
+}
+
 void
 output_engine_push (void)
 {
@@ -90,8 +105,13 @@ output_engine_push (void)
   memset (e, 0, sizeof *e);
   llx_init (&e->drivers);
   ds_init_empty (&e->deferred_syntax);
-  e->title = NULL;
-  e->subtitle = NULL;
+
+  string_map_init (&e->heading_vars);
+
+  time_t t = time (NULL);
+  const struct tm *tm = localtime (&t);
+  put_strftime ("Date", "%x", tm, &e->heading_vars);
+  put_strftime ("Time", "%X", tm, &e->heading_vars);
 }
 
 void
@@ -113,6 +133,7 @@ output_engine_pop (void)
   for (size_t i = 0; i < e->n_groups; i++)
     free (e->groups[i]);
   free (e->groups);
+  string_map_destroy (&e->heading_vars);
 }
 
 void
@@ -216,7 +237,29 @@ output_submit (struct output_item *item)
 
       size_t idx = --e->n_groups;
       free (e->groups[idx]);
+      if (idx >= 1 && idx <= 4)
+        {
+          char key[6];
+          snprintf (key, sizeof key, "Head%d", idx);
+          string_map_find_and_delete (&e->heading_vars, key);
+        }
     }
+  else if (is_text_item (item))
+    {
+      const struct text_item *text_item = to_text_item (item);
+      enum text_item_type type = text_item_get_type (text_item);
+      const char *text = text_item_get_text (text_item);
+      if (type == TEXT_ITEM_TITLE
+          && e->n_groups >= 1 && e->n_groups <= 4)
+        {
+          char key[6];
+          snprintf (key, sizeof key, "Head%d", e->n_groups);
+          string_map_replace (&e->heading_vars, key, text);
+        }
+      else if (type == TEXT_ITEM_PAGE_TITLE)
+        string_map_replace (&e->heading_vars, "PageTitle", text);
+    }
+
   output_submit__ (e, item);
 }
 
@@ -281,6 +324,14 @@ output_set_subtitle (const char *subtitle)
   struct output_engine *e = engine_stack_top ();
 
   output_set_title__ (e, &e->subtitle, subtitle);
+}
+
+void
+output_set_filename (const char *filename)
+{
+  struct output_engine *e = engine_stack_top ();
+
+  string_map_replace (&e->heading_vars, "Filename", filename);
 }
 
 size_t
@@ -511,4 +562,40 @@ output_get_text_from_markup (const char *markup)
   xmlFreeDoc (doc);
 
   return content;
+}
+
+char *
+output_driver_substitute_heading_vars (const char *src, int page_number)
+{
+  struct output_engine *e = engine_stack_top ();
+  struct string dst = DS_EMPTY_INITIALIZER;
+  ds_extend (&dst, strlen (src));
+  for (const char *p = src; *p; )
+    {
+      if (!strncmp (p, "&amp;[", 6))
+        {
+          if (page_number != INT_MIN)
+            {
+              const char *start = p + 6;
+              const char *end = strchr (start, ']');
+              if (end)
+                {
+                  const char *value = string_map_find__ (&e->heading_vars,
+                                                         start, end - start);
+                  if (value)
+                    ds_put_cstr (&dst, value);
+                  else if (ss_equals (ss_buffer (start, end - start),
+                                      ss_cstr ("Page")))
+                    ds_put_format (&dst, "%d", page_number);
+                  p = end + 1;
+                  continue;
+                }
+            }
+          ds_put_cstr (&dst, "&amp;");
+          p += 5;
+        }
+      else
+        ds_put_byte (&dst, *p++);
+    }
+  return ds_steal_cstr (&dst);
 }

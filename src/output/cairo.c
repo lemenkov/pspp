@@ -42,6 +42,7 @@
 #include "output/group-item.h"
 #include "output/message-item.h"
 #include "output/options.h"
+#include "output/page-setup-item.h"
 #include "output/render.h"
 #include "output/tab.h"
 #include "output/table-item.h"
@@ -150,9 +151,15 @@ struct xr_driver
     int line_width;		/* Width of lines. */
 
     int min_break[TABLE_N_AXES]; /* Min cell size to break across pages. */
+    int object_spacing;         /* Space between output objects. */
 
     struct xr_color bg;    /* Background color */
     struct xr_color fg;    /* Foreground color */
+
+    int initial_page_number;
+
+    struct page_heading headings[2]; /* Top and bottom headings. */
+    int headings_height[2];
 
     /* Internal state. */
     struct render_params *params;
@@ -161,10 +168,12 @@ struct xr_driver
     char *title;
     char *subtitle;
     cairo_t *cairo;
+    cairo_surface_t *surface;
     int page_number;		/* Current page number. */
     int x, y;
     struct xr_render_fsm *fsm;
     int nest;
+    struct string_map heading_vars;
   };
 
 static const struct output_driver_class cairo_driver_class;
@@ -316,8 +325,6 @@ apply_options (struct xr_driver *xr, struct string_map *o)
   xr->fonts[XR_FONT_EMPHASIS].desc = parse_font_option (
     d, o, "emph-font", "sans serif", font_size, false, true);
 
-  xr->page_number = 0;
-
   parse_color (d, o, "background-color", "#FFFFFFFFFFFF", &xr->bg);
   parse_color (d, o, "foreground-color", "#000000000000", &xr->fg);
 
@@ -331,6 +338,9 @@ apply_options (struct xr_driver *xr, struct string_map *o)
   min_break[H] = parse_dimension (opt (d, o, "min-hbreak", NULL)) * scale;
   min_break[V] = parse_dimension (opt (d, o, "min-vbreak", NULL)) * scale;
 
+  int object_spacing = (parse_dimension (opt (d, o, "object-spacing", NULL))
+                        * scale);
+
   /* Convert to inch/(XR_POINT * 72). */
   xr->left_margin = left_margin * scale;
   xr->right_margin = right_margin * scale;
@@ -340,6 +350,9 @@ apply_options (struct xr_driver *xr, struct string_map *o)
   xr->length = (paper_length - top_margin - bottom_margin) * scale;
   xr->min_break[H] = min_break[H] >= 0 ? min_break[H] : xr->width / 2;
   xr->min_break[V] = min_break[V] >= 0 ? min_break[V] : xr->length / 2;
+  xr->object_spacing = object_spacing >= 0 ? object_spacing : XR_POINT * 12;
+
+  /* There are no headings so headings_height can stay 0. */
 }
 
 static struct xr_driver *
@@ -349,6 +362,8 @@ xr_allocate (const char *name, int device_type, struct string_map *o)
   struct output_driver *d = &xr->driver;
 
   output_driver_init (d, &cairo_driver_class, name, device_type);
+
+  string_map_init (&xr->heading_vars);
 
   apply_options (xr, o);
 
@@ -371,29 +386,139 @@ xr_to_pango (int xr)
           : xr);
 }
 
+static void
+xr_measure_fonts (cairo_t *cairo, const struct xr_font fonts[XR_N_FONTS],
+                  int *char_width, int *char_height)
+{
+  *char_width = 0;
+  *char_height = 0;
+  for (int i = 0; i < XR_N_FONTS; i++)
+    {
+      PangoLayout *layout = pango_cairo_create_layout (cairo);
+      pango_layout_set_font_description (layout, fonts[i].desc);
+
+      pango_layout_set_text (layout, "0", 1);
+
+      int cw, ch;
+      pango_layout_get_size (layout, &cw, &ch);
+      *char_width = MAX (*char_width, pango_to_xr (cw));
+      *char_height = MAX (*char_height, pango_to_xr (ch));
+
+      g_object_unref (G_OBJECT (layout));
+    }
+}
+
+static int
+xr_render_page_heading (cairo_t *cairo, const PangoFontDescription *font,
+                        const struct page_heading *ph, int page_number,
+                        int width, bool draw, int base_y)
+{
+  PangoLayout *layout = pango_cairo_create_layout (cairo);
+  pango_layout_set_font_description (layout, font);
+
+  int y = 0;
+  for (size_t i = 0; i < ph->n; i++)
+    {
+      const struct page_paragraph *pp = &ph->paragraphs[i];
+
+      char *markup = output_driver_substitute_heading_vars (pp->markup,
+                                                            page_number);
+      pango_layout_set_markup (layout, markup, -1);
+      free (markup);
+
+      pango_layout_set_alignment (layout,
+                                  (pp->halign == TAB_RIGHT ? PANGO_ALIGN_RIGHT
+                                   : pp->halign == TAB_LEFT ? PANGO_ALIGN_LEFT
+                                   : PANGO_ALIGN_CENTER));
+      pango_layout_set_width (layout, xr_to_pango (width));
+      if (draw)
+        {
+          cairo_save (cairo);
+          cairo_translate (cairo, 0, xr_to_pt (y + base_y));
+          pango_cairo_show_layout (cairo, layout);
+          cairo_restore (cairo);
+        }
+
+      int w, h;
+      pango_layout_get_size (layout, &w, &h);
+      y += pango_to_xr (h);
+    }
+
+  g_object_unref (G_OBJECT (layout));
+
+  return y;
+}
+
+static int
+xr_measure_headings (cairo_surface_t *surface,
+                     const PangoFontDescription *font,
+                     const struct page_heading headings[2],
+                     int width, int object_spacing, int height[2])
+{
+  cairo_t *cairo = cairo_create (surface);
+  int total = 0;
+  for (int i = 0; i < 2; i++)
+    {
+      int h = xr_render_page_heading (cairo, font, &headings[i], -1,
+                                      width, false, 0);
+
+      /* If the top heading is nonempty, add some space below it. */
+      if (h && i == 0)
+        h += object_spacing;
+
+      if (height)
+        height[i] = h;
+      total += h;
+    }
+  cairo_destroy (cairo);
+  return total;
+}
+
 static bool
+xr_check_fonts (cairo_surface_t *surface,
+                const struct xr_font fonts[XR_N_FONTS],
+                int usable_width, int usable_length)
+{
+  cairo_t *cairo = cairo_create (surface);
+  int char_width, char_height;
+  xr_measure_fonts (cairo, fonts, &char_width, &char_height);
+  cairo_destroy (cairo);
+
+  bool ok = true;
+  enum { MIN_WIDTH = 3, MIN_LENGTH = 3 };
+  if (usable_width / char_width < MIN_WIDTH)
+    {
+      msg (ME, _("The defined page is not wide enough to hold at least %d "
+                 "characters in the default font.  In fact, there's only "
+                 "room for %d characters."),
+           MIN_WIDTH, usable_width / char_width);
+      ok = false;
+    }
+  if (usable_length / char_height < MIN_LENGTH)
+    {
+      msg (ME, _("The defined page is not long enough to hold at least %d "
+                 "lines in the default font.  In fact, there's only "
+                 "room for %d lines."),
+           MIN_LENGTH, usable_length / char_height);
+      ok = false;
+    }
+  return ok;
+}
+
+static void
 xr_set_cairo (struct xr_driver *xr, cairo_t *cairo)
 {
-  int i;
-
   xr->cairo = cairo;
 
   cairo_set_line_width (xr->cairo, xr_to_pt (XR_LINE_WIDTH));
 
-  xr->char_width = 0;
-  xr->char_height = 0;
-  for (i = 0; i < XR_N_FONTS; i++)
+  xr_measure_fonts (xr->cairo, xr->fonts, &xr->char_width, &xr->char_height);
+
+  for (int i = 0; i < XR_N_FONTS; i++)
     {
       struct xr_font *font = &xr->fonts[i];
-      int char_width, char_height;
-
       font->layout = pango_cairo_create_layout (cairo);
       pango_layout_set_font_description (font->layout, font->desc);
-
-      pango_layout_set_text (font->layout, "0", 1);
-      pango_layout_get_size (font->layout, &char_width, &char_height);
-      xr->char_width = MAX (xr->char_width, pango_to_xr (char_width));
-      xr->char_height = MAX (xr->char_height, pango_to_xr (char_height));
     }
 
   if (xr->params == NULL)
@@ -412,7 +537,7 @@ xr_set_cairo (struct xr_driver *xr, cairo_t *cairo)
 
       int lw = XR_LINE_WIDTH;
       int ls = XR_LINE_SPACE;
-      for (i = 0; i < TABLE_N_AXES; i++)
+      for (int i = 0; i < TABLE_N_AXES; i++)
         {
           xr->params->line_widths[i][RENDER_LINE_NONE] = 0;
           xr->params->line_widths[i][RENDER_LINE_SINGLE] = lw;
@@ -422,24 +547,20 @@ xr_set_cairo (struct xr_driver *xr, cairo_t *cairo)
           xr->params->line_widths[i][RENDER_LINE_DOUBLE] = 2 * lw + ls;
         }
 
-      for (i = 0; i < TABLE_N_AXES; i++)
+      for (int i = 0; i < TABLE_N_AXES; i++)
         xr->params->min_break[i] = xr->min_break[i];
       xr->params->supports_margins = true;
       xr->params->rtl = render_direction_rtl ();
     }
 
   cairo_set_source_rgb (xr->cairo, xr->fg.red, xr->fg.green, xr->fg.blue);
-
-  return true;
 }
 
 static struct output_driver *
 xr_create (const char *file_name, enum settings_output_devices device_type,
            struct string_map *o, enum xr_output_type file_type)
 {
-  enum { MIN_WIDTH = 3, MIN_LENGTH = 3 };
   struct xr_driver *xr;
-  cairo_surface_t *surface;
   cairo_status_t status;
   double width_pt, length_pt;
 
@@ -448,51 +569,24 @@ xr_create (const char *file_name, enum settings_output_devices device_type,
   width_pt = xr_to_pt (xr->width + xr->left_margin + xr->right_margin);
   length_pt = xr_to_pt (xr->length + xr->top_margin + xr->bottom_margin);
   if (file_type == XR_PDF)
-    surface = cairo_pdf_surface_create (file_name, width_pt, length_pt);
+    xr->surface = cairo_pdf_surface_create (file_name, width_pt, length_pt);
   else if (file_type == XR_PS)
-    surface = cairo_ps_surface_create (file_name, width_pt, length_pt);
+    xr->surface = cairo_ps_surface_create (file_name, width_pt, length_pt);
   else if (file_type == XR_SVG)
-    surface = cairo_svg_surface_create (file_name, width_pt, length_pt);
+    xr->surface = cairo_svg_surface_create (file_name, width_pt, length_pt);
   else
     NOT_REACHED ();
 
-  status = cairo_surface_status (surface);
+  status = cairo_surface_status (xr->surface);
   if (status != CAIRO_STATUS_SUCCESS)
     {
       msg (ME, _("error opening output file `%s': %s"),
              file_name, cairo_status_to_string (status));
-      cairo_surface_destroy (surface);
       goto error;
     }
 
-  xr->cairo = cairo_create (surface);
-  cairo_surface_destroy (surface);
-
-  if (!xr_set_cairo (xr, xr->cairo))
+  if (!xr_check_fonts (xr->surface, xr->fonts, xr->width, xr->length))
     goto error;
-
-  cairo_save (xr->cairo);
-  xr_driver_next_page (xr, xr->cairo);
-
-  if (xr->width / xr->char_width < MIN_WIDTH)
-    {
-      msg (ME, _("The defined page is not wide enough to hold at least %d "
-                     "characters in the default font.  In fact, there's only "
-                     "room for %d characters."),
-             MIN_WIDTH,
-             xr->width / xr->char_width);
-      goto error;
-    }
-
-  if (xr->length / xr->char_height < MIN_LENGTH)
-    {
-      msg (ME, _("The defined page is not long enough to hold at least %d "
-                     "lines in the default font.  In fact, there's only "
-                     "room for %d lines."),
-             MIN_LENGTH,
-             xr->length / xr->char_height);
-      goto error;
-    }
 
   return &xr->driver;
 
@@ -538,14 +632,14 @@ xr_destroy (struct output_driver *driver)
 
   if (xr->cairo != NULL)
     {
-      cairo_status_t status;
-
-      cairo_surface_finish (cairo_get_target (xr->cairo));
-      status = cairo_status (xr->cairo);
+      cairo_surface_finish (xr->surface);
+      cairo_status_t status = cairo_status (xr->cairo);
       if (status != CAIRO_STATUS_SUCCESS)
         msg (ME, _("error drawing output for %s driver: %s"),
                output_driver_get_name (driver),
                cairo_status_to_string (status));
+      cairo_surface_destroy (xr->surface);
+
       cairo_destroy (xr->cairo);
     }
 
@@ -572,9 +666,67 @@ xr_flush (struct output_driver *driver)
 }
 
 static void
+xr_update_page_setup (struct output_driver *driver,
+                      const struct page_setup *ps)
+{
+  struct xr_driver *xr = xr_driver_cast (driver);
+
+  xr->initial_page_number = ps->initial_page_number;
+  xr->object_spacing = ps->object_spacing * 72 * XR_POINT;
+
+  if (xr->cairo)
+    return;
+
+  int usable[TABLE_N_AXES];
+  for (int i = 0; i < 2; i++)
+    usable[i] = (ps->paper[i]
+                 - (ps->margins[i][0] + ps->margins[i][1])) * 72 * XR_POINT;
+
+  int headings_height[2];
+  usable[V] -= xr_measure_headings (
+    xr->surface, xr->fonts[XR_FONT_PROPORTIONAL].desc, ps->headings,
+    usable[H], xr->object_spacing, headings_height);
+
+  enum table_axis h = ps->orientation == PAGE_LANDSCAPE;
+  enum table_axis v = !h;
+  if (!xr_check_fonts (xr->surface, xr->fonts, usable[h], usable[v]))
+    return;
+
+  for (int i = 0; i < 2; i++)
+    {
+      page_heading_uninit (&xr->headings[i]);
+      page_heading_copy (&xr->headings[i], &ps->headings[i]);
+      xr->headings_height[i] = headings_height[i];
+    }
+  xr->width = usable[h];
+  xr->length = usable[v];
+  xr->left_margin = ps->margins[h][0] * 72 * XR_POINT;
+  xr->right_margin = ps->margins[h][1] * 72 * XR_POINT;
+  xr->top_margin = ps->margins[v][0] * 72 * XR_POINT;
+  xr->bottom_margin = ps->margins[v][1] * 72 * XR_POINT;
+  cairo_pdf_surface_set_size (xr->surface,
+                              ps->paper[h] * 72.0, ps->paper[v] * 72.0);
+}
+
+static void
 xr_submit (struct output_driver *driver, const struct output_item *output_item)
 {
   struct xr_driver *xr = xr_driver_cast (driver);
+
+  if (is_page_setup_item (output_item))
+    {
+      xr_update_page_setup (driver,
+                            to_page_setup_item (output_item)->page_setup);
+      return;
+    }
+
+  if (!xr->cairo)
+    {
+      xr->page_number = xr->initial_page_number - 1;
+      xr_set_cairo (xr, cairo_create (xr->surface));
+      cairo_save (xr->cairo);
+      xr_driver_next_page (xr, xr->cairo);
+    }
 
   xr_driver_output_item (xr, output_item);
   while (xr_driver_need_new_page (xr))
@@ -606,11 +758,19 @@ xr_driver_next_page (struct xr_driver *xr, cairo_t *cairo)
 
   cairo_translate (cairo,
                    xr_to_pt (xr->left_margin),
-                   xr_to_pt (xr->top_margin));
+                   xr_to_pt (xr->top_margin + xr->headings_height[0]));
 
   xr->page_number++;
   xr->cairo = cairo;
   xr->x = xr->y = 0;
+
+  xr_render_page_heading (xr->cairo, xr->fonts[XR_FONT_PROPORTIONAL].desc,
+                          &xr->headings[0], xr->page_number, xr->width, true,
+                          -xr->headings_height[0]);
+  xr_render_page_heading (xr->cairo, xr->fonts[XR_FONT_PROPORTIONAL].desc,
+                          &xr->headings[1], xr->page_number, xr->width, true,
+                          xr->length);
+
   xr_driver_run_fsm (xr);
 }
 
@@ -1274,7 +1434,8 @@ xr_layout_cell_text (struct xr_driver *xr,
           if (best && !xr->nest)
             dump_line (xr, -xr->left_margin, best,
                        xr->width + xr->right_margin, best,
-                       RENDER_LINE_SINGLE, &CELL_COLOR (0, 255, 0));
+                       RENDER_LINE_SINGLE,
+                       &(struct cell_color) CELL_COLOR (0, 255, 0));
         }
     }
 
@@ -1377,11 +1538,7 @@ struct xr_driver *
 xr_driver_create (cairo_t *cairo, struct string_map *options)
 {
   struct xr_driver *xr = xr_allocate ("cairo", 0, options);
-  if (!xr_set_cairo (xr, cairo))
-    {
-      output_driver_destroy (&xr->driver);
-      return NULL;
-    }
+  xr_set_cairo (xr, cairo);
   return xr;
 }
 
@@ -1714,10 +1871,12 @@ static struct xr_render_fsm *
 xr_render_text (struct xr_driver *xr, const struct text_item *text_item)
 {
   enum text_item_type type = text_item_get_type (text_item);
+  const char *text = text_item_get_text (text_item);
 
   switch (type)
     {
     case TEXT_ITEM_PAGE_TITLE:
+      string_map_replace (&xr->heading_vars, "PageTitle", text);
       break;
 
     case TEXT_ITEM_BLANK_LINE:

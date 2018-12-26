@@ -30,18 +30,13 @@
 
 enum text_item_type
   {
-    /* Headings. */
     TEXT_ITEM_PAGE_TITLE,       /* TITLE and SUBTITLE commands. */
-    TEXT_ITEM_SUBHEAD,          /* Heading within a command's output.*/
-
-    /* Syntax. */
-    TEXT_ITEM_SYNTAX,           /* A single line of PSPP syntax. */
-    TEXT_ITEM_COMMENT,          /* COMMENT command. */
-    TEXT_ITEM_ECHO,             /* ECHO command. */
-
-    /* Ordinary text. */
+    TEXT_ITEM_TITLE,            /* Title. */
     TEXT_ITEM_PARAGRAPH,        /* Normal paragraph of text. */
-    TEXT_ITEM_MONOSPACE,        /* Paragraph of monospaced text. */
+
+    /* Log items. */
+    TEXT_ITEM_SYNTAX,           /* A single line of PSPP syntax. */
+    TEXT_ITEM_LOG,              /* Other logging. */
 
     /* Spacing.  Some output drivers that are not based on lines and pages
        (e.g. CSV, HTML) may ignore these. */

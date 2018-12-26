@@ -40,7 +40,8 @@
 #include "output/table-item.h"
 #include "output/text-item.h"
 
-#include "xalloc.h"
+#include "gl/minmax.h"
+#include "gl/xalloc.h"
 
 #include "gettext.h"
 #define _(msgid) gettext (msgid)
@@ -199,7 +200,7 @@ print_title_tag (FILE *file, const char *name, const char *content)
 {
   if (content != NULL)
     {
-      fprintf (file, "<%s>", name);
+       fprintf (file, "<%s>", name);
       escape_string (file, content, strlen (content), " ", " - ");
       fprintf (file, "</%s>\n", name);
     }
@@ -264,8 +265,12 @@ html_submit (struct output_driver *driver,
         case TEXT_ITEM_PAGE_TITLE:
           break;
 
-        case TEXT_ITEM_SUBHEAD:
-          print_title_tag (html->file, "H4", s);
+        case TEXT_ITEM_TITLE:
+          {
+            int level = MIN (5, output_get_group_level ()) + 1;
+            char tag[3] = { 'H', level + '1', '\0' };
+            print_title_tag (html->file, tag, s);
+          }
           break;
 
         case TEXT_ITEM_SYNTAX:
@@ -278,7 +283,7 @@ html_submit (struct output_driver *driver,
           print_title_tag (html->file, "P", s);
           break;
 
-        case TEXT_ITEM_MONOSPACE:
+        case TEXT_ITEM_LOG:
           print_title_tag (html->file, "PRE", s); /* should be <P><TT> */
           break;
 
@@ -288,11 +293,6 @@ html_submit (struct output_driver *driver,
 
         case TEXT_ITEM_EJECT_PAGE:
           /* Nothing to do. */
-          break;
-
-        case TEXT_ITEM_COMMENT:
-        case TEXT_ITEM_ECHO:
-          /* We print out syntax anyway, so nothing to do here either. */
           break;
         }
     }
