@@ -1202,13 +1202,24 @@ markup_escape (const char *in, struct string *out)
 }
 
 static int
+get_layout_dimension (PangoLayout *layout, enum table_axis axis)
+{
+  int size[TABLE_N_AXES];
+  pango_layout_get_size (layout, &size[H], &size[V]);
+  return size[axis];
+}
+
+static int
 xr_layout_cell_text (struct xr_driver *xr, const struct table_cell *cell,
                      int bb[TABLE_N_AXES][2], int clip[TABLE_N_AXES][2],
                      int *widthp, int *brk)
 {
   const struct cell_style *style = cell->style;
   unsigned int options = cell->options;
-  int w, h;
+
+  enum table_axis X = options & TAB_ROTATE ? V : H;
+  enum table_axis Y = !X;
+  int R = options & TAB_ROTATE ? 0 : 1;
 
   struct xr_font *font = (options & TAB_FIX ? &xr->fonts[XR_FONT_FIXED]
                           : options & TAB_EMPH ? &xr->fonts[XR_FONT_EMPHASIS]
@@ -1236,21 +1247,22 @@ xr_layout_cell_text (struct xr_driver *xr, const struct table_cell *cell,
     footnote_adjustment = 0;
   else if (cell->n_footnotes == 1 && (options & TAB_HALIGN) == TAB_RIGHT)
     {
-      PangoAttrList *attrs;
-
       const char *marker = cell->footnotes[0]->marker;
       pango_layout_set_text (font->layout, marker, strlen (marker));
 
-      attrs = pango_attr_list_new ();
+      PangoAttrList *attrs = pango_attr_list_new ();
       pango_attr_list_insert (attrs, pango_attr_rise_new (7000));
       pango_layout_set_attributes (font->layout, attrs);
       pango_attr_list_unref (attrs);
 
-      pango_layout_get_size (font->layout, &w, &h);
-      footnote_adjustment = MIN (w, px_to_xr (style->margin[H][1]));
+      int w = get_layout_dimension (font->layout, X);
+      int right_margin = px_to_xr (cell->style->margin[X][R]);
+      footnote_adjustment = MIN (w, right_margin);
+
+      pango_layout_set_attributes (font->layout, NULL);
     }
   else
-    footnote_adjustment = px_to_xr (style->margin[H][1]);
+    footnote_adjustment = px_to_xr (cell->style->margin[X][R]);
 
   struct string tmp = DS_EMPTY_INITIALIZER;
   const char *text = cell->text;
@@ -1269,7 +1281,7 @@ xr_layout_cell_text (struct xr_driver *xr, const struct table_cell *cell,
      happen with grouping like 1,234,567.89 or 1.234.567,89 because if groups
      are present then there will always be a digit on both sides of every
      period and comma. */
-  if (bb[H][1] != INT_MAX)
+  if (options & TAB_ROTATE || bb[H][1] != INT_MAX)
     {
       const char *decimal = text + strcspn (text, ".,");
       if (decimal[0]
@@ -1285,7 +1297,10 @@ xr_layout_cell_text (struct xr_driver *xr, const struct table_cell *cell,
 
   if (footnote_adjustment)
     {
-      bb[H][1] += footnote_adjustment;
+      if (R)
+        bb[X][R] += footnote_adjustment;
+      else
+        bb[X][R] -= footnote_adjustment;
 
       if (ds_is_empty (&tmp))
         {
@@ -1348,16 +1363,25 @@ xr_layout_cell_text (struct xr_driver *xr, const struct table_cell *cell,
      : PANGO_ALIGN_CENTER));
   pango_layout_set_width (
     font->layout,
-    bb[H][1] == INT_MAX ? -1 : xr_to_pango (bb[H][1] - bb[H][0]));
+    bb[X][1] == INT_MAX ? -1 : xr_to_pango (bb[X][1] - bb[X][0]));
   pango_layout_set_wrap (font->layout, PANGO_WRAP_WORD);
 
   if (clip[H][0] != clip[H][1])
     {
       cairo_save (xr->cairo);
-      xr_clip (xr, clip);
-      cairo_translate (xr->cairo,
-                       xr_to_pt (bb[H][0] + xr->x),
-                       xr_to_pt (bb[V][0] + xr->y));
+      if (!(options & TAB_ROTATE))
+        xr_clip (xr, clip);
+      if (options & TAB_ROTATE)
+        {
+          cairo_translate (xr->cairo,
+                           xr_to_pt (bb[H][0] + xr->x),
+                           xr_to_pt (bb[V][1] + xr->y));
+          cairo_rotate (xr->cairo, -M_PI_2);
+        }
+      else
+        cairo_translate (xr->cairo,
+                         xr_to_pt (bb[H][0] + xr->x),
+                         xr_to_pt (bb[V][0] + xr->y));
       pango_cairo_show_layout (xr->cairo, font->layout);
 
       /* If enabled, this draws a blue rectangle around the extents of each
@@ -1388,12 +1412,13 @@ xr_layout_cell_text (struct xr_driver *xr, const struct table_cell *cell,
       cairo_restore (xr->cairo);
     }
 
-  pango_layout_get_size (font->layout, &w, &h);
-  w = pango_to_xr (w);
-  h = pango_to_xr (h);
+  int size[TABLE_N_AXES];
+  pango_layout_get_size (font->layout, &size[H], &size[V]);
+  int w = pango_to_xr (size[X]);
+  int h = pango_to_xr (size[Y]);
   if (w > *widthp)
     *widthp = w;
-  if (bb[V][0] + h >= bb[V][1])
+  if (bb[V][0] + h >= bb[V][1] && !(options & TAB_ROTATE))
     {
       PangoLayoutIter *iter;
       int best UNUSED = 0;
