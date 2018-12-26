@@ -58,6 +58,7 @@
 #include <pango/pangocairo.h>
 #include <stdlib.h>
 
+#include "gl/c-ctype.h"
 #include "gl/c-strcase.h"
 #include "gl/intprops.h"
 #include "gl/minmax.h"
@@ -1024,7 +1025,6 @@ xr_layout_cell_text (struct xr_driver *xr,
                      int *widthp, int *brk)
 {
   unsigned int options = contents->options;
-  size_t length;
   int w, h;
 
   struct xr_font *font = (options & TAB_FIX ? &xr->fonts[XR_FONT_FIXED]
@@ -1069,34 +1069,65 @@ xr_layout_cell_text (struct xr_driver *xr,
   else
     footnote_adjustment = px_to_xr (style->margin[H][1]);
 
-  length = strlen (contents->text);
+  struct string tmp = DS_EMPTY_INITIALIZER;
+  const char *text = contents->text;
+
+  /* Deal with an oddity of the Unicode line-breaking algorithm (or perhaps in
+     Pango's implementation of it): it will break after a period or a comma
+     that precedes a digit, e.g. in ".000" it will break after the period.
+     This code looks for such a situation and inserts a U+2060 WORD JOINER
+     to prevent the break.
+
+     This isn't necessary when the decimal point is between two digits
+     (e.g. "0.000" won't be broken) or when the display width is not limited so
+     that word wrapping won't happen.
+
+     It isn't necessary to look for more than one period or comma, as would
+     happen with grouping like 1,234,567.89 or 1.234.567,89 because if groups
+     are present then there will always be a digit on both sides of every
+     period and comma. */
+  if (bb[H][1] != INT_MAX)
+    {
+      const char *decimal = text + strcspn (text, ".,");
+      if (decimal[0]
+          && c_isdigit (decimal[1])
+          && (decimal == text || !c_isdigit (decimal[-1])))
+        {
+          ds_extend (&tmp, strlen (text) + 16);
+          ds_put_substring (&tmp, ss_buffer (text, decimal - text + 1));
+          ds_put_unichar (&tmp, 0x2060 /* U+2060 WORD JOINER */);
+          ds_put_cstr (&tmp, decimal + 1);
+        }
+    }
+
   if (footnote_adjustment)
     {
-      PangoAttrList *attrs;
-      struct string s;
-
       bb[H][1] += footnote_adjustment;
 
-      ds_init_empty (&s);
-      ds_extend (&s, length + contents->n_footnotes * 10);
-      ds_put_cstr (&s, contents->text);
-      cell_contents_format_footnote_markers (contents, &s);
-      pango_layout_set_text (font->layout, ds_cstr (&s), ds_length (&s));
-      ds_destroy (&s);
+      if (ds_is_empty (&tmp))
+        {
+          ds_extend (&tmp, strlen (text) + 16);
+          ds_put_cstr (&tmp, text);
+        }
+      size_t initial_length = ds_length (&tmp);
 
-      attrs = pango_attr_list_new ();
+      cell_contents_format_footnote_markers (contents, &tmp);
+      pango_layout_set_text (font->layout, ds_cstr (&tmp), ds_length (&tmp));
+
+      PangoAttrList *attrs = pango_attr_list_new ();
       if (style->underline)
         pango_attr_list_insert (attrs, pango_attr_underline_new (
                                PANGO_UNDERLINE_SINGLE));
-      add_attr_with_start (attrs, pango_attr_rise_new (7000), length);
+      add_attr_with_start (attrs, pango_attr_rise_new (7000), initial_length);
       add_attr_with_start (
-        attrs, pango_attr_font_desc_new (font->desc), length);
+        attrs, pango_attr_font_desc_new (font->desc), initial_length);
       pango_layout_set_attributes (font->layout, attrs);
       pango_attr_list_unref (attrs);
     }
   else
     {
-      pango_layout_set_text (font->layout, contents->text, -1);
+      const char *content = ds_is_empty (&tmp) ? text : ds_cstr (&tmp);
+      pango_layout_set_text (font->layout, content, -1);
 
       if (style->underline)
         {
@@ -1107,6 +1138,7 @@ xr_layout_cell_text (struct xr_driver *xr,
           pango_attr_list_unref (attrs);
         }
     }
+  ds_destroy (&tmp);
 
   pango_layout_set_alignment (
     font->layout,
