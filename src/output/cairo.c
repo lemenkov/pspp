@@ -71,7 +71,8 @@
 #define H TABLE_HORZ
 #define V TABLE_VERT
 
-/* The unit used for internal measurements is inch/(72 * XR_POINT). */
+/* The unit used for internal measurements is inch/(72 * XR_POINT).
+   (Thus, XR_POINT units represent one point.) */
 #define XR_POINT PANGO_SCALE
 
 /* Conversions to and from points. */
