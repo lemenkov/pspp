@@ -833,12 +833,19 @@ xr_layout_cell (struct xr_driver *, const struct table_cell *,
                 int *width, int *height, int *brk);
 
 static void
+set_source_rgba (cairo_t *cairo, const struct cell_color *color)
+{
+  cairo_set_source_rgba (cairo,
+                         color->r / 255., color->g / 255., color->b / 255.,
+                         color->alpha / 255.);
+}
+
+static void
 dump_line (struct xr_driver *xr, int x0, int y0, int x1, int y1, int style,
            const struct cell_color *color)
 {
   cairo_new_path (xr->cairo);
-  cairo_set_source_rgb (xr->cairo,
-                        color->r / 255.0, color->g / 255.0, color->b / 255.0);
+  set_source_rgba (xr->cairo, color);
   cairo_set_line_width (
     xr->cairo,
     xr_to_pt (style == RENDER_LINE_THICK ? XR_LINE_WIDTH * 2
@@ -1115,10 +1122,7 @@ xr_draw_cell (void *xr_, const struct table_cell *cell, int color_idx,
         bg_clip[axis][1] += spill[axis][1];
     }
   xr_clip (xr, bg_clip);
-  cairo_set_source_rgb (xr->cairo,
-                        cell->style->font_style.bg[color_idx].r / 255.,
-                        cell->style->font_style.bg[color_idx].g / 255.,
-                        cell->style->font_style.bg[color_idx].b / 255.);
+  set_source_rgba (xr->cairo, &cell->style->font_style.bg[color_idx]);
   fill_rectangle (xr,
                   bb[H][0] - spill[H][0],
                   bb[V][0] - spill[V][0],
@@ -1127,10 +1131,7 @@ xr_draw_cell (void *xr_, const struct table_cell *cell, int color_idx,
   cairo_restore (xr->cairo);
 
   cairo_save (xr->cairo);
-  cairo_set_source_rgb (xr->cairo,
-                        cell->style->font_style.fg[color_idx].r / 255.,
-                        cell->style->font_style.fg[color_idx].g / 255.,
-                        cell->style->font_style.fg[color_idx].b / 255.);
+  set_source_rgba (xr->cairo, &cell->style->font_style.fg[color_idx]);
 
   for (int axis = 0; axis < TABLE_N_AXES; axis++)
     {
