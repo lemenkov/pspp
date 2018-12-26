@@ -1020,6 +1020,27 @@ add_attr_with_start (PangoAttrList *list, PangoAttribute *attr, guint start_inde
   pango_attr_list_insert (list, attr);
 }
 
+static void
+markup_escape (const char *in, struct string *out)
+{
+  for (int c = *in++; c; c = *in++)
+    switch (c)
+      {
+      case '&':
+        ds_put_cstr (out, "&amp;");
+        break;
+      case '<':
+        ds_put_cstr (out, "&lt;");
+        break;
+      case '>':
+        ds_put_cstr (out, "&gt;");
+        break;
+      default:
+        ds_put_byte (out, c);
+        break;
+      }
+}
+
 static int
 xr_layout_cell_text (struct xr_driver *xr,
                      const struct cell_contents *contents,
@@ -1114,8 +1135,23 @@ xr_layout_cell_text (struct xr_driver *xr,
         }
       size_t initial_length = ds_length (&tmp);
 
-      cell_contents_format_footnote_markers (contents, &tmp);
-      pango_layout_set_text (font->layout, ds_cstr (&tmp), ds_length (&tmp));
+      for (size_t i = 0; i < contents->n_footnotes; i++)
+        {
+          if (i)
+            ds_put_byte (&tmp, ',');
+
+          const char *marker = contents->footnotes[i]->marker;
+          if (options & TAB_MARKUP)
+            markup_escape (marker, &tmp);
+          else
+            ds_put_cstr (&tmp, marker);
+        }
+
+      if (options & TAB_MARKUP)
+        pango_layout_set_markup (font->layout,
+                                 ds_cstr (&tmp), ds_length (&tmp));
+      else
+        pango_layout_set_text (font->layout, ds_cstr (&tmp), ds_length (&tmp));
 
       PangoAttrList *attrs = pango_attr_list_new ();
       if (style->underline)
@@ -1130,7 +1166,10 @@ xr_layout_cell_text (struct xr_driver *xr,
   else
     {
       const char *content = ds_is_empty (&tmp) ? text : ds_cstr (&tmp);
-      pango_layout_set_text (font->layout, content, -1);
+      if (options & TAB_MARKUP)
+        pango_layout_set_markup (font->layout, content, -1);
+      else
+        pango_layout_set_text (font->layout, content, -1);
 
       if (style->underline)
         {
@@ -1545,7 +1584,6 @@ xr_draw_png_chart (const struct chart_item *item,
 struct xr_table_state
   {
     struct xr_render_fsm fsm;
-    struct table_item *table_item;
     struct render_pager *p;
   };
 
@@ -1575,25 +1613,24 @@ xr_table_destroy (struct xr_render_fsm *fsm)
 {
   struct xr_table_state *ts = UP_CAST (fsm, struct xr_table_state, fsm);
 
-  table_item_unref (ts->table_item);
   render_pager_destroy (ts->p);
   free (ts);
 }
 
 static struct xr_render_fsm *
-xr_render_table (struct xr_driver *xr, const struct table_item *table_item)
+xr_render_table (struct xr_driver *xr, struct table_item *table_item)
 {
   struct xr_table_state *ts;
 
   ts = xmalloc (sizeof *ts);
   ts->fsm.render = xr_table_render;
   ts->fsm.destroy = xr_table_destroy;
-  ts->table_item = table_item_ref (table_item);
 
   if (xr->y > 0)
     xr->y += xr->char_height;
 
   ts->p = render_pager_create (xr->params, table_item);
+  table_item_unref (table_item);
 
   return &ts->fsm;
 }
@@ -1674,29 +1711,6 @@ xr_render_eject (void)
 }
 
 static struct xr_render_fsm *
-xr_create_text_renderer (struct xr_driver *xr, const struct text_item *item)
-{
-  struct tab_table *tab = tab_create (1, 1);
-
-  struct cell_style *style = pool_alloc (tab->container, sizeof *style);
-  *style = (struct cell_style) CELL_STYLE_INITIALIZER;
-  if (item->font)
-    style->font = pool_strdup (tab->container, item->font);
-  style->font_size = item->font_size;
-  style->bold = item->bold;
-  style->italic = item->italic;
-  style->underline = item->underline;
-  tab->styles[0] = style;
-
-  tab_text (tab, 0, 0, TAB_LEFT, text_item_get_text (item));
-  struct table_item *table_item = table_item_create (&tab->table, NULL, NULL);
-  struct xr_render_fsm *fsm = xr_render_table (xr, table_item);
-  table_item_unref (table_item);
-
-  return fsm;
-}
-
-static struct xr_render_fsm *
 xr_render_text (struct xr_driver *xr, const struct text_item *text_item)
 {
   enum text_item_type type = text_item_get_type (text_item);
@@ -1717,7 +1731,8 @@ xr_render_text (struct xr_driver *xr, const struct text_item *text_item)
       break;
 
     default:
-      return xr_create_text_renderer (xr, text_item);
+      return xr_render_table (
+        xr, text_item_to_table_item (text_item_ref (text_item)));
     }
 
   return NULL;
@@ -1730,10 +1745,7 @@ xr_render_message (struct xr_driver *xr,
   char *s = msg_to_string (message_item_get_msg (message_item));
   struct text_item *item = text_item_create (TEXT_ITEM_PARAGRAPH, s);
   free (s);
-  struct xr_render_fsm *fsm = xr_create_text_renderer (xr, item);
-  text_item_unref (item);
-
-  return fsm;
+  return xr_render_table (xr, text_item_to_table_item (item));
 }
 
 static struct xr_render_fsm *
@@ -1741,7 +1753,7 @@ xr_render_output_item (struct xr_driver *xr,
                        const struct output_item *output_item)
 {
   if (is_table_item (output_item))
-    return xr_render_table (xr, to_table_item (output_item));
+    return xr_render_table (xr, table_item_ref (to_table_item (output_item)));
   else if (is_chart_item (output_item))
     return xr_render_chart (to_chart_item (output_item));
   else if (is_text_item (output_item))

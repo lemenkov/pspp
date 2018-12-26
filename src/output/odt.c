@@ -530,7 +530,16 @@ write_table (struct odt_driver *odt, const struct table_item *item)
                   else
                     xmlTextWriterWriteAttribute (odt->content_wtr, _xml("text:style-name"), _xml("Table_20_Contents"));
 
-                  write_xml_with_line_breaks (odt, contents->text);
+                  if (contents->options & TAB_MARKUP)
+                    {
+                      /* XXX */
+                      char *s = output_get_text_from_markup (
+                        contents->text);
+                      write_xml_with_line_breaks (odt, s);
+                      free (s);
+                    }
+                  else
+                    write_xml_with_line_breaks (odt, contents->text);
 
                   for (j = 0; j < contents->n_footnotes; j++)
                     write_footnote (odt, contents->footnotes[j]);

@@ -480,7 +480,6 @@ ascii_submit (struct output_driver *driver,
     {
       const struct text_item *text_item = to_text_item (output_item);
       enum text_item_type type = text_item_get_type (text_item);
-      const char *text = text_item_get_text (text_item);
 
       switch (type)
         {
@@ -492,7 +491,7 @@ ascii_submit (struct output_driver *driver,
           break;
 
         default:
-          ascii_output_text (a, text);
+          ascii_output_table_item (a, text_item_to_table_item (text_item_ref (text_item)));
           break;
         }
     }
@@ -771,6 +770,16 @@ text_draw (struct ascii_driver *a, unsigned int options,
     }
 }
 
+static char *
+add_footnote_markers (const char *text, const struct cell_contents *contents)
+{
+  struct string s = DS_EMPTY_INITIALIZER;
+  ds_put_cstr (&s, text);
+  for (size_t i = 0; i < contents->n_footnotes; i++)
+    ds_put_format (&s, "[%s]", contents->footnotes[i]->marker);
+  return ds_steal_cstr (&s);
+}
+
 static int
 ascii_layout_cell_text (struct ascii_driver *a,
                         const struct cell_contents *contents,
@@ -778,34 +787,35 @@ ascii_layout_cell_text (struct ascii_driver *a,
                         int bb[TABLE_N_AXES][2], int clip[TABLE_N_AXES][2],
                         int *widthp)
 {
-  size_t length;
-  const char *text;
   char *breaks;
   int bb_width;
   size_t pos;
-  int y;
 
-  y = bb[V][0];
-  length = strlen (contents->text);
+  int y = bb[V][0];
+
+  /* Get the basic textual contents. */
+  const char *plain_text = (contents->options & TAB_MARKUP
+                            ? output_get_text_from_markup (contents->text)
+                            : contents->text);
+
+  /* Append footnote markers if any. */
+  const char *text;
   if (contents->n_footnotes)
     {
-      struct string s;
-      int i;
-
-      ds_init_empty (&s);
-      ds_extend (&s, length + contents->n_footnotes * 4);
-      ds_put_cstr (&s, contents->text);
-      for (i = 0; i < contents->n_footnotes; i++)
-        ds_put_format (&s, "[%s]", contents->footnotes[i]->marker);
-
-      length = ds_length (&s);
-      text = ds_steal_cstr (&s);
+      text = add_footnote_markers (plain_text, contents);
+      if (plain_text != contents->text)
+        free (CONST_CAST (char *, plain_text));
     }
   else
+    text = plain_text;
+
+  /* Calculate length; if it's zero, then there's nothing to do. */
+  size_t length = strlen (text);
+  if (!length)
     {
-      if (length == 0)
-        return y;
-      text = contents->text;
+      if (text != contents->text)
+        free (CONST_CAST (char *, text));
+      return y;
     }
 
   breaks = xmalloc (length + 1);

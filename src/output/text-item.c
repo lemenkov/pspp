@@ -23,8 +23,12 @@
 #include <stdlib.h>
 
 #include "libpspp/cast.h"
+#include "libpspp/pool.h"
 #include "output/driver.h"
 #include "output/output-item-provider.h"
+#include "output/tab.h"
+#include "output/table-item.h"
+#include "output/table-provider.h"
 
 #include "gl/xalloc.h"
 #include "gl/xvasprintf.h"
@@ -89,7 +93,30 @@ text_item_submit (struct text_item *item)
 {
   output_submit (&item->output_item);
 }
-
+
+struct table_item *
+text_item_to_table_item (struct text_item *text_item)
+{
+  struct tab_table *tab = tab_create (1, 1);
+
+  struct cell_style *style = pool_alloc (tab->container, sizeof *style);
+  *style = (struct cell_style) CELL_STYLE_INITIALIZER;
+  if (text_item->font)
+    style->font = pool_strdup (tab->container, text_item->font);
+  style->font_size = text_item->font_size;
+  style->bold = text_item->bold;
+  style->italic = text_item->italic;
+  style->underline = text_item->underline;
+  tab->styles[0] = style;
+
+  int opts = TAB_LEFT;
+  if (text_item->markup)
+    opts |= TAB_MARKUP;
+  tab_text (tab, 0, 0, opts, text_item_get_text (text_item));
+  struct table_item *table_item = table_item_create (&tab->table, NULL, NULL);
+  text_item_unref (text_item);
+  return table_item;
+}
 static void
 text_item_destroy (struct output_item *output_item)
 {

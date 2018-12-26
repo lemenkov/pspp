@@ -21,6 +21,8 @@
 
 #include <ctype.h>
 #include <errno.h>
+#include <libxml/parser.h>
+#include <libxml/tree.h>
 #include <limits.h>
 #include <stdlib.h>
 #include <string.h>
@@ -488,4 +490,25 @@ output_driver_parse_option (const char *option, struct string_map *options)
 
   char *value = xmemdup0 (equals + 1, strlen (equals + 1));
   string_map_insert_nocopy (options, key, value);
+}
+
+/* Extracts the actual text content from the given Pango MARKUP and returns it
+   as as a malloc()'d string. */
+char *
+output_get_text_from_markup (const char *markup)
+{
+  xmlDoc *doc = xmlReadMemory (markup, strlen (markup), "noname.xml", "UTF-8",
+                               (XML_PARSE_NOERROR | XML_PARSE_NOWARNING
+                                | XML_PARSE_NONET | XML_PARSE_NOCDATA));
+  if (!doc)
+    return xstrdup (markup);
+
+  char *content = CHAR_CAST (char *,
+                             xmlNodeGetContent (xmlDocGetRootElement (doc)));
+  if (!content)
+    content = xstrdup (markup);
+
+  xmlFreeDoc (doc);
+
+  return content;
 }

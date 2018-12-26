@@ -63,11 +63,12 @@ enum
     /* These flags may be combined with any alignment. */
     TAB_EMPH       = 1 << 4,    /* Emphasize cell contents. */
     TAB_FIX        = 1 << 5,    /* Use fixed font. */
+    TAB_MARKUP     = 1 << 6,    /* Text contains Pango markup. */
 
     /* Bits with values (1 << TAB_FIRST_AVAILABLE) and higher are
        not used, so they are available for subclasses to use as
        they wish. */
-    TAB_FIRST_AVAILABLE = 6
+    TAB_FIRST_AVAILABLE = 7
   };
 
 /* Styles for the rules around table cells. */

@@ -228,7 +228,14 @@ csv_submit (struct output_driver *driver,
                       if (i > 0)
                         ds_put_cstr (&s, "\n\n");
 
-                      ds_put_cstr (&s, c->text);
+                      if (c->options & TAB_MARKUP)
+                        {
+                          char *t = output_get_text_from_markup (c->text);
+                          ds_put_cstr (&s, t);
+                          free (t);
+                        }
+                      else
+                        ds_put_cstr (&s, c->text);
                       csv_format_footnotes (c->footnotes, c->n_footnotes, &s);
                     }
                   csv_output_field (csv, ds_cstr (&s));
@@ -272,7 +279,14 @@ csv_submit (struct output_driver *driver,
         return;
 
       csv_put_separator (csv);
-      csv_output_field (csv, text);
+      if (text_item->markup)
+        {
+          char *plain_text = output_get_text_from_markup (text);
+          csv_output_field (csv, plain_text);
+          free (plain_text);
+        }
+      else
+        csv_output_field (csv, text);
       putc ('\n', csv->file);
     }
   else if (is_message_item (output_item))
