@@ -18,7 +18,7 @@ AT_BANNER([datasheet])
 
 m4_define([DATASHEET_TEST],
   [AT_SETUP([$1x$2, $3 backing rows, backing widths $4])
-   AT_KEYWORDS([datasheet])
+   AT_KEYWORDS([datasheet slow])
    AT_CHECK(
      [datasheet-test --verbosity=0 --max-rows=$1 --max-columns=$2 \
    			    --backing-rows=$3 --backing-widths=$4],

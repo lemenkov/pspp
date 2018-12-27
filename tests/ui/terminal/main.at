@@ -23,6 +23,7 @@ AT_CHECK([pspp nonexistent], [1],
 AT_CLEANUP
 
 AT_SETUP([SIGTERM yields clean shutdown])
+AT_KEYWORDS([slow])
 AT_DATA([main.sps], [dnl
 INPUT PROGRAM.
 COMPUTE x = x + 1.

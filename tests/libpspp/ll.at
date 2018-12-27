@@ -18,6 +18,7 @@ AT_BANNER([doubly linked list (ll) library])
 
 m4_define([CHECK_LL],
   [AT_SETUP([ll -- $1])
+   AT_KEYWORDS([$2])
    AT_CHECK([ll-test $1])
    AT_CLEANUP])
 
@@ -41,8 +42,8 @@ CHECK_LL([apply])
 CHECK_LL([reverse])
 CHECK_LL([permutations-no-dups])
 CHECK_LL([permutations-with-dups])
-CHECK_LL([merge-no-dups])
-CHECK_LL([merge-with-dups])
+CHECK_LL([merge-no-dups], [slow])
+CHECK_LL([merge-with-dups], [slow])
 CHECK_LL([sort-exhaustive])
 CHECK_LL([sort-stable])
 CHECK_LL([sort-subset])

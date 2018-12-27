@@ -55,7 +55,7 @@ m4_divert_pop([PREPARE_TESTS])
 
 m4_define([SORT_CASES_TEST], 
   [AT_SETUP([sort m4_eval([$1 * $2]) cases[]m4_if([$2], [1], [], [ ($1 unique)])[]m4_if([$3], [], [], [ with $3 buffers])])
-   AT_KEYWORDS([SORT CASES])
+   AT_KEYWORDS([SORT CASES $4])
    AT_CHECK([sort_cases_gen_data $1 $2 $3])
    AT_CAPTURE_FILE([data.txt])
    AT_CAPTURE_FILE([output.txt])
@@ -84,17 +84,17 @@ SORT_CASES_TEST(100, 10, 3)
 SORT_CASES_TEST(100, 10, 5)
 SORT_CASES_TEST(100, 10)
 
-SORT_CASES_TEST(1000, 5, 5)
-SORT_CASES_TEST(1000, 5, 50)
-SORT_CASES_TEST(1000, 5)
+SORT_CASES_TEST(1000, 5, 5, slow)
+SORT_CASES_TEST(1000, 5, 50, slow)
+SORT_CASES_TEST(1000, 5, [], slow)
 
-SORT_CASES_TEST(100, 100, 3)
-SORT_CASES_TEST(100, 100, 5)
-SORT_CASES_TEST(100, 100)
+SORT_CASES_TEST(100, 100, 3, slow)
+SORT_CASES_TEST(100, 100, 5, slow)
+SORT_CASES_TEST(100, 100, [], slow)
 
-SORT_CASES_TEST(10000, 5, 500)
+SORT_CASES_TEST(10000, 5, 500, slow)
 
-SORT_CASES_TEST(50000, 1)
+SORT_CASES_TEST(50000, 1, [], slow)
 
 dnl Bug #33089 caused SORT CASES to delete filtered cases permanently.
 AT_SETUP([SORT CASES preserves filtered cases])

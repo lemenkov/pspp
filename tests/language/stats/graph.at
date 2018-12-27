@@ -41,6 +41,7 @@ AT_CLEANUP
 
 
 AT_SETUP([GRAPH Scatter and Histogram])
+AT_KEYWORDS([slow])
 AT_DATA([scatterlong.sps],[
 NEW FILE.
 INPUT PROGRAM.

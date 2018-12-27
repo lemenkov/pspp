@@ -22,6 +22,7 @@ dnl should generate them, run without crashing.
 dnl Better tests will come later (hopefully)
 
 AT_SETUP([Examine])
+AT_KEYWORDS([slow])
 AT_DATA([charts.sps],[
 input program.
 loop #i = 1 to 1000.

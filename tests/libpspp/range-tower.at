@@ -18,6 +18,7 @@ AT_BANNER([range tower library])
 
 m4_define([CHECK_RANGE_TOWER],
   [AT_SETUP([range-tower -- $1])
+   AT_KEYWORDS([slow])
    AT_CHECK([range-tower-test $1])
    AT_CLEANUP])
 

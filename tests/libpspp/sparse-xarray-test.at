@@ -56,6 +56,7 @@ m4_divert_push([PREPARE_TESTS])
 m4_divert_pop([PREPARE_TESTS])
 
 AT_SETUP([in-memory sparse_xarray])
+AT_KEYWORDS([slow])
 dnl --values=3 would be a slightly better test but takes much longer.
 AT_CHECK([sparse-xarray-test \
 	    --verbosity=0 --queue-limit=`sparse_xarray_queue_limit` \
@@ -65,6 +66,7 @@ AT_CLEANUP
 
 m4_define([SPARSE_XARRAY_ON_DISK],
   [AT_SETUP([on-disk sparse_xarray max-memory-rows=$1])
+   AT_KEYWORDS([slow])
    AT_CHECK([sparse-xarray-test \
 	       --verbosity=0 --queue-limit=`sparse_xarray_queue_limit` \
                --columns=2 --max-rows=3 --max-memory-rows=$1 --values=2],
@@ -75,7 +77,7 @@ SPARSE_XARRAY_ON_DISK([1])
 SPARSE_XARRAY_ON_DISK([2])
 
 AT_SETUP([copying between in-memory sparse_xarrays])
-AT_KEYWORDS([sparse_xarray])
+AT_KEYWORDS([sparse_xarray slow])
 AT_CHECK([sparse-xarray-test \
 	    --verbosity=0 --queue-limit=`sparse_xarray_queue_limit` \
  	    --columns=2 --max-rows=2 --max-memory-rows=2 --values=2 \
@@ -85,7 +87,7 @@ AT_CLEANUP
 
 m4_define([SPARSE_XARRAY_COPY_DISK],
   [AT_SETUP([copying between on-disk sparse_xarrays max-memory-rows=$1])
-   AT_KEYWORDS([sparse_xarray])
+   AT_KEYWORDS([sparse_xarray slow])
    limit=`sparse_xarray_queue_limit`
    AT_CHECK([sparse-xarray-test \
                --verbosity=0 --queue-limit=`expr $limit / 2` \

@@ -18,6 +18,7 @@ AT_BANNER([doubly linked list of pointers (llx) library])
 
 m4_define([CHECK_LLX],
   [AT_SETUP([llx -- $1])
+   AT_KEYWORDS([$2])
    AT_CHECK([llx-test $1])
    AT_CLEANUP])
 
@@ -42,8 +43,8 @@ CHECK_LLX([destroy])
 CHECK_LLX([reverse])
 CHECK_LLX([permutations-no-dups])
 CHECK_LLX([permutations-with-dups])
-CHECK_LLX([merge-no-dups])
-CHECK_LLX([merge-with-dups])
+CHECK_LLX([merge-no-dups], [slow])
+CHECK_LLX([merge-with-dups], [slow])
 CHECK_LLX([sort-exhaustive])
 CHECK_LLX([sort-stable])
 CHECK_LLX([sort-subset])

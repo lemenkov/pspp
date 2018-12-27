@@ -17,7 +17,7 @@ dnl
 AT_BANNER([data output (data-out)])
 
 AT_SETUP([numeric format output])
-AT_KEYWORDS([data-out])
+AT_KEYWORDS([data-out slow])
 AT_DATA([num-out.pl],
 [[use strict;
 use warnings 'all';

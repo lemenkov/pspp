@@ -145,6 +145,7 @@ m4_define([INIT_PSQL],
 m4_define([CLEANUP_PSQL], [PATH=$PG_PATH:$PATH pg_ctl stop -W -o "-k $socket_dir -h ''"])
 
 AT_SETUP([GET DATA /TYPE=PSQL])
+AT_KEYWORDS([slow])
 INIT_PSQL
 
 dnl Test with an ordinary query.

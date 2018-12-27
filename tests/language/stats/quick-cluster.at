@@ -60,6 +60,7 @@ Valid,,11
 AT_CLEANUP
 
 AT_SETUP([QUICK CLUSTER with large data set])
+AT_KEYWORDS([slow])
 AT_DATA([quick-cluster.sps], [dnl
 input program.
 loop #i = 1 to 50000.

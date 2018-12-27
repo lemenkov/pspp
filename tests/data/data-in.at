@@ -51,7 +51,7 @@ EOF
 m4_divert_pop([PREPARE_TESTS])
 
 AT_SETUP([numeric input formats])
-AT_KEYWORDS([data-in])
+AT_KEYWORDS([data-in slow])
 data_in_prng
 AT_CHECK([$PERL test-my-rand.pl])
 AT_DATA([num-in.pl],
@@ -326,7 +326,7 @@ AT_CHECK([cat wkyr.output], [0], [expout])
 AT_CLEANUP
 
 AT_SETUP([DATETIME input format])
-AT_KEYWORDS([data-in])
+AT_KEYWORDS([data-in slow])
 AT_SKIP_IF([test "$PYTHON" = none])
 AT_CHECK([$PYTHON $top_srcdir/tests/data/test-date-input.py datetime "d-m-y +H:M" "d-m-y +H:M:S"])
 AT_FAIL_IF([test ! -s datetime.sps || test ! -s datetime.input || \
@@ -336,7 +336,7 @@ AT_CHECK([cat datetime.output], [0], [expout])
 AT_CLEANUP
 
 AT_SETUP([YMDHMS input format])
-AT_KEYWORDS([data-in])
+AT_KEYWORDS([data-in slow])
 AT_SKIP_IF([test "$PYTHON" = none])
 AT_CHECK([$PYTHON $top_srcdir/tests/data/test-date-input.py ymdhms "y-m-d +H:M" "y-m-d +H:M:S"])
 AT_FAIL_IF([test ! -s ymdhms.sps || test ! -s ymdhms.input || \
@@ -373,6 +373,7 @@ AT_CHECK([cat dtime.output], [0], [expout])
 AT_CLEANUP
 
 AT_SETUP([binary and hexadecimal input (IB, PIB, and PIBHEX formats)])
+AT_KEYWORDS([slow])
 AT_CHECK([$PERL -e 'print pack "n", $_ foreach 0...65535' > binhex-in.data])
 AT_CHECK([[wc -c < binhex-in.data | sed 's/[ 	]//g']], [0], [131072
 ])
@@ -394,6 +395,7 @@ AT_CHECK([cat binhex-in.out], [0], [expout])
 AT_CLEANUP
 
 AT_SETUP([BCD input (P and PK formats)])
+AT_KEYWORDS([slow])
 AT_CHECK([$PERL -e 'print pack "n", $_ foreach 0...65535' > bcd-in.data])
 AT_CHECK([[wc -c < bcd-in.data | sed 's/[ 	]//g']], [0], [131072
 ])
@@ -414,6 +416,7 @@ AT_CHECK([cat bcd-in.out], [0], [expout])
 AT_CLEANUP
 
 AT_SETUP([legacy input (N and Z formats)])
+AT_KEYWORDS([slow])
 AT_CHECK([$PERL -e 'print pack "n", $_ foreach 0...65535' > legacy-in.data])
 AT_CHECK([[wc -c < legacy-in.data | sed 's/[ 	]//g']], [0], [131072
 ])
