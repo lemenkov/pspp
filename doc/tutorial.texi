@@ -376,7 +376,7 @@ seemingly bizarre height for an adult person.
 We can examine the data in more detail with the @cmd{EXAMINE}
 command (@pxref{EXAMINE}):
 
-In @ref{examine} you can see that the lowest value of @var{height} is
+In @ref{ex1} you can see that the lowest value of @var{height} is
 179 (which we suspect to be erroneous), but the second lowest is 1598
 which
 we know from the @cmd{DESCRIPTIVES} command 
@@ -386,7 +386,7 @@ negative but a plausible value for the second lowest value.
 This suggests that the two extreme values are outliers and probably 
 represent data entry errors. 
 
-@float Example, examine
+@float Example, ex1
 @cartouche
 [@dots{} continue from @ref{descriptives}]
 @example
@@ -448,7 +448,7 @@ From now on, they will be ignored in analysis.
 For detailed information about the @cmd{RECODE} command @pxref{RECODE}.
 
 If you now re-run the @cmd{DESCRIPTIVES} or @cmd{EXAMINE} commands in
-@ref{descriptives} and @ref{examine} you
+@ref{descriptives} and @ref{ex1} you
 will see a data summary with more plausible parameters.
 You will also notice that the data summaries indicate the two missing values.
 
