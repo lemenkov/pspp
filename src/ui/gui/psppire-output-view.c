@@ -385,6 +385,8 @@ psppire_output_view_put (struct psppire_output_view *view,
           else
             ds_put_cstr (&name, "Chart");
         }
+      else if (is_group_open_item (item))
+        ds_put_cstr (&name, to_group_open_item (item)->command_name);
       gtk_tree_store_set (store, &iter,
                           COL_NAME, ds_cstr (&name),
 			  COL_ADDR, item,
