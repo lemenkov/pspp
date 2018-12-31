@@ -645,13 +645,8 @@ on_size_allocate (GtkWidget    *widget,
                   GdkRectangle *allocation,
                   struct psppire_output_view *view)
 {
-  int new_render_width = MAX (300, allocation->width);
-
-  if (view->render_width != new_render_width)
-    {
-      view->render_width = new_render_width;
-      rerender (view);
-    }
+  view->render_width = MAX (300, allocation->width);
+  rerender (view);
 }
 
 static void
