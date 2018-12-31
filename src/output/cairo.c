@@ -39,6 +39,7 @@
 #include "output/charts/scree.h"
 #include "output/charts/scatterplot.h"
 #include "output/driver-provider.h"
+#include "output/group-item.h"
 #include "output/message-item.h"
 #include "output/options.h"
 #include "output/render.h"
@@ -1406,6 +1407,9 @@ xr_rendering_create (struct xr_driver *xr, const struct output_item *item,
       r = xzalloc (sizeof *r);
       r->item = output_item_ref (item);
     }
+  else if (is_group_open_item (item))
+    r = xr_rendering_create_text (xr, to_group_open_item (item)->command_name,
+                                  cr);
 
   return r;
 }
