@@ -83,6 +83,24 @@ enum
     N_COLS
   };
 
+/* Draws a white background on the GtkLayout to match the white background of
+   each of the output items. */
+static gboolean
+layout_draw_callback (GtkWidget *widget, cairo_t *cr, gpointer data)
+{
+  cairo_save (cr);
+
+  int width = gtk_widget_get_allocated_width (widget);
+  int height = gtk_widget_get_allocated_height (widget);
+  cairo_rectangle (cr, 0, 0, width, height);
+  cairo_set_source_rgb (cr, 1.0, 1.0, 1.0);
+  cairo_fill (cr);
+
+  cairo_restore (cr);
+
+  return FALSE;                 /* Continue drawing the GtkDrawingAreas. */
+}
+
 static gboolean
 draw_callback (GtkWidget *widget, cairo_t *cr, gpointer data)
 {
@@ -690,6 +708,8 @@ psppire_output_view_new (GtkLayout *output, GtkTreeView *overview)
   view->print_item = 0;
   view->print_n_pages = 0;
   view->paginated = FALSE;
+
+  g_signal_connect (output, "draw", G_CALLBACK (layout_draw_callback), NULL);
 
   g_signal_connect (output, "style-updated", G_CALLBACK (on_style_updated), view);
 
