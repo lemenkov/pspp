@@ -370,8 +370,8 @@ pivot_table_submit_layer (const struct pivot_table *st,
                     &st->areas[PIVOT_AREA_COLUMN_LABELS],
                     PIVOT_AREA_COLUMN_LABELS,
                     &st->areas[PIVOT_AREA_CORNER], footnotes,
-                    st->rotate_inner_column_labels,
-                    st->show_values, st->show_variables, false);
+                    st->show_values, st->show_variables,
+                    st->rotate_inner_column_labels, false);
 
   compose_headings (table,
                     &st->axes[PIVOT_AXIS_ROW], V, &st->axes[PIVOT_AXIS_COLUMN],
@@ -384,8 +384,8 @@ pivot_table_submit_layer (const struct pivot_table *st,
                     &st->areas[PIVOT_AREA_ROW_LABELS],
                     PIVOT_AREA_ROW_LABELS,
                     &st->areas[PIVOT_AREA_CORNER], footnotes,
-                    false, st->show_values, st->show_variables,
-                    st->rotate_outer_row_labels);
+                    st->show_values, st->show_variables,
+                    false, st->rotate_outer_row_labels);
 
   size_t *dindexes = xcalloc (st->n_dimensions, sizeof *dindexes);
   size_t y = 0;
