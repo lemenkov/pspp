@@ -548,18 +548,21 @@ output_driver_parse_option (const char *option, struct string_map *options)
 char *
 output_get_text_from_markup (const char *markup)
 {
-  xmlDoc *doc = xmlReadMemory (markup, strlen (markup), "noname.xml", "UTF-8",
-                               (XML_PARSE_NOERROR | XML_PARSE_NOWARNING
-                                | XML_PARSE_NONET | XML_PARSE_NOCDATA));
-  if (!doc)
+  xmlParserCtxt *parser = xmlCreatePushParserCtxt (NULL, NULL, NULL, 0, NULL);
+  if (!parser)
     return xstrdup (markup);
 
-  char *content = CHAR_CAST (char *,
-                             xmlNodeGetContent (xmlDocGetRootElement (doc)));
-  if (!content)
-    content = xstrdup (markup);
+  xmlParseChunk (parser, "<xml>", strlen ("<xml>"), false);
+  xmlParseChunk (parser, markup, strlen (markup), false);
+  xmlParseChunk (parser, "</xml>", strlen ("</xml>"), true);
 
-  xmlFreeDoc (doc);
+  char *content
+    = (parser->wellFormed
+       ? CHAR_CAST (char *,
+                    xmlNodeGetContent (xmlDocGetRootElement (parser->myDoc)))
+       : xstrdup (markup));
+  xmlFreeDoc (parser->myDoc);
+  xmlFreeParserCtxt (parser);
 
   return content;
 }
