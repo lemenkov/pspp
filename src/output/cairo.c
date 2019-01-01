@@ -1446,7 +1446,8 @@ static void xr_draw_chart (const struct chart_item *, cairo_t *,
 
 /* Draws onto CR */
 void
-xr_rendering_draw_all (struct xr_rendering *r, cairo_t *cr)
+xr_rendering_draw (struct xr_rendering *r, cairo_t *cr,
+                   int x0, int y0, int x1, int y1)
 {
   if (is_table_item (r->item))
     {
@@ -1454,8 +1455,8 @@ xr_rendering_draw_all (struct xr_rendering *r, cairo_t *cr)
 
       xr_set_cairo (xr, cr);
 
-      render_pager_draw (r->p);
-
+      render_pager_draw_region (r->p, x0 * XR_POINT, y0 * XR_POINT,
+                                (x1 - x0) * XR_POINT, (y1 - y0) * XR_POINT);
     }
   else
     xr_draw_chart (to_chart_item (r->item), cr,

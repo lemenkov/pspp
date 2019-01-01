@@ -104,8 +104,13 @@ layout_draw_callback (GtkWidget *widget, cairo_t *cr, gpointer data)
 static gboolean
 draw_callback (GtkWidget *widget, cairo_t *cr, gpointer data)
 {
+  GdkRectangle clip;
+  if (!gdk_cairo_get_clip_rectangle (cr, &clip))
+    return TRUE;
+
   struct xr_rendering *r = g_object_get_data (G_OBJECT (widget), "rendering");
-  xr_rendering_draw_all (r, cr);
+  xr_rendering_draw (r, cr, clip.x, clip.y,
+                     clip.x + clip.width, clip.y + clip.height);
   return TRUE;
 }
 
