@@ -298,7 +298,9 @@ rerender (struct psppire_output_view *view)
       view->y += th;
     }
 
-  gtk_layout_set_size (view->output, view->max_width, view->y);
+  gtk_layout_set_size (view->output,
+                       view->max_width + view->font_height,
+                       view->y + view->font_height);
   cairo_destroy (cr);
 }
 
