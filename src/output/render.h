@@ -125,7 +125,14 @@ struct render_params
        points.) */
     int min_break[TABLE_N_AXES];
 
+    /* True if the driver supports cell margins.  (If false, the rendering
+       engine will insert a small space betweeen adjacent cells that don't have
+       an intervening rule.)  */
     bool supports_margins;
+
+    /* True if the local language has a right-to-left direction, otherwise
+       false.  (Use render_direction_rtl() to find out.) */
+    bool rtl;
   };
 
 /* An iterator for breaking render_pages into smaller chunks. */

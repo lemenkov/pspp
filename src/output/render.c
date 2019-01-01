@@ -952,7 +952,7 @@ render_rule (const struct render_page *page, const int ofs[TABLE_N_AXES],
 
       bb[H][0] = ofs[H] + page->cp[H][d[H]];
       bb[H][1] = ofs[H] + page->cp[H][d[H] + 1];
-      if (render_direction_rtl ())
+      if (page->params->rtl)
 	{
 	  int temp = bb[H][0];
 	  bb[H][0] = render_page_get_size (page, H) - bb[H][1];
@@ -974,7 +974,7 @@ render_cell (const struct render_page *page, const int ofs[TABLE_N_AXES],
 
   bb[H][0] = clip[H][0] = ofs[H] + page->cp[H][cell->d[H][0] * 2 + 1];
   bb[H][1] = clip[H][1] = ofs[H] + page->cp[H][cell->d[H][1] * 2];
-  if (render_direction_rtl ())
+  if (page->params->rtl)
     {
       int temp = bb[H][0];
       bb[H][0] = clip[H][0] = render_page_get_size (page, H) - bb[H][1];

@@ -202,6 +202,7 @@ struct ascii_driver
     struct u8_line *lines;      /* Page content. */
     int allocated_lines;        /* Number of lines allocated. */
     int chart_cnt;              /* Number of charts so far. */
+    struct render_params params;
   };
 
 static const struct output_driver_class ascii_driver_class;
@@ -278,6 +279,27 @@ ascii_create (struct  file_handle *fh, enum settings_output_devices device_type,
   a->allocated_lines = 0;
   a->chart_cnt = 1;
 
+  a->params.draw_line = ascii_draw_line;
+  a->params.measure_cell_width = ascii_measure_cell_width;
+  a->params.measure_cell_height = ascii_measure_cell_height;
+  a->params.adjust_break = NULL;
+  a->params.draw_cell = ascii_draw_cell;
+  a->params.aux = a;
+  a->params.size[H] = a->width;
+  a->params.size[V] = INT_MAX;
+  a->params.font_size[H] = 1;
+  a->params.font_size[V] = 1;
+  for (int i = 0; i < RENDER_N_LINES; i++)
+    {
+      int width = i == RENDER_LINE_NONE ? 0 : 1;
+      a->params.line_widths[H][i] = width;
+      a->params.line_widths[V][i] = width;
+    }
+  for (int i = 0; i < TABLE_N_AXES; i++)
+    a->params.min_break[i] = a->min_break[i];
+  a->params.supports_margins = false;
+  a->params.rtl = render_direction_rtl ();
+
   if (!update_page_size (a, true))
     goto error;
 
@@ -326,8 +348,8 @@ update_page_size (struct ascii_driver *a, bool issue_error)
 
   if (a->auto_width)
     {
-      a->width = settings_get_viewwidth ();
-      a->min_break[H] = a->width / 2;
+      a->params.size[H] = a->width = settings_get_viewwidth ();
+      a->params.min_break[H] = a->min_break[H] = a->width / 2;
     }
 
   if (a->width < MIN_WIDTH)
@@ -339,7 +361,7 @@ update_page_size (struct ascii_driver *a, bool issue_error)
                MIN_WIDTH,
                a->width);
       if (a->width < MIN_WIDTH)
-        a->width = MIN_WIDTH;
+        a->params.size[H] = a->width = MIN_WIDTH;
       return false;
     }
 
@@ -390,38 +412,16 @@ static void
 ascii_output_table_item (struct ascii_driver *a,
                          const struct table_item *table_item)
 {
-  struct render_params params;
   struct render_pager *p;
-  int i;
 
   update_page_size (a, false);
-
-  params.draw_line = ascii_draw_line;
-  params.measure_cell_width = ascii_measure_cell_width;
-  params.measure_cell_height = ascii_measure_cell_height;
-  params.adjust_break = NULL;
-  params.draw_cell = ascii_draw_cell;
-  params.aux = a;
-  params.size[H] = a->width;
-  params.size[V] = INT_MAX;
-  params.font_size[H] = 1;
-  params.font_size[V] = 1;
-  for (i = 0; i < RENDER_N_LINES; i++)
-    {
-      int width = i == RENDER_LINE_NONE ? 0 : 1;
-      params.line_widths[H][i] = width;
-      params.line_widths[V][i] = width;
-    }
-  for (i = 0; i < TABLE_N_AXES; i++)
-    params.min_break[i] = a->min_break[i];
-  params.supports_margins = false;
 
   if (a->file)
     putc ('\n', a->file);
   else if (!ascii_open_page (a))
     return;
 
-  p = render_pager_create (&params, table_item);
+  p = render_pager_create (&a->params, table_item);
   for (int i = 0; render_pager_has_next (p); i++)
     {
       if (i)
