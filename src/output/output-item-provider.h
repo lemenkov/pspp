@@ -25,6 +25,8 @@
    instance of output_item. */
 struct output_item_class
   {
+    const char *name;
+
     /* Destroys and frees ITEM.  Called when output_item_unref() drops ITEM's
        reference count to 0. */
     void (*destroy) (struct output_item *item);

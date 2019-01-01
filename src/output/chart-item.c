@@ -84,5 +84,6 @@ chart_item_destroy (struct output_item *output_item)
 
 const struct output_item_class chart_item_class =
   {
+    "chart",
     chart_item_destroy,
   };

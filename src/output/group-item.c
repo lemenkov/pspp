@@ -56,6 +56,7 @@ group_open_item_destroy (struct output_item *output_item)
 
 const struct output_item_class group_open_item_class =
   {
+    "group_open",
     group_open_item_destroy,
   };
 
@@ -88,5 +89,6 @@ group_close_item_destroy (struct output_item *output_item)
 
 const struct output_item_class group_close_item_class =
   {
+    "group_close",
     group_close_item_destroy,
   };

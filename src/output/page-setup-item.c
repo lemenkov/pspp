@@ -99,5 +99,6 @@ page_setup_item_destroy (struct output_item *output_item)
 
 const struct output_item_class page_setup_item_class =
   {
+    "page_setup",
     page_setup_item_destroy,
   };

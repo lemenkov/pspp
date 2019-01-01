@@ -177,5 +177,6 @@ table_item_destroy (struct output_item *output_item)
 
 const struct output_item_class table_item_class =
   {
+    "table",
     table_item_destroy,
   };

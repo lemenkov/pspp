@@ -62,5 +62,6 @@ message_item_submit (struct message_item *item)
 
 const struct output_item_class message_item_class =
   {
+    "message",
     message_item_destroy,
   };
