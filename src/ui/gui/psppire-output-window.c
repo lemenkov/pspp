@@ -474,13 +474,7 @@ psppire_output_window_export (PsppireOutputWindow *window)
 	  /* Fall through */
 
 	case FT_ASCII:
-          string_map_insert (&options, "headers", "false");
-          string_map_insert (&options, "paginate", "false");
-          string_map_insert (&options, "squeeze", "true");
-          string_map_insert (&options, "emphasis", "none");
           string_map_insert (&options, "charts", "none");
-          string_map_insert (&options, "top-margin", "0");
-          string_map_insert (&options, "bottom-margin", "0");
           export_output (window, &options, "txt");
 	  break;
 	default:
