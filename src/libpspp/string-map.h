@@ -116,6 +116,8 @@ void string_map_replace_map (struct string_map *, const struct string_map *);
 void string_map_get_keys (const struct string_map *, struct string_set *);
 void string_map_get_values (const struct string_map *, struct string_set *);
 
+bool string_map_equals (const struct string_map *, const struct string_map *);
+
 static inline struct string_map_node *string_map_first (
   const struct string_map *);
 static inline struct string_map_node *string_map_next (

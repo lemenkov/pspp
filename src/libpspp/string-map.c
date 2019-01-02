@@ -357,6 +357,25 @@ string_map_get_values (const struct string_map *map, struct string_set *values)
   STRING_MAP_FOR_EACH_VALUE (value, node, map)
     string_set_insert (values, value);
 }
+
+/* Returns true if A and B have the same content, false otherwise. */
+bool
+string_map_equals (const struct string_map *a, const struct string_map *b)
+{
+  if (string_map_count (a) != string_map_count (b))
+    return false;
+
+   const struct string_map_node *a_node;
+   STRING_MAP_FOR_EACH_NODE (a_node, a)
+     {
+       const struct string_map_node *b_node = string_map_find_node_with_hash (
+         b, a_node->key, strlen (a_node->key), a_node->hmap_node.hash);
+       if (!b_node || strcmp (a_node->value, b_node->value))
+         return false;
+     }
+
+   return true;
+}
 
 static struct string_map_node *
 string_map_find_node_with_hash (const struct string_map *map, const char *key,
