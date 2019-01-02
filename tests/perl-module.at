@@ -26,7 +26,6 @@ dnl XXX "libtool --mode=execute" is probably better than setting
 dnl LD_LIBRARY_PATH.
 m4_define([RUN_PERL_MODULE],
   [LD_LIBRARY_PATH=$abs_top_builddir/src/.libs \
-   LD_PRELOAD=/usr/lib/i386-linux-gnu/libasan.so.4 \
    DYLD_LIBRARY_PATH=$abs_top_builddir/src/.libs \
    $PERL -I$abs_top_builddir/perl-module/blib/arch \
          -I$abs_top_builddir/perl-module/blib/lib])
