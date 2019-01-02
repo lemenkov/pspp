@@ -169,7 +169,7 @@ chisquare_execute (const struct dataset *ds,
           if (cst->n_expected > 0 && n_cells != cst->n_expected)
             {
               msg (ME, _("CHISQUARE test specified %d expected values, but "
-                         "variable %s has %d distinct values."),
+                         "variable %s has %zu distinct values."),
                    cst->n_expected, var_get_name (var), n_cells);
               freq_hmap_destroy (&freq_hash, var_get_width (var));
               continue;
