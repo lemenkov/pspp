@@ -1648,18 +1648,25 @@ xr_rendering_destroy (struct xr_rendering *r)
 }
 
 void
-xr_rendering_measure (struct xr_rendering *r, int *w, int *h)
+xr_rendering_measure (struct xr_rendering *r, int *wp, int *hp)
 {
+  int w, h;
+
   if (is_table_item (r->item))
     {
-      *w = render_pager_get_size (r->p, H) / XR_POINT;
-      *h = render_pager_get_size (r->p, V) / XR_POINT;
+      w = render_pager_get_size (r->p, H) / XR_POINT;
+      h = render_pager_get_size (r->p, V) / XR_POINT;
     }
   else
     {
-      *w = CHART_WIDTH;
-      *h = CHART_HEIGHT;
+      w = CHART_WIDTH;
+      h = CHART_HEIGHT;
     }
+
+  if (wp)
+    *wp = w;
+  if (hp)
+    *hp = h;
 }
 
 static void xr_draw_chart (const struct chart_item *, cairo_t *,
