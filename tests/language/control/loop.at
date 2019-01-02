@@ -38,25 +38,15 @@ execute.
 AT_CHECK([pspp -o pspp.csv loop.sps])
 AT_CHECK([cat pspp.csv], [0], [dnl
 1.00 @&t@
-
 2.00 @&t@
-
 --------
-
 2.00 @&t@
-
 4.00 @&t@
-
 --------
-
 3.00 @&t@
-
 6.00 @&t@
-
 9.00 @&t@
-
 --------
-
 --------
 ])
 AT_CLEANUP
@@ -75,25 +65,15 @@ execute.
 AT_CHECK([pspp -o pspp.csv loop.sps])
 AT_CHECK([cat pspp.csv], [0], [dnl
 1.00 @&t@
-
 2.00 @&t@
-
 --------
-
 2.00 @&t@
-
 4.00 @&t@
-
 --------
-
 3.00 @&t@
-
 6.00 @&t@
-
 9.00 @&t@
-
 --------
-
 --------
 ])
 AT_CLEANUP
@@ -112,27 +92,16 @@ execute.
 AT_CHECK([pspp -o pspp.csv loop.sps])
 AT_CHECK([cat pspp.csv], [0], [dnl
 1.00 @&t@
-
 2.00 @&t@
-
 --------
-
 2.00 @&t@
-
 4.00 @&t@
-
 --------
-
 3.00 @&t@
-
 6.00 @&t@
-
 9.00 @&t@
-
 --------
-
 4.00 @&t@
-
 --------
 ])
 AT_CLEANUP
@@ -149,19 +118,12 @@ execute.
 AT_CHECK([pspp -o pspp.csv loop.sps])
 AT_CHECK([cat pspp.csv], [0], [dnl
 1.00 @&t@
-
 2.00 @&t@
-
 --------
-
 2.00 @&t@
-
 --------
-
 3.00 @&t@
-
 --------
-
 --------
 ])
 AT_CLEANUP
@@ -178,23 +140,14 @@ execute.
 AT_CHECK([pspp -o pspp.csv loop.sps])
 AT_CHECK([cat pspp.csv], [0], [dnl
 1.00 @&t@
-
 2.00 @&t@
-
 --------
-
 2.00 @&t@
-
 4.00 @&t@
-
 --------
-
 3.00 @&t@
-
 6.00 @&t@
-
 --------
-
 --------
 ])
 AT_CLEANUP
@@ -211,15 +164,10 @@ execute.
 AT_CHECK([pspp -o pspp.csv loop.sps])
 AT_CHECK([cat pspp.csv], [0], [dnl
 --------
-
 2.00 @&t@
-
 4.00 @&t@
-
 --------
-
 --------
-
 --------
 ])
 AT_CLEANUP
@@ -241,23 +189,14 @@ execute.
 AT_CHECK([pspp -o pspp.csv loop.sps])
 AT_CHECK([cat pspp.csv], [0], [dnl
 1.00 @&t@
-
 --------
-
 2.00 @&t@
-
 4.00 @&t@
-
 --------
-
 3.00 @&t@
-
 6.00 @&t@
-
 --------
-
 4.00 @&t@
-
 --------
 ])
 AT_CLEANUP
@@ -276,27 +215,16 @@ execute.
 AT_CHECK([pspp -o pspp.csv loop.sps])
 AT_CHECK([cat pspp.csv], [0], [dnl
 1     1.00 @&t@
-
 1     2.00 @&t@
-
 --------
-
 2     3.00 @&t@
-
 2     4.00 @&t@
-
 --------
-
 3     5.00 @&t@
-
 3     6.00 @&t@
-
 --------
-
 4     7.00 @&t@
-
 4     8.00 @&t@
-
 --------
 ])
 AT_CLEANUP

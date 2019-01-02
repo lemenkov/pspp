@@ -32,17 +32,12 @@ enum text_item_type
   {
     TEXT_ITEM_PAGE_TITLE,       /* TITLE and SUBTITLE commands. */
     TEXT_ITEM_TITLE,            /* Title. */
-    TEXT_ITEM_PARAGRAPH,        /* Normal paragraph of text. */
-
-    /* Log items. */
-    TEXT_ITEM_SYNTAX,           /* A single line of PSPP syntax. */
+    TEXT_ITEM_SYNTAX,           /* Syntax printback logging. */
     TEXT_ITEM_LOG,              /* Other logging. */
-
-    /* Spacing.  Some output drivers that are not based on lines and pages
-       (e.g. CSV, HTML) may ignore these. */
-    TEXT_ITEM_BLANK_LINE,       /* Blank line. */
     TEXT_ITEM_EJECT_PAGE        /* Eject page. */
   };
+
+const char *text_item_type_to_string (enum text_item_type);
 
 /* A text item. */
 struct text_item

@@ -183,8 +183,8 @@ struct ascii_driver
 
 #ifdef HAVE_CAIRO
     /* Colours for charts */
-    struct xr_color fg;
-    struct xr_color bg;
+    struct cell_color fg;
+    struct cell_color bg;
 #endif
 
     int width;                  /* Page width. */
@@ -490,7 +490,7 @@ ascii_submit (struct output_driver *driver,
           struct text_item *text_item;
 
           text_item = text_item_create_format (
-            TEXT_ITEM_PARAGRAPH, _("See %s for a chart."), file_name);
+            TEXT_ITEM_LOG, _("See %s for a chart."), file_name);
 
           ascii_submit (driver, &text_item->output_item);
           text_item_unref (text_item);
@@ -503,20 +503,9 @@ ascii_submit (struct output_driver *driver,
       const struct text_item *text_item = to_text_item (output_item);
       enum text_item_type type = text_item_get_type (text_item);
 
-      switch (type)
-        {
-        case TEXT_ITEM_PAGE_TITLE:
-        case TEXT_ITEM_BLANK_LINE:
-          break;
-
-        case TEXT_ITEM_EJECT_PAGE:
-          break;
-
-        default:
-          ascii_output_table_item_unref (
-            a, text_item_to_table_item (text_item_ref (text_item)));
-          break;
-        }
+      if (type != TEXT_ITEM_PAGE_TITLE && type != TEXT_ITEM_EJECT_PAGE)
+        ascii_output_table_item_unref (
+          a, text_item_to_table_item (text_item_ref (text_item)));
     }
   else if (is_message_item (output_item))
     {

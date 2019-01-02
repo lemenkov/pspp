@@ -128,26 +128,49 @@ csv_flush (struct output_driver *driver)
 }
 
 static void
-csv_output_field (struct csv_driver *csv, const char *field)
+csv_output_field__ (struct csv_driver *csv, struct substring field)
 {
-  while (*field == ' ')
-    field++;
+  ss_ltrim (&field, ss_cstr (" "));
 
-  if (csv->quote && field[strcspn (field, csv->quote_set)])
+  if (csv->quote && ss_cspan (field, ss_cstr (csv->quote_set)) < field.length)
     {
-      const char *p;
-
       putc (csv->quote, csv->file);
-      for (p = field; *p != '\0'; p++)
+      for (size_t i = 0; i < field.length; i++)
         {
-          if (*p == csv->quote)
+          if (field.string[i] == csv->quote)
             putc (csv->quote, csv->file);
-          putc (*p, csv->file);
+          putc (field.string[i], csv->file);
         }
       putc (csv->quote, csv->file);
     }
   else
-    fputs (field, csv->file);
+    fwrite (field.string, field.length, 1, csv->file);
+}
+
+static void
+csv_output_field (struct csv_driver *csv, const char *field)
+{
+  csv_output_field__ (csv, ss_cstr (field));
+}
+
+static void
+csv_put_separator (struct csv_driver *csv)
+{
+  if (csv->n_items++ > 0)
+    putc ('\n', csv->file);
+}
+
+static void
+csv_output_lines (struct csv_driver *csv, const char *text_)
+{
+  struct substring text = ss_cstr (text_);
+  struct substring line;
+  size_t save_idx = 0;
+  while (ss_separate (text, ss_cstr ("\n"), &save_idx, &line))
+    {
+      csv_output_field__ (csv, line);
+      putc ('\n', csv->file);
+    }
 }
 
 static void
@@ -171,13 +194,6 @@ csv_output_table_item_text (struct csv_driver *csv,
   csv_output_field (csv, ds_cstr (&s));
   ds_destroy (&s);
   putc ('\n', csv->file);
-}
-
-static void
-csv_put_separator (struct csv_driver *csv)
-{
-  if (csv->n_items++ > 0)
-    putc ('\n', csv->file);
 }
 
 static void
@@ -268,15 +284,15 @@ csv_submit (struct output_driver *driver,
         return;
 
       csv_put_separator (csv);
+
       if (text_item->markup)
         {
           char *plain_text = output_get_text_from_markup (text);
-          csv_output_field (csv, plain_text);
+          csv_output_lines (csv, plain_text);
           free (plain_text);
         }
       else
-        csv_output_field (csv, text);
-      putc ('\n', csv->file);
+        csv_output_lines (csv, text);
     }
   else if (is_message_item (output_item))
     {

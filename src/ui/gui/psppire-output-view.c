@@ -30,6 +30,7 @@
 #include "output/group-item.h"
 #include "output/message-item.h"
 #include "output/output-item.h"
+#include "output/output-item-provider.h"
 #include "output/table-item.h"
 #include "output/text-item.h"
 
@@ -59,8 +60,7 @@ struct psppire_output_view
 
     struct string_map render_opts;
     GtkTreeView *overview;
-    GtkTreeIter cur_command;
-    bool in_command;
+    GtkTreePath *cur_group;
 
     GtkWidget *toplevel;
 
@@ -242,6 +242,9 @@ rerender (struct psppire_output_view *view)
       if (view->y > 0)
         view->y += view->font_height / 2;
 
+      if (is_group_open_item (item->item))
+        continue;
+
       r = xr_rendering_create (view->xr, item->item, cr);
       if (r == NULL)
         {
@@ -303,20 +306,20 @@ psppire_output_view_put (struct psppire_output_view *view,
 {
   struct output_view_item *view_item;
   GtkWidget *drawing_area;
-  struct xr_rendering *r;
   struct string name;
-  GtkTreeStore *store;
-  GtkTreePath *path;
-  GtkTreeIter iter;
   int tw, th;
 
   if (is_group_close_item (item))
     {
-      if (output_get_group_level () == 0)
+      if (view->cur_group)
         {
-          view->in_command = false;
-          return;
+          if (!gtk_tree_path_up (view->cur_group))
+            {
+              gtk_tree_path_free (view->cur_group);
+              view->cur_group = NULL;
+            }
         }
+      return;
     }
   else if (is_text_item (item))
     {
@@ -334,7 +337,9 @@ psppire_output_view_put (struct psppire_output_view *view,
   view_item->drawing_area = NULL;
 
   GdkWindow *win = gtk_widget_get_window (GTK_WIDGET (view->output));
-  if (win)
+  if (is_group_open_item (item))
+    tw = th = 0;
+  else if (win)
     {
       view_item->drawing_area = drawing_area = gtk_drawing_area_new ();
 
@@ -348,7 +353,7 @@ psppire_output_view_put (struct psppire_output_view *view,
       if (view->y > 0)
         view->y += view->font_height / 2;
 
-      r = xr_rendering_create (view->xr, item, cr);
+      struct xr_rendering *r = xr_rendering_create (view->xr, item, cr);
       if (r == NULL)
 	{
 	  gdk_window_end_draw_frame (win, ctx);
@@ -365,29 +370,38 @@ psppire_output_view_put (struct psppire_output_view *view,
   else
     tw = th = 0;
 
-  if (view->overview
-      && (!is_text_item (item)
-          || text_item_get_type (to_text_item (item)) != TEXT_ITEM_SYNTAX
-          || !view->in_command))
+  if (view->overview)
     {
-      store = GTK_TREE_STORE (gtk_tree_view_get_model (view->overview));
+      GtkTreeStore *store = GTK_TREE_STORE (
+        gtk_tree_view_get_model (view->overview));
 
       ds_init_empty (&name);
-      if (is_group_open_item (item) && output_get_group_level () == 1)
-        {
-          gtk_tree_store_append (store, &iter, NULL);
-          view->cur_command = iter; /* XXX shouldn't save a GtkTreeIter */
-          view->in_command = true;
-        }
+
+      /* Create a new node in the tree and puts a reference to it in 'iter'. */
+      GtkTreeIter iter;
+      GtkTreeIter parent;
+      if (view->cur_group
+          && gtk_tree_path_get_depth (view->cur_group) > 0
+          && gtk_tree_model_get_iter (GTK_TREE_MODEL (store),
+                                      &parent, view->cur_group))
+        gtk_tree_store_append (store, &iter, &parent);
       else
+        gtk_tree_store_append (store, &iter, NULL);
+
+      if (is_group_open_item (item))
         {
-          GtkTreeIter *p = view->in_command ? &view->cur_command : NULL;
-          gtk_tree_store_append (store, &iter, p);
+          gtk_tree_path_free (view->cur_group);
+          view->cur_group = gtk_tree_model_get_path (GTK_TREE_MODEL (store),
+                                                     &iter);
         }
 
       ds_clear (&name);
       if (is_text_item (item))
-        ds_put_cstr (&name, text_item_get_text (to_text_item (item)));
+        {
+          const struct text_item *text_item = to_text_item (item);
+          ds_put_cstr (&name, text_item_type_to_string (
+                         text_item_get_type (text_item)));
+        }
       else if (is_message_item (item))
         {
           const struct message_item *msg_item = to_message_item (item);
@@ -421,7 +435,8 @@ psppire_output_view_put (struct psppire_output_view *view,
                           -1);
       ds_destroy (&name);
 
-      path = gtk_tree_model_get_path (GTK_TREE_MODEL (store), &iter);
+      GtkTreePath *path = gtk_tree_model_get_path (
+        GTK_TREE_MODEL (store), &iter);
       gtk_tree_view_expand_row (view->overview, path, TRUE);
       gtk_tree_path_free (path);
     }
@@ -709,8 +724,7 @@ psppire_output_view_new (GtkLayout *output, GtkTreeView *overview)
   view->y = 0;
   string_map_init (&view->render_opts);
   view->overview = overview;
-  memset (&view->cur_command, 0, sizeof view->cur_command);
-  view->in_command = false;
+  view->cur_group = NULL;
   view->toplevel = gtk_widget_get_toplevel (GTK_WIDGET (output));
   view->items = NULL;
   view->n_items = view->allocated_items = 0;

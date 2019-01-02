@@ -36,6 +36,29 @@
 #include "gettext.h"
 #define _(msgid) gettext (msgid)
 
+const char *
+text_item_type_to_string (enum text_item_type type)
+{
+  switch (type)
+    {
+    case TEXT_ITEM_PAGE_TITLE:
+      return _("Page Title");
+
+    case TEXT_ITEM_TITLE:
+      return _("Title");
+
+    case TEXT_ITEM_SYNTAX:
+    case TEXT_ITEM_LOG:
+      return _("Log");
+
+    case TEXT_ITEM_EJECT_PAGE:
+      return _("Page Break");
+
+    default:
+      return _("Text");
+    }
+}
+
 /* Creates and returns a new text item containing TEXT and the specified TYPE.
    The new text item takes ownership of TEXT. */
 struct text_item *

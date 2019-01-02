@@ -30,10 +30,7 @@ EXECUTE.
 AT_CHECK([pspp -O format=csv print-space.sps], [0], [dnl
 1 @&t@
 
-
-
 2 @&t@
-
 
 ])
 AT_CLEANUP
@@ -53,12 +50,7 @@ AT_CHECK([pspp -O format=csv print-space.sps], [0], [dnl
 1 @&t@
 
 
-
-
-
 2 @&t@
-
-
 
 
 ])

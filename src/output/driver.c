@@ -53,7 +53,8 @@ struct output_engine
   {
     struct ll ll;                  /* Node for this engine. */
     struct llx_list drivers;       /* Contains "struct output_driver"s. */
-    struct string deferred_syntax; /* TEXT_ITEM_SYNTAX being accumulated. */
+    struct string deferred_text;   /* Output text being accumulated. */
+    enum text_item_type deferred_type; /* Type of text being accumulated. */
     char *command_name;            /* Name of command being processed. */
     char *title, *subtitle;        /* Components of page title. */
 
@@ -99,7 +100,7 @@ output_engine_push (void)
   struct output_engine *e = xzalloc (sizeof (*e));
 
   llx_init (&e->drivers);
-  ds_init_empty (&e->deferred_syntax);
+  ds_init_empty (&e->deferred_text);
 
   string_map_init (&e->heading_vars);
 
@@ -122,7 +123,7 @@ output_engine_pop (void)
       struct output_driver *d = llx_pop_head (&e->drivers, &llx_malloc_mgr);
       output_driver_destroy (d);
     }
-  ds_destroy (&e->deferred_syntax);
+  ds_destroy (&e->deferred_text);
   free (e->command_name);
   free (e->title);
   free (e->subtitle);
@@ -176,25 +177,39 @@ output_submit__ (struct output_engine *e, struct output_item *item)
 }
 
 static void
-flush_deferred_syntax (struct output_engine *e)
+flush_deferred_text (struct output_engine *e)
 {
-  if (!ds_is_empty (&e->deferred_syntax))
+  if (!ds_is_empty (&e->deferred_text))
     {
-      ds_trim (&e->deferred_syntax, ss_cstr ("\n"));
-      if (!ds_is_empty (&e->deferred_syntax))
-        {
-          char *syntax = ds_steal_cstr (&e->deferred_syntax);
-          output_submit__ (e, text_item_super (text_item_create_nocopy (
-                                                 TEXT_ITEM_SYNTAX, syntax)));
-        }
+      char *text = ds_steal_cstr (&e->deferred_text);
+      output_submit__ (e, text_item_super (text_item_create_nocopy (
+                                             e->deferred_type, text)));
     }
 }
 
 static bool
-is_syntax_item (const struct output_item *item)
+defer_text (struct output_engine *e, struct output_item *item)
 {
-  return (is_text_item (item)
-          && text_item_get_type (to_text_item (item)) == TEXT_ITEM_SYNTAX);
+  if (!is_text_item (item))
+    return false;
+
+  enum text_item_type type = text_item_get_type (to_text_item (item));
+  if (type != TEXT_ITEM_SYNTAX && type != TEXT_ITEM_LOG)
+    return false;
+
+  if (!ds_is_empty (&e->deferred_text) && e->deferred_type != type)
+    flush_deferred_text (e);
+
+  e->deferred_type = type;
+
+  if (!ds_is_empty (&e->deferred_text))
+    ds_put_byte (&e->deferred_text, '\n');
+
+  const char *text = text_item_get_text (to_text_item (item));
+  ds_put_cstr (&e->deferred_text, text);
+  output_item_unref (item);
+
+  return true;
 }
 
 /* Submits ITEM to the configured output drivers, and transfers ownership to
@@ -210,14 +225,9 @@ output_submit (struct output_item *item)
   if (item == NULL)
     return;
 
-  if (is_syntax_item (item))
-    {
-      ds_put_cstr (&e->deferred_syntax, text_item_get_text (to_text_item (item)));
-      output_item_unref (item);
-      return;
-    }
-
-  flush_deferred_syntax (e);
+  if (defer_text (e, item))
+    return;
+  flush_deferred_text (e);
 
   if (is_group_open_item (item))
     {
@@ -285,7 +295,7 @@ output_flush (void)
   struct output_engine *e = engine_stack_top ();
   struct llx *llx;
 
-  flush_deferred_syntax (e);
+  flush_deferred_text (e);
   for (llx = llx_head (&e->drivers); llx != llx_null (&e->drivers);
        llx = llx_next (llx))
     {

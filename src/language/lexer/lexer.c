@@ -1435,13 +1435,9 @@ lex_source_get__ (const struct lex_source *src_)
       if (copy_len > 0 && line[copy_len - 1] == '\r')
         copy_len--;
 
-      /* Make a copy of the line with \n end-of-line and null terminator. */
-      char *syntax = xmalloc (copy_len + 2);
-      memcpy (syntax, line, copy_len);
-      syntax[copy_len] = '\n';
-      syntax[copy_len + 1] = '\0';
-
-      text_item_submit (text_item_create_nocopy (TEXT_ITEM_SYNTAX, syntax));
+      /* Submit the line as syntax. */
+      text_item_submit (text_item_create_nocopy (TEXT_ITEM_SYNTAX,
+                                                 xmemdup0 (line, copy_len)));
 
       src->journal_pos += line_len;
     }

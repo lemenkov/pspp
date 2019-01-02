@@ -440,11 +440,9 @@ tab_cell_is_empty (const struct tab_table *table, int c, int r)
    This function is obsolete.  Please do not add new uses of it.  Instead, use
    a text_item (see output/text-item.h). */
 void
-tab_output_text (int options, const char *string)
+tab_output_text (int options UNUSED, const char *string)
 {
-  enum text_item_type type = (options & TAB_FIX ? TEXT_ITEM_LOG
-                              : TEXT_ITEM_PARAGRAPH);
-  text_item_submit (text_item_create (type, string));
+  text_item_submit (text_item_create (TEXT_ITEM_LOG, string));
 }
 
 /* Same as tab_output_text(), but FORMAT is passed through printf-like

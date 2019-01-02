@@ -50,8 +50,8 @@ struct html_driver
   {
     struct output_driver driver;
 #ifdef HAVE_CAIRO
-    struct xr_color fg;
-    struct xr_color bg;
+    struct cell_color fg;
+    struct cell_color bg;
 #endif
     struct file_handle *handle;
     char *chart_file_name;
@@ -279,16 +279,8 @@ html_submit (struct output_driver *driver,
           fprintf (html->file, "</PRE>\n");
           break;
 
-        case TEXT_ITEM_PARAGRAPH:
-          print_title_tag (html->file, "P", s);
-          break;
-
         case TEXT_ITEM_LOG:
           print_title_tag (html->file, "PRE", s); /* should be <P><TT> */
-          break;
-
-        case TEXT_ITEM_BLANK_LINE:
-          fputs ("<BR>", html->file);
           break;
 
         case TEXT_ITEM_EJECT_PAGE:

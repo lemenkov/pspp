@@ -134,7 +134,7 @@ print_space_trns_proc (void *t_, struct ccase **c,
 
   while (n--)
     if (trns->writer == NULL)
-      text_item_submit (text_item_create (TEXT_ITEM_BLANK_LINE, ""));
+      text_item_submit (text_item_create (TEXT_ITEM_LOG, ""));
     else
       dfm_put_record (trns->writer, " ", 1); /* XXX */
 
