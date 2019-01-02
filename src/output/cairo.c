@@ -1483,7 +1483,7 @@ xr_layout_cell_text (struct xr_driver *xr, const struct table_cell *cell,
             dump_line (xr, -xr->left_margin, best,
                        xr->width + xr->right_margin, best,
                        RENDER_LINE_SINGLE,
-                       &CELL_COLOR (0, 255, 0));
+                       &(struct cell_color) CELL_COLOR (0, 255, 0));
         }
     }
 

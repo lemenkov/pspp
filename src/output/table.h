@@ -65,7 +65,7 @@ struct cell_color
     uint8_t alpha, r, g, b;
   };
 
-#define CELL_COLOR(r, g, b) (struct cell_color) { 255, r, g, b }
+#define CELL_COLOR(r, g, b) { 255, r, g, b }
 #define CELL_COLOR_BLACK CELL_COLOR (0, 0, 0)
 #define CELL_COLOR_WHITE CELL_COLOR (255, 255, 255)
 
