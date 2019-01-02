@@ -1268,7 +1268,7 @@ void
 pivot_dimension_dump (const struct pivot_dimension *d, int indentation)
 {
   indent (indentation);
-  printf ("%s dimension %zu (where 0=innermost), label_depth=%zu:\n",
+  printf ("%s dimension %zu (where 0=innermost), label_depth=%d:\n",
           pivot_axis_type_to_string (d->axis_type), d->level, d->label_depth);
 
   pivot_category_dump (d->root, indentation + 1);
@@ -1520,7 +1520,7 @@ pivot_table_dump (const struct pivot_table *table, int indentation)
       if (f->marker)
         pivot_value_dump (f->marker);
       else
-        printf ("%d", f->idx);
+        printf ("%zu", f->idx);
       putchar (']');
       pivot_value_dump (f->content);
       putchar ('\n');
