@@ -160,7 +160,7 @@ paired_summary (const struct tt *tt, struct paired_samp *os)
     {
       struct pair_stats *pp = &os->ps[i];
       struct pivot_category *pair = pivot_category_create_group__ (
-        variables->root, pivot_value_new_text_format (N_("Pair %d"), i + 1));
+        variables->root, pivot_value_new_text_format (N_("Pair %zu"), i + 1));
 
       for (int j = 0; j < 2; j++)
         {
@@ -202,7 +202,7 @@ paired_correlations (const struct tt *tt, struct paired_samp *os)
     {
       struct pair_stats *pp = &os->ps[i];
       struct pivot_category *group = pivot_category_create_group__ (
-        pairs->root, pivot_value_new_text_format (N_("Pair %d"), i + 1));
+        pairs->root, pivot_value_new_text_format (N_("Pair %zu"), i + 1));
 
       int row = pivot_category_create_leaf (
         group, pivot_value_new_text_format (N_("%s & %s"),
@@ -260,7 +260,7 @@ paired_test (const struct tt *tt, const struct paired_samp *os)
     {
       struct pair_stats *pp = &os->ps[i];
       struct pivot_category *group = pivot_category_create_group__ (
-        pairs->root, pivot_value_new_text_format (N_("Pair %d"), i + 1));
+        pairs->root, pivot_value_new_text_format (N_("Pair %zu"), i + 1));
 
       int row = pivot_category_create_leaf (
         group, pivot_value_new_text_format (N_("%s - %s"),
