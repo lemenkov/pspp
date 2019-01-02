@@ -122,43 +122,25 @@ free_rendering (gpointer rendering_)
 }
 
 static void
-create_xr (struct psppire_output_view *view)
+get_xr_options (struct psppire_output_view *view, struct string_map *options)
 {
-  struct text_item *text_item;
-  PangoFontDescription *font_desc;
-  struct xr_rendering *r;
-  char *font_name;
-  int font_width;
-  cairo_t *cr;
-  gchar *fgc;
+  string_map_clear (options);
 
-  GtkStyleContext *context = gtk_widget_get_style_context (GTK_WIDGET (view->output));
+  GtkStyleContext *context
+    = gtk_widget_get_style_context (GTK_WIDGET (view->output));
   GtkStateFlags state = gtk_widget_get_state_flags (GTK_WIDGET (view->output));
-  GdkRGBA *fg_color;
-
-  gtk_style_context_get (context, state,
-    "font", &font_desc, "color", &fg_color, NULL);
-
-  cr = gdk_cairo_create (gtk_widget_get_window (GTK_WIDGET (view->output)));
-
-  /* Set the widget's text color as the foreground color for the output driver */
-  /* gdk_rgba_to_string() would be perfect, but xr's parse_color does not      */
-  /* understand the rgb(255,128,33) format. Therefore we do it ourself.        */
-  fgc = xasprintf("#%4x%4x%4x",(int)(fg_color->red*0xffff),
-    (int)(fg_color->green*0xffff),(int)(fg_color->blue*0xffff));
-  string_map_insert (&view->render_opts, "foreground-color", fgc);
-  g_free (fgc);
-  gdk_rgba_free (fg_color);
 
   /* Use GTK+ default font as proportional font. */
-  font_name = pango_font_description_to_string (font_desc);
-  string_map_insert (&view->render_opts, "prop-font", font_name);
+  PangoFontDescription *font_desc;
+  gtk_style_context_get (context, state, "font", &font_desc, NULL);
+  char *font_name = pango_font_description_to_string (font_desc);
+  string_map_insert (options, "prop-font", font_name);
   g_free (font_name);
 
   /* Derived emphasized font from proportional font. */
   pango_font_description_set_style (font_desc, PANGO_STYLE_ITALIC);
   font_name = pango_font_description_to_string (font_desc);
-  string_map_insert (&view->render_opts, "emph-font", font_name);
+  string_map_insert (options, "emph-font", font_name);
   g_free (font_name);
   pango_font_description_free (font_desc);
 
@@ -167,18 +149,30 @@ create_xr (struct psppire_output_view *view)
      scrolling only.  (The length should not be increased very much because
      it is already close enough to INT_MAX when expressed as thousands of a
      point.) */
-  string_map_insert_nocopy (&view->render_opts, xstrdup ("paper-size"),
+  string_map_insert_nocopy (options, xstrdup ("paper-size"),
                             xasprintf ("%dx1000000pt", view->render_width));
-  string_map_insert (&view->render_opts, "left-margin", "0");
-  string_map_insert (&view->render_opts, "right-margin", "0");
-  string_map_insert (&view->render_opts, "top-margin", "0");
-  string_map_insert (&view->render_opts, "bottom-margin", "0");
+  string_map_insert (options, "left-margin", "0");
+  string_map_insert (options, "right-margin", "0");
+  string_map_insert (options, "top-margin", "0");
+  string_map_insert (options, "bottom-margin", "0");
+}
 
-  view->xr = xr_driver_create (cr, &view->render_opts);
+static void
+create_xr (struct psppire_output_view *view)
+{
+  get_xr_options (view, &view->render_opts);
 
-  text_item = text_item_create (TEXT_ITEM_PARAGRAPH, "X");
-  r = xr_rendering_create (view->xr, text_item_super (text_item), cr);
-  xr_rendering_measure (r, &font_width, &view->font_height);
+  struct string_map options;
+  string_map_clone (&options, &view->render_opts);
+  cairo_t *cr = gdk_cairo_create (
+    gtk_widget_get_window (GTK_WIDGET (view->output)));
+  view->xr = xr_driver_create (cr, &options);
+  string_map_destroy (&options);
+
+  struct text_item *text_item = text_item_create (TEXT_ITEM_LOG, "X");
+  struct xr_rendering *r = xr_rendering_create (
+    view->xr, text_item_super (text_item), cr);
+  xr_rendering_measure (r, NULL, &view->font_height);
   text_item_unref (text_item);
 
   cairo_destroy (cr);
@@ -469,10 +463,20 @@ on_style_updated (GtkWidget *toplevel, struct psppire_output_view *view)
 {
   if (!view->n_items || !gtk_widget_get_window (GTK_WIDGET (view->output)))
     return;
-  string_map_clear (&view->render_opts);
-  xr_driver_destroy (view->xr);
-  create_xr (view);
-  rerender (view);
+
+  /* GTK+ fires this signal for trivial changes like the mouse moving in or out
+     of the window.  Check whether the actual rendering options changed and
+     re-render only if they did. */
+  struct string_map options = STRING_MAP_INITIALIZER (options);
+  get_xr_options (view, &options);
+  if (!string_map_equals (&options, &view->render_opts))
+    {
+      xr_driver_destroy (view->xr);
+      view->xr = NULL;
+
+      rerender (view);
+    }
+  string_map_destroy (&options);
 }
 
 enum {
