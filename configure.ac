@@ -36,6 +36,7 @@ AC_HEADER_TIOCGWINSZ
 PKG_PROG_PKG_CONFIG
 m4_pattern_forbid([PKG_CHECK_MODULES])
 PSPP_CHECK_CLICKSEQUENCE
+PSPP_CHECK_MAKEINFO_DOCBOOK_XML
 PSPP_CHECK_DOT
 
 PSPP_ENABLE_WERROR
@@ -81,12 +82,7 @@ if test "$with_cairo" != no; then
     [PSPP_REQUIRED_PREREQ([cairo 1.5 or later and pango 1.22 or later (or use --without-cairo)])])
 fi
 
-dnl Xmllint is used in the rules to build the documentation.  It is not actually necessary,
-dnl but is used for post-build consistency checks.  Thus, non-developers can live without it.
-dnl However for it to be useful, it needs to be a certain version and have certain features.
-dnl The macros below check that it the xmllint available is up to scratch.  If it isn't
-dnl then a dummy /bin/echo is subsituted instead.
-
+dnl One of the tests uses xmllint.
 AC_CACHE_CHECK([for an xmllint program which fits our needs],[ac_cv_path_XMLLINT],
 [AC_PATH_PROGS_FEATURE_CHECK([XMLLINT], [xmllint], 
   [[$ac_path_XMLLINT --version 2>&1 | $GREP XPath > /dev/null && 

@@ -281,6 +281,21 @@ EOF
        AC_SUBST([AM_MAKEINFOFLAGS])
    fi])
 
+dnl Texinfo 4.13 generates broken DocBook XML.  Probably other old
+dnl versions do too, but that's the one that causes problems.
+AC_DEFUN([PSPP_CHECK_MAKEINFO_DOCBOOK_XML],
+  [AC_REQUIRE([AM_INIT_AUTOMAKE])  # Defines MAKEINFO
+   AC_CACHE_CHECK(
+     [whether makeinfo generates broken DocBook XML],
+     [pspp_cv_broken_docbook_xml],
+     [AS_CASE(
+        [$(eval "$MAKEINFO --version | head -1")],
+        [*texinfo*4.13*], [pspp_cv_broken_docbook_xml=yes],
+        [*texinfo*], [pspp_cv_broken_docbook_xml=no],
+        [*], [pspp_cv_broken_docbook_xml=yes])])
+   AM_CONDITIONAL(
+     [BROKEN_DOCBOOK_XML], [test "$pspp_cv_broken_docbook_xml" = yes])])
+
 # The following comes from Open vSwitch:
 # ----------------------------------------------------------------------
 # Copyright (c) 2008, 2009, 2010, 2011 Nicira Networks.
