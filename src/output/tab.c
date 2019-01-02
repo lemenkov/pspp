@@ -513,7 +513,7 @@ tab_get_cell (const struct table *table, int x, int y,
            : TABLE_HALIGN_RIGHT);
       enum table_valign valign
         = ((opt & TAB_VALIGN) == TAB_TOP ? TABLE_VALIGN_TOP
-           : (opt & TAB_VALIGN) == TAB_CENTER ? TABLE_VALIGN_CENTER
+           : (opt & TAB_VALIGN) == TAB_MIDDLE ? TABLE_VALIGN_CENTER
            : TABLE_VALIGN_BOTTOM);
 
       cell->style = &styles[halign][valign];
