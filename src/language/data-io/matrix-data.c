@@ -214,7 +214,7 @@ preprocess (struct casereader *casereader0, const struct dictionary *dict, void 
       struct ccase *outcase = case_create (proto);
       union value *v = case_data_rw (outcase, mformat->rowtype);
       uint8_t *n = value_str_rw (v, ROWTYPE_WIDTH);
-      strncpy ((char *) n, "N        ", ROWTYPE_WIDTH);
+      memcpy (n, "N       ", ROWTYPE_WIDTH);
       blank_varname_column (outcase, mformat->varname);
       for (col = 0; col < mformat->n_continuous_vars; ++col)
 	{
