@@ -507,6 +507,12 @@ convert_xml_to_value (struct ccase *c, const struct variable *var,
     }
 }
 
+static int
+xml_reader_for_zip_member (void *zm_, char *buffer, int len)
+{
+  struct zip_member *zm = zm_;
+  return zip_member_read (zm, buffer, len);
+}
 
 /* Try to find out how many sheets there are in the "workbook" */
 static int
@@ -519,9 +525,7 @@ get_sheet_count (struct zip_reader *zreader)
   if ( meta == NULL)
     return -1;
 
-  mxtr = xmlReaderForIO ((xmlInputReadCallback) zip_member_read,
-			 (xmlInputCloseCallback) NULL,
-			 meta,   NULL, NULL, 0);
+  mxtr = xmlReaderForIO (xml_reader_for_zip_member, NULL, meta, NULL, NULL, 0);
 
   while (1 == xmlTextReaderRead (mxtr))
     {
@@ -570,9 +574,7 @@ init_reader (struct ods_reader *r, bool report_errors)
   if ( content == NULL)
     return NULL;
 
-  xtr = xmlReaderForIO ((xmlInputReadCallback) zip_member_read,
-			(xmlInputCloseCallback) NULL,
-			content,   NULL, NULL,
+  xtr = xmlReaderForIO (xml_reader_for_zip_member, NULL, content, NULL, NULL,
 			report_errors ? 0 : (XML_PARSE_NOERROR | XML_PARSE_NOWARNING) );
 
   if ( xtr == NULL)
