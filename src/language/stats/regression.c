@@ -561,7 +561,7 @@ fill_covariance (gsl_matrix * cov, struct covariance *all_cov,
 {
   size_t i;
   size_t j;
-  size_t dep_subscript;
+  size_t dep_subscript = SIZE_MAX;
   size_t *rows;
   const gsl_matrix *ssizes;
   const gsl_matrix *mean_matrix;
@@ -589,6 +589,8 @@ fill_covariance (gsl_matrix * cov, struct covariance *all_cov,
           dep_subscript = i;
         }
     }
+  assert (dep_subscript != SIZE_MAX);
+
   mean_matrix = covariance_moments (all_cov, MOMENT_MEAN);
   ssize_matrix = covariance_moments (all_cov, MOMENT_NONE);
   for (i = 0; i < cov->size1 - 1; i++)
