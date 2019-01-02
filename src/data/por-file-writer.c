@@ -261,8 +261,6 @@ write_header (struct pfm_writer *w)
 static void
 write_version_data (struct pfm_writer *w)
 {
-  char date_str[9];
-  char time_str[7];
   time_t t;
   struct tm tm;
   struct tm *tmp;
@@ -276,12 +274,15 @@ write_version_data (struct pfm_writer *w)
   else
     tmp = localtime (&t);
 
-  sprintf (date_str, "%04d%02d%02d",
-           tmp->tm_year + 1900, tmp->tm_mon + 1, tmp->tm_mday);
-  sprintf (time_str, "%02d%02d%02d", tmp->tm_hour, tmp->tm_min, tmp->tm_sec);
+  char *date_str = xasprintf ("%04d%02d%02d", tmp->tm_year + 1900,
+                              tmp->tm_mon + 1, tmp->tm_mday);
+  char *time_str = xasprintf ("%02d%02d%02d",
+                              tmp->tm_hour, tmp->tm_min, tmp->tm_sec);
   buf_write (w, "A", 1);
   write_string (w, date_str);
   write_string (w, time_str);
+  free (date_str);
+  free (time_str);
 
   /* Product identification. */
   buf_write (w, "1", 1);
