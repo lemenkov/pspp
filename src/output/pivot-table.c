@@ -810,7 +810,7 @@ pivot_cell_hash_indexes (const size_t *indexes, size_t n_idx)
 }
 
 static bool
-equal_indexes (const size_t *a, const size_t *b, size_t n)
+equal_indexes (const size_t *a, const unsigned int *b, size_t n)
 {
   for (size_t i = 0; i < n; i++)
     if (a[i] != b[i])
