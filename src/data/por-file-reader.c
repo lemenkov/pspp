@@ -43,7 +43,6 @@
 #include "libpspp/pool.h"
 #include "libpspp/str.h"
 
-#include "gl/intprops.h"
 #include "gl/minmax.h"
 #include "gl/xalloc.h"
 #include "gl/xmemdup0.h"
@@ -729,9 +728,9 @@ read_variables (struct pfm_reader *r, struct dictionary *dict)
           unsigned long int i;
           for (i = 1; ; i++)
             {
-              char try_name[8 + 1 + INT_STRLEN_BOUND (i) + 1];
-              sprintf (try_name, "%s_%lu", name, i);
+              char *try_name = xasprintf ("%s_%lu", name, i);
               v = dict_create_var (dict, try_name, width);
+              free (try_name);
               if (v != NULL)
                 break;
             }
