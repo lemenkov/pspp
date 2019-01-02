@@ -239,9 +239,9 @@ output_submit (struct output_item *item)
       free (e->groups[idx]);
       if (idx >= 1 && idx <= 4)
         {
-          char key[6];
-          snprintf (key, sizeof key, "Head%d", idx);
+          char *key = xasprintf ("Head%zu", idx);
           string_map_find_and_delete (&e->heading_vars, key);
+          free (key);
         }
     }
   else if (is_text_item (item))
@@ -252,9 +252,9 @@ output_submit (struct output_item *item)
       if (type == TEXT_ITEM_TITLE
           && e->n_groups >= 1 && e->n_groups <= 4)
         {
-          char key[6];
-          snprintf (key, sizeof key, "Head%d", e->n_groups);
+          char *key = xasprintf ("Head%zu", e->n_groups);
           string_map_replace (&e->heading_vars, key, text);
+          free (key);
         }
       else if (type == TEXT_ITEM_PAGE_TITLE)
         string_map_replace (&e->heading_vars, "PageTitle", text);
