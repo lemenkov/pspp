@@ -239,6 +239,19 @@ opt (struct output_driver *d, struct string_map *options, const char *key,
   return driver_option_get (d, options, key, default_value);
 }
 
+/* Return true iff the terminal appears to be an xterm with
+   UTF-8 capabilities */
+static bool
+term_is_utf8_xterm (void)
+{
+  const char *term = getenv ("TERM");
+  const char *xterm_locale = getenv ("XTERM_LOCAL");
+  return (term && xterm_locale
+          && !strcmp (term, "xterm")
+          && (strcasestr (xterm_locale, "utf8")
+              || strcasestr (xterm_locale, "utf-8")));
+}
+
 static struct output_driver *
 ascii_create (struct  file_handle *fh, enum settings_output_devices device_type,
               struct string_map *o)
@@ -266,7 +279,13 @@ ascii_create (struct  file_handle *fh, enum settings_output_devices device_type,
   parse_color (d, o, "background-color", "#FFFFFFFFFFFF", &a->bg);
   parse_color (d, o, "foreground-color", "#000000000000", &a->fg);
 #endif
-  box = parse_enum (opt (d, o, "box", "ascii"),
+
+  const char *default_box = (!strcmp (fh_get_file_name (fh), "-")
+                             && isatty (STDOUT_FILENO)
+                             && (!strcmp (locale_charset (), "UTF-8")
+                                 || term_is_utf8_xterm ())
+                             ? "unicode" : "ascii");
+  box = parse_enum (opt (d, o, "box", default_box),
                     "ascii", BOX_ASCII,
                     "unicode", BOX_UNICODE,
                     NULL_SENTINEL);
