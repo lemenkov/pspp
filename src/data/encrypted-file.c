@@ -49,7 +49,6 @@ struct encrypted_file
     int Nr;
   };
 
-static bool try_password(struct encrypted_file *, const char *password);
 static bool decode_password (const char *input, char output[11]);
 static bool fill_buffer (struct encrypted_file *);
 
@@ -122,9 +121,9 @@ encrypted_file_unlock (struct encrypted_file *f, const char *password)
 {
   char decoded_password[11];
 
-  return (try_password (f, password)
+  return (encrypted_file_unlock__ (f, password)
           || (decode_password (password, decoded_password)
-              && try_password (f, decoded_password)));
+              && encrypted_file_unlock__ (f, decoded_password)));
 }
 
 /* Attempts to read N bytes of plaintext from F into BUF.  Returns the number
@@ -287,12 +286,10 @@ decode_password (const char *input, char output[11])
   return true;
 }
 
-/* If CIPHERTEXT is the first ciphertext block in an encrypted .sav file for
-   PASSWORD, initializes rk[] and returns an nonzero Nr value.
-
-   Otherwise, returns zero. */
-static bool
-try_password(struct encrypted_file *f, const char *password)
+/* Attempts to use plaintext password PASSWORD to unlock F.  Returns true if
+   successful, otherwise false. */
+bool
+encrypted_file_unlock__ (struct encrypted_file *f, const char *password)
 {
   /* NIST SP 800-108 fixed data. */
   static const uint8_t fixed[] = {

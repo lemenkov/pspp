@@ -90,6 +90,19 @@ prompts for the password.
 On multiuser systems, this option may not be safe because other users
 may be able to see the password in process listings.
 .
+.IP "\fB\-a \fIalphabet \fB\-l \fImax-length\fR"
+.IQ "\fB\-\-password-alphabet=\fIalphabet\ \fB\-\-password-length=\fImax-length\fR"
+These options are an alternative to \fB\-p\fR or \fB\-\-password\fR.
+They direct \fBpspp\-convert\fR to search for the correct password
+from the set of all passwords of symbols from \fIalphabet\fR (which
+may contain character ranges specified with \fB-\fR) and no more than
+\fImax-length\fR symbols long.  For example, \fB\-a a-z \-l 5\fR
+checks all possible lowercase alphabetic passwords no more than 5
+characters long.
+.IP
+When these options are used, \fB\-p\fR may additionally specify a
+starting point for the search.
+.
 .IP "\fB\-h\fR"
 .IQ "\fB\-\-help\fR"
 Prints a usage message on stdout and exits.

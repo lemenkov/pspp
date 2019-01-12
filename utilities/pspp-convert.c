@@ -50,7 +50,8 @@ static void usage (void);
 static bool decrypt_file (struct encrypted_file *enc,
                           const struct file_handle *input_filename,
                           const struct file_handle *output_filename,
-                          const char *password);
+                          const char *password,
+                          const char *alphabet, int max_length);
 
 int
 main (int argc, char *argv[])
@@ -69,6 +70,8 @@ main (int argc, char *argv[])
   struct file_handle *output_fh = NULL;
   struct casewriter *writer;
   const char *password = NULL;
+  struct string alphabet = DS_EMPTY_INITIALIZER;
+  int length = 0;
 
   long long int i;
 
@@ -83,7 +86,10 @@ main (int argc, char *argv[])
         {
           { "cases",    required_argument, NULL, 'c' },
           { "encoding", required_argument, NULL, 'e' },
+
           { "password", required_argument, NULL, 'p' },
+          { "password-alphabet", required_argument, NULL, 'a' },
+          { "password-length", required_argument, NULL, 'l' },
 
           { "output-format", required_argument, NULL, 'O' },
 
@@ -94,7 +100,7 @@ main (int argc, char *argv[])
 
       int c;
 
-      c = getopt_long (argc, argv, "c:e:p:O:hv", long_options, NULL);
+      c = getopt_long (argc, argv, "c:e:p:a:l:O:hv", long_options, NULL);
       if (c == -1)
         break;
 
@@ -110,6 +116,22 @@ main (int argc, char *argv[])
 
         case 'p':
           password = optarg;
+          break;
+
+        case 'l':
+          length = atoi (optarg);
+          break;
+
+        case 'a':
+          for (const char *p = optarg; *p; )
+            if (p[1] == '-' && p[2] > p[0])
+              {
+                for (int ch = p[0]; ch <= p[2]; ch++)
+                  ds_put_byte (&alphabet, ch);
+                p += 3;
+              }
+            else
+              ds_put_byte (&alphabet, *p++);
           break;
 
         case 'O':
@@ -164,7 +186,8 @@ main (int argc, char *argv[])
                            "format"));
         }
 
-      if (! decrypt_file (enc, input_fh, output_fh, password))
+      if (!decrypt_file (enc, input_fh, output_fh, password,
+                         ds_cstr (&alphabet), length))
 	goto error;
 
       goto exit;
@@ -223,6 +246,7 @@ main (int argc, char *argv[])
     error (1, 0, _("%s: error writing output file"), output_filename);
 
 exit:
+  ds_destroy (&alphabet);
   dict_unref (dict);
   fh_unref (output_fh);
   fh_unref (input_fh);
@@ -232,6 +256,7 @@ exit:
   return 0;
 
 error:
+  ds_destroy (&alphabet);
   dict_unref (dict);
   fh_unref (output_fh);
   fh_unref (input_fh);
@@ -245,22 +270,96 @@ static bool
 decrypt_file (struct encrypted_file *enc,
 	      const struct file_handle *ifh,
 	      const struct file_handle *ofh,
-              const char *password)
+              const char *password,
+              const char *alphabet,
+              int max_length)
 {
   FILE *out;
   int err;
   const char *input_filename = fh_get_file_name (ifh);
   const char *output_filename = fh_get_file_name (ofh);
 
-  if (password == NULL)
+  if (alphabet[0] && max_length)
     {
-      password = getpass ("password: ");
-      if (password == NULL)
-	return false;
-    }
+      size_t alphabet_size = strlen (alphabet);
+      char *pw = xmalloc (max_length + 1);
+      int *indexes = xzalloc (max_length * sizeof *indexes);
 
-  if (!encrypted_file_unlock (enc, password))
-    error (1, 0, _("sorry, wrong password"));
+      for (int len = password ? strlen (password) : 0;
+           len <= max_length; len++)
+        {
+          if (password && len == strlen (password))
+            {
+              for (int i = 0; i < len; i++)
+                {
+                  const char *p = strchr (alphabet, password[i]);
+                  if (!p)
+                    error (1, 0, _("%s: '%c' is not in alphabet"),
+                           password, password[i]);
+                  indexes[i] = p - alphabet;
+                  pw[i] = *p;
+                }
+            }
+          else
+            {
+              memset (indexes, 0, len * sizeof *indexes);
+              for (int i = 0; i < len; i++)
+                pw[i] = alphabet[0];
+            }
+          pw[len] = '\0';
+
+          unsigned int target = 0;
+          for (unsigned int j = 0; ; j++)
+            {
+              if (j >= target)
+                {
+                  target += 100000;
+                  if (isatty (STDOUT_FILENO))
+                    {
+                      printf ("\rlength %d: %s", len, pw);
+                      fflush (stdout);
+                    }
+                }
+              if (encrypted_file_unlock__ (enc, pw))
+                {
+                  printf ("\npassword is: \"%s\"\n", pw);
+                  password = pw;
+                  goto success;
+                }
+
+              int i;
+              for (i = 0; i < len; i++)
+                if (++indexes[i] < alphabet_size)
+                  {
+                    pw[i] = alphabet[indexes[i]];
+                    break;
+                  }
+                else
+                  {
+                    indexes[i] = 0;
+                    pw[i] = alphabet[indexes[i]];
+                  }
+              if (i == len)
+                break;
+            }
+        }
+      free (indexes);
+      free (pw);
+
+    success:;
+    }
+  else
+    {
+      if (password == NULL)
+        {
+          password = getpass ("password: ");
+          if (password == NULL)
+            return false;
+        }
+
+      if (!encrypted_file_unlock (enc, password))
+        error (1, 0, _("sorry, wrong password"));
+    }
 
   out = fn_open (ofh, "wb");
   if (out == NULL)

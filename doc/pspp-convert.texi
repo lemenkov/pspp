@@ -59,8 +59,13 @@ formats.  Encrypted system file and syntax files are exceptions: if
 the input file is in an encrypted format, then the output file must be
 the same format (decrypted).  To decrypt such a file, specify the
 encrypted file as @var{input}.  The output will be the equivalent
-plaintext file.  You will be prompted for the password (or use
-@option{-p}, documented below).
+plaintext file.
+
+The password for encrypted files can be specified a few different
+ways.  If the password is known, use the @option{-p} option
+(documented below) or allow @command{pspp-convert} to prompt for it.
+If the password is unknown, use the @option{-a} and @option{-l}
+options to specify how to search for it.
 
 Use @code{-O @var{extension}} to override the inferred format or to
 specify the format for unrecognized extensions.
@@ -95,6 +100,24 @@ necessary.
 
 Be aware that command-line options, including passwords, may be
 visible to other users on multiuser systems.
+
+When used with @option{-a} (or @option{--password-alphabet}) and
+@option{-l} (or @option{--password-length}), this option specifies the
+starting point for the search.  This can be used to restart a search
+that was interrupted.
+
+@item -a @var{alphabet}
+@item --password-alphabet=@var{alphabet}
+Specifies the alphabet of symbols over which to search for an
+encrypted file's password.  @var{alphabet} may include individual
+characters and ranges delimited by @samp{-}.  For example, @option{-a
+a-z} searches lowercase letters, @option{-a A-Z0-9} searches uppercase
+letters and digits, and @option{-a ' -~'} searches all printable ASCII
+characters.
+
+@item -l @var{max-length}
+@item --password-length=@var{max-length}
+Specifies the maximum length of the passwords to try.
 
 @item -h
 @itemx --help
