@@ -56,6 +56,7 @@ struct odt_driver
   struct output_driver driver;
 
   struct zip_writer *zip;     /* ZIP file writer. */
+  struct file_handle *handle; /* Handle for 'file_name'. */
   char *file_name;            /* Output file name. */
 
   /* content.xml */
@@ -302,6 +303,7 @@ odt_create (struct file_handle *fh, enum settings_output_devices device_type,
   output_driver_init (d, &odt_driver_class, file_name, device_type);
 
   odt->zip = zip;
+  odt->handle = fh;
   odt->file_name = xstrdup (file_name);
 
   if (!create_mimetype (zip))
@@ -379,6 +381,7 @@ odt_destroy (struct output_driver *driver)
       zip_writer_close (odt->zip);
     }
 
+  fh_unref (odt->handle);
   free (odt->file_name);
   free (odt);
 }

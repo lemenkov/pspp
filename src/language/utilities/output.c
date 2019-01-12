@@ -135,6 +135,7 @@ cmd_output (struct lexer *lexer, struct dataset *ds UNUSED)
 	}
     }
 
+  string_set_destroy (&rc_names);
   return CMD_SUCCESS;
 
  error:

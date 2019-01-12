@@ -293,6 +293,7 @@ pivot_dimension_destroy (struct pivot_dimension *d)
   pivot_category_destroy (d->root);
   free (d->data_leaves);
   free (d->presentation_leaves);
+  free (d);
 }
 
 /* Returns the first leaf node in an in-order traversal that is a child of
@@ -505,6 +506,7 @@ pivot_category_destroy (struct pivot_category *c)
   pivot_value_destroy (c->name);
   for (size_t i = 0; i < c->n_subs; i++)
     pivot_category_destroy (c->subs[i]);
+  free (c->subs);
   free (c);
 }
 
@@ -1800,7 +1802,8 @@ pivot_value_destroy (struct pivot_value *value)
           free (value->numeric.value_label);
           break;
 
-        case SETTINGS_VALUE_SHOW_VALUE:
+        case PIVOT_VALUE_STRING:
+          free (value->string.s);
           free (value->string.var_name);
           free (value->string.value_label);
           break;

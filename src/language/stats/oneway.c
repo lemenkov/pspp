@@ -551,7 +551,10 @@ cmd_oneway (struct lexer *lexer, struct dataset *ds)
 	    }
 
 	  if ( ll_count (coefficient_list) <= 0)
-	    goto error;
+            {
+              destroy_coeff_list (cl);
+              goto error;
+            }
 
 	  ll_push_tail (&oneway.contrast_list, &cl->ll);
 	}

@@ -276,6 +276,7 @@ categoricals_destroy (struct categoricals *cat)
       free (cat->iap[i].enc_sum);
       hmap_destroy (&cat->iap[i].ivmap);
     }
+  free (cat->iap);
 
   /* Interate over each variable and delete its value map.
 

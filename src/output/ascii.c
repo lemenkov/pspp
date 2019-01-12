@@ -450,14 +450,19 @@ ascii_output_table_item (struct ascii_driver *a,
 }
 
 static void
-ascii_output_text (struct ascii_driver *a, const char *text)
+ascii_output_table_item_unref (struct ascii_driver *a,
+                               struct table_item *table_item)
 {
-  struct table_item *table_item;
-
-  table_item = table_item_create (table_from_string (TABLE_HALIGN_LEFT, text),
-                                  NULL, NULL);
   ascii_output_table_item (a, table_item);
   table_item_unref (table_item);
+}
+
+static void
+ascii_output_text (struct ascii_driver *a, const char *text)
+{
+  ascii_output_table_item_unref (
+    a, table_item_create (table_from_string (TABLE_HALIGN_LEFT, text),
+                          NULL, NULL));
 }
 
 static void
@@ -509,7 +514,8 @@ ascii_submit (struct output_driver *driver,
           break;
 
         default:
-          ascii_output_table_item (a, text_item_to_table_item (text_item_ref (text_item)));
+          ascii_output_table_item_unref (
+            a, text_item_to_table_item (text_item_ref (text_item)));
           break;
         }
     }

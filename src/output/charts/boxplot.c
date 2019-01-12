@@ -41,7 +41,11 @@ boxplot_add_box (struct boxplot *boxplot,
                  struct box_whisker *bw, const char *label)
 {
   if (boxplot == NULL)
-    return;
+    {
+      struct statistic *statistic = &bw->parent.parent;
+      statistic->destroy (statistic);
+      return;
+    }
 
   struct boxplot_box *box;
   if (boxplot->n_boxes >= boxplot->boxes_allocated)

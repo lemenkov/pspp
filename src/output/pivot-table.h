@@ -453,7 +453,7 @@ void pivot_table_set_weight_format (struct pivot_table *,
 bool pivot_table_is_empty (const struct pivot_table *);
 
 /* Output. */
-void pivot_table_submit (const struct pivot_table *);
+void pivot_table_submit (struct pivot_table *);
 
 /* Data cells. */
 void pivot_table_put (struct pivot_table *, const size_t *dindexes, size_t n,

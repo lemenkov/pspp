@@ -249,6 +249,7 @@ cmd_sysfile_info (struct lexer *lexer, struct dataset *ds UNUSED)
   display_value_labels (vars, n_vars);
   display_attributes (dict_get_attributes (dataset_dict (ds)),
                       vars, n_vars, DF_ATTRIBUTES);
+  free (vars);
 
   dict_unref (d);
 

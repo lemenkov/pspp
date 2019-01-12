@@ -53,7 +53,6 @@ cmd_read (int argc, char *argv[])
   struct line_reader *r;
   const char *filename;
   struct string line;
-  char *encoding;
 
   if (argc != 4)
     error (1, 0, "bad syntax for `%s' command; use `%s help' for help",
@@ -67,7 +66,7 @@ cmd_read (int argc, char *argv[])
   if (r == NULL)
     error (1, errno, "line_reader_open failed");
 
-  encoding = xstrdup (line_reader_get_encoding (r));
+  char *encoding = xstrdup (line_reader_get_encoding (r));
   printf ("encoded in %s", encoding);
   if (line_reader_is_auto (r))
     printf (" (auto)");
@@ -98,6 +97,7 @@ cmd_read (int argc, char *argv[])
 
       ds_clear (&line);
     }
+  free (encoding);
 
   if (!strcmp(filename, "-"))
     line_reader_free (r);

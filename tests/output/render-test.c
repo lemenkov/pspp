@@ -22,6 +22,7 @@
 #include <stdio.h>
 #include <string.h>
 
+#include "data/file-handle-def.h"
 #include "libpspp/assertion.h"
 #include "libpspp/compiler.h"
 #include "libpspp/string-map.h"
@@ -126,6 +127,7 @@ main (int argc, char **argv)
     fclose (input);
 
   output_engine_pop ();
+  fh_done ();
 
   return 0;
 }

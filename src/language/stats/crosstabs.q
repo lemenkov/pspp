@@ -394,12 +394,8 @@ exit:
   for (xt = &proc.pivots[0]; xt < &proc.pivots[proc.n_pivots]; xt++)
     {
       free (xt->vars);
-      /* We must not call value_destroy on const_values because
-         it is a wild pointer; it never pointed to anything owned
-         by the crosstabulation.
-
-         The rest of the data was allocated and destroyed at a
-         lower level already. */
+      free (xt->const_vars);
+      free (xt->const_indexes);
     }
   free (proc.pivots);
 
@@ -475,6 +471,7 @@ crs_custom_tables (struct lexer *lexer, struct dataset *ds,
       xt->vars = xcalloc (n_by, sizeof *xt->vars);
       xt->n_consts = 0;
       xt->const_vars = NULL;
+      xt->const_indexes = NULL;
 
       for (j = 0; j < n_by; j++)
         xt->vars[j].var = by[j][by_iter[j]];
@@ -780,6 +777,7 @@ postcalc (struct crosstabs_proc *proc)
               struct crosstabulation subset;
               make_crosstabulation_subset (xt, row0, row1, &subset);
               output_crosstabulation (proc, &subset);
+              free (subset.const_indexes);
             }
         }
       if (proc->barchart)
@@ -1015,7 +1013,8 @@ output_crosstabulation (struct crosstabs_proc *proc, struct crosstabulation *xt)
            ds_cstr (&vars));
 
       ds_destroy (&vars);
-      free_var_values (xt, COL_VAR);
+      for (size_t i = 0; i < xt->n_vars; i++)
+        free_var_values (xt, i);
       return;
     }
 
@@ -1081,6 +1080,7 @@ output_crosstabulation (struct crosstabs_proc *proc, struct crosstabulation *xt)
       free (x.mat);
       free (x.row_tot);
       free (x.col_tot);
+      free (x.const_indexes);
     }
 
   if (table)
@@ -1504,12 +1504,8 @@ compare_value_3way_inv (const void *a_, const void *b_, const void *width_)
 
 /* Given an array of ENTRY_CNT table_entry structures starting at
    ENTRIES, creates a sorted list of the values that the variable
-   with index VAR_IDX takes on.  The values are returned as a
-   malloc()'d array stored in *VALUES, with the number of values
-   stored in *VALUE_CNT.
-
-   The caller must eventually free *VALUES, but each pointer in *VALUES points
-   to existing data not owned by *VALUES itself. */
+   with index VAR_IDX takes on.  Stores the array of the values in
+   XT->values and the number of values in XT->n_values. */
 static void
 enum_var_values (const struct crosstabulation *xt, int var_idx,
                  bool descending)
@@ -1564,7 +1560,7 @@ static void
 free_var_values (const struct crosstabulation *xt, int var_idx)
 {
   struct xtab_var *xv = &xt->vars[var_idx];
-  //free (xv->values);
+  free (xv->values);
   xv->values = NULL;
   xv->n_values = 0;
 }
@@ -1689,6 +1685,8 @@ display_crosstabulation (struct crosstabs_proc *proc,
             }
         }
     }
+
+  free (indexes);
 }
 
 static void calc_r (struct crosstabulation *,
@@ -1787,6 +1785,8 @@ display_symmetric (struct crosstabs_proc *proc, struct crosstabulation *xt,
   struct pivot_value *total = pivot_value_new_number (xt->total);
   pivot_value_set_rc (sym, total, PIVOT_RC_COUNT);
   pivot_table_put (sym, indexes, sym->n_dimensions, total);
+
+  free (indexes);
 }
 
 static bool calc_risk (struct crosstabulation *,
@@ -1894,6 +1894,8 @@ display_directional (struct crosstabs_proc *proc,
                              pivot_value_new_number (entries[j]));
           }
     }
+
+  free (indexes);
 }
 
 /* Statistical calculations. */

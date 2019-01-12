@@ -349,15 +349,19 @@ pivot_table_submit_layer (const struct pivot_table *st,
 
   struct footnote **footnotes = xcalloc (st->n_footnotes, sizeof *footnotes);
   for (size_t i = 0; i < st->n_footnotes; i++)
-    footnotes[i] = tab_create_footnote (
-      table, i,
-      pivot_value_to_string (st->footnotes[i]->content,
-                             st->show_values, st->show_variables),
-      pivot_value_to_string (st->footnotes[i]->marker,
-                             st->show_values, st->show_variables),
-      area_style_override (table->container, &st->areas[PIVOT_AREA_FOOTER],
-                           st->footnotes[i]->content->cell_style,
-                           st->footnotes[i]->content->font_style));
+    {
+      char *content = pivot_value_to_string (
+        st->footnotes[i]->content, st->show_values, st->show_variables);
+      char *marker = pivot_value_to_string (
+        st->footnotes[i]->marker, st->show_values, st->show_variables);
+      footnotes[i] = tab_create_footnote (
+        table, i, content, marker,
+        area_style_override (table->container, &st->areas[PIVOT_AREA_FOOTER],
+                             st->footnotes[i]->content->cell_style,
+                             st->footnotes[i]->content->font_style));
+      free (marker);
+      free (content);
+    }
 
   compose_headings (table,
                     &st->axes[PIVOT_AXIS_COLUMN], H, &st->axes[PIVOT_AXIS_ROW],
@@ -479,11 +483,12 @@ pivot_table_submit_layer (const struct pivot_table *st,
       table_item_text_destroy (caption);
     }
 
+  free (footnotes);
   table_item_submit (ti);
 }
 
 void
-pivot_table_submit (const struct pivot_table *st)
+pivot_table_submit (struct pivot_table *st)
 {
   pivot_table_assign_label_depth (CONST_CAST (struct pivot_table *, st));
 
@@ -506,4 +511,6 @@ pivot_table_submit (const struct pivot_table *st)
     pivot_table_submit_layer (st, st->current_layer);
 
   settings_set_decimal_char (old_decimal);
+
+  pivot_table_destroy (st);
 }

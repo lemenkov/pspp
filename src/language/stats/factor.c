@@ -1533,6 +1533,10 @@ cmd_factor (struct lexer *lexer, struct dataset *ds)
 	{
 	  do_factor_by_matrix (&factor, id);
 
+          gsl_matrix_free (id->ai_cov);
+          id->ai_cov = NULL;
+          gsl_matrix_free (id->ai_cor);
+          id->ai_cor = NULL;
 	  gsl_matrix_free (id->mm.corr);
 	  id->mm.corr = NULL;
 	  gsl_matrix_free (id->mm.cov);

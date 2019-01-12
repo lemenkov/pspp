@@ -273,6 +273,8 @@ cmd_dataset_display (struct lexer *lexer UNUSED, struct dataset *ds)
                         pivot_value_new_user_text_nocopy (text));
     }
 
+  free (datasets);
+
   pivot_table_submit (table);
 
   return CMD_SUCCESS;

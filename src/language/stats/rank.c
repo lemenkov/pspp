@@ -865,6 +865,7 @@ cmd_rank (struct lexer *lexer, struct dataset *ds)
                     pivot_table_put2 (table, j, row_idx,
                                       pivot_value_new_user_text (entry, -1));
                 }
+              ds_destroy (&group_vars);
 	    }
 	}
 
