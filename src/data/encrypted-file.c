@@ -348,7 +348,12 @@ try_password(struct encrypted_file *f, const char *password)
   rijndaelDecrypt (f->rk, f->Nr,
                    CHAR_CAST (const char *, f->ciphertext),
                    CHAR_CAST (char *, f->plaintext));
-  return !memcmp (f->plaintext, f->type == SYSTEM ? "$FL" : "* E", 3);
+
+  const char *magic = f->type == SYSTEM ? "$FL?@(#)" : "* Encoding";
+  for (int i = 0; magic[i]; i++)
+    if (magic[i] != '?' && f->plaintext[i] != magic[i])
+      return false;
+  return true;
 }
 
 static bool
