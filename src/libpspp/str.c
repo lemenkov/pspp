@@ -1540,25 +1540,22 @@ ds_put_c_format (struct string *st, const char *format, ...)
   va_end (args);
 }
 
-
-/* Formats FORMAT as a printf string, using fmt_func (a snprintf like function)
-   and appends the result to ST. */
-static void
-ds_put_vformat_int (struct string *st, const char *format, va_list args_,
-		    int (*fmt_func) (char *, size_t, const char *, va_list))
+/* Formats FORMAT as a printf string and appends the result to ST. */
+void
+ds_put_vformat (struct string *st, const char *format, va_list args_)
 {
   int avail, needed;
   va_list args;
 
   va_copy (args, args_);
   avail = st->ss.string != NULL ? st->capacity - st->ss.length + 1 : 0;
-  needed = fmt_func (st->ss.string + st->ss.length, avail, format, args);
+  needed = vsnprintf (st->ss.string + st->ss.length, avail, format, args);
   va_end (args);
 
   if (needed >= avail)
     {
       va_copy (args, args_);
-      fmt_func (ds_put_uninit (st, needed), needed + 1, format, args);
+      vsnprintf (ds_put_uninit (st, needed), needed + 1, format, args);
       va_end (args);
     }
   else
@@ -1571,34 +1568,27 @@ ds_put_vformat_int (struct string *st, const char *format, va_list args_,
           avail = st->capacity - st->ss.length + 1;
 
           va_copy (args, args_);
-          needed = fmt_func (ds_end (st), avail, format, args);
+          needed = vsnprintf (ds_end (st), avail, format, args);
           va_end (args);
         }
       st->ss.length += needed;
     }
 }
 
-
-static int
-vasnwrapper (char *str, size_t size,  const char *format, va_list ap)
-{
-  c_vasnprintf (str, &size, format, ap);
-  return size;
-}
-
-/* Formats FORMAT as a printf string and appends the result to ST. */
-void
-ds_put_vformat (struct string *st, const char *format, va_list args_)
-{
-  ds_put_vformat_int (st, format, args_, vsnprintf);
-}
-
 /* Formats FORMAT as a printf string, as if in the C locale,
    and appends the result to ST. */
 void
-ds_put_c_vformat (struct string *st, const char *format, va_list args_)
+ds_put_c_vformat (struct string *st, const char *format, va_list args)
 {
-  ds_put_vformat_int (st, format, args_, vasnwrapper);
+  char buf[128];
+  size_t len = sizeof buf;
+  char *output = c_vasnprintf (buf, &len, format, args);
+  if (output)
+    {
+      ds_put_cstr (st, output);
+      if (output != buf)
+        free (output);
+    }
 }
 
 /* Appends byte CH to ST. */
