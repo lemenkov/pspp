@@ -1791,8 +1791,8 @@ pivot_value_destroy (struct pivot_value *value)
       font_style_uninit (value->font_style);
       free (value->font_style);
       free (value->cell_style);
-      for (size_t i = 0; i < value->n_footnotes; i++)
-        pivot_footnote_destroy (value->footnotes[i]);
+      /* Do not free the elements of footnotes because VALUE does not own
+         them. */
       free (value->footnotes);
 
       switch (value->type)
