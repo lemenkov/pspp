@@ -9,8 +9,8 @@ Changes since 1.2.0:
  * Plain text output is no longer divided into pages, since it is now
    rarely printed on paper.
 
- * pspp-convert: New "-a" and "-l" options to search for an encrypted file's
-   password.
+ * pspp-convert: New "-a", "-l", "--password-list" options to search
+   for an encrypted file's password.
 
  * Bug fix for CVE-2018-20230.
 

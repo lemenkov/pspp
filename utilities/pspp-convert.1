@@ -60,6 +60,7 @@ the input file is in an encrypted format, then the output file must
 be the same format (decrypted).
 .
 .SH "OPTIONS"
+.SS "General Options"
 .
 .IP "\fB\-O format\fR"
 .IQ "\fB\-\-output\-format=\fIformat\fR"
@@ -79,12 +80,20 @@ Overrides the encoding in which character strings in \fIinput\fR are
 interpreted.  This option is necessary because old SPSS system files
 do not self-identify their encoding.
 .
+.SS "Password Options"
+When the input file is encrypted, \fBpspp\-convert\fR needs to obtain
+a password to decrypt it.  To do so, the user may specify the password
+with \f\-p\fR (or \fB\-\-password), or the name of a file containing a
+list of possible passwords with \fB\-\-password\-list\fR, or an
+alphabet of possible passwords to try along with a maximum length with
+\fB\-a\fR (or \fB\-\-password\-alphabet\fR) and \fB\-l\fR (or
+\-\-password\-length\fR).  If none of these options is used,
+\fBpspp\-convert\fR prompts for the password.  The password options
+are:
+.
 .IP "\fB\-p \fIpassword\fR"
 .IQ "\fB\-\-password=\fIpassword\fR"
-Specifies the password to use to decrypt encrypted SPSS system file
-or syntax file
-\fIinput\fR.  If this option is not specified, \fBpspp\-convert\fR
-prompts for the password.
+Specifies the password to use to decrypt the input file.
 .
 .IP
 On multiuser systems, this option may not be safe because other users
@@ -103,6 +112,11 @@ characters long.
 When these options are used, \fB\-p\fR may additionally specify a
 starting point for the search.
 .
+.IP "\fB\-\-password\-list=\fIfile\fR"
+Specifies a file to read containing a list of passwords to try, one
+per line.  If \fIfile\fR is \fB\-\fR, reads from stdin.
+.
+.SS "Other Options"
 .IP "\fB\-h\fR"
 .IQ "\fB\-\-help\fR"
 Prints a usage message on stdout and exits.

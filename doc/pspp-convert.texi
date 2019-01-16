@@ -65,7 +65,8 @@ The password for encrypted files can be specified a few different
 ways.  If the password is known, use the @option{-p} option
 (documented below) or allow @command{pspp-convert} to prompt for it.
 If the password is unknown, use the @option{-a} and @option{-l}
-options to specify how to search for it.
+options to specify how to search for it, or @option{--password-list}
+to specify a file of passwords to try.
 
 Use @code{-O @var{extension}} to override the inferred format or to
 specify the format for unrecognized extensions.
@@ -118,6 +119,10 @@ characters.
 @item -l @var{max-length}
 @item --password-length=@var{max-length}
 Specifies the maximum length of the passwords to try.
+
+@item --password-list=@var{file}
+Specifies a file to read containing a list of passwords to try, one
+per line.  If @var{file} is @file{-}, reads from stdin.
 
 @item -h
 @itemx --help

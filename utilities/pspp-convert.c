@@ -51,7 +51,8 @@ static bool decrypt_file (struct encrypted_file *enc,
                           const struct file_handle *input_filename,
                           const struct file_handle *output_filename,
                           const char *password,
-                          const char *alphabet, int max_length);
+                          const char *alphabet, int max_length,
+                          const char *password_list);
 
 int
 main (int argc, char *argv[])
@@ -71,6 +72,7 @@ main (int argc, char *argv[])
   struct casewriter *writer;
   const char *password = NULL;
   struct string alphabet = DS_EMPTY_INITIALIZER;
+  const char *password_list = NULL;
   int length = 0;
 
   long long int i;
@@ -82,6 +84,10 @@ main (int argc, char *argv[])
 
   for (;;)
     {
+      enum
+        {
+          OPT_PASSWORD_LIST = UCHAR_MAX + 1,
+        };
       static const struct option long_options[] =
         {
           { "cases",    required_argument, NULL, 'c' },
@@ -90,6 +96,7 @@ main (int argc, char *argv[])
           { "password", required_argument, NULL, 'p' },
           { "password-alphabet", required_argument, NULL, 'a' },
           { "password-length", required_argument, NULL, 'l' },
+          { "password-list", required_argument, NULL, OPT_PASSWORD_LIST },
 
           { "output-format", required_argument, NULL, 'O' },
 
@@ -120,6 +127,10 @@ main (int argc, char *argv[])
 
         case 'l':
           length = atoi (optarg);
+          break;
+
+        case OPT_PASSWORD_LIST:
+          password_list = optarg;
           break;
 
         case 'a':
@@ -187,7 +198,7 @@ main (int argc, char *argv[])
         }
 
       if (!decrypt_file (enc, input_fh, output_fh, password,
-                         ds_cstr (&alphabet), length))
+                         ds_cstr (&alphabet), length, password_list))
 	goto error;
 
       goto exit;
@@ -272,14 +283,62 @@ decrypt_file (struct encrypted_file *enc,
 	      const struct file_handle *ofh,
               const char *password,
               const char *alphabet,
-              int max_length)
+              int max_length,
+              const char *password_list)
 {
   FILE *out;
   int err;
   const char *input_filename = fh_get_file_name (ifh);
   const char *output_filename = fh_get_file_name (ofh);
 
-  if (alphabet[0] && max_length)
+  if (password_list)
+    {
+      FILE *password_file;
+      if (!strcmp (password_list, "-"))
+        password_file = stdin;
+      else
+        {
+          password_file = fopen (password_list, "r");
+          if (!password_file)
+            error (1, errno, _("%s: error opening password file"),
+                   password_list);
+        }
+
+      struct string pw = DS_EMPTY_INITIALIZER;
+      unsigned int target = 100000;
+      for (unsigned int i = 0; ; i++)
+        {
+          ds_clear (&pw);
+          if (!ds_read_line (&pw, password_file, SIZE_MAX))
+            {
+              if (isatty (STDOUT_FILENO))
+                {
+                  putchar ('\r');
+                  fflush (stdout);
+                }
+              error (1, 0, _("\n%s: password not in file"), password_list);
+            }
+          ds_chomp_byte (&pw, '\n');
+
+          if (i >= target)
+            {
+              target += 100000;
+              if (isatty (STDOUT_FILENO))
+                {
+                  printf ("\r%u", i);
+                  fflush (stdout);
+                }
+            }
+
+          if (encrypted_file_unlock__ (enc, ds_cstr (&pw)))
+            {
+              printf ("\npassword is: \"%s\"\n", ds_cstr (&pw));
+              password = ds_cstr (&pw);
+              break;
+            }
+        }
+    }
+  else if (alphabet[0] && max_length)
     {
       size_t alphabet_size = strlen (alphabet);
       char *pw = xmalloc (max_length + 1);
@@ -404,12 +463,17 @@ The desired format of OUTPUT is by default inferred from its extension:\n\
   por                 SPSS portable file\n\
   sps                 SPSS syntax file (encrypted syntax input files only)\n\
 \n\
-Options:\n\
+General options:\n\
   -O, --output-format=FORMAT  set specific output format, where FORMAT\n\
                       is one of the extensions listed above\n\
   -e, --encoding=CHARSET  override encoding of input data file\n\
   -c MAXCASES         limit number of cases to copy (default is all cases)\n\
-  -p PASSWORD         password for encrypted files\n\
+Password options (for used with encrypted files):\n\
+  -p PASSWORD         individual password\n\
+  -a ALPHABET         with -l, alphabet of passwords to try\n\
+  -l MAX-LENGTH       with -a, maximum number of characters to try\n\
+  --password-list=FILE  try all of the passwords in FILE (one per line)\n\
+Other options:\n\
   --help              display this help and exit\n\
   --version           output version information and exit\n",
           program_name, program_name);
