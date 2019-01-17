@@ -16,19 +16,31 @@ dnl along with this program.  If not, see <http://www.gnu.org/licenses/>.
 dnl
 AT_BANNER([Perl module tests])
 
+m4_divert_push([PREPARE_TESTS])
+# Find the Address Sanitizer library that PSPP is linked against, if any.
+# If it exists, it needs to be preloaded when we run Perl.
+asan_lib=$($abs_top_builddir/libtool --mode=execute ldd \
+               $abs_top_builddir/src/ui/terminal/pspp 2>/dev/null \
+	   | grep asan \
+	   | awk '{print $3}')
+if test ! -e "$asan_lib"; then
+    asan_lib=
+fi
+
 dnl This command can be used to run with the PSPP Perl module after it has been
 dnl built (with "make") but before it has been installed.  The -I options are
 dnl equivalent to "use ExtUtils::testlib;" inside the Perl program, but it does
 dnl not need to be run with the perl-module build directory as the current
 dnl working directory.
-dnl
-dnl XXX "libtool --mode=execute" is probably better than setting
-dnl LD_LIBRARY_PATH.
-m4_define([RUN_PERL_MODULE],
-  [LD_LIBRARY_PATH=$abs_top_builddir/src/.libs \
-   DYLD_LIBRARY_PATH=$abs_top_builddir/src/.libs \
-   $PERL -I$abs_top_builddir/perl-module/blib/arch \
-         -I$abs_top_builddir/perl-module/blib/lib])
+run_perl_module () {
+    LD_PRELOAD=$asan_lib:$LD_PRELOAD \
+    LD_LIBRARY_PATH=$abs_top_builddir/src/.libs \
+    DYLD_LIBRARY_PATH=$abs_top_builddir/src/.libs \
+    ASAN_OPTIONS="$ASAN_OPTIONS detect_leaks=false" \
+    $PERL -I$abs_top_builddir/perl-module/blib/arch \
+          -I$abs_top_builddir/perl-module/blib/lib "$@"
+}
+m4_divert_pop([PREPARE_TESTS])
 
 AT_SETUP([Perl create system file])
 AT_SKIP_IF([test "$WITH_PERL_MODULE" = no])
@@ -67,7 +79,7 @@ AT_DATA([test.pl],
 
    $sysfile->close ();
 ])
-AT_CHECK([RUN_PERL_MODULE test.pl])
+AT_CHECK([run_perl_module test.pl])
 AT_DATA([dump-dict.sps],
   [GET FILE='testfile.sav'.
 DISPLAY FILE LABEL.
@@ -139,7 +151,7 @@ AT_DATA([test.pl],
 
     # Don't close.  We want to test that the destructor does that.
 ]])
-AT_CHECK([RUN_PERL_MODULE test.pl])
+AT_CHECK([run_perl_module test.pl])
 AT_DATA([dump-dicts.sps],
   [GET FILE='testfile.sav'.
 DISPLAY DICTIONARY.
@@ -231,7 +243,7 @@ AT_DATA([test.pl],
 
     $sysfile->close ();
 ]])
-AT_CHECK([RUN_PERL_MODULE test.pl], [0], [], [stderr])
+AT_CHECK([run_perl_module test.pl], [0], [], [stderr])
 cat stderr
 AT_DATA([dump-dict.sps],
   [GET FILE='testfile.sav'.
@@ -281,7 +293,7 @@ my $sysfile ;
     my $res = $sysfile->append_case ([3]);
     print "Dictionary survives sysfile\n" if $res;
 ]])
-AT_CHECK([RUN_PERL_MODULE test.pl], [0],
+AT_CHECK([run_perl_module test.pl], [0],
   [Dictionary survives sysfile
 ])
 AT_CLEANUP
@@ -359,7 +371,7 @@ AT_DATA([test.pl],
        print "\n";
     }
 ]])
-AT_CHECK([RUN_PERL_MODULE test.pl], [0],
+AT_CHECK([run_perl_module test.pl], [0],
   [Variable 0 is "string", label is "A Short String Variable"
 Value Labels:
 1111     => ones
@@ -437,7 +449,7 @@ AT_DATA([test.pl],
 
     $output->close ();
 ]])
-AT_CHECK([RUN_PERL_MODULE test.pl])
+AT_CHECK([run_perl_module test.pl])
 AT_DATA([dump-dicts.sps],
   [GET FILE='sample.sav'.
 DISPLAY DICTIONARY.
@@ -559,7 +571,7 @@ AT_DATA([test.pl],
     print "Formatted string is \"$formatted\"\n";
     print "Perl representation is \"$str\"\n";
 ]])
-AT_CHECK([RUN_PERL_MODULE test.pl], [0],
+AT_CHECK([run_perl_module test.pl], [0],
   [[Formatted string is "11-SEP-2001 08:20"
 Perl representation is "Tue Sep 11 08:20:00 2001"
 ]])
@@ -577,7 +589,7 @@ AT_DATA([test.pl],
     die "Returns undef on opening failure" if ref $sf;
     print $PSPP::errstr, "\n";
 ]])
-AT_CHECK([RUN_PERL_MODULE test.pl], [0],
+AT_CHECK([run_perl_module test.pl], [0],
   [[An error occurred while opening `no-such-file.sav': No such file or directory.
 ]],
   [[Name "PSPP::errstr" used only once: possible typo at test.pl line 8.
@@ -627,7 +639,7 @@ AT_DATA([test.pl],
     die "Missing Value Positive Num"
         if !PSPP::value_is_missing ($val, $numericvar);
 ]])
-AT_CHECK([RUN_PERL_MODULE test.pl])
+AT_CHECK([run_perl_module test.pl])
 AT_CLEANUP
 
 AT_SETUP([Perl custom attributes])
@@ -653,7 +665,7 @@ AT_DATA([test.pl],
 	print map "$_\n", join ', ', @$ll;
     }
 ]])
-AT_CHECK([RUN_PERL_MODULE test.pl], [0],
+AT_CHECK([run_perl_module test.pl], [0],
   [[$@Role =>0
 colour =>blue, pink, violet
 nationality =>foreign
@@ -665,7 +677,7 @@ AT_SETUP([Perl Pspp.t])
 AT_SKIP_IF([test "$WITH_PERL_MODULE" = no])
 # Skip this test if Perl's Text::Diff module is not installed.
 AT_CHECK([perl -MText::Diff -e '' || exit 77])
-AT_CHECK([RUN_PERL_MODULE $abs_top_builddir/perl-module/t/Pspp.t], [0],
+AT_CHECK([run_perl_module $abs_top_builddir/perl-module/t/Pspp.t], [0],
   [[1..37
 ok 1 - use PSPP;
 ok 2 - Dictionary Creation
