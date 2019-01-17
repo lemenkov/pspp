@@ -468,9 +468,10 @@ $(srcdir)/package.m4: $(top_srcdir)/configure.ac
 	} >'$(srcdir)/package.m4'
 
 check-valgrind:
-	$(MAKE) check RUNNER='$(SHELL) $(abs_top_builddir)/libtool --mode=execute valgrind --log-file=valgrind.%p --leak-check=full --num-callers=20' TESTSUITEFLAGS='$(TESTSUITEFLAGS) -d'
+	$(MAKE) check RUNNER='$(SHELL) $(abs_top_builddir)/libtool --mode=execute valgrind --log-file=valgrind.%p --leak-check=full --num-callers=20 --suppressions=$(abs_top_srcdir)/tests/valgrind.supp --read-inline-info=yes --read-var-info=yes' TESTSUITEFLAGS='$(TESTSUITEFLAGS) -d'
 	@echo
 	@echo '--------------------------------'
 	@echo 'Valgrind output is in:'
 	@echo 'tests/testsuite.dir/*/valgrind.*'
 	@echo '--------------------------------'
+EXTRA_DIST += tests/valgrind.supp tests/lsan.supp

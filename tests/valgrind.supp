@@ -1,0 +1,22 @@
+# libfontconfig uses offsets instead of pointers so valgrind doesn't
+# recognize when blocks are still in use
+{
+    fontconfig
+    Memcheck:Leak
+    ...
+    fun:FcFontRenderPrepare
+}
+{
+    fontconfig2
+    Memcheck:Leak
+    fun:realloc
+    obj:*libfontconfig.so.*
+}
+{
+    fontconfig3
+    Memcheck:Leak
+    fun:malloc
+    obj:*libfontconfig.so.*
+    ...
+    fun:XML_ParseBuffer
+}
