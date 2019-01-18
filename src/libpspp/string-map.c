@@ -25,6 +25,7 @@
 #include "libpspp/string-set.h"
 
 #include "gl/xalloc.h"
+#include "gl/xmemdup0.h"
 
 static struct string_map_node *string_map_find_node_with_hash (
   const struct string_map *, const char *key, size_t length,
@@ -199,7 +200,8 @@ string_map_insert (struct string_map *map, const char *key, const char *value)
   struct string_map_node *node = string_map_find_node_with_hash (map, key,
                                                                  length, hash);
   if (node == NULL)
-    node = string_map_insert__ (map, xstrdup (key), xstrdup (value), hash);
+    node = string_map_insert__ (map, xmemdup0 (key, length), xstrdup (value),
+                                hash);
   return node;
 }
 
@@ -235,7 +237,8 @@ string_map_replace (struct string_map *map, const char *key, const char *value)
   struct string_map_node *node = string_map_find_node_with_hash (map, key,
                                                                  length, hash);
   if (node == NULL)
-    node = string_map_insert__ (map, xstrdup (key), xstrdup (value), hash);
+    node = string_map_insert__ (map, xmemdup0 (key, length),
+                                xstrdup (value), hash);
   else
     string_map_node_set_value (node, value);
   return node;
