@@ -12,6 +12,8 @@ Changes since 1.2.0:
  * pspp-convert: New "-a", "-l", "--password-list" options to search
    for an encrypted file's password.
 
+ * Improvements to SAVE DATA COLLECTION support for MDD files.
+
  * Bug fix for CVE-2018-20230.
 
 Changes from 1.0.1 to 1.2.0:

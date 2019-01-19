@@ -36,6 +36,7 @@
 #include "language/lexer/lexer.h"
 #include "libpspp/assertion.h"
 #include "libpspp/compiler.h"
+#include "libpspp/message.h"
 
 #include "gl/xalloc.h"
 
@@ -166,6 +167,7 @@ parse_write_command (struct lexer *lexer, struct dataset *ds,
   struct casewriter *writer;  /* Writer. */
   struct case_map_stage *stage; /* Preparation for 'map'. */
   struct case_map *map;       /* Map from input data to data for writer. */
+  const char *sav_name = "";
 
   /* Common options. */
   struct sfm_write_options sysfile_opts;
@@ -303,37 +305,41 @@ parse_write_command (struct lexer *lexer, struct dataset *ds,
   if (lex_end_of_command (lexer) != CMD_SUCCESS)
     goto error;
 
-  if (handle == NULL)
+  if (!handle && !metadata)
     {
-      lex_sbc_missing ("OUTFILE");
+      msg (SE, _("The OUTFILE or METADATA subcommand is required."));
       goto error;
     }
 
   dict_delete_scratch_vars (dict);
   dict_compact_values (dict);
 
-  if (fh_get_referent (handle) == FH_REF_FILE)
+  if (handle)
     {
-      switch (writer_type)
+      if (metadata)
+        sav_name = (fh_get_referent (handle) == FH_REF_FILE
+                    ? fh_get_file_name (handle)
+                    : fh_get_name (handle));
+      if (fh_get_referent (handle) == FH_REF_FILE)
         {
-        case SYSFILE_WRITER:
-          writer = sfm_open_writer (handle, dict, sysfile_opts);
-          break;
-        case PORFILE_WRITER:
-          writer = pfm_open_writer (handle, dict, porfile_opts);
-          break;
+          switch (writer_type)
+            {
+            case SYSFILE_WRITER:
+              writer = sfm_open_writer (handle, dict, sysfile_opts);
+              break;
+            case PORFILE_WRITER:
+              writer = pfm_open_writer (handle, dict, porfile_opts);
+              break;
+            }
         }
+      else
+        writer = any_writer_open (handle, dict);
+      if (writer == NULL)
+        goto error;
     }
-  else
-    writer = any_writer_open (handle, dict);
-  if (writer == NULL)
-    goto error;
 
   if (metadata)
     {
-      const char *sav_name = (fh_get_referent (handle) == FH_REF_FILE
-                              ? fh_get_file_name (handle)
-                              : fh_get_name (handle));
       if (!mdd_write (metadata, dict, sav_name))
         goto error;
     }
