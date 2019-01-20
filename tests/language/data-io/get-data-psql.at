@@ -136,7 +136,7 @@ m4_define([INIT_PSQL],
    # normal $PATH works fine though.
    if (PATH=$PG_PATH:$PATH psql -V) >/dev/null 2>&1; then
        psql () {
-           PATH=$PG_PATH:$PATH command psql "$@"
+           PATH=$PG_PATH:$PATH command psql "$$@@"
        }
    fi
    AT_CHECK([psql -h "$socket_dir" -p $PG_PORT $PG_DBASE < populate.sql],
