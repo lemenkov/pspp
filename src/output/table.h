@@ -286,7 +286,4 @@ struct table *table_select_columns (struct table *,
 struct table *table_select_rows (struct table *,
                                  int y0, int y1, bool add_headers);
 
-/* Miscellaneous table operations. */
-struct table *table_transpose (struct table *);
-
 #endif /* output/table.h */

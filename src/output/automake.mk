@@ -79,7 +79,6 @@ src_output_liboutput_la_SOURCES = \
 	src/output/table-paste.c \
 	src/output/table-provider.h \
 	src/output/table-select.c \
-	src/output/table-transpose.c \
 	src/output/table.c \
 	src/output/table.h \
 	src/output/text-item.c \

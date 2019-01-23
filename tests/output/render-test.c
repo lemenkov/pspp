@@ -36,9 +36,6 @@
 #include "gl/xalloc.h"
 #include "gl/xvasprintf.h"
 
-/* --transpose: Transpose the table before outputting? */
-static int transpose;
-
 /* --emphasis: ASCII driver emphasis option. */
 static bool bold;
 static bool underline;
@@ -115,8 +112,6 @@ main (int argc, char **argv)
         }
 
       table = tables[n_tables - 1];
-      if (transpose)
-        table = table_transpose (table);
       table_item_submit (table_item_create (table, NULL, NULL));
       free (tables);
     }
@@ -252,7 +247,6 @@ parse_options (int argc, char **argv)
           {"width", required_argument, NULL, OPT_WIDTH},
           {"length", required_argument, NULL, OPT_LENGTH},
           {"min-break", required_argument, NULL, OPT_MIN_BREAK},
-          {"transpose", no_argument, &transpose, 1},
           {"emphasis", required_argument, NULL, OPT_EMPHASIS},
           {"box", required_argument, NULL, OPT_BOX},
           {"draw-mode", no_argument, &draw_mode, 1},
