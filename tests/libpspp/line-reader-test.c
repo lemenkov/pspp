@@ -98,6 +98,7 @@ cmd_read (int argc, char *argv[])
       ds_clear (&line);
     }
   free (encoding);
+  ds_destroy (&line);
 
   if (!strcmp(filename, "-"))
     line_reader_free (r);
