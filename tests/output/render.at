@@ -13,7 +13,7 @@ dnl GNU General Public License for more details.
 dnl 
 dnl You should have received a copy of the GNU General Public License
 dnl along with this program.  If not, see <http://www.gnu.org/licenses/>.
-dnl # +-+---+-+-+-+
+# +-+---+-+-+-+
 # |a|bcd|e|f|i|
 # +-+-+-+-+g+-+
 # |j|m|nop|h|q|
@@ -980,7 +980,7 @@ AT_DATA([expout], [dnl
 +-+u+-+-+
 |A|v|B|E|
 +-+-+C+-+
-|IJK|D|L|
+|K K|D|L|
 +-+-+-+M|
 |Q|RST|N|
 +-+---+-+
@@ -1028,7 +1028,7 @@ op|h|q|
 +-+-+r|
 |xyz|s|
 +-+-+-+
-|E|FGH|
+|E|H H|
 +-+-+-+
 |L|O|P|
 |M+-+-+

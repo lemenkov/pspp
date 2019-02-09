@@ -56,9 +56,20 @@ struct render_page
     struct table *table;                /* Table rendered. */
     int ref_cnt;
 
-    /* Local copies of table->n and table->h, for convenience. */
-    int n[TABLE_N_AXES];
+    /* Region of 'table' to render.
+
+       The horizontal cells rendered are the leftmost h[H][0], then
+       r[H][0] through r[H][1], exclusive, then the rightmost h[H][1].
+
+       The vertical cells rendered are the topmost h[V][0], then r[V][0]
+       through r[V][1], exclusive, then the bottommost h[V][1].
+
+       n[H] = h[H][0] + (r[H][1] - r[H][0]) + h[H][1]
+       n[V] = h[V][0] + (r[V][1] - r[V][0]) + h[V][1]
+    */
     int h[TABLE_N_AXES][2];
+    int r[TABLE_N_AXES][2];
+    int n[TABLE_N_AXES];
 
     /* "Cell positions".
 
@@ -506,33 +517,46 @@ measure_rule (const struct render_params *params, const struct table *table,
 }
 
 /* Allocates and returns a new render_page using PARAMS and TABLE.  Allocates
-   space for all of the members of the new page, but the caller must initialize
-   the 'cp' member itself. */
+   space for rendering a table with dimensions given in N.  The caller must
+   initialize most of the members itself. */
 static struct render_page *
-render_page_allocate (const struct render_params *params,
-                      struct table *table)
+render_page_allocate__ (const struct render_params *params,
+                        struct table *table, int n[TABLE_N_AXES])
 {
   struct render_page *page = xmalloc (sizeof *page);
   page->params = params;
   page->table = table;
   page->ref_cnt = 1;
-  page->n[H] = table->n[H];
-  page->n[V] = table->n[V];
-  page->h[H][0] = table->h[H][0];
-  page->h[H][1] = table->h[H][1];
-  page->h[V][0] = table->h[V][0];
-  page->h[V][1] = table->h[V][1];
+  page->n[H] = n[H];
+  page->n[V] = n[V];
 
   for (int i = 0; i < TABLE_N_AXES; i++)
     {
-      page->cp[i] = xmalloc ((2 * page->n[i] + 2) * sizeof *page->cp[i]);
-      page->join_crossing[i] = xzalloc ((page->n[i] + 1)
+      page->cp[i] = xmalloc ((2 * n[i] + 2) * sizeof *page->cp[i]);
+      page->join_crossing[i] = xzalloc ((n[i] + 1)
                                         * sizeof *page->join_crossing[i]);
     }
 
   hmap_init (&page->overflows);
   memset (page->is_edge_cutoff, 0, sizeof page->is_edge_cutoff);
 
+  return page;
+}
+
+/* Allocates and returns a new render_page using PARAMS and TABLE.  Allocates
+   space for all of the members of the new page, but the caller must initialize
+   the 'cp' member itself. */
+static struct render_page *
+render_page_allocate (const struct render_params *params, struct table *table)
+{
+  struct render_page *page = render_page_allocate__ (params, table, table->n);
+  for (enum table_axis a = 0; a < TABLE_N_AXES; a++)
+    {
+      page->h[a][0] = table->h[a][0];
+      page->h[a][1] = table->h[a][1];
+      page->r[a][0] = table->h[a][0];
+      page->r[a][1] = table->n[a] - table->h[a][1];
+    }
   return page;
 }
 
@@ -593,7 +617,6 @@ create_page_with_interpolated_widths (const struct render_params *params,
   assert (page->cp[H][n * 2 + 1] == params->size[H]);
   return page;
 }
-
 
 static void
 set_join_crossings (struct render_page *page, enum table_axis axis,
@@ -601,6 +624,75 @@ set_join_crossings (struct render_page *page, enum table_axis axis,
 {
   for (int z = cell->d[axis][0] + 1; z <= cell->d[axis][1] - 1; z++)
     page->join_crossing[axis][z] = rules[z];
+}
+
+/* Maps a contiguous range of cells from a page to the underlying table along
+   the horizpntal or vertical dimension. */
+struct map
+  {
+    int p0;                     /* First ordinate in the page. */
+    int t0;                     /* First ordinate in the table. */
+    int n;                      /* Number of ordinates in page and table. */
+  };
+
+/* Initializes M to a mapping from PAGE to PAGE->table along axis A.  The
+   mapping includes ordinate Z (in PAGE). */
+static void
+get_map (const struct render_page *page, enum table_axis a, int z,
+         struct map *m)
+{
+  if (z < page->h[a][0])
+    {
+      m->p0 = 0;
+      m->t0 = 0;
+      m->n = page->h[a][0];
+    }
+  else if (z < page->n[a] - page->h[a][1])
+    {
+      m->p0 = page->h[a][0];
+      m->t0 = page->r[a][0];
+      m->n = page->r[a][1] - page->r[a][0];
+    }
+  else
+    {
+      m->p0 = page->n[a] - page->h[a][1];
+      m->t0 = page->table->n[a] - page->table->h[a][1];
+      m->n = page->h[a][1];
+    }
+}
+
+/* Initializes CELL with the contents of the table cell at column X and row Y
+   within PAGE.  When CELL is no longer needed, the caller is responsible for
+   freeing it by calling table_cell_free(CELL).
+
+   The caller must ensure that CELL is destroyed before TABLE is unref'ed.
+
+   This is equivalent to table_get_cell(), except X and Y are in terms of the
+   page's rows and columns rather than the underlying table's. */
+static void
+render_get_cell (const struct render_page *page, int x, int y,
+                 struct table_cell *cell)
+{
+  int d[TABLE_N_AXES] = { [H] = x, [V] = y };
+  struct map map[TABLE_N_AXES];
+
+  for (enum table_axis a = 0; a < TABLE_N_AXES; a++)
+    {
+      struct map *m = &map[a];
+      get_map (page, a, d[a], m);
+      d[a] += m->t0 - m->p0;
+    }
+  table_get_cell (page->table, d[H], d[V], cell);
+
+  for (enum table_axis a = 0; a < TABLE_N_AXES; a++)
+    {
+      struct map *m = &map[a];
+
+      for (int i = 0; i < 2; i++)
+        cell->d[a][i] -= m->t0 - m->p0;
+      cell->d[a][0] = MAX (cell->d[a][0], m->p0);
+      cell->d[a][1] = MIN (cell->d[a][1], m->p0 + m->n);
+    }
 }
 
 /* Creates and returns a new render_page for rendering TABLE on a device
@@ -725,7 +817,7 @@ render_page_create (const struct render_params *params, struct table *table,
         struct render_row *r = &rows[y];
         struct table_cell cell;
 
-        table_get_cell (table, x, y, &cell);
+        render_get_cell (page, x, y, &cell);
         if (y == cell.d[V][0])
           {
             if (table_cell_rowspan (&cell) == 1)
@@ -753,7 +845,7 @@ render_page_create (const struct render_params *params, struct table *table,
       {
         struct table_cell cell;
 
-        table_get_cell (table, x, y, &cell);
+        render_get_cell (page, x, y, &cell);
         if (y == cell.d[V][0] && table_cell_rowspan (&cell) > 1)
           {
             int w = joined_width (page, H, cell.d[H][0], cell.d[H][1]);
@@ -776,9 +868,9 @@ render_page_create (const struct render_params *params, struct table *table,
       if (hw * 2 >= page->params->size[axis]
           || hw + max_cell_width (page, axis) > page->params->size[axis])
         {
-          page->table = table_unshare (page->table);
-          page->table->h[axis][0] = page->table->h[axis][1] = 0;
           page->h[axis][0] = page->h[axis][1] = 0;
+          page->r[axis][0] = 0;
+          page->r[axis][1] = page->n[axis];
         }
     }
 
@@ -848,13 +940,47 @@ render_page_get_best_breakpoint (const struct render_page *page, int height)
 
 /* Drawing render_pages. */
 
-static inline enum render_line_style
+/* This is like table_get_rule() except:
+
+   - D is in terms of the page's rows and column rather than the underlying
+     table's.
+
+   - The result is in the form of a render_line_style. */
+static enum render_line_style
 get_rule (const struct render_page *page, enum table_axis axis,
-          const int d[TABLE_N_AXES], struct cell_color *color)
+          const int d_[TABLE_N_AXES], struct cell_color *color)
 {
-  return rule_to_render_type (table_get_rule (page->table,
-                                              axis, d[H] / 2, d[V] / 2,
-                                              color));
+  int d[TABLE_N_AXES] = { d_[0] / 2, d_[1] / 2 };
+  int d2 = -1;
+
+  enum table_axis a = axis;
+  if (d[a] < page->h[a][0])
+    /* Nothing to do */;
+  else if (d[a] <= page->n[a] - page->h[a][1])
+    {
+      if (page->h[a][0] && d[a] == page->h[a][0])
+        d2 = page->h[a][0];
+      else if (page->h[a][1] && d[a] == page->n[a] - page->h[a][1])
+        d2 = page->table->n[a] - page->h[a][1];
+      d[a] += page->r[a][0] - page->h[a][0];
+    }
+  else
+    d[a] += ((page->table->n[a] - page->table->h[a][1])
+             - (page->n[a] - page->h[a][1]));
+
+  enum table_axis b = !axis;
+  struct map m;
+  get_map (page, b, d[b], &m);
+  d[b] += m.t0 - m.p0;
+
+  int r = table_get_rule (page->table, axis, d[H], d[V], color);
+  if (d2 >= 0)
+    {
+      d[a] = d2;
+      int r2 = table_get_rule (page->table, axis, d[H], d[V], color);
+      r = table_rule_combine (r, r2);
+    }
+  return rule_to_render_type (r);
 }
 
 static bool
@@ -910,7 +1036,7 @@ render_rule (const struct render_page *page, const int ofs[TABLE_N_AXES],
               styles[a][0] = get_rule (page, a, e, &colors[a][0]);
             }
 
-          if (d[b] / 2 < page->table->n[b])
+          if (d[b] / 2 < page->n[b])
             styles[a][1] = get_rule (page, a, d, &colors[a][1]);
         }
       else
@@ -1018,7 +1144,7 @@ render_page_draw_cells (const struct render_page *page,
         {
           struct table_cell cell;
 
-          table_get_cell (page->table, x / 2, y / 2, &cell);
+          render_get_cell (page, x / 2, y / 2, &cell);
           if (y / 2 == bb[V][0] / 2 || y / 2 == cell.d[V][0])
             render_cell (page, ofs, &cell);
           x = rule_ofs (cell.d[H][1]);
@@ -1254,7 +1380,7 @@ render_break_next (struct render_break *b, int size)
                   {
                     struct table_cell cell;
 
-                    table_get_cell (page->table, x, z, &cell);
+                    render_get_cell (page, x, z, &cell);
                     int w = joined_width (page, H, cell.d[H][0], cell.d[H][1]);
                     int better_pixel = page->params->adjust_break (
                       page->params->aux, &cell, w, pixel);
@@ -1654,9 +1780,20 @@ render_page_select (const struct render_page *page, enum table_axis axis,
     }
 
   /* Allocate subpage. */
-  struct render_page *subpage = render_page_allocate (
-    page->params, table_select_slice (table_ref (page->table),
-                                      a, z0, z1, true));
+  int trim[2] = { z0 - page->h[a][0], (page->n[a] - page->h[a][1]) - z1 };
+  int n[TABLE_N_AXES] = { [H] = page->n[H], [V] = page->n[V] };
+  n[a] -= trim[0] + trim[1];
+  struct render_page *subpage = render_page_allocate__ (
+    page->params, table_ref (page->table), n);
+  for (enum table_axis k = 0; k < TABLE_N_AXES; k++)
+    {
+      subpage->h[k][0] = page->h[k][0];
+      subpage->h[k][1] = page->h[k][1];
+      subpage->r[k][0] = page->r[k][0];
+      subpage->r[k][1] = page->r[k][1];
+    }
+  subpage->r[a][0] += trim[0];
+  subpage->r[a][1] -= trim[1];
 
   /* An edge is cut off if it was cut off in PAGE or if we're trimming pixels
      off that side of the page and there are no headers. */
@@ -1687,10 +1824,8 @@ render_page_select (const struct render_page *page, enum table_axis axis,
   *dcp = 0;
   for (int z = 0; z <= rule_ofs (subpage->h[a][0]); z++, dcp++)
     {
-      if (z == 0 && subpage->is_edge_cutoff[a][0])
-        dcp[1] = dcp[0];
-      else
-        dcp[1] = dcp[0] + (scp[z + 1] - scp[z]);
+      int w = !z && subpage->is_edge_cutoff[a][0] ? 0 : scp[z + 1] - scp[z];
+      dcp[1] = dcp[0] + w;
     }
   for (int z = cell_ofs (z0); z <= cell_ofs (z1 - 1); z++, dcp++)
     {
@@ -1737,7 +1872,7 @@ render_page_select (const struct render_page *page, enum table_axis axis,
         d[b] = z;
 
         struct table_cell cell;
-        table_get_cell (page->table, d[H], d[V], &cell);
+        render_get_cell (page, d[H], d[V], &cell);
         bool overflow0 = p0 || cell.d[a][0] < z0;
         bool overflow1 = cell.d[a][1] > z1 || (cell.d[a][1] == z1 && p1);
         if (overflow0 || overflow1)
@@ -1773,7 +1908,7 @@ render_page_select (const struct render_page *page, enum table_axis axis,
         d[b] = z;
 
         struct table_cell cell;
-        table_get_cell (page->table, d[H], d[V], &cell);
+        render_get_cell (page, d[H], d[V], &cell);
         if ((cell.d[a][1] > z1 || (cell.d[a][1] == z1 && p1))
             && find_overflow_for_cell (&s, &cell) == NULL)
           {

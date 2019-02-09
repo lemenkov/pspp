@@ -56,8 +56,8 @@ struct variable;
 enum table_axis
   {
     TABLE_HORZ,
-    TABLE_VERT,
-    TABLE_N_AXES
+    TABLE_VERT
+#define TABLE_N_AXES 2
   };
 
 struct cell_color
@@ -199,9 +199,7 @@ enum
 /* Given line styles A and B (each one of the TAL_* enumeration constants
    above), returns a line style that "combines" them, that is, that gives a
    reasonable line style choice for a rule for different reasons should have
-   both styles A and B.
-
-   Used especially for pasting tables together (see table_paste()). */
+   both styles A and B. */
 static inline int table_rule_combine (int a, int b)
 {
   return a > b ? a : b;
