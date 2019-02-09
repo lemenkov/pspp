@@ -293,14 +293,14 @@ compose_headings (struct tab_table *t,
 }
 
 static void
-pivot_table_submit_layer (const struct pivot_table *st,
+pivot_table_submit_layer (const struct pivot_table *pt,
                           const size_t *layer_indexes)
 {
   const size_t *pindexes[PIVOT_N_AXES]
     = { [PIVOT_AXIS_LAYER] = layer_indexes };
 
   struct string layer_label = DS_EMPTY_INITIALIZER;
-  const struct pivot_axis *layer_axis = &st->axes[PIVOT_AXIS_LAYER];
+  const struct pivot_axis *layer_axis = &pt->axes[PIVOT_AXIS_LAYER];
   for (size_t i = 0; i < layer_axis->n_dimensions; i++)
     {
       const struct pivot_dimension *d = layer_axis->dimensions[i];
@@ -308,36 +308,36 @@ pivot_table_submit_layer (const struct pivot_table *st,
         {
           if (!ds_is_empty (&layer_label))
             ds_put_byte (&layer_label, '\n');
-          pivot_value_format (d->root->name, st->show_values,
-                              st->show_variables, &layer_label);
+          pivot_value_format (d->root->name, pt->show_values,
+                              pt->show_variables, &layer_label);
           ds_put_cstr (&layer_label, ": ");
           pivot_value_format (d->data_leaves[layer_indexes[i]]->name,
-                              st->show_values, st->show_variables,
+                              pt->show_values, pt->show_variables,
                               &layer_label);
         }
     }
 
   size_t body[TABLE_N_AXES];
   size_t *column_enumeration = pivot_table_enumerate_axis (
-    st, PIVOT_AXIS_COLUMN, layer_indexes, st->omit_empty, &body[H]);
+    pt, PIVOT_AXIS_COLUMN, layer_indexes, pt->omit_empty, &body[H]);
   size_t *row_enumeration = pivot_table_enumerate_axis (
-    st, PIVOT_AXIS_ROW, layer_indexes, st->omit_empty, &body[V]);
+    pt, PIVOT_AXIS_ROW, layer_indexes, pt->omit_empty, &body[V]);
 
   int stub[TABLE_N_AXES] = {
-    [H] = st->axes[PIVOT_AXIS_ROW].label_depth,
-    [V] = st->axes[PIVOT_AXIS_COLUMN].label_depth,
+    [H] = pt->axes[PIVOT_AXIS_ROW].label_depth,
+    [V] = pt->axes[PIVOT_AXIS_COLUMN].label_depth,
   };
   struct tab_table *table = tab_create (body[H] + stub[H],
                                         body[V] + stub[V]);
   tab_headers (table, stub[H], 0, stub[V], 0);
 
   for (size_t i = 0; i < PIVOT_N_AREAS; i++)
-    table->styles[i] = area_style_override (table->container, &st->areas[i],
+    table->styles[i] = area_style_override (table->container, &pt->areas[i],
                                             NULL, NULL);
 
   for (size_t i = 0; i < PIVOT_N_BORDERS; i++)
     {
-      const struct table_border_style *in = &st->borders[i];
+      const struct table_border_style *in = &pt->borders[i];
       table->rule_colors[i] = pool_alloc (table->container,
                                           sizeof *table->rule_colors[i]);
       struct cell_color *out = table->rule_colors[i];
@@ -347,68 +347,68 @@ pivot_table_submit_layer (const struct pivot_table *st,
       out->b = in->color.b;
     }
 
-  struct footnote **footnotes = xcalloc (st->n_footnotes, sizeof *footnotes);
-  for (size_t i = 0; i < st->n_footnotes; i++)
+  struct footnote **footnotes = xcalloc (pt->n_footnotes, sizeof *footnotes);
+  for (size_t i = 0; i < pt->n_footnotes; i++)
     {
       char *content = pivot_value_to_string (
-        st->footnotes[i]->content, st->show_values, st->show_variables);
+        pt->footnotes[i]->content, pt->show_values, pt->show_variables);
       char *marker = pivot_value_to_string (
-        st->footnotes[i]->marker, st->show_values, st->show_variables);
+        pt->footnotes[i]->marker, pt->show_values, pt->show_variables);
       footnotes[i] = tab_create_footnote (
         table, i, content, marker,
-        area_style_override (table->container, &st->areas[PIVOT_AREA_FOOTER],
-                             st->footnotes[i]->content->cell_style,
-                             st->footnotes[i]->content->font_style));
+        area_style_override (table->container, &pt->areas[PIVOT_AREA_FOOTER],
+                             pt->footnotes[i]->content->cell_style,
+                             pt->footnotes[i]->content->font_style));
       free (marker);
       free (content);
     }
 
   compose_headings (table,
-                    &st->axes[PIVOT_AXIS_COLUMN], H, &st->axes[PIVOT_AXIS_ROW],
-                    st->borders,
+                    &pt->axes[PIVOT_AXIS_COLUMN], H, &pt->axes[PIVOT_AXIS_ROW],
+                    pt->borders,
                     PIVOT_BORDER_DIM_COL_HORZ,
                     PIVOT_BORDER_DIM_COL_VERT,
                     PIVOT_BORDER_CAT_COL_HORZ,
                     PIVOT_BORDER_CAT_COL_VERT,
                     column_enumeration, body[H],
-                    &st->areas[PIVOT_AREA_COLUMN_LABELS],
+                    &pt->areas[PIVOT_AREA_COLUMN_LABELS],
                     PIVOT_AREA_COLUMN_LABELS,
-                    &st->areas[PIVOT_AREA_CORNER], footnotes,
-                    st->show_values, st->show_variables,
-                    st->rotate_inner_column_labels, false);
+                    &pt->areas[PIVOT_AREA_CORNER], footnotes,
+                    pt->show_values, pt->show_variables,
+                    pt->rotate_inner_column_labels, false);
 
   compose_headings (table,
-                    &st->axes[PIVOT_AXIS_ROW], V, &st->axes[PIVOT_AXIS_COLUMN],
-                    st->borders,
+                    &pt->axes[PIVOT_AXIS_ROW], V, &pt->axes[PIVOT_AXIS_COLUMN],
+                    pt->borders,
                     PIVOT_BORDER_DIM_ROW_VERT,
                     PIVOT_BORDER_DIM_ROW_HORZ,
                     PIVOT_BORDER_CAT_ROW_VERT,
                     PIVOT_BORDER_CAT_ROW_HORZ,
                     row_enumeration, body[V],
-                    &st->areas[PIVOT_AREA_ROW_LABELS],
+                    &pt->areas[PIVOT_AREA_ROW_LABELS],
                     PIVOT_AREA_ROW_LABELS,
-                    &st->areas[PIVOT_AREA_CORNER], footnotes,
-                    st->show_values, st->show_variables,
-                    false, st->rotate_outer_row_labels);
+                    &pt->areas[PIVOT_AREA_CORNER], footnotes,
+                    pt->show_values, pt->show_variables,
+                    false, pt->rotate_outer_row_labels);
 
-  size_t *dindexes = xcalloc (st->n_dimensions, sizeof *dindexes);
+  size_t *dindexes = xcalloc (pt->n_dimensions, sizeof *dindexes);
   size_t y = 0;
   PIVOT_ENUMERATION_FOR_EACH (pindexes[PIVOT_AXIS_ROW], row_enumeration,
-                              &st->axes[PIVOT_AXIS_ROW])
+                              &pt->axes[PIVOT_AXIS_ROW])
     {
       size_t x = 0;
       PIVOT_ENUMERATION_FOR_EACH (pindexes[PIVOT_AXIS_COLUMN],
                                   column_enumeration,
-                                  &st->axes[PIVOT_AXIS_COLUMN])
+                                  &pt->axes[PIVOT_AXIS_COLUMN])
         {
-          pivot_table_convert_indexes_ptod (st, pindexes, dindexes);
-          const struct pivot_value *value = pivot_table_get (st, dindexes);
+          pivot_table_convert_indexes_ptod (pt, pindexes, dindexes);
+          const struct pivot_value *value = pivot_table_get (pt, dindexes);
           fill_cell (table,
                      x + stub[H], y + stub[V],
                      x + stub[H], y + stub[V],
-                     &st->areas[PIVOT_AREA_DATA], PIVOT_AREA_DATA,
+                     &pt->areas[PIVOT_AREA_DATA], PIVOT_AREA_DATA,
                      value, footnotes,
-                     st->show_values, st->show_variables, false);
+                     pt->show_values, pt->show_variables, false);
 
           x++;
         }
@@ -417,34 +417,34 @@ pivot_table_submit_layer (const struct pivot_table *st,
     }
   free (dindexes);
 
-  if (st->corner_text && stub[H] && stub[V])
+  if (pt->corner_text && stub[H] && stub[V])
     fill_cell (table, 0, 0, stub[H] - 1, stub[V] - 1,
-               &st->areas[PIVOT_AREA_CORNER], PIVOT_AREA_CORNER,
-               st->corner_text, footnotes,
-               st->show_values, st->show_variables, false);
+               &pt->areas[PIVOT_AREA_CORNER], PIVOT_AREA_CORNER,
+               pt->corner_text, footnotes,
+               pt->show_values, pt->show_variables, false);
 
   if (tab_nc (table) && tab_nr (table))
     {
       tab_hline (
-        table, get_table_rule (st->borders, PIVOT_BORDER_INNER_TOP),
+        table, get_table_rule (pt->borders, PIVOT_BORDER_INNER_TOP),
         0, tab_nc (table) - 1, 0);
       tab_hline (
-        table, get_table_rule (st->borders, PIVOT_BORDER_INNER_BOTTOM),
+        table, get_table_rule (pt->borders, PIVOT_BORDER_INNER_BOTTOM),
         0, tab_nc (table) - 1, tab_nr (table));
       tab_vline (
-        table, get_table_rule (st->borders, PIVOT_BORDER_INNER_LEFT),
+        table, get_table_rule (pt->borders, PIVOT_BORDER_INNER_LEFT),
         0, 0, tab_nr (table) - 1);
       tab_vline (
-        table, get_table_rule (st->borders, PIVOT_BORDER_INNER_RIGHT),
+        table, get_table_rule (pt->borders, PIVOT_BORDER_INNER_RIGHT),
         tab_nc (table), 0, tab_nr (table) - 1);
 
       if (stub[V])
         tab_hline (
-          table, get_table_rule (st->borders, PIVOT_BORDER_DATA_TOP),
+          table, get_table_rule (pt->borders, PIVOT_BORDER_DATA_TOP),
           0, tab_nc (table) - 1, stub[V]);
       if (stub[H])
         tab_vline (
-          table, get_table_rule (st->borders, PIVOT_BORDER_DATA_LEFT),
+          table, get_table_rule (pt->borders, PIVOT_BORDER_DATA_LEFT),
           stub[H], 0, tab_nr (table) - 1);
 
     }
@@ -453,11 +453,11 @@ pivot_table_submit_layer (const struct pivot_table *st,
 
   struct table_item *ti = table_item_create (&table->table, NULL, NULL);
 
-  if (st->title)
+  if (pt->title)
     {
       struct table_item_text *title = pivot_value_to_table_item_text (
-        st->title, &st->areas[PIVOT_AREA_TITLE], footnotes,
-        st->show_values, st->show_variables);
+        pt->title, &pt->areas[PIVOT_AREA_TITLE], footnotes,
+        pt->show_values, pt->show_variables);
       table_item_set_title (ti, title);
       table_item_text_destroy (title);
     }
@@ -466,7 +466,7 @@ pivot_table_submit_layer (const struct pivot_table *st,
     {
       struct table_item_text *layers = table_item_text_create (
         ds_cstr (&layer_label));
-      layers->style = area_style_override (NULL, &st->areas[PIVOT_AREA_LAYERS],
+      layers->style = area_style_override (NULL, &pt->areas[PIVOT_AREA_LAYERS],
                                            NULL, NULL);
       table_item_set_layers (ti, layers);
       table_item_text_destroy (layers);
@@ -474,11 +474,11 @@ pivot_table_submit_layer (const struct pivot_table *st,
       ds_destroy (&layer_label);
     }
 
-  if (st->caption)
+  if (pt->caption)
     {
       struct table_item_text *caption = pivot_value_to_table_item_text (
-        st->caption, &st->areas[PIVOT_AREA_CAPTION], footnotes,
-        st->show_values, st->show_variables);
+        pt->caption, &pt->areas[PIVOT_AREA_CAPTION], footnotes,
+        pt->show_values, pt->show_variables);
       table_item_set_caption (ti, caption);
       table_item_text_destroy (caption);
     }
@@ -488,29 +488,29 @@ pivot_table_submit_layer (const struct pivot_table *st,
 }
 
 void
-pivot_table_submit (struct pivot_table *st)
+pivot_table_submit (struct pivot_table *pt)
 {
-  pivot_table_assign_label_depth (CONST_CAST (struct pivot_table *, st));
+  pivot_table_assign_label_depth (CONST_CAST (struct pivot_table *, pt));
 
   int old_decimal = settings_get_decimal_char (FMT_COMMA);
-  if (st->decimal == '.' || st->decimal == ',')
-    settings_set_decimal_char (st->decimal);
+  if (pt->decimal == '.' || pt->decimal == ',')
+    settings_set_decimal_char (pt->decimal);
 
-  if (st->print_all_layers)
+  if (pt->print_all_layers)
     {
       size_t *layer_indexes;
 
-      PIVOT_AXIS_FOR_EACH (layer_indexes, &st->axes[PIVOT_AXIS_LAYER])
+      PIVOT_AXIS_FOR_EACH (layer_indexes, &pt->axes[PIVOT_AXIS_LAYER])
         {
-          if (st->paginate_layers)
+          if (pt->paginate_layers)
             text_item_submit (text_item_create (TEXT_ITEM_EJECT_PAGE, ""));
-          pivot_table_submit_layer (st, layer_indexes);
+          pivot_table_submit_layer (pt, layer_indexes);
         }
     }
   else
-    pivot_table_submit_layer (st, st->current_layer);
+    pivot_table_submit_layer (pt, pt->current_layer);
 
   settings_set_decimal_char (old_decimal);
 
-  pivot_table_destroy (st);
+  pivot_table_destroy (pt);
 }
