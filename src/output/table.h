@@ -269,19 +269,4 @@ void table_set_hb (struct table *, int hb);
 /* Simple kinds of tables. */
 struct table *table_from_string (enum table_halign, const char *);
 
-/* Combining tables. */
-struct table *table_paste (struct table *, struct table *,
-                           enum table_axis orientation);
-struct table *table_hpaste (struct table *left, struct table *right);
-struct table *table_vpaste (struct table *top, struct table *bottom);
-
-/* Taking subsets of tables. */
-struct table *table_select (struct table *, int rect[TABLE_N_AXES][2]);
-struct table *table_select_slice (struct table *, enum table_axis,
-                                  int z0, int z1, bool add_headers);
-struct table *table_select_columns (struct table *,
-                                    int x0, int x1, bool add_headers);
-struct table *table_select_rows (struct table *,
-                                 int y0, int y1, bool add_headers);
-
 #endif /* output/table.h */

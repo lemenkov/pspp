@@ -369,8 +369,6 @@ static const struct table_class table_unshared_class =
     table_unshared_destroy,
     table_unshared_get_cell,
     table_unshared_get_rule,
-    NULL,                       /* paste */
-    NULL,                       /* select */
   };
 
 struct table_string
@@ -448,8 +446,6 @@ static const struct table_class table_string_class =
     table_string_destroy,
     table_string_get_cell,
     table_string_get_rule,
-    NULL,                       /* paste */
-    NULL,                       /* select */
   };
 
 const char *

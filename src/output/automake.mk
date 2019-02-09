@@ -76,9 +76,7 @@ src_output_liboutput_la_SOURCES = \
 	src/output/tab.h \
 	src/output/table-item.c \
 	src/output/table-item.h \
-	src/output/table-paste.c \
 	src/output/table-provider.h \
-	src/output/table-select.c \
 	src/output/table.c \
 	src/output/table.h \
 	src/output/text-item.c \

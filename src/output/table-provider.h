@@ -141,49 +141,6 @@ struct table_class
     int (*get_rule) (const struct table *table,
                      enum table_axis axis, int x, int y,
                      struct cell_color *color);
-
-    /* This function is optional and most table classes will not implement it.
-
-       If provided, this function must take ownership of A and B and return a
-       table that consists of tables A and B "pasted together", that is, a
-       table whose size is the sum of the sizes of A and B along the axis
-       specified by ORIENTATION.  A and B will ordinarily have the same size
-       along the axis opposite ORIENTATION; no particular handling of tables
-       that have different sizes along that axis is required.
-
-       The handling of rules at the seam between A and B is not specified, but
-       table_rule_combine() is one reasonable way to do it.
-
-       Called only if neither A and B is shared (as returned by
-       table_is_shared()).
-
-       Called if A or B or both is of the class defined by this table class.
-       That is, the implementation must be prepared to deal with the case where
-       A or B is not the ordinarily expected table class.
-
-       This function may return a null pointer if it cannot implement the paste
-       operation, in which case the caller will use a fallback
-       implementation.
-
-       This function is used to implement table_paste(). */
-    struct table *(*paste) (struct table *a, struct table *b,
-                            enum table_axis orientation);
-
-    /* This function is optional and most table classes will not implement it.
-
-       If provided, this function must take ownership of TABLE and return a new
-       table whose contents are the TABLE's rows RECT[TABLE_VERT][0] through
-       RECT[TABLE_VERT][1], exclusive, and the TABLE's columns
-       RECT[TABLE_HORZ][0] through RECT[TABLE_HORZ][1].
-
-       Called only if TABLE is not shared (as returned by table_is_shared()).
-
-       This function may return a null pointer if it cannot implement the
-       select operation, in which case the caller will use a fallback
-       implementation.
-
-       This function is used to implement table_select(). */
-    struct table *(*select) (struct table *table, int rect[TABLE_N_AXES][2]);
   };
 
 void table_init (struct table *, const struct table_class *);

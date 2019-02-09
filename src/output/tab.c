@@ -563,8 +563,6 @@ static const struct table_class tab_table_class = {
   tab_destroy,
   tab_get_cell,
   tab_get_rule,
-  NULL,                         /* paste */
-  NULL,                         /* select */
 };
 
 struct tab_table *
