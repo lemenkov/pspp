@@ -297,80 +297,6 @@ table_collect_footnotes (const struct table_item *item,
   return n;
 }
 
-struct table_unshared
-  {
-    struct table table;
-    struct table *subtable;
-  };
-
-static const struct table_class table_unshared_class;
-
-/* Takes ownership of TABLE and returns a table with the same contents but
-   which is guaranteed not to be shared (as returned by table_is_shared()).
-
-   If TABLE is unshared, just returns TABLE.
-
-   The only real use for this function is to create a copy of TABLE in which
-   the headers can be adjusted, which is a pretty specialized use case. */
-struct table *
-table_unshare (struct table *table)
-{
-  if (!table_is_shared (table))
-    return table;
-  else
-    {
-      struct table_unshared *tiu = xmalloc (sizeof *tiu);
-      table_init (&tiu->table, &table_unshared_class);
-      table_set_nc (&tiu->table, table_nc (table));
-      table_set_nr (&tiu->table, table_nr (table));
-      table_set_hl (&tiu->table, table_hl (table));
-      table_set_hr (&tiu->table, table_hr (table));
-      table_set_ht (&tiu->table, table_ht (table));
-      table_set_hb (&tiu->table, table_hb (table));
-      tiu->subtable = table;
-      return &tiu->table;
-    }
-}
-
-static struct table_unshared *
-table_unshared_cast (const struct table *table)
-{
-  assert (table->klass == &table_unshared_class);
-  return UP_CAST (table, struct table_unshared, table);
-}
-
-static void
-table_unshared_destroy (struct table *tiu_)
-{
-  struct table_unshared *tiu = table_unshared_cast (tiu_);
-  table_unref (tiu->subtable);
-  free (tiu);
-}
-
-static void
-table_unshared_get_cell (const struct table *tiu_, int x, int y,
-                              struct table_cell *cell)
-{
-  struct table_unshared *tiu = table_unshared_cast (tiu_);
-  table_get_cell (tiu->subtable, x, y, cell);
-}
-
-static int
-table_unshared_get_rule (const struct table *tiu_,
-                         enum table_axis axis, int x, int y,
-                         struct cell_color *color)
-{
-  struct table_unshared *tiu = table_unshared_cast (tiu_);
-  return table_get_rule (tiu->subtable, axis, x, y, color);
-}
-
-static const struct table_class table_unshared_class =
-  {
-    table_unshared_destroy,
-    table_unshared_get_cell,
-    table_unshared_get_rule,
-  };
-
 struct table_string
   {
     struct table table;

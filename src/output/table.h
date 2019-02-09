@@ -239,7 +239,6 @@ struct table
 struct table *table_ref (const struct table *);
 void table_unref (struct table *);
 bool table_is_shared (const struct table *);
-struct table *table_unshare (struct table *);
 
 /* Returns the number of columns or rows, respectively, in T. */
 static inline int table_nc (const struct table *t)
