@@ -30,6 +30,7 @@
 #include "libpspp/pool.h"
 #include "libpspp/str.h"
 #include "output/table-item.h"
+#include "output/tab.h"
 
 #include "gl/xalloc.h"
 
@@ -297,82 +298,15 @@ table_collect_footnotes (const struct table_item *item,
   return n;
 }
 
-struct table_string
-  {
-    struct table table;
-    char *string;
-    enum table_halign halign;
-  };
-
-static const struct table_class table_string_class;
-
-/* Returns a table that contains a single cell, whose contents are S with
-   options OPTIONS (a combination of TAB_* values).  */
+/* Returns a table that contains a single cell, whose contents are the
+   left-aligned TEXT.  */
 struct table *
-table_from_string (enum table_halign halign, const char *s)
+table_from_string (const char *text)
 {
-  struct table_string *ts = xmalloc (sizeof *ts);
-  table_init (&ts->table, &table_string_class);
-  ts->table.n[TABLE_HORZ] = ts->table.n[TABLE_VERT] = 1;
-  ts->string = xstrdup (s);
-  ts->halign = halign;
-  return &ts->table;
+  struct tab_table *t = tab_create (1, 1);
+  tab_text (t, 0, 0, TAB_LEFT, text);
+  return &t->table;
 }
-
-static struct table_string *
-table_string_cast (const struct table *table)
-{
-  assert (table->klass == &table_string_class);
-  return UP_CAST (table, struct table_string, table);
-}
-
-static void
-table_string_destroy (struct table *ts_)
-{
-  struct table_string *ts = table_string_cast (ts_);
-  free (ts->string);
-  free (ts);
-}
-
-static void
-table_string_get_cell (const struct table *ts_, int x UNUSED, int y UNUSED,
-                       struct table_cell *cell)
-{
-  static const struct area_style styles[] = {
-#define S(H) [H] = { AREA_STYLE_INITIALIZER__, .cell_style.halign = H }
-    S(TABLE_HALIGN_LEFT),
-    S(TABLE_HALIGN_CENTER),
-    S(TABLE_HALIGN_RIGHT),
-    S(TABLE_HALIGN_MIXED),
-    S(TABLE_HALIGN_DECIMAL),
-  };
-  struct table_string *ts = table_string_cast (ts_);
-  cell->d[TABLE_HORZ][0] = 0;
-  cell->d[TABLE_HORZ][1] = 1;
-  cell->d[TABLE_VERT][0] = 0;
-  cell->d[TABLE_VERT][1] = 1;
-  cell->options = 0;
-  cell->style = &styles[table_halign_interpret (ts->halign, false)];
-  cell->text = ts->string;
-  cell->n_footnotes = 0;
-  cell->destructor = NULL;
-}
-
-
-static int
-table_string_get_rule (const struct table *ts UNUSED,
-                       enum table_axis axis UNUSED, int x UNUSED, int y UNUSED,
-                       struct cell_color *color UNUSED)
-{
-  return TAL_0;
-}
-
-static const struct table_class table_string_class =
-  {
-    table_string_destroy,
-    table_string_get_cell,
-    table_string_get_rule,
-  };
 
 const char *
 table_halign_to_string (enum table_halign halign)

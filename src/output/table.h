@@ -266,6 +266,6 @@ void table_set_hb (struct table *, int hb);
 /* Table classes. */
 
 /* Simple kinds of tables. */
-struct table *table_from_string (enum table_halign, const char *);
+struct table *table_from_string (const char *);
 
 #endif /* output/table.h */
