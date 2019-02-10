@@ -401,7 +401,7 @@ read_variable_record (struct sfm_reader *r)
   char name[9];
 
   printf ("%08llx: variable record #%d\n",
-          (long long int) ftello (r->file), r->n_variable_records++);
+          (long long int) ftello (r->file), ++r->n_variable_records);
 
   width = read_int (r);
   has_variable_label = read_int (r);

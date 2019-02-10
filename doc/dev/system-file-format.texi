@@ -316,10 +316,10 @@ so readers should take care to parse dummy variable records in the
 same way as other variable records.
 
 @anchor{Dictionary Index}
-The @dfn{dictionary index} of a variable is its offset in the set of
+The @dfn{dictionary index} of a variable is a 1-based offset in the set of
 variable records, including dummy variable records for long string
-variables.  The first variable record has a dictionary index of 0, the
-second has a dictionary index of 1, and so on.
+variables.  The first variable record has a dictionary index of 1, the
+second has a dictionary index of 2, and so on.
 
 The system file format does not directly support string variables
 wider than 255 bytes.  Such very long string variables are represented
@@ -600,7 +600,7 @@ Number of variables that the associated value labels from the value
 label record are to be applied.
 
 @item int32 vars[];
-A list of dictionary indexes of variables to which to apply the value
+A list of 1-based dictionary indexes of variables to which to apply the value
 labels (@pxref{Dictionary Index}).  There are @code{var_count}
 elements.
 
