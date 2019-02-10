@@ -1009,8 +1009,8 @@ fmt_date_template (enum fmt_type type, int width)
       break;
 
     case FMT_TIME:
-      s1 = "H:MM";
-      s2 = "H:MM:SS";
+      s1 = "HH:MM";
+      s2 = "HH:MM:SS";
       break;
 
     case FMT_DTIME:

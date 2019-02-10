@@ -189,9 +189,9 @@ timetz_zone,22,,Scale,Input,8,Right,F8.2,F8.2,
 
 Table: Data List
 bool,bytea,char,int8,int2,int4,numeric,text,oid,float4,float8,money,pbchar,varchar,date,time,timestamp,timestamptz,interval,interval_months,timetz,timetz_zone
-.00,30,a,.00,.00,.00,-2.560980E+002,this-long-text,.00,.00,.00,$.01,a,A,01-JAN-2000,0:00:00,08-JAN-1999 04:05:06,08-JAN-1999 12:05:06,0 00:01:00,0,10:09:00,4.00
+.00,30,a,.00,.00,.00,-2.560980E+002,this-long-text,.00,.00,.00,$.01,a,A,01-JAN-2000,00:00:00,08-JAN-1999 04:05:06,08-JAN-1999 12:05:06,0 00:01:00,0,10:09:00,4.00
 .  ,,,.  ,.  ,.  ,.          ,,.  ,.  ,.  ,.  ,,,.,.,.,.,.,.,.,.  @&t@
-1.00,31,b,1.00,1.00,1.00,6.553500E+004,that-long-text,.00,1.00,1.00,$1.23,b,B,10-JAN-1963,1:05:02,10-JAN-1963 23:58:00,10-JAN-1963 22:58:00,12 01:03:04,25,1:05:02,-7.00
+1.00,31,b,1.00,1.00,1.00,6.553500E+004,that-long-text,.00,1.00,1.00,$1.23,b,B,10-JAN-1963,01:05:02,10-JAN-1963 23:58:00,10-JAN-1963 22:58:00,12 01:03:04,25,01:05:02,-7.00
 ])
 
 dnl Test query with empty result set.
