@@ -481,7 +481,6 @@ SET
 (output driver options)
         /HEADERS=@{NO,YES,BLANK@}
         /LENGTH=@{NONE,@var{n_lines}@}
-        /MORE=@{ON,OFF@}
         /WIDTH=@{NARROW,WIDTH,@var{n_characters}@}
         /TNUMBERS=@{VALUES,LABELS,BOTH@}
         /TVARS=@{NAMES,LABELS,BOTH@}
@@ -780,7 +779,6 @@ subcommands are
 @table @asis
 @item HEADERS
 @itemx LENGTH
-@itemx MORE
 @itemx WIDTH
 @itemx TNUMBERS
 The @subcmd{TNUMBERS} option sets the way in which values are displayed in output tables.
@@ -805,7 +803,6 @@ If @subcmd{TVARS} is set to @subcmd{BOTH}, then variables will be displayed with
 
 @cindex headers
 @cindex length
-@cindex more
 @cindex pager 
 @cindex width
 @cindex tnumbers
