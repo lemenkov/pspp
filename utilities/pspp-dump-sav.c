@@ -236,6 +236,8 @@ main (int argc, char *argv[])
       else if (r.compression == COMP_ZLIB)
         read_zlib_compressed_data (&r);
 
+      free (r.var_widths);
+
       fclose (r.file);
     }
 
@@ -1018,6 +1020,8 @@ read_character_encoding (struct sfm_reader *r, size_t size, size_t count)
   read_string (r, encoding, count + 1);
 
   printf ("%08llx: Character Encoding: %s\n", posn, encoding);
+
+  free (encoding);
 }
 
 static void
