@@ -118,11 +118,12 @@ DOCUMENTS}.  They can be removed from the active dataset with @cmd{DROP
 DOCUMENTS}.
 
 Specify the @var{documentary text} following the @subcmd{DOCUMENT} keyword.  
-It is interpreted literally --- any quotes or other punctuation marks 
+It is interpreted literally---any quotes or other punctuation marks
 will be included in the file.
-You can extend the documentary text over as many lines as necessary.  
+You can extend the documentary text over as many lines as necessary,
+including blank lines to separate paragraphs.
 Lines are truncated at 80 bytes.  Don't forget to terminate
-the command with a dot or a blank line. @xref{ADD DOCUMENT}.
+the command with a dot at the end of a line. @xref{ADD DOCUMENT}.
 
 @node DISPLAY DOCUMENTS
 @section DISPLAY DOCUMENTS
