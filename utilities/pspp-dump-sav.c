@@ -1403,7 +1403,7 @@ open_text_record (struct sfm_reader *r, size_t size, size_t count)
   size_t n_bytes = size * count;
   char *buffer = xmalloc (n_bytes + 1);
   read_bytes (r, buffer, n_bytes);
-  buffer[size] = '\0';
+  buffer[n_bytes] = '\0';
   text->reader = r;
   text->buffer = buffer;
   text->size = n_bytes;
