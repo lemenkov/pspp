@@ -89,6 +89,8 @@ static void report_encodings (const struct file_handle *, struct pool *,
                               char **titles, bool *ids,
                               char **strings, size_t n_strings);
 
+static char *get_documents_as_string (const struct dictionary *);
+
 static void
 add_row (struct pivot_table *table, const char *attribute,
          struct pivot_value *value)
@@ -238,6 +240,10 @@ cmd_sysfile_info (struct lexer *lexer, struct dataset *ds UNUSED)
 
   add_row (table, N_("Encoding"),
            pivot_value_new_user_text (dict_get_encoding (d), -1));
+
+  if (dict_get_document_line_cnt (d) > 0)
+    add_row (table, N_("Documents"),
+             pivot_value_new_user_text_nocopy (get_documents_as_string (d)));
 
   pivot_table_submit (table);
 
@@ -398,6 +404,20 @@ display_macros (void)
   msg (SW, _("Macros not supported."));
 }
 
+static char *
+get_documents_as_string (const struct dictionary *dict)
+{
+  const struct string_array *documents = dict_get_documents (dict);
+  struct string s = DS_EMPTY_INITIALIZER;
+  for (size_t i = 0; i < documents->n; i++)
+    {
+      if (i)
+        ds_put_byte (&s, '\n');
+      ds_put_cstr (&s, documents->strings[i]);
+    }
+  return ds_steal_cstr (&s);
+}
+
 static void
 display_documents (const struct dictionary *dict)
 {
@@ -406,20 +426,12 @@ display_documents (const struct dictionary *dict)
     table, PIVOT_AXIS_COLUMN, N_("Documents"), N_("Document"));
   d->hide_all_labels = true;
 
-  const struct string_array *documents = dict_get_documents (dict);
-  if (!documents->n)
+  if (!dict_get_documents (dict)->n)
     pivot_table_put1 (table, 0, pivot_value_new_text (N_("(none)")));
   else
     {
-      struct string s = DS_EMPTY_INITIALIZER;
-      for (size_t i = 0; i < documents->n; i++)
-        {
-          if (i)
-            ds_put_byte (&s, '\n');
-          ds_put_cstr (&s, documents->strings[i]);
-        }
-      pivot_table_put1 (table, 0,
-                        pivot_value_new_user_text_nocopy (ds_steal_cstr (&s)));
+      char *docs = get_documents_as_string (dict);
+      pivot_table_put1 (table, 0, pivot_value_new_user_text_nocopy (docs));
     }
 
   pivot_table_submit (table);

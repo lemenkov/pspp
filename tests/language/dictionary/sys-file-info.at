@@ -24,6 +24,7 @@ BEGIN DATA
 2 two
 3 three
 END DATA.
+DOCUMENT A document.
 SAVE OUTFILE='pro.sav'.
 
 sysfile info file='pro.sav'.
@@ -34,7 +35,8 @@ AT_CHECK(
        -e '/^Endian,/d' \
        -e '/^Integer Format,/d' \
        -e '/^Real Format,/d' \
-       -e '/^Encoding,/d' pspp.csv],
+       -e '/^Encoding,/d' \
+       -e 's/(Entered.*)/(Entered <date>)/' pspp.csv],
   [0], [dnl
 Table: Reading free-form data from INLINE.
 Variable,Format
@@ -49,6 +51,8 @@ Cases,3
 Type,SPSS System File
 Weight,Not weighted
 Compression,SAV
+Documents,"DOCUMENT A document.
+   (Entered <date>)"
 
 Table: Variables
 Name,Position,Label,Measurement Level,Role,Width,Alignment,Print Format,Write Format,Missing Values
