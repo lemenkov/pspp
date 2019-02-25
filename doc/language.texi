@@ -1182,7 +1182,7 @@ controls the character accepted and displayed as the decimal point
 For output, the date and time formats use the delimiters indicated in
 the table.  For input, date components may be separated by spaces or by
 one of the characters @samp{-}, @samp{/}, @samp{.}, or @samp{,}, and
-time components may be separated by spaces, @samp{:}, or @samp{.}.  On
+time components may be separated by spaces or @samp{:}.  On
 input, the @samp{Q} separating quarter from year and the @samp{WK}
 separating week from year may be uppercase or lowercase, and the spaces
 around them are optional.
