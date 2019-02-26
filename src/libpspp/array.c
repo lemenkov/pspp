@@ -1027,3 +1027,18 @@ is_heap (const void *array, size_t count, size_t size,
   return true;
 }
 
+/* Reverses the order of ARRAY, which contains COUNT elements of SIZE bytes
+   each. */
+void
+reverse_array (void *array_, size_t count, size_t size)
+{
+  uint8_t *array = array_;
+  uint8_t *first = array;
+  uint8_t *last = array + (count - 1) * size;
+  for (size_t i = 0; i < count / 2; i++)
+    {
+      swap (first, last, size);
+      first += size;
+      last -= size;
+    }
+}

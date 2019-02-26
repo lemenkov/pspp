@@ -247,5 +247,8 @@ void sort_heap (void *array, size_t count, size_t size,
 bool is_heap (const void *array, size_t count, size_t size,
              algo_compare_func *compare, const void *aux);
 
+/* Reverses the order of ARRAY, which contains COUNT elements of SIZE bytes
+   each. */
+void reverse_array (void *array, size_t count, size_t size);
 
 #endif /* algorithm.h */
