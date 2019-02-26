@@ -42,8 +42,8 @@
    compare_variables_given_ordering(). */
 struct ordering
   {
-    int forward;		/* 1=FORWARD, 0=BACKWARD. */
-    int positional;		/* 1=POSITIONAL, 0=ALPHA. */
+    bool forward;		/* true=FORWARD, false=BACKWARD. */
+    bool positional;		/* true=POSITIONAL, false=ALPHA. */
   };
 
 /* Increasing order of variable index. */
@@ -57,16 +57,16 @@ struct var_modification
   {
     /* New variable ordering. */
     struct variable **reorder_vars;
-    size_t reorder_cnt;
+    size_t n_reorder;
 
     /* DROP/KEEP information. */
     struct variable **drop_vars;
-    size_t drop_cnt;
+    size_t n_drop;
 
     /* New variable names. */
     struct variable **rename_vars;
     char **new_names;
-    size_t rename_cnt;
+    size_t n_rename;
   };
 
 static bool rearrange_dict (struct dictionary *d,
@@ -76,29 +76,29 @@ static bool rearrange_dict (struct dictionary *d,
 int
 cmd_modify_vars (struct lexer *lexer, struct dataset *ds)
 {
-  /* Bits indicated whether we've already encountered a subcommand of
-     this type. */
-  unsigned already_encountered = 0;
+  if (proc_make_temporary_transformations_permanent (ds))
+    msg (SE, _("%s may not be used after %s.  "
+               "Temporary transformations will be made permanent."),
+         "MODIFY VARS", "TEMPORARY");
 
-  /* What we are going to do to the active dataset. */
-  struct var_modification vm;
+  /* Bits indicated whether we've already encountered a subcommand of this
+     type. */
+  unsigned int already_encountered = 0;
 
   /* Return code. */
   int ret_code = CMD_CASCADING_FAILURE;
 
-  size_t i;
-
-  if (proc_make_temporary_transformations_permanent (ds))
-    msg (SE, _("%s may not be used after %s.  "
-               "Temporary transformations will be made permanent."), "MODIFY VARS", "TEMPORARY");
-
-  vm.reorder_vars = NULL;
-  vm.reorder_cnt = 0;
-  vm.rename_vars = NULL;
-  vm.new_names = NULL;
-  vm.rename_cnt = 0;
-  vm.drop_vars = NULL;
-  vm.drop_cnt = 0;
+  /* What we are going to do to the active dataset. */
+  struct var_modification vm =
+    {
+      .reorder_vars = NULL,
+      .n_reorder = 0,
+      .rename_vars = NULL,
+      .new_names = NULL,
+      .n_rename = 0,
+      .drop_vars = NULL,
+      .n_drop = 0,
+    };
 
   /* Parse each subcommand. */
   lex_match (lexer, T_SLASH);
@@ -106,9 +106,6 @@ cmd_modify_vars (struct lexer *lexer, struct dataset *ds)
     {
       if (lex_match_id (lexer, "REORDER"))
 	{
-	  struct variable **v = NULL;
-	  size_t nv = 0;
-
 	  if (already_encountered & 1)
 	    {
               lex_sbc_only_once ("REORDER");
@@ -116,21 +113,33 @@ cmd_modify_vars (struct lexer *lexer, struct dataset *ds)
 	    }
 	  already_encountered |= 1;
 
+	  struct variable **v = NULL;
+	  size_t nv = 0;
+
 	  lex_match (lexer, T_EQUALS);
 	  do
 	    {
               struct ordering ordering;
 	      size_t prev_nv = nv;
 
-	      ordering.forward = ordering.positional = 1;
-	      if (lex_match_id (lexer, "FORWARD"));
-	      else if (lex_match_id (lexer, "BACKWARD"))
-		ordering.forward = 0;
-	      if (lex_match_id (lexer, "POSITIONAL"));
-	      else if (lex_match_id (lexer, "ALPHA"))
-		ordering.positional = 0;
+	      ordering.forward = ordering.positional = true;
+              for (;;)
+                {
+                  if (lex_match_id (lexer, "FORWARD"))
+                    ordering.forward = true;
+                  else if (lex_match_id (lexer, "BACKWARD"))
+                    ordering.forward = false;
+                  else if (lex_match_id (lexer, "POSITIONAL"))
+                    ordering.positional = true;
+                  else if (lex_match_id (lexer, "ALPHA"))
+                    ordering.positional = false;
+                  else
+                    break;
+                }
 
-	      if (lex_match (lexer, T_ALL) || lex_token (lexer) == T_SLASH || lex_token (lexer) == T_ENDCMD)
+	      if (lex_match (lexer, T_ALL)
+                  || lex_token (lexer) == T_SLASH
+                  || lex_token (lexer) == T_ENDCMD)
 		{
 		  if (prev_nv != 0)
 		    {
@@ -138,7 +147,8 @@ cmd_modify_vars (struct lexer *lexer, struct dataset *ds)
 			   "of variables."));
 		      goto done;
 		    }
-		  dict_get_vars_mutable (dataset_dict (ds), &v, &nv, DC_SYSTEM);
+		  dict_get_vars_mutable (dataset_dict (ds), &v, &nv,
+                                         DC_SYSTEM);
 		}
 	      else
 		{
@@ -168,7 +178,7 @@ cmd_modify_vars (struct lexer *lexer, struct dataset *ds)
                  && lex_token (lexer) != T_ENDCMD);
 
 	  vm.reorder_vars = v;
-          vm.reorder_cnt = nv;
+          vm.n_reorder = nv;
 	}
       else if (lex_match_id (lexer, "RENAME"))
 	{
@@ -182,8 +192,8 @@ cmd_modify_vars (struct lexer *lexer, struct dataset *ds)
 	  lex_match (lexer, T_EQUALS);
 	  do
 	    {
-	      size_t prev_nv_1 = vm.rename_cnt;
-	      size_t prev_nv_2 = vm.rename_cnt;
+	      size_t prev_nv_1 = vm.n_rename;
+	      size_t prev_nv_2 = vm.n_rename;
 
 	      if (!lex_match (lexer, T_LPAREN))
 		{
@@ -191,7 +201,7 @@ cmd_modify_vars (struct lexer *lexer, struct dataset *ds)
 		  goto done;
 		}
 	      if (!parse_variables (lexer, dataset_dict (ds),
-				    &vm.rename_vars, &vm.rename_cnt,
+				    &vm.rename_vars, &vm.n_rename,
 				    PV_APPEND | PV_NO_DUPLICATE))
 		goto done;
 	      if (!lex_match (lexer, T_EQUALS))
@@ -199,15 +209,16 @@ cmd_modify_vars (struct lexer *lexer, struct dataset *ds)
                   lex_error_expecting (lexer, "`='", NULL_SENTINEL);
 		  goto done;
 		}
+
 	      if (!parse_DATA_LIST_vars (lexer, dataset_dict (ds),
                                          &vm.new_names, &prev_nv_1, PV_APPEND))
 		goto done;
-	      if (prev_nv_1 != vm.rename_cnt)
+	      if (prev_nv_1 != vm.n_rename)
 		{
 		  msg (SE, _("Differing number of variables in old name list "
                              "(%zu) and in new name list (%zu)."),
-		       vm.rename_cnt - prev_nv_2, prev_nv_1 - prev_nv_2);
-		  for (i = 0; i < prev_nv_1; i++)
+		       vm.n_rename - prev_nv_2, prev_nv_1 - prev_nv_2);
+		  for (size_t i = 0; i < prev_nv_1; i++)
 		    free (vm.new_names[i]);
 		  free (vm.new_names);
 		  vm.new_names = NULL;
@@ -224,52 +235,56 @@ cmd_modify_vars (struct lexer *lexer, struct dataset *ds)
 	}
       else if (lex_match_id (lexer, "KEEP"))
 	{
-	  struct variable **keep_vars, **all_vars, **drop_vars;
-	  size_t keep_cnt, all_cnt, drop_cnt;
-
 	  if (already_encountered & 4)
 	    {
-	      msg (SE, _("%s subcommand may be given at most once.  It may "
-			 "not be given in conjunction with the %s subcommand."),
+	      msg (SE,
+                   _("%s subcommand may be given at most once.  It may "
+                     "not be given in conjunction with the %s subcommand."),
 		   "KEEP", "DROP");
 	      goto done;
 	    }
 	  already_encountered |= 4;
 
+	  struct variable **keep_vars, **drop_vars;
+	  size_t n_keep, n_drop;
 	  lex_match (lexer, T_EQUALS);
-	  if (!parse_variables (lexer, dataset_dict (ds), &keep_vars, &keep_cnt, PV_NONE))
+	  if (!parse_variables (lexer, dataset_dict (ds),
+                                &keep_vars, &n_keep, PV_NONE))
 	    goto done;
 
 	  /* Transform the list of variables to keep into a list of
 	     variables to drop.  First sort the keep list, then figure
 	     out which variables are missing. */
-	  sort (keep_vars, keep_cnt, sizeof *keep_vars,
-                compare_variables_given_ordering, &forward_positional_ordering);
+	  sort (keep_vars, n_keep, sizeof *keep_vars,
+                compare_variables_given_ordering,
+                &forward_positional_ordering);
 
-          dict_get_vars_mutable (dataset_dict (ds), &all_vars, &all_cnt, 0);
-          assert (all_cnt >= keep_cnt);
+          struct variable **all_vars;
+          size_t n_all;
+          dict_get_vars_mutable (dataset_dict (ds), &all_vars, &n_all, 0);
+          assert (n_all >= n_keep);
 
-          drop_cnt = all_cnt - keep_cnt;
-          drop_vars = xnmalloc (drop_cnt, sizeof *keep_vars);
-          if (set_difference (all_vars, all_cnt,
-                              keep_vars, keep_cnt,
+          n_drop = n_all - n_keep;
+          drop_vars = xnmalloc (n_drop, sizeof *keep_vars);
+          if (set_difference (all_vars, n_all,
+                              keep_vars, n_keep,
                               sizeof *all_vars,
                               drop_vars,
                               compare_variables_given_ordering,
                               &forward_positional_ordering)
-              != drop_cnt)
+              != n_drop)
             NOT_REACHED ();
 
           free (keep_vars);
           free (all_vars);
 
           vm.drop_vars = drop_vars;
-          vm.drop_cnt = drop_cnt;
+          vm.n_drop = n_drop;
 	}
       else if (lex_match_id (lexer, "DROP"))
 	{
 	  struct variable **drop_vars;
-	  size_t drop_cnt;
+	  size_t n_drop;
 
 	  if (already_encountered & 4)
 	    {
@@ -283,10 +298,11 @@ cmd_modify_vars (struct lexer *lexer, struct dataset *ds)
 	  already_encountered |= 4;
 
 	  lex_match (lexer, T_EQUALS);
-	  if (!parse_variables (lexer, dataset_dict (ds), &drop_vars, &drop_cnt, PV_NONE))
+	  if (!parse_variables (lexer, dataset_dict (ds),
+                                &drop_vars, &n_drop, PV_NONE))
 	    goto done;
           vm.drop_vars = drop_vars;
-          vm.drop_cnt = drop_cnt;
+          vm.n_drop = n_drop;
 	}
       else if (lex_match_id (lexer, "MAP"))
 	{
@@ -301,7 +317,8 @@ cmd_modify_vars (struct lexer *lexer, struct dataset *ds)
       else
 	{
 	  if (lex_token (lexer) == T_ID)
-	    msg (SE, _("Unrecognized subcommand name `%s'."), lex_tokcstr (lexer));
+	    msg (SE, _("Unrecognized subcommand name `%s'."),
+                 lex_tokcstr (lexer));
 	  else
 	    msg (SE, _("Subcommand name expected."));
 	  goto done;
@@ -332,15 +349,15 @@ cmd_modify_vars (struct lexer *lexer, struct dataset *ds)
 done:
   free (vm.reorder_vars);
   free (vm.rename_vars);
-  for (i = 0; i < vm.rename_cnt; i++)
+  for (size_t i = 0; i < vm.n_rename; i++)
     free (vm.new_names[i]);
   free (vm.new_names);
   free (vm.drop_vars);
   return ret_code;
 }
 
-/* Compares A and B according to the settings in
-   ORDERING, returning a strcmp()-type result. */
+/* Compares A and B according to the settings in ORDERING, returning a
+   strcmp()-type result. */
 static int
 compare_variables_given_ordering (const void *a_, const void *b_,
                                   const void *ordering_)
@@ -372,8 +389,8 @@ struct var_renaming
     const char *new_name;
   };
 
-/* A algo_compare_func that compares new_name members in struct
-   var_renaming structures A and B. */
+/* A algo_compare_func that compares new_name members in struct var_renaming
+   structures A and B. */
 static int
 compare_var_renaming_by_new_name (const void *a_, const void *b_,
                                   const void *aux UNUSED)
@@ -384,10 +401,10 @@ compare_var_renaming_by_new_name (const void *a_, const void *b_,
   return utf8_strcasecmp (a->new_name, b->new_name);
 }
 
-/* Returns true if performing VM on dictionary D would not cause
-   problems such as duplicate variable names.  Returns false
-   otherwise, and issues an error message. */
-static int
+/* Returns true if performing VM on dictionary D would not cause problems such
+   as duplicate variable names.  Returns false otherwise, and issues an error
+   message. */
+static bool
 validate_var_modification (const struct dictionary *d,
                            const struct var_modification *vm)
 {
@@ -395,54 +412,47 @@ validate_var_modification (const struct dictionary *d,
      it.  Variable renaming can cause duplicate names, but
      dropping variables can eliminate them, so we simulate both
      of those. */
-  struct variable **all_vars;
-  struct variable **keep_vars;
-  struct variable **drop_vars;
-  size_t keep_cnt, drop_cnt;
-  size_t all_cnt;
-
-  struct var_renaming *var_renaming;
-  int valid;
-  size_t i;
 
   /* All variables, in index order. */
-  dict_get_vars_mutable (d, &all_vars, &all_cnt, 0);
+  struct variable **all_vars;
+  size_t n_all;
+  dict_get_vars_mutable (d, &all_vars, &n_all, 0);
 
   /* Drop variables, in index order. */
-  drop_cnt = vm->drop_cnt;
-  drop_vars = xnmalloc (drop_cnt, sizeof *drop_vars);
-  memcpy (drop_vars, vm->drop_vars, drop_cnt * sizeof *drop_vars);
-  sort (drop_vars, drop_cnt, sizeof *drop_vars,
+  size_t n_drop = vm->n_drop;
+  struct variable **drop_vars = xnmalloc (n_drop, sizeof *drop_vars);
+  memcpy (drop_vars, vm->drop_vars, n_drop * sizeof *drop_vars);
+  sort (drop_vars, n_drop, sizeof *drop_vars,
         compare_variables_given_ordering, &forward_positional_ordering);
 
   /* Keep variables, in index order. */
-  assert (all_cnt >= drop_cnt);
-  keep_cnt = all_cnt - drop_cnt;
-  keep_vars = xnmalloc (keep_cnt, sizeof *keep_vars);
-  if (set_difference (all_vars, all_cnt,
-                      drop_vars, drop_cnt,
+  assert (n_all >= n_drop);
+  size_t n_keep = n_all - n_drop;
+  struct variable **keep_vars = xnmalloc (n_keep, sizeof *keep_vars);
+  if (set_difference (all_vars, n_all,
+                      drop_vars, n_drop,
                       sizeof *all_vars,
                       keep_vars,
                       compare_variables_given_ordering,
-                      &forward_positional_ordering) != keep_cnt)
+                      &forward_positional_ordering) != n_keep)
     NOT_REACHED ();
 
   /* Copy variables into var_renaming array. */
-  var_renaming = xnmalloc (keep_cnt, sizeof *var_renaming);
-  for (i = 0; i < keep_cnt; i++)
+  struct var_renaming *var_renaming = xnmalloc (n_keep, sizeof *var_renaming);
+  for (size_t i = 0; i < n_keep; i++)
     {
       var_renaming[i].var = keep_vars[i];
       var_renaming[i].new_name = var_get_name (keep_vars[i]);
     }
 
   /* Rename variables in var_renaming array. */
-  for (i = 0; i < vm->rename_cnt; i++)
+  for (size_t i = 0; i < vm->n_rename; i++)
     {
       struct variable *const *kv;
       struct var_renaming *vr;
 
       /* Get the var_renaming element. */
-      kv = binary_search (keep_vars, keep_cnt, sizeof *keep_vars,
+      kv = binary_search (keep_vars, n_keep, sizeof *keep_vars,
                           &vm->rename_vars[i],
                           compare_variables_given_ordering,
                           &forward_positional_ordering);
@@ -453,12 +463,11 @@ validate_var_modification (const struct dictionary *d,
       vr->new_name = vm->new_names[i];
     }
 
-  /* Sort var_renaming array by new names and check for
-     duplicates. */
-  sort (var_renaming, keep_cnt, sizeof *var_renaming,
+  /* Sort var_renaming array by new names and check for duplicates. */
+  sort (var_renaming, n_keep, sizeof *var_renaming,
         compare_var_renaming_by_new_name, NULL);
-  valid = adjacent_find_equal (var_renaming, keep_cnt, sizeof *var_renaming,
-                               compare_var_renaming_by_new_name, NULL) == NULL;
+  bool ok = !adjacent_find_equal (var_renaming, n_keep, sizeof *var_renaming,
+                                  compare_var_renaming_by_new_name, NULL);
 
   /* Clean up. */
   free (all_vars);
@@ -466,63 +475,53 @@ validate_var_modification (const struct dictionary *d,
   free (drop_vars);
   free (var_renaming);
 
-  return valid;
+  return ok;
 }
 
-/* Reoders, removes, and renames variables in dictionary D
-   according to VM.  Returns true if successful, false if there
-   would have been duplicate variable names if the modifications
-   had been carried out.  In the latter case, the dictionary is
-   not modified. */
+/* Reorders, removes, and renames variables in dictionary D according to VM.
+   Returns true if successful, false if there would have been duplicate
+   variable names if the modifications had been carried out.  In the latter
+   case, the dictionary is not modified. */
 static bool
 rearrange_dict (struct dictionary *d, const struct var_modification *vm)
 {
-  char **rename_old_names;
-
-  struct variable **rename_vars;
-  char **rename_new_names;
-  size_t rename_cnt;
-
-  size_t i;
-
-  /* Check whether the modifications will cause duplicate
-     names. */
+  /* Check whether the modifications will cause duplicate names. */
   if (!validate_var_modification (d, vm))
     return false;
 
-  /* Record the old names of variables to rename.  After
-     variables are deleted, we can't depend on the variables to
-     still exist, but we can still look them up by name. */
-  rename_old_names = xnmalloc (vm->rename_cnt, sizeof *rename_old_names);
-  for (i = 0; i < vm->rename_cnt; i++)
+  /* Record the old names of variables to rename.  After variables are deleted,
+     we can't depend on the variables to still exist, but we can still look
+     them up by name. */
+  char **rename_old_names = xnmalloc (vm->n_rename, sizeof *rename_old_names);
+  for (size_t i = 0; i < vm->n_rename; i++)
     rename_old_names[i] = xstrdup (var_get_name (vm->rename_vars[i]));
 
   /* Reorder and delete variables. */
-  dict_reorder_vars (d, vm->reorder_vars, vm->reorder_cnt);
-  dict_delete_vars (d, vm->drop_vars, vm->drop_cnt);
+  dict_reorder_vars (d, vm->reorder_vars, vm->n_reorder);
+  dict_delete_vars (d, vm->drop_vars, vm->n_drop);
 
   /* Compose lists of variables to rename and their new names. */
-  rename_vars = xnmalloc (vm->rename_cnt, sizeof *rename_vars);
-  rename_new_names = xnmalloc (vm->rename_cnt, sizeof *rename_new_names);
-  rename_cnt = 0;
-  for (i = 0; i < vm->rename_cnt; i++)
+  struct variable **rename_vars = xnmalloc (vm->n_rename, sizeof *rename_vars);
+  char **rename_new_names = xnmalloc (vm->n_rename, sizeof *rename_new_names);
+  size_t n_rename = 0;
+  for (size_t i = 0; i < vm->n_rename; i++)
     {
       struct variable *var = dict_lookup_var (d, rename_old_names[i]);
       if (var == NULL)
         continue;
 
-      rename_vars[rename_cnt] = var;
-      rename_new_names[rename_cnt] = vm->new_names[i];
-      rename_cnt++;
+      rename_vars[n_rename] = var;
+      rename_new_names[n_rename] = vm->new_names[i];
+      n_rename++;
     }
 
   /* Do renaming. */
-  if (dict_rename_vars (d, rename_vars, rename_new_names, rename_cnt,
+  if (dict_rename_vars (d, rename_vars, rename_new_names, n_rename,
                         NULL) == 0)
     NOT_REACHED ();
 
   /* Clean up. */
-  for (i = 0; i < vm->rename_cnt; i++)
+  for (size_t i = 0; i < vm->n_rename; i++)
     free (rename_old_names[i]);
   free (rename_old_names);
   free (rename_vars);
