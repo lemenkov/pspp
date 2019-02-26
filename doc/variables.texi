@@ -275,8 +275,10 @@ same number of old and new variable names.  Each old variable is renamed to
 the corresponding new variable name.  Multiple parenthesized groups of
 variables may be specified.
 
-The @subcmd{DROP} subcommand deletes a specified list of variables from the
-active dataset.
+The @subcmd{DROP} subcommand deletes a specified list of variables
+from the active dataset.  @cmd{MODIFY VARS} may not be used to delete
+all variables from the dictionary; use @cmd{NEW FILE} to do that
+(@pxref{NEW FILE}).
 
 The @subcmd{KEEP} subcommand keeps the specified list of variables in the active
 dataset.  Any unlisted variables are deleted from the active dataset.

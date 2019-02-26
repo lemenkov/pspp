@@ -171,8 +171,12 @@ cmd_modify_vars (struct lexer *lexer, struct dataset *ds)
 		      goto done;
 		    }
 		}
-	      sort (&v[prev_nv], nv - prev_nv, sizeof *v,
-                    compare_variables_given_ordering, &ordering);
+
+              if (!ordering.positional)
+                sort (&v[prev_nv], nv - prev_nv, sizeof *v,
+                      compare_variables_given_ordering, &ordering);
+              else if (!ordering.forward)
+                reverse_array(&v[prev_nv], nv - prev_nv, sizeof *v);
 	    }
 	  while (lex_token (lexer) != T_SLASH
                  && lex_token (lexer) != T_ENDCMD);
@@ -303,6 +307,14 @@ cmd_modify_vars (struct lexer *lexer, struct dataset *ds)
 	    goto done;
           vm.drop_vars = drop_vars;
           vm.n_drop = n_drop;
+
+          if (n_drop == dict_get_var_cnt (dataset_dict (ds)))
+            {
+              msg (SE, _("%s may not be used to delete all variables "
+                         "from the active dataset dictionary.  "
+                         "Use %s instead."), "MODIFY VARS", "NEW FILE");
+              goto done;
+            }
 	}
       else if (lex_match_id (lexer, "MAP"))
 	{
