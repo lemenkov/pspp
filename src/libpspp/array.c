@@ -163,19 +163,19 @@ count_if (const void *array, size_t count, size_t size,
   return true_cnt;
 }
 
-/* Byte-wise swap two items of size SIZE. */
-#define SWAP(a, b, size)                        \
-  do                                            \
-    {                                           \
-      register size_t __size = (size);          \
-      register char *__a = (a), *__b = (b);     \
-      do                                        \
-	{                                       \
-	  char __tmp = *__a;                    \
-	  *__a++ = *__b;                        \
-	  *__b++ = __tmp;                       \
-	} while (--__size > 0);                 \
-    } while (0)
+/* Byte-wise swap objects A and B, each SIZE bytes. */
+static void
+swap (void *a_, void *b_, size_t size)
+{
+  uint8_t *a = a_;
+  uint8_t *b = b_;
+  while (size-- > 0)
+    {
+      uint8_t tmp = *a;
+      *a++ = *b;
+      *b++ = tmp;
+    }
+}
 
 /* Makes the elements in ARRAY unique, by moving up duplicates,
    and returns the new number of elements in the array.  Sorted
@@ -264,7 +264,7 @@ partition (void *array, size_t count, size_t size,
       /* By swapping FIRST and LAST we extend the starting and
          ending sequences that pass and fail, respectively,
          PREDICATE. */
-      SWAP (first, last, size);
+      swap (first, last, size);
       first += size;
     }
 
@@ -670,13 +670,13 @@ sort (void *array, size_t count, size_t size,
 	  char *mid = lo + size * ((hi - lo) / size >> 1);
 
 	  if (compare (mid, lo, aux) < 0)
-	    SWAP (mid, lo, size);
+	    swap (mid, lo, size);
 	  if (compare (hi, mid, aux) < 0)
-	    SWAP (mid, hi, size);
+	    swap (mid, hi, size);
 	  else
 	    goto jump_over;
 	  if (compare (mid, lo, aux) < 0)
-	    SWAP (mid, lo, size);
+	    swap (mid, lo, size);
 	jump_over:;
 
 	  left_ptr  = lo + size;
@@ -695,7 +695,7 @@ sort (void *array, size_t count, size_t size,
 
 	      if (left_ptr < right_ptr)
 		{
-		  SWAP (left_ptr, right_ptr, size);
+		  swap (left_ptr, right_ptr, size);
 		  if (mid == left_ptr)
 		    mid = right_ptr;
 		  else if (mid == right_ptr)
@@ -765,7 +765,7 @@ sort (void *array, size_t count, size_t size,
         tmp_ptr = run_ptr;
 
     if (tmp_ptr != first)
-      SWAP (tmp_ptr, first, size);
+      swap (tmp_ptr, first, size);
 
     /* Insertion sort, running from left-hand-side up to right-hand-side.  */
 
@@ -909,7 +909,7 @@ push_heap (void *array, size_t count, size_t size,
       char *parent = first + (i / 2 - 1) * size;
       char *element = first + (i - 1) * size;
       if (compare (parent, element, aux) < 0)
-        SWAP (parent, element, size);
+        swap (parent, element, size);
       else
         break;
     }
@@ -947,7 +947,7 @@ heapify (void *array, size_t count, size_t size,
       if (largest == idx)
         break;
 
-      SWAP (first + size * (idx - 1), first + size * (largest - 1), size);
+      swap (first + size * (idx - 1), first + size * (largest - 1), size);
       idx = largest;
     }
 }
@@ -965,7 +965,7 @@ pop_heap (void *array, size_t count, size_t size,
   char *first = array;
 
   expensive_assert (is_heap (array, count, size, compare, aux));
-  SWAP (first, first + (count - 1) * size, size);
+  swap (first, first + (count - 1) * size, size);
   heapify (first, count - 1, size, 1, compare, aux);
   expensive_assert (count < 1 || is_heap (array, count - 1,
                                           size, compare, aux));
@@ -999,7 +999,7 @@ sort_heap (void *array, size_t count, size_t size,
   expensive_assert (is_heap (array, count, size, compare, aux));
   for (idx = count; idx >= 2; idx--)
     {
-      SWAP (first, first + (idx - 1) * size, size);
+      swap (first, first + (idx - 1) * size, size);
       heapify (array, idx - 1, size, 1, compare, aux);
     }
   expensive_assert (is_sorted (array, count, size, compare, aux));
