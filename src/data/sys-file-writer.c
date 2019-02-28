@@ -953,7 +953,6 @@ write_long_string_value_labels (struct sfm_writer *w,
   const char *encoding = dict_get_encoding (dict);
   size_t n_vars = dict_get_var_cnt (dict);
   size_t size, i;
-  off_t start UNUSED;
 
   /* Figure out the size in advance. */
   size = 0;
@@ -985,7 +984,6 @@ write_long_string_value_labels (struct sfm_writer *w,
   write_int (w, 1);             /* Data item (byte) size. */
   write_int (w, size);          /* Number of data items. */
 
-  start = ftello (w->file);
   for (i = 0; i < n_vars; i++)
     {
       struct variable *var = dict_get_var (dict, i);
@@ -1022,7 +1020,6 @@ write_long_string_value_labels (struct sfm_writer *w,
           free (label);
         }
     }
-  assert (ftello (w->file) == start + size);
 }
 
 static void
@@ -1032,7 +1029,6 @@ write_long_string_missing_values (struct sfm_writer *w,
   const char *encoding = dict_get_encoding (dict);
   size_t n_vars = dict_get_var_cnt (dict);
   size_t size, i;
-  off_t start UNUSED;
 
   /* Figure out the size in advance. */
   size = 0;
@@ -1058,7 +1054,6 @@ write_long_string_missing_values (struct sfm_writer *w,
   write_int (w, 1);             /* Data item (byte) size. */
   write_int (w, size);          /* Number of data items. */
 
-  start = ftello (w->file);
   for (i = 0; i < n_vars; i++)
     {
       struct variable *var = dict_get_var (dict, i);
@@ -1087,7 +1082,6 @@ write_long_string_missing_values (struct sfm_writer *w,
           write_bytes (w, value_str (value, width), 8);
         }
     }
-  assert (ftello (w->file) == start + size);
 }
 
 static void
