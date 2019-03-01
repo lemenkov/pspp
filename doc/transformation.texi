@@ -313,7 +313,8 @@ When @cmd{COMPUTE} is specified following @cmd{TEMPORARY}
 @vindex COUNT
 
 @display
-COUNT @var{var_name} = @var{var}@dots{} (@var{value}@dots{}).
+COUNT @var{var_name} = @var{var}@dots{} (@var{value}@dots{})
+    [/@var{var_name} = @var{var}@dots{} (@var{value}@dots{})]@dots{}
 
 Each @var{value} takes one of the following forms:
         @var{number}
