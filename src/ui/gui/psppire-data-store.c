@@ -183,6 +183,8 @@ psppire_data_store_value_to_string (gpointer unused, PsppireDataStore *store, gi
   g_return_val_if_fail (variable, g_strdup ("???"));
 
   GVariant *vrnt = g_value_get_variant (v);
+  g_return_val_if_fail (vrnt, g_strdup ("???"));
+
   union value val;
   value_variant_get (&val, vrnt);
 
@@ -231,11 +233,13 @@ __get_value (GtkTreeModel *tree_model,
   if (NULL == variable)
     return;
 
-  g_value_init (value, G_TYPE_VARIANT);
-
   gint row = GPOINTER_TO_INT (iter->user_data);
 
   struct ccase *cc = datasheet_get_row (store->datasheet, row);
+
+  g_return_if_fail (cc);
+
+  g_value_init (value, G_TYPE_VARIANT);
 
   const union value *val = case_data_idx (cc, var_get_case_index (variable));
 
