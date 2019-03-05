@@ -2380,3 +2380,80 @@ Table: Coefficients (Mean time to repair (hours) )
 Mean time between failures (months) ,3.11,.09,.99,33.39,.000
 ])
 AT_CLEANUP
+
+
+AT_SETUP([LINEAR REGRESSION collinearity])
+AT_DATA([regression-collin.sps], [dnl
+SET FORMAT=F10.3.
+
+data list notable  list /competence_x1 motivation_x2 performance_y.
+begin data
+32   34   36
+35   37   39
+38   45   49
+31   41   41
+36   40   38
+32   38   36
+33   39   37
+31   40   41
+30   37   40
+35   37   43
+31   34   36
+34   32   35
+31   42   34
+25   36   40
+35   42   40
+36   41   44
+30   38   32
+34   41   41
+34   41   44
+22   27   26
+27   26   33
+30   30   35
+30   35   37
+37   39   44
+29   35   36
+31   35   29
+31   45   41
+29   30   32
+29   35   36
+31   37   37
+36   45   42
+32   44   39
+27   26   31
+33   39   35
+20   25   28
+30   36   39
+27   37   39
+25   39   36
+32   38   38
+32   38   35
+end data.
+
+regression /variables=competence_x1 motivation_x2
+	/statistics=defaults collin
+	/dependent=performance_y
+	.
+])
+
+
+AT_CHECK([pspp -O format=csv regression-collin.sps], [0], [dnl
+Table: Model Summary (performance_y)
+R,R Square,Adjusted R Square,Std. Error of the Estimate
+.785,.616,.595,2.980
+
+Table: ANOVA (performance_y)
+,Sum of Squares,df,Mean Square,F,Sig.
+Regression,526.494,2,263.247,29.641,.000
+Residual,328.606,37,8.881,,
+Total,855.100,39,,,
+
+Table: Coefficients (performance_y)
+,Unstandardized Coefficients,,Standardized Coefficients,t,Sig.,Collinearity Statistics,
+,B,Std. Error,Beta,,,Tolerance,VIF
+(Constant),7.220,4.020,.000,1.796,.080,,
+competence_x1,.432,.166,.358,2.609,.013,.552,1.812
+motivation_x2,.453,.125,.499,3.636,.001,.552,1.812
+])
+
+AT_CLEANUP
