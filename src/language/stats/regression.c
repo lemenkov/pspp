@@ -1,6 +1,6 @@
 /* PSPP - a program for statistical analysis.
    Copyright (C) 2005, 2009, 2010, 2011, 2012, 2013, 2014,
-   2016, 2017 Free Software Foundation, Inc.
+   2016, 2017, 2019 Free Software Foundation, Inc.
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -653,22 +653,26 @@ fill_covariance (gsl_matrix * cov, struct covariance *all_cov,
   STATISTICS subcommand output functions.
 */
 static void reg_stats_r (const struct linreg *,     const struct variable *);
-static void reg_stats_coeff (const struct regression *, const struct regression_workspace *,
+static void reg_stats_coeff (const struct regression *,
 			     const struct linreg *, const struct linreg *,
 			     const gsl_matrix *, const struct variable *);
 static void reg_stats_anova (const struct linreg *, const struct variable *);
 static void reg_stats_bcov (const struct linreg *,  const struct variable *);
 
 
+struct model_container
+{
+  struct linreg **models;
+};
+
 static struct linreg **
 run_regression_get_models (const struct regression *cmd,
-			   struct regression_workspace *ws,
 			   struct casereader *input,
 			   bool output)
 {
   size_t i;
   struct linreg **models = NULL;
-  struct linreg **models_x = NULL;
+  struct model_container *model_container = xzalloc (sizeof (*model_container) * cmd->n_vars);
 
   struct ccase *c;
   struct covariance *cov;
@@ -692,16 +696,10 @@ run_regression_get_models (const struct regression *cmd,
 	  subreg.resid = false;
 	  subreg.pred = false;
 
-	  struct regression_workspace subws;
-	  subws.extras = 0;
-	  subws.res_idx = -1;
-	  subws.pred_idx = -1;
-	  subws.writer = NULL;
-	  subws.reader = NULL;
-	  subws.residvars = NULL;
-	  subws.predvars = NULL;
-
-	  models_x = run_regression_get_models (&subreg, &subws, input, false);
+	  model_container[i].models =
+	    run_regression_get_models (&subreg, input, false);
+	  free (subreg.vars);
+	  free (subreg.dep_vars);
 	}
     }
 
@@ -718,7 +716,6 @@ run_regression_get_models (const struct regression *cmd,
   reader = casereader_clone (input);
   reader = casereader_create_filter_missing (reader, all_vars, n_all_vars,
                                              MV_ANY, NULL, NULL);
-
 
   {
     struct casereader *r = casereader_clone (reader);
@@ -762,8 +759,8 @@ run_regression_get_models (const struct regression *cmd,
 		reg_stats_anova (models[k], dep_var);
 
 	      if (cmd->stats & STATS_COEFF)
-		reg_stats_coeff (cmd, ws, models[k],
-				 models_x ? models_x[k] : NULL,
+		reg_stats_coeff (cmd, models[k],
+				 model_container[k].models ? model_container[k].models[0] : NULL,
 				 cov_matrix, dep_var);
 
 	      if (cmd->stats & STATS_BCOV)
@@ -775,19 +772,20 @@ run_regression_get_models (const struct regression *cmd,
           msg (SE, _("No valid data found. This command was skipped."));
         }
       free (vars);
+      gsl_matrix_free (cov_matrix);
     }
-
 
   casereader_destroy (reader);
 
-
-  if (models_x)
+  for (int i = 0; i < cmd->n_vars; i++)
     {
-      for (int k = 0; k < cmd->n_dep_vars; k++)
-	linreg_unref (models_x[k]);
-
-      free (models_x);
+      if (model_container[i].models)
+	{
+	  linreg_unref (model_container[i].models[0]);
+	}
+      free (model_container[i].models);
     }
+  free (model_container);
 
   free (all_vars);
   free (means);
@@ -800,7 +798,7 @@ run_regression (const struct regression *cmd,
                 struct regression_workspace *ws,
                 struct casereader *input)
 {
-  struct linreg **models = run_regression_get_models (cmd, ws, input, true);
+  struct linreg **models = run_regression_get_models (cmd, input, true);
 
   if (ws->extras > 0)
    {
@@ -884,7 +882,7 @@ reg_stats_r (const struct linreg * c, const struct variable *var)
   Table showing estimated regression coefficients.
 */
 static void
-reg_stats_coeff (const struct regression *cmd, const struct regression_workspace *ws,
+reg_stats_coeff (const struct regression *cmd,
 		 const struct linreg *c, const struct linreg *c_x,
 		 const gsl_matrix *cov, const struct variable *var)
 {
