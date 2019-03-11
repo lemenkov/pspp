@@ -2382,8 +2382,8 @@ Mean time between failures (months) ,3.11,.09,.99,33.39,.000
 AT_CLEANUP
 
 
-AT_SETUP([LINEAR REGRESSION collinearity])
-AT_DATA([regression-collin.sps], [dnl
+AT_SETUP([LINEAR REGRESSION vif])
+AT_DATA([regression-vif.sps], [dnl
 SET FORMAT=F10.3.
 
 data list notable  list /competence_x1 motivation_x2 performance_y.
@@ -2431,13 +2431,13 @@ begin data
 end data.
 
 regression /variables=competence_x1 motivation_x2
-	/statistics=defaults collin
+	/statistics=defaults tol
 	/dependent=performance_y
 	.
 ])
 
 
-AT_CHECK([pspp -O format=csv regression-collin.sps], [0], [dnl
+AT_CHECK([pspp -O format=csv regression-vif.sps], [0], [dnl
 Table: Model Summary (performance_y)
 R,R Square,Adjusted R Square,Std. Error of the Estimate
 .785,.616,.595,2.980

@@ -60,7 +60,7 @@
 #define STATS_OUTS   8
 #define STATS_CI    16
 #define STATS_BCOV  32
-#define STATS_COLLIN 64
+#define STATS_TOL 64
 
 #define STATS_DEFAULT  (STATS_R | STATS_COEFF | STATS_ANOVA | STATS_OUTS)
 
@@ -309,9 +309,9 @@ cmd_regression (struct lexer *lexer, struct dataset *ds)
                 {
 		  statistics |= STATS_BCOV;
                 }
-              else if (lex_match_id (lexer, "COLLIN"))
+              else if (lex_match_id (lexer, "TOL"))
                 {
-		  statistics |= STATS_COLLIN;
+		  statistics |= STATS_TOL;
                 }
               else if (lex_match_id (lexer, "CI"))
                 {
@@ -678,7 +678,7 @@ run_regression_get_models (const struct regression *cmd,
   struct covariance *cov;
   struct casereader *reader;
 
-  if (cmd->stats & STATS_COLLIN)
+  if (cmd->stats & STATS_TOL)
     {
       for (i = 0; i < cmd->n_vars; i++)
 	{
@@ -909,7 +909,7 @@ reg_stats_coeff (const struct regression *cmd,
                                     N_("Upper Bound"));
     }
 
-  if (cmd->stats & STATS_COLLIN)
+  if (cmd->stats & STATS_TOL)
     pivot_category_create_group (statistics->root,
 				 N_("Collinearity Statistics"),
 				 N_("Tolerance"), N_("VIF"));
@@ -991,7 +991,7 @@ reg_stats_coeff (const struct regression *cmd,
 			      pivot_value_new_number (interval_entries[i]));
 	}
 
-      if (cmd->stats & STATS_COLLIN)
+      if (cmd->stats & STATS_TOL)
 	{
 	  assert (c_x);
 	  double rsq = linreg_ssreg (c_x) / linreg_sst (c_x);
