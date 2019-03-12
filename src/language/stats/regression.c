@@ -60,7 +60,7 @@
 #define STATS_OUTS   8
 #define STATS_CI    16
 #define STATS_BCOV  32
-#define STATS_TOL 64
+#define STATS_TOL   64
 
 #define STATS_DEFAULT  (STATS_R | STATS_COEFF | STATS_ANOVA | STATS_OUTS)
 
@@ -649,21 +649,21 @@ fill_covariance (gsl_matrix * cov, struct covariance *all_cov,
 
 
 
-/*
-  STATISTICS subcommand output functions.
-*/
-static void reg_stats_r (const struct linreg *,     const struct variable *);
-static void reg_stats_coeff (const struct regression *,
-			     const struct linreg *, const struct linreg *,
-			     const gsl_matrix *, const struct variable *);
-static void reg_stats_anova (const struct linreg *, const struct variable *);
-static void reg_stats_bcov (const struct linreg *,  const struct variable *);
-
-
 struct model_container
 {
   struct linreg **models;
 };
+
+/*
+  STATISTICS subcommand output functions.
+*/
+static void reg_stats_r (const struct linreg *,     const struct variable *);
+static void reg_stats_coeff (const struct regression *, const struct linreg *,
+			     const struct model_container *, const gsl_matrix *,
+			     const struct variable *);
+static void reg_stats_anova (const struct linreg *, const struct variable *);
+static void reg_stats_bcov (const struct linreg *,  const struct variable *);
+
 
 static struct linreg **
 run_regression_get_models (const struct regression *cmd,
@@ -716,8 +716,7 @@ run_regression_get_models (const struct regression *cmd,
   reader = casereader_clone (input);
   reader = casereader_create_filter_missing (reader, all_vars, n_all_vars,
                                              MV_ANY, NULL, NULL);
-
-  {
+{
     struct casereader *r = casereader_clone (reader);
 
     for (; (c = casereader_read (r)) != NULL; case_unref (c))
@@ -760,12 +759,12 @@ run_regression_get_models (const struct regression *cmd,
 
 	      if (cmd->stats & STATS_COEFF)
 		reg_stats_coeff (cmd, models[k],
-				 model_container[k].models ? model_container[k].models[0] : NULL,
+				 model_container,
 				 cov_matrix, dep_var);
 
 	      if (cmd->stats & STATS_BCOV)
 		reg_stats_bcov  (models[k], dep_var);
-            }
+	    }
         }
       else
         {
@@ -882,9 +881,9 @@ reg_stats_r (const struct linreg * c, const struct variable *var)
   Table showing estimated regression coefficients.
 */
 static void
-reg_stats_coeff (const struct regression *cmd,
-		 const struct linreg *c, const struct linreg *c_x,
-		 const gsl_matrix *cov, const struct variable *var)
+reg_stats_coeff (const struct regression *cmd, const struct linreg *c,
+		 const struct model_container *mc, const gsl_matrix *cov,
+		 const struct variable *var)
 {
   struct pivot_table *table = pivot_table_create__ (
     pivot_value_new_text_format (N_("Coefficients (%s)"),
@@ -993,17 +992,12 @@ reg_stats_coeff (const struct regression *cmd,
 
       if (cmd->stats & STATS_TOL)
 	{
-	  assert (c_x);
-	  double rsq = linreg_ssreg (c_x) / linreg_sst (c_x);
-
-	  double collin_entries[] = {
-	    1.0 - rsq,
-	    1.0 / (1.0 - rsq),
-	  };
-
-	  for (size_t i = 0; i < sizeof collin_entries / sizeof *collin_entries; i++)
-	    pivot_table_put2 (table, col++, var_idx,
-			      pivot_value_new_number (collin_entries[i]));
+	  {
+	    struct linreg *m = mc[j].models[0];
+	    double rsq = linreg_ssreg (m) / linreg_sst (m);
+	    pivot_table_put2 (table, col++, var_idx, pivot_value_new_number (1.0 - rsq));
+	    pivot_table_put2 (table, col++, var_idx, pivot_value_new_number (1.0 / (1.0 - rsq)));
+	  }
 	}
     }
 
