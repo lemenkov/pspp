@@ -41,7 +41,8 @@
   RG (CI,    N_("Conf. Interval"), N_("Show the confidence interval for the regression coefficients"))   \
   RG (R,     N_("R"),              N_("Show the correlation between observed and predicted values")) \
   RG (ANOVA, N_("Anova"),          N_("Show the analysis of variance table"))  \
-  RG (BCOV,  N_("Bcov"),           N_("Show the variance coefficient matrix"))
+  RG (BCOV,  N_("Bcov"),           N_("Show the variance coefficient matrix"))  \
+  RG (TOL,   N_("Tol"),            N_("Show the variance inflation factor and its reciprocal"))
 
 enum
   {
