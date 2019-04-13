@@ -1114,6 +1114,22 @@ dict_set_filter (struct dictionary *d, struct variable *v)
   assert (v == NULL || dict_contains_var (d, v));
   assert (v == NULL || var_is_numeric (v));
 
+  /* When a filter is set, we ref the dictionary.
+     This is because the GUI maintains a pointer
+     to the dict's variables, and the variables'
+     addresses change in the callback.  */
+  if (d->filter == NULL && v != NULL)
+    {
+      d = dict_ref (d);
+    }
+
+  /* Deref the dict when a filter is removed.  */
+  if (d->filter != NULL && v == NULL)
+    {
+      assert (d->ref_cnt > 0);
+      dict_unref (d);
+    }
+
   d->filter = v;
 
   if (d->changed) d->changed (d, d->changed_data);
