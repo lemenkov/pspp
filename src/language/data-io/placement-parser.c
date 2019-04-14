@@ -401,7 +401,7 @@ parse_record_placement (struct lexer *lexer, int *record, int *column)
     {
       if (lex_is_integer (lexer))
         {
-          if (lex_integer (lexer) <= *record)
+          if ((int) lex_integer (lexer) <= *record)
             {
               msg (SE, _("The record number specified, %ld, is at or "
                          "before the previous record, %d.  Data "
