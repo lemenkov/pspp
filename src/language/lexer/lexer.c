@@ -428,14 +428,14 @@ lex_end_of_command (struct lexer *lexer)
 
 /* Returns true if the current token is a number. */
 bool
-lex_is_number (struct lexer *lexer)
+lex_is_number (const struct lexer *lexer)
 {
   return lex_next_is_number (lexer, 0);
 }
 
 /* Returns true if the current token is a string. */
 bool
-lex_is_string (struct lexer *lexer)
+lex_is_string (const struct lexer *lexer)
 {
   return lex_next_is_string (lexer, 0);
 }
@@ -443,14 +443,14 @@ lex_is_string (struct lexer *lexer)
 /* Returns the value of the current token, which must be a
    floating point number. */
 double
-lex_number (struct lexer *lexer)
+lex_number (const struct lexer *lexer)
 {
   return lex_next_number (lexer, 0);
 }
 
 /* Returns true iff the current token is an integer. */
 bool
-lex_is_integer (struct lexer *lexer)
+lex_is_integer (const struct lexer *lexer)
 {
   return lex_next_is_integer (lexer, 0);
 }
@@ -458,7 +458,7 @@ lex_is_integer (struct lexer *lexer)
 /* Returns the value of the current token, which must be an
    integer. */
 long
-lex_integer (struct lexer *lexer)
+lex_integer (const struct lexer *lexer)
 {
   return lex_next_integer (lexer, 0);
 }
@@ -472,7 +472,7 @@ lex_integer (struct lexer *lexer)
 
 /* Returns true if the token N ahead of the current token is a number. */
 bool
-lex_next_is_number (struct lexer *lexer, int n)
+lex_next_is_number (const struct lexer *lexer, int n)
 {
   enum token_type next_token = lex_next_token (lexer, n);
   return next_token == T_POS_NUM || next_token == T_NEG_NUM;
@@ -480,7 +480,7 @@ lex_next_is_number (struct lexer *lexer, int n)
 
 /* Returns true if the token N ahead of the current token is a string. */
 bool
-lex_next_is_string (struct lexer *lexer, int n)
+lex_next_is_string (const struct lexer *lexer, int n)
 {
   return lex_next_token (lexer, n) == T_STRING;
 }
@@ -488,7 +488,7 @@ lex_next_is_string (struct lexer *lexer, int n)
 /* Returns the value of the token N ahead of the current token, which must be a
    floating point number. */
 double
-lex_next_number (struct lexer *lexer, int n)
+lex_next_number (const struct lexer *lexer, int n)
 {
   assert (lex_next_is_number (lexer, n));
   return lex_next_tokval (lexer, n);
@@ -496,7 +496,7 @@ lex_next_number (struct lexer *lexer, int n)
 
 /* Returns true if the token N ahead of the current token is an integer. */
 bool
-lex_next_is_integer (struct lexer *lexer, int n)
+lex_next_is_integer (const struct lexer *lexer, int n)
 {
   double value;
 
@@ -510,7 +510,7 @@ lex_next_is_integer (struct lexer *lexer, int n)
 /* Returns the value of the token N ahead of the current token, which must be
    an integer. */
 long
-lex_next_integer (struct lexer *lexer, int n)
+lex_next_integer (const struct lexer *lexer, int n)
 {
   assert (lex_next_is_integer (lexer, n));
   return lex_next_tokval (lexer, n);

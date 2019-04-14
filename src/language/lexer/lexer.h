@@ -104,18 +104,18 @@ void lex_append (struct lexer *, struct lex_reader *);
 void lex_get (struct lexer *);
 
 /* Token testing functions. */
-bool lex_is_number (struct lexer *);
-double lex_number (struct lexer *);
-bool lex_is_integer (struct lexer *);
-long lex_integer (struct lexer *);
-bool lex_is_string (struct lexer *);
+bool lex_is_number (const struct lexer *);
+double lex_number (const struct lexer *);
+bool lex_is_integer (const struct lexer *);
+long lex_integer (const struct lexer *);
+bool lex_is_string (const struct lexer *);
 
 /* Token testing functions with lookahead. */
-bool lex_next_is_number (struct lexer *, int n);
-double lex_next_number (struct lexer *, int n);
-bool lex_next_is_integer (struct lexer *, int n);
-long lex_next_integer (struct lexer *, int n);
-bool lex_next_is_string (struct lexer *, int n);
+bool lex_next_is_number (const struct lexer *, int n);
+double lex_next_number (const struct lexer *, int n);
+bool lex_next_is_integer (const struct lexer *, int n);
+long lex_next_integer (const struct lexer *, int n);
+bool lex_next_is_string (const struct lexer *, int n);
 
 /* Token matching functions. */
 bool lex_match (struct lexer *, enum token_type);
