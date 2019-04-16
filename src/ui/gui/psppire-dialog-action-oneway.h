@@ -1,5 +1,5 @@
 /* PSPPIRE - a graphical user interface for PSPP.
-   Copyright (C) 2013  Free Software Foundation
+   Copyright (C) 2013, 2019  Free Software Foundation
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -63,7 +63,18 @@ struct _PsppireDialogActionOneway
   GtkWidget *descriptives;
   GtkWidget *homogeneity;
 
+/* Post-Hoc dialog */
+  GtkWidget *posthoc_dialog;
 
+  GtkWidget *bonferroni_button;
+  GtkWidget *gh_button;
+  GtkWidget *lsd_button;
+  GtkWidget *scheffe_button;
+  GtkWidget *sidak_button;
+  GtkWidget *tukey_button;
+  guint posthoc;
+
+/* Contrasts dialog */
   GtkWidget *contrasts_dialog;
 
   GtkWidget *next;
@@ -71,7 +82,6 @@ struct _PsppireDialogActionOneway
   GtkWidget *acr;
   GtkWidget *vars_treeview;
   GtkWidget *factor_entry;
-
 
   /* Gets copied into contrasts when "Continue"
      is clicked */
@@ -82,7 +92,6 @@ struct _PsppireDialogActionOneway
 
 
   GArray *contrasts_array;
-
   GtkWidget *ctotal;
   GtkWidget *stack_label;
 };
