@@ -66,9 +66,6 @@ xrchart_draw_piechart (const struct chart_item *chart_item, cairo_t *cr,
   radius = MIN (5.0 / 12.0 * (geom->axis[SCALE_ORDINATE].data_max - geom->axis[SCALE_ORDINATE].data_min),
                 1.0 / 4.0 * (geom->axis[SCALE_ABSCISSA].data_max - geom->axis[SCALE_ORDINATE].data_min));
 
-  radius = MIN (5.0 / 12.0 * (geom->axis[SCALE_ORDINATE].data_max - geom->axis[SCALE_ORDINATE].data_min),
-                1.0 / 4.0 * (geom->axis[SCALE_ABSCISSA].data_max - geom->axis[SCALE_ORDINATE].data_min));
-
   xrchart_write_title (cr, geom, "%s", chart_item_get_title (chart_item));
 
   total_magnitude = 0.0;
