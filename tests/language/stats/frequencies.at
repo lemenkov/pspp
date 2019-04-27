@@ -845,3 +845,44 @@ FREQUENCIES VARIABLES=SCORE
 AT_CHECK([pspp bug.sps], [0],  [ignore])
 
 AT_CLEANUP
+
+
+AT_SETUP([FREQUENCIES vs. missing weights])
+AT_DATA([warn.sps], [dnl
+data list notable list /x w .
+begin data.
+1 1
+2 1
+1 1
+3 1
+3 .
+4 .
+end data.
+
+weight by w.
+
+frequencies /variables=x.
+])
+
+AT_CHECK([pspp warn.sps -O format=csv], [0],  [dnl
+"warn.sps:13: warning: FREQUENCIES: At least one case in the data file had a weight value that was user-missing, system-missing, zero, or negative.  These case(s) were ignored."
+
+Table: Statistics
+,,x
+N,Valid,4.00
+,Missing,.00
+Mean,,1.75
+Std Dev,,.96
+Minimum,,1.00
+Maximum,,4.00
+
+Table: x
+,,Frequency,Percent,Valid Percent,Cumulative Percent
+Valid,1.00,2.00,50.0%,50.0%,50.0%
+,2.00,1.00,25.0%,25.0%,75.0%
+,3.00,1.00,25.0%,25.0%,100.0%
+,4.00,.00,.0%,.0%,100.0%
+Total,,4.00,100.0%,,
+])
+
+AT_CLEANUP

@@ -225,6 +225,8 @@ struct frq_proc
 
     /* Histogram and pie chart settings. */
     struct frq_chart *hist, *pie, *bar;
+
+    bool warn;
   };
 
 
@@ -469,7 +471,7 @@ cleanup_freq_tab (struct var_freqs *vf)
 static void
 calc (struct frq_proc *frq, const struct ccase *c, const struct dataset *ds)
 {
-  double weight = dict_get_case_weight (dataset_dict (ds), c, NULL);
+  double weight = dict_get_case_weight (dataset_dict (ds), c, &frq->warn);
   size_t i;
 
   for (i = 0; i < frq->n_vars; i++)
@@ -613,6 +615,7 @@ cmd_frequencies (struct lexer *lexer, struct dataset *ds)
   frq.hist = NULL;
   frq.pie = NULL;
   frq.bar = NULL;
+  frq.warn = true;
 
 
   /* Accept an optional, completely pointless "/VARIABLES=" */
