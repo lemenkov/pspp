@@ -1,5 +1,5 @@
 /* PSPP - a program for statistical analysis.
-   Copyright (C) 1997-9, 2000, 2007, 2009, 2010, 2011, 2012, 2014 Free Software Foundation, Inc.
+   Copyright (C) 1997-9, 2000, 2007, 2009, 2010, 2011, 2012, 2014, 2019 Free Software Foundation, Inc.
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -51,6 +51,7 @@
 
 struct output_engine
   {
+    struct ll ll;                  /* Node for this engine. */
     struct llx_list drivers;       /* Contains "struct output_driver"s. */
     struct string deferred_syntax; /* TEXT_ITEM_SYNTAX being accumulated. */
     char *command_name;            /* Name of command being processed. */
@@ -67,17 +68,15 @@ struct output_engine
     struct string_map heading_vars;
   };
 
-static const struct output_driver_factory *factories[];
+static struct ll_list engine_stack = LL_INITIALIZER (engine_stack);
 
-/* A stack of output engines.. */
-static struct output_engine *engine_stack;
-static size_t n_stack, allocated_stack;
+static const struct output_driver_factory *factories[];
 
 static struct output_engine *
 engine_stack_top (void)
 {
-  assert (n_stack > 0);
-  return &engine_stack[n_stack - 1];
+  struct ll *head = ll_head (&engine_stack);
+  return ll_data (head, struct output_engine, ll);
 }
 
 static void
@@ -95,14 +94,8 @@ put_strftime (const char *key, const char *format,
 void
 output_engine_push (void)
 {
-  struct output_engine *e;
+  struct output_engine *e = xzalloc (sizeof (*e));
 
-  if (n_stack >= allocated_stack)
-    engine_stack = x2nrealloc (engine_stack, &allocated_stack,
-                               sizeof *engine_stack);
-
-  e = &engine_stack[n_stack++];
-  memset (e, 0, sizeof *e);
   llx_init (&e->drivers);
   ds_init_empty (&e->deferred_syntax);
 
@@ -112,15 +105,16 @@ output_engine_push (void)
   const struct tm *tm = localtime (&t);
   put_strftime ("Date", "%x", tm, &e->heading_vars);
   put_strftime ("Time", "%X", tm, &e->heading_vars);
+
+  ll_push_head (&engine_stack, &e->ll);
 }
 
 void
 output_engine_pop (void)
 {
-  struct output_engine *e;
+  struct ll *head = ll_pop_head (&engine_stack);
+  struct output_engine *e =ll_data (head, struct output_engine, ll);
 
-  assert (n_stack > 0);
-  e = &engine_stack[--n_stack];
   while (!llx_is_empty (&e->drivers))
     {
       struct output_driver *d = llx_pop_head (&e->drivers, &llx_malloc_mgr);
@@ -134,6 +128,7 @@ output_engine_pop (void)
     free (e->groups[i]);
   free (e->groups);
   string_map_destroy (&e->heading_vars);
+  free (e);
 }
 
 void
@@ -266,13 +261,10 @@ output_submit (struct output_item *item)
 const char *
 output_get_command_name (void)
 {
-  if (n_stack)
-    {
-      struct output_engine *e = engine_stack_top ();
-      for (size_t i = e->n_groups; i-- > 0; )
-        if (e->groups[i])
-          return e->groups[i];
-    }
+  struct output_engine *e = engine_stack_top ();
+  for (size_t i = e->n_groups; i-- > 0; )
+    if (e->groups[i])
+      return e->groups[i];
 
   return NULL;
 }
@@ -377,9 +369,11 @@ output_driver_get_engine (const struct output_driver *driver)
 {
   struct output_engine *e;
 
-  for (e = engine_stack; e < &engine_stack[n_stack]; e++)
-    if (llx_find (llx_head (&e->drivers), llx_null (&e->drivers), driver))
-      return e;
+  ll_for_each (e, struct output_engine, ll, &engine_stack)
+    {
+      if (llx_find (llx_head (&e->drivers), llx_null (&e->drivers), driver))
+	return e;
+    }
 
   return NULL;
 }
