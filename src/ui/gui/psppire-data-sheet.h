@@ -1,5 +1,5 @@
 /* PSPPIRE - a graphical user interface for PSPP.
-    Copyright (C) 2017  John Darrington
+    Copyright (C) 2017, 2019  John Darrington
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -46,5 +46,10 @@ struct _PsppireDataSheetClass
 G_DECLARE_FINAL_TYPE (PsppireDataSheet, psppire_data_sheet, PSPPIRE, DATA_SHEET, SswSheet)
 
 GtkWidget *psppire_data_sheet_new (void);
+
+void psppire_data_sheet_delete_variables (PsppireDataSheet *sheet);
+
+void psppire_data_sheet_insert_new_variable_at_posn (PsppireDataSheet *sheet, gint posn);
+
 
 #endif

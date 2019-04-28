@@ -1,6 +1,6 @@
 /* PSPPIRE - a graphical user interface for PSPP.
    Copyright (C) 2008, 2009, 2010, 2011, 2012, 2016,
-   2017 Free Software Foundation, Inc.
+   2017, 2019 Free Software Foundation, Inc.
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -437,12 +437,7 @@ static void set_font_recursively (GtkWidget *w, gpointer data);
 void
 psppire_data_editor_data_delete_variables (PsppireDataEditor *de)
 {
-  SswRange *range = SSW_SHEET(de->data_sheet)->selection;
-
-  psppire_dict_delete_variables (de->dict, range->start_x,
-				 (range->end_x - range->start_x + 1));
-
-  gtk_widget_queue_draw (GTK_WIDGET (de->data_sheet));
+  psppire_data_sheet_delete_variables (PSPPIRE_DATA_SHEET (de->data_sheet));
 }
 
 void
@@ -469,13 +464,7 @@ psppire_data_editor_insert_new_case_at_posn  (PsppireDataEditor *de, gint posn)
 void
 psppire_data_editor_insert_new_variable_at_posn (PsppireDataEditor *de, gint posn)
 {
-  g_return_if_fail (posn >= 0);
-  const struct variable *v = psppire_dict_insert_variable (de->dict, posn, NULL);
-  g_return_if_fail (v);
-  psppire_data_store_insert_value (de->data_store, var_get_width(v),
-				   var_get_case_index (v));
-
-  gtk_widget_queue_draw (GTK_WIDGET (de));
+  psppire_data_sheet_insert_new_variable_at_posn (PSPPIRE_DATA_SHEET (de->data_sheet), posn);
 }
 
 static void

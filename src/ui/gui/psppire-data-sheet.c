@@ -1,5 +1,5 @@
 /* PSPPIRE - a graphical user interface for PSPP.
-   Copyright (C) 2017  John Darrington
+   Copyright (C) 2017, 2019  John Darrington
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -206,6 +206,23 @@ show_cases_column_popup (PsppireDataSheet *sheet, int column, guint button, guin
   gtk_menu_popup_at_pointer (GTK_MENU (sheet->data_sheet_cases_column_popup), NULL);
 }
 
+void
+psppire_data_sheet_insert_new_variable_at_posn (PsppireDataSheet *sheet, gint posn)
+{
+  PsppireDataStore *data_store = NULL;
+  g_object_get (sheet, "data-model", &data_store, NULL);
+
+  const struct variable *v = psppire_dict_insert_variable (data_store->dict,
+							   posn, NULL);
+
+  psppire_data_store_insert_value (data_store, var_get_width(v),
+				   var_get_case_index (v));
+
+  ssw_sheet_scroll_to (SSW_SHEET (sheet), posn, -1);
+
+  gtk_widget_queue_draw (GTK_WIDGET (sheet));
+}
+
 static void
 insert_new_variable (PsppireDataSheet *sheet)
 {
@@ -216,14 +233,9 @@ insert_new_variable (PsppireDataSheet *sheet)
 				(G_OBJECT (sheet->data_sheet_cases_column_popup),
 				 "item"));
 
-  const struct variable *v = psppire_dict_insert_variable (data_store->dict,
-							   posn, NULL);
-
-  psppire_data_store_insert_value (data_store, var_get_width(v),
-				   var_get_case_index (v));
-
-  gtk_widget_queue_draw (GTK_WIDGET (sheet));
+  psppire_data_sheet_insert_new_variable_at_posn (sheet, posn);
 }
+
 
 static void
 set_menu_items_sensitivity (PsppireDataSheet *sheet, gpointer selection, gpointer p)
@@ -251,8 +263,8 @@ set_menu_items_sensitivity (PsppireDataSheet *sheet, gpointer selection, gpointe
 			    whole_column_selected);
 }
 
-static void
-delete_variables (PsppireDataSheet *sheet)
+void
+psppire_data_sheet_delete_variables (PsppireDataSheet *sheet)
 {
   SswRange *range = SSW_SHEET(sheet)->selection;
 
@@ -261,6 +273,8 @@ delete_variables (PsppireDataSheet *sheet)
 
   psppire_dict_delete_variables (data_store->dict, range->start_x,
 				 (range->end_x - range->start_x + 1));
+
+  ssw_sheet_scroll_to (SSW_SHEET (sheet), range->start_x, -1);
 
   gtk_widget_queue_draw (GTK_WIDGET (sheet));
 }
@@ -284,7 +298,7 @@ create_data_column_header_popup_menu (PsppireDataSheet *sheet)
   sheet->data_clear_variables_menu_item =
     gtk_menu_item_new_with_mnemonic  (_("Cl_ear Variables"));
   g_signal_connect_swapped (sheet->data_clear_variables_menu_item, "activate",
-			    G_CALLBACK (delete_variables),
+			    G_CALLBACK (psppire_data_sheet_delete_variables),
 			    sheet);
   gtk_widget_set_sensitive (sheet->data_clear_variables_menu_item, FALSE);
   gtk_menu_shell_append (GTK_MENU_SHELL (menu), sheet->data_clear_variables_menu_item);
