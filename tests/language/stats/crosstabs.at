@@ -425,7 +425,7 @@ z,1,Nominal by Nominal,Phi,1.00,,
 ,,N of Valid Cases,,4,,
 
 Table: Directional Measures
-,,,,,Value,Asymp. Std. Error,Approx. T,Approx Sig.
+,,,,,Value,Asymp. Std. Error,Approx. T,Approx. Sig.
 z,1,Nominal by Nominal,Lambda,Symmetric,.40,.28,1.12,.264
 ,,,,x Dependent,.25,.22,1.12,.264
 ,,,,y Dependent,1.00,.00,1.12,.264
@@ -1157,7 +1157,7 @@ Table: Summary
 x × y,1296.000,100.0%,.000,.0%,1296.000,100.0%
 
 Table: Directional Measures
-,,,Value,Asymp. Std. Error,Approx. T,Approx Sig.
+,,,Value,Asymp. Std. Error,Approx. T,Approx. Sig.
 Nominal by Nominal,Lambda,Symmetric,.423,.021,16.875,.000
 ,,x Dependent,.497,.024,15.986,.000
 ,,y Dependent,.370,.020,16.339,.000
@@ -1196,7 +1196,7 @@ Table: Summary
 x × y,137.000,100.0%,.000,.0%,137.000,100.0%
 
 Table: Directional Measures
-,,,Value,Asymp. Std. Error,Approx. T,Approx Sig.
+,,,Value,Asymp. Std. Error,Approx. T,Approx. Sig.
 Nominal by Nominal,Lambda,Symmetric,.259,.081,2.902,.004
 ,,x Dependent,.250,.089,2.479,.013
 ,,y Dependent,.267,.085,2.766,.006
@@ -1239,7 +1239,7 @@ Table: Summary
 x × y,6800.000,100.0%,.000,.0%,6800.000,100.0%
 
 Table: Directional Measures
-,,,Value,Asymp. Std. Error,Approx. T,Approx Sig.
+,,,Value,Asymp. Std. Error,Approx. T,Approx. Sig.
 Nominal by Nominal,Lambda,Symmetric,.208,.010,18.793,.000
 ,,x Dependent,.224,.013,16.076,.000
 ,,y Dependent,.192,.012,14.438,.000
@@ -1275,7 +1275,7 @@ Table: Summary
 x × y,500.000,100.0%,.000,.0%,500.000,100.0%
 
 Table: Directional Measures
-,,,Value,Asymp. Std. Error,Approx. T,Approx Sig.
+,,,Value,Asymp. Std. Error,Approx. T,Approx. Sig.
 Nominal by Nominal,Lambda,Symmetric,.031,.013,2.336,.019
 ,,x Dependent,.000,.000,NaN,NaN
 ,,y Dependent,.033,.014,2.336,.019
@@ -1318,7 +1318,7 @@ Table: Summary
 x × y,1.000000,100.0%,.000000,.0%,1.000000,100.0%
 
 Table: Directional Measures
-,,,Value,Asymp. Std. Error,Approx. T,Approx Sig.
+,,,Value,Asymp. Std. Error,Approx. T,Approx. Sig.
 Ordinal by Ordinal,Somers' d,Symmetric,-.084,,-.149,.882
 ,,x Dependent,-.045,.300,-.149,.882
 ,,y Dependent,-.684,2.378,-.149,.882
@@ -1361,7 +1361,7 @@ Ordinal by Ordinal,Kendall's tau-b,.372,.033,10.669
 N of Valid Cases,,687.000,,
 
 Table: Directional Measures
-,,,Value,Asymp. Std. Error,Approx. T,Approx Sig.
+,,,Value,Asymp. Std. Error,Approx. T,Approx. Sig.
 Ordinal by Ordinal,Somers' d,Symmetric,.371,,10.669,.000
 ,,x Dependent,.351,.032,10.669,.000
 ,,y Dependent,.394,.035,10.669,.000
@@ -1492,7 +1492,7 @@ Ordinal by Ordinal,Kendall's tau-b,1.000,.000,24.841
 N of Valid Cases,,150.000,,
 
 Table: Directional Measures
-,,,Value,Asymp. Std. Error,Approx. T,Approx Sig.
+,,,Value,Asymp. Std. Error,Approx. T,Approx. Sig.
 Ordinal by Ordinal,Somers' d,Symmetric,1.000,,24.841,.000
 ,,x Dependent,1.000,.000,24.841,.000
 ,,y Dependent,1.000,.000,24.841,.000
@@ -1510,7 +1510,7 @@ Ordinal by Ordinal,Kendall's tau-b,1.000,.000,24.841
 N of Valid Cases,,150.000,,
 
 Table: Directional Measures
-,,,Value,Asymp. Std. Error,Approx. T,Approx Sig.
+,,,Value,Asymp. Std. Error,Approx. T,Approx. Sig.
 Ordinal by Ordinal,Somers' d,Symmetric,1.000,,24.841,.000
 ,,x Dependent,1.000,.000,24.841,.000
 ,,y Dependent,1.000,.000,24.841,.000
@@ -1528,7 +1528,7 @@ Ordinal by Ordinal,Kendall's tau-b,-1.000,.000,-24.841
 N of Valid Cases,,150.000,,
 
 Table: Directional Measures
-,,,Value,Asymp. Std. Error,Approx. T,Approx Sig.
+,,,Value,Asymp. Std. Error,Approx. T,Approx. Sig.
 Ordinal by Ordinal,Somers' d,Symmetric,-1.000,,-24.841,.000
 ,,x Dependent,-1.000,.000,-24.841,.000
 ,,y Dependent,-1.000,.000,-24.841,.000
@@ -1546,7 +1546,7 @@ Ordinal by Ordinal,Kendall's tau-b,.972,.007,24.841
 N of Valid Cases,,150.000,,
 
 Table: Directional Measures
-,,,Value,Asymp. Std. Error,Approx. T,Approx Sig.
+,,,Value,Asymp. Std. Error,Approx. T,Approx. Sig.
 Ordinal by Ordinal,Somers' d,Symmetric,.971,,24.841,.000
 ,,x Dependent,.944,.013,24.841,.000
 ,,y Dependent,1.000,.000,24.841,.000
@@ -1564,7 +1564,7 @@ Ordinal by Ordinal,Kendall's tau-b,.119,.059,1.009
 N of Valid Cases,,150.000,,
 
 Table: Directional Measures
-,,,Value,Asymp. Std. Error,Approx. T,Approx Sig.
+,,,Value,Asymp. Std. Error,Approx. T,Approx. Sig.
 Ordinal by Ordinal,Somers' d,Symmetric,.035,,1.009,.313
 ,,x Dependent,.805,.032,1.009,.313
 ,,y Dependent,.018,.017,1.009,.313
@@ -1582,7 +1582,7 @@ Ordinal by Ordinal,Kendall's tau-b,-.208,.078,-2.641
 N of Valid Cases,,148.000,,
 
 Table: Directional Measures
-,,,Value,Asymp. Std. Error,Approx. T,Approx Sig.
+,,,Value,Asymp. Std. Error,Approx. T,Approx. Sig.
 Ordinal by Ordinal,Somers' d,Symmetric,-.206,,-2.641,.008
 ,,x Dependent,-.182,.069,-2.641,.008
 ,,y Dependent,-.237,.089,-2.641,.008
@@ -1601,7 +1601,7 @@ Ordinal by Ordinal,Gamma,-.110,.107,-1.022
 N of Valid Cases,,148.000,,
 
 Table: Directional Measures
-,,,Value,Asymp. Std. Error,Approx. T,Approx Sig.
+,,,Value,Asymp. Std. Error,Approx. T,Approx. Sig.
 Nominal by Nominal,Lambda,Symmetric,.338,.059,4.743,.000
 ,,x Dependent,.640,.085,4.875,.000
 ,,y Dependent,.174,.050,3.248,.001
@@ -1625,7 +1625,7 @@ Ordinal by Ordinal,Kendall's tau-b,.209,.062,3.338
 N of Valid Cases,,212.000,,
 
 Table: Directional Measures
-,,,Value,Asymp. Std. Error,Approx. T,Approx Sig.
+,,,Value,Asymp. Std. Error,Approx. T,Approx. Sig.
 Nominal by Nominal,Lambda,Symmetric,.102,.067,1.473,.141
 ,,x Dependent,.027,.087,.302,.763
 ,,y Dependent,.165,.065,2.349,.019
@@ -1727,7 +1727,7 @@ Interval by Interval,Pearson's R,.2999,.0973,2.5147
 N of Valid Cases,,66.0000,,
 
 Table: Directional Measures
-,,,Value,Asymp. Std. Error,Approx. T,Approx Sig.
+,,,Value,Asymp. Std. Error,Approx. T,Approx. Sig.
 Nominal by Nominal,Lambda,Symmetric,.0455,.1629,.2723,.785
 ,,x Dependent,.0000,.0000,NaN,NaN
 ,,y Dependent,.0500,.1791,.2723,.785
@@ -1768,7 +1768,7 @@ Table: Summary
 x × y,987.000,100.0%,.000,.0%,987.000,100.0%
 
 Table: Directional Measures
-,,,Value,Asymp. Std. Error,Approx. T,Approx Sig.
+,,,Value,Asymp. Std. Error,Approx. T,Approx. Sig.
 Nominal by Nominal,Lambda,Symmetric,.000,.000,NaN,NaN
 ,,x Dependent,.000,.000,NaN,NaN
 ,,y Dependent,.000,.000,NaN,NaN

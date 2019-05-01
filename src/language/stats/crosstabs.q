@@ -1409,7 +1409,7 @@ create_direct_table (struct crosstabulation *xt)
     N_("Value"), PIVOT_RC_OTHER,
     N_("Asymp. Std. Error"), PIVOT_RC_OTHER,
     N_("Approx. T"), PIVOT_RC_OTHER,
-    N_("Approx Sig."), PIVOT_RC_SIGNIFICANCE);
+    N_("Approx. Sig."), PIVOT_RC_SIGNIFICANCE);
 
   struct pivot_dimension *statistics = pivot_dimension_create (
     direct, PIVOT_AXIS_ROW, N_("Statistics"));
