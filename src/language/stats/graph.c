@@ -205,7 +205,8 @@ const struct ag_func ag_func[] =
     {"COUNT",   N_("Count"),      0, 0, NULL, calc_mom0, 0, 0},
     {"PCT",     N_("Percentage"), 0, 0, NULL, calc_mom0, 0, post_percentage},
     {"CUFREQ",  N_("Cumulative Count"),   0, 1, NULL, calc_mom0, 0, 0},
-    {"CUPCT",   N_("Cumulative Percent"), 0, 1, NULL, calc_mom0, 0, post_percentage},
+    {"CUPCT",   N_("Cumulative Percent"), 0, 1, NULL, calc_mom0, 0,
+     post_percentage},
 
     {"MEAN",    N_("Mean"),    1, 0, NULL, calc_mom1, post_normalise, 0},
     {"SUM",     N_("Sum"),     1, 0, NULL, calc_mom1, 0, 0},
@@ -307,7 +308,8 @@ show_scatterplot (const struct graph *cmd, struct casereader *input)
   scatterplot = scatterplot_create (input,
 				    var_to_string(cmd->dep_vars[0]),
 				    var_to_string(cmd->dep_vars[1]),
-				    (cmd->n_by_vars > 0) ? cmd->by_var[0] : NULL,
+				    (cmd->n_by_vars > 0) ? cmd->by_var[0]
+				                         : NULL,
 				    &byvar_overflow,
 				    ds_cstr (&title),
 				    cmd->es[0].minimum, cmd->es[0].maximum,
@@ -425,7 +427,9 @@ run_barchart (struct graph *cmd, struct casereader *input)
       /* Deal with missing values in the categorical variables */
       for (v = 0; v < cmd->n_by_vars; ++v)
 	{
-	  if (var_is_value_missing (cmd->by_var[v], case_data (c, cmd->by_var[v]), cmd->fctr_excl) )
+	  if (var_is_value_missing (cmd->by_var[v],
+				    case_data (c, cmd->by_var[v]),
+				    cmd->fctr_excl))
 	    break;
 	}
 
@@ -436,8 +440,9 @@ run_barchart (struct graph *cmd, struct casereader *input)
 	}
 
       freqs = xrealloc (freqs, sizeof (*freqs) * ++n_freqs);
-      freqs[n_freqs - 1] = xzalloc (sizeof (**freqs) +
-				    sizeof (union value) * (cmd->n_by_vars - 1) );
+      freqs[n_freqs - 1] = xzalloc (sizeof (**freqs)
+				    + sizeof (union value)
+				    * (cmd->n_by_vars - 1));
 
       if (ag_func[cmd->agr].cumulative && n_freqs >= 2)
 	freqs[n_freqs - 1]->count = freqs[n_freqs - 2]->count;
@@ -449,9 +454,9 @@ run_barchart (struct graph *cmd, struct casereader *input)
 
       for (v = 0; v < cmd->n_by_vars; ++v)
 	{
-	  value_clone (&freqs[n_freqs - 1]->values[v], case_data (c, cmd->by_var[v]),
-		       var_get_width (cmd->by_var[v])
-		       );
+	  value_clone (&freqs[n_freqs - 1]->values[v],
+		       case_data (c, cmd->by_var[v]),
+		       var_get_width (cmd->by_var[v]));
 	}
       case_unref (c);
 
@@ -459,7 +464,8 @@ run_barchart (struct graph *cmd, struct casereader *input)
       for (;(c = casereader_read (group)) != NULL; case_unref (c))
 	{
 	  const double weight = dict_get_case_weight (cmd->dict,c,NULL);
-	  const double x =  (cmd->n_dep_vars > 0) ? case_data (c, cmd->dep_vars[0])->f : SYSMIS;
+	  const double x = (cmd->n_dep_vars > 0)
+	    ? case_data (c, cmd->dep_vars[0])->f : SYSMIS;
 
 	  cc += weight;
 
@@ -516,7 +522,7 @@ run_graph (struct graph *cmd, struct casereader *input)
   struct casereader *reader;
   struct casewriter *writer;
 
-  cmd->es = pool_calloc (cmd->pool,cmd->n_dep_vars,sizeof(struct exploratory_stats));
+  cmd->es = pool_calloc (cmd->pool,cmd->n_dep_vars, sizeof *cmd->es);
   for(int v=0;v<cmd->n_dep_vars;v++)
     {
       cmd->es[v].mom = moments_create (MOMENT_KURTOSIS);
@@ -872,15 +878,23 @@ cmd_graph (struct lexer *lexer, struct dataset *ds)
     {
     case CT_SCATTERPLOT:
       /* See scatterplot.h for the setup of the case prototype */
-      graph.gr_proto = caseproto_add_width (graph.gr_proto, 0); /* x value - SP_IDX_X*/
-      graph.gr_proto = caseproto_add_width (graph.gr_proto, 0); /* y value - SP_IDX_Y*/
-      /* The by_var contains the plot categories for the different xy plot colors */
+
+      /* x value - SP_IDX_X*/
+      graph.gr_proto = caseproto_add_width (graph.gr_proto, 0);
+
+      /* y value - SP_IDX_Y*/
+      graph.gr_proto = caseproto_add_width (graph.gr_proto, 0);
+      /* The by_var contains the plot categories for the different xy
+	 plot colors */
       if (graph.n_by_vars > 0) /* SP_IDX_BY */
-	graph.gr_proto = caseproto_add_width (graph.gr_proto, var_get_width(graph.by_var[0]));
+	graph.gr_proto = caseproto_add_width (graph.gr_proto,
+					      var_get_width(graph.by_var[0]));
       break;
     case CT_HISTOGRAM:
-      graph.gr_proto = caseproto_add_width (graph.gr_proto, 0); /* x value      */
-      graph.gr_proto = caseproto_add_width (graph.gr_proto, 0); /* weight value */
+      /* x value      */
+      graph.gr_proto = caseproto_add_width (graph.gr_proto, 0);
+      /* weight value */
+      graph.gr_proto = caseproto_add_width (graph.gr_proto, 0);
       break;
     case CT_BAR:
       break;
