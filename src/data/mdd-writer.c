@@ -470,7 +470,8 @@ mdd_write (struct file_handle *fh, struct dictionary *dict,
   w->writer = xmlNewTextWriter (xmlOutputBufferCreateFile (w->file, NULL));
   if (!w->writer)
     {
-      msg (ME, _("Internal error creating xmlTextWriter."));
+      msg (ME, _("Internal error creating xmlTextWriter.  "
+		 "Please report this to %s."), PACKAGE_BUGREPORT);
       goto error;
     }
 

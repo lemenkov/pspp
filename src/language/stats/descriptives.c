@@ -656,7 +656,9 @@ descriptives_trns_proc (void *trns_, struct ccase **c,
         {
           if (t->ok)
             {
-              msg (SE, _("Internal error processing Z scores"));
+              msg (SE,  _("Internal error processing Z scores.  "
+			  "Please report this to %s."),
+		   PACKAGE_BUGREPORT);
               t->ok = false;
             }
           descriptives_set_all_sysmis_zscores (t, *c);
