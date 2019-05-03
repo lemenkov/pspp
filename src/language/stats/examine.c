@@ -90,6 +90,12 @@ enum
   };
 
 
+#define PLOT_HISTOGRAM      0x1
+#define PLOT_BOXPLOT        0x2
+#define PLOT_NPPLOT         0x4
+#define PLOT_SPREADLEVEL    0x8
+
+
 struct examine
 {
   struct pool *pool;
@@ -128,10 +134,7 @@ struct examine
   double *ptiles;
   size_t n_percentiles;
 
-  bool npplot;
-  bool histogramplot;
-  bool boxplot;
-  bool spreadlevelplot;
+  unsigned int plot;
   int sl_power;
 
   enum bp_mode boxplot_mode;
@@ -1053,7 +1056,7 @@ calculate_n (const void *aux1, void *aux2 UNUSED, void *user_data)
       struct casereader *reader;
       struct ccase *c;
 
-      if (examine->histogramplot && es[v].non_missing > 0)
+      if (examine->plot & PLOT_HISTOGRAM && es[v].non_missing > 0)
         {
           /* Sturges Rule */
           double bin_width = fabs (es[v].minimum - es[v].maximum)
@@ -1162,7 +1165,7 @@ calculate_n (const void *aux1, void *aux2 UNUSED, void *user_data)
 	free (os);
       }
 
-      if (examine->boxplot)
+      if (examine->plot & PLOT_BOXPLOT)
         {
           struct order_stats *os;
 
@@ -1175,7 +1178,7 @@ calculate_n (const void *aux1, void *aux2 UNUSED, void *user_data)
 				      EX_WT, EX_VAL);
         }
 
-      if (examine->npplot)
+      if (examine->plot & PLOT_NPPLOT)
         {
           double n, mean, var;
           struct order_stats *os;
@@ -1309,7 +1312,7 @@ run_examine (struct examine *cmd, struct casereader *input)
       if (cmd->n_percentiles > 0)
         percentiles_report (cmd, i);
 
-      if (cmd->boxplot)
+      if (cmd->plot & PLOT_BOXPLOT)
         {
           switch (cmd->boxplot_mode)
             {
@@ -1325,13 +1328,13 @@ run_examine (struct examine *cmd, struct casereader *input)
             }
         }
 
-      if (cmd->histogramplot)
+      if (cmd->plot & PLOT_HISTOGRAM)
         show_histogram (cmd, i);
 
-      if (cmd->npplot)
+      if (cmd->plot & PLOT_NPPLOT)
         show_npplot (cmd, i);
 
-      if (cmd->spreadlevelplot)
+      if (cmd->plot & PLOT_SPREADLEVEL)
         show_spreadlevel (cmd, i);
 
       if (cmd->descriptives)
@@ -1382,10 +1385,7 @@ cmd_examine (struct lexer *lexer, struct dataset *ds)
 
   examine.dep_excl = MV_ANY;
   examine.fctr_excl = MV_ANY;
-  examine.histogramplot = false;
-  examine.npplot = false;
-  examine.boxplot = false;
-  examine.spreadlevelplot = false;
+  examine.plot = 0;
   examine.sl_power = 0;
   examine.dep_vars = NULL;
   examine.n_dep_vars = 0;
@@ -1615,19 +1615,19 @@ cmd_examine (struct lexer *lexer, struct dataset *ds)
 	    {
               if (lex_match_id (lexer, "BOXPLOT"))
                 {
-                  examine.boxplot = true;
+                  examine.plot |= PLOT_BOXPLOT;
                 }
               else if (lex_match_id (lexer, "NPPLOT"))
                 {
-                  examine.npplot = true;
+                  examine.plot |= PLOT_NPPLOT;
                 }
               else if (lex_match_id (lexer, "HISTOGRAM"))
                 {
-                  examine.histogramplot = true;
+                  examine.plot |= PLOT_HISTOGRAM;
                 }
               else if (lex_match_id (lexer, "SPREADLEVEL"))
                 {
-		  examine.spreadlevelplot = true;
+                  examine.plot |= PLOT_SPREADLEVEL;
 		  examine.sl_power = 0;
 		  if (lex_match (lexer, T_LPAREN) && lex_force_int (lexer))
 		    {
@@ -1640,15 +1640,11 @@ cmd_examine (struct lexer *lexer, struct dataset *ds)
                 }
               else if (lex_match_id (lexer, "NONE"))
                 {
-                  examine.histogramplot = false;
-                  examine.npplot = false;
-                  examine.boxplot = false;
+                  examine.plot = 0;
                 }
               else if (lex_match (lexer, T_ALL))
                 {
-                  examine.histogramplot = true;
-                  examine.npplot = true;
-                  examine.boxplot = true;
+                  examine.plot = ~0;
                 }
               else
                 {
