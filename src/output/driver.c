@@ -76,7 +76,7 @@ static struct output_engine *
 engine_stack_top (void)
 {
   struct ll *head = ll_head (&engine_stack);
-  if (ll_is_empty (head))
+  if (ll_is_empty (&engine_stack))
     return NULL;
   return ll_data (head, struct output_engine, ll);
 }
