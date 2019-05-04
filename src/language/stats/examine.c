@@ -1,6 +1,6 @@
 /*
   PSPP - a program for statistical analysis.
-  Copyright (C) 2012, 2013, 2016  Free Software Foundation, Inc.
+  Copyright (C) 2012, 2013, 2016, 2019  Free Software Foundation, Inc.
 
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -47,6 +47,7 @@
 #include "math/sort.h"
 #include "math/order-stats.h"
 #include "math/percentiles.h"
+#include "math/shapiro-wilk.h"
 #include "math/tukey-hinges.h"
 #include "math/trimmed-mean.h"
 
@@ -94,7 +95,6 @@ enum
 #define PLOT_BOXPLOT        0x2
 #define PLOT_NPPLOT         0x4
 #define PLOT_SPREADLEVEL    0x8
-
 
 struct examine
 {
@@ -181,6 +181,7 @@ struct exploratory_stats
   struct trimmed_mean *trimmed_mean;
   struct percentile *quartiles[3];
   struct percentile **percentiles;
+  struct shapiro_wilk *shapiro_wilk;
 
   struct tukey_hinges *hinges;
 
@@ -663,6 +664,72 @@ percentiles_report (const struct examine *cmd, int iact_idx)
 }
 
 static void
+normality_report (const struct examine *cmd, int iact_idx)
+{
+  struct pivot_table *table = pivot_table_create (N_("Tests of Normality"));
+  table->omit_empty = true;
+
+  struct pivot_dimension *test =
+    pivot_dimension_create (table, PIVOT_AXIS_COLUMN, N_("Shapiro-Wilk"),
+			    N_("Statistic"),
+			    N_("df"), PIVOT_RC_COUNT,
+			    N_("Sig."));
+
+  test->root->show_label = true;
+
+  const struct interaction *iact = cmd->iacts[iact_idx];
+  struct pivot_footnote *missing_footnote = create_missing_footnote (table);
+  create_interaction_dimensions (table, cmd->cats, iact, missing_footnote);
+
+  struct pivot_dimension *dep_dim = pivot_dimension_create (
+    table, PIVOT_AXIS_ROW, N_("Dependent Variables"));
+
+  size_t *indexes = xnmalloc (table->n_dimensions, sizeof *indexes);
+
+  size_t n_cats = categoricals_n_count (cmd->cats, iact_idx);
+  for (size_t v = 0; v < cmd->n_dep_vars; ++v)
+    {
+      indexes[table->n_dimensions - 1] =
+	pivot_category_create_leaf (dep_dim->root, pivot_value_new_variable (cmd->dep_vars[v]));
+
+      for (size_t i = 0; i < n_cats; ++i)
+        {
+	  indexes[1] = i;
+
+          const struct exploratory_stats *es
+            = categoricals_get_user_data_by_category_real (
+              cmd->cats, iact_idx, i);
+
+	  struct shapiro_wilk *sw =  es[v].shapiro_wilk;
+
+	  if (sw == NULL)
+	    continue;
+
+	  double w = shapiro_wilk_calculate (sw);
+
+	  int j = 0;
+	  indexes[0] = j;
+
+	  pivot_table_put (table, indexes, table->n_dimensions,
+			   pivot_value_new_number (w));
+
+	  indexes[0] = ++j;
+	  pivot_table_put (table, indexes, table->n_dimensions,
+			   pivot_value_new_number (sw->n));
+
+	  indexes[0] = ++j;
+	  pivot_table_put (table, indexes, table->n_dimensions,
+			   pivot_value_new_number (shapiro_wilk_significance (sw->n, w)));
+	}
+    }
+
+  free (indexes);
+
+  pivot_table_submit (table);
+}
+
+
+static void
 descriptives_report (const struct examine *cmd, int iact_idx)
 {
   struct pivot_table *table = pivot_table_create (N_("Descriptives"));
@@ -1137,6 +1204,7 @@ calculate_n (const void *aux1, void *aux2 UNUSED, void *user_data)
 	es[v].percentiles = pool_calloc (examine->pool, examine->n_percentiles, sizeof (*es[v].percentiles));
 
 	es[v].trimmed_mean = trimmed_mean_create (es[v].cc, 0.05);
+	es[v].shapiro_wilk = NULL;
 
 	os = xcalloc (n_os, sizeof *os);
 	os[0] = &es[v].trimmed_mean->parent;
@@ -1176,6 +1244,23 @@ calculate_n (const void *aux1, void *aux2 UNUSED, void *user_data)
 	  order_stats_accumulate_idx (&os, 1,
 				      casereader_clone (es[v].sorted_reader),
 				      EX_WT, EX_VAL);
+        }
+
+      if (examine->plot)
+        {
+	  double mean;
+
+	  moments_calculate (es[v].mom, NULL, &mean, NULL, NULL, NULL);
+
+          es[v].shapiro_wilk = shapiro_wilk_create (es[v].non_missing, mean);
+
+	  if (es[v].shapiro_wilk)
+	    {
+	      struct order_stats *os = &es[v].shapiro_wilk->parent;
+	      order_stats_accumulate_idx (&os, 1,
+					  casereader_clone (es[v].sorted_reader),
+					  EX_WT, EX_VAL);
+	    }
         }
 
       if (examine->plot & PLOT_NPPLOT)
@@ -1339,6 +1424,9 @@ run_examine (struct examine *cmd, struct casereader *input)
 
       if (cmd->descriptives)
         descriptives_report (cmd, i);
+
+      if (cmd->plot)
+	normality_report (cmd, i);
     }
 
   cleanup_exploratory_stats (cmd);

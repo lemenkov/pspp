@@ -1,5 +1,5 @@
 # PSPP - a program for statistical analysis.
-# Copyright (C) 2017 Free Software Foundation, Inc.
+# Copyright (C) 2017, 2019 Free Software Foundation, Inc.
 # 
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -46,6 +46,7 @@ src_math_libpspp_math_la_SOURCES = \
 	src/math/random.c src/math/random.h \
         src/math/statistic.h \
 	src/math/sort.c src/math/sort.h \
+	src/math/shapiro-wilk.c	src/math/shapiro-wilk.h \
 	src/math/trimmed-mean.c src/math/trimmed-mean.h \
 	src/math/tukey-hinges.c src/math/tukey-hinges.h \
 	src/math/wilcoxon-sig.c src/math/wilcoxon-sig.h

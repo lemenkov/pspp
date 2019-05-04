@@ -249,7 +249,6 @@ V1,Highest,1,21,20.00
 AT_CLEANUP
 
 
-
 AT_SETUP([EXAMINE -- extremes with fractional weights])
 AT_KEYWORDS([categorical categoricals])
 AT_DATA([extreme.sps], [dnl
@@ -734,8 +733,8 @@ examine x
 	.
 ])
 
-AT_CHECK([pspp -O format=csv examine-id.sps], [0], 
-[Table: Case Processing Summary
+AT_CHECK([pspp -O format=csv examine-id.sps], [0], [dnl
+Table: Case Processing Summary
 ,Cases,,,,,
 ,Valid,,Missing,,Total,
 ,N,Percent,N,Percent,N,Percent
@@ -753,6 +752,11 @@ x,Highest,1,threehundred,300.00
 ,,3,three,3.00
 ,,4,four,4.00
 ,,5,five,5.00
+
+Table: Tests of Normality
+,Shapiro-Wilk,,
+,Statistic,df,Sig.
+x,.37,14,.00
 ])
 
 AT_CLEANUP 
@@ -1251,6 +1255,7 @@ Weight in kilograms ,Highest,1,13,92.1
 AT_CLEANUP
 
 
+
 AT_SETUP([EXAMINE -- Crash on unrepresentable graphs])
 AT_DATA([examine.sps], [dnl
 data list notable list /x * g *.
@@ -1264,4 +1269,103 @@ examine x  by g
 ])
 dnl This bug only manifested itself on cairo based drivers.
 AT_CHECK([pspp -O format=pdf examine.sps], [1], [ignore])
+AT_CLEANUP
+
+
+dnl This example comes from the web site:
+dnl  https://www.spsstests.com/2018/11/shapiro-wilk-normality-test-spss.html
+AT_SETUP([EXAMINE -- shapiro-wilk 1])
+AT_KEYWORDS([shapiro wilk])
+AT_DATA([shapiro-wilk.sps], [dnl
+data list notable list /x * g *.
+begin data.
+96 1
+98 1
+95 1
+89 1
+90 1
+92 1
+94 1
+93 1
+97 1
+100 1
+99 2
+96 2
+80 2
+89 2
+91 2
+92 2
+93 2
+94 2
+99 2
+80 2
+end data.
+
+set format F22.3.
+
+examine x  by g
+	/nototal
+	/plot = all.
+])
+
+AT_CHECK([pspp -O format=csv shapiro-wilk.sps], [0],[dnl
+Table: Case Processing Summary
+,,Cases,,,,,
+,,Valid,,Missing,,Total,
+,g,N,Percent,N,Percent,N,Percent
+x,1.00,10,100.0%,0,.0%,10,100.0%
+,2.00,10,100.0%,0,.0%,10,100.0%
+
+Table: Tests of Normality
+,,Shapiro-Wilk,,
+,g,Statistic,df,Sig.
+x,1.00,.984,10,.983
+,2.00,.882,10,.136
+])
+
+AT_CLEANUP
+
+
+dnl This example comes from the web site:
+dnl  http://www.real-statistics.com/tests-normality-and-symmetry/statistical-tests-normality-symmetry/shapiro-wilk-expanded-test/
+dnl It uses a dataset larger than 11 samples. Hence the alternative method for
+dnl signficance is used.
+AT_SETUP([EXAMINE -- shapiro-wilk 2])
+AT_KEYWORDS([shapiro wilk])
+AT_DATA([shapiro-wilk2.sps], [dnl
+data list notable list /x *.
+begin data.
+65
+61
+63
+86
+70
+55
+74
+35
+72
+68
+45
+58
+end data.
+
+set format F22.3.
+
+examine x
+	/plot = boxplot.
+])
+
+AT_CHECK([pspp -O format=csv shapiro-wilk2.sps], [0],[dnl
+Table: Case Processing Summary
+,Cases,,,,,
+,Valid,,Missing,,Total,
+,N,Percent,N,Percent,N,Percent
+x,12,100.0%,0,.0%,12,100.0%
+
+Table: Tests of Normality
+,Shapiro-Wilk,,
+,Statistic,df,Sig.
+x,.971,12,.922
+])
+
 AT_CLEANUP

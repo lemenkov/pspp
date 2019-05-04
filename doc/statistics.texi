@@ -331,6 +331,15 @@ Zero, however is a special value.  If @var{t} is 0 or
 is omitted, then data will be transformed by taking its natural logarithm instead of
 raising to the power of @var{t}.
 
+@cindex Shapiro-Wilk
+When one or more plots are requested, @subcmd{EXAMINE} also performs the
+Shapiro-Wilk test for each category.
+There are however a number of provisos:
+@itemize
+@item All weight values must be integer.
+@item The cumulative weight value must be in the range [3, 5000]
+@end itemize
+
 The @subcmd{COMPARE} subcommand is only relevant if producing boxplots, and it is only 
 useful there is more than one dependent variable and at least one factor.
 If 
