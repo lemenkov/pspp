@@ -1,5 +1,5 @@
 dnl PSPP - a program for statistical analysis.
-dnl Copyright (C) 2017 Free Software Foundation, Inc.
+dnl Copyright (C) 2017, 2019 Free Software Foundation, Inc.
 dnl 
 dnl This program is free software: you can redistribute it and/or modify
 dnl it under the terms of the GNU General Public License as published by
@@ -1250,3 +1250,18 @@ Weight in kilograms ,Highest,1,13,92.1
 ])
 AT_CLEANUP
 
+
+AT_SETUP([EXAMINE -- Crash on unrepresentable graphs])
+AT_DATA([examine.sps], [dnl
+data list notable list /x * g *.
+begin data.
+96 1
+end data.
+
+examine x  by g
+        /nototal
+        /plot = all.
+])
+dnl This bug only manifested itself on cairo based drivers.
+AT_CHECK([pspp -O format=pdf examine.sps], [1], [ignore])
+AT_CLEANUP

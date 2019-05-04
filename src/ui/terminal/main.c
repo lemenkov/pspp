@@ -160,13 +160,13 @@ main (int argc, char **argv)
     }
 
 
+  output_engine_pop ();
   session_destroy (the_session);
 
   random_done ();
   settings_done ();
   fh_done ();
   lex_destroy (lexer);
-  output_engine_pop ();
   i18n_done ();
 
   return msg_ui_any_errors ();

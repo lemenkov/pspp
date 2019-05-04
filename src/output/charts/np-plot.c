@@ -33,7 +33,7 @@ make_np_plot (const struct np *np, const struct casereader *reader,
 {
   struct np_plot_chart *npp;
 
-  if (np->n < 1.0)
+  if (np->n <= 1.0)
     return NULL;
 
   npp = xzalloc (sizeof *npp);

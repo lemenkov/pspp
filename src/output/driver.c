@@ -76,6 +76,8 @@ static struct output_engine *
 engine_stack_top (void)
 {
   struct ll *head = ll_head (&engine_stack);
+  if (ll_is_empty (head))
+    return NULL;
   return ll_data (head, struct output_engine, ll);
 }
 
@@ -202,6 +204,9 @@ output_submit (struct output_item *item)
 {
   struct output_engine *e = engine_stack_top ();
 
+  if (e == NULL)
+    return;
+
   if (item == NULL)
     return;
 
@@ -262,6 +267,9 @@ const char *
 output_get_command_name (void)
 {
   struct output_engine *e = engine_stack_top ();
+  if (e == NULL)
+    return NULL;
+
   for (size_t i = e->n_groups; i-- > 0; )
     if (e->groups[i])
       return e->groups[i];
