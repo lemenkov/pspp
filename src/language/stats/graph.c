@@ -416,6 +416,7 @@ run_barchart (struct graph *cmd, struct casereader *input)
   struct freq **cells = NULL;
   int n_cells = 0;
 
+  assert (cmd->n_by_vars <= 2);
   for (grouper = casegrouper_create_vars (input, cmd->by_var,
                                           cmd->n_by_vars);
        casegrouper_get_next_group (grouper, &group);
