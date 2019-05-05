@@ -413,8 +413,8 @@ run_barchart (struct graph *cmd, struct casereader *input)
 
   input = sort_execute (input, &cmd->ordering);
 
-  struct freq **freqs = NULL;
-  int n_freqs = 0;
+  struct freq **cells = NULL;
+  int n_cells = 0;
 
   for (grouper = casegrouper_create_vars (input, cmd->by_var,
                                           cmd->n_by_vars);
@@ -439,22 +439,22 @@ run_barchart (struct graph *cmd, struct casereader *input)
 	  continue;
 	}
 
-      freqs = xrealloc (freqs, sizeof (*freqs) * ++n_freqs);
-      freqs[n_freqs - 1] = xzalloc (sizeof (**freqs)
+      cells = xrealloc (cells, sizeof (*cells) * ++n_cells);
+      cells[n_cells - 1] = xzalloc (sizeof (**cells)
 				    + sizeof (union value)
 				    * (cmd->n_by_vars - 1));
 
-      if (ag_func[cmd->agr].cumulative && n_freqs >= 2)
-	freqs[n_freqs - 1]->count = freqs[n_freqs - 2]->count;
+      if (ag_func[cmd->agr].cumulative && n_cells >= 2)
+	cells[n_cells - 1]->count = cells[n_cells - 2]->count;
       else
-	freqs[n_freqs - 1]->count = 0;
+	cells[n_cells - 1]->count = 0;
       if (ag_func[cmd->agr].pre)
-	freqs[n_freqs - 1]->count = ag_func[cmd->agr].pre();
+	cells[n_cells - 1]->count = ag_func[cmd->agr].pre();
 
 
       for (v = 0; v < cmd->n_by_vars; ++v)
 	{
-	  value_clone (&freqs[n_freqs - 1]->values[v],
+	  value_clone (&cells[n_cells - 1]->values[v],
 		       case_data (c, cmd->by_var[v]),
 		       var_get_width (cmd->by_var[v]));
 	}
@@ -469,23 +469,23 @@ run_barchart (struct graph *cmd, struct casereader *input)
 
 	  cc += weight;
 
-	  freqs[n_freqs - 1]->count
-	    = ag_func[cmd->agr].calc (freqs[n_freqs - 1]->count, x, weight);
+	  cells[n_cells - 1]->count
+	    = ag_func[cmd->agr].calc (cells[n_cells - 1]->count, x, weight);
 	}
 
       if (ag_func[cmd->agr].post)
-      	freqs[n_freqs - 1]->count
-      	  = ag_func[cmd->agr].post (freqs[n_freqs - 1]->count, cc);
+      	cells[n_cells - 1]->count
+      	  = ag_func[cmd->agr].post (cells[n_cells - 1]->count, cc);
 
       ccc += cc;
     }
 
   casegrouper_destroy (grouper);
 
-  for (int i = 0; i < n_freqs; ++i)
+  for (int i = 0; i < n_cells; ++i)
     {
       if (ag_func[cmd->agr].ppost)
-      	freqs[i]->count = ag_func[cmd->agr].ppost (freqs[i]->count, ccc);
+      	cells[i]->count = ag_func[cmd->agr].ppost (cells[i]->count, ccc);
     }
 
 
@@ -503,15 +503,15 @@ run_barchart (struct graph *cmd, struct casereader *input)
 
     chart_item_submit (barchart_create (cmd->by_var, cmd->n_by_vars,
 					ds_cstr (&label), false,
-					freqs, n_freqs));
+					cells, n_cells));
 
     ds_destroy (&label);
   }
 
-  for (int i = 0; i < n_freqs; ++i)
-    free (freqs[i]);
+  for (int i = 0; i < n_cells; ++i)
+    free (cells[i]);
 
-  free (freqs);
+  free (cells);
 }
 
 
