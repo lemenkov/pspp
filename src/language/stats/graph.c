@@ -1,6 +1,6 @@
 /*
   PSPP - a program for statistical analysis.
-  Copyright (C) 2012, 2013, 2015 Free Software Foundation, Inc.
+  Copyright (C) 2012, 2013, 2015, 2019 Free Software Foundation, Inc.
 
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -416,6 +416,7 @@ run_barchart (struct graph *cmd, struct casereader *input)
   struct freq **cells = NULL;
   int n_cells = 0;
 
+  struct hmap columns = HMAP_INITIALIZER (columns);
   assert (cmd->n_by_vars <= 2);
   for (grouper = casegrouper_create_vars (input, cmd->by_var,
                                           cmd->n_by_vars);
@@ -452,6 +453,28 @@ run_barchart (struct graph *cmd, struct casereader *input)
       if (ag_func[cmd->agr].pre)
 	cells[n_cells - 1]->count = ag_func[cmd->agr].pre();
 
+      if (cmd->n_by_vars > 1)
+      {
+	const union value *vv = case_data (c, cmd->by_var[1]);
+	const double weight = dict_get_case_weight (cmd->dict, c, NULL);
+	int v1_width = var_get_width (cmd->by_var[1]);
+	size_t hash = value_hash (vv, v1_width, 0);
+
+	struct freq *fcol = NULL;
+	HMAP_FOR_EACH_WITH_HASH (fcol, struct freq, node, hash, &columns)
+	  if (value_equal (vv, &fcol->values[0], v1_width))
+	    break;
+
+	if (fcol)
+	  fcol->count += weight;
+	else
+	  {
+	    fcol = xzalloc (sizeof *fcol);
+	    fcol->count = weight;
+	    value_clone (&fcol->values[0], vv, v1_width);
+	    hmap_insert (&columns, &fcol->node, hash);
+	  }
+      }
 
       for (v = 0; v < cmd->n_by_vars; ++v)
 	{
@@ -486,9 +509,39 @@ run_barchart (struct graph *cmd, struct casereader *input)
   for (int i = 0; i < n_cells; ++i)
     {
       if (ag_func[cmd->agr].ppost)
-      	cells[i]->count = ag_func[cmd->agr].ppost (cells[i]->count, ccc);
+	{
+	  struct freq *cell = cells[i];
+	  if (cmd->n_by_vars > 1)
+	    {
+	      const union value *vv = &cell->values[1];
+
+	      int v1_width = var_get_width (cmd->by_var[1]);
+	      size_t hash = value_hash (vv, v1_width, 0);
+
+	      struct freq *fcol = NULL;
+	      HMAP_FOR_EACH_WITH_HASH (fcol, struct freq, node, hash, &columns)
+		if (value_equal (vv, &fcol->values[0], v1_width))
+		  break;
+
+	      cell->count = ag_func[cmd->agr].ppost (cell->count, fcol->count);
+	    }
+	  else
+	    cell->count = ag_func[cmd->agr].ppost (cell->count, ccc);
+	}
     }
 
+  if (cmd->n_by_vars > 1)
+    {
+      struct freq *col_cell;
+      struct freq *next;
+      HMAP_FOR_EACH_SAFE (col_cell, next, struct freq, node, &columns)
+	{
+
+	  value_destroy (col_cell->values, var_get_width (cmd->by_var[1]));
+	  free (col_cell);
+	}
+    }
+  hmap_destroy (&columns);
 
   {
     struct string label;

@@ -347,3 +347,91 @@ AT_CHECK([pspp -o pspp.pdf barchart.sps], [1], [ignore])
 dnl Ignore output -- this is just a no-crash check.
 
 AT_CLEANUP
+
+
+dnl Check that percentages are calculated with respect to the
+dnl proper total.  See bug #56247
+AT_SETUP([GRAPH barchart percentage sub-categorical])
+AT_DATA([barchart.sps], [dnl
+data list list notable /penalty_favopp_x * XYdem_racethW8 * w *.
+begin data.
+1 0 1960
+1 1 376
+2 0 678
+2 1 147
+4 0 368
+4 1 164
+5 0 427
+5 1 274
+. . 1522
+end data.
+
+weight by w.
+
+* crosstabs
+*   /tables=penalty_favopp_x by XYdem_racethW8
+*   /format=AVALUE TABLES PIVOT
+*   /statistics=CHISQ
+*   /cells COUNT COLUMN TOTAL.
+
+graph
+  /bar=pct by penalty_favopp_x
+  .
+
+graph
+  /bar=pct by penalty_favopp_x by XYdem_racethW8
+  .
+])
+
+AT_CHECK([pspp --testing barchart.sps], [0], [dnl
+Graphic: Barchart
+Percentage: 0
+Total Categories: 4
+Primary Categories: 4
+Largest Category: 53.1634
+Total Count: 100
+Y Label: "Percentage"
+Categorical Variables:
+  Var: "penalty_favopp_x"
+Categories:
+  0 "    1.00"
+  2 "    4.00"
+  3 "    5.00"
+  1 "    2.00"
+All Categories:
+Count: 53.1634; Cat: "    1.00"
+Count: 18.7756; Cat: "    2.00"
+Count: 12.1074; Cat: "    4.00"
+Count: 15.9536; Cat: "    5.00"
+
+Graphic: Barchart
+Percentage: 0
+Total Categories: 8
+Primary Categories: 4
+Largest Category: 57.0929
+Total Count: 200
+Y Label: "Percentage"
+Categorical Variables:
+  Var: "penalty_favopp_x"
+  Var: "XYdem_racethW8"
+Categories:
+  0 "    1.00"
+  2 "    4.00"
+  3 "    5.00"
+  1 "    2.00"
+Sub-categories:
+  0 "     .00"
+  1 "    1.00"
+All Categories:
+Count: 57.0929; Cat: "    1.00", "     .00"
+Count: 39.1259; Cat: "    1.00", "    1.00"
+Count: 19.7495; Cat: "    2.00", "     .00"
+Count: 15.2966; Cat: "    2.00", "    1.00"
+Count: 10.7195; Cat: "    4.00", "     .00"
+Count: 17.0656; Cat: "    4.00", "    1.00"
+Count: 12.4381; Cat: "    5.00", "     .00"
+Count: 28.512; Cat: "    5.00", "    1.00"
+
+])
+
+AT_CLEANUP
