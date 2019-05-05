@@ -70,9 +70,8 @@ struct barchart
     /* A hash table of struct category indexed by VAL */
     struct hmap secondaries;
 
-
     /* A array of pointers to the members of the above hmap,
-       sorted by VAL */
+       (the secondaries) sorted by VAL */
     struct category **ss;
   };
 
