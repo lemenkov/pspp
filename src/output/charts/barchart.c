@@ -28,6 +28,7 @@
 
 #include "gl/xalloc.h"
 #include "data/variable.h"
+#include "data/settings.h"
 #include "language/stats/freq.h"
 
 
@@ -72,6 +73,68 @@ compare_freq_2level_ptr_3way (const void *a_, const void *b_, const void *bc_)
   return level0;
 }
 
+/* Print out a textual representation of a barchart.
+   This is intended only for testing, and not as a means
+   of visualising the data.
+*/
+static void
+barchart_dump (const struct barchart *bc, FILE *fp)
+{
+  fprintf (fp, "Graphic: Barchart\n");
+  fprintf (fp, "Percentage: %d\n", bc->percent);
+  fprintf (fp, "Total Categories: %d\n", bc->n_nzcats);
+  fprintf (fp, "Primary Categories: %d\n", bc->n_pcats);
+  fprintf (fp, "Largest Category: %g\n", bc->largest);
+  fprintf (fp, "Total Count: %g\n", bc->total_count);
+
+  fprintf (fp, "Y Label: \"%s\"\n", bc->ylabel);
+
+  fprintf (fp, "Categorical Variables:\n");
+  for (int i = 0; i < bc->n_vars; ++i)
+    {
+      fprintf (fp, "  Var: \"%s\"\n", var_get_name (bc->var[i]));
+    }
+
+  fprintf (fp, "Categories:\n");
+  struct category *cat;
+  HMAP_FOR_EACH (cat, struct category, node, &bc->primaries)
+    {
+      fprintf (fp, "  %d \"%s\"\n", cat->idx, ds_cstr(&cat->label));
+    }
+
+  if (bc->ss)
+    {
+      fprintf (fp, "Sub-categories:\n");
+      for (int i = 0; i < bc->n_nzcats / bc->n_pcats; ++i)
+	{
+	  const struct category *cat = bc->ss[i];
+	  fprintf (fp, "  %d \"%s\"\n", cat->idx, ds_cstr(&cat->label));
+	}
+    }
+
+  fprintf (fp, "All Categories:\n");
+  for (int i = 0; i < bc->n_nzcats; ++i)
+    {
+      const struct freq *frq = bc->cats[i];
+      fprintf (fp, "Count: %g; ", frq->count);
+
+      struct string s = DS_EMPTY_INITIALIZER;
+      var_append_value_name (bc->var[0], &frq->values[0], &s);
+
+      fprintf (fp, "Cat: \"%s\"", ds_cstr (&s));
+      ds_clear (&s);
+
+      if (bc->ss)
+	{
+	  var_append_value_name (bc->var[1], &frq->values[1], &s);
+	  fprintf (fp, ", \"%s\"", ds_cstr (&s));
+	}
+      ds_destroy (&s);
+      fputc ('\n', fp);
+    }
+
+  fputc ('\n', fp);
+}
 
 
 /* Creates and returns a chart that will render a barchart with
@@ -250,6 +313,9 @@ barchart_create (const struct variable **var, int n_vars,
 
   sort (bar->cats, bar->n_nzcats, sizeof *bar->cats,
 	compare_freq_2level_ptr_3way, bar);
+
+  if (settings_get_testing_mode ())
+    barchart_dump (bar, stdout);
 
   return &bar->chart_item;
 }
