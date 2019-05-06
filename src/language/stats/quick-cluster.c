@@ -58,7 +58,7 @@ struct qc
   const struct variable **vars;
   size_t n_vars;
 
-  double epsilon;               /* The convergence criterium */
+  double epsilon;               /* The convergence criterion */
 
   int ngroups;			/* Number of group. (Given by the user) */
   int maxiter;			/* Maximum iterations (Given by the user) */
@@ -731,7 +731,7 @@ cmd_quick_cluster (struct lexer *lexer, struct dataset *ds)
 		      qc.epsilon = lex_number (lexer);
 		      if (qc.epsilon <= 0)
 			{
-			  lex_error (lexer, _("The convergence criterium must be positive"));
+			  lex_error (lexer, _("The convergence criterion must be positive"));
 			  goto error;
 			}
 		      lex_get (lexer);
