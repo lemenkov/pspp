@@ -228,7 +228,7 @@ parse_int (struct driver_option *o, int min_value, int max_value)
       else if (max_value == INT_MAX)
         {
           if (min_value == 0)
-            msg (MW, _("%s: `%s' is `%s' but a nonnegative integer "
+            msg (MW, _("%s: `%s' is `%s' but a non-negative integer "
                            "is required"),
                    o->driver_name, o->name, o->value);
           else if (min_value == 1)

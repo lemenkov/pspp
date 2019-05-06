@@ -126,7 +126,7 @@ cmd_data_list (struct lexer *lexer, struct dataset *ds)
 	  int records = lex_integer (lexer);
 	  if (records < 0)
 	    {
-	      msg (SE, _("The %s value must be nonnegative."), "RECORDS");
+	      msg (SE, _("The %s value must be non-negative."), "RECORDS");
 	      goto error;
 	    }
           data_parser_set_records (parser, records);
@@ -141,7 +141,7 @@ cmd_data_list (struct lexer *lexer, struct dataset *ds)
 	  int skip = lex_integer (lexer);
 	  if (skip < 0)
 	    {
-	      msg (SE, _("The %s value must be nonnegative."), "SKIP");
+	      msg (SE, _("The %s value must be non-negative."), "SKIP");
 	      goto error;
 	    }
           data_parser_set_skip (parser, skip);
