@@ -39,7 +39,7 @@ POFILES = \
 	po/uk.po \
 	po/zh_CN.po
 
-LOCALPOFILES = po/cs.po po/en_GB.po
+LOCALPOFILES = po/cs.po
 
 POTFILE=po/$(DOMAIN).pot
 
