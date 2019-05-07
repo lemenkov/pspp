@@ -1819,6 +1819,7 @@ QUICK CLUSTER @var{var_list}
       [/CRITERIA=CLUSTERS(@var{k}) [MXITER(@var{max_iter})] CONVERGE(@var{epsilon}) [NOINITIAL]]
       [/MISSING=@{EXCLUDE,INCLUDE@} @{LISTWISE, PAIRWISE@}]
       [/PRINT=@{INITIAL@} @{CLUSTER@}]
+      [/SAVE[=[CLUSTER[(@var{membership_var})]] [DISTANCE[(@var{distance_var})]]]
 @end display
 
 The @cmd{QUICK CLUSTER} command performs k-means clustering on the
@@ -1871,6 +1872,12 @@ be printed.
 If @subcmd{CLUSTER} is set, the cluster memberships of the individual
 cases will be displayed (potentially generating lengthy output).
 
+You can specify the subcommand @subcmd{SAVE} to ask that each case's cluster membership
+and the euclidean distance between the case and its cluster center be saved to
+a new variable in the active dataset.   To save the cluster membership use the
+@subcmd{CLUSTER} keyword and to save the distance use the @subcmd{DISTANCE} keyword.
+Each keyword may optionally be followed by a variable in parenthesis to specify
+the new variable which is to contain the saved parameter.
 
 @node RANK
 @section RANK
