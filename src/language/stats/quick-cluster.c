@@ -91,19 +91,28 @@ struct Kmeans
 
 static struct Kmeans *kmeans_create (const struct qc *qc);
 
-static void kmeans_get_nearest_group (const struct Kmeans *kmeans, struct ccase *c, const struct qc *, int *, double *, int *, double *);
+static void kmeans_get_nearest_group (const struct Kmeans *kmeans,
+				      struct ccase *c, const struct qc *,
+				      int *, double *, int *, double *);
 
 static void kmeans_order_groups (struct Kmeans *kmeans, const struct qc *);
 
-static void kmeans_cluster (struct Kmeans *kmeans, struct casereader *reader, const struct qc *);
+static void kmeans_cluster (struct Kmeans *kmeans, struct casereader *reader,
+			    const struct qc *);
 
-static void quick_cluster_show_centers (struct Kmeans *kmeans, bool initial, const struct qc *);
+static void quick_cluster_show_centers (struct Kmeans *kmeans, bool initial,
+					const struct qc *);
 
-static void quick_cluster_show_membership (struct Kmeans *kmeans, const struct casereader *reader, const struct qc *);
+static void quick_cluster_show_membership (struct Kmeans *kmeans,
+					   const struct casereader *reader,
+					   const struct qc *);
 
-static void quick_cluster_show_number_cases (struct Kmeans *kmeans, const struct qc *);
+static void quick_cluster_show_number_cases (struct Kmeans *kmeans,
+					     const struct qc *);
 
-static void quick_cluster_show_results (struct Kmeans *kmeans, const struct casereader *reader, const struct qc *);
+static void quick_cluster_show_results (struct Kmeans *kmeans,
+					const struct casereader *reader,
+					const struct qc *);
 
 int cmd_quick_cluster (struct lexer *lexer, struct dataset *ds);
 
@@ -192,7 +201,8 @@ matrix_mindist (const gsl_matrix *m, int *mn, int *mm)
 
 /* Return the distance of C from the group whose index is WHICH */
 static double
-dist_from_case (const struct Kmeans *kmeans, const struct ccase *c, const struct qc *qc, int which)
+dist_from_case (const struct Kmeans *kmeans, const struct ccase *c,
+		const struct qc *qc, int which)
 {
   int j;
   double dist = 0;
@@ -223,7 +233,8 @@ min_dist_from (const struct Kmeans *kmeans, const struct qc *qc, int which)
       double dist = 0;
       for (j = 0; j < qc->n_vars; j++)
 	{
-	  dist += pow2 (gsl_matrix_get (kmeans->centers, i, j) - gsl_matrix_get (kmeans->centers, which, j));
+	  dist += pow2 (gsl_matrix_get (kmeans->centers, i, j)
+			- gsl_matrix_get (kmeans->centers, which, j));
 	}
 
       if (dist < mindist)
@@ -239,7 +250,9 @@ min_dist_from (const struct Kmeans *kmeans, const struct qc *qc, int which)
 
 /* Calculate the initial cluster centers. */
 static void
-kmeans_initial_centers (struct Kmeans *kmeans, const struct casereader *reader, const struct qc *qc)
+kmeans_initial_centers (struct Kmeans *kmeans,
+			const struct casereader *reader,
+			const struct qc *qc)
 {
   struct ccase *c;
   int nc = 0, j;
@@ -278,10 +291,12 @@ kmeans_initial_centers (struct Kmeans *kmeans, const struct casereader *reader, 
 	  kmeans_get_nearest_group (kmeans, c, qc, &mq, &delta, &mp, NULL);
 	  if (delta > m)
 	    /* If the distance between C and the nearest group, is greater than the distance
-	       between the two  groups which are clostest to each other, then one group must be replaced */
+	       between the two  groups which are clostest to each
+	       other, then one group must be replaced.  */
 	    {
 	      /* Out of mn and mm, which is the clostest of the two groups to C ? */
-	      int which = (dist_from_case (kmeans, c, qc, mn) > dist_from_case (kmeans, c, qc, mm)) ? mm : mn;
+	      int which = (dist_from_case (kmeans, c, qc, mn)
+			   > dist_from_case (kmeans, c, qc, mm)) ? mm : mn;
 
 	      for (j = 0; j < qc->n_vars; ++j)
 		{
@@ -290,9 +305,10 @@ kmeans_initial_centers (struct Kmeans *kmeans, const struct casereader *reader, 
 		}
 	    }
 	  else if (dist_from_case (kmeans, c, qc, mp) > min_dist_from (kmeans, qc, mq))
-	    /* If the distance between C and the second nearest group (MP) is greater than the
-	       smallest distance between the nearest group (MQ) and any other group, then replace
-	       MQ with C */
+	    /* If the distance between C and the second nearest group
+	       (MP) is greater than the smallest distance between the
+	       nearest group (MQ) and any other group, then replace
+	       MQ with C.  */
 	    {
 	      for (j = 0; j < qc->n_vars; ++j)
 		{
@@ -316,7 +332,9 @@ kmeans_initial_centers (struct Kmeans *kmeans, const struct casereader *reader, 
 
 /* Return the index of the group which is nearest to the case C */
 static void
-kmeans_get_nearest_group (const struct Kmeans *kmeans, struct ccase *c, const struct qc *qc, int *g_q, double *delta_q, int *g_p, double *delta_p)
+kmeans_get_nearest_group (const struct Kmeans *kmeans, struct ccase *c,
+			  const struct qc *qc, int *g_q, double *delta_q,
+			  int *g_p, double *delta_p)
 {
   int result0 = -1;
   int result1 = -1;
@@ -378,7 +396,8 @@ kmeans_order_groups (struct Kmeans *kmeans, const struct qc *qc)
 /* Main algorithm.
    Does iterations, checks convergency. */
 static void
-kmeans_cluster (struct Kmeans *kmeans, struct casereader *reader, const struct qc *qc)
+kmeans_cluster (struct Kmeans *kmeans, struct casereader *reader,
+		const struct qc *qc)
 {
   int j;
 
@@ -514,18 +533,22 @@ kmeans_cluster (struct Kmeans *kmeans, struct casereader *reader, const struct q
 static void
 quick_cluster_show_centers (struct Kmeans *kmeans, bool initial, const struct qc *qc)
 {
-  struct pivot_table *table = pivot_table_create (
-    initial ? N_("Initial Cluster Centers") : N_("Final Cluster Centers"));
+  struct pivot_table *table
+    = pivot_table_create (initial
+			  ? N_("Initial Cluster Centers")
+			  : N_("Final Cluster Centers"));
 
-  struct pivot_dimension *clusters = pivot_dimension_create (
-    table, PIVOT_AXIS_COLUMN, N_("Cluster"));
+  struct pivot_dimension *clusters
+    = pivot_dimension_create (table, PIVOT_AXIS_COLUMN, N_("Cluster"));
+
   clusters->root->show_label = true;
   for (size_t i = 0; i < qc->ngroups; i++)
     pivot_category_create_leaf (clusters->root,
                                 pivot_value_new_integer (i + 1));
 
-  struct pivot_dimension *variables = pivot_dimension_create (
-    table, PIVOT_AXIS_ROW, N_("Variable"));
+  struct pivot_dimension *variables
+    = pivot_dimension_create (table, PIVOT_AXIS_ROW, N_("Variable"));
+
   for (size_t i = 0; i < qc->n_vars; i++)
     pivot_category_create_leaf (variables->root,
                                 pivot_value_new_variable (qc->vars[i]));
@@ -540,22 +563,25 @@ quick_cluster_show_centers (struct Kmeans *kmeans, bool initial, const struct qc
         union value v = { .f = x };
         pivot_table_put2 (table, i, j,
                           pivot_value_new_var_value (qc->vars[j], &v));
-    }
+      }
 
   pivot_table_submit (table);
 }
 
 /* Reports cluster membership for each case. */
 static void
-quick_cluster_show_membership (struct Kmeans *kmeans, const struct casereader *reader, const struct qc *qc)
+quick_cluster_show_membership (struct Kmeans *kmeans,
+			       const struct casereader *reader,
+			       const struct qc *qc)
 {
   struct pivot_table *table = pivot_table_create (N_("Cluster Membership"));
 
   pivot_dimension_create (table, PIVOT_AXIS_COLUMN, N_("Cluster"),
                           N_("Cluster"));
 
-  struct pivot_dimension *cases = pivot_dimension_create (
-    table, PIVOT_AXIS_ROW, N_("Case Number"));
+  struct pivot_dimension *cases
+    = pivot_dimension_create (table, PIVOT_AXIS_ROW, N_("Case Number"));
+
   cases->root->show_label = true;
 
   gsl_permutation *ip = gsl_permutation_alloc (qc->ngroups);
@@ -570,11 +596,12 @@ quick_cluster_show_membership (struct Kmeans *kmeans, const struct casereader *r
       kmeans_get_nearest_group (kmeans, c, qc, &clust, NULL, NULL, NULL);
       int cluster = ip->data[clust];
 
-      int case_idx = pivot_category_create_leaf (
-        cases->root, pivot_value_new_integer (i + 1));
+      int case_idx = pivot_category_create_leaf (cases->root,
+						 pivot_value_new_integer (i + 1));
       pivot_table_put2 (table, 0, case_idx,
                         pivot_value_new_integer (cluster + 1));
     }
+
   gsl_permutation_free (ip);
   pivot_table_submit (table);
   casereader_destroy (cs);
@@ -585,47 +612,47 @@ quick_cluster_show_membership (struct Kmeans *kmeans, const struct casereader *r
 static void
 quick_cluster_show_number_cases (struct Kmeans *kmeans, const struct qc *qc)
 {
-  struct pivot_table *table = pivot_table_create (
-    N_("Number of Cases in each Cluster"));
+  struct pivot_table *table
+    = pivot_table_create (N_("Number of Cases in each Cluster"));
 
   pivot_dimension_create (table, PIVOT_AXIS_COLUMN, N_("Statistics"),
                           N_("Count"));
 
-  struct pivot_dimension *clusters = pivot_dimension_create (
-    table, PIVOT_AXIS_ROW, N_("Clusters"));
-  struct pivot_category *group = pivot_category_create_group (
-    clusters->root, N_("Cluster"));
+  struct pivot_dimension *clusters
+    = pivot_dimension_create (table, PIVOT_AXIS_ROW, N_("Clusters"));
+
+  struct pivot_category *group
+    = pivot_category_create_group (clusters->root, N_("Cluster"));
 
   long int total = 0;
   for (int i = 0; i < qc->ngroups; i++)
     {
-      int cluster_idx = pivot_category_create_leaf (
-        group, pivot_value_new_integer (i + 1));
-      int count = kmeans->num_elements_groups->data[
-        kmeans->group_order->data[i]];
-      pivot_table_put2 (table, 0, cluster_idx,
-                        pivot_value_new_integer (count));
+      int cluster_idx
+	= pivot_category_create_leaf (group, pivot_value_new_integer (i + 1));
+      int count = kmeans->num_elements_groups->data [kmeans->group_order->data[i]];
+      pivot_table_put2 (table, 0, cluster_idx, pivot_value_new_integer (count));
       total += count;
     }
 
-  int cluster_idx = pivot_category_create_leaf (
-    clusters->root, pivot_value_new_text (N_("Valid")));
+  int cluster_idx = pivot_category_create_leaf (clusters->root,
+						pivot_value_new_text (N_("Valid")));
   pivot_table_put2 (table, 0, cluster_idx, pivot_value_new_integer (total));
   pivot_table_submit (table);
 }
 
 /* Reports. */
 static void
-quick_cluster_show_results (struct Kmeans *kmeans, const struct casereader *reader, const struct qc *qc)
+quick_cluster_show_results (struct Kmeans *kmeans, const struct casereader *reader,
+			    const struct qc *qc)
 {
   kmeans_order_groups (kmeans, qc); /* what does this do? */
 
-  if( qc->print_initial_clusters )
+  if (qc->print_initial_clusters)
     quick_cluster_show_centers (kmeans, true, qc);
   quick_cluster_show_centers (kmeans, false, qc);
   quick_cluster_show_number_cases (kmeans, qc);
-  if( qc->print_cluster_membership )
-    quick_cluster_show_membership(kmeans, reader, qc);
+  if (qc->print_cluster_membership)
+    quick_cluster_show_membership (kmeans, reader, qc);
 }
 
 int
@@ -661,7 +688,8 @@ cmd_quick_cluster (struct lexer *lexer, struct dataset *ds)
 	  while (lex_token (lexer) != T_ENDCMD
 		 && lex_token (lexer) != T_SLASH)
 	    {
-	      if (lex_match_id (lexer, "LISTWISE") || lex_match_id (lexer, "DEFAULT"))
+	      if (lex_match_id (lexer, "LISTWISE")
+		  || lex_match_id (lexer, "DEFAULT"))
 		{
 		  qc.missing_type = MISS_LISTWISE;
 		}
@@ -787,7 +815,7 @@ cmd_quick_cluster (struct lexer *lexer, struct dataset *ds)
       {
 	if ( qc.missing_type == MISS_LISTWISE )
 	  {
-	    group  = casereader_create_filter_missing (group, qc.vars, qc.n_vars,
+	    group = casereader_create_filter_missing (group, qc.vars, qc.n_vars,
 						       qc.exclude,
 						       NULL,  NULL);
 	  }
