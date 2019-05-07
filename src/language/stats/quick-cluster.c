@@ -1044,7 +1044,7 @@ cmd_quick_cluster (struct lexer *lexer, struct dataset *ds)
 
 	      if (!dict_lookup_var (qc.dict, ds_cstr (&name)))
 		{
-		  qc.var_distance = strdup (ds_cstr (&name));
+		  qc.var_membership = strdup (ds_cstr (&name));
 		  break;
 		}
 	    }
