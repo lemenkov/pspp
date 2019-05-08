@@ -783,22 +783,12 @@ quick_cluster_show_results (struct Kmeans *kmeans, const struct casereader *read
   quick_cluster_show_membership (kmeans, reader, qc);
 }
 
-int
-cmd_quick_cluster (struct lexer *lexer, struct dataset *ds)
+/* Parse the QUICK CLUSTER command and populate QC accordingly.
+   Returns false on error.  */
+static bool
+quick_cluster_parse (struct lexer *lexer, struct qc *qc)
 {
-  struct qc qc;
-  struct Kmeans *kmeans;
-  bool ok;
-  memset (&qc, 0, sizeof qc);
-  qc.dataset = ds;
-  qc.dict =  dataset_dict (ds);
-  qc.ngroups = 2;
-  qc.maxiter = 10;
-  qc.epsilon = DBL_EPSILON;
-  qc.missing_type = MISS_LISTWISE;
-  qc.exclude = MV_ANY;
-
-  if (!parse_variables_const (lexer, qc.dict, &qc.vars, &qc.n_vars,
+  if (!parse_variables_const (lexer, qc->dict, &qc->vars, &qc->n_vars,
 			      PV_NO_DUPLICATE | PV_NUMERIC))
     {
       return (CMD_FAILURE);
@@ -817,24 +807,24 @@ cmd_quick_cluster (struct lexer *lexer, struct dataset *ds)
 	      if (lex_match_id (lexer, "LISTWISE")
 		  || lex_match_id (lexer, "DEFAULT"))
 		{
-		  qc.missing_type = MISS_LISTWISE;
+		  qc->missing_type = MISS_LISTWISE;
 		}
 	      else if (lex_match_id (lexer, "PAIRWISE"))
 		{
-		  qc.missing_type = MISS_PAIRWISE;
+		  qc->missing_type = MISS_PAIRWISE;
 		}
 	      else if (lex_match_id (lexer, "INCLUDE"))
 		{
-		  qc.exclude = MV_SYSTEM;
+		  qc->exclude = MV_SYSTEM;
 		}
 	      else if (lex_match_id (lexer, "EXCLUDE"))
 		{
-		  qc.exclude = MV_ANY;
+		  qc->exclude = MV_ANY;
 		}
 	      else
 		{
 		  lex_error (lexer, NULL);
-		  goto error;
+		  return false;
 		}
 	    }
 	}
@@ -845,13 +835,13 @@ cmd_quick_cluster (struct lexer *lexer, struct dataset *ds)
 		 && lex_token (lexer) != T_SLASH)
 	    {
 	      if (lex_match_id (lexer, "CLUSTER"))
-                qc.print_cluster_membership = true;
+                qc->print_cluster_membership = true;
 	      else if (lex_match_id (lexer, "INITIAL"))
-	        qc.print_initial_clusters = true;
+	        qc->print_initial_clusters = true;
 	      else
 		{
 		  lex_error (lexer, NULL);
-		  goto error;
+		  return false;
 		}
 	    }
 	}
@@ -863,61 +853,61 @@ cmd_quick_cluster (struct lexer *lexer, struct dataset *ds)
 	    {
 	      if (lex_match_id (lexer, "CLUSTER"))
 		{
-		  qc.save_values |= SAVE_MEMBERSHIP;
+		  qc->save_values |= SAVE_MEMBERSHIP;
 		  if (lex_match (lexer, T_LPAREN))
 		    {
 		      if (!lex_force_id (lexer))
-			goto error;
+			return false;
 
-		      free (qc.var_membership);
-		      qc.var_membership = xstrdup (lex_tokcstr (lexer));
-		      if (NULL != dict_lookup_var (dataset_dict (ds), qc.var_membership))
+		      free (qc->var_membership);
+		      qc->var_membership = xstrdup (lex_tokcstr (lexer));
+		      if (NULL != dict_lookup_var (qc->dict, qc->var_membership))
 			{
 			  lex_error (lexer,
 				     _("A variable called `%s' already exists."),
-				     qc.var_membership);
-			  free (qc.var_membership);
-			  qc.var_membership = NULL;
-			  goto error;
+				     qc->var_membership);
+			  free (qc->var_membership);
+			  qc->var_membership = NULL;
+			  return false;
 			}
 
 		      lex_get (lexer);
 
 		      if (!lex_force_match (lexer, T_RPAREN))
-			goto error;
+			return false;
 		    }
 		}
 	      else if (lex_match_id (lexer, "DISTANCE"))
 		{
-		  qc.save_values |= SAVE_DISTANCE;
+		  qc->save_values |= SAVE_DISTANCE;
 		  if (lex_match (lexer, T_LPAREN))
 		    {
 		      if (!lex_force_id (lexer))
-			goto error;
+			return false;
 
-		      free (qc.var_distance);
-		      qc.var_distance = xstrdup (lex_tokcstr (lexer));
-		      if (NULL != dict_lookup_var (dataset_dict (ds), qc.var_distance))
+		      free (qc->var_distance);
+		      qc->var_distance = xstrdup (lex_tokcstr (lexer));
+		      if (NULL != dict_lookup_var (qc->dict, qc->var_distance))
 			{
 			  lex_error (lexer,
 				     _("A variable called `%s' already exists."),
-				     qc.var_distance);
-			  free (qc.var_distance);
-			  qc.var_distance = NULL;
-			  goto error;
+				     qc->var_distance);
+			  free (qc->var_distance);
+			  qc->var_distance = NULL;
+			  return false;
 			}
 
 		      lex_get (lexer);
 
 		      if (!lex_force_match (lexer, T_RPAREN))
-			goto error;
+			return false;
 		    }
 		}
 	      else
 		{
 		  lex_error (lexer, _("Expecting %s or %s."),
 			     "CLUSTER", "DISTANCE");
-		  goto error;
+		  return false;
 		}
 	    }
 	}
@@ -932,15 +922,15 @@ cmd_quick_cluster (struct lexer *lexer, struct dataset *ds)
 		  if (lex_force_match (lexer, T_LPAREN) &&
 		      lex_force_int (lexer))
 		    {
-		      qc.ngroups = lex_integer (lexer);
-		      if (qc.ngroups <= 0)
+		      qc->ngroups = lex_integer (lexer);
+		      if (qc->ngroups <= 0)
 			{
 			  lex_error (lexer, _("The number of clusters must be positive"));
-			  goto error;
+			  return false;
 			}
 		      lex_get (lexer);
 		      if (!lex_force_match (lexer, T_RPAREN))
-			goto error;
+			return false;
 		    }
 		}
 	      else if (lex_match_id (lexer, "CONVERGE"))
@@ -948,15 +938,15 @@ cmd_quick_cluster (struct lexer *lexer, struct dataset *ds)
 		  if (lex_force_match (lexer, T_LPAREN) &&
 		      lex_force_num (lexer))
 		    {
-		      qc.epsilon = lex_number (lexer);
-		      if (qc.epsilon <= 0)
+		      qc->epsilon = lex_number (lexer);
+		      if (qc->epsilon <= 0)
 			{
 			  lex_error (lexer, _("The convergence criterion must be positive"));
-			  goto error;
+			  return false;
 			}
 		      lex_get (lexer);
 		      if (!lex_force_match (lexer, T_RPAREN))
-			goto error;
+			return false;
 		    }
 		}
 	      else if (lex_match_id (lexer, "MXITER"))
@@ -964,38 +954,59 @@ cmd_quick_cluster (struct lexer *lexer, struct dataset *ds)
 		  if (lex_force_match (lexer, T_LPAREN) &&
 		      lex_force_int (lexer))
 		    {
-		      qc.maxiter = lex_integer (lexer);
-		      if (qc.maxiter <= 0)
+		      qc->maxiter = lex_integer (lexer);
+		      if (qc->maxiter <= 0)
 			{
 			  lex_error (lexer, _("The number of iterations must be positive"));
-			  goto error;
+			  return false;
 			}
 		      lex_get (lexer);
 		      if (!lex_force_match (lexer, T_RPAREN))
-			goto error;
+			return false;
 		    }
 		}
 	      else if (lex_match_id (lexer, "NOINITIAL"))
 		{
-		  qc.no_initial = true;
+		  qc->no_initial = true;
 		}
 	      else if (lex_match_id (lexer, "NOUPDATE"))
 		{
-		  qc.no_update = true;
+		  qc->no_update = true;
 		}
 	      else
 		{
 		  lex_error (lexer, NULL);
-		  goto error;
+		  return false;
 		}
 	    }
 	}
       else
         {
           lex_error (lexer, NULL);
-          goto error;
+          return false;
         }
     }
+  return true;
+}
+
+int
+cmd_quick_cluster (struct lexer *lexer, struct dataset *ds)
+{
+  struct qc qc;
+  struct Kmeans *kmeans;
+  bool ok;
+  memset (&qc, 0, sizeof qc);
+  qc.dataset = ds;
+  qc.dict =  dataset_dict (ds);
+  qc.ngroups = 2;
+  qc.maxiter = 10;
+  qc.epsilon = DBL_EPSILON;
+  qc.missing_type = MISS_LISTWISE;
+  qc.exclude = MV_ANY;
+
+
+  if (!quick_cluster_parse (lexer, &qc))
+    goto error;
 
   qc.wv = dict_get_weight (qc.dict);
 
