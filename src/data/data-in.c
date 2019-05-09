@@ -172,7 +172,7 @@ data_in_msg (struct substring input, const char *input_encoding,
                          output, width, output_encoding);
   if (error != NULL)
     {
-      msg (SW,_("Data is not valid as format %s: %s"),
+      msg (SW, _("Data is not valid as format %s: %s"),
            fmt_name (format), error);
       free (error);
       return false;
