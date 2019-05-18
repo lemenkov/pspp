@@ -845,7 +845,9 @@ extremes_report (const struct examine *cmd, int iact_idx)
   for (size_t i = 0; i < cmd->disp_extremes; i++)
     pivot_category_create_leaf (order->root, pivot_value_new_integer (i + 1));
 
-  pivot_dimension_create (table, PIVOT_AXIS_ROW, N_("Extreme"),
+  pivot_dimension_create (table, PIVOT_AXIS_ROW,
+			  /* TRANSLATORS: This is a noun, not an adjective.  */
+			  N_("Extreme"),
                           N_("Highest"), N_("Lowest"));
 
   const struct interaction *iact = cmd->iacts[iact_idx];
