@@ -1,3 +1,28 @@
+/* PSPP - a program for statistical analysis.
+   Copyright (C) 2019 Free Software Foundation, Inc.
+
+   This program is free software: you can redistribute it and/or modify
+   it under the terms of the GNU General Public License as published by
+   the Free Software Foundation, either version 3 of the License, or
+   (at your option) any later version.
+
+   This program is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+   GNU General Public License for more details.
+
+   You should have received a copy of the GNU General Public License
+   along with this program.  If not, see <http://www.gnu.org/licenses/>. */
+
+/*
+   The licence notice above applies to the structure and semantics of
+   this file.  You may use, copy, modify and distribute this file
+   under the above licence.
+
+   The strings contained in this file however are clauses taken from
+   the GNU General License version 3.    They may not be modified.
+ */
+
 #include <config.h>
 
 const char legal[]=""
