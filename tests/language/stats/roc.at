@@ -16,7 +16,7 @@ dnl along with this program.  If not, see <http://www.gnu.org/licenses/>.
 dnl
 AT_BANNER([ROC])
 
-AT_SETUP([ROC, free distribution])
+AT_SETUP([ROC free distribution])
 AT_DATA([roc.sps], [dnl
 set format F10.3.
 data list notable list /x * y * w * a *.
@@ -67,7 +67,7 @@ x,.000,1.000,1.000
 ])
 AT_CLEANUP
 
-AT_SETUP([ROC, negative exponential distribution])
+AT_SETUP([ROC negative exponential distribution])
 AT_DATA([roc.sps], [dnl
 set format F10.3.
 data list notable list /x * y * w * a *.
@@ -126,7 +126,7 @@ y,.000,1.000,1.000
 ])
 AT_CLEANUP
 
-AT_SETUP([ROC, with anomaly])
+AT_SETUP([ROC with anomaly])
 AT_DATA([roc.sps], [dnl
 set format F10.3.
 data list notable list /x * a * comment (a20).
