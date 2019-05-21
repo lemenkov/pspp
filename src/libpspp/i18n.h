@@ -17,6 +17,7 @@
 #ifndef I18N_H
 #define I18N_H
 
+#include "libpspp/compiler.h"
 #include <stdbool.h>
 #include <unistr.h>
 
@@ -71,8 +72,8 @@ bool set_encoding_from_locale (const char *loc);
 
 const char *uc_name (ucs4_t uc, char buffer[16]);
 
-unsigned int utf8_hash_case_bytes (const char *, size_t n, unsigned int basis);
-unsigned int utf8_hash_case_string (const char *, unsigned int basis);
+unsigned int utf8_hash_case_bytes (const char *, size_t n, unsigned int basis) WARN_UNUSED_RESULT;
+unsigned int utf8_hash_case_string (const char *, unsigned int basis) WARN_UNUSED_RESULT;
 int utf8_strcasecmp (const char *, const char *);
 int utf8_strncasecmp (const char *, size_t, const char *, size_t);
 int utf8_strverscasecmp (const char *, const char *);

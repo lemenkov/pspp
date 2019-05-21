@@ -17,12 +17,13 @@
 #ifndef LIBPSPP_HASH_FUNCTIONS_H
 #define LIBPSPP_HASH_FUNCTIONS_H 1
 
+#include "libpspp/compiler.h"
 #include <stddef.h>
 
-unsigned int hash_bytes (const void *, size_t, unsigned int basis);
-unsigned int hash_string (const char *, unsigned int basis);
-unsigned int hash_int (int, unsigned int basis);
-unsigned int hash_double (double, unsigned int basis);
-unsigned int hash_pointer (const void *, unsigned int basis);
+unsigned int hash_bytes (const void *, size_t, unsigned int basis) WARN_UNUSED_RESULT;
+unsigned int hash_string (const char *, unsigned int basis) WARN_UNUSED_RESULT;
+unsigned int hash_int (int, unsigned int basis) WARN_UNUSED_RESULT;
+unsigned int hash_double (double, unsigned int basis) WARN_UNUSED_RESULT;
+unsigned int hash_pointer (const void *, unsigned int basis) WARN_UNUSED_RESULT;
 
 #endif /* libpspp/hash-functions.h */

@@ -17,6 +17,7 @@
 #ifndef DATA_VALUE_H
 #define DATA_VALUE_H 1
 
+#include "libpspp/compiler.h"
 #include <assert.h>
 #include <stdbool.h>
 #include <stdlib.h>
@@ -71,7 +72,7 @@ void value_copy_buf_rpad (union value *dst, int dst_width,
 void value_set_missing (union value *, int width);
 int value_compare_3way (const union value *, const union value *, int width);
 bool value_equal (const union value *, const union value *, int width);
-unsigned int value_hash (const union value *, int width, unsigned int basis);
+unsigned int value_hash (const union value *, int width, unsigned int basis) WARN_UNUSED_RESULT;
 
 bool value_is_resizable (const union value *, int old_width, int new_width);
 bool value_needs_resize (int old_width, int new_width);

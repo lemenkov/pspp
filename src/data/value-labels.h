@@ -114,7 +114,7 @@ const struct val_lab *val_labs_next (const struct val_labs *,
 const struct val_lab **val_labs_sorted (const struct val_labs *);
 
 /* Properties of entire sets. */
-unsigned int val_labs_hash (const struct val_labs *, unsigned int basis);
+unsigned int val_labs_hash (const struct val_labs *, unsigned int basis) WARN_UNUSED_RESULT;
 bool val_labs_equal (const struct val_labs *, const struct val_labs *);
 
 #endif /* data/value-labels.h */

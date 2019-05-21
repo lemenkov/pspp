@@ -41,6 +41,7 @@
 #ifndef LIBPSPP_SPARSE_XARRAY_H
 #define LIBPSPP_SPARSE_XARRAY_H 1
 
+#include "libpspp/compiler.h"
 #include <stddef.h>
 #include <stdbool.h>
 
@@ -67,6 +68,6 @@ bool sparse_xarray_copy (const struct sparse_xarray *src,
 
 /* For testing purposes only. */
 unsigned int sparse_xarray_model_checker_hash (const struct sparse_xarray *,
-                                               unsigned int basis);
+                                               unsigned int basis) WARN_UNUSED_RESULT;
 
 #endif /* libpspp/sparse-libpspp.h */
