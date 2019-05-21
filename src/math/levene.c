@@ -110,7 +110,6 @@ find_group (const struct levene *nl, const union value *target)
     {
       if (nl->cmp (nl, &l->group, target))
 	break;
-      l = NULL;
     }
   return l;
 }
