@@ -739,8 +739,6 @@ lookup_variable (const struct hmap *map, const struct variable *var, unsigned in
     {
       if (vn->var == var)
 	break;
-
-      fprintf (stderr, "Warning: Hash table collision\n");
     }
 
   return vn;
