@@ -1,5 +1,5 @@
 /* PSPP - a program for statistical analysis.
-   Copyright (C) 1997-9, 2000, 2008, 2009, 2010, 2011, 2012 Free Software Foundation, Inc.
+   Copyright (C) 1997-9, 2000, 2008, 2009, 2010, 2011, 2012, 2019 Free Software Foundation, Inc.
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -17,6 +17,47 @@
 #include <config.h>
 
 #include "libpspp/hash-functions.h"
+
+#if 0
+/* Enable this code only for testing!   Theoretically everything
+   should still work, but very inefficient hash tables will result,
+   meaning that the code will be slow.  */
+#warning "HASHING FUNCTIONS ARE DISABLED!  EXPECT LOTS OF HASH COLLISIONS!!!"
+
+#include "libpspp/compiler.h"
+
+
+unsigned int
+hash_bytes (const void *b UNUSED, size_t s UNUSED, unsigned int basis UNUSED)
+{
+  return 0;
+}
+
+unsigned int
+hash_string (const char *s UNUSED, unsigned int basis UNUSED)
+{
+  return 0;
+}
+
+unsigned int
+hash_int (int i UNUSED, unsigned int basis UNUSED)
+{
+  return 0;
+}
+
+unsigned int
+hash_double (double d UNUSED, unsigned int basis UNUSED)
+{
+  return 0;
+}
+
+unsigned int
+hash_pointer (const void *p UNUSED, unsigned int basis UNUSED)
+{
+  return 0;
+}
+
+#else
 
 #include <assert.h>
 #include <ctype.h>
@@ -145,3 +186,5 @@ hash_pointer (const void *p, unsigned int basis)
      on 64-bit platforms. */
   return hash_int ((int) (uintptr_t) p, basis);
 }
+
+#endif
