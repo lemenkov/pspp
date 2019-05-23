@@ -1,5 +1,5 @@
 /* PSPP - a program for statistical analysis.
-   Copyright (C) 2017 Free Software Foundation, Inc.
+   Copyright (C) 2017, 2019 Free Software Foundation, Inc.
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -20,12 +20,14 @@
 
 #include <stdbool.h>
 
-#include <libpspp/hash-functions.h>
 #include <libpspp/message.h>
+#include <libpspp/str.h>
 #include <data/casegrouper.h>
 #include <data/casereader.h>
 #include <data/dictionary.h>
 #include <data/variable.h>
+#include <data/data-out.h>
+#include <data/format.h>
 
 #include "gettext.h"
 #define _(msgid) gettext (msgid)
@@ -77,6 +79,7 @@ s_0 ROWTYPE_   VARNAME_   v_0         v_1         v_2
 
 struct matrix_reader
 {
+  const struct dictionary *dict;
   const struct variable *varname;
   const struct variable *rowtype;
   struct casegrouper *grouper;
@@ -93,6 +96,7 @@ create_matrix_reader_from_case_reader (const struct dictionary *dict, struct cas
   struct matrix_reader *mr = xzalloc (sizeof *mr);
 
   mr->varname = dict_lookup_var (dict, "varname_");
+  mr->dict = dict;
   if (mr->varname == NULL)
     {
       msg (ME, _("Matrix dataset lacks a variable called %s."), "VARNAME_");
@@ -209,18 +213,10 @@ next_matrix_from_reader (struct matrix_material *mm,
   mm->mean_matrix = mr->mean_vectors;
   mm->var_matrix = mr->var_vectors;
 
-  // FIXME: Make this into a hash table.
-  unsigned long *table = xmalloc (sizeof (*table) * n_vars);
-  int i;
-  for (i = 0; i < n_vars; ++i)
+  struct substring *var_names = xcalloc (n_vars, sizeof *var_names);
+  for (int i = 0; i < n_vars; ++i)
     {
-      const int w = var_get_width (mr->varname);
-      char s[w];
-      memset (s, 0, w);
-      const char *name = var_get_name (vars[i]);
-      strncpy (s, name, w);
-      unsigned long h = hash_bytes (s, w, 0);
-      table[i] = h;
+      ss_alloc_substring (var_names + i, ss_cstr (var_get_name (vars[i])));
     }
 
   struct ccase *c;
@@ -243,20 +239,26 @@ next_matrix_from_reader (struct matrix_material *mm,
 	      gsl_matrix_set (mr->var_vectors, row, col, x * x);
 	}
 
+      const char *enc = dict_get_encoding (mr->dict);
+
       const union value *uvv  = case_data (c, mr->varname);
-      const uint8_t *vs = value_str (uvv, var_get_width (mr->varname));
       int w = var_get_width (mr->varname);
-      unsigned long h = hash_bytes (vs, w, 0);
+
+      struct fmt_spec fmt = {FMT_A, 0, 0};
+      fmt.w = w;
+      char *vname = data_out (uvv, enc, &fmt);
+      struct substring the_name = ss_cstr (vname);
 
       int mrow = -1;
-      for (i = 0; i < n_vars; ++i)
+      for (int i = 0; i < n_vars; ++i)
 	{
-	  if (table[i] == h)
+	  if (ss_equals (var_names[i], the_name))
 	    {
 	      mrow = i;
 	      break;
 	    }
 	}
+      free (vname);
 
       if (mrow == -1)
 	continue;
@@ -273,7 +275,9 @@ next_matrix_from_reader (struct matrix_material *mm,
 
   casereader_destroy (group);
 
-  free (table);
+  for (int i = 0; i < n_vars; ++i)
+    ss_dealloc (var_names + i);
+  free (var_names);
 
   return true;
 }
