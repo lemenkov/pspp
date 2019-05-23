@@ -137,20 +137,30 @@ preprocess (struct casereader *casereader0, const struct dictionary *dict, void 
   /* Make an initial pass to populate our temporary matrix */
   struct casereader *pass0 = casereader_clone (casereader0);
   struct ccase *c;
-  unsigned int prev_split_hash = 1;
+  union value *prev_values = xcalloc (mformat->n_split_vars, sizeof *prev_values);
   int row = (mformat->triangle == LOWER && mformat->diagonal == NO_DIAGONAL) ? 1 : 0;
+  bool first_case = true;
   for (; (c = casereader_read (pass0)) != NULL; case_unref (c))
     {
       int s;
-      unsigned int split_hash = 0;
-      for (s = 0; s < mformat->n_split_vars; ++s)
+      bool match = false;
+      if (!first_case)
 	{
-	  const struct variable *svar = mformat->split_vars[s];
-	  const union value *sv = case_data (c, svar);
-	  split_hash = value_hash (sv, var_get_width (svar), split_hash);
+	  match = true;
+	  for (s = 0; s < mformat->n_split_vars; ++s)
+	    {
+	      const struct variable *svar = mformat->split_vars[s];
+	      const union value *sv = case_data (c, svar);
+	      if (! value_equal (prev_values + s, sv, var_get_width (svar)))
+		{
+		  match = false;
+		  break;
+		}
+	    }
 	}
+      first_case = false;
 
-      if (matrices == NULL || prev_split_hash != split_hash)
+      if (matrices == NULL || ! match)
 	{
 	  row = (mformat->triangle == LOWER && mformat->diagonal == NO_DIAGONAL) ?
 	    1 : 0;
@@ -160,7 +170,12 @@ preprocess (struct casereader *casereader0, const struct dictionary *dict, void 
 	  matrices[n_splits - 1] = xmalloc (sizeof_matrix);
 	}
 
-      prev_split_hash = split_hash;
+      for (s = 0; s < mformat->n_split_vars; ++s)
+	{
+	  const struct variable *svar = mformat->split_vars[s];
+	  const union value *sv = case_data (c, svar);
+	  value_clone (prev_values + s, sv, var_get_width (svar));
+	}
 
       int c_offset = (mformat->triangle == UPPER) ? row : 0;
       if (mformat->triangle == UPPER && mformat->diagonal == NO_DIAGONAL)
@@ -177,6 +192,7 @@ preprocess (struct casereader *casereader0, const struct dictionary *dict, void 
 		   mformat->n_continuous_vars, row + 1);
 	      case_unref (c);
 	      casereader_destroy (pass0);
+	      free (prev_values);
 	      goto error;
 	    }
 	  int col;
@@ -202,6 +218,7 @@ preprocess (struct casereader *casereader0, const struct dictionary *dict, void 
 	}
     }
   casereader_destroy (pass0);
+  free (prev_values);
 
   /* Now make a second pass to fill in the other triangle from our
      temporary matrix */
@@ -226,25 +243,41 @@ preprocess (struct casereader *casereader0, const struct dictionary *dict, void 
       casewriter_write (writer, outcase);
     }
 
-  prev_split_hash = 1;
   n_splits = 0;
+  prev_values = xcalloc (mformat->n_split_vars, sizeof *prev_values);
+  first_case = true;
   for (; (c = casereader_read (casereader0)) != NULL; prev_case = c)
     {
       int s;
-      unsigned int split_hash = 0;
-      for (s = 0; s < mformat->n_split_vars; ++s)
+      bool match = false;
+      if (!first_case)
 	{
-	  const struct variable *svar = mformat->split_vars[s];
-	  const union value *sv = case_data (c, svar);
-	  split_hash = value_hash (sv, var_get_width (svar), split_hash);
+	  match = true;
+	  for (s = 0; s < mformat->n_split_vars; ++s)
+	    {
+	      const struct variable *svar = mformat->split_vars[s];
+	      const union value *sv = case_data (c, svar);
+	      if (! value_equal (prev_values + s, sv, var_get_width (svar)))
+		{
+		  match = false;
+		  break;
+		}
+	    }
 	}
-      if (prev_split_hash != split_hash)
+      first_case = false;
+      if (! match)
 	{
 	  n_splits++;
 	  row = 0;
 	}
 
-      prev_split_hash = split_hash;
+      for (s = 0; s < mformat->n_split_vars; ++s)
+	{
+	  const struct variable *svar = mformat->split_vars[s];
+	  const union value *sv = case_data (c, svar);
+	  value_clone (prev_values + s, sv, var_get_width (svar));
+	}
+
       case_unref (prev_case);
       const union value *v = case_data (c, mformat->rowtype);
       const char *val = (const char *) value_str (v, ROWTYPE_WIDTH);
@@ -325,7 +358,7 @@ preprocess (struct casereader *casereader0, const struct dictionary *dict, void 
 
       casewriter_write (writer, outcase);
     }
-
+  free (prev_values);
 
   if (prev_case)
     case_unref (prev_case);
@@ -629,4 +662,3 @@ data_list_trns_proc (void *trns_, struct ccase **c, casenumber case_num UNUSED)
 
   return retval;
 }
-
