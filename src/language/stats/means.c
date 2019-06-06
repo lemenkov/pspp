@@ -1,5 +1,5 @@
 /* PSPP - a program for statistical analysis.
-   Copyright (C) 2011, 2012, 2013 Free Software Foundation, Inc.
+   Copyright (C) 2011, 2012, 2013, 2019 Free Software Foundation, Inc.
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -24,1167 +24,716 @@
 #include "data/format.h"
 #include "data/variable.h"
 
-#include "language/command.h"
-#include "language/lexer/lexer.h"
-#include "language/lexer/variable-parser.h"
-
-#include "libpspp/misc.h"
-#include "libpspp/pool.h"
-
-#include "math/categoricals.h"
-#include "math/interaction.h"
-#include "math/moments.h"
+#include "libpspp/hmap.h"
+#include "libpspp/bt.h"
 
 #include "output/pivot-table.h"
 
-#include <math.h>
+#include "means.h"
+
 
 #include "gettext.h"
 #define _(msgid) gettext (msgid)
 #define N_(msgid) (msgid)
 
-
-struct means;
-
-struct per_var_data
-{
-  void **cell_stats;
-  struct moments1 *mom;
-};
-
-
-typedef void *stat_create (struct pool *pool);
-typedef void stat_update  (void *stat, double w, double x);
-typedef double stat_get   (const struct per_var_data *, void *aux);
-
-struct cell_spec
-{
-  /* Printable title for output */
-  const char *title;
-
-  /* Keyword for syntax */
-  const char *keyword;
-
-  stat_create *sc;
-  stat_update *su;
-  stat_get *sd;
-};
-
-struct harmonic_mean
-{
-  double rsum;
-  double n;
-};
-
-static void *
-harmonic_create (struct pool *pool)
-{
-  struct harmonic_mean *hm = pool_alloc (pool, sizeof *hm);
-
-  hm->rsum = 0;
-  hm->n = 0;
-
-  return hm;
-}
-
-
-static void
-harmonic_update (void *stat, double w, double x)
-{
-  struct harmonic_mean *hm = stat;
-  hm->rsum  += w / x;
-  hm->n += w;
-}
-
-
-static double
-harmonic_get (const struct per_var_data *pvd UNUSED, void *stat)
-{
-  struct harmonic_mean *hm = stat;
-
-  return hm->n / hm->rsum;
-}
-
-
-
-struct geometric_mean
-{
-  double prod;
-  double n;
-};
-
-
-static void *
-geometric_create (struct pool *pool)
-{
-  struct geometric_mean *gm = pool_alloc (pool, sizeof *gm);
-
-  gm->prod = 1.0;
-  gm->n = 0;
-
-  return gm;
-}
-
-
-static void
-geometric_update (void *stat, double w, double x)
-{
-  struct geometric_mean *gm = stat;
-  gm->prod  *=  pow (x, w);
-  gm->n += w;
-}
-
-
-static double
-geometric_get (const struct per_var_data *pvd UNUSED, void *stat)
-{
-  struct geometric_mean *gm = stat;
-
-  return pow (gm->prod, 1.0 / gm->n);
-}
-
-
-
-static double
-sum_get (const struct per_var_data *pvd, void *stat UNUSED)
-{
-  double n, mean;
-
-  moments1_calculate (pvd->mom, &n, &mean, 0, 0, 0);
-
-  return mean * n;
-}
-
-
-static double
-n_get (const struct per_var_data *pvd, void *stat UNUSED)
-{
-  double n;
-
-  moments1_calculate (pvd->mom, &n, 0, 0, 0, 0);
-
-  return n;
-}
-
-static double
-arithmean_get (const struct per_var_data *pvd, void *stat UNUSED)
-{
-  double n, mean;
-
-  moments1_calculate (pvd->mom, &n, &mean, 0, 0, 0);
-
-  return mean;
-}
-
-static double
-variance_get (const struct per_var_data *pvd, void *stat UNUSED)
-{
-  double n, mean, variance;
-
-  moments1_calculate (pvd->mom, &n, &mean, &variance, 0, 0);
-
-  return variance;
-}
-
-
-static double
-stddev_get (const struct per_var_data *pvd, void *stat)
-{
-  return sqrt (variance_get (pvd, stat));
-}
-
-
-
-
-static double
-skew_get (const struct per_var_data *pvd, void *stat UNUSED)
-{
-  double skew;
-
-  moments1_calculate (pvd->mom, NULL, NULL, NULL, &skew, 0);
-
-  return skew;
-}
-
-static double
-sekurt_get (const struct per_var_data *pvd, void *stat UNUSED)
-{
-  double n;
-
-  moments1_calculate (pvd->mom, &n, NULL, NULL, NULL, NULL);
-
-  return calc_sekurt (n);
-}
-
-static double
-seskew_get (const struct per_var_data *pvd, void *stat UNUSED)
-{
-  double n;
-
-  moments1_calculate (pvd->mom, &n, NULL, NULL, NULL, NULL);
-
-  return calc_seskew (n);
-}
-
-static double
-kurt_get (const struct per_var_data *pvd, void *stat UNUSED)
-{
-  double kurt;
-
-  moments1_calculate (pvd->mom, NULL, NULL, NULL, NULL, &kurt);
-
-  return kurt;
-}
-
-static double
-semean_get (const struct per_var_data *pvd, void *stat UNUSED)
-{
-  double n, var;
-
-  moments1_calculate (pvd->mom, &n, NULL, &var, NULL, NULL);
-
-  return sqrt (var / n);
-}
-
-
-
-static void *
-min_create (struct pool *pool)
-{
-  double *r = pool_alloc (pool, sizeof *r);
-
-  *r = DBL_MAX;
-
-  return r;
-}
-
-static void
-min_update (void *stat, double w UNUSED, double x)
-{
-  double *r = stat;
-
-  if (x < *r)
-    *r = x;
-}
-
-static double
-min_get (const struct per_var_data *pvd UNUSED, void *stat)
-{
-  double *r = stat;
-
-  return *r;
-}
-
-static void *
-max_create (struct pool *pool)
-{
-  double *r = pool_alloc (pool, sizeof *r);
-
-  *r = -DBL_MAX;
-
-  return r;
-}
-
-static void
-max_update (void *stat, double w UNUSED, double x)
-{
-  double *r = stat;
-
-  if (x > *r)
-    *r = x;
-}
-
-static double
-max_get (const struct per_var_data *pvd UNUSED, void *stat)
-{
-  double *r = stat;
-
-  return *r;
-}
-
-
-
-struct range
-{
-  double min;
-  double max;
-};
-
-static void *
-range_create (struct pool *pool)
-{
-  struct range *r = pool_alloc (pool, sizeof *r);
-
-  r->min = DBL_MAX;
-  r->max = -DBL_MAX;
-
-  return r;
-}
-
-static void
-range_update (void *stat, double w UNUSED, double x)
-{
-  struct range *r = stat;
-
-  if (x > r->max)
-    r->max = x;
-
-  if (x < r->min)
-    r->min = x;
-}
-
-static double
-range_get (const struct per_var_data *pvd UNUSED, void *stat)
-{
-  struct range *r = stat;
-
-  return r->max - r->min;
-}
-
-
-
-static void *
-last_create (struct pool *pool)
-{
-  double *l = pool_alloc (pool, sizeof *l);
-
-  return l;
-}
-
-static void
-last_update (void *stat, double w UNUSED, double x)
-{
-  double *l = stat;
-
-  *l = x;
-}
-
-static double
-last_get (const struct per_var_data *pvd UNUSED, void *stat)
-{
-  double *l = stat;
-
-  return *l;
-}
-
-
-static void *
-first_create (struct pool *pool)
-{
-  double *f = pool_alloc (pool, sizeof *f);
-
-  *f = SYSMIS;
-
-  return f;
-}
-
-static void
-first_update (void *stat, double w UNUSED, double x)
-{
-  double *f = stat;
-
-  if (*f == SYSMIS)
-    *f = x;
-}
-
-static double
-first_get (const struct per_var_data *pvd UNUSED,  void *stat)
-{
-  double *f = stat;
-
-  return *f;
-}
-
-enum
-  {
-    MEANS_MEAN = 0,
-    MEANS_N,
-    MEANS_STDDEV
-  };
-
-/* Table of cell_specs */
-static const struct cell_spec cell_spec[] = {
-  {N_("Mean"), "MEAN", NULL, NULL, arithmean_get},
-  {N_("N"), "COUNT", NULL, NULL, n_get},
-  {N_("Std. Deviation"), "STDDEV", NULL, NULL, stddev_get},
-#if 0
-  {N_("Median"), "MEDIAN", NULL, NULL, NULL},
-  {N_("Group Median"), "GMEDIAN", NULL, NULL, NULL},
-#endif
-  {N_("S.E. Mean"), "SEMEAN", NULL, NULL, semean_get},
-  {N_("Sum"), "SUM", NULL, NULL, sum_get},
-  {N_("Min"), "MIN", min_create, min_update, min_get},
-  {N_("Max"), "MAX", max_create, max_update, max_get},
-  {N_("Range"), "RANGE", range_create, range_update, range_get},
-  {N_("Variance"), "VARIANCE", NULL, NULL, variance_get},
-  {N_("Kurtosis"), "KURT", NULL, NULL, kurt_get},
-  {N_("S.E. Kurt"), "SEKURT", NULL, NULL, sekurt_get},
-  {N_("Skewness"), "SKEW", NULL, NULL, skew_get},
-  {N_("S.E. Skew"), "SESKEW", NULL, NULL, seskew_get},
-  {N_("First"), "FIRST", first_create, first_update, first_get},
-  {N_("Last"), "LAST", last_create, last_update, last_get},
-#if 0
-  {N_("Percent N"), "NPCT", NULL, NULL, NULL},
-  {N_("Percent Sum"), "SPCT", NULL, NULL, NULL},
-#endif
-  {N_("Harmonic Mean"), "HARMONIC", harmonic_create, harmonic_update, harmonic_get},
-  {N_("Geom. Mean"), "GEOMETRIC", geometric_create, geometric_update, geometric_get}
-};
-
-#define n_C (sizeof (cell_spec) / sizeof (struct cell_spec))
-
-
-struct summary
-{
-  casenumber missing;
-  casenumber non_missing;
-};
-
-
-struct layer
-{
-  size_t n_factor_vars;
-  const struct variable **factor_vars;
-};
-
-/* The thing parsed after TABLES= */
-struct mtable
-{
-  size_t n_dep_vars;
-  const struct variable **dep_vars;
-
-  int n_layers;
-  struct layer *layers;
-
-  struct interaction **interactions;
-  struct summary *summary;
-
-  int ii;
-
-  struct categoricals *cats;
-};
-
-struct means
-{
-  const struct dictionary *dict;
-
-  struct mtable *table;
-  size_t n_tables;
-
-  /* Missing value class for categorical variables */
-  enum mv_class exclude;
-
-  /* Missing value class for dependent variables */
-  enum mv_class dep_exclude;
-
-  bool listwise_exclude;
-
-  /* an array  indicating which statistics are to be calculated */
-  int *cells;
-
-  /* Size of cells */
-  int n_cells;
-
-  /* Pool on which cell functions may allocate data */
-  struct pool *pool;
-};
-
-
-static void
-run_means (struct means *cmd, struct casereader *input,
-	   const struct dataset *ds);
-
-
-
-static bool
-parse_means_table_syntax (struct lexer *lexer, const struct means *cmd, struct mtable *table)
-{
-  table->ii = 0;
-  table->n_layers = 0;
-  table->layers = NULL;
-  table->interactions = NULL;
-
-  /* Dependent variable (s) */
-  if (!parse_variables_const_pool (lexer, cmd->pool, cmd->dict,
-				   &table->dep_vars, &table->n_dep_vars,
-				   PV_NO_DUPLICATE | PV_NUMERIC))
-    return false;
-
-  /* Factor variable (s) */
-  while (lex_match (lexer, T_BY))
-    {
-      table->n_layers++;
-      table->layers =
-	pool_realloc (cmd->pool, table->layers,
-		      sizeof (*table->layers) * table->n_layers);
-
-      if (!parse_variables_const_pool
-	  (lexer, cmd->pool, cmd->dict,
-	   &table->layers[table->n_layers - 1].factor_vars,
-	   &table->layers[table->n_layers - 1].n_factor_vars,
-	   PV_NO_DUPLICATE))
-	return false;
-    }
-
-  /* There is always at least one layer.
-     However the final layer is the total, and not
-     normally considered by the user as a
-     layer.
+/* A "cell" in this procedure represents a distinct value of the
+   procedure's categorical variables,  and a set of summary statistics
+   of all cases which whose categorical variables have that set of
+   values.   For example,  the dataset
+
+   v1    v2    cat1     cat2
+   100   202      0     1
+   100   202      0     2
+   100   202      1     0
+   100   202      0     1
+
+
+   has three cells in layer 0 and two cells in layer 1  in addition
+   to a "grand summary" cell to which all (non-missing) cases
+   contribute.
+
+   The cells form a n-ary tree structure with the "grand summary"
+   cell at the root.
   */
+struct cell
+{
+  struct hmap_node hmap_node; /* Element in hash table. */
+  struct bt_node  bt_node;    /* Element in binary tree */
 
-  table->n_layers++;
-  table->layers =
-    pool_realloc (cmd->pool, table->layers,
-		  sizeof (*table->layers) * table->n_layers);
-  table->layers[table->n_layers - 1].factor_vars = NULL;
-  table->layers[table->n_layers - 1].n_factor_vars = 0;
+  struct cell_container children;
 
-  return true;
+  /* The level of the subtotal to which this cell pertains, or
+     -1 if it does not pertain to a subtotal.  */
+  int subtotal;
+
+  /* The statistics to be calculated for the cell.  */
+  struct per_var_data **stat;
+
+  /* The parent of this cell, or NULL if this is the root cell.  */
+  struct cell *parent_cell;
+
+  int n_subtotals;
+  struct cell_container *subtotals;
+
+  int n_values;
+  union value values[1];         /* The value(s). */
+};
+
+static void
+dump_cell (const struct cell *cell, int level)
+{
+  printf ("%p: ", cell);
+  for (int i = 0; i < cell->n_values; ++i)
+    printf ("%g; ", cell->values[i].f);
+  //  printf ("--- Count: %g", cell->count);
+  // printf ("--- N Subtotals: %d", cell->n_subtotals);
+  printf ("--- Level: %d", level);
+  printf ("--- Subtotal: %d", cell->subtotal);
+  printf ("--- Parent: %p", cell->parent_cell);
+  printf ("\n");
 }
 
-/* Match a variable.
-   If the match succeeds, the variable will be placed in VAR.
-   Returns true if successful */
-static bool
-lex_is_variable (struct lexer *lexer, const struct dictionary *dict,
-		 int n)
+static void
+dump_tree (const struct cell *cell, int level)
 {
-  const char *tstr;
-  if (lex_next_token (lexer, n) !=  T_ID)
-    return false;
-
-  tstr = lex_next_tokcstr (lexer, n);
-
-  if (NULL == dict_lookup_var (dict, tstr) )
-    return false;
-
-  return true;
-}
-
-
-int
-cmd_means (struct lexer *lexer, struct dataset *ds)
-{
-  int t;
-  int i;
-  int l;
-  struct means means;
-  bool more_tables = true;
-
-  means.pool = pool_create ();
-
-  means.exclude = MV_ANY;
-  means.dep_exclude = MV_ANY;
-  means.listwise_exclude = false;
-  means.table = NULL;
-  means.n_tables = 0;
-
-  means.dict = dataset_dict (ds);
-
-  means.n_cells = 3;
-  means.cells = pool_calloc (means.pool, means.n_cells, sizeof (*means.cells));
-
-
-  /* The first three items (MEAN, COUNT, STDDEV) are the default */
-  for (i = 0; i < 3; ++i)
-    means.cells[i] = i;
-
-
-  /*   Optional TABLES =   */
-  if (lex_match_id (lexer, "TABLES"))
+  struct cell *sub_cell;
+  BT_FOR_EACH (sub_cell, struct cell, bt_node, &cell->children.bt)
     {
-      if (! lex_force_match (lexer, T_EQUALS))
-	goto error;
+      dump_tree (sub_cell, level + 1);
     }
 
-
-  more_tables = true;
-  /* Parse the "tables" */
-  while (more_tables)
+  for (int i = 0; i < cell->n_subtotals; ++i)
     {
-      means.n_tables ++;
-      means.table = pool_realloc (means.pool, means.table, means.n_tables * sizeof (*means.table));
-
-      if (! parse_means_table_syntax (lexer, &means,
-				      &means.table[means.n_tables - 1]))
+      struct cell_container *container = cell->subtotals + i;
+      struct cell *scell;
+      BT_FOR_EACH (scell, struct cell, bt_node, &container->bt)
 	{
-	  goto error;
-	}
-
-      /* Look ahead to see if there are more tables to be parsed */
-      more_tables = false;
-      if ( T_SLASH == lex_next_token (lexer, 0) )
-	{
-	  if (lex_is_variable (lexer, means.dict, 1) )
-	    {
-	      more_tables = true;
-	      lex_match (lexer, T_SLASH);
-	    }
+	  dump_cell (scell, level);
 	}
     }
 
-  /* /MISSING subcommand */
-  while (lex_token (lexer) != T_ENDCMD)
+  dump_cell (cell, level);
+}
+
+struct instance
+{
+  struct hmap_node hmap_node; /* Element in hash table. */
+  struct bt_node  bt_node;    /* Element in binary tree */
+
+  /* A unique, consecutive, zero based index identifying this
+     instance.  */
+  int index;
+
+  /* The top level value of this instance.  */
+  union value value;
+};
+
+static void
+dump_layer (const struct layer *layer)
+{
+  printf ("Layer: %p; fv0: %s; N %ld\n", layer,
+	  layer->n_factor_vars
+	  ? var_get_name (layer->factor_vars[0])
+	  : "(null)",
+	  hmap_count (&layer->instances.map)
+	  );
+
+  struct instance *inst;
+  BT_FOR_EACH (inst, struct instance, bt_node, &layer->instances.bt)
     {
-      lex_match (lexer, T_SLASH);
+      printf ("Val %g; Index %d\n", inst->value.f, inst->index);
+    }
+  printf ("\n");
+}
 
-      if (lex_match_id (lexer, "MISSING"))
+
+/* Generate a hash based on the values of the N variables in
+   the array VARS which are taken from the case C.  */
+static size_t
+generate_hash (const struct ccase *c, int n,
+	       const struct variable * const * vars)
+{
+  size_t hash = 0;
+  for (int i = 0; i < n; ++i)
+    {
+      const struct variable *var = vars[i];
+      const union value *vv = case_data (c, var);
+      int width = var_get_width (var);
+      hash = value_hash (vv, width, hash);
+    }
+
+  return hash;
+}
+
+/* Create a cell based on the N variables in the array VARS,
+   which are indeces into the case C.
+   The caller is responsible for destroying this cell when
+   no longer needed. */
+static struct cell *
+generate_cell (const struct means *means, const struct ccase *c, int n,
+	       const struct variable * const * vars)
+{
+  struct cell *cell = xzalloc ((sizeof *cell)
+			       + (n - 1) * sizeof (union value));
+  cell->subtotal = -1;
+  cell->n_values = n;
+  for (int i = 0; i < n; ++i)
+    {
+      const struct variable *var = vars[i];
+      const union value *vv = case_data (c, var);
+      int width = var_get_width (var);
+      value_clone (&cell->values[i], vv, width);
+    }
+
+  hmap_init (&cell->children.map);
+
+  cell->stat = xcalloc (means->n_statistics, sizeof *cell->stat);
+  for (int stat = 0; stat < means->n_statistics; ++stat)
+    {
+      stat_create *sc = cell_spec[means->statistics[stat]].sc;
+
+      cell->stat[stat] = sc (means->pool);
+    }
+
+  return cell;
+}
+
+
+/* If a  cell based on the N variables in the array VARS,
+   which are indeces into the case C and whose hash is HASH,
+   exists in HMAP, then return that cell.
+   Otherwise, return NULL.  */
+static struct cell *
+lookup_cell (struct hmap *hmap,  size_t hash,
+	     const struct ccase *c,
+	     int n, const struct variable * const * vars)
+{
+  struct cell *fcol = NULL;
+  HMAP_FOR_EACH_WITH_HASH (fcol, struct cell, hmap_node, hash, hmap)
+    {
+      bool match = true;
+      for (int i = 0; i < n; ++i)
 	{
-	  /*
-	    If no MISSING subcommand is specified, each combination of
-	    a dependent variable and categorical variables is handled
-	    separately.
-	  */
-	  lex_match (lexer, T_EQUALS);
-	  if (lex_match_id (lexer, "INCLUDE"))
+	  const struct variable *var = vars[i];
+	  const union value *vv = case_data (c, var);
+	  int width = var_get_width (var);
+	  if (!value_equal (vv, &fcol->values[i], width))
 	    {
-	      /*
-		Use the subcommand  "/MISSING=INCLUDE" to include user-missing
-		values in the analysis.
-	      */
-
-	      means.exclude = MV_SYSTEM;
-	      means.dep_exclude = MV_SYSTEM;
-	    }
-	  else if (lex_match_id (lexer, "TABLE"))
-	    /*
-	      This is the default. (I think).
-	      Every case containing a complete set of variables for a given
-	      table. If any variable, categorical or dependent for in a table
-	      is missing (as defined by what?), then that variable will
-	      be dropped FOR THAT TABLE ONLY.
-	    */
-	    {
-	      means.listwise_exclude = true;
-	    }
-	  else if (lex_match_id (lexer, "DEPENDENT"))
-	    /*
-	      Use the command "/MISSING=DEPENDENT" to
-	      include user-missing values for the categorical variables,
-	      while excluding them for the dependent variables.
-
-	      Cases are dropped only when user-missing values
-	      appear in dependent  variables.  User-missing
-	      values for categorical variables are treated according to
-	      their face value.
-
-	      Cases are ALWAYS dropped when System Missing values appear
-	      in the categorical variables.
-	    */
-	    {
-	      means.dep_exclude = MV_ANY;
-	      means.exclude = MV_SYSTEM;
-	    }
-	  else
-	    {
-	      lex_error (lexer, NULL);
-	      goto error;
+	      match = false;
+	      break;
 	    }
 	}
-      else if (lex_match_id (lexer, "CELLS"))
+      if (match)
+	return fcol;
+    }
+  return NULL;
+}
+
+
+/*  A comparison function used to sort cells in a binary tree.  */
+static int
+my_compare_func (const struct bt_node *a,
+		 const struct bt_node *b,
+		 const void *aux)
+{
+  const struct cell *fa = BT_DATA (a, struct cell, bt_node);
+  const struct cell *fb = BT_DATA (b, struct cell, bt_node);
+
+  const struct variable *const *cv = aux;
+
+  int vidx = fa->n_values - 1;
+  assert (fa->n_values == fb->n_values);
+
+  // FIXME: Consider whether other layers need to be compared.
+  int r = value_compare_3way (&fa->values[vidx],
+			      &fb->values[vidx],
+			      var_get_width (cv[vidx]));
+  return r;
+}
+
+/*  A comparison function used to sort cells in a binary tree.  */
+static int
+my_other_compare_func (const struct bt_node *a,
+		 const struct bt_node *b,
+		 const void *aux)
+{
+  const struct instance *fa = BT_DATA (a, struct instance, bt_node);
+  const struct instance *fb = BT_DATA (b, struct instance, bt_node);
+
+  const struct variable *var = aux;
+
+  int r = value_compare_3way (&fa->value,
+			      &fb->value,
+			      var_get_width (var));
+  return r;
+}
+
+
+static void arrange_cells (struct cell *cell, const struct mtable *table);
+
+
+/* Walk the tree starting at CELL, creating and populating the BT for
+   each  cell.  Also assigns  the "rank", "parent_cell" and "subtotal" members
+   of each cell.*/
+static void
+arrange_cell (struct cell_container *container,
+	      struct cell *cell, const struct mtable *table,
+	      int subtotal)
+{
+  const struct variable **control_vars = table->control_vars;
+  struct bt *bt = &container->bt;
+  struct hmap *map = &container->map;
+  bt_init (bt, my_compare_func, control_vars);
+
+  struct cell *scell;
+  HMAP_FOR_EACH (scell, struct cell, hmap_node, map)
+    {
+      scell->parent_cell = cell;
+      scell->subtotal = subtotal;
+      bt_insert (bt, &scell->bt_node);
+      arrange_cells (scell, table);
+    }
+
+  if (cell->n_values > 0 && cell->subtotal == -1)
+    {
+      struct layer *layer = table->layers[cell->n_values - 1];
+
+      const struct variable *var = control_vars[cell->n_values - 1];
+      int width = var_get_width (var);
+      unsigned int hash
+  	= value_hash (&cell->values[cell->n_values - 1], width, 0);
+
+
+      struct instance *inst = NULL;
+      struct instance *next = NULL;
+      HMAP_FOR_EACH_WITH_HASH_SAFE (inst, next, struct instance, hmap_node,
+      			       hash, &layer->instances.map)
+      	{
+      	  if (value_equal (&inst->value,
+      	  		   &cell->values[cell->n_values - 1],
+      	  		   width))
+      	    {
+      	      break;
+      	    }
+      	}
+
+      if (!inst)
+      	{
+	  inst = xzalloc (sizeof *inst);
+	  inst->index = -1;
+	  value_copy (&inst->value, &cell->values[cell->n_values -1],
+		      width);
+      	  hmap_insert (&layer->instances.map, &inst->hmap_node, hash);
+      	}
+    }
+}
+
+/* Arrange the children and then all the subtotals.  */
+static void
+arrange_cells (struct cell *cell, const struct mtable *table)
+{
+  arrange_cell (&cell->children, cell, table, -1);
+
+  for (int s = 0; s < cell->n_subtotals; ++ s)
+    {
+      arrange_cell (cell->subtotals + s, cell, table, s);
+    }
+}
+
+
+
+
+/*  If the top level value in CELL, has an instance in LAYER, then
+    return that instance.  Otherwise return NULL.  */
+static const struct instance *
+lookup_instance (const struct layer *layer, const struct cell *cell)
+{
+  const struct variable *var = layer->factor_vars[0];
+  const union value *val = cell->values + cell->n_values - 1;
+  int width = var_get_width (var);
+  unsigned int hash = value_hash (val, width, 0);
+  struct instance *inst = NULL;
+  struct instance *next;
+  HMAP_FOR_EACH_WITH_HASH_SAFE (inst, next,
+				struct instance, hmap_node,
+				hash, &layer->instances.map)
+    {
+      if (value_equal (val, &inst->value, width))
+	break;
+    }
+  return inst;
+}
+
+static void
+populate_table (const struct cell *cell, const struct means *means,
+	     struct pivot_table *table, int level)
+{
+  /* It is easier to overallocate this table by 2, than to adjust the
+     logic when assigning its contents, and it is cheap to do so.  */
+  size_t *indexes = xcalloc (table->n_dimensions + 2, sizeof *indexes);
+  for (int s = 0; s < means->n_statistics; ++s)
+    {
+      bool kludge = false;   // FIXME: Remove this for production.
+      indexes[0] = s;
+      int stat = means->statistics[s];
+      if (cell->subtotal != -1)
 	{
-	  lex_match (lexer, T_EQUALS);
-
-	  /* The default values become overwritten */
-	  means.n_cells = 0;
-	  while (lex_token (lexer) != T_ENDCMD
-		 && lex_token (lexer) != T_SLASH)
+	  //	  for (int i = 1; i < table->n_dimensions; ++i)
+	  {
+	    int i = 1;
+	    const struct layer *layer
+	      = means->table->layers[table->n_dimensions - 1 - i];
+	    assert (layer);
+	    const struct instance *inst = lookup_instance (layer, cell);
+	    assert (inst);
+	    indexes[i] = inst->index;
+	  }
+	  int i = 2;
+	  const struct layer *layer
+	    = means->table->layers[table->n_dimensions - 1 - i];
+	  indexes[i] = hmap_count (&layer->instances.map);
+	  kludge = true;
+	}
+      else if (hmap_is_empty (&cell->children.map))
+	{
+	  const struct cell *pc = cell;
+	  for (int i = 1; i < table->n_dimensions; ++i)
 	    {
-	      int k = 0;
-	      if (lex_match (lexer, T_ALL))
-		{
-		  int x;
-		  means.cells =
-		    pool_realloc (means.pool, means.cells,
-				  (means.n_cells += n_C) * sizeof (*means.cells));
+	      const struct layer *layer
+		= means->table->layers[table->n_dimensions - 1 - i];
 
-		  for (x = 0; x < n_C; ++x)
-		    means.cells[means.n_cells - (n_C - 1 - x) - 1] = x;
-		}
-	      else if (lex_match_id (lexer, "NONE"))
-		{
-		  /* Do nothing */
-		}
-	      else if (lex_match_id (lexer, "DEFAULT"))
-		{
-		  means.cells =
-		    pool_realloc (means.pool, means.cells,
-				  (means.n_cells += 3) * sizeof (*means.cells));
-
-		  means.cells[means.n_cells - 2 - 1] = MEANS_MEAN;
-		  means.cells[means.n_cells - 1 - 1] = MEANS_N;
-		  means.cells[means.n_cells - 0 - 1] = MEANS_STDDEV;
-		}
-	      else
-		{
-		  for (; k < n_C; ++k)
-		    {
-		      if (lex_match_id (lexer, cell_spec[k].keyword))
-			{
-			  means.cells =
-			    pool_realloc (means.pool, means.cells,
-					  ++means.n_cells * sizeof (*means.cells));
-
-			  means.cells[means.n_cells - 1] = k;
-			  break;
-			}
-		    }
-		}
-	      if (k >= n_C)
-		{
-		  lex_error (lexer, NULL);
-		  goto error;
-		}
+	      const struct instance *inst = lookup_instance (layer, pc);
+	      assert (inst);
+	      indexes[i] = inst->index;
+	      pc = pc->parent_cell;
 	    }
+	  kludge = true;
 	}
       else
 	{
-	  lex_error (lexer, NULL);
-	  goto error;
-	}
-    }
-
-
-
-  for (t = 0; t < means.n_tables; ++t)
-    {
-      struct mtable *table = &means.table[t];
-
-      table->interactions =
-	pool_calloc (means.pool, table->n_layers, sizeof (*table->interactions));
-
-      table->summary =
-	pool_calloc (means.pool, table->n_dep_vars * table->n_layers, sizeof (*table->summary));
-
-      for (l = 0; l < table->n_layers; ++l)
-	{
-	  int v;
-	  const struct layer *lyr = &table->layers[l];
-	  const int n_vars = lyr->n_factor_vars;
-	  table->interactions[l] = interaction_create (NULL);
-	  for (v = 0; v < n_vars ; ++v)
+	  const struct layer *layer;
+	  int i = 0;
+	  for (int st = 0; st < cell->n_subtotals; ++st)
 	    {
-	      interaction_add_variable (table->interactions[l],
-					lyr->factor_vars[v]);
+	      layer = means->table->layers[table->n_dimensions - i - 2];
+	      indexes[++i] = hmap_count (&layer->instances.map);
 	    }
+	  layer = means->table->layers[table->n_dimensions - i - 2];
+	  indexes[++i] = hmap_count (&layer->instances.map);
+	  if (++i < table->n_dimensions)
+	    {
+	      layer = means->table->layers[table->n_dimensions - i - 1];
+	      const struct instance *inst = lookup_instance (layer, cell);
+	      assert (inst);
+	      indexes[i] = inst->index;
+	    }
+	  kludge = true;
+	}
+
+      if (kludge)
+	{
+	  stat_get *sg = cell_spec[stat].sd;
+	  pivot_table_put (table, indexes, table->n_dimensions,
+			   pivot_value_new_number (sg (cell->stat[s])));
 	}
     }
+  free (indexes);
 
-  {
-    struct casegrouper *grouper;
-    struct casereader *group;
-    bool ok;
+  const struct bt *bt = &cell->children.bt;
+  struct cell *child = NULL;
+  BT_FOR_EACH (child, struct cell, bt_node, bt)
+    {
+      populate_table (child, means, table, level + 1);
+    }
 
-    grouper = casegrouper_create_splits (proc_open (ds), means.dict);
-    while (casegrouper_get_next_group (grouper, &group))
+  //  printf ("There are %d subtotals\n", cell->n_subtotals);
+  for (int i = 0; i < cell->n_subtotals; ++i)
+    {
+      //      printf ("aa\n");
+      const struct cell_container *st = cell->subtotals + i;
+      struct cell *scell;
+      HMAP_FOR_EACH (scell, struct cell, hmap_node, &st->map)
+	{
+	  //	  printf ("%s:%d xxx\n", __FILE__, __LINE__);
+	  /* dump_cell (scell, 0); */
+	  populate_table (scell, means, table, level + 1);
+	}
+      //      printf ("zz\n");
+    }
+  //  printf ("ooo\n");
+}
+
+static void
+ann_dim (struct pivot_table *t, int d, size_t *indeces)
+{
+  if (d < 0)
+    return;
+  char label[10];
+
+  const struct pivot_dimension *dim = t->dimensions[d];
+  for (int l = 0; l < dim->n_leaves; ++l)
+    {
+      indeces[d] = l;
+      int x;
+      for (x = 0; x < t->n_dimensions; ++x)
+	{
+	  label[x] = '0' + indeces[x];
+	}
+      label[x] = '\0';
+      pivot_table_put (t, indeces, t->n_dimensions,
+		       pivot_value_new_user_text (label, x));
+      ann_dim (t, d - 1, indeces);
+    }
+}
+
+static void
+annotate_table (struct pivot_table *t)
+{
+  size_t *indeces = xcalloc (t->n_dimensions, sizeof *indeces);
+
+  for (int d = 0; d < t->n_dimensions; ++d)
+    {
+      ann_dim (t, d, indeces);
+    }
+  free (indeces);
+}
+
+static void
+create_table_structure (const struct mtable *mt, struct pivot_table *table)
+{
+  for (int l = mt->n_layers -1; l >=0 ; --l)
+    {
+      const struct layer *layer = mt->layers[l];
+      assert (layer->n_factor_vars > 0);
+      const struct variable *var = layer->factor_vars[0];
+      struct pivot_dimension *dim_layer
+	= pivot_dimension_create (table, PIVOT_AXIS_ROW,
+				  var_to_string (var));
+      dim_layer->root->show_label = true;
+
       {
-	run_means (&means, group, ds);
+	struct instance *inst = NULL;
+	BT_FOR_EACH (inst, struct instance, bt_node, &layer->instances.bt)
+	  {
+	    struct substring space = SS_LITERAL_INITIALIZER ("\t ");
+	    struct string str;
+	    ds_init_empty (&str);
+	    var_append_value_name (var,
+				   &inst->value,
+				   &str);
+
+	    ds_ltrim (&str, space);
+
+	    pivot_category_create_leaf
+	      (dim_layer->root,
+	       pivot_value_new_text (ds_cstr (&str)));
+
+	    ds_destroy (&str);
+	  }
       }
-    ok = casegrouper_destroy (grouper);
-    ok = proc_commit (ds) && ok;
-  }
 
-  for (t = 0; t < means.n_tables; ++t)
+      pivot_category_create_leaf
+	(dim_layer->root,
+	 pivot_value_new_text ("Total"));
+    }
+}
+
+void
+means_shipout (const struct mtable *mt, const struct means *means)
+{
+  struct pivot_table *table = pivot_table_create (N_("Report"));
+
+  struct pivot_dimension *dim_cells =
+    pivot_dimension_create (table, PIVOT_AXIS_COLUMN, N_("Statistics"));
+
+  for (int i = 0; i < means->n_statistics; ++i)
     {
-      int l;
-      struct mtable *table = &means.table[t];
-      if (table->interactions)
-	for (l = 0; l < table->n_layers; ++l)
-	  {
-	    interaction_destroy (table->interactions[l]);
-	  }
+      const struct cell_spec *cs = cell_spec + means->statistics[i];
+      pivot_category_create_leaf
+	(dim_cells->root,
+	 pivot_value_new_text (gettext (cs->title)));
     }
 
-  pool_destroy (means.pool);
-  return CMD_SUCCESS;
+  create_table_structure (mt, table);
 
- error:
+  populate_table (mt->root_cell, means, table, 0);
+  //  pivot_table_dump (table, 0);
+  // annotate_table (table);
 
-  for (t = 0; t < means.n_tables; ++t)
-    {
-      int l;
-      struct mtable *table = &means.table[t];
-      if (table->interactions)
-	for (l = 0; l < table->n_layers; ++l)
-	  {
-	    interaction_destroy (table->interactions[l]);
-	  }
-    }
+  pivot_table_submit (table);
+}
 
-  pool_destroy (means.pool);
-  return CMD_FAILURE;
+
+
+static bool
+missing_for_layer (const struct layer *layer, const struct ccase *c)
+{
+  if (layer->n_factor_vars == 0)
+    return false;
+
+  const struct variable *var = layer->factor_vars[0];
+  const union value *vv = case_data (c, var);
+
+  return var_is_value_missing (var, vv, MV_ANY);
 }
 
 
 static bool
-is_missing (const struct means *cmd,
-	    const struct variable *dvar,
-	    const struct interaction *iact,
-	    const struct ccase *c)
+missing_for_any_layer (const struct mtable *table,
+		       int startx,
+		       const struct ccase *c)
 {
-  if ( interaction_case_is_missing (iact, c, cmd->exclude) )
-    return true;
+  bool miss = false;
+  for (int l = startx; l < table->n_layers; ++l)
+    {
+      miss = missing_for_layer (table->layers[l], c);
+    }
 
-
-  if (var_is_value_missing (dvar,
-			    case_data (c, dvar),
-			    cmd->dep_exclude))
+  if (miss)
     return true;
 
   return false;
 }
 
-static void output_case_processing_summary (const struct mtable *,
-                                            const struct variable *wv);
-
-static void output_report (const struct means *, int, const struct mtable *);
-
-
-struct per_cat_data
+static struct cell *
+update_map_from_data (const struct means *means,
+		      const struct mtable *table,
+		      int startx,
+		      struct hmap *map,
+		      const struct ccase *c,
+		      int start_var,
+		      int n_vars,
+		      double weight)
 {
-  struct per_var_data *pvd;
-
-  bool warn;
-};
-
-
-static void
-destroy_n (const void *aux1 UNUSED, void *aux2, void *user_data)
-{
-  struct mtable *table = aux2;
-  int v;
-  struct per_cat_data *per_cat_data = user_data;
-  struct per_var_data *pvd = per_cat_data->pvd;
-
-  for (v = 0; v < table->n_dep_vars; ++v)
+  const struct variable **cv = table->control_vars + start_var;
+  if (! missing_for_any_layer (table, startx, c))
     {
-      struct per_var_data *pp = &pvd[v];
-      moments1_destroy (pp->mom);
-    }
-}
+      const struct variable *dep_var = table->dep_vars[0];
 
-static void *
-create_n (const void *aux1, void *aux2)
-{
-  int i, v;
-  const struct means *means = aux1;
-  struct mtable *table = aux2;
-  struct per_cat_data *per_cat_data = pool_malloc (means->pool, sizeof *per_cat_data);
+      size_t hash = generate_hash (c, n_vars, cv);
 
-  struct per_var_data *pvd = pool_calloc (means->pool, table->n_dep_vars, sizeof *pvd);
-
-  for (v = 0; v < table->n_dep_vars; ++v)
-    {
-      enum moment maxmom = MOMENT_KURTOSIS;
-      struct per_var_data *pp = &pvd[v];
-
-      pp->cell_stats = pool_calloc (means->pool, means->n_cells, sizeof *pp->cell_stats);
-
-
-      for (i = 0; i < means->n_cells; ++i)
+      struct cell *fcol = lookup_cell (map, hash,
+				       c, n_vars, cv);
+      if (!fcol)
 	{
-	  int csi = means->cells[i];
-	  const struct cell_spec *cs = &cell_spec[csi];
-	  if (cs->sc)
+	  fcol = generate_cell (means, c, n_vars, cv);
+	  fcol->n_subtotals = table->n_layers - 2 - start_var;
+	  if (fcol->n_subtotals < 0)
+	    fcol->n_subtotals = 0;
+	  fcol->subtotals = xcalloc (fcol->n_subtotals,
+				     sizeof *fcol->subtotals);
+	  for (int i = 0; i < fcol->n_subtotals; ++i)
 	    {
-	      pp->cell_stats[i] = cs->sc (means->pool);
+	      struct cell_container *c = fcol->subtotals + i;
+	      hmap_init (&c->map);
 	    }
+
+	  hmap_insert (map, &fcol->hmap_node, hash);
 	}
-      pp->mom = moments1_create (maxmom);
+
+      for (int stat = 0; stat < means->n_statistics; ++stat)
+	{
+	  stat_update *su = cell_spec[means->statistics[stat]].su;
+	  su (fcol->stat[stat], weight, case_data (c, dep_var)->f);
+	}
+
+      return fcol;
     }
-
-
-  per_cat_data->pvd = pvd;
-  per_cat_data->warn = true;
-  return per_cat_data;
+  return NULL;
 }
 
-static void
-update_n (const void *aux1, void *aux2, void *user_data, const struct ccase *c, double weight)
-{
-  int i;
-  int v = 0;
-  const struct means *means = aux1;
-  struct mtable *table = aux2;
-  struct per_cat_data *per_cat_data = user_data;
 
-  for (v = 0; v < table->n_dep_vars; ++v)
-    {
-      struct per_var_data *pvd = &per_cat_data->pvd[v];
-
-      const double x = case_data (c, table->dep_vars[v])->f;
-
-      for (i = 0; i < table->n_layers; ++i)
-	{
-	  if ( is_missing (means, table->dep_vars[v],
-			   table->interactions[i], c))
-	    goto end;
-	}
-
-      for (i = 0; i < means->n_cells; ++i)
-	{
-	  const int csi = means->cells[i];
-	  const struct cell_spec *cs = &cell_spec[csi];
-
-
-	  if (cs->su)
-	    cs->su (pvd->cell_stats[i],
-		    weight, x);
-	}
-
-      moments1_add (pvd->mom, x, weight);
-
-    end:
-      continue;
-    }
-}
-
-static void
-calculate_n (const void *aux1, void *aux2, void *user_data)
-{
-  int i;
-  int v = 0;
-  struct per_cat_data *per_cat_data = user_data;
-  const struct means *means = aux1;
-  struct mtable *table = aux2;
-
-  for (v = 0; v < table->n_dep_vars; ++v)
-    {
-      struct per_var_data *pvd = &per_cat_data->pvd[v];
-      for (i = 0; i < means->n_cells; ++i)
-	{
-	  int csi = means->cells[i];
-	  const struct cell_spec *cs = &cell_spec[csi];
-
-	  if (cs->su)
-	    cs->sd (pvd, pvd->cell_stats[i]);
-	}
-    }
-}
-
-static void
+void
 run_means (struct means *cmd, struct casereader *input,
 	   const struct dataset *ds UNUSED)
 {
-  int t;
-  const struct variable *wv = dict_get_weight (cmd->dict);
+  struct mtable *table = cmd->table + 0;
   struct ccase *c;
   struct casereader *reader;
 
-  struct payload payload;
-  payload.create = create_n;
-  payload.update = update_n;
-  payload.calculate = calculate_n;
-  payload.destroy = destroy_n;
-
-  for (t = 0; t < cmd->n_tables; ++t)
+  table->root_cell = generate_cell (cmd, 0, 0, 0);
+  table->root_cell->n_subtotals = table->n_layers - 1;
+  if (table->root_cell->n_subtotals < 0)
+    table->root_cell->n_subtotals = 0;
+  table->root_cell->subtotals
+    = xcalloc (table->root_cell->n_subtotals,
+	       sizeof *table->root_cell->subtotals);
+  for (int i = 0; i < table->root_cell->n_subtotals; ++i)
     {
-      struct mtable *table = &cmd->table[t];
-      table->cats
-	= categoricals_create (table->interactions,
-			       table->n_layers, wv, cmd->exclude);
-
-      categoricals_set_payload (table->cats, &payload, cmd, table);
+      struct cell_container *c = table->root_cell->subtotals + i;
+      hmap_init (&c->map);
     }
 
+  table->control_vars
+    = calloc (table->n_layers, sizeof *table->control_vars);
+  for (int l = 0; l  < table->n_layers; ++l)
+    {
+      const struct layer *layer = table->layers[l];
+      if (layer->n_factor_vars > 0)
+	table->control_vars[l] = layer->factor_vars[0];
+    }
+
+  struct cell *cell = table->root_cell;
+  const struct variable *dep_var = table->dep_vars[0];
   for (reader = input;
        (c = casereader_read (reader)) != NULL; case_unref (c))
     {
-      for (t = 0; t < cmd->n_tables; ++t)
+      const double weight = dict_get_case_weight (cmd->dict, c, NULL);
+      if (! missing_for_any_layer (table, 0, c))
 	{
-	  bool something_missing = false;
-	  int  v;
-	  struct mtable *table = &cmd->table[t];
-
-	  for (v = 0; v < table->n_dep_vars; ++v)
+	  for (int stat = 0; stat < cmd->n_statistics; ++stat)
 	    {
-	      int i;
-	      for (i = 0; i < table->n_layers; ++i)
-		{
-		  const bool missing =
-		    is_missing (cmd, table->dep_vars[v],
-				table->interactions[i], c);
-		  if (missing)
-		    {
-		      something_missing = true;
-		      table->summary[v * table->n_layers + i].missing++;
-		    }
-		  else
-		    table->summary[v * table->n_layers  + i].non_missing++;
-		}
+	      stat_update *su = cell_spec[cmd->statistics[stat]].su;
+	      su (cell->stat[stat], weight, case_data (c, dep_var)->f);
 	    }
-	  if ( something_missing && cmd->listwise_exclude)
-	    continue;
+	}
 
-	  categoricals_update (table->cats, c);
+      for (int i = 0; i < cell->n_subtotals; ++i)
+	{
+	  struct cell_container *container = cell->subtotals + i;
+	  update_map_from_data (cmd, table, 1, &container->map, c, 1, 1,
+				weight);
+	}
+
+      struct hmap *map = &cell->children.map;
+      for (int l = 0; l < table->n_layers; ++l)
+	{
+	  struct cell *cell
+	    = update_map_from_data (cmd, table, l, map, c,
+				    0, l + 1, weight);
+
+	  if (cell)
+	    map = &cell->children.map;
 	}
     }
   casereader_destroy (reader);
 
-  for (t = 0; t < cmd->n_tables; ++t)
+  arrange_cells (table->root_cell, table);
+  for (int l = 0; l < table->n_layers; ++l)
     {
-      struct mtable *table = &cmd->table[t];
+      struct layer *layer = table->layers[l];
+      bt_init (&layer->instances.bt, my_other_compare_func,
+	       table->control_vars[l]);
 
-      categoricals_done (table->cats);
+      /* Iterate the instance hash table, and insert each instance
+	 into the binary tree BT.  */
+      struct instance *inst;
+      HMAP_FOR_EACH (inst, struct instance, hmap_node,
+		     &layer->instances.map)
+      	{
+	  bt_insert (&layer->instances.bt, &inst->bt_node);
+      	}
+
+      /* Iterate the binary tree (in order) and assign the index
+	 member accordingly.  */
+      int index = 0;
+      BT_FOR_EACH (inst, struct instance, bt_node, &layer->instances.bt)
+      	{
+      	  inst->index = index++;
+      	}
     }
 
-
-  for (t = 0; t < cmd->n_tables; ++t)
-    {
-      int i;
-      const struct mtable *table = &cmd->table[t];
-
-      output_case_processing_summary (table, wv);
-
-      for (i = 0; i < table->n_layers; ++i)
-	{
-	  output_report (cmd, i, table);
-	}
-      categoricals_destroy (table->cats);
-    }
-
+  /*  The root cell should have no parent.  */
+  assert (table->root_cell->parent_cell == 0);
+  dump_tree (table->root_cell, 0);
 }
-
-
-
-static void
-output_case_processing_summary (const struct mtable *mt,
-                                const struct variable *wv)
-{
-  struct pivot_table *table = pivot_table_create (
-    N_("Case Processing Summary"));
-  pivot_table_set_weight_var (table, wv);
-
-  pivot_dimension_create (table, PIVOT_AXIS_COLUMN, N_("Statistics"),
-                          N_("N"), PIVOT_RC_COUNT,
-                          N_("Percent"), PIVOT_RC_PERCENT);
-  pivot_dimension_create (table, PIVOT_AXIS_COLUMN, N_("Cases"),
-                          N_("Included"), N_("Excluded"), N_("Total"))
-    ->root->show_label = true;
-
-  struct pivot_dimension *tables = pivot_dimension_create (
-    table, PIVOT_AXIS_ROW, N_("Tables"));
-
-  for (size_t v = 0; v < mt->n_dep_vars; ++v)
-    {
-      const struct variable *var = mt->dep_vars[v];
-      for (size_t i = 0; i < mt->n_layers; ++i)
-	{
-	  const int row = v * mt->n_layers + i;
-	  const struct interaction *iact = mt->interactions[i];
-
-	  struct string str = DS_EMPTY_INITIALIZER;
-          ds_put_format (&str, "%s: ", var_to_string (var));
-	  interaction_to_string (iact, &str);
-          int table_idx = pivot_category_create_leaf (
-            tables->root, pivot_value_new_user_text_nocopy (
-              ds_steal_cstr (&str)));
-
-          const struct summary *s = &mt->summary[row];
-	  double n_total = s->missing + s->non_missing;
-          struct entry
-            {
-              int stat_idx;
-              int case_idx;
-              double x;
-            }
-          entries[] =
-            {
-              { 0, 0, s->non_missing },
-              { 1, 0, s->non_missing / n_total * 100.0 },
-              { 0, 1, s->missing },
-              { 1, 1, s->missing / n_total * 100.0 },
-              { 0, 2, n_total },
-              { 1, 2, 100.0 },
-            };
-
-          for (size_t j = 0; j < sizeof entries / sizeof *entries; j++)
-            {
-              const struct entry *e = &entries[j];
-              pivot_table_put3 (table, e->stat_idx, e->case_idx, table_idx,
-                                pivot_value_new_number (e->x));
-            }
-	}
-    }
-
-  pivot_table_submit (table);
-}
-
-static void
-create_interaction_dimensions (struct pivot_table *table,
-                               const struct categoricals *cats,
-                               const struct interaction *iact)
-{
-  for (size_t i = iact->n_vars; i-- > 0; )
-    {
-      const struct variable *var = iact->vars[i];
-      struct pivot_dimension *d = pivot_dimension_create__ (
-        table, PIVOT_AXIS_ROW, pivot_value_new_variable (var));
-      d->root->show_label = true;
-
-      size_t n;
-      union value *values = categoricals_get_var_values (cats, var, &n);
-      for (size_t j = 0; j < n; j++)
-        pivot_category_create_leaf (
-          d->root, pivot_value_new_var_value (var, &values[j]));
-    }
-}
-
-static void
-output_report (const struct means *cmd,  int iact_idx,
-	       const struct mtable *mt)
-{
-  struct pivot_table *table = pivot_table_create (N_("Report"));
-  table->omit_empty = true;
-
-  struct pivot_dimension *statistics = pivot_dimension_create (
-    table, PIVOT_AXIS_COLUMN, N_("Statistics"));
-  for (int i = 0; i < cmd->n_cells; ++i)
-    pivot_category_create_leaf (
-      statistics->root, pivot_value_new_text (cell_spec[cmd->cells[i]].title));
-
-  const struct interaction *iact = mt->interactions[iact_idx];
-  create_interaction_dimensions (table, mt->cats, iact);
-
-  struct pivot_dimension *dep_dim = pivot_dimension_create (
-    table, PIVOT_AXIS_ROW, N_("Dependent Variables"));
-
-  size_t *indexes = xnmalloc (table->n_dimensions, sizeof *indexes);
-
-  size_t n_cats = categoricals_n_count (mt->cats, iact_idx);
-  for (size_t v = 0; v < mt->n_dep_vars; ++v)
-    {
-      indexes[table->n_dimensions - 1] = pivot_category_create_leaf (
-        dep_dim->root, pivot_value_new_variable (mt->dep_vars[v]));
-
-      for (size_t i = 0; i < n_cats; ++i)
-        {
-          for (size_t j = 0; j < iact->n_vars; j++)
-            {
-              int idx = categoricals_get_value_index_by_category_real (
-                mt->cats, iact_idx, i, j);
-              indexes[table->n_dimensions - 2 - j] = idx;
-            }
-
-          struct per_cat_data *per_cat_data
-            = categoricals_get_user_data_by_category_real (
-              mt->cats, iact_idx, i);
-
-          const struct per_var_data *pvd = &per_cat_data->pvd[v];
-          for (int stat_idx = 0; stat_idx < cmd->n_cells; ++stat_idx)
-            {
-              indexes[0] = stat_idx;
-              const int csi = cmd->cells[stat_idx];
-              const struct cell_spec *cs = &cell_spec[csi];
-
-              double result = cs->sd (pvd, pvd->cell_stats[stat_idx]);
-              pivot_table_put (table, indexes, table->n_dimensions,
-                               pivot_value_new_number (result));
-            }
-        }
-    }
-  free (indexes);
-
-  pivot_table_submit (table);
-}
-
