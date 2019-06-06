@@ -54,9 +54,6 @@ language_stats_sources = \
 	src/language/stats/mann-whitney.c \
 	src/language/stats/mann-whitney.h \
 	src/language/stats/means.c \
-	src/language/stats/means.h \
-	src/language/stats/means-calc.c \
-	src/language/stats/means-parser.c \
 	src/language/stats/mcnemar.c \
 	src/language/stats/mcnemar.h \
 	src/language/stats/median.c \
