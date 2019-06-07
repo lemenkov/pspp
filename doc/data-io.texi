@@ -1152,9 +1152,10 @@ are specified, @cmd{PRINT} outputs a single blank line.
 The @subcmd{OUTFILE} subcommand specifies the file to receive the output.  The
 file may be a file name as a string or a file handle (@pxref{File
 Handles}).  If @subcmd{OUTFILE} is not present then output will be sent to
-@pspp{}'s output listing file.  When @subcmd{OUTFILE} is present, a space is
-inserted at beginning of each output line, even lines that otherwise
-would be blank.
+@pspp{}'s output listing file.  When @subcmd{OUTFILE} is present, the
+output is written to @var{file_name} in a plain text format, with a
+space inserted at beginning of each output line, even lines that
+otherwise would be blank.
 
 The @subcmd{ENCODING} subcommand may only be used if the
 @subcmd{OUTFILE} subcommand is also used.  It specifies the character
