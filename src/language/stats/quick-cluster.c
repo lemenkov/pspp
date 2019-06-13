@@ -651,8 +651,8 @@ quick_cluster_show_membership (struct Kmeans *kmeans,
 			       const struct casereader *reader,
 			       struct qc *qc)
 {
-  struct pivot_table *table;
-  struct pivot_dimension *cases;
+  struct pivot_table *table = NULL;
+  struct pivot_dimension *cases = NULL;
   if (qc->print_cluster_membership)
     {
       table = pivot_table_create (N_("Cluster Membership"));
