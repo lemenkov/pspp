@@ -60,13 +60,20 @@ union value;
    Creating a pivot table usually consists of the following steps:
 
    1. Create the table with pivot_table_create(), passing in the title.
+      It's commonly useful to set up a few options at this point:
+
+      - If empty rows or columns should not be displayed, set ->omit_empty to
+        true.
+
+      - Set the format to use for "count" values with
+        pivot_table_set_weight_var() or pivot_table_set_weight_format().
 
    2. Create each dimension with pivot_dimension_create() and populate it with
       categories and, possibly, with groups that contain the categories.  This
       call also assigns the dimension to an axis.
 
       In simple cases, only a call to pivot_dimension_create() is needed.
-      Other functions such as pivot__create_group() can be used for
+      Other functions such as pivot_category_create_group() can be used for
       hierarchies of categories.
 
       Sometimes it's easier to create categories in tandem with inserting data,
@@ -370,7 +377,7 @@ struct pivot_table
     bool rotate_outer_row_labels;
     bool row_labels_in_corner;
     bool show_grid_lines;
-    bool omit_empty;
+    bool omit_empty;       /* Omit empty rows and columns? */
     size_t *current_layer; /* axis[PIVOT_AXIS_LAYER]->n_dimensions elements. */
     char *table_look;
     enum settings_value_show show_values;
