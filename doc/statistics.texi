@@ -1097,7 +1097,7 @@ MEANS [TABLES =]
         [ALL]
         [NONE] ]
 
-      [/MISSING = [TABLE] [INCLUDE] [DEPENDENT]]
+      [/MISSING = [INCLUDE] [DEPENDENT]]
 @end display 
 
 You can use the @cmd{MEANS} command to calculate the arithmetic mean and similar
@@ -1200,10 +1200,6 @@ for any of the variables directly involved in their calculation are
 encountered.
 This behaviour can be modified with the  @subcmd{/MISSING} subcommand.
 Three options are possible: @subcmd{TABLE}, @subcmd{INCLUDE} and @subcmd{DEPENDENT}.
-
-@subcmd{/MISSING = TABLE} causes cases to be dropped if any variable is missing 
-in the table specification currently being processed, regardless of 
-whether it is needed to calculate the statistic.
 
 @subcmd{/MISSING = INCLUDE} says that user missing values, either in the dependent
 variables or in the categorical variables should be taken at their face

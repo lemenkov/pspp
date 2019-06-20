@@ -37,6 +37,7 @@ GNULIB_MODULES = \
 	close \
 	configmake \
 	count-one-bits \
+	count-leading-zeros \
 	crc \
 	crypto/md4 \
 	crypto/rijndael \

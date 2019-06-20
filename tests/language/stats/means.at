@@ -1,574 +1,100 @@
 dnl PSPP - a program for statistical analysis.
-dnl Copyright (C) 2017 Free Software Foundation, Inc.
-dnl 
+dnl Copyright (C) 2017, 2019 Free Software Foundation, Inc.
+dnl
 dnl This program is free software: you can redistribute it and/or modify
 dnl it under the terms of the GNU General Public License as published by
 dnl the Free Software Foundation, either version 3 of the License, or
 dnl (at your option) any later version.
-dnl 
+dnl
 dnl This program is distributed in the hope that it will be useful,
 dnl but WITHOUT ANY WARRANTY; without even the implied warranty of
 dnl MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 dnl GNU General Public License for more details.
-dnl 
+dnl
 dnl You should have received a copy of the GNU General Public License
 dnl along with this program.  If not, see <http://www.gnu.org/licenses/>.
 dnl
 AT_BANNER([MEANS procedure])
 
-AT_SETUP([MEANS simple example])
+AT_SETUP([MEANS simple])
 AT_KEYWORDS([categorical categoricals])
 
 AT_DATA([means-simple.sps], [dnl
-SET FORMAT=F12.5.
-
-data list notable list /score * factor *.
-BEGIN DATA.
-22 01
-22 01
-29 01
-16 01
-24 02
-21 02
-22 01
-24 01
-19 01
-17 01
-22 01
-17 02
-23 02
-25 02
-20 01
-15 01
-18 01
-26 01
-23 02
-35 02
-20 01
-16 01
-19 01
-14 01
-14 01
-21 01
-END DATA.
-
-MEANS TABLES = score BY factor.
-])
-
-AT_CHECK([pspp -O format=csv means-simple.sps], [0],
-  [dnl
-Table: Case Processing Summary
-,Cases,,,,,
-,Included,,Excluded,,Total,
-,N,Percent,N,Percent,N,Percent
-score: factor,26,100.0%,0,.0%,26,100.0%
-score: ,26,100.0%,0,.0%,26,100.0%
-
-Table: Report
-,factor,Mean,N,Std. Deviation
-score,1.00000,19.78947,19.00000,4.03566
-,2.00000,24.00000,7.00000,5.50757
-
-Table: Report
-,Mean,N,Std. Deviation
-score,20.92308,26.00000,4.75750
-])
-
-AT_CLEANUP
-
-
-
-AT_SETUP([MEANS very simple example])
-AT_KEYWORDS([categorical categoricals])
-
-AT_DATA([means-vsimple.sps], [dnl
-SET FORMAT=F12.5.
-
-data list notable list /score.
+data list notable list /hand * score * w *.
 begin data.
-1
-1
-2
-2
+1 17 4
+1 16 5
+2 21 1
+2 22 1
+2 20 8
 end data.
 
-means tables = score.
+weight by w.
+
+means tables = score by hand
+ /cells = mean count.
 ])
 
-AT_CHECK([pspp -O format=csv means-vsimple.sps], [0],
-  [dnl
+AT_CHECK([pspp -O format=csv means-simple.sps], [0], [dnl
 Table: Case Processing Summary
 ,Cases,,,,,
 ,Included,,Excluded,,Total,
 ,N,Percent,N,Percent,N,Percent
-score: ,4,100.0%,0,.0%,4,100.0%
+score * hand,19,100.0%,0,.0%,19,100.0%
 
 Table: Report
-,Mean,N,Std. Deviation
-score,1.50000,4.00000,.57735
+hand,Mean,N
+1.00,16.44,9
+2.00,20.30,10
+Total,18.47,19
 ])
 
 AT_CLEANUP
 
-
-
-
-AT_SETUP([MEANS default missing])
+AT_SETUP([MEANS very simple])
 AT_KEYWORDS([categorical categoricals])
 
-AT_DATA([means-dmiss.sps], [dnl
-SET FORMAT=F12.2.
-data list notable list /a * g1 * g2 *.
+AT_DATA([very-simple.sps], [dnl
+data list notable list /score *.
 begin data.
-3 1 . 
-4 1 11
-3 1 21
-6 2 21
-2 2 31
-. 2 31
-8 2 31
-7 2 31
-end data.
-
-MEANS TABLES = 
-      a BY g1 g2
-      BY g2
-      /cells = MEAN COUNT
-      .
-])
-
-AT_CHECK([pspp -O format=csv means-dmiss.sps], [0],
-  [dnl
-Table: Case Processing Summary
-,Cases,,,,,
-,Included,,Excluded,,Total,
-,N,Percent,N,Percent,N,Percent
-a: g1 × g2,6,75.0%,2,25.0%,8,100.0%
-a: g2,6,75.0%,2,25.0%,8,100.0%
-a: ,7,87.5%,1,12.5%,8,100.0%
-
-Table: Report
-,g1,g2,Mean,N
-a,1.00,11.00,4.00,1.00
-,,21.00,3.00,1.00
-,2.00,,6.00,1.00
-,,31.00,5.67,3.00
-
-Table: Report
-,g2,Mean,N
-a,11.00,4.00,1.00
-,21.00,4.50,2.00
-,31.00,5.67,3.00
-
-Table: Report
-,Mean,N
-a,5.00,6.00
-])
-
-AT_CLEANUP
-
-
-AT_SETUP([MEANS linear stats])
-AT_KEYWORDS([categorical categoricals])
-
-dnl Slightly more involved example to test the linear statistics
-AT_DATA([means-linear.sps], [dnl
-set format F12.4.
-data list notable list /id * group * test1 *
-begin data.
-1 1 85
-2 1 90
-3 1 82
-4 1 75
-5 1 99
-6 2 70
-7 2 66
-8 2 52
-9 2 71
-10 2 50
-end data.
-
-add value labels /group 1 "experimental group" 2 "control group".
-
-means test1 by group
-  /cells = mean count stddev sum min max range variance kurt skew
-  .
-])
-
-
-AT_CHECK([pspp -O format=csv means-linear.sps], [0],
-  [dnl
-Table: Case Processing Summary
-,Cases,,,,,
-,Included,,Excluded,,Total,
-,N,Percent,N,Percent,N,Percent
-test1: group,10,100.0%,0,.0%,10,100.0%
-test1: ,10,100.0%,0,.0%,10,100.0%
-
-Table: Report
-,group,Mean,N,Std. Deviation,Sum,Min,Max,Range,Variance,Kurtosis,Skewness
-test1,experimental group,86.2000,5.0000,8.9833,431.0000,75.0000,99.0000,24.0000,80.7000,.2727,.3858
-,control group,61.8000,5.0000,10.0598,309.0000,50.0000,71.0000,21.0000,101.2000,-3.0437,-.4830
-
-Table: Report
-,Mean,N,Std. Deviation,Sum,Min,Max,Range,Variance,Kurtosis,Skewness
-test1,74.0000,10.0000,15.6915,740.0000,50.0000,99.0000,49.0000,246.2222,-.5759,-.1262
-])
-
-AT_CLEANUP
-
-
-AT_SETUP([MEANS standard errors])
-AT_KEYWORDS([categorical categoricals])
-
-AT_DATA([means-stderr.sps], [dnl
-set format F12.4.
-data list notable list /id * group * test1 *
-begin data.
-1 1 85
-2 1 90
-3 1 82
-4 1 75
-5 1 99
-6 1 70
-7 2 66
-8 2 52
-9 2 71
-10 2 50
-end data.
-
-means test1 by group 
-	/cells = mean count semean seskew sekurt.
-])
-
-
-AT_CHECK([pspp -O format=csv means-stderr.sps], [0],
-  [dnl
-Table: Case Processing Summary
-,Cases,,,,,
-,Included,,Excluded,,Total,
-,N,Percent,N,Percent,N,Percent
-test1: group,10,100.0%,0,.0%,10,100.0%
-test1: ,10,100.0%,0,.0%,10,100.0%
-
-Table: Report
-,group,Mean,N,S.E. Mean,S.E. Skew,S.E. Kurt
-test1,1.0000,83.5000,6.0000,4.2485,.8452,1.7408
-,2.0000,59.7500,4.0000,5.1700,1.0142,2.6186
-
-Table: Report
-,Mean,N,S.E. Mean,S.E. Skew,S.E. Kurt
-test1,74.0000,10.0000,4.9621,.6870,1.3342
-])
-
-AT_CLEANUP
-
-
-
-AT_SETUP([MEANS harmonic and geometric means])
-AT_KEYWORDS([categorical categoricals])
-
-AT_DATA([means-hg.sps], [dnl
-set format F12.4.
-data list notable list /x * y *.
-begin data.
-1 3
-2 3
-3 3
-4 3
-5 3
-end data.
-
-
-means x y
-	/cells = mean harmonic geometric
-.
-])
-
-
-AT_CHECK([pspp -O format=csv means-hg.sps], [0],
-  [dnl
-Table: Case Processing Summary
-,Cases,,,,,
-,Included,,Excluded,,Total,
-,N,Percent,N,Percent,N,Percent
-x: ,5,100.0%,0,.0%,5,100.0%
-y: ,5,100.0%,0,.0%,5,100.0%
-
-Table: Report
-,Mean,Harmonic Mean,Geom. Mean
-x,3.0000,2.1898,2.6052
-y,3.0000,3.0000,3.0000
-])
-
-AT_CLEANUP
-
-
-
-
-
-
-AT_SETUP([MEANS all/none/default])
-AT_KEYWORDS([categorical categoricals])
-
-dnl Make sure that /CELLS = {ALL,NONE,DEFAULT} work properly
-AT_DATA([means-stat-keywords.sps], [dnl
-SET FORMAT=F12.2.
-SET DECIMAL=DOT.
-
-DATA LIST NOTABLE LIST /score *.
-BEGIN DATA.
-22
-22
-29
+17
+17
+17
 16
-23
-END DATA.
-
-MEANS score /CELLS = ALL.
-MEANS score /CELLS = DEFAULT.
-MEANS score /CELLS = NONE.
-])
-
-
-AT_CHECK([pspp -O format=csv means-stat-keywords.sps], [0],
-  [dnl
-Table: Case Processing Summary
-,Cases,,,,,
-,Included,,Excluded,,Total,
-,N,Percent,N,Percent,N,Percent
-score: ,5,100.0%,0,.0%,5,100.0%
-
-Table: Report
-,Mean,N,Std. Deviation,S.E. Mean,Sum,Min,Max,Range,Variance,Kurtosis,S.E. Kurt,Skewness,S.E. Skew,First,Last,Harmonic Mean,Geom. Mean
-score,22.40,5.00,4.62,2.06,112.00,16.00,29.00,13.00,21.30,1.85,2.00,.11,.91,22.00,23.00,21.61,22.01
-
-Table: Case Processing Summary
-,Cases,,,,,
-,Included,,Excluded,,Total,
-,N,Percent,N,Percent,N,Percent
-score: ,5,100.0%,0,.0%,5,100.0%
-
-Table: Report
-,Mean,N,Std. Deviation
-score,22.40,5.00,4.62
-
-Table: Case Processing Summary
-,Cases,,,,,
-,Included,,Excluded,,Total,
-,N,Percent,N,Percent,N,Percent
-score: ,5,100.0%,0,.0%,5,100.0%
-
-Table: Report
-])
-
-AT_CLEANUP
-
-
-
-
-AT_SETUP([MEANS missing=table ])
-AT_KEYWORDS([categorical categoricals])
-
-AT_DATA([means-miss-table.sps], [dnl
-data list notable list /a * b * g1.
-begin data.
-1 9 1  
-2 9 1 
-3 9 1 
-4 9 2 
-5 9 2 
-6 9 2 
-7 . 2 
+17
+16
+16
+16
+16
+21
+22
+20
+20
+20
+20
+20
+20
+20
+20
 end data.
 
-MEANS a b BY g1
-      /a  BY g1
-      /cells =  COUNT
-      /missing = TABLE
-      .
-
-MEANS a b BY g1
-      /a  BY g1
-      /cells =  COUNT
-      .
+means tables = score
+ /cells = mean count.
 ])
 
-
-AT_CHECK([pspp -o pspp.csv -o pspp.txt means-miss-table.sps])
-AT_CHECK([cat pspp.csv], [0], [dnl
+AT_CHECK([pspp -O format=csv very-simple.sps], [0], [dnl
 Table: Case Processing Summary
 ,Cases,,,,,
 ,Included,,Excluded,,Total,
 ,N,Percent,N,Percent,N,Percent
-a: g1,7,100.0%,0,.0%,7,100.0%
-a: ,7,100.0%,0,.0%,7,100.0%
-b: g1,6,85.7%,1,14.3%,7,100.0%
-b: ,6,85.7%,1,14.3%,7,100.0%
+score,19,100.0%,0,.0%,19,100.0%
 
 Table: Report
-,g1,N
-a,1.00,3.00
-,2.00,3.00
-b,1.00,3.00
-,2.00,3.00
-
-Table: Report
-,N
-a,6.00
-b,6.00
-
-Table: Case Processing Summary
-,Cases,,,,,
-,Included,,Excluded,,Total,
-,N,Percent,N,Percent,N,Percent
-a: g1,7,100.0%,0,.0%,7,100.0%
-a: ,7,100.0%,0,.0%,7,100.0%
-
-Table: Report
-,g1,N
-a,1.00,3.00
-,2.00,4.00
-
-Table: Report
-,N
-a,7.00
-
-Table: Case Processing Summary
-,Cases,,,,,
-,Included,,Excluded,,Total,
-,N,Percent,N,Percent,N,Percent
-a: g1,7,100.0%,0,.0%,7,100.0%
-a: ,7,100.0%,0,.0%,7,100.0%
-b: g1,6,85.7%,1,14.3%,7,100.0%
-b: ,6,85.7%,1,14.3%,7,100.0%
-
-Table: Report
-,g1,N
-a,1.00,3.00
-,2.00,4.00
-b,1.00,3.00
-,2.00,3.00
-
-Table: Report
-,N
-a,7.00
-b,6.00
-
-Table: Case Processing Summary
-,Cases,,,,,
-,Included,,Excluded,,Total,
-,N,Percent,N,Percent,N,Percent
-a: g1,7,100.0%,0,.0%,7,100.0%
-a: ,7,100.0%,0,.0%,7,100.0%
-
-Table: Report
-,g1,N
-a,1.00,3.00
-,2.00,4.00
-
-Table: Report
-,N
-a,7.00
+Mean,N
+18.47,19
 ])
+
 AT_CLEANUP
-
-AT_SETUP([MEANS user missing values])
-AT_KEYWORDS([categorical categoricals])
-
-AT_DATA([means-missing.sps], [dnl
-data list notable list /a * b * g1.
-begin data.
-1 2 9  
-2 2 1 
-3 2 1 
-4 2 2 
-5 2 2 
-6 2 2 
-7 9 2 
-end data.
-
-MISSING VALUES a b g1 (9).
-
-MEANS a b BY g1 /cells =  COUNT .
-
-MEANS a b BY g1 /cells =  COUNT /missing = include .
-
-MEANS a b BY g1 /cells =  COUNT /missing = dependent .
-])
-
-
-AT_CHECK([pspp -o pspp.csv -o pspp.txt means-missing.sps])
-AT_CHECK([cat pspp.csv], [0], [dnl
-Table: Case Processing Summary
-,Cases,,,,,
-,Included,,Excluded,,Total,
-,N,Percent,N,Percent,N,Percent
-a: g1,6,85.7%,1,14.3%,7,100.0%
-a: ,7,100.0%,0,.0%,7,100.0%
-b: g1,5,71.4%,2,28.6%,7,100.0%
-b: ,6,85.7%,1,14.3%,7,100.0%
-
-Table: Report
-,g1,N
-a,1.00,2.00
-,2.00,4.00
-b,1.00,2.00
-,2.00,3.00
-
-Table: Report
-,N
-a,6.00
-b,5.00
-
-Table: Case Processing Summary
-,Cases,,,,,
-,Included,,Excluded,,Total,
-,N,Percent,N,Percent,N,Percent
-a: g1,7,100.0%,0,.0%,7,100.0%
-a: ,7,100.0%,0,.0%,7,100.0%
-b: g1,7,100.0%,0,.0%,7,100.0%
-b: ,7,100.0%,0,.0%,7,100.0%
-
-Table: Report
-,g1,N
-a,1.00,2.00
-,2.00,4.00
-,9.00,1.00
-b,1.00,2.00
-,2.00,4.00
-,9.00,1.00
-
-Table: Report
-,N
-a,7.00
-b,7.00
-
-Table: Case Processing Summary
-,Cases,,,,,
-,Included,,Excluded,,Total,
-,N,Percent,N,Percent,N,Percent
-a: g1,7,100.0%,0,.0%,7,100.0%
-a: ,7,100.0%,0,.0%,7,100.0%
-b: g1,6,85.7%,1,14.3%,7,100.0%
-b: ,6,85.7%,1,14.3%,7,100.0%
-
-Table: Report
-,g1,N
-a,1.00,2.00
-,2.00,4.00
-,9.00,1.00
-b,1.00,2.00
-,2.00,3.00
-,9.00,1.00
-
-Table: Report
-,N
-a,7.00
-b,6.00
-])
-AT_CLEANUP
-
 
 
 AT_SETUP([MEANS empty factor spec])
@@ -582,7 +108,7 @@ begin data.
 3
 end data.
 
-MEANS TABLES =  outcome 
+MEANS TABLES =  outcome
 	BY.
 ])
 
@@ -609,6 +135,913 @@ AT_CHECK([pspp -O format=csv means-bad.sps], [1], [ignore])
 
 AT_CLEANUP
 
+
+dnl This example is based upon info from https://libguides.library.kent.edu/SPSS/CompareMeans
+AT_SETUP([MEANS default missing behaviour])
+AT_KEYWORDS([categorical categoricals])
+
+AT_DATA([means-missing.sps], [dnl
+data list notable list /w * score * a * b *.
+begin data
+     12      . 0 0
+     13      . 0 1
+     11      . 1 0
+      7      . 1 1
+      5      1 0 .
+     91      1 0 0
+    130      1 0 1
+      4      1 1 .
+     90      1 1 0
+     72      1 1 1
+end data.
+
+weight by w.
+
+MEANS tables=score
+	/cells = count.
+
+MEANS tables=score by a
+	/cells = count.
+
+MEANS tables=score by a by b
+      /cells = count.
+])
+
+AT_CHECK([pspp -O format=csv means-missing.sps], [0], [dnl
+Table: Case Processing Summary
+,Cases,,,,,
+,Included,,Excluded,,Total,
+,N,Percent,N,Percent,N,Percent
+score,392,90.1%,43,9.9%,435,100.0%
+
+Table: Report
+N
+392
+
+Table: Case Processing Summary
+,Cases,,,,,
+,Included,,Excluded,,Total,
+,N,Percent,N,Percent,N,Percent
+score * a,392,90.1%,43,9.9%,435,100.0%
+
+Table: Report
+a,N
+.00,226
+1.00,166
+Total,392
+
+Table: Case Processing Summary
+,Cases,,,,,
+,Included,,Excluded,,Total,
+,N,Percent,N,Percent,N,Percent
+score * a * b,383,88.0%,52,12.0%,435,100.0%
+
+Table: Report
+a,b,N
+.00,.00,91
+,1.00,130
+,Total,221
+1.00,.00,90
+,1.00,72
+,Total,162
+Total,.00,181
+,1.00,202
+,Total,383
+])
+
+AT_CLEANUP
+
+
+dnl This example from https://www.spss-tutorials.com/spss-means-command/
+AT_SETUP([MEANS two way])
+AT_KEYWORDS([categorical categoricals])
+
+AT_DATA([means-freelancer.sps], [dnl
+data list notable list /income_2010 * gender  sector_2010.
+begin data
+6072.40 0 5
+12706.65 1 4
+14912.82 0 2
+16338.36 1 5
+22606.99 0 .
+23544.95 1 1
+24985.21 0 2
+26586.48 0 1
+29076.24 1 3
+31010.18 0 2
+33190.63 1 1
+35570.67 1 4
+36202.60 1 4
+36205.85 1 2
+36262.56 1 .
+38283.56 0 1
+38569.91 1 5
+39057.56 1 4
+39594.68 1 5
+42087.38 0 1
+42370.92 0 2
+42931.32 1 2
+45907.58 0 4
+45911.32 1 .
+47227.09 1 3
+50440.71 1 5
+57440.17 1 3
+58918.86 0 5
+59430.07 1 2
+61135.95 0 4
+64193.85 0 4
+64857.02 0 3
+65903.42 0 4
+66592.38 1 3
+70986.10 0 3
+71229.94 0 4
+74663.05 1 4
+76676.14 1 4
+79260.80 0 4
+80311.71 0 4
+end data.
+
+means income_2010 by gender by sector_2010
+	/cells count min mean stddev.
+])
+
+AT_CHECK([pspp -O format=csv means-freelancer.sps], [0], [dnl
+Table: Case Processing Summary
+,Cases,,,,,
+,Included,,Excluded,,Total,
+,N,Percent,N,Percent,N,Percent
+income_2010 * gender * sector_2010,37,92.5%,3,7.5%,40,100.0%
+
+Table: Report
+gender,sector_2010,N,Minimum,Mean,Std. Deviation
+.00,1.00,3,26586.48,35652.47,8078.46
+,2.00,4,14912.82,28319.78,11482.43
+,3.00,2,64857.02,67921.56,4333.91
+,4.00,7,45907.58,66849.04,11787.11
+,5.00,2,6072.40,32495.63,37368.09
+,Total,18,6072.40,49389.68,22371.48
+1.00,1.00,2,23544.95,28367.79,6820.53
+,2.00,3,36205.85,46189.08,11949.93
+,3.00,4,29076.24,50083.97,16084.44
+,4.00,6,12706.65,45812.78,24995.16
+,5.00,4,16338.36,36235.92,14311.04
+,Total,19,12706.65,42918.90,17851.64
+Total,1.00,5,23544.95,32738.60,7757.62
+,2.00,7,14912.82,35978.05,14309.27
+,3.00,6,29076.24,56029.83,15615.06
+,4.00,13,12706.65,57139.99,21187.85
+,5.00,6,6072.40,34989.15,20146.69
+,Total,37,6072.40,46066.84,20160.12
+])
+
+AT_CLEANUP
+
+
+dnl Check that rows are suppressed and that things generally work ok
+dnl when there are a 2 way instance contains an unbalanced set of
+dnl categorical values.
+AT_SETUP([MEANS unbalanced])
+AT_KEYWORDS([categorical categoricals])
+
+AT_DATA([means-unbalanced.sps], [dnl
+data list notable list /b c x *.
+begin data.
+4 1 123
+3 1 123
+5 0 246
+4 0 246
+3 0 246
+end data.
+
+* The data above lack a 5 1 case.
+
+means
+	table=x by b by c
+	/cells = mean count
+	.
+])
+
+AT_CHECK([pspp -O format=csv means-unbalanced.sps], [0], [dnl
+Table: Case Processing Summary
+,Cases,,,,,
+,Included,,Excluded,,Total,
+,N,Percent,N,Percent,N,Percent
+x * b * c,5,100.0%,0,.0%,5,100.0%
+
+Table: Report
+b,c,Mean,N
+3.00,.00,246.00,1
+,1.00,123.00,1
+,Total,184.50,2
+4.00,.00,246.00,1
+,1.00,123.00,1
+,Total,184.50,2
+5.00,.00,246.00,1
+,Total,246.00,1
+Total,.00,246.00,3
+,1.00,123.00,2
+,Total,196.80,5
+])
+
+AT_CLEANUP
+
+dnl This example kindly provided by Dana Williams
+AT_SETUP([MEANS three way])
+AT_KEYWORDS([categorical categoricals])
+
+AT_DATA([means-threeway.sps], [dnl
+data list notable list /score a b c.
+begin data.
+3  0 0 0
+4  0 0 1
+41 0 0 2
+5  0 1 0
+6  0 1 1
+7  1 0 0
+8  1 0 1
+9  1 1 0
+10 1 1 1
+end data.
+
+means score by a by b by c.
+])
+
+AT_CHECK([pspp -O format=csv means-threeway.sps], [0], [dnl
+Table: Case Processing Summary
+,Cases,,,,,
+,Included,,Excluded,,Total,
+,N,Percent,N,Percent,N,Percent
+score * a * b * c,9,100.0%,0,.0%,9,100.0%
+
+Table: Report
+a,b,c,Mean,N,Std. Deviation
+.00,.00,.00,3.00,1,NaN
+,,1.00,4.00,1,NaN
+,,2.00,41.00,1,NaN
+,,Total,16.00,3,21.66
+,1.00,.00,5.00,1,NaN
+,,1.00,6.00,1,NaN
+,,Total,5.50,2,.71
+,Total,.00,4.00,2,1.41
+,,1.00,5.00,2,1.41
+,,2.00,41.00,1,NaN
+,,Total,11.80,5,16.36
+1.00,.00,.00,7.00,1,NaN
+,,1.00,8.00,1,NaN
+,,Total,7.50,2,.71
+,1.00,.00,9.00,1,NaN
+,,1.00,10.00,1,NaN
+,,Total,9.50,2,.71
+,Total,.00,8.00,2,1.41
+,,1.00,9.00,2,1.41
+,,Total,8.50,4,1.29
+Total,.00,.00,5.00,2,2.83
+,,1.00,6.00,2,2.83
+,,2.00,41.00,1,NaN
+,,Total,12.60,5,16.01
+,1.00,.00,7.00,2,2.83
+,,1.00,8.00,2,2.83
+,,Total,7.50,4,2.38
+,Total,.00,6.00,4,2.58
+,,1.00,7.00,4,2.58
+,,2.00,41.00,1,NaN
+,,Total,10.33,9,11.73
+])
+
+AT_CLEANUP
+
+dnl The above example again, but with string variables for
+dnl the control vars.
+AT_SETUP([MEANS three way string])
+AT_KEYWORDS([categorical categoricals])
+
+AT_DATA([means-threeway-string.sps], [dnl
+data list notable list /score (f22.2) a (a24) b (a16) c (a8).
+begin data.
+3  fooberrycrumblexzaQ  fosilationwereqd  zero
+4  fooberrycrumblexzaQ  fosilationwereqd  one
+41 fooberrycrumblexzaQ  fosilationwereqd  two
+5  fooberrycrumblexzaQ  onlyonekonboys    zero
+6  fooberrycrumblexzaQ  onlyonekonboys    one
+7  wontledingbatsXASDF  fosilationwereqd  zero
+8  wontledingbatsXASDF  fosilationwereqd  one
+9  wontledingbatsXASDF  onlyonekonboys    zero
+10 wontledingbatsXASDF  onlyonekonboys    one
+end data.
+
+means score by a by b by c.
+])
+
+AT_CHECK([pspp -O format=csv means-threeway-string.sps], [0], [dnl
+Table: Case Processing Summary
+,Cases,,,,,
+,Included,,Excluded,,Total,
+,N,Percent,N,Percent,N,Percent
+score * a * b * c,9,100.0%,0,.0%,9,100.0%
+
+Table: Report
+a,b,c,Mean,N,Std. Deviation
+fooberrycrumblexzaQ     ,fosilationwereqd,one     ,4.00,1,NaN
+,,two     ,41.00,1,NaN
+,,zero    ,3.00,1,NaN
+,,Total,16.00,3,21.66
+,onlyonekonboys  ,one     ,6.00,1,NaN
+,,zero    ,5.00,1,NaN
+,,Total,5.50,2,.71
+,Total,one     ,5.00,2,1.41
+,,two     ,41.00,1,NaN
+,,zero    ,4.00,2,1.41
+,,Total,11.80,5,16.36
+wontledingbatsXASDF     ,fosilationwereqd,one     ,8.00,1,NaN
+,,zero    ,7.00,1,NaN
+,,Total,7.50,2,.71
+,onlyonekonboys  ,one     ,10.00,1,NaN
+,,zero    ,9.00,1,NaN
+,,Total,9.50,2,.71
+,Total,one     ,9.00,2,1.41
+,,zero    ,8.00,2,1.41
+,,Total,8.50,4,1.29
+Total,fosilationwereqd,one     ,6.00,2,2.83
+,,two     ,41.00,1,NaN
+,,zero    ,5.00,2,2.83
+,,Total,12.60,5,16.01
+,onlyonekonboys  ,one     ,8.00,2,2.83
+,,zero    ,7.00,2,2.83
+,,Total,7.50,4,2.38
+,Total,one     ,7.00,4,2.58
+,,two     ,41.00,1,NaN
+,,zero    ,6.00,4,2.58
+,,Total,10.33,9,11.73
+])
+
+AT_CLEANUP
+
+
+
+dnl An example with multiple tables
+AT_SETUP([MEANS multiple tables])
+AT_KEYWORDS([categorical categoricals])
+
+AT_DATA([means-multi-table.sps], [dnl
+data list notable list /a * b * c * x * y *.
+begin data.
+6 3 0 123 456
+6 3 1 123 456
+6 4 0 123 456
+6 4 1 123 456
+6 5 0 123 456
+6 5 1 123 456
+7 3 0 123 456
+7 3 1 123 456
+7 4 0 123 456
+7 4 1 123 456
+7 5 0 123 456
+7 5 1 123 456
+8 3 0 123 456
+8 3 1 123 456
+8 4 0 123 456
+8 4 1 123 456
+8 5 0 123 456
+8 5 1 123 456
+9 3 0 123 456
+9 3 1 123 456
+9 4 0 123 456
+9 4 1 123 456
+9 5 0 123 456
+9 5 1 123 456
+end data.
+
+
+means table = x by b by c
+	/x by b
+	/y by a by b
+  cells = min count  .
+])
+
+AT_CHECK([pspp -O format=csv means-multi-table.sps], [0], [dnl
+Table: Case Processing Summary
+,Cases,,,,,
+,Included,,Excluded,,Total,
+,N,Percent,N,Percent,N,Percent
+x * b * c,24,100.0%,0,.0%,24,100.0%
+
+Table: Report
+b,c,Minimum,N
+3.00,.00,123.00,4
+,1.00,123.00,4
+,Total,123.00,8
+4.00,.00,123.00,4
+,1.00,123.00,4
+,Total,123.00,8
+5.00,.00,123.00,4
+,1.00,123.00,4
+,Total,123.00,8
+Total,.00,123.00,12
+,1.00,123.00,12
+,Total,123.00,24
+
+Table: Case Processing Summary
+,Cases,,,,,
+,Included,,Excluded,,Total,
+,N,Percent,N,Percent,N,Percent
+x * b,24,100.0%,0,.0%,24,100.0%
+
+Table: Report
+b,Minimum,N
+3.00,123.00,8
+4.00,123.00,8
+5.00,123.00,8
+Total,123.00,24
+
+Table: Case Processing Summary
+,Cases,,,,,
+,Included,,Excluded,,Total,
+,N,Percent,N,Percent,N,Percent
+y * a * b,24,100.0%,0,.0%,24,100.0%
+
+Table: Report
+a,b,Minimum,N
+6.00,3.00,456.00,2
+,4.00,456.00,2
+,5.00,456.00,2
+,Total,456.00,6
+7.00,3.00,456.00,2
+,4.00,456.00,2
+,5.00,456.00,2
+,Total,456.00,6
+8.00,3.00,456.00,2
+,4.00,456.00,2
+,5.00,456.00,2
+,Total,456.00,6
+9.00,3.00,456.00,2
+,4.00,456.00,2
+,5.00,456.00,2
+,Total,456.00,6
+Total,3.00,456.00,8
+,4.00,456.00,8
+,5.00,456.00,8
+,Total,456.00,24
+])
+
+AT_CLEANUP
+
+
+
+dnl An example with more than one dependent variable.
+dnl This case uses a somewhat different table layout.
+AT_SETUP([MEANS multi variable])
+AT_KEYWORDS([categorical categoricals])
+
+AT_DATA([means-multi-variable.sps], [dnl
+data list notable list /b c x y.
+begin data.
+5 1 123 55
+5 1 123 55
+5 1 123 55
+5 1 123 55
+4 1 456 44
+4 1 456 44
+4 1 456 44
+4 1 456 44
+3 1 789 55
+3 1 789 55
+3 1 789 55
+3 1 789 55
+5 0 246 99
+5 0 246 99
+5 0 246 99
+5 0 246 .
+4 0 987 99
+4 0 987 99
+4 0 987 99
+4 0 987 99
+3 0 654 11
+3 0 654 11
+3 0 654 11
+3 0 654 11
+end data.
+
+means
+	table = x y by b by c
+	.
+])
+
+AT_CHECK([pspp -O format=csv means-multi-variable.sps], [0], [dnl
+Table: Case Processing Summary
+,Cases,,,,,
+,Included,,Excluded,,Total,
+,N,Percent,N,Percent,N,Percent
+x * b * c,24,100.0%,0,.0%,24,100.0%
+y * b * c,23,95.8%,1,4.2%,24,100.0%
+
+Table: x * y * b * c
+b,c,,x,y
+3.00,.00,Mean,654.00,11.00
+,,N,4,4
+,,Std. Deviation,.00,.00
+,1.00,Mean,789.00,55.00
+,,N,4,4
+,,Std. Deviation,.00,.00
+,Total,Mean,721.50,33.00
+,,N,8,8
+,,Std. Deviation,72.16,23.52
+4.00,.00,Mean,987.00,99.00
+,,N,4,4
+,,Std. Deviation,.00,.00
+,1.00,Mean,456.00,44.00
+,,N,4,4
+,,Std. Deviation,.00,.00
+,Total,Mean,721.50,71.50
+,,N,8,8
+,,Std. Deviation,283.83,29.40
+5.00,.00,Mean,246.00,99.00
+,,N,4,3
+,,Std. Deviation,.00,.00
+,1.00,Mean,123.00,55.00
+,,N,4,4
+,,Std. Deviation,.00,.00
+,Total,Mean,184.50,73.86
+,,N,8,7
+,,Std. Deviation,65.75,23.52
+Total,.00,Mean,629.00,67.00
+,,N,12,11
+,,Std. Deviation,316.50,44.40
+,1.00,Mean,456.00,51.33
+,,N,12,12
+,,Std. Deviation,283.98,5.42
+,Total,Mean,542.50,58.83
+,,N,24,23
+,,Std. Deviation,307.06,31.22
+])
+
+
+AT_CLEANUP
+
+
+dnl This example is based upon one kindly provided by Dana Williams
+dnl It exercises the most complex case where there are multiple
+dnl dependent variables AND multiple control variables in each layer.
+AT_SETUP([MEANS multi combination])
+AT_KEYWORDS([categorical categoricals])
+
+AT_DATA([means-multi-combination.sps], [dnl
+data list notable list /one two three four five six.
+begin data
+1 1 1 1 1 1
+2 1 1 1 1 1
+1 2 1 1 1 1
+2 2 1 1 1 1
+1 1 2 1 1 1
+2 1 2 1 1 1
+1 2 2 1 1 1
+2 2 2 1 1 1
+1 1 1 2 1 1
+2 1 1 2 1 1
+1 2 1 2 1 1
+2 2 1 2 1 1
+1 1 2 2 1 1
+2 1 2 2 1 1
+1 2 2 2 1 1
+2 2 2 2 1 1
+1 1 1 1 2 1
+2 1 1 1 2 1
+1 2 1 1 2 1
+2 2 1 1 2 1
+1 1 2 1 2 1
+2 1 2 1 2 1
+1 2 2 1 2 1
+2 2 2 1 2 1
+1 1 1 2 2 1
+2 1 1 2 2 1
+1 2 1 2 2 1
+2 2 1 2 2 1
+1 1 2 2 2 1
+2 1 2 2 2 1
+1 2 2 2 2 1
+2 2 2 2 2 1
+1 1 1 1 1 2
+2 1 1 1 1 2
+1 2 1 1 1 2
+2 2 1 1 1 2
+1 1 2 1 1 2
+2 1 2 1 1 2
+1 2 2 1 1 2
+2 2 2 1 1 2
+1 1 1 2 1 2
+2 1 1 2 1 2
+1 2 1 2 1 2
+2 2 1 2 1 2
+1 1 2 2 1 2
+2 1 2 2 1 2
+1 2 2 2 1 2
+2 2 2 2 1 2
+1 1 1 1 2 2
+2 1 1 1 2 2
+1 2 1 1 2 2
+2 2 1 1 2 2
+1 1 2 1 2 2
+2 1 2 1 2 2
+1 2 2 1 2 2
+2 2 2 1 2 2
+1 1 1 2 2 2
+2 1 1 2 2 2
+1 2 1 2 2 2
+2 2 1 2 2 2
+1 1 2 2 2 2
+2 1 2 2 2 2
+1 2 2 2 2 2
+2 2 2 2 2 2
+end data.
+
+recode six  (2 = 62) (1 = 61).
+recode five (2 = 52) (1 = 51).
+recode four (2 = 42) (1 = 41).
+recode three (2 = 32) (1 = 31).
+
+set format F22.5.
+
+means tables = one two BY three four BY five six.
+])
+
+AT_CHECK([pspp -O format=csv means-multi-combination.sps], [0], [dnl
+Table: Case Processing Summary
+,Cases,,,,,
+,Included,,Excluded,,Total,
+,N,Percent,N,Percent,N,Percent
+one * three * five,64,100.0%,0,.0%,64,100.0%
+two * three * five,64,100.0%,0,.0%,64,100.0%
+one * three * six,64,100.0%,0,.0%,64,100.0%
+two * three * six,64,100.0%,0,.0%,64,100.0%
+one * four * five,64,100.0%,0,.0%,64,100.0%
+two * four * five,64,100.0%,0,.0%,64,100.0%
+one * four * six,64,100.0%,0,.0%,64,100.0%
+two * four * six,64,100.0%,0,.0%,64,100.0%
+
+Table: one * two * three * five
+three,five,,one,two
+31.00,51.00,Mean,1.50000,1.50000
+,,N,16,16
+,,Std. Deviation,.51640,.51640
+,52.00,Mean,1.50000,1.50000
+,,N,16,16
+,,Std. Deviation,.51640,.51640
+,Total,Mean,1.50000,1.50000
+,,N,32,32
+,,Std. Deviation,.50800,.50800
+32.00,51.00,Mean,1.50000,1.50000
+,,N,16,16
+,,Std. Deviation,.51640,.51640
+,52.00,Mean,1.50000,1.50000
+,,N,16,16
+,,Std. Deviation,.51640,.51640
+,Total,Mean,1.50000,1.50000
+,,N,32,32
+,,Std. Deviation,.50800,.50800
+Total,51.00,Mean,1.50000,1.50000
+,,N,32,32
+,,Std. Deviation,.50800,.50800
+,52.00,Mean,1.50000,1.50000
+,,N,32,32
+,,Std. Deviation,.50800,.50800
+,Total,Mean,1.50000,1.50000
+,,N,64,64
+,,Std. Deviation,.50395,.50395
+
+Table: one * two * three * six
+three,six,,one,two
+31.00,61.00,Mean,1.50000,1.50000
+,,N,16,16
+,,Std. Deviation,.51640,.51640
+,62.00,Mean,1.50000,1.50000
+,,N,16,16
+,,Std. Deviation,.51640,.51640
+,Total,Mean,1.50000,1.50000
+,,N,32,32
+,,Std. Deviation,.50800,.50800
+32.00,61.00,Mean,1.50000,1.50000
+,,N,16,16
+,,Std. Deviation,.51640,.51640
+,62.00,Mean,1.50000,1.50000
+,,N,16,16
+,,Std. Deviation,.51640,.51640
+,Total,Mean,1.50000,1.50000
+,,N,32,32
+,,Std. Deviation,.50800,.50800
+Total,61.00,Mean,1.50000,1.50000
+,,N,32,32
+,,Std. Deviation,.50800,.50800
+,62.00,Mean,1.50000,1.50000
+,,N,32,32
+,,Std. Deviation,.50800,.50800
+,Total,Mean,1.50000,1.50000
+,,N,64,64
+,,Std. Deviation,.50395,.50395
+
+Table: one * two * four * five
+four,five,,one,two
+41.00,51.00,Mean,1.50000,1.50000
+,,N,16,16
+,,Std. Deviation,.51640,.51640
+,52.00,Mean,1.50000,1.50000
+,,N,16,16
+,,Std. Deviation,.51640,.51640
+,Total,Mean,1.50000,1.50000
+,,N,32,32
+,,Std. Deviation,.50800,.50800
+42.00,51.00,Mean,1.50000,1.50000
+,,N,16,16
+,,Std. Deviation,.51640,.51640
+,52.00,Mean,1.50000,1.50000
+,,N,16,16
+,,Std. Deviation,.51640,.51640
+,Total,Mean,1.50000,1.50000
+,,N,32,32
+,,Std. Deviation,.50800,.50800
+Total,51.00,Mean,1.50000,1.50000
+,,N,32,32
+,,Std. Deviation,.50800,.50800
+,52.00,Mean,1.50000,1.50000
+,,N,32,32
+,,Std. Deviation,.50800,.50800
+,Total,Mean,1.50000,1.50000
+,,N,64,64
+,,Std. Deviation,.50395,.50395
+
+Table: one * two * four * six
+four,six,,one,two
+41.00,61.00,Mean,1.50000,1.50000
+,,N,16,16
+,,Std. Deviation,.51640,.51640
+,62.00,Mean,1.50000,1.50000
+,,N,16,16
+,,Std. Deviation,.51640,.51640
+,Total,Mean,1.50000,1.50000
+,,N,32,32
+,,Std. Deviation,.50800,.50800
+42.00,61.00,Mean,1.50000,1.50000
+,,N,16,16
+,,Std. Deviation,.51640,.51640
+,62.00,Mean,1.50000,1.50000
+,,N,16,16
+,,Std. Deviation,.51640,.51640
+,Total,Mean,1.50000,1.50000
+,,N,32,32
+,,Std. Deviation,.50800,.50800
+Total,61.00,Mean,1.50000,1.50000
+,,N,32,32
+,,Std. Deviation,.50800,.50800
+,62.00,Mean,1.50000,1.50000
+,,N,32,32
+,,Std. Deviation,.50800,.50800
+,Total,Mean,1.50000,1.50000
+,,N,64,64
+,,Std. Deviation,.50395,.50395
+])
+
+AT_CLEANUP
+
+
+dnl This example was observed to cause a crash in the
+dnl destructor.  Found by zzuf.
+AT_SETUP([MEANS clean up])
+AT_KEYWORDS([categorical categoricals])
+
+AT_DATA([means-bad.sps], [dnl
+data list notable list /one two three four five six.
+begin data
+1 1 1 1 1 1
+2 1 1 1 1 !
+1 2 2 2 2 2
+2 2 2 2 2 2
+end data.
+
+means tables = one two BY thsee four BY five six.
+])
+
+AT_CHECK([pspp -O format=csv means-bad.sps], [1], [ignore])
+
+AT_CLEANUP
+
+
+dnl Another example which caused a crash.
+dnl Found by zzuf.
+AT_SETUP([MEANS control all missing])
+AT_KEYWORDS([categorical categoricals])
+
+AT_DATA([means-bad.sps], [dnl
+data list notable list /a * b *  y * uu *.
+begin data.
+6 3 . 5
+6 3 . 5
+6 4 . 5
+end data.
+
+means table = b by a by y by uu
+  .
+])
+
+AT_CHECK([pspp -O format=csv means-bad.sps], [0], [dnl
+Table: Case Processing Summary
+,Cases,,,,,
+,Included,,Excluded,,Total,
+,N,Percent,N,Percent,N,Percent
+b * a * y * uu,0,.0%,3,100.0%,3,100.0%
+
+"warning: The table ""a * y * uu"" has no non-empty control variables.  No result for this table will be displayed."
+])
+
+AT_CLEANUP
+
+
+dnl Do some tests on the MISSING keyword.
+AT_SETUP([MEANS missing classes])
+AT_KEYWORDS([categorical categoricals])
+
+AT_DATA([means-missing-classes.sps], [dnl
+data list notable list /hand * score *.
+begin data.
+1 17
+1 17
+1 17
+1 16
+1 17
+1 16
+1 16
+1 .
+1 99
+2 21
+2 22
+2 20
+2 20
+2 20
+2 20
+2 20
+2 20
+2 20
+2 20
+9 55
+end data.
+
+missing values score (99).
+missing values hand (9).
+
+means tables=score  by hand
+	/cells = count max
+	/missing = dependent
+	.
+
+means tables=score  by hand
+	/cells = count max
+	/missing = include
+	.
+
+means tables=score  by hand
+	/cells = count max
+	.
+
+])
+
+AT_CHECK([pspp -O format=csv means-missing-classes.sps], [0], [dnl
+Table: Case Processing Summary
+,Cases,,,,,
+,Included,,Excluded,,Total,
+,N,Percent,N,Percent,N,Percent
+score * hand,18,90.0%,2,10.0%,20,100.0%
+
+Table: Report
+hand,N,Maximum
+1.00,7,17.00
+2.00,10,22.00
+9.00,1,55.00
+Total,18,55.00
+
+Table: Case Processing Summary
+,Cases,,,,,
+,Included,,Excluded,,Total,
+,N,Percent,N,Percent,N,Percent
+score * hand,19,95.0%,1,5.0%,20,100.0%
+
+Table: Report
+hand,N,Maximum
+1.00,8,99.00
+2.00,10,22.00
+9.00,1,55.00
+Total,19,99.00
+
+Table: Case Processing Summary
+,Cases,,,,,
+,Included,,Excluded,,Total,
+,N,Percent,N,Percent,N,Percent
+score * hand,17,85.0%,3,15.0%,20,100.0%
+
+Table: Report
+hand,N,Maximum
+1.00,7,17.00
+2.00,10,22.00
+Total,17,22.00
+])
+
+AT_CLEANUP
 
 
 
