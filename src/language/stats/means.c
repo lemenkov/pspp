@@ -118,6 +118,8 @@ destroy_workspace (const struct mtable *mt, struct workspace *ws)
       HMAP_FOR_EACH_SAFE (inst, next, struct instance, hmap_node,
 		     &instances->map)
 	{
+	  int width = var_get_width (inst->var);
+	  value_destroy (&inst->value, width);
 	  free (inst);
 	}
       hmap_destroy (&instances->map);
