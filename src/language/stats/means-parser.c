@@ -24,13 +24,9 @@
 #include "data/format.h"
 #include "data/variable.h"
 
-#include "language/command.h"
 #include "language/lexer/lexer.h"
 #include "language/lexer/variable-parser.h"
 
-#include "libpspp/hmap.h"
-#include "libpspp/bt.h"
-#include "libpspp/misc.h"
 #include "libpspp/pool.h"
 
 #include "means.h"
@@ -89,7 +85,7 @@ lex_is_variable (struct lexer *lexer, const struct dictionary *dict,
   return true;
 }
 
-static bool
+bool
 means_parse (struct lexer *lexer, struct means *means)
 {
   /*   Optional TABLES =   */
@@ -247,59 +243,4 @@ means_parse (struct lexer *lexer, struct means *means)
 	}
     }
   return true;
-}
-
-
-int
-cmd_means (struct lexer *lexer, struct dataset *ds)
-{
-  struct means means;
-  means.pool = pool_create ();
-
-  means.ctrl_exclude = MV_ANY;
-  means.dep_exclude = MV_ANY;
-  means.table = NULL;
-  means.n_tables = 0;
-
-  means.dict = dataset_dict (ds);
-
-  means.n_statistics = 3;
-  means.statistics = pool_calloc (means.pool, 3, sizeof *means.statistics);
-  means.statistics[0] = MEANS_MEAN;
-  means.statistics[1] = MEANS_N;
-  means.statistics[2] = MEANS_STDDEV;
-
-  if (! means_parse (lexer, &means))
-    goto error;
-
-  {
-    struct casegrouper *grouper;
-    struct casereader *group;
-    bool ok;
-
-    grouper = casegrouper_create_splits (proc_open (ds), means.dict);
-    while (casegrouper_get_next_group (grouper, &group))
-      {
-      	run_means (&means, group, ds);
-      }
-    ok = casegrouper_destroy (grouper);
-    ok = proc_commit (ds) && ok;
-  }
-
-  for (int t = 0; t < means.n_tables; ++t)
-    {
-      const struct mtable *table = means.table + t;
-
-      means_case_processing_summary (table);
-      means_shipout (table, &means);
-    }
-  destroy_means (&means);
-  pool_destroy (means.pool);
-  return CMD_SUCCESS;
-
- error:
-
-  destroy_means (&means);
-  pool_destroy (means.pool);
-  return CMD_FAILURE;
 }

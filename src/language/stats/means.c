@@ -27,6 +27,10 @@
 #include "libpspp/hmap.h"
 #include "libpspp/bt.h"
 #include "libpspp/hash-functions.h"
+#include "libpspp/misc.h"
+#include "libpspp/pool.h"
+
+#include "language/command.h"
 
 #include "count-one-bits.h"
 #include "count-leading-zeros.h"
@@ -116,7 +120,7 @@ destroy_workspace (const struct mtable *mt, struct workspace *ws)
       struct instance *inst;
       struct instance *next;
       HMAP_FOR_EACH_SAFE (inst, next, struct instance, hmap_node,
-		     &instances->map)
+			  &instances->map)
 	{
 	  int width = var_get_width (inst->var);
 	  value_destroy (&inst->value, width);
@@ -185,10 +189,10 @@ means_destroy_cells (const struct means *means, struct cell *cell,
       struct cell *sub_cell;
       struct cell *next;
       HMAP_FOR_EACH_SAFE (sub_cell,  next, struct cell, hmap_node,
-			  &container->map)
-	{
-	  means_destroy_cells (means, sub_cell, table);
-	}
+  			  &container->map)
+  	{
+  	  means_destroy_cells (means, sub_cell, table);
+  	}
     }
 
   destroy_cell (means, table, cell);
@@ -674,7 +678,7 @@ populate_case_processing_summary (struct pivot_category *pc,
 }
 
 /* Create the "Case Processing Summary" table.  */
-void
+static void
 means_case_processing_summary (const struct mtable *mt)
 {
   struct pivot_table *pt = pivot_table_create (N_("Case Processing Summary"));
@@ -811,7 +815,7 @@ means_shipout_multivar (const struct mtable *mt, const struct means *means,
   pivot_table_submit (pt);
 }
 
-void
+static void
 means_shipout (const struct mtable *mt, const struct means *means)
 {
   for (int cmb = 0; cmb < mt->n_combinations; ++cmb)
@@ -955,13 +959,6 @@ prepare_means (struct means *cmd)
     {
       struct mtable *mt = cmd->table + t;
 
-      mt->n_combinations = 1;
-      for (int l = 0; l < mt->n_layers; ++l)
-        mt->n_combinations *= mt->layers[l]->n_factor_vars;
-
-      mt->ws = xzalloc (mt->n_combinations * sizeof (*mt->ws));
-      mt->summ = xzalloc (mt->n_combinations * mt->n_dep_vars
-			     * sizeof (*mt->summ));
       for (int i = 0; i < mt->n_combinations; ++i)
         {
           struct workspace *ws = mt->ws + i;
@@ -1100,29 +1097,95 @@ run_means (struct means *cmd, struct casereader *input,
   post_means (cmd);
 }
 
+struct lexer;
 
-/* Release all resources allocated by this routine.
-   This does not include those allocated by the parser,
-   which exclusively use MEANS->pool.  */
-void
-destroy_means (struct means *means)
+int
+cmd_means (struct lexer *lexer, struct dataset *ds)
 {
-  for (int t = 0; t < means->n_tables; ++t)
+  struct means means;
+  means.pool = pool_create ();
+
+  means.ctrl_exclude = MV_ANY;
+  means.dep_exclude = MV_ANY;
+  means.table = NULL;
+  means.n_tables = 0;
+
+  means.dict = dataset_dict (ds);
+
+  means.n_statistics = 3;
+  means.statistics = pool_calloc (means.pool, 3, sizeof *means.statistics);
+  means.statistics[0] = MEANS_MEAN;
+  means.statistics[1] = MEANS_N;
+  means.statistics[2] = MEANS_STDDEV;
+
+  if (! means_parse (lexer, &means))
+    goto error;
+
+  /* Calculate some constant data for each table.  */
+  for (int t = 0; t < means.n_tables; ++t)
     {
-      const struct mtable *table = means->table + t;
-      for (int i = 0; i < table->n_combinations; ++i)
-        {
-	  struct workspace *ws = table->ws + i;
-	  if (ws->root_cell == NULL)
-	    continue;
-	  means_destroy_cells (means, ws->root_cell, table);
-	}
-      for (int i = 0; i < table->n_combinations; ++i)
-        {
-	  struct workspace *ws = table->ws + i;
-	  destroy_workspace (table, ws);
-	}
-      free (table->ws);
-      free (table->summ);
+      struct mtable *mt = means.table + t;
+      mt->n_combinations = 1;
+      for (int l = 0; l < mt->n_layers; ++l)
+	mt->n_combinations *= mt->layers[l]->n_factor_vars;
     }
+
+  {
+    struct casegrouper *grouper;
+    struct casereader *group;
+    bool ok;
+
+    grouper = casegrouper_create_splits (proc_open (ds), means.dict);
+    while (casegrouper_get_next_group (grouper, &group))
+      {
+	/* Allocate the workspaces.  */
+	for (int t = 0; t < means.n_tables; ++t)
+	{
+	  struct mtable *mt = means.table + t;
+	  mt->summ = xzalloc (mt->n_combinations * mt->n_dep_vars
+			      * sizeof (*mt->summ));
+	  mt->ws = xzalloc (mt->n_combinations * sizeof (*mt->ws));
+	}
+      	run_means (&means, group, ds);
+	for (int t = 0; t < means.n_tables; ++t)
+	  {
+	    const struct mtable *mt = means.table + t;
+
+	    means_case_processing_summary (mt);
+	    means_shipout (mt, &means);
+
+	    for (int i = 0; i < mt->n_combinations; ++i)
+	      {
+		struct workspace *ws = mt->ws + i;
+		if (ws->root_cell == NULL)
+		  continue;
+
+		means_destroy_cells (&means, ws->root_cell, mt);
+	      }
+	  }
+
+	/* Destroy the workspaces.  */
+	for (int t = 0; t < means.n_tables; ++t)
+	  {
+	    struct mtable *mt = means.table + t;
+	    free (mt->summ);
+	    for (int i = 0; i < mt->n_combinations; ++i)
+	      {
+		struct workspace *ws = mt->ws + i;
+		destroy_workspace (mt, ws);
+	      }
+	    free (mt->ws);
+	  }
+      }
+    ok = casegrouper_destroy (grouper);
+    ok = proc_commit (ds) && ok;
+  }
+
+  pool_destroy (means.pool);
+  return CMD_SUCCESS;
+
+ error:
+
+  pool_destroy (means.pool);
+  return CMD_FAILURE;
 }

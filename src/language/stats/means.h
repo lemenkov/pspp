@@ -17,6 +17,8 @@
 #ifndef MEANS_H
 #define MEANS_H
 
+#include "libpspp/hmap.h"
+#include "libpspp/bt.h"
 #include "libpspp/compiler.h"
 
 struct cell_container
@@ -152,12 +154,9 @@ struct dataset;
 struct casereader;
 void run_means (struct means *cmd, struct casereader *input, const struct dataset *ds UNUSED);
 
-void means_shipout (const struct mtable *mt, const struct means *means);
+struct lexer;
+bool means_parse (struct lexer *lexer, struct means *means);
 
-void means_case_processing_summary (const struct mtable *mt);
-
-
-void destroy_means (struct means *means);
 
 
 #endif
