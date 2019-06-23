@@ -433,7 +433,8 @@ psppire_dict_generate_name (const PsppireDict *dict, char *name, size_t size)
 
 /* Insert a new variable at posn IDX, with the name NAME, and return the
    new variable.
-   If NAME is null, then a name will be automatically assigned.
+   IDX may take the special value -1, which will be treated the same as
+   zero.   If NAME is null, then a name will be automatically assigned.
 */
 struct variable *
 psppire_dict_insert_variable (PsppireDict *d, gint idx, const gchar *name)
@@ -441,7 +442,8 @@ psppire_dict_insert_variable (PsppireDict *d, gint idx, const gchar *name)
   struct variable *var;
   char tmpname[64];
 
-  g_return_val_if_fail (idx >= 0, NULL);
+  if (idx == -1)    /* Note bug #56392. */
+    idx = 0;
   g_return_val_if_fail (d, NULL);
   g_return_val_if_fail (PSPPIRE_IS_DICT (d), NULL);
 
