@@ -775,18 +775,17 @@ means_shipout_multivar (const struct mtable *mt, const struct means *means,
   ds_init_empty (&dss);
   for (int dv = 0; dv < mt->n_dep_vars; ++dv)
     {
-      ds_put_cstr (&dss, var_get_name (mt->dep_vars[dv]));
-      if (mt->n_layers > 0)
+      if (dv > 0)
 	ds_put_cstr (&dss, " * ");
+      ds_put_cstr (&dss, var_get_name (mt->dep_vars[dv]));
     }
 
   for (int l = 0; l < mt->n_layers; ++l)
     {
+      ds_put_cstr (&dss, " * ");
       const struct layer *layer = mt->layers[l];
       const struct variable *var = layer->factor_vars[ws->control_idx[l]];
       ds_put_cstr (&dss, var_get_name (var));
-      if (l < mt->n_layers - 1)
-	ds_put_cstr (&dss, " * ");
     }
 
   struct pivot_table *pt = pivot_table_create (ds_cstr (&dss));
