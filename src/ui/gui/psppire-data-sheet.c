@@ -206,8 +206,10 @@ show_cases_column_popup (PsppireDataSheet *sheet, int column, guint button, guin
   gtk_menu_popup_at_pointer (GTK_MENU (sheet->data_sheet_cases_column_popup), NULL);
 }
 
+/* Insert a new variable before the variable at POSN.  */
 void
-psppire_data_sheet_insert_new_variable_at_posn (PsppireDataSheet *sheet, gint posn)
+psppire_data_sheet_insert_new_variable_at_posn (PsppireDataSheet *sheet,
+						gint posn)
 {
   PsppireDataStore *data_store = NULL;
   g_object_get (sheet, "data-model", &data_store, NULL);
