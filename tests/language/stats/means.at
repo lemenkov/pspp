@@ -685,7 +685,7 @@ AT_SETUP([MEANS multi combination])
 AT_KEYWORDS([categorical categoricals])
 
 AT_DATA([means-multi-combination.sps], [dnl
-data list notable list /one two three four five six.
+data list notable list /one (F22.5) two (F22.5) three four five six.
 begin data
 1 1 1 1 1 1
 2 1 1 1 1 1
@@ -757,8 +757,6 @@ recode six  (2 = 62) (1 = 61).
 recode five (2 = 52) (1 = 51).
 recode four (2 = 42) (1 = 41).
 recode three (2 = 32) (1 = 31).
-
-set format F22.5.
 
 means tables = one two BY three four BY five six.
 ])

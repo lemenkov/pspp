@@ -423,29 +423,29 @@ first_get (const struct statistic *pvd)
 
 /* Table of cell_specs */
 const struct cell_spec cell_spec[n_MEANS_STATISTICS] = {
-  {N_("Mean"),           "MEAN",      PIVOT_RC_OTHER,   default_create,   default_update,   arithmean_get, default_destroy},
+  {N_("Mean"),           "MEAN",      NULL          ,   default_create,   default_update,   arithmean_get, default_destroy},
   {N_("N"),              "COUNT",     PIVOT_RC_COUNT,   default_create,   default_update,   n_get,         default_destroy},
-  {N_("Std. Deviation"), "STDDEV",    PIVOT_RC_OTHER,   default_create,   default_update,   stddev_get,    default_destroy},
+  {N_("Std. Deviation"), "STDDEV",    NULL          ,   default_create,   default_update,   stddev_get,    default_destroy},
 #if 0
-  {N_("Median"),         "MEDIAN",    PIVOT_RC_OTHER,   default_create,   default_update,   NULL,          default_destroy},
-  {N_("Group Median"),   "GMEDIAN",   PIVOT_RC_OTHER,   default_create,   default_update,   NULL,          default_destroy},
+  {N_("Median"),         "MEDIAN",    NULL          ,   default_create,   default_update,   NULL,          default_destroy},
+  {N_("Group Median"),   "GMEDIAN",   NULL          ,   default_create,   default_update,   NULL,          default_destroy},
 #endif
-  {N_("S.E. Mean"),      "SEMEAN",    PIVOT_RC_OTHER,   default_create,   default_update,   semean_get,    default_destroy},
-  {N_("Sum"),            "SUM",       PIVOT_RC_OTHER,   default_create,   default_update,   sum_get,       default_destroy},
-  {N_("Minimum"),        "MIN",       PIVOT_RC_OTHER,   min_create,       min_update,       min_get,       simple_destroy},
-  {N_("Maximum"),        "MAX",       PIVOT_RC_OTHER,   max_create,       max_update,       max_get,       simple_destroy},
-  {N_("Range"),          "RANGE",     PIVOT_RC_OTHER,   range_create,     range_update,     range_get,     simple_destroy},
-  {N_("Variance"),       "VARIANCE",  PIVOT_RC_OTHER,   default_create,   default_update,   variance_get,  default_destroy},
-  {N_("Kurtosis"),       "KURT",      PIVOT_RC_OTHER,   default_create,   default_update,   kurt_get,      default_destroy},
-  {N_("S.E. Kurt"),      "SEKURT",    PIVOT_RC_OTHER,   default_create,   default_update,   sekurt_get,    default_destroy},
-  {N_("Skewness"),       "SKEW",      PIVOT_RC_OTHER,   default_create,   default_update,   skew_get,      default_destroy},
-  {N_("S.E. Skew"),      "SESKEW",    PIVOT_RC_OTHER,   default_create,   default_update,   seskew_get,    default_destroy},
-  {N_("First"),          "FIRST",     PIVOT_RC_OTHER,   first_create,     first_update,     first_get,     simple_destroy},
-  {N_("Last"),           "LAST",      PIVOT_RC_OTHER,   last_create,      last_update,      last_get,      simple_destroy},
+  {N_("S.E. Mean"),      "SEMEAN",    NULL          ,   default_create,   default_update,   semean_get,    default_destroy},
+  {N_("Sum"),            "SUM",       NULL          ,   default_create,   default_update,   sum_get,       default_destroy},
+  {N_("Minimum"),        "MIN",       NULL          ,   min_create,       min_update,       min_get,       simple_destroy},
+  {N_("Maximum"),        "MAX",       NULL          ,   max_create,       max_update,       max_get,       simple_destroy},
+  {N_("Range"),          "RANGE",     NULL          ,   range_create,     range_update,     range_get,     simple_destroy},
+  {N_("Variance"),       "VARIANCE",  NULL          ,   default_create,   default_update,   variance_get,  default_destroy},
+  {N_("Kurtosis"),       "KURT",      NULL          ,   default_create,   default_update,   kurt_get,      default_destroy},
+  {N_("S.E. Kurt"),      "SEKURT",    NULL          ,   default_create,   default_update,   sekurt_get,    default_destroy},
+  {N_("Skewness"),       "SKEW",      NULL          ,   default_create,   default_update,   skew_get,      default_destroy},
+  {N_("S.E. Skew"),      "SESKEW",    NULL          ,   default_create,   default_update,   seskew_get,    default_destroy},
+  {N_("First"),          "FIRST",     NULL          ,   first_create,     first_update,     first_get,     simple_destroy},
+  {N_("Last"),           "LAST",      NULL          ,   last_create,      last_update,      last_get,      simple_destroy},
 #if 0
   {N_("Percent N"),      "NPCT",      PIVOT_RC_PERCENT, default_create,   default_update,   NULL,          default_destroy},
   {N_("Percent Sum"),    "SPCT",      PIVOT_RC_PERCENT, default_create,   default_update,   NULL,          default_destroy},
 #endif
-  {N_("Harmonic Mean"),  "HARMONIC",  PIVOT_RC_OTHER,   harmonic_create,  harmonic_update,  harmonic_get,  simple_destroy},
-  {N_("Geom. Mean"),     "GEOMETRIC", PIVOT_RC_OTHER,   geometric_create, geometric_update, geometric_get, simple_destroy}
+  {N_("Harmonic Mean"),  "HARMONIC",  NULL          ,   harmonic_create,  harmonic_update,  harmonic_get,  simple_destroy},
+  {N_("Geom. Mean"),     "GEOMETRIC", NULL          ,   geometric_create, geometric_update, geometric_get, simple_destroy}
 };

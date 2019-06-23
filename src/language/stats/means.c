@@ -567,8 +567,14 @@ populate_table (const struct means *means, const struct mtable *mt,
           }
 
 	  int idx = s + v * means->n_statistics;
-          pivot_table_put (pt, indexes, pt->n_dimensions,
-                           pivot_value_new_number (sg (cell->stat[idx])));
+	  struct pivot_value *pv
+	    = pivot_value_new_number (sg (cell->stat[idx]));
+	  if (NULL == cell_spec[stat].rc)
+	    {
+	      const struct variable *dv = mt->dep_vars[v];
+	      pv->numeric.format = * var_get_print_format (dv);
+	    }
+          pivot_table_put (pt, indexes, pt->n_dimensions, pv);
         }
     }
   free (indexes);
