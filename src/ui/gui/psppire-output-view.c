@@ -177,6 +177,7 @@ create_xr (struct psppire_output_view *view)
   struct xr_rendering *r
     = xr_rendering_create (view->xr, text_item_super (text_item), cr);
   xr_rendering_measure (r, NULL, &view->font_height);
+  xr_rendering_destroy (r);
   text_item_unref (text_item);
 
   gdk_window_end_draw_frame (win, ctx);
