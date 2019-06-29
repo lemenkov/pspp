@@ -33,11 +33,6 @@ static char *history_file;
 static char **complete_command_name (const char *, int, int);
 static char **dont_complete (const char *, int, int);
 static char *command_generator (const char *text, int state);
-
-static const bool have_readline = true;
-
-#else
-static const bool have_readline = false;
 #endif
 
 
