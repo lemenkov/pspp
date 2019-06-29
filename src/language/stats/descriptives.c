@@ -76,7 +76,7 @@ struct dsc_trns
     size_t var_cnt;             /* Number of variables. */
     enum dsc_missing_type missing_type; /* Treatment of missing values. */
     enum mv_class exclude;      /* Classes of missing values to exclude. */
-    struct variable *filter;    /* Dictionary FILTER BY variable. */
+    const struct variable *filter;    /* Dictionary FILTER BY variable. */
     struct casereader *z_reader; /* Reader for count, mean, stddev. */
     casenumber count;            /* Number left in this SPLIT FILE group.*/
     bool ok;
@@ -780,7 +780,7 @@ static void
 calc_descriptives (struct dsc_proc *dsc, struct casereader *group,
                    struct dataset *ds)
 {
-  struct variable *filter = dict_get_filter (dataset_dict (ds));
+  const struct variable *filter = dict_get_filter (dataset_dict (ds));
   struct casereader *pass1, *pass2;
   casenumber count;
   struct ccase *c;
