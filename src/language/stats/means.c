@@ -198,6 +198,8 @@ means_destroy_cells (const struct means *means, struct cell *cell,
   destroy_cell (means, table, cell);
 }
 
+#if 0
+
 static void
 dump_cell (const struct cell *cell, const struct mtable *mt, int level)
 {
@@ -257,6 +259,8 @@ dump_tree (const struct cell *cell, const struct mtable *table,
 	}
     }
 }
+
+#endif
 
 /* Generate a hash based on the values of the N variables in
    the array VARS which are taken from the case C.  */
