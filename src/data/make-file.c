@@ -190,7 +190,7 @@ struct replace_file
 static struct ll_list all_files = LL_INITIALIZER (all_files);
 
 static void free_replace_file (struct replace_file *);
-static void unlink_replace_files (void);
+static void unlink_replace_files (int sig);
 
 struct replace_file *
 replace_file_start (const struct file_handle *fh, const char *mode,
@@ -370,7 +370,7 @@ free_replace_file (struct replace_file *rf)
 }
 
 static void
-unlink_replace_files (void)
+unlink_replace_files (int sig UNUSED)
 {
   struct replace_file *rf;
 
