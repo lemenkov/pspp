@@ -589,7 +589,6 @@ get_value_labels (var)
 CODE:
  HV *labelhash = (HV *) sv_2mortal ((SV *) newHV());
  const struct val_lab *vl;
- struct val_labs_iterator *viter = NULL;
  const struct val_labs *labels = var_get_value_labels (var);
 
  if ( labels )
@@ -752,7 +751,6 @@ struct sysreader_info *
 pxs_open_sysfile (name)
  char * name
 CODE:
- struct casereader *reader;
  struct sysreader_info *sri = NULL;
  struct file_handle *fh =
    fh_create_file (NULL, name, "UTF-8", fh_default_properties () );
