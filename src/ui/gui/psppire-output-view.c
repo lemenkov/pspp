@@ -164,18 +164,23 @@ create_xr (struct psppire_output_view *view)
 
   struct string_map options;
   string_map_clone (&options, &view->render_opts);
-  cairo_t *cr = gdk_cairo_create (
-    gtk_widget_get_window (GTK_WIDGET (view->output)));
+
+  GdkWindow *win = gtk_layout_get_bin_window (view->output);
+  cairo_region_t *region = gdk_window_get_visible_region (win);
+  GdkDrawingContext *ctx = gdk_window_begin_draw_frame (win, region);
+  cairo_t *cr = gdk_drawing_context_get_cairo_context (ctx);
+
   view->xr = xr_driver_create (cr, &options);
   string_map_destroy (&options);
 
   struct text_item *text_item = text_item_create (TEXT_ITEM_LOG, "X");
-  struct xr_rendering *r = xr_rendering_create (
-    view->xr, text_item_super (text_item), cr);
+  struct xr_rendering *r
+    = xr_rendering_create (view->xr, text_item_super (text_item), cr);
   xr_rendering_measure (r, NULL, &view->font_height);
   text_item_unref (text_item);
 
-  cairo_destroy (cr);
+  gdk_window_end_draw_frame (win, ctx);
+  cairo_region_destroy (region);
 }
 
 /* Return the horizontal position to place a widget whose
@@ -226,12 +231,15 @@ rerender (struct psppire_output_view *view)
 {
   struct output_view_item *item;
   GdkWindow *gdkw = gtk_widget_get_window (GTK_WIDGET (view->output));
-  cairo_t *cr;
 
   if (!view->n_items || ! gdkw)
     return;
 
-  cr = gdk_cairo_create (gdkw);
+  GdkWindow *win = gtk_layout_get_bin_window (view->output);
+  cairo_region_t *region = gdk_window_get_visible_region (win);
+  GdkDrawingContext *ctx =  gdk_window_begin_draw_frame (win, region);
+  cairo_t *cr = gdk_drawing_context_get_cairo_context (ctx);
+
   if (view->xr == NULL)
     create_xr (view);
   view->y = 0;
@@ -295,7 +303,9 @@ rerender (struct psppire_output_view *view)
   gtk_layout_set_size (view->output,
                        view->max_width + view->font_height,
                        view->y + view->font_height);
-  cairo_destroy (cr);
+
+  gdk_window_end_draw_frame (win, ctx);
+  cairo_region_destroy (region);
 }
 
 void
@@ -307,7 +317,6 @@ psppire_output_view_put (struct psppire_output_view *view,
   struct xr_rendering *r;
   struct string name;
   GtkTreeStore *store;
-  cairo_t *cr = NULL;
   GtkTreePath *path;
   GtkTreeIter iter;
   int tw, th;
@@ -335,11 +344,15 @@ psppire_output_view_put (struct psppire_output_view *view,
   view_item->item = output_item_ref (item);
   view_item->drawing_area = NULL;
 
-  if (gtk_widget_get_window (GTK_WIDGET (view->output)))
+  GdkWindow *win = gtk_widget_get_window (GTK_WIDGET (view->output));
+  if (win)
     {
       view_item->drawing_area = drawing_area = gtk_drawing_area_new ();
 
-      cr = gdk_cairo_create (gtk_widget_get_window (GTK_WIDGET (view->output)));
+      cairo_region_t *region = gdk_window_get_visible_region (win);
+      GdkDrawingContext *ctx = gdk_window_begin_draw_frame (win, region);
+      cairo_t *cr = gdk_drawing_context_get_cairo_context (ctx);
+
       if (view->xr == NULL)
         create_xr (view);
 
@@ -348,11 +361,17 @@ psppire_output_view_put (struct psppire_output_view *view,
 
       r = xr_rendering_create (view->xr, item, cr);
       if (r == NULL)
-        goto done;
+	{
+	  gdk_window_end_draw_frame (win, ctx);
+	  cairo_region_destroy (region);
+	  return;
+	}
 
       xr_rendering_measure (r, &tw, &th);
 
       create_drawing_area (view, drawing_area, r, tw, th);
+      gdk_window_end_draw_frame (win, ctx);
+      cairo_region_destroy (region);
     }
   else
     tw = th = 0;
@@ -423,9 +442,6 @@ psppire_output_view_put (struct psppire_output_view *view,
   view->y += th;
 
   gtk_layout_set_size (view->output, view->max_width, view->y);
-
-done:
-  cairo_destroy (cr);
 }
 
 static void
