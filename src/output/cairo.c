@@ -1648,7 +1648,7 @@ xr_rendering_destroy (struct xr_rendering *r)
 }
 
 void
-xr_rendering_measure (struct xr_rendering *r, int *wp, int *hp)
+xr_rendering_measure (const struct xr_rendering *r, int *wp, int *hp)
 {
   int w, h;
 
