@@ -379,7 +379,7 @@ psppire_dict_new_from_dict (struct dictionary *d)
 void
 psppire_dict_replace_dictionary (PsppireDict *dict, struct dictionary *d)
 {
-  struct variable *var =  dict_get_weight (d);
+  const struct variable *var =  dict_get_weight (d);
 
   struct dictionary *old_dict = dict->dict;
 
