@@ -125,5 +125,7 @@ cmd_apply_dictionary (struct lexer *lexer, struct dataset *ds)
         dict_set_weight (dataset_dict (ds), new_weight);
     }
 
+  dict_unref (dict);
+
   return CMD_SUCCESS;
 }
