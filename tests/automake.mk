@@ -332,6 +332,7 @@ TESTSUITE_AT = \
 	tests/language/data-io/save-translate.at \
 	tests/language/data-io/update.at \
 	tests/language/dictionary/attributes.at \
+	tests/language/dictionary/apply.at \
 	tests/language/dictionary/delete-variables.at \
 	tests/language/dictionary/formats.at \
 	tests/language/dictionary/missing-values.at \

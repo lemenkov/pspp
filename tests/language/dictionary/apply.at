@@ -1,0 +1,50 @@
+dnl PSPP - a program for statistical analysis.
+dnl Copyright (C) 2019 Free Software Foundation, Inc.
+dnl
+dnl This program is free software: you can redistribute it and/or modify
+dnl it under the terms of the GNU General Public License as published by
+dnl the Free Software Foundation, either version 3 of the License, or
+dnl (at your option) any later version.
+dnl
+dnl This program is distributed in the hope that it will be useful,
+dnl but WITHOUT ANY WARRANTY; without even the implied warranty of
+dnl MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+dnl GNU General Public License for more details.
+dnl
+dnl You should have received a copy of the GNU General Public License
+dnl along with this program.  If not, see <http://www.gnu.org/licenses/>.
+dnl
+AT_BANNER([APPLY DICTIONARY])
+
+AT_SETUP([APPLY DICTIONARY])
+AT_DATA([apply-dict.sps], [dnl
+data list notable list /foo (TIME22.0) bar (a22).
+begin data
+end data.
+Variable label foo "This is a label".
+save outfile='ugg.sav'.
+
+new file.
+data list notable list /foo bar *.
+begin data
+end data.
+display dictionary.
+apply dictionary from = 'ugg.sav'.
+display dictionary.
+])
+
+AT_CHECK([pspp -O format=csv apply-dict.sps], [0],  [dnl
+Table: Variables
+Name,Position,Label,Measurement Level,Role,Width,Alignment,Print Format,Write Format,Missing Values
+foo,1,,Scale,Input,8,Right,F8.2,F8.2,
+bar,2,,Scale,Input,8,Right,F8.2,F8.2,
+
+"apply-dict.sps:12: warning: APPLY DICTIONARY: Variable bar is numeric in target file, but string in source file."
+
+Table: Variables
+Name,Position,Label,Measurement Level,Role,Width,Alignment,Print Format,Write Format,Missing Values
+foo,1,This is a label,Scale,Input,8,Right,TIME22.0,TIME22.0,
+bar,2,,Scale,Input,8,Right,F8.2,F8.2,
+])
+
+AT_CLEANUP
