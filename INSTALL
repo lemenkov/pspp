@@ -93,9 +93,7 @@ use the GUI, you must run `configure' with --without-gui.
       0.18 and 0.19 have a bug that will prevent library detection,
       but other versions should be fine.
 
-    * GTK+ (http://www.gtk.org/), version 3.18.0 or later.
-      It has been reported that versions prior to 3.22.x give problems,
-      so a recent version is recommended.
+    * GTK+ (http://www.gtk.org/), version 3.22.0 or later.
 
     * GtkSourceView (http://projects.gnome.org/gtksourceview/) 
       version 3.4.0 or later.
