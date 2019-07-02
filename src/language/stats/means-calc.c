@@ -36,21 +36,25 @@
 #define _(msgid) gettext (msgid)
 #define N_(msgid) (msgid)
 
+/* A base struct for all statistics.  */
 struct statistic
 {
 };
 
+/* Statistics which accumulate a single value.  */
 struct statistic_simple
 {
   struct statistic parent;
   double acc;
 };
 
+/* Statistics based on moments.  */
 struct statistic_moment
 {
   struct statistic parent;
   struct moments1 *mom;
 };
+
 
 static struct statistic *
 default_create (struct pool *pool)
@@ -77,6 +81,8 @@ default_destroy (struct statistic *stat)
   moments1_destroy (pvd->mom);
 }
 
+
+/* Simple statistics have nothing to destroy.  */
 static void
 simple_destroy (struct statistic *stat UNUSED)
 {
@@ -163,6 +169,10 @@ geometric_get (const struct statistic *pvd)
 
 
 
+/* The getters for moment based statistics simply calculate the
+   moment.    The only exception is Std Dev. which needs to call
+   sqrt as well.  */
+
 static double
 sum_get (const struct statistic *pvd)
 {
@@ -210,9 +220,6 @@ stddev_get (const struct statistic *pvd)
 {
   return sqrt (variance_get (pvd));
 }
-
-
-
 
 static double
 skew_get (const struct statistic *pvd)
@@ -333,6 +340,8 @@ struct range
   double max;
 };
 
+/* Initially min and max are set to their most (inverted) extreme possible
+   values.  */
 static struct statistic *
 range_create (struct pool *pool)
 {
@@ -344,6 +353,8 @@ range_create (struct pool *pool)
   return (struct statistic *) r;
 }
 
+/* On each update, set min and max to X or leave unchanged,
+   as appropriate.  */
 static void
 range_update (struct statistic *pvd, double w UNUSED, double x)
 {
@@ -356,6 +367,7 @@ range_update (struct statistic *pvd, double w UNUSED, double x)
     r->min = x;
 }
 
+/*  Get the difference between min and max.  */
 static double
 range_get (const struct statistic *pvd)
 {
