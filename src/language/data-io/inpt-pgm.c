@@ -239,7 +239,7 @@ destroy_input_program (struct input_program_pgm *pgm)
 
 /* Destroys the casereader. */
 static void
-input_program_casereader_destroy (struct casereader *reader UNUSED, void *inp_)
+input_program_casereader_destroy (struct casereader *reader, void *inp_)
 {
   struct input_program_pgm *inp = inp_;
   if (inp->restart == TRNS_ERROR)

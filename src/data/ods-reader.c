@@ -553,7 +553,8 @@ get_sheet_count (struct zip_reader *zreader)
 
 static void
 ods_error_handler (void *ctx, const char *mesg,
-			UNUSED xmlParserSeverities sev, xmlTextReaderLocatorPtr loc)
+		   xmlParserSeverities sev UNUSED,
+		   xmlTextReaderLocatorPtr loc)
 {
   struct ods_reader *r = ctx;
 

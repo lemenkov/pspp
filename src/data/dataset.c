@@ -939,7 +939,7 @@ add_filter_trns (struct dataset *ds)
 /* FILTER transformation. */
 static int
 filter_trns_proc (void *filter_var_,
-                  struct ccase **c UNUSED, casenumber case_nr UNUSED)
+                  struct ccase **c, casenumber case_nr UNUSED)
 
 {
   struct variable *filter_var = filter_var_;

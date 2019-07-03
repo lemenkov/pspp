@@ -1445,7 +1445,7 @@ xr_layout_cell_text (struct xr_driver *xr, const struct table_cell *cell,
   if (bb[V][0] + h >= bb[V][1] && !(options & TAB_ROTATE))
     {
       PangoLayoutIter *iter;
-      int best UNUSED = 0;
+      int best = 0;
 
       /* Choose a breakpoint between lines instead of in the middle of one. */
       iter = pango_layout_get_iter (font->layout);

@@ -815,7 +815,7 @@ data_parser_casereader_read (struct casereader *reader UNUSED, void *r_)
 }
 
 static void
-data_parser_casereader_destroy (struct casereader *reader UNUSED, void *r_)
+data_parser_casereader_destroy (struct casereader *reader, void *r_)
 {
   struct data_parser_casereader *r = r_;
   if (dfm_reader_error (r->reader))

@@ -494,7 +494,8 @@ struct var_spec
 
 static void
 gnumeric_error_handler (void *ctx, const char *mesg,
-			UNUSED xmlParserSeverities sev, xmlTextReaderLocatorPtr loc)
+			xmlParserSeverities sev UNUSED,
+			xmlTextReaderLocatorPtr loc)
 {
   struct gnumeric_reader *r = ctx;
 

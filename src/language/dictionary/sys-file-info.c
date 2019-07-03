@@ -103,7 +103,7 @@ add_row (struct pivot_table *table, const char *attribute,
 
 /* SYSFILE INFO utility. */
 int
-cmd_sysfile_info (struct lexer *lexer, struct dataset *ds UNUSED)
+cmd_sysfile_info (struct lexer *lexer, struct dataset *ds)
 {
   struct any_reader *any_reader;
   struct file_handle *h;

@@ -418,7 +418,7 @@ frq_update  (const void *aux1 UNUSED, void *aux2 UNUSED,
 }
 
 static void
-frq_destroy (const void *aux1 UNUSED, void *aux2 UNUSED, void *user_data UNUSED)
+frq_destroy (const void *aux1 UNUSED, void *aux2 UNUSED, void *user_data)
 {
   free (user_data);
 }

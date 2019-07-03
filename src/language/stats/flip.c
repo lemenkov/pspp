@@ -451,7 +451,7 @@ flip_casereader_read (struct casereader *reader, void *flip_)
    Returns true if successful read, false if an I/O occurred
    during destruction or previously. */
 static void
-flip_casereader_destroy (struct casereader *reader UNUSED, void *flip_)
+flip_casereader_destroy (struct casereader *reader, void *flip_)
 {
   struct flip_pgm *flip = flip_;
   if (flip->error)

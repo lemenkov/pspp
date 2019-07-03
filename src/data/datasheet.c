@@ -604,8 +604,8 @@ datasheet_get_value (const struct datasheet *ds, casenumber row,
    successful, false on I/O error.  On failure, ROW might be
    partially modified or corrupted. */
 bool
-datasheet_put_value (struct datasheet *ds UNUSED, casenumber row UNUSED,
-                     size_t column UNUSED, const union value *value UNUSED)
+datasheet_put_value (struct datasheet *ds, casenumber row,
+                     size_t column, const union value *value)
 {
   return rw_case (ds, OP_WRITE, row, column, 1, (union value *) value);
 }
