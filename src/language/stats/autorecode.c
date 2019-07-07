@@ -140,7 +140,6 @@ cmd_autorecode (struct lexer *lexer, struct dataset *ds)
   struct casereader *input;
   struct ccase *c;
 
-  size_t i;
   bool ok;
 
   /* Create procedure. */
@@ -168,7 +167,7 @@ cmd_autorecode (struct lexer *lexer, struct dataset *ds)
 
       goto error;
     }
-  for (i = 0; i < n_dsts; i++)
+  for (size_t i = 0; i < n_dsts; i++)
     {
       const char *name = dst_names[i];
 
@@ -229,7 +228,7 @@ cmd_autorecode (struct lexer *lexer, struct dataset *ds)
   arc->n_specs = n_dsts;
 
 
-  for (i = 0; i < n_dsts; i++)
+  for (size_t i = 0; i < n_dsts; i++)
     {
       struct arc_spec *spec = &arc->specs[i];
 
@@ -253,7 +252,7 @@ cmd_autorecode (struct lexer *lexer, struct dataset *ds)
   /* Execute procedure. */
   input = proc_open (ds);
   for (; (c = casereader_read (input)) != NULL; case_unref (c))
-    for (i = 0; i < arc->n_specs; i++)
+    for (size_t i = 0; i < arc->n_specs; i++)
       {
         struct arc_spec *spec = &arc->specs[i];
         int width = spec->width;
@@ -283,7 +282,7 @@ cmd_autorecode (struct lexer *lexer, struct dataset *ds)
   dict = dataset_dict (ds);
 
   /* Create transformation. */
-  for (i = 0; i < arc->n_specs; i++)
+  for (size_t i = 0; i < arc->n_specs; i++)
     {
       struct arc_spec *spec = &arc->specs[i];
       struct arc_item **items;
@@ -348,7 +347,7 @@ cmd_autorecode (struct lexer *lexer, struct dataset *ds)
     }
   add_transformation (ds, autorecode_trns_proc, autorecode_trns_free, arc);
 
-  for (i = 0; i < n_dsts; i++)
+  for (size_t i = 0; i < n_dsts; i++)
     free (dst_names[i]);
   free (dst_names);
   free (src_vars);
@@ -356,7 +355,7 @@ cmd_autorecode (struct lexer *lexer, struct dataset *ds)
   return ok ? CMD_SUCCESS : CMD_CASCADING_FAILURE;
 
 error:
-  for (i = 0; i < n_dsts; i++)
+  for (size_t i = 0; i < n_dsts; i++)
     free (dst_names[i]);
   free (dst_names);
   free (src_vars);
@@ -369,9 +368,7 @@ arc_free (struct autorecode_pgm *arc)
 {
   if (arc != NULL)
     {
-      size_t i;
-
-      for (i = 0; i < arc->n_specs; i++)
+      for (size_t i = 0; i < arc->n_specs; i++)
         {
           struct arc_spec *spec = &arc->specs[i];
           struct arc_item *item, *next;
@@ -385,7 +382,7 @@ arc_free (struct autorecode_pgm *arc)
 	    }
         }
 
-      for (i = 0; i < arc->n_specs; i++)
+      for (size_t i = 0; i < arc->n_specs; i++)
 	{
 	  struct arc_spec *spec = &arc->specs[i];
 
@@ -445,10 +442,9 @@ autorecode_trns_proc (void *arc_, struct ccase **c,
                       casenumber case_idx UNUSED)
 {
   struct autorecode_pgm *arc = arc_;
-  size_t i;
 
   *c = case_unshare (*c);
-  for (i = 0; i < arc->n_specs; i++)
+  for (size_t i = 0; i < arc->n_specs; i++)
     {
       const struct arc_spec *spec = &arc->specs[i];
       const union value *value = case_data_idx (*c, spec->src_idx);
