@@ -111,7 +111,7 @@ parse_dict_rename (struct lexer *lexer, struct dictionary *dict)
 	goto done;
       if (!lex_match (lexer, T_EQUALS))
 	{
-          lex_error_expecting (lexer, "`='", NULL_SENTINEL);
+          lex_error_expecting (lexer, "`='");
 	  goto done;
 	}
       if (!parse_DATA_LIST_vars (lexer, dict, &new_names, &nn,

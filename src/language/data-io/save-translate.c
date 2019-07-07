@@ -121,7 +121,7 @@ cmd_save_translate (struct lexer *lexer, struct dataset *ds)
             type = TAB_FILE;
           else
             {
-              lex_error_expecting (lexer, "CSV", "TAB", NULL_SENTINEL);
+              lex_error_expecting (lexer, "CSV", "TAB");
               goto error;
             }
         }
@@ -138,7 +138,7 @@ cmd_save_translate (struct lexer *lexer, struct dataset *ds)
             recode_user_missing = true;
           else
             {
-              lex_error_expecting (lexer, "IGNORE", "RECODE", NULL_SENTINEL);
+              lex_error_expecting (lexer, "IGNORE", "RECODE");
               goto error;
             }
         }
@@ -151,7 +151,7 @@ cmd_save_translate (struct lexer *lexer, struct dataset *ds)
             use_value_labels = true;
           else
             {
-              lex_error_expecting (lexer, "VALUES", "LABELS", NULL_SENTINEL);
+              lex_error_expecting (lexer, "VALUES", "LABELS");
               goto error;
             }
         }
@@ -199,8 +199,7 @@ cmd_save_translate (struct lexer *lexer, struct dataset *ds)
                     decimal = ',';
                   else
                     {
-                      lex_error_expecting (lexer, "DOT", "COMMA",
-                                           NULL_SENTINEL);
+                      lex_error_expecting (lexer, "DOT", "COMMA");
                       goto error;
                     }
                 }
@@ -213,8 +212,7 @@ cmd_save_translate (struct lexer *lexer, struct dataset *ds)
                     use_print_formats = true;
                   else
                     {
-                      lex_error_expecting (lexer, "PLAIN", "VARIABLE",
-                                           NULL_SENTINEL);
+                      lex_error_expecting (lexer, "PLAIN", "VARIABLE");
                       goto error;
                     }
                 }
@@ -231,7 +229,7 @@ cmd_save_translate (struct lexer *lexer, struct dataset *ds)
             retain_unselected = false;
           else
             {
-              lex_error_expecting (lexer, "RETAIN", "DELETE", NULL_SENTINEL);
+              lex_error_expecting (lexer, "RETAIN", "DELETE");
               goto error;
             }
         }

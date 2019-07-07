@@ -154,7 +154,7 @@ cmd_modify_vars (struct lexer *lexer, struct dataset *ds)
 		{
 		  if (!lex_match (lexer, T_LPAREN))
 		    {
-                      lex_error_expecting (lexer, "`('", NULL_SENTINEL);
+                      lex_error_expecting (lexer, "`('");
 		      free (v);
 		      goto done;
 		    }
@@ -166,7 +166,7 @@ cmd_modify_vars (struct lexer *lexer, struct dataset *ds)
 		    }
 		  if (!lex_match (lexer, T_RPAREN))
 		    {
-                      lex_error_expecting (lexer, "`)'", NULL_SENTINEL);
+                      lex_error_expecting (lexer, "`)'");
 		      free (v);
 		      goto done;
 		    }
@@ -201,7 +201,7 @@ cmd_modify_vars (struct lexer *lexer, struct dataset *ds)
 
 	      if (!lex_match (lexer, T_LPAREN))
 		{
-                  lex_error_expecting (lexer, "`('", NULL_SENTINEL);
+                  lex_error_expecting (lexer, "`('");
 		  goto done;
 		}
 	      if (!parse_variables (lexer, dataset_dict (ds),
@@ -210,7 +210,7 @@ cmd_modify_vars (struct lexer *lexer, struct dataset *ds)
 		goto done;
 	      if (!lex_match (lexer, T_EQUALS))
 		{
-                  lex_error_expecting (lexer, "`='", NULL_SENTINEL);
+                  lex_error_expecting (lexer, "`='");
 		  goto done;
 		}
 
@@ -230,7 +230,7 @@ cmd_modify_vars (struct lexer *lexer, struct dataset *ds)
 		}
 	      if (!lex_match (lexer, T_RPAREN))
 		{
-                  lex_error_expecting (lexer, "`)'", NULL_SENTINEL);
+                  lex_error_expecting (lexer, "`)'");
 		  goto done;
 		}
 	    }
@@ -340,7 +340,7 @@ cmd_modify_vars (struct lexer *lexer, struct dataset *ds)
 	break;
       if (lex_token (lexer) != T_SLASH)
 	{
-          lex_error_expecting (lexer, "`/'", "`.'", NULL_SENTINEL);
+          lex_error_expecting (lexer, "`/'", "`.'");
 	  goto done;
 	}
       lex_get (lexer);

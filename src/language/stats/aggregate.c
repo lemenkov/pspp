@@ -224,7 +224,7 @@ cmd_aggregate (struct lexer *lexer, struct dataset *ds)
 	  lex_match (lexer, T_EQUALS);
 	  if (!lex_match_id (lexer, "COLUMNWISE"))
 	    {
-	      lex_error_expecting (lexer, "COLUMNWISE", NULL);
+	      lex_error_expecting (lexer, "COLUMNWISE");
               goto error;
 	    }
 	  agr.missing = COLUMNWISE;

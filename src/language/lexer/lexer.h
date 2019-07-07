@@ -23,6 +23,7 @@
 
 #include "data/identifier.h"
 #include "data/variable.h"
+#include "libpspp/cast.h"
 #include "libpspp/compiler.h"
 #include "libpspp/prompt.h"
 
@@ -161,6 +162,8 @@ void lex_next_error (struct lexer *, int n0, int n1, const char *, ...)
 int lex_end_of_command (struct lexer *);
 
 void lex_error_expecting (struct lexer *, const char *, ...) SENTINEL(0);
+#define lex_error_expecting(...) \
+  lex_error_expecting(__VA_ARGS__, NULL_SENTINEL)
 
 void lex_sbc_only_once (const char *);
 void lex_sbc_missing (const char *);

@@ -76,7 +76,7 @@ cmd_permissions (struct lexer *lexer, struct dataset *ds UNUSED)
     }
   else
     {
-      lex_error_expecting (lexer, "WRITEABLE", "READONLY", NULL_SENTINEL);
+      lex_error_expecting (lexer, "WRITEABLE", "READONLY");
       goto error;
     }
 

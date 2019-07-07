@@ -425,7 +425,7 @@ parse_get_txt (struct lexer *lexer, struct dataset *ds)
                            DP_DELIMITED, &has_type);
           else
             {
-              lex_error_expecting (lexer, "FIXED", "DELIMITED", NULL_SENTINEL);
+              lex_error_expecting (lexer, "FIXED", "DELIMITED");
               goto error;
             }
           if (!ok)
@@ -463,7 +463,7 @@ parse_get_txt (struct lexer *lexer, struct dataset *ds)
             }
           else
             {
-              lex_error_expecting (lexer, "LINE", "VARIABLES", NULL_SENTINEL);
+              lex_error_expecting (lexer, "LINE", "VARIABLES");
               goto error;
             }
         }
@@ -560,7 +560,7 @@ parse_get_txt (struct lexer *lexer, struct dataset *ds)
         break;
       else
         {
-          lex_error_expecting (lexer, "VARIABLES", NULL_SENTINEL);
+          lex_error_expecting (lexer, "VARIABLES");
           goto error;
         }
     }

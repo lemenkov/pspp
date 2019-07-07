@@ -272,7 +272,7 @@ lex_next_error (struct lexer *lexer, int n0, int n1, const char *format, ...)
 /* Prints a syntax error message saying that OPTION0 or one of the other
    strings following it, up to the first NULL, is expected. */
 void
-lex_error_expecting (struct lexer *lexer, const char *option0, ...)
+(lex_error_expecting) (struct lexer *lexer, const char *option0, ...)
 {
   enum { MAX_OPTIONS = 8 };
   const char *options[MAX_OPTIONS + 1];
@@ -588,7 +588,7 @@ lex_force_match_id (struct lexer *lexer, const char *identifier)
     return true;
   else
     {
-      lex_error_expecting (lexer, identifier, NULL_SENTINEL);
+      lex_error_expecting (lexer, identifier);
       return false;
     }
 }
@@ -609,11 +609,11 @@ lex_force_match (struct lexer *lexer, enum token_type type)
       if (type_string)
 	{
 	  char *s = xasprintf ("`%s'", type_string);
-	  lex_error_expecting (lexer, s, NULL_SENTINEL);
+	  lex_error_expecting (lexer, s);
 	  free (s);
 	}
       else
-	lex_error_expecting (lexer, token_type_to_name (type), NULL_SENTINEL);
+	lex_error_expecting (lexer, token_type_to_name (type));
 
       return false;
     }

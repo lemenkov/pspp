@@ -71,7 +71,7 @@ cmd_numeric (struct lexer *lexer, struct dataset *ds)
 
 	  if (!lex_match (lexer, T_RPAREN))
 	    {
-              lex_error_expecting (lexer, "`)'", NULL_SENTINEL);
+              lex_error_expecting (lexer, "`)'");
 	      goto fail;
 	    }
 	}

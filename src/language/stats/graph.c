@@ -801,7 +801,7 @@ cmd_graph (struct lexer *lexer, struct dataset *ds)
 		}
 	      else
 		{
-		  lex_error_expecting (lexer, "BIVARIATE", NULL);
+		  lex_error_expecting (lexer, "BIVARIATE");
 		  goto error;
 		}
 	      if (!lex_force_match (lexer, T_RPAREN))
@@ -953,7 +953,7 @@ cmd_graph (struct lexer *lexer, struct dataset *ds)
     case CT_BAR:
       break;
     case CT_NONE:
-      lex_error_expecting (lexer, "HISTOGRAM", "SCATTERPLOT", "BAR", NULL);
+      lex_error_expecting (lexer, "HISTOGRAM", "SCATTERPLOT", "BAR");
       goto error;
     default:
       NOT_REACHED ();

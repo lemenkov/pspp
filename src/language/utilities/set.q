@@ -353,7 +353,7 @@ stc_custom_tnumbers (struct lexer *lexer,
     settings_set_show_values (SETTINGS_VALUE_SHOW_BOTH);
   else
     {
-      lex_error_expecting (lexer, "VALUES", "LABELS", "BOTH", NULL_SENTINEL);
+      lex_error_expecting (lexer, "VALUES", "LABELS", "BOTH");
       return 0;
     }
 
@@ -376,7 +376,7 @@ stc_custom_tvars (struct lexer *lexer,
     settings_set_show_variables (SETTINGS_VALUE_SHOW_BOTH);
   else
     {
-      lex_error_expecting (lexer, "NAMES", "LABELS", "BOTH", NULL_SENTINEL);
+      lex_error_expecting (lexer, "NAMES", "LABELS", "BOTH");
       return 0;
     }
 

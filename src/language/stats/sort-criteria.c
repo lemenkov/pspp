@@ -71,7 +71,7 @@ parse_sort_criteria (struct lexer *lexer, const struct dictionary *dict,
             direction = SC_ASCEND;
           else
 	    {
-              lex_error_expecting (lexer, "A", "D", NULL_SENTINEL);
+              lex_error_expecting (lexer, "A", "D");
               goto error;
 	    }
 	  if (!lex_force_match (lexer, T_RPAREN))

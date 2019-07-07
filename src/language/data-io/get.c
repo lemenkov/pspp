@@ -109,7 +109,7 @@ parse_read_command (struct lexer *lexer, struct dataset *ds,
 	  if (!lex_match_id (lexer, "COMM")
               && !lex_match_id (lexer, "TAPE"))
 	    {
-	      lex_error_expecting (lexer, "COMM", "TAPE", NULL_SENTINEL);
+	      lex_error_expecting (lexer, "COMM", "TAPE");
               goto error;
 	    }
 	}

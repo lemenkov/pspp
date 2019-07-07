@@ -1462,8 +1462,7 @@ dump_specifier_parse (const specifier *spec, const subcommand *sbc)
 		{
 		  dump (1, "if (!lex_match (lexer, T_LPAREN))");
 		  dump (1, "{");
-		  dump (0, "lex_error_expecting (lexer, \"`('\", "
-                        "NULL_SENTINEL);");
+		  dump (0, "lex_error_expecting (lexer, \"`('\");");
                   dump (0, "goto lossage;");
 		  dump (-1, "}");
 		  outdent ();
