@@ -1641,7 +1641,7 @@ The number of bytes in the ZLIB data trailer.  This and the previous
 field sum to the size of the system file in bytes.
 @end table
 
-The data header is followed by @code{(ztrailer_ofs - 24) / 24} ZLIB
+The data header is followed by @code{(ztrailer_len - 24) / 24} ZLIB
 compressed data blocks.  Each ZLIB compressed data block begins with a
 ZLIB header as specified in RFC@tie{}1950, e.g.@: hex bytes @code{78
 01} (the only header yet observed in practice).  Each block
@@ -1678,7 +1678,7 @@ been observed so far.
 
 @item int32 n_blocks;
 The number of ZLIB compressed data blocks, always exactly
-@code{(ztrailer_ofs - 24) / 24}.
+@code{(ztrailer_len - 24) / 24}.
 @end table
 
 The fixed header is followed by @code{n_blocks} 24-byte ZLIB data
