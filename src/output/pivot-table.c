@@ -279,6 +279,13 @@ pivot_dimension_create__ (struct pivot_table *table,
     axis->dimensions, (axis->n_dimensions + 1) * sizeof *axis->dimensions);
   axis->dimensions[axis->n_dimensions++] = d;
 
+  if (axis_type == PIVOT_AXIS_LAYER)
+    {
+      free (table->current_layer);
+      table->current_layer = xcalloc (axis[PIVOT_AXIS_LAYER].n_dimensions,
+                                      sizeof *table->current_layer);
+    }
+
   /* XXX extent and label_depth need to be calculated later. */
 
   return d;

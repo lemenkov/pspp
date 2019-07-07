@@ -378,7 +378,7 @@ struct pivot_table
     bool row_labels_in_corner;
     bool show_grid_lines;
     bool omit_empty;       /* Omit empty rows and columns? */
-    size_t *current_layer; /* axis[PIVOT_AXIS_LAYER]->n_dimensions elements. */
+    size_t *current_layer; /* axis[PIVOT_AXIS_LAYER].n_dimensions elements. */
     char *table_look;
     enum settings_value_show show_values;
     enum settings_value_show show_variables;
