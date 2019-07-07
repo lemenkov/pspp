@@ -207,10 +207,16 @@ cmd_autorecode (struct lexer *lexer, struct dataset *ds)
 	      arc->blank_valid = false;
 	    }
 	  else
-	    goto error;
+            {
+              lex_error_expecting (lexer, "VALID", "MISSING");
+              goto error;
+            }
 	}
       else
-	goto error;
+        {
+          lex_error_expecting (lexer, "DESCENDING", "PRINT", "GROUP", "BLANK");
+          goto error;
+        }
     }
 
   if (lex_token (lexer) != T_ENDCMD)
