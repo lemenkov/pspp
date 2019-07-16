@@ -419,7 +419,7 @@ struct pivot_table
     time_t date;                /* May be 0 if unknown. */
 
     /* Footnotes. */
-    struct pivot_footnote **footnotes;
+    const struct pivot_footnote **footnotes;
     size_t n_footnotes, allocated_footnotes;
 
     /* Titles. */
@@ -590,7 +590,7 @@ struct pivot_value
     char *subscript;
     char *superscript;
 
-    struct pivot_footnote **footnotes;
+    const struct pivot_footnote **footnotes;
     size_t n_footnotes;
 
     enum pivot_value_type type;
@@ -671,10 +671,10 @@ struct pivot_value *pivot_value_new_user_text (const char *, size_t length);
 struct pivot_value *pivot_value_new_user_text_nocopy (char *);
 
 /* Footnotes. */
-void pivot_value_add_footnote (struct pivot_value *, struct pivot_footnote *);
+void pivot_value_add_footnote (struct pivot_value *, const struct pivot_footnote *);
 
 /* Numeric formats. */
-void pivot_value_set_rc (struct pivot_table *, struct pivot_value *,
+void pivot_value_set_rc (const struct pivot_table *, struct pivot_value *,
                          const char *rc);
 
 /* Converting a pivot_value to a string for display. */

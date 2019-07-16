@@ -2062,7 +2062,7 @@ pivot_value_new_variable (const struct variable *variable)
 /* Attaches a reference to FOOTNOTE to V. */
 void
 pivot_value_add_footnote (struct pivot_value *v,
-                          struct pivot_footnote *footnote)
+                          const struct pivot_footnote *footnote)
 {
   v->footnotes = xrealloc (v->footnotes,
                            (v->n_footnotes + 1) * sizeof *v->footnotes);
@@ -2072,7 +2072,7 @@ pivot_value_add_footnote (struct pivot_value *v,
 /* If VALUE is a numeric value, and RC is a result class such as
    PIVOT_RC_COUNT, changes VALUE's format to the result class's. */
 void
-pivot_value_set_rc (struct pivot_table *table, struct pivot_value *value,
+pivot_value_set_rc (const struct pivot_table *table, struct pivot_value *value,
                     const char *rc)
 {
   if (value->type == PIVOT_VALUE_NUMERIC)
