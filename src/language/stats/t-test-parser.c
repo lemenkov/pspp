@@ -100,15 +100,21 @@ cmd_t_test (struct lexer *lexer, struct dataset *ds)
 	  value_init (&gval0, gval_width);
 	  value_init (&gval1, gval_width);
 
+	  int n;
 	  if (lex_match (lexer, T_LPAREN))
 	    {
 	      parse_value (lexer, &gval0, gvar);
-	      cut = true;
 	      if (lex_token (lexer) != T_RPAREN)
 		{
 		  lex_match (lexer, T_COMMA);
 		  parse_value (lexer, &gval1, gvar);
 		  cut = false;
+		  n = 2;
+		}
+	      else
+		{
+		  cut = true;
+		  n = 1;
 		}
 
 	      if (! lex_force_match (lexer, T_RPAREN))
@@ -119,9 +125,10 @@ cmd_t_test (struct lexer *lexer, struct dataset *ds)
 	      gval0.f = 1.0;
 	      gval1.f = 2.0;
 	      cut = false;
+	      n = 0;
 	    }
 
-	  if ( cut == true && var_is_alpha (gvar))
+	  if (n != 2 && var_is_alpha (gvar))
 	    {
 	      msg (SE, _("When applying %s to a string variable, two "
 			 "values must be specified."), "GROUPS");
