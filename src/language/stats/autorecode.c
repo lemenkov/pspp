@@ -76,7 +76,6 @@ enum arc_direction
 struct rec_items
 {
   struct hmap ht;         /* Hash table of "struct arc_item"s. */
-  int refcnt;
 };
 
 
@@ -87,9 +86,6 @@ struct autorecode_pgm
   struct arc_spec *specs;
   size_t n_specs;
 
-  /* Hash table of "struct arc_item"s. */
-  struct rec_items *global_items;
-
   bool blank_valid;
 };
 
@@ -98,29 +94,19 @@ static trns_free_func autorecode_trns_free;
 
 static int compare_arc_items (const void *, const void *, const void *aux);
 static void arc_free (struct autorecode_pgm *);
-static struct arc_item *find_arc_item (const struct arc_spec *, const union value *,
-                                       size_t hash);
+static struct arc_item *find_arc_item (
+  const struct rec_items *, const union value *, int width,
+  size_t hash);
 
-static bool
-value_is_blank (const union value *val, int width, const struct dictionary *dict)
+/* Returns WIDTH with any trailing spaces in VALUE trimmed off (except that a
+   minimum width of 1 is always returned because otherwise the width would
+   indicate a numeric type). */
+static int
+value_trim_spaces (const union value *value, int width)
 {
-  mbi_iterator_t iter;
-  const char *str = CHAR_CAST_BUG (const char *, val->s);
-  char *text = recode_string (UTF8, dict_get_encoding (dict), str, width);
-
-  for (mbi_init (iter, text, width); mbi_avail (iter); mbi_advance (iter))
-    {
-      mbchar_t c = mbi_cur (iter);
-
-      if ( ! mb_isblank (c))
-	{
-	  free (text);
-	  return false;
-	}
-    }
-
-  free (text);
-  return true;
+  while (width > 1 && value->s[width - 1] == ' ')
+    width--;
+  return width;
 }
 
 /* Performs the AUTORECODE procedure. */
@@ -180,6 +166,7 @@ cmd_autorecode (struct lexer *lexer, struct dataset *ds)
     }
 
   /* Parse options. */
+  bool group = false;
   while (lex_match (lexer, T_SLASH))
     {
       if (lex_match_id (lexer, "DESCENDING"))
@@ -189,11 +176,7 @@ cmd_autorecode (struct lexer *lexer, struct dataset *ds)
           /* Not yet implemented. */
         }
       else if (lex_match_id (lexer, "GROUP"))
-	{
-	  arc->global_items = xmalloc (sizeof (*arc->global_items));
-	  arc->global_items->refcnt = 1;
-	  hmap_init (&arc->global_items->ht);
-	}
+        group = true;
       else if (lex_match_id (lexer, "BLANK"))
 	{
 	  lex_match (lexer, T_EQUALS);
@@ -224,10 +207,34 @@ cmd_autorecode (struct lexer *lexer, struct dataset *ds)
       goto error;
     }
 
+  /* If GROUP is specified, verify that the variables are all string or all
+     numeric.  */
+  if (group)
+    {
+      enum val_type type = var_get_type (src_vars[0]);
+      for (size_t i = 1; i < n_dsts; i++)
+        {
+          if (var_get_type (src_vars[i]) != type)
+            {
+              size_t string_idx = type == VAL_STRING ? 0 : i;
+              size_t numeric_idx = type == VAL_STRING ? i : 0;
+              lex_error (lexer, _("With GROUP, variables may not mix string "
+                                  "variables (such as %s) and numeric "
+                                  "variables (such as %s)."),
+                         var_get_name (src_vars[string_idx]),
+                         var_get_name (src_vars[numeric_idx]));
+              goto error;
+            }
+        }
+    }
+
+  /* Allocate all the specs and the rec_items that they point to.
+
+     If GROUP is specified, there is only a single global rec_items, with the
+     maximum width 'width', and all of the specs point to it; otherwise each
+     spec has its own rec_items. */
   arc->specs = xmalloc (n_dsts * sizeof *arc->specs);
   arc->n_specs = n_dsts;
-
-
   for (size_t i = 0; i < n_dsts; i++)
     {
       struct arc_spec *spec = &arc->specs[i];
@@ -235,19 +242,14 @@ cmd_autorecode (struct lexer *lexer, struct dataset *ds)
       spec->width = var_get_width (src_vars[i]);
       spec->src_idx = var_get_case_index (src_vars[i]);
 
-      if (arc->global_items)
-	{
-	  arc->global_items->refcnt++;
-	  spec->items = arc->global_items;
-	}
+      if (group && i > 0)
+        spec->items = arc->specs[0].items;
       else
 	{
 	  spec->items = xzalloc (sizeof (*spec->items));
-	  spec->items->refcnt = 1;
 	  hmap_init (&spec->items->ht);
 	}
     }
-
 
   /* Execute procedure. */
   input = proc_open (ds);
@@ -255,24 +257,19 @@ cmd_autorecode (struct lexer *lexer, struct dataset *ds)
     for (size_t i = 0; i < arc->n_specs; i++)
       {
         struct arc_spec *spec = &arc->specs[i];
-        int width = spec->width;
         const union value *value = case_data_idx (c, spec->src_idx);
-        size_t hash = value_hash (value, width, 0);
-        struct arc_item *item;
+        int width = value_trim_spaces (value, spec->width);
+        if (width == 1 && value->s[0] == ' ' && !arc->blank_valid)
+          continue;
 
-        item = find_arc_item (spec, value, hash);
-        if ( (item == NULL)
-	     &&
-	     ( arc->blank_valid
-               || val_type_from_width (spec->width) == VAL_NUMERIC
-               || ! value_is_blank (value, width, dict))
-	     )
-          {
-            item = xmalloc (sizeof *item);
-	    item->width = width;
-            value_clone (&item->from, value, width);
-            hmap_insert (&spec->items->ht, &item->hmap_node, hash);
-          }
+        size_t hash = value_hash (value, width, 0);
+        if (find_arc_item (spec->items, value, width, hash))
+          continue;
+
+        struct arc_item *item = xmalloc (sizeof *item);
+        item->width = width;
+        value_clone (&item->from, value, width);
+        hmap_insert (&spec->items->ht, &item->hmap_node, hash);
       }
   ok = casereader_destroy (input);
   ok = proc_commit (ds) && ok;
@@ -382,21 +379,15 @@ arc_free (struct autorecode_pgm *arc)
 	    }
         }
 
-      for (size_t i = 0; i < arc->n_specs; i++)
+      size_t n_rec_items =
+        (arc->n_specs == 1 || arc->specs[0].items == arc->specs[1].items
+         ? 1
+         : arc->n_specs);
+      for (size_t i = 0; i < n_rec_items; i++)
 	{
 	  struct arc_spec *spec = &arc->specs[i];
-
-	  if (--spec->items->refcnt == 0)
-	    {
-	      hmap_destroy (&spec->items->ht);
-	      free (spec->items);
-	    }
-	}
-
-      if (arc->global_items && --arc->global_items->refcnt == 0)
-	{
-	  hmap_destroy (&arc->global_items->ht);
-	  free (arc->global_items);
+          hmap_destroy (&spec->items->ht);
+          free (spec->items);
 	}
 
       free (arc->specs);
@@ -405,13 +396,14 @@ arc_free (struct autorecode_pgm *arc)
 }
 
 static struct arc_item *
-find_arc_item (const struct arc_spec *spec, const union value *value,
+find_arc_item (const struct rec_items *items,
+               const union value *value, int width,
                size_t hash)
 {
   struct arc_item *item;
 
-  HMAP_FOR_EACH_WITH_HASH (item, struct arc_item, hmap_node, hash, &spec->items->ht)
-    if (value_equal (value, &item->from, spec->width))
+  HMAP_FOR_EACH_WITH_HASH (item, struct arc_item, hmap_node, hash, &items->ht)
+    if (item->width == width && value_equal (value, &item->from, width))
       return item;
   return NULL;
 }
@@ -448,9 +440,10 @@ autorecode_trns_proc (void *arc_, struct ccase **c,
     {
       const struct arc_spec *spec = &arc->specs[i];
       const union value *value = case_data_idx (*c, spec->src_idx);
-      unsigned int hash = value_hash (value, spec->width, 0);
-      const struct arc_item *item = find_arc_item (spec, value, hash);
-
+      int width = value_trim_spaces (value, spec->width);
+      size_t hash = value_hash (value, width, 0);
+      const struct arc_item *item = find_arc_item (spec->items, value, width,
+                                                   hash);
       case_data_rw (*c, spec->dst)->f = item ? item->to : SYSMIS;
     }
 
