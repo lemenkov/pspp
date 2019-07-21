@@ -412,12 +412,15 @@ INIT:
   croak ("No more than 3 missing values are permitted");
 
  for (i = 0; i < items - 1; ++i)
-   scalar_to_value (&val[i], ST(i+1), var);
+   make_value_from_scalar (&val[i], ST(i+1), var);
 CODE:
  struct missing_values mv;
  mv_init (&mv, var_get_width (var));
  for (i = 0 ; i < items - 1; ++i )
-   mv_add_value (&mv, &val[i]);
+   {
+     mv_add_value (&mv, &val[i]);
+     value_destroy (&val[i], var_get_width (var));
+   }
  var_set_missing_values (var, &mv);
 
 
