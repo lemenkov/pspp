@@ -37,7 +37,7 @@
 int
 cmd_t_test (struct lexer *lexer, struct dataset *ds)
 {
-  bool ok;
+  bool ok = false;
   const struct dictionary *dict = dataset_dict (ds);
   struct tt tt;
   int mode_count = 0;
@@ -59,6 +59,7 @@ cmd_t_test (struct lexer *lexer, struct dataset *ds)
   const struct variable *gvar;
   union value gval0;
   union value gval1;
+  int gval_width = -1;
   bool cut = false;
 
   tt.wv = dict_get_weight (dict);
@@ -81,7 +82,7 @@ cmd_t_test (struct lexer *lexer, struct dataset *ds)
 	  tt.mode = MODE_SINGLE;
 	  lex_match (lexer, T_EQUALS);
 	  if (!lex_force_num (lexer))
-	    goto parse_failed;
+	    goto exit;
 	  testval = lex_number (lexer);
 	  lex_get (lexer);
 	}
@@ -93,29 +94,28 @@ cmd_t_test (struct lexer *lexer, struct dataset *ds)
 	  lex_match (lexer, T_EQUALS);
 
 	  if (NULL == (gvar = parse_variable (lexer, dict)))
-	    goto parse_failed;
+	    goto exit;
+
+          gval_width = var_get_width (gvar);
+	  value_init (&gval0, gval_width);
+	  value_init (&gval1, gval_width);
 
 	  if (lex_match (lexer, T_LPAREN))
 	    {
-
-	      value_init (&gval0, var_get_width (gvar));
 	      parse_value (lexer, &gval0, gvar);
 	      cut = true;
 	      if (lex_token (lexer) != T_RPAREN)
 		{
 		  lex_match (lexer, T_COMMA);
-		  value_init (&gval1, var_get_width (gvar));
 		  parse_value (lexer, &gval1, gvar);
 		  cut = false;
 		}
 
 	      if (! lex_force_match (lexer, T_RPAREN))
-		goto parse_failed;
+		goto exit;
 	    }
 	  else
 	    {
-	      value_init (&gval0, 0);
-	      value_init (&gval1, 0);
 	      gval0.f = 1.0;
 	      gval1.f = 2.0;
 	      cut = false;
@@ -125,7 +125,7 @@ cmd_t_test (struct lexer *lexer, struct dataset *ds)
 	    {
 	      msg (SE, _("When applying %s to a string variable, two "
 			 "values must be specified."), "GROUPS");
-	      goto parse_failed;
+	      goto exit;
 	    }
 	}
       else if (lex_match_id (lexer, "PAIRS"))
@@ -136,7 +136,7 @@ cmd_t_test (struct lexer *lexer, struct dataset *ds)
 	  if (tt.n_vars > 0)
 	    {
 	      msg (SE, _("%s subcommand may not be used with %s."), "VARIABLES", "PAIRS");
-	      goto parse_failed;
+	      goto exit;
 	    }
 
 	  mode_count++;
@@ -146,7 +146,7 @@ cmd_t_test (struct lexer *lexer, struct dataset *ds)
 	  if (!parse_variables_const (lexer, dict,
 				      &v1, &n_v1,
 				      PV_NO_DUPLICATE | PV_NUMERIC))
-	    goto parse_failed;
+	    goto exit;
 
 	  if ( lex_match (lexer, T_WITH))
 	    {
@@ -154,7 +154,7 @@ cmd_t_test (struct lexer *lexer, struct dataset *ds)
 	      if (!parse_variables_const (lexer, dict,
 					  &v2, &n_v2,
 					  PV_NO_DUPLICATE | PV_NUMERIC))
-		goto parse_failed;
+		goto exit;
 
 	      if (lex_match (lexer, T_LPAREN)
 		  && lex_match_id (lexer, "PAIRED")
@@ -167,7 +167,7 @@ cmd_t_test (struct lexer *lexer, struct dataset *ds)
 				 "preceding WITH (%zu) did not match the number "
 				 "following (%zu)."),
 			   n_v1, n_v2);
-		      goto parse_failed;
+		      goto exit;
 		    }
 		}
 	    }
@@ -232,7 +232,7 @@ cmd_t_test (struct lexer *lexer, struct dataset *ds)
 	  if ( tt.mode == MODE_PAIRED)
 	    {
 	      msg (SE, _("%s subcommand may not be used with %s."), "VARIABLES", "PAIRS");
-	      goto parse_failed;
+	      goto exit;
 	    }
 
 	  lex_match (lexer, T_EQUALS);
@@ -241,7 +241,7 @@ cmd_t_test (struct lexer *lexer, struct dataset *ds)
 				      &tt.vars,
 				      &tt.n_vars,
 				      PV_NO_DUPLICATE | PV_NUMERIC))
-	    goto parse_failed;
+	    goto exit;
 	}
       else if ( lex_match_id (lexer, "MISSING"))
 	{
@@ -267,7 +267,7 @@ cmd_t_test (struct lexer *lexer, struct dataset *ds)
 	      else
 		{
                   lex_error (lexer, NULL);
-		  goto parse_failed;
+		  goto exit;
 		}
 	      lex_match (lexer, T_COMMA);
 	    }
@@ -279,17 +279,17 @@ cmd_t_test (struct lexer *lexer, struct dataset *ds)
 	    if ( lex_force_match (lexer, T_LPAREN))
 	      {
 		if (!lex_force_num (lexer))
-		  goto parse_failed;
+		  goto exit;
 		tt.confidence = lex_number (lexer);
 		lex_get (lexer);
 		if (! lex_force_match (lexer, T_RPAREN))
-		  goto parse_failed;
+		  goto exit;
 	      }
 	}
       else
 	{
 	  lex_error (lexer, NULL);
-	  goto parse_failed;
+	  goto exit;
 	}
     }
 
@@ -297,13 +297,13 @@ cmd_t_test (struct lexer *lexer, struct dataset *ds)
     {
       msg (SE, _("Exactly one of TESTVAL, GROUPS and PAIRS subcommands "
 		 "must be specified."));
-      goto parse_failed;
+      goto exit;
     }
 
   if (tt.n_vars == 0 && tt.mode != MODE_PAIRED)
     {
       lex_sbc_missing ("VARIABLES");
-      goto parse_failed;
+      goto exit;
     }
 
 
@@ -364,20 +364,17 @@ cmd_t_test (struct lexer *lexer, struct dataset *ds)
     ok = proc_commit (ds) && ok;
   }
 
+exit:
+  if (gval_width != -1)
+    {
+      value_destroy (&gval0, gval_width);
+      value_destroy (&gval1, gval_width);
+    }
   free (pairs);
   free (v1);
   free (v2);
   free (tt.vars);
 
   return ok ? CMD_SUCCESS : CMD_FAILURE;
-
- parse_failed:
-
-  free (pairs);
-  free (v1);
-  free (v2);
-  free (tt.vars);
-
-  return CMD_FAILURE;
 }
 
