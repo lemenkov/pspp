@@ -116,6 +116,9 @@ shapiro_wilk_calculate (const struct shapiro_wilk *sw)
 struct shapiro_wilk *
 shapiro_wilk_create (int n, double mean)
 {
+  if (n < 3 || n > 5000)
+    return NULL;
+
   struct shapiro_wilk *sw = xzalloc (sizeof (*sw));
   struct order_stats *os = &sw->parent;
   struct statistic *stat = &os->parent;
@@ -127,9 +130,6 @@ shapiro_wilk_create (int n, double mean)
 		       -1.752461, 5.682633, -3.582633};
 
   sw->n = n;
-
-  if (n < 3 || n > 5000)
-    return NULL;
 
   const double u = 1.0 / sqrt (sw->n);
 
