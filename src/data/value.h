@@ -25,30 +25,12 @@
 #include <string.h>
 #include "xalloc.h"
 
-/* Maximum length of a "short" string, that is represented in
-   "union value" without a separate pointer.
-
-   This is an implementation detail of the "union value" code.
-   There is little reason for client code to use it. */
-#define MAX_SHORT_STRING 8
-
-/* A numeric or string value.
-
-   The client is responsible for keeping track of the value's
-   width.
-
-   This structure is semi-opaque:
-
-       - If the value is a number, clients may access the 'f'
-         member directly.
-
-       - Clients should not access other members directly.
-*/
+/* A numeric or string value.  The client is responsible for keeping track of
+   the value's width. */
 union value
   {
     double f;
-    uint8_t short_string[MAX_SHORT_STRING];
-    uint8_t *long_string;
+    uint8_t *s;
   };
 
 static inline void value_init (union value *, int width);
@@ -100,8 +82,8 @@ void value_resize_pool (struct pool *, union value *,
 static inline void
 value_init (union value *v, int width)
 {
-  if (width > MAX_SHORT_STRING)
-    v->long_string = xmalloc (width);
+  if (width > 0)
+    v->s = xmalloc (width);
 }
 
 /* Initializes V as a value of the given WIDTH, as with value_init(), and
@@ -109,10 +91,10 @@ value_init (union value *v, int width)
 static inline void
 value_clone (union value *v, const union value *src, int width)
 {
-  if (width <= MAX_SHORT_STRING)
-    *v = *src;
+  if (width <= 0)
+    v->f = src->f;
   else
-    v->long_string = xmemdup (src->long_string, width);
+    v->s = xmemdup (src->s, width);
 }
 
 /* Returns true if a value of the given WIDTH actually needs to
@@ -124,7 +106,7 @@ value_clone (union value *v, const union value *src, int width)
 static inline bool
 value_needs_init (int width)
 {
-  return width > MAX_SHORT_STRING;
+  return width > 0;
 }
 
 /* Same as value_init, except that failure to allocate memory
@@ -133,10 +115,10 @@ value_needs_init (int width)
 static inline bool
 value_try_init (union value *v, int width)
 {
-  if (width > MAX_SHORT_STRING)
+  if (width > 0)
     {
-      v->long_string = malloc (width);
-      return v->long_string != NULL;
+      v->s = malloc (width);
+      return v->s != NULL;
     }
   else
     return true;
@@ -147,8 +129,8 @@ value_try_init (union value *v, int width)
 static inline void
 value_destroy (union value *v, int width)
 {
-  if (width > MAX_SHORT_STRING)
-    free (v->long_string);
+  if (width > 0)
+    free (v->s);
 }
 
 /* Returns the numeric value in V, which must have width 0. */
@@ -169,7 +151,7 @@ static inline const uint8_t *
 value_str (const union value *v, int width)
 {
   assert (width > 0);
-  return (width > MAX_SHORT_STRING ? v->long_string : v->short_string);
+  return v->s;
 }
 
 /* Returns the string value in V, which must have width WIDTH.
@@ -183,7 +165,7 @@ static inline uint8_t *
 value_str_rw (union value *v, int width)
 {
   assert (width > 0);
-  return (width > MAX_SHORT_STRING ? v->long_string : v->short_string);
+  return v->s;
 }
 
 /* Copies SRC to DST, given that they both contain data of the
@@ -191,10 +173,10 @@ value_str_rw (union value *v, int width)
 static inline void
 value_copy (union value *dst, const union value *src, int width)
 {
-  if (width <= MAX_SHORT_STRING)
-    *dst = *src;
-  else if (dst != src)
-    memcpy (dst->long_string, src->long_string, width);
+  if (width <= 0)
+    dst->f = src->f;
+  else
+    memcpy (dst->s, src->s, width);
 }
 
 /* Exchanges the contents of A and B. */

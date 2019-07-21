@@ -507,6 +507,7 @@ write_variable (struct sfm_writer *w, const struct variable *v)
 
      Missing values for long string variables are written in a separate
      record. */
+  enum { MAX_SHORT_STRING = 8 };
   if (width <= MAX_SHORT_STRING)
     {
       const struct missing_values *mv = var_get_missing_values (v);

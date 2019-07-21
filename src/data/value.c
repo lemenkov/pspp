@@ -201,16 +201,7 @@ value_needs_resize (int old_width, int new_width)
 {
   assert (val_type_from_width (old_width) == val_type_from_width (new_width));
 
-  /* We need to call value_resize if either the new width is
-     longer than the old width (in which case the new characters
-     must be set to spaces) or if either width is a long string.
-     (We could omit resizing if both the old and new widths were
-     long and the new width was shorter, but we choose to do so
-     anyway in hopes of saving memory.) */
-  return (old_width != new_width
-           && (new_width > old_width
-               || old_width > MAX_SHORT_STRING
-               || new_width > MAX_SHORT_STRING));
+  return old_width != new_width;
 }
 
 /* Same as value_init, except that memory for VALUE (if
@@ -223,8 +214,8 @@ value_needs_resize (int old_width, int new_width)
 void
 value_init_pool (struct pool *pool, union value *value, int width)
 {
-  if (width > MAX_SHORT_STRING)
-    value->long_string = pool_alloc_unaligned (pool, width);
+  if (width > 0)
+    value->s = pool_alloc_unaligned (pool, width);
 }
 
 /* Same as value_clone(), except that memory for VALUE (if necessary) is
@@ -237,10 +228,10 @@ void
 value_clone_pool (struct pool *pool,
                   union value *value, const union value *src, int width)
 {
-  if (width > MAX_SHORT_STRING)
-    value->long_string = pool_clone_unaligned (pool, src->long_string, width);
+  if (width > 0)
+    value->s = pool_clone_unaligned (pool, src->s, width);
   else
-    *value = *src;
+    value->f = src->f;
 }
 
 /* Same as value_resize, except that VALUE must have been
@@ -256,12 +247,10 @@ value_resize_pool (struct pool *pool, union value *value,
   assert (value_is_resizable (value, old_width, new_width));
   if (new_width > old_width)
     {
-      if (new_width > MAX_SHORT_STRING)
-        {
-          uint8_t *new_long_string = pool_alloc_unaligned (pool, new_width);
-          memcpy (new_long_string, value_str (value, old_width), old_width);
-          value->long_string = new_long_string;
-        }
+      uint8_t *new_string = pool_alloc_unaligned (pool, new_width);
+      memcpy (new_string, value_str (value, old_width), old_width);
+      value->s = new_string;
+
       memset (value_str_rw (value, new_width) + old_width, ' ',
               new_width - old_width);
     }

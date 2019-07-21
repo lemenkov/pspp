@@ -110,7 +110,7 @@ case_get_cost (const struct caseproto *proto)
 {
   /* FIXME: improve approximation? */
   return (1 + caseproto_get_n_widths (proto)
-          + 3 * caseproto_get_n_long_strings (proto)) * sizeof (union value);
+          + 3 * caseproto_get_n_strings (proto)) * sizeof (union value);
 }
 
 /* Changes the prototype for case C, which must not be shared.
@@ -206,7 +206,7 @@ case_copy (struct ccase *dst, size_t dst_idx,
 
   if (dst != src)
     {
-      if (!dst->proto->n_long_strings || !src->proto->n_long_strings)
+      if (!dst->proto->n_strings || !src->proto->n_strings)
         memcpy (&dst->values[dst_idx], &src->values[src_idx],
                 sizeof dst->values[0] * n_values);
       else
@@ -214,7 +214,7 @@ case_copy (struct ccase *dst, size_t dst_idx,
     }
   else if (dst_idx != src_idx)
     {
-      if (!dst->proto->n_long_strings)
+      if (!dst->proto->n_strings)
         memmove (&dst->values[dst_idx], &src->values[src_idx],
                  sizeof dst->values[0] * n_values);
       else if (dst_idx < src_idx)

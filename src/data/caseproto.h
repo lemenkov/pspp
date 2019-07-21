@@ -64,11 +64,10 @@ struct caseproto
   {
     size_t ref_cnt;             /* Reference count. */
 
-    /* Tracking of long string widths.  Lazily maintained: when
-       'long_strings' is null and 'n_long_strings' is nonzero,
-       the former must be regenerated. */
-    size_t *long_strings;       /* Array of indexes of long string widths. */
-    size_t n_long_strings;      /* Number of long string widths. */
+    /* Tracking of string widths.  Lazily maintained: when 'strings' is null
+       and 'n_strings' is nonzero, the former must be regenerated. */
+    size_t *strings;            /* Array of indexes of string widths. */
+    size_t n_strings;           /* Number of string widths. */
 
     /* Widths. */
     size_t n_widths;            /* Number of widths. */
@@ -118,14 +117,13 @@ void caseproto_destroy_values (const struct caseproto *, union value[]);
 void caseproto_copy (const struct caseproto *, size_t idx, size_t count,
                      union value *dst, const union value *src);
 
-/* Inspecting the cache of long string widths.
+/* Inspecting the cache of string widths.
 
-   (These functions are useful for allocating cases, which
-   requires allocating a block memory for each long string value
-   in the case.) */
-static inline size_t caseproto_get_n_long_strings (const struct caseproto *);
-static inline size_t caseproto_get_long_string_idx (const struct caseproto *,
-                                                    size_t idx1);
+   (These functions are useful for allocating cases, which requires allocating
+   a block of memory for each string value in the case.) */
+static inline size_t caseproto_get_n_strings (const struct caseproto *);
+static inline size_t caseproto_get_string_idx (const struct caseproto *,
+                                               size_t idx1);
 
 /* For use in assertions. */
 bool caseproto_range_is_valid (const struct caseproto *,
@@ -182,30 +180,27 @@ caseproto_get_n_widths (const struct caseproto *proto)
 
 /* Inspecting the cache of long string widths. */
 
-void caseproto_refresh_long_string_cache__ (const struct caseproto *);
+void caseproto_refresh_string_cache__ (const struct caseproto *);
 
-/* Returns the number of long string widths in PROTO; that is,
-   the number of widths in PROTO that are greater than to
-   MAX_SHORT_STRING. */
+/* Returns the number of strings in PROTO. */
 static inline size_t
-caseproto_get_n_long_strings (const struct caseproto *proto)
+caseproto_get_n_strings (const struct caseproto *proto)
 {
-  return proto->n_long_strings;
+  return proto->n_strings;
 }
 
-/* Given long string width IDX1, returns a value IDX2 for which
-   caseproto_get_width(PROTO, IDX2) will return a value greater
-   than MAX_SHORT_STRING.  IDX1 must be less than
-   caseproto_get_n_long_strings(PROTO), and IDX2 will be less
-   than caseproto_get_n_widths(PROTO). */
+/* Given string width IDX1, returns a value IDX2 for which
+   caseproto_get_width(PROTO, IDX2) will return a value greater than 0.  IDX1
+   must be less than caseproto_get_n_strings(PROTO), and IDX2 will be less than
+   caseproto_get_n_widths(PROTO). */
 static inline size_t
-caseproto_get_long_string_idx (const struct caseproto *proto, size_t idx1)
+caseproto_get_string_idx (const struct caseproto *proto, size_t idx1)
 {
-  if (proto->long_strings == NULL)
-    caseproto_refresh_long_string_cache__ (proto);
+  if (proto->strings == NULL)
+    caseproto_refresh_string_cache__ (proto);
 
-  assert (idx1 < proto->n_long_strings);
-  return proto->long_strings[idx1];
+  assert (idx1 < proto->n_strings);
+  return proto->strings[idx1];
 }
 
 #endif /* data/caseproto.h */

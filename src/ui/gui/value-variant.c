@@ -40,17 +40,10 @@ value_variant_new (const union value *in, int width)
 
   if (width == 0)
     vv[IDX_DATA] = g_variant_new_double (in->f);
-  else if (width <= MAX_SHORT_STRING)
-    {
-      char xx[MAX_SHORT_STRING + 1];
-      memset (xx, '\0', MAX_SHORT_STRING + 1);
-      memcpy (xx, in->short_string, width);
-      vv[IDX_DATA] = g_variant_new_bytestring (xx);
-    }
   else
     {
       gchar *q = xmalloc (width + 1);
-      memcpy (q, in->long_string, width);
+      memcpy (q, in->s, width);
       q[width] = '\0';
       vv[IDX_DATA] = g_variant_new_from_data (G_VARIANT_TYPE_BYTESTRING, q,
 					      width + 1, FALSE, NULL, NULL);
@@ -88,10 +81,7 @@ value_variant_get (union value *val, GVariant *v)
     {
       const gchar *data = g_variant_get_bytestring (vdata);
       size_t len = strlen (data);
-      if (width <= MAX_SHORT_STRING)
-	memcpy (val->short_string, data, MIN (MAX_SHORT_STRING, len));
-      else
-	val->long_string = xmemdup (data, MIN (width, len));
+      val->s = xmemdup (data, MIN (width, len));
     }
 
   g_variant_unref (vdata);

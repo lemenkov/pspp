@@ -27,13 +27,13 @@
 #include "gl/minmax.h"
 
 static struct caseproto *caseproto_unshare (struct caseproto *);
-static bool try_init_long_strings (const struct caseproto *,
+static bool try_init_strings (const struct caseproto *,
                                    size_t first, size_t last, union value[]);
-static void init_long_strings (const struct caseproto *,
+static void init_strings (const struct caseproto *,
                                size_t first, size_t last, union value[]);
-static void destroy_long_strings (const struct caseproto *,
+static void destroy_strings (const struct caseproto *,
                                   size_t first, size_t last, union value[]);
-static size_t count_long_strings (const struct caseproto *,
+static size_t count_strings (const struct caseproto *,
                                   size_t idx, size_t count);
 
 /* Returns the number of bytes to allocate for a struct caseproto
@@ -53,8 +53,8 @@ caseproto_create (void)
   enum { N_ALLOCATE = 4 };
   struct caseproto *proto = xmalloc (caseproto_size (N_ALLOCATE));
   proto->ref_cnt = 1;
-  proto->long_strings = NULL;
-  proto->n_long_strings = 0;
+  proto->strings = NULL;
+  proto->n_strings = 0;
   proto->n_widths = 0;
   proto->allocated_widths = N_ALLOCATE;
   return proto;
@@ -100,7 +100,7 @@ caseproto_add_width (struct caseproto *proto, int width)
 
   proto = caseproto_reserve (proto, proto->n_widths + 1);
   proto->widths[proto->n_widths++] = width;
-  proto->n_long_strings += count_long_strings (proto, proto->n_widths - 1, 1);
+  proto->n_strings += count_strings (proto, proto->n_widths - 1, 1);
 
   return proto;
 }
@@ -117,9 +117,9 @@ caseproto_set_width (struct caseproto *proto, size_t idx, int width)
   proto = caseproto_reserve (proto, idx + 1);
   while (idx >= proto->n_widths)
     proto->widths[proto->n_widths++] = -1;
-  proto->n_long_strings -= count_long_strings (proto, idx, 1);
+  proto->n_strings -= count_strings (proto, idx, 1);
   proto->widths[idx] = width;
-  proto->n_long_strings += count_long_strings (proto, idx, 1);
+  proto->n_strings += count_strings (proto, idx, 1);
 
   return proto;
 }
@@ -133,7 +133,7 @@ caseproto_insert_width (struct caseproto *proto, size_t before, int width)
   assert (before <= proto->n_widths);
 
   proto = caseproto_reserve (proto, proto->n_widths + 1);
-  proto->n_long_strings += value_needs_init (width);
+  proto->n_strings += value_needs_init (width);
   insert_element (proto->widths, proto->n_widths, sizeof *proto->widths,
                   before);
   proto->widths[before] = width;
@@ -150,7 +150,7 @@ caseproto_remove_widths (struct caseproto *proto, size_t idx, size_t cnt)
   assert (caseproto_range_is_valid (proto, idx, cnt));
 
   proto = caseproto_unshare (proto);
-  proto->n_long_strings -= count_long_strings (proto, idx, cnt);
+  proto->n_strings -= count_strings (proto, idx, cnt);
   remove_range (proto->widths, proto->n_widths, sizeof *proto->widths,
                 idx, cnt);
   proto->n_widths -= cnt;
@@ -231,7 +231,7 @@ caseproto_equal (const struct caseproto *a, size_t a_start,
 bool
 caseproto_needs_init_values (const struct caseproto *proto)
 {
-  return proto->n_long_strings > 0;
+  return proto->n_strings > 0;
 }
 
 /* Initializes the values in VALUES as required by PROTO, by
@@ -246,7 +246,7 @@ caseproto_needs_init_values (const struct caseproto *proto)
 void
 caseproto_init_values (const struct caseproto *proto, union value values[])
 {
-  init_long_strings (proto, 0, proto->n_long_strings, values);
+  init_strings (proto, 0, proto->n_strings, values);
 }
 
 /* Like caseproto_init_values, but returns false instead of
@@ -254,7 +254,7 @@ caseproto_init_values (const struct caseproto *proto, union value values[])
 bool
 caseproto_try_init_values (const struct caseproto *proto, union value values[])
 {
-  return try_init_long_strings (proto, 0, proto->n_long_strings, values);
+  return try_init_strings (proto, 0, proto->n_strings, values);
 }
 
 /* Initializes the data in VALUES that are in NEW but not in OLD,
@@ -273,15 +273,15 @@ void
 caseproto_reinit_values (const struct caseproto *old,
                          const struct caseproto *new, union value values[])
 {
-  size_t old_n_long = old->n_long_strings;
-  size_t new_n_long = new->n_long_strings;
+  size_t old_n_long = old->n_strings;
+  size_t new_n_long = new->n_strings;
 
   expensive_assert (caseproto_is_conformable (old, new));
 
   if (new_n_long > old_n_long)
-    init_long_strings (new, old_n_long, new_n_long, values);
+    init_strings (new, old_n_long, new_n_long, values);
   else if (new_n_long < old_n_long)
-    destroy_long_strings (old, new_n_long, old_n_long, values);
+    destroy_strings (old, new_n_long, old_n_long, values);
 }
 
 /* Frees the values in VALUES as required by PROTO, by calling
@@ -293,7 +293,7 @@ caseproto_reinit_values (const struct caseproto *old,
 void
 caseproto_destroy_values (const struct caseproto *proto, union value values[])
 {
-  destroy_long_strings (proto, 0, proto->n_long_strings, values);
+  destroy_strings (proto, 0, proto->n_strings, values);
 }
 
 /* Copies COUNT values, whose widths are given by widths in PROTO
@@ -314,26 +314,25 @@ caseproto_copy (const struct caseproto *proto, size_t idx, size_t count,
 void
 caseproto_free__ (struct caseproto *proto)
 {
-  free (proto->long_strings);
+  free (proto->strings);
   free (proto);
 }
 
 void
-caseproto_refresh_long_string_cache__ (const struct caseproto *proto_)
+caseproto_refresh_string_cache__ (const struct caseproto *proto_)
 {
   struct caseproto *proto = CONST_CAST (struct caseproto *, proto_);
   size_t n, i;
 
-  assert (proto->long_strings == NULL);
-  assert (proto->n_long_strings > 0);
+  assert (proto->strings == NULL);
+  assert (proto->n_strings > 0);
 
-  proto->long_strings = xmalloc (proto->n_long_strings
-                                 * sizeof *proto->long_strings);
+  proto->strings = xmalloc (proto->n_strings * sizeof *proto->strings);
   n = 0;
   for (i = 0; i < proto->n_widths; i++)
-    if (proto->widths[i] > MAX_SHORT_STRING)
-      proto->long_strings[n++] = i;
-  assert (n == proto->n_long_strings);
+    if (proto->widths[i] > 0)
+      proto->strings[n++] = i;
+  assert (n == proto->n_strings);
 }
 
 static struct caseproto *
@@ -349,27 +348,27 @@ caseproto_unshare (struct caseproto *old)
   else
     {
       new = old;
-      free (new->long_strings);
+      free (new->strings);
     }
-  new->long_strings = NULL;
+  new->strings = NULL;
   return new;
 }
 
 static bool
-try_init_long_strings (const struct caseproto *proto,
+try_init_strings (const struct caseproto *proto,
                        size_t first, size_t last, union value values[])
 {
   size_t i;
 
-  if (last > 0 && proto->long_strings == NULL)
-    caseproto_refresh_long_string_cache__ (proto);
+  if (last > 0 && proto->strings == NULL)
+    caseproto_refresh_string_cache__ (proto);
 
   for (i = first; i < last; i++)
     {
-      size_t idx = proto->long_strings[i];
+      size_t idx = proto->strings[i];
       if (!value_try_init (&values[idx], proto->widths[idx]))
         {
-          destroy_long_strings (proto, first, i, values);
+          destroy_strings (proto, first, i, values);
           return false;
         }
     }
@@ -377,36 +376,36 @@ try_init_long_strings (const struct caseproto *proto,
 }
 
 static void
-init_long_strings (const struct caseproto *proto,
+init_strings (const struct caseproto *proto,
                    size_t first, size_t last, union value values[])
 {
-  if (!try_init_long_strings (proto, first, last, values))
+  if (!try_init_strings (proto, first, last, values))
     xalloc_die ();
 }
 
 static void
-destroy_long_strings (const struct caseproto *proto, size_t first, size_t last,
+destroy_strings (const struct caseproto *proto, size_t first, size_t last,
                       union value values[])
 {
   size_t i;
 
-  if (last > 0 && proto->long_strings == NULL)
-    caseproto_refresh_long_string_cache__ (proto);
+  if (last > 0 && proto->strings == NULL)
+    caseproto_refresh_string_cache__ (proto);
 
   for (i = first; i < last; i++)
     {
-      size_t idx = proto->long_strings[i];
+      size_t idx = proto->strings[i];
       value_destroy (&values[idx], proto->widths[idx]);
     }
 }
 
 static size_t
-count_long_strings (const struct caseproto *proto, size_t idx, size_t count)
+count_strings (const struct caseproto *proto, size_t idx, size_t count)
 {
   size_t n, i;
 
   n = 0;
   for (i = 0; i < count; i++)
-    n += proto->widths[idx + i] > MAX_SHORT_STRING;
+    n += proto->widths[idx + i] > 0;
   return n;
 }
