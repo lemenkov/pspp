@@ -383,7 +383,7 @@ categoricals_update (struct categoricals *cat, const struct ccase *c)
         {
           valn = pool_malloc (cat->pool, sizeof *valn);
           valn->index = -1;
-          value_init (&valn->val, width);
+          value_init_pool (cat->pool, &valn->val, width);
           value_copy (&valn->val, val, width);
           hmap_insert (&vn->valmap, &valn->node, hash);
         }
