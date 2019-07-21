@@ -1320,6 +1320,12 @@ cleanup_exploratory_stats (struct examine *cmd)
 		  stat->destroy (stat);
 		}
 
+              if (es[v].shapiro_wilk)
+                {
+                  stat = &es[v].shapiro_wilk->parent.parent;
+                  stat->destroy (stat);
+                }
+
 	      os = &es[v].trimmed_mean->parent;
 	      stat = &os->parent;
 	      stat->destroy (stat);
