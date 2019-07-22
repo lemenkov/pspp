@@ -419,7 +419,7 @@ struct pivot_table
     time_t date;                /* May be 0 if unknown. */
 
     /* Footnotes. */
-    const struct pivot_footnote **footnotes;
+    struct pivot_footnote **footnotes;
     size_t n_footnotes, allocated_footnotes;
 
     /* Titles. */
