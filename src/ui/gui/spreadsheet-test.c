@@ -83,7 +83,7 @@ on_clicked (GtkButton *button, struct xxx *stuff)
 	else
 	  {
 	    char *ss = xzalloc (width + 1);
-            memcpy (ss, value_str (val, width), width);
+            memcpy (ss, val->s, width);
 
 	    printf ("%s ", ss);
 	    free (ss);

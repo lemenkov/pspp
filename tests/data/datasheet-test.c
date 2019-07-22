@@ -163,7 +163,7 @@ check_datasheet_casereader (struct mc *mc, struct casereader *reader,
                               "'%.*s' != '%.*s'",
                               row, col, n_rows, n_columns,
                               width, case_str_idx (c, col),
-                              width, value_str (&array[row][col], width));
+                              width, array[row][col].s);
                 }
             }
 
@@ -225,8 +225,8 @@ check_datasheet (struct mc *mc, struct datasheet *ds,
                   mc_error (mc, "element %zu,%zu (of %zu,%zu) differs: "
                             "'%.*s' != '%.*s'",
                             row, col, n_rows, n_columns,
-                            width, value_str (&v, width),
-                            width, value_str (av, width));
+                            width, v.s,
+                            width, v.s);
                 difference = true;
               }
             value_destroy (&v, width);
@@ -249,7 +249,7 @@ check_datasheet (struct mc *mc, struct datasheet *ds,
                   if (width == 0)
                     ds_put_format (&s, " %g", v->f);
                   else
-                    ds_put_format (&s, " '%.*s'", width, value_str (v, width));
+                    ds_put_format (&s, " '%.*s'", width, v->s);
                 }
               mc_error (mc, "%s", ds_cstr (&s));
             }
@@ -270,8 +270,7 @@ check_datasheet (struct mc *mc, struct datasheet *ds,
                   if (width == 0)
                     ds_put_format (&s, " %g", v.f);
                   else
-                    ds_put_format (&s, " '%.*s'",
-                                   width, value_str (&v, width));
+                    ds_put_format (&s, " '%.*s'", width, v.s);
                 }
               mc_error (mc, "%s", ds_cstr (&s));
             }
@@ -407,12 +406,11 @@ value_from_param (union value *value, int width, unsigned int idx)
   else
     {
       unsigned int hash = hash_int (idx, 0);
-      uint8_t *string = value_str_rw (value, width);
       int offset;
 
       assert (width < 32);
       for (offset = 0; offset < width; offset++)
-        string[offset] = "ABCDEFGHIJ"[(hash >> offset) % 10];
+        value->s[offset] = "ABCDEFGHIJ"[(hash >> offset) % 10];
     }
 }
 

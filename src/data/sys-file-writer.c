@@ -854,8 +854,7 @@ write_mrsets (struct sfm_writer *w, const struct dictionary *dict,
           if (mrset->width == 0)
             counted = xasprintf ("%.0f", mrset->counted.f);
           else
-            counted = xmemdup0 (value_str (&mrset->counted, mrset->width),
-                                mrset->width);
+            counted = xmemdup0 (mrset->counted.s, mrset->width);
           ds_put_format (&s, "%zu %s", strlen (counted), counted);
           free (counted);
         }
@@ -1010,8 +1009,7 @@ write_long_string_value_labels (struct sfm_writer *w,
           size_t len;
 
           write_int (w, width);
-          write_bytes (w, value_str (val_lab_get_value (val_lab), width),
-                       width);
+          write_bytes (w, val_lab_get_value (val_lab)->s, width);
 
           label = recode_string (var_get_encoding (var), "UTF-8",
                                  val_lab_get_escaped_label (val_lab), -1);
@@ -1080,7 +1078,7 @@ write_long_string_missing_values (struct sfm_writer *w,
           const union value *value = mv_get_value (mv, j);
 
           write_int (w, 8);
-          write_bytes (w, value_str (value, width), 8);
+          write_bytes (w, value->s, 8);
         }
     }
 }
@@ -1593,7 +1591,7 @@ write_value (struct sfm_writer *w, const union value *value, int width)
     write_float (w, value->f);
   else
     {
-      write_bytes (w, value_str (value, width), width);
+      write_bytes (w, value->s, width);
       write_zeros (w, 8 - width);
     }
 }

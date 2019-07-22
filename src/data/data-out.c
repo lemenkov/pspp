@@ -113,7 +113,7 @@ data_out_recode (const union value *input, const char *input_encoding,
   assert (fmt_check_output (format));
   if (format->type == FMT_A)
     {
-      char *in = CHAR_CAST (char *, value_str (input, format->w));
+      char *in = CHAR_CAST (char *, input->s);
       char *out = recode_string (output_encoding, input_encoding,
                                  in, format->w);
       ds_put_cstr (output, out);
@@ -170,7 +170,7 @@ data_out_pool (const union value *input, const char *input_encoding,
   assert (fmt_check_output (format));
   if (format->type == FMT_A)
     {
-      char *in = CHAR_CAST (char *, value_str (input, format->w));
+      char *in = CHAR_CAST (char *, input->s);
       return recode_string_pool (UTF8, input_encoding, in, format->w, pool);
     }
   else if (fmt_get_category (format->type) == FMT_CAT_BINARY)
@@ -621,7 +621,7 @@ static void
 output_AHEX (const union value *input, const struct fmt_spec *format,
              char *output)
 {
-  output_hex (value_str (input, format->w / 2), format->w / 2, output);
+  output_hex (input->s, format->w / 2, output);
 }
 
 /* Decimal and scientific formatting. */

@@ -452,7 +452,7 @@ set_map_out_str (struct map_out *out, struct pool *pool,
 
   out->copy_input = false;
   value_init_pool (pool, &out->value, length);
-  memcpy (value_str_rw (&out->value, length), string, length);
+  memcpy (out->value.s, string, length);
   out->width = length;
 }
 
@@ -656,8 +656,7 @@ find_src_string (struct recode_trns *trns, const uint8_t *value,
       switch (in->type)
         {
         case MAP_SINGLE:
-          match = !memcmp (value, value_str (&in->x, trns->max_src_width),
-                           width);
+          match = !memcmp (value, in->x.s, width);
           break;
         case MAP_ELSE:
           match = true;
@@ -722,8 +721,7 @@ recode_trns_proc (void *trns_, struct ccase **c, casenumber case_idx UNUSED)
           if (out != NULL)
             {
               if (!out->copy_input)
-                memcpy (dst, value_str (&out->value, trns->max_dst_width),
-                        var_get_width (dst_var));
+                memcpy (dst, out->value.s, var_get_width (dst_var));
               else if (trns->src_vars != trns->dst_vars)
                 {
                   union value *dst_data = case_data_rw (*c, dst_var);

@@ -900,8 +900,7 @@ parse_variable_records (struct pcp_reader *r, struct dictionary *dict,
           if (var_is_numeric (var))
             value.f = parse_float (rec->val_labs[i].value);
           else
-            memcpy (value_str_rw (&value, rec->width),
-                    rec->val_labs[i].value, rec->width);
+            memcpy (value.s, rec->val_labs[i].value, rec->width);
 
           utf8_label = recode_string ("UTF-8", dict_encoding,
                                       rec->val_labs[i].label, -1);
@@ -967,8 +966,7 @@ pcp_file_casereader_read (struct casereader *reader, void *r_)
       if (var->width == 0)
         retval = read_case_number (r, &v->f);
       else
-        retval = read_case_string (r, value_str_rw (v, var->width),
-                                   var->width);
+        retval = read_case_string (r, v->s, var->width);
 
       if (retval != 1)
         {

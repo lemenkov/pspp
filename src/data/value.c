@@ -46,9 +46,7 @@ value_copy_rpad (union value *dst, int dst_width,
                  const union value *src, int src_width,
                  char pad)
 {
-  u8_buf_copy_rpad (value_str_rw (dst, dst_width), dst_width,
-                 value_str (src, src_width), src_width,
-                 pad);
+  u8_buf_copy_rpad (dst->s, dst_width, src->s, src_width, pad);
 }
 
 /* Copies the contents of null-terminated string SRC to string
@@ -85,7 +83,7 @@ void
 value_copy_buf_rpad (union value *dst, int dst_width,
                      const uint8_t *src, size_t src_len, char pad)
 {
-  u8_buf_copy_rpad (value_str_rw (dst, dst_width), dst_width, src, src_len, pad);
+  u8_buf_copy_rpad (dst->s, dst_width, src, src_len, pad);
 }
 
 /* Sets V to the system-missing value for data of the given
@@ -98,7 +96,7 @@ value_set_missing (union value *v, int width)
       if (width == 0)
         v->f = SYSMIS;
       else
-        memset (value_str_rw (v, width), ' ', width);
+        memset (v->s, ' ', width);
     }
 }
 
@@ -109,7 +107,7 @@ value_compare_3way (const union value *a, const union value *b, int width)
 {
   return (width == -1 ? 0
           : width == 0 ? (a->f < b->f ? -1 : a->f > b->f)
-          : memcmp (value_str (a, width), value_str (b, width), width));
+          : memcmp (a->s, b->s, width));
 }
 
 /* Returns true if A and B, which must both have the given WIDTH,
@@ -119,7 +117,7 @@ value_equal (const union value *a, const union value *b, int width)
 {
   return (width == -1 ? true
           : width == 0 ? a->f == b->f
-          : !memcmp (value_str (a, width), value_str (b, width), width));
+          : !memcmp (a->s, b->s, width));
 }
 
 /* Returns a hash of the data in VALUE, which must have the given
@@ -129,7 +127,7 @@ value_hash (const union value *value, int width, unsigned int basis)
 {
   return (width == -1 ? basis
           : width == 0 ? hash_double (value->f, basis)
-          : hash_bytes (value_str (value, width), width, basis));
+          : hash_bytes (value->s, width, basis));
 }
 
 /* Tests whether VALUE may be resized from OLD_WIDTH to
@@ -147,7 +145,7 @@ value_is_resizable (const union value *value, int old_width, int new_width)
     return false;
   else
     {
-      const uint8_t *str = value_str (value, old_width);
+      const uint8_t *str = value->s;
       int i;
 
       for (i = new_width; i < old_width; i++)
@@ -178,11 +176,10 @@ value_resize (union value *value, int old_width, int new_width)
 bool
 value_is_spaces (const union value *value, int width)
 {
-  const uint8_t *s = value_str (value, width);
   int i;
 
   for (i = 0; i < width; i++)
-    if (s[i] != ' ')
+    if (value->s[i] != ' ')
       return false;
 
   return true;
@@ -248,10 +245,9 @@ value_resize_pool (struct pool *pool, union value *value,
   if (new_width > old_width)
     {
       uint8_t *new_string = pool_alloc_unaligned (pool, new_width);
-      memcpy (new_string, value_str (value, old_width), old_width);
+      memcpy (new_string, value->s, old_width);
       value->s = new_string;
 
-      memset (value_str_rw (value, new_width) + old_width, ' ',
-              new_width - old_width);
+      memset (value->s + old_width, ' ', new_width - old_width);
     }
 }

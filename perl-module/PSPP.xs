@@ -141,7 +141,7 @@ scalar_to_value (union value *val, SV *scalar, const struct variable *var)
 	const char *p = SvPV (scalar, len);
 	int width = var_get_width (var);
 	value_set_missing (val, width);
-	memcpy (value_str_rw (val, width), p, len);
+	memcpy (val->s, p, len);
     }
 }
 
@@ -159,7 +159,7 @@ value_to_scalar (const union value *val, const struct variable *var)
   else
     {
       int width = var_get_width (var);
-      return newSVpvn (value_str (val, width), width);
+      return newSVpvn (val->s, width);
     }
 }
 

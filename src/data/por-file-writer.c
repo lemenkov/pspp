@@ -316,7 +316,7 @@ write_value (struct pfm_writer *w, const union value *v, int width)
     {
       width = MIN (width, MAX_POR_WIDTH);
       write_int (w, width);
-      buf_write (w, value_str (v, width), width);
+      buf_write (w, v->s, width);
     }
 }
 

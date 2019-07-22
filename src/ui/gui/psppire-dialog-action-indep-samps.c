@@ -270,9 +270,9 @@ on_grp_var_change (GtkEntry *entry, PsppireDialogActionIndepSamps *act)
         }
       else
         {
-	  value_str_rw (&act->cut_point, width)[0] = '\0';
-	  value_str_rw (&act->grp_val[0], width)[0] = '\0';
-	  value_str_rw (&act->grp_val[1], width)[0] = '\0';
+	  act->cut_point.s[0] = '\0';
+	  act->grp_val[0].s[0] = '\0';
+	  act->grp_val[1].s[0] = '\0';
         }
     }
 

@@ -170,7 +170,7 @@ parse_group (struct lexer *lexer, struct dictionary *dict,
 
               value_destroy (&mrset->counted, mrset->width);
               value_init (&mrset->counted, width);
-              memcpy (value_str_rw (&mrset->counted, width), s, width);
+              memcpy (mrset->counted.s, s, width);
               mrset->width = width;
 
               free (s);

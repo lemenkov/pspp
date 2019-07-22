@@ -2024,8 +2024,7 @@ pivot_value_new_value (const union value *value, int width,
   struct pivot_value *pv = xzalloc (sizeof *pv);
   if (width > 0)
     {
-      char *s = recode_string (UTF8, encoding,
-                               CHAR_CAST (char *, value_str (value, width)),
+      char *s = recode_string (UTF8, encoding, CHAR_CAST (char *, value->s),
                                width);
       size_t n = strlen (s);
       while (n > 0 && s[n - 1] == ' ')

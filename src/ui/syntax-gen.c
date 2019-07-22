@@ -196,10 +196,8 @@ syntax_gen_value (struct string *output, const union value *value, int width,
   if (width == 0)
     syntax_gen_number (output, value->f, format);
   else
-    {
-      char *s = CHAR_CAST_BUG (char *, value_str (value, width));
-      syntax_gen_string (output, ss_buffer (s, width));
-    }
+    syntax_gen_string (output,
+                       ss_buffer (CHAR_CAST (const char *, value->s), width));
 }
 
 /* Appends <low> THRU <high> to OUTPUT.  If LOW is LOWEST, then

@@ -39,10 +39,6 @@ static inline bool value_needs_init (int width);
 static inline bool value_try_init (union value *, int width);
 static inline void value_destroy (union value *, int width);
 
-static inline double value_num (const union value *);
-static inline const uint8_t *value_str (const union value *, int width);
-static inline uint8_t *value_str_rw (union value *, int width);
-
 static inline void value_copy (union value *, const union value *, int width);
 void value_copy_rpad (union value *, int dst_width,
                       const union value *, int src_width,
@@ -131,41 +127,6 @@ value_destroy (union value *v, int width)
 {
   if (width > 0)
     free (v->s);
-}
-
-/* Returns the numeric value in V, which must have width 0. */
-static inline double
-value_num (const union value *v)
-{
-  return v->f;
-}
-
-/* Returns the string value in V, which must have width WIDTH.
-
-   The returned value is not null-terminated.
-
-   It is important that WIDTH be the actual value that was passed
-   to value_init.  Passing, e.g., a smaller value because only
-   that number of bytes will be accessed will not always work. */
-static inline const uint8_t *
-value_str (const union value *v, int width)
-{
-  assert (width > 0);
-  return v->s;
-}
-
-/* Returns the string value in V, which must have width WIDTH.
-
-   The returned value is not null-terminated.
-
-   It is important that WIDTH be the actual value that was passed
-   to value_init.  Passing, e.g., a smaller value because only
-   that number of bytes will be accessed will not always work. */
-static inline uint8_t *
-value_str_rw (union value *v, int width)
-{
-  assert (width > 0);
-  return v->s;
 }
 
 /* Copies SRC to DST, given that they both contain data of the

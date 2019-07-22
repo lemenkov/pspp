@@ -56,7 +56,7 @@ value_to_data (const union value *value_, int width)
   if (width == 0)
     return &value->f;
   else
-    return value_str_rw (value, width);
+    return value->s;
 }
 
 /* Creates and returns a new case_tmpfile that will store cases

@@ -2213,7 +2213,7 @@ parse_value_labels (struct sfm_reader *r, struct dictionary *dict,
           if (width == 0)
             value.f = parse_float (r, label->value, 0);
           else
-            memcpy (value_str_rw (&value, width), label->value, width);
+            memcpy (value.s, label->value, width);
 
           if (!var_add_value_label (var, &value, utf8_labels[j]))
             {
@@ -2232,8 +2232,7 @@ parse_value_labels (struct sfm_reader *r, struct dictionary *dict,
               else
                 sys_warn (r, record->pos,
                           _("Duplicate value label for `%.*s' on %s."),
-                          width, value_str (&value, width),
-                          var_get_name (var));
+                          width, value.s, var_get_name (var));
             }
 
           value_destroy (&value, width);
@@ -2520,8 +2519,7 @@ parse_long_string_value_labels (struct sfm_reader *r,
           if (!skip)
             {
               if (value_length == width)
-                memcpy (value_str_rw (&value, width),
-                        (const uint8_t *) record->data + ofs, width);
+                memcpy (value.s, (const uint8_t *) record->data + ofs, width);
               else
                 {
                   sys_warn (r, record->pos + ofs,
@@ -2553,8 +2551,7 @@ parse_long_string_value_labels (struct sfm_reader *r,
               if (!var_add_value_label (var, &value, label))
                 sys_warn (r, record->pos + ofs,
                           _("Duplicate value label for `%.*s' on %s."),
-                          width, value_str (&value, width),
-                          var_get_name (var));
+                          width, value.s, var_get_name (var));
               pool_free (r->pool, label);
             }
           ofs += label_length;
@@ -2688,8 +2685,7 @@ sys_file_casereader_read (struct casereader *reader, void *r_)
         retval = read_case_number (r, &v->f);
       else
         {
-          uint8_t *s = value_str_rw (v, sv->var_width);
-          retval = read_case_string (r, s + sv->offset, sv->segment_width);
+          retval = read_case_string (r, v->s + sv->offset, sv->segment_width);
           if (retval == 1)
             {
               retval = skip_whole_strings (r, ROUND_DOWN (sv->padding, 8));

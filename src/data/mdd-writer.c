@@ -288,7 +288,7 @@ write_value_label_value (xmlTextWriter *writer, const struct val_lab *vl,
   const union value *value = val_lab_get_value (vl);
   if (width)
     {
-      char *s = xmemdup0 (value_str (value, width), width);
+      char *s = xmemdup0 (value->s, width);
       xmlTextWriterWriteAttribute (writer, _xml ("value"), _xml (s));
       free (s);
     }

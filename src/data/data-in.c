@@ -699,7 +699,7 @@ parse_A (struct data_in *i)
 {
   /* This is equivalent to buf_copy_rpad, except that we posibly
      do a character set recoding in the middle. */
-  uint8_t *dst = value_str_rw (i->output, i->width);
+  uint8_t *dst = i->output->s;
   size_t dst_size = i->width;
   const char *src = ss_data (i->input);
   size_t src_size = ss_length (i->input);
@@ -716,7 +716,7 @@ parse_A (struct data_in *i)
 static char *
 parse_AHEX (struct data_in *i)
 {
-  uint8_t *s = value_str_rw (i->output, i->width);
+  uint8_t *s = i->output->s;
   size_t j;
 
   for (j = 0; ; j++)
@@ -1246,7 +1246,7 @@ static void
 default_result (struct data_in *i)
 {
   if (fmt_is_string (i->format))
-    memset (value_str_rw (i->output, i->width), ' ', i->width);
+    memset (i->output->s, ' ', i->width);
   else
     i->output->f = settings_get_blanks ();
 }

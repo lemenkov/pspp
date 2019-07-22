@@ -105,7 +105,7 @@ static bool
 value_is_blank (const union value *val, int width, const struct dictionary *dict)
 {
   mbi_iterator_t iter;
-  const char *str = CHAR_CAST_BUG (const char*, value_str (val, width));
+  const char *str = CHAR_CAST_BUG (const char *, val->s);
   char *text = recode_string (UTF8, dict_get_encoding (dict), str, width);
 
   for (mbi_init (iter, text, width); mbi_avail (iter); mbi_advance (iter))
@@ -324,7 +324,7 @@ cmd_autorecode (struct lexer *lexer, struct dataset *ds)
 	     the source value from whence the new value comes. */
 	  if (src_width > 0)
 	    {
-	      const char *str = CHAR_CAST_BUG (const char*, value_str (from, src_width));
+	      const char *str = CHAR_CAST_BUG (const char *, from->s);
 
 	      recoded_value = recode_string (UTF8, dict_get_encoding (dict),
                                              str, src_width);
@@ -433,8 +433,8 @@ compare_arc_items (const void *a_, const void *b_, const void *aux UNUSED)
   if ( width_b == 0 && width_a != 0)
     return +1;
 
-  return buf_compare_rpad (CHAR_CAST_BUG (const char *, value_str (&(*a)->from, width_a)), width_a,
-			   CHAR_CAST_BUG (const char *, value_str (&(*b)->from, width_b)), width_b);
+  return buf_compare_rpad (CHAR_CAST_BUG (const char *, (*a)->from.s), width_a,
+			   CHAR_CAST_BUG (const char *, (*b)->from.s), width_b);
 }
 
 static int

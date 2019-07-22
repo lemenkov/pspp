@@ -333,8 +333,7 @@ const uint8_t *
 case_str (const struct ccase *c, const struct variable *v)
 {
   assert_variable_matches_case (c, v);
-  size_t idx = var_get_case_index (v);
-  return value_str (&c->values[idx], caseproto_get_width (c->proto, idx));
+  return c->values[var_get_case_index (v)].s;
 }
 
 /* Returns the string value of the `union value' in C numbered
@@ -346,7 +345,7 @@ const uint8_t *
 case_str_idx (const struct ccase *c, size_t idx)
 {
   assert (idx < c->proto->n_widths);
-  return value_str (&c->values[idx], caseproto_get_width (c->proto, idx));
+  return c->values[idx].s;
 }
 
 /* Returns the string value of the `union value' in C for
@@ -363,7 +362,7 @@ case_str_rw (struct ccase *c, const struct variable *v)
   assert_variable_matches_case (c, v);
   size_t idx = var_get_case_index (v);
   assert (!case_is_shared (c));
-  return value_str_rw (&c->values[idx], caseproto_get_width (c->proto, idx));
+  return c->values[idx].s;
 }
 
 /* Returns the string value of the `union value' in C numbered
@@ -378,7 +377,7 @@ case_str_rw_idx (struct ccase *c, size_t idx)
 {
   assert (idx < c->proto->n_widths);
   assert (!case_is_shared (c));
-  return value_str_rw (&c->values[idx], caseproto_get_width (c->proto, idx));
+  return c->values[idx].s;
 }
 
 /* Compares the values of the N_VARS variables in VP

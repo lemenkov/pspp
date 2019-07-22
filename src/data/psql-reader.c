@@ -840,8 +840,7 @@ set_value (struct psql_reader *r)
 	    case VARCHAROID:
 	    case BPCHAROID:
 	    case BYTEAOID:
-	      memcpy (value_str_rw (val, var_width), vptr,
-                      MIN (length, var_width));
+	      memcpy (val->s, vptr, MIN (length, var_width));
 	      break;
 
 	    case NUMERICOID:

@@ -810,8 +810,8 @@ accumulate_aggregate_info (struct agr_proc *agr, const struct ccase *input)
 	    break;
 	  case MAX | FSTRING:
             /* Need to do some kind of Unicode collation thingy here */
-	    if (memcmp (iter->string, value_str (v, src_width), src_width) < 0)
-	      memcpy (iter->string, value_str (v, src_width), src_width);
+	    if (memcmp (iter->string, v->s, src_width) < 0)
+	      memcpy (iter->string, v->s, src_width);
 	    iter->int1 = 1;
 	    break;
 	  case MIN:
@@ -819,8 +819,8 @@ accumulate_aggregate_info (struct agr_proc *agr, const struct ccase *input)
 	    iter->int1 = 1;
 	    break;
 	  case MIN | FSTRING:
-	    if (memcmp (iter->string, value_str (v, src_width), src_width) > 0)
-	      memcpy (iter->string, value_str (v, src_width), src_width);
+	    if (memcmp (iter->string, v->s, src_width) > 0)
+	      memcpy (iter->string, v->s, src_width);
 	    iter->int1 = 1;
 	    break;
 	  case FGT:
@@ -831,8 +831,7 @@ accumulate_aggregate_info (struct agr_proc *agr, const struct ccase *input)
             break;
 	  case FGT | FSTRING:
 	  case PGT | FSTRING:
-            if (memcmp (iter->arg[0].c,
-                        value_str (v, src_width), src_width) < 0)
+            if (memcmp (iter->arg[0].c, v->s, src_width) < 0)
               iter->dbl[0] += weight;
             iter->dbl[1] += weight;
             break;
@@ -844,8 +843,7 @@ accumulate_aggregate_info (struct agr_proc *agr, const struct ccase *input)
             break;
 	  case FLT | FSTRING:
 	  case PLT | FSTRING:
-            if (memcmp (iter->arg[0].c,
-                        value_str (v, src_width), src_width) > 0)
+            if (memcmp (iter->arg[0].c, v->s, src_width) > 0)
               iter->dbl[0] += weight;
             iter->dbl[1] += weight;
             break;
@@ -857,10 +855,8 @@ accumulate_aggregate_info (struct agr_proc *agr, const struct ccase *input)
             break;
 	  case FIN | FSTRING:
 	  case PIN | FSTRING:
-            if (memcmp (iter->arg[0].c,
-                        value_str (v, src_width), src_width) <= 0
-                && memcmp (iter->arg[1].c,
-                           value_str (v, src_width), src_width) >= 0)
+            if (memcmp (iter->arg[0].c, v->s, src_width) <= 0
+                && memcmp (iter->arg[1].c, v->s, src_width) >= 0)
               iter->dbl[0] += weight;
             iter->dbl[1] += weight;
             break;
@@ -872,10 +868,8 @@ accumulate_aggregate_info (struct agr_proc *agr, const struct ccase *input)
             break;
 	  case FOUT | FSTRING:
 	  case POUT | FSTRING:
-            if (memcmp (iter->arg[0].c,
-                        value_str (v, src_width), src_width) > 0
-                || memcmp (iter->arg[1].c,
-                           value_str (v, src_width), src_width) < 0)
+            if (memcmp (iter->arg[0].c, v->s, src_width) > 0
+                || memcmp (iter->arg[1].c, v->s, src_width) < 0)
               iter->dbl[0] += weight;
             iter->dbl[1] += weight;
             break;
@@ -897,7 +891,7 @@ accumulate_aggregate_info (struct agr_proc *agr, const struct ccase *input)
 	  case FIRST | FSTRING:
 	    if (iter->int1 == 0)
 	      {
-		memcpy (iter->string, value_str (v, src_width), src_width);
+		memcpy (iter->string, v->s, src_width);
 		iter->int1 = 1;
 	      }
 	    break;
@@ -906,7 +900,7 @@ accumulate_aggregate_info (struct agr_proc *agr, const struct ccase *input)
 	    iter->int1 = 1;
 	    break;
 	  case LAST | FSTRING:
-	    memcpy (iter->string, value_str (v, src_width), src_width);
+	    memcpy (iter->string, v->s, src_width);
 	    iter->int1 = 1;
 	    break;
           case NMISS:
@@ -1024,7 +1018,7 @@ dump_aggregate_info (const struct agr_proc *agr, struct casewriter *output, cons
 	  case MAX | FSTRING:
 	  case MIN | FSTRING:
 	    if (i->int1)
-	      memcpy (value_str_rw (v, width), i->string, width);
+	      memcpy (v->s, i->string, width);
 	    else
               value_set_missing (v, width);
 	    break;
@@ -1063,7 +1057,7 @@ dump_aggregate_info (const struct agr_proc *agr, struct casewriter *output, cons
 	  case FIRST | FSTRING:
 	  case LAST | FSTRING:
 	    if (i->int1)
-	      memcpy (value_str_rw (v, width), i->string, width);
+	      memcpy (v->s, i->string, width);
 	    else
               value_set_missing (v, width);
 	    break;

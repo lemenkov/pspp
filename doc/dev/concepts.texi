@@ -156,27 +156,6 @@ This function returns false if @func{value_init} and
 @func{value_destroy} are actually required for the given @var{width}.
 @end deftypefun
 
-@deftypefun double value_num (const union value *@var{value})
-Returns the numeric value in @var{value}, which must have been
-initialized as a numeric value.  Equivalent to @code{@var{value}->f}.
-@end deftypefun
-
-@deftypefun {const char *} value_str (const union value *@var{value}, int @var{width})
-@deftypefunx {char *} value_str_rw (union value *@var{value}, int @var{width})
-Returns the string value in @var{value}, which must have been
-initialized with positive width @var{width}.  The string returned is
-not null-terminated.  Only @var{width} bytes of returned data may be
-accessed.
-
-The two different functions exist only for @code{const}-correctness.
-Otherwise they are identical.
-
-It is important that @var{width} be the correct value that was passed
-to @func{value_init}.  Passing a smaller or larger value (e.g.@:
-because that number of bytes will be accessed) will not always work
-and should be avoided.
-@end deftypefun
-
 @deftypefun void value_copy (union value *@var{dst}, @
                              const union value *@var{src}, @
                              int @var{width})

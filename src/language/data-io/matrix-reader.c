@@ -222,19 +222,20 @@ next_matrix_from_reader (struct matrix_material *mm,
   struct ccase *c;
   for ( ; (c = casereader_read (group) ); case_unref (c))
     {
-      const union value *uv  = case_data (c, mr->rowtype);
+      const union value *uv = case_data (c, mr->rowtype);
+      const char *row_type = CHAR_CAST (const char *, uv->s);
       int col, row;
       for (col = 0; col < n_vars; ++col)
 	{
 	  const struct variable *cv = vars[col];
 	  double x = case_data (c, cv)->f;
-	  if (0 == strncasecmp ((char *)value_str (uv, 8), "N       ", 8))
+	  if (0 == strncasecmp (row_type, "N       ", 8))
 	    for (row = 0; row < n_vars; ++row)
 	      gsl_matrix_set (mr->n_vectors, row, col, x);
-	  else if (0 == strncasecmp ((char *) value_str (uv, 8), "MEAN    ", 8))
+	  else if (0 == strncasecmp (row_type, "MEAN    ", 8))
 	    for (row = 0; row < n_vars; ++row)
 	      gsl_matrix_set (mr->mean_vectors, row, col, x);
-	  else if (0 == strncasecmp ((char *) value_str (uv, 8), "STDDEV  ", 8))
+	  else if (0 == strncasecmp (row_type, "STDDEV  ", 8))
 	    for (row = 0; row < n_vars; ++row)
 	      gsl_matrix_set (mr->var_vectors, row, col, x * x);
 	}
@@ -263,11 +264,11 @@ next_matrix_from_reader (struct matrix_material *mm,
       if (mrow == -1)
 	continue;
 
-      if (0 == strncasecmp ((char *) value_str (uv, 8), "CORR    ", 8))
+      if (0 == strncasecmp (row_type, "CORR    ", 8))
 	{
 	  matrix_fill_row (&mm->corr, c, mrow, vars, n_vars);
 	}
-      else if (0 == strncasecmp ((char *) value_str (uv, 8), "COV     ", 8))
+      else if (0 == strncasecmp (row_type, "COV     ", 8))
 	{
 	  matrix_fill_row (&mm->cov, c, mrow, vars, n_vars);
 	}

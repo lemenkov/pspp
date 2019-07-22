@@ -106,16 +106,16 @@ set_varname_column (struct ccase *outcase, const struct variable *vname,
      const char *str)
 {
   int len = var_get_width (vname);
-  uint8_t *s = value_str_rw (case_data_rw (outcase, vname), len);
+  uint8_t *s = case_str_rw (outcase, vname);
 
-  strncpy ((char *) s, str, len);
+  strncpy (CHAR_CAST (char *, s), str, len);
 }
 
 static void
 blank_varname_column (struct ccase *outcase, const struct variable *vname)
 {
   int len = var_get_width (vname);
-  uint8_t *s = value_str_rw (case_data_rw (outcase, vname), len);
+  uint8_t *s = case_str_rw (outcase, vname);
 
   memset (s, ' ', len);
 }
@@ -181,7 +181,7 @@ preprocess (struct casereader *casereader0, const struct dictionary *dict, void 
       if (mformat->triangle == UPPER && mformat->diagonal == NO_DIAGONAL)
 	c_offset++;
       const union value *v = case_data (c, mformat->rowtype);
-      const char *val = (const char *) value_str (v, ROWTYPE_WIDTH);
+      const char *val = CHAR_CAST (const char *, v->s);
       if (0 == strncasecmp (val, "corr    ", ROWTYPE_WIDTH) ||
 	  0 == strncasecmp (val, "cov     ", ROWTYPE_WIDTH))
 	{
@@ -230,8 +230,7 @@ preprocess (struct casereader *casereader0, const struct dictionary *dict, void 
       int col;
       struct ccase *outcase = case_create (proto);
       union value *v = case_data_rw (outcase, mformat->rowtype);
-      uint8_t *n = value_str_rw (v, ROWTYPE_WIDTH);
-      memcpy (n, "N       ", ROWTYPE_WIDTH);
+      memcpy (v->s, "N       ", ROWTYPE_WIDTH);
       blank_varname_column (outcase, mformat->varname);
       for (col = 0; col < mformat->n_continuous_vars; ++col)
 	{
@@ -280,7 +279,7 @@ preprocess (struct casereader *casereader0, const struct dictionary *dict, void 
 
       case_unref (prev_case);
       const union value *v = case_data (c, mformat->rowtype);
-      const char *val = (const char *) value_str (v, ROWTYPE_WIDTH);
+      const char *val = CHAR_CAST (const char *, v->s);
       if (mformat->n >= 0)
 	{
 	  if (0 == strncasecmp (val, "n       ", ROWTYPE_WIDTH) ||

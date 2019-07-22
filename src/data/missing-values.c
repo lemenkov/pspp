@@ -115,7 +115,7 @@ mv_is_acceptable (const union value *value, int width)
   int i;
 
   for (i = MV_MAX_STRING; i < width; i++)
-    if (value_str (value, width)[i] != ' ')
+    if (value->s[i] != ' ')
       return false;
   return true;
 }
@@ -177,7 +177,7 @@ mv_add_str (struct missing_values *mv, const uint8_t s[], size_t len)
       return false;
 
   value_init (&v, mv->width);
-  buf_copy_rpad (CHAR_CAST (char *, value_str_rw (&v, mv->width)), mv->width,
+  buf_copy_rpad (CHAR_CAST (char *, v.s), mv->width,
                  CHAR_CAST (char *, s), len, ' ');
   ok = mv_add_value (mv, &v);
   value_destroy (&v, mv->width);
@@ -424,14 +424,14 @@ is_str_user_missing (const struct missing_values *mv, const uint8_t s[])
     case MVT_NONE:
       return false;
     case MVT_1:
-      return !memcmp (value_str (&v[0], mv->width), s, mv->width);
+      return !memcmp (v[0].s, s, mv->width);
     case MVT_2:
-      return (!memcmp (value_str (&v[0], mv->width), s, mv->width)
-              || !memcmp (value_str (&v[1], mv->width), s, mv->width));
+      return (!memcmp (v[0].s, s, mv->width)
+              || !memcmp (v[1].s, s, mv->width));
     case MVT_3:
-      return (!memcmp (value_str (&v[0], mv->width), s, mv->width)
-              || !memcmp (value_str (&v[1], mv->width), s, mv->width)
-              || !memcmp (value_str (&v[2], mv->width), s, mv->width));
+      return (!memcmp (v[0].s, s, mv->width)
+              || !memcmp (v[1].s, s, mv->width)
+              || !memcmp (v[2].s, s, mv->width));
     case MVT_RANGE:
     case MVT_RANGE_1:
       NOT_REACHED ();
@@ -447,7 +447,7 @@ mv_is_value_missing (const struct missing_values *mv, const union value *v,
 {
   return (mv->width == 0
           ? mv_is_num_missing (mv, v->f, class)
-          : mv_is_str_missing (mv, value_str (v, mv->width), class));
+          : mv_is_str_missing (mv, v->s, class));
 }
 
 /* Returns true if D is a missing value in the given CLASS in MV,
@@ -501,8 +501,7 @@ mv_to_string (const struct missing_values *mv, const char *encoding)
       else
         {
           char *mvs = recode_string (
-            "UTF-8", encoding,
-            CHAR_CAST (char *, value_str (value, mv->width)),
+            "UTF-8", encoding, CHAR_CAST (char *, value->s),
             MIN (mv->width, MV_MAX_STRING));
           ds_put_format (&s, "\"%s\"", mvs);
           free (mvs);
