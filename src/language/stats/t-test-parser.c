@@ -96,8 +96,9 @@ cmd_t_test (struct lexer *lexer, struct dataset *ds)
           if (NULL == (gvar = parse_variable (lexer, dict)))
             goto exit;
 
-          value_init (&gval0, var_get_width (gvar));
-          value_init (&gval1, var_get_width (gvar));
+          gval_width = var_get_width (gvar);
+          value_init (&gval0, gval_width);
+          value_init (&gval1, gval_width);
 
           int n;
           if (lex_match (lexer, T_LPAREN))
