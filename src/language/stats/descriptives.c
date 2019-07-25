@@ -1004,7 +1004,7 @@ display (struct dsc_proc *dsc)
     table, PIVOT_AXIS_ROW, N_("Variable"));
   for (size_t i = 0; i < dsc->var_cnt; i++)
     {
-      struct dsc_var *dv = &dsc->vars[i];
+      const struct dsc_var *dv = &dsc->vars[i];
 
       int row = pivot_category_create_leaf (variables->root,
                                             pivot_value_new_variable (dv->v));
