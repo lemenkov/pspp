@@ -233,7 +233,7 @@ cmd_save_translate (struct lexer *lexer, struct dataset *ds)
               goto error;
             }
         }
-      else if (!parse_dict_trim (lexer, dict))
+      else if (!parse_dict_trim (lexer, dict, true))
         goto error;
     }
 

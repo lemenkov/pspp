@@ -238,7 +238,7 @@ combine_files (enum comb_command_type command,
       while (lex_match (lexer, T_SLASH))
         if (lex_match_id (lexer, "RENAME"))
           {
-            if (!parse_dict_rename (lexer, file->dict))
+            if (!parse_dict_rename (lexer, file->dict, false))
               goto error;
           }
         else if (lex_match_id (lexer, "IN"))

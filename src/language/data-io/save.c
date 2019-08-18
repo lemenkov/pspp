@@ -295,7 +295,7 @@ parse_write_command (struct lexer *lexer, struct dataset *ds,
           porfile_opts.digits = lex_integer (lexer);
           lex_get (lexer);
         }
-      else if (!parse_dict_trim (lexer, dict))
+      else if (!parse_dict_trim (lexer, dict, false))
         goto error;
 
       if (!lex_match (lexer, T_SLASH))

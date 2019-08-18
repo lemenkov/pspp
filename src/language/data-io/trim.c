@@ -1,5 +1,6 @@
 /* PSPP - a program for statistical analysis.
-   Copyright (C) 1997-9, 2000, 2006, 2007, 2008, 2010, 2011 Free Software Foundation, Inc.
+   Copyright (C) 1997-9, 2000, 2006, 2007, 2008, 2010, 2011,
+   2019 Free Software Foundation, Inc.
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -34,9 +35,11 @@
 /* Commands that read and write system files share a great deal
    of common syntactic structure for rearranging and dropping
    variables.  This function parses this syntax and modifies DICT
-   appropriately.  Returns true on success, false on failure. */
+   appropriately.  If RELAX is true, then the modified dictionary
+   need not conform to the usual variable name rules.  Returns
+   true on success, false on failure. */
 bool
-parse_dict_trim (struct lexer *lexer, struct dictionary *dict)
+parse_dict_trim (struct lexer *lexer, struct dictionary *dict, bool relax)
 {
   if (lex_match_id (lexer, "MAP"))
     {
@@ -48,7 +51,7 @@ parse_dict_trim (struct lexer *lexer, struct dictionary *dict)
   else if (lex_match_id (lexer, "KEEP"))
     return parse_dict_keep (lexer, dict);
   else if (lex_match_id (lexer, "RENAME"))
-    return parse_dict_rename (lexer, dict);
+    return parse_dict_rename (lexer, dict, relax);
   else
     {
       lex_error (lexer, _("expecting a valid subcommand"));
@@ -57,93 +60,95 @@ parse_dict_trim (struct lexer *lexer, struct dictionary *dict)
 }
 
 /* Parses and performs the RENAME subcommand of GET, SAVE, and
-   related commands. */
+   related commands.  If RELAX is true, then the new variable
+   names need  not conform to the normal dictionary rules.
+*/
 bool
-parse_dict_rename (struct lexer *lexer, struct dictionary *dict)
+parse_dict_rename (struct lexer *lexer, struct dictionary *dict,
+		   bool relax)
 {
-  size_t i;
-
-  int success = 0;
-
-  struct variable **v;
-  char **new_names;
-  size_t nv, nn;
-  char *err_name;
-
-  int group;
-
+  struct variable **oldvars = NULL;
+  size_t n_newvars = 0;
+  int group = 0;
+  char **newnames = NULL;
   lex_match (lexer, T_EQUALS);
-  if (lex_token (lexer) != T_LPAREN)
+
+  while (lex_token (lexer) != T_SLASH && lex_token (lexer) != T_ENDCMD)
     {
-      struct variable *v = parse_variable (lexer, dict);
-      if (v == NULL)
-	return 0;
+      size_t n_oldvars = 0;
+      oldvars = NULL;
+      n_newvars = 0;
+      n_oldvars = 0;
+      oldvars = NULL;
+
+      bool paren = lex_match (lexer, T_LPAREN);
+      group++;
+      if (!parse_variables (lexer, dict, &oldvars, &n_oldvars, PV_NO_DUPLICATE))
+	goto fail;
+
       if (!lex_force_match (lexer, T_EQUALS))
-        return 0;
+	goto fail;
 
-      char *new_name = parse_DATA_LIST_var (lexer, dict);
-      if (dict_lookup_var (dict, new_name) != NULL)
+      newnames = xmalloc (sizeof *newnames * n_oldvars);
+      while (lex_token (lexer) == T_ID || lex_token (lexer) == T_STRING)
 	{
-	  msg (SE, _("Cannot rename %s as %s because there already exists "
-		     "a variable named %s.  To rename variables with "
-		     "overlapping names, use a single RENAME subcommand "
-		     "such as `/RENAME (A=B)(B=C)(C=A)', or equivalently, "
-		     "`/RENAME (A B C=B C A)'."),
-               var_get_name (v), new_name, new_name);
-          free (new_name);
-	  return 0;
+	  if (n_newvars >= n_oldvars)
+	    break;
+	  const char *new_name = lex_tokcstr (lexer);
+	  if (!relax && ! id_is_plausible (new_name, true))
+	    goto fail;
+
+	  if (dict_lookup_var (dict, new_name) != NULL)
+	    {
+	      msg (SE, _("Cannot rename %s as %s because there already exists "
+			 "a variable named %s.  To rename variables with "
+			 "overlapping names, use a single RENAME subcommand "
+			 "such as `/RENAME (A=B)(B=C)(C=A)', or equivalently, "
+			 "`/RENAME (A B C=B C A)'."),
+		   var_get_name (oldvars[n_newvars]), new_name, new_name);
+	      goto fail;
+	    }
+	  newnames[n_newvars] = strdup (new_name);
+	  lex_get (lexer);
+	  n_newvars++;
 	}
-
-      dict_rename_var (dict, v, new_name);
-      free (new_name);
-      return 1;
-    }
-
-  nv = nn = 0;
-  v = NULL;
-  new_names = 0;
-  group = 1;
-  while (lex_match (lexer, T_LPAREN))
-    {
-      size_t old_nv = nv;
-
-      if (!parse_variables (lexer, dict, &v, &nv, PV_NO_DUPLICATE | PV_APPEND))
-	goto done;
-      if (!lex_match (lexer, T_EQUALS))
-	{
-          lex_error_expecting (lexer, "`='");
-	  goto done;
-	}
-      if (!parse_DATA_LIST_vars (lexer, dict, &new_names, &nn,
-                                 PV_APPEND | PV_NO_SCRATCH | PV_NO_DUPLICATE))
-	goto done;
-      if (nn != nv)
+      if (n_newvars != n_oldvars)
 	{
 	  msg (SE, _("Number of variables on left side of `=' (%zu) does not "
                      "match number of variables on right side (%zu), in "
                      "parenthesized group %d of RENAME subcommand."),
-	       nv - old_nv, nn - old_nv, group);
-	  goto done;
+	       n_newvars, n_oldvars, group);
+	  goto fail;
 	}
-      if (!lex_force_match (lexer, T_RPAREN))
-	goto done;
-      group++;
+
+      if (paren)
+	if (!lex_force_match (lexer, T_RPAREN))
+	  goto fail;
+
+      char *errname = 0;
+      if (!dict_rename_vars (dict, oldvars, newnames, n_newvars, &errname))
+	{
+	  msg (SE,
+	       _("Requested renaming duplicates variable name %s."),
+	       errname);
+	  goto fail;
+	}
+      free (oldvars);
+      for (int i = 0; i < n_newvars; ++i)
+	free (newnames[i]);
+      free (newnames);
+      newnames = NULL;
     }
 
-  if (!dict_rename_vars (dict, v, new_names, nv, &err_name))
-    {
-      msg (SE, _("Requested renaming duplicates variable name %s."), err_name);
-      goto done;
-    }
-  success = 1;
+  return true;
 
- done:
-  for (i = 0; i < nn; i++)
-    free (new_names[i]);
-  free (new_names);
-  free (v);
-
-  return success;
+ fail:
+  free (oldvars);
+  for (int i = 0; i < n_newvars; ++i)
+    free (newnames[i]);
+  free (newnames);
+  newnames = NULL;
+  return false;
 }
 
 /* Parses and performs the DROP subcommand of GET, SAVE, and

@@ -85,7 +85,7 @@ number:time:date:datetime:string:filter
 ])
 AT_CLEANUP
 
-AT_SETUP([CSV output -- KEEP, RENAME])
+AT_SETUP([CSV output -- KEEP, RENAME quoted])
 PREPARE_SAVE_TRANSLATE_CSV(
   [/FIELDNAMES /KEEP=time string /RENAME string='long name with spaces' /UNSELECTED=DELETE])
 AT_CHECK([cat data.csv], [0], [dnl
@@ -94,6 +94,56 @@ time,long name with spaces
 12:00:00,xyzzy
 ])
 AT_CLEANUP
+
+
+AT_SETUP([CSV output -- KEEP, RENAME multi quoted])
+PREPARE_SAVE_TRANSLATE_CSV(
+  [/FIELDNAMES
+  /RENAME =
+	number = "this one"
+	time = "that one"
+	date = "which one?"
+	datetime = "another variable replacement"
+	string="long name with spaces"
+  /UNSELECTED=DELETE])
+AT_CHECK([cat data.csv], [0], [dnl
+this one,that one,which one?,another variable replacement,long name with spaces,filter
+ ,-05:17:00,10/31/2010,04/09/2008 09:29:00, xxx,1
+1.625,12:00:00, , ,xyzzy,1
+])
+AT_CLEANUP
+
+
+AT_SETUP([CSV output -- KEEP, RENAME bad name ])
+AT_DATA([bad.sps], [
+data list notable list /Var1 Var2 Var3 Var4 Var5 *.
+begin data
+1 2 3 4 5
+end data.
+
+SAVE TRANSLATE 
+/OUTFILE="foo.csv"
+  /TYPE=CSV
+  /MAP
+  /REPLACE
+  /FIELDNAMES
+  /Unselected=DELETE
+   /RENAME = 
+        Var4 = foobar
+        (Var1 Var2 = one Var3 )
+        (Var3 = "The second")
+  /CELLS=VALUES
+.
+])
+
+AT_CHECK([pspp -O format=csv bad.sps], [1], [dnl
+"bad.sps:16: error: SAVE TRANSLATE: Cannot rename Var2 as Var3 because there already exists a variable named Var3.  To rename variables with overlapping names, use a single RENAME subcommand such as `/RENAME (A=B)(B=C)(C=A)', or equivalently, `/RENAME (A B C=B C A)'."
+])
+
+
+AT_CLEANUP
+
+
 
 AT_BANNER([SAVE TRANSLATE /TYPE=TAB])
 
@@ -106,3 +156,4 @@ number	time	date	datetime	string	filter
 1.625	12:00:00	 	 	xyzzy	1
 ])
 AT_CLEANUP
+
