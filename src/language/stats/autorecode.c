@@ -324,9 +324,12 @@ cmd_autorecode (struct lexer *lexer, struct dataset *ds)
           while (len > 0 && recoded_value[len - 1] == ' ')
             recoded_value[--len] = '\0';
 
-	  /* Add value label. */
-	  union value to_val = { .f = items[j]->to };
-	  var_add_value_label (spec->dst, &to_val, recoded_value);
+	  /* Add value label, if it would be nonempty. */
+	  if (len)
+	    {
+	      union value to_val = { .f = items[j]->to };
+	      var_add_value_label (spec->dst, &to_val, recoded_value);
+	    }
 	  free (recoded_value);
 	}
 
