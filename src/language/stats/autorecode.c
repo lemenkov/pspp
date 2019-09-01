@@ -113,23 +113,18 @@ value_trim_spaces (const union value *value, int width)
 int
 cmd_autorecode (struct lexer *lexer, struct dataset *ds)
 {
-  struct autorecode_pgm *arc = NULL;
-
   struct dictionary *dict = dataset_dict (ds);
+
   const struct variable **src_vars = NULL;
-  char **dst_names = NULL;
   size_t n_srcs = 0;
+
+  char **dst_names = NULL;
   size_t n_dsts = 0;
 
   enum arc_direction direction = ASCENDING;
 
-  struct casereader *input;
-  struct ccase *c;
-
-  bool ok;
-
   /* Create procedure. */
-  arc = xzalloc (sizeof *arc);
+  struct autorecode_pgm *arc = xzalloc (sizeof *arc);
   arc->blank_valid = true;
 
   /* Parse variable lists. */
@@ -252,7 +247,8 @@ cmd_autorecode (struct lexer *lexer, struct dataset *ds)
     }
 
   /* Execute procedure. */
-  input = proc_open (ds);
+  struct casereader *input = proc_open (ds);
+  struct ccase *c;
   for (; (c = casereader_read (input)) != NULL; case_unref (c))
     for (size_t i = 0; i < arc->n_specs; i++)
       {
@@ -271,7 +267,7 @@ cmd_autorecode (struct lexer *lexer, struct dataset *ds)
         value_clone (&item->from, value, width);
         hmap_insert (&spec->items->ht, &item->hmap_node, hash);
       }
-  ok = casereader_destroy (input);
+  bool ok = casereader_destroy (input);
   ok = proc_commit (ds) && ok;
 
   /* Re-fetch dictionary because it might have changed (if TEMPORARY was in
@@ -304,21 +300,15 @@ cmd_autorecode (struct lexer *lexer, struct dataset *ds)
 
       /* Assign recoded values in sorted order. */
       for (j = 0; j < n_items; j++)
+	items[j]->to = direction == ASCENDING ? j + 1 : n_items - j;
+
+      /* Add value labels to the destination variable which indicate
+	 the source value from whence the new value comes. */
+      for (j = 0; j < n_items; j++)
 	{
 	  const union value *from = &items[j]->from;
-	  char *recoded_value  = NULL;
 	  const int src_width = items[j]->width;
-	  union value to_val;
-	  size_t len;
-
-	  value_init (&to_val, 0);
-
-	  items[j]->to = direction == ASCENDING ? j + 1 : n_items - j;
-
-	  to_val.f = items[j]->to;
-
-	  /* Add value labels to the destination variable which indicate
-	     the source value from whence the new value comes. */
+	  char *recoded_value;
 	  if (src_width > 0)
 	    {
 	      const char *str = CHAR_CAST_BUG (const char *, from->s);
@@ -329,13 +319,14 @@ cmd_autorecode (struct lexer *lexer, struct dataset *ds)
 	  else
 	    recoded_value = c_xasprintf ("%.*g", DBL_DIG + 1, from->f);
 
-	  /* Remove trailing whitespace */
-          len = strlen (recoded_value);
+	  /* Remove trailing whitespace. */
+          size_t len = strlen (recoded_value);
           while (len > 0 && recoded_value[len - 1] == ' ')
             recoded_value[--len] = '\0';
 
+	  /* Add value label. */
+	  union value to_val = { .f = items[j]->to };
 	  var_add_value_label (spec->dst, &to_val, recoded_value);
-	  value_destroy (&to_val, 0);
 	  free (recoded_value);
 	}
 
