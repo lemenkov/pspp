@@ -441,36 +441,36 @@ score * a * b * c,9,100.0%,0,.0%,9,100.0%
 
 Table: Report
 a,b,c,Mean,N,Std. Deviation
-fooberrycrumblexzaQ     ,fosilationwereqd,one     ,4.00,1,NaN
-,,two     ,41.00,1,NaN
-,,zero    ,3.00,1,NaN
+fooberrycrumblexzaQ,fosilationwereqd,one,4.00,1,NaN
+,,two,41.00,1,NaN
+,,zero,3.00,1,NaN
 ,,Total,16.00,3,21.66
-,onlyonekonboys  ,one     ,6.00,1,NaN
-,,zero    ,5.00,1,NaN
+,onlyonekonboys,one,6.00,1,NaN
+,,zero,5.00,1,NaN
 ,,Total,5.50,2,.71
-,Total,one     ,5.00,2,1.41
-,,two     ,41.00,1,NaN
-,,zero    ,4.00,2,1.41
+,Total,one,5.00,2,1.41
+,,two,41.00,1,NaN
+,,zero,4.00,2,1.41
 ,,Total,11.80,5,16.36
-wontledingbatsXASDF     ,fosilationwereqd,one     ,8.00,1,NaN
-,,zero    ,7.00,1,NaN
+wontledingbatsXASDF,fosilationwereqd,one,8.00,1,NaN
+,,zero,7.00,1,NaN
 ,,Total,7.50,2,.71
-,onlyonekonboys  ,one     ,10.00,1,NaN
-,,zero    ,9.00,1,NaN
+,onlyonekonboys,one,10.00,1,NaN
+,,zero,9.00,1,NaN
 ,,Total,9.50,2,.71
-,Total,one     ,9.00,2,1.41
-,,zero    ,8.00,2,1.41
+,Total,one,9.00,2,1.41
+,,zero,8.00,2,1.41
 ,,Total,8.50,4,1.29
-Total,fosilationwereqd,one     ,6.00,2,2.83
-,,two     ,41.00,1,NaN
-,,zero    ,5.00,2,2.83
+Total,fosilationwereqd,one,6.00,2,2.83
+,,two,41.00,1,NaN
+,,zero,5.00,2,2.83
 ,,Total,12.60,5,16.01
-,onlyonekonboys  ,one     ,8.00,2,2.83
-,,zero    ,7.00,2,2.83
+,onlyonekonboys,one,8.00,2,2.83
+,,zero,7.00,2,2.83
 ,,Total,7.50,4,2.38
-,Total,one     ,7.00,4,2.58
-,,two     ,41.00,1,NaN
-,,zero    ,6.00,4,2.58
+,Total,one,7.00,4,2.58
+,,two,41.00,1,NaN
+,,zero,6.00,4,2.58
 ,,Total,10.33,9,11.73
 ])
 
