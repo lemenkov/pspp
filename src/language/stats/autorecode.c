@@ -55,7 +55,7 @@ struct arc_item
     int width;                  /* Width of the original value */
     bool missing;               /* Is 'from' missing in its source varible? */
 
-    double to;			/* Recoded value. */
+    double to;                  /* Recoded value. */
   };
 
 /* Explains how to recode an AUTORECODE variable. */
@@ -63,7 +63,7 @@ struct arc_spec
   {
     int width;                  /* Variable width. */
     int src_idx;                /* Case index of source variable. */
-    struct variable *dst;	/* Target variable. */
+    struct variable *dst;       /* Target variable. */
     struct missing_values mv;   /* Missing values of source variable. */
     struct rec_items *items;
   };
@@ -167,7 +167,7 @@ cmd_autorecode (struct lexer *lexer, struct dataset *ds)
   while (lex_match (lexer, T_SLASH))
     {
       if (lex_match_id (lexer, "DESCENDING"))
-	direction = DESCENDING;
+        direction = DESCENDING;
       else if (lex_match_id (lexer, "PRINT"))
         {
           /* Not yet implemented. */
@@ -175,22 +175,22 @@ cmd_autorecode (struct lexer *lexer, struct dataset *ds)
       else if (lex_match_id (lexer, "GROUP"))
         group = true;
       else if (lex_match_id (lexer, "BLANK"))
-	{
-	  lex_match (lexer, T_EQUALS);
-	  if (lex_match_id (lexer, "VALID"))
-	    {
-	      arc->blank_valid = true;
-	    }
-	  else if (lex_match_id (lexer, "MISSING"))
-	    {
-	      arc->blank_valid = false;
-	    }
-	  else
+        {
+          lex_match (lexer, T_EQUALS);
+          if (lex_match_id (lexer, "VALID"))
+            {
+              arc->blank_valid = true;
+            }
+          else if (lex_match_id (lexer, "MISSING"))
+            {
+              arc->blank_valid = false;
+            }
+          else
             {
               lex_error_expecting (lexer, "VALID", "MISSING");
               goto error;
             }
-	}
+        }
       else
         {
           lex_error_expecting (lexer, "DESCENDING", "PRINT", "GROUP", "BLANK");
@@ -242,10 +242,10 @@ cmd_autorecode (struct lexer *lexer, struct dataset *ds)
       if (group && i > 0)
         spec->items = arc->specs[0].items;
       else
-	{
-	  spec->items = xzalloc (sizeof (*spec->items));
-	  hmap_init (&spec->items->ht);
-	}
+        {
+          spec->items = xzalloc (sizeof (*spec->items));
+          hmap_init (&spec->items->ht);
+        }
     }
 
   /* Initialize specs[*]->mv to the user-missing values for each
@@ -373,35 +373,35 @@ cmd_autorecode (struct lexer *lexer, struct dataset *ds)
         }
 
       /* Add value labels to the destination variable which indicate
-	 the source value from whence the new value comes. */
+         the source value from whence the new value comes. */
       for (j = 0; j < n_items; j++)
-	{
-	  const union value *from = &items[j]->from;
-	  const int src_width = items[j]->width;
-	  char *recoded_value;
-	  if (src_width > 0)
-	    {
-	      const char *str = CHAR_CAST_BUG (const char *, from->s);
+        {
+          const union value *from = &items[j]->from;
+          const int src_width = items[j]->width;
+          char *recoded_value;
+          if (src_width > 0)
+            {
+              const char *str = CHAR_CAST_BUG (const char *, from->s);
 
-	      recoded_value = recode_string (UTF8, dict_get_encoding (dict),
+              recoded_value = recode_string (UTF8, dict_get_encoding (dict),
                                              str, src_width);
-	    }
-	  else
-	    recoded_value = c_xasprintf ("%.*g", DBL_DIG + 1, from->f);
+            }
+          else
+            recoded_value = c_xasprintf ("%.*g", DBL_DIG + 1, from->f);
 
-	  /* Remove trailing whitespace. */
+          /* Remove trailing whitespace. */
           size_t len = strlen (recoded_value);
           while (len > 0 && recoded_value[len - 1] == ' ')
             recoded_value[--len] = '\0';
 
-	  /* Add value label, if it would be nonempty. */
-	  if (len)
-	    {
-	      union value to_val = { .f = items[j]->to };
-	      var_add_value_label (spec->dst, &to_val, recoded_value);
-	    }
-	  free (recoded_value);
-	}
+          /* Add value label, if it would be nonempty. */
+          if (len)
+            {
+              union value to_val = { .f = items[j]->to };
+              var_add_value_label (spec->dst, &to_val, recoded_value);
+            }
+          free (recoded_value);
+        }
 
       /* Free array. */
       free (items);
@@ -434,13 +434,13 @@ arc_free (struct autorecode_pgm *arc)
           struct arc_spec *spec = &arc->specs[i];
           struct arc_item *item, *next;
 
-	  HMAP_FOR_EACH_SAFE (item, next, struct arc_item, hmap_node,
-			      &spec->items->ht)
-	    {
-	      value_destroy (&item->from, item->width);
-	      hmap_delete (&spec->items->ht, &item->hmap_node);
-	      free (item);
-	    }
+          HMAP_FOR_EACH_SAFE (item, next, struct arc_item, hmap_node,
+                              &spec->items->ht)
+            {
+              value_destroy (&item->from, item->width);
+              hmap_delete (&spec->items->ht, &item->hmap_node);
+              free (item);
+            }
           mv_destroy (&spec->mv);
         }
 
@@ -449,11 +449,11 @@ arc_free (struct autorecode_pgm *arc)
          ? 1
          : arc->n_specs);
       for (size_t i = 0; i < n_rec_items; i++)
-	{
-	  struct arc_spec *spec = &arc->specs[i];
+        {
+          struct arc_spec *spec = &arc->specs[i];
           hmap_destroy (&spec->items->ht);
           free (spec->items);
-	}
+        }
 
       free (arc->specs);
       free (arc);
