@@ -42,21 +42,21 @@ DISPLAY VARIABLES/VARIABLES=a TO f.
 AT_CHECK([pspp -O format=csv autorecode.sps], [0], [dnl
 Table: Data List
 u,v,w,x,y,z,a,b,c,d,e,f
-11,11,11,11,11,11,6.00,5.00,4.00,3.00,2.00,1.00
-12,12,12,12,12,12,1.00,6.00,5.00,4.00,3.00,2.00
-13,13,13,13,13,13,2.00,1.00,6.00,5.00,4.00,3.00
-14,14,14,14,14,14,3.00,2.00,1.00,6.00,5.00,4.00
-15,15,15,15,15,15,4.00,3.00,2.00,1.00,6.00,5.00
-16,16,16,16,16,16,5.00,4.00,3.00,2.00,1.00,6.00
+11,11,11,11,11,11,6,5,4,3,2,1
+12,12,12,12,12,12,1,6,5,4,3,2
+13,13,13,13,13,13,2,1,6,5,4,3
+14,14,14,14,14,14,3,2,1,6,5,4
+15,15,15,15,15,15,4,3,2,1,6,5
+16,16,16,16,16,16,5,4,3,2,1,6
 
 Table: Variables
 Name,Position,Print Format,Write Format,Missing Values
-a,7,F8.2,F8.2,6
-b,8,F8.2,F8.2,5; 6
-c,9,F8.2,F8.2,4; 5; 6
-d,10,F8.2,F8.2,3 THRU 6
-e,11,F8.2,F8.2,2 THRU 6
-f,12,F8.2,F8.2,1 THRU 6
+a,7,F1.0,F1.0,6
+b,8,F1.0,F1.0,5; 6
+c,9,F1.0,F1.0,4; 5; 6
+d,10,F1.0,F1.0,3 THRU 6
+e,11,F1.0,F1.0,2 THRU 6
+f,12,F1.0,F1.0,1 THRU 6
 ])
 AT_CLEANUP
 
@@ -81,6 +81,7 @@ autorecode x y into A B/descend.
 
 list.
 compute Z=trunc(y/2).
+formats z(F1.0).
 autorecode z into W.
 list.
 ])
@@ -92,27 +93,27 @@ Y,1,7-  7,F1.0
 
 Table: Data List
 X,Y,A,B
-lasdj,1,1.00,2.00
-asdfk,0,4.00,3.00
-asdfj,2,3.00,1.00
-asdfj,1,3.00,2.00
-asdfk,2,4.00,1.00
-asdfj,9,3.00,4.00
-lajks,9,2.00,4.00
-asdfk,0,4.00,3.00
-asdfk,1,4.00,2.00
+lasdj,1,1,2
+asdfk,0,4,3
+asdfj,2,3,1
+asdfj,1,3,2
+asdfk,2,4,1
+asdfj,9,3,4
+lajks,9,2,4
+asdfk,0,4,3
+asdfk,1,4,2
 
 Table: Data List
 X,Y,A,B,Z,W
-lasdj,1,1.00,2.00,.00,1.00
-asdfk,0,4.00,3.00,.00,1.00
-asdfj,2,3.00,1.00,1.00,2.00
-asdfj,1,3.00,2.00,.00,1.00
-asdfk,2,4.00,1.00,1.00,2.00
-asdfj,9,3.00,4.00,.  ,.  @&t@
-lajks,9,2.00,4.00,.  ,.  @&t@
-asdfk,0,4.00,3.00,.00,1.00
-asdfk,1,4.00,2.00,.00,1.00
+lasdj,1,1,2,0,1
+asdfk,0,4,3,0,1
+asdfj,2,3,1,1,2
+asdfj,1,3,2,0,1
+asdfk,2,4,1,1,2
+asdfj,9,3,4,.,.
+lajks,9,2,4,.,.
+asdfk,0,4,3,0,1
+asdfk,1,4,2,0,1
 ])
 AT_CLEANUP
 
@@ -120,7 +121,7 @@ AT_CLEANUP
 
 AT_SETUP([AUTORECODE long strings and check the value labels])
 AT_DATA([ar.sps],
-  [data list notable list /s (a16) x *.
+  [data list notable list /s (a16) x (f1.0).
 begin data.
 widgets      1
 thingummies  2
@@ -144,24 +145,24 @@ display dictionary/variables=new.
 AT_CHECK([pspp -O format=csv ar.sps], [0],
   [Table: Data List
 s,x,new
-widgets,1.00,4.00
-thingummies,2.00,3.00
-oojars,3.00,1.00
-widgets,4.00,4.00
-oojars,5.00,1.00
-thingummies,6.00,3.00
-oojimiflips,7.00,2.00
+widgets,1,4
+thingummies,2,3
+oojars,3,1
+widgets,4,4
+oojars,5,1
+thingummies,6,3
+oojimiflips,7,2
 
 Table: Variables
 Name,Position,Label,Measurement Level,Role,Width,Alignment,Print Format,Write Format,Missing Values
-new,3,tracking my stuff,Scale,Input,8,Right,F8.2,F8.2,
+new,3,tracking my stuff,Scale,Input,8,Right,F1.0,F1.0,
 
 Table: Value Labels
 Variable Value,,Label
-tracking my stuff,1.00,oojars
-,2.00,oojimiflips
-,3.00,Funny sticky things
-,4.00,widgets
+tracking my stuff,1,oojars
+,2,oojimiflips
+,3,Funny sticky things
+,4,widgets
 ])
 
 AT_CLEANUP
@@ -169,7 +170,7 @@ AT_CLEANUP
 
 AT_SETUP([AUTORECODE group subcommand])
 AT_DATA([ar-group.sps],
-[data list notable list /x * y *.
+[data list notable list /x y (f8.0).
 begin data.
 11 10
 12 12 
@@ -192,17 +193,17 @@ display variables /variables=a b.
 AT_CHECK([pspp -O format=csv ar-group.sps], [0],
 [Table: Data List
 x,y,a,b
-11.00,10.00,2.00,1.00
-12.00,12.00,8.00,8.00
-13.00,15.00,3.00,5.00
-14.00,11.00,4.00,2.00
-15.00,12.00,5.00,8.00
-16.00,18.00,6.00,7.00
+11,10,2,1
+12,12,8,8
+13,15,3,5
+14,11,4,2
+15,12,5,8
+16,18,6,7
 
 Table: Variables
 Name,Position,Print Format,Write Format,Missing Values
-a,3,F8.2,F8.2,8
-b,4,F8.2,F8.2,8
+a,3,F1.0,F1.0,8
+b,4,F1.0,F1.0,8
 ])
 
 AT_CLEANUP
@@ -233,11 +234,11 @@ list.
 AT_CHECK([pspp -O format=csv strings.sps], [0],
 [Table: Data List
 a,b
-6.00,2.00
-3.00,1.00
-4.00,5.00
-1.00,8.00
-1.00,7.00
+6,2
+3,1
+4,5
+1,8
+1,7
 ])
 
 AT_CLEANUP
@@ -265,10 +266,10 @@ AT_CHECK([pspp -O format=csv ar-strings.sps], [0],
 [dnl
 Table: Data List
 a,b,x,y
-one,nine,5.00,3.00
-two,ten,8.00,6.00
-three,eleven,7.00,1.00
-four,nought,2.00,4.00
+one,nine,5,3
+two,ten,8,6
+three,eleven,7,1
+four,nought,2,4
 ])
 
 AT_CLEANUP
@@ -278,7 +279,7 @@ AT_CLEANUP
 AT_SETUP([AUTORECODE /blank])
 
 AT_DATA([auto-blank.sps],  [dnl
-data list notable list /x (a8) y * z (a16).
+data list notable list /x (a8) y (f8.0) z (a16).
 begin data.
 one   2  fred
 two   4  ""
@@ -295,11 +296,11 @@ list a b c y.
 AT_CHECK([pspp -O format=csv auto-blank.sps], [0], [dnl
 Table: Data List
 a,b,c,y
-1.00,1.00,2.00,2.00
-3.00,2.00,.  ,4.00
-.  ,2.00,2.00,4.00
-.  ,1.00,1.00,2.00
-2.00,1.00,1.00,2.00
+1,1,2,2
+3,2,.,4
+.,2,2,4
+.,1,1,2
+2,1,1,2
 ])
 
 AT_CLEANUP
@@ -334,15 +335,15 @@ Y,1,7-  7,F1.0
 
 Table: Data List
 X,Y,A,B
-lasdj,1,.  ,.  @&t@
-asdfk,0,2.00,.  @&t@
-asdfj,2,3.00,2.00
-asdfj,1,3.00,.  @&t@
-asdfk,2,2.00,2.00
-asdfj,9,3.00,1.00
-lajks,9,1.00,1.00
-asdfk,0,2.00,.  @&t@
-asdfk,1,2.00,.  @&t@
+lasdj,1,.,.
+asdfk,0,2,.
+asdfj,2,3,2
+asdfj,1,3,.
+asdfk,2,2,2
+asdfj,9,3,1
+lajks,9,1,1
+asdfk,0,2,.
+asdfk,1,2,.
 ])
 AT_CLEANUP
 
@@ -351,7 +352,7 @@ dnl For compatibility, make sure that /INTO (with leading slash) is accepted
 dnl (bug #48762)
 AT_SETUP([AUTORECODE with /INTO])
 AT_DATA([autorecode.sps],
-  [data list list notable /x .
+  [data list list notable /x (f8.0).
 begin data.
 1
 8
@@ -369,12 +370,12 @@ list.
 AT_CHECK([pspp -O format=csv autorecode.sps], [0],
 [Table: Data List
 x,y
-1.00,2.00
-8.00,4.00
--901.00,1.00
-4.00,3.00
-1.00,2.00
-99.00,5.00
-8.00,4.00
+1,2
+8,4
+-901,1
+4,3
+1,2
+99,5
+8,4
 ])
 AT_CLEANUP

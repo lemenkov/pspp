@@ -331,8 +331,14 @@ cmd_autorecode (struct lexer *lexer, struct dataset *ds)
       spec->dst = dict_create_var_assert (dict, dst_names[i], 0);
       var_set_label (spec->dst, spec->label);
 
-      /* Create array of pointers to items. */
+      /* Set print format. */
       size_t n_items = hmap_count (&spec->items->ht);
+      char *longest_value = xasprintf ("%zu", n_items);
+      struct fmt_spec format = { .type = FMT_F, .w = strlen (longest_value) };
+      var_set_both_formats (spec->dst, &format);
+      free (longest_value);
+
+      /* Create array of pointers to items. */
       struct arc_item **items = xmalloc (n_items * sizeof *items);
       struct arc_item *item;
       size_t j = 0;
