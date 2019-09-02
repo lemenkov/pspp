@@ -271,6 +271,8 @@ If a source value has a value label, then that value label is retained
 for the new value in the target variable.  Otherwise, the source value
 itself becomes each new value's label.
 
+Variable labels are copied from the source to target variables.
+
 @subcmd{PRINT} is currently ignored.
 
 The @subcmd{GROUP} subcommand is relevant only if more than one variable is to be

@@ -131,6 +131,7 @@ thingummies  6
 oojimiflips  7
 end data.
 
+variable labels s 'tracking my stuff'.
 value labels /s 'thingummies' 'Funny sticky things'.
 
 autorecode s into new.
@@ -153,11 +154,11 @@ oojimiflips,7.00,2.00
 
 Table: Variables
 Name,Position,Label,Measurement Level,Role,Width,Alignment,Print Format,Write Format,Missing Values
-new,3,,Scale,Input,8,Right,F8.2,F8.2,
+new,3,tracking my stuff,Scale,Input,8,Right,F8.2,F8.2,
 
 Table: Value Labels
 Variable Value,,Label
-new,1.00,oojars
+tracking my stuff,1.00,oojars
 ,2.00,oojimiflips
 ,3.00,Funny sticky things
 ,4.00,widgets

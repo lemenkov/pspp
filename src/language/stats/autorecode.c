@@ -66,6 +66,7 @@ struct arc_spec
     int src_idx;                /* Case index of source variable. */
     struct variable *dst;       /* Target variable. */
     struct missing_values mv;   /* Missing values of source variable. */
+    char *label;                /* Variable label of source variable. */
     struct rec_items *items;
   };
 
@@ -240,6 +241,9 @@ cmd_autorecode (struct lexer *lexer, struct dataset *ds)
       spec->width = var_get_width (src_vars[i]);
       spec->src_idx = var_get_case_index (src_vars[i]);
 
+      const char *label = var_get_label (src_vars[i]);
+      spec->label = label ? xstrdup (label) : NULL;
+
       if (group && i > 0)
         spec->items = arc->specs[0].items;
       else
@@ -329,6 +333,7 @@ cmd_autorecode (struct lexer *lexer, struct dataset *ds)
 
       /* Create destination variable. */
       spec->dst = dict_create_var_assert (dict, dst_names[i], 0);
+      var_set_label (spec->dst, spec->label);
 
       /* Create array of pointers to items. */
       n_items = hmap_count (&spec->items->ht);
@@ -430,6 +435,7 @@ arc_free (struct autorecode_pgm *arc)
               hmap_delete (&spec->items->ht, &item->hmap_node);
               free (item);
             }
+          free (spec->label);
           mv_destroy (&spec->mv);
         }
 
