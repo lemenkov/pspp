@@ -40,7 +40,7 @@
 #include "gl/xalloc.h"
 #include "gl/c-xvasprintf.h"
 #include "gl/mbiter.h"
-
+#include "gl/size_max.h"
 
 #include "gettext.h"
 #define _(msgid) gettext (msgid)
@@ -53,6 +53,7 @@ struct arc_item
     struct hmap_node hmap_node; /* Element in "struct arc_spec" hash table. */
     union value from;           /* Original value. */
     int width;                  /* Width of the original value */
+    bool missing;               /* Is 'from' missing in its source varible? */
 
     double to;			/* Recoded value. */
   };
@@ -63,6 +64,7 @@ struct arc_spec
     int width;                  /* Variable width. */
     int src_idx;                /* Case index of source variable. */
     struct variable *dst;	/* Target variable. */
+    struct missing_values mv;   /* Missing values of source variable. */
     struct rec_items *items;
   };
 
@@ -246,6 +248,29 @@ cmd_autorecode (struct lexer *lexer, struct dataset *ds)
 	}
     }
 
+  /* Initialize specs[*]->mv to the user-missing values for each
+     source variable. */
+  if (group)
+    {
+      /* Use the first source variable that has any user-missing values. */
+      size_t mv_idx = 0;
+      for (size_t i = 0; i < n_dsts; i++)
+        if (var_has_missing_values (src_vars[i]))
+          {
+            mv_idx = i;
+            break;
+          }
+
+      for (size_t i = 0; i < n_dsts; i++)
+        mv_copy (&arc->specs[i].mv, var_get_missing_values (src_vars[mv_idx]));
+    }
+  else
+    {
+      /* Each variable uses its own user-missing values. */
+      for (size_t i = 0; i < n_dsts; i++)
+        mv_copy (&arc->specs[i].mv, var_get_missing_values (src_vars[i]));
+    }
+
   /* Execute procedure. */
   struct casereader *input = proc_open (ds);
   struct ccase *c;
@@ -254,6 +279,15 @@ cmd_autorecode (struct lexer *lexer, struct dataset *ds)
       {
         struct arc_spec *spec = &arc->specs[i];
         const union value *value = case_data_idx (c, spec->src_idx);
+        if (spec->width == 0 && value->f == SYSMIS)
+          {
+            /* AUTORECODE never changes the system-missing value.
+               (Leaving it out of the translation table has this
+               effect automatically because values not found in the
+               translation table get translated to system-missing.) */
+            continue;
+          }
+
         int width = value_trim_spaces (value, spec->width);
         if (width == 1 && value->s[0] == ' ' && !arc->blank_valid)
           continue;
@@ -265,6 +299,8 @@ cmd_autorecode (struct lexer *lexer, struct dataset *ds)
         struct arc_item *item = xmalloc (sizeof *item);
         item->width = width;
         value_clone (&item->from, value, width);
+        item->missing = mv_is_value_missing_varwidth (&spec->mv, value, spec->width,
+                                                      MV_ANY);
         hmap_insert (&spec->items->ht, &item->hmap_node, hash);
       }
   bool ok = casereader_destroy (input);
@@ -296,11 +332,45 @@ cmd_autorecode (struct lexer *lexer, struct dataset *ds)
       assert (j == n_items);
 
       /* Sort array by value. */
-      sort (items, n_items, sizeof *items, compare_arc_items, NULL);
+      sort (items, n_items, sizeof *items, compare_arc_items, &direction);
 
       /* Assign recoded values in sorted order. */
       for (j = 0; j < n_items; j++)
-	items[j]->to = direction == ASCENDING ? j + 1 : n_items - j;
+        items[j]->to = j + 1;
+
+      /* Assign user-missing values.
+
+         User-missing values in the source variable(s) must be marked
+         as user-missing values in the destination variable.  There
+         might be an arbitrary number of missing values, since the
+         source variable might have a range.  Our sort function always
+         puts missing values together at the top of the range, so that
+         means that we can use a missing value range to cover all of
+         the user-missing values in any case (but we avoid it unless
+         necessary because user-missing value ranges are an obscure
+         feature). */
+      size_t n_missing = n_items;
+      for (size_t k = 0; k < n_items; k++)
+        if (!items[n_items - k - 1]->missing)
+          {
+            n_missing = k;
+            break;
+          }
+      if (n_missing > 0)
+        {
+          size_t lo = n_items - (n_missing - 1);
+          size_t hi = n_items;
+
+          struct missing_values mv;
+          mv_init (&mv, 0);
+          if (n_missing > 3)
+            mv_add_range (&mv, lo, hi);
+          else if (n_missing > 0)
+            for (size_t k = 0; k < n_missing; k++)
+              mv_add_num (&mv, lo + k);
+          var_set_missing_values (spec->dst, &mv);
+          mv_destroy (&mv);
+        }
 
       /* Add value labels to the destination variable which indicate
 	 the source value from whence the new value comes. */
@@ -371,6 +441,7 @@ arc_free (struct autorecode_pgm *arc)
 	      hmap_delete (&spec->items->ht, &item->hmap_node);
 	      free (item);
 	    }
+          mv_destroy (&spec->mv);
         }
 
       size_t n_rec_items =
@@ -403,24 +474,35 @@ find_arc_item (const struct rec_items *items,
 }
 
 static int
-compare_arc_items (const void *a_, const void *b_, const void *aux UNUSED)
+compare_arc_items (const void *a_, const void *b_, const void *direction_)
 {
-  const struct arc_item *const *a = a_;
-  const struct arc_item *const *b = b_;
-  int width_a = (*a)->width;
-  int width_b = (*b)->width;
+  const struct arc_item *const *ap = a_;
+  const struct arc_item *const *bp = b_;
+  const struct arc_item *a = *ap;
+  const struct arc_item *b = *bp;
 
-  if ( width_a == width_b)
-    return value_compare_3way (&(*a)->from, &(*b)->from, width_a);
+  /* User-missing values always sort to the highest target values
+     (regardless of sort direction). */
+  if (a->missing != b->missing)
+    return a->missing < b->missing ? -1 : 1;
 
-  if ( width_a == 0 && width_b != 0)
-    return -1;
+  /* Otherwise, compare the data. */
+  int aw = a->width;
+  int bw = b->width;
+  int cmp;
+  if (aw == bw)
+    cmp = value_compare_3way (&a->from, &b->from, aw);
+  else
+    {
+      assert (aw && bw);
+      cmp = buf_compare_rpad (CHAR_CAST_BUG (const char *, a->from.s), aw,
+                              CHAR_CAST_BUG (const char *, b->from.s), bw);
+    }
 
-  if ( width_b == 0 && width_a != 0)
-    return +1;
-
-  return buf_compare_rpad (CHAR_CAST_BUG (const char *, (*a)->from.s), width_a,
-			   CHAR_CAST_BUG (const char *, (*b)->from.s), width_b);
+  /* Then apply sort direction. */
+  const enum arc_direction *directionp = direction_;
+  enum arc_direction direction = *directionp;
+  return direction == ASCENDING ? cmp : -cmp;
 }
 
 static int

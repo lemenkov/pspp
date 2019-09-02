@@ -474,6 +474,34 @@ mv_is_str_missing (const struct missing_values *mv, const uint8_t s[],
   return class & MV_USER && is_str_user_missing (mv, s);
 }
 
+/* Like mv_is_value_missing(), this tests whether V is a missing value
+   in the given CLASS in MV.  It supports the uncommon case where V
+   and MV might have different widths: the caller must specify VW, the
+   width of V.  MV and VW must be both numeric or both string.
+
+   Comparison of strings of different width is done by conceptually
+   extending both strings to infinite width by appending spaces. */
+bool
+mv_is_value_missing_varwidth (const struct missing_values *mv,
+                              const union value *v, int vw,
+                              enum mv_class class)
+{
+  int mvw = mv->width;
+  if (mvw == vw)
+    return mv_is_value_missing (mv, v, class);
+
+  /* Make sure they're both strings. */
+  assert (mvw && vw);
+  if (!(class & MV_USER) || mv->type == MVT_NONE)
+    return false;
+
+  for (int i = 0; i < mv->type; i++)
+    if (!buf_compare_rpad (CHAR_CAST_BUG (const char *, mv->values[i].s), mvw,
+                           CHAR_CAST_BUG (const char *, v->s), vw))
+      return true;
+  return false;
+}
+
 char *
 mv_to_string (const struct missing_values *mv, const char *encoding)
 {

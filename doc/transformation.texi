@@ -247,17 +247,33 @@ variables, @subcmd{INTO}, and a list of target variables.  There must the same
 number of source and target variables.  The target variables must not
 already exist.
 
-By default, increasing values of a source variable (for a string, this
-is based on character code comparisons) are recoded to increasing values
-of its target variable.  To cause increasing values of a source variable
-to be recoded to decreasing values of its target variable (@var{n} down
-to 1), specify @subcmd{DESCENDING}.
+@cmd{AUTORECODE} ordinarily assigns each increasing non-missing value
+of a source variable (for a string, this is based on character code
+comparisons) to consecutive values of its target variable.  For
+example, the smallest non-missing value of the source variable is
+recoded to value 1, the next smallest to 2, and so on.  If the source
+variable has user-missing values, they are recoded to
+consecutive values just above the non-missing values.  For example, if
+a source variables has seven distinct non-missing values, then the
+smallest missing value would be recoded to 8, the next smallest to 9,
+and so on.
+
+Use @subcmd{DESCENDING} to reverse the sort order for non-missing
+values, so that the largest non-missing value is recoded to 1, the
+second-largest to 2, and so on.  Even with @subcmd{DESCENDING},
+user-missing values are still recoded in ascending order just above
+the non-missing values.
+
+The system-missing value is always recoded into the system-missing
+variable in target variables.
 
 @subcmd{PRINT} is currently ignored.
 
 The @subcmd{GROUP} subcommand is relevant only if more than one variable is to be
 recoded.   It causes a single mapping between source and target values to
-be used, instead of one map per variable.
+be used, instead of one map per variable.  With @subcmd{GROUP},
+user-missing values are taken from the first source variable that has
+any user-missing values.
 
 If @subcmd{/BLANK=MISSING} is given, then string variables which contain only 
 whitespace are recoded as SYSMIS.  If @subcmd{/BLANK=VALID} is given then they

@@ -66,6 +66,9 @@ bool mv_is_value_missing (const struct missing_values *, const union value *,
 bool mv_is_num_missing (const struct missing_values *, double, enum mv_class);
 bool mv_is_str_missing (const struct missing_values *, const uint8_t[],
                         enum mv_class);
+bool mv_is_value_missing_varwidth (const struct missing_values *,
+                                   const union value *, int value_width,
+                                   enum mv_class);
 
 /* Initializing missing value sets. */
 void mv_init (struct missing_values *, int width);

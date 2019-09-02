@@ -16,6 +16,50 @@ dnl along with this program.  If not, see <http://www.gnu.org/licenses/>.
 dnl
 AT_BANNER([AUTORECODE procedure])
 
+AT_SETUP([AUTORECODE multiple missing values])
+AT_DATA([autorecode.sps],
+  [DATA LIST LIST NOTABLE /u v w x y z (F2.0).
+BEGIN DATA.
+11 11 11 11 11 11
+12 12 12 12 12 12
+13 13 13 13 13 13
+14 14 14 14 14 14
+15 15 15 15 15 15
+16 16 16 16 16 16
+END DATA.
+
+MISSING VALUES u (11)
+	       v (11, 12)
+               w (11, 12, 13)
+	       x (11 THRU 14)
+	       y (11 THRU 15)
+	       z (11 THRU 16).
+
+AUTORECODE u v w x y z INTO a b c d e f.
+LIST.
+DISPLAY VARIABLES/VARIABLES=a TO f.
+])
+AT_CHECK([pspp -O format=csv autorecode.sps], [0], [dnl
+Table: Data List
+u,v,w,x,y,z,a,b,c,d,e,f
+11,11,11,11,11,11,6.00,5.00,4.00,3.00,2.00,1.00
+12,12,12,12,12,12,1.00,6.00,5.00,4.00,3.00,2.00
+13,13,13,13,13,13,2.00,1.00,6.00,5.00,4.00,3.00
+14,14,14,14,14,14,3.00,2.00,1.00,6.00,5.00,4.00
+15,15,15,15,15,15,4.00,3.00,2.00,1.00,6.00,5.00
+16,16,16,16,16,16,5.00,4.00,3.00,2.00,1.00,6.00
+
+Table: Variables
+Name,Position,Print Format,Write Format,Missing Values
+a,7,F8.2,F8.2,6
+b,8,F8.2,F8.2,5; 6
+c,9,F8.2,F8.2,4; 5; 6
+d,10,F8.2,F8.2,3 THRU 6
+e,11,F8.2,F8.2,2 THRU 6
+f,12,F8.2,F8.2,1 THRU 6
+])
+AT_CLEANUP
+
 AT_SETUP([AUTORECODE numbers and short strings])
 AT_DATA([autorecode.sps],
   [data list /X 1-5(a) Y 7.
@@ -30,6 +74,8 @@ lajks 9
 asdfk 0
 asdfk 1
 end data.
+
+missing values x('asdfk') y(9).
 
 autorecode x y into A B/descend.
 
@@ -46,27 +92,27 @@ Y,1,7-  7,F1.0
 
 Table: Data List
 X,Y,A,B
-lasdj,1,1.00,3.00
-asdfk,0,3.00,4.00
-asdfj,2,4.00,2.00
-asdfj,1,4.00,3.00
-asdfk,2,3.00,2.00
-asdfj,9,4.00,1.00
-lajks,9,2.00,1.00
-asdfk,0,3.00,4.00
-asdfk,1,3.00,3.00
+lasdj,1,1.00,2.00
+asdfk,0,4.00,3.00
+asdfj,2,3.00,1.00
+asdfj,1,3.00,2.00
+asdfk,2,4.00,1.00
+asdfj,9,3.00,4.00
+lajks,9,2.00,4.00
+asdfk,0,4.00,3.00
+asdfk,1,4.00,2.00
 
 Table: Data List
 X,Y,A,B,Z,W
-lasdj,1,1.00,3.00,.00,1.00
-asdfk,0,3.00,4.00,.00,1.00
-asdfj,2,4.00,2.00,1.00,2.00
-asdfj,1,4.00,3.00,.00,1.00
-asdfk,2,3.00,2.00,1.00,2.00
-asdfj,9,4.00,1.00,4.00,3.00
-lajks,9,2.00,1.00,4.00,3.00
-asdfk,0,3.00,4.00,.00,1.00
-asdfk,1,3.00,3.00,.00,1.00
+lasdj,1,1.00,2.00,.00,1.00
+asdfk,0,4.00,3.00,.00,1.00
+asdfj,2,3.00,1.00,1.00,2.00
+asdfj,1,3.00,2.00,.00,1.00
+asdfk,2,4.00,1.00,1.00,2.00
+asdfj,9,3.00,4.00,.  ,.  @&t@
+lajks,9,2.00,4.00,.  ,.  @&t@
+asdfk,0,4.00,3.00,.00,1.00
+asdfk,1,4.00,2.00,.00,1.00
 ])
 AT_CLEANUP
 
@@ -132,22 +178,30 @@ begin data.
 16 18
 end data.
 
+missing values y (12).
+
 autorecode 
 	x y into a b
 	/group.
 
 list.
+display variables /variables=a b.
 ])
 
 AT_CHECK([pspp -O format=csv ar-group.sps], [0],
 [Table: Data List
 x,y,a,b
 11.00,10.00,2.00,1.00
-12.00,12.00,3.00,3.00
-13.00,15.00,4.00,6.00
-14.00,11.00,5.00,2.00
-15.00,12.00,6.00,3.00
-16.00,18.00,7.00,8.00
+12.00,12.00,8.00,8.00
+13.00,15.00,3.00,5.00
+14.00,11.00,4.00,2.00
+15.00,12.00,5.00,8.00
+16.00,18.00,6.00,7.00
+
+Table: Variables
+Name,Position,Print Format,Write Format,Missing Values
+a,3,F8.2,F8.2,8
+b,4,F8.2,F8.2,8
 ])
 
 AT_CLEANUP
