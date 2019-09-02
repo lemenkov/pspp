@@ -22,6 +22,7 @@
 #include "data/dict-class.h"
 #include "data/missing-values.h"
 #include "data/val-type.h"
+#include "data/settings.h"
 
 /* Bitfields to identify traits of a variable */
 
@@ -93,6 +94,8 @@ const char *var_lookup_value_label (const struct variable *,
 struct string;
 void var_append_value_name (const struct variable *, const union value *,
 			    struct string *);
+void var_append_value_name__ (const struct variable *, const union value *,
+                              enum settings_value_show, struct string *);
 
 bool var_has_value_labels (const struct variable *);
 const struct val_labs *var_get_value_labels (const struct variable *);

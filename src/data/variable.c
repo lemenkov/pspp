@@ -564,18 +564,13 @@ append_value (const struct variable *v, const union value *value,
   free (s);
 }
 
-/* Append STR with a string representing VALUE for variable V.
-   That is, if VALUE has a label, append that label,
-   otherwise format VALUE and append the formatted string.
-   STR must be a pointer to an initialised struct string.
-*/
 void
-var_append_value_name (const struct variable *v, const union value *value,
-		       struct string *str)
+var_append_value_name__ (const struct variable *v, const union value *value,
+                         enum settings_value_show show, struct string *str)
 {
   const char *label = var_lookup_value_label (v, value);
 
-  switch (settings_get_show_values ())
+  switch (show)
     {
     case SETTINGS_VALUE_SHOW_VALUE:
       append_value (v, value, str);
@@ -595,6 +590,18 @@ var_append_value_name (const struct variable *v, const union value *value,
         ds_put_format (str, " %s", label);
       break;
     }
+}
+
+/* Append STR with a string representing VALUE for variable V.
+   That is, if VALUE has a label, append that label,
+   otherwise format VALUE and append the formatted string.
+   STR must be a pointer to an initialised struct string.
+*/
+void
+var_append_value_name (const struct variable *v, const union value *value,
+		       struct string *str)
+{
+  var_append_value_name__ (v, value, settings_get_show_values (), str);
 }
 
 /* Print and write formats. */
