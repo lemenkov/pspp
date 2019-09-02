@@ -54,6 +54,7 @@ struct arc_item
     union value from;           /* Original value. */
     int width;                  /* Width of the original value */
     bool missing;               /* Is 'from' missing in its source varible? */
+    char *value_label;          /* Value label in source variable, if any. */
 
     double to;                  /* Recoded value. */
   };
@@ -296,12 +297,19 @@ cmd_autorecode (struct lexer *lexer, struct dataset *ds)
         if (find_arc_item (spec->items, value, width, hash))
           continue;
 
+        struct string value_label = DS_EMPTY_INITIALIZER;
+        var_append_value_name__ (src_vars[i], value,
+                                 SETTINGS_VALUE_SHOW_LABEL, &value_label);
+
         struct arc_item *item = xmalloc (sizeof *item);
         item->width = width;
         value_clone (&item->from, value, width);
         item->missing = mv_is_value_missing_varwidth (&spec->mv, value, spec->width,
                                                       MV_ANY);
+        item->value_label = ds_steal_cstr (&value_label);
         hmap_insert (&spec->items->ht, &item->hmap_node, hash);
+
+        ds_destroy (&value_label);
       }
   bool ok = casereader_destroy (input);
   ok = proc_commit (ds) && ok;
@@ -372,35 +380,15 @@ cmd_autorecode (struct lexer *lexer, struct dataset *ds)
           mv_destroy (&mv);
         }
 
-      /* Add value labels to the destination variable which indicate
-         the source value from whence the new value comes. */
+      /* Add value labels to the destination variable. */
       for (j = 0; j < n_items; j++)
         {
-          const union value *from = &items[j]->from;
-          const int src_width = items[j]->width;
-          char *recoded_value;
-          if (src_width > 0)
-            {
-              const char *str = CHAR_CAST_BUG (const char *, from->s);
-
-              recoded_value = recode_string (UTF8, dict_get_encoding (dict),
-                                             str, src_width);
-            }
-          else
-            recoded_value = c_xasprintf ("%.*g", DBL_DIG + 1, from->f);
-
-          /* Remove trailing whitespace. */
-          size_t len = strlen (recoded_value);
-          while (len > 0 && recoded_value[len - 1] == ' ')
-            recoded_value[--len] = '\0';
-
-          /* Add value label, if it would be nonempty. */
-          if (len)
+          const char *value_label = items[j]->value_label;
+          if (value_label && value_label[0])
             {
               union value to_val = { .f = items[j]->to };
-              var_add_value_label (spec->dst, &to_val, recoded_value);
+              var_add_value_label (spec->dst, &to_val, value_label);
             }
-          free (recoded_value);
         }
 
       /* Free array. */
@@ -438,6 +426,7 @@ arc_free (struct autorecode_pgm *arc)
                               &spec->items->ht)
             {
               value_destroy (&item->from, item->width);
+              free (item->value_label);
               hmap_delete (&spec->items->ht, &item->hmap_node);
               free (item);
             }

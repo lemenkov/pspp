@@ -131,11 +131,13 @@ thingummies  6
 oojimiflips  7
 end data.
 
+value labels /s 'thingummies' 'Funny sticky things'.
+
 autorecode s into new.
 
 list.
 
-display dictionary.
+display dictionary/variables=new.
 ])
 
 AT_CHECK([pspp -O format=csv ar.sps], [0],
@@ -151,15 +153,13 @@ oojimiflips,7.00,2.00
 
 Table: Variables
 Name,Position,Label,Measurement Level,Role,Width,Alignment,Print Format,Write Format,Missing Values
-s,1,,Nominal,Input,16,Left,A16,A16,
-x,2,,Scale,Input,8,Right,F8.2,F8.2,
 new,3,,Scale,Input,8,Right,F8.2,F8.2,
 
 Table: Value Labels
 Variable Value,,Label
 new,1.00,oojars
 ,2.00,oojimiflips
-,3.00,thingummies
+,3.00,Funny sticky things
 ,4.00,widgets
 ])
 

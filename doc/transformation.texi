@@ -267,6 +267,10 @@ the non-missing values.
 The system-missing value is always recoded into the system-missing
 variable in target variables.
 
+If a source value has a value label, then that value label is retained
+for the new value in the target variable.  Otherwise, the source value
+itself becomes each new value's label.
+
 @subcmd{PRINT} is currently ignored.
 
 The @subcmd{GROUP} subcommand is relevant only if more than one variable is to be
