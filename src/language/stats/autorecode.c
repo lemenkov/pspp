@@ -326,22 +326,18 @@ cmd_autorecode (struct lexer *lexer, struct dataset *ds)
   for (size_t i = 0; i < arc->n_specs; i++)
     {
       struct arc_spec *spec = &arc->specs[i];
-      struct arc_item **items;
-      struct arc_item *item;
-      size_t n_items;
-      size_t j;
 
       /* Create destination variable. */
       spec->dst = dict_create_var_assert (dict, dst_names[i], 0);
       var_set_label (spec->dst, spec->label);
 
       /* Create array of pointers to items. */
-      n_items = hmap_count (&spec->items->ht);
-      items = xmalloc (n_items * sizeof *items);
-      j = 0;
+      size_t n_items = hmap_count (&spec->items->ht);
+      struct arc_item **items = xmalloc (n_items * sizeof *items);
+      struct arc_item *item;
+      size_t j = 0;
       HMAP_FOR_EACH (item, struct arc_item, hmap_node, &spec->items->ht)
         items[j++] = item;
-
       assert (j == n_items);
 
       /* Sort array by value. */
