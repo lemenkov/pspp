@@ -621,7 +621,8 @@ pivot_table_create (const char *title)
   return pivot_table_create__ (pivot_value_new_text (title));
 }
 
-/* Creates and returns a new pivot table with the given TITLE.
+/* Creates and returns a new pivot table with the given TITLE, and takes
+   ownership of TITLE.
 
    Operations commonly performed on the new pivot_table:
 
@@ -1883,6 +1884,14 @@ pivot_argument_uninit (struct pivot_argument *arg)
     }
 }
 
+/* Creates and returns a new pivot_value whose contents is the null-terminated
+   string TEXT.  Takes ownership of TEXT.
+
+   This function is for text strings provided by the user (with the exception
+   that pivot_value_new_variable() should be used for variable names).  For
+   strings that are part of the PSPP user interface, such as names of
+   procedures, statistics, annotations, error messages, etc., use
+   pivot_value_new_text(). */
 struct pivot_value *
 pivot_value_new_user_text_nocopy (char *text)
 {
@@ -1899,6 +1908,17 @@ pivot_value_new_user_text_nocopy (char *text)
   return value;
 }
 
+/* Creates and returns a new pivot_value whose contents is the LENGTH bytes of
+   TEXT.  Use SIZE_MAX if TEXT is null-teriminated and its length is not known
+   in advance.
+
+   This function is for text strings provided by the user (with the exception
+   that pivot_value_new_variable() should be used for variable names).  For
+   strings that are part of the PSPP user interface, such as names of
+   procedures, statistics, annotations, error messages, etc., use
+   pivot_value_new_text().j
+
+   The caller retains ownership of TEXT.*/
 struct pivot_value *
 pivot_value_new_user_text (const char *text, size_t length)
 {
@@ -1906,8 +1926,12 @@ pivot_value_new_user_text (const char *text, size_t length)
     xmemdup0 (text, length != SIZE_MAX ? length : strlen (text)));
 }
 
-/* TEXT should be a translatable string, but not actually translated yet,
-   e.g. enclosed in N_(). */
+/* Creates and returns new pivot_value whose contents is TEXT, which should be
+   a translatable string, but not actually translated yet, e.g. enclosed in
+   N_().  This function is for text strings that are part of the PSPP user
+   interface, such as names of procedures, statistics, annotations, error
+   messages, etc.  For strings that come from the user, use
+   pivot_value_new_user_text(). */
 struct pivot_value *
 pivot_value_new_text (const char *text)
 {
@@ -1927,8 +1951,8 @@ pivot_value_new_text (const char *text)
   return value;
 }
 
-/* FORMAT should be a translatable string, but not actually translated yet,
-   e.g. enclosed in N_(). */
+/* Same as pivot_value_new_text() but its argument is a printf()-like format
+   string. */
 struct pivot_value * PRINTF_FORMAT (1, 2)
 pivot_value_new_text_format (const char *format, ...)
 {
