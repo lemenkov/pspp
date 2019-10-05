@@ -36,6 +36,7 @@
 #include "libpspp/message.h"
 #include "libpspp/pool.h"
 #include "libpspp/str.h"
+#include "output/pivot-table.h"
 
 #include "gl/xalloc.h"
 #include "gl/c-xvasprintf.h"
@@ -44,8 +45,7 @@
 
 #include "gettext.h"
 #define _(msgid) gettext (msgid)
-
-/* FIXME: Implement PRINT subcommand. */
+#define N_(msgid) (msgid)
 
 /* Explains how to recode one value. */
 struct arc_item
@@ -64,6 +64,8 @@ struct arc_spec
   {
     int width;                  /* Variable width. */
     int src_idx;                /* Case index of source variable. */
+    char *src_name;             /* Name of source variable. */
+    struct fmt_spec format;     /* Print format in source variable. */
     struct variable *dst;       /* Target variable. */
     struct missing_values mv;   /* Missing values of source variable. */
     char *label;                /* Variable label of source variable. */
@@ -126,6 +128,7 @@ cmd_autorecode (struct lexer *lexer, struct dataset *ds)
   size_t n_dsts = 0;
 
   enum arc_direction direction = ASCENDING;
+  bool print = false;
 
   /* Create procedure. */
   struct autorecode_pgm *arc = xzalloc (sizeof *arc);
@@ -171,9 +174,7 @@ cmd_autorecode (struct lexer *lexer, struct dataset *ds)
       if (lex_match_id (lexer, "DESCENDING"))
         direction = DESCENDING;
       else if (lex_match_id (lexer, "PRINT"))
-        {
-          /* Not yet implemented. */
-        }
+        print = true;
       else if (lex_match_id (lexer, "GROUP"))
         group = true;
       else if (lex_match_id (lexer, "BLANK"))
@@ -240,6 +241,8 @@ cmd_autorecode (struct lexer *lexer, struct dataset *ds)
 
       spec->width = var_get_width (src_vars[i]);
       spec->src_idx = var_get_case_index (src_vars[i]);
+      spec->src_name = xstrdup (var_get_name (src_vars[i]));
+      spec->format = *var_get_print_format (src_vars[i]);
 
       const char *label = var_get_label (src_vars[i]);
       spec->label = label ? xstrdup (label) : NULL;
@@ -353,6 +356,51 @@ cmd_autorecode (struct lexer *lexer, struct dataset *ds)
       for (j = 0; j < n_items; j++)
         items[j]->to = j + 1;
 
+      if (print && (!group || i == 0))
+        {
+          struct pivot_value *title
+            = (group
+               ? pivot_value_new_text (N_("Recoding grouped variables."))
+               : spec->label && spec->label[0]
+               ? pivot_value_new_text_format (N_("Recoding %s into %s (%s)."),
+                                              spec->src_name,
+                                              var_get_name (spec->dst),
+                                              spec->label)
+               : pivot_value_new_text_format (N_("Recoding %s into %s."),
+                                              spec->src_name,
+                                              var_get_name (spec->dst)));
+          struct pivot_table *table = pivot_table_create__ (title);
+
+          pivot_dimension_create (
+            table, PIVOT_AXIS_COLUMN, N_("Attributes"),
+            N_("New Value"), N_("Value Label"));
+
+          struct pivot_dimension *old_values = pivot_dimension_create (
+            table, PIVOT_AXIS_ROW, N_("Old Value"));
+          old_values->root->show_label = true;
+
+          for (size_t k = 0; k < n_items; k++)
+            {
+              const struct arc_item *item = items[k];
+              int old_value_idx = pivot_category_create_leaf (
+                old_values->root, pivot_value_new_value (
+                  &item->from, item->width,
+                  (item->width
+                   ? &(struct fmt_spec) { FMT_F, item->width, 0 }
+                   : &spec->format),
+                  dict_get_encoding (dict)));
+              pivot_table_put2 (table, 0, old_value_idx,
+                                pivot_value_new_integer (item->to));
+
+              const char *value_label = item->value_label;
+              if (value_label && value_label[0])
+                pivot_table_put2 (table, 1, old_value_idx,
+                                  pivot_value_new_user_text (value_label, -1));
+            }
+
+          pivot_table_submit (table);
+        }
+
       /* Assign user-missing values.
 
          User-missing values in the source variable(s) must be marked
@@ -438,6 +486,7 @@ arc_free (struct autorecode_pgm *arc)
               free (item);
             }
           free (spec->label);
+          free (spec->src_name);
           mv_destroy (&spec->mv);
         }
 

@@ -35,11 +35,65 @@ MISSING VALUES u (11)
 	       y (11 THRU 15)
 	       z (11 THRU 16).
 
-AUTORECODE u v w x y z INTO a b c d e f.
+AUTORECODE u v w x y z INTO a b c d e f/print.
 LIST.
 DISPLAY VARIABLES/VARIABLES=a TO f.
 ])
 AT_CHECK([pspp -O format=csv autorecode.sps], [0], [dnl
+Table: Recoding u into a.
+Old Value,New Value,Value Label
+12,1,12
+13,2,13
+14,3,14
+15,4,15
+16,5,16
+11,6,11
+
+Table: Recoding v into b.
+Old Value,New Value,Value Label
+13,1,13
+14,2,14
+15,3,15
+16,4,16
+11,5,11
+12,6,12
+
+Table: Recoding w into c.
+Old Value,New Value,Value Label
+14,1,14
+15,2,15
+16,3,16
+11,4,11
+12,5,12
+13,6,13
+
+Table: Recoding x into d.
+Old Value,New Value,Value Label
+15,1,15
+16,2,16
+11,3,11
+12,4,12
+13,5,13
+14,6,14
+
+Table: Recoding y into e.
+Old Value,New Value,Value Label
+16,1,16
+11,2,11
+12,3,12
+13,4,13
+14,5,14
+15,6,15
+
+Table: Recoding z into f.
+Old Value,New Value,Value Label
+11,1,11
+12,2,12
+13,3,13
+14,4,14
+15,5,15
+16,6,16
+
 Table: Data List
 u,v,w,x,y,z,a,b,c,d,e,f
 11,11,11,11,11,11,6,5,4,3,2,1
@@ -77,7 +131,7 @@ end data.
 
 missing values x('asdfk') y(9).
 
-autorecode x y into A B/descend.
+autorecode x y into A B/descend/print.
 
 list.
 compute Z=trunc(y/2).
@@ -90,6 +144,20 @@ AT_CHECK([pspp -O format=csv autorecode.sps], [0],
 Variable,Record,Columns,Format
 X,1,1-  5,A5
 Y,1,7-  7,F1.0
+
+Table: Recoding X into A.
+Old Value,New Value,Value Label
+lasdj,1,lasdj
+lajks,2,lajks
+asdfj,3,asdfj
+asdfk,4,asdfk
+
+Table: Recoding Y into B.
+Old Value,New Value,Value Label
+2,1,2
+1,2,1
+0,3,0
+9,4,9
 
 Table: Data List
 X,Y,A,B
@@ -117,8 +185,6 @@ asdfk,1,4,2,0,1
 ])
 AT_CLEANUP
 
-
-
 AT_SETUP([AUTORECODE long strings and check the value labels])
 AT_DATA([ar.sps],
   [data list notable list /s (a16) x (f1.0).
@@ -135,7 +201,7 @@ end data.
 variable labels s 'tracking my stuff'.
 value labels /s 'thingummies' 'Funny sticky things'.
 
-autorecode s into new.
+autorecode s into new/print.
 
 list.
 
@@ -143,7 +209,14 @@ display dictionary/variables=new.
 ])
 
 AT_CHECK([pspp -O format=csv ar.sps], [0],
-  [Table: Data List
+  [Table: Recoding s into new (tracking my stuff).
+Old Value,New Value,Value Label
+oojars,1,oojars
+oojimiflips,2,oojimiflips
+thingummies,3,Funny sticky things
+widgets,4,widgets
+
+Table: Data List
 s,x,new
 widgets,1,4
 thingummies,2,3
@@ -184,14 +257,26 @@ missing values y (12).
 
 autorecode 
 	x y into a b
-	/group.
+	/group
+	/print.
 
 list.
 display variables /variables=a b.
 ])
 
 AT_CHECK([pspp -O format=csv ar-group.sps], [0],
-[Table: Data List
+[Table: Recoding grouped variables.
+Old Value,New Value,Value Label
+10,1,10
+11,2,11
+13,3,13
+14,4,14
+15,5,15
+16,6,16
+18,7,18
+12,8,12
+
+Table: Data List
 x,y,a,b
 11,10,2,1
 12,12,8,8
@@ -223,7 +308,8 @@ end data.
 
 
 autorecode x y into a b
-	/group.
+	/group
+	/print.
 
 delete variables x y.
 
@@ -232,7 +318,18 @@ list.
 ])
 
 AT_CHECK([pspp -O format=csv strings.sps], [0],
-[Table: Data List
+[Table: Recoding grouped variables.
+Old Value,New Value,Value Label
+,1,
+bert,2,bert
+charlie,3,charlie
+delta,4,delta
+echo,5,echo
+fred,6,fred
+nothing,7,nothing
+windows,8,windows
+
+Table: Data List
 a,b
 6,2
 3,1
@@ -257,13 +354,24 @@ four   nought
 end data.
 
 autorecode a b into x y 
-	/group.
+	/group
+	/print.
 
 list.
 ])
 
-AT_CHECK([pspp -O format=csv ar-strings.sps], [0],
-[dnl
+AT_CHECK([pspp -O format=csv ar-strings.sps], [0], [dnl
+Table: Recoding grouped variables.
+Old Value,New Value,Value Label
+eleven,1,eleven
+four,2,four
+nine,3,nine
+nought,4,nought
+one,5,one
+ten,6,ten
+three,7,three
+two,8,two
+
 Table: Data List
 a,b,x,y
 one,nine,5,3
@@ -288,12 +396,28 @@ two   4  ""
 three 2  charliebrown
 end data.
 
-autorecode variables x y z into a b c  /blank=missing.
+autorecode variables x y z into a b c  /blank=missing /print.
 
 list a b c y.
 ])
 
 AT_CHECK([pspp -O format=csv auto-blank.sps], [0], [dnl
+Table: Recoding x into a.
+Old Value,New Value,Value Label
+one,1,one
+three,2,three
+two,3,two
+
+Table: Recoding y into b.
+Old Value,New Value,Value Label
+2,1,2
+4,2,4
+
+Table: Recoding z into c.
+Old Value,New Value,Value Label
+charliebrown,1,charliebrown
+fred,2,fred
+
 Table: Data List
 a,b,c,y
 1,1,2,2
@@ -324,14 +448,25 @@ end data.
 
 temporary.
 select if y > 1.
-autorecode x y into A B/descend.
+autorecode x y into A B/descend/print.
 list.
 ])
-AT_CHECK([pspp -O format=csv autorecode.sps], [0],
-  [Table: Reading 1 record from INLINE.
+AT_CHECK([pspp -O format=csv autorecode.sps], [0], [dnl
+Table: Reading 1 record from INLINE.
 Variable,Record,Columns,Format
 X,1,1-  5,A5
 Y,1,7-  7,F1.0
+
+Table: Recoding X into A.
+Old Value,New Value,Value Label
+lajks,1,lajks
+asdfk,2,asdfk
+asdfj,3,asdfj
+
+Table: Recoding Y into B.
+Old Value,New Value,Value Label
+9,1,9
+2,2,2
 
 Table: Data List
 X,Y,A,B
@@ -363,12 +498,20 @@ begin data.
 8
 end data.
 
-autorecode x  /into y.
+autorecode x  /into y /print.
 
 list.
 ])
 AT_CHECK([pspp -O format=csv autorecode.sps], [0],
-[Table: Data List
+[Table: Recoding x into y.
+Old Value,New Value,Value Label
+-901,1,-901
+1,2,1
+4,3,4
+8,4,8
+99,5,99
+
+Table: Data List
 x,y
 1,2
 8,4
