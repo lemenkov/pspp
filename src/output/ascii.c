@@ -415,14 +415,16 @@ ascii_output_lines (struct ascii_driver *a, size_t n_lines)
 {
   for (size_t y = 0; y < n_lines; y++)
     {
-      struct u8_line *line = &a->lines[y];
+      if (y < a->allocated_lines)
+        {
+          struct u8_line *line = &a->lines[y];
 
-      while (ds_chomp_byte (&line->s, ' '))
-        continue;
-      fwrite (ds_data (&line->s), 1, ds_length (&line->s), a->file);
+          while (ds_chomp_byte (&line->s, ' '))
+            continue;
+          fwrite (ds_data (&line->s), 1, ds_length (&line->s), a->file);
+          u8_line_clear (&a->lines[y]);
+        }
       putc ('\n', a->file);
-
-      u8_line_clear (&a->lines[y]);
     }
 }
 
