@@ -706,7 +706,7 @@ display_attributes (const struct attrset *dict_attrset,
                      var_get_attributes (vars[i]), flags);
 
   if (pivot_table_is_empty (table))
-    pivot_table_destroy (table);
+    pivot_table_unref (table);
   else
     pivot_table_submit (table);
 }

@@ -372,6 +372,11 @@ bool pivot_result_class_change (const char *, const struct fmt_spec *);
 /* A pivot table.  See the top of this file for more information. */
 struct pivot_table
   {
+    /* Reference count.  A pivot_table may be shared between multiple owners,
+       indicated by a reference count greater than 1.  When this is the case,
+       the pivot_table must not be modified. */
+    int ref_cnt;
+
     /* Display settings. */
     bool rotate_inner_column_labels;
     bool rotate_outer_row_labels;
@@ -448,7 +453,10 @@ struct pivot_table *pivot_table_create (const char *title);
 struct pivot_table *pivot_table_create__ (struct pivot_value *title);
 struct pivot_table *pivot_table_create_for_text (struct pivot_value *title,
                                                  struct pivot_value *content);
-void pivot_table_destroy (struct pivot_table *);
+
+struct pivot_table *pivot_table_ref (const struct pivot_table *);
+void pivot_table_unref (struct pivot_table *);
+bool pivot_table_is_shared (const struct pivot_table *);
 
 /* Format of PIVOT_RC_COUNT cells. */
 void pivot_table_set_weight_var (struct pivot_table *,

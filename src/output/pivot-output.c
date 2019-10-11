@@ -512,5 +512,5 @@ pivot_table_submit (struct pivot_table *pt)
 
   settings_set_decimal_char (old_decimal);
 
-  pivot_table_destroy (pt);
+  pivot_table_unref (pt);
 }

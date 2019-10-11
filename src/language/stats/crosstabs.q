@@ -1097,7 +1097,7 @@ output_crosstabulation (struct crosstabs_proc *proc, struct crosstabulation *xt)
       if (!pivot_table_is_empty (risk))
         pivot_table_submit (risk);
       else
-        pivot_table_destroy (risk);
+        pivot_table_unref (risk);
     }
 
   if (direct)

@@ -638,6 +638,7 @@ struct pivot_table *
 pivot_table_create__ (struct pivot_value *title)
 {
   struct pivot_table *table = xzalloc (sizeof *table);
+  table->ref_cnt = 1;
   table->weight_format = (struct fmt_spec) { FMT_F, 40, 0 };
   table->title = title;
 
@@ -723,11 +724,26 @@ pivot_table_create_for_text (struct pivot_value *title,
   return table;
 }
 
-/* Destroys TABLE and frees everything it points to. */
+/* Increases TABLE's reference count, indicating that it has an additional
+   owner.  A pivot table that is shared among multiple owners must not be
+   modified. */
+struct pivot_table *
+pivot_table_ref (const struct pivot_table *table_)
+{
+  struct pivot_table *table = CONST_CAST (struct pivot_table *, table_);
+  table->ref_cnt++;
+  return table;
+}
+
+/* Decreases TABLE's reference count, indicating that it has one fewer owner.
+   If TABLE no longer has any owners, it is freed. */
 void
-pivot_table_destroy (struct pivot_table *table)
+pivot_table_unref (struct pivot_table *table)
 {
   if (!table)
+    return;
+  assert (table->ref_cnt > 0);
+  if (--table->ref_cnt)
     return;
 
   free (table->current_layer);
@@ -779,6 +795,14 @@ pivot_table_destroy (struct pivot_table *table)
   hmap_destroy (&table->cells);
 
   free (table);
+}
+
+/* Returns true if TABLE has more than one owner.  A pivot table that is shared
+   among multiple owners must not be modified. */
+bool
+pivot_table_is_shared (const struct pivot_table *table)
+{
+  return table->ref_cnt > 1;
 }
 
 /* Sets the format used for PIVOT_RC_COUNT cells to the one used for variable
