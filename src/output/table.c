@@ -294,8 +294,13 @@ table_collect_footnotes (const struct table_item *item,
     footnotes = add_footnotes (caption->footnotes, caption->n_footnotes,
                                footnotes, &allocated, &n);
 
+  size_t n_nonnull = 0;
+  for (size_t i = 0; i < n; i++)
+    if (footnotes[i])
+      footnotes[n_nonnull++] = footnotes[i];
+
   *footnotesp = footnotes;
-  return n;
+  return n_nonnull;
 }
 
 /* Returns a table that contains a single cell, whose contents are the

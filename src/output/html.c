@@ -438,16 +438,15 @@ html_output_table (struct html_driver *html, const struct table_item *item)
   size_t n_footnotes = table_collect_footnotes (item, &f);
 
   for (size_t i = 0; i < n_footnotes; i++)
-    if (f[i])
-      {
-        put_tfoot (html, t, &tfoot);
-        fputs ("<SUP>", html->file);
-        escape_string (html->file, f[i]->marker, strlen (f[i]->marker),
-                       " ", "<BR>");
-        fputs ("</SUP> ", html->file);
-        escape_string (html->file, f[i]->content, strlen (f[i]->content),
-                       " ", "<BR>");
-      }
+    {
+      put_tfoot (html, t, &tfoot);
+      fputs ("<SUP>", html->file);
+      escape_string (html->file, f[i]->marker, strlen (f[i]->marker),
+                     " ", "<BR>");
+      fputs ("</SUP> ", html->file);
+      escape_string (html->file, f[i]->content, strlen (f[i]->content),
+                     " ", "<BR>");
+    }
   free (f);
   if (tfoot)
     fputs ("</TD></TR></TFOOT>\n", html->file);

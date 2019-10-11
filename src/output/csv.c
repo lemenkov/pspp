@@ -263,13 +263,12 @@ csv_submit (struct output_driver *driver,
           fputs ("\nFootnotes:\n", csv->file);
 
           for (size_t i = 0; i < n_footnotes; i++)
-            if (f[i])
-              {
-                csv_output_field (csv, f[i]->marker);
-                fputs (csv->separator, csv->file);
-                csv_output_field (csv, f[i]->content);
-                putc ('\n', csv->file);
-              }
+            {
+              csv_output_field (csv, f[i]->marker);
+              fputs (csv->separator, csv->file);
+              csv_output_field (csv, f[i]->content);
+              putc ('\n', csv->file);
+            }
 
           free (f);
         }
