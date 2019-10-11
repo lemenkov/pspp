@@ -22,6 +22,10 @@
 
 struct zip_writer *zip_writer_create (const char *file_name);
 void zip_writer_add (struct zip_writer *, FILE *, const char *member_name);
+void zip_writer_add_string (struct zip_writer *, const char *member_name,
+                            const char *content);
+void zip_writer_add_memory (struct zip_writer *, const char *member_name,
+                            const void *content, size_t size);
 bool zip_writer_close (struct zip_writer *);
 
 #endif /* libpspp/zip-writer.h */

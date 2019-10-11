@@ -29,6 +29,7 @@
 #include "gl/xalloc.h"
 
 #include "libpspp/message.h"
+#include "libpspp/temp-file.h"
 
 #include "gettext.h"
 #define _(msgid) gettext (msgid)
@@ -186,6 +187,33 @@ zip_writer_add (struct zip_writer *zw, FILE *file, const char *member_name)
   member->size = size;
   member->crc = crc;
   member->name = xstrdup (member_name);
+}
+
+/* Adds a member named MEMBER_NAME whose contents is the null-terminated string
+   CONTENT. */
+void
+zip_writer_add_string (struct zip_writer *zw, const char *member_name,
+                       const char *content)
+{
+  zip_writer_add_memory (zw, member_name, content, strlen (content));
+}
+
+/* Adds a member named MEMBER_NAME whose contents is the SIZE bytes of
+   CONTENT. */
+void
+zip_writer_add_memory (struct zip_writer *zw, const char *member_name,
+                       const void *content, size_t size)
+{
+  FILE *fp = create_temp_file ();
+  if (fp == NULL)
+    {
+      msg_error (errno, _("error creating temporary file"));
+      zw->ok = false;
+      return;
+    }
+  fwrite (content, size, 1, fp);
+  zip_writer_add (zw, fp, member_name);
+  close_temp_file (fp);
 }
 
 /* Finalizes the contents of ZW and closes it.  Returns true if successful,

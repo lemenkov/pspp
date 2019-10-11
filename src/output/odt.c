@@ -80,26 +80,6 @@ odt_driver_cast (struct output_driver *driver)
   return UP_CAST (driver, struct odt_driver, driver);
 }
 
-/* Create the "mimetype" file needed by ODF */
-static bool
-create_mimetype (struct zip_writer *zip)
-{
-  FILE *fp;
-
-  fp = create_temp_file ();
-  if (fp == NULL)
-    {
-      msg_error (errno, _("error creating temporary file"));
-      return false;
-    }
-
-  fprintf (fp, "application/vnd.oasis.opendocument.text");
-  zip_writer_add (zip, fp, "mimetype");
-  close_temp_file (fp);
-
-  return true;
-}
-
 /* Creates a new temporary file and stores it in *FILE, then creates an XML
    writer for it and stores it in *W. */
 static void
@@ -306,11 +286,8 @@ odt_create (struct file_handle *fh, enum settings_output_devices device_type,
   odt->handle = fh;
   odt->file_name = xstrdup (file_name);
 
-  if (!create_mimetype (zip))
-    {
-      output_driver_destroy (d);
-      return NULL;
-    }
+  zip_writer_add_string (zip, "mimetype",
+                         "application/vnd.oasis.opendocument.text");
 
   /* Create the manifest */
   create_writer (&odt->manifest_file, &odt->manifest_wtr);
