@@ -250,7 +250,7 @@ output_submit (struct output_item *item)
       if (idx >= 1 && idx <= 4)
         {
           char *key = xasprintf ("Head%zu", idx);
-          string_map_find_and_delete (&e->heading_vars, key);
+          free (string_map_find_and_delete (&e->heading_vars, key));
           free (key);
         }
     }
