@@ -1548,7 +1548,8 @@ xr_layout_cell_text (struct xr_driver *xr, const struct table_cell *cell,
           pango_layout_set_text (font->layout, marker, strlen (marker));
 
           PangoAttrList *attrs = pango_attr_list_new ();
-          pango_attr_list_insert (attrs, pango_attr_rise_new (7000));
+          pango_attr_list_insert (attrs, pango_attr_scale_new (PANGO_SCALE_SMALL));
+          pango_attr_list_insert (attrs, pango_attr_rise_new (3000));
           pango_layout_set_attributes (font->layout, attrs);
           pango_attr_list_unref (attrs);
 
@@ -1595,7 +1596,8 @@ xr_layout_cell_text (struct xr_driver *xr, const struct table_cell *cell,
       if (font_style->underline)
         pango_attr_list_insert (attrs, pango_attr_underline_new (
                                PANGO_UNDERLINE_SINGLE));
-      add_attr_with_start (attrs, pango_attr_rise_new (7000), initial_length);
+      add_attr_with_start (attrs, pango_attr_scale_new (PANGO_SCALE_SMALL), initial_length);
+      add_attr_with_start (attrs, pango_attr_rise_new (3000), initial_length);
       add_attr_with_start (
         attrs, pango_attr_font_desc_new (font->desc), initial_length);
       pango_layout_set_attributes (font->layout, attrs);
