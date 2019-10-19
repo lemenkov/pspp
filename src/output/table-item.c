@@ -24,6 +24,7 @@
 #include "libpspp/cast.h"
 #include "output/driver.h"
 #include "output/output-item-provider.h"
+#include "output/pivot-table.h"
 #include "output/table-item.h"
 
 #include "gl/xalloc.h"
@@ -65,6 +66,56 @@ table_item_text_destroy (struct table_item_text *text)
       free (text->footnotes);
       area_style_free (text->style);
       free (text);
+    }
+}
+
+void
+table_item_layer_copy (struct table_item_layer *dst,
+                       const struct table_item_layer *src)
+{
+  dst->content = xstrdup (src->content);
+  dst->footnotes = xmemdup (src->footnotes,
+                            src->n_footnotes * sizeof *src->footnotes);
+  dst->n_footnotes = src->n_footnotes;
+}
+
+void
+table_item_layer_uninit (struct table_item_layer *layer)
+{
+  if (layer)
+    {
+      free (layer->content);
+      free (layer->footnotes);
+    }
+}
+
+struct table_item_layers *
+table_item_layers_clone (const struct table_item_layers *old)
+{
+  if (!old)
+    return NULL;
+
+  struct table_item_layers *new = xmalloc (sizeof *new);
+  *new = (struct table_item_layers) {
+    .layers = xnmalloc (old->n_layers, sizeof *new->layers),
+    .n_layers = old->n_layers,
+    .style = area_style_clone (NULL, old->style),
+  };
+  for (size_t i = 0; i < new->n_layers; i++)
+    table_item_layer_copy (&new->layers[i], &old->layers[i]);
+  return new;
+}
+
+void
+table_item_layers_destroy (struct table_item_layers *layers)
+{
+  if (layers)
+    {
+      for (size_t i = 0; i < layers->n_layers; i++)
+        table_item_layer_uninit (&layers->layers[i]);
+      free (layers->layers);
+      area_style_free (layers->style);
+      free (layers);
     }
 }
 
@@ -114,7 +165,7 @@ table_item_set_title (struct table_item *item,
 
 /* Returns ITEM's layers, which will be a null pointer if no layers have been
    set. */
-const struct table_item_text *
+const struct table_item_layers *
 table_item_get_layers (const struct table_item *item)
 {
   return item->layers;
@@ -127,11 +178,11 @@ table_item_get_layers (const struct table_item *item)
    This function may only be used on a table_item that is unshared. */
 void
 table_item_set_layers (struct table_item *item,
-                      const struct table_item_text *layers)
+                       const struct table_item_layers *layers)
 {
   assert (!table_item_is_shared (item));
-  table_item_text_destroy (item->layers);
-  item->layers = table_item_text_clone (layers);
+  table_item_layers_destroy (item->layers);
+  item->layers = table_item_layers_clone (layers);
 }
 
 /* Returns ITEM's caption, which is a null pointer if no caption has been
@@ -169,8 +220,8 @@ table_item_destroy (struct output_item *output_item)
 {
   struct table_item *item = to_table_item (output_item);
   table_item_text_destroy (item->title);
-  table_item_text_destroy (item->layers);
   table_item_text_destroy (item->caption);
+  table_item_layers_destroy (item->layers);
   table_unref (item->table);
   free (item);
 }

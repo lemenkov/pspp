@@ -1547,6 +1547,26 @@ add_text_page (struct render_pager *p, const struct table_item_text *t,
   render_pager_add_table (p, &tab->table, min_width);
 }
 
+static void
+add_layers_page (struct render_pager *p,
+                 const struct table_item_layers *layers, int min_width)
+{
+  if (!layers)
+    return;
+
+  struct tab_table *tab = tab_create (1, layers->n_layers);
+  for (size_t i = 0; i < layers->n_layers; i++)
+    {
+      const struct table_item_layer *layer = &layers->layers[i];
+      tab_text (tab, 0, i, 0, layer->content);
+      for (size_t j = 0; j < layer->n_footnotes; j++)
+        tab_add_footnote (tab, 0, i, layer->footnotes[j]);
+    }
+  if (layers->style)
+    tab->styles[0] = area_style_clone (tab->container, layers->style);
+  render_pager_add_table (p, &tab->table, min_width);
+}
+
 /* Creates and returns a new render_pager for rendering TABLE_ITEM on the
    device with the given PARAMS. */
 struct render_pager *
@@ -1570,7 +1590,7 @@ render_pager_create (const struct render_params *params,
   add_text_page (p, table_item_get_title (table_item), title_width);
 
   /* Layers. */
-  add_text_page (p, table_item_get_layers (table_item), title_width);
+  add_layers_page (p, table_item_get_layers (table_item), title_width);
 
   /* Body. */
   render_pager_add_table (p, table_ref (table_item_get_table (table_item)), 0);

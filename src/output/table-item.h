@@ -42,6 +42,28 @@ struct table_item_text *table_item_text_create (const char *);
 struct table_item_text *table_item_text_clone (const struct table_item_text *);
 void table_item_text_destroy (struct table_item_text *);
 
+struct table_item_layer
+  {
+    char *content;
+    const struct footnote **footnotes;
+    size_t n_footnotes;
+  };
+
+void table_item_layer_copy (struct table_item_layer *,
+                            const struct table_item_layer *);
+void table_item_layer_uninit (struct table_item_layer *);
+
+struct table_item_layers
+  {
+    struct table_item_layer *layers;
+    size_t n_layers;
+    struct area_style *style;
+  };
+
+struct table_item_layers *table_item_layers_clone (
+  const struct table_item_layers *);
+void table_item_layers_destroy (struct table_item_layers *);
+
 /* A table item.
 
    The members of struct table_item should not be accessed directly.  Use one
@@ -51,8 +73,8 @@ struct table_item
     struct output_item output_item;  /* Superclass. */
     struct table *table;             /* The table to be rendered. */
     struct table_item_text *title;   /* Null if there is no title. */
-    struct table_item_text *layers;  /* Null if there is no layer info. */
     struct table_item_text *caption; /* Null if there is no caption. */
+    struct table_item_layers *layers; /* Null if there is no layer info. */
   };
 
 struct table_item *table_item_create (struct table *, const char *title,
@@ -64,10 +86,10 @@ const struct table_item_text *table_item_get_title (const struct table_item *);
 void table_item_set_title (struct table_item *,
                            const struct table_item_text *);
 
-const struct table_item_text *table_item_get_layers (
+const struct table_item_layers *table_item_get_layers (
   const struct table_item *);
 void table_item_set_layers (struct table_item *,
-                           const struct table_item_text *);
+                           const struct table_item_layers *);
 
 const struct table_item_text *table_item_get_caption (
   const struct table_item *);

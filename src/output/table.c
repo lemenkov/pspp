@@ -289,6 +289,15 @@ table_collect_footnotes (const struct table_item *item,
     footnotes = add_footnotes (title->footnotes, title->n_footnotes,
                                footnotes, &allocated, &n);
 
+  const struct table_item_layers *layers = table_item_get_layers (item);
+  if (layers)
+    {
+      for (size_t i = 0; i < layers->n_layers; i++)
+        footnotes = add_footnotes (layers->layers[i].footnotes,
+                                   layers->layers[i].n_footnotes,
+                                   footnotes, &allocated, &n);
+    }
+
   const struct table_item_text *caption = table_item_get_caption (item);
   if (caption)
     footnotes = add_footnotes (caption->footnotes, caption->n_footnotes,

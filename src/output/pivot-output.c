@@ -299,24 +299,6 @@ pivot_table_submit_layer (const struct pivot_table *pt,
   const size_t *pindexes[PIVOT_N_AXES]
     = { [PIVOT_AXIS_LAYER] = layer_indexes };
 
-  struct string layer_label = DS_EMPTY_INITIALIZER;
-  const struct pivot_axis *layer_axis = &pt->axes[PIVOT_AXIS_LAYER];
-  for (size_t i = 0; i < layer_axis->n_dimensions; i++)
-    {
-      const struct pivot_dimension *d = layer_axis->dimensions[i];
-      if (d->n_leaves)
-        {
-          if (!ds_is_empty (&layer_label))
-            ds_put_byte (&layer_label, '\n');
-          pivot_value_format (d->root->name, pt->show_values,
-                              pt->show_variables, &layer_label);
-          ds_put_cstr (&layer_label, ": ");
-          pivot_value_format (d->data_leaves[layer_indexes[i]]->name,
-                              pt->show_values, pt->show_variables,
-                              &layer_label);
-        }
-    }
-
   size_t body[TABLE_N_AXES];
   size_t *column_enumeration = pivot_table_enumerate_axis (
     pt, PIVOT_AXIS_COLUMN, layer_indexes, pt->omit_empty, &body[H]);
@@ -462,16 +444,40 @@ pivot_table_submit_layer (const struct pivot_table *pt,
       table_item_text_destroy (title);
     }
 
-  if (!ds_is_empty (&layer_label))
+  const struct pivot_axis *layer_axis = &pt->axes[PIVOT_AXIS_LAYER];
+  struct table_item_layers *layers = NULL;
+  for (size_t i = 0; i < layer_axis->n_dimensions; i++)
     {
-      struct table_item_text *layers = table_item_text_create (
-        ds_cstr (&layer_label));
-      layers->style = area_style_override (NULL, &pt->areas[PIVOT_AREA_LAYERS],
-                                           NULL, NULL);
-      table_item_set_layers (ti, layers);
-      table_item_text_destroy (layers);
+      const struct pivot_dimension *d = layer_axis->dimensions[i];
+      if (d->n_leaves)
+        {
+          if (!layers)
+            {
+              layers = xzalloc (sizeof *layers);
+              layers->style = area_style_override (
+                NULL, &pt->areas[PIVOT_AREA_LAYERS], NULL, NULL);
+              layers->layers = xnmalloc (layer_axis->n_dimensions,
+                                         sizeof *layers->layers);
+            }
 
-      ds_destroy (&layer_label);
+          const struct pivot_value *name
+            = d->data_leaves[layer_indexes[i]]->name;
+          struct table_item_layer *layer = &layers->layers[layers->n_layers++];
+          struct string s = DS_EMPTY_INITIALIZER;
+          pivot_value_format_body (name, pt->show_values, pt->show_variables,
+                                   &s);
+          layer->content = ds_steal_cstr (&s);
+          layer->n_footnotes = name->n_footnotes;
+          layer->footnotes = xnmalloc (layer->n_footnotes,
+                                       sizeof *layer->footnotes);
+          for (size_t i = 0; i < name->n_footnotes; i++)
+            layer->footnotes[i] = footnotes[name->footnotes[i]->idx];
+        }
+    }
+  if (layers)
+    {
+      table_item_set_layers (ti, layers);
+      table_item_layers_destroy (layers);
     }
 
   if (pt->caption)

@@ -420,6 +420,22 @@ html_put_table_item_text (struct html_driver *html,
 }
 
 static void
+html_put_table_item_layers (struct html_driver *html,
+                            const struct table_item_layers *layers)
+{
+  for (size_t i = 0; i < layers->n_layers; i++)
+    {
+      if (i)
+        fputs ("<BR>\n", html->file);
+
+      const struct table_item_layer *layer = &layers->layers[i];
+      escape_string (html->file, layer->content, strlen (layer->content),
+                     " ", "<BR>");
+      html_put_footnote_markers (html, layer->footnotes, layer->n_footnotes);
+    }
+}
+
+static void
 html_output_table (struct html_driver *html, const struct table_item *item)
 {
   const struct table *t = table_item_get_table (item);
@@ -454,7 +470,7 @@ html_output_table (struct html_driver *html, const struct table_item *item)
   fputs ("<TBODY VALIGN=\"TOP\">\n", html->file);
 
   const struct table_item_text *title = table_item_get_title (item);
-  const struct table_item_text *layers = table_item_get_layers (item);
+  const struct table_item_layers *layers = table_item_get_layers (item);
   if (title || layers)
     {
       fputs ("  <CAPTION>", html->file);
@@ -463,7 +479,7 @@ html_output_table (struct html_driver *html, const struct table_item *item)
       if (title && layers)
         fputs ("<BR>\n", html->file);
       if (layers)
-        html_put_table_item_text (html, layers);
+        html_put_table_item_layers (html, layers);
       fputs ("</CAPTION>\n", html->file);
     }
 
