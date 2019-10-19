@@ -717,5 +717,13 @@ struct pivot_argument
   };
 
 void pivot_argument_uninit (struct pivot_argument *);
+
+/* One piece of data within a pivot table. */
+struct pivot_cell
+  {
+    struct hmap_node hmap_node; /* In struct pivot_table's 'cells' hmap. */
+    struct pivot_value *value;
+    unsigned int idx[];         /* One index per table dimension. */
+  };
 
 #endif /* output/pivot-table.h */

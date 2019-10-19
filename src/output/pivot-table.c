@@ -651,14 +651,6 @@ pivot_result_class_change (const char *s_, const struct fmt_spec *format)
   return rc != NULL;
 }
 
-/* One piece of data within a pivot table. */
-struct pivot_cell
-  {
-    struct hmap_node hmap_node; /* In struct pivot_table's 'cells' hmap. */
-    struct pivot_value *value;
-    unsigned int idx[];         /* One index per table dimension. */
-  };
-
 /* Pivot tables. */
 
 /* Creates and returns a new pivot table with the given TITLE.  TITLE should be
