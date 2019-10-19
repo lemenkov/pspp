@@ -1514,17 +1514,13 @@ add_footnote_page (struct render_pager *p, const struct table_item *item)
   if (!n_footnotes)
     return;
 
-  struct tab_table *t = tab_create (2, n_footnotes);
-
+  struct tab_table *t = tab_create (1, n_footnotes);
   for (size_t i = 0; i < n_footnotes; i++)
     {
-      tab_text_format (t, 0, i, TAB_LEFT, "%s.", f[i]->marker);
-      tab_text (t, 1, i, TAB_LEFT, f[i]->content);
+      tab_text_format (t, 0, i, TAB_LEFT, "%s. %s",
+                       f[i]->marker, f[i]->content);
       if (f[i]->style)
-        {
-          tab_add_style (t, 0, i, f[i]->style);
-          tab_add_style (t, 1, i, f[i]->style);
-        }
+        tab_add_style (t, 0, i, f[i]->style);
     }
   render_pager_add_table (p, &t->table, 0);
 

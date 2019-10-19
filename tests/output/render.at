@@ -249,7 +249,7 @@ AT_CHECK([render-test --csv input], [0],
 +----------+------+
 a. Approximation.
 b. This is a very long footnote that will have to wrap from one line to the
-   next.  Let's see if the rendering engine does it acceptably.
+next.  Let's see if the rendering engine does it acceptably.
 c. One
 d. Two
 e. Three
