@@ -32,3 +32,14 @@ utilities_pspp_convert_LDFLAGS = $(PSPP_LDFLAGS) $(PG_LDFLAGS)
 if RELOCATABLE_VIA_LD
 utilities_pspp_convert_LDFLAGS += `$(RELOCATABLE_LDFLAGS) $(bindir)`
 endif
+
+bin_PROGRAMS += utilities/pspp-output
+dist_man_MANS += utilities/pspp-output.1
+utilities_pspp_output_SOURCES = utilities/pspp-output.c
+utilities_pspp_output_CPPFLAGS = \
+	$(LIBXML2_CFLAGS) $(AM_CPPFLAGS) -DINSTALLDIR=\"$(bindir)\"
+utilities_pspp_output_LDADD = \
+	src/libpspp.la \
+	src/libpspp-core.la \
+	$(CAIRO_LIBS)
+utilities_pspp_output_LDFLAGS = $(PSPP_LDFLAGS) $(LIBXML2_LIBS)

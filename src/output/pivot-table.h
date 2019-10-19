@@ -712,7 +712,8 @@ void pivot_value_destroy (struct pivot_value *);
 
 /* Styling. */
 void pivot_value_get_style (struct pivot_value *,
-                            const struct area_style *default_style,
+                            const struct font_style *base_font_style,
+                            const struct cell_style *base_cell_style,
                             struct area_style *);
 void pivot_value_set_style (struct pivot_value *, const struct area_style *);
 

@@ -1,0 +1,191 @@
+@c PSPP - a program for statistical analysis.
+@c Copyright (C) 2019 Free Software Foundation, Inc.
+@c Permission is granted to copy, distribute and/or modify this document
+@c under the terms of the GNU Free Documentation License, Version 1.3
+@c or any later version published by the Free Software Foundation;
+@c with no Invariant Sections, no Front-Cover Texts, and no Back-Cover Texts.
+@c A copy of the license is included in the section entitled "GNU
+@c Free Documentation License".
+@c
+@node Invoking pspp-output
+@chapter Invoking @command{pspp-output}
+@cindex Invocation
+@cindex @command{pspp-output}
+
+@command{pspp-output} is a command-line utility accompanying @pspp{}.
+It supports multiple operations on SPSS viewer or @file{.spv} files,
+here called SPV files.  SPSS 16 and later writes SPV files to
+represent the contents of its output editor.
+
+SPSS 15 and earlier versions instead use @file{.spo} files.
+@command{pspp-output} does not support this format.
+
+@command{pspp-options} may be invoked in the following ways:
+
+@display
+@t{pspp-output} @t{detect} @var{file}
+
+@t{pspp-output} [@var{options}] @t{dir} @var{file}
+
+@t{pspp-output} [@var{options}] @t{convert} @var{source} @var{destination}
+
+@t{pspp-output -@w{-}help}
+
+@t{pspp-output -@w{-}version}
+@end display
+
+Each of these forms is documented separately below.
+@command{pspp-output} also has several undocumented command forms that
+developers may find useful for debugging.
+
+@node The pspp-output detect Command
+@section The @code{detect} Command
+
+@display
+@t{pspp-output} @t{detect} @var{file}
+@end display
+
+When @var{file} is an SPV file, @command{pspp-output} exits
+successfully without outputting anything.  When @var{file} is not an
+SPV file or some other error occurs, @command{pspp-output} prints an
+error message and exits with a failure indication.
+
+@node The pspp-output dir Command
+@section The @code{dir} Command
+
+@display
+@t{pspp-output} [@var{options}] @t{dir} @var{file}
+@end display
+
+Prints on stdout a table of contents for SPV file @var{file}.  By
+default, this table lists every object in the file, except for hidden
+objects.  @xref{Input Selection Options}, for information on the
+options available to select a subset of objects.
+
+The following additional option for @command{dir} is intended mainly
+for use by PSPP developers:
+
+@table @option
+@item --member-names
+Also show the names of the Zip members associated with each object.
+@end table
+
+@node The pspp-output convert Command
+@section The @code{convert} Command
+
+@display
+@t{pspp-output} [@var{options}] @t{convert} @var{source} @var{destination}
+@end display
+
+Reads SPV file @var{source} and converts it to another format, writing
+the output to @var{destination}.
+
+By default, the intended format for @var{destination} is inferred
+based on its extension, in the same way that the @command{pspp}
+program does for its output files.  @xref{Invoking PSPP}, for details.
+
+@xref{Input Selection Options}, for information on the options
+available to select a subset of objects to include in the output.  The
+following additional options are accepted:
+
+@table @option
+@item -O format=@var{format}
+Overrides the format inferred from the output file's extension.  Use
+@option{--help} to list the available formats.  @xref{Invoking PSPP},
+for details of the available output formats.
+
+@item -O @var{option}=@var{value}
+Sets an option for the output file format.  @xref{Invoking PSPP}, for
+details of the available output options.
+
+@item -F
+@itemx --force
+By default, if the source is corrupt or otherwise cannot be processed,
+the destination is not written.  With @option{-F} or @option{--force},
+the destination is written as best it can, even with errors.
+@end table
+
+@node Input Selection Options
+@section Input Selection Options
+
+The @command{dir} and @command{convert} commands, by default, operate
+on all of the objects in the source SPV file, except for objects that
+are not visible in the output viewer window.  The user may specify
+these options to select a subset of the input objects.  When multiple
+options are used, only objects that satisfy all of them are selected:
+
+@table @option
+@item --select=@r{[}^@r{]}@var{class}@dots{}
+Include only objects of the given @var{class}; with leading @samp{^},
+include only objects not in the class.  Use commas to separate
+multiple classes.  The supported classes are:
+
+@quotation
+@code{charts headings logs models tables texts trees warnings
+outlineheaders pagetitle notes unknown other}
+@end quotation
+
+Use @option{--select=help} to print this list of classes.
+
+@item --commands=@r{[}^@r{]}@var{command}@dots{}
+@itemx --subtypes=@r{[}^@r{]}@var{subtype}@dots{}
+@itemx --labels=@r{[}^@r{]}@var{label}@dots{}
+Include only objects with the specified @var{command}, @var{subtype},
+or @var{label}.  With a leading @samp{^}, include only the objects
+that do not match.  Multiple values may be specified separated by
+commas.  An asterisk at the end of a value acts as a wildcard.
+
+The @option{--command} option matches command identifiers, case
+insensitively.  All of the objects produced by a single command use
+the same, unique command identifier.  Command identifiers are always
+in English regardless of the language used for output.  They often
+differ from the command name in PSPP syntax.  Use the
+@command{pspp-output} program's @command{dir} command to print command
+identifiers in particular output.
+
+The @option{--subtypes} option matches particular tables within a
+command, case insensitively.  Subtypes are not necessarily unique: two
+commands that produce similar output tables may use the same subtype.
+Subtypes are always in English and @command{dir} will print them.
+
+The @option{--labels} option matches the labels in table output (that
+is, the table titles).  Labels are affected by the output language,
+variable names and labels, split file settings, and other factors.
+
+@item --instances=@var{instance}@dots{}
+Include the specified @var{instance} of an object that matches the
+other criteria within a single command.  The @var{instance} may be a
+number (1 for the first instance, 2 for the second, and so on) or
+@code{last} for the last instance.
+
+@item --show-hidden
+Include hidden output objects in the output.  By default, they are
+excluded.
+
+@item --or
+Separates two sets of selection options.  Objects selected by either
+set of options are included in the output.
+@end table
+
+The following additional input selection options are intended mainly
+for use by PSPP developers:
+
+@table @option
+@item --errors
+Include only objects that cause an error when read.  With the
+@command{convert} command, this is most useful in conjunction with the
+@option{--force} option.
+
+@item --members=@var{member}@dots{}
+Include only the objects that include a listed Zip file @var{member}.
+More than one name may be included, comma-separated.  The members in
+an SPV file may be listed with the @command{dir} command by adding the
+@option{--show-members} option or with the @command{zipinfo} program
+included with many operating systems.  Error messages that
+@command{pspp-output} prints when it reads SPV files also often
+include member names.
+
+@item --member-names
+Displays the name of the Zip member or members associated with each
+object just above the object itself.
+@end table

@@ -38,6 +38,7 @@
 #include "output/driver.h"
 #include "output/journal.h"
 #include "output/message-item.h"
+#include "output/spv/spv.h"
 
 #include "ui/gui/dict-display.h"
 #include "ui/gui/executor.h"
@@ -193,8 +194,15 @@ psppire_preload_file (const gchar *file)
     w = open_data_window (NULL, filename, NULL, NULL);
   else if (retval == 0)
     {
-      create_data_window ();
-      w = open_syntax_window (filename, NULL);
+      char *error = spv_detect (filename);
+      if (!error)
+        read_spv_file (filename);
+      else
+        {
+          free (error);
+          create_data_window ();
+          open_syntax_window (filename, NULL);
+        }
     }
 
   fh_unref (fh);

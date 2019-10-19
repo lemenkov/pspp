@@ -704,10 +704,8 @@ pivot_table_create__ (struct pivot_value *title, const char *subtype)
   table->show_caption = true;
   table->weight_format = (struct fmt_spec) { FMT_F, 40, 0 };
   table->title = title;
-  table->subtype = pivot_value_new_text (subtype);
-
-  const char *command_id = output_get_command_name ();
-  table->command_c = command_id ? xstrdup (command_id) : NULL;
+  table->subtype = subtype ? pivot_value_new_text (subtype) : NULL;
+  table->command_c = output_get_command_name ();
 
   table->sizing[TABLE_HORZ].range[0] = 50;
   table->sizing[TABLE_HORZ].range[1] = 72;
@@ -1985,15 +1983,16 @@ pivot_value_destroy (struct pivot_value *value)
    DEFAULT_STYLE for the parts of the style that VALUE doesn't override. */
 void
 pivot_value_get_style (struct pivot_value *value,
-                       const struct area_style *default_style,
+                       const struct font_style *base_font_style,
+                       const struct cell_style *base_cell_style,
                        struct area_style *area)
 {
   font_style_copy (NULL, &area->font_style, (value->font_style
                                              ? value->font_style
-                                             : &default_style->font_style));
-  area->cell_style = (value->cell_style
-                      ? *value->cell_style
-                      : default_style->cell_style);
+                                             : base_font_style));
+  area->cell_style = *(value->cell_style
+                       ? value->cell_style
+                       : base_cell_style);
 }
 
 /* Copies AREA into VALUE's style. */
@@ -2228,6 +2227,12 @@ void
 pivot_value_add_footnote (struct pivot_value *v,
                           const struct pivot_footnote *footnote)
 {
+  /* Some legacy tables include numerous duplicate footnotes.  Suppress
+     them. */
+  for (size_t i = 0; i < v->n_footnotes; i++)
+    if (v->footnotes[i] == footnote)
+      return;
+
   v->footnotes = xrealloc (v->footnotes,
                            (v->n_footnotes + 1) * sizeof *v->footnotes);
   v->footnotes[v->n_footnotes++] = footnote;

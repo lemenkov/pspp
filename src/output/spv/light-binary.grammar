@@ -1,0 +1,217 @@
+# PSPP - a program for statistical analysis.
+# Copyright (C) 2017, 2018, 2019 Free Software Foundation, Inc.
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+Table =>
+   Header Titles Footnotes
+   Areas Borders PrintSettings[ps] TableSettings[ts] Formats
+   Dimensions Axes Cells
+   01?
+
+Header =>
+   01 00
+   int32[version]
+   bool[x0]
+   bool[x1]
+   bool[rotate-inner-column-labels]
+   bool[rotate-outer-row-labels]
+   bool[x2]
+   int32[x3]
+   int32[min-col-width] int32[max-col-width]
+   int32[min-row-height] int32[max-row-height]
+   int64[table-id]
+
+Titles =>
+   Value[title] 01?
+   Value[subtype] 01? 31
+   Value[user-title] 01?
+   (31 Value[corner-text] | 58)
+   (31 Value[caption] | 58)
+
+Footnotes => int32[n-footnotes] Footnote*[n-footnotes]
+Footnote => Value[text] (58 | 31 Value[marker]) int32[show]
+
+Areas => 00? Area*8[areas]
+Area =>
+   byte[index] 31
+   string[typeface] float[size] int32[style] bool[underline]
+   int32[halign] int32[valign]
+   string[fg-color] string[bg-color]
+   bool[alternate] string[alt-fg-color] string[alt-bg-color]
+   v3(int32[left-margin] int32[right-margin] int32[top-margin] int32[bottom-margin])
+
+Borders =>
+   count(
+       ib1
+       be32[n-borders] Border*[n-borders]
+       bool[show-grid-lines]
+       00 00 00)
+
+Border =>
+   be32[border-type]
+   be32[stroke-type]
+   be32[color]
+
+PrintSettings =>
+   count(
+       ib1
+       bool[all-layers]
+       bool[paginate-layers]
+       bool[fit-width]
+       bool[fit-length]
+       bool[top-continuation]
+       bool[bottom-continuation]
+       be32[n-orphan-lines]
+       bestring[continuation-string])
+
+TableSettings =>
+   count(
+     v3(
+       ib1
+       be32[x5]
+       be32[current-layer]
+       bool[omit-empty]
+       bool[show-row-labels-in-corner]
+       bool[show-alphabetic-markers]
+       bool[footnote-marker-superscripts]
+       byte[x6]
+       becount(
+	 Breakpoints[row-breaks] Breakpoints[col-breaks]
+	 Keeps[row-keeps] Keeps[col-keeps]
+	 PointKeeps[row-point-keeps] PointKeeps[col-point-keeps]
+       )
+       bestring[notes]
+       bestring[table-look]
+       )...)
+
+Breakpoints => be32[n-breaks] be32*[n-breaks]
+
+Keeps => be32[n-keeps] Keep*[n-keeps]
+Keep => be32[offset] be32[n]
+
+PointKeeps => be32[n-point-keeps] PointKeep*[n-point-keeps]
+PointKeep => be32[offset] be32 be32
+
+Formats =>
+   int32[n-widths] int32*[n-widths]
+   string[locale]
+   int32[current-layer]
+   bool[x7] bool[x8] bool[x9]
+   Y0
+   CustomCurrency
+   count(
+     v1(X0?)
+     v3(count(X1 count(X2)) count(X3)))
+Y0 => int32[epoch] byte[decimal] byte[grouping]
+CustomCurrency => int32[n-ccs] string*[n-ccs]
+
+X0 => byte*14 Y1 Y2
+Y1 =>
+   string[command] string[command-local]
+   string[language] string[charset] string[locale]
+   bool[x10] bool[x11] bool[x12] bool[x13]
+   Y0
+Y2 => CustomCurrency byte[missing] bool[x17]
+
+X1 =>
+   bool[x14] byte[x15] bool[x16]
+   byte[lang]
+   byte[show-variables]
+   byte[show-values]
+   int32[x18] int32[x19]
+   00*17
+   bool[x20]
+   bool[show-caption]
+
+X2 =>
+   int32[n-row-heights] int32*[n-row-heights]
+   int32[n-style-map] StyleMap*[n-style-map]
+   int32[n-styles] StylePair*[n-styles]
+   count((i0 i0)?)
+StyleMap => int64[cell-index] int16[style-index]
+
+X3 =>
+   01 00 byte[x21] 00 00 00
+   Y1
+   double[small] 01
+   (string[dataset] string[datafile] i0 int32[date] i0)?
+   Y2
+   (int32[x22] i0)?
+
+Dimensions => int32[n-dims] Dimension*[n-dims]
+Dimension =>
+    Value[name] DimProperties[props]
+    int32[n-categories] Category*[n-categories]
+DimProperties =>
+   byte[x1]
+   byte[x2]
+   int32[x3]
+   bool[hide-dim-label]
+   bool[hide-all-labels]
+   01 int32[dim-index]
+
+Category => Value[name] (Leaf | Group)
+Leaf => 00 00 00 i2 int32[leaf-index] i0
+Group =>
+   bool[merge] 00 01 int32[x23]
+   i-1 int32[n-subcategories] Category*[n-subcategories]
+
+Axes =>
+   int32[n-layers] int32[n-rows] int32[n-columns]
+   int32*[n-layers] int32*[n-rows] int32*[n-columns]
+
+Cells => int32[n-cells] Cell*[n-cells]
+Cell => int64[index] v1(00?) Value
+
+Value =>
+  00? 00? 00? 00?
+  case(
+      01 ValueMod int32[format] double[x]
+    | 02 ValueMod int32[format] double[x]
+      string[var-name] string[value-label] byte[show]
+    | 03 string[local] ValueMod string[id] string[c] bool[fixed]
+    | 04 ValueMod int32[format] string[value-label] string[var-name]
+      byte[show] string[s]
+    | 05 ValueMod string[var-name] string[var-label] byte[show]
+    | 06 string[local] ValueMod string[id] string[c]
+    | else ValueMod string[template] int32[n-args] Argument*[n-args]
+  )[type]
+Argument =>
+    i0 Value[value]
+  | int32[n-values] i0 Value*[n-values]
+
+ValueMod =>
+    58
+  | 31
+    int32[n-refs] int16*[n-refs]
+    int32[n-subscripts] string*[n-subscripts]
+    v1(00 (i1 | i2) 00? 00? int32 00? 00?)
+    v3(count(TemplateString StylePair))
+
+TemplateString => count((count((i0 (58 | 31 55))?) (58 | 31 string[id]))?)
+
+StylePair =>
+    (31 FontStyle | 58)
+    (31 CellStyle | 58)
+
+FontStyle =>
+    bool[bold] bool[italic] bool[underline] bool[show]
+    string[fg-color] string[bg-color]
+    string[typeface] byte[size]
+
+CellStyle =>
+    int32[halign] int32[valign] double[decimal-offset]
+    int16[left-margin] int16[right-margin]
+    int16[top-margin] int16[bottom-margin]

@@ -32,6 +32,11 @@
 #include "data/file-handle-def.h"
 #include "data/dataset.h"
 #include "libpspp/version.h"
+#include "output/group-item.h"
+#include "output/pivot-table.h"
+#include "output/spv/spv.h"
+#include "output/spv/spv-output.h"
+#include "output/spv/spv-select.h"
 
 #include "helper.h"
 #include "psppire-data-window.h"
@@ -656,9 +661,12 @@ psppire_window_file_chooser_dialog (PsppireWindow *toplevel)
   gtk_file_filter_set_name (filter, _("Data and Syntax Files"));
   gtk_file_filter_add_mime_type (filter, "application/x-spss-sav");
   gtk_file_filter_add_mime_type (filter, "application/x-spss-por");
+  gtk_file_filter_add_mime_type (filter, "application/x-spss-spv");
   gtk_file_filter_add_pattern (filter, "*.zsav");
   gtk_file_filter_add_pattern (filter, "*.sps");
   gtk_file_filter_add_pattern (filter, "*.SPS");
+  gtk_file_filter_add_pattern (filter, "*.spv");
+  gtk_file_filter_add_pattern (filter, "*.SPV");
   gtk_file_chooser_add_filter (GTK_FILE_CHOOSER (dialog), filter);
 
   filter = gtk_file_filter_new ();
@@ -676,6 +684,12 @@ psppire_window_file_chooser_dialog (PsppireWindow *toplevel)
   gtk_file_filter_set_name (filter, _("Syntax Files (*.sps) "));
   gtk_file_filter_add_pattern (filter, "*.sps");
   gtk_file_filter_add_pattern (filter, "*.SPS");
+  gtk_file_chooser_add_filter (GTK_FILE_CHOOSER (dialog), filter);
+
+  filter = gtk_file_filter_new ();
+  gtk_file_filter_set_name (filter, _("Output Files (*.spv) "));
+  gtk_file_filter_add_pattern (filter, "*.spv");
+  gtk_file_filter_add_pattern (filter, "*.SPV");
   gtk_file_chooser_add_filter (GTK_FILE_CHOOSER (dialog), filter);
 
   filter = gtk_file_filter_new ();
@@ -711,6 +725,112 @@ psppire_window_file_chooser_dialog (PsppireWindow *toplevel)
   return dialog;
 }
 
+struct item_path
+  {
+    const struct spv_item **nodes;
+    size_t n;
+
+#define N_STUB 10
+    const struct spv_item *stub[N_STUB];
+  };
+
+static void
+swap_nodes (const struct spv_item **a, const struct spv_item **b)
+{
+  const struct spv_item *tmp = *a;
+  *a = *b;
+  *b = tmp;
+}
+
+static void
+get_path (const struct spv_item *item, struct item_path *path)
+{
+  size_t allocated = 10;
+  path->nodes = path->stub;
+  path->n = 0;
+
+  while (item)
+    {
+      if (path->n >= allocated)
+        {
+          if (path->nodes == path->stub)
+            path->nodes = xmemdup (path->stub, sizeof path->stub);
+          path->nodes = x2nrealloc (path->nodes, &allocated,
+                                    sizeof *path->nodes);
+        }
+      path->nodes[path->n++] = item;
+      item = item->parent;
+    }
+
+  for (size_t i = 0; i < path->n / 2; i++)
+    swap_nodes (&path->nodes[i], &path->nodes[path->n - i - 1]);
+}
+
+static void
+free_path (struct item_path *path)
+{
+  if (path && path->nodes != path->stub)
+    free (path->nodes);
+}
+
+static void
+dump_heading_transition (const struct spv_item *old,
+                         const struct spv_item *new)
+{
+  if (old == new)
+    return;
+
+  struct item_path old_path, new_path;
+  get_path (old, &old_path);
+  get_path (new, &new_path);
+
+  size_t common = 0;
+  for (; common < old_path.n && common < new_path.n; common++)
+    if (old_path.nodes[common] != new_path.nodes[common])
+      break;
+
+  for (size_t i = common; i < old_path.n; i++)
+    group_close_item_submit (group_close_item_create ());
+  for (size_t i = common; i < new_path.n; i++)
+    group_open_item_submit (group_open_item_create (
+                              new_path.nodes[i]->command_id));
+
+  free_path (&old_path);
+  free_path (&new_path);
+}
+
+void
+read_spv_file (const char *filename)
+{
+  struct spv_reader *spv;
+  char *error = spv_open (filename, &spv);
+  if (error)
+    {
+      /* XXX */
+      fprintf (stderr, "%s\n", error);
+      return;
+    }
+
+  struct spv_item **items;
+  size_t n_items;
+  spv_select (spv, NULL, 0, &items, &n_items);
+  struct spv_item *prev_heading = spv_get_root (spv);
+  for (size_t i = 0; i < n_items; i++)
+    {
+      struct spv_item *heading
+        = items[i]->type == SPV_ITEM_HEADING ? items[i] : items[i]->parent;
+      dump_heading_transition (prev_heading, heading);
+      if (items[i]->type == SPV_ITEM_TEXT)
+        spv_text_submit (items[i]);
+      else if (items[i]->type == SPV_ITEM_TABLE)
+        pivot_table_submit (spv_item_get_table (items[i]));
+      prev_heading = heading;
+    }
+  dump_heading_transition (prev_heading, spv_get_root (spv));
+  free (items);
+  spv_close (spv);
+}
+
 /* Callback for the file_open action.
    Prompts for a filename and opens it */
 void
@@ -739,7 +859,16 @@ psppire_window_open (PsppireWindow *de)
 	if (retval == 1)
           open_data_window (de, name, encoding, NULL);
 	else if (retval == 0)
-	  open_syntax_window (name, encoding);
+          {
+            char *error = spv_detect (name);
+            if (!error)
+              read_spv_file (name);
+            else
+              {
+                free (error);
+                open_syntax_window (name, encoding);
+              }
+          }
 
         g_free (encoding);
 	fh_unref (fh);

@@ -75,6 +75,7 @@ struct table_item
     struct table_item_text *title;   /* Null if there is no title. */
     struct table_item_text *caption; /* Null if there is no caption. */
     struct table_item_layers *layers; /* Null if there is no layer info. */
+    struct pivot_table *pt;
   };
 
 struct table_item *table_item_create (struct table *, const char *title,

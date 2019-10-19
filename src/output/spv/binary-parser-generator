@@ -1,0 +1,877 @@
+#! /usr/bin/python
+
+# PSPP - a program for statistical analysis.
+# Copyright (C) 2017, 2018, 2019 Free Software Foundation, Inc.
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+import getopt
+import os
+import struct
+import sys
+
+n_errors = 0
+
+def error(msg):
+    global n_errors
+    sys.stderr.write("%s:%d: %s\n" % (file_name, line_number, msg))
+    n_errors += 1
+
+
+def fatal(msg):
+    error(msg)
+    sys.exit(1)
+
+
+def get_line():
+    global line
+    global line_number
+    line = input_file.readline()
+    line_number += 1
+
+
+def is_num(s):
+    return s.isdigit() or (s[0] == '-' and s[1].isdigit())
+
+
+xdigits = "0123456789abcdefABCDEF"
+def is_xdigits(s):
+    for c in s:
+        if c not in xdigits:
+            return False
+    return True
+
+
+def expect(type):
+    if token[0] != type:
+        fatal("syntax error expecting %s" % type)
+
+
+def match(type):
+    if token[0] == type:
+        get_token()
+        return True
+    else:
+        return False
+
+
+def must_match(type):
+    expect(type)
+    get_token()
+
+
+def get_token():
+    global token
+    global line
+    prev = token
+    if line == "":
+        if token == ('eof', ):
+            fatal("unexpected end of input")
+        get_line()
+        if not line:
+            token = ('eof', )
+            return
+        elif line == '\n':
+            token = (';', )
+            return
+        elif not line[0].isspace():
+            token = (';', )
+            return
+
+    line = line.lstrip()
+    if line == "":
+        get_token()
+    elif line[0] == '#':
+        line = ''
+        get_token()
+    elif line[0] in '[]()?|*':
+        token = (line[0], )
+        line = line[1:]
+    elif line.startswith('=>'):
+        token = (line[:2], )
+        line = line[2:]
+    elif line.startswith('...'):
+        token = (line[:3], )
+        line = line[3:]
+    elif line[0].isalnum() or line[0] == '-':
+        n = 1
+        while n < len(line) and (line[n].isalnum() or line[n] == '-'):
+            n += 1
+        s = line[:n]
+        line = line[n:]
+
+        if prev[0] == '*' and is_num(s):
+            token = ('number', int(s, 10))
+        elif len(s) == 2 and is_xdigits(s):
+            token = ('bytes', struct.pack('B', int(s, 16)))
+        elif s[0] == 'i' and is_num(s[1:]):
+            token = ('bytes', struct.pack('<i', int(s[1:])))
+        elif s[:2] == 'ib' and is_num(s[2:]):
+            token = ('bytes', struct.pack('>i', int(s[2:])))
+        elif s[0].isupper():
+            token = ('nonterminal', s)
+        elif s in ('bool', 'int16', 'int32', 'int64', 'be16', 'be32', 'be64',
+                   'string', 'bestring', 'byte', 'float', 'double',
+                   'count', 'becount', 'v1', 'v3', 'vAF', 'vB0',
+                   'case', 'else'):
+            token = (s, )
+        else:
+            token = ('id', s)
+    else:
+        fatal("unknown character %c" % line[0])
+
+
+def usage():
+    argv0 = os.path.basename(sys.argv[0])
+    print('''\
+%(argv0)s, parser generator for SPV binary members
+usage: %(argv0)s GRAMMAR header
+       %(argv0)s GRAMMAR code HEADER_NAME
+  where GRAMMAR contains grammar definitions\
+''' % {"argv0": argv0})
+    sys.exit(0)
+
+
+class Item(object):
+    def __init__(self, type_, name, n, content):
+        self.type_ = type_
+        self.name = name
+        self.n = n
+        self.content = content
+    def __repr__(self):
+        if self.type_ == 'constant':
+            return ' '.join(['%02x' % ord(x) for x in self.content])
+        elif self.content:
+            return "%s(%s)" % (self.type_, self.content)
+        else:
+            return self.type_
+
+def parse_item():
+    t = token
+    name = None
+    if t[0] == 'bytes':
+        type_ = 'constant'
+        content = t[1]
+        get_token()
+    elif t[0] in ('bool', 'byte',
+                  'int16', 'int32', 'int64',
+                  'be16', 'be32', 'be64',
+                  'string', 'bestring',
+                  'float', 'double',
+                  'nonterminal', '...'):
+        type_ = 'variable'
+        content = t
+        get_token()
+        if t[0] == 'nonterminal':
+            name = name_to_id(content[1])
+    elif t[0] in ('v1', 'v3', 'vAF', 'vB0', 'count', 'becount'):
+        type_ = t[0]
+        get_token()
+        must_match('(')
+        content = parse_choice()
+        must_match(')')
+    elif match('case'):
+        return parse_case()
+    elif match('('):
+        type_ = '()'
+        content = parse_choice()
+        must_match(')')
+    else:
+        print token
+        fatal('syntax error expecting item')
+
+    n = 1
+    optional = False
+    if match('*'):
+        if token[0] == 'number':
+            n = token[1]
+            get_token()
+        elif match('['):
+            expect('id')
+            n = token[1]
+            get_token()
+            must_match(']')
+            if n.startswith('n-'):
+                name = n[2:]
+        else:
+            fatal('expecting quantity')
+    elif match('?'):
+        optional = True
+
+    if match('['):
+        expect('id')
+        if type_ == 'constant' and not optional:
+            fatal("%s: cannot name a constant" % token[1])
+
+        name = token[1]
+        get_token()
+        must_match(']')
+
+    if type_ == 'constant':
+        content *= n
+        n = 1
+
+    item = Item(type_, name, n, content)
+    if optional:
+        item = Item('|', None, 1, [[item], []])
+    return item
+
+
+def parse_concatenation():
+    items = []
+    while token[0] not in (')', ';', '|', 'eof'):
+        item = parse_item()
+        if (item.type_ == 'constant'
+            and items
+            and items[-1].type_ == 'constant'):
+            items[-1].content += item.content
+        else:
+            items.append(item)
+    return items
+
+
+def parse_choice():
+    sub = parse_concatenation()
+    if token[0] != '|':
+        return sub
+
+    choices = [sub]
+    while match('|'):
+        choices.append(parse_concatenation())
+
+    return [Item('|', None, 1, choices)]
+
+
+def parse_case():
+    must_match('(')
+    choices = {}
+    while True:
+        choice = None
+        if match('else'):
+            choice = 'else'
+
+        items = parse_concatenation()
+        if choice is None:
+            if (not items
+                or items[0].type_ != 'constant'
+                or len(items[0].content) != 1):
+                fatal("choice must begin with xx (or 'else')")
+            choice = '%02x' % ord(items[0].content)
+
+        if choice in choices:
+            fatal("duplicate choice %s" % choice)
+        choices[choice] = items
+
+        if match(')'):
+            break
+        must_match('|')
+
+    case_name = None
+    if match('['):
+        expect('id')
+        case_name = token[1]
+        get_token()
+        must_match(']')
+
+    return Item('case', case_name, 1,
+                { '%s_%s' % (case_name, k) : v for k, v in choices.items() })
+
+
+def parse_production():
+    expect('nonterminal')
+    name = token[1]
+    get_token()
+    must_match('=>')
+    return name, parse_choice()
+
+
+def print_members(p, indent):
+    for item in p:
+        if item.type_ == 'variable' and item.name:
+            if item.content[0] == 'nonterminal':
+                typename = 'struct %s%s' % (prefix,
+                                            name_to_id(item.content[1]))
+                n_stars = 1
+            else:
+                c_types = {'bool': ('bool', 0),
+                           'byte': ('uint8_t', 0),
+                           'int16': ('uint16_t', 0),
+                           'int32': ('uint32_t', 0),
+                           'int64': ('uint64_t', 0),
+                           'be16': ('uint16_t', 0),
+                           'be32': ('uint32_t', 0),
+                           'be64': ('uint64_t', 0),
+                           'string': ('char', 1),
+                           'bestring': ('char', 1),
+                           'float': ('double', 0),
+                           'double': ('double', 0),
+                           '...': ('uint8_t', 1)}
+                typename, n_stars = c_types[item.content[0]]
+
+            array_suffix = ''
+            if item.n:
+                if isinstance(item.n, int):
+                    if item.n > 1:
+                        array_suffix = '[%d]' % item.n
+                else:
+                    n_stars += 1
+            
+            print "%s%s %s%s%s;" % (indent, typename, '*' * n_stars,
+                                    name_to_id(item.name),
+                                    array_suffix)
+        elif item.type_ in ('v1', 'v3', 'vAF', 'vB0',
+                            'count', 'becount', '()'):
+            print_members(item.content, indent)
+        elif item.type_ == '|':
+            for choice in item.content:
+                print_members(choice, indent)
+        elif item.type_ == 'case':
+            print "%sint %s;" % (indent, item.name)
+            print "%sunion {" % indent
+            for name, choice in sorted(item.content.items()):
+                print "%s    struct {" % indent
+                print_members(choice, indent + ' ' * 8)
+                print "%s    } %s;" % (indent, name)
+            print "%s};" % indent
+        elif item.type_ == 'constant':
+            if item.name:
+                print "%sbool %s;" % (indent, item.name)
+        elif item.type_ not in ("constant", "variable"):
+            fatal("unhandled type %s" % item.type_)
+
+
+def bytes_to_hex(s):
+    return ''.join(['"'] + ["\\x%02x" % ord(x) for x in s] + ['"'])
+
+
+class Parser_Context(object):
+    def __init__(self):
+        self.suffixes = {}
+        self.bail = 'error'
+        self.need_error_handler = False
+    def gen_name(self, prefix):
+        n = self.suffixes.get(prefix, 0) + 1
+        self.suffixes[prefix] = n
+        return '%s%d' % (prefix, n) if n > 1 else prefix
+    def save_pos(self, indent):
+        pos = self.gen_name('pos')
+        print "%sstruct spvbin_position %s = spvbin_position_save (input);" % (indent, pos)
+        return pos
+    def save_error(self, indent):
+        error = self.gen_name('save_n_errors')
+        print "%ssize_t %s = input->n_errors;" % (indent, error)
+        return error
+    def parse_limit(self, endian, indent):
+        limit = self.gen_name('saved_limit')
+        print """\
+%sstruct spvbin_limit %s;
+%sif (!spvbin_limit_parse%s (&%s, input))
+%s    goto %s;""" % (
+    indent, limit,
+    indent, '_be' if endian == 'big' else '', limit,
+    indent, self.bail)
+        return limit
+        
+
+def print_parser_items(name, production, indent, accessor, ctx):
+    for item_idx in range(len(production)):
+        if item_idx > 0:
+            print
+
+        item = production[item_idx]
+        if item.type_ == 'constant':
+            print """%sif (!spvbin_match_bytes (input, %s, %d))
+%s    goto %s;""" % (
+                indent, bytes_to_hex(item.content), len(item.content),
+                indent, ctx.bail)
+            ctx.need_error_handler = True
+            if item.name:
+                print "%sp->%s = true;" % (indent, item.name)
+        elif item.type_ == 'variable':
+            if item.content[0] == 'nonterminal':
+                func = '%sparse_%s' % (prefix, name_to_id(item.content[1]))
+            else:
+                func = 'spvbin_parse_%s' % item.content[0]
+
+            if item.name:
+                dst = "&p->%s%s" % (accessor, name_to_id(item.name))
+            else:
+                dst = "NULL"
+            if item.n == 1:
+                print """%sif (!%s (input, %s))
+%s    goto %s;""" % (indent, func, dst,
+                     indent, ctx.bail)
+
+                if item.content[0] != 'nonterminal' and item.name == 'version':
+                    print "%sinput->version = p->%s%s;" % (
+                        indent, accessor, name_to_id(item.name))
+            else:
+                if isinstance(item.n, int):
+                    count = item.n
+                else:
+                    count = 'p->%s%s' % (accessor, name_to_id(item.n))
+
+                i_name = ctx.gen_name('i')
+                if item.name:
+                    if not isinstance(item.n, int):
+                        print "%sp->%s%s = xcalloc (%s, sizeof *p->%s%s);" % (
+                            indent,
+                            accessor, name_to_id(item.name), count,
+                            accessor, name_to_id(item.name))
+                    dst += '[%s]' % i_name
+                print "%sfor (int %s = 0; %s < %s; %s++)" % (
+                    indent, i_name, i_name, count, i_name)
+                print """%s    if (!%s (input, %s))
+%s        goto %s;""" % (indent, func, dst,
+                     indent, ctx.bail)
+
+            ctx.need_error_handler = True
+        elif item.type_ == '()':
+            if item.n != 1:
+                # Not yet implemented
+                raise AssertionError
+
+            print_parser_items(name, item.content, indent, accessor, ctx)
+        elif item.type_ in  ('v1', 'v3', 'vAF', 'vB0'):
+            if item.n != 1:
+                # Not yet implemented
+                raise AssertionError
+
+            print "%sif (input->version == 0x%s) {" % (indent, item.type_[1:])
+            print_parser_items(name, item.content, indent + '    ', accessor, ctx)
+            print "%s}" % indent
+        elif item.type_ in ('count', 'becount'):
+            if item.n != 1:
+                # Not yet implemented
+                raise AssertionError
+
+            pos = ctx.save_pos(indent)
+            endian = 'big' if item.type_ == 'becount' else 'little'
+            limit = ctx.parse_limit(endian, indent)
+
+            save_bail = ctx.bail
+            ctx.bail = ctx.gen_name('backtrack')
+
+            print "%sdo {" % indent
+            indent += '    '
+            if (item.content
+                and item.content[-1].type_ == 'variable'
+                and item.content[-1].content[0] == '...'):
+                content = item.content[:-1]
+                ellipsis = True
+            else:
+                content = item.content
+                ellipsis = False
+            print_parser_items(name, content, indent, accessor, ctx)
+
+            if ellipsis:
+                print "%sinput->ofs = input->size;" % indent
+            else:
+                print """%sif (!spvbin_input_at_end (input))
+%s    goto %s;""" % (indent,
+                     indent, ctx.bail)
+            print '%sspvbin_limit_pop (&%s, input);' % (indent, limit)
+            print '%sbreak;' % indent
+            print
+            print '%s%s:' % (indent[4:], ctx.bail)
+            # In theory, we should emit code to clear whatever we're
+            # backtracking from.  In practice, it's not important to
+            # do that.
+            print "%sspvbin_position_restore (&%s, input);" % (indent, pos)
+            print '%sspvbin_limit_pop (&%s, input);' % (indent, limit)
+            print '%sgoto %s;' % (indent, save_bail)
+            indent = indent[4:]
+            print "%s} while (0);" % indent
+
+            ctx.bail = save_bail
+        elif item.type_ == '|':
+            save_bail = ctx.bail
+
+            print "%sdo {" % indent
+            indent += '    '
+            pos = ctx.save_pos(indent)
+            error = ctx.save_error(indent)
+            i = 0
+            for choice in item.content:
+                if i:
+                    print "%sspvbin_position_restore (&%s, input);" % (indent, pos)
+                    print "%sinput->n_errors = %s;" % (indent, error)
+                i += 1
+
+                if i != len(item.content):
+                    ctx.bail = ctx.gen_name('backtrack')
+                else:
+                    ctx.bail = save_bail
+                print_parser_items(name, choice, indent, accessor, ctx)
+                print "%sbreak;" % indent
+                if i != len(item.content):
+                    print
+                    print '%s%s:' % (indent[4:], ctx.bail)
+                    # In theory, we should emit code to clear whatever we're
+                    # backtracking from.  In practice, it's not important to
+                    # do that.
+            indent = indent[4:]
+            print "%s} while (0);" % indent
+        elif item.type_ == 'case':
+            i = 0
+            for choice_name, choice in sorted(item.content.items()):
+                if choice_name.endswith('else'):
+                    print "%s} else {" % indent
+                    print "%s    p->%s%s = -1;" % (indent, accessor, item.name)
+                    print
+                else:
+                    print "%s%sif (spvbin_match_byte (input, 0x%s)) {" % (
+                        indent, '} else ' if i else '', choice_name[-2:])
+                    print "%s    p->%s%s = 0x%s;" % (
+                        indent, accessor, item.name, choice_name[-2:])
+                    print
+                    choice = choice[1:]
+                
+                print_parser_items(name, choice, indent + '    ',
+                                   accessor + choice_name + '.', ctx)
+                i += 1
+            print "%s}" % indent
+        else:
+            # Not implemented
+            raise AssertionError
+
+
+def print_parser(name, production, indent):
+    print '''
+bool
+%(prefix)sparse_%(name)s (struct spvbin_input *input, struct %(prefix)s%(name)s **p_)
+{
+    *p_ = NULL;
+    struct %(prefix)s%(name)s *p = xzalloc (sizeof *p);
+    p->start = input->ofs;
+''' % {'prefix': prefix,
+       'name': name_to_id(name)}
+
+    ctx = Parser_Context()
+    print_parser_items(name, production, indent, '', ctx)
+
+    print '''
+    p->len = input->ofs - p->start;
+    *p_ = p;
+    return true;'''
+
+    if ctx.need_error_handler:
+        print """
+error:
+    spvbin_error (input, "%s", p->start);
+    %sfree_%s (p);
+    return false;""" % (name, prefix, name_to_id(name))
+
+    print "}"
+
+def print_free_items(name, production, indent, accessor, ctx):
+    for item in production:
+        if item.type_ == 'constant':
+            pass
+        elif item.type_ == 'variable':
+            if not item.name:
+                continue
+
+            if item.content[0] == 'nonterminal':
+                free_func = '%sfree_%s' % (prefix, name_to_id(item.content[1]))
+            elif item.content[0] in ('string', 'bestring', '...'):
+                free_func = 'free'
+            else:
+                free_func = None
+
+            dst = "p->%s%s" % (accessor, name_to_id(item.name))
+
+            if item.n == 1:
+                if free_func:
+                    print "%s%s (%s);" % (indent, free_func, dst)
+            else:
+                if isinstance(item.n, int):
+                    count = item.n
+                else:
+                    count = 'p->%s%s' % (accessor, name_to_id(item.n))
+
+                i_name = ctx.gen_name('i')
+                if free_func:
+                    print "%sfor (int %s = 0; %s < %s; %s++)" % (
+                        indent, i_name, i_name, count, i_name)
+                    print "%s    %s (%s[%s]);" % (
+                        indent, free_func, dst, i_name)
+                if not isinstance(item.n, int):
+                    print "%sfree (p->%s%s);" % (
+                        indent, accessor, name_to_id(item.name))
+        elif item.type_ in ('()', 'v1', 'v3', 'vAF', 'vB0',
+                            'count', 'becount'):
+            if item.n != 1:
+                # Not yet implemented
+                raise AssertionError
+
+            print_free_items(name, item.content, indent, accessor, ctx)
+        elif item.type_ == '|':
+            for choice in item.content:
+                print_free_items(name, choice, indent, accessor, ctx)
+        elif item.type_ == 'case':
+            i = 0
+            for choice_name, choice in sorted(item.content.items()):
+                if choice_name.endswith('else'):
+                    value_name = '-1'
+                else:
+                    value_name = '0x%s' % choice_name[-2:]
+
+                print '%s%sif (p->%s%s == %s) {' % (
+                    indent, '} else ' if i else '', accessor, item.name,
+                    value_name)
+                
+                print_free_items(name, choice, indent + '    ',
+                                 accessor + choice_name + '.', ctx)
+                i += 1
+            print "%s}" % indent
+        else:
+            # Not implemented
+            raise AssertionError
+
+def print_free(name, production, indent):
+    print '''
+void
+%(prefix)sfree_%(name)s (struct %(prefix)s%(name)s *p)
+{
+    if (p == NULL)
+        return;
+''' % {'prefix': prefix,
+       'name': name_to_id(name)}
+
+    print_free_items(name, production, indent, '', Parser_Context())
+
+    print "    free (p);"
+    print "}"
+
+def print_print_items(name, production, indent, accessor, ctx):
+    for item_idx in range(len(production)):
+        if item_idx > 0:
+            print
+
+        item = production[item_idx]
+        if item.type_ == 'constant':
+            if item.name:
+                print '%sspvbin_print_presence ("%s", indent + 1, p->%s);' % (
+                    indent, item.name, item.name)
+        elif item.type_ == 'variable':
+            if not item.name:
+                continue
+
+            if item.content[0] == 'nonterminal':
+                func = '%sprint_%s' % (prefix, name_to_id(item.content[1]))
+            else:
+                c_types = {'bool': 'bool',
+                           'byte': 'byte',
+                           'int16': 'int16',
+                           'int32': 'int32',
+                           'int64': 'int64',
+                           'be16': 'int16',
+                           'be32': 'int32',
+                           'be64': 'int64',
+                           'string': 'string',
+                           'bestring': 'string',
+                           'float': 'double',
+                           'double': 'double',
+                           '...': ('uint8_t', 1)}
+                func = 'spvbin_print_%s' % c_types[item.content[0]]
+
+            dst = "p->%s%s" % (accessor, name_to_id(item.name))
+            if item.n == 1:
+                print '%s%s ("%s", indent + 1, %s);' % (indent, func,
+                                                      item.name, dst)
+            else:
+                if isinstance(item.n, int):
+                    count = item.n
+                else:
+                    count = 'p->%s%s' % (accessor, name_to_id(item.n))
+
+                i_name = ctx.gen_name('i')
+                elem_name = ctx.gen_name('elem_name')
+                dst += '[%s]' % i_name
+                print """\
+%(indent)sfor (int %(index)s = 0; %(index)s < %(count)s; %(index)s++) {
+%(indent)s    char *%(elem_name)s = xasprintf ("%(item.name)s[%%d]", %(index)s);
+%(indent)s    %(func)s (%(elem_name)s, indent + 1, %(dst)s);
+%(indent)s    free (%(elem_name)s);
+%(indent)s}""" % {'indent': indent,
+                  'index': i_name,
+                  'count': count,
+                  'elem_name' : elem_name,
+                  'item.name': item.name,
+                  'func': func,
+                  'dst': dst}
+        elif item.type_ == '()':
+            if item.n != 1:
+                # Not yet implemented
+                raise AssertionError
+
+            print_print_items(name, item.content, indent, accessor, ctx)
+        elif item.type_ in  ('v1', 'v3', 'vAF', 'vB0'):
+            if item.n != 1:
+                # Not yet implemented
+                raise AssertionError
+
+            print_print_items(name, item.content, indent, accessor, ctx)
+        elif item.type_ in ('count', 'becount'):
+            if item.n != 1:
+                # Not yet implemented
+                raise AssertionError
+
+            indent += '    '
+            if (item.content
+                and item.content[-1].type_ == 'variable'
+                and item.content[-1].content[0] == '...'):
+                content = item.content[:-1]
+            else:
+                content = item.content
+            print_print_items(name, content, indent, accessor, ctx)
+        elif item.type_ == '|':
+            for choice in item.content:
+                print_print_items(name, choice, indent, accessor, ctx)
+        elif item.type_ == 'case':
+            i = 0
+            print """\
+%sspvbin_print_case ("%s", indent + 1, p->%s%s);""" % (
+    indent, item.name, accessor, name_to_id(item.name))
+            for choice_name, choice in sorted(item.content.items()):
+                if choice_name.endswith('else'):
+                    value_name = '-1'
+                else:
+                    value_name = '0x%s' % choice_name[-2:]
+
+                print '%s%sif (p->%s%s == %s) {' % (
+                    indent, '} else ' if i else '', accessor, item.name,
+                    value_name)
+                
+                print_print_items(name, choice, indent + '    ',
+                                  accessor + choice_name + '.', ctx)
+                i += 1
+            print "%s}" % indent
+        else:
+            # Not implemented
+            raise AssertionError
+
+
+def print_print(name, production, indent):
+    print '''
+void
+%(prefix)sprint_%(name)s (const char *title, int indent, const struct %(prefix)s%(name)s *p)
+{
+    spvbin_print_header (title, p ? p->start : -1, p ? p->len : -1, indent);
+    if (p == NULL) {
+        printf ("none\\n");
+        return;
+    }
+    putchar ('\\n');
+''' % {'prefix': prefix,
+       'rawname': name,
+       'name': name_to_id(name)}
+
+    ctx = Parser_Context()
+    print_print_items(name, production, indent, '', ctx)
+
+    print "}"
+
+def name_to_id(s):
+    return s[0].lower() + ''.join(['_%c' % x.lower() if x.isupper() else x
+                                   for x in s[1:]]).replace('-', '_')
+    
+
+if __name__ == "__main__":
+    argv0 = sys.argv[0]
+    try:
+        options, args = getopt.gnu_getopt(sys.argv[1:], 'h', ['help'])
+    except getopt.GetoptError as e:
+        sys.stderr.write("%s: %s\n" % (argv0, e.msg))
+        sys.exit(1)
+
+    for key, value in options:
+        if key in ['-h', '--help']:
+            usage()
+        else:
+            sys.exit(0)
+
+    if len(args) < 3:
+        sys.stderr.write("%s: bad usage (use --help for help)\n" % argv0)
+        sys.exit(1)
+
+    global file_name
+    file_name, output_type, prefix = args[:3]
+    input_file = open(file_name)
+
+    prefix = '%s_' % prefix
+
+    global line
+    global line_number
+    line = ""
+    line_number = 0
+
+    productions = {}
+
+    global token
+    token = ('start', )
+    get_token()
+    while True:
+        while match(';'):
+            pass
+        if token[0] == 'eof':
+            break
+
+        name, production = parse_production()
+        if name in productions:
+            fatal("%s: duplicate production" % name)
+        productions[name] = production
+
+    print '/* Generated automatically -- do not modify!    -*- buffer-read-only: t -*- */'
+    if output_type == 'code' and len(args) == 4:
+        header_name = args[3]
+
+        print """\
+#include <config.h>
+#include %s
+#include <stdio.h>
+#include <stdlib.h>
+#include "libpspp/str.h"
+#include "gl/xalloc.h"\
+""" % header_name
+        for name, production in productions.items():
+            print_parser(name, production, ' ' * 4)
+            print_free(name, production, ' ' * 4)
+            print_print(name, production, ' ' * 4)
+    elif output_type == 'header' and len(args) == 3:
+        print """\
+#ifndef %(PREFIX)sPARSER_H
+#define %(PREFIX)sPARSER_H
+
+#include <stddef.h>
+#include <stdint.h>
+#include <stdbool.h>
+#include "output/spv/spvbin-helpers.h"\
+""" % {'PREFIX': prefix.upper()}
+        for name, production in productions.items():
+            print '\nstruct %s%s {' % (prefix, name_to_id(name))
+            print "    size_t start, len;"
+            print_members(production, ' ' * 4)
+            print '''};
+bool %(prefix)sparse_%(name)s (struct spvbin_input *, struct %(prefix)s%(name)s **);
+void %(prefix)sfree_%(name)s (struct %(prefix)s%(name)s *);
+void %(prefix)sprint_%(name)s (const char *title, int indent, const struct %(prefix)s%(name)s *);\
+''' % {'prefix': prefix,
+       'name': name_to_id(name)}
+        print """\
+
+#endif /* %(PREFIX)sPARSER_H */""" % {'PREFIX': prefix.upper()}
+    else:
+        sys.stderr.write("%s: bad usage (use --help for help)" % argv0)

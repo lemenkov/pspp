@@ -1,0 +1,183 @@
+.\" -*- nroff -*-
+.de IQ
+.  br
+.  ns
+.  IP "\\$1"
+..
+.TH pspp\-output 1 "December 2019" "PSPP" "PSPP Manual"
+.
+.SH NAME
+pspp\-output \- convert and operate on SPSS viewer (SPV) files
+.
+.SH SYNOPSIS
+\fBpspp\-output detect \fIfile\fR
+.br
+\fBpspp\-output \fR[\fIoptions\fR] \fBdir\fR \fIfile\fR
+.br
+\fBpspp\-output \fR[\fIoptions\fR] \fBconvert\fR \fIsource destination\fR
+.br
+\fBpspp\-output \-\-help\fR | \fB\-h\fR
+.br
+\fBpspp\-output \-\-version\fR | \fB\-v\fR
+.
+.SH DESCRIPTION
+.PP
+\fBpspp\-output\fR is a command-line utility accompanying PSPP.
+It supports multiple operations on SPSS viewer or \fB.spv\fR files,
+here called SPV files.  SPSS 16 and later writes SPV files to
+represent the contents of its output editor.
+.PP
+SPSS 15 and earlier versions instead use \fB.spo\fR files.
+\fBpspp\-output\fR does not support this format.
+.PP
+\fBpspp\-output\fR has a number of subcommands, documented separately
+below.  \fBpspp\-output\fR also has several undocumented command forms
+that developers may find useful for debugging.
+.
+.SS The \fBdetect\fR command
+When invoked as \fBpspp\-output detect \fIfile\fR, \fBpspp\-output\fR
+reads enough of \fIfile\fR to determine whether it is an SPV file.  If
+so, it exits successfully without outputting anything.  When
+\fIfile\fR is not an SPV file or if some other error occurs,
+\fBpspp\-output\fR prints an error message and exits with a failure
+indication.
+.
+.SS The \fBdir\fR command
+When invoked as \fBpspp\-output dir \fIfile\fR, \fBpspp\-output\fR
+prints on stdout a table of contents for SPV file \fIfile\fR.  By
+default, this table lists every object in the file, except for hidden
+objects.  See the \fBInput Selection Options\fR section below for
+information on the options available to select a subset of objects.
+.PP
+The following additional option for \fBdir\fR is intended mainly for
+use by PSPP developers:
+.
+.IP "\fB\-\-member\-names\fR"
+Also show the names of the Zip members associated with each object.
+.
+.SS The \fBconvert\fR command
+When invoked as \fBpspp\-output convert \fIsource destination\fR,
+\fBpspp\-output\fR reads the SPV file \fIsource\fR and converts it
+to another format, writing the output to \fIdestination\fR.
+.PP
+By default, \fBpspp\-output\fR infers the intended format for
+\fIdestination\fR from its extension:
+.
+.IP \fBcsv\fR
+.IQ \fBtxt\fR
+Comma-separated value.  Each value is formatted according to its
+variable's print format.  The first line in the file contains variable
+names.
+.
+.IP \fBsav\fR
+.IQ \fBsys\fR
+SPSS system file.
+.
+.IP \fBpor\fR
+SPSS portable file.
+.
+.IP \fBsps\fR
+SPSS syntax file.  (Only encrypted syntax files may be converted to
+this format.)
+.PP
+See the \fBInput Selection Options\fR section below for information on
+the options available to select a subset of objects to include in the
+output.  The following additional options are accepted:
+.IP "\fB-O format=\fIformat\fR"
+Overrides the format inferred from the output file's extension.
+\fIformat\fR must be one of the extensions listed above.
+.IP "\fB-O \fIoption\fB=\fIvalue\fR"
+Sets an option for the output file format.  Refer to the PSPP manual
+for details of the available output options.
+.IP \fB\-F\fR
+.IQ \fB\-\-force\fR
+By default, if the source is corrupt or otherwise cannot be processed,
+the destination is not written.  These option make \fBpspp\-output\fR
+write the output as best it can, even with errors.
+.SS "Input Selection Options"
+The \fBdir\fR and \fBconvert\fR commands, by default, operate on all
+of the objects in the source SPV file, except for objects that are not
+visible in the output viewer window.  The user may specify these
+options to select a subset of the input objects.  When multiple
+options are used, only objects that satisfy all of them are selected:
+.IP "\fB\-\-select=\fR[\fB^\fR]\fIclass\fR..."
+Include only objects of the given \fIclass\fR; with leading \fB^\fR,
+include only objects not in the class.  Use commas to separate
+multiple classes.  The supported classes are:
+.RS
+.IP
+\fBcharts headings logs models tables texts trees warnings
+outlineheaders pagetitle notes unknown other\fR
+.RE
+.IP
+Use \fB\-\-select=help\fR to print this list of classes.
+.IP "\-\-commands=\fR[\fB^\fR]\fIcommand\fR..."
+.IQ "\-\-subtypes=\fR[\fB^\fR]\fIsubtype\fR..."
+.IQ "\-\-labels=\fR[\fB^\fR]\fIlabel\fR..."
+Include only objects with the specified \fIcommand\fR, \fIsubtype\fR,
+or \fIlabel\fR.  With a leading \fB^\fR, include only the objects
+that do not match.  Multiple values may be specified separated by
+commas.  An asterisk at the end of a value acts as a wildcard.
+.IP
+The \fB\-\-command\fR option matches command identifiers, case
+insensitively.  All of the objects produced by a single command use
+the same, unique command identifier.  Command identifiers are always
+in English regardless of the language used for output.  They often
+differ from the command name in PSPP syntax.  Use the
+\fBpspp\-output\fR program's \fBdir\fR command to print command
+identifiers in particular output.
+.IP
+The \fB\-\-subtypes\fR option matches particular tables within a
+command, case insensitively.  Subtypes are not necessarily unique: two
+commands that produce similar output tables may use the same subtype.
+Subtypes are always in English and \fBdir\fR will print them.
+.IP
+The \fB\-\-labels\fR option matches the labels in table output (that
+is, the table titles).  Labels are affected by the output language,
+variable names and labels, split file settings, and other factors.
+.IP "\fB\-\-instances=\fIinstance\fR..."
+Include the specified \fIinstance\fR of an object that matches the
+other criteria within a single command.  The \fIinstance\fR may be a
+number (1 for the first instance, 2 for the second, and so on) or
+\fBlast\fR for the last instance.
+.IP "\fB\-\-show\-hidden"
+Include hidden output objects in the output.  By default, they are
+excluded.
+.IP "\fB\-\-or\fR"
+Separates two sets of selection options.  Objects selected by either
+set of options are included in the output.
+.PP
+The following additional input selection options are intended mainly
+for use by PSPP developers:
+.IP "\fB\-\-errors\fR"
+Include only objects that cause an error when read.  With the
+\fBconvert\fR command, this is most useful in conjunction with the
+\fB\-\-force\fR option.
+.IP "\fB\-\-members=\fImember\fR..."
+Include only the objects that include a listed Zip file \fImember\fR.
+More than one name may be included, comma-separated.  The members in
+an SPV file may be listed with the \fBdir\fR command by adding the
+\fB\-\-show\-members\fR option or with the \fBzipinfo\fR program
+included with many operating systems.  Error messages that
+\fBpspp\-output\fR prints when it reads SPV files also often include
+member names.
+.IP "\fB\-\-member\-names\fR"
+Displays the name of the Zip member or members associated with each
+object just above the object itself.
+.SH "OPTIONS"
+.IP "\fB\-h\fR"
+.IQ "\fB\-\-help\fR"
+Prints a usage message on stdout and exits.
+.
+.IP "\fB\-v\fR"
+.IQ "\fB\-\-version\fR"
+Prints version information on stdout and exits.
+.
+.SH "AUTHORS"
+Ben Pfaff.
+.
+.SH "SEE ALSO"
+.
+.BR pspp\-convert (1),
+.BR pspp (1),
+.BR psppire (1).

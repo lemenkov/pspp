@@ -1,0 +1,362 @@
+# PSPP - a program for statistical analysis.
+# Copyright (C) 2017, 2018, 2019 Free Software Foundation, Inc.
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+visualization
+   :creator
+   :date
+   :lang
+   :name
+   :style[style_ref]=ref style
+   :type
+   :version
+   :schemaLocation?
+=> visualization_extension?
+   userSource
+   (sourceVariable | derivedVariable)+
+   categoricalDomain?
+   graph
+   labelFrame[lf1]*
+   container?
+   labelFrame[lf2]*
+   style+
+   layerController?
+
+extension[visualization_extension]
+   :numRows=int?
+   :showGridline=bool?
+   :minWidthSet=(true)?
+   :maxWidthSet=(true)?
+=> EMPTY
+
+userSource :missing=(listwise | pairwise)? => EMPTY   # Related to omit_empty?
+
+categoricalDomain => variableReference simpleSort
+
+simpleSort :method[sort_method]=(custom) => categoryOrder
+
+sourceVariable
+   :id
+   :categorical=(true)
+   :source
+   :domain=ref categoricalDomain?
+   :sourceName
+   :dependsOn=ref sourceVariable?
+   :label?
+   :labelVariable=ref sourceVariable?
+=> variable_extension* (format | stringFormat)?
+
+derivedVariable
+   :id
+   :categorical=(true)
+   :value
+   :dependsOn=ref sourceVariable?
+=> variable_extension* (format | stringFormat)? valueMapEntry*
+
+extension[variable_extension] :from :helpId => EMPTY
+
+valueMapEntry :from :to => EMPTY
+
+categoryOrder => TEXT
+
+graph
+   :cellStyle=ref style
+   :style=ref style
+=> location+ coordinates faceting facetLayout interval
+
+location
+   :part=(height | width | top | bottom | left | right)
+   :method=(sizeToContent | attach | fixed | same)
+   :min=dimension?
+   :max=dimension?
+   :target=ref (labelFrame | graph | container)?
+   :value?
+=> EMPTY
+
+coordinates => EMPTY
+
+faceting => layer[layers1]* cross layer[layers2]*
+
+cross => (unity | nest) (unity | nest)
+
+nest => variableReference[vars]+
+
+unity => EMPTY
+
+variableReference :ref=ref (sourceVariable | derivedVariable) => EMPTY
+
+layer
+   :variable=ref (sourceVariable | derivedVariable)
+   :value
+   :visible=bool?
+   :method[layer_method]=(nest)?
+   :titleVisible=bool?
+=> EMPTY
+
+facetLayout => tableLayout setCellProperties[scp1]*
+               facetLevel+ setCellProperties[scp2]*
+
+tableLayout
+   :verticalTitlesInCorner=bool
+   :style=ref style?
+   :fitCells=(ticks both)?
+=> EMPTY
+
+facetLevel :level=int :gap=dimension? => axis
+
+axis :style=ref style => label? majorTicks
+
+label
+   :style=ref style
+   :textFrameStyle=ref style?
+   :purpose=(title | subTitle | subSubTitle | layer | footnote)?
+=> text+ | descriptionGroup
+
+descriptionGroup
+   :target=ref faceting
+   :separator?
+=> (description | text)+
+
+description :name=(variable | value) => EMPTY
+
+majorTicks
+   :labelAngle=int
+   :length=dimension
+   :style=ref style
+   :tickFrameStyle=ref style
+   :labelFrequency=int?
+   :stagger=bool?
+=> gridline?
+
+gridline
+   :style=ref style
+   :zOrder=int
+=> EMPTY
+
+setCellProperties
+   :applyToConverse=bool?
+=> (setStyle | setFrameStyle | setFormat | setMetaData)* union[union_]?
+
+setStyle
+   :target=ref (labeling | graph | interval | majorTicks)
+   :style=ref style
+=> EMPTY
+
+setMetaData
+   :target=ref graph
+   :key
+   :value
+=> EMPTY
+
+setFormat
+   :target=ref (majorTicks | labeling)
+   :reset=bool?
+=> format | numberFormat | stringFormat+ | dateTimeFormat | elapsedTimeFormat
+
+setFrameStyle
+   :style=ref style
+   :target=ref majorTicks
+=> EMPTY
+
+format
+   :baseFormat[f_base_format]=(date | time | dateTime | elapsedTime)?
+   :errorCharacter?
+   :separatorChars?
+   :mdyOrder=(dayMonthYear | monthDayYear | yearMonthDay)?
+   :showYear=bool?
+   :showQuarter=bool?
+   :quarterPrefix?
+   :quarterSuffix?
+   :yearAbbreviation=bool?
+   :showMonth=bool?
+   :monthFormat=(long | short | number | paddedNumber)?
+   :dayPadding=bool?
+   :dayOfMonthPadding=bool?
+   :showWeek=bool?
+   :weekPadding=bool?
+   :weekSuffix?
+   :showDayOfWeek=bool?
+   :dayOfWeekAbbreviation=bool?
+   :hourPadding=bool?
+   :minutePadding=bool?
+   :secondPadding=bool?
+   :showDay=bool?
+   :showHour=bool?
+   :showMinute=bool?
+   :showSecond=bool?
+   :showMillis=bool?
+   :dayType=(month | year)?
+   :hourFormat=(AMPM | AS_24 | AS_12)?
+   :minimumIntegerDigits=int?
+   :maximumFractionDigits=int?
+   :minimumFractionDigits=int?
+   :useGrouping=bool?
+   :scientific=(onlyForSmall | whenNeeded | true | false)?
+   :small=real?
+   :prefix?
+   :suffix?
+   :tryStringsAsNumbers=bool?
+   :negativesOutside=bool?
+=> relabel* affix*
+
+numberFormat
+   :minimumIntegerDigits=int?
+   :maximumFractionDigits=int?
+   :minimumFractionDigits=int?
+   :useGrouping=bool?
+   :scientific=(onlyForSmall | whenNeeded | true | false)?
+   :small=real?
+   :prefix?
+   :suffix?
+=> affix*
+
+stringFormat => relabel* affix*
+
+dateTimeFormat
+   :baseFormat[dt_base_format]=(date | time | dateTime)
+   :separatorChars?
+   :mdyOrder=(dayMonthYear | monthDayYear | yearMonthDay)?
+   :showYear=bool?
+   :yearAbbreviation=bool?
+   :showQuarter=bool?
+   :quarterPrefix?
+   :quarterSuffix?
+   :showMonth=bool?
+   :monthFormat=(long | short | number | paddedNumber)?
+   :showWeek=bool?
+   :weekPadding=bool?
+   :weekSuffix?
+   :showDayOfWeek=bool?
+   :dayOfWeekAbbreviation=bool?
+   :dayPadding=bool?
+   :dayOfMonthPadding=bool?
+   :hourPadding=bool?
+   :minutePadding=bool?
+   :secondPadding=bool?
+   :showDay=bool?
+   :showHour=bool?
+   :showMinute=bool?
+   :showSecond=bool?
+   :showMillis=bool?
+   :dayType=(month | year)?
+   :hourFormat=(AMPM | AS_24 | AS_12)?
+=> affix*
+
+elapsedTimeFormat
+   :baseFormat[dt_base_format]=(date | time | dateTime)
+   :dayPadding=bool?
+   :hourPadding=bool?
+   :minutePadding=bool?
+   :secondPadding=bool?
+   :showYear=bool?
+   :showDay=bool?
+   :showHour=bool?
+   :showMinute=bool?
+   :showSecond=bool?
+   :showMillis=bool?
+=> affix*
+
+affix
+   :definesReference=int
+   :position=(subscript | superscript)
+   :suffix=bool
+   :value
+=> EMPTY
+
+relabel :from=real :to => EMPTY
+
+union => intersect+
+
+intersect => where+ | intersectWhere | alternating | EMPTY
+
+where
+   :variable=ref (sourceVariable | derivedVariable)
+   :include
+=> EMPTY
+
+intersectWhere
+   :variable=ref (sourceVariable | derivedVariable)
+   :variable2=ref (sourceVariable | derivedVariable)
+=> EMPTY
+
+alternating => EMPTY
+
+text
+   :usesReference=int?
+   :definesReference=int?
+   :position=(subscript | superscript)?
+   :style=ref style
+=> TEXT
+
+interval :style=ref style => labeling footnotes?
+
+labeling
+   :style=ref style?
+   :variable=ref (sourceVariable | derivedVariable)
+=> (formatting | format | footnotes)*
+
+formatting :variable=ref (sourceVariable | derivedVariable) => formatMapping*
+
+formatMapping :from=int => format?
+
+footnotes
+   :superscript=bool?
+   :variable=ref (sourceVariable | derivedVariable)
+=> footnoteMapping*
+
+footnoteMapping :definesReference=int :from=int :to => EMPTY
+
+style
+   :color=color?
+   :color2=color?
+   :labelAngle=real?
+   :border-bottom=(solid | thick | thin | double | none)?
+   :border-top=(solid | thick | thin | double | none)?
+   :border-left=(solid | thick | thin | double | none)?
+   :border-right=(solid | thick | thin | double | none)?
+   :border-bottom-color?
+   :border-top-color?
+   :border-left-color?
+   :border-right-color?
+   :font-family?
+   :font-size?
+   :font-weight=(regular | bold)?
+   :font-style=(regular | italic)?
+   :font-underline=(none | underline)?
+   :margin-bottom=dimension?
+   :margin-left=dimension?
+   :margin-right=dimension?
+   :margin-top=dimension?
+   :textAlignment=(left | right | center | decimal | mixed)?
+   :labelLocationHorizontal=(positive | negative | center)?
+   :labelLocationVertical=(positive | negative | center)?
+   :decimal-offset=dimension?
+   :size?
+   :width?
+   :visible=bool?
+=> EMPTY
+
+layerController
+   :source=(tableData)
+   :target=ref label?
+=> EMPTY
+
+container :style=ref style => container_extension? location+ labelFrame*
+
+extension[container_extension] :combinedFootnotes=(true) => EMPTY
+
+labelFrame :style=ref style => location+ label? paragraph?
+
+paragraph :hangingIndent=dimension? => EMPTY

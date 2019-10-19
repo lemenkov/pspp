@@ -72,6 +72,7 @@ src_output_liboutput_la_SOURCES = \
 	src/output/pivot-table.h \
 	src/output/render.c \
 	src/output/render.h \
+	src/output/spv-driver.c \
 	src/output/table-item.c \
 	src/output/table-item.h \
 	src/output/table-provider.h \
@@ -95,7 +96,10 @@ src_output_liboutput_la_SOURCES += \
 	src/output/charts/spreadlevel-cairo.c \
 	src/output/charts/scatterplot-cairo.c
 endif
+nodist_src_output_liboutput_la_SOURCES =
 
 EXTRA_DIST += \
 	src/output/README \
 	src/output/mk-class-boilerplate
+
+include src/output/spv/automake.mk

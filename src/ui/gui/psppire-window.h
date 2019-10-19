@@ -120,6 +120,8 @@ GtkWidget *psppire_window_file_chooser_dialog (PsppireWindow *toplevel);
 void add_most_recent (const char *file_name, const char *mime_type,
                       const char *encoding);
 
+void read_spv_file (const char *filename);
+
 G_END_DECLS
 
 #endif /* __PSPPIRE_WINDOW_H__ */

@@ -131,6 +131,7 @@ table_item_create (struct table *table, const char *title, const char *caption)
   item->title = table_item_text_create (title);
   item->layers = NULL;
   item->caption = table_item_text_create (caption);
+  item->pt = NULL;
   return item;
 }
 
@@ -222,6 +223,7 @@ table_item_destroy (struct output_item *output_item)
   table_item_text_destroy (item->title);
   table_item_text_destroy (item->caption);
   table_item_layers_destroy (item->layers);
+  pivot_table_unref (item->pt);
   table_unref (item->table);
   free (item);
 }

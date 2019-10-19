@@ -1,0 +1,193 @@
+# PSPP - a program for statistical analysis.
+# Copyright (C) 2017, 2018, 2019 Free Software Foundation, Inc.
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+heading[root_heading]
+   :creator-version?
+   :creator?
+   :creation-date-time?
+   :lockReader=bool?
+   :schemaLocation?
+=> label pageSetup? (container | heading)*
+
+heading
+   :creator-version?
+   :commandName?
+   :visibility[heading_visibility]=(collapsed)?
+   :locale?
+   :olang?
+=> label (container | heading)*
+
+label => TEXT
+
+container
+   :visibility=(visible | hidden)
+   :page-break-before=(always)?
+   :text-align=(left | center)?
+   :width=dimension
+=> label (table | container_text | graph | model | object | image | tree)
+
+text[container_text]
+  :type[text_type]=(title | log | text | page-title)
+  :commandName?
+  :creator-version?
+=> html
+
+html :lang=(en) => TEXT
+
+table
+   :VDPId?
+   :ViZmlSource?
+   :activePageId=int?
+   :commandName
+   :creator-version?
+   :displayFiltering=bool?
+   :maxNumCells=int?
+   :orphanTolerance=int?
+   :rowBreakNumber=int?
+   :subType
+   :tableId
+   :tableLookId?
+   :type[table_type]=(table | note | warning)
+=> tableProperties? tableStructure
+
+tableProperties
+=> generalProperties footnoteProperties cellFormatProperties borderProperties printingProperties
+
+generalProperties
+   :hideEmptyRows=bool?
+   :maximumColumnWidth=dimension?
+   :maximumRowWidth=dimension?
+   :minimumColumnWidth=dimension?
+   :minimumRowWidth=dimension?
+   :rowDimensionLabels=(inCorner | nested)?
+=> EMPTY
+
+footnoteProperties
+   :markerPosition=(superscript | subscript)?
+   :numberFormat=(alphabetic | numeric)?
+=> EMPTY
+
+cellFormatProperties => cell_style+
+
+any[cell_style]
+   :alternatingColor=color?
+   :alternatingTextColor=color?
+=> style
+
+style
+   :color=color?
+   :color2=color?
+   :font-family?
+   :font-size?
+   :font-style=(regular | italic)?
+   :font-weight=(regular | bold)?
+   :labelLocationVertical=(positive | negative | center)?
+   :margin-bottom=dimension?
+   :margin-left=dimension?
+   :margin-right=dimension?
+   :margin-top=dimension?
+   :textAlignment=(left | right | center | decimal | mixed)?
+   :decimal-offset=dimension?
+=> EMPTY
+
+borderProperties => border_style+
+
+any[border_style]
+   :borderStyleType=(none | solid | dashed | thick | thin | double)?
+   :color=color?
+=> EMPTY
+
+printingProperties
+   :printAllLayers=bool?
+   :rescaleLongTableToFitPage=bool?
+   :rescaleWideTableToFitPage=bool?
+   :windowOrphanLines=int?
+   :continuationText?
+   :continuationTextAtBottom=bool?
+   :continuationTextAtTop=bool?
+   :printEachLayerOnSeparatePage=bool?
+=> EMPTY
+
+tableStructure => path? dataPath
+
+graph
+   :VDPId?
+   :ViZmlSource?
+   :commandName?
+   :creator-version?
+   :dataMapId?
+   :dataMapURI?
+   :editor?
+   :refMapId?
+   :refMapURI?
+   :csvFileIds?
+   :csvFileNames?
+=> dataPath? path csvPath?
+
+model
+   :PMMLContainerId?
+   :PMMLId
+   :StatXMLContainerId
+   :VDPId
+   :auxiliaryViewName
+   :commandName
+   :creator-version
+   :mainViewName
+=> ViZml? dataPath? path | pmmlContainerPath statsContainerPath
+
+tree
+   :commandName
+   :creator-version
+   :name
+   :type
+=> dataPath path
+
+pmmlContainerPath => TEXT
+
+statsContainerPath => TEXT
+
+ViZml :viewName? => TEXT
+
+dataPath => TEXT
+
+path => TEXT
+
+csvPath => TEXT
+
+pageSetup
+   :initial-page-number=int?
+   :chart-size=(as-is | full-height | half-height | quarter-height | OTHER)?
+   :margin-left=dimension?
+   :margin-right=dimension?
+   :margin-top=dimension?
+   :margin-bottom=dimension?
+   :paper-height=dimension?
+   :paper-width=dimension?
+   :reference-orientation?
+   :space-after=dimension?
+=> pageHeader pageFooter
+
+pageHeader => pageParagraph?
+
+pageFooter => pageParagraph?
+
+pageParagraph => pageParagraph_text
+
+text[pageParagraph_text] :type=(title | text) => TEXT
+
+object :type :uri => EMPTY
+
+image :VDPId :commandName => dataPath

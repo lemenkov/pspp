@@ -509,6 +509,8 @@ pivot_table_submit_layer (const struct pivot_table *pt,
     }
 
   free (footnotes);
+  ti->pt = pivot_table_ref (pt);
+
   table_item_submit (ti);
 }
 

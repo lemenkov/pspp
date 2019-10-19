@@ -253,6 +253,7 @@ struct file_types
 enum
   {
     FT_AUTO = 0,
+    FT_SPV,
     FT_PDF,
     FT_HTML,
     FT_ODT,
@@ -267,6 +268,7 @@ enum
 
 struct file_types ft[n_FT] = {
   {N_("Infer file type from extension"),  NULL},
+  {N_("SPSS Viewer (*.spv)"),             ".spv"},
   {N_("PDF (*.pdf)"),                     ".pdf"},
   {N_("HTML (*.html)"),                   ".html"},
   {N_("OpenDocument (*.odt)"),            ".odt"},
@@ -453,6 +455,9 @@ psppire_output_window_export (PsppireOutputWindow *window)
 
       switch (file_type)
 	{
+        case FT_SPV:
+          export_output (window, &options, "spv");
+          break;
 	case FT_PDF:
           export_output (window, &options, "pdf");
 	  break;

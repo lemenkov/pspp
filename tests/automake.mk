@@ -280,7 +280,8 @@ EXTRA_DIST += \
 	tests/language/data-io/test.ods \
 	tests/language/data-io/newone.ods \
 	tests/language/data-io/readnames.ods \
-	tests/language/stats/llz.zsav
+	tests/language/stats/llz.zsav \
+	tests/utilities/regress.spv
 
 CLEANFILES += *.save pspp.* foo*
 
@@ -426,6 +427,7 @@ TESTSUITE_AT = \
 	tests/ui/terminal/main.at \
 	tests/ui/syntax-gen.at \
 	tests/utilities/pspp-convert.at \
+	tests/utilities/pspp-output.at \
 	tests/perl-module.at
 
 TESTSUITE = $(srcdir)/tests/testsuite

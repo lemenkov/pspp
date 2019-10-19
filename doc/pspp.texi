@@ -122,6 +122,7 @@ in the production of this manual.
 * Utilities::                   Other commands.
 
 * Invoking pspp-convert::       Utility for converting among file formats.
+* Invoking pspp-output::        Utility for working with viewer (SPV) files.
 * Invoking pspp-dump-sav::      Utility for examining raw .sav files.
 * Not Implemented::             What's not here yet
 * Bugs::                        Known problems; submitting bug reports.
@@ -151,6 +152,7 @@ in the production of this manual.
 @include utilities.texi
 
 @include pspp-convert.texi
+@include pspp-output.texi
 @include pspp-dump-sav.texi
 @include not-implemented.texi
 @include bugs.texi
