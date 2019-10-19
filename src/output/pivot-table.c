@@ -1352,6 +1352,18 @@ compose_headings (const struct pivot_axis *axis,
   return headings;
 }
 
+static void
+free_headings (const struct pivot_axis *axis, char ***headings)
+{
+  for (size_t i = 0; i < axis->label_depth; i++)
+    {
+      for (size_t j = 0; j < axis->extent; j++)
+        free (headings[i][j]);
+      free (headings[i]);
+    }
+  free (headings);
+}
+
 void
 pivot_table_dump (const struct pivot_table *table, int indentation)
 {
@@ -1470,6 +1482,7 @@ pivot_table_dump (const struct pivot_table *table, int indentation)
             }
           putchar ('\n');
         }
+      free_headings (&table->axes[PIVOT_AXIS_COLUMN], column_headings);
 
       indent (indentation + 1);
       printf ("-----------------------------------------------\n");
@@ -1518,6 +1531,7 @@ pivot_table_dump (const struct pivot_table *table, int indentation)
 
       free (column_enumeration);
       free (row_enumeration);
+      free_headings (&table->axes[PIVOT_AXIS_ROW], row_headings);
     }
 
   pivot_table_dump_value (table->caption, "caption", indentation);
@@ -1536,6 +1550,7 @@ pivot_table_dump (const struct pivot_table *table, int indentation)
       putchar ('\n');
     }
 
+  free (dindexes);
   settings_set_decimal_char (old_decimal);
 }
 
