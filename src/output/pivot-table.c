@@ -1383,7 +1383,8 @@ pivot_table_dump (const struct pivot_table *table, int indentation)
   if (table->date)
     {
       indent (indentation);
-      printf ("date: %s", ctime (&table->date)); /* XXX thread unsafe */
+      char buf[26];
+      printf ("date: %s", ctime_r (&table->date, buf));
     }
 
   indent (indentation);
