@@ -194,7 +194,11 @@ defer_text (struct output_engine *e, struct output_item *item)
   if (!is_text_item (item))
     return false;
 
-  enum text_item_type type = text_item_get_type (to_text_item (item));
+  struct text_item *text_item = to_text_item (item);
+  if (text_item->markup)        /* XXX */
+    return false;
+
+  enum text_item_type type = text_item_get_type (text_item);
   if (type != TEXT_ITEM_SYNTAX && type != TEXT_ITEM_LOG)
     return false;
 
@@ -206,7 +210,7 @@ defer_text (struct output_engine *e, struct output_item *item)
   if (!ds_is_empty (&e->deferred_text))
     ds_put_byte (&e->deferred_text, '\n');
 
-  const char *text = text_item_get_text (to_text_item (item));
+  const char *text = text_item_get_text (text_item);
   ds_put_cstr (&e->deferred_text, text);
   output_item_unref (item);
 
