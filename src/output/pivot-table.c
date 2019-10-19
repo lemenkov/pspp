@@ -350,7 +350,7 @@ pivot_dimension_create__ (struct pivot_table *table,
                                       sizeof *table->current_layer);
     }
 
-  /* XXX extent and label_depth need to be calculated later. */
+  /* axis->extent and axis->label_depth will be calculated later. */
 
   return d;
 }
@@ -1027,9 +1027,9 @@ pivot_make_default_footnote_marker (int idx, bool show_numeric_markers)
   return pivot_value_new_user_text (text, -1);
 }
 
-/* Creates or modifies a footnote in TABLE with 0-based number IDX.  If MARKER
-   is nonnull, sets the footnote's marker; if CONTENT is nonnull, sets the
-   footnote's content. */
+/* Creates or modifies a footnote in TABLE with 0-based number IDX (and creates
+   all lower indexes as a side effect).  If MARKER is nonnull, sets the
+   footnote's marker; if CONTENT is nonnull, sets the footnote's content. */
 struct pivot_footnote *
 pivot_table_create_footnote__ (struct pivot_table *table, size_t idx,
                                struct pivot_value *marker,
@@ -1503,7 +1503,7 @@ pivot_table_dump (const struct pivot_table *table, int indentation)
           fputs (" =", stdout);
 
           struct pivot_value **names = xnmalloc (layer_axis->label_depth,
-                                               sizeof *names);
+                                                 sizeof *names);
           size_t n_names = 0;
           for (const struct pivot_category *c
                  = d->presentation_leaves[layer_indexes[i]];
