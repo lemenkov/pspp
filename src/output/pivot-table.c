@@ -1424,6 +1424,40 @@ free_headings (const struct pivot_axis *axis, char ***headings)
   free (headings);
 }
 
+static void
+pivot_table_sizing_dump (const char *name, const struct pivot_table_sizing *s,
+                         int indentation)
+{
+  indent (indentation);
+  printf ("%ss: min=%d, max=%d\n", name, s->range[0], s->range[1]);
+  if (s->n_widths)
+    {
+      indent (indentation + 1);
+      printf ("%s widths:", name);
+      for (size_t i = 0; i < s->n_widths; i++)
+        printf (" %d", s->widths[i]);
+      printf ("\n");
+    }
+  if (s->n_breaks)
+    {
+      indent (indentation + 1);
+      printf ("break after %ss:", name);
+      for (size_t i = 0; i < s->n_breaks; i++)
+        printf (" %zu", s->breaks[i]);
+      printf ("\n");
+    }
+  if (s->n_keeps)
+    {
+      indent (indentation + 1);
+      printf ("keep %ss together:", name);
+      for (size_t i = 0; i < s->n_keeps; i++)
+        printf (" [%zu,%zu]",
+                s->keeps[i].ofs,
+                s->keeps[i].ofs + s->keeps[i].n - 1);
+      printf ("\n");
+    }
+}
+
 void
 pivot_table_dump (const struct pivot_table *table, int indentation)
 {
@@ -1446,6 +1480,13 @@ pivot_table_dump (const struct pivot_table *table, int indentation)
       char buf[26];
       printf ("date: %s", ctime_r (&table->date, buf));
     }
+
+  indent (indentation);
+  printf ("sizing:\n");
+  pivot_table_sizing_dump ("column", &table->sizing[TABLE_HORZ],
+                           indentation + 1);
+  pivot_table_sizing_dump ("row", &table->sizing[TABLE_VERT],
+                           indentation + 1);
 
   indent (indentation);
   printf ("areas:\n");
