@@ -107,6 +107,7 @@ enum pivot_area
   };
 
 const char *pivot_area_to_string (enum pivot_area);
+void pivot_area_get_default_style (enum pivot_area, struct area_style *);
 
 /* Table borders for styling purposes. */
 enum pivot_border
@@ -145,6 +146,8 @@ enum pivot_border
   };
 
 const char *pivot_border_to_string (enum pivot_border);
+void pivot_border_get_default_style (enum pivot_border,
+                                     struct table_border_style *);
 
 /* Sizing for rows or columns of a rendered table.  The comments below talk
    about columns and their widths but they apply equally to rows and their

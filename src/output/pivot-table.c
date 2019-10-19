@@ -61,6 +61,70 @@ pivot_area_to_string (enum pivot_area area)
     }
 }
 
+void
+pivot_area_get_default_style (enum pivot_area area, struct area_style *style)
+{
+#define STYLE(BOLD, H, V, L, R, T, B) {                         \
+    .cell_style = {                                             \
+      .halign = TABLE_HALIGN_##H,                               \
+      .valign = TABLE_VALIGN_##V,                               \
+      .margin = { [TABLE_HORZ][0] = L, [TABLE_HORZ][1] = R,     \
+                  [TABLE_VERT][0] = T, [TABLE_VERT][1] = B },   \
+    },                                                          \
+    .font_style = {                                             \
+      .bold = BOLD,                                             \
+      .fg = { [0] = CELL_COLOR_BLACK, [1] = CELL_COLOR_BLACK},  \
+      .bg = { [0] = CELL_COLOR_WHITE, [1] = CELL_COLOR_WHITE},  \
+      .size = 9,                                                \
+    },                                                          \
+  }
+  static const struct area_style default_area_styles[PIVOT_N_AREAS] = {
+    [PIVOT_AREA_TITLE]         = STYLE( true, CENTER, CENTER,  8,11,1,8),
+    [PIVOT_AREA_CAPTION]       = STYLE(false, LEFT,   TOP,     8,11,1,1),
+    [PIVOT_AREA_FOOTER]        = STYLE(false, LEFT,   TOP,    11, 8,2,3),
+    [PIVOT_AREA_CORNER]        = STYLE(false, LEFT,   BOTTOM,  8,11,1,1),
+    [PIVOT_AREA_COLUMN_LABELS] = STYLE(false, CENTER, BOTTOM,  8,11,1,3),
+    [PIVOT_AREA_ROW_LABELS]    = STYLE(false, LEFT,   TOP,     8,11,1,3),
+    [PIVOT_AREA_DATA]          = STYLE(false, MIXED,  TOP,     8,11,1,1),
+    [PIVOT_AREA_LAYERS]        = STYLE(false, LEFT,   BOTTOM,  8,11,1,3),
+    };
+#undef STYLE
+
+  *style = default_area_styles[area];
+  style->font_style.typeface = xstrdup ("SansSerif");
+}
+
+void
+pivot_border_get_default_style (enum pivot_border border,
+                                struct table_border_style *style)
+{
+  static const enum table_stroke default_strokes[PIVOT_N_BORDERS] = {
+    [PIVOT_BORDER_TITLE]        = TABLE_STROKE_NONE,
+    [PIVOT_BORDER_OUTER_LEFT]   = TABLE_STROKE_NONE,
+    [PIVOT_BORDER_OUTER_TOP]    = TABLE_STROKE_NONE,
+    [PIVOT_BORDER_OUTER_RIGHT]  = TABLE_STROKE_NONE,
+    [PIVOT_BORDER_OUTER_BOTTOM] = TABLE_STROKE_NONE,
+    [PIVOT_BORDER_INNER_LEFT]   = TABLE_STROKE_THICK,
+    [PIVOT_BORDER_INNER_TOP]    = TABLE_STROKE_THICK,
+    [PIVOT_BORDER_INNER_RIGHT]  = TABLE_STROKE_THICK,
+    [PIVOT_BORDER_INNER_BOTTOM] = TABLE_STROKE_THICK,
+    [PIVOT_BORDER_DATA_LEFT]    = TABLE_STROKE_THICK,
+    [PIVOT_BORDER_DATA_TOP]     = TABLE_STROKE_THICK,
+    [PIVOT_BORDER_DIM_ROW_HORZ] = TABLE_STROKE_SOLID,
+    [PIVOT_BORDER_DIM_ROW_VERT] = TABLE_STROKE_NONE,
+    [PIVOT_BORDER_DIM_COL_HORZ] = TABLE_STROKE_SOLID,
+    [PIVOT_BORDER_DIM_COL_VERT] = TABLE_STROKE_SOLID,
+    [PIVOT_BORDER_CAT_ROW_HORZ] = TABLE_STROKE_NONE,
+    [PIVOT_BORDER_CAT_ROW_VERT] = TABLE_STROKE_NONE,
+    [PIVOT_BORDER_CAT_COL_HORZ] = TABLE_STROKE_SOLID,
+    [PIVOT_BORDER_CAT_COL_VERT] = TABLE_STROKE_SOLID,
+  };
+  *style = (struct table_border_style) {
+      .stroke = default_strokes[border],
+      .color = CELL_COLOR_BLACK,
+  };
+}
+
 /* Returns the name of BORDER. */
 const char *
 pivot_border_to_string (enum pivot_border border)
@@ -642,33 +706,13 @@ pivot_table_create__ (struct pivot_value *title)
   table->weight_format = (struct fmt_spec) { FMT_F, 40, 0 };
   table->title = title;
 
-  /* Set default area styles. */
-#define STYLE(BOLD, H, V, L, R, T, B) {                         \
-    .cell_style = {                                             \
-      .halign = TABLE_HALIGN_##H,                               \
-      .valign = TABLE_VALIGN_##V,                               \
-      .margin = { [TABLE_HORZ][0] = L, [TABLE_HORZ][1] = R,     \
-                  [TABLE_VERT][0] = T, [TABLE_VERT][1] = B },   \
-    },                                                          \
-      .font_style = {                                           \
-      .bold = BOLD,                                             \
-      .fg = { [0] = CELL_COLOR_BLACK, [1] = CELL_COLOR_BLACK},  \
-      .bg = { [0] = CELL_COLOR_WHITE, [1] = CELL_COLOR_WHITE},  \
-    },                                                          \
-         }
-  static const struct area_style default_area_styles[PIVOT_N_AREAS] = {
-    [PIVOT_AREA_TITLE]         = STYLE( true, CENTER, CENTER,  8,11,1,8),
-    [PIVOT_AREA_CAPTION]       = STYLE(false, LEFT,   TOP,     8,11,1,1),
-    [PIVOT_AREA_FOOTER]        = STYLE(false, LEFT,   TOP,    11, 8,2,3),
-    [PIVOT_AREA_CORNER]        = STYLE(false, LEFT,   BOTTOM,  8,11,1,1),
-    [PIVOT_AREA_COLUMN_LABELS] = STYLE(false, CENTER, BOTTOM,  8,11,1,3),
-    [PIVOT_AREA_ROW_LABELS]    = STYLE(false, LEFT,   TOP,     8,11,1,3),
-    [PIVOT_AREA_DATA]          = STYLE(false, MIXED,  TOP,     8,11,1,1),
-    [PIVOT_AREA_LAYERS]        = STYLE(false, LEFT,   BOTTOM,  8,11,1,3),
-    };
-#undef STYLE
+  table->sizing[TABLE_HORZ].range[0] = 50;
+  table->sizing[TABLE_HORZ].range[1] = 72;
+  table->sizing[TABLE_VERT].range[0] = 36;
+  table->sizing[TABLE_VERT].range[1] = 120;
+
   for (size_t i = 0; i < PIVOT_N_AREAS; i++)
-    table->areas[i] = default_area_styles[i];
+    pivot_area_get_default_style (i, &table->areas[i]);
 
   /* Set default border styles. */
   static const enum table_stroke default_strokes[PIVOT_N_BORDERS] = {
