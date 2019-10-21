@@ -651,7 +651,8 @@ struct pivot_value
         /* PIVOT_VALUE_TEMPLATE. */
         struct
           {
-            char *s;
+            char *local;              /* Localized. */
+            char *id;                 /* Identifier. */
             struct pivot_argument *args;
             size_t n_args;
           }

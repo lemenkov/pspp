@@ -1860,7 +1860,7 @@ pivot_value_format_body (const struct pivot_value *value,
       break;
 
     case PIVOT_VALUE_TEMPLATE:
-      pivot_format_template (out, value->template.s, value->template.args,
+      pivot_format_template (out, value->template.local, value->template.args,
                              value->template.n_args, show_values,
                              show_variables);
       break;
@@ -1949,7 +1949,9 @@ pivot_value_destroy (struct pivot_value *value)
           break;
 
         case PIVOT_VALUE_TEMPLATE:
-          free (value->template.s);
+          free (value->template.local);
+          if (value->template.id != value->template.local)
+            free (value->template.id);
           for (size_t i = 0; i < value->template.n_args; i++)
             pivot_argument_uninit (&value->template.args[i]);
           free (value->template.args);
