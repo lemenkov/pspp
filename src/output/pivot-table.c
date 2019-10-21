@@ -1802,6 +1802,7 @@ pivot_value_destroy (struct pivot_value *value)
       /* Do not free the elements of footnotes because VALUE does not own
          them. */
       free (value->footnotes);
+      free (value->subscript);
 
       switch (value->type)
         {
