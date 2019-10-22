@@ -68,6 +68,7 @@ perl_module_tarball: $(module_sources) src/libpspp-core.la
 		      echo "  GEN      $$destdir/$$f"; \
 		 fi; \
 		 cp $(top_srcdir)/$$f $$destdir ; \
+		 chmod u+w $$destdir/`basename $$f`; \
 	  fi ; \
 	 done \
 	fi
