@@ -414,7 +414,7 @@ generate_syntax_filter (const PsppireDialogAction *a)
 			   ranvar);
 
 	  ds_put_c_format (&dss,
-			   "SORT BY %s, %s.\n",
+			   "SORT CASES BY %s, %s.\n",
 			   filter, ranvar);
 
 	  ds_put_cstr (&dss, "EXECUTE.\n");
@@ -434,7 +434,7 @@ generate_syntax_filter (const PsppireDialogAction *a)
 
 
 	  ds_put_c_format (&dss,
-			   "SORT BY %s.\n",
+			   "SORT CASES BY %s.\n",
 			   key);
 
 	  ds_put_c_format (&dss,
