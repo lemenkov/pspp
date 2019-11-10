@@ -177,10 +177,7 @@ close_loop (void *loop_)
 
   /* If there's nothing else limiting the number of loops, use
      MXLOOPS as a limit. */
-  if (loop->max_pass_count == -1
-      && loop->index_var == NULL
-      && loop->loop_condition == NULL
-      && loop->end_loop_condition == NULL)
+  if (loop->max_pass_count == -1 && loop->index_var == NULL)
     loop->max_pass_count = settings_get_mxloops ();
 }
 

@@ -182,8 +182,10 @@ code block is executed.  The condition is evaluated at the end of the
 loop, not at the beginning, so that the body of a loop with only a
 condition on @cmd{END LOOP} will always execute at least once.
 
-If neither the index clause nor either condition clause is
-present, then the loop is executed @var{max_loops} (@pxref{SET}) times.
+If the index clause is not
+present, then the loop is executed at most @var{max_loops} (@pxref{SET}) times
+(but possibly fewer, if a condition clause evaluates to false or if
+@cmd{BREAK} executes).
 The default value of @var{max_loops} is 40.
 
 @cmd{BREAK} also terminates @cmd{LOOP} execution (@pxref{BREAK}).

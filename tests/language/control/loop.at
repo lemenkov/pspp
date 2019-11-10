@@ -229,3 +229,34 @@ AT_CHECK([cat pspp.csv], [0], [dnl
 ])
 AT_CLEANUP
 
+AT_SETUP([LOOP with IF condition that ends due to MXLOOPS])
+AT_DATA([loop.sps], [dnl
+LOOP_DATA
+set mxloops=3.
+compute #p = x.
+loop.
+print /x #p.
+compute #p = #p + 1.
+end loop if #p >= 6.
+print/'--------'.
+execute.
+])
+AT_CHECK([pspp -o pspp.csv loop.sps])
+AT_CHECK([cat pspp.csv], [0], [dnl
+1     1.00 @&t@
+1     2.00 @&t@
+1     3.00 @&t@
+--------
+2     2.00 @&t@
+2     3.00 @&t@
+2     4.00 @&t@
+--------
+3     3.00 @&t@
+3     4.00 @&t@
+3     5.00 @&t@
+--------
+4     4.00 @&t@
+4     5.00 @&t@
+--------
+])
+AT_CLEANUP
