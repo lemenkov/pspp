@@ -32,9 +32,9 @@ struct string_array
 
 /* Suitable for use as the initializer for a string_array named ARRAY.  Typical
    usage:
-       struct string_array array = STRING_ARRAY_INITIALIZER (array);
+       struct string_array array = STRING_ARRAY_INITIALIZER;
    STRING_ARRAY_INITIALIZER is an alternative to calling string_array_init. */
-#define STRING_ARRAY_INITIALIZER(ARRAY) { NULL, 0, 0 }
+#define STRING_ARRAY_INITIALIZER { NULL, 0, 0 }
 
 void string_array_init (struct string_array *);
 void string_array_clone (struct string_array *, const struct string_array *);
