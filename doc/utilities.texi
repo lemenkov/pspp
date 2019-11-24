@@ -183,7 +183,7 @@ Use @cmd{ECHO} to write arbitrary text to the output stream. The text should be 
 ERASE FILE @var{file_name}.
 @end display
 
-@cmd{ERASE FILE} deletes a file from the local filesystem.
+@cmd{ERASE FILE} deletes a file from the local file system.
 @var{file_name} must be quoted.
 This command cannot be used if the SAFER (@pxref{SET}) setting is active.
 

@@ -369,7 +369,7 @@ calculate the 5, 10, 25, 50, 75, 90, 95 percentiles using the
 
 The @subcmd{TOTAL} and @subcmd{NOTOTAL} subcommands are mutually exclusive.  If @subcmd{NOTOTAL}
 is given and factors have been specified in the @subcmd{VARIABLES} subcommand,
-then then statistics for the unfactored dependent variables are
+then statistics for the unfactored dependent variables are
 produced in addition to the factored variables.  If there are no
 factors specified then @subcmd{TOTAL} and @subcmd{NOTOTAL} have no effect.
 
@@ -1339,7 +1339,7 @@ You may use the notation @subcmd{@var{n}*@var{f}} to specify @var{n}
 consecutive expected categories all taking a frequency of @var{f}.
 The frequencies given are proportions, not absolute frequencies.  The
 sum of the frequencies need not be 1.
-If no @subcmd{/EXPECTED} subcommand is given, then then equal frequencies 
+If no @subcmd{/EXPECTED} subcommand is given, then equal frequencies
 are expected.
 
 
