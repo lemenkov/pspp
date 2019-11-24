@@ -111,7 +111,7 @@ this:
 +---------------+-----------------+----------------+-----------------+
 
 In the second panel from the left, we might want a selector button.
-However, we don't want to to fill the entire panel.
+However, we don't want to fill the entire panel.
 So we put it in inside a GtkAlignment.  From the "Containers" category
 click "Alignment". and then the panel.   Such a widget is of course
 not visible,  but you will note its presence from the widget hierarchy
@@ -191,7 +191,7 @@ dialog_state_valid (gpointer data)
   PsppireDialogActionFoobar *ud = PSPPIRE_DIALOG_ACTION_FOOBAR (data);
 
   // This function is a predicate to determine if the dialog box has
-  //   been set to a state where is is appropriate to click OK  /
+  //   been set to a state where it is appropriate to click OK  /
   //  Paste.
 
   // If it returns FALSE, the OK and PASTE buttons are insensitive

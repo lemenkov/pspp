@@ -32,7 +32,7 @@ AT_CLEANUP
 dnl Tests for a bug where FINISH or EXIT wasn't executed until the lexer
 dnl read the first token of the next command.
 dnl
-dnl (If this reecurs, the the test will run forever.)
+dnl (If this reecurs, the test will run forever.)
 AT_SETUP([FINISH executes immediately])
 AT_CHECK([(echo "FINISH."; while echo ; do true; done) | pspp], [0], [ignore], [ignore])
 AT_CLEANUP
