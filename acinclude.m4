@@ -118,13 +118,13 @@ AC_DEFUN([PSPP_READLINE],
   ])
 
   if test "$gl_cv_lib_readline" = yes; then
-    AC_DEFINE(HAVE_READLINE, 1, [Define if you have the readline library.])
+    AC_DEFINE([HAVE_READLINE], 1, [Define if you have the readline library.])
     AC_MSG_CHECKING([how to link with libreadline])
     AC_MSG_RESULT([$LIBREADLINE])
     AC_SEARCH_LIBS([rl_echo_signal_char], [readline],
-        AC_DEFINE(HAVE_RL_ECHO_SIGNAL_CHAR, 1, [Define if the readline library provides rl_echo_signal_char.]),[],[$LIBREADLINE])
+        AC_DEFINE([HAVE_RL_ECHO_SIGNAL_CHAR], 1, [Define if the readline library provides rl_echo_signal_char.]),[],[$LIBREADLINE])
     AC_SEARCH_LIBS([rl_outstream], [readline],
-        AC_DEFINE(HAVE_RL_OUTSTREAM, 1, [Define if the readline library provides rl_outstream.]),[],[$LIBREADLINE])
+        AC_DEFINE([HAVE_RL_OUTSTREAM], 1, [Define if the readline library provides rl_outstream.]),[],[$LIBREADLINE])
   else
     dnl If $LIBREADLINE didn't lead to a usable library, we don't
     dnl need $INCREADLINE either.
@@ -187,7 +187,7 @@ AC_DEFUN([PSPP_LC_PAPER],
       [pspp_cv_lc_paper=yes])
   ])
   if test "$pspp_cv_lc_paper" = yes; then
-    AC_DEFINE(HAVE_LC_PAPER, 1, [Define if you have LC_PAPER.])
+    AC_DEFINE([HAVE_LC_PAPER], 1, [Define if you have LC_PAPER.])
   fi
 ])
 
