@@ -281,7 +281,7 @@ psppire_dialog_action_select_activate (PsppireDialogAction *a, GVariant *param)
   act->sample_n_cases = get_widget_assert (xml, "radiobutton-sample-n-cases");
   act->table = get_widget_assert (xml, "select-cases-random-sample-table");
 
-  act->l0 = get_widget_assert (xml, "random-sample-label");;
+  act->l0 = get_widget_assert (xml, "random-sample-label");
 
   act->radiobutton_range = get_widget_assert (xml, "radiobutton-range");
   act->range_subdialog = get_widget_assert (xml, "select-cases-range-dialog");
