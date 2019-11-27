@@ -156,7 +156,7 @@ psppire_dialog_action_paired_activate (PsppireDialogAction *a, GVariant *param)
   PsppireDialogActionPaired *act = PSPPIRE_DIALOG_ACTION_PAIRED (a);
 
   GtkBuilder *xml = builder_new ( "paired-samples.ui");
-  
+
   GtkWidget *selector = get_widget_assert (xml, "psppire-selector3");
   GtkWidget *bb = gtk_button_box_new (GTK_ORIENTATION_HORIZONTAL);
   GtkWidget *button = gtk_button_new_with_mnemonic (_("O_ptions..."));

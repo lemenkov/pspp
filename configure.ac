@@ -1,19 +1,19 @@
 dnl PSPP - a program for statistical analysis.
 dnl Copyright (C) 2017 Free Software Foundation, Inc.
-dnl 
+dnl
 dnl This program is free software: you can redistribute it and/or modify
 dnl it under the terms of the GNU General Public License as published by
 dnl the Free Software Foundation, either version 3 of the License, or
 dnl (at your option) any later version.
-dnl 
+dnl
 dnl This program is distributed in the hope that it will be useful,
 dnl but WITHOUT ANY WARRANTY; without even the implied warranty of
 dnl MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 dnl GNU General Public License for more details.
-dnl 
+dnl
 dnl You should have received a copy of the GNU General Public License
 dnl along with this program.  If not, see <http://www.gnu.org/licenses/>.
-dnl 
+dnl
 dnl Process this file with autoconf to produce a configure script.
 
 dnl Initialize.
@@ -69,7 +69,7 @@ AC_ARG_VAR([PSPPIRE_LDFLAGS], [linker flags to be used for linking the psppire b
 # Support for Cairo and Pango.
 AC_ARG_WITH([cairo],
   [AS_HELP_STRING(
-    [--without-cairo], 
+    [--without-cairo],
     [Don't build support for charts (using Cairo and Pango);
      implies --without-gui])],
   [], [with_cairo=yes])
@@ -77,15 +77,15 @@ AM_CONDITIONAL([HAVE_CAIRO], [test "$with_cairo" != no])
 if test "$with_cairo" != no; then
   PKG_CHECK_MODULES([CAIRO], [cairo >= 1.5 pango >= 1.22 pangocairo],
     [CPPFLAGS="$CPPFLAGS $CAIRO_CFLAGS"
-     AC_DEFINE([HAVE_CAIRO], 1, 
+     AC_DEFINE([HAVE_CAIRO], 1,
        [Define to 1 if Cairo and Pango are available.])],
     [PSPP_REQUIRED_PREREQ([cairo 1.5 or later and pango 1.22 or later (or use --without-cairo)])])
 fi
 
 dnl One of the tests uses xmllint.
 AC_CACHE_CHECK([for an xmllint program which fits our needs],[ac_cv_path_XMLLINT],
-[AC_PATH_PROGS_FEATURE_CHECK([XMLLINT], [xmllint], 
-  [[$ac_path_XMLLINT --version 2>&1 | $GREP XPath > /dev/null && 
+[AC_PATH_PROGS_FEATURE_CHECK([XMLLINT], [xmllint],
+  [[$ac_path_XMLLINT --version 2>&1 | $GREP XPath > /dev/null &&
     test `$ac_path_XMLLINT --version 2>&1 | $SED 's/^.* \([0-9]*\).*/\1/'` -gt 20900 &&
     ac_cv_path_XMLLINT=$ac_path_XMLLINT]],
    [AC_MSG_WARN([no appropriate xmllint program found. Using a dummy (echo)]); ac_cv_path_XMLLINT=$ECHO])])
@@ -93,11 +93,11 @@ AC_CACHE_CHECK([for an xmllint program which fits our needs],[ac_cv_path_XMLLINT
 AC_SUBST([XMLLINT],[$ac_cv_path_XMLLINT])
 
 # Support for GUI.
-AC_ARG_WITH([gui], 
-  [AS_HELP_STRING([--without-gui], 
+AC_ARG_WITH([gui],
+  [AS_HELP_STRING([--without-gui],
                   [Don't build the PSPPIRE GUI (using GTK+)])],
   [], [with_gui=yes])
-AM_CONDITIONAL([HAVE_GUI], 
+AM_CONDITIONAL([HAVE_GUI],
                [test "$with_cairo" != no && test "$with_gui" != "no"])
 if test "$with_cairo" != no && test "$with_gui" != "no"; then
   PKG_CHECK_MODULES([GTHREAD], [gthread-2.0], [],
@@ -139,27 +139,27 @@ dnl If the libpq.so file is in a non standard path, (one which the linker
 dnl doesn't search) then we must set the PG_LDFLAGS to -R/usr/wherever/
 dnl However, if the system happens to have more than one version of other
 dnl dependent libraries (eg. libgtk) in different standard paths. (eg:
-dnl /usr and /usr/local) then the wrong one may get linked. 
+dnl /usr and /usr/local) then the wrong one may get linked.
 
 dnl To overcome this, we first check for libpq in the standard places, and
 dnl only set PG_LDFLAGS if it's not found.
 
 
 AC_ARG_WITH(
-  libpq, 
+  libpq,
   [AS_HELP_STRING([--without-libpq], [don't compile in Postgres capability])])
-AC_ARG_VAR([PG_CONFIG], 
+AC_ARG_VAR([PG_CONFIG],
            [Full pathname of the pg_config program shipped with Postgresql])
-AC_PATH_PROG([PG_CONFIG], [pg_config], [], 
+AC_PATH_PROG([PG_CONFIG], [pg_config], [],
              [$PATH:/usr/local/pgsql/bin:/usr/pgsql/bin])
 
-if test x"$with_libpq" != x"no" && test -n "$PG_CONFIG" ; then 
+if test x"$with_libpq" != x"no" && test -n "$PG_CONFIG" ; then
   AC_SUBST(PG_CONFIG)
-  PG_CFLAGS=-I`$PG_CONFIG --includedir` 
+  PG_CFLAGS=-I`$PG_CONFIG --includedir`
   AC_SUBST(PG_CFLAGS)
 
   AC_CHECK_LIB([pq], [PQexec],
-     [:], 
+     [:],
      [PG_LDFLAGS="-L`$PG_CONFIG --libdir` -R`$PG_CONFIG --libdir`"])
   AC_SUBST(PG_LDFLAGS)
 
@@ -234,7 +234,7 @@ AC_DEFINE(
 AC_ARG_WITH(
   gui_tools,
   [AS_HELP_STRING([--with-gui-tools], [build the gui developer tools.  For DEVELOPERS only! There is no reason why users will need this flag.])])
-if test x"$with_gui_tools" = x"yes" ; then 
+if test x"$with_gui_tools" = x"yes" ; then
 	PKG_CHECK_MODULES(GLADE_UI, gladeui-2.0)
 fi
 AM_CONDITIONAL(WITH_GUI_TOOLS, test x"$with_gui_tools" = x"yes")
@@ -289,8 +289,8 @@ AC_CHECK_FUNCS([__setfpucw fork execl isinf isnan finite getpid feholdexcept fps
 AC_PROG_LN_S
 
 AC_ARG_ENABLE(
-  debug, 
-  [AS_HELP_STRING([--enable-debug], 
+  debug,
+  [AS_HELP_STRING([--enable-debug],
                   [Turn on diagnostic features in the program])])
 if test x"$enable_debug" = x"yes"  ; then
   AC_DEFINE(DEBUGGING, 1, [Define to 1 if debugging is enabled.])

@@ -1,11 +1,11 @@
 #!/usr/bin/perl
-# Creates Texinfo documentation from the source 
+# Creates Texinfo documentation from the source
 
 use strict;
 use warnings 'all';
 
-my ($file) = $ARGV[0]; 
-open(INFO, $file) || die "Cannot open \"$file\"\n" ;	
+my ($file) = $ARGV[0];
+open(INFO, $file) || die "Cannot open \"$file\"\n" ;
 print "\@c Generated from $file by get-commands.pl\n";
 print "\@c Do not modify!\n\n";
 

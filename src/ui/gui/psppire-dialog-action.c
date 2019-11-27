@@ -257,7 +257,7 @@ psppire_dialog_action_activate (PsppireDialogAction *act, GVariant *parameter)
       if (xml != NULL)
 	class->activate (act, parameter);
     }
-  
+
   gtk_window_set_transient_for (GTK_WINDOW (act->dialog),
 				GTK_WINDOW (act->toplevel));
 

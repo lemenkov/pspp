@@ -48,18 +48,18 @@ encountered in the input.
 @vindex  ADD DOCUMENT
 
 @display
-ADD DOCUMENT 
+ADD DOCUMENT
     'line one' 'line two' @dots{} 'last line' .
 @end display
 
 
-@cmd{ADD DOCUMENT} adds one or more lines of descriptive commentary to 
+@cmd{ADD DOCUMENT} adds one or more lines of descriptive commentary to
 the active dataset.  Documents added in this way are saved to system files.
 They can be viewed using @cmd{SYSFILE INFO} or @cmd{DISPLAY
 DOCUMENTS}.  They can be removed from the active dataset with @cmd{DROP
 DOCUMENTS}.
 
-Each line of documentary text must be enclosed in quotation marks, and 
+Each line of documentary text must be enclosed in quotation marks, and
 may not be more than 80 bytes long. @xref{DOCUMENT}.
 
 @node CACHE
@@ -80,7 +80,7 @@ This command is accepted, for compatibility, but it has no effect.
 
 @display
 CD 'new directory' .
-@end display 
+@end display
 
 @cmd{CD} changes the current directory.  The new directory will become that specified by the command.
 
@@ -89,14 +89,14 @@ CD 'new directory' .
 @vindex COMMENT
 @vindex *
 
-@display 
+@display
 Two possibles syntaxes:
         COMMENT comment text @dots{} .
         *comment text @dots{} .
 @end display
 
 @cmd{COMMENT} is ignored.  It is used to provide information to
-the author and other readers of the @pspp{} syntax file.  
+the author and other readers of the @pspp{} syntax file.
 
 @cmd{COMMENT} can extend over any number of lines.  Don't forget to
 terminate it with a dot or a blank line.
@@ -117,7 +117,7 @@ They can be viewed using @cmd{SYSFILE INFO} or @cmd{DISPLAY
 DOCUMENTS}.  They can be removed from the active dataset with @cmd{DROP
 DOCUMENTS}.
 
-Specify the @var{documentary text} following the @subcmd{DOCUMENT} keyword.  
+Specify the @var{documentary text} following the @subcmd{DOCUMENT} keyword.
 It is interpreted literally---any quotes or other punctuation marks
 will be included in the file.
 You can extend the documentary text over as many lines as necessary,
@@ -169,7 +169,7 @@ system files stored on disk.
 @section ECHO
 @vindex ECHO
 
-@display 
+@display
 ECHO 'arbitrary text' .
 @end display
 
@@ -234,7 +234,7 @@ HOST.
 HOST COMMAND=['@var{command}'...].
 @end display
 
-@cmd{HOST} suspends the current @pspp{} session and temporarily returns control 
+@cmd{HOST} suspends the current @pspp{} session and temporarily returns control
 to the operating system.
 This command cannot be used if the SAFER (@pxref{SET}) setting is active.
 
@@ -256,7 +256,7 @@ subshell.
 @cmd{INCLUDE} causes the @pspp{} command processor to read an
 additional command file as if it were included bodily in the current
 command file.
-If errors are encountered in the included file, then command processing will 
+If errors are encountered in the included file, then command processing will
 stop and no more commands will be processed.
 Include files may be nested to any depth, up to the limit of available
 memory.
@@ -279,14 +279,14 @@ The optional @subcmd{ENCODING} subcommand has the same meaning as with @cmd{INSE
         [ENCODING=@{LOCALE, '@var{charset_name}'@}].
 @end display
 
-@cmd{INSERT} is similar to @cmd{INCLUDE} (@pxref{INCLUDE}) 
+@cmd{INSERT} is similar to @cmd{INCLUDE} (@pxref{INCLUDE})
 but somewhat more flexible.
-It causes the command processor to read a file as if it were embedded in the 
+It causes the command processor to read a file as if it were embedded in the
 current command file.
 
 If @subcmd{CD=YES} is specified, then before including the file, the
 current directory  will be changed to the directory of the included
-file.  
+file.
 The default setting is @samp{CD=NO}.
 Note that this directory will remain current until it is
 changed explicitly (with the @cmd{CD} command, or a subsequent
@@ -310,7 +310,7 @@ the following forms:
 
 @table @asis
 @item @subcmd{LOCALE}
-The encoding used by the system locale, or as overridden by the 
+The encoding used by the system locale, or as overridden by the
 @cmd{SET} command (@pxref{SET}).  On GNU/Linux and other Unix-like systems,
 environment variables, e.g.@: @env{LANG} or @env{LC_ALL}, determine the
 system locale.
@@ -363,7 +363,7 @@ They must appear in the syntax to be interpreted.}
 @cmd{OUTPUT} changes the appearance of the tables in which results are printed.
 In particular, it can be used to set the format and precision to which results are displayed.
 
-After running this command, the default table appearance parameters will have been modified and  each 
+After running this command, the default table appearance parameters will have been modified and  each
 new output table generated will use the new parameters.
 
 Following @code{/TABLECELLS SELECT =} a list of cell classes must appear, enclosed in square
@@ -408,9 +408,9 @@ PERMISSIONS
         /PERMISSIONS = @{READONLY,WRITEABLE@}.
 @end display
 
-@cmd{PERMISSIONS} changes the permissions of a file.  
+@cmd{PERMISSIONS} changes the permissions of a file.
 There is one mandatory subcommand which specifies the permissions to
-which the file should be changed.  
+which the file should be changed.
 If you set a file's  permission  to @subcmd{READONLY}, then the file will become
 unwritable either by you or anyone else on the system.
 If you set the permission to @subcmd{WRITEABLE}, then the file will become
@@ -518,7 +518,7 @@ SET
 @pspp{}'s execution.  Since there are many subcommands to this command, its
 subcommands will be examined in groups.
 
-For subcommands that take boolean values, @subcmd{ON} and @subcmd{YES} are synonymous, 
+For subcommands that take boolean values, @subcmd{ON} and @subcmd{YES} are synonymous,
 as are @subcmd{OFF} and @subcmd{NO}, when used as subcommand values.
 
 The data input subcommands affect the way that data is read from data
@@ -559,7 +559,7 @@ epoch.  If @subcmd{AUTOMATIC} (the default) is specified, then the epoch begins
 69 years before the current date.
 
 @item RIB
-@anchor{SET RIB} 
+@anchor{SET RIB}
 
 @pspp{} extension to set the byte ordering (endianness) used for reading
 data in IB or PIB format (@pxref{Binary and Hexadecimal Numeric
@@ -609,7 +609,7 @@ order.
 
 @item ZS
 32-bit IBM Z architecture short format hexadecimal floating point, in
-big-endian byte order.  
+big-endian byte order.
 
 @item ZL
 64-bit IBM Z architecture long format hexadecimal floating point, in
@@ -631,7 +631,7 @@ command file.  The default is 50.
 
 @item MXWARNS
 The maximum number of warnings + errors before @pspp{} halts processing the
-current command file.  
+current command file.
 The special value of zero means that all warning situations should be ignored.
 No warnings will be issued, except a single initial warning advising the user
 that warnings will not be given.
@@ -680,7 +680,7 @@ Mathematics}).  The default @var{fuzzbits} is 6.
 The maximum amount of memory (in kilobytes) that @pspp{} will use to store data being processed.
 If memory in excess of the workspace size is required, then @pspp{} will start
 to use temporary files to store the data.
-Setting a higher value will, in general, mean procedures will run faster, 
+Setting a higher value will, in general, mean procedures will run faster,
 but may cause other applications to run slower.
 On platforms without virtual memory management, setting a very large workspace
 may cause @pspp{} to abort.
@@ -712,7 +712,7 @@ Allows the default numeric input/output format to be specified.  The
 default is F8.2.  @xref{Input and Output Formats}.
 
 @item WIB
-@anchor{SET WIB} 
+@anchor{SET WIB}
 
 @pspp{} extension to set the byte ordering (endianness) used for writing
 data in IB or PIB format (@pxref{Binary and Hexadecimal Numeric
@@ -784,7 +784,7 @@ subcommands are
 @itemx TNUMBERS
 The @subcmd{TNUMBERS} option sets the way in which values are displayed in output tables.
 The valid settings are @subcmd{VALUES}, @subcmd{LABELS} and @subcmd{BOTH}.
-If @subcmd{TNUMBERS} is set to @subcmd{VALUES}, then all values are displayed with their literal value 
+If @subcmd{TNUMBERS} is set to @subcmd{VALUES}, then all values are displayed with their literal value
 (which for a numeric value is a number and for a string value an alphanumeric string).
 If @subcmd{TNUMBERS} is set to @subcmd{LABELS}, then values are displayed using their assigned labels if any.
 (@xref{VALUE LABELS}.)
@@ -804,7 +804,7 @@ If @subcmd{TVARS} is set to @subcmd{BOTH}, then variables will be displayed with
 
 @cindex headers
 @cindex length
-@cindex pager 
+@cindex pager
 @cindex width
 @cindex tnumbers
 
@@ -868,7 +868,7 @@ This item is used to set the default character encoding.
 The encoding may be specified either as an encoding name or alias
 (see @url{http://www.iana.org/assignments/character-sets}), or
 as a locale name.
-If given as a locale name, only the character encoding of the 
+If given as a locale name, only the character encoding of the
 locale is relevant.
 
 System files written by @pspp{} will use this encoding.
@@ -887,7 +887,7 @@ SET LOCALE='ru_RU.cp1251'.
 SET LOCALE='japanese'.
 @end example
 
-Contrary to intuition, this command does not affect any aspect 
+Contrary to intuition, this command does not affect any aspect
 of the system's locale.
 @end table
 

@@ -19,7 +19,7 @@
 AUTOMAKE_OPTIONS = std-options check-news 1.10.1 subdir-objects
 
 SUBDIRS = gl po
-DISTCLEANFILES = ./po/stamp-po xconfigure 
+DISTCLEANFILES = ./po/stamp-po xconfigure
 BUILT_SOURCES =
 
 AM_CPPFLAGS = \
@@ -48,7 +48,7 @@ pkgsysconfdir = $(sysconfdir)/$(PACKAGE)
 
 EXTRA_DIST = ONEWS pspp-mode.el
 
-CLEANFILES = 
+CLEANFILES =
 CLEAN_LOCAL =
 ALL_LOCAL =
 CHECK_LOCAL =
@@ -60,7 +60,7 @@ check_PROGRAMS=
 bin_PROGRAMS=
 dist_man_MANS =
 DIST_HOOKS =
-INSTALL_DATA_HOOKS = 
+INSTALL_DATA_HOOKS =
 UNINSTALL_DATA_HOOKS =
 PHONY =
 SUFFIXES = .q

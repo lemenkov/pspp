@@ -1,16 +1,16 @@
 dnl PSPP - a program for statistical analysis.
 dnl Copyright (C) 2017, 2019 Free Software Foundation, Inc.
-dnl 
+dnl
 dnl This program is free software: you can redistribute it and/or modify
 dnl it under the terms of the GNU General Public License as published by
 dnl the Free Software Foundation, either version 3 of the License, or
 dnl (at your option) any later version.
-dnl 
+dnl
 dnl This program is distributed in the hope that it will be useful,
 dnl but WITHOUT ANY WARRANTY; without even the implied warranty of
 dnl MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 dnl GNU General Public License for more details.
-dnl 
+dnl
 dnl You should have received a copy of the GNU General Public License
 dnl along with this program.  If not, see <http://www.gnu.org/licenses/>.
 dnl
@@ -218,7 +218,7 @@ end data.
 
 weight by w.
 
-examine v1 
+examine v1
  /statistics=extreme(6)
  .
 ])
@@ -324,16 +324,16 @@ x,Mean,,1120010.293,86222.178
 AT_CLEANUP
 
 dnl Test the PERCENTILES subcommand of the EXAMINE command.
-dnl In particular test that it behaves properly when there are only 
+dnl In particular test that it behaves properly when there are only
 dnl a few cases.
 AT_SETUP([EXAMINE -- percentiles])
 AT_KEYWORDS([categorical categoricals])
 AT_DATA([examine.sps], [dnl
 DATA LIST LIST /X *.
 BEGIN DATA.
-2.00 
-8.00 
-5.00 
+2.00
+8.00
+5.00
 END DATA.
 
 EXAMINE /x
@@ -424,7 +424,7 @@ AT_KEYWORDS([categorical categoricals])
 AT_DATA([examine.sps], [dnl
 DATA LIST LIST /x * y *.
 BEGIN DATA.
-1   1 
+1   1
 2   1
 3   1
 4   1
@@ -568,7 +568,7 @@ end data.
 
 examine a by x by y
 	/statistics=DESCRIPTIVES
-	. 
+	.
 ])
 AT_CHECK([pspp -o pspp.csv examine.sps])
 dnl Ignore output -- this is just a no-crash check.
@@ -587,7 +587,7 @@ end data.
 
 EXAMINE /VARIABLES= z BY y.
 
-EXAMINE /VARIABLES= z. 
+EXAMINE /VARIABLES= z.
 ])
 AT_CHECK([pspp -o pspp.csv examine.sps])
 dnl Ignore output -- this is just a no-crash check.
@@ -605,7 +605,7 @@ begin data.
 3 1
 4 1
 end data.
-examine x by y /statistics=descriptives. 
+examine x by y /statistics=descriptives.
 ])
 AT_CHECK([pspp -o pspp.csv examine.sps])
 dnl Ignore output -- this is just a no-crash check.
@@ -617,13 +617,13 @@ AT_KEYWORDS([categorical categoricals])
 AT_DATA([examine.sps], [dnl
 DATA LIST LIST /quality * .
 BEGIN DATA
-3  
+3
 END DATA
 
 
 EXAMINE
-	quality 
-	/STATISTICS descriptives 
+	quality
+	/STATISTICS descriptives
         /PLOT = histogram
 	.
 ])
@@ -643,7 +643,7 @@ BEGIN DATA.
 .
 END DATA.
 
-EXAMINE /x 
+EXAMINE /x
 	PLOT=HISTOGRAM BOXPLOT NPPLOT SPREADLEVEL(1) ALL
 	/ID=x
         /STATISTICS = DESCRIPTIVES EXTREME (5) ALL
@@ -678,7 +678,7 @@ dnl Another test that big input doesn't crash.
 dnl The actual bug that this checks for has been lost.
 AT_SETUP([EXAMINE -- big input doesn't crash 2])
 AT_KEYWORDS([categorical categoricals slow])
-AT_DATA([make-big-input.pl], 
+AT_DATA([make-big-input.pl],
   [for ($i=0; $i<100000; $i++) { print "AB12\n" };
    for ($i=0; $i<100000; $i++) { print "AB04\n" };
 ])
@@ -694,7 +694,7 @@ EXAMINE /A BY X.
 ])
 AT_CHECK([pspp -o pspp.csv examine.sps])
 dnl Ignore output -- this is just a no-crash check.
-AT_DATA([more-big-input.pl], 
+AT_DATA([more-big-input.pl],
   [for ($i=0; $i<25000; $i++) { print "AB04\nAB12\n" };
 ])
 AT_CHECK([$PERL more-big-input.pl >> large.txt])
@@ -759,7 +759,7 @@ Table: Tests of Normality
 x,.37,14,.00
 ])
 
-AT_CLEANUP 
+AT_CLEANUP
 
 dnl Test for a crash which happened on cleanup from a bad input syntax
 AT_SETUP([EXAMINE -- Bad Input])
@@ -779,7 +779,7 @@ begin data.
 9 2
 end data.
 
-EXAMINE 
+EXAMINE
 	/VARIABLES= h
 	BY  g
 	/STATISTICS = DESCRIPTIVES EXTREME
@@ -789,7 +789,7 @@ EXAMINE
 
 AT_CHECK([pspp -o pspp.csv examine-bad.sps], [1], [ignore])
 
-AT_CLEANUP 
+AT_CLEANUP
 
 
 dnl Check the MISSING=REPORT option
@@ -921,7 +921,7 @@ Footnotes:
 a,User-missing value.
 ]])
 
-AT_CLEANUP 
+AT_CLEANUP
 
 
 dnl Run a test of the basic STATISTICS using a "real"
@@ -1066,7 +1066,7 @@ X,Mean,,587.6603,23.2665
 ,Kurtosis,,.5300,.4783
 ])
 
-AT_CLEANUP 
+AT_CLEANUP
 
 
 
@@ -1090,7 +1090,7 @@ EXAMINE
 
 AT_CHECK([pspp -o pspp.csv examine-empty-parens.sps], [1], [ignore])
 
-AT_CLEANUP 
+AT_CLEANUP
 
 
 
@@ -1115,7 +1115,7 @@ EXAMINE
 
 AT_CHECK([pspp -o pspp.csv examine-bad-variable.sps], [1], [ignore])
 
-AT_CLEANUP 
+AT_CLEANUP
 
 
 
@@ -1158,7 +1158,7 @@ h,Highest,1,3,5.00
 ,,3,2,4.00
 ])
 
-AT_CLEANUP 
+AT_CLEANUP
 
 dnl This is an example from doc/tutorial.texi
 dnl So if the results of this have to be changed in any way,

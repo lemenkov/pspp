@@ -1,16 +1,16 @@
 dnl PSPP - a program for statistical analysis.
 dnl Copyright (C) 2017 Free Software Foundation, Inc.
-dnl 
+dnl
 dnl This program is free software: you can redistribute it and/or modify
 dnl it under the terms of the GNU General Public License as published by
 dnl the Free Software Foundation, either version 3 of the License, or
 dnl (at your option) any later version.
-dnl 
+dnl
 dnl This program is distributed in the hope that it will be useful,
 dnl but WITHOUT ANY WARRANTY; without even the implied warranty of
 dnl MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 dnl GNU General Public License for more details.
-dnl 
+dnl
 dnl You should have received a copy of the GNU General Public License
 dnl along with this program.  If not, see <http://www.gnu.org/licenses/>.
 dnl
@@ -46,7 +46,7 @@ VALUE LABELS /brand 1 'Aspeger' 2 'Bloggs' 3 'Charlies'.
 ONEWAY
 	quality BY brand
 	/STATISTICS descriptives homogeneity
-	/CONTRAST =  -2 1 1 
+	/CONTRAST =  -2 1 1
 	/CONTRAST = 0 -1 1
 	.
 ])
@@ -224,14 +224,14 @@ END DATA
 ONEWAY
 	v1 v2 BY dep
 	/STATISTICS descriptives homogeneity
-	/MISSING ANALYSIS 
+	/MISSING ANALYSIS
 	.
 ])
 
 AT_DATA([oneway-missing2.sps],
 [DATA LIST NOTABLE LIST /v1 * v2 * dep * vn * .
 BEGIN DATA
-4 .  1  2 
+4 .  1  2
 3 3  1  2
 2 2  1  2
 1 1  1  2
@@ -268,7 +268,7 @@ dnl Now a test with missing values in the independent variable
 AT_DATA([oneway-missing3.sps],
 [DATA LIST NOTABLE LIST /v1 * v2 * dep * vn * .
 BEGIN DATA
-4 2  .  2 
+4 2  .  2
 3 3  1  2
 2 2  1  2
 1 1  1  2
@@ -333,7 +333,7 @@ ONEWAY
 	.
 ])
 
-AT_CHECK([pspp -O format=csv oneway-descriptives.sps], [0], 
+AT_CHECK([pspp -O format=csv oneway-descriptives.sps], [0],
 [Table: Descriptives
 ,,N,Mean,Std. Deviation,Std. Error,95% Confidence Interval for Mean,,Minimum,Maximum
 ,BRAND,,,,,Lower Bound,Upper Bound,,
@@ -383,7 +383,7 @@ ONEWAY
 	.
 ])
 
-AT_CHECK([pspp -O format=csv oneway-homogeneity.sps], [0], 
+AT_CHECK([pspp -O format=csv oneway-homogeneity.sps], [0],
 [Table: Test of Homogeneity of Variances
 ,Levene Statistic,df1,df2,Sig.
 QUALITY,.09,2,12,.913
@@ -756,7 +756,7 @@ ONEWAY
   /POSTHOC = SIDAK.
 ])
 
-AT_CHECK([pspp -O format=csv oneway-sidak.sps], [0], 
+AT_CHECK([pspp -O format=csv oneway-sidak.sps], [0],
 [Table: ANOVA
 ,,Sum of Squares,df,Mean Square,F,Sig.
 score,Between Groups,54.9500,3,18.3167,7.0449,.003
@@ -838,7 +838,7 @@ oneway usage by group
 	/posthoc scheffe.
 ])
 
-AT_CHECK([pspp -O format=csv oneway-scheffe.sps], [0], 
+AT_CHECK([pspp -O format=csv oneway-scheffe.sps], [0],
 [Table: ANOVA
 ,,Sum of Squares,df,Mean Square,F,Sig.
 Days of Use,Between Groups,555.275,3,185.092,6.663,.001
@@ -882,11 +882,11 @@ BEGIN DATA.
 END DATA.
 
 ONEWAY /VARIABLES= height weight temperature BY sex
- /CONTRAST = -1  1 
- /CONTRAST = -3  3 
+ /CONTRAST = -1  1
+ /CONTRAST = -3  3
  /CONTRAST =  2 -2  1
  /CONTRAST = -9  9
- . 
+ .
 ])
 
 
@@ -966,20 +966,20 @@ AT_KEYWORDS([categorical categoricals])
 AT_DATA([crash2.sps],[dnl
 data list notable list /dv1 * dv2  *  y * .
 begin data.
-2  .  2     
-1  .  2 
-1  .  1    
-2  .  4    
+2  .  2
+1  .  2
+1  .  1
+2  .  4
 3  .  4
-4  .  4    
-5  .  4    
+4  .  4
+5  .  4
 end data.
 
-ONEWAY 
+ONEWAY
        /VARIABLES= dv1 dv2  BY y
        /STATISTICS = DESCRIPTIVES
        /POSTHOC = BONFERRONI LSD SCHEFFE SIDAK TUKEY
-       /MISSING = ANALYSIS      
+       /MISSING = ANALYSIS
        .
 ])
 
@@ -1005,7 +1005,7 @@ end data.
 ONEWAY
  /VARIABLES= dv BY y
  /POSTHOC = GH
- . 
+ .
 ])
 
 AT_CHECK([pspp -O format=csv crash3.sps], [0], [ignore])

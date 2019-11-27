@@ -7,7 +7,7 @@ TRANSLATE ()
 
 extract_string ()
 {
-  msggrep -K -F -e "$2" $top_builddir/$1 2> /dev/null | msgattrib --translated --no-fuzzy | awk -F \" '/^msgstr "/{print $2}' | grep -v '^$' 
+  msggrep -K -F -e "$2" $top_builddir/$1 2> /dev/null | msgattrib --translated --no-fuzzy | awk -F \" '/^msgstr "/{print $2}' | grep -v '^$'
 }
 
 
@@ -21,7 +21,7 @@ printf '[Desktop Entry]\n';
 printf 'Name=GNU PSPP\n';
 printf "GenericName=$GenericName\n"
 
-for pfile in $POFILES; do 
+for pfile in $POFILES; do
     lang=${pfile%%.po}
     lang=${lang##po/}
     xlate=`extract_string $pfile "$GenericName"`
@@ -32,7 +32,7 @@ done
 
 printf "Comment=$Comment\n"
 
-for pfile in $POFILES; do 
+for pfile in $POFILES; do
     lang=${pfile%%.po}
     lang=${lang##po/}
     xlate=`extract_string $pfile "$Comment"`

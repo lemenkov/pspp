@@ -1,16 +1,16 @@
 dnl PSPP - a program for statistical analysis.
 dnl Copyright (C) 2017 Free Software Foundation, Inc.
-dnl 
+dnl
 dnl This program is free software: you can redistribute it and/or modify
 dnl it under the terms of the GNU General Public License as published by
 dnl the Free Software Foundation, either version 3 of the License, or
 dnl (at your option) any later version.
-dnl 
+dnl
 dnl This program is distributed in the hope that it will be useful,
 dnl but WITHOUT ANY WARRANTY; without even the implied warranty of
 dnl MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 dnl GNU General Public License for more details.
-dnl 
+dnl
 dnl You should have received a copy of the GNU General Public License
 dnl along with this program.  If not, see <http://www.gnu.org/licenses/>.
 dnl
@@ -82,7 +82,7 @@ AT_DATA([split-file.sps], [dnl
 
 data list list /a b c q g *.
 begin data.
-1 2 3     1  0 
+1 2 3     1  0
 4 5 6     0  0
 7 8 9     1  0
 10 11 12  0  1
@@ -94,7 +94,7 @@ split file by g.
 
 * The commented out lines are ones which currently fail.
 
-AGGREGATE outfile='foo' /break=c /X=sum(a). 
+AGGREGATE outfile='foo' /break=c /X=sum(a).
 AUTORECODE variables = c into d .
 COUNT e = c (1 2 3 4 5 6 7).
 CROSSTABS a by b.
@@ -119,7 +119,7 @@ ONEWAY c BY b.
 QUICK CLUSTER b c.
 RANK b c.
 REGRESSION /VARIABLES = c /DEPENDENT = q.
-RELIABILITY /VARIABLES = c b d. 
+RELIABILITY /VARIABLES = c b d.
 RENAME VARIABLES (b = bb).
 ROC bb by q(1).
 SAMPLE 0.9 .

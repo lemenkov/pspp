@@ -109,7 +109,6 @@
         </child>
 
 
-	
         <child>
           <object class="PsppireButtonbox" id="psppire-vbuttonbox1">
             <property name="orientation">vertical</property>

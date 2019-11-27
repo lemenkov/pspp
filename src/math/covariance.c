@@ -72,7 +72,7 @@ struct covariance
 {
   /* True if the covariances are centerered. (ie Real covariances) */
   bool centered;
-  
+
   /* The variables for which the covariance matrix is to be calculated. */
   size_t n_vars;
   const struct variable *const *vars;
@@ -678,7 +678,7 @@ covariance_calculate_single_pass_unnormalized (struct covariance *cov)
 	    }
 	}
     }
-  
+
   return cm_to_gsl (cov);
 }
 

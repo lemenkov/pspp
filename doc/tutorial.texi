@@ -19,25 +19,25 @@ You can use it to discover patterns in the data,
 to explain differences in one subset of data in terms of another subset
 and to find out
 whether certain beliefs about the data are justified.
-This chapter does not attempt to introduce the theory behind the 
+This chapter does not attempt to introduce the theory behind the
 statistical analysis,
 but it shows how such analysis can be performed using @pspp{}.
 
-For the purposes of this tutorial, it is assumed that you are using @pspp{} in its 
+For the purposes of this tutorial, it is assumed that you are using @pspp{} in its
 interactive mode from the command line.
-However, the example commands can also be typed into a file and executed in 
+However, the example commands can also be typed into a file and executed in
 a post-hoc mode by typing @samp{pspp @var{filename}} at a shell prompt,
 where @var{filename} is the name of the file containing the commands.
 Alternatively, from the graphical interface, you can select
 @clicksequence{File @click{} New @click{} Syntax} to open a new syntax window
-and use the @clicksequence{Run} menu when a syntax fragment is ready to be 
+and use the @clicksequence{Run} menu when a syntax fragment is ready to be
 executed.
 Whichever method you choose, the syntax is identical.
 
 When using the interactive method, @pspp{} tells you that it's waiting for your
 data with a string like @prompt{PSPP>} or @prompt{data>}.
 In the examples of this chapter, whenever you see text like this, it
-indicates the prompt displayed by @pspp{}, @emph{not} something that you 
+indicates the prompt displayed by @pspp{}, @emph{not} something that you
 should type.
 
 Throughout this chapter reference is made to a number of sample data files.
@@ -53,9 +53,9 @@ the examples accordingly.}
 
 
 @menu
-* Preparation of Data Files::   
-* Data Screening and Transformation::  
-* Hypothesis Testing::          
+* Preparation of Data Files::
+* Data Screening and Transformation::
+* Hypothesis Testing::
 @end menu
 
 @node Preparation of Data Files
@@ -73,7 +73,7 @@ There are two aspects of data:
  For example height, weight and geographic location are all variables.
 @item The observations (also called `cases') of the variables ---
  each observation represents an instance when the variables were measured
- or observed. 
+ or observed.
 @end itemize
 
 @noindent
@@ -88,12 +88,12 @@ For example, a data set which has the variables @var{height}, @var{weight}, and
 The following sections explain how to define a dataset.
 
 @menu
-* Defining Variables::          
-* Listing the data::            
-* Reading data from a text file::  
-* Reading data from a pre-prepared PSPP file::  
-* Saving data to a PSPP file.::  
-* Reading data from other sources::  
+* Defining Variables::
+* Listing the data::
+* Reading data from a text file::
+* Reading data from a pre-prepared PSPP file::
+* Saving data to a PSPP file.::
+* Reading data from other sources::
 * Exiting PSPP::
 @end menu
 
@@ -104,13 +104,13 @@ The following sections explain how to define a dataset.
 Variables come in two basic types, @i{viz}: @dfn{numeric} and @dfn{string}.
 Variables such as age, height and satisfaction are numeric,
 whereas name is a string variable.
-String variables are best reserved for commentary data to assist the 
+String variables are best reserved for commentary data to assist the
 human observer.
 However they can also be used for nominal or categorical data.
 
 
 @ref{data-list} defines two variables @var{forename} and @var{height},
-and reads data into them by manual input. 
+and reads data into them by manual input.
 
 @float Example, data-list
 @cartouche
@@ -160,8 +160,8 @@ Thus, the example is correct for English locales and other
 locales which use a period (@samp{.}) as the decimal separator.
 However if you are using a system with a locale which uses the comma (@samp{,})
 as the decimal separator, then you should in the subsequent lines substitute
-@samp{.} with @samp{,}.  
-Alternatively, you could explicitly tell @pspp{} that the @var{height} 
+@samp{.} with @samp{,}.
+Alternatively, you could explicitly tell @pspp{} that the @var{height}
 variable is to be read using a period as its decimal separator by appending the
 text @samp{DOT8.3} after the word @samp{height}.
 For more information on data formats, @pxref{Input and Output Formats}.
@@ -176,7 +176,7 @@ so that you know to enter data and not a command.
 @item
 At the end of every command there is a terminating @samp{.} which tells
 @pspp{} that the end of a command has been encountered.
-You should not enter @samp{.} when data is expected (@i{ie.} when 
+You should not enter @samp{.} when data is expected (@i{ie.} when
 the @prompt{data>} prompt is current) since it is appropriate only for
 terminating commands.
 @end itemize
@@ -192,7 +192,7 @@ you could type
 @end example
 @noindent
 to list the data.
-The optional text @samp{/format=numbered} requests the case numbers to be 
+The optional text @samp{/format=numbered} requests the case numbers to be
 shown along with the data.
 It should show the following output:
 @example
@@ -209,7 +209,7 @@ It should show the following output:
 @end group
 @end example
 @noindent
-Note that the numeric variable @var{height} is displayed to 2 decimal 
+Note that the numeric variable @var{height} is displayed to 2 decimal
 places, because the format for that variable is @samp{F8.2}.
 For a complete description of the @cmd{LIST} command, @pxref{LIST}.
 
@@ -217,18 +217,18 @@ For a complete description of the @cmd{LIST} command, @pxref{LIST}.
 @subsection Reading data from a text file
 @cindex reading data
 
-The previous example showed how to define a set of variables and to 
+The previous example showed how to define a set of variables and to
 manually enter the data for those variables.
 Manual entering of data is tedious work, and often
-a file containing the data will be have been previously 
+a file containing the data will be have been previously
 prepared.
 Let us assume that you have a file called @file{mydata.dat} containing the
 ascii encoded data:
 @example
-Ahmed          188.00 
-Bertram        167.00 
-Catherine      134.23 
-David          109.10 
+Ahmed          188.00
+Bertram        167.00
+Catherine      134.23
+David          109.10
 @              .
 @              .
 @              .
@@ -244,7 +244,7 @@ this file instead of by manual entry, with a command like:
 Notice however, that it is still necessary to specify the names of the
 variables and their formats, since this information is not contained
 in the file.
-It is also possible to specify the file's character encoding and other 
+It is also possible to specify the file's character encoding and other
 parameters.
 For full details refer to @pxref{DATA LIST}.
 
@@ -258,7 +258,7 @@ uses the @pspp{} data format, you may be given the data in
 a pre-prepared @pspp{} file.
 Such files contain not only the data, but the variable definitions,
 along with their formats, labels and other meta-data.
-Conventionally, these files (sometimes called ``system'' files) 
+Conventionally, these files (sometimes called ``system'' files)
 have the suffix @file{.sav}, but that is
 not mandatory.
 The following syntax loads a file called @file{my-file.sav}.
@@ -294,7 +294,7 @@ Otherwise it will be created.
 @cindex spreadsheets
 @cindex databases
 
-Sometimes it's useful to be able to read data from comma 
+Sometimes it's useful to be able to read data from comma
 separated text, from spreadsheets, databases or other sources.
 In these instances you should
 use the @cmd{GET DATA} command (@pxref{GET DATA}).
@@ -306,7 +306,7 @@ Use the @cmd{FINISH} command to exit PSPP:
 @example
 @prompt{PSPP>} finish.
 @end example
-  
+
 @node Data Screening and Transformation
 @section Data Screening and Transformation
 
@@ -318,11 +318,11 @@ to transform it in some way before performing analysis upon it.
 At the very least, it's good practice to check for errors.
 
 @menu
-* Identifying incorrect data::  
-* Dealing with suspicious data::  
-* Inverting negatively coded variables::  
-* Testing data consistency::    
-* Testing for normality ::      
+* Identifying incorrect data::
+* Dealing with suspicious data::
+* Inverting negatively coded variables::
+* Testing data consistency::
+* Testing for normality ::
 @end menu
 
 @node Identifying incorrect data
@@ -331,7 +331,7 @@ At the very least, it's good practice to check for errors.
 @cindex errors, in data
 
 Data from real sources is rarely error free.
-@pspp{} has a number of procedures which can be used to help 
+@pspp{} has a number of procedures which can be used to help
 identify data which might be incorrect.
 
 The @cmd{DESCRIPTIVES} command (@pxref{DESCRIPTIVES}) is used to generate
@@ -365,7 +365,7 @@ Output:
 +---------------------+--+-------+-------+-------+-------+
 @end example
 @end cartouche
-@caption{Using the @cmd{DESCRIPTIVES} command to display simple 
+@caption{Using the @cmd{DESCRIPTIVES} command to display simple
 summary information about the data.
 In this case, the results show unexpectedly low values in the Minimum
 column, suggesting incorrect data entry.}
@@ -376,7 +376,7 @@ the most interesting column is the minimum value.
 The @var{weight} variable has a minimum value of less than zero,
 which is clearly erroneous.
 Similarly, the @var{height} variable's minimum value seems to be very low.
-In fact, it is more than 5 standard deviations from the mean, and is a 
+In fact, it is more than 5 standard deviations from the mean, and is a
 seemingly bizarre height for an adult person.
 We can examine the data in more detail with the @cmd{EXAMINE}
 command (@pxref{EXAMINE}):
@@ -384,18 +384,18 @@ command (@pxref{EXAMINE}):
 In @ref{ex1} you can see that the lowest value of @var{height} is
 179 (which we suspect to be erroneous), but the second lowest is 1598
 which
-we know from the @cmd{DESCRIPTIVES} command 
+we know from the @cmd{DESCRIPTIVES} command
 is within 1 standard deviation from the mean.
 Similarly the @var{weight} variable has a lowest value which is
 negative but a plausible value for the second lowest value.
-This suggests that the two extreme values are outliers and probably 
-represent data entry errors. 
+This suggests that the two extreme values are outliers and probably
+represent data entry errors.
 
 @float Example, ex1
 @cartouche
 [@dots{} continue from @ref{descriptives}]
 @example
-@prompt{PSPP>} examine height, weight /statistics=extreme(3).    
+@prompt{PSPP>} examine height, weight /statistics=extreme(3).
 @end example
 
 Output:
@@ -462,7 +462,7 @@ You will also notice that the data summaries indicate the two missing values.
 @cindex Likert scale
 @cindex Inverting data
 Data entry errors are not the only reason for wanting to recode data.
-The sample file @file{hotel.sav} comprises data gathered from a 
+The sample file @file{hotel.sav} comprises data gathered from a
 customer satisfaction survey of clients at a particular hotel.
 In @ref{reliability}, this file is loaded for analysis.
 The line @code{display dictionary.} tells @pspp{} to display the
@@ -472,7 +472,7 @@ you will notice that each of the variables
 @var{v1}, @var{v2} @dots{} @var{v5}  are measured on a 5 point Likert scale,
 with 1 meaning ``Strongly disagree'' and 5 meaning ``Strongly agree''.
 Whilst variables @var{v1}, @var{v2} and @var{v4} record responses
-to a positively posed question, variables @var{v3} and @var{v5} are 
+to a positively posed question, variables @var{v3} and @var{v5} are
 responses to negatively worded questions.
 In order to perform meaningful analysis, we need to recode the variables so
 that they all measure in the same direction.
@@ -489,7 +489,7 @@ subtracting their value  from 6 has the effect of inverting them:
 compute @var{var} = 6 - @var{var}.
 @end example
 @noindent
-@ref{reliability} uses this technique to recode the variables 
+@ref{reliability} uses this technique to recode the variables
 @var{v3} and @var{v5}.
 After applying  @cmd{COMPUTE} for both variables,
 all subsequent commands will use the inverted values.
@@ -503,12 +503,12 @@ all subsequent commands will use the inverted values.
 
 A sensible check to perform on survey data is the calculation of
 reliability.
-This gives the statistician some confidence that the questionnaires have been 
+This gives the statistician some confidence that the questionnaires have been
 completed thoughtfully.
 If you examine the labels of variables @var{v1},  @var{v3} and @var{v4},
 you will notice that they ask very similar questions.
-One would therefore expect the values of these variables (after recoding) 
-to closely follow one another, and we can test that with the @cmd{RELIABILITY} 
+One would therefore expect the values of these variables (after recoding)
+to closely follow one another, and we can test that with the @cmd{RELIABILITY}
 command (@pxref{RELIABILITY}).
 @ref{reliability} shows a @pspp{} session where the user (after recoding
 negatively scaled variables) requests reliability statistics for
@@ -552,15 +552,15 @@ coefficient suggests a high degree of reliability among variables
 @var{v1}, @var{v3} and @var{v4}.}
 @end float
 
-As a rule of thumb, many statisticians consider a value of Cronbach's Alpha of 
+As a rule of thumb, many statisticians consider a value of Cronbach's Alpha of
 0.7 or higher to indicate reliable data.
-Here, the value is 0.81 so the data and the recoding that we performed 
+Here, the value is 0.81 so the data and the recoding that we performed
 are vindicated.
 
 
-@node Testing for normality 
+@node Testing for normality
 @subsection Testing for normality
-@cindex normality, testing 
+@cindex normality, testing
 
 Many statistical tests rely upon certain properties of the data.
 One common property, upon which many linear tests depend, is that of
@@ -572,14 +572,14 @@ In @ref{normality}, a researcher was examining the failure rates
 of equipment produced by an engineering company.
 The file @file{repairs.sav} contains the mean time between
 failures (@var{mtbf}) of some items of equipment subject to the study.
-Before performing linear analysis on the data, 
+Before performing linear analysis on the data,
 the researcher wanted to ascertain that the data is normally distributed.
 
 A normal distribution has a skewness and kurtosis of zero.
 Looking at the skewness of @var{mtbf} in @ref{normality} it is clear
 that the mtbf figures have a lot of positive skew and are therefore
 not drawn from a normally distributed variable.
-Positive skew can often be compensated for by applying a logarithmic 
+Positive skew can often be compensated for by applying a logarithmic
 transformation.
 This is done with the @cmd{COMPUTE} command in the line
 @example
@@ -592,10 +592,10 @@ the natural logarithm of @var{mtbf}.
 The final command in this example calls @cmd{EXAMINE} on this new variable,
 and it can be seen from the results that both the skewness and
 kurtosis for @var{mtbf_ln} are very close to zero.
-This provides some confidence that the @var{mtbf_ln} variable is 
+This provides some confidence that the @var{mtbf_ln} variable is
 normally distributed and thus safe for linear analysis.
 In the event that no suitable transformation can be found,
-then it would be worth considering 
+then it would be worth considering
 an appropriate non-parametric test instead of a linear one.
 @xref{NPAR TESTS}, for information about non-parametric tests.
 
@@ -603,7 +603,7 @@ an appropriate non-parametric test instead of a linear one.
 @cartouche
 @example
 @prompt{PSPP>} get file='@value{example-dir}/repairs.sav'.
-@prompt{PSPP>} examine mtbf 
+@prompt{PSPP>} examine mtbf
                 /statistics=descriptives.
 @prompt{PSPP>} compute mtbf_ln = ln (mtbf).
 @prompt{PSPP>} examine mtbf_ln
@@ -702,7 +702,7 @@ This section presents just some of the possible tests that @pspp{} offers.
 
 The researcher starts by making a @dfn{null hypothesis}.
 Often this is a hypothesis which he suspects to be false.
-For example, if he suspects that @var{A} is greater than @var{B} he will 
+For example, if he suspects that @var{A} is greater than @var{B} he will
 state the null hypothesis as @math{ @var{A} = @var{B}}.@c
 @footnote{This example assumes that it is already proven that @var{B} is
 not greater than @var{A}.}
@@ -718,8 +718,8 @@ hypothesis when it is true''.
 
 
 @menu
-* Testing for differences of means::  
-* Linear Regression::           
+* Testing for differences of means::
+* Linear Regression::
 @end menu
 
 @node Testing for differences of means
@@ -729,14 +729,14 @@ hypothesis when it is true''.
 @vindex T-TEST
 
 A common statistical test involves hypotheses about means.
-The @cmd{T-TEST} command is used to find out whether or not two separate 
+The @cmd{T-TEST} command is used to find out whether or not two separate
 subsets have the same mean.
 
 @ref{t-test} uses the file @file{physiology.sav} previously
 encountered.
-A researcher suspected that the heights and core body 
+A researcher suspected that the heights and core body
 temperature of persons might be different depending upon their sex.
-To investigate this, he posed two null hypotheses: 
+To investigate this, he posed two null hypotheses:
 @itemize @bullet
 @item The mean heights of males and females in the population are equal.
 @item The mean body temperature of males and
@@ -746,30 +746,30 @@ To investigate this, he posed two null hypotheses:
 For the purposes of the investigation the researcher
 decided to use a  p-value of 0.05.
 
-In addition to the T-test, the @cmd{T-TEST} command also performs the 
+In addition to the T-test, the @cmd{T-TEST} command also performs the
 Levene test for equal variances.
 If the variances are equal, then a more powerful form of the T-test can be used.
 However if it is unsafe to assume equal variances,
 then an alternative calculation is necessary.
 @pspp{} performs both calculations.
 
-For the @var{height} variable, the output shows the significance of the 
-Levene test to be 0.33 which means there is a 
-33% probability that the  
+For the @var{height} variable, the output shows the significance of the
+Levene test to be 0.33 which means there is a
+33% probability that the
 Levene test produces this outcome when the variances are equal.
 Had the significance been less than 0.05, then it would have been unsafe to assume that
 the variances were equal.
 However, because the value is higher than 0.05 the homogeneity of variances assumption
 is safe and the ``Equal Variances'' row (the more powerful test) can be used.
-Examining this row, the two tailed significance for the @var{height} t-test 
+Examining this row, the two tailed significance for the @var{height} t-test
 is less than 0.05, so it is safe to reject the null hypothesis and conclude
 that the mean heights of males and females are unequal.
 
-For the @var{temperature} variable, the significance of the Levene test 
+For the @var{temperature} variable, the significance of the Levene test
 is 0.58 so again, it is safe to use the row for equal variances.
 The equal variances row indicates that the two tailed significance for
 @var{temperature} is 0.20.  Since this is greater than 0.05 we must reject
-the null hypothesis and conclude that there is insufficient evidence to 
+the null hypothesis and conclude that there is insufficient evidence to
 suggest that the body temperature of male and female persons are different.
 
 @float Example, t-test
@@ -857,13 +857,13 @@ Output:
 |            not      |      |      |
 |            assumed  |      |      |
 +---------------------+------+------+
-@end example                                                          
+@end example
 @end cartouche
-@caption{The @cmd{T-TEST} command tests for differences of means. 
+@caption{The @cmd{T-TEST} command tests for differences of means.
 Here, the @var{height} variable's two tailed significance is less than
 0.05, so the null hypothesis can be rejected.
 Thus, the evidence suggests there is a difference between the heights of
-male and female persons. 
+male and female persons.
 However the significance of the test for the @var{temperature}
 variable is greater than 0.05 so the null hypothesis cannot be
 rejected, and there is insufficient evidence to suggest a difference
@@ -875,9 +875,9 @@ in body temperature.}
 @cindex linear regression
 @vindex REGRESSION
 
-Linear regression is a technique used to investigate if and how a variable 
+Linear regression is a technique used to investigate if and how a variable
 is linearly related to others.
-If a variable is found to be linearly related, then this can be used to 
+If a variable is found to be linearly related, then this can be used to
 predict future values of that variable.
 
 In example @ref{regression}, the service department of the company wanted to
@@ -892,7 +892,7 @@ This command not only tests if the variables are related, but also
 identifies the potential linear relationship. @xref{REGRESSION}.
 
 
-@float Example, regression 
+@float Example, regression
 @cartouche
 @example
 @prompt{PSPP>} get file='@value{example-dir}/repairs.sav'.

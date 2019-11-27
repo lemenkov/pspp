@@ -3,7 +3,7 @@ Installation Instructions for GNU pspp
 
 These instructions are based on the generic GNU installation
 instructions, but they have been tailored for PSPP.  These instructions
-apply only to people wishing to build and install PSPP from source. 
+apply only to people wishing to build and install PSPP from source.
 
 Overview
 ========
@@ -14,13 +14,13 @@ the following simple procedure should work, even on non-GNU systems:
  tar -xzf pspp-*.tar.gz
  cd pspp-*
  ./configure
- make 
+ make
  sudo make install
 
 Obviously, you should replace 'pspp-*' in the above, with the name of
-the tarball you are installing.  
+the tarball you are installing.
 
-In 99% of cases, that is all you have to do - FINISHED! 
+In 99% of cases, that is all you have to do - FINISHED!
 
 
 
@@ -74,7 +74,7 @@ The following packages are required to install PSPP:
 
     * zlib (http://www.zlib.net/).
 
-    * libxml2 (http://xmlsoft.org/).  
+    * libxml2 (http://xmlsoft.org/).
 
 The following packages are required to enable PSPP's graphing
 features.  If you cannot arrange to install them, you must run
@@ -95,7 +95,7 @@ use the GUI, you must run `configure' with --without-gui.
 
     * GTK+ (http://www.gtk.org/), version 3.22.0 or later.
 
-    * GtkSourceView (http://projects.gnome.org/gtksourceview/) 
+    * GtkSourceView (http://projects.gnome.org/gtksourceview/)
       version 3.4.0 or later.
 
     * GNU Spread Sheet Widget (http://www.gnu.org/software/ssw)
@@ -113,7 +113,7 @@ Other optional packages:
       later.  Installing Texinfo will allow you to build PSPP
       documentation in PostScript or PDF format.
 
-    * libpq, from Postgresql (http://postgresql.org).  This enables PSPP 
+    * libpq, from Postgresql (http://postgresql.org).  This enables PSPP
       to read Postgresql databases.  The tests for the Postgresql
       interface, but not the Postgresql interface itself, requires the
       Postgresql server to be installed.
@@ -125,7 +125,7 @@ Other optional packages:
 Basic Installation
 ==================
 
-These are installation instructions specific to PSPP (including PSPPIRE, 
+These are installation instructions specific to PSPP (including PSPPIRE,
 the graphic user interface).  These instructions contain the
 information most commonly needed by people wishing to build the
 program from source.  More detailed information can be found in the
@@ -252,7 +252,7 @@ you can set and what kinds of files go in them.
 
    You can cause programs to be installed with an extra prefix or
 suffix on their names by giving `configure' the  option
-`--program-prefix=PREFIX' or `--program-suffix=SUFFIX'. 
+`--program-prefix=PREFIX' or `--program-suffix=SUFFIX'.
 
 Optional Features
 =================

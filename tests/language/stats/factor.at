@@ -1,16 +1,16 @@
 dnl PSPP - a program for statistical analysis.
 dnl Copyright (C) 2017 Free Software Foundation, Inc.
-dnl 
+dnl
 dnl This program is free software: you can redistribute it and/or modify
 dnl it under the terms of the GNU General Public License as published by
 dnl the Free Software Foundation, either version 3 of the License, or
 dnl (at your option) any later version.
-dnl 
+dnl
 dnl This program is distributed in the hope that it will be useful,
 dnl but WITHOUT ANY WARRANTY; without even the implied warranty of
 dnl MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 dnl GNU General Public License for more details.
-dnl 
+dnl
 dnl You should have received a copy of the GNU General Public License
 dnl along with this program.  If not, see <http://www.gnu.org/licenses/>.
 dnl
@@ -1455,7 +1455,7 @@ begin data.
 
 end data.
 
-missing values 
+missing values
 	question13 question14 question15 question16 question17 question18 question19 question20 question21 question22 question23 question24 (0).
 
 factor
@@ -1516,7 +1516,7 @@ question21,.732,,
 question22,.613,,
 question23,.819,,.345
 question24,.695,,.386
- 
+
 Table: Rotated Factor Matrix
 ,Factor,,
 ,1,2,3
@@ -1537,7 +1537,7 @@ question24,.324,.321,.652
 AT_CLEANUP
 
 AT_SETUP([FACTOR extraction=pc method=correlation])
-dnl This example is from http://www.ats.ucla.edu/stat/spss/whatstat/whatstat.htm	
+dnl This example is from http://www.ats.ucla.edu/stat/spss/whatstat/whatstat.htm
 
 AT_DATA([factor2.sps],
   [set format = F11.3.
@@ -1949,12 +1949,12 @@ set format=F22.3.
 
 get file='llz.zsav'.
 
-factor 
-	/variables pz pn ps nz nn ns tz tn ts oz on os sz sn ss zz zn zs 
-	/missing listwise 
-	/print initial extraction rotation 
-	/criteria mineigen(1) iterate(25) 
-	/extraction paf 
+factor
+	/variables pz pn ps nz nn ns tz tn ts oz on os sz sn ss zz zn zs
+	/missing listwise
+	/print initial extraction rotation
+	/criteria mineigen(1) iterate(25)
+	/extraction paf
 	/method correlation
 	/rotation promax (5).
 ])
@@ -2095,17 +2095,17 @@ matrix data
     variables = rowtype_  var01 var02 var03 var04 var05 var06 var07 var08
     / format = lower diagonal .
 begin data
-mean     24.3  5.4  69.7  20.1  13.4  2.7  27.9  3.7  
-sd        5.7  1.5  23.5  5.8    2.8  4.5   5.4  1.5  
-n        92   92    92   92     92   92    92   92   
-cov   32.490000 
-cov   1.539000 2.250000 
-cov   -29.469000 -5.992500 552.250000 
-cov   11.901600 2.697000 -19.082000 33.640000 
-cov   4.309200 0.672000 -7.896000 3.572800 7.840000 
-cov   8.464500 1.012500 -17.977500 6.264000 2.646000 20.250000 
-cov   15.390000 2.349000 -25.380000 10.022400 1.814400 9.234000 29.160000 
-cov   1.453500 0.652500 -1.762500 1.740000 1.134000 1.350000 0.324000 2.250000 
+mean     24.3  5.4  69.7  20.1  13.4  2.7  27.9  3.7
+sd        5.7  1.5  23.5  5.8    2.8  4.5   5.4  1.5
+n        92   92    92   92     92   92    92   92
+cov   32.490000
+cov   1.539000 2.250000
+cov   -29.469000 -5.992500 552.250000
+cov   11.901600 2.697000 -19.082000 33.640000
+cov   4.309200 0.672000 -7.896000 3.572800 7.840000
+cov   8.464500 1.012500 -17.977500 6.264000 2.646000 20.250000
+cov   15.390000 2.349000 -25.380000 10.022400 1.814400 9.234000 29.160000
+cov   1.453500 0.652500 -1.762500 1.740000 1.134000 1.350000 0.324000 2.250000
 end data.
 
 factor matrix in (cov = *)
@@ -2181,9 +2181,9 @@ matrix data
     leesacc_wo_owo_811  leesacc_tekst_811  leesacc_otekst_811  leessne_wo_owo_811  leesvl_tekst_811  leesvl_otekst_811  leessne_wo_811  spel_wo_owo_811
     / format = upper diagonal .
 begin data
-mean  64.44  1.74  15.30  11.50  269.03  5.37  441.90  8.57  36.59  33.99  11.68  14.74  18.67  6.70  71.57  2.28  70.45  51.82  18.82  34.57  11.68  45.63  12.94  35.08  92.60  79.28  2.78  61.71  29.44  9.46  13.17  
+mean  64.44  1.74  15.30  11.50  269.03  5.37  441.90  8.57  36.59  33.99  11.68  14.74  18.67  6.70  71.57  2.28  70.45  51.82  18.82  34.57  11.68  45.63  12.94  35.08  92.60  79.28  2.78  61.71  29.44  9.46  13.17
 sd   74.93  1.36  5.51  4.17  159.26  2.76  128.77  3.50  6.20  6.50  3.55  8.37  5.90  3.01  24.81  4.09  24.44  18.55  2.90  6.46  3.01  14.06  7.69  4.36  7.10  17.57  1.27  25.68  11.75  3.36  4.13
-n     150 150 150 150 150 150 150 150 150 150 150 150 150 150 150 150 150 150 150 150 150 150 150 150 150 150 150 150 150 150 150 
+n     150 150 150 150 150 150 150 150 150 150 150 150 150 150 150 150 150 150 150 150 150 150 150 150 150 150 150 150 150 150 150
 corr    1.00  .784  .397  .862  .692  .625  .490  .374  .406  .371  .260  .257  .306  .118  -.148  .072  .202  .234  .198  .241  .205  -.054  .246  .166  .143  .155  -.122  .144  -.010  .135  .241
 corr    1.00  .333  .751  .549  .553  .447  .313  .304  .377  .204  .249  .258  .193  -.158  .119  .150  .216  .127  .209  .242  .046  .233  .120  .155  .107  -.126  .147  -.009  .134  .208
 corr    1.00  .469  .433  .381  .442  .307  .462  .391  .378  .293  .369  .191  -.306  .238  .204  .215  .295  .285  .157  .069  .241  .029  .060  .054  -.043  .124  -.069  .054  .136
@@ -2217,8 +2217,8 @@ corr    1.00  .621
 corr    1.00
 end data .
 
-factor  matrix in (cor = *) 
-    / analysis = cdi_actws_16 rdls_actws_16 cdi_actws_20 cdi_actws_26 rdls_actws_26 bnt_actws_36 bnt_actws_56 
+factor  matrix in (cor = *)
+    / analysis = cdi_actws_16 rdls_actws_16 cdi_actws_20 cdi_actws_26 rdls_actws_26 bnt_actws_36 bnt_actws_56
     / format = default
     / criteria = factors (1)
     / extraction = pc
@@ -2266,7 +2266,7 @@ AT_CLEANUP
 
 AT_SETUP([FACTOR bad input])
 
-dnl Test for a crash 
+dnl Test for a crash
 AT_DATA([bad-input.sps], [dnl
 set format = F10.3.
 MATRIX DATA VARIABLES S1 ROWTYPE_ V1 TO V3 /SPLIT=S1.
@@ -2316,9 +2316,9 @@ corr    0.25  0.07  0.46  0.38  1.00
 corr    0.37  0.22  0.39  0.30  0.59   1.00
 end data.
 
-factor matrix = in (cor = *) 
+factor matrix = in (cor = *)
  / analysis = viq piq pa ran piatwr piatc
- / format = sort 
+ / format = sort
  / extraction = pc
  / rotation = norotate
  / print = aic
@@ -2373,7 +2373,7 @@ corr    0.25  0.07  0.46  0.38  1.00
 corr    0.37  0.22  0.39  0.30  0.59   1.00
 end data.
 
-factor matrix = in (cor = *) 
+factor matrix = in (cor = *)
  / analysis = viq piq pa ran piatwr piatc
  / extraction = pc
  / rotation = norotate

@@ -96,7 +96,7 @@ psppire_dialog_action_flip_activate (PsppireDialogAction *a, GVariant *param)
   PsppireDialogActionFlip *act = PSPPIRE_DIALOG_ACTION_FLIP (a);
 
   GtkBuilder *xml = builder_new ( "transpose.ui");
-  
+
   pda->dialog = get_widget_assert   (xml, "transpose-dialog");
   pda->source = get_widget_assert   (xml, "source-treeview");
 

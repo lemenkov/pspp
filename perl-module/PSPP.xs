@@ -647,7 +647,7 @@ CODE:
  swi->opened = true;
  swi->dict_sv = dict_sv;
  SvREFCNT_inc (swi->dict_sv);
- 
+
  RETVAL = swi;
  OUTPUT:
 RETVAL
@@ -787,7 +787,7 @@ CODE:
  casenumber n = casereader_get_case_cnt (sfr->reader);
  if (n == CASENUMBER_MAX)
   ret = &PL_sv_undef;
- else 
+ else
   ret = newSViv (n);
  RETVAL = ret;
  OUTPUT:

@@ -260,7 +260,7 @@ psppire_dialog_action_select_activate (PsppireDialogAction *a, GVariant *param)
 {
   PsppireDialogActionSelect *act = PSPPIRE_DIALOG_ACTION_SELECT (a);
   PsppireDialogAction *pda = PSPPIRE_DIALOG_ACTION (a);
-  
+
   GtkBuilder *xml = builder_new ( "select-cases.ui");
 
   pda->dialog = get_widget_assert (xml, "select-cases-dialog");

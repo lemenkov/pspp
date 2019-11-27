@@ -2,20 +2,20 @@
 
 # PSPP - a program for statistical analysis.
 # Copyright (C) 2017 Free Software Foundation, Inc.
-# 
+#
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
-# 
+#
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
-# 
+#
 
 
 all: everything
@@ -364,7 +364,7 @@ src/ui/gui/resources.xml: $(ICONS)
 
 
 .PHONY: prep_ph
-prep_ph: 
+prep_ph:
 	test -e ChangeLog || touch ChangeLog
 	test -d m4 || mkdir m4
 	touch m4/Makefile.am
@@ -428,11 +428,11 @@ clean:
 	rm -f aclocal.m4
 	rm -f missing mkinstalldirs
 	rm -f install-sh
-	rm -f configure Makefile 
+	rm -f configure Makefile
 	rm -f depcomp
 	rm -rf intl gl
 	rm -f m4/*.m4
-	rm -f $(PO_FILES) po/*.gmo 
+	rm -f $(PO_FILES) po/*.gmo
 	rm -f mdate-sh texinfo.tex
 	rm -f doc/stamp-vti
 	rm -f config.h.in~

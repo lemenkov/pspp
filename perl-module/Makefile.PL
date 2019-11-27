@@ -1,16 +1,16 @@
 # PSPP - a program for statistical analysis.
 # Copyright (C) 2019 Free Software Foundation, Inc.
-# 
+#
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
-# 
+#
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
@@ -31,13 +31,13 @@ WriteMakefile(
     FULLPERL          => "PSPP_TEST_CMD=\"$Locations{BuildDir}/src/ui/terminal/pspp\" \$(PERL)",
     NAME              => 'PSPP',
     DISTNAME          => 'PSPP-Perl',
-    VERSION_FROM      => "$Locations{BuildDir}/src/libpspp/version.c", 
-    PREREQ_PM         => {POSIX=>0}, 
+    VERSION_FROM      => "$Locations{BuildDir}/src/libpspp/version.c",
+    PREREQ_PM         => {POSIX=>0},
     PM                => {"lib/PSPP.pm", "\$(INST_LIBDIR)/PSPP.pm"},
     ($] >= 5.005 ?     ## Add these new keywords supported since 5.005
       (ABSTRACT       => 'Perl extension to PSPP',
        AUTHOR         => 'John Darrington <john@darrington.wattle.id.au>') : ()),
-    INC       => "-I $Locations{SourceDir}  -I $Locations{SourceDir}/src -I $Locations{SourceDir}/gl -I $Locations{BuildDir}/gl -I $Locations{BuildDir}", 
+    INC       => "-I $Locations{SourceDir}  -I $Locations{SourceDir}/src -I $Locations{SourceDir}/gl -I $Locations{BuildDir}/gl -I $Locations{BuildDir}",
     MYEXTLIB  => "$Locations{BuildDir}/src/.libs/libpspp-core.\$(SO)",
     MAN3PODS  => {"lib/PSPP.pm", "\$(INST_MAN3DIR)/PSPP.3pm",
 	    "Examples.pod", "\$(INST_MAN3DIR)/PSPP::Examples.3pm"}

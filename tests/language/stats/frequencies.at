@@ -1,16 +1,16 @@
 dnl PSPP - a program for statistical analysis.
 dnl Copyright (C) 2017 Free Software Foundation, Inc.
-dnl 
+dnl
 dnl This program is free software: you can redistribute it and/or modify
 dnl it under the terms of the GNU General Public License as published by
 dnl the Free Software Foundation, either version 3 of the License, or
 dnl (at your option) any later version.
-dnl 
+dnl
 dnl This program is distributed in the hope that it will be useful,
 dnl but WITHOUT ANY WARRANTY; without even the implied warranty of
 dnl MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 dnl GNU General Public License for more details.
-dnl 
+dnl
 dnl You should have received a copy of the GNU General Public License
 dnl along with this program.  If not, see <http://www.gnu.org/licenses/>.
 dnl
@@ -54,7 +54,7 @@ AT_DATA([frequencies.sps],
   [data list free /v1 v2.
 begin data.
 0 1
-2 3 
+2 3
 4 5
 3 4
 end data.
@@ -127,7 +127,7 @@ AT_DATA([frequencies.sps],
   [data list free /v1 v2.
 begin data.
 0 1
-2 3 
+2 3
 4 5
 3 4
 end data.
@@ -212,8 +212,8 @@ end data.
 
 weight by w.
 
-frequencies /x 
-	    /format=notable 
+frequencies /x
+	    /format=notable
 	    /statistics=none
 	    /histogram=minimum(0) maximum(50) percent(5) normal.
 ])
@@ -307,14 +307,14 @@ AT_SETUP([FREQUENCIES basic percentiles])
 AT_DATA([frequencies.sps],
   [DATA LIST LIST notable /x * .
 BEGIN DATA.
-1 
-2 
-3 
-4 
+1
+2
+3
+4
 5
 END DATA.
 
-FREQUENCIES 
+FREQUENCIES
 	VAR=x
 	/FORMAT=NOTABLE
 	/PERCENTILES = 0 25 33.333 50 66.666 75 100.
@@ -327,14 +327,14 @@ AT_SETUP([FREQUENCIES basic n-tiles])
 AT_DATA([frequencies.sps],
   [DATA LIST LIST notable /x * .
 BEGIN DATA.
-1 
-2 
-3 
-4 
+1
+2
+3
+4
 5
 END DATA.
 
-FREQUENCIES 
+FREQUENCIES
 	VAR=x
 	/FORMAT=NOTABLE
 	/NTILES = 3
@@ -348,14 +348,14 @@ AT_SETUP([FREQUENCIES compatibility percentiles])
 AT_DATA([frequencies.sps],
   [DATA LIST LIST notable /X * .
 BEGIN DATA.
-1 
-2 
-3 
-4 
+1
+2
+3
+4
 5
 END DATA.
 
-FREQUENCIES 
+FREQUENCIES
 	VAR=x
 	/ALGORITHM=COMPATIBLE
 	/PERCENTILES = 0 25 50 75 100.
@@ -390,14 +390,14 @@ AT_SETUP([FREQUENCIES enhanced percentiles])
 AT_DATA([frequencies.sps],
   [DATA LIST LIST notable /X * .
 BEGIN DATA.
-1 
-2 
-3 
-4 
+1
+2
+3
+4
 5
 END DATA.
 
-FREQUENCIES 
+FREQUENCIES
 	VAR=x
 	/PERCENTILES = 0 25 50 75 100.
 ])
@@ -442,7 +442,7 @@ END DATA.
 
 WEIGHT BY f.
 
-FREQUENCIES 
+FREQUENCIES
 	VAR=x
 	/PERCENTILES = 0 25 50 75 100.
 ])
@@ -485,7 +485,7 @@ END DATA.
 
 WEIGHT BY f.
 
-FREQUENCIES 
+FREQUENCIES
 	VAR=x
 	/PERCENTILES = 0 25 50 75 100.
 ])
@@ -527,7 +527,7 @@ END DATA.
 
 WEIGHT BY f.
 
-FREQUENCIES 
+FREQUENCIES
 	VAR=x
 	/PERCENTILES = 0 25 50 75 100.
 ])
@@ -571,7 +571,7 @@ END DATA.
 MISSING VALUE x (99.0) .
 WEIGHT BY f.
 
-FREQUENCIES 
+FREQUENCIES
 	VAR=x
 	/PERCENTILES = 0 25 50 75 100.
 ])
@@ -606,23 +606,23 @@ AT_SETUP([FREQUENCIES dichotomous histogram])
 AT_DATA([frequencies.sps], [dnl
 data list notable list /d4 *.
 begin data.
-0 
-0 
-0 
-1 
-0 
-0 
-0 
-0 
-1 
-0 
-0 
-0 
-0 
-0 
-1 
-2 
-0 
+0
+0
+0
+1
+0
+0
+0
+0
+1
+0
+0
+0
+0
+0
+1
+2
+0
 end data.
 
 FREQUENCIES

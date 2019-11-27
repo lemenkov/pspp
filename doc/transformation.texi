@@ -31,7 +31,7 @@ as a rule.
 @vindex AGGREGATE
 
 @display
-AGGREGATE 
+AGGREGATE
         OUTFILE=@{*,'@var{file_name}',@var{file_handle}@} [MODE=@{REPLACE, ADDVARIABLES@}]
         /PRESORTED
         /DOCUMENT
@@ -60,7 +60,7 @@ In @subcmd{REPLACE} mode, the entire active dataset is replaced by a new dataset
 which contains just the break variables and the destination varibles.
 In this mode, the new file will contain as many cases as there are
 unique combinations of the break variables.
-In @subcmd{ADDVARIABLES} mode, the destination variables will be appended to 
+In @subcmd{ADDVARIABLES} mode, the destination variables will be appended to
 the existing active dataset.
 Cases which have identical combinations of values in their break
 variables, will receive identical values for the destination variables.
@@ -281,7 +281,7 @@ be used, instead of one map per variable.  With @subcmd{GROUP},
 user-missing values are taken from the first source variable that has
 any user-missing values.
 
-If @subcmd{/BLANK=MISSING} is given, then string variables which contain only 
+If @subcmd{/BLANK=MISSING} is given, then string variables which contain only
 whitespace are recoded as SYSMIS.  If @subcmd{/BLANK=VALID} is given then they
 will be allocated a value like any other.  @subcmd{/BLANK} is not relevant
 to numeric values. @subcmd{/BLANK=VALID} is the default.
@@ -398,7 +398,7 @@ the following commands:
 @enumerate
 @item
 Count the number of times the value 1 occurs through these variables
-for each case and assigns the count to variable @code{QCOUNT}.  
+for each case and assigns the count to variable @code{QCOUNT}.
 
 @item
 Print out the total number of times the value 1 occurs throughout
@@ -547,7 +547,7 @@ numeric variables in the same recoding.
 After the list of source variables, there should be one or more @dfn{mappings}.
 Each mapping is enclosed in parentheses, and contains the source values and
 a destination value separated by a single @samp{=}.
-The source values are used to specify the values in the dataset which 
+The source values are used to specify the values in the dataset which
 need to change, and the destination value specifies the new value
 to which they should be changed.
 Each @var{src_value} may take one of the following forms:
@@ -563,7 +563,7 @@ This form is valid only when the source variables are numeric.
 It specifies all values in the range between @var{num1} and @var{num2},
 including both endpoints of the range.  By convention, @var{num1}
 should be less than @var{num2}.
-Open-ended ranges may be specified using @samp{LO} or @samp{LOWEST} 
+Open-ended ranges may be specified using @samp{LO} or @samp{LOWEST}
 for @var{num1}
 or @samp{HI} or @samp{HIGHEST} for @var{num2}.
 @item @samp{MISSING}
@@ -577,7 +577,7 @@ It is valid for both numeric variables only.
 @item @samp{ELSE}
 The @samp{ELSE} keyword may be used to match any values which are
 not matched by any other @var{src_value} appearing in the command.
-If this keyword appears, it should be used in the last mapping of the 
+If this keyword appears, it should be used in the last mapping of the
 command.
 @end table
 
@@ -602,7 +602,7 @@ This is meaningful only if @samp{INTO @var{dest_vars}} is specified.
 @end table
 
 Mappings are considered from left to right.
-Therefore, if a value is matched by a @var{src_value} from more than 
+Therefore, if a value is matched by a @var{src_value} from more than
 one mapping, the first (leftmost) mapping which matches will be considered.
 Any subsequent matches will be ignored.
 
@@ -628,7 +628,7 @@ Zero is recoded to 99, the values 1 to 10 inclusive are unchanged,
 values 1000 and higher are recoded to the system-missing value and all other
 values are changed to 999:
 @example
-recode @var{x} @var{y} 
+recode @var{x} @var{y}
         (0 = 99)
         (1 THRU 10 = COPY)
         (1000 THRU HIGHEST = SYSMIS)
@@ -640,30 +640,30 @@ into the variables specified in @var{dest_vars}, which must therefore
  contain a list of valid variable names.
 The number of variables in @var{dest_vars} must be the same as the number
 of variables in @var{src_vars}
-and the respective order of the variables in @var{dest_vars} corresponds to 
+and the respective order of the variables in @var{dest_vars} corresponds to
 the order of @var{src_vars}.
-That is to say, recoded values whose 
+That is to say, recoded values whose
 original value came from the @var{n}th variable in @var{src_vars} will be
 placed into the @var{n}th variable in @var{dest_vars}.
 The source variables will be unchanged.
 If any mapping implies a string as its destination value, then the respective
-destination variable must already exist, or 
+destination variable must already exist, or
 have been declared using @cmd{STRING} or another transformation.
 Numeric variables however will be automatically created if they don't already
 exist.
 The following example deals with two source variables, @var{a} and @var{b}
 which contain string values.  Hence there are two destination variables
 @var{v1} and @var{v2}.
-Any cases where @var{a} or @var{b} contain the values @samp{apple}, 
+Any cases where @var{a} or @var{b} contain the values @samp{apple},
 @samp{pear} or @samp{pomegranate} will result in @var{v1} or @var{v2} being
-filled with the string @samp{fruit} whilst cases with 
+filled with the string @samp{fruit} whilst cases with
 @samp{tomato}, @samp{lettuce} or @samp{carrot} will result in @samp{vegetable}.
 Any other values will produce the result @samp{unknown}:
 @example
 string @var{v1} (a20).
 string @var{v2} (a20).
 
-recode @var{a} @var{b} 
+recode @var{a} @var{b}
         ("apple" "pear" "pomegranate" = "fruit")
         ("tomato" "lettuce" "carrot" = "vegetable")
         (ELSE = "unknown")
@@ -674,20 +674,20 @@ There is one very special mapping, not mentioned above.
 If the source variable is a string variable
 then a mapping may be specified as @samp{(CONVERT)}.
 This mapping, if it appears must be the last mapping given and
-the @samp{INTO @var{dest_vars}} clause must also be given and 
-must not refer to a string variable. 
+the @samp{INTO @var{dest_vars}} clause must also be given and
+must not refer to a string variable.
 @samp{CONVERT} causes a number specified as a string to
-be converted to a numeric value. 
+be converted to a numeric value.
 For example it will convert the string @samp{"3"} into the numeric
 value 3 (note that it will not convert @samp{three} into 3).
 If the string cannot be parsed as a number, then the system-missing value
 is assigned instead.
 In the following example, cases where the value of @var{x} (a string variable)
 is the empty string, are recoded to 999 and all others are converted to the
-numeric equivalent of the input value.  The results are placed into the 
+numeric equivalent of the input value.  The results are placed into the
 numeric variable @var{y}:
 @example
-recode @var{x} 
+recode @var{x}
        ("" = 999)
         (convert)
         into @var{y}.
@@ -697,14 +697,14 @@ It is possible to specify multiple recodings on a single command.
 Introduce additional recodings with a slash (@samp{/}) to
 separate them from the previous recodings:
 @example
-recode 
-        @var{a}  (2 = 22) (else = 99) 
+recode
+        @var{a}  (2 = 22) (else = 99)
         /@var{b} (1 = 3) into @var{z}
         .
 @end example
 @noindent Here we have two recodings. The first affects the source variable
 @var{a} and recodes in-place the value 2 into 22 and all other values to 99.
-The second recoding copies the values of @var{b} into the variable @var{z}, 
+The second recoding copies the values of @var{b} into the variable @var{z},
 changing any instances of 1 into 3.
 
 @node SORT CASES
@@ -736,4 +736,4 @@ cases.
 If workspace is exhausted, it falls back to a merge sort algorithm that
 involves creates numerous temporary files.
 
-@cmd{SORT CASES} may not be specified following @cmd{TEMPORARY}.  
+@cmd{SORT CASES} may not be specified following @cmd{TEMPORARY}.

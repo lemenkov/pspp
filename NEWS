@@ -176,7 +176,7 @@ Changes from 0.8.5 to 0.10.0:
 
  * The graphical user interface (psppire) has been changed as follows:
 
-   - It now uses Gtk+ version 3 instead of version 2.  Accordingly, it has a 
+   - It now uses Gtk+ version 3 instead of version 2.  Accordingly, it has a
      somewhat different look and feel.
 
    - There is now a Graphs menu to access the GRAPH command.
@@ -423,7 +423,7 @@ Changes from 0.6.2 to 0.8.0:
    - DO REPEAT command has been reimplemented.  Now, when DO REPEAT
      contains an INCLUDE or INSERT command, substitutions are not
      applied to the included file.
-  
+
    - FILE HANDLE has a new ENDS subcommand to select CR or CRLF new-lines.
 
    - HOST has been updated to use more modern syntax.
@@ -437,7 +437,7 @@ Changes from 0.6.2 to 0.8.0:
    - ONEWAY: the POSTHOC subcommand is now implemented.
 
    - The following new subcommands to NPAR TESTS have been implemented:
-     COCHRAN, FRIEDMAN, JONCKHEERE-TERPSTRA, KENDALL, KRUSKAL-WALLIS, MANN-WHITNEY, 
+     COCHRAN, FRIEDMAN, JONCKHEERE-TERPSTRA, KENDALL, KRUSKAL-WALLIS, MANN-WHITNEY,
      MCNEMAR, SIGN, WILCOXON, and RUNS
 
    - SET and SHOW no longer have ENDCMD, NULLINE, PROMPT, CPROMPT, and

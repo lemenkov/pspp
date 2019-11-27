@@ -438,7 +438,7 @@ psppire_variable_sheet_finalize (GObject *object)
   g_free (sheet->value_label_dispatch);
   g_free (sheet->missing_values_dispatch);
   g_free (sheet->var_type_dispatch);
-  
+
   if (G_OBJECT_CLASS (parent_class)->finalize)
     (*G_OBJECT_CLASS (parent_class)->finalize) (object);
 }
@@ -506,7 +506,7 @@ is_printable_key (gint keyval)
       return FALSE;
       break;
     }
-  
+
   return (0 != gdk_keyval_to_unicode (keyval));
 }
 
@@ -540,7 +540,7 @@ on_button_press (GtkWidget *w, GdkEventButton *e, gpointer user_data)
   d->payload (d->sheet);
   return TRUE;
 }
-  
+
 static void
 on_edit_start (GtkCellRenderer *renderer,
      GtkCellEditable *editable,
@@ -552,7 +552,7 @@ on_edit_start (GtkCellRenderer *renderer,
 		    G_CALLBACK (on_key_press), user_data);
   g_signal_connect (editable, "button-press-event",
 		    G_CALLBACK (on_button_press), user_data);
-  
+
 }
 
 static void
@@ -583,7 +583,7 @@ psppire_variable_sheet_init (PsppireVariableSheet *sheet)
   g_signal_connect_after (sheet->var_type_renderer,
 			  "editing-started", G_CALLBACK (on_edit_start),
 			  sheet->var_type_dispatch);
-  
+
   sheet->row_popup = create_var_row_header_popup_menu (sheet);
 
 

@@ -1,16 +1,16 @@
 dnl PSPP - a program for statistical analysis.
 dnl Copyright (C) 2017 Free Software Foundation, Inc.
-dnl 
+dnl
 dnl This program is free software: you can redistribute it and/or modify
 dnl it under the terms of the GNU General Public License as published by
 dnl the Free Software Foundation, either version 3 of the License, or
 dnl (at your option) any later version.
-dnl 
+dnl
 dnl This program is distributed in the hope that it will be useful,
 dnl but WITHOUT ANY WARRANTY; without even the implied warranty of
 dnl MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 dnl GNU General Public License for more details.
-dnl 
+dnl
 dnl You should have received a copy of the GNU General Public License
 dnl along with this program.  If not, see <http://www.gnu.org/licenses/>.
 # +-+---+-+-+-+
@@ -1266,12 +1266,12 @@ AT_DATA([input], [WEAVE_8X8_2])
 AT_CHECK([render-test --width=8 input], [0],[dnl
 +---+--
 |abc|jk
-|def|  
+|def|
 |ghi+--
 |   |yz
 +-+-+BC
 |Q|V|EF
-|R| |  
+|R| |
 |S+-+-+
 |T|012|
 |U|345|
@@ -1299,10 +1299,10 @@ FG|W| Z|
 |9| | ab
 | | | de
 +-+-+ gh
-|opq|   
+|opq|
 |rst+---
 |uvw| JK
-|   |   
+|   |
 +---+--+
 | MNOPQ|
 | RSTUV|
@@ -1336,12 +1336,12 @@ KL|  |
 AT_CHECK([render-test -o mb0 --min-break=0 --width=8 input], [0],[dnl
 +---+--
 |abc|jk
-|def|  
+|def|
 |ghi+--
 |   |yz
 +-+-+BC
 |Q|V|EF
-|R| |  
+|R| |
 |S+-+-+
 |T|012|
 |U|345|
@@ -1369,10 +1369,10 @@ FG|W| Z|
 |9| | ab
 | | | de
 +-+-+ gh
-|opq|   
+|opq|
 |rst+---
 |uvw| JK
-|   |   
+|   |
 +---+--+
 | MNOPQ|
 | RSTUV|

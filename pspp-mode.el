@@ -16,12 +16,12 @@
 ;; it under the terms of the GNU General Public License as published by
 ;; the Free Software Foundation, either version 3 of the License, or
 ;; (at your option) any later version.
-;; 
+;;
 ;; This program is distributed in the hope that it will be useful,
 ;; but WITHOUT ANY WARRANTY; without even the implied warranty of
 ;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 ;; GNU General Public License for more details.
-;; 
+;;
 ;; You should have received a copy of the GNU General Public License
 ;; along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
@@ -45,16 +45,16 @@
 	  (pspp-start-of-block-found nil)
 	  )
       (beginning-of-line)
-      (while (not (or 
-		   (or (bobp) pspp-end-of-block-found ) 
-		   pspp-start-of-block-found 
+      (while (not (or
+		   (or (bobp) pspp-end-of-block-found )
+		   pspp-start-of-block-found
 		   )
 		  )
 	(set 'pspp-end-of-block-found (looking-at "^[ \t]*END[\t ]+DATA\."))
 	(set 'pspp-start-of-block-found (looking-at "^[ \t]*BEGIN[\t ]+DATA"))
 	(forward-line -1)
 	)
-      
+
       (and pspp-start-of-block-found (not pspp-end-of-block-found))
       )
     )
@@ -92,7 +92,7 @@
 )
 
 
- 
+
 (defun pspp-indent-line ()
   "Indent current line as PSPP code."
 
@@ -106,7 +106,7 @@
     (if (bobp)
 	(setq the-indent 0)	; First line is always non-indented
       )
-  
+
 
     (let (
 	  (within-command nil)
@@ -116,14 +116,14 @@
       ;; If the most recent non blank line ended with a `.' then
       ;; we're at the start of a new command.
 
-      (save-excursion 
+      (save-excursion
 	(while (and blank-line  (not (bobp)))
 	  (forward-line -1)
-	
+
 	  (if (and (not (pspp-data-block-p)) (not (looking-at "^[ \t]*$")))
-	      (progn 
+	      (progn
 		(setq blank-line nil)
-	    
+
 		(if (not (looking-at ".*\\.[ \t]*$"))
 		    (setq within-command t)
 		  )
@@ -134,7 +134,7 @@
 
 
       ;; If we're not at the start of a new command, then add an indent.
-      (if within-command 
+      (if within-command
 	  (set 'the-indent (+ 1 the-indent))
 	)
       )
@@ -146,15 +146,15 @@
       (while (not (bobp))
 	(beginning-of-line)
 	(if  (not (pspp-comment-p))
-	    (cond 
+	    (cond
 	     (
-	      (save-excursion 
+	      (save-excursion
 		(forward-line -1)
 		(looking-at pspp-indenters)
 		)
 	      (set 'the-indent (+ the-indent 1) )
 	      )
-	       
+
 	     ( (looking-at pspp-unindenters)
 	       (set 'the-indent (- the-indent 1) )
 	       )
@@ -211,9 +211,9 @@
 		      )
 	  (beginning-of-line)
 	  (if (pspp-comment-start-line-p) (set 'pspp-comment-start-found t))
-	  (if (bobp) 
+	  (if (bobp)
 	      (set 'pspp-comment-end-found nil)
-	    (save-excursion 
+	    (save-excursion
 	      (forward-line -1)
 	      (if (pspp-comment-end-line-p) (set 'pspp-comment-end-found t))
 	      )
@@ -222,12 +222,12 @@
 	  )
 	)
 
-      (save-excursion 
+      (save-excursion
 	(set 'pspp-single-line-comment (and
 					(pspp-comment-start-line-p)
 					(pspp-comment-end-line-p)))
 	)
-      
+
 
       (or pspp-single-line-comment
           (and pspp-comment-start-found (not pspp-comment-end-found)))
@@ -239,7 +239,7 @@
   (let (
 	(x-pspp-mode-syntax-table (make-syntax-table))
 	)
-	
+
     ;; Special chars allowed in variables
       (modify-syntax-entry ?#  "w" x-pspp-mode-syntax-table)
       (modify-syntax-entry ?@  "w" x-pspp-mode-syntax-table)
@@ -249,7 +249,7 @@
     ;;  This is incomplete, because:
     ;;  a) Comments can also be given by COMMENT
     ;;  b) The sequence .\n* is interpreted incorrectly.
-    
+
       (modify-syntax-entry ?*  ". 2" x-pspp-mode-syntax-table)
       (modify-syntax-entry ?.  ". 3" x-pspp-mode-syntax-table)
       (modify-syntax-entry ?\n  "- 41" x-pspp-mode-syntax-table)
@@ -258,11 +258,11 @@
     ;; String delimiters
       (modify-syntax-entry ?'  "\"" x-pspp-mode-syntax-table)
       (modify-syntax-entry ?\"  "\"" x-pspp-mode-syntax-table)
-      
+
     x-pspp-mode-syntax-table)
-  
+
     "Syntax table for pspp-mode")
-  
+
 
 (defconst pspp-font-lock-keywords
   (list
@@ -270,187 +270,187 @@
    (cons  (concat "\\<"
 		  (regexp-opt '(
 				"END DATA"
-				"ACF"                    
-				"ADD FILES"              
-				"ADD VALUE LABELS"       
-				"AGGREGATE"              
-				"ANOVA"                  
-				"APPLY DICTIONARY"       
-				"AREG"                   
-				"ARIMA"                  
-				"AUTORECODE"             
-				"BEGIN DATA"             
-				"BREAK"                  
-				"CASEPLOT"               
-				"CASESTOVARS"		  
-				"CCF"                    
-				"CLEAR TRANSFORMATIONS"  
-				"CLUSTER"                
-				"COMPUTE"                
-				"CONJOINT"               
-				"CORRELATIONS"		  
-				"COXREG"                 
-				"COUNT"                  
-				"CREATE"                 
-				"CROSSTABS"              
-				"CURVEFIT"               
-				"DATA LIST"              
-				"DATE"                   
-				"DEBUG CASEFILE"	  
-				"DEBUG EVALUATE"	  
-				"DEBUG MOMENTS"	  
-				"DEBUG POOL"		  
-				"DELETE VARIABLES"       
-				"DESCRIPTIVES"           
-				"DISCRIMINANT"           
-				"DISPLAY"                
-				"DOCUMENT"               
-				"DO IF"                  
-				"DO REPEAT"              
-				"DROP DOCUMENTS"         
-				"ECHO"                   
-				"EDIT"                   
-				"ELSE"                   
-				"ELSE IF"                
-				"END CASE"               
-				"END FILE"               
-				"END FILE TYPE"          
-				"END IF"                 
-				"END INPUT PROGRAM"      
-				"END LOOP"               
-				"END REPEAT"             
-				"ERASE"                  
-				"EXAMINE"                
-				"EXECUTE"                
-				"EXIT"                   
-				"EXPORT"                 
-				"FACTOR"                 
-				"FILE HANDLE"            
-				"FILE LABEL"             
-				"FILE TYPE"              
-				"FILTER"                 
-				"FINISH"                 
-				"FIT"                    
-				"FLIP"			  
-				"FORMATS"                
-				"FREQUENCIES"            
-				"GENLOG"                 
-				"GET"                    
-				"GET TRANSLATE"          
-				"GLM"                    
-				"GRAPH"                  
-				"HILOGLINEAR"            
-				"HOST"                   
-				"IF"                     
-				"IGRAPH"                 
-				"IMPORT"                 
-				"INCLUDE"                
-				"INFO"                   
-				"INPUT MATRIX"           
-				"INPUT PROGRAM"          
-				"KEYED DATA LIST"        
-				"LEAVE"                  
-				"LIST"                   
-				"LOGLINEAR"              
-				"LOGISITIC REGRESSION"   
-				"LOOP"                   
-				"MATCH FILES"            
-				"MATRIX DATA"            
-				"MCONVERT"               
-				"MEANS"                  
-				"MISSING VALUES"         
-				"MODIFY VARS"            
-				"MULT RESPONSE"          
-				"MVA"                    
-				"NEW FILE"               
-				"N"                      
-				"N OF CASES"             
-				"NLR"                    
-				"NONPAR CORR"            
-				"NPAR TESTS"             
-				"NUMBERED"               
-				"NUMERIC"                
-				"OLAP CUBES"             
-				"OMS"                    
-				"ONEWAY"                 
-				"ORTHOPLAN"              
-				"PACF"                   
-				"PARTIAL CORR"           
-				"PEARSON CORRELATIONS"	  
-				"PERMISSIONS"            
-				"PLOT"                   
-				"POINT"                  
-				"PPLOT"                  
-				"PREDICT"                
-				"PRESERVE"		  
-				"PRINT EJECT"            
-				"PRINT"                  
-				"PRINT FORMATS"          
-				"PRINT SPACE"            
-				"PROCEDURE OUTPUT"       
-				"PROXIMITIES"            
-				"Q"                      
-				"QUICK CLUSTER"          
-				"QUIT"                   
-				"RANK"                   
-				"RECODE"                 
-				"RECORD TYPE"            
-				"REFORMAT"               
-				"REGRESSION"             
-				"RENAME VARIABLES"       
-				"REPEATING DATA"         
-				"REPORT"                 
-				"REREAD"                 
-				"RESTORE"		  
-				"RMV"                    
-				"SAMPLE"                 
-				"SAVE"                   
-				"SAVE TRANSLATE"         
-				"SCRIPT"                 
-				"SELECT IF"              
-				"SET"                    
-				"SHOW"                   
-				"SORT CASES"             
-				"SORT"                   
-				"SPCHART"                
-				"SPLIT FILE"             
-				"STRING"                 
-				"SUBTITLE"               
-				"SUMMARIZE"              
-				"SURVIVAL"               
-				"SYSFILE INFO"           
-				"TEMPORARY"              
-				"TITLE"                  
-				"TSET"                   
-				"TSHOW"                  
-				"TSPLOT"                 
-				"T-TEST"                 
-				"UNIANOVA"               
-				"UNNUMBERED"             
-				"UPDATE"                 
-				"USE"			  
-				"VALUE LABELS"           
-				"VARIABLE ALIGNMENT"     
-				"VARIABLE LABELS"        
-				"VARIABLE LEVEL"         
-				"VARIABLE WIDTH"         
-				"VARSTOCASES"		  
-				"VECTOR"                 
-				"VERIFY"                 
-				"WEIGHT"                 
-				"WRITE"                  
-				"WRITE FORMATS"          
+				"ACF"
+				"ADD FILES"
+				"ADD VALUE LABELS"
+				"AGGREGATE"
+				"ANOVA"
+				"APPLY DICTIONARY"
+				"AREG"
+				"ARIMA"
+				"AUTORECODE"
+				"BEGIN DATA"
+				"BREAK"
+				"CASEPLOT"
+				"CASESTOVARS"
+				"CCF"
+				"CLEAR TRANSFORMATIONS"
+				"CLUSTER"
+				"COMPUTE"
+				"CONJOINT"
+				"CORRELATIONS"
+				"COXREG"
+				"COUNT"
+				"CREATE"
+				"CROSSTABS"
+				"CURVEFIT"
+				"DATA LIST"
+				"DATE"
+				"DEBUG CASEFILE"
+				"DEBUG EVALUATE"
+				"DEBUG MOMENTS"
+				"DEBUG POOL"
+				"DELETE VARIABLES"
+				"DESCRIPTIVES"
+				"DISCRIMINANT"
+				"DISPLAY"
+				"DOCUMENT"
+				"DO IF"
+				"DO REPEAT"
+				"DROP DOCUMENTS"
+				"ECHO"
+				"EDIT"
+				"ELSE"
+				"ELSE IF"
+				"END CASE"
+				"END FILE"
+				"END FILE TYPE"
+				"END IF"
+				"END INPUT PROGRAM"
+				"END LOOP"
+				"END REPEAT"
+				"ERASE"
+				"EXAMINE"
+				"EXECUTE"
+				"EXIT"
+				"EXPORT"
+				"FACTOR"
+				"FILE HANDLE"
+				"FILE LABEL"
+				"FILE TYPE"
+				"FILTER"
+				"FINISH"
+				"FIT"
+				"FLIP"
+				"FORMATS"
+				"FREQUENCIES"
+				"GENLOG"
+				"GET"
+				"GET TRANSLATE"
+				"GLM"
+				"GRAPH"
+				"HILOGLINEAR"
+				"HOST"
+				"IF"
+				"IGRAPH"
+				"IMPORT"
+				"INCLUDE"
+				"INFO"
+				"INPUT MATRIX"
+				"INPUT PROGRAM"
+				"KEYED DATA LIST"
+				"LEAVE"
+				"LIST"
+				"LOGLINEAR"
+				"LOGISITIC REGRESSION"
+				"LOOP"
+				"MATCH FILES"
+				"MATRIX DATA"
+				"MCONVERT"
+				"MEANS"
+				"MISSING VALUES"
+				"MODIFY VARS"
+				"MULT RESPONSE"
+				"MVA"
+				"NEW FILE"
+				"N"
+				"N OF CASES"
+				"NLR"
+				"NONPAR CORR"
+				"NPAR TESTS"
+				"NUMBERED"
+				"NUMERIC"
+				"OLAP CUBES"
+				"OMS"
+				"ONEWAY"
+				"ORTHOPLAN"
+				"PACF"
+				"PARTIAL CORR"
+				"PEARSON CORRELATIONS"
+				"PERMISSIONS"
+				"PLOT"
+				"POINT"
+				"PPLOT"
+				"PREDICT"
+				"PRESERVE"
+				"PRINT EJECT"
+				"PRINT"
+				"PRINT FORMATS"
+				"PRINT SPACE"
+				"PROCEDURE OUTPUT"
+				"PROXIMITIES"
+				"Q"
+				"QUICK CLUSTER"
+				"QUIT"
+				"RANK"
+				"RECODE"
+				"RECORD TYPE"
+				"REFORMAT"
+				"REGRESSION"
+				"RENAME VARIABLES"
+				"REPEATING DATA"
+				"REPORT"
+				"REREAD"
+				"RESTORE"
+				"RMV"
+				"SAMPLE"
+				"SAVE"
+				"SAVE TRANSLATE"
+				"SCRIPT"
+				"SELECT IF"
+				"SET"
+				"SHOW"
+				"SORT CASES"
+				"SORT"
+				"SPCHART"
+				"SPLIT FILE"
+				"STRING"
+				"SUBTITLE"
+				"SUMMARIZE"
+				"SURVIVAL"
+				"SYSFILE INFO"
+				"TEMPORARY"
+				"TITLE"
+				"TSET"
+				"TSHOW"
+				"TSPLOT"
+				"T-TEST"
+				"UNIANOVA"
+				"UNNUMBERED"
+				"UPDATE"
+				"USE"
+				"VALUE LABELS"
+				"VARIABLE ALIGNMENT"
+				"VARIABLE LABELS"
+				"VARIABLE LEVEL"
+				"VARIABLE WIDTH"
+				"VARSTOCASES"
+				"VECTOR"
+				"VERIFY"
+				"WEIGHT"
+				"WRITE"
+				"WRITE FORMATS"
 				"XSAVE") t) "\\>" )
 	  'font-lock-builtin-face)
 
-   (cons 
+   (cons
     (concat "\\<" (regexp-opt '(
 				"ALL" "AND" "BY" "EQ" "GE" "GT" "LE" "LT"
 				"NE" "NOT" "OR" "TO" "WITH"
 				) t ) "\\>") 'font-lock-keyword-face)
 
 
-   (cons 
+   (cons
     (concat "\\<"
 	    (regexp-opt '(
 			  "ABS"
@@ -687,7 +687,7 @@
   (set (make-local-variable 'font-lock-keywords-case-fold-search) t)
   (set (make-local-variable 'font-lock-defaults) '(pspp-font-lock-keywords))
 
-  (set (make-local-variable 'indent-line-function) 'pspp-indent-line)  
+  (set (make-local-variable 'indent-line-function) 'pspp-indent-line)
   (set (make-local-variable 'comment-start ) "* ")
   (set (make-local-variable 'compile-command)
        (concat "pspp "

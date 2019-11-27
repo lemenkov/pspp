@@ -445,7 +445,7 @@ linreg_fit (const gsl_matrix *cov, struct linreg *l)
       linreg_fit_qr (cov, l);
     }
   else
-#endif    
+#endif
     {
       gsl_matrix *params = gsl_matrix_calloc (cov->size1, cov->size2);
       gsl_matrix_memcpy (params, cov);

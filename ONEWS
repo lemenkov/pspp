@@ -1,4 +1,4 @@
-PSPP NEWS -- history of user-visible changes.  
+PSPP NEWS -- history of user-visible changes.
 Time-stamp: <2005-11-05 18:34:17 blp>
 Copyright (C) 1996, 1997, 1998 Free Software Foundation, Inc.
 See the end for copying conditions.
@@ -420,7 +420,7 @@ except median.  No percentiles.  Full syntax.  No integer mode.
 
 * Changes for patchlevel 118:
 
-** Does not compile. 
+** Does not compile.
 
 ** Bugfix regarding titles on LIST procedure.
 
@@ -436,7 +436,7 @@ except median.  No percentiles.  Full syntax.  No integer mode.
 
 * Changes for patchlevel 115:
 
-** New output driver initialization interface. 
+** New output driver initialization interface.
 
 *** Changed option syntax.
 
@@ -468,7 +468,7 @@ Do it by specifying a definition on the command line of form
 `-v' causes PSPP to display more info about what it's doing.
 Multiple `-v's display even more.
 
-** Support for small 25-line screens. 
+** Support for small 25-line screens.
 
 The ASCII driver minimum for page length is now 15 lines instead of
 29.

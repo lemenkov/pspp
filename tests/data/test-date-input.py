@@ -106,7 +106,7 @@ def print_all_formats(date, template, formatted, exp_y, exp_m, exp_d,
                           30, 31, 30, 31, 31, 30, 31, 30, 31)[exp_m]
             print_all_formats(date, template, formatted + ('%d' % week),
                               exp_y, exp_m, exp_d, exp_time, exp_sign)
-            
+
         elif c == 'H':
             for f in ('%d', '%02d'):
                 print_all_formats(date, template, formatted + (f % hour),
@@ -151,7 +151,7 @@ def print_all_formats(date, template, formatted, exp_y, exp_m, exp_d,
                                   exp_y, exp_m, exp_d, exp_time,
                                   f)
         else:
-            assert False    
+            assert False
     else:
         # Write the formatted value to fmt_name.input.
         input_file.write('%s\n' % formatted)
@@ -178,7 +178,7 @@ def print_all_formats(date, template, formatted, exp_y, exp_m, exp_d,
         expected_s = '%17.2f\n' % expected
         expected_s = expected_s.replace(' 0.', '  .')
         expout_file.write(expected_s)
-        
+
 
 for template in templates:
     for date in dates:

@@ -1,16 +1,16 @@
 dnl PSPP - a program for statistical analysis.
 dnl Copyright (C) 2017 Free Software Foundation, Inc.
-dnl 
+dnl
 dnl This program is free software: you can redistribute it and/or modify
 dnl it under the terms of the GNU General Public License as published by
 dnl the Free Software Foundation, either version 3 of the License, or
 dnl (at your option) any later version.
-dnl 
+dnl
 dnl This program is distributed in the hope that it will be useful,
 dnl but WITHOUT ANY WARRANTY; without even the implied warranty of
 dnl MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 dnl GNU General Public License for more details.
-dnl 
+dnl
 dnl You should have received a copy of the GNU General Public License
 dnl along with this program.  If not, see <http://www.gnu.org/licenses/>.
 dnl
@@ -68,7 +68,7 @@ begin data.
 56 3.0 6.0 5.9 3.6
 end data.
 
-t-test /PAIRS a c with b d (PAIRED). 
+t-test /PAIRS a c with b d (PAIRED).
 ])
 
 AT_DATA([expout], [dnl
@@ -105,7 +105,7 @@ AT_CHECK([cat ref.csv], [0], [expout])
 AT_DATA([missing.sps], [dnl
 data list list /id * a * b * c * d *.
 begin data.
-1 2.0 3.0 4.0 4.0 
+1 2.0 3.0 4.0 4.0
 2 1.0 2.0 5.1 3.9
 3 2.0 4.5 5.2 3.8
 4 2.0 4.5 5.3 3.7
@@ -132,7 +132,7 @@ begin data.
 5 3.0 6.0 5.9 3.6
 end data.
 
-t-test /PAIRS a b with c d (PAIRED). 
+t-test /PAIRS a b with c d (PAIRED).
 ])
 
 AT_DATA([expout], [dnl
@@ -171,7 +171,7 @@ AT_CHECK([cat ref.csv], [0], [expout])
 AT_DATA([missing.sps], [dnl
 data list list /id * a * b * c * d *.
 begin data.
-1 2.0 3.0 4.0 4.0 
+1 2.0 3.0 4.0 4.0
 2 1.0 2.0 5.1 3.9
 3 2.0 4.5 5.2 3.8
 4 2.0 4.5 5.3 3.7
@@ -180,7 +180,7 @@ begin data.
 end data.
 
 
-t-test /MISSING=listwise /PAIRS a b with c d (PAIRED). 
+t-test /MISSING=listwise /PAIRS a b with c d (PAIRED).
 ])
 AT_CHECK([pspp -o missing.csv missing.sps])
 AT_CHECK([cat missing.csv], [0], [expout])
@@ -273,8 +273,8 @@ data list list /ID * INDEP * DEP1 * DEP2 *.
 begin data.
 1  1.1 1 3
 2  1.1 2 4
-3  1.1 2 4 
-4  1.1 2 4 
+3  1.1 2 4
+4  1.1 2 4
 5  1.1 3 5
 6  2.1 3 1
 7  2.1 4 2
@@ -419,7 +419,7 @@ begin data.
 7  .  3.1 5
 end data.
 
-* Note that if the independent variable is missing, then it's implicitly 
+* Note that if the independent variable is missing, then it's implicitly
 * listwise missing.
 
 t-test /missing=analysis /group=indep /var=dep1 dep2.
@@ -742,8 +742,8 @@ data list list /ID * INDEP (a1) DEP1 * DEP2 *.
 begin data.
 1  'a' 1 3
 2  'a' 2 4
-3  'a' 2 4 
-4  'a' 2 4 
+3  'a' 2 4
+4  'a' 2 4
 5  'a' 3 5
 6  'b' 3 1
 7  'b' 4 2
@@ -790,8 +790,8 @@ data list list notable /id * indep (a1) dep1 * dep2 *.
 begin data.
 1  'a' 1 3
 2  'a' 2 4
-3  'a' 2 4 
-4  'a' 2 4 
+3  'a' 2 4
+4  'a' 2 4
 5  'a' 3 5
 6  'b' 3 1
 7  'b' 4 2
@@ -860,7 +860,7 @@ begin data.
 2 2
 3 2
 4 2
-5 2 
+5 2
 end data.
 
 t-test /variables = x group=g(1,3).

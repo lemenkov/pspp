@@ -1,19 +1,19 @@
 # PSPP - a program for statistical analysis.
 # Copyright (C) 2017 Free Software Foundation, Inc.
-# 
+#
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
-# 
+#
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
-# 
+#
 use strict;
 use warnings 'all';
 
@@ -583,7 +583,7 @@ sub parse_arg {
 sub print_header {
     print <<EOF;
 /* $output_file
-   Generated from $input_file by generate.pl.  
+   Generated from $input_file by generate.pl.
    Do not modify! */
 
 EOF
@@ -943,7 +943,7 @@ sub any {
 # valid arguments for $op.
 sub make_sysmis_decl {
     my ($op, $min_valid_src) = @_;
-    my (@sysmis_cond); 
+    my (@sysmis_cond);
     if (!$op->{ABSORB_MISS}) {
 	for my $arg (@{$op->{ARGS}}) {
 	    my ($arg_name) = "arg_$arg->{NAME}";

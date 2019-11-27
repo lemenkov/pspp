@@ -1,19 +1,19 @@
 # PSPP - a program for statistical analysis.
 # Copyright (C) 2017 Free Software Foundation, Inc.
-# 
+#
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
-# 
+#
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
-# 
+#
 ## Process this file with automake to produce Makefile.in  -*- makefile -*-
 
 check_PROGRAMS += \
@@ -62,7 +62,7 @@ tests_data_datasheet_test_CFLAGS = $(AM_CFLAGS)
 
 tests_data_sack_SOURCES = \
 	tests/data/sack.c
-tests_data_sack_LDADD = src/libpspp-core.la 
+tests_data_sack_LDADD = src/libpspp-core.la
 tests_data_sack_CFLAGS = $(AM_CFLAGS)
 
 tests_libpspp_line_reader_test_SOURCES = tests/libpspp/line-reader-test.c
@@ -102,7 +102,7 @@ tests_libpspp_hmapx_test_SOURCES = \
 tests_libpspp_hmapx_test_CPPFLAGS = $(AM_CPPFLAGS) -DASSERT_LEVEL=10
 
 tests_libpspp_i18n_test_SOURCES = tests/libpspp/i18n-test.c
-tests_libpspp_i18n_test_LDADD = src/libpspp/liblibpspp.la gl/libgl.la 
+tests_libpspp_i18n_test_LDADD = src/libpspp/liblibpspp.la gl/libgl.la
 
 tests_libpspp_abt_test_SOURCES = \
 	src/libpspp/abt.c \
@@ -137,7 +137,7 @@ tests_libpspp_range_tower_test_LDADD = src/libpspp/liblibpspp.la gl/libgl.la
 
 tests_libpspp_str_test_SOURCES = \
 	tests/libpspp/str-test.c
-tests_libpspp_str_test_LDADD = src/libpspp/liblibpspp.la gl/libgl.la 
+tests_libpspp_str_test_LDADD = src/libpspp/liblibpspp.la gl/libgl.la
 
 tests_libpspp_string_map_test_SOURCES = \
 	tests/libpspp/string-map-test.c
@@ -170,7 +170,7 @@ tests_libpspp_u8_istream_test_SOURCES = tests/libpspp/u8-istream-test.c
 tests_libpspp_u8_istream_test_LDADD = src/libpspp/liblibpspp.la gl/libgl.la
 
 tests_libpspp_sparse_array_test_SOURCES = \
-	tests/libpspp/sparse-array-test.c 
+	tests/libpspp/sparse-array-test.c
 tests_libpspp_sparse_array_test_CPPFLAGS = $(AM_CPPFLAGS) -DASSERT_LEVEL=10
 tests_libpspp_sparse_array_test_LDADD = src/libpspp/liblibpspp.la gl/libgl.la
 
@@ -179,7 +179,7 @@ tests_libpspp_sparse_xarray_test_SOURCES = \
 tests_libpspp_sparse_xarray_test_CPPFLAGS = $(AM_CPPFLAGS) -DASSERT_LEVEL=10
 tests_libpspp_sparse_xarray_test_LDADD = src/libpspp/liblibpspp.la \
 	src/libpspp-core.la \
-	gl/libgl.la 
+	gl/libgl.la
 
 tests_data_inexactify_SOURCES = tests/data/inexactify.c
 
@@ -190,7 +190,7 @@ tests_language_lexer_command_name_test_SOURCES = \
 	tests/language/lexer/command-name-test.c
 tests_language_lexer_command_name_test_LDADD = \
 	src/libpspp/liblibpspp.la \
-	gl/libgl.la 
+	gl/libgl.la
 tests_language_lexer_command_name_test_CFLAGS = $(AM_CFLAGS)
 
 check_PROGRAMS += tests/language/lexer/scan-test
@@ -204,7 +204,7 @@ tests_language_lexer_scan_test_SOURCES = \
 tests_language_lexer_scan_test_CFLAGS = $(AM_CFLAGS)
 tests_language_lexer_scan_test_LDADD = \
 	src/libpspp/liblibpspp.la \
-	gl/libgl.la 
+	gl/libgl.la
 
 check_PROGRAMS += tests/language/lexer/segment-test
 tests_language_lexer_segment_test_SOURCES = \
@@ -215,7 +215,7 @@ tests_language_lexer_segment_test_SOURCES = \
 tests_language_lexer_segment_test_CFLAGS = $(AM_CFLAGS)
 tests_language_lexer_segment_test_LDADD = \
 	src/libpspp/liblibpspp.la \
-	gl/libgl.la 
+	gl/libgl.la
 
 check_PROGRAMS += tests/libpspp/zip-test
 tests_libpspp_zip_test_SOURCES = \
@@ -225,7 +225,7 @@ tests_libpspp_zip_test_CFLAGS = $(AM_CFLAGS)
 tests_libpspp_zip_test_LDADD = \
 	src/libpspp/liblibpspp.la \
 	src/libpspp-core.la \
-	gl/libgl.la 
+	gl/libgl.la
 
 check_PROGRAMS += tests/math/chart-get-scale-test
 tests_math_chart_get_scale_test_SOURCES = tests/math/chart-get-scale-test.c
@@ -452,7 +452,7 @@ tests_clean:
 
 AUTOM4TE = $(SHELL) $(srcdir)/build-aux/missing --run autom4te
 AUTOTEST = $(AUTOM4TE) --language=autotest
-$(TESTSUITE): package.m4 $(srcdir)/tests/testsuite.at $(TESTSUITE_AT) 
+$(TESTSUITE): package.m4 $(srcdir)/tests/testsuite.at $(TESTSUITE_AT)
 	$(AM_V_GEN)$(AUTOTEST) -I '$(srcdir)' $@.at | $(SED) 's/@<00A0>@/ /g' > $@.tmp
 	test -s $@.tmp
 	$(AM_V_at)mv $@.tmp $@

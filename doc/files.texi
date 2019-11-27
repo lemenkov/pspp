@@ -129,7 +129,7 @@ The @subcmd{OUTFILE} subcommand, which is the only required subcommand, specifie
 the portable file to be written as a file name string or
 a file handle (@pxref{File Handles}).
 
-@subcmd{DROP}, @subcmd{KEEP}, and @subcmd{RENAME} follow the same format as the 
+@subcmd{DROP}, @subcmd{KEEP}, and @subcmd{RENAME} follow the same format as the
 @subcmd{SAVE} procedure (@pxref{SAVE}).
 
 The @subcmd{TYPE} subcommand specifies the character set for use in the
@@ -179,7 +179,7 @@ eliminated.  When this is done, only a single variable may be renamed at
 once.  For instance, @subcmd{/RENAME=@var{A}=@var{B}}.  This alternate syntax is
 deprecated.
 
-@subcmd{DROP}, @subcmd{KEEP}, and @subcmd{RENAME} are executed in left-to-right order.  
+@subcmd{DROP}, @subcmd{KEEP}, and @subcmd{RENAME} are executed in left-to-right order.
 Each may be present any number of times.  @cmd{GET} never modifies a
 file on disk.  Only the active dataset read from the file
 is affected by these subcommands.
@@ -260,17 +260,17 @@ Gnumeric spreadsheets (@url{http://gnumeric.org}), and spreadsheets
 in OpenDocument format
 (@url{http://libreplanet.org/wiki/Group:OpenDocument/Software})
 can be read using the @cmd{GET DATA} command.
-Use the @subcmd{TYPE} subcommand to indicate the file's format.  
+Use the @subcmd{TYPE} subcommand to indicate the file's format.
 /TYPE=GNM indicates Gnumeric files,
 /TYPE=ODS indicates OpenDocument.
 The @subcmd{FILE} subcommand is mandatory.
-Use it to specify the name file to be read. 
+Use it to specify the name file to be read.
 All other subcommands are optional.
 
-The format of each variable is determined by the format of the spreadsheet 
+The format of each variable is determined by the format of the spreadsheet
 cell containing the first datum for the variable.
 If this cell is of string (text) format, then the width of the variable is
-determined from the length of the string it contains, unless the 
+determined from the length of the string it contains, unless the
 @subcmd{ASSUMEDSTRWIDTH} subcommand is given.
 
 The @subcmd{SHEET} subcommand specifies the sheet within the spreadsheet file to read.
@@ -287,9 +287,9 @@ first sheet in the file.
 The @subcmd{CELLRANGE} subcommand specifies the range of cells within the sheet to read.
 If the subcommand is given as @subcmd{/CELLRANGE=FULL}, then the entire
 sheet  is read.
-To read only part of a sheet, use the form 
+To read only part of a sheet, use the form
 @subcmd{/CELLRANGE=range '@var{top_left_cell}:@var{bottom_right_cell}'}.
-For example, the subcommand @subcmd{/CELLRANGE=range 'C3:P19'} reads 
+For example, the subcommand @subcmd{/CELLRANGE=range 'C3:P19'} reads
 columns C--P, and rows 3--19 inclusive.
 If no @subcmd{CELLRANGE} subcommand is given, then the entire sheet is read.
 
@@ -301,7 +301,7 @@ used, then the variables  receive automatically assigned names.
 
 The @subcmd{ASSUMEDSTRWIDTH} subcommand specifies the maximum width of string
 variables read  from the file.
-If omitted, the default value is determined from the length of the 
+If omitted, the default value is determined from the length of the
 string in the first spreadsheet cell for each variable.
 
 
@@ -322,12 +322,12 @@ GET DATA /TYPE=PSQL
 
 The PSQL type is used to import data from a postgres database server.
 The server may be located locally or remotely.
-Variables are automatically created based on the table column names 
+Variables are automatically created based on the table column names
 or the names specified in the SQL query.
-Postgres data types of high precision, will loose precision when 
+Postgres data types of high precision, will loose precision when
 imported into @pspp{}.
 Not all the postgres data types are able to be represented in @pspp{}.
-If a datum cannot be represented a warning will be issued and that 
+If a datum cannot be represented a warning will be issued and that
 datum will be set to SYSMIS.
 
 The @subcmd{CONNECT} subcommand is mandatory.
@@ -341,15 +341,15 @@ It must be a valid SQL string to retrieve data from the database.
 
 The @subcmd{ASSUMEDSTRWIDTH} subcommand specifies the maximum width of string
 variables read  from the database.
-If omitted, the default value is determined from the length of the 
+If omitted, the default value is determined from the length of the
 string in the first value read for each variable.
 
 The @subcmd{UNENCRYPTED} subcommand allows data to be retrieved over an insecure
 connection.
-If the connection is not encrypted, and the @subcmd{UNENCRYPTED} subcommand is 
+If the connection is not encrypted, and the @subcmd{UNENCRYPTED} subcommand is
 not given, then an error will occur.
 Whether or not the connection is
-encrypted depends upon the underlying psql library and the 
+encrypted depends upon the underlying psql library and the
 capabilities of the database server.
 
 The @subcmd{BSIZE} subcommand serves only to optimise the speed of data transfer.
@@ -358,7 +358,7 @@ number of cases to fetch from the database at once.
 The default value is 4096.
 If your SQL statement fetches a large number of cases but only a small number of
 variables, then the data transfer may be faster if you increase this value.
-Conversely, if the number of variables is large, or if the machine on which 
+Conversely, if the number of variables is large, or if the machine on which
 @pspp{} is running has only a
 small amount of memory, then a smaller value will be better.
 
@@ -389,7 +389,7 @@ GET DATA /TYPE=TXT
 When TYPE=TXT is specified, GET DATA reads data in a delimited or
 fixed columnar format, much like DATA LIST (@pxref{DATA LIST}).
 
-The @subcmd{FILE} subcommand is mandatory.  Specify the file to be read as 
+The @subcmd{FILE} subcommand is mandatory.  Specify the file to be read as
 a string file name or (for textual data only) a
 file handle (@pxref{File Handles}).
 
@@ -748,7 +748,7 @@ Specify, within parentheses, a list of variable names followed by an
 equals sign (@samp{=}) and the names that they should be renamed to.
 Multiple parenthesized groups of variable names can be included on a
 single @subcmd{RENAME} subcommand.  Variables' names may be swapped using a
-@subcmd{RENAME} subcommand of the 
+@subcmd{RENAME} subcommand of the
 form @subcmd{/RENAME=(@var{A} @var{B}=@var{B} @var{A})}.
 
 Alternate syntax for the @subcmd{RENAME} subcommand allows the parentheses to be
@@ -950,7 +950,7 @@ qualifier character that appears within a value is doubled.
 @section SYSFILE INFO
 @vindex SYSFILE INFO
 
-@display 
+@display
 SYSFILE INFO FILE='@var{file_name}' [ENCODING='@var{encoding}'].
 @end display
 

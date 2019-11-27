@@ -54,13 +54,13 @@ struct _PsppireDelimitedText
   GObject parent;
 
   GtkTreeModel *child;
-  
+
   /* The first line of the file to be modelled */
   gint first_line;
-  
+
   GSList *delimiters;
   gint max_delimiters;
-  
+
   /*< private >*/
   gboolean dispose_has_run ;
   gint stamp;

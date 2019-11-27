@@ -206,7 +206,7 @@ psppire_dialog_action_descriptives_activate (PsppireDialogAction *a, GVariant *p
 				      B_DS_DEFAULT,
 				      N_DESCRIPTIVE_STATS, stats);
   act->stats = gtk_tree_view_get_model (GTK_TREE_VIEW (stats_treeview));
-  
+
   pda->dialog = get_widget_assert   (xml, "descriptives-dialog");
   pda->source = get_widget_assert   (xml, "all-variables");
   act->variables =   get_widget_assert   (xml, "stat-variables");

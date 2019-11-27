@@ -447,7 +447,7 @@ psppire_dialog_action_recode_pre_activate (PsppireDialogActionRecode *act,
   PsppireDialogAction *pda = PSPPIRE_DIALOG_ACTION (act);
 
   GtkBuilder *xml = builder_new ("recode.ui");
-  
+
   pda->dialog = get_widget_assert   (xml, "recode-dialog");
   pda->source = get_widget_assert   (xml, "treeview1");
 

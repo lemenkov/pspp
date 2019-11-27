@@ -51,7 +51,7 @@ processed in a slightly different way before encryption, as described
 in the following sections.  The AES-256 key is derived from a password
 in the following way:
 
-@enumerate 
+@enumerate
 @item
 Start from the literal password typed by the user.  Truncate it to at
 most 10 bytes, then append as many null bytes as necessary until there

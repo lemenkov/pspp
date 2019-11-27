@@ -1,7 +1,7 @@
 We wish to thank current active contributors to PSPP:
 
 * Ben Pfaff wrote the initial program and manual, which comprises the
-majority of the current code. Ben continues to contribute and 
+majority of the current code. Ben continues to contribute and
 most of the core libraries which ensure that PSPP runs with optimal
 speed are his work.
 
@@ -11,8 +11,8 @@ long variable names, PostgreSQL and Gnumeric and made numerous
 revisions to other modules.
 
 * Jason Stover contributed statistical and numerical functionality,
-including lib/gslextras and the linear regression features. Jason 
-is also an important contributor to GSL, which is used by PSPP. 
+including lib/gslextras and the linear regression features. Jason
+is also an important contributor to GSL, which is used by PSPP.
 
 * Mehmet Hakan Satman provided the initial implementation of the QUICK CLUSTER command.
   Alan Mead and others contributed later improvements including the cluster membership subcommands.

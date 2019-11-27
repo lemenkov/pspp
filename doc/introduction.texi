@@ -13,12 +13,12 @@
 
 @cindex @pspp{} language
 @cindex language, @pspp{}
-@pspp{} is a tool for statistical analysis of sampled data.  
+@pspp{} is a tool for statistical analysis of sampled data.
 It reads the data, analyzes the data according to commands provided, and writes the results
 to a listing file,  to the standard output or to a window of the graphical display.
 
 The language accepted by @pspp{} is similar to those accepted by SPSS
-statistical products.  
+statistical products.
 The details of @pspp{}'s language are given later in this manual.
 
 @cindex PostScript

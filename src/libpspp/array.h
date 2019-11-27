@@ -1,4 +1,4 @@
-/* 
+/*
 PSPP - a program for statistical analysis.
 Copyright (C) 2017 Free Software Foundation, Inc.
 

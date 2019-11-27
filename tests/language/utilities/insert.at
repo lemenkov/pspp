@@ -1,23 +1,23 @@
 dnl PSPP - a program for statistical analysis.
 dnl Copyright (C) 2017 Free Software Foundation, Inc.
-dnl 
+dnl
 dnl This program is free software: you can redistribute it and/or modify
 dnl it under the terms of the GNU General Public License as published by
 dnl the Free Software Foundation, either version 3 of the License, or
 dnl (at your option) any later version.
-dnl 
+dnl
 dnl This program is distributed in the hope that it will be useful,
 dnl but WITHOUT ANY WARRANTY; without even the implied warranty of
 dnl MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 dnl GNU General Public License for more details.
-dnl 
+dnl
 dnl You should have received a copy of the GNU General Public License
 dnl along with this program.  If not, see <http://www.gnu.org/licenses/>.
 dnl
 AT_BANNER([INSERT])
 
 dnl Create a file "batch.sps" that is valid syntax only in batch mode.
-m4_define([CREATE_BATCH_SPS], 
+m4_define([CREATE_BATCH_SPS],
   [AT_DATA([batch.sps], [dnl
 input program
 loop #i = 1 to 5
@@ -31,7 +31,7 @@ end input program
 AT_SETUP([INSERT SYNTAX=INTERACTIVE])
 CREATE_BATCH_SPS
 AT_DATA([insert.sps], [dnl
-INSERT 
+INSERT
   FILE='batch.sps'
   SYNTAX=interactive.
 LIST.
@@ -47,7 +47,7 @@ AT_CLEANUP
 AT_SETUP([INSERT SYNTAX=BATCH])
 CREATE_BATCH_SPS
 AT_DATA([insert.sps], [dnl
-INSERT 
+INSERT
   FILE='batch.sps'
   SYNTAX=BATCH.
 LIST.
@@ -161,7 +161,7 @@ dnl Test for regression against bug #24569 in which PSPP crashed
 dnl upon attempt to insert a nonexistent file.
 AT_SETUP([INSERT nonexistent file])
 AT_DATA([insert.sps], [dnl
-INSERT 
+INSERT
   FILE='nonexistent'
   ERROR=CONTINUE.
   .
@@ -176,7 +176,7 @@ insert.sps:6: error: LIST: LIST is allowed only after the active dataset has bee
 AT_CLEANUP
 
 
-dnl A test to check the INCLUDE command complete with the 
+dnl A test to check the INCLUDE command complete with the
 dnl syntax and function of the ENCODING subcommand.
 AT_SETUP([INCLUDE full check])
 AT_DATA([two-utf8.sps], [dnl

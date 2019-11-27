@@ -90,7 +90,7 @@ gi (GListModel *list, guint position)
 
   if (text)
     gtk_button_set_label (GTK_BUTTON (button), gettext (text));
-  
+
   return button;
 }
 

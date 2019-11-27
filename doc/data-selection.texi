@@ -184,7 +184,7 @@ When a list of variable names is specified, one of the keywords
 @subcmd{LAYERED} or @subcmd{SEPARATE} may also be specified.  If provided, either
 keyword are ignored.
 
-Groups are formed only by @emph{adjacent} cases.  To create a split 
+Groups are formed only by @emph{adjacent} cases.  To create a split
 using a variable where like values are not adjacent in the working file,
 you should first sort the data by that variable (@pxref{SORT CASES}).
 

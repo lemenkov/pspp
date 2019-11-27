@@ -29,7 +29,7 @@ PSPP-Perl - Perl extension to PSPP
 =head1 DESCRIPTION
 
 PSPP-Perl provides an interface to the libraries used by pspp to read and
-write system files.  
+write system files.
 
 =head1 EXPORT
 
@@ -49,19 +49,19 @@ PSPP::onBoot($PSPP::VERSION);
 =head1 PROGRAMMER'S INTERFACE
 
 The subroutines in this package return zero or unref on error.
-When errors occur, a string describing the error is written 
-to C<$PSPP::errstr>. 
+When errors occur, a string describing the error is written
+to C<$PSPP::errstr>.
 
 =cut
 
 package PSPP;
 use POSIX ;
 
-use constant { SYSMIS => -(POSIX::DBL_MAX), 
-	       PERL_EPOCH => 12219379200 # Number of seconds between 
+use constant { SYSMIS => -(POSIX::DBL_MAX),
+	       PERL_EPOCH => 12219379200 # Number of seconds between
                    # 14th October 1582
-		   # and 
-		   # 1st January 1970 
+		   # and
+		   # 1st January 1970
 	       };
 
 
@@ -121,7 +121,7 @@ sub get_var
     my $idx = shift;
     my $var = pxs_get_variable ($dict, $idx);
 
-    if ( ref $var ) 
+    if ( ref $var )
     {
 	bless ($var, "PSPP::Var");
     }
@@ -143,7 +143,7 @@ sub get_var_by_name
     my $name = shift;
     my $var = pxs_get_var_by_name ($dict, $name);
 
-    if ( ref $var ) 
+    if ( ref $var )
     {
 	bless ($var, "PSPP::Var");
     }
@@ -157,7 +157,7 @@ package PSPP::Fmt;
 
 =head2 PSPP::Fmt
 
-Contains constants used to denote variable format types.  
+Contains constants used to denote variable format types.
 The identifiers are the same as  those used in pspp to denote formats.
 For  example C<PSPP::Fmt::F> defines floating point format, and
 C<PSPP::Fmt::A> denotes string format.
@@ -168,40 +168,40 @@ C<PSPP::Fmt::A> denotes string format.
 use constant {
     F =>        0,
     COMMA =>    1,
-    DOT =>      2, 
-    DOLLAR =>   3, 
-    PCT =>      4, 
-    E =>        5, 
-    CCA =>      6, 
-    CCB =>      7, 
-    CCC =>      8, 
-    CCD =>      9, 
-    CCE =>      10, 
-    N =>        11, 
-    Z =>        12, 
-    P =>        13, 
-    PK =>       14, 
-    IB =>       15, 
-    PIB =>      16, 
-    PIBHEX =>   17, 
-    RB =>       18, 
-    RBHEX =>    19, 
-    DATE =>     20, 
-    ADATE =>    21, 
-    EDATE =>    22, 
-    JDATE =>    23, 
-    SDATE =>    24, 
-    QYR =>      25, 
-    MOYR =>     26, 
-    WKYR =>     27, 
-    DATETIME => 28, 
-    YMDHMS =>   29, 
-    MTIME =>    30, 
-    TIME =>     31, 
-    DTIME =>    32, 
-    WKDAY =>    33, 
-    MONTH =>    34, 
-    A =>        35, 
+    DOT =>      2,
+    DOLLAR =>   3,
+    PCT =>      4,
+    E =>        5,
+    CCA =>      6,
+    CCB =>      7,
+    CCC =>      8,
+    CCD =>      9,
+    CCE =>      10,
+    N =>        11,
+    Z =>        12,
+    P =>        13,
+    PK =>       14,
+    IB =>       15,
+    PIB =>      16,
+    PIBHEX =>   17,
+    RB =>       18,
+    RBHEX =>    19,
+    DATE =>     20,
+    ADATE =>    21,
+    EDATE =>    22,
+    JDATE =>    23,
+    SDATE =>    24,
+    QYR =>      25,
+    MOYR =>     26,
+    WKYR =>     27,
+    DATETIME => 28,
+    YMDHMS =>   29,
+    MTIME =>    30,
+    TIME =>     31,
+    DTIME =>    32,
+    WKDAY =>    33,
+    MONTH =>    34,
+    A =>        35,
     AHEX =>     36
 };
 
@@ -214,12 +214,12 @@ package PSPP::Var;
 
 =head3 new ($dict, $name, %input_fmt)
 
-Creates and returns a new variable in the dictionary C<dict>.  The 
+Creates and returns a new variable in the dictionary C<dict>.  The
 new variable will have the name C<name>.  C<name> must be a valid UTF8 string.
-The input format is set by the C<input_fmt> parameter 
+The input format is set by the C<input_fmt> parameter
 (See L</PSPP::Fmt>).
 By default, the write and print formats are the same as the input format.
-The write and print formats may be changed (See L</set_write_format>), 
+The write and print formats may be changed (See L</set_write_format>),
 L</set_print_format>).  The input format may not be changed after
 the variable has been created.
 If the variable cannot be created, undef is returned.
@@ -233,7 +233,7 @@ sub new
     my $name = shift;
     my %format = @_;
     my $self = pxs_dict_create_var ($dict, $name, \%format);
-    if ( ref $self ) 
+    if ( ref $self )
     {
 	bless ($self, $class);
     }
@@ -354,9 +354,9 @@ sub add_value_labels
     my @li;
 
     my $n = 0;
-    while ( @li = each %values ) 
+    while ( @li = each %values )
     {
-	if ( $var->add_value_label ($li[0], "$li[1]") ) 
+	if ( $var->add_value_label ($li[0], "$li[1]") )
 	{
 	    $n++;
 	}
@@ -387,13 +387,13 @@ sub set_value_labels
 
 =head3 set_missing_values ($val1 [, $val2[, $val3] ])
 
-Sets the missing values for the variable.  
+Sets the missing values for the variable.
 No more than three missing values may be specified.
 
 =head3 get_attributes()
 
 Returns a reference to a hash of the custom variable attributes.
-Each value of the hash is a reference to an array containing the 
+Each value of the hash is a reference to an array containing the
 attribute values.
 
 =head3 get_name ()
@@ -420,7 +420,7 @@ package PSPP::Sysfile;
 =head3 new ($filename, $dict [,%opts])
 
 Creates a new system file from the dictionary C<dict>.  The file will
-be written to the file called C<filename>. The string C<filename> must 
+be written to the file called C<filename>. The string C<filename> must
 be encoded in UTF-8.
 C<opt>, if specified, is a hash containing optional parameters for the
 system file.  Currently, the only supported parameter is
@@ -432,7 +432,7 @@ On error, undef is returned.
 =head3 append_case (@case)
 
 Appends a case to the system file.
-C<Case> is an array of scalars, each of which are the values of 
+C<Case> is an array of scalars, each of which are the values of
 the variables in the dictionary corresponding to the system file.
 If the case contains strings, then the strings must be UTF8 encoded.
 The special value C<PSPP::SYSMIS> may be used to indicate that a value
@@ -451,7 +451,7 @@ sub new
 
     my $self  = pxs_create_sysfile ($filename, $dict, $opts);
 
-    if ( ref $self ) 
+    if ( ref $self )
     {
 	bless ($self, $class);
     }
@@ -485,7 +485,7 @@ sub open
 
     my $self  = pxs_open_sysfile ($filename);
 
-    if ( ref $self ) 
+    if ( ref $self )
     {
 	bless ($self, $class);
     }
@@ -498,9 +498,9 @@ sub open
 
 Opens a system file for reading.
 
-Open is used to read data from an existing system file. 
-It creates and returns a PSPP::Reader object which can be used to read 
-data and dictionary information from C<filename>.  The string C<filename> 
+Open is used to read data from an existing system file.
+It creates and returns a PSPP::Reader object which can be used to read
+data and dictionary information from C<filename>.  The string C<filename>
 must be in UTF-8 encoding.
 
 =head3 get_case_cnt ()
@@ -532,31 +532,31 @@ Returns the dictionary associated with the reader.
 =head3 get_next_case ()
 
 Retrieves the next case from the reader.
-This method returns an array of scalars, each of which are the values of 
+This method returns an array of scalars, each of which are the values of
 the data in the system file.
 The first call to C<get_next_case> after C<open> has been called retrieves
 the first case in the system file.  Each subsequent call retrieves the next
 case.  If there are no more cases to be read, the function returns an empty
 list.
 
-If the case contains system missing values, these values are set to the 
+If the case contains system missing values, these values are set to the
 empty string.
 
 =head2 Miscellaneous subroutines
 
-The following subroutines provide (hopefully) useful information about the 
+The following subroutines provide (hopefully) useful information about the
 values retrieved from a reader.
 
 =head3 PSPP::format_value ($value, $variable)
 
-Returns a scalar containing a string representing C<value> formatted according 
+Returns a scalar containing a string representing C<value> formatted according
 to the print format of C<variable>.
 In the most common usage,  C<value> should be a value of C<variable>.
 
 
 =head3 PSPP::value_is_missing ($value, $variable)
 
-Returns non-zero if C<value> is either system missing, or if it matches the 
+Returns non-zero if C<value> is either system missing, or if it matches the
 user missing criteria for C<variable>.
 
 =cut

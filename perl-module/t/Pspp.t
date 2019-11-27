@@ -105,8 +105,8 @@ sub run_pspp_syntax_cmp
   ok (!ref $var1, "Trap duplicate variable name");
   ok ($d->get_var_cnt () == 1);
 
-  $var1 = PSPP::Var->new ($d, "money", 
-			  (fmt=>PSPP::Fmt::DOLLAR, 
+  $var1 = PSPP::Var->new ($d, "money",
+			  (fmt=>PSPP::Fmt::DOLLAR,
 			   width=>4, decimals=>2) );
   ok (ref $var1, "Accept valid format");
   ok ($d->get_var_cnt () == 2);
@@ -134,16 +134,16 @@ sub run_pspp_syntax_cmp
   my $d = PSPP::Dict->new();
   PSPP::Var->new ($d, "id",
 			 (
-			  fmt=>PSPP::Fmt::F, 
-			  width=>2, 
+			  fmt=>PSPP::Fmt::F,
+			  width=>2,
 			  decimals=>0
 			  )
 			 );
 
   PSPP::Var->new ($d, "name",
 			 (
-			  fmt=>PSPP::Fmt::A, 
-			  width=>20, 
+			  fmt=>PSPP::Fmt::A,
+			  width=>20,
 			  )
 			 );
 
@@ -179,8 +179,8 @@ sub run_pspp_syntax_cmp
 	  my $res = $sysfile->append_case ( [21, "wheelbarrow"]);
 	  ok ($res, "Append Case 2");
 
-	  # Don't close.  We want to test that the destructor  does that 
-	  # automatically 
+	  # Don't close.  We want to test that the destructor  does that
+	  # automatically
       }
       ok (-s "$tempfile", "existance2");
 
@@ -211,27 +211,27 @@ RESULT
 
   }
 
-  # Now do some tests to make sure all the variable parameters 
+  # Now do some tests to make sure all the variable parameters
   # can be written properly.
 
   {
       my $tempdir = tempdir( CLEANUP => 1 );
-      my $tempfile = "$tempdir/testfile.sav";      
+      my $tempfile = "$tempdir/testfile.sav";
       my $dict = PSPP::Dict->new();
       ok (ref $dict, "Dictionary Creation 2");
 
-      my $int = PSPP::Var->new ($dict, "integer", 
+      my $int = PSPP::Var->new ($dict, "integer",
 				(width=>8, decimals=>0) );
 
       $int->set_label ("My Integer");
-      
+
       $int->add_value_label (99, "Silly");
       $int->clear_value_labels ();
       $int->add_value_label (0, "Zero");
       $int->add_value_label (1, "Unity");
       $int->add_value_label (2, "Duality");
 
-      my $str = PSPP::Var->new ($dict, "string", 
+      my $str = PSPP::Var->new ($dict, "string",
 				(fmt=>PSPP::Fmt::A, width=>8) );
 
 
@@ -242,7 +242,7 @@ RESULT
 
       $str->set_missing_values ("this", "that");
 
-      my $longstr = PSPP::Var->new ($dict, "longstring", 
+      my $longstr = PSPP::Var->new ($dict, "longstring",
  				(fmt=>PSPP::Fmt::A, width=>9) );
 
 
@@ -281,7 +281,7 @@ RESULT
 
 }
 
-sub generate_sav_file 
+sub generate_sav_file
 {
     my $filename = shift;
     my $tempdir = shift;
@@ -339,8 +339,8 @@ RESULT
 
 	PSPP::Var->new ($d, "id",
 			(
-			 fmt=>PSPP::Fmt::F, 
-			 width=>2, 
+			 fmt=>PSPP::Fmt::F,
+			 width=>2,
 			 decimals=>0
 			 )
 			);
@@ -372,7 +372,7 @@ RESULT
     my $label = $var->get_label ();
 
     print MYFILE "Variable $v is \"$name\", label is \"$label\"\n";
-    
+
     my $vl = $var->get_value_labels ();
 
     print MYFILE "Value Labels:\n";
@@ -486,7 +486,7 @@ SYNTAX
  list.
 
 SYNTAX
- 
+
  ok (! diff ("$tempdir/pspp.csv", "$tempdir/in.txt"), "Streaming of files");
 }
 
@@ -538,7 +538,7 @@ SYNTAX
 }
 
 
-# Missing value tests. 
+# Missing value tests.
 {
  my $tempdir = tempdir( CLEANUP => 1 );
 
@@ -561,17 +561,17 @@ SYNTAX
 
  ok ( !PSPP::value_is_missing ($val, $numericvar), "Missing Value Negative Num");
 
- @c = $sf->get_next_case (); 
- @c = $sf->get_next_case (); 
+ @c = $sf->get_next_case ();
+ @c = $sf->get_next_case ();
 
  $val = $c[0];
  ok ( PSPP::value_is_missing ($val, $stringvar), "Missing Value Positive");
 
- @c = $sf->get_next_case (); 
+ @c = $sf->get_next_case ();
  $val = $c[2];
  ok ( PSPP::value_is_missing ($val, $numericvar), "Missing Value Positive SYS");
 
- @c = $sf->get_next_case (); 
+ @c = $sf->get_next_case ();
  $val = $c[2];
  ok ( PSPP::value_is_missing ($val, $numericvar), "Missing Value Positive Num");
 }

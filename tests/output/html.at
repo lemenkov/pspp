@@ -1,16 +1,16 @@
 dnl PSPP - a program for statistical analysis.
 dnl Copyright (C) 2017 Free Software Foundation, Inc.
-dnl 
+dnl
 dnl This program is free software: you can redistribute it and/or modify
 dnl it under the terms of the GNU General Public License as published by
 dnl the Free Software Foundation, either version 3 of the License, or
 dnl (at your option) any later version.
-dnl 
+dnl
 dnl This program is distributed in the hope that it will be useful,
 dnl but WITHOUT ANY WARRANTY; without even the implied warranty of
 dnl MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 dnl GNU General Public License for more details.
-dnl 
+dnl
 dnl You should have received a copy of the GNU General Public License
 dnl along with this program.  If not, see <http://www.gnu.org/licenses/>.
 dnl
@@ -21,14 +21,14 @@ AT_SETUP([HTML bug])
 dnl Checks for a bug which caused the html driver to go into a tight loop.
 AT_DATA([foo.sps], [data list notable list /w l96_r l99_r l102_r *.
 begin data.
-15  0 0 0 
- 1  1 1 1 
- 2  1 1 2 
- 1  1 2 1 
- 1  1 2 2 
- 1  2 1 1 
- 4  2 2 1 
- 2  2 2 2 
+15  0 0 0
+ 1  1 1 1
+ 2  1 1 2
+ 1  1 2 1
+ 1  1 2 2
+ 1  2 1 1
+ 4  2 2 1
+ 2  2 2 2
 end data.
 
 weight by w.

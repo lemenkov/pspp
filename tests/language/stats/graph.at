@@ -1,16 +1,16 @@
 dnl PSPP - a program for statistical analysis.
 dnl Copyright (C) 2017 Free Software Foundation, Inc.
-dnl 
+dnl
 dnl This program is free software: you can redistribute it and/or modify
 dnl it under the terms of the GNU General Public License as published by
 dnl the Free Software Foundation, either version 3 of the License, or
 dnl (at your option) any later version.
-dnl 
+dnl
 dnl This program is distributed in the hope that it will be useful,
 dnl but WITHOUT ANY WARRANTY; without even the implied warranty of
 dnl MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 dnl GNU General Public License for more details.
-dnl 
+dnl
 dnl You should have received a copy of the GNU General Public License
 dnl along with this program.  If not, see <http://www.gnu.org/licenses/>.
 dnl
@@ -31,7 +31,7 @@ END INPUT PROGRAM.
 COMPUTE Size = Age * 3 + 50.
 
 GRAPH
-    /SCATTERPLOT(BIVARIATE) = Age WITH Size. 
+    /SCATTERPLOT(BIVARIATE) = Age WITH Size.
 
 ])
 
@@ -57,18 +57,18 @@ COMPUTE Size = Age * 3 + 50 + 50*CityNum.
 
 STRING City (a20).
 
-Recode CityNum 
+Recode CityNum
        (0 = "Madrid")
        (1 = "Paris")
        (ELSE = "Stockholm")
        into City.
 
  GRAPH
-    /SCATTERPLOT(BIVARIATE) = Age WITH Size 
+    /SCATTERPLOT(BIVARIATE) = Age WITH Size
 
  GRAPH
     /SCATTERPLOT(BIVARIATE) = Age WITH CityNum
- 
+
  GRAPH
     /SCATTERPLOT = CityNum WITH Age
 
@@ -81,7 +81,7 @@ Recode CityNum
  GRAPH
     /SCATTERPLOT(BIVARIATE) = Age WITH Size BY CityNum
 
- ADD VALUE LABELS 
+ ADD VALUE LABELS
     /CityNum 1 'Rio' 2 'Tokyo' 0 'Mumbai'.
 
  GRAPH
@@ -107,10 +107,10 @@ begin data.
 5 .
 6 1
 end data.
-graph 
+graph
       /scatterplot = x with y.
 graph
-      /histogram = x. 
+      /histogram = x.
 ])
 AT_CHECK([pspp -o pspp.pdf scatter.sps])
 dnl Ignore output -- this is just a no-crash check.
@@ -128,7 +128,7 @@ begin data.
 5 .
 6 1
 end data.
-graph 
+graph
       /scatterplot = x with y
       /missing = VARIABLE.
 graph
@@ -151,11 +151,11 @@ begin data.
 5 . 8
 6 1 8
 end data.
-graph 
+graph
       /scatterplot = x with y by z
       /missing = VARIABLE.
 
-graph 
+graph
       /scatterplot = x with y by z.
 
 ])
@@ -168,11 +168,11 @@ AT_SETUP([GRAPH histogram with null data])
 AT_DATA([null-hist.sps], [dnl
 data list list /x *.
 begin data.
-1109 
-. 
+1109
+.
 end data.
 
-graph 
+graph
       /histogram = x.
 
 ])
@@ -186,10 +186,10 @@ AT_SETUP([GRAPH histogram all missing])
 AT_DATA([null-hist.sps], [dnl
 data list list /x *.
 begin data.
-. 
+.
 end data.
 
-graph 
+graph
       /histogram = x.
 
 ])

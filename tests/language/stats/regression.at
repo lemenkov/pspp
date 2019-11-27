@@ -1,16 +1,16 @@
 dnl PSPP - a program for statistical analysis.
 dnl Copyright (C) 2017 Free Software Foundation, Inc.
-dnl 
+dnl
 dnl This program is free software: you can redistribute it and/or modify
 dnl it under the terms of the GNU General Public License as published by
 dnl the Free Software Foundation, either version 3 of the License, or
 dnl (at your option) any later version.
-dnl 
+dnl
 dnl This program is distributed in the hope that it will be useful,
 dnl but WITHOUT ANY WARRANTY; without even the implied warranty of
 dnl MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 dnl GNU General Public License for more details.
-dnl 
+dnl
 dnl You should have received a copy of the GNU General Public License
 dnl along with this program.  If not, see <http://www.gnu.org/licenses/>.
 dnl
@@ -176,7 +176,7 @@ data list notable file='regdata.txt' list /g x0 x1 y err *.
 
 select if (g = 0).
 
-regression 
+regression
 	   /variables = x0 x1
 	   /dependent = y
 	   /statistics = all
@@ -197,7 +197,7 @@ data list notable file='regdata.txt' list /g x0 x1 y err *.
 
 select if (g = 1).
 
-regression 
+regression
 	   /variables = x0 x1
 	   /dependent = y
 	   /statistics = all
@@ -218,7 +218,7 @@ data list notable file='regdata.txt' list /g x0 x1 y err *.
 
 split file by g.
 
-regression 
+regression
 	   /variables = x0 x1
 	   /dependent = y
 	   /statistics = all
@@ -254,7 +254,7 @@ end loop.
 end file.
 end input program.
 
-regression 
+regression
 	   /variables = x0 x1
 	   /dependent = y ycopy
 	   /statistics = default.
@@ -1905,7 +1905,7 @@ AT_CHECK([pspp ss.sps], [1], [ignore])
 AT_CLEANUP
 
 
-dnl The following example comes from 
+dnl The following example comes from
 dnl http://www.ats.ucla.edu/stat/spss/output/reg_spss%28long%29.htm
 AT_SETUP([LINEAR REGRESSION coefficient confidence interval])
 
@@ -2120,7 +2120,7 @@ regression
  /variables = math female socst read
  /statistics = coeff r anova ci (95)
  /dependent = science
- /method = enter 
+ /method = enter
 ])
 
 AT_CHECK([pspp -O format=csv conf.sps], [0], [dnl
@@ -2219,7 +2219,7 @@ regression
 
 AT_CHECK([pspp -o pspp.csv empty-parens.sps], [1], [ignore])
 
-AT_CLEANUP 
+AT_CLEANUP
 
 
 
@@ -2230,25 +2230,25 @@ SET FORMAT=F10.3.
 
 DATA LIST notable LIST /number * value *.
 BEGIN DATA
- 16 7.25 
-  0  .00 
-  1  .10 
-  9 27.9 
-  0  .00 
-  7 3.65 
- 14 16.8 
- 24 9.15 
-  0  .00 
- 24 19.0 
-  7 4.05 
- 12 7.90 
-  6  .75 
- 11 1.40 
-  0  .00 
-  3 2.30 
- 12 7.60 
- 11 6.80 
- 16 8.65 
+ 16 7.25
+  0  .00
+  1  .10
+  9 27.9
+  0  .00
+  7 3.65
+ 14 16.8
+ 24 9.15
+  0  .00
+ 24 19.0
+  7 4.05
+ 12 7.90
+  6  .75
+ 11 1.40
+  0  .00
+  3 2.30
+ 12 7.60
+ 11 6.80
+ 16 8.65
 END DATA.
 
 REGRESSION
@@ -2276,7 +2276,7 @@ Table: Coefficients (value)
 number,.611,.192,.612,3.189,.005
 ])
 
-AT_CLEANUP 
+AT_CLEANUP
 
 
 
@@ -2286,25 +2286,25 @@ SET FORMAT=F10.3.
 
 DATA LIST notable LIST /number * value *.
 BEGIN DATA
- 16 7.25 
-  0  .00 
-  1  .10 
-  9 27.9 
-  0  .00 
-  7 3.65 
- 14 16.8 
- 24 9.15 
-  0  .00 
- 24 19.0 
-  7 4.05 
- 12 7.90 
-  6  .75 
- 11 1.40 
-  0  .00 
-  3 2.30 
- 12 7.60 
- 11 6.80 
- 16 8.65 
+ 16 7.25
+  0  .00
+  1  .10
+  9 27.9
+  0  .00
+  7 3.65
+ 14 16.8
+ 24 9.15
+  0  .00
+ 24 19.0
+  7 4.05
+ 12 7.90
+  6  .75
+ 11 1.40
+  0  .00
+  3 2.30
+ 12 7.60
+ 11 6.80
+ 16 8.65
 END DATA.
 
 REGRESSION
@@ -2332,7 +2332,7 @@ Table: Coefficients (value)
 number,.672,.118,.802,5.699,.000
 ])
 
-AT_CLEANUP 
+AT_CLEANUP
 
 dnl This is an example from doc/tutorial.texi
 dnl So if the results of this have to be changed in any way,

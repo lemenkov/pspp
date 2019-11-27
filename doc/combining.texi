@@ -67,7 +67,7 @@ This section describes the syntactical features in common among the
 @cmd{ADD FILES}, @cmd{MATCH FILES}, and @cmd{UPDATE} commands.  The
 following sections describe details specific to each command.
 
-Each of these commands reads two or more input files and combines them.  
+Each of these commands reads two or more input files and combines them.
 The command's output becomes the new active dataset.
 None of the commands actually change the input files.
 Therefore, if you want the changes to become permanent, you must explicitly
@@ -310,7 +310,7 @@ Once per command:
 @end display
 
 @cmd{UPDATE} updates a @dfn{master file} by applying modifications
-from one or more @dfn{transaction files}.  
+from one or more @dfn{transaction files}.
 
 @cmd{UPDATE} shares the bulk of its syntax with other @pspp{} commands for
 combining multiple data files.  @xref{Combining Files Common Syntax},

@@ -42,7 +42,7 @@ several utility functions for examining and adjusting them.
 @section ADD VALUE LABELS
 @vindex ADD VALUE LABELS
 
-@display 
+@display
 ADD VALUE LABELS
         /@var{var_list} @var{value} '@var{label}' [@var{value} '@var{label}']@dots{}
 @end display
@@ -120,7 +120,7 @@ Variables}).
 @item ATTRIBUTES
 @itemx @@ATTRIBUTES
 Datafile and variable attributes are displayed.
-The first form of the command omits those attributes 
+The first form of the command omits those attributes
 whose names begin with @code{@@} or @code{$@@}.
 In the second for, all datafile and variable attributes are displayed.
 @end table
@@ -234,7 +234,7 @@ Specify a list of variables, followed by a list of their user-missing
 values in parentheses.  Up to three discrete values may be given, or,
 for numeric variables only, a range of values optionally accompanied by
 a single discrete value.  Ranges may be open-ended on one end, indicated
-through the use of the 
+through the use of the
 keyword @subcmd{LO} or @subcmd{LOWEST} or @subcmd{HI} or @subcmd{HIGHEST}.
 
 The @cmd{MISSING VALUES} command takes effect immediately.  It is not
@@ -245,12 +245,12 @@ affected by conditional and looping constructs such as @cmd{DO IF} or
 @section MODIFY VARS
 @vindex MODIFY VARS
 
-@display 
+@display
 MODIFY VARS
         /REORDER=@{FORWARD,BACKWARD@} @{POSITIONAL,ALPHA@} (@var{var_list})@dots{}
         /RENAME=(@var{old_names}=@var{new_names})@dots{}
         /@{DROP,KEEP@}=@var{var_list}
-        /MAP    
+        /MAP
 @end display
 
 @cmd{MODIFY VARS} reorders, renames, and deletes variables in the
@@ -296,7 +296,7 @@ otherwise it is not.
 @vindex MRSETS
 
 @display
-MRSETS 
+MRSETS
     /MDGROUP NAME=@var{name} VARIABLES=@var{var_list} VALUE=@var{value}
      [CATEGORYLABELS=@{VARLABELS,COUNTEDVALUES@}]
      [@{LABEL='@var{label}',LABELSOURCE=VARLABEL@}]
@@ -361,7 +361,7 @@ variable labels, variable names.  @pspp{} warns if two variables have the
 same variable label, since these categories cannot be distinguished in
 output.
 
-@item 
+@item
 @subcmd{COUNTEDVALUES} instead uses each variable's value label for the counted
 value.  @pspp{} warns if two variables have the same value label for the
 counted value or if one of the variables lacks a value label, since
@@ -535,7 +535,7 @@ Specify @code{(D)} to reverse the sort order.
 @section VALUE LABELS
 @vindex VALUE LABELS
 
-@display 
+@display
 VALUE LABELS
         /@var{var_list} @var{value} '@var{label}' [@var{value} '@var{label}']@dots{}
 @end display
@@ -575,7 +575,7 @@ transformations.
 
 Specify a list of names for the variable you want to create,
 followed by the desired output format specification in
-parentheses (@pxref{Input and Output Formats}).  
+parentheses (@pxref{Input and Output Formats}).
 Variable widths are
 implicitly derived from the specified output formats.
 The created variables will be initialized to spaces.
@@ -668,7 +668,7 @@ by conditional and looping structures such as @cmd{DO IF} or
 
 @display
 VARIABLE LABELS
-        @var{var_list} '@var{var_label}' 
+        @var{var_list} '@var{var_label}'
         [ /@var{var_list} '@var{var_label}']
         .
         .
@@ -680,9 +680,9 @@ VARIABLE LABELS
 with variables.  This name, called a @dfn{variable label}, is displayed by
 statistical procedures.
 
-To assign a variable label to a group of variables, specify a 
+To assign a variable label to a group of variables, specify a
 list of variable names and the variable label as a string.
-To assign different labels to different variables in the same command, 
+To assign different labels to different variables in the same command,
 precede the subsequent variable list with a slash (@samp{/}).
 
 
@@ -700,8 +700,8 @@ VARIABLE ALIGNMENT
         [ /@var{var_list} ( LEFT | RIGHT | CENTER ) ]
 @end display
 
-@cmd{VARIABLE ALIGNMENT} sets the alignment of variables for display editing 
-purposes.   This only has effect for third party software.  It does not affect 
+@cmd{VARIABLE ALIGNMENT} sets the alignment of variables for display editing
+purposes.   This only has effect for third party software.  It does not affect
 the display of variables in the @pspp{} output.
 
 
@@ -713,15 +713,15 @@ the display of variables in the @pspp{} output.
 @display
 VARIABLE WIDTH
         @var{var_list} (width)
-        [ /@var{var_list} (width) ] 
+        [ /@var{var_list} (width) ]
         .
         .
         .
-        [ /@var{var_list} (width) ] 
+        [ /@var{var_list} (width) ]
 @end display
 
 @cmd{VARIABLE WIDTH} sets the column width of variables for display editing
-purposes.   This only affects third party software.  It does not affect 
+purposes.   This only affects third party software.  It does not affect
 the display of variables in the @pspp{} output.
 
 

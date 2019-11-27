@@ -81,7 +81,7 @@ def print_all_formats(d, h, m, s, template, formatted, expected, sign):
             print_all_formats(d, h, m, s, template, formatted + ' ',
                               expected, sign)
         else:
-            assert False    
+            assert False
     else:
         # Write the formatted value to fmt_name.input.
         input_file.write('%s\n' % formatted)
@@ -92,7 +92,7 @@ def print_all_formats(d, h, m, s, template, formatted, expected, sign):
         expected_s = '%17.2f\n' % expected
         expected_s = expected_s.replace(' 0.', '  .')
         expout_file.write(expected_s)
-        
+
 
 for template in templates:
     for time in times:

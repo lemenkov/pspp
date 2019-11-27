@@ -1,16 +1,16 @@
 dnl PSPP - a program for statistical analysis.
 dnl Copyright (C) 2017 Free Software Foundation, Inc.
-dnl 
+dnl
 dnl This program is free software: you can redistribute it and/or modify
 dnl it under the terms of the GNU General Public License as published by
 dnl the Free Software Foundation, either version 3 of the License, or
 dnl (at your option) any later version.
-dnl 
+dnl
 dnl This program is distributed in the hope that it will be useful,
 dnl but WITHOUT ANY WARRANTY; without even the implied warranty of
 dnl MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 dnl GNU General Public License for more details.
-dnl 
+dnl
 dnl You should have received a copy of the GNU General Public License
 dnl along with this program.  If not, see <http://www.gnu.org/licenses/>.
 dnl
@@ -189,7 +189,7 @@ dnl File header.
 2; dnl Layout code
 -1; dnl Nominal case size (unspecified)
 0; dnl Not compressed
-0; dnl Not weighted 
+0; dnl Not weighted
 1; dnl 1 case.
 100.0; dnl Bias.
 "01 Jan 11"; "20:53:52"; s64 "PSPP synthetic test file";
@@ -209,7 +209,7 @@ dnl Dictionary termination record.
 999; 0;
 
 dnl Data.
-1.0; 2.0; 
+1.0; 2.0;
 ])
 for variant in be le; do
   AT_CHECK([sack --$variant sys-file.sack > sys-file.sav])
@@ -240,7 +240,7 @@ dnl File header.
 2; dnl Layout code
 -1; dnl Nominal case size (unspecified)
 0; dnl Not compressed
-0; dnl Not weighted 
+0; dnl Not weighted
 1; dnl 1 case.
 100.0; dnl Bias.
 "01 Jan 11"; "20:53:52"; s64 "PSPP synthetic test file";
@@ -263,7 +263,7 @@ dnl Dictionary termination record.
 999; 0;
 
 dnl Data.
-1.0; 2.0; 
+1.0; 2.0;
 ])
 for variant in be le; do
   AT_CHECK([sack --$variant sys-file.sack > sys-file.sav])
@@ -294,7 +294,7 @@ dnl File header.
 2; dnl Layout code
 22; dnl Nominal case size
 0; dnl Not compressed
-0; dnl Not weighted 
+0; dnl Not weighted
 1; dnl 1 case.
 100.0; dnl Bias.
 "01 Jan 11"; "20:53:52"; s64 "PSPP synthetic test file";
@@ -477,7 +477,7 @@ dnl File header.
 2; dnl Layout code
 1; dnl Nominal case size
 0; dnl Not compressed
-0; dnl Not weighted 
+0; dnl Not weighted
 1; dnl 1 case.
 100.0; dnl Bias.
 "01 Jan 11"; "20:53:52"; s64 "PSPP synthetic test file";
@@ -538,7 +538,7 @@ dnl File header.
 2; dnl Layout code
 1; dnl Nominal case size
 0; dnl Not compressed
-0; dnl Not weighted 
+0; dnl Not weighted
 1; dnl 1 case.
 100.0; dnl Bias.
 "01 Jan 11"; "20:53:52"; s64 "PSPP synthetic test file";
@@ -585,7 +585,7 @@ dnl File header.
 2; dnl Layout code
 16; dnl Nominal case size
 0; dnl Not compressed
-0; dnl Not weighted 
+0; dnl Not weighted
 0; dnl No cases.
 100.0; dnl Bias.
 "01 Jan 11"; "20:53:52"; s64 "PSPP synthetic test file";
@@ -726,7 +726,7 @@ dnl File header.
 2; dnl Layout code
 19; dnl Nominal case size
 0; dnl Not compressed
-0; dnl Not weighted 
+0; dnl Not weighted
 0; dnl No cases.
 100.0; dnl Bias.
 "01 Jan 11"; "20:53:52"; s64 "PSPP synthetic test file";
@@ -809,7 +809,7 @@ dnl File header.
 2; dnl Layout code
 19; dnl Nominal case size
 0; dnl Not compressed
-0; dnl Not weighted 
+0; dnl Not weighted
 0; dnl No cases.
 100.0; dnl Bias.
 "01 Jan 11"; "20:53:52"; s64 "PSPP synthetic test file";
@@ -892,7 +892,7 @@ dnl File header.
 2; dnl Layout code
 7; dnl Nominal case size
 0; dnl Not compressed
-0; dnl Not weighted 
+0; dnl Not weighted
 0; dnl No cases.
 100.0; dnl Bias.
 "01 Jan 11"; "20:53:52"; s64 "PSPP synthetic test file";
@@ -959,7 +959,7 @@ dnl File header.
 2; dnl Layout code
 109; dnl Nominal case size
 0; dnl Not compressed
-0; dnl Not weighted 
+0; dnl Not weighted
 1; dnl No cases.
 100.0; dnl Bias.
 "01 Jan 11"; "20:53:52"; s64 "PSPP synthetic test file";
@@ -1028,7 +1028,7 @@ dnl File header.
 2; dnl Layout code
 3; dnl Nominal case size
 0; dnl Not compressed
-0; dnl Not weighted 
+0; dnl Not weighted
 0; dnl 1 case.
 100.0; dnl Bias.
 "01 Jan 11"; "20:53:52"; s64 "PSPP synthetic test file";
@@ -1188,7 +1188,7 @@ dnl File header.
 2; dnl Layout code
 6; dnl Nominal case size
 1; dnl Simple compression
-0; dnl Not weighted 
+0; dnl Not weighted
 -1; dnl Unspecified number of cases.
 100.0; dnl Bias.
 "01 Jan 11"; "20:53:52"; s64 "PSPP synthetic test file";
@@ -1251,7 +1251,7 @@ dnl File header.
 2; dnl Layout code
 6; dnl Nominal case size
 1; dnl Simple compression.
-0; dnl Not weighted 
+0; dnl Not weighted
 -1; dnl Unspecified number of cases.
 0.0; dnl Bias.
 "01 Jan 11"; "20:53:52"; s64 "PSPP synthetic test file";
@@ -1314,7 +1314,7 @@ dnl File header.
 2; dnl Layout code
 6; dnl Nominal case size
 1; dnl Simple compression.
-0; dnl Not weighted 
+0; dnl Not weighted
 -1; dnl Unspecified number of cases.
 50.0; dnl Bias.
 "01 Jan 11"; "20:53:52"; s64 "PSPP synthetic test file";
@@ -1350,7 +1350,7 @@ GET FILE='sys-file.sav'.
 DISPLAY DICTIONARY.
 LIST.
 ])
-  AT_CHECK([pspp -o pspp.csv sys-file.sps], [0], 
+  AT_CHECK([pspp -o pspp.csv sys-file.sps], [0],
     [warning: `sys-file.sav' near offset 0x54: Compression bias is not the usual value of 100, or system file uses unrecognized floating-point format.
 ])
   AT_CHECK([cat pspp.csv], [0], [dnl
@@ -1563,7 +1563,7 @@ for variant in be le; do
   AT_CHECK([sack --$variant sys-file.sack > sys-file.sav])
   AT_DATA([sys-file.sps], [GET FILE='sys-file.sav'.
 ])
-  AT_CHECK([pspp -O format=csv sys-file.sps], [1], 
+  AT_CHECK([pspp -O format=csv sys-file.sps], [1],
    [error: `sys-file.sav' near offset 0xd4: Misplaced type 4 record.
 ])
 done
@@ -1586,7 +1586,7 @@ for variant in be le; do
   AT_CHECK([sack --$variant sys-file.sack > sys-file.sav])
   AT_DATA([sys-file.sps], [GET FILE='sys-file.sav'.
 ])
-  AT_CHECK([pspp -O format=csv sys-file.sps], [1], 
+  AT_CHECK([pspp -O format=csv sys-file.sps], [1],
    [error: `sys-file.sav' near offset 0xd4: Unrecognized record type 8.
 ])
 done
@@ -1612,7 +1612,7 @@ for variant in be le; do
   AT_CHECK([sack --$variant sys-file.sack > sys-file.sav])
   AT_DATA([sys-file.sps], [GET FILE='sys-file.sav'.
 ])
-  AT_CHECK([pspp -O format=csv sys-file.sps], [0], 
+  AT_CHECK([pspp -O format=csv sys-file.sps], [0],
    [warning: `sys-file.sav': File header claims 2 variable positions but 1 were read from file.
 ])
 done
@@ -1638,7 +1638,7 @@ for variant in be le; do
   AT_CHECK([sack --$variant sys-file.sack > sys-file.sav])
   AT_DATA([sys-file.sps], [GET FILE='sys-file.sav'.
 ])
-  AT_CHECK([pspp -O format=csv sys-file.sps], [1], 
+  AT_CHECK([pspp -O format=csv sys-file.sps], [1],
    [error: `sys-file.sav' near offset 0xb4: Invalid variable name `$UM1'.
 ])
 done
@@ -1664,7 +1664,7 @@ for variant in be le; do
   AT_CHECK([sack --$variant sys-file.sack > sys-file.sav])
   AT_DATA([sys-file.sps], [GET FILE='sys-file.sav'.
 ])
-  AT_CHECK([pspp -O format=csv sys-file.sps], [1], 
+  AT_CHECK([pspp -O format=csv sys-file.sps], [1],
    [error: `sys-file.sav' near offset 0xb4: Invalid variable name `TO'.
 ])
 done
@@ -1690,7 +1690,7 @@ for variant in be le; do
   AT_CHECK([sack --$variant sys-file.sack > sys-file.sav])
   AT_DATA([sys-file.sps], [GET FILE='sys-file.sav'.
 ])
-  AT_CHECK([pspp -O format=csv sys-file.sps], [1], 
+  AT_CHECK([pspp -O format=csv sys-file.sps], [1],
    [error: `sys-file.sav' near offset 0xb4: Bad width 256 for variable VAR1.
 ])
 done
@@ -1751,7 +1751,7 @@ for variant in be le; do
   AT_CHECK([sack --$variant sys-file.sack > sys-file.sav])
   AT_DATA([sys-file.sps], [GET FILE='sys-file.sav'.
 ])
-  AT_CHECK([pspp -O format=csv sys-file.sps], [1], 
+  AT_CHECK([pspp -O format=csv sys-file.sps], [1],
    [error: `sys-file.sav' near offset 0xb4: Variable label indicator field is not 0 or 1.
 ])
 done
@@ -1777,7 +1777,7 @@ for variant in be le; do
   AT_CHECK([sack --$variant sys-file.sack > sys-file.sav])
   AT_DATA([sys-file.sps], [GET FILE='sys-file.sav'.
 ])
-  AT_CHECK([pspp -O format=csv sys-file.sps], [1], 
+  AT_CHECK([pspp -O format=csv sys-file.sps], [1],
    ["error: `sys-file.sav' near offset 0xb4: Numeric missing value indicator field is not -3, -2, 0, 1, 2, or 3."
 ])
 done
@@ -1803,7 +1803,7 @@ for variant in be le; do
   AT_CHECK([sack --$variant sys-file.sack > sys-file.sav])
   AT_DATA([sys-file.sps], [GET FILE='sys-file.sav'.
 ])
-  AT_CHECK([pspp -O format=csv sys-file.sps], [1], 
+  AT_CHECK([pspp -O format=csv sys-file.sps], [1],
    ["error: `sys-file.sav' near offset 0xb4: String missing value indicator field is not 0, 1, 2, or 3."
 ])
 done
@@ -1830,7 +1830,7 @@ for variant in be le; do
   AT_CHECK([sack --$variant sys-file.sack > sys-file.sav])
   AT_DATA([sys-file.sps], [GET FILE='sys-file.sav'.
 ])
-  AT_CHECK([pspp -O format=csv sys-file.sps], [1], 
+  AT_CHECK([pspp -O format=csv sys-file.sps], [1],
    [error: `sys-file.sav' near offset 0xb4: Missing string continuation record.
 ])
 done
@@ -2032,7 +2032,7 @@ for variant in be le; do
   AT_CHECK([sack --$variant sys-file.sack > sys-file.sav])
   AT_DATA([sys-file.sps], [GET FILE='sys-file.sav'.
 ])
-  AT_CHECK([pspp -O format=csv sys-file.sps], [1], 
+  AT_CHECK([pspp -O format=csv sys-file.sps], [1],
    [error: `sys-file.sav' near offset 0x4c: Variable index 3 not in valid range 1...2.
 ])
 done
@@ -2062,7 +2062,7 @@ for variant in be le; do
   AT_CHECK([sack --$variant sys-file.sack > sys-file.sav])
   AT_DATA([sys-file.sps], [GET FILE='sys-file.sav'.
 ])
-  AT_CHECK([pspp -O format=csv sys-file.sps], [1], 
+  AT_CHECK([pspp -O format=csv sys-file.sps], [1],
    [error: `sys-file.sav' near offset 0x4c: Variable index 3 refers to long string continuation.
 ])
 done
@@ -3451,7 +3451,7 @@ for variant in be le; do
   AT_DATA([sys-file.sps], [GET FILE='sys-file.sav'.
 LIST.
 ])
-  AT_CHECK([pspp -O format=csv sys-file.sps], [1], 
+  AT_CHECK([pspp -O format=csv sys-file.sps], [1],
    [error: Error reading case from file `sys-file.sav'.
 
 Table: Data List
@@ -3488,7 +3488,7 @@ for variant in be le; do
   AT_DATA([sys-file.sps], [GET FILE='sys-file.sav'.
 LIST.
 ])
-  AT_CHECK([pspp -O format=csv sys-file.sps], [1], 
+  AT_CHECK([pspp -O format=csv sys-file.sps], [1],
    [error: `sys-file.sav' near offset 0x12c: File ends in partial case.
 
 Table: Data List
@@ -3522,7 +3522,7 @@ for variant in be le; do
   AT_DATA([sys-file.sps], [GET FILE='sys-file.sav'.
 LIST.
 ])
-  AT_CHECK([pspp -O format=csv sys-file.sps], [1], 
+  AT_CHECK([pspp -O format=csv sys-file.sps], [1],
    [error: `sys-file.sav' near offset 0x12a: Unexpected end of file.
 
 Table: Data List
@@ -3540,7 +3540,7 @@ dnl File header.
 2; dnl Layout code
 6; dnl Nominal case size
 1; dnl Compressed
-0; dnl Not weighted 
+0; dnl Not weighted
 -1; dnl Unspecified number of cases.
 100.0; dnl Bias.
 "01 Jan 11"; "20:53:52"; s64 "PSPP synthetic test file";
@@ -3570,7 +3570,7 @@ for variant in be le; do
   AT_DATA([sys-file.sps], [GET FILE='sys-file.sav'.
 LIST.
 ])
-  AT_CHECK([pspp -O format=csv sys-file.sps], [1], 
+  AT_CHECK([pspp -O format=csv sys-file.sps], [1],
    [error: `sys-file.sav' near offset 0x1ac: File ends in partial case.
 
 Table: Data List

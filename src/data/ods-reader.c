@@ -887,7 +887,7 @@ ods_make_reader (struct spreadsheet *spreadsheet,
      &ods_file_casereader_class, r);
 
  error:
-  
+
   for ( i = 0 ; i < n_var_specs ; ++i )
     {
       free (var_spec[i].firstval.type);

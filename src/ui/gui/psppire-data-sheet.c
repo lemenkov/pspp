@@ -411,15 +411,15 @@ resize_display_width (PsppireDict *dict, gint pos, gint size, gpointer user_data
   PangoContext *context = gtk_widget_create_pango_context (GTK_WIDGET (sheet));
   PangoLayout *layout = pango_layout_new (context);
   PangoRectangle rect;
-  
+
   pango_layout_set_text (layout, "M", 1);
   pango_layout_get_extents (layout, NULL, &rect);
-  
+
   gdouble width_of_M = rect.width / (gdouble) PANGO_SCALE;
-  
+
   g_object_unref (G_OBJECT (layout));
   g_object_unref (G_OBJECT (context));
-  
+
   gint Ms = round ((size / width_of_M) - 0.25);
   struct variable *var = psppire_dict_get_variable (dict, pos);
   g_return_val_if_fail (var, TRUE);

@@ -252,7 +252,7 @@ in arbitrary textual or binary formats.  @xref{INPUT PROGRAM}.
 @item Transformations
 @cindex transformations
 Perform operations on data and write data to output files.  Transformations
-are not carried out until a procedure is executed.  
+are not carried out until a procedure is executed.
 
 @item Restricted transformations
 @cindex restricted transformations
@@ -303,7 +303,7 @@ transformation state.
 Valid in any state.
 @item
 When executed in the initial or procedure state, causes a transition to
-the transformation state.  
+the transformation state.
 @item
 Clears the active dataset if executed in the procedure or transformation
 state.
@@ -314,7 +314,7 @@ state.
 @item
 Invalid in input-program and file-type states.
 @item
-Causes a transition to the intput-program state.  
+Causes a transition to the intput-program state.
 @item
 Clears the active dataset.
 @end itemize
@@ -619,7 +619,7 @@ created variables have identical print and write formats, and
 most of the time, the distinction between print and write formats is
 unimportant.
 
-Input and output formats are specified to @pspp{} with 
+Input and output formats are specified to @pspp{} with
 a @dfn{format specification} of the
 form @subcmd{@var{TYPE}@var{w}} or @code{TYPE@var{w}.@var{d}}, where
 @var{TYPE} is one of the format types described later, @var{w} is a
@@ -631,13 +631,13 @@ The following sections describe the input and output formats supported
 by @pspp{}.
 
 @menu
-* Basic Numeric Formats::       
-* Custom Currency Formats::     
-* Legacy Numeric Formats::      
-* Binary and Hexadecimal Numeric Formats::  
-* Time and Date Formats::       
-* Date Component Formats::      
-* String Formats::              
+* Basic Numeric Formats::
+* Custom Currency Formats::
+* Legacy Numeric Formats::
+* Binary and Hexadecimal Numeric Formats::
+* Time and Date Formats::
+* Date Component Formats::
+* String Formats::
 @end menu
 
 @node Basic Numeric Formats
@@ -843,7 +843,7 @@ SET command configures custom currency formats, using the syntax
 @display
 SET CC@var{x}=@t{"}@var{string}@t{"}.
 @end display
-@noindent 
+@noindent
 where @var{x} is A, B, C, D, or E, and @var{string} is no more than 16
 characters long.
 
@@ -1196,7 +1196,7 @@ below:
 
 @float
 @multitable {DATETIME} {Min. Input Width} {Min. Output Width} {4-digit year}
-@headitem Format @tab Min. Input Width @tab Min. Output Width @tab Option 
+@headitem Format @tab Min. Input Width @tab Min. Output Width @tab Option
 @item DATE @tab 8 @tab 9 @tab 4-digit year
 @item ADATE @tab 8 @tab 8 @tab 4-digit year
 @item EDATE @tab 8 @tab 8 @tab 4-digit year
@@ -1212,7 +1212,7 @@ below:
 @item DTIME @tab 8 @tab 8 @tab seconds
 @end multitable
 @end float
-@noindent 
+@noindent
 In the table, ``Option'' describes what increased output width enables:
 
 @table @asis
@@ -1242,7 +1242,7 @@ negative value on MTIME, TIME, or DTIME (which adds a leading minus sign).
 @c What about out-of-range values?
 
 The system-missing value is output as a period at the right end of the
-field.  
+field.
 
 @node Date Component Formats
 @subsubsection Date Component Formats
@@ -1296,7 +1296,7 @@ or to blanks, depending on type.
 However, sometimes it's useful to have a variable that keeps its value
 between cases.  You can do this with @cmd{LEAVE} (@pxref{LEAVE}), or you can
 use a @dfn{scratch variable}.  Scratch variables are variables whose
-names begin with an octothorpe (@samp{#}).  
+names begin with an octothorpe (@samp{#}).
 
 Scratch variables have the same properties as variables left with
 @cmd{LEAVE}: they retain their values between cases, and for the first
@@ -1358,7 +1358,7 @@ portable files.
 @section File Handles
 @cindex file handles
 
-A @dfn{file handle} is a reference to a data file, system file, or 
+A @dfn{file handle} is a reference to a data file, system file, or
 portable file.  Most often, a file handle is specified as the
 name of a file as a string, that is, enclosed within @samp{'} or
 @samp{"}.

@@ -2625,7 +2625,7 @@ tableLayout
    :fitCells=(ticks both)?
 => EMPTY
 @end example
-               
+
 The @code{facetLayout} element and its descendants control styling for
 the table.
 
@@ -2696,7 +2696,7 @@ Always observed as @code{0pt}.
 
 Each @code{facetLevel} contains an @code{axis}, which in turn may
 contain a @code{label} for the @code{facetLevel} (@pxref{SPV Detail
-label Element}) and does contain a @code{majorTicks} element.  
+label Element}) and does contain a @code{majorTicks} element.
 
 @defvr {Attribute} labelAngle
 Normally 0.  The value -90 causes inner column or outer row labels to

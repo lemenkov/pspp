@@ -1,16 +1,16 @@
 dnl PSPP - a program for statistical analysis.
 dnl Copyright (C) 2017 Free Software Foundation, Inc.
-dnl 
+dnl
 dnl This program is free software: you can redistribute it and/or modify
 dnl it under the terms of the GNU General Public License as published by
 dnl the Free Software Foundation, either version 3 of the License, or
 dnl (at your option) any later version.
-dnl 
+dnl
 dnl This program is distributed in the hope that it will be useful,
 dnl but WITHOUT ANY WARRANTY; without even the implied warranty of
 dnl MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 dnl GNU General Public License for more details.
-dnl 
+dnl
 dnl You should have received a copy of the GNU General Public License
 dnl along with this program.  If not, see <http://www.gnu.org/licenses/>.
 dnl
@@ -564,7 +564,7 @@ identifier      COMPUTE
 end_command     .
 newline         \n (first)
 
-separate_commands 
+separate_commands
 newline         \n (first)
 
 spaces          ___
@@ -572,7 +572,7 @@ comment_command *_Comment_need_not_start_at_left_margin
 end_command     .
 newline         \n (first)
 
-separate_commands 
+separate_commands
 newline         \n (first)
 
 comment_command *_Comment_ends_with_blank_line
@@ -611,7 +611,7 @@ second paragraph.
 AT_DATA([expout-base], [dnl
 start_document
 document        DOCUMENT_one_line.
-end_command     
+end_command
 separate_commands
 newline         \n (first)
 
@@ -626,7 +626,7 @@ document        ________one
 newline         \n (DOCUMENT)
 
 document        ____________line.
-end_command     
+end_command
 separate_commands
 newline         \n (first)
 
@@ -812,7 +812,7 @@ newline         \n (data)
 inline_data     5_6_7_/*_x
 newline         \n (data)
 
-inline_data     
+inline_data
 newline         \n (data)
 
 inline_data     end__data

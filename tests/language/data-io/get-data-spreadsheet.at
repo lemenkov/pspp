@@ -1,19 +1,19 @@
 dnl PSPP - a program for statistical analysis.
 dnl Copyright (C) 2017 Free Software Foundation, Inc.
-dnl 
+dnl
 dnl This program is free software: you can redistribute it and/or modify
 dnl it under the terms of the GNU General Public License as published by
 dnl the Free Software Foundation, either version 3 of the License, or
 dnl (at your option) any later version.
-dnl 
+dnl
 dnl This program is distributed in the hope that it will be useful,
 dnl but WITHOUT ANY WARRANTY; without even the implied warranty of
 dnl MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 dnl GNU General Public License for more details.
-dnl 
+dnl
 dnl You should have received a copy of the GNU General Public License
 dnl along with this program.  If not, see <http://www.gnu.org/licenses/>.
-dnl 
+dnl
 m4_define([SPREADSHEET_TEST_PREP],[dnl
  m4_if($1,[GNM],[dnl
     AT_CHECK([gzip -c $top_srcdir/tests/language/data-io/Book1.gnm.unzipped > Book1.gnumeric])dnl
@@ -296,7 +296,7 @@ AT_DATA([minimal3.gnumeric],[dnl
 ])
 
 AT_DATA([gnum.sps], [dnl
-GET DATA 	
+GET DATA
 	/TYPE=GNM
         /FILE='minimal3.gnumeric'
 	/SHEET=index 3
@@ -321,9 +321,9 @@ AT_CLEANUP
 dnl Check for a bug where certain gnumeric files failed an assertion
 AT_SETUP([GET DATA /TYPE=GNM assert-fail])
 AT_DATA([read.sps],[dnl
-GET DATA 
+GET DATA
 	/TYPE=GNM
-	/FILE='crash.gnumeric' 
+	/FILE='crash.gnumeric'
 	.
 list.
 ])
@@ -377,7 +377,7 @@ CHECK_SPREADSHEET_READER([ODS])
 
 AT_SETUP([GET DATA /TYPE=ODS crash])
 
-		     
+
 AT_CHECK([cp $top_srcdir/tests/language/data-io/newone.ods this.ods])dnl
 
 AT_DATA([crash.sps],[dnl

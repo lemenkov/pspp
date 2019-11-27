@@ -211,7 +211,7 @@ refresh (PsppireDialogAction *rd_)
 
 
 // This function is called when the menuitem is activated.
-// It is what pops up the dialog 
+// It is what pops up the dialog
 static void
 psppire_dialog_action_foobar_activate (GAction *a)
 {
@@ -335,7 +335,7 @@ The newer ones contain the string:
   <requires lib="gtk+" version="3.12"/>
 
 Like the string suggests Glade version 3.18.x or later will probably
-be ok for these files. 
+be ok for these files.
 
 Hopefully the older style .ui files will gradually be converted to new
 style ones.

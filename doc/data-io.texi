@@ -20,7 +20,7 @@
 @cindex cases
 @cindex observations
 
-Data are the focus of the @pspp{} language.  
+Data are the focus of the @pspp{} language.
 Each datum  belongs to a @dfn{case} (also called an @dfn{observation}).
 Each case represents an individual or ``experimental unit''.
 For example, in the results of a survey, the names of the respondents,
@@ -329,7 +329,7 @@ changed; see @ref{SET} for more information.)
 
 In columnar style, to use a variable format other than the default,
 specify the format type in parentheses after the column numbers.  For
-instance, for alphanumeric @samp{A} format, use @samp{(A)}.  
+instance, for alphanumeric @samp{A} format, use @samp{(A)}.
 
 In addition, implied decimal places can be specified in parentheses
 after the column numbers.  As an example, suppose that a data file has a
@@ -385,7 +385,7 @@ FORTRAN and columnar styles may be freely intermixed.  Columnar style
 leaves the active column immediately after the ending column
 specified.  Record motion using @code{NEWREC} in FORTRAN style also
 applies to later FORTRAN and columnar specifiers.
- 
+
 @menu
 * DATA LIST FIXED Examples::    Examples of DATA LIST FIXED.
 @end menu
@@ -524,7 +524,7 @@ The variables to be parsed are given as a single list of variable names.
 This list must be introduced by a single slash (@samp{/}).  The set of
 variable names may contain format specifications in parentheses
 (@pxref{Input and Output Formats}).  Format specifications apply to all
-variables back to the previous parenthesized format specification.  
+variables back to the previous parenthesized format specification.
 
 In addition, an asterisk may be used to indicate that all variables
 preceding it are to have input/output format @samp{F8.0}.
@@ -832,7 +832,7 @@ the extra data in the longer file is ignored.
 @example
 INPUT PROGRAM.
         NUMERIC #A #B.
-        
+
         DO IF NOT #A.
                 DATA LIST NOTABLE END=#A FILE='a.data'/X 1-10.
         END IF.
@@ -1127,7 +1127,7 @@ end data.
 @vindex PRINT
 
 @display
-PRINT 
+PRINT
         [OUTFILE='@var{file_name}']
         [RECORDS=@var{n_lines}]
         [@{NOTABLE,TABLE@}]
@@ -1199,7 +1199,7 @@ again extend the line to that length.
 @vindex PRINT EJECT
 
 @display
-PRINT EJECT 
+PRINT EJECT
         OUTFILE='@var{file_name}'
         RECORDS=@var{n_lines}
         @{NOTABLE,TABLE@}
@@ -1371,7 +1371,7 @@ structure (@pxref{LOOP}).  Use @cmd{DATA LIST} before, not after,
 @vindex WRITE
 
 @display
-WRITE 
+WRITE
         OUTFILE='@var{file_name}'
         RECORDS=@var{n_lines}
         @{NOTABLE,TABLE@}
@@ -1384,7 +1384,7 @@ WRITE
         @var{var_list} *
 @end display
 
-@code{WRITE} writes text or binary data to an output file.  
+@code{WRITE} writes text or binary data to an output file.
 
 @xref{PRINT}, for more information on syntax and usage.  @cmd{PRINT}
 and @cmd{WRITE} differ in only a few ways:

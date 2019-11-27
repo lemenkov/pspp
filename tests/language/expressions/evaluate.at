@@ -1,16 +1,16 @@
 dnl PSPP - a program for statistical analysis.
 dnl Copyright (C) 2017 Free Software Foundation, Inc.
-dnl 
+dnl
 dnl This program is free software: you can redistribute it and/or modify
 dnl it under the terms of the GNU General Public License as published by
 dnl the Free Software Foundation, either version 3 of the License, or
 dnl (at your option) any later version.
-dnl 
+dnl
 dnl This program is distributed in the hope that it will be useful,
 dnl but WITHOUT ANY WARRANTY; without even the implied warranty of
 dnl MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 dnl GNU General Public License for more details.
-dnl 
+dnl
 dnl You should have received a copy of the GNU General Public License
 dnl along with this program.  If not, see <http://www.gnu.org/licenses/>.
 dnl m4_define([CHECK_EXPR_EVAL],
@@ -25,8 +25,8 @@ DEBUG EVALUATE m4_argn(4, check)/[]m4_car(check).
 ])])
    AT_CAPTURE_FILE([evaluate.sps])
    m4_pushdef([i], [3])
-   AT_CHECK([pspp --testing-mode --error-file=- --no-output evaluate.sps], 
-     [m4_if(m4_bregexp([m4_foreach([check], [m4_shift($@)], [m4_argn(3, check)])], [error:]), [-1], [0], [1])], 
+   AT_CHECK([pspp --testing-mode --error-file=- --no-output evaluate.sps],
+     [m4_if(m4_bregexp([m4_foreach([check], [m4_shift($@)], [m4_argn(3, check)])], [error:]), [-1], [0], [1])],
      [stdout])
    # Use sed to transform "file:line.column:" into plain "file:line:",
    # because column numbers change between opt and noopt versions.
@@ -2022,8 +2022,8 @@ AT_SETUP([LAG crash bug])
 AT_DATA([lag.sps], [dnl
 DATA LIST LIST /x.
 BEGIN DATA
-1 
-2 
+1
+2
 END DATA.
 
 DO IF (x <> LAG(x) ).
@@ -2135,7 +2135,7 @@ DATA LIST NOTABLE/N1 TO N5 1-5.
 MISSING VALUES N1 TO N5 (3 THRU 5, 1).
 BEGIN DATA.
 12345
-6789 
+6789
 END DATA.
 
 COMPUTE P1=N1.
@@ -2184,7 +2184,7 @@ DATA LIST NOTABLE /N1 TO N5 1-5.
 MISSING VALUES N1 TO N5 (3 THRU 5, 1).
 BEGIN DATA.
 12345
-6789 
+6789
 END DATA.
 
 VECTOR N=N1 TO N5.

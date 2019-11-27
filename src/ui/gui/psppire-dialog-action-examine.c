@@ -207,13 +207,13 @@ psppire_dialog_action_examine_activate (PsppireDialogAction *a, GVariant *param)
 
   GtkWidget *stats_button = get_widget_assert (xml, "stats-button");
   GtkWidget *opts_button = get_widget_assert (xml, "opts-button");
-  
+
   g_signal_connect_swapped (stats_button, "clicked",
 			    G_CALLBACK (run_stats_dialog), act);
-  
+
   g_signal_connect_swapped (opts_button, "clicked",
 			    G_CALLBACK (run_opts_dialog), act);
-  
+
   GtkWidget *dep_sel = get_widget_assert (xml, "psppire-selector1");
   GtkWidget *dep_sel2 = get_widget_assert (xml, "psppire-selector2");
   GtkWidget *dep_sel3 = get_widget_assert (xml, "psppire-selector3");

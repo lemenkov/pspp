@@ -1,7 +1,7 @@
 Revision history for Perl extension Pspp.
 
 0.7.0 Sun Jan 11 10:35:56 2009
-      Integrated the module into Pspp's build environment. Added support for 
+      Integrated the module into Pspp's build environment. Added support for
       reading from an existing system file.
 
 0.4.3 Sat May 19 14:24:05 2007

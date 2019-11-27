@@ -107,14 +107,14 @@ gi (GListModel *list, guint id)
 	PangoContext *context = gtk_widget_create_pango_context (button);
 	PangoLayout *layout = pango_layout_new (context);
 	PangoRectangle rect;
-      
+
 	pango_layout_set_text (layout, "M", 1);
-      
+
 	pango_layout_get_extents (layout, NULL, &rect);
-      
+
 	g_object_unref (G_OBJECT (layout));
 	g_object_unref (G_OBJECT (context));
-      
+
 	gtk_widget_set_size_request (button,
 				     (0.25 + var_get_display_width (v))
 				     * rect.width / PANGO_SCALE,

@@ -1,7 +1,7 @@
 PSPP version 0.7
 ================
 
-This module provides an interface allowing perl programs to create pspp 
+This module provides an interface allowing perl programs to create pspp
 system files.
 
 INSTALLATION

@@ -598,7 +598,7 @@ Destroys @var{style}, freeing its storage.
 @end deftypefun
 
 @deftypefun {struct fmt_number_style}    *fmt_create (void)
-A function which creates an array of all the styles used by pspp, and 
+A function which creates an array of all the styles used by pspp, and
 calls fmt_number_style_init on each of them.
 @end deftypefun
 
@@ -687,7 +687,7 @@ This function is declared in @file{data/data-in.h}.
 @deftypefunx char * data_out_legacy (const union value *@var{input}, const char *@var{encoding}, const struct fmt_spec *@var{format})
 Converts the data pointed to by @var{input} into a string value, which
 will be encoded in UTF-8,  according to output format specifier @var{format}.
-Format 
+Format
 must be a valid output format.   The width of @var{input} is
 inferred from @var{format} using an algorithm equivalent to
 @func{fmt_var_width}.
@@ -1345,7 +1345,7 @@ Looks for a label for @var{value} in @var{var}'s set of value labels.
 @var{value} must have the same width as @var{var}.
 If a label exists, it will be appended to the string pointed to by @var{str}.
 Otherwise, it formats @var{value}
-using @var{var}'s print format (@pxref{Input and Output Formats}) 
+using @var{var}'s print format (@pxref{Input and Output Formats})
 and appends the formatted string.
 @end deftypefun
 

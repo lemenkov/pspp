@@ -139,7 +139,7 @@ FREQUENCIES
                      SESKEWNESS,SEKURTOSIS,ALL,NONE@}
         /NTILES=@var{ntiles}
         /PERCENTILES=percent@dots{}
-        /HISTOGRAM=[MINIMUM(@var{x_min})] [MAXIMUM(@var{x_max})] 
+        /HISTOGRAM=[MINIMUM(@var{x_min})] [MAXIMUM(@var{x_max})]
                    [@{FREQ[(@var{y_max})],PERCENT[(@var{y_max})]@}] [@{NONORMAL,NORMAL@}]
         /PIECHART=[MINIMUM(@var{x_min})] [MAXIMUM(@var{x_max})]
                   [@{FREQ,PERCENT@}] [@{NOMISSING,MISSING@}]
@@ -163,7 +163,7 @@ The @subcmd{VARIABLES} subcommand is the only required subcommand.  Specify the
 variables to be analyzed.
 
 The @subcmd{FORMAT} subcommand controls the output format.  It has several
-possible settings:  
+possible settings:
 
 @itemize @subcmd{}
 @item
@@ -185,8 +185,8 @@ in frequency tables or statistics.  When @subcmd{INCLUDE} is set, user-missing
 are included.  System-missing values are never included in statistics,
 but are listed in frequency tables.
 
-The available @subcmd{STATISTICS} are the same as available 
-in @cmd{DESCRIPTIVES} (@pxref{DESCRIPTIVES}), with the addition 
+The available @subcmd{STATISTICS} are the same as available
+in @cmd{DESCRIPTIVES} (@pxref{DESCRIPTIVES}), with the addition
 of @subcmd{MEDIAN}, the data's median
 value, and MODE, the mode.  (If there are multiple modes, the smallest
 value is reported.)  By default, the mean, standard deviation of the
@@ -195,7 +195,7 @@ mean, minimum, and maximum are reported for each variable.
 @cindex percentiles
 @subcmd{PERCENTILES} causes the specified percentiles to be reported.
 The percentiles should  be presented at a list of numbers between 0
-and 100 inclusive.  
+and 100 inclusive.
 The @subcmd{NTILES} subcommand causes the percentiles to be reported at the
 boundaries of the data set divided into the specified number of ranges.
 For instance, @subcmd{/NTILES=4} would cause quartiles to be reported.
@@ -204,7 +204,7 @@ For instance, @subcmd{/NTILES=4} would cause quartiles to be reported.
 The @subcmd{HISTOGRAM} subcommand causes the output to include a histogram for
 each specified numeric variable.  The X axis by default ranges from
 the minimum to the maximum value observed in the data, but the @subcmd{MINIMUM}
-and @subcmd{MAXIMUM} keywords can set an explicit range. 
+and @subcmd{MAXIMUM} keywords can set an explicit range.
 @footnote{The number of
 bins is chosen according to the Freedman-Diaconis rule:
 @math{2 \times IQR(x)n^{-1/3}}, where @math{IQR(x)} is the interquartile range of @math{x}
@@ -219,9 +219,9 @@ histogram.
 The @subcmd{PIECHART} subcommand adds a pie chart for each variable to the data.  Each
 slice represents one value, with the size of the slice proportional to
 the value's frequency.  By default, all non-missing values are given
-slices.  
+slices.
 The @subcmd{MINIMUM} and @subcmd{MAXIMUM} keywords can be used to limit the
-displayed slices to a given range of values.  
+displayed slices to a given range of values.
 The keyword @subcmd{NOMISSING} causes missing values to be omitted from the
 piechart.  This is the default.
 If instead, @subcmd{MISSING} is specified, then a single slice
@@ -235,7 +235,7 @@ The @subcmd{FREQ} option (default) causes the ordinate to display the frequency
 of each category, whereas the @subcmd{PERCENT} option will display relative
 percentages.
 
-The @subcmd{FREQ} and @subcmd{PERCENT} options on @subcmd{HISTOGRAM} and 
+The @subcmd{FREQ} and @subcmd{PERCENT} options on @subcmd{HISTOGRAM} and
 @subcmd{PIECHART} are accepted but not currently honoured.
 
 The @subcmd{ORDER} subcommand is accepted but ignored.
@@ -262,7 +262,7 @@ EXAMINE
         /ID=@var{identity_variable}
         /@{TOTAL,NOTOTAL@}
         /PERCENTILE=[@var{percentiles}]=@{HAVERAGE, WAVERAGE, ROUND, AEMPIRICAL, EMPIRICAL @}
-        /MISSING=@{LISTWISE, PAIRWISE@} [@{EXCLUDE, INCLUDE@}] 
+        /MISSING=@{LISTWISE, PAIRWISE@} [@{EXCLUDE, INCLUDE@}]
 		[@{NOREPORT,REPORT@}]
 
 @end display
@@ -271,18 +271,18 @@ The @cmd{EXAMINE} command is used to perform exploratory data analysis.
 In particular, it is useful for testing how closely a distribution follows a
 normal distribution, and for finding outliers and extreme values.
 
-The @subcmd{VARIABLES} subcommand is mandatory.  
+The @subcmd{VARIABLES} subcommand is mandatory.
 It specifies the dependent variables and optionally variables to use as
 factors for the analysis.
-Variables listed before the first @subcmd{BY} keyword (if any) are the 
+Variables listed before the first @subcmd{BY} keyword (if any) are the
 dependent variables.
 The dependent variables may optionally be followed by a list of
 factors which tell @pspp{} how to break down the analysis for each
-dependent variable. 
+dependent variable.
 
 Following the dependent variables, factors may be specified.
 The factors (if desired) should be preceded by a single @subcmd{BY} keyword.
-The format for each factor is 
+The format for each factor is
 @display
 @var{factorvar} [BY @var{subfactorvar}].
 @end display
@@ -314,7 +314,7 @@ specified.
 The @subcmd{PLOT} subcommand specifies which plots are to be produced if any.
 Available plots are @subcmd{HISTOGRAM}, @subcmd{NPPLOT},  @subcmd{BOXPLOT} and
 @subcmd{SPREADLEVEL}.
-The first three can be used to visualise how closely each cell conforms to a 
+The first three can be used to visualise how closely each cell conforms to a
 normal distribution, whilst the spread vs.@: level plot can be useful to visualise
 how the variance of differs between factors.
 Boxplots will also show you the outliers and extreme values.
@@ -322,12 +322,12 @@ Boxplots will also show you the outliers and extreme values.
 bins, as approximately @math{1 + \log2(n)}, where @math{n} is the number of samples.
 Note that @cmd{FREQUENCIES} uses a different algorithm to find the bin size.}
 
-The @subcmd{SPREADLEVEL} plot displays the interquartile range versus the 
+The @subcmd{SPREADLEVEL} plot displays the interquartile range versus the
 median.  It takes an optional parameter @var{t}, which specifies how the data
 should be transformed prior to plotting.
 The given value @var{t} is a power to which the data is raised.  For example, if
 @var{t} is given as 2, then the data will be squared.
-Zero, however is a special value.  If @var{t} is 0 or 
+Zero, however is a special value.  If @var{t} is 0 or
 is omitted, then data will be transformed by taking its natural logarithm instead of
 raising to the power of @var{t}.
 
@@ -340,21 +340,21 @@ There are however a number of provisos:
 @item The cumulative weight value must be in the range [3, 5000]
 @end itemize
 
-The @subcmd{COMPARE} subcommand is only relevant if producing boxplots, and it is only 
+The @subcmd{COMPARE} subcommand is only relevant if producing boxplots, and it is only
 useful there is more than one dependent variable and at least one factor.
-If 
+If
 @subcmd{/COMPARE=GROUPS} is specified, then one plot per dependent variable is produced,
 each of which contain boxplots for all the cells.
 If @subcmd{/COMPARE=VARIABLES} is specified, then one plot per cell is produced,
 each containing one boxplot per dependent variable.
 If the @subcmd{/COMPARE} subcommand is omitted, then @pspp{} behaves as if
 @subcmd{/COMPARE=GROUPS} were given.
- 
-The @subcmd{ID} subcommand is relevant only if @subcmd{/PLOT=BOXPLOT} or 
+
+The @subcmd{ID} subcommand is relevant only if @subcmd{/PLOT=BOXPLOT} or
 @subcmd{/STATISTICS=EXTREME} has been given.
 If given, it should provide the name of a variable which is to be used
 to labels extreme values and outliers.
-Numeric or string variables are permissible.  
+Numeric or string variables are permissible.
 If the @subcmd{ID} subcommand is not given, then the case number will be used for
 labelling.
 
@@ -362,7 +362,7 @@ The @subcmd{CINTERVAL} subcommand specifies the confidence interval to use in
 calculation of the descriptives command.  The default is 95%.
 
 @cindex percentiles
-The @subcmd{PERCENTILES} subcommand specifies which percentiles are to be calculated, 
+The @subcmd{PERCENTILES} subcommand specifies which percentiles are to be calculated,
 and which algorithm to use for calculating them.  The default is to
 calculate the 5, 10, 25, 50, 75, 90, 95 percentiles using the
 @subcmd{HAVERAGE} algorithm.
@@ -381,10 +381,10 @@ Therefore, the descriptives and histograms will be generated for each
 distinct  value
 of @var{gender} @emph{and} for each distinct combination of the values
 of @var{gender} and @var{race}.
-Since the @subcmd{NOTOTAL} keyword is given, statistics and histograms for 
+Since the @subcmd{NOTOTAL} keyword is given, statistics and histograms for
 @var{score1} and @var{score2} covering the  whole dataset are not produced.
 @example
-EXAMINE @var{score1} @var{score2} BY 
+EXAMINE @var{score1} @var{score2} BY
         @var{gender}
         @var{gender} BY @var{culture}
         /STATISTICS = DESCRIPTIVES
@@ -394,7 +394,7 @@ EXAMINE @var{score1} @var{score2} BY
 
 Here is a second example showing how the @cmd{examine} command can be used to find extremities.
 @example
-EXAMINE @var{height} @var{weight} BY 
+EXAMINE @var{height} @var{weight} BY
         @var{gender}
         /STATISTICS = EXTREME (3)
         /PLOT = BOXPLOT
@@ -403,7 +403,7 @@ EXAMINE @var{height} @var{weight} BY
 @end example
 In this example, we look at the height and weight of a sample of individuals and
 how they differ between male and female.
-A table showing the 3 largest and the 3 smallest values of @var{height} and 
+A table showing the 3 largest and the 3 smallest values of @var{height} and
 @var{weight} for each gender, and for the whole dataset will be shown.
 Boxplots will also be produced.
 Because @subcmd{/COMPARE = GROUPS} was given, boxplots for male and female will be
@@ -429,15 +429,15 @@ large quantity of output.
 GRAPH
         /HISTOGRAM [(NORMAL)]= @var{var}
         /SCATTERPLOT [(BIVARIATE)] = @var{var1} WITH @var{var2} [BY @var{var3}]
-        /BAR = @{@var{summary-function}(@var{var1}) | @var{count-function}@} BY @var{var2} [BY @var{var3}] 
-        [ /MISSING=@{LISTWISE, VARIABLE@} [@{EXCLUDE, INCLUDE@}] ] 
+        /BAR = @{@var{summary-function}(@var{var1}) | @var{count-function}@} BY @var{var2} [BY @var{var3}]
+        [ /MISSING=@{LISTWISE, VARIABLE@} [@{EXCLUDE, INCLUDE@}] ]
 		[@{NOREPORT,REPORT@}]
 
 @end display
 
-The @cmd{GRAPH} produces graphical plots of data. Only one of the subcommands 
+The @cmd{GRAPH} produces graphical plots of data. Only one of the subcommands
 @subcmd{HISTOGRAM} or @subcmd{SCATTERPLOT} can be specified, i.e. only one plot
-can be produced per call of @cmd{GRAPH}. The @subcmd{MISSING} is optional. 
+can be produced per call of @cmd{GRAPH}. The @subcmd{MISSING} is optional.
 
 @menu
 * SCATTERPLOT::             Cartesian Plots
@@ -455,7 +455,7 @@ will result in different colours and/or markers for the plot. The
 following is an example for producing a scatterplot.
 
 @example
-GRAPH   
+GRAPH
         /SCATTERPLOT = @var{height} WITH @var{weight} BY @var{gender}.
 @end example
 
@@ -475,7 +475,7 @@ For an alternative method to produce histograms @pxref{EXAMINE}. The
 following example produces a histogram plot for the variable @var{weight}.
 
 @example
-GRAPH   
+GRAPH
         /HISTOGRAM = @var{weight}.
 @end example
 
@@ -551,34 +551,34 @@ CORRELATIONS
      [ /PRINT=@{TWOTAIL, ONETAIL@} @{SIG, NOSIG@} ]
      [ /STATISTICS=DESCRIPTIVES XPROD ALL]
      [ /MISSING=@{PAIRWISE, LISTWISE@} @{INCLUDE, EXCLUDE@} ]
-@end display    
+@end display
 
 @cindex correlation
 The @cmd{CORRELATIONS} procedure produces tables of the Pearson correlation coefficient
 for a set of variables.  The significance of the coefficients are also given.
 
-At least one @subcmd{VARIABLES} subcommand is required. If the @subcmd{WITH} 
+At least one @subcmd{VARIABLES} subcommand is required. If the @subcmd{WITH}
 keyword is used, then a non-square correlation table will be produced.
 The variables preceding @subcmd{WITH}, will be used as the rows of the table,
 and the variables following will be the columns of the table.
 If no @subcmd{WITH} subcommand is given, then a square, symmetrical table using all variables is produced.
 
 
-The @cmd{MISSING} subcommand determines the handling of missing variables.  
+The @cmd{MISSING} subcommand determines the handling of missing variables.
 If @subcmd{INCLUDE} is set, then user-missing values are included in the
 calculations, but system-missing values are not.
 If @subcmd{EXCLUDE} is set, which is the default, user-missing
-values are excluded as well as system-missing values. 
+values are excluded as well as system-missing values.
 
 If @subcmd{LISTWISE} is set, then the entire case is excluded from analysis
 whenever any variable  specified in any @cmd{/VARIABLES} subcommand
-contains a missing value.   
+contains a missing value.
 If @subcmd{PAIRWISE} is set, then a case is considered missing only if either of the
 values  for the particular coefficient are missing.
 The default is @subcmd{PAIRWISE}.
 
 The @subcmd{PRINT} subcommand is used to control how the reported significance values are printed.
-If the @subcmd{TWOTAIL} option is used, then a two-tailed test of significance is 
+If the @subcmd{TWOTAIL} option is used, then a two-tailed test of significance is
 printed.  If the @subcmd{ONETAIL} option is given, then a one-tailed test is used.
 The default is @subcmd{TWOTAIL}.
 
@@ -587,12 +587,12 @@ If the @subcmd{NOSIG} option is specified, then correlation coefficients with si
 If @subcmd{SIG} is specified, then no highlighting is performed.  This is the default.
 
 @cindex covariance
-The @subcmd{STATISTICS} subcommand requests additional statistics to be displayed.  The keyword 
+The @subcmd{STATISTICS} subcommand requests additional statistics to be displayed.  The keyword
 @subcmd{DESCRIPTIVES} requests that the mean, number of non-missing cases, and the non-biased
 estimator of the standard deviation are displayed.
 These statistics will be displayed in a separated table, for all the variables listed
 in any @subcmd{/VARIABLES} subcommand.
-The @subcmd{XPROD} keyword requests cross-product deviations and covariance estimators to 
+The @subcmd{XPROD} keyword requests cross-product deviations and covariance estimators to
 be displayed for each pair of variables.
 The keyword @subcmd{ALL} is the union of @subcmd{DESCRIPTIVES} and @subcmd{XPROD}.
 
@@ -617,7 +617,7 @@ CROSSTABS
         /STATISTICS=@{CHISQ,PHI,CC,LAMBDA,UC,BTAU,CTAU,RISK,GAMMA,D,
                      KAPPA,ETA,CORR,ALL,NONE@}
         /BARCHART
-        
+
 (Integer mode.)
         /VARIABLES=@var{var_list} (@var{low},@var{high})@dots{}
 @end display
@@ -631,7 +631,7 @@ The @subcmd{TABLES} subcommand is used to specify the tables to be reported.  An
 number of dimensions is permitted, and any number of variables per
 dimension is allowed.  The @subcmd{TABLES} subcommand may be repeated as many
 times as needed.  This is the only required subcommand in @dfn{general
-mode}.  
+mode}.
 
 Occasionally, one may want to invoke a special mode called @dfn{integer
 mode}.  Normally, in general mode, @pspp{} automatically determines
@@ -695,7 +695,7 @@ Column percent.
 Table percent.
 @item EXPECTED
 Expected value.
-@item RESIDUAL 
+@item RESIDUAL
 Residual.
 @item SRESIDUAL
 Standardized residual.
@@ -708,7 +708,7 @@ Suppress cells entirely.
 @end table
 
 @samp{/CELLS} without any settings specified requests @subcmd{COUNT}, @subcmd{ROW},
-@subcmd{COLUMN}, and @subcmd{TOTAL}.  
+@subcmd{COLUMN}, and @subcmd{TOTAL}.
 If @subcmd{CELLS} is not specified at all then only @subcmd{COUNT}
 will be selected.
 
@@ -770,8 +770,8 @@ some statistics are calculated only in integer mode.
 @cindex bar chart
 The @samp{/BARCHART} subcommand produces a clustered bar chart for the first two
 variables on each table.
-If a table has more than two variables, the counts for the third and subsequent levels 
-will be aggregated and the chart will be produces as if there were only two variables.  
+If a table has more than two variables, the counts for the third and subsequent levels
+will be aggregated and the chart will be produces as if there were only two variables.
 
 
 @strong{Please note:} Currently the implementation of @cmd{CROSSTABS} has the
@@ -808,7 +808,7 @@ FACTOR  @{
 
         [ /ANALYSIS=@var{var_list} ]
 
-        [ /EXTRACTION=@{PC, PAF@}] 
+        [ /EXTRACTION=@{PC, PAF@}]
 
         [ /ROTATION=@{VARIMAX, EQUAMAX, QUARTIMAX, PROMAX[(@var{k})], NOROTATE@}]
 
@@ -843,25 +843,25 @@ dataset, or it may be a filename to be loaded. @xref{MATRIX DATA}, for the expec
 format of the file.
 
 The @subcmd{/EXTRACTION} subcommand is used to specify the way in which factors (components) are extracted from the data.
-If @subcmd{PC} is specified, then Principal Components Analysis is used.  
+If @subcmd{PC} is specified, then Principal Components Analysis is used.
 If @subcmd{PAF} is specified, then Principal Axis Factoring is
 used. By default Principal Components Analysis will be used.
 
 The @subcmd{/ROTATION} subcommand is used to specify the method by which the extracted solution will be rotated.
-Three orthogonal rotation methods are available: 
+Three orthogonal rotation methods are available:
 @subcmd{VARIMAX} (which is the default), @subcmd{EQUAMAX}, and @subcmd{QUARTIMAX}.
 There is one oblique rotation method, @i{viz}: @subcmd{PROMAX}.
 Optionally you may enter the power of the promax rotation @var{k}, which must be enclosed in parentheses.
 The default value of @var{k} is 5.
 If you don't want any rotation to be performed, the word @subcmd{NOROTATE} will prevent the command from performing any
-rotation on the data. 
+rotation on the data.
 
 The @subcmd{/METHOD} subcommand should be used to determine whether the covariance matrix or the correlation matrix of the data is
 to be analysed.  By default, the correlation matrix is analysed.
 
 The @subcmd{/PRINT} subcommand may be used to select which features of the analysis are reported:
 
-@itemize 
+@itemize
 @item @subcmd{UNIVARIATE}
       A table of mean values, standard deviations and total weights are printed.
 @item @subcmd{INITIAL}
@@ -893,39 +893,39 @@ which factors (components) should be retained.
 
 The @subcmd{/FORMAT} subcommand determined how data are to be displayed in loading matrices.  If @subcmd{SORT} is specified, then the variables
 are sorted in descending order of significance.  If @subcmd{BLANK(@var{n})} is specified, then coefficients whose absolute value is less
-than @var{n} will not be printed.  If the keyword @subcmd{DEFAULT} is given, or if no @subcmd{/FORMAT} subcommand is given, then no sorting is 
+than @var{n} will not be printed.  If the keyword @subcmd{DEFAULT} is given, or if no @subcmd{/FORMAT} subcommand is given, then no sorting is
 performed, and all coefficients will be printed.
 
 The @subcmd{/CRITERIA} subcommand is used to specify how the number of extracted factors (components) are chosen.
 If @subcmd{FACTORS(@var{n})} is
 specified, where @var{n} is an integer, then @var{n} factors will be extracted.  Otherwise, the @subcmd{MINEIGEN} setting will
-be used.  
+be used.
 @subcmd{MINEIGEN(@var{l})} requests that all factors whose eigenvalues are greater than or equal to @var{l} are extracted.
-The default value of @var{l} is 1.    
+The default value of @var{l} is 1.
 The @subcmd{ECONVERGE} setting has effect only when iterative algorithms for factor
-extraction (such as Principal Axis Factoring) are used.   
+extraction (such as Principal Axis Factoring) are used.
 @subcmd{ECONVERGE(@var{delta})} specifies that
 iteration should cease when
 the maximum absolute value of the communality estimate between one iteration and the previous is less than @var{delta}. The
 default value of @var{delta} is 0.001.
-The @subcmd{ITERATE(@var{m})} may appear any number of times and is used for two different purposes.  
+The @subcmd{ITERATE(@var{m})} may appear any number of times and is used for two different purposes.
 It is used to set the maximum number of iterations (@var{m}) for convergence and also to set the maximum number of iterations
 for rotation.
 Whether it affects convergence or rotation depends upon which subcommand follows the @subcmd{ITERATE} subcommand.
-If @subcmd{EXTRACTION} follows, it affects convergence.  
-If @subcmd{ROTATION} follows, it affects rotation.  
+If @subcmd{EXTRACTION} follows, it affects convergence.
+If @subcmd{ROTATION} follows, it affects rotation.
 If neither @subcmd{ROTATION} nor @subcmd{EXTRACTION} follow a @subcmd{ITERATE} subcommand it will be ignored.
 The default value of @var{m} is 25.
 
-The @cmd{MISSING} subcommand determines the handling of missing variables.  
+The @cmd{MISSING} subcommand determines the handling of missing variables.
 If @subcmd{INCLUDE} is set, then user-missing values are included in the
 calculations, but system-missing values are not.
 If @subcmd{EXCLUDE} is set, which is the default, user-missing
-values are excluded as well as system-missing values. 
+values are excluded as well as system-missing values.
 This is the default.
 If @subcmd{LISTWISE} is set, then the entire case is excluded from analysis
 whenever any variable  specified in the @cmd{VARIABLES} subcommand
-contains a missing value.   
+contains a missing value.
 If @subcmd{PAIRWISE} is set, then a case is considered missing only if either of the
 values  for the particular coefficient are missing.
 The default is @subcmd{LISTWISE}.
@@ -963,7 +963,7 @@ The @subcmd{METHOD} subcommand is used to change the method for producing the su
 squares.  Available values of @var{type} are 1, 2 and 3.  The default is type 3.
 
 You may specify a custom design using the @subcmd{DESIGN} subcommand.
-The design comprises a list of interactions where each interaction is a 
+The design comprises a list of interactions where each interaction is a
 list of variables separated by a @samp{*}.  For example the command
 @display
 GLM subject BY sex age_group race
@@ -980,12 +980,12 @@ implies the model
 
 
 The @subcmd{MISSING} subcommand determines the handling of missing
-variables.  
+variables.
 If @subcmd{INCLUDE} is set then, for the purposes of GLM analysis,
 only system-missing values are considered
 to be missing; user-missing values are not regarded as missing.
 If @subcmd{EXCLUDE} is set, which is the default, then user-missing
-values are considered to be missing as well as system-missing values. 
+values are considered to be missing as well as system-missing values.
 A case for which any dependent variable or any factor
 variable has a missing value is excluded from the analysis.
 
@@ -1025,9 +1025,9 @@ are the predictor variables whose coefficients the procedure estimates.
 By default, a constant term is included in the model.
 Hence, the full model is
 @math{
-{\bf y} 
-= b_0 + b_1 {\bf x_1} 
-+ b_2 {\bf x_2} 
+{\bf y}
+= b_0 + b_1 {\bf x_1}
++ b_2 {\bf x_2}
 + \dots
 + b_n {\bf x_n}
 }
@@ -1041,14 +1041,14 @@ If you want a model without the constant term @math{b_0}, use the keyword @subcm
 An iterative Newton-Raphson procedure is used to fit the model.
 The @subcmd{/CRITERIA} subcommand is used to specify the stopping criteria of the procedure,
 and other parameters.
-The value of @var{cut_point} is used in the classification table.  It is the 
+The value of @var{cut_point} is used in the classification table.  It is the
 threshold above which predicted values are considered to be 1.  Values
 of @var{cut_point} must lie in the range [0,1].
 During iterations, if any one of the stopping criteria are satisfied, the procedure is
 considered complete.
 The stopping criteria are:
 @itemize
-@item The number of iterations exceeds @var{max_iterations}.  
+@item The number of iterations exceeds @var{max_iterations}.
       The default value of @var{max_iterations} is 20.
 @item The change in the all coefficient estimates are less than @var{min_delta}.
 The default value of @var{min_delta} is 0.001.
@@ -1062,17 +1062,17 @@ The default value of @var{min_epsilon} is 0.00000001.
 
 
 The @subcmd{PRINT} subcommand controls the display of optional statistics.
-Currently there is one such option, @subcmd{CI}, which indicates that the 
+Currently there is one such option, @subcmd{CI}, which indicates that the
 confidence interval of the odds ratio should be displayed as well as its value.
 @subcmd{CI} should be followed by an integer in parentheses, to indicate the
 confidence level of the desired confidence interval.
 
 The @subcmd{MISSING} subcommand determines the handling of missing
-variables.  
+variables.
 If @subcmd{INCLUDE} is set, then user-missing values are included in the
 calculations, but system-missing values are not.
 If @subcmd{EXCLUDE} is set, which is the default, user-missing
-values are excluded as well as system-missing values. 
+values are excluded as well as system-missing values.
 This is the default.
 
 @node MEANS
@@ -1081,24 +1081,24 @@ This is the default.
 @vindex MEANS
 @cindex means
 
-@display 
-MEANS [TABLES =] 
-      @{@var{var_list}@} 
+@display
+MEANS [TABLES =]
+      @{@var{var_list}@}
         [ BY @{@var{var_list}@} [BY @{@var{var_list}@} [BY @{@var{var_list}@} @dots{} ]]]
 
-      [ /@{@var{var_list}@} 
+      [ /@{@var{var_list}@}
          [ BY @{@var{var_list}@} [BY @{@var{var_list}@} [BY @{@var{var_list}@} @dots{} ]]] ]
 
       [/CELLS = [MEAN] [COUNT] [STDDEV] [SEMEAN] [SUM] [MIN] [MAX] [RANGE]
-        [VARIANCE] [KURT] [SEKURT] 
-        [SKEW] [SESKEW] [FIRST] [LAST] 
-        [HARMONIC] [GEOMETRIC] 
+        [VARIANCE] [KURT] [SEKURT]
+        [SKEW] [SESKEW] [FIRST] [LAST]
+        [HARMONIC] [GEOMETRIC]
         [DEFAULT]
         [ALL]
         [NONE] ]
 
       [/MISSING = [INCLUDE] [DEPENDENT]]
-@end display 
+@end display
 
 You can use the @cmd{MEANS} command to calculate the arithmetic mean and similar
 statistics, either for the dataset as a whole or for categories of data.
@@ -1176,7 +1176,7 @@ In addition, three special keywords are recognized:
 @end itemize
 
 
-More than one @dfn{table} can be specified in a single command. 
+More than one @dfn{table} can be specified in a single command.
 Each table is separated by a @samp{/}. For
 example
 @example
@@ -1188,7 +1188,7 @@ MEANS TABLES =
 has three tables (the @samp{TABLE =} is optional).
 The first table has three dependent variables @var{c}, @var{d} and @var{e}
 and a single categorical variable @var{x}.
-The second table has two dependent variables @var{a} and @var{b}, 
+The second table has two dependent variables @var{a} and @var{b},
 and two categorical variables @var{x} and @var{y}.
 The third table has a single dependent variables @var{f}
 and a categorical variable formed by the combination of @var{y} and @var{z}.
@@ -1196,7 +1196,7 @@ and a categorical variable formed by the combination of @var{y} and @var{z}.
 
 By default values are omitted from the analysis only if missing values
 (either system missing or user missing)
-for any of the variables directly involved in their calculation are 
+for any of the variables directly involved in their calculation are
 encountered.
 This behaviour can be modified with the  @subcmd{/MISSING} subcommand.
 Three options are possible: @subcmd{TABLE}, @subcmd{INCLUDE} and @subcmd{DEPENDENT}.
@@ -1206,8 +1206,8 @@ variables or in the categorical variables should be taken at their face
 value, and not excluded.
 
 @subcmd{/MISSING = DEPENDENT} says that user missing values, in the dependent
-variables should be taken at their face value, however cases which 
-have user missing values for the categorical variables should be omitted 
+variables should be taken at their face value, however cases which
+have user missing values for the categorical variables should be omitted
 from the calculation.
 
 @node NPAR TESTS
@@ -1216,14 +1216,14 @@ from the calculation.
 @vindex NPAR TESTS
 @cindex nonparametric tests
 
-@display 
+@display
 NPAR TESTS
-     
+
      nonparametric test subcommands
      .
      .
      .
-     
+
      [ /STATISTICS=@{DESCRIPTIVES@} ]
 
      [ /MISSING=@{ANALYSIS, LISTWISE@} @{INCLUDE, EXCLUDE@} ]
@@ -1231,21 +1231,21 @@ NPAR TESTS
      [ /METHOD=EXACT [ TIMER [(@var{n})] ] ]
 @end display
 
-@cmd{NPAR TESTS} performs nonparametric tests. 
-Non parametric tests make very few assumptions about the distribution of the 
+@cmd{NPAR TESTS} performs nonparametric tests.
+Non parametric tests make very few assumptions about the distribution of the
 data.
 One or more tests may be specified by using the corresponding subcommand.
-If the @subcmd{/STATISTICS} subcommand is also specified, then summary statistics are 
+If the @subcmd{/STATISTICS} subcommand is also specified, then summary statistics are
 produces for each variable that is the subject of any test.
 
 Certain tests may take a long time to execute, if an exact figure is required.
 Therefore, by default asymptotic approximations are used unless the
-subcommand @subcmd{/METHOD=EXACT} is specified.  
-Exact tests give more accurate results, but may take an unacceptably long 
+subcommand @subcmd{/METHOD=EXACT} is specified.
+Exact tests give more accurate results, but may take an unacceptably long
 time to perform.  If the @subcmd{TIMER} keyword is used, it sets a maximum time,
 after which the test will be abandoned, and a warning message printed.
 The time, in minutes, should be specified in parentheses after the @subcmd{TIMER} keyword.
-If the @subcmd{TIMER} keyword is given without this figure, then a default value of 5 minutes 
+If the @subcmd{TIMER} keyword is given without this figure, then a default value of 5 minutes
 is used.
 
 
@@ -1271,25 +1271,25 @@ is used.
 @vindex BINOMIAL
 @cindex binomial test
 
-@display 
+@display
      [ /BINOMIAL[(@var{p})]=@var{var_list}[(@var{value1}[, @var{value2})] ] ]
-@end display 
+@end display
 
-The @subcmd{/BINOMIAL} subcommand compares the observed distribution of a dichotomous 
+The @subcmd{/BINOMIAL} subcommand compares the observed distribution of a dichotomous
 variable with that of a binomial distribution.
-The variable @var{p} specifies the test proportion of the binomial 
-distribution.  
+The variable @var{p} specifies the test proportion of the binomial
+distribution.
 The default value of 0.5 is assumed if @var{p} is omitted.
 
 If a single value appears after the variable list, then that value is
 used as the threshold to partition the observed values. Values less
 than or equal to the threshold value form the first category.  Values
-greater than the threshold form the second category. 
+greater than the threshold form the second category.
 
 If two values appear after the variable list, then they will be used
 as the values which a variable must take to be in the respective
-category. 
-Cases for which a variable takes a value equal to neither of the specified  
+category.
+Cases for which a variable takes a value equal to neither of the specified
 values, take no part in the test for that variable.
 
 If no values appear, then the variable must assume dichotomous
@@ -1299,14 +1299,14 @@ under test are encountered then an error occurs.
 
 If the test proportion is equal to 0.5, then a two tailed test is
 reported.   For any other test proportion, a one tailed test is
-reported.   
+reported.
 For one tailed tests, if the test proportion is less than
 or equal to the observed proportion, then the significance of
 observing the observed proportion or more is reported.
 If the test proportion is more than the observed proportion, then the
 significance of observing the observed proportion or less is reported.
 That is to say, the test is always performed in the observed
-direction. 
+direction.
 
 @pspp{} uses a very precise approximation to the gamma function to
 compute the binomial significance.  Thus, exact results are reported
@@ -1322,17 +1322,17 @@ even for very large sample sizes.
 
 @display
      [ /CHISQUARE=@var{var_list}[(@var{lo},@var{hi})] [/EXPECTED=@{EQUAL|@var{f1}, @var{f2} @dots{} @var{fn}@}] ]
-@end display 
+@end display
 
 
-The @subcmd{/CHISQUARE} subcommand produces a chi-square statistic for the differences 
-between the expected and observed frequencies of the categories of a variable. 
-Optionally, a range of values may appear after the variable list.  
+The @subcmd{/CHISQUARE} subcommand produces a chi-square statistic for the differences
+between the expected and observed frequencies of the categories of a variable.
+Optionally, a range of values may appear after the variable list.
 If a range is given, then non integer values are truncated, and values
 outside the  specified range are excluded from the analysis.
 
 The @subcmd{/EXPECTED} subcommand specifies the expected values of each
-category.  
+category.
 There must be exactly one non-zero expected value, for each observed
 category, or the @subcmd{EQUAL} keyword must be specified.
 You may use the notation @subcmd{@var{n}*@var{f}} to specify @var{n}
@@ -1354,7 +1354,7 @@ are expected.
 @end display
 
 The Cochran Q test is used to test for differences between three or more groups.
-The data for @var{var_list} in all cases must assume exactly two distinct values (other than missing values). 
+The data for @var{var_list} in all cases must assume exactly two distinct values (other than missing values).
 
 The value of Q will be displayed and its Asymptotic significance based on a chi-square distribution.
 
@@ -1383,7 +1383,7 @@ prints the sum of ranks for each variable, the test statistic and its significan
      [ /KENDALL = @var{var_list} ]
 @end display
 
-The Kendall test investigates whether an arbitrary number of related samples come from the 
+The Kendall test investigates whether an arbitrary number of related samples come from the
 same population.
 It is identical to the Friedman test except that the additional statistic W, Kendall's Coefficient of Concordance is printed.
 It has the range [0,1] --- a value of zero indicates no agreement between the samples whereas a value of
@@ -1439,7 +1439,7 @@ The abbreviated subcommand  @subcmd{K-S} may be used in place of @subcmd{KOLMOGO
      [ /KRUSKAL-WALLIS = @var{var_list} BY var (@var{lower}, @var{upper}) ]
 @end display
 
-The Kruskal-Wallis test is used to compare data from an 
+The Kruskal-Wallis test is used to compare data from an
 arbitrary number of populations.  It does not assume normality.
 The data to be compared are specified by @var{var_list}.
 The categorical variable determining the groups to which the
@@ -1511,11 +1511,11 @@ not be run.
      [ /MEDIAN [(@var{value})] = @var{var_list} BY @var{variable} (@var{value1}, @var{value2}) ]
 @end display
 
-The median test is used to test whether independent samples come from 
+The median test is used to test whether independent samples come from
 populations with a common median.
 The median of the populations against which the samples are to be tested
-may be given in parentheses immediately after the 
-@subcmd{/MEDIAN} subcommand.  If it is not given, the median will be imputed from the 
+may be given in parentheses immediately after the
+@subcmd{/MEDIAN} subcommand.  If it is not given, the median will be imputed from the
 union of all the samples.
 
 The variables of the samples to be tested should immediately follow the @samp{=} sign. The
@@ -1532,13 +1532,13 @@ range [@var{value1},@var{value2}].
 @vindex RUNS
 @cindex runs test
 
-@display 
+@display
      [ /RUNS (@{MEAN, MEDIAN, MODE, @var{value}@})  = @var{var_list} ]
 @end display
 
 The @subcmd{/RUNS} subcommand tests whether a data sequence is randomly ordered.
 
-It works by examining the number of times a variable's value crosses a given threshold. 
+It works by examining the number of times a variable's value crosses a given threshold.
 The desired threshold must be specified within parentheses.
 It may either be specified as a number or as one of @subcmd{MEAN}, @subcmd{MEDIAN} or @subcmd{MODE}.
 Following the threshold specification comes the list of variables whose values are to be
@@ -1556,7 +1556,7 @@ length of the data.
      [ /SIGN @var{var_list} [ WITH @var{var_list} [ (PAIRED) ]]]
 @end display
 
-The @subcmd{/SIGN} subcommand tests for differences between medians of the 
+The @subcmd{/SIGN} subcommand tests for differences between medians of the
 variables listed.
 The test does not make any assumptions about the
 distribution of the data.
@@ -1582,7 +1582,7 @@ of variable preceding @code{WITH} against variable following
      [ /WILCOXON @var{var_list} [ WITH @var{var_list} [ (PAIRED) ]]]
 @end display
 
-The @subcmd{/WILCOXON} subcommand tests for differences between medians of the 
+The @subcmd{/WILCOXON} subcommand tests for differences between medians of the
 variables listed.
 The test does not make any assumptions about the variances of the samples.
 It does however assume that the distribution is symmetrical.
@@ -1626,8 +1626,8 @@ T-TEST
 @end display
 
 
-The @cmd{T-TEST} procedure outputs tables used in testing hypotheses about 
-means.  
+The @cmd{T-TEST} procedure outputs tables used in testing hypotheses about
+means.
 It operates in one of three modes:
 @itemize
 @item One Sample mode.
@@ -1644,16 +1644,16 @@ in the tests.  The default value is 0.95.
 
 
 The @cmd{MISSING} subcommand determines the handling of missing
-variables.  
+variables.
 If @subcmd{INCLUDE} is set, then user-missing values are included in the
 calculations, but system-missing values are not.
 If @subcmd{EXCLUDE} is set, which is the default, user-missing
-values are excluded as well as system-missing values. 
+values are excluded as well as system-missing values.
 This is the default.
 
 If @subcmd{LISTWISE} is set, then the entire case is excluded from analysis
-whenever any variable  specified in the @subcmd{/VARIABLES}, @subcmd{/PAIRS} or 
-@subcmd{/GROUPS} subcommands contains a missing value.   
+whenever any variable  specified in the @subcmd{/VARIABLES}, @subcmd{/PAIRS} or
+@subcmd{/GROUPS} subcommands contains a missing value.
 If @subcmd{ANALYSIS} is set, then missing values are excluded only in the analysis for
 which they would be needed. This is the default.
 
@@ -1669,7 +1669,7 @@ which they would be needed. This is the default.
 
 The @subcmd{TESTVAL} subcommand invokes the One Sample mode.
 This mode is used to test a population mean against a hypothesized
-mean. 
+mean.
 The value given to the @subcmd{TESTVAL} subcommand is the value against
 which you wish to test.
 In this mode, you must also use the @subcmd{/VARIABLES} subcommand to
@@ -1679,7 +1679,7 @@ tell @pspp{} which variables you wish to test.
 @subsection Independent Samples Mode
 
 The @subcmd{GROUPS} subcommand invokes Independent Samples mode or
-`Groups' mode. 
+`Groups' mode.
 This mode is used to test whether two groups of values have the
 same population mean.
 In this mode, you must also use the @subcmd{/VARIABLES} subcommand to
@@ -1689,10 +1689,10 @@ The variable given in the @subcmd{GROUPS} subcommand is the independent
 variable which determines to which group the samples belong.
 The values in parentheses are the specific values of the independent
 variable for each group.
-If the parentheses are omitted and no values are given, the default values 
+If the parentheses are omitted and no values are given, the default values
 of 1.0 and 2.0 are assumed.
 
-If the independent variable is numeric, 
+If the independent variable is numeric,
 it is acceptable to specify only one value inside the parentheses.
 If you do this, cases where the independent variable is
 greater than or equal to this value belong to the first group, and cases
@@ -1710,7 +1710,7 @@ Use this mode when repeated measures have been taken from the same
 samples.
 If the @subcmd{WITH} keyword is omitted, then tables for all
 combinations of variables given in the @cmd{PAIRS} subcommand are
-generated. 
+generated.
 If the @subcmd{WITH} keyword is given, and the @subcmd{(PAIRED)} keyword
 is also given, then the number of variables preceding @subcmd{WITH}
 must be the same as the number following it.
@@ -1741,10 +1741,10 @@ ONEWAY
 The @cmd{ONEWAY} procedure performs a one-way analysis of variance of
 variables factored by a single independent variable.
 It is used to compare the means of a population
-divided into more than two groups. 
+divided into more than two groups.
 
 The dependent variables to be analysed should be given in the @subcmd{VARIABLES}
-subcommand.  
+subcommand.
 The list of variables must be followed by the @subcmd{BY} keyword and
 the name of the independent (or factor) variable.
 
@@ -1770,10 +1770,10 @@ display a warning, but will proceed with the analysis.
 The @subcmd{CONTRAST} subcommand may be given up to 10 times in order
 to specify different contrast tests.
 The @subcmd{MISSING} subcommand defines how missing values are handled.
-If @subcmd{LISTWISE} is specified then cases which have missing values for 
+If @subcmd{LISTWISE} is specified then cases which have missing values for
 the independent variable or any dependent variable will be ignored.
 If @subcmd{ANALYSIS} is specified, then cases will be ignored if the independent
-variable is missing or if the dependent variable currently being 
+variable is missing or if the dependent variable currently being
 analysed is missing.  The default is @subcmd{ANALYSIS}.
 A setting of @subcmd{EXCLUDE} means that variables whose values are
 user-missing are to be excluded from the analysis. A setting of
@@ -1846,17 +1846,17 @@ is ignored.
 The subcommand  @subcmd{/CRITERIA=CONVERGE(@var{epsilon})} is used
 to set the convergence criterion.  The value of convergence criterion is  @var{epsilon}
 times the minimum distance between the @emph{initial} cluster centers.  Iteration stops when
-the  mean cluster distance between  one iteration and the next  
+the  mean cluster distance between  one iteration and the next
 is less than the convergence criterion.  The default value of @var{epsilon} is zero.
 
-The @subcmd{MISSING} subcommand determines the handling of missing variables.  
+The @subcmd{MISSING} subcommand determines the handling of missing variables.
 If @subcmd{INCLUDE} is set, then user-missing values are considered at their face
 value and not as missing values.
 If @subcmd{EXCLUDE} is set, which is the default, user-missing
-values are excluded as well as system-missing values. 
+values are excluded as well as system-missing values.
 
 If @subcmd{LISTWISE} is set, then the entire case is excluded from the analysis
-whenever any of the clustering variables contains a missing value.   
+whenever any of the clustering variables contains a missing value.
 If @subcmd{PAIRWISE} is set, then a case is considered missing only if all the
 clustering variables contain missing values.  Otherwise it is clustered
 on the basis of the non-missing values.
@@ -1899,15 +1899,15 @@ RANK
 @end display
 
 The @cmd{RANK} command ranks variables and stores the results into new
-variables. 
+variables.
 
 The @subcmd{VARIABLES} subcommand, which is mandatory, specifies one or
-more variables whose values are to be ranked.  
+more variables whose values are to be ranked.
 After each variable, @samp{A} or @samp{D} may appear, indicating that
 the variable is to be ranked in ascending or descending order.
 Ascending is the default.
 If a @subcmd{BY} keyword appears, it should be followed by a list of variables
-which are to serve as group variables.  
+which are to serve as group variables.
 In this case, the cases are gathered into groups, and ranks calculated
 for each group.
 
@@ -1956,27 +1956,27 @@ RELIABILITY
 @cindex Cronbach's Alpha
 The @cmd{RELIABILITY} command performs reliability analysis on the data.
 
-The @subcmd{VARIABLES} subcommand is required. It determines the set of variables 
+The @subcmd{VARIABLES} subcommand is required. It determines the set of variables
 upon which analysis is to be performed.
 
-The @subcmd{SCALE} subcommand determines which variables reliability is to be 
+The @subcmd{SCALE} subcommand determines which variables reliability is to be
 calculated for.  If it is omitted, then analysis for all variables named
 in the @subcmd{VARIABLES} subcommand will be used.
-Optionally, the @var{name} parameter may be specified to set a string name 
+Optionally, the @var{name} parameter may be specified to set a string name
 for the scale.
 
-The @subcmd{MODEL} subcommand determines the type of analysis. If @subcmd{ALPHA} is specified, 
-then Cronbach's Alpha is calculated for the scale.  If the model is @subcmd{SPLIT}, 
-then the variables  are divided into 2 subsets.  An optional parameter 
+The @subcmd{MODEL} subcommand determines the type of analysis. If @subcmd{ALPHA} is specified,
+then Cronbach's Alpha is calculated for the scale.  If the model is @subcmd{SPLIT},
+then the variables  are divided into 2 subsets.  An optional parameter
 @var{n} may be given, to specify how many variables to be in the first subset.
-If @var{n} is omitted, then it defaults to one half of the variables in the 
+If @var{n} is omitted, then it defaults to one half of the variables in the
 scale, or one half minus one if there are an odd number of variables.
 The default model is @subcmd{ALPHA}.
 
-By default, any cases with user missing, or system missing values for 
-any variables given 
+By default, any cases with user missing, or system missing values for
+any variables given
 in the @subcmd{VARIABLES} subcommand will be omitted from analysis.
-The @subcmd{MISSING} subcommand determines whether user missing values are to 
+The @subcmd{MISSING} subcommand determines whether user missing values are to
 be included or excluded in the analysis.
 
 The @subcmd{SUMMARY} subcommand determines the type of summary analysis to be performed.
@@ -2004,12 +2004,12 @@ ROC     @var{var_list} BY @var{state_var} (@var{state_value})
 @end display
 
 
-The @cmd{ROC} command is used to plot the receiver operating characteristic curve 
+The @cmd{ROC} command is used to plot the receiver operating characteristic curve
 of a dataset, and to estimate the area under the curve.
 This is useful for analysing the efficacy of a variable as a predictor of a state of nature.
 
 The mandatory @var{var_list} is the list of predictor variables.
-The variable @var{state_var} is the variable whose values represent the actual states, 
+The variable @var{state_var} is the variable whose values represent the actual states,
 and @var{state_value} is the value of this variable which represents the positive state.
 
 The optional subcommand @subcmd{PLOT} is used to determine if and how the @subcmd{ROC} curve is drawn.
@@ -2019,7 +2019,7 @@ If the keyword @subcmd{NONE} is given, then no @subcmd{ROC} curve is drawn.
 By default, the curve is drawn with no reference line.
 
 The optional subcommand @subcmd{PRINT} determines which additional tables should be printed.
-Two additional tables are available. 
+Two additional tables are available.
 The @subcmd{SE} keyword says that standard error of the area under the curve should be printed as well as
 the area itself.
 In addition, a p-value under the null hypothesis that the area under the curve equals 0.5 will be
@@ -2029,16 +2029,16 @@ The @subcmd{COORDINATES} keyword says that a table of coordinates of the @subcmd
 The @subcmd{CRITERIA} subcommand has four optional parameters:
 @itemize @bullet
 @item The @subcmd{TESTPOS} parameter may be @subcmd{LARGE} or @subcmd{SMALL}.
-@subcmd{LARGE} is the default, and says that larger values in the predictor variables are to be 
+@subcmd{LARGE} is the default, and says that larger values in the predictor variables are to be
 considered positive.  @subcmd{SMALL} indicates that smaller values should be considered positive.
 
 @item The @subcmd{CI} parameter specifies the confidence interval that should be printed.
 It has no effect if the @subcmd{SE} keyword in the @subcmd{PRINT} subcommand has not been given.
 
 @item The @subcmd{DISTRIBUTION} parameter determines the method to be used when estimating the area
-under the curve.  
+under the curve.
 There are two possibilities, @i{viz}: @subcmd{FREE} and @subcmd{NEGEXPO}.
-The @subcmd{FREE} method uses a non-parametric estimate, and the @subcmd{NEGEXPO} method a bi-negative 
+The @subcmd{FREE} method uses a non-parametric estimate, and the @subcmd{NEGEXPO} method a bi-negative
 exponential distribution estimate.
 The @subcmd{NEGEXPO} method should only be used when the number of positive actual states is
 equal to the number of negative actual states.
@@ -2047,11 +2047,11 @@ The default is @subcmd{FREE}.
 @item The @subcmd{CUTOFF} parameter is for compatibility and is ignored.
 @end itemize
 
-The @subcmd{MISSING} subcommand determines whether user missing values are to 
+The @subcmd{MISSING} subcommand determines whether user missing values are to
 be included or excluded in the analysis.  The default behaviour is to
 exclude them.
-Cases are excluded on a listwise basis; if any of the variables in @var{var_list} 
-or if the variable @var{state_var} is missing, then the entire case will be 
+Cases are excluded on a listwise basis; if any of the variables in @var{var_list}
+or if the variable @var{state_var} is missing, then the entire case will be
 excluded.
 
 @c  LocalWords:  subcmd subcommand

@@ -2,7 +2,7 @@ PSPP is a program for statistical analysis of sampled data.  It is
 a free replacement for the proprietary program SPSS.
 
 PSPP supports T-tests, ANOVA and GLM analyses, factor analysis,
-non-parametric tests, linear and logistic regression, clustering, 
+non-parametric tests, linear and logistic regression, clustering,
 and other statistical features.  PSPP produces statistical reports in
 plain text, PDF, PostScript, CSV, HTML, SVG, and OpenDocument formats.
 It can import data from OpenDocument, Gnumeric, text and SPSS formats.
@@ -15,8 +15,8 @@ prerequisite packages and other PSPP-specific information.  Full
 documentation on PSPP's language is also included.
 
 For information on differences from previous versions, please see file
-NEWS.  
-          
+NEWS.
+
 Source code for the latest release of PSPP is available at
 ftp://ftp.gnu.org/pub/gnu/pspp/.  Test releases are at
 ftp://alpha.gnu.org/gnu/pspp/.  Development sources are available
@@ -55,7 +55,7 @@ following support to users:
           an "enhanced" mode in certain cases where PSPP can output
           better results that may surprise SPSS users.
 
-	* Friendly textual and graphical interfaces.  
+	* Friendly textual and graphical interfaces.
 
 	* Good documentation.  Currently the PSPP manual describes its
           language completely, but we would like to add information on

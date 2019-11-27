@@ -7,13 +7,13 @@ dnl Prerequisites.
 
 dnl Summarize all the missing prerequisites at the end of the run to
 dnl increase user-friendliness.
-AC_DEFUN([PSPP_REQUIRED_PREREQ], 
+AC_DEFUN([PSPP_REQUIRED_PREREQ],
   [AC_MSG_WARN([You must install $1 before building PSPP.])
 pspp_required_prereqs="$pspp_required_prereqs
 	$1"])
 AC_DEFUN([PSPP_OPTIONAL_PREREQ], [pspp_optional_prereqs="$pspp_optional_prereqs
 	$1"])
-AC_DEFUN([PSPP_CHECK_PREREQS], 
+AC_DEFUN([PSPP_CHECK_PREREQS],
 [
   if test "$pspp_optional_prereqs" != ""; then
     AC_MSG_WARN([The following optional prerequisites are not installed.
@@ -24,7 +24,7 @@ fi
 You must install them before PSPP can be built:$pspp_required_prereqs])
 fi
 ])
-    
+
 
 dnl Check that a new enough version of Perl is available.
 AC_DEFUN([PSPP_PERL],
@@ -54,7 +54,7 @@ dnl If so, execute ACTION-IF-ACCEPTED, otherwise ACTION-IF-REJECTED.
 AC_DEFUN([PSPP_CHECK_CC_OPTION],
 [
   m4_define([pspp_cv_name], [pspp_cv_[]m4_translit([$1], [-], [_])])dnl
-  AC_CACHE_CHECK([whether $CC accepts $1], [pspp_cv_name], 
+  AC_CACHE_CHECK([whether $CC accepts $1], [pspp_cv_name],
     [pspp_save_CFLAGS="$CFLAGS"
      CFLAGS="$CFLAGS $1"
      AC_COMPILE_IFELSE([AC_LANG_PROGRAM(,)], [pspp_cv_name[]=yes], [pspp_cv_name[]=no])

@@ -74,7 +74,7 @@ generate_syntax (const PsppireDialogAction *act)
 				  kid->upper_limit_value.f);
 	}
     }
-  
+
   g_string_append (string, ".\n");
 
   text = string->str;

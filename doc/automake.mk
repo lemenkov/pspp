@@ -45,7 +45,7 @@ doc_pspp_TEXINFOS = doc/version.texi \
 	doc/regression.texi \
 	doc/utilities.texi \
 	doc/variables.texi \
-	doc/fdl.texi 
+	doc/fdl.texi
 
 doc_pspp_dev_TEXINFOS = doc/version-dev.texi \
 	doc/dev/intro.texi \

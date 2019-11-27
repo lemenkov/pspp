@@ -2,17 +2,17 @@
 //
 // PSPP - a program for statistical analysis.
 // Copyright (C) 2005, 2006, 2009, 2010, 2011, 2012, 2015, 2016 Free Software Foundation, Inc.
-// 
+//
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
-// 
+//
 // This program is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
@@ -553,7 +553,7 @@ absorb_miss string function RPAD (string s, n, string c)
 
 string function LTRIM (string s)
 {
-  while (s.length > 0 && s.string[0] == ' ') 
+  while (s.length > 0 && s.string[0] == ' ')
     {
       s.length--;
       s.string++;
@@ -565,7 +565,7 @@ string function LTRIM (string s, string c)
 {
   if (c.length == 1)
     {
-      while (s.length > 0 && s.string[0] == c.string[0]) 
+      while (s.length > 0 && s.string[0] == c.string[0])
         {
           s.length--;
           s.string++;
@@ -758,7 +758,7 @@ function CDF.GAMMA (x >= 0, a > 0, b > 0) = gsl_cdf_gamma_P (x, a, 1. / b);
 function IDF.GAMMA (P >= 0 && P <= 1, a > 0, b > 0)
      = gsl_cdf_gamma_Pinv (P, a, 1. / b);
 function PDF.GAMMA (x >= 0, a > 0, b > 0) = gsl_ran_gamma_pdf (x, a, 1. / b);
-no_opt function RV.GAMMA (a > 0, b > 0) 
+no_opt function RV.GAMMA (a > 0, b > 0)
      = gsl_ran_gamma (get_rng (), a, 1. / b);
 
 // Half-normal distribution.
@@ -782,16 +782,16 @@ function CDF.LAPLACE (x, a, b > 0) = gsl_cdf_laplace_P ((x - a) / b, 1);
 function IDF.LAPLACE (P > 0 && P < 1, a, b > 0)
      = a + b * gsl_cdf_laplace_Pinv (P, 1);
 function PDF.LAPLACE (x, a, b > 0) = gsl_ran_laplace_pdf ((x - a) / b, 1) / b;
-no_opt function RV.LAPLACE (a, b > 0) 
+no_opt function RV.LAPLACE (a, b > 0)
      = a + b * gsl_ran_laplace (get_rng (), 1);
 
 // Levy alpha-stable distribution.
-no_opt extension function RV.LEVY (c, alpha > 0 && alpha <= 2) 
+no_opt extension function RV.LEVY (c, alpha > 0 && alpha <= 2)
      = gsl_ran_levy (get_rng (), c, alpha);
 
 // Levy skew alpha-stable distribution.
 no_opt extension function RV.LVSKEW (c, alpha > 0 && alpha <= 2,
-                                     beta >= -1 && beta <= 1) 
+                                     beta >= -1 && beta <= 1)
      = gsl_ran_levy_skew (get_rng (), c, alpha, beta);
 
 // Logistic distribution.
@@ -800,7 +800,7 @@ function IDF.LOGISTIC (P > 0 && P < 1, a, b > 0)
      = a + b * gsl_cdf_logistic_Pinv (P, 1);
 function PDF.LOGISTIC (x, a, b > 0)
      = gsl_ran_logistic_pdf ((x - a) / b, 1) / b;
-no_opt function RV.LOGISTIC (a, b > 0) 
+no_opt function RV.LOGISTIC (a, b > 0)
      = a + b * gsl_ran_logistic (get_rng (), 1);
 
 // Lognormal distribution.
@@ -810,7 +810,7 @@ function IDF.LNORMAL (P >= 0 && P < 1, m > 0, s > 0)
      = gsl_cdf_lognormal_Pinv (P, log (m), s);
 function PDF.LNORMAL (x >= 0, m > 0, s > 0)
      = gsl_ran_lognormal_pdf (x, log (m), s);
-no_opt function RV.LNORMAL (m > 0, s > 0) 
+no_opt function RV.LNORMAL (m > 0, s > 0)
      = gsl_ran_lognormal (get_rng (), log (m), s);
 
 // Normal distribution.
@@ -826,7 +826,7 @@ no_opt function NORMAL (s > 0) = gsl_ran_gaussian (get_rng (), s);
 // Normal tail distribution.
 function PDF.NTAIL (x, a > 0, sigma > 0)
      = gsl_ran_gaussian_tail_pdf (x, a, sigma);
-no_opt function RV.NTAIL (a > 0, sigma > 0) 
+no_opt function RV.NTAIL (a > 0, sigma > 0)
      = gsl_ran_gaussian_tail (get_rng (), a, sigma);
 
 // Pareto distribution.
@@ -842,13 +842,13 @@ extension function IDF.RAYLEIGH (P >= 0 && P <= 1, sigma > 0)
      = gsl_cdf_rayleigh_Pinv (P, sigma);
 extension function PDF.RAYLEIGH (x, sigma > 0)
      = gsl_ran_rayleigh_pdf (x, sigma);
-no_opt extension function RV.RAYLEIGH (sigma > 0) 
+no_opt extension function RV.RAYLEIGH (sigma > 0)
      = gsl_ran_rayleigh (get_rng (), sigma);
 
 // Rayleigh tail distribution.
 extension function PDF.RTAIL (x, a, sigma)
      = gsl_ran_rayleigh_tail_pdf (x, a, sigma);
-no_opt extension function RV.RTAIL (a, sigma) 
+no_opt extension function RV.RTAIL (a, sigma)
      = gsl_ran_rayleigh_tail (get_rng (), a, sigma);
 
 // Studentized maximum modulus distribution.
@@ -897,11 +897,11 @@ function PDF.WEIBULL (x >= 0, a > 0, b > 0) = gsl_ran_weibull_pdf (x, a, b);
 no_opt function RV.WEIBULL (a > 0, b > 0) = gsl_ran_weibull (get_rng (), a, b);
 
 // Bernoulli distribution.
-function CDF.BERNOULLI (k == 0 || k == 1, p >= 0 && p <= 1) 
+function CDF.BERNOULLI (k == 0 || k == 1, p >= 0 && p <= 1)
      = k ? 1 : 1 - p;
 function PDF.BERNOULLI (k == 0 || k == 1, p >= 0 && p <= 1)
      = gsl_ran_bernoulli_pdf (k, p);
-no_opt function RV.BERNOULLI (p >= 0 && p <= 1) 
+no_opt function RV.BERNOULLI (p >= 0 && p <= 1)
      = gsl_ran_bernoulli (get_rng (), p);
 
 // Binomial distribution.
@@ -911,7 +911,7 @@ function PDF.BINOM (k >= 0 && k == floor (k) && k <= n,
                     n > 0 && n == floor (n),
                     p >= 0 && p <= 1)
      = gsl_ran_binomial_pdf (k, p, n);
-no_opt function RV.BINOM (p > 0 && p == floor (p), n >= 0 && n <= 1) 
+no_opt function RV.BINOM (p > 0 && p == floor (p), n >= 0 && n <= 1)
      = gsl_ran_binomial (get_rng (), p, n);
 
 // Geometric distribution.
@@ -941,7 +941,7 @@ no_opt function RV.HYPER (a > 0 && a == floor (a),
 // Logarithmic distribution.
 extension function PDF.LOG (k >= 1, p > 0 && p <= 1)
      = gsl_ran_logarithmic_pdf (k, p);
-no_opt extension function RV.LOG (p > 0 && p <= 1) 
+no_opt extension function RV.LOG (p > 0 && p <= 1)
      = gsl_ran_logarithmic (get_rng (), p);
 
 // Negative binomial distribution.
@@ -949,7 +949,7 @@ function CDF.NEGBIN (k >= 1, n == floor (n), p > 0 && p <= 1)
      = gsl_cdf_negative_binomial_P (k, p, n);
 function PDF.NEGBIN (k >= 1, n == floor (n), p > 0 && p <= 1)
      = gsl_ran_negative_binomial_pdf (k, p, n);
-no_opt function RV.NEGBIN (n == floor (n), p > 0 && p <= 1) 
+no_opt function RV.NEGBIN (n == floor (n), p > 0 && p <= 1)
      = gsl_ran_negative_binomial (get_rng (), p, n);
 
 // Poisson distribution.
@@ -977,11 +977,11 @@ no_opt operator VEC_ELEM_NUM (idx)
      vector v;
      case c;
 {
-  if (idx >= 1 && idx <= vector_get_var_cnt (v)) 
+  if (idx >= 1 && idx <= vector_get_var_cnt (v))
     {
       const struct variable *var = vector_get_var (v, (size_t) idx - 1);
       double value = case_num (c, var);
-      return !var_is_num_missing (var, value, MV_USER) ? value : SYSMIS; 
+      return !var_is_num_missing (var, value, MV_USER) ? value : SYSMIS;
     }
   else
     {

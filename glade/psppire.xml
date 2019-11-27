@@ -20,9 +20,9 @@
 
   <glade-widget-classes>
 
-    <glade-widget-class name="PsppireDialog" 
-			generic-name="psppire-dialog" 
-			toplevel="True" 
+    <glade-widget-class name="PsppireDialog"
+			generic-name="psppire-dialog"
+			toplevel="True"
 			default-width="320"
 			default-height="260"
 			title="Dialog Box">
@@ -111,9 +111,9 @@
 
     </glade-widget-class>
 
-    <glade-widget-class name="PsppireKeypad" 
-                        get-type-function="psppire_keypad_get_type" 
-			generic-name="psppire-keypad" 
+    <glade-widget-class name="PsppireKeypad"
+                        get-type-function="psppire_keypad_get_type"
+			generic-name="psppire-keypad"
 			fixed="True"
 			title="Keypad">
 
@@ -130,7 +130,7 @@
 
 	<property id="visible" ignore="True" default="True" />
      </properties>
-  
+
     </glade-widget-class>
 
 
@@ -152,13 +152,13 @@
         <property id="border-width" default="5" optional-default="True"/>
 	<property id="orientation">
 	  <displayable-values>
-	    <value id="PSPPIRE_SOURCE_BEFORE_DEST" 
+	    <value id="PSPPIRE_SOURCE_BEFORE_DEST"
 	       name="Source Before Destination"></value>
-	    <value id="PSPPIRE_AFTER_BEFORE_DEST"  
+	    <value id="PSPPIRE_AFTER_BEFORE_DEST"
 	       name="Source After Destination"></value>
-	    <value id="PSPPIRE_ABOVE_BEFORE_DEST"  
+	    <value id="PSPPIRE_ABOVE_BEFORE_DEST"
 	       name="Source Above Destination"></value>
-	    <value id="PSPPIRE_BELOW_BEFORE_DEST"  
+	    <value id="PSPPIRE_BELOW_BEFORE_DEST"
 	       name="Source Below Destination"></value>
 	  </displayable-values>
 	</property>

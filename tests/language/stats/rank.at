@@ -1,16 +1,16 @@
 dnl PSPP - a program for statistical analysis.
 dnl Copyright (C) 2017 Free Software Foundation, Inc.
-dnl 
+dnl
 dnl This program is free software: you can redistribute it and/or modify
 dnl it under the terms of the GNU General Public License as published by
 dnl the Free Software Foundation, either version 3 of the License, or
 dnl (at your option) any later version.
-dnl 
+dnl
 dnl This program is distributed in the hope that it will be useful,
 dnl but WITHOUT ANY WARRANTY; without even the implied warranty of
 dnl MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 dnl GNU General Public License for more details.
-dnl 
+dnl
 dnl You should have received a copy of the GNU General Public License
 dnl along with this program.  If not, see <http://www.gnu.org/licenses/>.
 dnl
@@ -21,12 +21,12 @@ AT_DATA([rank.sps], [dnl
 DATA LIST LIST NOTABLE /x (f8).
 BEGIN DATA.
 -1
-0 
-1 
-2 
-2 
-4 
-5 
+0
+1
+2
+2
+4
+5
 END DATA.
 
 RANK x.
@@ -98,7 +98,7 @@ BEGIN DATA.
 END DATA.
 
 RANK a b (D)
-   /PRINT=YES 
+   /PRINT=YES
    /RANK
    /TIES=HIGH
    /RFRACTION
@@ -158,7 +158,7 @@ BEGIN DATA.
 5 29
 6 1
 7 43
-8 8 
+8 8
 9 45
 END DATA.
 
@@ -283,7 +283,7 @@ a,g1,g2,Ra,Na,RAN001,NOR001
 AT_CLEANUP
 
 # Also tests small ranks for special case of SAVAGE ranks.
-AT_SETUP([RANK with fractional ranks]) 
+AT_SETUP([RANK with fractional ranks])
 AT_DATA([rank.sps], [dnl
 DATA LIST LIST NOTABLE  /a *  w * .
 BEGIN DATA.
@@ -299,7 +299,7 @@ END DATA.
 
 WEIGHT BY w.
 
-RANK a 
+RANK a
   /FRACTION=TUKEY
   /PROPORTION
   /SAVAGE
@@ -575,23 +575,23 @@ BEGIN DATA.
 END DATA.
 
 * invalid NTILES (no parameter)
-RANK x 
+RANK x
   /NTILES
 .
 
 * invalid NTILES (not an integer)
-RANK x 
+RANK x
   /NTILES(d)
 .
 
 
 * destination variable already exists
-RANK x 
+RANK x
  /RANK INTO x.
 
 
 * Too many variables in INTO
-RANK x 
+RANK x
  /RANK INTO foo  bar wiz.
 ])
 AT_CHECK([pspp -O format=csv rank.sps], [1], [dnl

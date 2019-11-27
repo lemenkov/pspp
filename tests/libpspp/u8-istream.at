@@ -1,16 +1,16 @@
 dnl PSPP - a program for statistical analysis.
 dnl Copyright (C) 2017 Free Software Foundation, Inc.
-dnl 
+dnl
 dnl This program is free software: you can redistribute it and/or modify
 dnl it under the terms of the GNU General Public License as published by
 dnl the Free Software Foundation, either version 3 of the License, or
 dnl (at your option) any later version.
-dnl 
+dnl
 dnl This program is distributed in the hope that it will be useful,
 dnl but WITHOUT ANY WARRANTY; without even the implied warranty of
 dnl MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 dnl GNU General Public License for more details.
-dnl 
+dnl
 dnl You should have received a copy of the GNU General Public License
 dnl along with this program.  If not, see <http://www.gnu.org/licenses/>.
 dnl
@@ -147,7 +147,7 @@ dnl UTF-16BE is not ASCII compatible so this doesn't start out in Auto mode.
 AT_SETUP([read UTF-16BE as Auto,UTF-16BE])
 AT_KEYWORDS([u8_istream])
 AT_CHECK([i18n-test supports_encodings UTF-16BE])
-AT_CHECK([printf '\0e\0n\0t\0r\0\351\0e\0\n' | u8-istream-test read - Auto,UTF-16BE], 
+AT_CHECK([printf '\0e\0n\0t\0r\0\351\0e\0\n' | u8-istream-test read - Auto,UTF-16BE],
   [0], [dnl
 entrée
 ])
@@ -192,7 +192,7 @@ AT_CLEANUP
 AT_SETUP([read EUC-JP as Auto,EUC-JP])
 AT_KEYWORDS([u8_istream])
 AT_CHECK([i18n-test supports_encodings EUC-JP])
-AT_CHECK([printf 'entr\217\253\261e\n' | u8-istream-test read - Auto,EUC-JP], 
+AT_CHECK([printf 'entr\217\253\261e\n' | u8-istream-test read - Auto,EUC-JP],
   [0], [entrée
 ])
 AT_CLEANUP

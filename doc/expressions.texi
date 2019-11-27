@@ -8,7 +8,7 @@
 @c Free Documentation License".
 @c
 @c Use @func when referring to a function.
-@c Use @deftypefn for their definitions 
+@c Use @deftypefn for their definitions
 @macro func{NAME}
 @code{\NAME\}
 @end macro
@@ -132,7 +132,7 @@ system-missing.  The result of @code{0**0} is system-missing as well.
 @cindex @samp{-}
 @cindex negation
 @item - @var{a}
-Reverses the sign of @var{a}.  
+Reverses the sign of @var{a}.
 @end table
 
 @node Logical Operators
@@ -272,7 +272,7 @@ The sections below describe each function in detail.
 * Missing Value Functions::     MISSING NMISS NVALID SYSMIS VALUE
 * Set Membership::              ANY RANGE
 * Statistical Functions::       CFVAR MAX MEAN MEDIAN MIN SD SUM VARIANCE
-* String Functions::            CONCAT INDEX LENGTH LOWER LPAD LTRIM NUMBER 
+* String Functions::            CONCAT INDEX LENGTH LOWER LPAD LTRIM NUMBER
                                 REPLACE RINDEX RPAD RTRIM STRING STRUNC SUBSTR
                                 UPCASE
 * Time and Date::               CTIME.xxx DATE.xxx TIME.xxx XDATE.xxx
@@ -771,7 +771,7 @@ Most time and date functions will not accept earlier dates.
 Times and dates are handled by @pspp{} as single numbers.  A
 @dfn{time} is an interval.  @pspp{} measures times in seconds.
 Thus, the following intervals correspond with the numeric values given:
-                
+
 @example
           10 minutes                        600
           1 hour                          3,600
@@ -814,7 +814,7 @@ Returns a time corresponding to @var{ndays} days.
 Returns a time corresponding to @var{nhours} hours, @var{nmins}
 minutes, and @var{nsecs} seconds.  The arguments may not have mixed
 signs: if any of them are positive, then none may be negative, and
-vice versa.  
+vice versa.
 @end deftypefn
 
 @node Time Extraction
@@ -968,7 +968,7 @@ that is, gives the date that @var{date-or-time} is in.
 For a time, results in the number of whole hours beyond the number of
 whole days represented by @var{date-or-time}.  For a date, results in
 the hour (as an integer between 0 and 23) corresponding to
-@var{date-or-time}.  
+@var{date-or-time}.
 @end deftypefn
 
 @cindex day of the year
@@ -990,7 +990,7 @@ corresponding to @var{date}.
 @cindex time, in minutes
 @deftypefn {Function} {} XDATE.MINUTE (@var{time-or-date})
 Results in the number of minutes (as an integer between 0 and 59) after
-the last hour in @var{time-or-date}. 
+the last hour in @var{time-or-date}.
 @end deftypefn
 
 @cindex months
@@ -1224,8 +1224,8 @@ include an NCDF function.
 The individual distributions are described individually below.
 
 @menu
-* Continuous Distributions::    
-* Discrete Distributions::      
+* Continuous Distributions::
+* Discrete Distributions::
 @end menu
 
 @node Continuous Distributions

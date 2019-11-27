@@ -24,10 +24,10 @@ Let @math{X_{11}, X_{12}}, @dots{}, @math{X_{1n}} denote the @math{n} observatio
 of the first explanatory variable;
 @math{X_{21}},@dots{},@math{X_{2n}} denote the @math{n} observations of the second
 explanatory variable;
-@math{X_{k1}},@dots{},@math{X_{kn}} denote the @math{n} observations of 
+@math{X_{k1}},@dots{},@math{X_{kn}} denote the @math{n} observations of
 the @math{k}th explanatory variable.
 
-@item The dependent variable @math{Y} has the following relationship to the 
+@item The dependent variable @math{Y} has the following relationship to the
 explanatory variables:
 @math{Y_i = b_0 + b_1 X_{1i} + ... + b_k X_{ki} + Z_i}
 where @math{b_0, b_1, @dots{}, b_k} are unknown
@@ -39,7 +39,7 @@ This relationship is called the @dfn{linear model}.
 
 The @cmd{REGRESSION} procedure estimates the coefficients
 @math{b_0,@dots{},b_k} and produces output relevant to inferences for the
-linear model. 
+linear model.
 
 @menu
 * Syntax::                      Syntax definition.
@@ -108,7 +108,7 @@ is zero.  The default is @subcmd{NOORIGIN}.
 The @subcmd{SAVE} subcommand causes @pspp{} to save the residuals or predicted
 values from the fitted
 model to the active dataset. @pspp{} will store the residuals in a variable
-called @samp{RES1} if no such variable exists, @samp{RES2} if @samp{RES1} 
+called @samp{RES1} if no such variable exists, @samp{RES2} if @samp{RES1}
 already exists,
 @samp{RES3} if @samp{RES1} and @samp{RES2} already exist, etc. It will
 choose the name of
@@ -138,6 +138,6 @@ a  8.838262 -29.25689
 b  6.200189 -18.58219
 end data.
 list.
-regression /variables=v0 v1 v2 /statistics defaults /dependent=v2 
+regression /variables=v0 v1 v2 /statistics defaults /dependent=v2
            /save pred resid /method=enter.
 @end example

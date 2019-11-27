@@ -149,7 +149,7 @@ psppire_dialog_action_regression_activate (PsppireDialogAction *a, GVariant *par
   PsppireDialogAction *pda = PSPPIRE_DIALOG_ACTION (a);
 
   GtkBuilder *xml = builder_new ( "regression.ui");
-  
+
   GtkWidget *stat_button = get_widget_assert (xml, "stat-button");
   GtkWidget *save_button = get_widget_assert (xml, "save-button");
 

@@ -42,13 +42,13 @@ examine
   /plot=boxplot.
 
 * Do a Scatterplot to check if weight and height
-* might be correlated. As both the weight and the 
+* might be correlated. As both the weight and the
 * height for males is higher than for females
 * the combination of male and female data is correlated.
 * Weigth increases with height.
 graph
   /scatterplot = height with weight.
-  
+
 * Within the male and female groups there is no correlation between
 * weight and height. This becomes visible by marking male and female
 * datapoints with different colour.
@@ -58,16 +58,16 @@ graph
 * The T-Test checks if male and female humans have
 * different weight, height, beauty and iq. See that Significance for the
 * weight and height variable tends to 0, while the Significance
-* for iq should not go to 0. 
+* for iq should not go to 0.
 * Significance in T-Test means the probablity for the assumption that the
 * height (weight, beauty,iq) of the two groups (male,female) have the same
 * mean value. As the data for the iq values is generated as normal distribution
 * with the same mean value, the significance should not go down to 0.
 t-test groups=gender(0,1)
-  /variables=weight height beauty iq.  
+  /variables=weight height beauty iq.
 
 * Run the Code several times to see the effect that different data
-* is generated. Every run is like a new sample from the population.  
+* is generated. Every run is like a new sample from the population.
 
 * Change the number of samples (cases) by changing the
 * loop range to see the effect on significance!

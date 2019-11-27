@@ -149,11 +149,11 @@ termination options are offered.
 Specify index_var to make that variable count from one value to
 another by a particular increment.  @var{index_var} must be a pre-existing
 numeric variable.  @var{start}, @var{end}, and @var{incr} are numeric expressions
-(@pxref{Expressions}.)  
+(@pxref{Expressions}.)
 
 During the first iteration, @var{index_var} is set to the value of @var{start}.
 During each successive iteration, @var{index_var} is increased by the value of
-@var{incr}.  If @var{end} > @var{start}, then the loop terminates 
+@var{incr}.  If @var{end} > @var{start}, then the loop terminates
 when @var{index_var} > @var{end};
 otherwise it terminates when @var{index_var} < @var{end}.  If @var{incr} is not specified
 then it defaults to +1 or -1 as appropriate.

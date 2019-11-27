@@ -1,16 +1,16 @@
 dnl PSPP - a program for statistical analysis.
 dnl Copyright (C) 2017 Free Software Foundation, Inc.
-dnl 
+dnl
 dnl This program is free software: you can redistribute it and/or modify
 dnl it under the terms of the GNU General Public License as published by
 dnl the Free Software Foundation, either version 3 of the License, or
 dnl (at your option) any later version.
-dnl 
+dnl
 dnl This program is distributed in the hope that it will be useful,
 dnl but WITHOUT ANY WARRANTY; without even the implied warranty of
 dnl MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 dnl GNU General Public License for more details.
-dnl 
+dnl
 dnl You should have received a copy of the GNU General Public License
 dnl along with this program.  If not, see <http://www.gnu.org/licenses/>.
 dnl
@@ -32,7 +32,7 @@ m4_define([CHECK_I18N_RECODE],
    AT_CHECK_UNQUOTED([i18n-test recode '$2' '$3' `printf '$4'`], [0], [`printf '$5'`
 ])
    AT_CLEANUP])
-     
+
 CHECK_I18N_RECODE([reflexively], [ASCII], [ASCII], [abc], [abc])
 CHECK_I18N_RECODE([without any change], [ASCII], [UTF-8], [abc], [abc])
 
@@ -54,8 +54,8 @@ CHECK_I18N_RECODE([dropped final character in windows-1258], [windows-1258],
                   [UTF-8], [aeiou], [aeiou])
 
 dnl The input to this test is 7 bytes long and the expected output is 9 bytes.
-dnl So it should exercise the E2BIG case 
-CHECK_I18N_RECODE([from ISO-8859-1 to UTF-8 with overflow], 
+dnl So it should exercise the E2BIG case
+CHECK_I18N_RECODE([from ISO-8859-1 to UTF-8 with overflow],
                   [ISO-8859-1], [UTF-8],
                   [Tsch\374\337!], [Tsch\303\274\303\237!])
 
@@ -114,7 +114,7 @@ CHECK_I18N_CONCAT([\303\251\303\250\303\244], [xyz], [ISO-8859-1], [0], [xyz])
 CHECK_I18N_CONCAT([\303\251\303\250\303\244], [xyz], [ISO-8859-1], [1], [xyz])
 CHECK_I18N_CONCAT([\303\251\303\250\303\244], [xyz], [ISO-8859-1], [2], [xyz])
 CHECK_I18N_CONCAT([\303\251\303\250\303\244], [xyz], [ISO-8859-1], [3], [xyz])
-CHECK_I18N_CONCAT([\303\251\303\250\303\244], [xyz], [ISO-8859-1], [4], 
+CHECK_I18N_CONCAT([\303\251\303\250\303\244], [xyz], [ISO-8859-1], [4],
                   [\303\251xyz])
 CHECK_I18N_CONCAT([\303\251\303\250\303\244], [xyz], [ISO-8859-1], [5],
                   [\303\251\303\250xyz])
