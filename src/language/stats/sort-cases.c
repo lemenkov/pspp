@@ -16,7 +16,6 @@
 
 #include <config.h>
 
-#include <assert.h>
 #include <limits.h>
 #include <stdlib.h>
 #include <sys/types.h>

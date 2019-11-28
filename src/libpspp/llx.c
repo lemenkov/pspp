@@ -30,7 +30,6 @@
 
 #include "libpspp/llx.h"
 #include "libpspp/compiler.h"
-#include <assert.h>
 #include <stdlib.h>
 
 /* Destroys LIST and frees all of its nodes using MANAGER.

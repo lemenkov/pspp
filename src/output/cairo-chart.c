@@ -19,7 +19,6 @@
 #include "output/cairo-chart.h"
 #include "math/chart-geometry.h"
 
-#include <assert.h>
 #include <cairo/cairo.h>
 #include <pango/pango.h>
 #include <pango/pangocairo.h>

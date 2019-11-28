@@ -20,7 +20,6 @@
 #include <stdio.h>
 #include <math.h>
 #include <gsl/gsl_randist.h>
-#include <assert.h>
 
 #include "libpspp/cast.h"
 #include "math/histogram.h"

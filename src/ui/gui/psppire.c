@@ -17,7 +17,6 @@
 #include <config.h>
 
 
-#include <assert.h>
 #include <gsl/gsl_errno.h>
 #include <gtk/gtk.h>
 #include <libintl.h>

@@ -41,7 +41,6 @@ static char *command_generator (const char *text, int state);
 #include <sys/time.h>
 #include <sys/types.h>
 
-#include <assert.h>
 #include <errno.h>
 #include <stdint.h>
 #include <stdlib.h>

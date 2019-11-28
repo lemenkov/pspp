@@ -59,7 +59,6 @@ hash_pointer (const void *p UNUSED, unsigned int basis UNUSED)
 
 #else
 
-#include <assert.h>
 #include <ctype.h>
 #include <math.h>
 #include <stdint.h>

@@ -18,7 +18,6 @@
 
 #include "output/text-item.h"
 
-#include <assert.h>
 #include <stdarg.h>
 #include <stdlib.h>
 

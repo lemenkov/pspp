@@ -30,7 +30,6 @@
 
 #include "libpspp/ll.h"
 
-#include <assert.h>
 
 /* Returns the number of nodes in LIST (not counting the null
    node).  Executes in O(n) time in the length of the list. */

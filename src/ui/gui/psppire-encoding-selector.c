@@ -18,7 +18,6 @@
 
 #include "ui/gui/psppire-encoding-selector.h"
 
-#include <assert.h>
 #include <stdlib.h>
 
 #include "libpspp/cast.h"
