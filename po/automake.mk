@@ -63,8 +63,8 @@ $(POTFILE): $(TRANSLATABLE_FILES) $(UI_FILES) src/ui/gui/gen-dot-desktop.sh
 $(LOCALPOFILED) $(POFILES): $(POTFILE)
 	$(AM_V_GEN)$(MSGMERGE) --previous --quiet $(top_srcdir)/$@ $? -o $@,tmp
 	$(AM_V_at)if test -e $(top_srcdir)/$@,aux ; then \
-	         touch $@,tmp ; \
-		 msgcat --use-first $(top_srcdir)/$@,aux $@,tmp -o $@,tmp; \
+		touch $@,tmp ; \
+		msgcat --use-first $(top_srcdir)/$@,aux $@,tmp -o $@,tmp; \
 	fi ;
 	$(AM_V_at)$(SED) -e '/^"POT-Creation-Date: /d' $@,tmp > $@,tmp2
 	$(RM) $@,tmp
