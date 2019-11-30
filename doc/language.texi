@@ -1442,7 +1442,7 @@ Operators and punctuators.
 @cindex @code{.}
 @item @code{.}
 The end of the command.  This is not necessarily an actual dot in the
-syntax file: @xref{Commands}, for more details.
+syntax file (@pxref{Commands}).
 @end table
 
 @item

@@ -986,7 +986,7 @@ MATRIX DATA
 The @cmd{MATRIX DATA} command is used to input data in the form of matrices
 which can subsequently be used by other commands.  If the
 @subcmd{FILE} is omitted or takes the value @samp{INLINE} then the command
-should immediately followed by @cmd{BEGIN DATA}, @xref{BEGIN DATA}.
+should immediately followed by @cmd{BEGIN DATA} (@pxref{BEGIN DATA}).
 
 There is one mandatory subcommand, @i{viz:} @subcmd{VARIABLES}, which defines
 the @var{columns} of the matrix.
