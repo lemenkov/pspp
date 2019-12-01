@@ -29,7 +29,9 @@ Java ``JAR'' files (and ODF files), but whereas a JAR manifest
 contains a sequence of colon-delimited key/value pairs, an SPV
 manifest contains the string @samp{allowPivoting=true}, without a
 new-line.  PSPP uses this string to identify an SPV file; it is
-invariant across the corpus.
+invariant across the corpus.@footnote{SPV files always begin with the
+7-byte sequence 50 4b 03 04 14 00 08, but this is not a useful magic
+number because most Zip archives start the same way.}
 
 The rest of the members in an SPV file's Zip archive fall into two
 categories: @dfn{structure} and @dfn{detail} members.  Structure
@@ -343,8 +345,8 @@ December 5, 2014 5:00:19 o'clock PM EST}.
 
 @defvr {Attribute} @code{lockReader}
 Whether a reader should be allowed to edit the output.  The possible
-values are @code{true} and @code{false}, but the corpus only contains
-@code{false}.
+values are @code{true} and @code{false}.  The value @code{false} is by
+far the most common.
 @end defvr
 
 @defvr {Attribute} @code{schemaLocation}
