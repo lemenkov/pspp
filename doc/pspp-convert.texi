@@ -55,11 +55,11 @@ this format.)
 @end table
 
 @command{pspp-convert} can convert most input formats to most output
-formats.  Encrypted system file and syntax files are exceptions: if
-the input file is in an encrypted format, then the output file must be
-the same format (decrypted).  To decrypt such a file, specify the
-encrypted file as @var{input}.  The output will be the equivalent
-plaintext file.
+formats.  Encrypted SPSS file formats are exceptions: if the input
+file is in an encrypted format, then the output file will be the same
+format (decrypted).  To decrypt such a file, specify the encrypted
+file as @var{input}.  The output will be the equivalent plaintext
+file.  Options for the output format are ignored in this case.
 
 The password for encrypted files can be specified a few different
 ways.  If the password is known, use the @option{-p} option

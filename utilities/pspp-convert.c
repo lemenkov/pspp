@@ -184,24 +184,11 @@ main (int argc, char *argv[])
   output_fh = fh_create_file (NULL, output_filename, NULL, fh_default_properties ());
   if (encrypted_file_open (&enc, input_fh) > 0)
     {
-      if (encrypted_file_is_sav (enc))
-        {
-          if (strcmp (output_format, "sav") && strcmp (output_format, "sys"))
-            error (1, 0, _("can only convert encrypted data file to sav or "
-                           "sys format"));
-        }
-      else
-        {
-          if (strcmp (output_format, "sps"))
-            error (1, 0, _("can only convert encrypted syntax file to sps "
-                           "format"));
-        }
-
-      if (!decrypt_file (enc, input_fh, output_fh, password,
+      if (decrypt_file (enc, input_fh, output_fh, password,
                          ds_cstr (&alphabet), length, password_list))
+        goto exit;
+      else
 	goto error;
-
-      goto exit;
     }
 
 

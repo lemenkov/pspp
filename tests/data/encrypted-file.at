@@ -65,3 +65,8 @@ DESCRIPTIVES /quantity
 ])
 AT_CLEANUP
 
+AT_SETUP([decrypt an encrypted viewer file])
+AT_KEYWORDS([syntax file decrypt pspp-convert spv])
+AT_CHECK([pspp-convert $srcdir/data/test-encrypted.spv test.spv -p Password1])
+AT_CHECK([cmp $srcdir/data/test-decrypted.spv test.spv])
+AT_CLEANUP

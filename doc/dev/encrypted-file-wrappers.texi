@@ -16,10 +16,10 @@ encrypted wrapper.  The wrapper has a common format, regardless of the
 kind of the file that it contains.
 
 @quotation Warning
-The SPSS encryption wrapper is poorly designed.  It is much cheaper
-and faster to decrypt a file encrypted this way than if a well
-designed alternative were used.  If you must use this format, use a
-10-byte randomly generated password.
+The SPSS encryption wrapper is poorly designed.  When the password is
+unknown, it is much cheaper and faster to decrypt a file encrypted
+this way than if a well designed alternative were used.  If you must
+use this format, use a 10-byte randomly generated password.
 @end quotation
 
 @menu
@@ -30,13 +30,12 @@ designed alternative were used.  If you must use this format, use a
 @node Common Wrapper Format
 @section Common Wrapper Format
 
-This section describes the general format of an SPSS encrypted file
-wrapper.  The following sections describe the details for each kind of
-encapsulated file.
-
 An encrypted file wrapper begins with the following 36-byte header,
-where @i{xxx} identifies the type of file encapsulated, as described
-in the following sections:
+where @i{xxx} identifies the type of file encapsulated: @code{SAV} for
+a system file, @code{SPS} for a syntax file, @code{SPV} for a viewer
+file.  PSPP code for identifying these files just checks for the
+@code{ENCRYPTED} keyword at offset 8, but the other bytes are also
+fixed in practice:
 
 @example
 0000  1c 00 00 00 00 00 00 00  45 4e 43 52 59 50 54 45  |........ENCRYPTE|
@@ -46,10 +45,17 @@ in the following sections:
 
 Following the fixed header is essentially the regular contents of the
 encapsulated file in its usual format, with each 16-byte block
-encrypted with AES-256 in ECB mode.  Each type of encapsulated file is
-processed in a slightly different way before encryption, as described
-in the following sections.  The AES-256 key is derived from a password
-in the following way:
+encrypted with AES-256 in ECB mode.
+
+To make the plaintext an even multiple of 16 bytes in length, the
+encryption process appends PKCS #7 padding, as specified in RFC 5652
+section 6.3.  Padding appends 1 to 16 bytes to the plaintext, in which
+each byte of padding is the number of padding bytes added.  If the
+plaintext is, for example, 2 bytes short of a multiple of 16, the
+padding is 2 bytes with value 02; if the plaintext is a multiple of 16
+bytes in length, the padding is 16 bytes with value 0x10.
+
+The AES-256 key is derived from a password in the following way:
 
 @enumerate
 @item
@@ -102,35 +108,39 @@ The AES-256 key is:
 @end example
 
 @menu
-* Encrypted System Files::
-* Encrypted Syntax Files::
+* Checking Passwords::
 @end menu
 
-@node Encrypted System Files
-@subsection Encrypted System Files
+@node Checking Passwords
+@subsection Checking Passwords
 
-An encrypted system file uses @code{SAV} as the identifier in its
-header.
+A program reading an encrypted file may wish to verify that the
+password it was given is the correct one.  One way is to verify that
+the PKCS #7 padding at the end of the file is well formed.  However,
+any plaintext that ends in byte 01 is well formed PKCS #7, meaning
+that about 1 in 256 keys will falsely pass this test.  This might be
+acceptable for interactive use, but the false positive rate is too
+high for a brute-force search of the password space.
 
-Before encryption, a system file is appended with as many null bytes
-as needed (possibly zero) to make it a multiple of 16 bytes in length,
-so that it fits exactly in a series of AES blocks.  (This implies that
-encrypted system files must always be compressed, because otherwise a
-system file with only a single variable might appear to have an extra
-case.)
+A better test requires some knowledge of the file format being
+wrapped, to obtain a ``magic number'' for the beginning of the file.
 
-@node Encrypted Syntax Files
-@subsection Encrypted Syntax Files
+@itemize @bullet
+@item
+The plaintext of system files begins with @code{$FL2@@(#)} or
+@code{$FL3@@(#)}.
 
-An encrypted syntax file uses @code{SPS} as the identifier in its
-header.
-
+@item
 Before encryption, a syntax file is prefixed with a line at the
 beginning of the form @code{* Encoding: @var{encoding}.}, where
 @var{encoding} is the encoding used for the rest of the file,
-e.g. @code{windows-1252}.  The syntax file is then appended with as
-many bytes with value 04 as needed (possibly zero) to make it a
-multiple of 16 bytes in length.
+e.g.@: @code{windows-1252}.  Thus, @code{* Encoding} may be used as a
+magic number for system files.
+
+@item
+The plaintext of viewer files begins with 50 4b 03 04 14 00 08 (50 4b
+is @code{PK}).
+@end itemize
 
 @node Password Encoding
 @section Password Encoding

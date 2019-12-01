@@ -31,6 +31,4 @@ bool encrypted_file_unlock__ (struct encrypted_file *, const char *password);
 size_t encrypted_file_read (struct encrypted_file *, void *, size_t);
 int encrypted_file_close (struct encrypted_file *);
 
-bool encrypted_file_is_sav (const struct encrypted_file *);
-
 #endif /* encrypted-file.h */

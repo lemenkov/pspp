@@ -27,6 +27,7 @@
 #include "libpspp/cast.h"
 #include "libpspp/cmac-aes256.h"
 #include "libpspp/message.h"
+#include "libpspp/str.h"
 
 #include "gl/minmax.h"
 #include "gl/rijndael-alg-fst.h"
@@ -37,20 +38,20 @@
 
 struct encrypted_file
   {
+    const struct file_handle *fh;
     FILE *file;
-    enum { SYSTEM, SYNTAX } type;
     int error;
 
-    uint8_t ciphertext[16];
-    uint8_t plaintext[16];
-    unsigned int ofs, n;
+    uint8_t ciphertext[256];
+    uint8_t plaintext[256];
+    unsigned int ofs, n, readable;
 
     uint32_t rk[4 * (RIJNDAEL_MAXNR + 1)];
     int Nr;
   };
 
 static bool decode_password (const char *input, char output[11]);
-static bool fill_buffer (struct encrypted_file *);
+static void fill_buffer (struct encrypted_file *);
 
 /* If FILENAME names an encrypted SPSS file, returns 1 and initializes *FP
    for further use by the caller.
@@ -63,12 +64,14 @@ int
 encrypted_file_open (struct encrypted_file **fp, const struct file_handle *fh)
 {
   struct encrypted_file *f;
-  char header[36 + 16];
+  enum { HEADER_SIZE = 36 };
+  char data[HEADER_SIZE + sizeof f->ciphertext];
   int retval;
   int n;
 
   f = xmalloc (sizeof *f);
   f->error = 0;
+  f->fh = fh;
   f->file = fn_open (fh, "rb");
   if (f->file == NULL)
     {
@@ -78,8 +81,8 @@ encrypted_file_open (struct encrypted_file **fp, const struct file_handle *fh)
       goto error;
     }
 
-  n = fread (header, 1, sizeof header, f->file);
-  if (n != sizeof header)
+  n = fread (data, 1, sizeof data, f->file);
+  if (n < HEADER_SIZE + 2 * 16)
     {
       int error = feof (f->file) ? 0 : errno;
       if (error)
@@ -89,19 +92,16 @@ encrypted_file_open (struct encrypted_file **fp, const struct file_handle *fh)
       goto error;
     }
 
-  if (!memcmp (header + 8, "ENCRYPTEDSAV", 12))
-    f->type = SYSTEM;
-  else if (!memcmp (header + 8, "ENCRYPTEDSPS", 12))
-    f->type = SYNTAX;
-  else
+  if (memcmp (data + 8, "ENCRYPTED", 9))
     {
       retval = 0;
       goto error;
     }
 
-  memcpy (f->ciphertext, header + 36, 16);
-  f->n = 16;
+  f->n = n - HEADER_SIZE;
+  memcpy (f->ciphertext, data + HEADER_SIZE, f->n);
   f->ofs = 0;
+  f->readable = 0;
   *fp = f;
   return 1;
 
@@ -138,12 +138,9 @@ encrypted_file_read (struct encrypted_file *f, void *buf_, size_t n)
   uint8_t *buf = buf_;
   size_t ofs = 0;
 
-  if (f->error)
-    return 0;
-
   while (ofs < n)
     {
-      unsigned int chunk = MIN (n - ofs, f->n - f->ofs);
+      unsigned int chunk = MIN (n - ofs, f->readable - f->ofs);
       if (chunk > 0)
         {
           memcpy (buf + ofs, &f->plaintext[f->ofs], chunk);
@@ -152,8 +149,9 @@ encrypted_file_read (struct encrypted_file *f, void *buf_, size_t n)
         }
       else
         {
-          if (!fill_buffer (f))
-            return ofs;
+          fill_buffer (f);
+          if (!f->readable)
+            break;
         }
     }
 
@@ -165,20 +163,12 @@ encrypted_file_read (struct encrypted_file *f, void *buf_, size_t n)
 int
 encrypted_file_close (struct encrypted_file *f)
 {
-  int error = f->error;
+  int error = f->error > 0 ? f->error : 0;
   if (fclose (f->file) == EOF && !error)
     error = errno;
   free (f);
 
   return error;
-}
-
-/* Returns true if F is an encrypted system file,
-   false if it is an encrypted syntax file. */
-bool
-encrypted_file_is_sav (const struct encrypted_file *f)
-{
-  return f->type == SYSTEM;
 }
 
 #define b(x) (1 << (x))
@@ -286,6 +276,26 @@ decode_password (const char *input, char output[11])
   return true;
 }
 
+/* Check for magic number at beginning of plaintext decrypted from F. */
+static bool
+is_good_magic (const struct encrypted_file *f)
+{
+  char plaintext[16];
+  rijndaelDecrypt (f->rk, f->Nr, CHAR_CAST (const char *, f->ciphertext),
+                   plaintext);
+
+  const struct substring magic[] = {
+    ss_cstr ("$FL2@(#)"),
+    ss_cstr ("$FL3@(#)"),
+    ss_cstr ("* Encoding"),
+    ss_buffer ("PK\3\4\x14\0\x8", 7)
+  };
+  for (size_t i = 0; i < sizeof magic / sizeof *magic; i++)
+    if (ss_equals (ss_buffer (plaintext, magic[i].length), magic[i]))
+      return true;
+  return false;
+}
+
 /* Attempts to use plaintext password PASSWORD to unlock F.  Returns true if
    successful, otherwise false. */
 bool
@@ -341,40 +351,107 @@ encrypted_file_unlock__ (struct encrypted_file *f, const char *password)
   assert (sizeof key == 32);
   f->Nr = rijndaelKeySetupDec (f->rk, CHAR_CAST (const char *, key), 256);
 
-  /* Check for magic number at beginning of plaintext. */
-  rijndaelDecrypt (f->rk, f->Nr,
-                   CHAR_CAST (const char *, f->ciphertext),
-                   CHAR_CAST (char *, f->plaintext));
+  if (!is_good_magic (f))
+    return false;
 
-  const char *magic = f->type == SYSTEM ? "$FL?@(#)" : "* Encoding";
-  for (int i = 0; magic[i]; i++)
-    if (magic[i] != '?' && f->plaintext[i] != magic[i])
-      return false;
+  fill_buffer (f);
   return true;
 }
 
-static bool
+/* Checks the 16 bytes of PLAINTEXT for PKCS#7 padding bytes.  Returns the
+   number of padding bytes (between 1 and 16, inclusive), if well formed,
+   otherwise 0. */
+static int
+check_padding (const uint8_t *plaintext)
+{
+  uint8_t pad = plaintext[15];
+  if (pad < 1 || pad > 16)
+    return 0;
+
+  for (size_t i = 1; i < pad; i++)
+    if (plaintext[15 - i] != pad)
+      return 0;
+
+  return pad;
+}
+
+static void
 fill_buffer (struct encrypted_file *f)
 {
-  f->n = fread (f->ciphertext, 1, sizeof f->ciphertext, f->file);
+  /* Move bytes between f->ciphertext[f->readable] and f->ciphertext[f->n] to
+     the beginning of f->ciphertext.
+
+     The first time this is called for a given file, it does nothing because
+     f->readable is initially 0.  After that, in steady state f->readable is 16
+     less than f->n, so the final 16 bytes of ciphertext become the first 16
+     bytes.  This is necessary because we don't know until we hit end-of-file
+     whether padding in the last 16 bytes will require us to discard up to 16
+     bytes of data. */
+  memmove (f->ciphertext, f->ciphertext + f->readable, f->n - f->readable);
+  f->n -= f->readable;
+  f->readable = 0;
   f->ofs = 0;
-  if (f->n == sizeof f->ciphertext)
+
+  if (f->error)                 /* or assert(!f->error)? */
+    return;
+
+  /* Read new ciphernext, extending f->n, until we've filled up f->ciphertext
+     or until we reach end-of-file or encounter an error.
+
+     Afterward, f->error indicates what happened. */
+  while (f->n < sizeof f->ciphertext)
     {
-      rijndaelDecrypt (f->rk, f->Nr,
-                       CHAR_CAST (const char *, f->ciphertext),
-                       CHAR_CAST (char *, f->plaintext));
-      if (f->type == SYNTAX)
+      size_t retval = fread (f->ciphertext + f->n, 1,
+                             sizeof f->ciphertext - f->n, f->file);
+      if (!retval)
         {
-          const char *eof = memchr (f->plaintext, '\04', sizeof f->plaintext);
-          if (eof)
-            f->n = CHAR_CAST (const uint8_t *, eof) - f->plaintext;
+          f->error = ferror (f->file) ? errno : EOF;
+          break;
         }
-      return true;
+      f->n += retval;
+    }
+
+  /* Calculate the number of readable bytes.  If we're at the end of the file,
+     then we can read everything, otherwise we hold back the last 16 bytes
+     because they might be padding or not. */
+  if (!f->error)
+    {
+      assert (f->n == sizeof f->ciphertext);
+      f->readable = f->n - 16;
     }
   else
+    f->readable = f->n;
+
+  /* If we have an incomplete block then trim it off and complain. */
+  unsigned int overhang = f->readable % 16;
+  if (overhang)
     {
-      if (ferror (f->file))
-        f->error = errno;
-      return false;
+      assert (f->error);
+      msg (ME, _("%s: encrypted file corrupted (ends in incomplete %u-byte "
+                 "ciphertext block)"),
+           fh_get_file_name (f->fh), overhang);
+      f->error = EIO;
+      f->readable -= overhang;
+    }
+
+  /* Decrypt all the blocks we have. */
+  for (size_t ofs = 0; ofs < f->readable; ofs += 16)
+    rijndaelDecrypt (f->rk, f->Nr,
+                     CHAR_CAST (const char *, f->ciphertext + ofs),
+                     CHAR_CAST (char *, f->plaintext + ofs));
+
+  /* If we're at end of file then check the padding and trim it off. */
+  if (f->error == EOF)
+    {
+      unsigned int pad = check_padding (&f->plaintext[f->n - 16]);
+      if (!pad)
+        {
+          msg (ME, _("%s: encrypted file corrupted (ends with bad padding)"),
+               fh_get_file_name (f->fh));
+          f->error = EIO;
+          return;
+        }
+
+      f->readable -= pad;
     }
 }
