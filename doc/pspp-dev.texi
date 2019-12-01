@@ -120,7 +120,3 @@ Free Documentation License".
 @include fdl.texi
 
 @bye
-
-@c Local Variables:
-@c compile-command: "makeinfo pspp-dev.texi"
-@c End:

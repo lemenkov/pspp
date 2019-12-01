@@ -162,8 +162,3 @@ in the production of this manual.
 @include fdl.texi
 
 @bye
-
-@c Local Variables:
-@c use (texinfo-multiple-files-update "pspp.texi")  in emacs to keep these files consistent
-@c compile-command: "makeinfo pspp.texi"
-@c End:
