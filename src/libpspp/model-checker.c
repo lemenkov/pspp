@@ -1150,7 +1150,7 @@ struct mc
 
     /* Array of 2**(options->hash_bits) bits representing states
        already visited. */
-    unsigned char *hash;
+    unsigned long int *hash;
 
     /* State queue. */
     struct mc_state **queue;            /* Array of pointers to states. */
@@ -1269,7 +1269,7 @@ mc_discard_dup_state (struct mc *mc, unsigned int hash)
   if (!mc->state_error && mc->options->hash_bits > 0)
     {
       hash &= (1u << mc->options->hash_bits) - 1;
-      if (TEST_BIT (mc->hash, hash))
+      if (bitvector_is_set (mc->hash, hash))
         {
           if (mc->options->verbosity > 2)
             fprintf (mc->options->output_file,
@@ -1278,7 +1278,7 @@ mc_discard_dup_state (struct mc *mc, unsigned int hash)
           next_operation (mc);
           return true;
         }
-      SET_BIT (mc->hash, hash);
+      bitvector_set1 (mc->hash, hash);
     }
   return false;
 }
@@ -1688,7 +1688,7 @@ init_mc (struct mc *mc, const struct mc_class *class,
   mc->results = mc_results_create ();
 
   mc->hash = (mc->options->hash_bits > 0
-              ? xcalloc (1, DIV_RND_UP (1 << mc->options->hash_bits, CHAR_BIT))
+              ? bitvector_allocate (1 << mc->options->hash_bits)
               : NULL);
 
   mc->queue = NULL;

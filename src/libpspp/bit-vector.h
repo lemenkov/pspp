@@ -1,5 +1,5 @@
 /* PSPP - a program for statistical analysis.
-   Copyright (C) 1997-9, 2000 Free Software Foundation, Inc.
+   Copyright (C) 1997-9, 2000, 2019 Free Software Foundation, Inc.
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -14,26 +14,53 @@
    You should have received a copy of the GNU General Public License
    along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 
-#if !bitvector_h
-#define bitvector_h 1
+#ifndef BITVECTOR_H
+#define BITVECTOR_H 1
 
 #include <limits.h>
+#include <stdbool.h>
+#include <stddef.h>
 
-/* Sets bit Y starting at address X. */
-#define SET_BIT(X, Y) 					\
-	(((unsigned char *) X)[(Y) / CHAR_BIT] |= 1 << ((Y) % CHAR_BIT))
+enum { BITS_PER_ULONG = CHAR_BIT * sizeof (unsigned long int) };
 
-/* Clears bit Y starting at address X. */
-#define CLEAR_BIT(X, Y) 				\
-	(((unsigned char *) X)[(Y) / CHAR_BIT] &= ~(1 << ((Y) % CHAR_BIT)))
+unsigned long int *bitvector_allocate(size_t n);
+size_t bitvector_count (const unsigned long int *, size_t);
 
-/* Sets bit Y starting at address X to Z, which is zero/nonzero */
-#define SET_BIT_TO(X, Y, Z) 			\
-	((Z) ? SET_BIT(X, Y) : CLEAR_BIT(X, Y))
+static unsigned long int
+bitvector_mask (size_t idx)
+{
+  return 1UL << (idx % BITS_PER_ULONG);
+}
 
-/* Nonzero if bit Y starting at address X is set. */
-#define TEST_BIT(X, Y) 					\
-	(((unsigned char *) X)[(Y) / CHAR_BIT] & (1 << ((Y) % CHAR_BIT)))
+static const unsigned long int *
+bitvector_unit (const unsigned long int *vec, size_t idx)
+{
+  return &vec[idx / BITS_PER_ULONG];
+}
+
+static unsigned long int *
+bitvector_unit_rw (unsigned long int *vec, size_t idx)
+{
+  return &vec[idx / BITS_PER_ULONG];
+}
+
+static inline void
+bitvector_set1 (unsigned long int *vec, size_t idx)
+{
+  *bitvector_unit_rw (vec, idx) |= bitvector_mask (idx);
+}
+
+static inline void
+bitvector_set0 (unsigned long int *vec, size_t idx)
+{
+  *bitvector_unit_rw (vec, idx) &= ~bitvector_mask (idx);
+}
+
+static inline bool
+bitvector_is_set (const unsigned long int *vec, size_t idx)
+{
+  return (*bitvector_unit (vec, idx) & bitvector_mask (idx)) != 0;
+}
 
 /* Returns 2**X, 0 <= X < 32. */
 #define BIT_INDEX(X) (1ul << (X))

@@ -26,7 +26,6 @@
 #include "language/lexer/variable-parser.h"
 #include "libpspp/array.h"
 #include "libpspp/assertion.h"
-#include "libpspp/bit-vector.h"
 #include "libpspp/compiler.h"
 #include "libpspp/i18n.h"
 #include "libpspp/message.h"

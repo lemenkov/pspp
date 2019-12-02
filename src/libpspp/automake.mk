@@ -27,6 +27,7 @@ src_libpspp_liblibpspp_la_SOURCES = \
 	src/libpspp/array.c \
 	src/libpspp/array.h \
 	src/libpspp/assertion.h \
+	src/libpspp/bit-vector.c \
 	src/libpspp/bit-vector.h \
 	src/libpspp/bt.c \
 	src/libpspp/bt.h \
