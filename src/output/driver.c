@@ -32,6 +32,7 @@
 #include "data/settings.h"
 #include "libpspp/array.h"
 #include "libpspp/assertion.h"
+#include "libpspp/i18n.h"
 #include "libpspp/message.h"
 #include "libpspp/llx.h"
 #include "libpspp/string-map.h"
@@ -273,7 +274,11 @@ output_submit (struct output_item *item)
   output_submit__ (e, item);
 }
 
-const char *
+/* Returns the name of the command currently being parsed, in all uppercase.
+   The caller must free the returned value.
+
+   Returns NULL if no command is being parsed. */
+char *
 output_get_command_name (void)
 {
   struct output_engine *e = engine_stack_top ();
@@ -282,7 +287,7 @@ output_get_command_name (void)
 
   for (size_t i = e->n_groups; i-- > 0; )
     if (e->groups[i])
-      return e->groups[i];
+      return utf8_to_upper (e->groups[i]);
 
   return NULL;
 }

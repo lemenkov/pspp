@@ -36,7 +36,7 @@ void output_set_title (const char *);
 void output_set_subtitle (const char *);
 void output_set_filename (const char *);
 
-const char *output_get_command_name (void);
+char *output_get_command_name (void);
 
 size_t output_get_group_level (void);
 

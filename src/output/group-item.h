@@ -33,6 +33,7 @@ struct group_open_item
   };
 
 struct group_open_item *group_open_item_create (const char *command_name);
+struct group_open_item *group_open_item_create_nocopy (char *command_name);
 
 /* A group_close item. */
 struct group_close_item

@@ -28,11 +28,18 @@
 struct group_open_item *
 group_open_item_create (const char *command_name)
 {
+  return group_open_item_create_nocopy (
+    command_name ? xstrdup (command_name) : NULL);
+}
+
+struct group_open_item *
+group_open_item_create_nocopy (char *command_name)
+{
   struct group_open_item *item;
 
   item = xmalloc (sizeof *item);
   output_item_init (&item->output_item, &group_open_item_class);
-  item->command_name = command_name ? xstrdup (command_name) : NULL;
+  item->command_name = command_name;
 
   return item;
 }
