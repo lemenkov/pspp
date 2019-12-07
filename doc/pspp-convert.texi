@@ -68,17 +68,20 @@ If the password is unknown, use the @option{-a} and @option{-l}
 options to specify how to search for it, or @option{--password-list}
 to specify a file of passwords to try.
 
-Use @code{-O @var{extension}} to override the inferred format or to
+Use @code{-O format=@var{format}} to override the inferred format or to
 specify the format for unrecognized extensions.
 
-The following options are accepted:
+@command{pspp-convert} accepts the following options:
 
 @table @option
-@item -O @var{format}
-@itemx --output-format=@var{format}
-Specifies the desired output format.  @var{format} must be one of the
-extensions listed above, e.g. @code{-O csv} requests comma-separated
-value output.
+@item @option{-O format=@var{format}}
+Overrides the format inferred from the output file's extension.  Use
+@option{--help} to list the available formats.  @xref{Invoking PSPP},
+for details of the available output formats.
+
+@item @option{-O @var{option}=@var{value}}
+Sets an option for the output file format.  @xref{Invoking PSPP}, for
+details of the available output options.
 
 @item -c @var{maxcases}
 @itemx --cases=@var{maxcases}
