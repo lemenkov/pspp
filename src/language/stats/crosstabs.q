@@ -1243,7 +1243,8 @@ create_crosstab_table (struct crosstabs_proc *proc, struct crosstabulation *xt,
       free (s);
     }
   struct pivot_table *table = pivot_table_create__ (
-    pivot_value_new_user_text_nocopy (ds_steal_cstr (&title)));
+    pivot_value_new_user_text_nocopy (ds_steal_cstr (&title)),
+    "Crosstabulation");
   pivot_table_set_weight_format (table, &proc->weight_format);
   table->omit_empty = true;
 

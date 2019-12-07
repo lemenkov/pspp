@@ -1365,7 +1365,8 @@ show_comparisons (const struct oneway_spec *cmd, const struct oneway_workspace *
   struct pivot_table *table = pivot_table_create__ (
     pivot_value_new_user_text_nocopy (xasprintf (
                                         _("Multiple Comparisons (%s)"),
-                                        var_to_string (cmd->vars[v]))));
+                                        var_to_string (cmd->vars[v]))),
+    "Multiple Comparisons");
   table->omit_empty = true;
 
   struct pivot_dimension *statistics = pivot_dimension_create (

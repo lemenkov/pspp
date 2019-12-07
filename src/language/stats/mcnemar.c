@@ -169,7 +169,7 @@ output_freq_table (variable_pair *vp,
 		   const struct dictionary *dict)
 {
   struct pivot_table *table = pivot_table_create__ (
-    pivot_value_new_user_text_nocopy (make_pair_name (vp)));
+    pivot_value_new_user_text_nocopy (make_pair_name (vp)), "Frequencies");
   pivot_table_set_weight_var (table, dict_get_weight (dict));
 
   struct pivot_dimension *vars[2];

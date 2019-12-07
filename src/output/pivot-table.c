@@ -26,6 +26,7 @@
 #include "data/variable.h"
 #include "libpspp/hash-functions.h"
 #include "libpspp/i18n.h"
+#include "output/driver.h"
 
 #include "gl/c-ctype.h"
 #include "gl/intprops.h"
@@ -655,7 +656,8 @@ pivot_result_class_change (const char *s_, const struct fmt_spec *format)
 
 /* Creates and returns a new pivot table with the given TITLE.  TITLE should be
    a text string marked for translation but not actually translated yet,
-   e.g. N_("Descriptive Statistics").
+   e.g. N_("Descriptive Statistics").  The un-translated text string is used as
+   the pivot table's subtype.
 
    Operations commonly performed on the new pivot_table:
 
@@ -667,18 +669,22 @@ pivot_result_class_change (const char *s_, const struct fmt_spec *format)
 
    This function is a shortcut for pivot_table_create__() for the most common
    case.  Use pivot_table_create__() directly if the title should be some kind
-   of value other than an ordinary text string.
+   of value other than an ordinary text string, or if the subtype should be
+different from the title.
 
    See the large comment at the top of pivot-table.h for general advice on
    creating pivot tables. */
 struct pivot_table *
 pivot_table_create (const char *title)
 {
-  return pivot_table_create__ (pivot_value_new_text (title));
+  return pivot_table_create__ (pivot_value_new_text (title), title);
 }
 
 /* Creates and returns a new pivot table with the given TITLE, and takes
-   ownership of TITLE.
+   ownership of TITLE.  The new pivot table's subtype is SUBTYPE, which
+   should be an untranslated English string that describes the contents of
+   the table at a high level without being specific about the variables or
+   other context involved.
 
    Operations commonly performed on the new pivot_table:
 
@@ -691,12 +697,16 @@ pivot_table_create (const char *title)
    See the large comment at the top of pivot-table.h for general advice on
    creating pivot tables. */
 struct pivot_table *
-pivot_table_create__ (struct pivot_value *title)
+pivot_table_create__ (struct pivot_value *title, const char *subtype)
 {
   struct pivot_table *table = xzalloc (sizeof *table);
   table->ref_cnt = 1;
   table->weight_format = (struct fmt_spec) { FMT_F, 40, 0 };
   table->title = title;
+  table->subtype = pivot_value_new_text (subtype);
+
+  const char *command_id = output_get_command_name ();
+  table->command_c = command_id ? xstrdup (command_id) : NULL;
 
   table->sizing[TABLE_HORZ].range[0] = 50;
   table->sizing[TABLE_HORZ].range[1] = 72;
@@ -748,7 +758,7 @@ struct pivot_table *
 pivot_table_create_for_text (struct pivot_value *title,
                              struct pivot_value *content)
 {
-  struct pivot_table *table = pivot_table_create__ (title);
+  struct pivot_table *table = pivot_table_create__ (title, "Error");
 
   struct pivot_dimension *d = pivot_dimension_create (
     table, PIVOT_AXIS_ROW, N_("Error"));

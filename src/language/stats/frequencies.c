@@ -296,7 +296,7 @@ dump_freq_table (const struct var_freqs *vf, const struct variable *wv)
   const struct freq_tab *ft = &vf->tab;
 
   struct pivot_table *table = pivot_table_create__ (pivot_value_new_variable (
-                                                      vf->var));
+                                                      vf->var), "Frequencies");
   pivot_table_set_weight_var (table, wv);
 
   pivot_dimension_create (table, PIVOT_AXIS_COLUMN, N_("Statistics"),

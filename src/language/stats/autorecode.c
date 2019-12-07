@@ -369,7 +369,7 @@ cmd_autorecode (struct lexer *lexer, struct dataset *ds)
                : pivot_value_new_text_format (N_("Recoding %s into %s."),
                                               spec->src_name,
                                               var_get_name (spec->dst)));
-          struct pivot_table *table = pivot_table_create__ (title);
+          struct pivot_table *table = pivot_table_create__ (title, "Recoding");
 
           pivot_dimension_create (
             table, PIVOT_AXIS_COLUMN, N_("Attributes"),

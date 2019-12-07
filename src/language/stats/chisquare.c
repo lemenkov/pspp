@@ -176,7 +176,7 @@ chisquare_execute (const struct dataset *ds,
             }
 
           struct pivot_table *table = pivot_table_create__ (
-            pivot_value_new_variable (var));
+            pivot_value_new_variable (var), "Chisquare");
           pivot_table_set_weight_var (table, dict_get_weight (dict));
 
           pivot_dimension_create (

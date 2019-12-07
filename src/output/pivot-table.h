@@ -432,7 +432,7 @@ struct pivot_table
 
     /* Titles. */
     struct pivot_value *title;
-    struct pivot_value *subtype;  /* Same as pivot_item's subtype. */
+    struct pivot_value *subtype;  /* Same as spv_item's subtype. */
     struct pivot_value *corner_text;
     struct pivot_value *caption;
     char *notes;
@@ -453,7 +453,8 @@ struct pivot_table
 
 /* Creating and destroy pivot tables. */
 struct pivot_table *pivot_table_create (const char *title);
-struct pivot_table *pivot_table_create__ (struct pivot_value *title);
+struct pivot_table *pivot_table_create__ (struct pivot_value *title,
+                                          const char *subtype);
 struct pivot_table *pivot_table_create_for_text (struct pivot_value *title,
                                                  struct pivot_value *content);
 

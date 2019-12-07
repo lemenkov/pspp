@@ -1002,7 +1002,7 @@ report_encodings (const struct file_handle *h, struct pool *pool,
   /* Table of valid encodings. */
   struct pivot_table *table = pivot_table_create__ (
     pivot_value_new_text_format (N_("Usable encodings for %s."),
-                                 fh_get_name (h)));
+                                 fh_get_name (h)), "Usable Encodings");
   table->caption = pivot_value_new_text_format (
     N_("Encodings that can successfully read %s (by specifying the encoding "
        "name on the GET command's ENCODING subcommand).  Encodings that "
@@ -1040,7 +1040,8 @@ report_encodings (const struct file_handle *h, struct pool *pool,
   /* Table of alternative interpretations. */
   table = pivot_table_create__ (
     pivot_value_new_text_format (N_("%s Encoded Text Strings"),
-                                 fh_get_name (h)));
+                                 fh_get_name (h)),
+    "Alternate Encoded Text Strings");
   table->caption = pivot_value_new_text (
     N_("Text strings in the file dictionary that the previously listed "
        "encodings interpret differently, along with the interpretations."));

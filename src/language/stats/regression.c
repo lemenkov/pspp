@@ -856,7 +856,8 @@ reg_stats_r (const struct linreg * c, const struct variable *var)
 {
   struct pivot_table *table = pivot_table_create__ (
     pivot_value_new_text_format (N_("Model Summary (%s)"),
-                                 var_to_string (var)));
+                                 var_to_string (var)),
+    "Model Summary");
 
   pivot_dimension_create (table, PIVOT_AXIS_COLUMN, N_("Statistics"),
                           N_("R"), N_("R Square"), N_("Adjusted R Square"),
@@ -886,8 +887,8 @@ reg_stats_coeff (const struct regression *cmd, const struct linreg *c,
 		 const struct variable *var)
 {
   struct pivot_table *table = pivot_table_create__ (
-    pivot_value_new_text_format (N_("Coefficients (%s)"),
-                                 var_to_string (var)));
+    pivot_value_new_text_format (N_("Coefficients (%s)"), var_to_string (var)),
+    "Coefficients");
 
   struct pivot_dimension *statistics = pivot_dimension_create (
     table, PIVOT_AXIS_COLUMN, N_("Statistics"));
@@ -1011,7 +1012,8 @@ static void
 reg_stats_anova (const struct linreg * c, const struct variable *var)
 {
   struct pivot_table *table = pivot_table_create__ (
-    pivot_value_new_text_format (N_("ANOVA (%s)"), var_to_string (var)));
+    pivot_value_new_text_format (N_("ANOVA (%s)"), var_to_string (var)),
+    "ANOVA");
 
   pivot_dimension_create (table, PIVOT_AXIS_COLUMN, N_("Statistics"),
                           N_("Sum of Squares"), PIVOT_RC_OTHER,
@@ -1066,7 +1068,8 @@ reg_stats_bcov (const struct linreg * c, const struct variable *var)
 {
   struct pivot_table *table = pivot_table_create__ (
     pivot_value_new_text_format (N_("Coefficient Correlations (%s)"),
-                                 var_to_string (var)));
+                                 var_to_string (var)),
+    "Coefficient Correlations");
 
   for (size_t i = 0; i < 2; i++)
     {

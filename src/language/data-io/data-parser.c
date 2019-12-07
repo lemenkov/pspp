@@ -671,7 +671,7 @@ dump_fixed_table (const struct data_parser *parser,
                                      parser->records_per_case),
                            parser->records_per_case, fh_get_name (fh));
   struct pivot_table *table = pivot_table_create__ (
-    pivot_value_new_user_text (title, -1));
+    pivot_value_new_user_text (title, -1), "Fixed Data Records");
   free (title);
 
   pivot_dimension_create (
@@ -717,7 +717,8 @@ dump_delimited_table (const struct data_parser *parser,
 {
   struct pivot_table *table = pivot_table_create__ (
     pivot_value_new_text_format (N_("Reading free-form data from %s."),
-                                 fh_get_name (fh)));
+                                 fh_get_name (fh)),
+    "Free-Form Data Records");
 
   pivot_dimension_create (
     table, PIVOT_AXIS_COLUMN, N_("Attributes"), N_("Format"));
