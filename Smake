@@ -109,6 +109,7 @@ GNULIB_MODULES = \
 	unicase/u8-casefold \
 	unicase/u8-tolower \
 	unicase/u8-toupper \
+	unicase/u8-totitle \
 	unictype/ctype-print \
 	unictype/category-of \
 	unigbrk/uc-is-grapheme-break \
