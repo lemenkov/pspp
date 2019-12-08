@@ -19,6 +19,7 @@
 
 #include <stdbool.h>
 #include <stddef.h>
+#include "libpspp/str.h"
 
 /* An unordered array of strings.
 
@@ -61,6 +62,8 @@ void string_array_shrink (struct string_array *);
 
 void string_array_sort (struct string_array *);
 
+void string_array_parse (struct string_array *, struct substring string,
+                         struct substring delimiters);
 char *string_array_join (const struct string_array *, const char *separator);
 
 /* Macros for conveniently iterating through a string_array, e.g. to print all

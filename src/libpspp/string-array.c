@@ -234,6 +234,17 @@ string_array_sort (struct string_array *sa)
   qsort (sa->strings, sa->n, sizeof *sa->strings, compare_strings);
 }
 
+/* Divides STRING into tokens at DELIMITERS and adds each token to SA. */
+void
+string_array_parse (struct string_array *sa, struct substring string,
+                    struct substring delimiters)
+{
+  size_t save_idx = 0;
+  struct substring token;
+  while (ss_tokenize (string, delimiters, &save_idx, &token))
+    string_array_append_nocopy (sa, ss_xstrdup (token));
+}
+
 /* Returns a single string that consists of each of the strings in SA
    concatenated, separated from each other with SEPARATOR.
 
