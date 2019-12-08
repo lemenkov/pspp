@@ -79,6 +79,7 @@ int utf8_strncasecmp (const char *, size_t, const char *, size_t);
 int utf8_strverscasecmp (const char *, const char *);
 char *utf8_to_upper (const char *);
 char *utf8_to_lower (const char *);
+char *utf8_to_title (const char *);
 
 /* Information about character encodings. */
 

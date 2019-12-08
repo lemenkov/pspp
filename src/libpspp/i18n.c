@@ -952,6 +952,12 @@ utf8_to_lower (const char *s)
 {
   return utf8_casemap (s, u8_tolower);
 }
+
+char *
+utf8_to_title (const char *s)
+{
+  return utf8_casemap (s, u8_totitle);
+}
 
 bool
 get_encoding_info (struct encoding_info *e, const char *name)
