@@ -201,6 +201,7 @@ struct ascii_driver
     struct u8_line *lines;      /* Page content. */
     int allocated_lines;        /* Number of lines allocated. */
     int chart_cnt;              /* Number of charts so far. */
+    int object_cnt;             /* Number of objects so far. */
     struct render_params params;
   };
 
@@ -210,8 +211,6 @@ static void ascii_submit (struct output_driver *, const struct output_item *);
 
 static bool update_page_size (struct ascii_driver *, bool issue_error);
 static int parse_page_size (struct driver_option *);
-
-static bool ascii_open_page (struct ascii_driver *);
 
 static void ascii_draw_line (void *, int bb[TABLE_N_AXES][2],
                              enum render_line_style styles[TABLE_N_AXES][2],
@@ -224,6 +223,12 @@ static void ascii_draw_cell (void *, const struct table_cell *, int color_idx,
                              int bb[TABLE_N_AXES][2],
                              int spill[TABLE_N_AXES][2],
                              int clip[TABLE_N_AXES][2]);
+
+#if HAVE_DECL_SIGWINCH
+static struct ascii_driver *the_driver;
+
+static void winch_handler (int);
+#endif
 
 static struct ascii_driver *
 ascii_driver_cast (struct output_driver *driver)
@@ -295,7 +300,8 @@ ascii_create (struct  file_handle *fh, enum settings_output_devices device_type,
   a->error = false;
   a->lines = NULL;
   a->allocated_lines = 0;
-  a->chart_cnt = 1;
+  a->chart_cnt = 0;
+  a->object_cnt = 0;
 
   a->params.draw_line = ascii_draw_line;
   a->params.measure_cell_width = ascii_measure_cell_width;
@@ -320,6 +326,27 @@ ascii_create (struct  file_handle *fh, enum settings_output_devices device_type,
 
   if (!update_page_size (a, true))
     goto error;
+
+  a->file = fn_open (a->handle, a->append ? "a" : "w");
+  if (!a->file)
+    {
+      msg_error (errno, _("ascii: opening output file `%s'"),
+                 fh_get_file_name (a->handle));
+      goto error;
+    }
+
+  if (isatty (fileno (a->file)))
+    {
+#if HAVE_DECL_SIGWINCH
+      struct sigaction action;
+      sigemptyset (&action.sa_mask);
+      action.sa_flags = 0;
+      action.sa_handler = winch_handler;
+      the_driver = a;
+      sigaction (SIGWINCH, &action, NULL);
+#endif
+      a->auto_width = true;
+    }
 
   return d;
 
@@ -436,10 +463,8 @@ ascii_output_table_item (struct ascii_driver *a,
 
   update_page_size (a, false);
 
-  if (a->file)
+  if (a->object_cnt++)
     putc ('\n', a->file);
-  else if (!ascii_open_page (a))
-    return;
 
   p = render_pager_create (&a->params, table_item);
   for (int i = 0; render_pager_has_next (p); i++)
@@ -484,7 +509,7 @@ ascii_submit (struct output_driver *driver,
       char *file_name;
 
       file_name = xr_draw_png_chart (chart_item, a->chart_file_name,
-                                     a->chart_cnt++,
+                                     ++a->chart_cnt,
 				     &a->fg,
 				     &a->bg);
       if (file_name != NULL)
@@ -919,7 +944,7 @@ ascii_test_write (struct output_driver *driver,
   int bb[TABLE_N_AXES][2];
   int width, height;
 
-  if (a->file == NULL && !ascii_open_page (a))
+  if (!a->file)
     return;
 
   struct area_style style = {
@@ -945,7 +970,7 @@ ascii_test_set_length (struct output_driver *driver, int y, int length)
 {
   struct ascii_driver *a = ascii_driver_cast (driver);
 
-  if (a->file == NULL && !ascii_open_page (a))
+  if (!a->file)
     return;
 
   if (y < 0)
@@ -966,50 +991,10 @@ ascii_test_flush (struct output_driver *driver)
       }
 }
 
-/* ascii_close_page () and support routines. */
-
 #if HAVE_DECL_SIGWINCH
-static struct ascii_driver *the_driver;
-
 static void
 winch_handler (int signum UNUSED)
 {
   update_page_size (the_driver, false);
 }
 #endif
-
-static bool
-ascii_open_page (struct ascii_driver *a)
-{
-  if (a->error)
-    return false;
-
-  if (a->file == NULL)
-    {
-      a->file = fn_open (a->handle, a->append ? "a" : "w");
-      if (a->file != NULL)
-        {
-	  if ( isatty (fileno (a->file)))
-	    {
-#if HAVE_DECL_SIGWINCH
-	      struct sigaction action;
-	      sigemptyset (&action.sa_mask);
-	      action.sa_flags = 0;
-	      action.sa_handler = winch_handler;
-	      the_driver = a;
-	      sigaction (SIGWINCH, &action, NULL);
-#endif
-	      a->auto_width = true;
-	    }
-        }
-      else
-        {
-          msg_error (errno, _("ascii: opening output file `%s'"),
-		     fh_get_file_name (a->handle));
-          a->error = true;
-          return false;
-        }
-    }
-
-  return true;
-}
