@@ -1971,8 +1971,10 @@ An XML Schema for VizML is available, distributed with SPSS binaries,
 under a nonfree license.  It contains documentation that is
 occasionally helpful.
 
-See @file{src/output/spv/detail-xml.grammar} in the PSPP source tree
-for the full grammar that it uses for parsing.
+This section describes the detail XML format using the same notation
+already used for the structure XML format (@pxref{SPV Structure Member
+Format}).  See @file{src/output/spv/detail-xml.grammar} in the PSPP
+source tree for the full grammar that it uses for parsing.
 
 The important elements of the detail XML format are:
 
