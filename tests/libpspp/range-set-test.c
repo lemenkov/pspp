@@ -38,7 +38,6 @@
 #include <libpspp/compiler.h>
 #include <libpspp/pool.h>
 
-#include "xalloc.h"
 
 /* Exit with a failure code.
    (Place a breakpoint on this function while debugging.) */

@@ -42,7 +42,6 @@
 
 #include <math/sort.h>
 
-#include "xalloc.h"
 #include "xmalloca.h"
 
 #include "value-variant.h"

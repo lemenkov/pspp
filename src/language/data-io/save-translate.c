@@ -33,7 +33,6 @@
 #include "language/lexer/lexer.h"
 #include "libpspp/message.h"
 
-#include "xalloc.h"
 
 #include "gettext.h"
 #define _(msgid) gettext (msgid)

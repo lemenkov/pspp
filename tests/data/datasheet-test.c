@@ -42,7 +42,6 @@
 #include "error.h"
 #include "minmax.h"
 #include "progname.h"
-#include "xalloc.h"
 
 /* lazy_casereader callback function to instantiate a casereader
    from the datasheet. */

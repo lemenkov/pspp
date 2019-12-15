@@ -23,7 +23,6 @@
 #include <gtk/gtk.h>
 
 #include <stdlib.h>
-#include <xalloc.h>
 
 #include <gettext.h>
 #define _(msgid) gettext (msgid)

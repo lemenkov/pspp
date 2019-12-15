@@ -38,7 +38,6 @@
 #include "libpspp/str.h"
 #include "output/group-item.h"
 
-#include "xalloc.h"
 #include "xmalloca.h"
 
 #include "gettext.h"

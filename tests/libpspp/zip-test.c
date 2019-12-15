@@ -30,7 +30,6 @@
 #include <libpspp/str.h>
 
 #include <errno.h>
-#include "xalloc.h"
 
 /* Exit with a failure code.
    (Place a breakpoint on this function while debugging.) */
