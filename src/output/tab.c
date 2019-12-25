@@ -64,17 +64,26 @@ struct tab_joined_cell
 };
 
 /* Creates and returns a new table with NC columns and NR rows and initially no
-   header rows or columns.  The table's cells are initially empty. */
+   header rows or columns.
+
+   Sets the number of header rows on each side of TABLE to HL on the
+   left, HR on the right, HT on the top, HB on the bottom.  Header rows
+   are repeated when a table is broken across multiple columns or
+   multiple pages.
+
+   The table's cells are initially empty. */
 struct tab_table *
-tab_create (int nc, int nr)
+tab_create (int nc, int nr, int hl, int hr, int ht, int hb)
 {
   struct tab_table *t;
 
   t = pool_create_container (struct tab_table, container);
   t->table.n[TABLE_HORZ] = nc;
   t->table.n[TABLE_VERT] = nr;
-  t->table.h[TABLE_HORZ][0] = t->table.h[TABLE_HORZ][1] = 0;
-  t->table.h[TABLE_VERT][0] = t->table.h[TABLE_VERT][1] = 0;
+  t->table.h[TABLE_HORZ][0] = hl;
+  t->table.h[TABLE_HORZ][1] = hr;
+  t->table.h[TABLE_VERT][0] = ht;
+  t->table.h[TABLE_VERT][1] = hb;
   t->table.ref_cnt = 1;
 
   t->cc = pool_calloc (t->container, nr * nc, sizeof *t->cc);
@@ -90,20 +99,6 @@ tab_create (int nc, int nr)
   memset (t->rule_colors, 0, sizeof t->rule_colors);
 
   return t;
-}
-
-
-/* Sets the number of header rows on each side of TABLE to L on the
-   left, R on the right, T on the top, B on the bottom.  Header rows
-   are repeated when a table is broken across multiple columns or
-   multiple pages. */
-void
-tab_headers (struct tab_table *table, int l, int r, int t, int b)
-{
-  table_set_hl (&table->table, l);
-  table_set_hr (&table->table, r);
-  table_set_ht (&table->table, t);
-  table_set_hb (&table->table, b);
 }
 
 /* Rules. */

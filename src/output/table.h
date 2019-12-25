@@ -254,12 +254,6 @@ static inline int table_ht (const struct table *t)
         { return t->h[TABLE_VERT][0]; }
 static inline int table_hb (const struct table *t)
         { return t->h[TABLE_VERT][1]; }
-
-/* Set headers. */
-void table_set_hl (struct table *, int hl);
-void table_set_hr (struct table *, int hr);
-void table_set_ht (struct table *, int ht);
-void table_set_hb (struct table *, int hb);
 
 /* Table classes. */
 

@@ -381,8 +381,7 @@ read_table (FILE *stream)
   ht = n_input >= 5 ? input[4] : 0;
   hb = n_input >= 6 ? input[5] : 0;
 
-  tab = tab_create (nc, nr);
-  tab_headers (tab, hl, hr, ht, hb);
+  tab = tab_create (nc, nr, hl, hr, ht, hb);
   for (r = 0; r < nr; r++)
     for (c = 0; c < nc; c++)
       if (tab_cell_is_empty (tab, c, r))

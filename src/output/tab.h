@@ -81,19 +81,9 @@ static inline int tab_nr (const struct tab_table *table)
 static inline int tab_nc (const struct tab_table *table)
         { return table_nc (&table->table); }
 
-/* Number of left/right/top/bottom header columns/rows in TABLE. */
-static inline int tab_l (const struct tab_table *table)
-        { return table_hl (&table->table); }
-static inline int tab_r (const struct tab_table *table)
-        { return table_hr (&table->table); }
-static inline int tab_t (const struct tab_table *table)
-        { return table_ht (&table->table); }
-static inline int tab_b (const struct tab_table *table)
-        { return table_hb (&table->table); }
-
 /* Tables. */
-struct tab_table *tab_create (int nc, int nr);
-void tab_headers (struct tab_table *, int l, int r, int t, int b);
+struct tab_table *tab_create (int nc, int nr,
+                              int l, int r, int t, int b);
 
 /* Rules. */
 void tab_hline (struct tab_table *, int style, int x1, int x2, int y);

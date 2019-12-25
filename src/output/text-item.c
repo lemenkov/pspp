@@ -119,7 +119,7 @@ text_item_submit (struct text_item *item)
 struct table_item *
 text_item_to_table_item (struct text_item *text_item)
 {
-  struct tab_table *tab = tab_create (1, 1);
+  struct tab_table *tab = tab_create (1, 1, 0, 0, 0, 0);
 
   struct area_style *style = pool_alloc (tab->container, sizeof *style);
   *style = (struct area_style) { AREA_STYLE_INITIALIZER__,

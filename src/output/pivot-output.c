@@ -310,8 +310,8 @@ pivot_table_submit_layer (const struct pivot_table *pt,
     [V] = pt->axes[PIVOT_AXIS_COLUMN].label_depth,
   };
   struct tab_table *table = tab_create (body[H] + stub[H],
-                                        body[V] + stub[V]);
-  tab_headers (table, stub[H], 0, stub[V], 0);
+                                        body[V] + stub[V],
+                                        stub[H], 0, stub[V], 0);
 
   for (size_t i = 0; i < PIVOT_N_AREAS; i++)
     table->styles[i] = area_style_override (table->container, &pt->areas[i],

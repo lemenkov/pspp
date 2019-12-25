@@ -65,38 +65,6 @@ table_is_shared (const struct table *table)
 {
   return table->ref_cnt > 1;
 }
-
-/* Sets the number of left header columns in TABLE to HL. */
-void
-table_set_hl (struct table *table, int hl)
-{
-  assert (!table_is_shared (table));
-  table->h[TABLE_HORZ][0] = hl;
-}
-
-/* Sets the number of right header columns in TABLE to HR. */
-void
-table_set_hr (struct table *table, int hr)
-{
-  assert (!table_is_shared (table));
-  table->h[TABLE_HORZ][1] = hr;
-}
-
-/* Sets the number of top header rows in TABLE to HT. */
-void
-table_set_ht (struct table *table, int ht)
-{
-  assert (!table_is_shared (table));
-  table->h[TABLE_VERT][0] = ht;
-}
-
-/* Sets the number of top header rows in TABLE to HB. */
-void
-table_set_hb (struct table *table, int hb)
-{
-  assert (!table_is_shared (table));
-  table->h[TABLE_VERT][1] = hb;
-}
 
 struct area_style *
 area_style_clone (struct pool *pool, const struct area_style *old)
@@ -271,7 +239,7 @@ table_collect_footnotes (const struct table_item *item,
 struct table *
 table_from_string (const char *text)
 {
-  struct tab_table *t = tab_create (1, 1);
+  struct tab_table *t = tab_create (1, 1, 0, 0, 0, 0);
   tab_text (t, 0, 0, TAB_LEFT, text);
   return &t->table;
 }
