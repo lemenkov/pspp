@@ -360,7 +360,7 @@ replace_newlines (char *p)
 static struct table *
 read_table (FILE *stream)
 {
-  struct tab_table *tab;
+  struct table *tab;
   char buffer[1024];
   int input[6];
   int n_input = 0;
@@ -476,7 +476,7 @@ read_table (FILE *stream)
               }
         }
 
-  return &tab->table;
+  return tab;
 }
 
 static void

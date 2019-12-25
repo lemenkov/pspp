@@ -47,10 +47,6 @@
 
 static const bool debugging = true;
 
-
-/* Cell options. */
-#define TAB_JOIN     (1u << TAB_FIRST_AVAILABLE)
-
 /* Joined cell. */
 struct tab_joined_cell
 {
@@ -72,19 +68,19 @@ struct tab_joined_cell
    multiple pages.
 
    The table's cells are initially empty. */
-struct tab_table *
+struct table *
 tab_create (int nc, int nr, int hl, int hr, int ht, int hb)
 {
-  struct tab_table *t;
+  struct table *t;
 
-  t = pool_create_container (struct tab_table, container);
-  t->table.n[TABLE_HORZ] = nc;
-  t->table.n[TABLE_VERT] = nr;
-  t->table.h[TABLE_HORZ][0] = hl;
-  t->table.h[TABLE_HORZ][1] = hr;
-  t->table.h[TABLE_VERT][0] = ht;
-  t->table.h[TABLE_VERT][1] = hb;
-  t->table.ref_cnt = 1;
+  t = pool_create_container (struct table, container);
+  t->n[TABLE_HORZ] = nc;
+  t->n[TABLE_VERT] = nr;
+  t->h[TABLE_HORZ][0] = hl;
+  t->h[TABLE_HORZ][1] = hr;
+  t->h[TABLE_VERT][0] = ht;
+  t->h[TABLE_VERT][1] = hb;
+  t->ref_cnt = 1;
 
   t->cc = pool_calloc (t->container, nr * nc, sizeof *t->cc);
   t->ct = pool_calloc (t->container, nr * nc, sizeof *t->ct);
@@ -106,62 +102,62 @@ tab_create (int nc, int nr, int hl, int hr, int ht, int hb)
 /* Draws a vertical line to the left of cells at horizontal position X
    from Y1 to Y2 inclusive in style STYLE, if style is not -1. */
 void
-tab_vline (struct tab_table *t, int style, int x, int y1, int y2)
+tab_vline (struct table *t, int style, int x, int y1, int y2)
 {
   if (debugging)
     {
-      if (x < 0 || x > tab_nc (t)
-          || y1 < 0 || y1 >= tab_nr (t)
-          || y2 < 0 || y2 >= tab_nr (t))
+      if (x < 0 || x > table_nc (t)
+          || y1 < 0 || y1 >= table_nr (t)
+          || y2 < 0 || y2 >= table_nr (t))
         {
           printf (_("bad vline: x=%d y=(%d,%d) in table size (%d,%d)\n"),
-                  x, y1, y2, tab_nc (t), tab_nr (t));
+                  x, y1, y2, table_nc (t), table_nr (t));
           return;
         }
     }
 
   assert (x >= 0);
-  assert (x <= tab_nc (t));
+  assert (x <= table_nc (t));
   assert (y1 >= 0);
   assert (y2 >= y1);
-  assert (y2 <= tab_nr (t));
+  assert (y2 <= table_nr (t));
 
   if (style != -1)
     {
       int y;
       for (y = y1; y <= y2; y++)
-        t->rv[x + (tab_nc (t) + 1) * y] = style;
+        t->rv[x + (table_nc (t) + 1) * y] = style;
     }
 }
 
 /* Draws a horizontal line above cells at vertical position Y from X1
    to X2 inclusive in style STYLE, if style is not -1. */
 void
-tab_hline (struct tab_table *t, int style, int x1, int x2, int y)
+tab_hline (struct table *t, int style, int x1, int x2, int y)
 {
   if (debugging)
     {
-      if (y < 0 || y > tab_nr (t)
-          || x1 < 0 || x1 >= tab_nc (t)
-          || x2 < 0 || x2 >= tab_nc (t))
+      if (y < 0 || y > table_nr (t)
+          || x1 < 0 || x1 >= table_nc (t)
+          || x2 < 0 || x2 >= table_nc (t))
         {
           printf (_("bad hline: x=(%d,%d) y=%d in table size (%d,%d)\n"),
-                  x1, x2, y, tab_nc (t), tab_nr (t));
+                  x1, x2, y, table_nc (t), table_nr (t));
           return;
         }
     }
 
   assert (y >= 0);
-  assert (y <= tab_nr (t));
+  assert (y <= table_nr (t));
   assert (x2 >= x1);
   assert (x1 >= 0);
-  assert (x2 < tab_nc (t));
+  assert (x2 < table_nc (t));
 
   if (style != -1)
     {
       int x;
       for (x = x1; x <= x2; x++)
-        t->rh[x + tab_nc (t) * y] = style;
+        t->rh[x + table_nc (t) * y] = style;
     }
 }
 
@@ -172,18 +168,18 @@ tab_hline (struct tab_table *t, int style, int x1, int x2, int y)
    drawing those lines.  This is distinct from 0, which draws a null
    line. */
 void
-tab_box (struct tab_table *t, int f_h, int f_v, int i_h, int i_v,
+tab_box (struct table *t, int f_h, int f_v, int i_h, int i_v,
          int x1, int y1, int x2, int y2)
 {
   if (debugging)
     {
-      if (x1 < 0 || x1 >= tab_nc (t)
-          || x2 < 0 || x2 >= tab_nc (t)
-          || y1 < 0 || y1 >= tab_nr (t)
-          || y2 < 0 || y2 >= tab_nr (t))
+      if (x1 < 0 || x1 >= table_nc (t)
+          || x2 < 0 || x2 >= table_nc (t)
+          || y1 < 0 || y1 >= table_nr (t)
+          || y2 < 0 || y2 >= table_nr (t))
         {
           printf (_("bad box: (%d,%d)-(%d,%d) in table size (%d,%d)\n"),
-                  x1, y1, x2, y2, tab_nc (t), tab_nr (t));
+                  x1, y1, x2, y2, table_nc (t), table_nr (t));
           NOT_REACHED ();
         }
     }
@@ -192,16 +188,16 @@ tab_box (struct tab_table *t, int f_h, int f_v, int i_h, int i_v,
   assert (y2 >= y1);
   assert (x1 >= 0);
   assert (y1 >= 0);
-  assert (x2 < tab_nc (t));
-  assert (y2 < tab_nr (t));
+  assert (x2 < table_nc (t));
+  assert (y2 < table_nr (t));
 
   if (f_h != -1)
     {
       int x;
       for (x = x1; x <= x2; x++)
         {
-          t->rh[x + tab_nc (t) * y1] = f_h;
-          t->rh[x + tab_nc (t) * (y2 + 1)] = f_h;
+          t->rh[x + table_nc (t) * y1] = f_h;
+          t->rh[x + table_nc (t) * (y2 + 1)] = f_h;
         }
     }
   if (f_v != -1)
@@ -209,8 +205,8 @@ tab_box (struct tab_table *t, int f_h, int f_v, int i_h, int i_v,
       int y;
       for (y = y1; y <= y2; y++)
         {
-          t->rv[x1 + (tab_nc (t) + 1) * y] = f_v;
-          t->rv[(x2 + 1) + (tab_nc (t) + 1) * y] = f_v;
+          t->rv[x1 + (table_nc (t) + 1) * y] = f_v;
+          t->rv[(x2 + 1) + (table_nc (t) + 1) * y] = f_v;
         }
     }
 
@@ -223,7 +219,7 @@ tab_box (struct tab_table *t, int f_h, int f_v, int i_h, int i_v,
           int x;
 
           for (x = x1; x <= x2; x++)
-            t->rh[x + tab_nc (t) * y] = i_h;
+            t->rh[x + table_nc (t) * y] = i_h;
         }
     }
   if (i_v != -1)
@@ -235,7 +231,7 @@ tab_box (struct tab_table *t, int f_h, int f_v, int i_h, int i_v,
           int y;
 
           for (y = y1; y <= y2; y++)
-            t->rv[x + (tab_nc (t) + 1) * y] = i_v;
+            t->rv[x + (table_nc (t) + 1) * y] = i_v;
         }
     }
 }
@@ -243,31 +239,31 @@ tab_box (struct tab_table *t, int f_h, int f_v, int i_h, int i_v,
 /* Cells. */
 
 static void
-do_tab_text (struct tab_table *table, int c, int r, unsigned opt, char *text)
+do_tab_text (struct table *table, int c, int r, unsigned opt, char *text)
 {
   assert (c >= 0);
   assert (r >= 0);
-  assert (c < tab_nc (table));
-  assert (r < tab_nr (table));
+  assert (c < table_nc (table));
+  assert (r < table_nr (table));
 
   if (debugging)
     {
-      if (c < 0 || r < 0 || c >= tab_nc (table) || r >= tab_nr (table))
+      if (c < 0 || r < 0 || c >= table_nc (table) || r >= table_nr (table))
         {
           printf ("tab_text(): bad cell (%d,%d) in table size (%d,%d)\n",
-                  c, r, tab_nc (table), tab_nr (table));
+                  c, r, table_nc (table), table_nr (table));
           return;
         }
     }
 
-  table->cc[c + r * tab_nc (table)] = text;
-  table->ct[c + r * tab_nc (table)] = opt;
+  table->cc[c + r * table_nc (table)] = text;
+  table->ct[c + r * table_nc (table)] = opt;
 }
 
 /* Sets cell (C,R) in TABLE, with options OPT, to have text value
    TEXT. */
 void
-tab_text (struct tab_table *table, int c, int r, unsigned opt,
+tab_text (struct table *table, int c, int r, unsigned opt,
           const char *text)
 {
   do_tab_text (table, c, r, opt, pool_strdup (table->container, text));
@@ -276,7 +272,7 @@ tab_text (struct tab_table *table, int c, int r, unsigned opt,
 /* Sets cell (C,R) in TABLE, with options OPT, to have text value
    FORMAT, which is formatted as if passed to printf. */
 void
-tab_text_format (struct tab_table *table, int c, int r, unsigned opt,
+tab_text_format (struct table *table, int c, int r, unsigned opt,
                  const char *format, ...)
 {
   va_list args;
@@ -288,7 +284,7 @@ tab_text_format (struct tab_table *table, int c, int r, unsigned opt,
 }
 
 static struct tab_joined_cell *
-add_joined_cell (struct tab_table *table, int x1, int y1, int x2, int y2,
+add_joined_cell (struct table *table, int x1, int y1, int x2, int y2,
                  unsigned opt)
 {
   struct tab_joined_cell *j;
@@ -297,19 +293,19 @@ add_joined_cell (struct tab_table *table, int x1, int y1, int x2, int y2,
   assert (y1 >= 0);
   assert (y2 >= y1);
   assert (x2 >= x1);
-  assert (y2 < tab_nr (table));
-  assert (x2 < tab_nc (table));
+  assert (y2 < table_nr (table));
+  assert (x2 < table_nc (table));
 
   if (debugging)
     {
-      if (x1 < 0 || x1 >= tab_nc (table)
-          || y1 < 0 || y1 >= tab_nr (table)
-          || x2 < x1 || x2 >= tab_nc (table)
-          || y2 < y1 || y2 >= tab_nr (table))
+      if (x1 < 0 || x1 >= table_nc (table)
+          || y1 < 0 || y1 >= table_nr (table)
+          || x2 < x1 || x2 >= table_nc (table)
+          || y2 < y1 || y2 >= table_nr (table))
         {
           printf ("tab_joint_text(): bad cell "
                   "(%d,%d)-(%d,%d) in table size (%d,%d)\n",
-                  x1, y1, x2, y2, tab_nc (table), tab_nr (table));
+                  x1, y1, x2, y2, table_nc (table), table_nr (table));
           return NULL;
         }
     }
@@ -326,9 +322,9 @@ add_joined_cell (struct tab_table *table, int x1, int y1, int x2, int y2,
   j->style = NULL;
 
   {
-    void **cc = &table->cc[x1 + y1 * tab_nc (table)];
-    unsigned short *ct = &table->ct[x1 + y1 * tab_nc (table)];
-    const int ofs = tab_nc (table) - (x2 - x1);
+    void **cc = &table->cc[x1 + y1 * table_nc (table)];
+    unsigned short *ct = &table->ct[x1 + y1 * table_nc (table)];
+    const int ofs = table_nc (table) - (x2 - x1);
 
     int y;
 
@@ -353,7 +349,7 @@ add_joined_cell (struct tab_table *table, int x1, int y1, int x2, int y2,
 /* Joins cells (X1,X2)-(Y1,Y2) inclusive in TABLE, and sets them with
    options OPT to have text value TEXT. */
 void
-tab_joint_text (struct tab_table *table, int x1, int y1, int x2, int y2,
+tab_joint_text (struct table *table, int x1, int y1, int x2, int y2,
                 unsigned opt, const char *text)
 {
   char *s = pool_strdup (table->container, text);
@@ -364,7 +360,7 @@ tab_joint_text (struct tab_table *table, int x1, int y1, int x2, int y2,
 }
 
 struct footnote *
-tab_create_footnote (struct tab_table *table, size_t idx, const char *content,
+tab_create_footnote (struct table *table, size_t idx, const char *content,
                      const char *marker, struct area_style *style)
 {
   struct footnote *f = pool_alloc (table->container, sizeof *f);
@@ -376,10 +372,10 @@ tab_create_footnote (struct tab_table *table, size_t idx, const char *content,
 }
 
 void
-tab_add_footnote (struct tab_table *table, int x, int y,
+tab_add_footnote (struct table *table, int x, int y,
                   const struct footnote *f)
 {
-  int index = x + y * tab_nc (table);
+  int index = x + y * table_nc (table);
   unsigned short opt = table->ct[index];
   struct tab_joined_cell *j;
 
@@ -400,10 +396,10 @@ tab_add_footnote (struct tab_table *table, int x, int y,
 }
 
 void
-tab_add_style (struct tab_table *table, int x, int y,
+tab_add_style (struct table *table, int x, int y,
                const struct area_style *style)
 {
-  int index = x + y * tab_nc (table);
+  int index = x + y * table_nc (table);
   unsigned short opt = table->ct[index];
   struct tab_joined_cell *j;
 
@@ -421,9 +417,9 @@ tab_add_style (struct tab_table *table, int x, int y,
 }
 
 bool
-tab_cell_is_empty (const struct tab_table *table, int c, int r)
+tab_cell_is_empty (const struct table *table, int c, int r)
 {
-  return table->cc[c + r * tab_nc (table)] == NULL;
+  return table->cc[c + r * table_nc (table)] == NULL;
 }
 
 /* Editing. */
@@ -461,16 +457,13 @@ tab_output_text_format (int options, const char *format, ...)
 void
 tab_destroy (struct table *table)
 {
-  struct tab_table *t = tab_cast (table);
-  pool_destroy (t->container);
+  pool_destroy (table->container);
 }
 
 void
-tab_get_cell (const struct table *table, int x, int y,
-              struct table_cell *cell)
+tab_get_cell (const struct table *t, int x, int y, struct table_cell *cell)
 {
-  const struct tab_table *t = tab_cast (table);
-  int index = x + y * tab_nc (t);
+  int index = x + y * table_nc (t);
   unsigned short opt = t->ct[index];
   const void *cc = t->cc[index];
 
@@ -537,22 +530,15 @@ tab_get_cell (const struct table *table, int x, int y,
 }
 
 int
-tab_get_rule (const struct table *table, enum table_axis axis, int x, int y,
+tab_get_rule (const struct table *t, enum table_axis axis, int x, int y,
               struct cell_color *color)
 {
-  const struct tab_table *t = tab_cast (table);
   uint8_t raw = (axis == TABLE_VERT
-                 ? t->rh[x + tab_nc (t) * y]
-                 : t->rv[x + (tab_nc (t) + 1) * y]);
+                 ? t->rh[x + table_nc (t) * y]
+                 : t->rv[x + (table_nc (t) + 1) * y]);
   struct cell_color *p = t->rule_colors[(raw & TAB_RULE_STYLE_MASK)
                                         >> TAB_RULE_STYLE_SHIFT];
   if (p)
     *color = *p;
   return (raw & TAB_RULE_TYPE_MASK) >> TAB_RULE_TYPE_SHIFT;
-}
-
-struct tab_table *
-tab_cast (const struct table *table)
-{
-  return UP_CAST (table, struct tab_table, table);
 }

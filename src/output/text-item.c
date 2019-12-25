@@ -119,7 +119,7 @@ text_item_submit (struct text_item *item)
 struct table_item *
 text_item_to_table_item (struct text_item *text_item)
 {
-  struct tab_table *tab = tab_create (1, 1, 0, 0, 0, 0);
+  struct table *tab = tab_create (1, 1, 0, 0, 0, 0);
 
   struct area_style *style = pool_alloc (tab->container, sizeof *style);
   *style = (struct area_style) { AREA_STYLE_INITIALIZER__,
@@ -140,7 +140,7 @@ text_item_to_table_item (struct text_item *text_item)
   if (text_item->type == TEXT_ITEM_SYNTAX || text_item->type == TEXT_ITEM_LOG)
     opts |= TAB_FIX;
   tab_text (tab, 0, 0, opts, text_item_get_text (text_item));
-  struct table_item *table_item = table_item_create (&tab->table, NULL, NULL);
+  struct table_item *table_item = table_item_create (tab, NULL, NULL);
   text_item_unref (text_item);
   return table_item;
 }

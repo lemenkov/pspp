@@ -1508,7 +1508,7 @@ add_footnote_page (struct render_pager *p, const struct table_item *item)
   if (!n_footnotes)
     return;
 
-  struct tab_table *t = tab_create (1, n_footnotes, 0, 0, 0, 0);
+  struct table *t = tab_create (1, n_footnotes, 0, 0, 0, 0);
   for (size_t i = 0; i < n_footnotes; i++)
     {
       tab_text_format (t, 0, i, TAB_LEFT, "%s. %s",
@@ -1516,7 +1516,7 @@ add_footnote_page (struct render_pager *p, const struct table_item *item)
       if (f[i]->style)
         tab_add_style (t, 0, i, f[i]->style);
     }
-  render_pager_add_table (p, &t->table, 0);
+  render_pager_add_table (p, t, 0);
 
   free (f);
 }
@@ -1528,13 +1528,13 @@ add_text_page (struct render_pager *p, const struct table_item_text *t,
   if (!t)
     return;
 
-  struct tab_table *tab = tab_create (1, 1, 0, 0, 0, 0);
+  struct table *tab = tab_create (1, 1, 0, 0, 0, 0);
   tab_text (tab, 0, 0, 0, t->content);
   for (size_t i = 0; i < t->n_footnotes; i++)
     tab_add_footnote (tab, 0, 0, t->footnotes[i]);
   if (t->style)
     tab->styles[0] = area_style_clone (tab->container, t->style);
-  render_pager_add_table (p, &tab->table, min_width);
+  render_pager_add_table (p, tab, min_width);
 }
 
 static void
@@ -1544,7 +1544,7 @@ add_layers_page (struct render_pager *p,
   if (!layers)
     return;
 
-  struct tab_table *tab = tab_create (1, layers->n_layers, 0, 0, 0, 0);
+  struct table *tab = tab_create (1, layers->n_layers, 0, 0, 0, 0);
   for (size_t i = 0; i < layers->n_layers; i++)
     {
       const struct table_item_layer *layer = &layers->layers[i];
@@ -1554,7 +1554,7 @@ add_layers_page (struct render_pager *p,
     }
   if (layers->style)
     tab->styles[0] = area_style_clone (tab->container, layers->style);
-  render_pager_add_table (p, &tab->table, min_width);
+  render_pager_add_table (p, tab, min_width);
 }
 
 /* Creates and returns a new render_pager for rendering TABLE_ITEM on the

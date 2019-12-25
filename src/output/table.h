@@ -28,7 +28,7 @@
 
    Every table is an instance of a particular table class that is responsible
    for keeping track of cell data.  By far the most common table class is
-   struct tab_table (see output/tab.h).  This header also declares some other
+   struct table (see output/tab.h).  This header also declares some other
    kinds of table classes, near the end of the file.
 
    A table is not itself an output_item, and thus a table cannot by itself be
@@ -176,10 +176,23 @@ enum
     TAB_NUMERIC    = 1 << 3,    /* Cell contents are numeric. */
     TAB_ROTATE     = 1 << 4,    /* Rotate cell contents 90 degrees. */
 
-    /* Bits with values (1 << TAB_FIRST_AVAILABLE) and higher are
-       not used, so they are available for subclasses to use as
-       they wish. */
-    TAB_FIRST_AVAILABLE = 5
+    TAB_STYLE_SHIFT = 5,
+    TAB_STYLE_MASK = 7 << TAB_STYLE_SHIFT,
+
+    /* Horizontal alignment of cell contents. */
+    TAB_RIGHT      = 0 << 10,
+    TAB_LEFT       = 1 << 10,
+    TAB_CENTER     = 2 << 10,
+    TAB_HALIGN     = 3 << 10, /* Alignment mask. */
+
+    /* Vertical alignment of cell contents. */
+    TAB_TOP        = 0 << 12,
+    TAB_MIDDLE     = 1 << 12,
+    TAB_BOTTOM     = 2 << 12,
+    TAB_VALIGN     = 3 << 12, /* Alignment mask. */
+
+    /* Internal use by tab.c only. */
+    TAB_JOIN = 1 << 14,
   };
 
 /* Styles for the rules around table cells. */
@@ -208,6 +221,8 @@ static inline int table_rule_combine (int a, int b)
 /* A table. */
 struct table
   {
+    struct pool *container;
+
     /* Table size.
 
        n[TABLE_HORZ]: Number of columns.
@@ -231,6 +246,21 @@ struct table
        indicated by a reference count greater than 1.  When this is the case,
        the table must not be modified. */
     int ref_cnt;
+
+    /* Table contents.
+
+       Each array element in cc[] is ordinarily a "char *" pointer to a
+       string.  If TAB_JOIN (defined in tab.c) is set in ct[] for the element,
+       however, it is a joined cell and the corresponding element of cc[]
+       points to a struct tab_joined_cell. */
+    void **cc;                  /* Cell contents; void *[nr][nc]. */
+    unsigned short *ct;		/* Cell types; unsigned short[nr][nc]. */
+    struct area_style *styles[8];
+
+    /* Rules. */
+    unsigned char *rh;		/* Horiz rules; unsigned char[nr+1][nc]. */
+    unsigned char *rv;		/* Vert rules; unsigned char[nr][nc+1]. */
+    struct cell_color *rule_colors[32];
   };
 
 /* Reference counting. */

@@ -91,7 +91,7 @@ area_style_override (struct pool *pool,
 }
 
 static void
-fill_cell (struct tab_table *t, int x1, int y1, int x2, int y2,
+fill_cell (struct table *t, int x1, int y1, int x2, int y2,
            const struct area_style *style, int style_idx,
            const struct pivot_value *value, struct footnote **footnotes,
            enum settings_value_show show_values,
@@ -164,7 +164,7 @@ get_table_rule (const struct table_border_style *styles,
 }
 
 static void
-draw_line (struct tab_table *t, const struct table_border_style *styles,
+draw_line (struct table *t, const struct table_border_style *styles,
            enum pivot_border style_idx,
            enum table_axis axis, int a, int b0, int b1)
 {
@@ -176,7 +176,7 @@ draw_line (struct tab_table *t, const struct table_border_style *styles,
 }
 
 static void
-compose_headings (struct tab_table *t,
+compose_headings (struct table *t,
                   const struct pivot_axis *a_axis, enum table_axis a,
                   const struct pivot_axis *b_axis,
                   const struct table_border_style *borders,
@@ -252,7 +252,7 @@ compose_headings (struct tab_table *t,
                            ? dim_col_vert
                            : cat_col_vert);
                       draw_line (t, borders, style, b, x2 + a_ofs, y1,
-                                 t->table.n[b] - 1);
+                                 t->n[b] - 1);
                     }
                   if (pivot_category_is_leaf (c) && x1 > 0)
                     {
@@ -261,7 +261,7 @@ compose_headings (struct tab_table *t,
                            ? dim_col_vert
                            : cat_col_vert);
                       draw_line (t, borders, style, b, x1 + a_ofs, y1,
-                                 t->table.n[b] - 1);
+                                 t->n[b] - 1);
                     }
                 }
               if (c->parent && c->parent->show_label)
@@ -286,7 +286,7 @@ compose_headings (struct tab_table *t,
 
       if (dim_index > 1)
         draw_line (t, borders, dim_col_horz, a, bottom_row + 1, a_ofs,
-                   t->table.n[a] - 1);
+                   t->n[a] - 1);
 
       bottom_row -= d->label_depth;
     }
@@ -309,7 +309,7 @@ pivot_table_submit_layer (const struct pivot_table *pt,
     [H] = pt->axes[PIVOT_AXIS_ROW].label_depth,
     [V] = pt->axes[PIVOT_AXIS_COLUMN].label_depth,
   };
-  struct tab_table *table = tab_create (body[H] + stub[H],
+  struct table *table = tab_create (body[H] + stub[H],
                                         body[V] + stub[V],
                                         stub[H], 0, stub[V], 0);
 
@@ -405,35 +405,35 @@ pivot_table_submit_layer (const struct pivot_table *pt,
                pt->corner_text, footnotes,
                pt->show_values, pt->show_variables, false);
 
-  if (tab_nc (table) && tab_nr (table))
+  if (table_nc (table) && table_nr (table))
     {
       tab_hline (
         table, get_table_rule (pt->borders, PIVOT_BORDER_INNER_TOP),
-        0, tab_nc (table) - 1, 0);
+        0, table_nc (table) - 1, 0);
       tab_hline (
         table, get_table_rule (pt->borders, PIVOT_BORDER_INNER_BOTTOM),
-        0, tab_nc (table) - 1, tab_nr (table));
+        0, table_nc (table) - 1, table_nr (table));
       tab_vline (
         table, get_table_rule (pt->borders, PIVOT_BORDER_INNER_LEFT),
-        0, 0, tab_nr (table) - 1);
+        0, 0, table_nr (table) - 1);
       tab_vline (
         table, get_table_rule (pt->borders, PIVOT_BORDER_INNER_RIGHT),
-        tab_nc (table), 0, tab_nr (table) - 1);
+        table_nc (table), 0, table_nr (table) - 1);
 
       if (stub[V])
         tab_hline (
           table, get_table_rule (pt->borders, PIVOT_BORDER_DATA_TOP),
-          0, tab_nc (table) - 1, stub[V]);
+          0, table_nc (table) - 1, stub[V]);
       if (stub[H])
         tab_vline (
           table, get_table_rule (pt->borders, PIVOT_BORDER_DATA_LEFT),
-          stub[H], 0, tab_nr (table) - 1);
+          stub[H], 0, table_nr (table) - 1);
 
     }
   free (column_enumeration);
   free (row_enumeration);
 
-  struct table_item *ti = table_item_create (&table->table, NULL, NULL);
+  struct table_item *ti = table_item_create (table, NULL, NULL);
 
   if (pt->title)
     {

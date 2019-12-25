@@ -27,89 +27,40 @@
 #include "output/table.h"
 #include "data/format.h"
 
-#define TAB_STYLE_MASK (7u << (TAB_FIRST_AVAILABLE + 1))
-#define TAB_STYLE_SHIFT (TAB_FIRST_AVAILABLE + 1)
-
-enum
-  {
-    /* Horizontal alignment of cell contents. */
-    TAB_RIGHT      = 0 << (TAB_FIRST_AVAILABLE + 4),
-    TAB_LEFT       = 1 << (TAB_FIRST_AVAILABLE + 4),
-    TAB_CENTER     = 2 << (TAB_FIRST_AVAILABLE + 4),
-    TAB_HALIGN     = 3 << (TAB_FIRST_AVAILABLE + 4), /* Alignment mask. */
-
-    /* Vertical alignment of cell contents. */
-    TAB_TOP        = 0 << (TAB_FIRST_AVAILABLE + 6),
-    TAB_MIDDLE     = 1 << (TAB_FIRST_AVAILABLE + 6),
-    TAB_BOTTOM     = 2 << (TAB_FIRST_AVAILABLE + 6),
-    TAB_VALIGN     = 3 << (TAB_FIRST_AVAILABLE + 6), /* Alignment mask. */
-  };
-
 /* Rule masks. */
 #define TAB_RULE_TYPE_MASK   7
 #define TAB_RULE_TYPE_SHIFT  0
 #define TAB_RULE_STYLE_MASK  (31 << TAB_RULE_STYLE_SHIFT)
 #define TAB_RULE_STYLE_SHIFT 3
 
-/* A table. */
-struct tab_table
-  {
-    struct table table;
-    struct pool *container;
-
-    /* Table contents.
-
-       Each array element in cc[] is ordinarily a "char *" pointer to a
-       string.  If TAB_JOIN (defined in tab.c) is set in ct[] for the element,
-       however, it is a joined cell and the corresponding element of cc[]
-       points to a struct tab_joined_cell. */
-    void **cc;                  /* Cell contents; void *[nr][nc]. */
-    unsigned short *ct;		/* Cell types; unsigned short[nr][nc]. */
-    struct area_style *styles[8];
-
-    /* Rules. */
-    unsigned char *rh;		/* Horiz rules; unsigned char[nr+1][nc]. */
-    unsigned char *rv;		/* Vert rules; unsigned char[nr][nc+1]. */
-    struct cell_color *rule_colors[32];
-  };
-
-struct tab_table *tab_cast (const struct table *);
-
-/* Number of rows or columns in TABLE. */
-static inline int tab_nr (const struct tab_table *table)
-        { return table_nr (&table->table); }
-static inline int tab_nc (const struct tab_table *table)
-        { return table_nc (&table->table); }
-
 /* Tables. */
-struct tab_table *tab_create (int nc, int nr,
-                              int l, int r, int t, int b);
+struct table *tab_create (int nc, int nr, int hl, int hr, int ht, int hb);
 
 /* Rules. */
-void tab_hline (struct tab_table *, int style, int x1, int x2, int y);
-void tab_vline (struct tab_table *, int style, int x, int y1, int y2);
-void tab_box (struct tab_table *, int f_h, int f_v, int i_h, int i_v,
+void tab_hline (struct table *, int style, int x1, int x2, int y);
+void tab_vline (struct table *, int style, int x, int y1, int y2);
+void tab_box (struct table *, int f_h, int f_v, int i_h, int i_v,
 	      int x1, int y1, int x2, int y2);
 
 /* Cells. */
-void tab_text (struct tab_table *, int c, int r, unsigned opt, const char *);
-void tab_text_format (struct tab_table *, int c, int r, unsigned opt,
+void tab_text (struct table *, int c, int r, unsigned opt, const char *);
+void tab_text_format (struct table *, int c, int r, unsigned opt,
                       const char *, ...)
-     PRINTF_FORMAT (5, 6);
+  PRINTF_FORMAT (5, 6);
 
-void tab_joint_text (struct tab_table *, int x1, int y1, int x2, int y2,
+void tab_joint_text (struct table *, int x1, int y1, int x2, int y2,
 		     unsigned opt, const char *);
 
-struct footnote *tab_create_footnote (struct tab_table *, size_t idx,
+struct footnote *tab_create_footnote (struct table *, size_t idx,
                                       const char *content, const char *marker,
                                       struct area_style *);
-void tab_add_footnote (struct tab_table *, int x, int y,
+void tab_add_footnote (struct table *, int x, int y,
                        const struct footnote *);
 
-void tab_add_style (struct tab_table *, int x, int y,
+void tab_add_style (struct table *, int x, int y,
                     const struct area_style *);
 
-bool tab_cell_is_empty (const struct tab_table *, int c, int r);
+bool tab_cell_is_empty (const struct table *, int c, int r);
 
 /* Simple output. */
 void tab_output_text (int options, const char *string);

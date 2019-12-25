@@ -239,9 +239,9 @@ table_collect_footnotes (const struct table_item *item,
 struct table *
 table_from_string (const char *text)
 {
-  struct tab_table *t = tab_create (1, 1, 0, 0, 0, 0);
+  struct table *t = tab_create (1, 1, 0, 0, 0, 0);
   tab_text (t, 0, 0, TAB_LEFT, text);
-  return &t->table;
+  return t;
 }
 
 const char *
