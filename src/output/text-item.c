@@ -122,7 +122,8 @@ text_item_to_table_item (struct text_item *text_item)
   struct tab_table *tab = tab_create (1, 1);
 
   struct area_style *style = pool_alloc (tab->container, sizeof *style);
-  *style = (struct area_style) AREA_STYLE_INITIALIZER;
+  *style = (struct area_style) { AREA_STYLE_INITIALIZER__,
+                                 .cell_style.halign = TABLE_HALIGN_LEFT };
   struct font_style *font_style = &style->font_style;
   if (text_item->typeface)
     font_style->typeface = pool_strdup (tab->container, text_item->typeface);
@@ -133,7 +134,7 @@ text_item_to_table_item (struct text_item *text_item)
   font_style->markup = text_item->markup;
   tab->styles[0] = style;
 
-  int opts = TAB_LEFT;
+  int opts = 0;
   if (text_item->markup)
     opts |= TAB_MARKUP;
   if (text_item->type == TEXT_ITEM_SYNTAX || text_item->type == TEXT_ITEM_LOG)

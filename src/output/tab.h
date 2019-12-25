@@ -33,16 +33,16 @@
 enum
   {
     /* Horizontal alignment of cell contents. */
-    TAB_RIGHT      = 0 << (TAB_FIRST_AVAILABLE + 2),
-    TAB_LEFT       = 1 << (TAB_FIRST_AVAILABLE + 2),
-    TAB_CENTER     = 2 << (TAB_FIRST_AVAILABLE + 2),
-    TAB_HALIGN     = 3 << (TAB_FIRST_AVAILABLE + 2), /* Alignment mask. */
+    TAB_RIGHT      = 0 << (TAB_FIRST_AVAILABLE + 4),
+    TAB_LEFT       = 1 << (TAB_FIRST_AVAILABLE + 4),
+    TAB_CENTER     = 2 << (TAB_FIRST_AVAILABLE + 4),
+    TAB_HALIGN     = 3 << (TAB_FIRST_AVAILABLE + 4), /* Alignment mask. */
 
     /* Vertical alignment of cell contents. */
-    TAB_TOP        = 0 << (TAB_FIRST_AVAILABLE + 4),
-    TAB_MIDDLE     = 1 << (TAB_FIRST_AVAILABLE + 4),
-    TAB_BOTTOM     = 2 << (TAB_FIRST_AVAILABLE + 4),
-    TAB_VALIGN     = 3 << (TAB_FIRST_AVAILABLE + 4), /* Alignment mask. */
+    TAB_TOP        = 0 << (TAB_FIRST_AVAILABLE + 6),
+    TAB_MIDDLE     = 1 << (TAB_FIRST_AVAILABLE + 6),
+    TAB_BOTTOM     = 2 << (TAB_FIRST_AVAILABLE + 6),
+    TAB_VALIGN     = 3 << (TAB_FIRST_AVAILABLE + 6), /* Alignment mask. */
   };
 
 /* Rule masks. */
