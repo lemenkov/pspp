@@ -27,7 +27,6 @@
 #include "libpspp/hmap.h"
 #include "libpspp/pool.h"
 #include "output/render.h"
-#include "output/tab.h"
 #include "output/table-item.h"
 #include "output/table.h"
 
@@ -1508,13 +1507,13 @@ add_footnote_page (struct render_pager *p, const struct table_item *item)
   if (!n_footnotes)
     return;
 
-  struct table *t = tab_create (1, n_footnotes, 0, 0, 0, 0);
+  struct table *t = table_create (1, n_footnotes, 0, 0, 0, 0);
   for (size_t i = 0; i < n_footnotes; i++)
     {
-      tab_text_format (t, 0, i, TAB_LEFT, "%s. %s",
-                       f[i]->marker, f[i]->content);
+      table_text_format (t, 0, i, TAB_LEFT, "%s. %s",
+                         f[i]->marker, f[i]->content);
       if (f[i]->style)
-        tab_add_style (t, 0, i, f[i]->style);
+        table_add_style (t, 0, i, f[i]->style);
     }
   render_pager_add_table (p, t, 0);
 
@@ -1528,10 +1527,10 @@ add_text_page (struct render_pager *p, const struct table_item_text *t,
   if (!t)
     return;
 
-  struct table *tab = tab_create (1, 1, 0, 0, 0, 0);
-  tab_text (tab, 0, 0, 0, t->content);
+  struct table *tab = table_create (1, 1, 0, 0, 0, 0);
+  table_text (tab, 0, 0, 0, t->content);
   for (size_t i = 0; i < t->n_footnotes; i++)
-    tab_add_footnote (tab, 0, 0, t->footnotes[i]);
+    table_add_footnote (tab, 0, 0, t->footnotes[i]);
   if (t->style)
     tab->styles[0] = area_style_clone (tab->container, t->style);
   render_pager_add_table (p, tab, min_width);
@@ -1544,13 +1543,13 @@ add_layers_page (struct render_pager *p,
   if (!layers)
     return;
 
-  struct table *tab = tab_create (1, layers->n_layers, 0, 0, 0, 0);
+  struct table *tab = table_create (1, layers->n_layers, 0, 0, 0, 0);
   for (size_t i = 0; i < layers->n_layers; i++)
     {
       const struct table_item_layer *layer = &layers->layers[i];
-      tab_text (tab, 0, i, 0, layer->content);
+      table_text (tab, 0, i, 0, layer->content);
       for (size_t j = 0; j < layer->n_footnotes; j++)
-        tab_add_footnote (tab, 0, i, layer->footnotes[j]);
+        table_add_footnote (tab, 0, i, layer->footnotes[j]);
     }
   if (layers->style)
     tab->styles[0] = area_style_clone (tab->container, layers->style);

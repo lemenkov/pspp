@@ -41,7 +41,7 @@
 #include "libpspp/pool.h"
 #include "libpspp/u8-line.h"
 #include "output/pivot-table.h"
-#include "output/tab.h"
+#include "output/table.h"
 #include "output/text-item.h"
 
 #include "gl/xalloc.h"
@@ -562,7 +562,7 @@ print_text_flush_records (struct print_trns *trns, struct u8_line *line,
       *u8_line_reserve (line, 0, 1, 1) = leader;
 
       if (trns->writer == NULL)
-        tab_output_text (TAB_FIX, ds_cstr (&line->s) + 1);
+        table_output_text (TAB_FIX, ds_cstr (&line->s) + 1);
       else
         {
           size_t len = ds_length (&line->s);

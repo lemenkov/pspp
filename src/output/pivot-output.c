@@ -23,7 +23,6 @@
 #include "data/settings.h"
 #include "libpspp/assertion.h"
 #include "libpspp/pool.h"
-#include "output/tab.h"
 #include "output/table.h"
 #include "output/table-item.h"
 #include "output/text-item.h"
@@ -112,19 +111,19 @@ fill_cell (struct table *t, int x1, int y1, int x2, int y2,
       if (rotate_label)
         opts |= TAB_ROTATE;
     }
-  tab_joint_text (t, x1, y1, x2, y2, opts, ds_cstr (&s));
+  table_joint_text (t, x1, y1, x2, y2, opts, ds_cstr (&s));
   ds_destroy (&s);
 
   if (value)
     {
       if (value->cell_style || value->font_style)
-        tab_add_style (t, x1, y1,
-                       area_style_override (t->container, style,
-                                            value->cell_style,
-                                            value->font_style));
-
+        table_add_style (t, x1, y1,
+                         area_style_override (t->container, style,
+                                              value->cell_style,
+                                              value->font_style));
+      
       for (size_t i = 0; i < value->n_footnotes; i++)
-        tab_add_footnote (t, x1, y1, footnotes[value->footnotes[i]->idx]);
+        table_add_footnote (t, x1, y1, footnotes[value->footnotes[i]->idx]);
     }
 }
 
@@ -170,9 +169,9 @@ draw_line (struct table *t, const struct table_border_style *styles,
 {
   int rule = get_table_rule (styles, style_idx);
   if (axis == H)
-    tab_hline (t, rule, b0, b1, a);
+    table_hline (t, rule, b0, b1, a);
   else
-    tab_vline (t, rule, a, b0, b1);
+    table_vline (t, rule, a, b0, b1);
 }
 
 static void
@@ -309,9 +308,9 @@ pivot_table_submit_layer (const struct pivot_table *pt,
     [H] = pt->axes[PIVOT_AXIS_ROW].label_depth,
     [V] = pt->axes[PIVOT_AXIS_COLUMN].label_depth,
   };
-  struct table *table = tab_create (body[H] + stub[H],
-                                        body[V] + stub[V],
-                                        stub[H], 0, stub[V], 0);
+  struct table *table = table_create (body[H] + stub[H],
+                                      body[V] + stub[V],
+                                      stub[H], 0, stub[V], 0);
 
   for (size_t i = 0; i < PIVOT_N_AREAS; i++)
     table->styles[i] = area_style_override (table->container, &pt->areas[i],
@@ -336,7 +335,7 @@ pivot_table_submit_layer (const struct pivot_table *pt,
         pt->footnotes[i]->content, pt->show_values, pt->show_variables);
       char *marker = pivot_value_to_string (
         pt->footnotes[i]->marker, pt->show_values, pt->show_variables);
-      footnotes[i] = tab_create_footnote (
+      footnotes[i] = table_create_footnote (
         table, i, content, marker,
         area_style_override (table->container, &pt->areas[PIVOT_AREA_FOOTER],
                              pt->footnotes[i]->content->cell_style,
@@ -407,25 +406,25 @@ pivot_table_submit_layer (const struct pivot_table *pt,
 
   if (table_nc (table) && table_nr (table))
     {
-      tab_hline (
+      table_hline (
         table, get_table_rule (pt->borders, PIVOT_BORDER_INNER_TOP),
         0, table_nc (table) - 1, 0);
-      tab_hline (
+      table_hline (
         table, get_table_rule (pt->borders, PIVOT_BORDER_INNER_BOTTOM),
         0, table_nc (table) - 1, table_nr (table));
-      tab_vline (
+      table_vline (
         table, get_table_rule (pt->borders, PIVOT_BORDER_INNER_LEFT),
         0, 0, table_nr (table) - 1);
-      tab_vline (
+      table_vline (
         table, get_table_rule (pt->borders, PIVOT_BORDER_INNER_RIGHT),
         table_nc (table), 0, table_nr (table) - 1);
 
       if (stub[V])
-        tab_hline (
+        table_hline (
           table, get_table_rule (pt->borders, PIVOT_BORDER_DATA_TOP),
           0, table_nc (table) - 1, stub[V]);
       if (stub[H])
-        tab_vline (
+        table_vline (
           table, get_table_rule (pt->borders, PIVOT_BORDER_DATA_LEFT),
           stub[H], 0, table_nr (table) - 1);
 

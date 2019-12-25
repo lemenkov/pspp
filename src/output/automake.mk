@@ -72,7 +72,6 @@ src_output_liboutput_la_SOURCES = \
 	src/output/pivot-table.h \
 	src/output/render.c \
 	src/output/render.h \
-	src/output/tab.h \
 	src/output/table-item.c \
 	src/output/table-item.h \
 	src/output/table-provider.h \

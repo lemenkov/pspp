@@ -26,11 +26,6 @@
    broken across more than one page, those rows or columns are repeated on each
    page.
 
-   Every table is an instance of a particular table class that is responsible
-   for keeping track of cell data.  By far the most common table class is
-   struct table (see output/tab.h).  This header also declares some other
-   kinds of table classes, near the end of the file.
-
    A table is not itself an output_item, and thus a table cannot by itself be
    used for output, but they can be embedded inside struct table_item (see
    table-item.h) for that purpose. */
@@ -38,6 +33,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 #include <stddef.h>
+#include "libpspp/compiler.h"
 
 struct casereader;
 struct fmt_spec;
@@ -284,10 +280,47 @@ static inline int table_ht (const struct table *t)
         { return t->h[TABLE_VERT][0]; }
 static inline int table_hb (const struct table *t)
         { return t->h[TABLE_VERT][1]; }
-
-/* Table classes. */
 
-/* Simple kinds of tables. */
+/* Simple kinds of output. */
 struct table *table_from_string (const char *);
+void table_output_text (int options, const char *string);
+void table_output_text_format (int options, const char *, ...)
+  PRINTF_FORMAT (2, 3);
+
+/* Rule masks. */
+#define TAB_RULE_TYPE_MASK   7
+#define TAB_RULE_TYPE_SHIFT  0
+#define TAB_RULE_STYLE_MASK  (31 << TAB_RULE_STYLE_SHIFT)
+#define TAB_RULE_STYLE_SHIFT 3
+
+/* Tables. */
+struct table *table_create (int nc, int nr, int hl, int hr, int ht, int hb);
+
+/* Rules. */
+void table_hline (struct table *, int style, int x1, int x2, int y);
+void table_vline (struct table *, int style, int x, int y1, int y2);
+void table_box (struct table *, int f_h, int f_v, int i_h, int i_v,
+                int x1, int y1, int x2, int y2);
+
+/* Cells. */
+void table_text (struct table *, int c, int r, unsigned opt, const char *);
+void table_text_format (struct table *, int c, int r, unsigned opt,
+                        const char *, ...)
+  PRINTF_FORMAT (5, 6);
+
+void table_joint_text (struct table *, int x1, int y1, int x2, int y2,
+                       unsigned opt, const char *);
+
+struct footnote *table_create_footnote (struct table *, size_t idx,
+                                        const char *content,
+                                        const char *marker,
+                                        struct area_style *);
+void table_add_footnote (struct table *, int x, int y,
+                         const struct footnote *);
+
+void table_add_style (struct table *, int x, int y,
+                      const struct area_style *);
+
+bool table_cell_is_empty (const struct table *, int c, int r);
 
 #endif /* output/table.h */

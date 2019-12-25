@@ -30,7 +30,7 @@
 #include "libpspp/pool.h"
 #include "libpspp/str.h"
 #include "output/table-item.h"
-#include "output/tab.h"
+#include "output/table.h"
 #include "output/text-item.h"
 
 #include "gl/xalloc.h"
@@ -175,8 +175,8 @@ table_collect_footnotes (const struct table_item *item,
 struct table *
 table_from_string (const char *text)
 {
-  struct table *t = tab_create (1, 1, 0, 0, 0, 0);
-  tab_text (t, 0, 0, TAB_LEFT, text);
+  struct table *t = table_create (1, 1, 0, 0, 0, 0);
+  table_text (t, 0, 0, TAB_LEFT, text);
   return t;
 }
 
@@ -320,7 +320,7 @@ cell_style_dump (const struct cell_style *c)
 static const bool debugging = true;
 
 /* Joined cell. */
-struct tab_joined_cell
+struct table_joined_cell
 {
   int d[TABLE_N_AXES][2];       /* Table region, same as struct table_cell. */
   char *text;
@@ -341,7 +341,7 @@ struct tab_joined_cell
 
    The table's cells are initially empty. */
 struct table *
-tab_create (int nc, int nr, int hl, int hr, int ht, int hb)
+table_create (int nc, int nr, int hl, int hr, int ht, int hb)
 {
   struct table *t;
 
@@ -374,7 +374,7 @@ tab_create (int nc, int nr, int hl, int hr, int ht, int hb)
 /* Draws a vertical line to the left of cells at horizontal position X
    from Y1 to Y2 inclusive in style STYLE, if style is not -1. */
 void
-tab_vline (struct table *t, int style, int x, int y1, int y2)
+table_vline (struct table *t, int style, int x, int y1, int y2)
 {
   if (debugging)
     {
@@ -405,7 +405,7 @@ tab_vline (struct table *t, int style, int x, int y1, int y2)
 /* Draws a horizontal line above cells at vertical position Y from X1
    to X2 inclusive in style STYLE, if style is not -1. */
 void
-tab_hline (struct table *t, int style, int x1, int x2, int y)
+table_hline (struct table *t, int style, int x1, int x2, int y)
 {
   if (debugging)
     {
@@ -440,8 +440,8 @@ tab_hline (struct table *t, int style, int x1, int x2, int y)
    drawing those lines.  This is distinct from 0, which draws a null
    line. */
 void
-tab_box (struct table *t, int f_h, int f_v, int i_h, int i_v,
-         int x1, int y1, int x2, int y2)
+table_box (struct table *t, int f_h, int f_v, int i_h, int i_v,
+           int x1, int y1, int x2, int y2)
 {
   if (debugging)
     {
@@ -511,7 +511,7 @@ tab_box (struct table *t, int f_h, int f_v, int i_h, int i_v,
 /* Cells. */
 
 static void
-do_tab_text (struct table *table, int c, int r, unsigned opt, char *text)
+do_table_text (struct table *table, int c, int r, unsigned opt, char *text)
 {
   assert (c >= 0);
   assert (r >= 0);
@@ -522,7 +522,7 @@ do_tab_text (struct table *table, int c, int r, unsigned opt, char *text)
     {
       if (c < 0 || r < 0 || c >= table_nc (table) || r >= table_nr (table))
         {
-          printf ("tab_text(): bad cell (%d,%d) in table size (%d,%d)\n",
+          printf ("table_text(): bad cell (%d,%d) in table size (%d,%d)\n",
                   c, r, table_nc (table), table_nr (table));
           return;
         }
@@ -535,31 +535,31 @@ do_tab_text (struct table *table, int c, int r, unsigned opt, char *text)
 /* Sets cell (C,R) in TABLE, with options OPT, to have text value
    TEXT. */
 void
-tab_text (struct table *table, int c, int r, unsigned opt,
+table_text (struct table *table, int c, int r, unsigned opt,
           const char *text)
 {
-  do_tab_text (table, c, r, opt, pool_strdup (table->container, text));
+  do_table_text (table, c, r, opt, pool_strdup (table->container, text));
 }
 
 /* Sets cell (C,R) in TABLE, with options OPT, to have text value
    FORMAT, which is formatted as if passed to printf. */
 void
-tab_text_format (struct table *table, int c, int r, unsigned opt,
-                 const char *format, ...)
+table_text_format (struct table *table, int c, int r, unsigned opt,
+                   const char *format, ...)
 {
   va_list args;
 
   va_start (args, format);
-  do_tab_text (table, c, r, opt,
-               pool_vasprintf (table->container, format, args));
+  do_table_text (table, c, r, opt,
+                 pool_vasprintf (table->container, format, args));
   va_end (args);
 }
 
-static struct tab_joined_cell *
+static struct table_joined_cell *
 add_joined_cell (struct table *table, int x1, int y1, int x2, int y2,
                  unsigned opt)
 {
-  struct tab_joined_cell *j;
+  struct table_joined_cell *j;
 
   assert (x1 >= 0);
   assert (y1 >= 0);
@@ -575,14 +575,14 @@ add_joined_cell (struct table *table, int x1, int y1, int x2, int y2,
           || x2 < x1 || x2 >= table_nc (table)
           || y2 < y1 || y2 >= table_nr (table))
         {
-          printf ("tab_joint_text(): bad cell "
+          printf ("table_joint_text(): bad cell "
                   "(%d,%d)-(%d,%d) in table size (%d,%d)\n",
                   x1, y1, x2, y2, table_nc (table), table_nr (table));
           return NULL;
         }
     }
 
-  tab_box (table, -1, -1, TAL_0, TAL_0, x1, y1, x2, y2);
+  table_box (table, -1, -1, TAL_0, TAL_0, x1, y1, x2, y2);
 
   j = pool_alloc (table->container, sizeof *j);
   j->d[TABLE_HORZ][0] = x1;
@@ -621,18 +621,18 @@ add_joined_cell (struct table *table, int x1, int y1, int x2, int y2,
 /* Joins cells (X1,X2)-(Y1,Y2) inclusive in TABLE, and sets them with
    options OPT to have text value TEXT. */
 void
-tab_joint_text (struct table *table, int x1, int y1, int x2, int y2,
-                unsigned opt, const char *text)
+table_joint_text (struct table *table, int x1, int y1, int x2, int y2,
+                  unsigned opt, const char *text)
 {
   char *s = pool_strdup (table->container, text);
   if (x1 == x2 && y1 == y2)
-    do_tab_text (table, x1, y1, opt, s);
+    do_table_text (table, x1, y1, opt, s);
   else
     add_joined_cell (table, x1, y1, x2, y2, opt)->text = s;
 }
 
 struct footnote *
-tab_create_footnote (struct table *table, size_t idx, const char *content,
+table_create_footnote (struct table *table, size_t idx, const char *content,
                      const char *marker, struct area_style *style)
 {
   struct footnote *f = pool_alloc (table->container, sizeof *f);
@@ -644,12 +644,12 @@ tab_create_footnote (struct table *table, size_t idx, const char *content,
 }
 
 void
-tab_add_footnote (struct table *table, int x, int y,
+table_add_footnote (struct table *table, int x, int y,
                   const struct footnote *f)
 {
   int index = x + y * table_nc (table);
   unsigned short opt = table->ct[index];
-  struct tab_joined_cell *j;
+  struct table_joined_cell *j;
 
   if (opt & TAB_JOIN)
     j = table->cc[index];
@@ -668,12 +668,12 @@ tab_add_footnote (struct table *table, int x, int y,
 }
 
 void
-tab_add_style (struct table *table, int x, int y,
-               const struct area_style *style)
+table_add_style (struct table *table, int x, int y,
+                 const struct area_style *style)
 {
   int index = x + y * table_nc (table);
   unsigned short opt = table->ct[index];
-  struct tab_joined_cell *j;
+  struct table_joined_cell *j;
 
   if (opt & TAB_JOIN)
     j = table->cc[index];
@@ -689,7 +689,7 @@ tab_add_style (struct table *table, int x, int y,
 }
 
 bool
-tab_cell_is_empty (const struct table *table, int c, int r)
+table_cell_is_empty (const struct table *table, int c, int r)
 {
   return table->cc[c + r * table_nc (table)] == NULL;
 }
@@ -702,15 +702,15 @@ tab_cell_is_empty (const struct table *table, int c, int r)
    This function is obsolete.  Please do not add new uses of it.  Instead, use
    a text_item (see output/text-item.h). */
 void
-tab_output_text (int options UNUSED, const char *string)
+table_output_text (int options UNUSED, const char *string)
 {
   text_item_submit (text_item_create (TEXT_ITEM_LOG, string));
 }
 
-/* Same as tab_output_text(), but FORMAT is passed through printf-like
+/* Same as table_output_text(), but FORMAT is passed through printf-like
    formatting before output. */
 void
-tab_output_text_format (int options, const char *format, ...)
+table_output_text_format (int options, const char *format, ...)
 {
   va_list args;
   char *text;
@@ -719,7 +719,7 @@ tab_output_text_format (int options, const char *format, ...)
   text = xvasprintf (format, args);
   va_end (args);
 
-  tab_output_text (options, text);
+  table_output_text (options, text);
 
   free (text);
 }
@@ -777,7 +777,7 @@ table_get_cell (const struct table *t, int x, int y, struct table_cell *cell)
 
   if (opt & TAB_JOIN)
     {
-      const struct tab_joined_cell *jc = cc;
+      const struct table_joined_cell *jc = cc;
       cell->text = jc->text;
 
       cell->footnotes = jc->footnotes;

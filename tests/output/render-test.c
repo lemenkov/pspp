@@ -28,7 +28,7 @@
 #include "libpspp/string-map.h"
 #include "output/ascii.h"
 #include "output/driver.h"
-#include "output/tab.h"
+#include "output/table.h"
 #include "output/table-item.h"
 
 #include "gl/error.h"
@@ -381,10 +381,10 @@ read_table (FILE *stream)
   ht = n_input >= 5 ? input[4] : 0;
   hb = n_input >= 6 ? input[5] : 0;
 
-  tab = tab_create (nc, nr, hl, hr, ht, hb);
+  tab = table_create (nc, nr, hl, hr, ht, hb);
   for (r = 0; r < nr; r++)
     for (c = 0; c < nc; c++)
-      if (tab_cell_is_empty (tab, c, r))
+      if (table_cell_is_empty (tab, c, r))
         {
           unsigned int opt;
           char *new_line;
@@ -417,23 +417,23 @@ read_table (FILE *stream)
             switch (*text++)
               {
               case '<':
-                tab_vline (tab, TAL_1, c, r, r + rs - 1);
+                table_vline (tab, TAL_1, c, r, r + rs - 1);
                 break;
 
               case '>':
-                tab_vline (tab, TAL_1, c + cs, r, r + rs - 1);
+                table_vline (tab, TAL_1, c + cs, r, r + rs - 1);
                 break;
 
               case '^':
-                tab_hline (tab, TAL_1, c, c + cs - 1, r);
+                table_hline (tab, TAL_1, c, c + cs - 1, r);
                 break;
 
               case ',':
-                tab_hline (tab, TAL_1, c, c + cs - 1, r + rs);
+                table_hline (tab, TAL_1, c, c + cs - 1, r + rs);
                 break;
 
               case '@':
-                tab_box (tab, TAL_1, TAL_1, -1, -1, c, r,
+                table_box (tab, TAL_1, TAL_1, -1, -1, c, r,
                          c + cs - 1, r + rs - 1);
                 break;
 
@@ -464,14 +464,14 @@ read_table (FILE *stream)
 
           for (i = 0; (content = strsep (&pos, "#")) != NULL; i++)
             if (!i)
-              tab_joint_text (tab, c, r, c + cs - 1, r + rs - 1, opt,
-                              content);
+              table_joint_text (tab, c, r, c + cs - 1, r + rs - 1, opt,
+                                content);
             else
               {
                 char marker[2] = { 'a' + n_footnotes, '\0' };
-                struct footnote *f = tab_create_footnote (
+                struct footnote *f = table_create_footnote (
                   tab, n_footnotes, content, marker, NULL);
-                tab_add_footnote (tab, c, r, f);
+                table_add_footnote (tab, c, r, f);
                 n_footnotes++;
               }
         }
