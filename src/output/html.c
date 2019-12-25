@@ -587,7 +587,6 @@ html_output_table (struct html_driver *html, const struct table_item *item)
 
 	next_1:
           x = cell.d[TABLE_HORZ][1];
-          table_cell_free (&cell);
         }
       fputs ("  </TR>\n", html->file);
     }

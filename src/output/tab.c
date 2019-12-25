@@ -482,7 +482,6 @@ tab_get_cell (const struct table *table, int x, int y,
 
   cell->options = opt;
   cell->n_footnotes = 0;
-  cell->destructor = NULL;
 
   int style_idx = (opt & TAB_STYLE_MASK) >> TAB_STYLE_SHIFT;
   const struct area_style *style = t->styles[style_idx];

@@ -61,13 +61,7 @@ struct table_cell
     size_t n_footnotes;
 
     const struct area_style *style;
-
-    /* Called to free the cell's data, if nonnull. */
-    void (*destructor) (void *destructor_aux);
-    void *destructor_aux;
   };
-
-void table_cell_free (struct table_cell *);
 
 void table_cell_format_footnote_markers (const struct table_cell *,
                                          struct string *);

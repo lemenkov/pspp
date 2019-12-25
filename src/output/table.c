@@ -172,15 +172,6 @@ table_get_cell (const struct table *table, int x, int y,
   table->klass->get_cell (table, x, y, cell);
 }
 
-/* Frees CELL, which should have been initialized by calling
-   table_get_cell(). */
-void
-table_cell_free (struct table_cell *cell)
-{
-  if (cell->destructor != NULL)
-    cell->destructor (cell->destructor_aux);
-}
-
 /* Returns one of the TAL_* enumeration constants (declared in output/table.h)
    representing a rule running alongside one of the cells in TABLE.
 
@@ -280,7 +271,6 @@ table_collect_footnotes (const struct table_item *item,
           if (x == cell.d[TABLE_HORZ][0] && y == cell.d[TABLE_VERT][0])
             footnotes = add_footnotes (cell.footnotes, cell.n_footnotes,
                                        footnotes, &allocated, &n);
-          table_cell_free (&cell);
         }
     }
 

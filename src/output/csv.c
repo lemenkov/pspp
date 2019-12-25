@@ -246,8 +246,6 @@ csv_submit (struct output_driver *driver,
                   csv_output_field (csv, ds_cstr (&s));
                   ds_destroy (&s);
                 }
-
-              table_cell_free (&cell);
             }
           putc ('\n', csv->file);
         }

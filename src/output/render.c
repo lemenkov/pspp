@@ -745,7 +745,6 @@ render_page_create (const struct render_params *params, struct table *table,
               }
           }
         x = cell.d[H][1];
-        table_cell_free (&cell);
       }
 
   /* Distribute widths of spanned columns. */
@@ -768,7 +767,6 @@ render_page_create (const struct render_params *params, struct table *table,
                                         rules[H], table_cell_colspan (&cell));
           }
         x = cell.d[H][1];
-        table_cell_free (&cell);
       }
   if (min_width > 0)
     for (int i = 0; i < 2; i++)
@@ -834,7 +832,6 @@ render_page_create (const struct render_params *params, struct table *table,
               set_join_crossings (page, H, &cell, rules[H]);
           }
         x = cell.d[H][1];
-        table_cell_free (&cell);
       }
   for (int i = 0; i < 2; i++)
     free (columns[i]);
@@ -854,7 +851,6 @@ render_page_create (const struct render_params *params, struct table *table,
                                       table_cell_rowspan (&cell));
           }
         x = cell.d[H][1];
-        table_cell_free (&cell);
       }
 
   /* Decide final row heights. */
@@ -1148,7 +1144,6 @@ render_page_draw_cells (const struct render_page *page,
           if (y / 2 == bb[V][0] / 2 || y / 2 == cell.d[V][0])
             render_cell (page, ofs, &cell);
           x = rule_ofs (cell.d[H][1]);
-          table_cell_free (&cell);
         }
       else
         x++;
@@ -1385,7 +1380,6 @@ render_break_next (struct render_break *b, int size)
                     int better_pixel = page->params->adjust_break (
                       page->params->aux, &cell, w, pixel);
                     x = cell.d[H][1];
-                    table_cell_free (&cell);
 
                     if (better_pixel < pixel)
                       {
@@ -1912,7 +1906,6 @@ render_page_select (const struct render_page *page, enum table_axis axis,
               }
           }
         z = cell.d[b][1];
-        table_cell_free (&cell);
       }
 
   if (!page->h[a][1] || z1 < page->n[a] - page->h[a][1] || p1)
@@ -1932,7 +1925,6 @@ render_page_select (const struct render_page *page, enum table_axis axis,
                                                    cell_ofs (cell.d[a][1]));
           }
         z = cell.d[b][1];
-        table_cell_free (&cell);
       }
 
   /* Copy overflows from PAGE into subpage. */
@@ -1945,7 +1937,6 @@ render_page_select (const struct render_page *page, enum table_axis axis,
       if (cell.d[a][1] > z0 && cell.d[a][0] < z1
           && find_overflow_for_cell (&s, &cell) == NULL)
         insert_overflow (&s, &cell);
-      table_cell_free (&cell);
     }
 
   return subpage;

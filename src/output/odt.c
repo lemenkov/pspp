@@ -544,8 +544,6 @@ write_table (struct odt_driver *odt, const struct table_item *item)
 	      xmlTextWriterStartElement (odt->content_wtr, _xml("table:covered-table-cell"));
 	      xmlTextWriterEndElement (odt->content_wtr);
 	    }
-
-          table_cell_free (&cell);
 	}
 
       xmlTextWriterEndElement (odt->content_wtr); /* row */
