@@ -73,11 +73,8 @@ tab_create (int nc, int nr)
   struct tab_table *t;
 
   t = pool_create_container (struct tab_table, container);
-  table_init (&t->table, &tab_table_class);
-  table_set_nc (&t->table, nc);
-  table_set_nr (&t->table, nr);
+  table_init (&t->table, &tab_table_class, nc, nr);
 
-  t->cf = nc;
   t->cc = pool_calloc (t->container, nr * nc, sizeof *t->cc);
   t->ct = pool_calloc (t->container, nr * nc, sizeof *t->ct);
 
@@ -136,7 +133,7 @@ tab_vline (struct tab_table *t, int style, int x, int y1, int y2)
     {
       int y;
       for (y = y1; y <= y2; y++)
-        t->rv[x + (t->cf + 1) * y] = style;
+        t->rv[x + (tab_nc (t) + 1) * y] = style;
     }
 }
 
@@ -167,7 +164,7 @@ tab_hline (struct tab_table *t, int style, int x1, int x2, int y)
     {
       int x;
       for (x = x1; x <= x2; x++)
-        t->rh[x + t->cf * y] = style;
+        t->rh[x + tab_nc (t) * y] = style;
     }
 }
 
@@ -206,8 +203,8 @@ tab_box (struct tab_table *t, int f_h, int f_v, int i_h, int i_v,
       int x;
       for (x = x1; x <= x2; x++)
         {
-          t->rh[x + t->cf * y1] = f_h;
-          t->rh[x + t->cf * (y2 + 1)] = f_h;
+          t->rh[x + tab_nc (t) * y1] = f_h;
+          t->rh[x + tab_nc (t) * (y2 + 1)] = f_h;
         }
     }
   if (f_v != -1)
@@ -215,8 +212,8 @@ tab_box (struct tab_table *t, int f_h, int f_v, int i_h, int i_v,
       int y;
       for (y = y1; y <= y2; y++)
         {
-          t->rv[x1 + (t->cf + 1) * y] = f_v;
-          t->rv[(x2 + 1) + (t->cf + 1) * y] = f_v;
+          t->rv[x1 + (tab_nc (t) + 1) * y] = f_v;
+          t->rv[(x2 + 1) + (tab_nc (t) + 1) * y] = f_v;
         }
     }
 
@@ -229,7 +226,7 @@ tab_box (struct tab_table *t, int f_h, int f_v, int i_h, int i_v,
           int x;
 
           for (x = x1; x <= x2; x++)
-            t->rh[x + t->cf * y] = i_h;
+            t->rh[x + tab_nc (t) * y] = i_h;
         }
     }
   if (i_v != -1)
@@ -241,7 +238,7 @@ tab_box (struct tab_table *t, int f_h, int f_v, int i_h, int i_v,
           int y;
 
           for (y = y1; y <= y2; y++)
-            t->rv[x + (t->cf + 1) * y] = i_v;
+            t->rv[x + (tab_nc (t) + 1) * y] = i_v;
         }
     }
 }
@@ -266,8 +263,8 @@ do_tab_text (struct tab_table *table, int c, int r, unsigned opt, char *text)
         }
     }
 
-  table->cc[c + r * table->cf] = text;
-  table->ct[c + r * table->cf] = opt;
+  table->cc[c + r * tab_nc (table)] = text;
+  table->ct[c + r * tab_nc (table)] = opt;
 }
 
 /* Sets cell (C,R) in TABLE, with options OPT, to have text value
@@ -332,9 +329,9 @@ add_joined_cell (struct tab_table *table, int x1, int y1, int x2, int y2,
   j->style = NULL;
 
   {
-    void **cc = &table->cc[x1 + y1 * table->cf];
-    unsigned short *ct = &table->ct[x1 + y1 * table->cf];
-    const int ofs = table->cf - (x2 - x1);
+    void **cc = &table->cc[x1 + y1 * tab_nc (table)];
+    unsigned short *ct = &table->ct[x1 + y1 * tab_nc (table)];
+    const int ofs = tab_nc (table) - (x2 - x1);
 
     int y;
 
@@ -385,7 +382,7 @@ void
 tab_add_footnote (struct tab_table *table, int x, int y,
                   const struct footnote *f)
 {
-  int index = x + y * table->cf;
+  int index = x + y * tab_nc (table);
   unsigned short opt = table->ct[index];
   struct tab_joined_cell *j;
 
@@ -409,7 +406,7 @@ void
 tab_add_style (struct tab_table *table, int x, int y,
                const struct area_style *style)
 {
-  int index = x + y * table->cf;
+  int index = x + y * tab_nc (table);
   unsigned short opt = table->ct[index];
   struct tab_joined_cell *j;
 
@@ -429,7 +426,7 @@ tab_add_style (struct tab_table *table, int x, int y,
 bool
 tab_cell_is_empty (const struct tab_table *table, int c, int r)
 {
-  return table->cc[c + r * table->cf] == NULL;
+  return table->cc[c + r * tab_nc (table)] == NULL;
 }
 
 /* Editing. */
@@ -476,7 +473,7 @@ tab_get_cell (const struct table *table, int x, int y,
               struct table_cell *cell)
 {
   const struct tab_table *t = tab_cast (table);
-  int index = x + y * t->cf;
+  int index = x + y * tab_nc (t);
   unsigned short opt = t->ct[index];
   const void *cc = t->cc[index];
 
@@ -548,7 +545,8 @@ tab_get_rule (const struct table *table, enum table_axis axis, int x, int y,
 {
   const struct tab_table *t = tab_cast (table);
   uint8_t raw = (axis == TABLE_VERT
-                 ? t->rh[x + t->cf * y] : t->rv[x + (t->cf + 1) * y]);
+                 ? t->rh[x + tab_nc (t) * y]
+                 : t->rv[x + (tab_nc (t) + 1) * y]);
   struct cell_color *p = t->rule_colors[(raw & TAB_RULE_STYLE_MASK)
                                         >> TAB_RULE_STYLE_SHIFT];
   if (p)

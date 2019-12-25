@@ -57,9 +57,6 @@ struct tab_table
     struct table table;
     struct pool *container;
 
-    /* Table title and caption, or null. */
-    int cf;			/* Column factor for indexing purposes. */
-
     /* Table contents.
 
        Each array element in cc[] is ordinarily a "char *" pointer to a

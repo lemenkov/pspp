@@ -137,12 +137,7 @@ struct table_class
                      struct cell_color *color);
   };
 
-void table_init (struct table *, const struct table_class *);
-
-/* Table class implementations can call these functions or just set the
-   table's n[] and h[][] members directly. */
-void table_set_nc (struct table *, int nc);
-void table_set_nr (struct table *, int nr);
+void table_init (struct table *, const struct table_class *, int nc, int nr);
 
 /* For use primarily by output drivers. */
 

@@ -101,37 +101,22 @@ table_set_hb (struct table *table, int hb)
 /* Initializes TABLE as a table of the specified CLASS, initially with a
    reference count of 1.
 
-   TABLE initially has 0 rows and columns and no headers.  The table
-   implementation should update the numbers of rows and columns.  The table
+   TABLE initially has NR rows and NC columns and no headers.  The table
    implementation (or its client) may update the header rows and columns.
 
    A table is an abstract class, that is, a plain struct table is not useful on
    its own.  Thus, this function is normally called from the initialization
    function of some subclass of table. */
 void
-table_init (struct table *table, const struct table_class *class)
+table_init (struct table *table, const struct table_class *class,
+            int nc, int nr)
 {
   table->klass = class;
-  table->n[TABLE_HORZ] = table->n[TABLE_VERT] = 0;
+  table->n[TABLE_HORZ] = nc;
+  table->n[TABLE_VERT] = nr;
   table->h[TABLE_HORZ][0] = table->h[TABLE_HORZ][1] = 0;
   table->h[TABLE_VERT][0] = table->h[TABLE_VERT][1] = 0;
   table->ref_cnt = 1;
-}
-
-/* Sets the number of columns in TABLE to NC. */
-void
-table_set_nc (struct table *table, int nc)
-{
-  assert (!table_is_shared (table));
-  table->n[TABLE_HORZ] = nc;
-}
-
-/* Sets the number of rows in TABLE to NR. */
-void
-table_set_nr (struct table *table, int nr)
-{
-  assert (!table_is_shared (table));
-  table->n[TABLE_VERT] = nr;
 }
 
 struct area_style *
