@@ -54,7 +54,7 @@ table_unref (struct table *table)
     {
       assert (table->ref_cnt > 0);
       if (--table->ref_cnt == 0)
-        table->klass->destroy (table);
+        tab_destroy (table);
     }
 }
 
@@ -98,27 +98,6 @@ table_set_hb (struct table *table, int hb)
   table->h[TABLE_VERT][1] = hb;
 }
 
-/* Initializes TABLE as a table of the specified CLASS, initially with a
-   reference count of 1.
-
-   TABLE initially has NR rows and NC columns and no headers.  The table
-   implementation (or its client) may update the header rows and columns.
-
-   A table is an abstract class, that is, a plain struct table is not useful on
-   its own.  Thus, this function is normally called from the initialization
-   function of some subclass of table. */
-void
-table_init (struct table *table, const struct table_class *class,
-            int nc, int nr)
-{
-  table->klass = class;
-  table->n[TABLE_HORZ] = nc;
-  table->n[TABLE_VERT] = nr;
-  table->h[TABLE_HORZ][0] = table->h[TABLE_HORZ][1] = 0;
-  table->h[TABLE_VERT][0] = table->h[TABLE_VERT][1] = 0;
-  table->ref_cnt = 1;
-}
-
 struct area_style *
 area_style_clone (struct pool *pool, const struct area_style *old)
 {
@@ -154,7 +133,7 @@ table_get_cell (const struct table *table, int x, int y,
   static const struct area_style default_style = AREA_STYLE_INITIALIZER;
   cell->style = &default_style;
 
-  table->klass->get_cell (table, x, y, cell);
+  tab_get_cell (table, x, y, cell);
 }
 
 /* Returns one of the TAL_* enumeration constants (declared in output/table.h)
@@ -201,7 +180,7 @@ table_get_rule (const struct table *table, enum table_axis axis, int x, int y,
   assert (x >= 0 && x < table->n[TABLE_HORZ] + (axis == TABLE_HORZ));
   assert (y >= 0 && y < table->n[TABLE_VERT] + (axis == TABLE_VERT));
   *color = (struct cell_color) CELL_COLOR_BLACK;
-  return table->klass->get_rule (table, axis, x, y, color);
+  return tab_get_rule (table, axis, x, y, color);
 }
 
 void

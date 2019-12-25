@@ -208,8 +208,6 @@ static inline int table_rule_combine (int a, int b)
 /* A table. */
 struct table
   {
-    const struct table_class *klass;
-
     /* Table size.
 
        n[TABLE_HORZ]: Number of columns.

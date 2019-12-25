@@ -63,8 +63,6 @@ struct tab_joined_cell
   const struct area_style *style;
 };
 
-static const struct table_class tab_table_class;
-
 /* Creates and returns a new table with NC columns and NR rows and initially no
    header rows or columns.  The table's cells are initially empty. */
 struct tab_table *
@@ -73,7 +71,11 @@ tab_create (int nc, int nr)
   struct tab_table *t;
 
   t = pool_create_container (struct tab_table, container);
-  table_init (&t->table, &tab_table_class, nc, nr);
+  t->table.n[TABLE_HORZ] = nc;
+  t->table.n[TABLE_VERT] = nr;
+  t->table.h[TABLE_HORZ][0] = t->table.h[TABLE_HORZ][1] = 0;
+  t->table.h[TABLE_VERT][0] = t->table.h[TABLE_VERT][1] = 0;
+  t->table.ref_cnt = 1;
 
   t->cc = pool_calloc (t->container, nr * nc, sizeof *t->cc);
   t->ct = pool_calloc (t->container, nr * nc, sizeof *t->ct);
@@ -461,14 +463,14 @@ tab_output_text_format (int options, const char *format, ...)
 
 /* Table class implementation. */
 
-static void
+void
 tab_destroy (struct table *table)
 {
   struct tab_table *t = tab_cast (table);
   pool_destroy (t->container);
 }
 
-static void
+void
 tab_get_cell (const struct table *table, int x, int y,
               struct table_cell *cell)
 {
@@ -539,7 +541,7 @@ tab_get_cell (const struct table *table, int x, int y,
     }
 }
 
-static int
+int
 tab_get_rule (const struct table *table, enum table_axis axis, int x, int y,
               struct cell_color *color)
 {
@@ -554,15 +556,8 @@ tab_get_rule (const struct table *table, enum table_axis axis, int x, int y,
   return (raw & TAB_RULE_TYPE_MASK) >> TAB_RULE_TYPE_SHIFT;
 }
 
-static const struct table_class tab_table_class = {
-  tab_destroy,
-  tab_get_cell,
-  tab_get_rule,
-};
-
 struct tab_table *
 tab_cast (const struct table *table)
 {
-  assert (table->klass == &tab_table_class);
   return UP_CAST (table, struct tab_table, table);
 }

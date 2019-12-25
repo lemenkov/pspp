@@ -126,5 +126,12 @@ void tab_output_text (int options, const char *string);
 void tab_output_text_format (int options, const char *, ...)
      PRINTF_FORMAT (2, 3);
 
+/* For use by table-provider only. */
+struct table_cell;
+void tab_destroy (struct table *);
+void tab_get_cell (const struct table *, int x, int y, struct table_cell *);
+int tab_get_rule (const struct table *, enum table_axis, int x, int y,
+                  struct cell_color *);
+
 #endif /* output/tab.h */
 

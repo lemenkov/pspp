@@ -90,55 +90,6 @@ table_cell_is_joined (const struct table_cell *cell)
   return table_cell_colspan (cell) > 1 || table_cell_rowspan (cell) > 1;
 }
 
-/* Declarations to allow defining table classes. */
-
-struct table_class
-  {
-    /* Frees TABLE.
-
-       The table class may assume that any cells that were retrieved by calling
-       the 'get_cell' function have been freed (by calling their destructors)
-       before this function is called. */
-    void (*destroy) (struct table *table);
-
-    /* Initializes CELL with the contents of the table cell at column X and row
-       Y within TABLE.  All members of CELL must be initialized, except that if
-       'destructor' is set to a null pointer, then 'destructor_aux' need not be
-       initialized.  The 'contents' member of CELL must be set to a nonnull
-       value.
-
-       The table class must allow any number of cells in the table to be
-       retrieved simultaneously; that is, TABLE must not assume that a given
-       cell will be freed before another one is retrieved using 'get_cell'.
-
-       The table class must allow joined cells to be retrieved, with identical
-       contents, using any (X,Y) location inside the cell.
-
-       The table class must not allow cells to overlap.
-
-       The table class should not allow a joined cell to cross the border
-       between header rows/columns and the interior of the table.  That is, a
-       joined cell should be entirely within headers rows and columns or
-       entirely outside them.
-
-       The table class may assume that CELL will be freed before TABLE is
-       destroyed. */
-    void (*get_cell) (const struct table *table, int x, int y,
-                      struct table_cell *cell);
-
-    /* Returns one of the TAL_* enumeration constants (declared in
-       output/table.h) representing a rule running alongside one of the cells
-       in TABLE.
-
-       See table_get_rule() in table.c for a detailed explanation of the
-       meaning of AXIS and X and Y, including a diagram. */
-    int (*get_rule) (const struct table *table,
-                     enum table_axis axis, int x, int y,
-                     struct cell_color *color);
-  };
-
-void table_init (struct table *, const struct table_class *, int nc, int nr);
-
 /* For use primarily by output drivers. */
 
 void table_get_cell (const struct table *, int x, int y, struct table_cell *);
