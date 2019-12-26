@@ -107,7 +107,7 @@ enum pivot_area
   };
 
 const char *pivot_area_to_string (enum pivot_area);
-void pivot_area_get_default_style (enum pivot_area, struct area_style *);
+const struct area_style *pivot_area_get_default_style (enum pivot_area);
 
 /* Table borders for styling purposes. */
 enum pivot_border

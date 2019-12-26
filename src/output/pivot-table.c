@@ -62,8 +62,8 @@ pivot_area_to_string (enum pivot_area area)
     }
 }
 
-void
-pivot_area_get_default_style (enum pivot_area area, struct area_style *style)
+const struct area_style *
+pivot_area_get_default_style (enum pivot_area area)
 {
 #define STYLE(BOLD, H, V, L, R, T, B) {                         \
     .cell_style = {                                             \
@@ -77,6 +77,7 @@ pivot_area_get_default_style (enum pivot_area area, struct area_style *style)
       .fg = { [0] = CELL_COLOR_BLACK, [1] = CELL_COLOR_BLACK},  \
       .bg = { [0] = CELL_COLOR_WHITE, [1] = CELL_COLOR_WHITE},  \
       .size = 9,                                                \
+      .typeface = (char *) "Sans Serif",                        \
     },                                                          \
   }
   static const struct area_style default_area_styles[PIVOT_N_AREAS] = {
@@ -91,8 +92,7 @@ pivot_area_get_default_style (enum pivot_area area, struct area_style *style)
     };
 #undef STYLE
 
-  *style = default_area_styles[area];
-  style->font_style.typeface = xstrdup ("SansSerif");
+  return &default_area_styles[area];
 }
 
 void
@@ -714,7 +714,7 @@ pivot_table_create__ (struct pivot_value *title, const char *subtype)
   table->sizing[TABLE_VERT].range[1] = 120;
 
   for (size_t i = 0; i < PIVOT_N_AREAS; i++)
-    pivot_area_get_default_style (i, &table->areas[i]);
+    area_style_copy (NULL, &table->areas[i], pivot_area_get_default_style (i));
 
   /* Set default border styles. */
   static const enum table_stroke default_strokes[PIVOT_N_BORDERS] = {
