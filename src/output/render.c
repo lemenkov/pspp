@@ -463,17 +463,17 @@ rule_to_render_type (unsigned char type)
 {
   switch (type)
     {
-    case TAL_NONE:
+    case TABLE_STROKE_NONE:
       return RENDER_LINE_NONE;
-    case TAL_SOLID:
+    case TABLE_STROKE_SOLID:
       return RENDER_LINE_SINGLE;
-    case TAL_DASHED:
+    case TABLE_STROKE_DASHED:
       return RENDER_LINE_DASHED;
-    case TAL_THICK:
+    case TABLE_STROKE_THICK:
       return RENDER_LINE_THICK;
-    case TAL_THIN:
+    case TABLE_STROKE_THIN:
       return RENDER_LINE_THIN;
-    case TAL_DOUBLE:
+    case TABLE_STROKE_DOUBLE:
       return RENDER_LINE_DOUBLE;
     default:
       NOT_REACHED ();
@@ -497,15 +497,15 @@ measure_rule (const struct render_params *params, const struct table *table,
   for (d[b] = 0; d[b] < table->n[b]; d[b]++)
     rules |= 1u << table_get_rule (table, a, d[H], d[V], &color);
 
-  /* Turn off TAL_NONE because it has width 0 and we needn't bother.  However,
-     if the device doesn't support margins, make sure that there is at least a
-     small gap between cells (but we don't need any at the left or right edge
-     of the table). */
-  if (rules & (1u << TAL_NONE))
+  /* Turn off TABLE_STROKE_NONE because it has width 0 and we needn't bother.
+     However, if the device doesn't support margins, make sure that there is at
+     least a small gap between cells (but we don't need any at the left or
+     right edge of the table). */
+  if (rules & (1u << TABLE_STROKE_NONE))
     {
-      rules &= ~(1u << TAL_NONE);
+      rules &= ~(1u << TABLE_STROKE_NONE);
       if (z > 0 && z < table->n[a] && !params->supports_margins && a == H)
-        rules |= 1u << TAL_SOLID;
+        rules |= 1u << TABLE_STROKE_SOLID;
     }
 
   /* Calculate maximum width of the rules that are present. */
@@ -974,7 +974,7 @@ get_rule (const struct render_page *page, enum table_axis axis,
     {
       d[a] = d2;
       int r2 = table_get_rule (page->table, axis, d[H], d[V], color);
-      r = table_rule_combine (r, r2);
+      r = table_stroke_combine (r, r2);
     }
   return rule_to_render_type (r);
 }

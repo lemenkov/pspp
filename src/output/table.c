@@ -366,10 +366,10 @@ table_create (int nc, int nr, int hl, int hr, int ht, int hb)
   t->ct = pool_calloc (t->container, nr * nc, sizeof *t->ct);
 
   t->rh = pool_nmalloc (t->container, nc, nr + 1);
-  memset (t->rh, TAL_0, nc * (nr + 1));
+  memset (t->rh, TABLE_STROKE_NONE, nc * (nr + 1));
 
   t->rv = pool_nmalloc (t->container, nr, nc + 1);
-  memset (t->rv, TAL_0, nr * (nc + 1));
+  memset (t->rv, TABLE_STROKE_NONE, nr * (nc + 1));
 
   memset (t->styles, 0, sizeof t->styles);
   memset (t->rule_colors, 0, sizeof t->rule_colors);
@@ -590,7 +590,8 @@ add_joined_cell (struct table *table, int x1, int y1, int x2, int y2,
         }
     }
 
-  table_box (table, -1, -1, TAL_0, TAL_0, x1, y1, x2, y2);
+  table_box (table, -1, -1, TABLE_STROKE_NONE, TABLE_STROKE_NONE,
+             x1, y1, x2, y2);
 
   j = pool_alloc (table->container, sizeof *j);
   j->d[TABLE_HORZ][0] = x1;

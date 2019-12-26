@@ -341,22 +341,22 @@ border_to_css (int border)
 {
   switch (border)
     {
-    case TAL_NONE:
+    case TABLE_STROKE_NONE:
       return NULL;
 
-    case TAL_SOLID:
+    case TABLE_STROKE_SOLID:
       return "solid";
 
-    case TAL_DASHED:
+    case TABLE_STROKE_DASHED:
       return "dashed";
 
-    case TAL_THICK:
+    case TABLE_STROKE_THICK:
       return "thick solid";
 
-    case TAL_THIN:
+    case TABLE_STROKE_THIN:
       return "thin solid";
 
-    case TAL_DOUBLE:
+    case TABLE_STROKE_DOUBLE:
       return "double";
 
     default:

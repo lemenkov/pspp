@@ -422,24 +422,24 @@ read_table (FILE *stream)
             switch (*text++)
               {
               case '<':
-                table_vline (tab, TAL_1, c, r, r + rs - 1);
+                table_vline (tab, TABLE_STROKE_SOLID, c, r, r + rs - 1);
                 break;
 
               case '>':
-                table_vline (tab, TAL_1, c + cs, r, r + rs - 1);
+                table_vline (tab, TABLE_STROKE_SOLID, c + cs, r, r + rs - 1);
                 break;
 
               case '^':
-                table_hline (tab, TAL_1, c, c + cs - 1, r);
+                table_hline (tab, TABLE_STROKE_SOLID, c, c + cs - 1, r);
                 break;
 
               case ',':
-                table_hline (tab, TAL_1, c, c + cs - 1, r + rs);
+                table_hline (tab, TABLE_STROKE_SOLID, c, c + cs - 1, r + rs);
                 break;
 
               case '@':
-                table_box (tab, TAL_1, TAL_1, -1, -1, c, r,
-                         c + cs - 1, r + rs - 1);
+                table_box (tab, TABLE_STROKE_SOLID, TABLE_STROKE_SOLID,
+                           -1, -1, c, r, c + cs - 1, r + rs - 1);
                 break;
 
               case '(':

@@ -86,6 +86,15 @@ enum table_stroke
 
 const char *table_stroke_to_string (enum table_stroke);
 
+/* Given strokes A and B, returns a stroke that "combines" them, that is, that
+   gives a reasonable stroke choice for a rule for different reasons should
+   have both styles A and B. */
+static inline int
+table_stroke_combine (enum table_stroke a, enum table_stroke b)
+{
+  return a > b ? a : b;
+}
+
 struct table_border_style
   {
     enum table_stroke stroke;
@@ -180,29 +189,6 @@ enum
     /* Internal use by tab.c only. */
     TAB_JOIN = 1 << 14,
   };
-
-/* Styles for the rules around table cells. */
-enum
-  {
-    TAL_NONE = TABLE_STROKE_NONE,
-#define TAL_0 TAL_NONE
-    TAL_SOLID = TABLE_STROKE_SOLID,
-#define TAL_1 TAL_SOLID
-    TAL_DASHED = TABLE_STROKE_DASHED,
-    TAL_THICK = TABLE_STROKE_THICK,
-    TAL_THIN = TABLE_STROKE_THIN,
-    TAL_DOUBLE = TABLE_STROKE_DOUBLE,
-#define TAL_2 TAL_DOUBLE
-  };
-
-/* Given line styles A and B (each one of the TAL_* enumeration constants
-   above), returns a line style that "combines" them, that is, that gives a
-   reasonable line style choice for a rule for different reasons should have
-   both styles A and B. */
-static inline int table_rule_combine (int a, int b)
-{
-  return a > b ? a : b;
-}
 
 /* A table. */
 struct table
