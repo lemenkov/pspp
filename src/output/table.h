@@ -143,7 +143,8 @@ struct font_style
         .fg = { [0] = CELL_COLOR_BLACK, [1] = CELL_COLOR_BLACK},        \
         .bg = { [0] = CELL_COLOR_WHITE, [1] = CELL_COLOR_WHITE},
 
-void font_style_copy (struct font_style *, const struct font_style *);
+void font_style_copy (struct pool *,
+                      struct font_style *, const struct font_style *);
 void font_style_uninit (struct font_style *);
 void font_style_dump (const struct font_style *);
 
@@ -159,7 +160,8 @@ struct area_style
        .font_style = FONT_STYLE_INITIALIZER
 
 struct area_style *area_style_clone (struct pool *, const struct area_style *);
-void area_style_copy (struct area_style *, const struct area_style *);
+void area_style_copy (struct pool *,
+                      struct area_style *, const struct area_style *);
 void area_style_uninit (struct area_style *);
 void area_style_free (struct area_style *);
 

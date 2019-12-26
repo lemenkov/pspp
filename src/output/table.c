@@ -228,11 +228,12 @@ table_halign_interpret (enum table_halign halign, bool numeric)
 }
 
 void
-font_style_copy (struct font_style *dst, const struct font_style *src)
+font_style_copy (struct pool *container,
+                 struct font_style *dst, const struct font_style *src)
 {
   *dst = *src;
   if (dst->typeface)
-    dst->typeface = xstrdup (dst->typeface);
+    dst->typeface = pool_strdup (container, dst->typeface);
 }
 
 void
@@ -243,9 +244,10 @@ font_style_uninit (struct font_style *font)
 }
 
 void
-area_style_copy (struct area_style *dst, const struct area_style *src)
+area_style_copy (struct pool *container,
+                 struct area_style *dst, const struct area_style *src)
 {
-  font_style_copy (&dst->font_style, &src->font_style);
+  font_style_copy (container, &dst->font_style, &src->font_style);
   dst->cell_style = src->cell_style;
 }
 

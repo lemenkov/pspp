@@ -1978,9 +1978,9 @@ pivot_value_get_style (struct pivot_value *value,
                        const struct area_style *default_style,
                        struct area_style *area)
 {
-  font_style_copy (&area->font_style, (value->font_style
-                                       ? value->font_style
-                                       : &default_style->font_style));
+  font_style_copy (NULL, &area->font_style, (value->font_style
+                                             ? value->font_style
+                                             : &default_style->font_style));
   area->cell_style = (value->cell_style
                       ? *value->cell_style
                       : default_style->cell_style);
@@ -1995,7 +1995,7 @@ pivot_value_set_style (struct pivot_value *value,
     font_style_uninit (value->font_style);
   else
     value->font_style = xmalloc (sizeof *value->font_style);
-  font_style_copy (value->font_style, &area->font_style);
+  font_style_copy (NULL, value->font_style, &area->font_style);
 
   if (!value->cell_style)
     value->cell_style = xmalloc (sizeof *value->cell_style);
