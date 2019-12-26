@@ -475,7 +475,8 @@ read_table (FILE *stream)
               {
                 char marker[2] = { 'a' + n_footnotes, '\0' };
                 struct footnote *f = table_create_footnote (
-                  tab, n_footnotes, content, marker, NULL);
+                  tab, n_footnotes, content, marker,
+                  area_style_clone (tab->container, &left_style));
                 table_add_footnote (tab, c, r, f);
                 n_footnotes++;
               }

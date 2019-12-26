@@ -644,6 +644,8 @@ struct footnote *
 table_create_footnote (struct table *table, size_t idx, const char *content,
                      const char *marker, struct area_style *style)
 {
+  assert (style);
+
   struct footnote *f = pool_alloc (table->container, sizeof *f);
   f->idx = idx;
   f->content = pool_strdup (table->container, content);
@@ -654,8 +656,10 @@ table_create_footnote (struct table *table, size_t idx, const char *content,
 
 void
 table_add_footnote (struct table *table, int x, int y,
-                  const struct footnote *f)
+                    const struct footnote *f)
 {
+  assert (f->style);
+
   int index = x + y * table_nc (table);
   unsigned short opt = table->ct[index];
   struct table_joined_cell *j;
