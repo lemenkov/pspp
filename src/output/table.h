@@ -287,6 +287,11 @@ void table_text_format (struct table *, int c, int r, unsigned opt,
 void table_joint_text (struct table *, int x1, int y1, int x2, int y2,
                        unsigned opt, const char *);
 
+/* Footnotes.
+
+   Use table_create_footnote() to create the footnotes themselves, then use
+   table_add_footnote() to create a reference from a table cell to a footnote.
+   There are two steps because a footnote may have multiple references. */
 struct footnote *table_create_footnote (struct table *, size_t idx,
                                         const char *content,
                                         const char *marker,

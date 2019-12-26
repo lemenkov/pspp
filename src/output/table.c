@@ -620,9 +620,34 @@ table_joint_text (struct table *table, int x1, int y1, int x2, int y2,
     add_joined_cell (table, x1, y1, x2, y2, opt)->text = s;
 }
 
+static struct table_cell *
+get_joined_cell (struct table *table, int x, int y)
+{
+  int index = x + y * table_nc (table);
+  unsigned short opt = table->ct[index];
+  struct table_cell *cell;
+
+  if (opt & TAB_JOIN)
+    cell = table->cc[index];
+  else
+    {
+      char *text = table->cc[index];
+
+      cell = add_joined_cell (table, x, y, x, y, table->ct[index]);
+      cell->text = text ? text : pool_strdup (table->container, "");
+    }
+  return cell;
+}
+
+/* Create a footnote in TABLE with MARKER (e.g. "a") as its marker and CONTENT
+   as its content.  The footnote will be styled as STYLE, which is mandatory.
+   IDX must uniquely identify the footnote within TABLE.
+
+   Returns the new footnote.  The return value is the only way to get to the
+   footnote later, so it is important for the caller to remember it. */
 struct footnote *
 table_create_footnote (struct table *table, size_t idx, const char *content,
-                     const char *marker, struct area_style *style)
+                       const char *marker, struct area_style *style)
 {
   assert (style);
 
@@ -634,25 +659,15 @@ table_create_footnote (struct table *table, size_t idx, const char *content,
   return f;
 }
 
+/* Attaches a reference to footnote F to the cell at column X, row Y in
+   TABLE. */
 void
 table_add_footnote (struct table *table, int x, int y,
                     const struct footnote *f)
 {
   assert (f->style);
 
-  int index = x + y * table_nc (table);
-  unsigned short opt = table->ct[index];
-  struct table_cell *cell;
-
-  if (opt & TAB_JOIN)
-    cell = table->cc[index];
-  else
-    {
-      char *text = table->cc[index];
-
-      cell = add_joined_cell (table, x, y, x, y, table->ct[index]);
-      cell->text = text ? text : pool_strdup (table->container, "");
-    }
+  struct table_cell *cell = get_joined_cell (table, x, y);
 
   cell->footnotes = pool_realloc (
     table->container, cell->footnotes,
@@ -661,27 +676,17 @@ table_add_footnote (struct table *table, int x, int y,
   cell->footnotes[cell->n_footnotes++] = f;
 }
 
+/* Overrides the style for column X, row Y in TABLE with STYLE.
+   Does not make a copy of STYLE, so it should either be allocated from
+   TABLE->container or have a lifetime that will outlive TABLE. */
 void
 table_add_style (struct table *table, int x, int y,
                  const struct area_style *style)
 {
-  int index = x + y * table_nc (table);
-  unsigned short opt = table->ct[index];
-  struct table_cell *cell;
-
-  if (opt & TAB_JOIN)
-    cell = table->cc[index];
-  else
-    {
-      char *text = table->cc[index];
-
-      cell = add_joined_cell (table, x, y, x, y, table->ct[index]);
-      cell->text = text ? text : pool_strdup (table->container, "");
-    }
-
-  cell->style = style;
+  get_joined_cell (table, x, y)->style = style;
 }
 
+/* Returns true if column C, row R has no contents, otherwise false. */
 bool
 table_cell_is_empty (const struct table *table, int c, int r)
 {
