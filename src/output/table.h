@@ -177,18 +177,6 @@ enum
     TAB_STYLE_SHIFT = 5,
     TAB_STYLE_MASK = 7 << TAB_STYLE_SHIFT,
 
-    /* Horizontal alignment of cell contents. */
-    TAB_RIGHT      = 0 << 10,
-    TAB_LEFT       = 1 << 10,
-    TAB_CENTER     = 2 << 10,
-    TAB_HALIGN     = 3 << 10, /* Alignment mask. */
-
-    /* Vertical alignment of cell contents. */
-    TAB_TOP        = 0 << 12,
-    TAB_MIDDLE     = 1 << 12,
-    TAB_BOTTOM     = 2 << 12,
-    TAB_VALIGN     = 3 << 12, /* Alignment mask. */
-
     /* Internal use by tab.c only. */
     TAB_JOIN = 1 << 14,
   };

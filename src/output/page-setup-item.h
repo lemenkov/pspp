@@ -43,7 +43,7 @@ enum page_chart_size
 struct page_paragraph
   {
     char *markup;
-    int halign;                 /* TAB_LEFT, TAB_CENTER, TAB_RIGHT. */
+    enum table_halign halign;
   };
 
 struct page_heading

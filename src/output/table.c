@@ -176,7 +176,13 @@ struct table *
 table_from_string (const char *text)
 {
   struct table *t = table_create (1, 1, 0, 0, 0, 0);
-  table_text (t, 0, 0, TAB_LEFT, text);
+  t->styles[0] = xmalloc (sizeof *t->styles[0]);
+  *t->styles[0] = (struct area_style) {
+    AREA_STYLE_INITIALIZER__,
+    .cell_style.halign = TABLE_HALIGN_LEFT,
+    .cell_style.valign = TABLE_VALIGN_TOP
+  };
+  table_text (t, 0, 0, 0 << TAB_STYLE_SHIFT, text);
   return t;
 }
 
@@ -745,37 +751,7 @@ table_get_cell (const struct table *t, int x, int y, struct table_cell *cell)
   cell->n_footnotes = 0;
 
   int style_idx = (opt & TAB_STYLE_MASK) >> TAB_STYLE_SHIFT;
-  const struct area_style *style = t->styles[style_idx];
-  if (style)
-    cell->style = style;
-  else
-    {
-      static const struct area_style styles[3][3] = {
-#define S(H,V) [H][V] = { AREA_STYLE_INITIALIZER__,     \
-                          .cell_style.halign = H,       \
-                          .cell_style.valign = V }
-        S(TABLE_HALIGN_LEFT, TABLE_VALIGN_TOP),
-        S(TABLE_HALIGN_LEFT, TABLE_VALIGN_CENTER),
-        S(TABLE_HALIGN_LEFT, TABLE_VALIGN_BOTTOM),
-        S(TABLE_HALIGN_CENTER, TABLE_VALIGN_TOP),
-        S(TABLE_HALIGN_CENTER, TABLE_VALIGN_CENTER),
-        S(TABLE_HALIGN_CENTER, TABLE_VALIGN_BOTTOM),
-        S(TABLE_HALIGN_RIGHT, TABLE_VALIGN_TOP),
-        S(TABLE_HALIGN_RIGHT, TABLE_VALIGN_CENTER),
-        S(TABLE_HALIGN_RIGHT, TABLE_VALIGN_BOTTOM),
-      };
-
-      enum table_halign halign
-        = ((opt & TAB_HALIGN) == TAB_LEFT ? TABLE_HALIGN_LEFT
-           : (opt & TAB_HALIGN) == TAB_CENTER ? TABLE_HALIGN_CENTER
-           : TABLE_HALIGN_RIGHT);
-      enum table_valign valign
-        = ((opt & TAB_VALIGN) == TAB_TOP ? TABLE_VALIGN_TOP
-           : (opt & TAB_VALIGN) == TAB_MIDDLE ? TABLE_VALIGN_CENTER
-           : TABLE_VALIGN_BOTTOM);
-
-      cell->style = &styles[halign][valign];
-    }
+  cell->style = t->styles[style_idx];
 
   if (opt & TAB_JOIN)
     {
@@ -801,6 +777,8 @@ table_get_cell (const struct table *t, int x, int y, struct table_cell *cell)
       cell->d[TABLE_VERT][1] = y + 1;
       cell->text = CONST_CAST (char *, cc ? cc : "");
     }
+
+  assert (cell->style);
 }
 
 /* Returns one of the TAL_* enumeration constants (declared in output/table.h)

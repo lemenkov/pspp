@@ -26,6 +26,7 @@
 #include "libpspp/hash-functions.h"
 #include "libpspp/hmap.h"
 #include "libpspp/pool.h"
+#include "output/pivot-table.h" /* XXX for PIVOT_AREA_FOOTER */
 #include "output/render.h"
 #include "output/table-item.h"
 #include "output/table.h"
@@ -1508,10 +1509,16 @@ add_footnote_page (struct render_pager *p, const struct table_item *item)
     return;
 
   struct table *t = table_create (1, n_footnotes, 0, 0, 0, 0);
+
+  const struct area_style *style = item->table->styles[PIVOT_AREA_FOOTER];
+  if (!style)
+    style = pivot_area_get_default_style (PIVOT_AREA_FOOTER);
+  t->styles[PIVOT_AREA_FOOTER] = area_style_clone (t->container, style);
+
   for (size_t i = 0; i < n_footnotes; i++)
     {
-      table_text_format (t, 0, i, TAB_LEFT, "%s. %s",
-                         f[i]->marker, f[i]->content);
+      table_text_format (t, 0, i, PIVOT_AREA_FOOTER << TAB_STYLE_SHIFT,
+                         "%s. %s", f[i]->marker, f[i]->content);
       if (f[i]->style)
         table_add_style (t, 0, i, f[i]->style);
     }

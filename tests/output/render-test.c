@@ -386,7 +386,6 @@ read_table (FILE *stream)
     for (c = 0; c < nc; c++)
       if (table_cell_is_empty (tab, c, r))
         {
-          unsigned int opt;
           char *new_line;
           char *text;
           int rs, cs;
@@ -412,7 +411,13 @@ read_table (FILE *stream)
               cs = 1;
             }
 
-          opt = 0;
+#define S(H) { AREA_STYLE_INITIALIZER__, .cell_style.halign = H }
+          static const struct area_style left_style = S (TABLE_HALIGN_LEFT);
+          static const struct area_style right_style = S (TABLE_HALIGN_RIGHT);
+          static const struct area_style center_style
+            = S (TABLE_HALIGN_CENTER);
+
+          const struct area_style *style = &right_style;
           while (*text && strchr ("<>^,@()|", *text))
             switch (*text++)
               {
@@ -438,18 +443,15 @@ read_table (FILE *stream)
                 break;
 
               case '(':
-                opt &= ~TAB_HALIGN;
-                opt |= TAB_LEFT;
+                style = &left_style;
                 break;
 
               case ')':
-                opt &= ~TAB_HALIGN;
-                opt |= TAB_RIGHT;
+                style = &right_style;
                 break;
 
               case '|':
-                opt &= ~TAB_HALIGN;
-                opt |= TAB_CENTER;
+                style = &center_style;
                 break;
 
               default:
@@ -464,8 +466,11 @@ read_table (FILE *stream)
 
           for (i = 0; (content = strsep (&pos, "#")) != NULL; i++)
             if (!i)
-              table_joint_text (tab, c, r, c + cs - 1, r + rs - 1, opt,
-                                content);
+              {
+                table_joint_text (tab, c, r, c + cs - 1, r + rs - 1, 0,
+                                  content);
+                table_add_style (tab, c, r, style);
+              }
             else
               {
                 char marker[2] = { 'a' + n_footnotes, '\0' };
