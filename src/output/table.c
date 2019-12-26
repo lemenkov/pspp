@@ -327,18 +327,6 @@ cell_style_dump (const struct cell_style *c)
 
 static const bool debugging = true;
 
-/* Joined cell. */
-struct table_joined_cell
-{
-  int d[TABLE_N_AXES][2];       /* Table region, same as struct table_cell. */
-  char *text;
-
-  size_t n_footnotes;
-  const struct footnote **footnotes;
-
-  const struct area_style *style;
-};
-
 /* Creates and returns a new table with NC columns and NR rows and initially no
    header rows or columns.
 
@@ -563,12 +551,10 @@ table_text_format (struct table *table, int c, int r, unsigned opt,
   va_end (args);
 }
 
-static struct table_joined_cell *
+static struct table_cell *
 add_joined_cell (struct table *table, int x1, int y1, int x2, int y2,
                  unsigned opt)
 {
-  struct table_joined_cell *j;
-
   assert (x1 >= 0);
   assert (y1 >= 0);
   assert (y2 >= y1);
@@ -593,38 +579,32 @@ add_joined_cell (struct table *table, int x1, int y1, int x2, int y2,
   table_box (table, -1, -1, TABLE_STROKE_NONE, TABLE_STROKE_NONE,
              x1, y1, x2, y2);
 
-  j = pool_alloc (table->container, sizeof *j);
-  j->d[TABLE_HORZ][0] = x1;
-  j->d[TABLE_VERT][0] = y1;
-  j->d[TABLE_HORZ][1] = ++x2;
-  j->d[TABLE_VERT][1] = ++y2;
-  j->n_footnotes = 0;
-  j->footnotes = NULL;
-  j->style = NULL;
+  struct table_cell *cell = pool_alloc (table->container, sizeof *cell);
+  cell->d[TABLE_HORZ][0] = x1;
+  cell->d[TABLE_VERT][0] = y1;
+  cell->d[TABLE_HORZ][1] = ++x2;
+  cell->d[TABLE_VERT][1] = ++y2;
+  cell->options = opt;
+  cell->footnotes = NULL;
+  cell->n_footnotes = 0;
+  cell->style = NULL;
 
-  {
-    void **cc = &table->cc[x1 + y1 * table_nc (table)];
-    unsigned short *ct = &table->ct[x1 + y1 * table_nc (table)];
-    const int ofs = table_nc (table) - (x2 - x1);
+  void **cc = &table->cc[x1 + y1 * table_nc (table)];
+  unsigned short *ct = &table->ct[x1 + y1 * table_nc (table)];
+  const int ofs = table_nc (table) - (x2 - x1);
+  for (int y = y1; y < y2; y++)
+    {
+      for (int x = x1; x < x2; x++)
+        {
+          *cc++ = cell;
+          *ct++ = opt | TAB_JOIN;
+        }
 
-    int y;
+      cc += ofs;
+      ct += ofs;
+    }
 
-    for (y = y1; y < y2; y++)
-      {
-        int x;
-
-        for (x = x1; x < x2; x++)
-          {
-            *cc++ = j;
-            *ct++ = opt | TAB_JOIN;
-          }
-
-        cc += ofs;
-        ct += ofs;
-      }
-  }
-
-  return j;
+  return cell;
 }
 
 /* Joins cells (X1,X2)-(Y1,Y2) inclusive in TABLE, and sets them with
@@ -662,22 +642,23 @@ table_add_footnote (struct table *table, int x, int y,
 
   int index = x + y * table_nc (table);
   unsigned short opt = table->ct[index];
-  struct table_joined_cell *j;
+  struct table_cell *cell;
 
   if (opt & TAB_JOIN)
-    j = table->cc[index];
+    cell = table->cc[index];
   else
     {
       char *text = table->cc[index];
 
-      j = add_joined_cell (table, x, y, x, y, table->ct[index]);
-      j->text = text ? text : xstrdup ("");
+      cell = add_joined_cell (table, x, y, x, y, table->ct[index]);
+      cell->text = text ? text : pool_strdup (table->container, "");
     }
 
-  j->footnotes = pool_realloc (table->container, j->footnotes,
-                               (j->n_footnotes + 1) * sizeof *j->footnotes);
+  cell->footnotes = pool_realloc (
+    table->container, cell->footnotes,
+    (cell->n_footnotes + 1) * sizeof *cell->footnotes);
 
-  j->footnotes[j->n_footnotes++] = f;
+  cell->footnotes[cell->n_footnotes++] = f;
 }
 
 void
@@ -686,19 +667,19 @@ table_add_style (struct table *table, int x, int y,
 {
   int index = x + y * table_nc (table);
   unsigned short opt = table->ct[index];
-  struct table_joined_cell *j;
+  struct table_cell *cell;
 
   if (opt & TAB_JOIN)
-    j = table->cc[index];
+    cell = table->cc[index];
   else
     {
       char *text = table->cc[index];
 
-      j = add_joined_cell (table, x, y, x, y, table->ct[index]);
-      j->text = text ? text : xstrdup ("");
+      cell = add_joined_cell (table, x, y, x, y, table->ct[index]);
+      cell->text = text ? text : pool_strdup (table->container, "");
     }
 
-  j->style = style;
+  cell->style = style;
 }
 
 bool
@@ -752,36 +733,23 @@ table_get_cell (const struct table *t, int x, int y, struct table_cell *cell)
   unsigned short opt = t->ct[index];
   const void *cc = t->cc[index];
 
-  cell->options = opt;
-  cell->n_footnotes = 0;
-
-  int style_idx = (opt & TAB_STYLE_MASK) >> TAB_STYLE_SHIFT;
-  cell->style = t->styles[style_idx];
-
+  const struct area_style *style
+    = t->styles[(opt & TAB_STYLE_MASK) >> TAB_STYLE_SHIFT];
   if (opt & TAB_JOIN)
     {
-      const struct table_joined_cell *jc = cc;
-      cell->text = jc->text;
-
-      cell->footnotes = jc->footnotes;
-      cell->n_footnotes = jc->n_footnotes;
-
-      cell->d[TABLE_HORZ][0] = jc->d[TABLE_HORZ][0];
-      cell->d[TABLE_HORZ][1] = jc->d[TABLE_HORZ][1];
-      cell->d[TABLE_VERT][0] = jc->d[TABLE_VERT][0];
-      cell->d[TABLE_VERT][1] = jc->d[TABLE_VERT][1];
-
-      if (jc->style)
-        cell->style = jc->style;
+      const struct table_cell *jc = cc;
+      *cell = *jc;
+      if (!cell->style)
+        cell->style = style;
     }
   else
-    {
-      cell->d[TABLE_HORZ][0] = x;
-      cell->d[TABLE_HORZ][1] = x + 1;
-      cell->d[TABLE_VERT][0] = y;
-      cell->d[TABLE_VERT][1] = y + 1;
-      cell->text = CONST_CAST (char *, cc ? cc : "");
-    }
+    *cell = (struct table_cell) {
+      .d = { [TABLE_HORZ] = { x, x + 1 },
+             [TABLE_VERT] = { y, y + 1 } },
+      .options = opt,
+      .text = CONST_CAST (char *, cc ? cc : ""),
+      .style = style,
+    };
 
   assert (cell->style);
 }

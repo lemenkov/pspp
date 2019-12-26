@@ -221,10 +221,10 @@ struct table
 
     /* Table contents.
 
-       Each array element in cc[] is ordinarily a "char *" pointer to a
-       string.  If TAB_JOIN (defined in tab.c) is set in ct[] for the element,
+       Each array element in cc[] is ordinarily a "char *" pointer to a string.
+       If TAB_JOIN (defined in table.c) is set in ct[] for the element,
        however, it is a joined cell and the corresponding element of cc[]
-       points to a struct tab_joined_cell. */
+       points to a struct table_cell. */
     void **cc;                  /* Cell contents; void *[nr][nc]. */
     unsigned short *ct;		/* Cell types; unsigned short[nr][nc]. */
     struct area_style *styles[8];
