@@ -14,7 +14,7 @@
 SPSS Viewer or @file{.spv} files, here called SPV files, are written
 by SPSS 16 and later to represent the contents of its output editor.
 This chapter documents the format, based on examination of a corpus of
-about 3,000 files from a variety of sources.  This description is
+about 8,000 files from a variety of sources.  This description is
 detailed enough to both read and write SPV files.
 
 SPSS 15 and earlier versions instead use @file{.spo} files, which have
@@ -134,7 +134,7 @@ container
    :page-break-before=(always)?
    :text-align=(left | center)?
    :width=dimension
-=> label (table | container_text | graph | model | object | image)
+=> label (table | container_text | graph | model | object | image | tree)
 @end example
 
 Each attribute specification begins with @samp{:} followed by the
@@ -155,11 +155,23 @@ Either @code{true} or @code{false}.
 @item dimension
 A floating-point number followed by a unit, e.g.@: @code{10pt}.  Units
 in the corpus include @code{in} (inch), @code{pt} (points, 72/inch),
-@code{px} (``device-independent pixels'', 96/inch), and @code{cm}.
-The corpus also contains localized names for units: @code{인치} for
-inch, @code{пт} for points, and @code{см} for centimeters.  If the
-unit is omitted then points should be assumed.  The number and unit
-may be separated by white space.
+@code{px} (``device-independent pixels'', 96/inch), and @code{cm}.  If
+the unit is omitted then points should be assumed.  The number and
+unit may be separated by white space.
+
+The corpus also includes localized names for units.  A reader must
+understand these to properly interpret the dimension:
+
+@table @asis
+@item inch
+@code{인치}, @code{pol.}, @code{cala}, @code{cali}
+
+@item point
+@code{пт}
+
+@item centimeter
+@code{см}
+@end table
 
 @item real
 A floating-point number.
@@ -279,7 +291,8 @@ information, and the CSS from the embedded HTML:
 * SPV Structure table Element::
 * SPV Structure graph Element::
 * SPV Structure model Element::
-* SPV Structure dataPath and path Elements::
+* SPV Structure tree Element::
+* SPV Structure Path Elements::
 * SPV Structure pageSetup Element::
 * SPV Structure @code{text} Element (Inside @code{pageParagraph})::
 @end menu
@@ -406,7 +419,7 @@ container
    :page-break-before=(always)?
    :text-align=(left | center)?
    :width=dimension
-=> label (table | container_text | graph | model | object | image)
+=> label (table | container_text | graph | model | object | image | tree)
 @end example
 
 A @code{container} serves to contain and label a @code{table},
@@ -527,7 +540,7 @@ table
    :type[table_type]=(table | note | warning)
 => tableProperties? tableStructure
 
-tableStructure => path? dataPath
+tableStructure => path? dataPath csvPath?
 @end example
 
 This element has the following attributes.
@@ -575,7 +588,9 @@ graph
    :editor?
    :refMapId?
    :refMapURI?
-=> dataPath? path
+   :csvFileIds?
+   :csvFileNames?
+=> dataPath? path csvPath?
 @end example
 
 This element represents a graph.  The @code{dataPath} and @code{path}
@@ -583,12 +598,21 @@ elements name the Zip members that give the details of the graph.
 Normally, both elements are present; there is only one counterexample
 in the corpus.
 
+@code{csvPath} only appears in one SPV file in the corpus, for two
+graphs.  In these two cases, @code{dataPath}, @code{path}, and
+@code{csvPath} all appear.  These @code{csvPath} name Zip members with
+names of the form @file{@var{number}_csv.bin}, where @var{number} is a
+many-digit number and the same as the @code{csvFileIds}.  The named
+Zip members are CSV text files (despite the @file{.bin} extension).
+The CSV files are encoded in UTF-8 and begin with a U+FEFF byte-order
+marker.
+
 @node SPV Structure model Element
 @subsection The @code{model} Element
 
 @example
 model
-   :PMMLContainerId
+   :PMMLContainerId?
    :PMMLId
    :StatXMLContainerId
    :VDPId
@@ -596,7 +620,7 @@ model
    :commandName
    :creator-version
    :mainViewName
-=> ViZml? path | pmmlContainerPath statsContainerPath
+=> ViZml? dataPath? path | pmmlContainerPath statsContainerPath
 
 pmmlContainerPath => TEXT
 
@@ -616,13 +640,31 @@ strings, and @code{path} names an Zip member that contains XML.
 Alternatively, @code{pmmlContainerPath} and @code{statsContainerPath}
 name Zip members with @file{.scf} extension.
 
-@node SPV Structure dataPath and path Elements
-@subsection The @code{dataPath} and @code{path} Elements
+@node SPV Structure tree Element
+@subsection The @code{tree} Element
+
+@example
+tree
+   :commandName
+   :creator-version
+   :name
+   :type
+=> dataPath path
+@end example
+
+This element represents a tree.  The @code{dataPath} and @code{path}
+elements name the Zip members that give the details of the tree.
+The details are unexplored.
+
+@node SPV Structure Path Elements
+@subsection Path Elements
 
 @example
 dataPath => TEXT
 
 path => TEXT
+
+csvPath => TEXT
 @end example
 
 These element contain the name of the Zip members that hold details
@@ -801,17 +843,17 @@ A byte with value 0 or 1.
 
 @item int16
 @itemx be16
-A 16-bit integer in little-endian or big-endian byte order,
+A 16-bit unsigned integer in little-endian or big-endian byte order,
 respectively.
 
 @item int32
 @itemx be32
-A 32-bit integer in little-endian or big-endian byte order,
+A 32-bit unsigned integer in little-endian or big-endian byte order,
 respectively.
 
 @item int64
 @itemx be64
-A 64-bit integer in little-endian or big-endian byte order,
+A 64-bit unsigned integer in little-endian or big-endian byte order,
 respectively.
 
 @item double
@@ -822,7 +864,7 @@ A 32-bit IEEE floating-point number.
 
 @item string
 @itemx bestring
-A 32-bit integer, in little-endian or big-endian byte order,
+A 32-bit unsigned integer, in little-endian or big-endian byte order,
 respectively, followed by the specified number of bytes of character
 data.  (The encoding is indicated by the Formats nonterminal.)
 
@@ -848,8 +890,9 @@ in the presence of @math{|}, e.g.@: in 00 (01 @math{|} 02 @math{|} 03)
 
 @item count(@var{x})
 @itemx becount(@var{x})
-A 32-bit integer, in little-endian or big-endian byte order, respectively,
-that indicates the number of bytes in @var{x}, followed by @var{x} itself.
+A 32-bit unsigned integer, in little-endian or big-endian byte order,
+respectively, that indicates the number of bytes in @var{x}, followed
+by @var{x} itself.
 
 @item v1(@var{x})
 In a version 1 @file{.bin} member, @var{x}; in version 3, nothing.
@@ -990,11 +1033,15 @@ The @code{caption}, if present, is shown below the table.
 
 @example
 Footnotes => int32[n-footnotes] Footnote*[n-footnotes]
-Footnote => Value[text] (58 @math{|} 31 Value[marker]) byte*4
+Footnote => Value[text] (58 @math{|} 31 Value[marker]) int32[show]
 @end example
 
 Each footnote has @code{text} and an optional custom @code{marker}
 (such as @samp{*}).
+
+@code{show} is a 32-bit signed integer.  It is positive to show the
+footnote or negative to hide it.  Its magnitude is often 1, and in
+other cases tends to be the number of references to the footnote.
 
 @node SPV Light Member Areas
 @subsection Areas
@@ -1291,7 +1338,7 @@ Y1 =>
     string[language] string[charset] string[locale]
     bool bool bool bool
     Y0
-Y2 => CustomCurrency byte[missing] bool[x16]
+Y2 => CustomCurrency byte[missing] bool[x17]
 @end example
 
 @code{command} describes the statistical procedure that generated the
@@ -1312,7 +1359,7 @@ a missing value.  It is always observed as @samp{.}.
 X0 repeats @code{decimal}, @code{grouping}, CustomCurrency, and
 @code{missing} already included in Formats.
 
-A writer may safely use false for @code{x16}.
+A writer may safely use false for @code{x17}.
 
 @subsubheading X1
 
@@ -1320,14 +1367,14 @@ X1 only appears in version 3 members.
 
 @example
 X1 =>
-    00 byte[x14] bool[x15]
+    bool byte[x15] bool[x16]
     byte[lang]
     byte[show-variables]
     byte[show-values]
-    int32[x17] int32[x18]
+    int32[x18] int32[x19]
     00*17
-    bool[x19]
-    01
+    bool[x20]
+    bool[show-caption]
 @end example
 
 @code{lang} may indicate the language in use.  Some values seem to be
@@ -1347,8 +1394,11 @@ means to display the value, 2 to display the value label when
 available, 3 to display both.  Again, the most common value is 0,
 which probably means to use a global default.
 
-A writer may safely use 1 for @code{x14}, false for @code{x15}, -1 for
-@code{x17} and @code{x18}, and false for @code{x19}.
+@code{show-caption} is true to show the caption, false to hide it.
+
+A writer may safely use false for @code{x14}, 1 for @code{x15}, false
+for @code{x16}, -1 for @code{x18} and @code{x19}, and false for
+@code{x20}.
 
 @subsubheading X2
 
@@ -1383,12 +1433,12 @@ X3 only appears in version 3 members.
 
 @example
 X3 =>
-    01 00 byte[x20] 00 00 00
+    01 00 byte[x21] 00 00 00
     Y1
     double[small] 01
     (string[dataset] string[datafile] i0 int32[date] i0)?
     Y2
-    (int32 i0)?
+    (int32[x22] i0)?
 @end example
 
 @code{date} is a date, as seconds since the epoch, i.e.@: since
@@ -1410,8 +1460,10 @@ assuming that they are present and then checking whether the
 presumptive @code{dataset} contains a null byte (a valid string never
 will).
 
-A writer may safely use 4 for @code{x20} and omit the optional bytes
-at the end.
+@code{x22} is usually 0 or 2000000.
+
+A writer may safely use 4 for @code{x21} and omit @code{x22} and the
+other optional bytes at the end.
 
 @node SPV Light Member Dimensions
 @subsection Dimensions
@@ -1472,7 +1524,7 @@ are really categories; the others just serve as grouping constructs.
 Category => Value[name] (Leaf @math{|} Group)
 Leaf => 00 00 00 i2 int32[leaf-index] i0
 Group =>
-    bool[merge] 00 01 int32[x22]
+    bool[merge] 00 01 int32[x23]
     i-1 int32[n-subcategories] Category*[n-subcategories]
 @end example
 
@@ -1506,7 +1558,7 @@ nested!)
 (For writing an SPV file, there is no need to use the @code{merge}
 feature unless it is convenient.)
 
-A Group's @code{x22} appears to be i2 when all of the categories
+A Group's @code{x23} appears to be i2 when all of the categories
 within a group are leaf categories that directly represent data values
 for a variable (e.g.@: in a frequency table or crosstabulation, a group
 of values in a variable being tabulated) and i0 otherwise.  A writer
@@ -1747,11 +1799,11 @@ ValueMod =>
     58
   @math{|} 31
     int32[n-refs] int16*[n-refs]
-    (i0 | i1 string[subscript])
+    int32[n-subscripts] string*[n-subscripts]
     v1(00 (i1 | i2) 00? 00? int32 00? 00?)
     v3(count(TemplateString StylePair))
 
-TemplateString => count((count((i0 58)?) (58 @math{|} 31 string[id]))?)
+TemplateString => count((count((i0 (58 @math{|} 31 55))?) (58 @math{|} 31 string[id]))?)
 
 StylePair =>
     (31 FontStyle | 58)
@@ -1776,10 +1828,11 @@ Each of the @code{n-refs} integers is a reference to a Footnote
 markers are shown appended to the main text of the Value, as
 superscripts.
 
-The @code{subscript}, if present, is a string to append to the main
-text of the Value, as a subscript.  The subscript text is a brief
-indicator, e.g.@: @samp{a} or @samp{a,b}, with its meaning indicated
-by the table caption.
+The @code{subscripts}, if present, are strings to append to the main
+text of the Value, as subscripts.  Each subscript text is a brief
+indicator, e.g.@: @samp{a} or @samp{b}, with its meaning indicated by
+the table caption.  When multiple subscripts are present, they are
+displayed separated by commas.
 
 The @code{id} inside the TemplateString, if present, is a template
 string for substitutions using the syntax explained previously.  It
