@@ -164,6 +164,7 @@ struct xr_driver
 
     /* Internal state. */
     struct render_params *params;
+    double font_scale;
     int char_width, char_height;
     char *command_name;
     char *title;
@@ -592,7 +593,8 @@ apply_options (struct xr_driver *xr, struct string_map *o)
 }
 
 static struct xr_driver *
-xr_allocate (const char *name, int device_type, struct string_map *o)
+xr_allocate (const char *name, int device_type, struct string_map *o,
+             double font_scale)
 {
   struct xr_driver *xr = xzalloc (sizeof *xr);
   struct output_driver *d = &xr->driver;
@@ -600,6 +602,13 @@ xr_allocate (const char *name, int device_type, struct string_map *o)
   output_driver_init (d, &cairo_driver_class, name, device_type);
 
   string_map_init (&xr->heading_vars);
+
+  /* This is a nasty kluge for an issue that does not make sense.  On any
+     surface other than a screen (e.g. for output to PDF or PS or SVG), the
+     fonts are way too big by default.  A "9-point" font seems to appear about
+     16 points tall.  We use a scale factor for these surfaces to help, but the
+     underlying issue is a mystery. */
+  xr->font_scale = font_scale;
 
   apply_options (xr, o);
 
@@ -809,7 +818,7 @@ xr_create (const char *file_name, enum settings_output_devices device_type,
   cairo_status_t status;
   double width_pt, length_pt;
 
-  xr = xr_allocate (file_name, device_type, o);
+  xr = xr_allocate (file_name, device_type, o, 72.0 / 128.0);
 
   width_pt = xr_to_pt (xr->width + xr->left_margin + xr->right_margin);
   length_pt = xr_to_pt (xr->length + xr->top_margin + xr->bottom_margin);
@@ -1491,7 +1500,7 @@ xr_layout_cell_text (struct xr_driver *xr, const struct table_cell *cell,
     {
       PangoFontDescription *desc = parse_font (
         font_style->typeface,
-        font_style->size ? font_style->size * 1000 * 72 / 128 : 10000,
+        font_style->size ? font_style->size * 1000 * xr->font_scale : 10000,
         font_style->bold, font_style->italic);
       if (desc)
         {
@@ -1847,7 +1856,7 @@ struct xr_rendering
 struct xr_driver *
 xr_driver_create (cairo_t *cairo, struct string_map *options)
 {
-  struct xr_driver *xr = xr_allocate ("cairo", 0, options);
+  struct xr_driver *xr = xr_allocate ("cairo", 0, options, 1.0);
   xr_set_cairo (xr, cairo);
   return xr;
 }

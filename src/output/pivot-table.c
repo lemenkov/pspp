@@ -76,6 +76,7 @@ pivot_area_get_default_style (enum pivot_area area)
       .bold = BOLD,                                             \
       .fg = { [0] = CELL_COLOR_BLACK, [1] = CELL_COLOR_BLACK},  \
       .bg = { [0] = CELL_COLOR_WHITE, [1] = CELL_COLOR_WHITE},  \
+      .size = 9,                                                \
       .typeface = (char *) "Sans Serif",                        \
     },                                                          \
   }
