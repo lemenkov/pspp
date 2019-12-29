@@ -502,6 +502,7 @@ struct pivot_footnote
     size_t idx;
     struct pivot_value *content;
     struct pivot_value *marker;
+    bool show;
   };
 
 struct pivot_footnote *pivot_table_create_footnote (

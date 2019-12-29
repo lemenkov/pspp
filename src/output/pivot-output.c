@@ -121,9 +121,13 @@ fill_cell (struct table *t, int x1, int y1, int x2, int y2,
                          area_style_override (t->container, style,
                                               value->cell_style,
                                               value->font_style));
-      
+
       for (size_t i = 0; i < value->n_footnotes; i++)
-        table_add_footnote (t, x1, y1, footnotes[value->footnotes[i]->idx]);
+        {
+          struct footnote *f = footnotes[value->footnotes[i]->idx];
+          if (f)
+            table_add_footnote (t, x1, y1, f);
+        }
 
       if (value->n_subscripts)
         table_add_subscripts (t, x1, y1,
@@ -148,13 +152,16 @@ pivot_value_to_table_item_text (const struct pivot_value *value,
   *text = (struct table_item_text) {
     .content = ds_steal_cstr (&s),
     .footnotes = xnmalloc (value->n_footnotes, sizeof *text->footnotes),
-    .n_footnotes = value->n_footnotes,
     .style = area_style_override (
       NULL, area, value->cell_style, value->font_style),
   };
 
   for (size_t i = 0; i < value->n_footnotes; i++)
-    text->footnotes[i] = footnotes[value->footnotes[i]->idx];
+    {
+      struct footnote *f = footnotes[value->footnotes[i]->idx];
+      if (f)
+        text->footnotes[text->n_footnotes++] = f;
+    }
 
   return text;
 }
@@ -335,15 +342,20 @@ pivot_table_submit_layer (const struct pivot_table *pt,
   struct footnote **footnotes = xcalloc (pt->n_footnotes, sizeof *footnotes);
   for (size_t i = 0; i < pt->n_footnotes; i++)
     {
-      char *content = pivot_value_to_string (
-        pt->footnotes[i]->content, pt->show_values, pt->show_variables);
-      char *marker = pivot_value_to_string (
-        pt->footnotes[i]->marker, pt->show_values, pt->show_variables);
+      const struct pivot_footnote *pf = pt->footnotes[i];
+
+      if (!pf->show)
+        continue;
+
+      char *content = pivot_value_to_string (pf->content, pt->show_values,
+                                             pt->show_variables);
+      char *marker = pivot_value_to_string (pf->marker, pt->show_values,
+                                            pt->show_variables);
       footnotes[i] = table_create_footnote (
         table, i, content, marker,
         area_style_override (table->container, &pt->areas[PIVOT_AREA_FOOTER],
-                             pt->footnotes[i]->content->cell_style,
-                             pt->footnotes[i]->content->font_style));
+                             pf->content->cell_style,
+                             pf->content->font_style));
       free (marker);
       free (content);
     }
@@ -470,11 +482,15 @@ pivot_table_submit_layer (const struct pivot_table *pt,
           pivot_value_format_body (name, pt->show_values, pt->show_variables,
                                    &s);
           layer->content = ds_steal_cstr (&s);
-          layer->n_footnotes = name->n_footnotes;
-          layer->footnotes = xnmalloc (layer->n_footnotes,
+          layer->n_footnotes = 0;
+          layer->footnotes = xnmalloc (name->n_footnotes,
                                        sizeof *layer->footnotes);
           for (size_t i = 0; i < name->n_footnotes; i++)
-            layer->footnotes[i] = footnotes[name->footnotes[i]->idx];
+            {
+              struct footnote *f = footnotes[name->footnotes[i]->idx];
+              if (f)
+                layer->footnotes[layer->n_footnotes++] = f;
+            }
         }
     }
   if (layers)

@@ -1059,6 +1059,7 @@ pivot_table_create_footnote__ (struct pivot_table *table, size_t idx,
           f->marker = pivot_make_default_footnote_marker (
             f->idx, table->show_numeric_markers);
           f->content = NULL;
+          f->show = true;
 
           table->footnotes[table->n_footnotes++] = f;
         }
