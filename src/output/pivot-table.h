@@ -385,6 +385,7 @@ struct pivot_table
     bool rotate_outer_row_labels;
     bool row_labels_in_corner;
     bool show_grid_lines;
+    bool show_caption;
     bool omit_empty;       /* Omit empty rows and columns? */
     size_t *current_layer; /* axis[PIVOT_AXIS_LAYER].n_dimensions elements. */
     char *table_look;

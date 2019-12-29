@@ -483,7 +483,7 @@ pivot_table_submit_layer (const struct pivot_table *pt,
       table_item_layers_destroy (layers);
     }
 
-  if (pt->caption)
+  if (pt->caption && pt->show_caption)
     {
       struct table_item_text *caption = pivot_value_to_table_item_text (
         pt->caption, &pt->areas[PIVOT_AREA_CAPTION], footnotes,
