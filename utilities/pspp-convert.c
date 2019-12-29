@@ -75,6 +75,9 @@ main (int argc, char *argv[])
   const char *password_list = NULL;
   int length = 0;
 
+  bool recode_user_missing = false;
+  bool use_value_labels = false;
+
   long long int i;
 
   set_program_name (argv[0]);
@@ -87,11 +90,16 @@ main (int argc, char *argv[])
       enum
         {
           OPT_PASSWORD_LIST = UCHAR_MAX + 1,
+          OPT_LABELS,
+          OPT_RECODE,
         };
       static const struct option long_options[] =
         {
           { "cases",    required_argument, NULL, 'c' },
           { "encoding", required_argument, NULL, 'e' },
+
+          { "labels", no_argument, NULL, OPT_LABELS },
+          { "recode", no_argument, NULL, OPT_RECODE },
 
           { "password", required_argument, NULL, 'p' },
           { "password-alphabet", required_argument, NULL, 'a' },
@@ -131,6 +139,14 @@ main (int argc, char *argv[])
 
         case OPT_PASSWORD_LIST:
           password_list = optarg;
+          break;
+
+        case OPT_LABELS:
+          use_value_labels = true;
+          break;
+
+        case OPT_RECODE:
+          recode_user_missing = true;
           break;
 
         case 'a':
@@ -202,6 +218,8 @@ main (int argc, char *argv[])
 
       csv_writer_options_init (&options);
       options.include_var_names = true;
+      options.use_value_labels = use_value_labels;
+      options.recode_user_missing = recode_user_missing;
       writer = csv_writer_open (output_fh, dict, &options);
     }
   else if (!strcmp (output_format, "sav") || !strcmp (output_format, "sys"))

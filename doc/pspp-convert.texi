@@ -95,6 +95,17 @@ Overrides the encoding in which character strings in @var{input} are
 interpreted.  This option is necessary because old SPSS system files,
 and SPSS/PC+ system files, do not self-identify their encoding.
 
+@item --labels
+By default, @command{pspp-convert} writes variables' values to CVS
+output files.  With this option, @command{pspp-convert} writes value
+labels.
+
+@item --recode
+By default, @command{pspp-convert} writes user-missing values to CVS
+output files as their regular values.  With this option,
+@command{pspp-convert} recodes them to system-missing values (which
+are written as a single space).
+
 @item -p @var{password}
 @item --password=@var{password}
 Specifies the password to use to decrypt an encrypted SPSS system file
