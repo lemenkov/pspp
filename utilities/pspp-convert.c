@@ -473,6 +473,9 @@ General options:\n\
                       is one of the extensions listed above\n\
   -e, --encoding=CHARSET  override encoding of input data file\n\
   -c MAXCASES         limit number of cases to copy (default is all cases)\n\
+CSV output options:\n\
+  --labels            write value labels to output\n\
+  --recode            convert user-missing values to system-missing\n\
 Password options (for used with encrypted files):\n\
   -p PASSWORD         individual password\n\
   -a ALPHABET         with -l, alphabet of passwords to try\n\
