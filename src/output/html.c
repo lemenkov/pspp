@@ -66,8 +66,7 @@ struct html_driver
 static const struct output_driver_class html_driver_class;
 
 static void html_output_table (struct html_driver *, const struct table_item *);
-static void escape_string (FILE *file,
-                           const char *text, size_t length,
+static void escape_string (FILE *file, const char *text,
                            const char *space, const char *newline);
 static void print_title_tag (FILE *file, const char *name,
                              const char *content);
@@ -201,7 +200,7 @@ print_title_tag (FILE *file, const char *name, const char *content)
   if (content != NULL)
     {
        fprintf (file, "<%s>", name);
-      escape_string (file, content, strlen (content), " ", " - ");
+      escape_string (file, content, " ", " - ");
       fprintf (file, "</%s>\n", name);
     }
 }
@@ -275,7 +274,7 @@ html_submit (struct output_driver *driver,
 
         case TEXT_ITEM_SYNTAX:
           fprintf (html->file, "<PRE class=\"syntax\">");
-          escape_string (html->file, s, strlen (s), " ", "<BR>");
+          escape_string (html->file, s, " ", "<BR>");
           fprintf (html->file, "</PRE>\n");
           break;
 
@@ -297,20 +296,20 @@ html_submit (struct output_driver *driver,
     }
 }
 
-/* Write LENGTH characters in TEXT to file F, escaping characters as necessary
-   for HTML.  Spaces are replaced by SPACE, which should be " " or "&nbsp;"
-   New-lines are replaced by NEWLINE, which might be "<BR>" or "\n" or
-   something else appropriate. */
+/* Write TEXT to file F, escaping characters as necessary for HTML.  Spaces are
+   replaced by SPACE, which should be " " or "&nbsp;" New-lines are replaced by
+   NEWLINE, which might be "<BR>" or "\n" or something else appropriate. */
 static void
-escape_string (FILE *file,
-               const char *text, size_t length,
+escape_string (FILE *file, const char *text,
                const char *space, const char *newline)
 {
-  while (length-- > 0)
+  for (;;)
     {
       char c = *text++;
       switch (c)
         {
+        case 0:
+          return;
         case '\n':
           fputs (newline, file);
           break;
@@ -334,6 +333,18 @@ escape_string (FILE *file,
           break;
         }
     }
+}
+
+static void
+escape_tag (FILE *file, const char *tag,
+            const char *text, const char *space, const char *newline)
+{
+  if (!text || !*text)
+    return;
+
+  fprintf (file, "<%s>", tag);
+  escape_string (file, text, space, newline);
+  fprintf (file, "</%s>", tag);
 }
 
 static const char *
@@ -403,8 +414,7 @@ html_put_footnote_markers (struct html_driver *html,
 
           if (i > 0)
             putc (',', html->file);
-          escape_string (html->file, f->marker,
-                         strlen (f->marker), " ", "<BR>");
+          escape_string (html->file, f->marker, " ", "<BR>");
         }
       fputs ("</SUP>", html->file);
     }
@@ -414,8 +424,7 @@ static void
 html_put_table_item_text (struct html_driver *html,
                           const struct table_item_text *text)
 {
-  escape_string (html->file, text->content, strlen (text->content),
-                 " ", "<BR>");
+  escape_string (html->file, text->content, " ", "<BR>");
   html_put_footnote_markers (html, text->footnotes, text->n_footnotes);
 }
 
@@ -429,8 +438,7 @@ html_put_table_item_layers (struct html_driver *html,
         fputs ("<BR>\n", html->file);
 
       const struct table_item_layer *layer = &layers->layers[i];
-      escape_string (html->file, layer->content, strlen (layer->content),
-                     " ", "<BR>");
+      escape_string (html->file, layer->content, " ", "<BR>");
       html_put_footnote_markers (html, layer->footnotes, layer->n_footnotes);
     }
 }
@@ -456,12 +464,8 @@ html_output_table (struct html_driver *html, const struct table_item *item)
   for (size_t i = 0; i < n_footnotes; i++)
     {
       put_tfoot (html, t, &tfoot);
-      fputs ("<SUP>", html->file);
-      escape_string (html->file, f[i]->marker, strlen (f[i]->marker),
-                     " ", "<BR>");
-      fputs ("</SUP> ", html->file);
-      escape_string (html->file, f[i]->content, strlen (f[i]->content),
-                     " ", "<BR>");
+      escape_tag (html->file, "SUP", f[i]->marker, " ", "<BR>");
+      escape_string (html->file, f[i]->content, " ", "<BR>");
     }
   free (f);
   if (tfoot)
@@ -569,17 +573,27 @@ html_output_table (struct html_driver *html, const struct table_item *item)
           /* Output cell contents. */
           const char *s = cell.text;
           if (cell.options & TAB_FIX)
-            {
-              fputs ("<TT>", html->file);
-              escape_string (html->file, s, strlen (s), "&nbsp;", "<BR>");
-              fputs ("</TT>", html->file);
-            }
+            escape_tag (html->file, "TT", s, "&nbsp;", "<BR>");
           else
             {
               s += strspn (s, CC_SPACES);
-              escape_string (html->file, s, strlen (s), " ", "<BR>");
+              escape_string (html->file, s, " ", "<BR>");
             }
 
+          if (cell.n_subscripts)
+            {
+              fputs ("<SUB>", html->file);
+              for (size_t i = 0; i < cell.n_subscripts; i++)
+                {
+                  if (i)
+                    putc (',', html->file);
+                  escape_string (html->file, cell.subscripts[i],
+                                 "&nbsp;", "<BR>");
+                }
+              fputs ("</SUB>", html->file);
+            }
+          if (cell.superscript)
+            escape_tag (html->file, "SUP", cell.superscript, "&nbsp;", "<BR>");
           html_put_footnote_markers (html, cell.footnotes, cell.n_footnotes);
 
           /* Output </TH> or </TD>. */

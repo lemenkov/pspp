@@ -1891,8 +1891,11 @@ pivot_value_format (const struct pivot_value *value,
 {
   pivot_value_format_body ( value, show_values, show_variables, out);
 
-  if (value->subscript)
-    ds_put_format (out, "_%s", value->subscript);
+  if (value->n_subscripts)
+    {
+      for (size_t i = 0; i < value->n_subscripts; i++)
+        ds_put_format (out, "%c%s", i ? ',' : '_', value->subscripts[i]);
+    }
 
   if (value->superscript)
     ds_put_format (out, "^%s", value->superscript);
@@ -1929,7 +1932,12 @@ pivot_value_destroy (struct pivot_value *value)
       /* Do not free the elements of footnotes because VALUE does not own
          them. */
       free (value->footnotes);
-      free (value->subscript);
+
+      for (size_t i = 0; i < value->n_subscripts; i++)
+        free (value->subscripts[i]);
+      free (value->subscripts);
+
+      free (value->superscript);
 
       switch (value->type)
         {

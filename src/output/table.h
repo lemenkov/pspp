@@ -283,9 +283,13 @@ void table_text (struct table *, int c, int r, unsigned opt, const char *);
 void table_text_format (struct table *, int c, int r, unsigned opt,
                         const char *, ...)
   PRINTF_FORMAT (5, 6);
-
 void table_joint_text (struct table *, int x1, int y1, int x2, int y2,
                        unsigned opt, const char *);
+
+void table_add_subscripts (struct table *, int x, int y,
+                           char **subscripts, size_t n_subscripts);
+void table_add_superscript (struct table *, int x, int y,
+                            const char *superscript);
 
 /* Footnotes.
 

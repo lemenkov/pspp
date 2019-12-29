@@ -599,7 +599,10 @@ struct pivot_value
   {
     struct font_style *font_style;
     struct cell_style *cell_style;
-    char *subscript;
+
+    char **subscripts;
+    size_t n_subscripts;
+
     char *superscript;
 
     const struct pivot_footnote **footnotes;

@@ -55,11 +55,11 @@ struct table_cell
 
     unsigned int options;       /* TAB_*. */
     char *text;                 /* A paragraph of text. */
-
-    /* Optional footnote(s). */
+    char **subscripts;
+    size_t n_subscripts;
+    char *superscript;
     const struct footnote **footnotes;
     size_t n_footnotes;
-
     const struct area_style *style;
   };
 

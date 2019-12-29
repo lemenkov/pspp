@@ -124,6 +124,10 @@ fill_cell (struct table *t, int x1, int y1, int x2, int y2,
       
       for (size_t i = 0; i < value->n_footnotes; i++)
         table_add_footnote (t, x1, y1, footnotes[value->footnotes[i]->idx]);
+
+      if (value->n_subscripts)
+        table_add_subscripts (t, x1, y1,
+                              value->subscripts, value->n_subscripts);
     }
 }
 

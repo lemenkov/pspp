@@ -580,14 +580,11 @@ add_joined_cell (struct table *table, int x1, int y1, int x2, int y2,
              x1, y1, x2, y2);
 
   struct table_cell *cell = pool_alloc (table->container, sizeof *cell);
-  cell->d[TABLE_HORZ][0] = x1;
-  cell->d[TABLE_VERT][0] = y1;
-  cell->d[TABLE_HORZ][1] = ++x2;
-  cell->d[TABLE_VERT][1] = ++y2;
-  cell->options = opt;
-  cell->footnotes = NULL;
-  cell->n_footnotes = 0;
-  cell->style = NULL;
+  *cell = (struct table_cell) {
+    .d = { [TABLE_HORZ] = { x1, ++x2 },
+           [TABLE_VERT] = { y1, ++y2 } },
+    .options = opt,
+  };
 
   void **cc = &table->cc[x1 + y1 * table_nc (table)];
   unsigned short *ct = &table->ct[x1 + y1 * table_nc (table)];
@@ -637,6 +634,29 @@ get_joined_cell (struct table *table, int x, int y)
       cell->text = text ? text : pool_strdup (table->container, "");
     }
   return cell;
+}
+
+/* Sets the subscripts for column X, row Y in TABLE. */
+void
+table_add_subscripts (struct table *table, int x, int y,
+                      char **subscripts, size_t n_subscripts)
+{
+  struct table_cell *cell = get_joined_cell (table, x, y);
+
+  cell->n_subscripts = n_subscripts;
+  cell->subscripts = pool_nalloc (table->container, n_subscripts,
+                                  sizeof *cell->subscripts);
+  for (size_t i = 0; i < n_subscripts; i++)
+    cell->subscripts[i] = pool_strdup (table->container, subscripts[i]);
+}
+
+/* Sets the superscript for column X, row Y in TABLE. */
+void
+table_add_superscript (struct table *table, int x, int y,
+                       const char *superscript)
+{
+  get_joined_cell (table, x, y)->superscript
+    = pool_strdup (table->container, superscript);
 }
 
 /* Create a footnote in TABLE with MARKER (e.g. "a") as its marker and CONTENT

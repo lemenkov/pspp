@@ -227,7 +227,8 @@ csv_submit (struct output_driver *driver,
 
               if (x != cell.d[TABLE_HORZ][0] || y != cell.d[TABLE_VERT][0])
                 csv_output_field (csv, "");
-              else if (!(cell.options & TAB_MARKUP) && !cell.n_footnotes)
+              else if (!(cell.options & TAB_MARKUP) && !cell.n_footnotes
+                       && !cell.n_subscripts && !cell.superscript)
                 csv_output_field (csv, cell.text);
               else
                 {
@@ -242,6 +243,12 @@ csv_submit (struct output_driver *driver,
                   else
                     ds_put_cstr (&s, cell.text);
 
+                  if (cell.n_subscripts)
+                    for (size_t i = 0; i < cell.n_subscripts; i++)
+                      ds_put_format (&s, "%c%s",
+                                     i ? ',' : '_', cell.subscripts[i]);
+                  if (cell.superscript)
+                    ds_put_format (&s, "^%s", cell.superscript);
                   csv_format_footnotes (cell.footnotes, cell.n_footnotes, &s);
                   csv_output_field (csv, ds_cstr (&s));
                   ds_destroy (&s);

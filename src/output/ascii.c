@@ -615,7 +615,8 @@ ascii_measure_cell_width (void *a_, const struct table_cell *cell,
   clip[H][0] = clip[H][1] = clip[V][0] = clip[V][1] = 0;
   ascii_layout_cell (a, cell, bb, clip, max_width, &h);
 
-  if (cell->n_footnotes || strchr (cell->text, ' '))
+  if (cell->n_footnotes || strchr (cell->text, ' ')
+      || cell->n_subscripts || cell->superscript)
     {
       bb[H][1] = 1;
       ascii_layout_cell (a, cell, bb, clip, min_width, &h);
@@ -809,10 +810,14 @@ text_draw (struct ascii_driver *a, enum table_halign halign, int options,
 }
 
 static char *
-add_footnote_markers (const char *text, const struct table_cell *cell)
+add_markers (const char *text, const struct table_cell *cell)
 {
   struct string s = DS_EMPTY_INITIALIZER;
   ds_put_cstr (&s, text);
+  for (size_t i = 0; i < cell->n_subscripts; i++)
+    ds_put_format (&s, "%c%s", i ? ',' : '_', cell->subscripts[i]);
+  if (cell->superscript)
+    ds_put_format (&s, "^%s", cell->superscript);
   for (size_t i = 0; i < cell->n_footnotes; i++)
     ds_put_format (&s, "[%s]", cell->footnotes[i]->marker);
   return ds_steal_cstr (&s);
@@ -831,11 +836,11 @@ ascii_layout_cell (struct ascii_driver *a, const struct table_cell *cell,
                             ? output_get_text_from_markup (cell->text)
                             : cell->text);
 
-  /* Append footnote markers if any. */
+  /* Append footnotes, subscripts, superscript if any. */
   const char *text;
-  if (cell->n_footnotes)
+  if (cell->n_footnotes || cell->n_subscripts || cell->superscript)
     {
-      text = add_footnote_markers (plain_text, cell);
+      text = add_markers (plain_text, cell);
       if (plain_text != cell->text)
         free (CONST_CAST (char *, plain_text));
     }

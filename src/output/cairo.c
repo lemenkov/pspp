@@ -1422,31 +1422,45 @@ xr_clip (struct xr_driver *xr, int clip[TABLE_N_AXES][2])
 }
 
 static void
-add_attr_with_start (PangoAttrList *list, PangoAttribute *attr, guint start_index)
+add_attr (PangoAttrList *list, PangoAttribute *attr,
+          guint start_index, guint end_index)
 {
   attr->start_index = start_index;
+  attr->end_index = end_index;
   pango_attr_list_insert (list, attr);
 }
 
 static void
-markup_escape (const char *in, struct string *out)
+markup_escape (struct string *out, unsigned int options,
+               const char *in, size_t len)
 {
-  for (int c = *in++; c; c = *in++)
-    switch (c)
-      {
-      case '&':
-        ds_put_cstr (out, "&amp;");
-        break;
-      case '<':
-        ds_put_cstr (out, "&lt;");
-        break;
-      case '>':
-        ds_put_cstr (out, "&gt;");
-        break;
-      default:
-        ds_put_byte (out, c);
-        break;
-      }
+  if (!(options & TAB_MARKUP))
+    {
+      ds_put_substring (out, ss_buffer (in, len == -1 ? strlen (in) : len));
+      return;
+    }
+
+  while (len-- > 0)
+    {
+      int c = *in++;
+      switch (c)
+        {
+        case 0:
+          return;
+        case '&':
+          ds_put_cstr (out, "&amp;");
+          break;
+        case '<':
+          ds_put_cstr (out, "&lt;");
+          break;
+        case '>':
+          ds_put_cstr (out, "&gt;");
+          break;
+        default:
+          ds_put_byte (out, c);
+          break;
+        }
+    }
 }
 
 static int
@@ -1510,6 +1524,7 @@ xr_layout_cell_text (struct xr_driver *xr, const struct table_cell *cell,
     }
 
   struct string tmp = DS_EMPTY_INITIALIZER;
+  PangoAttrList *attrs = NULL;
 
   /* Deal with an oddity of the Unicode line-breaking algorithm (or perhaps in
      Pango's implementation of it): it will break after a period or a comma
@@ -1525,7 +1540,23 @@ xr_layout_cell_text (struct xr_driver *xr, const struct table_cell *cell,
      happen with grouping like 1,234,567.89 or 1.234.567,89 because if groups
      are present then there will always be a digit on both sides of every
      period and comma. */
-  if (options & TAB_ROTATE || bb[H][1] != INT_MAX)
+  if (options & TAB_MARKUP)
+    {
+      PangoAttrList *new_attrs;
+      char *new_text;
+      if (pango_parse_markup (text, -1, 0, &new_attrs, &new_text, NULL, NULL))
+        {
+          attrs = new_attrs;
+          tmp.ss = ss_cstr (new_text);
+          tmp.capacity = tmp.ss.length;
+        }
+      else
+        {
+          /* XXX should we report the error? */
+          ds_put_cstr (&tmp, text);
+        }
+    }
+  else if (options & TAB_ROTATE || bb[H][1] != INT_MAX)
     {
       const char *decimal = text + strcspn (text, ".,");
       if (decimal[0]
@@ -1533,93 +1564,106 @@ xr_layout_cell_text (struct xr_driver *xr, const struct table_cell *cell,
           && (decimal == text || !c_isdigit (decimal[-1])))
         {
           ds_extend (&tmp, strlen (text) + 16);
-          ds_put_substring (&tmp, ss_buffer (text, decimal - text + 1));
+          markup_escape (&tmp, options, text, decimal - text + 1);
           ds_put_unichar (&tmp, 0x2060 /* U+2060 WORD JOINER */);
-          ds_put_cstr (&tmp, decimal + 1);
+          markup_escape (&tmp, options, decimal + 1, -1);
         }
     }
 
-  if (cell->n_footnotes)
+  if (font_style->underline)
     {
-      int footnote_adjustment;
-      if (cell->n_footnotes == 1 && halign == TABLE_HALIGN_RIGHT)
-        {
-          const char *marker = cell->footnotes[0]->marker;
-          pango_layout_set_text (font->layout, marker, strlen (marker));
+      if (!attrs)
+        attrs = pango_attr_list_new ();
+      pango_attr_list_insert (attrs, pango_attr_underline_new (
+                                PANGO_UNDERLINE_SINGLE));
+    }
 
-          PangoAttrList *attrs = pango_attr_list_new ();
-          pango_attr_list_insert (attrs, pango_attr_scale_new (PANGO_SCALE_SMALL));
-          pango_attr_list_insert (attrs, pango_attr_rise_new (3000));
-          pango_layout_set_attributes (font->layout, attrs);
-          pango_attr_list_unref (attrs);
-
-          int w = get_layout_dimension (font->layout, X);
-          int right_margin = px_to_xr (cell_style->margin[X][R]);
-          footnote_adjustment = MIN (w, right_margin);
-
-          pango_layout_set_attributes (font->layout, NULL);
-        }
-      else
-        footnote_adjustment = px_to_xr (cell_style->margin[X][R]);
-
-      if (R)
-        bb[X][R] += footnote_adjustment;
-      else
-        bb[X][R] -= footnote_adjustment;
-
+  if (cell->n_footnotes || cell->n_subscripts || cell->superscript)
+    {
+      /* If we haven't already put TEXT into tmp, do it now. */
       if (ds_is_empty (&tmp))
         {
           ds_extend (&tmp, strlen (text) + 16);
-          ds_put_cstr (&tmp, text);
+          markup_escape (&tmp, options, text, -1);
         }
-      size_t initial_length = ds_length (&tmp);
 
+      size_t subscript_ofs = ds_length (&tmp);
+      for (size_t i = 0; i < cell->n_subscripts; i++)
+        {
+          if (i)
+            ds_put_byte (&tmp, ',');
+          ds_put_cstr (&tmp, cell->subscripts[i]);
+        }
+
+      size_t superscript_ofs = ds_length (&tmp);
+      if (cell->superscript)
+        ds_put_cstr (&tmp, cell->superscript);
+
+      size_t footnote_ofs = ds_length (&tmp);
       for (size_t i = 0; i < cell->n_footnotes; i++)
         {
           if (i)
             ds_put_byte (&tmp, ',');
-
-          const char *marker = cell->footnotes[i]->marker;
-          if (options & TAB_MARKUP)
-            markup_escape (marker, &tmp);
-          else
-            ds_put_cstr (&tmp, marker);
+          ds_put_cstr (&tmp, cell->footnotes[i]->marker);
         }
 
-      if (options & TAB_MARKUP)
-        pango_layout_set_markup (font->layout,
-                                 ds_cstr (&tmp), ds_length (&tmp));
-      else
-        pango_layout_set_text (font->layout, ds_cstr (&tmp), ds_length (&tmp));
+      /* Allow footnote markers to occupy the right margin.  That way, numbers
+         in the column are still aligned. */
+      if (cell->n_footnotes && halign == TABLE_HALIGN_RIGHT)
+        {
+          /* Measure the width of the footnote marker, so we know how much we
+             need to make room for. */
+          pango_layout_set_text (font->layout, ds_cstr (&tmp) + footnote_ofs,
+                                 ds_length (&tmp) - footnote_ofs);
 
-      PangoAttrList *attrs = pango_attr_list_new ();
-      if (font_style->underline)
-        pango_attr_list_insert (attrs, pango_attr_underline_new (
-                               PANGO_UNDERLINE_SINGLE));
-      add_attr_with_start (attrs, pango_attr_scale_new (PANGO_SCALE_SMALL), initial_length);
-      add_attr_with_start (attrs, pango_attr_rise_new (3000), initial_length);
-      add_attr_with_start (
-        attrs, pango_attr_font_desc_new (font->desc), initial_length);
+          PangoAttrList *fn_attrs = pango_attr_list_new ();
+          pango_attr_list_insert (
+            fn_attrs, pango_attr_scale_new (PANGO_SCALE_SMALL));
+          pango_attr_list_insert (fn_attrs, pango_attr_rise_new (3000));
+          pango_layout_set_attributes (font->layout, fn_attrs);
+          pango_attr_list_unref (fn_attrs);
+          int footnote_width = get_layout_dimension (font->layout, X);
+
+          /* Bound the adjustment by the width of the right margin. */
+          int right_margin = px_to_xr (cell_style->margin[X][R]);
+          int footnote_adjustment = MIN (footnote_width, right_margin);
+
+          /* Adjust the bounding box. */
+          if (options & TAB_ROTATE)
+            footnote_adjustment = -footnote_adjustment;
+          bb[X][R] += footnote_adjustment;
+
+          /* Clean up. */
+          pango_layout_set_attributes (font->layout, NULL);
+        }
+
+      /* Set attributes. */
+      if (!attrs)
+        attrs = pango_attr_list_new ();
+      add_attr (attrs, pango_attr_font_desc_new (font->desc), subscript_ofs,
+                PANGO_ATTR_INDEX_TO_TEXT_END);
+      add_attr (attrs, pango_attr_scale_new (PANGO_SCALE_SMALL),
+                subscript_ofs, PANGO_ATTR_INDEX_TO_TEXT_END);
+      if (cell->n_subscripts)
+        add_attr (attrs, pango_attr_rise_new (-3000), subscript_ofs,
+                  superscript_ofs - subscript_ofs);
+      if (cell->superscript || cell->n_footnotes)
+        add_attr (attrs, pango_attr_rise_new (3000), superscript_ofs,
+                  PANGO_ATTR_INDEX_TO_TEXT_END);
+    }
+
+  /* Set the attributes, if any. */
+  if (attrs)
+    {
       pango_layout_set_attributes (font->layout, attrs);
       pango_attr_list_unref (attrs);
     }
-  else
-    {
-      const char *content = ds_is_empty (&tmp) ? text : ds_cstr (&tmp);
-      if (options & TAB_MARKUP)
-        pango_layout_set_markup (font->layout, content, -1);
-      else
-        pango_layout_set_text (font->layout, content, -1);
 
-      if (font_style->underline)
-        {
-          PangoAttrList *attrs = pango_attr_list_new ();
-          pango_attr_list_insert (attrs, pango_attr_underline_new (
-                                    PANGO_UNDERLINE_SINGLE));
-          pango_layout_set_attributes (font->layout, attrs);
-          pango_attr_list_unref (attrs);
-        }
-    }
+  /* Set the text. */
+  if (ds_is_empty (&tmp))
+    pango_layout_set_text (font->layout, text, -1);
+  else
+    pango_layout_set_text (font->layout, ds_cstr (&tmp), ds_length (&tmp));
   ds_destroy (&tmp);
 
   pango_layout_set_alignment (font->layout,
