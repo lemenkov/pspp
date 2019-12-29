@@ -61,24 +61,10 @@ When invoked as \fBpspp\-output convert \fIsource destination\fR,
 to another format, writing the output to \fIdestination\fR.
 .PP
 By default, \fBpspp\-output\fR infers the intended format for
-\fIdestination\fR from its extension:
-.
-.IP \fBcsv\fR
-.IQ \fBtxt\fR
-Comma-separated value.  Each value is formatted according to its
-variable's print format.  The first line in the file contains variable
-names.
-.
-.IP \fBsav\fR
-.IQ \fBsys\fR
-SPSS system file.
-.
-.IP \fBpor\fR
-SPSS portable file.
-.
-.IP \fBsps\fR
-SPSS syntax file.  (Only encrypted syntax files may be converted to
-this format.)
+\fIdestination\fR from its extension.  The known extensions are
+generally: \fBcsv html list odt pdf ps spv svg txt\fR.  Use
+\fB\-\-help\fR to see an accurate list, since a given installation
+might be built without support for some formats.
 .PP
 See the \fBInput Selection Options\fR section below for information on
 the options available to select a subset of objects to include in the
