@@ -96,7 +96,6 @@ struct _PsppireImportAssistant
   GtkWidget *quote_cb;
   GtkWidget *quote_combo;
 
-  GtkEntry *quote_entry;
   GtkWidget *fields_tree_view;
 
 /* END Page where the user chooses field separators. */

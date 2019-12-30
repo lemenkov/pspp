@@ -1024,32 +1024,6 @@ psppire_import_assistant_new (GtkWindow *toplevel)
 
 
 
-static void
-set_quote_list (GtkComboBox *cb)
-{
-  GtkListStore *list =  gtk_list_store_new (1, G_TYPE_STRING);
-  GtkTreeIter iter;
-  gint i;
-  const gchar *separator[3] = {"'\"", "\'", "\""};
-
-  for (i = 0; i < 3; i++)
-    {
-      const gchar *s = separator[i];
-
-      /* Add a new row to the model */
-      gtk_list_store_append (list, &iter);
-      gtk_list_store_set (list, &iter,
-                          0, s,
-                          -1);
-
-    }
-
-  gtk_combo_box_set_model (GTK_COMBO_BOX (cb), GTK_TREE_MODEL (list));
-  g_object_unref (list);
-
-  gtk_combo_box_set_entry_text_column (cb, 0);
-}
-
 /* Chooses a name for each column on the separators page */
 static void
 choose_column_names (PsppireImportAssistant *ia)
@@ -1159,10 +1133,9 @@ separators_page_create (PsppireImportAssistant *ia)
   ia->custom_cb = get_widget_assert (builder, "custom-cb");
   ia->custom_entry = get_widget_assert (builder, "custom-entry");
   ia->quote_combo = get_widget_assert (builder, "quote-combo");
-  ia->quote_entry = GTK_ENTRY (gtk_bin_get_child (GTK_BIN (ia->quote_combo)));
   ia->quote_cb = get_widget_assert (builder, "quote-cb");
 
-  set_quote_list (GTK_COMBO_BOX (ia->quote_combo));
+  gtk_combo_box_set_active (GTK_COMBO_BOX (ia->quote_combo), 0);
 
   if (ia->fields_tree_view == NULL)
     {
@@ -1423,8 +1396,15 @@ separators_append_syntax (const PsppireImportAssistant *ia, struct string *s)
 	}
     }
   ds_put_cstr (s, "\"\n");
-  if (!ds_is_empty (&ia->quotes))
-    syntax_gen_pspp (s, "  /QUALIFIER=%sq\n", ds_cstr (&ia->quotes));
+
+  if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (ia->quote_cb)))
+    {
+      GtkComboBoxText *cbt = GTK_COMBO_BOX_TEXT (ia->quote_combo);
+      gchar *quotes = gtk_combo_box_text_get_active_text (cbt);
+      if (quotes && *quotes)
+        syntax_gen_pspp (s, "  /QUALIFIER=%sq\n", quotes);
+      free (quotes);
+    }
 }
 
 static void
