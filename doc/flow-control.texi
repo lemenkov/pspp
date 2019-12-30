@@ -129,9 +129,9 @@ Any command may appear within @subcmd{DO REPEAT}, including nested @subcmd{DO RE
 commands.  If @cmd{INCLUDE} or @cmd{INSERT} appears within @subcmd{DO REPEAT},
 the substitutions do not apply to the included file.
 
-If @subcmd{PRINT} is specified on @cmd{END REPEAT}, the commands after substitutions
-are made are printed to the listing file, prefixed by a plus sign
-(@samp{+}).
+If @subcmd{PRINT} is specified on @cmd{END REPEAT}, the commands after
+substitutions are made should be printed to the listing file, prefixed
+by a plus sign (@samp{+}).  This feature is not yet implemented.
 
 @node LOOP
 @section LOOP
