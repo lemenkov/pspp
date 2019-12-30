@@ -345,36 +345,36 @@ def print_members(attributes, rhs, indent):
     for enum_name in new_enums:
         used_enums.add(enum_name)
         c_name = name_to_id(enum_name)
-        print '\nenum %s%s {' % (prefix, c_name)
+        print('\nenum %s%s {' % (prefix, c_name))
         i = 0
         for value in sorted(enums[enum_name]):
-            print '    %s%s_%s%s,' % (prefix.upper(),
+            print('    %s%s_%s%s,' % (prefix.upper(),
                                       c_name.upper(),
                                       name_to_id(value).upper(),
-                                      ' = 1' if i == 0 else '')
+                                      ' = 1' if i == 0 else ''))
             i += 1
-        print '};'
-        print 'const char *%s%s_to_string (enum %s%s);' % (
-            prefix, c_name, prefix, c_name)
+        print('};')
+        print('const char *%s%s_to_string (enum %s%s);' % (
+            prefix, c_name, prefix, c_name))
 
-    print '\nstruct %s%s {' % (prefix, name_to_id(name))
-    print '%sstruct spvxml_node node_;' % indent
+    print('\nstruct %s%s {' % (prefix, name_to_id(name)))
+    print('%sstruct spvxml_node node_;' % indent)
 
     if attrs:
-        print '\n%s/* Attributes. */' % indent
+        print('\n%s/* Attributes. */' % indent)
         for decl, comment in attrs:
             line = '%s%s' % (indent, decl)
             if comment:
                 n_spaces = max(35 - len(line), 1)
                 line += '%s/* %s. */' % (' ' * n_spaces, comment)
-            print line
+            print(line)
 
     if rhs['type'] == 'etc' or rhs['type'] == 'empty':
         return
 
-    print '\n%s/* Content. */' % indent
+    print('\n%s/* Content. */' % indent)
     if rhs['type'] == 'text':
-        print '%schar *text; /* Always nonnull. */' % indent
+        print('%schar *text; /* Always nonnull. */' % indent)
         return
 
     for a in rhs['items'] if rhs['type'] == '|' else (rhs,):
@@ -384,24 +384,24 @@ def print_members(attributes, rhs, indent):
             elif term['type'] == 'nonterminal':
                 nt_name = name_to_id(term['nonterminal_name'])
                 member_name = name_to_id(term['member_name'])
-                print '%sstruct %s%s *%s; /* Always nonnull. */' % (
-                    indent, prefix, nt_name, member_name)
+                print('%sstruct %s%s *%s; /* Always nonnull. */' % (
+                    indent, prefix, nt_name, member_name))
             elif term['type'] == '?' and term['item']['type'] == 'nonterminal':
                 nt_name = name_to_id(term['item']['nonterminal_name'])
                 member_name = name_to_id(term['item']['member_name'])
-                print '%sstruct %s%s *%s; /* Possibly null. */' % (
-                    indent, prefix, nt_name, member_name)
+                print('%sstruct %s%s *%s; /* Possibly null. */' % (
+                    indent, prefix, nt_name, member_name))
             elif (term['type'] in ('*', '+')
                   and term['item']['type'] == 'nonterminal'):
                 nt_name = name_to_id(term['item']['nonterminal_name'])
                 member_name = name_to_id(term['item']['member_name'])
-                print '%sstruct %s%s **%s;' % (indent, prefix,
-                                               nt_name, member_name)
-                print '%ssize_t n_%s;' % (indent, member_name)
+                print('%sstruct %s%s **%s;' % (indent, prefix,
+                                               nt_name, member_name))
+                print('%ssize_t n_%s;' % (indent, member_name))
             else:
                 seq_name = term['seq_name']
-                print '%sstruct spvxml_node **%s;' % (indent, seq_name)
-                print '%ssize_t n_%s;' % (indent, seq_name)
+                print('%sstruct spvxml_node **%s;' % (indent, seq_name))
+                print('%ssize_t n_%s;' % (indent, seq_name))
 
 
 def bytes_to_hex(s):
@@ -720,7 +720,7 @@ bool
     *p_ = p;
     return true;''')
 
-    print "}"
+    print("}")
 
 
 def print_free_members(attributes, rhs, indent):
@@ -782,14 +782,14 @@ def print_free_members(attributes, rhs, indent):
 def print_free(name, production, indent):
     xml_name, attributes, rhs = production
 
-    print '''
+    print('''
 void
 %(prefix)sfree_%(name)s (struct %(prefix)s%(name)s *p)
 {
     if (!p)
         return;
 ''' % {'prefix': prefix,
-       'name': name_to_id(name)}
+       'name': name_to_id(name)})
 
     print_free_members(attributes, rhs, ' ' * 4)
 
@@ -842,7 +842,7 @@ def print_recurse_members(attributes, rhs, function):
 def print_collect_ids(name, production):
     xml_name, attributes, rhs = production
 
-    print '''
+    print('''
 void
 %(prefix)scollect_ids_%(name)s (struct spvxml_context *ctx, struct %(prefix)s%(name)s *p)
 {
@@ -851,7 +851,7 @@ void
 
     spvxml_node_collect_id (ctx, &p->node_);
 ''' % {'prefix': prefix,
-       'name': name_to_id(name)}
+       'name': name_to_id(name)})
 
     print_recurse_members(attributes, rhs, 'collect_ids')
 
@@ -861,7 +861,7 @@ void
 def print_resolve_refs(name, production):
     xml_name, attributes, rhs = production
 
-    print '''
+    print('''
 bool
 %(prefix)sis_%(name)s (const struct spvxml_node *node)
 {
@@ -882,7 +882,7 @@ void
     if (!p)
         return;
 ''' % {'prefix': prefix,
-       'name': name_to_id(name)}
+       'name': name_to_id(name)})
 
     i = 0
     for unique_name, (xml_name, value, required) in sorted(attributes.items()):
@@ -982,11 +982,11 @@ if __name__ == "__main__":
             fatal("%s: duplicate production" % name)
         productions[name] = (xml_name, attributes, rhs)
 
-    print '/* Generated automatically -- do not modify!    -*- buffer-read-only: t -*- */'
+    print('/* Generated automatically -- do not modify!    -*- buffer-read-only: t -*- */')
     if output_type == 'code' and len(args) == 4:
         header_name = args[3]
 
-        print """\
+        print("""\
 #include <config.h>
 #include %s
 #include <limits.h>
@@ -996,7 +996,7 @@ if __name__ == "__main__":
 #include "libpspp/str.h"
 #include "gl/xalloc.h"
 
-""" % header_name
+""" % header_name)
         for enum_name, values in sorted(enums.items()):
             if len(values) <= 1:
                 continue
@@ -1064,7 +1064,7 @@ struct spvxml_node_class %(prefix)s%(name)s_class = {
                'class': (name if name == production[0]
                          else '%s (%s)' % (name, production[0]))})
     elif output_type == 'header' and len(args) == 3:
-        print """\
+        print("""\
 #ifndef %(PREFIX)sPARSER_H
 #define %(PREFIX)sPARSER_H
 
@@ -1072,7 +1072,7 @@ struct spvxml_node_class %(prefix)s%(name)s_class = {
 #include <stdint.h>
 #include <stdbool.h>
 #include "output/spv/spvxml-helpers.h"\
-""" % {'PREFIX': prefix.upper()}
+""" % {'PREFIX': prefix.upper()})
         for name, (xml_name, attributes, rhs) in sorted(productions.items()):
             print_members(attributes, rhs, ' ' * 4)
             print('''};
@@ -1085,8 +1085,8 @@ bool %(prefix)sis_%(name)s (const struct spvxml_node *);
 struct %(prefix)s%(name)s *%(prefix)scast_%(name)s (const struct spvxml_node *);'''
                   % {'prefix': prefix,
                      'name': name_to_id(name)})
-        print """\
+        print("""\
 
-#endif /* %(PREFIX)sPARSER_H */""" % {'PREFIX': prefix.upper()}
+#endif /* %(PREFIX)sPARSER_H */""" % {'PREFIX': prefix.upper()})
     else:
         sys.stderr.write("%s: bad usage (use --help for help)" % argv0)

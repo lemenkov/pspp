@@ -151,7 +151,7 @@ class Item(object):
         self.content = content
     def __repr__(self):
         if self.type_ == 'constant':
-            return ' '.join(['%02x' % ord(x) for x in self.content])
+            return ' '.join(['%02x' % maybe_ord(x) for x in self.content])
         elif self.content:
             return "%s(%s)" % (self.type_, self.content)
         else:
@@ -188,7 +188,7 @@ def parse_item():
         content = parse_choice()
         must_match(')')
     else:
-        print token
+        print(token)
         fatal('syntax error expecting item')
 
     n = 1
@@ -267,7 +267,7 @@ def parse_case():
                 or items[0].type_ != 'constant'
                 or len(items[0].content) != 1):
                 fatal("choice must begin with xx (or 'else')")
-            choice = '%02x' % ord(items[0].content)
+            choice = '%02x' % maybe_ord(items[0].content)
 
         if choice in choices:
             fatal("duplicate choice %s" % choice)
@@ -327,9 +327,9 @@ def print_members(p, indent):
                 else:
                     n_stars += 1
             
-            print "%s%s %s%s%s;" % (indent, typename, '*' * n_stars,
+            print("%s%s %s%s%s;" % (indent, typename, '*' * n_stars,
                                     name_to_id(item.name),
-                                    array_suffix)
+                                    array_suffix))
         elif item.type_ in ('v1', 'v3', 'vAF', 'vB0',
                             'count', 'becount', '()'):
             print_members(item.content, indent)
@@ -337,22 +337,31 @@ def print_members(p, indent):
             for choice in item.content:
                 print_members(choice, indent)
         elif item.type_ == 'case':
-            print "%sint %s;" % (indent, item.name)
-            print "%sunion {" % indent
+            print("%sint %s;" % (indent, item.name))
+            print("%sunion {" % indent)
             for name, choice in sorted(item.content.items()):
-                print "%s    struct {" % indent
+                print("%s    struct {" % indent)
                 print_members(choice, indent + ' ' * 8)
-                print "%s    } %s;" % (indent, name)
-            print "%s};" % indent
+                print("%s    } %s;" % (indent, name))
+            print("%s};" % indent)
         elif item.type_ == 'constant':
             if item.name:
-                print "%sbool %s;" % (indent, item.name)
+                print("%sbool %s;" % (indent, item.name))
         elif item.type_ not in ("constant", "variable"):
             fatal("unhandled type %s" % item.type_)
 
 
+def maybe_ord(x):
+    """
+    In Python 2, the elements of byte strings b'asdf' are char.
+    In Python 3, the elements are int.
+    This converts chars to ints.
+    """
+    return x if type(x) is int else ord(x)
+
+
 def bytes_to_hex(s):
-    return ''.join(['"'] + ["\\x%02x" % ord(x) for x in s] + ['"'])
+    return ''.join(['"'] + ["\\x%02x" % maybe_ord(x) for x in s] + ['"'])
 
 
 class Parser_Context(object):
@@ -366,21 +375,21 @@ class Parser_Context(object):
         return '%s%d' % (prefix, n) if n > 1 else prefix
     def save_pos(self, indent):
         pos = self.gen_name('pos')
-        print "%sstruct spvbin_position %s = spvbin_position_save (input);" % (indent, pos)
+        print("%sstruct spvbin_position %s = spvbin_position_save (input);" % (indent, pos))
         return pos
     def save_error(self, indent):
         error = self.gen_name('save_n_errors')
-        print "%ssize_t %s = input->n_errors;" % (indent, error)
+        print("%ssize_t %s = input->n_errors;" % (indent, error))
         return error
     def parse_limit(self, endian, indent):
         limit = self.gen_name('saved_limit')
-        print """\
+        print("""\
 %sstruct spvbin_limit %s;
 %sif (!spvbin_limit_parse%s (&%s, input))
 %s    goto %s;""" % (
     indent, limit,
     indent, '_be' if endian == 'big' else '', limit,
-    indent, self.bail)
+    indent, self.bail))
         return limit
         
 
@@ -391,13 +400,13 @@ def print_parser_items(name, production, indent, accessor, ctx):
 
         item = production[item_idx]
         if item.type_ == 'constant':
-            print """%sif (!spvbin_match_bytes (input, %s, %d))
+            print("""%sif (!spvbin_match_bytes (input, %s, %d))
 %s    goto %s;""" % (
                 indent, bytes_to_hex(item.content), len(item.content),
-                indent, ctx.bail)
+                indent, ctx.bail))
             ctx.need_error_handler = True
             if item.name:
-                print "%sp->%s = true;" % (indent, item.name)
+                print("%sp->%s = true;" % (indent, item.name))
         elif item.type_ == 'variable':
             if item.content[0] == 'nonterminal':
                 func = '%sparse_%s' % (prefix, name_to_id(item.content[1]))
@@ -409,13 +418,13 @@ def print_parser_items(name, production, indent, accessor, ctx):
             else:
                 dst = "NULL"
             if item.n == 1:
-                print """%sif (!%s (input, %s))
+                print("""%sif (!%s (input, %s))
 %s    goto %s;""" % (indent, func, dst,
-                     indent, ctx.bail)
+                     indent, ctx.bail))
 
                 if item.content[0] != 'nonterminal' and item.name == 'version':
-                    print "%sinput->version = p->%s%s;" % (
-                        indent, accessor, name_to_id(item.name))
+                    print("%sinput->version = p->%s%s;" % (
+                        indent, accessor, name_to_id(item.name)))
             else:
                 if isinstance(item.n, int):
                     count = item.n
@@ -425,16 +434,16 @@ def print_parser_items(name, production, indent, accessor, ctx):
                 i_name = ctx.gen_name('i')
                 if item.name:
                     if not isinstance(item.n, int):
-                        print "%sp->%s%s = xcalloc (%s, sizeof *p->%s%s);" % (
+                        print("%sp->%s%s = xcalloc (%s, sizeof *p->%s%s);" % (
                             indent,
                             accessor, name_to_id(item.name), count,
-                            accessor, name_to_id(item.name))
+                            accessor, name_to_id(item.name)))
                     dst += '[%s]' % i_name
-                print "%sfor (int %s = 0; %s < %s; %s++)" % (
-                    indent, i_name, i_name, count, i_name)
-                print """%s    if (!%s (input, %s))
+                print("%sfor (int %s = 0; %s < %s; %s++)" % (
+                    indent, i_name, i_name, count, i_name))
+                print("""%s    if (!%s (input, %s))
 %s        goto %s;""" % (indent, func, dst,
-                     indent, ctx.bail)
+                     indent, ctx.bail))
 
             ctx.need_error_handler = True
         elif item.type_ == '()':
@@ -448,9 +457,9 @@ def print_parser_items(name, production, indent, accessor, ctx):
                 # Not yet implemented
                 raise AssertionError
 
-            print "%sif (input->version == 0x%s) {" % (indent, item.type_[1:])
+            print("%sif (input->version == 0x%s) {" % (indent, item.type_[1:]))
             print_parser_items(name, item.content, indent + '    ', accessor, ctx)
-            print "%s}" % indent
+            print("%s}" % indent)
         elif item.type_ in ('count', 'becount'):
             if item.n != 1:
                 # Not yet implemented
@@ -463,7 +472,7 @@ def print_parser_items(name, production, indent, accessor, ctx):
             save_bail = ctx.bail
             ctx.bail = ctx.gen_name('backtrack')
 
-            print "%sdo {" % indent
+            print("%sdo {" % indent)
             indent += '    '
             if (item.content
                 and item.content[-1].type_ == 'variable'
@@ -476,37 +485,37 @@ def print_parser_items(name, production, indent, accessor, ctx):
             print_parser_items(name, content, indent, accessor, ctx)
 
             if ellipsis:
-                print "%sinput->ofs = input->size;" % indent
+                print("%sinput->ofs = input->size;" % indent)
             else:
-                print """%sif (!spvbin_input_at_end (input))
+                print("""%sif (!spvbin_input_at_end (input))
 %s    goto %s;""" % (indent,
-                     indent, ctx.bail)
-            print '%sspvbin_limit_pop (&%s, input);' % (indent, limit)
-            print '%sbreak;' % indent
-            print
-            print '%s%s:' % (indent[4:], ctx.bail)
+                     indent, ctx.bail))
+            print('%sspvbin_limit_pop (&%s, input);' % (indent, limit))
+            print('%sbreak;' % indent)
+            print('')
+            print('%s%s:' % (indent[4:], ctx.bail))
             # In theory, we should emit code to clear whatever we're
             # backtracking from.  In practice, it's not important to
             # do that.
-            print "%sspvbin_position_restore (&%s, input);" % (indent, pos)
-            print '%sspvbin_limit_pop (&%s, input);' % (indent, limit)
-            print '%sgoto %s;' % (indent, save_bail)
+            print("%sspvbin_position_restore (&%s, input);" % (indent, pos))
+            print('%sspvbin_limit_pop (&%s, input);' % (indent, limit))
+            print('%sgoto %s;' % (indent, save_bail))
             indent = indent[4:]
-            print "%s} while (0);" % indent
+            print("%s} while (0);" % indent)
 
             ctx.bail = save_bail
         elif item.type_ == '|':
             save_bail = ctx.bail
 
-            print "%sdo {" % indent
+            print("%sdo {" % indent)
             indent += '    '
             pos = ctx.save_pos(indent)
             error = ctx.save_error(indent)
             i = 0
             for choice in item.content:
                 if i:
-                    print "%sspvbin_position_restore (&%s, input);" % (indent, pos)
-                    print "%sinput->n_errors = %s;" % (indent, error)
+                    print("%sspvbin_position_restore (&%s, input);" % (indent, pos))
+                    print("%sinput->n_errors = %s;" % (indent, error))
                 i += 1
 
                 if i != len(item.content):
@@ -514,41 +523,42 @@ def print_parser_items(name, production, indent, accessor, ctx):
                 else:
                     ctx.bail = save_bail
                 print_parser_items(name, choice, indent, accessor, ctx)
-                print "%sbreak;" % indent
+                print("%sbreak;" % indent)
                 if i != len(item.content):
-                    print
-                    print '%s%s:' % (indent[4:], ctx.bail)
+                    print('')
+                    print('%s%s:' % (indent[4:], ctx.bail))
                     # In theory, we should emit code to clear whatever we're
                     # backtracking from.  In practice, it's not important to
                     # do that.
             indent = indent[4:]
-            print "%s} while (0);" % indent
+            print("%s} while (0);" % indent)
         elif item.type_ == 'case':
             i = 0
             for choice_name, choice in sorted(item.content.items()):
                 if choice_name.endswith('else'):
-                    print "%s} else {" % indent
-                    print "%s    p->%s%s = -1;" % (indent, accessor, item.name)
-                    print
+                    print("%s} else {" % indent)
+                    print("%s    p->%s%s = -1;"
+                          % (indent, accessor, item.name))
+                    print('')
                 else:
-                    print "%s%sif (spvbin_match_byte (input, 0x%s)) {" % (
-                        indent, '} else ' if i else '', choice_name[-2:])
-                    print "%s    p->%s%s = 0x%s;" % (
-                        indent, accessor, item.name, choice_name[-2:])
-                    print
+                    print("%s%sif (spvbin_match_byte (input, 0x%s)) {" % (
+                        indent, '} else ' if i else '', choice_name[-2:]))
+                    print("%s    p->%s%s = 0x%s;" % (
+                        indent, accessor, item.name, choice_name[-2:]))
+                    print('')
                     choice = choice[1:]
                 
                 print_parser_items(name, choice, indent + '    ',
                                    accessor + choice_name + '.', ctx)
                 i += 1
-            print "%s}" % indent
+            print("%s}" % indent)
         else:
             # Not implemented
             raise AssertionError
 
 
 def print_parser(name, production, indent):
-    print '''
+    print('''
 bool
 %(prefix)sparse_%(name)s (struct spvbin_input *input, struct %(prefix)s%(name)s **p_)
 {
@@ -556,24 +566,24 @@ bool
     struct %(prefix)s%(name)s *p = xzalloc (sizeof *p);
     p->start = input->ofs;
 ''' % {'prefix': prefix,
-       'name': name_to_id(name)}
+       'name': name_to_id(name)})
 
     ctx = Parser_Context()
     print_parser_items(name, production, indent, '', ctx)
 
-    print '''
+    print('''
     p->len = input->ofs - p->start;
     *p_ = p;
-    return true;'''
+    return true;''')
 
     if ctx.need_error_handler:
-        print """
+        print("""
 error:
     spvbin_error (input, "%s", p->start);
     %sfree_%s (p);
-    return false;""" % (name, prefix, name_to_id(name))
+    return false;""" % (name, prefix, name_to_id(name)))
 
-    print "}"
+    print("}")
 
 def print_free_items(name, production, indent, accessor, ctx):
     for item in production:
@@ -594,7 +604,7 @@ def print_free_items(name, production, indent, accessor, ctx):
 
             if item.n == 1:
                 if free_func:
-                    print "%s%s (%s);" % (indent, free_func, dst)
+                    print("%s%s (%s);" % (indent, free_func, dst))
             else:
                 if isinstance(item.n, int):
                     count = item.n
@@ -603,13 +613,13 @@ def print_free_items(name, production, indent, accessor, ctx):
 
                 i_name = ctx.gen_name('i')
                 if free_func:
-                    print "%sfor (int %s = 0; %s < %s; %s++)" % (
-                        indent, i_name, i_name, count, i_name)
-                    print "%s    %s (%s[%s]);" % (
-                        indent, free_func, dst, i_name)
+                    print("%sfor (int %s = 0; %s < %s; %s++)" % (
+                        indent, i_name, i_name, count, i_name))
+                    print("%s    %s (%s[%s]);" % (
+                        indent, free_func, dst, i_name))
                 if not isinstance(item.n, int):
-                    print "%sfree (p->%s%s);" % (
-                        indent, accessor, name_to_id(item.name))
+                    print("%sfree (p->%s%s);" % (
+                        indent, accessor, name_to_id(item.name)))
         elif item.type_ in ('()', 'v1', 'v3', 'vAF', 'vB0',
                             'count', 'becount'):
             if item.n != 1:
@@ -628,43 +638,43 @@ def print_free_items(name, production, indent, accessor, ctx):
                 else:
                     value_name = '0x%s' % choice_name[-2:]
 
-                print '%s%sif (p->%s%s == %s) {' % (
+                print('%s%sif (p->%s%s == %s) {' % (
                     indent, '} else ' if i else '', accessor, item.name,
-                    value_name)
+                    value_name))
                 
                 print_free_items(name, choice, indent + '    ',
                                  accessor + choice_name + '.', ctx)
                 i += 1
-            print "%s}" % indent
+            print("%s}" % indent)
         else:
             # Not implemented
             raise AssertionError
 
 def print_free(name, production, indent):
-    print '''
+    print('''
 void
 %(prefix)sfree_%(name)s (struct %(prefix)s%(name)s *p)
 {
     if (p == NULL)
         return;
 ''' % {'prefix': prefix,
-       'name': name_to_id(name)}
+       'name': name_to_id(name)})
 
     print_free_items(name, production, indent, '', Parser_Context())
 
-    print "    free (p);"
-    print "}"
+    print("    free (p);")
+    print("}")
 
 def print_print_items(name, production, indent, accessor, ctx):
     for item_idx in range(len(production)):
         if item_idx > 0:
-            print
+            print('')
 
         item = production[item_idx]
         if item.type_ == 'constant':
             if item.name:
-                print '%sspvbin_print_presence ("%s", indent + 1, p->%s);' % (
-                    indent, item.name, item.name)
+                print('%sspvbin_print_presence ("%s", indent + 1, p->%s);' % (
+                    indent, item.name, item.name))
         elif item.type_ == 'variable':
             if not item.name:
                 continue
@@ -689,8 +699,8 @@ def print_print_items(name, production, indent, accessor, ctx):
 
             dst = "p->%s%s" % (accessor, name_to_id(item.name))
             if item.n == 1:
-                print '%s%s ("%s", indent + 1, %s);' % (indent, func,
-                                                      item.name, dst)
+                print('%s%s ("%s", indent + 1, %s);' % (indent, func,
+                                                        item.name, dst))
             else:
                 if isinstance(item.n, int):
                     count = item.n
@@ -700,7 +710,7 @@ def print_print_items(name, production, indent, accessor, ctx):
                 i_name = ctx.gen_name('i')
                 elem_name = ctx.gen_name('elem_name')
                 dst += '[%s]' % i_name
-                print """\
+                print("""\
 %(indent)sfor (int %(index)s = 0; %(index)s < %(count)s; %(index)s++) {
 %(indent)s    char *%(elem_name)s = xasprintf ("%(item.name)s[%%d]", %(index)s);
 %(indent)s    %(func)s (%(elem_name)s, indent + 1, %(dst)s);
@@ -711,7 +721,7 @@ def print_print_items(name, production, indent, accessor, ctx):
                   'elem_name' : elem_name,
                   'item.name': item.name,
                   'func': func,
-                  'dst': dst}
+                  'dst': dst})
         elif item.type_ == '()':
             if item.n != 1:
                 # Not yet implemented
@@ -742,30 +752,30 @@ def print_print_items(name, production, indent, accessor, ctx):
                 print_print_items(name, choice, indent, accessor, ctx)
         elif item.type_ == 'case':
             i = 0
-            print """\
+            print("""\
 %sspvbin_print_case ("%s", indent + 1, p->%s%s);""" % (
-    indent, item.name, accessor, name_to_id(item.name))
+    indent, item.name, accessor, name_to_id(item.name)))
             for choice_name, choice in sorted(item.content.items()):
                 if choice_name.endswith('else'):
                     value_name = '-1'
                 else:
                     value_name = '0x%s' % choice_name[-2:]
 
-                print '%s%sif (p->%s%s == %s) {' % (
+                print('%s%sif (p->%s%s == %s) {' % (
                     indent, '} else ' if i else '', accessor, item.name,
-                    value_name)
+                    value_name))
                 
                 print_print_items(name, choice, indent + '    ',
                                   accessor + choice_name + '.', ctx)
                 i += 1
-            print "%s}" % indent
+            print("%s}" % indent)
         else:
             # Not implemented
             raise AssertionError
 
 
 def print_print(name, production, indent):
-    print '''
+    print('''
 void
 %(prefix)sprint_%(name)s (const char *title, int indent, const struct %(prefix)s%(name)s *p)
 {
@@ -777,12 +787,12 @@ void
     putchar ('\\n');
 ''' % {'prefix': prefix,
        'rawname': name,
-       'name': name_to_id(name)}
+       'name': name_to_id(name)})
 
     ctx = Parser_Context()
     print_print_items(name, production, indent, '', ctx)
 
-    print "}"
+    print("}")
 
 def name_to_id(s):
     return s[0].lower() + ''.join(['_%c' % x.lower() if x.isupper() else x
@@ -834,24 +844,24 @@ if __name__ == "__main__":
             fatal("%s: duplicate production" % name)
         productions[name] = production
 
-    print '/* Generated automatically -- do not modify!    -*- buffer-read-only: t -*- */'
+    print('/* Generated automatically -- do not modify!    -*- buffer-read-only: t -*- */')
     if output_type == 'code' and len(args) == 4:
         header_name = args[3]
 
-        print """\
+        print("""\
 #include <config.h>
 #include %s
 #include <stdio.h>
 #include <stdlib.h>
 #include "libpspp/str.h"
 #include "gl/xalloc.h"\
-""" % header_name
+""" % header_name)
         for name, production in productions.items():
             print_parser(name, production, ' ' * 4)
             print_free(name, production, ' ' * 4)
             print_print(name, production, ' ' * 4)
     elif output_type == 'header' and len(args) == 3:
-        print """\
+        print("""\
 #ifndef %(PREFIX)sPARSER_H
 #define %(PREFIX)sPARSER_H
 
@@ -859,19 +869,19 @@ if __name__ == "__main__":
 #include <stdint.h>
 #include <stdbool.h>
 #include "output/spv/spvbin-helpers.h"\
-""" % {'PREFIX': prefix.upper()}
+""" % {'PREFIX': prefix.upper()})
         for name, production in productions.items():
-            print '\nstruct %s%s {' % (prefix, name_to_id(name))
-            print "    size_t start, len;"
+            print('\nstruct %s%s {' % (prefix, name_to_id(name)))
+            print("    size_t start, len;")
             print_members(production, ' ' * 4)
-            print '''};
+            print('''};
 bool %(prefix)sparse_%(name)s (struct spvbin_input *, struct %(prefix)s%(name)s **);
 void %(prefix)sfree_%(name)s (struct %(prefix)s%(name)s *);
 void %(prefix)sprint_%(name)s (const char *title, int indent, const struct %(prefix)s%(name)s *);\
 ''' % {'prefix': prefix,
-       'name': name_to_id(name)}
-        print """\
+       'name': name_to_id(name)})
+        print("""\
 
-#endif /* %(PREFIX)sPARSER_H */""" % {'PREFIX': prefix.upper()}
+#endif /* %(PREFIX)sPARSER_H */""" % {'PREFIX': prefix.upper()})
     else:
         sys.stderr.write("%s: bad usage (use --help for help)" % argv0)
