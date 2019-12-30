@@ -46,10 +46,10 @@ light_binary_out = \
 	src/output/spv/light-binary-parser.c \
 	src/output/spv/light-binary-parser.h
 src/output/spv/light-binary-parser.c: $(light_binary_in)
-	$(AM_V_GEN)python $^ code spvlb '"output/spv/light-binary-parser.h"' > $@.tmp
+	$(AM_V_GEN)$(PYTHON) $^ code spvlb '"output/spv/light-binary-parser.h"' > $@.tmp
 	$(AM_V_at)mv $@.tmp $@
 src/output/spv/light-binary-parser.h: $(light_binary_in)
-	$(AM_V_GEN)python $^ header spvlb > $@.tmp && mv $@.tmp $@
+	$(AM_V_GEN)$(PYTHON) $^ header spvlb > $@.tmp && mv $@.tmp $@
 nodist_src_output_liboutput_la_SOURCES += $(light_binary_out)
 BUILT_SOURCES += $(light_binary_out)
 CLEANFILES += $(light_binary_out)
@@ -62,10 +62,10 @@ old_binary_out = \
 	src/output/spv/old-binary-parser.c \
 	src/output/spv/old-binary-parser.h
 src/output/spv/old-binary-parser.c: $(old_binary_in)
-	$(AM_V_GEN)python $^ code spvob '"output/spv/old-binary-parser.h"' > $@.tmp
+	$(AM_V_GEN)$(PYTHON) $^ code spvob '"output/spv/old-binary-parser.h"' > $@.tmp
 	$(AM_V_at)mv $@.tmp $@
 src/output/spv/old-binary-parser.h: $(old_binary_in)
-	$(AM_V_GEN)python $^ header spvob > $@.tmp && mv $@.tmp $@
+	$(AM_V_GEN)$(PYTHON) $^ header spvob > $@.tmp && mv $@.tmp $@
 nodist_src_output_liboutput_la_SOURCES += $(old_binary_out)
 BUILT_SOURCES += $(old_binary_out)
 CLEANFILES += $(old_binary_out)
@@ -78,10 +78,10 @@ detail_xml_out = \
 	src/output/spv/detail-xml-parser.c \
 	src/output/spv/detail-xml-parser.h
 src/output/spv/detail-xml-parser.c: $(detail_xml_in)
-	$(AM_V_GEN)python $^ code spvdx '"output/spv/detail-xml-parser.h"' > $@.tmp
+	$(AM_V_GEN)$(PYTHON) $^ code spvdx '"output/spv/detail-xml-parser.h"' > $@.tmp
 	$(AM_V_at)mv $@.tmp $@
 src/output/spv/detail-xml-parser.h: $(detail_xml_in)
-	$(AM_V_GEN)python $^ header spvdx > $@.tmp && mv $@.tmp $@
+	$(AM_V_GEN)$(PYTHON) $^ header spvdx > $@.tmp && mv $@.tmp $@
 nodist_src_output_liboutput_la_SOURCES += $(detail_xml_out)
 BUILT_SOURCES += $(detail_xml_out)
 CLEANFILES += $(detail_xml_out)
@@ -94,10 +94,10 @@ structure_xml_out = \
 	src/output/spv/structure-xml-parser.c \
 	src/output/spv/structure-xml-parser.h
 src/output/spv/structure-xml-parser.c: $(structure_xml_in)
-	$(AM_V_GEN)python $^ code spvsx '"output/spv/structure-xml-parser.h"' > $@.tmp
+	$(AM_V_GEN)$(PYTHON) $^ code spvsx '"output/spv/structure-xml-parser.h"' > $@.tmp
 	$(AM_V_at)mv $@.tmp $@
 src/output/spv/structure-xml-parser.h: $(structure_xml_in)
-	$(AM_V_GEN)python $^ header spvsx > $@.tmp && mv $@.tmp $@
+	$(AM_V_GEN)$(PYTHON) $^ header spvsx > $@.tmp && mv $@.tmp $@
 nodist_src_output_liboutput_la_SOURCES += $(structure_xml_out)
 BUILT_SOURCES += $(structure_xml_out)
 CLEANFILES += $(structure_xml_out)
