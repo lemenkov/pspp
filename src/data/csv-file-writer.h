@@ -33,8 +33,6 @@ struct csv_writer_options
     char qualifier;             /* Quote character. */
   };
 
-void csv_writer_options_init (struct csv_writer_options *);
-
 struct file_handle;
 struct dictionary;
 struct casewriter *csv_writer_open (struct file_handle *,

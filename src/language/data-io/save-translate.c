@@ -49,8 +49,6 @@ cmd_save_translate (struct lexer *lexer, struct dataset *ds)
   struct casewriter *writer;
   struct file_handle *handle;
 
-  struct csv_writer_options csv_opts;
-
   bool replace;
 
   bool retain_unselected;
@@ -256,17 +254,18 @@ cmd_save_translate (struct lexer *lexer, struct dataset *ds)
   dict_delete_scratch_vars (dict);
   dict_compact_values (dict);
 
-  csv_opts.recode_user_missing = recode_user_missing;
-  csv_opts.include_var_names = include_var_names;
-  csv_opts.use_value_labels = use_value_labels;
-  csv_opts.use_print_formats = use_print_formats;
-  csv_opts.decimal = decimal;
-  csv_opts.delimiter = (delimiter ? delimiter
-                        : type == TAB_FILE ? '\t'
-                        : decimal == '.' ? ','
-                        : ';');
-  csv_opts.qualifier = qualifier;
-
+  struct csv_writer_options csv_opts = {
+    .recode_user_missing = recode_user_missing,
+    .include_var_names = include_var_names,
+    .use_value_labels = use_value_labels,
+    .use_print_formats = use_print_formats,
+    .decimal = decimal,
+    .delimiter = (delimiter ? delimiter
+                  : type == TAB_FILE ? '\t'
+                  : decimal == '.' ? ','
+                  : ';'),
+    .qualifier = qualifier,
+  };
   writer = csv_writer_open (handle, dict, &csv_opts);
   if (writer == NULL)
     goto error;

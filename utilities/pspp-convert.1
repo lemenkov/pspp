@@ -81,21 +81,52 @@ Overrides the encoding in which character strings in \fIinput\fR are
 interpreted.  This option is necessary because old SPSS system files
 do not self-identify their encoding.
 .
+.IP "\fB\-k \fIvar\fR..."
+.IQ "\fB\-\-keep=\fIvar\fR..."
+Drops all variables except those listed as \fIvar\fR, and reorders the
+remaining variables into the specified order.
+.
+.IP "\fB\-d \fIvar\fR..."
+.IQ "\fB\-\-drop=\fIvar\fR..."
+Drops each \fIvar\fR listed from the output.
+.
 .SS "CSV Output Options"
 .PP
 These options affect only output to \fB.csv\fR and \fB.txt\fR files.
 .IP "\fB\-\-labels\fR"
 By default, \fBpspp\-convert\fR writes variables' values to the output.
 With this option, \fBpspp\-convert\fR writes value labels.
+.IP "\fB\-\-no\-var\-names\fR"
+By default, \fRpspp\-convert\fR\fR writes the variable names as the
+first line of output.  With this option, \fBpspp\-convert\fR omits
+this line.
 .IP "\fB\-\-recode\fR"
 By default, \fBpspp\-convert\fR writes user-missing values as their
 regular values.  With this option, \fBpspp\-convert\fR recodes them to
 system-missing values (which are written as a single space).
+
+.IP "\fB\-\-print\-formats\fR"
+By default, \fBpspp\-convert\fR writes numeric variables as plain
+numbers.  This option makes \fBpspp\-convert\fR honor variables'
+print formats.
+
+.IP "\fB\-\-decimal=\fIdecimal\fR"
+This option sets the character used as a decimal point in output.  The
+default is a period (\fB.\fR).
+
+.IP "\fB\-\-delimiter=\fIdelimiter\fR"
+This option sets the character used to separate fields in output.  The
+default is a comma (\fB,\fR), unless the decimal point is a comma, in
+which case a semicolon (\fB;\fR) is used.
+
+.IP "\fB\-\-qualifier=\fIqualifier\fR"
+The option sets the character used to quote fields that contain the
+delimiter.  The default is a double quote (\fB\(dq\fR).
 .
 .SS "Password Options"
 When the input file is encrypted, \fBpspp\-convert\fR needs to obtain
 a password to decrypt it.  To do so, the user may specify the password
-with \f\-p\fR (or \fB\-\-password), or the name of a file containing a
+with \f\-p\fR (or \fB\-\-password\fR), or the name of a file containing a
 list of possible passwords with \fB\-\-password\-list\fR, or an
 alphabet of possible passwords to try along with a maximum length with
 \fB\-a\fR (or \fB\-\-password\-alphabet\fR) and \fB\-l\fR (or

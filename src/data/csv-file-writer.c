@@ -87,19 +87,6 @@ static void write_var_names (struct csv_writer *, const struct dictionary *);
 static bool write_error (const struct csv_writer *);
 static bool close_writer (struct csv_writer *);
 
-/* Initializes OPTS with default options for writing a CSV file. */
-void
-csv_writer_options_init (struct csv_writer_options *opts)
-{
-  opts->recode_user_missing = false;
-  opts->include_var_names = false;
-  opts->use_value_labels = false;
-  opts->use_print_formats = false;
-  opts->decimal = settings_get_decimal_char (FMT_F);
-  opts->delimiter = ',';
-  opts->qualifier = '"';
-}
-
 /* Opens the CSV file designated by file handle FH for writing cases from
    dictionary DICT according to the given OPTS.
 

@@ -33,12 +33,16 @@
 #include "data/settings.h"
 #include "data/sys-file-writer.h"
 #include "data/file-handle-def.h"
+#include "language/command.h"
+#include "language/lexer/lexer.h"
+#include "language/lexer/variable-parser.h"
 #include "libpspp/assertion.h"
 #include "libpspp/cast.h"
 #include "libpspp/i18n.h"
 
 #include "gl/error.h"
 #include "gl/getpass.h"
+#include "gl/localcharset.h"
 #include "gl/progname.h"
 #include "gl/version-etc.h"
 
@@ -54,6 +58,42 @@ static bool decrypt_file (struct encrypted_file *enc,
                           const char *alphabet, int max_length,
                           const char *password_list);
 
+static void
+parse_character_option (const char *arg, const char *option_name, char *out)
+{
+  if (strlen (arg) != 1)
+    {
+      /* XXX support multibyte characters */
+      error (1, 0, _("%s argument must be a single character"), option_name);
+    }
+  *out = arg[0];
+}
+
+static bool
+parse_variables_option (const char *arg, struct dictionary *dict,
+                        struct variable ***vars, size_t *n_vars)
+{
+  struct lexer *lexer = lex_create ();
+  lex_append (lexer, lex_reader_for_string (arg, locale_charset ()));
+  lex_get (lexer);
+
+  bool ok = parse_variables (lexer, dict, vars, n_vars, 0);
+  if (ok && (lex_token (lexer) != T_STOP && lex_token (lexer) != T_ENDCMD))
+    {
+      lex_error (lexer, _("expecting variable name"));
+      ok = false;
+    }
+
+  lex_destroy (lexer);
+  if (!ok)
+    {
+      free (*vars);
+      *vars = NULL;
+      *n_vars = 0;
+    }
+  return ok;
+}
+
 int
 main (int argc, char *argv[])
 {
@@ -61,8 +101,10 @@ main (int argc, char *argv[])
   const char *output_filename;
 
   long long int max_cases = LLONG_MAX;
+  const char *keep = NULL;
+  const char *drop = NULL;
   struct dictionary *dict = NULL;
-  struct casereader *reader;
+  struct casereader *reader = NULL;
   struct file_handle *input_fh = NULL;
   const char *encoding = NULL;
   struct encrypted_file *enc;
@@ -75,8 +117,12 @@ main (int argc, char *argv[])
   const char *password_list = NULL;
   int length = 0;
 
-  bool recode_user_missing = false;
-  bool use_value_labels = false;
+  struct csv_writer_options csv_opts = {
+    .include_var_names = true,
+    .decimal = '.',
+    .delimiter = 0,             /* The default will be set later. */
+    .qualifier = '"',
+  };
 
   long long int i;
 
@@ -90,16 +136,28 @@ main (int argc, char *argv[])
       enum
         {
           OPT_PASSWORD_LIST = UCHAR_MAX + 1,
-          OPT_LABELS,
           OPT_RECODE,
+          OPT_NO_VAR_NAMES,
+          OPT_LABELS,
+          OPT_PRINT_FORMATS,
+          OPT_DECIMAL,
+          OPT_DELIMITER,
+          OPT_QUALIFIER,
         };
       static const struct option long_options[] =
         {
-          { "cases",    required_argument, NULL, 'c' },
+          { "cases", required_argument, NULL, 'c' },
+          { "keep", required_argument, NULL, 'k' },
+          { "drop", required_argument, NULL, 'd' },
           { "encoding", required_argument, NULL, 'e' },
 
-          { "labels", no_argument, NULL, OPT_LABELS },
           { "recode", no_argument, NULL, OPT_RECODE },
+          { "no-var-names", no_argument, NULL, OPT_NO_VAR_NAMES },
+          { "labels", no_argument, NULL, OPT_LABELS },
+          { "print-formats", no_argument, NULL, OPT_PRINT_FORMATS },
+          { "decimal", required_argument, NULL, OPT_DECIMAL },
+          { "delimiter", required_argument, NULL, OPT_DELIMITER },
+          { "qualifier", required_argument, NULL, OPT_QUALIFIER },
 
           { "password", required_argument, NULL, 'p' },
           { "password-alphabet", required_argument, NULL, 'a' },
@@ -115,7 +173,7 @@ main (int argc, char *argv[])
 
       int c;
 
-      c = getopt_long (argc, argv, "c:e:p:a:l:O:hv", long_options, NULL);
+      c = getopt_long (argc, argv, "c:k:d:e:p:a:l:O:hv", long_options, NULL);
       if (c == -1)
         break;
 
@@ -123,6 +181,14 @@ main (int argc, char *argv[])
         {
         case 'c':
           max_cases = strtoull (optarg, NULL, 0);
+          break;
+
+        case 'k':
+          keep = optarg;
+          break;
+
+        case 'd':
+          drop = optarg;
           break;
 
         case 'e':
@@ -141,12 +207,28 @@ main (int argc, char *argv[])
           password_list = optarg;
           break;
 
-        case OPT_LABELS:
-          use_value_labels = true;
+        case OPT_RECODE:
+          csv_opts.recode_user_missing = true;
           break;
 
-        case OPT_RECODE:
-          recode_user_missing = true;
+        case OPT_NO_VAR_NAMES:
+          csv_opts.include_var_names = false;
+          break;
+
+        case OPT_LABELS:
+          csv_opts.use_value_labels = true;
+          break;
+
+        case OPT_DECIMAL:
+          parse_character_option (optarg, "--decimal", &csv_opts.decimal);
+          break;
+
+        case OPT_DELIMITER:
+          parse_character_option (optarg, "--delimiter", &csv_opts.delimiter);
+          break;
+
+        case OPT_QUALIFIER:
+          parse_character_option (optarg, "--qualifier", &csv_opts.qualifier);
           break;
 
         case 'a':
@@ -212,15 +294,33 @@ main (int argc, char *argv[])
   if (reader == NULL)
     goto error;
 
+  if (keep)
+    {
+      struct variable **keep_vars;
+      size_t n_keep_vars;
+      if (!parse_variables_option (keep, dict, &keep_vars, &n_keep_vars))
+        goto error;
+      dict_reorder_vars (dict, keep_vars, n_keep_vars);
+      dict_delete_consecutive_vars (dict, n_keep_vars,
+                                    dict_get_var_cnt (dict) - n_keep_vars);
+      free (keep_vars);
+    }
+
+  if (drop)
+    {
+      struct variable **drop_vars;
+      size_t n_drop_vars;
+      if (!parse_variables_option (drop, dict, &drop_vars, &n_drop_vars))
+        goto error;
+      dict_delete_vars (dict, drop_vars, n_drop_vars);
+      free (drop_vars);
+    }
+
   if (!strcmp (output_format, "csv") || !strcmp (output_format, "txt"))
     {
-      struct csv_writer_options options;
-
-      csv_writer_options_init (&options);
-      options.include_var_names = true;
-      options.use_value_labels = use_value_labels;
-      options.recode_user_missing = recode_user_missing;
-      writer = csv_writer_open (output_fh, dict, &options);
+      if (!csv_opts.delimiter)
+        csv_opts.delimiter = csv_opts.decimal == '.' ? ',' : ';';
+      writer = csv_writer_open (output_fh, dict, &csv_opts);
     }
   else if (!strcmp (output_format, "sav") || !strcmp (output_format, "sys"))
     {
@@ -272,6 +372,7 @@ exit:
   return 0;
 
 error:
+  casereader_destroy (reader);
   ds_destroy (&alphabet);
   dict_unref (dict);
   fh_unref (output_fh);
@@ -473,9 +574,16 @@ General options:\n\
                       is one of the extensions listed above\n\
   -e, --encoding=CHARSET  override encoding of input data file\n\
   -c MAXCASES         limit number of cases to copy (default is all cases)\n\
+  -k, --keep=VAR...   include only the given variables in output\n\
+  -d, --drop=VAR...   drop the given variables from output\n\
 CSV output options:\n\
-  --labels            write value labels to output\n\
   --recode            convert user-missing values to system-missing\n\
+  --no-var-names      do not include variable names as first row\n\
+  --labels            write value labels to output\n\
+  --print-formats     honor variables' print formats\n\
+  --decimal=CHAR      use CHAR as the decimal point (default: .)\n\
+  --delimiter=CHAR    use CHAR to separate fields (default: ,)\n\
+  --qualifier=CHAR    use CHAR to quote the delimiter (default: \")\n\
 Password options (for used with encrypted files):\n\
   -p PASSWORD         individual password\n\
   -a ALPHABET         with -l, alphabet of passwords to try\n\

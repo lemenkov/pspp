@@ -68,20 +68,17 @@ If the password is unknown, use the @option{-a} and @option{-l}
 options to specify how to search for it, or @option{--password-list}
 to specify a file of passwords to try.
 
-Use @code{-O format=@var{format}} to override the inferred format or to
+Use @code{-O @var{format}} to override the inferred format or to
 specify the format for unrecognized extensions.
 
-@command{pspp-convert} accepts the following options:
+@command{pspp-convert} accepts the following general options:
 
 @table @option
-@item @option{-O format=@var{format}}
-Overrides the format inferred from the output file's extension.  Use
-@option{--help} to list the available formats.  @xref{Invoking PSPP},
-for details of the available output formats.
-
-@item @option{-O @var{option}=@var{value}}
-Sets an option for the output file format.  @xref{Invoking PSPP}, for
-details of the available output options.
+@item @option{-O @var{format}}
+@itemx @option{--output-format=@var{format}}
+Sets the output format, where @var{format} is one of the extensions
+listed above, e.g.: @option{-O csv}.  Use @option{--help} to list
+the supported output formats.
 
 @item -c @var{maxcases}
 @itemx --cases=@var{maxcases}
@@ -95,17 +92,75 @@ Overrides the encoding in which character strings in @var{input} are
 interpreted.  This option is necessary because old SPSS system files,
 and SPSS/PC+ system files, do not self-identify their encoding.
 
-@item --labels
-By default, @command{pspp-convert} writes variables' values to CVS
-output files.  With this option, @command{pspp-convert} writes value
-labels.
+@item -k @var{variable}@dots{}
+@itemx --keep=@var{variable}@dots{}
+By default, @command{pspp-convert} includes all the variables from the
+input file.  Use this option to list specific variables to include;
+any variables not listed will be dropped.  The variables in the output
+file will also be reordered into the given order.  The variable list
+may use @code{TO} in the same way as in PSPP syntax, e.g.@: if the
+dictionary contains consecutive variables @code{a}, @code{b},
+@code{c}, and @code{d}, then @option{--keep='a to d'} will include all
+of them (and no others).
 
+@item -d @var{variable}@dots{}
+@itemx --drop=@var{variable}@dots{}
+Drops the specified variables from the output.
+
+When @option{--keep} and @option{--drop} are used together,
+@option{--keep} is processed first.
+
+@item -h
+@itemx --help
+Prints a usage message on stdout and exits.
+
+@item -v
+@itemx --version
+Prints version information on stdout and exits.
+@end table
+
+The following options affect CSV output:
+
+@table @option
 @item --recode
-By default, @command{pspp-convert} writes user-missing values to CVS
+By default, @command{pspp-convert} writes user-missing values to CSV
 output files as their regular values.  With this option,
 @command{pspp-convert} recodes them to system-missing values (which
 are written as a single space).
 
+@item --no-var-names
+By default, @command{pspp-convert} writes the variable names as the
+first line of output.  With this option, @command{pspp-convert} omits
+this line.
+
+@item --labels
+By default, @command{pspp-convert} writes variables' values to CSV
+output files.  With this option, @command{pspp-convert} writes value
+labels.
+
+@item --print-formats
+By default, @command{pspp-convert} writes numeric variables as plain
+numbers.  This option makes @command{pspp-convert} honor variables'
+print formats.
+
+@item --decimal=@var{decimal}
+This option sets the character used as a decimal point in output.  The
+default is @samp{.}.
+
+@item --delimiter=@var{delimiter}
+This option sets the character used to separate fields in output.  The
+default is @samp{,}, unless the decimal point is @samp{,}, in which
+case @samp{;} is used.
+
+@item --qualifier=@var{qualifier}
+The option sets the character used to quote fields that contain the
+delimiter.  The default is @samp{"}.
+@end table
+
+The following options specify how to obtain the password for encrypted
+files:
+
+@table @option
 @item -p @var{password}
 @item --password=@var{password}
 Specifies the password to use to decrypt an encrypted SPSS system file
@@ -137,12 +192,4 @@ Specifies the maximum length of the passwords to try.
 @item --password-list=@var{file}
 Specifies a file to read containing a list of passwords to try, one
 per line.  If @var{file} is @file{-}, reads from stdin.
-
-@item -h
-@itemx --help
-Prints a usage message on stdout and exits.
-
-@item -v
-@itemx --version
-Prints version information on stdout and exits.
 @end table
