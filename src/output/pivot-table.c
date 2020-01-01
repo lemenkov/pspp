@@ -1487,8 +1487,11 @@ pivot_table_dump (const struct pivot_table *table, int indentation)
   if (table->date)
     {
       indent (indentation);
-      char buf[26];
-      printf ("date: %s", ctime_r (&table->date, buf));
+
+      struct tm *tm = localtime (&table->date);
+      printf ("date: %d-%02d-%02d %d:%02d:%02d\n", tm->tm_year + 1900,
+              tm->tm_mon + 1, tm->tm_mday, tm->tm_hour, tm->tm_min,
+              tm->tm_sec);
     }
 
   indent (indentation);
