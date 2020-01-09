@@ -371,7 +371,7 @@ parse_page_size (struct driver_option *option)
 
           errno = 0;
           value = strtol (option->value, &tail, 0);
-          if (dim >= 1 && errno != ERANGE && *tail == '\0')
+          if (value >= 1 && errno != ERANGE && *tail == '\0')
             dim = value;
           else
             msg (MW, _("%s: %s must be positive integer or `auto'"),
