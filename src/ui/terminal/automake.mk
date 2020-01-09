@@ -23,9 +23,7 @@ src_ui_terminal_libui_la_SOURCES = \
 	src/ui/terminal/terminal-opts.c \
 	src/ui/terminal/terminal-opts.h	\
 	src/ui/terminal/terminal-reader.c \
-	src/ui/terminal/terminal-reader.h \
-	src/ui/terminal/terminal.c \
-	src/ui/terminal/terminal.h
+	src/ui/terminal/terminal-reader.h
 
 src_ui_terminal_libui_la_CFLAGS = $(NCURSES_CFLAGS)
 

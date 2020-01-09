@@ -56,7 +56,6 @@ static char *command_generator (const char *text, int state);
 #include "libpspp/version.h"
 #include "output/driver.h"
 #include "output/journal.h"
-#include "ui/terminal/terminal.h"
 
 #include "gl/minmax.h"
 #include "gl/xalloc.h"
@@ -158,15 +157,6 @@ terminal_reader_read (struct lex_reader *r_, char *buf, size_t n,
 	}
       r->offset = 0;
       r->eof = ss_is_empty (r->s);
-
-      /* Check whether the size of the window has changed, so that
-         the output drivers can adjust their settings as needed.  We
-         only do this for the first line of a command, as it's
-         possible that the output drivers are actually in use
-         afterward, and we don't want to confuse them in the middle
-         of output. */
-      if (prompt_style == PROMPT_FIRST)
-        terminal_check_size ();
     }
 
   chunk = MIN (n, r->s.length - r->offset);

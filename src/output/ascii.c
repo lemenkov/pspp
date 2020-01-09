@@ -19,13 +19,21 @@
 #include <ctype.h>
 #include <errno.h>
 #include <limits.h>
+#include <signal.h>
 #include <stdint.h>
 #include <stdlib.h>
-#include <signal.h>
 #include <unilbrk.h>
 #include <unistd.h>
 #include <unistr.h>
 #include <uniwidth.h>
+
+#ifdef HAVE_TERMIOS_H
+# include <termios.h>
+#endif
+
+#ifdef GWINSZ_IN_SYS_IOCTL
+# include <sys/ioctl.h>
+#endif
 
 #include "data/file-name.h"
 #include "data/file-handle-def.h"
@@ -187,10 +195,15 @@ struct ascii_driver
     struct cell_color bg;
 #endif
 
+    /* How the page width is determined: */
+    enum {
+      FIXED_WIDTH,              /* Specified by configuration. */
+      VIEW_WIDTH,               /* From SET WIDTH. */
+      TERMINAL_WIDTH            /* From the terminal's width. */
+    } width_mode;
     int width;                  /* Page width. */
-    bool auto_width;            /* Use viewwidth as page width? */
 
-    int min_break[TABLE_N_AXES]; /* Min cell size to break across pages. */
+    int min_hbreak;             /* Min cell size to break across pages. */
 
     const ucs4_t *box;          /* Line & box drawing characters. */
 
@@ -209,6 +222,8 @@ static const struct output_driver_class ascii_driver_class;
 
 static void ascii_submit (struct output_driver *, const struct output_item *);
 
+static int get_terminal_width (void);
+
 static bool update_page_size (struct ascii_driver *, bool issue_error);
 static int parse_page_size (struct driver_option *);
 
@@ -223,12 +238,6 @@ static void ascii_draw_cell (void *, const struct table_cell *, int color_idx,
                              int bb[TABLE_N_AXES][2],
                              int spill[TABLE_N_AXES][2],
                              int clip[TABLE_N_AXES][2]);
-
-#if HAVE_DECL_SIGWINCH
-static struct ascii_driver *the_driver;
-
-static void winch_handler (int);
-#endif
 
 static struct ascii_driver *
 ascii_driver_cast (struct output_driver *driver)
@@ -262,7 +271,6 @@ ascii_create (struct  file_handle *fh, enum settings_output_devices device_type,
               struct string_map *o)
 {
   enum { BOX_ASCII, BOX_UNICODE } box;
-  int min_break[TABLE_N_AXES];
   struct output_driver *d;
   struct ascii_driver *a;
 
@@ -275,20 +283,21 @@ ascii_create (struct  file_handle *fh, enum settings_output_devices device_type,
   a->chart_file_name = parse_chart_file_name (opt (d, o, "charts", fh_get_file_name (fh)));
   a->handle = fh;
 
-  min_break[H] = parse_int (opt (d, o, "min-hbreak", "-1"), -1, INT_MAX);
 
-  a->width = parse_page_size (opt (d, o, "width", "79"));
-  a->auto_width = a->width < 0;
-  a->min_break[H] = min_break[H] >= 0 ? min_break[H] : a->width / 2;
+  bool terminal = !strcmp (fh_get_file_name (fh), "-") && isatty (1);
+  a->width = parse_page_size (opt (d, o, "width", "-1"));
+  a->width_mode = (a->width > 0 ? FIXED_WIDTH
+                   : terminal ? TERMINAL_WIDTH
+                   : VIEW_WIDTH);
+  a->min_hbreak = parse_int (opt (d, o, "min-hbreak", "-1"), -1, INT_MAX);
+
 #ifdef HAVE_CAIRO
   parse_color (d, o, "background-color", "#FFFFFFFFFFFF", &a->bg);
   parse_color (d, o, "foreground-color", "#000000000000", &a->fg);
 #endif
 
-  const char *default_box = (!strcmp (fh_get_file_name (fh), "-")
-                             && isatty (STDOUT_FILENO)
-                             && (!strcmp (locale_charset (), "UTF-8")
-                                 || term_is_utf8_xterm ())
+  const char *default_box = (terminal && (!strcmp (locale_charset (), "UTF-8")
+                                          || term_is_utf8_xterm ())
                              ? "unicode" : "ascii");
   box = parse_enum (opt (d, o, "box", default_box),
                     "ascii", BOX_ASCII,
@@ -319,8 +328,6 @@ ascii_create (struct  file_handle *fh, enum settings_output_devices device_type,
       a->params.line_widths[H][i] = width;
       a->params.line_widths[V][i] = width;
     }
-  for (int i = 0; i < TABLE_N_AXES; i++)
-    a->params.min_break[i] = a->min_break[i];
   a->params.supports_margins = false;
   a->params.rtl = render_direction_rtl ();
 
@@ -333,19 +340,6 @@ ascii_create (struct  file_handle *fh, enum settings_output_devices device_type,
       msg_error (errno, _("ascii: opening output file `%s'"),
                  fh_get_file_name (a->handle));
       goto error;
-    }
-
-  if (isatty (fileno (a->file)))
-    {
-#if HAVE_DECL_SIGWINCH
-      struct sigaction action;
-      sigemptyset (&action.sa_mask);
-      action.sa_flags = 0;
-      action.sa_handler = winch_handler;
-      the_driver = a;
-      sigaction (SIGWINCH, &action, NULL);
-#endif
-      a->auto_width = true;
     }
 
   return d;
@@ -389,28 +383,22 @@ parse_page_size (struct driver_option *option)
 static bool
 update_page_size (struct ascii_driver *a, bool issue_error)
 {
-  enum { MIN_WIDTH = 6, MIN_LENGTH = 6 };
+  enum { MIN_WIDTH = 6 };
 
-  if (a->auto_width)
-    {
-      a->params.size[H] = a->width = settings_get_viewwidth ();
-      a->params.min_break[H] = a->min_break[H] = a->width / 2;
-    }
+  int want_width = (a->width_mode == VIEW_WIDTH ? settings_get_viewwidth ()
+                    : a->width_mode == TERMINAL_WIDTH ? get_terminal_width ()
+                    : a->width);
+  bool ok = want_width >= MIN_WIDTH;
+  if (!ok && issue_error)
+    msg (ME, _("ascii: page must be at least %d characters wide, but "
+               "as configured is only %d characters"),
+         MIN_WIDTH, want_width);
 
-  if (a->width < MIN_WIDTH)
-    {
-      if (issue_error)
-        msg (ME,
-               _("ascii: page must be at least %d characters wide, but "
-                 "as configured is only %d characters"),
-               MIN_WIDTH,
-               a->width);
-      if (a->width < MIN_WIDTH)
-        a->params.size[H] = a->width = MIN_WIDTH;
-      return false;
-    }
+  a->width = ok ? want_width : MIN_WIDTH;
+  a->params.size[H] = a->width;
+  a->params.min_break[H] = a->min_hbreak >= 0 ? a->min_hbreak : a->width / 2;
 
-  return true;
+  return ok;
 }
 
 static void
@@ -996,10 +984,50 @@ ascii_test_flush (struct output_driver *driver)
       }
 }
 
+static sig_atomic_t terminal_changed = true;
+static int terminal_width;
+
 #if HAVE_DECL_SIGWINCH
 static void
 winch_handler (int signum UNUSED)
 {
-  update_page_size (the_driver, false);
+  terminal_changed = true;
 }
 #endif
+
+int
+get_terminal_width (void)
+{
+#if HAVE_DECL_SIGWINCH
+  static bool setup_signal;
+  if (!setup_signal)
+    {
+      setup_signal = true;
+
+      struct sigaction action = { .sa_handler = winch_handler };
+      sigemptyset (&action.sa_mask);
+      sigaction (SIGWINCH, &action, NULL);
+    }
+#endif
+
+  if (terminal_changed)
+    {
+      terminal_changed = false;
+
+#ifdef HAVE_TERMIOS_H
+      struct winsize ws;
+      if (!ioctl (0, TIOCGWINSZ, &ws))
+        terminal_width = ws.ws_col;
+      else
+#endif
+        {
+          if (getenv ("COLUMNS"))
+            terminal_width = atoi (getenv ("COLUMNS"));
+        }
+
+      if (terminal_width <= 0 || terminal_width > 1024)
+        terminal_width = 79;
+    }
+
+  return terminal_width;
+}

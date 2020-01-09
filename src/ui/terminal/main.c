@@ -51,7 +51,6 @@
 #include "ui/source-init-opts.h"
 #include "ui/terminal/terminal-opts.h"
 #include "ui/terminal/terminal-reader.h"
-#include "ui/terminal/terminal.h"
 
 #include "gl/fatal-signal.h"
 #include "gl/progname.h"
@@ -92,7 +91,6 @@ main (int argc, char **argv)
   output_engine_push ();
   fh_init ();
   settings_init ();
-  terminal_check_size ();
   random_init ();
 
   lexer = lex_create ();

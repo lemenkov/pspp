@@ -320,10 +320,10 @@ where @var{RRRR}, @var{GGGG} and @var{BBBB} are 4 character hexadecimal
 representations of the red, green and blue components respectively.
 If charts are disabled, this option has no effect.
 
-@item @option{-O width=@var{character-count}}
-Width of a page, in characters.  For screen output you may specify
-@code{auto} in place of a number to track the width of the terminal as
-it changes.  Default: @code{79}.
+@item @option{-O width=@var{columns}}
+Width of a page, in columns.  If unspecified or given as @code{auto},
+the default is the width of the terminal, for interactive output, or
+the WIDTH setting (@pxref{SET}), for output to a file.
 
 @item @option{-O box=@{ascii|unicode@}}
 Sets the characters used for lines in tables.
