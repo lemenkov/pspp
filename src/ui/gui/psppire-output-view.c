@@ -224,13 +224,14 @@ rerender (struct psppire_output_view *view)
   if (!view->n_items || ! gdkw)
     return;
 
+  if (view->xr == NULL)
+    create_xr (view);
+
   GdkWindow *win = gtk_layout_get_bin_window (view->output);
   cairo_region_t *region = gdk_window_get_visible_region (win);
   GdkDrawingContext *ctx =  gdk_window_begin_draw_frame (win, region);
   cairo_t *cr = gdk_drawing_context_get_cairo_context (ctx);
 
-  if (view->xr == NULL)
-    create_xr (view);
   view->y = 0;
   view->max_width = 0;
   for (item = view->items; item < &view->items[view->n_items]; item++)
@@ -343,12 +344,12 @@ psppire_output_view_put (struct psppire_output_view *view,
     {
       view_item->drawing_area = drawing_area = gtk_drawing_area_new ();
 
+      if (view->xr == NULL)
+        create_xr (view);
+
       cairo_region_t *region = gdk_window_get_visible_region (win);
       GdkDrawingContext *ctx = gdk_window_begin_draw_frame (win, region);
       cairo_t *cr = gdk_drawing_context_get_cairo_context (ctx);
-
-      if (view->xr == NULL)
-        create_xr (view);
 
       if (view->y > 0)
         view->y += view->font_height / 2;
