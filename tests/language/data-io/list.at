@@ -76,6 +76,7 @@ AT_DATA([list.sps], [dnl
 DATA LIST FILE='data.txt'/avar 1-5 bvar 6-10.
 WEIGHT BY bvar.
 LIST/FORMAT NUMBERED.
+LIST/FORMAT NUMBERED/CASES FROM 2 TO 9 BY 2.
 ])
 AT_CHECK([pspp -o pspp.csv list.sps])
 AT_CHECK([cat pspp.csv], [0], [dnl
@@ -97,6 +98,13 @@ Case Number,avar,bvar
 9,26,30
 10,27,21
 11,28,23
+
+Table: Data List
+Case Number,avar,bvar
+2,19,7
+4,21,76
+6,23,58
+8,25,38
 ])
 AT_CLEANUP
 

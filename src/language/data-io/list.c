@@ -113,11 +113,12 @@ list_execute (const struct lst_cmd *lcmd, struct dataset *ds)
       else
         cases->hide_all_labels = true;
 
-      casenumber case_num = 1;
+      casenumber case_num = lcmd->first;
       for (; (c = casereader_read (group)) != NULL; case_unref (c))
         {
           int case_idx = pivot_category_create_leaf (
-            cases->root, pivot_value_new_integer (case_num++));
+            cases->root, pivot_value_new_integer (case_num));
+          case_num += lcmd->step;
 
           for (int i = 0; i < lcmd->n_variables; i++)
             pivot_table_put2 (table, i, case_idx,
