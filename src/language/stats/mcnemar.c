@@ -235,7 +235,9 @@ output_statistics_table (const struct two_sample_test *t2s,
         pairs->root, pivot_value_new_user_text_nocopy (make_pair_name (vp)));
 
       double n = mc[i].n00 + mc[i].n01 + mc[i].n10 + mc[i].n11;
-      double sig = gsl_cdf_binomial_P (mc[i].n01, 0.5, mc[i].n01 + mc[i].n10);
+      double sig = gsl_cdf_binomial_P ((mc[i].n01 > mc[i].n10) ? mc[i].n10: mc[i].n01,
+				       0.5, mc[i].n01 + mc[i].n10);
+
       double point = gsl_ran_binomial_pdf (mc[i].n01, 0.5,
                                            mc[i].n01 + mc[i].n10);
       double entries[] = { n, 2.0 * sig, sig, point };
