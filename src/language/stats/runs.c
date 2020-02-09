@@ -346,7 +346,7 @@ show_runs_result (const struct runs_test *rt, const struct run_state *rs, const 
         run->n,
         run->runs,
         z,
-        2.0 * (1.0 - gsl_cdf_ugaussian_P (z)),
+        2.0 * (1.0 - gsl_cdf_ugaussian_P (fabs (z))),
       };
 
       for (int row = 0; row < sizeof rows / sizeof *rows; row++)

@@ -890,7 +890,7 @@ Cases ≥ Test Value,309.0000
 Total Cases,486.0000
 Number of Runs,12
 Z,-20.9931
-Asymp. Sig. (2-tailed),2.000
+Asymp. Sig. (2-tailed),.000
 
 Table: Runs Test
 ,score
@@ -900,7 +900,7 @@ Cases ≥ Test Value,227.0000
 Total Cases,486.0000
 Number of Runs,12
 Z,-21.0650
-Asymp. Sig. (2-tailed),2.000
+Asymp. Sig. (2-tailed),.000
 
 Table: Runs Test
 ,score
@@ -910,7 +910,7 @@ Cases ≥ Test Value,170.0000
 Total Cases,486.0000
 Number of Runs,11
 Z,-21.0742
-Asymp. Sig. (2-tailed),2.000
+Asymp. Sig. (2-tailed),.000
 ])
 
 AT_CLEANUP
