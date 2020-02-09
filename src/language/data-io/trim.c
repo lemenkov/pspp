@@ -117,7 +117,7 @@ parse_dict_rename (struct lexer *lexer, struct dictionary *dict,
 	  msg (SE, _("Number of variables on left side of `=' (%zu) does not "
                      "match number of variables on right side (%zu), in "
                      "parenthesized group %d of RENAME subcommand."),
-	       n_newvars, n_oldvars, group);
+	       n_oldvars, n_newvars, group);
 	  goto fail;
 	}
 
