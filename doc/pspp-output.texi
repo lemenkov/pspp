@@ -38,6 +38,13 @@ Each of these forms is documented separately below.
 @command{pspp-output} also has several undocumented command forms that
 developers may find useful for debugging.
 
+@menu
+* The pspp-output detect Command::
+* The pspp-output dir Command::
+* The pspp-output convert Command::
+* Input Selection Options::
+@end menu
+
 @node The pspp-output detect Command
 @section The @code{detect} Command
 
