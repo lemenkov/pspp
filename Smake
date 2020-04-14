@@ -440,9 +440,14 @@ clean:
 	rm -f config.h.in
 	rm -f gl/Makefile.in
 	rm -f Makefile.in
-	rm -f compile
-	rm -f ltmain.sh
-	rm -f reloc-ldflags install-reloc
+	rm -f build-aux/compile
+	rm -f build-aux/ltmain.sh
+	rm -f build-aux/reloc-ldflags
+	rm -f build-aux/install-reloc
+	rm -f build-aux/config.rpath
+	rm -f build-aux/config.libpath
+	rm -f build-aux/libtool-reloc
+	rm -f build-aux/gitlog-to-changelog
 
 .PHONY: all gettextize clean
 
