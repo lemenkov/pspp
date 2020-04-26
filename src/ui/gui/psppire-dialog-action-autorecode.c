@@ -149,7 +149,7 @@ generate_syntax (const PsppireDialogAction *act)
     g_string_append (string, "\n\t/GROUP");
 
   if ( gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (rd->blank)))
-    g_string_append (string, "\n\t/BLANK");
+    g_string_append (string, "\n\t/BLANK = MISSING");
 
   g_string_append (string, ".\n");
 
