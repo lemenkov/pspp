@@ -522,3 +522,24 @@ x,y
 8,4
 ])
 AT_CLEANUP
+
+
+AT_SETUP([AUTORECODE with /BLANK without specifier])
+
+AT_DATA([autorecode.sps], [data list notable list /x (a18).
+begin data
+one
+two
+three
+end data.
+
+* /BLANK should be either =MISSING or =VALID
+autorecode x /into y
+ /blank
+
+execute.
+])
+
+AT_CHECK([pspp -O format=csv autorecode.sps], [1], [ignore])
+
+AT_CLEANUP

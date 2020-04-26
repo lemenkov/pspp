@@ -491,9 +491,10 @@ arc_free (struct autorecode_pgm *arc)
         }
 
       size_t n_rec_items =
-        (arc->n_specs == 1 || arc->specs[0].items == arc->specs[1].items
+        (arc->n_specs >= 2 && arc->specs[0].items == arc->specs[1].items
          ? 1
          : arc->n_specs);
+
       for (size_t i = 0; i < n_rec_items; i++)
         {
           struct arc_spec *spec = &arc->specs[i];
