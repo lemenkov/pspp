@@ -129,9 +129,14 @@ programs: $(PROGRAMS)
 
 # If we're checked out from a Git repository, make sure that every
 # file that is in Git is distributed.
+# The debian package is now also maintained in git and that contains
+# the distribution files. Do not run this check if we are
+# in a debian package git repository, because the check fails there
 ALL_LOCAL += dist-hook-git
 dist-hook-git: distfiles
-	@if test -e $(srcdir)/.git && (git --version) >/dev/null 2>&1; then \
+	@if test -e $(srcdir)/.git &&                                       \
+	    test ! -d $(srcdir)/debian &&                                   \
+            (git --version) >/dev/null 2>&1; then                           \
 	  (cd $(srcdir) && git ls-files)				    \
 	    | grep -vE '\.gitignore|README.Git|Smake|Bug-administration'    \
 	    | LC_ALL=C sort -u > gitfiles;				    \
