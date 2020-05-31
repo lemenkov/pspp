@@ -1180,7 +1180,10 @@ insert_variable (PsppireDataWindow *dw)
   else
     {
       SswRange *range = SSW_SHEET(de->var_sheet)->selection;
-      psppire_data_editor_insert_new_variable_at_posn (de, range->start_y);
+      PsppireDict *dict = NULL;
+      g_object_get (de->var_sheet, "data-model", &dict, NULL);
+      psppire_dict_insert_variable (dict, range->start_y, NULL);
+      gtk_widget_queue_draw (GTK_WIDGET (de->var_sheet));
     }
 }
 
