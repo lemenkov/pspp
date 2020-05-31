@@ -445,6 +445,13 @@ psppire_data_editor_var_delete_variables (PsppireDataEditor *de)
 {
   SswRange *range = SSW_SHEET(de->var_sheet)->selection;
 
+  if (range->start_x > range->end_x)
+    {
+      gint temp = range->start_x;
+      range->start_x = range->end_x;
+      range->end_x = temp;
+    }
+
   psppire_dict_delete_variables (de->dict, range->start_y,
 				 (range->end_y - range->start_y + 1));
 

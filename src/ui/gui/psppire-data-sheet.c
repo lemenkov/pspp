@@ -273,6 +273,13 @@ psppire_data_sheet_delete_variables (PsppireDataSheet *sheet)
   PsppireDataStore *data_store = NULL;
   g_object_get (sheet, "data-model", &data_store, NULL);
 
+  if (range->start_x > range->end_x)
+    {
+      gint temp = range->start_x;
+      range->start_x = range->end_x;
+      range->end_x = temp;
+    }
+
   psppire_dict_delete_variables (data_store->dict, range->start_x,
 				 (range->end_x - range->start_x + 1));
 
