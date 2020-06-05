@@ -43,6 +43,7 @@
 #include "libpspp/pool.h"
 #include "libpspp/str.h"
 #include "libpspp/string-array.h"
+#include "libpspp/ll.h"
 
 #include "gl/intprops.h"
 #include "gl/minmax.h"
@@ -685,16 +686,73 @@ dict_delete_vars (struct dictionary *d,
 
 /* Deletes the COUNT variables in D starting at index IDX.  This
    is unsafe; see the comment on dict_delete_var() for
-   details. */
+   details. Deleting consecutive vars will result in less callbacks
+   compared to iterating over dict_delete_var.
+   A simple while loop over dict_delete_var will
+   produce (d->var_cnt - IDX ) * COUNT variable changed callbacks
+   plus COUNT variable delete callbacks.
+   This here produces d->var_cnt - IDX variable changed callbacks
+   plus COUNT variable delete callbacks. */
 void
 dict_delete_consecutive_vars (struct dictionary *d, size_t idx, size_t count)
 {
-  /* FIXME: this can be done in O(count) time, but this algorithm
-     is O(count**2). */
   assert (idx + count <= d->var_cnt);
 
-  while (count-- > 0)
-    dict_delete_var (d, d->var[idx].var);
+  /* We need to store the variable and the corresponding case_index
+     for the delete callbacks later. We store them in a linked list.*/
+  struct delvar {
+    struct ll ll;
+    struct variable *var;
+    int case_index;
+  };
+  struct ll_list list = LL_INITIALIZER (list);
+
+  for (size_t i = idx; i < idx + count; i++)
+    {
+      struct delvar *dv = xmalloc (sizeof (struct delvar));
+      assert (dv);
+      struct variable *v = d->var[i].var;
+
+      dict_unset_split_var (d, v);
+      dict_unset_mrset_var (d, v);
+
+      if (d->weight == v)
+	dict_set_weight (d, NULL);
+
+      if (d->filter == v)
+	dict_set_filter (d, NULL);
+
+      dv->var = v;
+      dv->case_index = var_get_case_index (v);
+      ll_push_tail (&list, (struct ll *)dv);
+    }
+
+  dict_clear_vectors (d);
+
+  /* Remove variables from var array. */
+  unindex_vars (d, idx, d->var_cnt);
+  remove_range (d->var, d->var_cnt, sizeof *d->var, idx, count);
+  d->var_cnt -= count;
+
+  /* Reindexing will result variable-changed callback */
+  reindex_vars (d, idx, d->var_cnt);
+
+  invalidate_proto (d);
+  if ( d->changed ) d->changed (d, d->changed_data);
+
+  /* Now issue the variable delete callbacks and delete
+     the variables. The vardict is not valid at this point
+     anymore. That is the reason why we stored the
+     caseindex before reindexing. */
+  for (size_t vi = idx; vi < idx + count; vi++)
+    {
+      struct delvar *dv = (struct delvar *) ll_pop_head (&list);
+      var_clear_vardict (dv->var);
+      if (d->callbacks &&  d->callbacks->var_deleted )
+	d->callbacks->var_deleted (d, dv->var, vi, dv->case_index, d->cb_data);
+      var_destroy (dv->var);
+      free (dv);
+    }
 }
 
 /* Deletes scratch variables from dictionary D. */

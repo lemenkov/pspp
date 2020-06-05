@@ -477,18 +477,13 @@ psppire_dict_delete_variables (PsppireDict *d, gint first, gint n)
   g_return_if_fail (d);
   g_return_if_fail (d->dict);
   g_return_if_fail (PSPPIRE_IS_DICT (d));
+  size_t varcnt = dict_get_var_cnt (d->dict);
+  g_return_if_fail (first < varcnt);
+  g_return_if_fail (first >= 0);
+  g_return_if_fail (n > 0);
+  g_return_if_fail (first + n <= varcnt);
 
-  for (idx = 0 ; idx < n ; ++idx )
-    {
-      struct variable *var;
-
-      /* Do nothing if it's out of bounds */
-      if ( first >= dict_get_var_cnt (d->dict))
-	break;
-
-      var = dict_get_var (d->dict, first);
-      dict_delete_var (d->dict, var);
-    }
+  dict_delete_consecutive_vars (d->dict, first, n);
 }
 
 
