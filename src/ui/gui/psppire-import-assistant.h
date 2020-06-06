@@ -1,5 +1,5 @@
 /* PSPPIRE - a graphical user interface for PSPP.
-   Copyright (C) 2015, 2017  Free Software Foundation
+   Copyright (C) 2015, 2017, 2020  Free Software Foundation
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -117,6 +117,7 @@ struct _PsppireImportAssistant
   struct sheet_spec_page *sheet_spec;
 
   struct dictionary *dict;
+  struct dictionary *casereader_dict;
 
   GtkWidget *var_sheet;
   GtkWidget *data_sheet;

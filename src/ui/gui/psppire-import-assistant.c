@@ -1,5 +1,5 @@
 /* PSPPIRE - a graphical user interface for PSPP.
-   Copyright (C) 2015, 2016, 2017, 2018  Free Software Foundation
+   Copyright (C) 2015, 2016, 2017, 2018, 2020  Free Software Foundation
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -128,6 +128,7 @@ psppire_import_assistant_finalize (GObject *object)
   ds_destroy (&ia->quotes);
 
   dict_unref (ia->dict);
+  dict_unref (ia->casereader_dict);
 
   g_object_unref (ia->builder);
 
@@ -729,6 +730,8 @@ psppire_import_assistant_init (PsppireImportAssistant *ia)
   ia->file_name = NULL;
 
   ia->spreadsheet = NULL;
+  ia->dict = NULL;
+  ia->casereader_dict = NULL;
 
   ia->main_loop = g_main_loop_new (NULL, TRUE);
 
@@ -1188,12 +1191,19 @@ my_read (struct casereader *reader, void *aux, casenumber idx)
 	  GValue value = {0};
 	  gtk_tree_model_get_value (tm, &iter, i + 1, &value);
 
-	  const struct variable *var = dict_get_var (ia->dict, i);
+	  const struct variable *var = dict_get_var (ia->casereader_dict, i);
 
 	  const gchar *ss = g_value_get_string (&value);
 	  if (ss)
 	    {
 	      union value *v = case_data_rw (c, var);
+	      /* In this reader we derive the union value from the
+		 string in the tree_model. We retrieve the width and format
+		 from a dictionary which is stored directly after
+		 the reader creation. Changes in ia->dict in the
+		 variable window are not reflected here and therefore
+		 this is always compatible with the width in the
+		 caseproto. See bug #58298 */
 	      char *xx = data_in (ss_cstr (ss),
 				  "UTF-8",
 				  var_get_write_format (var)->type,
@@ -1277,10 +1287,47 @@ textfile_create_reader (PsppireImportAssistant *ia)
   free (fg);
 
   struct casereader *cr = casereader_create_random (proto, n_rows, &my_casereader_class,  ia);
+  /* Store the dictionary at this point when the casereader is created.
+     my_read depends on the dictionary to interpret the strings in the treeview.
+     This guarantees that the union value is produced according to the
+     caseproto in the reader. */
+  ia->casereader_dict = dict_clone (ia->dict);
   caseproto_unref (proto);
   return cr;
 }
 
+/* When during import the variable type is changed, the reader is reinitialized
+   based on the new dictionary with a fresh caseprototype. The default behaviour
+   when a variable type is changed and the column is resized is that the union
+   value is interpreted with new variable type and an overlay for that column
+   is generated. Here we reinit to the original reader based on strings.
+   As a result you can switch from string to numeric to string without loosing
+   the string information. */
+static void
+ia_variable_changed_cb (GObject *obj, gint var_num, guint what,
+			const struct variable *oldvar, gpointer data)
+{
+  PsppireImportAssistant *ia  = PSPPIRE_IMPORT_ASSISTANT (data);
+
+  struct caseproto *proto = caseproto_create();
+  for (int i = 0; i < dict_get_var_cnt (ia->dict); i++)
+    {
+      const struct variable *var = dict_get_var (ia->dict, i);
+      int width = var_get_width (var);
+      proto = caseproto_add_width (proto, width);
+    }
+
+  gint n_rows = gtk_tree_model_iter_n_children (GTK_TREE_MODEL (ia->delimiters_model), NULL);
+
+  PsppireDataStore *store = NULL;
+  g_object_get (ia->data_sheet, "data-model", &store, NULL);
+
+  struct casereader *cr = casereader_create_random (proto, n_rows,
+						    &my_casereader_class, ia);
+  psppire_data_store_set_reader (store, cr);
+  dict_unref (ia->casereader_dict);
+  ia->casereader_dict = dict_clone (ia->dict);
+}
 
 /* Called just before the formats page of the assistant is
    displayed. */
@@ -1320,6 +1367,9 @@ prepare_formats_page (PsppireImportAssistant *ia)
       PsppireDict *dict = psppire_dict_new_from_dict (ia->dict);
       PsppireDataStore *store = psppire_data_store_new (dict);
       psppire_data_store_set_reader (store, reader);
+      g_signal_connect (dict, "variable-changed",
+                        G_CALLBACK (ia_variable_changed_cb),
+                        ia);
 
       g_object_set (ia->data_sheet, "data-model", store, NULL);
       g_object_set (ia->var_sheet, "data-model", dict, NULL);
