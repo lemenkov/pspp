@@ -36,11 +36,16 @@ This version of PSPP should work with the Gnulib commit shown below.
 Gnulib does not maintain a stable API or ABI, so it is possible that
 PSPP will not work with older or newer versions of Gnulib.
 
-    commit 9ce9be2ef0cb1180e35dfe9dfbbe90d774b374bd (HEAD, origin/master, origin/HEAD)
-    Author: Karl Berry <karl@freefriends.org>
-    Date:   Thu Jul 4 08:23:14 2019 -0700
 
-	autoupdate
+  commit 1e972a8a37c153ddc15e604592f84f939eb3c2ad
+  Author: Bruno Haible <bruno@clisp.org>
+  Date:   Sat Jun 6 10:14:24 2020 +0200
+
+    calloc-gnu tests: Avoid a test failure with clang.
+
+    * tests/test-calloc-gnu.c (main): Mark the pointer variable as
+    'volatile', to defeat compiler optimizations.
+
 
 To clone Gnulib into a directory named "gnulib" using Git, and then
 check out this particular commit, run these commands:

@@ -61,8 +61,8 @@ main (int argc, char *argv[])
 
   /* Read from stdin into 'input'. */
   input = (!strcmp (file_name, "-")
-           ? fread_file (stdin, &length)
-           : read_file (file_name, &length));
+           ? fread_file (stdin, 0, &length)
+           : read_file (file_name, 0, &length));
   if (input == NULL)
     error (EXIT_FAILURE, errno, "reading %s failed", file_name);
 
