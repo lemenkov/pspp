@@ -442,7 +442,7 @@ report_state_mismatch (const struct command *command, enum cmd_state state)
     }
   else if (state == CMD_STATE_INPUT_PROGRAM)
     msg (SE, _("%s is not allowed inside %s."),
-	 command->name, "INPUT PROGRAM" );
+	 command->name, "INPUT PROGRAM");
   else if (state == CMD_STATE_FILE_TYPE)
     msg (SE, _("%s is not allowed inside %s."), command->name, "FILE TYPE");
 

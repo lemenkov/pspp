@@ -164,7 +164,7 @@ llx_remove_range (struct llx *r0, struct llx *r1,
 {
   struct llx *llx;
 
-  for (llx = r0; llx != r1; )
+  for (llx = r0; llx != r1;)
     llx = llx_remove (llx, manager);
 }
 
@@ -181,7 +181,7 @@ llx_remove_equal (struct llx *r0, struct llx *r1, const void *target,
   size_t count;
 
   count = 0;
-  for (x = r0; x != r1; )
+  for (x = r0; x != r1;)
     if (compare (llx_data (x), target, aux) == 0)
       {
         x = llx_remove (x, manager);
@@ -206,7 +206,7 @@ llx_remove_if (struct llx *r0, struct llx *r1,
   size_t count;
 
   count = 0;
-  for (x = r0; x != r1; )
+  for (x = r0; x != r1;)
     if (predicate (llx_data (x), aux))
       {
         x = llx_remove (x, manager);

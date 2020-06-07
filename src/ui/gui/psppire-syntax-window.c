@@ -261,7 +261,7 @@ on_edit_delete (PsppireSyntaxWindow *sw)
   GtkTextIter begin, end;
   GtkTextBuffer *buffer = GTK_TEXT_BUFFER (sw->buffer);
 
-  if ( gtk_text_buffer_get_selection_bounds (buffer, &begin, &end) )
+  if (gtk_text_buffer_get_selection_bounds (buffer, &begin, &end))
     gtk_text_buffer_delete (buffer, &begin, &end);
 }
 
@@ -331,7 +331,7 @@ set_clip (PsppireSyntaxWindow *sw, GtkTextIter *begin, GtkTextIter *end)
   GtkClipboard *clipboard ;
   GtkTextBuffer *buffer = GTK_TEXT_BUFFER (sw->buffer);
 
-  if ( ! gtk_text_buffer_get_selection_bounds (buffer, begin, end) )
+  if (! gtk_text_buffer_get_selection_bounds (buffer, begin, end))
     return FALSE;
 
   g_free (sw->cliptext);
@@ -354,7 +354,7 @@ on_edit_cut (PsppireSyntaxWindow *sw)
 {
   GtkTextIter begin, end;
 
-  if ( set_clip (sw, &begin, &end))
+  if (set_clip (sw, &begin, &end))
     gtk_text_buffer_delete (GTK_TEXT_BUFFER (sw->buffer), &begin, &end);
 }
 
@@ -390,7 +390,7 @@ set_paste_sensitivity (GtkClipboard *clip, GdkEventOwnerChange *event, gpointer 
   for (i = 0 ; i < sizeof (targets) / sizeof (targets[0]) ; ++i)
     {
       GdkAtom atom = gdk_atom_intern (targets[i].target, TRUE);
-      if ( gtk_clipboard_wait_is_target_available (clip, atom))
+      if (gtk_clipboard_wait_is_target_available (clip, atom))
 	{
 	  compatible_target = TRUE;
 	  break;
@@ -421,7 +421,7 @@ on_run_selection (PsppireSyntaxWindow *se)
 {
   GtkTextIter begin, end;
 
-  if ( gtk_text_buffer_get_selection_bounds (GTK_TEXT_BUFFER (se->buffer), &begin, &end) )
+  if (gtk_text_buffer_get_selection_bounds (GTK_TEXT_BUFFER (se->buffer), &begin, &end))
     editor_execute_syntax (se, begin, end);
 }
 
@@ -439,7 +439,7 @@ on_run_to_end (PsppireSyntaxWindow *se)
   gtk_text_buffer_get_iter_at_mark (GTK_TEXT_BUFFER (se->buffer),
 				    &here,
 				    gtk_text_buffer_get_insert (GTK_TEXT_BUFFER (se->buffer))
-				    );
+				);
 
   line = gtk_text_iter_get_line (&here) ;
 
@@ -465,7 +465,7 @@ on_run_current_line (PsppireSyntaxWindow *se)
   gtk_text_buffer_get_iter_at_mark (GTK_TEXT_BUFFER (se->buffer),
 				    &here,
 				    gtk_text_buffer_get_insert (GTK_TEXT_BUFFER (se->buffer))
-				    );
+				);
 
   line = gtk_text_iter_get_line (&here) ;
 
@@ -485,8 +485,8 @@ on_run_current_line (PsppireSyntaxWindow *se)
 static gchar *
 append_suffix (const gchar *filename)
 {
-  if ( ! g_str_has_suffix (filename, ".sps" ) &&
-       ! g_str_has_suffix (filename, ".SPS" ) )
+  if (! g_str_has_suffix (filename, ".sps") &&
+       ! g_str_has_suffix (filename, ".SPS"))
     {
       return g_strdup_printf ("%s.sps", filename);
     }
@@ -529,7 +529,7 @@ save_editor_to_file (PsppireSyntaxWindow *se,
   ss_dealloc (&text_locale);
   g_free (suffixedname);
 
-  if ( result )
+  if (result)
     {
       char *fn = g_filename_display_name (filename);
       gchar *msg = g_strdup_printf (_("Saved file `%s'"), fn);
@@ -583,12 +583,12 @@ syntax_pick_filename (PsppireWindow *window)
 
   response = gtk_dialog_run (GTK_DIALOG (dialog));
 
-  if ( response == GTK_RESPONSE_ACCEPT )
+  if (response == GTK_RESPONSE_ACCEPT)
     {
       gchar *encoding;
       char *filename;
 
-      filename = gtk_file_chooser_get_filename (GTK_FILE_CHOOSER (dialog) );
+      filename = gtk_file_chooser_get_filename (GTK_FILE_CHOOSER (dialog));
       psppire_window_set_filename (window, filename);
       free (filename);
 
@@ -612,7 +612,7 @@ syntax_save (PsppireWindow *se)
   const gchar *filename = psppire_window_get_filename (se);
   GError *err = NULL;
   save_editor_to_file (PSPPIRE_SYNTAX_WINDOW (se), filename, &err);
-  if ( err )
+  if (err)
     {
       msg (ME, "%s", err->message);
       g_error_free (err);
@@ -630,7 +630,7 @@ load_and_show_syntax_window (GtkWidget *se, const gchar *filename,
   ok = psppire_window_load (PSPPIRE_WINDOW (se), filename, encoding, NULL);
   gtk_source_buffer_end_not_undoable_action (PSPPIRE_SYNTAX_WINDOW (se)->buffer);
 
-  if (ok )
+  if (ok)
     gtk_widget_show (se);
   else
     gtk_widget_destroy (se);
@@ -649,7 +649,7 @@ open_syntax_window (const char *file_name, const gchar *encoding)
 {
   GtkWidget *se = psppire_syntax_window_new (NULL);
 
-  if ( file_name)
+  if (file_name)
     load_and_show_syntax_window (se, file_name, encoding);
 
   return GTK_WINDOW (se);
@@ -978,7 +978,7 @@ syntax_load (PsppireWindow *window, const gchar *filename,
   GtkTextBuffer *buffer = GTK_TEXT_BUFFER (sw->buffer);
 
   /* FIXME: What if it's a very big file ? */
-  if ( ! g_file_get_contents (filename, &text_locale, &len_locale, &err) )
+  if (! g_file_get_contents (filename, &text_locale, &len_locale, &err))
     {
       error_dialog (GTK_WINDOW (window), filename, err);
       g_clear_error (&err);
@@ -1009,7 +1009,7 @@ syntax_load (PsppireWindow *window, const gchar *filename,
                                      NULL).string;
   free (text_locale);
 
-  if ( text_utf8 == NULL )
+  if (text_utf8 == NULL)
     {
       error_dialog (GTK_WINDOW (window), filename, err);
       g_clear_error (&err);

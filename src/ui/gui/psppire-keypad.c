@@ -139,7 +139,7 @@ button_click (GtkButton *b, PsppireKeypad *kp)
   const gchar *s = g_hash_table_lookup (kp->frag_table, b);
 
 
-  if ( s )
+  if (s)
     g_signal_emit (kp, keypad_signals [INSERT_SYNTAX], 0, s);
   else
     g_signal_emit (kp, keypad_signals [ERASE], 0);
@@ -166,7 +166,7 @@ add_button (PsppireKeypad *kp, GtkWidget **button,
 			       30 * cols / (float) rows);
 
   g_hash_table_insert (kp->frag_table, *button,
-		       (void *) keypad_insert_text[(button - &kp->digit[0])] );
+		       (void *) keypad_insert_text[(button - &kp->digit[0])]);
 
   g_signal_connect (*button, "clicked",
 		    G_CALLBACK (button_click), kp);
@@ -211,7 +211,7 @@ key_release_callback (GtkWidget   *widget,
 		      GdkEventKey *event,
 		      gpointer     user_data)
 {
-  if ( ! gtk_widget_has_focus (widget))
+  if (! gtk_widget_has_focus (widget))
     return FALSE;
 
   switch (event->keyval)
@@ -332,7 +332,7 @@ psppire_keypad_init (PsppireKeypad *kp)
       g_snprintf (buf, 5, "%d", i);
       kp->digit[i] = gtk_button_new_with_label (buf);
 
-      if ( i == 0 )
+      if (i == 0)
 	add_button (kp, &kp->digit[i],
 		    digit_hoffset + 0, digit_hoffset + 2,
 		    digit_voffset + 3, digit_voffset + 4);

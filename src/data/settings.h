@@ -36,14 +36,14 @@ void settings_set (const struct settings *);
 void settings_destroy (struct settings *);
 
 enum float_format settings_get_input_float_format (void);
-void settings_set_input_float_format ( enum float_format);
+void settings_set_input_float_format (enum float_format);
 
 /* Returns the integer format used for IB and PIB input. */
 enum integer_format settings_get_input_integer_format (void);
 
 /* Sets the integer format used for IB and PIB input to
    FORMAT. */
-void settings_set_input_integer_format ( enum integer_format);
+void settings_set_input_integer_format (enum integer_format);
 
 
 /* Returns the current output integer format. */
@@ -61,19 +61,19 @@ void settings_set_output_float_format (enum float_format float_format);
 
 
 int settings_get_viewlength (void);
-void settings_set_viewlength ( int);
+void settings_set_viewlength (int);
 
 int settings_get_viewwidth (void);
-void settings_set_viewwidth ( int);
+void settings_set_viewwidth (int);
 
 bool settings_get_safer_mode (void);
 void settings_set_safer_mode (void);
 
 bool settings_get_include (void);
-void settings_set_include ( bool);
+void settings_set_include (bool);
 
 int settings_get_epoch (void);
-void settings_set_epoch ( int);
+void settings_set_epoch (int);
 
 bool settings_get_scompression (void);
 void settings_set_scompression (bool);
@@ -90,14 +90,14 @@ bool settings_get_mprint (void);
 void settings_set_mprint (bool);
 
 int settings_get_mxloops (void);
-void settings_set_mxloops ( int);
+void settings_set_mxloops (int);
 
 size_t settings_get_workspace (void);
 size_t settings_get_workspace_cases (const struct caseproto *);
 void settings_set_workspace (size_t);
 
 const struct fmt_spec *settings_get_format (void);
-void settings_set_format ( const struct fmt_spec *);
+void settings_set_format (const struct fmt_spec *);
 
 bool settings_get_testing_mode (void);
 void settings_set_testing_mode (bool);

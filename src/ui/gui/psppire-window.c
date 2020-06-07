@@ -333,7 +333,7 @@ insert_item (gpointer key, gpointer value, gpointer data)
 {
   PsppireWindow *window = PSPPIRE_WINDOW (data);
 
-  if ( NULL != g_hash_table_lookup (window->menuitem_table, key))
+  if (NULL != g_hash_table_lookup (window->menuitem_table, key))
     return;
 
   insert_menuitem_into_menu (window, key);
@@ -368,7 +368,7 @@ on_delete (PsppireWindow *w, GdkEvent *event, gpointer user_data)
 {
   PsppireWindowRegister *reg = psppire_window_register_new ();
 
-  if ( w->dirty )
+  if (w->dirty)
     {
       gint response = psppire_window_query_save (w);
 
@@ -391,7 +391,7 @@ on_delete (PsppireWindow *w, GdkEvent *event, gpointer user_data)
 	}
     }
 
-  if ( 1 == psppire_window_register_n_items (reg))
+  if (1 == psppire_window_register_n_items (reg))
     gtk_main_quit ();
 
   return FALSE;
@@ -508,7 +508,7 @@ psppire_window_set_filename (PsppireWindow *w, const gchar *filename)
 void
 psppire_window_set_unsaved (PsppireWindow *w)
 {
-  if ( w->dirty == FALSE)
+  if (w->dirty == FALSE)
     g_get_current_time (&w->savetime);
 
   w->dirty = TRUE;
@@ -632,7 +632,7 @@ psppire_window_load (PsppireWindow *w, const gchar *file,
 
   ok = i->load (w, file, encoding, hint);
 
-  if ( ok )
+  if (ok)
     {
       psppire_window_set_filename (w, file);
       w->dirty = FALSE;
@@ -702,7 +702,7 @@ psppire_window_file_chooser_dialog (PsppireWindow *toplevel)
       const gchar *filename = toplevel->filename;
       gchar *dir_name;
 
-      if ( ! g_path_is_absolute (filename))
+      if (! g_path_is_absolute (filename))
         {
           gchar *path =
             g_build_filename (g_get_current_dir (), filename, NULL);
@@ -891,7 +891,7 @@ add_most_recent (const char *file_name,
                  const char *mime_type, const char *encoding)
 {
   gchar *uri = g_filename_to_uri  (file_name, NULL, NULL);
-  if ( uri )
+  if (uri)
     {
       GtkRecentData recent_data;
       gchar *full_mime_type;
@@ -930,7 +930,7 @@ delete_recent (const char *file_name)
 {
   gchar *uri = g_filename_to_uri  (file_name, NULL, NULL);
 
-  if ( uri )
+  if (uri)
     gtk_recent_manager_remove_item (gtk_recent_manager_get_default (), uri, NULL);
 
   g_free (uri);

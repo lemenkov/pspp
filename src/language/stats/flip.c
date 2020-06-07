@@ -349,7 +349,7 @@ flip_file (struct flip_pgm *flip)
       return false;
     }
 
-  for (case_idx = 0; case_idx < flip->n_cases; )
+  for (case_idx = 0; case_idx < flip->n_cases;)
     {
       unsigned long read_cases = MIN (flip->n_cases - case_idx,
                                       case_capacity);

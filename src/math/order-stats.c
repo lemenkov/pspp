@@ -62,7 +62,7 @@ static void
 update_k_lower (struct k *kk,
 		double y_i, double c_i, double cc_i)
 {
-  if ( cc_i <= kk->tc )
+  if (cc_i <= kk->tc)
     {
       kk->cc = cc_i;
       kk->c = c_i;
@@ -75,7 +75,7 @@ static void
 update_k_upper (struct k *kk,
 		double y_i, double c_i, double cc_i)
 {
-  if ( cc_i > kk->tc && kk->c_p1 == 0)
+  if (cc_i > kk->tc && kk->c_p1 == 0)
     {
       kk->cc_p1 = cc_i;
       kk->c_p1 = c_i;
@@ -102,7 +102,7 @@ update_k_values (const struct ccase *cx, double y_i, double c_i, double cc_i,
 	  update_k_upper (myk, y_i, c_i, cc_i);
 	}
 
-      if ( stat->accumulate )
+      if (stat->accumulate)
 	stat->accumulate (stat, cx, c_i, cc_i, y_i);
 
       tos->cc = cc_i;
@@ -131,10 +131,10 @@ order_stats_accumulate_idx (struct order_stats **os, size_t nos,
       /* The casereader MUST be sorted */
       assert (this_value >= prev_value);
 
-      if ( prev_value == -DBL_MAX || prev_value == this_value)
+      if (prev_value == -DBL_MAX || prev_value == this_value)
 	c_i += weight;
 
-      if ( prev_value > -DBL_MAX && this_value > prev_value)
+      if (prev_value > -DBL_MAX && this_value > prev_value)
 	{
 	  update_k_values (prev_cx, prev_value, c_i, cc_i, os, nos);
 	  c_i = weight;

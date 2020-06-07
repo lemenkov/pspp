@@ -55,16 +55,16 @@ run_stats_dialog (PsppireDialogActionExamine *ed)
 
   response = psppire_dialog_run (PSPPIRE_DIALOG (ed->stats_dialog));
 
-  if ( response == PSPPIRE_RESPONSE_CONTINUE )
+  if (response == PSPPIRE_RESPONSE_CONTINUE)
     {
       ed->stats = 0;
-      if ( gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (ed->descriptives_button) ))
+      if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (ed->descriptives_button)))
 	ed->stats |= STAT_DESCRIPTIVES;
 
-      if ( gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (ed->extremes_button) ))
+      if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (ed->extremes_button)))
 	ed->stats |= STAT_EXTREMES;
 
-      if ( gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (ed->percentiles_button) ))
+      if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (ed->percentiles_button)))
 	ed->stats |= STAT_PERCENTILES;
     }
 }
@@ -92,7 +92,7 @@ run_opts_dialog (PsppireDialogActionExamine *ed)
 
   response = psppire_dialog_run (PSPPIRE_DIALOG (ed->opts_dialog));
 
-  if ( response == PSPPIRE_RESPONSE_CONTINUE )
+  if (response == PSPPIRE_RESPONSE_CONTINUE)
     {
       if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (ed->listwise)))
 	ed->opts = OPT_LISTWISE;
@@ -118,7 +118,7 @@ generate_syntax (const PsppireDialogAction *act)
   g_string_append (str, "\n\t/VARIABLES=");
   psppire_var_view_append_names (PSPPIRE_VAR_VIEW (ed->variables), 0, str);
 
-  if ( 0  < gtk_tree_model_iter_n_children
+  if (0  < gtk_tree_model_iter_n_children
        (gtk_tree_view_get_model (GTK_TREE_VIEW (ed->factors)), NULL))
     {
       g_string_append (str, "\n\tBY ");
@@ -126,24 +126,24 @@ generate_syntax (const PsppireDialogAction *act)
     }
 
   label = gtk_entry_get_text (GTK_ENTRY (ed->id_var));
-  if ( 0 != strcmp (label, "") )
+  if (0 != strcmp (label, ""))
     {
       g_string_append (str, "\n\t/ID = ");
       g_string_append (str, label);
     }
 
-  if ( ed->stats & (STAT_DESCRIPTIVES | STAT_EXTREMES))
+  if (ed->stats & (STAT_DESCRIPTIVES | STAT_EXTREMES))
     {
       g_string_append (str, "\n\t/STATISTICS =");
 
-      if ( ed->stats & STAT_DESCRIPTIVES)
+      if (ed->stats & STAT_DESCRIPTIVES)
 	g_string_append (str, " DESCRIPTIVES");
 
-      if ( ed->stats & STAT_EXTREMES)
+      if (ed->stats & STAT_EXTREMES)
 	g_string_append (str, " EXTREME");
     }
 
-  if ( ed->stats & STAT_PERCENTILES)
+  if (ed->stats & STAT_PERCENTILES)
     g_string_append (str, "\n\t/PERCENTILES");
 
 

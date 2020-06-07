@@ -43,16 +43,16 @@ generate_syntax (const PsppireDialogAction *pda)
 
   GString *string = g_string_new ("SPLIT FILE OFF.");
 
-  if ( ! gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (act->off)))
+  if (! gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (act->off)))
     {
       GString * varlist = g_string_sized_new (80);
       gint n_vars = psppire_var_view_append_names (PSPPIRE_VAR_VIEW (act->tv), 0, varlist);
 
-      if ( n_vars > 0 )
+      if (n_vars > 0)
 	{
 	  g_string_assign (string, "");
 
-	  if ( gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON(act->sort)))
+	  if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON(act->sort)))
 	    {
 	      g_string_append (string, "SORT CASES BY");
 	      g_string_append (string, varlist->str);
@@ -61,7 +61,7 @@ generate_syntax (const PsppireDialogAction *pda)
 
 	  g_string_append (string, "SPLIT FILE ");
 
-	  if ( gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (act->layered)))
+	  if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (act->layered)))
 	    g_string_append (string, "LAYERED ");
 	  else
 	    g_string_append (string, "SEPARATE ");
@@ -98,7 +98,7 @@ refresh (PsppireDialogAction *pda)
 
   gtk_list_store_clear (GTK_LIST_STORE (liststore));
 
-  if ( n_vars == 0 )
+  if (n_vars == 0)
     gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (act->off), TRUE);
   else
     {
@@ -106,7 +106,7 @@ refresh (PsppireDialogAction *pda)
       gint i;
       const struct variable *const *vars = dict_get_split_vars (pda->dict->dict);
 
-      for (i = 0 ; i < n_vars; ++i )
+      for (i = 0 ; i < n_vars; ++i)
 	{
 	  gtk_list_store_append (GTK_LIST_STORE (liststore), &iter);
 
@@ -141,7 +141,7 @@ psppire_dialog_action_split_activate (PsppireDialogAction *pda, GVariant *param)
 {
   PsppireDialogActionSplit *act = PSPPIRE_DIALOG_ACTION_SPLIT (pda);
 
-  GtkBuilder *xml = builder_new ( "split-file.ui");
+  GtkBuilder *xml = builder_new ("split-file.ui");
 
   pda->dialog = get_widget_assert   (xml, "split-file-dialog");
   pda->source = get_widget_assert   (xml, "split-file-dict-treeview");

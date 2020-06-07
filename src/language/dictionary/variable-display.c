@@ -51,13 +51,13 @@ cmd_variable_alignment (struct lexer *lexer, struct dataset *ds)
       if (!parse_variables (lexer, dataset_dict (ds), &v, &nv, PV_NONE))
         return CMD_FAILURE;
 
-      if ( lex_force_match (lexer, T_LPAREN) )
+      if (lex_force_match (lexer, T_LPAREN))
 	{
-	  if ( lex_match_id (lexer, "LEFT"))
+	  if (lex_match_id (lexer, "LEFT"))
 	    align = ALIGN_LEFT;
-	  else if ( lex_match_id (lexer, "RIGHT"))
+	  else if (lex_match_id (lexer, "RIGHT"))
 	    align = ALIGN_RIGHT;
-	  else if ( lex_match_id (lexer, "CENTER"))
+	  else if (lex_match_id (lexer, "CENTER"))
 	    align = ALIGN_CENTRE;
 	  else
             {
@@ -74,7 +74,7 @@ cmd_variable_alignment (struct lexer *lexer, struct dataset *ds)
           return CMD_FAILURE;
         }
 
-      for( i = 0 ; i < nv ; ++i )
+      for(i = 0 ; i < nv ; ++i)
         var_set_alignment (v[i], align);
 
       while (lex_token (lexer) == T_SLASH)
@@ -124,7 +124,7 @@ cmd_variable_width (struct lexer *lexer, struct dataset *ds)
         }
       width = MIN (width, 2 * MAX_STRING);
 
-      for( i = 0 ; i < nv ; ++i )
+      for(i = 0 ; i < nv ; ++i)
         var_set_display_width (v[i], width);
 
       while (lex_token (lexer) == T_SLASH)
@@ -150,13 +150,13 @@ cmd_variable_level (struct lexer *lexer, struct dataset *ds)
       if (!parse_variables (lexer, dataset_dict (ds), &v, &nv, PV_NONE))
         return CMD_FAILURE;
 
-      if ( lex_force_match (lexer, T_LPAREN) )
+      if (lex_force_match (lexer, T_LPAREN))
 	{
-	  if ( lex_match_id (lexer, "SCALE"))
+	  if (lex_match_id (lexer, "SCALE"))
 	    level = MEASURE_SCALE;
-	  else if ( lex_match_id (lexer, "ORDINAL"))
+	  else if (lex_match_id (lexer, "ORDINAL"))
 	    level = MEASURE_ORDINAL;
-	  else if ( lex_match_id (lexer, "NOMINAL"))
+	  else if (lex_match_id (lexer, "NOMINAL"))
 	    level = MEASURE_NOMINAL;
 	  else
             {
@@ -173,7 +173,7 @@ cmd_variable_level (struct lexer *lexer, struct dataset *ds)
           return CMD_FAILURE;
         }
 
-      for( i = 0 ; i < nv ; ++i )
+      for(i = 0 ; i < nv ; ++i)
 	var_set_measure (v[i], level);
 
 
@@ -197,17 +197,17 @@ cmd_variable_role (struct lexer *lexer, struct dataset *ds)
       enum var_role role;
       size_t i;
 
-      if ( lex_match_id (lexer, "INPUT"))
+      if (lex_match_id (lexer, "INPUT"))
         role = ROLE_INPUT;
-      else if ( lex_match_id (lexer, "TARGET"))
+      else if (lex_match_id (lexer, "TARGET"))
         role = ROLE_TARGET;
-      else if ( lex_match_id (lexer, "BOTH"))
+      else if (lex_match_id (lexer, "BOTH"))
         role = ROLE_BOTH;
-      else if ( lex_match_id (lexer, "NONE"))
+      else if (lex_match_id (lexer, "NONE"))
         role = ROLE_NONE;
-      else if ( lex_match_id (lexer, "PARTITION"))
+      else if (lex_match_id (lexer, "PARTITION"))
         role = ROLE_PARTITION;
-      else if ( lex_match_id (lexer, "SPLIT"))
+      else if (lex_match_id (lexer, "SPLIT"))
         role = ROLE_SPLIT;
       else
         {

@@ -365,7 +365,7 @@ eval {
     help quiet diag! filter! hints! changes! cplusplus
     patch=s copy=s diff=s compat-version=s
     list-provided list-unsupported api-info=s
-  )) or usage();
+)) or usage();
 };
 
 if ($@ and grep /^-/, @ARGV) {
@@ -395,13 +395,13 @@ my $rccs = quotemeta $ccs;
 my $rcce = quotemeta $cce;
 
 my %API = map { /^(\w+)\|([^|]*)\|([^|]*)\|(\w*)$/
-                ? ( $1 => {
-                      ($2                  ? ( base     => $2 ) : ()),
-                      ($3                  ? ( todo     => $3 ) : ()),
-                      (index($4, 'v') >= 0 ? ( varargs  => 1  ) : ()),
-                      (index($4, 'p') >= 0 ? ( provided => 1  ) : ()),
-                      (index($4, 'n') >= 0 ? ( nothxarg => 1  ) : ()),
-                    } )
+                ? ($1 => {
+                      ($2                  ? (base     => $2) : ()),
+                      ($3                  ? (todo     => $3) : ()),
+                      (index($4, 'v') >= 0 ? (varargs  => 1) : ()),
+                      (index($4, 'p') >= 0 ? (provided => 1) : ()),
+                      (index($4, 'n') >= 0 ? (nothxarg => 1) : ()),
+                    })
                 : die "invalid spec: $_" } qw(
 AvFILLp|5.004050||p
 AvFILL|||
@@ -2101,7 +2101,7 @@ if (exists $opt{'list-provided'}) {
 }
 
 my @files;
-my @srcext = qw( xs c h cc cpp );
+my @srcext = qw(xs c h cc cpp);
 my $srcext = join '|', @srcext;
 
 if (@ARGV) {
@@ -2165,13 +2165,13 @@ for $filename (@files) {
         (?:"[^"\\]*(?:\\.[^"\\]*)*" [^"'/]*)+
       |
         (?:'[^'\\]*(?:\\.[^'\\]*)*' [^"'/]*)+
-    )
+)
   |
     (/ (?:
         \*[^*]*\*+(?:[^$ccs][^*]*\*+)* /
         |
         /[^\r\n]*
-      ))
+))
   }{
     defined $2 and push @ccom, $2;
     defined $1 ? $1 : "$ccs$#ccom$cce";
@@ -2624,7 +2624,7 @@ sub hint
 sub usage
 {
   my($usage) = do { local(@ARGV,$/)=($0); <> } =~ /^=head\d$HS+SYNOPSIS\s*^(.*?)\s*^=/ms;
-  my %M = ( 'I' => '*' );
+  my %M = ('I' => '*');
   $usage =~ s/^\s*perl\s+\S+/$^X $0/;
   $usage =~ s/([A-Z])<([^>]+)>/$M{$1}$2$M{$1}/g;
 
@@ -3058,7 +3058,7 @@ __DATA__
 #  define sv_uv(sv)                      SvUVx(sv)
 #endif
 #ifndef XST_mUV
-#  define XST_mUV(i,v)                   (ST(i) = sv_2mortal(newSVuv(v))  )
+#  define XST_mUV(i,v)                   (ST(i) = sv_2mortal(newSVuv(v)))
 #endif
 
 #ifndef XSRETURN_UV
@@ -3555,7 +3555,7 @@ DPPP_(my_newCONSTSUB)(HV *stash, char *name, SV *sv)
  * case below uses it to declare the data as static. */
 #define START_MY_CXT
 
-#if (PERL_VERSION < 4 || (PERL_VERSION == 4 && PERL_SUBVERSION < 68 ))
+#if (PERL_VERSION < 4 || (PERL_VERSION == 4 && PERL_SUBVERSION < 68))
 /* Fetches the SV that keeps the per-interpreter data. */
 #define dMY_CXT_SV \
 	SV *my_cxt_sv = get_sv(MY_CXT_KEY, FALSE)
@@ -4736,9 +4736,9 @@ DPPP_(my_grok_bin)(pTHX_ char *start, STRLEN *len_p, I32 *flags, NV *result)
         break;
     }
 
-    if (   ( overflowed && value_nv > 4294967295.0)
+    if ((overflowed && value_nv > 4294967295.0)
 #if UVSIZE > 4
-	|| (!overflowed && value > 0xffffffff  )
+	|| (!overflowed && value > 0xffffffff)
 #endif
 	) {
 	warn("Binary number > 0b11111111111111111111111111111111 non-portable");
@@ -4838,9 +4838,9 @@ DPPP_(my_grok_hex)(pTHX_ char *start, STRLEN *len_p, I32 *flags, NV *result)
         break;
     }
 
-    if (   ( overflowed && value_nv > 4294967295.0)
+    if ((overflowed && value_nv > 4294967295.0)
 #if UVSIZE > 4
-	|| (!overflowed && value > 0xffffffff  )
+	|| (!overflowed && value > 0xffffffff)
 #endif
 	) {
 	warn("Hexadecimal number > 0xffffffff non-portable");
@@ -4931,9 +4931,9 @@ DPPP_(my_grok_oct)(pTHX_ char *start, STRLEN *len_p, I32 *flags, NV *result)
         break;
     }
 
-    if (   ( overflowed && value_nv > 4294967295.0)
+    if ((overflowed && value_nv > 4294967295.0)
 #if UVSIZE > 4
-	|| (!overflowed && value > 0xffffffff  )
+	|| (!overflowed && value > 0xffffffff)
 #endif
 	) {
 	warn("Octal number > 037777777777 non-portable");

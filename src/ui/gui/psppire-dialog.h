@@ -74,10 +74,10 @@ void           psppire_dialog_close           (PsppireDialog *);
 gint           psppire_dialog_run             (PsppireDialog *);
 void           psppire_dialog_set_valid_predicate (PsppireDialog *,
 						   ContentsAreValid,
-						   gpointer );
+						   gpointer);
 void           psppire_dialog_set_accept_predicate (PsppireDialog *,
                                                     ContentsAreValid,
-                                                    gpointer );
+                                                    gpointer);
 gboolean       psppire_dialog_is_acceptable (const PsppireDialog *);
 void           psppire_dialog_notify_change (PsppireDialog *);
 

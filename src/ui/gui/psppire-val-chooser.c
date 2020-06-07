@@ -237,7 +237,7 @@ static void simple_set (PsppireValChooser *vr, struct old_value *ov, const struc
 {
   const gchar *text = gtk_entry_get_text (rw->e1);
 
-  if ( vr->input_var_is_string)
+  if (vr->input_var_is_string)
     {
       ov->type = OV_STRING;
       ov->v.s = g_strdup (text);
@@ -441,7 +441,7 @@ old_value_copy (struct old_value *ov)
 {
   struct old_value *copy = g_memdup (ov, sizeof (*copy));
 
-  if ( ov->type == OV_STRING )
+  if (ov->type == OV_STRING)
     copy->v.s = g_strdup (ov->v.s);
 
   return copy;
@@ -539,7 +539,7 @@ old_value_get_type (void)
 {
   static GType t = 0;
 
-  if (t == 0 )
+  if (t == 0)
     {
       t = g_boxed_type_register_static  ("psppire-recode-old-values",
 					 (GBoxedCopyFunc) old_value_copy,
@@ -610,7 +610,7 @@ psppire_val_chooser_get_status (PsppireValChooser *vr, struct old_value *ov)
 
   for (i = 0; i < n_VAL_CHOOSER_BUTTONS; ++i)
     {
-      if ( gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (vr->rw[i].rb)))
+      if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (vr->rw[i].rb)))
 	{
 	  range_opt[i].set (vr, ov, &vr->rw[i]);
 	  break;
@@ -633,7 +633,7 @@ void
 psppire_val_chooser_set_status (PsppireValChooser *vr, const struct old_value *ov)
 {
   gint i;
-  if ( !ov )
+  if (!ov)
     return;
 
   for (i = 0; i < n_VAL_CHOOSER_BUTTONS; ++i)

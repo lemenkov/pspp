@@ -93,10 +93,10 @@ cutpoint_cmp (const struct levene *nl, const union value *val0, const union valu
 
   int y = value_compare_3way (val1, nl->cutpoint, nl->gvw);
 
-  if ( x == 0) x = 1;
-  if ( y == 0) y = 1;
+  if (x == 0) x = 1;
+  if (y == 0) y = 1;
 
-  return ( x == y);
+  return (x == y);
 }
 
 
@@ -138,13 +138,13 @@ levene_pass_one (struct levene *nl, double value, double weight, const union val
 {
   struct lev *lev = find_group (nl, gv);
 
-  if ( nl->pass == 0 )
+  if (nl->pass == 0)
     {
       nl->pass = 1;
     }
   assert (nl->pass == 1);
 
-  if ( NULL == lev)
+  if (NULL == lev)
     {
       struct lev *l = xzalloc (sizeof *l);
       value_clone (&l->group, gv, nl->gvw);
@@ -164,7 +164,7 @@ levene_pass_two (struct levene *nl, double value, double weight, const union val
 {
   struct lev *lev = NULL;
 
-  if ( nl->pass == 1 )
+  if (nl->pass == 1)
     {
       struct lev *next;
       struct lev *l;
@@ -191,7 +191,7 @@ levene_pass_three (struct levene *nl, double value, double weight, const union v
   double z;
   struct lev *lev = NULL;
 
-  if ( nl->pass == 2 )
+  if (nl->pass == 2)
     {
       struct lev *next;
       struct lev *l;
@@ -231,7 +231,7 @@ levene_calculate (struct levene *nl)
    */
   assert (nl->pass == 0 || nl->pass == 3);
 
-  if ( nl->pass == 0 )
+  if (nl->pass == 0)
     return SYSMIS;
 
   nl->denominator *= hmap_count (&nl->hmap) - 1;

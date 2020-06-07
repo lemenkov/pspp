@@ -68,7 +68,7 @@ do_insert (struct lexer *lexer, struct dataset *ds, enum variant variant)
   filename = include_path_search (relative_name);
   free (relative_name);
 
-  if ( ! filename)
+  if (! filename)
     {
       msg (SE, _("Can't find `%s' in include file search path."),
            lex_tokcstr (lexer));
@@ -82,7 +82,7 @@ do_insert (struct lexer *lexer, struct dataset *ds, enum variant variant)
   status = CMD_FAILURE;
   encoding = xstrdup (session_get_default_syntax_encoding (
                         dataset_session (ds)));
-  while ( T_ENDCMD != lex_token (lexer))
+  while (T_ENDCMD != lex_token (lexer))
     {
       if (lex_match_id (lexer, "ENCODING"))
         {
@@ -97,11 +97,11 @@ do_insert (struct lexer *lexer, struct dataset *ds, enum variant variant)
       else if (variant == INSERT && lex_match_id (lexer, "SYNTAX"))
 	{
 	  lex_match (lexer, T_EQUALS);
-	  if ( lex_match_id (lexer, "INTERACTIVE") )
+	  if (lex_match_id (lexer, "INTERACTIVE"))
 	    syntax_mode = LEX_SYNTAX_INTERACTIVE;
-	  else if ( lex_match_id (lexer, "BATCH"))
+	  else if (lex_match_id (lexer, "BATCH"))
 	    syntax_mode = LEX_SYNTAX_BATCH;
-	  else if ( lex_match_id (lexer, "AUTO"))
+	  else if (lex_match_id (lexer, "AUTO"))
 	    syntax_mode = LEX_SYNTAX_AUTO;
 	  else
 	    {
@@ -112,11 +112,11 @@ do_insert (struct lexer *lexer, struct dataset *ds, enum variant variant)
       else if (variant == INSERT && lex_match_id (lexer, "CD"))
 	{
 	  lex_match (lexer, T_EQUALS);
-	  if ( lex_match_id (lexer, "YES") )
+	  if (lex_match_id (lexer, "YES"))
 	    {
 	      cd = true;
 	    }
-	  else if ( lex_match_id (lexer, "NO"))
+	  else if (lex_match_id (lexer, "NO"))
 	    {
 	      cd = false;
 	    }
@@ -129,11 +129,11 @@ do_insert (struct lexer *lexer, struct dataset *ds, enum variant variant)
       else if (variant == INSERT && lex_match_id (lexer, "ERROR"))
 	{
 	  lex_match (lexer, T_EQUALS);
-	  if ( lex_match_id (lexer, "CONTINUE") )
+	  if (lex_match_id (lexer, "CONTINUE"))
 	    {
 	      error_mode = LEX_ERROR_CONTINUE;
 	    }
-	  else if ( lex_match_id (lexer, "STOP"))
+	  else if (lex_match_id (lexer, "STOP"))
 	    {
 	      error_mode = LEX_ERROR_STOP;
 	    }
@@ -152,7 +152,7 @@ do_insert (struct lexer *lexer, struct dataset *ds, enum variant variant)
     }
   status = lex_end_of_command (lexer);
 
-  if ( status == CMD_SUCCESS)
+  if (status == CMD_SUCCESS)
     {
       struct lex_reader *reader;
 
@@ -163,7 +163,7 @@ do_insert (struct lexer *lexer, struct dataset *ds, enum variant variant)
           lex_discard_rest_of_command (lexer);
           lex_include (lexer, reader);
 
-          if ( cd )
+          if (cd)
             {
               char *directory = dir_name (filename);
               chdir (directory);

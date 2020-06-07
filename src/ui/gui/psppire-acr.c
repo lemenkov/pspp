@@ -135,7 +135,7 @@ on_add_button_clicked (PsppireAcr *acr)
        ++i)
     {
       static GValue value;
-      if ( ! acr->get_value (i, &value, acr->get_value_data) )
+      if (! acr->get_value (i, &value, acr->get_value_data))
 	continue;
 
       gtk_list_store_set_value (acr->list_store, &iter,
@@ -170,7 +170,7 @@ on_change_button_clicked (PsppireAcr *acr)
        ++i)
     {
       static GValue value;
-      if ( ! acr->get_value (i, &value, acr->get_value_data) )
+      if (! acr->get_value (i, &value, acr->get_value_data))
 	continue;
 
       gtk_list_store_set_value (acr->list_store, &iter,
@@ -181,7 +181,7 @@ on_change_button_clicked (PsppireAcr *acr)
   g_list_foreach (l, (GFunc) gtk_tree_path_free, NULL);
   g_list_free (l);
 
-  if ( acr->update) acr->update (acr->update_data);
+  if (acr->update) acr->update (acr->update_data);
 }
 
 
@@ -238,7 +238,7 @@ on_select (GtkTreeSelection *selection, gpointer data)
 
   gtk_widget_set_sensitive (acr->change_button,
 			    row_is_selected (acr)
-			    );
+			);
 }
 
 

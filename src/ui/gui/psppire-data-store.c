@@ -477,7 +477,7 @@ psppire_data_store_set_reader (PsppireDataStore *ds,
 {
   gint i;
   gint old_n = 0;
-  if ( ds->datasheet)
+  if (ds->datasheet)
     {
       old_n = datasheet_get_n_rows (ds->datasheet);
       datasheet_destroy (ds->datasheet);
@@ -487,10 +487,10 @@ psppire_data_store_set_reader (PsppireDataStore *ds,
 
   gint new_n = datasheet_get_n_rows (ds->datasheet);
 
-  if ( ds->dict )
-    for (i = 0 ; i < n_dict_signals; ++i )
+  if (ds->dict)
+    for (i = 0 ; i < n_dict_signals; ++i)
       {
-	if ( ds->dict_handler_id [i] > 0)
+	if (ds->dict_handler_id [i] > 0)
 	  {
 	    g_signal_handler_unblock (ds->dict,
 				      ds->dict_handler_id[i]);
@@ -515,8 +515,8 @@ psppire_data_store_set_dictionary (PsppireDataStore *data_store, PsppireDict *di
   int i;
 
   /* Disconnect any existing handlers */
-  if ( data_store->dict )
-    for (i = 0 ; i < n_dict_signals; ++i )
+  if (data_store->dict)
+    for (i = 0 ; i < n_dict_signals; ++i)
       {
 	g_signal_handler_disconnect (data_store->dict,
 				     data_store->dict_handler_id[i]);
@@ -524,7 +524,7 @@ psppire_data_store_set_dictionary (PsppireDataStore *data_store, PsppireDict *di
 
   data_store->dict = dict;
 
-  if ( dict != NULL)
+  if (dict != NULL)
     {
 
       data_store->dict_handler_id [VARIABLE_INSERTED] =
@@ -547,10 +547,10 @@ psppire_data_store_set_dictionary (PsppireDataStore *data_store, PsppireDict *di
 
   /* The entire model has changed */
 
-  if ( data_store->dict )
-    for (i = 0 ; i < n_dict_signals; ++i )
+  if (data_store->dict)
+    for (i = 0 ; i < n_dict_signals; ++i)
       {
-	if ( data_store->dict_handler_id [i] > 0)
+	if (data_store->dict_handler_id [i] > 0)
 	  {
 	    g_signal_handler_block (data_store->dict,
 				    data_store->dict_handler_id[i]);
@@ -728,8 +728,8 @@ psppire_data_store_get_reader (PsppireDataStore *ds)
   int i;
   struct casereader *reader ;
 
-  if ( ds->dict )
-    for (i = 0 ; i < n_dict_signals; ++i )
+  if (ds->dict)
+    for (i = 0 ; i < n_dict_signals; ++i)
       {
 	g_signal_handler_block (ds->dict,
 				ds->dict_handler_id[i]);
@@ -790,7 +790,7 @@ psppire_data_store_insert_case (PsppireDataStore *ds,
   cc = case_ref (cc);
   result = datasheet_insert_rows (ds->datasheet, posn, &cc, 1);
 
-  if ( result )
+  if (result)
     {
       g_signal_emit (ds, signals[ITEMS_CHANGED], 0, posn, 0, 1);
     }
@@ -815,7 +815,7 @@ psppire_data_store_set_value (PsppireDataStore *ds, casenumber casenum,
   g_return_val_if_fail (ds->datasheet, FALSE);
 
   n_cases = psppire_data_store_get_case_count (ds);
-  if ( casenum > n_cases)
+  if (casenum > n_cases)
     return FALSE;
 
   if (casenum == n_cases)
@@ -881,7 +881,7 @@ psppire_data_store_insert_value (PsppireDataStore *ds,
 
   g_assert (width >= 0);
 
-  if ( ! ds->datasheet )
+  if (! ds->datasheet)
     ds->datasheet = datasheet_create (NULL);
 
   value_init (&value, width);
@@ -902,20 +902,20 @@ psppire_data_store_filtered (PsppireDataStore *ds,
   const struct dictionary *dict;
   const struct variable *filter;
 
-  if ( row < 0 || row >= datasheet_get_n_rows (ds->datasheet))
+  if (row < 0 || row >= datasheet_get_n_rows (ds->datasheet))
     return FALSE;
 
   dict = ds->dict->dict;
   g_return_val_if_fail (dict, FALSE);
   filter = dict_get_filter (dict);
-  if ( ! filter)
+  if (! filter)
     return FALSE;
 
   g_return_val_if_fail (var_is_numeric (filter), FALSE);
   value_init (&val, 0);
-  if ( ! datasheet_get_value (ds->datasheet, row,
+  if (! datasheet_get_value (ds->datasheet, row,
                               var_get_case_index (filter),
-                              &val) )
+                              &val))
     return FALSE;
 
   return (val.f == 0.0);

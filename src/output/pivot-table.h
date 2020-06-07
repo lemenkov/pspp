@@ -221,7 +221,7 @@ struct pivot_axis
    breaks out of the loop prematurely, it needs to free it with free(). */
 #define PIVOT_AXIS_FOR_EACH(INDEXES, AXIS)                              \
   for ((INDEXES) = NULL;                                                \
-       ((INDEXES) = pivot_axis_iterator_next (INDEXES, AXIS)) != NULL; )
+       ((INDEXES) = pivot_axis_iterator_next (INDEXES, AXIS)) != NULL;)
 size_t *pivot_axis_iterator_next (size_t *indexes, const struct pivot_axis *);
 
 /* Dimensions.

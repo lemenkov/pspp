@@ -60,7 +60,7 @@ dialog_state_valid (gpointer data)
   GtkTreeModel *vars;
   GtkTreeIter notused;
 
-  if ( 0 == strcmp ("", gtk_entry_get_text (GTK_ENTRY (ud->dep_entry))))
+  if (0 == strcmp ("", gtk_entry_get_text (GTK_ENTRY (ud->dep_entry))))
     return false;
 
   vars =
@@ -88,7 +88,7 @@ psppire_dialog_action_univariate_activate (PsppireDialogAction *a, GVariant *par
   PsppireDialogAction *pda = PSPPIRE_DIALOG_ACTION (a);
   PsppireDialogActionUnivariate *act = PSPPIRE_DIALOG_ACTION_UNIVARIATE (a);
 
-  GtkBuilder *xml = builder_new ( "univariate.ui");
+  GtkBuilder *xml = builder_new ("univariate.ui");
 
   pda->dialog = get_widget_assert   (xml, "univariate-dialog");
   pda->source = get_widget_assert   (xml, "dict-view");

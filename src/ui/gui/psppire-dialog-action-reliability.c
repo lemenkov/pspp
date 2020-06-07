@@ -48,14 +48,14 @@ generate_syntax (const PsppireDialogAction *act)
 
   g_string_append (string, "\n\t/MODEL=");
 
-  if ( ALPHA == gtk_combo_box_get_active (GTK_COMBO_BOX (rd->model_combo)))
+  if (ALPHA == gtk_combo_box_get_active (GTK_COMBO_BOX (rd->model_combo)))
     g_string_append (string, "ALPHA");
   else
     g_string_append_printf (string, "SPLIT (%d)",
 			    gtk_spin_button_get_value_as_int (GTK_SPIN_BUTTON (rd->split_spinbutton))
-			    );
+			);
 
-  if ( gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (rd->scale_if_item_deleted_checkbutton)))
+  if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (rd->scale_if_item_deleted_checkbutton)))
     g_string_append (string, "\n\t/SUMMARY = TOTAL");
 
   g_string_append (string, ".\n");
@@ -95,7 +95,7 @@ update_split_control (PsppireDialogActionReliability *pda)
 			     0, n_vars - 1);
 
   gtk_widget_set_sensitive (pda->split_point_hbox,
-			    ( SPLIT == gtk_combo_box_get_active (GTK_COMBO_BOX (pda->model_combo))));
+			    (SPLIT == gtk_combo_box_get_active (GTK_COMBO_BOX (pda->model_combo))));
 }
 
 
@@ -126,7 +126,7 @@ psppire_dialog_action_reliability_activate (PsppireDialogAction *a, GVariant *pa
   PsppireDialogActionReliability *act = PSPPIRE_DIALOG_ACTION_RELIABILITY (a);
   GtkTreeModel *liststore ;
 
-  GtkBuilder *xml = builder_new ( "reliability.ui");
+  GtkBuilder *xml = builder_new ("reliability.ui");
 
   pda->dialog = get_widget_assert   (xml, "reliability-dialog");
   pda->source = get_widget_assert   (xml, "dict-view");

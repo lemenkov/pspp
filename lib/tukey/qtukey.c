@@ -143,8 +143,8 @@ static double qinv(double p, double c, double v)
 
     ps = 0.5 - 0.5 * p;
     yi = sqrt (log (1.0 / (ps * ps)));
-    t = yi + (((( yi * p4 + p3) * yi + p2) * yi + p1) * yi + p0)
-	   / (((( yi * q4 + q3) * yi + q2) * yi + q1) * yi + q0);
+    t = yi + ((((yi * p4 + p3) * yi + p2) * yi + p1) * yi + p0)
+	   / ((((yi * q4 + q3) * yi + q2) * yi + q1) * yi + q0);
     if (v < vmax) t += (t * t * t + t) / v / 4.0;
     q = c1 - c2 * t;
     if (v < vmax) q += -c3 / v + c4 * t / v;

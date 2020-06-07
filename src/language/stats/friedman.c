@@ -139,7 +139,7 @@ friedman_execute (const struct dataset *ds,
 	{
 	  double x = row[v].x;
 	  /* Replace value by the Rank */
-	  if ( prev_x == x)
+	  if (prev_x == x)
 	    {
 	      /* Deal with ties */
 	      int i;
@@ -155,7 +155,7 @@ friedman_execute (const struct dataset *ds,
 	  else
 	    {
 	      row[v].x = v + 1;
-	      if ( run_length > 0)
+	      if (run_length > 0)
 		{
 		  double t = run_length + 1;
 		  sigma_t += w * (pow3 (t) - t);
@@ -164,10 +164,10 @@ friedman_execute (const struct dataset *ds,
 	    }
 	  prev_x = x;
 	}
-      if ( run_length > 0)
+      if (run_length > 0)
 	{
 	  double t = run_length + 1;
-	  sigma_t += w * (pow3 (t) - t );
+	  sigma_t += w * (pow3 (t) - t);
 	}
 
       qsort (row, ost->n_vars, sizeof *row, cmp_posn);
@@ -186,14 +186,14 @@ friedman_execute (const struct dataset *ds,
 
   rsq = numerator;
 
-  numerator *= 12.0 / (fr.cc * ost->n_vars * ( ost->n_vars + 1));
-  numerator -= 3 * fr.cc * ( ost->n_vars + 1);
+  numerator *= 12.0 / (fr.cc * ost->n_vars * (ost->n_vars + 1));
+  numerator -= 3 * fr.cc * (ost->n_vars + 1);
 
-  denominator = 1 - sigma_t / ( fr.cc * ost->n_vars * ( pow2 (ost->n_vars) - 1));
+  denominator = 1 - sigma_t / (fr.cc * ost->n_vars * (pow2 (ost->n_vars) - 1));
 
   fr.chi_sq = numerator / denominator;
 
-  if ( ft->kendalls_w)
+  if (ft->kendalls_w)
     {
       fr.w = 12 * rsq ;
       fr.w -= 3 * pow2 (fr.cc) *

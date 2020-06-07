@@ -137,7 +137,7 @@ void
 dict_dump (const struct dictionary *d)
 {
   int i;
-  for (i = 0 ; i < d->var_cnt ; ++i )
+  for (i = 0 ; i < d->var_cnt ; ++i)
     {
       const struct variable *v = d->var[i].var;
       printf ("Name: %s;\tdict_idx: %zu; case_idx: %zu\n",
@@ -275,7 +275,7 @@ dict_clear (struct dictionary *d)
 {
   /* FIXME?  Should we really clear case_limit, label, documents?
      Others are necessarily cleared by deleting all the variables.*/
-  while (d->var_cnt > 0 )
+  while (d->var_cnt > 0)
     {
       dict_delete_var (d, d->var[d->var_cnt - 1].var);
     }
@@ -419,8 +419,8 @@ add_var_with_case_index (struct dictionary *d, struct variable *v,
   vardict->case_index = case_index;
   var_set_vardict (v, vardict);
 
-  if ( d->changed ) d->changed (d, d->changed_data);
-  if ( d->callbacks &&  d->callbacks->var_added )
+  if (d->changed) d->changed (d, d->changed_data);
+  if (d->callbacks &&  d->callbacks->var_added)
     d->callbacks->var_added (d, var_get_dict_index (v), d->cb_data);
 
   invalidate_proto (d);
@@ -581,7 +581,7 @@ reindex_var (struct dictionary *d, struct vardict_info *vardict)
   hmap_insert_fast (&d->name_map, &vardict->name_node,
                     vardict->name_node.hash);
 
-  if ( d->changed ) d->changed (d, d->changed_data);
+  if (d->changed) d->changed (d, d->changed_data);
   if (old)
     {
       d->callbacks->var_changed (d, var_get_dict_index (var), VAR_TRAIT_POSITION, old, d->cb_data);
@@ -661,10 +661,10 @@ dict_delete_var (struct dictionary *d, struct variable *v)
   /* Free memory. */
   var_clear_vardict (v);
 
-  if ( d->changed ) d->changed (d, d->changed_data);
+  if (d->changed) d->changed (d, d->changed_data);
 
   invalidate_proto (d);
-  if (d->callbacks &&  d->callbacks->var_deleted )
+  if (d->callbacks &&  d->callbacks->var_deleted)
     d->callbacks->var_deleted (d, v, dict_index, case_index, d->cb_data);
 
   var_destroy (v);
@@ -689,7 +689,7 @@ dict_delete_vars (struct dictionary *d,
    details. Deleting consecutive vars will result in less callbacks
    compared to iterating over dict_delete_var.
    A simple while loop over dict_delete_var will
-   produce (d->var_cnt - IDX ) * COUNT variable changed callbacks
+   produce (d->var_cnt - IDX) * COUNT variable changed callbacks
    plus COUNT variable delete callbacks.
    This here produces d->var_cnt - IDX variable changed callbacks
    plus COUNT variable delete callbacks. */
@@ -738,7 +738,7 @@ dict_delete_consecutive_vars (struct dictionary *d, size_t idx, size_t count)
   reindex_vars (d, idx, d->var_cnt);
 
   invalidate_proto (d);
-  if ( d->changed ) d->changed (d, d->changed_data);
+  if (d->changed) d->changed (d, d->changed_data);
 
   /* Now issue the variable delete callbacks and delete
      the variables. The vardict is not valid at this point
@@ -748,7 +748,7 @@ dict_delete_consecutive_vars (struct dictionary *d, size_t idx, size_t count)
     {
       struct delvar *dv = (struct delvar *) ll_pop_head (&list);
       var_clear_vardict (dv->var);
-      if (d->callbacks &&  d->callbacks->var_deleted )
+      if (d->callbacks &&  d->callbacks->var_deleted)
 	d->callbacks->var_deleted (d, dv->var, vi, dv->case_index, d->cb_data);
       var_destroy (dv->var);
       free (dv);
@@ -763,7 +763,7 @@ dict_delete_scratch_vars (struct dictionary *d)
 
   /* FIXME: this can be done in O(count) time, but this algorithm
      is O(count**2). */
-  for (i = 0; i < d->var_cnt; )
+  for (i = 0; i < d->var_cnt;)
     if (var_get_dict_class (d->var[i].var) == DC_SCRATCH)
       dict_delete_var (d, d->var[i].var);
     else
@@ -858,8 +858,8 @@ dict_try_rename_var (struct dictionary *d, struct variable *v,
   if (settings_get_algorithm () == ENHANCED)
     var_clear_short_names (v);
 
-  if ( d->changed ) d->changed (d, d->changed_data);
-  if ( d->callbacks &&  d->callbacks->var_changed )
+  if (d->changed) d->changed (d, d->changed_data);
+  if (d->callbacks &&  d->callbacks->var_changed)
     d->callbacks->var_changed (d, var_get_dict_index (v), VAR_TRAIT_NAME, old, d->cb_data);
 
   var_destroy (old);
@@ -1148,7 +1148,7 @@ dict_set_weight (struct dictionary *d, struct variable *v)
   d->weight = v;
 
   if (d->changed) d->changed (d, d->changed_data);
-  if ( d->callbacks &&  d->callbacks->weight_changed )
+  if (d->callbacks &&  d->callbacks->weight_changed)
     d->callbacks->weight_changed (d,
 				  v ? var_get_dict_index (v) : -1,
 				  d->cb_data);
@@ -1191,7 +1191,7 @@ dict_set_filter (struct dictionary *d, struct variable *v)
   d->filter = v;
 
   if (d->changed) d->changed (d, d->changed_data);
-  if ( d->callbacks && d->callbacks->filter_changed )
+  if (d->callbacks && d->callbacks->filter_changed)
     d->callbacks->filter_changed (d,
 				  v ? var_get_dict_index (v) : -1,
 				  d->cb_data);
@@ -1370,7 +1370,7 @@ dict_set_split_vars (struct dictionary *d,
   assert (cnt == 0 || split != NULL);
 
   d->split_cnt = cnt;
-  if ( cnt > 0 )
+  if (cnt > 0)
    {
     d->split = xnrealloc (d->split, cnt, sizeof *d->split) ;
     memcpy (d->split, split, cnt * sizeof *d->split);
@@ -1382,7 +1382,7 @@ dict_set_split_vars (struct dictionary *d,
    }
 
   if (d->changed) d->changed (d, d->changed_data);
-  if ( d->callbacks &&  d->callbacks->split_changed )
+  if (d->callbacks &&  d->callbacks->split_changed)
     d->callbacks->split_changed (d, d->cb_data);
 }
 
@@ -1438,7 +1438,7 @@ dict_set_documents_string (struct dictionary *d, const char *new_docs)
   const char *s;
 
   dict_clear_documents (d);
-  for (s = new_docs; *s != '\0'; )
+  for (s = new_docs; *s != '\0';)
     {
       size_t len = strcspn (s, "\n");
       char *line = xmemdup0 (s, len);
@@ -1686,12 +1686,12 @@ dict_unset_mrset_var (struct dictionary *dict, struct variable *var)
 
   assert (dict_contains_var (dict, var));
 
-  for (i = 0; i < dict->n_mrsets; )
+  for (i = 0; i < dict->n_mrsets;)
     {
       struct mrset *mrset = dict->mrsets[i];
       size_t j;
 
-      for (j = 0; j < mrset->n_vars; )
+      for (j = 0; j < mrset->n_vars;)
         if (mrset->vars[j] == var)
           remove_element (mrset->vars, mrset->n_vars--,
                           sizeof *mrset->vars, j);
@@ -1741,16 +1741,16 @@ dict_has_attributes (const struct dictionary *d)
 void
 dict_var_changed (const struct variable *v, unsigned int what, struct variable *oldvar)
 {
-  if ( var_has_vardict (v))
+  if (var_has_vardict (v))
     {
       const struct vardict_info *vardict = var_get_vardict (v);
       struct dictionary *d = vardict->dict;
 
-      if ( NULL == d)
+      if (NULL == d)
 	return;
 
-      if (d->changed ) d->changed (d, d->changed_data);
-      if ( d->callbacks && d->callbacks->var_changed )
+      if (d->changed) d->changed (d, d->changed_data);
+      if (d->callbacks && d->callbacks->var_changed)
 	d->callbacks->var_changed (d, var_get_dict_index (v), what, oldvar, d->cb_data);
     }
   var_destroy (oldvar);

@@ -53,7 +53,7 @@ generate_syntax (const PsppireDialogAction *act)
 		   gtk_toggle_button_get_active (rd->ascending_togglebutton)
 		   ?'A':'D');
 
-  if (  gtk_tree_model_get_iter_first (gs, &notused) )
+  if (gtk_tree_model_get_iter_first (gs, &notused))
     {
       g_string_append (str, "\n\tBY ");
 
@@ -94,24 +94,24 @@ generate_syntax (const PsppireDialogAction *act)
     {
       g_string_append (str, "\n\t/FRACTION=");
 
-      if ( gtk_toggle_button_get_active (rd->blom))
+      if (gtk_toggle_button_get_active (rd->blom))
 	g_string_append (str, "BLOM");
-      else if ( gtk_toggle_button_get_active (rd->tukey))
+      else if (gtk_toggle_button_get_active (rd->tukey))
 	g_string_append (str, "TUKEY");
-      else if ( gtk_toggle_button_get_active (rd->rankit))
+      else if (gtk_toggle_button_get_active (rd->rankit))
 	g_string_append (str, "RANKIT");
-      else if ( gtk_toggle_button_get_active (rd->vw))
+      else if (gtk_toggle_button_get_active (rd->vw))
 	g_string_append (str, "VW");
     }
 
   g_string_append (str, "\n\t/TIES=");
-  if ( gtk_toggle_button_get_active (rd->mean))
+  if (gtk_toggle_button_get_active (rd->mean))
     g_string_append (str, "MEAN");
-  else if ( gtk_toggle_button_get_active (rd->low))
+  else if (gtk_toggle_button_get_active (rd->low))
     g_string_append (str, "LOW");
-  else if ( gtk_toggle_button_get_active (rd->high))
+  else if (gtk_toggle_button_get_active (rd->high))
     g_string_append (str, "HIGH");
-  else if ( gtk_toggle_button_get_active (rd->condense))
+  else if (gtk_toggle_button_get_active (rd->condense))
     g_string_append (str, "CONDENSE");
 
 
@@ -155,7 +155,7 @@ types_dialog_reset (PsppireDialogActionRank *rd)
 {
   gint i;
 
-  for (i = 0 ; i < n_RANK_FUNCS ; ++i )
+  for (i = 0 ; i < n_RANK_FUNCS ; ++i)
     gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (rd->func_button [i]),
 				  FALSE);
 
@@ -212,7 +212,7 @@ psppire_dialog_action_rank_activate (PsppireDialogAction *a, GVariant *param)
   PsppireDialogAction *pda = PSPPIRE_DIALOG_ACTION (a);
   PsppireDialogActionRank *act = PSPPIRE_DIALOG_ACTION_RANK (a);
 
-  GtkBuilder *xml = builder_new ( "rank.ui");
+  GtkBuilder *xml = builder_new ("rank.ui");
   GtkWidget *types_button = get_widget_assert (xml, "button1");
   GtkWidget *ties_button = get_widget_assert (xml, "button2");
 

@@ -97,7 +97,7 @@ repopulate_windows_menu (GObject *inst, gchar *name, gpointer data)
 
   gtk_menu_attach (GTK_MENU (menu), minimize, 0, 1, 0, 1);
 
-  if (PSPPIRE_DATA_WINDOW_TYPE == G_OBJECT_TYPE (toplevel) )
+  if (PSPPIRE_DATA_WINDOW_TYPE == G_OBJECT_TYPE (toplevel))
     {
       gtk_menu_attach (GTK_MENU (menu), split, 0, 1, 1, 2);
       g_signal_connect_swapped (split, "toggled",

@@ -68,7 +68,7 @@ refresh (PsppireDialogAction *pda)
   gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (rd->group), FALSE);
   gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (rd->blank), FALSE);
 
-  if (rd->varmap )
+  if (rd->varmap)
     g_hash_table_remove_all (rd->varmap);
 
   gtk_list_store_clear (GTK_LIST_STORE (target_list));
@@ -92,7 +92,7 @@ nlp_create (const char *name, const char *label)
 
   nlp->label = NULL;
 
-  if ( label != NULL && 0 != strcmp ("", label))
+  if (label != NULL && 0 != strcmp ("", label))
     nlp->label = g_strdup (label);
 
   return nlp;
@@ -102,7 +102,7 @@ static void
 nlp_destroy (gpointer data)
 {
   struct nlp *nlp = data ;
-  if ( ! nlp )
+  if (! nlp)
     return;
 
   g_free (nlp->name);
@@ -142,13 +142,13 @@ generate_syntax (const PsppireDialogAction *act)
     g_string_append (string, nlp->name);
   }
 
-  if ( ! gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (rd->ascending)))
+  if (! gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (rd->ascending)))
     g_string_append (string, "\n\t/DESCENDING");
 
-  if ( gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (rd->group)))
+  if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (rd->group)))
     g_string_append (string, "\n\t/GROUP");
 
-  if ( gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (rd->blank)))
+  if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (rd->blank)))
     g_string_append (string, "\n\t/BLANK = MISSING");
 
   g_string_append (string, ".\n");
@@ -176,7 +176,7 @@ on_change_clicked (GObject *obj, gpointer data)
   const gchar *dest_var_name =
     gtk_entry_get_text (GTK_ENTRY (rd->new_name_entry));
 
-  if ( NULL == rows || rows->next != NULL)
+  if (NULL == rows || rows->next != NULL)
     goto finish;
 
   gtk_tree_model_get_iter (model, &iter, rows->data);
@@ -203,7 +203,7 @@ on_entry_change (PsppireDialogActionAutorecode *rd)
   gboolean valid = TRUE;
   const char *text = gtk_entry_get_text (GTK_ENTRY (rd->new_name_entry));
 
-  if ( 0 == strcmp ("", text))
+  if (0 == strcmp ("", text))
     valid = FALSE;
   else if (psppire_dict_lookup_var (rd->dict, text))
     valid = FALSE;
@@ -217,7 +217,7 @@ on_entry_change (PsppireDialogActionAutorecode *rd)
 	{
 	  struct nlp *nlp = value;
 
-	  if ( 0 == strcmp (nlp->name, text))
+	  if (0 == strcmp (nlp->name, text))
 	    {
 	      valid = FALSE;
 	      break;
@@ -243,7 +243,7 @@ on_selection_change (GtkTreeSelection *selection, gpointer data)
 
   GList *rows = gtk_tree_selection_get_selected_rows (selection, &model);
 
-  if ( rows && !rows->next)
+  if (rows && !rows->next)
     {
       /* Exactly one row is selected */
       struct nlp *nlp;
@@ -301,7 +301,7 @@ render_new_var_name (GtkTreeViewColumn *tree_column,
 
   nlp = g_hash_table_lookup (rd->varmap, var);
 
-  if ( nlp )
+  if (nlp)
     g_object_set (cell, "text", nlp->name, NULL);
   else
     g_object_set (cell, "text", "", NULL);

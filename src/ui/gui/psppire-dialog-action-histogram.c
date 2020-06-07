@@ -42,7 +42,7 @@ dialog_state_valid (gpointer data)
   const gchar *var_name = gtk_entry_get_text (GTK_ENTRY (rd->variable));
   const struct variable *var = psppire_dict_lookup_var (PSPPIRE_DIALOG_ACTION (rd)->dict, var_name);
 
-  if ( var == NULL)
+  if (var == NULL)
     return FALSE;
 
 
@@ -64,7 +64,7 @@ psppire_dialog_action_histogram_activate (PsppireDialogAction *a, GVariant *para
   PsppireDialogActionHistogram *act = PSPPIRE_DIALOG_ACTION_HISTOGRAM (a);
   PsppireDialogAction *pda = PSPPIRE_DIALOG_ACTION (a);
 
-  GtkBuilder *xml = builder_new ( "histogram.ui");
+  GtkBuilder *xml = builder_new ("histogram.ui");
 
   pda->dialog = get_widget_assert (xml, "histogram-dialog");
   pda->source = get_widget_assert (xml, "dict-view");

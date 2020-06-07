@@ -109,7 +109,7 @@ on_statistics_clicked (PsppireDialogActionRegression *rd)
 
   ret = psppire_dialog_run (PSPPIRE_DIALOG (rd->stat_dialog));
 
-  if ( ret != PSPPIRE_RESPONSE_CONTINUE )
+  if (ret != PSPPIRE_RESPONSE_CONTINUE)
     {
       /* If the user chose to abandon his changes, then replace the model, from the backup */
       gtk_tree_view_set_model (GTK_TREE_VIEW (rd->stat_view) , GTK_TREE_MODEL (backup_model));
@@ -132,7 +132,7 @@ on_save_clicked (PsppireDialogActionRegression *rd)
 
   ret = psppire_dialog_run (PSPPIRE_DIALOG (rd->save_dialog));
 
-  if ( ret == PSPPIRE_RESPONSE_CONTINUE )
+  if (ret == PSPPIRE_RESPONSE_CONTINUE)
     {
       rd->pred = (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (rd->pred_button)) == TRUE)
 	? TRUE : FALSE;
@@ -148,7 +148,7 @@ psppire_dialog_action_regression_activate (PsppireDialogAction *a, GVariant *par
   PsppireDialogActionRegression *act = PSPPIRE_DIALOG_ACTION_REGRESSION (a);
   PsppireDialogAction *pda = PSPPIRE_DIALOG_ACTION (a);
 
-  GtkBuilder *xml = builder_new ( "regression.ui");
+  GtkBuilder *xml = builder_new ("regression.ui");
 
   GtkWidget *stat_button = get_widget_assert (xml, "stat-button");
   GtkWidget *save_button = get_widget_assert (xml, "save-button");

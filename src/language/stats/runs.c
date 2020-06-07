@@ -78,7 +78,7 @@ runs_statistic (const struct run_state *rs)
 
   z = rs->runs - mu;
 
-  if ( rs->n < 50)
+  if (rs->n < 50)
     {
       if (z <= -0.5)
 	z += 0.5;
@@ -118,7 +118,7 @@ runs_execute (const struct dataset *ds,
   struct runs_test *rt = UP_CAST (otp, struct runs_test, parent);
   struct run_state *rs = xcalloc (otp->n_vars, sizeof (*rs));
 
-  switch  ( rt->cp_mode)
+  switch  (rt->cp_mode)
     {
     case CP_MODE:
       {
@@ -145,20 +145,20 @@ runs_execute (const struct dataset *ds,
 		  {
 		    const double w = weight ? case_data (c, weight)->f: 1.0;
 		    const union value *val = case_data (c, var);
-		    if ( var_is_value_missing (var, val, exclude))
+		    if (var_is_value_missing (var, val, exclude))
 		      continue;
 		    x = val->f;
 		    cc += w;
 		  }
 
-		if ( cc > last_cc)
+		if (cc > last_cc)
 		  {
 		    run->cutpoint = x;
 		  }
-		else if ( cc == last_cc)
+		else if (cc == last_cc)
 		  {
 		    multimodal = true;
-		    if ( x > run->cutpoint)
+		    if (x > run->cutpoint)
 		      run->cutpoint = x;
 		  }
 		last_cc = cc;
@@ -188,11 +188,11 @@ runs_execute (const struct dataset *ds,
 	    subcase_init_var (&sc, var, SC_ASCEND);
 	    writer = sort_create_writer (&sc, casereader_get_proto (reader));
 
- 	    for (; (c = casereader_read (reader)); )
+ 	    for (; (c = casereader_read (reader));)
 	      {
 		const union value *val = case_data (c, var);
 		const double w = weight ? case_data (c, weight)->f: 1.0;
-		if ( var_is_value_missing (var, val, exclude))
+		if (var_is_value_missing (var, val, exclude))
 		  {
 		    case_unref (c);
 		    continue;
@@ -232,7 +232,7 @@ runs_execute (const struct dataset *ds,
 		const double x = val->f;
 		struct run_state *run = &rs[v];
 
-		if ( var_is_value_missing (var, val, exclude))
+		if (var_is_value_missing (var, val, exclude))
 		  continue;
 
 		run->cutpoint += x * w;
@@ -271,7 +271,7 @@ runs_execute (const struct dataset *ds,
 	  double d = x - run->cutpoint;
 	  short sign = 0;
 
-	  if ( var_is_value_missing (var, val, exclude))
+	  if (var_is_value_missing (var, val, exclude))
 	    continue;
 
 	  if (d >= 0)

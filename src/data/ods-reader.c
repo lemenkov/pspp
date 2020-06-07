@@ -173,7 +173,7 @@ reading_target_sheet (const struct ods_reader *r, const struct state_data *msd)
 {
   if (r->target_sheet_name != NULL)
     {
-      if ( 0 == xmlStrcmp (r->target_sheet_name, msd->current_sheet_name))
+      if (0 == xmlStrcmp (r->target_sheet_name, msd->current_sheet_name))
 	return true;
     }
 
@@ -198,10 +198,10 @@ ods_get_sheet_name (struct spreadsheet *s, int n)
   while (
 	  (r->n_allocated_sheets <= n)
 	  || or->state != STATE_SPREADSHEET
-	  )
+	)
     {
       int ret = xmlTextReaderRead (or->xtr);
-      if ( ret != 1)
+      if (ret != 1)
 	break;
 
       process_node (r, or);
@@ -222,10 +222,10 @@ ods_get_sheet_range (struct spreadsheet *s, int n)
 	  (r->n_allocated_sheets <= n)
 	  || (r->sheets[n].stop_row == -1)
 	  || or->state != STATE_SPREADSHEET
-	  )
+	)
     {
       int ret = xmlTextReaderRead (or->xtr);
-      if ( ret != 1)
+      if (ret != 1)
 	break;
 
       process_node (r, or);
@@ -243,17 +243,17 @@ static void
 ods_file_casereader_destroy (struct casereader *reader UNUSED, void *r_)
 {
   struct ods_reader *r = r_;
-  if ( r == NULL)
+  if (r == NULL)
     return ;
 
   state_data_destroy (&r->rsd);
 
-  if ( ! ds_is_empty (&r->ods_errs))
+  if (! ds_is_empty (&r->ods_errs))
     msg (ME, "%s", ds_cstr (&r->ods_errs));
 
   ds_destroy (&r->ods_errs);
 
-  if ( r->first_case && ! r->used_first_case )
+  if (r->first_case && ! r->used_first_case)
     case_unref (r->first_case);
 
 
@@ -349,7 +349,7 @@ process_node (struct ods_reader *or, struct state_data *r)
 	}
       break;
     case STATE_ROW:
-      if ( (0 == xmlStrcasecmp (name, _xml ("table:table-cell")))
+      if ((0 == xmlStrcasecmp (name, _xml ("table:table-cell")))
 	   &&
 	   (XML_READER_TYPE_ELEMENT  == r->node_type))
 	{
@@ -365,7 +365,7 @@ process_node (struct ods_reader *or, struct state_data *r)
 
 	  xmlFree (value);
 	}
-      else if ( (0 == xmlStrcasecmp (name, _xml ("table:table-row")))
+      else if ((0 == xmlStrcasecmp (name, _xml ("table:table-row")))
 		&&
 		(XML_READER_TYPE_END_ELEMENT  == r->node_type))
 	{
@@ -373,18 +373,18 @@ process_node (struct ods_reader *or, struct state_data *r)
 	}
       break;
     case STATE_CELL:
-      if ( (0 == xmlStrcasecmp (name, _xml("text:p")))
+      if ((0 == xmlStrcasecmp (name, _xml("text:p")))
 	    &&
-	   ( XML_READER_TYPE_ELEMENT  == r->node_type))
+	   (XML_READER_TYPE_ELEMENT  == r->node_type))
 	{
 	  if (! xmlTextReaderIsEmptyElement (r->xtr))
 	    r->state = STATE_CELL_CONTENT;
 	}
       else if
-	( (0 == xmlStrcasecmp (name, _xml("table:table-cell")))
+	((0 == xmlStrcasecmp (name, _xml("table:table-cell")))
 	  &&
 	  (XML_READER_TYPE_END_ELEMENT  == r->node_type)
-	  )
+	)
 	{
 	  r->state = STATE_ROW;
 	}
@@ -400,12 +400,12 @@ process_node (struct ods_reader *or, struct state_data *r)
 	  (or->sheets[r->current_sheet].start_col == -1)
 	  ||
 	  (or->sheets[r->current_sheet].start_col >= r->col - 1)
-	   )
+	)
 	or->sheets[r->current_sheet].start_col = r->col - 1;
 
       or->sheets[r->current_sheet].stop_row = r->row - 1;
 
-      if ( or->sheets[r->current_sheet].stop_col < r->col - 1)
+      if (or->sheets[r->current_sheet].stop_col < r->col - 1)
 	or->sheets[r->current_sheet].stop_col = r->col - 1;
 
       if (XML_READER_TYPE_END_ELEMENT  == r->node_type)
@@ -447,13 +447,13 @@ xmv_to_width (const struct xml_value *xmv, int fallback)
   if (xmv->type != NULL && 0 != xmlStrcmp (xmv->type, _xml("string")))
     return 0;
 
-  if ( fallback != -1)
+  if (fallback != -1)
     return fallback;
 
-  if ( xmv->value )
+  if (xmv->value)
     width = ROUND_UP (xmlStrlen (xmv->value),
 		      SPREADSHEET_DEFAULT_WIDTH);
-  else if ( xmv->text)
+  else if (xmv->text)
     width = ROUND_UP (xmlStrlen (xmv->text),
 		      SPREADSHEET_DEFAULT_WIDTH);
 
@@ -471,7 +471,7 @@ convert_xml_to_value (struct ccase *c, const struct variable *var,
 
   if (xmv->value == NULL && xmv->text == NULL)
     value_set_missing (v, var_get_width (var));
-  else if ( var_is_alpha (var))
+  else if (var_is_alpha (var))
     /* Use the text field, because it seems that there is no
        value field for strings */
     value_copy_str_rpad (v, var_get_width (var), xmv->text, ' ');
@@ -480,9 +480,9 @@ convert_xml_to_value (struct ccase *c, const struct variable *var,
       const struct fmt_spec *fmt = var_get_write_format (var);
       enum fmt_category fc  = fmt_get_category (fmt->type);
 
-      assert ( fc != FMT_CAT_STRING);
+      assert (fc != FMT_CAT_STRING);
 
-      if ( 0 == xmlStrcmp (xmv->type, _xml("float")))
+      if (0 == xmlStrcmp (xmv->type, _xml("float")))
 	{
 	  v->f = c_strtod (CHAR_CAST (const char *, xmv->value), NULL);
 	}
@@ -526,7 +526,7 @@ get_sheet_count (struct zip_reader *zreader)
   struct zip_member *meta = NULL;
   meta = zip_member_open (zreader, "meta.xml");
 
-  if ( meta == NULL)
+  if (meta == NULL)
     return -1;
 
   mxtr = xmlReaderForIO (xml_reader_for_zip_member, NULL, meta, NULL, NULL, 0);
@@ -534,11 +534,11 @@ get_sheet_count (struct zip_reader *zreader)
   while (1 == xmlTextReaderRead (mxtr))
     {
       xmlChar *name = xmlTextReaderName (mxtr);
-      if ( 0 == xmlStrcmp (name, _xml("meta:document-statistic")))
+      if (0 == xmlStrcmp (name, _xml("meta:document-statistic")))
 	{
 	  xmlChar *attr = xmlTextReaderGetAttribute (mxtr, _xml ("meta:table-count"));
 
-	  if ( attr != NULL)
+	  if (attr != NULL)
 	    {
 	      int s = _xmlchar_to_int (attr);
 	      xmlFreeTextReader (mxtr);
@@ -579,13 +579,13 @@ init_reader (struct ods_reader *r, bool report_errors,
   struct zip_member *content = zip_member_open (r->zreader, "content.xml");
   xmlTextReaderPtr xtr;
 
-  if ( content == NULL)
+  if (content == NULL)
     return NULL;
 
   xtr = xmlReaderForIO (xml_reader_for_zip_member, NULL, content, NULL, NULL,
-			report_errors ? 0 : (XML_PARSE_NOERROR | XML_PARSE_NOWARNING) );
+			report_errors ? 0 : (XML_PARSE_NOERROR | XML_PARSE_NOWARNING));
 
-  if ( xtr == NULL)
+  if (xtr == NULL)
       return false;
 
   *state = (struct state_data) { .xtr = xtr,
@@ -675,7 +675,7 @@ ods_make_reader (struct spreadsheet *spreadsheet,
 
   if (opts->cell_range)
     {
-      if ( ! convert_cell_ref (opts->cell_range,
+      if (! convert_cell_ref (opts->cell_range,
 			       &r->start_col, &r->start_row,
 			       &r->stop_col, &r->stop_row))
 	{
@@ -696,8 +696,8 @@ ods_make_reader (struct spreadsheet *spreadsheet,
   r->target_sheet_index = opts->sheet_index;
 
   /* Advance to the start of the cells for the target sheet */
-  while ( ! reading_target_sheet (r, &r->rsd)
-	  || r->rsd.state != STATE_ROW || r->rsd.row <= r->start_row )
+  while (! reading_target_sheet (r, &r->rsd)
+	  || r->rsd.state != STATE_ROW || r->rsd.row <= r->start_row)
     {
       if (1 != (ret = xmlTextReaderRead (r->rsd.xtr)))
 	   break;
@@ -712,7 +712,7 @@ ods_make_reader (struct spreadsheet *spreadsheet,
       goto error;
     }
 
-  if ( opts->read_names)
+  if (opts->read_names)
     {
       while (1 == xmlTextReaderRead (r->rsd.xtr))
 	{
@@ -765,7 +765,7 @@ ods_make_reader (struct spreadsheet *spreadsheet,
       int idx;
       process_node (r, &r->rsd);
 
-      if ( ! reading_target_sheet (r, &r->rsd) )
+      if (! reading_target_sheet (r, &r->rsd))
 	break;
 
       /* If the row is finished then stop for now */
@@ -780,14 +780,14 @@ ods_make_reader (struct spreadsheet *spreadsheet,
       if (r->stop_col != -1 && idx > r->stop_col - r->start_col)
 	continue;
 
-      if ( r->rsd.state == STATE_CELL &&
+      if (r->rsd.state == STATE_CELL &&
 	   XML_READER_TYPE_ELEMENT  == r->rsd.node_type)
 	{
 	  type = xmlTextReaderGetAttribute (r->rsd.xtr, _xml ("office:value-type"));
 	  val_string = xmlTextReaderGetAttribute (r->rsd.xtr, _xml ("office:value"));
 	}
 
-      if ( r->rsd.state == STATE_CELL_CONTENT &&
+      if (r->rsd.state == STATE_CELL_CONTENT &&
 	   XML_READER_TYPE_TEXT  == r->rsd.node_type)
 	{
 	  if (idx >= n_var_specs)
@@ -815,7 +815,7 @@ ods_make_reader (struct spreadsheet *spreadsheet,
   r->spreadsheet.dict = r->dict = dict_create (
     CHAR_CAST (const char *, xmlTextReaderConstEncoding (r->rsd.xtr)));
 
-  for (i = 0; i < n_var_specs ; ++i )
+  for (i = 0; i < n_var_specs ; ++i)
     {
       struct fmt_spec fmt;
       struct variable *var = NULL;
@@ -826,7 +826,7 @@ ods_make_reader (struct spreadsheet *spreadsheet,
 
       var = dict_get_var (r->dict, i);
 
-      if ( 0 == xmlStrcmp (var_spec[i].firstval.type, _xml("date")))
+      if (0 == xmlStrcmp (var_spec[i].firstval.type, _xml("date")))
 	{
 	  fmt.type = FMT_DATE;
 	  fmt.d = 0;
@@ -838,7 +838,7 @@ ods_make_reader (struct spreadsheet *spreadsheet,
       var_set_both_formats (var, &fmt);
     }
 
-  if ( n_var_specs ==  0 )
+  if (n_var_specs ==  0)
     {
       msg (MW, _("Selected sheet or range of spreadsheet `%s' is empty."),
            spreadsheet->file_name);
@@ -869,7 +869,7 @@ ods_make_reader (struct spreadsheet *spreadsheet,
     }
 
 
-  for ( i = 0 ; i < n_var_specs ; ++i )
+  for (i = 0 ; i < n_var_specs ; ++i)
     {
       free (var_spec[i].firstval.type);
       free (var_spec[i].firstval.value);
@@ -888,7 +888,7 @@ ods_make_reader (struct spreadsheet *spreadsheet,
 
  error:
 
-  for ( i = 0 ; i < n_var_specs ; ++i )
+  for (i = 0 ; i < n_var_specs ; ++i)
     {
       free (var_spec[i].firstval.type);
       free (var_spec[i].firstval.value);
@@ -925,16 +925,16 @@ ods_file_casereader_read (struct casereader *reader UNUSED, void *r_)
   /* Advance to the start of a row. (If there is one) */
   while (r->rsd.state != STATE_ROW
 	 && 1 == xmlTextReaderRead (r->rsd.xtr)
-	 )
+	)
     {
       process_node (r, &r->rsd);
     }
 
 
-  if ( ! reading_target_sheet (r, &r->rsd)
+  if (! reading_target_sheet (r, &r->rsd)
        ||  r->rsd.state < STATE_TABLE
        ||  (r->stop_row != -1 && r->rsd.row > r->stop_row + 1)
-       )
+)
     {
       return NULL;
     }
@@ -946,7 +946,7 @@ ods_file_casereader_read (struct casereader *reader UNUSED, void *r_)
     {
       process_node (r, &r->rsd);
 
-      if ( r->stop_row != -1 && r->rsd.row > r->stop_row + 1)
+      if (r->stop_row != -1 && r->rsd.row > r->stop_row + 1)
 	break;
 
       if (r->rsd.state == STATE_CELL &&
@@ -973,7 +973,7 @@ ods_file_casereader_read (struct casereader *reader UNUSED, void *r_)
 	      const int idx = r->rsd.col - col - r->start_col - 1;
 	      if (idx < 0)
 		continue;
-	      if (r->stop_col != -1 && idx > r->stop_col - r->start_col )
+	      if (r->stop_col != -1 && idx > r->stop_col - r->start_col)
 		break;
 	      if (idx >= dict_get_var_cnt (r->dict))
 		break;
@@ -987,7 +987,7 @@ ods_file_casereader_read (struct casereader *reader UNUSED, void *r_)
 	  xmlFree (xmv->type);
 	  free (xmv);
 	}
-      if ( r->rsd.state <= STATE_TABLE)
+      if (r->rsd.state <= STATE_TABLE)
 	break;
     }
 

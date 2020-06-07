@@ -726,7 +726,7 @@ render_page_create (const struct render_params *params, struct table *table,
   for (int i = 0; i < 2; i++)
     columns[i] = xzalloc (nc * sizeof *columns[i]);
   for (int y = 0; y < nr; y++)
-    for (int x = 0; x < nc; )
+    for (int x = 0; x < nc;)
       {
         struct table_cell cell;
 
@@ -751,7 +751,7 @@ render_page_create (const struct render_params *params, struct table *table,
     for (int x = 0; x < nc; x++)
       columns[i][x].width = columns[i][x].unspanned;
   for (int y = 0; y < nr; y++)
-    for (int x = 0; x < nc; )
+    for (int x = 0; x < nc;)
       {
         struct table_cell cell;
 
@@ -809,7 +809,7 @@ render_page_create (const struct render_params *params, struct table *table,
   /* Calculate heights of cells that do not span multiple rows. */
   struct render_row *rows = xzalloc (nr * sizeof *rows);
   for (int y = 0; y < nr; y++)
-    for (int x = 0; x < nc; )
+    for (int x = 0; x < nc;)
       {
         struct render_row *r = &rows[y];
         struct table_cell cell;
@@ -837,7 +837,7 @@ render_page_create (const struct render_params *params, struct table *table,
 
   /* Distribute heights of spanned rows. */
   for (int y = 0; y < nr; y++)
-    for (int x = 0; x < nc; )
+    for (int x = 0; x < nc;)
       {
         struct table_cell cell;
 
@@ -992,10 +992,10 @@ render_direction_rtl (void)
      this string with "output-direction-rtl".  Otherwise either leave it
      untranslated or copy it verbatim. */
   const char *dir = _("output-direction-ltr");
-  if ( 0 == strcmp ("output-direction-rtl", dir))
+  if (0 == strcmp ("output-direction-rtl", dir))
     return true;
 
-  if ( 0 != strcmp ("output-direction-ltr", dir))
+  if (0 != strcmp ("output-direction-ltr", dir))
     fprintf (stderr, "This localisation has been incorrectly translated.  "
              "Complain to the translator.\n");
 
@@ -1134,7 +1134,7 @@ render_page_draw_cells (const struct render_page *page,
                         int ofs[TABLE_N_AXES], int bb[TABLE_N_AXES][2])
 {
   for (int y = bb[V][0]; y < bb[V][1]; y++)
-    for (int x = bb[H][0]; x < bb[H][1]; )
+    for (int x = bb[H][0]; x < bb[H][1];)
       if (!is_rule (x) && !is_rule (y))
         {
           struct table_cell cell;
@@ -1370,7 +1370,7 @@ render_break_next (struct render_break *b, int size)
                  number of pixels available, which might look bad e.g. because
                  it breaks in the middle of a line of text. */
               if (axis == TABLE_VERT && page->params->adjust_break)
-                for (int x = 0; x < page->n[H]; )
+                for (int x = 0; x < page->n[H];)
                   {
                     struct table_cell cell;
 
@@ -1872,7 +1872,7 @@ render_page_select (const struct render_page *page, enum table_axis axis,
   };
 
   if (!page->h[a][0] || z0 > page->h[a][0] || p0)
-    for (int z = 0; z < page->n[b]; )
+    for (int z = 0; z < page->n[b];)
       {
         int d[TABLE_N_AXES];
         d[a] = z0;
@@ -1907,7 +1907,7 @@ render_page_select (const struct render_page *page, enum table_axis axis,
       }
 
   if (!page->h[a][1] || z1 < page->n[a] - page->h[a][1] || p1)
-    for (int z = 0; z < page->n[b]; )
+    for (int z = 0; z < page->n[b];)
       {
         int d[TABLE_N_AXES];
         d[a] = z1 - 1;

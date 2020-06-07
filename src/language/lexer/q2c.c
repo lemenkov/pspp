@@ -732,7 +732,7 @@ parse_specifier (specifier *spec, subcommand *sbc)
     }
   skip_token (':');
 
-  if ( sbc->type == SBC_ARRAY && token == T_ID )
+  if (sbc->type == SBC_ARRAY && token == T_ID)
     {
 	spec->varname = xstrdup (st_lower (tokstr));
 	spec->index = sbc->narray;
@@ -794,7 +794,7 @@ parse_subcommand (subcommand *sbc)
     }
 
   sbc->arity = ARITY_ONCE_ONLY;
-  if ( match_token('+'))
+  if (match_token('+'))
     sbc->arity = ARITY_MANY;
   else if (match_token('^'))
     sbc->arity = ARITY_ONCE_EXACTLY ;
@@ -859,7 +859,7 @@ parse_subcommand (subcommand *sbc)
 	sbc->type = SBC_PINT;
       else if (match_id ("DOUBLE"))
 	{
-	  if ( match_id ("LIST") )
+	  if (match_id ("LIST"))
 	    sbc->type = SBC_DBL_LIST;
 	  else
 	    sbc->type = SBC_DBL;
@@ -1278,7 +1278,7 @@ dump_vars_init (int persistent)
 	int f = 0;
 
 	dump (0, "p->sbc_%s = 0;", st_lower (sbc->name));
-	if ( ! persistent )
+	if (! persistent)
 	  {
 	    switch (sbc->type)
 	      {
@@ -1291,7 +1291,7 @@ dump_vars_init (int persistent)
                       sbc->type == SBC_INT_LIST ? "int" : "double",
                       sbc->type == SBC_INT_LIST ? 'i' : 'd',
 		      st_lower (sbc->name)
-		      );
+		);
 		dump (-2, "}");
 		break;
 
@@ -1443,7 +1443,7 @@ dump_specifier_parse (const specifier *spec, const subcommand *sbc)
 	      dump (0, "p->%s%s = %s%s;", sbc->prefix, spec->varname,
 		    st_upper (prefix), find_symbol (s->con)->name);
 
-	      if ( sbc->type == SBC_ARRAY )
+	      if (sbc->type == SBC_ARRAY)
 		dump (0, "p->a_%s[%s%s%s] = 1;",
 		      st_lower (sbc->name),
 		      st_upper (prefix), st_upper (sbc->prefix),
@@ -1637,7 +1637,7 @@ dump_subcommand (const subcommand *sbc)
       dump (1, "if (!lex_force_string (lexer))");
       dump (0, "return false;");
       outdent ();
-      dump (0, "free(p->s_%s);", st_lower(sbc->name) );
+      dump (0, "free(p->s_%s);", st_lower(sbc->name));
       dump (0, "p->s_%s = ss_xstrdup (lex_tokss (lexer));",
 	    st_lower (sbc->name));
       dump (0, "lex_get (lexer);");
@@ -1647,7 +1647,7 @@ dump_subcommand (const subcommand *sbc)
       dump (1, "if (!lex_force_num (lexer))");
       dump (0, "goto lossage;");
       dump (-1, "p->n_%s[p->sbc_%s - 1] = lex_number (lexer);",
-	    st_lower (sbc->name), st_lower (sbc->name) );
+	    st_lower (sbc->name), st_lower (sbc->name));
       dump (0, "lex_get(lexer);");
     }
   else if (sbc->type == SBC_INT)
@@ -1658,7 +1658,7 @@ dump_subcommand (const subcommand *sbc)
       dump (0, "goto lossage;");
       dump (-1, "x = lex_integer (lexer);");
       dump (0, "lex_get(lexer);");
-      dump (0, "p->n_%s[p->sbc_%s - 1] = x;", st_lower (sbc->name), st_lower(sbc->name) );
+      dump (0, "p->n_%s[p->sbc_%s - 1] = x;", st_lower (sbc->name), st_lower(sbc->name));
       dump (-1,"}");
     }
   else if (sbc->type == SBC_PINT)
@@ -1671,7 +1671,7 @@ dump_subcommand (const subcommand *sbc)
     }
   else if (sbc->type == SBC_DBL_LIST || sbc->type == SBC_INT_LIST)
     {
-      dump (0, "if ( p->sbc_%s > MAXLISTS)",st_lower(sbc->name));
+      dump (0, "if (p->sbc_%s > MAXLISTS)",st_lower(sbc->name));
       dump (1, "{");
       dump (0, "subc_list_error (lexer, \"%s\", MAXLISTS);",
             st_lower(sbc->name));
@@ -1728,7 +1728,7 @@ dump_parser (int persistent)
   dump (0, "static int");
   dump (0, "parse_%s (struct lexer *lexer, struct dataset *ds%s, struct cmd_%s *p, void *aux UNUSED)",
         make_identifier (cmdname),
-	(def && ( def->type == SBC_VARLIST || def->type == SBC_CUSTOM))?"":" UNUSED",
+	(def && (def->type == SBC_VARLIST || def->type == SBC_CUSTOM))?"":" UNUSED",
 	make_identifier (cmdname));
   dump (1, "{");
 
@@ -1811,7 +1811,7 @@ dump_parser (int persistent)
 
 
   /* Now deal with the /ALGORITHM subcommand implicit to all commands */
-  dump(1,"else if ( settings_get_syntax () != COMPATIBLE && lex_match_id(lexer, \"ALGORITHM\"))");
+  dump(1,"else if (settings_get_syntax () != COMPATIBLE && lex_match_id(lexer, \"ALGORITHM\"))");
   dump(1,"{");
 
   dump (0, "lex_match (lexer, T_EQUALS);");
@@ -1848,9 +1848,9 @@ dump_parser (int persistent)
     for (sbc = subcommands; sbc; sbc = sbc->next)
       {
 
-	if ( sbc->arity == ARITY_ONCE_EXACTLY )
+	if (sbc->arity == ARITY_ONCE_EXACTLY)
 	  {
-	    dump (0, "if ( 0 == p->sbc_%s)", st_lower (sbc->name));
+	    dump (0, "if (0 == p->sbc_%s)", st_lower (sbc->name));
 	    dump (1, "{");
 	    dump (0, "lex_sbc_missing (\"%s\");", sbc->name);
 	    dump (0, "goto lossage;");
@@ -1893,7 +1893,7 @@ dump_free (int persistent)
   indent = 0;
 
   used = 0;
-  if ( ! persistent )
+  if (! persistent)
     {
       for (sbc = subcommands; sbc; sbc = sbc->next)
         used = (sbc->type == SBC_STRING
@@ -1906,7 +1906,7 @@ dump_free (int persistent)
 	make_identifier (cmdname), used ? "" : " UNUSED");
   dump (1, "{");
 
-  if ( ! persistent )
+  if (! persistent)
     {
 
       for (sbc = subcommands; sbc; sbc = sbc->next)

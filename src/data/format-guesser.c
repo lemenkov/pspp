@@ -334,7 +334,7 @@ add_numeric (struct fmt_guesser *g, struct substring s)
           if (dots || commas)
             delim_digits++;
         }
-      else if (c == '.' )
+      else if (c == '.')
         {
           dots++;
           prev_delim = c;

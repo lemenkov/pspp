@@ -75,7 +75,7 @@ xrchart_draw_piechart (const struct chart_item *chart_item, cairo_t *cr,
 
   /* Draw the segments */
   angle = 0.0;
-  for (i = 0; i < pie->n_slices ; ++i )
+  for (i = 0; i < pie->n_slices ; ++i)
     {
       const double segment_angle =
 	pie->slices[i].magnitude / total_magnitude * 2 * M_PI ;
@@ -96,7 +96,7 @@ xrchart_draw_piechart (const struct chart_item *chart_item, cairo_t *cr,
      obscure them.
    */
   angle = 0.0;
-  for (i = 0; i < pie->n_slices ; ++i )
+  for (i = 0; i < pie->n_slices ; ++i)
     {
       const double segment_angle =
 	pie->slices[i].magnitude / total_magnitude * 2 * M_PI ;
@@ -107,7 +107,7 @@ xrchart_draw_piechart (const struct chart_item *chart_item, cairo_t *cr,
       const double label_y = centre_y +
 	radius * sin (angle + segment_angle/2.0);
 
-      if ( label_x < centre_x )
+      if (label_x < centre_x)
 	{
           cairo_move_to (cr, label_x, label_y);
           cairo_line_to (cr, left_label, label_y);

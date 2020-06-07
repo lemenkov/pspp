@@ -128,7 +128,7 @@ data_to_native (const void *in_, void *out_, int len)
   int i;
   const unsigned char *in = in_;
   unsigned char *out = out_;
-  for (i = 0 ; i < len ; ++i )
+  for (i = 0 ; i < len ; ++i)
     out[i] = in[i];
 }
 #else
@@ -138,7 +138,7 @@ data_to_native (const void *in_, void *out_, int len)
   int i;
   const unsigned char *in = in_;
   unsigned char *out = out_;
-  for (i = 0 ; i < len ; ++i )
+  for (i = 0 ; i < len ; ++i)
     out[len - i - 1] = in[i];
 }
 #endif
@@ -166,7 +166,7 @@ dump (const unsigned char *x, int l)
 
   for (i = 0; i < l ; ++i)
     {
-      if ( isprint (x[i]))
+      if (isprint (x[i]))
 	printf ("%c ", x[i]);
       else
 	printf ("   ");
@@ -190,7 +190,7 @@ create_var (struct psql_reader *r, const struct fmt_spec *fmt,
 
   var_set_both_formats (var, fmt);
 
-  if ( col != -1)
+  if (col != -1)
     {
       r->vmap = xrealloc (r->vmap, (col + 1) * sizeof (*r->vmap));
 
@@ -237,13 +237,13 @@ psql_open_reader (struct psql_read_info *info, struct dictionary **dict)
   struct string query ;
 
   r->conn = PQconnectdb (info->conninfo);
-  if ( NULL == r->conn)
+  if (NULL == r->conn)
     {
       msg (ME, _("Memory error whilst opening psql source"));
       goto error;
     }
 
-  if ( PQstatus (r->conn) != CONNECTION_OK )
+  if (PQstatus (r->conn) != CONNECTION_OK)
     {
       msg (ME, _("Error opening psql source: %s."),
 	   PQerrorMessage (r->conn));
@@ -257,7 +257,7 @@ psql_open_reader (struct psql_read_info *info, struct dictionary **dict)
 
     sscanf (vers, "%d", &ver_num);
 
-    if ( ver_num < 8)
+    if (ver_num < 8)
       {
 	msg (ME,
 	     _("Postgres server is version %s."
@@ -271,11 +271,11 @@ psql_open_reader (struct psql_read_info *info, struct dictionary **dict)
   {
     const char *dt =  PQparameterStatus (r->conn, "integer_datetimes");
 
-    r->integer_datetimes = ( 0 == c_strcasecmp (dt, "on"));
+    r->integer_datetimes = (0 == c_strcasecmp (dt, "on"));
   }
 
 #if USE_SSL
-  if ( PQgetssl (r->conn) == NULL)
+  if (PQgetssl (r->conn) == NULL)
 #endif
     {
       if (! info->allow_clear)
@@ -319,7 +319,7 @@ psql_open_reader (struct psql_read_info *info, struct dictionary **dict)
 
   qres = PQexec (r->conn, ds_cstr (&query));
   ds_destroy (&query);
-  if ( PQresultStatus (qres) != PGRES_COMMAND_OK )
+  if (PQresultStatus (qres) != PGRES_COMMAND_OK)
     {
       msg (ME, _("Error from psql source: %s."),
 	   PQresultErrorMessage (qres));
@@ -344,7 +344,7 @@ psql_open_reader (struct psql_read_info *info, struct dictionary **dict)
 
   qres = PQexec (r->conn, ds_cstr (&query));
   ds_destroy (&query);
-  if ( PQresultStatus (qres) != PGRES_TUPLES_OK )
+  if (PQresultStatus (qres) != PGRES_TUPLES_OK)
     {
       msg (ME, _("Error from psql source: %s."),
 	   PQresultErrorMessage (qres));
@@ -354,7 +354,7 @@ psql_open_reader (struct psql_read_info *info, struct dictionary **dict)
   PQclear (qres);
 
   qres = PQexec (r->conn, "FETCH FIRST FROM pspp");
-  if ( PQresultStatus (qres) != PGRES_TUPLES_OK )
+  if (PQresultStatus (qres) != PGRES_TUPLES_OK)
     {
       msg (ME, _("Error from psql source: %s."),
 	   PQresultErrorMessage (qres));
@@ -368,7 +368,7 @@ psql_open_reader (struct psql_read_info *info, struct dictionary **dict)
   r->vmap = NULL;
   r->vmapsize = 0;
 
-  for (i = 0 ; i < n_fields ; ++i )
+  for (i = 0 ; i < n_fields ; ++i)
     {
       struct variable *var;
       struct fmt_spec fmt = {FMT_F, 8, 2};
@@ -378,7 +378,7 @@ psql_open_reader (struct psql_read_info *info, struct dictionary **dict)
 
       /* If there are no data then make a finger in the air
 	 guess at the contents */
-      if ( n_tuples > 0 )
+      if (n_tuples > 0)
 	length = PQgetlength (qres, 0, i);
       else
 	length = PSQL_DEFAULT_WIDTH;
@@ -459,12 +459,12 @@ psql_open_reader (struct psql_read_info *info, struct dictionary **dict)
 	  break;
 	}
 
-      if ( width == 0 && fmt_is_string (fmt.type))
+      if (width == 0 && fmt_is_string (fmt.type))
 	fmt.w = width = PSQL_DEFAULT_WIDTH;
 
 
       var = create_var (r, &fmt, width, PQfname (qres, i), i);
-      if ( type == NUMERICOID && n_tuples > 0)
+      if (type == NUMERICOID && n_tuples > 0)
 	{
 	  const uint8_t *vptr = (const uint8_t *) PQgetvalue (qres, 0, i);
 	  struct fmt_spec fmt;
@@ -522,7 +522,7 @@ psql_open_reader (struct psql_read_info *info, struct dictionary **dict)
   PQclear (qres);
 
   qres = PQexec (r->conn, "MOVE BACKWARD 1 FROM pspp");
-  if ( PQresultStatus (qres) != PGRES_COMMAND_OK)
+  if (PQresultStatus (qres) != PGRES_COMMAND_OK)
     {
       PQclear (qres);
       goto error;
@@ -574,9 +574,9 @@ psql_casereader_read (struct casereader *reader UNUSED, void *r_)
 {
   struct psql_reader *r = r_;
 
-  if ( NULL == r->res || r->tuple >= r->cache_size)
+  if (NULL == r->res || r->tuple >= r->cache_size)
     {
-      if ( ! reload_cache (r) )
+      if (! reload_cache (r))
 	return false;
     }
 
@@ -594,14 +594,14 @@ set_value (struct psql_reader *r)
 
   n_vars = PQnfields (r->res);
 
-  if ( r->tuple >= PQntuples (r->res))
+  if (r->tuple >= PQntuples (r->res))
     return NULL;
 
   c = case_create (r->proto);
   case_set_missing (c);
 
 
-  for (i = 0 ; i < n_vars ; ++i )
+  for (i = 0 ; i < n_vars ; ++i)
     {
       Oid type = PQftype (r->res, i);
       const struct variable *v = r->vmap[i];
@@ -728,7 +728,7 @@ set_value (struct psql_reader *r)
 
 	    case INTERVALOID:
 	      {
-		if ( r->integer_datetimes )
+		if (r->integer_datetimes)
 		  {
 		    uint32_t months;
 		    uint32_t days;
@@ -774,7 +774,7 @@ set_value (struct psql_reader *r)
 
 	    case TIMEOID:
 	      {
-		if ( r->integer_datetimes)
+		if (r->integer_datetimes)
 		  {
 		    uint64_t x;
 		    GET_VALUE (&vptr, x);
@@ -792,7 +792,7 @@ set_value (struct psql_reader *r)
 	    case TIMETZOID:
 	      {
 		int32_t zone;
-		if ( r->integer_datetimes)
+		if (r->integer_datetimes)
 		  {
 		    uint64_t x;
 
@@ -816,7 +816,7 @@ set_value (struct psql_reader *r)
 	    case TIMESTAMPOID:
 	    case TIMESTAMPTZOID:
 	      {
-		if ( r->integer_datetimes)
+		if (r->integer_datetimes)
 		  {
 		    int64_t x;
 
@@ -824,7 +824,7 @@ set_value (struct psql_reader *r)
 
 		    x /= 1000000;
 
-		    val->f = (x + r->postgres_epoch * 24 * 3600 );
+		    val->f = (x + r->postgres_epoch * 24 * 3600);
 		  }
 		else
 		  {
@@ -832,7 +832,7 @@ set_value (struct psql_reader *r)
 
 		    GET_VALUE (&vptr, x);
 
-		    val->f = (x + r->postgres_epoch * 24 * 3600 );
+		    val->f = (x + r->postgres_epoch * 24 * 3600);
 		  }
 	      }
 	      break;
@@ -873,10 +873,10 @@ set_value (struct psql_reader *r)
 		    f += x * pow (10000, weight--);
 		  }
 
-		if ( sign == 0x4000)
+		if (sign == 0x4000)
 		  f *= -1.0;
 
-		if ( sign == 0xC000)
+		if (sign == 0xC000)
 		  val->f = SYSMIS;
 		else
 		  val->f = f;

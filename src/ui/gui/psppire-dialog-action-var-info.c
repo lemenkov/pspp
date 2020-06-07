@@ -171,7 +171,7 @@ psppire_dialog_action_var_info_activate (PsppireDialogAction *a, GVariant *param
   PsppireDialogAction *pda = PSPPIRE_DIALOG_ACTION (a);
   PsppireDialogActionVarInfo *act = PSPPIRE_DIALOG_ACTION_VAR_INFO (pda);
 
-  GtkBuilder *xml = builder_new ( "variable-info.ui");
+  GtkBuilder *xml = builder_new ("variable-info.ui");
 
   act->output =
     psppire_output_view_new (GTK_LAYOUT (get_widget_assert (xml, "layout1")),

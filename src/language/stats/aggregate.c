@@ -206,7 +206,7 @@ cmd_aggregate (struct lexer *lexer, struct dataset *ds)
 	goto error;
     }
 
-  if ( agr.add_variables )
+  if (agr.add_variables)
     agr.dict = dict_clone (dict);
   else
     agr.dict = dict_create (dict_get_encoding (dict));
@@ -312,7 +312,7 @@ cmd_aggregate (struct lexer *lexer, struct dataset *ds)
 
       initialize_aggregate_info (&agr);
 
-      if ( agr.add_variables )
+      if (agr.add_variables)
 	placeholder = casereader_clone (group);
 
       {
@@ -934,7 +934,7 @@ dump_aggregate_info (const struct agr_proc *agr, struct casewriter *output, cons
 {
   struct ccase *c = case_create (dict_get_proto (agr->dict));
 
-  if ( agr->add_variables)
+  if (agr->add_variables)
     {
       case_copy (c, 0, break_case, 0, dict_get_var_cnt (agr->src_dict));
     }
@@ -980,7 +980,7 @@ dump_aggregate_info (const struct agr_proc *agr, struct casewriter *output, cons
 	    break;
 	  case MEDIAN:
 	    {
-	      if ( i->writer)
+	      if (i->writer)
 		{
 		  struct percentile *median = percentile_create (0.5, i->cc);
 		  struct order_stats *os = &median->parent;
@@ -1112,10 +1112,10 @@ initialize_aggregate_info (struct agr_proc *agr)
             proto = caseproto_add_width (proto, 0);
             proto = caseproto_add_width (proto, 0);
 
-	    if ( ! iter->subject)
+	    if (! iter->subject)
 	      iter->subject = dict_create_internal_var (0, 0);
 
-	    if ( ! iter->weight)
+	    if (! iter->weight)
 	      iter->weight = dict_create_internal_var (1, 0);
 
             subcase_init_var (&ordering, iter->subject, SC_ASCEND);

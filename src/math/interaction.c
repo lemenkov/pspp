@@ -35,7 +35,7 @@ interaction_create (const struct variable *v)
   struct interaction *iact = xmalloc (sizeof *iact);
   iact->vars = xmalloc (sizeof *iact->vars);
   iact->n_vars = 0;
-  if ( v )
+  if (v)
     {
       iact->vars[0] = v;
       iact->n_vars = 1;

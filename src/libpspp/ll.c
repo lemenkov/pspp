@@ -121,7 +121,7 @@ ll_remove_equal (struct ll *r0, struct ll *r1, struct ll *target,
   size_t count;
 
   count = 0;
-  for (x = r0; x != r1; )
+  for (x = r0; x != r1;)
     if (compare (x, target, aux) == 0)
       {
         x = ll_remove (x);
@@ -144,7 +144,7 @@ ll_remove_if (struct ll *r0, struct ll *r1,
   size_t count;
 
   count = 0;
-  for (x = r0; x != r1; )
+  for (x = r0; x != r1;)
     if (predicate (x, aux))
       {
         x = ll_remove (x);

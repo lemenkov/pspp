@@ -58,10 +58,10 @@ generate_syntax (const PsppireDialogAction *act)
 
   string = g_string_sized_new (64);
 
-  if ( cd->use_type &&
-       NULL == psppire_dict_lookup_var (act->dict, target_name ))
+  if (cd->use_type &&
+       NULL == psppire_dict_lookup_var (act->dict, target_name))
     {
-      if ( gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (cd->str_btn)))
+      if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (cd->str_btn)))
 	{
 	  const char *w = gtk_entry_get_text (GTK_ENTRY (cd->width_entry));
 	  g_string_append_printf (string,
@@ -71,12 +71,12 @@ generate_syntax (const PsppireDialogAction *act)
 	g_string_append_printf (string, "NUMERIC %s.\n", target_name);
     }
 
-  if ( gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (cd->user_label)))
+  if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (cd->user_label)))
     label = gtk_entry_get_text (GTK_ENTRY (cd->entry));
   else
     label = expression;
 
-  if ( strlen (label) > 0 )
+  if (strlen (label) > 0)
     g_string_append_printf (string, "VARIABLE LABEL %s '%s'.\n",
 			    target_name,
 			    label);
@@ -84,7 +84,7 @@ generate_syntax (const PsppireDialogAction *act)
   g_string_append_printf (string, "COMPUTE %s = %s.\n",
 			  target_name,
 			  expression
-			  );
+			);
 
   g_string_append (string, "EXECUTE.\n");
 
@@ -214,21 +214,21 @@ reset_type_label_dialog (PsppireDialogActionCompute *cd)
   target_name = gtk_entry_get_text (GTK_ENTRY (cd->target));
 
 
-  if ( (target_var = psppire_dict_lookup_var (pda->dict, target_name)) )
+  if ((target_var = psppire_dict_lookup_var (pda->dict, target_name)))
     {
       /* Existing Variable */
       const gchar *label = var_get_label (target_var);
 
       gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (cd->user_label), TRUE);
 
-      if ( label )
+      if (label)
 	{
 	  gtk_entry_set_text (GTK_ENTRY (cd->entry), label);
 	}
 
       gtk_widget_set_sensitive (cd->width_entry, FALSE);
 
-      if ( var_is_numeric (target_var))
+      if (var_is_numeric (target_var))
 	gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (cd->numeric_target),
 				      TRUE);
       else
@@ -307,7 +307,7 @@ run_type_label_dialog (GtkButton *b, gpointer data)
 
   reset_type_label_dialog (cd);
   response = psppire_dialog_run (PSPPIRE_DIALOG (cd->subdialog));
-  if ( response == PSPPIRE_RESPONSE_CONTINUE)
+  if (response == PSPPIRE_RESPONSE_CONTINUE)
     cd->use_type = TRUE;
 }
 
@@ -315,7 +315,7 @@ static void
 on_type_toggled (GtkToggleButton *button, gpointer data)
 {
   PsppireDialogActionCompute *cd = PSPPIRE_DIALOG_ACTION_COMPUTE (data);
-  if ( gtk_toggle_button_get_active (button))
+  if (gtk_toggle_button_get_active (button))
     {
       gtk_widget_set_sensitive (cd->width_entry, TRUE);
       gtk_widget_grab_focus (cd->width_entry);
@@ -333,7 +333,7 @@ on_expression_toggle (GtkToggleButton *button, gpointer data)
   PsppireDialogActionCompute *cd = PSPPIRE_DIALOG_ACTION_COMPUTE (data);
   PsppireDialogAction *pda = PSPPIRE_DIALOG_ACTION (data);
 
-  if ( gtk_toggle_button_get_active (button))
+  if (gtk_toggle_button_get_active (button))
     {
       gtk_entry_set_text (GTK_ENTRY (cd->entry), "");
       gtk_widget_set_sensitive (cd->entry, FALSE);
@@ -342,11 +342,11 @@ on_expression_toggle (GtkToggleButton *button, gpointer data)
     {
       const gchar *target_name = gtk_entry_get_text (GTK_ENTRY (cd->target));
       const struct variable *target_var = psppire_dict_lookup_var (pda->dict, target_name);
-      if ( target_var )
+      if (target_var)
 	{
 	  const char *label = var_get_label (target_var);
 
-	  if ( label )
+	  if (label)
 	    gtk_entry_set_text (GTK_ENTRY (cd->entry), label);
 	}
       else
@@ -421,7 +421,7 @@ insert_function_into_syntax_area (GtkTreeIter iter,
   string = g_string_new (g_value_get_string (&name_value));
 
   g_string_append (string, "(");
-  for ( i = 0 ; i < arity -1 ; ++i )
+  for (i = 0 ; i < arity -1 ; ++i)
     {
       g_string_append (string, "?,");
     }
@@ -441,7 +441,7 @@ insert_function_into_syntax_area (GtkTreeIter iter,
     GtkTextIter selectbound;
     GtkTextMark *cursor = gtk_text_buffer_get_insert (buffer);
     gtk_text_buffer_get_iter_at_mark (buffer, &insert, cursor);
-    for ( i = 0 ; i < arity ; ++i )
+    for (i = 0 ; i < arity ; ++i)
       {
 	gtk_text_iter_backward_cursor_position (&insert);
 	gtk_text_iter_backward_cursor_position (&insert);
@@ -460,7 +460,7 @@ psppire_dialog_action_compute_activate (PsppireDialogAction *a, GVariant *param)
   PsppireDialogAction *pda = PSPPIRE_DIALOG_ACTION (a);
   PsppireDialogActionCompute *act = PSPPIRE_DIALOG_ACTION_COMPUTE (a);
 
-  GtkBuilder *xml = builder_new ( "compute.ui");
+  GtkBuilder *xml = builder_new ("compute.ui");
 
   pda->dialog = get_widget_assert   (xml, "compute-variable-dialog");
   pda->source = get_widget_assert   (xml, "compute-treeview1");

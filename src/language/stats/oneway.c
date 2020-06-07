@@ -168,7 +168,7 @@ df_individual (const struct per_var_ws *pvw UNUSED, const struct moments1 *mom_i
   moments1_calculate (mom_i, &n_i, NULL, &var_i, 0, 0);
   moments1_calculate (mom_j, &n_j, NULL, &var_j, 0, 0);
 
-  if ( n_i <= 1.0 || n_j <= 1.0)
+  if (n_i <= 1.0 || n_j <= 1.0)
     return SYSMIS;
 
   nom = pow2 (var_i/n_i + var_j/n_j);
@@ -191,13 +191,13 @@ static double bonferroni_pinv (double std_err, double alpha, double df, int k, c
 static double sidak_pinv (double std_err, double alpha, double df, int k, const struct moments1 *mom_i UNUSED, const struct moments1 *mom_j UNUSED)
 {
   const double m = k * (k - 1) / 2;
-  double lp = 1.0 - exp (log (1.0 - alpha) / m ) ;
+  double lp = 1.0 - exp (log (1.0 - alpha) / m) ;
   return std_err * gsl_cdf_tdist_Pinv (1.0 - lp / 2.0, df);
 }
 
 static double tukey_pinv (double std_err, double alpha, double df, int k, const struct moments1 *mom_i UNUSED, const struct moments1 *mom_j UNUSED)
 {
-  if ( k < 2 || df < 2)
+  if (k < 2 || df < 2)
     return SYSMIS;
 
   return std_err / sqrt (2.0)  * qtukey (1 - alpha, 1.0, k, df, 1, 0);
@@ -220,7 +220,7 @@ static double gh_pinv (double std_err UNUSED, double alpha, double df, int k, co
 
   m = sqrt ((var_i/n_i + var_j/n_j) / 2.0);
 
-  if ( k < 2 || df < 2)
+  if (k < 2 || df < 2)
     return SYSMIS;
 
   return m * qtukey (1 - alpha, 1.0, k, df, 1, 0);
@@ -236,7 +236,7 @@ multiple_comparison_sig (double std_err,
   int k = pvw->n_groups;
   double df = ph->dff (pvw, dd_i->mom, dd_j->mom);
   double ts = ph->tsf (k, dd_i->mom, dd_j->mom, std_err);
-  if ( df == SYSMIS)
+  if (df == SYSMIS)
     return SYSMIS;
   return  ph->p1f (ts, k - 1, df);
 }
@@ -246,7 +246,7 @@ mc_half_range (const struct oneway_spec *cmd, const struct per_var_ws *pvw, doub
 {
   int k = pvw->n_groups;
   double df = ph->dff (pvw, dd_i->mom, dd_j->mom);
-  if ( df == SYSMIS)
+  if (df == SYSMIS)
     return SYSMIS;
 
   return ph->pinv (std_err, cmd->alpha, df, k, dd_i->mom, dd_j->mom);
@@ -438,7 +438,7 @@ cmd_oneway (struct lexer *lexer, struct dataset *ds)
   ll_init (&oneway.contrast_list);
 
 
-  if ( lex_match (lexer, T_SLASH))
+  if (lex_match (lexer, T_SLASH))
     {
       if (!lex_force_match_id (lexer, "VARIABLES"))
 	{
@@ -501,17 +501,17 @@ cmd_oneway (struct lexer *lexer, struct dataset *ds)
 		      break;
 		    }
 		}
-	      if ( method == false)
+	      if (method == false)
 		{
 		  if (lex_match_id (lexer, "ALPHA"))
 		    {
-		      if ( !lex_force_match (lexer, T_LPAREN))
+		      if (!lex_force_match (lexer, T_LPAREN))
 			goto error;
 		      if (! lex_force_num (lexer))
 			goto error;
 		      oneway.alpha = lex_number (lexer);
 		      lex_get (lexer);
-		      if ( !lex_force_match (lexer, T_RPAREN))
+		      if (!lex_force_match (lexer, T_RPAREN))
 			goto error;
 		    }
 		  else
@@ -534,7 +534,7 @@ cmd_oneway (struct lexer *lexer, struct dataset *ds)
 
           while (lex_token (lexer) != T_ENDCMD && lex_token (lexer) != T_SLASH)
 	    {
-	      if ( lex_is_number (lexer))
+	      if (lex_is_number (lexer))
 		{
 		  struct coeff_node *cc = xmalloc (sizeof *cc);
 		  cc->coeff = lex_number (lexer);
@@ -550,7 +550,7 @@ cmd_oneway (struct lexer *lexer, struct dataset *ds)
 		}
 	    }
 
-	  if ( ll_count (coefficient_list) <= 0)
+	  if (ll_count (coefficient_list) <= 0)
             {
               destroy_coeff_list (cl);
               goto error;
@@ -769,9 +769,9 @@ run_oneway (const struct oneway_spec *cmd,
 	  const struct variable *v = cmd->vars[i];
 	  const union value *val = case_data (c, v);
 
-	  if ( MISS_ANALYSIS == cmd->missing_type)
+	  if (MISS_ANALYSIS == cmd->missing_type)
 	    {
-	      if ( var_is_value_missing (v, val, cmd->exclude))
+	      if (var_is_value_missing (v, val, cmd->exclude))
 		continue;
 	    }
 
@@ -782,7 +782,7 @@ run_oneway (const struct oneway_spec *cmd,
   casereader_destroy (reader);
 
   reader = casereader_clone (input);
-  for ( ; (c = casereader_read (reader) ); case_unref (c))
+  for (; (c = casereader_read (reader)); case_unref (c))
     {
       int i;
       double w = dict_get_case_weight (dict, c, NULL);
@@ -792,9 +792,9 @@ run_oneway (const struct oneway_spec *cmd,
 	  const struct variable *v = cmd->vars[i];
 	  const union value *val = case_data (c, v);
 
-	  if ( MISS_ANALYSIS == cmd->missing_type)
+	  if (MISS_ANALYSIS == cmd->missing_type)
 	    {
-	      if ( var_is_value_missing (v, val, cmd->exclude))
+	      if (var_is_value_missing (v, val, cmd->exclude))
 		continue;
 	    }
 
@@ -805,7 +805,7 @@ run_oneway (const struct oneway_spec *cmd,
   casereader_destroy (reader);
 
   reader = casereader_clone (input);
-  for ( ; (c = casereader_read (reader) ); case_unref (c))
+  for (; (c = casereader_read (reader)); case_unref (c))
     {
       int i;
       double w = dict_get_case_weight (dict, c, NULL);
@@ -816,9 +816,9 @@ run_oneway (const struct oneway_spec *cmd,
 	  const struct variable *v = cmd->vars[i];
 	  const union value *val = case_data (c, v);
 
-	  if ( MISS_ANALYSIS == cmd->missing_type)
+	  if (MISS_ANALYSIS == cmd->missing_type)
 	    {
-	      if ( var_is_value_missing (v, val, cmd->exclude))
+	      if (var_is_value_missing (v, val, cmd->exclude))
 		continue;
 	    }
 
@@ -836,7 +836,7 @@ run_oneway (const struct oneway_spec *cmd,
       const struct categoricals *cats = covariance_get_categoricals (pvw->cov);
       const bool ok = categoricals_sane (cats);
 
-      if ( ! ok)
+      if (! ok)
 	{
 	  msg (MW,
 	       _("Dependent variable %s has no non-missing values.  No analysis for this variable will be done."),
@@ -869,7 +869,7 @@ run_oneway (const struct oneway_spec *cmd,
     {
       const struct categoricals *cats = covariance_get_categoricals (ws.vws[v].cov);
 
-      if ( ! categoricals_is_complete (cats))
+      if (! categoricals_is_complete (cats))
 	{
 	  continue;
 	}
@@ -932,7 +932,7 @@ output_oneway (const struct oneway_spec *cmd, struct oneway_workspace *ws)
       ll_for_each (cn, struct coeff_node, ll, cl)
 	sum += cn->coeff;
 
-      if ( sum != 0.0 )
+      if (sum != 0.0)
 	msg (SW, _("Coefficients for contrast %zu do not total zero"), i);
     }
 
@@ -950,14 +950,14 @@ output_oneway (const struct oneway_spec *cmd, struct oneway_workspace *ws)
       show_contrast_tests (cmd, ws);
     }
 
-  if ( cmd->posthoc )
+  if (cmd->posthoc)
     {
       int v;
       for (v = 0 ; v < cmd->n_vars; ++v)
 	{
 	  const struct categoricals *cats = covariance_get_categoricals (ws->vws[v].cov);
 
-	  if ( categoricals_is_complete (cats))
+	  if (categoricals_is_complete (cats))
 	    show_comparisons (cmd, ws, v);
 	}
     }

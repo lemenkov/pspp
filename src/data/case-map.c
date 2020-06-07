@@ -364,6 +364,6 @@ void
 case_map_dump (const struct case_map *cm)
 {
   int i;
-  for (i = 0 ; i < caseproto_get_n_widths (cm->proto); ++i )
+  for (i = 0 ; i < caseproto_get_n_widths (cm->proto); ++i)
     printf ("%d -> %d\n", i, cm->map[i]);
 }

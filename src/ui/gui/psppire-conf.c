@@ -82,7 +82,7 @@ flush_conf (PsppireConf *conf)
 
   gchar *kf = g_key_file_to_data  (conf->keyfile, &length, NULL);
 
-  if ( ! g_file_set_contents (conf->filename, kf, length, NULL) )
+  if (! g_file_set_contents (conf->filename, kf, length, NULL))
     {
       g_warning ("Cannot open %s for writing", conf->filename);
     }
@@ -95,7 +95,7 @@ flush_conf (PsppireConf *conf)
 static void
 conf_write (PsppireConf *conf)
 {
-  if ( conf->idle == 0)
+  if (conf->idle == 0)
     conf->idle = g_idle_add_full (G_PRIORITY_LOW,
 				  (GSourceFunc) flush_conf, conf, NULL);
 }
@@ -194,7 +194,7 @@ psppire_conf_get_int (PsppireConf *conf, const gchar *base,
 				   name, &err);
 
   ok = (err == NULL);
-  if ( err != NULL )
+  if (err != NULL)
     g_error_free (err);
 
   return ok;
@@ -213,7 +213,7 @@ psppire_conf_get_boolean (PsppireConf *conf, const gchar *base,
 			      name, &err);
 
   ok = (err == NULL);
-  if ( err != NULL )
+  if (err != NULL)
     g_error_free (err);
 
   if (ok)
@@ -237,7 +237,7 @@ psppire_conf_get_string (PsppireConf *conf, const gchar *base,
 			     name, &err);
 
   ok = (err == NULL);
-  if ( err != NULL )
+  if (err != NULL)
     g_error_free (err);
 
   if (ok)
@@ -262,7 +262,7 @@ psppire_conf_get_variant (PsppireConf *conf, const gchar *base,
 			     name, &err);
 
   ok = (err == NULL);
-  if ( err != NULL )
+  if (err != NULL)
     g_error_free (err);
 
   if (ok)
@@ -289,7 +289,7 @@ psppire_conf_get_enum (PsppireConf *conf, const gchar *base,
 			     name, &err);
 
   ok = (err == NULL);
-  if ( err != NULL )
+  if (err != NULL)
     g_error_free (err);
 
   if (ok)
@@ -377,19 +377,19 @@ psppire_conf_set_window_geometry (PsppireConf *conf,
 
   if (psppire_conf_get_int (conf, base, "height", &height)
       &&
-      psppire_conf_get_int (conf, base, "width", &width) )
+      psppire_conf_get_int (conf, base, "width", &width))
     {
       gtk_window_set_default_size (window, width, height);
     }
 
-  if ( psppire_conf_get_int (conf, base, "x", &x)
+  if (psppire_conf_get_int (conf, base, "x", &x)
        &&
-       psppire_conf_get_int (conf, base, "y", &y) )
+       psppire_conf_get_int (conf, base, "y", &y))
     {
       gtk_window_move (window, x, y);
     }
 
-  if ( psppire_conf_get_boolean (conf, base, "maximize", &maximize))
+  if (psppire_conf_get_boolean (conf, base, "maximize", &maximize))
     {
       if (maximize)
 	gtk_window_maximize (window);

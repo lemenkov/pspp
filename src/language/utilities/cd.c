@@ -34,12 +34,12 @@ cmd_cd (struct lexer *lexer, struct dataset *ds UNUSED)
 {
   char  *path = 0;
 
-  if ( ! lex_force_string (lexer))
+  if (! lex_force_string (lexer))
     goto error;
 
   path = utf8_to_filename (lex_tokcstr (lexer));
 
-  if ( -1 == chdir (path) )
+  if (-1 == chdir (path))
     {
       int err = errno;
       msg (SE, _("Cannot change directory to %s:  %s "), path,

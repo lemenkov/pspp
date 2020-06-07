@@ -300,7 +300,7 @@ addcb (struct dictionary *d, int idx, void *pd)
 {
   PsppireDict *dict = PSPPIRE_DICT (pd);
 
-  if ( ! dict->disable_insert_signal)
+  if (! dict->disable_insert_signal)
     {
       g_signal_emit (dict, signals [VARIABLE_INSERTED], 0, idx);
       g_signal_emit_by_name (dict, "items-changed", idx, 1, 1);
@@ -494,10 +494,10 @@ psppire_dict_set_name (PsppireDict* d, gint idx, const gchar *name)
   g_assert (d);
   g_assert (PSPPIRE_IS_DICT (d));
 
-  if ( ! dict_id_is_valid (d->dict, name, false))
+  if (! dict_id_is_valid (d->dict, name, false))
     return FALSE;
 
-  if ( idx < dict_get_var_cnt (d->dict))
+  if (idx < dict_get_var_cnt (d->dict))
     {
       /* This is an existing variable? */
       var = dict_get_var (d->dict, idx);
@@ -523,7 +523,7 @@ psppire_dict_get_variable (const PsppireDict *d, gint idx)
   g_return_val_if_fail (d, NULL);
   g_return_val_if_fail (d->dict, NULL);
 
-  if ( dict_get_var_cnt (d->dict) <= idx )
+  if (dict_get_var_cnt (d->dict) <= idx)
     return NULL;
 
   return dict_get_var (d->dict, idx);
@@ -596,12 +596,12 @@ gboolean
 psppire_dict_check_name (const PsppireDict *dict,
 			 const gchar *name, gboolean report)
 {
-  if ( ! dict_id_is_valid (dict->dict, name, report ) )
+  if (! dict_id_is_valid (dict->dict, name, report))
     return FALSE;
 
   if (psppire_dict_lookup_var (dict, name))
     {
-      if ( report )
+      if (report)
 	msg (ME, _("Duplicate variable name."));
       return FALSE;
     }
@@ -754,7 +754,7 @@ tree_model_get_iter (GtkTreeModel *model, GtkTreeIter *iter, GtkTreePath *path)
 
   n = indices [0];
 
-  if ( n < 0 || n >= psppire_dict_get_var_cnt (dict))
+  if (n < 0 || n >= psppire_dict_get_var_cnt (dict))
     {
       iter->stamp = 0;
       iter->user_data = NULL;
@@ -779,7 +779,7 @@ tree_model_iter_next (GtkTreeModel *model, GtkTreeIter *iter)
   struct variable *var;
   gint idx;
 
-  if ( iter == NULL || iter->user_data == NULL)
+  if (iter == NULL || iter->user_data == NULL)
     return FALSE;
 
   g_return_val_if_fail (iter->stamp == dict->stamp, FALSE);
@@ -788,7 +788,7 @@ tree_model_iter_next (GtkTreeModel *model, GtkTreeIter *iter)
 
   idx = var_get_dict_index (var);
 
-  if ( idx + 1 >= psppire_dict_get_var_cnt (dict))
+  if (idx + 1 >= psppire_dict_get_var_cnt (dict))
     {
       iter->user_data = NULL;
       iter->stamp = 0;
@@ -911,16 +911,16 @@ tree_model_nth_child (GtkTreeModel *model, GtkTreeIter *iter,
 
   dict = PSPPIRE_DICT (model);
 
-  if ( parent )
+  if (parent)
     return FALSE;
 
-  if ( n >= psppire_dict_get_var_cnt (dict) )
+  if (n >= psppire_dict_get_var_cnt (dict))
     return FALSE;
 
   iter->stamp = dict->stamp;
   iter->user_data = psppire_dict_get_variable (dict, n);
 
-  if ( !iter->user_data)
+  if (!iter->user_data)
     return FALSE;
 
   return TRUE;
@@ -931,11 +931,11 @@ gboolean
 psppire_dict_rename_var (PsppireDict *dict, struct variable *v,
 			 const gchar *name)
 {
-  if ( ! dict_id_is_valid (dict->dict, name, false))
+  if (! dict_id_is_valid (dict->dict, name, false))
     return FALSE;
 
   /* Make sure no other variable has this name */
-  if ( NULL != psppire_dict_lookup_var (dict, name))
+  if (NULL != psppire_dict_lookup_var (dict, name))
     return FALSE;
 
   dict_rename_var (dict->dict, v, name);

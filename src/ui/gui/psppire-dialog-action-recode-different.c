@@ -42,7 +42,7 @@ difx_variable_treeview_is_populated (PsppireDialogActionRecode *rd)
   PsppireDialogActionRecodeDifferent *rdd = PSPPIRE_DIALOG_ACTION_RECODE_DIFFERENT (rd);
   GtkTreeModel *model = gtk_tree_view_get_model (GTK_TREE_VIEW (rd->variable_treeview));
 
-  if (g_hash_table_size (rdd->varmap) != gtk_tree_model_iter_n_children (model, NULL) )
+  if (g_hash_table_size (rdd->varmap) != gtk_tree_model_iter_n_children (model, NULL))
     return FALSE;
 
   return TRUE;
@@ -58,11 +58,11 @@ dialog_state_valid (gpointer data)
   PsppireDialogActionRecode *rd = data;
   GtkTreeIter not_used;
 
-  if ( ! rd->value_map )
+  if (! rd->value_map)
     return FALSE;
 
-  if ( ! gtk_tree_model_get_iter_first (GTK_TREE_MODEL (rd->value_map),
-					&not_used) )
+  if (! gtk_tree_model_get_iter_first (GTK_TREE_MODEL (rd->value_map),
+					&not_used))
     return FALSE;
 
 
@@ -122,7 +122,7 @@ nlp_create (const char *name, const char *label)
 
   nlp->label = NULL;
 
-  if ( 0 != strcmp ("", label))
+  if (0 != strcmp ("", label))
     nlp->label = g_strdup (label);
 
   return nlp;
@@ -132,7 +132,7 @@ static void
 nlp_destroy (gpointer data)
 {
   struct nlp *nlp = data ;
-  if ( ! nlp )
+  if (! nlp)
     return;
 
   g_free (nlp->name);
@@ -161,7 +161,7 @@ render_new_var_name (GtkTreeViewColumn *tree_column,
 
   nlp = g_hash_table_lookup (rdd->varmap, var);
 
-  if ( nlp )
+  if (nlp)
     g_object_set (cell, "text", nlp->name, NULL);
   else
     g_object_set (cell, "text", "", NULL);
@@ -190,7 +190,7 @@ on_change_clicked (GObject *obj, gpointer data)
   const gchar *dest_var_label =
     gtk_entry_get_text (GTK_ENTRY (rd->new_label_entry));
 
-  if ( NULL == rows || rows->next != NULL)
+  if (NULL == rows || rows->next != NULL)
     goto finish;
 
   gtk_tree_model_get_iter (model, &iter, rows->data);
@@ -227,7 +227,7 @@ on_selection_change (GtkTreeSelection *selection, gpointer data)
 
   GList *rows = gtk_tree_selection_get_selected_rows (selection, &model);
 
-  if ( rows && !rows->next)
+  if (rows && !rows->next)
     {
       /* Exactly one row is selected */
       struct nlp *nlp;

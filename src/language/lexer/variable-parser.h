@@ -124,7 +124,7 @@ parse_const_var_set_vars (struct lexer *l, const struct const_var_set *vs,
 static inline void
 const_var_set_destroy (struct const_var_set *vs)
 {
-  var_set_destroy ( (struct var_set *) vs);
+  var_set_destroy ((struct var_set *) vs);
 }
 
 /* Match a variable.

@@ -812,7 +812,7 @@ format_trig_double (long double value, int base_10_precision, char output[])
       value -= chunk;
 
       /* Append the chunk, in base 30, to trigs[]. */
-      for (trigs_left = CHUNK_SIZE; chunk > 0 && trigs_left > 0; )
+      for (trigs_left = CHUNK_SIZE; chunk > 0 && trigs_left > 0;)
         {
           trigs[trig_cnt + --trigs_left] = chunk % 30;
           chunk /= 30;

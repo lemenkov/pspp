@@ -128,7 +128,7 @@ prev_region (unsigned int pattern, unsigned int offset,
   unsigned int i;
 
   assert (offset <= UINT_BIT);
-  for (i = offset; i-- > 0; )
+  for (i = offset; i-- > 0;)
     if (pattern & (1u << i))
       {
         *start = i;

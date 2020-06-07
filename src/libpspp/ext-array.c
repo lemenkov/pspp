@@ -124,7 +124,7 @@ do_read (const struct ext_array *ea_, void *buffer, size_t bytes)
       if (ferror (ea->file))
         msg_error (errno, _("reading temporary file"));
       else if (feof (ea->file))
-        msg_error ( 0, _("unexpected end of file reading temporary file"));
+        msg_error (0, _("unexpected end of file reading temporary file"));
       else
         NOT_REACHED ();
       return false;

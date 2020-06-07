@@ -37,19 +37,19 @@ generate_syntax (const PsppireDialogAction *act)
 
   GString *string = g_string_new ("NPAR TEST");
 
-  if ( gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (krd->friedman)))
+  if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (krd->friedman)))
     {
       g_string_append (string, "\n\t/FRIEDMAN = ");
       psppire_var_view_append_names (PSPPIRE_VAR_VIEW (krd->var_view), 0, string);
     }
 
-  if ( gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (krd->kendal)))
+  if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (krd->kendal)))
     {
       g_string_append (string, "\n\t/KENDALL = ");
       psppire_var_view_append_names (PSPPIRE_VAR_VIEW (krd->var_view), 0, string);
     }
 
-  if ( gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (krd->cochran)))
+  if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (krd->cochran)))
     {
       g_string_append (string, "\n\t/COCHRAN = ");
       psppire_var_view_append_names (PSPPIRE_VAR_VIEW (krd->var_view), 0, string);
@@ -84,7 +84,7 @@ dialog_state_valid (gpointer data)
       ! gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (krd->kendal))
       &&
       ! gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (krd->cochran))
-       )
+)
     return FALSE;
 
   return TRUE;
@@ -110,7 +110,7 @@ psppire_dialog_action_k_related_activate (PsppireDialogAction *a, GVariant *para
   PsppireDialogAction *pda = PSPPIRE_DIALOG_ACTION (a);
   PsppireDialogActionKRelated *act = PSPPIRE_DIALOG_ACTION_K_RELATED (a);
 
-  GtkBuilder *xml = builder_new ( "k-related.ui");
+  GtkBuilder *xml = builder_new ("k-related.ui");
 
   pda->dialog = get_widget_assert   (xml, "k-related-dialog");
   pda->source = get_widget_assert   (xml, "dict-view");

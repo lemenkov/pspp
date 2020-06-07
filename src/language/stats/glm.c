@@ -234,7 +234,7 @@ cmd_glm (struct lexer *lexer, struct dataset *ds)
 
 		  glm.alpha = lex_number (lexer);
 		  lex_get (lexer);
-		  if ( ! lex_force_match (lexer, T_RPAREN))
+		  if (! lex_force_match (lexer, T_RPAREN))
 		    {
 		      lex_error (lexer, NULL);
 		      goto error;
@@ -250,26 +250,26 @@ cmd_glm (struct lexer *lexer, struct dataset *ds)
       else if (lex_match_id (lexer, "METHOD"))
 	{
 	  lex_match (lexer, T_EQUALS);
-	  if ( !lex_force_match_id (lexer, "SSTYPE"))
+	  if (!lex_force_match_id (lexer, "SSTYPE"))
 	    {
 	      lex_error (lexer, NULL);
 	      goto error;
 	    }
 
-	  if ( ! lex_force_match (lexer, T_LPAREN))
+	  if (! lex_force_match (lexer, T_LPAREN))
 	    {
 	      lex_error (lexer, NULL);
 	      goto error;
 	    }
 
-	  if ( ! lex_force_int (lexer))
+	  if (! lex_force_int (lexer))
 	    {
 	      lex_error (lexer, NULL);
 	      goto error;
 	    }
 
 	  glm.ss_type = lex_integer (lexer);
-	  if (1 > glm.ss_type  ||  3 < glm.ss_type )
+	  if (1 > glm.ss_type  ||  3 < glm.ss_type)
 	    {
 	      msg (ME, _("Only types 1, 2 & 3 sums of squares are currently implemented"));
 	      goto error;
@@ -277,7 +277,7 @@ cmd_glm (struct lexer *lexer, struct dataset *ds)
 
 	  lex_get (lexer);
 
-	  if ( ! lex_force_match (lexer, T_RPAREN))
+	  if (! lex_force_match (lexer, T_RPAREN))
 	    {
 	      lex_error (lexer, NULL);
 	      goto error;
@@ -307,7 +307,7 @@ cmd_glm (struct lexer *lexer, struct dataset *ds)
 	}
     }
 
-  if ( ! design )
+  if (! design)
     {
       design_full (&glm);
     }
@@ -423,7 +423,7 @@ ssq_type1 (struct covariance *cov, gsl_vector *ssq, const struct glm_spec *cmd)
 	  const struct interaction * x =
 	    categoricals_get_interaction_by_subscript (cats, i - cmd->n_dep_vars);
 
-	  if ( x == cmd->interactions [k])
+	  if (x == cmd->interactions [k])
 	    {
 	      model_dropped[i] = false;
 	      n_dropped_model--;
@@ -441,7 +441,7 @@ ssq_type1 (struct covariance *cov, gsl_vector *ssq, const struct glm_spec *cmd)
 
       gsl_vector_set (ssq, k + 1,
 		      gsl_matrix_get (submodel_cov, 0, 0) - gsl_matrix_get (model_cov, 0, 0)
-		      );
+		);
 
       gsl_matrix_free (model_cov);
       gsl_matrix_free (submodel_cov);
@@ -484,7 +484,7 @@ ssq_type2 (struct covariance *cov, gsl_vector *ssq, const struct glm_spec *cmd)
 	      n_dropped_submodel++;
               submodel_dropped[i] = true;
 
-	      if ( cmd->interactions [k]->n_vars < x->n_vars)
+	      if (cmd->interactions [k]->n_vars < x->n_vars)
 		{
 		  assert (n_dropped_model < covariance_dim (cov));
 		  n_dropped_model++;
@@ -504,7 +504,7 @@ ssq_type2 (struct covariance *cov, gsl_vector *ssq, const struct glm_spec *cmd)
 
       gsl_vector_set (ssq, k + 1,
 		      gsl_matrix_get (submodel_cov, 0, 0) - gsl_matrix_get (model_cov, 0, 0)
-		      );
+		);
 
       gsl_matrix_free (model_cov);
       gsl_matrix_free (submodel_cov);
@@ -548,7 +548,7 @@ ssq_type3 (struct covariance *cov, gsl_vector *ssq, const struct glm_spec *cmd)
 
 	  model_dropped[i] = false;
 
-	  if ( cmd->interactions [k] == x)
+	  if (cmd->interactions [k] == x)
 	    {
 	      assert (n_dropped_model < covariance_dim (cov));
 	      n_dropped_model++;
@@ -848,15 +848,15 @@ static bool
 parse_nested_variable (struct lexer *lexer, struct glm_spec *glm)
 {
   const struct variable *v = NULL;
-  if ( ! lex_match_variable (lexer, glm->dict, &v))
+  if (! lex_match_variable (lexer, glm->dict, &v))
     return false;
 
   if (lex_match (lexer, T_LPAREN))
     {
-      if ( ! parse_nested_variable (lexer, glm))
+      if (! parse_nested_variable (lexer, glm))
 	return false;
 
-      if ( ! lex_force_match (lexer, T_RPAREN))
+      if (! lex_force_match (lexer, T_RPAREN))
 	return false;
     }
 
@@ -877,7 +877,7 @@ parse_design_term (struct lexer *lexer, struct glm_spec *glm)
       return true;
     }
 
-  if ( parse_nested_variable (lexer, glm))
+  if (parse_nested_variable (lexer, glm))
     return true;
 
   return false;
@@ -895,7 +895,7 @@ parse_design_spec (struct lexer *lexer, struct glm_spec *glm)
   if  (lex_token (lexer) == T_ENDCMD || lex_token (lexer) == T_SLASH)
     return true;
 
-  if ( ! parse_design_term (lexer, glm))
+  if (! parse_design_term (lexer, glm))
     return false;
 
   lex_match (lexer, T_COMMA);

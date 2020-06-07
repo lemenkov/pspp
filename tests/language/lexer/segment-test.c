@@ -197,7 +197,7 @@ check_segmentation (const char *input, size_t length, bool print_segments)
 
           for (i = MIN (15, strlen (type_name)); i < 16; i++)
             putchar (' ');
-          for (i = 0; i < n; )
+          for (i = 0; i < n;)
             {
               const uint8_t *u_input = CHAR_CAST (const uint8_t *, input);
               ucs4_t uc;

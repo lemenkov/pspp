@@ -85,7 +85,7 @@ psppire_dialog_action_kmeans_activate (PsppireDialogAction *a, GVariant *param)
   PsppireDialogActionKmeans *act = PSPPIRE_DIALOG_ACTION_KMEANS (a);
   PsppireDialogAction *pda = PSPPIRE_DIALOG_ACTION (a);
 
-  GtkBuilder *xml = builder_new ( "k-means.ui");
+  GtkBuilder *xml = builder_new ("k-means.ui");
 
   pda->dialog = get_widget_assert   (xml, "k-means-dialog");
   pda->source = get_widget_assert   (xml, "dict-view");

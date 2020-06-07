@@ -98,7 +98,7 @@ fn_search_path (const char *base_name, char **path)
         file = xasprintf ("%s/%s", dir, base_name);
 
       struct stat temp;
-      if (( (stat (file, &temp) == 0 ) && ( ! S_ISDIR (temp.st_mode) )))
+      if (((stat (file, &temp) == 0) && (! S_ISDIR (temp.st_mode))))
 	return file;
 
       free (file);
@@ -115,7 +115,7 @@ fn_exists (const struct file_handle *fh)
 {
   const char *name = fh_get_file_name (fh);
   struct stat temp;
-  if ( stat (name, &temp) != 0 )
+  if (stat (name, &temp) != 0)
     return false;
 
   return ! S_ISDIR (temp.st_mode);
@@ -235,7 +235,7 @@ default_output_path (void)
 {
   static char *path = NULL;
 
-  if ( path == NULL)
+  if (path == NULL)
     {
       /* Windows NT defines HOMEDRIVE and HOMEPATH.  But give preference
 	 to HOME, because the user can change HOME.  */

@@ -191,7 +191,7 @@ trns_chain_execute (const struct trns_chain *chain, enum trns_result start,
   size_t i;
 
   assert (chain->finalized);
-  for (i = start < 0 ? 0 : start; i < chain->trns_cnt; )
+  for (i = start < 0 ? 0 : start; i < chain->trns_cnt;)
     {
       struct transformation *trns = &chain->trns[i];
       int retval = trns->execute (trns->aux, c, case_nr);

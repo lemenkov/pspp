@@ -310,7 +310,7 @@ casereader_filter_missing_include (const struct ccase *c, void *cfm_)
       const union value *value = case_data (c, var);
       if (var_is_value_missing (var, value, cfm->class))
 	{
-	  if ( cfm->n_missing )
+	  if (cfm->n_missing)
 	    (*cfm->n_missing)++;
 	  return false;
 	}

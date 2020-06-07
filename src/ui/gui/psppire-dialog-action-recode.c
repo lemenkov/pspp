@@ -72,7 +72,7 @@ new_value_copy (struct new_value *nv)
 {
   struct new_value *copy = g_memdup (nv, sizeof (*copy));
 
-  if ( nv->type == NV_STRING )
+  if (nv->type == NV_STRING)
     copy->v.s = xstrdup (nv->v.s);
 
   return copy;
@@ -82,7 +82,7 @@ new_value_copy (struct new_value *nv)
 static void
 new_value_free (struct new_value *nv)
 {
-  if ( nv->type == NV_STRING )
+  if (nv->type == NV_STRING)
     g_free (nv->v.s);
 
   g_free (nv);
@@ -127,7 +127,7 @@ new_value_get_type (void)
 {
   static GType t = 0;
 
-  if (t == 0 )
+  if (t == 0)
     {
       t = g_boxed_type_register_static  ("psppire-recode-new-values",
 					 (GBoxedCopyFunc) new_value_copy,
@@ -146,7 +146,7 @@ static void
 on_string_toggled (GtkToggleButton *b, PsppireDialogActionRecode *rd)
 {
   gboolean active;
-  if (! rd->input_var_is_string )
+  if (! rd->input_var_is_string)
     return ;
 
   active = gtk_toggle_button_get_active (b);
@@ -168,7 +168,7 @@ on_convert_toggled (GtkToggleButton *b, PsppireDialogActionRecode *rd)
 static void
 focus_value_entry (GtkWidget *w, PsppireDialogActionRecode *rd)
 {
-  if ( gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (w)))
+  if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (w)))
     gtk_widget_grab_focus (rd->new_value_entry);
 }
 
@@ -180,7 +180,7 @@ set_acr (PsppireDialogActionRecode *rd)
 {
   const gchar *text;
 
-  if ( !gtk_toggle_button_get_active
+  if (!gtk_toggle_button_get_active
        (GTK_TOGGLE_BUTTON (rd->toggle[BUTTON_NEW_VALUE])))
     {
       psppire_acr_set_enabled (PSPPIRE_ACR (rd->acr), TRUE);
@@ -216,7 +216,7 @@ on_acr_selection_change (GtkTreeSelection *selection, gpointer data)
   struct old_value *ov = NULL;
   struct new_value *nv = NULL;
 
-  if ( ! gtk_tree_selection_get_selected (selection, &model, &iter) )
+  if (! gtk_tree_selection_get_selected (selection, &model, &iter))
     return;
 
 
@@ -304,7 +304,7 @@ set_new_value (GValue *val, const PsppireDialogActionRecode *rd)
       if (PSPPIRE_DIALOG_ACTION_RECODE_CLASS (G_OBJECT_GET_CLASS (rd))->target_is_string (rd))
 	nv.type = NV_STRING;
 
-      if ( nv.type == NV_STRING )
+      if (nv.type == NV_STRING)
 	nv.v.s = g_strdup (text);
       else
 	nv.v.v = g_strtod (text, 0);
@@ -334,7 +334,7 @@ set_value (gint col, GValue  *val, gpointer data)
 {
   PsppireDialogActionRecode *rd = data;
 
-  switch ( col )
+  switch (col)
     {
     case COL_VALUE_OLD:
       set_old_value (val, rd);
@@ -388,7 +388,7 @@ run_old_and_new_dialog (PsppireDialogActionRecode *rd)
   psppire_acr_set_model (PSPPIRE_ACR (rd->acr), NULL);
 
 
-  if ( response == PSPPIRE_RESPONSE_CONTINUE )
+  if (response == PSPPIRE_RESPONSE_CONTINUE)
     {
       g_object_unref (rd->value_map);
       rd->value_map = clone_list_store (local_store);
@@ -604,7 +604,7 @@ psppire_dialog_action_recode_generate_syntax (const PsppireDialogAction *act,
 
   ds_put_cstr (&dds, "\n\t");
 
-  if ( gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (rd->convert_button)))
+  if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (rd->convert_button)))
     {
       ds_put_cstr (&dds, "(CONVERT) ");
     }

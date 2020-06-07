@@ -146,7 +146,7 @@ sign_execute (const struct dataset *ds,
     {
       const double weight = dict_get_case_weight (dict, c, &warn);
 
-      for (i = 0 ; i < t2s->n_pairs; ++i )
+      for (i = 0 ; i < t2s->n_pairs; ++i)
 	{
 	  variable_pair *vp = &t2s->pairs[i];
 	  const union value *value0 = case_data (c, (*vp)[0]);
@@ -159,7 +159,7 @@ sign_execute (const struct dataset *ds,
 	  if (var_is_value_missing ((*vp)[1], value1, exclude))
 	    continue;
 
-	  if ( diff > 0)
+	  if (diff > 0)
 	    stp[i].pos += weight;
 	  else if (diff < 0)
 	    stp[i].neg += weight;
@@ -170,7 +170,7 @@ sign_execute (const struct dataset *ds,
 
   casereader_destroy (r);
 
-  for (i = 0 ; i < t2s->n_pairs; ++i )
+  for (i = 0 ; i < t2s->n_pairs; ++i)
     {
       int r = MIN (stp[i].pos, stp[i].neg);
       stp[i].one_tailed_sig = gsl_cdf_binomial_P (r,

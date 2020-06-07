@@ -107,13 +107,13 @@ enum rotation_type
 
 typedef void (*rotation_coefficients) (double *x, double *y,
 				    double a, double b, double c, double d,
-				    const gsl_matrix *loadings );
+				    const gsl_matrix *loadings);
 
 
 static void
 varimax_coefficients (double *x, double *y,
 		      double a, double b, double c, double d,
-		      const gsl_matrix *loadings )
+		      const gsl_matrix *loadings)
 {
   *x = d - 2 * a * b / loadings->size1;
   *y = c - (a * a - b * b) / loadings->size1;
@@ -122,7 +122,7 @@ varimax_coefficients (double *x, double *y,
 static void
 equamax_coefficients (double *x, double *y,
 		      double a, double b, double c, double d,
-		      const gsl_matrix *loadings )
+		      const gsl_matrix *loadings)
 {
   *x = d - loadings->size2 * a * b / loadings->size1;
   *y = c - loadings->size2 * (a * a - b * b) / (2 * loadings->size1);
@@ -286,7 +286,7 @@ ssq_row_od_n (const gsl_matrix *m, int j)
 
   for (i = 0; i < m->size1; ++i)
     {
-      if (i == j ) continue;
+      if (i == j) continue;
       ss += pow2 (gsl_matrix_get (m, i, j));
     }
 
@@ -416,7 +416,7 @@ n_extracted_factors (const struct cmd_factor *factor, struct idata *idata)
   int i;
 
   /* If there is a cached value, then return that. */
-  if ( idata->n_extractions != 0)
+  if (idata->n_extractions != 0)
     return idata->n_extractions;
 
   /* Otherwise, if the number of factors has been explicitly requested,
@@ -645,7 +645,7 @@ sort_matrix_indirect (const gsl_matrix *input, gsl_permutation *perm)
 	  gsl_vector_view row = gsl_matrix_row (mat, p->data[n - 1 - i]);
 	  size_t maxindex = gsl_vector_max_index (&row.vector);
 
-	  if ( maxindex > column_n )
+	  if (maxindex > column_n)
 	    break;
 
 	  /* All subsequent elements of this row, are of no interest.
@@ -663,7 +663,7 @@ sort_matrix_indirect (const gsl_matrix *input, gsl_permutation *perm)
   gsl_permutation_free (p);
   gsl_matrix_free (mat);
 
-  assert ( 0 == gsl_permutation_valid (perm));
+  assert (0 == gsl_permutation_valid (perm));
 
   /* We want the biggest value to be first */
   gsl_permutation_reverse (perm);
@@ -720,7 +720,7 @@ initial_sv (const gsl_matrix *fm)
 	  l4s += lambda_4;
 	  l2s += lambda_sq;
 	}
-      sv += ( fm->size1 * l4s - (l2s * l2s) ) / (fm->size1 * fm->size1 );
+      sv += (fm->size1 * l4s - (l2s * l2s)) / (fm->size1 * fm->size1);
     }
   return sv;
 }
@@ -805,7 +805,7 @@ rotate (const struct cmd_factor *cf, const gsl_matrix *unrot,
 	      phi = atan2 (x,  y) / 4.0 ;
 
 	      /* Don't bother rotating if the angle is small */
-	      if ( fabs (sin (phi) ) <= pow (10.0, -15.0))
+	      if (fabs (sin (phi)) <= pow (10.0, -15.0))
 		  continue;
 
 	      for (p = 0; p < normalised->size1; ++p)
@@ -825,10 +825,10 @@ rotate (const struct cmd_factor *cf, const gsl_matrix *unrot,
 		l2s += lambda_sq;
 	      }
 	    }
-	  sv += ( normalised->size1 * l4s - (l2s * l2s) ) / (normalised->size1 * normalised->size1 );
+	  sv += (normalised->size1 * l4s - (l2s * l2s)) / (normalised->size1 * normalised->size1);
 	}
 
-      if ( fabs (sv - prev_sv) <= cf->rconverge)
+      if (fabs (sv - prev_sv) <= cf->rconverge)
 	break;
 
       prev_sv = sv;
@@ -991,7 +991,7 @@ rotate (const struct cmd_factor *cf, const gsl_matrix *unrot,
 
       gsl_vector_set (rotated_loadings, i, ssq);
 
-      if ( sum < 0 )
+      if (sum < 0)
 	for (j = 0 ; j < result->size1; ++j)
 	  {
 	    double *lambda = gsl_matrix_ptr (result, j, i);
@@ -1270,7 +1270,7 @@ cmd_factor (struct lexer *lexer, struct dataset *ds)
 	    {
 	      if (lex_match_id (lexer, "FACTORS"))
 		{
-		  if ( lex_force_match (lexer, T_LPAREN)
+		  if (lex_force_match (lexer, T_LPAREN)
                        && lex_force_int (lexer))
 		    {
 		      factor.n_factors = lex_integer (lexer);
@@ -1281,7 +1281,7 @@ cmd_factor (struct lexer *lexer, struct dataset *ds)
 		}
 	      else if (lex_match_id (lexer, "MINEIGEN"))
 		{
-		  if ( lex_force_match (lexer, T_LPAREN)
+		  if (lex_force_match (lexer, T_LPAREN)
                        && lex_force_num (lexer))
 		    {
 		      factor.min_eigen = lex_number (lexer);
@@ -1292,7 +1292,7 @@ cmd_factor (struct lexer *lexer, struct dataset *ds)
 		}
 	      else if (lex_match_id (lexer, "ECONVERGE"))
 		{
-		  if ( lex_force_match (lexer, T_LPAREN)
+		  if (lex_force_match (lexer, T_LPAREN)
                        && lex_force_num (lexer))
 		    {
 		      factor.econverge = lex_number (lexer);
@@ -1314,7 +1314,7 @@ cmd_factor (struct lexer *lexer, struct dataset *ds)
 		}
 	      else if (lex_match_id (lexer, "ITERATE"))
 		{
-		  if ( lex_force_match (lexer, T_LPAREN)
+		  if (lex_force_match (lexer, T_LPAREN)
                        && lex_force_int (lexer))
 		    {
 		      n_iterations = lex_integer (lexer);
@@ -1376,7 +1376,7 @@ cmd_factor (struct lexer *lexer, struct dataset *ds)
 		}
 	      else if (lex_match_id (lexer, "BLANK"))
 		{
-		  if ( lex_force_match (lexer, T_LPAREN)
+		  if (lex_force_match (lexer, T_LPAREN)
                        && lex_force_num (lexer))
 		    {
 		      factor.blank = lex_number (lexer);
@@ -1512,7 +1512,7 @@ cmd_factor (struct lexer *lexer, struct dataset *ds)
 	}
     }
 
-  if ( factor.rotation == ROT_NONE )
+  if (factor.rotation == ROT_NONE)
     factor.print &= ~PRINT_ROTATION;
 
   if (factor.n_vars < 2)
@@ -1546,7 +1546,7 @@ cmd_factor (struct lexer *lexer, struct dataset *ds)
       idata_free (id);
     }
   else
-    if ( ! run_factor (ds, &factor))
+    if (! run_factor (ds, &factor))
       goto error;
 
 
@@ -1574,7 +1574,7 @@ run_factor (struct dataset *ds, const struct cmd_factor *factor)
 
   while (casegrouper_get_next_group (grouper, &group))
     {
-      if ( factor->missing_type == MISS_LISTWISE )
+      if (factor->missing_type == MISS_LISTWISE)
 	group  = casereader_create_filter_missing (group, factor->vars, factor->n_vars,
 						   factor->exclude,
 						   NULL,  NULL);
@@ -1627,7 +1627,7 @@ show_scree (const struct cmd_factor *f, const struct idata *idata)
   struct scree *s;
   const char *label ;
 
-  if ( !(f->plot & PLOT_SCREE) )
+  if (!(f->plot & PLOT_SCREE))
     return;
 
 
@@ -1703,7 +1703,7 @@ show_factor_matrix (const struct cmd_factor *factor, const struct idata *idata, 
   /* Initialise to the identity permutation */
   gsl_permutation *perm = gsl_permutation_calloc (factor->n_vars);
 
-  if ( factor->sort)
+  if (factor->sort)
     sort_matrix_indirect (fm, perm);
 
   for (size_t i = 0 ; i < factor->n_vars; ++i)
@@ -1716,7 +1716,7 @@ show_factor_matrix (const struct cmd_factor *factor, const struct idata *idata, 
       for (size_t j = 0 ; j < n_factors; ++j)
 	{
 	  double x = gsl_matrix_get (fm, matrix_row, j);
-	  if ( fabs (x) < factor->blank)
+	  if (fabs (x) < factor->blank)
 	    continue;
 
           pivot_table_put2 (table, j, var_idx, pivot_value_new_number (x));
@@ -1977,7 +1977,7 @@ do_factor (const struct cmd_factor *factor, struct casereader *r)
   idata->cvm = covariance_1pass_create (factor->n_vars, factor->vars,
 					factor->wv, factor->exclude, true);
 
-  for ( ; (c = casereader_read (r) ); case_unref (c))
+  for (; (c = casereader_read (r)); case_unref (c))
     {
       covariance_accumulate (idata->cvm, c);
     }
@@ -2058,7 +2058,7 @@ do_factor_by_matrix (const struct cmd_factor *factor, struct idata *idata)
       gsl_matrix_free (tmp);
     }
 
-  if ( factor->print & PRINT_UNIVARIATE)
+  if (factor->print & PRINT_UNIVARIATE)
     {
       struct pivot_table *table = pivot_table_create (
         N_("Descriptive Statistics"));
@@ -2175,7 +2175,7 @@ do_factor_by_matrix (const struct cmd_factor *factor, struct idata *idata)
     struct factor_matrix_workspace *fmw = factor_matrix_workspace_alloc (idata->msr->size, idata->n_extractions);
     gsl_matrix *factor_matrix = gsl_matrix_calloc (factor->n_vars, fmw->n_factors);
 
-    if ( factor->extraction == EXTRACTION_PAF)
+    if (factor->extraction == EXTRACTION_PAF)
       {
 	gsl_vector *diff = gsl_vector_alloc (idata->msr->size);
 	struct smr_workspace *ws = ws_create (idata->analysis_matrix);
@@ -2201,7 +2201,7 @@ do_factor_by_matrix (const struct cmd_factor *factor, struct idata *idata)
 
 	    gsl_vector_minmax (diff, &min, &max);
 
-	    if ( fabs (min) < factor->econverge && fabs (max) < factor->econverge)
+	    if (fabs (min) < factor->econverge && fabs (max) < factor->econverge)
 	      break;
 	  }
 	gsl_vector_free (diff);
@@ -2228,7 +2228,7 @@ do_factor_by_matrix (const struct cmd_factor *factor, struct idata *idata)
     show_aic (factor, idata);
     show_communalities (factor, initial_communalities, extracted_communalities);
 
-    if ( factor->rotation != ROT_NONE)
+    if (factor->rotation != ROT_NONE)
       {
 	rotated_factors = gsl_matrix_calloc (factor_matrix->size1, factor_matrix->size2);
 	rotated_loadings = gsl_vector_calloc (factor_matrix->size2);
@@ -2253,14 +2253,14 @@ do_factor_by_matrix (const struct cmd_factor *factor, struct idata *idata)
                          ? N_("Component Matrix") : N_("Factor Matrix")),
 			factor_matrix);
 
-    if ( factor->rotation == ROT_PROMAX)
+    if (factor->rotation == ROT_PROMAX)
       {
 	show_factor_matrix (factor, idata, N_("Pattern Matrix"),
                             pattern_matrix);
 	gsl_matrix_free (pattern_matrix);
       }
 
-    if ( factor->rotation != ROT_NONE)
+    if (factor->rotation != ROT_NONE)
       {
 	show_factor_matrix (factor, idata,
 			    (factor->rotation == ROT_PROMAX
@@ -2273,7 +2273,7 @@ do_factor_by_matrix (const struct cmd_factor *factor, struct idata *idata)
 	gsl_matrix_free (rotated_factors);
       }
 
-    if ( factor->rotation == ROT_PROMAX)
+    if (factor->rotation == ROT_PROMAX)
       {
 	show_factor_correlation (factor, fcm);
 	gsl_matrix_free (fcm);

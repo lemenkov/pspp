@@ -60,8 +60,8 @@ static double
 calculate_binomial (double n1, double n2, double p)
 {
   const double n = n1 + n2;
-  const bool test_reversed = (n1 / n > p ) ;
-  if ( test_reversed )
+  const bool test_reversed = (n1 / n > p) ;
+  if (test_reversed)
     {
       p = 1 - p ;
       swap (&n1, &n2);
@@ -78,7 +78,7 @@ calculate_binomial_internal (double n1, double n2, double p)
 
   double sig1tailed = gsl_cdf_binomial_P (n1, p, n1 + n2);
 
-  if ( p == 0.5 )
+  if (p == 0.5)
     return sig1tailed > 0.5 ? 1.0 :sig1tailed * 2.0;
 
   return sig1tailed ;
@@ -91,7 +91,7 @@ do_binomial (const struct dictionary *dict,
 	     struct freq *cat1,
 	     struct freq *cat2,
              enum mv_class exclude
-	     )
+	)
 {
   const struct binomial_test *bst = UP_CAST (ost, const struct binomial_test, parent);
   bool warn = true;
@@ -103,7 +103,7 @@ do_binomial (const struct dictionary *dict,
       int v;
       double w = dict_get_case_weight (dict, c, &warn);
 
-      for (v = 0 ; v < ost->n_vars ; ++v )
+      for (v = 0 ; v < ost->n_vars ; ++v)
 	{
 	  const struct variable *var = ost->vars[v];
 	  double value = case_num (c, var);
@@ -113,28 +113,28 @@ do_binomial (const struct dictionary *dict,
 
 	  if (bst->cutpoint != SYSMIS)
 	    {
-	      if ( cat1[v].values[0].f >= value )
+	      if (cat1[v].values[0].f >= value)
 		  cat1[v].count  += w;
 	      else
 		  cat2[v].count += w;
 	    }
 	  else
 	    {
-	      if ( SYSMIS == cat1[v].values[0].f )
+	      if (SYSMIS == cat1[v].values[0].f)
 		{
 		  cat1[v].values[0].f = value;
 		  cat1[v].count = w;
 		}
-	      else if ( cat1[v].values[0].f == value )
+	      else if (cat1[v].values[0].f == value)
 		cat1[v].count += w;
-	      else if ( SYSMIS == cat2[v].values[0].f )
+	      else if (SYSMIS == cat2[v].values[0].f)
 		{
 		  cat2[v].values[0].f = value;
 		  cat2[v].count = w;
 		}
-	      else if ( cat2[v].values[0].f == value )
+	      else if (cat2[v].values[0].f == value)
 		cat2[v].count += w;
-	      else if ( bst->category1 == SYSMIS)
+	      else if (bst->category1 == SYSMIS)
 		msg (ME, _("Variable %s is not dichotomous"), var_get_name (var));
 	    }
 	}

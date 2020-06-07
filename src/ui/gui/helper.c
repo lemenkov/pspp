@@ -137,20 +137,20 @@ text_to_value__ (const gchar *text,
 {
   int width = fmt_var_width (format);
 
-  if ( format->type != FMT_A)
+  if (format->type != FMT_A)
     {
-      if ( ! text ) return NULL;
+      if (! text) return NULL;
 
       {
 	const gchar *s = text;
 	while (*s)
 	  {
-	    if ( !isspace (*s))
+	    if (!isspace (*s))
 	      break;
 	    s++;
 	  }
 
-	if ( !*s) return NULL;
+	if (!*s) return NULL;
       }
     }
 
@@ -219,20 +219,20 @@ connect_help (GtkBuilder *xml)
   GSList *helps = gtk_builder_get_objects (xml);
 
   GSList *i;
-  for ( i = helps; i ; i = g_slist_next (i))
+  for (i = helps; i ; i = g_slist_next (i))
     {
       GObject *o = i->data;
-      if ( GTK_IS_WIDGET (o) )
+      if (GTK_IS_WIDGET (o))
 	{
 	  const gchar *name = gtk_buildable_get_name (GTK_BUILDABLE (o));
 	  gchar s[12] = {0};
 
-	  if ( name)
+	  if (name)
 	    strncpy (s, name, 11);
 	  s[11] = '\0';
 
 
-	  if ( 0 == strcmp ("help_button", s))
+	  if (0 == strcmp ("help_button", s))
 	    {
 	    g_signal_connect (o, "clicked", give_help, 0);
 	    }
@@ -256,7 +256,7 @@ clone_list_store (const GtkListStore *src)
   int row = 0;
   GtkListStore *dest;
 
-  for (i = 0 ; i < n_cols; ++i )
+  for (i = 0 ; i < n_cols; ++i)
     types[i] = gtk_tree_model_get_column_type (GTK_TREE_MODEL (src), i);
 
   dest = gtk_list_store_newv (n_cols, types);
@@ -269,7 +269,7 @@ clone_list_store (const GtkListStore *src)
       GtkTreeIter dest_iter;
       gtk_list_store_append  (dest, &dest_iter);
 
-      for (i = 0 ; i < n_cols; ++i )
+      for (i = 0 ; i < n_cols; ++i)
 	{
 	  GValue val = {0};
 
@@ -304,7 +304,7 @@ paste_syntax_to_window (gchar *syntax)
 
   GtkTextBuffer *buffer = NULL;
 
-  if ( NULL == the_syntax_pasteboard)
+  if (NULL == the_syntax_pasteboard)
     {
       the_syntax_pasteboard = psppire_syntax_window_new (NULL);
       g_signal_connect (the_syntax_pasteboard, "delete-event", G_CALLBACK (on_delete),

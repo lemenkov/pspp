@@ -117,7 +117,7 @@ dialog_state_valid (gpointer data)
   if (! cnt->value_list)
     return FALSE;
 
-  if (!gtk_tree_model_get_iter_first (GTK_TREE_MODEL (cnt->value_list),	&iter) )
+  if (!gtk_tree_model_get_iter_first (GTK_TREE_MODEL (cnt->value_list),	&iter))
     return FALSE;
 
   if (!gtk_tree_model_get_iter_first (gtk_tree_view_get_model (GTK_TREE_VIEW (cnt->variable_treeview)), &iter))
@@ -150,7 +150,7 @@ psppire_dialog_action_count_activate (PsppireDialogAction *a, GVariant *param)
   PsppireDialogAction *pda = PSPPIRE_DIALOG_ACTION (a);
   PsppireDialogActionCount *act = PSPPIRE_DIALOG_ACTION_COUNT (a);
 
-  GtkBuilder *xml = builder_new ( "count.ui");
+  GtkBuilder *xml = builder_new ("count.ui");
 
   GtkWidget *selector = get_widget_assert (xml, "count-selector1");
   GtkWidget *button = get_widget_assert (xml, "button1");
@@ -207,7 +207,7 @@ on_acr_selection_change (GtkTreeSelection *selection, gpointer data)
   PsppireDialogActionCount *cnt = PSPPIRE_DIALOG_ACTION_COUNT (data);
   GValue ov_value = {0};
 
-  if ( ! gtk_tree_selection_get_selected (selection, &model, &iter) )
+  if (! gtk_tree_selection_get_selected (selection, &model, &iter))
     return;
 
   gtk_tree_model_get_value (GTK_TREE_MODEL (model), &iter,
@@ -263,7 +263,7 @@ values_dialog (PsppireDialogActionCount *cd)
 
   response = psppire_dialog_run (PSPPIRE_DIALOG (dialog));
 
-  if ( response == PSPPIRE_RESPONSE_CONTINUE )
+  if (response == PSPPIRE_RESPONSE_CONTINUE)
     {
       g_object_unref (cd->value_list);
       cd->value_list = local_store;

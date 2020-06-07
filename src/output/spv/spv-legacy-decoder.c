@@ -1229,7 +1229,7 @@ add_dimension (struct spv_series **series, size_t n,
       series[j]->n_index = max_cat + 1;
       series[j]->index_to_category = xcalloc (
         max_cat + 1, sizeof *series[j]->index_to_category);
-      for (size_t cat1 = 0; cat1 < n_cats; )
+      for (size_t cat1 = 0; cat1 < n_cats;)
         {
           /* Find a sequence of categories cat1...cat2 (exclusive), that all
              have the same value in series 'j'.  (This might be only a single
@@ -1335,7 +1335,7 @@ add_dimensions (struct hmap *series_map, const struct spvdx_nest *nest,
     return NULL;
 
   struct spv_series **series = xnmalloc (nest->n_vars, sizeof *series);
-  for (size_t i = 0; i < nest->n_vars; )
+  for (size_t i = 0; i < nest->n_vars;)
     {
       size_t n;
       for (n = 0; i + n < nest->n_vars; n++)
@@ -1380,7 +1380,7 @@ add_layers (struct hmap *series_map,
     return NULL;
 
   struct spv_series **series = xnmalloc (n_layers, sizeof *series);
-  for (size_t i = 0; i < n_layers; )
+  for (size_t i = 0; i < n_layers;)
     {
       size_t n;
       for (n = 0; i + n < n_layers; n++)
@@ -2143,7 +2143,7 @@ decode_spvdx_table (const struct spvdx_visualization *v, const char *subtype,
   while (n_nodes > 0)
     {
       bool progress = false;
-      for (size_t i = 0; i < n_nodes; )
+      for (size_t i = 0; i < n_nodes;)
         {
           error = (spvdx_is_source_variable (nodes[i])
                    ? decode_spvdx_source_variable (nodes[i], data, &series_map)

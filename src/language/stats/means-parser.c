@@ -79,7 +79,7 @@ lex_is_variable (struct lexer *lexer, const struct dictionary *dict,
 
   tstr = lex_next_tokcstr (lexer, n);
 
-  if (NULL == dict_lookup_var (dict, tstr) )
+  if (NULL == dict_lookup_var (dict, tstr))
     return false;
 
   return true;
@@ -111,9 +111,9 @@ means_parse (struct lexer *lexer, struct means *means)
 
       /* Look ahead to see if there are more tables to be parsed */
       more_tables = false;
-      if ( T_SLASH == lex_next_token (lexer, 0) )
+      if (T_SLASH == lex_next_token (lexer, 0))
 	{
-	  if (lex_is_variable (lexer, means->dict, 1) )
+	  if (lex_is_variable (lexer, means->dict, 1))
 	    {
 	      more_tables = true;
 	      lex_match (lexer, T_SLASH);

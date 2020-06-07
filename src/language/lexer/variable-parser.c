@@ -921,7 +921,7 @@ lex_match_variable (struct lexer *lexer, const struct dictionary *dict, const st
 
   *var = parse_variable_const  (lexer, dict);
 
-  if ( *var == NULL)
+  if (*var == NULL)
     return false;
   return true;
 }
@@ -957,12 +957,12 @@ parse_internal_interaction (struct lexer *lexer, const struct dictionary *dict, 
 
   assert (v);
 
-  if ( *iact == NULL)
+  if (*iact == NULL)
     *iact = interaction_create (v);
   else
     interaction_add_variable (*iact, v);
 
-  if ( lex_match (lexer, T_ASTERISK) || lex_match (lexer, T_BY))
+  if (lex_match (lexer, T_ASTERISK) || lex_match (lexer, T_BY))
     {
       return parse_internal_interaction (lexer, dict, iact, iact);
     }

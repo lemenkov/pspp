@@ -73,7 +73,7 @@ set_default (PsppireButtonbox *bb)
 {
   int i;
 
-  for (i = 0 ; i < n_PsppireButtonboxButtons ; ++i )
+  for (i = 0 ; i < n_PsppireButtonboxButtons ; ++i)
     if (bb->def == (1 << i))
       {
         gtk_widget_set_can_default (bb->button[i], TRUE);
@@ -95,7 +95,7 @@ psppire_buttonbox_set_property (GObject         *object,
     {
     case PROP_BUTTONS:
       flags = g_value_get_flags (value);
-      for (i = 0 ; i < n_PsppireButtonboxButtons ; ++i )
+      for (i = 0 ; i < n_PsppireButtonboxButtons ; ++i)
         g_object_set (bb->button[i], "visible", 0x01 & (flags >> i)  , NULL);
       break;
 
@@ -124,12 +124,12 @@ psppire_buttonbox_get_property (GObject         *object,
   switch (prop_id)
     {
     case PROP_BUTTONS:
-      for (i = 0 ; i < n_PsppireButtonboxButtons ; ++i )
+      for (i = 0 ; i < n_PsppireButtonboxButtons ; ++i)
         {
           gboolean visibility;
           g_object_get (bb->button[i], "visible", &visibility, NULL);
 
-          if ( visibility )
+          if (visibility)
             flags |= (0x01 << i);
         }
 
@@ -205,7 +205,7 @@ close_and_respond (GtkWidget *w, gint response)
 
   /* If we're not in a psppire dialog (for example when in glade)
      then do nothing */
-  if ( ! PSPPIRE_IS_DIALOG (toplevel))
+  if (! PSPPIRE_IS_DIALOG (toplevel))
     return;
 
   dialog = PSPPIRE_DIALOG (toplevel);
@@ -267,7 +267,7 @@ refresh_clicked (GtkWidget *w, gpointer data)
   GtkWidget *toplevel = gtk_widget_get_toplevel (w);
   PsppireDialog *dialog;
 
-  if ( ! PSPPIRE_IS_DIALOG (toplevel))
+  if (! PSPPIRE_IS_DIALOG (toplevel))
     return;
 
   dialog = PSPPIRE_DIALOG (toplevel);
@@ -281,7 +281,7 @@ help_clicked (GtkWidget *w, gpointer data)
   GtkWidget *toplevel = gtk_widget_get_toplevel (w);
   PsppireDialog *dialog;
 
-  if ( ! PSPPIRE_IS_DIALOG (toplevel))
+  if (! PSPPIRE_IS_DIALOG (toplevel))
     return;
 
   dialog = PSPPIRE_DIALOG (toplevel);
@@ -409,7 +409,7 @@ psppire_button_box_init (PsppireButtonbox *bb)
 
     flags = g_value_get_flags (&value);
 
-    for (i = 0 ; i < n_PsppireButtonboxButtons ; ++i )
+    for (i = 0 ; i < n_PsppireButtonboxButtons ; ++i)
       g_object_set (bb->button[i], "visible", 0x01 & (flags >> i)  , NULL);
 
     g_value_unset (&value);

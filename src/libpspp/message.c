@@ -273,7 +273,7 @@ static void
 ship_message (struct msg *m)
 {
   entrances++;
-  if ( ! m->shipped )
+  if (! m->shipped)
     {
       if (msg_handler && entrances <= 1)
 	msg_handler (m, msg_aux);
@@ -309,7 +309,7 @@ process_msg (struct msg *m)
 
   if (too_many_errors
       || (too_many_notes && m->severity == MSG_S_NOTE)
-      || (warnings_off && m->severity == MSG_S_WARNING) )
+      || (warnings_off && m->severity == MSG_S_WARNING))
     return;
 
   ship_message (m);
@@ -396,7 +396,7 @@ request_bug_report (const char *msg)
 #else
            "Unknown"
 #endif
-           );
+);
   fprintf (stderr, "******************************************************\n");
 }
 

@@ -242,7 +242,7 @@ predictor_value (const struct ccase *c,
 
 
 /*
-  Return the probability beta_hat (that is the estimator logit(y) )
+  Return the probability beta_hat (that is the estimator logit(y))
   corresponding to the coefficient estimator for case C
 */
 static double
@@ -321,7 +321,7 @@ hessian (const struct lr_spec *cmd,
     }
   casereader_destroy (reader);
 
-  if ( max_w < cmd->min_epsilon)
+  if (max_w < cmd->min_epsilon)
     {
       *converged = true;
       msg (MN, _("All predicted values are either 1 or 0"));
@@ -509,7 +509,7 @@ initial_pass (const struct lr_spec *cmd, struct lr_result *res, struct casereade
 	}
       else if (!v1set)
 	{
-	  if ( !value_equal (&res->y0, depval, width))
+	  if (!value_equal (&res->y0, depval, width))
 	    {
 	      value_clone (&res->y1, depval, width);
 	      v1set = true;
@@ -520,7 +520,7 @@ initial_pass (const struct lr_spec *cmd, struct lr_result *res, struct casereade
 	  if (! value_equal (&res->y0, depval, width)
 	      &&
 	      ! value_equal (&res->y1, depval, width)
-	      )
+	)
 	    {
 	      msg (ME, _("Dependent variable's values are not dichotomous."));
               case_unref (c);
@@ -640,7 +640,7 @@ run_lr (const struct lr_spec *cmd, struct casereader *input,
   work.hessian = gsl_matrix_calloc (work.beta_hat->size, work.beta_hat->size);
 
   /* Start the Newton Raphson iteration process... */
-  for( i = 0 ; i < cmd->max_iter ; ++i)
+  for(i = 0 ; i < cmd->max_iter ; ++i)
     {
       double min, max;
       gsl_vector *v ;
@@ -669,7 +669,7 @@ run_lr (const struct lr_spec *cmd, struct casereader *input,
 
 	gsl_vector_minmax (delta, &min, &max);
 
-	if ( fabs (min) < cmd->bcon && fabs (max) < cmd->bcon)
+	if (fabs (min) < cmd->bcon && fabs (max) < cmd->bcon)
 	  {
 	    msg (MN, _("Estimation terminated at iteration number %d because parameter estimates changed by less than %g"),
 		 i + 1, cmd->bcon);
@@ -697,8 +697,8 @@ run_lr (const struct lr_spec *cmd, struct casereader *input,
 
 
 
-  if ( ! converged)
-    msg (MW, _("Estimation terminated at iteration number %d because maximum iterations has been reached"), i );
+  if (! converged)
+    msg (MW, _("Estimation terminated at iteration number %d because maximum iterations has been reached"), i);
 
 
   output_model_summary (&work, initial_log_likelihood, log_likelihood);
@@ -883,7 +883,7 @@ cmd_logistic (struct lexer *lexer, struct dataset *ds)
 			}
 		      lr.confidence = lex_number (lexer);
 		      lex_get (lexer);
-		      if ( ! lex_force_match (lexer, T_RPAREN))
+		      if (! lex_force_match (lexer, T_RPAREN))
 			{
 			  lex_error (lexer, NULL);
 			  goto error;
@@ -917,7 +917,7 @@ cmd_logistic (struct lexer *lexer, struct dataset *ds)
 			}
 		      lr.bcon = lex_number (lexer);
 		      lex_get (lexer);
-		      if ( ! lex_force_match (lexer, T_RPAREN))
+		      if (! lex_force_match (lexer, T_RPAREN))
 			{
 			  lex_error (lexer, NULL);
 			  goto error;
@@ -935,7 +935,7 @@ cmd_logistic (struct lexer *lexer, struct dataset *ds)
 			}
 		      lr.max_iter = lex_integer (lexer);
 		      lex_get (lexer);
-		      if ( ! lex_force_match (lexer, T_RPAREN))
+		      if (! lex_force_match (lexer, T_RPAREN))
 			{
 			  lex_error (lexer, NULL);
 			  goto error;
@@ -953,7 +953,7 @@ cmd_logistic (struct lexer *lexer, struct dataset *ds)
 			}
 		      lr.lcon = lex_number (lexer);
 		      lex_get (lexer);
-		      if ( ! lex_force_match (lexer, T_RPAREN))
+		      if (! lex_force_match (lexer, T_RPAREN))
 			{
 			  lex_error (lexer, NULL);
 			  goto error;
@@ -971,7 +971,7 @@ cmd_logistic (struct lexer *lexer, struct dataset *ds)
 			}
 		      lr.min_epsilon = lex_number (lexer);
 		      lex_get (lexer);
-		      if ( ! lex_force_match (lexer, T_RPAREN))
+		      if (! lex_force_match (lexer, T_RPAREN))
 			{
 			  lex_error (lexer, NULL);
 			  goto error;
@@ -995,7 +995,7 @@ cmd_logistic (struct lexer *lexer, struct dataset *ds)
 			  goto error;
 			}
 		      lex_get (lexer);
-		      if ( ! lex_force_match (lexer, T_RPAREN))
+		      if (! lex_force_match (lexer, T_RPAREN))
 			{
 			  lex_error (lexer, NULL);
 			  goto error;
@@ -1312,7 +1312,7 @@ output_model_summary (const struct lr_result *res,
   double entries[] = {
     -2 * log_likelihood,
     cox,
-    cox / ( 1.0 - exp(initial_log_likelihood * (2 / res->cc)))
+    cox / (1.0 - exp(initial_log_likelihood * (2 / res->cc)))
   };
   for (size_t i = 0; i < sizeof entries / sizeof *entries; i++)
     pivot_table_put2 (table, i, 0, pivot_value_new_number (entries[i]));

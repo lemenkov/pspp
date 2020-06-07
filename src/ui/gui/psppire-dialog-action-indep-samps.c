@@ -187,7 +187,7 @@ run_define_groups (PsppireDialogActionIndepSamps *act)
   psppire_value_entry_set_variable (PSPPIRE_VALUE_ENTRY (act->dg_grp_entry[1]), act->grp_var);
   psppire_value_entry_set_variable (PSPPIRE_VALUE_ENTRY (act->dg_cut_point_entry), act->grp_var);
 
-  if (act->group_defn != GROUPS_CUT_POINT )
+  if (act->group_defn != GROUPS_CUT_POINT)
     {
       gtk_toggle_button_set_active
   	(GTK_TOGGLE_BUTTON (act->dg_cut_point_toggle_button), TRUE);
@@ -299,7 +299,7 @@ psppire_dialog_action_indep_samps_activate (PsppireDialogAction *a, GVariant *pa
   PsppireDialogActionIndepSamps *act = PSPPIRE_DIALOG_ACTION_INDEP_SAMPS (a);
   PsppireDialogAction *pda = PSPPIRE_DIALOG_ACTION (a);
 
-  GtkBuilder *xml = builder_new ( "indep-samples.ui");
+  GtkBuilder *xml = builder_new ("indep-samples.ui");
 
   pda->dialog = get_widget_assert (xml,"independent-samples-dialog");
   pda->source = get_widget_assert (xml, "indep-samples-treeview1");

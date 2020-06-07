@@ -124,7 +124,7 @@ html_create (struct file_handle *fh, enum settings_output_devices device_type,
   fputs ("<META HTTP-EQUIV=\"Content-Type\" "
          "CONTENT=\"text/html; charset=utf-8\">\n", html->file);
 
-  if ( html->css)
+  if (html->css)
     {
       fputs ("<META http-equiv=\"Content-Style-Type\" content=\"text/css\">\n",
 	     html->file);
@@ -244,7 +244,7 @@ html_submit (struct output_driver *driver,
                                      html->chart_cnt++,
 				     &html->fg,
 				     &html->bg
-				     );
+				);
       if (file_name != NULL)
         {
 	  const char *title = chart_item_get_title (chart_item);
@@ -492,7 +492,7 @@ html_output_table (struct html_driver *html, const struct table_item *item)
       int x;
 
       fputs ("  <TR>\n", html->file);
-      for (x = 0; x < table_nc (t); )
+      for (x = 0; x < table_nc (t);)
         {
           struct table_cell cell;
           const char *tag;

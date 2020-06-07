@@ -252,7 +252,7 @@ static struct element *
 find_by_position (struct abt *abt, int position)
 {
   struct abt_node *p;
-  for (p = abt->root; p != NULL; )
+  for (p = abt->root; p != NULL;)
     {
       int p_pos = p->down[0] ? abt_node_to_element (p->down[0])->count : 0;
       if (position == p_pos)

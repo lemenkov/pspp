@@ -145,7 +145,7 @@ median_execute (const struct dataset *ds,
 					    var_get_width (nst->indep_var), 0));
 	}
 
-      if ( median == SYSMIS)
+      if (median == SYSMIS)
 	{
 	  struct percentile *ptl;
 	  struct order_stats *os;
@@ -157,9 +157,9 @@ median_execute (const struct dataset *ds,
 	  rr = casereader_clone (r);
 	  writer = sort_create_writer (&sc, casereader_get_proto (rr));
 
-	  for (; (c = casereader_read (rr)) != NULL; )
+	  for (; (c = casereader_read (rr)) != NULL;)
 	    {
-	      if ( var_is_value_missing (var, case_data (c, var), exclude))
+	      if (var_is_value_missing (var, case_data (c, var), exclude))
 		{
 		  case_unref (c);
 		  continue;
@@ -196,7 +196,7 @@ median_execute (const struct dataset *ds,
 	  const union value *val = case_data (c, var);
 	  const union value *indep_val = case_data (c, nst->indep_var);
 
-	  if ( var_is_value_missing (var, case_data (c, var), exclude))
+	  if (var_is_value_missing (var, case_data (c, var), exclude))
 	    {
 	      continue;
 	    }
@@ -209,16 +209,16 @@ median_execute (const struct dataset *ds,
 		  value_compare_3way (indep_val, &nst->val1, width) < 0
 		||
 		  value_compare_3way (indep_val, &nst->val2, width) > 0
-		   )
+		)
 		{
 		  continue;
 		}
 	    }
 
 	  vn = find_value (&map, indep_val, nst->indep_var);
-	  if ( vn == NULL)
+	  if (vn == NULL)
 	    {
-	      if ( n_sample_test == true)
+	      if (n_sample_test == true)
 		{
 		  int width = var_get_width (nst->indep_var);
 		  vn = xzalloc (sizeof *vn);

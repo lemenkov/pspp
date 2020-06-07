@@ -167,7 +167,7 @@ bool spv_item_is_visible (const struct spv_item *);
 #define SPV_ITEM_FOR_EACH(ITER, ROOT) \
   for ((ITER) = (ROOT); (ITER) != NULL; (ITER) = spv_item_next(ITER))
 #define SPV_ITEM_FOR_EACH_SKIP_ROOT(ITER, ROOT) \
-  for ((ITER) = (ROOT); ((ITER) = spv_item_next(ITER)) != NULL; )
+  for ((ITER) = (ROOT); ((ITER) = spv_item_next(ITER)) != NULL;)
 struct spv_item *spv_item_next (const struct spv_item *);
 
 const struct spv_item *spv_item_get_parent (const struct spv_item *);

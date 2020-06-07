@@ -48,14 +48,14 @@ widget_printf (const gchar *fmt, ...)
   va_list ap;
   const char *s = fmt;
 
-  if ( 0 !=  printf_parse (fmt, &d, &a) )
+  if (0 !=  printf_parse (fmt, &d, &a))
     return NULL;
 
   widgets = xcalloc (d.count, sizeof (*widgets));
   va_start (ap, fmt);
-  for (i = 0 ; i < d.count ; ++i )
+  for (i = 0 ; i < d.count ; ++i)
     {
-      if ( d.dir[i].conversion != '%')
+      if (d.dir[i].conversion != '%')
 	widgets[i] = va_arg (ap, GtkWidget *);
     }
   va_end (ap);
@@ -65,13 +65,13 @@ widget_printf (const gchar *fmt, ...)
 
   output = g_string_sized_new (strlen (fmt));
 
-  for (i = 0 ; i < d.count ; ++i )
+  for (i = 0 ; i < d.count ; ++i)
     {
       char_directive dir = d.dir[i];
       GtkWidget *w ;
       const gchar *entry_text;
 
-      if ( dir.conversion == '%')
+      if (dir.conversion == '%')
 	{
 	  s++;
 	  continue;
@@ -80,7 +80,7 @@ widget_printf (const gchar *fmt, ...)
       w = widgets [dir.arg_index];
       entry_text = gtk_entry_get_text (GTK_ENTRY (w));
 
-      if ( dir.dir_start > s )
+      if (dir.dir_start > s)
 	g_string_append_len (output, s, dir.dir_start - s);
 
       s = dir.dir_end;

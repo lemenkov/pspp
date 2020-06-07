@@ -125,7 +125,7 @@ u (const struct group_data *grp0, const struct group_data *grp1)
           else
             {
 #if 1
-              usum += w0 * ( (grp1->cc - prev_cc1) / 2.0);
+              usum += w0 * ((grp1->cc - prev_cc1) / 2.0);
 #else
               usum += w0 * (grp1->cc - (prev_cc1 + cc1) / 2.0);
 #endif
@@ -285,7 +285,7 @@ jonckheere_terpstra_execute (const struct dataset *ds,
     jt.levels = 0;
     jt.n = 0;
     for (; casegrouper_get_next_group (grouper, &group);
-         casereader_destroy (group) )
+         casereader_destroy (group))
       {
         struct casewriter *writer = autopaging_writer_create (proto);
         struct ccase *c;

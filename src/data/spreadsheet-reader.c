@@ -58,10 +58,10 @@ struct casereader *
 spreadsheet_make_reader (struct spreadsheet *s,
                          const struct spreadsheet_read_options *opts)
 {
-  if ( s->type == SPREADSHEET_ODS)
+  if (s->type == SPREADSHEET_ODS)
     return ods_make_reader (s, opts);
 
-  if ( s->type == SPREADSHEET_GNUMERIC)
+  if (s->type == SPREADSHEET_GNUMERIC)
     return gnumeric_make_reader (s, opts);
 
   return NULL;
@@ -70,10 +70,10 @@ spreadsheet_make_reader (struct spreadsheet *s,
 const char *
 spreadsheet_get_sheet_name (struct spreadsheet *s, int n)
 {
-  if ( s->type == SPREADSHEET_ODS)
+  if (s->type == SPREADSHEET_ODS)
     return ods_get_sheet_name (s, n);
 
-  if ( s->type == SPREADSHEET_GNUMERIC)
+  if (s->type == SPREADSHEET_GNUMERIC)
     return gnumeric_get_sheet_name (s, n);
 
   return NULL;
@@ -83,10 +83,10 @@ spreadsheet_get_sheet_name (struct spreadsheet *s, int n)
 char *
 spreadsheet_get_sheet_range (struct spreadsheet *s, int n)
 {
-  if ( s->type == SPREADSHEET_ODS)
+  if (s->type == SPREADSHEET_ODS)
     return ods_get_sheet_range (s, n);
 
-  if ( s->type == SPREADSHEET_GNUMERIC)
+  if (s->type == SPREADSHEET_GNUMERIC)
     return gnumeric_get_sheet_range (s, n);
 
   return NULL;
@@ -185,8 +185,8 @@ create_cell_ref (int col0, int row0)
   char *cs0 ;
   char *s ;
 
-  if ( col0 < 0) return NULL;
-  if ( row0 < 0) return NULL;
+  if (col0 < 0) return NULL;
+  if (row0 < 0) return NULL;
 
   cs0 =  int_to_ps26 (col0);
   s =  c_xasprintf ("%s%d", cs0, row0 + 1);
@@ -229,7 +229,7 @@ convert_cell_ref (const char *ref,
   int n = sscanf (ref, "%4[a-zA-Z]%d:%4[a-zA-Z]%d",
 	      startcol, &startrow,
 	      stopcol, &stoprow);
-  if ( n != 4)
+  if (n != 4)
     return false;
 
   str_uppercase (startcol);

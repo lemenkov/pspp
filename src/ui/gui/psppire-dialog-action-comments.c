@@ -52,7 +52,7 @@ generate_syntax (const PsppireDialogAction *pda)
 
   g_string_append (str, "ADD DOCUMENT\n");
 
-  for (i = 0 ; i < gtk_text_buffer_get_line_count (buffer) ; ++i )
+  for (i = 0 ; i < gtk_text_buffer_get_line_count (buffer) ; ++i)
     {
       struct string tmp;
       GtkTextIter start;
@@ -79,7 +79,7 @@ generate_syntax (const PsppireDialogAction *pda)
   g_string_append (str, " .\n");
 
 
-  if ( gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (cd->check)))
+  if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (cd->check)))
     g_string_append (str, "DISPLAY DOCUMENTS.\n");
 
   text = str->str;
@@ -114,7 +114,7 @@ retrieve_comments (PsppireDialogAction *pda)
 
   gtk_text_buffer_set_text (buffer, "", 0);
 
-  for ( i = 0 ; i < dict_get_document_line_cnt (pda->dict->dict); ++i )
+  for (i = 0 ; i < dict_get_document_line_cnt (pda->dict->dict); ++i)
     add_line_to_buffer (buffer, dict_get_document_line (pda->dict->dict, i));
 }
 
@@ -139,7 +139,7 @@ set_column_number (GtkTextBuffer *textbuffer,
   GtkLabel *label = data;
   gchar *text ;
 
-  text = g_strdup_printf ( _("Column Number: %d"),
+  text = g_strdup_printf (_("Column Number: %d"),
 			   1 + gtk_text_iter_get_line_offset (iter));
 
   gtk_label_set_text (label, text);
@@ -156,7 +156,7 @@ wrap_line (GtkTextBuffer *buffer,
 {
   gint chars = gtk_text_iter_get_chars_in_line (iter);
 
-  if ( chars > DOC_LINE_LENGTH )
+  if (chars > DOC_LINE_LENGTH)
     {
       GtkTextIter line_fold = *iter;
 
@@ -172,7 +172,7 @@ psppire_dialog_action_comments_activate (PsppireDialogAction *pda, GVariant *par
 {
   PsppireDialogActionComments *act = PSPPIRE_DIALOG_ACTION_COMMENTS (pda);
 
-  GtkBuilder *xml = builder_new ( "comments.ui");
+  GtkBuilder *xml = builder_new ("comments.ui");
 
   pda->dialog = get_widget_assert (xml, "comments-dialog");
   act->textview = get_widget_assert (xml, "comments-textview1");

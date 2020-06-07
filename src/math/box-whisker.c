@@ -40,7 +40,7 @@ destroy (struct statistic *s)
   struct order_stats *os = &bw->parent;
   struct ll *ll;
 
-  for (ll = ll_head (&bw->outliers); ll != ll_null (&bw->outliers); )
+  for (ll = ll_head (&bw->outliers); ll != ll_null (&bw->outliers);)
     {
       struct outlier *e = ll_data (ll, struct outlier, ll);
 
@@ -63,7 +63,7 @@ acc (struct statistic *s, const struct ccase *cx,
   bool extreme;
   struct outlier *o;
 
-  if ( y > bw->hinges[2] + bw->step) /* Upper outlier */
+  if (y > bw->hinges[2] + bw->step) /* Upper outlier */
     {
       extreme = (y > bw->hinges[2] + 2 * bw->step) ;
     }

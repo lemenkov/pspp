@@ -46,7 +46,7 @@ spvbin_input_to_error (const struct spvbin_input *input, const char *name)
   if (name)
     ds_put_format (&s, "%s: ", name);
   ds_put_cstr (&s, "parse error decoding ");
-  for (size_t i = input->n_errors; i-- > 0; )
+  for (size_t i = input->n_errors; i-- > 0;)
     if (i < SPVBIN_MAX_ERRORS)
       ds_put_format (&s, "/%s@%#zx", input->errors[i].name,
                      input->errors[i].start);

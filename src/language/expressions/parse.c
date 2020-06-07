@@ -885,7 +885,7 @@ parse_primary (struct lexer *lexer, struct expression *e)
     case T_POS_NUM:
     case T_NEG_NUM:
       {
-        union any_node *node = expr_allocate_number (e, lex_tokval (lexer) );
+        union any_node *node = expr_allocate_number (e, lex_tokval (lexer));
         lex_get (lexer);
         return node;
       }

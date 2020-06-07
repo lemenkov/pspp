@@ -35,8 +35,8 @@
     TOKEN_TYPE(ASTERISK)                   /* * */                      \
     TOKEN_TYPE(SLASH)                      /* / */                      \
     TOKEN_TYPE(EQUALS)                     /* = */                      \
-    TOKEN_TYPE(LPAREN)                     /* ( */                      \
-    TOKEN_TYPE(RPAREN)                     /* ) */                      \
+    TOKEN_TYPE(LPAREN)                     /* (*/                      \
+    TOKEN_TYPE(RPAREN)                     /*) */                      \
     TOKEN_TYPE(LBRACK)                     /* [ */                      \
     TOKEN_TYPE(RBRACK)                     /* ] */                      \
     TOKEN_TYPE(COMMA)                      /* , */                      \

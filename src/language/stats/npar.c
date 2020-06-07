@@ -149,7 +149,7 @@ static int npar_method (struct lexer *, struct npar_specs *);
 
 /* Command parsing functions. */
 static int parse_npar_tests (struct lexer *lexer, struct dataset *ds, struct cmd_npar_tests *p,
-			     struct npar_specs *npar_specs );
+			     struct npar_specs *npar_specs);
 
 static int
 parse_npar_tests (struct lexer *lexer, struct dataset *ds, struct cmd_npar_tests *npt,
@@ -487,7 +487,7 @@ parse_npar_tests (struct lexer *lexer, struct dataset *ds, struct cmd_npar_tests
               lex_match (lexer, T_COMMA);
             }
         }
-      else if ( settings_get_syntax () != COMPATIBLE && lex_match_id (lexer, "ALGORITHM"))
+      else if (settings_get_syntax () != COMPATIBLE && lex_match_id (lexer, "ALGORITHM"))
         {
           lex_match (lexer, T_EQUALS);
           if (lex_match_id (lexer, "COMPATIBLE"))
@@ -528,10 +528,10 @@ npar_execute (struct casereader *input,
   int t;
   struct descriptives *summary_descriptives = NULL;
 
-  for ( t = 0 ; t < specs->n_tests; ++t )
+  for (t = 0 ; t < specs->n_tests; ++t)
     {
       const struct npar_test *test = specs->test[t];
-      if ( NULL == test->execute )
+      if (NULL == test->execute)
 	{
 	  msg (SW, _("%s subcommand not currently implemented."), "NPAR");
 	  continue;
@@ -551,8 +551,8 @@ npar_execute (struct casereader *input,
                                       specs->filter);
     }
 
-  if ( (specs->descriptives || specs->quartiles)
-       && !taint_has_tainted_successor (casereader_get_taint (input)) )
+  if ((specs->descriptives || specs->quartiles)
+       && !taint_has_tainted_successor (casereader_get_taint (input)))
     do_summary_box (summary_descriptives, specs->vv, specs->n_vars,
                     dict_get_weight_format (dataset_dict (ds)));
 
@@ -577,13 +577,13 @@ cmd_npar_tests (struct lexer *lexer, struct dataset *ds)
   npar_specs.n_vars = -1;
   npar_specs.vv = NULL;
 
-  if ( ! parse_npar_tests (lexer, ds, &cmd, &npar_specs) )
+  if (! parse_npar_tests (lexer, ds, &cmd, &npar_specs))
     {
       pool_destroy (npar_specs.pool);
       return CMD_FAILURE;
     }
 
-  for (i = 0; i < npar_specs.n_tests; ++i )
+  for (i = 0; i < npar_specs.n_tests; ++i)
     {
       const struct npar_test *test = npar_specs.test[i];
       test->insert_variables (test, &var_map);
@@ -605,15 +605,15 @@ cmd_npar_tests (struct lexer *lexer, struct dataset *ds)
   sort (npar_specs.vv, npar_specs.n_vars, sizeof (*npar_specs.vv),
 	 compare_var_ptrs_by_name, NULL);
 
-  if ( cmd.statistics )
+  if (cmd.statistics)
     {
       int i;
 
-      for ( i = 0 ; i < NPAR_ST_count; ++i )
+      for (i = 0 ; i < NPAR_ST_count; ++i)
 	{
-	  if ( cmd.a_statistics[i] )
+	  if (cmd.a_statistics[i])
 	    {
-	      switch ( i )
+	      switch (i)
 		{
 		case NPAR_ST_DESCRIPTIVES:
 		  npar_specs.descriptives = true;
@@ -633,7 +633,7 @@ cmd_npar_tests (struct lexer *lexer, struct dataset *ds)
     }
 
   input = proc_open (ds);
-  if ( cmd.miss == MISS_LISTWISE )
+  if (cmd.miss == MISS_LISTWISE)
     {
       input = casereader_create_filter_missing (input,
 						npar_specs.vv,
@@ -666,9 +666,9 @@ npar_runs (struct lexer *lexer, struct dataset *ds,
   nt->execute = runs_execute;
   nt->insert_variables = one_sample_insert_variables;
 
-  if ( lex_force_match (lexer, T_LPAREN) )
+  if (lex_force_match (lexer, T_LPAREN))
     {
-      if ( lex_match_id (lexer, "MEAN"))
+      if (lex_match_id (lexer, "MEAN"))
 	{
 	  rt->cp_mode = CP_MEAN;
 	}
@@ -830,16 +830,16 @@ npar_chisquare (struct lexer *lexer, struct dataset *ds,
 
   cstp->ranged = false;
 
-  if ( lex_match (lexer, T_LPAREN))
+  if (lex_match (lexer, T_LPAREN))
     {
       cstp->ranged = true;
-      if ( ! lex_force_num (lexer)) return 0;
+      if (! lex_force_num (lexer)) return 0;
       cstp->lo = lex_number (lexer);
       lex_get (lexer);
       if (! lex_force_match (lexer, T_COMMA)) return 0;
-      if (! lex_force_num (lexer) ) return 0;
+      if (! lex_force_num (lexer)) return 0;
       cstp->hi = lex_number (lexer);
-      if ( cstp->lo >= cstp->hi )
+      if (cstp->lo >= cstp->hi)
 	{
 	  msg (ME,
 	      _("The specified value of HI (%d) is "
@@ -856,17 +856,17 @@ npar_chisquare (struct lexer *lexer, struct dataset *ds,
   if (lex_match_phrase (lexer, "/EXPECTED"))
     {
       if (! lex_force_match (lexer, T_EQUALS)) return 0;
-      if (! lex_match_id (lexer, "EQUAL") )
+      if (! lex_match_id (lexer, "EQUAL"))
         {
           double f;
           int n;
-          while ( lex_is_number (lexer) )
+          while (lex_is_number (lexer))
             {
               int i;
               n = 1;
               f = lex_number (lexer);
               lex_get (lexer);
-              if ( lex_match (lexer, T_ASTERISK))
+              if (lex_match (lexer, T_ASTERISK))
                 {
                   n = f;
                   if (!lex_force_num (lexer))
@@ -881,17 +881,17 @@ npar_chisquare (struct lexer *lexer, struct dataset *ds,
                                              cstp->expected,
                                              sizeof (double) *
                                              cstp->n_expected);
-              for ( i = cstp->n_expected - n ;
+              for (i = cstp->n_expected - n ;
                     i < cstp->n_expected;
-                    ++i )
+                    ++i)
                 cstp->expected[i] = f;
 
             }
         }
     }
 
-  if ( cstp->ranged && cstp->n_expected > 0 &&
-       cstp->n_expected != cstp->hi - cstp->lo + 1 )
+  if (cstp->ranged && cstp->n_expected > 0 &&
+       cstp->n_expected != cstp->hi - cstp->lo + 1)
     {
       msg (ME,
 	  _("%d expected values were given, but the specified "
@@ -928,10 +928,10 @@ npar_binomial (struct lexer *lexer, struct dataset *ds,
 
   btp->p = 0.5;
 
-  if ( lex_match (lexer, T_LPAREN) )
+  if (lex_match (lexer, T_LPAREN))
     {
       equals = false;
-      if ( lex_force_num (lexer) )
+      if (lex_force_num (lexer))
 	{
 	  btp->p = lex_number (lexer);
 	  lex_get (lexer);
@@ -951,7 +951,7 @@ npar_binomial (struct lexer *lexer, struct dataset *ds,
   {
     if (parse_variables_const_pool (lexer, specs->pool, dataset_dict (ds),
                                     &tp->vars, &tp->n_vars,
-                                    PV_NUMERIC | PV_NO_SCRATCH | PV_NO_DUPLICATE) )
+                                    PV_NUMERIC | PV_NO_SCRATCH | PV_NO_DUPLICATE))
       {
         if (lex_match (lexer, T_LPAREN))
           {
@@ -959,9 +959,9 @@ npar_binomial (struct lexer *lexer, struct dataset *ds,
               return 2;
             btp->category1 = lex_number (lexer);
             lex_get (lexer);
-            if ( lex_match (lexer, T_COMMA))
+            if (lex_match (lexer, T_COMMA))
               {
-                if ( ! lex_force_num (lexer) ) return 2;
+                if (! lex_force_num (lexer)) return 2;
                 btp->category2 = lex_number (lexer);
                 lex_get (lexer);
               }
@@ -1002,7 +1002,7 @@ ks_one_sample_parse_params (struct lexer *lexer, struct ks_one_sample_test *kst,
       kst->p[0] = lex_number (lexer);
 
       lex_get (lexer);
-      if ( params == 2)
+      if (params == 2)
 	{
 	  lex_match (lexer, T_COMMA);
 	  if (lex_force_num (lexer))
@@ -1059,7 +1059,7 @@ npar_ks_one_sample (struct lexer *lexer, struct dataset *ds, struct npar_specs *
 
   if (! parse_variables_const_pool (lexer, specs->pool, dataset_dict (ds),
 				  &tp->vars, &tp->n_vars,
-				  PV_NUMERIC | PV_NO_SCRATCH | PV_NO_DUPLICATE) )
+				  PV_NUMERIC | PV_NO_SCRATCH | PV_NO_DUPLICATE))
     return 2;
 
   specs->n_tests++;
@@ -1093,15 +1093,15 @@ parse_two_sample_related_test (struct lexer *lexer,
   if (!parse_variables_const_pool (lexer, pool,
 				   dict,
 				   &vlist1, &n_vlist1,
-				   PV_NUMERIC | PV_NO_SCRATCH | PV_DUPLICATE) )
+				   PV_NUMERIC | PV_NO_SCRATCH | PV_DUPLICATE))
     return false;
 
-  if ( lex_match (lexer, T_WITH))
+  if (lex_match (lexer, T_WITH))
     {
       with = true;
-      if ( !parse_variables_const_pool (lexer, pool, dict,
+      if (!parse_variables_const_pool (lexer, pool, dict,
 					&vlist2, &n_vlist2,
-					PV_NUMERIC | PV_NO_SCRATCH | PV_DUPLICATE) )
+					PV_NUMERIC | PV_NO_SCRATCH | PV_DUPLICATE))
 	return false;
 
       paired = (lex_match (lexer, T_LPAREN) &&
@@ -1109,11 +1109,11 @@ parse_two_sample_related_test (struct lexer *lexer,
     }
 
 
-  if ( with )
+  if (with)
     {
       if (paired)
 	{
-	  if ( n_vlist1 != n_vlist2)
+	  if (n_vlist1 != n_vlist2)
             {
 	      msg (SE, _("PAIRED was specified but the number of variables "
 		       "preceding WITH (%zu) did not match the number "
@@ -1134,15 +1134,15 @@ parse_two_sample_related_test (struct lexer *lexer,
     }
 
   test_parameters->pairs =
-    pool_alloc (pool, sizeof ( variable_pair) * test_parameters->n_pairs);
+    pool_alloc (pool, sizeof (variable_pair) * test_parameters->n_pairs);
 
-  if ( with )
+  if (with)
     {
       if (paired)
 	{
 	  int i;
 	  assert (n_vlist1 == n_vlist2);
-	  for ( i = 0 ; i < n_vlist1; ++i )
+	  for (i = 0 ; i < n_vlist1; ++i)
 	    {
 	      test_parameters->pairs[n][0] = vlist1[i];
 	      test_parameters->pairs[n][1] = vlist2[i];
@@ -1152,9 +1152,9 @@ parse_two_sample_related_test (struct lexer *lexer,
       else
 	{
 	  int i,j;
-	  for ( i = 0 ; i < n_vlist1; ++i )
+	  for (i = 0 ; i < n_vlist1; ++i)
 	    {
-	      for ( j = 0 ; j < n_vlist2; ++j )
+	      for (j = 0 ; j < n_vlist2; ++j)
 		{
 		  test_parameters->pairs[n][0] = vlist1[i];
 		  test_parameters->pairs[n][1] = vlist2[j];
@@ -1166,11 +1166,11 @@ parse_two_sample_related_test (struct lexer *lexer,
   else
     {
       int i,j;
-      for ( i = 0 ; i < n_vlist1 - 1; ++i )
+      for (i = 0 ; i < n_vlist1 - 1; ++i)
 	{
-	  for ( j = i + 1 ; j < n_vlist1; ++j )
+	  for (j = i + 1 ; j < n_vlist1; ++j)
 	    {
-	      assert ( n < test_parameters->n_pairs);
+	      assert (n < test_parameters->n_pairs);
 	      test_parameters->pairs[n][0] = vlist1[i];
 	      test_parameters->pairs[n][1] = vlist1[j];
 	      n++;
@@ -1178,7 +1178,7 @@ parse_two_sample_related_test (struct lexer *lexer,
 	}
     }
 
-  assert ( n == test_parameters->n_pairs);
+  assert (n == test_parameters->n_pairs);
 
   return true;
 }
@@ -1189,26 +1189,26 @@ parse_n_sample_related_test (struct lexer *lexer,
 			     const struct dictionary *dict,
 			     struct n_sample_test *nst,
 			     struct pool *pool
-			     )
+			)
 {
   if (!parse_variables_const_pool (lexer, pool,
 				   dict,
 				   &nst->vars, &nst->n_vars,
-				   PV_NUMERIC | PV_NO_SCRATCH | PV_NO_DUPLICATE) )
+				   PV_NUMERIC | PV_NO_SCRATCH | PV_NO_DUPLICATE))
     return false;
 
-  if ( ! lex_force_match (lexer, T_BY))
+  if (! lex_force_match (lexer, T_BY))
     return false;
 
   nst->indep_var = parse_variable_const (lexer, dict);
   if (!nst->indep_var)
     return false;
 
-  if ( ! lex_force_match (lexer, T_LPAREN))
+  if (! lex_force_match (lexer, T_LPAREN))
     return false;
 
   value_init (&nst->val1, var_get_width (nst->indep_var));
-  if ( ! parse_value (lexer, &nst->val1, nst->indep_var))
+  if (! parse_value (lexer, &nst->val1, nst->indep_var))
     {
       value_destroy (&nst->val1, var_get_width (nst->indep_var));
       return false;
@@ -1217,13 +1217,13 @@ parse_n_sample_related_test (struct lexer *lexer,
   lex_match (lexer, T_COMMA);
 
   value_init (&nst->val2, var_get_width (nst->indep_var));
-  if ( ! parse_value (lexer, &nst->val2, nst->indep_var))
+  if (! parse_value (lexer, &nst->val2, nst->indep_var))
     {
       value_destroy (&nst->val2, var_get_width (nst->indep_var));
       return false;
     }
 
-  if ( ! lex_force_match (lexer, T_RPAREN))
+  if (! lex_force_match (lexer, T_RPAREN))
     return false;
 
   return true;
@@ -1232,14 +1232,14 @@ parse_n_sample_related_test (struct lexer *lexer,
 static int
 npar_wilcoxon (struct lexer *lexer,
 	       struct dataset *ds,
-	       struct npar_specs *specs )
+	       struct npar_specs *specs)
 {
   struct two_sample_test *tp = pool_alloc (specs->pool, sizeof (*tp));
   struct npar_test *nt = &tp->parent;
   nt->execute = wilcoxon_execute;
 
   if (!parse_two_sample_related_test (lexer, dataset_dict (ds),
-				      tp, specs->pool) )
+				      tp, specs->pool))
     return 0;
 
   specs->n_tests++;
@@ -1255,7 +1255,7 @@ npar_wilcoxon (struct lexer *lexer,
 static int
 npar_mann_whitney (struct lexer *lexer,
 	       struct dataset *ds,
-	       struct npar_specs *specs )
+	       struct npar_specs *specs)
 {
   struct n_sample_test *tp = pool_alloc (specs->pool, sizeof (*tp));
   struct npar_test *nt = &tp->parent;
@@ -1264,7 +1264,7 @@ npar_mann_whitney (struct lexer *lexer,
   nt->execute = mann_whitney_execute;
 
   if (!parse_n_sample_related_test (lexer, dataset_dict (ds),
-				    tp, specs->pool) )
+				    tp, specs->pool))
     return 0;
 
   specs->n_tests++;
@@ -1288,7 +1288,7 @@ npar_median (struct lexer *lexer,
 
   mt->median = SYSMIS;
 
-  if ( lex_match (lexer, T_LPAREN) && lex_force_num (lexer))
+  if (lex_match (lexer, T_LPAREN) && lex_force_num (lexer))
     {
       mt->median = lex_number (lexer);
       lex_get (lexer);
@@ -1302,7 +1302,7 @@ npar_median (struct lexer *lexer,
   nt->execute = median_execute;
 
   if (!parse_n_sample_related_test (lexer, dataset_dict (ds),
-				    tp, specs->pool) )
+				    tp, specs->pool))
     return 0;
 
   specs->n_tests++;
@@ -1325,7 +1325,7 @@ npar_sign (struct lexer *lexer, struct dataset *ds,
   nt->execute = sign_execute;
 
   if (!parse_two_sample_related_test (lexer, dataset_dict (ds),
-				      tp, specs->pool) )
+				      tp, specs->pool))
     return 0;
 
   specs->n_tests++;
@@ -1348,7 +1348,7 @@ npar_mcnemar (struct lexer *lexer, struct dataset *ds,
   nt->execute = mcnemar_execute;
 
   if (!parse_two_sample_related_test (lexer, dataset_dict (ds),
-				      tp, specs->pool) )
+				      tp, specs->pool))
     return 0;
 
   specs->n_tests++;
@@ -1373,7 +1373,7 @@ npar_jonckheere_terpstra (struct lexer *lexer, struct dataset *ds,
   nt->execute = jonckheere_terpstra_execute;
 
   if (!parse_n_sample_related_test (lexer, dataset_dict (ds),
-				      tp, specs->pool) )
+				      tp, specs->pool))
     return 0;
 
   specs->n_tests++;
@@ -1397,7 +1397,7 @@ npar_kruskal_wallis (struct lexer *lexer, struct dataset *ds,
   nt->execute = kruskal_wallis_execute;
 
   if (!parse_n_sample_related_test (lexer, dataset_dict (ds),
-				      tp, specs->pool) )
+				      tp, specs->pool))
     return 0;
 
   specs->n_tests++;
@@ -1418,7 +1418,7 @@ insert_variable_into_map (struct hmapx *var_map, const struct variable *var)
 
   HMAPX_FOR_EACH_WITH_HASH (v, node, hash, var_map)
     {
-      if ( v == var)
+      if (v == var)
 	return ;
     }
 
@@ -1433,7 +1433,7 @@ one_sample_insert_variables (const struct npar_test *test,
   int i;
   const struct one_sample_test *ost = UP_CAST (test, const struct one_sample_test, parent);
 
-  for ( i = 0 ; i < ost->n_vars ; ++i )
+  for (i = 0 ; i < ost->n_vars ; ++i)
     insert_variable_into_map (var_map, ost->vars[i]);
 }
 
@@ -1445,7 +1445,7 @@ two_sample_insert_variables (const struct npar_test *test,
   int i;
   const struct two_sample_test *tst = UP_CAST (test, const struct two_sample_test, parent);
 
-  for ( i = 0 ; i < tst->n_pairs ; ++i )
+  for (i = 0 ; i < tst->n_pairs ; ++i)
     {
       variable_pair *pair = &tst->pairs[i];
 
@@ -1461,7 +1461,7 @@ n_sample_insert_variables (const struct npar_test *test,
   int i;
   const struct n_sample_test *tst = UP_CAST (test, const struct n_sample_test, parent);
 
-  for ( i = 0 ; i < tst->n_vars ; ++i )
+  for (i = 0 ; i < tst->n_vars ; ++i)
     insert_variable_into_map (var_map, tst->vars[i]);
 
   insert_variable_into_map (var_map, tst->indep_var);
@@ -1471,7 +1471,7 @@ n_sample_insert_variables (const struct npar_test *test,
 static int
 npar_method (struct lexer *lexer,  struct npar_specs *specs)
 {
-  if ( lex_match_id (lexer, "EXACT") )
+  if (lex_match_id (lexer, "EXACT"))
     {
       specs->exact = true;
       specs->timer = 0.0;
@@ -1479,9 +1479,9 @@ npar_method (struct lexer *lexer,  struct npar_specs *specs)
 	{
 	  specs->timer = 5.0;
 
-	  if ( lex_match (lexer, T_LPAREN))
+	  if (lex_match (lexer, T_LPAREN))
 	    {
-	      if (lex_force_num (lexer) )
+	      if (lex_force_num (lexer))
 		{
 		  specs->timer = lex_number (lexer);
 		  lex_get (lexer);

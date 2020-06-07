@@ -65,9 +65,9 @@ boxplot_draw_box (cairo_t *cr, const struct xrchart_geometry *geom,
   box_whisker_whiskers (bw, whisker);
   box_whisker_hinges (bw, hinge);
 
-  box_bottom = geom->axis[SCALE_ORDINATE].data_min + (hinge[0] - geom->axis[SCALE_ORDINATE].min ) * geom->axis[SCALE_ORDINATE].scale;
+  box_bottom = geom->axis[SCALE_ORDINATE].data_min + (hinge[0] - geom->axis[SCALE_ORDINATE].min) * geom->axis[SCALE_ORDINATE].scale;
 
-  box_top = geom->axis[SCALE_ORDINATE].data_min + (hinge[2] - geom->axis[SCALE_ORDINATE].min ) * geom->axis[SCALE_ORDINATE].scale;
+  box_top = geom->axis[SCALE_ORDINATE].data_min + (hinge[2] - geom->axis[SCALE_ORDINATE].min) * geom->axis[SCALE_ORDINATE].scale;
 
   bottom_whisker = geom->axis[SCALE_ORDINATE].data_min + (whisker[0] - geom->axis[SCALE_ORDINATE].min) *
     geom->axis[SCALE_ORDINATE].scale;
@@ -107,7 +107,7 @@ boxplot_draw_box (cairo_t *cr, const struct xrchart_geometry *geom,
   cairo_stroke (cr);
 
   /* Draw top whisker */
-  if (! isnan (top_whisker) )
+  if (! isnan (top_whisker))
     {
       cairo_move_to (cr, box_left, top_whisker);
       cairo_line_to (cr, box_right, top_whisker);

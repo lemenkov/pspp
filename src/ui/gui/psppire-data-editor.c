@@ -138,7 +138,7 @@ psppire_data_editor_set_property (GObject         *object,
       g_object_set (de->var_sheet, "split", de->split, NULL);
       break;
     case PROP_DATA_STORE:
-      if ( de->data_store)
+      if (de->data_store)
         {
           g_signal_handlers_disconnect_by_func (de->data_store,
                                                 G_CALLBACK (refresh_entry),
@@ -269,7 +269,7 @@ psppire_data_editor_class_init (PsppireDataEditorClass *klass)
     g_param_spec_pointer ("data-store",
 			  "Data Store",
 			  "A pointer to the data store associated with this editor",
-			  G_PARAM_CONSTRUCT_ONLY | G_PARAM_WRITABLE | G_PARAM_READABLE );
+			  G_PARAM_CONSTRUCT_ONLY | G_PARAM_WRITABLE | G_PARAM_READABLE);
 
   g_object_class_install_property (object_class,
                                    PROP_DATA_STORE,
@@ -279,7 +279,7 @@ psppire_data_editor_class_init (PsppireDataEditorClass *klass)
     g_param_spec_pointer ("dictionary",
 			  "Dictionary",
 			  "A pointer to the dictionary associated with this editor",
-			  G_PARAM_CONSTRUCT_ONLY | G_PARAM_WRITABLE | G_PARAM_READABLE );
+			  G_PARAM_CONSTRUCT_ONLY | G_PARAM_WRITABLE | G_PARAM_READABLE);
 
   g_object_class_install_property (object_class,
                                    PROP_DICTIONARY,
@@ -537,7 +537,7 @@ psppire_data_editor_init (PsppireDataEditor *de)
 
   if (psppire_conf_get_string (psppire_conf_new (),
 			   "Data Editor", "font",
-				&fontname) )
+				&fontname))
     {
       de->font = pango_font_description_from_string (fontname);
       g_free (fontname);
@@ -600,7 +600,7 @@ set_font_recursively (GtkWidget *w, gpointer data)
   g_object_unref (cssp);
 
 
-  if ( GTK_IS_CONTAINER (w))
+  if (GTK_IS_CONTAINER (w))
     gtk_container_foreach (GTK_CONTAINER (w), set_font_recursively, font_desc);
 }
 

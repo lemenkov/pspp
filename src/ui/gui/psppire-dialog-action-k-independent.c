@@ -57,7 +57,7 @@ generate_syntax (const PsppireDialogAction *act)
     {
       g_string_append (string, "\n\t");
 
-      if ( gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (kid->checkbutton[i])))
+      if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (kid->checkbutton[i])))
 	{
 	  g_string_append_printf (string, "/%s = ", keyword[i]);
 	  psppire_var_view_append_names (PSPPIRE_VAR_VIEW (kid->vars_treeview),
@@ -95,10 +95,10 @@ dialog_state_valid (gpointer data)
 
   GtkTreeIter notused;
 
-  if ( !gtk_tree_model_get_iter_first (vars, &notused) )
+  if (!gtk_tree_model_get_iter_first (vars, &notused))
     return FALSE;
 
-  if ( 0 == strcmp ("", gtk_entry_get_text (GTK_ENTRY (kid->groupvar_entry))))
+  if (0 == strcmp ("", gtk_entry_get_text (GTK_ENTRY (kid->groupvar_entry))))
     return FALSE;
 
   gboolean method_set = FALSE;
@@ -175,7 +175,7 @@ psppire_dialog_action_k_independent_activate (PsppireDialogAction *a, GVariant *
   PsppireDialogAction *pda = PSPPIRE_DIALOG_ACTION (a);
   PsppireDialogActionKIndependent *kid = PSPPIRE_DIALOG_ACTION_K_INDEPENDENT (a);
 
-  GtkBuilder *xml = builder_new ( "k-independent.ui");
+  GtkBuilder *xml = builder_new ("k-independent.ui");
 
   pda->dialog = get_widget_assert   (xml, "k-independent-dialog");
   pda->source = get_widget_assert   (xml, "k-independent-treeview1");

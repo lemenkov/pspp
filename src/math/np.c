@@ -47,7 +47,7 @@ acc (struct statistic *s, const struct ccase *cx UNUSED,
   struct np *np = UP_CAST (s, struct np, parent.parent);
   double rank = np->prev_cc + (c + 1) / 2.0;
 
-  double ns = gsl_cdf_ugaussian_Pinv (rank / ( np->n + 1 ));
+  double ns = gsl_cdf_ugaussian_Pinv (rank / (np->n + 1));
 
   double z = (y - np->mean) / np->stddev;
 

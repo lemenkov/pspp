@@ -209,7 +209,7 @@ transformation_change_callback (bool transformations_pending,
 				 transformations_pending);
   }
 
-  if ( transformations_pending)
+  if (transformations_pending)
     gtk_label_set_text (GTK_LABEL (status_label),
 			_("Transformations Pending"));
   else
@@ -225,7 +225,7 @@ on_filter_change (GObject *o, gint filter_index, gpointer data)
   GtkWidget *filter_status_area =
     get_widget_assert (de->builder, "filter-use-status-area");
 
-  if ( filter_index == -1 )
+  if (filter_index == -1)
     {
       gtk_label_set_text (GTK_LABEL (filter_status_area), _("Filter off"));
     }
@@ -258,7 +258,7 @@ on_split_change (PsppireDict *dict, gpointer data)
   GtkWidget *split_status_area =
     get_widget_assert (de->builder, "split-file-status-area");
 
-  if ( n_split_vars == 0 )
+  if (n_split_vars == 0)
     {
       gtk_label_set_text (GTK_LABEL (split_status_area), _("No Split"));
     }
@@ -271,7 +271,7 @@ on_split_change (PsppireDict *dict, gpointer data)
 
       text = g_string_new (_("Split by "));
 
-      for (i = 0 ; i < n_split_vars - 1; ++i )
+      for (i = 0 ; i < n_split_vars - 1; ++i)
 	{
 	  g_string_append_printf (text, "%s, ", var_get_name (split_vars[i]));
 	}
@@ -295,7 +295,7 @@ on_weight_change (GObject *o, gint weight_index, gpointer data)
   GtkWidget *weight_status_area =
     get_widget_assert (de->builder, "weight-status-area");
 
-  if ( weight_index == -1 )
+  if (weight_index == -1)
     {
       gtk_label_set_text (GTK_LABEL (weight_status_area), _("Weights off"));
     }
@@ -335,7 +335,7 @@ dump_rm (GtkRecentManager *rm)
 	       gtk_recent_info_get_mime_type (ri),
 	       gtk_recent_info_get_description (ri),
 	       gtk_recent_info_get_uri (ri)
-	       );
+	);
 
 
       gtk_recent_info_unref (ri);
@@ -451,7 +451,7 @@ save_file (PsppireWindow *w)
 
   fnx = g_string_new (file_name);
 
-  if ( ! name_has_suffix (fnx->str))
+  if (! name_has_suffix (fnx->str))
     g_string_append (fnx, psppire_data_window_format_to_string (de->format));
 
   ds_init_empty (&filename);
@@ -488,7 +488,7 @@ sysfile_info (PsppireDataWindow *de)
 {
   GtkWidget *dialog = psppire_window_file_chooser_dialog (PSPPIRE_WINDOW (de));
 
-  if  ( GTK_RESPONSE_ACCEPT == gtk_dialog_run (GTK_DIALOG (dialog)))
+  if  (GTK_RESPONSE_ACCEPT == gtk_dialog_run (GTK_DIALOG (dialog)))
     {
       struct string filename;
       gchar *file_name =
@@ -613,7 +613,7 @@ data_pick_filename (PsppireWindow *window)
 	  g_string_new
 	  (
 	   gtk_file_chooser_get_filename (GTK_FILE_CHOOSER (dialog))
-	   );
+	);
 
         GtkTreeIter iter;
         int format;
@@ -624,7 +624,7 @@ data_pick_filename (PsppireWindow *window)
                             -1);
 	de->format = format;
 
-	if ( ! name_has_suffix (filename->str))
+	if (! name_has_suffix (filename->str))
           g_string_append (filename,
                            psppire_data_window_format_to_string (format));
 
@@ -801,7 +801,7 @@ fonts_activate (PsppireDataWindow  *de)
   gtk_window_set_transient_for (GTK_WINDOW (dialog),
 				GTK_WINDOW (toplevel));
 
-  if ( GTK_RESPONSE_OK == gtk_dialog_run (GTK_DIALOG (dialog)) )
+  if (GTK_RESPONSE_OK == gtk_dialog_run (GTK_DIALOG (dialog)))
     {
       PangoFontDescription* font_desc = gtk_font_chooser_get_font_desc (GTK_FONT_CHOOSER (dialog));
 
@@ -920,7 +920,7 @@ on_recent_files_select (GtkMenuShell *menushell,   gpointer user_data)
 
   free (encoding);
 
-  if ( psppire_window_load (PSPPIRE_WINDOW (se), file, encoding, NULL) )
+  if (psppire_window_load (PSPPIRE_WINDOW (se), file, encoding, NULL))
     gtk_widget_show (se);
   else
     gtk_widget_destroy (se);

@@ -534,7 +534,7 @@ clipboard_get_cb (GtkClipboard     *clipboard,
   GList *rows = gtk_tree_selection_get_selected_rows (sel, &model);
   GList *n = rows;
 
-  if ( n == NULL)
+  if (n == NULL)
     return;
 
   if (path_search (dirname, sizeof dirname, NULL, NULL, true)
@@ -592,7 +592,7 @@ clipboard_get_cb (GtkClipboard     *clipboard,
       n = n->next;
     }
 
-  if ( driver->class->flush)
+  if (driver->class->flush)
     driver->class->flush (driver);
 
 
@@ -601,7 +601,7 @@ clipboard_get_cb (GtkClipboard     *clipboard,
   output_driver_destroy (driver);
   driver = NULL;
 
-  if ( g_file_get_contents (filename, &text, &length, NULL) )
+  if (g_file_get_contents (filename, &text, &length, NULL))
     {
       gtk_selection_data_set (selection_data, gtk_selection_data_get_target (selection_data),
 			      8,
@@ -902,7 +902,7 @@ paginate (GtkPrintOperation *operation,
          complete.  Don't let that screw up printing. */
       return TRUE;
     }
-  else if ( view->print_item < view->n_items )
+  else if (view->print_item < view->n_items)
     {
       xr_driver_output_item (view->print_xrd,
                              view->items[view->print_item++].item);

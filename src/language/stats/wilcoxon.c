@@ -99,7 +99,7 @@ wilcoxon_execute (const struct dataset *ds,
   if (weight != NULL)
     proto = caseproto_add_width (proto, 0);
 
-  for (i = 0 ; i < t2s->n_pairs; ++i )
+  for (i = 0 ; i < t2s->n_pairs; ++i)
     {
       struct casereader *r = casereader_clone (input);
       struct casewriter *writer;
@@ -156,7 +156,7 @@ wilcoxon_execute (const struct dataset *ds,
     }
   caseproto_unref (proto);
 
-  for (i = 0 ; i < t2s->n_pairs; ++i )
+  for (i = 0 ; i < t2s->n_pairs; ++i)
     {
       struct casereader *rr ;
       struct ccase *c;
@@ -165,7 +165,7 @@ wilcoxon_execute (const struct dataset *ds,
       rr = casereader_create_append_rank (ws[i].reader, ws[i].absdiff,
 					  weight ? weightx : NULL, &err,
 					  distinct_callback, &ws[i]
-					  );
+					);
 
       for (; (c = casereader_read (rr)) != NULL; case_unref (c))
 	{
@@ -175,7 +175,7 @@ wilcoxon_execute (const struct dataset *ds,
 	  if (weight)
 	    w = case_data (c, weightx)->f;
 
-	  if ( sign > 0 )
+	  if (sign > 0)
 	    {
 	      ws[i].positives.sum += rank * w;
 	      ws[i].positives.n += w;
@@ -199,7 +199,7 @@ wilcoxon_execute (const struct dataset *ds,
   show_ranks_box (ws, t2s, dict);
   show_tests_box (ws, t2s, exact, timer);
 
-  for (i = 0 ; i < t2s->n_pairs; ++i )
+  for (i = 0 ; i < t2s->n_pairs; ++i)
     {
       dict_destroy_internal_var (ws[i].sign);
       dict_destroy_internal_var (ws[i].absdiff);

@@ -184,7 +184,7 @@ on_charts_clicked (PsppireDialogActionFrequencies *fd)
 
   ret = psppire_dialog_run (PSPPIRE_DIALOG (fd->charts_dialog));
 
-  if ( ret == PSPPIRE_RESPONSE_CONTINUE )
+  if (ret == PSPPIRE_RESPONSE_CONTINUE)
     {
       fd->charts_opts_use_min = gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (fd->min));
       fd->charts_opts_min = gtk_spin_button_get_value (GTK_SPIN_BUTTON (fd->min_spin));
@@ -257,7 +257,7 @@ psppire_dialog_action_frequencies_activate (PsppireDialogAction *a, GVariant *pa
   PsppireDialogActionFrequencies *act = PSPPIRE_DIALOG_ACTION_FREQUENCIES (a);
   PsppireDialogAction *pda = PSPPIRE_DIALOG_ACTION (a);
 
-  GtkBuilder *xml = builder_new ( "frequencies.ui");
+  GtkBuilder *xml = builder_new ("frequencies.ui");
 
   GtkWidget *stats_treeview = get_widget_assert (xml, "stats-treeview");
 

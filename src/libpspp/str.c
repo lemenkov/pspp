@@ -1621,7 +1621,7 @@ ds_relocate (struct string *st)
   const char *orig = ds_cstr (st);
   const char *rel = relocate (orig);
 
-  if ( orig != rel)
+  if (orig != rel)
     {
       ds_clear (st);
       ds_put_cstr (st, rel);

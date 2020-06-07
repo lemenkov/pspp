@@ -308,7 +308,7 @@ draw_tick_internal (cairo_t *cr, const struct xrchart_geometry *geom,
 
       if (orientation == SCALE_ABSCISSA)
 	{
-	  if ( rotated)
+	  if (rotated)
 	    xrchart_label_rotate (cr, 'l', 'c', geom->font_size, s, -G_PI_4);
 	  else
 	    xrchart_label (cr, 'c', 't', geom->font_size, s);
@@ -469,7 +469,7 @@ xrchart_write_legend (cairo_t *cr, const struct xrchart_geometry *geom)
   const int swatch = 20;
   const int legend_top = geom->axis[SCALE_ORDINATE].data_max;
   const int legend_bottom = legend_top -
-    (vstep * geom->n_datasets + 2 * ypad );
+    (vstep * geom->n_datasets + 2 * ypad);
 
   cairo_save (cr);
 
@@ -478,7 +478,7 @@ xrchart_write_legend (cairo_t *cr, const struct xrchart_geometry *geom)
                    legend_bottom - legend_top);
   cairo_stroke (cr);
 
-  for (i = 0 ; i < geom->n_datasets ; ++i )
+  for (i = 0 ; i < geom->n_datasets ; ++i)
     {
       const int ypos = legend_top - vstep * (i + 1);
       const int xpos = geom->legend_left + xpad;
@@ -578,10 +578,10 @@ xrchart_line(cairo_t *cr, const struct xrchart_geometry *geom,
   double x1, y1;
   double x2, y2;
 
-  if ( lim_dim == XRCHART_DIM_Y )
+  if (lim_dim == XRCHART_DIM_Y)
     {
-      x1 = ( limit1 - intercept ) / slope;
-      x2 = ( limit2 - intercept ) / slope;
+      x1 = (limit1 - intercept) / slope;
+      x2 = (limit2 - intercept) / slope;
       y1 = limit1;
       y2 = limit2;
     }

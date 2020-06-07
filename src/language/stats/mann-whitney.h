@@ -36,6 +36,6 @@ void mann_whitney_execute (const struct dataset *ds,
 		       const struct npar_test *test,
 		       bool exact,
 		       double timer
-		       );
+		);
 
 #endif

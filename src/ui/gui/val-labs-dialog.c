@@ -232,14 +232,14 @@ select_treeview_from_value (GtkTreeView *treeview, union value *val)
 
       v.f = g_value_get_double (&gvalue);
 
-      if ( 0 == memcmp (&v, val, sizeof (union value)))
+      if (0 == memcmp (&v, val, sizeof (union value)))
 	{
 	  break;
 	}
     }
 
   path = gtk_tree_model_get_path (model, &iter);
-  if ( path )
+  if (path)
     {
       gtk_tree_view_set_cursor (treeview, path, 0, 0);
       gtk_tree_path_free (path);
@@ -268,7 +268,7 @@ on_value_entry_change (GtkEntry *entry, gpointer data)
   gtk_entry_set_text (GTK_ENTRY (dialog->label_entry),"");
 
 
-  if ( (s = val_labs_find (dialog->labs, &v)) )
+  if ((s = val_labs_find (dialog->labs, &v)))
     {
       gtk_entry_set_text (GTK_ENTRY (dialog->label_entry), s);
       gtk_widget_set_sensitive (dialog->add_button, FALSE);
@@ -376,7 +376,7 @@ on_add (GtkWidget *w, gpointer data)
     {
       if (val_labs_add (dialog->labs, &v,
 			gtk_entry_get_text
-			( GTK_ENTRY (dialog->label_entry)) ) )
+			(GTK_ENTRY (dialog->label_entry))))
 	{
 	  gtk_widget_set_sensitive (dialog->add_button, FALSE);
 

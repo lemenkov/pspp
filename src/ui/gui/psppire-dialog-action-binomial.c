@@ -67,10 +67,10 @@ dialog_state_valid (gpointer data)
 
   GtkTreeIter notused;
 
-  if ( !gtk_tree_model_get_iter_first (vars, &notused) )
+  if (!gtk_tree_model_get_iter_first (vars, &notused))
     return FALSE;
 
-  if ( ! get_proportion (act, &prop))
+  if (! get_proportion (act, &prop))
     return FALSE;
 
   if (prop < 0 || prop > 1.0)
@@ -102,7 +102,7 @@ psppire_dialog_action_binomial_activate (PsppireDialogAction *a, GVariant *param
   PsppireDialogActionBinomial *act = PSPPIRE_DIALOG_ACTION_BINOMIAL (a);
   PsppireDialogAction *pda = PSPPIRE_DIALOG_ACTION (a);
 
-  GtkBuilder *xml = builder_new ( "binomial.ui");
+  GtkBuilder *xml = builder_new ("binomial.ui");
 
   pda->dialog = get_widget_assert   (xml, "binomial-dialog");
   pda->source = get_widget_assert   (xml, "dict-view");
@@ -137,14 +137,14 @@ generate_syntax (const PsppireDialogAction *a)
 
   ds_init_cstr (&str, "NPAR TEST\n\t/BINOMIAL");
 
-  if ( get_proportion (scd, &prop))
+  if (get_proportion (scd, &prop))
     ds_put_c_format (&str, "(%.*g)", DBL_DIG + 1, prop);
 
   ds_put_cstr (&str, " =");
 
   psppire_var_view_append_names_str (PSPPIRE_VAR_VIEW (scd->var_view), 0, &str);
 
-  if ( gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (scd->cutpoint_button)))
+  if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (scd->cutpoint_button)))
     {
       const gchar *cutpoint = gtk_entry_get_text (GTK_ENTRY (scd->cutpoint_entry));
       ds_put_c_format  (&str, "(%s)", cutpoint);

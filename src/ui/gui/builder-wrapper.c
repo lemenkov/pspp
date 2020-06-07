@@ -27,7 +27,7 @@ builder_new_real (const gchar *name)
   GtkBuilder *builder = gtk_builder_new ();
 
   GError *err = NULL;
-  if ( ! gtk_builder_add_from_file (builder, name,  &err))
+  if (! gtk_builder_add_from_file (builder, name,  &err))
     {
       g_critical ("Couldn\'t open user interface  file %s: %s", name, err->message);
       g_clear_error (&err);
@@ -44,9 +44,9 @@ get_object_assert (GtkBuilder *builder, const gchar *name, GType type)
 
   o = gtk_builder_get_object (builder, name);
 
-  if ( !o )
+  if (!o)
     g_critical ("Object `%s' could not be found\n", name);
-  else if ( ! g_type_is_a (G_OBJECT_TYPE (o), type))
+  else if (! g_type_is_a (G_OBJECT_TYPE (o), type))
    {
      g_critical ("Object `%s' was expected to have type %s, but in fact has type %s",
 	name, g_type_name (type), G_OBJECT_TYPE_NAME (o));

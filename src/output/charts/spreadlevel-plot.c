@@ -53,7 +53,7 @@ spreadlevel_plot_add (struct chart_item *ci, double spread, double level)
 {
   struct spreadlevel_plot_chart *sl = to_spreadlevel_plot_chart (ci);
 
-  if ( sl->tx_pwr == 0)
+  if (sl->tx_pwr == 0)
     {
       spread = log (spread);
       level = log (level);

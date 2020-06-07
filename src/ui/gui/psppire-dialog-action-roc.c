@@ -55,7 +55,7 @@ dialog_state_valid (gpointer data)
 
   var = psppire_dict_lookup_var (PSPPIRE_DIALOG_ACTION (rd)->dict, var_name);
 
-  if ( var == NULL)
+  if (var == NULL)
     return FALSE;
 
   width = var_get_width (var);
@@ -74,9 +74,9 @@ dialog_state_valid (gpointer data)
 static void
 on_curve_button_toggle (GtkCheckButton *curve, PsppireDialogActionRoc *rd)
 {
-  if ( !gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (curve)))
+  if (!gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (curve)))
     {
-      if ( gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (rd->reference)))
+      if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (rd->reference)))
 	g_object_set (rd->reference, "inconsistent", TRUE, NULL);
       g_object_set (rd->reference, "sensitive", FALSE, NULL);
     }
@@ -114,7 +114,7 @@ on_state_var_changed (PsppireDialogAction *a)
   const struct variable *var =
     psppire_dict_lookup_var (PSPPIRE_DIALOG_ACTION(act)->dict, var_name);
 
-  if ( var == NULL)
+  if (var == NULL)
     return;
 
   psppire_value_entry_set_variable (PSPPIRE_VALUE_ENTRY (act->state_value), var);
@@ -126,7 +126,7 @@ psppire_dialog_action_roc_activate (PsppireDialogAction *a, GVariant *param)
   PsppireDialogActionRoc *act = PSPPIRE_DIALOG_ACTION_ROC (a);
   PsppireDialogAction *pda = PSPPIRE_DIALOG_ACTION (a);
 
-  GtkBuilder *xml = builder_new ( "roc.ui");
+  GtkBuilder *xml = builder_new ("roc.ui");
 
   pda->dialog = get_widget_assert   (xml, "roc-dialog");
   pda->source = get_widget_assert   (xml, "dict-view");
@@ -200,10 +200,10 @@ generate_syntax (const PsppireDialogAction *a)
 
   /* The /PLOT subcommand */
   g_string_append (string, "\n\t/PLOT ");
-  if ( gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (rd->curve)))
+  if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (rd->curve)))
     {
       g_string_append (string, "CURVE");
-      if ( gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (rd->reference)))
+      if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (rd->reference)))
 	g_string_append (string, " (REFERENCE)");
     }
   else
@@ -211,15 +211,15 @@ generate_syntax (const PsppireDialogAction *a)
 
 
   /* The /PRINT subcommand */
-  if ( gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (rd->standard_error)) ||
-       gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (rd->coordinates)) )
+  if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (rd->standard_error)) ||
+       gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (rd->coordinates)))
     {
       g_string_append (string, "\n\t/PRINT");
 
-      if ( gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (rd->standard_error)))
+      if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (rd->standard_error)))
 	g_string_append (string, " SE");
 
-      if ( gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (rd->coordinates)))
+      if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (rd->coordinates)))
 	g_string_append (string, " COORDINATES");
     }
 

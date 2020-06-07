@@ -219,7 +219,7 @@ compose_headings (struct table *t,
 
       for (int row_ofs = 0; row_ofs < d->label_depth; row_ofs++)
         {
-          for (size_t x1 = 0; x1 < n_columns; )
+          for (size_t x1 = 0; x1 < n_columns;)
             {
               const struct pivot_category *c = find_category (
                 d, dim_index, column_enumeration + x1 * stride, row_ofs);

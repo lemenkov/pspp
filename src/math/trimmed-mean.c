@@ -33,10 +33,10 @@ acc (struct statistic *s, const struct ccase *cx UNUSED, double c, double cc, do
   struct trimmed_mean *tm = UP_CAST (s, struct trimmed_mean, parent.parent);
   struct order_stats *os = &tm->parent;
 
-  if ( cc > os->k[0].tc && cc <= os->k[1].tc)
+  if (cc > os->k[0].tc && cc <= os->k[1].tc)
     tm->sum += c * y;
 
-  if ( tm->cyk1p1 == SYSMIS && cc > os->k[0].tc)
+  if (tm->cyk1p1 == SYSMIS && cc > os->k[0].tc)
     tm->cyk1p1 = c * y;
 }
 
@@ -88,6 +88,6 @@ trimmed_mean_calculate (const struct trimmed_mean *tm)
       (tm->w - os->k[1].cc - os->k[0].tc) * os->k[1].y_p1
      +
       tm->sum
-     )
+)
     / ((1.0 - tm->tail * 2) * tm->w);
 }

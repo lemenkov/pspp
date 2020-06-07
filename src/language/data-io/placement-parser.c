@@ -119,7 +119,7 @@ fixed_parse_columns (struct lexer *lexer, struct pool *pool, size_t var_cnt,
   int fc, lc;
   size_t i;
 
-  if ( !parse_column_range (lexer, 1, &fc, &lc, NULL) )
+  if (!parse_column_range (lexer, 1, &fc, &lc, NULL))
     return false;
 
   /* Divide columns evenly. */

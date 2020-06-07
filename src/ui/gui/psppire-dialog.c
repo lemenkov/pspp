@@ -287,7 +287,7 @@ psppire_dialog_new (void)
 void
 psppire_dialog_notify_change (PsppireDialog *dialog)
 {
-  if ( dialog->contents_are_valid )
+  if (dialog->contents_are_valid)
     {
       gboolean valid = dialog->contents_are_valid (dialog->validity_data);
 
@@ -303,10 +303,10 @@ connect_notify_signal (GtkWidget *w, gpointer data)
 {
   PsppireDialog *dialog = data;
 
-  if ( PSPPIRE_IS_BUTTONBOX (w))
+  if (PSPPIRE_IS_BUTTONBOX (w))
     return;
 
-  if ( GTK_IS_CONTAINER (w))
+  if (GTK_IS_CONTAINER (w))
     {
       gtk_container_foreach (GTK_CONTAINER (w),
 			     connect_notify_signal,
@@ -318,14 +318,14 @@ connect_notify_signal (GtkWidget *w, gpointer data)
      "user-modified-state-changed" signal.  Instead, we have to try and
      predict what widgets and signals are likely to exist in our dialogs. */
 
-  if ( GTK_IS_TOGGLE_BUTTON (w))
+  if (GTK_IS_TOGGLE_BUTTON (w))
     {
       g_signal_connect_swapped (w, "toggled",
 				G_CALLBACK (psppire_dialog_notify_change),
 				dialog);
     }
 
-  if ( PSPPIRE_IS_SELECTOR (w))
+  if (PSPPIRE_IS_SELECTOR (w))
     {
       g_signal_connect_swapped (w, "selected",
 				G_CALLBACK (psppire_dialog_notify_change),
@@ -338,21 +338,21 @@ connect_notify_signal (GtkWidget *w, gpointer data)
       psppire_selector_update_subjects (PSPPIRE_SELECTOR (w));
     }
 
-  if ( GTK_IS_EDITABLE (w))
+  if (GTK_IS_EDITABLE (w))
     {
       g_signal_connect_swapped (w, "changed",
 				G_CALLBACK (psppire_dialog_notify_change),
 				dialog);
     }
 
-  if ( GTK_IS_CELL_EDITABLE (w))
+  if (GTK_IS_CELL_EDITABLE (w))
     {
       g_signal_connect_swapped (w, "editing-done",
 				G_CALLBACK (psppire_dialog_notify_change),
 				dialog);
     }
 
-  if ( GTK_IS_TEXT_VIEW (w))
+  if (GTK_IS_TEXT_VIEW (w))
     {
       GtkTextBuffer *buffer = gtk_text_view_get_buffer (GTK_TEXT_VIEW (w));
 
@@ -361,7 +361,7 @@ connect_notify_signal (GtkWidget *w, gpointer data)
 				dialog);
     }
 
-  if ( GTK_IS_TREE_VIEW (w))
+  if (GTK_IS_TREE_VIEW (w))
     {
       gint i = 0;
       GtkTreeView *tv = GTK_TREE_VIEW (w);
@@ -370,7 +370,7 @@ connect_notify_signal (GtkWidget *w, gpointer data)
       GtkTreeViewColumn *col;
       GtkTreeModel *model = gtk_tree_view_get_model (tv);
 
-      if ( model)
+      if (model)
 	{
 	  g_signal_connect_swapped (model, "row-changed",
 				    G_CALLBACK (psppire_dialog_notify_change),
@@ -396,7 +396,7 @@ connect_notify_signal (GtkWidget *w, gpointer data)
 	  GList *start = renderers;
 	  while (renderers)
 	    {
-	      if ( GTK_IS_CELL_RENDERER_TOGGLE (renderers->data))
+	      if (GTK_IS_CELL_RENDERER_TOGGLE (renderers->data))
 		g_signal_connect_swapped (renderers->data, "toggled",
 					  G_CALLBACK (psppire_dialog_notify_change), dialog);
 	      renderers = renderers->next;
@@ -416,7 +416,7 @@ psppire_dialog_run (PsppireDialog *dialog)
   if (title == NULL)
     g_warning ("PsppireDialog %s has no title", gtk_widget_get_name (GTK_WIDGET (dialog)));
 
-  if ( dialog->contents_are_valid != NULL )
+  if (dialog->contents_are_valid != NULL)
     gtk_container_foreach (GTK_CONTAINER (gtk_bin_get_child(GTK_BIN(dialog))),
 			   connect_notify_signal,
 			   dialog);

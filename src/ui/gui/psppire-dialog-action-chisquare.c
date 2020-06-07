@@ -48,7 +48,7 @@ generate_syntax (const PsppireDialogAction *act)
 
   psppire_var_view_append_names_str (PSPPIRE_VAR_VIEW (scd->var_view), 0, &dss);
 
-  if ( gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (scd->range_button)))
+  if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (scd->range_button)))
     {
       ds_put_cstr (&dss, "(");
 
@@ -63,7 +63,7 @@ generate_syntax (const PsppireDialogAction *act)
       ds_put_cstr (&dss, ")");
     }
 
-  if ( gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (scd->values_button)))
+  if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (scd->values_button)))
     {
       GtkListStore *ls = scd->expected_list;
       GtkTreeIter iter;
@@ -105,7 +105,7 @@ dialog_state_valid (gpointer a)
   GtkTreeModel *vars =
     gtk_tree_view_get_model (GTK_TREE_VIEW (act->var_view));
 
-  if ( !gtk_tree_model_get_iter_first (vars, &notused) )
+  if (!gtk_tree_model_get_iter_first (vars, &notused))
     return FALSE;
 
   return TRUE;
@@ -134,7 +134,7 @@ psppire_dialog_action_chisquare_activate (PsppireDialogAction *a, GVariant *para
   PsppireDialogAction *pda = PSPPIRE_DIALOG_ACTION (a);
   PsppireDialogActionChisquare *act = PSPPIRE_DIALOG_ACTION_CHISQUARE (a);
 
-  GtkBuilder *xml = builder_new ( "chi-square.ui");
+  GtkBuilder *xml = builder_new ("chi-square.ui");
 
   GtkWidget *range_table = get_widget_assert   (xml, "range-table");
   GtkWidget *values_acr = get_widget_assert   (xml, "psppire-acr1");

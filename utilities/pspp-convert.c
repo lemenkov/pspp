@@ -232,7 +232,7 @@ main (int argc, char *argv[])
           break;
 
         case 'a':
-          for (const char *p = optarg; *p; )
+          for (const char *p = optarg; *p;)
             if (p[1] == '-' && p[2] > p[0])
               {
                 for (int ch = p[0]; ch <= p[2]; ch++)

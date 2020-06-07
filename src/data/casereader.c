@@ -107,7 +107,7 @@ casereader_clone (const struct casereader *reader_)
 {
   struct casereader *reader = CONST_CAST (struct casereader *, reader_);
   struct casereader *clone;
-  if ( reader == NULL )
+  if (reader == NULL)
     return NULL;
 
   if (reader->class->clone == NULL)

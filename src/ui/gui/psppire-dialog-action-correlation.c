@@ -97,7 +97,7 @@ psppire_dialog_action_correlation_activate (PsppireDialogAction *a, GVariant *pa
   PsppireDialogAction *pda = PSPPIRE_DIALOG_ACTION (a);
   PsppireDialogActionCorrelation *act = PSPPIRE_DIALOG_ACTION_CORRELATION (a);
 
-  GtkBuilder *xml = builder_new ( "correlation.ui");
+  GtkBuilder *xml = builder_new ("correlation.ui");
 
   pda->dialog = get_widget_assert (xml, "correlation-dialog");
   pda->source = get_widget_assert (xml, "dict-view");

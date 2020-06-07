@@ -59,19 +59,19 @@ cmd_permissions (struct lexer *lexer, struct dataset *ds UNUSED)
 
   lex_match (lexer, T_SLASH);
 
-  if ( ! lex_match_id (lexer, "PERMISSIONS"))
+  if (! lex_match_id (lexer, "PERMISSIONS"))
     goto error;
 
   lex_match (lexer, T_EQUALS);
 
-  if ( lex_match_id (lexer, "READONLY"))
+  if (lex_match_id (lexer, "READONLY"))
     {
       if (! change_permissions (fn, PER_RO))
 	goto error;
     }
   else if (lex_match_id (lexer, "WRITEABLE"))
     {
-      if (! change_permissions (fn, PER_RW ))
+      if (! change_permissions (fn, PER_RW))
 	goto error;
     }
   else
@@ -107,7 +107,7 @@ change_permissions (const char *file_name, enum PER per)
     }
 
   locale_file_name = utf8_to_filename (file_name);
-  if ( -1 == stat(locale_file_name, &buf) )
+  if (-1 == stat(locale_file_name, &buf))
     {
       const int errnum = errno;
       msg (SE, _("Cannot stat %s: %s"), file_name, strerror(errnum));
@@ -115,12 +115,12 @@ change_permissions (const char *file_name, enum PER per)
       return 0;
     }
 
-  if ( per == PER_RW )
+  if (per == PER_RW)
     mode = buf.st_mode | 0200;
   else
     mode = buf.st_mode & ~0222;
 
-  if ( -1 == chmod(locale_file_name, mode))
+  if (-1 == chmod(locale_file_name, mode))
 
     {
       const int errnum = errno;

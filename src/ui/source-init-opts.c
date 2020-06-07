@@ -88,7 +88,7 @@ source_init_option_callback (int id, void *aux UNUSED)
       break;
 
     case OPT_SYNTAX:
-      if (!strcmp (optarg, "compatible") )
+      if (!strcmp (optarg, "compatible"))
 	settings_set_syntax (COMPATIBLE);
       else if (!strcmp (optarg, "enhanced"))
 	settings_set_syntax (ENHANCED);

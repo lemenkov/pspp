@@ -75,8 +75,8 @@ hist_draw_bar (cairo_t *cr, const struct xrchart_geometry *geom,
   double lower;
   double height;
 
-  assert ( 0 == gsl_histogram_get_range (h, bar, &lower, &upper));
-  assert ( upper >= lower);
+  assert (0 == gsl_histogram_get_range (h, bar, &lower, &upper));
+  assert (upper >= lower);
 
   const double x_pos =
     (lower - geom->axis[SCALE_ABSCISSA].min) * geom->axis[SCALE_ABSCISSA].scale

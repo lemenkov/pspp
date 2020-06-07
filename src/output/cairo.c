@@ -433,7 +433,7 @@ parse_color__ (const char *s, struct cell_color *color)
     }
 
   /* rgb(r,g,b) */
-  if (sscanf (s, "rgb (%"SCNi8" , %"SCNi8" , %"SCNi8" ) %n",
+  if (sscanf (s, "rgb (%"SCNi8" , %"SCNi8" , %"SCNi8") %n",
               &r, &g, &b, &len) == 3
       && !s[len])
     {
@@ -444,7 +444,7 @@ parse_color__ (const char *s, struct cell_color *color)
     }
 
   /* rgba(r,g,b,a), ignoring a. */
-  if (sscanf (s, "rgba (%"SCNi8" , %"SCNi8" , %"SCNi8", %*f ) %n",
+  if (sscanf (s, "rgba (%"SCNi8" , %"SCNi8" , %"SCNi8", %*f) %n",
               &r, &g, &b, &len) == 3
       && !s[len])
     {

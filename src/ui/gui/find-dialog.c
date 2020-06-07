@@ -106,7 +106,7 @@ do_find (GObject *obj, const struct find_dialog *fd)
 
   find_value (fd, row, &x, &column);
 
-  if ( x != -1)
+  if (x != -1)
     {
       SswSheet *sheet = SSW_SHEET (fd->de->data_editor->data_sheet);
       gtk_notebook_set_current_page (GTK_NOTEBOOK (fd->de->data_editor),
@@ -269,7 +269,7 @@ forward (casenumber *i, struct datasheet *data UNUSED)
 static void
 forward_wrap (casenumber *i, struct datasheet *data)
 {
-  if ( ++*i >=  datasheet_get_n_rows (data) ) *i = 0;
+  if (++*i >=  datasheet_get_n_rows (data)) *i = 0;
 }
 
 static void
@@ -282,7 +282,7 @@ backward (casenumber *i, struct datasheet *data UNUSED)
 static void
 backward_wrap (casenumber *i, struct datasheet *data)
 {
-  if ( --*i < 0 )
+  if (--*i < 0)
     *i = datasheet_get_n_rows (data) - 1;
 }
 
@@ -387,16 +387,16 @@ get_iteration_params (const struct find_dialog *fd)
   gboolean reverse = gtk_toggle_button_get_active
     (GTK_TOGGLE_BUTTON (get_widget_assert (fd->xml, "find-backwards")));
 
-  if ( wrap )
+  if (wrap)
     {
-      if ( reverse )
+      if (reverse)
 	return &ip[REVERSE_WRAP];
       else
 	return &ip[FORWARD_WRAP];
     }
   else
     {
-      if ( reverse )
+      if (reverse)
 	return &ip[REVERSE];
       else
 	return &ip[FORWARD];
@@ -475,11 +475,11 @@ string_label_compare (const struct comparator *cmptr,
 
   width = strlen (text);
 
-  assert ( cmptr->flags & STR_CMP_LABELS);
+  assert (cmptr->flags & STR_CMP_LABELS);
 
   g_return_val_if_fail (width > 0, false);
 
-  if ( cmptr->flags & STR_CMP_SUBSTR)
+  if (cmptr->flags & STR_CMP_SUBSTR)
     return (NULL != g_strstr_len (text, width, ssc->pattern));
   else
     return (0 == strncmp (text, ssc->pattern, width));
@@ -497,11 +497,11 @@ string_value_compare (const struct comparator *cmptr,
 
   int width = var_get_width (cmptr->var);
   g_return_val_if_fail (width > 0, false);
-  assert ( ! (cmptr->flags & STR_CMP_LABELS));
+  assert (! (cmptr->flags & STR_CMP_LABELS));
 
   text = value_to_text (*val, cmptr->var);
 
-  if ( cmptr->flags & STR_CMP_SUBSTR)
+  if (cmptr->flags & STR_CMP_SUBSTR)
     found =  (NULL != g_strstr_len (text, width, ssc->pattern));
   else
     found = (0 == strncmp (text, ssc->pattern, width));
@@ -524,7 +524,7 @@ regexp_value_compare (const struct comparator *cmptr,
 
   int width = var_get_width (cmptr->var);
 
-  assert  ( ! (cmptr->flags & STR_CMP_LABELS) );
+  assert  (! (cmptr->flags & STR_CMP_LABELS));
 
   g_return_val_if_fail (width > 0, false);
 
@@ -551,7 +551,7 @@ regexp_label_compare (const struct comparator *cmptr,
 
   int width ;
 
-  assert ( cmptr->flags & STR_CMP_LABELS);
+  assert (cmptr->flags & STR_CMP_LABELS);
 
   text = var_lookup_value_label (cmptr->var, val);
   width = strlen (text);
@@ -607,7 +607,7 @@ string_comparator_create (const struct variable *var, const char *target,
   cmptr->flags = flags;
   cmptr->var = var;
 
-  if ( flags & STR_CMP_LABELS)
+  if (flags & STR_CMP_LABELS)
     cmptr->compare = string_label_compare;
   else
     cmptr->compare = string_value_compare;
@@ -634,7 +634,7 @@ regexp_comparator_create (const struct variable *var, const char *target,
   cmptr->destroy  = regexp_destroy;
 
   code = regcomp (&rec->re, target, 0);
-  if ( code != 0 )
+  if (code != 0)
     {
       char *errbuf = NULL;
       size_t errbuf_size = regerror (code, &rec->re, errbuf,  0);
@@ -645,7 +645,7 @@ regexp_comparator_create (const struct variable *var, const char *target,
 
       msg (ME, _("Bad regular expression: %s"), errbuf);
 
-      free ( cmptr);
+      free (cmptr);
       free (errbuf);
       return NULL;
     }
@@ -666,10 +666,10 @@ comparator_compare (const struct comparator *cmptr,
 static void
 comparator_destroy (struct comparator *cmptr)
 {
-  if ( ! cmptr )
+  if (! cmptr)
     return ;
 
-  if ( cmptr->destroy )
+  if (cmptr->destroy)
     cmptr->destroy (cmptr);
 
   free (cmptr);
@@ -680,10 +680,10 @@ static struct comparator *
 comparator_factory (const struct variable *var, const char *str,
 		    enum string_cmp_flags flags)
 {
-  if ( flags & STR_CMP_REGEXP )
+  if (flags & STR_CMP_REGEXP)
     return regexp_comparator_create (var, str, flags);
 
-  if ( flags & (STR_CMP_SUBSTR | STR_CMP_LABELS) )
+  if (flags & (STR_CMP_SUBSTR | STR_CMP_LABELS))
     return string_comparator_create (var, str, flags);
 
   return value_comparator_create (var, str);
@@ -706,7 +706,7 @@ find_value (const struct find_dialog *fd, casenumber current_row,
   enum string_cmp_flags flags = 0;
 
   var = dict_lookup_var (fd->dict->dict, var_name);
-  if ( ! var )
+  if (! var)
     return ;
 
   width = var_get_width (var);
@@ -714,15 +714,15 @@ find_value (const struct find_dialog *fd, casenumber current_row,
   *column = var_get_dict_index (var);
   *row = -1;
 
-  if ( gtk_toggle_button_get_active
+  if (gtk_toggle_button_get_active
        (GTK_TOGGLE_BUTTON (fd->match_substring_checkbox)))
     flags |= STR_CMP_SUBSTR;
 
-  if ( gtk_toggle_button_get_active
+  if (gtk_toggle_button_get_active
        (GTK_TOGGLE_BUTTON (fd->match_regexp_checkbox)))
     flags |= STR_CMP_REGEXP;
 
-  if ( gtk_toggle_button_get_active
+  if (gtk_toggle_button_get_active
        (GTK_TOGGLE_BUTTON (fd->value_labels_checkbox)))
     flags |= STR_CMP_LABELS;
 
@@ -734,7 +734,7 @@ find_value (const struct find_dialog *fd, casenumber current_row,
       comparator_factory (var, target_string, flags);
 
     value_init (&val, width);
-    if ( ! cmptr)
+    if (! cmptr)
       goto finish;
 
     for (i = ip->start (current_row, fd->data);
@@ -743,7 +743,7 @@ find_value (const struct find_dialog *fd, casenumber current_row,
       {
 	datasheet_get_value (fd->data, i, var_get_case_index (var), &val);
 
-	if ( comparator_compare (cmptr, &val))
+	if (comparator_compare (cmptr, &val))
 	  {
 	    *row = i;
 	    break;

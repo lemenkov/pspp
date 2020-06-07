@@ -327,7 +327,7 @@ ptukey (double q, double rr, double cc, double df, int lower_tail, int log_p)
 
 	f(x) = .5 + erf(x / sqrt(2)) / 2      for x > 0
 
-	f(x) = erfc( -x / sqrt(2)) / 2	      for x < 0
+	f(x) = erfc(-x / sqrt(2)) / 2	      for x < 0
 
 	where f(x) is standard normal c. d. f.
 

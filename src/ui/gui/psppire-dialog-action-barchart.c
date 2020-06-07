@@ -42,7 +42,7 @@ dialog_state_valid (gpointer rd_)
 {
   PsppireDialogActionBarchart *rd = PSPPIRE_DIALOG_ACTION_BARCHART (rd_);
 
-  if ( gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (rd->button_summary_func)) )
+  if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (rd->button_summary_func)))
     {
       if (0 == g_strcmp0 ("", gtk_entry_get_text (GTK_ENTRY (rd->var))))
 	return FALSE;
@@ -120,7 +120,7 @@ psppire_dialog_action_barchart_activate (PsppireDialogAction *a, GVariant *param
   PsppireDialogActionBarchart *act = PSPPIRE_DIALOG_ACTION_BARCHART (a);
   PsppireDialogAction *pda = PSPPIRE_DIALOG_ACTION (a);
 
-  GtkBuilder *xml = builder_new ( "barchart.ui");
+  GtkBuilder *xml = builder_new ("barchart.ui");
 
   pda->dialog = get_widget_assert (xml, "barchart-dialog");
   pda->source = get_widget_assert (xml, "dict-view");

@@ -85,7 +85,7 @@ mcnemar_execute (const struct dataset *ds,
 
   struct mcnemar *mc = xcalloc (t2s->n_pairs, sizeof *mc);
 
-  for (i = 0 ; i < t2s->n_pairs; ++i )
+  for (i = 0 ; i < t2s->n_pairs; ++i)
     {
       mc[i].val0.f = mc[i].val1.f = SYSMIS;
     }
@@ -94,7 +94,7 @@ mcnemar_execute (const struct dataset *ds,
     {
       const double weight = dict_get_case_weight (dict, c, &warn);
 
-      for (i = 0 ; i < t2s->n_pairs; ++i )
+      for (i = 0 ; i < t2s->n_pairs; ++i)
 	{
 	  variable_pair *vp = &t2s->pairs[i];
 	  const union value *value0 = case_data (c, (*vp)[0]);
@@ -107,7 +107,7 @@ mcnemar_execute (const struct dataset *ds,
 	    continue;
 
 
-	  if ( mc[i].val0.f == SYSMIS)
+	  if (mc[i].val0.f == SYSMIS)
 	    {
 	      if (mc[i].val1.f != value0->f)
 		mc[i].val0.f = value0->f;
@@ -115,7 +115,7 @@ mcnemar_execute (const struct dataset *ds,
 		mc[i].val0.f = value1->f;
 	    }
 
-	  if ( mc[i].val1.f == SYSMIS)
+	  if (mc[i].val1.f == SYSMIS)
 	    {
 	      if (mc[i].val0.f != value1->f)
 		mc[i].val1.f = value1->f;
@@ -127,15 +127,15 @@ mcnemar_execute (const struct dataset *ds,
 	    {
 	      mc[i].n00 += weight;
 	    }
-	  else if ( mc[i].val0.f == value0->f && mc[i].val1.f == value1->f)
+	  else if (mc[i].val0.f == value0->f && mc[i].val1.f == value1->f)
 	    {
 	      mc[i].n10 += weight;
 	    }
-	  else if ( mc[i].val1.f == value0->f && mc[i].val0.f == value1->f)
+	  else if (mc[i].val1.f == value0->f && mc[i].val0.f == value1->f)
 	    {
 	      mc[i].n01 += weight;
 	    }
-	  else if ( mc[i].val1.f == value0->f && mc[i].val1.f == value1->f)
+	  else if (mc[i].val1.f == value0->f && mc[i].val1.f == value1->f)
 	    {
 	      mc[i].n11 += weight;
 	    }

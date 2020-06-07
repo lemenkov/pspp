@@ -719,7 +719,7 @@ text_draw (struct ascii_driver *a, enum table_halign halign, int options,
       int ofs;
 
       ofs = width = 0;
-      for (ofs = 0; ofs < n; )
+      for (ofs = 0; ofs < n;)
         {
           ucs4_t uc;
           int mblen;
@@ -864,7 +864,7 @@ ascii_layout_cell (struct ascii_driver *a, const struct table_cell *cell,
       size_t graph_ofs;
       size_t ofs;
 
-      for (ofs = 0; ofs < n; )
+      for (ofs = 0; ofs < n;)
         {
           ucs4_t uc;
           int mblen;
@@ -976,7 +976,7 @@ ascii_test_flush (struct output_driver *driver)
 {
   struct ascii_driver *a = ascii_driver_cast (driver);
 
-  for (size_t i = a->allocated_lines; i-- > 0; )
+  for (size_t i = a->allocated_lines; i-- > 0;)
     if (a->lines[i].width)
       {
         ascii_output_lines (a, i + 1);

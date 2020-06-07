@@ -39,7 +39,7 @@ xrchart_draw_scree (const struct chart_item *chart_item, cairo_t *cr,
 
   gsl_vector_minmax (rc->eval, &min, &max);
 
-  if ( fabs (max) > fabs (min))
+  if (fabs (max) > fabs (min))
     max = fabs (max);
   else
     max = fabs (min);

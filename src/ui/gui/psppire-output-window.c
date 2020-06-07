@@ -298,12 +298,12 @@ on_combo_change (GtkFileChooser *chooser)
   else
     {
       gint i;
-      if ( x != 0 )
+      if (x != 0)
 	sensitive = TRUE;
 
       for (i = 1 ; i < N_EXTENSIONS ; ++i)
 	{
-	  if ( g_str_has_suffix (fn, ft[i].ext))
+	  if (g_str_has_suffix (fn, ft[i].ext))
 	    {
 	      sensitive = TRUE;
 	      break;
@@ -324,11 +324,11 @@ on_file_chooser_change (GObject *w, GParamSpec *pspec, gpointer data)
   GtkFileChooser *chooser = data;
   const gchar *name = g_param_spec_get_name (pspec);
 
-  if ( ! gtk_widget_get_realized (GTK_WIDGET (chooser)))
+  if (! gtk_widget_get_realized (GTK_WIDGET (chooser)))
     return;
 
   /* Ignore this one.  It causes recursion. */
-  if ( 0 == strcmp ("tooltip-text", name))
+  if (0 == strcmp ("tooltip-text", name))
     return;
 
   on_combo_change (chooser);
@@ -340,7 +340,7 @@ on_file_chooser_change (GObject *w, GParamSpec *pspec, gpointer data)
 static void
 iterate_widgets (GtkWidget *w, gpointer data)
 {
-  if ( GTK_IS_CONTAINER (w))
+  if (GTK_IS_CONTAINER (w))
     gtk_container_forall (GTK_CONTAINER (w), iterate_widgets, data);
   else
     g_signal_connect (w, "notify",  G_CALLBACK (on_file_chooser_change), data);
@@ -395,7 +395,7 @@ psppire_output_window_export (PsppireOutputWindow *window)
   {
     /* Create text cell renderer */
     GtkCellRenderer *cell = gtk_cell_renderer_text_new();
-    gtk_cell_layout_pack_start (GTK_CELL_LAYOUT (combo), cell, FALSE );
+    gtk_cell_layout_pack_start (GTK_CELL_LAYOUT (combo), cell, FALSE);
 
     gtk_cell_layout_add_attribute (GTK_CELL_LAYOUT (combo), cell,  "text", 0);
   }
@@ -415,7 +415,7 @@ psppire_output_window_export (PsppireOutputWindow *window)
 
   response = gtk_dialog_run (GTK_DIALOG (dialog));
 
-  if ( response == GTK_RESPONSE_ACCEPT )
+  if (response == GTK_RESPONSE_ACCEPT)
     {
       gint file_type = gtk_combo_box_get_active (GTK_COMBO_BOX (combo));
       gchar *filename = gtk_file_chooser_get_filename (chooser);
@@ -431,7 +431,7 @@ psppire_output_window_export (PsppireOutputWindow *window)
 	  gint i;
 	  for (i = 1 ; i < N_EXTENSIONS ; ++i)
 	    {
-	      if ( g_str_has_suffix (filename, ft[i].ext))
+	      if (g_str_has_suffix (filename, ft[i].ext))
 		{
 		  file_type = i;
 		  break;

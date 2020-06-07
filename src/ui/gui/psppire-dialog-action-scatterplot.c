@@ -69,10 +69,10 @@ dialog_state_valid (gpointer data)
   const char *xvar = gtk_entry_get_text (GTK_ENTRY  (ow->x_axis));
   const char *yvar = gtk_entry_get_text (GTK_ENTRY  (ow->y_axis));
 
-  if ( 0 == strcmp ("", xvar))
+  if (0 == strcmp ("", xvar))
     return FALSE;
 
-  if ( 0 == strcmp ("", yvar))
+  if (0 == strcmp ("", yvar))
     return FALSE;
 
 
@@ -96,7 +96,7 @@ psppire_dialog_action_scatterplot_activate (PsppireDialogAction *a, GVariant *pa
   PsppireDialogAction *pda = PSPPIRE_DIALOG_ACTION (a);
   PsppireDialogActionScatterplot *act = PSPPIRE_DIALOG_ACTION_SCATTERPLOT (a);
 
-  GtkBuilder *xml = builder_new ( "scatterplot.ui");
+  GtkBuilder *xml = builder_new ("scatterplot.ui");
   pda->dialog = get_widget_assert   (xml, "scatterplot-dialog");
   pda->source = get_widget_assert   (xml, "scatterplot-treeview1");
 

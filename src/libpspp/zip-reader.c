@@ -220,11 +220,11 @@ zip_member_read (struct zip_member *zm, void *buf, size_t bytes)
 
   ds_clear (zm->errmsgs);
 
-  if ( bytes > zm->bytes_unread)
+  if (bytes > zm->bytes_unread)
     bytes = zm->bytes_unread;
 
   bytes_read  = zm->decompressor->read (zm, buf, bytes);
-  if ( bytes_read < 0)
+  if (bytes_read < 0)
     return bytes_read;
 
   zm->bytes_unread -= bytes_read;
@@ -281,7 +281,7 @@ zip_header_read_next (FILE *file, const char *file_name,
   uint32_t eattr;
   uint16_t comp_type;
 
-  if ( ! check_magic (file, file_name, MAGIC_SOCD, errs))
+  if (! check_magic (file, file_name, MAGIC_SOCD, errs))
     return false;
 
   if (! get_u16 (file, &v)) return false;
@@ -320,7 +320,7 @@ zip_reader_create (const char *file_name, struct string *errs)
 
   struct zip_reader *zr = xzalloc (sizeof *zr);
   zr->errs = errs;
-  if ( zr->errs)
+  if (zr->errs)
     ds_init_empty (zr->errs);
 
   FILE *file = fopen (file_name, "rb");
@@ -332,14 +332,14 @@ zip_reader_create (const char *file_name, struct string *errs)
       return NULL;
     }
 
-  if ( ! check_magic (file, file_name, MAGIC_LHDR, zr->errs))
+  if (! check_magic (file, file_name, MAGIC_LHDR, zr->errs))
     {
       fclose (file);
       free (zr);
       return NULL;
     }
 
-  if ( ! find_eocd (file, &offset))
+  if (! find_eocd (file, &offset))
     {
       ds_put_format (zr->errs, _("%s: cannot find central directory"),
                      file_name);
@@ -348,7 +348,7 @@ zip_reader_create (const char *file_name, struct string *errs)
       return NULL;
     }
 
-  if ( 0 != fseeko (file, offset, SEEK_SET))
+  if (0 != fseeko (file, offset, SEEK_SET))
     {
       ds_put_format (zr->errs, _("%s: seek failed (%s)"),
                      file_name, strerror (errno));
@@ -358,7 +358,7 @@ zip_reader_create (const char *file_name, struct string *errs)
     }
 
 
-  if ( ! check_magic (file, file_name, MAGIC_EOCD, zr->errs))
+  if (! check_magic (file, file_name, MAGIC_EOCD, zr->errs))
     {
       fclose (file);
       free (zr);
@@ -379,7 +379,7 @@ zip_reader_create (const char *file_name, struct string *errs)
       return NULL;
     }
 
-  if ( 0 != fseeko (file, central_dir_start, SEEK_SET))
+  if (0 != fseeko (file, central_dir_start, SEEK_SET))
     {
       ds_put_format (zr->errs, _("%s: seek failed (%s)"),
                      file_name, strerror (errno));
@@ -436,7 +436,7 @@ struct zip_member *
 zip_member_open (struct zip_reader *zr, const char *member)
 {
   struct zip_entry *ze = zip_entry_find (zr, member);
-  if ( ze == NULL)
+  if (ze == NULL)
     {
       ds_put_format (zr->errs, _("%s: unknown member \"%s\""),
                      zr->file_name, member);
@@ -463,14 +463,14 @@ zip_member_open (struct zip_reader *zr, const char *member)
   zm->errmsgs = zr->errs;
   zm->aux = NULL;
 
-  if ( 0 != fseeko (zm->fp, zm->offset, SEEK_SET))
+  if (0 != fseeko (zm->fp, zm->offset, SEEK_SET))
     {
       ds_put_format (zr->errs, _("%s: seek failed (%s)"),
                      ze->name, strerror (errno));
       goto error;
     }
 
-  if ( ! check_magic (zm->fp, zr->file_name, MAGIC_LHDR, zr->errs))
+  if (! check_magic (zm->fp, zr->file_name, MAGIC_LHDR, zr->errs))
     goto error;
 
   uint16_t v, nlen, extra_len;
@@ -510,7 +510,7 @@ zip_member_open (struct zip_reader *zr, const char *member)
 
   skip_bytes (zm->fp, extra_len);
 
-  if (!zm->decompressor->init (zm) )
+  if (!zm->decompressor->init (zm))
     goto error;
 
   return zm;
@@ -543,7 +543,7 @@ find_eocd (FILE *fp, off_t *off)
      because that is the minimum length of the EndOfCentralDirectory
      record.
    */
-  if ( 0 > fseeko (fp, -22, SEEK_END))
+  if (0 > fseeko (fp, -22, SEEK_END))
     {
       return false;
     }
@@ -553,12 +553,12 @@ find_eocd (FILE *fp, off_t *off)
     {
       found = probe_magic (fp, magic, start, stop, off);
       /* FIXME: For extra confidence lookup the directory start record here*/
-      if ( start == 0)
+      if (start == 0)
 	break;
       stop = start + sizeof (magic);
       start >>= 1;
     }
-  while (!found );
+  while (!found);
 
   return found;
 }
@@ -577,7 +577,7 @@ probe_magic (FILE *fp, uint32_t magic, off_t start, off_t stop, off_t *off)
   unsigned char seq[4];
   unsigned char byte;
 
-  if ( 0 > fseeko (fp, start, SEEK_SET))
+  if (0 > fseeko (fp, start, SEEK_SET))
     {
       return -1;
     }
@@ -592,18 +592,18 @@ probe_magic (FILE *fp, uint32_t magic, off_t start, off_t stop, off_t *off)
       if (1 != fread (&byte, 1, 1, fp))
 	break;
 
-      if ( byte == seq[state])
+      if (byte == seq[state])
 	state++;
       else
 	state = 0;
 
-      if ( state == 4)
+      if (state == 4)
 	{
 	  *off = ftello (fp) - 4;
 	  return true;
 	}
       start++;
-      if ( start >= stop)
+      if (start >= stop)
 	break;
     }
   while (!feof (fp));
@@ -677,7 +677,7 @@ inflate_init (struct zip_member *zm)
   cmf |= cinfo << 4;     /* Put cinfo into the high nibble */
 
   /* make these into a 16 bit word */
-  inf->cmf_flg = (cmf << 8 ) | flg;
+  inf->cmf_flg = (cmf << 8) | flg;
 
   /* Set the check bits */
   inf->cmf_flg += 31 - (inf->cmf_flg % 31);
@@ -690,7 +690,7 @@ inflate_init (struct zip_member *zm)
   inf->zss.opaque = Z_NULL;
   r = inflateInit (&inf->zss);
 
-  if ( Z_OK != r)
+  if (Z_OK != r)
     {
       ds_put_format (zm->errmsgs,
                      _("%s: cannot initialize inflator (%s)"),
@@ -715,7 +715,7 @@ inflate_read (struct zip_member *zm, void *buf, size_t n)
       int bytes_to_read;
       int pad = 0;
 
-      if ( inf->state == 0)
+      if (inf->state == 0)
 	{
 	  inf->ucomp[1] = inf->cmf_flg ;
       	  inf->ucomp[0] = inf->cmf_flg >> 8 ;
@@ -743,7 +743,7 @@ inflate_read (struct zip_member *zm, void *buf, size_t n)
   inf->zss.next_out = buf;
 
   r = inflate (&inf->zss, Z_NO_FLUSH);
-  if ( Z_OK == r)
+  if (Z_OK == r)
     {
       return n - inf->zss.avail_out;
     }

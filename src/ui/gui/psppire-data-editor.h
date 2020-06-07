@@ -80,7 +80,7 @@ GType          psppire_data_editor_get_type        (void);
 GtkWidget*     psppire_data_editor_new             (PsppireDict *, PsppireDataStore *);
 void           psppire_data_editor_show_grid       (PsppireDataEditor *, gboolean);
 void           psppire_data_editor_set_font        (PsppireDataEditor *, PangoFontDescription *);
-void           psppire_data_editor_split_window    (PsppireDataEditor *, gboolean );
+void           psppire_data_editor_split_window    (PsppireDataEditor *, gboolean);
 
 void psppire_data_editor_goto_variable               (PsppireDataEditor *, gint dict_index);
 void psppire_data_editor_data_delete_variables       (PsppireDataEditor *de);

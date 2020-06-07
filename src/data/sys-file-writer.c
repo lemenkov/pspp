@@ -411,7 +411,7 @@ write_header (struct sfm_writer *w, const struct dictionary *d)
   if (time (&t) == (time_t) -1)
     {
       creation_date = xstrdup ("01 Jan 70");
-      creation_time = xstrdup ( "00:00:00");
+      creation_time = xstrdup ("00:00:00");
     }
   else
     {

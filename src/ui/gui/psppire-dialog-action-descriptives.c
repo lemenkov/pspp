@@ -199,7 +199,7 @@ psppire_dialog_action_descriptives_activate (PsppireDialogAction *a, GVariant *p
   PsppireDialogAction *pda = PSPPIRE_DIALOG_ACTION (a);
   PsppireDialogActionDescriptives *act = PSPPIRE_DIALOG_ACTION_DESCRIPTIVES (a);
 
-  GtkBuilder *xml = builder_new ( "descriptives.ui");
+  GtkBuilder *xml = builder_new ("descriptives.ui");
 
   GtkWidget *stats_treeview = get_widget_assert (xml, "statistics");
   psppire_checkbox_treeview_populate (PSPPIRE_CHECKBOX_TREEVIEW (stats_treeview),

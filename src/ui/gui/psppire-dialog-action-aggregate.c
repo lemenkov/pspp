@@ -62,7 +62,7 @@ append_summary_variable_syntax (const PsppireDialogActionAggregate *agg,  GStrin
   for (ok = gtk_tree_model_get_iter_first (GTK_TREE_MODEL (acr_model), &iter);
        ok ;
        ok = gtk_tree_model_iter_next (GTK_TREE_MODEL (acr_model), &iter)
-       )
+)
     {
       g_string_append (string, "\n\t/");
 
@@ -73,7 +73,7 @@ append_summary_variable_syntax (const PsppireDialogActionAggregate *agg,  GStrin
 static void
 append_destination_filename (const PsppireDialogActionAggregate *agg, GString *gs)
 {
-  if ( gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (agg->filename_radiobutton)))
+  if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (agg->filename_radiobutton)))
     {
       struct string ss;
       const gchar *s = gtk_label_get_text (GTK_LABEL (agg->filename_label));
@@ -86,7 +86,7 @@ append_destination_filename (const PsppireDialogActionAggregate *agg, GString *g
     {
       g_string_append (gs, "* ");
 
-      if ( gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (agg->replace_radiobutton)))
+      if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (agg->replace_radiobutton)))
 	g_string_append (gs, "MODE=REPLACE");
       else
 	g_string_append (gs, "MODE=ADDVARIABLES");
@@ -105,7 +105,7 @@ generate_syntax (const PsppireDialogAction *act)
 
   append_destination_filename (agg, string);
 
-  if ( gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (agg->sorted_button)))
+  if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (agg->sorted_button)))
     g_string_append (string, "\n\t/PRESORTED");
 
   g_string_append (string, "\n\t/BREAK=");
@@ -132,12 +132,12 @@ dialog_state_valid (gpointer user_data)
   GtkTreeModel *liststore =
     gtk_tree_view_get_model (GTK_TREE_VIEW (agg->break_variables));
 
-  if ( ! gtk_tree_model_get_iter_first  (liststore, &iter))
+  if (! gtk_tree_model_get_iter_first  (liststore, &iter))
     return FALSE;
 
   liststore = GTK_TREE_MODEL (PSPPIRE_ACR (agg->summary_acr)->list_store);
 
-  if ( ! gtk_tree_model_get_iter_first (liststore, &iter))
+  if (! gtk_tree_model_get_iter_first (liststore, &iter))
     return FALSE;
 
   return TRUE;
@@ -354,7 +354,7 @@ summary_complete (const PsppireDialogActionAggregate *agg)
   gboolean ok;
   GtkTreeModel *model = gtk_combo_box_get_model (GTK_COMBO_BOX (agg->function_combo));
 
-  if ( 0 == strcmp ("", gtk_entry_get_text (GTK_ENTRY (agg->summary_var_name_entry))))
+  if (0 == strcmp ("", gtk_entry_get_text (GTK_ENTRY (agg->summary_var_name_entry))))
     return FALSE;
 
   ok = gtk_combo_box_get_active_iter (GTK_COMBO_BOX (agg->function_combo), &iter);
@@ -370,19 +370,19 @@ summary_complete (const PsppireDialogActionAggregate *agg)
 		       COMBO_MODEL_COL_SRC_VARS, &src_vars,
 		       -1);
 
-  if ( src_vars == AGR_SV_YES )
+  if (src_vars == AGR_SV_YES)
     {
       if (0 == strcmp ("", gtk_entry_get_text (GTK_ENTRY (agg->summary_sv_entry))))
 	return FALSE;
     }
 
-  if ( n_args >= 2)
+  if (n_args >= 2)
     {
       if (0 == strcmp ("", gtk_entry_get_text (GTK_ENTRY (agg->summary_arg2_entry))))
 	return FALSE;
     }
 
-  if ( n_args >= 1)
+  if (n_args >= 1)
     {
       if (0 == strcmp ("", gtk_entry_get_text (GTK_ENTRY (agg->summary_arg1_entry))))
 	return FALSE;
@@ -457,7 +457,7 @@ update_arguments (PsppireDialogActionAggregate *agg)
 
   gboolean ok = gtk_combo_box_get_active_iter (GTK_COMBO_BOX (agg->function_combo), &iter);
 
-  if ( ok)
+  if (ok)
     {
       GtkTreeModel *model = gtk_combo_box_get_model (GTK_COMBO_BOX (agg->function_combo));
       int n_args;
@@ -577,7 +577,7 @@ psppire_dialog_action_aggregate_activate (PsppireDialogAction *a, GVariant *para
 
 
   g_signal_connect (act->filename_radiobutton, "toggled",
-		    G_CALLBACK (set_sensitivity_from_toggle), act->filename_box );
+		    G_CALLBACK (set_sensitivity_from_toggle), act->filename_box);
 
   g_signal_connect_swapped (act->filename_button, "clicked",
 			    G_CALLBACK (choose_filename), act);
@@ -653,17 +653,17 @@ append_summary_spec (const PsppireDialogActionAggregate *agg, GtkTreeIter *iter,
 
   g_string_append_printf (string, " = %s", funcname);
 
-  if ( has_src_vars != AGR_SV_NO)
+  if (has_src_vars != AGR_SV_NO)
     {
       struct string dss;
       ds_init_cstr (&dss, " (");
 
       ds_put_cstr (&dss, srcvar);
 
-      if ( arity > 0)
+      if (arity > 0)
 	ds_put_c_format (&dss, ", %.*g", DBL_DIG + 1, arg1);
 
-      if ( arity > 1)
+      if (arity > 1)
 	ds_put_c_format (&dss, ", %.*g", DBL_DIG + 1, arg2);
 
       ds_put_cstr (&dss, ")");

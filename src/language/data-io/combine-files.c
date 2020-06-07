@@ -517,7 +517,7 @@ merge_dictionary (struct dictionary *const m, struct comb_file *f)
      The correct thing to do would be to convert to an encoding
      which can cope with all the input files (eg UTF-8).
    */
-  if ( 0 != strcmp (dict_get_encoding (f->dict), dict_get_encoding (m)))
+  if (0 != strcmp (dict_get_encoding (f->dict), dict_get_encoding (m)))
     msg (MW, _("Combining files with incompatible encodings. String data may "
                "not be represented correctly."));
 
@@ -717,7 +717,7 @@ execute_match_files (struct comb_proc *proc)
       size_t i;
 
       output = create_output_case (proc);
-      for (i = proc->n_files; i-- > 0; )
+      for (i = proc->n_files; i-- > 0;)
         {
           struct comb_file *file = &proc->files[i];
           if (file->type == COMB_FILE)

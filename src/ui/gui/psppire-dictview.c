@@ -189,7 +189,7 @@ set_model (PsppireDictView *dict_view)
 {
   GtkTreeModel *model = NULL;
 
-  if ( dict_view->dict == NULL)
+  if (dict_view->dict == NULL)
     return;
 
   dict_view->sorted_model = gtk_tree_model_sort_new_with_model (GTK_TREE_MODEL (dict_view->dict));
@@ -197,7 +197,7 @@ set_model (PsppireDictView *dict_view)
   gtk_tree_sortable_set_sort_column_id (GTK_TREE_SORTABLE (dict_view->sorted_model),
 					GTK_TREE_SORTABLE_DEFAULT_SORT_COLUMN_ID, GTK_SORT_ASCENDING);
 
-   if ( dict_view->predicate )
+   if (dict_view->predicate)
     {
       model = gtk_tree_model_filter_new (dict_view->sorted_model,	 NULL);
 
@@ -491,7 +491,7 @@ set_tooltip_for_variable (GtkTreeView  *treeview,
 
   gtk_tree_model_get (tree_model, &iter, DICT_TVM_COL_VAR,  &var, -1);
 
-  if ( ! var_has_label (var))
+  if (! var_has_label (var))
     return FALSE;
 
   {
@@ -500,7 +500,7 @@ set_tooltip_for_variable (GtkTreeView  *treeview,
 
     get_base_model (tree_model, NULL, &m, NULL);
 
-    if ( use_labels (PSPPIRE_DICT_VIEW (treeview)))
+    if (use_labels (PSPPIRE_DICT_VIEW (treeview)))
       tip = var_get_name (var);
     else
       tip = var_get_label (var);

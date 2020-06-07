@@ -73,7 +73,7 @@ dialog_state_valid (gpointer data)
 
   text = gtk_entry_get_text (GTK_ENTRY (tt_d->test_value_entry));
 
-  if ( 0 == strcmp ("", text))
+  if (0 == strcmp ("", text))
     return FALSE;
 
   /* Check to see if the entry is numeric */
@@ -83,7 +83,7 @@ dialog_state_valid (gpointer data)
     return FALSE;
 
 
-  if ( 0 == gtk_tree_model_get_iter_first (vars, &notused))
+  if (0 == gtk_tree_model_get_iter_first (vars, &notused))
     return FALSE;
 
   return TRUE;
@@ -108,7 +108,7 @@ psppire_dialog_action_tt1s_activate (PsppireDialogAction *a, GVariant *param)
   PsppireDialogAction *pda = PSPPIRE_DIALOG_ACTION (a);
   PsppireDialogActionTt1s *act = PSPPIRE_DIALOG_ACTION_TT1S (a);
 
-  GtkBuilder *xml = builder_new ( "t-test.ui");
+  GtkBuilder *xml = builder_new ("t-test.ui");
   GtkWidget *options_button = get_widget_assert (xml, "button1");
 
   pda->dialog = get_widget_assert (xml, "t-test-one-sample-dialog");

@@ -91,7 +91,7 @@ simple_destroy (struct statistic *stat UNUSED)
 
 
 /* HARMONIC MEAN: The reciprocal of the sum of the reciprocals:
-   1 / ( 1/(x_0) + 1/(x_1) + ... + 1/(x_{n-1}) ) */
+   1 / (1/(x_0) + 1/(x_1) + ... + 1/(x_{n-1})) */
 
 struct harmonic_mean
 {

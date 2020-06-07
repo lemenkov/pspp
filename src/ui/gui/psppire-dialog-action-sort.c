@@ -39,7 +39,7 @@ generate_syntax (const PsppireDialogAction *act)
   PsppireVarView *var_view = PSPPIRE_VAR_VIEW (scd->variables);
   gint n_vars = psppire_var_view_append_names (var_view, 0, string);
 
-  if ( n_vars == 0 )
+  if (n_vars == 0)
     {
       g_string_assign (string, "");
     }
@@ -82,7 +82,7 @@ dialog_state_valid (gpointer act)
 
   gint n_rows = gtk_tree_model_iter_n_children  (model, NULL);
 
-  if ( n_rows == 0 )
+  if (n_rows == 0)
     return FALSE;
 
   return TRUE;
@@ -95,7 +95,7 @@ psppire_dialog_action_sort_activate (PsppireDialogAction *a, GVariant *param)
   PsppireDialogAction *pda = PSPPIRE_DIALOG_ACTION (a);
   PsppireDialogActionSort *act = PSPPIRE_DIALOG_ACTION_SORT (a);
 
-  GtkBuilder *xml = builder_new ( "sort.ui");
+  GtkBuilder *xml = builder_new ("sort.ui");
 
   pda->dialog = get_widget_assert (xml, "sort-cases-dialog");
   pda->source = get_widget_assert (xml, "sort-cases-treeview1");

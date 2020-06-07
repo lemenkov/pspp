@@ -105,7 +105,7 @@ initialize (const struct init_source *is)
       bind_textdomain_codeset (PACKAGE, "UTF-8");
       break;
     case 8:
-      if ( ! gtk_parse_args (is->argc, is->argv) )
+      if (! gtk_parse_args (is->argc, is->argv))
 	{
 	  perror ("Error parsing arguments");
 	  exit (1);

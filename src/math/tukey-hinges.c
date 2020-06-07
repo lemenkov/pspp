@@ -41,7 +41,7 @@ tukey_hinges_calculate (const struct tukey_hinges *th, double hinge[3])
 
       if (a_star[i] < 1)
 	{
-	  if (os->k[i].c_p1 >= 1 )
+	  if (os->k[i].c_p1 >= 1)
 	    {
 	      hinge[i] = (1 - a_star[i]) * os->k[i].y
 		+ a_star[i] * os->k[i].y_p1;
@@ -83,7 +83,7 @@ tukey_hinges_create (double W, double c_min)
   os->n_k = 3;
   os->k = xcalloc (3, sizeof (*os->k));
 
-  if ( c_min >= 1.0)
+  if (c_min >= 1.0)
     {
       d = floor ((W + 3) / 2.0) / 2.0;
 

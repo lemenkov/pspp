@@ -220,7 +220,7 @@ next_matrix_from_reader (struct matrix_material *mm,
     }
 
   struct ccase *c;
-  for ( ; (c = casereader_read (group) ); case_unref (c))
+  for (; (c = casereader_read (group)); case_unref (c))
     {
       const union value *uv = case_data (c, mr->rowtype);
       const char *row_type = CHAR_CAST (const char *, uv->s);

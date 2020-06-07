@@ -134,14 +134,14 @@ execute_syntax (PsppireDataWindow *window, struct lex_reader *lex_reader)
       struct dataset *ds = session_active_dataset (the_session);
       enum cmd_result result = cmd_parse (lexer, ds);
 
-      if ( cmd_result_is_failure (result))
+      if (cmd_result_is_failure (result))
 	{
 	  retval = FALSE;
-	  if ( lex_get_error_mode (lexer) == LEX_ERROR_STOP )
+	  if (lex_get_error_mode (lexer) == LEX_ERROR_STOP)
 	    break;
 	}
 
-      if ( result == CMD_EOF || result == CMD_FINISH)
+      if (result == CMD_EOF || result == CMD_FINISH)
 	break;
     }
 

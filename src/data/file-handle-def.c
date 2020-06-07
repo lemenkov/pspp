@@ -494,14 +494,14 @@ fh_lock (struct file_handle *h, enum fh_referent mask UNUSED,
 
   HMAP_FOR_EACH_WITH_HASH (lock, struct fh_lock, node, hash, &locks)
     {
-      if ( 0 == compare_fh_locks (lock, key))
+      if (0 == compare_fh_locks (lock, key))
 	{
 	  found_lock = true;
 	  break;
 	}
     }
 
-  if ( found_lock )
+  if (found_lock)
     {
       if (strcmp (lock->type, type))
         {
@@ -533,7 +533,7 @@ fh_lock (struct file_handle *h, enum fh_referent mask UNUSED,
   found_lock = false;
   HMAP_FOR_EACH_WITH_HASH (lock, struct fh_lock, node, hash, &locks)
     {
-      if ( 0 == compare_fh_locks (lock, key))
+      if (0 == compare_fh_locks (lock, key))
 	{
 	  found_lock = true;
 	  break;
@@ -608,7 +608,7 @@ fh_is_locked (const struct file_handle *handle, enum fh_access access)
 
   HMAP_FOR_EACH_WITH_HASH (k, struct fh_lock, node, hash, &locks)
     {
-      if ( 0 == compare_fh_locks (k, &key))
+      if (0 == compare_fh_locks (k, &key))
 	{
 	  is_locked = true;
 	  break;

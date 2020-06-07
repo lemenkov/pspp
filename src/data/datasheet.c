@@ -819,7 +819,7 @@ rw_case (struct datasheet *ds, enum rw_op op,
   assert (start_column + n_columns <= datasheet_get_n_columns (ds));
 
   prow = axis_map (ds->rows, lrow);
-  for (i = 0; i < n_columns; )
+  for (i = 0; i < n_columns;)
     {
       struct source *source = columns[i].source;
       size_t j;

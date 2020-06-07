@@ -68,7 +68,7 @@ xrchart_draw_barchart (const struct chart_item *chart_item, cairo_t *cr,
   xrchart_write_xlabel (cr, geom, chart_item_get_title (chart_item));
 
   if (bc->percent)
-    xrchart_write_yscale (cr, geom, 0, bc->largest * 100.0 / bc->total_count );
+    xrchart_write_yscale (cr, geom, 0, bc->largest * 100.0 / bc->total_count);
   else
     xrchart_write_yscale (cr, geom, 0, bc->largest);
 

@@ -295,7 +295,7 @@ cmd_modify_vars (struct lexer *lexer, struct dataset *ds)
                          "not be given in conjunction with the %s "
                          "subcommand."),
 		   "DROP", "KEEP"
-		   );
+		);
 	      goto done;
 	    }
 	  already_encountered |= 4;

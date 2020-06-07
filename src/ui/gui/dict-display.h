@@ -50,7 +50,7 @@ void insert_source_row_into_entry (GtkTreeIter source_iter,
 				   GtkWidget *dest,
 				   GtkTreeModel *source_model,
 				   gpointer data
-				   );
+				);
 
 
 

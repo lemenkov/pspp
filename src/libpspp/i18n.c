@@ -264,10 +264,10 @@ recode_string_pool (const char *to, const char *from,
 {
   struct substring out;
 
-  if ( text == NULL )
+  if (text == NULL)
     return NULL;
 
-  if ( length == -1 )
+  if (length == -1)
     length = strlen (text);
 
   out = recode_substring_pool (to, from, ss_buffer (text, length), pool);
@@ -563,7 +563,7 @@ recode_substring_pool__ (const char *to, const char *from,
 
   conv = create_iconv (to, from);
 
-  if ( NULL == conv )
+  if (NULL == conv)
     {
       if (fallbackchar)
         {
@@ -685,7 +685,7 @@ set_encoding_from_locale (const char *loc)
   loc_encoding = xstrdup (locale_charset ());
 
 
-  if ( 0 == strcmp (loc_encoding, c_encoding))
+  if (0 == strcmp (loc_encoding, c_encoding))
     {
       ok = false;
     }
@@ -737,7 +737,7 @@ valid_encoding (const char *enc)
 {
   iconv_t conv = iconv_open (UTF8, enc);
 
-  if ( conv == (iconv_t) -1)
+  if (conv == (iconv_t) -1)
     return false;
 
   iconv_close (conv);

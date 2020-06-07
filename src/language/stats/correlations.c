@@ -217,12 +217,12 @@ run_corr (struct casereader *r, const struct corr_opts *opts, const struct corr 
 						    true);
 
   struct casereader *rc = casereader_clone (r);
-  for ( ; (c = casereader_read (r) ); case_unref (c))
+  for (; (c = casereader_read (r)); case_unref (c))
     {
       covariance_accumulate_pass1 (cov, c);
     }
 
-  for ( ; (c = casereader_read (rc) ); case_unref (c))
+  for (; (c = casereader_read (rc)); case_unref (c))
     {
       covariance_accumulate_pass2 (cov, c);
     }
@@ -241,7 +241,7 @@ run_corr (struct casereader *r, const struct corr_opts *opts, const struct corr 
 
   corr_matrix = correlation_from_covariance (cov_matrix, var_matrix);
 
-  if ( opts->statistics & STATS_DESCRIPTIVES)
+  if (opts->statistics & STATS_DESCRIPTIVES)
     output_descriptives (corr, opts, mean_matrix, var_matrix, samples_matrix);
 
   output_correlation (corr, opts, corr_matrix,
@@ -307,7 +307,7 @@ cmd_correlation (struct lexer *lexer, struct dataset *ds)
           lex_match (lexer, T_EQUALS);
           while (lex_token (lexer) != T_ENDCMD && lex_token (lexer) != T_SLASH)
 	    {
-	      if ( lex_match_id (lexer, "TWOTAIL"))
+	      if (lex_match_id (lexer, "TWOTAIL"))
 		opts.tails = 2;
 	      else if (lex_match_id (lexer, "ONETAIL"))
 		opts.tails = 1;
@@ -329,7 +329,7 @@ cmd_correlation (struct lexer *lexer, struct dataset *ds)
 	  lex_match (lexer, T_EQUALS);
           while (lex_token (lexer) != T_ENDCMD && lex_token (lexer) != T_SLASH)
 	    {
-	      if ( lex_match_id (lexer, "DESCRIPTIVES"))
+	      if (lex_match_id (lexer, "DESCRIPTIVES"))
 		opts.statistics = STATS_DESCRIPTIVES;
 	      else if (lex_match_id (lexer, "XPROD"))
 		opts.statistics = STATS_XPROD;
@@ -357,7 +357,7 @@ cmd_correlation (struct lexer *lexer, struct dataset *ds)
 	  corr = xrealloc (corr, sizeof (*corr) * (n_corrs + 1));
 	  corr[n_corrs].n_vars_total = corr[n_corrs].n_vars1 = 0;
 
-	  if ( ! parse_variables_const (lexer, dict, &corr[n_corrs].vars,
+	  if (! parse_variables_const (lexer, dict, &corr[n_corrs].vars,
 					&corr[n_corrs].n_vars_total,
 					PV_NUMERIC))
 	    {
@@ -368,9 +368,9 @@ cmd_correlation (struct lexer *lexer, struct dataset *ds)
 
 	  corr[n_corrs].n_vars1 = corr[n_corrs].n_vars_total;
 
-	  if ( lex_match (lexer, T_WITH))
+	  if (lex_match (lexer, T_WITH))
 	    {
-	      if ( ! parse_variables_const (lexer, dict,
+	      if (! parse_variables_const (lexer, dict,
 					    &corr[n_corrs].vars, &corr[n_corrs].n_vars_total,
 					    PV_NUMERIC | PV_APPEND))
 		{
@@ -416,7 +416,7 @@ cmd_correlation (struct lexer *lexer, struct dataset *ds)
 	  /* FIXME: No need to iterate the data multiple times */
 	  struct casereader *r = casereader_clone (group);
 
-	  if ( opts.missing_type == CORR_LISTWISE)
+	  if (opts.missing_type == CORR_LISTWISE)
 	    r = casereader_create_filter_missing (r, all_vars, n_all_vars,
 						  opts.exclude, NULL, NULL);
 

@@ -369,7 +369,7 @@ casereader_create_append_rank (struct casereader *subreader,
 			       enum rank_error *err,
 			       distinct_func *distinct_callback,
 			       void *aux
-			       )
+			)
 {
   struct casereader_append_rank *car = xmalloc (sizeof *car);
   car->proto = caseproto_ref (casereader_get_proto (subreader));
@@ -407,13 +407,13 @@ car_translate (struct ccase *input, void *car_)
 
   const double value = case_data (input, car->var)->f;
 
-  if ( car->prev_value != SYSMIS)
+  if (car->prev_value != SYSMIS)
     {
       if (car->err && value < car->prev_value)
 	*car->err |= RANK_ERR_UNSORTED;
     }
 
-  if ( car->n_common == 1)
+  if (car->n_common == 1)
     {
       double vxx = SYSMIS;
       casenumber k = 0;
@@ -421,7 +421,7 @@ car_translate (struct ccase *input, void *car_)
       if (car->weight)
 	{
 	  weight = case_data (input, car->weight)->f;
-	  if ( car->err && weight < 0 )
+	  if (car->err && weight < 0)
 	    *car->err |= RANK_ERR_NEGATIVE_WEIGHT;
 	}
 
@@ -432,13 +432,13 @@ car_translate (struct ccase *input, void *car_)
 	    break;
 	  vxx = case_data (c, car->var)->f;
 
-	  if ( vxx == value)
+	  if (vxx == value)
 	    {
 	      if (car->weight)
 		{
 		  double w = case_data (c, car->weight)->f;
 
-		  if ( car->err && w < 0 )
+		  if (car->err && w < 0)
 		    *car->err |= RANK_ERR_NEGATIVE_WEIGHT;
 
 		  weight += w;
@@ -497,13 +497,13 @@ uniquify (const struct ccase *c, void *aux)
   cdr->n ++;
   cdr->cc += weight;
 
-  if ( NULL == next_case)
+  if (NULL == next_case)
       goto end;
 
   dir = value_compare_3way (case_data (next_case, cdr->key),
 			    current_value, key_width);
   case_unref (next_case);
-  if ( dir != 0 )
+  if (dir != 0)
     {
       /* Insist that the data are sorted */
       assert (cdr->direction == 0 || dir == cdr->direction);
@@ -582,7 +582,7 @@ casereader_create_distinct (struct casereader *input,
   cdr->clone = casereader_clone (input);
   cdr->direction = 0;
 
-  if ( NULL == cdr->weight )
+  if (NULL == cdr->weight)
     output_proto = caseproto_add_width (output_proto, 0);
 
   cdr->proto = output_proto;

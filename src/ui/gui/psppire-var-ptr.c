@@ -49,7 +49,7 @@ variable_to_string (const GValue *src,
 {
   const struct variable *v = g_value_get_boxed (src);
 
-  if ( v == NULL)
+  if (v == NULL)
     g_value_set_string (dest, "");
   else
     g_value_set_string (dest, var_get_name (v));
@@ -63,7 +63,7 @@ variable_to_int (const GValue *src,
 {
   const struct variable *v = g_value_get_boxed (src);
 
-  if ( v == NULL)
+  if (v == NULL)
     g_value_set_int (dest, -1);
   else
     g_value_set_int (dest, var_get_dict_index (v));
@@ -77,7 +77,7 @@ psppire_var_ptr_get_type (void)
 {
   static GType t = 0;
 
-  if (t == 0 )
+  if (t == 0)
     {
       t = g_boxed_type_register_static  ("psppire-var-ptr",
 					 (GBoxedCopyFunc) variable_copy,

@@ -33,7 +33,7 @@ static GtkTreePath *
 get_base_tree_path (GtkTreeModel *m, GtkTreePath *op)
 {
   GtkTreePath *p = gtk_tree_path_copy (op);
-  while ( ! PSPPIRE_IS_DICT (m))
+  while (! PSPPIRE_IS_DICT (m))
     {
       GtkTreePath *oldp = p;
 
@@ -115,7 +115,7 @@ homogeneous_types (GtkWidget *source, GtkWidget *dest)
   g_list_foreach (list, (GFunc) gtk_tree_path_free, NULL);
   g_list_free (list);
 
-  if ( retval == FALSE )
+  if (retval == FALSE)
     return FALSE;
 
   /* now deal with the dest widget */
@@ -128,7 +128,7 @@ homogeneous_types (GtkWidget *source, GtkWidget *dest)
       const struct variable *v;
       gtk_tree_model_get (model, &iter, 0, &v, -1);
 
-      if ( have_type && var_get_type (v) != type )
+      if (have_type && var_get_type (v) != type)
         {
           retval = FALSE;
           break;
@@ -172,7 +172,7 @@ numeric_only (GtkWidget *source, GtkWidget *dest)
       const struct variable *v = psppire_dict_get_variable (dict, idx[0]);
       gtk_tree_path_free (p);
 
-      if ( var_is_alpha (v))
+      if (var_is_alpha (v))
 	{
 	  retval = FALSE;
 	  break;

@@ -167,7 +167,7 @@ one_sample_run (const struct tt *tt, double testval, struct casereader *reader)
 
   struct casereader *r = casereader_clone (reader);
   struct ccase *c;
-  for ( ; (c = casereader_read (r) ); case_unref (c))
+  for (; (c = casereader_read (r)); case_unref (c))
     {
       double w = dict_get_case_weight (tt->dict, c, NULL);
       for (size_t i = 0; i < os.n_stats; i++)
@@ -184,7 +184,7 @@ one_sample_run (const struct tt *tt, double testval, struct casereader *reader)
   casereader_destroy (r);
 
   r = reader;
-  for ( ; (c = casereader_read (r) ); case_unref (c))
+  for (; (c = casereader_read (r)); case_unref (c))
     {
       double w = dict_get_case_weight (tt->dict, c, NULL);
       for (size_t i = 0; i < os.n_stats; i++)

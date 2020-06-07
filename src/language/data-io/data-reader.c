@@ -554,7 +554,7 @@ dfm_eof (struct dfm_reader *r)
     {
       r->flags &= ~DFM_ADVANCE;
 
-      if (r->eof_cnt == 0 && read_record (r) )
+      if (r->eof_cnt == 0 && read_record (r))
         {
           r->pos = 0;
           return 0;

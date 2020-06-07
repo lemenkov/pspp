@@ -43,9 +43,9 @@ append_fragment (GString *string, const gchar *cut, PsppireVarView *vv)
 {
   g_string_append (string, "\n\t/RUNS");
 
-  g_string_append (string, " ( ");
+  g_string_append (string, " (");
   g_string_append (string, cut);
-  g_string_append (string, " ) = ");
+  g_string_append (string, ") = ");
 
   psppire_var_view_append_names (vv, 0, string);
 }
@@ -58,16 +58,16 @@ generate_syntax (const PsppireDialogAction *act)
 
   GString *string = g_string_new ("NPAR TEST");
 
-  if ( gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (rd->cb[CB_MEAN])))
+  if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (rd->cb[CB_MEAN])))
     append_fragment (string, "MEAN", PSPPIRE_VAR_VIEW (rd->variables));
 
-  if ( gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (rd->cb[CB_MEDIAN])))
+  if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (rd->cb[CB_MEDIAN])))
     append_fragment (string, "MEDIAN", PSPPIRE_VAR_VIEW (rd->variables));
 
-  if ( gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (rd->cb[CB_MODE])))
+  if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (rd->cb[CB_MODE])))
     append_fragment (string, "MODE", PSPPIRE_VAR_VIEW (rd->variables));
 
-  if ( gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (rd->cb[CB_CUSTOM])))
+  if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (rd->cb[CB_CUSTOM])))
     {
       const char *text = gtk_entry_get_text (GTK_ENTRY (rd->entry));
       append_fragment (string, text, PSPPIRE_VAR_VIEW (rd->variables));
@@ -96,10 +96,10 @@ dialog_state_valid (gpointer data)
 
   for (i = 0; i < 4; ++i)
     {
-      if ( TRUE == gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (fd->cb[i])))
+      if (TRUE == gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (fd->cb[i])))
 	break;
     }
-  if ( i >= 4)
+  if (i >= 4)
     return FALSE;
 
 
@@ -133,7 +133,7 @@ psppire_dialog_action_runs_activate (PsppireDialogAction *a, GVariant *param)
   PsppireDialogAction *pda = PSPPIRE_DIALOG_ACTION (a);
   PsppireDialogActionRuns *act = PSPPIRE_DIALOG_ACTION_RUNS (a);
 
-  GtkBuilder *xml = builder_new ( "runs.ui");
+  GtkBuilder *xml = builder_new ("runs.ui");
 
   pda->dialog = get_widget_assert   (xml, "runs-dialog");
   pda->source = get_widget_assert   (xml, "dict-view");

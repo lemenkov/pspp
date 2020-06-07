@@ -264,13 +264,13 @@ interruptible_getc (FILE *fp)
       max_fd = (max_fd > fd) ? max_fd : fd;
       FD_SET (fd, &what);
       ret = select (max_fd + 1, &what, NULL, NULL, &timeout);
-      if ( ret == -1 && errno != EINTR)
+      if (ret == -1 && errno != EINTR)
 	{
 	  perror ("Select failed");
 	  continue;
 	}
 
-      if (ret > 0 )
+      if (ret > 0)
 	{
 	  if (FD_ISSET (pfd[0], &what))
 	    {
@@ -302,10 +302,10 @@ handler (int sig)
 static void
 readline_init (void)
 {
-  if ( 0 != pipe2 (pfd, O_NONBLOCK))
+  if (0 != pipe2 (pfd, O_NONBLOCK))
     perror ("Cannot create pipe");
 
-  if ( SIG_ERR == signal (SIGINT, handler))
+  if (SIG_ERR == signal (SIGINT, handler))
     perror ("Cannot add signal handler");
 
   rl_catch_signals = 0;
@@ -327,7 +327,7 @@ readline_init (void)
 static void
 readline_done (void)
 {
-  if (history_file != NULL && false == settings_get_testing_mode () )
+  if (history_file != NULL && false == settings_get_testing_mode ())
     write_history (history_file);
   clear_history ();
   free (history_file);

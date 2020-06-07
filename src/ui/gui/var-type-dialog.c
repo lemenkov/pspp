@@ -230,7 +230,7 @@ on_toggle (GtkToggleButton *togglebutton, gpointer dialog_)
 {
   PsppireVarTypeDialog *dialog = dialog_;
 
-  if ( gtk_toggle_button_get_active (togglebutton) == TRUE)
+  if (gtk_toggle_button_get_active (togglebutton) == TRUE)
     refresh_active_button (dialog);
 }
 
@@ -419,7 +419,7 @@ preview_custom (GtkWidget *w, gpointer data)
 
   PsppireVarTypeDialog *dialog = data;
 
-  if ( dialog->active_button != BUTTON_CUSTOM )
+  if (dialog->active_button != BUTTON_CUSTOM)
     return;
 
   text = gtk_entry_get_text (GTK_ENTRY (dialog->entry_decimals));
@@ -429,7 +429,7 @@ preview_custom (GtkWidget *w, gpointer data)
   dialog->fmt_l.w = atoi (text);
 
   msg_disable ();
-  if ( ! fmt_check_output (&dialog->fmt_l))
+  if (! fmt_check_output (&dialog->fmt_l))
     {
       gtk_label_set_text (GTK_LABEL (dialog->label_psample), "---");
       gtk_label_set_text (GTK_LABEL (dialog->label_nsample), "---");
@@ -605,7 +605,7 @@ psppire_var_type_dialog_constructor (GType                  type,
 			add_to_group, sizeGroup);
 
 
-  for (i = 0 ; i < num_BUTTONS; ++i )
+  for (i = 0 ; i < num_BUTTONS; ++i)
     g_signal_connect (dialog->radioButton[i], "toggled",
                       G_CALLBACK (on_toggle), dialog);
 
@@ -627,7 +627,7 @@ psppire_var_type_dialog_constructor (GType                  type,
 
   list_store = gtk_list_store_new (1, G_TYPE_STRING);
 
-  for ( i = 0 ; i < sizeof (date_format) / sizeof (date_format[0]) ; ++i )
+  for (i = 0 ; i < sizeof (date_format) / sizeof (date_format[0]) ; ++i)
     {
       const struct fmt_spec *f = &date_format[i];
       gtk_list_store_append (list_store, &iter);
@@ -661,7 +661,7 @@ psppire_var_type_dialog_constructor (GType                  type,
 
   list_store = gtk_list_store_new (1, G_TYPE_STRING);
 
-  for ( i = 0 ; i < sizeof (dollar_format)/sizeof (dollar_format[0]) ; ++i )
+  for (i = 0 ; i < sizeof (dollar_format)/sizeof (dollar_format[0]) ; ++i)
     {
       char *template = settings_dollar_template (&dollar_format[i]);
       gtk_list_store_append (list_store, &iter);
@@ -701,7 +701,7 @@ psppire_var_type_dialog_constructor (GType                  type,
 
   list_store = gtk_list_store_new (1, G_TYPE_STRING);
 
-  for ( i = 0 ; i < 5 ; ++i )
+  for (i = 0 ; i < 5 ; ++i)
     {
       enum fmt_type cc_fmts[5] = {FMT_CCA, FMT_CCB, FMT_CCC, FMT_CCD, FMT_CCE};
       gtk_list_store_append (list_store, &iter);

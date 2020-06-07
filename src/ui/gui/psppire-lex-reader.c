@@ -93,7 +93,7 @@ lex_gtk_text_buffer_read (struct lex_reader *r_, char *buf, size_t n,
       int offset = gtk_text_iter_get_offset (&iter);
       int end_offset = gtk_text_iter_get_offset (&r->stop);
 
-      if ( end_offset - offset < n)
+      if (end_offset - offset < n)
         n_chars = end_offset - offset;
 
       gtk_text_iter_set_offset (&iter, offset + n_chars);

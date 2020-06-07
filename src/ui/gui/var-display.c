@@ -39,20 +39,20 @@ missing_values_to_string (const struct variable *pv, GError **err)
 {
   gchar *s;
   const struct missing_values *miss = var_get_missing_values (pv);
-  if ( mv_is_empty (miss))
+  if (mv_is_empty (miss))
     return xstrdup (gettext (none));
   else
     {
-      if ( ! mv_has_range (miss))
+      if (! mv_has_range (miss))
 	{
 	  GString *gstr = g_string_sized_new (10);
 	  const int n = mv_n_values (miss);
 	  gchar *mv[4] = {0,0,0,0};
 	  gint i;
-	  for (i = 0 ; i < n; ++i )
+	  for (i = 0 ; i < n; ++i)
 	    {
 	      mv[i] = value_to_text (*mv_get_value (miss, i), pv);
-	      if ( i > 0 )
+	      if (i > 0)
 		g_string_append (gstr, ", ");
 	      g_string_append (gstr, mv[i]);
 	      g_free (mv[i]);
@@ -74,7 +74,7 @@ missing_values_to_string (const struct variable *pv, GError **err)
 	  g_free (l);
 	  g_free (h);
 
-	  if ( mv_has_value (miss))
+	  if (mv_has_value (miss))
 	    {
 	      gchar *ss = NULL;
 

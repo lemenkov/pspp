@@ -43,7 +43,7 @@ difx_variable_treeview_is_populated (PsppireDialogActionRecode *rd)
   GtkTreeModel *vars =
     gtk_tree_view_get_model (GTK_TREE_VIEW (rd->variable_treeview));
 
-  if ( !gtk_tree_model_get_iter_first (vars, &not_used))
+  if (!gtk_tree_model_get_iter_first (vars, &not_used))
     return FALSE;
 
   return TRUE;
@@ -59,11 +59,11 @@ dialog_state_valid (gpointer data)
   PsppireDialogActionRecode *rd = data;
   GtkTreeIter not_used;
 
-  if ( ! rd->value_map )
+  if (! rd->value_map)
     return FALSE;
 
-  if ( ! gtk_tree_model_get_iter_first (GTK_TREE_MODEL (rd->value_map),
-					&not_used) )
+  if (! gtk_tree_model_get_iter_first (GTK_TREE_MODEL (rd->value_map),
+					&not_used))
     return FALSE;
 
   return difx_variable_treeview_is_populated (rd);

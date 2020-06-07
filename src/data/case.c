@@ -496,7 +496,7 @@ copy_backward (struct ccase *dst, size_t dst_idx,
 {
   size_t i;
 
-  for (i = n_values; i-- != 0; )
+  for (i = n_values; i-- != 0;)
     value_copy (&dst->values[dst_idx + i], &src->values[src_idx + i],
                 caseproto_get_width (dst->proto, dst_idx + i));
 }

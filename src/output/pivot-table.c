@@ -81,7 +81,7 @@ pivot_area_get_default_style (enum pivot_area area)
     },                                                          \
   }
   static const struct area_style default_area_styles[PIVOT_N_AREAS] = {
-    [PIVOT_AREA_TITLE]         = STYLE( true, CENTER, CENTER,  8,11,1,8),
+    [PIVOT_AREA_TITLE]         = STYLE(true, CENTER, CENTER,  8,11,1,8),
     [PIVOT_AREA_CAPTION]       = STYLE(false, LEFT,   TOP,     8,11,1,1),
     [PIVOT_AREA_FOOTER]        = STYLE(false, LEFT,   TOP,    11, 8,2,3),
     [PIVOT_AREA_CORNER]        = STYLE(false, LEFT,   BOTTOM,  8,11,1,1),
@@ -1568,7 +1568,7 @@ pivot_table_dump (const struct pivot_table *table, int indentation)
                 names[n_names++] = c->name;
             }
 
-          for (size_t i = n_names; i-- > 0; )
+          for (size_t i = n_names; i-- > 0;)
             {
               putchar (' ');
               pivot_value_dump (names[i]);
@@ -1892,7 +1892,7 @@ pivot_value_format (const struct pivot_value *value,
                     enum settings_value_show show_variables,
                     struct string *out)
 {
-  pivot_value_format_body ( value, show_values, show_variables, out);
+  pivot_value_format_body (value, show_values, show_variables, out);
 
   if (value->n_subscripts)
     {

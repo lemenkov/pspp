@@ -98,9 +98,9 @@ cmd_get_data (struct lexer *lexer, struct dataset *ds)
 	goto error;
 
       struct spreadsheet *spreadsheet = NULL;
-      if ( 0 == strncasecmp (tok, "GNM", 3))
+      if (0 == strncasecmp (tok, "GNM", 3))
         spreadsheet = gnumeric_probe (filename, true);
-      else if ( 0 == strncasecmp (tok, "ODS", 3))
+      else if (0 == strncasecmp (tok, "ODS", 3))
         spreadsheet = ods_probe (filename, true);
 
       if (spreadsheet == NULL)
@@ -159,9 +159,9 @@ parse_get_psql (struct lexer *lexer, struct dataset *ds)
 
   lex_get (lexer);
 
-  while (lex_match (lexer, T_SLASH) )
+  while (lex_match (lexer, T_SLASH))
     {
-      if ( lex_match_id (lexer, "ASSUMEDSTRWIDTH"))
+      if (lex_match_id (lexer, "ASSUMEDSTRWIDTH"))
 	{
 	  lex_match (lexer, T_EQUALS);
           if (lex_force_int (lexer))
@@ -170,7 +170,7 @@ parse_get_psql (struct lexer *lexer, struct dataset *ds)
               lex_get (lexer);
             }
 	}
-      else if ( lex_match_id (lexer, "BSIZE"))
+      else if (lex_match_id (lexer, "BSIZE"))
 	{
 	  lex_match (lexer, T_EQUALS);
           if (lex_force_int (lexer))
@@ -179,14 +179,14 @@ parse_get_psql (struct lexer *lexer, struct dataset *ds)
               lex_get (lexer);
             }
 	}
-      else if ( lex_match_id (lexer, "UNENCRYPTED"))
+      else if (lex_match_id (lexer, "UNENCRYPTED"))
 	{
 	  psql.allow_clear = true;
 	}
       else if (lex_match_id (lexer, "SQL"))
 	{
 	  lex_match (lexer, T_EQUALS);
-	  if ( ! lex_force_string (lexer) )
+	  if (! lex_force_string (lexer))
 	    goto error;
 
 	  ds_put_substring (&psql.sql, lex_tokss (lexer));
@@ -197,7 +197,7 @@ parse_get_psql (struct lexer *lexer, struct dataset *ds)
     struct dictionary *dict = NULL;
     struct casereader *reader = psql_open_reader (&psql, &dict);
 
-    if ( reader )
+    if (reader)
       {
         dataset_set_dict (ds, dict);
         dataset_set_source (ds, reader);
@@ -243,9 +243,9 @@ parse_spreadsheet (struct lexer *lexer, char **filename,
 
   lex_get (lexer);
 
-  while (lex_match (lexer, T_SLASH) )
+  while (lex_match (lexer, T_SLASH))
     {
-      if ( lex_match_id (lexer, "ASSUMEDSTRWIDTH"))
+      if (lex_match_id (lexer, "ASSUMEDSTRWIDTH"))
 	{
 	  lex_match (lexer, T_EQUALS);
           if (lex_force_int (lexer))
@@ -259,7 +259,7 @@ parse_spreadsheet (struct lexer *lexer, char **filename,
 	  lex_match (lexer, T_EQUALS);
 	  if (lex_match_id (lexer, "NAME"))
 	    {
-	      if ( ! lex_force_string (lexer) )
+	      if (! lex_force_string (lexer))
 		goto error;
 
 	      opts->sheet_name = ss_xstrdup (lex_tokss (lexer));
@@ -297,7 +297,7 @@ parse_spreadsheet (struct lexer *lexer, char **filename,
 	    }
 	  else if (lex_match_id (lexer, "RANGE"))
 	    {
-	      if ( ! lex_force_string (lexer) )
+	      if (! lex_force_string (lexer))
 		goto error;
 
 	      opts->cell_range = ss_xstrdup (lex_tokss (lexer));
@@ -314,7 +314,7 @@ parse_spreadsheet (struct lexer *lexer, char **filename,
 	{
 	  lex_match (lexer, T_EQUALS);
 
-	  if ( lex_match_id (lexer, "ON"))
+	  if (lex_match_id (lexer, "ON"))
 	    {
 	      opts->read_names = true;
 	    }

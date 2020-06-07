@@ -105,7 +105,7 @@ tt_options_dialog_run (struct tt_options_dialog *tto)
 {
   gint response;
 
-  if ( tto->excl == EXCL_ANALYSIS)
+  if (tto->excl == EXCL_ANALYSIS)
     gtk_toggle_button_set_active (tto->analysis, TRUE);
   else
     gtk_toggle_button_set_active (tto->listwise, TRUE);
@@ -114,12 +114,12 @@ tt_options_dialog_run (struct tt_options_dialog *tto)
 
   response = psppire_dialog_run (PSPPIRE_DIALOG (tto->dialog));
 
-  if ( response == PSPPIRE_RESPONSE_CONTINUE)
+  if (response == PSPPIRE_RESPONSE_CONTINUE)
     {
       tto->non_default_options = TRUE;
 
       tto->confidence_interval = gtk_spin_button_get_value (tto->conf_percent);
-      if ( gtk_toggle_button_get_active (tto->analysis) )
+      if (gtk_toggle_button_get_active (tto->analysis))
 	tto->excl = EXCL_ANALYSIS;
       else
 	tto->excl = EXCL_LISTWISE;

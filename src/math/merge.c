@@ -137,7 +137,7 @@ do_merge (struct merge *m)
     taint_propagate (casereader_get_taint (m->inputs[i].reader),
                      casewriter_get_taint (w));
 
-  for (i = 0; i < m->input_cnt; )
+  for (i = 0; i < m->input_cnt;)
     if (read_input_case (m, i))
       i++;
   while (m->input_cnt > 0)

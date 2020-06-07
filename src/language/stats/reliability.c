@@ -191,17 +191,17 @@ cmd_reliability (struct lexer *lexer, struct dataset *ds)
       if (lex_match_id (lexer, "SCALE"))
 	{
 	  struct const_var_set *vs;
-	  if ( ! lex_force_match (lexer, T_LPAREN))
+	  if (! lex_force_match (lexer, T_LPAREN))
 	    goto error;
 
-	  if ( ! lex_force_string (lexer) )
+	  if (! lex_force_string (lexer))
 	    goto error;
 
 	  ds_assign_substring (&reliability.scale_name, lex_tokss (lexer));
 
 	  lex_get (lexer);
 
-	  if ( ! lex_force_match (lexer, T_RPAREN))
+	  if (! lex_force_match (lexer, T_RPAREN))
 	    goto error;
 
           lex_match (lexer, T_EQUALS);
@@ -229,7 +229,7 @@ cmd_reliability (struct lexer *lexer, struct dataset *ds)
 	      reliability.model = MODEL_SPLIT;
 	      reliability.split_point = -1;
 
-	      if ( lex_match (lexer, T_LPAREN)
+	      if (lex_match (lexer, T_LPAREN)
 		   && lex_force_num (lexer))
 		{
 		  reliability.split_point = lex_number (lexer);
@@ -290,12 +290,12 @@ cmd_reliability (struct lexer *lexer, struct dataset *ds)
 	}
     }
 
-  if ( reliability.model == MODEL_SPLIT)
+  if (reliability.model == MODEL_SPLIT)
     {
       int i;
       const struct cronbach *s;
 
-      if ( reliability.split_point >= reliability.n_variables)
+      if (reliability.split_point >= reliability.n_variables)
         {
           msg (ME, _("The split point must be less than the number of variables"));
           goto error;
@@ -326,7 +326,7 @@ cmd_reliability (struct lexer *lexer, struct dataset *ds)
 	}
     }
 
-  if ( reliability.summary & SUMMARY_TOTAL)
+  if (reliability.summary & SUMMARY_TOTAL)
     {
       int i;
       const int base_sc = reliability.n_sc;
@@ -337,7 +337,7 @@ cmd_reliability (struct lexer *lexer, struct dataset *ds)
       reliability.sc = xrealloc (reliability.sc, sizeof (struct cronbach) * reliability.n_sc);
 
 
-      for (i = 0 ; i < reliability.sc[0].n_items; ++i )
+      for (i = 0 ; i < reliability.sc[0].n_items; ++i)
 	{
 	  int v_src;
 	  int v_dest = 0;
@@ -347,14 +347,14 @@ cmd_reliability (struct lexer *lexer, struct dataset *ds)
 	  s->items = xzalloc (sizeof (struct variable *) * s->n_items);
 	  for (v_src = 0 ; v_src < reliability.sc[0].n_items ; ++v_src)
 	    {
-	      if ( v_src != i)
+	      if (v_src != i)
 		s->items[v_dest++] = reliability.sc[0].items[v_src];
 	    }
 	}
     }
 
 
-  if ( ! run_reliability (ds, &reliability))
+  if (! run_reliability (ds, &reliability))
     goto error;
 
   reliability_destroy (&reliability);
@@ -394,7 +394,7 @@ run_reliability (struct dataset *ds, const struct reliability *reliability)
       s->m = xzalloc (sizeof *s->m * s->n_items);
       s->total = moments1_create (MOMENT_VARIANCE);
 
-      for (i = 0 ; i < s->n_items ; ++i )
+      for (i = 0 ; i < s->n_items ; ++i)
 	s->m[i] = moments1_create (MOMENT_VARIANCE);
     }
 
@@ -405,7 +405,7 @@ run_reliability (struct dataset *ds, const struct reliability *reliability)
 
       reliability_statistics (reliability);
 
-      if (reliability->summary & SUMMARY_TOTAL )
+      if (reliability->summary & SUMMARY_TOTAL)
 	reliability_summary_total (reliability);
     }
 
@@ -443,7 +443,7 @@ case_processing_summary (casenumber n_valid, casenumber n_missing,
 static double
 alpha (int k, double sum_of_variances, double variance_of_sums)
 {
-  return k / ( k - 1.0) * ( 1 - sum_of_variances / variance_of_sums);
+  return k / (k - 1.0) * (1 - sum_of_variances / variance_of_sums);
 }
 
 static void
@@ -463,7 +463,7 @@ do_reliability (struct casereader *input, struct dataset *ds,
 
       moments1_clear (s->total);
 
-      for (i = 0 ; i < s->n_items ; ++i )
+      for (i = 0 ; i < s->n_items ; ++i)
         moments1_clear (s->m[i]);
     }
 
@@ -494,7 +494,7 @@ do_reliability (struct casereader *input, struct dataset *ds,
 	{
 	  struct cronbach *s = &rel->sc[si];
 
-	  for (i = 0 ; i < s->n_items ; ++i )
+	  for (i = 0 ; i < s->n_items ; ++i)
 	    moments1_add (s->m[i], case_data (c, s->items[i])->f, weight);
 
 	  moments1_add (s->total, case_data_idx (c, s->totals_idx)->f, weight);
@@ -507,7 +507,7 @@ do_reliability (struct casereader *input, struct dataset *ds,
       struct cronbach *s = &rel->sc[si];
 
       s->sum_of_variances = 0;
-      for (i = 0 ; i < s->n_items ; ++i )
+      for (i = 0 ; i < s->n_items ; ++i)
 	{
 	  double weight, mean, variance;
 	  moments1_calculate (s->m[i], &weight, &mean, &variance, NULL, NULL);
@@ -685,7 +685,7 @@ reliability_statistics (const struct reliability *rel)
         rel->sc[1].n_items + rel->sc[2].n_items,
         r1,
         2 * r1 / (1.0 + r1),
-        (sqrt ( pow4 (r1) + 4 * pow2 (r1) * tmp) - pow2 (r1)) / (2 * tmp),
+        (sqrt (pow4 (r1) + 4 * pow2 (r1) * tmp) - pow2 (r1)) / (2 * tmp),
         g,
       };
       for (size_t i = 0; i < sizeof entries / sizeof *entries; i++)

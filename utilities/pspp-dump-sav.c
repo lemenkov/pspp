@@ -1231,7 +1231,7 @@ read_simple_compressed_data (struct sfm_reader *r, int max_cases)
     {
       printf ("%08llx: case %d's uncompressible data begins\n",
               (long long int) ftello (r->file), case_num);
-      for (i = 0; i < r->n_var_widths; )
+      for (i = 0; i < r->n_var_widths;)
         {
           int width = r->var_widths[i];
           char raw_value[8];

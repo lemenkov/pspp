@@ -48,27 +48,27 @@ percentile_calculate (const struct percentile *ptl, enum pc_alg alg)
   struct percentile *mutable = CONST_CAST (struct percentile *, ptl);
   const struct order_stats *os = &ptl->parent;
 
-  if ( ptl->g1 == SYSMIS)
+  if (ptl->g1 == SYSMIS)
     mutable->g1 = (os->k[0].tc - os->k[0].cc) / os->k[0].c_p1;
 
-  if ( ptl->g1_star == SYSMIS)
+  if (ptl->g1_star == SYSMIS)
     mutable->g1_star = os->k[0].tc - os->k[0].cc;
 
-  if ( ptl->g2 == SYSMIS)
+  if (ptl->g2 == SYSMIS)
     {
-      if ( os->k[1].c == 0 )
+      if (os->k[1].c == 0)
 	mutable->g2 = os->k[1].tc / os->k[1].c_p1;
-      else if ( os->k[1].c_p1 == 0 )
+      else if (os->k[1].c_p1 == 0)
 	mutable->g2 = 0;
       else
 	mutable->g2 = (os->k[1].tc - os->k[1].cc) / os->k[1].c_p1;
     }
 
-  if ( ptl->g2_star == SYSMIS)
+  if (ptl->g2_star == SYSMIS)
     {
-      if ( os->k[1].c == 0 )
+      if (os->k[1].c == 0)
 	mutable->g2_star = os->k[1].tc;
-      else if ( os->k[1].c_p1 == 0 )
+      else if (os->k[1].c_p1 == 0)
 	mutable->g2_star = 0;
       else
 	mutable->g2_star = os->k[1].tc - os->k[1].cc;
@@ -77,11 +77,11 @@ percentile_calculate (const struct percentile *ptl, enum pc_alg alg)
   switch (alg)
     {
     case PC_WAVERAGE:
-      if ( ptl->g1_star >= 1.0)
+      if (ptl->g1_star >= 1.0)
 	return os->k[0].y_p1;
       else
 	{
-	  double a = ( os->k[0].y == SYSMIS ) ? 0 : os->k[0].y;
+	  double a = (os->k[0].y == SYSMIS) ? 0 : os->k[0].y;
 
 	  if (os->k[0].c_p1 >= 1.0)
 	    return (1 - ptl->g1_star) * a + ptl->g1_star * os->k[0].y_p1;
@@ -92,7 +92,7 @@ percentile_calculate (const struct percentile *ptl, enum pc_alg alg)
 
     case PC_ROUND:
       {
-	double a = ( os->k[0].y == SYSMIS ) ? 0 : os->k[0].y;
+	double a = (os->k[0].y == SYSMIS) ? 0 : os->k[0].y;
 
 	if (os->k[0].c_p1 >= 1.0)
 	  return (ptl->g1_star < 0.5) ? a : os->k[0].y_p1;
@@ -102,24 +102,24 @@ percentile_calculate (const struct percentile *ptl, enum pc_alg alg)
       break;
 
     case PC_EMPIRICAL:
-      if ( ptl->g1_star == 0 )
+      if (ptl->g1_star == 0)
 	return os->k[0].y;
       else
 	return os->k[0].y_p1;
       break;
 
     case PC_HAVERAGE:
-      if ( ptl->g2_star >= 1.0)
+      if (ptl->g2_star >= 1.0)
 	{
 	  return os->k[1].y_p1;
 	}
       else
 	{
-	  double a = ( os->k[1].y == SYSMIS ) ? 0 : os->k[1].y;
+	  double a = (os->k[1].y == SYSMIS) ? 0 : os->k[1].y;
 
-	  if ( os->k[1].c_p1 >= 1.0)
+	  if (os->k[1].c_p1 >= 1.0)
 	    {
-	      if ( ptl->g2_star == 0)
+	      if (ptl->g2_star == 0)
 		return os->k[1].y;
 
 	      return (1 - ptl->g2_star) * a + ptl->g2_star * os->k[1].y_p1;
@@ -133,7 +133,7 @@ percentile_calculate (const struct percentile *ptl, enum pc_alg alg)
       break;
 
     case PC_AEMPIRICAL:
-      if ( ptl->g1_star == 0 )
+      if (ptl->g1_star == 0)
 	return (os->k[0].y + os->k[0].y_p1)/ 2.0;
       else
 	return os->k[0].y_p1;

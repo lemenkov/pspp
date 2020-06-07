@@ -1035,7 +1035,7 @@ read_header (struct sfm_reader *r, struct any_read_info *info,
 
   if (!read_int (r, &r->case_cnt))
     return false;
-  if ( r->case_cnt > INT_MAX / 2)
+  if (r->case_cnt > INT_MAX / 2)
     r->case_cnt = -1;
 
   /* Identify floating-point format and obtain compression bias. */
@@ -1424,7 +1424,7 @@ parse_variable_records (struct sfm_reader *r, struct dictionary *dict,
   struct sfm_var_record *rec;
   int n_warnings = 0;
 
-  for (rec = var_recs; rec < &var_recs[n_var_recs]; )
+  for (rec = var_recs; rec < &var_recs[n_var_recs];)
     {
       struct variable *var;
       size_t n_values;

@@ -272,7 +272,7 @@ cmd_descriptives (struct lexer *lexer, struct dataset *ds)
               else
 		{
 		  enum dsc_statistic s = match_statistic (lexer);
-		  if (s == DSC_NONE )
+		  if (s == DSC_NONE)
 		    {
 		      lex_error (lexer, NULL);
 		      goto error;
@@ -292,7 +292,7 @@ cmd_descriptives (struct lexer *lexer, struct dataset *ds)
           else
 	    {
 	      dsc->sort_by_stat = match_statistic (lexer);
-	      if (dsc->sort_by_stat == DSC_NONE )
+	      if (dsc->sort_by_stat == DSC_NONE)
 		dsc->sort_by_stat = DSC_MEAN;
 	    }
           if (lex_match (lexer, T_LPAREN))
@@ -727,7 +727,7 @@ setup_z_trns (struct dsc_proc *dsc, struct dataset *ds)
   t->z_score_cnt = cnt;
   t->missing_type = dsc->missing_type;
   t->exclude = dsc->exclude;
-  if ( t->missing_type == DSC_LISTWISE )
+  if (t->missing_type == DSC_LISTWISE)
     {
       t->var_cnt = dsc->var_cnt;
       t->vars = xnmalloc (t->var_cnt, sizeof *t->vars);

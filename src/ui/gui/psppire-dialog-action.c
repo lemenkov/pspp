@@ -274,7 +274,7 @@ psppire_dialog_action_activate (PsppireDialogAction *act, GVariant *parameter)
 
   response = psppire_dialog_run (PSPPIRE_DIALOG (act->dialog));
 
-  if ( class->generate_syntax )
+  if (class->generate_syntax)
     {
       switch (response)
 	{

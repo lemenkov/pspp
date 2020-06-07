@@ -530,19 +530,19 @@ double linreg_sst (const struct linreg *c)
 }
 
 double
-linreg_dfmodel ( const struct linreg *c)
+linreg_dfmodel (const struct linreg *c)
 {
   return c->dfm;
 }
 
 double
-linreg_dferror ( const struct linreg *c)
+linreg_dferror (const struct linreg *c)
 {
   return c->dfe;
 }
 
 double
-linreg_dftotal ( const struct linreg *c)
+linreg_dftotal (const struct linreg *c)
 {
   return c->dft;
 }

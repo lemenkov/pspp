@@ -73,7 +73,7 @@ cmd_t_test (struct lexer *lexer, struct dataset *ds)
 
   lex_match (lexer, T_EQUALS);
 
-  for (; lex_token (lexer) != T_ENDCMD; )
+  for (; lex_token (lexer) != T_ENDCMD;)
     {
       lex_match (lexer, T_SLASH);
       if (lex_match_id (lexer, "TESTVAL"))
@@ -155,7 +155,7 @@ cmd_t_test (struct lexer *lexer, struct dataset *ds)
                                       PV_NO_DUPLICATE | PV_NUMERIC))
             goto exit;
 
-          if ( lex_match (lexer, T_WITH))
+          if (lex_match (lexer, T_WITH))
             {
               with = true;
               if (!parse_variables_const (lexer, dict,
@@ -181,16 +181,16 @@ cmd_t_test (struct lexer *lexer, struct dataset *ds)
           {
             int i;
 
-            if ( !with )
+            if (!with)
               n_pairs = (n_v1 * (n_v1 - 1)) / 2.0;
-            else if ( paired )
+            else if (paired)
               n_pairs = n_v1;
             else
               n_pairs = n_v1 * n_v2;
 
             pairs = xcalloc (n_pairs, sizeof *pairs);
 
-            if ( with)
+            if (with)
               {
                 int x = 0;
                 if (paired)
@@ -236,7 +236,7 @@ cmd_t_test (struct lexer *lexer, struct dataset *ds)
         }
       else if (lex_match_id (lexer, "VARIABLES"))
         {
-          if ( tt.mode == MODE_PAIRED)
+          if (tt.mode == MODE_PAIRED)
             {
               msg (SE, _("%s subcommand may not be used with %s."), "VARIABLES", "PAIRS");
               goto exit;
@@ -250,7 +250,7 @@ cmd_t_test (struct lexer *lexer, struct dataset *ds)
                                       PV_NO_DUPLICATE | PV_NUMERIC))
             goto exit;
         }
-      else if ( lex_match_id (lexer, "MISSING"))
+      else if (lex_match_id (lexer, "MISSING"))
         {
           lex_match (lexer, T_EQUALS);
           while (lex_token (lexer) != T_ENDCMD && lex_token (lexer) != T_SLASH)
@@ -282,8 +282,8 @@ cmd_t_test (struct lexer *lexer, struct dataset *ds)
       else if (lex_match_id (lexer, "CRITERIA"))
         {
           lex_match (lexer, T_EQUALS);
-          if ( lex_match_id (lexer, "CIN") || lex_force_match_id (lexer, "CI"))
-            if ( lex_force_match (lexer, T_LPAREN))
+          if (lex_match_id (lexer, "CIN") || lex_force_match_id (lexer, "CI"))
+            if (lex_force_match (lexer, T_LPAREN))
               {
                 if (!lex_force_num (lexer))
                   goto exit;
@@ -300,7 +300,7 @@ cmd_t_test (struct lexer *lexer, struct dataset *ds)
         }
     }
 
-  if ( mode_count != 1)
+  if (mode_count != 1)
     {
       msg (SE, _("Exactly one of TESTVAL, GROUPS and PAIRS subcommands "
                  "must be specified."));
@@ -322,18 +322,18 @@ cmd_t_test (struct lexer *lexer, struct dataset *ds)
 
     while (casegrouper_get_next_group (grouper, &group))
       {
-        if ( tt.mode == MODE_SINGLE)
+        if (tt.mode == MODE_SINGLE)
           {
-            if ( tt.missing_type == MISS_LISTWISE )
+            if (tt.missing_type == MISS_LISTWISE)
               group  = casereader_create_filter_missing (group,
                                                          tt.vars, tt.n_vars,
                                                          tt.exclude,
                                                          NULL,  NULL);
             one_sample_run (&tt, testval, group);
           }
-        else if ( tt.mode == MODE_PAIRED)
+        else if (tt.mode == MODE_PAIRED)
           {
-            if ( tt.missing_type == MISS_LISTWISE )
+            if (tt.missing_type == MISS_LISTWISE)
               {
                 group  = casereader_create_filter_missing (group,
                                                            v1, n_v1,
@@ -349,7 +349,7 @@ cmd_t_test (struct lexer *lexer, struct dataset *ds)
           }
         else /* tt.mode == MODE_INDEP */
           {
-            if ( tt.missing_type == MISS_LISTWISE )
+            if (tt.missing_type == MISS_LISTWISE)
               {
                 group  = casereader_create_filter_missing (group,
                                                            tt.vars, tt.n_vars,

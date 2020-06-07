@@ -108,7 +108,7 @@ GType psppire_dialog_action_recode_get_type (void) ;
 void psppire_dialog_action_recode_refresh (PsppireDialogAction *);
 
 GtkBuilder * psppire_dialog_action_recode_pre_activate (PsppireDialogActionRecode *act,
-							void (*populate_treeview) (PsppireDialogActionRecode *) );
+							void (*populate_treeview) (PsppireDialogActionRecode *));
 
 
 GType new_value_get_type (void);

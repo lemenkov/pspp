@@ -68,10 +68,10 @@ belongs_to_test (const struct ccase *c, void *aux)
   const union value *group = case_data (c, nst->indep_var);
   const size_t group_var_width = var_get_width (nst->indep_var);
 
-  if ( value_equal (group, &nst->val1, group_var_width))
+  if (value_equal (group, &nst->val1, group_var_width))
     return true;
 
-  if ( value_equal (group, &nst->val2, group_var_width))
+  if (value_equal (group, &nst->val2, group_var_width))
     return true;
 
   return false;
@@ -129,12 +129,12 @@ mann_whitney_execute (const struct dataset *ds,
 	  const size_t group_var_width = var_get_width (nst->indep_var);
 	  const double rank = case_data_idx (c, rank_idx)->f;
 
-	  if ( value_equal (group, &nst->val1, group_var_width))
+	  if (value_equal (group, &nst->val1, group_var_width))
 	    {
 	      mw[i].rank_sum[0] += rank;
 	      mw[i].n[0] += dict_get_case_weight (dict, c, &warn);
 	    }
-	  else if ( value_equal (group, &nst->val2, group_var_width))
+	  else if (value_equal (group, &nst->val2, group_var_width))
 	    {
 	      mw[i].rank_sum[1] += rank;
 	      mw[i].n[1] += dict_get_case_weight (dict, c, &warn);
@@ -152,7 +152,7 @@ mann_whitney_execute (const struct dataset *ds,
 	mwv->u -= mwv->rank_sum[0];
 
 	mwv->w = mwv->rank_sum[1];
-	if ( mwv->u > mwv->n[0] * mwv->n[1] / 2.0)
+	if (mwv->u > mwv->n[0] * mwv->n[1] / 2.0)
 	  {
 	    mwv->u =  mwv->n[0] * mwv->n[1] - mwv->u;
 	    mwv->w = mwv->rank_sum[0];

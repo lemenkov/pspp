@@ -326,7 +326,7 @@ psppire_var_view_get_var_from_model (GtkTreeModel *model, gint column, GtkTreeIt
   GValue value = {0};
   gtk_tree_model_get_value (model, iter, column, &value);
 
-  if ( G_VALUE_TYPE (&value) == PSPPIRE_VAR_PTR_TYPE)
+  if (G_VALUE_TYPE (&value) == PSPPIRE_VAR_PTR_TYPE)
     var = g_value_get_boxed (&value);
   else
     g_critical ("Unsupported type `%s', in variable name treeview.",
@@ -356,7 +356,7 @@ psppire_var_view_append_names (PsppireVarView *vv, gint column, GString *string)
   gint n_vars = 0;
   GtkTreeIter iter;
 
-  if ( psppire_var_view_get_iter_first (vv, &iter) )
+  if (psppire_var_view_get_iter_first (vv, &iter))
     {
       do
 	{
@@ -384,7 +384,7 @@ psppire_var_view_list_names (PsppireVarView *vv, gint column)
   GtkTreeIter iter;
   GSList *list = NULL;
 
-  if ( psppire_var_view_get_iter_first (vv, &iter) )
+  if (psppire_var_view_get_iter_first (vv, &iter))
     {
       do
 	{
@@ -408,7 +408,7 @@ psppire_var_view_append_names_str (PsppireVarView *vv, gint column, struct strin
   gint n_vars = 0;
   GtkTreeIter iter;
 
-  if ( psppire_var_view_get_iter_first (vv, &iter) )
+  if (psppire_var_view_get_iter_first (vv, &iter))
     {
       do
 	{

@@ -43,7 +43,7 @@ cmp_descending (const struct ll *a_, const struct ll *b_, void *aux UNUSED)
   const struct extremum *a = ll_data (a_, struct extremum, ll);
   const struct extremum *b = ll_data (b_, struct extremum, ll);
 
-  if ( a->value > b->value) return -1;
+  if (a->value > b->value) return -1;
 
   return (a->value < b->value);
 }
@@ -54,7 +54,7 @@ cmp_ascending (const struct ll *a_, const struct ll *b_, void *aux UNUSED)
   const struct extremum *a = ll_data (a_, struct extremum, ll);
   const struct extremum *b = ll_data (b_, struct extremum, ll);
 
-  if ( a->value < b->value) return -1;
+  if (a->value < b->value) return -1;
 
   return (a->value > b->value);
 }
@@ -66,7 +66,7 @@ extrema_create (size_t n, enum extreme_end end)
   struct extrema *extrema = xzalloc (sizeof *extrema);
   extrema->capacity = n;
 
-  if ( end == EXTREME_MAXIMA )
+  if (end == EXTREME_MAXIMA)
     extrema->cmp_func = cmp_descending;
   else
     extrema->cmp_func = cmp_ascending;
@@ -103,7 +103,7 @@ extrema_add (struct extrema *extrema, double val,
   e->location = location;
   e->weight = weight;
 
-  if ( val == SYSMIS)
+  if (val == SYSMIS)
     {
       free (e);
       return;
@@ -112,7 +112,7 @@ extrema_add (struct extrema *extrema, double val,
   ll_insert_ordered (ll_head (&extrema->list), ll_null (&extrema->list),
 		       &e->ll,  extrema->cmp_func, NULL);
 
-  if ( extrema->n++ > extrema->capacity)
+  if (extrema->n++ > extrema->capacity)
     {
       struct ll *tail = ll_tail (&extrema->list);
       struct extremum *et = ll_data (tail, struct extremum, ll);
@@ -136,7 +136,7 @@ extrema_top (const struct extrema *ex, double *v)
 {
   const struct extremum  *top;
 
-  if ( ll_is_empty (&ex->list))
+  if (ll_is_empty (&ex->list))
     return false;
 
   top = (const struct extremum *)

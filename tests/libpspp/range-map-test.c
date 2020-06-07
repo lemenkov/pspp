@@ -124,7 +124,7 @@ factorial (unsigned int n)
   unsigned int value = 1;
   /* Disallow N values that overflow on 32-bit machines. */
   assert (n <= 12);
-  for (; n > 1; )
+  for (; n > 1;)
     value *= n--;
   return value;
 }

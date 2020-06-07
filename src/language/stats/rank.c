@@ -287,16 +287,16 @@ parse_into (struct lexer *lexer, struct rank *cmd,
     }
   else if (lex_match_id (lexer, "NTILES"))
     {
-      if ( !lex_force_match (lexer, T_LPAREN))
+      if (!lex_force_match (lexer, T_LPAREN))
 	return false;
 
-      if (! lex_force_int (lexer) )
+      if (! lex_force_int (lexer))
 	return false;
 
       cmd->k_ntiles = lex_integer (lexer);
       lex_get (lexer);
 
-      if ( !lex_force_match (lexer, T_RPAREN))
+      if (!lex_force_match (lexer, T_RPAREN))
 	return false;
 
       rs->rfunc = NTILES;
@@ -313,13 +313,13 @@ parse_into (struct lexer *lexer, struct rank *cmd,
 
   if (lex_match_id (lexer, "INTO"))
     {
-      while( lex_token (lexer) == T_ID )
+      while(lex_token (lexer) == T_ID)
 	{
 	  const char *name = lex_tokcstr (lexer);
 
-	  if ( var_count >= subcase_get_n_fields (&cmd->sc) )
+	  if (var_count >= subcase_get_n_fields (&cmd->sc))
             msg (SE, _("Too many variables in %s clause."), "INTO");
-	  else if ( dict_lookup_var (cmd->dict, name) != NULL )
+	  else if (dict_lookup_var (cmd->dict, name) != NULL)
             msg (SE, _("Variable %s already exists."), name);
           else if (string_set_contains (new_names, name))
             msg (SE, _("Duplicate variable name %s."), name);
@@ -354,7 +354,7 @@ rank_rank (const struct rank *cmd, double c, double cc, double cc_1,
 {
   double rank;
 
-  if ( c >= 1.0 )
+  if (c >= 1.0)
     {
       switch (cmd->ties)
 	{
@@ -423,7 +423,7 @@ rank_proportion (const struct rank *cmd, double c, double cc, double cc_1,
 
   double f;
 
-  switch ( cmd->fraction )
+  switch (cmd->fraction)
     {
     case FRAC_BLOM:
       f =  (r - 3.0/8.0) / (w + 0.25);
@@ -435,7 +435,7 @@ rank_proportion (const struct rank *cmd, double c, double cc, double cc_1,
       f = (r - 1.0/3.0) / (w + 1.0/3.0);
       break;
     case FRAC_VW:
-      f = r / ( w + 1.0);
+      f = r / (w + 1.0);
       break;
     default:
       NOT_REACHED ();
@@ -461,7 +461,7 @@ rank_ntiles (const struct rank *cmd, double c, double cc, double cc_1,
   double r = rank_rank (cmd, c, cc, cc_1, i, w);
 
 
-  return ( floor (( r * cmd->k_ntiles) / ( w + 1) ) + 1);
+  return (floor ((r * cmd->k_ntiles) / (w + 1)) + 1);
 }
 
 /* Expected value of the order statistics from an exponential distribution */
@@ -472,7 +472,7 @@ ee (int j, double w_star)
   double sum = 0.0;
 
   for (k = 1 ; k <= j; k++)
-    sum += 1.0 / ( w_star + 1 - k );
+    sum += 1.0 / (w_star + 1 - k);
 
   return sum;
 }
@@ -486,29 +486,29 @@ rank_savage (const struct rank *cmd UNUSED, double c, double cc, double cc_1,
   const int i_1 = floor (cc_1);
   const int i_2 = floor (cc);
 
-  const double w_star = (modf (w, &int_part) == 0 ) ? w : floor (w) + 1;
+  const double w_star = (modf (w, &int_part) == 0) ? w : floor (w) + 1;
 
   const double g_1 = cc_1 - i_1;
   const double g_2 = cc - i_2;
 
   /* The second factor is infinite, when the first is zero.
      Therefore, evaluate the second, only when the first is non-zero */
-  const double expr1 =  (1 - g_1) ? (1 - g_1) * ee(i_1+1, w_star) : ( 1 - g_1);
+  const double expr1 =  (1 - g_1) ? (1 - g_1) * ee(i_1+1, w_star) : (1 - g_1);
   const double expr2 =  g_2 ? g_2 * ee (i_2+1, w_star) : g_2 ;
 
-  if ( i_1 == i_2 )
+  if (i_1 == i_2)
     return ee (i_1 + 1, w_star) - 1;
 
-  if ( i_1 + 1 == i_2 )
-    return ( ( expr1 + expr2 )/c ) - 1;
+  if (i_1 + 1 == i_2)
+    return ((expr1 + expr2)/c) - 1;
 
-  if ( i_1 + 2 <= i_2 )
+  if (i_1 + 2 <= i_2)
     {
       int j;
       double sigma = 0.0;
-      for (j = i_1 + 2 ; j <= i_2; ++j )
+      for (j = i_1 + 2 ; j <= i_2; ++j)
 	sigma += ee (j, w_star);
-      return ( (expr1 + expr2 + sigma) / c) -1;
+      return ((expr1 + expr2 + sigma) / c) -1;
     }
 
   NOT_REACHED();
@@ -595,7 +595,7 @@ rank_cmd (struct dataset *ds,  const struct rank *cmd);
 static const char *
 fraction_name (const struct rank *cmd)
 {
-  switch (cmd->fraction )
+  switch (cmd->fraction)
     {
     case FRAC_BLOM:   return "BLOM";
     case FRAC_RANKIT: return "RANKIT";
@@ -615,16 +615,16 @@ create_var_label (struct rank *cmd, const struct variable *src_var,
 
   ds_init_empty (&label);
 
-  if ( cmd->n_group_vars > 0 )
+  if (cmd->n_group_vars > 0)
     {
       struct string group_var_str;
       int g;
 
       ds_init_empty (&group_var_str);
 
-      for (g = 0 ; g < cmd->n_group_vars ; ++g )
+      for (g = 0 ; g < cmd->n_group_vars ; ++g)
 	{
-	  if ( g > 0 ) ds_put_cstr (&group_var_str, " ");
+	  if (g > 0) ds_put_cstr (&group_var_str, " ");
 	  ds_put_cstr (&group_var_str, var_get_name (cmd->group_vars[g]));
 	}
 
@@ -676,16 +676,16 @@ cmd_rank (struct lexer *lexer, struct dataset *ds)
 
   rank.n_vars = rank.sc.n_fields;
 
-  if (lex_match (lexer, T_BY) )
+  if (lex_match (lexer, T_BY))
     {
-      if ( ! parse_variables_const (lexer, rank.dict,
+      if (! parse_variables_const (lexer, rank.dict,
 				    &rank.group_vars, &rank.n_group_vars,
 				    PV_NO_DUPLICATE | PV_NO_SCRATCH))
 	goto error;
     }
 
 
-  while (lex_token (lexer) != T_ENDCMD )
+  while (lex_token (lexer) != T_ENDCMD)
     {
       if (! lex_force_match (lexer, T_SLASH))
 	goto error;
@@ -783,7 +783,7 @@ cmd_rank (struct lexer *lexer, struct dataset *ds)
 
 
   /* If no rank specs are given, then apply a default */
-  if ( rank.n_rs == 0)
+  if (rank.n_rs == 0)
     {
       struct rank_spec *rs;
 
@@ -802,10 +802,10 @@ cmd_rank (struct lexer *lexer, struct dataset *ds)
     {
       rs->dest_labels = pool_calloc (rank.pool, rank.n_vars,
                                      sizeof *rs->dest_labels);
-      for (int v = 0 ; v < rank.n_vars ;  v ++ )
+      for (int v = 0 ; v < rank.n_vars ;  v ++)
         {
           const char **dst_name = &rs->dest_names[v];
-          if ( *dst_name == NULL )
+          if (*dst_name == NULL)
             {
               *dst_name = rank_choose_dest_name (rank.dict, &new_names,
                                                  rs->rfunc,
@@ -819,7 +819,7 @@ cmd_rank (struct lexer *lexer, struct dataset *ds)
         }
     }
 
-  if ( rank.print )
+  if (rank.print)
     {
       struct pivot_table *table = pivot_table_create (
         N_("Variables Created by RANK"));
@@ -834,15 +834,15 @@ cmd_rank (struct lexer *lexer, struct dataset *ds)
         N_("Existing Variable"));
       variables->root->show_label = true;
 
-      for (size_t i = 0 ; i <  rank.n_rs ; ++i )
+      for (size_t i = 0 ; i <  rank.n_rs ; ++i)
 	{
-	  for (size_t v = 0 ; v < rank.n_vars ;  v ++ )
+	  for (size_t v = 0 ; v < rank.n_vars ;  v ++)
 	    {
               int row_idx = pivot_category_create_leaf (
                 variables->root, pivot_value_new_variable (rank.vars[v]));
 
               struct string group_vars = DS_EMPTY_INITIALIZER;
-              for (int g = 0 ; g < rank.n_group_vars ; ++g )
+              for (int g = 0 ; g < rank.n_group_vars ; ++g)
                 {
                   if (g)
                     ds_put_byte (&group_vars, ' ');
@@ -997,7 +997,7 @@ rank_cmd (struct dataset *ds, const struct rank *cmd)
   /* Open the active file and make one pass per input variable. */
   input = proc_open (ds);
   input = casereader_create_filter_weight (input, d, NULL, NULL);
-  for (i = 0 ; i < cmd->n_vars ; ++i )
+  for (i = 0 ; i < cmd->n_vars ; ++i)
     {
       const struct variable *input_var = cmd->vars[i];
       struct casereader *input_pass;

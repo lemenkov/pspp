@@ -183,7 +183,7 @@ kruskal_wallis_execute (const struct dataset *ds,
 	  const size_t group_var_width = var_get_width (nst->indep_var);
 	  struct rank_entry *rank = find_rank_entry (&kw[i].map, group, group_var_width);
 
-	  if ( NULL == rank)
+	  if (NULL == rank)
 	    {
 	      rank = xzalloc (sizeof *rank);
 	      value_clone (&rank->group, group, group_var_width);
@@ -214,7 +214,7 @@ kruskal_wallis_execute (const struct dataset *ds,
 
 	    total_n_groups ++;
 	  }
-	kw[i].h *= 12 / (n * ( n + 1));
+	kw[i].h *= 12 / (n * (n + 1));
 	kw[i].h -= 3 * (n + 1) ;
 
 	kw[i].h /= 1 - tiebreaker/ (pow3 (n) - n);

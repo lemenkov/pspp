@@ -289,7 +289,7 @@ output_get_command_name (void)
   if (e == NULL)
     return NULL;
 
-  for (size_t i = e->n_groups; i-- > 0; )
+  for (size_t i = e->n_groups; i-- > 0;)
     if (e->groups[i])
       return utf8_to_upper (e->groups[i]);
 
@@ -596,7 +596,7 @@ output_driver_substitute_heading_vars (const char *src, int page_number)
   struct output_engine *e = engine_stack_top ();
   struct string dst = DS_EMPTY_INITIALIZER;
   ds_extend (&dst, strlen (src));
-  for (const char *p = src; *p; )
+  for (const char *p = src; *p;)
     {
       if (!strncmp (p, "&amp;[", 6))
         {

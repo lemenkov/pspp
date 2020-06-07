@@ -46,7 +46,7 @@ dialog_state_valid (gpointer data)
   struct variable *v = NULL;
   GtkTreeIter dest_iter;
 
-  if ( n_rows == 0 )
+  if (n_rows == 0)
     return FALSE;
 
   /* Get the last row */
@@ -59,7 +59,7 @@ dialog_state_valid (gpointer data)
   if (v == NULL)
     return FALSE;
 
-  /* if ( NULL == pd->valid) */
+  /* if (NULL == pd->valid) */
   /*   return TRUE; */
 
   return TRUE;
@@ -93,7 +93,7 @@ select_as_pair_member (GtkTreeIter source_iter,
 
   n_rows = gtk_tree_model_iter_n_children  (GTK_TREE_MODEL (tt_d->list_store), NULL);
 
-  if ( n_rows > 0 )
+  if (n_rows > 0)
     {
 
       gtk_tree_model_iter_nth_child (GTK_TREE_MODEL (tt_d->list_store),
@@ -104,7 +104,7 @@ select_as_pair_member (GtkTreeIter source_iter,
   else
     v1 = NULL;
 
-  if ( n_rows == 0 || v1 != NULL)
+  if (n_rows == 0 || v1 != NULL)
     {
       gtk_list_store_append (tt_d->list_store, &dest_iter);
 
@@ -155,7 +155,7 @@ psppire_dialog_action_paired_activate (PsppireDialogAction *a, GVariant *param)
   PsppireDialogAction *pda = PSPPIRE_DIALOG_ACTION (a);
   PsppireDialogActionPaired *act = PSPPIRE_DIALOG_ACTION_PAIRED (a);
 
-  GtkBuilder *xml = builder_new ( "paired-samples.ui");
+  GtkBuilder *xml = builder_new ("paired-samples.ui");
 
   GtkWidget *selector = get_widget_assert (xml, "psppire-selector3");
   GtkWidget *bb = gtk_button_box_new (GTK_ORIENTATION_HORIZONTAL);

@@ -97,7 +97,7 @@ psppire_dialog_action_means_activate (PsppireDialogAction *a, GVariant *param)
   PsppireDialogAction *pda = PSPPIRE_DIALOG_ACTION (a);
   PsppireDialogActionMeans *act = PSPPIRE_DIALOG_ACTION_MEANS (a);
 
-  GtkBuilder *xml = builder_new ( "means.ui");
+  GtkBuilder *xml = builder_new ("means.ui");
 
   GtkWidget *vb =   get_widget_assert (xml, "frame2");
   act->layer = psppire_means_layer_new ();

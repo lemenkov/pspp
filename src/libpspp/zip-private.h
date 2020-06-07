@@ -17,10 +17,10 @@
 #ifndef ZIP_PRIVATE_H
 #define ZIP_PRIVATE_H 1
 
-#define MAGIC_EOCD ( (uint32_t) 0x06054b50) /* End of directory */
-#define MAGIC_SOCD ( (uint32_t) 0x02014b50) /* Start of directory */
-#define MAGIC_LHDR ( (uint32_t) 0x04034b50) /* Local Header */
-#define MAGIC_DDHD ( (uint32_t) 0x08074b50) /* Data Descriptor Header */
+#define MAGIC_EOCD ((uint32_t) 0x06054b50) /* End of directory */
+#define MAGIC_SOCD ((uint32_t) 0x02014b50) /* Start of directory */
+#define MAGIC_LHDR ((uint32_t) 0x04034b50) /* Local Header */
+#define MAGIC_DDHD ((uint32_t) 0x08074b50) /* Data Descriptor Header */
 
 #endif
 

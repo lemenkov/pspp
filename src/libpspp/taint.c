@@ -96,7 +96,7 @@ taint_clone (const struct taint *taint_)
 bool
 taint_destroy (struct taint *taint)
 {
-  if ( taint )
+  if (taint)
     {
       bool was_tainted = taint_is_tainted (taint);
       if (--taint->ref_cnt == 0)

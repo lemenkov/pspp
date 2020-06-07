@@ -43,16 +43,16 @@ get_base_model (GtkTreeModel *top_model, GtkTreeIter *top_iter,
 {
   *model = top_model;
 
-  if ( iter)
+  if (iter)
     *iter = *top_iter;
 
-  while ( ! PSPPIRE_IS_DICT (*model))
+  while (! PSPPIRE_IS_DICT (*model))
     {
       GtkTreeIter parent_iter;
       if (iter)
 	parent_iter = *iter;
 
-      if ( GTK_IS_TREE_MODEL_FILTER (*model))
+      if (GTK_IS_TREE_MODEL_FILTER (*model))
 	{
 	  GtkTreeModelFilter *parent_model = GTK_TREE_MODEL_FILTER (*model);
 
@@ -83,7 +83,7 @@ insert_source_row_into_entry (GtkTreeIter iter,
 			      GtkWidget *dest,
 			      GtkTreeModel *model,
 			      gpointer data
-			      )
+			)
 {
   GtkTreePath *path;
   GtkTreeModel *dict;
@@ -197,7 +197,7 @@ is_currently_in_entry (GtkTreeModel *model, GtkTreeIter *iter,
 
   gtk_tree_path_free (path);
 
-  result = ( 0 == strcmp (text, var_get_name (var) ));
+  result = (0 == strcmp (text, var_get_name (var)));
 
   return result;
 }

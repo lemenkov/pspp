@@ -103,7 +103,7 @@ print_msg (const struct msg *m, void *aux UNUSED)
 
 
 int
-main (int argc, char *argv[] )
+main (int argc, char *argv[])
 {
   GtkWidget *window;
   GtkWidget *hbox;
@@ -119,7 +119,7 @@ main (int argc, char *argv[] )
 
   gtk_init (&argc, &argv);
 
-  if ( argc < 2)
+  if (argc < 2)
     g_error ("Usage: prog file\n");
 
   msg_set_handler (print_msg, 0);

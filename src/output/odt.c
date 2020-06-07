@@ -120,7 +120,7 @@ write_style_data (struct odt_driver *odt)
 			       _xml ("urn:oasis:names:tc:opendocument:xmlns:style:1.0"));
 
   xmlTextWriterWriteAttribute (w, _xml ("xmlns:fo"),
-			       _xml ("urn:oasis:names:tc:opendocument:xmlns:xsl-fo-compatible:1.0") );
+			       _xml ("urn:oasis:names:tc:opendocument:xmlns:xsl-fo-compatible:1.0"));
 
   xmlTextWriterWriteAttribute (w, _xml ("office:version"),  _xml ("1.1"));
 
@@ -432,7 +432,7 @@ write_table_item_text (struct odt_driver *odt,
   xmlTextWriterStartElement (odt->content_wtr, _xml("text:h"));
   xmlTextWriterWriteFormatAttribute (odt->content_wtr,
                                      _xml("text:outline-level"), "%d", 2);
-  xmlTextWriterWriteString (odt->content_wtr, _xml (text->content) );
+  xmlTextWriterWriteString (odt->content_wtr, _xml (text->content));
   for (size_t i = 0; i < text->n_footnotes; i++)
     write_footnote (odt, text->footnotes[i]);
   xmlTextWriterEndElement (odt->content_wtr);
@@ -451,7 +451,7 @@ write_table_item_layers (struct odt_driver *odt,
       xmlTextWriterStartElement (odt->content_wtr, _xml("text:h"));
       xmlTextWriterWriteFormatAttribute (odt->content_wtr,
                                          _xml("text:outline-level"), "%d", 2);
-      xmlTextWriterWriteString (odt->content_wtr, _xml (layer->content) );
+      xmlTextWriterWriteString (odt->content_wtr, _xml (layer->content));
       for (size_t i = 0; i < layer->n_footnotes; i++)
         write_footnote (odt, layer->footnotes[i]);
       xmlTextWriterEndElement (odt->content_wtr);
@@ -481,7 +481,7 @@ write_table (struct odt_driver *odt, const struct table_item *item)
 
 
   /* Deal with row headers */
-  if ( table_ht (tab) > 0)
+  if (table_ht (tab) > 0)
     xmlTextWriterStartElement (odt->content_wtr, _xml("table:table-header-rows"));
 
 
@@ -518,7 +518,7 @@ write_table (struct odt_driver *odt, const struct table_item *item)
 
               xmlTextWriterStartElement (odt->content_wtr, _xml("text:p"));
 
-              if ( r < table_ht (tab) || c < table_hl (tab) )
+              if (r < table_ht (tab) || c < table_hl (tab))
                 xmlTextWriterWriteAttribute (odt->content_wtr, _xml("text:style-name"), _xml("Table_20_Heading"));
               else
                 xmlTextWriterWriteAttribute (odt->content_wtr, _xml("text:style-name"), _xml("Table_20_Contents"));
@@ -548,7 +548,7 @@ write_table (struct odt_driver *odt, const struct table_item *item)
 
       xmlTextWriterEndElement (odt->content_wtr); /* row */
 
-      if ( table_ht (tab) > 0 && r == table_ht (tab) - 1)
+      if (table_ht (tab) > 0 && r == table_ht (tab) - 1)
 	xmlTextWriterEndElement (odt->content_wtr); /* table-header-rows */
     }
 

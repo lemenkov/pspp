@@ -158,23 +158,23 @@ cmd_list (struct lexer *lexer, struct dataset *ds)
   while (lex_token (lexer) != T_ENDCMD)
     {
       lex_match (lexer, T_SLASH);
-      if (lex_match_id (lexer, "VARIABLES") )
+      if (lex_match_id (lexer, "VARIABLES"))
         {
           lex_match (lexer, T_EQUALS);
-          if (! parse_variables_const (lexer, dict, &cmd.v_variables, &cmd.n_variables, 0 ))
+          if (! parse_variables_const (lexer, dict, &cmd.v_variables, &cmd.n_variables, 0))
             {
               msg (SE, _("No variables specified."));
               return CMD_FAILURE;
             }
         }
-      else if (lex_match_id (lexer, "FORMAT") )
+      else if (lex_match_id (lexer, "FORMAT"))
         {
           lex_match (lexer, T_EQUALS);
-          if (lex_match_id (lexer, "NUMBERED") )
+          if (lex_match_id (lexer, "NUMBERED"))
             {
               cmd.numbering = format_numbered;
             }
-          else if (lex_match_id (lexer, "UNNUMBERED") )
+          else if (lex_match_id (lexer, "UNNUMBERED"))
             {
               cmd.numbering = format_unnumbered;
             }
@@ -207,7 +207,7 @@ cmd_list (struct lexer *lexer, struct dataset *ds)
               lex_get (lexer);
             }
         }
-      else if (! parse_variables_const (lexer, dict, &cmd.v_variables, &cmd.n_variables, 0 ))
+      else if (! parse_variables_const (lexer, dict, &cmd.v_variables, &cmd.n_variables, 0))
         {
           return CMD_FAILURE;
         }

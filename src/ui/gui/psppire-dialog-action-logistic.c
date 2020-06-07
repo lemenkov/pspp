@@ -82,7 +82,7 @@ on_opts_clicked (PsppireDialogActionLogistic *act)
 
   ret = psppire_dialog_run (PSPPIRE_DIALOG (act->opts_dialog));
 
-  if ( ret == PSPPIRE_RESPONSE_CONTINUE )
+  if (ret == PSPPIRE_RESPONSE_CONTINUE)
     {
       act->conf = gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON(act->conf_checkbox));
       act->conf_level = gtk_spin_button_get_value (GTK_SPIN_BUTTON (act->conf_entry));
@@ -102,7 +102,7 @@ psppire_dialog_action_logistic_activate (PsppireDialogAction *a, GVariant *param
   PsppireDialogAction *pda = PSPPIRE_DIALOG_ACTION (a);
   GtkWidget *opts_button;
 
-  GtkBuilder *xml = builder_new ( "logistic.ui");
+  GtkBuilder *xml = builder_new ("logistic.ui");
 
   pda->dialog = get_widget_assert   (xml, "logistic-dialog");
   pda->source = get_widget_assert   (xml, "dict-view");

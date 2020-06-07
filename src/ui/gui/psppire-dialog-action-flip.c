@@ -48,7 +48,7 @@ generate_syntax (const PsppireDialogAction *act)
 
   text = gtk_entry_get_text (GTK_ENTRY (rd->entry));
 
-  if ( text)
+  if (text)
     g_string_append_printf (string, " /NEWNAME = %s", text);
 
   g_string_append (string, ".\n");
@@ -70,10 +70,10 @@ dialog_state_valid (gpointer a)
 
   gint n_rows = gtk_tree_model_iter_n_children  (model, NULL);
 
-  if ( n_rows == 0 )
+  if (n_rows == 0)
     return FALSE;
 
-  if ( 0 == strcmp ("", gtk_entry_get_text (GTK_ENTRY (act->entry))))
+  if (0 == strcmp ("", gtk_entry_get_text (GTK_ENTRY (act->entry))))
     return FALSE;
 
   return TRUE;
@@ -95,7 +95,7 @@ psppire_dialog_action_flip_activate (PsppireDialogAction *a, GVariant *param)
   PsppireDialogAction *pda = PSPPIRE_DIALOG_ACTION (a);
   PsppireDialogActionFlip *act = PSPPIRE_DIALOG_ACTION_FLIP (a);
 
-  GtkBuilder *xml = builder_new ( "transpose.ui");
+  GtkBuilder *xml = builder_new ("transpose.ui");
 
   pda->dialog = get_widget_assert   (xml, "transpose-dialog");
   pda->source = get_widget_assert   (xml, "source-treeview");

@@ -43,9 +43,9 @@ append_fragment (GString *string, const gchar *dist, PsppireVarView *vv)
 {
   g_string_append (string, "\n\t/KOLMOGOROV-SMIRNOV");
 
-  g_string_append (string, " ( ");
+  g_string_append (string, " (");
   g_string_append (string, dist);
-  g_string_append (string, " ) = ");
+  g_string_append (string, ") = ");
 
   psppire_var_view_append_names (vv, 0, string);
 }
@@ -59,16 +59,16 @@ generate_syntax (const PsppireDialogAction *act)
 
   GString *string = g_string_new ("NPAR TEST");
 
-  if ( gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (rd->cb[CB_NORMAL])))
+  if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (rd->cb[CB_NORMAL])))
     append_fragment (string, "NORMAL", PSPPIRE_VAR_VIEW (rd->variables));
 
-  if ( gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (rd->cb[CB_UNIFORM])))
+  if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (rd->cb[CB_UNIFORM])))
     append_fragment (string, "UNIFORM", PSPPIRE_VAR_VIEW (rd->variables));
 
-  if ( gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (rd->cb[CB_POISSON])))
+  if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (rd->cb[CB_POISSON])))
     append_fragment (string, "POISSON", PSPPIRE_VAR_VIEW (rd->variables));
 
-  if ( gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (rd->cb[CB_EXPONENTIAL])))
+  if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (rd->cb[CB_EXPONENTIAL])))
     append_fragment (string, "EXPONENTIAL", PSPPIRE_VAR_VIEW (rd->variables));
 
   g_string_append (string, ".\n");
@@ -94,10 +94,10 @@ dialog_state_valid (gpointer data)
 
   for (i = 0; i < 4; ++i)
     {
-      if ( TRUE == gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (fd->cb[i])))
+      if (TRUE == gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (fd->cb[i])))
 	break;
     }
-  if ( i >= 4)
+  if (i >= 4)
     return FALSE;
 
   return TRUE;
@@ -122,7 +122,7 @@ psppire_dialog_action_1sks_activate (PsppireDialogAction *a, GVariant *param)
   PsppireDialogAction *pda = PSPPIRE_DIALOG_ACTION (a);
   PsppireDialogAction1sks *act = PSPPIRE_DIALOG_ACTION_1SKS (a);
 
-  GtkBuilder *xml = builder_new ( "ks-one-sample.ui");
+  GtkBuilder *xml = builder_new ("ks-one-sample.ui");
 
   pda->dialog = get_widget_assert   (xml, "ks-one-sample-dialog");
   pda->source = get_widget_assert   (xml, "dict-view");

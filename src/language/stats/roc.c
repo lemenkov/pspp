@@ -102,7 +102,7 @@ cmd_roc (struct lexer *lexer, struct dataset *ds)
 			      PV_APPEND | PV_NO_DUPLICATE | PV_NUMERIC))
     goto error;
 
-  if ( ! lex_force_match (lexer, T_BY))
+  if (! lex_force_match (lexer, T_BY))
     {
       goto error;
     }
@@ -113,7 +113,7 @@ cmd_roc (struct lexer *lexer, struct dataset *ds)
       goto error;
     }
 
-  if ( !lex_force_match (lexer, T_LPAREN))
+  if (!lex_force_match (lexer, T_LPAREN))
     {
       goto error;
     }
@@ -123,7 +123,7 @@ cmd_roc (struct lexer *lexer, struct dataset *ds)
   parse_value (lexer, &roc.state_value, roc.state_var);
 
 
-  if ( !lex_force_match (lexer, T_RPAREN))
+  if (!lex_force_match (lexer, T_RPAREN))
     {
       goto error;
     }
@@ -286,16 +286,16 @@ cmd_roc (struct lexer *lexer, struct dataset *ds)
 	}
     }
 
-  if ( ! run_roc (ds, &roc))
+  if (! run_roc (ds, &roc))
     goto error;
 
-  if ( roc.state_var)
+  if (roc.state_var)
     value_destroy (&roc.state_value, roc.state_var_width);
   free (roc.vars);
   return CMD_SUCCESS;
 
  error:
-  if ( roc.state_var)
+  if (roc.state_var)
     value_destroy (&roc.state_value, roc.state_var_width);
   free (roc.vars);
   return CMD_FAILURE;
@@ -333,7 +333,7 @@ dump_casereader (struct casereader *reader)
   struct ccase *c;
   struct casereader *r = casereader_clone (reader);
 
-  for ( ; (c = casereader_read (r) ); case_unref (c))
+  for (; (c = casereader_read (r)); case_unref (c))
     {
       int i;
       for (i = 0 ; i < case_get_value_cnt (c); ++i)
@@ -362,10 +362,10 @@ match_positives (const struct ccase *c, void *aux)
   const double weight = wv ? case_data (c, wv)->f : 1.0;
 
   const bool positive =
-  ( 0 == value_compare_3way (case_data (c, roc->state_var), &roc->state_value,
+  (0 == value_compare_3way (case_data (c, roc->state_var), &roc->state_value,
     var_get_width (roc->state_var)));
 
-  if ( positive )
+  if (positive)
     {
       roc->pos++;
       roc->pos_weighted += weight;
@@ -426,7 +426,7 @@ accumulate_counts (struct casereader *input,
   struct ccase *cpc;
   double prev_cp = SYSMIS;
 
-  for ( ; (cpc = casereader_read (input) ); case_unref (cpc))
+  for (; (cpc = casereader_read (input)); case_unref (cpc))
     {
       struct ccase *new_case;
       const double cp = case_data_idx (cpc, ROC_CUTPOINT)->f;
@@ -434,12 +434,12 @@ accumulate_counts (struct casereader *input,
       assert (cp != SYSMIS);
 
       /* We don't want duplicates here */
-      if ( cp == prev_cp )
+      if (cp == prev_cp)
 	continue;
 
       new_case = case_clone (cpc);
 
-      if ( pos_cond (result, cp))
+      if (pos_cond (result, cp))
 	case_data_rw_idx (new_case, true_index)->f += weight;
       else
 	case_data_rw_idx (new_case, false_index)->f += weight;
@@ -504,7 +504,7 @@ process_group (const struct variable *var, struct casereader *reader,
 
   *cc = 0;
 
-  for ( ; (c1 = casereader_read (r1) ); case_unref (c1))
+  for (; (c1 = casereader_read (r1)); case_unref (c1))
     {
       struct ccase *new_case = case_create (proto);
       struct ccase *c2;
@@ -521,17 +521,17 @@ process_group (const struct variable *var, struct casereader *reader,
 
       *cc += weight1;
 
-      for ( ; (c2 = casereader_read (r2) ); case_unref (c2))
+      for (; (c2 = casereader_read (r2)); case_unref (c2))
 	{
 	  const double d2 = case_data (c2, var)->f;
 	  const double weight2 = case_data_idx (c2, weight_idx)->f;
 
-	  if ( d1 == d2 )
+	  if (d1 == d2)
 	    {
 	      n_eq += weight2;
 	      continue;
 	    }
-	  else  if ( pred (d2, d1))
+	  else  if (pred (d2, d1))
 	    {
 	      n_pred += weight2;
 	    }
@@ -679,15 +679,15 @@ prepare_cutpoints (struct cmd_roc *roc, struct roc_state *rs, struct casereader 
 	  const union value *v = case_data (c, roc->vars[i]);
 	  const double result = v->f;
 
-	  if ( mv_is_value_missing (var_get_missing_values (roc->vars[i]), v, roc->exclude))
+	  if (mv_is_value_missing (var_get_missing_values (roc->vars[i]), v, roc->exclude))
 	    continue;
 
 	  minimize (&rs[i].min, result);
 	  maximize (&rs[i].max, result);
 
-	  if ( rs[i].prev_result != SYSMIS && rs[i].prev_result != result )
+	  if (rs[i].prev_result != SYSMIS && rs[i].prev_result != result)
 	    {
-	      const double mean = (result + rs[i].prev_result ) / 2.0;
+	      const double mean = (result + rs[i].prev_result) / 2.0;
 	      append_cutpoint (rs[i].cutpoint_wtr, mean);
 	    }
 
@@ -777,7 +777,7 @@ do_roc (struct cmd_roc *roc, struct casereader *reader, struct dictionary *dict)
       struct casereader *n_pos_reader =
 	process_positive_group (var, pos, dict, &rs[i]);
 
-      if ( negatives == NULL)
+      if (negatives == NULL)
 	{
 	  negatives = casewriter_make_reader (neg_wtr);
 	}
@@ -788,7 +788,7 @@ do_roc (struct cmd_roc *roc, struct casereader *reader, struct dictionary *dict)
 
       /* Merge the n_pos and n_neg casereaders */
       w = sort_create_writer (&up_ordering, n_proto);
-      for ( ; (cpos = casereader_read (n_pos_reader) ); case_unref (cpos))
+      for (; (cpos = casereader_read (n_pos_reader)); case_unref (cpos))
 	{
 	  struct ccase *pos_case = case_create (n_proto);
 	  struct ccase *cneg;
@@ -811,7 +811,7 @@ do_roc (struct cmd_roc *roc, struct casereader *reader, struct dictionary *dict)
 	      casewriter_write (w, nc);
 
 	      case_unref (cneg);
-	      if ( jneg > jpos)
+	      if (jneg > jpos)
 		break;
 	    }
 
@@ -839,12 +839,12 @@ do_roc (struct cmd_roc *roc, struct casereader *reader, struct dictionary *dict)
 	double prev_pos_gt = rs[i].n1;
 	w = sort_create_writer (&down_ordering, n_proto);
 
-	for ( ; (c = casereader_read (r) ); case_unref (c))
+	for (; (c = casereader_read (r)); case_unref (c))
 	  {
 	    double n_pos_gt = case_data_idx (c, N_POS_GT)->f;
 	    struct ccase *nc = case_clone (c);
 
-	    if ( n_pos_gt == SYSMIS)
+	    if (n_pos_gt == SYSMIS)
 	      {
 		n_pos_gt = prev_pos_gt;
 		case_data_rw_idx (nc, N_POS_GT)->f = n_pos_gt;
@@ -864,12 +864,12 @@ do_roc (struct cmd_roc *roc, struct casereader *reader, struct dictionary *dict)
 	double prev_neg_lt = rs[i].n2;
 	w = sort_create_writer (&up_ordering, n_proto);
 
-	for ( ; (c = casereader_read (r) ); case_unref (c))
+	for (; (c = casereader_read (r)); case_unref (c))
 	  {
 	    double n_neg_lt = case_data_idx (c, N_NEG_LT)->f;
 	    struct ccase *nc = case_clone (c);
 
-	    if ( n_neg_lt == SYSMIS)
+	    if (n_neg_lt == SYSMIS)
 	      {
 		n_neg_lt = prev_neg_lt;
 		case_data_rw_idx (nc, N_NEG_LT)->f = n_neg_lt;
@@ -885,7 +885,7 @@ do_roc (struct cmd_roc *roc, struct casereader *reader, struct dictionary *dict)
 
       {
 	struct ccase *prev_case = NULL;
-	for ( ; (c = casereader_read (r) ); case_unref (c))
+	for (; (c = casereader_read (r)); case_unref (c))
 	  {
 	    struct ccase *next_case = casereader_peek (r, 0);
 
@@ -895,29 +895,29 @@ do_roc (struct cmd_roc *roc, struct casereader *reader, struct dictionary *dict)
 	    double n_neg_eq = case_data_idx (c, N_NEG_EQ)->f;
 	    double n_neg_lt = case_data_idx (c, N_NEG_LT)->f;
 
-	    if ( prev_case && j == case_data_idx (prev_case, VALUE)->f)
+	    if (prev_case && j == case_data_idx (prev_case, VALUE)->f)
 	      {
-		if ( 0 ==  case_data_idx (c, N_POS_EQ)->f)
+		if (0 ==  case_data_idx (c, N_POS_EQ)->f)
 		  {
 		    n_pos_eq = case_data_idx (prev_case, N_POS_EQ)->f;
 		    n_pos_gt = case_data_idx (prev_case, N_POS_GT)->f;
 		  }
 
-		if ( 0 ==  case_data_idx (c, N_NEG_EQ)->f)
+		if (0 ==  case_data_idx (c, N_NEG_EQ)->f)
 		  {
 		    n_neg_eq = case_data_idx (prev_case, N_NEG_EQ)->f;
 		    n_neg_lt = case_data_idx (prev_case, N_NEG_LT)->f;
 		  }
 	      }
 
-	    if ( NULL == next_case || j != case_data_idx (next_case, VALUE)->f)
+	    if (NULL == next_case || j != case_data_idx (next_case, VALUE)->f)
 	      {
 		rs[i].auc += n_pos_gt * n_neg_eq + (n_pos_eq * n_neg_eq) / 2.0;
 
 		rs[i].q1hat +=
-		  n_neg_eq * ( pow2 (n_pos_gt) + n_pos_gt * n_pos_eq + pow2 (n_pos_eq) / 3.0);
+		  n_neg_eq * (pow2 (n_pos_gt) + n_pos_gt * n_pos_eq + pow2 (n_pos_eq) / 3.0);
 		rs[i].q2hat +=
-		  n_pos_eq * ( pow2 (n_neg_lt) + n_neg_lt * n_neg_eq + pow2 (n_neg_eq) / 3.0);
+		  n_pos_eq * (pow2 (n_neg_lt) + n_neg_lt * n_neg_eq + pow2 (n_neg_eq) / 3.0);
 
 	      }
 
@@ -929,13 +929,13 @@ do_roc (struct cmd_roc *roc, struct casereader *reader, struct dictionary *dict)
 	case_unref (prev_case);
 
 	rs[i].auc /=  rs[i].n1 * rs[i].n2;
-	if ( roc->invert )
+	if (roc->invert)
 	  rs[i].auc = 1 - rs[i].auc;
 
-	if ( roc->bi_neg_exp )
+	if (roc->bi_neg_exp)
 	  {
-	    rs[i].q1hat = rs[i].auc / ( 2 - rs[i].auc);
-	    rs[i].q2hat = 2 * pow2 (rs[i].auc) / ( 1 + rs[i].auc);
+	    rs[i].q1hat = rs[i].auc / (2 - rs[i].auc);
+	    rs[i].q2hat = 2 * pow2 (rs[i].auc) / (1 + rs[i].auc);
 	  }
 	else
 	  {
@@ -987,14 +987,14 @@ show_auc  (struct roc_state *rs, const struct cmd_roc *roc)
     table, PIVOT_AXIS_ROW, N_("Variable under test"));
   variables->root->show_label = true;
 
-  for (size_t i = 0 ; i < roc->n_vars ; ++i )
+  for (size_t i = 0 ; i < roc->n_vars ; ++i)
     {
       int var_idx = pivot_category_create_leaf (
         variables->root, pivot_value_new_variable (roc->vars[i]));
 
       pivot_table_put2 (table, 0, var_idx, pivot_value_new_number (rs[i].auc));
 
-      if ( roc->print_se )
+      if (roc->print_se)
 	{
 	  double se = (rs[i].auc * (1 - rs[i].auc)
                        + (rs[i].n1 - 1) * (rs[i].q1hat - pow2 (rs[i].auc))
@@ -1126,7 +1126,7 @@ output_roc (struct roc_state *rs, const struct cmd_roc *roc)
 {
   show_summary (roc);
 
-  if ( roc->curve )
+  if (roc->curve)
     {
       struct roc_chart *rc;
       size_t i;
@@ -1140,7 +1140,7 @@ output_roc (struct roc_state *rs, const struct cmd_roc *roc)
 
   show_auc (rs, roc);
 
-  if ( roc->print_coords )
+  if (roc->print_coords)
     show_coords (rs, roc);
 }
 

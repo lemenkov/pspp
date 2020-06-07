@@ -40,7 +40,7 @@ xrchart_draw_roc (const struct chart_item *chart_item, cairo_t *cr,
   xrchart_write_xscale (cr, geom, 0, 1);
   xrchart_write_yscale (cr, geom, 0, 1);
 
-  if ( rc->reference )
+  if (rc->reference)
     {
       xrchart_line (cr, geom, 1.0, 0,
                     0.0, 1.0,

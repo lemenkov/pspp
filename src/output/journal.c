@@ -78,7 +78,7 @@ journal_destroy (struct output_driver *driver)
 {
   struct journal_driver *j = journal_driver_cast (driver);
 
-  if ( !j->destroyed)
+  if (!j->destroyed)
     journal_close ();
 
   j->destroyed = true;
@@ -87,7 +87,7 @@ journal_destroy (struct output_driver *driver)
 static void
 journal_output (struct journal_driver *j, const char *s)
 {
-  if ( j->file == NULL)
+  if (j->file == NULL)
     return;
 
   fprintf (j->file, "%s\n", s);

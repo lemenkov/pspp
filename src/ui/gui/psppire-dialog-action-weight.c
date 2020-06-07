@@ -45,7 +45,7 @@ generate_syntax (const PsppireDialogAction *pda)
 
   const struct variable *var = psppire_dict_lookup_var (pda->dict, text);
 
-  if ( var == NULL)
+  if (var == NULL)
     syntax = g_strdup ("WEIGHT OFF.\n");
   else
     syntax = g_strdup_printf ("WEIGHT BY %s.\n",
@@ -68,7 +68,7 @@ refresh (PsppireDialogAction *pda)
 
   const struct variable *var = dict_get_weight (pda->dict->dict);
 
-  if ( ! var )
+  if (! var)
     {
       gtk_entry_set_text (GTK_ENTRY (wcd->entry), "");
       gtk_label_set_text (GTK_LABEL (wcd->status), _("Do not weight cases"));
@@ -124,7 +124,7 @@ psppire_dialog_action_weight_activate (PsppireDialogAction *pda, GVariant *param
 {
   PsppireDialogActionWeight *act = PSPPIRE_DIALOG_ACTION_WEIGHT (pda);
 
-  GtkBuilder *xml = builder_new ( "weight.ui");
+  GtkBuilder *xml = builder_new ("weight.ui");
 
   pda->dialog = get_widget_assert   (xml, "weight-cases-dialog");
   pda->source = get_widget_assert   (xml, "weight-cases-treeview");

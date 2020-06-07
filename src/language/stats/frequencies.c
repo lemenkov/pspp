@@ -443,7 +443,7 @@ postprocess_freq_tab (const struct frq_proc *frq, struct var_freqs *vf)
 
   /* Summary statistics. */
   ft->valid_cases = 0.0;
-  for(i = 0 ;  i < ft->n_valid ; ++i )
+  for(i = 0 ;  i < ft->n_valid ; ++i)
     {
       f = &ft->valid[i];
       ft->valid_cases += f->count;
@@ -451,7 +451,7 @@ postprocess_freq_tab (const struct frq_proc *frq, struct var_freqs *vf)
     }
 
   ft->total_cases = ft->valid_cases ;
-  for(i = 0 ;  i < ft->n_missing ; ++i )
+  for(i = 0 ;  i < ft->n_missing ; ++i)
     {
       f = &ft->missing[i];
       ft->total_cases += f->count;
@@ -545,7 +545,7 @@ postcalc (struct frq_proc *frq, const struct dataset *ds)
 
 	  histogram = freq_tab_to_hist (frq, &vf->tab, vf->var);
 
-	  if ( histogram)
+	  if (histogram)
 	    {
 	      chart_item_submit (histogram_chart_create (
                                histogram->gsl_hist, var_to_string(vf->var),
@@ -622,7 +622,7 @@ cmd_frequencies (struct lexer *lexer, struct dataset *ds)
   lex_match (lexer, T_SLASH);
   if (lex_match_id  (lexer, "VARIABLES"))
     {
-      if (! lex_force_match (lexer, T_EQUALS) )
+      if (! lex_force_match (lexer, T_EQUALS))
         goto error;
     }
 
@@ -1037,7 +1037,7 @@ cmd_frequencies (struct lexer *lexer, struct dataset *ds)
 		}
 	      else if (lex_match_id (lexer, "FREQ"))
 		{
-		  if ( lex_match (lexer, T_LPAREN))
+		  if (lex_match (lexer, T_LPAREN))
 		    {
 		      if (lex_force_num (lexer))
 			{
@@ -1051,7 +1051,7 @@ cmd_frequencies (struct lexer *lexer, struct dataset *ds)
 		}
 	      else if (lex_match_id (lexer, "PERCENT"))
 		{
-		  if ( lex_match (lexer, T_LPAREN))
+		  if (lex_match (lexer, T_LPAREN))
 		    {
 		      if (lex_force_num (lexer))
 			{
@@ -1351,7 +1351,7 @@ freq_tab_to_hist (const struct frq_proc *frq, const struct freq_tab *ft,
 
   histogram = histogram_create (bin_width, x_min, x_max);
 
-  if ( histogram == NULL)
+  if (histogram == NULL)
     return NULL;
 
   for (i = 0; i < ft->n_valid; i++)

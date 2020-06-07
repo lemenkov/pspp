@@ -60,7 +60,7 @@ which_group (const union value *v, const struct indep_samples *is)
 {
   int width = var_get_width (is->gvar);
   int cmp = value_compare_3way (v, is->gval0, width);
-  if ( is->cut )
+  if (is->cut)
     return  (cmp < 0);
 
   if (cmp == 0)
@@ -99,14 +99,14 @@ indep_run (struct tt *tt, const struct variable *gvar,
   is.cut = cut;
 
   r = casereader_clone (reader);
-  for ( ; (c = casereader_read (r) ); case_unref (c))
+  for (; (c = casereader_read (r)); case_unref (c))
     {
       double w = dict_get_case_weight (tt->dict, c, NULL);
 
       const union value *gv = case_data (c, gvar);
 
       int grp = which_group (gv, &is);
-      if ( grp < 0)
+      if (grp < 0)
 	continue;
 
       for (v = 0; v < tt->n_vars; ++v)
@@ -122,14 +122,14 @@ indep_run (struct tt *tt, const struct variable *gvar,
   casereader_destroy (r);
 
   r = casereader_clone (reader);
-  for ( ; (c = casereader_read (r) ); case_unref (c))
+  for (; (c = casereader_read (r)); case_unref (c))
     {
       double w = dict_get_case_weight (tt->dict, c, NULL);
 
       const union value *gv = case_data (c, gvar);
 
       int grp = which_group (gv, &is);
-      if ( grp < 0)
+      if (grp < 0)
 	continue;
 
       for (v = 0; v < tt->n_vars; ++v)
@@ -145,14 +145,14 @@ indep_run (struct tt *tt, const struct variable *gvar,
   casereader_destroy (r);
 
   r = reader;
-  for ( ; (c = casereader_read (r) ); case_unref (c))
+  for (; (c = casereader_read (r)); case_unref (c))
     {
       double w = dict_get_case_weight (tt->dict, c, NULL);
 
       const union value *gv = case_data (c, gvar);
 
       int grp = which_group (gv, &is);
-      if ( grp < 0)
+      if (grp < 0)
 	continue;
 
       for (v = 0; v < tt->n_vars; ++v)

@@ -78,7 +78,7 @@ about_new (GtkMenuItem *mmm, GtkWindow *parent)
      /* TRANSLATORS: Do not translate this string.  Instead, put the names of the people
 	who have helped in the translation. */
      _("translator-credits")
-     );
+);
 
   gtk_window_set_transient_for (GTK_WINDOW (about), parent);
 
@@ -198,7 +198,7 @@ online_help (const char *page)
                         NULL, G_SPAWN_SEARCH_PATH,
                         NULL, NULL,   NULL,   &htmlerr))
 #endif
-      )
+)
     {
       msg (ME, _("Cannot open reference manual via yelp: %s. "
                  "Cannot open via html: %s "

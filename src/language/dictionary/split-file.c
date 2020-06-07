@@ -50,7 +50,7 @@ cmd_split_file (struct lexer *lexer, struct dataset *ds)
       size_t n;
 
       /* For now, ignore SEPARATE and LAYERED. */
-      (void) ( lex_match_id (lexer, "SEPARATE") || lex_match_id (lexer, "LAYERED") );
+      (void) (lex_match_id (lexer, "SEPARATE") || lex_match_id (lexer, "LAYERED"));
 
       lex_match (lexer, T_BY);
       if (!parse_variables (lexer, dataset_dict (ds), &v, &n, PV_NO_DUPLICATE))

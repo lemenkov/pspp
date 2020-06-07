@@ -172,7 +172,7 @@ sample_subdialog (GtkButton *b, gpointer data)
 
   response = psppire_dialog_run (PSPPIRE_DIALOG (scd->rsample_dialog));
 
-  if ( response != PSPPIRE_RESPONSE_CONTINUE)
+  if (response != PSPPIRE_RESPONSE_CONTINUE)
     {
       g_signal_handlers_disconnect_by_func
 	(G_OBJECT (scd->percent),
@@ -192,7 +192,7 @@ sample_subdialog (GtkButton *b, gpointer data)
     {
       gchar *text;
 
-      if ( gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (scd->percent)))
+      if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (scd->percent)))
 	{
 	  text = widget_printf (gettext(label1), scd->spinbutton);
 	  gtk_label_set_text (GTK_LABEL (scd->l0), text);
@@ -231,7 +231,7 @@ range_subdialog (GtkButton *b, gpointer data)
 				GTK_WINDOW (pda->dialog));
 
   response = psppire_dialog_run (PSPPIRE_DIALOG (scd->range_subdialog));
-  if ( response == PSPPIRE_RESPONSE_CONTINUE)
+  if (response == PSPPIRE_RESPONSE_CONTINUE)
     {
       gchar *text = widget_printf (_("%d thru %d"), scd->first, scd->last);
       gtk_label_set_text (GTK_LABEL (scd->l1), text);
@@ -261,7 +261,7 @@ psppire_dialog_action_select_activate (PsppireDialogAction *a, GVariant *param)
   PsppireDialogActionSelect *act = PSPPIRE_DIALOG_ACTION_SELECT (a);
   PsppireDialogAction *pda = PSPPIRE_DIALOG_ACTION (a);
 
-  GtkBuilder *xml = builder_new ( "select-cases.ui");
+  GtkBuilder *xml = builder_new ("select-cases.ui");
 
   pda->dialog = get_widget_assert (xml, "select-cases-dialog");
   pda->source = get_widget_assert   (xml, "select-cases-treeview");
@@ -379,10 +379,10 @@ generate_syntax_filter (const PsppireDialogAction *a)
 
       ds_put_cstr (&dss, "EXECUTE.\n");
     }
-  else if ( gtk_toggle_button_get_active
+  else if (gtk_toggle_button_get_active
 	    (GTK_TOGGLE_BUTTON (scd->radiobutton_sample)))
     {
-      if ( gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (scd->percent)))
+      if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (scd->percent)))
 	{
 	  const double percentage =
 	    gtk_spin_button_get_value (GTK_SPIN_BUTTON (scd->spinbutton));
@@ -390,7 +390,7 @@ generate_syntax_filter (const PsppireDialogAction *a)
 	  ds_put_c_format (&dss,
 			   "COMPUTE %s = RV.UNIFORM (0,1) < %.*g.\n",
 			   filter,
-			   DBL_DIG + 1, percentage / 100.0 );
+			   DBL_DIG + 1, percentage / 100.0);
 	}
       else
 	{
@@ -422,13 +422,13 @@ generate_syntax_filter (const PsppireDialogAction *a)
 
 	  ds_put_c_format (&dss,
 			   "COMPUTE %s = $CASENUM.\n",
-			   filter );
+			   filter);
 
 	  ds_put_c_format (&dss,
 			   "COMPUTE %s = %s <= %d\n",
 			   filter,
 			   filter,
-			   n_cases );
+			   n_cases);
 
 	  ds_put_cstr (&dss, "EXECUTE.\n");
 
@@ -466,7 +466,7 @@ generate_syntax_delete (const PsppireDialogAction *a)
   gchar *text = NULL;
   struct string dss;
 
-  if ( gtk_toggle_button_get_active
+  if (gtk_toggle_button_get_active
        (GTK_TOGGLE_BUTTON (scd->radiobutton_all)))
     {
       return xstrdup ("\n");
@@ -474,12 +474,12 @@ generate_syntax_delete (const PsppireDialogAction *a)
 
   ds_init_empty (&dss);
 
-  if ( gtk_toggle_button_get_active
+  if (gtk_toggle_button_get_active
        (GTK_TOGGLE_BUTTON (scd->radiobutton_sample)))
     {
       ds_put_cstr (&dss, "SAMPLE ");
 
-      if ( gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (scd->percent)))
+      if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (scd->percent)))
 	{
 	  const double percentage =
 	    gtk_spin_button_get_value (GTK_SPIN_BUTTON (scd->spinbutton));
@@ -496,7 +496,7 @@ generate_syntax_delete (const PsppireDialogAction *a)
 	}
 
     }
-  else if ( gtk_toggle_button_get_active
+  else if (gtk_toggle_button_get_active
 	    (GTK_TOGGLE_BUTTON (scd->radiobutton_range)))
     {
       ds_put_c_format (&dss,
@@ -532,13 +532,13 @@ generate_syntax (const PsppireDialogAction *a)
   PsppireDialogActionSelect *scd = PSPPIRE_DIALOG_ACTION_SELECT (a);
 
   /* In the simple case, all we need to do is cancel any existing filter */
-  if ( gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (scd->radiobutton_all)))
+  if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (scd->radiobutton_all)))
     {
       return g_strdup ("FILTER OFF.\n");
     }
 
   /* Are we filtering or deleting ? */
-  if ( gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (scd->radiobutton_delete)))
+  if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (scd->radiobutton_delete)))
     {
       return generate_syntax_delete (a);
     }

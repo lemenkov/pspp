@@ -374,7 +374,7 @@ extract_html_text (const xmlNode *node, int base_font_size, struct string *s)
                   else
                     {
                       uint8_t r, g, b;
-                      if (sscanf (color, "rgb (%"SCNu8", %"SCNu8", %"SCNu8" )",
+                      if (sscanf (color, "rgb (%"SCNu8", %"SCNu8", %"SCNu8")",
                                   &r, &g, &b) == 3)
                         {
                           char color2[8];
@@ -420,7 +420,7 @@ extract_html_text (const xmlNode *node, int base_font_size, struct string *s)
          Do the same for U+2007 FIGURE SPACE, which also crops out weirdly
          sometimes. */
       ds_extend (s, ds_length (s) + xmlStrlen (node->content));
-      for (const uint8_t *p = node->content; *p; )
+      for (const uint8_t *p = node->content; *p;)
         {
           int c;
           if (p[0] == 0xc2 && p[1] == 0xa0)

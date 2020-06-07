@@ -78,7 +78,7 @@ paired_run (const struct tt *tt, size_t n_pairs, vp *pairs, struct casereader *r
     }
 
   r = casereader_clone (reader);
-  for ( ; (c = casereader_read (r) ); case_unref (c))
+  for (; (c = casereader_read (r)); case_unref (c))
     {
       double w = dict_get_case_weight (tt->dict, c, NULL);
 
@@ -101,7 +101,7 @@ paired_run (const struct tt *tt, size_t n_pairs, vp *pairs, struct casereader *r
   casereader_destroy (r);
 
   r = reader;
-  for ( ; (c = casereader_read (r) ); case_unref (c))
+  for (; (c = casereader_read (r)); case_unref (c))
     {
       double w = dict_get_case_weight (tt->dict, c, NULL);
 

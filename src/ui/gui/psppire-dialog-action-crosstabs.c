@@ -151,7 +151,7 @@ on_format_clicked (PsppireDialogActionCrosstabs *cd)
 
   ret = psppire_dialog_run (PSPPIRE_DIALOG (cd->format_dialog));
 
-  if ( ret == PSPPIRE_RESPONSE_CONTINUE )
+  if (ret == PSPPIRE_RESPONSE_CONTINUE)
     {
       cd->format_options_avalue =
 	gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (cd->avalue_button));
@@ -171,7 +171,7 @@ on_cell_clicked (PsppireDialogActionCrosstabs *cd)
 
   gint ret = psppire_dialog_run (PSPPIRE_DIALOG (cd->cell_dialog));
 
-  if ( ret == PSPPIRE_RESPONSE_CONTINUE )
+  if (ret == PSPPIRE_RESPONSE_CONTINUE)
     {
       g_object_unref (liststore);
     }
@@ -190,7 +190,7 @@ on_statistics_clicked (PsppireDialogActionCrosstabs *cd)
 
   gint ret = psppire_dialog_run (PSPPIRE_DIALOG (cd->stat_dialog));
 
-  if ( ret == PSPPIRE_RESPONSE_CONTINUE )
+  if (ret == PSPPIRE_RESPONSE_CONTINUE)
     {
       g_object_unref (liststore);
     }
@@ -208,7 +208,7 @@ psppire_dialog_action_crosstabs_activate (PsppireDialogAction *a, GVariant *para
   PsppireDialogActionCrosstabs *act = PSPPIRE_DIALOG_ACTION_CROSSTABS (a);
   PsppireDialogAction *pda = PSPPIRE_DIALOG_ACTION (a);
 
-  GtkBuilder *xml = builder_new ( "crosstabs.ui");
+  GtkBuilder *xml = builder_new ("crosstabs.ui");
 
   pda->dialog = get_widget_assert   (xml, "crosstabs-dialog");
   pda->source = get_widget_assert   (xml, "dict-treeview");

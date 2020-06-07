@@ -54,12 +54,12 @@ ship_label (PsppireScanf *box, const char **s,
   GtkWidget *label ;
   GString *str = g_string_new (*s);
 
-  if ( dirs)
+  if (dirs)
     {
       char_directive dir = dirs->dir[dir_idx];
       int n = 0;
 
-      while (dir_idx < dirs->count && dir.conversion == '%' )
+      while (dir_idx < dirs->count && dir.conversion == '%')
 	{
 	  g_string_erase (str, dir.dir_start - *s, 1);
 	  dir = dirs->dir[++dir_idx];
@@ -68,7 +68,7 @@ ship_label (PsppireScanf *box, const char **s,
 
       g_string_truncate (str, dir.dir_start - *s - n);
 
-      if ( dir_idx >= dirs->count)
+      if (dir_idx >= dirs->count)
 	*s = NULL;
       else
 	*s = dir.dir_end;
@@ -92,31 +92,31 @@ guts (PsppireScanf *scanf)
   /* Get the number of args into D */
   g_return_if_fail (0 == printf_parse (scanf->format, &scanf->d, &a));
 
-  if ( scanf->d.count > 0)
+  if (scanf->d.count > 0)
     scanf->widgets = xcalloc (scanf->d.count, sizeof (*scanf->widgets));
 
   /* A is not used, so get rid of it */
   if (a.arg != a.direct_alloc_arg)
     free (a.arg);
 
-  for (i = 0 ; i < scanf->d.count ; ++i )
+  for (i = 0 ; i < scanf->d.count ; ++i)
     {
       GtkWidget **w;
       char_directive dir = scanf->d.dir[i];
       int precision = 0;
       int width = 0;
 
-      if ( dir.precision_start && dir.precision_end)
+      if (dir.precision_start && dir.precision_end)
 	precision = strtol (dir.precision_start + 1,
 			    (char **) &dir.precision_end, 10);
 
-      if ( dir.width_start && dir.width_end )
+      if (dir.width_start && dir.width_end)
 	width = strtol (dir.width_start, (char **) &dir.width_end, 10);
 
-      if ( dir.dir_start > s )
+      if (dir.dir_start > s)
 	ship_label (scanf, &s, &scanf->d, i);
 
-      if ( dir.conversion == '%')
+      if (dir.conversion == '%')
 	{
 	  if (s) s++;
 	  continue;
@@ -142,7 +142,7 @@ guts (PsppireScanf *scanf)
       gtk_widget_show (*w);
     }
 
-  if ( s && *s )
+  if (s && *s)
     ship_label (scanf, &s, NULL, 0);
 
 }
@@ -156,10 +156,10 @@ set_mnemonic (PsppireScanf *scanf)
       GList *l = gtk_container_get_children (GTK_CONTAINER (scanf));
       while (l)
 	{
-	  if ( GTK_IS_LABEL (l->data))
+	  if (GTK_IS_LABEL (l->data))
 	    {
 	      const gchar *t = gtk_label_get_label (l->data);
-	      if  ( g_strstr_len (t, -1,  "_"))
+	      if  (g_strstr_len (t, -1,  "_"))
 		{
 		  g_object_set (l->data,
 				"use-underline", TRUE,
@@ -337,14 +337,14 @@ psppire_scanf_init (PsppireScanf *w)
 gchar
 psppire_get_conversion_char (PsppireScanf *w, gint n)
 {
-  g_return_val_if_fail ( n < w->d.count, '\0');
+  g_return_val_if_fail (n < w->d.count, '\0');
   return w->d.dir[n].conversion;
 }
 
 GtkWidget *
 psppire_scanf_get_child (PsppireScanf *w, gint n)
 {
-  g_return_val_if_fail ( n < w->d.count, NULL);
+  g_return_val_if_fail (n < w->d.count, NULL);
   return w->widgets[n];
 }
 
@@ -371,11 +371,11 @@ psppire_scanf_new (const gchar *fmt, ...)
 
   va_start (ap, fmt);
 
-  for (i = 0 ; i < n ; ++i )
+  for (i = 0 ; i < n ; ++i)
     {
       GtkWidget **field;
 
-      if ( psppire_get_conversion_char (PSPPIRE_SCANF (w), i) == '%')
+      if (psppire_get_conversion_char (PSPPIRE_SCANF (w), i) == '%')
 	continue;
 
       field = va_arg (ap, GtkWidget **);

@@ -70,7 +70,7 @@ generate_syntax (const PsppireDialogAction *act)
 
 
   ds_put_cstr (&str, "\n\t/CRITERIA = ");
-  if ( rd->extraction.explicit_nfactors )
+  if (rd->extraction.explicit_nfactors)
     ds_put_c_format (&str, "FACTORS (%d)", rd->extraction.n_factors);
   else
     ds_put_c_format (&str, "MINEIGEN (%.*g)",
@@ -84,19 +84,19 @@ generate_syntax (const PsppireDialogAction *act)
 
 
   ds_put_cstr (&str, "\n\t/EXTRACTION =");
-  if ( rd->extraction.paf)
+  if (rd->extraction.paf)
     ds_put_cstr (&str, "PAF");
   else
     ds_put_cstr (&str, "PC");
 
 
   ds_put_cstr (&str, "\n\t/METHOD = ");
-  if ( rd->extraction.covariance )
+  if (rd->extraction.covariance)
     ds_put_cstr (&str, "COVARIANCE");
   else
     ds_put_cstr (&str, "CORRELATION");
 
-  if ( rd->extraction.scree )
+  if (rd->extraction.scree)
     {
       ds_put_cstr (&str, "\n\t/PLOT = ");
       ds_put_cstr (&str, "EIGEN");
@@ -105,17 +105,17 @@ generate_syntax (const PsppireDialogAction *act)
   ds_put_cstr (&str, "\n\t/PRINT = ");
   ds_put_cstr (&str, "INITIAL ");
 
-  if ( rd->extraction.unrotated )
+  if (rd->extraction.unrotated)
     ds_put_cstr (&str, "EXTRACTION ");
 
-  if ( rd->rotation.rotated_solution )
+  if (rd->rotation.rotated_solution)
     ds_put_cstr (&str, "ROTATION");
 
 
   /* The CRITERIA = ITERATE subcommand is overloaded.
      It applies to the next /ROTATION and/or EXTRACTION command whatever comes first.
   */
-  ds_put_c_format (&str, "\n\t/CRITERIA = ITERATE (%d)",  rd->rotation.iterations  );
+  ds_put_c_format (&str, "\n\t/CRITERIA = ITERATE (%d)",  rd->rotation.iterations);
 
   ds_put_cstr (&str, "\n\t/ROTATION = ");
   ds_put_cstr (&str, rot_method_syntax[rd->rotation.method]);
@@ -180,7 +180,7 @@ load_extraction_parameters (PsppireDialogActionFactor *fd, const struct extracti
   gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (fd->scree_button), p->scree);
   gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (fd->unrotated_button), p->unrotated);
 
-  if ( p->paf )
+  if (p->paf)
     gtk_combo_box_set_active (GTK_COMBO_BOX (fd->extraction_combo), 1);
   else
     gtk_combo_box_set_active (GTK_COMBO_BOX (fd->extraction_combo), 0);
@@ -225,16 +225,16 @@ set_rotation_parameters (PsppireDialogActionFactor *act, struct rotation_paramet
   p->rotated_solution = gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (act->display_rotated_solution));
 
 
-  if ( gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (act->rotation_none)))
+  if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (act->rotation_none)))
     p->method = ROT_NONE;
 
-  if ( gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (act->rotation_varimax)))
+  if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (act->rotation_varimax)))
     p->method = ROT_VARIMAX;
 
   if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (act->rotation_quartimax)))
     p->method = ROT_QUARTIMAX;
 
-  if ( gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (act->rotation_equimax)))
+  if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (act->rotation_equimax)))
     p->method = ROT_EQUIMAX;
 }
 
@@ -262,7 +262,7 @@ run_extractions_subdialog (PsppireDialogActionFactor *act)
 
   gint response = psppire_dialog_run (PSPPIRE_DIALOG (act->extraction_dialog));
 
-  if ( response == PSPPIRE_RESPONSE_CONTINUE )
+  if (response == PSPPIRE_RESPONSE_CONTINUE)
     {
       /* Set the parameters from their respective widgets */
       set_extraction_parameters (act, ex);
@@ -281,7 +281,7 @@ run_rotations_subdialog (PsppireDialogActionFactor *act)
 
   gint response = psppire_dialog_run (PSPPIRE_DIALOG (act->rotation_dialog));
 
-  if ( response == PSPPIRE_RESPONSE_CONTINUE )
+  if (response == PSPPIRE_RESPONSE_CONTINUE)
     {
       /* Set the parameters from their respective widgets */
       set_rotation_parameters (act, rot);
@@ -301,7 +301,7 @@ psppire_dialog_action_factor_activate (PsppireDialogAction *a, GVariant *param)
   GtkWidget *extraction_button ;
   GtkWidget *rotation_button ;
 
-  GtkBuilder *xml = builder_new ( "factor.ui");
+  GtkBuilder *xml = builder_new ("factor.ui");
 
   pda->dialog = get_widget_assert   (xml, "factor-dialog");
   pda->source = get_widget_assert   (xml, "dict-view");

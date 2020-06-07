@@ -196,7 +196,7 @@ diff_matrix (const gsl_matrix *m1, const gsl_matrix *m2)
       double diff = 0;
       for (j = 0; j < m1->size2; ++j)
 	{
-	  diff += pow2 (gsl_matrix_get (m1,i,j) - gsl_matrix_get (m2,i,j) );
+	  diff += pow2 (gsl_matrix_get (m1,i,j) - gsl_matrix_get (m2,i,j));
 	}
       if (diff > max_diff)
 	max_diff = diff;
@@ -247,7 +247,7 @@ dist_from_case (const struct Kmeans *kmeans, const struct ccase *c,
   for (j = 0; j < qc->n_vars; j++)
     {
       const union value *val = case_data (c, qc->vars[j]);
-      if ( var_is_value_missing (qc->vars[j], val, qc->exclude))
+      if (var_is_value_missing (qc->vars[j], val, qc->exclude))
 	NOT_REACHED ();
 
       dist += pow2 (gsl_matrix_get (kmeans->centers, which, j) - val->f);
@@ -302,7 +302,7 @@ kmeans_initial_centers (struct Kmeans *kmeans,
       for (j = 0; j < qc->n_vars; ++j)
 	{
 	  const union value *val = case_data (c, qc->vars[j]);
-	  if ( var_is_value_missing (qc->vars[j], val, qc->exclude))
+	  if (var_is_value_missing (qc->vars[j], val, qc->exclude))
 	    {
 	      missing = true;
 	      break;
@@ -385,7 +385,7 @@ kmeans_get_nearest_group (const struct Kmeans *kmeans, struct ccase *c,
       for (j = 0; j < qc->n_vars; j++)
 	{
 	  const union value *val = case_data (c, qc->vars[j]);
-	  if ( var_is_value_missing (qc->vars[j], val, qc->exclude))
+	  if (var_is_value_missing (qc->vars[j], val, qc->exclude))
 	    continue;
 
 	  dist += pow2 (gsl_matrix_get (kmeans->centers, i, j) - val->f);
@@ -462,7 +462,7 @@ kmeans_cluster (struct Kmeans *kmeans, struct casereader *reader,
 	      for (j = 0; j < qc->n_vars; j++)
 		{
 		  const union value *val = case_data (c, qc->vars[j]);
-		  if ( var_is_value_missing (qc->vars[j], val, qc->exclude))
+		  if (var_is_value_missing (qc->vars[j], val, qc->exclude))
 		    missing = true;
 		}
 
@@ -488,7 +488,7 @@ kmeans_cluster (struct Kmeans *kmeans, struct casereader *reader,
 	      for (j = 0; j < qc->n_vars; ++j)
 		{
 		  const union value *val = case_data (c, qc->vars[j]);
-		  if ( var_is_value_missing (qc->vars[j], val, qc->exclude))
+		  if (var_is_value_missing (qc->vars[j], val, qc->exclude))
 		    continue;
 		  double *x = gsl_matrix_ptr (kmeans->updated_centers, group, j);
 		  *x += val->f * (qc->wv ? case_data (c, qc->wv)->f : 1.0);
@@ -529,7 +529,7 @@ kmeans_cluster (struct Kmeans *kmeans, struct casereader *reader,
 	    for (j = 0; j < qc->n_vars; ++j)
 	      {
 		const union value *val = case_data (c, qc->vars[j]);
-		if ( var_is_value_missing (qc->vars[j], val, qc->exclude))
+		if (var_is_value_missing (qc->vars[j], val, qc->exclude))
 		  continue;
 
 		double *x = gsl_matrix_ptr (kmeans->updated_centers, group, j);
@@ -1016,7 +1016,7 @@ cmd_quick_cluster (struct lexer *lexer, struct dataset *ds)
 
     while (casegrouper_get_next_group (grouper, &group))
       {
-	if ( qc.missing_type == MISS_LISTWISE )
+	if (qc.missing_type == MISS_LISTWISE)
 	  {
 	    group = casereader_create_filter_missing (group, qc.vars, qc.n_vars,
 						       qc.exclude,

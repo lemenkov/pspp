@@ -346,7 +346,7 @@ replace_newlines (char *p)
 {
   char *q;
 
-  for (q = p; *p != '\0'; )
+  for (q = p; *p != '\0';)
     if (*p == '\\' && p[1] == 'n')
       {
         *q++ = '\n';

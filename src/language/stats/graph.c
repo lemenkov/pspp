@@ -374,7 +374,7 @@ show_histogr (const struct graph *cmd, struct casereader *input)
     moments_calculate (cmd->es[0].mom, &n, &mean, &var, NULL, NULL);
 
     chart_item_submit
-      ( histogram_chart_create (histogram->gsl_hist,
+      (histogram_chart_create (histogram->gsl_hist,
 				ds_cstr (&label), n, mean,
 				sqrt (var), cmd->normal));
 
@@ -402,7 +402,7 @@ run_barchart (struct graph *cmd, struct casereader *input)
   struct casereader *group;
   double ccc = 0.0;
 
-  if ( cmd->missing_pw == false)
+  if (cmd->missing_pw == false)
     input = casereader_create_filter_missing (input,
                                               cmd->dep_vars,
                                               cmd->n_dep_vars,
@@ -587,7 +587,7 @@ run_graph (struct graph *cmd, struct casereader *input)
   /* Always remove cases listwise. This is correct for */
   /* the histogram because there is only one variable  */
   /* and a simple bivariate scatterplot                */
-  /* if ( cmd->missing_pw == false)                    */
+  /* if (cmd->missing_pw == false)                    */
     input = casereader_create_filter_missing (input,
                                               cmd->dep_vars,
                                               cmd->n_dep_vars,

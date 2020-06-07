@@ -70,7 +70,7 @@ create_freq_hash_with_range (const struct dictionary *dict,
 
   /* Populate the hash with zero entries */
   entries = xnmalloc (hi - lo + 1, sizeof *entries);
-  for (i_d = lo; i_d <= hi; i_d += 1.0 )
+  for (i_d = lo; i_d <= hi; i_d += 1.0)
     {
       size_t ofs = i_d - lo;
       union value value = { i_d };
@@ -145,12 +145,12 @@ chisquare_execute (const struct dataset *ds,
   double *xsq = xzalloc (sizeof (*df) * ost->n_vars);
   bool ok;
 
-  for ( i = 0 ; i < cst->n_expected ; ++i )
+  for (i = 0 ; i < cst->n_expected ; ++i)
     total_expected += cst->expected[i];
 
-  if ( cst->ranged == false )
+  if (cst->ranged == false)
     {
-      for ( v = 0 ; v < ost->n_vars ; ++v )
+      for (v = 0 ; v < ost->n_vars ; ++v)
 	{
           const struct variable *var = ost->vars[v];
 
@@ -244,19 +244,19 @@ chisquare_execute (const struct dataset *ds,
 
       struct pivot_dimension *var_dim
         = pivot_dimension_create (table, PIVOT_AXIS_COLUMN, N_("Variable"));
-      for ( size_t i = 0 ; i < ost->n_vars ; ++i )
+      for (size_t i = 0 ; i < ost->n_vars ; ++i)
         pivot_category_create_leaf (var_dim->root,
                                     pivot_value_new_variable (ost->vars[i]));
 
       struct pivot_dimension *category_dim
         = pivot_dimension_create (table, PIVOT_AXIS_ROW, N_("Category"));
       size_t n_cells = cst->hi - cst->lo + 1;
-      for (size_t i = 0 ; i < n_cells; ++i )
+      for (size_t i = 0 ; i < n_cells; ++i)
         pivot_category_create_leaf (category_dim->root,
                                     pivot_value_new_integer (i + 1));
       pivot_category_create_leaves (category_dim->root, N_("Total"));
 
-      for ( size_t v = 0 ; v < ost->n_vars ; ++v )
+      for (size_t v = 0 ; v < ost->n_vars ; ++v)
 	{
           const struct variable *var = ost->vars[v];
           struct casereader *reader =
@@ -274,11 +274,11 @@ chisquare_execute (const struct dataset *ds,
 	  struct freq **ff = freq_hmap_sort (&freq_hash, var_get_width (var));
 
           double total_obs = 0.0;
-	  for ( size_t i = 0 ; i < hmap_count (&freq_hash) ; ++i )
+	  for (size_t i = 0 ; i < hmap_count (&freq_hash) ; ++i)
 	    total_obs += ff[i]->count;
 
 	  xsq[v] = 0.0;
-	  for ( size_t i = 0 ; i < hmap_count (&freq_hash) ; ++i )
+	  for (size_t i = 0 ; i < hmap_count (&freq_hash) ; ++i)
 	    {
               /* Category. */
               pivot_table_put3 (table, 0, v, i,
@@ -327,7 +327,7 @@ chisquare_execute (const struct dataset *ds,
       struct pivot_dimension *variables = pivot_dimension_create (
         table, PIVOT_AXIS_ROW, N_("Variable"));
 
-      for ( size_t v = 0 ; v < ost->n_vars ; ++v )
+      for (size_t v = 0 ; v < ost->n_vars ; ++v)
         {
           const struct variable *var = ost->vars[v];
 

@@ -69,7 +69,7 @@ fmt_settings_create (void)
   int t;
 
   settings = xzalloc (sizeof *settings);
-  for (t = 0 ; t < FMT_NUMBER_OF_FORMATS ; ++t )
+  for (t = 0 ; t < FMT_NUMBER_OF_FORMATS ; ++t)
     fmt_number_style_init (&settings->styles[t]);
   fmt_settings_set_decimal (settings, '.');
 
@@ -84,7 +84,7 @@ fmt_settings_destroy (struct fmt_settings *settings)
     {
       int t;
 
-      for (t = 0 ; t < FMT_NUMBER_OF_FORMATS ; ++t )
+      for (t = 0 ; t < FMT_NUMBER_OF_FORMATS ; ++t)
         fmt_number_style_destroy (&settings->styles[t]);
 
       free (settings->styles);
@@ -99,7 +99,7 @@ fmt_settings_clone (const struct fmt_settings *old)
   int t;
 
   new = xmalloc (sizeof *new);
-  for (t = 0 ; t < FMT_NUMBER_OF_FORMATS ; ++t )
+  for (t = 0 ; t < FMT_NUMBER_OF_FORMATS ; ++t)
     fmt_number_style_clone (&new->styles[t], &old->styles[t]);
 
   return new;

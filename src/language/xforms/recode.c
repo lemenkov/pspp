@@ -158,7 +158,7 @@ cmd_recode (struct lexer *lexer, struct dataset *ds)
          as the widest destination variable. */
       if (trns->dst_type == VAL_STRING)
 	{
-	  if ( ! enlarge_dst_widths (trns))
+	  if (! enlarge_dst_widths (trns))
 	    {
 	      recode_trns_free (trns);
 	      return CMD_FAILURE;

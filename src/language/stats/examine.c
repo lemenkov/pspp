@@ -71,7 +71,7 @@ static void
 append_value_name (const struct variable *var, const union value *val, struct string *str)
 {
   var_append_value_name (var, val, str);
-  if ( var_is_value_missing (var, val, MV_ANY))
+  if (var_is_value_missing (var, val, MV_ANY))
     ds_put_cstr (str, _(" (missing)"));
 }
 
@@ -235,10 +235,10 @@ show_boxplot_grouped (const struct examine *cmd, int iact_idx)
           const struct exploratory_stats *es =
             categoricals_get_user_data_by_category_real (cmd->cats, iact_idx, grp);
 
-          if ( y_min > es[v].minimum)
+          if (y_min > es[v].minimum)
             y_min = es[v].minimum;
 
-          if ( y_max < es[v].maximum)
+          if (y_max < es[v].maximum)
             y_max = es[v].maximum;
         }
 
@@ -310,14 +310,14 @@ show_boxplot_variabled (const struct examine *cmd, int iact_idx)
           const struct exploratory_stats *es =
             categoricals_get_user_data_by_category_real (cmd->cats, iact_idx, grp);
 
-          if ( y_min > es[v].minimum)
+          if (y_min > es[v].minimum)
             y_min = es[v].minimum;
 
-          if ( y_max < es[v].maximum)
+          if (y_max < es[v].maximum)
             y_max = es[v].maximum;
         }
 
-      if ( iact->n_vars == 0)
+      if (iact->n_vars == 0)
         ds_put_format (&title, _("Boxplot"));
       else
         {
@@ -389,7 +389,7 @@ show_npplot (const struct examine *cmd, int iact_idx)
           ds_init_cstr (&label,
                         var_to_string (cmd->dep_vars[v]));
 
-          if ( iact->n_vars > 0)
+          if (iact->n_vars > 0)
             {
               ds_put_cstr (&label, " (");
               for (ivar_idx = 0; ivar_idx < iact->n_vars; ++ivar_idx)
@@ -514,7 +514,7 @@ show_histogram (const struct examine *cmd, int iact_idx)
           ds_init_cstr (&label,
                         var_to_string (cmd->dep_vars[v]));
 
-          if ( iact->n_vars > 0)
+          if (iact->n_vars > 0)
             {
               ds_put_cstr (&label, " (");
               for (ivar_idx = 0; ivar_idx < iact->n_vars; ++ivar_idx)
@@ -535,7 +535,7 @@ show_histogram (const struct examine *cmd, int iact_idx)
           moments_calculate (es[v].mom, &n, &mean, &var, NULL, NULL);
 
           chart_item_submit
-            ( histogram_chart_create (es[v].histogram->gsl_hist,
+            (histogram_chart_create (es[v].histogram->gsl_hist,
                                       ds_cstr (&label), n, mean,
                                       sqrt (var), false));
 
@@ -562,7 +562,7 @@ create_interaction_dimensions (struct pivot_table *table,
                                const struct interaction *iact,
                                struct pivot_footnote *missing_footnote)
 {
-  for (size_t i = iact->n_vars; i-- > 0; )
+  for (size_t i = iact->n_vars; i-- > 0;)
     {
       const struct variable *var = iact->vars[i];
       struct pivot_dimension *d = pivot_dimension_create__ (
@@ -996,7 +996,7 @@ parse_interaction (struct lexer *lexer, struct examine *ex)
   const struct variable *v = NULL;
   struct interaction *iact = NULL;
 
-  if ( lex_match_variable (lexer, ex->dict, &v))
+  if (lex_match_variable (lexer, ex->dict, &v))
     {
       iact = interaction_create (v);
 
@@ -1491,7 +1491,7 @@ cmd_examine (struct lexer *lexer, struct dataset *ds)
   lex_match (lexer, T_SLASH);
   if (lex_match_id  (lexer, "VARIABLES"))
     {
-      if (! lex_force_match (lexer, T_EQUALS) )
+      if (! lex_force_match (lexer, T_EQUALS))
         goto error;
     }
 
@@ -1581,7 +1581,7 @@ cmd_examine (struct lexer *lexer, struct dataset *ds)
                 {
                   double p = lex_number (lexer);
 
-                  if ( p <= 0 || p >= 100.0)
+                  if (p <= 0 || p >= 100.0)
                     {
                       lex_error (lexer,
                                  _("Percentiles must lie in the range (0, 100)"));
@@ -1752,7 +1752,7 @@ cmd_examine (struct lexer *lexer, struct dataset *ds)
         }
       else if (lex_match_id (lexer, "CINTERVAL"))
         {
-          if ( !lex_force_num (lexer))
+          if (!lex_force_num (lexer))
             goto error;
 
           examine.conf = lex_number (lexer);
@@ -1772,7 +1772,7 @@ cmd_examine (struct lexer *lexer, struct dataset *ds)
     }
 
 
-  if ( totals_seen && nototals_seen)
+  if (totals_seen && nototals_seen)
     {
       msg (SE, _("%s and %s are mutually exclusive"), "TOTAL", "NOTOTAL");
       goto error;
@@ -1780,7 +1780,7 @@ cmd_examine (struct lexer *lexer, struct dataset *ds)
 
   /* If totals have been requested or if there are no factors
      in this analysis, then the totals need to be included. */
-  if ( !nototals_seen || examine.n_iacts == 1)
+  if (!nototals_seen || examine.n_iacts == 1)
     {
       examine.iacts = &iacts_mem[0];
     }
@@ -1792,7 +1792,7 @@ cmd_examine (struct lexer *lexer, struct dataset *ds)
     }
 
 
-  if ( examine.id_var )
+  if (examine.id_var)
     {
       examine.id_idx = var_get_case_index (examine.id_var);
       examine.id_width = var_get_width (examine.id_var);

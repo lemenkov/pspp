@@ -58,7 +58,7 @@ cmd_numeric (struct lexer *lexer, struct dataset *ds)
 	  if (!parse_format_specifier (lexer, &f))
 	    goto fail;
 
-	  if ( ! fmt_check_output (&f))
+	  if (! fmt_check_output (&f))
 	    goto fail;
 
 	  if (fmt_is_string (f.type))
