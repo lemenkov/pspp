@@ -2019,12 +2019,10 @@ open_data_window (PsppireWindow *victim, const char *file_name,
       && psppire_data_window_is_empty (PSPPIRE_DATA_WINDOW (victim)))
     {
       window = GTK_WIDGET (victim);
-      gtk_widget_hide (GTK_WIDGET (PSPPIRE_DATA_WINDOW (window)->data_editor));
     }
   else
     window = psppire_data_window_new (NULL);
 
   psppire_window_load (PSPPIRE_WINDOW (window), file_name, encoding, hint);
-  gtk_widget_show_all (window);
   return GTK_WINDOW (window);
 }
