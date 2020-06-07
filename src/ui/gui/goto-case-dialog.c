@@ -19,7 +19,6 @@
 #include "goto-case-dialog.h"
 #include "builder-wrapper.h"
 #include "psppire-dialog.h"
-#include "psppire-data-window.h"
 #include "psppire-data-store.h"
 #include "psppire-data-sheet.h"
 
@@ -27,11 +26,12 @@
 static void
 refresh (PsppireDataSheet *ds, GtkBuilder *xml)
 {
-  PsppireDataStore *store = NULL;
-  g_object_get (ds, "data-model", &store, NULL);
+  GtkTreeModel *tm = NULL;
+  g_object_get (ds, "data-model", &tm, NULL);
 
   GtkWidget *case_num_entry = get_widget_assert (xml, "goto-case-case-num-entry");
-  casenumber case_count =  gtk_tree_model_iter_n_children (GTK_TREE_MODEL (store), NULL);
+  gint case_count =  gtk_tree_model_iter_n_children (tm, NULL);
+  g_object_unref (tm);
 
   gtk_spin_button_set_range (GTK_SPIN_BUTTON (case_num_entry), 1, case_count);
 }
@@ -53,18 +53,20 @@ goto_case_dialog (PsppireDataSheet *ds)
 
   if (response == PSPPIRE_RESPONSE_GOTO)
     {
-      PsppireDataStore *store = NULL;
-      g_object_get (ds, "data-model", &store, NULL);
+      GtkTreeModel *tm  = NULL;
+      g_object_get (ds, "data-model", &tm, NULL);
 
       GtkWidget *case_num_entry =
   	get_widget_assert (xml, "goto-case-case-num-entry");
 
-      glong case_num =
+      gint case_num =
 	gtk_spin_button_get_value_as_int (GTK_SPIN_BUTTON (case_num_entry))
   	- FIRST_CASE_NUMBER ;
 
-      if (case_num >= 0 &&
-	  case_num < gtk_tree_model_iter_n_children (GTK_TREE_MODEL (ds), NULL))
+      gint case_count = gtk_tree_model_iter_n_children (tm, NULL);
+      g_object_unref (tm);
+
+      if (case_num >= 0 && case_num < case_count)
       {
 	ssw_sheet_scroll_to (SSW_SHEET (ds), -1, case_num);
 	ssw_sheet_set_active_cell (SSW_SHEET (ds), -1, case_num, 0);
