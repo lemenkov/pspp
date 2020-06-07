@@ -1,5 +1,5 @@
 /* PSPPIRE - a graphical user interface for PSPP.
-   Copyright (C) 2007, 2009, 2011, 2012, 2015  Free Software Foundation
+   Copyright (C) 2007, 2009, 2011, 2012, 2015, 2020  Free Software Foundation
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -40,6 +40,7 @@ which match particular strings */
 #include "ui/gui/psppire-data-window.h"
 #include "ui/gui/psppire-dialog.h"
 #include "ui/gui/psppire-selector.h"
+#include <ssw-sheet.h>
 
 #include "gl/xalloc.h"
 
@@ -101,18 +102,18 @@ do_find (GObject *obj, const struct find_dialog *fd)
 {
   casenumber x = -1;
   gint column = -1;
-  glong row;
-
-
-  row = 10;
+  glong row = -1;
 
   find_value (fd, row, &x, &column);
 
   if ( x != -1)
     {
+      SswSheet *sheet = SSW_SHEET (fd->de->data_editor->data_sheet);
       gtk_notebook_set_current_page (GTK_NOTEBOOK (fd->de->data_editor),
 				     PSPPIRE_DATA_EDITOR_DATA_VIEW);
 
+      ssw_sheet_scroll_to (sheet, column, x);
+      ssw_sheet_set_active_cell (sheet, column, x, NULL);
     }
 }
 
