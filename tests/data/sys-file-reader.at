@@ -2038,7 +2038,7 @@ for variant in be le; do
 done
 AT_CLEANUP
 
-AT_SETUP([variable index is long string contination])
+AT_SETUP([variable index is long string continuation])
 AT_KEYWORDS([sack synthetic system file negative])
 AT_DATA([sys-file.sack], [dnl
 dnl File header.
