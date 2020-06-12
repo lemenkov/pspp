@@ -341,10 +341,10 @@ The example file @file{physiology.sav} contains a number of physiological
 measurements of a sample of healthy adults selected at random.
 However, the data entry clerk made a number of mistakes when entering
 the data.
-@ref{descriptives} illustrates the use of @cmd{DESCRIPTIVES} to screen this
+@ref{ex-descriptives} illustrates the use of @cmd{DESCRIPTIVES} to screen this
 data and identify the erroneous values.
 
-@float Example, descriptives
+@float Example, ex-descriptives
 @cartouche
 @example
 @prompt{PSPP>} get file='@value{example-dir}/physiology.sav'.
@@ -371,7 +371,7 @@ In this case, the results show unexpectedly low values in the Minimum
 column, suggesting incorrect data entry.}
 @end float
 
-In the output of @ref{descriptives},
+In the output of @ref{ex-descriptives},
 the most interesting column is the minimum value.
 The @var{weight} variable has a minimum value of less than zero,
 which is clearly erroneous.
@@ -393,7 +393,7 @@ represent data entry errors.
 
 @float Example, ex1
 @cartouche
-[@dots{} continue from @ref{descriptives}]
+[@dots{} continue from @ref{ex-descriptives}]
 @example
 @prompt{PSPP>} examine height, weight /statistics=extreme(3).
 @end example
@@ -452,7 +452,7 @@ From now on, they will be ignored in analysis.
 For detailed information about the @cmd{RECODE} command @pxref{RECODE}.
 
 If you now re-run the @cmd{DESCRIPTIVES} or @cmd{EXAMINE} commands in
-@ref{descriptives} and @ref{ex1} you
+@ref{ex-descriptives} and @ref{ex1} you
 will see a data summary with more plausible parameters.
 You will also notice that the data summaries indicate the two missing values.
 
@@ -464,7 +464,7 @@ You will also notice that the data summaries indicate the two missing values.
 Data entry errors are not the only reason for wanting to recode data.
 The sample file @file{hotel.sav} comprises data gathered from a
 customer satisfaction survey of clients at a particular hotel.
-In @ref{reliability}, this file is loaded for analysis.
+In @ref{ex-reliability}, this file is loaded for analysis.
 The line @code{display dictionary.} tells @pspp{} to display the
 variables and associated data.
 The output from this command has been omitted from the example for the sake of clarity, but
@@ -489,7 +489,7 @@ subtracting their value  from 6 has the effect of inverting them:
 compute @var{var} = 6 - @var{var}.
 @end example
 @noindent
-@ref{reliability} uses this technique to recode the variables
+@ref{ex-reliability} uses this technique to recode the variables
 @var{v3} and @var{v5}.
 After applying  @cmd{COMPUTE} for both variables,
 all subsequent commands will use the inverted values.
@@ -510,11 +510,11 @@ you will notice that they ask very similar questions.
 One would therefore expect the values of these variables (after recoding)
 to closely follow one another, and we can test that with the @cmd{RELIABILITY}
 command (@pxref{RELIABILITY}).
-@ref{reliability} shows a @pspp{} session where the user (after recoding
+@ref{ex-reliability} shows a @pspp{} session where the user (after recoding
 negatively scaled variables) requests reliability statistics for
 @var{v1}, @var{v3} and @var{v4}.
 
-@float Example, reliability
+@float Example, ex-reliability
 @cartouche
 @example
 @prompt{PSPP>} get file='@value{example-dir}/hotel.sav'.
@@ -732,7 +732,7 @@ A common statistical test involves hypotheses about means.
 The @cmd{T-TEST} command is used to find out whether or not two separate
 subsets have the same mean.
 
-@ref{t-test} uses the file @file{physiology.sav} previously
+@ref{ex-t-test} uses the file @file{physiology.sav} previously
 encountered.
 A researcher suspected that the heights and core body
 temperature of persons might be different depending upon their sex.
@@ -772,7 +772,7 @@ The equal variances row indicates that the two tailed significance for
 the null hypothesis and conclude that there is insufficient evidence to
 suggest that the body temperature of male and female persons are different.
 
-@float Example, t-test
+@float Example, ex-t-test
 @cartouche
 @example
 @prompt{PSPP>} get file='@value{example-dir}/physiology.sav'.
@@ -880,7 +880,7 @@ is linearly related to others.
 If a variable is found to be linearly related, then this can be used to
 predict future values of that variable.
 
-In example @ref{regression}, the service department of the company wanted to
+In example @ref{ex-regression}, the service department of the company wanted to
 be able to predict the time to repair equipment, in order to improve
 the accuracy of their quotations.
 It was suggested that the time to repair might be related to the time
@@ -892,7 +892,7 @@ This command not only tests if the variables are related, but also
 identifies the potential linear relationship. @xref{REGRESSION}.
 
 
-@float Example, regression
+@float Example, ex-regression
 @cartouche
 @example
 @prompt{PSPP>} get file='@value{example-dir}/repairs.sav'.
