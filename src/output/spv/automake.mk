@@ -1,5 +1,5 @@
 # PSPP - a program for statistical analysis.
-# Copyright (C) 2017 Free Software Foundation, Inc.
+# Copyright (C) 2019, 2020 Free Software Foundation, Inc.
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -38,6 +38,8 @@ src_output_liboutput_la_SOURCES += \
 	src/output/spv/spvbin-helpers.h \
 	src/output/spv/spvxml-helpers.c \
 	src/output/spv/spvxml-helpers.h
+
+AM_CPPFLAGS += -Isrc
 
 light_binary_in = \
 	src/output/spv/binary-parser-generator \
