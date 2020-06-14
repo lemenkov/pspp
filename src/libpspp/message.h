@@ -100,7 +100,8 @@ void msg (enum msg_class, const char *format, ...)
      PRINTF_FORMAT (2, 3);
 void msg_emit (struct msg *);
 
-void msg_error (int errnum, const char *format, ...);
+void msg_error (int errnum, const char *format, ...)
+  PRINTF_FORMAT (2, 3);
 
 
 /* Enable and disable messages. */
