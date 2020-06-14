@@ -38,6 +38,7 @@
     <property name="can_focus">False</property>
     <property name="title" translatable="yes">Factor Analysis: Rotation</property>
     <property name="modal">True</property>
+    <property name="help_page">FACTOR</property>
     <child>
       <object class="GtkBox" id="dialog-hbox8">
         <property name="visible">True</property>
@@ -262,6 +263,7 @@
     <property name="can_focus">False</property>
     <property name="title" translatable="yes">Factor Analysis: Extraction</property>
     <property name="modal">True</property>
+    <property name="help_page">FACTOR</property>
     <child>
       <object class="GtkBox" id="dialog-hbox4">
         <property name="visible">True</property>
