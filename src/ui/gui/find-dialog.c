@@ -25,6 +25,7 @@ which match particular strings */
 #include <regex.h>
 #include <stdlib.h>
 #include <sys/types.h>
+#include <math.h>
 
 #include "data/data-in.h"
 #include "data/datasheet.h"
@@ -428,11 +429,13 @@ struct comparator
 };
 
 
-/* A comparator which operates on the unadulterated union values */
-struct value_comparator
+/* A comparator which operates on the numerical values,
+   rounded to the number of decimal places indicated by
+   the variable's format.  */
+struct numeric_comparator
 {
   struct comparator parent;
-  union value pattern;
+  double rounded_ref;
 };
 
 /* A comparator which matches string values or parts thereof */
@@ -454,8 +457,12 @@ static bool
 value_compare (const struct comparator *cmptr,
 	       const union value *v)
 {
-  const struct value_comparator *vc = (const struct value_comparator *) cmptr;
-  return 0 == value_compare_3way (v, &vc->pattern, var_get_width (cmptr->var));
+  const struct numeric_comparator *nc = (const struct numeric_comparator *) cmptr;
+  const struct fmt_spec *fs = var_get_print_format (cmptr->var);
+
+  double c = nearbyint (v->f * exp10 (fs->d));
+
+  return c == nc->rounded_ref;
 }
 
 
@@ -572,27 +579,21 @@ regexp_destroy (struct comparator *cmptr)
   regfree (&rec->re);
 }
 
-static void
-cmptr_value_destroy (struct comparator *cmptr)
-{
-  struct value_comparator *vc
-    = UP_CAST (cmptr, struct value_comparator, parent);
-  value_destroy (&vc->pattern, var_get_width (cmptr->var));
-}
-
-
 static struct comparator *
-value_comparator_create (const struct variable *var, const char *target)
+numeric_comparator_create (const struct variable *var, const char *target)
 {
-  struct value_comparator *vc = xzalloc (sizeof (*vc));
-  struct comparator *cmptr = &vc->parent;
+  struct numeric_comparator *nc = xzalloc (sizeof (*nc));
+  struct comparator *cmptr = &nc->parent;
 
   cmptr->flags = 0;
   cmptr->var = var;
-  cmptr->compare  = value_compare ;
-  cmptr->destroy = cmptr_value_destroy;
+  cmptr->compare  = value_compare;
+  const struct fmt_spec *fs = var_get_write_format (var);
 
-  text_to_value (target, var, &vc->pattern);
+  union value val;
+  text_to_value (target, var, &val);
+  nc->rounded_ref = nearbyint (val.f * exp10 (fs->d));
+  value_destroy (&val, var_get_width (var));
 
   return cmptr;
 }
@@ -686,7 +687,7 @@ comparator_factory (const struct variable *var, const char *str,
   if (flags & (STR_CMP_SUBSTR | STR_CMP_LABELS))
     return string_comparator_create (var, str, flags);
 
-  return value_comparator_create (var, str);
+  return numeric_comparator_create (var, str);
 }
 
 
