@@ -409,7 +409,7 @@ fh_set_default_handle (struct file_handle *new_default_handle)
     fh_unref (default_handle);
   default_handle = new_default_handle;
   if (default_handle != NULL)
-    fh_ref (default_handle);
+    default_handle = fh_ref (default_handle);
 }
 
 /* Information about a file handle's readers or writers. */

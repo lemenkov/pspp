@@ -17,6 +17,7 @@
 #ifndef FILE_HANDLE_DEF_H
 #define FILE_HANDLE_DEF_H
 
+#include "libpspp/compiler.h"
 #include <stdbool.h>
 #include <stddef.h>
 
@@ -81,7 +82,7 @@ struct file_handle *fh_create_dataset (struct dataset *);
 const struct fh_properties *fh_default_properties (void);
 
 /* Reference management. */
-struct file_handle *fh_ref (struct file_handle *);
+struct file_handle *fh_ref (struct file_handle *) WARN_UNUSED_RESULT;
 void fh_unref (struct file_handle *);
 void fh_unname (struct file_handle *);
 
