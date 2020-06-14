@@ -1,5 +1,5 @@
 /* PSPPIRE - a graphical user interface for PSPP.
-   Copyright (C) 2009, 2010, 2011, 2013, 2014  Free Software Foundation
+   Copyright (C) 2009, 2010, 2011, 2013, 2014, 2020 Free Software Foundation
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -95,7 +95,7 @@ psppire_window_set_title (PsppireWindow *window)
 {
   GString *title = g_string_sized_new (80);
 
-  if (window->dirty)
+  if (window->edited != NULL)
     g_string_append_c (title, '*');
 
   if (window->basename || window->id)
@@ -245,6 +245,9 @@ psppire_window_finalize (GObject *object)
 
   PsppireWindowRegister *reg = psppire_window_register_new ();
 
+  if (window->edited)
+    g_date_time_unref (window->edited);
+
   g_signal_handler_disconnect (reg, window->remove_handler);
   g_signal_handler_disconnect (reg, window->insert_handler);
   psppire_window_register_remove (reg, window->list_name);
@@ -368,7 +371,7 @@ on_delete (PsppireWindow *w, GdkEvent *event, gpointer user_data)
 {
   PsppireWindowRegister *reg = psppire_window_register_new ();
 
-  if (w->dirty)
+  if (w->edited != NULL)
     {
       gint response = psppire_window_query_save (w);
 
@@ -380,7 +383,7 @@ on_delete (PsppireWindow *w, GdkEvent *event, gpointer user_data)
 	  break;
 	case GTK_RESPONSE_APPLY:
 	  psppire_window_save (w);
-          if (w->dirty)
+          if (w->edited != NULL)
             {
               /* Save failed, or user exited Save As dialog with Cancel. */
               return TRUE;
@@ -406,6 +409,7 @@ psppire_window_init (PsppireWindow *window)
   window->id = NULL;
   window->description = NULL;
   window->list_name = NULL;
+  window->edited = NULL;
 
   window->menuitem_table  = g_hash_table_new (g_str_hash, g_str_equal);
 
@@ -423,7 +427,6 @@ psppire_window_init (PsppireWindow *window)
 					     window);
 
   window->added_separator = FALSE;
-  window->dirty = FALSE;
 
   g_signal_connect_swapped (window, "delete-event", G_CALLBACK (on_delete), window);
 
@@ -443,9 +446,9 @@ psppire_window_query_save (PsppireWindow *se)
 
   gchar *description;
 
-  GTimeVal time;
-
-  g_get_current_time (&time);
+  GDateTime *now = g_date_time_new_now_utc ();
+  GTimeSpan timespan = g_date_time_difference (now, se->edited);
+  g_date_time_unref (now);
 
   if (se->filename)
     description = g_filename_display_basename (se->filename);
@@ -466,7 +469,7 @@ psppire_window_query_save (PsppireWindow *se)
 
   gtk_message_dialog_format_secondary_text (GTK_MESSAGE_DIALOG (dialog),
 					    _("If you don't save, changes from the last %ld seconds will be permanently lost."),
-					    time.tv_sec - se->savetime.tv_sec);
+					    timespan / G_TIME_SPAN_SECOND);
 
   gtk_dialog_add_button  (GTK_DIALOG (dialog),
 			  _("Close _without saving"),
@@ -508,10 +511,8 @@ psppire_window_set_filename (PsppireWindow *w, const gchar *filename)
 void
 psppire_window_set_unsaved (PsppireWindow *w)
 {
-  if (w->dirty == FALSE)
-    g_get_current_time (&w->savetime);
-
-  w->dirty = TRUE;
+  if (w->edited == NULL)
+    w->edited = g_date_time_new_now_utc ();
 
   psppire_window_set_title (w);
 }
@@ -519,7 +520,7 @@ psppire_window_set_unsaved (PsppireWindow *w)
 gboolean
 psppire_window_get_unsaved (PsppireWindow *w)
 {
-  return w->dirty;
+  return w->edited != NULL;
 }
 
 
@@ -588,7 +589,10 @@ psppire_window_save (PsppireWindow *w)
   else
     {
       i->save (w);
-      w->dirty = FALSE;
+      if (w->edited)
+        g_date_time_unref (w->edited);
+      w->edited = NULL;
+
       psppire_window_set_title (w);
     }
 }
@@ -635,7 +639,9 @@ psppire_window_load (PsppireWindow *w, const gchar *file,
   if (ok)
     {
       psppire_window_set_filename (w, file);
-      w->dirty = FALSE;
+      if (w->edited)
+        g_date_time_unref (w->edited);
+      w->edited = NULL;
     }
   else
     delete_recent (file);
