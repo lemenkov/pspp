@@ -281,7 +281,7 @@ decode_variable_map (const char *source_name,
 #endif
         }
 #endif
-      
+
       value->width = strlen (label->label);
       value->s = xmemdup0 (label->label, value->width);
     }

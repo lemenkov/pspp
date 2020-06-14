@@ -617,7 +617,7 @@ def generate_content_parser(nonterminal, rhs, function, ctx, state, seq_name):
             function.code += [
                 'p->%s = xrealloc (p->%s, sizeof *p->%s * (p->n_%s + 1));'
                 % (member, member, member, member),
-                'p->%s[p->n_%s++] = %s;' % (member, member, 
+                'p->%s[p->n_%s++] = %s;' % (member, member,
                                             '&%s->node_' % member
                                             if state == STATE_GENERAL
                                             else member)]
@@ -924,7 +924,7 @@ void
                          'prefix': prefix,
                          'name': name,
                          'ref_type': name_to_id(value[1])})
-                
+
 
     print_recurse_members(attributes, rhs, 'resolve_refs')
 

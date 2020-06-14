@@ -326,7 +326,7 @@ def print_members(p, indent):
                         array_suffix = '[%d]' % item.n
                 else:
                     n_stars += 1
-            
+
             print("%s%s %s%s%s;" % (indent, typename, '*' * n_stars,
                                     name_to_id(item.name),
                                     array_suffix))
@@ -391,7 +391,7 @@ class Parser_Context(object):
     indent, '_be' if endian == 'big' else '', limit,
     indent, self.bail))
         return limit
-        
+
 
 def print_parser_items(name, production, indent, accessor, ctx):
     for item_idx in range(len(production)):
@@ -547,7 +547,7 @@ def print_parser_items(name, production, indent, accessor, ctx):
                         indent, accessor, item.name, choice_name[-2:]))
                     print('')
                     choice = choice[1:]
-                
+
                 print_parser_items(name, choice, indent + '    ',
                                    accessor + choice_name + '.', ctx)
                 i += 1
@@ -641,7 +641,7 @@ def print_free_items(name, production, indent, accessor, ctx):
                 print('%s%sif (p->%s%s == %s) {' % (
                     indent, '} else ' if i else '', accessor, item.name,
                     value_name))
-                
+
                 print_free_items(name, choice, indent + '    ',
                                  accessor + choice_name + '.', ctx)
                 i += 1
@@ -764,7 +764,7 @@ def print_print_items(name, production, indent, accessor, ctx):
                 print('%s%sif (p->%s%s == %s) {' % (
                     indent, '} else ' if i else '', accessor, item.name,
                     value_name))
-                
+
                 print_print_items(name, choice, indent + '    ',
                                   accessor + choice_name + '.', ctx)
                 i += 1
@@ -797,7 +797,7 @@ void
 def name_to_id(s):
     return s[0].lower() + ''.join(['_%c' % x.lower() if x.isupper() else x
                                    for x in s[1:]]).replace('-', '_')
-    
+
 
 if __name__ == "__main__":
     argv0 = sys.argv[0]
