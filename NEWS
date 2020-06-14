@@ -1,5 +1,5 @@
 PSPP NEWS -- history of user-visible changes.
-Copyright (C) 1996-2000, 2008-2016, 2017, 2019 Free Software Foundation, Inc.
+Copyright (C) 1996-2000, 2008-2016, 2017, 2019, 2020 Free Software Foundation, Inc.
 See the end for copying conditions.
 
 Please send PSPP bug reports to bug-gnu-pspp@gnu.org.
@@ -71,6 +71,9 @@ Changes from 1.2.0 to 1.3.0:
  * GRAPH: Categorical barcharts displaying percentages now show the
    sub-category as a percentage of the primary category instead of the
    total.
+
+ * The Syntax Window now has a Find function to perform simple text
+   searching.
 
  * AUTORECODE:
 

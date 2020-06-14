@@ -95,6 +95,12 @@
 	<attribute name="action">win.redo</attribute>
       </item>
     </section>
+    <section>
+      <item>
+	<attribute name="label" translatable="yes">_Find</attribute>
+	<attribute name="action">win.find</attribute>
+      </item>
+    </section>
   </submenu>
   <submenu>
     <attribute name="label" translatable="yes">_Run</attribute>

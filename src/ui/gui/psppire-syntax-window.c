@@ -1,5 +1,6 @@
 /* PSPPIRE - a graphical user interface for PSPP.
-   Copyright (C) 2008, 2009, 2010, 2011, 2012, 2014, 2016  Free Software Foundation
+   Copyright (C) 2008, 2009, 2010, 2011, 2012, 2014, 2016,
+   2020  Free Software Foundation
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -160,6 +161,8 @@ psppire_syntax_window_dispose (GObject *obj)
   if (sw->dispose_has_run)
     return;
 
+  g_object_unref (sw->search_text_buffer);
+
   g_free (sw->encoding);
   sw->encoding = NULL;
 
@@ -263,6 +266,86 @@ on_edit_delete (PsppireSyntaxWindow *sw)
 
   if (gtk_text_buffer_get_selection_bounds (buffer, &begin, &end))
     gtk_text_buffer_delete (buffer, &begin, &end);
+}
+
+/* Create and run a dialog to collect the search string.
+   In future this might be expanded to include options, for example
+   backward searching, case sensitivity etc.  */
+static const char *
+get_search_text (PsppireSyntaxWindow *parent)
+{
+  const char *search_text = NULL;
+  GtkDialogFlags flags = GTK_DIALOG_DESTROY_WITH_PARENT | GTK_DIALOG_MODAL;
+  GtkWidget *dialog = gtk_dialog_new_with_buttons (_("Text Search"),
+                                                   GTK_WINDOW (parent),
+                                                   flags,
+                                                   _("_OK"),
+                                                   GTK_RESPONSE_OK,
+                                                   _("_Cancel"),
+                                                   GTK_RESPONSE_CANCEL,
+                                                   NULL);
+
+  GtkWidget *content_area =
+    gtk_dialog_get_content_area (GTK_DIALOG (dialog));
+
+  GtkWidget *box = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 5);
+  GtkWidget *label = gtk_label_new (_("Text to search for:"));
+  GtkWidget *entry = gtk_entry_new_with_buffer (parent->search_text_buffer);
+
+  /* Add the label, and show everything we have added.  */
+  gtk_container_add (GTK_CONTAINER (content_area), box);
+  gtk_container_add (GTK_CONTAINER (box), label);
+  gtk_container_add (GTK_CONTAINER (box), entry);
+  gtk_widget_show_all (content_area);
+
+  int result = gtk_dialog_run (GTK_DIALOG (dialog));
+  switch (result)
+    {
+    case GTK_RESPONSE_OK:
+      search_text = gtk_entry_get_text (GTK_ENTRY (entry));
+      break;
+    default:
+      search_text = NULL;
+    };
+
+  gtk_widget_destroy (dialog);
+  return search_text;
+}
+
+
+/* What to do when the Find menuitem is called.  */
+static void
+on_edit_find (PsppireSyntaxWindow *sw)
+{
+  GtkTextBuffer *buffer = GTK_TEXT_BUFFER (sw->buffer);
+  GtkTextIter begin;
+  GtkTextIter loc;
+  const char *target = get_search_text (sw);
+
+  if (target == NULL)
+    return;
+
+  /* This is a wrap-around search.  So start searching one
+     character after the current char.  */
+  GtkTextMark *mark = gtk_text_buffer_get_insert (buffer);
+  gtk_text_buffer_get_iter_at_mark (buffer, &begin, mark);
+  gtk_text_iter_forward_char (&begin);
+  if (gtk_text_iter_forward_search (&begin, target, 0,
+                                    &loc, 0, 0))
+    {
+      gtk_text_buffer_place_cursor (buffer, &loc);
+    }
+  else
+    {
+      /* If not found, then continue the search from the top
+         of the buffer.  */
+      gtk_text_buffer_get_start_iter (buffer, &begin);
+      if (gtk_text_iter_forward_search (&begin, target, 0,
+                                        &loc, 0, 0))
+        {
+          gtk_text_buffer_place_cursor (buffer, &loc);
+        }
+    }
 }
 
 
@@ -729,6 +812,7 @@ psppire_syntax_window_init (PsppireSyntaxWindow *window)
   window->cliptext = NULL;
   window->dispose_has_run = FALSE;
 
+  window->search_text_buffer = gtk_entry_buffer_new (NULL, -1);
 
   window->edit_delete = g_simple_action_new ("delete", NULL);
   g_action_map_add_action (G_ACTION_MAP (window), G_ACTION (window->edit_delete));
@@ -742,6 +826,8 @@ psppire_syntax_window_init (PsppireSyntaxWindow *window)
   window->edit_paste = g_simple_action_new ("paste", NULL);
   g_action_map_add_action (G_ACTION_MAP (window), G_ACTION (window->edit_paste));
 
+  window->edit_find = g_simple_action_new ("find", NULL);
+  g_action_map_add_action (G_ACTION_MAP (window), G_ACTION (window->edit_find));
 
   window->buffer = GTK_SOURCE_BUFFER (gtk_text_view_get_buffer (GTK_TEXT_VIEW (text_view)));
 
@@ -865,6 +951,11 @@ psppire_syntax_window_init (PsppireSyntaxWindow *window)
   g_signal_connect_swapped (window->edit_paste,
 		    "activate",
 		    G_CALLBACK (on_edit_paste),
+		    window);
+
+  g_signal_connect_swapped (window->edit_find,
+		    "activate",
+		    G_CALLBACK (on_edit_find),
 		    window);
 
   {
