@@ -220,6 +220,9 @@ preprocess (struct casereader *casereader0, const struct dictionary *dict, void 
   casereader_destroy (pass0);
   free (prev_values);
 
+  if (!matrices)
+    goto error;
+
   /* Now make a second pass to fill in the other triangle from our
      temporary matrix */
   const int idx = var_get_dict_index (mformat->varname);
@@ -375,8 +378,9 @@ error:
   if (prev_case)
     case_unref (prev_case);
 
-  for (i = 0 ; i < n_splits; ++i)
-    free (matrices[i]);
+  if (matrices)
+    for (i = 0 ; i < n_splits; ++i)
+      free (matrices[i]);
   free (matrices);
   casereader_destroy (casereader0);
   casewriter_destroy (writer);

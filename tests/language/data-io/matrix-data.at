@@ -1,5 +1,5 @@
 dnl PSPP - a program for statistical analysis.
-dnl Copyright (C) 2017 Free Software Foundation, Inc.
+dnl Copyright (C) 2017, 2020 Free Software Foundation, Inc.
 dnl
 dnl This program is free software: you can redistribute it and/or modify
 dnl it under the terms of the GNU General Public License as published by
@@ -480,5 +480,31 @@ corr,var02,9.0000,1.0000,6.0000,5.0000
 corr,var03,8.0000,6.0000,1.0000,4.0000
 corr,var04,7.0000,5.0000,4.0000,1.0000
 ])
+
+AT_CLEANUP
+
+
+
+dnl A "no-crash" test.  This was observed to cause problems.
+dnl See bug #58596
+AT_SETUP([Matrix data crash])
+
+AT_DATA([matrix-data.pspp], [dnl
+begin data
+corr 31
+
+matrix data
+    var1
+begin data
+    corr    1.00
+end data .
+
+matrix data
+    variables = roxtype_  var01
+   /format = upper nodiagonal.
+begin data
+])
+
+AT_CHECK([pspp -O format=csv matrix-data.pspp], [1], [ignore])
 
 AT_CLEANUP
