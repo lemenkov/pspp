@@ -452,6 +452,18 @@ struct regexp_comparator
   regex_t re;
 };
 
+/* Returns 10 raised to the power of X.
+   X must be a non-negative integer.  */
+static inline int
+int_pow10 (int x)
+{
+  int ret = 1;
+  assert (x >= 0);
+  while (x--)
+    ret *= 10;
+
+  return ret;
+}
 
 static bool
 value_compare (const struct comparator *cmptr,
@@ -460,7 +472,7 @@ value_compare (const struct comparator *cmptr,
   const struct numeric_comparator *nc = (const struct numeric_comparator *) cmptr;
   const struct fmt_spec *fs = var_get_print_format (cmptr->var);
 
-  double c = nearbyint (v->f * exp10 (fs->d));
+  double c = nearbyint (v->f * int_pow10 (fs->d));
 
   return c == nc->rounded_ref;
 }
@@ -592,7 +604,7 @@ numeric_comparator_create (const struct variable *var, const char *target)
 
   union value val;
   text_to_value (target, var, &val);
-  nc->rounded_ref = nearbyint (val.f * exp10 (fs->d));
+  nc->rounded_ref = nearbyint (val.f * int_pow10 (fs->d));
   value_destroy (&val, var_get_width (var));
 
   return cmptr;
