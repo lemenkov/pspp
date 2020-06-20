@@ -49,13 +49,6 @@ which match particular strings */
 #define _(msgid) gettext (msgid)
 #define N_(msgid) msgid
 
-/* Some systems like MacOS do not have exp10 */
-#ifndef HAVE_EXP10
-inline static double exp10(double x)
-{
-  return pow(10.0, x);
-}
-#endif
 
 struct find_dialog
 {

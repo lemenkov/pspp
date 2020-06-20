@@ -296,9 +296,6 @@ if test x"$enable_debug" = x"yes"  ; then
   AC_DEFINE(DEBUGGING, 1, [Define to 1 if debugging is enabled.])
 fi
 
-# exp10 is not available on all systems (MacOS)
-AC_CHECK_LIB(m, exp10, [AC_DEFINE([HAVE_EXP10],[1],[Define to 1 if your system has 'exp10'.])])
-
 # iconv is required
 AM_ICONV
 if test "$am_cv_func_iconv" != "yes"; then
