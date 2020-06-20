@@ -1,5 +1,5 @@
 dnl PSPP - a program for statistical analysis.
-dnl Copyright (C) 2017 Free Software Foundation, Inc.
+dnl Copyright (C) 2017, 2020 Free Software Foundation, Inc.
 dnl
 dnl This program is free software: you can redistribute it and/or modify
 dnl it under the terms of the GNU General Public License as published by
@@ -63,4 +63,18 @@ X,1.00,Count,0,0,0,0,0,0,0,0
 ,7.00,,0,0,0,0,0,0,0,0
 Total,,,0,0,0,0,1,0,0,1
 ])
+AT_CLEANUP
+
+
+AT_SETUP([variable parser crash])
+
+AT_DATA([crash.sps], [dnl
+INPUT PROGRAM.
+FORMATS ALL(F1).$
+END FILE.
+END INPUT PROGRAM.
+])
+
+AT_CHECK([pspp -O format=txt crash.sps], [1], [ignore])
+
 AT_CLEANUP

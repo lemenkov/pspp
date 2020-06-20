@@ -1,5 +1,5 @@
 /* PSPP - a program for statistical analysis.
-   Copyright (C) 1997-9, 2000, 2009, 2010, 2011, 2012 Free Software Foundation, Inc.
+   Copyright (C) 1997-9, 2000, 2009, 2010, 2011, 2012, 2020 Free Software Foundation, Inc.
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -123,7 +123,8 @@ parse_variable (struct lexer *lexer, const struct dictionary *d)
 /* Parses a set of variables from dictionary D given options
    OPTS.  Resulting list of variables stored in *VAR and the
    number of variables into *CNT.  Returns true only if
-   successful. */
+   successful.  The dictionary D must contain at least one
+   variable.  */
 bool
 parse_variables (struct lexer *lexer, const struct dictionary *d,
 			struct variable ***var,
@@ -137,6 +138,12 @@ parse_variables (struct lexer *lexer, const struct dictionary *d,
   assert (cnt != NULL);
 
   vs = var_set_create_from_dict (d);
+  if (var_set_get_cnt (vs) == 0)
+    {
+      *cnt = 0;
+      var_set_destroy (vs);
+      return false;
+    }
   success = parse_var_set_vars (lexer, vs, var, cnt, opts);
   var_set_destroy (vs);
   return success;
