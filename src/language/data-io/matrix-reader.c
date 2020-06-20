@@ -138,7 +138,7 @@ create_matrix_reader_from_case_reader (const struct dictionary *dict, struct cas
   if (vars)
     {
       int i;
-      *vars = xcalloc (sizeof (struct variable **), *n_vars);
+      *vars = xcalloc (*n_vars, sizeof (struct variable **));
 
       for (i = 0; i < *n_vars; ++i)
 	{
