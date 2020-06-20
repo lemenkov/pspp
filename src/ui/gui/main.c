@@ -401,5 +401,6 @@ main (int argc, char *argv[])
     g_action_map_add_action (G_ACTION_MAP (app), G_ACTION (act_new_data));
   }
 
+  g_object_set (G_OBJECT (app), "register-session", TRUE, NULL);
   return g_application_run (G_APPLICATION (app), argc, argv);
 }
