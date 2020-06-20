@@ -706,8 +706,13 @@ run_regression_get_models (const struct regression *cmd,
   size_t n_all_vars = get_n_all_vars (cmd);
   const struct variable **all_vars = xnmalloc (n_all_vars, sizeof (*all_vars));
 
-  double *means = xnmalloc (n_all_vars, sizeof (*means));
-
+  /* In the (rather pointless) case where the dependent variable is
+     the independent variable, n_all_vars == 1.
+     However this would result in a buffer overflow so we must
+     over-allocate the space required in this malloc call.
+     See bug #58599  */
+  double *means = xnmalloc (n_all_vars <= 1 ? 2 : n_all_vars,
+                            sizeof (*means));
   fill_all_vars (all_vars, cmd);
   cov = covariance_1pass_create (n_all_vars, all_vars,
                                  dict_get_weight (dataset_dict (cmd->ds)),
