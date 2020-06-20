@@ -360,8 +360,9 @@ cmd_modify_vars (struct lexer *lexer, struct dataset *ds)
 done:
   free (vm.reorder_vars);
   free (vm.rename_vars);
-  for (size_t i = 0; i < vm.n_rename; i++)
-    free (vm.new_names[i]);
+  if (vm.new_names)
+    for (size_t i = 0; i < vm.n_rename; i++)
+      free (vm.new_names[i]);
   free (vm.new_names);
   free (vm.drop_vars);
   return ret_code;
