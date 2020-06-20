@@ -1,5 +1,5 @@
 # PSPP - a program for statistical analysis.
-# Copyright (C) 2017 Free Software Foundation, Inc.
+# Copyright (C) 2017, 2020 Free Software Foundation, Inc.
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -81,7 +81,8 @@ EXTRA_DIST += doc/help-pages-list
 
 EXTRA_DIST += \
 	src/ui/gui/memorandum.txt \
-	src/ui/gui/gen-dot-desktop.sh \
+	src/ui/gui/org.fsf.pspp.metainfo.xml.in \
+	src/ui/gui/org.fsf.pspp.desktop.in \
 	src/ui/gui/marshaller-list \
 	src/ui/gui/pspplogo.svg
 
@@ -376,10 +377,14 @@ PHONY += yelp-check
 
 AM_CPPFLAGS += -Isrc
 
-src/ui/gui/pspp.desktop: src/ui/gui/gen-dot-desktop.sh $(POFILES)
-	$(AM_V_GEN)POFILES="$(POFILES)" top_builddir="$(top_builddir)" $(SHELL) $< > $@
+src/ui/gui/org.fsf.pspp.metainfo.xml: src/ui/gui/org.fsf.pspp.metainfo.xml.in $(POFILES)
+	$(AM_V_GEN)$(MSGFMT) --xml --template $< -o $@ -d $(top_srcdir)/po
 
-CLEANFILES+=src/ui/gui/pspp.desktop
+src/ui/gui/org.fsf.pspp.desktop: src/ui/gui/org.fsf.pspp.desktop.in $(POFILES)
+	$(AM_V_GEN)$(MSGFMT) --desktop --template $< -o $@ -d $(top_srcdir)/po
+
+CLEANFILES+=src/ui/gui/org.fsf.pspp.desktop \
+            src/ui/gui/org.fsf.pspp.metainfo.xml
 
 src/ui/gui/resources.c: src/ui/gui/resources.xml
 	$(AM_V_at)$(GLIB_COMPILE_RESOURCES) --sourcedir=$(top_srcdir)/src/ui/gui --generate-source $< --target=$@,out
@@ -396,10 +401,10 @@ src/ui/gui/psppire-marshal.h: src/ui/gui/marshaller-list
 	$(AM_V_GEN)$(GLIB_GENMARSHAL) --header --prefix=psppire_marshal $? > $@
 
 desktopdir = $(datadir)/applications
-desktop_DATA = src/ui/gui/pspp.desktop
+desktop_DATA = src/ui/gui/org.fsf.pspp.desktop
 
 appdatadir = $(datadir)/metainfo
-dist_appdata_DATA = src/ui/gui/pspp.appdata.xml
+dist_appdata_DATA = src/ui/gui/org.fsf.pspp.metainfo.xml
 
 BUILT_SOURCES += src/ui/gui/psppire-marshal.c src/ui/gui/psppire-marshal.h src/ui/gui/resources.c
 

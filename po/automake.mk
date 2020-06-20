@@ -1,5 +1,5 @@
 # PSPP - a program for statistical analysis.
-# Copyright (C) 2017 Free Software Foundation, Inc.
+# Copyright (C) 2017, 2020 Free Software Foundation, Inc.
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -51,13 +51,21 @@ XGETTEXT_OPTIONS = \
 	--package-version=$(VERSION) \
 	--msgid-bugs-address=$(MSGID_BUGS_ADDRESS) \
         --from-code=UTF-8 \
-	--add-comments='TRANSLATORS:'
+	--add-comments='TRANSLATORS:' \
+	--directory=$(top_srcdir)
 
-$(POTFILE): $(TRANSLATABLE_FILES) $(UI_FILES) src/ui/gui/gen-dot-desktop.sh
+ALL_TRANSLATEABLE_FILES = \
+	$(TRANSLATEABLE_FILES) \
+	$(UI_FILES) \
+	src/ui/gui/org.fsf.pspp.metainfo.xml.in \
+	src/ui/gui/org.fsf.pspp.desktop.in
+
+$(POTFILE): $(ALL_TRANSLATABLE_FILES)
 	@$(MKDIR_P) po
-	$(AM_V_GEN)$(XGETTEXT) --directory=$(top_srcdir) $(XGETTEXT_OPTIONS)    $(TRANSLATABLE_FILES) --language=C --keyword=_ --keyword=N_ -o $@,tmp
-	$(AM_V_at)$(XGETTEXT) --directory=$(top_srcdir) $(XGETTEXT_OPTIONS) -j $(UI_FILES) --language=glade -o $@,tmp
-	$(AM_V_at)$(XGETTEXT) --directory=$(top_srcdir) $(XGETTEXT_OPTIONS) -j src/ui/gui/gen-dot-desktop.sh --language=shell --keyword=TRANSLATE -o $@,tmp
+	$(AM_V_GEN)$(XGETTEXT) $(XGETTEXT_OPTIONS) $(TRANSLATABLE_FILES) --language=C --keyword=_ --keyword=N_ -o $@,tmp
+	$(AM_V_at)$(XGETTEXT) $(XGETTEXT_OPTIONS) -j $(UI_FILES) --language=glade -o $@,tmp
+	$(AM_V_at)$(XGETTEXT) $(XGETTEXT_OPTIONS) -j src/ui/gui/org.fsf.pspp.metainfo.xml.in -o $@,tmp
+	$(AM_V_at)$(XGETTEXT) $(XGETTEXT_OPTIONS) -j src/ui/gui/org.fsf.pspp.desktop.in -o $@,tmp
 	$(AM_V_at)$(SED) -e '/^"POT-Creation-Date: .*/d' $@,tmp > $@
 
 $(LOCALPOFILED) $(POFILES): $(POTFILE)
@@ -98,6 +106,7 @@ EXTRA_DIST += \
 	$(LOCALPOFILES) \
 	$(POFILES) \
 	$(POTFILE) \
+	po/LINGUAS \
 	po/ChangeLog \
 	po/cs.po,aux
 

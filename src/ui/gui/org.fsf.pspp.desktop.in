@@ -1,0 +1,13 @@
+# This file is processed by gettext to add translations
+
+[Desktop Entry]
+Name=GNU PSPP
+GenericName=Statistical Software
+Comment=Analyze statistical data with a free alternative to SPSS
+Exec=psppire %F
+Icon=pspp
+Terminal=false
+Type=Application
+Categories=GTK;Education;Science;Math;
+MimeType=application/x-spss-sav;application/x-spss-por;
+StartupNotify=false
