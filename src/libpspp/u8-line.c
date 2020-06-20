@@ -122,6 +122,9 @@ u8_line_find_pos (const struct u8_line *line, int target_x, struct u8_pos *c)
         }
       x += w;
     }
+
+  /* This can happen if there are non-printable characters
+     in the line.  */
   c->x1 = x;
   c->ofs1 = ofs;
   return false;

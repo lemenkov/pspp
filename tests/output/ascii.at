@@ -688,3 +688,22 @@ execute.
 AT_CHECK([pspp print.sps], [0], [ignore])
 
 AT_CLEANUP
+
+
+
+dnl A crash has been observed when the first character
+dnl of a string is U+0008
+AT_SETUP([ASCII crash on non-printables])
+
+AT_DATA([nonprint.sps], [dnl
+DATA LIST FREE /s8 (a8).
+BEGIN DATA.
+xxxxxx zzz  a qqq
+END DATA.
+
+LIST.
+])
+
+AT_CHECK([pspp nonprint.sps], [0], [ignore])
+
+AT_CLEANUP
