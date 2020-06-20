@@ -1392,6 +1392,15 @@ parse_header (struct sfm_reader *r, const struct sfm_header_record *header,
   info->product = ss_xstrdup (product);
 }
 
+static struct variable *
+add_var_with_generated_name (struct dictionary *dict, int width)
+{
+  char *name = dict_make_unique_var_name (dict, NULL, NULL);
+  struct variable *var = dict_create_var_assert (dict, name, width);
+  free (name);
+  return var;
+}
+
 /* Reads a variable (type 2) record from R and adds the
    corresponding variable to DICT.
    Also skips past additional variable records for long string
@@ -1406,7 +1415,6 @@ parse_variable_records (struct sfm_reader *r, struct dictionary *dict,
 
   for (rec = var_recs; rec < &var_recs[n_var_recs];)
     {
-      struct variable *var;
       size_t n_values;
       char *name;
       size_t i;
@@ -1415,13 +1423,6 @@ parse_variable_records (struct sfm_reader *r, struct dictionary *dict,
                                  rec->name, -1, r->pool);
       name[strcspn (name, " ")] = '\0';
 
-      if (!dict_id_is_valid (dict, name, false)
-          || name[0] == '$' || name[0] == '#')
-        {
-          sys_error (r, rec->pos, _("Invalid variable name `%s'."), name);
-          return false;
-        }
-
       if (rec->width < 0 || rec->width > 255)
         {
           sys_error (r, rec->pos,
@@ -1429,17 +1430,26 @@ parse_variable_records (struct sfm_reader *r, struct dictionary *dict,
           return false;
         }
 
-      var = rec->var = dict_create_var (dict, name, rec->width);
-      if (var == NULL)
+      struct variable *var;
+      if (!dict_id_is_valid (dict, name, false)
+          || name[0] == '$' || name[0] == '#')
         {
-          char *new_name = dict_make_unique_var_name (dict, NULL, NULL);
-          sys_warn (r, rec->pos, _("Renaming variable with duplicate name "
-                                   "`%s' to `%s'."),
-                    name, new_name);
-          var = rec->var = dict_create_var_assert (dict, new_name, rec->width);
-          var_set_short_name (var, 0, new_name);
-          free (new_name);
+          var = add_var_with_generated_name (dict, rec->width);
+          sys_warn (r, rec->pos, _("Renaming variable with invalid name "
+                                   "`%s' to `%s'."), name, var_get_name (var));
         }
+      else
+        {
+          var = dict_create_var (dict, name, rec->width);
+          if (var == NULL)
+            {
+              var = add_var_with_generated_name (dict, rec->width);
+              sys_warn (r, rec->pos, _("Renaming variable with duplicate name "
+                                       "`%s' to `%s'."),
+                        name, var_get_name (var));
+            }
+        }
+      rec->var = var;
 
       /* Set the short name the same as the long name (even if we renamed
          it). */

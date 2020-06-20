@@ -1638,8 +1638,8 @@ for variant in be le; do
   AT_CHECK([sack --$variant sys-file.sack > sys-file.sav])
   AT_DATA([sys-file.sps], [GET FILE='sys-file.sav'.
 ])
-  AT_CHECK([pspp -O format=csv sys-file.sps], [1],
-   [error: `sys-file.sav' near offset 0xb4: Invalid variable name `$UM1'.
+  AT_CHECK([pspp -O format=csv sys-file.sps], 0,
+   [warning: `sys-file.sav' near offset 0xb4: Renaming variable with invalid name `$UM1' to `VAR001'.
 ])
 done
 AT_CLEANUP
@@ -1664,8 +1664,8 @@ for variant in be le; do
   AT_CHECK([sack --$variant sys-file.sack > sys-file.sav])
   AT_DATA([sys-file.sps], [GET FILE='sys-file.sav'.
 ])
-  AT_CHECK([pspp -O format=csv sys-file.sps], [1],
-   [error: `sys-file.sav' near offset 0xb4: Invalid variable name `TO'.
+  AT_CHECK([pspp -O format=csv sys-file.sps], 0,
+   [warning: `sys-file.sav' near offset 0xb4: Renaming variable with invalid name `TO' to `VAR001'.
 ])
 done
 AT_CLEANUP
