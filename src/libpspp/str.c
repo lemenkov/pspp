@@ -1,5 +1,6 @@
 /* PSPP - a program for statistical analysis.
-   Copyright (C) 1997-9, 2000, 2006, 2009, 2010, 2011, 2012, 2014 Free Software Foundation, Inc.
+   Copyright (C) 1997-9, 2000, 2006, 2009, 2010, 2011, 2012, 2014,
+   2020 Free Software Foundation, Inc.
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -1510,6 +1511,9 @@ ds_splice_uninit (struct string *st,
     {
       if (new_len > old_len)
         ds_extend (st, ds_length (st) + (new_len - old_len));
+
+      assert (ds_length (st) >= ofs + old_len);
+
       memmove (ds_data (st) + (ofs + new_len),
                ds_data (st) + (ofs + old_len),
                ds_length (st) - (ofs + old_len));
