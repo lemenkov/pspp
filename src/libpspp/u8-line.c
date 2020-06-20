@@ -1,5 +1,5 @@
 /* PSPP - a program for statistical analysis.
-   Copyright (C) 2011, 2012 Free Software Foundation, Inc.
+   Copyright (C) 2011, 2012, 2020 Free Software Foundation, Inc.
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -96,8 +96,8 @@ struct u8_pos
     size_t ofs1;
   };
 
-static void
-u8_line_find_pos (struct u8_line *line, int target_x, struct u8_pos *c)
+static bool
+u8_line_find_pos (const struct u8_line *line, int target_x, struct u8_pos *c)
 {
   const uint8_t *s = CHAR_CAST (const uint8_t *, ds_cstr (&line->s));
   size_t length = ds_length (&line->s);
@@ -106,21 +106,25 @@ u8_line_find_pos (struct u8_line *line, int target_x, struct u8_pos *c)
   int x;
 
   x = 0;
-  for (ofs = 0; ; ofs += mblen)
+  c->x0 = 0;
+  c->ofs0 = 0;
+  for (ofs = 0; ofs <= length; ofs += mblen)
     {
       int w;
-
+      c->x0 = x;
+      c->ofs0 = ofs;
       mblen = u8_mb_to_display (&w, s + ofs, length - ofs);
       if (x + w > target_x)
         {
-          c->x0 = x;
           c->x1 = x + w;
-          c->ofs0 = ofs;
           c->ofs1 = ofs + mblen;
-          return;
+          return true;
         }
       x += w;
     }
+  c->x1 = x;
+  c->ofs1 = ofs;
+  return false;
 }
 
 /* Prepares LINE to write N bytes of characters that comprise X1-X0 column
@@ -129,6 +133,7 @@ u8_line_find_pos (struct u8_line *line, int target_x, struct u8_pos *c)
 char *
 u8_line_reserve (struct u8_line *line, int x0, int x1, int n)
 {
+  assert (x1 >= x0);
   if (x0 >= line->width)
     {
       /* The common case: adding new characters at the end of a line. */
@@ -179,9 +184,11 @@ u8_line_reserve (struct u8_line *line, int x0, int x1, int n)
               p1.x0++;
             }
           while (p1.x0 < x1);
+          assert (p1.ofs1 >= p0.ofs0);
           return ds_splice_uninit (&line->s, p0.ofs0, p1.ofs1 - p0.ofs0, n);
         }
 
+      assert (p1.ofs0 >= p0.ofs0);
       return ds_splice_uninit (&line->s, p0.ofs0, p1.ofs0 - p0.ofs0, n);
     }
 }
