@@ -378,7 +378,8 @@ PHONY += yelp-check
 AM_CPPFLAGS += -Isrc
 
 src/ui/gui/org.fsf.pspp.metainfo.xml: src/ui/gui/org.fsf.pspp.metainfo.xml.in $(POFILES)
-	$(AM_V_GEN)$(MSGFMT) --xml --template $< -o $@ -d $(top_srcdir)/po
+	$(AM_V_GEN)$(MSGFMT) --xml --template $< -o $@ -d $(top_srcdir)/po || \
+	  $(MSGFMT) -L appdata --xml --template $< -o $@ -d $(top_srcdir)/po
 
 src/ui/gui/org.fsf.pspp.desktop: src/ui/gui/org.fsf.pspp.desktop.in $(POFILES)
 	$(AM_V_GEN)$(MSGFMT) --desktop --template $< -o $@ -d $(top_srcdir)/po
