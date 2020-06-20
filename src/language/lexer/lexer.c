@@ -1231,7 +1231,10 @@ lex_ellipsize__ (struct substring in, char *out, size_t out_size)
   int mblen;
 
   assert (out_size >= 16);
-  out_maxlen = out_size - (in.length >= out_size ? 3 : 0) - 1;
+  out_maxlen = out_size - 1;
+  if (in.length > out_maxlen - 3)
+    out_maxlen -= 3;
+
   for (out_len = 0; out_len < in.length; out_len += mblen)
     {
       if (in.string[out_len] == '\n'
@@ -1243,6 +1246,10 @@ lex_ellipsize__ (struct substring in, char *out, size_t out_size)
 
       mblen = u8_mblen (CHAR_CAST (const uint8_t *, in.string + out_len),
                         in.length - out_len);
+
+      if (mblen < 0)
+        break;
+
       if (out_len + mblen > out_maxlen)
         break;
     }
