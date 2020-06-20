@@ -1,6 +1,7 @@
-# This file is processed by gettext to add translations
-
+# org.fsf.pspp.desktop file is generated with gettext to add
+# translations. Edit org.fsf.pspp.desktop.in instead
 [Desktop Entry]
+# TRANSLATORS: This is the application name in the desktop file
 Name=GNU PSPP
 GenericName=Statistical Software
 Comment=Analyze statistical data with a free alternative to SPSS
@@ -8,6 +9,8 @@ Exec=psppire %F
 Icon=pspp
 Terminal=false
 Type=Application
-Categories=GTK;Education;Science;Math;
-MimeType=application/x-spss-sav;application/x-spss-por;
+Categories=GTK;Science;Math;
+# TRANSLATORS: You must keep all ";" - also at the end of line.
+Keywords=statistics;analysis;spss;
+MimeType=application/x-spss-sav;application/x-spss-por;text/x-spss-sps;application/x-spss-spv
 StartupNotify=false
