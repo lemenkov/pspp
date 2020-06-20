@@ -605,7 +605,7 @@ spv_item_get_light_table (const struct spv_item *item,
   struct spvbin_input input;
   spvbin_input_init (&input, data, size);
 
-  struct spvlb_table *table;
+  struct spvlb_table *table = NULL;
   error = (!size
            ? xasprintf ("light table member is empty")
            : !spvlb_parse_table (&input, &table)
@@ -965,7 +965,7 @@ spv_decode_children (struct spv_reader *spv, const char *structure_member,
     {
       const struct spvxml_node *node = seq[i];
 
-      char *error;
+      char *error = NULL;
       if (spvsx_is_container (node))
         {
           const struct spvsx_container *container
