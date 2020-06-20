@@ -493,10 +493,7 @@ read_record (struct sfm_reader *r, int type,
 
     case 6:
       if (r->document != NULL)
-        {
-          sys_error (r, r->pos, _("Duplicate type 6 (document) record."));
-          return false;
-        }
+        sys_warn (r, r->pos, _("Duplicate type 6 (document) record."));
       return read_document_record (r);
 
     case 7:
