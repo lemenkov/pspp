@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <component type="desktop">
-  <id>pspp.desktop</id>
+  <id>org.fsf.pspp</id>
   <metadata_license>CC0-1.0</metadata_license>
   <project_license>GPL-3.0+</project_license>
   <name>GNU PSPP</name>
@@ -29,13 +29,22 @@
     </ul>
     <p>PSPP is particularly aimed at statisticians, social scientists and students requiring fast convenient analysis of sampled data.</p>
   </description>
+  <categories>
+    <category>Science</category>
+    <category>Math</category>
+    <category>NumericalAnalysis</category>
+    <category>GTK</category>
+  </categories>
   <screenshots>
     <screenshot type="default">
-      <image>http://www.gnu.org/software/pspp/images/variable-sheet.png</image>
+      <caption>GNU PSPP Variable View</caption>
+      <image>https://www.gnu.org/software/pspp/images/variable-sheet.png</image>
     </screenshot>
   </screenshots>
-  <url type="homepage">http://www.gnu.org/software/pspp/</url>
-  <url type="translate">http://translationproject.org/domain/pspp.html</url>
+  <translation type="gettext">pspp</translation>
+  <icon type="stock">pspp</icon>
+  <url type="homepage">https://www.gnu.org/software/pspp/</url>
+  <url type="translate">https://translationproject.org/domain/pspp.html</url>
   <url type="donation">https://my.fsf.org/donate</url>
   <keywords>
     <keyword>statistics</keyword>
@@ -44,4 +53,16 @@
   <developer_name>Free Software Foundation</developer_name>
   <url type="bugtracker">https://savannah.gnu.org/bugs/?func=additem&amp;group=pspp</url>
   <url type="help">https://www.gnu.org/software/pspp/manual/html_node/index.html</url>
+  <provides>
+    <binary>pspp</binary>
+    <binary>psppire</binary>
+  </provides>
+  <releases>
+    <release version="1.3.0">
+      <url>http://git.savannah.gnu.org/cgit/pspp.git/commit/NEWS?h=v1.3.0</url>
+    </release>
+    <release version="1.2.0" date="2018-11-06">
+      <url>http://git.savannah.gnu.org/cgit/pspp.git/commit/NEWS?h=v1.2.0</url>
+    </release>
+  </releases>
 </component>
