@@ -167,8 +167,8 @@ cmd_vector (struct lexer *lexer, struct dataset *ds)
                     }
                   if (dict_lookup_var (dict, name))
 		    {
-                      free (name);
 		      msg (SE, _("%s is an existing variable name."), name);
+                      free (name);
 		      goto fail;
 		    }
                   free (name);
