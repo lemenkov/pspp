@@ -234,10 +234,6 @@ sfm_reader_cast (const struct any_reader *r_)
 
 static bool sfm_close (struct any_reader *);
 
-static struct variable *lookup_var_by_index (struct sfm_reader *, off_t,
-                                             const struct sfm_var_record *,
-                                             size_t n, int idx);
-
 static void sys_msg (struct sfm_reader *r, off_t, int class,
                      const char *format, va_list args)
      PRINTF_FORMAT (4, 0);
@@ -358,10 +354,10 @@ static void parse_long_var_name_map (struct sfm_reader *,
 static bool parse_long_string_map (struct sfm_reader *,
                                    const struct sfm_extension_record *,
                                    struct dictionary *);
-static bool parse_value_labels (struct sfm_reader *, struct dictionary *,
-                                const struct sfm_var_record *,
-                                size_t n_var_recs,
-                                const struct sfm_value_label_record *);
+static void parse_value_labels (struct sfm_reader *, struct dictionary *);
+static struct variable *parse_weight_var (struct sfm_reader *,
+                                          const struct sfm_var_record *, size_t n_var_recs,
+                                          int idx);
 static void parse_data_file_attributes (struct sfm_reader *,
                                         const struct sfm_extension_record *,
                                         struct dictionary *);
@@ -761,7 +757,6 @@ sfm_decode (struct any_reader *r_, const char *encoding,
 {
   struct sfm_reader *r = sfm_reader_cast (r_);
   struct dictionary *dict;
-  size_t i;
 
   if (encoding == NULL)
     {
@@ -808,25 +803,10 @@ sfm_decode (struct any_reader *r_, const char *encoding,
   /* Parse value labels and the weight variable immediately after the variable
      records.  These records use indexes into var_recs[], so we must parse them
      before those indexes become invalidated by very long string variables. */
-  for (i = 0; i < r->n_labels; i++)
-    if (!parse_value_labels (r, dict, r->vars, r->n_vars, &r->labels[i]))
-      goto error;
+  parse_value_labels (r, dict);
   if (r->header.weight_idx != 0)
-    {
-      struct variable *weight_var;
-
-      weight_var = lookup_var_by_index (r, 76, r->vars, r->n_vars,
-                                        r->header.weight_idx);
-      if (weight_var != NULL)
-        {
-          if (var_is_numeric (weight_var))
-            dict_set_weight (dict, weight_var);
-          else
-            sys_warn (r, -1, _("Ignoring string variable `%s' set "
-                               "as weighting variable."),
-                      var_get_name (weight_var));
-        }
-    }
+    dict_set_weight (dict, parse_weight_var (r, r->vars, r->n_vars,
+                                             r->header.weight_idx));
 
   if (r->extensions[EXT_DISPLAY] != NULL)
     parse_display_parameters (r, r->extensions[EXT_DISPLAY], dict);
@@ -2150,61 +2130,99 @@ parse_long_string_map (struct sfm_reader *r,
   return true;
 }
 
-static bool
-parse_value_labels (struct sfm_reader *r, struct dictionary *dict,
-                    const struct sfm_var_record *var_recs, size_t n_var_recs,
-                    const struct sfm_value_label_record *record)
-{
-  struct variable **vars;
-  char **utf8_labels;
-  size_t i;
+#define MAX_LABEL_WARNINGS 5
 
-  utf8_labels = pool_nmalloc (r->pool, record->n_labels, sizeof *utf8_labels);
-  for (i = 0; i < record->n_labels; i++)
+/* Displays a warning for offset OFFSET in the file. */
+static void
+value_label_warning (struct sfm_reader *r, off_t offset, int *n_label_warnings,
+                     const char *format, ...)
+{
+  if (++*n_label_warnings > MAX_LABEL_WARNINGS)
+    return;
+
+  va_list args;
+
+  va_start (args, format);
+  sys_msg (r, offset, MW, format, args);
+  va_end (args);
+}
+
+#define MAX_LABEL_WARNINGS 5
+
+static void
+parse_one_value_label_set (struct sfm_reader *r, struct dictionary *dict,
+                           const struct sfm_var_record *var_recs,
+                           size_t n_var_recs,
+                           const struct sfm_value_label_record *record,
+                           int *n_label_warnings)
+{
+  char **utf8_labels
+    = pool_nmalloc (r->pool, record->n_labels, sizeof *utf8_labels);
+  for (size_t i = 0; i < record->n_labels; i++)
     utf8_labels[i] = recode_string_pool ("UTF-8", dict_get_encoding (dict),
                                          record->labels[i].label, -1,
                                          r->pool);
 
-  vars = pool_nmalloc (r->pool, record->n_vars, sizeof *vars);
-  for (i = 0; i < record->n_vars; i++)
+  struct variable **vars = pool_nmalloc (r->pool,
+                                         record->n_vars, sizeof *vars);
+  unsigned int n_vars = 0;
+  for (size_t i = 0; i < record->n_vars; i++)
     {
-      vars[i] = lookup_var_by_index (r, record->pos,
-                                     var_recs, n_var_recs, record->vars[i]);
-      if (vars[i] == NULL)
-        return false;
-    }
-
-  for (i = 1; i < record->n_vars; i++)
-    if (var_get_type (vars[i]) != var_get_type (vars[0]))
-      {
-        sys_error (r, record->pos,
-                   _("Variables associated with value label are not all of "
-                     "identical type.  Variable %s is %s, but variable "
-                     "%s is %s."),
-                   var_get_name (vars[0]),
-                   var_is_numeric (vars[0]) ? _("numeric") : _("string"),
-                   var_get_name (vars[i]),
-                   var_is_numeric (vars[i]) ? _("numeric") : _("string"));
-        return false;
-      }
-
-  for (i = 0; i < record->n_vars; i++)
-    {
-      struct variable *var = vars[i];
-      int width;
-      size_t j;
-
-      width = var_get_width (var);
-      if (width > 8)
+      int idx = record->vars[i];
+      if (idx < 1 || idx > n_var_recs)
         {
-          sys_error (r, record->pos,
-                     _("Value labels may not be added to long string "
-                       "variables (e.g. %s) using records types 3 and 4."),
-                     var_get_name (var));
-          return false;
+          value_label_warning (
+            r, record->pos, n_label_warnings,
+            _("Value label variable index %d not in valid range 1...%zu."),
+            idx, n_var_recs);
+          continue;
         }
 
-      for (j = 0; j < record->n_labels; j++)
+      const struct sfm_var_record *rec = &var_recs[idx - 1];
+      if (rec->var == NULL)
+        {
+          value_label_warning (
+            r, record->pos, n_label_warnings,
+            _("Value label variable index %d "
+              "refers to long string continuation."), idx);
+          continue;
+        }
+
+      vars[n_vars++] = rec->var;
+    }
+  if (!n_vars)
+    return;
+
+  for (size_t i = 1; i < n_vars; i++)
+    if (var_get_type (vars[i]) != var_get_type (vars[0]))
+      {
+        value_label_warning (
+          r, record->pos, n_label_warnings,
+          _("Variables associated with value label are not all of "
+            "identical type.  Variable %s is %s, but variable "
+            "%s is %s."),
+          var_get_name (vars[0]),
+          var_is_numeric (vars[0]) ? _("numeric") : _("string"),
+          var_get_name (vars[i]),
+          var_is_numeric (vars[i]) ? _("numeric") : _("string"));
+        return;
+      }
+
+  for (size_t i = 0; i < n_vars; i++)
+    {
+      struct variable *var = vars[i];
+      int width = var_get_width (var);
+      if (width > 8)
+        {
+          value_label_warning (
+            r, record->pos, n_label_warnings,
+            _("Value labels may not be added to long string "
+              "variables (e.g. %s) using records types 3 and 4."),
+            var_get_name (var));
+          continue;
+        }
+
+      for (size_t j = 0; j < record->n_labels; j++)
         {
           struct sfm_value_label *label = &record->labels[j];
           union value value;
@@ -2226,13 +2244,14 @@ parse_value_labels (struct sfm_reader *r, struct dictionary *dict,
                      string variable with width 3. */
                 }
               else if (var_is_numeric (var))
-                sys_warn (r, record->pos,
-                          _("Duplicate value label for %g on %s."),
-                          value.f, var_get_name (var));
+                value_label_warning (r, record->pos, n_label_warnings,
+                                     _("Duplicate value label for %g on %s."),
+                                     value.f, var_get_name (var));
               else
-                sys_warn (r, record->pos,
-                          _("Duplicate value label for `%.*s' on %s."),
-                          width, value.s, var_get_name (var));
+                value_label_warning (
+                  r, record->pos, n_label_warnings,
+                  _("Duplicate value label for `%.*s' on %s."),
+                  width, value.s, var_get_name (var));
             }
 
           value_destroy (&value, width);
@@ -2240,38 +2259,59 @@ parse_value_labels (struct sfm_reader *r, struct dictionary *dict,
     }
 
   pool_free (r->pool, vars);
-  for (i = 0; i < record->n_labels; i++)
+  for (size_t i = 0; i < record->n_labels; i++)
     pool_free (r->pool, utf8_labels[i]);
   pool_free (r->pool, utf8_labels);
+}
 
-  return true;
+static void
+parse_value_labels (struct sfm_reader *r, struct dictionary *dict)
+{
+  int n_label_warnings = 0;
+  for (size_t i = 0; i < r->n_labels; i++)
+    parse_one_value_label_set (r, dict, r->vars, r->n_vars, &r->labels[i],
+                               &n_label_warnings);
+  if (n_label_warnings > MAX_LABEL_WARNINGS)
+      sys_warn (r, -1,
+                _("Suppressed %d additional warnings for value labels."),
+                n_label_warnings - MAX_LABEL_WARNINGS);
 }
 
 static struct variable *
-lookup_var_by_index (struct sfm_reader *r, off_t offset,
-                     const struct sfm_var_record *var_recs, size_t n_var_recs,
-                     int idx)
+parse_weight_var (struct sfm_reader *r,
+                  const struct sfm_var_record *var_recs, size_t n_var_recs,
+                  int idx)
 {
-  const struct sfm_var_record *rec;
+  off_t offset = 76;            /* Offset to variable index in header. */
 
   if (idx < 1 || idx > n_var_recs)
     {
-      sys_error (r, offset,
-                 _("Variable index %d not in valid range 1...%zu."),
-                 idx, n_var_recs);
+      sys_warn (r, offset,
+                _("Weight variable index %d not in valid range 1...%zu.  "
+                  "Treating file as unweighted."),
+                idx, n_var_recs);
       return NULL;
     }
 
-  rec = &var_recs[idx - 1];
+  const struct sfm_var_record *rec = &var_recs[idx - 1];
   if (rec->var == NULL)
     {
-      sys_error (r, offset,
-                 _("Variable index %d refers to long string continuation."),
-                 idx);
+      sys_warn (r, offset,
+                _("Weight variable index %d refers to long string "
+                  "continuation.  Treating file as unweighted."), idx);
       return NULL;
     }
 
-  return rec->var;
+  struct variable *weight_var = rec->var;
+  if (!var_is_numeric (weight_var))
+    {
+      sys_warn (r, offset, _("Ignoring string variable `%s' set "
+                             "as weighting variable."),
+                var_get_name (weight_var));
+      return NULL;
+    }
+
+  return weight_var;
 }
 
 /* Parses a set of custom attributes from TEXT into ATTRS.

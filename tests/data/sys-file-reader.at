@@ -1999,7 +1999,7 @@ for variant in be le; do
 DISPLAY DICTIONARY.
 ])
   AT_CHECK([pspp -O format=csv sys-file.sps], [0],
-   [warning: `sys-file.sav': Ignoring string variable `STR1' set as weighting variable.
+   [warning: `sys-file.sav' near offset 0x4c: Ignoring string variable `STR1' set as weighting variable.
 
 Table: Variables
 Name,Position,Label,Measurement Level,Role,Width,Alignment,Print Format,Write Format,Missing Values
@@ -2032,8 +2032,8 @@ for variant in be le; do
   AT_CHECK([sack --$variant sys-file.sack > sys-file.sav])
   AT_DATA([sys-file.sps], [GET FILE='sys-file.sav'.
 ])
-  AT_CHECK([pspp -O format=csv sys-file.sps], [1],
-   [error: `sys-file.sav' near offset 0x4c: Variable index 3 not in valid range 1...2.
+  AT_CHECK([pspp -O format=csv sys-file.sps], 0,
+   [warning: `sys-file.sav' near offset 0x4c: Weight variable index 3 not in valid range 1...2.  Treating file as unweighted.
 ])
 done
 AT_CLEANUP
@@ -2062,8 +2062,8 @@ for variant in be le; do
   AT_CHECK([sack --$variant sys-file.sack > sys-file.sav])
   AT_DATA([sys-file.sps], [GET FILE='sys-file.sav'.
 ])
-  AT_CHECK([pspp -O format=csv sys-file.sps], [1],
-   [error: `sys-file.sav' near offset 0x4c: Variable index 3 refers to long string continuation.
+  AT_CHECK([pspp -O format=csv sys-file.sps], 0,
+   [warning: `sys-file.sav' near offset 0x4c: Weight variable index 3 refers to long string continuation.  Treating file as unweighted.
 ])
 done
 AT_CLEANUP
@@ -3171,8 +3171,82 @@ for variant in be le; do
   AT_DATA([sys-file.sps], [dnl
 GET FILE='sys-file.sav'.
 ])
-  AT_CHECK([pspp -O format=csv sys-file.sps], [1], [dnl
-error: `sys-file.sav' near offset 0xf4: Value labels may not be added to long string variables (e.g. STR1) using records types 3 and 4.
+  AT_CHECK([pspp -O format=csv sys-file.sps], 0, [dnl
+warning: `sys-file.sav' near offset 0xf4: Value labels may not be added to long string variables (e.g. STR1) using records types 3 and 4.
+])
+done
+AT_CLEANUP
+
+AT_SETUP([value label variable indexes must be in correct range])
+AT_KEYWORDS([sack synthetic system file negative])
+AT_DATA([sys-file.sack], [dnl
+dnl File header.
+"$FL2"; s60 "$(#) SPSS DATA FILE PSPP synthetic test file";
+2; 2; 1; 0; -1; 100.0; "01 Jan 11"; "20:53:52"; s64 ""; i8 0 *3;
+
+dnl Variables.
+2; 6; 0; 0; 0x010600 *2; s8 "STR1";
+2; 0; 0; 0; 0x050800 *2; s8 "NUM1";
+
+dnl Value labels with bad variable indexes.
+3; 1; s8 "xyzzy"; i8 3; s7 "one"; 4; 2; >>3; 4;<<
+3; 1; s8 "xyzzy"; i8 3; s7 "one"; 4; 2; >>5; 6;<<
+3; 1; s8 "xyzzy"; i8 3; s7 "one"; 4; 2; >>7; 8;<<
+
+dnl Character encoding record.
+7; 20; 1; 12; "windows-1252";
+
+dnl End of dictionary.
+999; 0;
+])
+for variant in be le; do
+  AT_CHECK([sack --$variant sys-file.sack > sys-file.sav])
+  AT_DATA([sys-file.sps], [dnl
+GET FILE='sys-file.sav'.
+])
+  AT_CHECK([pspp -O format=csv sys-file.sps], 0, [dnl
+warning: `sys-file.sav' near offset 0xf4: Value label variable index 3 not in valid range 1...2.
+
+warning: `sys-file.sav' near offset 0xf4: Value label variable index 4 not in valid range 1...2.
+
+warning: `sys-file.sav' near offset 0x11c: Value label variable index 5 not in valid range 1...2.
+
+warning: `sys-file.sav' near offset 0x11c: Value label variable index 6 not in valid range 1...2.
+
+warning: `sys-file.sav' near offset 0x144: Value label variable index 7 not in valid range 1...2.
+
+warning: `sys-file.sav': Suppressed 1 additional warnings for value labels.
+])
+done
+AT_CLEANUP
+
+AT_SETUP([value label variable indexes must not be long string continuation])
+AT_KEYWORDS([sack synthetic system file negative])
+AT_DATA([sys-file.sack], [dnl
+dnl File header.
+"$FL2"; s60 "$(#) SPSS DATA FILE PSPP synthetic test file";
+2; 2; 1; 0; -1; 100.0; "01 Jan 11"; "20:53:52"; s64 ""; i8 0 *3;
+
+dnl Long string variable.
+2; 9; 0; 0; 0x010900 *2; s8 "STR1";
+(2; -1; 0; 0; 0; 0; s8 "");
+
+dnl Value label with long string indexes.
+3; 1; s8 "xyzzy"; i8 3; s7 "one"; 4; 1; >>2;<<
+
+dnl Character encoding record.
+7; 20; 1; 12; "windows-1252";
+
+dnl End of dictionary.
+999; 0;
+])
+for variant in be le; do
+  AT_CHECK([sack --$variant sys-file.sack > sys-file.sav])
+  AT_DATA([sys-file.sps], [dnl
+GET FILE='sys-file.sav'.
+])
+  AT_CHECK([pspp -O format=csv sys-file.sps], 0, [dnl
+warning: `sys-file.sav' near offset 0xf4: Value label variable index 2 refers to long string continuation.
 ])
 done
 AT_CLEANUP
@@ -3202,8 +3276,8 @@ for variant in be le; do
   AT_DATA([sys-file.sps], [dnl
 GET FILE='sys-file.sav'.
 ])
-  AT_CHECK([pspp -O format=csv sys-file.sps], [1], [dnl
-"error: `sys-file.sav' near offset 0xf4: Variables associated with value label are not all of identical type.  Variable STR1 is string, but variable NUM1 is numeric."
+  AT_CHECK([pspp -O format=csv sys-file.sps], 0, [dnl
+"warning: `sys-file.sav' near offset 0xf4: Variables associated with value label are not all of identical type.  Variable STR1 is string, but variable NUM1 is numeric."
 ])
 done
 AT_CLEANUP
