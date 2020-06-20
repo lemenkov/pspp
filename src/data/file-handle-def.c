@@ -115,12 +115,17 @@ fh_done (void)
   HMAP_FOR_EACH_SAFE (handle, next,
                       struct file_handle, name_node, &named_handles)
     unname_handle (handle);
+
+  free_handle (inline_file);
 }
 
 /* Free HANDLE and remove it from the global list. */
 static void
 free_handle (struct file_handle *handle)
 {
+  if (handle == NULL)
+    return;
+
   /* Remove handle from global list. */
   if (handle->id != NULL)
     hmap_delete (&named_handles, &handle->name_node);
@@ -153,6 +158,8 @@ unname_handle (struct file_handle *handle)
 struct file_handle *
 fh_ref (struct file_handle *handle)
 {
+  if (handle == fh_inline_file ())
+    return handle;
   assert (handle->ref_cnt > 0);
   handle->ref_cnt++;
   return handle;
@@ -165,6 +172,8 @@ fh_unref (struct file_handle *handle)
 {
   if (handle != NULL)
     {
+      if (handle == fh_inline_file ())
+        return;
       assert (handle->ref_cnt > 0);
       if (--handle->ref_cnt == 0)
         free_handle (handle);

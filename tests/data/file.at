@@ -120,3 +120,21 @@ x,y
 ])
 
 AT_CLEANUP
+
+
+dnl This was seen to crash pspp
+AT_SETUP([Reusing inline file])
+
+AT_DATA([inline-reuse.sps], [dnl
+get data /type=txt /file=inline  /variables=A f7.2 .
+
+data list notable list /foo.
+begin data.
+end data.
+
+data list notable list /foo.
+])
+
+AT_CHECK([pspp inline-reuse.sps], [0], [ignore])
+
+AT_CLEANUP
