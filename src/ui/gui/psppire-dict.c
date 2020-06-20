@@ -473,7 +473,6 @@ psppire_dict_insert_variable (PsppireDict *d, gint idx, const gchar *name)
 void
 psppire_dict_delete_variables (PsppireDict *d, gint first, gint n)
 {
-  gint idx;
   g_return_if_fail (d);
   g_return_if_fail (d->dict);
   g_return_if_fail (PSPPIRE_IS_DICT (d));
