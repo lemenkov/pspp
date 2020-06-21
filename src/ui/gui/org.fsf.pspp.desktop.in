@@ -12,5 +12,5 @@ Type=Application
 Categories=GTK;Science;Math;
 # TRANSLATORS: You must keep all ";" - also at the end of line.
 Keywords=statistics;analysis;spss;
-MimeType=application/x-spss-sav;application/x-spss-por;text/x-spss-sps;application/x-spss-spv
+MimeType=application/x-spss-sav;application/x-spss-por;application/x-spss-sps;application/x-spss-spv;
 StartupNotify=false
