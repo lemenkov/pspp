@@ -88,6 +88,7 @@ struct _PsppireDialogActionRecode
   GtkWidget *new_name_entry;
   GtkWidget *new_label_entry;
   GtkWidget *change_button;
+  GtkWidget *old_and_new;
 
   GtkWidget *output_variable_box;
 

@@ -1,5 +1,6 @@
 /* PSPPIRE - a graphical user interface for PSPP.
-   Copyright (C) 2007, 2009, 2010, 2011, 2012, 2014, 2016  Free Software Foundation
+   Copyright (C) 2007, 2009, 2010, 2011, 2012, 2014, 2016,
+   2020  Free Software Foundation
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -350,6 +351,16 @@ set_value (gint col, GValue  *val, gpointer data)
 }
 
 static void
+set_old_and_new_button_sensitivity (GtkTreeSelection *sel, PsppireDialogActionRecode *rd)
+{
+  GtkTreeModel *model = NULL;
+
+  GList *rows = gtk_tree_selection_get_selected_rows (sel, &model);
+
+  gtk_widget_set_sensitive (rd->old_and_new, rows != NULL);
+}
+
+static void
 run_old_and_new_dialog (PsppireDialogActionRecode *rd)
 {
   gint response;
@@ -435,6 +446,7 @@ psppire_dialog_action_recode_refresh (PsppireDialogAction *rd_)
   gtk_widget_set_sensitive (rd->change_button, FALSE);
   gtk_widget_set_sensitive (rd->new_name_entry, FALSE);
   gtk_widget_set_sensitive (rd->new_label_entry, FALSE);
+  gtk_widget_set_sensitive (rd->old_and_new, FALSE);
 
   gtk_list_store_clear (GTK_LIST_STORE (rd->value_map));
 }
@@ -453,8 +465,7 @@ psppire_dialog_action_recode_pre_activate (PsppireDialogActionRecode *act,
 
 
   GtkWidget *selector = get_widget_assert (xml, "psppire-selector1");
-  GtkWidget *oldandnew = get_widget_assert (xml, "button1");
-
+  act->old_and_new  = get_widget_assert (xml, "button1");
 
   act->output_variable_box = get_widget_assert (xml,"frame4");
 
@@ -536,9 +547,14 @@ psppire_dialog_action_recode_pre_activate (PsppireDialogActionRecode *act,
     }
 
 
-    g_signal_connect_swapped (oldandnew, "clicked",
+    g_signal_connect_swapped (act->old_and_new, "clicked",
 			      G_CALLBACK (run_old_and_new_dialog), act);
 
+
+    GtkTreeSelection *sel =
+      gtk_tree_view_get_selection (GTK_TREE_VIEW (act->variable_treeview));
+    g_signal_connect (sel, "changed",
+                      G_CALLBACK (set_old_and_new_button_sensitivity), act);
 
     g_signal_connect (act->toggle[BUTTON_NEW_VALUE], "toggled",
 		      G_CALLBACK (toggle_sensitivity), act->new_value_entry);
