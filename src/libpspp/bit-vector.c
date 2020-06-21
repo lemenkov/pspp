@@ -25,7 +25,8 @@
 unsigned long int *
 bitvector_allocate(size_t n)
 {
-  return xcalloc (sizeof (unsigned long int), DIV_RND_UP (n, BITS_PER_ULONG));
+  return xcalloc (DIV_RND_UP (n, BITS_PER_ULONG),
+                  sizeof (unsigned long int));
 }
 
 size_t

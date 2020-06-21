@@ -1241,7 +1241,7 @@ textfile_create_reader (PsppireImportAssistant *ia)
 
   int i;
 
-  struct fmt_guesser **fg = xcalloc (sizeof *fg, n_vars);
+  struct fmt_guesser **fg = xcalloc (n_vars, sizeof *fg);
   for (i = 0 ; i < n_vars; ++i)
     {
       fg[i] = fmt_guesser_create ();

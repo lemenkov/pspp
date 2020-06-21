@@ -480,7 +480,7 @@ categoricals_done (const struct categoricals *cat_)
           return;
         }
 
-      struct value_node **nodes = xcalloc (sizeof *nodes, n_vals);
+      struct value_node **nodes = xcalloc (n_vals, sizeof *nodes);
       int x = 0;
       struct value_node *valnd;
       HMAP_FOR_EACH (valnd, struct value_node, node, &vn->valmap)
