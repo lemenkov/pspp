@@ -145,44 +145,63 @@ GNULIB_MODULES = \
 	xvasprintf
 
 APP_ICONS = \
-src/ui/gui/icons/32x32/apps/pspp.png \
-src/ui/gui/icons/22x22/apps/pspp.png \
-src/ui/gui/icons/24x24/apps/pspp.png \
-src/ui/gui/icons/16x16/apps/pspp.png \
 src/ui/gui/icons/48x48/apps/pspp.png \
-src/ui/gui/icons/256x256/apps/pspp.png \
 src/ui/gui/icons/scalable/apps/pspp.svg
 
 CATEGORY_ICONS = \
-src/ui/gui/icons/16x16/categories/align-left.png \
-src/ui/gui/icons/16x16/categories/align-center.png \
-src/ui/gui/icons/16x16/categories/align-right.png \
-src/ui/gui/icons/16x16/categories/measure-scale.png \
-src/ui/gui/icons/16x16/categories/measure-ordinal.png \
-src/ui/gui/icons/16x16/categories/measure-nominal.png \
-src/ui/gui/icons/16x16/categories/measure-date-scale.png \
-src/ui/gui/icons/16x16/categories/measure-date-nominal.png \
-src/ui/gui/icons/16x16/categories/measure-date-ordinal.png \
-src/ui/gui/icons/16x16/categories/measure-time-scale.png \
-src/ui/gui/icons/16x16/categories/measure-time-nominal.png \
-src/ui/gui/icons/16x16/categories/measure-time-ordinal.png \
-src/ui/gui/icons/16x16/categories/measure-string-nominal.png \
-src/ui/gui/icons/16x16/categories/measure-string-ordinal.png \
-src/ui/gui/icons/16x16/categories/measure-currency-scale.png \
-src/ui/gui/icons/16x16/categories/measure-currency-nominal.png \
-src/ui/gui/icons/16x16/categories/measure-currency-ordinal.png \
-src/ui/gui/icons/16x16/categories/role-input.png \
-src/ui/gui/icons/16x16/categories/role-target.png \
-src/ui/gui/icons/16x16/categories/role-both.png \
-src/ui/gui/icons/16x16/categories/role-none.png \
-src/ui/gui/icons/16x16/categories/role-partition.png \
-src/ui/gui/icons/16x16/categories/role-split.png
+src/ui/gui/icons/48x48/categories/align-left.png \
+src/ui/gui/icons/48x48/categories/align-center.png \
+src/ui/gui/icons/48x48/categories/align-right.png \
+src/ui/gui/icons/48x48/categories/measure-scale.png \
+src/ui/gui/icons/48x48/categories/measure-ordinal.png \
+src/ui/gui/icons/48x48/categories/measure-nominal.png \
+src/ui/gui/icons/48x48/categories/measure-date-scale.png \
+src/ui/gui/icons/48x48/categories/measure-date-nominal.png \
+src/ui/gui/icons/48x48/categories/measure-date-ordinal.png \
+src/ui/gui/icons/48x48/categories/measure-time-scale.png \
+src/ui/gui/icons/48x48/categories/measure-time-nominal.png \
+src/ui/gui/icons/48x48/categories/measure-time-ordinal.png \
+src/ui/gui/icons/48x48/categories/measure-string-nominal.png \
+src/ui/gui/icons/48x48/categories/measure-string-ordinal.png \
+src/ui/gui/icons/48x48/categories/measure-currency-scale.png \
+src/ui/gui/icons/48x48/categories/measure-currency-nominal.png \
+src/ui/gui/icons/48x48/categories/measure-currency-ordinal.png \
+src/ui/gui/icons/48x48/categories/role-input.png \
+src/ui/gui/icons/48x48/categories/role-target.png \
+src/ui/gui/icons/48x48/categories/role-both.png \
+src/ui/gui/icons/48x48/categories/role-none.png \
+src/ui/gui/icons/48x48/categories/role-partition.png \
+src/ui/gui/icons/48x48/categories/role-split.png \
+src/ui/gui/icons/scalable/categories/align-left.svg \
+src/ui/gui/icons/scalable/categories/align-center.svg \
+src/ui/gui/icons/scalable/categories/align-right.svg \
+src/ui/gui/icons/scalable/categories/measure-scale.svg \
+src/ui/gui/icons/scalable/categories/measure-ordinal.svg \
+src/ui/gui/icons/scalable/categories/measure-nominal.svg \
+src/ui/gui/icons/scalable/categories/measure-date-scale.svg \
+src/ui/gui/icons/scalable/categories/measure-date-nominal.svg \
+src/ui/gui/icons/scalable/categories/measure-date-ordinal.svg \
+src/ui/gui/icons/scalable/categories/measure-time-scale.svg \
+src/ui/gui/icons/scalable/categories/measure-time-nominal.svg \
+src/ui/gui/icons/scalable/categories/measure-time-ordinal.svg \
+src/ui/gui/icons/scalable/categories/measure-string-nominal.svg \
+src/ui/gui/icons/scalable/categories/measure-string-ordinal.svg \
+src/ui/gui/icons/scalable/categories/measure-currency-scale.svg \
+src/ui/gui/icons/scalable/categories/measure-currency-nominal.svg \
+src/ui/gui/icons/scalable/categories/measure-currency-ordinal.svg \
+src/ui/gui/icons/scalable/categories/role-input.svg \
+src/ui/gui/icons/scalable/categories/role-target.svg \
+src/ui/gui/icons/scalable/categories/role-both.svg \
+src/ui/gui/icons/scalable/categories/role-none.svg \
+src/ui/gui/icons/scalable/categories/role-partition.svg \
+src/ui/gui/icons/scalable/categories/role-split.svg
 
+# Mimetype icons have size dependent layouts
 MIMETYPE_ICONS = \
-src/ui/gui/icons/32x32/mimetypes/application-x-spss-por.png \
-src/ui/gui/icons/32x32/mimetypes/application-x-spss-sav.png \
-src/ui/gui/icons/32x32/mimetypes/application-x-spss-sps.png \
-src/ui/gui/icons/32x32/mimetypes/application-x-spss-zsav.png \
+src/ui/gui/icons/16x16/mimetypes/application-x-spss-por.png \
+src/ui/gui/icons/16x16/mimetypes/application-x-spss-sav.png \
+src/ui/gui/icons/16x16/mimetypes/application-x-spss-sps.png \
+src/ui/gui/icons/16x16/mimetypes/application-x-spss-zsav.png \
 src/ui/gui/icons/22x22/mimetypes/application-x-spss-por.png \
 src/ui/gui/icons/22x22/mimetypes/application-x-spss-sav.png \
 src/ui/gui/icons/22x22/mimetypes/application-x-spss-sps.png \
@@ -191,19 +210,18 @@ src/ui/gui/icons/24x24/mimetypes/application-x-spss-por.png \
 src/ui/gui/icons/24x24/mimetypes/application-x-spss-sav.png \
 src/ui/gui/icons/24x24/mimetypes/application-x-spss-sps.png \
 src/ui/gui/icons/24x24/mimetypes/application-x-spss-zsav.png \
-src/ui/gui/icons/256x256/mimetypes/application-x-spss-por.png \
-src/ui/gui/icons/256x256/mimetypes/application-x-spss-sav.png \
-src/ui/gui/icons/256x256/mimetypes/application-x-spss-sps.png \
-src/ui/gui/icons/256x256/mimetypes/application-x-spss-zsav.png \
-src/ui/gui/icons/16x16/mimetypes/application-x-spss-por.png \
-src/ui/gui/icons/16x16/mimetypes/application-x-spss-sav.png \
-src/ui/gui/icons/16x16/mimetypes/application-x-spss-sps.png \
-src/ui/gui/icons/16x16/mimetypes/application-x-spss-zsav.png \
+src/ui/gui/icons/32x32/mimetypes/application-x-spss-por.png \
+src/ui/gui/icons/32x32/mimetypes/application-x-spss-sav.png \
+src/ui/gui/icons/32x32/mimetypes/application-x-spss-sps.png \
+src/ui/gui/icons/32x32/mimetypes/application-x-spss-zsav.png \
 src/ui/gui/icons/48x48/mimetypes/application-x-spss-por.png \
 src/ui/gui/icons/48x48/mimetypes/application-x-spss-sav.png \
 src/ui/gui/icons/48x48/mimetypes/application-x-spss-sps.png \
-src/ui/gui/icons/48x48/mimetypes/application-x-spss-zsav.png
-
+src/ui/gui/icons/48x48/mimetypes/application-x-spss-zsav.png \
+src/ui/gui/icons/256x256/mimetypes/application-x-spss-por.png \
+src/ui/gui/icons/256x256/mimetypes/application-x-spss-sav.png \
+src/ui/gui/icons/256x256/mimetypes/application-x-spss-sps.png \
+src/ui/gui/icons/256x256/mimetypes/application-x-spss-zsav.png
 
 src/ui/gui/artwork/splash-t.svg: src/ui/gui/artwork/splash.svg
 	cp $< $@
@@ -211,123 +229,55 @@ src/ui/gui/artwork/splash-t.svg: src/ui/gui/artwork/splash.svg
 src/ui/gui/artwork/splash-r.svg: src/ui/gui/artwork/splash.svg
 	sed -e '/inkscape:label="Overlay"/s/inline/none/' $< > $@
 
-
 MISC_ICONS = src/ui/gui/icons/splash-t.png \
 	src/ui/gui/icons/splash-r.png
 
-
 ACTION_ICONS = \
-src/ui/gui/icons/32x32/actions/data-split-file.png \
-src/ui/gui/icons/32x32/actions/data-select-cases.png \
-src/ui/gui/icons/32x32/actions/data-weight-cases.png \
-src/ui/gui/icons/32x32/actions/transform-compute.png \
-src/ui/gui/icons/32x32/actions/edit-find.png \
-src/ui/gui/icons/32x32/actions/edit-go-to-case.png \
-src/ui/gui/icons/32x32/actions/edit-go-to-variable.png \
-src/ui/gui/icons/32x32/actions/edit-insert-case.png \
-src/ui/gui/icons/32x32/actions/edit-insert-variable.png \
-src/ui/gui/icons/32x32/actions/edit-cut.png \
-src/ui/gui/icons/32x32/actions/edit-copy.png \
-src/ui/gui/icons/32x32/actions/edit-paste.png \
-src/ui/gui/icons/32x32/actions/edit-undo.png \
-src/ui/gui/icons/32x32/actions/edit-redo.png \
-src/ui/gui/icons/32x32/actions/edit-select-all.png \
-src/ui/gui/icons/32x32/actions/file-open-data.png \
-src/ui/gui/icons/32x32/actions/file-save-data.png \
-src/ui/gui/icons/32x32/actions/file-export-data.png \
-src/ui/gui/icons/32x32/actions/file-print.png \
-src/ui/gui/icons/32x32/actions/view-value-labels.png \
-src/ui/gui/icons/32x32/actions/utilities-variables.png \
-src/ui/gui/icons/32x32/actions/run-all.png \
-src/ui/gui/icons/24x24/actions/data-split-file.png \
-src/ui/gui/icons/24x24/actions/data-select-cases.png \
-src/ui/gui/icons/24x24/actions/data-weight-cases.png \
-src/ui/gui/icons/24x24/actions/transform-compute.png \
-src/ui/gui/icons/24x24/actions/edit-find.png \
-src/ui/gui/icons/24x24/actions/edit-go-to-case.png \
-src/ui/gui/icons/24x24/actions/edit-go-to-variable.png \
-src/ui/gui/icons/24x24/actions/edit-insert-case.png \
-src/ui/gui/icons/24x24/actions/edit-insert-variable.png \
-src/ui/gui/icons/24x24/actions/edit-cut.png \
-src/ui/gui/icons/24x24/actions/edit-copy.png \
-src/ui/gui/icons/24x24/actions/edit-paste.png \
-src/ui/gui/icons/24x24/actions/edit-undo.png \
-src/ui/gui/icons/24x24/actions/edit-redo.png \
-src/ui/gui/icons/24x24/actions/edit-select-all.png \
 src/ui/gui/icons/24x24/actions/file-open-data.png \
 src/ui/gui/icons/24x24/actions/file-save-data.png \
-src/ui/gui/icons/24x24/actions/file-export-data.png \
-src/ui/gui/icons/24x24/actions/file-print.png \
+src/ui/gui/icons/24x24/actions/edit-go-to-variable.png \
+src/ui/gui/icons/24x24/actions/edit-go-to-case.png \
+src/ui/gui/icons/24x24/actions/edit-find.png \
+src/ui/gui/icons/24x24/actions/edit-insert-case.png \
+src/ui/gui/icons/24x24/actions/edit-insert-variable.png \
+src/ui/gui/icons/24x24/actions/data-split-file.png \
+src/ui/gui/icons/24x24/actions/data-weight-cases.png \
 src/ui/gui/icons/24x24/actions/view-value-labels.png \
-src/ui/gui/icons/24x24/actions/utilities-variables.png \
-src/ui/gui/icons/24x24/actions/run-all.png \
-src/ui/gui/icons/16x16/actions/file-new-data.png \
-src/ui/gui/icons/16x16/actions/file-syntax-data.png \
-src/ui/gui/icons/16x16/actions/file-system-data.png \
-src/ui/gui/icons/16x16/actions/file-open-data.png \
-src/ui/gui/icons/16x16/actions/file-import-data.png \
-src/ui/gui/icons/16x16/actions/file-export-data.png \
-src/ui/gui/icons/16x16/actions/file-save-data.png \
-src/ui/gui/icons/16x16/actions/file-save-as.png \
-src/ui/gui/icons/16x16/actions/file-print.png \
-src/ui/gui/icons/16x16/actions/file-rename-data-set.png \
-src/ui/gui/icons/16x16/actions/file-display-information.png \
-src/ui/gui/icons/16x16/actions/display-information-working-file.png \
-src/ui/gui/icons/16x16/actions/display-information-external-file.png \
-src/ui/gui/icons/16x16/actions/file-recently-used.png \
-src/ui/gui/icons/16x16/actions/file-quit.png \
-src/ui/gui/icons/16x16/actions/file-display-information.png \
-src/ui/gui/icons/16x16/actions/edit-insert-variable.png \
-src/ui/gui/icons/16x16/actions/edit-insert-case.png \
-src/ui/gui/icons/16x16/actions/edit-go-to-variable.png \
-src/ui/gui/icons/16x16/actions/edit-go-to-case.png \
-src/ui/gui/icons/16x16/actions/edit-cut.png \
-src/ui/gui/icons/16x16/actions/edit-copy.png \
-src/ui/gui/icons/16x16/actions/edit-paste.png \
-src/ui/gui/icons/16x16/actions/edit-delete.png \
-src/ui/gui/icons/16x16/actions/edit-undo.png \
-src/ui/gui/icons/16x16/actions/edit-redo.png \
-src/ui/gui/icons/16x16/actions/edit-select-all.png \
-src/ui/gui/icons/16x16/actions/edit-clear.png \
-src/ui/gui/icons/16x16/actions/edit-find.png \
-src/ui/gui/icons/16x16/actions/view-font.png \
-src/ui/gui/icons/16x16/actions/view-value-labels.png \
-src/ui/gui/icons/16x16/actions/data-sort-cases.png \
-src/ui/gui/icons/16x16/actions/data-transpose.png \
-src/ui/gui/icons/16x16/actions/data-aggregate.png \
-src/ui/gui/icons/16x16/actions/data-split-file.png \
-src/ui/gui/icons/16x16/actions/data-select-cases.png \
-src/ui/gui/icons/16x16/actions/data-weight-cases.png \
-src/ui/gui/icons/16x16/actions/run-all.png \
-src/ui/gui/icons/16x16/actions/run-selection.png \
-src/ui/gui/icons/16x16/actions/run-current-line.png \
-src/ui/gui/icons/16x16/actions/run-to-end.png \
-src/ui/gui/icons/16x16/actions/transform-compute.png \
-src/ui/gui/icons/16x16/actions/transform-count.png \
-src/ui/gui/icons/16x16/actions/transform-rank-cases.png \
-src/ui/gui/icons/16x16/actions/transform-automatic-recode.png \
-src/ui/gui/icons/16x16/actions/transform-in-to-same-variables.png \
-src/ui/gui/icons/16x16/actions/transform-in-to-different-variables.png \
-src/ui/gui/icons/16x16/actions/transform-run-pending.png \
-src/ui/gui/icons/16x16/actions/analyze-descriptive-statistics.png \
-src/ui/gui/icons/16x16/actions/analyze-compare-means.png \
-src/ui/gui/icons/16x16/actions/analyze-univariate-analysis.png \
-src/ui/gui/icons/16x16/actions/analyze-bivariate-correlation.png \
-src/ui/gui/icons/16x16/actions/analyze-kmeans-cluster.png \
-src/ui/gui/icons/16x16/actions/analyze-factor-analysis.png \
-src/ui/gui/icons/16x16/actions/analyze-reliability.png \
-src/ui/gui/icons/16x16/actions/analyze-regression.png \
-src/ui/gui/icons/16x16/actions/analyze-non-parametric-statistics.png \
-src/ui/gui/icons/16x16/actions/analyze-roc-curve.png \
-src/ui/gui/icons/16x16/actions/utilities-variables.png \
-src/ui/gui/icons/16x16/actions/utilities-data-file-comments.png \
-src/ui/gui/icons/16x16/actions/windows-minimize-all.png \
-src/ui/gui/icons/16x16/actions/windows-split.png \
-src/ui/gui/icons/16x16/actions/help-reference-manual.png \
-src/ui/gui/icons/16x16/actions/help-about.png
-
+src/ui/gui/icons/48x48/actions/file-open-data.png \
+src/ui/gui/icons/48x48/actions/file-save-data.png \
+src/ui/gui/icons/48x48/actions/edit-go-to-variable.png \
+src/ui/gui/icons/48x48/actions/edit-go-to-case.png \
+src/ui/gui/icons/48x48/actions/edit-find.png \
+src/ui/gui/icons/48x48/actions/edit-insert-case.png \
+src/ui/gui/icons/48x48/actions/edit-insert-variable.png \
+src/ui/gui/icons/48x48/actions/data-split-file.png \
+src/ui/gui/icons/48x48/actions/data-weight-cases.png \
+src/ui/gui/icons/48x48/actions/view-value-labels.png \
+src/ui/gui/icons/96x96/actions/file-open-data.png \
+src/ui/gui/icons/96x96/actions/file-save-data.png \
+src/ui/gui/icons/96x96/actions/edit-go-to-variable.png \
+src/ui/gui/icons/96x96/actions/edit-go-to-case.png \
+src/ui/gui/icons/96x96/actions/edit-find.png \
+src/ui/gui/icons/96x96/actions/edit-insert-case.png \
+src/ui/gui/icons/96x96/actions/edit-insert-variable.png \
+src/ui/gui/icons/96x96/actions/data-split-file.png \
+src/ui/gui/icons/96x96/actions/data-weight-cases.png \
+src/ui/gui/icons/96x96/actions/view-value-labels.png \
+src/ui/gui/icons/scalable/actions/file-open-data.svg \
+src/ui/gui/icons/scalable/actions/file-save-data.svg \
+src/ui/gui/icons/scalable/actions/edit-go-to-variable.svg \
+src/ui/gui/icons/scalable/actions/edit-go-to-case.svg \
+src/ui/gui/icons/scalable/actions/edit-find.svg \
+src/ui/gui/icons/scalable/actions/edit-insert-case.svg \
+src/ui/gui/icons/scalable/actions/edit-insert-variable.svg \
+src/ui/gui/icons/scalable/actions/data-split-file.svg \
+src/ui/gui/icons/scalable/actions/data-weight-cases.svg \
+src/ui/gui/icons/scalable/actions/view-value-labels.svg
 
 ICONS=$(CATEGORY_ICONS) $(ACTION_ICONS) $(MIMETYPE_ICONS) $(APP_ICONS) $(MISC_ICONS)
+
+ICON_SOURCES = $(wildcard src/ui/gui/artwork/*/*/*.svg)
+ICON_SOURCES += $(wildcard src/ui/gui/artwork/splash*.svg)
 
 everything: prep_ph  icons
 	$(MAKE) -f Smake Makefile.in configure
@@ -344,9 +294,8 @@ src/ui/gui/icons/manifest: $(MAKEFILE_LIST)
 	echo >> $@
 	echo >> $@
 	printf 'icon_srcs = ' >> $@
-	for i in  $(ICONS); do \
-		printf ' \\\n\t ' >> $@ ;\
-		printf $$i | awk '{ gsub(".png",".svg")gsub("icons","artwork");printf $$0}' >> $@ ; \
+	for i in  $(ICON_SOURCES); do \
+		printf ' \\\n\t '$$i  >> $@ ;\
 	done
 	echo ' ' >> $@
 	echo >> $@
@@ -458,11 +407,66 @@ clean:
 
 #svg2png=convert -background transparent $1 $3
 
+# Graphical layout of icons and our portfolio
+# ===========================================
+#
+# We have two different kinds of icons in our artwork collection
+#
+#   a) The mimetype icons have a different graphical layout depending on resolution
+#      This assumes that a higher resolution means a bigger size. On the bigger
+#      size you can identify more details and this is used in the design.
+#   b) Icons which are designed based on 16x16 pixels which are just scaled
+#      This are all other icons.
+#
+# Icon resolutions
+#
+# The different icon resolutions are historically derived for bitmaps when an icon
+# is displayed in different sizes. Then a scaled version of the icon requires a new
+# bitmap image. All our icons are now svg type and can be scaled from one svg file as
+# the names suggests - scalable vector format.
+#
+# The strategy for pspp gui
+#
+# All icons which are simply scaled provide a default 48x48 bitmap png image plus
+# an svg version in the scalable directory.
+# The mimetype icons with different layouts provide png bitmaps in their original resolutions
+#
+# The artwork directory contains only the pure source svg files. No copies and no
+# version has another size indication although it is an svg.
+#
+#  => mimetype icons are located in 16x16, 32x32, ... , 256x256 (different designs)
+#  => all others are in scaled (just one design svg)
+#
+
+# Rule for icons with size dependent graphical design
 src/ui/gui/icons/%.png: src/ui/gui/artwork/%.svg build-aux/svg2png src/ui/gui/icons/COPYING_CCBYSA3
 	mkdir -p $(dir $@)
 	build-aux/svg2png "$<" "$(lastword $^)" "$@"
 
+# Rules for icons which are simply scaled - Attention multitarget would trigger only once...
+src/ui/gui/icons/16x16/%.png : src/ui/gui/artwork/scalable/%.svg build-aux/svg2png src/ui/gui/icons/COPYING_CCBYSA3
+	mkdir -p $(dir $@)
+	build-aux/svg2png "$<" "$(lastword $^)" "$@"
+src/ui/gui/icons/22x22/%.png : src/ui/gui/artwork/scalable/%.svg build-aux/svg2png src/ui/gui/icons/COPYING_CCBYSA3
+	mkdir -p $(dir $@)
+	build-aux/svg2png "$<" "$(lastword $^)" "$@"
+src/ui/gui/icons/24x24/%.png : src/ui/gui/artwork/scalable/%.svg build-aux/svg2png src/ui/gui/icons/COPYING_CCBYSA3
+	mkdir -p $(dir $@)
+	build-aux/svg2png "$<" "$(lastword $^)" "$@"
+src/ui/gui/icons/32x32/%.png : src/ui/gui/artwork/scalable/%.svg build-aux/svg2png src/ui/gui/icons/COPYING_CCBYSA3
+	mkdir -p $(dir $@)
+	build-aux/svg2png "$<" "$(lastword $^)" "$@"
+src/ui/gui/icons/48x48/%.png : src/ui/gui/artwork/scalable/%.svg build-aux/svg2png src/ui/gui/icons/COPYING_CCBYSA3
+	mkdir -p $(dir $@)
+	build-aux/svg2png "$<" "$(lastword $^)" "$@"
+src/ui/gui/icons/96x96/%.png : src/ui/gui/artwork/scalable/%.svg build-aux/svg2png src/ui/gui/icons/COPYING_CCBYSA3
+	mkdir -p $(dir $@)
+	build-aux/svg2png "$<" "$(lastword $^)" "$@"
+src/ui/gui/icons/256x256/%.png : src/ui/gui/artwork/scalable/%.svg build-aux/svg2png src/ui/gui/icons/COPYING_CCBYSA3
+	mkdir -p $(dir $@)
+	build-aux/svg2png "$<" "$(lastword $^)" "$@"
 
+# Copy svg
 src/ui/gui/icons/%.svg: src/ui/gui/artwork/%.svg
 	mkdir -p $(dir $@)
 	cp $< $@
