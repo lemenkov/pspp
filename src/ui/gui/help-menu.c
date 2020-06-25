@@ -131,9 +131,7 @@ static gboolean open_windows_help (const gchar *helpuri,
 void
 online_help (const char *page)
 {
-  GError *err = NULL;
   GError *htmlerr = NULL;
-  gchar *argv[3] = { "yelp", 0, 0};
   gchar *htmlargv[3] = HTMLOPENARGV;
   gchar *htmlfilename = NULL;
   gchar *htmlfullname = NULL;
@@ -141,7 +139,6 @@ online_help (const char *page)
 
   if (page == NULL)
     {
-      argv[1] = g_strdup_printf ("file://%s", relocate (DOCDIR "/pspp.xml"));
       htmlfilename = g_strdup ("index.html");
     }
   else
@@ -149,8 +146,6 @@ online_help (const char *page)
       gchar **tokens = NULL;
       const int maxtokens = 5;
       int idx ;
-      argv[1] = g_strdup_printf ("file://%s#%s",
-                                 relocate (DOCDIR "/pspp.xml"), page);
       /* The page will be translated to the htmlfilename
          page                   htmlfilename
          GRAPH#SCATTERPLOT      SCATTERPLOT.html
@@ -188,9 +183,7 @@ online_help (const char *page)
      osx: wine is started to launch the uri...
      windows: not so bad, but the first access does not work*/
 
-  if (! (g_spawn_async (NULL, argv,
-                        NULL, G_SPAWN_SEARCH_PATH,
-                        NULL, NULL,   NULL,   &err) ||
+  if (! (
 #ifdef _WIN32
          open_windows_help (htmluri, &htmlerr))
 #else
@@ -200,19 +193,15 @@ online_help (const char *page)
 #endif
 )
     {
-      msg (ME, _("Cannot open reference manual via yelp: %s. "
-                 "Cannot open via html: %s "
+      msg (ME, _("Cannot open via html: %s "
                  "with uri: %s "
                  "The PSSP manual is also available at %s"),
-                  err->message,
                   htmlerr->message,
                   htmluri,
                   PACKAGE_URL "documentation.html");
     }
 
-  g_free (argv[1]);
   g_free (htmluri);
-  g_clear_error (&err);
   g_clear_error (&htmlerr);
 }
 
