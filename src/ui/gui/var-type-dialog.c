@@ -32,6 +32,10 @@
 #include "ui/gui/psppire-format.h"
 #include "ui/gui/var-type-dialog.h"
 
+#include <gettext.h>
+#define _(msgid) gettext (msgid)
+#define N_(msgid) msgid
+
 static const struct fmt_spec date_format[] =
   {
     {FMT_DATE,  11, 0},
@@ -533,7 +537,8 @@ psppire_var_type_dialog_constructor (GType                  type,
     type, n_properties, properties);
   dialog = PSPPIRE_VAR_TYPE_DIALOG (obj);
 
-  g_object_set (dialog, "help_page", "Input-and-Output-Formats", NULL);
+  g_object_set (dialog, "help_page", "Input-and-Output-Formats",
+		"title", _("Variable Type and Format"), NULL);
 
   xml = builder_new ("var-type-dialog.ui");
 
