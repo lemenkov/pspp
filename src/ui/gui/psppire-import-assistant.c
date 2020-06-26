@@ -301,7 +301,8 @@ choose_likely_separators (PsppireImportAssistant *ia)
       hmap_destroy (&count_map[j]);
     }
 
-  gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (get_widget_assert (ia->builder, separators[most_frequent].name)), TRUE);
+  const char* sepname = separators[MAX (0,most_frequent)].name;
+  gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (get_widget_assert (ia->builder, sepname)), TRUE);
 }
 
 static void
