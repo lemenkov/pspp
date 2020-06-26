@@ -1,5 +1,5 @@
 /* PSPPIRE - a graphical user interface for PSPP.
-    Copyright (C) 2005, 2006, 2010, 2011, 2012, 2015  Free Software Foundation
+   Copyright (C) 2005, 2006, 2010, 2011, 2012, 2015, 2020  Free Software Foundation
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -532,6 +532,8 @@ psppire_var_type_dialog_constructor (GType                  type,
   obj = G_OBJECT_CLASS (psppire_var_type_dialog_parent_class)->constructor (
     type, n_properties, properties);
   dialog = PSPPIRE_VAR_TYPE_DIALOG (obj);
+
+  g_object_set (dialog, "help_page", "Input-and-Output-Formats", NULL);
 
   xml = builder_new ("var-type-dialog.ui");
 

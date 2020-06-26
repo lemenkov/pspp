@@ -1,5 +1,6 @@
 /* PSPPIRE - a graphical user interface for PSPP.
-   Copyright (C) 2005, 2006, 2009, 2011, 2012, 2015, 2016  Free Software Foundation
+   Copyright (C) 2005, 2006, 2009, 2011, 2012, 2015, 2016,
+   2020  Free Software Foundation
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -373,6 +374,8 @@ psppire_missing_val_dialog_constructor (GType                  type,
   obj = G_OBJECT_CLASS (psppire_missing_val_dialog_parent_class)->constructor (
     type, n_properties, properties);
   dialog = PSPPIRE_MISSING_VAL_DIALOG (obj);
+
+  g_object_set (dialog, "help_page", "Missing-Observations", NULL);
 
   content_area = GTK_CONTAINER (PSPPIRE_DIALOG (dialog));
   xml = builder_new ("missing-val-dialog.ui");
