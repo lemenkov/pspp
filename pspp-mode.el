@@ -1,9 +1,9 @@
 ;;; pspp-mode.el --- Major mode for editing PSPP files
 
-;; Copyright (C) 2005,2018 Free Software Foundation
+;; Copyright (C) 2005,2018,2020 Free Software Foundation
 ;; Author: Scott Andrew Borton <scott@pp.htv.fi>
 ;; Created: 05 March 2005
-;; Version: 1.0
+;; Version: 1.1
 ;; Keywords: PSPP major-mode
 ;; This file is not part of GNU Emacs.
 
@@ -33,7 +33,7 @@
     pspp-mode-map)
   "Keymap for PSPP major mode")
 
-;;;+++autoload
+;;;###autoload
 (add-to-list 'auto-mode-alist '("\\.sps\\'" . pspp-mode))
 
 
@@ -677,7 +677,7 @@
   )
 "Highlighting expressions for PSPP mode.")
 
-;;;+++autoload
+;;;###autoload
 (defun pspp-mode ()
   (interactive)
   (kill-all-local-variables)
