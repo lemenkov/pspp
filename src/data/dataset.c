@@ -293,7 +293,7 @@ dataset_set_dict (struct dataset *ds, struct dictionary *dict)
   dataset_clear (ds);
 
   dict_unref (ds->dict);
-  ds->dict = dict_ref (dict);
+  ds->dict = dict;
   dict_set_change_callback (ds->dict, dict_callback, ds);
 }
 
