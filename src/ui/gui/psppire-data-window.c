@@ -918,13 +918,12 @@ on_recent_files_select (GtkMenuShell *menushell,   gpointer user_data)
 
   se = psppire_syntax_window_new (encoding);
 
-  free (encoding);
-
   if (psppire_window_load (PSPPIRE_WINDOW (se), file, encoding, NULL))
     gtk_widget_show (se);
   else
     gtk_widget_destroy (se);
 
+  g_free (encoding);
   g_free (file);
 }
 
