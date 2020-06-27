@@ -280,6 +280,7 @@ process_pre_start_arguments (int *argc, char ***argv)
   g_option_context_set_ignore_unknown_options (oc, FALSE);
   g_option_context_add_main_entries (oc, oe, NULL);
   g_option_context_parse (oc, argc, argv, NULL);
+  g_option_context_free (oc);
 }
 
 #if ENABLE_RELOCATABLE && defined(__APPLE__)
