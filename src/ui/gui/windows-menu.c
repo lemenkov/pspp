@@ -90,8 +90,6 @@ repopulate_windows_menu (GObject *inst, gchar *name, gpointer data)
   GtkWindow *toplevel = g_object_get_data (G_OBJECT (mi), "toplevel");
 
   GtkWidget *minimize = gtk_menu_item_new_with_mnemonic (_("_Minimize all Windows"));
-  GtkWidget *split = gtk_check_menu_item_new_with_mnemonic (_("_Split"));
-
 
   GtkWidget *sep = gtk_separator_menu_item_new ();
 
@@ -99,6 +97,7 @@ repopulate_windows_menu (GObject *inst, gchar *name, gpointer data)
 
   if (PSPPIRE_DATA_WINDOW_TYPE == G_OBJECT_TYPE (toplevel))
     {
+      GtkWidget *split = gtk_check_menu_item_new_with_mnemonic (_("_Split"));
       gtk_menu_attach (GTK_MENU (menu), split, 0, 1, 1, 2);
       g_signal_connect_swapped (split, "toggled",
 				G_CALLBACK (toggle_split_window), toplevel);
