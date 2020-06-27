@@ -186,13 +186,6 @@ dict_create (const char *encoding)
   return d;
 }
 
-struct dictionary *
-dict_ref (struct dictionary *s)
-{
-  s->ref_cnt++;
-  return s;
-}
-
 /* Creates and returns a (deep) copy of an existing
    dictionary.
 
@@ -312,6 +305,13 @@ _dict_destroy (struct dictionary *d)
   dict_clear_mrsets (d);
   free (d->encoding);
   free (d);
+}
+
+struct dictionary *
+dict_ref (struct dictionary *d)
+{
+  d->ref_cnt++;
+  return d;
 }
 
 void
