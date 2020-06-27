@@ -66,7 +66,7 @@ scatterplot_chart_destroy (struct chart_item *chart_item)
   free (spc->xlabel);
   free (spc->ylabel);
   if (spc->byvar)
-    var_destroy (spc->byvar);
+    var_unref (spc->byvar);
   free (spc);
 }
 

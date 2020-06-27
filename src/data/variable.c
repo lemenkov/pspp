@@ -1,5 +1,6 @@
 /* PSPP - a program for statistical analysis.
-   Copyright (C) 1997-9, 2000, 2006, 2009, 2010, 2011, 2012, 2013, 2014, 2016 Free Software Foundation, Inc.
+   Copyright (C) 1997-9, 2000, 2006, 2009, 2010, 2011, 2012, 2013,
+   2014, 2016, 2020 Free Software Foundation, Inc.
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -82,6 +83,7 @@ const GEnumValue role[] =
 /* A variable. */
 struct variable
   {
+    int ref_cnt;
     /* Dictionary information. */
     char *name;                 /* Variable name.  Mixed case. */
     int width;			/* 0 for numeric, otherwise string width. */
@@ -145,28 +147,43 @@ var_create (const char *name, int width)
   attrset_init (&v->attributes);
   ds_init_empty (&v->name_and_label);
 
+  v->ref_cnt = 1;
+
   return v;
 }
 
 /* Destroys variable V.
    V must not belong to a dictionary.  If it does, use
    dict_delete_var instead. */
-void
-var_destroy (struct variable *v)
+static void
+var_destroy__ (struct variable *v)
 {
-  if (v != NULL)
-    {
-      assert (!var_has_vardict (v));
-      mv_destroy (&v->miss);
-      var_clear_short_names (v);
-      val_labs_destroy (v->val_labs);
-      var_set_label_quiet (v, NULL);
-      attrset_destroy (var_get_attributes (v));
-      free (v->name);
-      ds_destroy (&v->name_and_label);
-      free (v);
-    }
+  assert (!var_has_vardict (v));
+  mv_destroy (&v->miss);
+  var_clear_short_names (v);
+  val_labs_destroy (v->val_labs);
+  var_set_label_quiet (v, NULL);
+  attrset_destroy (var_get_attributes (v));
+  free (v->name);
+  ds_destroy (&v->name_and_label);
+  free (v);
 }
+
+struct variable *
+var_ref (struct variable *v)
+{
+  v->ref_cnt++;
+  return v;
+}
+
+void
+var_unref (struct variable *v)
+{
+  if (--v->ref_cnt == 0)
+    var_destroy__ (v);
+}
+
+
 
 /* Variable names. */
 

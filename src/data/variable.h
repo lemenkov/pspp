@@ -1,5 +1,6 @@
 /* PSPP - a program for statistical analysis.
-   Copyright (C) 1997-9, 2000, 2009, 2010, 2011, 2012, 2013, 2014 Free Software Foundation, Inc.
+   Copyright (C) 1997-9, 2000, 2009, 2010, 2011, 2012, 2013,
+   2014, 2020 Free Software Foundation, Inc.
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -50,7 +51,8 @@ union value;
    instead. */
 struct variable *var_create (const char *name, int width);
 struct variable *var_clone (const struct variable *);
-void var_destroy (struct variable *);
+struct variable * var_ref (struct variable *) WARN_UNUSED_RESULT;
+void var_unref (struct variable *);
 
 /* Variable names. */
 const char *var_get_name (const struct variable *);

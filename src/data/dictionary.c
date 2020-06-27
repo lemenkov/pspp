@@ -133,7 +133,7 @@ reindex_var (struct dictionary *d, struct vardict_info *vardict, bool skip_callb
       if (old)
         {
           d->callbacks->var_changed (d, var_get_dict_index (var), VAR_TRAIT_POSITION, old, d->cb_data);
-          var_destroy (old);
+          var_unref (old);
         }
     }
 }
@@ -466,7 +466,7 @@ dict_delete_var__ (struct dictionary *d, struct variable *v, bool skip_callbacks
     }
 
   invalidate_proto (d);
-  var_destroy (v);
+  var_unref (v);
 }
 
 /* Deletes variable V from dictionary D and frees V.
@@ -569,7 +569,7 @@ dict_delete_consecutive_vars (struct dictionary *d, size_t idx, size_t count)
       var_clear_vardict (dv->var);
       if (d->callbacks &&  d->callbacks->var_deleted)
         d->callbacks->var_deleted (d, dv->var, vi, dv->case_index, d->cb_data);
-      var_destroy (dv->var);
+      var_unref (dv->var);
       free (dv);
     }
 }
@@ -988,7 +988,7 @@ dict_try_rename_var (struct dictionary *d, struct variable *v,
   if (d->callbacks &&  d->callbacks->var_changed)
     d->callbacks->var_changed (d, var_get_dict_index (v), VAR_TRAIT_NAME, old, d->cb_data);
 
-  var_destroy (old);
+  var_unref (old);
 
   return true;
 }
@@ -1799,7 +1799,7 @@ dict_var_changed (const struct variable *v, unsigned int what, struct variable *
       if (d->callbacks && d->callbacks->var_changed)
         d->callbacks->var_changed (d, var_get_dict_index (v), what, oldvar, d->cb_data);
     }
-  var_destroy (oldvar);
+  var_unref (oldvar);
 }
 
 
