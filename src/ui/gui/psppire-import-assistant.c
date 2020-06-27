@@ -285,24 +285,30 @@ choose_likely_separators (PsppireImportAssistant *ia)
     }
   gtk_tree_path_free (p);
 
-  int most_frequent = -1;
-  int largest = 0;
-  for (j = 0; j < SEPARATOR_CNT; ++j)
+  if (hmap_count (count_map) > 0)
     {
-      struct separator_count_node *cn;
-      HMAP_FOR_EACH (cn, struct separator_count_node, node, &count_map[j])
-	{
-	  if (largest < cn->quantity)
-	    {
-	      largest = cn->quantity;
-	      most_frequent = j;
-	    }
-	}
-      hmap_destroy (&count_map[j]);
-    }
+      int most_frequent = -1;
+      int largest = 0;
+      for (j = 0; j < SEPARATOR_CNT; ++j)
+        {
+          struct separator_count_node *cn;
+          HMAP_FOR_EACH (cn, struct separator_count_node, node, &count_map[j])
+            {
+              if (largest < cn->quantity)
+                {
+                  largest = cn->quantity;
+                  most_frequent = j;
+                }
+            }
+          hmap_destroy (&count_map[j]);
+        }
 
-  const char* sepname = separators[MAX (0,most_frequent)].name;
-  gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (get_widget_assert (ia->builder, sepname)), TRUE);
+      g_return_if_fail (most_frequent >= 0);
+
+      GtkWidget *toggle =
+        get_widget_assert (ia->builder, separators[most_frequent].name);
+      gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (toggle), TRUE);
+    }
 }
 
 static void
