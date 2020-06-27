@@ -239,5 +239,7 @@ create_help_menu (GtkWindow *toplevel)
 
   gtk_widget_show_all (menuitem);
 
+  g_object_unref (accel_group);
+
   return menuitem;
 }

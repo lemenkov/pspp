@@ -1399,6 +1399,7 @@ create_edit_menu (PsppireDataWindow *dw)
     dw->mi_clear_cases = gtk_menu_item_new_with_mnemonic (_("Cl_ear Cases"));
     gtk_menu_attach (GTK_MENU (menu), dw->mi_clear_cases,     0, 1, i, i + 1); ++i;
     g_signal_connect_swapped (dw->mi_clear_cases, "activate", G_CALLBACK (on_clear_cases), dw);
+    g_object_unref (ag);
   }
 
   {
