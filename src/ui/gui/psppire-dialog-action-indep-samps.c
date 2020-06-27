@@ -74,6 +74,7 @@ refresh (PsppireDialogAction *da)
       value_destroy (&act->cut_point, width);
       value_destroy (&act->grp_val[0], width);
       value_destroy (&act->grp_val[1], width);
+      var_unref (act->grp_var);
       act->grp_var = NULL;
       act->grp_var_width = -1;
     }
@@ -243,7 +244,7 @@ on_grp_var_change (GtkEntry *entry, PsppireDialogActionIndepSamps *act)
   PsppireDialogAction *da = PSPPIRE_DIALOG_ACTION (act);
   const gchar *text = gtk_entry_get_text (entry);
 
-  const struct variable *v = da->dict ? psppire_dict_lookup_var (da->dict, text) : NULL;
+  struct variable *v = da->dict ? psppire_dict_lookup_var (da->dict, text) : NULL;
 
   gtk_widget_set_sensitive (act->define_groups_button, v != NULL);
 
@@ -276,7 +277,11 @@ on_grp_var_change (GtkEntry *entry, PsppireDialogActionIndepSamps *act)
         }
     }
 
-  act->grp_var = v;
+  struct variable *old_grp_var = act->grp_var;
+  if (v)
+    act->grp_var = var_ref (v);
+  if (old_grp_var)
+    var_unref (old_grp_var);
   act->grp_var_width = v ? var_get_width (v) : -1;
 }
 

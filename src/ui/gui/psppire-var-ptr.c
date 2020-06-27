@@ -28,17 +28,17 @@
 */
 
 
-/* Shallow copy the pointer */
 static gpointer
 variable_copy (gpointer var)
 {
-  return var;
+  struct variable *v = var;
+  return var_ref (v);
 }
 
-/* Do nothing. It's a pointer only! */
 static void
 variable_free (gpointer var)
 {
+  var_unref (var);
 }
 
 
