@@ -1,5 +1,6 @@
 /* PSPP - a program for statistical analysis.
-   Copyright (C) 1997-9, 2000, 2006, 2007, 2009, 2010, 2011, 2012, 2013, 2014, 2015 Free Software Foundation, Inc.
+   Copyright (C) 1997-9, 2000, 2006, 2007, 2009, 2010, 2011, 2012, 2013, 2014,
+   2015, 2020 Free Software Foundation, Inc.
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -91,8 +92,82 @@ struct dictionary
     void *changed_data;
   };
 
-static void dict_unset_split_var (struct dictionary *, struct variable *);
+static void dict_unset_split_var (struct dictionary *, struct variable *, bool);
 static void dict_unset_mrset_var (struct dictionary *, struct variable *);
+
+/* Compares two double pointers to variables, which should point
+   to elements of a struct dictionary's `var' member array. */
+static int
+compare_var_ptrs (const void *a_, const void *b_, const void *aux UNUSED)
+{
+  struct variable *const *a = a_;
+  struct variable *const *b = b_;
+
+  return *a < *b ? -1 : *a > *b;
+}
+
+static void
+unindex_var (struct dictionary *d, struct vardict_info *vardict)
+{
+  hmap_delete (&d->name_map, &vardict->name_node);
+}
+
+/* This function assumes that vardict->name_node.hash is valid, that is, that
+   its name has not changed since it was hashed (rename_var() updates this
+   hash along with the name itself). */
+static void
+reindex_var (struct dictionary *d, struct vardict_info *vardict, bool skip_callbacks)
+{
+  struct variable *old = (d->callbacks && d->callbacks->var_changed
+                          ? var_clone (vardict->var)
+                          : NULL);
+
+  struct variable *var = vardict->var;
+  var_set_vardict (var, vardict);
+  hmap_insert_fast (&d->name_map, &vardict->name_node,
+                    vardict->name_node.hash);
+
+  if (! skip_callbacks)
+    {
+      if (d->changed) d->changed (d, d->changed_data);
+      if (old)
+        {
+          d->callbacks->var_changed (d, var_get_dict_index (var), VAR_TRAIT_POSITION, old, d->cb_data);
+          var_destroy (old);
+        }
+    }
+}
+
+/* Sets the case_index in V's vardict to CASE_INDEX. */
+static void
+set_var_case_index (struct variable *v, int case_index)
+{
+  var_get_vardict (v)->case_index = case_index;
+}
+
+/* Removes the dictionary variables with indexes from FROM to TO (exclusive)
+   from name_map. */
+static void
+unindex_vars (struct dictionary *d, size_t from, size_t to)
+{
+  size_t i;
+
+  for (i = from; i < to; i++)
+    unindex_var (d, &d->var[i]);
+}
+
+/* Re-sets the dict_index in the dictionary variables with
+   indexes from FROM to TO (exclusive). */
+static void
+reindex_vars (struct dictionary *d, size_t from, size_t to, bool skip_callbacks)
+{
+  size_t i;
+
+  for (i = from; i < to; i++)
+    reindex_var (d, &d->var[i], skip_callbacks);
+}
+
+
 
 /* Returns the encoding for data in dictionary D.  The return value is a
    nonnull string that contains an IANA character set name. */
@@ -261,16 +336,271 @@ dict_clone (const struct dictionary *s)
   return d;
 }
 
+
+
+/* Returns the SPLIT FILE vars (see cmd_split_file()).  Call
+   dict_get_split_cnt() to determine how many SPLIT FILE vars
+   there are.  Returns a null pointer if and only if there are no
+   SPLIT FILE vars. */
+const struct variable *const *
+dict_get_split_vars (const struct dictionary *d)
+{
+  return d->split;
+}
+
+/* Returns the number of SPLIT FILE vars. */
+size_t
+dict_get_split_cnt (const struct dictionary *d)
+{
+  return d->split_cnt;
+}
+
+/* Removes variable V, which must be in D, from D's set of split
+   variables. */
+static void
+dict_unset_split_var (struct dictionary *d, struct variable *v, bool skip_callbacks)
+{
+  int orig_count;
+
+  assert (dict_contains_var (d, v));
+
+  orig_count = d->split_cnt;
+  d->split_cnt = remove_equal (d->split, d->split_cnt, sizeof *d->split,
+                               &v, compare_var_ptrs, NULL);
+  if (orig_count != d->split_cnt && !skip_callbacks)
+    {
+      if (d->changed) d->changed (d, d->changed_data);
+      /* We changed the set of split variables so invoke the
+         callback. */
+      if (d->callbacks &&  d->callbacks->split_changed)
+        d->callbacks->split_changed (d, d->cb_data);
+    }
+}
+
+
+/* Sets CNT split vars SPLIT in dictionary D. */
+static void
+dict_set_split_vars__ (struct dictionary *d,
+                       struct variable *const *split, size_t cnt, bool skip_callbacks)
+{
+  assert (cnt == 0 || split != NULL);
+
+  d->split_cnt = cnt;
+  if (cnt > 0)
+   {
+    d->split = xnrealloc (d->split, cnt, sizeof *d->split) ;
+    memcpy (d->split, split, cnt * sizeof *d->split);
+   }
+  else
+   {
+    free (d->split);
+    d->split = NULL;
+   }
+
+ if (!skip_callbacks)
+    {
+      if (d->changed) d->changed (d, d->changed_data);
+      if (d->callbacks &&  d->callbacks->split_changed)
+        d->callbacks->split_changed (d, d->cb_data);
+    }
+}
+
+/* Sets CNT split vars SPLIT in dictionary D. */
+void
+dict_set_split_vars (struct dictionary *d,
+                     struct variable *const *split, size_t cnt)
+{
+  dict_set_split_vars__ (d, split, cnt, false);
+}
+
+
+
+/* Deletes variable V from dictionary D and frees V.
+
+   This is a very bad idea if there might be any pointers to V
+   from outside D.  In general, no variable in the active dataset's
+   dictionary should be deleted when any transformations are
+   active on the dictionary's dataset, because those
+   transformations might reference the deleted variable.  The
+   safest time to delete a variable is just after a procedure has
+   been executed, as done by DELETE VARIABLES.
+
+   Pointers to V within D are not a problem, because
+   dict_delete_var() knows to remove V from split variables,
+   weights, filters, etc. */
+static void
+dict_delete_var__ (struct dictionary *d, struct variable *v, bool skip_callbacks)
+{
+  int dict_index = var_get_dict_index (v);
+  const int case_index = var_get_case_index (v);
+
+  assert (dict_contains_var (d, v));
+
+  dict_unset_split_var (d, v, skip_callbacks);
+  dict_unset_mrset_var (d, v);
+
+  if (d->weight == v)
+    dict_set_weight (d, NULL);
+
+  if (d->filter == v)
+    dict_set_filter (d, NULL);
+
+  dict_clear_vectors (d);
+
+  /* Remove V from var array. */
+  unindex_vars (d, dict_index, d->var_cnt);
+  remove_element (d->var, d->var_cnt, sizeof *d->var, dict_index);
+  d->var_cnt--;
+
+  /* Update dict_index for each affected variable. */
+  reindex_vars (d, dict_index, d->var_cnt, skip_callbacks);
+
+  /* Free memory. */
+  var_clear_vardict (v);
+
+  if (! skip_callbacks)
+    {
+      if (d->changed) d->changed (d, d->changed_data);
+      if (d->callbacks &&  d->callbacks->var_deleted)
+        d->callbacks->var_deleted (d, v, dict_index, case_index, d->cb_data);
+    }
+
+  invalidate_proto (d);
+  var_destroy (v);
+}
+
+/* Deletes variable V from dictionary D and frees V.
+
+   This is a very bad idea if there might be any pointers to V
+   from outside D.  In general, no variable in the active dataset's
+   dictionary should be deleted when any transformations are
+   active on the dictionary's dataset, because those
+   transformations might reference the deleted variable.  The
+   safest time to delete a variable is just after a procedure has
+   been executed, as done by DELETE VARIABLES.
+
+   Pointers to V within D are not a problem, because
+   dict_delete_var() knows to remove V from split variables,
+   weights, filters, etc. */
+void
+dict_delete_var (struct dictionary *d, struct variable *v)
+{
+  dict_delete_var__ (d, v, false);
+}
+
+
+/* Deletes the COUNT variables listed in VARS from D.  This is
+   unsafe; see the comment on dict_delete_var() for details. */
+void
+dict_delete_vars (struct dictionary *d,
+                  struct variable *const *vars, size_t count)
+{
+  /* FIXME: this can be done in O(count) time, but this algorithm
+     is O(count**2). */
+  assert (count == 0 || vars != NULL);
+
+  while (count-- > 0)
+    dict_delete_var (d, *vars++);
+}
+
+/* Deletes the COUNT variables in D starting at index IDX.  This
+   is unsafe; see the comment on dict_delete_var() for
+   details. Deleting consecutive vars will result in less callbacks
+   compared to iterating over dict_delete_var.
+   A simple while loop over dict_delete_var will
+   produce (d->var_cnt - IDX) * COUNT variable changed callbacks
+   plus COUNT variable delete callbacks.
+   This here produces d->var_cnt - IDX variable changed callbacks
+   plus COUNT variable delete callbacks. */
+void
+dict_delete_consecutive_vars (struct dictionary *d, size_t idx, size_t count)
+{
+  assert (idx + count <= d->var_cnt);
+
+  /* We need to store the variable and the corresponding case_index
+     for the delete callbacks later. We store them in a linked list.*/
+  struct delvar {
+    struct ll ll;
+    struct variable *var;
+    int case_index;
+  };
+  struct ll_list list = LL_INITIALIZER (list);
+
+  for (size_t i = idx; i < idx + count; i++)
+    {
+      struct delvar *dv = xmalloc (sizeof (struct delvar));
+      assert (dv);
+      struct variable *v = d->var[i].var;
+
+      dict_unset_split_var (d, v, false);
+      dict_unset_mrset_var (d, v);
+
+      if (d->weight == v)
+	dict_set_weight (d, NULL);
+
+      if (d->filter == v)
+	dict_set_filter (d, NULL);
+
+      dv->var = v;
+      dv->case_index = var_get_case_index (v);
+      ll_push_tail (&list, (struct ll *)dv);
+    }
+
+  dict_clear_vectors (d);
+
+  /* Remove variables from var array. */
+  unindex_vars (d, idx, d->var_cnt);
+  remove_range (d->var, d->var_cnt, sizeof *d->var, idx, count);
+  d->var_cnt -= count;
+
+  /* Reindexing will result variable-changed callback */
+  reindex_vars (d, idx, d->var_cnt, false);
+
+  invalidate_proto (d);
+  if (d->changed) d->changed (d, d->changed_data);
+
+  /* Now issue the variable delete callbacks and delete
+     the variables. The vardict is not valid at this point
+     anymore. That is the reason why we stored the
+     caseindex before reindexing. */
+  for (size_t vi = idx; vi < idx + count; vi++)
+    {
+      struct delvar *dv = (struct delvar *) ll_pop_head (&list);
+      var_clear_vardict (dv->var);
+      if (d->callbacks &&  d->callbacks->var_deleted)
+        d->callbacks->var_deleted (d, dv->var, vi, dv->case_index, d->cb_data);
+      var_destroy (dv->var);
+      free (dv);
+    }
+}
+
+/* Deletes scratch variables from dictionary D. */
+void
+dict_delete_scratch_vars (struct dictionary *d)
+{
+  int i;
+
+  /* FIXME: this can be done in O(count) time, but this algorithm
+     is O(count**2). */
+  for (i = 0; i < d->var_cnt;)
+    if (var_get_dict_class (d->var[i].var) == DC_SCRATCH)
+      dict_delete_var (d, d->var[i].var);
+    else
+      i++;
+}
+
+
+
 /* Clears the contents from a dictionary without destroying the
    dictionary itself. */
-void
-dict_clear (struct dictionary *d)
+static void
+dict_clear__ (struct dictionary *d, bool skip_callbacks)
 {
   /* FIXME?  Should we really clear case_limit, label, documents?
      Others are necessarily cleared by deleting all the variables.*/
   while (d->var_cnt > 0)
     {
-      dict_delete_var (d, d->var[d->var_cnt - 1].var);
+      dict_delete_var__ (d, d->var[d->var_cnt - 1].var, skip_callbacks);
     }
 
   free (d->var);
@@ -279,15 +609,32 @@ dict_clear (struct dictionary *d)
   invalidate_proto (d);
   hmap_clear (&d->name_map);
   d->next_value_idx = 0;
-  dict_set_split_vars (d, NULL, 0);
-  dict_set_weight (d, NULL);
-  dict_set_filter (d, NULL);
+  dict_set_split_vars__ (d, NULL, 0, skip_callbacks);
+
+  if (skip_callbacks)
+    {
+      d->weight = NULL;
+      d->filter = NULL;
+    }
+  else
+    {
+      dict_set_weight (d, NULL);
+      dict_set_filter (d, NULL);
+    }
   d->case_limit = 0;
   free (d->label);
   d->label = NULL;
   string_array_clear (&d->documents);
   dict_clear_vectors (d);
   attrset_clear (&d->attributes);
+}
+
+/* Clears the contents from a dictionary without destroying the
+   dictionary itself. */
+void
+dict_clear (struct dictionary *d)
+{
+  dict_clear__ (d, false);
 }
 
 /* Clears a dictionary and destroys it. */
@@ -298,7 +645,7 @@ _dict_destroy (struct dictionary *d)
      is being destroyed */
   d->callbacks  = NULL ;
 
-  dict_clear (d);
+  dict_clear__ (d, true);
   string_array_destroy (&d->documents);
   hmap_destroy (&d->name_map);
   attrset_destroy (&d->attributes);
@@ -549,227 +896,6 @@ dict_contains_var (const struct dictionary *d, const struct variable *v)
           && vardict_get_dictionary (var_get_vardict (v)) == d);
 }
 
-/* Compares two double pointers to variables, which should point
-   to elements of a struct dictionary's `var' member array. */
-static int
-compare_var_ptrs (const void *a_, const void *b_, const void *aux UNUSED)
-{
-  struct variable *const *a = a_;
-  struct variable *const *b = b_;
-
-  return *a < *b ? -1 : *a > *b;
-}
-
-static void
-unindex_var (struct dictionary *d, struct vardict_info *vardict)
-{
-  hmap_delete (&d->name_map, &vardict->name_node);
-}
-
-/* This function assumes that vardict->name_node.hash is valid, that is, that
-   its name has not changed since it was hashed (rename_var() updates this
-   hash along with the name itself). */
-static void
-reindex_var (struct dictionary *d, struct vardict_info *vardict)
-{
-  struct variable *old = (d->callbacks && d->callbacks->var_changed
-                          ? var_clone (vardict->var)
-                          : NULL);
-
-  struct variable *var = vardict->var;
-  var_set_vardict (var, vardict);
-  hmap_insert_fast (&d->name_map, &vardict->name_node,
-                    vardict->name_node.hash);
-
-  if (d->changed) d->changed (d, d->changed_data);
-  if (old)
-    {
-      d->callbacks->var_changed (d, var_get_dict_index (var), VAR_TRAIT_POSITION, old, d->cb_data);
-      var_destroy (old);
-    }
-}
-
-/* Sets the case_index in V's vardict to CASE_INDEX. */
-static void
-set_var_case_index (struct variable *v, int case_index)
-{
-  var_get_vardict (v)->case_index = case_index;
-}
-
-/* Removes the dictionary variables with indexes from FROM to TO (exclusive)
-   from name_map. */
-static void
-unindex_vars (struct dictionary *d, size_t from, size_t to)
-{
-  size_t i;
-
-  for (i = from; i < to; i++)
-    unindex_var (d, &d->var[i]);
-}
-
-/* Re-sets the dict_index in the dictionary variables with
-   indexes from FROM to TO (exclusive). */
-static void
-reindex_vars (struct dictionary *d, size_t from, size_t to)
-{
-  size_t i;
-
-  for (i = from; i < to; i++)
-    reindex_var (d, &d->var[i]);
-}
-
-/* Deletes variable V from dictionary D and frees V.
-
-   This is a very bad idea if there might be any pointers to V
-   from outside D.  In general, no variable in the active dataset's
-   dictionary should be deleted when any transformations are
-   active on the dictionary's dataset, because those
-   transformations might reference the deleted variable.  The
-   safest time to delete a variable is just after a procedure has
-   been executed, as done by DELETE VARIABLES.
-
-   Pointers to V within D are not a problem, because
-   dict_delete_var() knows to remove V from split variables,
-   weights, filters, etc. */
-void
-dict_delete_var (struct dictionary *d, struct variable *v)
-{
-  int dict_index = var_get_dict_index (v);
-  const int case_index = var_get_case_index (v);
-
-  assert (dict_contains_var (d, v));
-
-  dict_unset_split_var (d, v);
-  dict_unset_mrset_var (d, v);
-
-  if (d->weight == v)
-    dict_set_weight (d, NULL);
-
-  if (d->filter == v)
-    dict_set_filter (d, NULL);
-
-  dict_clear_vectors (d);
-
-  /* Remove V from var array. */
-  unindex_vars (d, dict_index, d->var_cnt);
-  remove_element (d->var, d->var_cnt, sizeof *d->var, dict_index);
-  d->var_cnt--;
-
-  /* Update dict_index for each affected variable. */
-  reindex_vars (d, dict_index, d->var_cnt);
-
-  /* Free memory. */
-  var_clear_vardict (v);
-
-  if (d->changed) d->changed (d, d->changed_data);
-
-  invalidate_proto (d);
-  if (d->callbacks &&  d->callbacks->var_deleted)
-    d->callbacks->var_deleted (d, v, dict_index, case_index, d->cb_data);
-
-  var_destroy (v);
-}
-
-/* Deletes the COUNT variables listed in VARS from D.  This is
-   unsafe; see the comment on dict_delete_var() for details. */
-void
-dict_delete_vars (struct dictionary *d,
-                  struct variable *const *vars, size_t count)
-{
-  /* FIXME: this can be done in O(count) time, but this algorithm
-     is O(count**2). */
-  assert (count == 0 || vars != NULL);
-
-  while (count-- > 0)
-    dict_delete_var (d, *vars++);
-}
-
-/* Deletes the COUNT variables in D starting at index IDX.  This
-   is unsafe; see the comment on dict_delete_var() for
-   details. Deleting consecutive vars will result in less callbacks
-   compared to iterating over dict_delete_var.
-   A simple while loop over dict_delete_var will
-   produce (d->var_cnt - IDX) * COUNT variable changed callbacks
-   plus COUNT variable delete callbacks.
-   This here produces d->var_cnt - IDX variable changed callbacks
-   plus COUNT variable delete callbacks. */
-void
-dict_delete_consecutive_vars (struct dictionary *d, size_t idx, size_t count)
-{
-  assert (idx + count <= d->var_cnt);
-
-  /* We need to store the variable and the corresponding case_index
-     for the delete callbacks later. We store them in a linked list.*/
-  struct delvar {
-    struct ll ll;
-    struct variable *var;
-    int case_index;
-  };
-  struct ll_list list = LL_INITIALIZER (list);
-
-  for (size_t i = idx; i < idx + count; i++)
-    {
-      struct delvar *dv = xmalloc (sizeof (struct delvar));
-      assert (dv);
-      struct variable *v = d->var[i].var;
-
-      dict_unset_split_var (d, v);
-      dict_unset_mrset_var (d, v);
-
-      if (d->weight == v)
-	dict_set_weight (d, NULL);
-
-      if (d->filter == v)
-	dict_set_filter (d, NULL);
-
-      dv->var = v;
-      dv->case_index = var_get_case_index (v);
-      ll_push_tail (&list, (struct ll *)dv);
-    }
-
-  dict_clear_vectors (d);
-
-  /* Remove variables from var array. */
-  unindex_vars (d, idx, d->var_cnt);
-  remove_range (d->var, d->var_cnt, sizeof *d->var, idx, count);
-  d->var_cnt -= count;
-
-  /* Reindexing will result variable-changed callback */
-  reindex_vars (d, idx, d->var_cnt);
-
-  invalidate_proto (d);
-  if (d->changed) d->changed (d, d->changed_data);
-
-  /* Now issue the variable delete callbacks and delete
-     the variables. The vardict is not valid at this point
-     anymore. That is the reason why we stored the
-     caseindex before reindexing. */
-  for (size_t vi = idx; vi < idx + count; vi++)
-    {
-      struct delvar *dv = (struct delvar *) ll_pop_head (&list);
-      var_clear_vardict (dv->var);
-      if (d->callbacks &&  d->callbacks->var_deleted)
-	d->callbacks->var_deleted (d, dv->var, vi, dv->case_index, d->cb_data);
-      var_destroy (dv->var);
-      free (dv);
-    }
-}
-
-/* Deletes scratch variables from dictionary D. */
-void
-dict_delete_scratch_vars (struct dictionary *d)
-{
-  int i;
-
-  /* FIXME: this can be done in O(count) time, but this algorithm
-     is O(count**2). */
-  for (i = 0; i < d->var_cnt;)
-    if (var_get_dict_class (d->var[i].var) == DC_SCRATCH)
-      dict_delete_var (d, d->var[i].var);
-    else
-      i++;
-}
-
 /* Moves V to 0-based position IDX in D.  Other variables in D,
    if any, retain their relative positions.  Runs in time linear
    in the distance moved. */
@@ -782,7 +908,7 @@ dict_reorder_var (struct dictionary *d, struct variable *v, size_t new_index)
 
   unindex_vars (d, MIN (old_index, new_index), MAX (old_index, new_index) + 1);
   move_element (d->var, d->var_cnt, sizeof *d->var, old_index, new_index);
-  reindex_vars (d, MIN (old_index, new_index), MAX (old_index, new_index) + 1);
+  reindex_vars (d, MIN (old_index, new_index), MAX (old_index, new_index) + 1, false);
 }
 
 /* Reorders the variables in D, placing the COUNT variables
@@ -824,7 +950,7 @@ dict_reorder_vars (struct dictionary *d,
   d->var = new_var;
 
   hmap_clear (&d->name_map);
-  reindex_vars (d, 0, d->var_cnt);
+  reindex_vars (d, 0, d->var_cnt, false);
 }
 
 /* Changes the name of variable V that is currently in a dictionary to
@@ -853,7 +979,7 @@ dict_try_rename_var (struct dictionary *d, struct variable *v,
   struct variable *old = var_clone (v);
   unindex_var (d, var_get_vardict (v));
   rename_var (v, new_name);
-  reindex_var (d, var_get_vardict (v));
+  reindex_var (d, var_get_vardict (v), false);
 
   if (settings_get_algorithm () == ENHANCED)
     var_clear_short_names (v);
@@ -929,13 +1055,13 @@ dict_rename_vars (struct dictionary *d,
           for (i = 0; i < count; i++)
             {
               rename_var (vars[i], old_names[i]);
-              reindex_var (d, var_get_vardict (vars[i]));
+              reindex_var (d, var_get_vardict (vars[i]), false);
             }
 
           pool_destroy (pool);
           return false;
         }
-      reindex_var (d, var_get_vardict (vars[i]));
+      reindex_var (d, var_get_vardict (vars[i]), false);
     }
 
   /* Clear short names. */
@@ -1150,8 +1276,8 @@ dict_set_weight (struct dictionary *d, struct variable *v)
   if (d->changed) d->changed (d, d->changed_data);
   if (d->callbacks &&  d->callbacks->weight_changed)
     d->callbacks->weight_changed (d,
-				  v ? var_get_dict_index (v) : -1,
-				  d->cb_data);
+                                  v ? var_get_dict_index (v) : -1,
+                                  d->cb_data);
 }
 
 /* Returns the filter variable in dictionary D (see cmd_filter())
@@ -1177,8 +1303,8 @@ dict_set_filter (struct dictionary *d, struct variable *v)
   if (d->changed) d->changed (d, d->changed_data);
   if (d->callbacks && d->callbacks->filter_changed)
     d->callbacks->filter_changed (d,
-				  v ? var_get_dict_index (v) : -1,
-				  d->cb_data);
+                                  v ? var_get_dict_index (v) : -1,
+                                      d->cb_data);
 }
 
 /* Returns the case limit for dictionary D, or zero if the number
@@ -1306,70 +1432,6 @@ dict_get_compacted_proto (const struct dictionary *d,
     }
   return proto;
 }
-
-/* Returns the SPLIT FILE vars (see cmd_split_file()).  Call
-   dict_get_split_cnt() to determine how many SPLIT FILE vars
-   there are.  Returns a null pointer if and only if there are no
-   SPLIT FILE vars. */
-const struct variable *const *
-dict_get_split_vars (const struct dictionary *d)
-{
-  return d->split;
-}
-
-/* Returns the number of SPLIT FILE vars. */
-size_t
-dict_get_split_cnt (const struct dictionary *d)
-{
-  return d->split_cnt;
-}
-
-/* Removes variable V, which must be in D, from D's set of split
-   variables. */
-static void
-dict_unset_split_var (struct dictionary *d, struct variable *v)
-{
-  int orig_count;
-
-  assert (dict_contains_var (d, v));
-
-  orig_count = d->split_cnt;
-  d->split_cnt = remove_equal (d->split, d->split_cnt, sizeof *d->split,
-                               &v, compare_var_ptrs, NULL);
-  if (orig_count != d->split_cnt)
-    {
-      if (d->changed) d->changed (d, d->changed_data);
-      /* We changed the set of split variables so invoke the
-         callback. */
-      if (d->callbacks &&  d->callbacks->split_changed)
-        d->callbacks->split_changed (d, d->cb_data);
-    }
-}
-
-/* Sets CNT split vars SPLIT in dictionary D. */
-void
-dict_set_split_vars (struct dictionary *d,
-                     struct variable *const *split, size_t cnt)
-{
-  assert (cnt == 0 || split != NULL);
-
-  d->split_cnt = cnt;
-  if (cnt > 0)
-   {
-    d->split = xnrealloc (d->split, cnt, sizeof *d->split) ;
-    memcpy (d->split, split, cnt * sizeof *d->split);
-   }
-  else
-   {
-    free (d->split);
-    d->split = NULL;
-   }
-
-  if (d->changed) d->changed (d, d->changed_data);
-  if (d->callbacks &&  d->callbacks->split_changed)
-    d->callbacks->split_changed (d, d->cb_data);
-}
-
 /* Returns the file label for D, or a null pointer if D is
    unlabeled (see cmd_file_label()). */
 const char *
@@ -1735,7 +1797,7 @@ dict_var_changed (const struct variable *v, unsigned int what, struct variable *
 
       if (d->changed) d->changed (d, d->changed_data);
       if (d->callbacks && d->callbacks->var_changed)
-	d->callbacks->var_changed (d, var_get_dict_index (v), what, oldvar, d->cb_data);
+        d->callbacks->var_changed (d, var_get_dict_index (v), what, oldvar, d->cb_data);
     }
   var_destroy (oldvar);
 }
