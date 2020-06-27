@@ -42,7 +42,7 @@
 /* Data parser for textual data like that read by DATA LIST. */
 struct data_parser
   {
-    const struct dictionary *dict; /*Dictionary of destination */
+    struct dictionary *dict;    /* Dictionary of destination */
     enum data_parser_type type; /* Type of data to parse. */
     int skip_records;           /* Records to skip before first real data. */
 
@@ -80,7 +80,7 @@ static void set_any_sep (struct data_parser *parser);
 
 /* Creates and returns a new data parser. */
 struct data_parser *
-data_parser_create (const struct dictionary *dict)
+data_parser_create (struct dictionary *dict)
 {
   struct data_parser *parser = xmalloc (sizeof *parser);
 
@@ -90,7 +90,7 @@ data_parser_create (const struct dictionary *dict)
   parser->fields = NULL;
   parser->field_cnt = 0;
   parser->field_allocated = 0;
-  parser->dict = dict;
+  parser->dict = dict_ref (dict);
 
   parser->span = true;
   parser->empty_line_has_field = false;
@@ -115,6 +115,7 @@ data_parser_destroy (struct data_parser *parser)
     {
       size_t i;
 
+      dict_unref (parser->dict);
       for (i = 0; i < parser->field_cnt; i++)
         free (parser->fields[i].name);
       free (parser->fields);
@@ -821,9 +822,9 @@ data_parser_casereader_destroy (struct casereader *reader, void *r_)
   struct data_parser_casereader *r = r_;
   if (dfm_reader_error (r->reader))
     casereader_force_error (reader);
-  data_parser_destroy (r->parser);
   dfm_close_reader (r->reader);
   caseproto_unref (r->proto);
+  data_parser_destroy (r->parser);
   free (r);
 }
 
