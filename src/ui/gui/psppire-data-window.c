@@ -1230,7 +1230,7 @@ create_file_menu (PsppireDataWindow *dw)
   }
 
   GtkWidget *open = gtk_menu_item_new_with_mnemonic (_("_Open"));
-  connect_action_to_menuitem (G_ACTION_MAP (dw), "open", open, "<Ctrl>O");
+  connect_action_to_menuitem (G_ACTION_MAP (dw), "open", open, "<Primary>O");
 
   GtkWidget *import = gtk_menu_item_new_with_mnemonic (_("_Import Data..."));
   connect_action_to_menuitem (G_ACTION_MAP (dw), "file-import", import, 0);
@@ -1241,10 +1241,10 @@ create_file_menu (PsppireDataWindow *dw)
   gtk_menu_attach (GTK_MENU (menu), gtk_separator_menu_item_new (), 0, 1, 3, 4);
 
   GtkWidget *save = gtk_menu_item_new_with_mnemonic (_("_Save..."));
-  connect_action_to_menuitem (G_ACTION_MAP (dw), "save", save, "<Ctrl>S");
+  connect_action_to_menuitem (G_ACTION_MAP (dw), "save", save, "<Primary>S");
 
   GtkWidget *save_as = gtk_menu_item_new_with_mnemonic (_("Save _As..."));
-  connect_action_to_menuitem (G_ACTION_MAP (dw), "save-as", save_as, "<Shift><Ctrl>S");
+  connect_action_to_menuitem (G_ACTION_MAP (dw), "save-as", save_as, "<Shift><Primary>S");
 
   GtkWidget *rename_dataset = gtk_menu_item_new_with_mnemonic (_("_Rename Dataset..."));
   connect_action_to_menuitem (G_ACTION_MAP (dw), "rename-dataset", rename_dataset, 0);
@@ -1328,7 +1328,7 @@ create_file_menu (PsppireDataWindow *dw)
     gtk_menu_attach (GTK_MENU (menu), quit,     0, 1, 13, 14);
 
     connect_action_to_menuitem (G_ACTION_MAP (g_application_get_default ()),
-				"quit", quit, "<Ctrl>Q");
+				"quit", quit, "<Primary>Q");
   }
 
   g_object_set (menuitem, "submenu", menu, NULL);
@@ -1367,6 +1367,8 @@ create_edit_menu (PsppireDataWindow *dw)
 
   {
     GtkAccelGroup *ag = gtk_accel_group_new ();
+    guint key;
+    GdkModifierType modifier;
 
     dw->mi_edit_separator = gtk_separator_menu_item_new ();
     gtk_menu_attach (GTK_MENU (menu), dw->mi_edit_separator, 0, 1, i, i + 1); ++i;
@@ -1376,20 +1378,23 @@ create_edit_menu (PsppireDataWindow *dw)
     g_signal_connect_swapped (dw->mi_cut, "activate", G_CALLBACK (on_cut), dw);
 
     gtk_window_add_accel_group (GTK_WINDOW (dw), ag);
+    gtk_accelerator_parse ("<Primary>X", &key, &modifier);
     gtk_widget_add_accelerator (dw->mi_cut, "activate", ag,
-				'X', GDK_CONTROL_MASK, GTK_ACCEL_VISIBLE);
+				key, modifier, GTK_ACCEL_VISIBLE);
 
     dw->mi_copy = gtk_menu_item_new_with_mnemonic (_("_Copy"));
     gtk_menu_attach (GTK_MENU (menu), dw->mi_copy,     0, 1, i, i + 1); ++i;
     g_signal_connect_swapped (dw->mi_copy, "activate", G_CALLBACK (on_copy), dw);
+    gtk_accelerator_parse ("<Primary>C", &key, &modifier);
     gtk_widget_add_accelerator (dw->mi_copy, "activate", ag,
-				'C', GDK_CONTROL_MASK, GTK_ACCEL_VISIBLE);
+				key, modifier, GTK_ACCEL_VISIBLE);
 
     dw->mi_paste = gtk_menu_item_new_with_mnemonic (_("_Paste"));
     gtk_menu_attach (GTK_MENU (menu), dw->mi_paste,     0, 1, i, i + 1); ++i;
     g_signal_connect_swapped (dw->mi_paste, "activate", G_CALLBACK (on_paste), dw);
+    gtk_accelerator_parse ("<Primary>V", &key, &modifier);
     gtk_widget_add_accelerator (dw->mi_paste, "activate", ag,
-				'V', GDK_CONTROL_MASK, GTK_ACCEL_VISIBLE);
+				key, modifier, GTK_ACCEL_VISIBLE);
 
     dw->mi_clear_variables = gtk_menu_item_new_with_mnemonic (_("Clear _Variables"));
     gtk_menu_attach (GTK_MENU (menu), dw->mi_clear_variables,     0, 1, i, i + 1); ++i;

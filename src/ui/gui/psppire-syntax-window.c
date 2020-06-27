@@ -906,7 +906,7 @@ psppire_syntax_window_init (PsppireSyntaxWindow *window)
 			      G_CALLBACK (psppire_window_save),
 			      window);
 
-    const gchar *accels[2] = { "<Ctrl>S", NULL};
+    const gchar *accels[2] = { "<Primary>S", NULL};
     gtk_application_set_accels_for_action (app,
 					   "win.save",
 					   accels);
@@ -924,7 +924,7 @@ psppire_syntax_window_init (PsppireSyntaxWindow *window)
 			      window);
 
 
-    const gchar *accels[2] = { "<Shift><Ctrl>S", NULL};
+    const gchar *accels[2] = { "<Shift><Primary>S", NULL};
     gtk_application_set_accels_for_action (app,
 					   "win.save_as",
 					   accels);
@@ -976,7 +976,7 @@ psppire_syntax_window_init (PsppireSyntaxWindow *window)
     g_action_map_add_action (G_ACTION_MAP (window), G_ACTION (run_current_line));
 
     GtkApplication *app = GTK_APPLICATION (g_application_get_default ());
-    const gchar *accels[2] = { "<Ctrl>R", NULL};
+    const gchar *accels[2] = { "<Primary>R", NULL};
     gtk_application_set_accels_for_action (app,
 					   "win.run-current-line",
 					   accels);

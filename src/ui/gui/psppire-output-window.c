@@ -535,7 +535,7 @@ psppire_output_window_init (PsppireOutputWindow *window)
     g_action_map_add_action (G_ACTION_MAP (window), G_ACTION (print));
 
 
-    const gchar *accels[2] = { "<Ctrl>P", NULL};
+    const gchar *accels[2] = { "<Primary>P", NULL};
     gtk_application_set_accels_for_action (app,
 					   "win.print",
 					   accels);
@@ -557,7 +557,7 @@ psppire_output_window_init (PsppireOutputWindow *window)
     GSimpleAction *copy = g_simple_action_new ("copy", NULL);
     g_action_map_add_action (G_ACTION_MAP (window), G_ACTION (copy));
 
-    const gchar *accels[2] = { "<Ctrl>C", NULL};
+    const gchar *accels[2] = { "<Primary>C", NULL};
     gtk_application_set_accels_for_action (app,
 					   "win.copy",
 					   accels);
