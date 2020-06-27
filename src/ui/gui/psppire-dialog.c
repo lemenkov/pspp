@@ -432,6 +432,8 @@ psppire_dialog_run (PsppireDialog *dialog)
 
   g_signal_emit (dialog, signals [RESPONSE], 0, dialog->response);
 
+  g_free (title);
+
   return dialog->response;
 }
 
