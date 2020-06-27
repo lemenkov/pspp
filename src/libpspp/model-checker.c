@@ -886,7 +886,7 @@ struct mc_results
 static struct mc_results *
 mc_results_create (void)
 {
-  struct mc_results *results = xcalloc (1, sizeof (struct mc_results));
+  struct mc_results *results = XCALLOC (1,  struct mc_results);
   results->stop_reason = MC_CONTINUING;
   gettimeofday (&results->start, NULL);
   return results;

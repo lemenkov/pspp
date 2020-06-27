@@ -213,7 +213,7 @@ next_matrix_from_reader (struct matrix_material *mm,
   mm->mean_matrix = mr->mean_vectors;
   mm->var_matrix = mr->var_vectors;
 
-  struct substring *var_names = xcalloc (n_vars, sizeof *var_names);
+  struct substring *var_names = XCALLOC (n_vars,  struct substring);
   for (int i = 0; i < n_vars; ++i)
     {
       ss_alloc_substring (var_names + i, ss_cstr (var_get_name (vars[i])));

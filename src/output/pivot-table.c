@@ -1138,7 +1138,7 @@ pivot_table_enumerate_axis (const struct pivot_table *table,
                                                 axis->n_dimensions), 1),
                                   sizeof *enumeration);
   size_t *p = enumeration;
-  size_t *dindexes = xcalloc (table->n_dimensions, sizeof *dindexes);
+  size_t *dindexes = XCALLOC (table->n_dimensions, size_t);
 
   size_t *axis_indexes;
   PIVOT_AXIS_FOR_EACH (axis_indexes, axis)
@@ -1515,7 +1515,7 @@ pivot_table_dump (const struct pivot_table *table, int indentation)
     pivot_dimension_dump (table->dimensions[i], indentation);
 
   /* Presentation and data indexes. */
-  size_t *dindexes = xcalloc (table->n_dimensions, sizeof *dindexes);
+  size_t *dindexes = XCALLOC (table->n_dimensions, size_t);
 
   const struct pivot_axis *layer_axis = &table->axes[PIVOT_AXIS_LAYER];
   if (layer_axis->n_dimensions)

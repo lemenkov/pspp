@@ -118,7 +118,7 @@ median_execute (const struct dataset *ds,
   const bool n_sample_test = (value_compare_3way (&nst->val2, &nst->val1,
 				       var_get_width (nst->indep_var)) > 0);
 
-  struct results *results = xcalloc (nst->n_vars, sizeof (*results));
+  struct results *results = XCALLOC (nst->n_vars,  struct results);
   int n_vals = 0;
   for (v = 0; v < nst->n_vars; ++v)
     {

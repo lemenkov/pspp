@@ -145,7 +145,7 @@ ks_one_sample_execute (const struct dataset *ds,
   int v;
   struct casereader *r = casereader_clone (input);
 
-  struct ks *ks = xcalloc (ost->n_vars, sizeof *ks);
+  struct ks *ks = XCALLOC (ost->n_vars,  struct ks);
 
   for (v = 0; v < ost->n_vars; ++v)
     {

@@ -712,7 +712,7 @@ do_roc (struct cmd_roc *roc, struct casereader *reader, struct dictionary *dict)
 {
   int i;
 
-  struct roc_state *rs = xcalloc (roc->n_vars, sizeof *rs);
+  struct roc_state *rs = XCALLOC (roc->n_vars,  struct roc_state);
 
   struct casereader *negatives = NULL;
   struct casereader *positives = NULL;

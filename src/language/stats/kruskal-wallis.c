@@ -137,7 +137,7 @@ kruskal_wallis_execute (const struct dataset *ds,
 
   int total_n_groups = 0.0;
 
-  struct kw *kw = xcalloc (nst->n_vars, sizeof *kw);
+  struct kw *kw = XCALLOC (nst->n_vars,  struct kw);
 
   /* If the independent variable is missing, then we ignore the case */
   input = casereader_create_filter_missing (input,

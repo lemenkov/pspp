@@ -339,7 +339,7 @@ pivot_table_submit_layer (const struct pivot_table *pt,
       out->b = in->color.b;
     }
 
-  struct footnote **footnotes = xcalloc (pt->n_footnotes, sizeof *footnotes);
+  struct footnote **footnotes = XCALLOC (pt->n_footnotes,  struct footnote *);
   for (size_t i = 0; i < pt->n_footnotes; i++)
     {
       const struct pivot_footnote *pf = pt->footnotes[i];
@@ -388,7 +388,7 @@ pivot_table_submit_layer (const struct pivot_table *pt,
                     pt->show_values, pt->show_variables,
                     false, pt->rotate_outer_row_labels);
 
-  size_t *dindexes = xcalloc (pt->n_dimensions, sizeof *dindexes);
+  size_t *dindexes = XCALLOC (pt->n_dimensions, size_t);
   size_t y = 0;
   PIVOT_ENUMERATION_FOR_EACH (pindexes[PIVOT_AXIS_ROW], row_enumeration,
                               &pt->axes[PIVOT_AXIS_ROW])

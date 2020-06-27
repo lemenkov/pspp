@@ -392,8 +392,8 @@ ssq_type1 (struct covariance *cov, gsl_vector *ssq, const struct glm_spec *cmd)
   const gsl_matrix *cm = covariance_calculate_unnormalized (cov);
   size_t i;
   size_t k;
-  bool *model_dropped = xcalloc (covariance_dim (cov), sizeof (*model_dropped));
-  bool *submodel_dropped = xcalloc (covariance_dim (cov), sizeof (*submodel_dropped));
+  bool *model_dropped = XCALLOC (covariance_dim (cov), bool);
+  bool *submodel_dropped = XCALLOC (covariance_dim (cov), bool);
   const struct categoricals *cats = covariance_get_categoricals (cov);
 
   size_t n_dropped_model = 0;
@@ -461,8 +461,8 @@ ssq_type2 (struct covariance *cov, gsl_vector *ssq, const struct glm_spec *cmd)
   const gsl_matrix *cm = covariance_calculate_unnormalized (cov);
   size_t i;
   size_t k;
-  bool *model_dropped = xcalloc (covariance_dim (cov), sizeof (*model_dropped));
-  bool *submodel_dropped = xcalloc (covariance_dim (cov), sizeof (*submodel_dropped));
+  bool *model_dropped = XCALLOC (covariance_dim (cov), bool);
+  bool *submodel_dropped = XCALLOC (covariance_dim (cov), bool);
   const struct categoricals *cats = covariance_get_categoricals (cov);
 
   for (k = 0; k < cmd->n_interactions; k++)
@@ -524,8 +524,8 @@ ssq_type3 (struct covariance *cov, gsl_vector *ssq, const struct glm_spec *cmd)
   const gsl_matrix *cm = covariance_calculate_unnormalized (cov);
   size_t i;
   size_t k;
-  bool *model_dropped = xcalloc (covariance_dim (cov), sizeof (*model_dropped));
-  bool *submodel_dropped = xcalloc (covariance_dim (cov), sizeof (*submodel_dropped));
+  bool *model_dropped = XCALLOC (covariance_dim (cov), bool);
+  bool *submodel_dropped = XCALLOC (covariance_dim (cov), bool);
   const struct categoricals *cats = covariance_get_categoricals (cov);
 
   double ss0;

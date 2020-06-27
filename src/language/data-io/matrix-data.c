@@ -137,7 +137,7 @@ preprocess (struct casereader *casereader0, const struct dictionary *dict, void 
   /* Make an initial pass to populate our temporary matrix */
   struct casereader *pass0 = casereader_clone (casereader0);
   struct ccase *c;
-  union value *prev_values = xcalloc (mformat->n_split_vars, sizeof *prev_values);
+  union value *prev_values = XCALLOC (mformat->n_split_vars,  union value);
   int row = (mformat->triangle == LOWER && mformat->diagonal == NO_DIAGONAL) ? 1 : 0;
   bool first_case = true;
   for (; (c = casereader_read (pass0)) != NULL; case_unref (c))

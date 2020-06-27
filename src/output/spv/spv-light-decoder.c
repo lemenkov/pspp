@@ -565,7 +565,7 @@ decode_spvlb_group (const struct pivot_table *table,
                     struct pivot_dimension *dimension,
                     const char *encoding)
 {
-  category->subs = xcalloc (n_categories, sizeof *category->subs);
+  category->subs = XCALLOC (n_categories, struct pivot_category *);
   category->n_subs = 0;
   category->allocated_subs = 0;
   category->show_label = show_label;
@@ -633,9 +633,8 @@ decode_spvlb_dimension (const struct pivot_table *table,
 
   /* Allocate and fill the array of leaves now that we know how many there
      are. */
-  out->data_leaves = xcalloc (out->n_leaves, sizeof *out->data_leaves);
-  out->presentation_leaves = xcalloc (out->n_leaves,
-                                      sizeof *out->presentation_leaves);
+  out->data_leaves = XCALLOC (out->n_leaves, struct pivot_category *);
+  out->presentation_leaves = XCALLOC (out->n_leaves, struct pivot_category *);
   out->allocated_leaves = out->n_leaves;
   error = fill_leaves (out->root, out);
   if (error)
@@ -689,7 +688,7 @@ decode_spvlb_axis (const uint32_t *dimension_indexes, size_t n_dimensions,
                    enum pivot_axis_type axis_type, struct pivot_table *table)
 {
   struct pivot_axis *axis = &table->axes[axis_type];
-  axis->dimensions = xcalloc (n_dimensions, sizeof *axis->dimensions);
+  axis->dimensions = XCALLOC (n_dimensions, struct pivot_dimension *);
   axis->n_dimensions = n_dimensions;
   axis->extent = 1;
   for (size_t i = 0; i < n_dimensions; i++)
@@ -1004,7 +1003,7 @@ decode_spvlb_table (const struct spvlb_table *in, struct pivot_table **outp)
 
   /* Dimensions. */
   out->n_dimensions = in->dimensions->n_dims;
-  out->dimensions = xcalloc (out->n_dimensions, sizeof *out->dimensions);
+  out->dimensions = XCALLOC (out->n_dimensions, struct pivot_dimension *);
   for (size_t i = 0; i < out->n_dimensions; i++)
     {
       error = decode_spvlb_dimension (out, in->dimensions->dims[i],

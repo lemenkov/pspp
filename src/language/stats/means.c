@@ -537,7 +537,7 @@ populate_table (const struct means *means, const struct mtable *mt,
                 const struct cell *cell,
                 struct pivot_table *pt)
 {
-  size_t *indexes = xcalloc (pt->n_dimensions, sizeof *indexes);
+  size_t *indexes = XCALLOC (pt->n_dimensions, size_t);
   for (int v = 0; v < mt->n_dep_vars; ++v)
     {
       for (int s = 0; s < means->n_statistics; ++s)

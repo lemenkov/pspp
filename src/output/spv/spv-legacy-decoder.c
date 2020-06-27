@@ -865,7 +865,7 @@ decode_spvdx_derived_variable (const struct spvxml_node *node,
         return &BAD_REFERENCE;
 
       n_values = existing_series->n_values;
-      values = xcalloc (n_values, sizeof *values);
+      values = XCALLOC (n_values, struct spv_data_value);
       for (size_t i = 0; i < n_values; i++)
         values[i].width = -1;
     }
@@ -1638,9 +1638,9 @@ decode_set_cell_properties__ (struct pivot_table *table,
     {
       /* Formatting for individual cells or groups of them with some dimensions
          in common. */
-      int **indexes = xcalloc (table->n_dimensions, sizeof *indexes);
-      size_t *n = xcalloc (table->n_dimensions, sizeof *n);
-      size_t *allocated = xcalloc (table->n_dimensions, sizeof *allocated);
+      int **indexes = XCALLOC (table->n_dimensions, int *);
+      size_t *n = XCALLOC (table->n_dimensions, size_t);
+      size_t *allocated = XCALLOC (table->n_dimensions, size_t);
 
       for (size_t i = 0; i < intersect->n_where; i++)
         {

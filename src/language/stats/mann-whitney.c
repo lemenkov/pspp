@@ -94,7 +94,7 @@ mann_whitney_execute (const struct dataset *ds,
   const struct caseproto *proto = casereader_get_proto (input);
   size_t rank_idx = caseproto_get_n_widths (proto);
 
-  struct mw *mw = xcalloc (nst->n_vars, sizeof *mw);
+  struct mw *mw = XCALLOC (nst->n_vars,  struct mw);
 
   for (i = 0; i < nst->n_vars; ++i)
     {

@@ -83,7 +83,7 @@ mcnemar_execute (const struct dataset *ds,
 
   struct casereader *r = input;
 
-  struct mcnemar *mc = xcalloc (t2s->n_pairs, sizeof *mc);
+  struct mcnemar *mc = XCALLOC (t2s->n_pairs,  struct mcnemar);
 
   for (i = 0 ; i < t2s->n_pairs; ++i)
     {

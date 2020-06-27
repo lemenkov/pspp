@@ -148,8 +148,8 @@ all_variables (struct dictionary *dict)
   size_t var_count = n_sets + string_set_count (&var_names);
 
   /* Allocate an array of var_or_mrset pointers (initially null). */
-  struct var_or_mrset *var_or_mrset_array = xcalloc (
-    var_count, sizeof *var_or_mrset_array);
+  struct var_or_mrset *var_or_mrset_array
+    = XCALLOC (var_count, struct var_or_mrset);
 
   /* Fill the array. */
   struct string_set added_mrsets = STRING_SET_INITIALIZER (added_mrsets);

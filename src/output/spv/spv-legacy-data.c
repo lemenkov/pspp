@@ -347,7 +347,7 @@ spv_legacy_data_decode (const uint8_t *in, size_t size, struct spv_data *out)
       goto error;
     }
 
-  out->sources = xcalloc (lb->n_sources, sizeof *out->sources);
+  out->sources = XCALLOC (lb->n_sources, struct spv_data_source);
   out->n_sources = lb->n_sources;
 
   for (size_t i = 0; i < lb->n_sources; i++)

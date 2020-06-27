@@ -116,7 +116,7 @@ runs_execute (const struct dataset *ds,
 
   struct one_sample_test *otp = UP_CAST (test, struct one_sample_test, parent);
   struct runs_test *rt = UP_CAST (otp, struct runs_test, parent);
-  struct run_state *rs = xcalloc (otp->n_vars, sizeof (*rs));
+  struct run_state *rs = XCALLOC (otp->n_vars,  struct run_state);
 
   switch  (rt->cp_mode)
     {

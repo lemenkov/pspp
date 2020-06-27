@@ -101,7 +101,7 @@ friedman_execute (const struct dataset *ds,
   bool warn = true;
 
   double sigma_t = 0.0;
-  struct datum *row = xcalloc (ost->n_vars, sizeof *row);
+  struct datum *row = XCALLOC (ost->n_vars,  struct datum);
   double rsq;
   struct friedman fr;
   fr.rank_sum = xcalloc (ost->n_vars, sizeof *fr.rank_sum);
