@@ -1,5 +1,5 @@
 /* PSPPIRE - a graphical user interface for PSPP.
-   Copyright (C) 2017 Free Software Foundation
+   Copyright (C) 2017, 2020 Free Software Foundation
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -43,7 +43,6 @@ enum
 
 enum {MAX_LINE_LEN = 16384};  /* Max length of an acceptable line. */
 
-
 static void
 read_lines (PsppireTextFile *tf)
 {
@@ -78,7 +77,7 @@ read_lines (PsppireTextFile *tf)
 		     tf->file_name, MAX_LINE_LEN);
 	      line_reader_close (reader);
 	      for (i = 0; i < tf->line_cnt; i++)
-		g_free (&tf->lines[i]);
+                g_free (tf->lines[i].string);
 	      tf->line_cnt = 0;
 	      ds_destroy (&input);
 	      return;
@@ -88,7 +87,7 @@ read_lines (PsppireTextFile *tf)
 	    = recode_substring_pool ("UTF-8",
 				     line_reader_get_encoding (reader),
 				     input.ss, NULL);
-	}
+        }
       ds_destroy (&input);
 
       if (tf->line_cnt == 0)
@@ -97,7 +96,7 @@ read_lines (PsppireTextFile *tf)
 	  msg (ME, _("`%s' is empty."), tf->file_name);
 	  line_reader_close (reader);
 	  for (i = 0; i < tf->line_cnt; i++)
-	    g_free (&tf->lines[i]);
+	    g_free (tf->lines[i].string);
 	  tf->line_cnt = 0;
 	  goto done;
 	}
@@ -512,6 +511,9 @@ static void
 psppire_text_file_finalize (GObject *object)
 {
   PsppireTextFile *tf = PSPPIRE_TEXT_FILE (object);
+
+  for (int i = 0; i < tf->line_cnt; i++)
+    g_free (tf->lines[i].string);
 
   g_free (tf->encoding);
   g_free (tf->file_name);
