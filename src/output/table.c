@@ -176,7 +176,7 @@ struct table *
 table_from_string (const char *text)
 {
   struct table *t = table_create (1, 1, 0, 0, 0, 0);
-  t->styles[0] = xmalloc (sizeof *t->styles[0]);
+  t->styles[0] = pool_alloc (t->container, sizeof *t->styles[0]);
   *t->styles[0] = (struct area_style) {
     AREA_STYLE_INITIALIZER__,
     .cell_style.halign = TABLE_HALIGN_LEFT,
