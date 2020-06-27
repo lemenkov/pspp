@@ -793,6 +793,9 @@ psppire_output_view_destroy (struct psppire_output_view *view)
 
   xr_driver_destroy (view->xr);
 
+  if (view->cur_group)
+    gtk_tree_path_free (view->cur_group);
+
   free (view);
 }
 
