@@ -294,3 +294,36 @@ Table: Datasets
 unnamed dataset (active dataset)
 ])
 AT_CLEANUP
+
+
+
+dnl The bug for which the following test checks, is apparent only
+dnl when compiled with -fsanitize=address or run under valgrind
+AT_SETUP([DATASET heap overflow])
+AT_DATA([dataset.pspp], [dnl
+DATASET DECLARE initial.
+DATA LIST /x 1.
+
+DATASET COPY subsq.
+
+DATA LIST /y 2-4.
+BEGIN DATA.
+7
+END DATA.
+
+DATASET ACTIVATE subsq.
+
+LIST.
+])
+
+AT_CHECK([pspp -O format=csv dataset.pspp], [0], [dnl
+Table: Reading 1 record from INLINE.
+Variable,Record,Columns,Format
+x,1,1-  1,F1.0
+
+Table: Reading 1 record from INLINE.
+Variable,Record,Columns,Format
+y,1,2-  4,F3.0
+])
+
+AT_CLEANUP
