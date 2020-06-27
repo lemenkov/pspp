@@ -326,6 +326,7 @@ insert_menuitem_into_menu (PsppireWindow *window, gpointer key)
   GtkWidget *item;
   filename = g_filename_display_name (key);
   item = gtk_check_menu_item_new_with_label (filename);
+  g_object_ref_sink (item);
   g_free (filename);
 
   g_hash_table_insert (window->menuitem_table, key, item);
@@ -411,17 +412,19 @@ psppire_window_init (PsppireWindow *window)
   window->list_name = NULL;
   window->edited = NULL;
 
-  window->menuitem_table  = g_hash_table_new (g_str_hash, g_str_equal);
+  window->menuitem_table  = g_hash_table_new_full (g_str_hash, g_str_equal,
+                                                   NULL, g_object_unref);
 
 
   g_signal_connect (window,  "realize", G_CALLBACK (insert_existing_items), NULL);
 
-  window->insert_handler = g_signal_connect (psppire_window_register_new (),
+  PsppireWindowRegister *reg = psppire_window_register_new ();
+  window->insert_handler = g_signal_connect (reg,
 					     "inserted",
 					     G_CALLBACK (insert_menuitem),
 					     window);
 
-  window->remove_handler = g_signal_connect (psppire_window_register_new (),
+  window->remove_handler = g_signal_connect (reg,
 					     "removed",
 					     G_CALLBACK (remove_menuitem),
 					     window);
