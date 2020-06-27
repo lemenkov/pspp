@@ -163,6 +163,10 @@ create_data_row_header_popup_menu (PsppireDataSheet *sheet)
 {
   GtkWidget *menu = gtk_menu_new ();
 
+  /* gtk_menu_shell_append does not sink/ref this object,
+     so we must do it ourselves (and remember to unref it).  */
+  g_object_ref_sink (menu);
+
   GtkWidget *item =
     gtk_menu_item_new_with_mnemonic  (_("_Insert Case"));
 
@@ -288,12 +292,14 @@ psppire_data_sheet_delete_variables (PsppireDataSheet *sheet)
   gtk_widget_queue_draw (GTK_WIDGET (sheet));
 }
 
-
-
 static GtkWidget *
 create_data_column_header_popup_menu (PsppireDataSheet *sheet)
 {
   GtkWidget *menu = gtk_menu_new ();
+
+  /* gtk_menu_shell_append does not sink/ref this object,
+     so we must do it ourselves (and remember to unref it).  */
+  g_object_ref_sink (menu);
 
   GtkWidget *item =
     gtk_menu_item_new_with_mnemonic  (_("_Insert Variable"));
@@ -345,12 +351,15 @@ static gboolean dispose_has_run = FALSE;
 static void
 psppire_data_sheet_dispose (GObject *obj)
 {
-  //  PsppireDataSheet *sheet = PSPPIRE_DATA_SHEET (obj);
+  PsppireDataSheet *sheet = PSPPIRE_DATA_SHEET (obj);
 
   if (dispose_has_run)
     return;
 
   dispose_has_run = TRUE;
+
+  g_object_unref (sheet->data_sheet_cases_column_popup);
+  g_object_unref (sheet->data_sheet_cases_row_popup);
 
   /* Chain up to the parent class */
   G_OBJECT_CLASS (parent_class)->dispose (obj);

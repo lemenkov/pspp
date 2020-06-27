@@ -266,6 +266,10 @@ create_var_row_header_popup_menu (PsppireVariableSheet *var_sheet)
 {
   GtkWidget *menu = gtk_menu_new ();
 
+  /* gtk_menu_shell_append does not sink/ref this object,
+     so we must do it ourselves (and remember to unref it).  */
+  g_object_ref_sink (menu);
+
   GtkWidget *item =
     gtk_menu_item_new_with_mnemonic  (_("_Insert Variable"));
   g_signal_connect_swapped (item, "activate", G_CALLBACK (insert_new_variable_var),
@@ -432,6 +436,7 @@ psppire_variable_sheet_dispose (GObject *obj)
   g_object_unref (sheet->value_label_renderer);
   g_object_unref (sheet->missing_values_renderer);
   g_object_unref (sheet->var_type_renderer);
+  g_object_unref (sheet->row_popup);
 
   /* Chain up to the parent class */
   G_OBJECT_CLASS (parent_class)->dispose (obj);
@@ -592,7 +597,6 @@ psppire_variable_sheet_init (PsppireVariableSheet *sheet)
 			  sheet->var_type_dispatch);
 
   sheet->row_popup = create_var_row_header_popup_menu (sheet);
-
 
   g_signal_connect (sheet, "selection-changed",
 		    G_CALLBACK (set_var_popup_sensitivity), sheet);
