@@ -302,6 +302,8 @@ parse_dict_keep (struct lexer *lexer, struct dictionary *dict)
   dict_reorder_vars (dict, v, nv);
 
   /* Delete the remaining variables. */
+  if (dict_get_var_cnt (dict) == nv)
+    return true;
   v = xnrealloc (v, dict_get_var_cnt (dict) - nv, sizeof *v);
   for (i = nv; i < dict_get_var_cnt (dict); i++)
     v[i - nv] = dict_get_var (dict, i);
