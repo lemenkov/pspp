@@ -175,7 +175,7 @@ psppire_set_lexer (struct lexer *lexer)
 
 
 GtkWindow *
-psppire_preload_file (const gchar *file)
+psppire_preload_file (const gchar *file, GtkWindow *victim)
 {
   const gchar *local_encoding = "UTF-8";
 
@@ -191,7 +191,7 @@ psppire_preload_file (const gchar *file)
   /* Check to see if the file is a .sav or a .por file.  If not
      assume that it is a syntax file */
   if (retval == 1)
-    w = open_data_window (NULL, filename, NULL, NULL);
+    w = open_data_window (PSPPIRE_WINDOW (victim), filename, NULL, NULL);
   else if (retval == 0)
     {
       char *error = spv_detect (filename);

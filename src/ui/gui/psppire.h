@@ -48,7 +48,7 @@ void psppire_set_lexer (struct lexer *);
 
 void register_selection_functions (void);
 
-GtkWindow * psppire_preload_file (const gchar *file);
+GtkWindow * psppire_preload_file (const gchar *file, GtkWindow *victim);
 
 
 #endif /* PSPPIRE_H */

@@ -238,7 +238,6 @@ wait_for_splash (GApplication *app, GtkWindow *x)
     }
 }
 
-
 static void
 on_activate (GApplication * app, gpointer ud)
 {
@@ -250,15 +249,50 @@ on_activate (GApplication * app, gpointer ud)
   wait_for_splash (app, x);
 }
 
+GtkWindow *
+find_empty_data_window (GApplication *app)
+{
+  GList *wl = gtk_application_get_windows (GTK_APPLICATION (app));
+  while (wl)
+    {
+      if (wl->data && PSPPIRE_IS_DATA_WINDOW (GTK_WINDOW (wl->data)) &&
+          psppire_data_window_is_empty (PSPPIRE_DATA_WINDOW (wl->data)))
+        return GTK_WINDOW (wl->data);
+      wl = wl->next;
+    }
+  return NULL;
+}
+
+GtkWindow *
+find_psppire_window (GApplication *app)
+{
+  GList *wl = gtk_application_get_windows (GTK_APPLICATION (app));
+  while (wl)
+    {
+      if (wl->data && PSPPIRE_IS_WINDOW (GTK_WINDOW (wl->data)))
+        return GTK_WINDOW (wl->data);
+      wl = wl->next;
+    }
+  return NULL;
+}
 
 static void
 on_open (GApplication *app, GFile **files, gint n_files, gchar * hint,
          gpointer ud)
 {
-  post_initialise (app);
+  /* If the application is already open and we open another file
+     via xdg-open on linux or via the file manager, then open is
+     called. Check if we already have a psppire window. */
+  if (find_psppire_window (app) == NULL)
+    post_initialise (app);
+
+  /* When a new data file is opened, then try to find an empty
+     data window which will then be replaced as in the open file
+     dialog */
+  GtkWindow *victim = find_empty_data_window (app);
 
   gchar *file = g_file_get_parse_name (files[0]);
-  GtkWindow *x = psppire_preload_file (file);
+  GtkWindow *x = psppire_preload_file (file, victim);
   g_free (file);
 
   wait_for_splash (app, x);
