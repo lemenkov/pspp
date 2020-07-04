@@ -1,5 +1,5 @@
 /* PSPPIRE - a graphical user interface for PSPP.
-   Copyright (C) 2016  Free Software Foundation
+   Copyright (C) 2016, 2020  Free Software Foundation
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -42,11 +42,10 @@ value_variant_new (const union value *in, int width)
     vv[IDX_DATA] = g_variant_new_double (in->f);
   else
     {
-      gchar *q = xmalloc (width + 1);
+      gchar *q = xmalloc (width);
       memcpy (q, in->s, width);
-      q[width] = '\0';
-      vv[IDX_DATA] = g_variant_new_from_data (G_VARIANT_TYPE_BYTESTRING, q,
-					      width + 1, FALSE, NULL, NULL);
+      vv[IDX_DATA] = g_variant_new_fixed_array (G_VARIANT_TYPE_BYTE,
+                                                q, width, sizeof (gchar));
     }
 
   return g_variant_new_tuple (vv, 2);
@@ -79,9 +78,11 @@ value_variant_get (union value *val, GVariant *v)
     val->f = g_variant_get_double (vdata);
   else
     {
-      const gchar *data = g_variant_get_bytestring (vdata);
-      size_t len = strlen (data);
-      val->s = xmemdup (data, MIN (width, len));
+      gsize w;
+      const gchar *data = g_variant_get_fixed_array (vdata, &w, sizeof (gchar));
+      if (w != width)
+        g_critical ("Value variant's width does not match its array size");
+      val->s = xmemdup (data, w);
     }
 
   g_variant_unref (vdata);
