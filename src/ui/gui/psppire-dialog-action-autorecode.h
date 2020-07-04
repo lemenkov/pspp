@@ -60,8 +60,6 @@ struct _PsppireDialogActionAutorecode
   /*< private >*/
   gboolean dispose_has_run ;
 
-
-  PsppireDict *dict;
   GtkWidget *change_button;
   GtkWidget *new_name_entry;
   GtkWidget *var_view;

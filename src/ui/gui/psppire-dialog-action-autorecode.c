@@ -206,7 +206,7 @@ on_entry_change (PsppireDialogActionAutorecode *rd)
 
   if (0 == strcmp ("", text))
     valid = FALSE;
-  else if (psppire_dict_lookup_var (rd->dict, text))
+  else if (psppire_dict_lookup_var (PSPPIRE_DIALOG_ACTION (rd)->dict, text))
     valid = FALSE;
   else
     {
