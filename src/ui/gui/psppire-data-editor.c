@@ -81,6 +81,13 @@ psppire_data_editor_get_type (void)
 static GObjectClass * parent_class = NULL;
 
 static void
+psppire_data_editor_finalize (GObject *obj)
+{
+  /* Chain up to the parent class */
+  G_OBJECT_CLASS (parent_class)->finalize (obj);
+}
+
+static void
 psppire_data_editor_dispose (GObject *obj)
 {
   PsppireDataEditor *de = (PsppireDataEditor *) obj;
@@ -258,6 +265,7 @@ psppire_data_editor_class_init (PsppireDataEditorClass *klass)
   parent_class = g_type_class_peek_parent (klass);
 
   object_class->dispose = psppire_data_editor_dispose;
+  object_class->finalize = psppire_data_editor_finalize;
   object_class->set_property = psppire_data_editor_set_property;
   object_class->get_property = psppire_data_editor_get_property;
 

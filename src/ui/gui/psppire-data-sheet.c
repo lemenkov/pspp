@@ -349,6 +349,13 @@ static GObjectClass * parent_class = NULL;
 static gboolean dispose_has_run = FALSE;
 
 static void
+psppire_data_sheet_finalize (GObject *obj)
+{
+  /* Chain up to the parent class */
+  G_OBJECT_CLASS (parent_class)->finalize (obj);
+}
+
+static void
 psppire_data_sheet_dispose (GObject *obj)
 {
   PsppireDataSheet *sheet = PSPPIRE_DATA_SHEET (obj);
@@ -370,6 +377,7 @@ psppire_data_sheet_class_init (PsppireDataSheetClass *class)
 {
   GObjectClass *object_class = G_OBJECT_CLASS (class);
   object_class->dispose = psppire_data_sheet_dispose;
+  object_class->finalize = psppire_data_sheet_finalize;
 
   parent_class = g_type_class_peek_parent (class);
 }
