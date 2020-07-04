@@ -281,7 +281,7 @@ on_open (GApplication *app, GFile **files, gint n_files, gchar * hint,
          gpointer ud)
 {
   /* If the application is already open and we open another file
-     via xdg-open on linux or via the file manager, then open is
+     via xdg-open on GNU/Linux or via the file manager, then open is
      called. Check if we already have a psppire window. */
   if (find_psppire_window (app) == NULL)
     post_initialise (app);
