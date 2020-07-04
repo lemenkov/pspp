@@ -377,6 +377,8 @@ static void
 psppire_data_store_delete_value (PsppireDataStore *store, gint case_index)
 {
   g_return_if_fail (store->datasheet);
+  g_return_if_fail (case_index < datasheet_get_n_columns (store->datasheet));
+
   datasheet_delete_columns (store->datasheet, case_index, 1);
   datasheet_insert_column (store->datasheet, NULL, -1, case_index);
 }
