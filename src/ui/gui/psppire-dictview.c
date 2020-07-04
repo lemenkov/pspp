@@ -1,5 +1,6 @@
 /* PSPPIRE - a graphical user interface for PSPP.
-   Copyright (C) 2009, 2010, 2011, 2012, 2013, 2017  Free Software Foundation
+   Copyright (C) 2009, 2010, 2011, 2012, 2013, 2017,
+   2020  Free Software Foundation
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -113,14 +114,18 @@ unsorted (GtkTreeModel *model,
      GtkTreeIter *b,
      gpointer user_data)
 {
-  const struct variable *var_a;
-  const struct variable *var_b;
-
+  struct variable *var_a;
+  struct variable *var_b;
 
   gtk_tree_model_get (model, a, DICT_TVM_COL_VAR,  &var_a, -1);
   gtk_tree_model_get (model, b, DICT_TVM_COL_VAR,  &var_b, -1);
 
-  return compare_var_ptrs_by_dict_index (&var_a, &var_b, NULL);
+  gint rval = compare_var_ptrs_by_dict_index (&var_a, &var_b, NULL);
+
+  var_unref (var_a);
+  var_unref (var_b);
+
+  return rval;
 }
 
 static gint
@@ -129,13 +134,18 @@ sort_by_name (GtkTreeModel *model,
      GtkTreeIter *b,
      gpointer user_data)
 {
-  const struct variable *var_a;
-  const struct variable *var_b;
+  struct variable *var_a;
+  struct variable *var_b;
 
   gtk_tree_model_get (model, a, DICT_TVM_COL_VAR,  &var_a, -1);
   gtk_tree_model_get (model, b, DICT_TVM_COL_VAR,  &var_b, -1);
 
-  return g_strcmp0 (var_get_name (var_a), var_get_name (var_b));
+  gint rval =  g_strcmp0 (var_get_name (var_a), var_get_name (var_b));
+
+  var_unref (var_a);
+  var_unref (var_b);
+
+  return rval;
 }
 
 
@@ -145,13 +155,18 @@ sort_by_label (GtkTreeModel *model,
      GtkTreeIter *b,
      gpointer user_data)
 {
-  const struct variable *var_a;
-  const struct variable *var_b;
+  struct variable *var_a;
+  struct variable *var_b;
 
   gtk_tree_model_get (model, a, DICT_TVM_COL_VAR,  &var_a, -1);
   gtk_tree_model_get (model, b, DICT_TVM_COL_VAR,  &var_b, -1);
 
-  return g_strcmp0 (var_get_label (var_a), var_get_label (var_b));
+  gint rval = g_strcmp0 (var_get_label (var_a), var_get_label (var_b));
+
+  var_unref (var_a);
+  var_unref (var_b);
+
+  return rval;
 }
 
 
@@ -389,6 +404,8 @@ var_description_cell_data_func (GtkTreeViewColumn *col,
     {
       g_object_set (cell, "text", var_get_name (var), NULL);
     }
+
+  var_unref (var);
 }
 
 
@@ -411,6 +428,8 @@ var_icon_cell_data_func (GtkTreeViewColumn *col,
 		"icon-name", get_var_measurement_stock_id (var_get_print_format (var)->type,
 							   var_get_measure (var)),
                 NULL);
+
+  var_unref (var);
 }
 
 const char *
@@ -488,11 +507,13 @@ set_tooltip_for_variable (GtkTreeView  *treeview,
   if (!ok)
     return FALSE;
 
-
   gtk_tree_model_get (tree_model, &iter, DICT_TVM_COL_VAR,  &var, -1);
 
   if (! var_has_label (var))
-    return FALSE;
+    {
+      var_unref (var);
+      return FALSE;
+    }
 
   {
     const gchar *tip ;
@@ -508,6 +529,7 @@ set_tooltip_for_variable (GtkTreeView  *treeview,
     gtk_tooltip_set_text (tooltip, tip);
   }
 
+  var_unref (var);
   return TRUE;
 }
 
@@ -757,5 +779,3 @@ psppire_dict_view_get_selected_variable (PsppireDictView *dict_view)
   else
     return NULL;
 }
-
-

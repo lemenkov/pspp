@@ -194,6 +194,7 @@ on_change_clicked (GObject *obj, gpointer data)
  finish:
   g_list_foreach (rows, (GFunc) gtk_tree_path_free, NULL);
   g_list_free (rows);
+  var_unref (var);
 }
 
 

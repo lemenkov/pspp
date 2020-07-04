@@ -165,6 +165,8 @@ render_new_var_name (GtkTreeViewColumn *tree_column,
     g_object_set (cell, "text", nlp->name, NULL);
   else
     g_object_set (cell, "text", "", NULL);
+
+  var_unref (var);
 }
 
 static void
