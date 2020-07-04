@@ -526,7 +526,7 @@ html_output_table (struct html_driver *html, const struct table_item *item)
             }
 
           if (cell.style->cell_style.valign != TABLE_VALIGN_TOP)
-            fprintf (html->file, " ALIGN=\"%s\"",
+            fprintf (html->file, " VALIGN=\"%s\"",
                      (cell.style->cell_style.valign == TABLE_VALIGN_BOTTOM
                       ? "BOTTOM" : "MIDDLE"));
 
