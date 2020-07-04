@@ -1470,8 +1470,6 @@ psppire_data_window_finish_init (PsppireDataWindow *de,
 
   dataset_set_callbacks (de->dataset, &cbs, de);
 
-  connect_help (de->builder);
-
   gtk_box_pack_start (GTK_BOX (box), menubar, FALSE, TRUE, 0);
   gtk_box_pack_start (GTK_BOX (box), hb, FALSE, TRUE, 0);
   gtk_box_pack_start (GTK_BOX (box), GTK_WIDGET (de->data_editor), TRUE, TRUE, 0);

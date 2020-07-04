@@ -59,9 +59,6 @@ union value *text_to_value__ (const gchar *text, const struct fmt_spec *,
 gchar * convert_glib_filename_to_system_filename (const gchar *fname,
 						  GError **err);
 
-void connect_help (GtkBuilder *);
-
-
 /* Create a deep copy of SRC */
 GtkListStore * clone_list_store (const GtkListStore *src);
 

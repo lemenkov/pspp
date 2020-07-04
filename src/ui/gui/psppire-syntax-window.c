@@ -869,8 +869,6 @@ psppire_syntax_window_init (PsppireSyntaxWindow *window)
   window->ps_handler = g_signal_connect (clip_selection, "owner-change",
 					  G_CALLBACK (set_paste_sensitivity), window);
 
-  connect_help (xml);
-
   gtk_container_add (GTK_CONTAINER (window), box);
 
   g_object_ref (sw);

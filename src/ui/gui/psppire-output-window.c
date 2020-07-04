@@ -510,9 +510,6 @@ psppire_output_window_init (PsppireOutputWindow *window)
     GTK_LAYOUT (get_widget_assert (xml, "output")),
     GTK_TREE_VIEW (get_widget_assert (xml, "overview")));
 
-
-  connect_help (xml);
-
   g_signal_connect (window,
 		    "focus-in-event",
 		    G_CALLBACK (cancel_urgency),

@@ -197,52 +197,6 @@ convert_glib_filename_to_system_filename (const gchar *fname, GError **err)
 #define _(msgid) gettext (msgid)
 #define N_(msgid) msgid
 
-
-static void
-give_help (void)
-{
-  GtkWidget *dialog;
-
-  dialog = gtk_message_dialog_new (NULL,
-                                   GTK_DIALOG_MODAL,
-                                   GTK_MESSAGE_INFO,
-                                   GTK_BUTTONS_CLOSE,
-                                   _("Sorry. The help system hasn't yet "
-                                     "been implemented."));
-  gtk_dialog_run (GTK_DIALOG (dialog));
-  gtk_widget_destroy (dialog);
-}
-
-void
-connect_help (GtkBuilder *xml)
-{
-  GSList *helps = gtk_builder_get_objects (xml);
-
-  GSList *i;
-  for (i = helps; i ; i = g_slist_next (i))
-    {
-      GObject *o = i->data;
-      if (GTK_IS_WIDGET (o))
-	{
-	  const gchar *name = gtk_buildable_get_name (GTK_BUILDABLE (o));
-	  gchar s[12] = {0};
-
-	  if (name)
-	    strncpy (s, name, 11);
-	  s[11] = '\0';
-
-
-	  if (0 == strcmp ("help_button", s))
-	    {
-	    g_signal_connect (o, "clicked", give_help, 0);
-	    }
-	}
-    }
-
-  g_slist_free (helps);
-}
-
-
 /* Create a deep copy of SRC */
 GtkListStore *
 clone_list_store (const GtkListStore *src)
