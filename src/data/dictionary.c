@@ -1795,6 +1795,9 @@ dict_var_changed (const struct variable *v, unsigned int what, struct variable *
       if (NULL == d)
 	return;
 
+      if (what & (VAR_TRAIT_WIDTH | VAR_TRAIT_POSITION))
+        invalidate_proto (d);
+
       if (d->changed) d->changed (d, d->changed_data);
       if (d->callbacks && d->callbacks->var_changed)
         d->callbacks->var_changed (d, var_get_dict_index (v), what, oldvar, d->cb_data);
