@@ -307,17 +307,15 @@ var_set_width_and_formats (struct variable *v, int new_width,
 
   ov = var_clone (v);
 
-  if (var_has_missing_values (v))
+  if (mv_is_resizable (&v->miss, new_width))
+    mv_resize (&v->miss, new_width);
+  else
     {
-      if (mv_is_resizable (&v->miss, new_width))
-	mv_resize (&v->miss, new_width);
-      else
-	{
-	  mv_destroy (&v->miss);
-	  mv_init (&v->miss, new_width);
-	}
-      traits |= VAR_TRAIT_MISSING_VALUES;
+      mv_destroy (&v->miss);
+      mv_init (&v->miss, new_width);
     }
+  if (new_width != var_get_width (v))
+    traits |= VAR_TRAIT_MISSING_VALUES;
 
   if (v->val_labs != NULL)
     {
