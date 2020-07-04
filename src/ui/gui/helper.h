@@ -57,7 +57,13 @@ union value *text_to_value__ (const gchar *text, const struct fmt_spec *,
 /* Create a deep copy of SRC */
 GtkListStore * clone_list_store (const GtkListStore *src);
 
-void psppire_box_pack_start_defaults (GtkBox *box, GtkWidget *widget);
-
+/* gtk_box_pack_start_defaults is deprecated.
+   Therefore we roll our own until a better solution is found */
+static inline void
+psppire_box_pack_start_defaults (GtkBox *box, GtkWidget *widget)
+{
+  gtk_box_pack_start (box, widget, TRUE, TRUE, 0);
+}
 
 #endif
+

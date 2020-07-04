@@ -230,12 +230,3 @@ paste_syntax_to_window (gchar *syntax)
 
   return syntax;
 }
-
-
-/* gtk_box_pack_start_defaults is deprecated.
-   Therefore we roll our own until a better solution is found */
-void
-psppire_box_pack_start_defaults (GtkBox *box, GtkWidget *widget)
-{
-  gtk_box_pack_start (box, widget, TRUE, TRUE, 0);
-}
