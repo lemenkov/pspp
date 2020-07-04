@@ -49,8 +49,10 @@
       (while (not (or
                    (or (bobp) pspp-end-of-block-found)
                    pspp-start-of-block-found))
-        (set 'pspp-end-of-block-found (looking-at "^[ \t]*END[\t ]+DATA\."))
-        (set 'pspp-start-of-block-found (looking-at "^[ \t]*BEGIN[\t ]+DATA"))
+        (set 'pspp-end-of-block-found
+             (looking-at "^[ \t]*\\(END\\|end\\)[\t ]+\\(DATA\\|data\\)\."))
+        (set 'pspp-start-of-block-found
+             (looking-at "^[ \t]*\\(BEGIN\\|begin\\)[\t ]+\\(DATA\\|data\\)"))
         (forward-line -1))
 
       (and pspp-start-of-block-found (not pspp-end-of-block-found)))))
@@ -61,23 +63,43 @@
   "size of indent")
 
 
+(defun downcase-list (l)
+  "Takes a list of strings and returns that list with all elements downcased"
+  (if l
+      (cons (downcase (car l)) (downcase-list (cdr l)))
+    nil))
+
+
+(defun upcase-list (l)
+  "Takes a list of strings and returns that list with all elements upcased"
+  (if l
+      (cons (upcase (car l)) (upcase-list (cdr l)))
+    nil))
+
+
+(defun updown-list (l)
+  "Takes a list of strings and returns that list with all elements upcased
+and downcased"
+  (append (upcase-list l) (downcase-list l)))
+
+
 (defconst pspp-indenters
   (concat "^[\t ]*"
-          (regexp-opt '("DO"
-                        "BEGIN"
-                        "LOOP"
-                        "INPUT") t)
+          (regexp-opt (updown-list '("DO"
+                                     "BEGIN"
+                                     "LOOP"
+                                     "INPUT")) t)
           "[\t ]+")
   "constructs which cause indentation")
 
 
 (defconst pspp-unindenters
-  (concat "^[\t ]*END[\t ]+"
-          (regexp-opt '("IF"
-                        "DATA"
-                        "LOOP"
-                        "REPEAT"
-                        "INPUT") t)
+  (concat "^[\t ]*\\(END\\|end\\)[\t ]+"
+          (regexp-opt (updown-list '("IF"
+                                     "DATA"
+                                     "LOOP"
+                                     "REPEAT"
+                                     "INPUT")) t)
           "[\t ]*")
   ;; Note that "END CASE" and "END FILE" do not unindent.
   "constructs which cause end of indentation")
@@ -135,6 +157,7 @@
   "Returns t if the current line is the first line of a comment, nil otherwise"
   (beginning-of-line)
   (or (looking-at "^\*")
+      (looking-at "^[\t ]*comment[\t ]")
       (looking-at "^[\t ]*COMMENT[\t ]")))
 
 
@@ -177,7 +200,7 @@
 
 (defvar pspp-mode-syntax-table
   (let ((x-pspp-mode-syntax-table (make-syntax-table)))
-    
+
     ;; Special chars allowed in variables
     (modify-syntax-entry ?#  "w" x-pspp-mode-syntax-table)
     (modify-syntax-entry ?@  "w" x-pspp-mode-syntax-table)
@@ -204,7 +227,7 @@
 (defconst pspp-font-lock-keywords
   (list (cons
          (concat "\\<"
-                 (regexp-opt '(
+                 (regexp-opt (updown-list '(
                                "END DATA"
                                "ACF"
                                "ADD FILES"
@@ -376,18 +399,18 @@
                                "WEIGHT"
                                "WRITE"
                                "WRITE FORMATS"
-                               "XSAVE") t) "\\>")
+                               "XSAVE")) t) "\\>")
          'font-lock-builtin-face)
 
         (cons
-         (concat "\\<" (regexp-opt
-                        '("ALL" "AND" "BY" "EQ" "GE" "GT" "LE" "LT" "NE" "NOT" "OR" "TO" "WITH")
+         (concat "\\<" (regexp-opt (updown-list
+                        '("ALL" "AND" "BY" "EQ" "GE" "GT" "LE" "LT" "NE" "NOT" "OR" "TO" "WITH"))
                         t) "\\>")
          'font-lock-keyword-face)
 
         (cons
          (concat "\\<"
-                 (regexp-opt '(
+                 (regexp-opt (updown-list '(
                                "ABS"
                                "ACOS"
                                "ANY"
@@ -602,7 +625,7 @@
                                "XDATE.WEEK"
                                "XDATE.WKDAY"
                                "XDATE.YEAR"
-                               "YRMODA")
+                               "YRMODA"))
                              t) "\\>")  'font-lock-function-name-face)
 
         '( "\\<[#$@a-zA-Z][a-zA-Z0-9_]*\\>" . font-lock-variable-name-face))
