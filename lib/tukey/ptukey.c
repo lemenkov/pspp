@@ -71,7 +71,7 @@
 #include <assert.h>
 #include <math.h>
 
-#define R_D__0	(log_p ? ML_NEGINF : 0.)		/* 0 */
+#define R_D__0	(log_p ? -INFINITY : 0.)		/* 0 */
 #define R_D__1	(log_p ? 0. : 1.)			/* 1 */
 #define R_DT_0	(lower_tail ? R_D__0 : R_D__1)		/* 0 */
 #define R_DT_1	(lower_tail ? R_D__1 : R_D__0)		/* 1 */
@@ -272,7 +272,6 @@ wprob (double w, double rr, double cc)
 double
 ptukey (double q, double rr, double cc, double df, int lower_tail, int log_p)
 {
-  const double ML_NEGINF = -1.0 / 0.0;
 /*  function ptukey() [was qprob() ]:
 
 	q = value of studentized range
