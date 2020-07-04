@@ -17,10 +17,8 @@
 #include <config.h>
 #include <gtk/gtk.h>
 
-#include <string.h>
 #include "value-variant.h"
 #include "data/value.h"
-
 
 enum
   {
@@ -42,10 +40,9 @@ value_variant_new (const union value *in, int width)
     vv[IDX_DATA] = g_variant_new_double (in->f);
   else
     {
-      gchar *q = xmalloc (width);
-      memcpy (q, in->s, width);
       vv[IDX_DATA] = g_variant_new_fixed_array (G_VARIANT_TYPE_BYTE,
-                                                q, width, sizeof (gchar));
+                                                in->s, width,
+                                                sizeof (gchar));
     }
 
   return g_variant_new_tuple (vv, 2);
@@ -79,7 +76,9 @@ value_variant_get (union value *val, GVariant *v)
   else
     {
       gsize w;
-      const gchar *data = g_variant_get_fixed_array (vdata, &w, sizeof (gchar));
+      const gchar *data =
+        g_variant_get_fixed_array (vdata, &w, sizeof (gchar));
+
       if (w != width)
         g_critical ("Value variant's width does not match its array size");
       val->s = xmemdup (data, w);
