@@ -42,7 +42,7 @@
     <property name="can_focus">False</property>
     <property name="title" translatable="yes">Reliability Analysis</property>
     <property name="modal">True</property>
-    <property name="help_page">RELIABILITY</property>
+    <property name="help-page">RELIABILITY</property>
     <child>
       <object class="GtkBox" id="dialog-hbox5">
         <property name="visible">True</property>

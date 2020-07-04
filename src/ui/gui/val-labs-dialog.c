@@ -475,7 +475,7 @@ psppire_val_labs_dialog_constructor (GType                  type,
     type, n_properties, properties);
   dialog = PSPPIRE_VAL_LABS_DIALOG (obj);
 
-  g_object_set (dialog, "help_page", "VALUE-LABELS",
+  g_object_set (dialog, "help-page", "VALUE-LABELS",
 		"title", _("Value Labels"), NULL);
 
   content_area = GTK_CONTAINER (PSPPIRE_DIALOG (dialog));

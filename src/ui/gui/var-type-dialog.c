@@ -537,7 +537,7 @@ psppire_var_type_dialog_constructor (GType                  type,
     type, n_properties, properties);
   dialog = PSPPIRE_VAR_TYPE_DIALOG (obj);
 
-  g_object_set (dialog, "help_page", "Input-and-Output-Formats",
+  g_object_set (dialog, "help-page", "Input-and-Output-Formats",
 		"title", _("Variable Type and Format"), NULL);
 
   xml = builder_new ("var-type-dialog.ui");
