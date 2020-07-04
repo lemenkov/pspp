@@ -51,6 +51,8 @@ struct _PsppireDataEditor
 {
   GtkNotebook parent;
 
+  gboolean dispose_has_run;
+
   /* <private> */
   PsppireDataStore *data_store;
   PsppireDict *dict;

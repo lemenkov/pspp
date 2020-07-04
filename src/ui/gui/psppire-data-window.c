@@ -958,9 +958,11 @@ enable_save (PsppireDataWindow *dw)
    modify the menu as part of the "filename" property_set() function and end up
    with a Gtk-CRITICAL since 'menu' is NULL.  */
 static void
-psppire_data_window_init (PsppireDataWindow *de)
+psppire_data_window_init (PsppireDataWindow *dw)
 {
-  de->builder = builder_new ("data-editor.ui");
+  dw->dispose_has_run = FALSE;
+
+  dw->builder = builder_new ("data-editor.ui");
 }
 
 static void
@@ -1803,11 +1805,11 @@ psppire_data_window_dispose (GObject *object)
 {
   PsppireDataWindow *dw = PSPPIRE_DATA_WINDOW (object);
 
-  if (dw->builder != NULL)
-    {
-      g_object_unref (dw->builder);
-      dw->builder = NULL;
-    }
+  if (dw->dispose_has_run)
+    return;
+  dw->dispose_has_run = TRUE;
+
+  g_object_unref (dw->builder);
 
   if (dw->dict)
     {
@@ -1821,20 +1823,9 @@ psppire_data_window_dispose (GObject *object)
                                             G_CALLBACK (on_split_change), dw);
 
       g_object_unref (dw->dict);
-      dw->dict = NULL;
     }
 
-  if (dw->data_store)
-    {
-      g_object_unref (dw->data_store);
-      dw->data_store = NULL;
-    }
-
-  if (dw->ll.next != NULL)
-    {
-      ll_remove (&dw->ll);
-      dw->ll.next = NULL;
-    }
+  g_object_unref (dw->data_store);
 
   if (G_OBJECT_CLASS (parent_class)->dispose)
     G_OBJECT_CLASS (parent_class)->dispose (object);
@@ -1855,6 +1846,12 @@ psppire_data_window_finalize (GObject *object)
       dataset_set_callbacks (dataset, NULL, NULL);
       session_set_active_dataset (session, NULL);
       dataset_destroy (dataset);
+    }
+
+  if (dw->ll.next != NULL)
+    {
+      ll_remove (&dw->ll);
+      dw->ll.next = NULL;
     }
 
   if (G_OBJECT_CLASS (parent_class)->finalize)

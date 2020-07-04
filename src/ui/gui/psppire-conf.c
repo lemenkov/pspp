@@ -148,7 +148,6 @@ psppire_conf_class_init (PsppireConfClass *class)
   object_class->finalize = psppire_conf_finalize;
   object_class->dispose = psppire_conf_dispose;
   object_class->constructor = psppire_conf_construct;
-
 }
 
 
@@ -169,7 +168,6 @@ psppire_conf_init (PsppireConf *conf)
 
   conf->keyfile = g_key_file_new ();
 
-  conf->dispose_has_run = FALSE;
   conf->idle = 0;
 }
 

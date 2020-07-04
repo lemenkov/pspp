@@ -62,6 +62,8 @@ struct _PsppireDataWindow
 {
   PsppireWindow parent;
 
+  gboolean dispose_has_run;
+
   /* <private> */
   PsppireDataEditor *data_editor;
   GtkBuilder *builder;

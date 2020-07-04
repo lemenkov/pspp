@@ -331,6 +331,8 @@ psppire_scanf_class_init (PsppireScanfClass *class)
 static void
 psppire_scanf_init (PsppireScanf *w)
 {
+  w->dispose_has_run = FALSE;
+
   gtk_orientable_set_orientation (GTK_ORIENTABLE (w), GTK_ORIENTATION_HORIZONTAL);
 }
 

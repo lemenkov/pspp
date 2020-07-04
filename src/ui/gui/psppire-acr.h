@@ -66,7 +66,7 @@ struct _PsppireAcr
 {
   GtkBox parent;
 
-
+  gboolean dispose_has_run;
   GtkListStore *list_store;
 
   GtkTreeView *tv;

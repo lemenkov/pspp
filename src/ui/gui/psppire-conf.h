@@ -58,7 +58,6 @@ struct _PsppireConf
   GObject parent;
 
   /*< private >*/
-  gboolean dispose_has_run ;
 
   GKeyFile *keyfile;
   gchar *filename;

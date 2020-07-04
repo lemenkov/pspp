@@ -50,6 +50,11 @@ static void
 psppire_acr_dispose (GObject *obj)
 {
   PsppireAcr *acr = PSPPIRE_ACR (obj);
+
+  if (acr->dispose_has_run)
+    return;
+  acr->dispose_has_run = TRUE;
+
   psppire_acr_set_model (acr, NULL);
 
   G_OBJECT_CLASS (psppire_acr_parent_class)->dispose (obj);
@@ -258,6 +263,8 @@ psppire_acr_init (PsppireAcr *acr)
   GtkWidget *bb  = gtk_button_box_new (GTK_ORIENTATION_VERTICAL);
 
   GtkWidget *sw = gtk_scrolled_window_new (NULL, NULL);
+
+  acr->dispose_has_run = FALSE;
 
   gtk_orientable_set_orientation (GTK_ORIENTABLE (acr), GTK_ORIENTATION_HORIZONTAL);
 

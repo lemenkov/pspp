@@ -83,6 +83,10 @@ static GObjectClass * parent_class = NULL;
 static void
 psppire_data_editor_finalize (GObject *obj)
 {
+  PsppireDataEditor *de = (PsppireDataEditor *) obj;
+  if (de->font)
+    pango_font_description_free (de->font);
+
   /* Chain up to the parent class */
   G_OBJECT_CLASS (parent_class)->finalize (obj);
 }
@@ -92,23 +96,13 @@ psppire_data_editor_dispose (GObject *obj)
 {
   PsppireDataEditor *de = (PsppireDataEditor *) obj;
 
-  if (de->data_store)
-    {
-      g_object_unref (de->data_store);
-      de->data_store = NULL;
-    }
+  if (de->dispose_has_run)
+    return;
 
-  if (de->dict)
-    {
-      g_object_unref (de->dict);
-      de->dict = NULL;
-    }
+  de->dispose_has_run = TRUE;
 
-  if (de->font != NULL)
-    {
-      pango_font_description_free (de->font);
-      de->font = NULL;
-    }
+  g_object_unref (de->data_store);
+  g_object_unref (de->dict);
 
   /* Chain up to the parent class */
   G_OBJECT_CLASS (parent_class)->dispose (obj);
@@ -490,6 +484,8 @@ psppire_data_editor_init (PsppireDataEditor *de)
 
   GtkStyleContext *context = gtk_widget_get_style_context (GTK_WIDGET (de));
   gtk_style_context_add_class (context, "psppire-data-editor");
+
+  de->dispose_has_run = FALSE;
 
   de->font = NULL;
 

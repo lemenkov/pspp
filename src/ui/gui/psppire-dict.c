@@ -287,6 +287,11 @@ psppire_dict_dispose (GObject *object)
 {
   PsppireDict *d = PSPPIRE_DICT (object);
 
+  if (!d->dispose_has_run)
+    return;
+
+  d->dispose_has_run = TRUE;
+
   dict_set_callbacks (d->dict, NULL, NULL);
   dict_unref (d->dict);
 
@@ -352,10 +357,12 @@ static const struct dict_callbacks gui_callbacks =
   };
 
 static void
-psppire_dict_init (PsppireDict *psppire_dict)
+psppire_dict_init (PsppireDict *d)
 {
-  psppire_dict->stamp = g_random_int ();
-  psppire_dict->disable_insert_signal = FALSE;
+  d->dispose_has_run = FALSE;
+
+  d->stamp = g_random_int ();
+  d->disable_insert_signal = FALSE;
 }
 
 /**

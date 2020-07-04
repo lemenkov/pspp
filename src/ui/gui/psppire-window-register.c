@@ -134,7 +134,6 @@ psppire_window_register_class_init (PsppireWindowRegisterClass *class)
 static void
 psppire_window_register_init (PsppireWindowRegister *window_register)
 {
-  window_register->dispose_has_run = FALSE;
   window_register->name_table = g_hash_table_new (g_str_hash, g_str_equal);
 }
 

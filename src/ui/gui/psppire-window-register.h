@@ -58,7 +58,6 @@ struct _PsppireWindowRegister
   GObject parent;
 
   /*< private >*/
-  gboolean dispose_has_run ;
   GHashTable *name_table;
 };
 

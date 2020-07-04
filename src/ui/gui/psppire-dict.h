@@ -61,6 +61,8 @@ struct _PsppireDict
   GObject             parent;
   struct dictionary   *dict;
 
+  gboolean dispose_has_run;
+
   gboolean disable_insert_signal;
   /* For GtkTreeModelIface */
   gint stamp;
