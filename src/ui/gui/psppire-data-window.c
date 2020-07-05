@@ -1665,14 +1665,14 @@ psppire_data_window_finish_init (PsppireDataWindow *de,
       GtkToolItem *ti = gtk_tool_button_new (NULL, "Open");
       g_signal_connect_swapped (ti, "clicked", G_CALLBACK (psppire_window_open), de);
       gtk_toolbar_insert (GTK_TOOLBAR (hb), ti, idx++);
-      gtk_tool_button_set_icon_name (GTK_TOOL_BUTTON (ti), "file-open-data");
+      gtk_tool_button_set_icon_name (GTK_TOOL_BUTTON (ti), "psppire-file-open-data");
     }
 
     {
       GtkToolItem *ti = gtk_tool_button_new (NULL, "Save");
       g_signal_connect_swapped (ti, "clicked", G_CALLBACK (psppire_window_save), de);
       gtk_toolbar_insert (GTK_TOOLBAR (hb), ti, idx++);
-      gtk_tool_button_set_icon_name (GTK_TOOL_BUTTON (ti), "file-save-data");
+      gtk_tool_button_set_icon_name (GTK_TOOL_BUTTON (ti), "psppire-file-save-data");
     }
 
     gtk_toolbar_insert (GTK_TOOLBAR (hb), gtk_separator_tool_item_new (), idx++);
@@ -1686,7 +1686,7 @@ psppire_data_window_finish_init (PsppireDataWindow *de,
 				G_CALLBACK (psppire_dialog_action_activate_null), a);
 
       gtk_toolbar_insert (GTK_TOOLBAR (hb), de->ti_jump_to_variable, idx++);
-      gtk_tool_button_set_icon_name (GTK_TOOL_BUTTON (de->ti_jump_to_variable), "edit-go-to-variable");
+      gtk_tool_button_set_icon_name (GTK_TOOL_BUTTON (de->ti_jump_to_variable), "psppire-edit-go-to-variable");
       gtk_widget_set_tooltip_text (GTK_WIDGET (de->ti_jump_to_variable), _("Jump to variable"));
     }
 
@@ -1699,7 +1699,7 @@ psppire_data_window_finish_init (PsppireDataWindow *de,
 				G_CALLBACK (g_action_activate_null), a);
 
       gtk_toolbar_insert (GTK_TOOLBAR (hb), de->ti_jump_to_case, idx++);
-      gtk_tool_button_set_icon_name (GTK_TOOL_BUTTON (de->ti_jump_to_case), "edit-go-to-case");
+      gtk_tool_button_set_icon_name (GTK_TOOL_BUTTON (de->ti_jump_to_case), "psppire-edit-go-to-case");
       gtk_widget_set_tooltip_text (GTK_WIDGET (de->ti_jump_to_case), _("Jump to a case in the data sheet"));
     }
 
@@ -1713,7 +1713,7 @@ psppire_data_window_finish_init (PsppireDataWindow *de,
 
 
       gtk_toolbar_insert (GTK_TOOLBAR (hb), de->ti_find, idx++);
-      gtk_tool_button_set_icon_name (GTK_TOOL_BUTTON (de->ti_find), "edit-find");
+      gtk_tool_button_set_icon_name (GTK_TOOL_BUTTON (de->ti_find), "psppire-edit-find");
       gtk_widget_set_tooltip_text (GTK_WIDGET (de->ti_find), _("Search for values in the data"));
     }
 
@@ -1725,7 +1725,7 @@ psppire_data_window_finish_init (PsppireDataWindow *de,
 				G_CALLBACK (g_action_activate_null), a);
 
       gtk_toolbar_insert (GTK_TOOLBAR (hb), de->ti_insert_case, idx++);
-      gtk_tool_button_set_icon_name (GTK_TOOL_BUTTON (de->ti_insert_case), "edit-insert-case");
+      gtk_tool_button_set_icon_name (GTK_TOOL_BUTTON (de->ti_insert_case), "psppire-edit-insert-case");
       gtk_widget_set_tooltip_text (GTK_WIDGET (de->ti_insert_case), _("Create a new case at the current position"));
     }
 
@@ -1737,7 +1737,7 @@ psppire_data_window_finish_init (PsppireDataWindow *de,
 				G_CALLBACK (g_action_activate_null), a);
 
       gtk_toolbar_insert (GTK_TOOLBAR (hb), de->ti_insert_variable, idx++);
-      gtk_tool_button_set_icon_name (GTK_TOOL_BUTTON (de->ti_insert_variable), "edit-insert-variable");
+      gtk_tool_button_set_icon_name (GTK_TOOL_BUTTON (de->ti_insert_variable), "psppire-edit-insert-variable");
       gtk_widget_set_tooltip_text (GTK_WIDGET (de->ti_insert_variable), _("Create a new variable at the current position"));
     }
 
@@ -1751,7 +1751,7 @@ psppire_data_window_finish_init (PsppireDataWindow *de,
       g_signal_connect_swapped (ti, "clicked",
 				G_CALLBACK (psppire_dialog_action_activate_null), a);
       gtk_toolbar_insert (GTK_TOOLBAR (hb), ti, idx++);
-      gtk_tool_button_set_icon_name (GTK_TOOL_BUTTON (ti), "data-split-file");
+      gtk_tool_button_set_icon_name (GTK_TOOL_BUTTON (ti), "psppire-data-split-file");
       gtk_widget_set_tooltip_text (GTK_WIDGET (ti), _("Split the active dataset"));
     }
 
@@ -1763,7 +1763,7 @@ psppire_data_window_finish_init (PsppireDataWindow *de,
       g_signal_connect_swapped (ti, "clicked",
 				G_CALLBACK (psppire_dialog_action_activate_null), a);
       gtk_toolbar_insert (GTK_TOOLBAR (hb), ti, idx++);
-      gtk_tool_button_set_icon_name (GTK_TOOL_BUTTON (ti), "data-weight-cases");
+      gtk_tool_button_set_icon_name (GTK_TOOL_BUTTON (ti), "psppire-data-weight-cases");
       gtk_widget_set_tooltip_text (GTK_WIDGET (ti), _("Weight cases by variable"));
     }
 
@@ -1774,7 +1774,7 @@ psppire_data_window_finish_init (PsppireDataWindow *de,
       g_signal_connect (de->ti_value_labels_button, "toggled",
 			G_CALLBACK (on_labels_button_toggle), de);
       gtk_toolbar_insert (GTK_TOOLBAR (hb), de->ti_value_labels_button, idx++);
-      gtk_tool_button_set_icon_name (GTK_TOOL_BUTTON (de->ti_value_labels_button), "view-value-labels");
+      gtk_tool_button_set_icon_name (GTK_TOOL_BUTTON (de->ti_value_labels_button), "psppire-view-value-labels");
       gtk_widget_set_tooltip_text (GTK_WIDGET (de->ti_value_labels_button), _("Show/hide value labels"));
     }
   }
