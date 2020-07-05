@@ -46,7 +46,7 @@ all_q_sources =
 pkgsysconfdir = $(sysconfdir)/$(PACKAGE)
 
 
-EXTRA_DIST = ONEWS pspp-mode.el
+EXTRA_DIST = ONEWS
 
 CLEANFILES =
 CLEAN_LOCAL =
