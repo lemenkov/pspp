@@ -169,4 +169,8 @@ struct encoding_category
 struct encoding_category *get_encoding_categories (void);
 size_t get_n_encoding_categories (void);
 
+/* Return the ISO two letter code for the current LC_MESSAGES
+   locale category.  */
+char *get_language (void);
+
 #endif /* i18n.h */

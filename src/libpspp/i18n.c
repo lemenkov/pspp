@@ -40,6 +40,7 @@
 #include "gl/c-ctype.h"
 #include "gl/c-strcase.h"
 #include "gl/localcharset.h"
+#include <gl/localename.h>
 #include "gl/minmax.h"
 #include "gl/xalloc.h"
 #include "gl/relocatable.h"
@@ -663,6 +664,21 @@ set_default_encoding (const char *enc)
 {
   free (default_encoding);
   default_encoding = xstrdup (enc);
+}
+
+/* Return the ISO two letter code for the current LC_MESSAGES
+   locale category.  */
+char *
+get_language (void)
+{
+  const char *localename = gl_locale_name (LC_MESSAGES, "LC_MESSAGES");
+  if (0 == strcmp (localename, "C"))
+    return NULL;
+  char *ln = xstrdup (localename);
+  char *end = strchr (ln, '_');
+  if (end)
+    *end = '\0';
+  return ln;
 }
 
 
