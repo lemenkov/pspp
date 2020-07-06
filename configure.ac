@@ -56,6 +56,8 @@ if test "x$MSGFMT" = x; then
   PSPP_REQUIRED_PREREQ([msgfmt (is usually provided with gettext)])
 fi
 
+AC_CHECK_HEADERS([sys/resource.h])
+
 
 dnl Checks for libraries.
 AC_SYS_LARGEFILE

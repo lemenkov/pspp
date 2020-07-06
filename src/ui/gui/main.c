@@ -22,11 +22,22 @@
 #include <gtk/gtk.h>
 #include <stdlib.h>
 #include <sys/stat.h>
-#include <sys/resource.h>
 #if ENABLE_RELOCATABLE && defined(__APPLE__)
+#include <sys/resource.h>
 static const bool apple_relocatable = true;
 #else
 static const bool apple_relocatable = false;
+#if HAVE_SYS_RESOURCE_H
+#include <sys/resource.h>
+#else
+/* Dummy definitions to keep the compiler happy. */
+struct rlimit
+{
+  int rlim_cur;
+  int rlim_max;
+};
+#define RLIMIT_NOFILE 0
+#endif
 #endif
 
 #include "language/lexer/include-path.h"
