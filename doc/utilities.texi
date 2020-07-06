@@ -90,18 +90,25 @@ CD 'new directory' .
 @vindex *
 
 @display
-Two possibles syntaxes:
-        COMMENT comment text @dots{} .
-        *comment text @dots{} .
+Comment commands:
+    COMMENT comment text @dots{} .
+    *comment text @dots{} .
+
+Comments within a line of syntax:
+    FREQUENCIES /VARIABLES=v0 v1 v2.  /* All our categorical variables.
 @end display
 
 @cmd{COMMENT} is ignored.  It is used to provide information to
 the author and other readers of the @pspp{} syntax file.
 
-@cmd{COMMENT} can extend over any number of lines.  Don't forget to
-terminate it with a dot or a blank line.
+@cmd{COMMENT} can extend over any number of lines.  It ends at a dot
+at the end of a line or a blank line.  The comment may contain any
+characters.
 
-
+PSPP also supports comments within a line of syntax, introduced with
+@samp{/*}.  These comments end at the first @samp{*/} or at the end of
+the line, whichever comes first.  A line that contains just this kind
+of comment is considered blank and ends the current command.
 
 @node DOCUMENT
 @section DOCUMENT
