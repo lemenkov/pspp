@@ -22,7 +22,7 @@ AC_INIT([GNU PSPP], [1.3.0], [bug-gnu-pspp@gnu.org], [pspp])
 AC_CONFIG_AUX_DIR([build-aux])
 AC_CONFIG_HEADERS([config.h])
 AC_CONFIG_TESTDIR([tests])
-AM_INIT_AUTOMAKE
+AM_INIT_AUTOMAKE([tar-ustar])
 
 dnl Checks for programs.
 AC_GNU_SOURCE
