@@ -176,7 +176,7 @@ unlabeled_value (PsppireDataStore *store, const struct variable *variable, const
     return g_strdup ("");
 
   const struct fmt_spec *fmt = var_get_print_format (variable);
-  return data_out (val, psppire_dict_encoding (store->dict),  fmt);
+  return value_to_text__ (*val, fmt, psppire_dict_encoding (store->dict));
 }
 
 gchar *
