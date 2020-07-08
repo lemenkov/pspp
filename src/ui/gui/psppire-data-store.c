@@ -171,6 +171,10 @@ psppire_data_store_string_to_value (GtkTreeModel *model, gint col, gint row,
 static char *
 unlabeled_value (PsppireDataStore *store, const struct variable *variable, const union value *val)
 {
+  if (var_is_numeric (variable) &&
+      var_is_value_missing (variable, val, MV_SYSTEM))
+    return g_strdup ("");
+
   const struct fmt_spec *fmt = var_get_print_format (variable);
   return data_out (val, psppire_dict_encoding (store->dict),  fmt);
 }
