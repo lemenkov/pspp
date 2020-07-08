@@ -1073,6 +1073,11 @@ on_cut (PsppireDataWindow *dw)
       SswSheet *sheet = SSW_SHEET (dw->data_editor->data_sheet);
       SswRange sel = *sheet->selection;
 
+#if (SSW_SHEET_API_VERSION >= 1)
+      if ((ssw_sheet_get_api_version() >= 1) && ssw_sheet_try_cut (sheet))
+	return;
+#endif
+
       GtkClipboard *clip =
 	gtk_clipboard_get_for_display (gtk_widget_get_display (GTK_WIDGET (dw)),
 				       GDK_SELECTION_CLIPBOARD);
