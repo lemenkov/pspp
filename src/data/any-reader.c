@@ -129,6 +129,10 @@ any_reader_open (struct file_handle *handle)
   NOT_REACHED ();
 }
 
+/* gnulib on some systems defines "close" as something else,
+   which causes problems for this code.  So undefine it here.  */
+#undef close
+
 bool
 any_reader_close (struct any_reader *any_reader)
 {
