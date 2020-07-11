@@ -1092,10 +1092,12 @@ on_cut (PsppireDataWindow *dw)
 	      gchar *s = psppire_data_store_get_string (dw->data_editor->data_store,
 							  y, var, FALSE);
 	      g_string_append (str, s);
-	      g_string_append (str, "\t");
+              if (x < sel.end_x)
+                g_string_append (str, "\t");
 	      g_free (s);
 	    }
-	  g_string_append (str, "\n");
+          if (y < sel.end_y)
+            g_string_append (str, "\n");
 	}
 
       gtk_clipboard_set_text (clip, str->str, str->len);
