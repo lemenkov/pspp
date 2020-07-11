@@ -1101,20 +1101,25 @@ on_cut (PsppireDataWindow *dw)
       gtk_clipboard_set_text (clip, str->str, str->len);
       g_string_free (str, TRUE);
 
-      /* Now fill the selected area with SYSMIS */
-      union value sm ;
-      sm.f = SYSMIS;
+      /* Now fill the selected area with SYSMIS or blanks */
       for (x = sel.start_x ; x <= sel.end_x; ++x)
 	{
-	  const struct variable * var = psppire_dict_get_variable (dict, x);
+	  const struct variable *var = psppire_dict_get_variable (dict, x);
+          int width = var_get_width (var);
+          union value sm ;
+          value_init (&sm, width);
+          if (var_is_numeric (var))
+            sm.f = SYSMIS;
+          else
+            memset (sm.s, 0, width);
 	  for (y = sel.start_y ; y <= sel.end_y; ++y)
 	    {
 	      psppire_data_store_set_value (dw->data_editor->data_store,
 					    y,
 					    var, &sm);
 	    }
+          value_destroy (&sm, width);
 	}
-
     }
 }
 
