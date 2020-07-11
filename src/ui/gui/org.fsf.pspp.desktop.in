@@ -1,3 +1,4 @@
+
 # org.fsf.pspp.desktop file is generated with gettext to add
 # translations. Edit org.fsf.pspp.desktop.in instead
 [Desktop Entry]
@@ -6,6 +7,7 @@ Name=GNU PSPP
 GenericName=Statistical Software
 Comment=Analyze statistical data with a free alternative to SPSS
 Exec=psppire %F
+# TRANSLATORS: Do not translate this string. Keep it as is, verbatim.
 Icon=pspp
 Terminal=false
 Type=Application
