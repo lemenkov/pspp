@@ -126,6 +126,7 @@ psppire_val_labs_dialog_init (PsppireValLabsDialog *obj)
      runs after the construction properties have been set.  Otherwise
      PsppireDialog's "orientation" property hasn't been set and therefore we
      have no box to populate. */
+
   obj->labs = val_labs_create (0);
 }
 
@@ -143,10 +144,12 @@ psppire_val_labs_dialog_finalize (GObject *obj)
 PsppireValLabsDialog *
 psppire_val_labs_dialog_new (const struct variable *var)
 {
-  return PSPPIRE_VAL_LABS_DIALOG (
-    g_object_new (PSPPIRE_TYPE_VAL_LABS_DIALOG,
-                  "variable", var,
-                  NULL));
+  PsppireValLabsDialog *obj
+    = PSPPIRE_VAL_LABS_DIALOG (g_object_new (PSPPIRE_TYPE_VAL_LABS_DIALOG,
+                                             "variable", var,
+                                             NULL));
+
+  return obj;
 }
 
 struct val_labs *
@@ -161,9 +164,16 @@ psppire_val_labs_dialog_run (GtkWindow *parent_window,
   gtk_window_set_modal (GTK_WINDOW (dialog), TRUE);
   gtk_widget_show (GTK_WIDGET (dialog));
 
-  labs = (psppire_dialog_run (PSPPIRE_DIALOG (dialog)) == GTK_RESPONSE_OK
-          ? val_labs_clone (psppire_val_labs_dialog_get_value_labels (dialog))
-          : NULL);
+  gint response = psppire_dialog_run (PSPPIRE_DIALOG (dialog));
+  switch (response)
+    {
+      case GTK_RESPONSE_OK:
+        labs = val_labs_clone (psppire_val_labs_dialog_get_value_labels (dialog));
+        break;
+      default:
+        labs = NULL;
+        break;
+    }
 
   gtk_widget_destroy (GTK_WIDGET (dialog));
 
@@ -531,7 +541,9 @@ psppire_val_labs_dialog_constructor (GType                  type,
   g_signal_connect (dialog->add_button, "clicked",
 		   G_CALLBACK (on_add), dialog);
 
-  dialog->labs = NULL;
+  /* dialog->labs must not be set here, because as a member of a singleton
+     class its value persists "between" objects.  */
+  /* dialog->labs = NULL; */
 
   g_object_unref (xml);
 
@@ -594,7 +606,6 @@ repopulate_dialog (PsppireValLabsDialog *dialog)
 			  GTK_TREE_MODEL (list_store));
 
   g_object_unref (list_store);
-
 }
 
 void
