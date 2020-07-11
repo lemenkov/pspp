@@ -69,6 +69,9 @@ psppire_dialog_action_histogram_activate (PsppireDialogAction *a, GVariant *para
   pda->dialog = get_widget_assert (xml, "histogram-dialog");
   pda->source = get_widget_assert (xml, "dict-view");
 
+  g_object_set (pda->source,
+		"predicate", var_is_numeric, NULL);
+
   act->variable = get_widget_assert (xml, "entry1");
   act->curve = get_widget_assert (xml, "curve");
 
@@ -120,4 +123,3 @@ static void
 psppire_dialog_action_histogram_init (PsppireDialogActionHistogram *act)
 {
 }
-
