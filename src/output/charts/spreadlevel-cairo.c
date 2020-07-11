@@ -39,8 +39,11 @@ xrchart_draw_spreadlevel (const struct chart_item *chart_item, cairo_t *cr,
   xrchart_write_ylabel (cr, geom, _("Spread"));
 
 
-  xrchart_write_xscale (cr, geom, sl->x_lower, sl->x_upper);
-  xrchart_write_yscale (cr, geom, sl->y_lower, sl->y_upper);
+  if (! xrchart_write_xscale (cr, geom, sl->x_lower, sl->x_upper))
+    return;
+
+  if (! xrchart_write_yscale (cr, geom, sl->y_lower, sl->y_upper))
+    return;
 
   for (i = 0 ; i < sl->n_data; ++i)
     {

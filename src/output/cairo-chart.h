@@ -117,13 +117,12 @@ void xrchart_write_title (cairo_t *, const struct xrchart_geometry *,
   PRINTF_FORMAT (3, 4);
 
 /* Set the scale for the abscissa */
-void xrchart_write_xscale (cairo_t *, struct xrchart_geometry *,
-                           double min, double max);
-
+bool xrchart_write_xscale (cairo_t *, struct xrchart_geometry *,
+                           double min, double max) WARN_UNUSED_RESULT;
 
 /* Set the scale for the ordinate */
-void xrchart_write_yscale (cairo_t *, struct xrchart_geometry *,
-                           double smin, double smax);
+bool xrchart_write_yscale (cairo_t *, struct xrchart_geometry *,
+                           double smin, double smax) WARN_UNUSED_RESULT;
 
 void xrchart_write_xlabel (cairo_t *, const struct xrchart_geometry *,
                            const char *label) ;

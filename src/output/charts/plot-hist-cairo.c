@@ -118,9 +118,11 @@ xrchart_draw_histogram (const struct chart_item *chart_item, cairo_t *cr,
       return;
     }
 
-  xrchart_write_yscale (cr, geom, 0, gsl_histogram_max_val (h->gsl_hist));
-  xrchart_write_xscale (cr, geom, gsl_histogram_min (h->gsl_hist),
-			gsl_histogram_max (h->gsl_hist));
+  if (! xrchart_write_yscale (cr, geom, 0, gsl_histogram_max_val (h->gsl_hist)))
+    return;
+  if (! xrchart_write_xscale (cr, geom, gsl_histogram_min (h->gsl_hist),
+                              gsl_histogram_max (h->gsl_hist)))
+    return;
 
 
   /* Draw the ticks and compute if the rendered tick text is wider than the bin */

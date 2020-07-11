@@ -152,7 +152,9 @@ xrchart_draw_boxplot (const struct chart_item *chart_item, cairo_t *cr,
   double box_width;
   size_t i;
 
-  xrchart_write_yscale (cr, geom, boxplot->y_min, boxplot->y_max);
+  if (! xrchart_write_yscale (cr, geom, boxplot->y_min, boxplot->y_max))
+    return;
+
   xrchart_write_title (cr, geom, "%s", chart_item->title);
 
   box_width = (geom->axis[SCALE_ABSCISSA].data_max - geom->axis[SCALE_ABSCISSA].data_min) / boxplot->n_boxes / 2.0;

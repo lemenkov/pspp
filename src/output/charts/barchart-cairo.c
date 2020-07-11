@@ -67,10 +67,9 @@ xrchart_draw_barchart (const struct chart_item *chart_item, cairo_t *cr,
   xrchart_write_ylabel (cr, geom, bc->ylabel);
   xrchart_write_xlabel (cr, geom, chart_item_get_title (chart_item));
 
-  if (bc->percent)
-    xrchart_write_yscale (cr, geom, 0, bc->largest * 100.0 / bc->total_count);
-  else
-    xrchart_write_yscale (cr, geom, 0, bc->largest);
+  if (! xrchart_write_yscale (cr, geom, 0,
+                              bc->percent ? bc->largest * 100.0 / bc->total_count : bc->largest))
+    return;
 
   const double abscale = geom->axis[SCALE_ABSCISSA].data_max - geom->axis[SCALE_ABSCISSA].data_min;
   const double width = abscale / (double) (bc->n_nzcats + bc->n_pcats);

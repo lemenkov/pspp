@@ -1,5 +1,6 @@
 /* PSPP - a program for statistical analysis.
-   Copyright (C) 2004, 2009, 2010, 2011, 2014, 2015 Free Software Foundation, Inc.
+   Copyright (C) 2004, 2009, 2010, 2011, 2014, 2015,
+   2020 Free Software Foundation, Inc.
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -365,7 +366,7 @@ xrchart_text_extents (cairo_t *cr, const struct xrchart_geometry *geom,
   pango_font_description_free (desc);
 }
 
-static void
+static bool
 xrchart_write_scale (cairo_t *cr, struct xrchart_geometry *geom,
 		     double smin, double smax, enum tick_orientation orient)
 {
@@ -378,6 +379,9 @@ xrchart_write_scale (cairo_t *cr, struct xrchart_geometry *geom,
   double tickscale;
   char *tick_format_string;
   bool tickoversize = false;
+
+  if (smax == smin)
+    return false;
 
   chart_get_scale (smax, smin, &lower, &interval, &ticks);
 
@@ -417,22 +421,24 @@ xrchart_write_scale (cairo_t *cr, struct xrchart_geometry *geom,
       pos += interval;
     }
   free(tick_format_string);
+
+  return true;
 }
 
 /* Set the scale for the ordinate */
-void
+bool
 xrchart_write_yscale (cairo_t *cr, struct xrchart_geometry *geom,
                     double smin, double smax)
 {
-  xrchart_write_scale (cr, geom, smin, smax, SCALE_ORDINATE);
+  return xrchart_write_scale (cr, geom, smin, smax, SCALE_ORDINATE);
 }
 
 /* Set the scale for the abscissa */
-void
+bool
 xrchart_write_xscale (cairo_t *cr, struct xrchart_geometry *geom,
 		      double smin, double smax)
 {
-  xrchart_write_scale (cr, geom, smin, smax, SCALE_ABSCISSA);
+  return xrchart_write_scale (cr, geom, smin, smax, SCALE_ABSCISSA);
 }
 
 

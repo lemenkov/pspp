@@ -37,10 +37,13 @@ np_plot_chart_draw (const struct chart_item *chart_item, cairo_t *cr,
   xrchart_write_title (cr, geom, _("Normal Q-Q Plot of %s"), chart_item->title);
   xrchart_write_xlabel (cr, geom, _("Observed Value"));
   xrchart_write_ylabel (cr, geom, _("Expected Normal"));
-  xrchart_write_xscale (cr, geom,
+  if (! xrchart_write_xscale (cr, geom,
                       npp->x_lower - npp->slack,
-                      npp->x_upper + npp->slack);
-  xrchart_write_yscale (cr, geom, npp->y_first, npp->y_last);
+                              npp->x_upper + npp->slack))
+    return;
+
+  if (! xrchart_write_yscale (cr, geom, npp->y_first, npp->y_last))
+    return;
 
   data = casereader_clone (npp->data);
   for (; (c = casereader_read (data)) != NULL; case_unref (c))
@@ -64,8 +67,10 @@ dnp_plot_chart_draw (const struct chart_item *chart_item, cairo_t *cr,
   xrchart_write_title (cr, geom, _("Detrended Normal Q-Q Plot of %s"), chart_item->title);
   xrchart_write_xlabel (cr, geom, _("Observed Value"));
   xrchart_write_ylabel (cr, geom, _("Dev from Normal"));
-  xrchart_write_xscale (cr, geom, dnpp->y_min, dnpp->y_max);
-  xrchart_write_yscale (cr, geom, dnpp->dns_min, dnpp->dns_max);
+  if (! xrchart_write_xscale (cr, geom, dnpp->y_min, dnpp->y_max))
+    return;
+  if (! xrchart_write_yscale (cr, geom, dnpp->dns_min, dnpp->dns_max))
+    return;
 
   data = casereader_clone (dnpp->data);
   for (; (c = casereader_read (data)) != NULL; case_unref (c))
