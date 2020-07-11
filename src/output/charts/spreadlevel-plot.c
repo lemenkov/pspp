@@ -1,5 +1,5 @@
 /* PSPP - a program for statistical analysis.
-   Copyright (C) 2012 Free Software Foundation, Inc.
+   Copyright (C) 2012, 2020 Free Software Foundation, Inc.
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -53,10 +53,11 @@ spreadlevel_plot_add (struct chart_item *ci, double spread, double level)
 {
   struct spreadlevel_plot_chart *sl = to_spreadlevel_plot_chart (ci);
 
+  /* Zero has a special meaning, in this implementation.  */
   if (sl->tx_pwr == 0)
     {
-      spread = log (spread);
-      level = log (level);
+      spread = log (fabs (spread));
+      level = log (fabs (level));
     }
   else
     {
