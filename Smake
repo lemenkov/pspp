@@ -233,46 +233,46 @@ MISC_ICONS = src/ui/gui/icons/splash-t.png \
 	src/ui/gui/icons/splash-r.png
 
 ACTION_ICONS = \
-src/ui/gui/icons/24x24/actions/psppire-file-open-data.png \
-src/ui/gui/icons/24x24/actions/psppire-file-save-data.png \
-src/ui/gui/icons/24x24/actions/psppire-edit-go-to-variable.png \
-src/ui/gui/icons/24x24/actions/psppire-edit-go-to-case.png \
-src/ui/gui/icons/24x24/actions/psppire-edit-find.png \
-src/ui/gui/icons/24x24/actions/psppire-edit-insert-case.png \
-src/ui/gui/icons/24x24/actions/psppire-edit-insert-variable.png \
-src/ui/gui/icons/24x24/actions/psppire-data-split-file.png \
-src/ui/gui/icons/24x24/actions/psppire-data-weight-cases.png \
-src/ui/gui/icons/24x24/actions/psppire-view-value-labels.png \
-src/ui/gui/icons/48x48/actions/psppire-file-open-data.png \
-src/ui/gui/icons/48x48/actions/psppire-file-save-data.png \
-src/ui/gui/icons/48x48/actions/psppire-edit-go-to-variable.png \
-src/ui/gui/icons/48x48/actions/psppire-edit-go-to-case.png \
-src/ui/gui/icons/48x48/actions/psppire-edit-find.png \
-src/ui/gui/icons/48x48/actions/psppire-edit-insert-case.png \
-src/ui/gui/icons/48x48/actions/psppire-edit-insert-variable.png \
-src/ui/gui/icons/48x48/actions/psppire-data-split-file.png \
-src/ui/gui/icons/48x48/actions/psppire-data-weight-cases.png \
-src/ui/gui/icons/48x48/actions/psppire-view-value-labels.png \
-src/ui/gui/icons/96x96/actions/psppire-file-open-data.png \
-src/ui/gui/icons/96x96/actions/psppire-file-save-data.png \
-src/ui/gui/icons/96x96/actions/psppire-edit-go-to-variable.png \
-src/ui/gui/icons/96x96/actions/psppire-edit-go-to-case.png \
-src/ui/gui/icons/96x96/actions/psppire-edit-find.png \
-src/ui/gui/icons/96x96/actions/psppire-edit-insert-case.png \
-src/ui/gui/icons/96x96/actions/psppire-edit-insert-variable.png \
-src/ui/gui/icons/96x96/actions/psppire-data-split-file.png \
-src/ui/gui/icons/96x96/actions/psppire-data-weight-cases.png \
-src/ui/gui/icons/96x96/actions/psppire-view-value-labels.png \
-src/ui/gui/icons/scalable/actions/psppire-file-open-data.svg \
-src/ui/gui/icons/scalable/actions/psppire-file-save-data.svg \
-src/ui/gui/icons/scalable/actions/psppire-edit-go-to-variable.svg \
-src/ui/gui/icons/scalable/actions/psppire-edit-go-to-case.svg \
-src/ui/gui/icons/scalable/actions/psppire-edit-find.svg \
-src/ui/gui/icons/scalable/actions/psppire-edit-insert-case.svg \
-src/ui/gui/icons/scalable/actions/psppire-edit-insert-variable.svg \
-src/ui/gui/icons/scalable/actions/psppire-data-split-file.svg \
-src/ui/gui/icons/scalable/actions/psppire-data-weight-cases.svg \
-src/ui/gui/icons/scalable/actions/psppire-view-value-labels.svg
+src/ui/gui/icons/24x24/actions/pspp-file-open-data.png \
+src/ui/gui/icons/24x24/actions/pspp-file-save-data.png \
+src/ui/gui/icons/24x24/actions/pspp-edit-go-to-variable.png \
+src/ui/gui/icons/24x24/actions/pspp-edit-go-to-case.png \
+src/ui/gui/icons/24x24/actions/pspp-edit-find.png \
+src/ui/gui/icons/24x24/actions/pspp-edit-insert-case.png \
+src/ui/gui/icons/24x24/actions/pspp-edit-insert-variable.png \
+src/ui/gui/icons/24x24/actions/pspp-data-split-file.png \
+src/ui/gui/icons/24x24/actions/pspp-data-weight-cases.png \
+src/ui/gui/icons/24x24/actions/pspp-view-value-labels.png \
+src/ui/gui/icons/48x48/actions/pspp-file-open-data.png \
+src/ui/gui/icons/48x48/actions/pspp-file-save-data.png \
+src/ui/gui/icons/48x48/actions/pspp-edit-go-to-variable.png \
+src/ui/gui/icons/48x48/actions/pspp-edit-go-to-case.png \
+src/ui/gui/icons/48x48/actions/pspp-edit-find.png \
+src/ui/gui/icons/48x48/actions/pspp-edit-insert-case.png \
+src/ui/gui/icons/48x48/actions/pspp-edit-insert-variable.png \
+src/ui/gui/icons/48x48/actions/pspp-data-split-file.png \
+src/ui/gui/icons/48x48/actions/pspp-data-weight-cases.png \
+src/ui/gui/icons/48x48/actions/pspp-view-value-labels.png \
+src/ui/gui/icons/96x96/actions/pspp-file-open-data.png \
+src/ui/gui/icons/96x96/actions/pspp-file-save-data.png \
+src/ui/gui/icons/96x96/actions/pspp-edit-go-to-variable.png \
+src/ui/gui/icons/96x96/actions/pspp-edit-go-to-case.png \
+src/ui/gui/icons/96x96/actions/pspp-edit-find.png \
+src/ui/gui/icons/96x96/actions/pspp-edit-insert-case.png \
+src/ui/gui/icons/96x96/actions/pspp-edit-insert-variable.png \
+src/ui/gui/icons/96x96/actions/pspp-data-split-file.png \
+src/ui/gui/icons/96x96/actions/pspp-data-weight-cases.png \
+src/ui/gui/icons/96x96/actions/pspp-view-value-labels.png \
+src/ui/gui/icons/scalable/actions/pspp-file-open-data.svg \
+src/ui/gui/icons/scalable/actions/pspp-file-save-data.svg \
+src/ui/gui/icons/scalable/actions/pspp-edit-go-to-variable.svg \
+src/ui/gui/icons/scalable/actions/pspp-edit-go-to-case.svg \
+src/ui/gui/icons/scalable/actions/pspp-edit-find.svg \
+src/ui/gui/icons/scalable/actions/pspp-edit-insert-case.svg \
+src/ui/gui/icons/scalable/actions/pspp-edit-insert-variable.svg \
+src/ui/gui/icons/scalable/actions/pspp-data-split-file.svg \
+src/ui/gui/icons/scalable/actions/pspp-data-weight-cases.svg \
+src/ui/gui/icons/scalable/actions/pspp-view-value-labels.svg
 
 ICONS=$(CATEGORY_ICONS) $(ACTION_ICONS) $(MIMETYPE_ICONS) $(APP_ICONS) $(MISC_ICONS)
 
