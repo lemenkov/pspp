@@ -1,6 +1,5 @@
 /* PSPPIRE - a graphical user interface for PSPP.
-   Copyright (C) 2004, 2005, 2006, 2010, 2011, 2012, 2013, 2014, 2015, 2016,
-   2020 Free Software Foundation
+   Copyright (C) 2004, 2005, 2006, 2010, 2011, 2012, 2013, 2014, 2015, 2016  Free Software Foundation
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -21,12 +20,8 @@
 
 #include <gtk/gtk.h>
 #include <stdlib.h>
-#include <sys/stat.h>
-#include <sys/resource.h>
 #if ENABLE_RELOCATABLE && defined(__APPLE__)
-static const bool apple_relocatable = true;
-#else
-static const bool apple_relocatable = false;
+#include <sys/stat.h>
 #endif
 
 #include "language/lexer/include-path.h"
@@ -322,6 +317,7 @@ process_pre_start_arguments (int *argc, char ***argv)
   g_option_context_free (oc);
 }
 
+#if ENABLE_RELOCATABLE && defined(__APPLE__)
 static void
 pspp_macos_setenv (const char * progname)
 {
@@ -378,29 +374,30 @@ pspp_macos_setenv (const char * progname)
         }
     }
 }
+#endif
 
 int
 main (int argc, char *argv[])
 {
-  if (apple_relocatable)
+
+#if ENABLE_RELOCATABLE && defined(__APPLE__)
+  /* remove MacOS session identifier from the command line args */
+  gint newargc = 0;
+  for (gint i = 0; i < argc; i++)
     {
-      /* remove MacOS session identifier from the command line args */
-      gint newargc = 0;
-      for (gint i = 0; i < argc; i++)
+      if (!g_str_has_prefix (argv[i], "-psn_"))
         {
-          if (!g_str_has_prefix (argv[i], "-psn_"))
-            {
-              argv[newargc] = argv[i];
-              newargc++;
-            }
+          argv[newargc] = argv[i];
+          newargc++;
         }
-      if (argc > newargc)
-        {
-          argv[newargc] = NULL; /* glib expects NULL terminated array */
-          argc = newargc;
-        }
-      pspp_macos_setenv (argv[0]);
     }
+  if (argc > newargc)
+    {
+      argv[newargc] = NULL; /* glib expects NULL terminated array */
+      argc = newargc;
+    }
+  pspp_macos_setenv (argv[0]);
+#endif
 
   set_program_name (argv[0]);
 
