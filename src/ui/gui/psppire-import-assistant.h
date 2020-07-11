@@ -114,8 +114,6 @@ struct _PsppireImportAssistant
   PsppireTextFile *text_file;
   PsppireDelimitedText *delimiters_model;
 
-  struct sheet_spec_page *sheet_spec;
-
   struct dictionary *dict;
   struct dictionary *casereader_dict;
 
