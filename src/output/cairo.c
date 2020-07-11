@@ -889,9 +889,9 @@ xr_destroy (struct output_driver *driver)
       cairo_surface_finish (xr->surface);
       cairo_status_t status = cairo_status (xr->cairo);
       if (status != CAIRO_STATUS_SUCCESS)
-        msg (ME, _("error drawing output for %s driver: %s"),
-               output_driver_get_name (driver),
-               cairo_status_to_string (status));
+        fprintf (stderr,  _("error drawing output for %s driver: %s"),
+                 output_driver_get_name (driver),
+                 cairo_status_to_string (status));
       cairo_surface_destroy (xr->surface);
 
       cairo_destroy (xr->cairo);

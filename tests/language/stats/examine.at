@@ -1268,7 +1268,7 @@ examine x  by g
         /plot = all.
 ])
 dnl This bug only manifested itself on cairo based drivers.
-AT_CHECK([pspp -O format=pdf examine.sps], [1], [ignore], [ignore])
+AT_CHECK([pspp -O format=pdf examine.sps], [0], [ignore], [ignore])
 AT_CLEANUP
 
 
