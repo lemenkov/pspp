@@ -1087,8 +1087,10 @@ on_cut (PsppireDataWindow *dw)
 	  for (x = sel.start_x ; x <= sel.end_x; ++x)
 	    {
 	      const struct variable * var = psppire_dict_get_variable (dict, x);
+	      gboolean use_value_label = FALSE;
+	      g_object_get (dw->data_editor, "value-labels", &use_value_label, NULL);
 	      gchar *s = psppire_data_store_get_string (dw->data_editor->data_store,
-							  y, var, FALSE);
+							  y, var, use_value_label);
 	      g_string_append (str, s);
               if (x < sel.end_x)
                 g_string_append (str, "\t");

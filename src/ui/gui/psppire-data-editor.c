@@ -173,6 +173,7 @@ psppire_data_editor_set_property (GObject         *object,
     case PROP_VALUE_LABELS:
       {
 	gboolean l = g_value_get_boolean (value);
+	de->use_value_labels = l;
 	g_object_set (de->data_sheet, "forward-conversion",
 		      l ?
 		      psppire_data_store_value_to_string_with_labels :
@@ -207,6 +208,7 @@ psppire_data_editor_get_property (GObject         *object,
       g_value_set_pointer (value, de->dict);
       break;
     case PROP_VALUE_LABELS:
+      g_value_set_boolean (value, de->use_value_labels);
       break;
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
@@ -504,6 +506,7 @@ psppire_data_editor_init (PsppireDataEditor *de)
   gtk_box_pack_start (GTK_BOX (hbox), de->datum_entry, TRUE, TRUE, 0);
 
   de->split = FALSE;
+  de->use_value_labels = FALSE;
   de->data_sheet = psppire_data_sheet_new ();
 
   GtkWidget *data_button = ssw_sheet_get_button (SSW_SHEET (de->data_sheet));

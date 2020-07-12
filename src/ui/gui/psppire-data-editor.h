@@ -70,6 +70,7 @@ struct _PsppireDataEditor
   GtkWidget *datum_entry;      /* PsppireValueEntry for editing current cell. */
 
   gboolean split;              /* True if the sheets are in split view. */
+  gboolean use_value_labels;   /* True if labels instead of data are shown. */
 };
 
 struct _PsppireDataEditorClass
