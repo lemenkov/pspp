@@ -1076,6 +1076,19 @@ on_cut (PsppireDataWindow *dw)
       if (ssw_sheet_try_cut (sheet))
 	return;
 
+      if (sel.start_x > sel.end_x)
+	{
+	  gint tmp = sel.start_x;
+	  sel.start_x = sel.end_x;
+	  sel.end_x = tmp;
+	}
+      if (sel.start_y > sel.end_y)
+	{
+	  gint tmp = sel.start_y;
+	  sel.start_y = sel.end_y;
+	  sel.end_y = tmp;
+	}
+	  
       GtkClipboard *clip =
 	gtk_clipboard_get_for_display (gtk_widget_get_display (GTK_WIDGET (dw)),
 				       GDK_SELECTION_CLIPBOARD);
