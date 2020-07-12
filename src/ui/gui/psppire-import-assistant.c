@@ -527,8 +527,11 @@ prepare_sheet_spec_page (PsppireImportAssistant *ia)
   GtkWidget *sheet_entry = get_widget_assert (builder, "sheet-entry");
   GtkWidget *readnames_checkbox = get_widget_assert (builder, "readnames-checkbox");
 
-  gtk_combo_box_set_model (GTK_COMBO_BOX (sheet_entry),
-			   psppire_spreadsheet_model_new (ia->spreadsheet));
+  GtkTreeModel *model = psppire_spreadsheet_model_new (ia->spreadsheet);
+  gtk_combo_box_set_model (GTK_COMBO_BOX (sheet_entry), model);
+
+  gint items = gtk_tree_model_iter_n_children (model, NULL);
+  gtk_widget_set_sensitive (sheet_entry, items > 1);
 
   gtk_combo_box_set_active (GTK_COMBO_BOX (sheet_entry), 0);
 
