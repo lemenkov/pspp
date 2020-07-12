@@ -155,9 +155,20 @@ psppire_data_store_string_to_value (GtkTreeModel *model, gint col, gint row,
 
   union value val;
   value_init (&val, width);
-  char *xx =
-    data_in (ss_cstr (in), psppire_dict_encoding (store->dict),
-	     fmt->type, &val, width, "UTF-8");
+  const struct val_labs *value_labels = var_get_value_labels (variable);
+  const union value *vp = NULL;
+  if (value_labels)
+    {
+      vp = val_labs_find_value (value_labels, in);
+      if (vp)
+	value_copy (&val, vp, width);
+    }
+  char *xx = NULL;
+  if (vp == NULL)
+    {
+      xx = data_in (ss_cstr (in), psppire_dict_encoding (store->dict),
+		    fmt->type, &val, width, "UTF-8");
+    }
 
   GVariant *vrnt = value_variant_new (&val, width);
   value_destroy (&val, width);
