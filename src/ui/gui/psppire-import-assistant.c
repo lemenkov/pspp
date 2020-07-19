@@ -655,6 +655,11 @@ chooser_page_reset (PsppireImportAssistant *ia, GtkWidget *page)
 }
 
 
+static void
+on_file_activated (GtkFileChooser *chooser, PsppireImportAssistant *ia)
+{
+  gtk_assistant_next_page (GTK_ASSISTANT (ia));
+}
 
 static void
 chooser_page_create (PsppireImportAssistant *ia)
@@ -662,6 +667,8 @@ chooser_page_create (PsppireImportAssistant *ia)
   GtkFileFilter *filter = NULL;
 
   GtkWidget *chooser = gtk_file_chooser_widget_new (GTK_FILE_CHOOSER_ACTION_OPEN);
+
+  g_signal_connect (chooser, "file-activated", G_CALLBACK (on_file_activated), ia);
 
   g_object_set_data (G_OBJECT (chooser), "on-forward", chooser_page_leave);
   g_object_set_data (G_OBJECT (chooser), "on-reset",   chooser_page_reset);
