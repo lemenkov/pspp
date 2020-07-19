@@ -68,7 +68,7 @@ $(POTFILE): $(ALL_TRANSLATABLE_FILES)
 	$(AM_V_at)$(XGETTEXT) $(XGETTEXT_OPTIONS) -j src/ui/gui/org.fsf.pspp.desktop.in -o $@,tmp
 	$(AM_V_at)$(SED) -e '/^"POT-Creation-Date: .*/d' $@,tmp > $@
 
-$(LOCALPOFILED) $(POFILES): $(POTFILE)
+$(LOCALPOFILES) $(POFILES): $(POTFILE)
 	$(AM_V_GEN)$(MSGMERGE) --previous --quiet $(top_srcdir)/$@ $? -o $@,tmp
 	$(AM_V_at)if test -e $(top_srcdir)/$@,aux ; then \
 		touch $@,tmp ; \
