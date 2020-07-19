@@ -55,7 +55,7 @@ GNULIB_MODULES = \
 	fwriteerror \
 	getline \
 	getpass \
-	gettext \
+	gettext-h \
 	gettimeofday \
         getopt-gnu \
 	gitlog-to-changelog \
@@ -97,7 +97,7 @@ GNULIB_MODULES = \
 	strcasestr \
 	stpcpy \
 	strerror \
-	strftime \
+	nstrftime \
 	strsep \
 	strtod \
 	strtok_r \
