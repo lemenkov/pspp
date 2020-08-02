@@ -138,6 +138,7 @@ GNULIB_MODULES = \
 	vsprintf-posix \
 	xalloc \
 	xalloc-die \
+	xbinary-io \
 	xmalloca \
 	xmemdup0 \
 	xsize \

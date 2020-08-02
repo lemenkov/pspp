@@ -38,6 +38,7 @@
 #include "gl/intprops.h"
 #include "gl/progname.h"
 #include "gl/xalloc.h"
+#include "gl/xbinary-io.h"
 
 struct buffer
   {
@@ -704,6 +705,7 @@ main (int argc, char **argv)
   if (input != stdin)
     fclose (input);
 
+  xset_binary_mode (fileno (stdout), O_BINARY);
   fwrite (output.data, output.size, 1, stdout);
   free (output.data);
 

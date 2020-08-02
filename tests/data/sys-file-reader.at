@@ -699,7 +699,7 @@ dnl Character encoding record.
 dnl Dictionary termination record.
 999; 0;
 ])
-for variant in be le; do
+for variant in be; do
   AT_CHECK([sack --$variant sys-file.sack > sys-file.sav])
   AT_DATA([sys-file.sps], [dnl
 SYSFILE INFO FILE='sys-file.sav'.
