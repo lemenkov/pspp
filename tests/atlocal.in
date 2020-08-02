@@ -80,3 +80,6 @@ fi
 # Enable leak suppressions for Address Sanitizer/Leak Sanitizer.
 LSAN_OPTIONS="suppressions=$abs_top_srcdir/tests/lsan.supp print_suppressions=0"
 export LSAN_OPTIONS
+
+# Avoid complaints if the system doesn't have a configured paper size.
+export PAPERSIZE=a4
