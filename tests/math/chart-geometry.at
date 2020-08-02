@@ -17,11 +17,11 @@ dnl
 AT_BANNER([Chart Geometry])
 
 AT_SETUP([Chart Scale])
-AT_CHECK([../../math/chart-get-scale-test], [0], [ignore])
+AT_CHECK([chart-get-scale-test], [0], [ignore])
 AT_CLEANUP
 
 AT_SETUP([Chart Ticks Format])
-AT_CHECK([../../math/chart-get-ticks-format-test], [0], [dnl
+AT_CHECK([chart-get-ticks-format-test], [0], [dnl
 lower: 1000, interval: 10, nticks: 10, fs: %.0lf, scale: 1, ex: 1030, ex 2: 1040
 lower: 10000, interval: 10, nticks: 10, fs: %.0lf, scale: 1, ex: 10030, ex 2: 10040
 lower: 100000, interval: 10, nticks: 10, fs: %.0lf, scale: 1, ex: 100030, ex 2: 100040

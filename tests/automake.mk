@@ -432,7 +432,7 @@ TESTSUITE_AT = \
 
 TESTSUITE = $(srcdir)/tests/testsuite
 DISTCLEANFILES += tests/atconfig tests/atlocal
-AUTOTEST_PATH = tests/data:tests/language/lexer:tests/libpspp:tests/output:src/ui/terminal:utilities
+AUTOTEST_PATH = tests/data:tests/language/lexer:tests/libpspp:tests/output:tests/math:src/ui/terminal:utilities
 
 $(srcdir)/tests/testsuite.at: tests/testsuite.in tests/automake.mk
 	$(AM_V_GEN)printf '\043 Generated automatically -- do not modify!    -*- buffer-read-only: t -*-\n' > $@,tmp
