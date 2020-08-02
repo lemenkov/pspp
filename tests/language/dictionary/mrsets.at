@@ -120,7 +120,7 @@ AT_DATA([mrsets.sps],
     /DELETE NAME=ALL
     /DISPLAY NAME=ALL.
 ]])
-AT_CHECK([pspp -o - -O format=csv -o mrsets.csv -o mrsets.txt -o mrsets.pdf mrsets.sps], [0],
+AT_CHECK([pspp -o - -O format=csv -o mrsets.csv -o mrsets.txt mrsets.sps], [0],
   [DEFINE_MRSETS_OUTPUT
 Table: Multiple Response Sets
 Name,Label,Encoding,Counted Value,Member Variables
