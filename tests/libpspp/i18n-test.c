@@ -22,8 +22,34 @@
 
 #include "libpspp/i18n.h"
 
+#include "gl/xalloc.h"
+
 #undef NDEBUG
 #include <assert.h>
+
+/* Returns a malloc()'d copy of INPUT with \ooo octal escapes replaced by their
+   values. */
+static char *
+backslash_decode (const char *input)
+{
+  char *output = xmalloc (strlen (input) + 1);
+  char *p = output;
+  for (; *input; input++)
+    {
+      if (*input == '\\' && input[1] >= '0' && input[1] <= '7')
+        {
+          uint8_t c = 0;
+          while (input[1] >= '0' && input[1] <= '7')
+            c = c * 8 + (*++input - '0');
+          *p++ = c;
+        }
+      else
+        *p++ = *input;
+    }
+  *p = '\0';
+
+  return output;
+}
 
 int
 main (int argc, char *argv[])
@@ -48,16 +74,17 @@ main (int argc, char *argv[])
     {
       const char *from = argv[2];
       const char *to = argv[3];
-      const char *string = argv[4];
+      char *string = backslash_decode (argv[4]);
       char *result = recode_string (to, from, string, -1);
       puts (result);
       assert (strlen (result) == recode_string_len (to, from, string, -1));
+      free (string);
       free (result);
     }
   else if (argc == 6 && !strcmp (argv[1], "concat"))
     {
-      const char *head = argv[2];
-      const char *tail = argv[3];
+      char *head = backslash_decode (argv[2]);
+      char *tail = backslash_decode (argv[3]);
       const char *encoding = argv[4];
       int max_len = atoi (argv[5]);
       char *result;
@@ -78,6 +105,8 @@ main (int argc, char *argv[])
         }
 
       free (result);
+      free (head);
+      free (tail);
     }
   else
     {

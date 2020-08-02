@@ -100,7 +100,7 @@ tests_libpspp_hmapx_test_SOURCES = \
 tests_libpspp_hmapx_test_CPPFLAGS = $(AM_CPPFLAGS) -DASSERT_LEVEL=10
 
 tests_libpspp_i18n_test_SOURCES = tests/libpspp/i18n-test.c
-tests_libpspp_i18n_test_LDADD = src/libpspp-core.la
+tests_libpspp_i18n_test_LDADD = src/libpspp-core.la gl/libgl.la
 
 tests_libpspp_abt_test_SOURCES = \
 	src/libpspp/abt.c \

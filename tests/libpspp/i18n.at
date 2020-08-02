@@ -20,16 +20,14 @@ AT_BANNER([i18n recoding])
 #                   [FROM-TEXT], [TO-TEXT])
 #
 # Converts FROM-TEXT from FROM-CODING to TO-CODING and checks that the result
-# is TO-TEXT.  The "printf" program is applied to both FROM-TEXT and TO-TEXT to
-# allow for backslash-escapes.  (Hex escapes are not portable; use octal
-# escapes instead.)
+# is TO-TEXT.  Octal backslash-escapes are supported in FROM-TEXT and TO-TEXT.
 m4_define([CHECK_I18N_RECODE],
   [AT_SETUP([convert $1])
    AT_KEYWORDS([i18n])
 
    dnl Skip the test if this host doesn't know the source and target encodings.
    AT_CHECK([i18n-test supports_encodings '$2' '$3'])
-   AT_CHECK_UNQUOTED([i18n-test recode '$2' '$3' `printf '$4'`], [0], [`printf '$5'`
+   AT_CHECK_UNQUOTED([i18n-test recode '$2' '$3' '$4'], [0], [`printf '$5'`
 ])
    AT_CLEANUP])
 
@@ -85,8 +83,7 @@ m4_define([CHECK_I18N_CONCAT],
    dnl Skip the test if this host doesn't know the encoding.
    AT_CHECK([i18n-test supports_encodings '$3'])
    AT_CHECK_UNQUOTED(
-     [i18n-test concat "`printf '$1'`" "`printf '$2'`" '$3' '$4'], [0],
-     [`printf '$5'`
+     [i18n-test concat '$1' '$2' '$3' '$4'], [0], [`printf '$5'`
 ])
    AT_CLEANUP])
 
