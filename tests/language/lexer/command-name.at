@@ -18,7 +18,7 @@ AT_BANNER([command name matching])
 
 AT_SETUP([single words])
 AT_KEYWORDS([command name matching])
-AT_CHECK([command-name-test DESCRIPTIVES , DESCRIPTIVESX DESCRIPTIVES descr Des DEX DE '' 'DESCRIPTIVES MORE' 'DESCRIPTIVES@<00A0>@MORE'],
+AT_CHECK([command-name-test DESCRIPTIVES , DESCRIPTIVESX DESCRIPTIVES descr Des DEX DE '' 'DESCRIPTIVES MORE' 'DESCRIPTIVES++MORE'],
   [0], [dnl
 string="DESCRIPTIVESX":
 	command="DESCRIPTIVES" match=no
@@ -60,7 +60,7 @@ AT_CLEANUP
 
 AT_SETUP([two words without prefix match])
 AT_KEYWORDS([command name matching])
-AT_CHECK([command-name-test 'DO IF' 'DO REPEAT' , 'DO@<00A0>@IF' 'DO REPEAT' 'DO REP' 'DO OTHER' 'D IF' 'DO I' DO],
+AT_CHECK([command-name-test 'DO IF' 'DO REPEAT' , 'DO++IF' 'DO REPEAT' 'DO REP' 'DO OTHER' 'D IF' 'DO I' DO],
   [0], [dnl
 string="DO@<00A0>@IF":
 	command="DO IF" match=yes exact=yes missing_words=0
@@ -153,7 +153,7 @@ AT_CLEANUP
 
 AT_SETUP([ambiguous two-word names])
 AT_KEYWORDS([command name matching])
-AT_CHECK([command-name-test VARCOMP VARSTOCASES 'VARIABLE ATTRIBUTE' , VAR VARC VARS VARI 'VAR@<00A0>@ATT'],
+AT_CHECK([command-name-test VARCOMP VARSTOCASES 'VARIABLE ATTRIBUTE' , VAR VARC VARS VARI 'VAR++ATT'],
   [0], [dnl
 string="VAR":
 	command="VARCOMP" match=yes exact=no missing_words=0
@@ -225,7 +225,7 @@ AT_CLEANUP
 
 AT_SETUP([off by more than one word])
 AT_KEYWORDS([command name matching])
-AT_CHECK([command-name-test 'a@<00A0>@b c' , a 'a b' 'a b c' 'a@<00A0>@b c d' 'a b c@<00A0>@d e'],
+AT_CHECK([command-name-test 'a++b c' , a 'a b' 'a b c' 'a++b c d' 'a b c++d e'],
   [0], [dnl
 string="a":
 	command="a@<00A0>@b c" match=yes exact=yes missing_words=2

@@ -118,6 +118,17 @@ parse_options (int argc, char **argv)
 
     }
 
+  for (int i = optind; i < argc; i++)
+    {
+      /* Replace ++ by nonbreaking space in UTF-8. */
+      for (char *p = argv[i]; *p != '\0'; p++)
+        if (p[0] == '+' && p[1] == '+')
+          {
+            p[0] = 0xc2;
+            p[1] = 0xa0;
+          }
+    }
+
   for (breakpoint = optind; ; breakpoint++)
     if (breakpoint >= argc)
       error (1, 0, "missing ',' on command line; use --help for help");
