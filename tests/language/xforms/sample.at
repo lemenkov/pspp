@@ -42,6 +42,7 @@ AT_CHECK(
   [n=0
    while read line; do
      n=`expr $n + 1`
+     line=$(echo "$line" | tr -d '\r')
      case $line in # (
        "Table: Data List" | A | [[0-9]] | 10) ;; # (
        *) echo $line; exit 1;
