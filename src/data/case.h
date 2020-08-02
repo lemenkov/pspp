@@ -138,7 +138,7 @@ case_unshare (struct ccase *c)
 static inline void
 case_unref (struct ccase *c)
 {
-  if (c != NULL && !--c->ref_cnt)
+  if (c != NULL && --c->ref_cnt == 0)
     case_unref__ (c);
 }
 

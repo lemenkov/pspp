@@ -156,7 +156,7 @@ caseproto_ref (const struct caseproto *proto_)
 static inline void
 caseproto_unref (struct caseproto *proto)
 {
-  if (proto != NULL && !--proto->ref_cnt)
+  if (proto != NULL && --proto->ref_cnt == 0)
     caseproto_free__ (proto);
 }
 
