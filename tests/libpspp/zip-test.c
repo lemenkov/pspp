@@ -54,7 +54,7 @@ main (int argc, char **argv)
       struct zip_writer *zw = zip_writer_create (argv[2]);
       for (i = 3; i < argc; ++i)
 	{
-	  FILE *fp = fopen (argv[i], "r");
+	  FILE *fp = fopen (argv[i], "rb");
 	  if (!fp) check_die ();
 	  zip_writer_add (zw, fp, argv[i]);
 	}
@@ -76,7 +76,7 @@ main (int argc, char **argv)
 	{
 	  int x = 0;
 	  struct zip_member *zm ;
-	  FILE *fp = fopen (argv[i], "w");
+	  FILE *fp = fopen (argv[i], "wb");
 	  if (NULL == fp)
 	    {
 	      int e = errno;
