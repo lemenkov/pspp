@@ -84,7 +84,8 @@ flush_conf (PsppireConf *conf)
 
   if (! g_file_set_contents (conf->filename, kf, length, NULL))
     {
-      g_warning ("Cannot open %s for writing", conf->filename);
+      char *msg = strerror (errno);
+      g_warning ("Cannot open %s for writing: %s", conf->filename, msg);
     }
 
   g_free (kf);
