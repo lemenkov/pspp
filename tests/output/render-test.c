@@ -25,6 +25,7 @@
 #include "data/file-handle-def.h"
 #include "libpspp/assertion.h"
 #include "libpspp/compiler.h"
+#include "libpspp/i18n.h"
 #include "libpspp/string-map.h"
 #include "output/ascii.h"
 #include "output/driver.h"
@@ -76,6 +77,7 @@ main (int argc, char **argv)
   FILE *input;
 
   set_program_name (argv[0]);
+  i18n_init ();
   output_engine_push ();
   input_file_name = parse_options (argc, argv);
 
