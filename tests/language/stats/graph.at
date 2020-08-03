@@ -92,7 +92,7 @@ Recode CityNum
 
 ])
 
-AT_CHECK([pspp -O format=pdf scatterlong.sps], [0], [ignore])
+AT_CHECK([pspp -O format=pdf scatterlong.sps], [0], [ignore], [ignore])
 AT_CLEANUP
 
 AT_SETUP([GRAPH missing values don't crash])
@@ -112,7 +112,7 @@ graph
 graph
       /histogram = x.
 ])
-AT_CHECK([pspp -o pspp.pdf scatter.sps])
+AT_CHECK([pspp -o pspp.pdf scatter.sps], [], [ignore])
 dnl Ignore output -- this is just a no-crash check.
 AT_CLEANUP
 
@@ -135,7 +135,7 @@ graph
       /histogram = x
       /missing = VARIABLE.
 ])
-AT_CHECK([pspp -o pspp.pdf scatter.sps])
+AT_CHECK([pspp -o pspp.pdf scatter.sps], [], [ignore])
 dnl Ignore output -- this is just a no-crash check.
 AT_CLEANUP
 
@@ -159,7 +159,7 @@ graph
       /scatterplot = x with y by z.
 
 ])
-AT_CHECK([pspp -o pspp.pdf scatter.sps])
+AT_CHECK([pspp -o pspp.pdf scatter.sps], [0], [ignore])
 dnl Ignore output -- this is just a no-crash check.
 AT_CLEANUP
 

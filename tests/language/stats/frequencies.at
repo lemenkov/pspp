@@ -219,7 +219,7 @@ frequencies /x
 ])
 # Cannot use the CSV driver for this because it does not output charts
 # at all.
-AT_CHECK([pspp -O format=pdf frequencies.sps], [0], [ignore])
+AT_CHECK([pspp -O format=pdf frequencies.sps], [0], [ignore], [ignore])
 AT_CLEANUP
 
 # Tests for a bug which crashed PSPP when the median and a histogram
