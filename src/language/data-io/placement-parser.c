@@ -401,16 +401,17 @@ parse_record_placement (struct lexer *lexer, int *record, int *column)
     {
       if (lex_is_integer (lexer))
         {
-          if ((int) lex_integer (lexer) <= *record)
+          long n = lex_integer (lexer);
+          if (n <= *record || n > INT_MAX)
             {
               msg (SE, _("The record number specified, %ld, is at or "
                          "before the previous record, %d.  Data "
                          "fields must be listed in order of "
                          "increasing record number."),
-                   lex_integer (lexer), *record);
+                   n, *record);
               return false;
             }
-          *record = lex_integer (lexer);
+          *record = n;
           lex_get (lexer);
         }
       else
