@@ -105,7 +105,7 @@ create_temp_file (void)
 
   file_name = xasprintf ("%s/%d", temp_dir->dir_name, idx++);
   register_temp_file (temp_dir, file_name);
-  stream = fopen_temp (file_name, "wb+");
+  stream = fopen_temp (file_name, "wb+", true);
   if (stream == NULL)
     unregister_temp_file (temp_dir, file_name);
   else

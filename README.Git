@@ -37,15 +37,13 @@ Gnulib does not maintain a stable API or ABI, so it is possible that
 PSPP will not work with older or newer versions of Gnulib.
 
 
-  commit 1e972a8a37c153ddc15e604592f84f939eb3c2ad
-  Author: Bruno Haible <bruno@clisp.org>
-  Date:   Sat Jun 6 10:14:24 2020 +0200
+ commit d6dabe8eece3a9c1269dc1c084531ce447c7a42e (HEAD -> master, origin/master, origin/HEAD)
+ Author: Bruno Haible <bruno@clisp.org>
+ Date:   Sun Aug 9 12:36:37 2020 +0200
 
-    calloc-gnu tests: Avoid a test failure with clang.
+    Use __builtin_signbit* with clang.
 
-    * tests/test-calloc-gnu.c (main): Mark the pointer variable as
-    'volatile', to defeat compiler optimizations.
-
+    * lib/math.in.h (signbit): Use __builtin_signbit{,f,l} also on clang.
 
 To clone Gnulib into a directory named "gnulib" using Git, and then
 check out this particular commit, run these commands:
