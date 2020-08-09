@@ -19,6 +19,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #ifndef BARCHART_DEF_H
 #define BARCHART_DEF_H 1
 
+#include <stdbool.h>
+
 struct ag_func
 {
   const char *name;
