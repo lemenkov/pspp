@@ -142,22 +142,12 @@ dist_src_ui_gui_psppire_DATA = \
 	$(top_srcdir)/src/ui/gui/pspp.lang
 
 src_ui_gui_psppire_SOURCES = \
-	src/ui/gui/psppire-dialog.c \
-	src/ui/gui/psppire-keypad.c \
-	src/ui/gui/psppire-selector.c \
-	src/ui/gui/psppire-buttonbox.c \
-	src/ui/gui/psppire-buttonbox.h \
-	src/ui/gui/psppire-scanf.c \
-	src/ui/gui/psppire-scanf.h \
-	src/ui/gui/psppire-acr.c \
-	src/ui/gui/psppire-import-assistant.c \
-	src/ui/gui/psppire-import-assistant.h \
 	src/ui/gui/builder-wrapper.c \
 	src/ui/gui/builder-wrapper.h \
 	src/ui/gui/dialog-common.c \
 	src/ui/gui/dialog-common.h \
-	src/ui/gui/dict-display.h \
 	src/ui/gui/dict-display.c \
+	src/ui/gui/dict-display.h \
 	src/ui/gui/entry-dialog.c \
 	src/ui/gui/entry-dialog.h \
 	src/ui/gui/executor.c \
@@ -167,50 +157,54 @@ src_ui_gui_psppire_SOURCES = \
 	src/ui/gui/goto-case-dialog.c \
 	src/ui/gui/goto-case-dialog.h \
 	src/ui/gui/helper.c \
+	src/ui/gui/helper.h \
 	src/ui/gui/help-menu.c \
 	src/ui/gui/help-menu.h \
-	src/ui/gui/helper.h \
 	src/ui/gui/main.c \
 	src/ui/gui/missing-val-dialog.c \
 	src/ui/gui/missing-val-dialog.h \
 	src/ui/gui/options-dialog.c \
 	src/ui/gui/options-dialog.h \
-	src/ui/gui/psppire.c \
-	src/ui/gui/psppire.h \
+	src/ui/gui/psppire-acr.c \
 	src/ui/gui/psppire-acr.h \
+	src/ui/gui/psppire-buttonbox.c \
+	src/ui/gui/psppire-buttonbox.h \
+	src/ui/gui/psppire.c \
 	src/ui/gui/psppire-checkbox-treeview.c \
 	src/ui/gui/psppire-checkbox-treeview.h \
 	src/ui/gui/psppire-conf.c \
 	src/ui/gui/psppire-conf.h \
 	src/ui/gui/psppire-data-editor.c \
 	src/ui/gui/psppire-data-editor.h \
+	src/ui/gui/psppire-data-sheet.c \
+	src/ui/gui/psppire-data-sheet.h \
 	src/ui/gui/psppire-data-store.c \
 	src/ui/gui/psppire-data-store.h \
 	src/ui/gui/psppire-data-window.c \
 	src/ui/gui/psppire-data-window.h \
-	src/ui/gui/psppire-dialog.h \
-	src/ui/gui/psppire-dialog-action.c \
-	src/ui/gui/psppire-dialog-action.h \
+	src/ui/gui/psppire-delimited-text.c \
+	src/ui/gui/psppire-delimited-text.h \
+	src/ui/gui/psppire-dialog-action-1sks.c \
+	src/ui/gui/psppire-dialog-action-1sks.h \
 	src/ui/gui/psppire-dialog-action-aggregate.c \
 	src/ui/gui/psppire-dialog-action-aggregate.h \
 	src/ui/gui/psppire-dialog-action-autorecode.c \
 	src/ui/gui/psppire-dialog-action-autorecode.h \
-	src/ui/gui/psppire-dialog-action-1sks.c \
-	src/ui/gui/psppire-dialog-action-1sks.h \
 	src/ui/gui/psppire-dialog-action-barchart.c \
 	src/ui/gui/psppire-dialog-action-barchart.h \
 	src/ui/gui/psppire-dialog-action-binomial.c \
 	src/ui/gui/psppire-dialog-action-binomial.h \
+	src/ui/gui/psppire-dialog-action.c \
 	src/ui/gui/psppire-dialog-action-chisquare.c \
 	src/ui/gui/psppire-dialog-action-chisquare.h \
-	src/ui/gui/psppire-dialog-action-compute.c \
-	src/ui/gui/psppire-dialog-action-compute.h \
 	src/ui/gui/psppire-dialog-action-comments.c \
 	src/ui/gui/psppire-dialog-action-comments.h \
-	src/ui/gui/psppire-dialog-action-count.c \
-	src/ui/gui/psppire-dialog-action-count.h \
+	src/ui/gui/psppire-dialog-action-compute.c \
+	src/ui/gui/psppire-dialog-action-compute.h \
 	src/ui/gui/psppire-dialog-action-correlation.c \
 	src/ui/gui/psppire-dialog-action-correlation.h \
+	src/ui/gui/psppire-dialog-action-count.c \
+	src/ui/gui/psppire-dialog-action-count.h \
 	src/ui/gui/psppire-dialog-action-crosstabs.c \
 	src/ui/gui/psppire-dialog-action-crosstabs.h \
 	src/ui/gui/psppire-dialog-action-descriptives.c \
@@ -223,18 +217,19 @@ src_ui_gui_psppire_SOURCES = \
 	src/ui/gui/psppire-dialog-action-flip.h \
 	src/ui/gui/psppire-dialog-action-frequencies.c \
 	src/ui/gui/psppire-dialog-action-frequencies.h \
+	src/ui/gui/psppire-dialog-action.h \
 	src/ui/gui/psppire-dialog-action-histogram.c \
 	src/ui/gui/psppire-dialog-action-histogram.h \
 	src/ui/gui/psppire-dialog-action-indep-samps.c \
 	src/ui/gui/psppire-dialog-action-indep-samps.h \
-	src/ui/gui/psppire-dialog-action-kmeans.c \
-	src/ui/gui/psppire-dialog-action-kmeans.h \
-	src/ui/gui/psppire-dialog-action-logistic.c \
-	src/ui/gui/psppire-dialog-action-logistic.h \
 	src/ui/gui/psppire-dialog-action-k-independent.c \
 	src/ui/gui/psppire-dialog-action-k-independent.h \
+	src/ui/gui/psppire-dialog-action-kmeans.c \
+	src/ui/gui/psppire-dialog-action-kmeans.h \
 	src/ui/gui/psppire-dialog-action-k-related.c \
 	src/ui/gui/psppire-dialog-action-k-related.h \
+	src/ui/gui/psppire-dialog-action-logistic.c \
+	src/ui/gui/psppire-dialog-action-logistic.h \
 	src/ui/gui/psppire-dialog-action-means.c \
 	src/ui/gui/psppire-dialog-action-means.h \
 	src/ui/gui/psppire-dialog-action-oneway.c \
@@ -244,11 +239,11 @@ src_ui_gui_psppire_SOURCES = \
 	src/ui/gui/psppire-dialog-action-rank.c \
 	src/ui/gui/psppire-dialog-action-rank.h \
 	src/ui/gui/psppire-dialog-action-recode.c \
+	src/ui/gui/psppire-dialog-action-recode-different.c \
+	src/ui/gui/psppire-dialog-action-recode-different.h \
 	src/ui/gui/psppire-dialog-action-recode.h \
 	src/ui/gui/psppire-dialog-action-recode-same.c \
 	src/ui/gui/psppire-dialog-action-recode-same.h \
-	src/ui/gui/psppire-dialog-action-recode-different.c \
-	src/ui/gui/psppire-dialog-action-recode-different.h \
 	src/ui/gui/psppire-dialog-action-regression.c \
 	src/ui/gui/psppire-dialog-action-regression.h \
 	src/ui/gui/psppire-dialog-action-reliability.c \
@@ -259,10 +254,10 @@ src_ui_gui_psppire_SOURCES = \
 	src/ui/gui/psppire-dialog-action-runs.h \
 	src/ui/gui/psppire-dialog-action-scatterplot.c \
 	src/ui/gui/psppire-dialog-action-scatterplot.h \
-	src/ui/gui/psppire-dialog-action-sort.c \
-	src/ui/gui/psppire-dialog-action-sort.h \
 	src/ui/gui/psppire-dialog-action-select.c \
 	src/ui/gui/psppire-dialog-action-select.h \
+	src/ui/gui/psppire-dialog-action-sort.c \
+	src/ui/gui/psppire-dialog-action-sort.h \
 	src/ui/gui/psppire-dialog-action-split.c \
 	src/ui/gui/psppire-dialog-action-split.h \
 	src/ui/gui/psppire-dialog-action-tt1s.c \
@@ -275,6 +270,8 @@ src_ui_gui_psppire_SOURCES = \
 	src/ui/gui/psppire-dialog-action-var-info.h \
 	src/ui/gui/psppire-dialog-action-weight.c \
 	src/ui/gui/psppire-dialog-action-weight.h \
+	src/ui/gui/psppire-dialog.c \
+	src/ui/gui/psppire-dialog.h \
 	src/ui/gui/psppire-dict.c \
 	src/ui/gui/psppire-dict.h \
 	src/ui/gui/psppire-dictview.c \
@@ -283,6 +280,10 @@ src_ui_gui_psppire_SOURCES = \
 	src/ui/gui/psppire-encoding-selector.h \
 	src/ui/gui/psppire-format.c \
 	src/ui/gui/psppire-format.h \
+	src/ui/gui/psppire.h \
+	src/ui/gui/psppire-import-assistant.c \
+	src/ui/gui/psppire-import-assistant.h \
+	src/ui/gui/psppire-keypad.c \
 	src/ui/gui/psppire-keypad.h \
 	src/ui/gui/psppire-lex-reader.c \
 	src/ui/gui/psppire-lex-reader.h \
@@ -292,47 +293,46 @@ src_ui_gui_psppire_SOURCES = \
 	src/ui/gui/psppire-output-view.h \
 	src/ui/gui/psppire-output-window.c \
 	src/ui/gui/psppire-output-window.h \
-	src/ui/gui/psppire-var-view.c \
-	src/ui/gui/psppire-var-view.h \
-	src/ui/gui/psppire-spreadsheet-model.c \
-	src/ui/gui/psppire-spreadsheet-model.h \
-	src/ui/gui/psppire-selector.h \
+	src/ui/gui/psppire-scanf.c \
+	src/ui/gui/psppire-scanf.h \
 	src/ui/gui/psppire-select-dest.c \
 	src/ui/gui/psppire-select-dest.h \
+	src/ui/gui/psppire-selector.c \
+	src/ui/gui/psppire-selector.h \
+	src/ui/gui/psppire-spreadsheet-model.c \
+	src/ui/gui/psppire-spreadsheet-model.h \
 	src/ui/gui/psppire-syntax-window.c \
 	src/ui/gui/psppire-syntax-window.h \
-	src/ui/gui/psppire-delimited-text.c \
-	src/ui/gui/psppire-delimited-text.h \
 	src/ui/gui/psppire-text-file.c \
 	src/ui/gui/psppire-text-file.h \
 	src/ui/gui/psppire-val-chooser.c \
 	src/ui/gui/psppire-val-chooser.h \
 	src/ui/gui/psppire-value-entry.c \
 	src/ui/gui/psppire-value-entry.h \
-	src/ui/gui/psppire-var-ptr.c \
-	src/ui/gui/psppire-var-ptr.h \
-	src/ui/gui/psppire-data-sheet.c \
-	src/ui/gui/psppire-data-sheet.h \
 	src/ui/gui/psppire-variable-sheet.c \
 	src/ui/gui/psppire-variable-sheet.h \
-	src/ui/gui/psppire-var-sheet-header.h \
+	src/ui/gui/psppire-var-ptr.c \
+	src/ui/gui/psppire-var-ptr.h \
 	src/ui/gui/psppire-var-sheet-header.c \
-	src/ui/gui/psppire-window.c \
-	src/ui/gui/psppire-window.h \
+	src/ui/gui/psppire-var-sheet-header.h \
+	src/ui/gui/psppire-var-view.c \
+	src/ui/gui/psppire-var-view.h \
 	src/ui/gui/psppire-window-base.c \
 	src/ui/gui/psppire-window-base.h \
+	src/ui/gui/psppire-window.c \
+	src/ui/gui/psppire-window.h \
 	src/ui/gui/psppire-window-register.c \
 	src/ui/gui/psppire-window-register.h \
 	src/ui/gui/t-test-options.c \
 	src/ui/gui/t-test-options.h \
 	src/ui/gui/val-labs-dialog.c \
 	src/ui/gui/val-labs-dialog.h \
+	src/ui/gui/value-variant.c \
+	src/ui/gui/value-variant.h \
 	src/ui/gui/var-display.c \
 	src/ui/gui/var-display.h \
 	src/ui/gui/var-type-dialog.c \
 	src/ui/gui/var-type-dialog.h \
-	src/ui/gui/value-variant.c \
-	src/ui/gui/value-variant.h \
 	src/ui/gui/widget-io.c \
 	src/ui/gui/widget-io.h \
 	src/ui/gui/widgets.c \

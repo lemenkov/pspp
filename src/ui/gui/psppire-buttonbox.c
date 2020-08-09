@@ -37,7 +37,7 @@ static void psppire_button_box_init                (PsppireButtonBox      *);
 
 
 GType
-psppire_buttonbox_get_type (void)
+psppire_button_box_get_type (void)
 {
   static GType button_box_type = 0;
 

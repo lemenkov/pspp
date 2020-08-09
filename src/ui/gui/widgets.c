@@ -207,7 +207,7 @@ preregister_widgets (void)
   psppire_val_chooser_get_type ();
   psppire_dialog_get_type ();
   psppire_selector_get_type ();
-  psppire_buttonbox_get_type ();
+  psppire_button_box_get_type ();
   psppire_keypad_get_type ();
   psppire_acr_get_type ();
   psppire_dict_view_get_type ();

@@ -25,7 +25,7 @@
 
 G_BEGIN_DECLS
 
-#define PSPPIRE_BUTTON_BOX_TYPE            (psppire_buttonbox_get_type ())
+#define PSPPIRE_BUTTON_BOX_TYPE            (psppire_button_box_get_type ())
 #define PSPPIRE_BUTTON_BOX(obj)            (G_TYPE_CHECK_INSTANCE_CAST ((obj), PSPPIRE_BUTTON_BOX_TYPE, PsppireButtonBox))
 #define PSPPIRE_BUTTON_BOX_CLASS(klass)    (G_TYPE_CHECK_CLASS_CAST ((klass), PSPPIRE_BUTTON_BOX_TYPE, PsppireButtonBoxClass))
 #define PSPPIRE_IS_BUTTON_BOX(obj)         (G_TYPE_CHECK_INSTANCE_TYPE ((obj), PSPPIRE_BUTTON_BOX_TYPE))
@@ -64,7 +64,7 @@ struct _PsppireButtonBoxClass
   GtkButtonBoxClass parent_class;
 };
 
-GType          psppire_buttonbox_get_type        (void);
+GType          psppire_button_box_get_type        (void);
 
 
 #define PSPPIRE_TYPE_BUTTON_MASK psppire_button_flags_get_type()
