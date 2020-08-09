@@ -229,7 +229,7 @@ psppire_var_view_set_property (GObject         *object,
 	gint c;
 	var_view->n_cols = g_value_get_int (value);
 
-	var_view->cols = xrealloc (var_view->cols, sizeof (GType) *  var_view->n_cols);
+	var_view->cols = g_realloc (var_view->cols, sizeof (GType) *  var_view->n_cols);
 
 	for (c = 0 ; c < var_view->n_cols; ++c)
 	  var_view->cols[c] = PSPPIRE_VAR_PTR_TYPE;
