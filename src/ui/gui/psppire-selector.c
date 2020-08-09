@@ -188,8 +188,11 @@ psppire_selector_dispose (GObject *obj)
       sel->source_litem = NULL;
     }
 
-  g_object_unref (sel->dest);
-  g_object_unref (sel->source);
+  if (sel->dest)
+    g_object_unref (sel->dest);
+
+  if (sel->source)
+    g_object_unref (sel->source);
 
   /* Chain up to the parent class */
   G_OBJECT_CLASS (parent_class)->dispose (obj);
