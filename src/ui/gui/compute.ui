@@ -319,7 +319,7 @@
           </packing>
         </child>
         <child>
-          <object class="PsppireButtonbox" id="psppire-vbuttonbox1">
+          <object class="PsppireButtonBox" id="psppire-vbuttonbox1">
             <property name="orientation">vertical</property>
             <property name="visible">True</property>
             <property name="can_focus">False</property>
@@ -708,7 +708,7 @@
               </packing>
             </child>
             <child>
-              <object class="PsppireButtonbox" id="psppire-hbuttonbox1">
+              <object class="PsppireButtonBox" id="psppire-hbuttonbox1">
                 <property name="orientation">horizontal</property>
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>

@@ -32,8 +32,8 @@
 GType psppire_button_flags_get_type (void);
 
 
-static void psppire_button_box_class_init          (PsppireButtonboxClass *);
-static void psppire_button_box_init                (PsppireButtonbox      *);
+static void psppire_button_box_class_init          (PsppireButtonBoxClass *);
+static void psppire_button_box_init                (PsppireButtonBox      *);
 
 
 GType
@@ -45,19 +45,19 @@ psppire_buttonbox_get_type (void)
     {
       static const GTypeInfo button_box_info =
       {
-	sizeof (PsppireButtonboxClass),
+	sizeof (PsppireButtonBoxClass),
 	NULL, /* base_init */
         NULL, /* base_finalize */
 	(GClassInitFunc) psppire_button_box_class_init,
         NULL, /* class_finalize */
 	NULL, /* class_data */
-        sizeof (PsppireButtonbox),
+        sizeof (PsppireButtonBox),
 	0,
 	(GInstanceInitFunc) psppire_button_box_init,
       };
 
       button_box_type = g_type_register_static (GTK_TYPE_BUTTON_BOX,
-					    "PsppireButtonbox", &button_box_info, 0);
+					    "PsppireButtonBox", &button_box_info, 0);
     }
 
   return button_box_type;
@@ -69,11 +69,11 @@ enum {
 };
 
 static void
-set_default (PsppireButtonbox *bb)
+set_default (PsppireButtonBox *bb)
 {
   int i;
 
-  for (i = 0 ; i < n_PsppireButtonboxButtons ; ++i)
+  for (i = 0 ; i < n_PsppireButtonBoxButtons ; ++i)
     if (bb->def == (1 << i))
       {
         gtk_widget_set_can_default (bb->button[i], TRUE);
@@ -89,13 +89,13 @@ psppire_buttonbox_set_property (GObject         *object,
 {
   gint i;
   guint flags;
-  PsppireButtonbox *bb = PSPPIRE_BUTTONBOX (object);
+  PsppireButtonBox *bb = PSPPIRE_BUTTON_BOX (object);
 
   switch (prop_id)
     {
     case PROP_BUTTONS:
       flags = g_value_get_flags (value);
-      for (i = 0 ; i < n_PsppireButtonboxButtons ; ++i)
+      for (i = 0 ; i < n_PsppireButtonBoxButtons ; ++i)
         g_object_set (bb->button[i], "visible", 0x01 & (flags >> i)  , NULL);
       break;
 
@@ -119,12 +119,12 @@ psppire_buttonbox_get_property (GObject         *object,
   guint flags = 0;
   gint i;
 
-  PsppireButtonbox *bb = PSPPIRE_BUTTONBOX (object);
+  PsppireButtonBox *bb = PSPPIRE_BUTTON_BOX (object);
 
   switch (prop_id)
     {
     case PROP_BUTTONS:
-      for (i = 0 ; i < n_PsppireButtonboxButtons ; ++i)
+      for (i = 0 ; i < n_PsppireButtonBoxButtons ; ++i)
         {
           gboolean visibility;
           g_object_get (bb->button[i], "visible", &visibility, NULL);
@@ -162,7 +162,7 @@ static GParamSpec *button_flags;
 static GParamSpec *default_flags;
 
 static void
-psppire_button_box_class_init (PsppireButtonboxClass *class)
+psppire_button_box_class_init (PsppireButtonBoxClass *class)
 {
   GObjectClass *object_class = G_OBJECT_CLASS (class);
 
@@ -292,7 +292,7 @@ help_clicked (GtkWidget *w, gpointer data)
 static void
 on_validity_change (GtkWidget *toplevel, gboolean valid, gpointer data)
 {
-  PsppireButtonbox *bb = data;
+  PsppireButtonBox *bb = data;
 
   /* Set the sensitivity of all the 'executive order' buttons */
   gtk_widget_set_sensitive (GTK_WIDGET (bb->button[PSPPIRE_BUTTON_OK]), valid);
@@ -304,7 +304,7 @@ on_validity_change (GtkWidget *toplevel, gboolean valid, gpointer data)
 static gboolean
 on_key_press (GtkWidget *w, GdkEventKey *e, gpointer ud)
 {
-  PsppireButtonbox *bb = PSPPIRE_BUTTONBOX (ud);
+  PsppireButtonBox *bb = PSPPIRE_BUTTON_BOX (ud);
   if (e->keyval == GDK_KEY_Escape)
     {
       g_signal_emit_by_name (bb->button[PSPPIRE_BUTTON_CANCEL], "activate");
@@ -328,12 +328,12 @@ on_realize (GtkWidget *buttonbox, gpointer data)
 			G_CALLBACK (on_key_press), buttonbox);
     }
 
-  set_default (PSPPIRE_BUTTONBOX (buttonbox));
+  set_default (PSPPIRE_BUTTON_BOX (buttonbox));
 }
 
 
 static void
-psppire_button_box_init (PsppireButtonbox *bb)
+psppire_button_box_init (PsppireButtonBox *bb)
 {
   bb->def = PSPPIRE_BUTTON_CONTINUE;
 
@@ -409,7 +409,7 @@ psppire_button_box_init (PsppireButtonbox *bb)
 
     flags = g_value_get_flags (&value);
 
-    for (i = 0 ; i < n_PsppireButtonboxButtons ; ++i)
+    for (i = 0 ; i < n_PsppireButtonBoxButtons ; ++i)
       g_object_set (bb->button[i], "visible", 0x01 & (flags >> i)  , NULL);
 
     g_value_unset (&value);

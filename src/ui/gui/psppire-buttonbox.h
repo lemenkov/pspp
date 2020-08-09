@@ -15,8 +15,8 @@
    along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 
 
-#ifndef __PSPPIRE_BUTTONBOX_H__
-#define __PSPPIRE_BUTTONBOX_H__
+#ifndef __PSPPIRE_BUTTON_BOX_H__
+#define __PSPPIRE_BUTTON_BOX_H__
 
 
 #include <glib.h>
@@ -25,15 +25,15 @@
 
 G_BEGIN_DECLS
 
-#define PSPPIRE_BUTTONBOX_TYPE            (psppire_buttonbox_get_type ())
-#define PSPPIRE_BUTTONBOX(obj)            (G_TYPE_CHECK_INSTANCE_CAST ((obj), PSPPIRE_BUTTONBOX_TYPE, PsppireButtonbox))
-#define PSPPIRE_BUTTONBOX_CLASS(klass)    (G_TYPE_CHECK_CLASS_CAST ((klass), PSPPIRE_BUTTONBOX_TYPE, PsppireButtonboxClass))
-#define PSPPIRE_IS_BUTTONBOX(obj)         (G_TYPE_CHECK_INSTANCE_TYPE ((obj), PSPPIRE_BUTTONBOX_TYPE))
-#define PSPPIRE_IS_BUTTONBOX_CLASS(klass) (G_TYPE_CHECK_CLASS_TYPE ((klass), PSPPIRE_BUTTONBOX_TYPE))
+#define PSPPIRE_BUTTON_BOX_TYPE            (psppire_buttonbox_get_type ())
+#define PSPPIRE_BUTTON_BOX(obj)            (G_TYPE_CHECK_INSTANCE_CAST ((obj), PSPPIRE_BUTTON_BOX_TYPE, PsppireButtonBox))
+#define PSPPIRE_BUTTON_BOX_CLASS(klass)    (G_TYPE_CHECK_CLASS_CAST ((klass), PSPPIRE_BUTTON_BOX_TYPE, PsppireButtonBoxClass))
+#define PSPPIRE_IS_BUTTON_BOX(obj)         (G_TYPE_CHECK_INSTANCE_TYPE ((obj), PSPPIRE_BUTTON_BOX_TYPE))
+#define PSPPIRE_IS_BUTTON_BOX_CLASS(klass) (G_TYPE_CHECK_CLASS_TYPE ((klass), PSPPIRE_BUTTON_BOX_TYPE))
 
 
-typedef struct _PsppireButtonbox       PsppireButtonbox;
-typedef struct _PsppireButtonboxClass  PsppireButtonboxClass;
+typedef struct _PsppireButtonBox       PsppireButtonBox;
+typedef struct _PsppireButtonBoxClass  PsppireButtonBoxClass;
 
 
 enum
@@ -46,20 +46,20 @@ enum
     PSPPIRE_BUTTON_HELP,
     PSPPIRE_BUTTON_RESET,
     PSPPIRE_BUTTON_PASTE,
-    n_PsppireButtonboxButtons
+    n_PsppireButtonBoxButtons
   };
 
 
-struct _PsppireButtonbox
+struct _PsppireButtonBox
 {
   GtkButtonBox parent;
 
   /* <private> */
-  GtkWidget *button[n_PsppireButtonboxButtons];
+  GtkWidget *button[n_PsppireButtonBoxButtons];
   guint def;
 };
 
-struct _PsppireButtonboxClass
+struct _PsppireButtonBoxClass
 {
   GtkButtonBoxClass parent_class;
 };
@@ -71,5 +71,5 @@ GType          psppire_buttonbox_get_type        (void);
 
 G_END_DECLS
 
-#endif /* __PSPPIRE_BUTTONBOX_H__ */
+#endif /* __PSPPIRE_BUTTON_BOX_H__ */
 

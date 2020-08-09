@@ -293,7 +293,7 @@
           </packing>
         </child>
         <child>
-          <object class="PsppireButtonbox" id="find-buttonbox">
+          <object class="PsppireButtonBox" id="find-buttonbox">
             <property name="orientation">vertical</property>
             <property name="visible">True</property>
             <property name="can_focus">False</property>

@@ -303,7 +303,7 @@ connect_notify_signal (GtkWidget *w, gpointer data)
 {
   PsppireDialog *dialog = data;
 
-  if (PSPPIRE_IS_BUTTONBOX (w))
+  if (PSPPIRE_IS_BUTTON_BOX (w))
     return;
 
   if (GTK_IS_CONTAINER (w))

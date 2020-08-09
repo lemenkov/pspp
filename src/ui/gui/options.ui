@@ -237,7 +237,7 @@
         </child>
 
         <child>
-          <object class="PsppireButtonbox" id="options-buttonbox">
+          <object class="PsppireButtonBox" id="options-buttonbox">
             <property name="orientation">vertical</property>
             <property name="visible">True</property>
             <property name="can_focus">False</property>

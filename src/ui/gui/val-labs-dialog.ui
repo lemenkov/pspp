@@ -204,7 +204,7 @@
       </packing>
     </child>
     <child>
-      <object class="PsppireButtonbox" id="vbuttonbox">
+      <object class="PsppireButtonBox" id="vbuttonbox">
         <property name="orientation">vertical</property>
         <property name="visible">True</property>
         <property name="can_focus">False</property>
