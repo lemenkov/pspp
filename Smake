@@ -322,6 +322,7 @@ prep_ph:
 	test -e ChangeLog || touch ChangeLog
 	test -d m4 || mkdir m4
 	touch m4/Makefile.am
+	touch build-aux/config.rpath
 	$(GNULIB_TOOL) --add-import --no-changelog --m4-base=gl/m4 \
 		--source-base=gl --lib=libgl --tests-base=tests \
 		--doc-base=gl/doc --aux-dir=build-aux  \
