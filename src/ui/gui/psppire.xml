@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<glade-catalog name="psppire" library="psppire-glade" depends="gtk+">
+  <!-- <init-function>my_catalog_init</init-function> -->
+
+  <glade-widget-classes>
+    <glade-widget-class name="PsppireDialog"    generic-name="dialog" title="Psppire Dialog"/>
+    <glade-widget-class name="PsppireDictView"  generic-name="dictview" title="Psppire Dict View"/>
+    <glade-widget-class name="PsppireCheckboxTreeview"  generic-name="checkbox-treeview" title="Psppire Checkbox Treeview"/>
+    <glade-widget-class name="PsppireVarView"  generic-name="var-view" title="Psppire Variable View"/>
+    <glade-widget-class name="PsppireSelector"  generic-name="frobnicator" title="Frobnicator"/>
+    <glade-widget-class name="PsppireButtonBox" generic-name="frobnicator" title="Frobnicator"/>
+  </glade-widget-classes>
+
+  <glade-widget-group name="psppire" title="Psppire">
+    <glade-widget-class-ref name="PsppireDialog"/>
+    <glade-widget-class-ref name="PsppireDictView"/>
+    <glade-widget-class-ref name="PsppireVarView"/>
+    <glade-widget-class-ref name="PsppireSelector"/>
+  </glade-widget-group>
+
+</glade-catalog>

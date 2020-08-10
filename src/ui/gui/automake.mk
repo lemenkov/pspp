@@ -141,49 +141,15 @@ dist_src_ui_gui_psppire_DATA = \
 	$(UI_FILES) \
 	$(top_srcdir)/src/ui/gui/pspp.lang
 
-src_ui_gui_psppire_SOURCES = \
-	src/ui/gui/builder-wrapper.c \
-	src/ui/gui/builder-wrapper.h \
-	src/ui/gui/dialog-common.c \
-	src/ui/gui/dialog-common.h \
-	src/ui/gui/dict-display.c \
-	src/ui/gui/dict-display.h \
-	src/ui/gui/entry-dialog.c \
-	src/ui/gui/entry-dialog.h \
-	src/ui/gui/executor.c \
-	src/ui/gui/executor.h \
-	src/ui/gui/find-dialog.c \
-	src/ui/gui/find-dialog.h \
-	src/ui/gui/goto-case-dialog.c \
-	src/ui/gui/goto-case-dialog.h \
-	src/ui/gui/helper.c \
-	src/ui/gui/helper.h \
-	src/ui/gui/help-menu.c \
-	src/ui/gui/help-menu.h \
-	src/ui/gui/main.c \
-	src/ui/gui/missing-val-dialog.c \
-	src/ui/gui/missing-val-dialog.h \
-	src/ui/gui/options-dialog.c \
-	src/ui/gui/options-dialog.h \
+UI_WIDGETS_ESSENTIAL= \
 	src/ui/gui/psppire-acr.c \
 	src/ui/gui/psppire-acr.h \
 	src/ui/gui/psppire-buttonbox.c \
 	src/ui/gui/psppire-buttonbox.h \
-	src/ui/gui/psppire.c \
 	src/ui/gui/psppire-checkbox-treeview.c \
 	src/ui/gui/psppire-checkbox-treeview.h \
 	src/ui/gui/psppire-conf.c \
 	src/ui/gui/psppire-conf.h \
-	src/ui/gui/psppire-data-editor.c \
-	src/ui/gui/psppire-data-editor.h \
-	src/ui/gui/psppire-data-sheet.c \
-	src/ui/gui/psppire-data-sheet.h \
-	src/ui/gui/psppire-data-store.c \
-	src/ui/gui/psppire-data-store.h \
-	src/ui/gui/psppire-data-window.c \
-	src/ui/gui/psppire-data-window.h \
-	src/ui/gui/psppire-delimited-text.c \
-	src/ui/gui/psppire-delimited-text.h \
 	src/ui/gui/psppire-dialog-action-1sks.c \
 	src/ui/gui/psppire-dialog-action-1sks.h \
 	src/ui/gui/psppire-dialog-action-aggregate.c \
@@ -276,49 +242,87 @@ src_ui_gui_psppire_SOURCES = \
 	src/ui/gui/psppire-dict.h \
 	src/ui/gui/psppire-dictview.c \
 	src/ui/gui/psppire-dictview.h \
-	src/ui/gui/psppire-encoding-selector.c \
-	src/ui/gui/psppire-encoding-selector.h \
 	src/ui/gui/psppire-format.c \
 	src/ui/gui/psppire-format.h \
+	src/ui/gui/psppire-keypad.c \
+	src/ui/gui/psppire-keypad.h \
+	src/ui/gui/psppire-means-layer.c \
+	src/ui/gui/psppire-means-layer.h \
+	src/ui/gui/psppire-select-dest.c \
+	src/ui/gui/psppire-select-dest.h \
+	src/ui/gui/psppire-selector.c \
+	src/ui/gui/psppire-selector.h \
+	src/ui/gui/psppire-text-file.c \
+	src/ui/gui/psppire-text-file.h \
+	src/ui/gui/psppire-val-chooser.c \
+	src/ui/gui/psppire-val-chooser.h \
+	src/ui/gui/psppire-var-ptr.c \
+	src/ui/gui/psppire-var-ptr.h \
+	src/ui/gui/psppire-var-view.c \
+	src/ui/gui/psppire-var-view.h \
+	src/ui/gui/psppire-window-base.c \
+	src/ui/gui/psppire-window-base.h \
+	src/ui/gui/dialog-common.c \
+	src/ui/gui/dialog-common.h \
+	src/ui/gui/widgets.c \
+	src/ui/gui/widgets.h \
+	src/ui/gui/dict-display.c \
+	src/ui/gui/dict-display.h
+
+src_ui_gui_psppire_SOURCES = $(UI_WIDGETS_ESSENTIAL) \
+	src/ui/gui/builder-wrapper.c \
+	src/ui/gui/builder-wrapper.h \
+	src/ui/gui/entry-dialog.c \
+	src/ui/gui/entry-dialog.h \
+	src/ui/gui/executor.c \
+	src/ui/gui/executor.h \
+	src/ui/gui/find-dialog.c \
+	src/ui/gui/find-dialog.h \
+	src/ui/gui/goto-case-dialog.c \
+	src/ui/gui/goto-case-dialog.h \
+	src/ui/gui/helper.c \
+	src/ui/gui/helper.h \
+	src/ui/gui/help-menu.c \
+	src/ui/gui/help-menu.h \
+	src/ui/gui/main.c \
+	src/ui/gui/missing-val-dialog.c \
+	src/ui/gui/missing-val-dialog.h \
+	src/ui/gui/options-dialog.c \
+	src/ui/gui/options-dialog.h \
+	src/ui/gui/psppire.c \
+	src/ui/gui/psppire-data-editor.c \
+	src/ui/gui/psppire-data-editor.h \
+	src/ui/gui/psppire-data-sheet.c \
+	src/ui/gui/psppire-data-sheet.h \
+	src/ui/gui/psppire-data-store.c \
+	src/ui/gui/psppire-data-store.h \
+	src/ui/gui/psppire-data-window.c \
+	src/ui/gui/psppire-data-window.h \
+	src/ui/gui/psppire-delimited-text.c \
+	src/ui/gui/psppire-delimited-text.h \
+	src/ui/gui/psppire-encoding-selector.c \
+	src/ui/gui/psppire-encoding-selector.h \
 	src/ui/gui/psppire.h \
 	src/ui/gui/psppire-import-assistant.c \
 	src/ui/gui/psppire-import-assistant.h \
-	src/ui/gui/psppire-keypad.c \
-	src/ui/gui/psppire-keypad.h \
 	src/ui/gui/psppire-lex-reader.c \
 	src/ui/gui/psppire-lex-reader.h \
-	src/ui/gui/psppire-means-layer.c \
-	src/ui/gui/psppire-means-layer.h \
 	src/ui/gui/psppire-output-view.c \
 	src/ui/gui/psppire-output-view.h \
 	src/ui/gui/psppire-output-window.c \
 	src/ui/gui/psppire-output-window.h \
 	src/ui/gui/psppire-scanf.c \
 	src/ui/gui/psppire-scanf.h \
-	src/ui/gui/psppire-select-dest.c \
-	src/ui/gui/psppire-select-dest.h \
-	src/ui/gui/psppire-selector.c \
-	src/ui/gui/psppire-selector.h \
 	src/ui/gui/psppire-spreadsheet-model.c \
 	src/ui/gui/psppire-spreadsheet-model.h \
 	src/ui/gui/psppire-syntax-window.c \
 	src/ui/gui/psppire-syntax-window.h \
-	src/ui/gui/psppire-text-file.c \
-	src/ui/gui/psppire-text-file.h \
-	src/ui/gui/psppire-val-chooser.c \
-	src/ui/gui/psppire-val-chooser.h \
 	src/ui/gui/psppire-value-entry.c \
 	src/ui/gui/psppire-value-entry.h \
 	src/ui/gui/psppire-variable-sheet.c \
 	src/ui/gui/psppire-variable-sheet.h \
-	src/ui/gui/psppire-var-ptr.c \
-	src/ui/gui/psppire-var-ptr.h \
 	src/ui/gui/psppire-var-sheet-header.c \
 	src/ui/gui/psppire-var-sheet-header.h \
-	src/ui/gui/psppire-var-view.c \
-	src/ui/gui/psppire-var-view.h \
-	src/ui/gui/psppire-window-base.c \
-	src/ui/gui/psppire-window-base.h \
 	src/ui/gui/psppire-window.c \
 	src/ui/gui/psppire-window.h \
 	src/ui/gui/psppire-window-register.c \
@@ -335,8 +339,6 @@ src_ui_gui_psppire_SOURCES = \
 	src/ui/gui/var-type-dialog.h \
 	src/ui/gui/widget-io.c \
 	src/ui/gui/widget-io.h \
-	src/ui/gui/widgets.c \
-	src/ui/gui/widgets.h \
 	src/ui/gui/windows-menu.c \
 	src/ui/gui/windows-menu.h
 
@@ -427,3 +429,27 @@ include $(top_srcdir)/src/ui/gui/icons/automake.mk
 UNINSTALL_DATA_HOOKS += update-icon-cache
 INSTALL_DATA_HOOKS += update-icon-cache
 
+#############################################
+
+EXTRA_pkgdir = $(abs_builddir)/src/ui/gui
+
+EXTRA_pkg_LTLIBRARIES = src/ui/gui/libpsppire-glade.la
+
+src_ui_gui_libpsppire_glade_la_SOURCES = \
+	$(UI_WIDGETS_ESSENTIAL)  \
+	src/ui/gui/dummy.c
+
+src_ui_gui_libpsppire_glade_la_LIBADD = \
+	src/ui/gui/psppire-marshal.lo
+
+src_ui_gui_libpsppire_glade_la_CFLAGS = $(GTK_CFLAGS) $(GTKSOURCEVIEW_CFLAGS)
+src_ui_gui_libpsppire_glade_la_LDFLAGS = -release $(VERSION)
+
+EXTRA_DIST += src/ui/gui/psppire.xml src/ui/gui/glade-wrapper.in
+
+src/ui/gui/glade-wrapper: src/ui/gui/glade-wrapper.in
+	$(SED) -e 's%\@abs_top_srcdir\@%@abs_top_srcdir@%g' -e 's%\@abs_top_builddir\@%@abs_top_builddir@%g'  $< > $@
+	chmod a+x $@
+
+.PHONY: glade-tools
+glade-tools: src/ui/gui/glade-wrapper src/ui/gui/libpsppire-glade.la

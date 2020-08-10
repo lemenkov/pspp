@@ -1,0 +1,3 @@
+GLADE_CATALOG_SEARCH_PATH=@abs_top_srcdir@/src/ui/gui \
+GLADE_MODULE_SEARCH_PATH=@abs_top_builddir@/src/ui/gui/.libs \
+glade "$@"

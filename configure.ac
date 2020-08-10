@@ -232,14 +232,6 @@ AC_DEFINE(
   [Avoid making zlib call gnulib's crc32() instead of its own.])
 
 AC_ARG_WITH(
-  gui_tools,
-  [AS_HELP_STRING([--with-gui-tools], [build the gui developer tools.  For DEVELOPERS only! There is no reason why users will need this flag.])])
-if test x"$with_gui_tools" = x"yes" ; then
-	PKG_CHECK_MODULES(GLADE_UI, gladeui-2.0)
-fi
-AM_CONDITIONAL(WITH_GUI_TOOLS, test x"$with_gui_tools" = x"yes")
-
-AC_ARG_WITH(
   [perl-module],
   [AS_HELP_STRING([--without-perl-module], [do not build the Perl module])],
   [case $with_perl_module in # (
