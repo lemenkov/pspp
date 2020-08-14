@@ -1687,9 +1687,9 @@ parse_mrsets (struct sfm_reader *r, const struct sfm_extension_record *record,
   text = open_text_record (r, record, false);
   for (;;)
     {
-      struct sfm_mrset *mrset;
-      size_t allocated_vars;
-      char delimiter;
+      struct sfm_mrset *mrset = NULL;
+      size_t allocated_vars = 0;
+      char delimiter = '4';
 
       /* Skip extra line feeds if present. */
       while (text_match (text, '\n'))
@@ -3119,7 +3119,11 @@ text_get_token (struct text_record *text, struct substring delimiters,
   char *end;
 
   if (!ss_tokenize (text->buffer, delimiters, &text->pos, &token))
-    return NULL;
+    {
+      if (delimiter != NULL)
+	*delimiter = ss_data (text->buffer)[text->pos-1];
+      return NULL;
+    }
 
   end = &ss_data (token)[ss_length (token)];
   if (delimiter != NULL)

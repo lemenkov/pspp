@@ -511,7 +511,7 @@ ss_tokenize (struct substring ss, struct substring delimiters,
   ss_get_bytes (&ss, ss_cspan (ss, delimiters), token);
 
   found_token = ss_length (*token) > 0;
-  *save_idx += ss_length (*token) + found_token;
+  *save_idx += ss_length (*token) + (found_token?1:0);
   return found_token;
 }
 
@@ -738,7 +738,7 @@ ss_cspan (struct substring ss, struct substring stop_set)
 size_t
 ss_find_byte (struct substring ss, char c)
 {
-  const char *p = memchr (ss.string, c, ss.length);
+  const char *p = memchr (ss.string, (int) c, ss.length);
   return p != NULL ? p - ss.string : SIZE_MAX;
 }
 
