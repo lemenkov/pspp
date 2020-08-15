@@ -1,15 +1,15 @@
 # Hungarian translation for pspp.
-# Copyright (C) 2016, 2017 Free Software Foundation, Inc.
+# Copyright (C) 2016, 2017, 2019 Free Software Foundation, Inc.
 # This file is distributed under the same license as the pspp package.
 #
-# Balázs Meskó <meskobalazs@gmail.com>, 2016, 2017.
+# Balázs Meskó <mesko.balazs@fsf.hu>, 2016, 2017, 2019.
 msgid ""
 msgstr ""
-"Project-Id-Version: pspp 1.0.1\n"
+"Project-Id-Version: pspp 1.2.0\n"
 "Report-Msgid-Bugs-To: pspp-dev@gnu.org\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2017-12-23 13:20+0100\n"
-"Last-Translator: Balázs Meskó <meskobalazs@gmail.com>\n"
+"PO-Revision-Date: 2019-11-14 20:04+0100\n"
+"Last-Translator: Meskó Balázs <mesko.balazs@fsf.hu>\n"
 "Language-Team: Hungarian <translation-team-hu@lists.sourceforge.net>\n"
 "Language: hu\n"
 "MIME-Version: 1.0\n"
@@ -17,73 +17,73 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "X-Bugs: Report translation errors to the Language-Team address.\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
-"X-Generator: Poedit 2.0.5\n"
+"X-Generator: Poedit 2.2.4\n"
 
 #: src/ui/gui/helper.c:210
 msgid "Sorry. The help system hasn't yet been implemented."
 msgstr "Sajnáljuk. A súgórendszer még nem lett megvalósítva."
 
-#: src/data/format.c:329
+#: src/data/format.c:339
 msgid "Input format"
 msgstr "Bemeneti formátum"
 
-#: src/data/format.c:329
+#: src/data/format.c:339
 msgid "Output format"
 msgstr "Kimeneti formátum"
 
-#: src/data/format.c:332
+#: src/data/format.c:342
 #, c-format
 msgid "Format %s may not be used for input."
 msgstr "A(z) %s formátum nem használható bemenethez."
 
-#: src/data/format.c:339
+#: src/data/format.c:349
 #, c-format
 msgid "%s specifies width %d, but %s requires an even width."
 msgstr "%s a %d szélességet határozza meg, de a(z) %s egyenlő szélességet vár el."
 
-#: src/data/format.c:348
+#: src/data/format.c:358
 #, c-format
 msgid "%s %s specifies width %d, but %s requires a width between %d and %d."
 msgstr "%s %s a %d szélességet határozza meg, de a(z) %s %d és %d közti szélességet vár el."
 
-#: src/data/format.c:357
+#: src/data/format.c:367
 #, c-format
 msgid "%s %s specifies %d decimal place, but %s does not allow any decimals."
 msgid_plural "%s %s specifies %d decimal places, but %s does not allow any decimals."
 msgstr[0] "%s %s %d decimális helyet határoz meg, de a(z) %s egyet sem engedélyez."
 msgstr[1] "%s %s %d decimális helyet határoz meg, de a(z) %s egyet sem engedélyez."
 
-#: src/data/format.c:368
+#: src/data/format.c:378
 #, c-format
 msgid "%s %s specifies %d decimal place, but the given width allows at most %d decimals."
 msgid_plural "%s %s specifies %d decimal places, but the given width allows at most %d decimals."
 msgstr[0] "%s %s %d decimális helyet határoz meg, de a megadott szélesség legfeljebb %d decimálist engedélyez."
 msgstr[1] "%s %s %d decimális helyet határoz meg, de a megadott szélesség legfeljebb %d decimálist engedélyez."
 
-#: src/data/format.c:375
+#: src/data/format.c:385
 #, c-format
 msgid "%s %s specifies %d decimal place, but the given width does not allow for any decimals."
 msgid_plural "%s %s specifies %d decimal places, but the given width does not allow for any decimals."
 msgstr[0] "%s %s %d decimális helyet határoz meg, de a megadott szélesség egyetlen decimálist sem engedélyez."
 msgstr[1] "%s %s %d decimális helyet határoz meg, de a megadott szélesség egyetlen decimálist sem engedélyez."
 
-#: src/data/format.c:414
+#: src/data/format.c:424
 #, c-format
 msgid "%s variables are not compatible with %s format %s."
 msgstr "A(z) %1$s változók nem kompatibilisek a(z) %3$s %2$s formátummal."
 
-#: src/data/format.c:415 src/data/format.c:1010
+#: src/data/format.c:425 src/data/format.c:1040
 #: src/ui/gui/var-type-dialog.ui:167
 msgid "String"
 msgstr "Karakterlánc"
 
-#: src/data/format.c:415 src/data/format.c:973
+#: src/data/format.c:425 src/data/format.c:1001
 #: src/ui/gui/var-type-dialog.ui:48
 msgid "Numeric"
 msgstr "Numerikus"
 
-#: src/data/format.c:416 src/data/sys-file-reader.c:2193
-#: src/data/sys-file-reader.c:2195 src/language/xforms/recode.c:512
+#: src/data/format.c:426 src/data/sys-file-reader.c:2198
+#: src/data/sys-file-reader.c:2200 src/language/xforms/recode.c:512
 #: src/language/xforms/recode.c:513 src/language/xforms/recode.c:525
 #: src/language/xforms/recode.c:526
 #: src/language/dictionary/apply-dictionary.c:77
@@ -91,8 +91,8 @@ msgstr "Numerikus"
 msgid "numeric"
 msgstr "numerikus"
 
-#: src/data/format.c:416 src/data/sys-file-reader.c:2193
-#: src/data/sys-file-reader.c:2195 src/language/xforms/recode.c:512
+#: src/data/format.c:426 src/data/sys-file-reader.c:2198
+#: src/data/sys-file-reader.c:2200 src/language/xforms/recode.c:512
 #: src/language/xforms/recode.c:513 src/language/xforms/recode.c:525
 #: src/language/xforms/recode.c:526
 #: src/language/dictionary/apply-dictionary.c:77
@@ -100,32 +100,32 @@ msgstr "numerikus"
 msgid "string"
 msgstr "karakterlánc"
 
-#: src/data/format.c:434
+#: src/data/format.c:444
 #, c-format
 msgid "String variable with width %d is not compatible with format %s."
 msgstr "A(z) %d szélességű karakterlánc nem kompatibilis a(z) %s formátummal."
 
-#: src/data/format.c:976 src/ui/gui/var-type-dialog.ui:65
+#: src/data/format.c:1004 src/ui/gui/var-type-dialog.ui:65
 msgid "Comma"
 msgstr "Vessző"
 
-#: src/data/format.c:979 src/ui/gui/var-type-dialog.ui:82
+#: src/data/format.c:1007 src/ui/gui/var-type-dialog.ui:82
 msgid "Dot"
 msgstr "Pont"
 
-#: src/data/format.c:982
+#: src/data/format.c:1010
 msgid "Scientific"
 msgstr "Tudományos"
 
-#: src/data/format.c:997 src/ui/gui/var-type-dialog.ui:116
+#: src/data/format.c:1027 src/ui/gui/var-type-dialog.ui:116
 msgid "Date"
 msgstr "Dátum"
 
-#: src/data/format.c:1000 src/ui/gui/var-type-dialog.ui:133
+#: src/data/format.c:1030 src/ui/gui/var-type-dialog.ui:133
 msgid "Dollar"
 msgstr "Dollár"
 
-#: src/data/format.c:1007
+#: src/data/format.c:1037
 msgid "Custom"
 msgstr "Egyéni"
 
@@ -154,12 +154,12 @@ msgid "Continue"
 msgstr "Folytatás"
 
 #: src/ui/gui/psppire-buttonbox.c:368
-#: src/ui/gui/psppire-import-assistant.c:938
+#: src/ui/gui/psppire-import-assistant.c:739
 msgid "Paste"
 msgstr "Beillesztés"
 
-#: src/ui/gui/psppire-buttonbox.c:374 src/ui/gui/psppire-data-window.c:533
-#: src/ui/gui/psppire-data-window.c:661
+#: src/ui/gui/psppire-buttonbox.c:374 src/ui/gui/psppire-data-window.c:535
+#: src/ui/gui/psppire-data-window.c:663
 #: src/ui/gui/psppire-dialog-action-aggregate.c:216
 #: src/ui/gui/psppire-output-window.c:381
 #: src/ui/gui/psppire-syntax-window.c:559 src/ui/gui/psppire-window.c:472
@@ -172,7 +172,7 @@ msgid "Close"
 msgstr "Bezárás"
 
 #: src/ui/gui/psppire-buttonbox.c:387
-#: src/ui/gui/psppire-import-assistant.c:939
+#: src/ui/gui/psppire-import-assistant.c:740
 msgid "Reset"
 msgstr "Visszaállítás"
 
@@ -180,34 +180,34 @@ msgstr "Visszaállítás"
 msgid "Help"
 msgstr "Súgó"
 
-#: src/ui/gui/psppire-dictview.c:603 src/language/dictionary/split-file.c:82
+#: src/ui/gui/psppire-dictview.c:602 src/language/dictionary/split-file.c:82
 #: src/language/dictionary/sys-file-info.c:240
 #: src/language/dictionary/sys-file-info.c:440
 #: src/language/dictionary/sys-file-info.c:738
 #: src/language/stats/descriptives.c:1027
 #: src/language/data-io/data-parser.c:672
-#: src/language/data-io/data-parser.c:711 src/language/data-io/print.c:446
-#: src/ui/gui/psppire-var-sheet.c:1243
+#: src/language/data-io/data-parser.c:711 src/language/data-io/print.c:440
+#: src/ui/gui/psppire-data-editor.c:527
 msgid "Variable"
 msgstr "Változó"
 
-#: src/ui/gui/psppire-dictview.c:640
+#: src/ui/gui/psppire-dictview.c:639
 msgid "Prefer variable labels"
 msgstr "Változócímkék előnyben részesítése"
 
-#: src/ui/gui/psppire-dictview.c:654
+#: src/ui/gui/psppire-dictview.c:653
 msgid "Default sort order"
 msgstr "Alapértelmezett rendezési sorrend"
 
-#: src/ui/gui/psppire-dictview.c:660
+#: src/ui/gui/psppire-dictview.c:659
 msgid "Unsorted (dictionary order)"
 msgstr "Nem rendezett (szótári rendezés)"
 
-#: src/ui/gui/psppire-dictview.c:665
+#: src/ui/gui/psppire-dictview.c:664
 msgid "Sort by name"
 msgstr "Rendezés név szerint"
 
-#: src/ui/gui/psppire-dictview.c:670
+#: src/ui/gui/psppire-dictview.c:669
 msgid "Sort by label"
 msgstr "Rendezés címke szerint"
 
@@ -259,7 +259,7 @@ msgstr "Ö_sszes többi érték"
 msgid "An error occurred while opening `%s': %s."
 msgstr "Hiba történt a(z) „%s” fájl megnyitása közben: %s."
 
-#: src/data/any-reader.c:93 src/language/lexer/lexer.c:1638
+#: src/data/any-reader.c:93 src/language/lexer/lexer.c:1629
 #, c-format
 msgid "Error reading `%s': %s."
 msgstr "Hiba a(z) „%s” olvasásakor: %s."
@@ -312,7 +312,7 @@ msgstr "CSV fájl"
 msgid "Error opening `%s' for writing as a system file: %s."
 msgstr "Hiba a(z) „%s” fájl rendszerfájlként, írásra megnyitása közben: %s."
 
-#: src/data/csv-file-writer.c:464
+#: src/data/csv-file-writer.c:466
 #, c-format
 msgid "An I/O error occurred writing CSV file `%s'."
 msgstr "Ki-/bemeneti hiba történt a(z) „%s” CSV fájl írása közben."
@@ -366,7 +366,7 @@ msgstr "Érvénytelen tizedes tört szintaxis."
 msgid "Invalid syntax for P field."
 msgstr "Érvénytelen szintaxis a P mezőhöz."
 
-#: src/data/data-in.c:768 src/data/data-in.c:814
+#: src/data/data-in.c:768 src/data/data-in.c:818
 msgid "Syntax error in date field."
 msgstr "Szintaktikai hiba a dátum mezőben."
 
@@ -375,67 +375,67 @@ msgstr "Szintaktikai hiba a dátum mezőben."
 msgid "Day (%ld) must be between 1 and 31."
 msgstr "A nap (%ld) 1 és 31 között kell legyen."
 
-#: src/data/data-in.c:828
+#: src/data/data-in.c:832
 msgid "Delimiter expected between fields in date."
 msgstr "Elválasztó karakter várt a dátum mezői között."
 
-#: src/data/data-in.c:902
+#: src/data/data-in.c:906
 msgid "Unrecognized month format.  Months may be specified as Arabic or Roman numerals or as at least 3 letters of their English names."
 msgstr "Nem felismert hónapformátum. A hónapokat arab vagy római számokkal lehet megadni, vagy az angol nevük legalább 3 betűjével."
 
-#: src/data/data-in.c:929
+#: src/data/data-in.c:933
 #, c-format
 msgid "Year (%ld) must be between 1582 and 19999."
 msgstr "Az évnek (%ld) 1582 és 19999 között kell lennie."
 
-#: src/data/data-in.c:940
+#: src/data/data-in.c:944
 #, c-format
 msgid "Trailing garbage `%.*s' following date."
 msgstr "„%.*s” záró szemét a dátum után."
 
-#: src/data/data-in.c:954
+#: src/data/data-in.c:958
 msgid "Julian day must have exactly three digits."
 msgstr "A julián napnak pontosan 3 számjegye kell legyen."
 
-#: src/data/data-in.c:956
+#: src/data/data-in.c:960
 #, c-format
 msgid "Julian day (%ld) must be between 1 and 366."
 msgstr "A julián napnak (%ld) 1 és 366 között kell lennie."
 
-#: src/data/data-in.c:980
+#: src/data/data-in.c:984
 #, c-format
 msgid "Quarter (%ld) must be between 1 and 4."
 msgstr "A negyedévnek (%ld) 1 és 4 között kell lennie."
 
-#: src/data/data-in.c:1001
+#: src/data/data-in.c:1005
 #, c-format
 msgid "Week (%ld) must be between 1 and 53."
 msgstr "A hétnek (%ld) 1 és 53 között kell lennie."
 
-#: src/data/data-in.c:1013
+#: src/data/data-in.c:1017
 msgid "Delimiter expected between fields in time."
 msgstr "Elválasztó karakter várt az idő mezői között."
 
-#: src/data/data-in.c:1033
+#: src/data/data-in.c:1037
 #, c-format
 msgid "Minute (%ld) must be between 0 and 59."
 msgstr "A percnek (%ld) 0 és 59 között kell lennie."
 
-#: src/data/data-in.c:1071
+#: src/data/data-in.c:1075
 msgid "Unrecognized weekday name.  At least the first two letters of an English weekday name must be specified."
 msgstr "Nem felismert nap név. Legalább az angol nevük első két betűjét meg kell adni."
 
-#: src/data/data-in.c:1201
+#: src/data/data-in.c:1210
 #, c-format
 msgid "`%c' expected in date field."
 msgstr "„%c” várt a dátum mezőben."
 
-#: src/data/data-out.c:574
+#: src/data/data-out.c:579
 #, c-format
 msgid "Weekday number %f is not between 1 and 7."
 msgstr "A hét napjának száma, %f, nem 1 és 7 között van."
 
-#: src/data/data-out.c:599
+#: src/data/data-out.c:604
 #, c-format
 msgid "Month number %f is not between 1 and 12."
 msgstr "A hónap száma, %f, nem 1 és 12 között van."
@@ -458,7 +458,7 @@ msgstr "rendszer"
 msgid "scratch"
 msgstr "segéd"
 
-#: src/data/dictionary.c:1350
+#: src/data/dictionary.c:1396
 #, c-format
 msgid "Truncating document line to %d bytes."
 msgstr "Dokumentum sor csonkolása %d bájtra."
@@ -492,33 +492,28 @@ msgstr "Nem nyitható meg újra a(z) „%s” a következőként: %s."
 msgid "Not opening pipe file `%s' because %s option set."
 msgstr "A(z) „%s” csővezeték fájl nem kerül megnyitásra, mert a(z) %s lehetőség be van kapcsolva."
 
-#: src/data/gnumeric-reader.c:37 src/data/ods-reader.c:41
-#, c-format
-msgid "Support for %s files was not compiled into this installation of PSPP"
-msgstr "A(z) %s fájlok támogatása nem lett belefordítva a PSPP ezen telepítésébe"
-
-#: src/data/gnumeric-reader.c:520 src/data/ods-reader.c:544
+#: src/data/gnumeric-reader.c:478 src/data/ods-reader.c:501
 #, c-format
 msgid "Cannot convert the value in the spreadsheet cell %s to format (%s): %s"
 msgstr "A(z) %s táblázatcella értéke nem alakítható át a formátumra (%s): %s"
 
-#: src/data/gnumeric-reader.c:543 src/data/ods-reader.c:599
+#: src/data/gnumeric-reader.c:501 src/data/ods-reader.c:556
 #, c-format
 msgid "There was a problem whilst reading the %s file `%s' (near line %d): `%s'"
 msgstr "Probléma volt a(z) „%s” %s fájl olvasásakor (a(z) %d. sor körül): „%s”"
 
-#: src/data/gnumeric-reader.c:638
+#: src/data/gnumeric-reader.c:596
 #, c-format
 msgid "The gnumeric file `%s' is encoded as %s instead of the usual UTF-8 encoding. Any non-ascii characters will be incorrectly imported."
 msgstr "A(z) „%s” gnumeric fájl %s karakterkódolású, a szokásos UTF-8 kódolás helyett. Minden nem ASCII karakter helytelenül lesz importálva."
 
-#: src/data/gnumeric-reader.c:682 src/data/ods-reader.c:730
+#: src/data/gnumeric-reader.c:640 src/data/ods-reader.c:687
 #, c-format
 msgid "Invalid cell range `%s'"
 msgstr "Érvénytelen cellatartomány: „%s”"
 
-#: src/data/gnumeric-reader.c:854 src/data/ods-reader.c:758
-#: src/data/ods-reader.c:891
+#: src/data/gnumeric-reader.c:812 src/data/ods-reader.c:715
+#: src/data/ods-reader.c:848
 #, c-format
 msgid "Selected sheet or range of spreadsheet `%s' is empty."
 msgstr "A kiválasztott munkalap vagy táblázattartomány („%s”) üres."
@@ -551,6 +546,26 @@ msgstr "A(z) %s karakter (itt: „%s”) nem lehet egy azonosító első karakte
 #, c-format
 msgid "Character %s (in `%s') may not appear in an identifier."
 msgstr "A(z) %s karakter (itt: „%s”) nem szerepelhet azonosítóban."
+
+#: src/data/mdd-writer.c:87
+#, c-format
+msgid "An I/O error occurred writing metadata file `%s'."
+msgstr "Ki-/bemeneti hiba történt a(z) „%s” adatfájl írásakor."
+
+#. TRANSLATORS: this fragment will be interpolated into
+#. messages in fh_lock() that identify types of files.
+#: src/data/mdd-writer.c:205
+msgid "metadata file"
+msgstr "metaadatfájl"
+
+#: src/data/mdd-writer.c:213
+#, c-format
+msgid "Error opening `%s' for writing as a metadata file: %s."
+msgstr "Hiba a(z) „%s” metaadatfájlként, írásra megnyitása közben: %s."
+
+#: src/data/mdd-writer.c:221
+msgid "Internal error creating xmlTextWriter."
+msgstr "Belső hiba az xmlTextWriter létrehozásakor."
 
 #: src/data/make-file.c:218
 #, c-format
@@ -592,7 +607,7 @@ msgstr "A(z) „%s” eltávolítása: %s."
 msgid "%s is not a valid name for a multiple response set.  Multiple response set names must begin with `$'."
 msgstr "A(z) %s nem érvényes név egy többértékű válaszhalmazhoz. A többértékű válaszhalmazok neveinek „$” jellel kell kezdődniük."
 
-#: src/data/ods-reader.c:651
+#: src/data/ods-reader.c:608
 #, c-format
 msgid "Cannot open %s as a OpenDocument file: %s"
 msgstr "A(z) %s nem nyitható meg OpenDocument fájlként: %s"
@@ -608,7 +623,7 @@ msgstr "SPSS/PC+ rendszerfájl"
 msgid "Error opening `%s' for reading as an SPSS/PC+ system file: %s."
 msgstr "Hiba a(z) „%s” SPSS/PC+ rendszerfájlként megnyitásakor: %s."
 
-#: src/data/pc+-file-reader.c:224 src/data/sys-file-reader.c:3507
+#: src/data/pc+-file-reader.c:224 src/data/sys-file-reader.c:3512
 #, c-format
 msgid "%s: stat failed (%s)."
 msgstr "%s: statisztika sikertelen (%s)."
@@ -763,7 +778,7 @@ msgstr "Ismétlődő nevű változó átnevezése, erről: „%s”, erre: „%s
 msgid "Cannot weight by string variable `%s'."
 msgstr "Nem lehet a(z) „%s” karakterlánc változó szerint súlyozni."
 
-#: src/data/pc+-file-reader.c:975 src/data/sys-file-reader.c:2727
+#: src/data/pc+-file-reader.c:975 src/data/sys-file-reader.c:2732
 msgid "File ends in partial case."
 msgstr "A fájl részleges esettel ér véget."
 
@@ -772,36 +787,36 @@ msgstr "A fájl részleges esettel ér véget."
 msgid "Case beginning at offset 0x%08x extends past end of data record at offset 0x%08x."
 msgstr "A 0x%08x eltolásnál kezdődő eset túlnyúlik a 0x%08x eltolásnál lévő adatrekordon."
 
-#: src/data/pc+-file-reader.c:1000 src/data/sys-file-reader.c:2735
+#: src/data/pc+-file-reader.c:1000 src/data/sys-file-reader.c:2740
 #, c-format
 msgid "Error reading case from file %s."
 msgstr "Hiba az eset olvasásakor a(z) %s fájlból."
 
-#: src/data/pc+-file-reader.c:1116 src/data/sys-file-reader.c:2898
+#: src/data/pc+-file-reader.c:1116 src/data/sys-file-reader.c:2903
 #, c-format
 msgid "Possible compressed data corruption: string contains compressed integer (opcode %d)."
 msgstr "Lehetséges tömörített adat sérülés: a karakterlánc tömörített egészt tartalmaz (%d opkód)."
 
-#: src/data/pc+-file-reader.c:1160 src/data/sys-file-reader.c:3196
+#: src/data/pc+-file-reader.c:1160 src/data/sys-file-reader.c:3201
 #, c-format
 msgid "`%s' near offset 0x%llx: "
 msgstr "„%s” a 0x%llx eltolásnál: "
 
-#: src/data/pc+-file-reader.c:1163 src/data/sys-file-reader.c:3199
+#: src/data/pc+-file-reader.c:1163 src/data/sys-file-reader.c:3204
 #, c-format
 msgid "`%s': "
 msgstr "„%s”: "
 
-#: src/data/pc+-file-reader.c:1219 src/data/sys-file-reader.c:3254
+#: src/data/pc+-file-reader.c:1219 src/data/sys-file-reader.c:3259
 #, c-format
 msgid "System error: %s."
 msgstr "Rendszerhiba: %s."
 
-#: src/data/pc+-file-reader.c:1224 src/data/sys-file-reader.c:3259
+#: src/data/pc+-file-reader.c:1224 src/data/sys-file-reader.c:3264
 msgid "Unexpected end of file."
 msgstr "Váratlan fájlvég."
 
-#: src/data/pc+-file-reader.c:1309 src/data/sys-file-reader.c:3484
+#: src/data/pc+-file-reader.c:1309 src/data/sys-file-reader.c:3489
 #, c-format
 msgid "%s: seek failed (%s)."
 msgstr "%s: pozicionálás sikertelen (%s)."
@@ -1185,314 +1200,319 @@ msgstr "A fájl váratlan értéket ad meg: %g (%a) mint %s, ehelyett: %g (%a) v
 msgid "Missing space following `%c' at offset %zu in MRSETS record."
 msgstr "Hiányzó szóköz a(z) „%c” után, a(z) %zu eltolásnál, az MRSETS rekordban."
 
-#: src/data/sys-file-reader.c:1769
+#: src/data/sys-file-reader.c:1767
+#, c-format
+msgid "Missing label source value following `E' at offset %zu in MRSETS record."
+msgstr "Hiányzó címke forrásérték az „E” után, a(z) %zu eltolásnál, az MRSETS rekordban."
+
+#: src/data/sys-file-reader.c:1774
 #, c-format
 msgid "Unexpected label source value following `E' at offset %zu in MRSETS record."
 msgstr "Váratlan címke forrásérték az „E” után, a(z) %zu eltolásnál, az MRSETS rekordban."
 
-#: src/data/sys-file-reader.c:1776
+#: src/data/sys-file-reader.c:1781
 #, c-format
 msgid "Missing `C', `D', or `E' at offset %zu in MRSETS record."
 msgstr "Hiányzó „C”, „D” vagy „E” a(z) %zu eltolásnál, az MRSETS rekordban."
 
-#: src/data/sys-file-reader.c:1803
+#: src/data/sys-file-reader.c:1808
 #, c-format
 msgid "Missing new-line parsing variable names at offset %zu in MRSETS record."
 msgstr "Hiányzó újsor feldolgozási változónevek a(z) %zu eltolásnál, az MRSETS rekordban."
 
-#: src/data/sys-file-reader.c:1838
+#: src/data/sys-file-reader.c:1843
 #, c-format
 msgid "Invalid multiple response set name `%s'."
 msgstr "Érvénytelen nevű többértékű válaszhalmaz név: „%s”."
 
-#: src/data/sys-file-reader.c:1871
+#: src/data/sys-file-reader.c:1876
 #, c-format
 msgid "MRSET %s contains duplicate variable name %s."
 msgstr "A(z) %s MRSET ismételt változónevet tartalmaz: %s."
 
-#: src/data/sys-file-reader.c:1886
+#: src/data/sys-file-reader.c:1891
 #, c-format
 msgid "MRSET %s contains both string and numeric variables."
 msgstr "A(z) %s MRSET karakterlánc és numerikus változókat is tartalmaz."
 
-#: src/data/sys-file-reader.c:1898
+#: src/data/sys-file-reader.c:1903
 #, c-format
 msgid "MRSET %s has no variables."
 msgstr "A(z) %s MRSET nem tartalmaz változókat."
 
-#: src/data/sys-file-reader.c:1900
+#: src/data/sys-file-reader.c:1905
 #, c-format
 msgid "MRSET %s has only one variable."
 msgstr "A(z) %s MRSET csak egy változót tartalmaz."
 
-#: src/data/sys-file-reader.c:1944
+#: src/data/sys-file-reader.c:1949
 #, c-format
 msgid "Extension 11 has bad count %u (for %zu variables)."
 msgstr "A 11. kiegészítőnek hibás darabszáma van: %u (%zu változónál)."
 
-#: src/data/sys-file-reader.c:1977
+#: src/data/sys-file-reader.c:1982
 #, c-format
 msgid "Invalid variable display parameters for variable %zu (%s).  Default parameters substituted."
 msgstr "Érvénytelen változómegjelenítési paraméterek a(z) %zu változóhoz (%s). Alapértelmezett paraméterek behelyettesítve."
 
-#: src/data/sys-file-reader.c:2021
+#: src/data/sys-file-reader.c:2026
 #, c-format
 msgid "Duplicate long variable name `%s'."
 msgstr "Ismételt hosszú változónév: „%s”."
 
-#: src/data/sys-file-reader.c:2074
+#: src/data/sys-file-reader.c:2079
 #, c-format
 msgid "Long variable mapping from %s to invalid variable name `%s'."
 msgstr "A(z) %s hosszú változónév leképezése az érvénytelen „%s” változónévre."
 
-#: src/data/sys-file-reader.c:2109
+#: src/data/sys-file-reader.c:2114
 #, c-format
 msgid "%s listed as string of invalid length %s in very long string record."
 msgstr "Érvénytelen %2$s hosszú karakterláncaként felsorolt %1$s egy nagyon hosszú karakterláncrekordban."
 
-#: src/data/sys-file-reader.c:2120
+#: src/data/sys-file-reader.c:2125
 #, c-format
 msgid "%s listed in very long string record with width %s, which requires only one segment."
 msgstr "%s szélességű nagyon hosszú karakterláncrekordban felsorolt %s, amely csak egyetlen szakaszt igényel."
 
-#: src/data/sys-file-reader.c:2128
+#: src/data/sys-file-reader.c:2133
 #, c-format
 msgid "Very long string %s overflows dictionary."
 msgstr "A(z) %s nagyon hosszú karakterlánc túlcsordulást okoz."
 
-#: src/data/sys-file-reader.c:2146
+#: src/data/sys-file-reader.c:2151
 #, c-format
 msgid "Very long string with width %ld has segment %d of width %d (expected %d)."
 msgstr "A(z) %ld hosszúságú nagyon hosszú karakterlánc %d. szegmense %d széles (várt: %d)."
 
-#: src/data/sys-file-reader.c:2189
+#: src/data/sys-file-reader.c:2194
 #, c-format
 msgid "Variables associated with value label are not all of identical type.  Variable %s is %s, but variable %s is %s."
 msgstr "Az értékcímkével kapcsolatos változók nem azonos típusúak. A(z) %s változó %s, de a(z) %s változó %s."
 
-#: src/data/sys-file-reader.c:2209
+#: src/data/sys-file-reader.c:2214
 #, c-format
 msgid "Value labels may not be added to long string variables (e.g. %s) using records types 3 and 4."
 msgstr "Értékcímkék nem adhatóak a nagyon hosszú karakterláncokhoz (pl. %s) 3. vagy 4. típusú rekordok használatával."
 
-#: src/data/sys-file-reader.c:2238
+#: src/data/sys-file-reader.c:2243
 #, c-format
 msgid "Duplicate value label for %g on %s."
 msgstr "Ismételt értékcímke ehhez: %g, itt: %s."
 
-#: src/data/sys-file-reader.c:2242 src/data/sys-file-reader.c:2563
+#: src/data/sys-file-reader.c:2247 src/data/sys-file-reader.c:2568
 #, c-format
 msgid "Duplicate value label for `%.*s' on %s."
 msgstr "Ismételt értékcímke ehhez: „%.*s”, itt: %s."
 
-#: src/data/sys-file-reader.c:2269
+#: src/data/sys-file-reader.c:2274
 #, c-format
 msgid "Variable index %d not in valid range 1...%zu."
 msgstr "A(z) %d változóindex nincs az érvényes 1..%zu tartományban."
 
-#: src/data/sys-file-reader.c:2278
+#: src/data/sys-file-reader.c:2283
 #, c-format
 msgid "Variable index %d refers to long string continuation."
 msgstr "A(z) %d változóindex egy hosszú karakterlánc folytatására hivatkozik."
 
-#: src/data/sys-file-reader.c:2314
+#: src/data/sys-file-reader.c:2319
 #, c-format
 msgid "Error parsing attribute value %s[%d]."
 msgstr "Hiba a(z) %s[%d] attribútumérték feldolgozásakor."
 
-#: src/data/sys-file-reader.c:2328
+#: src/data/sys-file-reader.c:2333
 #, c-format
 msgid "Attribute value %s[%d] is not quoted: %s."
 msgstr "A(z) %s[%d] attribútumérték nincs idézőjelekben: %s."
 
-#: src/data/sys-file-reader.c:2341
+#: src/data/sys-file-reader.c:2346
 #, c-format
 msgid "Duplicate attribute %s."
 msgstr "Ismételt attribútum: %s."
 
-#: src/data/sys-file-reader.c:2425
+#: src/data/sys-file-reader.c:2430
 #, c-format
 msgid "Invalid role for variable %s."
 msgstr "Érvénytelen szerep a(z) %s változóhoz."
 
-#: src/data/sys-file-reader.c:2434
+#: src/data/sys-file-reader.c:2439
 #, c-format
 msgid "%zu other variables had invalid roles."
 msgstr "%zu más változónak volt érvénytelen szerepe."
 
-#: src/data/sys-file-reader.c:2447
+#: src/data/sys-file-reader.c:2452
 #, c-format
 msgid "Extension record subtype %d ends unexpectedly."
 msgstr "A(z) %d. kiegészítő rekord altípus váratlanul véget ér."
 
-#: src/data/sys-file-reader.c:2493
+#: src/data/sys-file-reader.c:2498
 #, c-format
 msgid "Ignoring long string value label record for unknown variable %s."
 msgstr "Hosszú karakterlánc értékcímke rekordjának figyelmen kívül hagyása a(z) %s ismeretlen változónál."
 
-#: src/data/sys-file-reader.c:2498
+#: src/data/sys-file-reader.c:2503
 #, c-format
 msgid "Ignoring long string value label record for numeric variable %s."
 msgstr "Hosszú karakterlánc értékcímke rekordjának figyelmen kívül hagyása a(z) %s numerikus változónál."
 
-#: src/data/sys-file-reader.c:2505
+#: src/data/sys-file-reader.c:2510
 #, c-format
 msgid "Ignoring long string value label record for variable %s because the record's width (%d) does not match the variable's width (%d)."
 msgstr "Hosszú karakterlánc értékcímke rekordjának figyelmen kívül hagyása a(z) %s változónál, mert a rekord szélessége (%d) nem egyezik a változó szélességével (%d)."
 
-#: src/data/sys-file-reader.c:2536
+#: src/data/sys-file-reader.c:2541
 #, c-format
 msgid "Ignoring long string value label %zu for variable %s, with width %d, that has bad value width %zu."
 msgstr "A hibás, %4$zu szélességű hosszú karakterlánc %1$zu. értékcímkéjének figyelmen kívül hagyása a(z) %2$s, %3$d szélességű változónál."
 
-#: src/data/sys-file-reader.c:2610
+#: src/data/sys-file-reader.c:2615
 #, c-format
 msgid "Long string missing values record says variable %s has %d missing values, but only 1 to 3 missing values are allowed."
 msgstr "A hosszú karakterlánc hiányzó érték rekordja azt mondja, hogy a(z) %s változónak %d hiányzó értéke van, de csak 1 és 3 közti hiányzó érték megengedett."
 
-#: src/data/sys-file-reader.c:2620
+#: src/data/sys-file-reader.c:2625
 #, c-format
 msgid "Ignoring long string missing value record for unknown variable %s."
 msgstr "A hosszú karakterlánc hiányzó érték rekordja figyelmen kívül hagyva a(z) %s ismeretlen változónál."
 
-#: src/data/sys-file-reader.c:2625
+#: src/data/sys-file-reader.c:2630
 #, c-format
 msgid "Ignoring long string missing value record for numeric variable %s."
 msgstr "A hosszú karakterlánc hiányzó érték rekordja figyelmen kívül hagyva a(z) %s numerikus változónál."
 
-#: src/data/sys-file-reader.c:2650
+#: src/data/sys-file-reader.c:2655
 #, c-format
 msgid "Ignoring long string missing value %zu for variable %s, with width %d, that has bad value width %zu."
 msgstr "A hibás, %4$zu szélességű hosszú karakterlánc %1$zu. hiányzó értéke figyelmen kívül hagyása a(z) %2$s, %3$d szélességű változónál."
 
-#: src/data/sys-file-reader.c:2705
+#: src/data/sys-file-reader.c:2710
 msgid "File ends in partial string value."
 msgstr "A fájl részleges karakterlánc értékkel ér véget."
 
-#: src/data/sys-file-reader.c:2844
+#: src/data/sys-file-reader.c:2849
 msgid "Possible compressed data corruption: compressed spaces appear in numeric field."
 msgstr "Lehetséges tömörített adatsérülés: tömörített szóközök egy numerikus mezőben."
 
-#: src/data/sys-file-reader.c:2995
+#: src/data/sys-file-reader.c:3000
 #, c-format
 msgid "Suppressed %d additional related warnings."
 msgstr "%d további kapcsolódó figyelmeztetés elrejtve."
 
-#: src/data/sys-file-reader.c:3041 src/data/sys-file-reader.c:3058
+#: src/data/sys-file-reader.c:3046 src/data/sys-file-reader.c:3063
 #, c-format
 msgid "Dictionary record refers to unknown variable %s."
 msgstr "A szótárbejegyzés a(z) %s ismeretlen változóra hivatkozik."
 
-#: src/data/sys-file-reader.c:3120
+#: src/data/sys-file-reader.c:3125
 #, c-format
 msgid "Expecting digit at offset %zu in MRSETS record."
 msgstr "Számjegy várt a(z) %zu eltolásnál, az MRSETS rekordban."
 
-#: src/data/sys-file-reader.c:3128
+#: src/data/sys-file-reader.c:3133
 #, c-format
 msgid "Expecting space at offset %zu in MRSETS record."
 msgstr "Szóköz várt a(z) %zu eltolásnál az MRSETS rekordban."
 
-#: src/data/sys-file-reader.c:3136
+#: src/data/sys-file-reader.c:3141
 #, c-format
 msgid "%zu-byte string starting at offset %zu exceeds record length %zu."
 msgstr "A(z) %2$zu eltolásnál kezdődő %1$zu bájtos karakterlánc meghaladja a(z) %3$zu rekordhosszt."
 
-#: src/data/sys-file-reader.c:3146
+#: src/data/sys-file-reader.c:3151
 #, c-format
 msgid "Expecting space at offset %zu following %zu-byte string."
 msgstr "Szóköz várt a(z) %zu eltolásnál, a %zu bájtos karakterláncot követve."
 
-#: src/data/sys-file-reader.c:3442
+#: src/data/sys-file-reader.c:3447
 #, c-format
 msgid "Wrong ZLIB data header offset %#llx (expected %#llx)."
 msgstr "Hibás ZLIB adatfejléc eltolás: %#llx (várt? %#llx)."
 
-#: src/data/sys-file-reader.c:3450
+#: src/data/sys-file-reader.c:3455
 #, c-format
 msgid "Impossible ZLIB trailer offset 0x%llx."
 msgstr "Lehetetlen ZLIB záró eltolás: 0x%llx."
 
-#: src/data/sys-file-reader.c:3457
+#: src/data/sys-file-reader.c:3462
 #, c-format
 msgid "Invalid ZLIB trailer length %lld."
 msgstr "Érvénytelen ZLIB záró hossz: %lld."
 
-#: src/data/sys-file-reader.c:3521
+#: src/data/sys-file-reader.c:3526
 #, c-format
 msgid "End of ZLIB trailer (0x%llx) is not file size (0x%llx)."
 msgstr "A ZLIB záró vége (0x%llx) nem a fájl mérete (0x%llx)."
 
-#: src/data/sys-file-reader.c:3531
+#: src/data/sys-file-reader.c:3536
 #, c-format
 msgid "ZLIB trailer bias (%lld) differs from file header bias (%.2f)."
 msgstr "A ZLIB záró eltolása (%lld) eltér a fájlfejléc eltolásától (%.2f)."
 
-#: src/data/sys-file-reader.c:3541
+#: src/data/sys-file-reader.c:3546
 #, c-format
 msgid "ZLIB trailer \"zero\" field has nonzero value %lld."
 msgstr "A ZLIB záró „zero” mező nemzérus értéket tartalmaz: %lld."
 
-#: src/data/sys-file-reader.c:3547
+#: src/data/sys-file-reader.c:3552
 #, c-format
 msgid "ZLIB trailer specifies unexpected %u-byte block size."
 msgstr "A ZLIB záró váratlan, %u bájtos blokkméretet határoz meg."
 
-#: src/data/sys-file-reader.c:3555
+#: src/data/sys-file-reader.c:3560
 #, c-format
 msgid "%lld-byte ZLIB trailer specifies %u data blocks (expected %lld)."
 msgstr "A(z) %lld bájtos ZLIB záró %u adatblokkot határoz meg (várt: %lld)."
 
-#: src/data/sys-file-reader.c:3580
+#: src/data/sys-file-reader.c:3585
 #, c-format
 msgid "ZLIB block descriptor %u reported uncompressed data offset %#llx, when %#llx was expected."
 msgstr "A(z) %u. ZLIB blokkleíró %#llx tömörítetlen adateltolást jelentett, amikor %#llx érték várt."
 
-#: src/data/sys-file-reader.c:3589
+#: src/data/sys-file-reader.c:3594
 #, c-format
 msgid "ZLIB block descriptor %u reported compressed data offset %#llx, when %#llx was expected."
 msgstr "A(z) %u. ZLIB blokkleíró %#llx tömörített adateltolást jelentett, amikor %#llx érték várt."
 
-#: src/data/sys-file-reader.c:3599
+#: src/data/sys-file-reader.c:3604
 #, c-format
 msgid "ZLIB block descriptor %u reported block size %#x, when %#x was expected."
 msgstr "A(z) %u. ZLIB blokkleíró %#x blokkméretet jelentett, amikor %#x érték várt."
 
-#: src/data/sys-file-reader.c:3607
+#: src/data/sys-file-reader.c:3612
 #, c-format
 msgid "ZLIB block descriptor %u reported block size %#x, when at most %#x was expected."
 msgstr "A(z) %u. ZLIB blokkleíró %#x blokkméretet jelentett, amikor legfeljebb %#x érték várt."
 
-#: src/data/sys-file-reader.c:3619
+#: src/data/sys-file-reader.c:3624
 #, c-format
 msgid "ZLIB block descriptor %u reports compressed size %u and uncompressed size %u."
 msgstr "A(z) %u. ZLIB blokkleíró %u tömörített méretet és %u tömörítetlen méretet jelentett."
 
-#: src/data/sys-file-reader.c:3631
+#: src/data/sys-file-reader.c:3636
 #, c-format
 msgid "ZLIB trailer is at offset %#llx but %#llx would be expected from block descriptors."
 msgstr "A ZLIB záró a(z) %#llx eltolásnál van, de %#llx lenne várt a blokkleírókból."
 
-#: src/data/sys-file-reader.c:3650
+#: src/data/sys-file-reader.c:3655
 #, c-format
 msgid "ZLIB initialization failed (%s)."
 msgstr "A ZLIB előkészítés sikertelen (%s)."
 
-#: src/data/sys-file-reader.c:3665
+#: src/data/sys-file-reader.c:3670
 #, c-format
 msgid "Inconsistency at end of ZLIB stream (%s)."
 msgstr "Inkonzisztencia a ZLIB adatfolyam végén (%s)."
 
-#: src/data/sys-file-reader.c:3724
+#: src/data/sys-file-reader.c:3729
 #, c-format
 msgid "ZLIB stream inconsistency (%s)."
 msgstr "ZLIB adatfolyam inkonzisztencia (%s)."
 
-#: src/data/sys-file-reader.c:3748
+#: src/data/sys-file-reader.c:3753
 msgid "Unexpected end of ZLIB compressed data."
 msgstr "A ZLIB tömörített adat váratlanul véget ért."
 
-#: src/data/sys-file-reader.c:3786
+#: src/data/sys-file-reader.c:3791
 msgid "SPSS System File"
 msgstr "SPSS rendszerfájl"
 
@@ -1526,66 +1546,66 @@ msgstr "ZLIB adatfolyam tömörítés sikertelen (%s)."
 msgid "%s: Seek failed (%s)."
 msgstr "%s: pozicionálás sikertelen (%s)."
 
-#: src/data/variable.c:675
-#, c-format
-msgid "%s (%s)"
-msgstr "%s (%s)"
+#: src/data/variable.c:57
+msgid "Left"
+msgstr "Bal"
 
-#: src/data/variable.c:777
+#: src/data/variable.c:58
+msgid "Right"
+msgstr "Jobb"
+
+#: src/data/variable.c:59
+msgid "Center"
+msgstr "Közép"
+
+#: src/data/variable.c:65
 msgid "Nominal"
 msgstr "Nominális"
 
-#: src/data/variable.c:780
+#: src/data/variable.c:66
 msgid "Ordinal"
 msgstr "Ordinális"
 
-#: src/data/variable.c:783 src/language/stats/ks-one-sample.c:327
+#: src/data/variable.c:67 src/language/stats/ks-one-sample.c:327
 msgid "Scale"
 msgstr "Arány"
 
-#: src/data/variable.c:874
+#: src/data/variable.c:73
 msgid "Input"
 msgstr "Bemenet"
 
 #. TRANSLATORS: This will be part of a filename.  Please avoid whitespace.
-#: src/data/variable.c:877 src/ui/gui/psppire-output-window.c:581
+#: src/data/variable.c:74 src/ui/gui/psppire-output-window.c:581
 msgid "Output"
 msgstr "Kimenet"
 
-#: src/data/variable.c:880
+#: src/data/variable.c:75
 msgid "Both"
 msgstr "Mindkettő"
 
-#: src/data/variable.c:883 src/language/dictionary/sys-file-info.c:229
+#: src/data/variable.c:76 src/language/dictionary/sys-file-info.c:229
 #: src/ui/gui/psppire-dialog-action-crosstabs.c:84
 #: src/ui/gui/psppire-dialog-action-crosstabs.c:96
 #: src/ui/gui/psppire-dialog-action-crosstabs.c:131
 #: src/ui/gui/psppire-dialog-action-crosstabs.c:139
-#: src/ui/gui/psppire-var-sheet.c:438 src/ui/gui/var-display.c:34
+#: src/ui/gui/psppire-variable-sheet.c:397 src/ui/gui/var-display.c:34
 msgid "None"
 msgstr "Nincs"
 
-#: src/data/variable.c:886
+#: src/data/variable.c:77
 msgid "Partition"
 msgstr "Partíció"
 
-#: src/data/variable.c:889 src/ui/gui/reliability.ui:37
+#: src/data/variable.c:78 src/ui/gui/reliability.ui:37
 msgid "Split"
 msgstr "Felosztás"
 
-#: src/data/variable.c:1002
-msgid "Left"
-msgstr "Bal"
+#: src/data/variable.c:710
+#, c-format
+msgid "%s (%s)"
+msgstr "%s (%s)"
 
-#: src/data/variable.c:1005
-msgid "Right"
-msgstr "Jobb"
-
-#: src/data/variable.c:1008
-msgid "Center"
-msgstr "Közép"
-
-#: src/data/variable.c:1334
+#: src/data/variable.c:1322
 msgid "At least one case in the data file had a weight value that was user-missing, system-missing, zero, or negative.  These case(s) were ignored."
 msgstr "Az adatfájlban legalább egy értéknek van olyan súlyértéke, amely hiányzó, nulla vagy negatív. Ezek az esetek figyelmen kívül lettek hagyva."
 
@@ -1675,149 +1695,149 @@ msgstr "Ez a parancs nem engedélyezett, ha a(z) %s opció be van állítva."
 msgid "Error removing `%s': %s."
 msgstr "Hiba a(z) „%s” eltávolításakor: %s."
 
-#: src/language/lexer/lexer.c:295
+#: src/language/lexer/lexer.c:296
 #, c-format
 msgid "expecting %s"
 msgstr "%s várt"
 
-#: src/language/lexer/lexer.c:299
+#: src/language/lexer/lexer.c:300
 #, c-format
 msgid "expecting %s or %s"
 msgstr "%s vagy %s várt"
 
-#: src/language/lexer/lexer.c:303
+#: src/language/lexer/lexer.c:304
 #, c-format
 msgid "expecting %s, %s, or %s"
 msgstr "%s, %s vagy %s várt"
 
-#: src/language/lexer/lexer.c:308
+#: src/language/lexer/lexer.c:309
 #, c-format
 msgid "expecting %s, %s, %s, or %s"
 msgstr "%s, %s, %s vagy %s várt"
 
-#: src/language/lexer/lexer.c:313
+#: src/language/lexer/lexer.c:314
 #, c-format
 msgid "expecting %s, %s, %s, %s, or %s"
 msgstr "%s, %s, %s, %s vagy %s várt"
 
-#: src/language/lexer/lexer.c:318
+#: src/language/lexer/lexer.c:319
 #, c-format
 msgid "expecting %s, %s, %s, %s, %s, or %s"
 msgstr "%s, %s, %s, %s, %s vagy %s várt"
 
-#: src/language/lexer/lexer.c:324
+#: src/language/lexer/lexer.c:325
 #, c-format
 msgid "expecting %s, %s, %s, %s, %s, %s, or %s"
 msgstr "%s, %s, %s, %s, %s, %s vagy %s várt"
 
-#: src/language/lexer/lexer.c:330
+#: src/language/lexer/lexer.c:331
 #, c-format
 msgid "expecting %s, %s, %s, %s, %s, %s, %s, or %s"
 msgstr "%s, %s, %s, %s, %s, %s, %s vagy %s várt"
 
-#: src/language/lexer/lexer.c:350
+#: src/language/lexer/lexer.c:351
 #, c-format
 msgid "Subcommand %s may only be specified once."
 msgstr "A(z) %s alparancs csak egyszer adható meg."
 
-#: src/language/lexer/lexer.c:362
+#: src/language/lexer/lexer.c:363
 #, c-format
 msgid "Required subcommand %s was not specified."
 msgstr "A szükséges %s alparancs nem lett megadva."
 
-#: src/language/lexer/lexer.c:370
+#: src/language/lexer/lexer.c:371
 #, c-format
 msgid "%s may only be specified once within subcommand %s"
 msgstr "a(z) %s csak egyszer adható meg a(z) %s alparancson belül"
 
-#: src/language/lexer/lexer.c:379
+#: src/language/lexer/lexer.c:380
 #, c-format
 msgid "Required %s specification missing from %s subcommand"
 msgstr "A szükséges %s megadás hiányzik a(z) %s alparancsból"
 
-#: src/language/lexer/lexer.c:398
+#: src/language/lexer/lexer.c:399
 msgid "Syntax error at end of input"
 msgstr "Szintaktikai hiba a bemenet végén"
 
-#: src/language/lexer/lexer.c:419 src/language/xforms/select-if.c:60
+#: src/language/lexer/lexer.c:420 src/language/xforms/select-if.c:60
 #: src/language/stats/autorecode.c:218 src/language/stats/npar.c:503
 #: src/language/data-io/print-space.c:83
 msgid "expecting end of command"
 msgstr "parancs vége várt"
 
-#: src/language/lexer/lexer.c:630
+#: src/language/lexer/lexer.c:631
 msgid "expecting string"
 msgstr "karakterlánc várt"
 
-#: src/language/lexer/lexer.c:659
+#: src/language/lexer/lexer.c:660
 msgid "expecting integer"
 msgstr "egész várt"
 
-#: src/language/lexer/lexer.c:672
+#: src/language/lexer/lexer.c:673
 msgid "expecting number"
 msgstr "szám várt"
 
-#: src/language/lexer/lexer.c:684
+#: src/language/lexer/lexer.c:685
 msgid "expecting identifier"
 msgstr "azonosító várt"
 
-#: src/language/lexer/lexer.c:1291
+#: src/language/lexer/lexer.c:1266
 msgid "Syntax error at end of command"
 msgstr "Szintaktikai hiba a parancs végén"
 
-#: src/language/lexer/lexer.c:1300
+#: src/language/lexer/lexer.c:1275
 #, c-format
 msgid "Syntax error at `%s'"
 msgstr "Szintaktikai hiba itt: „%s”"
 
-#: src/language/lexer/lexer.c:1303
+#: src/language/lexer/lexer.c:1278
 msgid "Syntax error"
 msgstr "Szintaktikai hiba"
 
-#: src/language/lexer/lexer.c:1475
+#: src/language/lexer/lexer.c:1466
 #, c-format
 msgid "String of hex digits has %d characters, which is not a multiple of 2"
 msgstr "A hexadecimális számjegyekből álló karakterlánc %d karakter hosszú, amely nem a 2 többszöröse"
 
-#: src/language/lexer/lexer.c:1482
+#: src/language/lexer/lexer.c:1473
 #, c-format
 msgid "`%c' is not a valid hex digit"
 msgstr "a(z) „%c” nem érvényes hexadecimális számjegy"
 
-#: src/language/lexer/lexer.c:1487
+#: src/language/lexer/lexer.c:1478
 #, c-format
 msgid "Unicode string contains %d bytes, which is not in the valid range of 1 to 8 bytes"
 msgstr "A Unicode karakterlánc %d bájtot tartalmaz, amely nem esik bele az érvényes 1-8 bájtos tartományba"
 
-#: src/language/lexer/lexer.c:1493
+#: src/language/lexer/lexer.c:1484
 #, c-format
 msgid "U+%04X is not a valid Unicode code point"
 msgstr "U+%04X nem érvényes Unicode kódpont"
 
-#: src/language/lexer/lexer.c:1498
+#: src/language/lexer/lexer.c:1489
 msgid "Unterminated string constant"
 msgstr "Nem lezárt karakterlánc állandó"
 
-#: src/language/lexer/lexer.c:1502
+#: src/language/lexer/lexer.c:1493
 #, c-format
 msgid "Missing exponent following `%s'"
 msgstr "Hiányzó exponens a(z) „%s” után"
 
-#: src/language/lexer/lexer.c:1507
+#: src/language/lexer/lexer.c:1498
 msgid "Unexpected `.' in middle of command"
 msgstr "Váratlan „.” a parancs közben"
 
-#: src/language/lexer/lexer.c:1513
+#: src/language/lexer/lexer.c:1504
 #, c-format
 msgid "Bad character %s in input"
 msgstr "Hibás karakter a bemenetben: %s"
 
-#: src/language/lexer/lexer.c:1608
+#: src/language/lexer/lexer.c:1599
 #, c-format
 msgid "Opening `%s': %s."
 msgstr "A(z) „%s” megnyitása: %s."
 
-#: src/language/lexer/lexer.c:1652
+#: src/language/lexer/lexer.c:1643
 #, c-format
 msgid "Error closing `%s': %s."
 msgstr "Hiba a(z) „%s” lezárásakor: %s."
@@ -1867,75 +1887,75 @@ msgstr "%s vagy %s egy tartományon belül kell legyen."
 msgid "System-missing value is not valid here."
 msgstr "A hiányzó érték itt nem érvényes."
 
-#: src/language/lexer/variable-parser.c:70
+#: src/language/lexer/variable-parser.c:86
 msgid "expecting variable name"
 msgstr "változónév várt"
 
-#: src/language/lexer/variable-parser.c:80
+#: src/language/lexer/variable-parser.c:96
 #, c-format
 msgid "%s is not a variable name."
 msgstr "%s nem egy változónév."
 
-#: src/language/lexer/variable-parser.c:183
+#: src/language/lexer/variable-parser.c:199
 #, c-format
 msgid "%s is not a numeric variable.  It will not be included in the variable list."
 msgstr "%s nem egy numerikus változó. Nem fog bekerülni a változólistába."
 
-#: src/language/lexer/variable-parser.c:186
+#: src/language/lexer/variable-parser.c:202
 #, c-format
 msgid "%s is not a string variable.  It will not be included in the variable list."
 msgstr "%s nem egy karakterlánc változó. Nem fog bekerülni a változólistába."
 
-#: src/language/lexer/variable-parser.c:190
+#: src/language/lexer/variable-parser.c:206
 #, c-format
 msgid "Scratch variables (such as %s) are not allowed here."
 msgstr "A segédváltozók (mint a(z) %s) itt nem megengedettek."
 
-#: src/language/lexer/variable-parser.c:194
+#: src/language/lexer/variable-parser.c:210
 #, c-format
 msgid "%s and %s are not the same type.  All variables in this variable list must be of the same type.  %s will be omitted from the list."
 msgstr "A(z) %s és %s nem azonos típusú. Minden változónak azonos típusúnak kell lennie. A(z) %s ki lesz hagyva a listából."
 
-#: src/language/lexer/variable-parser.c:200
+#: src/language/lexer/variable-parser.c:216
 #, c-format
 msgid "%s and %s are string variables with different widths.  All variables in this variable list must have the same width.  %s will be omitted from the list."
 msgstr "A(z) %s és %s különböző szélességű karakterlánc változók. Minden változónak azonos típusúnak kell lennie. A(z) %s ki lesz hagyva a listából."
 
-#: src/language/lexer/variable-parser.c:205
-#: src/language/lexer/variable-parser.c:407
+#: src/language/lexer/variable-parser.c:221
+#: src/language/lexer/variable-parser.c:440
 #, c-format
 msgid "Variable %s appears twice in variable list."
 msgstr "A(z) %s változó kétszer szerepel a változólistában."
 
-#: src/language/lexer/variable-parser.c:318
+#: src/language/lexer/variable-parser.c:334
 #, c-format
 msgid "%s TO %s is not valid syntax since %s precedes %s in the dictionary."
 msgstr "A(z) „%s TO %s” érvénytelen szintaxis, mert a(z) %s megelőzi a(z) %s-t a szótárban."
 
-#: src/language/lexer/variable-parser.c:326
+#: src/language/lexer/variable-parser.c:342
 #, c-format
 msgid "When using the TO keyword to specify several variables, both variables must be from the same variable dictionaries, of either ordinary, scratch, or system variables.  %s is a %s variable, whereas %s is %s."
 msgstr "Amikor a TO kulcsszót több változó megadására használja, akkor mindkettő ugyanabban a szótárban kell legyen, a szokásos, segéd vagy rendszerváltozók között. A(z) %s egy %s változó, de a(z) %s egy %s."
 
-#: src/language/lexer/variable-parser.c:384
+#: src/language/lexer/variable-parser.c:417
 #, c-format
 msgid "`%s' cannot be used with TO because it does not end in a digit."
 msgstr "A(z) „%s” nem használható a TO-val, mert nem számjegyre végződik."
 
-#: src/language/lexer/variable-parser.c:392
+#: src/language/lexer/variable-parser.c:425
 #, c-format
 msgid "Numeric suffix on `%s' is larger than supported with TO."
 msgstr "A(z) „%s” numerikus szuffixuma nagyobb, mint amit a TO támogat."
 
-#: src/language/lexer/variable-parser.c:468
+#: src/language/lexer/variable-parser.c:498
 msgid "Scratch variables not allowed here."
 msgstr "A segédváltozók itt nem megengedettek."
 
-#: src/language/lexer/variable-parser.c:501
+#: src/language/lexer/variable-parser.c:522
 msgid "Prefixes don't match in use of TO convention."
 msgstr "A prefixek nem egyeznek a TO konvencióban."
 
-#: src/language/lexer/variable-parser.c:506
+#: src/language/lexer/variable-parser.c:527
 msgid "Bad bounds in use of TO convention."
 msgstr "Hibás korlátok a TO konvencióban."
 
@@ -2045,31 +2065,31 @@ msgstr "Ez a parancs nem követheti ezt: %s, itt: %s ... %s."
 msgid "Only one index clause may be specified."
 msgstr "Csak egy index tagmondat adható meg."
 
-#: src/language/control/repeat.c:118
+#: src/language/control/repeat.c:120
 #, c-format
 msgid "Dummy variable name `%s' hides dictionary variable `%s'."
 msgstr "Az előállított „%s” nevű változó elrejti a szótárban szereplő „%s” változót."
 
-#: src/language/control/repeat.c:122
+#: src/language/control/repeat.c:126
 #, c-format
 msgid "Dummy variable name `%s' is given twice."
 msgstr "Az előállított „%s” nevű változó kétszer van megadva."
 
-#: src/language/control/repeat.c:165
+#: src/language/control/repeat.c:170
 #, c-format
 msgid "Dummy variable `%s' had %zu substitutions, so `%s' must also, but %zu were specified."
 msgstr "A(z) „%s” előállított változónak %zu helyettesítése van, így „%s” változónak is annyival kell rendelkeznie, de %zu lett megadva."
 
-#: src/language/control/repeat.c:377
+#: src/language/control/repeat.c:379
 msgid "Ranges may only have integer bounds."
 msgstr "A tartományoknak csak egész korlátja lehet."
 
-#: src/language/control/repeat.c:391
+#: src/language/control/repeat.c:393
 #, c-format
 msgid "%ld TO %ld is an invalid range."
 msgstr "%ld TO %ld egy érvénytelen tartomány."
 
-#: src/language/control/repeat.c:441
+#: src/language/control/repeat.c:443
 #, c-format
 msgid "No matching %s."
 msgstr "Nincs illeszkedő %s."
@@ -2213,7 +2233,8 @@ msgstr "Az aktív adathalmazszótár nem tartalmaz egyetlen többértékű vála
 msgid "Multiple Response Sets"
 msgstr "Többértékű válaszhalmazok"
 
-#: src/language/dictionary/mrsets.c:548 src/ui/gui/psppire-var-sheet.c:1359
+#: src/language/dictionary/mrsets.c:548
+#: src/ui/gui/psppire-var-sheet-header.c:55
 msgid "Name"
 msgstr "Név"
 
@@ -2237,7 +2258,7 @@ msgstr "Többértékű kategóriahalmaz"
 #: src/language/dictionary/split-file.c:84
 #: src/language/dictionary/sys-file-info.c:444
 #: src/language/dictionary/sys-file-info.c:543
-#: src/ui/gui/psppire-var-sheet.c:1372 src/ui/gui/compute.ui:157
+#: src/ui/gui/psppire-var-sheet-header.c:67 src/ui/gui/compute.ui:157
 msgid "Label"
 msgstr "Címke"
 
@@ -2523,7 +2544,7 @@ msgid "Purpose"
 msgstr "Cél"
 
 #: src/language/dictionary/sys-file-info.c:1052
-#: src/ui/gui/psppire-import-assistant.c:1038
+#: src/ui/gui/psppire-import-assistant.c:865
 msgid "Text"
 msgstr "Szöveg"
 
@@ -4735,7 +4756,7 @@ msgstr "A kódolást nem szükséges megadni beágyazott adatoknál. Figyelmen k
 msgid "The %s subcommand may be used only with %s."
 msgstr "A(z) %s alparancsot csak ezzel együtt lehet használni: %s."
 
-#: src/language/data-io/data-list.c:284 src/language/data-io/matrix-data.c:540
+#: src/language/data-io/data-list.c:284 src/language/data-io/matrix-data.c:542
 msgid "At least one variable must be specified."
 msgstr "Legalább egy változót meg kell adni."
 
@@ -4793,17 +4814,17 @@ msgstr "Hiányzó értékek minden változónál a(z) %s változót követően. 
 msgid "Record ends in data not part of any field."
 msgstr "A rekord olyan adatokkal ér véget, amely egyetlen mezőnek sem része."
 
-#: src/language/data-io/data-parser.c:673 src/language/data-io/print.c:447
+#: src/language/data-io/data-parser.c:673 src/language/data-io/print.c:441
 msgid "Record"
 msgstr "Rekord"
 
-#: src/language/data-io/data-parser.c:674 src/language/data-io/print.c:448
-#: src/ui/gui/psppire-var-sheet.c:1380
+#: src/language/data-io/data-parser.c:674 src/language/data-io/print.c:442
+#: src/ui/gui/psppire-var-sheet-header.c:76
 msgid "Columns"
 msgstr "Oszlopok"
 
 #: src/language/data-io/data-parser.c:675
-#: src/language/data-io/data-parser.c:712 src/language/data-io/print.c:449
+#: src/language/data-io/data-parser.c:712 src/language/data-io/print.c:443
 msgid "Format"
 msgstr "Formátum"
 
@@ -5073,49 +5094,49 @@ msgstr "A(z) %s változón megadott kifejezés hiányzó értékre értékelőd�
 msgid "The expression on %s evaluated to %g."
 msgstr "A(z) %s változón megadott kifejezés erre értékelődött ki: %g."
 
-#: src/language/data-io/print.c:193 src/language/data-io/trim.c:54
+#: src/language/data-io/print.c:187 src/language/data-io/trim.c:54
 msgid "expecting a valid subcommand"
 msgstr "érvényes alparancs várt"
 
-#: src/language/data-io/print.c:223
+#: src/language/data-io/print.c:217
 #, c-format
 msgid "%s is required when binary formats are specified."
 msgstr "A(z) %s szükséges, amikor bináris formátum van megadva."
 
-#: src/language/data-io/print.c:306
+#: src/language/data-io/print.c:300
 #, c-format
 msgid "Output calls for %d records but %zu specified on RECORDS subcommand."
 msgstr "A kimenet %d rekordot vár, de %zu lett megadva a RECORDS alparancsban."
 
-#: src/language/data-io/print.c:479
+#: src/language/data-io/print.c:473
 #, c-format
 msgid "Writing %zu record to %s."
 msgid_plural "Writing %zu records to %s."
 msgstr[0] "%zu rekord írása ide: %s."
 msgstr[1] "%zu rekord írása ide: %s."
 
-#: src/language/data-io/print.c:483
+#: src/language/data-io/print.c:477
 #, c-format
 msgid "Writing %zu record."
 msgid_plural "Writing %zu records."
 msgstr[0] "%zu rekord írása."
 msgstr[1] "%zu rekord írása."
 
-#: src/language/data-io/matrix-data.c:177
+#: src/language/data-io/matrix-data.c:176
 #, c-format
 msgid "There are %d variable declared but the data has at least %d matrix rows."
 msgstr "%d változó van megadva, de az adatokban legalább %d mátrixsor szerepel."
 
-#: src/language/data-io/matrix-data.c:256
+#: src/language/data-io/matrix-data.c:257
 msgid "The N subcommand was specified, but a N record was also found in the data.  The N record will be ignored."
 msgstr "Az N alparancs volt megadva, de már található N rekord az adatokban. Az N rekord figyelmen kívül lesz hagyva."
 
-#: src/language/data-io/matrix-data.c:450 src/language/utilities/set.q:186
+#: src/language/data-io/matrix-data.c:452 src/language/utilities/set.q:186
 #, c-format
 msgid "%s must not be negative."
 msgstr "%s nem lehet negatív."
 
-#: src/language/data-io/matrix-data.c:530
+#: src/language/data-io/matrix-data.c:532
 msgid "FORMAT = FULL and FORMAT = NODIAGONAL are mutually exclusive."
 msgstr "A FORMAT = FULL és a FORMAT = NODIAGONAL kölcsönösen kizárják egymást."
 
@@ -5131,33 +5152,33 @@ msgstr "A mátrix adathalmazból hiányzik a(z) %s változó."
 msgid "Matrix dataset variable %s should be of string type."
 msgstr "A mátrix adathalmaz %s változó karakterlánc kell legyen."
 
-#: src/language/data-io/save-translate.c:170
-#: src/language/data-io/save-translate.c:185
+#: src/language/data-io/save-translate.c:171
+#: src/language/data-io/save-translate.c:186
 #, c-format
 msgid "The %s string must contain exactly one character."
 msgstr "A(z) %s karakterlánc pontosan egy karaktert kell tartalmazzon."
 
-#: src/language/data-io/save-translate.c:253
+#: src/language/data-io/save-translate.c:254
 #, c-format
 msgid "Output file `%s' exists but %s was not specified."
 msgstr "A(z) „%s” kimeneti fájl létezik, de a(z) %s nem lett megadva."
 
-#: src/language/data-io/trim.c:89
+#: src/language/data-io/trim.c:87
 #, c-format
 msgid "Cannot rename %s as %s because there already exists a variable named %s.  To rename variables with overlapping names, use a single RENAME subcommand such as `/RENAME (A=B)(B=C)(C=A)', or equivalently, `/RENAME (A B C=B C A)'."
 msgstr "A(z) %s nem nevezhető át erre: %s, mert már létezik %s nevű változó. Az ütköző nevű változók átnevezéséhez használjon egy RENAME alparancsot, mint például `/RENAME (A=B)(B=C)(C=A)`, vagy ekvivalens módon: `/RENAME (A B C=B C A)`."
 
-#: src/language/data-io/trim.c:123
+#: src/language/data-io/trim.c:122
 #, c-format
 msgid "Number of variables on left side of `=' (%zu) does not match number of variables on right side (%zu), in parenthesized group %d of RENAME subcommand."
 msgstr "Az `=` bal oldalán található változók száma (%zu) nem egyezik a jobb oldali változók számával (%zu), a RENAME alparancs %d. zárójelbe tett csoportjában."
 
-#: src/language/data-io/trim.c:136
+#: src/language/data-io/trim.c:135
 #, c-format
 msgid "Requested renaming duplicates variable name %s."
 msgstr "%s ismételt változónév átnevezése kérve."
 
-#: src/language/data-io/trim.c:167
+#: src/language/data-io/trim.c:166
 msgid "Cannot DROP all variables from dictionary."
 msgstr "Nem dobható el az összes változó a szótárból a DROP paranccsal."
 
@@ -5608,12 +5629,12 @@ msgstr "*HIÁNYZÓ*"
 msgid "error opening output file `%s'"
 msgstr "hiba a(z) %s kimeneti fájl megnyitásakor"
 
-#: src/output/driver.c:377
+#: src/output/driver.c:373
 #, c-format
 msgid "%s is not a valid device type (the choices are `%s' and `%s')"
 msgstr "A(z) %s nem egy érvényes eszköztípus (a lehetőségek: „%s” és „%s”)"
 
-#: src/output/driver.c:391
+#: src/output/driver.c:387
 #, c-format
 msgid "%s: unknown option `%s'"
 msgstr "%s: ismeretlen beállítás: „%s”"
@@ -5655,6 +5676,10 @@ msgstr "hiba a(z) %s bemeneti fájl megnyitásakor"
 #, c-format
 msgid "file `%s' does not state a paper size"
 msgstr "a(z) „%s” fájl nem adja meg a papírméretet"
+
+#: src/output/odt.c:98
+msgid "error creating temporary file"
+msgstr "hiba az átmeneti fájl létrehozásakor"
 
 #: src/output/options.c:112
 #, c-format
@@ -5824,10 +5849,6 @@ msgstr "Szórás"
 msgid "Scatterplot %s"
 msgstr "%s pontdiagram"
 
-#: src/output/odt.c:98
-msgid "error creating temporary file"
-msgstr "hiba az átmeneti fájl létrehozásakor"
-
 #: src/ui/source-init-opts.c:72
 #, c-format
 msgid "Algorithm must be either `%s' or `%s'."
@@ -5936,85 +5957,73 @@ msgstr ""
 "A nem kapcsolóként megadott argumentumok szintaktika fájlokként értelmezettek,\n"
 "és végrehajtásra kerülnek.\n"
 
-#: src/ui/gui/psppire-import-assistant.c:535
-#, c-format
-msgid "Could not open `%s'"
-msgstr "A(z) „%s” nem nyitható meg"
+#: src/ui/gui/psppire-import-assistant.c:329
+msgid "line"
+msgstr "sor"
 
-#: src/ui/gui/psppire-import-assistant.c:550
-#, c-format
-msgid "Error reading `%s': %s"
-msgstr "Hiba a(z) „%s” olvasásakor: %s"
+#: src/ui/gui/psppire-import-assistant.c:339
+msgid "var"
+msgstr "változó"
 
-#: src/ui/gui/psppire-import-assistant.c:553
-#, c-format
-msgid "Failed to read `%s', because it contains a line over %d bytes long and therefore appears not to be a text file."
-msgstr "A(z) „%s” olvasása sikertelen, mert egy több mint %d bájtos sort  tartalmaz, ezért nem tűnik szöveges fájlnak."
-
-#: src/ui/gui/psppire-import-assistant.c:570
-#, c-format
-msgid "`%s' is empty."
-msgstr "A(z) „%s” üres."
-
-#: src/ui/gui/psppire-import-assistant.c:652
-msgid "Line"
-msgstr "Sor"
-
-#: src/ui/gui/psppire-import-assistant.c:746
+#: src/ui/gui/psppire-import-assistant.c:549
 msgid "Importing Spreadsheet Data"
 msgstr "Táblázatadatok importálása"
 
-#: src/ui/gui/psppire-import-assistant.c:853
-#: src/ui/gui/psppire-data-window.c:555 src/ui/gui/psppire-syntax-window.c:572
+#: src/ui/gui/psppire-import-assistant.c:663
+#: src/ui/gui/psppire-data-window.c:557 src/ui/gui/psppire-syntax-window.c:572
 #: src/ui/gui/psppire-window.c:683
 msgid "All Files"
 msgstr "Minden fájl"
 
-#: src/ui/gui/psppire-import-assistant.c:858
+#: src/ui/gui/psppire-import-assistant.c:668
 msgid "Text Files"
 msgstr "Minden szövegfájl"
 
-#: src/ui/gui/psppire-import-assistant.c:863
+#: src/ui/gui/psppire-import-assistant.c:673
 msgid "Text (*.txt) Files"
 msgstr "Szöveg (*.txt) fájlok"
 
-#: src/ui/gui/psppire-import-assistant.c:869
+#: src/ui/gui/psppire-import-assistant.c:679
 msgid "Plain Text (ASCII) Files"
 msgstr "Egyszerű szöveg (ASCII) fájlok"
 
-#: src/ui/gui/psppire-import-assistant.c:874
+#: src/ui/gui/psppire-import-assistant.c:684
 msgid "Comma Separated Value Files"
 msgstr "Vesszővel elválasztott érték fájlok"
 
-#: src/ui/gui/psppire-import-assistant.c:881
+#: src/ui/gui/psppire-import-assistant.c:691
 msgid "Tab Separated Value Files"
 msgstr "Tabulátorral elválasztott érték fájlok"
 
-#: src/ui/gui/psppire-import-assistant.c:886
+#: src/ui/gui/psppire-import-assistant.c:696
 msgid "Gnumeric Spreadsheet Files"
 msgstr "Gnumeric táblázatfájlok"
 
-#: src/ui/gui/psppire-import-assistant.c:891
+#: src/ui/gui/psppire-import-assistant.c:701
 msgid "OpenDocument Spreadsheet Files"
 msgstr "OpenDocument táblázatfájlok"
 
-#: src/ui/gui/psppire-import-assistant.c:896
+#: src/ui/gui/psppire-import-assistant.c:706
 msgid "All Spreadsheet Files"
 msgstr "Minden táblázatfájl"
 
-#: src/ui/gui/psppire-import-assistant.c:905
+#: src/ui/gui/psppire-import-assistant.c:715
 msgid "Select File to Import"
 msgstr "Válassza ki az importálandó fájlt"
 
-#: src/ui/gui/psppire-import-assistant.c:949
+#: src/ui/gui/psppire-import-assistant.c:750
 msgid "Importing Delimited Text Data"
 msgstr "Tagolt szöveges adat importálása"
 
-#: src/ui/gui/psppire-import-assistant.c:1116
+#: src/ui/gui/psppire-import-assistant.c:845
 msgid "Select the First Line"
 msgstr "Első sor kiválasztása"
 
-#: src/ui/gui/psppire-import-assistant.c:1150
+#: src/ui/gui/psppire-import-assistant.c:857
+msgid "Line"
+msgstr "Sor"
+
+#: src/ui/gui/psppire-import-assistant.c:911
 msgid ""
 "This assistant will guide you through the process of importing data into PSPP from a text file with one line per case,  in which fields are separated by tabs, commas, or other delimiters.\n"
 "\n"
@@ -6022,72 +6031,58 @@ msgstr ""
 "A varázsló végigvezeti az adatimportálási folyamaton, amely egy eset / egy sor alapon importálja a szöveges fájl adatait, és ahol a mezőket tabulátorok, vesszők, vagy más elválasztók határolják.\n"
 "\n"
 
-#: src/ui/gui/psppire-import-assistant.c:1158
+#: src/ui/gui/psppire-import-assistant.c:921
 #, c-format
 msgid "The selected file contains %'lu line of text.  "
 msgid_plural "The selected file contains %'lu lines of text.  "
 msgstr[0] "A kiválasztott fájl %'lu sornyi szöveget tartalmaz. "
 msgstr[1] "A kiválasztott fájl %'lu sornyi szöveget tartalmaz. "
 
-#: src/ui/gui/psppire-import-assistant.c:1167
+#: src/ui/gui/psppire-import-assistant.c:930
 #, c-format
 msgid "The selected file contains approximately %'lu line of text.  "
 msgid_plural "The selected file contains approximately %'lu lines of text.  "
 msgstr[0] "A kiválasztott fájl %'lu körülbelül sornyi szöveget tartalmaz. "
 msgstr[1] "A kiválasztott fájl %'lu körülbelül sornyi szöveget tartalmaz. "
 
-#: src/ui/gui/psppire-import-assistant.c:1173
+#: src/ui/gui/psppire-import-assistant.c:936
 #, c-format
 msgid "Only the first %zu line of the file will be shown for preview purposes in the following screens.  "
 msgid_plural "Only the first %zu lines of the file will be shown for preview purposes in the following screens.  "
 msgstr[0] "Csak az első %zu sor szöveg lesz előnézeti célból megjelenítve a következő képernyőkön. "
 msgstr[1] "Csak az első %zu sor szöveg lesz előnézeti célból megjelenítve a következő képernyőkön. "
 
-#: src/ui/gui/psppire-import-assistant.c:1181
+#: src/ui/gui/psppire-import-assistant.c:945
 msgid "You may choose below how much of the file should actually be imported."
 msgstr "Kiválaszthatja lent, hogy a fájl mekkora része kerüljön ténylegesen importálásra."
 
-#: src/ui/gui/psppire-import-assistant.c:1198
+#: src/ui/gui/psppire-import-assistant.c:954
 #, c-format
 msgid "Only the first %4d cases"
 msgstr "Csak az első %4d eset"
 
-#: src/ui/gui/psppire-import-assistant.c:1214
+#: src/ui/gui/psppire-import-assistant.c:965
 #, c-format
 msgid "Only the first %3d %% of file (approximately)"
 msgstr "Csak a fájl első %3d %%-nyi része (körülbelül)"
 
-#: src/ui/gui/psppire-import-assistant.c:1237
+#: src/ui/gui/psppire-import-assistant.c:989
 msgid "Select the Lines to Import"
 msgstr "Válassza ki az importálandó sorokat"
 
-#: src/ui/gui/psppire-import-assistant.c:1371
-#, c-format
-msgid "Cannot parse field content `%.*s' as format %s: %s"
-msgstr "A(z) „%.*s” mezőtartalom nem dolgozható fel a(z) %s formátum szerint: %s"
-
-#: src/ui/gui/psppire-import-assistant.c:1380
-#: src/ui/gui/psppire-import-assistant.c:1487
-msgid "This input line has too few separators to fill in this field."
-msgstr "A bemeneti sornak túl kevés elválasztója van ahhoz, hogy kitöltse ezt a mezőt."
-
-#: src/ui/gui/psppire-import-assistant.c:1887
+#: src/ui/gui/psppire-import-assistant.c:1157
 msgid "Choose Separators"
 msgstr "Elválasztók kiválasztása"
 
-#: src/ui/gui/psppire-import-assistant.c:2112
-msgid "An error occurred reading the spreadsheet file."
-msgstr "Hiba történt a táblázatfájl olvasásakor."
-
-#: src/ui/gui/psppire-import-assistant.c:2167
+#: src/ui/gui/psppire-import-assistant.c:1398
 msgid "Adjust Variable Formats"
 msgstr "Változóformátumok módosítása"
 
-#: src/ui/gui/find-dialog.c:197
+#: src/ui/gui/find-dialog.c:193
 msgid "Find"
 msgstr "Keresés"
 
-#: src/ui/gui/find-dialog.c:649
+#: src/ui/gui/find-dialog.c:645
 #, c-format
 msgid "Bad regular expression: %s"
 msgstr "Hibás reguláris kifejezés: %s"
@@ -6101,8 +6096,8 @@ msgstr "Egy program mintaadatok elemzéséhez"
 #: src/ui/gui/help-menu.c:80
 msgid "translator-credits"
 msgstr ""
-"Meskó Balázs <meskobalazs at fedoraproject dot org>\n"
-"Úr Balázs <urbalazs at gmail dot com>"
+"Meskó Balázs <mesko.balazs at fsf dot hu>\n"
+"Úr Balázs <ur.balazs at fsf dot hu>"
 
 #: src/ui/gui/help-menu.c:174
 #, c-format
@@ -6138,108 +6133,80 @@ msgstr "Ne jelenítse meg az indítóképet"
 msgid "Do not attempt single instance negotiation"
 msgstr "Ne próbáljon meg csak egy példányban futni"
 
-#: src/ui/gui/missing-val-dialog.c:214
+#: src/ui/gui/missing-val-dialog.c:216
 msgid "The maximum length of a missing value for a string variable is 8 in UTF-8."
 msgstr "Egy hiányzó érték legnagyobb hossza egy karakterlánc-változónál 8 UTF-8-ban."
 
-#: src/ui/gui/missing-val-dialog.c:265
+#: src/ui/gui/missing-val-dialog.c:267
 msgid "At least one value must be specified"
 msgstr "Legalább egy értéket meg kell adni"
 
-#: src/ui/gui/missing-val-dialog.c:295
+#: src/ui/gui/missing-val-dialog.c:297
 msgid "Incorrect range specification"
 msgstr "Érvénytelen tartománymegadás"
 
-#: src/ui/gui/psppire-data-editor.c:417
+#: src/ui/gui/psppire-data-editor.c:404
+#, c-format
+msgid "%d : %s"
+msgstr "%d : %s"
+
+#: src/ui/gui/psppire-data-editor.c:415
 #, c-format
 msgid "%'d case"
 msgid_plural "%'d cases"
 msgstr[0] "%'d eset"
 msgstr[1] "%'d eset"
 
-#: src/ui/gui/psppire-data-editor.c:422
+#: src/ui/gui/psppire-data-editor.c:420
 #, c-format
 msgid "%'d variable"
 msgid_plural "%'d variables"
 msgstr[0] "%'d változó"
 msgstr[1] "%'d variables"
 
-#: src/ui/gui/psppire-data-editor.c:715
-msgid "Data View"
-msgstr "Adatnézet"
-
-#: src/ui/gui/psppire-data-editor.c:728
-msgid "Variable View"
-msgstr "Változónézet"
-
-#: src/ui/gui/psppire-data-sheet.c:139
-msgid "Enter a number to add a new variable."
-msgstr "Írjon be egy számot egy új változó hozzáadásához."
-
-#: src/ui/gui/psppire-data-sheet.c:144
-msgid "Enter a number to add a new case."
-msgstr "Írjon be egy számot egy új eset hozzáadásához."
-
-#: src/ui/gui/psppire-data-sheet.c:230
+#: src/ui/gui/psppire-data-editor.c:510
 msgid "Case"
 msgstr "Eset"
 
-#: src/ui/gui/psppire-data-sheet.c:1662 src/ui/gui/psppire-data-window.c:1303
-msgid "_Insert Case"
-msgstr "_Eset beszúrása"
+#: src/ui/gui/psppire-data-editor.c:520
+msgid "Data View"
+msgstr "Adatnézet"
 
-#: src/ui/gui/psppire-data-sheet.c:1663 src/ui/gui/psppire-data-window.c:1351
-msgid "Cl_ear Cases"
-msgstr "Esetek _törlése"
+#: src/ui/gui/psppire-data-editor.c:530
+msgid "Variable View"
+msgstr "Változónézet"
 
-#: src/ui/gui/psppire-data-sheet.c:1678 src/ui/gui/psppire-data-window.c:1302
-#: src/ui/gui/psppire-var-sheet.c:944
-msgid "_Insert Variable"
-msgstr "_Változó beszúrása"
-
-#: src/ui/gui/psppire-data-sheet.c:1679 src/ui/gui/psppire-var-sheet.c:945
-msgid "Cl_ear Variables"
-msgstr "Változók tö_rlése"
-
-#: src/ui/gui/psppire-data-sheet.c:1680
-msgid "Sort _Ascending"
-msgstr "_Növekvő sorrend"
-
-#: src/ui/gui/psppire-data-sheet.c:1681
-msgid "Sort _Descending"
-msgstr "Csö_kkenő sorrend"
-
-#: src/ui/gui/psppire-data-window.c:212
+#: src/ui/gui/psppire-data-window.c:214
 msgid "Transformations Pending"
 msgstr "Transzformációk függőben"
 
-#: src/ui/gui/psppire-data-window.c:228
+#: src/ui/gui/psppire-data-window.c:230
 msgid "Filter off"
 msgstr "Szűrő ki"
 
-#: src/ui/gui/psppire-data-window.c:240
+#: src/ui/gui/psppire-data-window.c:242
 #, c-format
 msgid "Filter by %s"
 msgstr "Szűrés e szerint: %s"
 
-#: src/ui/gui/psppire-data-window.c:261
+#: src/ui/gui/psppire-data-window.c:263
 msgid "No Split"
 msgstr "Nincs felosztás"
 
-#: src/ui/gui/psppire-data-window.c:270
+#: src/ui/gui/psppire-data-window.c:272
 msgid "Split by "
 msgstr "Felosztás e szerint: "
 
-#: src/ui/gui/psppire-data-window.c:298
+#: src/ui/gui/psppire-data-window.c:300
 msgid "Weights off"
 msgstr "Súlyok ki"
 
-#: src/ui/gui/psppire-data-window.c:310
+#: src/ui/gui/psppire-data-window.c:312
 #, c-format
 msgid "Weight by %s"
 msgstr "Súly e szerint: %s"
 
-#: src/ui/gui/psppire-data-window.c:530 src/ui/gui/psppire-data-window.c:534
+#: src/ui/gui/psppire-data-window.c:532 src/ui/gui/psppire-data-window.c:536
 #: src/ui/gui/psppire-dialog-action-aggregate.c:217
 #: src/ui/gui/psppire-output-window.c:382
 #: src/ui/gui/psppire-syntax-window.c:560 src/ui/gui/psppire-window.c:476
@@ -6247,195 +6214,208 @@ msgstr "Súly e szerint: %s"
 msgid "Save"
 msgstr "Mentés"
 
-#: src/ui/gui/psppire-data-window.c:540
+#: src/ui/gui/psppire-data-window.c:542
 #: src/ui/gui/psppire-dialog-action-aggregate.c:226
 msgid "System Files (*.sav)"
 msgstr "Rendszerfájlok (*.sav)"
 
-#: src/ui/gui/psppire-data-window.c:545
+#: src/ui/gui/psppire-data-window.c:547
 #: src/ui/gui/psppire-dialog-action-aggregate.c:231
 msgid "Compressed System Files (*.zsav)"
 msgstr "Tömörített rendszerfájlok (*.zsav)"
 
-#: src/ui/gui/psppire-data-window.c:550
+#: src/ui/gui/psppire-data-window.c:552
 #: src/ui/gui/psppire-dialog-action-aggregate.c:236
 #: src/ui/gui/psppire-window.c:672
 msgid "Portable Files (*.por) "
 msgstr "Hordozható fájlok (*.por) "
 
-#: src/ui/gui/psppire-data-window.c:572
+#: src/ui/gui/psppire-data-window.c:574
 msgid "System File"
 msgstr "Rendszerfájl"
 
-#: src/ui/gui/psppire-data-window.c:579
+#: src/ui/gui/psppire-data-window.c:581
 msgid "Compressed System File"
 msgstr "Tömörített rendszerfájl"
 
-#: src/ui/gui/psppire-data-window.c:585
+#: src/ui/gui/psppire-data-window.c:587
 msgid "Portable File"
 msgstr "Hordozható fájl"
 
-#: src/ui/gui/psppire-data-window.c:588
+#: src/ui/gui/psppire-data-window.c:590
 msgid "Format:"
 msgstr "Formátum:"
 
-#: src/ui/gui/psppire-data-window.c:652
+#: src/ui/gui/psppire-data-window.c:654
 msgid "Delete Existing Dataset?"
 msgstr "Törli a meglévő adathalmazt?"
 
-#: src/ui/gui/psppire-data-window.c:656
+#: src/ui/gui/psppire-data-window.c:658
 #, c-format
 msgid "Renaming \"%s\" to \"%s\" will destroy the existing dataset named \"%s\".  Are you sure that you want to do this?"
 msgstr "Az átnevezés („%s” → „%s”) tönkre fogja tenni a meglévő „%s” adathalmazt. Biztosan ezt szeretné tenni?"
 
-#: src/ui/gui/psppire-data-window.c:662
+#: src/ui/gui/psppire-data-window.c:664
 msgid "Delete"
 msgstr "Törlés"
 
-#: src/ui/gui/psppire-data-window.c:684
+#: src/ui/gui/psppire-data-window.c:686
 #, c-format
 msgid "Please enter a new name for dataset \"%s\":"
 msgstr "Adjon egy új nevet a(z) „%s” adathalmaznak:"
 
-#: src/ui/gui/psppire-data-window.c:686
+#: src/ui/gui/psppire-data-window.c:688
 msgid "Rename Dataset"
 msgstr "Adathalmaz átnevezése"
 
-#: src/ui/gui/psppire-data-window.c:1165 src/ui/gui/output-window.ui:68
+#: src/ui/gui/psppire-data-window.c:1209 src/ui/gui/output-window.ui:68
 #: src/ui/gui/syntax-editor.ui:22
 msgid "_File"
 msgstr "_Fájl"
 
-#: src/ui/gui/psppire-data-window.c:1169 src/ui/gui/syntax-editor.ui:25
+#: src/ui/gui/psppire-data-window.c:1213 src/ui/gui/syntax-editor.ui:25
 msgid "_New"
 msgstr "Ú_j"
 
-#: src/ui/gui/psppire-data-window.c:1176
+#: src/ui/gui/psppire-data-window.c:1220
 msgid "_Syntax"
 msgstr "Szinta_xis"
 
-#: src/ui/gui/psppire-data-window.c:1179 src/ui/gui/data-editor.ui:177
+#: src/ui/gui/psppire-data-window.c:1223 src/ui/gui/data-editor.ui:177
 #: src/ui/gui/data-editor.ui:189
 msgid "_Data"
 msgstr "_Adatok"
 
-#: src/ui/gui/psppire-data-window.c:1186 src/ui/gui/syntax-editor.ui:36
+#: src/ui/gui/psppire-data-window.c:1230 src/ui/gui/syntax-editor.ui:36
 msgid "_Open"
 msgstr "_Megnyitás"
 
-#: src/ui/gui/psppire-data-window.c:1189
+#: src/ui/gui/psppire-data-window.c:1233
 msgid "_Import Data..."
 msgstr "Adatok _importálása…"
 
-#: src/ui/gui/psppire-data-window.c:1197 src/ui/gui/logistic.ui:260
+#: src/ui/gui/psppire-data-window.c:1241 src/ui/gui/logistic.ui:260
 #: src/ui/gui/regression.ui:66
 msgid "_Save..."
 msgstr "_Mentés…"
 
-#: src/ui/gui/psppire-data-window.c:1200
+#: src/ui/gui/psppire-data-window.c:1244
 msgid "Save _As..."
 msgstr "Men_tés másként…"
 
-#: src/ui/gui/psppire-data-window.c:1203
+#: src/ui/gui/psppire-data-window.c:1247
 msgid "_Rename Dataset..."
 msgstr "Adathalmaz át_nevezése…"
 
-#: src/ui/gui/psppire-data-window.c:1214
+#: src/ui/gui/psppire-data-window.c:1258
 msgid "_Display Data File Information"
 msgstr "_Adatfájl információk megjelenítése"
 
-#: src/ui/gui/psppire-data-window.c:1221
+#: src/ui/gui/psppire-data-window.c:1265
 msgid "Working File"
 msgstr "Munkafájl"
 
-#: src/ui/gui/psppire-data-window.c:1223
+#: src/ui/gui/psppire-data-window.c:1267
 msgid "_External File..."
 msgstr "_Külső fájl…"
 
-#: src/ui/gui/psppire-data-window.c:1233
+#: src/ui/gui/psppire-data-window.c:1277
 msgid "_Recently Used Data"
 msgstr "Nemrég _használt adatok"
 
-#: src/ui/gui/psppire-data-window.c:1234
+#: src/ui/gui/psppire-data-window.c:1278
 msgid "Recently Used _Files"
 msgstr "Nemrég használt _fájlok"
 
-#: src/ui/gui/psppire-data-window.c:1281 src/ui/gui/output-window.ui:82
+#: src/ui/gui/psppire-data-window.c:1325 src/ui/gui/output-window.ui:82
 #: src/ui/gui/syntax-editor.ui:59
 msgid "_Quit"
 msgstr "_Kilépés"
 
-#: src/ui/gui/psppire-data-window.c:1298 src/ui/gui/output-window.ui:89
+#: src/ui/gui/psppire-data-window.c:1343 src/ui/gui/output-window.ui:89
 #: src/ui/gui/syntax-editor.ui:66
 msgid "_Edit"
 msgstr "Sz_erkesztés"
 
-#: src/ui/gui/psppire-data-window.c:1304
+#: src/ui/gui/psppire-data-window.c:1347 src/ui/gui/psppire-data-sheet.c:276
+#: src/ui/gui/psppire-variable-sheet.c:263
+msgid "_Insert Variable"
+msgstr "_Változó beszúrása"
+
+#: src/ui/gui/psppire-data-window.c:1348 src/ui/gui/psppire-data-sheet.c:167
+msgid "_Insert Case"
+msgstr "_Eset beszúrása"
+
+#: src/ui/gui/psppire-data-window.c:1349
 msgid "_Go To Variable..."
 msgstr "_Ugrás változóhoz…"
 
-#: src/ui/gui/psppire-data-window.c:1305
+#: src/ui/gui/psppire-data-window.c:1350
 msgid "_Go To Case..."
 msgstr "Ugrás _esethez…"
 
-#: src/ui/gui/psppire-data-window.c:1327 src/ui/gui/syntax-editor.ui:69
+#: src/ui/gui/psppire-data-window.c:1372 src/ui/gui/syntax-editor.ui:69
 msgid "Cu_t"
 msgstr "Ki_vágás"
 
-#: src/ui/gui/psppire-data-window.c:1335 src/ui/gui/output-window.ui:96
+#: src/ui/gui/psppire-data-window.c:1380 src/ui/gui/output-window.ui:96
 #: src/ui/gui/syntax-editor.ui:74
 msgid "_Copy"
 msgstr "_Másolás"
 
-#: src/ui/gui/psppire-data-window.c:1341 src/ui/gui/syntax-editor.ui:79
+#: src/ui/gui/psppire-data-window.c:1386 src/ui/gui/syntax-editor.ui:79
 msgid "_Paste"
 msgstr "_Beillesztés"
 
-#: src/ui/gui/psppire-data-window.c:1347
+#: src/ui/gui/psppire-data-window.c:1392
 msgid "Clear _Variables"
 msgstr "_Változók törlése"
 
-#: src/ui/gui/psppire-data-window.c:1360
+#: src/ui/gui/psppire-data-window.c:1396 src/ui/gui/psppire-data-sheet.c:175
+msgid "Cl_ear Cases"
+msgstr "Esetek _törlése"
+
+#: src/ui/gui/psppire-data-window.c:1405
 msgid "_Find..."
 msgstr "_Keresés…"
 
-#: src/ui/gui/psppire-data-window.c:1366 src/ui/gui/logistic.ui:245
+#: src/ui/gui/psppire-data-window.c:1411 src/ui/gui/logistic.ui:245
 msgid "_Options..."
 msgstr "_Beállítások…"
 
-#: src/ui/gui/psppire-data-window.c:1644
+#: src/ui/gui/psppire-data-window.c:1682
 msgid "Jump to variable"
 msgstr "Ugrás változóhoz"
 
-#: src/ui/gui/psppire-data-window.c:1657
+#: src/ui/gui/psppire-data-window.c:1695
 msgid "Jump to a case in the data sheet"
 msgstr "Esethez ugrás a munkafüzetben"
 
-#: src/ui/gui/psppire-data-window.c:1671
+#: src/ui/gui/psppire-data-window.c:1709
 msgid "Search for values in the data"
 msgstr "Értékek keresése az adatokban"
 
-#: src/ui/gui/psppire-data-window.c:1683
+#: src/ui/gui/psppire-data-window.c:1721
 msgid "Create a new case at the current position"
 msgstr "Egy új eset létrehozása a jelenlegi pozíciónál"
 
-#: src/ui/gui/psppire-data-window.c:1695
+#: src/ui/gui/psppire-data-window.c:1733
 msgid "Create a new variable at the current position"
 msgstr "Egy új változó létrehozása a jelenlegi pozíciónál"
 
-#: src/ui/gui/psppire-data-window.c:1709
+#: src/ui/gui/psppire-data-window.c:1747
 msgid "Split the active dataset"
 msgstr "Az aktív adathalmaz felosztása"
 
-#: src/ui/gui/psppire-data-window.c:1721
+#: src/ui/gui/psppire-data-window.c:1759
 msgid "Weight cases by variable"
 msgstr "Esetek súlyozása változóval"
 
-#: src/ui/gui/psppire-data-window.c:1732
+#: src/ui/gui/psppire-data-window.c:1770
 msgid "Show/hide value labels"
 msgstr "Értékcímkék megjelenítése/elrejtése"
 
-#: src/ui/gui/psppire-data-window.c:1875
+#: src/ui/gui/psppire-data-window.c:1915
 msgid "Data Editor"
 msgstr "Adatszerkesztő"
 
@@ -6665,6 +6645,10 @@ msgstr "Ne súlyozza az eseteket"
 msgid "Weight cases by %s"
 msgstr "Esetek súlyozása e szerint: %s"
 
+#: src/ui/gui/psppire-dict.c:97
+msgid "Var"
+msgstr "Valtozo"
+
 #. TRANSLATORS: This string must be a valid variable name.  That means:
 #. - The string must be at most 64 bytes (not characters) long.
 #. - The string may not contain whitespace.
@@ -6672,12 +6656,12 @@ msgstr "Esetek súlyozása e szerint: %s"
 #. - The first character may not be a digit
 #. - The final character may not be '.' or '_'
 #.
-#: src/ui/gui/psppire-dict.c:332
+#: src/ui/gui/psppire-dict.c:423
 #, c-format
 msgid "Var%04d"
 msgstr "Valtozo%04d"
 
-#: src/ui/gui/psppire-dict.c:516
+#: src/ui/gui/psppire-dict.c:608
 msgid "Duplicate variable name."
 msgstr "Ismételt változónév."
 
@@ -6706,11 +6690,11 @@ msgstr "Előre"
 msgid "Back"
 msgstr "Vissza"
 
-#: src/ui/gui/psppire-output-view.c:366
+#: src/ui/gui/psppire-output-view.c:367
 msgid "Message"
 msgstr "Üzenet"
 
-#: src/ui/gui/psppire-output-view.c:488
+#: src/ui/gui/psppire-output-view.c:489
 msgid "failed to create temporary directory during clipboard operation"
 msgstr "nem sikerült átmeneti könyvtárat létrehozni a vágólapművelet során"
 
@@ -6754,7 +6738,7 @@ msgstr "Exportálás kimenete"
 msgid "Output Viewer"
 msgstr "Kimenetmegjelenítő"
 
-#: src/ui/gui/psppire-spreadsheet-model.c:279
+#: src/ui/gui/psppire-spreadsheet-model.c:276
 msgid "(empty)"
 msgstr "(üres)"
 
@@ -6780,69 +6764,74 @@ msgstr "Szintaxisszerkesztő"
 msgid "Cannot load syntax file `%s'"
 msgstr "Nem tölthető be a(z) „%s” szintaxisfájl"
 
-#: src/ui/gui/psppire-var-sheet.c:182 src/ui/gui/psppire-var-sheet.c:187
-msgid "Cannot create variable."
-msgstr "Nem lehet létrehozni a változót."
-
-#: src/ui/gui/psppire-var-sheet.c:183 src/ui/gui/psppire-var-sheet.c:212
+#: src/ui/gui/psppire-text-file.c:56
 #, c-format
-msgid "\"%s\" is not a valid variable name."
-msgstr "A(z) „%s” nem érvényes változónév."
+msgid "Could not open `%s'"
+msgstr "A(z) „%s” nem nyitható meg"
 
-#: src/ui/gui/psppire-var-sheet.c:188 src/ui/gui/psppire-var-sheet.c:218
+#: src/ui/gui/psppire-text-file.c:72
 #, c-format
-msgid "This dictionary already contains a variable named \"%s\"."
-msgstr "Ez a szótár már tartalmaz egy „%s” nevű változót."
+msgid "Error reading `%s': %s"
+msgstr "Hiba a(z) „%s” olvasásakor: %s"
 
-#: src/ui/gui/psppire-var-sheet.c:211 src/ui/gui/psppire-var-sheet.c:217
-msgid "Cannot rename variable."
-msgstr "Nem lehet átnevezni a változót."
+#: src/ui/gui/psppire-text-file.c:75
+#, c-format
+msgid "Failed to read `%s', because it contains a line over %d bytes long and therefore appears not to be a text file."
+msgstr "A(z) „%s” olvasása sikertelen, mert egy több mint %d bájtos sort  tartalmaz, ezért nem tűnik szöveges fájlnak."
 
-#: src/ui/gui/psppire-var-sheet.c:445
+#: src/ui/gui/psppire-text-file.c:97
+#, c-format
+msgid "`%s' is empty."
+msgstr "A(z) „%s” üres."
+
+#: src/ui/gui/psppire-data-sheet.c:285 src/ui/gui/psppire-variable-sheet.c:272
+msgid "Cl_ear Variables"
+msgstr "Változók tö_rlése"
+
+#: src/ui/gui/psppire-data-sheet.c:297
+msgid "Sort _Ascending"
+msgstr "_Növekvő sorrend"
+
+#: src/ui/gui/psppire-data-sheet.c:304
+msgid "Sort _Descending"
+msgstr "Csö_kkenő sorrend"
+
+#: src/ui/gui/psppire-variable-sheet.c:401
 #, c-format
 msgid "{%s, %s}..."
 msgstr "{%s, %s}…"
 
-#: src/ui/gui/psppire-var-sheet.c:878
-msgid "Enter a variable name to add a new variable."
-msgstr "Adjon meg egy változónevet az új változóhoz."
-
-#: src/ui/gui/psppire-var-sheet.c:918
-#, c-format
-msgid "{%s, %s}\n"
-msgstr "{%s, %s}\n"
-
-#: src/ui/gui/psppire-var-sheet.c:1365 src/language/stats/crosstabs.q:1390
-#: src/ui/gui/compute.ui:303
+#: src/ui/gui/psppire-var-sheet-header.c:58
+#: src/language/stats/crosstabs.q:1390 src/ui/gui/compute.ui:303
 msgid "Type"
 msgstr "Típus"
 
-#: src/ui/gui/psppire-var-sheet.c:1368 src/ui/gui/compute.ui:215
+#: src/ui/gui/psppire-var-sheet-header.c:61 src/ui/gui/compute.ui:215
 msgid "Width"
 msgstr "Szélesség"
 
-#: src/ui/gui/psppire-var-sheet.c:1370
-msgid "Decimals"
-msgstr "Tizedesjegyek"
+#: src/ui/gui/psppire-var-sheet-header.c:64
+msgid "Decimal"
+msgstr "Decimális"
 
-#: src/ui/gui/psppire-var-sheet.c:1374 src/ui/gui/val-labs-dialog.ui:194
+#: src/ui/gui/psppire-var-sheet-header.c:70 src/ui/gui/val-labs-dialog.ui:194
 msgid "Value Labels"
 msgstr "Értékcímkék"
 
-#: src/ui/gui/psppire-var-sheet.c:1377 src/ui/gui/examine.ui:415
+#: src/ui/gui/psppire-var-sheet-header.c:73 src/ui/gui/examine.ui:415
 #: src/ui/gui/t-test.ui:105
 msgid "Missing Values"
 msgstr "Hiányzó értékek"
 
-#: src/ui/gui/psppire-var-sheet.c:1382
+#: src/ui/gui/psppire-var-sheet-header.c:79
 msgid "Align"
 msgstr "Igazítás"
 
-#: src/ui/gui/psppire-var-sheet.c:1388
+#: src/ui/gui/psppire-var-sheet-header.c:82
 msgid "Measure"
 msgstr "Mérési skála"
 
-#: src/ui/gui/psppire-var-sheet.c:1394
+#: src/ui/gui/psppire-var-sheet-header.c:85
 msgid "Role"
 msgstr "Szerep"
 
@@ -8646,15 +8635,15 @@ msgstr "A kiválasztott sor feletti sor tartalmazza a változóneveket"
 msgid "Check the data formats displayed below and fix any that are incorrect.  You may set other variable properties now or later."
 msgstr "Ellenőrizze az alább megjelenített adatformátumokat, és javítsa a hibásakat. Más változótulajdonságokat is beállíthat, most vagy később."
 
-#: src/ui/gui/text-data-import.ui:119
+#: src/ui/gui/text-data-import.ui:121
 msgid "<b>Variables</b>"
 msgstr "<b>Változók</b>"
 
-#: src/ui/gui/text-data-import.ui:149
+#: src/ui/gui/text-data-import.ui:152
 msgid "<b>Data Preview</b>"
 msgstr "<b>Adat előnézet</b>"
 
-#: src/ui/gui/text-data-import.ui:178
+#: src/ui/gui/text-data-import.ui:181
 msgid ""
 "This assistant will guide you through the process of importing data into PSPP from a text file with one line per case,  in which fields are separated by tabs, commas, or other delimiters.\n"
 "\n"
@@ -8664,87 +8653,87 @@ msgstr ""
 "\n"
 "\tA kiválasztott fájl N sornyi szöveget tartalmaz. Áttekintési céllal, csak az első M lesz megjelenítve a következő képernyőkön. Alább kiválaszthatja hogy mennyi adat kerüljön ténylegesen importálásra a fájlból."
 
-#: src/ui/gui/text-data-import.ui:249
+#: src/ui/gui/text-data-import.ui:252
 msgid "All cases"
 msgstr "Minden eset"
 
-#: src/ui/gui/text-data-import.ui:269
+#: src/ui/gui/text-data-import.ui:272
 msgid "<b>Amount to Import</b>"
 msgstr "<b>Importálandó mennyiség</b>"
 
-#: src/ui/gui/text-data-import.ui:322
+#: src/ui/gui/text-data-import.ui:325
 msgid "C_ustom"
 msgstr "_Egyéni"
 
-#: src/ui/gui/text-data-import.ui:338
+#: src/ui/gui/text-data-import.ui:341
 msgid "Slas_h (/)"
 msgstr "_Ferde vonal (/)"
 
-#: src/ui/gui/text-data-import.ui:354
+#: src/ui/gui/text-data-import.ui:357
 msgid "Semicolo_n (;)"
 msgstr "_Pontosvessző (;)"
 
-#: src/ui/gui/text-data-import.ui:370
+#: src/ui/gui/text-data-import.ui:373
 msgid "P_ipe (|)"
 msgstr "_Csővezeték (|)"
 
-#: src/ui/gui/text-data-import.ui:386
+#: src/ui/gui/text-data-import.ui:389
 msgid "H_yphen (-)"
 msgstr "_Kötőjel (-)"
 
-#: src/ui/gui/text-data-import.ui:402
+#: src/ui/gui/text-data-import.ui:405
 msgid "Co_mma (,)"
 msgstr "_Vessző (,)"
 
-#: src/ui/gui/text-data-import.ui:418
+#: src/ui/gui/text-data-import.ui:421
 msgid "_Colon (:)"
 msgstr "Ke_ttőspont (:)"
 
-#: src/ui/gui/text-data-import.ui:434
+#: src/ui/gui/text-data-import.ui:437
 msgid "Ban_g (!)"
 msgstr "F_elkiáltójel (!)"
 
-#: src/ui/gui/text-data-import.ui:450
+#: src/ui/gui/text-data-import.ui:453
 msgid "Ta_b"
 msgstr "Ta_b"
 
-#: src/ui/gui/text-data-import.ui:466
+#: src/ui/gui/text-data-import.ui:469
 msgid "_Space"
 msgstr "_Szóköz"
 
-#: src/ui/gui/text-data-import.ui:487
+#: src/ui/gui/text-data-import.ui:490
 msgid "<b>Separators</b>"
 msgstr "<b>Elválasztók</b>"
 
-#: src/ui/gui/text-data-import.ui:533
+#: src/ui/gui/text-data-import.ui:536
 msgid "Quote separator characters with"
 msgstr "Elválasztó karakterek idézőjelekben"
 
-#: src/ui/gui/text-data-import.ui:553
+#: src/ui/gui/text-data-import.ui:556
 msgid "<b>Quoting</b>"
 msgstr "<b>Idézőjelek</b>"
 
-#: src/ui/gui/text-data-import.ui:591
+#: src/ui/gui/text-data-import.ui:594
 msgid "<b>Fields Preview</b>"
 msgstr "<b>Mezők előnézete</b>"
 
-#: src/ui/gui/text-data-import.ui:614
+#: src/ui/gui/text-data-import.ui:617
 msgid "Enter below the sheet number and the cell range which you wish to import."
 msgstr "Írja be lent a munkalap számát, és a cellatartományt, amelyet importálni szeretne."
 
-#: src/ui/gui/text-data-import.ui:662
+#: src/ui/gui/text-data-import.ui:665
 msgid "_Cells: "
 msgstr "_Cellák: "
 
-#: src/ui/gui/text-data-import.ui:676
+#: src/ui/gui/text-data-import.ui:679
 msgid "_Sheet Index: "
 msgstr "_Munkalap index: "
 
-#: src/ui/gui/text-data-import.ui:687
+#: src/ui/gui/text-data-import.ui:690
 msgid "Use first row as _variable names"
 msgstr "Az első sor használata _változónevekként"
 
-#: src/ui/gui/text-data-import.ui:709
+#: src/ui/gui/text-data-import.ui:712
 msgid "<b>Cells to Import</b>"
 msgstr "<b>Importálandó cellák</b>"
 
@@ -9140,6 +9129,42 @@ msgstr "Statisztikai szoftver"
 msgid "Analyze statistical data with a free alternative to SPSS"
 msgstr "Statisztikai adatok elemzése az SPSS szabad alternatívájával"
 
+#~ msgid "Support for %s files was not compiled into this installation of PSPP"
+#~ msgstr "A(z) %s fájlok támogatása nem lett belefordítva a PSPP ezen telepítésébe"
+
+#~ msgid "Cannot parse field content `%.*s' as format %s: %s"
+#~ msgstr "A(z) „%.*s” mezőtartalom nem dolgozható fel a(z) %s formátum szerint: %s"
+
+#~ msgid "This input line has too few separators to fill in this field."
+#~ msgstr "A bemeneti sornak túl kevés elválasztója van ahhoz, hogy kitöltse ezt a mezőt."
+
+#~ msgid "An error occurred reading the spreadsheet file."
+#~ msgstr "Hiba történt a táblázatfájl olvasásakor."
+
+#~ msgid "Enter a number to add a new variable."
+#~ msgstr "Írjon be egy számot egy új változó hozzáadásához."
+
+#~ msgid "Enter a number to add a new case."
+#~ msgstr "Írjon be egy számot egy új eset hozzáadásához."
+
+#~ msgid "Cannot create variable."
+#~ msgstr "Nem lehet létrehozni a változót."
+
+#~ msgid "\"%s\" is not a valid variable name."
+#~ msgstr "A(z) „%s” nem érvényes változónév."
+
+#~ msgid "This dictionary already contains a variable named \"%s\"."
+#~ msgstr "Ez a szótár már tartalmaz egy „%s” nevű változót."
+
+#~ msgid "Cannot rename variable."
+#~ msgstr "Nem lehet átnevezni a változót."
+
+#~ msgid "Enter a variable name to add a new variable."
+#~ msgstr "Adjon meg egy változónevet az új változóhoz."
+
+#~ msgid "{%s, %s}\n"
+#~ msgstr "{%s, %s}\n"
+
 #~ msgid "Multiple response set name `%s' does not begin with `$'."
 #~ msgstr "A(z) „%s” többértékű válaszhalmaz neve nem „$” jellel kezdődik."
 
@@ -9208,9 +9233,6 @@ msgstr "Statisztikai adatok elemzése az SPSS szabad alternatívájával"
 
 #~ msgid "_Select"
 #~ msgstr "_Kijelölés"
-
-#~ msgid "var"
-#~ msgstr "változó"
 
 #~ msgid "Delete the variables at the selected position(s)"
 #~ msgstr "Változók törlése a kiválasztott pozícióknál"

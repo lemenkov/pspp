@@ -1,7 +1,7 @@
 # Polish translation for PSPP
 # Copyright (C) 2014 Free Software Foundation, Inc.
 # This file is distributed under the same license as the pspp package.
-# Radoslaw Rogoza <rogoza.radoslaw@gmail.com>, 2014 -
+# Rados³aw Rogoza <rogoza.radoslaw@gmail.com>, 2014 -
 # Jan Cieciuch <jancieciuch@gmail.com>, 2014 
 msgid ""
 msgstr ""
