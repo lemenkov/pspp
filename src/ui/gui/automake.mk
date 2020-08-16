@@ -399,6 +399,7 @@ dist_appdata_DATA = src/ui/gui/org.fsf.pspp.metainfo.xml
 BUILT_SOURCES += src/ui/gui/psppire-marshal.c src/ui/gui/psppire-marshal.h src/ui/gui/resources.c
 
 CLEANFILES += src/ui/gui/psppire-marshal.c src/ui/gui/psppire-marshal.h \
+	src/ui/gui/.deps/psppire-marshal.Plo \
 	src/ui/gui/resources.c $(nodist_src_ui_gui_psppire_DATA)
 
 endif HAVE_GUI
