@@ -169,8 +169,7 @@ else
      rm -f conftest*
      test x"${pspp_cv_build_exeext}" = x && pspp_cv_build_exeext=no])
   EXEEXT_FOR_BUILD=""
-  test x"${pspp_cv_build_exeext}" != xno && EXEEXT_FOR_BUILD=${pspp_cv_build_exeex
-t}
+  test x"${pspp_cv_build_exeext}" != xno && EXEEXT_FOR_BUILD=${pspp_cv_build_exeext}
 fi
 AC_SUBST(EXEEXT_FOR_BUILD)])
 
