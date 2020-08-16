@@ -1,5 +1,5 @@
 /* PSPP - a program for statistical analysis.
-   Copyright (C) 2011 Free Software Foundation, Inc.
+   Copyright (C) 2011, 2020 Free Software Foundation, Inc.
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -269,6 +269,7 @@ indep_test (const struct tt *tt, const struct pair_stats *ps)
     N_("Mean Difference"), PIVOT_RC_OTHER,
     N_("Std. Error Difference"), PIVOT_RC_OTHER);
   pivot_category_create_group (
+    /* xgettext:no-c-format */
     group, N_("95% Confidence Interval of the Difference"),
     N_("Lower"), PIVOT_RC_OTHER,
     N_("Upper"), PIVOT_RC_OTHER);

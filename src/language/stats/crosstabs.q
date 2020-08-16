@@ -1363,6 +1363,7 @@ create_risk_table (struct crosstabulation *xt,
     risk, PIVOT_AXIS_COLUMN, N_("Values"),
     N_("Value"), PIVOT_RC_OTHER);
   pivot_category_create_group (
+  /* xgettext:no-c-format */
     values->root, N_("95% Confidence Interval"),
     N_("Lower"), PIVOT_RC_OTHER,
     N_("Upper"), PIVOT_RC_OTHER);

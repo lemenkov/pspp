@@ -500,7 +500,7 @@ zip_member_open (struct zip_reader *zr, const char *member)
   if (strcmp (name, ze->name) != 0)
     {
       ds_put_format (zm->errmsgs,
-		     _("%s: name mismatch betwen central directory (%s) "
+		     _("%s: name mismatch between central directory (%s) "
                        "and local file header (%s)"),
                      zm->file_name, ze->name, name);
       free (name);

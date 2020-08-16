@@ -1752,9 +1752,9 @@ show_explained_variance (const struct cmd_factor * factor,
     N_("Total Variance Explained"));
   table->omit_empty = true;
 
-  /* xgettext:no-c-format */
   pivot_dimension_create (table, PIVOT_AXIS_COLUMN, N_("Statistics"),
                           N_("Total"), PIVOT_RC_OTHER,
+                          /* xgettext:no-c-format */
                           N_("% of Variance"), PIVOT_RC_PERCENT,
                           N_("Cumulative %"), PIVOT_RC_PERCENT);
 
