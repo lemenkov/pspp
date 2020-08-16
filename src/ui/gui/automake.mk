@@ -381,7 +381,7 @@ src/ui/gui/resources.c: src/ui/gui/resources.xml
 
 src/ui/gui/psppire-marshal.c: src/ui/gui/marshaller-list
 	$(AM_V_GEN)echo '#include <config.h>' > $@
-	$(AM_V_at)$(GLIB_GENMARSHAL) --body --prefix=psppire_marshal $? >> $@
+	$(AM_V_at)$(GLIB_GENMARSHAL) --body --include-header=ui/gui/psppire-marshal.h --prefix=psppire_marshal $? >> $@
 
 src/ui/gui/psppire-marshal.h: src/ui/gui/marshaller-list
 	$(AM_V_GEN)$(GLIB_GENMARSHAL) --header --prefix=psppire_marshal $? > $@
