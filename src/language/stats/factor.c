@@ -1756,6 +1756,7 @@ show_explained_variance (const struct cmd_factor * factor,
                           N_("Total"), PIVOT_RC_OTHER,
                           /* xgettext:no-c-format */
                           N_("% of Variance"), PIVOT_RC_PERCENT,
+			  /* xgettext:no-c-format */
                           N_("Cumulative %"), PIVOT_RC_PERCENT);
 
   struct pivot_dimension *phase = pivot_dimension_create (
