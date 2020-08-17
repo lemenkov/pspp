@@ -399,16 +399,18 @@ parse_record_placement (struct lexer *lexer, int *record, int *column)
 {
   while (lex_match (lexer, T_SLASH))
     {
-      if (lex_is_integer (lexer))
+      if (lex_is_number (lexer))
         {
-          long n = lex_integer (lexer);
-          if (n <= *record || n > INT_MAX)
+	  double orignum = lex_number (lexer);
+	  long n = (lex_is_integer (lexer)?lex_integer (lexer):*record);
+	  bool out_of_range = orignum > INT_MAX || orignum < INT_MIN;
+          if (n <= *record || out_of_range)
             {
-              msg (SE, _("The record number specified, %ld, is at or "
+              msg (SE, _("The record number specified, %.0f, is at or "
                          "before the previous record, %d.  Data "
                          "fields must be listed in order of "
                          "increasing record number."),
-                   n, *record);
+                   orignum, *record);
               return false;
             }
           *record = n;
