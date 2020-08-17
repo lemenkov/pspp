@@ -135,6 +135,7 @@ dist-hook-git: distfiles
             (git --version) >/dev/null 2>&1; then                           \
 	  (cd $(srcdir) && git ls-files)				    \
 	    | grep -vE '\.gitignore|README.Git|Smake|Bug-administration'    \
+	    | grep -vE '\.gitattributes'                                    \
 	    | LC_ALL=C sort -u > gitfiles;				    \
 	  LC_ALL=C comm -1 -3 distfiles gitfiles > missing-distfiles;	    \
 	  if test -s missing-distfiles; then				    \
