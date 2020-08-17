@@ -160,7 +160,7 @@ barchart_create (const struct variable **var, int n_vars,
 
   int width = var_get_width (var[pidx]);
 
-  assert (n_vars >= 1);
+  assert (n_vars >= 1 && n_vars <= 2);
 
   bar = xzalloc (sizeof *bar);
   bar->percent = percent;

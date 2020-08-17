@@ -782,10 +782,11 @@ postcalc (struct crosstabs_proc *proc)
         }
       if (proc->barchart)
         {
-          const struct variable **vars = xcalloc (xt->n_vars, sizeof *vars);
-          for (size_t i = 0; i < xt->n_vars; i++)
+          int n_vars = (xt->n_vars > 2 ? 2 : xt->n_vars);
+          const struct variable **vars = xcalloc (n_vars, sizeof *vars);
+          for (size_t i = 0; i < n_vars; i++)
             vars[i] = xt->vars[i].var;
-          chart_item_submit (barchart_create (vars, xt->n_vars, _("Count"),
+          chart_item_submit (barchart_create (vars, n_vars, _("Count"),
                                               false,
                                               xt->entries, xt->n_entries));
           free (vars);
