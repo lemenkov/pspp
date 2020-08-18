@@ -43,6 +43,19 @@ compare_category_3way (const void *a_, const void *b_, const void *bc_)
 }
 
 
+static int
+compare_category_by_index_3way (const void *a_, const void *b_,
+                                const void *unused UNUSED)
+{
+  const struct category *const*a = a_;
+  const struct category *const*b = b_;
+
+  if ( (*a)->idx < (*b)->idx)
+    return -1;
+
+  return ((*a)->idx > (*b)->idx);
+}
+
 static unsigned int
 hash_freq_2level_ptr (const void *a_, const void *bc_)
 {
@@ -97,10 +110,21 @@ barchart_dump (const struct barchart *bc, FILE *fp)
 
   fprintf (fp, "Categories:\n");
   struct category *cat;
+  struct category **cats = XCALLOC (hmap_count (&bc->primaries), struct category *);
+  int  i = 0;
   HMAP_FOR_EACH (cat, struct category, node, &bc->primaries)
     {
-      fprintf (fp, "  %d \"%s\"\n", cat->idx, ds_cstr(&cat->label));
+      cats[i++] = cat;
     }
+  /* HMAP_FOR_EACH is not guaranteed to iterate in any particular order.  So
+     we must sort here before we output the results.  */
+  sort (cats, i, sizeof (struct category *),  compare_category_by_index_3way, bc);
+  for (i = 0; i < hmap_count (&bc->primaries); ++i)
+    {
+      const struct category *c = cats[i];
+      fprintf (fp, "  %d \"%s\"\n", c->idx, ds_cstr (&c->label));
+    }
+  free (cats);
 
   if (bc->ss)
     {

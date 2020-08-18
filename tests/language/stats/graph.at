@@ -395,9 +395,9 @@ Categorical Variables:
   Var: "penalty_favopp_x"
 Categories:
   0 "    1.00"
+  1 "    2.00"
   2 "    4.00"
   3 "    5.00"
-  1 "    2.00"
 All Categories:
 Count: 53.1634; Cat: "    1.00"
 Count: 18.7756; Cat: "    2.00"
@@ -416,9 +416,9 @@ Categorical Variables:
   Var: "XYdem_racethW8"
 Categories:
   0 "    1.00"
+  1 "    2.00"
   2 "    4.00"
   3 "    5.00"
-  1 "    2.00"
 Sub-categories:
   0 "     .00"
   1 "    1.00"
