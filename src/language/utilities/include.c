@@ -1,5 +1,5 @@
 /* PSPP - a program for statistical analysis.
-   Copyright (C) 1997-9, 2000, 2007, 2010, 2011 Free Software Foundation, Inc.
+   Copyright (C) 1997-9, 2000, 2007, 2010, 2011, 2020 Free Software Foundation, Inc.
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -166,7 +166,15 @@ do_insert (struct lexer *lexer, struct dataset *ds, enum variant variant)
           if (cd)
             {
               char *directory = dir_name (filename);
-              chdir (directory);
+              int ret = chdir (directory);
+              if (0 != ret)
+                {
+                  int err = errno;
+                  msg (SE, _("Cannot change directory to %s: %s"), directory,
+                       strerror (err));
+                  status = CMD_FAILURE;
+                }
+
               free (directory);
             }
         }

@@ -42,7 +42,7 @@ cmd_cd (struct lexer *lexer, struct dataset *ds UNUSED)
   if (-1 == chdir (path))
     {
       int err = errno;
-      msg (SE, _("Cannot change directory to %s:  %s "), path,
+      msg (SE, _("Cannot change directory to %s: %s"), path,
 	   strerror (err));
       goto error;
     }
