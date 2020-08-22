@@ -24,6 +24,7 @@
 
 
 #include <config.h>
+#include <assert.h>
 
 #include <gtk/gtk.h>
 
@@ -33,15 +34,28 @@ const GEnumValue align[1];
 const GEnumValue measure[1];
 const GEnumValue role[1];
 
-
 const int N_AG_FUNCS = 0;
 const struct ag_func ag_func[1];
 
 int F_8_0;
 
-int var_is_numeric () {}
+int
+var_is_numeric ()
+{
+  assert (0);
+  return -1;
+}
 
+int
+tt_options_dialog_run ()
+{
+  assert (0);
+  return -1;
+}
 
-int tt_options_dialog_run () {}
-
-int agr_func_tab () {}
+int
+agr_func_tab ()
+{
+  assert (0);
+  return -1;
+}
