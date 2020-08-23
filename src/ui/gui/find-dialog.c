@@ -101,15 +101,17 @@ refresh (GObject *obj, const struct find_dialog *fd)
 static void
 do_find (GObject *obj, const struct find_dialog *fd)
 {
+  SswSheet *sheet = SSW_SHEET (fd->de->data_editor->data_sheet);
   casenumber x = -1;
   gint column = -1;
-  glong row = -1;
+  gint unused;
+  gint row = 0;
+  ssw_sheet_get_active_cell (sheet, &unused, &row);
 
   find_value (fd, row, &x, &column);
 
   if (x != -1)
     {
-      SswSheet *sheet = SSW_SHEET (fd->de->data_editor->data_sheet);
       gtk_notebook_set_current_page (GTK_NOTEBOOK (fd->de->data_editor),
 				     PSPPIRE_DATA_EDITOR_DATA_VIEW);
 
@@ -311,8 +313,8 @@ cp1c (casenumber current, struct datasheet *data)
 static casenumber
 cm1 (casenumber current, struct datasheet *data)
 {
-  if (current == -1)
-    return datasheet_get_n_rows (data);
+  if (current == 0)
+    return datasheet_get_n_rows (data) - 1;
 
   return current - 1;
 }
@@ -322,9 +324,6 @@ static casenumber
 cm1c (casenumber current, struct datasheet *data)
 {
   casenumber next = current;
-
-  if (current == -1)
-    return datasheet_get_n_rows (data);
 
   backward_wrap (&next, data);
 
@@ -341,9 +340,6 @@ last (casenumber current, struct datasheet *data)
 static casenumber
 minus1 (casenumber current, struct datasheet *data)
 {
-  if (current == -1)
-    return 0;
-
   return -1;
 }
 
@@ -370,9 +366,16 @@ enum iteration_type{
 
 static const struct casenum_iterator ip[n_iterators] =
   {
+   /* Forward iterator (linear) */
     {cp1, last, forward},
+
+    /* Forward iterator (circular) */
     {cp1c, cm1, forward_wrap},
+
+    /* Reverse iterator (linear) */
     {cm1, minus1, backward},
+
+    /* Reverse iterator (circular */
     {cm1c, cp1, backward_wrap}
   };
 
