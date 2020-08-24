@@ -574,7 +574,7 @@ de_select_tree_model (GtkTreeSelection *selection, GtkTreeModel *model)
     }
 
   /* Delete list of RowRefs and its contents */
-  g_list_foreach (selected_rows, (GFunc) gtk_tree_row_reference_free, NULL);
+  g_list_foreach (selected_rows, (GFunc) (void (*)(void)) gtk_tree_row_reference_free, NULL);
   g_list_free (selected_rows);
 }
 
@@ -661,7 +661,7 @@ select_selection (PsppireSelector *selector)
 			);
     }
 
-  g_list_foreach (selected_rows, (GFunc) gtk_tree_path_free, NULL);
+  g_list_foreach (selected_rows, (GFunc) (void (*)(void)) gtk_tree_path_free, NULL);
   g_list_free (selected_rows);
 
   refilter (selector);

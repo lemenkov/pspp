@@ -183,7 +183,7 @@ on_change_button_clicked (PsppireAcr *acr)
       g_value_unset (&value);
     }
 
-  g_list_foreach (l, (GFunc) gtk_tree_path_free, NULL);
+  g_list_foreach (l, (GFunc) (void (*)(void)) gtk_tree_path_free, NULL);
   g_list_free (l);
 
   if (acr->update) acr->update (acr->update_data);
@@ -209,7 +209,7 @@ on_remove_button_clicked (PsppireAcr *acr)
 
   gtk_list_store_remove (acr->list_store, &iter);
 
-  g_list_foreach (l, (GFunc) gtk_tree_path_free, NULL);
+  g_list_foreach (l, (GFunc) (void (*)(void)) gtk_tree_path_free, NULL);
   g_list_free (l);
 }
 
@@ -225,7 +225,7 @@ row_is_selected (const PsppireAcr *acr)
 
   result = (l != NULL);
 
-  g_list_foreach (l, (GFunc) gtk_tree_path_free, NULL);
+  g_list_foreach (l, (GFunc) (void (*)(void)) gtk_tree_path_free, NULL);
   g_list_free (l);
 
   return result;

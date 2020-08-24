@@ -208,7 +208,7 @@ on_change_clicked (GObject *obj, gpointer data)
   gtk_tree_model_row_changed (model, rows->data, &iter);
 
  finish:
-  g_list_foreach (rows, (GFunc) gtk_tree_path_free, NULL);
+  g_list_foreach (rows, (GFunc) (void (*)(void)) gtk_tree_path_free, NULL);
   g_list_free (rows);
 }
 
@@ -272,7 +272,7 @@ on_selection_change (GtkTreeSelection *selection, gpointer data)
     }
 
 
-  g_list_foreach (rows, (GFunc) gtk_tree_path_free, NULL);
+  g_list_foreach (rows, (GFunc) (void (*)(void)) gtk_tree_path_free, NULL);
   g_list_free (rows);
 }
 
