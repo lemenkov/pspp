@@ -101,7 +101,7 @@ spv_item_class_from_string (const char *name)
   SPV_CLASSES
 #undef SPV_CLASS
 
-  return SPV_N_CLASSES;
+  return (enum spv_item_class) SPV_N_CLASSES;
 }
 
 enum spv_item_type

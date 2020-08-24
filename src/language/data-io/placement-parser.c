@@ -167,7 +167,7 @@ fixed_parse_columns (struct lexer *lexer, struct pool *pool, size_t var_cnt,
 
   *formats = pool_nalloc (pool, var_cnt + 1, sizeof **formats);
   *format_cnt = var_cnt + 1;
-  (*formats)[0].type = PRS_TYPE_T;
+  (*formats)[0].type = (enum fmt_type) PRS_TYPE_T;
   (*formats)[0].w = fc;
   for (i = 1; i <= var_cnt; i++)
     (*formats)[i] = format;
@@ -213,7 +213,7 @@ fixed_parse_fortran (struct lexer *lexer, struct pool *pool, enum fmt_use use,
           new_formats = &f;
           new_format_cnt = 1;
           if (use == FMT_FOR_INPUT && lex_match (lexer, T_SLASH))
-            f.type = PRS_TYPE_NEW_REC;
+            f.type = (enum fmt_type) PRS_TYPE_NEW_REC;
           else
             {
               char type[FMT_TYPE_LEN_MAX + 1];
@@ -222,10 +222,10 @@ fixed_parse_fortran (struct lexer *lexer, struct pool *pool, enum fmt_use use,
                 return false;
 
               if (!c_strcasecmp (type, "T"))
-                f.type = PRS_TYPE_T;
+                f.type = (enum fmt_type) PRS_TYPE_T;
               else if (!c_strcasecmp (type, "X"))
                 {
-                  f.type = PRS_TYPE_X;
+                  f.type = (enum fmt_type) PRS_TYPE_X;
                   f.w = count;
                   count = 1;
                 }
