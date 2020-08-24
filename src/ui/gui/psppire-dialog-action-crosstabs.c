@@ -67,37 +67,39 @@ refresh (PsppireDialogAction *rd_)
   gtk_list_store_clear (GTK_LIST_STORE (liststore));
 }
 
-#define CROSSTABS_STATS                         \
-  CS (CHISQ, N_("Chisq"))                       \
-  CS (PHI, N_("Phi"))                           \
-  CS (CC, N_("CC"))                             \
-  CS (LAMBDA, N_("Lambda"))                     \
-  CS (UC, N_("UC"))                             \
-  CS (BTAU, N_("BTau"))                         \
-  CS (CTAU, N_("CTau"))                         \
-  CS (RISK, N_("Risk"))                         \
-  CS (GAMMA, N_("Gamma"))                       \
-  CS (D, N_("D"))                               \
-  CS (KAPPA, N_("Kappa"))                       \
-  CS (ETA, N_("Eta"))                           \
-  CS (CORR, N_("Corr"))                         \
-  CS (STATS_NONE, N_("None"))
+#define CROSSTABS_STATS                                             \
+  CS (CHISQ, N_("Chisq"), N_("Pearson chi-square, "                 \
+   "likelihood ratio, Fisher’s exact test, continuity correction, " \
+   "linear-by-linear association."))				    \
+  CS (PHI, N_("Phi"), NULL)                                         \
+  CS (CC, N_("CC"), N_("Contingency coefficient"))                  \
+  CS (LAMBDA, N_("Lambda"), NULL)                                   \
+  CS (UC, N_("UC"), N_("Uncertainty coefficient"))                  \
+  CS (BTAU, N_("BTau"), N_("Kendall's Tau-b"))                      \
+  CS (CTAU, N_("CTau"), N_("Kendall's Tau-c"))                      \
+  CS (RISK, N_("Risk"), N_("Relative Risk estimate"))               \
+  CS (GAMMA, N_("Gamma"), NULL)                                     \
+  CS (D, N_("D"), N_("Somer's d"))                                  \
+  CS (KAPPA, N_("Kappa"), N_("Cohen's Kappa"))                      \
+  CS (ETA, N_("Eta"), NULL)                                         \
+  CS (CORR, N_("Corr"), N_("Spearman correlation, Pearson's r"))    \
+  CS (STATS_NONE, N_("None"), NULL)
 
 
-#define CROSSTABS_CELLS                         \
-  CS (COUNT, N_("Count"))                       \
-  CS (ROW, N_("Row"))                           \
-  CS (COLUMN, N_("Column"))                     \
-  CS (TOTAL, N_("Total"))                       \
-  CS (EXPECTED, N_("Expected"))                 \
-  CS (RESIDUAL, N_("Residual"))                 \
-  CS (SRESIDUAL, N_("Std. Residual"))           \
-  CS (ASRESIDUAL, N_("Adjusted Std. Residual")) \
-  CS (CELLS_NONE, N_("None"))
+#define CROSSTABS_CELLS                                               \
+  CS (COUNT, N_("Count"), N_("Frequency Count"))                      \
+  CS (ROW, N_("Row"), N_("Row percent"))                              \
+  CS (COLUMN, N_("Column"), N_("Column percent"))                     \
+  CS (TOTAL, N_("Total"), N_("Total percent"))                        \
+  CS (EXPECTED, N_("Expected"), N_("Expected value"))                 \
+  CS (RESIDUAL, N_("Residual"), NULL)                                 \
+  CS (SRESIDUAL, N_("Std. Residual"), N_("Standardized Residual"))    \
+  CS (ASRESIDUAL, N_("Adjusted Std. Residual"), NULL)                 \
+  CS (CELLS_NONE, N_("None"), NULL)
 
 enum
   {
-#define CS(NAME, LABEL) CS_##NAME,
+#define CS(NAME, LABEL, TOOLTIP) CS_##NAME,
     CROSSTABS_STATS
 #undef CS
     N_CROSSTABS_STATS
@@ -105,7 +107,7 @@ enum
 
 enum
   {
-#define CS(NAME, LABEL) CS_##NAME,
+#define CS(NAME, LABEL, TOOLTIP) CS_##NAME,
     CROSSTABS_CELLS
 #undef CS
     N_CROSSTABS_CELLS
@@ -113,7 +115,7 @@ enum
 
 enum
   {
-#define CS(NAME, LABEL) B_CS_##NAME = 1u << CS_##NAME,
+#define CS(NAME, LABEL, TOOLTIP) B_CS_##NAME = 1u << CS_##NAME,
     CROSSTABS_STATS
     CROSSTABS_CELLS
 #undef CS
@@ -126,17 +128,17 @@ enum
 
 static const struct checkbox_entry_item stats[] =
   {
-#define CS(NAME, LABEL) {#NAME, LABEL},
+#define CS(NAME, LABEL, TOOLTIP) {#NAME, LABEL, TOOLTIP},
     CROSSTABS_STATS \
-    CS(NONE, N_("None"))
+    CS(NONE, N_("None"), NULL)
 #undef CS
   };
 
 static const struct checkbox_entry_item cells[] =
   {
-#define CS(NAME, LABEL) {#NAME, LABEL},
+#define CS(NAME, LABEL, TOOLTIP) {#NAME, LABEL, TOOLTIP},
     CROSSTABS_CELLS \
-    CS(NONE, N_("None"))
+    CS(NONE, N_("None"), NULL)
 #undef CS
   };
 

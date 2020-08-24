@@ -35,21 +35,21 @@ static void psppire_dialog_action_descriptives_class_init      (PsppireDialogAct
 G_DEFINE_TYPE (PsppireDialogActionDescriptives, psppire_dialog_action_descriptives, PSPPIRE_TYPE_DIALOG_ACTION);
 
 
-#define DESCRIPTIVE_STATS                       \
-  DS (MEAN, N_("Mean"))                         \
-  DS (STDDEV, N_("Standard deviation"))         \
-  DS (MINIMUM, N_("Minimum"))                   \
-  DS (MAXIMUM, N_("Maximum"))                   \
-  DS (RANGE, N_("Range"))                       \
-  DS (SUM, N_("Sum"))                           \
-  DS (SEMEAN, N_("Standard error"))             \
-  DS (VARIANCE, N_("Variance"))                 \
-  DS (KURTOSIS, N_("Kurtosis"))                 \
-  DS (SKEWNESS, N_("Skewness"))
+#define DESCRIPTIVE_STATS                                                      \
+  DS (MEAN, N_("Mean"), NULL)                                                  \
+  DS (STDDEV, N_("Standard deviation"), NULL)                                  \
+  DS (MINIMUM, N_("Minimum"), N_("Minimum value"))                             \
+  DS (MAXIMUM, N_("Maximum"), N_("Maximum value"))                             \
+  DS (RANGE, N_("Range"), NULL)                                                \
+  DS (SUM, N_("Sum"), NULL)                                                    \
+  DS (SEMEAN, N_("Standard error"), N_("Standard error of mean"))              \
+  DS (VARIANCE, N_("Variance"), NULL)                                          \
+  DS (KURTOSIS, N_("Kurtosis"), N_("Kurtosis and standard error of kurtosis")) \
+  DS (SKEWNESS, N_("Skewness"), N_("Skewness and standard error of skewness"))
 
 enum
   {
-#define DS(NAME, LABEL) DS_##NAME,
+#define DS(NAME, LABEL, TOOLTIP) DS_##NAME,
     DESCRIPTIVE_STATS
 #undef DS
     N_DESCRIPTIVE_STATS
@@ -57,7 +57,7 @@ enum
 
 enum
   {
-#define DS(NAME, LABEL) B_DS_##NAME = 1u << DS_##NAME,
+#define DS(NAME, LABEL, TOOLTIP) B_DS_##NAME = 1u << DS_##NAME,
     DESCRIPTIVE_STATS
 #undef DS
     B_DS_ALL = (1u << N_DESCRIPTIVE_STATS) - 1,
@@ -67,7 +67,7 @@ enum
 
 static const struct checkbox_entry_item stats[] =
   {
-#define DS(NAME, LABEL) {#NAME, LABEL},
+#define DS(NAME, LABEL, TOOLTIP) {#NAME, LABEL, TOOLTIP},
     DESCRIPTIVE_STATS
 #undef DS
   };

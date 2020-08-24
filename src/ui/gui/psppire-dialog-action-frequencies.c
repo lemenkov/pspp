@@ -73,7 +73,7 @@ enum
 
 
 static const struct checkbox_entry_item stats[] = {
-#define FS(NAME, LABEL) {#NAME, LABEL},
+#define FS(NAME, LABEL) {#NAME, LABEL, NULL},
   FREQUENCY_STATS
 #undef FS
 };
