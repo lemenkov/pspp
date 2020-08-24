@@ -165,7 +165,7 @@ on_destroy_dataset (GObject *w)
 
    This is useful for storing the state of dialogs so they can persist between invocations.
 */
-GHashTable *
+static GHashTable *
 psppire_dialog_action_get_hash_table (PsppireDialogAction *act)
 {
   GHashTable *t = g_object_get_data (G_OBJECT (act->toplevel), "thing-table");

@@ -39,6 +39,10 @@ const struct ag_func ag_func[1];
 
 int F_8_0;
 
+int var_is_numeric (void);
+int tt_options_dialog_run (void);
+int agr_func_tab (void);
+
 int
 var_is_numeric ()
 {

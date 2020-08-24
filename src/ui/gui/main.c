@@ -51,7 +51,7 @@
 
 
 static gboolean
-show_version_and_exit ()
+show_version_and_exit (void)
 {
   version_etc (stdout, "psppire", PACKAGE_NAME, PACKAGE_VERSION,
                "Ben Pfaff", "John Darrington", "Jason Stover", NULL_SENTINEL);
@@ -63,19 +63,19 @@ show_version_and_exit ()
 
 
 
-gboolean
+static gboolean
 init_prepare (GSource * source, gint * timeout_)
 {
   return TRUE;
 }
 
-gboolean
+static gboolean
 init_check (GSource * source)
 {
   return TRUE;
 }
 
-gboolean
+static gboolean
 init_dispatch (GSource * ss, GSourceFunc callback, gpointer user_data)
 {
   struct init_source *is = (struct init_source *) ss;
@@ -249,7 +249,7 @@ on_activate (GApplication * app, gpointer ud)
   wait_for_splash (app, x);
 }
 
-GtkWindow *
+static GtkWindow *
 find_empty_data_window (GApplication *app)
 {
   GList *wl = gtk_application_get_windows (GTK_APPLICATION (app));
@@ -263,7 +263,7 @@ find_empty_data_window (GApplication *app)
   return NULL;
 }
 
-GtkWindow *
+static GtkWindow *
 find_psppire_window (GApplication *app)
 {
   GList *wl = gtk_application_get_windows (GTK_APPLICATION (app));

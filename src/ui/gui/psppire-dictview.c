@@ -702,13 +702,6 @@ psppire_dict_view_init (PsppireDictView *dict_view)
 		    G_CALLBACK (show_menu), NULL);
 }
 
-
-GtkWidget*
-psppire_dict_view_new (void)
-{
-  return GTK_WIDGET (g_object_new (psppire_dict_view_get_type (), NULL));
-}
-
 static struct variable *
 psppire_dict_view_iter_to_var (PsppireDictView *dict_view,
                                GtkTreeIter *top_iter)

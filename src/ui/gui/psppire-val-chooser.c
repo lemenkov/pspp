@@ -408,15 +408,6 @@ psppire_val_chooser_init (PsppireValChooser *vr)
   gtk_widget_show_all (grid);
 }
 
-
-GtkWidget*
-psppire_val_chooser_new (void)
-{
-  return GTK_WIDGET (g_object_new (psppire_val_chooser_get_type (), NULL));
-}
-
-
-
 static void
 psppire_val_chooser_realize (GtkWidget *w)
 {

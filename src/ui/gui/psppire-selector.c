@@ -100,6 +100,7 @@ on_row_inserted (PsppireSelector *selector)
 
 static GObjectClass * parent_class = NULL;
 
+#if DEBUG
 static void
 dump_hash_entry (gpointer key, gpointer value, gpointer obj)
 {
@@ -124,7 +125,7 @@ psppire_selector_show_map (PsppireSelector *obj)
   g_print ("%s %p\n", __FUNCTION__, obj);
   g_hash_table_foreach (class->source_hash, dump_hash_entry, obj);
 }
-
+#endif
 
 
 static void

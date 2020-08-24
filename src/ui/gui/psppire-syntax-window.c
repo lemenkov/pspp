@@ -1054,7 +1054,7 @@ error_dialog (GtkWindow *w, const gchar *filename,  GError *err)
 /*
   Loads the buffer from the file called FILENAME
 */
-gboolean
+static gboolean
 syntax_load (PsppireWindow *window, const gchar *filename,
              const gchar *encoding, gpointer not_used)
 {

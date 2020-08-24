@@ -758,7 +758,7 @@ psppire_var_type_dialog_constructor (GType                  type,
 
 
 /* Set a particular button to be active */
-void
+static void
 var_type_dialog_set_active_button (PsppireVarTypeDialog *dialog, gint b)
 {
   gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (dialog->radioButton[b]),

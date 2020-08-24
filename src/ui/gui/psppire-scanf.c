@@ -336,7 +336,7 @@ psppire_scanf_init (PsppireScanf *w)
   gtk_orientable_set_orientation (GTK_ORIENTABLE (w), GTK_ORIENTATION_HORIZONTAL);
 }
 
-gchar
+static gchar
 psppire_get_conversion_char (PsppireScanf *w, gint n)
 {
   g_return_val_if_fail (n < w->d.count, '\0');
