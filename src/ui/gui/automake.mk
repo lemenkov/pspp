@@ -92,8 +92,13 @@ if HAVE_GUI
 bin_PROGRAMS += src/ui/gui/psppire
 noinst_PROGRAMS += src/ui/gui/spreadsheet-test
 
-src_ui_gui_psppire_CFLAGS = $(GTK_CFLAGS) $(GTKSOURCEVIEW_CFLAGS) $(SPREAD_SHEET_WIDGET_CFLAGS) -Wall -DGDK_MULTIHEAD_SAFE=1
-src_ui_gui_spreadsheet_test_CFLAGS = $(GTK_CFLAGS) -Wall -DGDK_MULTIHEAD_SAFE=1
+src_ui_gui_psppire_CFLAGS = $(GTK_CFLAGS) $(GTKSOURCEVIEW_CFLAGS) $(SPREAD_SHEET_WIDGET_CFLAGS) $(AM_CFLAGS) -DGDK_MULTIHEAD_SAFE=1
+src_ui_gui_spreadsheet_test_CFLAGS = $(GTK_CFLAGS) $(AM_CFLAGS) -DGDK_MULTIHEAD_SAFE=1
+
+if cc_is_gcc
+src_ui_gui_psppire_CFLAGS+=-Wno-unused-parameter
+src_ui_gui_spreadsheet_test_CFLAGS+=-Wno-unused-parameter
+endif
 
 
 src_ui_gui_psppire_LDFLAGS = \
@@ -431,7 +436,10 @@ src_ui_gui_libpsppire_glade_la_SOURCES = \
 src_ui_gui_libpsppire_glade_la_LIBADD = \
 	src/ui/gui/psppire-marshal.lo
 
-src_ui_gui_libpsppire_glade_la_CFLAGS = $(GTK_CFLAGS) $(GTKSOURCEVIEW_CFLAGS)
+src_ui_gui_libpsppire_glade_la_CFLAGS = $(GTK_CFLAGS) $(GTKSOURCEVIEW_CFLAGS) $(AM_CFLAGS)
+if cc_is_gcc
+src_ui_gui_libpsppire_glade_la_CFLAGS += -Wno-unused-parameter
+endif
 src_ui_gui_libpsppire_glade_la_LDFLAGS = -release $(VERSION)
 
 EXTRA_DIST += src/ui/gui/psppire.xml src/ui/gui/glade-wrapper.in

@@ -32,7 +32,7 @@ AM_V_P ?= :
 AM_CFLAGS=
 
 if cc_is_gcc
-AM_CFLAGS+=-Wall -W -Wwrite-strings -Wstrict-prototypes \
+AM_CFLAGS+=-Wall -Wextra -Wwrite-strings -Wstrict-prototypes \
 -Wpointer-arith -Wno-sign-compare -Wmissing-prototypes
 endif
 
