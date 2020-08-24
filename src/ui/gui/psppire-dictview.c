@@ -291,6 +291,7 @@ psppire_dict_view_get_property (GObject         *object,
 
 	g_value_set_enum (value, gtk_tree_selection_get_mode (selection));
       }
+      break;
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
       break;

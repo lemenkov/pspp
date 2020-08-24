@@ -144,6 +144,7 @@ psppire_val_chooser_get_property (GObject         *object,
       break;
     case PROP_IS_STRING:
       g_value_set_boolean (value, vr->input_var_is_string);
+      break;
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
       break;
