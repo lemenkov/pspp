@@ -36,7 +36,8 @@ psppire_select_dest_widget_get_type (void)
 	NULL,		/* class_data */
 	0,
 	0,              /* n_preallocs */
-	NULL
+	NULL,
+	NULL            /* value_table */
       };
 
       dest_widget_type =

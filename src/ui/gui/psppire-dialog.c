@@ -70,14 +70,15 @@ psppire_dialog_get_type (void)
       static const GTypeInfo dialog_info =
       {
 	sizeof (PsppireDialogClass),
-	(GBaseInitFunc) psppire_dialog_base_init,
+	(GBaseInitFunc) (void (*)(void)) psppire_dialog_base_init,
         NULL, /* base_finalize */
-	(GClassInitFunc) psppire_dialog_class_init,
+	(GClassInitFunc) (void (*)(void)) psppire_dialog_class_init,
         NULL, /* class_finalize */
 	NULL, /* class_data */
         sizeof (PsppireDialog),
 	0,
-	(GInstanceInitFunc) psppire_dialog_init,
+	(GInstanceInitFunc) (void (*)(void)) psppire_dialog_init,
+	NULL /* value_table */
       };
 
       dialog_type = g_type_register_static (PSPPIRE_TYPE_WINDOW_BASE,

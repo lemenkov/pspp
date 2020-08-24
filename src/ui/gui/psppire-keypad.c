@@ -25,37 +25,9 @@ enum {
   n_SIGNALS
 };
 
-static void psppire_keypad_class_init          (PsppireKeypadClass *klass);
-static void psppire_keypad_init                (PsppireKeypad      *kp);
-
 static guint keypad_signals [n_SIGNALS] = { 0 };
 
-GType
-psppire_keypad_get_type (void)
-{
-  static GType kp_type = 0;
-
-  if (!kp_type)
-    {
-      static const GTypeInfo kp_info =
-      {
-	sizeof (PsppireKeypadClass),
-	NULL, /* base_init */
-        NULL, /* base_finalize */
-	(GClassInitFunc) psppire_keypad_class_init,
-        NULL, /* class_finalize */
-	NULL, /* class_data */
-        sizeof (PsppireKeypad),
-	0,
-	(GInstanceInitFunc) psppire_keypad_init,
-      };
-
-      kp_type = g_type_register_static (GTK_TYPE_EVENT_BOX, "PsppireKeypad",
-					&kp_info, 0);
-    }
-
-  return kp_type;
-}
+G_DEFINE_TYPE (PsppireKeypad, psppire_keypad, GTK_TYPE_EVENT_BOX)
 
 static GObjectClass * parent_class = NULL;
 

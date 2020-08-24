@@ -67,9 +67,7 @@
 
 #include "psppire-selector.h"
 
-static void psppire_selector_class_init    (PsppireSelectorClass *class);
-static void psppire_selector_init          (PsppireSelector      *selector);
-
+G_DEFINE_TYPE (PsppireSelector, psppire_selector, GTK_TYPE_BUTTON)
 
 static void set_direction (PsppireSelector *, enum psppire_selector_dir);
 
@@ -100,38 +98,7 @@ on_row_inserted (PsppireSelector *selector)
   g_signal_emit (selector, signals [DE_SELECTED], 0);
 }
 
-
-GType
-psppire_selector_get_type (void)
-{
-  static GType psppire_selector_type = 0;
-
-  if (!psppire_selector_type)
-    {
-      static const GTypeInfo psppire_selector_info =
-      {
-	sizeof (PsppireSelectorClass),
-	(GBaseInitFunc) NULL,
-        (GBaseFinalizeFunc) NULL,
-	(GClassInitFunc)psppire_selector_class_init,
-	(GClassFinalizeFunc) NULL,
-	NULL,
-        sizeof (PsppireSelector),
-	0,
-	(GInstanceInitFunc) psppire_selector_init,
-      };
-
-      psppire_selector_type =
-	g_type_register_static (GTK_TYPE_BUTTON, "PsppireSelector",
-				&psppire_selector_info, 0);
-    }
-
-  return psppire_selector_type;
-}
-
 static GObjectClass * parent_class = NULL;
-
-
 
 static void
 dump_hash_entry (gpointer key, gpointer value, gpointer obj)

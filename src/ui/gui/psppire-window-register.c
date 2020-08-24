@@ -18,9 +18,6 @@
 
 #include "psppire-window-register.h"
 
-static void psppire_window_register_init            (PsppireWindowRegister      *window_register);
-static void psppire_window_register_class_init      (PsppireWindowRegisterClass *class);
-
 static void psppire_window_register_finalize        (GObject   *object);
 static void psppire_window_register_dispose        (GObject   *object);
 
@@ -35,34 +32,7 @@ enum  {
 
 static guint signals [n_SIGNALS];
 
-GType
-psppire_window_register_get_type (void)
-{
-  static GType window_register_type = 0;
-
-  if (!window_register_type)
-    {
-      static const GTypeInfo window_register_info =
-      {
-	sizeof (PsppireWindowRegisterClass),
-	NULL,		/* base_init */
-	NULL,		/* base_finalize */
-        (GClassInitFunc) psppire_window_register_class_init,
-	NULL,		/* class_finalize */
-	NULL,		/* class_data */
-        sizeof (PsppireWindowRegister),
-	0,
-        (GInstanceInitFunc) psppire_window_register_init,
-      };
-
-      window_register_type = g_type_register_static (G_TYPE_OBJECT,
-						"PsppireWindowRegister",
-						&window_register_info, 0);
-    }
-
-  return window_register_type;
-}
-
+G_DEFINE_TYPE (PsppireWindowRegister, psppire_window_register, G_TYPE_OBJECT)
 
 static void
 psppire_window_register_finalize (GObject *object)

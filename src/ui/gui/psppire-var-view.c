@@ -74,18 +74,19 @@ psppire_var_view_get_type (void)
       static const GTypeInfo psppire_var_view_info =
       {
 	sizeof (PsppireVarViewClass),
-	(GBaseInitFunc) psppire_var_view_base_init,
-        (GBaseFinalizeFunc) psppire_var_view_base_finalize,
-	(GClassInitFunc)psppire_var_view_class_init,
+	(GBaseInitFunc) (void (*)(void)) psppire_var_view_base_init,
+        (GBaseFinalizeFunc) (void (*)(void)) psppire_var_view_base_finalize,
+	(GClassInitFunc) (void (*)(void)) psppire_var_view_class_init,
 	(GClassFinalizeFunc) NULL,
 	NULL,
         sizeof (PsppireVarView),
 	0,
-	(GInstanceInitFunc) psppire_var_view_init,
+	(GInstanceInitFunc) (void (*)(void)) psppire_var_view_init,
+	NULL /* value_table */
       };
 
       static const GInterfaceInfo var_view_model_info = {
-	(GInterfaceInitFunc) model_init, /* Fill this in */
+	(GInterfaceInitFunc) (void (*)(void)) model_init, /* Fill this in */
 	NULL,
 	NULL
       };

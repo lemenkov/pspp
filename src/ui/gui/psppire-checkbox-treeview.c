@@ -32,37 +32,7 @@
 #define _(msgid) gettext (msgid)
 #define N_(msgid) msgid
 
-static void psppire_checkbox_treeview_init          (PsppireCheckboxTreeview      *cbtv);
-
-GType
-psppire_checkbox_treeview_get_type (void)
-{
-  static GType psppire_checkbox_treeview_type = 0;
-
-  if (!psppire_checkbox_treeview_type)
-    {
-      static const GTypeInfo psppire_checkbox_treeview_info =
-      {
-	sizeof (PsppireCheckboxTreeviewClass),
-	(GBaseInitFunc) NULL,
-        (GBaseFinalizeFunc) NULL,
-	(GClassInitFunc) NULL,
-	(GClassFinalizeFunc) NULL,
-	NULL,
-        sizeof (PsppireCheckboxTreeview),
-	0,
-	(GInstanceInitFunc) psppire_checkbox_treeview_init,
-      };
-
-      psppire_checkbox_treeview_type =
-	g_type_register_static (GTK_TYPE_TREE_VIEW, "PsppireCheckboxTreeview",
-				&psppire_checkbox_treeview_info, 0);
-    }
-
-  return psppire_checkbox_treeview_type;
-}
-
-
+G_DEFINE_TYPE (PsppireCheckboxTreeview, psppire_checkbox_treeview, GTK_TYPE_TREE_VIEW)
 
 /* Callback for checkbox cells in the statistics tree view.
    Toggles the checkbox. */
@@ -154,4 +124,9 @@ psppire_checkbox_treeview_populate (PsppireCheckboxTreeview *cbtv,
     }
 
   gtk_tree_view_set_tooltip_column (GTK_TREE_VIEW (cbtv), CHECKBOX_COLUMN_TOOLTIP);
+}
+
+static void
+psppire_checkbox_treeview_class_init (PsppireCheckboxTreeviewClass *class)
+{
 }

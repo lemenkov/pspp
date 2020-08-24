@@ -184,10 +184,6 @@ psppire_text_file_get_property (GObject         *object,
     };
 }
 
-
-static void psppire_text_file_init            (PsppireTextFile      *text_file);
-static void psppire_text_file_class_init      (PsppireTextFileClass *class);
-
 static void psppire_text_file_finalize        (GObject           *object);
 static void psppire_text_file_dispose        (GObject           *object);
 
@@ -386,44 +382,9 @@ __tree_model_init (GtkTreeModelIface *iface)
   iface->iter_parent     = __iter_parent;
 }
 
-
-GType
-psppire_text_file_get_type (void)
-{
-  static GType text_file_type = 0;
-
-  if (!text_file_type)
-    {
-      static const GTypeInfo text_file_info =
-	{
-	  sizeof (PsppireTextFileClass),
-	  NULL,		/* base_init */
-	  NULL,		/* base_finalize */
-	  (GClassInitFunc) psppire_text_file_class_init,
-	  NULL,		/* class_finalize */
-	  NULL,		/* class_data */
-	  sizeof (PsppireTextFile),
-	  0,
-	  (GInstanceInitFunc) psppire_text_file_init,
-	};
-
-      static const GInterfaceInfo tree_model_info = {
-	(GInterfaceInitFunc) __tree_model_init,
-	NULL,
-	NULL
-      };
-
-      text_file_type = g_type_register_static (G_TYPE_OBJECT,
-					       "PsppireTextFile",
-					       &text_file_info, 0);
-
-      g_type_add_interface_static (text_file_type, GTK_TYPE_TREE_MODEL,
-				   &tree_model_info);
-    }
-
-  return text_file_type;
-}
-
+G_DEFINE_TYPE_WITH_CODE (PsppireTextFile, psppire_text_file, G_TYPE_OBJECT,
+			 G_IMPLEMENT_INTERFACE (GTK_TYPE_TREE_MODEL,
+						__tree_model_init))
 
 static void
 psppire_text_file_class_init (PsppireTextFileClass *class)

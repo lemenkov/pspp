@@ -63,8 +63,6 @@ enum  {
 
 
 /* --- prototypes --- */
-static void psppire_dict_class_init	(PsppireDictClass	*class);
-static void psppire_dict_init	(PsppireDict		*dict);
 static void psppire_dict_dispose	(GObject		*object);
 
 static void dictionary_tree_model_init (GtkTreeModelIface *iface);
@@ -141,55 +139,12 @@ static GObjectClass     *parent_class = NULL;
 static guint signals [n_SIGNALS];
 
 /* --- functions --- */
-/**
- * psppire_dict_get_type:
- * @returns: the type ID for accelerator groups.
- */
-GType
-psppire_dict_get_type (void)
-{
-  static GType object_type = 0;
 
-  if (!object_type)
-    {
-      static const GTypeInfo object_info = {
-	sizeof (PsppireDictClass),
-	(GBaseInitFunc) NULL,
-	(GBaseFinalizeFunc) NULL,
-	(GClassInitFunc) psppire_dict_class_init,
-	NULL,   /* class_finalize */
-	NULL,   /* class_data */
-	sizeof (PsppireDict),
-	0,      /* n_preallocs */
-	(GInstanceInitFunc) psppire_dict_init,
-      };
-
-      static const GInterfaceInfo tree_model_info = {
-	(GInterfaceInitFunc) dictionary_tree_model_init,
-	NULL,
-	NULL
-      };
-
-      static const GInterfaceInfo list_model_info = {
-	(GInterfaceInitFunc) ssw_init_iface,
-	NULL,
-	NULL
-      };
-
-      object_type = g_type_register_static (G_TYPE_OBJECT,
-					    "PsppireDict",
-					    &object_info, 0);
-
-      g_type_add_interface_static (object_type, GTK_TYPE_TREE_MODEL,
-				   &tree_model_info);
-
-      g_type_add_interface_static (object_type, G_TYPE_LIST_MODEL,
-				   &list_model_info);
-    }
-
-  return object_type;
-}
-
+G_DEFINE_TYPE_WITH_CODE (PsppireDict, psppire_dict, G_TYPE_OBJECT,
+			 G_IMPLEMENT_INTERFACE (GTK_TYPE_TREE_MODEL,
+						dictionary_tree_model_init)
+			 G_IMPLEMENT_INTERFACE (G_TYPE_LIST_MODEL,
+						ssw_init_iface))
 
 static void
 psppire_dict_class_init (PsppireDictClass *class)

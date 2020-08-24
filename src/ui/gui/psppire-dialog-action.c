@@ -24,11 +24,7 @@
 #include "psppire-data-window.h"
 #include "builder-wrapper.h"
 
-static void psppire_dialog_action_init            (PsppireDialogAction      *act);
-static void psppire_dialog_action_class_init      (PsppireDialogActionClass *class);
-
 static GObjectClass * parent_class = NULL;
-
 
 static const gchar *
 __get_name (GAction *act)
@@ -89,44 +85,11 @@ action_model_init (GActionInterface *iface)
   iface->activate = __activate;
 }
 
-
-GType
-psppire_dialog_action_get_type (void)
-{
-  static GType de_type = 0;
-
-  if (!de_type)
-    {
-      static const GTypeInfo de_info =
-      {
-	sizeof (PsppireDialogActionClass),
-	NULL, /* base_init */
-        NULL, /* base_finalize */
-	(GClassInitFunc) psppire_dialog_action_class_init,
-        NULL, /* class_finalize */
-	NULL, /* class_data */
-        sizeof (PsppireDialogAction),
-	0,
-	(GInstanceInitFunc) psppire_dialog_action_init,
-      };
-
-
-      static const GInterfaceInfo ga_info = {
-	(GInterfaceInitFunc) action_model_init,
-	NULL,
-	NULL
-      };
-
-
-      de_type = g_type_register_static (G_TYPE_OBJECT, "PsppireDialogAction",
-					&de_info, G_TYPE_FLAG_ABSTRACT);
-
-      g_type_add_interface_static (de_type, G_TYPE_ACTION, &ga_info);
-    }
-
-  return de_type;
-}
-
+G_DEFINE_ABSTRACT_TYPE_WITH_CODE (PsppireDialogAction, \
+				  psppire_dialog_action, \
+				  G_TYPE_OBJECT, \
+				  G_IMPLEMENT_INTERFACE (G_TYPE_ACTION, \
+							 action_model_init))
 
 /* Properties */
 enum

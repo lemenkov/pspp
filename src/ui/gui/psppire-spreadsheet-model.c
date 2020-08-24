@@ -33,57 +33,18 @@
 #include "psppire-spreadsheet-model.h"
 #include "data/spreadsheet-reader.h"
 
-
-static void psppire_spreadsheet_model_init (PsppireSpreadsheetModel *
-                                            spreadsheetModel);
-static void psppire_spreadsheet_model_class_init (PsppireSpreadsheetModelClass
-                                                  * class);
-
 static void psppire_spreadsheet_model_finalize (GObject * object);
 static void psppire_spreadsheet_model_dispose (GObject * object);
 
 static GObjectClass *parent_class = NULL;
 
-
 static void spreadsheet_tree_model_init (GtkTreeModelIface * iface);
 
-
-GType
-psppire_spreadsheet_model_get_type (void)
-{
-  static GType object_type = 0;
-
-  if (!object_type)
-    {
-      static const GTypeInfo spreadsheet_model_info = {
-        sizeof (PsppireSpreadsheetModelClass),
-        NULL,                   /* base_init */
-        NULL,                   /* base_finalize */
-        (GClassInitFunc) psppire_spreadsheet_model_class_init,
-        NULL,                   /* class_finalize */
-        NULL,                   /* class_data */
-        sizeof (PsppireSpreadsheetModel),
-        0,
-        (GInstanceInitFunc) psppire_spreadsheet_model_init,
-      };
-
-      static const GInterfaceInfo tree_model_info = {
-        (GInterfaceInitFunc) spreadsheet_tree_model_init,
-        NULL,
-        NULL
-      };
-
-      object_type = g_type_register_static (G_TYPE_OBJECT,
-                                            "PsppireSpreadsheetModel",
-                                            &spreadsheet_model_info, 0);
-
-      g_type_add_interface_static (object_type, GTK_TYPE_TREE_MODEL,
-                                   &tree_model_info);
-    }
-
-  return object_type;
-}
-
+G_DEFINE_TYPE_WITH_CODE (PsppireSpreadsheetModel,\
+			 psppire_spreadsheet_model,\
+			 G_TYPE_OBJECT,
+			 G_IMPLEMENT_INTERFACE (GTK_TYPE_TREE_MODEL,
+						spreadsheet_tree_model_init))
 
 /* Properties */
 enum
@@ -146,6 +107,7 @@ psppire_spreadsheet_model_class_init (PsppireSpreadsheetModelClass * class)
                                                        | G_PARAM_WRITABLE);
 
   parent_class = g_type_class_peek_parent (class);
+
   object_class = (GObjectClass *) class;
 
   object_class->set_property = psppire_spreadsheet_model_set_property;

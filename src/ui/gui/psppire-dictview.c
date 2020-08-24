@@ -46,14 +46,15 @@ psppire_dict_view_get_type (void)
       static const GTypeInfo psppire_dict_view_info =
       {
 	sizeof (PsppireDictViewClass),
-	(GBaseInitFunc) psppire_dict_view_base_init,
-        (GBaseFinalizeFunc) psppire_dict_view_base_finalize,
-	(GClassInitFunc)psppire_dict_view_class_init,
+	(GBaseInitFunc) (void (*)(void)) psppire_dict_view_base_init,
+        (GBaseFinalizeFunc) (void (*)(void)) psppire_dict_view_base_finalize,
+	(GClassInitFunc) (void (*)(void)) psppire_dict_view_class_init,
 	(GClassFinalizeFunc) NULL,
 	NULL,
         sizeof (PsppireDictView),
 	0,
-	(GInstanceInitFunc) psppire_dict_view_init,
+	(GInstanceInitFunc) (void (*)(void)) psppire_dict_view_init,
+	NULL /* value_table */
       };
 
       psppire_dict_view_type =

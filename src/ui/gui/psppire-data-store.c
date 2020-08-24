@@ -46,9 +46,6 @@
 
 #include "value-variant.h"
 
-static void psppire_data_store_init            (PsppireDataStore      *data_store);
-static void psppire_data_store_class_init      (PsppireDataStoreClass *class);
-
 static void psppire_data_store_finalize        (GObject           *object);
 static void psppire_data_store_dispose        (GObject           *object);
 
@@ -283,44 +280,9 @@ __tree_model_init (GtkTreeModelIface *iface)
   iface->iter_parent     = NULL;
 }
 
-
-GType
-psppire_data_store_get_type (void)
-{
-  static GType data_store_type = 0;
-
-  if (!data_store_type)
-    {
-      static const GTypeInfo data_store_info =
-      {
-	sizeof (PsppireDataStoreClass),
-	NULL,		/* base_init */
-	NULL,		/* base_finalize */
-        (GClassInitFunc) psppire_data_store_class_init,
-	NULL,		/* class_finalize */
-	NULL,		/* class_data */
-        sizeof (PsppireDataStore),
-	0,
-        (GInstanceInitFunc) psppire_data_store_init,
-      };
-
-      static const GInterfaceInfo tree_model_info = {
-	(GInterfaceInitFunc) __tree_model_init,
-	NULL,
-	NULL
-      };
-
-      data_store_type = g_type_register_static (G_TYPE_OBJECT,
-						"PsppireDataStore",
-						&data_store_info, 0);
-
-      g_type_add_interface_static (data_store_type, GTK_TYPE_TREE_MODEL,
-				   &tree_model_info);
-    }
-
-  return data_store_type;
-}
-
+G_DEFINE_TYPE_WITH_CODE (PsppireDataStore, psppire_data_store, G_TYPE_OBJECT,
+			 G_IMPLEMENT_INTERFACE (GTK_TYPE_TREE_MODEL,
+						__tree_model_init))
 
 static void
 psppire_data_store_class_init (PsppireDataStoreClass *class)

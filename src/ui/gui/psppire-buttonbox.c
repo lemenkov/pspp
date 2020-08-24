@@ -31,37 +31,7 @@
 
 GType psppire_button_flags_get_type (void);
 
-
-static void psppire_button_box_class_init          (PsppireButtonBoxClass *);
-static void psppire_button_box_init                (PsppireButtonBox      *);
-
-
-GType
-psppire_button_box_get_type (void)
-{
-  static GType button_box_type = 0;
-
-  if (!button_box_type)
-    {
-      static const GTypeInfo button_box_info =
-      {
-	sizeof (PsppireButtonBoxClass),
-	NULL, /* base_init */
-        NULL, /* base_finalize */
-	(GClassInitFunc) psppire_button_box_class_init,
-        NULL, /* class_finalize */
-	NULL, /* class_data */
-        sizeof (PsppireButtonBox),
-	0,
-	(GInstanceInitFunc) psppire_button_box_init,
-      };
-
-      button_box_type = g_type_register_static (GTK_TYPE_BUTTON_BOX,
-					    "PsppireButtonBox", &button_box_info, 0);
-    }
-
-  return button_box_type;
-}
+G_DEFINE_TYPE (PsppireButtonBox, psppire_button_box, GTK_TYPE_BUTTON_BOX)
 
 enum {
   PROP_BUTTONS = 1,

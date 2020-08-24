@@ -101,10 +101,6 @@
 struct session *the_session;
 struct ll_list all_data_windows = LL_INITIALIZER (all_data_windows);
 
-static void psppire_data_window_class_init    (PsppireDataWindowClass *class);
-static void psppire_data_window_init          (PsppireDataWindow      *data_editor);
-
-
 static void psppire_data_window_iface_init (PsppireWindowIface *iface);
 
 static void psppire_data_window_dispose (GObject *object);
@@ -118,45 +114,10 @@ static void psppire_data_window_get_property (GObject         *object,
                                               GValue          *value,
                                               GParamSpec      *pspec);
 
-GType
-psppire_data_window_get_type (void)
-{
-  static GType psppire_data_window_type = 0;
 
-  if (!psppire_data_window_type)
-    {
-      static const GTypeInfo psppire_data_window_info =
-	{
-	  sizeof (PsppireDataWindowClass),
-	  NULL,
-	  NULL,
-	  (GClassInitFunc)psppire_data_window_class_init,
-	  (GClassFinalizeFunc) NULL,
-	  NULL,
-	  sizeof (PsppireDataWindow),
-	  0,
-	  (GInstanceInitFunc) psppire_data_window_init,
-	};
-
-      static const GInterfaceInfo window_interface_info =
-	{
-	  (GInterfaceInitFunc) psppire_data_window_iface_init,
-	  NULL,
-	  NULL
-	};
-
-      psppire_data_window_type =
-	g_type_register_static (PSPPIRE_TYPE_WINDOW, "PsppireDataWindow",
-				&psppire_data_window_info, 0);
-
-
-      g_type_add_interface_static (psppire_data_window_type,
-				   PSPPIRE_TYPE_WINDOW_MODEL,
-				   &window_interface_info);
-    }
-
-  return psppire_data_window_type;
-}
+G_DEFINE_TYPE_WITH_CODE (PsppireDataWindow, psppire_data_window, PSPPIRE_TYPE_WINDOW,
+			 G_IMPLEMENT_INTERFACE (PSPPIRE_TYPE_WINDOW_MODEL,
+						psppire_data_window_iface_init))
 
 static GObjectClass *parent_class ;
 

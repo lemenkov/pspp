@@ -48,36 +48,7 @@
 #define _(msgid) gettext (msgid)
 #define N_(msgid) msgid
 
-static void psppire_output_window_class_init    (PsppireOutputWindowClass *class);
-static void psppire_output_window_init          (PsppireOutputWindow      *window);
-
-GType
-psppire_output_window_get_type (void)
-{
-  static GType psppire_output_window_type = 0;
-
-  if (!psppire_output_window_type)
-    {
-      static const GTypeInfo psppire_output_window_info =
-      {
-	sizeof (PsppireOutputWindowClass),
-	(GBaseInitFunc) NULL,
-        (GBaseFinalizeFunc) NULL,
-	(GClassInitFunc)psppire_output_window_class_init,
-	(GClassFinalizeFunc) NULL,
-	NULL,
-        sizeof (PsppireOutputWindow),
-	0,
-	(GInstanceInitFunc) psppire_output_window_init,
-      };
-
-      psppire_output_window_type =
-	g_type_register_static (PSPPIRE_TYPE_WINDOW, "PsppireOutputWindow",
-				&psppire_output_window_info, 0);
-    }
-
-  return psppire_output_window_type;
-}
+G_DEFINE_TYPE (PsppireOutputWindow, psppire_output_window, PSPPIRE_TYPE_WINDOW)
 
 static GObjectClass *parent_class;
 

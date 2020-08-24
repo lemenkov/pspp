@@ -28,43 +28,12 @@
 
 #include "psppire-conf.h"
 
-static void psppire_conf_init            (PsppireConf      *conf);
-static void psppire_conf_class_init      (PsppireConfClass *class);
+G_DEFINE_TYPE (PsppireConf, psppire_conf, G_TYPE_OBJECT)
 
 static void psppire_conf_finalize        (GObject   *object);
 static void psppire_conf_dispose        (GObject   *object);
 
 static GObjectClass *parent_class = NULL;
-
-
-GType
-psppire_conf_get_type (void)
-{
-  static GType conf_type = 0;
-
-  if (!conf_type)
-    {
-      static const GTypeInfo conf_info =
-      {
-	sizeof (PsppireConfClass),
-	NULL,		/* base_init */
-	NULL,		/* base_finalize */
-        (GClassInitFunc) psppire_conf_class_init,
-	NULL,		/* class_finalize */
-	NULL,		/* class_data */
-        sizeof (PsppireConf),
-	0,
-        (GInstanceInitFunc) psppire_conf_init,
-      };
-
-      conf_type = g_type_register_static (G_TYPE_OBJECT,
-						"PsppireConf",
-						&conf_info, 0);
-    }
-
-  return conf_type;
-}
-
 
 static void
 conf_read (PsppireConf *conf)

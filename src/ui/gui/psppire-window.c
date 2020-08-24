@@ -61,14 +61,15 @@ psppire_window_get_type (void)
       static const GTypeInfo psppire_window_info =
       {
 	sizeof (PsppireWindowClass),
-	(GBaseInitFunc) psppire_window_base_init,
+	(GBaseInitFunc) (void (*)(void)) psppire_window_base_init,
         (GBaseFinalizeFunc) NULL,
-	(GClassInitFunc) psppire_window_class_init,
+	(GClassInitFunc) (void (*)(void)) psppire_window_class_init,
 	(GClassFinalizeFunc) NULL,
 	NULL,
         sizeof (PsppireWindow),
 	0,
-	(GInstanceInitFunc) psppire_window_init,
+	(GInstanceInitFunc) (void (*)(void)) psppire_window_init,
+	NULL /* value_table */
       };
 
       psppire_window_type =
@@ -565,7 +566,8 @@ psppire_window_model_get_type (void)
 	NULL,		/* class_data */
 	0,
 	0,              /* n_preallocs */
-	NULL
+	NULL,
+	NULL            /* value_table */
       };
 
       window_model_type =

@@ -111,19 +111,20 @@ psppire_syntax_window_get_type (void)
       static const GTypeInfo psppire_syntax_window_info =
       {
 	sizeof (PsppireSyntaxWindowClass),
-	(GBaseInitFunc) psppire_syntax_window_base_init,
-        (GBaseFinalizeFunc) psppire_syntax_window_base_finalize,
-	(GClassInitFunc)psppire_syntax_window_class_init,
+	(GBaseInitFunc) (void (*)(void)) psppire_syntax_window_base_init,
+        (GBaseFinalizeFunc) (void (*)(void)) psppire_syntax_window_base_finalize,
+	(GClassInitFunc) (void (*)(void)) psppire_syntax_window_class_init,
 	(GClassFinalizeFunc) NULL,
 	NULL,
         sizeof (PsppireSyntaxWindow),
 	0,
-	(GInstanceInitFunc) psppire_syntax_window_init,
+	(GInstanceInitFunc) (void (*)(void)) psppire_syntax_window_init,
+	NULL /* value_table */
       };
 
       static const GInterfaceInfo window_interface_info =
 	{
-	  (GInterfaceInitFunc) psppire_syntax_window_iface_init,
+	  (GInterfaceInitFunc) (void (*)(void)) psppire_syntax_window_iface_init,
 	  NULL,
 	  NULL
 	};

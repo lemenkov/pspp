@@ -46,37 +46,9 @@
 #include <gettext.h>
 #define _(msgid) gettext (msgid)
 
-static void psppire_data_editor_class_init          (PsppireDataEditorClass *klass);
-static void psppire_data_editor_init                (PsppireDataEditor      *de);
-
 static void refresh_entry (PsppireDataEditor *);
 
-GType
-psppire_data_editor_get_type (void)
-{
-  static GType de_type = 0;
-
-  if (!de_type)
-    {
-      static const GTypeInfo de_info =
-      {
-	sizeof (PsppireDataEditorClass),
-	NULL, /* base_init */
-        NULL, /* base_finalize */
-	(GClassInitFunc) psppire_data_editor_class_init,
-        NULL, /* class_finalize */
-	NULL, /* class_data */
-        sizeof (PsppireDataEditor),
-	0,
-	(GInstanceInitFunc) psppire_data_editor_init,
-      };
-
-      de_type = g_type_register_static (GTK_TYPE_NOTEBOOK, "PsppireDataEditor",
-					&de_info, 0);
-    }
-
-  return de_type;
-}
+G_DEFINE_TYPE (PsppireDataEditor, psppire_data_editor, GTK_TYPE_NOTEBOOK)
 
 static GObjectClass * parent_class = NULL;
 
