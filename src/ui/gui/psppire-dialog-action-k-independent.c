@@ -39,7 +39,7 @@ static void psppire_dialog_action_k_independent_class_init      (PsppireDialogAc
 
 G_DEFINE_TYPE (PsppireDialogActionKIndependent, psppire_dialog_action_k_independent, PSPPIRE_TYPE_DIALOG_ACTION);
 
-const static char *keyword[n_KIDS] =
+static const char *keyword[n_KIDS] =
   {
     "KRUSKAL-WALLIS",
     "MEDIAN"
