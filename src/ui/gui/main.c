@@ -93,9 +93,7 @@ init_dispatch (GSource * ss, GSourceFunc callback, gpointer user_data)
 }
 
 static GSourceFuncs init_funcs =
-  { init_prepare, init_check, init_dispatch, NULL };
-
-
+  { init_prepare, init_check, init_dispatch, NULL, NULL, NULL };
 
 GtkWidget *wsplash = 0;
 gint64 start_time = 0;
