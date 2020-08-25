@@ -960,8 +960,8 @@ function PDF.POISSON (k >= 0 && k == floor (k), mu > 0)
 no_opt function RV.POISSON (mu > 0) = gsl_ran_poisson (get_rng (), mu);
 
 // Weirdness.
-absorb_miss boolean function MISSING (x) = x == SYSMIS || !finite (x);
-absorb_miss boolean function SYSMIS (x) = x == SYSMIS || !finite (x);
+absorb_miss boolean function MISSING (x) = x == SYSMIS || !isfinite (x);
+absorb_miss boolean function SYSMIS (x) = x == SYSMIS || !isfinite (x);
 no_opt boolean function SYSMIS (num_var v)
      case c;
 {
