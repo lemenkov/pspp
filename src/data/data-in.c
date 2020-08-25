@@ -1084,7 +1084,7 @@ parse_weekday (struct data_in *i, long *weekday)
 static char *
 parse_WKDAY (struct data_in *i)
 {
-  long weekday;
+  long weekday = 0;
   char *error;
 
   if (trim_spaces_and_check_missing (i))
