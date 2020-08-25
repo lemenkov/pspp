@@ -392,16 +392,21 @@ clipboard_clear_cb (GtkClipboard *clipboard,
   sw->cliptext = NULL;
 }
 
+static gchar tn1[] = "UTF8_STRING";
+static gchar tn2[] = "STRING";
+static gchar tn3[] = "TEXT";
+static gchar tn4[] = "COMPOUND_TEXT";
+static gchar tn5[] = "text/plain;charset=utf-8";
+static gchar tn6[] = "text/plain";
 
 static const GtkTargetEntry targets[] = {
-  { "UTF8_STRING",   0, SELECT_FMT_TEXT },
-  { "STRING",        0, SELECT_FMT_TEXT },
-  { "TEXT",          0, SELECT_FMT_TEXT },
-  { "COMPOUND_TEXT", 0, SELECT_FMT_TEXT },
-  { "text/plain;charset=utf-8", 0, SELECT_FMT_TEXT },
-  { "text/plain",    0, SELECT_FMT_TEXT },
+  { tn1, 0, SELECT_FMT_TEXT },
+  { tn2, 0, SELECT_FMT_TEXT },
+  { tn3, 0, SELECT_FMT_TEXT },
+  { tn4, 0, SELECT_FMT_TEXT },
+  { tn5, 0, SELECT_FMT_TEXT },
+  { tn6, 0, SELECT_FMT_TEXT }
 };
-
 
 /*
   Store a clip containing the currently selected text.

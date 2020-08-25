@@ -628,19 +628,25 @@ clipboard_clear_cb (GtkClipboard *clipboard,
 {
 }
 
+#define CBTARGETS                                           \
+CT ( ctn1, "STRING",        0, SELECT_FMT_TEXT )            \
+CT ( ctn2, "TEXT",          0, SELECT_FMT_TEXT )            \
+CT ( ctn3, "COMPOUND_TEXT", 0, SELECT_FMT_TEXT )            \
+CT ( ctn4, "text/plain",    0, SELECT_FMT_TEXT )            \
+CT ( ctn5, "UTF8_STRING",   0, SELECT_FMT_UTF8 )            \
+CT ( ctn6, "text/plain;charset=utf-8", 0, SELECT_FMT_UTF8 ) \
+CT ( ctn7, "text/html",     0, SELECT_FMT_HTML )
+
+#define CT(ID, TARGET, FLAGS, INFO) static gchar ID[] = TARGET;
+CBTARGETS
+#undef CT
+gchar ctnlast[] = "application/vnd.oasis.opendocument.text";
+
 static const GtkTargetEntry targets[] = {
-
-  { "STRING",        0, SELECT_FMT_TEXT },
-  { "TEXT",          0, SELECT_FMT_TEXT },
-  { "COMPOUND_TEXT", 0, SELECT_FMT_TEXT },
-  { "text/plain",    0, SELECT_FMT_TEXT },
-
-  { "UTF8_STRING",   0, SELECT_FMT_UTF8 },
-  { "text/plain;charset=utf-8", 0, SELECT_FMT_UTF8 },
-
-  { "text/html",     0, SELECT_FMT_HTML },
-
-  { "application/vnd.oasis.opendocument.text", 0, SELECT_FMT_ODT }
+#define CT(ID, TARGET, FLAGS, INFO) { ID, FLAGS, INFO },
+  CBTARGETS
+#undef CT
+  { ctnlast, 0, SELECT_FMT_ODT }
 };
 
 static void

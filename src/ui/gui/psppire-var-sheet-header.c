@@ -47,7 +47,7 @@ static gpointer
 gi (GListModel *list, guint position)
 {
   GtkWidget *button = gtk_button_new ();
-  gchar *text = NULL;
+  const gchar *text = NULL;
 
   switch (position)
     {

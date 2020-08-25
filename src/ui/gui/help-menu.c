@@ -34,11 +34,11 @@
 /* Try to open html documentation uri via the default
    browser on the operating system */
 #ifdef __APPLE__
-#define HTMLOPENARGV {"open", 0, 0}
+#define HTMLOPENAPP "open"
 #elif  _WIN32
-#define HTMLOPENARGV {"wscript", 0, 0}
+#define HTMLOPENAPP "wscript"
 #else
-#define HTMLOPENARGV {"xdg-open", 0, 0}
+#define HTMLOPENAPP "xdg-open"
 #endif
 
 static const gchar *artists[] = { "Bastián Díaz", "Hugo Alejandro", NULL};
@@ -132,7 +132,8 @@ void
 online_help (const char *page)
 {
   GError *htmlerr = NULL;
-  gchar *htmlargv[3] = HTMLOPENARGV;
+  gchar helpapp[] = HTMLOPENAPP;
+  gchar *htmlargv[3] = {helpapp, 0, 0};
   gchar *htmlfilename = NULL;
   gchar *htmlfullname = NULL;
   gchar *htmluri = NULL;
