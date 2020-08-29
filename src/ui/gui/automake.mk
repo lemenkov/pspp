@@ -351,7 +351,8 @@ src_ui_gui_libwidgets_essential_la_SOURCES = \
 
 src_ui_gui_libwidgets_essential_la_CFLAGS = \
 	$(GTK_CFLAGS) \
-	$(GTKSOURCEVIEW_CFLAGS)
+	$(GTKSOURCEVIEW_CFLAGS) \
+	$(AM_CFLAGS)
 
 nodist_src_ui_gui_psppire_SOURCES = \
 	src/ui/gui/psppire-marshal.c \
