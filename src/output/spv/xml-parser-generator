@@ -295,7 +295,7 @@ used_enums = set()
 def print_members(attributes, rhs, indent):
     attrs = []
     new_enums = set()
-    for unique_name, (xml_name, value, required) in attributes.items():
+    for unique_name, (xml_name, value, required) in sorted(attributes.items()):
         c_name = name_to_id(unique_name)
         if type(value) is set:
             if len(value) <= 1:
@@ -342,7 +342,7 @@ def print_members(attributes, rhs, indent):
         else:
             assert False
 
-    for enum_name in new_enums:
+    for enum_name in sorted(new_enums):
         used_enums.add(enum_name)
         c_name = name_to_id(enum_name)
         print('\nenum %s%s {' % (prefix, c_name))
@@ -900,7 +900,7 @@ void
                 name += '%d' % i
             if type(value[1]) is set:
                 print('    static const struct spvxml_node_class *const %s[] = {' % name)
-                for ref_type in value[1]:
+                for ref_type in sorted(value[1]):
                     print('        &%(prefix)s%(ref_type)s_class,'
                          % {'prefix': prefix,
                             'ref_type': name_to_id(ref_type)})
