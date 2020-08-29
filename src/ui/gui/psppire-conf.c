@@ -50,11 +50,12 @@ flush_conf (PsppireConf *conf)
   gsize length = 0;
 
   gchar *kf = g_key_file_to_data  (conf->keyfile, &length, NULL);
+  GError *err = NULL;
 
-  if (! g_file_set_contents (conf->filename, kf, length, NULL))
+  if (! g_file_set_contents (conf->filename, kf, length, &err))
     {
-      char *msg = strerror (errno);
-      g_warning ("Cannot open %s for writing: %s", conf->filename, msg);
+      g_warning ("Cannot open %s for writing: %s", conf->filename, err->message);
+      g_error_free (err);
     }
 
   g_free (kf);
