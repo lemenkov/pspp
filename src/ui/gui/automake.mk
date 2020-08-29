@@ -354,6 +354,14 @@ src_ui_gui_libwidgets_essential_la_CFLAGS = \
 	$(GTKSOURCEVIEW_CFLAGS) \
 	$(AM_CFLAGS)
 
+# The unused-parameter warning is not by default disabled
+# in AM_CFLAGS because the core pspp code has this enabled.
+# This is only disabled in the gui code where we have many
+# callbacks from gtk3 which have fixed parameters
+if cc_is_gcc
+src_ui_gui_libwidgets_essential_la_CFLAGS += -Wno-unused-parameter
+endif
+
 nodist_src_ui_gui_psppire_SOURCES = \
 	src/ui/gui/psppire-marshal.c \
 	src/ui/gui/psppire-marshal.h \
