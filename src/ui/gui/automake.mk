@@ -80,7 +80,6 @@ EXTRA_DIST += doc/help-pages-list
 
 
 EXTRA_DIST += \
-	src/ui/gui/memorandum.txt \
 	src/ui/gui/org.fsf.pspp.metainfo.xml.in \
 	src/ui/gui/org.fsf.pspp.desktop.in \
 	src/ui/gui/marshaller-list \
