@@ -202,7 +202,7 @@ tree_model_iter_next (GtkTreeModel *model, GtkTreeIter *iter)
       return FALSE;
     }
 
-  iter->user_data++;
+  iter->user_data = (void *) ((intptr_t)(iter->user_data) + 1);
 
   return TRUE;
 }
