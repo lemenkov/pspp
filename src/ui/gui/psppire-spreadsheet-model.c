@@ -201,7 +201,7 @@ tree_model_iter_next (GtkTreeModel *model, GtkTreeIter *iter)
       return FALSE;
     }
 
-  iter->user_data = (void *) ((intptr_t)(iter->user_data) + 1);
+  iter->user_data = GINT_TO_POINTER (GPOINTER_TO_INT (iter->user_data) + 1);
 
   return TRUE;
 }
