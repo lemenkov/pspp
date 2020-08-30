@@ -72,7 +72,7 @@ psppire_window_register_class_init (PsppireWindowRegisterClass *class)
   GObjectClass *object_class;
 
   parent_class = g_type_class_peek_parent (class);
-  object_class = (GObjectClass*) class;
+  object_class = G_OBJECT_CLASS (class);
 
   object_class->finalize = psppire_window_register_finalize;
   object_class->dispose = psppire_window_register_dispose;

@@ -290,7 +290,7 @@ psppire_data_store_class_init (PsppireDataStoreClass *class)
   GObjectClass *object_class;
 
   parent_class = g_type_class_peek_parent (class);
-  object_class = (GObjectClass*) class;
+  object_class = G_OBJECT_CLASS (class);
 
   object_class->finalize = psppire_data_store_finalize;
   object_class->dispose = psppire_data_store_dispose;

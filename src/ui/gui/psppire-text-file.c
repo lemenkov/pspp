@@ -392,7 +392,7 @@ psppire_text_file_class_init (PsppireTextFileClass *class)
   GObjectClass *object_class;
 
   parent_class = g_type_class_peek_parent (class);
-  object_class = (GObjectClass*) class;
+  object_class = G_OBJECT_CLASS (class);
 
   GParamSpec *maximum_lines_spec =
     g_param_spec_int ("maximum-lines",

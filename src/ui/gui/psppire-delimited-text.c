@@ -492,7 +492,7 @@ psppire_delimited_text_class_init (PsppireDelimitedTextClass *class)
   GObjectClass *object_class;
 
   parent_class = g_type_class_peek_parent (class);
-  object_class = (GObjectClass*) class;
+  object_class = G_OBJECT_CLASS (class);
 
   GParamSpec *first_line_spec =
     g_param_spec_int ("first-line",

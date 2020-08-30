@@ -98,7 +98,7 @@ psppire_spreadsheet_model_finalize (GObject * object)
 static void
 psppire_spreadsheet_model_class_init (PsppireSpreadsheetModelClass * class)
 {
-  GObjectClass *object_class;
+  GObjectClass *object_class = G_OBJECT_CLASS (class);
 
   GParamSpec *spreadsheet_spec = g_param_spec_pointer ("spreadsheet",
                                                        "Spreadsheet",
@@ -108,7 +108,6 @@ psppire_spreadsheet_model_class_init (PsppireSpreadsheetModelClass * class)
 
   parent_class = g_type_class_peek_parent (class);
 
-  object_class = (GObjectClass *) class;
 
   object_class->set_property = psppire_spreadsheet_model_set_property;
 
