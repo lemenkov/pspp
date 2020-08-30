@@ -238,7 +238,7 @@ static GObjectClass *parent_class = NULL;
 static void
 psppire_scanf_dispose (GObject *obj)
 {
-  PsppireScanf *w = (PsppireScanf *)obj;
+  PsppireScanf *w = PSPPIRE_SCANF (obj);
 
   if (w->dispose_has_run)
     return;

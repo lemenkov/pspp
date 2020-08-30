@@ -55,8 +55,8 @@
 G_BEGIN_DECLS
 
 #define PSPPIRE_KEYPAD_TYPE            (psppire_keypad_get_type ())
-#define PSPPIRE_KEYPAD(obj)            (G_TYPE_CHECK_INSTANCE_CAST ((obj), PSPPIRE_KEYPAD_TYPE, Psppire_Keypad))
-#define PSPPIRE_KEYPAD_CLASS(klass)    (G_TYPE_CHECK_CLASS_CAST ((klass), PSPPIRE_KEYPAD_TYPE, Psppire_KeypadClass))
+#define PSPPIRE_KEYPAD(obj)            (G_TYPE_CHECK_INSTANCE_CAST ((obj), PSPPIRE_KEYPAD_TYPE, PsppireKeypad))
+#define PSPPIRE_KEYPAD_CLASS(klass)    (G_TYPE_CHECK_CLASS_CAST ((klass), PSPPIRE_KEYPAD_TYPE, PsppireKeypadClass))
 #define PSPPIRE_IS_KEYPAD(obj)         (G_TYPE_CHECK_INSTANCE_TYPE ((obj), PSPPIRE_KEYPAD_TYPE))
 #define PSPPIRE_IS_KEYPAD_CLASS(klass) (G_TYPE_CHECK_CLASS_TYPE ((klass), PSPPIRE_KEYPAD_TYPE))
 

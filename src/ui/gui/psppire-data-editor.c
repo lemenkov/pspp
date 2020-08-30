@@ -55,7 +55,7 @@ static GObjectClass * parent_class = NULL;
 static void
 psppire_data_editor_finalize (GObject *obj)
 {
-  PsppireDataEditor *de = (PsppireDataEditor *) obj;
+  PsppireDataEditor *de = PSPPIRE_DATA_EDITOR (obj);
   if (de->font)
     pango_font_description_free (de->font);
 
@@ -66,7 +66,7 @@ psppire_data_editor_finalize (GObject *obj)
 static void
 psppire_data_editor_dispose (GObject *obj)
 {
-  PsppireDataEditor *de = (PsppireDataEditor *) obj;
+  PsppireDataEditor *de = PSPPIRE_DATA_EDITOR (obj);
 
   if (de->dispose_has_run)
     return;

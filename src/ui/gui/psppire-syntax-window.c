@@ -115,7 +115,7 @@ psppire_syntax_window_finalize (GObject *object)
 static void
 psppire_syntax_window_dispose (GObject *obj)
 {
-  PsppireSyntaxWindow *sw = (PsppireSyntaxWindow *)obj;
+  PsppireSyntaxWindow *sw = PSPPIRE_SYNTAX_WINDOW (obj);
 
   GtkClipboard *clip_selection;
   GtkClipboard *clip_primary;

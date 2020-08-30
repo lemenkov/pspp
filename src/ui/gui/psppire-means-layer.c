@@ -36,7 +36,7 @@ static GObjectClass *parent_class = NULL;
 static void
 psppire_means_layer_dispose (GObject *obj)
 {
-  PsppireMeansLayer *w = (PsppireMeansLayer *)obj;
+  PsppireMeansLayer *w = PSPPIRE_MEANS_LAYER (obj);
 
   if (w->dispose_has_run)
     return;

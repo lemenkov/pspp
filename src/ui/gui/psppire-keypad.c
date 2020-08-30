@@ -34,7 +34,7 @@ static GObjectClass * parent_class = NULL;
 static void
 psppire_keypad_dispose (GObject *obj)
 {
-  PsppireKeypad *kp = (PsppireKeypad *)obj;
+  PsppireKeypad *kp = PSPPIRE_KEYPAD (obj);
 
   if (kp->dispose_has_run)
     return;
