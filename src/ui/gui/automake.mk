@@ -437,7 +437,7 @@ include $(top_srcdir)/src/ui/gui/icons/automake.mk
 UNINSTALL_DATA_HOOKS += update-icon-cache
 INSTALL_DATA_HOOKS += update-icon-cache
 
-#############################################
+#### Build the tools needed to run glade on our .ui files
 
 EXTRA_pkgdir = $(abs_builddir)/src/ui/gui
 
@@ -464,3 +464,8 @@ src/ui/gui/glade-wrapper: src/ui/gui/glade-wrapper.in
 
 .PHONY: glade-tools
 glade-tools: src/ui/gui/glade-wrapper src/ui/gui/libpsppire-glade.la
+
+# This works around a possible bug in Automake 1.16.1 which installs
+# EXTRA_pkgLTLIBRARIES if DESTDIR is set.  It should not do that.
+install-EXTRA_pkgLTLIBRARIES:
+	true
