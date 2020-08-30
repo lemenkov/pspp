@@ -62,6 +62,7 @@
 #include "psppire-dict.h"
 #include "psppire-select-dest.h"
 #include "psppire-means-layer.h"
+#include "helper.h"
 
 #include <gtk/gtk.h>
 
@@ -575,7 +576,7 @@ de_select_tree_model (GtkTreeSelection *selection, GtkTreeModel *model)
     }
 
   /* Delete list of RowRefs and its contents */
-  g_list_foreach (selected_rows, (GFunc) (void (*)(void)) gtk_tree_row_reference_free, NULL);
+  g_list_foreach (selected_rows, GFUNC_COMPAT_CAST (gtk_tree_row_reference_free), NULL);
   g_list_free (selected_rows);
 }
 
@@ -662,7 +663,7 @@ select_selection (PsppireSelector *selector)
 			);
     }
 
-  g_list_foreach (selected_rows, (GFunc) (void (*)(void)) gtk_tree_path_free, NULL);
+  g_list_foreach (selected_rows, GFUNC_COMPAT_CAST (gtk_tree_path_free), NULL);
   g_list_free (selected_rows);
 
   refilter (selector);

@@ -23,6 +23,7 @@
 #include <stdlib.h>
 #include "psppire-dialog.h"
 #include "builder-wrapper.h"
+#include "helper.h"
 
 #include "gettext.h"
 #define _(msgid) gettext (msgid)
@@ -192,7 +193,7 @@ on_change_clicked (GObject *obj, gpointer data)
   gtk_tree_model_row_changed (model, rows->data, &iter);
 
  finish:
-  g_list_foreach (rows, (GFunc) (void (*)(void)) gtk_tree_path_free, NULL);
+  g_list_foreach (rows, GFUNC_COMPAT_CAST (gtk_tree_path_free), NULL);
   g_list_free (rows);
   var_unref (var);
 }
@@ -275,7 +276,7 @@ on_selection_change (GtkTreeSelection *selection, gpointer data)
       gtk_widget_set_sensitive  (rd->change_button, FALSE);
     }
 
-  g_list_foreach (rows, (GFunc) (void (*)(void)) gtk_tree_path_free, NULL);
+  g_list_foreach (rows, GFUNC_COMPAT_CAST (gtk_tree_path_free), NULL);
   g_list_free (rows);
 }
 

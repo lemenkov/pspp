@@ -65,5 +65,13 @@ psppire_box_pack_start_defaults (GtkBox *box, GtkWidget *widget)
   gtk_box_pack_start (box, widget, TRUE, TRUE, 0);
 }
 
+/* Starting with gcc8 the warning Wcast-function-type will
+   trigger if no intermediate (void (*)(void)) cast is done
+   for a function cast to GFunc when the number of parameters
+   is not 2. The reason is that the compiler behaviour in this
+   situation is undefined according to C standard although many
+   implementations rely on this. */
+#define GFUNC_COMPAT_CAST(x) ((GFunc) (void (*)(void)) (x))
+
 #endif
 
