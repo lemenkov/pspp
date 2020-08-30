@@ -28,38 +28,33 @@
 
 #include <gtk/gtk.h>
 
+#include "libpspp/compiler.h"
+#include "data/variable.h"
+
+#include "t-test-options.h"
 #include "src/language/stats/chart-category.h"
+#include "src/language/stats/aggregate.h"
 
 const GEnumValue align[1];
 const GEnumValue measure[1];
 const GEnumValue role[1];
 
-const int N_AG_FUNCS = 0;
-const struct ag_func ag_func[1];
-
-int F_8_0;
-
-int var_is_numeric (void);
-int tt_options_dialog_run (void);
-int agr_func_tab (void);
-
-int
-var_is_numeric ()
+bool
+var_is_numeric (const struct variable *v UNUSED)
 {
   assert (0);
   return -1;
 }
 
-int
-tt_options_dialog_run ()
+void
+tt_options_dialog_run (struct tt_options_dialog *x UNUSED)
 {
   assert (0);
-  return -1;
 }
 
-int
-agr_func_tab ()
-{
-  assert (0);
-  return -1;
-}
+const struct agr_func agr_func_tab[] =
+  {
+  };
+
+const struct ag_func ag_func[] = {};
+const int N_AG_FUNCS = 1;
