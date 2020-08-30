@@ -29,8 +29,6 @@
 #define _(msgid) gettext (msgid)
 #define N_(msgid) msgid
 
-static void psppire_var_view_base_finalize (PsppireVarViewClass *, gpointer);
-static void psppire_var_view_base_init     (PsppireVarViewClass *class);
 static void psppire_var_view_class_init    (PsppireVarViewClass *class);
 static void psppire_var_view_init          (PsppireVarView      *var_view);
 
@@ -64,44 +62,8 @@ model_init (PsppireSelectDestWidgetIface *iface)
   iface->contains_var = var_view_contains_var;
 }
 
-GType
-psppire_var_view_get_type (void)
-{
-  static GType psppire_var_view_type = 0;
-
-  if (!psppire_var_view_type)
-    {
-      static const GTypeInfo psppire_var_view_info =
-      {
-	sizeof (PsppireVarViewClass),
-	(GBaseInitFunc) (void (*)(void)) psppire_var_view_base_init,
-        (GBaseFinalizeFunc) (void (*)(void)) psppire_var_view_base_finalize,
-	(GClassInitFunc) (void (*)(void)) psppire_var_view_class_init,
-	(GClassFinalizeFunc) NULL,
-	NULL,
-        sizeof (PsppireVarView),
-	0,
-	(GInstanceInitFunc) (void (*)(void)) psppire_var_view_init,
-	NULL /* value_table */
-      };
-
-      static const GInterfaceInfo var_view_model_info = {
-	(GInterfaceInitFunc) (void (*)(void)) model_init, /* Fill this in */
-	NULL,
-	NULL
-      };
-
-      psppire_var_view_type =
-	g_type_register_static (GTK_TYPE_TREE_VIEW, "PsppireVarView",
-				&psppire_var_view_info, 0);
-
-      g_type_add_interface_static (psppire_var_view_type,
-				   PSPPIRE_TYPE_SELECT_DEST_WIDGET,
-				   &var_view_model_info);
-    }
-
-  return psppire_var_view_type;
-}
+G_DEFINE_TYPE_WITH_CODE (PsppireVarView, psppire_var_view, GTK_TYPE_TREE_VIEW,
+               G_IMPLEMENT_INTERFACE (PSPPIRE_TYPE_SELECT_DEST_WIDGET, model_init))
 
 void
 psppire_var_view_clear (PsppireVarView *vv)
@@ -251,6 +213,8 @@ psppire_var_view_class_init (PsppireVarViewClass *class)
 {
   GObjectClass *object_class = G_OBJECT_CLASS (class);
 
+  object_class->finalize = psppire_var_view_finalize;
+
   GParamSpec *n_cols_spec =
     g_param_spec_int ("n-cols",
 		      "Number of columns",
@@ -267,26 +231,6 @@ psppire_var_view_class_init (PsppireVarViewClass *class)
                                    PROP_N_COLS,
                                    n_cols_spec);
 }
-
-
-static void
-psppire_var_view_base_init (PsppireVarViewClass *class)
-{
-
-  GObjectClass *object_class = G_OBJECT_CLASS (class);
-
-  object_class->finalize = psppire_var_view_finalize;
-}
-
-
-
-static void
-psppire_var_view_base_finalize (PsppireVarViewClass *class,
-				 gpointer class_data)
-{
-}
-
-
 
 static void
 psppire_var_view_init (PsppireVarView *vv)

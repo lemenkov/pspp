@@ -44,42 +44,12 @@
 #include "psppire-syntax-window.h"
 #include "psppire-window-register.h"
 
-static void psppire_window_base_init     (PsppireWindowClass *class);
 static void psppire_window_class_init    (PsppireWindowClass *class);
 static void psppire_window_init          (PsppireWindow      *window);
 
-
 static GObjectClass *parent_class;
 
-GType
-psppire_window_get_type (void)
-{
-  static GType psppire_window_type = 0;
-
-  if (!psppire_window_type)
-    {
-      static const GTypeInfo psppire_window_info =
-      {
-	sizeof (PsppireWindowClass),
-	(GBaseInitFunc) (void (*)(void)) psppire_window_base_init,
-        (GBaseFinalizeFunc) NULL,
-	(GClassInitFunc) (void (*)(void)) psppire_window_class_init,
-	(GClassFinalizeFunc) NULL,
-	NULL,
-        sizeof (PsppireWindow),
-	0,
-	(GInstanceInitFunc) (void (*)(void)) psppire_window_init,
-	NULL /* value_table */
-      };
-
-      psppire_window_type =
-	g_type_register_static (PSPPIRE_TYPE_WINDOW_BASE, "PsppireWindow",
-				&psppire_window_info, G_TYPE_FLAG_ABSTRACT);
-    }
-
-  return psppire_window_type;
-}
-
+G_DEFINE_ABSTRACT_TYPE (PsppireWindow, psppire_window, PSPPIRE_TYPE_WINDOW_BASE)
 
 /* Properties */
 enum
@@ -269,6 +239,8 @@ psppire_window_class_init (PsppireWindowClass *class)
 {
   GObjectClass *object_class = G_OBJECT_CLASS (class);
 
+  object_class->finalize = psppire_window_finalize;
+
   GParamSpec *description_spec =
     null_if_empty_param ("description",
 		       "Description",
@@ -308,16 +280,6 @@ psppire_window_class_init (PsppireWindowClass *class)
 
   parent_class = g_type_class_peek_parent (class);
 }
-
-
-static void
-psppire_window_base_init (PsppireWindowClass *class)
-{
-  GObjectClass *object_class = G_OBJECT_CLASS (class);
-
-  object_class->finalize = psppire_window_finalize;
-}
-
 
 
 static void
@@ -946,4 +908,3 @@ delete_recent (const char *file_name)
 
   g_free (uri);
 }
-

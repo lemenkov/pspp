@@ -45,8 +45,6 @@
 #define _(msgid) gettext (msgid)
 #define N_(msgid) msgid
 
-static void psppire_syntax_window_base_finalize (PsppireSyntaxWindowClass *, gpointer);
-static void psppire_syntax_window_base_init     (PsppireSyntaxWindowClass *class);
 static void psppire_syntax_window_class_init    (PsppireSyntaxWindowClass *class);
 static void psppire_syntax_window_init          (PsppireSyntaxWindow      *syntax_editor);
 
@@ -101,45 +99,8 @@ psppire_syntax_window_get_property (GObject         *object,
     };
 }
 
-GType
-psppire_syntax_window_get_type (void)
-{
-  static GType psppire_syntax_window_type = 0;
-
-  if (!psppire_syntax_window_type)
-    {
-      static const GTypeInfo psppire_syntax_window_info =
-      {
-	sizeof (PsppireSyntaxWindowClass),
-	(GBaseInitFunc) (void (*)(void)) psppire_syntax_window_base_init,
-        (GBaseFinalizeFunc) (void (*)(void)) psppire_syntax_window_base_finalize,
-	(GClassInitFunc) (void (*)(void)) psppire_syntax_window_class_init,
-	(GClassFinalizeFunc) NULL,
-	NULL,
-        sizeof (PsppireSyntaxWindow),
-	0,
-	(GInstanceInitFunc) (void (*)(void)) psppire_syntax_window_init,
-	NULL /* value_table */
-      };
-
-      static const GInterfaceInfo window_interface_info =
-	{
-	  (GInterfaceInitFunc) (void (*)(void)) psppire_syntax_window_iface_init,
-	  NULL,
-	  NULL
-	};
-
-      psppire_syntax_window_type =
-	g_type_register_static (PSPPIRE_TYPE_WINDOW, "PsppireSyntaxWindow",
-				&psppire_syntax_window_info, 0);
-
-      g_type_add_interface_static (psppire_syntax_window_type,
-				   PSPPIRE_TYPE_WINDOW_MODEL,
-				   &window_interface_info);
-    }
-
-  return psppire_syntax_window_type;
-}
+G_DEFINE_TYPE_WITH_CODE (PsppireSyntaxWindow, psppire_syntax_window, PSPPIRE_TYPE_WINDOW,
+                         G_IMPLEMENT_INTERFACE (PSPPIRE_TYPE_WINDOW_MODEL, psppire_syntax_window_iface_init))
 
 static GObjectClass *parent_class ;
 
@@ -188,6 +149,7 @@ psppire_syntax_window_class_init (PsppireSyntaxWindowClass *class)
 {
   GParamSpec *encoding_spec;
   GObjectClass *gobject_class = G_OBJECT_CLASS (class);
+  gobject_class->finalize = psppire_syntax_window_finalize;
 
   GtkSourceLanguageManager *lm = gtk_source_language_manager_get_default ();
 
@@ -227,22 +189,6 @@ psppire_syntax_window_class_init (PsppireSyntaxWindowClass *class)
   g_object_class_install_property (gobject_class,
                                    PROP_ENCODING,
                                    encoding_spec);
-}
-
-
-static void
-psppire_syntax_window_base_init (PsppireSyntaxWindowClass *class)
-{
-  GObjectClass *object_class = G_OBJECT_CLASS (class);
-  object_class->finalize = psppire_syntax_window_finalize;
-}
-
-
-
-static void
-psppire_syntax_window_base_finalize (PsppireSyntaxWindowClass *class,
-				     gpointer class_data)
-{
 }
 
 

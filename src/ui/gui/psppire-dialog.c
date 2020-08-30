@@ -52,43 +52,8 @@ psppire_dialog_finalize (GObject *object)
     G_OBJECT_CLASS (parent_class)->finalize (object);
 }
 
-static void
-psppire_dialog_base_init (PsppireDialogClass *class)
-{
-  GObjectClass *object_class = G_OBJECT_CLASS (class);
 
-  object_class->finalize = psppire_dialog_finalize;
-}
-
-GType
-psppire_dialog_get_type (void)
-{
-  static GType dialog_type = 0;
-
-  if (!dialog_type)
-    {
-      static const GTypeInfo dialog_info =
-      {
-	sizeof (PsppireDialogClass),
-	(GBaseInitFunc) (void (*)(void)) psppire_dialog_base_init,
-        NULL, /* base_finalize */
-	(GClassInitFunc) (void (*)(void)) psppire_dialog_class_init,
-        NULL, /* class_finalize */
-	NULL, /* class_data */
-        sizeof (PsppireDialog),
-	0,
-	(GInstanceInitFunc) (void (*)(void)) psppire_dialog_init,
-	NULL /* value_table */
-      };
-
-      dialog_type = g_type_register_static (PSPPIRE_TYPE_WINDOW_BASE,
-					    "PsppireDialog", &dialog_info, 0);
-    }
-
-  return dialog_type;
-}
-
-
+G_DEFINE_TYPE (PsppireDialog, psppire_dialog, PSPPIRE_TYPE_WINDOW_BASE);
 
 /* Properties */
 enum
@@ -148,7 +113,9 @@ psppire_dialog_set_property (GObject         *object,
 static void
 psppire_dialog_class_init (PsppireDialogClass *class)
 {
-  GObjectClass *object_class = (GObjectClass *) class;
+  GObjectClass *object_class = G_OBJECT_CLASS (class);
+
+  object_class->finalize = psppire_dialog_finalize;
 
   GParamSpec *sliding_spec ;
   GParamSpec *help_page_spec ;

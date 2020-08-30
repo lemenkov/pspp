@@ -14,10 +14,8 @@
    You should have received a copy of the GNU General Public License
    along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 
-
 #ifndef __PSPPIRE_DIALOG_H__
 #define __PSPPIRE_DIALOG_H__
-
 
 #include <glib.h>
 #include <glib-object.h>
@@ -84,4 +82,3 @@ void           psppire_dialog_notify_change (PsppireDialog *);
 G_END_DECLS
 
 #endif /* __PSPPIRE_DIALOG_H__ */
-

@@ -31,40 +31,10 @@
 #define _(msgid) gettext (msgid)
 #define N_(msgid) msgid
 
-static void psppire_dict_view_base_finalize (PsppireDictViewClass *, gpointer);
-static void psppire_dict_view_base_init     (PsppireDictViewClass *class);
 static void psppire_dict_view_class_init    (PsppireDictViewClass *class);
 static void psppire_dict_view_init          (PsppireDictView      *dict_view);
 
-GType
-psppire_dict_view_get_type (void)
-{
-  static GType psppire_dict_view_type = 0;
-
-  if (!psppire_dict_view_type)
-    {
-      static const GTypeInfo psppire_dict_view_info =
-      {
-	sizeof (PsppireDictViewClass),
-	(GBaseInitFunc) (void (*)(void)) psppire_dict_view_base_init,
-        (GBaseFinalizeFunc) (void (*)(void)) psppire_dict_view_base_finalize,
-	(GClassInitFunc) (void (*)(void)) psppire_dict_view_class_init,
-	(GClassFinalizeFunc) NULL,
-	NULL,
-        sizeof (PsppireDictView),
-	0,
-	(GInstanceInitFunc) (void (*)(void)) psppire_dict_view_init,
-	NULL /* value_table */
-      };
-
-      psppire_dict_view_type =
-	g_type_register_static (GTK_TYPE_TREE_VIEW, "PsppireDictView",
-				&psppire_dict_view_info, 0);
-    }
-
-  return psppire_dict_view_type;
-}
-
+G_DEFINE_TYPE (PsppireDictView, psppire_dict_view, GTK_TYPE_TREE_VIEW)
 
 static void
 psppire_dict_view_finalize (GObject *object)
@@ -305,6 +275,8 @@ psppire_dict_view_class_init (PsppireDictViewClass *class)
 {
   GObjectClass *object_class = G_OBJECT_CLASS (class);
 
+  object_class->finalize = psppire_dict_view_finalize;
+
   GParamSpec *predicate_spec =
     g_param_spec_pointer ("predicate",
 			  "Predicate",
@@ -334,24 +306,6 @@ psppire_dict_view_class_init (PsppireDictViewClass *class)
   g_object_class_install_property (object_class,
                                    PROP_SELECTION_MODE,
                                    selection_mode_spec);
-}
-
-
-static void
-psppire_dict_view_base_init (PsppireDictViewClass *class)
-{
-  GObjectClass *object_class = G_OBJECT_CLASS (class);
-
-  object_class->finalize = psppire_dict_view_finalize;
-}
-
-
-
-static void
-psppire_dict_view_base_finalize (PsppireDictViewClass *class,
-				 gpointer class_data)
-{
-
 }
 
 static gboolean

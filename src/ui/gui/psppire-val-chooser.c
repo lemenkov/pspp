@@ -30,42 +30,12 @@
 #define _(msgid) gettext (msgid)
 #define N_(msgid) msgid
 
-static void psppire_val_chooser_base_finalize (PsppireValChooserClass *, gpointer);
-static void psppire_val_chooser_base_init     (PsppireValChooserClass *class);
 static void psppire_val_chooser_class_init    (PsppireValChooserClass *class);
 static void psppire_val_chooser_init          (PsppireValChooser      *vc);
 
 static void psppire_val_chooser_realize       (GtkWidget *w);
 
-GType
-psppire_val_chooser_get_type (void)
-{
-  static GType psppire_val_chooser_type = 0;
-
-  if (!psppire_val_chooser_type)
-    {
-      static const GTypeInfo psppire_val_chooser_info =
-      {
-	sizeof (PsppireValChooserClass),
-	(GBaseInitFunc) (void (*)(void)) psppire_val_chooser_base_init,
-        (GBaseFinalizeFunc)  (void (*)(void)) psppire_val_chooser_base_finalize,
-	(GClassInitFunc)  (void (*)(void)) psppire_val_chooser_class_init,
-	(GClassFinalizeFunc) NULL,
-	NULL,
-        sizeof (PsppireValChooser),
-	0,
-	(GInstanceInitFunc) (void (*)(void)) psppire_val_chooser_init,
-	NULL /* value_table */
-      };
-
-      psppire_val_chooser_type =
-	g_type_register_static (GTK_TYPE_FRAME, "PsppireValChooser",
-				&psppire_val_chooser_info, 0);
-    }
-
-  return psppire_val_chooser_type;
-}
-
+G_DEFINE_TYPE (PsppireValChooser, psppire_val_chooser, GTK_TYPE_FRAME)
 
 static void
 psppire_val_chooser_finalize (GObject *object)
@@ -158,6 +128,8 @@ static void
 psppire_val_chooser_class_init (PsppireValChooserClass *class)
 {
   GObjectClass *object_class = G_OBJECT_CLASS (class);
+
+  object_class->finalize = psppire_val_chooser_finalize;
   GtkWidgetClass *widget_class = GTK_WIDGET_CLASS (class);
 
   GParamSpec *is_string_spec =
@@ -189,24 +161,6 @@ psppire_val_chooser_class_init (PsppireValChooserClass *class)
   g_object_class_install_property (object_class,
                                    PROP_SHOW_ELSE,
                                    show_else_spec);
-}
-
-
-static void
-psppire_val_chooser_base_init (PsppireValChooserClass *class)
-{
-  GObjectClass *object_class = G_OBJECT_CLASS (class);
-
-  object_class->finalize = psppire_val_chooser_finalize;
-}
-
-
-
-static void
-psppire_val_chooser_base_finalize (PsppireValChooserClass *class,
-				 gpointer class_data)
-{
-
 }
 
 
