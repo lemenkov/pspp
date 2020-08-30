@@ -112,7 +112,7 @@ homogeneous_types (GtkWidget *source, GtkWidget *dest)
       have_type = true;
     }
 
-  g_list_foreach (list, (GFunc) (void (*)(void)) gtk_tree_path_free, NULL);
+  g_list_foreach (list, GFUNC_COMPAT_CAST (gtk_tree_path_free), NULL);
   g_list_free (list);
 
   if (retval == FALSE)
@@ -179,7 +179,7 @@ numeric_only (GtkWidget *source, GtkWidget *dest)
 	}
     }
 
-  g_list_foreach (list, (GFunc) (void (*)(void)) gtk_tree_path_free, NULL);
+  g_list_foreach (list, GFUNC_COMPAT_CAST (gtk_tree_path_free), NULL);
   g_list_free (list);
 
   return retval;
