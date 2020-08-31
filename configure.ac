@@ -47,6 +47,12 @@ PSPP_CC_FOR_BUILD
 PSPP_PERL
 PSPP_PYTHON
 
+# This suppresses an error in gl/careadlinkat.c that otherwise can't be
+# avoided in GCC 10.x:
+#   ../../gl/careadlinkat.c: In function ‘careadlinkat’:
+#   cc1: error: function may return address of local variable
+CFLAGS="$CFLAGS -DGCC_LINT"
+
 dnl Disable automatic po/ support, because PSPP provides its own po/ support.
 AC_PROVIDE([AM_PO_SUBDIRS])
 AM_GNU_GETTEXT([external], [need-ngettext])
