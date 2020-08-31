@@ -185,6 +185,7 @@ decode_spvlb_valign (uint32_t in, enum table_valign *valignp)
       return NULL;
 
     default:
+      *valignp = 0;
       return xasprintf ("bad cell style valign %"PRIu32, in);
     }
 }
