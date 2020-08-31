@@ -674,6 +674,7 @@ size =>large
 AT_CLEANUP
 
 AT_SETUP([Perl Pspp.t])
+AT_KEYWORDS([slow])
 AT_SKIP_IF([test "$WITH_PERL_MODULE" = no])
 # Skip this test if Perl's Text::Diff module is not installed.
 AT_CHECK([perl -MText::Diff -e '' || exit 77])

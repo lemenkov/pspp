@@ -154,7 +154,7 @@ entrée
 AT_CLEANUP
 
 AT_SETUP([read UTF-16 as Auto])
-AT_KEYWORDS([u8_istream])
+AT_KEYWORDS([u8_istream slow])
 AT_CHECK([i18n-test supports_encodings UTF-16 UTF-16BE UTF-16LE])
 dnl The "sleep 1" checks for a bug in which u8-istream did not properly
 dnl handle receiving data in multiple chunks.
