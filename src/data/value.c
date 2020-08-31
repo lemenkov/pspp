@@ -161,7 +161,7 @@ void
 value_resize (union value *value, int old_width, int new_width)
 {
   assert (value_is_resizable (value, old_width, new_width));
-  if (new_width != old_width)
+  if (new_width != old_width && new_width > 0)
     {
       union value tmp;
       value_init (&tmp, new_width);
