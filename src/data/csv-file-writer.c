@@ -143,7 +143,7 @@ csv_writer_open (struct file_handle *fh, const struct dictionary *dict,
   w->rf = replace_file_start (fh, "w", 0666,  &w->file);
   if (w->rf == NULL)
     {
-      msg (ME, _("Error opening `%s' for writing as a system file: %s."),
+      msg (ME, _("Error opening `%s' for writing as a CSV file: %s."),
            fh_get_file_name (fh), strerror (errno));
       goto error;
     }
