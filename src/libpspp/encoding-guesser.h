@@ -56,6 +56,49 @@
    The encoding_guess_parse_encoding() and encoding_guess_encoding_is_auto()
    functions work with encoding names in these forms.
 
+   Endian variants
+   ---------------
+
+   These functions identify three different variants of UTF-16:
+
+     - "UTF-16BE": Big-endian UTF-16 byte order without a byte-order mark
+       (BOM),
+
+     - "UTF-16LE": Little-endian UTF-16 byte order without a BOM,
+
+     - "UTF-16": Big-endian or little-endian UTF-16 byte order *with* a BOM,
+
+   and similarly for UTF-32.
+
+   Unicode requires these distinctions.  The UTF-8, UTF-16, UTF-32 & BOM FAQ at
+   https://unicode.org/faq/utf_bom.html, for example, says:
+
+     Q: Why do some of the UTFs have a BE or LE in their label, such as
+     UTF-16LE?
+
+     A: UTF-16 and UTF-32 use code units that are two and four bytes long
+     respectively. For these UTFs, there are three sub-flavors: BE, LE and
+     unmarked. The BE form uses big-endian byte serialization (most significant
+     byte first), the LE form uses little-endian byte serialization (least
+     significant byte first) and the unmarked form uses big-endian byte
+     serialization by default, but may include a byte order mark at the
+     beginning to indicate the actual byte serialization used.
+
+   ...
+
+     Q: How do I tag data that does not interpret U+FEFF as a BOM?
+
+     A: Use the tag UTF-16BE to indicate big-endian UTF-16 text, and UTF-16LE
+     to indicate little-endian UTF-16 text. If you do use a BOM, tag the text
+     as simply UTF-16. [MD]
+
+     Q: Why wouldn’t I always use a protocol that requires a BOM?
+
+     A: Where the data has an associated type, such as a field in a database, a
+     BOM is unnecessary. In particular, if a text data stream is marked as
+     UTF-16BE, UTF-16LE, UTF-32BE or UTF-32LE, a BOM is neither necessary nor
+     permitted. Any U+FEFF would be interpreted as a ZWNBSP...
+
    Usage
    -----
 
