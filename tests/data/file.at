@@ -84,7 +84,7 @@ AT_CLEANUP
 AT_SETUP([Write fifo])
 
 dnl The Fifo feature is not available in w32 builds
-AT_SKIP_IF([case $host in *-*-mingw*) true ;; *) false ;; esac])
+AT_SKIP_IF([$MINGW])
 
 AT_DATA([file.sps], [dnl
 DATA LIST NOTABLE/x 1.

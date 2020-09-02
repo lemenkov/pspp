@@ -63,7 +63,6 @@ export GZIP
 WINEPREFIX=$HOME/.wine    # Work around the following kludge to keep wine happy
 export WINEPREFIX
 
-
 HOME=/nonexistent		# Kluge to make PSPP ignore $HOME/.pspprc.
 export HOME
 
@@ -76,6 +75,11 @@ if test X"$RUNNER" = Xwine; then
         $pspp_diff -w  "$@"
     }
 fi
+
+case $host in
+    *-*-mingw*) MINGW=: ;;
+    *) MINGW=false ;;
+esac
 
 # Enable leak suppressions for Address Sanitizer/Leak Sanitizer.
 LSAN_OPTIONS="suppressions=$abs_top_srcdir/tests/lsan.supp print_suppressions=0"

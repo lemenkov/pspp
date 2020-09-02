@@ -380,6 +380,7 @@ TESTSUITE_AT = \
 	tests/language/utilities/cache.at \
 	tests/language/utilities/cd.at \
 	tests/language/utilities/date.at \
+	tests/language/utilities/host.at \
 	tests/language/utilities/insert.at \
 	tests/language/utilities/permissions.at \
 	tests/language/utilities/set.at \

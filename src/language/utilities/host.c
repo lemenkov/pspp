@@ -1,4 +1,4 @@
-/* PSPP - a program for statistical analysis.
+/* pspp - a program for statistical analysis.
    Copyright (C) 1997-9, 2000, 2009, 2010, 2011 Free Software Foundation, Inc.
 
    This program is free software: you can redistribute it and/or modify
@@ -16,10 +16,13 @@
 
 #include <config.h>
 
-#include <stdio.h>
-#include <stdlib.h>
 #include <ctype.h>
 #include <errno.h>
+#include <fcntl.h>
+#include <signal.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <sys/time.h>
 #include <unistd.h>
 #if HAVE_SYS_WAIT_H
 #include <sys/wait.h>
@@ -33,8 +36,14 @@
 #include "libpspp/i18n.h"
 #include "libpspp/message.h"
 #include "libpspp/str.h"
+#include "libpspp/string-array.h"
+#include "libpspp/temp-file.h"
+#include "output/text-item.h"
 
+#include "gl/intprops.h"
 #include "gl/localcharset.h"
+#include "gl/read-file.h"
+#include "gl/timespec.h"
 #include "gl/xalloc.h"
 #include "gl/xmalloca.h"
 
@@ -42,85 +51,218 @@
 #define _(msgid) gettext (msgid)
 #define N_(msgid) msgid
 
-#if HAVE_FORK && HAVE_EXECL
-/* Spawn an interactive shell process. */
+#if !HAVE_FORK
 static bool
-shell (void)
+run_commands (const struct string_array *commands, double time_limit)
 {
-  int pid;
-
-  pid = fork ();
-  switch (pid)
+  if (time_limit != DBL_MAX)
     {
-    case 0:
-      {
-	const char *shell_fn;
-	char *shell_process;
+      msg (SE, _("Time limit not supported on this platform."));
+      return false;
+    }
 
-	{
-	  int i;
+  for (size_t i = 0; i < commands->n; i++)
+    {
+      /* XXX No way to capture command output */
+      char *s = recode_string (locale_charset (), "UTF-8",
+                               commands->strings[i], -1);
+      int retval = system (s);
+      free (s);
 
-	  for (i = 3; i < 20; i++)
-	    close (i);
-	}
+      if (retval)
+        {
+          msg (SE, _("%s: Command exited with status %d."),
+               commands->strings[i], retval);
+          return false;
+        }
+    }
+  return true;
+}
+#else
+static bool
+run_command (const char *command, struct timespec timeout)
+{
+  /* Same exit codes used by 'sh'. */
+  enum {
+    EXIT_CANNOT_INVOKE = 126,
+    EXIT_ENOENT = 127,
+  };
 
-	shell_fn = getenv ("SHELL");
-	if (shell_fn == NULL)
-	  shell_fn = "/bin/sh";
+  /* Create a temporary file to capture command output. */
+  FILE *output_file = create_temp_file ();
+  if (!output_file)
+    {
+      msg (SE, _("Failed to create temporary file (%s)."), strerror (errno));
+      return false;
+    }
 
-	{
-	  const char *cp = strrchr (shell_fn, '/');
-	  cp = cp ? &cp[1] : shell_fn;
-	  shell_process = xmalloca (strlen (cp) + 8);
-	  strcpy (shell_process, "-");
-	  strcat (shell_process, cp);
-	  if (strcmp (cp, "sh"))
-	    shell_process[0] = '+';
-	}
+  int dev_null_fd = open ("/dev/null", O_RDONLY);
+  if (dev_null_fd < 0)
+    {
+      msg (SE, _("/dev/null: Failed to open (%s)."), strerror (errno));
+      fclose (output_file);
+      return false;
+    }
 
-	execl (shell_fn, shell_process, NULL);
+  char *locale_command = recode_string (locale_charset (), "UTF-8",
+                                        command, -1);
 
-	_exit (1);
-      }
+  pid_t pid = fork ();
+  if (pid < 0)
+    {
+      close (dev_null_fd);
+      fclose (output_file);
+      free (locale_command);
 
-    case -1:
       msg (SE, _("Couldn't fork: %s."), strerror (errno));
       return false;
-
-    default:
-      assert (pid > 0);
-      while (wait (NULL) != pid)
-	;
-      return true;
     }
-}
-#else /* !(HAVE_FORK && HAVE_EXECL) */
-/* Don't know how to spawn an interactive shell. */
-static bool
-shell (void)
-{
-  msg (SE, _("Interactive shell not supported on this platform."));
-  return false;
-}
-#endif
-
-/* Executes the specified COMMAND in a subshell.  Returns true if
-   successful, false otherwise. */
-static bool
-run_command (const char *command)
-{
-  if (system (NULL) == 0)
+  else if (!pid)
     {
-      msg (SE, _("Command shell not supported on this platform."));
-      return false;
+      /* Running in the child. */
+
+      /* Set up timeout. */
+      if (timeout.tv_sec < TYPE_MAXIMUM (time_t))
+        {
+          signal (SIGALRM, SIG_DFL);
+
+          struct timespec left = timespec_sub (timeout, current_timespec ());
+          if (timespec_sign (left) <= 0)
+            raise (SIGALRM);
+
+          struct itimerval it = {
+            .it_value = {
+              .tv_sec = left.tv_sec,
+              .tv_usec = left.tv_nsec / 1000
+            }
+          };
+          setitimer (ITIMER_REAL, &it, NULL);
+        }
+
+      /* Set up file descriptors:
+         - /dev/null for stdin
+         - Temporary file to capture stdout and stderr.
+         - Close everything else.
+      */
+      dup2 (dev_null_fd, 0);
+      dup2 (fileno (output_file), 1);
+      dup2 (fileno (output_file), 2);
+      close (dev_null_fd);
+      for (int fd = 3; fd < 256; fd++)
+        close (fd);
+
+      /* Choose the shell. */
+      const char *shell = getenv ("SHELL");
+      if (shell == NULL)
+        shell = "/bin/sh";
+
+      /* Run subprocess. */
+      execl (shell, shell, "-c", locale_command, NULL);
+
+      /* Failed to start the shell. */
+      _exit (errno == ENOENT ? EXIT_ENOENT : EXIT_CANNOT_INVOKE);
     }
 
-  /* Execute the command. */
-  if (system (command) == -1)
-    msg (SE, _("Error executing command: %s."), strerror (errno));
+  /* Running in the parent. */
+  close (dev_null_fd);
+  free (locale_command);
+
+  /* Wait for child to exit. */
+  int status = 0;
+  int error = 0;
+  for (;;)
+    {
+      pid_t retval = waitpid (pid, &status, 0);
+      if (retval == pid)
+        break;
+      else if (retval < 0)
+        {
+          if (errno != EINTR)
+            {
+              error = errno;
+              break;
+            }
+        }
+      else
+        NOT_REACHED ();
+    }
+
+  bool ok = true;
+  if (error)
+    {
+      msg (SW, _("While running \"%s\", waiting for child process "
+                 "failed (%s)."),
+           command, strerror (errno));
+      ok = false;
+    }
+
+  if (WIFSIGNALED (status))
+    {
+      int signum = WTERMSIG (status);
+      if (signum == SIGALRM)
+        msg (SW, _("Command \"%s\" timed out."), command);
+      else
+        msg (SW, _("Command \"%s\" terminated by signal %d."), command, signum);
+      ok = false;
+    }
+  else if (WIFEXITED (status) && WEXITSTATUS (status))
+    {
+      int exit_code = WEXITSTATUS (status);
+      const char *detail = (exit_code == EXIT_ENOENT
+                            ? _("Command or shell not found")
+                            : exit_code == EXIT_CANNOT_INVOKE
+                            ? _("Could not invoke command or shell")
+                            : NULL);
+      if (detail)
+        msg (SW, _("Command \"%s\" exited with status %d (%s)."),
+             command, exit_code, detail);
+      else
+        msg (SW, _("Command \"%s\" exited with status %d."),
+             command, exit_code);
+      ok = false;
+    }
+
+  rewind (output_file);
+  size_t length;
+  char *locale_output = fread_file (output_file, 0, &length);
+  if (!locale_output)
+    {
+      msg (SW, _("Command \"%s\" output could not be read (%s)."),
+           command, strerror (errno));
+      ok = false;
+    }
+  else if (length > 0)
+    {
+      char *output = recode_string ("UTF-8", locale_charset (),
+                                    locale_output, -1);
+
+      /* Drop final new-line, if any. */
+      char *end = strchr (output, '\0');
+      if (end > output && end[-1] == '\n')
+        end[-1] = '\0';
+
+      text_item_submit (text_item_create_nocopy (TEXT_ITEM_LOG, output));
+    }
+  free (locale_output);
+
+  return ok;
+}
+
+static bool
+run_commands (const struct string_array *commands, double time_limit)
+{
+  struct timespec timeout = timespec_add (dtotimespec (time_limit),
+                                          current_timespec ());
+
+  for (size_t i = 0; i < commands->n; i++)
+    {
+      if (!run_command (commands->strings[i], timeout))
+        return false;
+    }
 
   return true;
 }
+#endif
 
 int
 cmd_host (struct lexer *lexer, struct dataset *ds UNUSED)
@@ -131,45 +273,42 @@ cmd_host (struct lexer *lexer, struct dataset *ds UNUSED)
       return CMD_FAILURE;
     }
 
-  if (lex_token (lexer) == T_ENDCMD)
-    return shell () ? CMD_SUCCESS : CMD_FAILURE;
-  else if (lex_match_id (lexer, "COMMAND"))
+  if (!lex_force_match_id (lexer, "COMMAND")
+      || !lex_force_match (lexer, T_EQUALS)
+      || !lex_force_match (lexer, T_LBRACK)
+      || !lex_force_string (lexer))
+    return CMD_FAILURE;
+
+  struct string_array commands = STRING_ARRAY_INITIALIZER;
+  while (lex_token (lexer) == T_STRING)
     {
-      struct string command;
-      char *locale_command;
-      bool ok;
+      string_array_append (&commands, lex_tokcstr (lexer));
+      lex_get (lexer);
+    }
+  if (!lex_force_match (lexer, T_RBRACK))
+    {
+      string_array_destroy (&commands);
+      return CMD_FAILURE;
+    }
 
-      lex_match (lexer, T_EQUALS);
-      if (!lex_force_match (lexer, T_LBRACK))
-        return CMD_FAILURE;
-
-      ds_init_empty (&command);
-      while (lex_is_string (lexer))
+  double time_limit = DBL_MAX;
+  if (lex_match_id (lexer, "TIMELIMIT"))
+    {
+      if (!lex_force_match (lexer, T_EQUALS)
+          || !lex_force_num (lexer))
         {
-          if (!ds_is_empty (&command))
-            ds_put_byte (&command, '\n');
-          ds_put_substring (&command, lex_tokss (lexer));
-          lex_get (lexer);
-        }
-      if (!lex_force_match (lexer, T_RBRACK))
-        {
-          ds_destroy (&command);
+          string_array_destroy (&commands);
           return CMD_FAILURE;
         }
 
-      locale_command = recode_string (locale_charset (), "UTF-8",
-                                      ds_cstr (&command),
-                                      ds_length (&command));
-      ds_destroy (&command);
-
-      ok = run_command (locale_command);
-      free (locale_command);
-
-      return ok ? CMD_SUCCESS : CMD_FAILURE;
+      double num = lex_number (lexer);
+      lex_get (lexer);
+      time_limit = num < 0.0 ? 0.0 : num;
     }
-  else
-    {
-      lex_error (lexer, NULL);
-      return CMD_FAILURE;
-    }
+
+  enum cmd_result result = lex_end_of_command (lexer);
+  if (result == CMD_SUCCESS && !run_commands (&commands, time_limit))
+    result = CMD_FAILURE;
+  string_array_destroy (&commands);
+  return result;
 }

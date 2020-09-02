@@ -8,6 +8,8 @@ Changes from 1.4.0 to 1.5.0:
 
  * HTML output is now HTML5 instead of HTML4.0 Transitional.
 
+ * The HOST command has been reimplemented.  It now supports TIMELIMIT.
+
 Changes from 1.2.0 to 1.4.0:
 
  * The file pspp-mode.el (the pspp-mode for Emacs) is no longer distributed
@@ -16,7 +18,7 @@ Changes from 1.2.0 to 1.4.0:
 
  * The Find dialog box, when searching for numeric values, will match only
    to the precision of the variable's print format.  This avoids behaviour
-   which is suprising to some users.
+   which is surprising to some users.
 
  * PSPP now supports the SPSS viewer (.spv) format that SPSS 16 and later
    use to save the contents of its output editor:

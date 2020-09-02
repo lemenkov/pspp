@@ -236,21 +236,51 @@ control to the operating system.
 @section HOST
 @vindex HOST
 
+In the syntax below, the square brackets must be included in the
+command syntax and do not indicate that that their contents are
+optional.
+
 @display
-HOST.
-HOST COMMAND=['@var{command}'...].
+HOST COMMAND=['@var{command}'...]
+     TIMELIMIT=@var{secs}.
 @end display
 
-@cmd{HOST} suspends the current @pspp{} session and temporarily returns control
-to the operating system.
-This command cannot be used if the SAFER (@pxref{SET}) setting is active.
+@cmd{HOST} executes one or more commands, each provided as a string in
+the required @subcmd{COMMAND} subcommand, in the shell of the
+underlying operating system.  PSPP runs each command in a separate
+shell process and waits for it to finish before running the next one.
+If a command fails (with a nonzero exit status, or because it is
+killed by a signal), then PSPP does not run any remaining commands.
 
-If the @subcmd{COMMAND} subcommand is specified, as a sequence of shell
-commands as quoted strings within square brackets, then @pspp{} executes
-them together in a single subshell.
+PSPP provides @file{/dev/null} as the shell's standard input.  If a
+process needs to read from stdin, redirect from a file or device, or
+use a pipe.
 
-If no subcommands are specified, then @pspp{} invokes an interactive
-subshell.
+PSPP displays the shell's standard output and standard error as PSPP
+output.  Redirect to a file or @code{/dev/null} or another device if
+this is not desired.
+
+The following example runs @code{rsync} to copy a file from a remote
+server to the local file @file{data.txt}, writing @code{rsync}'s own
+output to @file{rsync-log.txt}.  PSPP displays the command's error
+output, if any.  If @code{rsync} needs to prompt the user (e.g.@: to
+obtain a password), the command fails.  Only if the @code{rsync}
+succeeds, PSPP then runs the @code{sha512sum} command.
+
+@example
+HOST COMMAND=['rsync remote:data.txt data.txt > rsync-log.txt'
+              'sha512sum -c data.txt.sha512sum].
+@end example
+
+By default, PSPP waits as long as necessary for the series of commands
+to complete.  Use the optional @subcmd{TIMELIMIT} subcommand to limit
+the execution time to the specified number of seconds.
+
+PSPP built for mingw does not support all the features of
+@subcmd{HOST}.
+
+PSPP rejects this command if the SAFER (@pxref{SET}) setting is
+active.
 
 @node INCLUDE
 @section INCLUDE

@@ -43,6 +43,7 @@ GNULIB_MODULES = \
 	crypto/rijndael \
 	dirname \
 	dtoastr \
+	dtotimespec \
 	environ \
 	fatal-signal \
 	fcntl \
@@ -56,6 +57,7 @@ GNULIB_MODULES = \
 	getline \
 	getpass \
 	gettext-h \
+	gettime \
 	gettimeofday \
         getopt-gnu \
 	gitlog-to-changelog \
@@ -105,6 +107,9 @@ GNULIB_MODULES = \
 	sys_stat \
 	tempname \
 	termios \
+	timespec \
+	timespec-add \
+	timespec-sub \
 	trunc \
 	unicase/u8-casecmp \
 	unicase/u8-casefold \
