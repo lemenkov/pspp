@@ -265,7 +265,10 @@ replace_file_start (const struct file_handle *fh, const char *mode,
       rf->tmp_name = convert_to_filename_encoding (rf->tmp_name_verbatim, strlen (rf->tmp_name_verbatim), fh_get_file_name_encoding (fh));
 
       /* Create file by that name. */
-      fd = Topen (rf->tmp_name, O_WRONLY | O_CREAT | O_EXCL | O_BINARY, permissions);
+      bool binary = strchr (mode, 'b') != NULL;
+      fd = Topen (rf->tmp_name,
+                  O_WRONLY | O_CREAT | O_EXCL | (binary ? O_BINARY : O_TEXT),
+                  permissions);
       if (fd >= 0)
         break;
       if (errno != EEXIST)
