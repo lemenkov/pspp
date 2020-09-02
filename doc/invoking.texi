@@ -157,7 +157,9 @@ interactive mode, respectively, rather than the default ``auto'' mode.
 
 @item @option{-r}
 @itemx @option{--no-statrc}
-Disables running @file{rc} at @pspp{} startup time.
+By default, at startup @pspp{} searches for a file named @file{rc} in
+the include path (described above) and, if it finds one, runs the
+commands in it.  This option disables this behavior.
 
 @item @option{-a @{enhanced|compatible@}}
 @itemx @option{--algorithm=@{enhanced|compatible@}}
