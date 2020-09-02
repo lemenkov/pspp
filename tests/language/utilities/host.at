@@ -1,0 +1,143 @@
+dnl PSPP - a program for statistical analysis.
+dnl Copyright (C) 2017 Free Software Foundation, Inc.
+dnl
+dnl This program is free software: you can redistribute it and/or modify
+dnl it under the terms of the GNU General Public License as published by
+dnl the Free Software Foundation, either version 3 of the License, or
+dnl (at your option) any later version.
+dnl
+dnl This program is distributed in the hope that it will be useful,
+dnl but WITHOUT ANY WARRANTY; without even the implied warranty of
+dnl MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+dnl GNU General Public License for more details.
+dnl
+dnl You should have received a copy of the GNU General Public License
+dnl along with this program.  If not, see <http://www.gnu.org/licenses/>.
+dnl
+AT_BANNER([HOST - portable tests])
+
+AT_SETUP([HOST - one command])
+AT_DATA([host.sps], [dnl
+HOST COMMAND=[['echo "hi there" > file']].
+])
+AT_CHECK([pspp -O format=csv host.sps])
+AT_CHECK([cat file], [0], [hi there
+])
+AT_CLEANUP
+
+AT_SETUP([HOST - two commands])
+AT_DATA([host.sps], [dnl
+HOST COMMAND=[['echo a > a' 'echo b > b']].
+])
+AT_CHECK([pspp -O format=csv host.sps])
+AT_CHECK([cat a], [0], [a
+])
+AT_CHECK([cat b], [0], [b
+])
+AT_CLEANUP
+
+AT_SETUP([HOST - time limit])
+AT_DATA([host.sps], [dnl
+HOST COMMAND=[['sleep 10']] TIMELIMIT=0.1.
+])
+if $MINGW; then
+    AT_CHECK([pspp -O format=csv host.sps], [1], [dnl
+host.sps:1: error: HOST: Time limit not supported on this platform.
+])
+else
+    AT_CHECK([pspp -O format=csv host.sps], [0], [dnl
+"host.sps:1: warning: HOST: Command ""sleep 10"" timed out."
+])
+fi
+AT_CLEANUP
+
+AT_BANNER([HOST - Unix-like OSes only])
+
+AT_SETUP([HOST - command failure])
+AT_SKIP_IF([$MINGW])
+AT_DATA([host.sps], [dnl
+HOST COMMAND=[['exit 1' 'echo "Not reached"']].
+])
+AT_CHECK([pspp -O format=csv host.sps], [0], [dnl
+"host.sps:1: warning: HOST: Command ""exit 1"" exited with status 1."
+])
+AT_CLEANUP
+
+AT_SETUP([HOST - nonexistent shell])
+AT_SKIP_IF([$MINGW])
+AT_DATA([host.sps], [dnl
+HOST COMMAND=[['echo hi']].
+])
+AT_CHECK([SHELL=/nonexistent pspp -O format=csv host.sps], [0], [dnl
+"host.sps:1: warning: HOST: Command ""echo hi"" exited with status 127 (Command or shell not found)."
+])
+AT_CLEANUP
+
+AT_SETUP([HOST - nonexistent command])
+AT_SKIP_IF([$MINGW])
+AT_DATA([host.sps], [dnl
+HOST COMMAND=[['/nonexistent']].
+])
+AT_CHECK([pspp -O format=csv host.sps | head -1], [0], [dnl
+"host.sps:1: warning: HOST: Command ""/nonexistent"" exited with status 127 (Command or shell not found)."
+])
+AT_CLEANUP
+
+AT_SETUP([HOST - output to stdout])
+AT_SKIP_IF([$MINGW])
+AT_DATA([host.sps], [dnl
+HOST COMMAND=[['echo hi']].
+])
+AT_CHECK([pspp -O format=csv host.sps], [0], [hi
+])
+AT_CLEANUP
+
+AT_SETUP([HOST - output to stderr])
+AT_SKIP_IF([$MINGW])
+AT_DATA([host.sps], [dnl
+HOST COMMAND=[['echo hi 2>&1']].
+])
+AT_CHECK([pspp -O format=csv host.sps], [0], [hi
+])
+AT_CLEANUP
+
+AT_SETUP([HOST - input from stdin])
+AT_SKIP_IF([$MINGW])
+AT_DATA([host.sps], [dnl
+HOST COMMAND=[['cat && echo ok || echo fail']] TIMELIMIT=5.
+])
+AT_CHECK([pspp -O format=csv host.sps], [0], [ok
+])
+AT_CLEANUP
+
+dnl This is a special case inside run_command().
+AT_SETUP([HOST - zero time limit])
+AT_SKIP_IF([$MINGW])
+AT_DATA([host.sps], [dnl
+HOST COMMAND=[['sleep 10']] TIMELIMIT=0.
+])
+AT_CHECK([pspp -O format=csv host.sps], [0], [dnl
+"host.sps:1: warning: HOST: Command ""sleep 10"" timed out."
+])
+AT_CLEANUP
+
+AT_SETUP([HOST - signal termination])
+AT_SKIP_IF([$MINGW])
+AT_DATA([host.sps], [dnl
+HOST COMMAND=[['kill -ABRT $$' 'echo "Not reached"']].
+])
+AT_CHECK([pspp -O format=csv host.sps], [0], [dnl
+"host.sps:1: warning: HOST: Command ""kill -ABRT $$"" terminated by signal 6."
+])
+AT_CLEANUP
+
+AT_SETUP([HOST - SAFER])
+AT_SKIP_IF([$MINGW])
+AT_DATA([host.sps], [dnl
+SET SAFER=ON.
+HOST COMMAND=[['sleep 10']] TIMELIMIT=0.1.
+])
+AT_CHECK([pspp -O format=csv host.sps], [1], [dnl
+host.sps:2: error: HOST: This command not allowed when the SAFER option is set.
+])
+AT_CLEANUP
