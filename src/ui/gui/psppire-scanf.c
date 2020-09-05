@@ -107,11 +107,11 @@ guts (PsppireScanf *scanf)
       int width = 0;
 
       if (dir.precision_start && dir.precision_end)
-	precision = strtol (dir.precision_start + 1,
+	precision = g_ascii_strtoll (dir.precision_start + 1,
 			    (char **) &dir.precision_end, 10);
 
       if (dir.width_start && dir.width_end)
-	width = strtol (dir.width_start, (char **) &dir.width_end, 10);
+	width = g_ascii_strtoll (dir.width_start, (char **) &dir.width_end, 10);
 
       if (dir.dir_start > s)
 	ship_label (scanf, &s, &scanf->d, i);
