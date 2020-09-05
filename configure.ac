@@ -286,14 +286,6 @@ AC_CHECK_FUNCS([__setfpucw fork execl isinf isnan finite getpid feholdexcept fps
 
 AC_PROG_LN_S
 
-AC_ARG_ENABLE(
-  debug,
-  [AS_HELP_STRING([--enable-debug],
-                  [Turn on diagnostic features in the program])])
-if test x"$enable_debug" = x"yes"  ; then
-  AC_DEFINE(DEBUGGING, 1, [Define to 1 if debugging is enabled.])
-fi
-
 # iconv is required
 AM_ICONV
 if test "$am_cv_func_iconv" != "yes"; then

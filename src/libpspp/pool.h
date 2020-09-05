@@ -102,8 +102,4 @@ bool pool_unregister (struct pool *, void *);
 void pool_mark (struct pool *, struct pool_mark *);
 void pool_release (struct pool *, const struct pool_mark *);
 
-#if DEBUGGING
-void pool_dump (const struct pool *, const char *title);
-#endif
-
 #endif /* pool.h */

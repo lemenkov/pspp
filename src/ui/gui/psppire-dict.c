@@ -911,29 +911,6 @@ psppire_dict_get_weight_variable (const PsppireDict *dict)
   return dict_get_weight (dict->dict);
 }
 
-
-
-#if DEBUGGING
-void
-psppire_dict_dump (const PsppireDict *dict)
-{
-  gint i;
-  const struct dictionary *d = dict->dict;
-
-  for (i = 0; i < dict_get_var_cnt (d); ++i)
-    {
-      const struct variable *v = psppire_dict_get_variable (dict, i);
-      int di = var_get_dict_index (v);
-      g_print ("`%s' idx=%d, fv=%d\n",
-	       var_get_name(v),
-	       di,
-	       var_get_case_index(v));
-
-    }
-}
-#endif
-
-
 const gchar *
 psppire_dict_encoding (const PsppireDict *dict)
 {
