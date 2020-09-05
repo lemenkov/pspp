@@ -1,5 +1,6 @@
 /* PSPPIRE - a graphical user interface for PSPP.
-   Copyright (C) 2004, 2005, 2006, 2010, 2011, 2012, 2013, 2014, 2015, 2016  Free Software Foundation
+   Copyright (C) 2004, 2005, 2006, 2010, 2011, 2012, 2013, 2014, 2015,
+   2016, 2020  Free Software Foundation
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -29,6 +30,7 @@
 #include "libpspp/assertion.h"
 #include "libpspp/cast.h"
 #include "libpspp/copyleft.h"
+#include "libpspp/message.h"
 #include "libpspp/str.h"
 #include "libpspp/string-array.h"
 #include "libpspp/version.h"
@@ -235,15 +237,90 @@ wait_for_splash (GApplication *app, GtkWindow *x)
     }
 }
 
+static GtkWidget *fatal_error_dialog = NULL;
+static GtkWidget *fatal_error_label;
+static const char *diagnostic_info;
+
+static void
+fatal_error_handler (int sig)
+{
+  /* Reset SIG to its default handling so that if it happens again we won't
+     recurse. */
+  signal (sig, SIG_DFL);
+
+  static char message [1024];
+  strcpy (message, "proximate cause:    ");
+  switch (sig)
+    {
+    case SIGABRT:
+      strcat (message, "Assertion Failure/Abort");
+      break;
+    case SIGFPE:
+      strcat (message, "Floating Point Exception");
+      break;
+    case SIGSEGV:
+      strcat (message, "Segmentation Violation");
+      break;
+    default:
+      strcat (message, "Unknown");
+      break;
+    }
+  strcat (message, "\n");
+  strcat (message, diagnostic_info);
+
+  g_object_set (fatal_error_label,
+                "label", message,
+                NULL);
+
+  gtk_dialog_run (GTK_DIALOG (fatal_error_dialog));
+
+  /* Re-raise the signal so that we terminate with the correct status. */
+  raise (sig);
+}
+
 static void
 on_activate (GApplication * app, gpointer ud)
 {
+  struct sigaction fatal_error_action;
+  sigset_t sigset;
+  g_return_if_fail (0 == sigemptyset (&sigset));
+  fatal_error_dialog =
+    gtk_message_dialog_new (NULL, 0, GTK_MESSAGE_ERROR, GTK_BUTTONS_CLOSE,
+                            _("Psppire: Fatal Error"));
+
+  diagnostic_info = prepare_diagnostic_information ();
+
+  gtk_message_dialog_format_secondary_text (GTK_MESSAGE_DIALOG (fatal_error_dialog),
+                                            _("You have discovered a bug in PSPP.  "
+                                              "Please report this to %s including all of the following information, "
+                                              "and a description of what you were doing when this happened."),
+                                            PACKAGE_BUGREPORT);
+
+  g_return_if_fail (fatal_error_dialog != NULL);
+
+  GtkWidget *content_area = gtk_dialog_get_content_area (GTK_DIALOG (fatal_error_dialog));
+  fatal_error_label = gtk_label_new ("");
+  g_object_set (fatal_error_label,
+                "selectable", TRUE,
+                "wrap", TRUE,
+                NULL);
+  gtk_container_add (GTK_CONTAINER (content_area), fatal_error_label);
+
+  gtk_widget_show_all (content_area);
+
+  fatal_error_action.sa_handler = fatal_error_handler;
+  fatal_error_action.sa_mask = sigset;
+  fatal_error_action.sa_flags = 0;
+
   post_initialise (app);
 
   GtkWindow *x = create_data_window ();
   gtk_application_add_window (GTK_APPLICATION (app), x);
 
   wait_for_splash (app, x);
+  sigaction (SIGABRT, &fatal_error_action, NULL);
+  sigaction (SIGSEGV, &fatal_error_action, NULL);
+  sigaction (SIGFPE,  &fatal_error_action, NULL);
 }
 
 static GtkWindow *
