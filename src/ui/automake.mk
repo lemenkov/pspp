@@ -1,5 +1,5 @@
 # PSPP - a program for statistical analysis.
-# Copyright (C) 2017 Free Software Foundation, Inc.
+# Copyright (C) 2017, 2020 Free Software Foundation, Inc.
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -17,8 +17,9 @@
 ## Process this file with automake to produce Makefile.in  -*- makefile -*-
 
 include $(top_srcdir)/src/ui/terminal/automake.mk
+if HAVE_GUI
 include $(top_srcdir)/src/ui/gui/automake.mk
-
+endif
 
 noinst_LTLIBRARIES += src/ui/libuicommon.la
 
