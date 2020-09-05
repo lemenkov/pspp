@@ -67,6 +67,7 @@ $(POTFILE): $(ALL_TRANSLATABLE_FILES) Makefile
 	$(AM_V_at)$(XGETTEXT) $(XGETTEXT_OPTIONS) -j src/ui/gui/org.fsf.pspp.metainfo.xml.in -o $@,tmp
 	$(AM_V_at)$(XGETTEXT) $(XGETTEXT_OPTIONS) -j src/ui/gui/org.fsf.pspp.desktop.in -o $@,tmp
 	$(AM_V_at)$(SED) -e '/^"POT-Creation-Date: .*/d' $@,tmp > $@
+	rm -f $@,tmp
 
 $(LOCALPOFILES) $(POFILES): $(POTFILE)
 	$(AM_V_GEN)$(MSGMERGE) --previous --quiet $(top_srcdir)/$@ $? -o $@,tmp
@@ -76,7 +77,7 @@ $(LOCALPOFILES) $(POFILES): $(POTFILE)
 	fi ;
 	$(AM_V_at)$(SED) -e '/^"POT-Creation-Date: /d' $@,tmp > $@,tmp2
 	$(RM) $@,tmp
-	$(MSGFMT) -c $@,tmp2
+	$(MSGFMT) -c $@,tmp2 -o - > /dev/null
 	mv $@,tmp2 $@
 
 SUFFIXES += .po .gmo
