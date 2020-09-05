@@ -413,9 +413,21 @@ command_generator (const char *text, int state)
 
 #else  /* !HAVE_READLINE */
 
+static const char * the_prompt;
+
+static void
+handler (int sig)
+{
+  if (the_prompt)
+    fputs (the_prompt, stdout);
+  fflush (stdout);
+}
+
 static void
 readline_init (void)
 {
+  if (SIG_ERR == signal (SIGINT, handler))
+    perror ("Cannot add signal handler");
 }
 
 static void
@@ -423,19 +435,22 @@ readline_done (void)
 {
 }
 
+/* Prompt the user for a line of input and return it in LINE.
+   Returns true if the LINE should be considered valid, false otherwise.
+ */
 static bool
 readline_read (struct substring *line, enum prompt_style style)
 {
   struct string string;
-  const char *prompt = readline_prompt (style);
+  the_prompt = readline_prompt (style);
 
-  fputs (prompt, stdout);
+  fputs (the_prompt, stdout);
   fflush (stdout);
   ds_init_empty (&string);
   ds_read_line (&string, stdin, SIZE_MAX);
 
   *line = string.ss;
 
-  return false;
+  return true;
 }
 #endif /* !HAVE_READLINE */
