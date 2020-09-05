@@ -4,7 +4,11 @@ See the end for copying conditions.
 
 Please send PSPP bug reports to bug-gnu-pspp@gnu.org.
 
-Changes from 1.4.0 to 1.5.0:
+Changes from 1.4.0 to 1.4.1:
+
+ * Bug fixes.
+
+ * Translation updates.
 
  * HTML output is now HTML5 instead of HTML4.0 Transitional.
 
