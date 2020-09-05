@@ -62,6 +62,22 @@ if test "x$MSGFMT" = x; then
   PSPP_REQUIRED_PREREQ([msgfmt (is usually provided with gettext)])
 fi
 
+AC_CHECK_PROGS([XGETTEXT], [xgettext])
+if test "x$XGETTEXT" = x; then
+  PSPP_REQUIRED_PREREQ([xgettext (is usually provided with gettext)])
+fi
+dnl appstream required for metainfo.its
+dnl if metainfo.its is not there, then the following small
+dnl file will not produce an outputfile
+$as_echo '<?xml version="1.0" encoding="UTF-8"?>' > test.metainfo.xml.in
+$as_echo '<component type="desktop">' >> test.metainfo.xml.in
+$as_echo '<name>Hallo</name>' >> test.metainfo.xml.in
+$as_echo '</component>' >> test.metainfo.xml.in
+xgettext -o mifc.po test.metainfo.xml.in
+if ! test -f ./mifc.po  ; then
+  PSPP_REQUIRED_PREREQ([appstream 0.12 or later for metainfo.its])
+fi
+rm -f mifc.po test.metainfo.xml.in
 
 dnl Checks for libraries.
 AC_SYS_LARGEFILE
