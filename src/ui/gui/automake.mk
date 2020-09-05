@@ -460,7 +460,7 @@ src/ui/gui/glade-wrapper: src/ui/gui/glade-wrapper.in
 	$(SED) -e 's%\@abs_top_srcdir\@%@abs_top_srcdir@%g' -e 's%\@abs_top_builddir\@%@abs_top_builddir@%g'  $< > $@
 	chmod a+x $@
 
-.PHONY: glade-tools
+PHONY += glade-tools
 glade-tools: src/ui/gui/glade-wrapper src/ui/gui/libpsppire-glade.la
 
 # This works around a possible bug in Automake 1.16.1 which installs

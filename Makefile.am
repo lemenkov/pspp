@@ -154,4 +154,4 @@ distfiles: Makefile
 	      -e "s|^$$topsrcdirstrip/|$(top_builddir)/|;t" \
 	  | LC_ALL=C sort -u > $@
 CLEANFILES += distfiles gitfiles missing-distfiles
-.PHONY: dist-hook-git
+PHONY += dist-hook-git

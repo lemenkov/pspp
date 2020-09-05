@@ -125,7 +125,7 @@ CLEAN_LOCAL += po_CLEAN
 # Download the po files from http://translationproject.org
 # The final action to this rule is to remove the .pot file.  This
 # is because the po files must be re-merged against an updated version of it.
-.PHONY: po-update
+PHONY += po-update
 po-update: $(POFILES)
 	for p in $^; do \
 		wget --recursive --level=1 --accept=po --no-directories --no-use-server-timestamps \
