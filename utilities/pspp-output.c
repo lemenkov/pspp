@@ -1,4 +1,4 @@
-/* PSPP - a program for statistical analysis.
+ /* PSPP - a program for statistical analysis.
    Copyright (C) 2017, 2018 Free Software Foundation, Inc.
 
    This program is free software: you can redistribute it and/or modify
@@ -723,14 +723,25 @@ main (int argc, char **argv)
   if (n_args < c->min_args || n_args > c->max_args)
     {
       if (c->min_args == c->max_args)
-        error (1, 0, _("\"%s\" command takes exactly %d argument%s"),
-               c->name, c->min_args, c->min_args ? "s" : "");
+        {
+          error (1, 0,
+                 ngettext ("\"%s\" command takes exactly %d argument",
+                           "\"%s\" command takes exactly %d arguments",
+                           c->min_args), c->name, c->min_args);
+        }
       else if (c->max_args == INT_MAX)
-        error (1, 0, _("\"%s\" command requires at least %d argument%s"),
-               c->name, c->min_args, c->min_args ? "s" : "");
+        {
+          error (1, 0,
+                 ngettext ("\"%s\" command requires at least %d argument",
+                           "\"%s\" command requires at least %d arguments",
+                           c->min_args), c->name, c->min_args);
+        }
       else
-        error (1, 0, _("\"%s\" command requires between %d and %d arguments"),
-               c->name, c->min_args, c->max_args);
+        {
+          error (1, 0,
+                 _("\"%s\" command requires between %d and %d arguments"),
+                 c->name, c->min_args, c->max_args);
+        }
     }
 
   c->run (argc, argv);
