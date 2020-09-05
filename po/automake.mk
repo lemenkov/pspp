@@ -123,6 +123,15 @@ po_CLEAN:
 	fi
 CLEAN_LOCAL += po_CLEAN
 
-RSYNC = rsync
-po-update:
-	$(RSYNC) -Lrtvz translationproject.org::tp/latest/pspp/ $(srcdir)/po
+# Download the po files from http://translationproject.org
+# The final action to this rule is to remove the .pot file.  This
+# is because the po files must be re-merged against an updated version of it.
+.PHONY: po-update
+po-update: $(POFILES)
+	for p in $^; do \
+		wget --recursive --level=1 --accept=po --no-directories --no-use-server-timestamps \
+		--directory-prefix=po -O ${top_srcdir}/$$p,tmp \
+		https://translationproject.org/latest/pspp/`basename $$p` ; \
+		mv ${top_srcdir}/$$p,tmp ${top_srcdir}/$$p; \
+	done
+	$(RM) $(POTFILE)
