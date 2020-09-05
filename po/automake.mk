@@ -54,13 +54,13 @@ XGETTEXT_OPTIONS = \
 	--add-comments='TRANSLATORS:' \
 	--directory=$(top_srcdir)
 
-ALL_TRANSLATEABLE_FILES = \
-	$(TRANSLATEABLE_FILES) \
+ALL_TRANSLATABLE_FILES = \
+	$(TRANSLATABLE_FILES) \
 	$(UI_FILES) \
 	src/ui/gui/org.fsf.pspp.metainfo.xml.in \
 	src/ui/gui/org.fsf.pspp.desktop.in
 
-$(POTFILE): $(ALL_TRANSLATABLE_FILES)
+$(POTFILE): $(ALL_TRANSLATABLE_FILES) Makefile
 	@$(MKDIR_P) po
 	$(AM_V_GEN)$(XGETTEXT) $(XGETTEXT_OPTIONS) $(TRANSLATABLE_FILES) --language=C --keyword=_ --keyword=N_ -o $@,tmp
 	$(AM_V_at)$(XGETTEXT) $(XGETTEXT_OPTIONS) -j $(UI_FILES) --language=Glade -o $@,tmp
