@@ -76,6 +76,7 @@ $(LOCALPOFILES) $(POFILES): $(POTFILE)
 	fi ;
 	$(AM_V_at)$(SED) -e '/^"POT-Creation-Date: /d' $@,tmp > $@,tmp2
 	$(RM) $@,tmp
+	$(MSGFMT) -c $@,tmp2
 	mv $@,tmp2 $@
 
 SUFFIXES += .po .gmo
