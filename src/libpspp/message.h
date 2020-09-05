@@ -116,6 +116,8 @@ void msg_ui_disable_warnings (bool);
 
 
 /* Used in panic situations only. */
+const char * prepare_diagnostic_information (void);
+const char * prepare_fatal_error_message (void);
 void request_bug_report (const char *msg);
 
 

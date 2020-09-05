@@ -80,6 +80,9 @@ main (int argc, char **argv)
 
   set_program_name (argv[0]);
 
+  prepare_fatal_error_message ();
+  prepare_diagnostic_information ();
+
   signal (SIGABRT, bug_handler);
   signal (SIGSEGV, bug_handler);
   signal (SIGFPE, bug_handler);

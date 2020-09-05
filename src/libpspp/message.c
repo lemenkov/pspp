@@ -375,28 +375,75 @@ msg_enable (void)
 
 /* Private functions. */
 
-void
-request_bug_report (const char *msg)
+static char fatal_error_message[1024];
+static int fatal_error_message_bytes = 0;
+
+static char diagnostic_information[1024];
+static int diagnostic_information_bytes = 0;
+
+static int
+append_message (char *msg, int bytes_used, const char *fmt, ...)
 {
-  fprintf (stderr, "******************************************************\n");
-  fprintf (stderr, "You have discovered a bug in PSPP.  Please report this\n");
-  fprintf (stderr, "to " PACKAGE_BUGREPORT ".  Please include this entire\n");
-  fprintf (stderr, "message, *plus* several lines of output just above it.\n");
-  fprintf (stderr, "For the best chance at having the bug fixed, also\n");
-  fprintf (stderr, "include the syntax file that triggered it and a sample\n");
-  fprintf (stderr, "of any data file used for input.\n");
-  fprintf (stderr, "proximate cause:     %s\n", msg);
-  fprintf (stderr, "version:             %s\n", version);
-  fprintf (stderr, "host_system:         %s\n", host_system);
-  fprintf (stderr, "build_system:        %s\n", build_system);
-  fprintf (stderr, "locale_dir:          %s\n", locale_dir);
-  fprintf (stderr, "compiler version:    %s\n",
+  va_list va;
+  va_start (va, fmt);
+  int ret = vsnprintf (msg + bytes_used, 1024 - bytes_used, fmt, va);
+  va_end (va);
+  assert (ret >= 0);
+
+  return ret;
+}
+
+
+/* Generate a row of asterisks held in statically allocated memory  */
+static struct substring
+generate_banner (void)
+{
+  static struct substring banner;
+  if (!banner.string)
+    banner = ss_cstr ("******************************************************\n");
+  return banner;
+}
+
+const char *
+prepare_fatal_error_message (void)
+{
+  fatal_error_message_bytes += append_message (fatal_error_message, fatal_error_message_bytes, generate_banner ().string);
+
+  fatal_error_message_bytes += append_message (fatal_error_message, fatal_error_message_bytes, "You have discovered a bug in PSPP.  Please report this\n");
+  fatal_error_message_bytes += append_message (fatal_error_message, fatal_error_message_bytes, "to " PACKAGE_BUGREPORT ".  Please include this entire\n");
+  fatal_error_message_bytes += append_message (fatal_error_message, fatal_error_message_bytes, "message, *plus* several lines of output just above it.\n");
+  fatal_error_message_bytes += append_message (fatal_error_message, fatal_error_message_bytes, "For the best chance at having the bug fixed, also\n");
+  fatal_error_message_bytes += append_message (fatal_error_message, fatal_error_message_bytes, "include the syntax file that triggered it and a sample\n");
+  fatal_error_message_bytes += append_message (fatal_error_message, fatal_error_message_bytes, "of any data file used for input.\n");
+  return fatal_error_message;
+}
+
+const char *
+prepare_diagnostic_information (void)
+{
+  diagnostic_information_bytes += append_message (diagnostic_information, diagnostic_information_bytes, "version:             %s\n", version);
+  diagnostic_information_bytes += append_message (diagnostic_information, diagnostic_information_bytes, "host_system:         %s\n", host_system);
+  diagnostic_information_bytes += append_message (diagnostic_information, diagnostic_information_bytes, "build_system:        %s\n", build_system);
+  diagnostic_information_bytes += append_message (diagnostic_information, diagnostic_information_bytes, "locale_dir:          %s\n", locale_dir);
+  diagnostic_information_bytes += append_message (diagnostic_information, diagnostic_information_bytes, "compiler version:    %s\n",
 #ifdef __VERSION__
            __VERSION__
 #else
            "Unknown"
 #endif
 );
-  fprintf (stderr, "******************************************************\n");
+
+  return diagnostic_information;
 }
 
+void
+request_bug_report (const char *msg)
+{
+  write (STDERR_FILENO, fatal_error_message, fatal_error_message_bytes);
+  write (STDERR_FILENO, "proximate cause:     ", 21);
+  write (STDERR_FILENO, msg, strlen (msg));
+  write (STDERR_FILENO, "\n", 1);
+  write (STDERR_FILENO, diagnostic_information, diagnostic_information_bytes);
+  const struct substring banner = generate_banner ();
+  write (STDERR_FILENO, banner.string, banner.length);
+}
