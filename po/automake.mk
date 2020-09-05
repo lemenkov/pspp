@@ -64,7 +64,10 @@ $(POTFILE): $(ALL_TRANSLATABLE_FILES) Makefile
 	@$(MKDIR_P) po
 	$(AM_V_GEN)$(XGETTEXT) $(XGETTEXT_OPTIONS) $(TRANSLATABLE_FILES) --language=C --keyword=_ --keyword=N_ -o $@,tmp
 	$(AM_V_at)$(XGETTEXT) $(XGETTEXT_OPTIONS) -j $(UI_FILES) --language=Glade -o $@,tmp
-	$(AM_V_at)$(XGETTEXT) $(XGETTEXT_OPTIONS) --its=$(top_srcdir)/po/metainfo.its -j src/ui/gui/org.fsf.pspp.metainfo.xml.in -o $@,tmp
+	## xgettext 0.19.8.1 is known to crash on exit on the following command.
+	## See https://git.savannah.gnu.org/gitweb/?p=gettext.git;a=commitdiff;h=a0cab233
+	## Therefore we ignore the exit status
+	$(AM_V_at)$(XGETTEXT) $(XGETTEXT_OPTIONS) --its=$(top_srcdir)/po/metainfo.its -j src/ui/gui/org.fsf.pspp.metainfo.xml.in -o $@,tmp || true
 	$(AM_V_at)$(XGETTEXT) $(XGETTEXT_OPTIONS) -j src/ui/gui/org.fsf.pspp.desktop.in -o $@,tmp
 	$(AM_V_at)$(SED) -e '/^"POT-Creation-Date: .*/d' $@,tmp > $@
 
