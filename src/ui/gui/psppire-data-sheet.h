@@ -1,5 +1,5 @@
 /* PSPPIRE - a graphical user interface for PSPP.
-    Copyright (C) 2017, 2019  John Darrington
+    Copyright (C) 2017, 2019  Free Software Foundation
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
