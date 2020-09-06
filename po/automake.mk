@@ -63,7 +63,7 @@ ALL_TRANSLATABLE_FILES = \
 $(POTFILE): $(ALL_TRANSLATABLE_FILES) Makefile
 	@$(MKDIR_P) po
 	$(AM_V_GEN)$(XGETTEXT) $(XGETTEXT_OPTIONS) $(TRANSLATABLE_FILES) --language=C --keyword=_ --keyword=N_ -o $@,tmp
-	$(AM_V_at)$(XGETTEXT) $(XGETTEXT_OPTIONS) -j $(UI_FILES) --language=Glade -o $@,tmp
+	test -z "$(UI_FILES)" || $(AM_V_at)$(XGETTEXT) $(XGETTEXT_OPTIONS) -j $(UI_FILES) --language=Glade -o $@,tmp
 	$(AM_V_at)$(XGETTEXT) $(XGETTEXT_OPTIONS) -j src/ui/gui/org.fsf.pspp.metainfo.xml.in -o $@,tmp
 	$(AM_V_at)$(XGETTEXT) $(XGETTEXT_OPTIONS) -j src/ui/gui/org.fsf.pspp.desktop.in -o $@,tmp
 	$(AM_V_at)$(SED) -e '/^"POT-Creation-Date: .*/d' $@,tmp > $@
