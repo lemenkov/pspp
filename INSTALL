@@ -77,9 +77,9 @@ The following packages are required to install PSPP:
     * libxml2 (http://xmlsoft.org/).
 
     * metainfo.its, provided by the appstream package. This is required
-      by xgettext to extract the translation strings from the
-      org.fsf.pspp.metainfo.xml.in file. This is only required for
-      building. It is not a runtime requirement.
+      by xgettext version lower then 0.20 to extract the translation
+      strings from the org.fsf.pspp.metainfo.xml.in file. This is only
+      required for building. It is not a runtime requirement.
 
 The following packages are required to enable PSPP's graphing
 features.  If you cannot arrange to install them, you must run

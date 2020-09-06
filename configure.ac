@@ -75,7 +75,7 @@ $as_echo '<name>Hallo</name>' >> test.metainfo.xml.in
 $as_echo '</component>' >> test.metainfo.xml.in
 xgettext -o mifc.po test.metainfo.xml.in
 if ! test -f ./mifc.po  ; then
-  PSPP_REQUIRED_PREREQ([appstream 0.12 or later for metainfo.its])
+  AC_MSG_WARN([org.fsf.metainfo.xml will not be translated. Install gettext >=0.20 or appstream.])
 fi
 rm -f mifc.po test.metainfo.xml.in
 
