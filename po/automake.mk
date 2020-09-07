@@ -129,9 +129,8 @@ CLEAN_LOCAL += po_CLEAN
 PHONY += po-update
 po-update:
 	for p in $(POFILES); do \
-		wget --recursive --level=1 --accept=po --no-directories --no-use-server-timestamps \
-		--directory-prefix=po -O ${top_srcdir}/$$p,tmp \
+		wget --no-use-server-timestamps -O $$p,tmp \
 		https://translationproject.org/latest/pspp/`basename $$p` ; \
-		mv ${top_srcdir}/$$p,tmp ${top_srcdir}/$$p; \
+		mv $$p,tmp ${top_srcdir}/$$p; \
 	done
 	$(RM) $(POTFILE)
