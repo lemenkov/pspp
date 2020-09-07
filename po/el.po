@@ -1,14 +1,14 @@
 # Greek translation for PSPP
 # Copyright (C) 2016 Free Software Foundation, Inc.
 # This file is distributed under the same license as the pspp package.
-# Elias Tsolis <estatisticseu@gmail.com>, 2016 -, 2018.
+# Elias Tsolis <estatisticseu@gmail.com>, 2016 -, 2020.
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: pspp 1.4.0\n"
+"Project-Id-Version: pspp 1.4.1\n"
 "Report-Msgid-Bugs-To: pspp-dev@gnu.org\n"
-"POT-Creation-Date: 2020-08-15 12:34-0700\n"
-"PO-Revision-Date: 2020-08-16 20:02+0300\n"
+"POT-Creation-Date: 2020-09-05 12:34-0700\n"
+"PO-Revision-Date: 2020-09-07 12:34+0300\n"
 "Last-Translator: Elias Tsolis <estatisticseu@gmail.com>\n"
 "Language-Team: Greek <team@lists.gnome.gr>\n"
 "Language: el\n"
@@ -18,243 +18,6 @@ msgstr ""
 "X-Bugs: Report translation errors to the Language-Team address.\n"
 "X-Generator: Poedit 2.0.6\n"
 "Plural-Forms: nplurals=2; plural=n == 1 ? 0 : 1;\n"
-
-#: src/ui/gui/helper.c:210
-msgid "Sorry. The help system hasn't yet been implemented."
-msgstr "Συγνώμη. Το σύστημα βοήθειας δεν είναι διαθέσιμο ακόμη."
-
-#: src/data/format.c:339
-msgid "Input format"
-msgstr "Εισαγωγή μορφότυπου"
-
-#: src/data/format.c:339
-msgid "Output format"
-msgstr "Εξαγωγή μορφότυπου"
-
-#: src/data/format.c:342
-#, c-format
-msgid "Format %s may not be used for input."
-msgstr "Το μορφότυπο %s δεν μπορεί να χρησιμοποιηθεί σαν εισαγωγή."
-
-#: src/data/format.c:349
-#, c-format
-msgid "%s specifies width %d, but %s requires an even width."
-msgstr "%s ορίζει εύρος %d, αλλά %s απαιτεί ένα ζυγό εύρος."
-
-#: src/data/format.c:358
-#, c-format
-msgid "%s %s specifies width %d, but %s requires a width between %d and %d."
-msgstr "%s %s ορίζει εύρος %d, αλλά %s απαιτεί ένα εύρος μεταξύ %d και %d."
-
-#: src/data/format.c:367
-#, c-format
-msgid "%s %s specifies %d decimal place, but %s does not allow any decimals."
-msgid_plural "%s %s specifies %d decimal places, but %s does not allow any decimals."
-msgstr[0] "%s %s ορίζει %d δεκαδική θέση, αλλά %s δεν επιτρέπει κανένα δεκαδικό ψηφίο."
-msgstr[1] "%s %s ορίζει %d δεκαδικές θέσεις, αλλά %s δεν επιτρέπει κανένα δεκαδικό ψηφίο."
-
-#: src/data/format.c:378
-#, c-format
-msgid "%s %s specifies %d decimal place, but the given width allows at most %d decimals."
-msgid_plural "%s %s specifies %d decimal places, but the given width allows at most %d decimals."
-msgstr[0] "%s %s ορίζει %d δεκαδική θέση, αλλά το δοσμένο εύρος επιτρέπει μέγιστα %d δεκαδικά ψηφία."
-msgstr[1] "%s %s ορίζει %d δεκαδικές θέσεις, αλλά το δοσμένο εύρος επιτρέπει μέγιστα %d δεκαδικά ψηφία."
-
-#: src/data/format.c:385
-#, c-format
-msgid "%s %s specifies %d decimal place, but the given width does not allow for any decimals."
-msgid_plural "%s %s specifies %d decimal places, but the given width does not allow for any decimals."
-msgstr[0] "%s %s ορίζει %d δεκαδική θέση, αλλά το δοσμένο εύρος δεν επιτρέπει κανένα δεκαδικό ψηφίο."
-msgstr[1] "%s %s ορίζει %d δεκαδικές θέσεις, αλλά το δοσμένο εύρος δεν επιτρέπει κανένα δεκαδικό ψηφίο."
-
-#: src/data/format.c:424
-#, c-format
-msgid "%s variables are not compatible with %s format %s."
-msgstr "%s μεταβλητές δεν είναι συμβατές με %s το μορφότυπο %s."
-
-#: src/data/format.c:425 src/data/format.c:1074
-#: src/ui/gui/var-type-dialog.ui:167
-msgid "String"
-msgstr "Συμβολοσειρά"
-
-#: src/data/format.c:425 src/data/format.c:1035
-#: src/ui/gui/var-type-dialog.ui:48
-msgid "Numeric"
-msgstr "Αριθμητικά"
-
-#: src/data/format.c:426 src/data/sys-file-reader.c:2205
-#: src/data/sys-file-reader.c:2207 src/language/xforms/recode.c:512
-#: src/language/xforms/recode.c:513 src/language/xforms/recode.c:525
-#: src/language/xforms/recode.c:526
-#: src/language/dictionary/apply-dictionary.c:77
-#: src/language/dictionary/apply-dictionary.c:78
-msgid "numeric"
-msgstr "αριθμητικά"
-
-#: src/data/format.c:426 src/data/sys-file-reader.c:2205
-#: src/data/sys-file-reader.c:2207 src/language/xforms/recode.c:512
-#: src/language/xforms/recode.c:513 src/language/xforms/recode.c:525
-#: src/language/xforms/recode.c:526
-#: src/language/dictionary/apply-dictionary.c:77
-#: src/language/dictionary/apply-dictionary.c:78
-msgid "string"
-msgstr "συμβολοσειρά"
-
-#: src/data/format.c:444
-#, c-format
-msgid "String variable with width %d is not compatible with format %s."
-msgstr "Μεταβλητή συμβολοσειράς με εύρος %d δεν είναι συμβατή με το μορφότυπο %s."
-
-#: src/data/format.c:1038 src/ui/gui/var-type-dialog.ui:65
-msgid "Comma"
-msgstr "Κόμμα"
-
-#: src/data/format.c:1041 src/ui/gui/var-type-dialog.ui:82
-msgid "Dot"
-msgstr "Τελεία"
-
-#: src/data/format.c:1044
-msgid "Scientific"
-msgstr "Επιστημονικό"
-
-#: src/data/format.c:1061 src/ui/gui/var-type-dialog.ui:116
-msgid "Date"
-msgstr "Ημερομηνία"
-
-#: src/data/format.c:1064 src/ui/gui/var-type-dialog.ui:133
-msgid "Dollar"
-msgstr "Δολλάριο"
-
-#: src/data/format.c:1071
-msgid "Custom"
-msgstr "Επιλογή χρήστη"
-
-#: src/ui/gui/psppire-acr.c:266
-msgid "Add"
-msgstr "Πρόσθεση"
-
-#: src/ui/gui/psppire-acr.c:267
-msgid "Edit"
-msgstr "Διόρθωση"
-
-#: src/ui/gui/psppire-acr.c:268
-msgid "Remove"
-msgstr "Διαγραφή"
-
-#: src/ui/gui/psppire-buttonbox.c:340
-msgid "OK"
-msgstr "ΟΚ"
-
-#: src/ui/gui/psppire-buttonbox.c:348
-msgid "Go To"
-msgstr "Προς"
-
-#: src/ui/gui/psppire-buttonbox.c:356
-msgid "Continue"
-msgstr "Επόμενο"
-
-#: src/ui/gui/psppire-buttonbox.c:368
-#: src/ui/gui/psppire-import-assistant.c:742
-msgid "Paste"
-msgstr "Επικόλληση"
-
-#: src/ui/gui/psppire-buttonbox.c:374 src/ui/gui/psppire-data-window.c:535
-#: src/ui/gui/psppire-data-window.c:663
-#: src/ui/gui/psppire-dialog-action-aggregate.c:216
-#: src/ui/gui/psppire-output-window.c:382
-#: src/ui/gui/psppire-syntax-window.c:642 src/ui/gui/psppire-window.c:479
-#: src/ui/gui/psppire-window.c:661
-msgid "Cancel"
-msgstr "Ακύρωση"
-
-#: src/ui/gui/psppire-buttonbox.c:380
-msgid "Close"
-msgstr "Κλείσιμο"
-
-#: src/ui/gui/psppire-buttonbox.c:387
-#: src/ui/gui/psppire-import-assistant.c:743
-msgid "Reset"
-msgstr "Επαναφορά"
-
-#: src/ui/gui/psppire-buttonbox.c:394
-msgid "Help"
-msgstr "Βοήθεια"
-
-#: src/ui/gui/psppire-dictview.c:602 src/language/dictionary/split-file.c:79
-#: src/language/dictionary/sys-file-info.c:734
-#: src/language/stats/chisquare.c:246 src/language/stats/chisquare.c:328
-#: src/language/stats/cochran.c:164 src/language/stats/correlations.c:100
-#: src/language/stats/descriptives.c:1004 src/language/stats/friedman.c:226
-#: src/language/stats/jonckheere-terpstra.c:377
-#: src/language/stats/npar-summary.c:113
-#: src/language/stats/quick-cluster.c:588 src/language/stats/runs.c:331
-#: src/language/data-io/data-parser.c:682
-#: src/language/data-io/data-parser.c:727 src/language/data-io/print.c:438
-#: src/ui/gui/psppire-data-editor.c:523
-msgid "Variable"
-msgstr "Μεταβλητή"
-
-#: src/ui/gui/psppire-dictview.c:639
-msgid "Prefer variable labels"
-msgstr "Προτίμηση ετικέτας μεταβλητής"
-
-#: src/ui/gui/psppire-dictview.c:653
-msgid "Default sort order"
-msgstr "Ορισμένη Ταξινόμιση"
-
-#: src/ui/gui/psppire-dictview.c:659
-msgid "Unsorted (dictionary order)"
-msgstr "Αταξινόμητα (Σειρά Λίστας)"
-
-#: src/ui/gui/psppire-dictview.c:664
-msgid "Sort by name"
-msgstr "Ταξινόμηση κατά όνομα"
-
-#: src/ui/gui/psppire-dictview.c:669
-msgid "Sort by label"
-msgstr "Ταξινόμηση κατά ετικέτα"
-
-#: src/ui/gui/psppire-var-view.c:190
-#, c-format
-msgid "Var%d"
-msgstr "Μεταβλ%d"
-
-#: src/ui/gui/psppire-checkbox-treeview.c:103 src/language/stats/examine.c:674
-#: src/language/stats/examine.c:739
-msgid "Statistic"
-msgstr "Στατιστικά"
-
-#: src/ui/gui/psppire-val-chooser.c:301
-msgid "through"
-msgstr "διά"
-
-#: src/ui/gui/psppire-val-chooser.c:334
-msgid "_Value:"
-msgstr "_Τιμή:"
-
-#: src/ui/gui/psppire-val-chooser.c:335
-msgid "_System Missing"
-msgstr "Ελλειπούσες _Συστήματος"
-
-#: src/ui/gui/psppire-val-chooser.c:336
-msgid "System _or User Missing"
-msgstr "Συστήματος ή _Χρήστη ελλειπούσες"
-
-#: src/ui/gui/psppire-val-chooser.c:337
-msgid "_Range:"
-msgstr "_Εύρος:"
-
-#: src/ui/gui/psppire-val-chooser.c:338
-msgid "Range, _LOWEST thru value"
-msgstr "Εύρος, _Ελάχιστη ως Τιμή"
-
-#: src/ui/gui/psppire-val-chooser.c:339
-msgid "Range, value thru _HIGHEST"
-msgstr "Εύρος, Τιμή ως _Μέγιστη"
-
-#: src/ui/gui/psppire-val-chooser.c:340
-msgid "_All other values"
-msgstr "Ό_Λες οι υπόλοιπες τιμές"
 
 #: src/data/any-reader.c:72 src/data/encrypted-file.c:78
 #, c-format
@@ -275,12 +38,12 @@ msgstr "`%s' δεν είναι αρχείο φορητό ή συστήματος
 msgid "The inline file is not allowed here."
 msgstr "Το εσωκλειώμενο αρχείο δεν επιτρέπεται εδώ."
 
-#: src/data/any-reader.c:201
+#: src/data/any-reader.c:205
 #, c-format
 msgid "Cannot read from dataset %s because no dictionary or data has been written to it yet."
 msgstr "Δεν μπορεί να γίνει ανάγνωση από τη βάση δεδομένων %s επειδή δεν υπάρχει λίστα αυτών ή δεδομένα σε αυτό ακόμη."
 
-#: src/data/any-reader.c:256 src/language/data-io/dataset.c:253
+#: src/data/any-reader.c:260 src/language/data-io/dataset.c:253
 msgid "Dataset"
 msgstr "Βάση δεδομένων"
 
@@ -309,10 +72,10 @@ msgstr "Τουλάχιστον μία υπόθεση στα αναγνωσμέν
 msgid "CSV file"
 msgstr "CSV αρχείο"
 
-#: src/data/csv-file-writer.c:146 src/data/sys-file-writer.c:256
+#: src/data/csv-file-writer.c:146
 #, c-format
-msgid "Error opening `%s' for writing as a system file: %s."
-msgstr "Σφάλμα ανοίγματος `%s' προς εγγραφή σαν αρχείο συστήματος: %s."
+msgid "Error opening `%s' for writing as a CSV file: %s."
+msgstr "Σφάλμα ανοίγματος `%s' προς εγγραφή σαν αρχείο CSV: %s."
 
 #: src/data/csv-file-writer.c:453
 #, c-format
@@ -460,7 +223,7 @@ msgstr "σύστημα"
 msgid "scratch"
 msgstr "πρόχειρο"
 
-#: src/data/dictionary.c:1477
+#: src/data/dictionary.c:1523
 #, c-format
 msgid "Truncating document line to %d bytes."
 msgstr "Περικοπή γραμμής κειμένου κατά %d bytes."
@@ -503,6 +266,112 @@ msgstr "Δεν μπορεί να ξανά-ανοικτεί %s σαν %s."
 #, c-format
 msgid "Not opening pipe file `%s' because %s option set."
 msgstr "Δεν μπορεί να ανοιχθεί το αρχείο pipe `%s' επειδή η επιλογή αυτή %s είναι ενεργή."
+
+#: src/data/format.c:339
+msgid "Input format"
+msgstr "Εισαγωγή μορφότυπου"
+
+#: src/data/format.c:339
+msgid "Output format"
+msgstr "Εξαγωγή μορφότυπου"
+
+#: src/data/format.c:342
+#, c-format
+msgid "Format %s may not be used for input."
+msgstr "Το μορφότυπο %s δεν μπορεί να χρησιμοποιηθεί σαν εισαγωγή."
+
+#: src/data/format.c:349
+#, c-format
+msgid "%s specifies width %d, but %s requires an even width."
+msgstr "%s ορίζει εύρος %d, αλλά %s απαιτεί ένα ζυγό εύρος."
+
+#: src/data/format.c:358
+#, c-format
+msgid "%s %s specifies width %d, but %s requires a width between %d and %d."
+msgstr "%s %s ορίζει εύρος %d, αλλά %s απαιτεί ένα εύρος μεταξύ %d και %d."
+
+#: src/data/format.c:367
+#, c-format
+msgid "%s %s specifies %d decimal place, but %s does not allow any decimals."
+msgid_plural "%s %s specifies %d decimal places, but %s does not allow any decimals."
+msgstr[0] "%s %s ορίζει %d δεκαδική θέση, αλλά %s δεν επιτρέπει κανένα δεκαδικό ψηφίο."
+msgstr[1] "%s %s ορίζει %d δεκαδικές θέσεις, αλλά %s δεν επιτρέπει κανένα δεκαδικό ψηφίο."
+
+#: src/data/format.c:378
+#, c-format
+msgid "%s %s specifies %d decimal place, but the given width allows at most %d decimals."
+msgid_plural "%s %s specifies %d decimal places, but the given width allows at most %d decimals."
+msgstr[0] "%s %s ορίζει %d δεκαδική θέση, αλλά το δοσμένο εύρος επιτρέπει μέγιστα %d δεκαδικά ψηφία."
+msgstr[1] "%s %s ορίζει %d δεκαδικές θέσεις, αλλά το δοσμένο εύρος επιτρέπει μέγιστα %d δεκαδικά ψηφία."
+
+#: src/data/format.c:385
+#, c-format
+msgid "%s %s specifies %d decimal place, but the given width does not allow for any decimals."
+msgid_plural "%s %s specifies %d decimal places, but the given width does not allow for any decimals."
+msgstr[0] "%s %s ορίζει %d δεκαδική θέση, αλλά το δοσμένο εύρος δεν επιτρέπει κανένα δεκαδικό ψηφίο."
+msgstr[1] "%s %s ορίζει %d δεκαδικές θέσεις, αλλά το δοσμένο εύρος δεν επιτρέπει κανένα δεκαδικό ψηφίο."
+
+#: src/data/format.c:424
+#, c-format
+msgid "%s variables are not compatible with %s format %s."
+msgstr "%s μεταβλητές δεν είναι συμβατές με %s το μορφότυπο %s."
+
+#: src/data/format.c:425 src/data/format.c:1074
+#: src/ui/gui/var-type-dialog.ui:167
+msgid "String"
+msgstr "Συμβολοσειρά"
+
+#: src/data/format.c:425 src/data/format.c:1035
+#: src/ui/gui/var-type-dialog.ui:48
+msgid "Numeric"
+msgstr "Αριθμητικά"
+
+#: src/data/format.c:426 src/data/sys-file-reader.c:2212
+#: src/data/sys-file-reader.c:2214 src/language/xforms/recode.c:512
+#: src/language/xforms/recode.c:513 src/language/xforms/recode.c:525
+#: src/language/xforms/recode.c:526
+#: src/language/dictionary/apply-dictionary.c:77
+#: src/language/dictionary/apply-dictionary.c:78
+msgid "numeric"
+msgstr "αριθμητικά"
+
+#: src/data/format.c:426 src/data/sys-file-reader.c:2212
+#: src/data/sys-file-reader.c:2214 src/language/xforms/recode.c:512
+#: src/language/xforms/recode.c:513 src/language/xforms/recode.c:525
+#: src/language/xforms/recode.c:526
+#: src/language/dictionary/apply-dictionary.c:77
+#: src/language/dictionary/apply-dictionary.c:78
+msgid "string"
+msgstr "συμβολοσειρά"
+
+#: src/data/format.c:444
+#, c-format
+msgid "String variable with width %d is not compatible with format %s."
+msgstr "Μεταβλητή συμβολοσειράς με εύρος %d δεν είναι συμβατή με το μορφότυπο %s."
+
+#: src/data/format.c:1038 src/ui/gui/var-type-dialog.ui:65
+msgid "Comma"
+msgstr "Κόμμα"
+
+#: src/data/format.c:1041 src/ui/gui/var-type-dialog.ui:82
+msgid "Dot"
+msgstr "Τελεία"
+
+#: src/data/format.c:1044
+msgid "Scientific"
+msgstr "Επιστημονικό"
+
+#: src/data/format.c:1061 src/ui/gui/var-type-dialog.ui:116
+msgid "Date"
+msgstr "Ημερομηνία"
+
+#: src/data/format.c:1064 src/ui/gui/var-type-dialog.ui:133
+msgid "Dollar"
+msgstr "Δολλάριο"
+
+#: src/data/format.c:1071
+msgid "Custom"
+msgstr "Επιλογή χρήστη"
 
 #: src/data/gnumeric-reader.c:478 src/data/ods-reader.c:505
 #, c-format
@@ -595,22 +464,22 @@ msgstr "Άνοιγμα ροοθήκευσης για %s: %s."
 msgid "Creating temporary file to replace %s: %s."
 msgstr "Δημιουργία πρόχειρου αρχείου για αντικατάσταση του %s: %s."
 
-#: src/data/make-file.c:274
+#: src/data/make-file.c:277
 #, c-format
 msgid "Creating temporary file %s: %s."
 msgstr "Δημιουργία πρόχειρου αρχείου %s: %s."
 
-#: src/data/make-file.c:286
+#: src/data/make-file.c:289
 #, c-format
 msgid "Opening stream for temporary file %s: %s."
 msgstr "Άνοιγμα ροοθήκευσης για πρόχειρο αρχείο %s: %s."
 
-#: src/data/make-file.c:323
+#: src/data/make-file.c:326
 #, c-format
 msgid "Replacing %s by %s: %s."
 msgstr "Αντικατάσταση του %s από %s: %s."
 
-#: src/data/make-file.c:351
+#: src/data/make-file.c:354
 #, c-format
 msgid "Removing %s: %s."
 msgstr "Αφαίρεση του %s: %s."
@@ -636,7 +505,7 @@ msgstr "SPSS/PC+ αρχείο συστήματος"
 msgid "Error opening `%s' for reading as an SPSS/PC+ system file: %s."
 msgstr "Σφάλμα ανοίγματος `%s' για ανάγνωση σαν αρχείο συστήματος SPSS/PC+: %s."
 
-#: src/data/pc+-file-reader.c:224 src/data/sys-file-reader.c:3528
+#: src/data/pc+-file-reader.c:224 src/data/sys-file-reader.c:3541
 #, c-format
 msgid "%s: stat failed (%s)."
 msgstr "%s: αποτυχία του stat (%s)."
@@ -656,12 +525,12 @@ msgstr "Η καταχώρηση καταλόγου είναι έκτασης %u-
 msgid "Directory fields have unexpected values (%u,%u)."
 msgstr "Τα πεδία του καταλόγου έχουν μη αναμενόμενες τιμές (%u,%u)."
 
-#: src/data/pc+-file-reader.c:372 src/data/sys-file-reader.c:675
+#: src/data/pc+-file-reader.c:372 src/data/sys-file-reader.c:672
 #, c-format
 msgid "Variable %zu"
 msgstr "Μεταβλητή %zu"
 
-#: src/data/pc+-file-reader.c:380 src/data/sys-file-reader.c:683
+#: src/data/pc+-file-reader.c:380 src/data/sys-file-reader.c:680
 #, c-format
 msgid "Variable %zu Label"
 msgstr "Μεταβλητή %zu ετικέτας"
@@ -671,20 +540,20 @@ msgstr "Μεταβλητή %zu ετικέτας"
 msgid "Variable %zu Value Label %zu"
 msgstr "Μεταβλητή %zu Τιμές Ετικέτας %zu"
 
-#: src/data/pc+-file-reader.c:388 src/data/sys-file-reader.c:693
+#: src/data/pc+-file-reader.c:388 src/data/sys-file-reader.c:690
 msgid "Creation Date"
 msgstr "Ημερομηνία δημιουργίας"
 
-#: src/data/pc+-file-reader.c:389 src/data/sys-file-reader.c:694
+#: src/data/pc+-file-reader.c:389 src/data/sys-file-reader.c:691
 msgid "Creation Time"
 msgstr "Ώρα δημιουργίας"
 
-#: src/data/pc+-file-reader.c:390 src/data/sys-file-reader.c:695
+#: src/data/pc+-file-reader.c:390 src/data/sys-file-reader.c:692
 #: src/language/dictionary/sys-file-info.c:200
 msgid "Product"
 msgstr "Προϊόν"
 
-#: src/data/pc+-file-reader.c:391 src/data/sys-file-reader.c:696
+#: src/data/pc+-file-reader.c:391 src/data/sys-file-reader.c:693
 #: src/language/dictionary/sys-file-info.c:300
 msgid "File Label"
 msgstr "Ετικέτα αρχείου"
@@ -694,7 +563,7 @@ msgstr "Ετικέτα αρχείου"
 msgid "Using default encoding %s to read this SPSS/PC+ system file.  For best results, specify an encoding explicitly.  Use SYSFILE INFO with ENCODING=\"DETECT\" to analyze the possible encodings."
 msgstr "Χρησιμοποιώντας τις προκαθορισμένες επιλογές κωδικοποίησης %s για ανάγνωση του αρχείου συστήματος SPSS/PC+. Καλύτερα, προκαθόρισε έναν κωδικοποιητή εξαρχής. Χρησιμοποίησε SYSFILE INFO με ENCODING=\"DETECT\" για να δεις πιθανούς κωδικοποιητές."
 
-#: src/data/pc+-file-reader.c:483 src/data/sys-file-reader.c:893
+#: src/data/pc+-file-reader.c:483 src/data/sys-file-reader.c:890
 #, c-format
 msgid "Error closing system file `%s': %s."
 msgstr "Σφάλμα κλεισίματος αρχείου συστήματος `%s': %s."
@@ -778,12 +647,12 @@ msgstr "Η μεταβλητή %u έχει μη έγκυρο τύπο %<PRIu8>."
 msgid "Invalid weight index %u."
 msgstr "Μη έγκυρος καταχωρητής στάθμισης %u."
 
-#: src/data/pc+-file-reader.c:857 src/data/sys-file-reader.c:1421
+#: src/data/pc+-file-reader.c:857
 #, c-format
 msgid "Invalid variable name `%s'."
 msgstr "Μη έγκυρο όνομα μεταβλητής `%s'."
 
-#: src/data/pc+-file-reader.c:865 src/data/sys-file-reader.c:1436
+#: src/data/pc+-file-reader.c:865 src/data/sys-file-reader.c:1444
 #, c-format
 msgid "Renaming variable with duplicate name `%s' to `%s'."
 msgstr "Μετονομασία μεταβλητής με διπλότυπο όνομα από `%s' σε `%s'."
@@ -793,7 +662,7 @@ msgstr "Μετονομασία μεταβλητής με διπλότυπο όν
 msgid "Cannot weight by string variable `%s'."
 msgstr "Δεν μπορεί να χρησιμοποιηθεί σαν Βάρος μεταβλητή συμβολοσειράς `%s'."
 
-#: src/data/pc+-file-reader.c:973 src/data/sys-file-reader.c:2753
+#: src/data/pc+-file-reader.c:973 src/data/sys-file-reader.c:2762
 msgid "File ends in partial case."
 msgstr "Το αρχείο τελειώνει πρόωρα."
 
@@ -802,36 +671,36 @@ msgstr "Το αρχείο τελειώνει πρόωρα."
 msgid "Case beginning at offset 0x%08x extends past end of data record at offset 0x%08x."
 msgstr "Η υπόθεση που αρχίζει στο 0x%08x επεκτείνεται μετά το τέλος του αρχείου στο 0x%08x."
 
-#: src/data/pc+-file-reader.c:998 src/data/sys-file-reader.c:2761
+#: src/data/pc+-file-reader.c:998 src/data/sys-file-reader.c:2770
 #, c-format
 msgid "Error reading case from file %s."
 msgstr "Σφάλμα ανάγνωσης υπόθεσης από το αρχείο %s."
 
-#: src/data/pc+-file-reader.c:1114 src/data/sys-file-reader.c:2924
+#: src/data/pc+-file-reader.c:1114 src/data/sys-file-reader.c:2933
 #, c-format
 msgid "Possible compressed data corruption: string contains compressed integer (opcode %d)."
 msgstr "Πιθανόν αλλοιωμένα συμπιεσμένα δεδομένα: Η συμβολοσειρά περιέχει ακέραιο τον ακέραιο αριθμό συμπίεσης (opcode %d)."
 
-#: src/data/pc+-file-reader.c:1156 src/data/sys-file-reader.c:3221
+#: src/data/pc+-file-reader.c:1156 src/data/sys-file-reader.c:3234
 #, c-format
 msgid "`%s' near offset 0x%llx: "
 msgstr "`%s' κόντα στο 0x%llx: "
 
-#: src/data/pc+-file-reader.c:1159 src/data/sys-file-reader.c:3224
+#: src/data/pc+-file-reader.c:1159 src/data/sys-file-reader.c:3237
 #, c-format
 msgid "`%s': "
 msgstr "`%s': "
 
-#: src/data/pc+-file-reader.c:1211 src/data/sys-file-reader.c:3275
+#: src/data/pc+-file-reader.c:1211 src/data/sys-file-reader.c:3288
 #, c-format
 msgid "System error: %s."
 msgstr "Σφάλμα συστήματος: %s."
 
-#: src/data/pc+-file-reader.c:1216 src/data/sys-file-reader.c:3280
+#: src/data/pc+-file-reader.c:1216 src/data/sys-file-reader.c:3293
 msgid "Unexpected end of file."
 msgstr "Μη αναμενόμενο τέλος αρχείου."
 
-#: src/data/pc+-file-reader.c:1301 src/data/sys-file-reader.c:3505
+#: src/data/pc+-file-reader.c:1301 src/data/sys-file-reader.c:3518
 #, c-format
 msgid "%s: seek failed (%s)."
 msgstr "%s: η αναζήτηση απέτυχε (%s)."
@@ -954,7 +823,7 @@ msgstr "Μη έγκυρο εύρος μεταβλητής %d."
 msgid "Invalid variable name `%s' in position %d."
 msgstr "Μη έγκυρο όνομα μεταβλητής `%s' στη θέση %d."
 
-#: src/data/por-file-reader.c:723 src/data/sys-file-reader.c:1428
+#: src/data/por-file-reader.c:723 src/data/sys-file-reader.c:1426
 #, c-format
 msgid "Bad width %d for variable %s."
 msgstr "Λάθος εύρος %d για την μεταβλητή %s."
@@ -1060,484 +929,494 @@ msgstr "Σφάλμα ανοίγματος `%s' για ανάγνωση σαν α
 msgid "Misplaced type 4 record."
 msgstr "Αστοχεία τύπου 4 εγγραφή."
 
-#: src/data/sys-file-reader.c:497
+#: src/data/sys-file-reader.c:496
 msgid "Duplicate type 6 (document) record."
 msgstr "Διπλότυπο τύπου 6 (εγγράφου) εγγραφή."
 
-#: src/data/sys-file-reader.c:509 src/data/sys-file-reader.c:1346
+#: src/data/sys-file-reader.c:506 src/data/sys-file-reader.c:1343
 #, c-format
 msgid "Unrecognized record type 7, subtype %d.  For help, please send this file to %s and mention that you were using %s."
 msgstr "Μη αναγνωρίσιμη εγγραφή τύπου 7, υπότυπος %d.  Στείλε ένα αντίγραφο του αρχείου σε %s, και ανέφερε ότι έκανες χρήσης του %s."
 
-#: src/data/sys-file-reader.c:529
+#: src/data/sys-file-reader.c:526
 #, c-format
 msgid "Record type 7, subtype %d found here has the same type as the record found near offset 0x%llx.  For help, please send this file to %s and mention that you were using %s."
 msgstr "Εγγραφή τύπου 7, υπότυπος %d που βρέθηκε εδώ έχει τον ίδιο τύπο όπως η εγγραφή που βρέθηκε κοντά στο 0x%llx. Για βοήθεια, στείλε το αρχείο αυτό %s και ανέφερε ότι έκανες χρήσης του %s."
 
-#: src/data/sys-file-reader.c:541
+#: src/data/sys-file-reader.c:538
 #, c-format
 msgid "Unrecognized record type %d."
 msgstr "Μη αναγνωρίσιμη εγγραφή τύπου %d."
 
-#: src/data/sys-file-reader.c:691
+#: src/data/sys-file-reader.c:688
 #, c-format
 msgid "Value Label %zu"
 msgstr "Ετικέτα τιμής %zu"
 
-#: src/data/sys-file-reader.c:700
+#: src/data/sys-file-reader.c:697
 msgid "Extra Product Info"
 msgstr "Επιπλέον πληροφορίες προίοντος"
 
-#: src/data/sys-file-reader.c:713
+#: src/data/sys-file-reader.c:710
 #, c-format
 msgid "Document Line %zu"
 msgstr "Γρααμή εγγράφου %zu"
 
-#: src/data/sys-file-reader.c:721
+#: src/data/sys-file-reader.c:718
 #, c-format
 msgid "MRSET %zu"
 msgstr "MRSET %zu"
 
-#: src/data/sys-file-reader.c:723
+#: src/data/sys-file-reader.c:720
 #, c-format
 msgid "MRSET %zu Label"
 msgstr "MRSET %zu Ετικέτας"
 
-#: src/data/sys-file-reader.c:728
+#: src/data/sys-file-reader.c:725
 #, c-format
 msgid "MRSET %zu Counted Value"
 msgstr "MRSET %zu υπολογίσιμη τιμή"
 
-#: src/data/sys-file-reader.c:766
+#: src/data/sys-file-reader.c:763
 #, c-format
 msgid "This system file does not indicate its own character encoding.  Using default encoding %s.  For best results, specify an encoding explicitly.  Use SYSFILE INFO with ENCODING=\"DETECT\" to analyze the possible encodings."
 msgstr "Αυτό το αρχείο συστήματος δεν αναφέρει το σύστημα κωδικοποίησης των χαρακτήρων του. Χρησιμοποιήτε η ορισμένη κψδικοποίηση %s. Μπορείτε να ορίσετε μία κωδικοποίηση.  Κάνε χρήση του SYSFILE INFO με ENCODING=\"DETECT\" για να δεις πιθανές κωδικοποιήσεις."
 
-#: src/data/sys-file-reader.c:848
+#: src/data/sys-file-reader.c:845
 #, c-format
 msgid "File header claims %d variable positions but %zu were read from file."
 msgstr "Η επικεφαλίδα αρχείου αναφέρει %d διάφορες θέσεις αλλά %zu διαβάστηκε από το αρχείο."
 
-#: src/data/sys-file-reader.c:961 src/data/sys-file-reader.c:975
+#: src/data/sys-file-reader.c:958 src/data/sys-file-reader.c:972
 msgid "This is not an SPSS system file."
 msgstr "Αυτό δεν είναι ένα αρχείο συστήματος SPSS."
 
-#: src/data/sys-file-reader.c:1030
+#: src/data/sys-file-reader.c:1027
 msgid "Compression bias is not the usual value of 100, or system file uses unrecognized floating-point format."
 msgstr "Η τιμή συμπίεσης δεν έχει τη συνήθης τιμή 100, ή το αρχείο συστήματος κάνει χρήση μη αναγνωρίσιμης μορφής κινητής υποδιαστολής."
 
-#: src/data/sys-file-reader.c:1105
+#: src/data/sys-file-reader.c:1102
 msgid "Variable label indicator field is not 0 or 1."
 msgstr "Η ένδειξη πεδίου της ετικέτας μεταβλητής δεν είναι 0 ή 1."
 
-#: src/data/sys-file-reader.c:1118
+#: src/data/sys-file-reader.c:1115
 msgid "Numeric missing value indicator field is not -3, -2, 0, 1, 2, or 3."
 msgstr "Η ένδειξη πεδίου των αριθμητικών ελλειπούσων τιμών δεν είναι -3, -2, 0, 1, 2, ή 3."
 
-#: src/data/sys-file-reader.c:1128
+#: src/data/sys-file-reader.c:1125
 msgid "String missing value indicator field is not 0, 1, 2, or 3."
 msgstr "Η ένδειξη πεδίου της συμβολοσειράς δεν είναι 0, 1, 2, ή 3."
 
-#: src/data/sys-file-reader.c:1155
+#: src/data/sys-file-reader.c:1152
 #, c-format
 msgid "Invalid number of labels %u."
 msgstr "Μη έγκυρος αριθμός Ταμπέλων %u."
 
-#: src/data/sys-file-reader.c:1188
+#: src/data/sys-file-reader.c:1185
 msgid "Variable index record (type 4) does not immediately follow value label record (type 3) as it should."
 msgstr "Η ένδειξη εγγραφής μεταβλητών (τύπου 4) δεν ακολουθεί άμεσα τις εγγραφές των ταμπέλων τιμών (τύπου 3) όπως θα έπρεπε."
 
-#: src/data/sys-file-reader.c:1200
+#: src/data/sys-file-reader.c:1197
 #, c-format
 msgid "Number of variables associated with a value label (%u) is not between 1 and the number of variables (%zu)."
 msgstr "Ο αριθμός των μεταβλητών που έχουν σχέση με μία τιμή ετικέτας (%u) δεν είναι μεταξύ 1 και με τον αριθμό των μεταβλητών (%zu)."
 
-#: src/data/sys-file-reader.c:1227
+#: src/data/sys-file-reader.c:1224
 #, c-format
 msgid "Number of document lines (%d) must be greater than 0 and less than %d."
 msgstr "Ο αριθμός των γραμμών του εγγράφου (%d) πρέπει να είναι μεγαλύτερος από 0 και μικρότερος από %d."
 
-#: src/data/sys-file-reader.c:1320
+#: src/data/sys-file-reader.c:1317
 #, c-format
 msgid "Record type 7, subtype %d has bad size %u (expected %d)."
 msgstr "Η εγγραφή τύπου 7, υποτύπου %d είχε λανθασμένο μέγεθος %u (αναμενόταν %d)."
 
-#: src/data/sys-file-reader.c:1324
+#: src/data/sys-file-reader.c:1321
 #, c-format
 msgid "Record type 7, subtype %d has bad count %u (expected %d)."
 msgstr "Η εγγραφή τύπου 7, υποτύπου %d είχαν λανθασμένη αρίθμηση %u (expected %d)."
 
-#: src/data/sys-file-reader.c:1510
+#: src/data/sys-file-reader.c:1435
+#, c-format
+msgid "Renaming variable with invalid name `%s' to `%s'."
+msgstr "Μετονομασία μεταβλητής με μη έγκυεο όνομα από `%s' σε `%s'."
+
+#: src/data/sys-file-reader.c:1517
 msgid "Missing string continuation record."
 msgstr "Ελλειπής εγγραφή της συνέχηση της συμβολοσειράς."
 
-#: src/data/sys-file-reader.c:1543
+#: src/data/sys-file-reader.c:1550
 #, c-format
 msgid "Variable %s with width %d has invalid print format 0x%x."
 msgstr "Η μεταβλητή %s με εύρος %d έχει μη έγκυρο μορφότυπο εκτύπωσης 0x%x."
 
-#: src/data/sys-file-reader.c:1547
+#: src/data/sys-file-reader.c:1554
 #, c-format
 msgid "Variable %s with width %d has invalid write format 0x%x."
 msgstr "Η μεταβλητή %s με εύρος %d έχει μη έγκυρο εγγράψιμο μορφότυπο 0x%x."
 
-#: src/data/sys-file-reader.c:1552
+#: src/data/sys-file-reader.c:1559
 msgid "Suppressing further invalid format warnings."
 msgstr "Επιπλέον παράλλειψη μη έγκυρο μορφότυπο προειδοποιήσεων."
 
-#: src/data/sys-file-reader.c:1606
+#: src/data/sys-file-reader.c:1613
 #, c-format
 msgid "Floating-point representation indicated by system file (%d) differs from expected (%d)."
 msgstr "Η δηλωθείς κινητή υποδιαστολή από το αρχείο συστήματος (%d) διαφέρει από την αναμενόμενη (%d)."
 
-#: src/data/sys-file-reader.c:1622
+#: src/data/sys-file-reader.c:1629
 #, c-format
 msgid "Integer format indicated by system file (%d) differs from expected (%d)."
 msgstr "Ο μορφότυποε των ακέραιων δηλωθείς από το αρχείο συστήματος (%d) διαφέρει από την αναμενόμενη (%d)."
 
-#: src/data/sys-file-reader.c:1640 src/data/sys-file-reader.c:1646
+#: src/data/sys-file-reader.c:1647 src/data/sys-file-reader.c:1653
 #, c-format
 msgid "File specifies unexpected value %g (%a) as %s, instead of %g (%a)."
 msgstr "Το αρχείο ορίζει μη αναμενόμενη τιμή %g (%a) σαν %s, αντί για %g (%a)."
 
-#: src/data/sys-file-reader.c:1655
+#: src/data/sys-file-reader.c:1662
 #, c-format
 msgid "File specifies unexpected value %g (%a) as %s, instead of %g (%a) or %g (%a)."
 msgstr "Το αρχείο ορίζει μη αναμενόμενη τιμή %g (%a) σαν %s, αντί για %g (%a) ή %g (%a)."
 
-#: src/data/sys-file-reader.c:1707 src/data/sys-file-reader.c:1726
+#: src/data/sys-file-reader.c:1714 src/data/sys-file-reader.c:1733
 #, c-format
 msgid "Missing space following `%c' at offset %zu in MRSETS record."
 msgstr "Ελλειπές διάστημα που ακολουθεί το `%c' στο %zu στις εγγραφές MRSETS."
 
-#: src/data/sys-file-reader.c:1734
+#: src/data/sys-file-reader.c:1741
 #, c-format
 msgid "Missing label source value following `E' at offset %zu in MRSETS record."
 msgstr "Ε ετικέτα τιμής από τη πηγή που ακολουθεί το `E' στο %zu στις εγγραφές MRSETS."
 
-#: src/data/sys-file-reader.c:1741
+#: src/data/sys-file-reader.c:1748
 #, c-format
 msgid "Unexpected label source value following `E' at offset %zu in MRSETS record."
 msgstr "Μη αναμενόμενη ετικέτα τιμής από τη πηγή που ακολουθεί το `E' στο  %zu στις εγγραφές MRSETS."
 
-#: src/data/sys-file-reader.c:1748
+#: src/data/sys-file-reader.c:1755
 #, c-format
 msgid "Missing `C', `D', or `E' at offset %zu in MRSETS record."
 msgstr "Ελλειπούσες `C', `D', ή `E' στο %zu στις εγγραφές MRSETS."
 
-#: src/data/sys-file-reader.c:1775
+#: src/data/sys-file-reader.c:1782
 #, c-format
 msgid "Missing new-line parsing variable names at offset %zu in MRSETS record."
 msgstr "Ελλειπούσα νέα γραμμή ανάλυσης ονομάτων μεταβλητών στο %zu στις εγγραφές MRSETS."
 
-#: src/data/sys-file-reader.c:1810
+#: src/data/sys-file-reader.c:1817
 #, c-format
 msgid "Invalid multiple response set name `%s'."
 msgstr "Δεν ορίστηκε όνομα για το σετ πολλαπλών απαντήσεων `%s'."
 
-#: src/data/sys-file-reader.c:1843
+#: src/data/sys-file-reader.c:1850
 #, c-format
 msgid "MRSET %s contains duplicate variable name %s."
 msgstr "MRSET %s περιλαμβάνει διπλότυπο όνομα μεταβλητής %s."
 
-#: src/data/sys-file-reader.c:1858
+#: src/data/sys-file-reader.c:1865
 #, c-format
 msgid "MRSET %s contains both string and numeric variables."
 msgstr "MRSET %s περιλαμβάνει και συμβολοσειρές και Αριθμητικές μεταβλητές."
 
-#: src/data/sys-file-reader.c:1870
+#: src/data/sys-file-reader.c:1877
 #, c-format
 msgid "MRSET %s has no variables."
 msgstr "MRSET %s δεν έχει μεταβλητές."
 
-#: src/data/sys-file-reader.c:1872
+#: src/data/sys-file-reader.c:1879
 #, c-format
 msgid "MRSET %s has only one variable."
 msgstr "MRSET %s έχει μόνο μία μεταβλητή."
 
-#: src/data/sys-file-reader.c:1916
+#: src/data/sys-file-reader.c:1923
 #, c-format
 msgid "Extension 11 has bad count %u (for %zu variables)."
 msgstr "Η επέκταση 11 έχει κακή αρίθμηση %u (για %zu μεταβλητές)."
 
-#: src/data/sys-file-reader.c:1949
+#: src/data/sys-file-reader.c:1956
 #, c-format
 msgid "Invalid variable display parameters for variable %zu (%s).  Default parameters substituted."
 msgstr "Μη έγκυρή παράμετρος  απεικόνισης για μεταβλητές %zu (%s). Η καθορισμένη παράμετρος υποκαταστάθηκε."
 
-#: src/data/sys-file-reader.c:1993
+#: src/data/sys-file-reader.c:2000
 #, c-format
 msgid "Duplicate long variable name `%s'."
 msgstr "Διπλότυπο μεγάλο όνομα μεταβλητής `%s'."
 
-#: src/data/sys-file-reader.c:2046
+#: src/data/sys-file-reader.c:2053
 #, c-format
 msgid "Long variable mapping from %s to invalid variable name `%s'."
 msgstr "Αντιγραφή μεγάλου ονόματος μεταβλητής από %s σε μη έγκυρο όνομα `%s'."
 
-#: src/data/sys-file-reader.c:2081
+#: src/data/sys-file-reader.c:2088
 #, c-format
 msgid "%s listed as string of invalid length %s in very long string record."
 msgstr "%s αναφέρθηκε σαν συμβολοσειρά μη έγκυρου μήκους %s σε εγγραφή με πολύ μεγάλο μήκος."
 
-#: src/data/sys-file-reader.c:2092
+#: src/data/sys-file-reader.c:2099
 #, c-format
 msgid "%s listed in very long string record with width %s, which requires only one segment."
 msgstr "%s αναφέρθηκε σε εγγραφή με πολύ μεγάλο εύρος %s, το οποίο απαιτέι μόνο ένα τμήμα."
 
-#: src/data/sys-file-reader.c:2100
+#: src/data/sys-file-reader.c:2107
 #, c-format
 msgid "Very long string %s overflows dictionary."
 msgstr "Πολύ μεγάλη συμβολοσειρά %s που υπερχειλίζει την λίστα."
 
-#: src/data/sys-file-reader.c:2118
+#: src/data/sys-file-reader.c:2125
 #, c-format
 msgid "Very long string with width %ld has segment %d of width %d (expected %d)."
 msgstr "Πολύ μεγάλη συμβολοσειρά με εύρος %ld έχει τμήμα %d εύρους %d (αναμενόμενο %d)."
 
-#: src/data/sys-file-reader.c:2177
+#: src/data/sys-file-reader.c:2183
 #, c-format
-msgid "Variable index %d not in valid range 1...%zu."
-msgstr "Ο καταχωρητής μεταβλητής %d δεν είναι σε έγκυρο εύρος 1...%zu."
+msgid "Value label variable index %d not in valid range 1...%zu."
+msgstr "Ο καταχωρητής ονοματοποίησης επιπέδου μεταβλητής %d δεν είναι σε έγκυρο εύρος 1...%zu."
 
-#: src/data/sys-file-reader.c:2187
+#: src/data/sys-file-reader.c:2193
 #, c-format
-msgid "Variable index %d refers to long string continuation."
-msgstr "Ο καταχωρητής μεταβλητής %d αναφέρεται σε μεγάλες συμβολοσειρές που συνεχίζονται."
+msgid "Value label variable index %d refers to long string continuation."
+msgstr "Ο καταχωρητής ονοματοποίησης επιπέδου μεταβλητής %d αναφέρεται σε μεγάλες συνεχής συμβολοσειρές."
 
-#: src/data/sys-file-reader.c:2201
+#: src/data/sys-file-reader.c:2208
 #, c-format
 msgid "Variables associated with value label are not all of identical type.  Variable %s is %s, but variable %s is %s."
 msgstr "Μεταβλητές που έχουν σχετιστεί με τιμές ταμπελών δεν είναι όλες ίδιου τύπου.  Η μεταβλητή %s είναι %s, αλλά η μεταβλητή %s είναι %s."
 
-#: src/data/sys-file-reader.c:2219
+#: src/data/sys-file-reader.c:2226
 #, c-format
 msgid "Value labels may not be added to long string variables (e.g. %s) using records types 3 and 4."
 msgstr "Ταμπέλες τιμών δεν μπορούν να προσθεθούν σε μεγάλες μεταβλητές συμβολοσειράς (π.χ. %s) σε εγγραφές τύπου 3 και 4."
 
-#: src/data/sys-file-reader.c:2248
+#: src/data/sys-file-reader.c:2255
 #, c-format
 msgid "Duplicate value label for %g on %s."
 msgstr "Διπλότυπες τιμές ταμπέλων για %g στο %s."
 
-#: src/data/sys-file-reader.c:2253 src/data/sys-file-reader.c:2591
+#: src/data/sys-file-reader.c:2260 src/data/sys-file-reader.c:2600
 #, c-format
 msgid "Duplicate value label for `%.*s' on %s."
 msgstr "Διπλότυπη τιμή ετικέτας για `%.*s' στο %s."
 
-#: src/data/sys-file-reader.c:2275 src/data/sys-file-reader.c:3021
+#: src/data/sys-file-reader.c:2283
 #, c-format
-msgid "Suppressed %d additional related warnings."
-msgstr "Παράληψη %d επιπλεόν σχετικών προειδοποιήσεων."
+msgid "Suppressed %d additional warnings for value labels."
+msgstr "Απόκρυψη %d επιπλέον σχετικών προειδοποιήσεων για ονοματοποιημένα επίπεδα μεταβλητών."
 
-#: src/data/sys-file-reader.c:2289
+#: src/data/sys-file-reader.c:2297
 #, c-format
-msgid "Weight variable index %d not in valid range 1...%zu."
-msgstr "Ο Δείκτης Βάρους μεταβλητής %d σε μη έγκυρο εύρος 1 ... %zu."
+msgid "Weight variable index %d not in valid range 1...%zu.  Treating file as unweighted."
+msgstr "Ο Δείκτης Βάρους μεταβλητής %d σε μη έγκυρο εύρος 1 ... %zu.  Μεταχείριση αρχείου ως δίχως βάρη."
 
-#: src/data/sys-file-reader.c:2298
+#: src/data/sys-file-reader.c:2307
 #, c-format
-msgid "Weight variable index %d refers to long string continuation."
-msgstr "Ο Δείκτης Βάρους μεταβλητής %d αναφέρεται σε μακρά συνεχή συμβολοσειρών."
+msgid "Weight variable index %d refers to long string continuation.  Treating file as unweighted."
+msgstr "Ο Δείκτης Βάρους μεταβλητής %d αναφέρεται σε μακρά συνεχή συμβολοσειρά. Μεταχείριση αρχείου ως δίχως βάρη."
 
-#: src/data/sys-file-reader.c:2306
+#: src/data/sys-file-reader.c:2315
 #, c-format
 msgid "Ignoring string variable `%s' set as weighting variable."
 msgstr "Αγνόηση της μεταβλητής συμβολοσειράς `%s' που ορίστηκε σαν μεταβλητή στάθμισης."
 
-#: src/data/sys-file-reader.c:2343
+#: src/data/sys-file-reader.c:2352
 #, c-format
 msgid "Error parsing attribute value %s[%d]."
 msgstr "Σφάλμα ανάλυσης ιδιότητας τιμής %s[%d]."
 
-#: src/data/sys-file-reader.c:2357
+#: src/data/sys-file-reader.c:2366
 #, c-format
 msgid "Attribute value %s[%d] is not quoted: %s."
 msgstr "Ιδιότητα τιμής %s[%d] δεν  έχουν παρατεθεί: %s."
 
-#: src/data/sys-file-reader.c:2370
+#: src/data/sys-file-reader.c:2379
 #, c-format
 msgid "Duplicate attribute %s."
 msgstr "Διπλότυπο χαρακτηριστικό %s."
 
-#: src/data/sys-file-reader.c:2454
+#: src/data/sys-file-reader.c:2463
 #, c-format
 msgid "Invalid role for variable %s."
 msgstr "Μη έγκυρος ρολος για μεταβλητή %s."
 
-#: src/data/sys-file-reader.c:2463
+#: src/data/sys-file-reader.c:2472
 #, c-format
 msgid "%zu other variables had invalid roles."
 msgstr "%zu άλλες μεταβλητές είχαν μη έγκυρους ρόλους."
 
-#: src/data/sys-file-reader.c:2476
+#: src/data/sys-file-reader.c:2485
 #, c-format
 msgid "Extension record subtype %d ends unexpectedly."
 msgstr "Η εγγραφή επέκτασης υποτύπου %d τελειώνει μη αναμενόμενα."
 
-#: src/data/sys-file-reader.c:2522
+#: src/data/sys-file-reader.c:2531
 #, c-format
 msgid "Ignoring long string value label record for unknown variable %s."
 msgstr "Αγνόηση ταμπέλες τιμών για μεγάλες συμβολοσειρές για άγνωστη μεταβλητή %s."
 
-#: src/data/sys-file-reader.c:2527
+#: src/data/sys-file-reader.c:2536
 #, c-format
 msgid "Ignoring long string value label record for numeric variable %s."
 msgstr "Αγνόηση ταμπέλες τιμών για μεγάλες συμβολοσειρές για Αριθμητική μεταβλητή %s."
 
-#: src/data/sys-file-reader.c:2534
+#: src/data/sys-file-reader.c:2543
 #, c-format
 msgid "Ignoring long string value label record for variable %s because the record's width (%d) does not match the variable's width (%d)."
 msgstr "Αγνόηση εγγραφής ταμπέλων τιμών για μεγάλες συμβολοσειρές για μεταβλητή %s επειδή το εύρος της εγγραφής (%d) δεν ταιριάζει με το εύρος της μεταβλητής (%d)."
 
-#: src/data/sys-file-reader.c:2564
+#: src/data/sys-file-reader.c:2573
 #, c-format
 msgid "Ignoring long string value label %zu for variable %s, with width %d, that has bad value width %zu."
 msgstr "Αγνόηση ετικέτας τιμών για μεγάλες συμβολοσειρές %zu για μεταβλητή %s, με εύρος %d, που έχει λάθος τιμή εύρους %zu."
 
-#: src/data/sys-file-reader.c:2637
+#: src/data/sys-file-reader.c:2646
 #, c-format
 msgid "Long string missing values record says variable %s has %d missing values, but only 1 to 3 missing values are allowed."
 msgstr "Η εγγραφή ελλειπούσων τιμών μεγάλων συμβολοσειρών αναφέρει ότι η μεταβλητή %s έχει %d ελλειπούσες τιμές αλλά μόνο 1 ως 3 ελλειπούσες τιμές επιτρέπονται."
 
-#: src/data/sys-file-reader.c:2647
+#: src/data/sys-file-reader.c:2656
 #, c-format
 msgid "Ignoring long string missing value record for unknown variable %s."
 msgstr "Αγνόηση εγγραφής ελλειπούσων τιμών μεγάλων συμβολοσειρών για άγνωστη μεταβλητή %s."
 
-#: src/data/sys-file-reader.c:2652
+#: src/data/sys-file-reader.c:2661
 #, c-format
 msgid "Ignoring long string missing value record for numeric variable %s."
 msgstr "Αγνόηση εγγραφής ελλειπούσων τιμών μεγάλων συμβολοσειρών για Αριθμητική μεταβλητή %s."
 
-#: src/data/sys-file-reader.c:2677
+#: src/data/sys-file-reader.c:2686
 #, c-format
 msgid "Ignoring long string missing value %zu for variable %s, with width %d, that has bad value width %zu."
 msgstr "Αγνόηση ελλειπούσων τιμών μεγάλων συμβολοσειρών %zu για μεταβλητή %s, με εύρος %d, που έχει λάθος τιμή εύρους %zu."
 
-#: src/data/sys-file-reader.c:2731
+#: src/data/sys-file-reader.c:2740
 msgid "File ends in partial string value."
 msgstr "Το αρχείο τελειώνει με περικομμένη τιμή συμβολοσειράς."
 
-#: src/data/sys-file-reader.c:2870
+#: src/data/sys-file-reader.c:2879
 msgid "Possible compressed data corruption: compressed spaces appear in numeric field."
 msgstr "Πιθανόν αλλοίωση στη συμπίεση: Συμπιεσμένα διαστήματα εμφανίζονται σε αριθμητικά πεδία."
 
-#: src/data/sys-file-reader.c:3067 src/data/sys-file-reader.c:3084
+#: src/data/sys-file-reader.c:3030
+#, c-format
+msgid "Suppressed %d additional related warnings."
+msgstr "Παράληψη %d επιπλεόν σχετικών προειδοποιήσεων."
+
+#: src/data/sys-file-reader.c:3076 src/data/sys-file-reader.c:3093
 #, c-format
 msgid "Dictionary record refers to unknown variable %s."
 msgstr "Η εγγραφή στην λίστα αναφέρει άγνωστη μεταβλητή %s."
 
-#: src/data/sys-file-reader.c:3146
+#: src/data/sys-file-reader.c:3159
 #, c-format
 msgid "Expecting digit at offset %zu in MRSETS record."
 msgstr "Αναμενόταν ψηφίο στο %zu στις εγγραφές MRSETS."
 
-#: src/data/sys-file-reader.c:3154
+#: src/data/sys-file-reader.c:3167
 #, c-format
 msgid "Expecting space at offset %zu in MRSETS record."
 msgstr "Αναμενόταν διάστημα στο %zu στις εγγραφές MRSETS."
 
-#: src/data/sys-file-reader.c:3162
+#: src/data/sys-file-reader.c:3175
 #, c-format
 msgid "%zu-byte string starting at offset %zu exceeds record length %zu."
 msgstr "%zu-δίφυα συμβολοσειράς ξεκινόντας από %zu υπερβαίνει το μήκος εγγραφής %zu."
 
-#: src/data/sys-file-reader.c:3172
+#: src/data/sys-file-reader.c:3185
 #, c-format
 msgid "Expecting space at offset %zu following %zu-byte string."
 msgstr "Αναμενόταν διάστημα στο %zu με ακολουθία από %zu-δίφυα συμβολοσειράς."
 
-#: src/data/sys-file-reader.c:3463
+#: src/data/sys-file-reader.c:3476
 #, c-format
 msgid "Wrong ZLIB data header offset %#llx (expected %#llx)."
 msgstr "Λάθος ZLIB δεδομένα επικεφαλίδας στο %#llx (αναμενόταν %#llx)."
 
-#: src/data/sys-file-reader.c:3471
+#: src/data/sys-file-reader.c:3484
 #, c-format
 msgid "Impossible ZLIB trailer offset 0x%llx."
 msgstr "Μη δυνατόν κομμάτι ZLIB που ξεκινά στο 0x%llx."
 
-#: src/data/sys-file-reader.c:3478
+#: src/data/sys-file-reader.c:3491
 #, c-format
 msgid "Invalid ZLIB trailer length %lld."
 msgstr "Μη έγκυρο μήκος κομματιού ΖLIB που ξεκινά στο %lld."
 
-#: src/data/sys-file-reader.c:3542
+#: src/data/sys-file-reader.c:3555
 #, c-format
 msgid "End of ZLIB trailer (0x%llx) is not file size (0x%llx)."
 msgstr "Τέλος του κομματιού ΖLIB (0x%llx) που δεν είναι μέγεθος αρχείου (0x%llx)."
 
-#: src/data/sys-file-reader.c:3552
+#: src/data/sys-file-reader.c:3565
 #, c-format
 msgid "ZLIB trailer bias (%lld) differs from file header bias (%.2f)."
 msgstr "H τιμή του ZLIB κομματιού (%lld) διαφέρει από αυτό της επικεφαλίδας του αρχείου (%.2f)."
 
-#: src/data/sys-file-reader.c:3562
+#: src/data/sys-file-reader.c:3575
 #, c-format
 msgid "ZLIB trailer \"zero\" field has nonzero value %lld."
 msgstr "Το πεδίο του κομματιού ZLIB \"μηδέν\" έχει μη μηδενική τιμή %lld."
 
-#: src/data/sys-file-reader.c:3568
+#: src/data/sys-file-reader.c:3581
 #, c-format
 msgid "ZLIB trailer specifies unexpected %u-byte block size."
 msgstr "Το κομμάτι του ZLIB ορίζει μη αναμενόμενο %u-δίφυα μέγεθος συμπλόκου."
 
-#: src/data/sys-file-reader.c:3576
+#: src/data/sys-file-reader.c:3589
 #, c-format
 msgid "%lld-byte ZLIB trailer specifies %u data blocks (expected %lld)."
 msgstr "%lld-δίφυα του κομματιού του ZLIB ορίζει %u σύμπλοκα δεδομένων (αναμενόταν %lld)."
 
-#: src/data/sys-file-reader.c:3601
+#: src/data/sys-file-reader.c:3614
 #, c-format
 msgid "ZLIB block descriptor %u reported uncompressed data offset %#llx, when %#llx was expected."
 msgstr "Ο περιγραφέας του συμπλόκου ZLIB %u ανέφερε ότι τα ασυμπίεστα δεδομένα ξεκινούν στο %#llx, όταν %#llx αναμενόταν."
 
-#: src/data/sys-file-reader.c:3610
+#: src/data/sys-file-reader.c:3623
 #, c-format
 msgid "ZLIB block descriptor %u reported compressed data offset %#llx, when %#llx was expected."
 msgstr "Ο περιγραφέας του συμπλόκου ZLIB %u ανέφερε ότι τα συμπιεσμένα δεδομένα ξεκινούν στο %#llx, όταν %#llx αναμενόταν."
 
-#: src/data/sys-file-reader.c:3620
+#: src/data/sys-file-reader.c:3633
 #, c-format
 msgid "ZLIB block descriptor %u reported block size %#x, when %#x was expected."
 msgstr "Ο περιγραφέας του συμπλόκου ZLIB %u ανέφερε μέγεθος συμπλόκου %#x, όταν %#x αναμενόταν."
 
-#: src/data/sys-file-reader.c:3628
+#: src/data/sys-file-reader.c:3641
 #, c-format
 msgid "ZLIB block descriptor %u reported block size %#x, when at most %#x was expected."
 msgstr "Ο περιγραφέας του συμπλόκου ZLIB %u ανέφερε μέγεθος συμπλόκου %#x, όταν μέγιστα %#x αναμενόταν."
 
-#: src/data/sys-file-reader.c:3640
+#: src/data/sys-file-reader.c:3653
 #, c-format
 msgid "ZLIB block descriptor %u reports compressed size %u and uncompressed size %u."
 msgstr "Ο περιγραφέας του συμπλόκου ZLIB %u αναφέρει συμπιεσμένο μέγεθος %u και ασυμπίεστο μέγεθος %u."
 
-#: src/data/sys-file-reader.c:3652
+#: src/data/sys-file-reader.c:3665
 #, c-format
 msgid "ZLIB trailer is at offset %#llx but %#llx would be expected from block descriptors."
 msgstr "Το κομμάτι του ZLIB ξεκινά στο %#llx αλλά %#llx αναμενόταν από τους περιγραφείς συμπλόκων."
 
-#: src/data/sys-file-reader.c:3671
+#: src/data/sys-file-reader.c:3684
 #, c-format
 msgid "ZLIB initialization failed (%s)."
 msgstr "Η έναρξη του ZLIB απέτυχε (%s)."
 
-#: src/data/sys-file-reader.c:3686
+#: src/data/sys-file-reader.c:3699
 #, c-format
 msgid "Inconsistency at end of ZLIB stream (%s)."
 msgstr "Ασυνέπεια στο τέλος του ZLIB  (%s)."
 
-#: src/data/sys-file-reader.c:3745
+#: src/data/sys-file-reader.c:3758
 #, c-format
 msgid "ZLIB stream inconsistency (%s)."
 msgstr "ZLIB  ασυνέπεια (%s)."
 
-#: src/data/sys-file-reader.c:3769
+#: src/data/sys-file-reader.c:3782
 msgid "Unexpected end of ZLIB compressed data."
 msgstr "Μη αναμενόμενο τέλος των συμπιεσμένων δεδομένων του ZLIB."
 
-#: src/data/sys-file-reader.c:3807
+#: src/data/sys-file-reader.c:3820
 msgid "SPSS System File"
 msgstr "Αρχείο συστήματος SPSS"
 
@@ -1545,6 +1424,11 @@ msgstr "Αρχείο συστήματος SPSS"
 #, c-format
 msgid "Unknown system file version %d. Treating as version %d."
 msgstr "Άγνωστη έκδοση αρχείου συστήαμτος %d. Χρήση σαν έκδοση %d."
+
+#: src/data/sys-file-writer.c:256
+#, c-format
+msgid "Error opening `%s' for writing as a system file: %s."
+msgstr "Σφάλμα ανοίγματος `%s' προς εγγραφή σαν αρχείο συστήματος: %s."
 
 #: src/data/sys-file-writer.c:1271
 #, c-format
@@ -1571,67 +1455,67 @@ msgstr "ZLIB συμπίεση απέτυχε (%s)."
 msgid "%s: Seek failed (%s)."
 msgstr "%s: Η αναζήτηση απέτυχε (%s)."
 
-#: src/data/variable.c:57
+#: src/data/variable.c:58
 msgid "Left"
 msgstr "Αριστερά"
 
-#: src/data/variable.c:58
+#: src/data/variable.c:59
 msgid "Right"
 msgstr "Δεξιά"
 
-#: src/data/variable.c:59
+#: src/data/variable.c:60
 msgid "Center"
 msgstr "Κέντρο"
 
-#: src/data/variable.c:65
+#: src/data/variable.c:66
 msgid "Nominal"
 msgstr "Ονομαστική"
 
-#: src/data/variable.c:66
+#: src/data/variable.c:67
 msgid "Ordinal"
 msgstr "Τακτική"
 
-#: src/data/variable.c:67 src/language/stats/ks-one-sample.c:300
+#: src/data/variable.c:68 src/language/stats/ks-one-sample.c:300
 msgid "Scale"
 msgstr "Κλίμακα"
 
-#: src/data/variable.c:73
+#: src/data/variable.c:74
 msgid "Input"
 msgstr "Εισαγωγή"
 
 #. TRANSLATORS: This will be part of a filename.  Please avoid whitespace.
-#: src/data/variable.c:74 src/output/spv/spv-writer.c:213
-#: src/ui/gui/psppire-output-window.c:579
+#: src/data/variable.c:75 src/output/spv/spv-writer.c:213
+#: src/ui/gui/psppire-output-window.c:547
 msgid "Output"
 msgstr "Εξαγωγή"
 
-#: src/data/variable.c:75
+#: src/data/variable.c:76
 msgid "Both"
 msgstr "Κ τα δύο"
 
-#: src/data/variable.c:76 src/language/dictionary/sys-file-info.c:237
-#: src/ui/gui/psppire-dialog-action-crosstabs.c:84
-#: src/ui/gui/psppire-dialog-action-crosstabs.c:96
-#: src/ui/gui/psppire-dialog-action-crosstabs.c:131
-#: src/ui/gui/psppire-dialog-action-crosstabs.c:139
-#: src/ui/gui/psppire-variable-sheet.c:404 src/ui/gui/var-display.c:34
+#: src/data/variable.c:77 src/language/dictionary/sys-file-info.c:237
+#: src/ui/gui/psppire-dialog-action-crosstabs.c:86
+#: src/ui/gui/psppire-dialog-action-crosstabs.c:98
+#: src/ui/gui/psppire-dialog-action-crosstabs.c:133
+#: src/ui/gui/psppire-dialog-action-crosstabs.c:141
+#: src/ui/gui/psppire-variable-sheet.c:408 src/ui/gui/var-display.c:34
 msgid "None"
 msgstr "Κανένα"
 
-#: src/data/variable.c:77
+#: src/data/variable.c:78
 msgid "Partition"
 msgstr "Διαχώρισμα"
 
-#: src/data/variable.c:78 src/ui/gui/reliability.ui:37
+#: src/data/variable.c:79 src/ui/gui/reliability.ui:37
 msgid "Split"
 msgstr "Ημίσεα"
 
-#: src/data/variable.c:714
+#: src/data/variable.c:729
 #, c-format
 msgid "%s (%s)"
 msgstr "%s (%s)"
 
-#: src/data/variable.c:1324
+#: src/data/variable.c:1339
 msgid "At least one case in the data file had a weight value that was user-missing, system-missing, zero, or negative.  These case(s) were ignored."
 msgstr "Τουλάχιστον μία υπόθεση στο αρχείο δεδομένων είχε τιμή Βάρους που ήταν ελλειπούσα-χρήστη, ελλειπούσα-συστήματος, μηδέν, ή αρνητική.  Αυτές οι υποθέσεις αγνοήθηκαν."
 
@@ -1710,7 +1594,7 @@ msgstr "%s επιτρέπεται μόνο πριν τον καθορισμό τ
 msgid "%s is not allowed inside %s."
 msgstr "%s δεν επιτρέπεται μέσα στο %s."
 
-#: src/language/command.c:529 src/language/utilities/host.c:130
+#: src/language/command.c:529 src/language/utilities/host.c:272
 #: src/language/utilities/permissions.c:105
 #, c-format
 msgid "This command not allowed when the %s option is set."
@@ -2263,8 +2147,8 @@ msgstr "Σετ πολλαπλών απαντήσεων"
 #: src/language/dictionary/mrsets.c:543
 #: src/language/dictionary/sys-file-info.c:446
 #: src/language/dictionary/sys-file-info.c:733
-#: src/language/stats/autorecode.c:375 src/language/data-io/data-parser.c:678
-#: src/language/data-io/data-parser.c:724 src/language/data-io/print.c:434
+#: src/language/stats/autorecode.c:375 src/language/data-io/data-parser.c:679
+#: src/language/data-io/data-parser.c:725 src/language/data-io/print.c:434
 msgid "Attributes"
 msgstr "Ιδιότητες"
 
@@ -2335,10 +2219,24 @@ msgstr "Διαχωρισμός Τιμών"
 #: src/language/stats/chisquare.c:195 src/language/stats/cochran.c:156
 #: src/language/stats/cochran.c:185 src/language/stats/examine.c:841
 #: src/language/stats/reliability.c:648 src/language/stats/reliability.c:651
-#: src/language/stats/crosstabs.q:1302 src/language/stats/crosstabs.q:1324
-#: src/language/stats/crosstabs.q:1364 src/language/stats/crosstabs.q:1410
+#: src/language/stats/crosstabs.q:1303 src/language/stats/crosstabs.q:1325
+#: src/language/stats/crosstabs.q:1365 src/language/stats/crosstabs.q:1412
 msgid "Value"
 msgstr "Τιμή"
+
+#: src/language/dictionary/split-file.c:79
+#: src/language/dictionary/sys-file-info.c:734
+#: src/language/stats/chisquare.c:246 src/language/stats/chisquare.c:328
+#: src/language/stats/cochran.c:164 src/language/stats/correlations.c:100
+#: src/language/stats/descriptives.c:1004 src/language/stats/friedman.c:226
+#: src/language/stats/jonckheere-terpstra.c:377
+#: src/language/stats/npar-summary.c:113
+#: src/language/stats/quick-cluster.c:588 src/language/stats/runs.c:331
+#: src/language/data-io/data-parser.c:683
+#: src/language/data-io/data-parser.c:728 src/language/data-io/print.c:438
+#: src/ui/gui/psppire-dictview.c:580 src/ui/gui/psppire-data-editor.c:502
+msgid "Variable"
+msgstr "Μεταβλητή"
 
 #: src/language/dictionary/sys-file-info.c:184
 msgid "File Information"
@@ -2404,7 +2302,7 @@ msgstr "IBM 390 δεκαεδικό μήκος."
 #: src/language/stats/binomial.c:199 src/language/stats/correlations.c:131
 #: src/language/stats/correlations.c:159 src/language/stats/descriptives.c:585
 #: src/language/stats/factor.c:1658 src/language/stats/factor.c:1701
-#: src/language/stats/factor.c:1859 src/language/stats/factor.c:2073
+#: src/language/stats/factor.c:1860 src/language/stats/factor.c:2074
 #: src/language/stats/frequencies.c:1583
 #: src/language/stats/kruskal-wallis.c:254
 #: src/language/stats/kruskal-wallis.c:303
@@ -2421,7 +2319,7 @@ msgstr "Μεταβλητές"
 
 #: src/language/dictionary/sys-file-info.c:221
 #: src/language/stats/examine.c:929 src/language/stats/means.c:697
-#: src/language/stats/reliability.c:548 src/language/stats/crosstabs.q:929
+#: src/language/stats/reliability.c:548 src/language/stats/crosstabs.q:930
 msgid "Cases"
 msgstr "Υποθέσεις"
 
@@ -2497,13 +2395,15 @@ msgid "Write Format"
 msgstr "Διαμορφωποίηση Εγγραφής"
 
 #: src/language/dictionary/sys-file-info.c:462
+#: src/ui/gui/missing-val-dialog.c:379
 #: src/ui/gui/psppire-var-sheet-header.c:73 src/ui/gui/examine.ui:416
 #: src/ui/gui/t-test.ui:105
 msgid "Missing Values"
 msgstr "Ελλειπούσες Τιμές"
 
 #: src/language/dictionary/sys-file-info.c:567
-#: src/ui/gui/psppire-var-sheet-header.c:70 src/ui/gui/val-labs-dialog.ui:194
+#: src/ui/gui/psppire-var-sheet-header.c:70 src/ui/gui/val-labs-dialog.c:489
+#: src/ui/gui/val-labs-dialog.ui:194
 msgid "Value Labels"
 msgstr "Ταμπέλες Τιμών"
 
@@ -2568,7 +2468,7 @@ msgid "Text strings in the file dictionary that the previously listed encodings 
 msgstr "Κειμενό-Συμβολοσειρές στη λίστα που οι προηγούμενες κωδικοποιήσεις μετέφρασαν διαφορετικά, όπως και τις ερμηνείες αυτών."
 
 #: src/language/dictionary/sys-file-info.c:1049 src/output/text-item.c:57
-#: src/ui/gui/psppire-import-assistant.c:868
+#: src/ui/gui/psppire-import-assistant.c:885
 msgid "Text"
 msgstr "Κείμενο"
 
@@ -2624,33 +2524,77 @@ msgstr "Η μεταβλητή στάθμισης δεν πρέπει να είν
 msgid "expecting weight value"
 msgstr "αναμένει τιμή στάθμισης"
 
-#: src/language/utilities/cd.c:45
+#: src/language/utilities/cd.c:45 src/language/utilities/include.c:173
 #, c-format
-msgid "Cannot change directory to %s:  %s "
-msgstr "Δεν μπορεί να αλλάξει κατάλογο σε %s:  %s "
+msgid "Cannot change directory to %s: %s"
+msgstr "Δεν μπορεί να αλλάξει κατάλογο σε %s: %s"
 
 #: src/language/utilities/date.c:33
 #, c-format
 msgid "Only %s is currently implemented."
 msgstr "Μόνο %s υποστηρίζεται στη παρούσα στιγμή."
 
-#: src/language/utilities/host.c:87
+#: src/language/utilities/host.c:60
+msgid "Time limit not supported on this platform."
+msgstr "Χρονικά όρια δεν υποστηρίζονται σε αυτήν την πλατφόρμα."
+
+#: src/language/utilities/host.c:74
+#, c-format
+msgid "%s: Command exited with status %d."
+msgstr "%s: Η εντολή διακόπηκε με κατάσταση %d."
+
+#: src/language/utilities/host.c:95
+#, c-format
+msgid "Failed to create temporary file (%s)."
+msgstr "Αποτυχία δημιουργίας πρόχειρου αρχείου (%s)."
+
+#: src/language/utilities/host.c:102
+#, c-format
+msgid "/dev/null: Failed to open (%s)."
+msgstr "/dev/null: Αποτυχία ανοίγματος (%s)."
+
+#: src/language/utilities/host.c:117
 #, c-format
 msgid "Couldn't fork: %s."
 msgstr "Δεν μπορεί να εκτελέσει: %s."
 
-#: src/language/utilities/host.c:102
-msgid "Interactive shell not supported on this platform."
-msgstr "Το διαδραστικό περιβάλλον δεν υποστηρίζεται σε αυτή τη πλατφόρμα."
-
-#: src/language/utilities/host.c:114
-msgid "Command shell not supported on this platform."
-msgstr "Το περιβάλλον εντολών δεν υποστηρίζεται σε αυτή τη πλατφόρμα."
-
-#: src/language/utilities/host.c:120
+#: src/language/utilities/host.c:193
 #, c-format
-msgid "Error executing command: %s."
-msgstr "Σφάλμα εκτέλεσης εντολής: %s."
+msgid "While running \"%s\", waiting for child process failed (%s)."
+msgstr "Ενώ εκτελείτε το \"%s\", η αναμονή για την υποδιαδικασία απέτυχε (%s)."
+
+#: src/language/utilities/host.c:203
+#, c-format
+msgid "Command \"%s\" timed out."
+msgstr "Η εντολή \"%s\" έληξε."
+
+#: src/language/utilities/host.c:205
+#, c-format
+msgid "Command \"%s\" terminated by signal %d."
+msgstr "Η εντολή \"%s\" τερματίστηκε από σήμα %d."
+
+#: src/language/utilities/host.c:212
+msgid "Command or shell not found"
+msgstr "Η εντολή ή το περιβάλλον δεν βρέθηκαν"
+
+#: src/language/utilities/host.c:214
+msgid "Could not invoke command or shell"
+msgstr "Αδυναμία να επικαλεστεί η εντολή ή το περιβάλλον"
+
+#: src/language/utilities/host.c:217
+#, c-format
+msgid "Command \"%s\" exited with status %d (%s)."
+msgstr "Η εντολή \"%s\" τερματίστηκε με κατάσταση %d (%s)."
+
+#: src/language/utilities/host.c:220
+#, c-format
+msgid "Command \"%s\" exited with status %d."
+msgstr "Η εντολή \"%s\" τερματίστηκε με κατάσταση %d."
+
+#: src/language/utilities/host.c:230
+#, c-format
+msgid "Command \"%s\" output could not be read (%s)."
+msgstr "Το εξερχόμενο αποτέλεσμα της εντολής \"%s\" δεν μπορεί να διαβαστεί (%s)."
 
 #: src/language/utilities/title.c:88
 #, c-format
@@ -2696,10 +2640,12 @@ msgid "Standard deviation"
 msgstr "Τυπική Απόκλιση"
 
 #: src/language/stats/aggregate.c:100
+#: src/ui/gui/psppire-dialog-action-descriptives.c:42
 msgid "Maximum value"
 msgstr "Μέγιστη τιμή"
 
 #: src/language/stats/aggregate.c:101
+#: src/ui/gui/psppire-dialog-action-descriptives.c:41
 msgid "Minimum value"
 msgstr "Ελάχιστη τιμή"
 
@@ -2826,7 +2772,7 @@ msgstr "Επανακωδικοποίηση %s σε %s (%s)."
 msgid "Recoding %s into %s."
 msgstr "Επανακωδικοποίηση του %s σε %s."
 
-#: src/language/stats/autorecode.c:376 src/ui/gui/recode.ui:208
+#: src/language/stats/autorecode.c:376 src/ui/gui/recode.ui:209
 msgid "New Value"
 msgstr "Νέα Τιμή"
 
@@ -2853,9 +2799,9 @@ msgstr "Διωνυμικό τεστ"
 #: src/language/stats/correlations.c:145 src/language/stats/descriptives.c:991
 #: src/language/stats/examine.c:602 src/language/stats/examine.c:742
 #: src/language/stats/examine.c:836 src/language/stats/examine.c:925
-#: src/language/stats/factor.c:1756 src/language/stats/factor.c:1877
-#: src/language/stats/factor.c:1907 src/language/stats/factor.c:2067
-#: src/language/stats/factor.c:2101 src/language/stats/frequencies.c:302
+#: src/language/stats/factor.c:1755 src/language/stats/factor.c:1878
+#: src/language/stats/factor.c:1908 src/language/stats/factor.c:2068
+#: src/language/stats/factor.c:2102 src/language/stats/frequencies.c:302
 #: src/language/stats/frequencies.c:1579 src/language/stats/frequencies.c:1586
 #: src/language/stats/friedman.c:250 src/language/stats/glm.c:729
 #: src/language/stats/kruskal-wallis.c:249
@@ -2882,12 +2828,11 @@ msgstr "Διωνυμικό τεστ"
 #: src/language/stats/t-test-paired.c:150
 #: src/language/stats/t-test-paired.c:193
 #: src/language/stats/t-test-paired.c:238 src/language/stats/wilcoxon.c:243
-#: src/language/stats/wilcoxon.c:282 src/language/stats/crosstabs.q:924
-#: src/language/stats/crosstabs.q:1252 src/language/stats/crosstabs.q:1292
-#: src/language/stats/crosstabs.q:1301 src/language/stats/crosstabs.q:1330
-#: src/language/stats/crosstabs.q:1371 src/language/stats/crosstabs.q:1416
+#: src/language/stats/wilcoxon.c:282 src/language/stats/crosstabs.q:925
+#: src/language/stats/crosstabs.q:1253 src/language/stats/crosstabs.q:1293
+#: src/language/stats/crosstabs.q:1302 src/language/stats/crosstabs.q:1331
+#: src/language/stats/crosstabs.q:1373 src/language/stats/crosstabs.q:1418
 #: src/ui/gui/crosstabs.ui:499 src/ui/gui/oneway.ui:615
-#, no-c-format
 msgid "Statistics"
 msgstr "Στατιστικά"
 
@@ -2912,7 +2857,7 @@ msgstr "Κατηγορίες"
 #: src/language/stats/t-test-one-sample.c:126
 #: src/language/stats/t-test-paired.c:151
 #: src/language/stats/t-test-paired.c:194 src/language/stats/wilcoxon.c:244
-#: src/language/stats/crosstabs.q:925
+#: src/language/stats/crosstabs.q:926
 msgid "N"
 msgstr "N"
 
@@ -2926,13 +2871,13 @@ msgstr "Τεστ Ποσοστών."
 
 #: src/language/stats/binomial.c:192 src/language/stats/mcnemar.c:224
 #: src/language/stats/sign.c:103 src/language/stats/wilcoxon.c:288
-#: src/language/stats/crosstabs.q:1305
+#: src/language/stats/crosstabs.q:1306
 msgid "Exact Sig. (2-tailed)"
 msgstr "Επακριβής Στ.Σημ. (2-κατ/νσης)"
 
 #: src/language/stats/binomial.c:193 src/language/stats/mcnemar.c:225
 #: src/language/stats/sign.c:104 src/language/stats/wilcoxon.c:289
-#: src/language/stats/crosstabs.q:1306
+#: src/language/stats/crosstabs.q:1307
 msgid "Exact Sig. (1-tailed)"
 msgstr "Επακριβής Στ.Σημ. (1-κατ/νσης)"
 
@@ -2950,15 +2895,15 @@ msgstr "Ομάδα 2"
 
 #: src/language/stats/binomial.c:196 src/language/stats/chisquare.c:223
 #: src/language/stats/chisquare.c:257 src/language/stats/examine.c:930
-#: src/language/stats/factor.c:1757 src/language/stats/frequencies.c:344
+#: src/language/stats/factor.c:1756 src/language/stats/frequencies.c:344
 #: src/language/stats/glm.c:811 src/language/stats/kruskal-wallis.c:285
 #: src/language/stats/logistic.c:1336 src/language/stats/mann-whitney.c:197
 #: src/language/stats/means.c:706 src/language/stats/oneway.c:982
 #: src/language/stats/oneway.c:1072 src/language/stats/reliability.c:549
 #: src/language/stats/regression.c:1031 src/language/stats/sign.c:75
 #: src/language/stats/wilcoxon.c:250
-#: src/ui/gui/psppire-dialog-action-crosstabs.c:91
-#: src/language/stats/crosstabs.q:930 src/language/stats/crosstabs.q:1217
+#: src/ui/gui/psppire-dialog-action-crosstabs.c:93
+#: src/language/stats/crosstabs.q:931 src/language/stats/crosstabs.q:1218
 msgid "Total"
 msgstr "Σύνολο"
 
@@ -2977,8 +2922,8 @@ msgstr "Αναμενόμενο N"
 
 #: src/language/stats/chisquare.c:186 src/language/stats/chisquare.c:243
 #: src/language/stats/regression.c:1031
-#: src/ui/gui/psppire-dialog-action-crosstabs.c:93
-#: src/language/stats/crosstabs.q:1266
+#: src/ui/gui/psppire-dialog-action-crosstabs.c:95
+#: src/language/stats/crosstabs.q:1267
 msgid "Residual"
 msgstr "Σφάλμα"
 
@@ -3001,14 +2946,14 @@ msgid "Chi-square"
 msgstr "Χ-Τετράγωνο"
 
 #: src/language/stats/chisquare.c:324 src/language/stats/cochran.c:191
-#: src/language/stats/examine.c:675 src/language/stats/factor.c:2106
+#: src/language/stats/examine.c:675 src/language/stats/factor.c:2107
 #: src/language/stats/friedman.c:257 src/language/stats/glm.c:733
 #: src/language/stats/kruskal-wallis.c:299 src/language/stats/logistic.c:1174
 #: src/language/stats/median.c:354 src/language/stats/oneway.c:975
 #: src/language/stats/oneway.c:1242 src/language/stats/regression.c:1025
 #: src/language/stats/t-test-indep.c:267
 #: src/language/stats/t-test-one-sample.c:75
-#: src/language/stats/t-test-paired.c:253 src/language/stats/crosstabs.q:1303
+#: src/language/stats/t-test-paired.c:253 src/language/stats/crosstabs.q:1304
 msgid "df"
 msgstr "ΒΕ"
 
@@ -3037,12 +2982,12 @@ msgid "Cochran's Q"
 msgstr "Cochran's Q"
 
 #: src/language/stats/correlations.c:91 src/language/stats/descriptives.c:987
-#: src/language/stats/factor.c:2064 src/language/stats/npar-summary.c:102
+#: src/language/stats/factor.c:2065 src/language/stats/npar-summary.c:102
 msgid "Descriptive Statistics"
 msgstr "Περιγραφικά Στατιστικά"
 
 #: src/language/stats/correlations.c:95 src/language/stats/descriptives.c:108
-#: src/language/stats/examine.c:742 src/language/stats/factor.c:2068
+#: src/language/stats/examine.c:742 src/language/stats/factor.c:2069
 #: src/language/stats/frequencies.c:141 src/language/stats/graph.c:211
 #: src/language/stats/ks-one-sample.c:290 src/language/stats/means-calc.c:438
 #: src/language/stats/npar-summary.c:108 src/language/stats/oneway.c:1052
@@ -3056,7 +3001,7 @@ msgid "Mean"
 msgstr "Μέσος Όρος"
 
 #: src/language/stats/correlations.c:96 src/language/stats/examine.c:751
-#: src/language/stats/factor.c:2069 src/language/stats/ks-one-sample.c:290
+#: src/language/stats/factor.c:2070 src/language/stats/ks-one-sample.c:290
 #: src/language/stats/means-calc.c:440 src/language/stats/npar-summary.c:109
 #: src/language/stats/oneway.c:1052 src/language/stats/t-test-indep.c:196
 #: src/language/stats/t-test-one-sample.c:128
@@ -3080,7 +3025,7 @@ msgstr "Pearson Συσχέτιση"
 msgid "Sig. (2-tailed)"
 msgstr "Στ.Σημ. (2-κατ/νσης)"
 
-#: src/language/stats/correlations.c:147 src/language/stats/factor.c:1912
+#: src/language/stats/correlations.c:147 src/language/stats/factor.c:1913
 msgid "Sig. (1-tailed)"
 msgstr "Στ.Σημ. (1-κατ/νσης)"
 
@@ -3280,7 +3225,7 @@ msgstr "Tukey's Hinges"
 #: src/language/stats/examine.c:759 src/language/stats/examine.c:858
 #: src/language/stats/examine.c:938 src/language/stats/mann-whitney.c:200
 #: src/language/stats/median.c:319 src/language/stats/t-test-indep.c:227
-#: src/language/stats/t-test-indep.c:281
+#: src/language/stats/t-test-indep.c:282
 #: src/language/stats/t-test-one-sample.c:87
 msgid "Dependent Variables"
 msgstr "Εξαρτημένες Μεταβλητές"
@@ -3293,7 +3238,12 @@ msgstr "Τεστ Κανονικότητας"
 msgid "Shapiro-Wilk"
 msgstr "Shapiro-Wilk"
 
-#: src/language/stats/examine.c:676 src/language/stats/factor.c:2107
+#: src/language/stats/examine.c:674 src/language/stats/examine.c:739
+#: src/ui/gui/psppire-checkbox-treeview.c:73
+msgid "Statistic"
+msgstr "Στατιστικά"
+
+#: src/language/stats/examine.c:676 src/language/stats/factor.c:2108
 #: src/language/stats/glm.c:736 src/language/stats/logistic.c:1175
 #: src/language/stats/oneway.c:978 src/language/stats/oneway.c:1154
 #: src/language/stats/oneway.c:1376 src/language/stats/regression.c:906
@@ -3382,19 +3332,19 @@ msgstr "Σύνοψη Επεξεργασίας Υποθέσεων"
 #: src/language/stats/examine.c:927 src/language/stats/frequencies.c:304
 #: src/language/stats/frequencies.c:1494 src/language/stats/logistic.c:1332
 #: src/language/stats/means.c:713 src/language/stats/reliability.c:545
-#: src/language/stats/crosstabs.q:926
+#: src/language/stats/crosstabs.q:927
 msgid "Percent"
 msgstr "Ποσοστά"
 
 #: src/language/stats/examine.c:929 src/language/stats/frequencies.c:321
 #: src/language/stats/frequencies.c:1590
 #: src/language/stats/quick-cluster.c:766 src/language/stats/reliability.c:548
-#: src/language/stats/crosstabs.q:930
+#: src/language/stats/crosstabs.q:931
 msgid "Valid"
 msgstr "Έγκυρες"
 
 #: src/language/stats/examine.c:929 src/language/stats/frequencies.c:336
-#: src/language/stats/frequencies.c:1591 src/language/stats/crosstabs.q:930
+#: src/language/stats/frequencies.c:1591 src/language/stats/crosstabs.q:931
 msgid "Missing"
 msgstr "Ελλειπούσες"
 
@@ -3445,13 +3395,13 @@ msgstr "Αρχική"
 msgid "Extraction"
 msgstr "Εξαγωγή"
 
-#: src/language/stats/factor.c:1697 src/language/stats/factor.c:1776
-#: src/language/stats/factor.c:1838
+#: src/language/stats/factor.c:1697 src/language/stats/factor.c:1777
+#: src/language/stats/factor.c:1839
 msgid "Component"
 msgstr "Συνιστώσα"
 
-#: src/language/stats/factor.c:1697 src/language/stats/factor.c:1776
-#: src/language/stats/factor.c:1838
+#: src/language/stats/factor.c:1697 src/language/stats/factor.c:1777
+#: src/language/stats/factor.c:1839
 msgid "Factor"
 msgstr "Παράγοντας"
 
@@ -3460,126 +3410,127 @@ msgid "Total Variance Explained"
 msgstr "Συν/κης. Διακύμανσης Επεξήγηση"
 
 #: src/language/stats/factor.c:1758
-#, fuzzy, c-format
+#, fuzzy, no-c-format
 #| msgid "% of Variance"
 msgid "% of Variance"
 msgstr "% της Διακύμανσης"
 
-#: src/language/stats/factor.c:1759
+#: src/language/stats/factor.c:1760
+#, no-c-format
 msgid "Cumulative %"
 msgstr "Συσσωρευτικό %"
 
-#: src/language/stats/factor.c:1762
+#: src/language/stats/factor.c:1763
 msgid "Phase"
 msgstr "Φάση"
 
-#: src/language/stats/factor.c:1764
+#: src/language/stats/factor.c:1765
 msgid "Initial Eigenvalues"
 msgstr "Αρχικές Ιδιοτιμές"
 
-#: src/language/stats/factor.c:1768
+#: src/language/stats/factor.c:1769
 msgid "Extraction Sums of Squared Loadings"
 msgstr "Εξαγωγή Άθροισμα Τετραγονισμένων Φορτώσεων"
 
-#: src/language/stats/factor.c:1772
+#: src/language/stats/factor.c:1773
 msgid "Rotation Sums of Squared Loadings"
 msgstr "Περιστρεφόμενο Άθροισμα Τετραγονισμένων Φορτώσεων"
 
-#: src/language/stats/factor.c:1834
+#: src/language/stats/factor.c:1835
 msgid "Factor Correlation Matrix"
 msgstr "Πίνακας Παραγοντικών συσχετίσεων"
 
-#: src/language/stats/factor.c:1841
+#: src/language/stats/factor.c:1842
 msgid "Factor 2"
 msgstr "Παράγοντας 2"
 
-#: src/language/stats/factor.c:1873
+#: src/language/stats/factor.c:1874
 msgid "Anti-Image Matrices"
 msgstr "Αντίστροφος πίνακας"
 
-#: src/language/stats/factor.c:1878
+#: src/language/stats/factor.c:1879
 msgid "Anti-image Covariance"
 msgstr "Αντίστροφος πίνακας Συνδιακύμανσης"
 
-#: src/language/stats/factor.c:1879
+#: src/language/stats/factor.c:1880
 msgid "Anti-image Correlation"
 msgstr "Συ"
 
-#: src/language/stats/factor.c:1900
+#: src/language/stats/factor.c:1901
 msgid "Correlation Matrix"
 msgstr "Πίνακας Συσχετίσεων"
 
-#: src/language/stats/factor.c:1909 src/language/stats/t-test-paired.c:195
+#: src/language/stats/factor.c:1910 src/language/stats/t-test-paired.c:195
 msgid "Correlation"
 msgstr "Συσχέτιση"
 
-#: src/language/stats/factor.c:1946
+#: src/language/stats/factor.c:1947
 msgid "Determinant"
 msgstr "Ορίζουσα"
 
-#: src/language/stats/factor.c:1957
+#: src/language/stats/factor.c:1958
 msgid "Covariance Matrix"
 msgstr "Πίνακας _Συνδιακύμανσης"
 
-#: src/language/stats/factor.c:1989
+#: src/language/stats/factor.c:1990
 msgid "The dataset contains no complete observations. No analysis will be performed."
 msgstr "Η βάση δεδομένων δεν περιέχει ολοκληρωμένες παρατηρήσεις. Η ανάλυση δεν θα διεξαχθεί."
 
-#: src/language/stats/factor.c:2013
+#: src/language/stats/factor.c:2014
 msgid "The dataset has no complete covariance or correlation matrix."
 msgstr "Τα δεδομένα του Πίνακα Συνδιακύμανσης ή Συσχέτισης δεν είναι πλήρη."
 
-#: src/language/stats/factor.c:2070
+#: src/language/stats/factor.c:2071
 msgid "Analysis N"
 msgstr "Ανάλυση του N"
 
-#: src/language/stats/factor.c:2098
+#: src/language/stats/factor.c:2099
 msgid "KMO and Bartlett's Test"
 msgstr "Τεστ KMO και Bartlett"
 
-#: src/language/stats/factor.c:2102
+#: src/language/stats/factor.c:2103
 msgid "Kaiser-Meyer-Olkin Measure of Sampling Adequacy"
 msgstr "Kaiser-Meyer-Olkin Μέτρηση Επάρκειας Δείγματος"
 
-#: src/language/stats/factor.c:2104
+#: src/language/stats/factor.c:2105
 msgid "Bartlett's Test of Sphericity"
 msgstr "Τεστ Σφαιρικότητας Bartlett"
 
-#: src/language/stats/factor.c:2105
+#: src/language/stats/factor.c:2106
 msgid "Approx. Chi-Square"
 msgstr "Προσεγγ. Χ-Τετράγωνο"
 
-#: src/language/stats/factor.c:2153
+#: src/language/stats/factor.c:2154
 #, c-format
 msgid "The %s criteria result in zero factors extracted. Therefore no analysis will be performed."
 msgstr "Το κριτήριο %s έχει σαν αποτέλεσμα μηδέν Παράγοντες να εξαχθούν. Για αυτό το λόγο, η ανάλυση δεν θα διεξαχθεί."
 
-#: src/language/stats/factor.c:2160
+#: src/language/stats/factor.c:2161
 #, c-format
 msgid "The %s criteria result in more factors than variables, which is not meaningful. No analysis will be performed."
 msgstr "Το κριτήριο %s έχει σαν αποτέλεσμα περισσότερους Παράγοντες από μεταβλητές, το οποίο δεν είναι χρήσιμο. Η ανάλυση δεν θα διεξαχθεί."
 
-#: src/language/stats/factor.c:2253
+#: src/language/stats/factor.c:2254
 msgid "Component Matrix"
 msgstr "Πίνακας Συνιστωσών"
 
-#: src/language/stats/factor.c:2253
+#: src/language/stats/factor.c:2254
 msgid "Factor Matrix"
 msgstr "Παραγοντικός Πίνακας"
 
-#: src/language/stats/factor.c:2258
+#: src/language/stats/factor.c:2259
 msgid "Pattern Matrix"
 msgstr "Πίνακας Μοτίβων"
 
-#: src/language/stats/factor.c:2267
+#: src/language/stats/factor.c:2268
 msgid "Structure Matrix"
 msgstr "Δομικός Πίνακας"
 
-#: src/language/stats/factor.c:2269
+#: src/language/stats/factor.c:2270
 msgid "Rotated Component Matrix"
 msgstr "Περιστρεφόμενος Πίνακας Συνιστωσών"
 
-#: src/language/stats/factor.c:2270
+#: src/language/stats/factor.c:2271
 msgid "Rotated Factor Matrix"
 msgstr "Περιστρεφόμενος Παραγοντικός Πίνακας"
 
@@ -3686,8 +3637,8 @@ msgstr "Απαλειφή του γράφηματος πίτας για %s, το 
 
 #: src/language/stats/frequencies.c:1494 src/language/stats/graph.c:205
 #: src/language/stats/quick-cluster.c:747
-#: src/ui/gui/psppire-dialog-action-crosstabs.c:88
-#: src/language/stats/crosstabs.q:788 src/language/stats/crosstabs.q:1261
+#: src/ui/gui/psppire-dialog-action-crosstabs.c:90
+#: src/language/stats/crosstabs.q:789 src/language/stats/crosstabs.q:1262
 msgid "Count"
 msgstr "Μετρητής"
 
@@ -3828,8 +3779,8 @@ msgid "Poisson Parameters"
 msgstr "Παράμετροι για Poisson"
 
 #: src/language/stats/ks-one-sample.c:295
-#: src/ui/gui/psppire-dialog-action-crosstabs.c:74
-#: src/language/stats/crosstabs.q:1419
+#: src/ui/gui/psppire-dialog-action-crosstabs.c:76
+#: src/language/stats/crosstabs.q:1421
 msgid "Lambda"
 msgstr "Lambda"
 
@@ -3937,15 +3888,15 @@ msgstr "Εκθ(Β)"
 msgid "%d%% CI for Exp(B)"
 msgstr "%d%% ΔΕ για Εκθ(B)"
 
-#: src/language/stats/logistic.c:1183 src/language/stats/t-test-indep.c:273
+#: src/language/stats/logistic.c:1183 src/language/stats/t-test-indep.c:274
 #: src/language/stats/t-test-one-sample.c:83
-#: src/language/stats/t-test-paired.c:249 src/language/stats/crosstabs.q:1367
+#: src/language/stats/t-test-paired.c:249 src/language/stats/crosstabs.q:1369
 msgid "Lower"
 msgstr "Κατώτερο"
 
-#: src/language/stats/logistic.c:1183 src/language/stats/t-test-indep.c:274
+#: src/language/stats/logistic.c:1183 src/language/stats/t-test-indep.c:275
 #: src/language/stats/t-test-one-sample.c:84
-#: src/language/stats/t-test-paired.c:250 src/language/stats/crosstabs.q:1368
+#: src/language/stats/t-test-paired.c:250 src/language/stats/crosstabs.q:1370
 msgid "Upper"
 msgstr "Ανώτερο"
 
@@ -4729,21 +4680,20 @@ msgstr "Διαφορές Μέσου"
 msgid "Std. Error Difference"
 msgstr "Τυπικό Σφάλμα Διαφορών"
 
-#: src/language/stats/t-test-indep.c:272
-#, fuzzy, c-format
-#| msgid "95% Confidence Interval of the Difference"
+#: src/language/stats/t-test-indep.c:273
+#, no-c-format
 msgid "95% Confidence Interval of the Difference"
-msgstr "Διάστημα Εμπιστοσύνης Διαφοράς 95%"
+msgstr "95% Διάστημα Εμπιστοσύνης Διαφοράς"
 
-#: src/language/stats/t-test-indep.c:276
+#: src/language/stats/t-test-indep.c:277
 msgid "Assumptions"
 msgstr "Προϋποθέσεις"
 
-#: src/language/stats/t-test-indep.c:277
+#: src/language/stats/t-test-indep.c:278
 msgid "Equal variances assumed"
 msgstr "Υπόθεση Ίσων Διακυμάνσεων"
 
-#: src/language/stats/t-test-indep.c:278
+#: src/language/stats/t-test-indep.c:279
 msgid "Equal variances not assumed"
 msgstr "Υπ. Μη Ισων Διακυμάνσεων"
 
@@ -4950,61 +4900,61 @@ msgstr "Υπάρχει ήδη μία μεταβλητή συμβολοσειρά
 msgid "Cannot place variable %s on record %d when RECORDS=%d is specified."
 msgstr "Δεν μπορεί να τοποθετήσει τη μεταβλητή %s στην εγγραφή %d όταν η RECORDS=%d έχει οριστεί."
 
-#: src/language/data-io/data-parser.c:452
-#: src/language/data-io/data-parser.c:461
+#: src/language/data-io/data-parser.c:453
+#: src/language/data-io/data-parser.c:462
 msgid "Quoted string extends beyond end of line."
 msgstr "Η παραθεμένη συμβολοσειρά εκετείνεται πέρα το τέλος της γραμμής."
 
-#: src/language/data-io/data-parser.c:487
+#: src/language/data-io/data-parser.c:488
 msgid "Missing delimiter following quoted string."
 msgstr "Ελλειπούσσα υποδιαστολή στην ακόλουθη παραθεμένη συμβολοσειρά."
 
-#: src/language/data-io/data-parser.c:505
+#: src/language/data-io/data-parser.c:506
 #, c-format
 msgid "Data for variable %s is not valid as format %s: %s"
 msgstr "Δεδομένα για την μεταβλητή %s δεν είναι έγκυρα με μορφότυπο %s: %s"
 
-#: src/language/data-io/data-parser.c:535
+#: src/language/data-io/data-parser.c:536
 #, c-format
 msgid "Partial case of %d of %d records discarded."
 msgstr "Περικομμένη υπόθεση στην %d της %d εγγραφής αφέθηκε."
 
-#: src/language/data-io/data-parser.c:591
+#: src/language/data-io/data-parser.c:592
 #, c-format
 msgid "Partial case discarded.  The first variable missing was %s."
 msgstr "Περικομμένη υπόθεση αφέθηκε. Η πρώτη ελλειπούσσα μεταβλητή ήταν %s."
 
-#: src/language/data-io/data-parser.c:633
+#: src/language/data-io/data-parser.c:634
 #, c-format
 msgid "Missing value(s) for all variables from %s onward.  These will be filled with the system-missing value or blanks, as appropriate."
 msgstr "Ελλειπούσες τιμές για όλες τις μεταβλητές από %s και έπειτα. Αυτές θα αντικατασταθούν με Ελλειπούσες-Συστήματος ή κενά."
 
-#: src/language/data-io/data-parser.c:654
+#: src/language/data-io/data-parser.c:655
 msgid "Record ends in data not part of any field."
 msgstr "Εγγραφή τελειώνει με ορφανά δεδομένα ."
 
-#: src/language/data-io/data-parser.c:669
+#: src/language/data-io/data-parser.c:670
 #, c-format
 msgid "Reading %d record from %s."
 msgid_plural "Reading %d records from %s."
 msgstr[0] "Ανάγνωση εγγραφής %d από %s."
 msgstr[1] "Ανάγνωση εγγραφών %d από %s."
 
-#: src/language/data-io/data-parser.c:679 src/language/data-io/print.c:435
+#: src/language/data-io/data-parser.c:680 src/language/data-io/print.c:435
 msgid "Record"
 msgstr "Εγγραφή"
 
-#: src/language/data-io/data-parser.c:679 src/language/data-io/print.c:435
+#: src/language/data-io/data-parser.c:680 src/language/data-io/print.c:435
 #: src/ui/gui/psppire-var-sheet-header.c:76
 msgid "Columns"
 msgstr "Στήλες"
 
-#: src/language/data-io/data-parser.c:679
-#: src/language/data-io/data-parser.c:724 src/language/data-io/print.c:435
+#: src/language/data-io/data-parser.c:680
+#: src/language/data-io/data-parser.c:725 src/language/data-io/print.c:435
 msgid "Format"
 msgstr "Μορφοποίηση"
 
-#: src/language/data-io/data-parser.c:719
+#: src/language/data-io/data-parser.c:720
 #, c-format
 msgid "Reading free-form data from %s."
 msgstr "Ανάγνωση μη ορισμένου τύπου δεδομένων από %s."
@@ -5174,7 +5124,6 @@ msgid "In compatible syntax mode, the QUALIFIER string must contain exactly one 
 msgstr "Σε συμβατή λειτουργία σύνταξης, η συμβολοσειρά QUALIFIER πρέπει να περιέχει ακριβώς έναν χαρακτήρα."
 
 #: src/language/data-io/get-data.c:583
-#: src/language/data-io/placement-parser.c:406
 #, c-format
 msgid "The record number specified, %ld, is at or before the previous record, %d.  Data fields must be listed in order of increasing record number."
 msgstr "Ο αριθμός εγγραφής που ορίστηκε, %ld, είναι στο ή πριν από την προηγούμενη εγγραφή, %d.  Τα πεδία δεδομένων πρέπει να είναι καταγεγραμμένα για να αυξηθεί ο αριθμός εγγραφής."
@@ -5256,6 +5205,11 @@ msgstr "Οι θέσεις στηλών για πεδία δεν πρέπει ν�
 #: src/language/data-io/placement-parser.c:372
 msgid "The ending column for a field must be greater than the starting column."
 msgstr "Η τελευταία στήλη για ένα πεδίο πρέπει να είναι μεγαλύτερο από την πρώτη στήλη."
+
+#: src/language/data-io/placement-parser.c:409
+#, c-format
+msgid "The record number specified, %.0f, is at or before the previous record, %d.  Data fields must be listed in order of increasing record number."
+msgstr "Ο αριθμός εγγραφής που ορίστηκε, %.0f, είναι στο ή πριν από την προηγούμενη εγγραφή, %d.  Τα πεδία δεδομένων πρέπει να είναι καταγεγραμμένα ώστε να αυξηθεί ο αριθμός εγγραφής."
 
 #: src/language/data-io/print-space.c:127
 #, c-format
@@ -5507,115 +5461,115 @@ msgstr "ανεπιτυχή τερματισμό αρχείου ανάγνωση 
 msgid "writing to temporary file"
 msgstr "δημιουργία πρόχειρου αρχείου"
 
-#: src/libpspp/i18n.c:1112
+#: src/libpspp/i18n.c:1128
 msgid "Arabic"
 msgstr "Αραβικά"
 
-#: src/libpspp/i18n.c:1114
+#: src/libpspp/i18n.c:1130
 msgid "Armenian"
 msgstr "Αρμενικά"
 
-#: src/libpspp/i18n.c:1115
+#: src/libpspp/i18n.c:1131
 msgid "Baltic"
 msgstr "Βαλτικά"
 
-#: src/libpspp/i18n.c:1117
+#: src/libpspp/i18n.c:1133
 msgid "Celtic"
 msgstr "Κέλτικα"
 
-#: src/libpspp/i18n.c:1118
+#: src/libpspp/i18n.c:1134
 msgid "Central European"
 msgstr "Ευρώπη: Κεντρικά"
 
-#: src/libpspp/i18n.c:1120
+#: src/libpspp/i18n.c:1136
 msgid "Chinese Simplified"
 msgstr "Απλοποιημένα Κινέζικα"
 
-#: src/libpspp/i18n.c:1122
+#: src/libpspp/i18n.c:1138
 msgid "Chinese Traditional"
 msgstr "Παραδοσιακά Κινέζικα"
 
-#: src/libpspp/i18n.c:1124
+#: src/libpspp/i18n.c:1140
 msgid "Croatian"
 msgstr "Κροάτικα"
 
-#: src/libpspp/i18n.c:1125
+#: src/libpspp/i18n.c:1141
 msgid "Cyrillic"
 msgstr "Κυριλλικά"
 
-#: src/libpspp/i18n.c:1127
+#: src/libpspp/i18n.c:1143
 msgid "Cyrillic/Russian"
 msgstr "Κυριλλικά/Ρώσικα"
 
-#: src/libpspp/i18n.c:1128
+#: src/libpspp/i18n.c:1144
 msgid "Cyrillic/Ukrainian"
 msgstr "Κυριλλικά/Ουκρανικά"
 
-#: src/libpspp/i18n.c:1130
+#: src/libpspp/i18n.c:1146
 msgid "Georgian"
 msgstr "Γεωργιανά"
 
-#: src/libpspp/i18n.c:1131
+#: src/libpspp/i18n.c:1147
 msgid "Greek"
 msgstr "Ελληνικά"
 
-#: src/libpspp/i18n.c:1132
+#: src/libpspp/i18n.c:1148
 msgid "Gujarati"
 msgstr "Γκουγιαράτι"
 
-#: src/libpspp/i18n.c:1133
+#: src/libpspp/i18n.c:1149
 msgid "Gurmukhi"
 msgstr "Γκουρμούκι"
 
-#: src/libpspp/i18n.c:1134
+#: src/libpspp/i18n.c:1150
 msgid "Hebrew"
 msgstr "Εβραϊκά"
 
-#: src/libpspp/i18n.c:1136
+#: src/libpspp/i18n.c:1152
 msgid "Hebrew Visual"
 msgstr "Οπτικά Εβραϊκά"
 
-#: src/libpspp/i18n.c:1137
+#: src/libpspp/i18n.c:1153
 msgid "Hindi"
 msgstr "Χίντι"
 
-#: src/libpspp/i18n.c:1138
+#: src/libpspp/i18n.c:1154
 msgid "Icelandic"
 msgstr "Ισλανδικά"
 
-#: src/libpspp/i18n.c:1139
+#: src/libpspp/i18n.c:1155
 msgid "Japanese"
 msgstr "Ιαπωνικά"
 
-#: src/libpspp/i18n.c:1141
+#: src/libpspp/i18n.c:1157
 msgid "Korean"
 msgstr "Κορεάτικα"
 
-#: src/libpspp/i18n.c:1143
+#: src/libpspp/i18n.c:1159
 msgid "Nordic"
 msgstr "Σκανδιναβικά"
 
-#: src/libpspp/i18n.c:1144
+#: src/libpspp/i18n.c:1160
 msgid "Romanian"
 msgstr "Ρουμάνικα"
 
-#: src/libpspp/i18n.c:1146
+#: src/libpspp/i18n.c:1162
 msgid "South European"
 msgstr "Ευρώπη: Νότια"
 
-#: src/libpspp/i18n.c:1147
+#: src/libpspp/i18n.c:1163
 msgid "Thai"
 msgstr "Ταϊλανδικά"
 
-#: src/libpspp/i18n.c:1149
+#: src/libpspp/i18n.c:1165
 msgid "Turkish"
 msgstr "Τούρκικα"
 
-#: src/libpspp/i18n.c:1151
+#: src/libpspp/i18n.c:1167
 msgid "Vietnamese"
 msgstr "Βιετναμέζικα"
 
-#: src/libpspp/i18n.c:1153
+#: src/libpspp/i18n.c:1169
 msgid "Western European"
 msgstr "Ευρώπη: Δυτικά"
 
@@ -5679,8 +5633,8 @@ msgstr "%s: άγνωστο μέλος `%s'"
 
 #: src/libpspp/zip-reader.c:503
 #, c-format
-msgid "%s: name mismatch betwen central directory (%s) and local file header (%s)"
-msgstr "%s: Αναντιστοιχία ονόματος μεταξύ καταλόγου (%s) και τοπικής κεφαλίδας αρχείου (%s)"
+msgid "%s: name mismatch between central directory (%s) and local file header (%s)"
+msgstr "%s: Αναντιστοιχία ονόματος μεταξύ κεντρικού καταλόγου (%s) κ τοπικής κεφαλίδας αρχείου (%s)"
 
 #: src/libpspp/zip-reader.c:696
 #, c-format
@@ -5785,7 +5739,7 @@ msgstr "Δες %s για γράφημα."
 msgid "*MISSING*"
 msgstr "*MISSING*"
 
-#: src/output/csv.c:100 src/output/html.c:114 src/output/journal.c:166
+#: src/output/csv.c:100 src/output/html.c:117 src/output/journal.c:166
 #: src/output/msglog.c:68
 #, c-format
 msgid "error opening output file `%s'"
@@ -5811,11 +5765,11 @@ msgstr "%s: επιλογή εξερχόμενου λείπει `='"
 msgid "%s: output option specified more than once"
 msgstr "%s: η επιλογή εξερχόμενου ορίστηκε πάνω από μία φορά"
 
-#: src/output/html.c:122
+#: src/output/html.c:129
 msgid "PSPP Output"
 msgstr "PSPP Εξαγωγή"
 
-#: src/output/html.c:252
+#: src/output/html.c:266
 msgid "No description"
 msgstr "Μη περιγραφή"
 
@@ -5948,7 +5902,7 @@ msgstr "σφάλμα εγγραφής εξερχομένου αρχείου `%s'
 msgid "Normal Q-Q Plot of %s"
 msgstr "Τυπικό Q-Q διάγραμμα του %s"
 
-#: src/output/charts/np-plot-cairo.c:38 src/output/charts/np-plot-cairo.c:65
+#: src/output/charts/np-plot-cairo.c:38 src/output/charts/np-plot-cairo.c:68
 msgid "Observed Value"
 msgstr "Παρατηρίσημη Τιμή"
 
@@ -5956,12 +5910,12 @@ msgstr "Παρατηρίσημη Τιμή"
 msgid "Expected Normal"
 msgstr "Αναμενόμενό Τυπικό"
 
-#: src/output/charts/np-plot-cairo.c:64
+#: src/output/charts/np-plot-cairo.c:67
 #, c-format
 msgid "Detrended Normal Q-Q Plot of %s"
 msgstr "Αποτασσικό Τυπικό Q-Q διάγραμμα του %s"
 
-#: src/output/charts/np-plot-cairo.c:66
+#: src/output/charts/np-plot-cairo.c:69
 msgid "Dev from Normal"
 msgstr "Απόκλ. από Τυπική"
 
@@ -6013,7 +5967,7 @@ msgstr "Επίπεδο"
 msgid "Spread"
 msgstr "Διασπορά"
 
-#: src/output/charts/scatterplot-cairo.c:55
+#: src/output/charts/scatterplot-cairo.c:57
 #, c-format
 msgid "Scatterplot %s"
 msgstr "Διάγραμμα Διασποράς %s"
@@ -6045,6 +5999,516 @@ msgstr "%s: το έγγραφο δεν είναι καλά διαμορφωμέ�
 #, c-format
 msgid "%s: root node is \"%s\" but \"%s\" was expected"
 msgstr "%s: ο αρχικός κόμβος είναι \"%s\" αλλά \"%s\" αναμενόταν "
+
+#: src/ui/gui/psppire-acr.c:273
+msgid "Add"
+msgstr "Πρόσθεση"
+
+#: src/ui/gui/psppire-acr.c:274
+msgid "Edit"
+msgstr "Διόρθωση"
+
+#: src/ui/gui/psppire-acr.c:275
+msgid "Remove"
+msgstr "Διαγραφή"
+
+#: src/ui/gui/psppire-buttonbox.c:311
+msgid "OK"
+msgstr "ΟΚ"
+
+#: src/ui/gui/psppire-buttonbox.c:319
+msgid "Go To"
+msgstr "Προς"
+
+#: src/ui/gui/psppire-buttonbox.c:327
+msgid "Continue"
+msgstr "Επόμενο"
+
+#: src/ui/gui/psppire-buttonbox.c:339
+#: src/ui/gui/psppire-import-assistant.c:759
+msgid "Paste"
+msgstr "Επικόλληση"
+
+#: src/ui/gui/psppire-buttonbox.c:345
+#: src/ui/gui/psppire-dialog-action-aggregate.c:216
+#: src/ui/gui/psppire-data-window.c:496 src/ui/gui/psppire-data-window.c:624
+#: src/ui/gui/psppire-output-window.c:353
+#: src/ui/gui/psppire-syntax-window.c:594 src/ui/gui/psppire-window.c:445
+#: src/ui/gui/psppire-window.c:628
+msgid "Cancel"
+msgstr "Ακύρωση"
+
+#: src/ui/gui/psppire-buttonbox.c:351
+msgid "Close"
+msgstr "Κλείσιμο"
+
+#: src/ui/gui/psppire-buttonbox.c:358
+#: src/ui/gui/psppire-import-assistant.c:760
+msgid "Reset"
+msgstr "Επαναφορά"
+
+#: src/ui/gui/psppire-buttonbox.c:365
+msgid "Help"
+msgstr "Βοήθεια"
+
+#: src/ui/gui/psppire-dialog-action-aggregate.c:213
+msgid "Aggregate destination file"
+msgstr "Συναθροισμός προορισμού αρχείου"
+
+#: src/ui/gui/psppire-dialog-action-aggregate.c:217
+#: src/ui/gui/psppire-data-window.c:493 src/ui/gui/psppire-data-window.c:497
+#: src/ui/gui/psppire-output-window.c:354
+#: src/ui/gui/psppire-syntax-window.c:595 src/ui/gui/psppire-window.c:449
+#: src/ui/gui/aggregate.ui:565
+msgid "Save"
+msgstr "Αποθήκευση"
+
+#: src/ui/gui/psppire-dialog-action-aggregate.c:226
+#: src/ui/gui/psppire-data-window.c:503
+msgid "System Files (*.sav)"
+msgstr "Αρχεία Συστήματος (*.sav)"
+
+#: src/ui/gui/psppire-dialog-action-aggregate.c:231
+#: src/ui/gui/psppire-data-window.c:508
+msgid "Compressed System Files (*.zsav)"
+msgstr "Συμπιεσμένα Αρχεία Συστήματος (*.zsav)"
+
+#: src/ui/gui/psppire-dialog-action-aggregate.c:236
+#: src/ui/gui/psppire-data-window.c:513 src/ui/gui/psppire-window.c:652
+msgid "Portable Files (*.por) "
+msgstr "Φορητά Αρχεία (*.por) "
+
+#: src/ui/gui/psppire-dialog-action-autorecode.c:337
+#: src/ui/gui/psppire-dialog-action-recode.c:535
+#: src/ui/gui/psppire-dialog-action-recode-different.c:288
+msgid "New"
+msgstr "Νέο"
+
+#: src/ui/gui/psppire-dialog-action-autorecode.c:351
+#: src/ui/gui/psppire-dialog-action-recode.c:527
+#: src/ui/gui/psppire-dialog-action-recode-different.c:301
+msgid "Old"
+msgstr "Προηγούμενο"
+
+#: src/ui/gui/psppire-dialog-action-comments.c:142
+#, c-format
+msgid "Column Number: %d"
+msgstr "Αριθμός Στήλης: %d"
+
+#: src/ui/gui/psppire-dialog-action-crosstabs.c:71
+msgid "Chisq"
+msgstr "Χ-τετρ"
+
+#: src/ui/gui/psppire-dialog-action-crosstabs.c:71
+msgid "Pearson chi-square, likelihood ratio, Fisher’s exact test, continuity correction, linear-by-linear association."
+msgstr "Pearson Χ τετράγωνο, αναλογία πιθανοτήτων, Fisher’s ακριβές τεστ, διόρθωση συνέχειας, γραμμική επί γραμμική σχέση."
+
+#: src/ui/gui/psppire-dialog-action-crosstabs.c:74
+#: src/language/stats/crosstabs.q:1334
+msgid "Phi"
+msgstr "Phi"
+
+#: src/ui/gui/psppire-dialog-action-crosstabs.c:75
+msgid "CC"
+msgstr "ΣΣ"
+
+#: src/ui/gui/psppire-dialog-action-crosstabs.c:75
+#, fuzzy
+#| msgid "Contingency Coefficient"
+msgid "Contingency coefficient"
+msgstr "Συντελεστής Συνάφειας"
+
+#: src/ui/gui/psppire-dialog-action-crosstabs.c:77
+msgid "UC"
+msgstr "ΣΑ"
+
+#: src/ui/gui/psppire-dialog-action-crosstabs.c:77
+#, fuzzy
+#| msgid "Uncertainty Coefficient"
+msgid "Uncertainty coefficient"
+msgstr "Συντελεστής Αβεβαιότητας"
+
+#: src/ui/gui/psppire-dialog-action-crosstabs.c:78
+msgid "BTau"
+msgstr "BTau"
+
+#: src/ui/gui/psppire-dialog-action-crosstabs.c:78
+#, fuzzy
+#| msgid "Kendall's tau-b"
+msgid "Kendall's Tau-b"
+msgstr "Kendall's tau-b"
+
+#: src/ui/gui/psppire-dialog-action-crosstabs.c:79
+msgid "CTau"
+msgstr "CTau"
+
+#: src/ui/gui/psppire-dialog-action-crosstabs.c:79
+#, fuzzy
+#| msgid "Kendall's tau-c"
+msgid "Kendall's Tau-c"
+msgstr "Kendall's tau-c"
+
+#: src/ui/gui/psppire-dialog-action-crosstabs.c:80
+msgid "Risk"
+msgstr "Ρίσκο"
+
+#: src/ui/gui/psppire-dialog-action-crosstabs.c:80
+msgid "Relative Risk estimate"
+msgstr "Σχετική Εκτίμηση Ρίσκου"
+
+#: src/ui/gui/psppire-dialog-action-crosstabs.c:81
+#: src/language/stats/crosstabs.q:1338
+msgid "Gamma"
+msgstr "Γάμμα"
+
+#: src/ui/gui/psppire-dialog-action-crosstabs.c:82
+msgid "D"
+msgstr "D"
+
+#: src/ui/gui/psppire-dialog-action-crosstabs.c:82
+#, fuzzy
+#| msgid "Somers' d"
+msgid "Somer's d"
+msgstr "Somers' d"
+
+#: src/ui/gui/psppire-dialog-action-crosstabs.c:83
+#: src/language/stats/crosstabs.q:1344
+msgid "Kappa"
+msgstr "Κάππα"
+
+#: src/ui/gui/psppire-dialog-action-crosstabs.c:83
+msgid "Cohen's Kappa"
+msgstr "Cohen's Kappa"
+
+#: src/ui/gui/psppire-dialog-action-crosstabs.c:84
+#: src/language/stats/crosstabs.q:1429
+msgid "Eta"
+msgstr "Ήτα"
+
+#: src/ui/gui/psppire-dialog-action-crosstabs.c:85
+msgid "Corr"
+msgstr "Συσχ"
+
+#: src/ui/gui/psppire-dialog-action-crosstabs.c:85
+msgid "Spearman correlation, Pearson's r"
+msgstr "Συσχέτιση Spearman, Pearson's r"
+
+#: src/ui/gui/psppire-dialog-action-crosstabs.c:90
+#, fuzzy
+#| msgid "Frequency"
+msgid "Frequency Count"
+msgstr "Συχνότητα"
+
+#: src/ui/gui/psppire-dialog-action-crosstabs.c:91
+msgid "Row"
+msgstr "Σειρά"
+
+#: src/ui/gui/psppire-dialog-action-crosstabs.c:91
+#, fuzzy
+#| msgid "Percent"
+msgid "Row percent"
+msgstr "Ποσοστά"
+
+#: src/ui/gui/psppire-dialog-action-crosstabs.c:92
+msgid "Column"
+msgstr "Στήλη"
+
+#: src/ui/gui/psppire-dialog-action-crosstabs.c:92
+msgid "Column percent"
+msgstr "Ποσοστά Στήλης"
+
+#: src/ui/gui/psppire-dialog-action-crosstabs.c:93
+msgid "Total percent"
+msgstr "Συνολικά Ποσοστά"
+
+#: src/ui/gui/psppire-dialog-action-crosstabs.c:94
+#: src/language/stats/crosstabs.q:1266
+msgid "Expected"
+msgstr "Aναμένεται"
+
+#: src/ui/gui/psppire-dialog-action-crosstabs.c:94
+msgid "Expected value"
+msgstr "Αναμενόμενη Τιμή"
+
+#: src/ui/gui/psppire-dialog-action-crosstabs.c:96
+#: src/language/stats/crosstabs.q:1268
+msgid "Std. Residual"
+msgstr "Στθμ. Σφάλμα"
+
+#: src/ui/gui/psppire-dialog-action-crosstabs.c:96
+#, fuzzy
+#| msgid "Std. Residual"
+msgid "Standardized Residual"
+msgstr "Στθμ. Σφάλμα"
+
+#: src/ui/gui/psppire-dialog-action-crosstabs.c:97
+msgid "Adjusted Std. Residual"
+msgstr "Προσαρμοσμένο Στθμ. Σφάλμα"
+
+#: src/ui/gui/psppire-dialog-action-descriptives.c:45
+msgid "Standard error"
+msgstr "Τυπικό Σφάλμα"
+
+#: src/ui/gui/psppire-dialog-action-descriptives.c:45
+#, fuzzy
+#| msgid "Standard error of the mean"
+msgid "Standard error of mean"
+msgstr "Τυπικό σφάλμα μέσου"
+
+#: src/ui/gui/psppire-dialog-action-descriptives.c:47
+msgid "Kurtosis and standard error of kurtosis"
+msgstr "Κύρτωση κ Τυπικό σφάλμα κύρτωσης"
+
+#: src/ui/gui/psppire-dialog-action-descriptives.c:48
+msgid "Skewness and standard error of skewness"
+msgstr "Λοξότητα κ Τυπικό σφάλμα λοξότητας"
+
+#: src/ui/gui/psppire-dialog-action-factor.c:323
+#, c-format
+msgid "_Eigenvalues over %4.2f times the mean eigenvalue"
+msgstr "_Ιδιοτιμές πάνω από %4.2f φορές τη μέση ιδιοτιμή"
+
+#: src/ui/gui/psppire-dialog-action-frequencies.c:44
+msgid "Standard error of the mean"
+msgstr "Τυπικό σφάλμα μέσου"
+
+#: src/ui/gui/psppire-dialog-action-frequencies.c:47
+msgid "Standard error of the skewness"
+msgstr "Τυπικό σφάλμα λοξότητας"
+
+#: src/ui/gui/psppire-dialog-action-frequencies.c:51
+msgid "Standard error of the kurtosis"
+msgstr "Τυπικό σφάλμα κύρτωσης"
+
+#: src/ui/gui/psppire-dialog-action-oneway.c:175
+#, c-format
+msgid "Contrast %d of %d"
+msgstr "Συγκρίσεις %d of %d"
+
+#: src/ui/gui/psppire-dialog-action-paired.c:162 src/ui/gui/examine.ui:282
+#: src/ui/gui/indep-samples.ui:334 src/ui/gui/t-test.ui:296
+msgid "O_ptions..."
+msgstr "Ε_πιλογές..."
+
+#: src/ui/gui/psppire-dialog-action-paired.c:168
+msgid "Paired Samples T Test"
+msgstr "Εξαρτημένων δειγμάτων Τ Τεστ"
+
+#: src/ui/gui/psppire-dialog-action-recode-different.c:327
+msgid "Recode into Different Variables"
+msgstr "Κωδικοποίηση σε Διαφορετικές Μεταβλητές"
+
+#: src/ui/gui/psppire-dialog-action-recode-different.c:330
+msgid "Recode into Different Variables: Old and New Values "
+msgstr "Επανακώδικας Μεταβλητών σε Άλλες: Παλιές και Νέες Τιμές "
+
+#: src/ui/gui/psppire-dialog-action-recode-same.c:108 src/ui/gui/recode.ui:391
+msgid "Recode into Same Variables"
+msgstr "Επανακώδικας στις Ιδίες Μεταβλητές"
+
+#: src/ui/gui/psppire-dialog-action-recode-same.c:114
+msgid "Recode into Same Variables: Old and New Values"
+msgstr "Επανακώδικας στις Ιδίες Μεταβλητές: Παλιές και Νέες Τιμές"
+
+#: src/ui/gui/psppire-dialog-action-regression.c:40
+msgid "Coeff"
+msgstr "Συντελ"
+
+#: src/ui/gui/psppire-dialog-action-regression.c:40
+msgid "Show the regression coefficients"
+msgstr "Προβολή συντελεστών παλινδρόμησης"
+
+#: src/ui/gui/psppire-dialog-action-regression.c:41
+msgid "Conf. Interval"
+msgstr "Διάστημα Εμπ."
+
+#: src/ui/gui/psppire-dialog-action-regression.c:41
+msgid "Show the confidence interval for the regression coefficients"
+msgstr "Προβολή Διαστημάτων εμπιστοσύνης για τους συντελεστές παλινδρόμησης"
+
+#: src/ui/gui/psppire-dialog-action-regression.c:42
+msgid "Show the correlation between observed and predicted values"
+msgstr "Προβολή συσχετίσεων μεταξύ παρατηρίσιμων και προβλέψιμων τιμών"
+
+#: src/ui/gui/psppire-dialog-action-regression.c:43
+msgid "Anova"
+msgstr "Anova"
+
+#: src/ui/gui/psppire-dialog-action-regression.c:43
+msgid "Show the analysis of variance table"
+msgstr "Προβολή πίνακα ανάλυσης διακύμανσης"
+
+#: src/ui/gui/psppire-dialog-action-regression.c:44
+msgid "Bcov"
+msgstr "B Συνδ"
+
+#: src/ui/gui/psppire-dialog-action-regression.c:44
+msgid "Show the variance coefficient matrix"
+msgstr "Προβολή πίνακα συντελεστών διακύμνασης"
+
+#: src/ui/gui/psppire-dialog-action-regression.c:45
+msgid "Tol"
+msgstr "Tol"
+
+#: src/ui/gui/psppire-dialog-action-regression.c:45
+msgid "Show the variance inflation factor and its reciprocal"
+msgstr "Δείχνει τον παράγοντα πληθωρισμού διακύμανσης και τον αμοιβαίο του"
+
+#: src/ui/gui/psppire-dialog-action-select.c:88
+#, c-format
+msgid "Approximately %3d%% of all cases."
+msgstr "Σχεδόν %3d%% όλων των υποθέσεων."
+
+#: src/ui/gui/psppire-dialog-action-select.c:89
+#, c-format
+msgid "Exactly %3d cases from the first %3d cases."
+msgstr "Ακριβώς %3d υποθέσεις από τις πρώτες %3d υποθέσεις."
+
+#: src/ui/gui/psppire-dialog-action-select.c:236
+#, c-format
+msgid "%d thru %d"
+msgstr "%d ως %d"
+
+#: src/ui/gui/psppire-dialog-action-two-sample.c:180
+#: src/ui/gui/k-independent.ui:404 src/ui/gui/k-related.ui:197
+msgid "Test Type"
+msgstr "Τύπος Τεστ"
+
+#: src/ui/gui/psppire-dialog-action-two-sample.c:189
+msgid "_Wilcoxon"
+msgstr "_Wilcoxon"
+
+#: src/ui/gui/psppire-dialog-action-two-sample.c:190
+msgid "_Sign"
+msgstr "_Sign"
+
+#: src/ui/gui/psppire-dialog-action-two-sample.c:191
+msgid "_McNemar"
+msgstr "_McNemar"
+
+#: src/ui/gui/psppire-dialog-action-two-sample.c:209
+msgid "Two-Related-Samples Tests"
+msgstr "Δύο-Εξαρτημένων-Δειγμάτων Τεστ"
+
+#: src/ui/gui/psppire-dialog-action-weight.c:74 src/ui/gui/weight.ui:83
+#: src/ui/gui/weight.ui:211
+msgid "Do not weight cases"
+msgstr "Μη στάθμιση υποθέσεων"
+
+#: src/ui/gui/psppire-dialog-action-weight.c:80
+#, c-format
+msgid "Weight cases by %s"
+msgstr "Στάθμιση Υποθέσεων κατά %s"
+
+#: src/ui/gui/psppire-dict.c:95
+msgid "Var"
+msgstr "Μεταβλ"
+
+#. TRANSLATORS: This string must be a valid variable name.  That means:
+#. - The string must be at most 64 bytes (not characters) long.
+#. - The string may not contain whitespace.
+#. - The first character may not be '$'
+#. - The first character may not be a digit
+#. - The final character may not be '.' or '_'
+#.
+#: src/ui/gui/psppire-dict.c:385
+#, c-format
+msgid "Var%04d"
+msgstr "Μετ%04d"
+
+#: src/ui/gui/psppire-dict.c:566
+msgid "Duplicate variable name."
+msgstr "Διπλότυπο όνομα μεταβλητής."
+
+#: src/ui/gui/psppire-dictview.c:617
+msgid "Prefer variable labels"
+msgstr "Προτίμηση ετικέτας μεταβλητής"
+
+#: src/ui/gui/psppire-dictview.c:631
+msgid "Default sort order"
+msgstr "Ορισμένη Ταξινόμιση"
+
+#: src/ui/gui/psppire-dictview.c:637
+msgid "Unsorted (dictionary order)"
+msgstr "Αταξινόμητα (Σειρά Λίστας)"
+
+#: src/ui/gui/psppire-dictview.c:642
+msgid "Sort by name"
+msgstr "Ταξινόμηση κατά όνομα"
+
+#: src/ui/gui/psppire-dictview.c:647
+msgid "Sort by label"
+msgstr "Ταξινόμηση κατά ετικέτα"
+
+#: src/ui/gui/psppire-means-layer.c:95
+#, c-format
+msgid "Layer %d of %d"
+msgstr "Επίπεδο %d από %d"
+
+#: src/ui/gui/psppire-means-layer.c:169
+msgid "Forward"
+msgstr "Επόμενο"
+
+#: src/ui/gui/psppire-means-layer.c:170
+msgid "Back"
+msgstr "Πίσω"
+
+#: src/ui/gui/psppire-text-file.c:55
+#, c-format
+msgid "Could not open `%s'"
+msgstr "Αδυναμία ανοίγματος του `%s'"
+
+#: src/ui/gui/psppire-text-file.c:71
+#, c-format
+msgid "Error reading `%s': %s"
+msgstr "Σφάλμα ανάγνωσης `%s': %s"
+
+#: src/ui/gui/psppire-text-file.c:74
+#, c-format
+msgid "Failed to read `%s', because it contains a line over %d bytes long and therefore appears not to be a text file."
+msgstr "Αποτυχία ανάγνωσης του `%s'. Περιέχει μία γραμμή κατά %d διφύων μήκους και για αυτό φαίνεται ότι δεν είναι αρχείο κειμένου."
+
+#: src/ui/gui/psppire-text-file.c:96
+#, c-format
+msgid "`%s' is empty."
+msgstr "Το `%s' είναι κενό."
+
+#: src/ui/gui/psppire-val-chooser.c:255
+msgid "through"
+msgstr "διά"
+
+#: src/ui/gui/psppire-val-chooser.c:288
+msgid "_Value:"
+msgstr "_Τιμή:"
+
+#: src/ui/gui/psppire-val-chooser.c:289
+msgid "_System Missing"
+msgstr "Ελλειπούσες _Συστήματος"
+
+#: src/ui/gui/psppire-val-chooser.c:290
+msgid "System _or User Missing"
+msgstr "Συστήματος ή _Χρήστη ελλειπούσες"
+
+#: src/ui/gui/psppire-val-chooser.c:291
+msgid "_Range:"
+msgstr "_Εύρος:"
+
+#: src/ui/gui/psppire-val-chooser.c:292
+msgid "Range, _LOWEST thru value"
+msgstr "Εύρος, _Ελάχιστη ως Τιμή"
+
+#: src/ui/gui/psppire-val-chooser.c:293
+msgid "Range, value thru _HIGHEST"
+msgstr "Εύρος, Τιμή ως _Μέγιστη"
+
+#: src/ui/gui/psppire-val-chooser.c:294
+msgid "_All other values"
+msgstr "Ό_Λες οι υπόλοιπες τιμές"
+
+#: src/ui/gui/psppire-var-view.c:153
+#, c-format
+msgid "Var%d"
+msgstr "Μεταβλ%d"
 
 #: src/ui/source-init-opts.c:72
 #, c-format
@@ -6137,132 +6601,11 @@ msgstr ""
 "\n"
 "Ορίσματα μη απεικονιζόμενα εδώ θα ερμηνευτούν σαν σύνταξη αρχείων και θα εκτελεστούν ως έτσι.\n"
 
-#: src/ui/gui/psppire-import-assistant.c:330
-msgid "line"
-msgstr "γραμμή"
-
-#: src/ui/gui/psppire-import-assistant.c:340
-msgid "var"
-msgstr "μετ"
-
-#: src/ui/gui/psppire-import-assistant.c:550
-msgid "Importing Spreadsheet Data"
-msgstr "Δεδομένα Υπ. Φύλλου εισάγωνται"
-
-#: src/ui/gui/psppire-import-assistant.c:664
-#: src/ui/gui/psppire-data-window.c:557 src/ui/gui/psppire-syntax-window.c:655
-#: src/ui/gui/psppire-window.c:702
-msgid "All Files"
-msgstr "Όλα τα Αρχεία"
-
-#: src/ui/gui/psppire-import-assistant.c:669
-msgid "Text Files"
-msgstr "Αρχεία Κειμένου"
-
-#: src/ui/gui/psppire-import-assistant.c:674
-msgid "Text (*.txt) Files"
-msgstr "Αρχεία Κειμένου (*.txt)"
-
-#: src/ui/gui/psppire-import-assistant.c:680
-msgid "Plain Text (ASCII) Files"
-msgstr "Απλά Αρχεία Κειμένου (ASCII)"
-
-#: src/ui/gui/psppire-import-assistant.c:685
-msgid "Comma Separated Value Files"
-msgstr "Αρχεία Τιμών Χωρισμένα με Κόμμα"
-
-#: src/ui/gui/psppire-import-assistant.c:692
-msgid "Tab Separated Value Files"
-msgstr "Αρχεία Τιμών Χωρισμένα με διάκενο"
-
-#: src/ui/gui/psppire-import-assistant.c:697
-msgid "Gnumeric Spreadsheet Files"
-msgstr "Αρχεία Υπολ. φύλλων Gnumeric"
-
-#: src/ui/gui/psppire-import-assistant.c:702
-msgid "OpenDocument Spreadsheet Files"
-msgstr "Αρχεία Υπολογ. φύλλων Ανοικτού Εγγράφου (odt)"
-
-#: src/ui/gui/psppire-import-assistant.c:707
-msgid "All Spreadsheet Files"
-msgstr "Όλα τα αρχεία Υπολογ.φύλλων"
-
-#: src/ui/gui/psppire-import-assistant.c:716
-msgid "Select File to Import"
-msgstr "Επιλογή αρχείου για Εισαγωγή"
-
-#: src/ui/gui/psppire-import-assistant.c:753
-msgid "Importing Delimited Text Data"
-msgstr "Εισαγωγή Δεδομένων από Αρχείο Κειμένου Υποδιαστολής"
-
-#: src/ui/gui/psppire-import-assistant.c:848
-msgid "Select the First Line"
-msgstr "Επίλεξε τη Πρώτη Γραμμή"
-
-#: src/ui/gui/psppire-import-assistant.c:860
-msgid "Line"
-msgstr "Γραμμή"
-
-#: src/ui/gui/psppire-import-assistant.c:914
-msgid ""
-"This assistant will guide you through the process of importing data into PSPP from a text file with one line per case,  in which fields are separated by tabs, commas, or other delimiters.\n"
-"\n"
-msgstr ""
-"Αυτός ο βοηθός θα σε καθοδηγήσει στις διαδικασίες εισαγωγής δεδομένων στο PSPP από ένα αρχείο κειμένου, με κάθε γραμμή να ορίζει μία υπόθεση, και με πεδία διαχωρισμένα με διάκενα, κόμματα, ή άλλου τύπου υποδιαστολές \n"
-"\n"
-
-#: src/ui/gui/psppire-import-assistant.c:924
-#, c-format
-msgid "The selected file contains %'lu line of text.  "
-msgid_plural "The selected file contains %'lu lines of text.  "
-msgstr[0] "Το επιλεγμένο αρχείο περιέχει %'lu γραμμή κειμένου. "
-msgstr[1] "Το επιλεγμένο αρχείο περιέχει %'lu γραμμές κειμένου. "
-
-#: src/ui/gui/psppire-import-assistant.c:933
-#, c-format
-msgid "The selected file contains approximately %'lu line of text.  "
-msgid_plural "The selected file contains approximately %'lu lines of text.  "
-msgstr[0] "Το επιλεγμένο αρχείο περιέχει σχεδόν %'lu γραμμή κειμένου. "
-msgstr[1] "Το επιλεγμένο αρχείο περιέχει σχεδόν %'lu γραμμές κειμένου. "
-
-#: src/ui/gui/psppire-import-assistant.c:939
-#, c-format
-msgid "Only the first %zu line of the file will be shown for preview purposes in the following screens.  "
-msgid_plural "Only the first %zu lines of the file will be shown for preview purposes in the following screens.  "
-msgstr[0] "Μόνο η πρώτη %zu γραμμή του αρχείου θα εμφανιστεί στην επόμενη οθόνη για λόγους προεπισκόπησης.  "
-msgstr[1] "Μόνο οι πρώτες %zu γραμμές του αρχείου θα εμφανιστούν στην επόμενη οθόνη για λόγους προεπισκόπησης.  "
-
-#: src/ui/gui/psppire-import-assistant.c:948
-msgid "You may choose below how much of the file should actually be imported."
-msgstr "Μπορείς να διαλέξεις παρακάτω πόσοτητα αρχείου που θα γίνει εισαγωγή."
-
-#: src/ui/gui/psppire-import-assistant.c:957
-#, c-format
-msgid "Only the first %4d cases"
-msgstr "Μόνο οι πρώτες %4d υποθέσεις"
-
-#: src/ui/gui/psppire-import-assistant.c:968
-#, c-format
-msgid "Only the first %3d %% of file (approximately)"
-msgstr "Μόνο οι πρώτες %3d %% του αρχείου (σχεδόν)"
-
-#: src/ui/gui/psppire-import-assistant.c:992
-msgid "Select the Lines to Import"
-msgstr "Επιλογή Γραμμών για Εισαγωγή"
-
-#: src/ui/gui/psppire-import-assistant.c:1134
-msgid "Choose Separators"
-msgstr "Διάλεξε Διαχωριστές"
-
-#: src/ui/gui/psppire-import-assistant.c:1421
-msgid "Adjust Variable Formats"
-msgstr "Ρύθμιση Μορφής Μεταβλητών"
-
-#: src/ui/gui/find-dialog.c:195
+#: src/ui/gui/find-dialog.c:197
 msgid "Find"
 msgstr "Αναζήτηση"
 
-#: src/ui/gui/find-dialog.c:659
+#: src/ui/gui/find-dialog.c:662
 #, c-format
 msgid "Bad regular expression: %s"
 msgstr "Λάθος τυπικής έκφρασης: %s"
@@ -6277,581 +6620,319 @@ msgstr "Πρόγραμμα για τη στατιστική ανάλυση δε�
 msgid "translator-credits"
 msgstr "μεταφραστής-στοιχεία"
 
-#: src/ui/gui/help-menu.c:174
+#: src/ui/gui/help-menu.c:170
 #, c-format
 msgid "Help path conversion error: %s"
 msgstr "Σφάλμα βοήθειας μετατροπής διαδρομής: %s"
 
-#: src/ui/gui/help-menu.c:203
+#: src/ui/gui/help-menu.c:197
 #, c-format
-msgid "Cannot open reference manual via yelp: %s. Cannot open via html: %s with uri: %s The PSSP manual is also available at %s"
-msgstr "Αδυναμία ανοίγματος του Οδηγού αναφορών: %s. Δεν μπορεί να ανοιχθεί μέσω html: %s με uri: %s  Ο οδηγός PSSP είναι επίσης προσβάσιμος στο %s"
+msgid "Cannot open via html: %s with uri: %s The PSSP manual is also available at %s"
+msgstr "Αδυναμία ανοίγματος μέσω html: %s με Uniform Resource Identifier (URI): %s Το εγχειρίδιο PSPP είναι επίσης προσβάσιμος στο %s"
 
-#: src/ui/gui/help-menu.c:228
+#: src/ui/gui/help-menu.c:218
 msgid "_Help"
 msgstr "_Βοήθεια"
 
-#: src/ui/gui/help-menu.c:231
+#: src/ui/gui/help-menu.c:221
 msgid "_About"
 msgstr "Σ_χετικά"
 
-#: src/ui/gui/help-menu.c:232
+#: src/ui/gui/help-menu.c:222
 msgid "_Reference Manual"
 msgstr "_Οδηγός Αναφορών"
 
-#: src/ui/gui/main.c:274
+#: src/ui/gui/main.c:306
 msgid "Show version information and exit"
 msgstr "Απεικόνιση πληροφορίας έκδοσης και έξοδος"
 
-#: src/ui/gui/main.c:376
+#: src/ui/gui/main.c:409
 msgid "Do not display the splash screen"
 msgstr "Μη απεικόνιση της αρχικής οθόνης"
 
-#: src/ui/gui/main.c:378
+#: src/ui/gui/main.c:411
 msgid "Do not attempt single instance negotiation"
 msgstr "Μην προβείς σε απομονωμένη  διαπραγμάτευση της περίπτωσης αυτής"
 
-#: src/ui/gui/missing-val-dialog.c:216
+#: src/ui/gui/missing-val-dialog.c:217
 msgid "The maximum length of a missing value for a string variable is 8 in UTF-8."
 msgstr "Το μέγιστο μήκος μιας ελλειπούσας τιμής για μία συμβολοσειρά είναι 8 στο UTF-8."
 
-#: src/ui/gui/missing-val-dialog.c:267
+#: src/ui/gui/missing-val-dialog.c:268
 msgid "At least one value must be specified"
 msgstr "Τουλάχιστον μία τιμή πρέπει να οριστεί"
 
-#: src/ui/gui/missing-val-dialog.c:297
+#: src/ui/gui/missing-val-dialog.c:298
 msgid "Incorrect range specification"
 msgstr "Εσφαλμένο εύρος ορισμάτων"
 
-#: src/ui/gui/psppire-data-editor.c:404
+#: src/ui/gui/psppire-data-editor.c:380
 #, c-format
 msgid "%d : %s"
 msgstr "%d : %s"
 
-#: src/ui/gui/psppire-data-editor.c:415
+#: src/ui/gui/psppire-data-editor.c:391
 #, c-format
 msgid "%'d case"
 msgid_plural "%'d cases"
 msgstr[0] "%'d υπόθεση"
 msgstr[1] "%'d υποθέσεις"
 
-#: src/ui/gui/psppire-data-editor.c:420
+#: src/ui/gui/psppire-data-editor.c:396
 #, c-format
 msgid "%'d variable"
 msgid_plural "%'d variables"
 msgstr[0] "%'d μεταβλητή"
 msgstr[1] "%'d μεταβλητές"
 
-#: src/ui/gui/psppire-data-editor.c:506
+#: src/ui/gui/psppire-data-editor.c:485
 msgid "Case"
 msgstr "Υπόθεση"
 
-#: src/ui/gui/psppire-data-editor.c:516
+#: src/ui/gui/psppire-data-editor.c:495
 msgid "Data View"
 msgstr "Απεικ. Δεδομένων"
 
-#: src/ui/gui/psppire-data-editor.c:526
+#: src/ui/gui/psppire-data-editor.c:505
 msgid "Variable View"
 msgstr "Απεικ. Μεταβλητών"
 
-#: src/ui/gui/psppire-data-window.c:214
+#: src/ui/gui/psppire-data-sheet.c:171 src/ui/gui/psppire-data-window.c:1338
+msgid "_Insert Case"
+msgstr "Ει_Σαγωγή Υπόθεσης"
+
+#: src/ui/gui/psppire-data-sheet.c:179 src/ui/gui/psppire-data-window.c:1391
+msgid "Cl_ear Cases"
+msgstr "_Καθαρισμός Υποθέσεων"
+
+#: src/ui/gui/psppire-data-sheet.c:305 src/ui/gui/psppire-data-window.c:1337
+#: src/ui/gui/psppire-variable-sheet.c:274
+msgid "_Insert Variable"
+msgstr "Εισαγωγή Μεταβλητή"
+
+#: src/ui/gui/psppire-data-sheet.c:314 src/ui/gui/psppire-variable-sheet.c:283
+msgid "Cl_ear Variables"
+msgstr "Κα_Θαρισμός Μεταβλητών"
+
+#: src/ui/gui/psppire-data-sheet.c:326
+msgid "Sort _Ascending"
+msgstr "_Ταξινόμηση Αύξουσα"
+
+#: src/ui/gui/psppire-data-sheet.c:333
+msgid "Sort _Descending"
+msgstr "Ταξινόμηση _Φθίνουσα"
+
+#: src/ui/gui/psppire-data-window.c:175
 msgid "Transformations Pending"
 msgstr "Μετατροπές Αναμένονται"
 
-#: src/ui/gui/psppire-data-window.c:230
+#: src/ui/gui/psppire-data-window.c:191
 msgid "Filter off"
 msgstr "Μη Φίλτρο"
 
-#: src/ui/gui/psppire-data-window.c:242
+#: src/ui/gui/psppire-data-window.c:203
 #, c-format
 msgid "Filter by %s"
 msgstr "Φίλτρο με %s"
 
-#: src/ui/gui/psppire-data-window.c:263
+#: src/ui/gui/psppire-data-window.c:224
 msgid "No Split"
 msgstr "Μη Διαίρεση"
 
-#: src/ui/gui/psppire-data-window.c:272
+#: src/ui/gui/psppire-data-window.c:233
 msgid "Split by "
 msgstr "Διαίρεση με "
 
-#: src/ui/gui/psppire-data-window.c:300
+#: src/ui/gui/psppire-data-window.c:261
 msgid "Weights off"
 msgstr "Μη Στάθμιση"
 
-#: src/ui/gui/psppire-data-window.c:312
+#: src/ui/gui/psppire-data-window.c:273
 #, c-format
 msgid "Weight by %s"
 msgstr "Στάθμιση με %s"
 
-#: src/ui/gui/psppire-data-window.c:532 src/ui/gui/psppire-data-window.c:536
-#: src/ui/gui/psppire-dialog-action-aggregate.c:217
-#: src/ui/gui/psppire-output-window.c:383
-#: src/ui/gui/psppire-syntax-window.c:643 src/ui/gui/psppire-window.c:483
-#: src/ui/gui/aggregate.ui:565
-msgid "Save"
-msgstr "Αποθήκευση"
+#: src/ui/gui/psppire-data-window.c:518
+#: src/ui/gui/psppire-import-assistant.c:681
+#: src/ui/gui/psppire-syntax-window.c:607 src/ui/gui/psppire-window.c:669
+msgid "All Files"
+msgstr "Όλα τα Αρχεία"
 
-#: src/ui/gui/psppire-data-window.c:542
-#: src/ui/gui/psppire-dialog-action-aggregate.c:226
-msgid "System Files (*.sav)"
-msgstr "Αρχεία Συστήματος (*.sav)"
-
-#: src/ui/gui/psppire-data-window.c:547
-#: src/ui/gui/psppire-dialog-action-aggregate.c:231
-msgid "Compressed System Files (*.zsav)"
-msgstr "Συμπιεσμένα Αρχεία Συστήματος (*.zsav)"
-
-#: src/ui/gui/psppire-data-window.c:552
-#: src/ui/gui/psppire-dialog-action-aggregate.c:236
-#: src/ui/gui/psppire-window.c:685
-msgid "Portable Files (*.por) "
-msgstr "Φορητά Αρχεία (*.por) "
-
-#: src/ui/gui/psppire-data-window.c:574
+#: src/ui/gui/psppire-data-window.c:535
 msgid "System File"
 msgstr "Αρχείο Συστήματος"
 
-#: src/ui/gui/psppire-data-window.c:581
+#: src/ui/gui/psppire-data-window.c:542
 msgid "Compressed System File"
 msgstr "Συμπιεσμένο Αρχείο Συστήματος (CSF)"
 
-#: src/ui/gui/psppire-data-window.c:587
+#: src/ui/gui/psppire-data-window.c:548
 msgid "Portable File"
 msgstr "Φορητό Αρχείο"
 
-#: src/ui/gui/psppire-data-window.c:590
+#: src/ui/gui/psppire-data-window.c:551
 msgid "Format:"
 msgstr "Μορφή:"
 
-#: src/ui/gui/psppire-data-window.c:654
+#: src/ui/gui/psppire-data-window.c:615
 msgid "Delete Existing Dataset?"
 msgstr "Διαγραφή Υπάρχουσας Βάσης Δεδομένων?"
 
-#: src/ui/gui/psppire-data-window.c:658
+#: src/ui/gui/psppire-data-window.c:619
 #, c-format
 msgid "Renaming \"%s\" to \"%s\" will destroy the existing dataset named \"%s\".  Are you sure that you want to do this?"
 msgstr "Μετονομασία από \"%s\" σε \"%s\" θα καταστρέψει την υπάρχουσα βάση δεδομένων με το όνομα \"%s\".  Θέλεις σίγουρα να το κάνεις αυτό;"
 
-#: src/ui/gui/psppire-data-window.c:664
+#: src/ui/gui/psppire-data-window.c:625
 msgid "Delete"
 msgstr "Διαγραφή"
 
-#: src/ui/gui/psppire-data-window.c:686
+#: src/ui/gui/psppire-data-window.c:647
 #, c-format
 msgid "Please enter a new name for dataset \"%s\":"
 msgstr "Παρακαλώ, εισήγαγε ένα νέο όνομα για τη βάση δεδομένων \"%s\":"
 
-#: src/ui/gui/psppire-data-window.c:688
+#: src/ui/gui/psppire-data-window.c:649
 msgid "Rename Dataset"
 msgstr "Μετονομασία Βάσης"
 
-#: src/ui/gui/psppire-data-window.c:1212 src/ui/gui/output-window.ui:68
+#: src/ui/gui/psppire-data-window.c:1199 src/ui/gui/output-window.ui:68
 #: src/ui/gui/syntax-editor.ui:22
 msgid "_File"
 msgstr "_Αρχείο"
 
-#: src/ui/gui/psppire-data-window.c:1216 src/ui/gui/syntax-editor.ui:25
+#: src/ui/gui/psppire-data-window.c:1203 src/ui/gui/syntax-editor.ui:25
 msgid "_New"
 msgstr "_Νέο"
 
-#: src/ui/gui/psppire-data-window.c:1223
+#: src/ui/gui/psppire-data-window.c:1210
 msgid "_Syntax"
 msgstr "_Σύνταξη"
 
-#: src/ui/gui/psppire-data-window.c:1226 src/ui/gui/data-editor.ui:177
+#: src/ui/gui/psppire-data-window.c:1213 src/ui/gui/data-editor.ui:177
 #: src/ui/gui/data-editor.ui:189
 msgid "_Data"
 msgstr "_Δεδομένα"
 
-#: src/ui/gui/psppire-data-window.c:1233 src/ui/gui/syntax-editor.ui:36
+#: src/ui/gui/psppire-data-window.c:1220 src/ui/gui/syntax-editor.ui:36
 msgid "_Open"
 msgstr "_Άνοιγμα"
 
-#: src/ui/gui/psppire-data-window.c:1236
+#: src/ui/gui/psppire-data-window.c:1223
 msgid "_Import Data..."
 msgstr "_Εισαγωγή Δεδομένων..."
 
-#: src/ui/gui/psppire-data-window.c:1244 src/ui/gui/logistic.ui:261
+#: src/ui/gui/psppire-data-window.c:1231 src/ui/gui/logistic.ui:261
 #: src/ui/gui/regression.ui:66
 msgid "_Save..."
 msgstr "Απο_Θήκευση..."
 
-#: src/ui/gui/psppire-data-window.c:1247
+#: src/ui/gui/psppire-data-window.c:1234
 msgid "Save _As..."
 msgstr "Αποθήκευση _Ως..."
 
-#: src/ui/gui/psppire-data-window.c:1250
+#: src/ui/gui/psppire-data-window.c:1237
 msgid "_Rename Dataset..."
 msgstr "_Μετονομασία Βάσης..."
 
-#: src/ui/gui/psppire-data-window.c:1261
+#: src/ui/gui/psppire-data-window.c:1248
 msgid "_Display Data File Information"
 msgstr "_Πληροφορίες Αρχείου Δεδομένων"
 
-#: src/ui/gui/psppire-data-window.c:1268
+#: src/ui/gui/psppire-data-window.c:1255
 msgid "Working File"
 msgstr "_Αρχείο Εργασίας"
 
-#: src/ui/gui/psppire-data-window.c:1270
+#: src/ui/gui/psppire-data-window.c:1257
 msgid "_External File..."
 msgstr "_Εξωτερικό Αρχείο..."
 
-#: src/ui/gui/psppire-data-window.c:1280
+#: src/ui/gui/psppire-data-window.c:1267
 msgid "_Recently Used Data"
 msgstr "_Δεδομένα Πρόσφατης Χρήσης"
 
-#: src/ui/gui/psppire-data-window.c:1281
+#: src/ui/gui/psppire-data-window.c:1268
 msgid "Recently Used _Files"
 msgstr "Αρχεία Πρόσφατης _Χρήσης"
 
-#: src/ui/gui/psppire-data-window.c:1328 src/ui/gui/output-window.ui:82
+#: src/ui/gui/psppire-data-window.c:1315 src/ui/gui/output-window.ui:82
 #: src/ui/gui/syntax-editor.ui:59
 msgid "_Quit"
 msgstr "Έ_Ξοδος"
 
-#: src/ui/gui/psppire-data-window.c:1346 src/ui/gui/output-window.ui:89
+#: src/ui/gui/psppire-data-window.c:1333 src/ui/gui/output-window.ui:89
 #: src/ui/gui/syntax-editor.ui:66
 msgid "_Edit"
 msgstr "_Διόρθωση"
 
-#: src/ui/gui/psppire-data-window.c:1350 src/ui/gui/psppire-data-sheet.c:299
-#: src/ui/gui/psppire-variable-sheet.c:270
-msgid "_Insert Variable"
-msgstr "Εισαγωγή Μεταβλητή"
-
-#: src/ui/gui/psppire-data-window.c:1351 src/ui/gui/psppire-data-sheet.c:167
-msgid "_Insert Case"
-msgstr "Ει_Σαγωγή Υπόθεσης"
-
-#: src/ui/gui/psppire-data-window.c:1352
+#: src/ui/gui/psppire-data-window.c:1339
 msgid "_Go To Variable..."
 msgstr "_Προς την μεταβλητή..."
 
-#: src/ui/gui/psppire-data-window.c:1353
+#: src/ui/gui/psppire-data-window.c:1340
 msgid "_Go To Case..."
 msgstr "Π_Ρος την Υπόθεση..."
 
-#: src/ui/gui/psppire-data-window.c:1375 src/ui/gui/syntax-editor.ui:69
+#: src/ui/gui/psppire-data-window.c:1364 src/ui/gui/syntax-editor.ui:69
 msgid "Cu_t"
 msgstr "Απο_Κοπή"
 
-#: src/ui/gui/psppire-data-window.c:1383 src/ui/gui/output-window.ui:96
+#: src/ui/gui/psppire-data-window.c:1373 src/ui/gui/output-window.ui:96
 #: src/ui/gui/syntax-editor.ui:74
 msgid "_Copy"
 msgstr "_Αντιγραφή"
 
-#: src/ui/gui/psppire-data-window.c:1389 src/ui/gui/syntax-editor.ui:79
+#: src/ui/gui/psppire-data-window.c:1380 src/ui/gui/syntax-editor.ui:79
 msgid "_Paste"
 msgstr "Επικό_Λληση"
 
-#: src/ui/gui/psppire-data-window.c:1395
+#: src/ui/gui/psppire-data-window.c:1387
 msgid "Clear _Variables"
 msgstr "Κα_Θαρισμός Μεταβλητών"
 
-#: src/ui/gui/psppire-data-window.c:1399 src/ui/gui/psppire-data-sheet.c:175
-msgid "Cl_ear Cases"
-msgstr "_Καθαρισμός Υποθέσεων"
-
-#: src/ui/gui/psppire-data-window.c:1408
+#: src/ui/gui/psppire-data-window.c:1401
 msgid "_Find..."
 msgstr "_Αναζήτηση..."
 
-#: src/ui/gui/psppire-data-window.c:1414 src/ui/gui/logistic.ui:246
+#: src/ui/gui/psppire-data-window.c:1407 src/ui/gui/logistic.ui:246
 msgid "_Options..."
 msgstr "Ε_Πιλογές..."
 
-#: src/ui/gui/psppire-data-window.c:1685
+#: src/ui/gui/psppire-data-window.c:1676
 msgid "Jump to variable"
 msgstr "Πήγαινε στην μεταβλητή"
 
-#: src/ui/gui/psppire-data-window.c:1698
+#: src/ui/gui/psppire-data-window.c:1689
 msgid "Jump to a case in the data sheet"
 msgstr "Πήγαινε σε μία Υπόθεση στο Φύλλο Δεδομένων"
 
-#: src/ui/gui/psppire-data-window.c:1712
+#: src/ui/gui/psppire-data-window.c:1703
 msgid "Search for values in the data"
 msgstr "Αναζήτηση τιμών στην ενεργή βάση"
 
-#: src/ui/gui/psppire-data-window.c:1724
+#: src/ui/gui/psppire-data-window.c:1715
 msgid "Create a new case at the current position"
 msgstr "Δημιοργία νέας υπόθεσης στην παρούσα θέση"
 
-#: src/ui/gui/psppire-data-window.c:1736
+#: src/ui/gui/psppire-data-window.c:1727
 msgid "Create a new variable at the current position"
 msgstr "Δημιοργία νέας μεταβλητής στην παρούσα θέση"
 
-#: src/ui/gui/psppire-data-window.c:1750
+#: src/ui/gui/psppire-data-window.c:1741
 msgid "Split the active dataset"
 msgstr "Διαίρεση της ενεργής Βάσης"
 
-#: src/ui/gui/psppire-data-window.c:1762
+#: src/ui/gui/psppire-data-window.c:1753
 msgid "Weight cases by variable"
 msgstr "Στάθμιση υποθέσεων βάση μεταβλητής"
 
-#: src/ui/gui/psppire-data-window.c:1773
+#: src/ui/gui/psppire-data-window.c:1764
 msgid "Show/hide value labels"
 msgstr "Δείξε/Κρύψε ταμπέλες τιμών"
 
-#: src/ui/gui/psppire-data-window.c:1918
+#: src/ui/gui/psppire-data-window.c:1904
 msgid "Data Editor"
 msgstr "Επεξεργασία Δεδομένων"
-
-#: src/ui/gui/psppire-dialog-action-aggregate.c:213
-msgid "Aggregate destination file"
-msgstr "Συναθροισμός προορισμού αρχείου"
-
-#: src/ui/gui/psppire-dialog-action-autorecode.c:335
-#: src/ui/gui/psppire-dialog-action-recode.c:524
-#: src/ui/gui/psppire-dialog-action-recode-different.c:286
-msgid "New"
-msgstr "Νέο"
-
-#: src/ui/gui/psppire-dialog-action-autorecode.c:349
-#: src/ui/gui/psppire-dialog-action-recode.c:516
-#: src/ui/gui/psppire-dialog-action-recode-different.c:299
-msgid "Old"
-msgstr "Προηγούμενο"
-
-#: src/ui/gui/psppire-dialog-action-comments.c:142
-#, c-format
-msgid "Column Number: %d"
-msgstr "Αριθμός Στήλης: %d"
-
-#: src/ui/gui/psppire-dialog-action-crosstabs.c:71
-msgid "Chisq"
-msgstr "Χ-τετρ"
-
-#: src/ui/gui/psppire-dialog-action-crosstabs.c:72
-#: src/language/stats/crosstabs.q:1333
-msgid "Phi"
-msgstr "Phi"
-
-#: src/ui/gui/psppire-dialog-action-crosstabs.c:73
-msgid "CC"
-msgstr "ΣΣ"
-
-#: src/ui/gui/psppire-dialog-action-crosstabs.c:75
-msgid "UC"
-msgstr "ΣΑ"
-
-#: src/ui/gui/psppire-dialog-action-crosstabs.c:76
-msgid "BTau"
-msgstr "BTau"
-
-#: src/ui/gui/psppire-dialog-action-crosstabs.c:77
-msgid "CTau"
-msgstr "CTau"
-
-#: src/ui/gui/psppire-dialog-action-crosstabs.c:78
-msgid "Risk"
-msgstr "Ρίσκο"
-
-#: src/ui/gui/psppire-dialog-action-crosstabs.c:79
-#: src/language/stats/crosstabs.q:1337
-msgid "Gamma"
-msgstr "Γάμμα"
-
-#: src/ui/gui/psppire-dialog-action-crosstabs.c:80
-msgid "D"
-msgstr "D"
-
-#: src/ui/gui/psppire-dialog-action-crosstabs.c:81
-#: src/language/stats/crosstabs.q:1343
-msgid "Kappa"
-msgstr "Κάππα"
-
-#: src/ui/gui/psppire-dialog-action-crosstabs.c:82
-#: src/language/stats/crosstabs.q:1427
-msgid "Eta"
-msgstr "Ήτα"
-
-#: src/ui/gui/psppire-dialog-action-crosstabs.c:83
-msgid "Corr"
-msgstr "Συσχ"
-
-#: src/ui/gui/psppire-dialog-action-crosstabs.c:89
-msgid "Row"
-msgstr "Σειρά"
-
-#: src/ui/gui/psppire-dialog-action-crosstabs.c:90
-msgid "Column"
-msgstr "Στήλη"
-
-#: src/ui/gui/psppire-dialog-action-crosstabs.c:92
-#: src/language/stats/crosstabs.q:1265
-msgid "Expected"
-msgstr "Aναμένεται"
-
-#: src/ui/gui/psppire-dialog-action-crosstabs.c:94
-#: src/language/stats/crosstabs.q:1267
-msgid "Std. Residual"
-msgstr "Στθμ. Σφάλμα"
-
-#: src/ui/gui/psppire-dialog-action-crosstabs.c:95
-msgid "Adjusted Std. Residual"
-msgstr "Προσαρμοσμένο Στθμ. Σφάλμα"
-
-#: src/ui/gui/psppire-dialog-action-descriptives.c:45
-msgid "Standard error"
-msgstr "Τυπικό Σφάλμα"
-
-#: src/ui/gui/psppire-dialog-action-factor.c:323
-#, c-format
-msgid "_Eigenvalues over %4.2f times the mean eigenvalue"
-msgstr "_Ιδιοτιμές πάνω από %4.2f φορές τη μέση ιδιοτιμή"
-
-#: src/ui/gui/psppire-dialog-action-frequencies.c:44
-msgid "Standard error of the mean"
-msgstr "Τυπικό σφάλμα μέσου"
-
-#: src/ui/gui/psppire-dialog-action-frequencies.c:47
-msgid "Standard error of the skewness"
-msgstr "Τυπικό σφάλμα λοξότητας"
-
-#: src/ui/gui/psppire-dialog-action-frequencies.c:51
-msgid "Standard error of the kurtosis"
-msgstr "Τυπικό σφάλμα κύρτωσης"
-
-#: src/ui/gui/psppire-dialog-action-oneway.c:175
-#, c-format
-msgid "Contrast %d of %d"
-msgstr "Συγκρίσεις %d of %d"
-
-#: src/ui/gui/psppire-dialog-action-paired.c:162 src/ui/gui/examine.ui:282
-#: src/ui/gui/indep-samples.ui:334 src/ui/gui/t-test.ui:296
-msgid "O_ptions..."
-msgstr "Ε_πιλογές..."
-
-#: src/ui/gui/psppire-dialog-action-paired.c:168
-msgid "Paired Samples T Test"
-msgstr "Εξαρτημένων δειγμάτων Τ Τεστ"
-
-#: src/ui/gui/psppire-dialog-action-recode-same.c:108 src/ui/gui/recode.ui:390
-msgid "Recode into Same Variables"
-msgstr "Επανακώδικας στις Ιδίες Μεταβλητές"
-
-#: src/ui/gui/psppire-dialog-action-recode-same.c:114
-msgid "Recode into Same Variables: Old and New Values"
-msgstr "Επανακώδικας στις Ιδίες Μεταβλητές: Παλιές και Νέες Τιμές"
-
-#: src/ui/gui/psppire-dialog-action-recode-different.c:325
-msgid "Recode into Different Variables"
-msgstr "Κωδικοποίηση σε Διαφορετικές Μεταβλητές"
-
-#: src/ui/gui/psppire-dialog-action-recode-different.c:328
-msgid "Recode into Different Variables: Old and New Values "
-msgstr "Επανακώδικας Μεταβλητών σε Άλλες: Παλιές και Νέες Τιμές "
-
-#: src/ui/gui/psppire-dialog-action-regression.c:40
-msgid "Coeff"
-msgstr "Συντελ"
-
-#: src/ui/gui/psppire-dialog-action-regression.c:40
-msgid "Show the regression coefficients"
-msgstr "Προβολή συντελεστών παλινδρόμησης"
-
-#: src/ui/gui/psppire-dialog-action-regression.c:41
-msgid "Conf. Interval"
-msgstr "Διάστημα Εμπ."
-
-#: src/ui/gui/psppire-dialog-action-regression.c:41
-msgid "Show the confidence interval for the regression coefficients"
-msgstr "Προβολή Διαστημάτων εμπιστοσύνης για τους συντελεστές παλινδρόμησης"
-
-#: src/ui/gui/psppire-dialog-action-regression.c:42
-msgid "Show the correlation between observed and predicted values"
-msgstr "Προβολή συσχετίσεων μεταξύ παρατηρίσιμων και προβλέψιμων τιμών"
-
-#: src/ui/gui/psppire-dialog-action-regression.c:43
-msgid "Anova"
-msgstr "Anova"
-
-#: src/ui/gui/psppire-dialog-action-regression.c:43
-msgid "Show the analysis of variance table"
-msgstr "Προβολή πίνακα ανάλυσης διακύμανσης"
-
-#: src/ui/gui/psppire-dialog-action-regression.c:44
-msgid "Bcov"
-msgstr "B Συνδ"
-
-#: src/ui/gui/psppire-dialog-action-regression.c:44
-msgid "Show the variance coefficient matrix"
-msgstr "Προβολή πίνακα συντελεστών διακύμνασης"
-
-#: src/ui/gui/psppire-dialog-action-regression.c:45
-msgid "Tol"
-msgstr "Tol"
-
-#: src/ui/gui/psppire-dialog-action-regression.c:45
-msgid "Show the variance inflation factor and its reciprocal"
-msgstr "Δείχνει τον παράγοντα πληθωρισμού διακύμανσης και τον αμοιβαίο του"
-
-#: src/ui/gui/psppire-dialog-action-select.c:88
-#, c-format
-msgid "Approximately %3d%% of all cases."
-msgstr "Σχεδόν %3d%% όλων των υποθέσεων."
-
-#: src/ui/gui/psppire-dialog-action-select.c:89
-#, c-format
-msgid "Exactly %3d cases from the first %3d cases."
-msgstr "Ακριβώς %3d υποθέσεις από τις πρώτες %3d υποθέσεις."
-
-#: src/ui/gui/psppire-dialog-action-select.c:236
-#, c-format
-msgid "%d thru %d"
-msgstr "%d ως %d"
-
-#: src/ui/gui/psppire-dialog-action-two-sample.c:180
-#: src/ui/gui/k-independent.ui:404 src/ui/gui/k-related.ui:197
-msgid "Test Type"
-msgstr "Τύπος Τεστ"
-
-#: src/ui/gui/psppire-dialog-action-two-sample.c:189
-msgid "_Wilcoxon"
-msgstr "_Wilcoxon"
-
-#: src/ui/gui/psppire-dialog-action-two-sample.c:190
-msgid "_Sign"
-msgstr "_Sign"
-
-#: src/ui/gui/psppire-dialog-action-two-sample.c:191
-msgid "_McNemar"
-msgstr "_McNemar"
-
-#: src/ui/gui/psppire-dialog-action-two-sample.c:209
-msgid "Two-Related-Samples Tests"
-msgstr "Δύο-Εξαρτημένων-Δειγμάτων Τεστ"
-
-#: src/ui/gui/psppire-dialog-action-weight.c:74 src/ui/gui/weight.ui:83
-#: src/ui/gui/weight.ui:211
-msgid "Do not weight cases"
-msgstr "Μη στάθμιση υποθέσεων"
-
-#: src/ui/gui/psppire-dialog-action-weight.c:80
-#, c-format
-msgid "Weight cases by %s"
-msgstr "Στάθμιση Υποθέσεων κατά %s"
-
-#: src/ui/gui/psppire-dict.c:97
-msgid "Var"
-msgstr "Μεταβλ"
-
-#. TRANSLATORS: This string must be a valid variable name.  That means:
-#. - The string must be at most 64 bytes (not characters) long.
-#. - The string may not contain whitespace.
-#. - The first character may not be '$'
-#. - The first character may not be a digit
-#. - The final character may not be '.' or '_'
-#.
-#: src/ui/gui/psppire-dict.c:423
-#, c-format
-msgid "Var%04d"
-msgstr "Μετ%04d"
-
-#: src/ui/gui/psppire-dict.c:604
-msgid "Duplicate variable name."
-msgstr "Διπλότυπο όνομα μεταβλητής."
 
 #: src/ui/gui/psppire-encoding-selector.c:140
 msgid "Automatically Detect"
@@ -6865,18 +6946,120 @@ msgstr "Κωδικοποίηση"
 msgid "Character Encoding: "
 msgstr "Κωδικοποίηση Χαρακτήρων: "
 
-#: src/ui/gui/psppire-means-layer.c:95
+#: src/ui/gui/psppire-import-assistant.c:337
+msgid "line"
+msgstr "γραμμή"
+
+#: src/ui/gui/psppire-import-assistant.c:347
+msgid "var"
+msgstr "μετ"
+
+#: src/ui/gui/psppire-import-assistant.c:560
+msgid "Importing Spreadsheet Data"
+msgstr "Δεδομένα Υπ. Φύλλου εισάγωνται"
+
+#: src/ui/gui/psppire-import-assistant.c:686
+msgid "Text Files"
+msgstr "Αρχεία Κειμένου"
+
+#: src/ui/gui/psppire-import-assistant.c:691
+msgid "Text (*.txt) Files"
+msgstr "Αρχεία Κειμένου (*.txt)"
+
+#: src/ui/gui/psppire-import-assistant.c:697
+msgid "Plain Text (ASCII) Files"
+msgstr "Απλά Αρχεία Κειμένου (ASCII)"
+
+#: src/ui/gui/psppire-import-assistant.c:702
+msgid "Comma Separated Value Files"
+msgstr "Αρχεία Τιμών Χωρισμένα με Κόμμα"
+
+#: src/ui/gui/psppire-import-assistant.c:709
+msgid "Tab Separated Value Files"
+msgstr "Αρχεία Τιμών Χωρισμένα με διάκενο"
+
+#: src/ui/gui/psppire-import-assistant.c:714
+msgid "Gnumeric Spreadsheet Files"
+msgstr "Αρχεία Υπολ. φύλλων Gnumeric"
+
+#: src/ui/gui/psppire-import-assistant.c:719
+msgid "OpenDocument Spreadsheet Files"
+msgstr "Αρχεία Υπολογ. φύλλων Ανοικτού Εγγράφου (odt)"
+
+#: src/ui/gui/psppire-import-assistant.c:724
+msgid "All Spreadsheet Files"
+msgstr "Όλα τα αρχεία Υπολογ.φύλλων"
+
+#: src/ui/gui/psppire-import-assistant.c:733
+msgid "Select File to Import"
+msgstr "Επιλογή αρχείου για Εισαγωγή"
+
+#: src/ui/gui/psppire-import-assistant.c:770
+msgid "Importing Delimited Text Data"
+msgstr "Εισαγωγή Δεδομένων από Αρχείο Κειμένου Υποδιαστολής"
+
+#: src/ui/gui/psppire-import-assistant.c:865
+msgid "Select the First Line"
+msgstr "Επίλεξε τη Πρώτη Γραμμή"
+
+#: src/ui/gui/psppire-import-assistant.c:877
+msgid "Line"
+msgstr "Γραμμή"
+
+#: src/ui/gui/psppire-import-assistant.c:931
+msgid ""
+"This assistant will guide you through the process of importing data into PSPP from a text file with one line per case,  in which fields are separated by tabs, commas, or other delimiters.\n"
+"\n"
+msgstr ""
+"Αυτός ο βοηθός θα σε καθοδηγήσει στις διαδικασίες εισαγωγής δεδομένων στο PSPP από ένα αρχείο κειμένου, με κάθε γραμμή να ορίζει μία υπόθεση, και με πεδία διαχωρισμένα με διάκενα, κόμματα, ή άλλου τύπου υποδιαστολές \n"
+"\n"
+
+#: src/ui/gui/psppire-import-assistant.c:941
 #, c-format
-msgid "Layer %d of %d"
-msgstr "Επίπεδο %d από %d"
+msgid "The selected file contains %'lu line of text.  "
+msgid_plural "The selected file contains %'lu lines of text.  "
+msgstr[0] "Το επιλεγμένο αρχείο περιέχει %'lu γραμμή κειμένου. "
+msgstr[1] "Το επιλεγμένο αρχείο περιέχει %'lu γραμμές κειμένου. "
 
-#: src/ui/gui/psppire-means-layer.c:169
-msgid "Forward"
-msgstr "Επόμενο"
+#: src/ui/gui/psppire-import-assistant.c:950
+#, c-format
+msgid "The selected file contains approximately %'lu line of text.  "
+msgid_plural "The selected file contains approximately %'lu lines of text.  "
+msgstr[0] "Το επιλεγμένο αρχείο περιέχει σχεδόν %'lu γραμμή κειμένου. "
+msgstr[1] "Το επιλεγμένο αρχείο περιέχει σχεδόν %'lu γραμμές κειμένου. "
 
-#: src/ui/gui/psppire-means-layer.c:170
-msgid "Back"
-msgstr "Πίσω"
+#: src/ui/gui/psppire-import-assistant.c:956
+#, c-format
+msgid "Only the first %zu line of the file will be shown for preview purposes in the following screens.  "
+msgid_plural "Only the first %zu lines of the file will be shown for preview purposes in the following screens.  "
+msgstr[0] "Μόνο η πρώτη %zu γραμμή του αρχείου θα εμφανιστεί στην επόμενη οθόνη για λόγους προεπισκόπησης.  "
+msgstr[1] "Μόνο οι πρώτες %zu γραμμές του αρχείου θα εμφανιστούν στην επόμενη οθόνη για λόγους προεπισκόπησης.  "
+
+#: src/ui/gui/psppire-import-assistant.c:965
+msgid "You may choose below how much of the file should actually be imported."
+msgstr "Μπορείς να διαλέξεις παρακάτω πόσοτητα αρχείου που θα γίνει εισαγωγή."
+
+#: src/ui/gui/psppire-import-assistant.c:974
+#, c-format
+msgid "Only the first %4d cases"
+msgstr "Μόνο οι πρώτες %4d υποθέσεις"
+
+#: src/ui/gui/psppire-import-assistant.c:985
+#, c-format
+msgid "Only the first %3d %% of file (approximately)"
+msgstr "Μόνο οι πρώτες %3d %% του αρχείου (σχεδόν)"
+
+#: src/ui/gui/psppire-import-assistant.c:1009
+msgid "Select the Lines to Import"
+msgstr "Επιλογή Γραμμών για Εισαγωγή"
+
+#: src/ui/gui/psppire-import-assistant.c:1151
+msgid "Choose Separators"
+msgstr "Διάλεξε Διαχωριστές"
+
+#: src/ui/gui/psppire-import-assistant.c:1438
+msgid "Adjust Variable Formats"
+msgstr "Ρύθμιση Μορφής Μεταβλητών"
 
 #: src/ui/gui/psppire-output-view.c:410
 msgid "Message"
@@ -6886,125 +7069,93 @@ msgstr "Μήνυμα"
 msgid "failed to create temporary directory during clipboard operation"
 msgstr "αποτυχία δημιουργίας προσωρινού καταλόγου στη διάρκεια διαδικασιών στο Πρόχειρο"
 
-#: src/ui/gui/psppire-output-window.c:270
+#: src/ui/gui/psppire-output-window.c:241
 msgid "Infer file type from extension"
 msgstr "Αναγνώριση τύπος αρχείου από κατάληξη"
 
-#: src/ui/gui/psppire-output-window.c:271
+#: src/ui/gui/psppire-output-window.c:242
 msgid "SPSS Viewer (*.spv)"
 msgstr "Προβολή SPSS (*.spv)"
 
-#: src/ui/gui/psppire-output-window.c:272
+#: src/ui/gui/psppire-output-window.c:243
 msgid "PDF (*.pdf)"
 msgstr "PDF (*.pdf)"
 
-#: src/ui/gui/psppire-output-window.c:273
+#: src/ui/gui/psppire-output-window.c:244
 msgid "HTML (*.html)"
 msgstr "HTML (*.html)"
 
-#: src/ui/gui/psppire-output-window.c:274
+#: src/ui/gui/psppire-output-window.c:245
 msgid "OpenDocument (*.odt)"
 msgstr "Ανοικτού Εγγράφου (*.odt)"
 
-#: src/ui/gui/psppire-output-window.c:275
+#: src/ui/gui/psppire-output-window.c:246
 msgid "Text (*.txt)"
 msgstr "Κειμένου (*.txt)"
 
-#: src/ui/gui/psppire-output-window.c:276
+#: src/ui/gui/psppire-output-window.c:247
 msgid "Text [plain] (*.txt)"
 msgstr "Κειμένου [απλού] (*.txt)"
 
-#: src/ui/gui/psppire-output-window.c:277
+#: src/ui/gui/psppire-output-window.c:248
 msgid "PostScript (*.ps)"
 msgstr "PostScript (*.ps)"
 
-#: src/ui/gui/psppire-output-window.c:278
+#: src/ui/gui/psppire-output-window.c:249
 msgid "Comma-Separated Values (*.csv)"
 msgstr "Χωρισμένες με κόμμα τιμές (*.csv)"
 
-#: src/ui/gui/psppire-output-window.c:379
+#: src/ui/gui/psppire-output-window.c:350
 msgid "Export Output"
 msgstr "Αποθήκευση Αρχείου"
 
-#: src/ui/gui/psppire-output-window.c:580
+#: src/ui/gui/psppire-output-window.c:548
 msgid "Output Viewer"
 msgstr "Απεικ. Εξαγωγής"
 
-#: src/ui/gui/psppire-spreadsheet-model.c:276
+#: src/ui/gui/psppire-spreadsheet-model.c:237
 msgid "(empty)"
 msgstr "(κενό)"
 
-#: src/ui/gui/psppire-syntax-window.c:279
+#: src/ui/gui/psppire-syntax-window.c:226
 msgid "Text Search"
 msgstr "Αναζήτηση κειμένου"
 
-#: src/ui/gui/psppire-syntax-window.c:282
+#: src/ui/gui/psppire-syntax-window.c:229
 msgid "_OK"
 msgstr "_ΟΚ"
 
-#: src/ui/gui/psppire-syntax-window.c:284
+#: src/ui/gui/psppire-syntax-window.c:231
 msgid "_Cancel"
 msgstr "_Ακύρωση"
 
-#: src/ui/gui/psppire-syntax-window.c:292
+#: src/ui/gui/psppire-syntax-window.c:239
 msgid "Text to search for:"
 msgstr "Κείμενο προς αναζήτηση για:"
 
-#: src/ui/gui/psppire-syntax-window.c:618
+#: src/ui/gui/psppire-syntax-window.c:570
 #, c-format
 msgid "Saved file `%s'"
 msgstr "Αποθ/μένο αρχείο `%s'"
 
-#: src/ui/gui/psppire-syntax-window.c:639
+#: src/ui/gui/psppire-syntax-window.c:591
 msgid "Save Syntax"
 msgstr "Αποθ. Σύνταξης"
 
-#: src/ui/gui/psppire-syntax-window.c:649 src/ui/gui/psppire-window.c:690
+#: src/ui/gui/psppire-syntax-window.c:601 src/ui/gui/psppire-window.c:657
 msgid "Syntax Files (*.sps) "
 msgstr "Αρχεία Σύνταξης (*.sps) "
 
-#: src/ui/gui/psppire-syntax-window.c:1020
+#: src/ui/gui/psppire-syntax-window.c:970
 msgid "Syntax Editor"
 msgstr "Επεξ. Σύνταξης"
 
-#: src/ui/gui/psppire-syntax-window.c:1040
+#: src/ui/gui/psppire-syntax-window.c:990
 #, c-format
 msgid "Cannot load syntax file `%s'"
 msgstr "Αδυναμία φόρτωσης αρχείου σύνταξης `%s'"
 
-#: src/ui/gui/psppire-text-file.c:56
-#, c-format
-msgid "Could not open `%s'"
-msgstr "Αδυναμία ανοίγματος του `%s'"
-
-#: src/ui/gui/psppire-text-file.c:72
-#, c-format
-msgid "Error reading `%s': %s"
-msgstr "Σφάλμα ανάγνωσης `%s': %s"
-
-#: src/ui/gui/psppire-text-file.c:75
-#, c-format
-msgid "Failed to read `%s', because it contains a line over %d bytes long and therefore appears not to be a text file."
-msgstr "Αποτυχία ανάγνωσης του `%s'. Περιέχει μία γραμμή κατά %d διφύων μήκους και για αυτό φαίνεται ότι δεν είναι αρχείο κειμένου."
-
-#: src/ui/gui/psppire-text-file.c:97
-#, c-format
-msgid "`%s' is empty."
-msgstr "Το `%s' είναι κενό."
-
-#: src/ui/gui/psppire-data-sheet.c:308 src/ui/gui/psppire-variable-sheet.c:279
-msgid "Cl_ear Variables"
-msgstr "Κα_Θαρισμός Μεταβλητών"
-
-#: src/ui/gui/psppire-data-sheet.c:320
-msgid "Sort _Ascending"
-msgstr "_Ταξινόμηση Αύξουσα"
-
-#: src/ui/gui/psppire-data-sheet.c:327
-msgid "Sort _Descending"
-msgstr "Ταξινόμηση _Φθίνουσα"
-
-#: src/ui/gui/psppire-variable-sheet.c:408
+#: src/ui/gui/psppire-variable-sheet.c:412
 #, c-format
 msgid "{%s, %s}..."
 msgstr "{%s, %s}..."
@@ -7021,33 +7172,33 @@ msgstr "Ευθυγρ/ση"
 msgid "Measure"
 msgstr "Μέτρηση"
 
-#: src/ui/gui/psppire-window.c:464
+#: src/ui/gui/psppire-window.c:430
 #, c-format
 msgid "Save the changes to `%s' before closing?"
 msgstr "Αποθήκευση αλλαγών σε `%s' πριν το κλείσιμο?"
 
-#: src/ui/gui/psppire-window.c:471
+#: src/ui/gui/psppire-window.c:437
 #, c-format
 msgid "If you don't save, changes from the last %ld seconds will be permanently lost."
 msgstr "Αν δεν αποθηκεύσης, αλλαγές από τα τελευταία %ld δευτ/πτα θα χαθούν μόνιμα.lost."
 
-#: src/ui/gui/psppire-window.c:475
+#: src/ui/gui/psppire-window.c:441
 msgid "Close _without saving"
 msgstr "Κλείσιμο _Δίχως Αποθήκευσης"
 
-#: src/ui/gui/psppire-window.c:658 src/ui/gui/psppire-window.c:662
+#: src/ui/gui/psppire-window.c:625 src/ui/gui/psppire-window.c:629
 msgid "Open"
 msgstr "Άνοιγμα"
 
-#: src/ui/gui/psppire-window.c:667
+#: src/ui/gui/psppire-window.c:634
 msgid "Data and Syntax Files"
 msgstr "Αρχεία δεδομένων και Σύνταξης"
 
-#: src/ui/gui/psppire-window.c:679
+#: src/ui/gui/psppire-window.c:646
 msgid "System Files (*.sav, *.zsav)"
 msgstr "Αρχεία Συστήματος (*.sav, *.zsav)"
 
-#: src/ui/gui/psppire-window.c:696
+#: src/ui/gui/psppire-window.c:663
 msgid "Output Files (*.spv) "
 msgstr "Εξερχόμενα Αρχεία (*.spv) "
 
@@ -7056,20 +7207,24 @@ msgstr "Εξερχόμενα Αρχεία (*.spv) "
 msgid "Con_fidence Interval: %2d %%"
 msgstr "_Διάστημα Εμπιστοσύνης: %2d %%"
 
-#: src/ui/gui/val-labs-dialog.c:575
+#: src/ui/gui/val-labs-dialog.c:591
 #, c-format
 msgid "%s = `%s'"
 msgstr "%s = `%s'"
+
+#: src/ui/gui/var-type-dialog.c:541
+msgid "Variable Type and Format"
+msgstr "Τύπος Μεταβλητής κ Μορφή"
 
 #: src/ui/gui/windows-menu.c:92
 msgid "_Minimize all Windows"
 msgstr "Ε_Λαχιστοποίηση Όλων"
 
-#: src/ui/gui/windows-menu.c:93
+#: src/ui/gui/windows-menu.c:100
 msgid "_Split"
 msgstr "_Διαίρεση"
 
-#: src/ui/gui/windows-menu.c:133
+#: src/ui/gui/windows-menu.c:132
 msgid "_Windows"
 msgstr "_Παράθυρα"
 
@@ -7144,26 +7299,30 @@ msgstr "λείπει όνομα εντολής (χρησιμοποιήστε --h
 msgid "unknown command \"%s\" (use --help for help)"
 msgstr "άγνωστη εντολή \"%s\" (χρησιμοποιήστε --help για βοήθεια)"
 
-#: utilities/pspp-output.c:726
+#: utilities/pspp-output.c:728
 #, c-format
-msgid "\"%s\" command takes exactly %d argument%s"
-msgstr "Η εντολή \"%s\" παίρνει ακριβώς το %d όρισμα %s"
+msgid "\"%s\" command takes exactly %d argument"
+msgid_plural "\"%s\" command takes exactly %d arguments"
+msgstr[0] "Η εντολή \"%s\" παίρνει ακριβώς το %d όρισμα"
+msgstr[1] "Η εντολή \"%s\" παίρνει ακριβώς %d όρισμα"
 
-#: utilities/pspp-output.c:729
+#: utilities/pspp-output.c:735
 #, c-format
-msgid "\"%s\" command requires at least %d argument%s"
-msgstr "\"%s\" εντολή απαιτεί τουλάχιστον %d ορίσματα%s"
+msgid "\"%s\" command requires at least %d argument"
+msgid_plural "\"%s\" command requires at least %d arguments"
+msgstr[0] "\"%s\" εντολή απαιτεί τουλάχιστον %d ορίσματα"
+msgstr[1] "\"%s\" εντολή απαιτεί τουλάχιστον %d ορίσματα"
 
-#: utilities/pspp-output.c:732
+#: utilities/pspp-output.c:742
 #, c-format
 msgid "\"%s\" command requires between %d and %d arguments"
 msgstr "\"%s\" εντολή απαιτεί μεταξύ %d και %d ορίσματα"
 
-#: utilities/pspp-output.c:771
+#: utilities/pspp-output.c:782
 msgid "The following object classes are supported:"
 msgstr "Υποστηρίζονται οι ακόλουθες κλάσεις αντικειμένων:"
 
-#: utilities/pspp-output.c:780
+#: utilities/pspp-output.c:791
 #, c-format
 msgid "%s: unknown object class (use --select=help for help"
 msgstr "%s: άγνωστη κλάση αντικειμένων (χρησιμοποιήστε --select=help για βοήθεια)"
@@ -7297,180 +7456,179 @@ msgstr "%s πρέπει να οριστεί πριν %s."
 msgid "Maximum value (%ld) less than minimum value (%ld)."
 msgstr "Μέγιστη τιμή (%ld) μικρότερη από την Ελάχιστη τιμή (%ld)."
 
-#: src/language/stats/crosstabs.q:921
+#: src/language/stats/crosstabs.q:922
 msgid "Summary"
 msgstr "Σύνοψη"
 
-#: src/language/stats/crosstabs.q:934
+#: src/language/stats/crosstabs.q:935
 msgid "Crosstabulation"
 msgstr "Π. Διασταυρώσεων"
 
 #. TRANSLATORS: The %s here describes a crosstabulation.  It takes the
 #. form "var1 * var2 * var3 * ...".
-#: src/language/stats/crosstabs.q:1012
+#: src/language/stats/crosstabs.q:1013
 #, c-format
 msgid "Crosstabulation %s contained no non-missing cases."
 msgstr "Οι Πιν. Διασταυρώσεις %s δεν περιείχαν ελλειπούσες υποθέσεις."
 
-#: src/language/stats/crosstabs.q:1203
+#: src/language/stats/crosstabs.q:1204
 msgid "Missing value"
 msgstr "Ελλειπούσα Τιμή"
 
-#: src/language/stats/crosstabs.q:1262
+#: src/language/stats/crosstabs.q:1263
 msgid "Row %"
 msgstr "Σειρά %"
 
-#: src/language/stats/crosstabs.q:1263
+#: src/language/stats/crosstabs.q:1264
 msgid "Column %"
 msgstr "Στήλη %"
 
-#: src/language/stats/crosstabs.q:1264
+#: src/language/stats/crosstabs.q:1265
 msgid "Total %"
 msgstr "Σύνολο %"
 
-#: src/language/stats/crosstabs.q:1268
+#: src/language/stats/crosstabs.q:1269
 msgid "Adjusted Residual"
 msgstr "Προσαρμοσμένο Σφάλμα"
 
-#: src/language/stats/crosstabs.q:1287
+#: src/language/stats/crosstabs.q:1288
 msgid "Chi-Square Tests"
 msgstr "Χ-Τετράγωνο Τεστ"
 
-#: src/language/stats/crosstabs.q:1293
+#: src/language/stats/crosstabs.q:1294
 msgid "Pearson Chi-Square"
 msgstr "Pearson Χ-Τετράγωνο"
 
-#: src/language/stats/crosstabs.q:1294
+#: src/language/stats/crosstabs.q:1295
 msgid "Likelihood Ratio"
 msgstr "Λόγος Πιθανότητας"
 
-#: src/language/stats/crosstabs.q:1295
+#: src/language/stats/crosstabs.q:1296
 msgid "Fisher's Exact Test"
 msgstr "Επακριβής Τεστ Fisher"
 
-#: src/language/stats/crosstabs.q:1296
+#: src/language/stats/crosstabs.q:1297
 msgid "Continuity Correction"
 msgstr "Διόρθωση Συνέχειας"
 
-#: src/language/stats/crosstabs.q:1297
+#: src/language/stats/crosstabs.q:1298
 msgid "Linear-by-Linear Association"
 msgstr "Γραμμική-επί-Γραμμική Συσχέτιση"
 
-#: src/language/stats/crosstabs.q:1298 src/language/stats/crosstabs.q:1344
-#: src/language/stats/crosstabs.q:1852
+#: src/language/stats/crosstabs.q:1299 src/language/stats/crosstabs.q:1345
+#: src/language/stats/crosstabs.q:1854
 msgid "N of Valid Cases"
 msgstr "N έγκυρων Υποθέσεων"
 
-#: src/language/stats/crosstabs.q:1304
+#: src/language/stats/crosstabs.q:1305
 msgid "Asymptotic Sig. (2-tailed)"
 msgstr "Ασυμπτ. Στ.Σημ. (2-κατ/νσης)"
 
-#: src/language/stats/crosstabs.q:1318
+#: src/language/stats/crosstabs.q:1319
 msgid "Symmetric Measures"
 msgstr "Συμμετρικά Μέτρα"
 
-#: src/language/stats/crosstabs.q:1323 src/language/stats/crosstabs.q:1363
-#: src/language/stats/crosstabs.q:1409
+#: src/language/stats/crosstabs.q:1324 src/language/stats/crosstabs.q:1364
+#: src/language/stats/crosstabs.q:1411
 msgid "Values"
 msgstr "Τιμές"
 
-#: src/language/stats/crosstabs.q:1325 src/language/stats/crosstabs.q:1411
+#: src/language/stats/crosstabs.q:1326 src/language/stats/crosstabs.q:1413
 msgid "Asymp. Std. Error"
 msgstr "Ασυμπτ. Τυπικό Σφάλμα"
 
-#: src/language/stats/crosstabs.q:1326 src/language/stats/crosstabs.q:1412
+#: src/language/stats/crosstabs.q:1327 src/language/stats/crosstabs.q:1414
 msgid "Approx. T"
 msgstr "Προσεγγ. T"
 
-#: src/language/stats/crosstabs.q:1327 src/language/stats/crosstabs.q:1413
+#: src/language/stats/crosstabs.q:1328 src/language/stats/crosstabs.q:1415
 msgid "Approx. Sig."
 msgstr "Προσεγγ. Στ.Σημ."
 
-#: src/language/stats/crosstabs.q:1332 src/language/stats/crosstabs.q:1418
+#: src/language/stats/crosstabs.q:1333 src/language/stats/crosstabs.q:1420
 msgid "Nominal by Nominal"
 msgstr "Ονοματική επί Ονοματική"
 
-#: src/language/stats/crosstabs.q:1333
+#: src/language/stats/crosstabs.q:1334
 msgid "Cramer's V"
 msgstr "Cramer's V"
 
-#: src/language/stats/crosstabs.q:1333
+#: src/language/stats/crosstabs.q:1334
 msgid "Contingency Coefficient"
 msgstr "Συντελεστής Συνάφειας"
 
-#: src/language/stats/crosstabs.q:1335 src/language/stats/crosstabs.q:1423
+#: src/language/stats/crosstabs.q:1336 src/language/stats/crosstabs.q:1425
 msgid "Ordinal by Ordinal"
 msgstr "Ιεραρχική επί Ιεραρχική"
 
-#: src/language/stats/crosstabs.q:1336
+#: src/language/stats/crosstabs.q:1337
 msgid "Kendall's tau-b"
 msgstr "Kendall's tau-b"
 
-#: src/language/stats/crosstabs.q:1336
+#: src/language/stats/crosstabs.q:1337
 msgid "Kendall's tau-c"
 msgstr "Kendall's tau-c"
 
-#: src/language/stats/crosstabs.q:1337
+#: src/language/stats/crosstabs.q:1338
 msgid "Spearman Correlation"
 msgstr "Συσχέτιση Spearman"
 
-#: src/language/stats/crosstabs.q:1339
+#: src/language/stats/crosstabs.q:1340
 msgid "Interval by Interval"
 msgstr "Ισοδιαστημική επί Ισοδιαστημική"
 
-#: src/language/stats/crosstabs.q:1340
+#: src/language/stats/crosstabs.q:1341
 msgid "Pearson's R"
 msgstr "Pearson's R"
 
-#: src/language/stats/crosstabs.q:1342
+#: src/language/stats/crosstabs.q:1343
 msgid "Measure of Agreement"
 msgstr "Μέτρηση Συμφωνίας"
 
-#: src/language/stats/crosstabs.q:1358
+#: src/language/stats/crosstabs.q:1359
 msgid "Risk Estimate"
 msgstr "Εκτίμηση Ρίσκου"
 
-#: src/language/stats/crosstabs.q:1366
-#, fuzzy, c-format
-#| msgid "95% Confidence Interval"
+#: src/language/stats/crosstabs.q:1368
+#, no-c-format
 msgid "95% Confidence Interval"
-msgstr "Διάστημα Εμπιστοσύνης 95%"
+msgstr "95% Διάστημα Εμπιστοσύνης"
 
-#: src/language/stats/crosstabs.q:1387
+#: src/language/stats/crosstabs.q:1389
 msgid "Symmetric"
 msgstr "Συμμετρική"
 
-#: src/language/stats/crosstabs.q:1389 src/language/stats/crosstabs.q:1394
+#: src/language/stats/crosstabs.q:1391 src/language/stats/crosstabs.q:1396
 #, c-format
 msgid "%s Dependent"
 msgstr "%s Εξαρτημένη"
 
-#: src/language/stats/crosstabs.q:1404
+#: src/language/stats/crosstabs.q:1406
 msgid "Directional Measures"
 msgstr "Κατευθυντήρια Μέτρα"
 
-#: src/language/stats/crosstabs.q:1420
+#: src/language/stats/crosstabs.q:1422
 msgid "Goodman and Kruskal tau"
 msgstr "Goodman και Kruskal tau"
 
-#: src/language/stats/crosstabs.q:1421
+#: src/language/stats/crosstabs.q:1423
 msgid "Uncertainty Coefficient"
 msgstr "Συντελεστής Αβεβαιότητας"
 
-#: src/language/stats/crosstabs.q:1424
+#: src/language/stats/crosstabs.q:1426
 msgid "Somers' d"
 msgstr "Somers' d"
 
-#: src/language/stats/crosstabs.q:1426
+#: src/language/stats/crosstabs.q:1428
 msgid "Nominal by Interval"
 msgstr "Ονοματική επί Ισοδιαστημική"
 
-#: src/language/stats/crosstabs.q:1824
+#: src/language/stats/crosstabs.q:1826
 #, c-format
 msgid "Odds Ratio for %s"
 msgstr "Λόγος αναλογιών για %s"
 
-#: src/language/stats/crosstabs.q:1833
+#: src/language/stats/crosstabs.q:1835
 #, c-format
 msgid "For cohort %s = "
 msgstr "Για cohort (κλάσεις) %s = "
@@ -7848,7 +8006,7 @@ msgid "Expected Range:"
 msgstr "Αναμενόμενο Εύρος:"
 
 #: src/ui/gui/descriptives.ui:131 src/ui/gui/factor.ui:797
-#: src/ui/gui/recode.ui:637
+#: src/ui/gui/recode.ui:638
 msgid "_Variables:"
 msgstr "_Μεταβλητές:"
 
@@ -8652,47 +8810,47 @@ msgstr "Παρούσα κατάσταση : "
 msgid "Analysis by groups is off"
 msgstr "Ανάλύση ανά ομάδες είναι κλειστή"
 
-#: src/ui/gui/recode.ui:134
+#: src/ui/gui/recode.ui:135
 msgid "System _Missing"
 msgstr "_Ελλειπούσες Συστύματος"
 
-#: src/ui/gui/recode.ui:149
+#: src/ui/gui/recode.ui:150
 msgid "Co_py old values"
 msgstr "Αντι_Γραφή Προηγούμενων τιμών"
 
-#: src/ui/gui/recode.ui:171
+#: src/ui/gui/recode.ui:172
 msgid "Va_lue: "
 msgstr "Τι_Μή: "
 
-#: src/ui/gui/recode.ui:275
+#: src/ui/gui/recode.ui:276
 msgid "Conver_t numeric strings to numbers (`5' -> 5)"
 msgstr "Μετατροπή Αριθμητικών συμβολοσειρών σε _Αριθμούς (`5' -> 5)"
 
-#: src/ui/gui/recode.ui:296
+#: src/ui/gui/recode.ui:297
 msgid "Output variables are _strings"
 msgstr "Οι μεταβλητές ε_Ξαγωγής είναι συμβολοσειρές"
 
-#: src/ui/gui/recode.ui:317
+#: src/ui/gui/recode.ui:318
 msgid "Width: "
 msgstr "Εύρος: "
 
-#: src/ui/gui/recode.ui:498
+#: src/ui/gui/recode.ui:499
 msgid "_Name:"
 msgstr "_Όνομα:"
 
-#: src/ui/gui/recode.ui:526
+#: src/ui/gui/recode.ui:527
 msgid "La_bel:"
 msgstr "_Ετικέτα:"
 
-#: src/ui/gui/recode.ui:555
+#: src/ui/gui/recode.ui:556
 msgid "Chan_ge"
 msgstr "_Αλλαγή"
 
-#: src/ui/gui/recode.ui:583
+#: src/ui/gui/recode.ui:584
 msgid "Output Variable"
 msgstr "Μεταβλητή Εξαγωγής"
 
-#: src/ui/gui/recode.ui:657
+#: src/ui/gui/recode.ui:658
 msgid "Old and New Va_lues..."
 msgstr "Παλιές κ _Νέες τιμές..."
 
@@ -9379,26 +9537,129 @@ msgid "Current Status: "
 msgstr "Παρούσα Κατάσταση: "
 
 #. TRANSLATORS: This is the application name in the desktop file
-#: src/ui/gui/org.fsf.pspp.desktop.in:6
+#: src/ui/gui/org.fsf.pspp.metainfo.xml.in:7
+#: src/ui/gui/org.fsf.pspp.desktop.in:7
 msgid "GNU PSPP"
 msgstr "GNU PSPP"
 
-#: src/ui/gui/org.fsf.pspp.desktop.in:7
+#: src/ui/gui/org.fsf.pspp.metainfo.xml.in:8
+msgid "GNU PSPP is a program for statistical analysis of sampled data"
+msgstr "Το GNU PSPP είναι ένα πρόγραμμα στατιστικής ανάλυσης δειγμάτων δεδομένων"
+
+#: src/ui/gui/org.fsf.pspp.metainfo.xml.in:10
+msgid "GNU PSPP is a program for the statistical analysis of sampled data. It is a Free replacement for the proprietary program SPSS, and appears very similar to it with a few exceptions. The most important of these exceptions are, that there are no “time bombs”; your copy of PSPP will not “expire” or deliberately stop working in the future. Neither are there any artificial limits on the number of cases or variables which you can use. There are no additional packages to purchase in order to get “advanced” functions; all functionality that PSPP currently supports is in the core package."
+msgstr "Το GNU PSPP είναι ένα πρόγραμμα για τη στατιστική ανάλυση δειγματικών δεδομένων. Είναι μια δωρεάν αντικατάσταση για το ιδιόκτητο πρόγραμμα SPSS, κ φαίνεται πολύ παρόμοιο με αυτό με μερικές εξαιρέσεις. Οι σημαντικότερες από αυτές τις εξαιρέσεις είναι ότι δεν υπάρχει «χρονόμετρο». Το αντίγραφο του PSPP δεν θα \"λήξει\" ή θα σταματήσει να λειτουργεί στο μέλλον, επίτηδες. Ούτε υπάρχουν τεχνητά όρια στον αριθμό περιπτώσεων ή μεταβλητών που μπορείτε να χρησιμοποιήσετε. Δεν υπάρχουν πρόσθετα πακέτα για αγορά προκειμένου να λάβετε «προηγμένες» λειτουργίες. Όλες οι λειτουργίες που υποστηρίζει το PSPP είναι στο βασικό πακέτο."
+
+#: src/ui/gui/org.fsf.pspp.metainfo.xml.in:11
+msgid "PSPP is a stable and reliable application. It can perform descriptive statistics, T-tests, anova, linear and logistic regression, measures of association, cluster analysis, reliability and factor analysis, non-parametric tests and more. Its backend is designed to perform its analyses as fast as possible, regardless of the size of the input data. You can use PSPP with its graphical interface or the more traditional syntax commands."
+msgstr "Το PSPP είναι μια σταθερή κ αξιόπιστη εφαρμογή. Μπορεί να εκτελέσει περιγραφικά στατιστικά στοιχεία, δοκιμές T, anova, γραμμική και λογιστική παλινδρόμηση, μέτρα συσχέτισης, ανάλυση συστάδων, αξιοπιστία κ ανάλυση παραγόντων, μη παραμετρικές δοκιμές κ άλλα. Το backend -\"παρασκήνιο\"- έχει σχεδιαστεί για να εκτελεί τις αναλύσεις όσο το δυνατόν γρηγορότερα, ανεξάρτητα από το μέγεθος των δεδομένων εισαγωγής. Μπορείτε να χρησιμοποιήσετε το PSPP με τη γραφική διεπαφή ή τις πιο παραδοσιακές εντολές σύνταξης."
+
+#: src/ui/gui/org.fsf.pspp.metainfo.xml.in:12
+msgid "A brief list of some of the PSPP's features."
+msgstr "Μια σύντομη λίστα με μερικά από τα χαρακτηριστικά του PSPP."
+
+#: src/ui/gui/org.fsf.pspp.metainfo.xml.in:14
+msgid "Support for over 1 billion cases"
+msgstr "Υποστήριξη για πάνω από 1 δισεκατομμύριο υποθέσεις"
+
+#: src/ui/gui/org.fsf.pspp.metainfo.xml.in:15
+msgid "Support for over 1 billion variables"
+msgstr "Υποστήριξη για πάνω από 1 δισεκατομμύριο μεταβλητές"
+
+#: src/ui/gui/org.fsf.pspp.metainfo.xml.in:16
+msgid "Syntax and data files which are compatible with those of SPSS"
+msgstr "Σύνταξη κ αρχεία δεδομένων που είναι συμβατά με αυτά του SPSS"
+
+#: src/ui/gui/org.fsf.pspp.metainfo.xml.in:17
+msgid "A choice of terminal or graphical user interface"
+msgstr "Δυνατότητα επιλογής χρήσης γραμμή εντολών ή γραφικού περιβάλλοντος από τον χρήστη"
+
+#: src/ui/gui/org.fsf.pspp.metainfo.xml.in:18
+msgid "A choice of text, postscript, pdf, opendocument or html output formats"
+msgstr "Δυνατότητα επιλογής αποθήκευσης των εξαγόμενων πληροφοριών ως κείμενο, postscript, pdf, opendocument ή html"
+
+#: src/ui/gui/org.fsf.pspp.metainfo.xml.in:19
+msgid "Inter-operability with: LibreOffice, Apache OpenOffice, Gnumeric and other free software"
+msgstr "Δια-λειτουργικότητα με: LibreOffice, Apache OpenOffice, Gnumeric κ άλλα δωρεάν -ανοικτού κώδικα- λογισμικά"
+
+#: src/ui/gui/org.fsf.pspp.metainfo.xml.in:20
+msgid "Easy data import from spreadsheets, text files and database sources"
+msgstr "Εύκολη εισαγωγή δεδομένων από υπολογιστικά φύλλα, αρχεία κειμένου κ πηγές βάσης δεδομένων"
+
+#: src/ui/gui/org.fsf.pspp.metainfo.xml.in:21
+msgid "The capability to open, analyse and edit two or more datasets concurrently"
+msgstr "Η δυνατότητα ανοίγματος, ανάλυσης κ επεξεργασίας δύο ή περισσότερων συνόλων δεδομένων ταυτόχρονα"
+
+#: src/ui/gui/org.fsf.pspp.metainfo.xml.in:22
+msgid "A user interface supporting all common character sets"
+msgstr "Μια διεπαφή χρήστη που υποστηρίζει όλα τα κοινά σύνολα χαρακτήρων υπολογιστή"
+
+#: src/ui/gui/org.fsf.pspp.metainfo.xml.in:23
+msgid "A user interface has been translated to multiple languages"
+msgstr "Μια διεπαφή χρήστη που έχει μεταφραστεί σε πολλές γλώσσες"
+
+#: src/ui/gui/org.fsf.pspp.metainfo.xml.in:24
+msgid "Very fast statistical procedures, even on very large data sets"
+msgstr "Πολύ γρήγορες εκτελέσεις στατιστικών διαδικασιών, ακόμη κ σε πολύ μεγάλα σύνολα δεδομένων"
+
+#: src/ui/gui/org.fsf.pspp.metainfo.xml.in:25
+msgid "No license fees and no expiration period"
+msgstr "Χωρίς τέλη άδειας κατοχής προγράμματος κ περίοδο λήξης"
+
+#: src/ui/gui/org.fsf.pspp.metainfo.xml.in:26
+msgid "No unethical “end user license agreements”"
+msgstr "Χωρίς ανήθικες \"συμφωνίες άδειας τελικού χρήστη\""
+
+#: src/ui/gui/org.fsf.pspp.metainfo.xml.in:27
+msgid "A fully indexed user manual"
+msgstr "Ένα εγχειρίδιο χρήστη με πλήρες ευρετήριο"
+
+#: src/ui/gui/org.fsf.pspp.metainfo.xml.in:28
+msgid "Freedom ensured; It is licensed under the GPLv3 or later"
+msgstr "Διασφάλιση της ελευθερίας. Έχει άδεια βάσει της GPLv3 ή νεότερης έκδοσης"
+
+#: src/ui/gui/org.fsf.pspp.metainfo.xml.in:29
+msgid "Portability; Runs on many different computers and many different operating systems"
+msgstr "Φορητότητα; Τρέχει σε πολλούς διαφορετικούς υπολογιστές κ σε πολλά διαφορετικά λειτουργικά συστήματα"
+
+#: src/ui/gui/org.fsf.pspp.metainfo.xml.in:31
+msgid "PSPP is particularly aimed at statisticians, social scientists and students requiring fast convenient analysis of sampled data."
+msgstr "Το PSPP απευθύνεται ιδιαίτερα σε στατιστικολόγους, κοινωνικούς επιστήμονες κ μαθητές που απαιτούν γρήγορη κ βολική ανάλυση δεδομένων δειγματοληψίας."
+
+#: src/ui/gui/org.fsf.pspp.metainfo.xml.in:41
+msgid "GNU PSPP Variable View"
+msgstr "Απεικόνιση Μεταβλητών GNU PSPP"
+
+#: src/ui/gui/org.fsf.pspp.metainfo.xml.in:54
+msgid "Free Software Foundation"
+msgstr "Ίδρυμα Ελεύθερου Λογισμικού"
+
+#: src/ui/gui/org.fsf.pspp.desktop.in:8
 msgid "Statistical Software"
 msgstr "Στατιστικό Πρόγραμμα"
 
-#: src/ui/gui/org.fsf.pspp.desktop.in:8
+#: src/ui/gui/org.fsf.pspp.desktop.in:9
 msgid "Analyze statistical data with a free alternative to SPSS"
 msgstr "Ανάλυση στατιστικών δεδομένων με δωρεάν πρόγραμμα, εναλλακτικό του SPSS"
 
-#: src/ui/gui/org.fsf.pspp.desktop.in:10
+#. TRANSLATORS: Do not translate this string. Keep it as is, verbatim.
+#: src/ui/gui/org.fsf.pspp.desktop.in:12
 msgid "pspp"
 msgstr "pspp"
 
 #. TRANSLATORS: You must keep all ";" - also at the end of line.
-#: src/ui/gui/org.fsf.pspp.desktop.in:15
+#: src/ui/gui/org.fsf.pspp.desktop.in:17
 msgid "statistics;analysis;spss;"
 msgstr "στατιστικές;ανάλυση;spss;"
+
+#~ msgid "Sorry. The help system hasn't yet been implemented."
+#~ msgstr "Συγνώμη. Το σύστημα βοήθειας δεν είναι διαθέσιμο ακόμη."
+
+#~ msgid "Interactive shell not supported on this platform."
+#~ msgstr "Το διαδραστικό περιβάλλον δεν υποστηρίζεται σε αυτή τη πλατφόρμα."
+
+#~ msgid "Error executing command: %s."
+#~ msgstr "Σφάλμα εκτέλεσης εντολής: %s."
 
 #~ msgid "Details"
 #~ msgstr "Λεπτομέρειες"
@@ -9513,9 +9774,6 @@ msgstr "στατιστικές;ανάλυση;spss;"
 
 #~ msgid "%zu"
 #~ msgstr "%zu"
-
-#~ msgid "Cum Percent"
-#~ msgstr "Συσσωρευτικά Ποσοστά"
 
 #~ msgid "50 (Median)"
 #~ msgstr "50 (Διάμεσος)"
