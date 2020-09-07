@@ -122,6 +122,11 @@ run_command (const char *command, struct timespec timeout)
     {
       /* Running in the child. */
 
+#if __GNU__
+      /* Hurd doesn't support inheriting process timers in a way that works. */
+      if (setpgid (0, 0) < 0)
+        error (1, errno, _("Failed to set process group."));
+#else
       /* Set up timeout. */
       if (timeout.tv_sec < TYPE_MAXIMUM (time_t))
         {
@@ -140,6 +145,7 @@ run_command (const char *command, struct timespec timeout)
           if (setitimer (ITIMER_REAL, &it, NULL) < 0)
             error (1, errno, _("Failed to set timeout."));
         }
+#endif
 
       /* Set up file descriptors:
          - /dev/null for stdin
@@ -174,7 +180,15 @@ run_command (const char *command, struct timespec timeout)
   int error = 0;
   for (;;)
     {
-      pid_t retval = waitpid (pid, &status, 0);
+#if __GNU__
+      if (timespec_cmp (current_timespec (), timeout) >= 0)
+        kill (-pid, SIGALRM);
+
+      int flags = WNOHANG;
+#else
+      int flags = 0;
+#endif
+      pid_t retval = waitpid (pid, &status, flags);
       if (retval == pid)
         break;
       else if (retval < 0)
@@ -185,6 +199,10 @@ run_command (const char *command, struct timespec timeout)
               break;
             }
         }
+#if __GNU__
+      else if (retval == 0)
+        sleep (1);
+#endif
       else
         NOT_REACHED ();
     }
