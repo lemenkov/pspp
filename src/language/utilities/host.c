@@ -40,6 +40,7 @@
 #include "libpspp/temp-file.h"
 #include "output/text-item.h"
 
+#include "gl/error.h"
 #include "gl/intprops.h"
 #include "gl/localcharset.h"
 #include "gl/read-file.h"
@@ -136,7 +137,8 @@ run_command (const char *command, struct timespec timeout)
               .tv_usec = left.tv_nsec / 1000
             }
           };
-          setitimer (ITIMER_REAL, &it, NULL);
+          if (setitimer (ITIMER_REAL, &it, NULL) < 0)
+            error (1, errno, _("Failed to set timeout."));
         }
 
       /* Set up file descriptors:
