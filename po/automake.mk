@@ -127,8 +127,8 @@ CLEAN_LOCAL += po_CLEAN
 # The final action to this rule is to remove the .pot file.  This
 # is because the po files must be re-merged against an updated version of it.
 PHONY += po-update
-po-update: $(POFILES)
-	for p in $^; do \
+po-update:
+	for p in $(POFILES); do \
 		wget --recursive --level=1 --accept=po --no-directories --no-use-server-timestamps \
 		--directory-prefix=po -O ${top_srcdir}/$$p,tmp \
 		https://translationproject.org/latest/pspp/`basename $$p` ; \
