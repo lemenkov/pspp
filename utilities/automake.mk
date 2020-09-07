@@ -43,3 +43,6 @@ utilities_pspp_output_LDADD = \
 	src/libpspp-core.la \
 	$(CAIRO_LIBS)
 utilities_pspp_output_LDFLAGS = $(PSPP_LDFLAGS) $(LIBXML2_LIBS)
+if RELOCATABLE_VIA_LD
+utilities_pspp_output_LDFLAGS += `$(RELOCATABLE_LDFLAGS) $(bindir)`
+endif
