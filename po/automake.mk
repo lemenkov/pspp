@@ -126,6 +126,9 @@ CLEAN_LOCAL += po_CLEAN
 # Download the po files from http://translationproject.org
 # The final action to this rule is to remove the .pot file.  This
 # is because the po files must be re-merged against an updated version of it.
+#
+# You can update just one .po file with, e.g.:
+# make po-update POFILES=po/uk.po
 PHONY += po-update
 po-update:
 	for p in $(POFILES); do \
