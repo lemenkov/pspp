@@ -156,6 +156,8 @@ struct xr_driver
 
     struct cell_color bg;       /* Background color */
     struct cell_color fg;       /* Foreground color */
+    bool transparent;           /* true -> do not render background */
+    bool systemcolors;          /* true -> do not change colors     */
 
     int initial_page_number;
 
@@ -565,6 +567,9 @@ apply_options (struct xr_driver *xr, struct string_map *o)
   parse_color (d, o, "background-color", "#FFFFFFFFFFFF", &xr->bg);
   parse_color (d, o, "foreground-color", "#000000000000", &xr->fg);
 
+  xr->transparent = parse_boolean (opt (d, o, "transparent", "false"));
+  xr->systemcolors = parse_boolean (opt (d, o, "systemcolors", "false"));
+
   /* Get dimensions.  */
   parse_paper_size (opt (d, o, "paper-size", ""), &paper_width, &paper_length);
   left_margin = parse_dimension (opt (d, o, "left-margin", ".5in"));
@@ -806,8 +811,9 @@ xr_set_cairo (struct xr_driver *xr, cairo_t *cairo)
       xr->params->rtl = render_direction_rtl ();
     }
 
-  cairo_set_source_rgb (xr->cairo,
-                        xr->fg.r / 255.0, xr->fg.g / 255.0, xr->fg.b / 255.0);
+  if (!xr->systemcolors)
+    cairo_set_source_rgb (xr->cairo,
+			  xr->fg.r / 255.0, xr->fg.g / 255.0, xr->fg.b / 255.0);
 }
 
 static struct output_driver *
@@ -1004,13 +1010,15 @@ xr_submit (struct output_driver *driver, const struct output_item *output_item)
 void
 xr_driver_next_page (struct xr_driver *xr, cairo_t *cairo)
 {
-  cairo_save (cairo);
-  cairo_set_source_rgb (cairo,
-                        xr->bg.r / 255.0, xr->bg.g / 255.0, xr->bg.b / 255.0);
-  cairo_rectangle (cairo, 0, 0, xr->width, xr->length);
-  cairo_fill (cairo);
-  cairo_restore (cairo);
-
+  if (!xr->transparent)
+    {
+      cairo_save (cairo);
+      cairo_set_source_rgb (cairo,
+			    xr->bg.r / 255.0, xr->bg.g / 255.0, xr->bg.b / 255.0);
+      cairo_rectangle (cairo, 0, 0, xr->width, xr->length);
+      cairo_fill (cairo);
+      cairo_restore (cairo);
+    }
   cairo_translate (cairo,
                    xr_to_pt (xr->left_margin),
                    xr_to_pt (xr->top_margin + xr->headings_height[0]));
@@ -1092,7 +1100,8 @@ dump_line (struct xr_driver *xr, int x0, int y0, int x1, int y1, int style,
            const struct cell_color *color)
 {
   cairo_new_path (xr->cairo);
-  set_source_rgba (xr->cairo, color);
+  if (!xr->systemcolors)
+    set_source_rgba (xr->cairo, color);
   cairo_set_line_width (
     xr->cairo,
     xr_to_pt (style == RENDER_LINE_THICK ? XR_LINE_WIDTH * 2
@@ -1356,29 +1365,32 @@ xr_draw_cell (void *xr_, const struct table_cell *cell, int color_idx,
   struct xr_driver *xr = xr_;
   int w, h, brk;
 
-  cairo_save (xr->cairo);
-  int bg_clip[TABLE_N_AXES][2];
-  for (int axis = 0; axis < TABLE_N_AXES; axis++)
+  if (!xr->transparent)
     {
-      bg_clip[axis][0] = clip[axis][0];
-      if (bb[axis][0] == clip[axis][0])
-        bg_clip[axis][0] -= spill[axis][0];
+      cairo_save (xr->cairo);
+      int bg_clip[TABLE_N_AXES][2];
+      for (int axis = 0; axis < TABLE_N_AXES; axis++)
+	{
+	  bg_clip[axis][0] = clip[axis][0];
+	  if (bb[axis][0] == clip[axis][0])
+	    bg_clip[axis][0] -= spill[axis][0];
 
-      bg_clip[axis][1] = clip[axis][1];
-      if (bb[axis][1] == clip[axis][1])
-        bg_clip[axis][1] += spill[axis][1];
+	  bg_clip[axis][1] = clip[axis][1];
+	  if (bb[axis][1] == clip[axis][1])
+	    bg_clip[axis][1] += spill[axis][1];
+	}
+      xr_clip (xr, bg_clip);
+      set_source_rgba (xr->cairo, &cell->style->font_style.bg[color_idx]);
+      fill_rectangle (xr,
+		      bb[H][0] - spill[H][0],
+		      bb[V][0] - spill[V][0],
+		      bb[H][1] + spill[H][1],
+		      bb[V][1] + spill[V][1]);
+      cairo_restore (xr->cairo);
     }
-  xr_clip (xr, bg_clip);
-  set_source_rgba (xr->cairo, &cell->style->font_style.bg[color_idx]);
-  fill_rectangle (xr,
-                  bb[H][0] - spill[H][0],
-                  bb[V][0] - spill[V][0],
-                  bb[H][1] + spill[H][1],
-                  bb[V][1] + spill[V][1]);
-  cairo_restore (xr->cairo);
-
   cairo_save (xr->cairo);
-  set_source_rgba (xr->cairo, &cell->style->font_style.fg[color_idx]);
+  if (!xr->systemcolors)
+    set_source_rgba (xr->cairo, &cell->style->font_style.fg[color_idx]);
 
   for (int axis = 0; axis < TABLE_N_AXES; axis++)
     {

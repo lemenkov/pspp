@@ -88,16 +88,10 @@ enum
 static gboolean
 layout_draw_callback (GtkWidget *widget, cairo_t *cr, gpointer data)
 {
-  cairo_save (cr);
-
   int width = gtk_widget_get_allocated_width (widget);
   int height = gtk_widget_get_allocated_height (widget);
-  cairo_rectangle (cr, 0, 0, width, height);
-  cairo_set_source_rgb (cr, 1.0, 1.0, 1.0);
-  cairo_fill (cr);
-
-  cairo_restore (cr);
-
+  GtkStyleContext *context = gtk_widget_get_style_context (widget);
+  gtk_render_background (context, cr, 0, 0, width, height);
   return FALSE;                 /* Continue drawing the GtkDrawingAreas. */
 }
 
@@ -109,8 +103,22 @@ draw_callback (GtkWidget *widget, cairo_t *cr, gpointer data)
     return TRUE;
 
   struct xr_rendering *r = g_object_get_data (G_OBJECT (widget), "rendering");
+
+  /* Draw the background based on the state of the widget
+     which can be selected or not selected */
+  GtkStyleContext *context = gtk_widget_get_style_context (widget);
+  gtk_render_background (context, cr, clip.x, clip.y,
+			 clip.x + clip.width, clip.y + clip.height);
+
+  /* Select the default foreground color based on current style
+     and state of the widget */
+  GtkStateFlags state = gtk_widget_get_state_flags (widget);
+  GdkRGBA color;
+  gtk_style_context_get_color (context, state, &color);
+  cairo_set_source_rgba (cr, color.red, color.green, color.blue, color.alpha);
   xr_rendering_draw (r, cr, clip.x, clip.y,
                      clip.x + clip.width, clip.y + clip.height);
+
   return TRUE;
 }
 
@@ -197,6 +205,34 @@ get_xpos (const struct psppire_output_view *view, gint child_width)
 }
 
 static void
+clear_selection (struct psppire_output_view *view)
+{
+  struct output_view_item *item = NULL;
+  if (view == NULL)
+    return;
+  if (view->items == NULL)
+    return;
+
+  for (item = view->items; item < &view->items[view->n_items]; item++)
+    {
+      GtkWidget *widget = GTK_WIDGET (item->drawing_area);
+      if GTK_IS_WIDGET (widget)
+        gtk_widget_unset_state_flags (widget, GTK_STATE_FLAG_SELECTED);
+    }
+}
+
+static gboolean
+button_press_event_cb (GtkWidget      *widget,
+		       GdkEventButton *event,
+		       struct psppire_output_view *view)
+{
+  clear_selection (view);
+  gtk_widget_set_state_flags (widget, GTK_STATE_FLAG_SELECTED, FALSE);
+  gtk_widget_queue_draw (widget);
+  return TRUE; /* We have handled the event */
+}
+
+static void
 create_drawing_area (struct psppire_output_view *view,
                      GtkWidget *drawing_area, struct xr_rendering *r,
                      int tw, int th)
@@ -204,6 +240,12 @@ create_drawing_area (struct psppire_output_view *view,
   g_object_set_data_full (G_OBJECT (drawing_area),
                           "rendering", r, free_rendering);
 
+  g_signal_connect (drawing_area, "button-press-event",
+		    G_CALLBACK (button_press_event_cb), view);
+  gtk_widget_add_events (drawing_area, GDK_BUTTON_PRESS_MASK);
+  GtkStyleContext *context = gtk_widget_get_style_context (drawing_area);
+  gtk_style_context_add_class (context,
+			       GTK_STYLE_CLASS_VIEW);
   g_signal_connect (drawing_area, "draw",
                     G_CALLBACK (draw_callback), view);
 
@@ -301,6 +343,7 @@ rerender (struct psppire_output_view *view)
   cairo_region_destroy (region);
 }
 
+
 void
 psppire_output_view_put (struct psppire_output_view *view,
                          const struct output_item *item)
@@ -364,6 +407,10 @@ psppire_output_view_put (struct psppire_output_view *view,
 
       xr_rendering_measure (r, &tw, &th);
 
+      struct string_map options = STRING_MAP_INITIALIZER (options);
+      string_map_insert (&options, "transparent", "true");
+      string_map_insert (&options, "systemcolors", "true");      
+      xr_rendering_apply_options (r, &options);
       create_drawing_area (view, drawing_area, r, tw, th);
       gdk_window_end_draw_frame (win, ctx);
       cairo_region_destroy (region);
