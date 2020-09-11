@@ -90,7 +90,10 @@ src_ui_gui_psppire_CPPFLAGS=
 bin_PROGRAMS += src/ui/gui/psppire
 noinst_PROGRAMS += src/ui/gui/spreadsheet-test
 
-src_ui_gui_psppire_CFLAGS = $(GTK_CFLAGS) $(GTKSOURCEVIEW_CFLAGS) $(SPREAD_SHEET_WIDGET_CFLAGS) $(AM_CFLAGS) -DGDK_MULTIHEAD_SAFE=1
+src_ui_gui_psppire_CFLAGS = $(GTK_CFLAGS) $(GTKSOURCEVIEW_CFLAGS) \
+        $(SPREAD_SHEET_WIDGET_CFLAGS) \
+        $(LIBRSVG_CFLAGS) \
+        $(AM_CFLAGS) -DGDK_MULTIHEAD_SAFE=1
 src_ui_gui_spreadsheet_test_CFLAGS = $(GTK_CFLAGS) $(AM_CFLAGS) -DGDK_MULTIHEAD_SAFE=1
 
 if cc_is_gcc
@@ -120,6 +123,7 @@ src_ui_gui_psppire_LDADD = \
 	$(GTHREAD_LIBS) \
 	$(GTKSOURCEVIEW_LIBS) \
 	$(SPREAD_SHEET_WIDGET_LIBS) \
+	$(LIBRSVG_LIBS) \
 	$(CAIRO_LIBS) \
 	$(LIBINTL) \
 	$(GSL_LIBS)

@@ -21,6 +21,9 @@
 #include <errno.h>
 #include <stdbool.h>
 
+#if HAVE_RSVG
+#include "librsvg/rsvg.h"
+#endif
 #include "libpspp/assertion.h"
 #include "libpspp/string-map.h"
 #include "output/cairo.h"
@@ -66,6 +69,7 @@ struct psppire_output_view
 
     struct output_view_item *items;
     size_t n_items, allocated_items;
+    struct output_view_item *selected_item;
 
     /* Variables pertaining to printing */
     GtkPrintSettings *print_settings;
@@ -109,7 +113,6 @@ draw_callback (GtkWidget *widget, cairo_t *cr, gpointer data)
   GtkStyleContext *context = gtk_widget_get_style_context (widget);
   gtk_render_background (context, cr, clip.x, clip.y,
 			 clip.x + clip.width, clip.y + clip.height);
-
   /* Select the default foreground color based on current style
      and state of the widget */
   GtkStateFlags state = gtk_widget_get_state_flags (widget);
@@ -204,21 +207,65 @@ get_xpos (const struct psppire_output_view *view, gint child_width)
   return (gtk_widget_get_direction (GTK_WIDGET (view->output)) ==  GTK_TEXT_DIR_RTL) ? w - child_width - gutter: gutter;
 }
 
-static void
-clear_selection (struct psppire_output_view *view)
+static struct output_view_item *
+find_selected_item (struct psppire_output_view *view)
 {
   struct output_view_item *item = NULL;
   if (view == NULL)
-    return;
+    return NULL;
   if (view->items == NULL)
-    return;
+    return NULL;
 
   for (item = view->items; item < &view->items[view->n_items]; item++)
     {
       GtkWidget *widget = GTK_WIDGET (item->drawing_area);
       if GTK_IS_WIDGET (widget)
-        gtk_widget_unset_state_flags (widget, GTK_STATE_FLAG_SELECTED);
+        {
+	  GtkStateFlags state = gtk_widget_get_state_flags (widget);
+	  if (state & GTK_STATE_FLAG_SELECTED)
+	    return item;
+	}
     }
+  return NULL;
+}
+
+
+static void
+set_copy_action (struct psppire_output_view *view,
+		 gboolean state)
+{
+  GtkWidget *toplevel = gtk_widget_get_toplevel (GTK_WIDGET (view->output));
+  GAction *copy_action = g_action_map_lookup_action (G_ACTION_MAP (toplevel),
+						     "copy");
+  g_object_set (copy_action,
+		"enabled", state,
+		NULL);
+}
+
+static void
+clear_selection (struct psppire_output_view *view)
+{
+  if (view == NULL)
+    return;
+  struct output_view_item *item = find_selected_item (view);
+  if (item == NULL)
+    return;
+  set_copy_action (view, FALSE);
+  GtkWidget *widget = GTK_WIDGET (item->drawing_area);
+  if (GTK_IS_WIDGET (widget))
+    {
+      gtk_widget_unset_state_flags (widget, GTK_STATE_FLAG_SELECTED);
+      gtk_widget_queue_draw (widget);
+    }
+}
+
+static gboolean
+off_item_button_press_event_cb (GtkWidget      *widget,
+				GdkEventButton *event,
+				struct psppire_output_view *view)
+{
+  clear_selection (view);
+  return FALSE; /* Forward the event */
 }
 
 static gboolean
@@ -227,6 +274,7 @@ button_press_event_cb (GtkWidget      *widget,
 		       struct psppire_output_view *view)
 {
   clear_selection (view);
+  set_copy_action (view, TRUE);
   gtk_widget_set_state_flags (widget, GTK_STATE_FLAG_SELECTED, FALSE);
   gtk_widget_queue_draw (widget);
   return TRUE; /* We have handled the event */
@@ -237,6 +285,11 @@ create_drawing_area (struct psppire_output_view *view,
                      GtkWidget *drawing_area, struct xr_rendering *r,
                      int tw, int th)
 {
+  struct string_map options = STRING_MAP_INITIALIZER (options);
+  string_map_insert (&options, "transparent", "true");
+  string_map_insert (&options, "systemcolors", "true");
+  xr_rendering_apply_options (r, &options);
+
   g_object_set_data_full (G_OBJECT (drawing_area),
                           "rendering", r, free_rendering);
 
@@ -406,11 +459,6 @@ psppire_output_view_put (struct psppire_output_view *view,
 	}
 
       xr_rendering_measure (r, &tw, &th);
-
-      struct string_map options = STRING_MAP_INITIALIZER (options);
-      string_map_insert (&options, "transparent", "true");
-      string_map_insert (&options, "systemcolors", "true");      
-      xr_rendering_apply_options (r, &options);
       create_drawing_area (view, drawing_area, r, tw, th);
       gdk_window_end_draw_frame (win, ctx);
       cairo_region_destroy (region);
@@ -552,6 +600,8 @@ enum {
   SELECT_FMT_TEXT,
   SELECT_FMT_UTF8,
   SELECT_FMT_HTML,
+  SELECT_FMT_SVG,
+  SELECT_FMT_IMG,
   SELECT_FMT_ODT
 };
 
@@ -560,6 +610,34 @@ enum {
 #ifndef PATH_MAX
 # define PATH_MAX 1024
 #endif
+
+/* Returns a pixbuf from a svg file      */
+/* You must unref the pixbuf after usage */
+static GdkPixbuf *
+derive_pixbuf_from_svg (const char *filename)
+{
+  GError *err = NULL;
+  GdkPixbuf *pixbuf = NULL;
+#if HAVE_RSVG
+  RsvgHandle *handle = rsvg_handle_new_from_file (filename, &err);
+  if (err == NULL)
+    {
+      rsvg_handle_set_dpi (handle, 300.0);
+      pixbuf = rsvg_handle_get_pixbuf (handle);
+      g_object_unref (handle);
+    }
+#else
+  pixbuf = gdk_pixbuf_new_from_file (filename, &err);
+#endif
+  if (err != NULL)
+    {
+      msg (ME, _("Could not open file %s during copy operation: %s"),
+	   filename, err->message);
+      g_error_free (err);
+      return NULL;
+    }
+  return pixbuf;
+}
 
 static void
 clipboard_get_cb (GtkClipboard     *clipboard,
@@ -575,13 +653,7 @@ clipboard_get_cb (GtkClipboard     *clipboard,
   char dirname[PATH_MAX], *filename;
   struct string_map options;
 
-  GtkTreeSelection *sel = gtk_tree_view_get_selection (view->overview);
-  GtkTreeModel *model = gtk_tree_view_get_model (view->overview);
-
-  GList *rows = gtk_tree_selection_get_selected_rows (sel, &model);
-  GList *n = rows;
-
-  if (n == NULL)
+  if (view->selected_item == NULL)
     return;
 
   if (path_search (dirname, sizeof dirname, NULL, NULL, true)
@@ -611,6 +683,11 @@ clipboard_get_cb (GtkClipboard     *clipboard,
       string_map_insert (&options, "css", "false");
       break;
 
+    case SELECT_FMT_SVG:
+    case SELECT_FMT_IMG:
+      /* see below */
+      break;
+
     case SELECT_FMT_ODT:
       string_map_insert (&options, "format", "odt");
       break;
@@ -621,39 +698,43 @@ clipboard_get_cb (GtkClipboard     *clipboard,
       break;
     }
 
-  driver = output_driver_create (&options);
-  if (driver == NULL)
-    goto finish;
-
-  while (n)
+  if ((info == SELECT_FMT_IMG) ||
+      (info == SELECT_FMT_SVG) )
     {
-      GtkTreePath *path = n->data ;
-      GtkTreeIter iter;
-      struct output_item *item ;
+      GtkWidget *widget = view->selected_item->drawing_area;
+      struct xr_rendering *r = g_object_get_data (G_OBJECT (widget), "rendering");
+      xr_draw_svg_file (r, filename);
+    }
+  else
+    {
+      driver = output_driver_create (&options);
+      if (driver == NULL)
+	goto finish;
 
-      gtk_tree_model_get_iter (model, &iter, path);
-      gtk_tree_model_get (model, &iter, COL_ADDR, &item, -1);
+      driver->class->submit (driver, view->selected_item->item);
 
-      driver->class->submit (driver, item);
+      if (driver->class->flush)
+	driver->class->flush (driver);
 
-      n = n->next;
+      /* Some drivers (eg: the odt one) don't write anything until they
+	 are closed */
+      output_driver_destroy (driver);
+      driver = NULL;
     }
 
-  if (driver->class->flush)
-    driver->class->flush (driver);
-
-
-  /* Some drivers (eg: the odt one) don't write anything until they
-     are closed */
-  output_driver_destroy (driver);
-  driver = NULL;
-
-  if (g_file_get_contents (filename, &text, &length, NULL))
+  if (info == SELECT_FMT_IMG)
     {
-      gtk_selection_data_set (selection_data, gtk_selection_data_get_target (selection_data),
-			      8,
-			      (const guchar *) text, length);
+      GdkPixbuf *pixbuf = derive_pixbuf_from_svg (filename);
+      if (pixbuf)
+	{
+	  gtk_selection_data_set_pixbuf (selection_data, pixbuf);
+	  g_object_unref (pixbuf);
+	}
     }
+  else if (g_file_get_contents (filename, &text, &length, NULL))
+    gtk_selection_data_set (selection_data, gtk_selection_data_get_target (selection_data),
+			    8,
+			    (const guchar *) text, length);
 
  finish:
 
@@ -665,8 +746,6 @@ clipboard_get_cb (GtkClipboard     *clipboard,
   unlink (filename);
   free (filename);
   rmdir (dirname);
-
-  g_list_free (rows);
 }
 
 static void
@@ -682,7 +761,8 @@ CT ( ctn3, "COMPOUND_TEXT", 0, SELECT_FMT_TEXT )            \
 CT ( ctn4, "text/plain",    0, SELECT_FMT_TEXT )            \
 CT ( ctn5, "UTF8_STRING",   0, SELECT_FMT_UTF8 )            \
 CT ( ctn6, "text/plain;charset=utf-8", 0, SELECT_FMT_UTF8 ) \
-CT ( ctn7, "text/html",     0, SELECT_FMT_HTML )
+CT ( ctn7, "text/html",     0, SELECT_FMT_HTML )            \
+CT ( ctn8, "image/svg+xml", 0, SELECT_FMT_SVG )
 
 #define CT(ID, TARGET, FLAGS, INFO) static gchar ID[] = TARGET;
 CBTARGETS
@@ -702,10 +782,25 @@ on_copy (struct psppire_output_view *view)
   GtkWidget *widget = GTK_WIDGET (view->overview);
   GtkClipboard *cb = gtk_widget_get_clipboard (widget, GDK_SELECTION_CLIPBOARD);
 
-  if (!gtk_clipboard_set_with_data (cb, targets, G_N_ELEMENTS (targets),
+  struct output_view_item *ov_item = find_selected_item (view);
+  if (ov_item == NULL)
+    return;
+  view->selected_item = ov_item;
+  GtkTargetList *tl = gtk_target_list_new (targets, G_N_ELEMENTS (targets));
+  g_return_if_fail (tl);
+  if (is_table_item (ov_item->item) ||
+      is_chart_item (ov_item->item))
+    gtk_target_list_add_image_targets (tl, SELECT_FMT_IMG, TRUE);
+  gint no_of_targets = 0;
+  GtkTargetEntry *ta = gtk_target_table_new_from_list (tl, &no_of_targets);
+  g_return_if_fail (ta);
+  if (!gtk_clipboard_set_with_data (cb, ta, no_of_targets,
                                     clipboard_get_cb, clipboard_clear_cb,
                                     view))
     clipboard_clear_cb (cb, view);
+
+  gtk_target_list_unref (tl);
+  gtk_target_table_free (ta,no_of_targets);
 }
 
 static void
@@ -782,6 +877,7 @@ psppire_output_view_new (GtkLayout *output, GtkTreeView *overview)
   view->toplevel = gtk_widget_get_toplevel (GTK_WIDGET (output));
   view->items = NULL;
   view->n_items = view->allocated_items = 0;
+  view->selected_item = NULL;
   view->print_settings = NULL;
   view->print_xrd = NULL;
   view->print_item = 0;
@@ -793,6 +889,10 @@ psppire_output_view_new (GtkLayout *output, GtkTreeView *overview)
   g_signal_connect (output, "style-updated", G_CALLBACK (on_style_updated), view);
 
   g_signal_connect (output, "size-allocate", G_CALLBACK (on_size_allocate), view);
+
+  gtk_widget_add_events (GTK_WIDGET (output), GDK_BUTTON_PRESS_MASK);
+  g_signal_connect (output, "button-press-event",
+		    G_CALLBACK (off_item_button_press_event_cb), view);
 
   gtk_style_context_add_class (gtk_widget_get_style_context (GTK_WIDGET (output)),
 			       GTK_STYLE_CLASS_VIEW);

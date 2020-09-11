@@ -75,7 +75,7 @@ $as_echo '<name>Hallo</name>' >> test.metainfo.xml.in
 $as_echo '</component>' >> test.metainfo.xml.in
 xgettext -o mifc.po test.metainfo.xml.in
 if ! test -f ./mifc.po  ; then
-  AC_MSG_WARN([org.fsf.metainfo.xml will not be translated. Install gettext >=0.20 or appstream.])
+  PSPP_OPTIONAL_PREREQ([org.fsf.metainfo.xml will not be translated. Install gettext >=0.20 or appstream.])
 fi
 rm -f mifc.po test.metainfo.xml.in
 
@@ -136,6 +136,10 @@ if test "$with_cairo" != no && test "$with_gui" != "no"; then
 
   PKG_CHECK_MODULES([SPREAD_SHEET_WIDGET], [spread-sheet-widget >= 0.6], [],
     [PSPP_REQUIRED_PREREQ([spread-sheet-widget 0.6 (or use --without-gui)])])
+
+  PKG_CHECK_MODULES([LIBRSVG], [librsvg-2.0 >= 2.44],
+    [AC_DEFINE([HAVE_RSVG], 1, [Define to 1 if librsvg is available])],
+    [PSPP_OPTIONAL_PREREQ([librsvg >= 2.44 required for high dpi Copy and Paste])])
 
   AC_ARG_VAR([GLIB_GENMARSHAL])
   AC_CHECK_PROGS([GLIB_GENMARSHAL], [glib-genmarshal])

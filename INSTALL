@@ -127,6 +127,10 @@ Other optional packages:
       PSPP to test the Perl module more thoroughly.  It is not needed
       to build or use the Perl module.
 
+    * librsvg enables 300 dpi copy and paste operation. Without librsvg
+      the copy action will only provide images with default resolution
+      which is often 96dpi. This only affects bitmap image formats.
+
 Basic Installation
 ==================
 
