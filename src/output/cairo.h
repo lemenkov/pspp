@@ -96,6 +96,9 @@ char *xr_draw_png_chart (const struct chart_item *,
                          const struct cell_color *fg,
 			 const struct cell_color *bg);
 
+/* Render to a svg file */
+bool xr_draw_svg_file (struct xr_rendering *r,
+		       const char *filename);
 
 #endif  /* HAVE_CAIRO */
 

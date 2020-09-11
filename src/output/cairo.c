@@ -2253,3 +2253,23 @@ xr_render_output_item (struct xr_driver *xr,
   else
     return NULL;
 }
+
+bool
+xr_draw_svg_file (struct xr_rendering *r,
+		  const char *filename)
+{
+  int width, height;
+  g_assert (r);
+  xr_rendering_measure (r, &width, &height);
+  cairo_surface_t *surface = cairo_svg_surface_create (filename, width, height);
+  if (!surface)
+    {
+      g_error ("Could not create cairo svg surface with file %s", filename);
+      return FALSE;
+    }
+  cairo_t *cr = cairo_create (surface);
+  xr_rendering_draw (r, cr, 0, 0, width, height);
+  cairo_destroy (cr);
+  cairo_surface_destroy (surface);
+  return TRUE;
+}
