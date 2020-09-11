@@ -67,6 +67,8 @@ struct psppire_output_view
 
     GtkWidget *toplevel;
 
+    guint buttontime; /* Time of the button event */
+
     struct output_view_item *items;
     size_t n_items, allocated_items;
     struct output_view_item *selected_item;
@@ -86,6 +88,12 @@ enum
     COL_Y,                      /* Y position of top of name. */
     N_COLS
   };
+
+static GtkTargetList *build_target_list (const struct output_item *item);
+static void clipboard_get_cb (GtkClipboard     *clipboard,
+			      GtkSelectionData *selection_data,
+			      guint             info,
+			      gpointer          data);
 
 /* Draws a white background on the GtkLayout to match the white background of
    each of the output items. */
@@ -264,8 +272,14 @@ off_item_button_press_event_cb (GtkWidget      *widget,
 				GdkEventButton *event,
 				struct psppire_output_view *view)
 {
-  clear_selection (view);
-  return FALSE; /* Forward the event */
+  /* buttontime is set by button_press_event_cb
+     If our event->time is equal to the time from the
+     button_press_event_cb, then we handle the same event.
+     In that case we must not clear the selection because
+     it was just set by button_press_event_cb from the item */
+  if (event->time != view->buttontime)
+    clear_selection (view);
+  return FALSE; /* Forward the event -> DragNDrop */
 }
 
 static gboolean
@@ -273,17 +287,28 @@ button_press_event_cb (GtkWidget      *widget,
 		       GdkEventButton *event,
 		       struct psppire_output_view *view)
 {
+  view->buttontime = event->time;
   clear_selection (view);
   set_copy_action (view, TRUE);
   gtk_widget_set_state_flags (widget, GTK_STATE_FLAG_SELECTED, FALSE);
   gtk_widget_queue_draw (widget);
-  return TRUE; /* We have handled the event */
+  return FALSE; /* Forward Event -> off_item will trigger */
+}
+
+static void
+drag_data_get_cb (GtkWidget *widget, GdkDragContext *context,
+		  GtkSelectionData *selection_data,
+		  guint target_type, guint time,
+		  struct psppire_output_view *view)
+{
+  view->selected_item = find_selected_item (view);
+  clipboard_get_cb (NULL, selection_data, target_type, view);
 }
 
 static void
 create_drawing_area (struct psppire_output_view *view,
                      GtkWidget *drawing_area, struct xr_rendering *r,
-                     int tw, int th)
+                     int tw, int th, const struct output_item *item)
 {
   struct string_map options = STRING_MAP_INITIALIZER (options);
   string_map_insert (&options, "transparent", "true");
@@ -292,10 +317,19 @@ create_drawing_area (struct psppire_output_view *view,
 
   g_object_set_data_full (G_OBJECT (drawing_area),
                           "rendering", r, free_rendering);
-
   g_signal_connect (drawing_area, "button-press-event",
 		    G_CALLBACK (button_press_event_cb), view);
   gtk_widget_add_events (drawing_area, GDK_BUTTON_PRESS_MASK);
+
+  { /* Drag and Drop */
+    GtkTargetList *tl = build_target_list (item);
+    g_assert (tl);
+    gtk_drag_source_set (drawing_area, GDK_BUTTON1_MASK, NULL, 0, GDK_ACTION_COPY);
+    gtk_drag_source_set_target_list (drawing_area, tl);
+    gtk_target_list_unref (tl);
+    g_signal_connect (drawing_area, "drag-data-get",
+		      G_CALLBACK (drag_data_get_cb), view);
+  }
   GtkStyleContext *context = gtk_widget_get_style_context (drawing_area);
   gtk_style_context_add_class (context,
 			       GTK_STYLE_CLASS_VIEW);
@@ -355,7 +389,7 @@ rerender (struct psppire_output_view *view)
       if (!item->drawing_area)
         {
           item->drawing_area = gtk_drawing_area_new ();
-          create_drawing_area (view, item->drawing_area, r, tw, th);
+          create_drawing_area (view, item->drawing_area, r, tw, th, item->item);
         }
       else
         {
@@ -459,7 +493,7 @@ psppire_output_view_put (struct psppire_output_view *view,
 	}
 
       xr_rendering_measure (r, &tw, &th);
-      create_drawing_area (view, drawing_area, r, tw, th);
+      create_drawing_area (view, drawing_area, r, tw, th, item);
       gdk_window_end_draw_frame (win, ctx);
       cairo_region_destroy (region);
     }
@@ -776,6 +810,17 @@ static const GtkTargetEntry targets[] = {
   { ctnlast, 0, SELECT_FMT_ODT }
 };
 
+static GtkTargetList *
+build_target_list (const struct output_item *item)
+{
+  GtkTargetList *tl = gtk_target_list_new (targets, G_N_ELEMENTS (targets));
+  g_return_val_if_fail (tl, NULL);
+  if (is_table_item (item) ||
+      is_chart_item (item))
+    gtk_target_list_add_image_targets (tl, SELECT_FMT_IMG, TRUE);
+  return tl;
+}
+
 static void
 on_copy (struct psppire_output_view *view)
 {
@@ -786,11 +831,8 @@ on_copy (struct psppire_output_view *view)
   if (ov_item == NULL)
     return;
   view->selected_item = ov_item;
-  GtkTargetList *tl = gtk_target_list_new (targets, G_N_ELEMENTS (targets));
+  GtkTargetList *tl = build_target_list (ov_item->item);
   g_return_if_fail (tl);
-  if (is_table_item (ov_item->item) ||
-      is_chart_item (ov_item->item))
-    gtk_target_list_add_image_targets (tl, SELECT_FMT_IMG, TRUE);
   gint no_of_targets = 0;
   GtkTargetEntry *ta = gtk_target_table_new_from_list (tl, &no_of_targets);
   g_return_if_fail (ta);
@@ -851,6 +893,7 @@ psppire_output_view_new (GtkLayout *output, GtkTreeView *overview)
   view->overview = overview;
   view->cur_group = NULL;
   view->toplevel = gtk_widget_get_toplevel (GTK_WIDGET (output));
+  view->buttontime = 0;
   view->items = NULL;
   view->n_items = view->allocated_items = 0;
   view->selected_item = NULL;
