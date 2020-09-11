@@ -804,23 +804,6 @@ on_copy (struct psppire_output_view *view)
 }
 
 static void
-on_selection_change (GtkTreeSelection *sel, GAction *copy_action)
-{
-  /* The Copy action is available only if there is something selected */
-  g_object_set (copy_action,
-		"enabled", gtk_tree_selection_count_selected_rows (sel) > 0,
-		NULL);
-}
-
-static void
-on_select_all (struct psppire_output_view *view)
-{
-  GtkTreeSelection *sel = gtk_tree_view_get_selection (view->overview);
-  gtk_tree_view_expand_all (view->overview);
-  gtk_tree_selection_select_all (sel);
-}
-
-static void
 on_size_allocate (GtkWidget    *widget,
                   GdkRectangle *allocation,
                   struct psppire_output_view *view)
@@ -832,9 +815,6 @@ on_size_allocate (GtkWidget    *widget,
 static void
 on_realize (GtkWidget *overview, GObject *view)
 {
-  GtkTreeSelection *sel = gtk_tree_view_get_selection (GTK_TREE_VIEW (overview));
-  gtk_tree_selection_set_mode (sel, GTK_SELECTION_MULTIPLE);
-
   GtkWidget *toplevel = gtk_widget_get_toplevel (GTK_WIDGET (overview));
 
   GAction *copy_action = g_action_map_lookup_action (G_ACTION_MAP (toplevel),
@@ -844,15 +824,11 @@ on_realize (GtkWidget *overview, GObject *view)
 							   "select-all");
 
   g_object_set (copy_action, "enabled", FALSE, NULL);
-
-  g_signal_connect_swapped (select_all_action, "activate",
-			    G_CALLBACK (on_select_all), view);
+  g_object_set (select_all_action, "enabled", FALSE, NULL);
 
   g_signal_connect_swapped (copy_action, "activate",
                             G_CALLBACK (on_copy), view);
 
-  g_signal_connect (sel, "changed", G_CALLBACK (on_selection_change),
-                    copy_action);
 }
 
 struct psppire_output_view *
