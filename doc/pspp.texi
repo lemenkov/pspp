@@ -84,13 +84,6 @@ Free Documentation License".
 @insertcopying
 @end titlepage
 
-@c @chapheading Acknowledgements
-The authors wish to thank Network Theory Ltd
-@url{http://www.network-theory.co.uk}
-for their financial support
-in the production of this manual.
-
-
 @contents
 
 
