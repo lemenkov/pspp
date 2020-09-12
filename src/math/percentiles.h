@@ -31,9 +31,6 @@ enum pc_alg {
   PC_AEMPIRICAL
 } ;
 
-extern  const char *const ptile_alg_desc[];
-
-
 struct percentile
 {
   struct order_stats parent;

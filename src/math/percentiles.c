@@ -31,17 +31,6 @@
 #define _(msgid) gettext (msgid)
 #define N_(msgid) msgid
 
-const char *const ptile_alg_desc[] = {
-  "",
-  N_("HAverage"),
-  N_("Weighted Average"),
-  N_("Rounded"),
-  N_("Empirical"),
-  N_("Empirical with averaging")
-};
-
-
-
 double
 percentile_calculate (const struct percentile *ptl, enum pc_alg alg)
 {
