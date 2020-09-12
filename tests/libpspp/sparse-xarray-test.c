@@ -472,10 +472,9 @@ usage (void)
           "  --no-copy-columns    Do not copy column ranges in an xarray\n",
           program_name, program_name);
   mc_options_usage ();
-  fputs ("\nOther options:\n"
+  printf ("\nOther options:\n"
          "  --help               Display this help message\n"
-         "\nReport bugs to <bug-gnu-pspp@gnu.org>\n",
-         stdout);
+          "\nReport bugs to <%s>\n", PACKAGE_BUGREPORT);
   exit (0);
 }
 

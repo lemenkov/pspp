@@ -855,10 +855,9 @@ usage (void)
           "                       other values are string widths (0,1,11)\n",
           program_name, program_name);
   mc_options_usage ();
-  fputs ("\nOther options:\n"
-         "  --help               Display this help message\n"
-         "\nReport bugs to <bug-gnu-pspp@gnu.org>\n",
-         stdout);
+  printf ("\nOther options:\n"
+          "  --help               Display this help message\n"
+          "\nReport bugs to <%s>\n", PACKAGE_BUGREPORT);
   exit (0);
 }
 
