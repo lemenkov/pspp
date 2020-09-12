@@ -80,26 +80,6 @@ Once PSPP is built, you may run its self-tests with:
 or for a more thorough test:
 	make distcheck
 
-Glade UI Design
----------------
-
-The ui files in src/ui/gui may be viewed (maybe changed) with Glade. For this
-you need
-
-	* libgladeui 2.0 or later
-
-Then you need to run
-
-        configure --with-gui-tools
-	make
-	make install
-
-psppire uses some self defined widgets. To use glade these widgets have
-to be announced to glade such that you can view the interface.
-The install process will install the psppire glade library, icons and
-psppire.xml files in the appropriate system locations. You cannot override
-this with --prefix. After that you can run "glade" and open the ui files.
-
 Building from git on Mac OS
 ---------------------------
 
