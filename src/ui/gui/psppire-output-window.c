@@ -237,7 +237,7 @@ enum
 
 #define N_EXTENSIONS (n_FT - 1)
 
-struct file_types ft[n_FT] = {
+static const struct file_types ft[n_FT] = {
   {N_("Infer file type from extension"),  NULL},
   {N_("SPSS Viewer (*.spv)"),             ".spv"},
   {N_("PDF (*.pdf)"),                     ".pdf"},

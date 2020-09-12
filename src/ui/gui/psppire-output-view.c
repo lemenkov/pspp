@@ -801,7 +801,7 @@ CT ( ctn8, "image/svg+xml", 0, SELECT_FMT_SVG )
 #define CT(ID, TARGET, FLAGS, INFO) static gchar ID[] = TARGET;
 CBTARGETS
 #undef CT
-gchar ctnlast[] = "application/vnd.oasis.opendocument.text";
+static gchar ctnlast[] = "application/vnd.oasis.opendocument.text";
 
 static const GtkTargetEntry targets[] = {
 #define CT(ID, TARGET, FLAGS, INFO) { ID, FLAGS, INFO },

@@ -43,7 +43,7 @@
 static void cleanup (void);
 
 static struct temp_dir *temp_dir;
-struct hmapx map;
+static struct hmapx map;
 
 static void
 setup (void)
