@@ -107,18 +107,15 @@ create_iconv (const char* tocode, const char* fromcode)
   iconv_t bconv = iconv_open (tocode, "ASCII");
   if (bconv != (iconv_t) -1)
     {
-      ICONV_CONST  char *nullstr = strdup ("");
-      ICONV_CONST  char *outbuf = strdup ("XXXXXXXX");
-      ICONV_CONST  char *snullstr = nullstr;
-      ICONV_CONST  char *soutbuf = outbuf;
+      ICONV_CONST char inbuf[1] = "";
+      ICONV_CONST char *inptr = inbuf;
+      size_t inbytes = sizeof inbuf;
 
-      size_t inbytes = 1;
-      const size_t bytes = 8;
-      size_t outbytes = bytes;
-      if (-1 != iconv (bconv, &nullstr, &inbytes, &outbuf, &outbytes))
-	converter->null_char_width = bytes - outbytes;
-      free (snullstr);
-      free (soutbuf);
+      char outbuf[8];
+      char *outptr = outbuf;
+      size_t outbytes = sizeof outbuf;
+      if (-1 != iconv (bconv, &inptr, &inbytes, &outptr, &outbytes))
+	converter->null_char_width = outptr - outbuf;
       iconv_close (bconv);
     }
 
