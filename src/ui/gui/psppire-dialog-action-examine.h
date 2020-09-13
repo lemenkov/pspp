@@ -1,5 +1,5 @@
 /* PSPPIRE - a graphical user interface for PSPP.
-   Copyright (C) 2012  Free Software Foundation
+   Copyright (C) 2012, 2020  Free Software Foundation
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -60,6 +60,31 @@ enum PsppireDialogActionExamineOpts
     OPT_REPORT
   };
 
+enum PsppireDialogActionExaminePlotsBoxplots
+  {
+   BOXPLOT_FACTORS,
+   BOXPLOT_DEPENDENTS,
+   BOXPLOT_NONE
+  };
+
+enum PsppireDialogActionExaminePlotsSpreadlevel
+  {
+   SPREAD_NONE,
+   SPREAD_POWER,
+   SPREAD_TRANS,
+   SPREAD_UNTRANS
+  };
+
+enum PsppireDialogActionExaminePlotsSpreadpower
+  {
+   SPREADPOWER_NATLOG,
+   SPREADPOWER_CUBE,
+   SPREADPOWER_SQUARE,
+   SPREADPOWER_SQUAREROOT,
+   SPREADPOWER_RECROOT,
+   SPREADPOWER_RECIPROCAL
+  };
+
 struct _PsppireDialogActionExamine
 {
   PsppireDialogAction parent;
@@ -68,6 +93,10 @@ struct _PsppireDialogActionExamine
   GtkWidget *variables;
   GtkWidget *factors;
   GtkWidget *id_var;
+
+  GtkWidget *display_both_button;
+  GtkWidget *display_stats_button;
+  GtkWidget *display_plots_button;
 
   /* The stats dialog */
   GtkWidget *stats_dialog;
@@ -82,6 +111,25 @@ struct _PsppireDialogActionExamine
   GtkWidget *pairwise;
   GtkWidget *report;
   enum PsppireDialogActionExamineOpts opts;
+
+  /* The plots dialog */
+  GtkWidget *plots_dialog;
+  GtkWidget *boxplot_factors_button;
+  GtkWidget *boxplot_dependents_button;
+  GtkWidget *boxplot_none_button;
+  enum PsppireDialogActionExaminePlotsBoxplots boxplots;
+  GtkWidget *histogram_button;
+  bool histogram;
+  GtkWidget *npplots_button;
+  bool npplots;
+  GtkWidget *spread_none_button;
+  GtkWidget *spread_power_button;
+  GtkWidget *spread_trans_button;
+  GtkWidget *spread_untrans_button;
+  enum PsppireDialogActionExaminePlotsSpreadlevel spreadlevel;
+  GtkWidget *spread_power_combo;
+  enum PsppireDialogActionExaminePlotsSpreadpower spreadpower;
+
 };
 
 

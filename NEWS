@@ -6,7 +6,10 @@ Please send PSPP bug reports to bug-gnu-pspp@gnu.org.
 
 Changes from 1.4.1 to 1.4.2:
 
- * Added Drag-N-Drop in output view
+ * Added Drag-N-Drop in output view.
+
+ * The Explore GUI dialog supports the "Plots" subdialog. Boxplots, Q-Q Plots
+   and Spreadlevel plots are now also available via the GUI.
 
 Changes from 1.4.0 to 1.4.1:
 
