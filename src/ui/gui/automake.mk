@@ -169,6 +169,7 @@ src_ui_gui_psppire_SOURCES = \
 	src/ui/gui/missing-val-dialog.h \
 	src/ui/gui/options-dialog.c \
 	src/ui/gui/options-dialog.h \
+	src/ui/gui/pre-initialisation.h \
 	src/ui/gui/psppire.c \
 	src/ui/gui/psppire-data-editor.c \
 	src/ui/gui/psppire-data-editor.h \
