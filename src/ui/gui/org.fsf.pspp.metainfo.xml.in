@@ -59,8 +59,11 @@
     <binary>psppire</binary>
   </provides>
   <releases>
-    <release version="1.3.0">
-      <url>http://git.savannah.gnu.org/cgit/pspp.git/commit/NEWS?h=v1.3.0</url>
+    <release version="1.4.1" date="2020-05-09">
+      <url>http://git.savannah.gnu.org/cgit/pspp.git/commit/NEWS?h=v1.4.1</url>
+    </release>
+    <release version="1.4.0" date="2020-15-08">
+      <url>http://git.savannah.gnu.org/cgit/pspp.git/commit/NEWS?h=v1.4.0</url>
     </release>
     <release version="1.2.0" date="2018-11-06">
       <url>http://git.savannah.gnu.org/cgit/pspp.git/commit/NEWS?h=v1.2.0</url>
