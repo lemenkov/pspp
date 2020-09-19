@@ -1,21 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!-- Generated with glade 3.22.1 -->
 <!-- PSPP - a program for statistical analysis. -->
-<!-- Copyright (C) 2017 Free Software Foundation, Inc. -->
-
+<!-- Copyright (C) 2017, 2020 Free Software Foundation, Inc. -->
 <!-- This program is free software: you can redistribute it and/or modify -->
 <!-- it under the terms of the GNU General Public License as published by -->
 <!-- the Free Software Foundation, either version 3 of the License, or -->
 <!-- (at your option) any later version. -->
-
 <!-- This program is distributed in the hope that it will be useful, -->
 <!-- but WITHOUT ANY WARRANTY; without even the implied warranty of -->
 <!-- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the -->
 <!-- GNU General Public License for more details. -->
-
 <!-- You should have received a copy of the GNU General Public License -->
 <!-- along with this program.  If not, see <http://www.gnu.org/licenses/>. -->
-
-<!-- Generated with glade 3.18.3 -->
 <interface>
   <requires lib="gtk+" version="3.22"/>
   <requires lib="psppire" version="2054.17080"/>
@@ -36,6 +32,9 @@
     <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
     <property name="title" translatable="yes">Select Cases: Range</property>
     <property name="modal">True</property>
+    <child>
+      <placeholder/>
+    </child>
     <child>
       <object class="GtkBox" id="dialog-hbox10">
         <property name="visible">True</property>
@@ -138,7 +137,6 @@
         </child>
         <child>
           <object class="PsppireButtonBox" id="psppire-hbuttonbox4">
-            <property name="orientation">horizontal</property>
             <property name="visible">True</property>
             <property name="can_focus">False</property>
             <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
@@ -160,7 +158,10 @@
     <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
     <property name="title" translatable="yes">Select Cases</property>
     <property name="modal">True</property>
-    <property name="help-page">SELECT-IF</property>
+    <property name="help_page">SELECT-IF</property>
+    <child>
+      <placeholder/>
+    </child>
     <child>
       <object class="GtkBox" id="dialog-hbox6">
         <property name="visible">True</property>
@@ -211,6 +212,7 @@
                 <property name="can_focus">False</property>
                 <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
                 <property name="orientation">vertical</property>
+                <property name="spacing">5</property>
                 <child>
                   <object class="GtkFrame" id="Select5">
                     <property name="visible">True</property>
@@ -222,14 +224,16 @@
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
                         <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
+                        <property name="margin_left">5</property>
                         <property name="row_spacing">5</property>
+                        <property name="column_spacing">5</property>
+                        <property name="row_homogeneous">True</property>
                         <child>
                           <object class="GtkRadioButton" id="radiobutton-all">
                             <property name="visible">True</property>
                             <property name="can_focus">True</property>
                             <property name="receives_default">False</property>
                             <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
-                            <property name="xalign">0</property>
                             <property name="active">True</property>
                             <property name="draw_indicator">True</property>
                           </object>
@@ -244,7 +248,6 @@
                             <property name="can_focus">True</property>
                             <property name="receives_default">False</property>
                             <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
-                            <property name="xalign">0</property>
                             <property name="draw_indicator">True</property>
                             <property name="group">radiobutton-all</property>
                           </object>
@@ -259,7 +262,6 @@
                             <property name="can_focus">True</property>
                             <property name="receives_default">False</property>
                             <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
-                            <property name="xalign">0</property>
                             <property name="draw_indicator">True</property>
                             <property name="group">radiobutton-all</property>
                           </object>
@@ -274,7 +276,6 @@
                             <property name="can_focus">True</property>
                             <property name="receives_default">False</property>
                             <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
-                            <property name="xalign">0</property>
                             <property name="draw_indicator">True</property>
                             <property name="group">radiobutton-all</property>
                           </object>
@@ -289,7 +290,6 @@
                             <property name="can_focus">True</property>
                             <property name="receives_default">False</property>
                             <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
-                            <property name="xalign">0</property>
                             <property name="draw_indicator">True</property>
                             <property name="group">radiobutton-all</property>
                           </object>
@@ -309,7 +309,7 @@
                                 <property name="visible">True</property>
                                 <property name="can_focus">False</property>
                                 <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
-                                <property name="xalign">0</property>
+                                <property name="halign">start</property>
                                 <property name="label" translatable="yes">Use filter variable</property>
                               </object>
                               <packing>
@@ -376,7 +376,7 @@
                                 <property name="visible">True</property>
                                 <property name="can_focus">False</property>
                                 <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
-                                <property name="xalign">0</property>
+                                <property name="halign">start</property>
                                 <property name="label" translatable="yes">Based on time or case range</property>
                               </object>
                               <packing>
@@ -440,7 +440,7 @@
                                 <property name="visible">True</property>
                                 <property name="can_focus">False</property>
                                 <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
-                                <property name="xalign">0</property>
+                                <property name="halign">start</property>
                                 <property name="label" translatable="yes">Random sample of cases</property>
                               </object>
                               <packing>
@@ -504,7 +504,7 @@
                                 <property name="visible">True</property>
                                 <property name="can_focus">False</property>
                                 <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
-                                <property name="xalign">0</property>
+                                <property name="halign">start</property>
                                 <property name="label" translatable="yes">If condition is satisfied</property>
                               </object>
                               <packing>
@@ -559,11 +559,11 @@
                           </packing>
                         </child>
                         <child>
-                          <object class="GtkLabel" id="label10">
+                          <object class="GtkLabel" id="all-cases-label">
                             <property name="visible">True</property>
                             <property name="can_focus">False</property>
                             <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
-                            <property name="xalign">0</property>
+                            <property name="halign">start</property>
                             <property name="label" translatable="yes">All Cases</property>
                           </object>
                           <packing>
@@ -610,7 +610,7 @@
                             <property name="can_focus">True</property>
                             <property name="receives_default">False</property>
                             <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
-                            <property name="xalign">0</property>
+                            <property name="halign">start</property>
                             <property name="active">True</property>
                             <property name="draw_indicator">True</property>
                           </object>
@@ -627,7 +627,7 @@
                             <property name="can_focus">True</property>
                             <property name="receives_default">False</property>
                             <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
-                            <property name="xalign">0</property>
+                            <property name="halign">start</property>
                             <property name="draw_indicator">True</property>
                             <property name="group">radiobutton-filter</property>
                           </object>
@@ -650,7 +650,7 @@
                     </child>
                   </object>
                   <packing>
-                    <property name="expand">True</property>
+                    <property name="expand">False</property>
                     <property name="fill">True</property>
                     <property name="position">1</property>
                   </packing>
@@ -672,7 +672,6 @@
         </child>
         <child>
           <object class="PsppireButtonBox" id="psppire-hbuttonbox3">
-            <property name="orientation">horizontal</property>
             <property name="visible">True</property>
             <property name="can_focus">False</property>
             <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
@@ -693,6 +692,9 @@
     <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
     <property name="title" translatable="yes">Select Cases: Random Sample</property>
     <property name="modal">True</property>
+    <child>
+      <placeholder/>
+    </child>
     <child>
       <object class="GtkBox" id="dialog-hbox13">
         <property name="visible">True</property>
@@ -721,7 +723,6 @@
                     <property name="can_focus">True</property>
                     <property name="receives_default">False</property>
                     <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
-                    <property name="xalign">0.5</property>
                     <property name="active">True</property>
                     <property name="draw_indicator">True</property>
                   </object>
@@ -736,7 +737,6 @@
                     <property name="can_focus">True</property>
                     <property name="receives_default">False</property>
                     <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
-                    <property name="xalign">0.5</property>
                     <property name="active">True</property>
                     <property name="draw_indicator">True</property>
                     <property name="group">radiobutton-sample-percent</property>
@@ -767,7 +767,6 @@
         </child>
         <child>
           <object class="PsppireButtonBox" id="psppire-hbuttonbox6">
-            <property name="orientation">horizontal</property>
             <property name="visible">True</property>
             <property name="can_focus">False</property>
             <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
