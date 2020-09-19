@@ -107,7 +107,7 @@ A few options that apply generically are listed below.
 @item @option{-O format=@var{format}}
 @pspp{} uses the extension of the file name given on @option{-o} to
 select an output format.  Use this option to override this choice by
-specifying an alternate format, e.g.@: @option{-o pspp.out -O html} to
+specifying an alternate format, e.g.@: @option{-o pspp.out -O format=html} to
 write HTML to a file named @file{pspp.out}.  Use @option{--help} to
 list the available formats.
 
