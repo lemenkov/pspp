@@ -1,21 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!-- Generated with glade 3.22.1 -->
 <!-- PSPP - a program for statistical analysis. -->
 <!-- Copyright (C) 2017 Free Software Foundation, Inc. -->
-
 <!-- This program is free software: you can redistribute it and/or modify -->
 <!-- it under the terms of the GNU General Public License as published by -->
 <!-- the Free Software Foundation, either version 3 of the License, or -->
 <!-- (at your option) any later version. -->
-
 <!-- This program is distributed in the hope that it will be useful, -->
 <!-- but WITHOUT ANY WARRANTY; without even the implied warranty of -->
 <!-- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the -->
 <!-- GNU General Public License for more details. -->
-
 <!-- You should have received a copy of the GNU General Public License -->
 <!-- along with this program.  If not, see <http://www.gnu.org/licenses/>. -->
-
-<!-- Generated with glade 3.18.3 -->
 <interface>
   <requires lib="gtk+" version="3.22"/>
   <requires lib="psppire" version="0.0"/>
@@ -42,7 +38,10 @@
     <property name="can_focus">False</property>
     <property name="title" translatable="yes">Reliability Analysis</property>
     <property name="modal">True</property>
-    <property name="help-page">RELIABILITY</property>
+    <property name="help_page">RELIABILITY</property>
+    <child>
+      <placeholder/>
+    </child>
     <child>
       <object class="GtkBox" id="dialog-hbox5">
         <property name="visible">True</property>
@@ -162,11 +161,11 @@
                           <object class="GtkLabel" id="label3">
                             <property name="visible">True</property>
                             <property name="can_focus">False</property>
-                            <property name="xalign">1</property>
                             <property name="label" translatable="yes">_Model: </property>
                             <property name="use_underline">True</property>
                             <property name="justify">right</property>
                             <property name="mnemonic_widget">combobox1</property>
+                            <property name="xalign">1</property>
                           </object>
                           <packing>
                             <property name="expand">False</property>
@@ -260,8 +259,8 @@
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="receives_default">False</property>
+                <property name="halign">start</property>
                 <property name="use_underline">True</property>
-                <property name="xalign">0</property>
                 <property name="draw_indicator">True</property>
               </object>
               <packing>
@@ -279,10 +278,10 @@
         </child>
         <child>
           <object class="PsppireButtonBox" id="psppire-vbuttonbox1">
-            <property name="orientation">vertical</property>
             <property name="visible">True</property>
             <property name="can_focus">False</property>
             <property name="border_width">5</property>
+            <property name="orientation">vertical</property>
           </object>
           <packing>
             <property name="expand">False</property>
