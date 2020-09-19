@@ -276,7 +276,7 @@ generate_syntax (const PsppireDialogAction *act)
 	  g_string_append (str, " SPREADLEVEL");
 	  if (ed->spreadlevel != SPREAD_POWER)
 	    {
-	      gchar *power = NULL;
+	      const gchar *power = NULL;
 	      if (ed->spreadlevel == SPREAD_TRANS)
 		switch (ed->spreadpower)
 		  {
