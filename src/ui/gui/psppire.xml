@@ -3,6 +3,8 @@
   <!-- <init-function>my_catalog_init</init-function> -->
 
   <glade-widget-classes>
+    <glade-widget-class name="PsppireAcr"    generic-name="acr" title="Psppire Add/Change/Remove"/>
+    <glade-widget-class name="PsppireValChooser"    generic-name="val-chooser" title="Psppire Value Chooser"/>
     <glade-widget-class name="PsppireDialog"    generic-name="dialog" title="Psppire Dialog"/>
     <glade-widget-class name="PsppireDictView"  generic-name="dictview" title="Psppire Dict View"/>
     <glade-widget-class name="PsppireCheckboxTreeview"  generic-name="checkbox-treeview" title="Psppire Checkbox Treeview"/>
