@@ -127,6 +127,12 @@ run_plots_dialog (PsppireDialogActionExamine *ed)
   gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (ed->histogram_button), ed->histogram);
   gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (ed->npplots_button), ed->npplots);
 
+  g_signal_connect (ed->spread_trans_button, "toggled",
+                    G_CALLBACK (set_sensitivity_from_toggle),
+                    ed->spread_power_combo);
+  gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (ed->spread_trans_button), FALSE);
+  gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (ed->spread_trans_button), TRUE);
+
   switch (ed->spreadlevel)
     {
     case SPREAD_NONE:
