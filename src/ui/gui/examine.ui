@@ -1,21 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!-- Generated with glade 3.22.1 -->
 <!-- PSPP - a program for statistical analysis. -->
 <!-- Copyright (C) 2017, 2020 Free Software Foundation, Inc. -->
-
 <!-- This program is free software: you can redistribute it and/or modify -->
 <!-- it under the terms of the GNU General Public License as published by -->
 <!-- the Free Software Foundation, either version 3 of the License, or -->
 <!-- (at your option) any later version. -->
-
 <!-- This program is distributed in the hope that it will be useful, -->
 <!-- but WITHOUT ANY WARRANTY; without even the implied warranty of -->
 <!-- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the -->
 <!-- GNU General Public License for more details. -->
-
 <!-- You should have received a copy of the GNU General Public License -->
 <!-- along with this program.  If not, see <http://www.gnu.org/licenses/>. -->
-
-<!-- Generated with glade 3.18.3 -->
 <interface>
   <requires lib="gtk+" version="3.22"/>
   <requires lib="psppire" version="2054.17080"/>
@@ -24,7 +20,10 @@
     <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
     <property name="title" translatable="yes">Explore</property>
     <property name="modal">True</property>
-    <property name="help-page">EXAMINE</property>
+    <property name="help_page">EXAMINE</property>
+    <child>
+      <placeholder/>
+    </child>
     <child>
       <object class="GtkBox" id="dialog-hbox1">
         <property name="visible">True</property>
@@ -55,10 +54,10 @@
                     <property name="shadow_type">none</property>
                     <child>
                       <object class="GtkEntry" id="entry1">
-                        <property name="margin-start">12</property>
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
                         <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
+                        <property name="margin_start">12</property>
                       </object>
                     </child>
                     <child type="label">
@@ -89,9 +88,9 @@
                     <child>
                       <object class="GtkScrolledWindow" id="scrolledwindow3">
                         <property name="visible">True</property>
-                        <property name="margin-start">12</property>
                         <property name="can_focus">True</property>
                         <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
+                        <property name="margin_start">12</property>
                         <property name="hscrollbar_policy">never</property>
                         <property name="shadow_type">etched-in</property>
                         <child>
@@ -136,9 +135,9 @@
                     <child>
                       <object class="GtkScrolledWindow" id="scrolledwindow2">
                         <property name="visible">True</property>
-                        <property name="margin-start">12</property>
                         <property name="can_focus">True</property>
                         <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
+                        <property name="margin_start">12</property>
                         <property name="hscrollbar_policy">never</property>
                         <property name="shadow_type">etched-in</property>
                         <child>
@@ -256,47 +255,76 @@
                 <property name="position">0</property>
               </packing>
             </child>
-	    <child>
-	      <object class="GtkFrame" id="display-frame">
-		<property name="visible">True</property>
-		<child>
-		  <object class="GtkBox" id="display-hbox">
-		    <property name="visible">True</property>
-		    <property name="orientation">horizontal</property>
-		    <child>
-		      <object class="GtkRadioButton" id="display-both-button">
-			<property name="label" translatable="yes">Both</property>
-			<property name="visible">True</property>
-		      </object>
-		    </child>
-		    <child>
-		      <object class="GtkRadioButton" id="display-stats-button">
-			<property name="label" translatable="yes">Statistics</property>
-			<property name="visible">True</property>
-			<property name="group">display-both-button</property>
-		      </object>
-		    </child>
-		    <child>
-		      <object class="GtkRadioButton" id="display-plots-button">
-			<property name="label" translatable="yes">Plots</property>
-			<property name="visible">True</property>
-			<property name="group">display-both-button</property>
-		      </object>
-		    </child>
-		  </object>
-		</child>
-		<child type="label">
-		  <object class="GtkLabel" id="display-label">
+            <child>
+              <object class="GtkFrame" id="display-frame">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="label_xalign">0</property>
+                <child>
+                  <object class="GtkBox" id="display-hbox">
                     <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <child>
+                      <object class="GtkRadioButton" id="display-both-button">
+                        <property name="label" translatable="yes">Both</property>
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                        <property name="receives_default">False</property>
+                        <property name="draw_indicator">True</property>
+                      </object>
+                      <packing>
+                        <property name="expand">False</property>
+                        <property name="fill">True</property>
+                        <property name="position">0</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkRadioButton" id="display-stats-button">
+                        <property name="label" translatable="yes">Statistics</property>
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                        <property name="receives_default">False</property>
+                        <property name="draw_indicator">True</property>
+                        <property name="group">display-both-button</property>
+                      </object>
+                      <packing>
+                        <property name="expand">False</property>
+                        <property name="fill">True</property>
+                        <property name="position">1</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkRadioButton" id="display-plots-button">
+                        <property name="label" translatable="yes">Plots</property>
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                        <property name="receives_default">False</property>
+                        <property name="draw_indicator">True</property>
+                        <property name="group">display-both-button</property>
+                      </object>
+                      <packing>
+                        <property name="expand">False</property>
+                        <property name="fill">True</property>
+                        <property name="position">2</property>
+                      </packing>
+                    </child>
+                  </object>
+                </child>
+                <child type="label">
+                  <object class="GtkLabel" id="display-label">
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
                     <property name="label" translatable="yes">Display</property>
                     <property name="use_markup">True</property>
-		  </object>
-		</child>
+                  </object>
+                </child>
               </object>
-	      <packing>
+              <packing>
+                <property name="expand">False</property>
+                <property name="fill">True</property>
                 <property name="position">1</property>
               </packing>
-	    </child>
+            </child>
             <child>
               <object class="GtkButtonBox" id="hbuttonbox1">
                 <property name="visible">True</property>
@@ -336,8 +364,15 @@
                 <child>
                   <object class="GtkButton" id="plots-button">
                     <property name="label" translatable="yes">Plot...</property>
-		    <property name="visible">True</property>
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <property name="receives_default">False</property>
                   </object>
+                  <packing>
+                    <property name="expand">True</property>
+                    <property name="fill">True</property>
+                    <property name="position">2</property>
+                  </packing>
                 </child>
               </object>
               <packing>
@@ -356,11 +391,11 @@
         </child>
         <child>
           <object class="PsppireButtonBox" id="psppire-vbuttonbox1">
-            <property name="orientation">vertical</property>
             <property name="visible">True</property>
             <property name="can_focus">False</property>
             <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
             <property name="border_width">5</property>
+            <property name="orientation">vertical</property>
           </object>
           <packing>
             <property name="expand">False</property>
@@ -377,7 +412,10 @@
     <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
     <property name="title" translatable="yes">Explore: Options</property>
     <property name="modal">True</property>
-    <property name="help-page">EXAMINE</property>
+    <property name="help_page">EXAMINE</property>
+    <child>
+      <placeholder/>
+    </child>
     <child>
       <object class="GtkBox" id="dialog-hbox3">
         <property name="visible">True</property>
@@ -394,8 +432,8 @@
               <object class="GtkBox" id="vbox4">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
-                <property name="margin-start">12</property>
                 <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
+                <property name="margin_start">12</property>
                 <property name="orientation">vertical</property>
                 <child>
                   <object class="GtkRadioButton" id="radiobutton1">
@@ -405,7 +443,6 @@
                     <property name="receives_default">False</property>
                     <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
                     <property name="use_underline">True</property>
-                    <property name="xalign">0.5</property>
                     <property name="active">True</property>
                     <property name="draw_indicator">True</property>
                   </object>
@@ -423,7 +460,6 @@
                     <property name="receives_default">False</property>
                     <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
                     <property name="use_underline">True</property>
-                    <property name="xalign">0.5</property>
                     <property name="active">True</property>
                     <property name="draw_indicator">True</property>
                     <property name="group">radiobutton1</property>
@@ -442,7 +478,6 @@
                     <property name="receives_default">False</property>
                     <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
                     <property name="use_underline">True</property>
-                    <property name="xalign">0.5</property>
                     <property name="active">True</property>
                     <property name="draw_indicator">True</property>
                     <property name="group">radiobutton1</property>
@@ -473,11 +508,11 @@
         </child>
         <child>
           <object class="PsppireButtonBox" id="psppire-vbuttonbox2">
-            <property name="orientation">vertical</property>
             <property name="visible">True</property>
             <property name="can_focus">False</property>
             <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
             <property name="border_width">5</property>
+            <property name="orientation">vertical</property>
             <property name="buttons">PSPPIRE_BUTTON_CONTINUE_MASK | PSPPIRE_BUTTON_CANCEL_MASK | PSPPIRE_BUTTON_HELP_MASK</property>
           </object>
           <packing>
@@ -490,12 +525,307 @@
       </object>
     </child>
   </object>
+  <object class="PsppireDialog" id="plots-dialog">
+    <property name="can_focus">False</property>
+    <property name="title" translatable="yes">Explore: Plots</property>
+    <property name="modal">True</property>
+    <property name="help_page">EXAMINE</property>
+    <child>
+      <placeholder/>
+    </child>
+    <child>
+      <object class="GtkBox" id="dialog-plot-vboxtop">
+        <property name="visible">True</property>
+        <property name="can_focus">False</property>
+        <property name="margin_left">5</property>
+        <property name="margin_right">5</property>
+        <property name="margin_top">5</property>
+        <property name="margin_bottom">5</property>
+        <property name="spacing">5</property>
+        <child>
+          <object class="GtkBox">
+            <property name="visible">True</property>
+            <property name="can_focus">False</property>
+            <property name="orientation">vertical</property>
+            <child>
+              <object class="GtkBox" id="dialog-plot-hboxplots">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="spacing">5</property>
+                <child>
+                  <object class="GtkFrame" id="boxplot-frame">
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <property name="label_xalign">0</property>
+                    <child>
+                      <object class="GtkBox" id="dialog-plot-vbox-boxplots">
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                        <property name="orientation">vertical</property>
+                        <property name="homogeneous">True</property>
+                        <child>
+                          <object class="GtkRadioButton" id="boxplot-factors-button">
+                            <property name="label" translatable="yes">Factor levels together</property>
+                            <property name="visible">True</property>
+                            <property name="can_focus">True</property>
+                            <property name="receives_default">False</property>
+                            <property name="active">True</property>
+                            <property name="draw_indicator">True</property>
+                          </object>
+                          <packing>
+                            <property name="expand">False</property>
+                            <property name="fill">True</property>
+                            <property name="position">0</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <object class="GtkRadioButton" id="boxplot-dependents-button">
+                            <property name="label" translatable="yes">Dependents together</property>
+                            <property name="visible">True</property>
+                            <property name="can_focus">True</property>
+                            <property name="receives_default">False</property>
+                            <property name="draw_indicator">True</property>
+                            <property name="group">boxplot-factors-button</property>
+                          </object>
+                          <packing>
+                            <property name="expand">False</property>
+                            <property name="fill">True</property>
+                            <property name="position">1</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <object class="GtkRadioButton" id="boxplot-none-button">
+                            <property name="label" translatable="yes">None</property>
+                            <property name="visible">True</property>
+                            <property name="can_focus">True</property>
+                            <property name="receives_default">False</property>
+                            <property name="draw_indicator">True</property>
+                            <property name="group">boxplot-factors-button</property>
+                          </object>
+                          <packing>
+                            <property name="expand">False</property>
+                            <property name="fill">True</property>
+                            <property name="position">2</property>
+                          </packing>
+                        </child>
+                      </object>
+                    </child>
+                    <child type="label">
+                      <object class="GtkLabel" id="boxplot-label">
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                        <property name="label" translatable="yes">Boxplots</property>
+                        <property name="use_markup">True</property>
+                      </object>
+                    </child>
+                  </object>
+                  <packing>
+                    <property name="expand">True</property>
+                    <property name="fill">True</property>
+                    <property name="position">0</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkFrame" id="descriptive-frame">
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <property name="label_xalign">0</property>
+                    <child>
+                      <object class="GtkCheckButton" id="histogram-button">
+                        <property name="label" translatable="yes">Histogram</property>
+                        <property name="visible">True</property>
+                        <property name="can_focus">True</property>
+                        <property name="receives_default">False</property>
+                        <property name="draw_indicator">True</property>
+                      </object>
+                    </child>
+                    <child type="label">
+                      <object class="GtkLabel" id="descriptive-label">
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                        <property name="label" translatable="yes">Descriptive</property>
+                        <property name="use_markup">True</property>
+                      </object>
+                    </child>
+                  </object>
+                  <packing>
+                    <property name="expand">True</property>
+                    <property name="fill">True</property>
+                    <property name="position">1</property>
+                  </packing>
+                </child>
+              </object>
+              <packing>
+                <property name="expand">True</property>
+                <property name="fill">True</property>
+                <property name="position">0</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkCheckButton" id="npplots-button">
+                <property name="label" translatable="yes">Normality plots with tests</property>
+                <property name="visible">True</property>
+                <property name="can_focus">True</property>
+                <property name="receives_default">False</property>
+                <property name="draw_indicator">True</property>
+              </object>
+              <packing>
+                <property name="expand">True</property>
+                <property name="fill">True</property>
+                <property name="position">1</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkFrame" id="spread-frame">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="label_xalign">0</property>
+                <child>
+                  <object class="GtkBox" id="dialog-plot-vbox-spread">
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <property name="orientation">vertical</property>
+                    <property name="homogeneous">True</property>
+                    <child>
+                      <object class="GtkRadioButton" id="spread-none-button">
+                        <property name="label" translatable="yes">None</property>
+                        <property name="visible">True</property>
+                        <property name="can_focus">True</property>
+                        <property name="receives_default">False</property>
+                        <property name="active">True</property>
+                        <property name="draw_indicator">True</property>
+                      </object>
+                      <packing>
+                        <property name="expand">False</property>
+                        <property name="fill">True</property>
+                        <property name="position">0</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkRadioButton" id="spread-power-button">
+                        <property name="label" translatable="yes">Power estimation</property>
+                        <property name="visible">True</property>
+                        <property name="can_focus">True</property>
+                        <property name="receives_default">False</property>
+                        <property name="draw_indicator">True</property>
+                        <property name="group">spread-none-button</property>
+                      </object>
+                      <packing>
+                        <property name="expand">False</property>
+                        <property name="fill">True</property>
+                        <property name="position">1</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkBox" id="dialog-plot-hbox-spreadtrans">
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                        <child>
+                          <object class="GtkRadioButton" id="spread-trans-button">
+                            <property name="label" translatable="yes">Transformed Power:</property>
+                            <property name="visible">True</property>
+                            <property name="can_focus">True</property>
+                            <property name="receives_default">False</property>
+                            <property name="draw_indicator">True</property>
+                            <property name="group">spread-none-button</property>
+                          </object>
+                          <packing>
+                            <property name="expand">False</property>
+                            <property name="fill">True</property>
+                            <property name="position">0</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <object class="GtkComboBoxText" id="spread-power-combo">
+                            <property name="visible">True</property>
+                            <property name="can_focus">False</property>
+                            <items>
+                              <item id="natlog" translatable="yes">Natural Log</item>
+                              <item id="cube" translatable="yes">Cube</item>
+                              <item id="square" translatable="yes">Square</item>
+                              <item id="squareroot" translatable="yes">Square Root</item>
+                              <item id="recroot" translatable="yes">Rec. Root</item>
+                              <item id="reciprocal" translatable="yes">Reciprocal</item>
+                            </items>
+                          </object>
+                          <packing>
+                            <property name="expand">False</property>
+                            <property name="fill">True</property>
+                            <property name="position">1</property>
+                          </packing>
+                        </child>
+                      </object>
+                      <packing>
+                        <property name="expand">False</property>
+                        <property name="fill">True</property>
+                        <property name="position">2</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkRadioButton" id="spread-untrans-button">
+                        <property name="label" translatable="yes">Untransformed</property>
+                        <property name="visible">True</property>
+                        <property name="can_focus">True</property>
+                        <property name="receives_default">False</property>
+                        <property name="draw_indicator">True</property>
+                        <property name="group">spread-none-button</property>
+                      </object>
+                      <packing>
+                        <property name="expand">False</property>
+                        <property name="fill">True</property>
+                        <property name="position">3</property>
+                      </packing>
+                    </child>
+                  </object>
+                </child>
+                <child type="label">
+                  <object class="GtkLabel" id="spread-label">
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <property name="label" translatable="yes">Spread vs Level with Levene Test</property>
+                    <property name="use_markup">True</property>
+                  </object>
+                </child>
+              </object>
+              <packing>
+                <property name="expand">True</property>
+                <property name="fill">True</property>
+                <property name="position">2</property>
+              </packing>
+            </child>
+          </object>
+          <packing>
+            <property name="expand">True</property>
+            <property name="fill">True</property>
+            <property name="position">0</property>
+          </packing>
+        </child>
+        <child>
+          <object class="PsppireButtonBox" id="psppire-plotbuttonbox">
+            <property name="visible">True</property>
+            <property name="can_focus">False</property>
+            <property name="orientation">vertical</property>
+            <property name="buttons">PSPPIRE_BUTTON_CONTINUE_MASK | PSPPIRE_BUTTON_CANCEL_MASK | PSPPIRE_BUTTON_HELP_MASK</property>
+          </object>
+          <packing>
+            <property name="expand">False</property>
+            <property name="fill">False</property>
+            <property name="pack_type">end</property>
+            <property name="position">3</property>
+          </packing>
+        </child>
+      </object>
+    </child>
+  </object>
   <object class="PsppireDialog" id="statistics-dialog">
     <property name="can_focus">False</property>
     <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
     <property name="title" translatable="yes">Explore: Statistics</property>
     <property name="modal">True</property>
-    <property name="help-page">EXAMINE</property>
+    <property name="help_page">EXAMINE</property>
+    <child>
+      <placeholder/>
+    </child>
     <child>
       <object class="GtkBox" id="dialog-hbox2">
         <property name="visible">True</property>
@@ -518,7 +848,6 @@
                 <property name="receives_default">False</property>
                 <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
                 <property name="use_underline">True</property>
-                <property name="xalign">0.5</property>
                 <property name="draw_indicator">True</property>
               </object>
               <packing>
@@ -535,7 +864,6 @@
                 <property name="receives_default">False</property>
                 <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
                 <property name="use_underline">True</property>
-                <property name="xalign">0.5</property>
                 <property name="draw_indicator">True</property>
               </object>
               <packing>
@@ -552,7 +880,6 @@
                 <property name="receives_default">False</property>
                 <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
                 <property name="use_underline">True</property>
-                <property name="xalign">0.5</property>
                 <property name="draw_indicator">True</property>
               </object>
               <packing>
@@ -570,7 +897,6 @@
         </child>
         <child>
           <object class="PsppireButtonBox" id="psppire-hbuttonbox1">
-            <property name="orientation">horizontal</property>
             <property name="visible">True</property>
             <property name="can_focus">False</property>
             <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
@@ -584,157 +910,6 @@
             <property name="pack_type">end</property>
             <property name="position">1</property>
           </packing>
-        </child>
-      </object>
-    </child>
-  </object>
-  <object class="PsppireDialog" id="plots-dialog">
-    <property name="can_focus">False</property>
-    <property name="title" translatable="yes">Explore: Plots</property>
-    <property name="modal">True</property>
-    <property name="help-page">EXAMINE</property>
-    <child>
-      <object class="GtkBox" id="dialog-plot-vboxtop">
-        <property name="visible">True</property>
-        <property name="orientation">vertical</property>
-        <child>
-	  <object class="GtkBox" id="dialog-plot-hboxplots">
-            <property name="visible">True</property>
-            <property name="orientation">horizontal</property>
-	    <child>
-	      <object class="GtkFrame" id="boxplot-frame">
-		<property name="visible">True</property>
-		<child>
-		  <object class="GtkBox" id="dialog-plot-vbox-boxplots">
-		    <property name="visible">True</property>
-		    <property name="orientation">vertical</property>
-		    <child>
-		      <object class="GtkRadioButton" id="boxplot-factors-button">
-			<property name="label" translatable="yes">Factor levels together</property>
-			<property name="visible">True</property>
-		      </object>
-		    </child>
-		    <child>
-		      <object class="GtkRadioButton" id="boxplot-dependents-button">
-			<property name="label" translatable="yes">Dependents together</property>
-			<property name="visible">True</property>
-			<property name="group">boxplot-factors-button</property>
-		      </object>
-		    </child>
-		    <child>
-		      <object class="GtkRadioButton" id="boxplot-none-button">
-			<property name="label" translatable="yes">None</property>
-			<property name="visible">True</property>
-			<property name="group">boxplot-factors-button</property>
-		      </object>
-		    </child>
-		  </object>
-		</child>
-		<child type="label">
-		  <object class="GtkLabel" id="boxplot-label">
-                    <property name="visible">True</property>
-                    <property name="label" translatable="yes">Boxplots</property>
-                    <property name="use_markup">True</property>
-		  </object>
-		</child>
-              </object>
-	    </child>
-	    <child>
-	      <object class="GtkFrame" id="descriptive-frame">
-		<property name="visible">True</property>
-		<child>
-		  <object class="GtkCheckButton" id="histogram-button">
-                    <property name="label" translatable="yes">Histogram</property>
-                    <property name="visible">True</property>
-		  </object>
-		</child>
-		<child type="label">
-		  <object class="GtkLabel" id="descriptive-label">
-                    <property name="visible">True</property>
-                    <property name="label" translatable="yes">Descriptive</property>
-                    <property name="use_markup">True</property>
-		  </object>
-		</child>
-	      </object>
-	    </child>
-	  </object>
-        </child>
-	<child>
-	  <object class="GtkCheckButton" id="npplots-button">
-            <property name="label" translatable="yes">Normality plots with tests</property>
-            <property name="visible">True</property>
-	  </object>
-	</child>
-	<child>
-	  <object class="GtkFrame" id="spread-frame">
-	    <property name="visible">True</property>
-	    <child>
-	      <object class="GtkBox" id="dialog-plot-vbox-spread">
-		<property name="visible">True</property>
-		<property name="orientation">vertical</property>
-		<child>
-		  <object class="GtkRadioButton" id="spread-none-button">
-		    <property name="label" translatable="yes">None</property>
-		    <property name="visible">True</property>
-		  </object>
-		</child>
-		<child>
-		  <object class="GtkRadioButton" id="spread-power-button">
-		    <property name="label" translatable="yes">Power estimation</property>
-		    <property name="visible">True</property>
-		    <property name="group">spread-none-button</property>
-		  </object>
-		</child>
-		<child>
-		  <object class="GtkBox" id="dialog-plot-hbox-spreadtrans">
-		    <property name="visible">True</property>
-		    <property name="orientation">horizontal</property>
-		    <child>
-		      <object class="GtkRadioButton" id="spread-trans-button">
-			<property name="label" translatable="yes">Transformed Power:</property>
-			<property name="visible">True</property>
-			<property name="group">spread-none-button</property>
-		      </object>
-		    </child>
-		    <child>
-		      <object class="GtkComboBoxText" id="spread-power-combo">
-			<property name="visible">True</property>
-			<items>
-			  <item translatable="yes" id="natlog"    >Natural Log</item>
-			  <item translatable="yes" id="cube"      >Cube</item>
-			  <item translatable="yes" id="square"    >Square</item>
-			  <item translatable="yes" id="squareroot">Square Root</item>
-			  <item translatable="yes" id="recroot"   >Rec. Root</item>
-			  <item translatable="yes" id="reciprocal">Reciprocal</item>
-			</items>
-		      </object>
-		    </child>
-		  </object>
-		</child>
-		<child>
-		  <object class="GtkRadioButton" id="spread-untrans-button">
-		    <property name="label" translatable="yes">Untransformed</property>
-		    <property name="visible">True</property>
-		    <property name="group">spread-none-button</property>
-		  </object>
-		</child>
-	      </object>
-	    </child>
-	    <child type="label">
-	      <object class="GtkLabel" id="spread-label">
-                <property name="visible">True</property>
-                <property name="label" translatable="yes">Spread vs Level with Levene Test</property>
-                <property name="use_markup">True</property>
-	      </object>
-	    </child>
-	  </object>
-	</child>
-        <child>
-          <object class="PsppireButtonBox" id="psppire-plotbuttonbox">
-	    <property name="orientation">horizontal</property>
-	    <property name="visible">True</property>
-	    <property name="buttons">PSPPIRE_BUTTON_CONTINUE_MASK | PSPPIRE_BUTTON_CANCEL_MASK | PSPPIRE_BUTTON_HELP_MASK</property>
-          </object>
         </child>
       </object>
     </child>
