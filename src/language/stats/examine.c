@@ -135,7 +135,7 @@ struct examine
   size_t n_percentiles;
 
   unsigned int plot;
-  int sl_power;
+  float sl_power;
 
   enum bp_mode boxplot_mode;
 
@@ -1725,9 +1725,9 @@ cmd_examine (struct lexer *lexer, struct dataset *ds)
                 {
                   examine.plot |= PLOT_SPREADLEVEL;
 		  examine.sl_power = 0;
-		  if (lex_match (lexer, T_LPAREN) && lex_force_int (lexer))
+		  if (lex_match (lexer, T_LPAREN) && lex_force_num (lexer))
 		    {
-                      examine.sl_power = lex_integer (lexer);
+                      examine.sl_power = lex_number (lexer);
 
                       lex_get (lexer);
                       if (! lex_force_match (lexer, T_RPAREN))
