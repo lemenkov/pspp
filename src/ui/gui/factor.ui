@@ -1,21 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!-- Generated with glade 3.22.1 -->
 <!-- PSPP - a program for statistical analysis. -->
 <!-- Copyright (C) 2017 Free Software Foundation, Inc. -->
-
 <!-- This program is free software: you can redistribute it and/or modify -->
 <!-- it under the terms of the GNU General Public License as published by -->
 <!-- the Free Software Foundation, either version 3 of the License, or -->
 <!-- (at your option) any later version. -->
-
 <!-- This program is distributed in the hope that it will be useful, -->
 <!-- but WITHOUT ANY WARRANTY; without even the implied warranty of -->
 <!-- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the -->
 <!-- GNU General Public License for more details. -->
-
 <!-- You should have received a copy of the GNU General Public License -->
 <!-- along with this program.  If not, see <http://www.gnu.org/licenses/>. -->
-
-<!-- Generated with glade 3.18.3 -->
 <interface>
   <requires lib="gtk+" version="3.22"/>
   <requires lib="psppire" version="0.0"/>
@@ -38,7 +34,10 @@
     <property name="can_focus">False</property>
     <property name="title" translatable="yes">Factor Analysis: Rotation</property>
     <property name="modal">True</property>
-    <property name="help-page">FACTOR</property>
+    <property name="help_page">FACTOR</property>
+    <child>
+      <placeholder/>
+    </child>
     <child>
       <object class="GtkBox" id="dialog-hbox8">
         <property name="visible">True</property>
@@ -71,9 +70,9 @@
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
                         <property name="receives_default">False</property>
+                        <property name="halign">start</property>
                         <property name="hexpand">True</property>
                         <property name="use_underline">True</property>
-                        <property name="xalign">0.5</property>
                         <property name="active">True</property>
                         <property name="draw_indicator">True</property>
                       </object>
@@ -88,8 +87,8 @@
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
                         <property name="receives_default">False</property>
+                        <property name="halign">start</property>
                         <property name="use_underline">True</property>
-                        <property name="xalign">0.5</property>
                         <property name="active">True</property>
                         <property name="draw_indicator">True</property>
                         <property name="group">radiobutton-none</property>
@@ -105,10 +104,10 @@
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
                         <property name="receives_default">False</property>
+                        <property name="halign">start</property>
                         <property name="hexpand">True</property>
                         <property name="vexpand">True</property>
                         <property name="use_underline">True</property>
-                        <property name="xalign">0.5</property>
                         <property name="active">True</property>
                         <property name="draw_indicator">True</property>
                         <property name="group">radiobutton-none</property>
@@ -124,10 +123,10 @@
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
                         <property name="receives_default">False</property>
+                        <property name="halign">start</property>
                         <property name="hexpand">True</property>
                         <property name="vexpand">True</property>
                         <property name="use_underline">True</property>
-                        <property name="xalign">0.5</property>
                         <property name="active">True</property>
                         <property name="draw_indicator">True</property>
                         <property name="group">radiobutton-none</property>
@@ -160,8 +159,8 @@
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="receives_default">False</property>
+                <property name="halign">start</property>
                 <property name="use_underline">True</property>
-                <property name="xalign">0.5</property>
                 <property name="draw_indicator">True</property>
               </object>
               <packing>
@@ -217,7 +216,6 @@
         </child>
         <child>
           <object class="PsppireButtonBox" id="psppire-vbuttonbox3">
-            <property name="orientation">vertical</property>
             <property name="visible">True</property>
             <property name="can_focus">False</property>
             <property name="border_width">5</property>
@@ -263,7 +261,10 @@
     <property name="can_focus">False</property>
     <property name="title" translatable="yes">Factor Analysis: Extraction</property>
     <property name="modal">True</property>
-    <property name="help-page">FACTOR</property>
+    <property name="help_page">FACTOR</property>
+    <child>
+      <placeholder/>
+    </child>
     <child>
       <object class="GtkBox" id="dialog-hbox4">
         <property name="visible">True</property>
@@ -346,8 +347,8 @@
                             <property name="visible">True</property>
                             <property name="can_focus">True</property>
                             <property name="receives_default">False</property>
+                            <property name="halign">start</property>
                             <property name="use_underline">True</property>
-                            <property name="xalign">0.5</property>
                             <property name="draw_indicator">True</property>
                           </object>
                           <packing>
@@ -362,8 +363,8 @@
                             <property name="visible">True</property>
                             <property name="can_focus">True</property>
                             <property name="receives_default">False</property>
+                            <property name="halign">start</property>
                             <property name="use_underline">True</property>
-                            <property name="xalign">0.5</property>
                             <property name="draw_indicator">True</property>
                             <property name="group">correlations-radiobutton</property>
                           </object>
@@ -408,8 +409,8 @@
                             <property name="visible">True</property>
                             <property name="can_focus">True</property>
                             <property name="receives_default">False</property>
+                            <property name="halign">start</property>
                             <property name="use_underline">True</property>
-                            <property name="xalign">0.5</property>
                             <property name="draw_indicator">True</property>
                           </object>
                           <packing>
@@ -424,8 +425,8 @@
                             <property name="visible">True</property>
                             <property name="can_focus">True</property>
                             <property name="receives_default">False</property>
+                            <property name="halign">start</property>
                             <property name="use_underline">True</property>
-                            <property name="xalign">0.5</property>
                             <property name="draw_indicator">True</property>
                           </object>
                           <packing>
@@ -479,7 +480,7 @@
                             <property name="visible">True</property>
                             <property name="can_focus">True</property>
                             <property name="receives_default">False</property>
-                            <property name="xalign">0.5</property>
+                            <property name="halign">start</property>
                             <property name="active">True</property>
                             <property name="draw_indicator">True</property>
                             <property name="group">nfactors-radiobutton</property>
@@ -509,7 +510,7 @@
                             <property name="visible">True</property>
                             <property name="can_focus">True</property>
                             <property name="receives_default">False</property>
-                            <property name="xalign">0.5</property>
+                            <property name="halign">start</property>
                             <property name="draw_indicator">True</property>
                           </object>
                           <packing>
@@ -522,7 +523,7 @@
                           <object class="GtkLabel" id="label7">
                             <property name="visible">True</property>
                             <property name="can_focus">False</property>
-                            <property name="xalign">0</property>
+                            <property name="halign">start</property>
                             <property name="label" translatable="yes">_Number of factors:</property>
                             <property name="use_underline">True</property>
                             <property name="mnemonic_widget">nfactors-radiobutton</property>
@@ -611,17 +612,17 @@
             </child>
           </object>
           <packing>
-            <property name="expand">False</property>
+            <property name="expand">True</property>
             <property name="fill">True</property>
             <property name="position">0</property>
           </packing>
         </child>
         <child>
           <object class="PsppireButtonBox" id="psppire-vbuttonbox2">
-            <property name="orientation">vertical</property>
             <property name="visible">True</property>
             <property name="can_focus">False</property>
             <property name="border_width">5</property>
+            <property name="orientation">vertical</property>
             <property name="spacing">5</property>
             <property name="buttons">PSPPIRE_BUTTON_CONTINUE_MASK | PSPPIRE_BUTTON_CANCEL_MASK | PSPPIRE_BUTTON_HELP_MASK</property>
           </object>
@@ -639,7 +640,10 @@
     <property name="can_focus">False</property>
     <property name="title" translatable="yes">Factor Analysis</property>
     <property name="modal">True</property>
-    <property name="help-page">FACTOR</property>
+    <property name="help_page">FACTOR</property>
+    <child>
+      <placeholder/>
+    </child>
     <child>
       <object class="GtkGrid" id="dialog-hbox1">
         <property name="visible">True</property>
@@ -651,10 +655,10 @@
         <property name="row_spacing">5</property>
         <child>
           <object class="PsppireButtonBox" id="psppire-vbuttonbox1">
-            <property name="orientation">vertical</property>
             <property name="visible">True</property>
             <property name="can_focus">False</property>
             <property name="border_width">5</property>
+            <property name="orientation">vertical</property>
           </object>
           <packing>
             <property name="left_attach">1</property>
