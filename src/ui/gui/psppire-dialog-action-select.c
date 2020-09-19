@@ -1,5 +1,5 @@
 /* PSPPIRE - a graphical user interface for PSPP.
-   Copyright (C) 2007, 2008, 2009, 2010, 2011, 2014, 2015 Free Software Foundation, Inc.
+   Copyright (C) 2007, 2008, 2009, 2010, 2011, 2014, 2015, 2020 Free Software Foundation, Inc.
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -255,6 +255,20 @@ consistency (GtkSpinButton *spin, PsppireDialogActionSelect *act)
     }
 }
 
+
+/* When the all cases label button is clicked, set the corresponding button
+   to active.    This is a convenience thing, since the button itself has
+   a very small area and is hard to find with the mouse pointer.  */
+static gboolean
+on_button_release  (GtkWidget *w, GdkEvent *e, gpointer a)
+{
+  PsppireDialogActionSelect *act = PSPPIRE_DIALOG_ACTION_SELECT (a);
+
+  gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (act->radiobutton_all), TRUE);
+
+  return FALSE;
+}
+
 static GtkBuilder *
 psppire_dialog_action_select_activate (PsppireDialogAction *a, GVariant *param)
 {
@@ -301,8 +315,10 @@ psppire_dialog_action_select_activate (PsppireDialogAction *a, GVariant *param)
   act->radiobutton_filter =  get_widget_assert (xml, "radiobutton-filter");
   act->radiobutton_delete = get_widget_assert (xml,   "radiobutton-delete");
 
+  GtkWidget *all_cases_event = get_widget_assert (xml, "all-cases-event");
+  g_signal_connect (all_cases_event, "button-release-event", G_CALLBACK (on_button_release), act);
 
-  GtkWidget	*button_range = get_widget_assert (xml, "button-range");
+  GtkWidget *button_range = get_widget_assert (xml, "button-range");
   GtkWidget *button_sample = get_widget_assert (xml, "button-sample");
 
   GtkWidget *button_if =get_widget_assert (xml, "button-if");
