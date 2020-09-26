@@ -16,11 +16,11 @@ AC_DEFUN([PSPP_OPTIONAL_PREREQ], [pspp_optional_prereqs="$pspp_optional_prereqs
 AC_DEFUN([PSPP_CHECK_PREREQS],
 [
   if test "$pspp_optional_prereqs" != ""; then
-    AC_MSG_WARN([The following optional prerequisites are not installed.
+    AC_MSG_WARN([The following optional packages are not installed.
 You may wish to install them to obtain additional functionality:$pspp_optional_prereqs])
 fi
   if test "$pspp_required_prereqs" != ""; then
-    AC_MSG_ERROR([The following required prerequisites are not installed.
+    AC_MSG_ERROR([The following required packages are not installed.
 You must install them before PSPP can be built:$pspp_required_prereqs])
 fi
 ])
