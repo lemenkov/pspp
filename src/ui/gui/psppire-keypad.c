@@ -1,5 +1,5 @@
 /* PSPPIRE - a graphical user interface for PSPP.
-   Copyright (C) 2007, 2010, 2011, 2015 Free Software Foundation, Inc.
+   Copyright (C) 2007, 2010, 2011, 2015, 2020 Free Software Foundation, Inc.
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -19,11 +19,15 @@
 #include <gdk/gdkkeysyms.h>
 #include "psppire-keypad.h"
 
-enum {
-  INSERT_SYNTAX,
-  ERASE,
-  n_SIGNALS
-};
+#include <gettext.h>
+#define _(msgid) gettext (msgid)
+
+enum
+  {
+   INSERT_SYNTAX,
+   ERASE,
+   n_SIGNALS
+  };
 
 static guint keypad_signals [n_SIGNALS] = { 0 };
 
@@ -94,11 +98,12 @@ psppire_keypad_class_init (PsppireKeypadClass *klass)
    The order of these must correspond
    to the order of the button declarations
 */
-static const char * const keypad_insert_text[] = {
-  "0",  "1",  "2", "3", "4", "5", "6", "7", "8", "9",
-  ".", "+", "-", "*", "**", "/", "=", "<>", "<", "<=",
-  ">", ">=", "&", "|", "~", "()", NULL
-};
+static const char * const keypad_insert_text[] =
+  {
+   "0",  "1",  "2", "3", "4", "5", "6", "7", "8", "9",
+   ".", "+", "-", "*", "**", "/", "=", "<>", "<", "<=",
+   ">", ">=", "&", "|", "~", "()", NULL
+  };
 
 
 /* Callback for any button click.
@@ -324,21 +329,22 @@ psppire_keypad_init (PsppireKeypad *kp)
 	      digit_voffset + 4);
 
   kp->plus  = gtk_button_new_with_label ("+");
-  add_button (kp, &kp->plus, 0, 1,
-	      0,1);
+  gtk_widget_set_tooltip_text (kp->plus, _("add"));
+  add_button (kp, &kp->plus, 0, 1, 0, 1);
 
   kp->minus = button_new_from_unicode (0x2212); /* MINUS SIGN */
-  add_button (kp, &kp->minus, 0, 1,
-	      1,2);
+  gtk_widget_set_tooltip_text (kp->minus, _("subtract"));
+  add_button (kp, &kp->minus, 0, 1, 1, 2);
 
   kp->star  = button_new_from_unicode (0xD7);   /* MULTIPLICATION SIGN */
-  add_button (kp, &kp->star, 0, 1,
-	      2,3);
+  gtk_widget_set_tooltip_text (kp->star, _("multiply"));
+  add_button (kp, &kp->star, 0, 1,  2, 3);
 
   kp->slash = button_new_from_unicode (0xF7);   /* DIVISION SIGN */
-  add_button (kp, &kp->slash, 0, 1,
-	      3,4);
+  gtk_widget_set_tooltip_text (kp->slash, _("divide"));
+  add_button (kp, &kp->slash, 0, 1, 3, 4);
 
+  /* Exponention */
   {
     GtkWidget *label;
     char *markup =
@@ -350,66 +356,57 @@ psppire_keypad_init (PsppireKeypad *kp)
     g_free (markup);
 
     kp->star_star = gtk_button_new ();
+    gtk_widget_set_tooltip_text (kp->star_star, _("raise x to the power of y"));
+
     gtk_container_add (GTK_CONTAINER (kp->star_star), label);
 
     gtk_widget_show (label);
 
-    add_button (kp, &kp->star_star,
-		0, 1,
-		4, 5);
+    add_button (kp, &kp->star_star, 0, 1, 4, 5);
   }
 
 
   kp->gt = button_new_from_unicode (0x3E); /* GREATER-THAN SIGN*/
-  add_button (kp, &kp->gt, 2, 3,
-	      0,1);
+  gtk_widget_set_tooltip_text (kp->gt, _("is greater than"));
+  add_button (kp, &kp->gt, 2, 3,  0, 1);
 
   kp->lt = button_new_from_unicode (0x3C); /* LESS-THAN SIGN*/
-  add_button (kp, &kp->lt, 1, 2,
-	      0,1);
+  gtk_widget_set_tooltip_text (kp->lt, _("is less than"));
+  add_button (kp, &kp->lt, 1, 2, 0, 1);
 
   kp->ge = button_new_from_unicode (0x2265); /* GREATER-THAN OR EQUAL */
-  add_button (kp, &kp->ge, 2, 3,
-	      1,2);
+  gtk_widget_set_tooltip_text (kp->ge, _("is no less than"));
+  add_button (kp, &kp->ge, 2, 3, 1, 2);
 
   kp->le = button_new_from_unicode (0x2264); /* LESS-THAN OR EQUAL */
-  add_button (kp, &kp->le, 1, 2,
-	      1,2);
+  gtk_widget_set_tooltip_text (kp->le, _("is no greater than"));
+  add_button (kp, &kp->le, 1, 2, 1, 2);
 
   kp->neq = button_new_from_unicode (0x2260); /* NOT EQUAL */
-  add_button (kp, &kp->neq, 2, 3,
-	      2,3);
+  gtk_widget_set_tooltip_text (kp->neq, _("is not equal to"));
+  add_button (kp, &kp->neq, 2, 3, 2, 3);
 
   kp->eq = gtk_button_new_with_label ("=");
-  add_button (kp, &kp->eq, 1, 2,
-	      2,3);
+  gtk_widget_set_tooltip_text (kp->eq, _("is equal to"));
+  add_button (kp, &kp->eq, 1, 2, 2, 3);
 
   kp->parentheses = gtk_button_new_with_label ("()");
-  add_button (kp, &kp->parentheses, 2, 3,
-	      4,5);
-
+  add_button (kp, &kp->parentheses, 2, 3, 4, 5);
 
   kp->delete = gtk_button_new_with_label ("Delete");
-  add_button (kp, &kp->delete, 3, 6,
-	      4,5);
-
-
+  add_button (kp, &kp->delete, 3, 6, 4, 5);
 
   kp->and = button_new_from_unicode (0x2227); /* LOGICAL AND */
-  add_button (kp, &kp->and, 1, 2,
-	      3,4);
-
+  gtk_widget_set_tooltip_text (kp->and, _("and"));
+  add_button (kp, &kp->and, 1, 2, 3, 4);
 
   kp->or = button_new_from_unicode (0x2228); /* LOGICAL OR */
-  add_button (kp, &kp->or, 2, 3,
-	      3,4);
-
+  gtk_widget_set_tooltip_text (kp->or, _("or"));
+  add_button (kp, &kp->or, 2, 3, 3, 4);
 
   kp->not = button_new_from_unicode (0xAC); /* NOT SIGN */
-  add_button (kp, &kp->not, 1, 2,
-	      4,5);
-
-
+  gtk_widget_set_tooltip_text (kp->not, _("not"));
+  add_button (kp, &kp->not, 1, 2, 4, 5);
 
   g_object_set (G_OBJECT (kp->table), "row-spacing", 5, NULL);
   g_object_set (G_OBJECT (kp->table), "column-spacing", 5, NULL);
@@ -422,7 +419,6 @@ psppire_keypad_init (PsppireKeypad *kp)
 	GDK_LEAVE_NOTIFY_MASK |
 	GDK_ENTER_NOTIFY_MASK |
         GDK_FOCUS_CHANGE_MASK);
-
 }
 
 
