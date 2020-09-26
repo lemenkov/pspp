@@ -64,7 +64,7 @@ realize (GtkWidget *wb)
   psppire_conf_set_window_geometry (conf, get_window_id (wb), GTK_WINDOW (wb));
 
   if (GTK_WIDGET_CLASS (psppire_window_base_parent_class)->realize)
-    return GTK_WIDGET_CLASS (psppire_window_base_parent_class)->realize (wb) ;
+    GTK_WIDGET_CLASS (psppire_window_base_parent_class)->realize (wb) ;
 }
 
 
