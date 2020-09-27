@@ -77,6 +77,11 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "psppire-dialog-action-var-info.h"
 #include "psppire-dialog-action-weight.h"
 #include "psppire-value-entry.h"
+#include "psppire-data-sheet.h"
+#include "psppire-var-sheet-header.h"
+#include "psppire-variable-sheet.h"
+#include <ssw-sheet.h>
+
 
 static  volatile GType kludge;
 
@@ -215,6 +220,10 @@ preregister_widgets (void)
   psppire_value_entry_get_type ();
   psppire_checkbox_treeview_get_type ();
   psppire_means_layer_get_type ();
+  ssw_sheet_get_type ();
+  psppire_data_sheet_get_type ();
+  psppire_var_sheet_header_get_type ();
+  psppire_variable_sheet_get_type ();
 
   preregister_actions ();
   preregister_misc ();

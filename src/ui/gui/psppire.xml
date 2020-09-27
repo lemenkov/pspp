@@ -3,22 +3,33 @@
   <!-- <init-function>my_catalog_init</init-function> -->
 
   <glade-widget-classes>
-    <glade-widget-class name="PsppireAcr"    generic-name="acr" title="Psppire Add/Change/Remove"/>
-    <glade-widget-class name="PsppireValChooser"    generic-name="val-chooser" title="Psppire Value Chooser"/>
-    <glade-widget-class name="PsppireDialog"    generic-name="dialog" title="Psppire Dialog"/>
-    <glade-widget-class name="PsppireKeypad"    generic-name="dialog" title="Psppire Keypad"/>
-    <glade-widget-class name="PsppireDictView"  generic-name="dictview" title="Psppire Dict View"/>
+    <glade-widget-class name="PsppireAcr"       generic-name="acr" title="Psppire Add/Change/Remove"/>
+    <glade-widget-class name="PsppireButtonBox" generic-name="button-box" title="Psppire Button Box"/>
     <glade-widget-class name="PsppireCheckboxTreeview"  generic-name="checkbox-treeview" title="Psppire Checkbox Treeview"/>
-    <glade-widget-class name="PsppireVarView"  generic-name="var-view" title="Psppire Variable View"/>
-    <glade-widget-class name="PsppireSelector"  generic-name="frobnicator" title="Frobnicator"/>
-    <glade-widget-class name="PsppireButtonBox" generic-name="frobnicator" title="Frobnicator"/>
+    <glade-widget-class name="PsppireDataSheet" generic-name="data-sheet" title="Psppire Data Sheet"/>
+    <glade-widget-class name="PsppireDialog"    generic-name="dialog" title="Psppire Dialog"/>
+    <glade-widget-class name="PsppireDictView"  generic-name="dictview" title="Psppire Dict View"/>
+    <glade-widget-class name="PsppireKeypad"    generic-name="dialog" title="Psppire Keypad"/>
+    <glade-widget-class name="PsppireSelector"  generic-name="selector" title="Psppire Selector"/>
+    <glade-widget-class name="PsppireValChooser"    generic-name="val-chooser" title="Psppire Value Chooser"/>
+    <glade-widget-class name="PsppireVarView"   generic-name="var-view" title="Psppire Variable View"/>
+    <glade-widget-class name="PsppireVariableSheet" generic-name="variable-sheet" title="Psppire Variable Sheet"/>
+    <glade-widget-class name="SswSheet" generic-name="variable-sheet" title="Spread Sheet"/>
   </glade-widget-classes>
 
   <glade-widget-group name="psppire" title="Psppire">
+    <glade-widget-class-ref name="PsppireAcr"/>
+    <glade-widget-class-ref name="PsppireButtonBox"/>
+    <glade-widget-class-ref name="PsppireCheckboxTreeview"/>
+    <glade-widget-class-ref name="PsppireDataSheet"/>
     <glade-widget-class-ref name="PsppireDialog"/>
     <glade-widget-class-ref name="PsppireDictView"/>
-    <glade-widget-class-ref name="PsppireVarView"/>
+    <glade-widget-class-ref name="PsppireKeypad"/>
     <glade-widget-class-ref name="PsppireSelector"/>
+    <glade-widget-class-ref name="PsppireValChooser"/>
+    <glade-widget-class-ref name="PsppireVarView"/>
+    <glade-widget-class-ref name="PsppireVariableSheet"/>
+    <glade-widget-class-ref name="SswSheet"/>
   </glade-widget-group>
 
 </glade-catalog>
