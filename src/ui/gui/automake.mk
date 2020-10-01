@@ -356,6 +356,7 @@ src_ui_gui_libwidgets_essential_la_SOURCES = \
 src_ui_gui_libwidgets_essential_la_CFLAGS = \
 	$(GTK_CFLAGS) \
 	$(GTKSOURCEVIEW_CFLAGS) \
+        $(SPREAD_SHEET_WIDGET_CFLAGS) \
 	$(AM_CFLAGS)
 
 # The unused-parameter warning is not by default disabled
