@@ -41,11 +41,13 @@ enum
     PROP_LINE_COUNT
   };
 
-enum {MAX_LINE_LEN = 16384};  /* Max length of an acceptable line. */
 
 static void
 read_lines (PsppireTextFile *tf)
 {
+  /* Max length of an acceptable line. */
+  static const int MAX_LINE_LEN = 16384;
+
   if (tf->file_name && 0 != g_strcmp0 ("unset", tf->encoding))
     {
       struct line_reader *reader = line_reader_for_file (tf->encoding, tf->file_name, O_RDONLY);
