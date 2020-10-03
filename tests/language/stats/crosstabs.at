@@ -153,9 +153,9 @@ CROSSTABS TABLES  y by z.
 AT_CHECK([pspp -o - -O format=csv -o pspp.txt crosstabs.sps], [0],
   [Table: Reading 1 record from INLINE.
 Variable,Record,Columns,Format
-x,1,1-  2,F2.0
-y,1,3-  3,F1.0
-z,1,4-  4,F1.0
+x,1,1-2,F2.0
+y,1,3-3,F1.0
+z,1,4-4,F1.0
 
 Table: Data List
 x,y,z
@@ -355,9 +355,9 @@ CROSSTABS TABLES  x BY y BY z/STATISTICS=ALL.
 AT_CHECK([pspp -o - -O format=csv -o pspp.csv -o pspp.txt crosstabs.sps], [0],
   [Table: Reading 1 record from INLINE.
 Variable,Record,Columns,Format
-x,1,1-  2,F2.0
-y,1,3-  3,F1.0
-z,1,4-  4,F1.0
+x,1,1-2,F2.0
+y,1,3-3,F1.0
+z,1,4-4,F1.0
 
 Table: Data List
 x,y,z

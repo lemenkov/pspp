@@ -35,8 +35,8 @@ END DATA.
 AT_CHECK([pspp -O format=csv begin-data.sps], [0], [dnl
 Table: Reading 1 record from INLINE.
 Variable,Record,Columns,Format
-a,1,1-  1,F1.0
-b,1,2-  2,F1.0
+a,1,1-1,F1.0
+b,1,2-2,F1.0
 
 Table: Data List
 a,b
@@ -64,8 +64,8 @@ list.
 AT_CHECK([pspp -O format=csv begin-data.sps], [0], [dnl
 Table: Reading 1 record from INLINE.
 Variable,Record,Columns,Format
-A,1,1-  1,F1.0
-B,1,2-  2,F1.0
+A,1,1-1,F1.0
+B,1,2-2,F1.0
 
 Table: Data List
 A,B

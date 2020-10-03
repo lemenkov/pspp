@@ -83,8 +83,8 @@ AT_CHECK([pspp -o pspp.csv -o pspp.txt weight.sps])
 AT_CHECK([cat pspp.csv], [0], [dnl
 Table: Reading 1 record from `weight.txt'.
 Variable,Record,Columns,Format
-AVAR,1,1-  5,F5.0
-BVAR,1,6- 10,F5.0
+AVAR,1,1-5,F5.0
+BVAR,1,6-10,F5.0
 
 Table: Descriptive Statistics
 ,N,Mean,S.E. Mean,Std Dev,Variance,Kurtosis,S.E. Kurt,Skewness,S.E. Skew,Range,Minimum,Maximum,Sum

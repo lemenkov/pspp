@@ -39,23 +39,23 @@ descript all/stat=all/format=serial.
 AT_CHECK([pspp -O format=csv descriptives.sps], [0], [dnl
 Table: Reading 1 record from INLINE.
 Variable,Record,Columns,Format
-V0,1,1-  1,F1.0
-V1,1,2-  2,F1.0
-V2,1,3-  3,F1.0
-V3,1,4-  4,F1.0
-V4,1,5-  5,F1.0
-V5,1,6-  6,F1.0
-V6,1,7-  7,F1.0
-V7,1,8-  8,F1.0
-V8,1,9-  9,F1.0
-V9,1,10- 10,F1.0
-V10,1,11- 11,F1.0
-V11,1,12- 12,F1.0
-V12,1,13- 13,F1.0
-V13,1,14- 14,F1.0
-V14,1,15- 15,F1.0
-V15,1,16- 16,F1.0
-V16,1,17- 17,F1.0
+V0,1,1-1,F1.0
+V1,1,2-2,F1.0
+V2,1,3-3,F1.0
+V3,1,4-4,F1.0
+V4,1,5-5,F1.0
+V5,1,6-6,F1.0
+V6,1,7-7,F1.0
+V7,1,8-8,F1.0
+V8,1,9-9,F1.0
+V9,1,10-10,F1.0
+V10,1,11-11,F1.0
+V11,1,12-12,F1.0
+V12,1,13-13,F1.0
+V13,1,14-14,F1.0
+V14,1,15-15,F1.0
+V15,1,16-16,F1.0
+V16,1,17-17,F1.0
 
 Table: Descriptive Statistics
 ,N,Mean,S.E. Mean,Std Dev,Variance,Kurtosis,S.E. Kurt,Skewness,S.E. Skew,Range,Minimum,Maximum,Sum

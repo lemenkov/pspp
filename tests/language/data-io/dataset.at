@@ -319,11 +319,11 @@ LIST.
 AT_CHECK([pspp -O format=csv dataset.pspp], [0], [dnl
 Table: Reading 1 record from INLINE.
 Variable,Record,Columns,Format
-x,1,1-  1,F1.0
+x,1,1-1,F1.0
 
 Table: Reading 1 record from INLINE.
 Variable,Record,Columns,Format
-y,1,2-  4,F3.0
+y,1,2-4,F3.0
 ])
 
 AT_CLEANUP

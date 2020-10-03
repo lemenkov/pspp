@@ -39,8 +39,8 @@ AT_CHECK([pspp -o pspp.csv list.sps])
 AT_CHECK([cat pspp.csv], [0], [dnl
 Table: Reading 1 record from `data.txt'.
 Variable,Record,Columns,Format
-avar,1,1-  5,F5.0
-bvar,1,6- 10,F5.0
+avar,1,1-5,F5.0
+bvar,1,6-10,F5.0
 
 Table: Data List
 avar,bvar
@@ -82,8 +82,8 @@ AT_CHECK([pspp -o pspp.csv list.sps])
 AT_CHECK([cat pspp.csv], [0], [dnl
 Table: Reading 1 record from `data.txt'.
 Variable,Record,Columns,Format
-avar,1,1-  5,F5.0
-bvar,1,6- 10,F5.0
+avar,1,1-5,F5.0
+bvar,1,6-10,F5.0
 
 Table: Data List
 Case Number,avar,bvar

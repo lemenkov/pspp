@@ -695,7 +695,7 @@ dump_fixed_table (const struct data_parser *parser,
 
       int first_column = f->first_column;
       int last_column = f->first_column + f->format.w - 1;
-      char *columns = xasprintf ("%3d-%3d", first_column, last_column);
+      char *columns = xasprintf ("%d-%d", first_column, last_column);
       pivot_table_put2 (table, 1, variable_idx,
                         pivot_value_new_user_text (columns, -1));
       free (columns);

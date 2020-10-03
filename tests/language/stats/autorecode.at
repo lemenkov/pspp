@@ -142,8 +142,8 @@ list.
 AT_CHECK([pspp -O format=csv autorecode.sps], [0],
   [Table: Reading 1 record from INLINE.
 Variable,Record,Columns,Format
-X,1,1-  5,A5
-Y,1,7-  7,F1.0
+X,1,1-5,A5
+Y,1,7-7,F1.0
 
 Table: Recoding X into A.
 Old Value,New Value,Value Label
@@ -454,8 +454,8 @@ list.
 AT_CHECK([pspp -O format=csv autorecode.sps], [0], [dnl
 Table: Reading 1 record from INLINE.
 Variable,Record,Columns,Format
-X,1,1-  5,A5
-Y,1,7-  7,F1.0
+X,1,1-5,A5
+Y,1,7-7,F1.0
 
 Table: Recoding X into A.
 Old Value,New Value,Value Label

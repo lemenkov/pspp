@@ -450,7 +450,7 @@ dump_table (struct print_trns *trns)
                         pivot_value_new_integer (spec->record));
       int last_column = spec->first_column + spec->format.w - 1;
       pivot_table_put2 (table, 1, row, pivot_value_new_user_text_nocopy (
-                          xasprintf ("%3d-%3d",
+                          xasprintf ("%d-%d",
                                      spec->first_column, last_column)));
 
       char fmt_string[FMT_STRING_LEN_MAX + 1];

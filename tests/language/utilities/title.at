@@ -77,8 +77,8 @@ dnl Filter out the dates/times
 AT_CHECK([[sed 's/(Entered [^)]*)/(Entered <date>)/' pspp.csv]], [0], [dnl
 Table: Reading 1 record from INLINE.
 Variable,Record,Columns,Format
-X,1,1-  1,F1.0
-Y,1,2-  2,F1.0
+X,1,1-1,F1.0
+Y,1,2-2,F1.0
 
 Table: Documents
 "document First line of a document
