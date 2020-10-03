@@ -1,5 +1,5 @@
 /* PSPPIRE - a graphical user interface for PSPP.
-   Copyright (C) 2017  Free Software Foundation
+   Copyright (C) 2017, 2020  Free Software Foundation
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -456,32 +456,41 @@ psppire_variable_sheet_finalize (GObject *object)
 }
 
 static void
+psppire_variable_sheet_realize (GtkWidget *widget)
+{
+  /* This is a kludge.  These are properties from the parent class.
+     They should really be set immediately after initialisation, but there is no
+     simple way to do that.  */
+  g_object_set (widget,
+                "editable", TRUE,
+                "select-renderer-func", select_renderer_func,
+                "vertical-draggable", TRUE,
+                "forward-conversion", var_sheet_data_to_string,
+                NULL);
+
+  if (GTK_WIDGET_CLASS (parent_class)->realize)
+    (*GTK_WIDGET_CLASS (parent_class)->realize) (widget);
+}
+
+
+static void
 psppire_variable_sheet_class_init (PsppireVariableSheetClass *class)
 {
   GObjectClass *object_class = G_OBJECT_CLASS (class);
+  GtkWidgetClass *widget_class = GTK_WIDGET_CLASS (class);
+
   object_class->dispose = psppire_variable_sheet_dispose;
 
   parent_class = g_type_class_peek_parent (class);
 
+  widget_class->realize = psppire_variable_sheet_realize;
   object_class->finalize = psppire_variable_sheet_finalize;
 }
 
 GtkWidget*
 psppire_variable_sheet_new (void)
 {
-  PsppireVarSheetHeader *vsh =
-    g_object_new (PSPPIRE_TYPE_VAR_SHEET_HEADER, NULL);
-
-  GObject *obj =
-    g_object_new (PSPPIRE_TYPE_VARIABLE_SHEET,
-		  "select-renderer-func", select_renderer_func,
-		  "hmodel", vsh,
-		  "forward-conversion", var_sheet_data_to_string,
-		  "editable", TRUE,
-		  "vertical-draggable", TRUE,
-		  NULL);
-
-  return GTK_WIDGET (obj);
+  return g_object_new (PSPPIRE_TYPE_VARIABLE_SHEET, NULL);
 }
 
 static void
@@ -609,4 +618,11 @@ psppire_variable_sheet_init (PsppireVariableSheet *sheet)
 
   g_signal_connect (sheet, "row-moved",
 		    G_CALLBACK (move_variable), NULL);
+
+  PsppireVarSheetHeader *vsh =
+    g_object_new (PSPPIRE_TYPE_VAR_SHEET_HEADER, NULL);
+
+  g_object_set (sheet,
+                "hmodel", vsh,
+                NULL);
 }

@@ -1,5 +1,5 @@
 /* PSPPIRE - a graphical user interface for PSPP.
-   Copyright (C) 2017, 2019  Free Software Foundation
+   Copyright (C) 2017, 2019, 2020  Free Software Foundation
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -372,10 +372,28 @@ psppire_data_sheet_dispose (GObject *obj)
   G_OBJECT_CLASS (parent_class)->dispose (obj);
 }
 
+
+static void
+psppire_data_sheet_realize (GtkWidget *widget)
+{
+  g_object_set (widget,
+                "forward-conversion", psppire_data_store_value_to_string,
+                "reverse-conversion", psppire_data_store_string_to_value,
+                "editable", TRUE,
+                "horizontal-draggable", TRUE,
+                NULL);
+
+  /* Chain up to the parent class */
+  GTK_WIDGET_CLASS (parent_class)->realize (widget);
+}
+
 static void
 psppire_data_sheet_class_init (PsppireDataSheetClass *class)
 {
   GObjectClass *object_class = G_OBJECT_CLASS (class);
+  GtkWidgetClass *widget_class = GTK_WIDGET_CLASS (class);
+
+  widget_class->realize = psppire_data_sheet_realize;
   object_class->dispose = psppire_data_sheet_dispose;
   object_class->finalize = psppire_data_sheet_finalize;
 
@@ -385,15 +403,7 @@ psppire_data_sheet_class_init (PsppireDataSheetClass *class)
 GtkWidget*
 psppire_data_sheet_new (void)
 {
-  GObject *obj =
-    g_object_new (PSPPIRE_TYPE_DATA_SHEET,
-		  "forward-conversion", psppire_data_store_value_to_string,
-		  "reverse-conversion", psppire_data_store_string_to_value,
-		  "editable", TRUE,
-		  "horizontal-draggable", TRUE,
-		  NULL);
-
-  return GTK_WIDGET (obj);
+  return g_object_new (PSPPIRE_TYPE_DATA_SHEET, NULL);
 }
 
 
@@ -456,6 +466,8 @@ set_dictionary (PsppireDataSheet *sheet)
 {
   GtkTreeModel *data_model = NULL;
   g_object_get (sheet, "data-model", &data_model, NULL);
+
+  g_return_if_fail (data_model);
 
   PsppireDataStore *store = PSPPIRE_DATA_STORE (data_model);
   g_object_set (sheet, "hmodel", store->dict, NULL);
