@@ -86,11 +86,11 @@ DIST_HOOKS += generate-changelog
 include $(top_srcdir)/build-aux/automake.mk
 include $(top_srcdir)/po/automake.mk
 include $(top_srcdir)/lib/automake.mk
-include $(top_srcdir)/doc/automake.mk
 include $(top_srcdir)/examples/automake.mk
 include $(top_srcdir)/src/automake.mk
 include $(top_srcdir)/utilities/automake.mk
 include $(top_srcdir)/tests/automake.mk
+include $(top_srcdir)/doc/automake.mk
 
 if WITH_PERL_MODULE
 include $(top_srcdir)/perl-module/automake.mk

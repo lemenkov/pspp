@@ -95,3 +95,12 @@ CLEANFILES += pspp-dev.dvi $(docbook_DATA)
 
 doc: $(INFO_DEPS) $(DVIS) $(PDFS) $(PSS) $(HTMLS) $(dist_docbook_DATA)
 PHONY += doc
+
+$(top_srcdir)/doc/help-pages-list: $(UI_FILES)
+	 $(AM_V_GEN)cat $^ | grep '"help[-_]page"' | \
+   $(SED) -e 's% *<property name="help[-_]page">\([^<]*\)</property>%//*[@id='"'"'\1'"'"']%' \
+	-e 's%#%'"'"']/*[@id='"'"'%g' > $@,tmp
+	test -s $@,tmp
+	mv $@,tmp $@
+
+EXTRA_DIST += doc/help-pages-list

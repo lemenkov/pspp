@@ -119,7 +119,7 @@ AC_ARG_WITH([gui],
   [AS_HELP_STRING([--without-gui],
                   [Don't build the PSPPIRE GUI (using GTK+)])],
   [], [with_gui=yes])
-AM_CONDITIONAL([HAVE_GUI],
+AM_CONDITIONAL([building_gui],
                [test "$with_cairo" != no && test "$with_gui" != "no"])
 if test "$with_cairo" != no && test "$with_gui" != "no"; then
   PKG_CHECK_MODULES([GTHREAD], [gthread-2.0], [],

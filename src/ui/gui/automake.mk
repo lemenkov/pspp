@@ -68,16 +68,7 @@ UI_FILES = \
 	src/ui/gui/var-type-dialog.ui \
 	src/ui/gui/weight.ui
 
-
-$(top_srcdir)/doc/help-pages-list: $(UI_FILES)
-	 $(AM_V_GEN)cat $^ | grep '"help[-_]page"' | \
-   $(SED) -e 's% *<property name="help[-_]page">\([^<]*\)</property>%//*[@id='"'"'\1'"'"']%' \
-	-e 's%#%'"'"']/*[@id='"'"'%g' > $@,tmp
-	test -s $@,tmp
-	mv $@,tmp $@
-
-EXTRA_DIST += doc/help-pages-list
-
+if building_gui
 
 EXTRA_DIST += \
 	src/ui/gui/org.fsf.pspp.metainfo.xml.in \
@@ -473,3 +464,5 @@ glade-tools: src/ui/gui/glade-wrapper src/ui/gui/libpsppire-glade.la
 # EXTRA_pkgLTLIBRARIES if DESTDIR is set.  It should not do that.
 install-EXTRA_pkgLTLIBRARIES:
 	true
+
+endif

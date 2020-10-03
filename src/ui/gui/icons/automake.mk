@@ -74,7 +74,7 @@ uninstall-icons:
 INSTALL_DATA_HOOKS += install-icons install-ext-icons
 UNINSTALL_DATA_HOOKS += uninstall-icons uninstall-ext-icons
 
-if HAVE_GUI
+if building_gui
 nodist_src_ui_gui_psppire_DATA = src/ui/gui/icons/splash.png
 
 src/ui/gui/icons/splash.png: $(top_srcdir)/src/ui/gui/icons/splash-t.png $(top_srcdir)/src/ui/gui/icons/splash-r.png Makefile
