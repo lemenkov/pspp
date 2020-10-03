@@ -31,6 +31,7 @@
 #include "libpspp/compiler.h"
 #include "data/variable.h"
 
+#include "psppire-data-store.h"
 #include "t-test-options.h"
 #include "src/language/stats/chart-category.h"
 #include "src/language/stats/aggregate.h"
@@ -58,3 +59,19 @@ const struct agr_func agr_func_tab[] =
 
 const struct ag_func ag_func[] = {};
 const int N_AG_FUNCS = 1;
+
+
+gchar *
+psppire_data_store_value_to_string (gpointer unused, PsppireDataStore *store, gint col, gint row, const GValue *v)
+{
+  assert (0);
+  return NULL;
+}
+
+gboolean
+psppire_data_store_string_to_value (GtkTreeModel *model, gint col, gint row,
+				    const gchar *in, GValue *out)
+{
+  assert (0);
+  return FALSE;
+}
