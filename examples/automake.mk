@@ -1,5 +1,5 @@
 # PSPP - a program for statistical analysis.
-# Copyright (C) 2017 Free Software Foundation, Inc.
+# Copyright (C) 2017, 2020 Free Software Foundation, Inc.
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -24,6 +24,8 @@ examples_DATA = \
 	examples/descript.sps \
 	examples/grid.sps \
 	examples/hotel.sav \
+	examples/horticulture.sav \
+	examples/personnel.sav \
 	examples/physiology.sav \
 	examples/repairs.sav \
 	examples/regress.sps \

@@ -288,6 +288,40 @@ to numeric values. @subcmd{/BLANK=VALID} is the default.
 
 @cmd{AUTORECODE} is a procedure.  It causes the data to be read.
 
+@subsection Autorecode Example
+
+In the file @file{personnel.sav}, the variable @exvar{occupation} is a string
+variable.   Except for data of a purely commentary nature, string variables
+are generally a bad idea.  One reason is that data entry errors are easily
+overlooked.  This has happened in @file{personnel.sav}; one entry which should
+read ``Scientist'' has been mistyped as ``Scrientist''.  In @ref{autorecode:ex}
+first, this error will be corrected,
+@footnote{One must use care when correcting such data input errors rather than
+msimply marking them as missing.  For example, if an occupation has been entered
+``Barister'', did the person mean ``Barrister'' or did she mean ``Barista''?}
+then we will use @cmd{AUTORECODE} to
+create a new numeric variable which takes recoded values of @exvar{occupation}.
+Finally, we will remove the old variable and rename the new variable to
+the name of the old variable.
+
+@float Example, autorecode:ex
+@psppsyntax {autorecode.sps}
+@caption {Changing a string variable to a numeric variable using @cmd{AUTORECODE}
+after correcting a data entry error}
+@end float
+
+
+Notice in @ref{autorecode:res}, how  the new variable has been automatically
+allocated value labels which correspond to the strings of the old variable.
+This means that in future analyses the descriptive strings are reported instead
+of the numeric values.
+
+@float Result, autorecode:res
+@psppoutput {autorecode}
+@caption {The properties of the @exvar{occupation} variable following @cmd{AUTORECODE}}
+@end float
+
+
 @node COMPUTE
 @section COMPUTE
 @vindex COMPUTE
@@ -329,6 +363,39 @@ read.
 When @cmd{COMPUTE} is specified following @cmd{TEMPORARY}
 (@pxref{TEMPORARY}), the @cmd{LAG} function may not be used
 (@pxref{LAG}).
+
+@subsection Compute Examples
+
+The dataset @file{physiology.sav} contains the height and weight of persons.
+For some purposes, neither height nor weight alone is of interest.
+Epidemiologists are often more interested in the @dfn{body mass index} which
+can sometimes be used as a predictor for clinical conditions.
+The body mass index is defined as the weight of the person in kg divided
+by the square of the person's height in metres.
+@footnote{Since BMI is a quantity with a ratio scale and has units, the term ``index''
+is a misnomer, but that is what it is called.}
+
+@float Example, bmi:ex
+@psppsyntax {compute.sps}
+@caption {Computing the body mass index from @exvar{weight} and @exvar{height}}
+@end float
+
+@ref{bmi:ex} shows how you can use @cmd{COMPUTE} to generate a new variable called
+@exvar{bmi} and have every case's value calculated from the existing values of
+@exvar{weight} and @exvar{height}.
+It also shows how you can add a label to this new variable (@pxref{VARIABLE LABELS}),
+so that a more descriptive label appears in subsequent analyses, and this can be seen
+in the ouput from the @cmd{DESCRIPTIVES} command in @ref{bmi:res}.
+
+The expression which follows the @samp{=} sign can be as complicated as necessary.
+@xref{Expressions} for a precise description of the language accepted.
+
+@float Results, bmi:res
+@psppoutput {compute}
+@caption {An analysis which includes @exvar{bmi} in its results}
+@end float
+
+
 
 @node COUNT
 @section COUNT
@@ -388,52 +455,34 @@ before the procedure is executed---they may not be created as target
 variables earlier in the command!  Break such a command into two
 separate commands.
 
-The examples below may help to clarify.
+@subsection Count Examples
 
-@enumerate A
-@item
-Assuming @code{Q0}, @code{Q2}, @dots{}, @code{Q9} are numeric variables,
-the following commands:
+In the survey results in dataset @file{hotel.sav} a manager wishes
+to know how many respondents answered with low valued answers to questions
+@exvar{v1}, @exvar{v2} and @exvar{v3}.  This can be found using the code
+in @ref{count:ex}.  Specifically, this code creates a new variable, and
+populates it with the number of values in @exvar{v1}--@exvar{v2} which
+are 2 or lower.
 
-@enumerate
-@item
-Count the number of times the value 1 occurs through these variables
-for each case and assigns the count to variable @code{QCOUNT}.
+@float Example, count:ex
+@psppsyntax {count.sps}
+@caption {Counting low values to responses @exvar{v1}, @exvar{v2} and @exvar{v3}}
+@end float
 
-@item
-Print out the total number of times the value 1 occurs throughout
-@emph{all} cases using @cmd{DESCRIPTIVES}.  @xref{DESCRIPTIVES}, for
-details.
-@end enumerate
+In @ref{count:ex} the @cmd{COUNT} transformation creates a new variable, @exvar{low_counts} and
+its values are shown using the @cmd{LIST} command.
 
-@example
-COUNT QCOUNT=Q0 TO Q9(1).
-DESCRIPTIVES QCOUNT /STATISTICS=SUM.
-@end example
+In @ref{count:res} we can see the values of @exvar{low_counts} after the @cmd{COUNT}
+transformation has completed.  The first value is 1, because there is only one
+variable amoung @exvar{v1}, @exvar{v2} and @exvar{3} which has a value of 2 or less.
+The second value is 2, because both @exvar{v1} and @exvar{v2} are 2 or less.
 
-@item
-Given these same variables, the following commands:
+@float Result, count:res
+@psppoutput {count}
+@caption {The values of @exvar{v1}, @exvar{v2}, @exvar{v3} and @exvar{low_counts} after
+the @cmd{COUNT} transformation has run}
+@end float
 
-@enumerate
-@item
-Count the number of valid values of these variables for each case and
-assigns the count to variable @code{QVALID}.
-
-@item
-Multiplies each value of @code{QVALID} by 10 to obtain a percentage of
-valid values, using @cmd{COMPUTE}.  @xref{COMPUTE}, for details.
-
-@item
-Print out the percentage of valid values across all cases, using
-@cmd{DESCRIPTIVES}.  @xref{DESCRIPTIVES}, for details.
-@end enumerate
-
-@example
-COUNT QVALID=Q0 TO Q9 (LO THRU HI).
-COMPUTE QVALID=QVALID*10.
-DESCRIPTIVES QVALID /STATISTICS=MEAN.
-@end example
-@end enumerate
 
 @node FLIP
 @section FLIP
@@ -459,7 +508,7 @@ string variable, is
 used to give names to the variables created by @cmd{FLIP}.  Only the
 first 8 characters of the variable are used.  If
 @subcmd{NEWNAMES} is not
-specified then the default is a variable named CASE_LBL, if it exists.
+specified then the default is a variable named @exvar{CASE_LBL}, if it exists.
 If it does not then the variables created by @cmd{FLIP} are named VAR000
 through VAR999, then VAR1000, VAR1001, and so on.
 
@@ -471,16 +520,47 @@ extensions are added, starting with 1, until a unique name is found or
 there are no remaining possibilities.  If the latter occurs then the
 @cmd{FLIP} operation aborts.
 
-The resultant dictionary contains a CASE_LBL variable, a string
+The resultant dictionary contains a @exvar{CASE_LBL} variable, a string
 variable of width 8, which stores the names of the variables in the
 dictionary before the transposition.  Variables names longer than 8
-characters are truncated.  If the active dataset is subsequently
-transposed using @cmd{FLIP}, this variable can be used to recreate the
-original variable names.
+characters are truncated.  If @cmd{FLIP} is called again on
+this dataset, the @exvar{CASE_LBL} variable can be passed to the @subcmd{NEWNAMES}
+subcommand to recreate the original variable names.
 
 @cmd{FLIP} honors @cmd{N OF CASES} (@pxref{N OF CASES}).  It ignores
 @cmd{TEMPORARY} (@pxref{TEMPORARY}), so that ``temporary''
 transformations become permanent.
+
+@subsection Flip Examples
+
+
+In @ref{flip:ex}, data has been entered using @cmd{DATA LIST} (@pxref{DATA LIST})
+such that the first variable in the dataset is a string variable containing
+a description of the other data for the case.
+Clearly this is not a convenient arrangement for performing statistical analyses,
+so it would have been better to think a little more carefully about how the data
+should have been arranged.
+However often the data is provided by some third party source, and you have
+no control over the form.
+Fortunately, we can use @cmd{FLIP} to exchange the variables
+and cases in the active dataset.
+
+@float Example, flip:ex
+@psppsyntax {flip.sps}
+@caption {Using @cmd{FLIP} to exchange variables and cases in a dataset}
+@end float
+
+As you can see in @ref{flip:res} before the @cmd{FLIP} command has run there
+are seven variables (six containing data and one for the heading) and three cases.
+Afterwards there are four variables (one per case, plus the @exvar{CASE_LBL} variable)
+and six cases.
+You can delete the @exvar{CASE_LBL} variable (@pxref{DELETE VARIABLES}) if you don't need it.
+
+@float Results, flip:res
+@psppoutput {flip}
+@caption {The results of using @cmd{FLIP} to exchange variables and cases in a dataset}
+@end float
+
 
 @node IF
 @section IF
@@ -720,7 +800,8 @@ variables.
 
 Specify @subcmd{BY} and a list of variables to sort by.  By default, variables
 are sorted in ascending order.  To override sort order, specify @subcmd{(D)} or
-@subcmd{(DOWN)} after a list of variables to get descending order, or @subcmd{(A)} or @subcmd{(UP)}
+@subcmd{(DOWN)} after a list of variables to get descending order, or @subcmd{(A)}
+or @subcmd{(UP)}
 for ascending order.  These apply to all the listed variables
 up until the preceding @subcmd{(A)}, @subcmd{(D)}, @subcmd{(UP)} or @subcmd{(DOWN)}.
 
@@ -737,3 +818,6 @@ If workspace is exhausted, it falls back to a merge sort algorithm that
 involves creates numerous temporary files.
 
 @cmd{SORT CASES} may not be specified following @cmd{TEMPORARY}.
+
+@subsection Sorting Example
+

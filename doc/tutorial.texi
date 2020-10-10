@@ -77,8 +77,8 @@ There are two aspects of data:
 @end itemize
 
 @noindent
-For example, a data set which has the variables @var{height}, @var{weight}, and
-@var{name}, might have the observations:
+For example, a data set which has the variables @exvar{height}, @exvar{weight}, and
+@exvar{name}, might have the observations:
 @example
 1881 89.2 Ahmed
 1192 107.01 Frank
@@ -109,7 +109,7 @@ human observer.
 However they can also be used for nominal or categorical data.
 
 
-@ref{data-list} defines two variables @var{forename} and @var{height},
+@ref{data-list} defines two variables @exvar{forename} and @exvar{height},
 and reads data into them by manual input.
 
 @float Example, data-list
@@ -127,7 +127,7 @@ and reads data into them by manual input.
 @end cartouche
 @caption{Manual entry of data using the @cmd{DATA LIST} command.
 Two variables
-@var{forename} and @var{height} are defined and subsequently filled
+@exvar{forename} and @exvar{height} are defined and subsequently filled
 with  manually entered data.}
 @end float
 
@@ -150,7 +150,7 @@ variables which you wish to define.
 
 @item
 The text @samp{forename} is the name of the first variable,
-and @samp{(A12)} says that the variable @var{forename} is a string
+and @samp{(A12)} says that the variable @exvar{forename} is a string
 variable and that its maximum length is 12 bytes.
 The second variable's name is specified by the text @samp{height}.
 Since no format is given, this variable has the default format.
@@ -161,7 +161,7 @@ locales which use a period (@samp{.}) as the decimal separator.
 However if you are using a system with a locale which uses the comma (@samp{,})
 as the decimal separator, then you should in the subsequent lines substitute
 @samp{.} with @samp{,}.
-Alternatively, you could explicitly tell @pspp{} that the @var{height}
+Alternatively, you could explicitly tell @pspp{} that the @exvar{height}
 variable is to be read using a period as its decimal separator by appending the
 text @samp{DOT8.3} after the word @samp{height}.
 For more information on data formats, @pxref{Input and Output Formats}.
@@ -209,7 +209,7 @@ It should show the following output:
 @end group
 @end example
 @noindent
-Note that the numeric variable @var{height} is displayed to 2 decimal
+Note that the numeric variable @exvar{height} is displayed to 2 decimal
 places, because the format for that variable is @samp{F8.2}.
 For a complete description of the @cmd{LIST} command, @pxref{LIST}.
 
@@ -373,20 +373,20 @@ column, suggesting incorrect data entry.}
 
 In the output of @ref{ex-descriptives},
 the most interesting column is the minimum value.
-The @var{weight} variable has a minimum value of less than zero,
+The @exvar{weight} variable has a minimum value of less than zero,
 which is clearly erroneous.
-Similarly, the @var{height} variable's minimum value seems to be very low.
+Similarly, the @exvar{height} variable's minimum value seems to be very low.
 In fact, it is more than 5 standard deviations from the mean, and is a
 seemingly bizarre height for an adult person.
 We can examine the data in more detail with the @cmd{EXAMINE}
 command (@pxref{EXAMINE}):
 
-In @ref{ex1} you can see that the lowest value of @var{height} is
+In @ref{ex1} you can see that the lowest value of @exvar{height} is
 179 (which we suspect to be erroneous), but the second lowest is 1598
 which
 we know from the @cmd{DESCRIPTIVES} command
 is within 1 standard deviation from the mean.
-Similarly the @var{weight} variable has a lowest value which is
+Similarly the @exvar{weight} variable has a lowest value which is
 negative but a plausible value for the second lowest value.
 This suggests that the two extreme values are outliers and probably
 represent data entry errors.
@@ -444,9 +444,9 @@ command.
 @end example
 @noindent
 The first command says that for any observation which has a
-@var{height} value of 179, that value should be changed to the SYSMIS
+@exvar{height} value of 179, that value should be changed to the SYSMIS
 value.
-The second command says that any @var{weight} values of zero or less
+The second command says that any @exvar{weight} values of zero or less
 should be changed to SYSMIS.
 From now on, they will be ignored in analysis.
 For detailed information about the @cmd{RECODE} command @pxref{RECODE}.
@@ -469,10 +469,10 @@ The line @code{display dictionary.} tells @pspp{} to display the
 variables and associated data.
 The output from this command has been omitted from the example for the sake of clarity, but
 you will notice that each of the variables
-@var{v1}, @var{v2} @dots{} @var{v5}  are measured on a 5 point Likert scale,
+@exvar{v1}, @exvar{v2} @dots{} @exvar{v5}  are measured on a 5 point Likert scale,
 with 1 meaning ``Strongly disagree'' and 5 meaning ``Strongly agree''.
-Whilst variables @var{v1}, @var{v2} and @var{v4} record responses
-to a positively posed question, variables @var{v3} and @var{v5} are
+Whilst variables @exvar{v1}, @exvar{v2} and @exvar{v4} record responses
+to a positively posed question, variables @exvar{v3} and @exvar{v5} are
 responses to negatively worded questions.
 In order to perform meaningful analysis, we need to recode the variables so
 that they all measure in the same direction.
@@ -490,7 +490,7 @@ compute @var{var} = 6 - @var{var}.
 @end example
 @noindent
 @ref{ex-reliability} uses this technique to recode the variables
-@var{v3} and @var{v5}.
+@exvar{v3} and @exvar{v5}.
 After applying  @cmd{COMPUTE} for both variables,
 all subsequent commands will use the inverted values.
 
@@ -505,14 +505,14 @@ A sensible check to perform on survey data is the calculation of
 reliability.
 This gives the statistician some confidence that the questionnaires have been
 completed thoughtfully.
-If you examine the labels of variables @var{v1},  @var{v3} and @var{v4},
+If you examine the labels of variables @exvar{v1},  @exvar{v3} and @exvar{v4},
 you will notice that they ask very similar questions.
 One would therefore expect the values of these variables (after recoding)
 to closely follow one another, and we can test that with the @cmd{RELIABILITY}
 command (@pxref{RELIABILITY}).
 @ref{ex-reliability} shows a @pspp{} session where the user (after recoding
 negatively scaled variables) requests reliability statistics for
-@var{v1}, @var{v3} and @var{v4}.
+@exvar{v1}, @exvar{v3} and @exvar{v4}.
 
 @float Example, ex-reliability
 @cartouche
@@ -549,7 +549,7 @@ Case Processing Summary
 @caption{Recoding negatively scaled variables, and testing for
 reliability with the @cmd{RELIABILITY} command. The Cronbach Alpha
 coefficient suggests a high degree of reliability among variables
-@var{v1}, @var{v3} and @var{v4}.}
+@exvar{v1}, @exvar{v3} and @exvar{v4}.}
 @end float
 
 As a rule of thumb, many statisticians consider a value of Cronbach's Alpha of
@@ -571,12 +571,12 @@ test procedure to use.  One way to do this uses the @cmd{EXAMINE} command.
 In @ref{normality}, a researcher was examining the failure rates
 of equipment produced by an engineering company.
 The file @file{repairs.sav} contains the mean time between
-failures (@var{mtbf}) of some items of equipment subject to the study.
+failures (@exvar{mtbf}) of some items of equipment subject to the study.
 Before performing linear analysis on the data,
 the researcher wanted to ascertain that the data is normally distributed.
 
 A normal distribution has a skewness and kurtosis of zero.
-Looking at the skewness of @var{mtbf} in @ref{normality} it is clear
+Looking at the skewness of @exvar{mtbf} in @ref{normality} it is clear
 that the mtbf figures have a lot of positive skew and are therefore
 not drawn from a normally distributed variable.
 Positive skew can often be compensated for by applying a logarithmic
@@ -587,12 +587,12 @@ compute mtbf_ln = ln (mtbf).
 @end example
 @noindent
 Rather than redefining the existing variable, this use of @cmd{COMPUTE}
-defines a new variable @var{mtbf_ln} which is
-the natural logarithm of @var{mtbf}.
+defines a new variable @exvar{mtbf_ln} which is
+the natural logarithm of @exvar{mtbf}.
 The final command in this example calls @cmd{EXAMINE} on this new variable,
 and it can be seen from the results that both the skewness and
-kurtosis for @var{mtbf_ln} are very close to zero.
-This provides some confidence that the @var{mtbf_ln} variable is
+kurtosis for @exvar{mtbf_ln} are very close to zero.
+This provides some confidence that the @exvar{mtbf_ln} variable is
 normally distributed and thus safe for linear analysis.
 In the event that no suitable transformation can be found,
 then it would be worth considering
@@ -676,9 +676,9 @@ Output:
 @end cartouche
 @caption{Testing for normality using the @cmd{EXAMINE} command and applying
 a logarithmic transformation.
-The @var{mtbf} variable has a large positive skew and is therefore
+The @exvar{mtbf} variable has a large positive skew and is therefore
 unsuitable for linear statistical analysis.
-However the transformed variable (@var{mtbf_ln}) is close to normal and
+However the transformed variable (@exvar{mtbf_ln}) is close to normal and
 would appear to be more suitable.}
 @end float
 
@@ -753,7 +753,7 @@ However if it is unsafe to assume equal variances,
 then an alternative calculation is necessary.
 @pspp{} performs both calculations.
 
-For the @var{height} variable, the output shows the significance of the
+For the @exvar{height} variable, the output shows the significance of the
 Levene test to be 0.33 which means there is a
 33% probability that the
 Levene test produces this outcome when the variances are equal.
@@ -761,14 +761,14 @@ Had the significance been less than 0.05, then it would have been unsafe to assu
 the variances were equal.
 However, because the value is higher than 0.05 the homogeneity of variances assumption
 is safe and the ``Equal Variances'' row (the more powerful test) can be used.
-Examining this row, the two tailed significance for the @var{height} t-test
+Examining this row, the two tailed significance for the @exvar{height} t-test
 is less than 0.05, so it is safe to reject the null hypothesis and conclude
 that the mean heights of males and females are unequal.
 
-For the @var{temperature} variable, the significance of the Levene test
+For the @exvar{temperature} variable, the significance of the Levene test
 is 0.58 so again, it is safe to use the row for equal variances.
 The equal variances row indicates that the two tailed significance for
-@var{temperature} is 0.20.  Since this is greater than 0.05 we must reject
+@exvar{temperature} is 0.20.  Since this is greater than 0.05 we must reject
 the null hypothesis and conclude that there is insufficient evidence to
 suggest that the body temperature of male and female persons are different.
 
@@ -860,11 +860,11 @@ Output:
 @end example
 @end cartouche
 @caption{The @cmd{T-TEST} command tests for differences of means.
-Here, the @var{height} variable's two tailed significance is less than
+Here, the @exvar{height} variable's two tailed significance is less than
 0.05, so the null hypothesis can be rejected.
 Thus, the evidence suggests there is a difference between the heights of
 male and female persons.
-However the significance of the test for the @var{temperature}
+However the significance of the test for the @exvar{temperature}
 variable is greater than 0.05 so the null hypothesis cannot be
 rejected, and there is insufficient evidence to suggest a difference
 in body temperature.}
@@ -929,13 +929,13 @@ Output (excerpts):
 @end example
 @end cartouche
 @caption{Linear regression analysis to find a predictor for
-@var{mttr}.
-The first attempt, including @var{duty_cycle}, produces some
+@exvar{mttr}.
+The first attempt, including @exvar{duty_cycle}, produces some
 unacceptable high significance values.
-However the second attempt, which excludes @var{duty_cycle}, produces
+However the second attempt, which excludes @exvar{duty_cycle}, produces
 significance values no higher than 0.06.
-This suggests that @var{mtbf} alone may be a suitable predictor
-for @var{mttr}.}
+This suggests that @exvar{mtbf} alone may be a suitable predictor
+for @exvar{mttr}.}
 @end float
 
 The coefficients in the first table suggest that the formula
@@ -944,7 +944,7 @@ can be used to predict the time to repair.
 However, the significance value for the @var{duty_cycle} coefficient
 is very high, which would make this an unsafe predictor.
 For this reason, the test was repeated, but omitting the
-@var{duty_cycle} variable.
+@exvar{duty_cycle} variable.
 This time, the significance of all coefficients no higher than 0.06,
 suggesting that at the 0.06 level, the formula
 @math{@var{mttr} = 10.5 + 3.11 \times @var{mtbf}} is a reliable

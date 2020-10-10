@@ -194,6 +194,40 @@ entire active dataset as a single group of data.
 When @cmd{SPLIT FILE} is specified after @cmd{TEMPORARY}, it affects only
 the next procedure (@pxref{TEMPORARY}).
 
+@subsection Example Split
+
+The file @file{horticulture.sav} contains data describing the @exvar{yield}
+of a number of horticultural specimens which have been subjected to
+various @exvar{treatment}s.   If we wanted to investigate linear statistics
+of the @exvar{yeild}, one way to do this is using the @cmd{DESCRIPTIVES} (@pxref{DESCRIPTIVES}).
+However, it is reasonable to expect the mean to be different depending
+on the @exvar{treatment}.   So we might want to perform three separate
+procedures --- one for each treatment.
+@footnote{There are other, possibly better, ways to achieve a similar result
+using the @cmd{MEANS} or @cmd{EXAMINE} commands.}
+@ref{split:ex} shows how this can be done automatically using
+the @cmd{SPLIT FILE} command.
+
+@float Example, split:ex
+@psppsyntax {split.sps}
+@caption {Running @cmd{DESCRIPTIVES} on each value of @exvar{treatment}}
+@end float
+
+In @ref{split:res} you can see that the table of descriptive statistics
+appears 3 times --- once for each value of @exvar{treatment}.
+In this example @samp{N}, the number of observations are identical in
+all splits.  This is because that experiment was deliberately designed
+that way.  However in general one can expect a different @samp{N} for each
+split.
+
+@float Example, split:res
+@psppsyntax {split.out}
+@caption {The results of running @cmd{DESCRIPTIVES} with an active split}
+@end float
+
+Unless @cmd{TEMPORARY} was used, after a split has been defined for
+a dataset it remains active until explicitly disabled.
+
 @node TEMPORARY
 @section TEMPORARY
 @vindex TEMPORARY
@@ -276,3 +310,27 @@ the next procedure (@pxref{TEMPORARY}).
 
 @cmd{WEIGHT} does not cause cases in the active dataset to be
 replicated in memory.
+
+
+@subsection Example Weights
+
+One could define a  dataset containing an inventory of stock items.
+It would be reasonable to use a string variable for a description of the
+item, and a numeric variable for the number in stock, like in @ref{weight:ex}.
+
+@float Example, weight:ex
+@psppsyntax {weight.sps}
+@caption {Setting the weight on the variable @exvar{quantity}}
+@end float
+
+One analysis which most surely would be of interest is
+the relative amounts or each item in stock.
+However without setting a weight variable, @cmd{FREQUENCIES} (@pxref{FREQUENCIES}) will not
+tell us what we want to know, since there is only one case for each stock item.
+@ref{weight:res} shows the difference between the weighted and unweighted
+frequency tables.
+
+@float Example, weight:res
+@psppoutput {weight}
+@caption {Weighted and unweighted frequency tables of @exvar{items}}
+@end float

@@ -2344,41 +2344,42 @@ GET FILE='repairs.sav'.
 REGRESSION /VARIABLES=mtbf duty_cycle /DEPENDENT=mttr.
 REGRESSION /VARIABLES=mtbf /DEPENDENT=mttr.
 ])
-AT_CHECK([pspp -o pspp.csv -o pspp.txt regression.sps])
-AT_CHECK([cat pspp.csv], [0], [dnl
+
+AT_CHECK([pspp -O format=csv regression.sps], [0], [dnl
 Table: Model Summary (Mean time to repair (hours) )
 R,R Square,Adjusted R Square,Std. Error of the Estimate
-.99,.99,.99,2.24
+.94,.89,.88,6.54
 
 Table: ANOVA (Mean time to repair (hours) )
 ,Sum of Squares,df,Mean Square,F,Sig.
-Regression,5308.87,2,2654.44,530.75,.000
-Residual,60.02,12,5.00,,
-Total,5368.89,14,,,
+Regression,9576.26,2,4788.13,111.94,.000
+Residual,1154.94,27,42.78,,
+Total,10731.20,29,,,
 
 Table: Coefficients (Mean time to repair (hours) )
 ,Unstandardized Coefficients,,Standardized Coefficients,t,Sig.
 ,B,Std. Error,Beta,,
-(Constant),9.81,1.50,.00,6.54,.000
-Mean time between failures (months) ,3.10,.10,.99,32.43,.000
-Ratio of working to non-working time,1.09,1.78,.02,.61,.552
+(Constant),10.59,3.11,.00,3.40,.002
+Mean time between failures (months) ,3.02,.20,.95,14.88,.000
+Ratio of working to non-working time,-1.12,3.69,-.02,-.30,.763
 
 Table: Model Summary (Mean time to repair (hours) )
 R,R Square,Adjusted R Square,Std. Error of the Estimate
-.99,.99,.99,2.18
+.94,.89,.89,6.43
 
 Table: ANOVA (Mean time to repair (hours) )
 ,Sum of Squares,df,Mean Square,F,Sig.
-Regression,5307.00,1,5307.00,1114.73,.000
-Residual,61.89,13,4.76,,
-Total,5368.89,14,,,
+Regression,9572.30,1,9572.30,231.28,.000
+Residual,1158.90,28,41.39,,
+Total,10731.20,29,,,
 
 Table: Coefficients (Mean time to repair (hours) )
 ,Unstandardized Coefficients,,Standardized Coefficients,t,Sig.
 ,B,Std. Error,Beta,,
-(Constant),10.50,.96,.00,10.96,.000
-Mean time between failures (months) ,3.11,.09,.99,33.39,.000
+(Constant),9.90,2.10,.00,4.71,.000
+Mean time between failures (months) ,3.01,.20,.94,15.21,.000
 ])
+
 AT_CLEANUP
 
 

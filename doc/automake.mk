@@ -1,5 +1,5 @@
 ## PSPP - a program for statistical analysis.
-## Copyright (C) 2019 Free Software Foundation, Inc.
+## Copyright (C) 2019, 2020 Free Software Foundation, Inc.
 ##
 ## This program is free software: you can redistribute it and/or modify
 ## it under the terms of the GNU General Public License as published by
@@ -91,7 +91,8 @@ docbookdir = $(docdir)
 dist_docbook_DATA = doc/pspp.xml
 
 
-CLEANFILES += pspp-dev.dvi $(docbook_DATA)
+CLEANFILES += pspp-dev.dvi $(docbook_DATA) doc/pspp.info*
+
 
 doc: $(INFO_DEPS) $(DVIS) $(PDFS) $(PSS) $(HTMLS) $(dist_docbook_DATA)
 PHONY += doc
@@ -103,4 +104,75 @@ $(top_srcdir)/doc/help-pages-list: $(UI_FILES)
 	test -s $@,tmp
 	mv $@,tmp $@
 
-EXTRA_DIST += doc/help-pages-list
+EXTRA_DIST += \
+	doc/help-pages-list \
+	doc/pspp-manual.css
+
+
+AM_MAKEINFOFLAGS=-I $(top_srcdir)/doc/examples -I $(top_builddir)/doc/examples
+am__TEXINFO_TEX_DIR=:$(top_srcdir)/doc/examples:$(top_builddir)/doc/examples
+
+################# Example programs ##############################
+
+EXAMPLE_SYNTAX = \
+ doc/examples/autorecode.sps \
+ doc/examples/chisquare.sps \
+ doc/examples/compute.sps \
+ doc/examples/count.sps \
+ doc/examples/descriptives.sps \
+ doc/examples/flip.sps \
+ doc/examples/frequencies.sps \
+ doc/examples/means.sps \
+ doc/examples/one-sample-t.sps \
+ doc/examples/independent-samples-t.sps \
+ doc/examples/reliability.sps \
+ doc/examples/split.sps \
+ doc/examples/weight.sps
+
+
+EXTRA_DIST += $(EXAMPLE_SYNTAX)
+
+EXAMPLE_OUTPUTS = $(EXAMPLE_SYNTAX:.sps=.out)
+EXAMPLE_HTML = $(EXAMPLE_SYNTAX:.sps=.html)
+
+$(top_builddir)/doc/pspp.info:  $(EXAMPLE_OUTPUTS)
+$(top_builddir)/doc/pspp.ps:    $(EXAMPLE_OUTPUTS)
+$(top_builddir)/doc/pspp.dvi:   $(EXAMPLE_OUTPUTS)
+$(top_builddir)/doc/pspp.html:  $(EXAMPLE_HTML)
+$(top_builddir)/doc/pspp.pdf:   $(EXAMPLE_OUTPUTS)
+
+# The examples cannot be built until the binary has been built
+$(EXAMPLE_OUTPUTS): $(top_builddir)/src/ui/terminal/pspp
+$(EXAMPLE_HTML): $(top_builddir)/src/ui/terminal/pspp
+
+CLEANFILES += $(EXAMPLE_OUTPUTS)
+
+SUFFIXES: .sps
+
+# use pspp to process a syntax file and reap the output into a text file
+.sps.out:
+	$(MKDIR_P) $(@D)
+	where=$$PWD ; \
+	(cd $(top_srcdir)/examples; ${abs_builddir}/src/ui/terminal/pspp $(abs_srcdir)/doc/examples/$(<F) -o $$where/$@)
+
+# Use pspp to process a syntax file and reap the output into a html file
+# Then, use sed to delete everything up to and including <body> and
+# everything after and including </body>
+.sps.html:
+	$(MKDIR_P) $(@D)
+	where=$$PWD ; \
+	(cd $(top_srcdir)/examples; ${abs_builddir}/src/ui/terminal/pspp $(abs_srcdir)/doc/examples/$(<F) -o $$where/$@,x -O format=html)
+	$(SED) -e '\%</body%,$$d' -e '0,/<body/d' $@,x > $@
+
+# Insert the link tag for the cascading style sheet.
+# But make sure these operations are idempotent.
+html-local:
+	for h in doc/pspp.html/*.html; do \
+		if grep -Fq '<link rel="stylesheet"' $$h; then continue; fi ; \
+		$(SED) -i -e '/^<\/head>/i \\\
+<link rel="stylesheet" href="pspp-manual.css">' $$h; \
+	done
+
+install-html-local: html-local
+	$(MKDIR_P) $(DESTDIR)$(prefix)/share/doc/pspp/pspp.html
+	$(INSTALL_DATA) ${top_srcdir}/doc/pspp-manual.css $(DESTDIR)$(prefix)/share/doc/pspp/pspp.html

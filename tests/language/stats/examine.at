@@ -1171,52 +1171,53 @@ EXAMINE mtbf /STATISTICS=DESCRIPTIVES.
 COMPUTE mtbf_ln = LN (mtbf).
 EXAMINE mtbf_ln /STATISTICS=DESCRIPTIVES.
 ])
-AT_CHECK([pspp -o pspp.csv -o pspp.txt repairs.sps])
-AT_CHECK([cat pspp.csv], [0], [dnl
+
+AT_CHECK([pspp -O format=csv repairs.sps], [0], [dnl
 Table: Case Processing Summary
 ,Cases,,,,,
 ,Valid,,Missing,,Total,
 ,N,Percent,N,Percent,N,Percent
-Mean time between failures (months) ,15,100.0%,0,.0%,15,100.0%
+Mean time between failures (months) ,30,100.0%,0,.0%,30,100.0%
 
 Table: Descriptives
 ,,,Statistic,Std. Error
-Mean time between failures (months) ,Mean,,8.32,1.62
-,95% Confidence Interval for Mean,Lower Bound,4.85,
-,,Upper Bound,11.79,
-,5% Trimmed Mean,,7.69,
-,Median,,8.12,
-,Variance,,39.21,
-,Std. Deviation,,6.26,
+Mean time between failures (months) ,Mean,,8.78,1.10
+,95% Confidence Interval for Mean,Lower Bound,6.53,
+,,Upper Bound,11.04,
+,5% Trimmed Mean,,8.20,
+,Median,,8.29,
+,Variance,,36.34,
+,Std. Deviation,,6.03,
 ,Minimum,,1.63,
 ,Maximum,,26.47,
 ,Range,,24.84,
-,Interquartile Range,,5.83,
-,Skewness,,1.85,.58
-,Kurtosis,,4.49,1.12
+,Interquartile Range,,6.03,
+,Skewness,,1.65,.43
+,Kurtosis,,3.41,.83
 
 Table: Case Processing Summary
 ,Cases,,,,,
 ,Valid,,Missing,,Total,
 ,N,Percent,N,Percent,N,Percent
-mtbf_ln,15,100.0%,0,.0%,15,100.0%
+mtbf_ln,30,100.0%,0,.0%,30,100.0%
 
 Table: Descriptives
 ,,,Statistic,Std. Error
-mtbf_ln,Mean,,1.88,.19
-,95% Confidence Interval for Mean,Lower Bound,1.47,
-,,Upper Bound,2.29,
-,5% Trimmed Mean,,1.88,
-,Median,,2.09,
-,Variance,,.54,
-,Std. Deviation,,.74,
+mtbf_ln,Mean,,1.95,.13
+,95% Confidence Interval for Mean,Lower Bound,1.69,
+,,Upper Bound,2.22,
+,5% Trimmed Mean,,1.96,
+,Median,,2.11,
+,Variance,,.49,
+,Std. Deviation,,.70,
 ,Minimum,,.49,
 ,Maximum,,3.28,
 ,Range,,2.79,
-,Interquartile Range,,.92,
-,Skewness,,-.16,.58
-,Kurtosis,,-.09,1.12
+,Interquartile Range,,.88,
+,Skewness,,-.37,.43
+,Kurtosis,,.01,.83
 ])
+
 AT_CLEANUP
 
 dnl This is an example from doc/tutorial.texi

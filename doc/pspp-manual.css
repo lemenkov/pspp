@@ -1,0 +1,50 @@
+/* Use a sans-serif font for the Syntax descriptions of each command. */
+pre.display {
+    font-family: sans-serif;
+}
+
+.pspp h1 {
+    font-size: 150%;
+    margin-left: -1.33em
+}
+.pspp h2 {
+    font-size: 125%;
+    font-weight: bold;
+    margin-left: -.8em
+}
+.pspp h3 {
+    font-size: 100%;
+    font-weight: bold;
+    margin-left: -.5em }
+.pspp h4 {
+    font-size: 100%;
+    margin-left: 0em
+}
+.pspp h1, .pspp h2, .pspp h3, .pspp h4, .pspp h5, .pspp h6 {
+    font-family: sans-serif;
+    color: blue
+}
+
+.pspp code {
+    font-family: sans-serif
+}
+.pspp table {
+    border-collapse: collapse;
+    margin-bottom: 1em
+}
+
+/* Simple cartouche for syntax examples */
+.pspp-syntax table {
+    border-collapse: collapse;
+    border: 1px solid black;
+    padding: 10px;
+}
+
+
+.pspp th { background: #dddddd; font-weight: normal; font-style: oblique }
+.pspp caption {
+    font-family: sans-serif;
+    text-align: left;
+    color: dark-grey;
+}
+
