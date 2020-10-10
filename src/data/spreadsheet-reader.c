@@ -1,5 +1,5 @@
 /* PSPP - a program for statistical analysis.
-   Copyright (C) 2007, 2009, 2010, 2011, 2013 Free Software Foundation, Inc.
+   Copyright (C) 2007, 2009, 2010, 2011, 2013, 2020 Free Software Foundation, Inc.
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -29,28 +29,18 @@
 #include <gl/c-xvasprintf.h>
 #include <stdlib.h>
 
-void
+struct spreadsheet *
 spreadsheet_ref (struct spreadsheet *s)
 {
   s->ref_cnt++;
+  return s;
 }
 
 void
 spreadsheet_unref (struct spreadsheet *s)
 {
-  switch (s->type)
-    {
-    case SPREADSHEET_ODS:
-      ods_unref (s);
-      break;
-
-    case SPREADSHEET_GNUMERIC:
-      gnumeric_unref (s);
-      break;
-    default:
-      NOT_REACHED ();
-      break;
-    }
+  if (--s->ref_cnt == 0)
+    s->destroy (s);
 }
 
 
@@ -58,38 +48,44 @@ struct casereader *
 spreadsheet_make_reader (struct spreadsheet *s,
                          const struct spreadsheet_read_options *opts)
 {
-  if (s->type == SPREADSHEET_ODS)
-    return ods_make_reader (s, opts);
-
-  if (s->type == SPREADSHEET_GNUMERIC)
-    return gnumeric_make_reader (s, opts);
-
-  return NULL;
+  return s->make_reader (s, opts);
 }
 
 const char *
 spreadsheet_get_sheet_name (struct spreadsheet *s, int n)
 {
-  if (s->type == SPREADSHEET_ODS)
-    return ods_get_sheet_name (s, n);
-
-  if (s->type == SPREADSHEET_GNUMERIC)
-    return gnumeric_get_sheet_name (s, n);
-
-  return NULL;
+  return s->get_sheet_name (s, n);
 }
 
 
 char *
 spreadsheet_get_sheet_range (struct spreadsheet *s, int n)
 {
-  if (s->type == SPREADSHEET_ODS)
-    return ods_get_sheet_range (s, n);
+  return s->get_sheet_range (s, n);
+}
 
-  if (s->type == SPREADSHEET_GNUMERIC)
-    return gnumeric_get_sheet_range (s, n);
+int
+spreadsheet_get_sheet_n_sheets (struct spreadsheet *s)
+{
+  return s->get_sheet_n_sheets (s);
+}
 
-  return NULL;
+unsigned int
+spreadsheet_get_sheet_n_rows (struct spreadsheet *s, int n)
+{
+  return s->get_sheet_n_rows (s, n);
+}
+
+unsigned int
+spreadsheet_get_sheet_n_columns (struct spreadsheet *s, int n)
+{
+  return s->get_sheet_n_columns (s, n);
+}
+
+char *
+spreadsheet_get_cell (struct spreadsheet *s, int n, int row, int column)
+{
+  return s->get_sheet_cell (s, n, row, column);
 }
 
 
@@ -114,6 +110,7 @@ reverse (char *s, int len)
    greater than 1 are implicitly incremented by 1, so
    AA  = 0 + 1*26, AB = 1 + 1*26,
    ABC = 2 + 2*26 + 1*26^2 ....
+   On error, this function returns -1
 */
 int
 ps26_to_int (const char *str)
@@ -125,7 +122,10 @@ ps26_to_int (const char *str)
 
   for (i = len - 1 ; i >= 0; --i)
     {
-      int mantissa = (str[i] - 'A');
+      char c = str[i];
+      if (c < 'A' || c > 'Z')
+	return -1;
+      int mantissa = (c - 'A');
 
       assert (mantissa >= 0);
       assert (mantissa < RADIX);
@@ -140,6 +140,9 @@ ps26_to_int (const char *str)
   return result;
 }
 
+/* Convert an integer, which must be non-negative,
+   to pseudo base 26.
+   The caller must free the return value when no longer required.  */
 char *
 int_to_ps26 (int i)
 {
@@ -149,7 +152,8 @@ int_to_ps26 (int i)
   long long int base = RADIX;
   int exp = 1;
 
-  assert (i >= 0);
+  if (i < 0)
+    return NULL;
 
   while (i > lower + base - 1)
     {
@@ -188,7 +192,7 @@ create_cell_ref (int col0, int row0)
   if (col0 < 0) return NULL;
   if (row0 < 0) return NULL;
 
-  cs0 =  int_to_ps26 (col0);
+  cs0 = int_to_ps26 (col0);
   s =  c_xasprintf ("%s%d", cs0, row0 + 1);
 
   free (cs0);
@@ -241,4 +245,3 @@ convert_cell_ref (const char *ref,
 
   return true;
 }
-

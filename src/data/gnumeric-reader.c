@@ -1,5 +1,6 @@
 /* PSPP - a program for statistical analysis.
-   Copyright (C) 2007, 2009, 2010, 2011, 2012, 2013, 2016  Free Software Foundation, Inc.
+   Copyright (C) 2007, 2009, 2010, 2011, 2012, 2013, 2016,
+   2020 Free Software Foundation, Inc.
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -36,6 +37,9 @@
 #include "libpspp/i18n.h"
 #include "libpspp/message.h"
 #include "libpspp/misc.h"
+#include "libpspp/hmap.h"
+#include "libpspp/hash-functions.h"
+
 #include "libpspp/str.h"
 
 #include "gl/c-strtod.h"
@@ -45,6 +49,11 @@
 #include "gettext.h"
 #define _(msgid) gettext (msgid)
 #define N_(msgid) (msgid)
+
+/* Setting this to false can help with debugging and development.
+   Don't forget to set it back to true, or users will complain that
+   all but the smallest spreadsheets display VERY slowly.  */
+static const bool use_cache = true;
 
 /* Shamelessly lifted from the Gnumeric sources:
    https://git.gnome.org/browse/gnumeric/tree/src/value.h
@@ -61,7 +70,6 @@ enum gnm_value_type
   VALUE_CELLRANGE  = 70,
   VALUE_ARRAY   = 80
 };
-
 
 
 static void gnm_file_casereader_destroy (struct casereader *, void *);
@@ -91,22 +99,10 @@ enum reader_state
     STATE_CELL             /* Found a cell */
   };
 
-struct sheet_detail
-{
-  /* The name of the sheet (utf8 encoding) */
-  char *name;
-
-  int start_col;
-  int stop_col;
-  int start_row;
-  int stop_row;
-
-  int maxcol;
-  int maxrow;
-};
-
 struct state_data
 {
+  gzFile gz;
+
   /* The libxml reader for this instance */
   xmlTextReaderPtr xtr;
 
@@ -137,88 +133,266 @@ struct gnumeric_reader
   struct state_data rsd;
   struct state_data msd;
 
-  int start_col;
-  int stop_col;
-  int start_row;
-  int stop_row;
-
-  struct sheet_detail *sheets;
-
-  const xmlChar *target_sheet;
+  const xmlChar *target_sheet_name;
   int target_sheet_index;
 
-  struct caseproto *proto;
-  struct dictionary *dict;
-  struct ccase *first_case;
-  bool used_first_case;
-
   enum gnm_value_type vtype;
+
+  /* The total number of sheets in the "workbook" */
+  int n_sheets;
+
+  struct hmap cache;
 };
 
+/* A value to be kept in the hash table for cache purposes.  */
+struct cache_datum
+{
+  struct hmap_node node;
 
-void
-gnumeric_unref (struct spreadsheet *s)
+  /* The cell's row.  */
+  int row;
+
+  /* The cell's column.  */
+  int col;
+
+  /* The value of the cell.  */
+  char *value;
+};
+
+static void
+gnumeric_destroy (struct spreadsheet *s)
 {
   struct gnumeric_reader *r = (struct gnumeric_reader *) s;
 
-  if (0 == --s->ref_cnt)
+  int i;
+
+  for (i = 0; i < r->n_sheets; ++i)
     {
-      int i;
-
-      for (i = 0; i < s->n_sheets; ++i)
-	{
-	  xmlFree (r->sheets[i].name);
-	}
-
-
-      free (r->sheets);
-      state_data_destroy (&r->msd);
-
-      dict_unref (r->dict);
-
-      free (s->file_name);
-
-      free (r);
+      xmlFree (r->spreadsheet.sheets[i].name);
     }
+
+  if (s->dict)
+    dict_unref (s->dict);
+
+  free (r->spreadsheet.sheets);
+  state_data_destroy (&r->msd);
+
+  free (s->file_name);
+
+  struct cache_datum *cell;
+  struct cache_datum *next;
+  HMAP_FOR_EACH_SAFE (cell, next, struct cache_datum, node, &r->cache)
+    {
+      free (cell->value);
+      free (cell);
+    }
+
+  hmap_destroy (&r->cache);
+
+  free (r);
 }
 
 
-const char *
+static const char *
 gnumeric_get_sheet_name (struct spreadsheet *s, int n)
 {
   struct gnumeric_reader *gr = (struct gnumeric_reader *) s;
-  assert (n < s->n_sheets);
+  assert (n < gr->n_sheets);
 
-  return gr->sheets[n].name;
+  return gr->spreadsheet.sheets[n].name;
 }
 
 
 static void process_node (struct gnumeric_reader *r, struct state_data *sd);
 
 
+static int
+gnumeric_get_sheet_n_sheets (struct spreadsheet *s)
+{
+  struct gnumeric_reader *gr = (struct gnumeric_reader *) s;
 
-char *
+  int ret;
+  while (1 == (ret = xmlTextReaderRead (gr->msd.xtr)))
+    {
+      process_node (gr, &gr->msd);
+    }
+
+  return gr->n_sheets;
+}
+
+
+static char *
 gnumeric_get_sheet_range (struct spreadsheet *s, int n)
 {
   int ret;
   struct gnumeric_reader *gr = (struct gnumeric_reader *) s;
 
-  assert (n < s->n_sheets);
-
-  while (
-	 (gr->sheets[n].stop_col == -1)
+  while ((gr->spreadsheet.sheets[n].last_col == -1)
 	 &&
-	 (1 == (ret = xmlTextReaderRead (gr->msd.xtr)))
-	)
+	 (1 == (ret = xmlTextReaderRead (gr->msd.xtr))))
     {
       process_node (gr, &gr->msd);
     }
 
+  assert (n < gr->n_sheets);
   return create_cell_range (
-			  gr->sheets[n].start_col,
-			  gr->sheets[n].start_row,
-			  gr->sheets[n].stop_col,
-			  gr->sheets[n].stop_row);
+			  gr->spreadsheet.sheets[n].first_col,
+			  gr->spreadsheet.sheets[n].first_row,
+			  gr->spreadsheet.sheets[n].last_col,
+			  gr->spreadsheet.sheets[n].last_row);
+}
+
+
+static unsigned int
+gnumeric_get_sheet_n_rows (struct spreadsheet *s, int n)
+{
+  struct gnumeric_reader *gr = (struct gnumeric_reader *) s;
+
+  while ((gr->spreadsheet.sheets[n].last_col == -1)
+	 &&
+	 (1 == xmlTextReaderRead (gr->msd.xtr)))
+    {
+      process_node (gr, &gr->msd);
+    }
+
+  assert (n < gr->n_sheets);
+  return gr->spreadsheet.sheets[n].last_row + 1;
+}
+
+static unsigned int
+gnumeric_get_sheet_n_columns (struct spreadsheet *s, int n)
+{
+  struct gnumeric_reader *gr = (struct gnumeric_reader *) s;
+
+  while ((gr->spreadsheet.sheets[n].last_col == -1)
+	 &&
+	 (1 == xmlTextReaderRead (gr->msd.xtr)))
+    {
+      process_node (gr, &gr->msd);
+    }
+
+  assert (n < gr->n_sheets);
+  return gr->spreadsheet.sheets[n].last_col + 1;
+}
+
+static struct gnumeric_reader *
+gnumeric_reopen (struct gnumeric_reader *r, const char *filename, bool show_errors);
+
+
+static char *
+gnumeric_get_sheet_cell (struct spreadsheet *s, int n, int row, int column)
+{
+  struct gnumeric_reader *gr = (struct gnumeric_reader *) s;
+
+  /* See if this cell is in the cache.  If it is, then use it.  */
+  if (use_cache)
+    {
+      struct cache_datum *lookup = NULL;
+      unsigned int hash = hash_int (row, 0);
+      hash = hash_int (column, hash);
+
+      HMAP_FOR_EACH_WITH_HASH (lookup, struct cache_datum, node, hash,
+			       &gr->cache)
+	{
+	  if (lookup->row == row && lookup->col == column)
+	    {
+	      break;
+	    }
+	}
+      if (lookup)
+	{
+	  return strdup (lookup->value);
+	}
+    }
+
+  struct state_data sd;
+
+  sd.state = STATE_PRE_INIT;
+  sd.current_sheet = -1;
+  sd.row = -1;
+  sd.col = -1;
+  sd.min_col = 0;
+  sd.gz =  gzopen (s->file_name, "r");
+
+  sd.xtr = xmlReaderForIO ((xmlInputReadCallback) gzread,
+                                (xmlInputCloseCallback) gzclose,
+                                sd.gz,
+                                NULL, NULL,
+                                0);
+
+
+  gr->target_sheet_name = NULL;
+
+  int current_row = -1;
+  int current_col = -1;
+
+  /* Spool to the target cell, caching values of cells as they are encountered.  */
+  for (int ret = 1; ret; )
+    {
+      while ((ret = xmlTextReaderRead (sd.xtr)))
+        {
+          process_node (gr, &sd);
+          if (sd.state == STATE_CELL)
+            {
+              if (sd.current_sheet == n)
+                {
+                  current_row = sd.row;
+                  current_col = sd.col;
+                  break;
+                }
+            }
+        }
+      if (current_row >= row && current_col >= column - 1)
+        break;
+
+      while ((ret = xmlTextReaderRead (sd.xtr)))
+        {
+          process_node (gr, &sd);
+          if (sd.node_type == XML_READER_TYPE_TEXT)
+            break;
+        }
+
+      if (use_cache)
+	{
+	  /* See if this cell has already been cached ... */
+	  unsigned int hash = hash_int (current_row, 0);
+	  hash = hash_int (current_col, hash);
+	  struct cache_datum *probe = NULL;
+	  HMAP_FOR_EACH_WITH_HASH (probe, struct cache_datum, node, hash,
+				   &gr->cache)
+	    {
+	      if (probe->row == current_row && probe->col == current_col)
+		break;
+	    }
+	  /* If not, then cache it.  */
+	  if (!probe)
+	    {
+	      char *str = CHAR_CAST (char *, xmlTextReaderValue (sd.xtr));
+	      struct cache_datum *cell_data = XMALLOC (struct cache_datum);
+	      cell_data->row = current_row;
+	      cell_data->col = current_col;
+	      cell_data->value = str;
+	      hmap_insert (&gr->cache, &cell_data->node, hash);
+	    }
+	}
+    }
+
+  while (xmlTextReaderRead (sd.xtr))
+    {
+      process_node (gr, &sd);
+      if (sd.state == STATE_CELL && sd.node_type == XML_READER_TYPE_TEXT)
+        {
+          if (sd.current_sheet == n)
+            {
+              if (row == sd.row && column == sd.col)
+                break;
+            }
+        }
+    }
+
+  char *cell_content = CHAR_CAST (char *, xmlTextReaderValue (sd.xtr));
+  xmlFreeTextReader (sd.xtr);
+  return cell_content;
 }
 
 
@@ -232,13 +406,13 @@ gnm_file_casereader_destroy (struct casereader *reader UNUSED, void *r_)
 
   state_data_destroy (&r->rsd);
 
-  if (r->first_case &&  ! r->used_first_case)
-    case_unref (r->first_case);
+  if (r->spreadsheet.first_case &&  ! r->spreadsheet.used_first_case)
+    case_unref (r->spreadsheet.first_case);
 
-  if (r->proto)
-    caseproto_unref (r->proto);
+  if (r->spreadsheet.proto)
+    caseproto_unref (r->spreadsheet.proto);
 
-  gnumeric_unref (&r->spreadsheet);
+  spreadsheet_unref (&r->spreadsheet);
 }
 
 
@@ -267,14 +441,14 @@ process_node (struct gnumeric_reader *r, struct state_data *sd)
 	  XML_READER_TYPE_ELEMENT  == sd->node_type)
 	{
 	  ++sd->current_sheet;
-	  if (sd->current_sheet + 1 > r->spreadsheet.n_sheets)
+	  if (sd->current_sheet + 1 > r->n_sheets)
 	    {
 	      struct sheet_detail *detail ;
-	      r->sheets = xrealloc (r->sheets, (sd->current_sheet + 1) * sizeof *r->sheets);
-	      detail = &r->sheets[sd->current_sheet];
-	      detail->start_col = detail->stop_col = detail->start_row = detail->stop_row = -1;
+	      r->spreadsheet.sheets = xrealloc (r->spreadsheet.sheets, (sd->current_sheet + 1) * sizeof *r->spreadsheet.sheets);
+	      detail = &r->spreadsheet.sheets[sd->current_sheet];
+	      detail->first_col = detail->last_col = detail->first_row = detail->last_row = -1;
 	      detail->name = NULL;
-	      r->spreadsheet.n_sheets = sd->current_sheet + 1;
+	      r->n_sheets = sd->current_sheet + 1;
 	    }
 	}
       else if (0 == xmlStrcasecmp (name, _xml("gnm:SheetNameIndex")) &&
@@ -285,8 +459,9 @@ process_node (struct gnumeric_reader *r, struct state_data *sd)
 	}
       else if (XML_READER_TYPE_TEXT == sd->node_type)
 	{
-	  if (r->sheets [r->spreadsheet.n_sheets - 1].name == NULL)
-	    r->sheets [r->spreadsheet.n_sheets - 1].name = CHAR_CAST (char *, xmlTextReaderValue (sd->xtr));
+	  if (r->spreadsheet.sheets [r->n_sheets - 1].name == NULL)
+	    r->spreadsheet.sheets [r->n_sheets - 1].name =
+              CHAR_CAST (char *, xmlTextReaderValue (sd->xtr));
 	}
       break;
 
@@ -318,10 +493,10 @@ process_node (struct gnumeric_reader *r, struct state_data *sd)
 	}
       else if (XML_READER_TYPE_TEXT == sd->node_type)
 	{
-       	  if (r->target_sheet != NULL)
+       	  if (r->target_sheet_name != NULL)
 	    {
 	      xmlChar *value = xmlTextReaderValue (sd->xtr);
-	      if (0 == xmlStrcmp (value, r->target_sheet))
+	      if (0 == xmlStrcmp (value, r->target_sheet_name))
 		sd->state = STATE_SHEET_FOUND;
 	      free (value);
 	    }
@@ -368,7 +543,6 @@ process_node (struct gnumeric_reader *r, struct state_data *sd)
       else if (sd->node_type == XML_READER_TYPE_TEXT)
 	{
 	  xmlChar *value = xmlTextReaderValue (sd->xtr);
-	  r->sheets[sd->current_sheet].maxrow = _xmlchar_to_int (value);
 	  xmlFree (value);
 	}
       break;
@@ -381,7 +555,6 @@ process_node (struct gnumeric_reader *r, struct state_data *sd)
       else if (sd->node_type == XML_READER_TYPE_TEXT)
 	{
 	  xmlChar *value = xmlTextReaderValue (sd->xtr);
-	  r->sheets[sd->current_sheet].maxcol = _xmlchar_to_int (value);
 	  xmlFree (value);
 	}
       break;
@@ -389,9 +562,7 @@ process_node (struct gnumeric_reader *r, struct state_data *sd)
       if (0 == xmlStrcasecmp (name, _xml ("gnm:Cell"))  &&
 	  XML_READER_TYPE_ELEMENT  == sd->node_type)
 	{
-	  xmlChar *attr = NULL;
-
-	  attr = xmlTextReaderGetAttribute (sd->xtr, _xml ("Col"));
+	  xmlChar *attr = xmlTextReaderGetAttribute (sd->xtr, _xml ("Col"));
 	  sd->col =  _xmlchar_to_int (attr);
 	  free (attr);
 
@@ -402,27 +573,29 @@ process_node (struct gnumeric_reader *r, struct state_data *sd)
 	  sd->row = _xmlchar_to_int (attr);
 	  free (attr);
 
-	  if (r->sheets[sd->current_sheet].start_row == -1)
+	  if (r->spreadsheet.sheets[sd->current_sheet].first_row == -1)
 	    {
-	      r->sheets[sd->current_sheet].start_row = sd->row;
+	      r->spreadsheet.sheets[sd->current_sheet].first_row = sd->row;
 	    }
 
-	  if (r->sheets[sd->current_sheet].start_col == -1)
+	  if (r->spreadsheet.sheets[sd->current_sheet].first_col == -1)
 	    {
-	      r->sheets[sd->current_sheet].start_col = sd->col;
+	      r->spreadsheet.sheets[sd->current_sheet].first_col = sd->col;
 	    }
 	  if (! xmlTextReaderIsEmptyElement (sd->xtr))
 	    sd->state = STATE_CELL;
 	}
-      else if ((0 == xmlStrcasecmp (name, _xml("gnm:Cells")))  &&  (XML_READER_TYPE_END_ELEMENT  == sd->node_type))
+      else if ((0 == xmlStrcasecmp (name, _xml("gnm:Cells")))
+	       &&  (XML_READER_TYPE_END_ELEMENT  == sd->node_type))
 	{
-	  r->sheets[sd->current_sheet].stop_col = sd->col;
-	  r->sheets[sd->current_sheet].stop_row = sd->row;
+	  r->spreadsheet.sheets[sd->current_sheet].last_col = sd->col;
+	  r->spreadsheet.sheets[sd->current_sheet].last_row = sd->row;
 	  sd->state = STATE_SHEET_NAME;
 	}
       break;
     case STATE_CELL:
-      if (0 == xmlStrcasecmp (name, _xml("gnm:Cell"))  && XML_READER_TYPE_END_ELEMENT  == sd->node_type)
+      if (0 == xmlStrcasecmp (name, _xml("gnm:Cell"))
+	  && XML_READER_TYPE_END_ELEMENT  == sd->node_type)
 	{
 	  sd->state = STATE_CELLS_START;
 	}
@@ -506,115 +679,7 @@ gnumeric_error_handler (void *ctx, const char *mesg,
        mesg);
 }
 
-static struct gnumeric_reader *
-gnumeric_reopen (struct gnumeric_reader *r, const char *filename, bool show_errors)
-{
-  int ret = -1;
-  struct state_data *sd;
-
-  xmlTextReaderPtr xtr;
-  gzFile gz;
-
-  assert (r == NULL || filename == NULL);
-
-  if (filename)
-    {
-      gz = gzopen (filename, "r");
-    }
-  else
-    {
-      gz = gzopen (r->spreadsheet.file_name, "r");
-    }
-
-  if (NULL == gz)
-    return NULL;
-
-
-  xtr = xmlReaderForIO ((xmlInputReadCallback) gzread,
-			(xmlInputCloseCallback) gzclose, gz,
-			NULL, NULL,
-			show_errors ? 0 : (XML_PARSE_NOERROR | XML_PARSE_NOWARNING));
-
-  if (xtr == NULL)
-    {
-      gzclose (gz);
-      return NULL;
-    }
-
-  if (r == NULL)
-    {
-      r = xzalloc (sizeof *r);
-      r->spreadsheet.n_sheets = -1;
-      r->spreadsheet.file_name = strdup (filename);
-      sd = &r->msd;
-    }
-  else
-    {
-      sd = &r->rsd;
-    }
-
-  if (show_errors)
-    xmlTextReaderSetErrorHandler (xtr, gnumeric_error_handler, r);
-
-  r->target_sheet = NULL;
-  r->target_sheet_index = -1;
-
-  sd->row = sd->col = -1;
-  sd->state = STATE_PRE_INIT;
-  sd->xtr = xtr;
-  r->spreadsheet.ref_cnt++;
-
-
-  /* Advance to the start of the workbook.
-     This gives us some confidence that we are actually dealing with a gnumeric
-     spreadsheet.
-   */
-  while ((sd->state != STATE_INIT)
-	  && 1 == (ret = xmlTextReaderRead (sd->xtr)))
-    {
-      process_node (r, sd);
-    }
-
-
-  if (ret != 1)
-    {
-      /* Does not seem to be a gnumeric file */
-      gnumeric_unref (&r->spreadsheet);
-      return NULL;
-    }
-
-  r->spreadsheet.type = SPREADSHEET_GNUMERIC;
-
-  if (show_errors)
-    {
-      const xmlChar *enc = xmlTextReaderConstEncoding (sd->xtr);
-      xmlCharEncoding xce = xmlParseCharEncoding (CHAR_CAST (const char *, enc));
-
-      if (XML_CHAR_ENCODING_UTF8 != xce)
-	{
-	  /* I have been told that ALL gnumeric files are UTF8 encoded.  If that is correct, this
-	     can never happen. */
-	  msg (MW, _("The gnumeric file `%s' is encoded as %s instead of the usual UTF-8 encoding. "
-		     "Any non-ascii characters will be incorrectly imported."),
-	       r->spreadsheet.file_name,
-	       enc);
-	}
-    }
-
-  return r;
-}
-
-
-struct spreadsheet *
-gnumeric_probe (const char *filename, bool report_errors)
-{
-  struct gnumeric_reader *r = gnumeric_reopen (NULL, filename, report_errors);
-
-  return &r->spreadsheet;
-}
-
-
-struct casereader *
+static struct casereader *
 gnumeric_make_reader (struct spreadsheet *spreadsheet,
 		      const struct spreadsheet_read_options *opts)
 {
@@ -635,8 +700,8 @@ gnumeric_make_reader (struct spreadsheet *spreadsheet,
   if (opts->cell_range)
     {
       if (! convert_cell_ref (opts->cell_range,
-			       &r->start_col, &r->start_row,
-			       &r->stop_col, &r->stop_row))
+			       &r->spreadsheet.start_col, &r->spreadsheet.start_row,
+			       &r->spreadsheet.stop_col, &r->spreadsheet.stop_row))
 	{
 	  msg (SE, _("Invalid cell range `%s'"),
 	       opts->cell_range);
@@ -645,21 +710,21 @@ gnumeric_make_reader (struct spreadsheet *spreadsheet,
     }
   else
     {
-      r->start_col = -1;
-      r->start_row = 0;
-      r->stop_col = -1;
-      r->stop_row = -1;
+      r->spreadsheet.start_col = -1;
+      r->spreadsheet.start_row = 0;
+      r->spreadsheet.stop_col = -1;
+      r->spreadsheet.stop_row = -1;
     }
 
-  r->target_sheet = BAD_CAST opts->sheet_name;
+  r->target_sheet_name = BAD_CAST opts->sheet_name;
   r->target_sheet_index = opts->sheet_index;
   r->rsd.row = r->rsd.col = -1;
   r->rsd.current_sheet = -1;
-  r->first_case = NULL;
-  r->proto = NULL;
+  r->spreadsheet.first_case = NULL;
+  r->spreadsheet.proto = NULL;
 
   /* Advance to the start of the cells for the target sheet */
-  while ((r->rsd.state != STATE_CELL || r->rsd.row < r->start_row)
+  while ((r->rsd.state != STATE_CELL || r->rsd.row < r->spreadsheet.start_row)
 	  && 1 == (ret = xmlTextReaderRead (r->rsd.xtr)))
     {
       xmlChar *value ;
@@ -677,12 +742,12 @@ gnumeric_make_reader (struct spreadsheet *spreadsheet,
      of cases */
   if (opts->cell_range)
     {
-      n_cases = MIN (n_cases, r->stop_row - r->start_row + 1);
+      n_cases = MIN (n_cases, r->spreadsheet.stop_row - r->spreadsheet.start_row + 1);
     }
 
   if (opts->read_names)
     {
-      r->start_row++;
+      r->spreadsheet.start_row++;
       n_cases --;
     }
 
@@ -690,7 +755,7 @@ gnumeric_make_reader (struct spreadsheet *spreadsheet,
   /* Read in the first row of cells,
      including the headers if read_names was set */
   while (
-	 ((r->rsd.state == STATE_CELLS_START && r->rsd.row <= r->start_row) || r->rsd.state == STATE_CELL)
+	 ((r->rsd.state == STATE_CELLS_START && r->rsd.row <= r->spreadsheet.start_row) || r->rsd.state == STATE_CELL)
 	 && (ret = xmlTextReaderRead (r->rsd.xtr))
 	)
     {
@@ -708,7 +773,7 @@ gnumeric_make_reader (struct spreadsheet *spreadsheet,
 
       process_node (r, &r->rsd);
 
-      if (r->rsd.row > r->start_row)
+      if (r->rsd.row > r->spreadsheet.start_row)
 	{
 	  xmlChar *attr =
 	    xmlTextReaderGetAttribute (r->rsd.xtr, _xml ("ValueType"));
@@ -719,11 +784,11 @@ gnumeric_make_reader (struct spreadsheet *spreadsheet,
 	  break;
 	}
 
-      if (r->rsd.col < r->start_col ||
-	   (r->stop_col != -1 && r->rsd.col > r->stop_col))
+      if (r->rsd.col < r->spreadsheet.start_col ||
+	   (r->spreadsheet.stop_col != -1 && r->rsd.col > r->spreadsheet.stop_col))
 	continue;
 
-      idx = r->rsd.col - r->start_col;
+      idx = r->rsd.col - r->spreadsheet.start_col;
 
       if (idx  >= n_var_specs)
 	{
@@ -746,7 +811,7 @@ gnumeric_make_reader (struct spreadsheet *spreadsheet,
 	  xmlChar *value = xmlTextReaderValue (r->rsd.xtr);
 	  const char *text  = CHAR_CAST (const char *, value);
 
-	  if (r->rsd.row < r->start_row)
+	  if (r->rsd.row < r->spreadsheet.start_row)
 	    {
 	      if (opts->read_names)
 		{
@@ -767,7 +832,7 @@ gnumeric_make_reader (struct spreadsheet *spreadsheet,
       else if (r->rsd.node_type == XML_READER_TYPE_ELEMENT
 		&& r->rsd.state == STATE_CELL)
 	{
-	  if (r->rsd.row == r->start_row)
+	  if (r->rsd.row == r->spreadsheet.start_row)
 	    {
 	      xmlChar *attr =
 		xmlTextReaderGetAttribute (r->rsd.xtr, _xml ("ValueType"));
@@ -785,7 +850,7 @@ gnumeric_make_reader (struct spreadsheet *spreadsheet,
     if (enc == NULL)
       goto error;
     /* Create the dictionary and populate it */
-    spreadsheet->dict = r->dict = dict_create (CHAR_CAST (const char *, enc));
+    spreadsheet->dict = dict_create (CHAR_CAST (const char *, enc));
   }
 
   for (i = 0 ; i < n_var_specs ; ++i)
@@ -800,13 +865,13 @@ gnumeric_make_reader (struct spreadsheet *spreadsheet,
       if (var_spec[i].width == -1)
 	var_spec[i].width = SPREADSHEET_DEFAULT_WIDTH;
 
-      name = dict_make_unique_var_name (r->dict, var_spec[i].name, &vstart);
-      dict_create_var (r->dict, name, var_spec[i].width);
+      name = dict_make_unique_var_name (r->spreadsheet.dict, var_spec[i].name, &vstart);
+      dict_create_var (r->spreadsheet.dict, name, var_spec[i].width);
       free (name);
     }
 
   /* Create the first case, and cache it */
-  r->used_first_case = false;
+  r->spreadsheet.used_first_case = false;
 
   if (n_var_specs ==  0)
     {
@@ -815,9 +880,9 @@ gnumeric_make_reader (struct spreadsheet *spreadsheet,
       goto error;
     }
 
-  r->proto = caseproto_ref (dict_get_proto (r->dict));
-  r->first_case = case_create (r->proto);
-  case_set_missing (r->first_case);
+  r->spreadsheet.proto = caseproto_ref (dict_get_proto (r->spreadsheet.dict));
+  r->spreadsheet.first_case = case_create (r->spreadsheet.proto);
+  case_set_missing (r->spreadsheet.first_case);
 
 
   for (i = 0 ; i < n_var_specs ; ++i)
@@ -827,9 +892,9 @@ gnumeric_make_reader (struct spreadsheet *spreadsheet,
       if ((var_spec[i].name == NULL) && (var_spec[i].first_value == NULL))
 	continue;
 
-      var = dict_get_var (r->dict, x++);
+      var = dict_get_var (r->spreadsheet.dict, x++);
 
-      convert_xml_string_to_value (r->first_case, var,
+      convert_xml_string_to_value (r->spreadsheet.first_case, var,
 				   var_spec[i].first_value,
 				   var_spec[i].first_type,
 				   r->rsd.col + i - 1,
@@ -847,7 +912,7 @@ gnumeric_make_reader (struct spreadsheet *spreadsheet,
 
   return casereader_create_sequential
     (NULL,
-     r->proto,
+     r->spreadsheet.proto,
      n_cases,
      &gnm_file_casereader_class, r);
 
@@ -878,17 +943,17 @@ gnm_file_casereader_read (struct casereader *reader UNUSED, void *r_)
   struct gnumeric_reader *r = r_;
   int current_row = r->rsd.row;
 
-  if (!r->used_first_case)
+  if (!r->spreadsheet.used_first_case)
     {
-      r->used_first_case = true;
-      return r->first_case;
+      r->spreadsheet.used_first_case = true;
+      return r->spreadsheet.first_case;
     }
 
-  c = case_create (r->proto);
+  c = case_create (r->spreadsheet.proto);
   case_set_missing (c);
 
-  if (r->start_col == -1)
-    r->start_col = r->rsd.min_col;
+  if (r->spreadsheet.start_col == -1)
+    r->spreadsheet.start_col = r->rsd.min_col;
 
 
   while ((r->rsd.state == STATE_CELL || r->rsd.state == STATE_CELLS_START)
@@ -906,22 +971,22 @@ gnm_file_casereader_read (struct casereader *reader UNUSED, void *r_)
 	  xmlFree (attr);
 	}
 
-      if (r->rsd.col < r->start_col || (r->stop_col != -1 &&
-				     r->rsd.col > r->stop_col))
+      if (r->rsd.col < r->spreadsheet.start_col || (r->spreadsheet.stop_col != -1 &&
+				     r->rsd.col > r->spreadsheet.stop_col))
 	continue;
 
-      if (r->rsd.col - r->start_col >= caseproto_get_n_widths (r->proto))
+      if (r->rsd.col - r->spreadsheet.start_col >= caseproto_get_n_widths (r->spreadsheet.proto))
 	continue;
 
-      if (r->stop_row != -1 && r->rsd.row > r->stop_row)
+      if (r->spreadsheet.stop_row != -1 && r->rsd.row > r->spreadsheet.stop_row)
 	break;
 
 
       if (r->rsd.node_type == XML_READER_TYPE_TEXT)
 	{
 	  xmlChar *value = xmlTextReaderValue (r->rsd.xtr);
-	  const int idx = r->rsd.col - r->start_col;
-	  const struct variable *var = dict_get_var (r->dict, idx);
+	  const int idx = r->rsd.col - r->spreadsheet.start_col;
+	  const struct variable *var = dict_get_var (r->spreadsheet.dict, idx);
 
 	  convert_xml_string_to_value (c, var, value, r->vtype,
 				       r->rsd.col, r->rsd.row);
@@ -937,4 +1002,124 @@ gnm_file_casereader_read (struct casereader *reader UNUSED, void *r_)
       case_unref (c);
       return NULL;
     }
+}
+
+static struct gnumeric_reader *
+gnumeric_reopen (struct gnumeric_reader *r, const char *filename, bool show_errors)
+{
+  int ret = -1;
+  struct state_data *sd;
+
+  xmlTextReaderPtr xtr;
+  gzFile gz;
+
+  assert (r == NULL || filename == NULL);
+
+  if (filename)
+    {
+      gz = gzopen (filename, "r");
+    }
+  else
+    {
+      gz = gzopen (r->spreadsheet.file_name, "r");
+    }
+
+  if (NULL == gz)
+    return NULL;
+
+  if (r == NULL)
+    {
+      r = xzalloc (sizeof *r);
+      r->n_sheets = -1;
+      r->spreadsheet.file_name = strdup (filename);
+      struct spreadsheet *s = SPREADSHEET_CAST (r);
+      strcpy (s->type, "GNM");
+      s->destroy = gnumeric_destroy;
+      s->make_reader = gnumeric_make_reader;
+      s->get_sheet_name = gnumeric_get_sheet_name;
+      s->get_sheet_range = gnumeric_get_sheet_range;
+      s->get_sheet_n_sheets = gnumeric_get_sheet_n_sheets;
+      s->get_sheet_n_rows = gnumeric_get_sheet_n_rows;
+      s->get_sheet_n_columns = gnumeric_get_sheet_n_columns;
+      s->get_sheet_cell = gnumeric_get_sheet_cell;
+
+      sd = &r->msd;
+      hmap_init (&r->cache);
+    }
+  else
+    {
+      sd = &r->rsd;
+    }
+  sd->gz = gz;
+
+  r = (struct gnumeric_reader *) spreadsheet_ref (SPREADSHEET_CAST (r));
+
+  {
+    xtr = xmlReaderForIO ((xmlInputReadCallback) gzread,
+			  (xmlInputCloseCallback) gzclose, gz,
+			  NULL, NULL,
+			  show_errors ? 0 : (XML_PARSE_NOERROR | XML_PARSE_NOWARNING));
+
+    if (xtr == NULL)
+      {
+	gzclose (gz);
+	free (r);
+	return NULL;
+      }
+
+    if (show_errors)
+      xmlTextReaderSetErrorHandler (xtr, gnumeric_error_handler, r);
+
+    sd->row = sd->col = -1;
+    sd->state = STATE_PRE_INIT;
+    sd->xtr = xtr;
+  }
+
+  r->target_sheet_name = NULL;
+  r->target_sheet_index = -1;
+
+
+  /* Advance to the start of the workbook.
+     This gives us some confidence that we are actually dealing with a gnumeric
+     spreadsheet.
+   */
+  while ((sd->state != STATE_INIT)
+	  && 1 == (ret = xmlTextReaderRead (sd->xtr)))
+    {
+      process_node (r, sd);
+    }
+
+  if (ret != 1)
+    {
+      /* Does not seem to be a gnumeric file */
+      spreadsheet_unref (&r->spreadsheet);
+      return NULL;
+    }
+
+  if (show_errors)
+    {
+      const xmlChar *enc = xmlTextReaderConstEncoding (sd->xtr);
+      xmlCharEncoding xce = xmlParseCharEncoding (CHAR_CAST (const char *, enc));
+
+      if (XML_CHAR_ENCODING_UTF8 != xce)
+	{
+	  /* I have been told that ALL gnumeric files are UTF8 encoded.  If that is correct, this
+	     can never happen. */
+	  msg (MW, _("The gnumeric file `%s' is encoded as %s instead of the usual UTF-8 encoding. "
+		     "Any non-ascii characters will be incorrectly imported."),
+	       r->spreadsheet.file_name,
+	       enc);
+	}
+    }
+
+  return r;
+}
+
+
+struct spreadsheet *
+gnumeric_probe (const char *filename, bool report_errors)
+{
+  struct gnumeric_reader *r = gnumeric_reopen (NULL, filename, report_errors);
+
+  return &r->spreadsheet;
 }

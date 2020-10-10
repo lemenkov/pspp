@@ -51,28 +51,56 @@ bool convert_cell_ref (const char *ref,
 
 #define _xmlchar_to_int(X) ((X) ? atoi (CHAR_CAST (const char *, (X))) : -1)
 
-enum spreadsheet_type
-  {
-    SPREADSHEET_NONE,
-    SPREADSHEET_GNUMERIC,
-    SPREADSHEET_ODS
-  };
+struct sheet_detail
+{
+  /* The name of the sheet (utf8 encoding) */
+  char *name;
 
+  /* The extents of the sheet.  */
+  int first_col;
+  int last_col;
+  int first_row;
+  int last_row;
+};
 
 struct spreadsheet
 {
+  /** General spreadsheet object related things.  */
+  int ref_cnt;
+
+  /* A 3 letter string (null terminated) which identifies the type of
+     spreadsheet (eg: "ODS" for opendocument; "GNM" for gnumeric etc).  */
+  char type[4];
+
+  void (*destroy) (struct spreadsheet *);
+  struct casereader* (*make_reader) (struct spreadsheet *,
+				    const struct spreadsheet_read_options *);
+  const char * (*get_sheet_name) (struct spreadsheet *, int);
+  char * (*get_sheet_range) (struct spreadsheet *, int);
+  int (*get_sheet_n_sheets) (struct spreadsheet *);
+  unsigned int (*get_sheet_n_rows) (struct spreadsheet *, int);
+  unsigned int (*get_sheet_n_columns) (struct spreadsheet *, int);
+  char * (*get_sheet_cell) (struct spreadsheet *, int , int , int);
+
   char *file_name;
 
-  enum spreadsheet_type type;
+  struct sheet_detail *sheets;
 
-  /* The total number of sheets in the "workbook" */
-  int n_sheets;
+
+  /** Things specific to casereaders.  */
 
   /* The dictionary for client's reference.
      Client must ref or clone it if it needs a permanent or modifiable copy. */
   struct dictionary *dict;
+  struct caseproto *proto;
+  struct ccase *first_case;
+  bool used_first_case;
 
-  int ref_cnt;
+  /* Where the reader should start and stop.  */
+  int start_row;
+  int start_col;
+  int stop_row;
+  int stop_col;
 };
 
 
@@ -80,16 +108,17 @@ struct casereader * spreadsheet_make_reader (struct spreadsheet *, const struct 
 
 const char * spreadsheet_get_sheet_name (struct spreadsheet *s, int n) OPTIMIZE(2);
 char * spreadsheet_get_sheet_range (struct spreadsheet *s, int n) OPTIMIZE(2);
+int  spreadsheet_get_sheet_n_sheets (struct spreadsheet *s) OPTIMIZE(2);
+unsigned int  spreadsheet_get_sheet_n_rows (struct spreadsheet *s, int n) OPTIMIZE(2);
+unsigned int  spreadsheet_get_sheet_n_columns (struct spreadsheet *s, int n) OPTIMIZE(2);
 
+char * spreadsheet_get_cell (struct spreadsheet *s, int n, int row, int column);
 
 char * create_cell_ref (int col0, int row0);
 char *create_cell_range (int col0, int row0, int coli, int rowi);
 
+struct spreadsheet * spreadsheet_ref (struct spreadsheet *s) WARN_UNUSED_RESULT;
 void spreadsheet_unref (struct spreadsheet *);
-void spreadsheet_ref (struct spreadsheet *);
-
-
-
 
 
 #define SPREADSHEET_CAST(X) ((struct spreadsheet *)(X))

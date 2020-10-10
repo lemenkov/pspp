@@ -19,6 +19,7 @@
 check_PROGRAMS += \
 	tests/data/datasheet-test \
 	tests/data/sack \
+	tests/data/spreadsheet-test \
 	tests/data/inexactify \
 	tests/language/lexer/command-name-test \
 	tests/language/lexer/scan-test \
@@ -64,6 +65,12 @@ tests_data_sack_SOURCES = \
 	tests/data/sack.c
 tests_data_sack_LDADD = src/libpspp-core.la
 tests_data_sack_CFLAGS = $(AM_CFLAGS)
+
+
+tests_data_spreadsheet_test_SOURCES = \
+	tests/data/spreadsheet-test.c
+tests_data_spreadsheet_test_LDADD = src/libpspp-core.la
+tests_data_spreadsheet_test_CFLAGS = $(AM_CFLAGS)
 
 tests_libpspp_line_reader_test_SOURCES = tests/libpspp/line-reader-test.c
 tests_libpspp_line_reader_test_LDADD = src/libpspp-core.la
@@ -258,6 +265,18 @@ tests_ui_syntax_gen_test_LDADD = \
 
 EXTRA_DIST += \
 	tests/coverage.sh \
+	tests/data/simple.ods \
+	tests/data/simple.gnumeric \
+	tests/data/sparse.ods \
+	tests/data/sparse.gnumeric \
+	tests/data/holey.ods \
+	tests/data/holey.gnumeric \
+	tests/data/multisheet.ods \
+	tests/data/multisheet.gnumeric \
+	tests/data/repeating.ods \
+	tests/data/repeating.gnumeric \
+	tests/data/one-thousand-by-fifty-three.ods \
+	tests/data/one-thousand-by-fifty-three.gnumeric \
 	tests/data/CVE-2017-10791.sav \
 	tests/data/CVE-2017-10792.sav \
 	tests/data/bcd-in.expected.cmp.gz \
@@ -300,6 +319,7 @@ TESTSUITE_AT = \
 	tests/data/data-in.at \
 	tests/data/data-out.at \
 	tests/data/datasheet-test.at \
+	tests/data/spreadsheet-test.at \
 	tests/data/dictionary.at \
 	tests/data/file.at \
 	tests/data/format-guesser.at \

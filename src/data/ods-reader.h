@@ -1,5 +1,5 @@
 /* PSPP - a program for statistical analysis.
-   Copyright (C) 2011 Free Software Foundation, Inc.
+   Copyright (C) 2011, 2020 Free Software Foundation, Inc.
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -19,21 +19,7 @@
 
 #include <stdbool.h>
 
-struct casereader;
-struct dictionary;
-
-struct spreadsheet_read_options;
-struct spreadsheet;
-
-const char * ods_get_sheet_name (struct spreadsheet *s, int n);
-char * ods_get_sheet_range (struct spreadsheet *s, int n);
-
 struct spreadsheet *ods_probe (const char *filename, bool report_errors);
-
-struct casereader * ods_make_reader (struct spreadsheet *spreadsheet,
-				     const struct spreadsheet_read_options *opts);
-
-void ods_unref (struct spreadsheet *s);
 
 
 #endif

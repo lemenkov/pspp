@@ -15,6 +15,7 @@ dnl You should have received a copy of the GNU General Public License
 dnl along with this program.  If not, see <http://www.gnu.org/licenses/>.
 dnl
 m4_define([SPREADSHEET_TEST_PREP],[dnl
+ AT_KEYWORDS([spreadsheet])
  m4_if($1,[GNM],[dnl
     AT_CHECK([gzip -c $top_srcdir/tests/language/data-io/Book1.gnm.unzipped > Book1.gnumeric])dnl
     m4_define([testsheet],[Book1.gnumeric])dnl
@@ -172,6 +173,7 @@ CHECK_SPREADSHEET_READER([GNM])
 
 dnl Check for a bug where gnumeric files were interpreted incorrectly
 AT_SETUP([GET DATA /TYPE=GNM sheet index bug])
+AT_KEYWORDS([spreadsheet])
 AT_DATA([minimal3.gnumeric],[dnl
 <?xml version="1.0" encoding="UTF-8"?>
 <gnm:Workbook xmlns:gnm="http://www.gnumeric.org/v10.dtd" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.gnumeric.org/v9.xsd">
@@ -320,6 +322,7 @@ AT_CLEANUP
 
 dnl Check for a bug where certain gnumeric files failed an assertion
 AT_SETUP([GET DATA /TYPE=GNM assert-fail])
+AT_KEYWORDS([spreadsheet])
 AT_DATA([read.sps],[dnl
 GET DATA
 	/TYPE=GNM
@@ -376,6 +379,7 @@ CHECK_SPREADSHEET_READER([ODS])
 
 
 AT_SETUP([GET DATA /TYPE=ODS crash])
+AT_KEYWORDS([spreadsheet])
 
 
 AT_CHECK([cp $top_srcdir/tests/language/data-io/newone.ods this.ods])dnl
@@ -391,6 +395,7 @@ AT_CLEANUP
 
 
 AT_SETUP([GET DATA /TYPE=ODS readnames])
+AT_KEYWORDS([spreadsheet])
 
 dnl Check for a bug where in the ODS reader /READNAMES incorrectly
 dnl dealt with repeated names.

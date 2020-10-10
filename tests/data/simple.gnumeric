@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<gnm:Workbook xmlns:gnm="http://www.gnumeric.org/v10.dtd" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.gnumeric.org/v9.xsd">
+  <gnm:Version Epoch="1" Major="12" Minor="44" Full="1.12.44"/>
+  <office:document-meta xmlns:office="urn:oasis:names:tc:opendocument:xmlns:office:1.0" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:meta="urn:oasis:names:tc:opendocument:xmlns:meta:1.0" xmlns:ooo="http://openoffice.org/2004/office" office:version="1.2">
+    <office:meta>
+      <dc:date>2020-07-29T14:56:16Z</dc:date>
+      <meta:creation-date>2020-07-29T14:55:24Z</meta:creation-date>
+    </office:meta>
+  </office:document-meta>
+  <gnm:Calculation ManualRecalc="0" EnableIteration="1" MaxIterations="100" IterationTolerance="0.001" FloatRadix="2" FloatDigits="53"/>
+  <gnm:SheetNameIndex>
+    <gnm:SheetName gnm:Cols="256" gnm:Rows="65536">Sheet1</gnm:SheetName>
+  </gnm:SheetNameIndex>
+  <gnm:Sheets>
+    <gnm:Sheet DisplayFormulas="0" HideZero="0" HideGrid="0" HideColHeader="0" HideRowHeader="0" DisplayOutlines="1" OutlineSymbolsBelow="1" OutlineSymbolsRight="1" Visibility="GNM_SHEET_VISIBILITY_VISIBLE" GridColor="0:0:0">
+      <gnm:Name>Sheet1</gnm:Name>
+      <gnm:MaxCol>2</gnm:MaxCol>
+      <gnm:MaxRow>3</gnm:MaxRow>
+      <gnm:Zoom>1</gnm:Zoom>
+      <gnm:Cells>
+        <gnm:Cell Row="0" Col="0" ValueType="60">one</gnm:Cell>
+        <gnm:Cell Row="0" Col="1" ValueType="60">two</gnm:Cell>
+        <gnm:Cell Row="0" Col="2" ValueType="60">three</gnm:Cell>
+        <gnm:Cell Row="1" Col="0" ValueType="60">four</gnm:Cell>
+        <gnm:Cell Row="1" Col="1" ValueType="60">five</gnm:Cell>
+        <gnm:Cell Row="1" Col="2" ValueType="60">six</gnm:Cell>
+        <gnm:Cell Row="2" Col="0" ValueType="60">seven</gnm:Cell>
+        <gnm:Cell Row="2" Col="1" ValueType="60">eight</gnm:Cell>
+        <gnm:Cell Row="2" Col="2" ValueType="60">nine</gnm:Cell>
+        <gnm:Cell Row="3" Col="0" ValueType="60">ten</gnm:Cell>
+        <gnm:Cell Row="3" Col="1" ValueType="60">eleven</gnm:Cell>
+        <gnm:Cell Row="3" Col="2" ValueType="60">twelve</gnm:Cell>
+      </gnm:Cells>
+    </gnm:Sheet>
+  </gnm:Sheets>
+</gnm:Workbook>

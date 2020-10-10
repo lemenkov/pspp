@@ -104,6 +104,7 @@ use the GUI, you must run `configure' with --without-gui.
       version 3.4.0 or later.
 
     * GNU Spread Sheet Widget (http://www.gnu.org/software/ssw)
+      version 0.7 or later.
 
 The following packages are optional:
 

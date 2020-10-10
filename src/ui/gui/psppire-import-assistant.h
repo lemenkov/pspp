@@ -28,6 +28,8 @@
 #include "psppire-text-file.h"
 #include "psppire-delimited-text.h"
 
+#include <ssw-sheet.h>
+
 G_BEGIN_DECLS
 
 struct spreadsheet;
@@ -58,23 +60,33 @@ struct spreadsheet;
 typedef struct _PsppireImportAssistant       PsppireImportAssistant;
 typedef struct _PsppireImportAssistantClass  PsppireImportAssistantClass;
 
-
-typedef void page_func (PsppireImportAssistant *, GtkWidget *page);
+enum IMPORT_ASSISTANT_DIRECTION {IMPORT_ASSISTANT_FORWARDS, IMPORT_ASSISTANT_BACKWARDS};
 
 struct _PsppireImportAssistant
 {
   GtkAssistant parent;
 
-  GtkBuilder *builder;
-
-  gint current_page;
-
+  gint previous_page;
   gchar *file_name;
+  GMainLoop *main_loop;
+  GtkWidget *paste_button;
+  GtkWidget *reset_button;
+  int response;
+
+  struct dictionary *dict;
+  struct dictionary *casereader_dict;
+
+  GtkWidget *var_sheet;
+  GtkWidget *data_sheet;
+
 
   /* START The chooser page of the assistant. */
   GtkWidget *encoding_selector;
   GtkFileFilter *default_filter;
   /* END The chooser page of the assistant. */
+
+
+  GtkBuilder *text_builder;
 
 
   /* START The introduction page of the assistant. */
@@ -86,7 +98,7 @@ struct _PsppireImportAssistant
   /* END The introduction page of the assistant. */
 
 
-/* START Page where the user chooses field separators. */
+  /* START Page where the user chooses field separators. */
 
   /* How to break lines into columns. */
   struct string quotes;       /* Quote characters. */
@@ -106,21 +118,15 @@ struct _PsppireImportAssistant
   GtkWidget *variable_names_cb;
   /* END first line page */
 
-  GMainLoop *main_loop;
-  GtkWidget *paste_button;
-  GtkWidget *reset_button;
-  int response;
-
   PsppireTextFile *text_file;
   PsppireDelimitedText *delimiters_model;
 
-  struct dictionary *dict;
-  struct dictionary *casereader_dict;
-
-  GtkWidget *var_sheet;
-  GtkWidget *data_sheet;
-
+  /* START spreadsheet related things */
+  GtkBuilder *spread_builder;
+  GtkWidget *preview_sheet;
   struct spreadsheet *spreadsheet;
+  SswRange selection;
+  bool updating_selection;
 };
 
 struct _PsppireImportAssistantClass
@@ -136,6 +142,9 @@ GtkWidget *psppire_import_assistant_new (GtkWindow *toplevel);
 gchar *psppire_import_assistant_generate_syntax (PsppireImportAssistant *);
 
 int psppire_import_assistant_run (PsppireImportAssistant *asst);
+
+GtkWidget *add_page_to_assistant (PsppireImportAssistant *ia,
+                                  GtkWidget *page, GtkAssistantPageType type, const gchar *title);
 
 G_END_DECLS
 

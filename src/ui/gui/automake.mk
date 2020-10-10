@@ -56,6 +56,7 @@ UI_FILES = \
 	src/ui/gui/roc.ui \
 	src/ui/gui/scatterplot.ui \
 	src/ui/gui/select-cases.ui \
+	src/ui/gui/spreadsheet-import.ui \
 	src/ui/gui/t-test.ui \
 	src/ui/gui/text-data-import.ui \
 	src/ui/gui/transpose.ui \
@@ -175,6 +176,10 @@ src_ui_gui_psppire_SOURCES = \
 	src/ui/gui/psppire.h \
 	src/ui/gui/psppire-import-assistant.c \
 	src/ui/gui/psppire-import-assistant.h \
+	src/ui/gui/psppire-import-spreadsheet.c \
+	src/ui/gui/psppire-import-spreadsheet.h \
+	src/ui/gui/psppire-import-textfile.c \
+	src/ui/gui/psppire-import-textfile.h \
 	src/ui/gui/psppire-lex-reader.c \
 	src/ui/gui/psppire-lex-reader.h \
 	src/ui/gui/psppire-output-view.c \
@@ -183,6 +188,8 @@ src_ui_gui_psppire_SOURCES = \
 	src/ui/gui/psppire-output-window.h \
 	src/ui/gui/psppire-scanf.c \
 	src/ui/gui/psppire-scanf.h \
+	src/ui/gui/psppire-spreadsheet-data-model.c \
+	src/ui/gui/psppire-spreadsheet-data-model.h \
 	src/ui/gui/psppire-spreadsheet-model.c \
 	src/ui/gui/psppire-spreadsheet-model.h \
 	src/ui/gui/psppire-syntax-window.c \

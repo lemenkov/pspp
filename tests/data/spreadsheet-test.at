@@ -1,0 +1,85 @@
+dnl PSPP - a program for statistical analysis.
+dnl Copyright (C) 2020 Free Software Foundation, Inc.
+dnl
+dnl This program is free software: you can redistribute it and/or modify
+dnl it under the terms of the GNU General Public License as published by
+dnl the Free Software Foundation, either version 3 of the License, or
+dnl (at your option) any later version.
+dnl
+dnl This program is distributed in the hope that it will be useful,
+dnl but WITHOUT ANY WARRANTY; without even the implied warranty of
+dnl MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+dnl GNU General Public License for more details.
+dnl
+dnl You should have received a copy of the GNU General Public License
+dnl along with this program.  If not, see <http://www.gnu.org/licenses/>.
+dnl
+AT_BANNER([spreadsheet])
+
+m4_define([SPREADSHEET_TEST],
+  [AT_SETUP([$1 $2])
+   AT_KEYWORDS([spreadsheet $4])
+   AT_CHECK([spreadsheet-test $2 $top_srcdir/tests/data/$1.gnumeric], [0], [$3], [ignore])
+   AT_CHECK([spreadsheet-test $2 $top_srcdir/tests/data/$1.ods], [0], [$3], [ignore])
+   AT_CLEANUP])
+
+SPREADSHEET_TEST([simple], [--sheet=0], [dnl
+Rows 4; Columns 3
+one	two	three
+four	five	six
+seven	eight	nine
+ten	eleven	twelve
+])
+
+SPREADSHEET_TEST([simple], [--sheet=0 --reverse], [dnl
+Rows 4; Columns 3
+twelve	eleven	ten
+nine	eight	seven
+six	five	four
+three	two	one
+])
+
+
+SPREADSHEET_TEST([multisheet], [--sheet=1], [dnl
+Rows 4; Columns 3
+hi	tweedle	1
+ho	dee	2
+hum	dum	3
+6	5	4
+])
+
+
+SPREADSHEET_TEST([repeating], [], [dnl
+Rows 3; Columns 5
+one	one	one	two	two
+two	three	three	three	four
+four	four	five	five	five
+])
+
+SPREADSHEET_TEST([sparse], [], [dnl
+Rows 2; Columns 6
+			0	1	2
+the	row	above	starts	at	D
+])
+
+SPREADSHEET_TEST([holey], [], [dnl
+Rows 1; Columns 8
+		hi	ho			hum	hee
+])
+
+
+dnl If this test takes an unreasonably long time, then probably the caching
+dnl code is not working.
+dnl On my machine, this test takes about 7 seconds
+SPREADSHEET_TEST([one-thousand-by-fifty-three], [--refcheck --reverse], [dnl
+Rows 1000; Columns 53
+], [slow])
+
+dnl Check that the worksheet metadata is retrieved correctly
+SPREADSHEET_TEST([multisheet], [--metadata], [dnl
+Number of sheets: 3
+])
+
+SPREADSHEET_TEST([simple], [--metadata], [dnl
+Number of sheets: 1
+])
