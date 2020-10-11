@@ -36,14 +36,14 @@ This version of PSPP should work with the Gnulib commit shown below.
 Gnulib does not maintain a stable API or ABI, so it is possible that
 PSPP will not work with older or newer versions of Gnulib.
 
-
- commit d6dabe8eece3a9c1269dc1c084531ce447c7a42e (HEAD -> master, origin/master, origin/HEAD)
+ commit 0edaafc813caff4101c58405c6ab279597afc0b9
  Author: Bruno Haible <bruno@clisp.org>
- Date:   Sun Aug 9 12:36:37 2020 +0200
+ Date:   Sat Oct 10 22:52:22 2020 +0200
 
-    Use __builtin_signbit* with clang.
+     *-list, *-oset, *-omap: Avoid possible compiler warnings.
 
-    * lib/math.in.h (signbit): Use __builtin_signbit{,f,l} also on clang.
+     Reported by Marc Nieper-Wißkirchen in
+     <https://lists.gnu.org/r/bug-gnulib/2020-10/msg00025.html>.
 
 To clone Gnulib into a directory named "gnulib" using Git, and then
 check out this particular commit, run these commands:

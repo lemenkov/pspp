@@ -320,6 +320,8 @@ AC_DEFUN([PSPP_ENABLE_WERROR],
    AC_CONFIG_COMMANDS_PRE(
      [if test "X$enable_Werror" = Xyes; then
         CFLAGS="$CFLAGS -Werror -Wno-error=deprecated-declarations"
+	# gnulib needs this, for now:
+	CFLAGS="$CFLAGS -Wno-error=attributes"
       fi])])
 
 # The following comes from Open vSwitch:
