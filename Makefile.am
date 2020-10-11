@@ -1,5 +1,5 @@
 ## PSPP - a program for statistical analysis.
-## Copyright (C) 2019 Free Software Foundation, Inc.
+## Copyright (C) 2019, 2020 Free Software Foundation, Inc.
 ##
 ## This program is free software: you can redistribute it and/or modify
 ## it under the terms of the GNU General Public License as published by
@@ -65,6 +65,11 @@ UNINSTALL_DATA_HOOKS =
 PHONY =
 SUFFIXES = .q
 LDADD = gl/libgl.la
+
+gl/libgl.la: config.h
+	$(MAKE) -C gl
+
+dist: gl/libgl.la
 
 # This ensures that files added to EXTRA_DIST are always distributed,
 # even if they are inside an Automake if...endif conditional block that is

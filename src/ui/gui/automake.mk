@@ -397,8 +397,6 @@ src/ui/gui/psppire-marshal.h: src/ui/gui/marshaller-list
 	$(AM_V_GEN)$(GLIB_GENMARSHAL) --header --prefix=psppire_marshal $? > $@
 
 mimedir = $(datadir)/mime/packages
-mime_DATA = src/ui/gui/pspp.xml
-EXTRA_DIST += src/ui/gui/pspp.xml
 
 desktopdir = $(datadir)/applications
 desktop_DATA = src/ui/gui/org.fsf.pspp.desktop

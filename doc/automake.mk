@@ -78,7 +78,7 @@ $(srcdir)/doc/tut.texi:
 	$(AM_V_GEN)echo "@set example-dir $(examplesdir)" > $@
 
 
-$(srcdir)/doc/pspp.xml: doc/pspp.texi $(doc_pspp_TEXINFOS) $(top_srcdir)/doc/help-pages-list
+doc/pspp.xml: doc/pspp.texi $(doc_pspp_TEXINFOS) doc/help-pages-list
 if BROKEN_DOCBOOK_XML
 	touch $@
 else
@@ -91,13 +91,13 @@ docbookdir = $(docdir)
 dist_docbook_DATA = doc/pspp.xml
 
 
-CLEANFILES += pspp-dev.dvi $(docbook_DATA) doc/pspp.info*
+CLEANFILES += pspp-dev.dvi $(docbook_DATA) doc/pspp.info* doc/pspp.xml
 
 
 doc: $(INFO_DEPS) $(DVIS) $(PDFS) $(PSS) $(HTMLS) $(dist_docbook_DATA)
 PHONY += doc
 
-$(top_srcdir)/doc/help-pages-list: $(UI_FILES)
+doc/help-pages-list: $(UI_FILES)
 	 $(AM_V_GEN)cat $^ | grep '"help[-_]page"' | \
    $(SED) -e 's% *<property name="help[-_]page">\([^<]*\)</property>%//*[@id='"'"'\1'"'"']%' \
 	-e 's%#%'"'"']/*[@id='"'"'%g' > $@,tmp
@@ -140,6 +140,7 @@ $(top_builddir)/doc/pspp.ps:    $(EXAMPLE_OUTPUTS)
 $(top_builddir)/doc/pspp.dvi:   $(EXAMPLE_OUTPUTS)
 $(top_builddir)/doc/pspp.html:  $(EXAMPLE_HTML)
 $(top_builddir)/doc/pspp.pdf:   $(EXAMPLE_OUTPUTS)
+$(top_builddir)/doc/pspp.xml:   $(EXAMPLE_OUTPUTS)
 
 # The examples cannot be built until the binary has been built
 $(EXAMPLE_OUTPUTS): $(top_builddir)/src/ui/terminal/pspp
