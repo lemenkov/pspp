@@ -72,8 +72,6 @@ UI_FILES = \
 if building_gui
 
 EXTRA_DIST += \
-	src/ui/gui/org.fsf.pspp.metainfo.xml.in \
-	src/ui/gui/org.fsf.pspp.desktop.in \
 	src/ui/gui/marshaller-list \
 	src/ui/gui/pspplogo.svg
 
@@ -372,16 +370,6 @@ nodist_src_ui_gui_psppire_SOURCES = \
 
 AM_CPPFLAGS += -Isrc
 
-src/ui/gui/org.fsf.pspp.metainfo.xml: src/ui/gui/org.fsf.pspp.metainfo.xml.in $(POFILES)
-	$(AM_V_GEN)$(MSGFMT) --xml --template $< -o $@ -d $(top_srcdir)/po || \
-	  $(MSGFMT) -L appdata --xml --template $< -o $@ -d $(top_srcdir)/po
-
-src/ui/gui/org.fsf.pspp.desktop: src/ui/gui/org.fsf.pspp.desktop.in $(POFILES)
-	$(AM_V_GEN)$(MSGFMT) --desktop --template $< -o $@ -d $(top_srcdir)/po
-
-CLEANFILES+=src/ui/gui/org.fsf.pspp.desktop \
-            src/ui/gui/org.fsf.pspp.metainfo.xml
-
 src/ui/gui/resources.c: src/ui/gui/resources.xml
 	$(AM_V_at)$(GLIB_COMPILE_RESOURCES) --sourcedir=$(top_srcdir)/src/ui/gui --generate-source $< --target=$@,out
 	$(AM_V_GEN)echo '#include <config.h>' > $@,tmp
@@ -395,14 +383,6 @@ src/ui/gui/psppire-marshal.c: src/ui/gui/marshaller-list
 
 src/ui/gui/psppire-marshal.h: src/ui/gui/marshaller-list
 	$(AM_V_GEN)$(GLIB_GENMARSHAL) --header --prefix=psppire_marshal $? > $@
-
-mimedir = $(datadir)/mime/packages
-
-desktopdir = $(datadir)/applications
-desktop_DATA = src/ui/gui/org.fsf.pspp.desktop
-
-appdatadir = $(datadir)/metainfo
-dist_appdata_DATA = src/ui/gui/org.fsf.pspp.metainfo.xml
 
 BUILT_SOURCES += src/ui/gui/psppire-marshal.c src/ui/gui/psppire-marshal.h src/ui/gui/resources.c
 

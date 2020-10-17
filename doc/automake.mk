@@ -177,3 +177,27 @@ html-local:
 install-html-local: html-local
 	$(MKDIR_P) $(DESTDIR)$(prefix)/share/doc/pspp/pspp.html
 	$(INSTALL_DATA) ${top_srcdir}/doc/pspp-manual.css $(DESTDIR)$(prefix)/share/doc/pspp/pspp.html
+
+
+
+
+mimedir = $(datadir)/mime/packages
+desktopdir = $(datadir)/applications
+
+doc/org.fsf.pspp.metainfo.xml: doc/org.fsf.pspp.metainfo.xml.in $(POFILES)
+	$(AM_V_GEN)$(MSGFMT) --xml --template $< -o $@ -d $(top_srcdir)/po || \
+	  $(MSGFMT) -L appdata --xml --template $< -o $@ -d $(top_srcdir)/po
+
+doc/org.fsf.pspp.desktop: doc/org.fsf.pspp.desktop.in $(POFILES)
+	$(AM_V_GEN)$(MSGFMT) --desktop --template $< -o $@ -d $(top_srcdir)/po
+
+CLEANFILES+=doc/org.fsf.pspp.desktop \
+            doc/org.fsf.pspp.metainfo.xml
+
+desktop_DATA = doc/org.fsf.pspp.desktop
+
+appdatadir = $(datadir)/metainfo
+dist_appdata_DATA = doc/org.fsf.pspp.metainfo.xml
+
+EXTRA_DIST += doc/org.fsf.pspp.metainfo.xml.in \
+	doc/org.fsf.pspp.desktop.in
