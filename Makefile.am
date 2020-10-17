@@ -70,8 +70,6 @@ LDADD = gl/libgl.la
 gl/libgl.la: config.h
 	$(MAKE) -C gl
 
-dist: gl/libgl.la
-
 # This ensures that files added to EXTRA_DIST are always distributed,
 # even if they are inside an Automake if...endif conditional block that is
 # disabled by some particular "configure" run.  For more information, see:
@@ -160,4 +158,8 @@ distfiles: Makefile
 	      -e "s|^$$topsrcdirstrip/|$(top_builddir)/|;t" \
 	  | LC_ALL=C sort -u > $@
 CLEANFILES += distfiles gitfiles missing-distfiles
-PHONY += dist-hook-git
+PHONY += dist-hook-git dummy-prerequisistes
+
+-include dummy-prerequisistes
+
+dummy-prerequisistes: $(BUILT_SOURCES) gl/libgl.la
