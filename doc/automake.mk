@@ -181,7 +181,6 @@ install-html-local: html-local
 
 
 
-mimedir = $(datadir)/mime/packages
 desktopdir = $(datadir)/applications
 
 doc/org.fsf.pspp.metainfo.xml: doc/org.fsf.pspp.metainfo.xml.in $(POFILES)

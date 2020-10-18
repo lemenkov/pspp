@@ -163,3 +163,10 @@ PHONY += dist-hook-git dummy-prerequisistes
 -include dummy-prerequisistes
 
 dummy-prerequisistes: $(BUILT_SOURCES) gl/libgl.la
+
+
+
+mimedir = $(datadir)/mime/packages
+mime_DATA =pspp.xml
+EXTRA_DIST += pspp.xml
+
