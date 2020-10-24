@@ -135,6 +135,10 @@ EXTRA_DIST += $(EXAMPLE_SYNTAX)
 EXAMPLE_OUTPUTS = $(EXAMPLE_SYNTAX:.sps=.out)
 EXAMPLE_HTML = $(EXAMPLE_SYNTAX:.sps=.html)
 
+example-outputs: $(EXAMPLE_OUTPUTS)
+example-html: $(EXAMPLE_HTML)
+PHONY += example-outputs example-html
+
 $(top_builddir)/doc/pspp.info:  $(EXAMPLE_OUTPUTS)
 $(top_builddir)/doc/pspp.ps:    $(EXAMPLE_OUTPUTS)
 $(top_builddir)/doc/pspp.dvi:   $(EXAMPLE_OUTPUTS)
