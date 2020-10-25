@@ -72,7 +72,6 @@ spv_create (struct file_handle *fh, enum settings_output_devices device_type,
   return d;
 
  error:
-  fh_unref (fh);
   output_driver_destroy (d);
   return NULL;
 }
