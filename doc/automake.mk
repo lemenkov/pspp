@@ -124,14 +124,23 @@ EXAMPLE_SYNTAX = \
  doc/examples/independent-samples-t.sps \
  doc/examples/reliability.sps \
  doc/examples/split.sps \
+ doc/examples/tutorial1.sps \
+ doc/examples/tutorial2.sps \
+ doc/examples/tutorial3.sps \
+ doc/examples/tutorial4.sps \
+ doc/examples/tutorial5.sps \
+ doc/examples/tutorial6.sps \
+ doc/examples/tutorial7.sps \
  doc/examples/weight.sps
 
 
 EXTRA_DIST += $(EXAMPLE_SYNTAX)
 
+EXAMPLE_SPVS = $(EXAMPLE_SYNTAX:.sps=.spv) doc/examples/tutorial7b.spv
 EXAMPLE_OUTPUTS = $(EXAMPLE_SYNTAX:.sps=.out)
 EXAMPLE_HTML = $(EXAMPLE_SYNTAX:.sps=.html)
 
+example-spv: $(EXAMPLE_SPVS)
 example-outputs: $(EXAMPLE_OUTPUTS)
 example-html: $(EXAMPLE_HTML)
 PHONY += example-outputs example-html
@@ -148,22 +157,30 @@ pspp = $(abs_top_builddir)/src/ui/terminal/pspp
 $(EXAMPLE_OUTPUTS): $(pspp)
 $(EXAMPLE_HTML): $(pspp)
 
-CLEANFILES += $(EXAMPLE_OUTPUTS)
+CLEANFILES += $(EXAMPLE_OUTPUTS) $(EXAMPLE_SPVS)
 
 SUFFIXES: .sps
 
-# use pspp to process a syntax file and reap the output into a text file
-.sps.out:
+# Use pspp to process a syntax file into an output file.
+.sps.spv:
 	$(AM_V_GEN)(cd $(top_srcdir)/examples \
-         && $(pspp) ../doc/examples/$(<F) -o -) > $@.tmp && mv $@.tmp $@
+         && $(pspp) ../doc/examples/$(<F) -o - -O format=spv) > $@.tmp
+	$(AM_V_at)mv $@.tmp $@
 
-# Use pspp to process a syntax file and reap the output into a html file
-# Then, use sed to delete everything up to and including <body> and
-# everything after and including </body>
-.sps.html:
-	$(AM_V_GEN)(cd $(top_srcdir)/examples \
-         && $(pspp) ../doc/examples/$(<F) -o - -O format=html) \
-	| $(SED) -e '\%</body%,$$d' -e '0,/<body/d' > $@.tmp && mv $@.tmp $@
+# The tutorial only wants some parts of the output here.
+pspp_output = utilities/pspp-output
+doc/examples/tutorial7b.spv: doc/examples/tutorial7.spv $(pspp_output)
+	$(AM_V_GEN)$(pspp_output) convert --subtypes=coefficients $< $@
+
+# Convert an output file into a text file or HTML file.
+#
+# (For HTML, use sed to include only the contents of <body>.)
+.spv.out:
+	$(AM_V_GEN)utilities/pspp-output convert $< $@
+.spv.html:
+	$(AM_V_GEN)utilities/pspp-output convert $< - -O format=html \
+	| $(SED) -e '\%</body%,$$d' -e '0,/<body/d' > $@.tmp
+	$(AM_V_at)mv $@.tmp $@
 
 # Insert the link tag for the cascading style sheet.
 # But make sure these operations are idempotent.
