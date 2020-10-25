@@ -26,7 +26,7 @@ The details of @pspp{}'s language are given later in this manual.
 @cindex HTML
 @cindex DocBook
 @pspp{} produces tables and charts as output, which it can produce in
-several formats; currently, ASCII, PostScript, PDF, HTML, and DocBook are
+several formats; currently, ASCII, PostScript, PDF, HTML, DocBook and @TeX{} are
 supported.
 
 The current version of @pspp{}, @value{VERSION}, is incomplete in
