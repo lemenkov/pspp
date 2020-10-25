@@ -144,8 +144,9 @@ $(top_builddir)/doc/pspp.pdf:   $(EXAMPLE_OUTPUTS)
 $(top_builddir)/doc/pspp.xml:   $(EXAMPLE_OUTPUTS)
 
 # The examples cannot be built until the binary has been built
-$(EXAMPLE_OUTPUTS): $(top_builddir)/src/ui/terminal/pspp
-$(EXAMPLE_HTML): $(top_builddir)/src/ui/terminal/pspp
+pspp = $(abs_top_builddir)/src/ui/terminal/pspp
+$(EXAMPLE_OUTPUTS): $(pspp)
+$(EXAMPLE_HTML): $(pspp)
 
 CLEANFILES += $(EXAMPLE_OUTPUTS)
 
@@ -153,16 +154,16 @@ SUFFIXES: .sps
 
 # use pspp to process a syntax file and reap the output into a text file
 .sps.out:
-	where=$$PWD ; \
-	(cd $(top_srcdir)/examples; ${abs_builddir}/src/ui/terminal/pspp $(abs_srcdir)/doc/examples/$(<F) -o $$where/$@)
+	$(AM_V_GEN)(cd $(top_srcdir)/examples \
+         && $(pspp) ../doc/examples/$(<F) -o -) > $@.tmp && mv $@.tmp $@
 
 # Use pspp to process a syntax file and reap the output into a html file
 # Then, use sed to delete everything up to and including <body> and
 # everything after and including </body>
 .sps.html:
-	where=$$PWD ; \
-	(cd $(top_srcdir)/examples; ${abs_builddir}/src/ui/terminal/pspp $(abs_srcdir)/doc/examples/$(<F) -o $$where/$@,x -O format=html)
-	$(SED) -e '\%</body%,$$d' -e '0,/<body/d' $@,x > $@
+	$(AM_V_GEN)(cd $(top_srcdir)/examples \
+         && $(pspp) ../doc/examples/$(<F) -o - -O format=html) \
+	| $(SED) -e '\%</body%,$$d' -e '0,/<body/d' > $@.tmp && mv $@.tmp $@
 
 # Insert the link tag for the cascading style sheet.
 # But make sure these operations are idempotent.
