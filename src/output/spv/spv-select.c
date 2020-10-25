@@ -27,18 +27,17 @@
 #include "gl/c-ctype.h"
 #include "gl/xalloc.h"
 
+static bool
+is_command_item (const struct spv_item *item)
+{
+  return !item->parent || !item->parent->parent;
+}
+
 static struct spv_item *
 find_command_item (struct spv_item *item)
 {
-  /* A command item itself does not have a command item. */
-  if (!item->parent || !item->parent->parent)
-    return NULL;
-
-  do
-    {
-      item = item->parent;
-    }
-  while (item->parent && item->parent->parent);
+  while (!is_command_item (item))
+    item = item->parent;
   return item;
 }
 
@@ -97,21 +96,36 @@ match_instance (const int *instances, size_t n_instances,
   return retval;
 }
 
+static bool
+match_command (size_t nth_command, size_t *commands, size_t n_commands)
+{
+  for (size_t i = 0; i < n_commands; i++)
+    if (nth_command == commands[i])
+      return true;
+  return false;
+}
+
 static void
 select_matches (const struct spv_reader *spv, const struct spv_criteria *c,
                 unsigned long int *include)
 {
-  struct spv_item *item;
-  struct spv_item *command_item = NULL;
+  /* Counting instances within a command. */
+  struct spv_item *instance_command_item = NULL;
   int instance_within_command = 0;
   int last_instance = -1;
+
+  /* Counting commands. */
+  struct spv_item *command_command_item = NULL;
+  size_t nth_command = 0;
+
+  struct spv_item *item;
   ssize_t index = -1;
   SPV_ITEM_FOR_EACH_SKIP_ROOT (item, spv_get_root (spv))
     {
       index++;
 
       struct spv_item *new_command_item = find_command_item (item);
-      if (new_command_item != command_item)
+      if (new_command_item != instance_command_item)
         {
           if (last_instance >= 0)
             {
@@ -119,7 +133,7 @@ select_matches (const struct spv_reader *spv, const struct spv_criteria *c,
               last_instance = -1;
             }
 
-          command_item = new_command_item;
+          instance_command_item = new_command_item;
           instance_within_command = 0;
         }
 
@@ -140,6 +154,18 @@ select_matches (const struct spv_reader *spv, const struct spv_criteria *c,
                   &c->include.commands, &c->exclude.commands))
         continue;
 
+      if (c->n_commands)
+        {
+          if (new_command_item != command_command_item)
+            {
+              command_command_item = new_command_item;
+              nth_command++;
+            }
+
+          if (!match_command (nth_command, c->commands, c->n_commands))
+            continue;
+        }
+
       if (!match (spv_item_get_subtype (item),
                   &c->include.subtypes, &c->exclude.subtypes))
         continue;
@@ -157,7 +183,7 @@ select_matches (const struct spv_reader *spv, const struct spv_criteria *c,
 
       if (c->n_instances)
         {
-          if (!command_item)
+          if (is_command_item (item))
             continue;
           instance_within_command++;
 

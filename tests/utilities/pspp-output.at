@@ -80,6 +80,20 @@ AT_CHECK([pspp-output dir $srcdir/utilities/regress.spv --commands='^reg*'],
 ])
 AT_CLEANUP
 
+AT_SETUP([pspp-output --nth-commands])
+AT_CHECK([pspp-output dir $srcdir/utilities/regress.spv --nth-commands=2,4,6],
+  [0], [dnl
+- heading "Title" command "Title"
+    - text "Page Title" command "Title"
+- heading "Begin Data" command "Begin Data"
+- heading "Frequencies" command "Frequencies"
+    - table "Statistics" command "Frequencies"
+    - table "v0" command "Frequencies" subtype "Frequencies"
+    - table "v1" command "Frequencies" subtype "Frequencies"
+    - table "v2" command "Frequencies" subtype "Frequencies"
+])
+AT_CLEANUP
+
 AT_SETUP([pspp-output --subtypes equal])
 AT_CHECK([pspp-output dir $srcdir/utilities/regress.spv --subtypes='freq*'],
   [0], [dnl

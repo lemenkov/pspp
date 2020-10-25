@@ -121,6 +121,11 @@ Subtypes are always in English and \fBdir\fR will print them.
 The \fB\-\-labels\fR option matches the labels in table output (that
 is, the table titles).  Labels are affected by the output language,
 variable names and labels, split file settings, and other factors.
+.IP "\-\-nth-commands=\fIn\fR..."
+Include only objects from the \fIn\fRth command that matches
+\fB\-\-commands\fR (or the \fIn\fRth command overall if
+\fB\-\-commands\fR is not specified), where \fIn\fR is 1 for the first
+command, 2 for the second, and so on.
 .IP "\fB\-\-instances=\fIinstance\fR..."
 Include the specified \fIinstance\fR of an object that matches the
 other criteria within a single command.  The \fIinstance\fR may be a

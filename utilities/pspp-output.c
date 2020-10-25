@@ -850,6 +850,22 @@ parse_instances (char *arg)
 }
 
 static void
+parse_nth_commands (char *arg)
+{
+  struct spv_criteria *c = get_criteria ();
+  size_t allocated_commands = c->n_commands;
+
+  for (char *token = strtok (arg, ","); token; token = strtok (NULL, ","))
+    {
+      if (c->n_commands >= allocated_commands)
+        c->commands = x2nrealloc (c->commands, &allocated_commands,
+                                   sizeof *c->commands);
+
+      c->commands[c->n_commands++] = atoi (token);
+    }
+}
+
+static void
 parse_members (const char *arg)
 {
   struct spv_criteria *cm = get_criteria ();
@@ -867,6 +883,7 @@ parse_options (int argc, char *argv[])
           OPT_SHOW_HIDDEN,
           OPT_SELECT,
           OPT_COMMANDS,
+          OPT_NTH_COMMANDS,
           OPT_SUBTYPES,
           OPT_LABELS,
           OPT_INSTANCES,
@@ -882,6 +899,7 @@ parse_options (int argc, char *argv[])
           { "show-hidden", no_argument, NULL, OPT_SHOW_HIDDEN },
           { "select", required_argument, NULL, OPT_SELECT },
           { "commands", required_argument, NULL, OPT_COMMANDS },
+          { "nth-commands", required_argument, NULL, OPT_NTH_COMMANDS },
           { "subtypes", required_argument, NULL, OPT_SUBTYPES },
           { "labels", required_argument, NULL, OPT_LABELS },
           { "instances", required_argument, NULL, OPT_INSTANCES },
@@ -931,6 +949,10 @@ parse_options (int argc, char *argv[])
 
         case OPT_COMMANDS:
           parse_commands (optarg);
+          break;
+
+        case OPT_NTH_COMMANDS:
+          parse_nth_commands (optarg);
           break;
 
         case OPT_SUBTYPES:
@@ -1013,6 +1035,7 @@ Input selection options for \"dir\" and \"convert\":\n\
   --select=CLASS...   include only some kinds of objects\n\
   --select=help       print known object classes\n\
   --commands=COMMAND...  include only specified COMMANDs\n\
+  --nth-commands=N...  include only the Nth instance of selected commands\n\
   --subtypes=SUBTYPE...  include only specified SUBTYPEs of output\n\
   --labels=LABEL...   include only output objects with the given LABELs\n\
   --instances=INSTANCE...  include only the given object INSTANCEs\n\

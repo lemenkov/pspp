@@ -52,6 +52,11 @@ struct spv_criteria
     struct spv_criteria_match include;
     struct spv_criteria_match exclude;
 
+    /* Include objects under commands with indexes listed in COMMANDS.  Indexes
+       are 1-based.  Everything is included if N_COMMANDS is 0. */
+    size_t *commands;
+    size_t n_commands;
+
     /* Include XML and binary member names that match (except that everything
        is included by default if empty). */
     struct string_array members;
@@ -68,6 +73,5 @@ struct spv_criteria
 void spv_select (const struct spv_reader *,
                  const struct spv_criteria[], size_t n_criteria,
                  struct spv_item ***items, size_t *n_items);
-
 
 #endif /* output/spv/spv-select.h */
