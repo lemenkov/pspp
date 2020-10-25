@@ -24,7 +24,9 @@ graphic user interface
 <div class="pspp-syntax">
 @end html
 @cartouche
+@smallexample
 @verbatiminclude \FILE\
+@end smallexample
 @end cartouche
 @html
 </div>
@@ -33,7 +35,9 @@ graphic user interface
 
 @macro psppoutput{FILE}
 @ifnothtml
+@smallexample
 @verbatiminclude \FILE\.out
+@end smallexample
 @end ifnothtml
 @ifhtml
 @cartouche
