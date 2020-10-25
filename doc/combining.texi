@@ -88,7 +88,7 @@ Each @subcmd{FILE} subcommand may be followed by any number of @subcmd{RENAME}
 subcommands that specify a parenthesized group or groups of variable
 names as they appear in the input file, followed by those variables'
 new names, separated by an equals sign (@subcmd{=}),
-e.g. @subcmd{/RENAME=(OLD1=NEW1)(OLD2=NEW2)}.  To rename a single
+@i{e.g.} @subcmd{/RENAME=(OLD1=NEW1)(OLD2=NEW2)}.  To rename a single
 variable, the parentheses may be omitted: @subcmd{/RENAME=@var{old}=@var{new}}.
 Within a parenthesized group, variables are renamed simultaneously, so
 that @subcmd{/RENAME=(@var{A} @var{B}=@var{B} @var{A})} exchanges the

@@ -396,7 +396,7 @@ The @subcmd{DISPLAY} subcommand displays information about defined multiple
 response sets.  Its syntax is the same as the @subcmd{DELETE} subcommand.
 
 Multiple response sets are saved to and read from system files by,
-e.g., the @cmd{SAVE} and @cmd{GET} command.  Otherwise, multiple
+@i{e.g.}, the @cmd{SAVE} and @cmd{GET} command.  Otherwise, multiple
 response sets are currently used only by third party software.
 
 @node NUMERIC

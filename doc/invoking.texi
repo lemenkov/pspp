@@ -98,7 +98,7 @@ Use @samp{-} as @var{output-file} to write output to standard output.
 
 If no @option{-o} option is used, then @pspp{} writes text and CSV
 output to standard output and other kinds of output to whose name is
-based on the format, e.g.@: @file{pspp.pdf} for PDF output.
+based on the format, @i{e.g.}@: @file{pspp.pdf} for PDF output.
 
 @item @option{-O @var{option}=@var{value}}
 Sets an option for the output file configured by a preceding
@@ -108,7 +108,7 @@ A few options that apply generically are listed below.
 @item @option{-O format=@var{format}}
 @pspp{} uses the extension of the file name given on @option{-o} to
 select an output format.  Use this option to override this choice by
-specifying an alternate format, e.g.@: @option{-o pspp.out -O format=html} to
+specifying an alternate format, @i{e.g.}@: @option{-o pspp.out -O format=html} to
 write HTML to a file named @file{pspp.out}.  Use @option{--help} to
 list the available formats.
 
@@ -226,8 +226,8 @@ given on @option{-o} does not end in @file{.pdf}, @file{.ps}, or
 @file{.svg}.
 
 @item @option{-O paper-size=@var{paper-size}}
-Paper size, as a name (e.g.@: @code{a4}, @code{letter}) or
-measurements (e.g.@: @code{210x297}, @code{8.5x11in}).
+Paper size, as a name (@i{e.g.}@: @code{a4}, @code{letter}) or
+measurements (@i{e.g.}@: @code{210x297}, @code{8.5x11in}).
 
 The default paper size is taken from the @env{PAPERSIZE} environment
 variable or the file indicated by the @env{PAPERCONF} environment
@@ -456,7 +456,7 @@ output just below the table as a single field prefixed by
 
 @item Footnotes
 Within a table, footnote markers are output as bracketed letters
-following the cell's contents, e.g.@tie{}@samp{[a]}, @samp{[b]},
+following the cell's contents, @i{e.g.}@tie{}@samp{[a]}, @samp{[b]},
 @enddots{}  The footnotes themselves are output following the body of
 the table, as a separate two-column table introduced with a line that
 says @samp{Footnotes:}.  Each row in the table represent one footnote:

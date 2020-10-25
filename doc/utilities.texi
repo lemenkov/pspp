@@ -263,7 +263,7 @@ this is not desired.
 The following example runs @code{rsync} to copy a file from a remote
 server to the local file @file{data.txt}, writing @code{rsync}'s own
 output to @file{rsync-log.txt}.  PSPP displays the command's error
-output, if any.  If @code{rsync} needs to prompt the user (e.g.@: to
+output, if any.  If @code{rsync} needs to prompt the user (@i{e.g.}@: to
 obtain a password), the command fails.  Only if the @code{rsync}
 succeeds, PSPP then runs the @code{sha512sum} command.
 
@@ -349,7 +349,7 @@ the following forms:
 @item @subcmd{LOCALE}
 The encoding used by the system locale, or as overridden by the
 @cmd{SET} command (@pxref{SET}).  On GNU/Linux and other Unix-like systems,
-environment variables, e.g.@: @env{LANG} or @env{LC_ALL}, determine the
+environment variables, @i{e.g.}@: @env{LANG} or @env{LC_ALL}, determine the
 system locale.
 
 @item @var{charset_name}

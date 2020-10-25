@@ -636,7 +636,7 @@ empty string.
 Returns the number produced when @var{string} is interpreted according
 to format specifier @var{format}.  If the format width @var{w} is less
 than the length of @var{string}, then only the first @var{w}
-characters in @var{string} are used, e.g.@: @code{NUMBER("123", F3.0)}
+characters in @var{string} are used, @i{e.g.}@: @code{NUMBER("123", F3.0)}
 and @code{NUMBER("1234", F3.0)} both have value 123.  If @var{w} is
 greater than @var{string}'s length, then it is treated as if it were
 right-padded with spaces.  If @var{string} is not in the correct

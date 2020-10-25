@@ -122,7 +122,7 @@ variable PRINT would not be substituted into the word PRINTOUT.
 
 New variable names used as replacements are not automatically created
 as variables, but only if used in the code block in a context that
-would create them, e.g.@: on a @cmd{NUMERIC} or @cmd{STRING} command
+would create them, @i{e.g.}@: on a @cmd{NUMERIC} or @cmd{STRING} command
 or on the left side of a @cmd{COMPUTE} assignment.
 
 Any command may appear within @subcmd{DO REPEAT}, including nested @subcmd{DO REPEAT}

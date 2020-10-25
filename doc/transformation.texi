@@ -218,7 +218,7 @@ On most modern computers, this is  @acronym{ASCII} or a superset thereof.
 
 The aggregation functions listed above exclude all user-missing values
 from calculations.  To include user-missing values, insert a period
-(@samp{.}) at the end of the function name.  (e.g.@: @samp{SUM.}).
+(@samp{.}) at the end of the function name.  (@i{e.g.}@: @samp{SUM.}).
 (Be aware that specifying such a function as the last token on a line
 will cause the period to be interpreted as the end of the command.)
 

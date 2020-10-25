@@ -77,7 +77,7 @@ specify the format for unrecognized extensions.
 @item @option{-O @var{format}}
 @itemx @option{--output-format=@var{format}}
 Sets the output format, where @var{format} is one of the extensions
-listed above, e.g.: @option{-O csv}.  Use @option{--help} to list
+listed above, @i{e.g.}: @option{-O csv}.  Use @option{--help} to list
 the supported output formats.
 
 @item -c @var{maxcases}
@@ -98,7 +98,7 @@ By default, @command{pspp-convert} includes all the variables from the
 input file.  Use this option to list specific variables to include;
 any variables not listed will be dropped.  The variables in the output
 file will also be reordered into the given order.  The variable list
-may use @code{TO} in the same way as in PSPP syntax, e.g.@: if the
+may use @code{TO} in the same way as in PSPP syntax, @i{e.g.}@: if the
 dictionary contains consecutive variables @code{a}, @code{b},
 @code{c}, and @code{d}, then @option{--keep='a to d'} will include all
 of them (and no others).

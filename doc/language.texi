@@ -115,7 +115,7 @@ tokens, @samp{8945} and @samp{.}, if it is the last token on a line.
 @cindex case-sensitivity
 Strings are literal sequences of characters enclosed in pairs of
 single quotes (@samp{'}) or double quotes (@samp{"}).  To include the
-character used for quoting in the string, double it, e.g.@:
+character used for quoting in the string, double it, @i{e.g.}@:
 @samp{'it''s an apostrophe'}.  White space and case of letters are
 significant inside strings.
 
@@ -158,7 +158,7 @@ Most of these appear within the syntax of commands, but the period
 punctuator only as the last character on a line (except white space).
 When it is the last non-space character on a line, a period is not
 treated as part of another token, even if it would otherwise be part
-of, e.g.@:, an identifier or a floating-point number.
+of, @i{e.g.}@:, an identifier or a floating-point number.
 @end table
 
 @node Commands
@@ -1235,7 +1235,7 @@ Time or dates narrower than the field width are right-justified within
 the field.
 
 When a time or date exceeds the field width, characters are trimmed from
-the end until it fits.  This can occur in an unusual situation, e.g.@:
+the end until it fits.  This can occur in an unusual situation, @i{e.g.}@:
 with a year greater than 9999 (which adds an extra digit), or for a
 negative value on MTIME, TIME, or DTIME (which adds a leading minus sign).
 
@@ -1366,9 +1366,9 @@ name of a file as a string, that is, enclosed within @samp{'} or
 A file name string that begins or ends with @samp{|} is treated as the
 name of a command to pipe data to or from.  You can use this feature
 to read data over the network using a program such as @samp{curl}
-(e.g.@: @code{GET '|curl -s -S http://example.com/mydata.sav'}), to
+(@i{e.g.}@: @code{GET '|curl -s -S http://example.com/mydata.sav'}), to
 read compressed data from a file using a program such as @samp{zcat}
-(e.g.@: @code{GET '|zcat mydata.sav.gz'}), and for many other
+(@i{e.g.}@: @code{GET '|zcat mydata.sav.gz'}), and for many other
 purposes.
 
 @pspp{} also supports declaring named file handles with the @cmd{FILE
@@ -1382,9 +1382,9 @@ for more information.
 
 In some circumstances, @pspp{} must distinguish whether a file handle
 refers to a system file or a portable file.  When this is necessary to
-read a file, e.g.@: as an input file for @cmd{GET} or @cmd{MATCH FILES},
+read a file, @i{e.g.}@: as an input file for @cmd{GET} or @cmd{MATCH FILES},
 @pspp{} uses the file's contents to decide.  In the context of writing a
-file, e.g.@: as an output file for @cmd{SAVE} or @cmd{AGGREGATE}, @pspp{}
+file, @i{e.g.}@: as an output file for @cmd{SAVE} or @cmd{AGGREGATE}, @pspp{}
 decides based on the file's name: if it ends in @samp{.por} (with any
 capitalization), then @pspp{} writes a portable file; otherwise, @pspp{}
 writes a system file.

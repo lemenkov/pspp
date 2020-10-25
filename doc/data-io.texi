@@ -190,7 +190,7 @@ The DATASET DECLARE command creates a new dataset that is initially
 ``empty,'' that is, it has no dictionary or data.  If a dataset with
 the given name already exists, this has no effect.  The new dataset
 can be used with commands that support output to a dataset,
-e.g. AGGREGATE (@pxref{AGGREGATE}).
+@i{e.g.} AGGREGATE (@pxref{AGGREGATE}).
 
 @vindex DATASET CLOSE
 The DATASET CLOSE command deletes a dataset.  If the active dataset is
