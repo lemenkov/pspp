@@ -48,6 +48,12 @@ src_output_liboutput_la_SOURCES = \
 	src/output/driver-provider.h \
 	src/output/driver.c \
 	src/output/driver.h \
+	src/output/tex-glyphs.c \
+	src/output/tex-glyphs.h \
+	src/output/tex-parsing.c \
+	src/output/tex-parsing.h \
+	src/output/tex-rendering.c \
+	src/output/tex-rendering.h \
 	src/output/group-item.c \
 	src/output/group-item.h \
 	src/output/html.c \
@@ -78,6 +84,7 @@ src_output_liboutput_la_SOURCES = \
 	src/output/table-provider.h \
 	src/output/table.c \
 	src/output/table.h \
+	src/output/tex.c \
 	src/output/text-item.c \
 	src/output/text-item.h
 if HAVE_CAIRO

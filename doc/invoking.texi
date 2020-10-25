@@ -24,6 +24,7 @@ interface.
 * Main Options::
 * PDF PostScript and SVG Output Options::
 * Plain Text Output Options::
+* TeX Output Options::
 * HTML Output Options::
 * OpenDocument Output Options::
 * Comma-Separated Value Output Options::
@@ -341,6 +342,21 @@ How to emphasize text.  Bold and underline emphasis are achieved with
 overstriking, which may not be supported by all the software to which
 you might pass the output.  Default: @code{none}.
 @end table
+
+@node TeX Output Options
+@section TeX Output Options
+@cindex @TeX{}
+@cindex tex
+
+If you want to publish statistical results in professional or academic
+journals, you will probably want to provide results in @TeX{} format.
+To do this, specify @option{-o @var{file}} on the @pspp{} command line where
+@var{file} is a file name ending in @file{.tex}, or you can specify
+@option{-O format=tex}.
+
+The resulting file can be directly processed using @TeX{} or you can manually
+edit the file to add commentary text.
+Alternatively, you can cut and paste desired sections to another @TeX{} file.
 
 @node HTML Output Options
 @section HTML Output Options

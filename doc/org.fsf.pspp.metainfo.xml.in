@@ -15,7 +15,7 @@
       <li>Support for over 1 billion variables</li>
       <li>Syntax and data files which are compatible with those of SPSS</li>
       <li>A choice of terminal or graphical user interface</li>
-      <li>A choice of text, postscript, pdf, opendocument or html output formats</li>
+      <li>A choice of text, postscript, pdf, opendocument, html or TeX output formats</li>
       <li>Inter-operability with: LibreOffice, Apache OpenOffice, Gnumeric and other free software</li>
       <li>Easy data import from spreadsheets, text files and database sources</li>
       <li>The capability to open, analyse and edit two or more datasets concurrently</li>

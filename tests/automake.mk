@@ -51,6 +51,8 @@ check_PROGRAMS += \
 	tests/math/chart-get-ticks-format-test \
 	tests/math/chart-get-scale-test \
 	tests/output/render-test \
+	tests/output/tex-glyphs \
+	tests/output/tex-strings \
 	tests/ui/syntax-gen-test
 
 
@@ -262,6 +264,16 @@ tests_ui_syntax_gen_test_LDADD = \
 	src/libpspp-core.la \
 	$(CAIRO_LIBS)
 
+tests_output_tex_glyphs_SOURCES = \
+	tests/output/tex-glyphs.c
+tests_output_tex_glyphs_LDADD = src/libpspp-core.la src/output/liboutput.la
+tests_output_tex_glyphs_CFLAGS = $(AM_CFLAGS) -I $(top_srcdir)/src/output
+
+tests_output_tex_strings_SOURCES = \
+	tests/output/tex-strings.c
+tests_output_tex_strings_LDADD = src/libpspp-core.la src/output/liboutput.la
+tests_output_tex_strings_CFLAGS = $(AM_CFLAGS) -I $(top_srcdir)/src/output
+
 
 EXTRA_DIST += \
 	tests/coverage.sh \
@@ -445,6 +457,7 @@ TESTSUITE_AT = \
 	tests/output/paper-size.at \
 	tests/output/render.at \
 	tests/output/tables.at \
+	tests/output/tex.at \
 	tests/ui/terminal/main.at \
 	tests/ui/syntax-gen.at \
 	tests/utilities/pspp-convert.at \

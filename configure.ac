@@ -46,6 +46,8 @@ AM_CONDITIONAL(cc_is_gcc, test x"$GCC" = x"yes" )
 PSPP_CC_FOR_BUILD
 PSPP_PERL
 PSPP_PYTHON
+AC_CHECK_PROGS([TEX], [tex], [no])
+AC_SUBST([TEX])
 
 # This suppresses an error in gl/careadlinkat.c that otherwise can't be
 # avoided in GCC 10.x:

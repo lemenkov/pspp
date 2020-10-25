@@ -1,0 +1,326 @@
+dnl PSPP - a program for statistical analysis.
+dnl Copyright (C) 2020 Free Software Foundation, Inc.
+dnl
+dnl This program is free software: you can redistribute it and/or modify
+dnl it under the terms of the GNU General Public License as published by
+dnl the Free Software Foundation, either version 3 of the License, or
+dnl (at your option) any later version.
+dnl
+dnl This program is distributed in the hope that it will be useful,
+dnl but WITHOUT ANY WARRANTY; without even the implied warranty of
+dnl MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+dnl GNU General Public License for more details.
+dnl
+dnl You should have received a copy of the GNU General Public License
+dnl along with this program.  If not, see <http://www.gnu.org/licenses/>.
+dnl
+
+AT_BANNER([tex driver])
+
+dnl By passing --xdvi=xdvi to TESTSUITEFLAGS, one can view the rendered dvi from
+dnl tests defined in this file.
+AT_ARG_OPTION_ARG([xdvi],[AS_HELP_STRING([--xdvi],
+  [the xdvi program to show show TeX output (default none)])])
+
+AT_SETUP([tex glyphs])
+
+AT_CHECK([tex-glyphs pspp.tex], [0], [ignore], [ignore])
+
+AT_SKIP_IF([test "$TEX" = no])
+AT_CHECK([$TEX --halt-on-error pspp.tex], [0], [ignore])
+
+dnl There should be no overfull boxes
+AT_CHECK([grep '^Overfull ' pspp.log], [1])
+dnl nor any underful ones
+AT_CHECK([grep '^Underfull ' pspp.log], [1])
+
+test -z "$at_arg_xdvi" || AT_CHECK([$at_arg_xdvi -s 3 pspp.dvi], [0], [ignore])
+
+AT_CLEANUP
+
+
+
+AT_SETUP([tex utf8-strings])
+
+mkdir sample-texts
+
+dnl The following UTF-8 texts are a collection of snippets harvested
+dnl from various Wikipedia sites.  Wikipedia articles are
+dnl copyright and licenced under the GFDL (unversioned)
+AT_DATA([sample-texts/en.txt], [[The
+Battle of Artaza (Acción de Artaza) was
+a battle that occurred on April 20–22, 1835 during the First
+Carlist War.
+
+Jerónimo Valdés, at the time Minister of War, arrived at the area known as
+Las Amescoas with 22,000 men with the intention of
+definitively destroying the Carlist forces.[1] Zumalacárregui had 5,000 men,
+but had the advantage of knowing the terrain and practicing guerrilla tactics.
+]])
+
+AT_DATA([sample-texts/pl.txt], [[The Giszowiec składa się z budynków
+wielorodzinnych z wielkiej płyty oraz
+zabytkowych domów, przeważnie jedno- i dwurodzinnych, stanowiących
+niegdyś zwarte osiedle górnicze, które do dziś jest unikatowe w skali
+europejskiej i znajduje się na Szlaku Zabytków Techniki Województwa
+Śląskiego. Zostało ono wybudowane dla górników pracujących w kopalni
+Giesche (późniejszej kopalni Wieczorek) przez koncern Georg von
+Giesches Erben na zlecenie dyrektora spółki Antona Uthemanna w latach
+1907–1910. Projektantami osiedla byli Zillmannowie: Georg i
+go dwa szlaki komunikacyjne: droga krajowa nr 86 oraz autostrada A4, a
+także rozpoczyna swój bieg droga krajowa nr 81. Dzielnica ma
+powierzchnię 12,03 km² (7,30% powierzchni miasta) i liczyła w 2007
+roku 18 475 mieszkańców (5,9% ludności Katowic).
+]])
+
+AT_DATA([sample-texts/el.txt], [[Η πόλη των Σερρών υπήρξε η πιο
+οχυρωμένη πόλη της περιοχής λόγω της στρατηγικής γεωγραφικής της
+θέσης. Στα βόρεια της πόλης των Σερρών, πάνω σε λόφο γνωστό με την
+επωνυμία Κουλάς, βρίσκεται η αρχαία και βυζαντινή ακρόπολη. Η ακρόπολη
+όπως σώζεται σήμερα αποτελεί έργο των βυζαντινών χρόνων, αλλά
+θεμελιώθηκε πάνω σε αρχαίο φρούριο  του 7ου και  6ου π. Χ. αιώνα. Η
+κατασκευή της ακρόπολης χρονολογείται στον 9ο μ. Χ. αιώνα, πιθανότατα,
+επί Αυτοκράτορα Νικηφόρου Φωκά και αναφέρεται σε πολλά βυζαντινά
+χρυσόβουλα ως «κάστρο» με γνωστότερο καστροφύλακα τον Λέοντα τον
+Αζανίτη. [1] Με την πάροδο των χρόνων ολόκληρη η πόλη χαρακτηριζόταν
+ως «κάστρο» και οι Σερραίοι, «καστρινοί».
+]])
+
+AT_DATA([sample-texts/is.txt], [[Saloth Sar, betur þekktur sem Pol Pot,
+var fæddur 19. maí 1925 og dó
+15. apríl 1998. Hann var leiðtogi Rauðu khmeranna í Kambódíu frá 1963
+til 1979 og er þekktastur fyrir dauða óhemjumargs fólks í stjórnartíð
+sinni, sem var frá 1975 til 1979. Rauðu khmerarnir reyndu að
+framfylgja sýn sinni um eins konar samyrkjuvæðingu, en meðal þess sem
+hún átti að fela í sér var að borgarbúar flyttu út í sveitir og ynnu
+þar við landbúnað eða í betrunarvinnu. Þeir töldu sig geta byrjað
+siðmenninguna upp á nýtt og tóku því upp tímatal sem átti að hefjast
+með valdatíð þeirra. Sú valdatíð var ekki löng, en því
+mannskæðari. Þrælkunarvinna, vannæring, hrun í heilbrigðiskerfinu og
+beinar aftökur kostuðu á bilinu 750.000 - 1.700.000 manns lífið (sumir
+segja á bilinu).
+]])
+
+AT_DATA([sample-texts/hr.txt], [[Nakon što je film završen početkom
+1984., autori su krenuli tražiti distributera. Odnijeli su film u Los
+Angeles i pokazali ga velikim studijima. Svi su odbili izuzev Oriona
+koji je prihvatio distribuciju, ali uz uvjet da ne bi ništa platio
+unaprijed, što je investitorima bilo neprihvatljivo. Joel Coen
+napominje da se dogovorio sa agentom za prodaju prava u inozemstvu
+kako bi se napokon film počeo prikazivati negdje, no to je bio
+riskantan potez jer to ubija zanimanje domaćih distributera.
+]])
+
+AT_DATA([sample-texts/cz.txt], [[Volarský dům alpského typu (německy
+Wallerer Haus) je na území České
+republiky ojedinělý typ venkovského dřevěného domu, jenž se vyskytuje
+v šumavském městě Volary, které proto někdy bylo nazýváno „alpským
+městečkem na Šumavě“. Mimo Volary se vyskytuje ještě v sousední obci
+Dobrá a další jeden dům se nachází v Železné Rudě.[1] Další, do
+současnosti nedochované domy, se nacházely v Českých Žlebech, Lenoře,
+Hůrce a Vimperku. V širším okolí Šumavy (Chodsko, Klatovsko, Plánicko)
+se vyskytují domy volarským stylem více nebo méně ovlivněné.[2]
+]])
+
+AT_DATA([sample-texts/de.txt], [[Urkundlich wurde Rehme 753 erstmals
+in den fränkischen Reichsannalen erwähnt, als sich die fränkischen
+Könige Pippin der Jüngere und sein Nachfolger Karl der Große auf
+Feldzügen dorthin begaben.[2] Seit ca. 800 ist Rehme Sitz einer
+Kirchengemeinde. Die romanische Laurentiuskirche stammt aus dem
+12. Jahrhundert und wurde 1890–1892 im neoromanischen Stil erweitert.
+]])
+
+AT_DATA([sample-texts/ang.txt], [[Regn is ƿǣt æðmhēap, nā heard cynn
+æðmhēapes sƿilce snāƿ, hægel, and īsregn. Tō regnenne, hit is nȳdmicel
+þæt þicce dǣl þæs lyfthelmes sīe ƿearmra þonne his hāt meltunge, nēah
+þǣm andƿlitan þǣre eorðan and ēac ofer him. Hē is sēo gæderung þæs
+lyfthelmes æðmes on lyfte oþþæt hē is sƿā hefig þæt hē fealle, oft
+full tō þǣre eorðan þǣm andƿlitan. Tū ƿeorc cunnon fyllan þā lyfte
+oþþæt hire ƿæter beflōƿe: sēo acēlung þǣre lyfte and sēo settung
+ƿæteres æðmes on þā lyfte.
+]])
+
+AT_DATA([sample-texts/sv.txt], [[Årsmedeltemperaturen i trakten är 18
+°C. Den varmaste månaden är januari, då medeltemperaturen är 20 °C,
+och den kallaste är juni, med 16 °C.[5] Genomsnittlig årsnederbörd är
+2 874 millimeter. Den regnigaste månaden är februari, med i genomsnitt
+421 mm nederbörd, och den torraste är augusti, med 79 mm nederbörd.[6]
+]])
+
+
+AT_CHECK([tex-strings -o pspp.tex sample-texts/*], [0], [ignore], [ignore])
+
+AT_SKIP_IF([test "$TEX" = no])
+AT_CHECK([$TEX --halt-on-error pspp.tex], [0], [ignore])
+
+test -z "$at_arg_xdvi" || AT_CHECK([$at_arg_xdvi -s 3 pspp.dvi], [0], [ignore])
+
+AT_CLEANUP
+
+
+
+AT_SETUP([tex simple example])
+
+AT_DATA([simple.sps], [dnl
+data list list /name (a16) score *.
+begin data
+alfred   34.0
+bertram  12.2
+charlie  12.1
+david    54.1
+end data.
+
+descriptives /score.
+])
+
+
+AT_CHECK([pspp -O format=tex simple.sps], [0], [])
+AT_CHECK([test $(wc -L pspp.tex | awk '{print $1}') -le 80], [0], [ignore])
+
+AT_SKIP_IF([test "$TEX" = no])
+AT_CHECK([$TEX --halt-on-error pspp.tex], [0], [ignore])
+
+dnl There should be no overfull boxes
+AT_CHECK([grep '^Overfull ' pspp.log], [1])
+dnl nor any underful ones
+AT_CHECK([grep '^Underfull ' pspp.log], [1])
+
+test -z "$at_arg_xdvi" || AT_CHECK([$at_arg_xdvi -s 3 pspp.dvi], [0], [ignore])
+
+AT_CLEANUP
+
+
+
+AT_SETUP([tex another example])
+
+AT_CHECK([pspp -O format=tex $abs_top_srcdir/examples/regress.sps], [0], [])
+AT_CHECK([test $(wc -L pspp.tex | awk '{print $1}') -le 80], [0], [ignore])
+
+AT_SKIP_IF([test "$TEX" = no])
+AT_CHECK([$TEX --halt-on-error pspp.tex], [0], [ignore])
+
+test -z "$at_arg_xdvi" || AT_CHECK([$at_arg_xdvi -s 3 pspp.dvi], [0], [ignore])
+
+AT_CLEANUP
+
+
+dnl This example emits a table footnote
+AT_SETUP([tex table footnotes])
+
+AT_DATA([footnote.sps], [dnl
+set format = F11.3.
+data list notable list /foo * bar * wiz * bang *.
+begin data.
+1   0   3   1
+3   9 -50   5
+3   4   3 203
+4  -9   0  -4
+98 78 104   2
+3  50 -49 200
+.   4   4   4
+5   3   0   .
+end data.
+
+correlations
+	variables = foo bar wiz bang
+	/print nosig
+	.
+])
+
+AT_CHECK([pspp -O format=tex footnote.sps], [0], [])
+AT_CHECK([test $(wc -L pspp.tex | awk '{print $1}') -le 80], [0], [ignore])
+
+AT_SKIP_IF([test "$TEX" = no])
+AT_CHECK([$TEX --halt-on-error pspp.tex], [0], [ignore])
+
+dnl There should be no overfull boxes
+AT_CHECK([grep '^Overfull ' pspp.log], [1])
+dnl nor any underful ones
+AT_CHECK([grep '^Underfull ' pspp.log], [1])
+
+test -z "$at_arg_xdvi" || AT_CHECK([$at_arg_xdvi -s 3 pspp.dvi], [0], [ignore])
+
+
+AT_CLEANUP
+
+
+dnl An example with non-ascii characters
+AT_SETUP([tex non-ascii])
+
+AT_DATA([utf8.sps], [dnl
+set format = F11.3.
+data list notable list /items (a16).
+begin data.
+Äpfeln
+Öl
+Üter
+Tschüß
+école
+côte
+français
+þekktastur
+landbúnað
+16°C
+powierzchnię
+12.03km²
+end data.
+
+frequencies items.
+])
+
+AT_CHECK([LC_ALL=C.UTF-8 pspp -O format=tex utf8.sps], [0], [])
+AT_CHECK([test $(wc -L pspp.tex | awk '{print $1}') -le 80], [0], [ignore])
+
+dnl The string "??" should not be present in pspp.tex
+AT_CHECK([grep -F '??' pspp.tex], [1])
+
+AT_SKIP_IF([test "$TEX" = no])
+AT_CHECK([$TEX --halt-on-error pspp.tex], [0], [ignore])
+
+dnl There should be no overfull boxes
+AT_CHECK([grep '^Overfull ' pspp.log], [1])
+dnl nor any underful ones
+AT_CHECK([grep '^Underfull ' pspp.log], [1])
+
+test -z "$at_arg_xdvi" || AT_CHECK([$at_arg_xdvi -s 3 pspp.dvi], [0], [ignore])
+
+AT_CLEANUP
+
+
+dnl This example emits a table which is rather more complicated
+dnl It has cells which span multiple columns
+AT_SETUP([tex multispan])
+
+AT_DATA([t-test.sps], [dnl
+set format = F11.3.
+data list notable list /score * group (a20).
+begin data.
+1 this
+2 this
+3 this
+4 this
+5 that
+6 that
+7 that
+8 that
+end data.
+
+t-test /variables=score /group=group("this", "that").
+])
+
+AT_CHECK([pspp -O format=tex t-test.sps], [0], [])
+AT_CHECK([test $(wc -L pspp.tex | awk '{print $1}') -le 80], [0], [ignore])
+
+AT_SKIP_IF([test "$TEX" = no])
+AT_CHECK([$TEX --halt-on-error pspp.tex], [0], [ignore])
+
+dnl There should be no overfull boxes
+AT_CHECK([grep '^Overfull ' pspp.log], [1])
+dnl nor any underful ones
+AT_CHECK([grep '^Underfull ' pspp.log], [1])
+
+test -z "$at_arg_xdvi" || AT_CHECK([$at_arg_xdvi -s 3 pspp.dvi], [0], [ignore])
+
+
+AT_CLEANUP
+

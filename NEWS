@@ -6,6 +6,8 @@ Please send PSPP bug reports to bug-gnu-pspp@gnu.org.
 
 Changes from 1.4.1 to 1.5.2:
 
+ * PSPP can now write its results directly to a TeX source file.
+
  * Added Drag-N-Drop in output view.
 
  * The Explore GUI dialog supports the "Plots" subdialog. Boxplots, Q-Q Plots
