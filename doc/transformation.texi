@@ -369,7 +369,7 @@ The dataset @file{physiology.sav} contains the height and weight of persons.
 For some purposes, neither height nor weight alone is of interest.
 Epidemiologists are often more interested in the @dfn{body mass index} which
 can sometimes be used as a predictor for clinical conditions.
-The body mass index is defined as the weight of the person in kg divided
+The body mass index is defined as the weight of the person in kilograms divided
 by the square of the person's height in metres.
 @footnote{Since BMI is a quantity with a ratio scale and has units, the term ``index''
 is a misnomer, but that is what it is called.}
