@@ -40,37 +40,38 @@ and missing values taken from a file to corresponding
 variables in the active dataset.  In some cases it also updates the
 weighting variable.
 
-Specify a system file or portable file's name, a data set name
-(@pxref{Datasets}), or a file handle name (@pxref{File Handles}).  The
-dictionary in the file will be read, but it will not replace the
-active dataset's dictionary.  The file's data will not be read.
+The @subcmd{FROM} clause is mandatory.  Use it to specify a system
+file or portable file's name in single quotes, a data set name
+(@pxref{Datasets}), or a file handle name (@pxref{File Handles}).
+The dictionary in the file is be read, but it does not replace the active
+dataset's dictionary. The file's data is not read.
 
 Only variables with names that exist in both the active dataset and the
 system file are considered.  Variables with the same name but different
-types (numeric, string) will cause an error message.  Otherwise, the
-system file variables' attributes will replace those in their matching
+types (numeric, string) cause an error message.  Otherwise, the
+system file variables' attributes replace those in their matching
 active dataset variables:
 
 @itemize @bullet
 @item
-If a system file variable has a variable label, then it will replace
+If a system file variable has a variable label, then it replaces
 the variable label of the active dataset variable.  If the system
 file variable does not have a variable label, then the active dataset
-variable's variable label, if any, will be retained.
+variable's variable label, if any, is retained.
 
 @item
 If the system file variable has custom attributes (@pxref{VARIABLE
 ATTRIBUTE}), then those attributes replace the active dataset variable's
 custom attributes.  If the system file variable does not have custom
 attributes, then the active dataset variable's custom attributes, if any,
-will be retained.
+is retained.
 
 @item
 If the active dataset variable is numeric or short string, then value
-labels and missing values, if any, will be copied to the active dataset
+labels and missing values, if any, are copied to the active dataset
 variable.  If the system file variable does not have value labels or
-missing values, then those in the active dataset variable, if any, will not
-be disturbed.
+missing values, then those in the active dataset variable, if any, are not
+disturbed.
 @end itemize
 
 In addition to properties of variables, some properties of the active
@@ -281,7 +282,7 @@ name of the sheet to read.
 In the second form, @subcmd{/SHEET=index @var{idx}}, @var{idx} is a
 integer which is the index of the sheet to read.
 The first sheet has the index 1.
-If the @subcmd{SHEET} subcommand is omitted, then the command will read the
+If the @subcmd{SHEET} subcommand is omitted, then the command reads the
 first sheet in the file.
 
 The @subcmd{CELLRANGE} subcommand specifies the range of cells within the sheet to read.
@@ -324,11 +325,11 @@ The PSQL type is used to import data from a postgres database server.
 The server may be located locally or remotely.
 Variables are automatically created based on the table column names
 or the names specified in the SQL query.
-Postgres data types of high precision, will loose precision when
+Postgres data types of high precision, loose precision when
 imported into @pspp{}.
 Not all the postgres data types are able to be represented in @pspp{}.
-If a datum cannot be represented a warning will be issued and that
-datum will be set to SYSMIS.
+If a datum cannot be represented then @cmd{GET DATA} issues a warning
+and that datum is set to SYSMIS.
 
 The @subcmd{CONNECT} subcommand is mandatory.
 It is a string specifying the parameters of the database server from
@@ -347,7 +348,7 @@ string in the first value read for each variable.
 The @subcmd{UNENCRYPTED} subcommand allows data to be retrieved over an insecure
 connection.
 If the connection is not encrypted, and the @subcmd{UNENCRYPTED} subcommand is
-not given, then an error will occur.
+not given, then an error occurs.
 Whether or not the connection is
 encrypted depends upon the underlying psql library and the
 capabilities of the database server.
@@ -360,7 +361,7 @@ If your SQL statement fetches a large number of cases but only a small number of
 variables, then the data transfer may be faster if you increase this value.
 Conversely, if the number of variables is large, or if the machine on which
 @pspp{} is running has only a
-small amount of memory, then a smaller value will be better.
+small amount of memory, then a smaller value is probably better.
 
 
 The following syntax is an example:
@@ -764,7 +765,7 @@ affect the system file written to disk.
 
 The @subcmd{VERSION} subcommand specifies the version of the file format. Valid
 versions are 2 and 3.  The default version is 3.  In version 2 system
-files, variable names longer than 8 bytes will be truncated.  The two
+files, variable names longer than 8 bytes are truncated.  The two
 versions are otherwise identical.
 
 The @subcmd{NAMES} and @subcmd{MAP} subcommands are currently ignored.
@@ -846,7 +847,7 @@ Comma-separated value format,
 Tab-delimited format.
 @end table
 
-By default, @cmd{SAVE TRANSLATE} will not overwrite an existing file.  Use
+By default, @cmd{SAVE TRANSLATE} does not overwrite an existing file.  Use
 @subcmd{REPLACE} to force an existing file to be overwritten.
 
 With MISSING=IGNORE, the default, @subcmd{SAVE TRANSLATE} treats user-missing

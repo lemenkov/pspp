@@ -76,7 +76,7 @@ When @cmd{N OF CASES} is used along with @cmd{SAMPLE} or @cmd{SELECT
 IF}, the case limit is applied to the cases obtained after sampling or
 case selection, regardless of how @cmd{N OF CASES} is placed relative
 to @cmd{SAMPLE} or @cmd{SELECT IF} in the command file.  Thus, the
-commands @code{N OF CASES 100} and @code{SAMPLE .5} will both randomly
+commands @code{N OF CASES 100} and @code{SAMPLE .5} both randomly
 sample approximately half of the active dataset's cases, then select the
 first 100 of those sampled, regardless of their order in the command
 file.
@@ -101,7 +101,7 @@ transformation, permanently removing cases from the active dataset.
 The proportion to sample can be expressed as a single number between 0
 and 1.  If @var{k} is the number specified, and @var{N} is the number
 of currently-selected cases in the active dataset, then after
-@subcmd{SAMPLE @var{k}.}, approximately @var{k}*@var{N} cases will be
+@subcmd{SAMPLE @var{k}.}, approximately @var{k}*@var{N} cases are
 selected.
 
 The proportion to sample can also be specified in the style @subcmd{SAMPLE
@@ -110,15 +110,15 @@ The proportion to sample can also be specified in the style @subcmd{SAMPLE
 @enumerate
 @item
 If @var{N} is equal to the number of currently-selected cases in the
-active dataset, exactly @var{m} cases will be selected.
+active dataset, exactly @var{m} cases are selected.
 
 @item
 If @var{N} is greater than the number of currently-selected cases in the
-active dataset, an equivalent proportion of cases will be selected.
+active dataset, an equivalent proportion of cases are selected.
 
 @item
 If @var{N} is less than the number of currently-selected cases in the
-active, exactly @var{m} cases will be selected @emph{from the first
+active, exactly @var{m} cases are selected @emph{from the first
 @var{N} cases in the active dataset.}
 @end enumerate
 
@@ -149,8 +149,8 @@ from the active dataset, unless @cmd{TEMPORARY} is in effect
 (@pxref{TEMPORARY}).
 
 Specify a boolean expression (@pxref{Expressions}).  If the value of the
-expression is true for a particular case, the case will be analyzed.  If
-the expression has a false or missing value, then the case will be
+expression is true for a particular case, the case is analyzed.  If
+the expression has a false or missing value, then the case is
 deleted from the data stream.
 
 Place @cmd{SELECT IF} as early in the command file as
@@ -237,9 +237,9 @@ TEMPORARY.
 @end display
 
 @cmd{TEMPORARY} is used to make the effects of transformations
-following its execution temporary.  These transformations will
+following its execution temporary.  These transformations
 affect only the execution of the next procedure or procedure-like
-command.  Their effects will not be saved to the active dataset.
+command.  Their effects are not be saved to the active dataset.
 
 The only specification on @cmd{TEMPORARY} is the command name.
 
@@ -294,10 +294,10 @@ procedures.  Use of keyword @subcmd{BY} is optional but recommended.  Weighting
 variables must be numeric.  Scratch variables may not be used for
 weighting (@pxref{Scratch Variables}).
 
-When @subcmd{OFF} is specified, subsequent statistical procedures will weight all
+When @subcmd{OFF} is specified, subsequent statistical procedures weight all
 cases equally.
 
-A positive integer weighting factor @var{w} on a case will yield the
+A positive integer weighting factor @var{w} on a case yields the
 same statistical output as would replicating the case @var{w} times.
 A weighting factor of 0 is treated for statistical purposes as if the
 case did not exist in the input.  Weighting values need not be
@@ -325,10 +325,10 @@ item, and a numeric variable for the number in stock, like in @ref{weight:ex}.
 
 One analysis which most surely would be of interest is
 the relative amounts or each item in stock.
-However without setting a weight variable, @cmd{FREQUENCIES} (@pxref{FREQUENCIES}) will not
-tell us what we want to know, since there is only one case for each stock item.
-@ref{weight:res} shows the difference between the weighted and unweighted
-frequency tables.
+However without setting a weight variable, @cmd{FREQUENCIES}
+(@pxref{FREQUENCIES}) does not tell us what we want to know, since
+there is only one case for each stock item. @ref{weight:res} shows the
+difference between the weighted and unweighted frequency tables.
 
 @float Example, weight:res
 @psppoutput {weight}

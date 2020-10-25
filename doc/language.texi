@@ -13,7 +13,7 @@
 @cindex @pspp{}, language
 
 This chapter discusses elements common to many @pspp{} commands.
-Later chapters will describe individual commands in detail.
+Later chapters describe individual commands in detail.
 
 @menu
 * Tokens::                      Characters combine to form tokens.
@@ -104,7 +104,7 @@ number.
 No white space is allowed within a number token, except for horizontal
 white space between @samp{-} and the rest of the number.
 
-The last example above, @samp{8945.} will be interpreted as two
+The last example above, @samp{8945.} is interpreted as two
 tokens, @samp{8945} and @samp{.}, if it is the last token on a line.
 @xref{Commands, , Forming commands of tokens}.
 
@@ -440,7 +440,7 @@ variables' names may not begin with @samp{$}.
 @cindex variable names, ending with period
 The final character in a variable name should not be @samp{.}, because
 such an identifier will be misinterpreted when it is the final token
-on a line: @code{FOO.} will be divided into two separate tokens,
+on a line: @code{FOO.} is divided into two separate tokens,
 @samp{FOO} and @samp{.}, indicating end-of-command.  @xref{Tokens}.
 
 @cindex @samp{_}
@@ -813,7 +813,7 @@ In scientific notation, the exponent is output as @samp{E} followed by
 @samp{+} or @samp{-} and exactly three digits.  Numbers with magnitude
 less than 10**-999 or larger than 10**999 are not supported by most
 computers, but if they are supported then their output is considered
-to overflow the field and will be output as asterisks.
+to overflow the field and they are output as asterisks.
 
 @item
 On most computers, no more than 15 decimal digits are significant in
@@ -826,7 +826,7 @@ calculations may also reduce precision of output.
 Special values such as infinities and ``not a number'' values are
 usually converted to the system-missing value before printing.  In a few
 circumstances, these values are output directly.  In fields of width 3
-or greater, special values are output as however many characters will
+or greater, special values are output as however many characters
 fit from @code{+Infinity} or @code{-Infinity} for infinities, from
 @code{NaN} for ``not a number,'' or from @code{Unknown} for other values
 (if any are supported by the system).  In fields under 3 columns wide,
@@ -850,8 +850,8 @@ characters long.
 @var{string} must contain exactly three commas or exactly three periods
 (but not both), except that a single quote character may be used to
 ``escape'' a following comma, period, or single quote.  If three commas
-are used, commas will be used for grouping in output, and a period will
-be used as the decimal point.  Uses of periods reverses these roles.
+are used, commas are used for grouping in output, and a period
+is used as the decimal point.  Uses of periods reverses these roles.
 
 The commas or periods divide @var{string} into four fields, called the
 @dfn{negative prefix}, @dfn{prefix}, @dfn{suffix}, and @dfn{negative
@@ -1053,7 +1053,7 @@ WRB}).
 The recommended field width depends on the floating-point format.
 NATIVE (the default format), IDL, IDB, VD, VG, and ZL formats should use
 a field width of 8.  ISL, ISB, VF, and ZS formats should use a field
-width of 4.  Other field widths will not produce useful results.  The
+width of 4.  Other field widths do not produce useful results.  The
 maximum field width is 8.  No decimal places may be specified.
 
 The default output format is F8.2.
@@ -1217,11 +1217,11 @@ In the table, ``Option'' describes what increased output width enables:
 
 @table @asis
 @item 4-digit year
-A field 2 columns wider than minimum will include a 4-digit year.
+A field 2 columns wider than the minimum includes a 4-digit year.
 (DATETIME and YMDHMS formats always include a 4-digit year.)
 
 @item seconds
-A field 3 columns wider than minimum will include seconds as well as
+A field 3 columns wider than the minimum includes seconds as well as
 minutes.  A field 5 columns wider than minimum, or more, can also
 include a decimal point and fractional seconds (but no more than allowed
 by the format's decimal places).
