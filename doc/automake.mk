@@ -70,11 +70,9 @@ EXTRA_DIST += doc/get-commands.pl \
               doc/prepdoc.sh
 
 $(srcdir)/doc/ni.texi: $(top_srcdir)/src/language/command.def doc/get-commands.pl
-	@$(MKDIR_P)  doc
 	$(AM_V_GEN)$(PERL) $(top_srcdir)/doc/get-commands.pl $(top_srcdir)/src/language/command.def > $@
 
 $(srcdir)/doc/tut.texi:
-	@$(MKDIR_P) doc
 	$(AM_V_GEN)echo "@set example-dir $(examplesdir)" > $@
 
 
@@ -82,7 +80,6 @@ doc/pspp.xml: doc/pspp.texi $(doc_pspp_TEXINFOS) doc/help-pages-list
 if BROKEN_DOCBOOK_XML
 	touch $@
 else
-	@$(MKDIR_P)  doc
 	$(AM_V_GEN)$(MAKEINFO) $(AM_MAKEINFOFLAGS) --docbook -I $(top_srcdir) \
 		$< -o $@
 endif
@@ -156,7 +153,6 @@ SUFFIXES: .sps
 
 # use pspp to process a syntax file and reap the output into a text file
 .sps.out:
-	$(MKDIR_P) $(@D)
 	where=$$PWD ; \
 	(cd $(top_srcdir)/examples; ${abs_builddir}/src/ui/terminal/pspp $(abs_srcdir)/doc/examples/$(<F) -o $$where/$@)
 
@@ -164,7 +160,6 @@ SUFFIXES: .sps
 # Then, use sed to delete everything up to and including <body> and
 # everything after and including </body>
 .sps.html:
-	$(MKDIR_P) $(@D)
 	where=$$PWD ; \
 	(cd $(top_srcdir)/examples; ${abs_builddir}/src/ui/terminal/pspp $(abs_srcdir)/doc/examples/$(<F) -o $$where/$@,x -O format=html)
 	$(SED) -e '\%</body%,$$d' -e '0,/<body/d' $@,x > $@

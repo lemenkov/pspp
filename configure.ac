@@ -136,6 +136,7 @@ if test "$with_cairo" != no && test "$with_gui" != "no"; then
 
   PKG_CHECK_MODULES([SPREAD_SHEET_WIDGET], [spread-sheet-widget >= 0.7], [],
     [PSPP_REQUIRED_PREREQ([spread-sheet-widget 0.7 (or use --without-gui)])])
+  PKG_CHECK_VAR([SPREAD_SHEET_WIDGET_LIBDIR], [spread-sheet-widget], [libdir])
 
   PKG_CHECK_MODULES([LIBRSVG], [librsvg-2.0 >= 2.44],
     [AC_DEFINE([HAVE_RSVG], 1, [Define to 1 if librsvg is available])],
@@ -315,7 +316,7 @@ LIBS="$LIBICONV $LIBS"
 
 dnl Required by the gnulib 'relocatable-prog' module.
 dnl See doc/relocatable-maint.texi in the gnulib tree for details.
-RELOCATABLE_LIBRARY_PATH='$(pkglibdir)'
+RELOCATABLE_LIBRARY_PATH='$(pkglibdir):$(SPREAD_SHEET_WIDGET_LIBDIR)'
 RELOCATABLE_STRIP=:
 
 PSPP_CHECK_PREREQS
@@ -323,7 +324,7 @@ PSPP_CHECK_PREREQS
 AC_CONFIG_FILES(
   [Makefile gl/Makefile po/Makefile tests/atlocal perl-module/lib/PSPP.pm])
 
-AC_CONFIG_COMMANDS([doc/dummy], [:])
+AC_CONFIG_COMMANDS([doc/examples/dummy], [:])
 
 m4_ifdef([AM_SILENT_RULES], [AM_SILENT_RULES])
 
