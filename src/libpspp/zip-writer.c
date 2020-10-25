@@ -23,6 +23,7 @@
 #include <errno.h>
 #include <stdlib.h>
 #include <time.h>
+#include <unistd.h>
 
 #include "gl/crc.h"
 #include "gl/fwriteerror.h"
@@ -38,6 +39,7 @@ struct zip_writer
   {
     char *file_name;            /* File name, for use in error mesages. */
     FILE *file;                 /* Output stream. */
+    uint32_t offset;            /* Offset in output stream. */
 
     uint16_t date, time;        /* Date and time in MS-DOS format. */
 
@@ -61,6 +63,7 @@ static void
 put_bytes (struct zip_writer *zw, const void *p, size_t n)
 {
   fwrite (p, 1, n, zw->file);
+  zw->offset += n;
 }
 
 static void
@@ -91,16 +94,30 @@ zip_writer_create (const char *file_name)
   time_t now;
   FILE *file;
 
-  file = fopen (file_name, "wb");
-  if (file == NULL)
+  if (strcmp (file_name, "-"))
     {
-      msg_error (errno, _("%s: error opening output file"), file_name);
-      return NULL;
+      file = fopen (file_name, "wb");
+      if (file == NULL)
+        {
+          msg_error (errno, _("%s: error opening output file"), file_name);
+          return NULL;
+        }
+    }
+  else
+    {
+      if (isatty (STDOUT_FILENO))
+        {
+          msg (ME, _("%s: not writing ZIP file to terminal"), file_name);
+          return NULL;
+        }
+
+      file = stdout;
     }
 
   zw = xmalloc (sizeof *zw);
   zw->file_name = xstrdup (file_name);
   zw->file = file;
+  zw->offset = 0;
 
   zw->ok = true;
 
@@ -139,13 +156,13 @@ void
 zip_writer_add (struct zip_writer *zw, FILE *file, const char *member_name)
 {
   struct zip_member *member;
-  uint32_t offset, size;
+  uint32_t size;
   size_t bytes_read;
   uint32_t crc;
   char buf[4096];
 
   /* Local file header. */
-  offset = ftello (zw->file);
+  uint32_t offset = zw->offset;
   put_local_header (zw, member_name, 0, 0, 1 << 3);
 
   /* File data. */
@@ -162,6 +179,7 @@ zip_writer_add (struct zip_writer *zw, FILE *file, const char *member_name)
      with the correct file size and CRC.  Otherwise, write data descriptor. */
   if (fseeko (zw->file, offset, SEEK_SET) == 0)
     {
+      uint32_t save_offset = zw->offset;
       put_local_header (zw, member_name, crc, size, 0);
       if (fseeko (zw->file, size, SEEK_CUR)
           && zw->ok)
@@ -169,6 +187,7 @@ zip_writer_add (struct zip_writer *zw, FILE *file, const char *member_name)
           msg_error (errno, _("%s: error seeking in output file"), zw->file_name);
           zw->ok = false;
         }
+      zw->offset = save_offset;
     }
   else
     {
@@ -229,7 +248,7 @@ zip_writer_close (struct zip_writer *zw)
   if (zw == NULL)
     return true;
 
-  dir_start = ftello (zw->file);
+  dir_start = zw->offset;
   for (i = 0; i < zw->n_members; i++)
     {
       struct zip_member *m = &zw->members[i];
@@ -256,7 +275,7 @@ zip_writer_close (struct zip_writer *zw)
       free (m->name);
     }
   free (zw->members);
-  dir_end = ftello (zw->file);
+  dir_end = zw->offset;
 
   /* End of central directory record. */
   put_u32 (zw, MAGIC_EOCD);     /* end of central dir signature */
@@ -274,7 +293,7 @@ zip_writer_close (struct zip_writer *zw)
   put_u16 (zw, 0);              /* .ZIP file comment length */
 
   ok = zw->ok;
-  if (ok && fwriteerror (zw->file))
+  if (ok && zw->file != stdout && fwriteerror (zw->file))
     {
       msg_error (errno, _("%s: write failed"), zw->file_name);
       ok = false;
