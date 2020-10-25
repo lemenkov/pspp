@@ -137,8 +137,8 @@ EXAMPLE_SYNTAX = \
 EXTRA_DIST += $(EXAMPLE_SYNTAX)
 
 EXAMPLE_SPVS = $(EXAMPLE_SYNTAX:.sps=.spv) doc/examples/tutorial7b.spv
-EXAMPLE_OUTPUTS = $(EXAMPLE_SYNTAX:.sps=.out)
-EXAMPLE_HTML = $(EXAMPLE_SYNTAX:.sps=.html)
+EXAMPLE_OUTPUTS = $(EXAMPLE_SPVS:.spv=.out)
+EXAMPLE_HTML = $(EXAMPLE_SPVS:.spv=.html)
 
 example-spv: $(EXAMPLE_SPVS)
 example-outputs: $(EXAMPLE_OUTPUTS)
@@ -152,19 +152,15 @@ $(top_builddir)/doc/pspp.html:  $(EXAMPLE_HTML)
 $(top_builddir)/doc/pspp.pdf:   $(EXAMPLE_OUTPUTS)
 $(top_builddir)/doc/pspp.xml:   $(EXAMPLE_OUTPUTS)
 
-# The examples cannot be built until the binary has been built
-pspp = $(abs_top_builddir)/src/ui/terminal/pspp
-$(EXAMPLE_OUTPUTS): $(pspp)
-$(EXAMPLE_HTML): $(pspp)
-
 CLEANFILES += $(EXAMPLE_OUTPUTS) $(EXAMPLE_SPVS)
-
-SUFFIXES: .sps
+SUFFIXES += .sps .spv
 
 # Use pspp to process a syntax file into an output file.
+pspp = src/ui/terminal/pspp
+$(EXAMPLE_SPVS): $(pspp)
 .sps.spv:
 	$(AM_V_GEN)(cd $(top_srcdir)/examples \
-         && $(pspp) ../doc/examples/$(<F) -o - -O format=spv) > $@.tmp
+         && $(abs_top_builddir)/$(pspp) ../doc/examples/$(<F) -o - -O format=spv) > $@.tmp
 	$(AM_V_at)mv $@.tmp $@
 
 # The tutorial only wants some parts of the output here.
@@ -175,6 +171,7 @@ doc/examples/tutorial7b.spv: doc/examples/tutorial7.spv $(pspp_output)
 # Convert an output file into a text file or HTML file.
 #
 # (For HTML, use sed to include only the contents of <body>.)
+$(EXAMPLE_OUTPUTS) $(EXAMPLE_HTML): $(pspp_output)
 .spv.out:
 	$(AM_V_GEN)utilities/pspp-output convert $< $@
 .spv.html:
