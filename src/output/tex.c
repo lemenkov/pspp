@@ -323,7 +323,7 @@ tex_submit (struct output_driver *driver,
                                            &tex->bg);
       if (file_name != NULL)
         {
-	  const char *title = chart_item_get_title (chart_item);
+	  //const char *title = chart_item_get_title (chart_item);
           //          printf ("The chart title is %s\n", title);
 
           shipout (&tex->token_list, "\\includegraphics{%s}\n", file_name);
