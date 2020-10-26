@@ -136,24 +136,32 @@ EXAMPLE_SYNTAX = \
 
 EXTRA_DIST += $(EXAMPLE_SYNTAX)
 
-EXAMPLE_SPVS = $(EXAMPLE_SYNTAX:.sps=.spv) doc/examples/tutorial7b.spv
-EXAMPLE_OUTPUTS = $(EXAMPLE_SPVS:.spv=.out)
+EXAMPLE_SPVS = $(EXAMPLE_SYNTAX:.sps=.spv) \
+	doc/examples/tutorial2a.spv \
+	doc/examples/tutorial2b.spv \
+	doc/examples/tutorial5a.spv \
+	doc/examples/tutorial5b.spv \
+	doc/examples/tutorial7a.spv \
+	doc/examples/tutorial7b.spv
+EXAMPLE_TXTS = $(EXAMPLE_SPVS:.spv=.txt)
+EXAMPLE_TEXIS = $(EXAMPLE_TXTS:.txt=.texi)
 EXAMPLE_HTML = $(EXAMPLE_SPVS:.spv=.html)
 
 example-spv: $(EXAMPLE_SPVS)
-example-outputs: $(EXAMPLE_OUTPUTS)
+example-txts: $(EXAMPLE_TXTS)
+example-texis: $(EXAMPLE_TEXIS)
 example-html: $(EXAMPLE_HTML)
-PHONY += example-outputs example-html
+PHONY += example-spv example-txts example-texis example-html
 
-$(top_builddir)/doc/pspp.info:  $(EXAMPLE_OUTPUTS)
-$(top_builddir)/doc/pspp.ps:    $(EXAMPLE_OUTPUTS)
-$(top_builddir)/doc/pspp.dvi:   $(EXAMPLE_OUTPUTS)
+$(top_builddir)/doc/pspp.info:  $(EXAMPLE_TEXIS)
+$(top_builddir)/doc/pspp.ps:    $(EXAMPLE_TEXIS)
+$(top_builddir)/doc/pspp.dvi:   $(EXAMPLE_TEXIS)
 $(top_builddir)/doc/pspp.html:  $(EXAMPLE_HTML)
-$(top_builddir)/doc/pspp.pdf:   $(EXAMPLE_OUTPUTS)
-$(top_builddir)/doc/pspp.xml:   $(EXAMPLE_OUTPUTS)
+$(top_builddir)/doc/pspp.pdf:   $(EXAMPLE_TEXIS)
+$(top_builddir)/doc/pspp.xml:   $(EXAMPLE_TEXIS)
 
-CLEANFILES += $(EXAMPLE_OUTPUTS) $(EXAMPLE_SPVS)
-SUFFIXES += .sps .spv
+CLEANFILES += $(EXAMPLE_TXTS) $(EXAMPLE_SPVS) $(EXAMPLE_TEXIS) $(EXAMPLE_HTML)
+SUFFIXES += .sps .spv .txt .html .texi
 
 # Use pspp to process a syntax file into an output file.
 pspp = src/ui/terminal/pspp
@@ -163,20 +171,36 @@ $(EXAMPLE_SPVS): $(pspp)
          && $(abs_top_builddir)/$(pspp) ../doc/examples/$(<F) -o - -O format=spv) > $@.tmp
 	$(AM_V_at)mv $@.tmp $@
 
-# The tutorial only wants some parts of the output here.
+# In some cases, the tutorial only wants some parts of the output.
 pspp_output = utilities/pspp-output
+convert = $(AM_V_GEN)$(pspp_output) convert $< $@
+doc/examples/tutorial2a.spv: doc/examples/tutorial2.spv $(pspp_output)
+	$(convert) --command='Descriptives'
+doc/examples/tutorial2b.spv: doc/examples/tutorial2.spv $(pspp_output)
+	$(convert) --label='Extreme Values'
+doc/examples/tutorial5a.spv: doc/examples/tutorial5.spv $(pspp_output)
+	$(convert) --commands=examine --nth-command=1 --labels=descriptives
+doc/examples/tutorial5b.spv: doc/examples/tutorial5.spv $(pspp_output)
+	$(convert) --commands=examine --nth-command=2 --labels=descriptives
+doc/examples/tutorial7a.spv: doc/examples/tutorial7.spv $(pspp_output)
+	$(convert) --commands=regression --nth-command=1 --subtypes=coefficients
 doc/examples/tutorial7b.spv: doc/examples/tutorial7.spv $(pspp_output)
-	$(AM_V_GEN)$(pspp_output) convert --subtypes=coefficients $< $@
+	$(convert) --commands=regression --nth-command=2 --subtypes=coefficients
 
 # Convert an output file into a text file or HTML file.
 #
 # (For HTML, use sed to include only the contents of <body>.)
-$(EXAMPLE_OUTPUTS) $(EXAMPLE_HTML): $(pspp_output)
-.spv.out:
+$(EXAMPLE_TXTS) $(EXAMPLE_HTML): $(pspp_output)
+.spv.txt:
 	$(AM_V_GEN)utilities/pspp-output convert $< $@
 .spv.html:
 	$(AM_V_GEN)utilities/pspp-output convert $< - -O format=html \
 	| $(SED) -e '\%</body%,$$d' -e '0,/<body/d' > $@.tmp
+	$(AM_V_at)mv $@.tmp $@
+
+# Convert a text file into a Texinfo file.
+.txt.texi:
+	$(AM_V_GEN)sed 's/@/@@/g' < $< > $@.tmp
 	$(AM_V_at)mv $@.tmp $@
 
 # Insert the link tag for the cascading style sheet.

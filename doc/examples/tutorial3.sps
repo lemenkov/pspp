@@ -1,2 +1,2 @@
-get file='physiology.sav'.
-examine height, weight /statistics=extreme(3).
+get file='hotel.sav'.
+display dictionary.
