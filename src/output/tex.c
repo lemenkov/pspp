@@ -66,6 +66,7 @@ struct tex_driver
     struct output_driver driver;
     /* A hash table containing any Tex macros which need to be emitted.  */
     struct hmap macros;
+    bool require_graphics;
 #ifdef HAVE_CAIRO
     struct cell_color fg;
     struct cell_color bg;
@@ -215,8 +216,6 @@ tex_destroy (struct output_driver *driver)
   shipout (&tex->preamble_list, "%%%% Define the horizontal space between table columns\n");
   shipout (&tex->preamble_list, "\\def\\psppcolumnspace{1mm}\n\n");
 
-  shipout (&tex->preamble_list, "\\input graphicx\n\n");
-
   char *ln = get_language ();
   if (ln)
     shipout (&tex->preamble_list, "%%%% Language is \"%s\"\n", ln);
@@ -259,6 +258,9 @@ tex_destroy (struct output_driver *driver)
       free (m);
     }
   hmap_destroy (&tex->macros);
+
+  if (tex->require_graphics)
+    shipout (&tex->preamble_list, "\\input graphicx\n\n");
 
   post_process_tokens (tex->file, &tex->preamble_list);
 
@@ -327,6 +329,7 @@ tex_submit (struct output_driver *driver,
           //          printf ("The chart title is %s\n", title);
 
           shipout (&tex->token_list, "\\includegraphics{%s}\n", file_name);
+          tex->require_graphics = true;
           free (file_name);
         }
     }
