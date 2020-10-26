@@ -221,7 +221,7 @@ that way.  However in general one can expect a different @samp{N} for each
 split.
 
 @float Example, split:res
-@psppsyntax {split.out}
+@psppoutput {split}
 @caption {The results of running @cmd{DESCRIPTIVES} with an active split}
 @end float
 
