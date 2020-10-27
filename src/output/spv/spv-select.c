@@ -27,6 +27,10 @@
 #include "gl/c-ctype.h"
 #include "gl/xalloc.h"
 
+/* Returns true if ITEM represents a command, false otherwise.
+
+   The root item and each of its immediate children are considered to be
+   command items. */
 static bool
 is_command_item (const struct spv_item *item)
 {

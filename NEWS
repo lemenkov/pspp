@@ -17,7 +17,7 @@ Changes from 1.4.1 to 1.5.2:
    The new interface provides the user with a preview of the data to be imported
    and interactive methods to select the desired ranges.
 
- * The pspp-output utility has a new --nth-commands option.
+ * The pspp-output utility has new --table-look and --nth-commands options.
 
 Changes from 1.4.0 to 1.4.1:
 

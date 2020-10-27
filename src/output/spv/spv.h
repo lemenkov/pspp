@@ -130,7 +130,7 @@ struct spv_item
 
     /* SPV_ITEM_TABLE only. */
     struct pivot_table *table;    /* NULL if not yet loaded. */
-    struct spv_legacy_properties *legacy_properties;
+    struct spv_table_look *table_look;
     char *bin_member;
     char *xml_member;
     char *subtype;
@@ -196,6 +196,9 @@ char *spv_item_get_legacy_data (const struct spv_item *, struct spv_data *)
   WARN_UNUSED_RESULT;
 char *spv_item_get_legacy_table (const struct spv_item *, struct _xmlDoc **)
   WARN_UNUSED_RESULT;
+
+void spv_item_set_table_look (struct spv_item *,
+                              const struct spv_table_look *);
 
 char *spv_decode_fmt_spec (uint32_t u32, struct fmt_spec *) WARN_UNUSED_RESULT;
 

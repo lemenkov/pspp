@@ -17,7 +17,7 @@
 #ifndef OUTPUT_SPV_LEGACY_DECODER_H
 #define OUTPUT_SPV_LEGACY_DECODER_H 1
 
-/* SPSS Viewer (SPV) legacy binary decoder.
+/* SPSS Viewer (SPV) legacy decoder.
 
    Used by spv.h, not useful directly. */
 
@@ -25,20 +25,12 @@
 
 struct pivot_table;
 struct spvdx_visualization;
-struct spvsx_table_properties;
 struct spv_data;
-
-struct spv_legacy_properties;
-
-void spv_legacy_properties_destroy (struct spv_legacy_properties *);
-
-char *decode_spvsx_legacy_properties (const struct spvsx_table_properties *,
-                                      struct spv_legacy_properties **)
-  WARN_UNUSED_RESULT;
+struct spv_table_look;
 
 char *decode_spvdx_table (const struct spvdx_visualization *,
                           const char *subtype,
-                          const struct spv_legacy_properties *,
+                          const struct spv_table_look *,
                           struct spv_data *,
                           struct pivot_table **outp)
   WARN_UNUSED_RESULT;

@@ -35,6 +35,7 @@
 #include "output/pivot-table.h"
 #include "output/spv/detail-xml-parser.h"
 #include "output/spv/spv-legacy-data.h"
+#include "output/spv/spv-table-look.h"
 #include "output/spv/spv.h"
 #include "output/spv/structure-xml-parser.h"
 
@@ -47,31 +48,6 @@
 #include "gettext.h"
 #define N_(msgid) msgid
 #define _(msgid) gettext (msgid)
-
-struct spv_legacy_properties
-  {
-    /* General properties. */
-    bool omit_empty;
-    int width_ranges[TABLE_N_AXES][2];      /* In 1/96" units. */
-    bool row_labels_in_corner;
-
-    /* Footnote display settings. */
-    bool show_numeric_markers;
-    bool footnote_marker_superscripts;
-
-    /* Styles. */
-    struct area_style areas[PIVOT_N_AREAS];
-    struct table_border_style borders[PIVOT_N_BORDERS];
-
-    /* Print settings. */
-    bool print_all_layers;
-    bool paginate_layers;
-    bool shrink_to_width;
-    bool shrink_to_length;
-    bool top_continuation, bottom_continuation;
-    char *continuation;
-    size_t n_orphan_lines;
-  };
 
 struct spv_series
   {
@@ -597,12 +573,6 @@ static int
 optional_px (double inches, int default_px)
 {
   return inches != DBL_MAX ? inches * 96.0 : default_px;
-}
-
-static int
-optional_pt (double inches, int default_pt)
-{
-  return inches != DBL_MAX ? inches * 72.0 + .5 : default_pt;
 }
 
 static void
@@ -1417,65 +1387,6 @@ add_layers (struct hmap *series_map,
   return NULL;
 }
 
-static int
-optional_int (int x, int default_value)
-{
-  return x != INT_MIN ? x : default_value;
-}
-
-static enum pivot_area
-pivot_area_from_name (const char *name)
-{
-  static const char *area_names[PIVOT_N_AREAS] = {
-    [PIVOT_AREA_TITLE] = "title",
-    [PIVOT_AREA_CAPTION] = "caption",
-    [PIVOT_AREA_FOOTER] = "footnotes",
-    [PIVOT_AREA_CORNER] = "cornerLabels",
-    [PIVOT_AREA_COLUMN_LABELS] = "columnLabels",
-    [PIVOT_AREA_ROW_LABELS] = "rowLabels",
-    [PIVOT_AREA_DATA] = "data",
-    [PIVOT_AREA_LAYERS] = "layers",
-  };
-
-  enum pivot_area area;
-  for (area = 0; area < PIVOT_N_AREAS; area++)
-    if (!strcmp (name, area_names[area]))
-      break;
-  return area;
-}
-
-static enum pivot_border
-pivot_border_from_name (const char *name)
-{
-  static const char *border_names[PIVOT_N_BORDERS] = {
-    [PIVOT_BORDER_TITLE] = "titleLayerSeparator",
-    [PIVOT_BORDER_OUTER_LEFT] = "leftOuterFrame",
-    [PIVOT_BORDER_OUTER_TOP] = "topOuterFrame",
-    [PIVOT_BORDER_OUTER_RIGHT] = "rightOuterFrame",
-    [PIVOT_BORDER_OUTER_BOTTOM] = "bottomOuterFrame",
-    [PIVOT_BORDER_INNER_LEFT] = "leftInnerFrame",
-    [PIVOT_BORDER_INNER_TOP] = "topInnerFrame",
-    [PIVOT_BORDER_INNER_RIGHT] = "rightInnerFrame",
-    [PIVOT_BORDER_INNER_BOTTOM] = "bottomInnerFrame",
-    [PIVOT_BORDER_DATA_LEFT] = "dataAreaLeft",
-    [PIVOT_BORDER_DATA_TOP] = "dataAreaTop",
-    [PIVOT_BORDER_DIM_ROW_HORZ] = "horizontalDimensionBorderRows",
-    [PIVOT_BORDER_DIM_ROW_VERT] = "verticalDimensionBorderRows",
-    [PIVOT_BORDER_DIM_COL_HORZ] = "horizontalDimensionBorderColumns",
-    [PIVOT_BORDER_DIM_COL_VERT] = "verticalDimensionBorderColumns",
-    [PIVOT_BORDER_CAT_ROW_HORZ] = "horizontalCategoryBorderRows",
-    [PIVOT_BORDER_CAT_ROW_VERT] = "verticalCategoryBorderRows",
-    [PIVOT_BORDER_CAT_COL_HORZ] = "horizontalCategoryBorderColumns",
-    [PIVOT_BORDER_CAT_COL_VERT] = "verticalCategoryBorderColumns",
-  };
-
-  enum pivot_border border;
-  for (border = 0; border < PIVOT_N_BORDERS; border++)
-    if (!strcmp (name, border_names[border]))
-      break;
-  return border;
-}
-
 static struct pivot_category *
 find_category (struct spv_series *series, int index)
 {
@@ -1798,177 +1709,6 @@ decode_set_cell_properties (struct pivot_table *table, struct hmap *series_map,
     }
 }
 
-char * WARN_UNUSED_RESULT
-decode_spvsx_legacy_properties (const struct spvsx_table_properties *in,
-                                struct spv_legacy_properties **outp)
-{
-  struct spv_legacy_properties *out = xzalloc (sizeof *out);
-  char *error;
-
-  if (!in)
-    {
-      error = xstrdup ("Legacy table lacks tableProperties");
-      goto error;
-    }
-
-  const struct spvsx_general_properties *g = in->general_properties;
-  out->omit_empty = g->hide_empty_rows != 0;
-  out->width_ranges[TABLE_HORZ][0] = optional_pt (g->minimum_column_width, -1);
-  out->width_ranges[TABLE_HORZ][1] = optional_pt (g->maximum_column_width, -1);
-  out->width_ranges[TABLE_VERT][0] = optional_pt (g->minimum_row_width, -1);
-  out->width_ranges[TABLE_VERT][1] = optional_pt (g->maximum_row_width, -1);
-  out->row_labels_in_corner
-    = g->row_dimension_labels != SPVSX_ROW_DIMENSION_LABELS_NESTED;
-
-  const struct spvsx_footnote_properties *f = in->footnote_properties;
-  out->footnote_marker_superscripts
-    = (f->marker_position != SPVSX_MARKER_POSITION_SUBSCRIPT);
-  out->show_numeric_markers
-    = (f->number_format == SPVSX_NUMBER_FORMAT_NUMERIC);
-
-  for (int i = 0; i < PIVOT_N_AREAS; i++)
-    area_style_copy (NULL, &out->areas[i], pivot_area_get_default_style (i));
-
-  const struct spvsx_cell_format_properties *cfp = in->cell_format_properties;
-  for (size_t i = 0; i < cfp->n_cell_style; i++)
-    {
-      const struct spvsx_cell_style *c = cfp->cell_style[i];
-      const char *name = CHAR_CAST (const char *, c->node_.raw->name);
-      enum pivot_area area = pivot_area_from_name (name);
-      if (area == PIVOT_N_AREAS)
-        {
-          error = xasprintf ("unknown area \"%s\" in cellFormatProperties",
-                             name);
-          goto error;
-        }
-
-      struct area_style *a = &out->areas[area];
-      const struct spvsx_style *s = c->style;
-      if (s->font_weight)
-        a->font_style.bold = s->font_weight == SPVSX_FONT_WEIGHT_BOLD;
-      if (s->font_style)
-        a->font_style.italic = s->font_style == SPVSX_FONT_STYLE_ITALIC;
-      a->font_style.underline = false;
-      if (s->color >= 0)
-        a->font_style.fg[0] = optional_color (
-          s->color, (struct cell_color) CELL_COLOR_BLACK);
-      if (c->alternating_text_color >= 0 || s->color >= 0)
-        a->font_style.fg[1] = optional_color (c->alternating_text_color,
-                                              a->font_style.fg[0]);
-      if (s->color2 >= 0)
-        a->font_style.bg[0] = optional_color (
-          s->color2, (struct cell_color) CELL_COLOR_WHITE);
-      if (c->alternating_color >= 0 || s->color2 >= 0)
-        a->font_style.bg[1] = optional_color (c->alternating_color,
-                                              a->font_style.bg[0]);
-      if (s->font_family)
-        {
-          free (a->font_style.typeface);
-          a->font_style.typeface = xstrdup (s->font_family);
-        }
-
-      if (s->font_size)
-        a->font_style.size = optional_length (s->font_size, 0);
-
-      if (s->text_alignment)
-        a->cell_style.halign
-          = (s->text_alignment == SPVSX_TEXT_ALIGNMENT_LEFT
-             ? TABLE_HALIGN_LEFT
-             : s->text_alignment == SPVSX_TEXT_ALIGNMENT_RIGHT
-             ? TABLE_HALIGN_RIGHT
-             : s->text_alignment == SPVSX_TEXT_ALIGNMENT_CENTER
-             ? TABLE_HALIGN_CENTER
-             : s->text_alignment == SPVSX_TEXT_ALIGNMENT_DECIMAL
-             ? TABLE_HALIGN_DECIMAL
-             : TABLE_HALIGN_MIXED);
-      if (s->label_location_vertical)
-        a->cell_style.valign
-          = (s->label_location_vertical == SPVSX_LABEL_LOCATION_VERTICAL_NEGATIVE
-             ? TABLE_VALIGN_BOTTOM
-             : s->label_location_vertical == SPVSX_LABEL_LOCATION_VERTICAL_POSITIVE
-             ? TABLE_VALIGN_TOP
-             : TABLE_VALIGN_CENTER);
-
-      if (s->decimal_offset != DBL_MAX)
-        a->cell_style.decimal_offset = optional_px (s->decimal_offset, 0);
-
-      if (s->margin_left != DBL_MAX)
-        a->cell_style.margin[TABLE_HORZ][0] = optional_px (s->margin_left, 8);
-      if (s->margin_right != DBL_MAX)
-        a->cell_style.margin[TABLE_HORZ][1] = optional_px (s->margin_right,
-                                                           11);
-      if (s->margin_top != DBL_MAX)
-        a->cell_style.margin[TABLE_VERT][0] = optional_px (s->margin_top, 1);
-      if (s->margin_bottom != DBL_MAX)
-        a->cell_style.margin[TABLE_VERT][1] = optional_px (s->margin_bottom,
-                                                           1);
-    }
-
-  for (int i = 0; i < PIVOT_N_BORDERS; i++)
-    pivot_border_get_default_style (i, &out->borders[i]);
-
-  const struct spvsx_border_properties *bp = in->border_properties;
-  for (size_t i = 0; i < bp->n_border_style; i++)
-    {
-      const struct spvsx_border_style *bin = bp->border_style[i];
-      const char *name = CHAR_CAST (const char *, bin->node_.raw->name);
-      enum pivot_border border = pivot_border_from_name (name);
-      if (border == PIVOT_N_BORDERS)
-        {
-          error = xasprintf ("unknown border \"%s\" parsing borderProperties",
-                             name);
-          goto error;
-        }
-
-      struct table_border_style *bout = &out->borders[border];
-      bout->stroke
-        = (bin->border_style_type == SPVSX_BORDER_STYLE_TYPE_NONE
-           ? TABLE_STROKE_NONE
-           : bin->border_style_type == SPVSX_BORDER_STYLE_TYPE_DASHED
-           ? TABLE_STROKE_DASHED
-           : bin->border_style_type == SPVSX_BORDER_STYLE_TYPE_THICK
-           ? TABLE_STROKE_THICK
-           : bin->border_style_type == SPVSX_BORDER_STYLE_TYPE_THIN
-           ? TABLE_STROKE_THIN
-           : bin->border_style_type == SPVSX_BORDER_STYLE_TYPE_DOUBLE
-           ? TABLE_STROKE_DOUBLE
-           : TABLE_STROKE_SOLID);
-      bout->color = optional_color (bin->color,
-                                    (struct cell_color) CELL_COLOR_BLACK);
-    }
-
-  const struct spvsx_printing_properties *pp = in->printing_properties;
-  out->print_all_layers = pp->print_all_layers > 0;
-  out->paginate_layers = pp->print_each_layer_on_separate_page > 0;
-  out->shrink_to_width = pp->rescale_wide_table_to_fit_page > 0;
-  out->shrink_to_length = pp->rescale_long_table_to_fit_page > 0;
-  out->top_continuation = pp->continuation_text_at_top > 0;
-  out->bottom_continuation = pp->continuation_text_at_bottom > 0;
-  out->continuation = xstrdup (pp->continuation_text
-                               ? pp->continuation_text : "(cont.)");
-  out->n_orphan_lines = optional_int (pp->window_orphan_lines, 2);
-
-  *outp = out;
-  return NULL;
-
-error:
-  spv_legacy_properties_destroy (out);
-  *outp = NULL;
-  return error;
-}
-
-void
-spv_legacy_properties_destroy (struct spv_legacy_properties *props)
-{
-  if (props)
-    {
-      for (size_t i = 0; i < PIVOT_N_AREAS; i++)
-        area_style_uninit (&props->areas[i]);
-      free (props->continuation);
-      free (props);
-    }
-}
-
 static struct spv_series *
 parse_formatting (const struct spvdx_visualization *v,
                   const struct hmap *series_map, struct hmap *format_map)
@@ -2015,43 +1755,16 @@ format_map_destroy (struct hmap *format_map)
 
 char * WARN_UNUSED_RESULT
 decode_spvdx_table (const struct spvdx_visualization *v, const char *subtype,
-                    const struct spv_legacy_properties *props,
+                    const struct spv_table_look *look,
                     struct spv_data *data, struct pivot_table **outp)
 {
   struct pivot_table *table = pivot_table_create__ (NULL, subtype);
+  spv_table_look_install (look, table);
 
   struct hmap series_map = HMAP_INITIALIZER (series_map);
   struct hmap format_map = HMAP_INITIALIZER (format_map);
   struct spv_series **dim_series = NULL;
   char *error;
-
-  /* First get the legacy properties. */
-  table->omit_empty = props->omit_empty;
-  for (enum table_axis axis = 0; axis < TABLE_N_AXES; axis++)
-    for (int i = 0; i < 2; i++)
-      if (props->width_ranges[axis][i] > 0)
-        table->sizing[axis].range[i] = props->width_ranges[axis][i];
-  table->row_labels_in_corner = props->row_labels_in_corner;
-
-  table->footnote_marker_superscripts = props->footnote_marker_superscripts;
-  table->show_numeric_markers = props->show_numeric_markers;
-
-  for (size_t i = 0; i < PIVOT_N_AREAS; i++)
-    {
-      area_style_uninit (&table->areas[i]);
-      area_style_copy (NULL, &table->areas[i], &props->areas[i]);
-    }
-  for (size_t i = 0; i < PIVOT_N_BORDERS; i++)
-    table->borders[i] = props->borders[i];
-
-  table->print_all_layers = props->print_all_layers;
-  table->paginate_layers = props->paginate_layers;
-  table->shrink_to_fit[TABLE_HORZ] = props->shrink_to_width;
-  table->shrink_to_fit[TABLE_VERT] = props->shrink_to_length;
-  table->top_continuation = props->top_continuation;
-  table->bottom_continuation = props->bottom_continuation;
-  table->continuation = xstrdup (props->continuation);
-  table->n_orphan_lines = props->n_orphan_lines;
 
   struct spvdx_visualization_extension *ve = v->visualization_extension;
   table->show_grid_lines = ve && ve->show_gridline;

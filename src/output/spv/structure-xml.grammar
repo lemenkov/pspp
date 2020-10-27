@@ -64,6 +64,8 @@ table
 => tableProperties? tableStructure
 
 tableProperties
+   :schemaLocation?		# Just for standalone .stt files.
+   :name?			# Just for standalone .stt files.
 => generalProperties footnoteProperties cellFormatProperties borderProperties printingProperties
 
 generalProperties

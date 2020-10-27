@@ -30,6 +30,8 @@ src_output_liboutput_la_SOURCES += \
 	src/output/spv/spv-output.h \
 	src/output/spv/spv-select.c \
 	src/output/spv/spv-select.h \
+	src/output/spv/spv-table-look.c \
+	src/output/spv/spv-table-look.h \
 	src/output/spv/spv-writer.c \
 	src/output/spv/spv-writer.h \
 	src/output/spv/spv.c \

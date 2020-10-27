@@ -80,6 +80,9 @@ for details of the available output options.
 By default, if the source is corrupt or otherwise cannot be processed,
 the destination is not written.  These option make \fBpspp\-output\fR
 write the output as best it can, even with errors.
+.IP \fB\-\-table\-look=\fIfile\fR
+Reads a table style from \fIfile\fR and applies it to all of the
+output tables.  The file should a TableLook \fB.stt\fR file.
 .SS "Input Selection Options"
 The \fBdir\fR and \fBconvert\fR commands, by default, operate on all
 of the objects in the source SPV file, except for objects that are not

@@ -35,6 +35,7 @@
 #include "output/spv/spv-legacy-data.h"
 #include "output/spv/spv-output.h"
 #include "output/spv/spv-select.h"
+#include "output/spv/spv-table-look.h"
 #include "output/spv/spv.h"
 #include "output/table-item.h"
 #include "output/text-item.h"
@@ -74,6 +75,9 @@ static bool raw;
 
 /* -f, --force: Keep output file even on error. */
 static bool force;
+
+/* --table-look: TableLook to replace table style for conversion. */
+static struct spv_table_look *table_look;
 
 /* Number of warnings issued. */
 static size_t n_warnings;
@@ -277,6 +281,9 @@ run_convert (int argc UNUSED, char **argv)
   char *err = spv_open (argv[1], &spv);
   if (err)
     error (1, 0, "%s", err);
+
+  if (table_look)
+    spv_item_set_table_look (spv_get_root (spv), table_look);
 
   output_engine_push ();
   output_set_filename (argv[1]);
@@ -746,6 +753,7 @@ main (int argc, char **argv)
 
   c->run (argc, argv);
 
+  spv_table_look_destroy (table_look);
   i18n_done ();
 
   return n_warnings ? EXIT_FAILURE : EXIT_SUCCESS;
@@ -873,6 +881,15 @@ parse_members (const char *arg)
 }
 
 static void
+parse_table_look (const char *arg)
+{
+  spv_table_look_destroy (table_look);
+  char *error_s = spv_table_look_read (arg, &table_look);
+  if (error_s)
+    error (1, 0, "%s", error_s);
+}
+
+static void
 parse_options (int argc, char *argv[])
 {
   for (;;)
@@ -892,6 +909,7 @@ parse_options (int argc, char *argv[])
           OPT_OR,
           OPT_SORT,
           OPT_RAW,
+          OPT_TABLE_LOOK,
         };
       static const struct option long_options[] =
         {
@@ -912,6 +930,7 @@ parse_options (int argc, char *argv[])
 
           /* "convert" command options. */
           { "force", no_argument, NULL, 'f' },
+          { "table-look", required_argument, NULL, OPT_TABLE_LOOK },
 
           /* "dump-light-table" command options. */
           { "sort", no_argument, NULL, OPT_SORT },
@@ -987,6 +1006,10 @@ parse_options (int argc, char *argv[])
           raw = true;
           break;
 
+        case OPT_TABLE_LOOK:
+          parse_table_look (optarg);
+          break;
+
         case 'f':
           force = true;
           break;
@@ -1048,6 +1071,7 @@ The following options override \"convert\" behavior:\n\
   -O format=FORMAT          set destination format to FORMAT\n\
   -O OPTION=VALUE           set output option\n\
   -f, --force               keep output file even given errors\n\
+  --table-look=FILE         override tables' style with TableLook from FILE\n\
 Other options:\n\
   --help              display this help and exit\n\
   --version           output version information and exit\n",

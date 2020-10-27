@@ -39,6 +39,7 @@
 #include "output/spv/spv-legacy-data.h"
 #include "output/spv/spv-legacy-decoder.h"
 #include "output/spv/spv-light-decoder.h"
+#include "output/spv/spv-table-look.h"
 #include "output/spv/structure-xml-parser.h"
 
 #include "gl/c-ctype.h"
@@ -259,7 +260,7 @@ spv_item_destroy (struct spv_item *item)
       free (item->children);
 
       pivot_table_unref (item->table);
-      spv_legacy_properties_destroy (item->legacy_properties);
+      spv_table_look_destroy (item->table_look);
       free (item->bin_member);
       free (item->xml_member);
       free (item->subtype);
@@ -827,7 +828,7 @@ pivot_table_open_legacy (struct spv_item *item)
   error = spvxml_context_finish (&ctx, &v->node_);
 
   if (!error)
-    error = decode_spvdx_table (v, item->subtype, item->legacy_properties,
+    error = decode_spvdx_table (v, item->subtype, item->table_look,
                                 &data, &item->table);
 
   if (error)
@@ -905,8 +906,10 @@ spv_decode_container (const struct spvsx_container *c,
       if (ts->path)
         {
           item->xml_member = ts->path ? xstrdup (ts->path->text) : NULL;
-          char *error = decode_spvsx_legacy_properties (
-            table->table_properties, &item->legacy_properties);
+          char *error = (table->table_properties
+                         ? spv_table_look_decode (table->table_properties,
+                                                  &item->table_look)
+                         : xstrdup ("Legacy table lacks tableProperties"));
           if (error)
             {
               spv_item_destroy (item);
@@ -1182,6 +1185,21 @@ spv_close (struct spv_reader *spv)
       page_setup_destroy (spv->page_setup);
       free (spv);
     }
+}
+
+void
+spv_item_set_table_look (struct spv_item *item,
+                         const struct spv_table_look *look)
+{
+  /* If this is a table, install the table look in it.
+
+     (We can't just set item->table_look because light tables ignore it and
+     legacy tables sometimes override it.) */
+  if (spv_item_is_table (item))
+    spv_table_look_install (look, spv_item_get_table (item));
+
+  for (size_t i = 0; i < item->n_children; i++)
+    spv_item_set_table_look (item->children[i], look);
 }
 
 char * WARN_UNUSED_RESULT

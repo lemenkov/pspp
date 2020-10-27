@@ -110,6 +110,10 @@ details of the available output options.
 By default, if the source is corrupt or otherwise cannot be processed,
 the destination is not written.  With @option{-F} or @option{--force},
 the destination is written as best it can, even with errors.
+
+@item --table-look=@var{file}
+Reads a table style from @var{file} and applies it to all of the
+output tables.  The file should a TableLook @file{.stt} file.
 @end table
 
 @node Input Selection Options
