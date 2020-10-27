@@ -19,10 +19,11 @@
 
 #include <gtk/gtk.h>
 
-#include <libpspp/copyleft.h>
-#include <libpspp/version.h>
-#include "help-menu.h"
-#include <libpspp/message.h>
+#include "libpspp/cast.h"
+#include "libpspp/copyleft.h"
+#include "libpspp/message.h"
+#include "libpspp/version.h"
+#include "ui/gui/help-menu.h"
 
 #include "gl/configmake.h"
 #include "gl/relocatable.h"
@@ -113,7 +114,7 @@ static gboolean open_windows_help (const gchar *helpuri,
   if (!result)
     goto error;
 
-  gchar *argv[] = {"wscript",vbsfilename,0};
+  gchar *argv[] = {CONST_CAST (gchar *, "wscript"), vbsfilename, 0};
 
   result = g_spawn_async (NULL, argv,
                           NULL, G_SPAWN_SEARCH_PATH,
@@ -132,8 +133,6 @@ void
 online_help (const char *page)
 {
   GError *htmlerr = NULL;
-  gchar helpapp[] = HTMLOPENAPP;
-  gchar *htmlargv[3] = {helpapp, 0, 0};
   gchar *htmlfilename = NULL;
   gchar *htmlfullname = NULL;
   gchar *htmluri = NULL;
@@ -177,22 +176,21 @@ online_help (const char *page)
                                htmlfilename);
   g_free (htmlfullname);
   g_free (htmlfilename);
-  htmlargv[1] = htmluri;
 
   /* The following **SHOULD** work but it does not on 28.5.2016
      g_app_info_launch_default_for_uri (htmluri, NULL, &err);
      osx: wine is started to launch the uri...
      windows: not so bad, but the first access does not work*/
 
-  if (! (
 #ifdef _WIN32
-         open_windows_help (htmluri, &htmlerr))
+  bool ok = open_windows_help (htmluri, &htmlerr);
 #else
-         g_spawn_async (NULL, htmlargv,
-                        NULL, G_SPAWN_SEARCH_PATH,
-                        NULL, NULL,   NULL,   &htmlerr))
+  gchar *htmlargv[3] = {CONST_CAST (char *, HTMLOPENAPP), htmluri, 0};
+  bool ok = g_spawn_async (NULL, htmlargv,
+                           NULL, G_SPAWN_SEARCH_PATH,
+                           NULL, NULL, NULL, &htmlerr);
 #endif
-)
+  if (!ok)
     {
       msg (ME, _("Cannot open via html: %s "
                  "with uri: %s "
