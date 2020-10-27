@@ -435,7 +435,7 @@ psppire_window_query_save (PsppireWindow *se)
 
   gtk_message_dialog_format_secondary_text (GTK_MESSAGE_DIALOG (dialog),
 					    _("If you don't save, changes from the last %ld seconds will be permanently lost."),
-					    timespan / G_TIME_SPAN_SECOND);
+					    (long int) (timespan / G_TIME_SPAN_SECOND));
 
   gtk_dialog_add_button  (GTK_DIALOG (dialog),
 			  _("Close _without saving"),
