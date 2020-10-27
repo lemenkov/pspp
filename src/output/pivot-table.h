@@ -683,7 +683,7 @@ struct pivot_value *pivot_value_new_variable (const struct variable *);
 /* Values from text strings. */
 struct pivot_value *pivot_value_new_text (const char *);
 struct pivot_value *pivot_value_new_text_format (const char *, ...)
-  PRINTF_FORMAT (1, 2);
+  __attribute__((format(gnu_printf, 1, 2)));
 
 struct pivot_value *pivot_value_new_user_text (const char *, size_t length);
 struct pivot_value *pivot_value_new_user_text_nocopy (char *);
