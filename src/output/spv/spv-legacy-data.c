@@ -360,7 +360,7 @@ spv_legacy_data_decode (const uint8_t *in, size_t size, struct spv_data *out)
       source->n_values = md->n_values;
       source->vars = xcalloc (md->n_variables, sizeof *source->vars);
 
-      size_t end;
+      size_t end = -1;
       error = decode_data (in, size, md->data_offset, source, &end);
       if (error)
         goto error;

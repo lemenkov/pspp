@@ -377,7 +377,7 @@ decode_spvlb_value (const struct pivot_table *table,
       break;
 
     default:
-      assert (0);
+      abort ();
     }
 
   if (vm)
