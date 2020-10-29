@@ -33,6 +33,8 @@ struct spvsx_table_properties;
 
 struct spv_table_look
   {
+    char *name;                 /* May be null. */
+
     /* General properties. */
     bool omit_empty;
     int width_ranges[TABLE_N_AXES][2];      /* In 1/96" units. */
@@ -63,8 +65,11 @@ char *spv_table_look_decode (const struct spvsx_table_properties *,
   WARN_UNUSED_RESULT;
 char *spv_table_look_read (const char *, struct spv_table_look **)
   WARN_UNUSED_RESULT;
+char *spv_table_look_write (const char *, const struct spv_table_look *)
+  WARN_UNUSED_RESULT;
 
 void spv_table_look_install (const struct spv_table_look *,
                              struct pivot_table *);
+struct spv_table_look *spv_table_look_get (const struct pivot_table *);
 
 #endif /* output/spv/spv-table-look.h */

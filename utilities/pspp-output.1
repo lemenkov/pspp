@@ -16,6 +16,8 @@ pspp\-output \- convert and operate on SPSS viewer (SPV) files
 .br
 \fBpspp\-output \fR[\fIoptions\fR] \fBconvert\fR \fIsource destination\fR
 .br
+\fBpspp\-output \fR[\fIoptions\fR] \fBget\-table\-look\fR \fIsource destination\fR
+.br
 \fBpspp\-output \-\-help\fR | \fB\-h\fR
 .br
 \fBpspp\-output \-\-version\fR | \fB\-v\fR
@@ -83,6 +85,18 @@ write the output as best it can, even with errors.
 .IP \fB\-\-table\-look=\fIfile\fR
 Reads a table style from \fIfile\fR and applies it to all of the
 output tables.  The file should a TableLook \fB.stt\fR file.
+.SS The \fBget\-table\-look\fR command
+When invoked as \fBpspp\-output get\-table\-look \fIsource
+destination\fR, \fBpspp\-output\fR reads SPV file \fIsource\fR,
+applies any selection options (as described under \fBInput Selection
+Options\fR below), picks the first table from the selected object,
+extracts the TableLook from that table, and writes it to
+\fIdestination\fR (typically with an \fB.stt\fR extension) in the
+TableLook XML format.
+.PP
+The user may use the TableLook file to change the style of tables in
+other files, by passing it to the \fB\-\-table\-look\fR option on the
+\fBconvert\fR command.
 .SS "Input Selection Options"
 The \fBdir\fR and \fBconvert\fR commands, by default, operate on all
 of the objects in the source SPV file, except for objects that are not

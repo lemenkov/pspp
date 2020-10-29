@@ -29,6 +29,8 @@ SPSS 15 and earlier versions instead use @file{.spo} files.
 
 @t{pspp-output} [@var{options}] @t{convert} @var{source} @var{destination}
 
+@t{pspp-output} [@var{options}] @t{get-table-look} @var{source} @var{destination}
+
 @t{pspp-output -@w{-}help}
 
 @t{pspp-output -@w{-}version}
@@ -42,6 +44,7 @@ developers may find useful for debugging.
 * The pspp-output detect Command::
 * The pspp-output dir Command::
 * The pspp-output convert Command::
+* The pspp-output get-table-look Command::
 * Input Selection Options::
 @end menu
 
@@ -115,6 +118,23 @@ the destination is written as best it can, even with errors.
 Reads a table style from @var{file} and applies it to all of the
 output tables.  The file should a TableLook @file{.stt} file.
 @end table
+
+@node The pspp-output get-table-look Command
+@section The @code{get-table-look} Command
+
+@display
+@t{pspp-output} [@var{options}] @t{get-table-look} @var{source} @var{destination}
+@end display
+
+Reads SPV file @var{source}, applies any selection options
+(@pxref{Input Selection Options}), picks the first table from the
+selected object, extracts the TableLook from that table, and writes it
+to @var{destination} (typically with an @file{.stt} extension) in the
+TableLook XML format.
+
+The user may use the TableLook file to change the style of tables in
+other files, by passing it to the @option{--table-look} option on the
+@code{convert} command.
 
 @node Input Selection Options
 @section Input Selection Options

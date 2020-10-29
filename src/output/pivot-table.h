@@ -388,7 +388,7 @@ struct pivot_table
     bool show_caption;
     bool omit_empty;       /* Omit empty rows and columns? */
     size_t *current_layer; /* axis[PIVOT_AXIS_LAYER].n_dimensions elements. */
-    char *table_look;
+    char *table_look;      /* May be NULL. */
     enum settings_value_show show_values;
     enum settings_value_show show_variables;
     struct fmt_spec weight_format;

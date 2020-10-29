@@ -325,6 +325,45 @@ run_convert (int argc UNUSED, char **argv)
     }
 }
 
+static const struct pivot_table *
+get_first_table (const struct spv_reader *spv)
+{
+  struct spv_item **items;
+  size_t n_items;
+  spv_select (spv, criteria, n_criteria, &items, &n_items);
+
+  for (size_t i = 0; i < n_items; i++)
+    if (spv_item_is_table (items[i]))
+      {
+        free (items);
+        return spv_item_get_table (items[i]);
+      }
+
+  free (items);
+  return NULL;
+}
+
+static void
+run_get_table_look (int argc UNUSED, char **argv)
+{
+  struct spv_reader *spv;
+  char *err = spv_open (argv[1], &spv);
+  if (err)
+    error (1, 0, "%s", err);
+
+  const struct pivot_table *table = get_first_table (spv);
+  if (!table)
+    error (1, 0, "%s: no tables found", argv[1]);
+
+  struct spv_table_look *look = spv_table_look_get (table);
+  err = spv_table_look_write (argv[2], look);
+  if (err)
+    error (1, 0, "%s", err);
+  spv_table_look_destroy (look);
+
+  spv_close (spv);
+}
+
 static void
 run_dump (int argc UNUSED, char **argv)
 {
@@ -672,6 +711,7 @@ static const struct command commands[] =
     { "detect", 1, 1, run_detect },
     { "dir", 1, 1, run_directory },
     { "convert", 2, 2, run_convert },
+    { "get-table-look", 2, 2, run_get_table_look },
 
     /* Undocumented commands. */
     { "dump", 1, 1, run_dump },
@@ -1053,6 +1093,7 @@ The following commands are available:\n\
   detect FILE            Detect whether FILE is an SPV file.\n\
   dir FILE               List tables and other items in FILE.\n\
   convert SOURCE DEST    Convert .spv SOURCE to DEST.\n\
+  get-table-look SOURCE DEST  Copies first selected TableLook into DEST\n\
 \n\
 Input selection options for \"dir\" and \"convert\":\n\
   --select=CLASS...   include only some kinds of objects\n\
