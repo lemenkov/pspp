@@ -202,15 +202,7 @@ $(EXAMPLE_TXTS) $(EXAMPLE_HTML): $(pspp_output)
 	$(AM_V_GEN)sed 's/@/@@/g' < $< > $@.tmp
 	$(AM_V_at)mv $@.tmp $@
 
-# Insert the link tag for the cascading style sheet.
-# But make sure these operations are idempotent.
-html-local:
-	for h in doc/pspp.html/*.html; do \
-		if grep -Fq '<link rel="stylesheet"' $$h; then continue; fi ; \
-		$(SED) -i -e '/^<\/head>/i \\\
-<link rel="stylesheet" href="pspp-manual.css">' $$h; \
-	done
-
+AM_MAKEINFOHTMLFLAGS = $(AM_MAKEINFOFLAGS) --css-ref=pspp-manual.css
 install-html-local: html-local
 	$(MKDIR_P) $(DESTDIR)$(prefix)/share/doc/pspp/pspp.html
 	$(INSTALL_DATA) ${top_srcdir}/doc/pspp-manual.css $(DESTDIR)$(prefix)/share/doc/pspp/pspp.html
