@@ -62,6 +62,7 @@ struct html_driver
     FILE *file;
     size_t chart_cnt;
 
+    bool bare;
     bool css;
     bool borders;
   };
@@ -88,36 +89,9 @@ opt (struct output_driver *d, struct string_map *options, const char *key,
   return driver_option_get (d, options, key, default_value);
 }
 
-static struct output_driver *
-html_create (struct file_handle *fh, enum settings_output_devices device_type,
-             struct string_map *o)
+static void
+put_header (struct html_driver *html)
 {
-  struct output_driver *d;
-  struct html_driver *html;
-
-  html = xzalloc (sizeof *html);
-  d = &html->driver;
-  output_driver_init (&html->driver, &html_driver_class, fh_get_file_name (fh),
-                      device_type);
-  html->css = parse_boolean (opt (d, o, "css", "true"));
-  html->borders = parse_boolean (opt (d, o, "borders", "true"));
-
-  html->handle = fh;
-  html->chart_file_name = parse_chart_file_name (opt (d, o, "charts",
-                                                      fh_get_file_name (fh)));
-  html->file = NULL;
-  html->chart_cnt = 1;
-#ifdef HAVE_CAIRO
-  parse_color (d, o, "background-color", "#FFFFFFFFFFFF", &html->bg);
-  parse_color (d, o, "foreground-color", "#000000000000", &html->fg);
-#endif
-  html->file = fn_open (html->handle, "w");
-  if (html->file == NULL)
-    {
-      msg_error (errno, _("error opening output file `%s'"), fh_get_file_name (html->handle));
-      goto error;
-    }
-
   fputs ("<!doctype html>\n", html->file);
   fprintf (html->file, "<html");
   char *ln = get_language ();
@@ -198,6 +172,41 @@ html_create (struct file_handle *fh, enum settings_output_devices device_type,
     }
   fputs ("</head>\n", html->file);
   fputs ("<body>\n", html->file);
+}
+
+static struct output_driver *
+html_create (struct file_handle *fh, enum settings_output_devices device_type,
+             struct string_map *o)
+{
+  struct output_driver *d;
+  struct html_driver *html;
+
+  html = xzalloc (sizeof *html);
+  d = &html->driver;
+  output_driver_init (&html->driver, &html_driver_class, fh_get_file_name (fh),
+                      device_type);
+  html->bare = parse_boolean (opt (d, o, "bare", "false"));
+  html->css = parse_boolean (opt (d, o, "css", "true"));
+  html->borders = parse_boolean (opt (d, o, "borders", "true"));
+
+  html->handle = fh;
+  html->chart_file_name = parse_chart_file_name (opt (d, o, "charts",
+                                                      fh_get_file_name (fh)));
+  html->file = NULL;
+  html->chart_cnt = 1;
+#ifdef HAVE_CAIRO
+  parse_color (d, o, "background-color", "#FFFFFFFFFFFF", &html->bg);
+  parse_color (d, o, "foreground-color", "#000000000000", &html->fg);
+#endif
+  html->file = fn_open (html->handle, "w");
+  if (html->file == NULL)
+    {
+      msg_error (errno, _("error opening output file `%s'"), fh_get_file_name (html->handle));
+      goto error;
+    }
+
+  if (!html->bare)
+    put_header (html);
 
   return d;
 
@@ -226,10 +235,11 @@ html_destroy (struct output_driver *driver)
 
   if (html->file != NULL)
     {
-      fprintf (html->file,
-               "</body>\n"
-               "</html>\n"
-               "<!-- end of file -->\n");
+      if (!html->bare)
+        fprintf (html->file,
+                 "</body>\n"
+                 "</html>\n"
+                 "<!-- end of file -->\n");
       fn_close (html->handle, html->file);
     }
   free (html->chart_file_name);

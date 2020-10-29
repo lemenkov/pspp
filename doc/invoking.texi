@@ -378,6 +378,11 @@ for details.
 Decorate the tables with borders.  If set to false, the tables produced
 will have no borders.  The default value is true.
 
+@item @option{-O bare=@var{boolean}}
+The HTML output driver ordinarily outputs a complete HTML document.
+If set to true, the driver instead outputs only what would normally be
+the contents of the @code{body} element.  The default value is false.
+
 @item @option{-O css=@var{boolean}}
 Use cascading style sheets.  Cascading style sheets give an improved appearance
 and can be used to produce pages which fit a certain web site's style.

@@ -194,8 +194,7 @@ $(EXAMPLE_TXTS) $(EXAMPLE_HTML): $(pspp_output)
 .spv.txt:
 	$(AM_V_GEN)utilities/pspp-output convert $< $@
 .spv.html:
-	$(AM_V_GEN)utilities/pspp-output convert $< - -O format=html \
-	| $(SED) -e '\%</body%,$$d' -e '0,/<body/d' > $@.tmp
+	$(AM_V_GEN)utilities/pspp-output convert $< - -O format=html -O bare=true > $@.tmp
 	$(AM_V_at)mv $@.tmp $@
 
 # Convert a text file into a Texinfo file.

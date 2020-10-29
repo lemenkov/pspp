@@ -17,6 +17,8 @@ Changes from 1.4.1 to 1.5.2:
    The new interface provides the user with a preview of the data to be imported
    and interactive methods to select the desired ranges.
 
+ * The html output driver has a new option "bare".
+
  * New features in pspp-output:
 
    - New --table-look and --nth-commands options.
