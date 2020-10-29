@@ -1079,6 +1079,7 @@ render_cell (const struct render_page *page, const int ofs[TABLE_N_AXES],
   bb[V][1] = clip[V][1] = ofs[V] + page->cp[V][cell->d[V][1] * 2];
 
   enum table_valign valign = cell->style->cell_style.valign;
+  int valign_offset = 0;
   if (valign != TABLE_VALIGN_TOP)
     {
       int height = page->params->measure_cell_height (
@@ -1088,7 +1089,7 @@ render_cell (const struct render_page *page, const int ofs[TABLE_N_AXES],
         {
           if (valign == TABLE_VALIGN_CENTER)
             extra /= 2;
-          bb[V][0] += extra;
+          valign_offset += extra;
         }
     }
 
@@ -1125,7 +1126,7 @@ render_cell (const struct render_page *page, const int ofs[TABLE_N_AXES],
                    ? 0
                    : (cell->d[V][0] - page->h[V][0]) & 1);
   page->params->draw_cell (page->params->aux, cell, color_idx,
-                           bb, spill, clip);
+                           bb, valign_offset, spill, clip);
 }
 
 /* Draws the cells of PAGE indicated in BB. */

@@ -99,9 +99,16 @@ struct render_params
     /* Draws CELL within bounding box BB.  CLIP is the same as BB (the common
        case) or a subregion enclosed by BB.  In the latter case only the part
        of the cell that lies within CLIP should actually be drawn, although BB
-       should used to determine the layout of the cell. */
+       should used to determine the layout of the cell.
+
+       The text in the cell needs to be vertically offset VALIGN_OFFSET units
+       from the top of the bounding box.  This handles vertical alignment with
+       the cell.  (The caller doesn't just reduce the bounding box size because
+       that would prevent the implementation from filling the entire cell with
+       the background color.)  The implementation must handle horizontal
+       alignment itself. */
     void (*draw_cell) (void *aux, const struct table_cell *cell, int color_idx,
-                       int bb[TABLE_N_AXES][2],
+                       int bb[TABLE_N_AXES][2], int valign_offset,
                        int spill[TABLE_N_AXES][2],
                        int clip[TABLE_N_AXES][2]);
 

@@ -193,7 +193,7 @@ static void xr_measure_cell_width (void *, const struct table_cell *,
 static int xr_measure_cell_height (void *, const struct table_cell *,
                                    int width);
 static void xr_draw_cell (void *, const struct table_cell *, int color_idx,
-                          int bb[TABLE_N_AXES][2],
+                          int bb[TABLE_N_AXES][2], int valign_offset,
                           int spill[TABLE_N_AXES][2],
                           int clip[TABLE_N_AXES][2]);
 static int xr_adjust_break (void *, const struct table_cell *,
@@ -1358,7 +1358,7 @@ static void xr_clip (struct xr_driver *, int clip[TABLE_N_AXES][2]);
 
 static void
 xr_draw_cell (void *xr_, const struct table_cell *cell, int color_idx,
-              int bb[TABLE_N_AXES][2],
+              int bb[TABLE_N_AXES][2], int valign_offset,
               int spill[TABLE_N_AXES][2],
               int clip[TABLE_N_AXES][2])
 {
@@ -1391,6 +1391,8 @@ xr_draw_cell (void *xr_, const struct table_cell *cell, int color_idx,
   cairo_save (xr->cairo);
   if (!xr->systemcolors)
     set_source_rgba (xr->cairo, &cell->style->font_style.fg[color_idx]);
+
+  bb[V][0] += valign_offset;
 
   for (int axis = 0; axis < TABLE_N_AXES; axis++)
     {
