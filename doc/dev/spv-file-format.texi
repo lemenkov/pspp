@@ -3660,6 +3660,7 @@ style
    :font-size?
    :font-style=(regular | italic)?
    :font-weight=(regular | bold)?
+   :font-underline=(none | underline)?
    :labelLocationVertical=(positive | negative | center)?
    :margin-bottom=dimension?
    :margin-left=dimension?

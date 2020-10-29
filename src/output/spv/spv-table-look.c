@@ -158,7 +158,9 @@ spv_table_look_decode (const struct spvsx_table_properties *in,
         a->font_style.bold = s->font_weight == SPVSX_FONT_WEIGHT_BOLD;
       if (s->font_style)
         a->font_style.italic = s->font_style == SPVSX_FONT_STYLE_ITALIC;
-      a->font_style.underline = false;
+      if (s->font_underline)
+        a->font_style.underline
+          = s->font_underline == SPVSX_FONT_UNDERLINE_UNDERLINE;
       if (s->color >= 0)
         a->font_style.fg[0] = optional_color (
           s->color, (struct cell_color) CELL_COLOR_BLACK);
