@@ -77,7 +77,7 @@ static bool raw;
 static bool force;
 
 /* --table-look: TableLook to replace table style for conversion. */
-static struct spv_table_look *table_look;
+static struct pivot_table_look *table_look;
 
 /* Number of warnings issued. */
 static size_t n_warnings;
@@ -355,11 +355,9 @@ run_get_table_look (int argc UNUSED, char **argv)
   if (!table)
     error (1, 0, "%s: no tables found", argv[1]);
 
-  struct spv_table_look *look = spv_table_look_get (table);
-  err = spv_table_look_write (argv[2], look);
+  err = spv_table_look_write (argv[2], pivot_table_get_look (table));
   if (err)
     error (1, 0, "%s", err);
-  spv_table_look_destroy (look);
 
   spv_close (spv);
 }
@@ -793,7 +791,11 @@ main (int argc, char **argv)
 
   c->run (argc, argv);
 
-  spv_table_look_destroy (table_look);
+  if (table_look)
+    {
+      pivot_table_look_uninit (table_look);
+      free (table_look);
+    }
   i18n_done ();
 
   return n_warnings ? EXIT_FAILURE : EXIT_SUCCESS;
@@ -923,7 +925,12 @@ parse_members (const char *arg)
 static void
 parse_table_look (const char *arg)
 {
-  spv_table_look_destroy (table_look);
+  if (table_look)
+    {
+      pivot_table_look_uninit (table_look);
+      free (table_look);
+    }
+
   char *error_s = spv_table_look_read (arg, &table_look);
   if (error_s)
     error (1, 0, "%s", error_s);

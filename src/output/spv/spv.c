@@ -260,7 +260,11 @@ spv_item_destroy (struct spv_item *item)
       free (item->children);
 
       pivot_table_unref (item->table);
-      spv_table_look_destroy (item->table_look);
+      if (item->table_look)
+        {
+          pivot_table_look_uninit (item->table_look);
+          free (item->table_look);
+        }
       free (item->bin_member);
       free (item->xml_member);
       free (item->subtype);
@@ -1189,14 +1193,14 @@ spv_close (struct spv_reader *spv)
 
 void
 spv_item_set_table_look (struct spv_item *item,
-                         const struct spv_table_look *look)
+                         const struct pivot_table_look *look)
 {
   /* If this is a table, install the table look in it.
 
      (We can't just set item->table_look because light tables ignore it and
      legacy tables sometimes override it.) */
   if (spv_item_is_table (item))
-    spv_table_look_install (look, spv_item_get_table (item));
+    pivot_table_set_look (spv_item_get_table (item), look);
 
   for (size_t i = 0; i < item->n_children; i++)
     spv_item_set_table_look (item->children[i], look);

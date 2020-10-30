@@ -193,6 +193,80 @@ pivot_table_sizing_uninit (struct pivot_table_sizing *sizing)
     }
 }
 
+/* Pivot table looks. */
+
+void
+pivot_table_look_init (struct pivot_table_look *look)
+{
+  memset (look, 0, sizeof *look);
+
+  look->omit_empty = false;
+  look->row_labels_in_corner = true;
+  look->width_ranges[TABLE_HORZ][0] = 50;
+  look->width_ranges[TABLE_HORZ][1] = 72;
+  look->width_ranges[TABLE_VERT][0] = 36;
+  look->width_ranges[TABLE_VERT][1] = 120;
+
+  for (size_t i = 0; i < PIVOT_N_AREAS; i++)
+    table_area_style_copy (NULL, &look->areas[i],
+                           pivot_area_get_default_style (i));
+
+  static const enum table_stroke default_strokes[PIVOT_N_BORDERS] = {
+    [PIVOT_BORDER_TITLE]        = TABLE_STROKE_NONE,
+    [PIVOT_BORDER_OUTER_LEFT]   = TABLE_STROKE_NONE,
+    [PIVOT_BORDER_OUTER_TOP]    = TABLE_STROKE_NONE,
+    [PIVOT_BORDER_OUTER_RIGHT]  = TABLE_STROKE_NONE,
+    [PIVOT_BORDER_OUTER_BOTTOM] = TABLE_STROKE_NONE,
+    [PIVOT_BORDER_INNER_LEFT]   = TABLE_STROKE_THICK,
+    [PIVOT_BORDER_INNER_TOP]    = TABLE_STROKE_THICK,
+    [PIVOT_BORDER_INNER_RIGHT]  = TABLE_STROKE_THICK,
+    [PIVOT_BORDER_INNER_BOTTOM] = TABLE_STROKE_THICK,
+    [PIVOT_BORDER_DATA_LEFT]    = TABLE_STROKE_THICK,
+    [PIVOT_BORDER_DATA_TOP]     = TABLE_STROKE_THICK,
+    [PIVOT_BORDER_DIM_ROW_HORZ] = TABLE_STROKE_SOLID,
+    [PIVOT_BORDER_DIM_ROW_VERT] = TABLE_STROKE_NONE,
+    [PIVOT_BORDER_DIM_COL_HORZ] = TABLE_STROKE_SOLID,
+    [PIVOT_BORDER_DIM_COL_VERT] = TABLE_STROKE_SOLID,
+    [PIVOT_BORDER_CAT_ROW_HORZ] = TABLE_STROKE_NONE,
+    [PIVOT_BORDER_CAT_ROW_VERT] = TABLE_STROKE_NONE,
+    [PIVOT_BORDER_CAT_COL_HORZ] = TABLE_STROKE_SOLID,
+    [PIVOT_BORDER_CAT_COL_VERT] = TABLE_STROKE_SOLID,
+  };
+  for (size_t i = 0; i < PIVOT_N_BORDERS; i++)
+    look->borders[i] = (struct table_border_style) {
+      .stroke = default_strokes[i],
+      .color = CELL_COLOR_BLACK,
+    };
+}
+
+void
+pivot_table_look_uninit (struct pivot_table_look *look)
+{
+  free (look->name);
+
+  for (size_t i = 0; i < PIVOT_N_AREAS; i++)
+    table_area_style_uninit (&look->areas[i]);
+
+  free (look->continuation);
+}
+
+static char *
+xstrdup_if_nonempty (const char *s)
+{
+  return s && s[0] ? xstrdup (s) : NULL;
+}
+
+void
+pivot_table_look_copy (struct pivot_table_look *dst,
+                       const struct pivot_table_look *src)
+{
+  *dst = *src;
+  dst->name = xstrdup_if_nonempty (src->name);
+  for (size_t i = 0; i < PIVOT_N_AREAS; i++)
+    table_area_style_copy (NULL, &dst->areas[i], &src->areas[i]);
+  dst->continuation = xstrdup_if_nonempty (src->continuation);
+}
+
 /* Axes. */
 
 /* Returns the name of AXIS_TYPE. */
@@ -707,44 +781,8 @@ pivot_table_create__ (struct pivot_value *title, const char *subtype)
   table->subtype = subtype ? pivot_value_new_text (subtype) : NULL;
   table->command_c = output_get_command_name ();
 
-  table->sizing[TABLE_HORZ].range[0] = 50;
-  table->sizing[TABLE_HORZ].range[1] = 72;
-  table->sizing[TABLE_VERT].range[0] = 36;
-  table->sizing[TABLE_VERT].range[1] = 120;
+  pivot_table_look_init (&table->look);
 
-  for (size_t i = 0; i < PIVOT_N_AREAS; i++)
-    table_area_style_copy (NULL, &table->areas[i],
-                           pivot_area_get_default_style (i));
-
-  /* Set default border styles. */
-  static const enum table_stroke default_strokes[PIVOT_N_BORDERS] = {
-    [PIVOT_BORDER_TITLE]        = TABLE_STROKE_NONE,
-    [PIVOT_BORDER_OUTER_LEFT]   = TABLE_STROKE_NONE,
-    [PIVOT_BORDER_OUTER_TOP]    = TABLE_STROKE_NONE,
-    [PIVOT_BORDER_OUTER_RIGHT]  = TABLE_STROKE_NONE,
-    [PIVOT_BORDER_OUTER_BOTTOM] = TABLE_STROKE_NONE,
-    [PIVOT_BORDER_INNER_LEFT]   = TABLE_STROKE_THICK,
-    [PIVOT_BORDER_INNER_TOP]    = TABLE_STROKE_THICK,
-    [PIVOT_BORDER_INNER_RIGHT]  = TABLE_STROKE_THICK,
-    [PIVOT_BORDER_INNER_BOTTOM] = TABLE_STROKE_THICK,
-    [PIVOT_BORDER_DATA_LEFT]    = TABLE_STROKE_THICK,
-    [PIVOT_BORDER_DATA_TOP]     = TABLE_STROKE_THICK,
-    [PIVOT_BORDER_DIM_ROW_HORZ] = TABLE_STROKE_SOLID,
-    [PIVOT_BORDER_DIM_ROW_VERT] = TABLE_STROKE_NONE,
-    [PIVOT_BORDER_DIM_COL_HORZ] = TABLE_STROKE_SOLID,
-    [PIVOT_BORDER_DIM_COL_VERT] = TABLE_STROKE_SOLID,
-    [PIVOT_BORDER_CAT_ROW_HORZ] = TABLE_STROKE_NONE,
-    [PIVOT_BORDER_CAT_ROW_VERT] = TABLE_STROKE_NONE,
-    [PIVOT_BORDER_CAT_COL_HORZ] = TABLE_STROKE_SOLID,
-    [PIVOT_BORDER_CAT_COL_VERT] = TABLE_STROKE_SOLID,
-  };
-  for (size_t i = 0; i < PIVOT_N_BORDERS; i++)
-    table->borders[i] = (struct table_border_style) {
-      .stroke = default_strokes[i],
-      .color = CELL_COLOR_BLACK,
-    };
-
-  table->row_labels_in_corner = true;
   hmap_init (&table->cells);
 
   return table;
@@ -793,12 +831,10 @@ pivot_table_unref (struct pivot_table *table)
     return;
 
   free (table->current_layer);
-  free (table->table_look);
+  pivot_table_look_uninit (&table->look);
 
   for (int i = 0; i < TABLE_N_AXES; i++)
     pivot_table_sizing_uninit (&table->sizing[i]);
-
-  free (table->continuation);
 
   for (int i = 0; i < sizeof table->ccs / sizeof *table->ccs; i++)
     free (table->ccs[i]);
@@ -819,9 +855,6 @@ pivot_table_unref (struct pivot_table *table)
   pivot_value_destroy (table->subtype);
   pivot_value_destroy (table->corner_text);
   pivot_value_destroy (table->caption);
-
-  for (size_t i = 0; i < PIVOT_N_AREAS; i++)
-    table_area_style_uninit (&table->areas[i]);
 
   for (size_t i = 0; i < table->n_dimensions; i++)
     pivot_dimension_destroy (table->dimensions[i]);
@@ -849,6 +882,20 @@ bool
 pivot_table_is_shared (const struct pivot_table *table)
 {
   return table->ref_cnt > 1;
+}
+
+const struct pivot_table_look *
+pivot_table_get_look (const struct pivot_table *table)
+{
+  return &table->look;
+}
+
+void
+pivot_table_set_look (struct pivot_table *table,
+                      const struct pivot_table_look *look)
+{
+  pivot_table_look_uninit (&table->look);
+  pivot_table_look_copy (&table->look, look);
 }
 
 /* Sets the format used for PIVOT_RC_COUNT cells to the one used for variable
@@ -1056,7 +1103,7 @@ pivot_table_create_footnote__ (struct pivot_table *table, size_t idx,
           struct pivot_footnote *f = xmalloc (sizeof *f);
           f->idx = table->n_footnotes;
           f->marker = pivot_make_default_footnote_marker (
-            f->idx, table->show_numeric_markers);
+            f->idx, table->look.show_numeric_markers);
           f->content = NULL;
           f->show = true;
 
@@ -1275,7 +1322,7 @@ pivot_table_assign_label_depth (struct pivot_table *table)
 {
   pivot_axis_assign_label_depth (table, PIVOT_AXIS_COLUMN, false);
   if (pivot_axis_assign_label_depth (
-        table, PIVOT_AXIS_ROW, (table->row_labels_in_corner
+        table, PIVOT_AXIS_ROW, (table->look.row_labels_in_corner
                                 && !table->corner_text))
       && table->axes[PIVOT_AXIS_COLUMN].label_depth == 0)
     table->axes[PIVOT_AXIS_COLUMN].label_depth = 1;
@@ -1436,11 +1483,13 @@ free_headings (const struct pivot_axis *axis, char ***headings)
 }
 
 static void
-pivot_table_sizing_dump (const char *name, const struct pivot_table_sizing *s,
+pivot_table_sizing_dump (const char *name,
+                         const int width_ranges[2],
+                         const struct pivot_table_sizing *s,
                          int indentation)
 {
   indent (indentation);
-  printf ("%ss: min=%d, max=%d\n", name, s->range[0], s->range[1]);
+  printf ("%ss: min=%d, max=%d\n", name, width_ranges[0], width_ranges[1]);
   if (s->n_widths)
     {
       indent (indentation + 1);
@@ -1484,7 +1533,7 @@ pivot_table_dump (const struct pivot_table *table, int indentation)
   pivot_table_dump_string (table->dataset, "dataset", indentation);
   pivot_table_dump_string (table->datafile, "datafile", indentation);
   pivot_table_dump_string (table->notes, "notes", indentation);
-  pivot_table_dump_string (table->table_look, "table-look", indentation);
+  pivot_table_dump_string (table->look.name, "table-look", indentation);
   if (table->date)
     {
       indent (indentation);
@@ -1497,20 +1546,21 @@ pivot_table_dump (const struct pivot_table *table, int indentation)
 
   indent (indentation);
   printf ("sizing:\n");
-  pivot_table_sizing_dump ("column", &table->sizing[TABLE_HORZ],
-                           indentation + 1);
-  pivot_table_sizing_dump ("row", &table->sizing[TABLE_VERT],
-                           indentation + 1);
+  pivot_table_sizing_dump ("column", table->look.width_ranges[TABLE_HORZ],
+                           &table->sizing[TABLE_HORZ], indentation + 1);
+  pivot_table_sizing_dump ("row", table->look.width_ranges[TABLE_VERT],
+                           &table->sizing[TABLE_VERT], indentation + 1);
 
   indent (indentation);
   printf ("areas:\n");
   for (enum pivot_area area = 0; area < PIVOT_N_AREAS; area++)
-    table_area_style_dump (area, &table->areas[area], indentation + 1);
+    table_area_style_dump (area, &table->look.areas[area], indentation + 1);
 
   indent (indentation);
   printf ("borders:\n");
   for (enum pivot_border border = 0; border < PIVOT_N_BORDERS; border++)
-    table_border_style_dump (border, &table->borders[border], indentation + 1);
+    table_border_style_dump (border, &table->look.borders[border],
+                             indentation + 1);
 
   for (size_t i = 0; i < table->n_dimensions; i++)
     pivot_dimension_dump (table->dimensions[i], indentation);
@@ -1579,9 +1629,9 @@ pivot_table_dump (const struct pivot_table *table, int indentation)
       putchar ('\n');
 
       size_t *column_enumeration = pivot_table_enumerate_axis (
-        table, PIVOT_AXIS_COLUMN, layer_indexes, table->omit_empty, NULL);
+        table, PIVOT_AXIS_COLUMN, layer_indexes, table->look.omit_empty, NULL);
       size_t *row_enumeration = pivot_table_enumerate_axis (
-        table, PIVOT_AXIS_ROW, layer_indexes, table->omit_empty, NULL);
+        table, PIVOT_AXIS_ROW, layer_indexes, table->look.omit_empty, NULL);
 
       char ***column_headings = compose_headings (
         &table->axes[PIVOT_AXIS_COLUMN], column_enumeration,
@@ -2119,12 +2169,6 @@ pivot_value_new_text_format (const char *format, ...)
     }
   };
   return value;
-}
-
-static char *
-xstrdup_if_nonempty (const char *s)
-{
-  return s && s[0] ? xstrdup (s) : NULL;
 }
 
 /* Returns a new pivot_value that represents X.

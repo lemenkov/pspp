@@ -154,9 +154,6 @@ void pivot_border_get_default_style (enum pivot_border,
    heights. */
 struct pivot_table_sizing
   {
-    /* Minimum and maximum column width, in 1/96" units. */
-    int range[2];
-
     /* Specific column widths, in 1/96" units. */
     int *widths;
     size_t n_widths;
@@ -372,34 +369,27 @@ void pivot_category_destroy (struct pivot_category *);
 
 bool pivot_result_class_change (const char *, const struct fmt_spec *);
 
-/* A pivot table.  See the top of this file for more information. */
-struct pivot_table
-  {
-    /* Reference count.  A pivot_table may be shared between multiple owners,
-       indicated by a reference count greater than 1.  When this is the case,
-       the pivot_table must not be modified. */
-    int ref_cnt;
+/* Styling for a pivot table.
 
-    /* Display settings. */
-    bool rotate_inner_column_labels;
-    bool rotate_outer_row_labels;
+   The division between this and the style information in struct pivot_table
+   seems fairly arbitrary.  The ultimate reason for the division is simply
+   because that's how SPSS documentation and file formats do it. */
+struct pivot_table_look
+  {
+    char *name;                 /* May be null. */
+
+    /* General properties. */
+    bool omit_empty;
     bool row_labels_in_corner;
-    bool show_grid_lines;
-    bool show_caption;
-    bool omit_empty;       /* Omit empty rows and columns? */
-    size_t *current_layer; /* axis[PIVOT_AXIS_LAYER].n_dimensions elements. */
-    char *table_look;      /* May be NULL. */
-    enum settings_value_show show_values;
-    enum settings_value_show show_variables;
-    struct fmt_spec weight_format;
+    int width_ranges[TABLE_N_AXES][2];      /* In 1/96" units. */
 
     /* Footnote display settings. */
     bool show_numeric_markers;
     bool footnote_marker_superscripts;
 
-    /* Column and row sizing and page breaks.
-       sizing[TABLE_HORZ] is for columns, sizing[TABLE_VERT] is for rows. */
-    struct pivot_table_sizing sizing[TABLE_N_AXES];
+    /* Styles. */
+    struct table_area_style areas[PIVOT_N_AREAS];
+    struct table_border_style borders[PIVOT_N_BORDERS];
 
     /* Print settings. */
     bool print_all_layers;
@@ -408,6 +398,37 @@ struct pivot_table
     bool top_continuation, bottom_continuation;
     char *continuation;
     size_t n_orphan_lines;
+  };
+
+void pivot_table_look_init (struct pivot_table_look *);
+void pivot_table_look_uninit (struct pivot_table_look *);
+void pivot_table_look_copy (struct pivot_table_look *,
+                            const struct pivot_table_look *);
+
+/* A pivot table.  See the top of this file for more information. */
+struct pivot_table
+  {
+    /* Reference count.  A pivot_table may be shared between multiple owners,
+       indicated by a reference count greater than 1.  When this is the case,
+       the pivot_table must not be modified. */
+    int ref_cnt;
+
+    /* Styling. */
+    struct pivot_table_look look;
+
+    /* Display settings. */
+    bool rotate_inner_column_labels;
+    bool rotate_outer_row_labels;
+    bool show_grid_lines;
+    bool show_caption;
+    size_t *current_layer; /* axis[PIVOT_AXIS_LAYER].n_dimensions elements. */
+    enum settings_value_show show_values;
+    enum settings_value_show show_variables;
+    struct fmt_spec weight_format;
+
+    /* Column and row sizing and page breaks.
+       sizing[TABLE_HORZ] is for columns, sizing[TABLE_VERT] is for rows. */
+    struct pivot_table_sizing sizing[TABLE_N_AXES];
 
     /* Format settings. */
     int epoch;
@@ -438,10 +459,6 @@ struct pivot_table
     struct pivot_value *caption;
     char *notes;
 
-    /* Styles. */
-    struct table_area_style areas[PIVOT_N_AREAS];
-    struct table_border_style borders[PIVOT_N_BORDERS];
-
     /* Dimensions. */
     struct pivot_dimension **dimensions;
     size_t n_dimensions;
@@ -462,6 +479,12 @@ struct pivot_table *pivot_table_create_for_text (struct pivot_value *title,
 struct pivot_table *pivot_table_ref (const struct pivot_table *);
 void pivot_table_unref (struct pivot_table *);
 bool pivot_table_is_shared (const struct pivot_table *);
+
+/* Styling. */
+const struct pivot_table_look *pivot_table_get_look (
+  const struct pivot_table *);
+void pivot_table_set_look (struct pivot_table *,
+                           const struct pivot_table_look *);
 
 /* Format of PIVOT_RC_COUNT cells. */
 void pivot_table_set_weight_var (struct pivot_table *,

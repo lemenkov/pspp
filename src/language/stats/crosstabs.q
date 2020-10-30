@@ -1247,7 +1247,7 @@ create_crosstab_table (struct crosstabs_proc *proc, struct crosstabulation *xt,
     pivot_value_new_user_text_nocopy (ds_steal_cstr (&title)),
     "Crosstabulation");
   pivot_table_set_weight_format (table, &proc->weight_format);
-  table->omit_empty = true;
+  table->look.omit_empty = true;
 
   struct pivot_dimension *statistics = pivot_dimension_create (
     table, PIVOT_AXIS_ROW, N_("Statistics"));
@@ -1287,7 +1287,7 @@ create_chisq_table (struct crosstabulation *xt)
 {
   struct pivot_table *chisq = pivot_table_create (N_("Chi-Square Tests"));
   pivot_table_set_weight_format (chisq, &xt->weight_format);
-  chisq->omit_empty = true;
+  chisq->look.omit_empty = true;
 
   pivot_dimension_create (
     chisq, PIVOT_AXIS_ROW, N_("Statistics"),
@@ -1318,7 +1318,7 @@ create_sym_table (struct crosstabulation *xt)
 {
   struct pivot_table *sym = pivot_table_create (N_("Symmetric Measures"));
   pivot_table_set_weight_format (sym, &xt->weight_format);
-  sym->omit_empty = true;
+  sym->look.omit_empty = true;
 
   pivot_dimension_create (
     sym, PIVOT_AXIS_COLUMN, N_("Values"),
@@ -1358,7 +1358,7 @@ create_risk_table (struct crosstabulation *xt,
 {
   struct pivot_table *risk = pivot_table_create (N_("Risk Estimate"));
   pivot_table_set_weight_format (risk, &xt->weight_format);
-  risk->omit_empty = true;
+  risk->look.omit_empty = true;
 
   struct pivot_dimension *values = pivot_dimension_create (
     risk, PIVOT_AXIS_COLUMN, N_("Values"),
@@ -1405,7 +1405,7 @@ create_direct_table (struct crosstabulation *xt)
 {
   struct pivot_table *direct = pivot_table_create (N_("Directional Measures"));
   pivot_table_set_weight_format (direct, &xt->weight_format);
-  direct->omit_empty = true;
+  direct->look.omit_empty = true;
 
   pivot_dimension_create (
     direct, PIVOT_AXIS_COLUMN, N_("Values"),

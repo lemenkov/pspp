@@ -25,6 +25,8 @@
 #include <string.h>
 
 #include "output/spv/structure-xml-parser.h"
+#include "output/pivot-table.h"
+#include "output/table.h"
 
 #include "gl/read-file.h"
 #include "gl/xalloc.h"
@@ -121,9 +123,9 @@ pivot_border_from_name (const char *name)
 
 char * WARN_UNUSED_RESULT
 spv_table_look_decode (const struct spvsx_table_properties *in,
-                       struct spv_table_look **outp)
+                       struct pivot_table_look **outp)
 {
-  struct spv_table_look *out = xzalloc (sizeof *out);
+  struct pivot_table_look *out = xzalloc (sizeof *out);
   char *error = NULL;
 
   out->name = in->name ? xstrdup (in->name) : NULL;
@@ -260,8 +262,8 @@ spv_table_look_decode (const struct spvsx_table_properties *in,
   const struct spvsx_printing_properties *pp = in->printing_properties;
   out->print_all_layers = pp->print_all_layers > 0;
   out->paginate_layers = pp->print_each_layer_on_separate_page > 0;
-  out->shrink_to_width = pp->rescale_wide_table_to_fit_page > 0;
-  out->shrink_to_length = pp->rescale_long_table_to_fit_page > 0;
+  out->shrink_to_fit[TABLE_HORZ] = pp->rescale_wide_table_to_fit_page > 0;
+  out->shrink_to_fit[TABLE_VERT] = pp->rescale_long_table_to_fit_page > 0;
   out->top_continuation = pp->continuation_text_at_top > 0;
   out->bottom_continuation = pp->continuation_text_at_bottom > 0;
   out->continuation = xstrdup (pp->continuation_text
@@ -272,13 +274,14 @@ spv_table_look_decode (const struct spvsx_table_properties *in,
   return NULL;
 
 error:
-  spv_table_look_destroy (out);
+  pivot_table_look_uninit (out);
+  free (out);
   *outp = NULL;
   return error;
 }
 
 char * WARN_UNUSED_RESULT
-spv_table_look_read (const char *filename, struct spv_table_look **outp)
+spv_table_look_read (const char *filename, struct pivot_table_look **outp)
 {
   *outp = NULL;
 
@@ -362,7 +365,7 @@ end_elem (xmlTextWriter *xml)
 }
 
 char * WARN_UNUSED_RESULT
-spv_table_look_write (const char *filename, const struct spv_table_look *look)
+spv_table_look_write (const char *filename, const struct pivot_table_look *look)
 {
   FILE *file = fopen (filename, "w");
   if (!file)
@@ -476,8 +479,10 @@ spv_table_look_write (const char *filename, const struct spv_table_look *look)
 
   start_elem (xml, "printingProperties");
   write_attr_bool (xml, "printAllLayers", look->print_all_layers);
-  write_attr_bool (xml, "rescaleLongTableToFitPage", look->shrink_to_length);
-  write_attr_bool (xml, "rescaleWideTableToFitPage", look->shrink_to_width);
+  write_attr_bool (xml, "rescaleLongTableToFitPage",
+                   look->shrink_to_fit[TABLE_HORZ]);
+  write_attr_bool (xml, "rescaleWideTableToFitPage",
+                   look->shrink_to_fit[TABLE_VERT]);
   write_attr_format (xml, "windowOrphanLines", "%zu", look->n_orphan_lines);
   if (look->continuation && look->continuation[0]
       && (look->top_continuation || look->bottom_continuation))
@@ -503,88 +508,4 @@ spv_table_look_write (const char *filename, const struct spv_table_look *look)
                       filename, strerror (errno));
 
   return NULL;
-}
-
-void
-spv_table_look_destroy (struct spv_table_look *look)
-{
-  if (look)
-    {
-      free (look->name);
-      for (size_t i = 0; i < PIVOT_N_AREAS; i++)
-        table_area_style_uninit (&look->areas[i]);
-      free (look->continuation);
-      free (look);
-    }
-}
-
-void
-spv_table_look_install (const struct spv_table_look *look,
-                        struct pivot_table *table)
-{
-  free (table->table_look);
-  if (look->name)
-    table->table_look = xstrdup (look->name);
-
-  table->omit_empty = look->omit_empty;
-
-  for (enum table_axis axis = 0; axis < TABLE_N_AXES; axis++)
-    for (int i = 0; i < 2; i++)
-      if (look->width_ranges[axis][i] > 0)
-        table->sizing[axis].range[i] = look->width_ranges[axis][i];
-  table->row_labels_in_corner = look->row_labels_in_corner;
-
-  table->footnote_marker_superscripts = look->footnote_marker_superscripts;
-  table->show_numeric_markers = look->show_numeric_markers;
-
-  for (size_t i = 0; i < PIVOT_N_AREAS; i++)
-    {
-      table_area_style_uninit (&table->areas[i]);
-      table_area_style_copy (NULL, &table->areas[i], &look->areas[i]);
-    }
-  for (size_t i = 0; i < PIVOT_N_BORDERS; i++)
-    table->borders[i] = look->borders[i];
-
-  table->print_all_layers = look->print_all_layers;
-  table->paginate_layers = look->paginate_layers;
-  table->shrink_to_fit[TABLE_HORZ] = look->shrink_to_width;
-  table->shrink_to_fit[TABLE_VERT] = look->shrink_to_length;
-  table->top_continuation = look->top_continuation;
-  table->bottom_continuation = look->bottom_continuation;
-  table->continuation = xstrdup (look->continuation);
-  table->n_orphan_lines = look->n_orphan_lines;
-}
-
-struct spv_table_look *
-spv_table_look_get (const struct pivot_table *table)
-{
-  struct spv_table_look *look = xzalloc (sizeof *look);
-
-  look->name = table->table_look ? xstrdup (table->table_look) : NULL;
-
-  look->omit_empty = table->omit_empty;
-
-  for (enum table_axis axis = 0; axis < TABLE_N_AXES; axis++)
-    for (int i = 0; i < 2; i++)
-      look->width_ranges[axis][i] = table->sizing[axis].range[i];
-  look->row_labels_in_corner = table->row_labels_in_corner;
-
-  look->footnote_marker_superscripts = table->footnote_marker_superscripts;
-  look->show_numeric_markers = table->show_numeric_markers;
-
-  for (size_t i = 0; i < PIVOT_N_AREAS; i++)
-    table_area_style_copy (NULL, &look->areas[i], &table->areas[i]);
-  for (size_t i = 0; i < PIVOT_N_BORDERS; i++)
-    look->borders[i] = table->borders[i];
-
-  look->print_all_layers = table->print_all_layers;
-  look->paginate_layers = table->paginate_layers;
-  look->shrink_to_width = table->shrink_to_fit[TABLE_HORZ];
-  look->shrink_to_length = table->shrink_to_fit[TABLE_VERT];
-  look->top_continuation = table->top_continuation;
-  look->bottom_continuation = table->bottom_continuation;
-  look->continuation = xstrdup (table->continuation);
-  look->n_orphan_lines = table->n_orphan_lines;
-
-  return look;
 }

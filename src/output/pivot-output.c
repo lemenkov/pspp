@@ -312,9 +312,9 @@ pivot_table_submit_layer (const struct pivot_table *pt,
 
   size_t body[TABLE_N_AXES];
   size_t *column_enumeration = pivot_table_enumerate_axis (
-    pt, PIVOT_AXIS_COLUMN, layer_indexes, pt->omit_empty, &body[H]);
+    pt, PIVOT_AXIS_COLUMN, layer_indexes, pt->look.omit_empty, &body[H]);
   size_t *row_enumeration = pivot_table_enumerate_axis (
-    pt, PIVOT_AXIS_ROW, layer_indexes, pt->omit_empty, &body[V]);
+    pt, PIVOT_AXIS_ROW, layer_indexes, pt->look.omit_empty, &body[V]);
 
   int stub[TABLE_N_AXES] = {
     [H] = pt->axes[PIVOT_AXIS_ROW].label_depth,
@@ -326,11 +326,11 @@ pivot_table_submit_layer (const struct pivot_table *pt,
 
   for (size_t i = 0; i < PIVOT_N_AREAS; i++)
     table->styles[i] = table_area_style_override (
-      table->container, &pt->areas[i], NULL, NULL);
+      table->container, &pt->look.areas[i], NULL, NULL);
 
   for (size_t i = 0; i < PIVOT_N_BORDERS; i++)
     {
-      const struct table_border_style *in = &pt->borders[i];
+      const struct table_border_style *in = &pt->look.borders[i];
       table->rule_colors[i] = pool_alloc (table->container,
                                           sizeof *table->rule_colors[i]);
       struct cell_color *out = table->rule_colors[i];
@@ -355,7 +355,7 @@ pivot_table_submit_layer (const struct pivot_table *pt,
       footnotes[i] = table_create_footnote (
         table, i, content, marker,
         table_area_style_override (table->container,
-                                   &pt->areas[PIVOT_AREA_FOOTER],
+                                   &pt->look.areas[PIVOT_AREA_FOOTER],
                                    pf->content->cell_style,
                                    pf->content->font_style));
       free (marker);
@@ -364,29 +364,29 @@ pivot_table_submit_layer (const struct pivot_table *pt,
 
   compose_headings (table,
                     &pt->axes[PIVOT_AXIS_COLUMN], H, &pt->axes[PIVOT_AXIS_ROW],
-                    pt->borders,
+                    pt->look.borders,
                     PIVOT_BORDER_DIM_COL_HORZ,
                     PIVOT_BORDER_DIM_COL_VERT,
                     PIVOT_BORDER_CAT_COL_HORZ,
                     PIVOT_BORDER_CAT_COL_VERT,
                     column_enumeration, body[H],
-                    &pt->areas[PIVOT_AREA_COLUMN_LABELS],
+                    &pt->look.areas[PIVOT_AREA_COLUMN_LABELS],
                     PIVOT_AREA_COLUMN_LABELS,
-                    &pt->areas[PIVOT_AREA_CORNER], footnotes,
+                    &pt->look.areas[PIVOT_AREA_CORNER], footnotes,
                     pt->show_values, pt->show_variables,
                     pt->rotate_inner_column_labels, false);
 
   compose_headings (table,
                     &pt->axes[PIVOT_AXIS_ROW], V, &pt->axes[PIVOT_AXIS_COLUMN],
-                    pt->borders,
+                    pt->look.borders,
                     PIVOT_BORDER_DIM_ROW_VERT,
                     PIVOT_BORDER_DIM_ROW_HORZ,
                     PIVOT_BORDER_CAT_ROW_VERT,
                     PIVOT_BORDER_CAT_ROW_HORZ,
                     row_enumeration, body[V],
-                    &pt->areas[PIVOT_AREA_ROW_LABELS],
+                    &pt->look.areas[PIVOT_AREA_ROW_LABELS],
                     PIVOT_AREA_ROW_LABELS,
-                    &pt->areas[PIVOT_AREA_CORNER], footnotes,
+                    &pt->look.areas[PIVOT_AREA_CORNER], footnotes,
                     pt->show_values, pt->show_variables,
                     false, pt->rotate_outer_row_labels);
 
@@ -405,7 +405,7 @@ pivot_table_submit_layer (const struct pivot_table *pt,
           fill_cell (table,
                      x + stub[H], y + stub[V],
                      x + stub[H], y + stub[V],
-                     &pt->areas[PIVOT_AREA_DATA], PIVOT_AREA_DATA,
+                     &pt->look.areas[PIVOT_AREA_DATA], PIVOT_AREA_DATA,
                      value, footnotes,
                      pt->show_values, pt->show_variables, false);
 
@@ -418,32 +418,32 @@ pivot_table_submit_layer (const struct pivot_table *pt,
 
   if (pt->corner_text && stub[H] && stub[V])
     fill_cell (table, 0, 0, stub[H] - 1, stub[V] - 1,
-               &pt->areas[PIVOT_AREA_CORNER], PIVOT_AREA_CORNER,
+               &pt->look.areas[PIVOT_AREA_CORNER], PIVOT_AREA_CORNER,
                pt->corner_text, footnotes,
                pt->show_values, pt->show_variables, false);
 
   if (table_nc (table) && table_nr (table))
     {
       table_hline (
-        table, get_table_rule (pt->borders, PIVOT_BORDER_INNER_TOP),
+        table, get_table_rule (pt->look.borders, PIVOT_BORDER_INNER_TOP),
         0, table_nc (table) - 1, 0);
       table_hline (
-        table, get_table_rule (pt->borders, PIVOT_BORDER_INNER_BOTTOM),
+        table, get_table_rule (pt->look.borders, PIVOT_BORDER_INNER_BOTTOM),
         0, table_nc (table) - 1, table_nr (table));
       table_vline (
-        table, get_table_rule (pt->borders, PIVOT_BORDER_INNER_LEFT),
+        table, get_table_rule (pt->look.borders, PIVOT_BORDER_INNER_LEFT),
         0, 0, table_nr (table) - 1);
       table_vline (
-        table, get_table_rule (pt->borders, PIVOT_BORDER_INNER_RIGHT),
+        table, get_table_rule (pt->look.borders, PIVOT_BORDER_INNER_RIGHT),
         table_nc (table), 0, table_nr (table) - 1);
 
       if (stub[V])
         table_hline (
-          table, get_table_rule (pt->borders, PIVOT_BORDER_DATA_TOP),
+          table, get_table_rule (pt->look.borders, PIVOT_BORDER_DATA_TOP),
           0, table_nc (table) - 1, stub[V]);
       if (stub[H])
         table_vline (
-          table, get_table_rule (pt->borders, PIVOT_BORDER_DATA_LEFT),
+          table, get_table_rule (pt->look.borders, PIVOT_BORDER_DATA_LEFT),
           stub[H], 0, table_nr (table) - 1);
 
     }
@@ -455,7 +455,7 @@ pivot_table_submit_layer (const struct pivot_table *pt,
   if (pt->title)
     {
       struct table_item_text *title = pivot_value_to_table_item_text (
-        pt->title, &pt->areas[PIVOT_AREA_TITLE], footnotes,
+        pt->title, &pt->look.areas[PIVOT_AREA_TITLE], footnotes,
         pt->show_values, pt->show_variables);
       table_item_set_title (ti, title);
       table_item_text_destroy (title);
@@ -472,7 +472,7 @@ pivot_table_submit_layer (const struct pivot_table *pt,
             {
               layers = xzalloc (sizeof *layers);
               layers->style = table_area_style_override (
-                NULL, &pt->areas[PIVOT_AREA_LAYERS], NULL, NULL);
+                NULL, &pt->look.areas[PIVOT_AREA_LAYERS], NULL, NULL);
               layers->layers = xnmalloc (layer_axis->n_dimensions,
                                          sizeof *layers->layers);
             }
@@ -504,7 +504,7 @@ pivot_table_submit_layer (const struct pivot_table *pt,
   if (pt->caption && pt->show_caption)
     {
       struct table_item_text *caption = pivot_value_to_table_item_text (
-        pt->caption, &pt->areas[PIVOT_AREA_CAPTION], footnotes,
+        pt->caption, &pt->look.areas[PIVOT_AREA_CAPTION], footnotes,
         pt->show_values, pt->show_variables);
       table_item_set_caption (ti, caption);
       table_item_text_destroy (caption);
@@ -525,13 +525,13 @@ pivot_table_submit (struct pivot_table *pt)
   if (pt->decimal == '.' || pt->decimal == ',')
     settings_set_decimal_char (pt->decimal);
 
-  if (pt->print_all_layers)
+  if (pt->look.print_all_layers)
     {
       size_t *layer_indexes;
 
       PIVOT_AXIS_FOR_EACH (layer_indexes, &pt->axes[PIVOT_AXIS_LAYER])
         {
-          if (pt->paginate_layers)
+          if (pt->look.paginate_layers)
             text_item_submit (text_item_create (TEXT_ITEM_EJECT_PAGE, ""));
           pivot_table_submit_layer (pt, layer_indexes);
         }

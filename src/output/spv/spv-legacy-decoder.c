@@ -671,12 +671,12 @@ decode_label_frame (struct pivot_table *table,
   if (lf->label->purpose == SPVDX_PURPOSE_TITLE)
     {
       target = &table->title;
-      area = &table->areas[PIVOT_AREA_TITLE];
+      area = &table->look.areas[PIVOT_AREA_TITLE];
     }
   else if (lf->label->purpose == SPVDX_PURPOSE_SUB_TITLE)
     {
       target = &table->caption;
-      area = &table->areas[PIVOT_AREA_CAPTION];
+      area = &table->look.areas[PIVOT_AREA_CAPTION];
     }
   else if (lf->label->purpose == SPVDX_PURPOSE_FOOTNOTE)
     {
@@ -684,7 +684,7 @@ decode_label_frame (struct pivot_table *table,
           && lf->label->text[0]->uses_reference != INT_MIN)
         {
           target = NULL;
-          area = &table->areas[PIVOT_AREA_FOOTER];
+          area = &table->look.areas[PIVOT_AREA_FOOTER];
         }
       else
         return NULL;
@@ -692,7 +692,7 @@ decode_label_frame (struct pivot_table *table,
   else if (lf->label->purpose == SPVDX_PURPOSE_LAYER)
     {
       target = NULL;
-      area = &table->areas[PIVOT_AREA_LAYERS];
+      area = &table->look.areas[PIVOT_AREA_LAYERS];
     }
   else
     return NULL;
@@ -1079,11 +1079,12 @@ add_dimension (struct spv_series **series, size_t n,
     = find_facet_level (v, base_facet_level + n);
   if (fl)
     {
-      struct table_area_style *area = (axis_type == PIVOT_AXIS_COLUMN
-                                       ? &table->areas[PIVOT_AREA_COLUMN_LABELS]
-                                       : axis_type == PIVOT_AXIS_ROW
-                                       ? &table->areas[PIVOT_AREA_ROW_LABELS]
-                                       : NULL);
+      struct table_area_style *area
+        = (axis_type == PIVOT_AXIS_COLUMN
+           ? &table->look.areas[PIVOT_AREA_COLUMN_LABELS]
+           : axis_type == PIVOT_AXIS_ROW
+           ? &table->look.areas[PIVOT_AREA_ROW_LABELS]
+           : NULL);
       if (area && fl->axis->label)
         {
           table_area_style_uninit (area);
@@ -1100,7 +1101,7 @@ add_dimension (struct spv_series **series, size_t n,
         decode_spvdx_style_incremental (
           fl2->axis->major_ticks->style,
           fl2->axis->major_ticks->tick_frame_style,
-          &table->areas[PIVOT_AREA_ROW_LABELS]);
+          &table->look.areas[PIVOT_AREA_ROW_LABELS]);
     }
 
   const struct spvdx_facet_level *fl3 = find_facet_level (v, base_facet_level);
@@ -1493,9 +1494,9 @@ decode_set_cell_properties__ (struct pivot_table *table,
       /* Sets alt_fg_color and alt_bg_color. */
       struct table_area_style area;
       decode_spvdx_style (labeling, graph, &area);
-      table->areas[PIVOT_AREA_DATA].font_style.fg[1]
+      table->look.areas[PIVOT_AREA_DATA].font_style.fg[1]
         = area.font_style.fg[0];
-      table->areas[PIVOT_AREA_DATA].font_style.bg[1]
+      table->look.areas[PIVOT_AREA_DATA].font_style.bg[1]
         = area.font_style.bg[0];
       table_area_style_uninit (&area);
     }
@@ -1531,8 +1532,8 @@ decode_set_cell_properties__ (struct pivot_table *table,
             {
               const struct table_area_style *base_area_style
                 = (c->dimension->axis_type == PIVOT_AXIS_ROW
-                   ? &table->areas[PIVOT_AREA_ROW_LABELS]
-                   : &table->areas[PIVOT_AREA_COLUMN_LABELS]);
+                   ? &table->look.areas[PIVOT_AREA_ROW_LABELS]
+                   : &table->look.areas[PIVOT_AREA_COLUMN_LABELS]);
               apply_styles_to_value (table, c->name, set_format,
                                      base_area_style, major_ticks, frame);
             }
@@ -1625,7 +1626,7 @@ decode_set_cell_properties__ (struct pivot_table *table,
                 goto skip;
             }
           apply_styles_to_value (table, cell->value, set_format,
-                                 &table->areas[PIVOT_AREA_DATA],
+                                 &table->look.areas[PIVOT_AREA_DATA],
                                  labeling, interval);
 
         skip: ;
@@ -1696,7 +1697,7 @@ decode_set_cell_properties (struct pivot_table *table, struct hmap *series_map,
               struct pivot_cell *cell;
               HMAP_FOR_EACH (cell, struct pivot_cell, hmap_node, &table->cells)
                 apply_styles_to_value (table, cell->value, set_format,
-                                       &table->areas[PIVOT_AREA_DATA],
+                                       &table->look.areas[PIVOT_AREA_DATA],
                                        NULL, NULL);
             }
         }
@@ -1755,11 +1756,11 @@ format_map_destroy (struct hmap *format_map)
 
 char * WARN_UNUSED_RESULT
 decode_spvdx_table (const struct spvdx_visualization *v, const char *subtype,
-                    const struct spv_table_look *look,
+                    const struct pivot_table_look *look,
                     struct spv_data *data, struct pivot_table **outp)
 {
   struct pivot_table *table = pivot_table_create__ (NULL, subtype);
-  spv_table_look_install (look, table);
+  pivot_table_set_look (table, look);
 
   struct hmap series_map = HMAP_INITIALIZER (series_map);
   struct hmap format_map = HMAP_INITIALIZER (format_map);
@@ -1777,8 +1778,8 @@ decode_spvdx_table (const struct spvdx_visualization *v, const char *subtype,
                   &min_width, &max_width, &n)
           && v->graph->cell_style->width[n] == '\0')
         {
-          table->sizing[TABLE_HORZ].range[0] = min_width;
-          table->sizing[TABLE_HORZ].range[1] = max_width;
+          table->look.width_ranges[TABLE_HORZ][0] = min_width;
+          table->look.width_ranges[TABLE_HORZ][1] = max_width;
         }
     }
 
@@ -1844,10 +1845,10 @@ decode_spvdx_table (const struct spvdx_visualization *v, const char *subtype,
       }
   if (v->graph->interval->labeling->style)
     {
-      table_area_style_uninit (&table->areas[PIVOT_AREA_DATA]);
+      table_area_style_uninit (&table->look.areas[PIVOT_AREA_DATA]);
       decode_spvdx_style (v->graph->interval->labeling->style,
                           v->graph->cell_style,
-                          &table->areas[PIVOT_AREA_DATA]);
+                          &table->look.areas[PIVOT_AREA_DATA]);
     }
 
   /* Decode all of the sourceVariable and derivedVariable  */
