@@ -144,7 +144,8 @@ spv_table_look_decode (const struct spvsx_table_properties *in,
     = (f->number_format == SPVSX_NUMBER_FORMAT_NUMERIC);
 
   for (int i = 0; i < PIVOT_N_AREAS; i++)
-    area_style_copy (NULL, &out->areas[i], pivot_area_get_default_style (i));
+    table_area_style_copy (NULL, &out->areas[i],
+                           pivot_area_get_default_style (i));
 
   const struct spvsx_cell_format_properties *cfp = in->cell_format_properties;
   for (size_t i = 0; i < cfp->n_cell_style; i++)
@@ -159,7 +160,7 @@ spv_table_look_decode (const struct spvsx_table_properties *in,
           goto error;
         }
 
-      struct area_style *a = &out->areas[area];
+      struct table_area_style *a = &out->areas[area];
       const struct spvsx_style *s = c->style;
       if (s->font_weight)
         a->font_style.bold = s->font_weight == SPVSX_FONT_WEIGHT_BOLD;
@@ -408,7 +409,7 @@ spv_table_look_write (const char *filename, const struct spv_table_look *look)
   start_elem (xml, "cellFormatProperties");
   for (enum pivot_area a = 0; a < PIVOT_N_AREAS; a++)
     {
-      const struct area_style *area = &look->areas[a];
+      const struct table_area_style *area = &look->areas[a];
       const struct font_style *font = &area->font_style;
       const struct cell_style *cell = &area->cell_style;
 
@@ -511,7 +512,7 @@ spv_table_look_destroy (struct spv_table_look *look)
     {
       free (look->name);
       for (size_t i = 0; i < PIVOT_N_AREAS; i++)
-        area_style_uninit (&look->areas[i]);
+        table_area_style_uninit (&look->areas[i]);
       free (look->continuation);
       free (look);
     }
@@ -538,8 +539,8 @@ spv_table_look_install (const struct spv_table_look *look,
 
   for (size_t i = 0; i < PIVOT_N_AREAS; i++)
     {
-      area_style_uninit (&table->areas[i]);
-      area_style_copy (NULL, &table->areas[i], &look->areas[i]);
+      table_area_style_uninit (&table->areas[i]);
+      table_area_style_copy (NULL, &table->areas[i], &look->areas[i]);
     }
   for (size_t i = 0; i < PIVOT_N_BORDERS; i++)
     table->borders[i] = look->borders[i];
@@ -572,7 +573,7 @@ spv_table_look_get (const struct pivot_table *table)
   look->show_numeric_markers = table->show_numeric_markers;
 
   for (size_t i = 0; i < PIVOT_N_AREAS; i++)
-    area_style_copy (NULL, &look->areas[i], &table->areas[i]);
+    table_area_style_copy (NULL, &look->areas[i], &table->areas[i]);
   for (size_t i = 0; i < PIVOT_N_BORDERS; i++)
     look->borders[i] = table->borders[i];
 

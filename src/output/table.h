@@ -157,22 +157,23 @@ void font_style_copy (struct pool *,
 void font_style_uninit (struct font_style *);
 void font_style_dump (const struct font_style *);
 
-struct area_style
+struct table_area_style
   {
     struct cell_style cell_style;
     struct font_style font_style;
   };
 
-#define AREA_STYLE_INITIALIZER { AREA_STYLE_INITIALIZER__ }
-#define AREA_STYLE_INITIALIZER__                \
+#define TABLE_AREA_STYLE_INITIALIZER { TABLE_AREA_STYLE_INITIALIZER__ }
+#define TABLE_AREA_STYLE_INITIALIZER__          \
        .cell_style = CELL_STYLE_INITIALIZER,    \
        .font_style = FONT_STYLE_INITIALIZER
 
-struct area_style *area_style_clone (struct pool *, const struct area_style *);
-void area_style_copy (struct pool *,
-                      struct area_style *, const struct area_style *);
-void area_style_uninit (struct area_style *);
-void area_style_free (struct area_style *);
+struct table_area_style *table_area_style_clone (
+  struct pool *, const struct table_area_style *);
+void table_area_style_copy (struct pool *, struct table_area_style *,
+                            const struct table_area_style *);
+void table_area_style_uninit (struct table_area_style *);
+void table_area_style_free (struct table_area_style *);
 
 /* Properties of a table cell. */
 enum
@@ -227,7 +228,7 @@ struct table
        points to a struct table_cell. */
     void **cc;                  /* Cell contents; void *[nr][nc]. */
     unsigned short *ct;		/* Cell types; unsigned short[nr][nc]. */
-    struct area_style *styles[8];
+    struct table_area_style *styles[8];
 
     /* Rules. */
     unsigned char *rh;		/* Horiz rules; unsigned char[nr+1][nc]. */
@@ -299,12 +300,12 @@ void table_add_superscript (struct table *, int x, int y,
 struct footnote *table_create_footnote (struct table *, size_t idx,
                                         const char *content,
                                         const char *marker,
-                                        struct area_style *);
+                                        struct table_area_style *);
 void table_add_footnote (struct table *, int x, int y,
                          const struct footnote *);
 
 void table_add_style (struct table *, int x, int y,
-                      const struct area_style *);
+                      const struct table_area_style *);
 
 bool table_cell_is_empty (const struct table *, int c, int r);
 

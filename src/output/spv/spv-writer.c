@@ -795,7 +795,7 @@ put_light_table (struct buf *buf, uint64_t table_id,
   /* Areas. */
   for (size_t i = 0; i < PIVOT_N_AREAS; i++)
     {
-      const struct area_style *a = &table->areas[i];
+      const struct table_area_style *a = &table->areas[i];
       put_byte (buf, i + 1);
       put_byte (buf, 0x31);
       put_string (buf, (a->font_style.typeface

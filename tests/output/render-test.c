@@ -413,13 +413,15 @@ read_table (FILE *stream)
               cs = 1;
             }
 
-#define S(H) { AREA_STYLE_INITIALIZER__, .cell_style.halign = H }
-          static const struct area_style left_style = S (TABLE_HALIGN_LEFT);
-          static const struct area_style right_style = S (TABLE_HALIGN_RIGHT);
-          static const struct area_style center_style
+#define S(H) { TABLE_AREA_STYLE_INITIALIZER__, .cell_style.halign = H }
+          static const struct table_area_style left_style
+            = S (TABLE_HALIGN_LEFT);
+          static const struct table_area_style right_style
+            = S (TABLE_HALIGN_RIGHT);
+          static const struct table_area_style center_style
             = S (TABLE_HALIGN_CENTER);
 
-          const struct area_style *style = &right_style;
+          const struct table_area_style *style = &right_style;
           while (*text && strchr ("<>^,@()|", *text))
             switch (*text++)
               {
@@ -478,7 +480,7 @@ read_table (FILE *stream)
                 char marker[2] = { 'a' + n_footnotes, '\0' };
                 struct footnote *f = table_create_footnote (
                   tab, n_footnotes, content, marker,
-                  area_style_clone (tab->container, &left_style));
+                  table_area_style_clone (tab->container, &left_style));
                 table_add_footnote (tab, c, r, f);
                 n_footnotes++;
               }

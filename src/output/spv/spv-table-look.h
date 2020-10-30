@@ -45,7 +45,7 @@ struct spv_table_look
     bool footnote_marker_superscripts;
 
     /* Styles. */
-    struct area_style areas[PIVOT_N_AREAS];
+    struct table_area_style areas[PIVOT_N_AREAS];
     struct table_border_style borders[PIVOT_N_BORDERS];
 
     /* Print settings. */

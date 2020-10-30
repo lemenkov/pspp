@@ -30,7 +30,7 @@ struct footnote
     size_t idx;
     char *content;
     char *marker;
-    struct area_style *style;
+    struct table_area_style *style;
   };
 
 /* A cell in a table. */
@@ -60,7 +60,7 @@ struct table_cell
     char *superscript;
     const struct footnote **footnotes;
     size_t n_footnotes;
-    const struct area_style *style;
+    const struct table_area_style *style;
   };
 
 void table_cell_format_footnote_markers (const struct table_cell *,

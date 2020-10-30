@@ -578,7 +578,7 @@ optional_px (double inches, int default_px)
 static void
 decode_spvdx_style_incremental (const struct spvdx_style *in,
                                 const struct spvdx_style *bg,
-                                struct area_style *out)
+                                struct table_area_style *out)
 {
   if (in && in->font_weight)
     out->font_style.bold = in->font_weight == SPVDX_FONT_WEIGHT_BOLD;
@@ -644,9 +644,9 @@ decode_spvdx_style_incremental (const struct spvdx_style *in,
 static void
 decode_spvdx_style (const struct spvdx_style *in,
                     const struct spvdx_style *bg,
-                    struct area_style *out)
+                    struct table_area_style *out)
 {
-  *out = (struct area_style) AREA_STYLE_INITIALIZER;
+  *out = (struct table_area_style) TABLE_AREA_STYLE_INITIALIZER;
   decode_spvdx_style_incremental (in, bg, out);
 }
 
@@ -667,7 +667,7 @@ decode_label_frame (struct pivot_table *table,
     return NULL;
 
   struct pivot_value **target;
-  struct area_style *area;
+  struct table_area_style *area;
   if (lf->label->purpose == SPVDX_PURPOSE_TITLE)
     {
       target = &table->title;
@@ -697,7 +697,7 @@ decode_label_frame (struct pivot_table *table,
   else
     return NULL;
 
-  area_style_uninit (area);
+  table_area_style_uninit (area);
   decode_spvdx_style (lf->label->style, lf->label->text_frame_style, area);
 
   if (target)
@@ -1079,14 +1079,14 @@ add_dimension (struct spv_series **series, size_t n,
     = find_facet_level (v, base_facet_level + n);
   if (fl)
     {
-      struct area_style *area = (axis_type == PIVOT_AXIS_COLUMN
-                                 ? &table->areas[PIVOT_AREA_COLUMN_LABELS]
-                                 : axis_type == PIVOT_AXIS_ROW
-                                 ? &table->areas[PIVOT_AREA_ROW_LABELS]
-                                 : NULL);
+      struct table_area_style *area = (axis_type == PIVOT_AXIS_COLUMN
+                                       ? &table->areas[PIVOT_AREA_COLUMN_LABELS]
+                                       : axis_type == PIVOT_AXIS_ROW
+                                       ? &table->areas[PIVOT_AREA_ROW_LABELS]
+                                       : NULL);
       if (area && fl->axis->label)
         {
-          area_style_uninit (area);
+          table_area_style_uninit (area);
           decode_spvdx_style (fl->axis->label->style,
                               fl->axis->label->text_frame_style, area);
         }
@@ -1409,7 +1409,7 @@ static void
 apply_styles_to_value (struct pivot_table *table,
                        struct pivot_value *value,
                        const struct spvdx_set_format *sf,
-                       const struct area_style *base_area_style,
+                       const struct table_area_style *base_area_style,
                        const struct spvdx_style *fg,
                        const struct spvdx_style *bg)
 {
@@ -1464,7 +1464,7 @@ apply_styles_to_value (struct pivot_table *table,
     }
   if (fg || bg)
     {
-      struct area_style area;
+      struct table_area_style area;
       pivot_value_get_style (
         value,
         value->font_style ? value->font_style : &base_area_style->font_style,
@@ -1472,7 +1472,7 @@ apply_styles_to_value (struct pivot_table *table,
         &area);
       decode_spvdx_style_incremental (fg, bg, &area);
       pivot_value_set_style (value, &area);
-      area_style_uninit (&area);
+      table_area_style_uninit (&area);
     }
 }
 
@@ -1491,13 +1491,13 @@ decode_set_cell_properties__ (struct pivot_table *table,
       && !interval && !major_ticks && !frame && !set_format)
     {
       /* Sets alt_fg_color and alt_bg_color. */
-      struct area_style area;
+      struct table_area_style area;
       decode_spvdx_style (labeling, graph, &area);
       table->areas[PIVOT_AREA_DATA].font_style.fg[1]
         = area.font_style.fg[0];
       table->areas[PIVOT_AREA_DATA].font_style.bg[1]
         = area.font_style.bg[0];
-      area_style_uninit (&area);
+      table_area_style_uninit (&area);
     }
   else if (graph
            && !labeling && !interval && !major_ticks && !frame && !set_format)
@@ -1529,7 +1529,7 @@ decode_set_cell_properties__ (struct pivot_table *table,
           struct pivot_category *c = find_category (s, include);
           if (c)
             {
-              const struct area_style *base_area_style
+              const struct table_area_style *base_area_style
                 = (c->dimension->axis_type == PIVOT_AXIS_ROW
                    ? &table->areas[PIVOT_AREA_ROW_LABELS]
                    : &table->areas[PIVOT_AREA_COLUMN_LABELS]);
@@ -1844,7 +1844,7 @@ decode_spvdx_table (const struct spvdx_visualization *v, const char *subtype,
       }
   if (v->graph->interval->labeling->style)
     {
-      area_style_uninit (&table->areas[PIVOT_AREA_DATA]);
+      table_area_style_uninit (&table->areas[PIVOT_AREA_DATA]);
       decode_spvdx_style (v->graph->interval->labeling->style,
                           v->graph->cell_style,
                           &table->areas[PIVOT_AREA_DATA]);

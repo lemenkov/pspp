@@ -67,10 +67,10 @@ table_is_shared (const struct table *table)
   return table->ref_cnt > 1;
 }
 
-struct area_style *
-area_style_clone (struct pool *pool, const struct area_style *old)
+struct table_area_style *
+table_area_style_clone (struct pool *pool, const struct table_area_style *old)
 {
-  struct area_style *new = pool_malloc (pool, sizeof *new);
+  struct table_area_style *new = pool_malloc (pool, sizeof *new);
   *new = *old;
   if (new->font_style.typeface)
     new->font_style.typeface = pool_strdup (pool, new->font_style.typeface);
@@ -78,7 +78,7 @@ area_style_clone (struct pool *pool, const struct area_style *old)
 }
 
 void
-area_style_free (struct area_style *style)
+table_area_style_free (struct table_area_style *style)
 {
   if (style)
     {
@@ -177,8 +177,8 @@ table_from_string (const char *text)
 {
   struct table *t = table_create (1, 1, 0, 0, 0, 0);
   t->styles[0] = pool_alloc (t->container, sizeof *t->styles[0]);
-  *t->styles[0] = (struct area_style) {
-    AREA_STYLE_INITIALIZER__,
+  *t->styles[0] = (struct table_area_style) {
+    TABLE_AREA_STYLE_INITIALIZER__,
     .cell_style.halign = TABLE_HALIGN_LEFT,
     .cell_style.valign = TABLE_VALIGN_TOP
   };
@@ -250,15 +250,15 @@ font_style_uninit (struct font_style *font)
 }
 
 void
-area_style_copy (struct pool *container,
-                 struct area_style *dst, const struct area_style *src)
+table_area_style_copy (struct pool *container, struct table_area_style *dst,
+                       const struct table_area_style *src)
 {
   font_style_copy (container, &dst->font_style, &src->font_style);
   dst->cell_style = src->cell_style;
 }
 
 void
-area_style_uninit (struct area_style *area)
+table_area_style_uninit (struct table_area_style *area)
 {
   if (area)
     font_style_uninit (&area->font_style);
@@ -667,7 +667,7 @@ table_add_superscript (struct table *table, int x, int y,
    footnote later, so it is important for the caller to remember it. */
 struct footnote *
 table_create_footnote (struct table *table, size_t idx, const char *content,
-                       const char *marker, struct area_style *style)
+                       const char *marker, struct table_area_style *style)
 {
   assert (style);
 
@@ -701,7 +701,7 @@ table_add_footnote (struct table *table, int x, int y,
    TABLE->container or have a lifetime that will outlive TABLE. */
 void
 table_add_style (struct table *table, int x, int y,
-                 const struct area_style *style)
+                 const struct table_area_style *style)
 {
   get_joined_cell (table, x, y)->style = style;
 }
@@ -758,7 +758,7 @@ table_get_cell (const struct table *t, int x, int y, struct table_cell *cell)
   unsigned short opt = t->ct[index];
   const void *cc = t->cc[index];
 
-  const struct area_style *style
+  const struct table_area_style *style
     = t->styles[(opt & TAB_STYLE_MASK) >> TAB_STYLE_SHIFT];
   if (opt & TAB_JOIN)
     {

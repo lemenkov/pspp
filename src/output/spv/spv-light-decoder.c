@@ -434,7 +434,7 @@ decode_spvlb_value (const struct pivot_table *table,
 }
 
 static char * WARN_UNUSED_RESULT
-decode_spvlb_area (const struct spvlb_area *in, struct area_style *out,
+decode_spvlb_area (const struct spvlb_area *in, struct table_area_style *out,
                    const char *encoding)
 {
   char *error;
@@ -467,7 +467,7 @@ decode_spvlb_area (const struct spvlb_area *in, struct area_style *out,
   if (error)
     return error;
 
-  *out = (struct area_style) {
+  *out = (struct table_area_style) {
     .font_style = {
       .bold = (in->style & 1) != 0,
       .italic = (in->style & 2) != 0,

@@ -53,19 +53,19 @@ find_category (const struct pivot_dimension *d, int dim_index,
   return NULL;
 }
 
-static struct area_style *
-area_style_override (struct pool *pool,
-                     const struct area_style *in,
-                     const struct cell_style *cell_,
-                     const struct font_style *font_)
+static struct table_area_style *
+table_area_style_override (struct pool *pool,
+                           const struct table_area_style *in,
+                           const struct cell_style *cell_,
+                           const struct font_style *font_)
 {
   const struct cell_style *cell = cell_ ? cell_ : &in->cell_style;
   const struct font_style *font = font_ ? font_ : &in->font_style;
 
-  struct area_style *out = (pool
+  struct table_area_style *out = (pool
                             ? pool_alloc (pool, sizeof *out)
                             : xmalloc (sizeof *out));
-  *out = (struct area_style) {
+  *out = (struct table_area_style) {
     .cell_style.halign = cell->halign,
     .cell_style.valign = cell->valign,
     .cell_style.decimal_offset = cell->decimal_offset,
@@ -91,7 +91,7 @@ area_style_override (struct pool *pool,
 
 static void
 fill_cell (struct table *t, int x1, int y1, int x2, int y2,
-           const struct area_style *style, int style_idx,
+           const struct table_area_style *style, int style_idx,
            const struct pivot_value *value, struct footnote **footnotes,
            enum settings_value_show show_values,
            enum settings_value_show show_variables,
@@ -118,9 +118,9 @@ fill_cell (struct table *t, int x1, int y1, int x2, int y2,
     {
       if (value->cell_style || value->font_style)
         table_add_style (t, x1, y1,
-                         area_style_override (t->container, style,
-                                              value->cell_style,
-                                              value->font_style));
+                         table_area_style_override (t->container, style,
+                                                    value->cell_style,
+                                                    value->font_style));
 
       for (size_t i = 0; i < value->n_footnotes; i++)
         {
@@ -137,7 +137,7 @@ fill_cell (struct table *t, int x1, int y1, int x2, int y2,
 
 static struct table_item_text *
 pivot_value_to_table_item_text (const struct pivot_value *value,
-                                const struct area_style *area,
+                                const struct table_area_style *area,
                                 struct footnote **footnotes,
                                 enum settings_value_show show_values,
                                 enum settings_value_show show_variables)
@@ -152,7 +152,7 @@ pivot_value_to_table_item_text (const struct pivot_value *value,
   *text = (struct table_item_text) {
     .content = ds_steal_cstr (&s),
     .footnotes = xnmalloc (value->n_footnotes, sizeof *text->footnotes),
-    .style = area_style_override (
+    .style = table_area_style_override (
       NULL, area, value->cell_style, value->font_style),
   };
 
@@ -195,8 +195,9 @@ compose_headings (struct table *t,
                   enum pivot_border cat_col_horz,
                   enum pivot_border cat_col_vert,
                   const size_t *column_enumeration, size_t n_columns,
-                  const struct area_style *label_style, int label_style_idx,
-                  const struct area_style *corner_style,
+                  const struct table_area_style *label_style,
+                  int label_style_idx,
+                  const struct table_area_style *corner_style,
                   struct footnote **footnotes,
                   enum settings_value_show show_values,
                   enum settings_value_show show_variables,
@@ -324,8 +325,8 @@ pivot_table_submit_layer (const struct pivot_table *pt,
                                       stub[H], 0, stub[V], 0);
 
   for (size_t i = 0; i < PIVOT_N_AREAS; i++)
-    table->styles[i] = area_style_override (table->container, &pt->areas[i],
-                                            NULL, NULL);
+    table->styles[i] = table_area_style_override (
+      table->container, &pt->areas[i], NULL, NULL);
 
   for (size_t i = 0; i < PIVOT_N_BORDERS; i++)
     {
@@ -353,9 +354,10 @@ pivot_table_submit_layer (const struct pivot_table *pt,
                                             pt->show_variables);
       footnotes[i] = table_create_footnote (
         table, i, content, marker,
-        area_style_override (table->container, &pt->areas[PIVOT_AREA_FOOTER],
-                             pf->content->cell_style,
-                             pf->content->font_style));
+        table_area_style_override (table->container,
+                                   &pt->areas[PIVOT_AREA_FOOTER],
+                                   pf->content->cell_style,
+                                   pf->content->font_style));
       free (marker);
       free (content);
     }
@@ -469,7 +471,7 @@ pivot_table_submit_layer (const struct pivot_table *pt,
           if (!layers)
             {
               layers = xzalloc (sizeof *layers);
-              layers->style = area_style_override (
+              layers->style = table_area_style_override (
                 NULL, &pt->areas[PIVOT_AREA_LAYERS], NULL, NULL);
               layers->layers = xnmalloc (layer_axis->n_dimensions,
                                          sizeof *layers->layers);

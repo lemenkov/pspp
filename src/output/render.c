@@ -1532,7 +1532,7 @@ add_text_page (struct render_pager *p, const struct table_item_text *t,
   for (size_t i = 0; i < t->n_footnotes; i++)
     table_add_footnote (tab, 0, 0, t->footnotes[i]);
   if (t->style)
-    tab->styles[0] = area_style_clone (tab->container, t->style);
+    tab->styles[0] = table_area_style_clone (tab->container, t->style);
   render_pager_add_table (p, tab, min_width);
 }
 
@@ -1552,7 +1552,7 @@ add_layers_page (struct render_pager *p,
         table_add_footnote (tab, 0, i, layer->footnotes[j]);
     }
   if (layers->style)
-    tab->styles[0] = area_style_clone (tab->container, layers->style);
+    tab->styles[0] = table_area_style_clone (tab->container, layers->style);
   render_pager_add_table (p, tab, min_width);
 }
 

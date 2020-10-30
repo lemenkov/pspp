@@ -121,9 +121,9 @@ text_item_to_table_item (struct text_item *text_item)
 {
   struct table *tab = table_create (1, 1, 0, 0, 0, 0);
 
-  struct area_style *style = pool_alloc (tab->container, sizeof *style);
-  *style = (struct area_style) { AREA_STYLE_INITIALIZER__,
-                                 .cell_style.halign = TABLE_HALIGN_LEFT };
+  struct table_area_style *style = pool_alloc (tab->container, sizeof *style);
+  *style = (struct table_area_style) { TABLE_AREA_STYLE_INITIALIZER__,
+                                       .cell_style.halign = TABLE_HALIGN_LEFT };
   struct font_style *font_style = &style->font_style;
   if (text_item->typeface)
     font_style->typeface = pool_strdup (tab->container, text_item->typeface);

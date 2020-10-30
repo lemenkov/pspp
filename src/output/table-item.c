@@ -52,7 +52,7 @@ table_item_text_clone (const struct table_item_text *old)
     .footnotes = xmemdup (old->footnotes,
                           old->n_footnotes * sizeof *old->footnotes),
     .n_footnotes = old->n_footnotes,
-    .style = area_style_clone (NULL, old->style),
+    .style = table_area_style_clone (NULL, old->style),
   };
   return new;
 }
@@ -64,7 +64,7 @@ table_item_text_destroy (struct table_item_text *text)
     {
       free (text->content);
       free (text->footnotes);
-      area_style_free (text->style);
+      table_area_style_free (text->style);
       free (text);
     }
 }
@@ -99,7 +99,7 @@ table_item_layers_clone (const struct table_item_layers *old)
   *new = (struct table_item_layers) {
     .layers = xnmalloc (old->n_layers, sizeof *new->layers),
     .n_layers = old->n_layers,
-    .style = area_style_clone (NULL, old->style),
+    .style = table_area_style_clone (NULL, old->style),
   };
   for (size_t i = 0; i < new->n_layers; i++)
     table_item_layer_copy (&new->layers[i], &old->layers[i]);
@@ -114,7 +114,7 @@ table_item_layers_destroy (struct table_item_layers *layers)
       for (size_t i = 0; i < layers->n_layers; i++)
         table_item_layer_uninit (&layers->layers[i]);
       free (layers->layers);
-      area_style_free (layers->style);
+      table_area_style_free (layers->style);
       free (layers);
     }
 }

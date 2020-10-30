@@ -35,7 +35,7 @@ struct table_item_text
     char *content;
     const struct footnote **footnotes;
     size_t n_footnotes;
-    struct area_style *style;
+    struct table_area_style *style;
   };
 
 struct table_item_text *table_item_text_create (const char *);
@@ -57,7 +57,7 @@ struct table_item_layers
   {
     struct table_item_layer *layers;
     size_t n_layers;
-    struct area_style *style;
+    struct table_area_style *style;
   };
 
 struct table_item_layers *table_item_layers_clone (

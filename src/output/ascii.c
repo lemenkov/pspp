@@ -941,7 +941,7 @@ ascii_test_write (struct output_driver *driver,
   if (!a->file)
     return;
 
-  struct area_style style = {
+  struct table_area_style style = {
     .cell_style.halign = TABLE_HALIGN_LEFT,
     .font_style.bold = bold,
     .font_style.underline = underline,

@@ -107,7 +107,7 @@ enum pivot_area
   };
 
 const char *pivot_area_to_string (enum pivot_area);
-const struct area_style *pivot_area_get_default_style (enum pivot_area);
+const struct table_area_style *pivot_area_get_default_style (enum pivot_area);
 
 /* Table borders for styling purposes. */
 enum pivot_border
@@ -439,7 +439,7 @@ struct pivot_table
     char *notes;
 
     /* Styles. */
-    struct area_style areas[PIVOT_N_AREAS];
+    struct table_area_style areas[PIVOT_N_AREAS];
     struct table_border_style borders[PIVOT_N_BORDERS];
 
     /* Dimensions. */
@@ -714,8 +714,9 @@ void pivot_value_destroy (struct pivot_value *);
 void pivot_value_get_style (struct pivot_value *,
                             const struct font_style *base_font_style,
                             const struct cell_style *base_cell_style,
-                            struct area_style *);
-void pivot_value_set_style (struct pivot_value *, const struct area_style *);
+                            struct table_area_style *);
+void pivot_value_set_style (struct pivot_value *,
+                            const struct table_area_style *);
 
 /* Template arguments. */
 struct pivot_argument

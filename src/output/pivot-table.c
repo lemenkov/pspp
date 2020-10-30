@@ -62,7 +62,7 @@ pivot_area_to_string (enum pivot_area area)
     }
 }
 
-const struct area_style *
+const struct table_area_style *
 pivot_area_get_default_style (enum pivot_area area)
 {
 #define STYLE(BOLD, H, V, L, R, T, B) {                         \
@@ -80,7 +80,7 @@ pivot_area_get_default_style (enum pivot_area area)
       .typeface = (char *) "Sans Serif",                        \
     },                                                          \
   }
-  static const struct area_style default_area_styles[PIVOT_N_AREAS] = {
+  static const struct table_area_style default_area_styles[PIVOT_N_AREAS] = {
     [PIVOT_AREA_TITLE]         = STYLE(true, CENTER, CENTER,  8,11,1,8),
     [PIVOT_AREA_CAPTION]       = STYLE(false, LEFT,   TOP,     8,11,1,1),
     [PIVOT_AREA_FOOTER]        = STYLE(false, LEFT,   TOP,    11, 8,2,3),
@@ -713,7 +713,8 @@ pivot_table_create__ (struct pivot_value *title, const char *subtype)
   table->sizing[TABLE_VERT].range[1] = 120;
 
   for (size_t i = 0; i < PIVOT_N_AREAS; i++)
-    area_style_copy (NULL, &table->areas[i], pivot_area_get_default_style (i));
+    table_area_style_copy (NULL, &table->areas[i],
+                           pivot_area_get_default_style (i));
 
   /* Set default border styles. */
   static const enum table_stroke default_strokes[PIVOT_N_BORDERS] = {
@@ -820,7 +821,7 @@ pivot_table_unref (struct pivot_table *table)
   pivot_value_destroy (table->caption);
 
   for (size_t i = 0; i < PIVOT_N_AREAS; i++)
-    area_style_uninit (&table->areas[i]);
+    table_area_style_uninit (&table->areas[i]);
 
   for (size_t i = 0; i < table->n_dimensions; i++)
     pivot_dimension_destroy (table->dimensions[i]);
@@ -1355,8 +1356,8 @@ pivot_dimension_dump (const struct pivot_dimension *d, int indentation)
 }
 
 static void
-area_style_dump (enum pivot_area area, const struct area_style *a,
-                 int indentation)
+table_area_style_dump (enum pivot_area area, const struct table_area_style *a,
+                       int indentation)
 {
   indent (indentation);
   printf ("%s: ", pivot_area_to_string (area));
@@ -1504,7 +1505,7 @@ pivot_table_dump (const struct pivot_table *table, int indentation)
   indent (indentation);
   printf ("areas:\n");
   for (enum pivot_area area = 0; area < PIVOT_N_AREAS; area++)
-    area_style_dump (area, &table->areas[area], indentation + 1);
+    table_area_style_dump (area, &table->areas[area], indentation + 1);
 
   indent (indentation);
   printf ("borders:\n");
@@ -1988,7 +1989,7 @@ void
 pivot_value_get_style (struct pivot_value *value,
                        const struct font_style *base_font_style,
                        const struct cell_style *base_cell_style,
-                       struct area_style *area)
+                       struct table_area_style *area)
 {
   font_style_copy (NULL, &area->font_style, (value->font_style
                                              ? value->font_style
@@ -2001,7 +2002,7 @@ pivot_value_get_style (struct pivot_value *value,
 /* Copies AREA into VALUE's style. */
 void
 pivot_value_set_style (struct pivot_value *value,
-                       const struct area_style *area)
+                       const struct table_area_style *area)
 {
   if (value->font_style)
     font_style_uninit (value->font_style);
