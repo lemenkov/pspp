@@ -1,5 +1,5 @@
 dnl PSPP - a program for statistical analysis.
-dnl Copyright (C) 2017 Free Software Foundation, Inc.
+dnl Copyright (C) 2017, 2020 Free Software Foundation, Inc.
 dnl
 dnl This program is free software: you can redistribute it and/or modify
 dnl it under the terms of the GNU General Public License as published by
@@ -443,7 +443,7 @@ ONEWAY x y z by g
 AT_CHECK([pspp -o pspp.csv -o pspp.txt multivar.sps])
 
 dnl Some machines return 3.88 instead of 3.87 below (see bug #31611).
-AT_CHECK([sed 's/^,Within Groups,3.88/,Within Groups,3.87/' pspp.csv], [0],
+AT_CHECK([sed -e 's/^,Within Groups,3.88/,Within Groups,3.87/' pspp.csv], [0],
   [Table: Descriptives
 ,,N,Mean,Std. Deviation,Std. Error,95% Confidence Interval for Mean,,Minimum,Maximum
 ,g,,,,,Lower Bound,Upper Bound,,
@@ -489,17 +489,17 @@ Contrast,10.00,20.00,30.00,40.00
 
 Table: Contrast Tests
 ,,Contrast,Value of Contrast,Std. Error,t,df,Sig. (2-tailed)
-x,Assume equal variances,1,-7.40,6.67,1.11,20.00,.280
+x,Assume equal variances,1,-7.40,6.67,-1.11,20.00,.280
 ,,2,6.26,12.32,.51,20.00,.617
-,Does not assume equal variances,1,-7.40,10.04,-.74,4.53,1.503
+,Does not assume equal variances,1,-7.40,10.04,-.74,4.53,.497
 ,,2,6.26,5.85,1.07,2.87,.366
-y,Assume equal variances,1,-6.88,1.16,5.94,20.00,.000
+y,Assume equal variances,1,-6.88,1.16,-5.94,20.00,.000
 ,,2,3.50,2.14,1.63,20.00,.118
-,Does not assume equal variances,1,-6.88,.91,-7.51,7.00,2.000
+,Does not assume equal variances,1,-6.88,.91,-7.51,7.00,.000
 ,,2,3.50,1.32,2.65,7.00,.033
-z,Assume equal variances,1,-9.70,8.07,1.20,20.00,.243
+z,Assume equal variances,1,-9.70,8.07,-1.20,20.00,.243
 ,,2,11.73,14.91,.79,20.00,.440
-,Does not assume equal variances,1,-9.70,9.57,-1.01,3.64,1.627
+,Does not assume equal variances,1,-9.70,9.57,-1.01,3.64,.373
 ,,2,11.73,14.53,.81,9.88,.438
 ])
 
@@ -917,24 +917,24 @@ Contrast,.00,1.00
 
 Table: Contrast Tests
 ,,Contrast,Value of Contrast,Std. Error,t,df,Sig. (2-tailed)
-height,Assume equal variances,1,-222.27,20.23,10.99,6.00,.000
-,,2,-666.80,60.68,10.99,6.00,.000
-,,3,-2000.40,182.03,10.99,6.00,.000
-,Does not assume equal variances,1,-222.27,27.67,-8.03,2.00,1.985
-,,2,-666.80,83.02,-8.03,2.00,1.985
-,,3,-2000.40,249.07,-8.03,2.00,1.985
-weight,Assume equal variances,1,-36.16,2.74,13.21,6.00,.000
-,,2,-108.48,8.21,13.21,6.00,.000
-,,3,-325.44,24.63,13.21,6.00,.000
-,Does not assume equal variances,1,-36.16,2.19,-16.48,5.42,2.000
-,,2,-108.48,6.58,-16.48,5.42,2.000
-,,3,-325.44,19.75,-16.48,5.42,2.000
-temperature,Assume equal variances,1,-.98,2.74,.36,6.00,.733
-,,2,-2.94,8.22,.36,6.00,.733
-,,3,-8.83,24.67,.36,6.00,.733
-,Does not assume equal variances,1,-.98,2.07,-.47,4.19,1.340
-,,2,-2.94,6.22,-.47,4.19,1.340
-,,3,-8.83,18.66,-.47,4.19,1.340
+height,Assume equal variances,1,-222.27,20.23,-10.99,6.00,.000
+,,2,-666.80,60.68,-10.99,6.00,.000
+,,3,-2000.40,182.03,-10.99,6.00,.000
+,Does not assume equal variances,1,-222.27,27.67,-8.03,2.00,.015
+,,2,-666.80,83.02,-8.03,2.00,.015
+,,3,-2000.40,249.07,-8.03,2.00,.015
+weight,Assume equal variances,1,-36.16,2.74,-13.21,6.00,.000
+,,2,-108.48,8.21,-13.21,6.00,.000
+,,3,-325.44,24.63,-13.21,6.00,.000
+,Does not assume equal variances,1,-36.16,2.19,-16.48,5.42,.000
+,,2,-108.48,6.58,-16.48,5.42,.000
+,,3,-325.44,19.75,-16.48,5.42,.000
+temperature,Assume equal variances,1,-.98,2.74,-.36,6.00,.733
+,,2,-2.94,8.22,-.36,6.00,.733
+,,3,-8.83,24.67,-.36,6.00,.733
+,Does not assume equal variances,1,-.98,2.07,-.47,4.19,.660
+,,2,-2.94,6.22,-.47,4.19,.660
+,,3,-8.83,18.66,-.47,4.19,.660
 ])
 AT_CLEANUP
 
@@ -1073,5 +1073,73 @@ ONEWAY /VARIABLES= height weight temperature BY sex
 ])
 
 AT_CHECK([pspp -O format=csv crash6.sps], [1], [ignore])
+
+AT_CLEANUP
+
+
+AT_SETUP([ONEWAY contrast bug])
+
+AT_KEYWORDS([categorical categoricals])
+
+
+
+dnl this example comes from: https://case.truman.edu/files/2015/06/SPSS-One-Way-ANOVA.pdf
+AT_DATA([contrasts.sps],
+[
+SET FORMAT=F10.3.
+
+DATA LIST notable LIST /relieftime drugs *.
+begin data.
+12 0
+15 0
+18 0
+16 0
+20 0
+20 1
+21 1
+22 1
+19 1
+20 1
+17 2
+16 2
+19 2
+15 2
+19 2
+14 3
+13 3
+12 3
+14 3
+11 3
+end data.
+
+ONEWAY relieftime by drugs
+	/CONTRAST 3 -1 -1 -1
+	/CONTRAST 0 2 -1 -1
+        /CONTRAST 0 0 1 -1
+	.
+])
+
+AT_CHECK([pspp -O format=csv contrasts.sps], [0], [Table: ANOVA
+,,Sum of Squares,df,Mean Square,F,Sig.
+relieftime,Between Groups,146.950,3,48.983,12.723,.000
+,Within Groups,61.600,16,3.850,,
+,Total,208.550,19,,,
+
+Table: Contrast Coefficients
+,drugs,,,
+Contrast,.000,1.000,2.000,3.000
+1,3,-1,-1,-1
+2,0,2,-1,-1
+3,0,0,1,-1
+
+Table: Contrast Tests
+,,Contrast,Value of Contrast,Std. Error,t,df,Sig. (2-tailed)
+relieftime,Assume equal variances,1,-1.800,3.040,-.592,16.000,.562
+,,2,10.800,2.149,5.025,16.000,.000
+,,3,4.400,1.241,3.546,16.000,.003
+,Does not assume equal variances,1,-1.800,4.219,-.427,4.611,.689
+,,2,10.800,1.421,7.599,10.158,.000
+,,3,4.400,.990,4.445,7.315,.003
+])
 
 AT_CLEANUP

@@ -6,6 +6,9 @@ Please send PSPP bug reports to bug-gnu-pspp@gnu.org.
 
 Changes from 1.4.1 to 1.5.2:
 
+ * An error in the displayed signficance of oneway anova
+   contrasts tests has been corrected.
+
  * PSPP can now write its results directly to a TeX source file.
 
  * Added Drag-N-Drop in output view.

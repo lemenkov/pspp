@@ -1,5 +1,6 @@
 /* PSPP - a program for statistical analysis.
-   Copyright (C) 1997-9, 2000, 2007, 2009, 2010, 2011, 2012, 2013, 2014 Free Software Foundation, Inc.
+   Copyright (C) 1997-9, 2000, 2007, 2009, 2010, 2011, 2012, 2013, 2014,
+   2020 Free Software Foundation, Inc.
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -1316,11 +1317,9 @@ show_contrast_tests (const struct oneway_spec *cmd, const struct oneway_workspac
 	  df_numerator = pow2 (df_numerator);
 
 	  double std_error_contrast = sqrt (pvw->mse * coef_msq);
-	  double T = fabs (contrast_value / std_error_contrast);
+	  double T = contrast_value / std_error_contrast;
 	  double T_ne = contrast_value / sec_vneq;
 	  double df_ne = df_numerator / df_denominator;
-          double p_ne = gsl_cdf_tdist_P (T_ne, df_ne);
-          double q_ne = gsl_cdf_tdist_Q (T_ne, df_ne);
 
           struct entry
             {
@@ -1335,13 +1334,13 @@ show_contrast_tests (const struct oneway_spec *cmd, const struct oneway_workspac
               { 1, 0, std_error_contrast },
               { 2, 0, T },
               { 3, 0, df },
-              { 4, 0, 2 * gsl_cdf_tdist_Q (T, df) },
+              { 4, 0, 2 * gsl_cdf_tdist_Q (fabs(T), df) },
               /* Do not assume equal. */
               { 0, 1, contrast_value },
               { 1, 1, sec_vneq },
               { 2, 1, T_ne },
               { 3, 1, df_ne },
-              { 4, 1, 2 * (T > 0 ? q_ne : p_ne) },
+              { 4, 1, 2 * gsl_cdf_tdist_Q (fabs(T_ne), df_ne) },
             };
 
           for (size_t i = 0; i < sizeof entries / sizeof *entries; i++)
