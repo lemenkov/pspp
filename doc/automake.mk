@@ -192,13 +192,11 @@ $(EXAMPLE_TXTS) $(EXAMPLE_HTML): $(pspp_output)
 .spv.txt:
 	$(AM_V_GEN)utilities/pspp-output convert $< $@
 .spv.html:
-	$(AM_V_GEN)utilities/pspp-output convert $< - -O format=html -O bare=true > $@.tmp
-	$(AM_V_at)mv $@.tmp $@
+	$(AM_V_GEN)utilities/pspp-output convert $< $@ -O format=html -O bare=true
 
 # Convert a text file into a Texinfo file.
 .txt.texi:
-	$(AM_V_GEN)sed 's/@/@@/g' < $< > $@.tmp
-	$(AM_V_at)mv $@.tmp $@
+	$(AM_V_GEN)$(SED) -e 's/@/@@/g' $< > $@
 
 AM_MAKEINFOHTMLFLAGS = $(AM_MAKEINFOFLAGS) --css-ref=pspp-manual.css
 install-html-local: html-local
