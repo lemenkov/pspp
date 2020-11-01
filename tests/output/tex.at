@@ -27,6 +27,11 @@ AT_SETUP([tex glyphs])
 AT_CHECK([tex-glyphs pspp.tex], [0], [ignore], [ignore])
 
 AT_SKIP_IF([test "$TEX" = no])
+
+dnl  The wasy10 font and its associated .tex file must be installed.
+dnl  in order to run this test.  On Debian based systems this is found
+dnl  in the texlive-fonts-recommended package.
+AT_SKIP_IF([! kpsewhich wasyfont.tex])
 AT_CHECK([$TEX --halt-on-error pspp.tex], [0], [ignore])
 
 dnl There should be no overfull boxes
@@ -151,6 +156,7 @@ och den kallaste är juni, med 16 °C.[5] Genomsnittlig årsnederbörd är
 AT_CHECK([tex-strings -o pspp.tex sample-texts/*], [0], [ignore], [ignore])
 
 AT_SKIP_IF([test "$TEX" = no])
+AT_SKIP_IF([! kpsewhich wasyfont.tex])
 AT_CHECK([$TEX --halt-on-error pspp.tex], [0], [ignore])
 
 test -z "$at_arg_xdvi" || AT_CHECK([$at_arg_xdvi -s 3 pspp.dvi], [0], [ignore])

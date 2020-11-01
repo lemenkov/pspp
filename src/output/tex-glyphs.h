@@ -22,18 +22,17 @@
 #include "libpspp/hmap.h"
 
 
+/* Keep these enums in sync with the definition of tex_macro in tex-glyphs.c */
 enum tex_ancilliary
   {
    TEX_NONE,
    TEX_VULGAR_FRAC,
    TEX_OGONEK,
-   TEX_THORN_UC,
-   TEX_THORN_LC,
    TEX_GUILLEMET_LEFT,
    TEX_GUILLEMET_RIGHT,
-   TEX_ETH,
    TEX_DOT,
-   TEX_DOUBLE_ACUTE
+   TEX_DOUBLE_ACUTE,
+   TEX_WASY
   };
 
 extern const char *tex_macro[];

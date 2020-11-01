@@ -31,22 +31,17 @@ const char *tex_macro[] =
    /* TEX_OGONEK */
   "\\def\\ogonekx#1#2{#1\\hskip -#2\\llap{\\smash{\\lower1ex\\hbox{\\the\\textfont1 \\char\"2C}}}}\n"
    "\\def\\ogonek#1{\\ogonekx{#1}{0pt}}",
-   /* TEX_THORN_UC */
-   "\\def\\Thorn{{\\font\\xx=cmr7 \\xx \\rlap{\\raise 0.74ex\\hbox{I}}P}}",
-   /* TEX_THORN_LC */
-   "\\def\\thorn{{\\rlap {\\lower 0.7ex \\hbox{l}}b}}",
    /* TEX_GUILLEMET_LEFT */
    "\\def\\lguillemet{{\\raise0.5ex\\hbox{\\font\\xx=cmsy5 \\xx \\char\"1C}}}",
    /* TEX_GUILLEMET_RIGHT */
    "\\def\\rguillemet{{\\raise0.5ex\\hbox{\\font\\xx=cmsy5 \\xx \\char\"1D}}}",
-   /* TEX_ETH */
-   "\\def\\eth{\\rlap{\\hskip 0.08em\\raise 0.5ex\\hbox{\\the\\textfont0 \\char\"20}}"
-   "\\rlap{\\raise 1.5ex\\hbox{\\hskip -0.04em\\vbox to 0pt{\\hbox{\\font\\xx=cmr17 \\xx \\`\\ }\\vss}}}o}",
    /* TEX_DOT */
    "\\def\\dotabove#1{{\\ifnum\\fam=7 \\raise1.5ex\\rlap{.}#1\\else\\.#1\\fi}}",
    /* TEX_DOUBLE_ACUTE */
    "\\def\\doubleacute#1{\\ifnum\\fam=7 {\\setbox0=\\hbox{#1}\\setbox1=\\hbox{o}\\dimen0=\\ht0\\advance\\dimen0 -\\ht1"
-   " \\raise\\dimen0\\rlap{\\kern -0.25ex\\char\"13\\kern -0.8ex\\char\"13}#1}\\else\\H{#1}\\fi}"
+   " \\raise\\dimen0\\rlap{\\kern -0.25ex\\char\"13\\kern -0.8ex\\char\"13}#1}\\else\\H{#1}\\fi}",
+   /* TEX_WASY */
+   "\\input wasyfont.tex",
 };
 
 
@@ -166,16 +161,11 @@ static const struct glyph extended_latin [] =
   {
    { 0x00A0, "NO-BREAK SPACE", TEX_NONE, "~" },
    { 0x00A1, "INVERTED EXCLAMATION MARK", TEX_NONE, "!`" },
-   { 0x00A2, "CENT SIGN", TEX_NONE, "\\rlap /c" },
+   { 0x00A2, "CENT SIGN", TEX_WASY, "{\\cent}" },
    { 0x00A3, "POUND SIGN", TEX_NONE, "{\\it \\$}" },
-   { 0x00A4, "CURRENCY SIGN", TEX_NONE,
-     "\\rlap{\\kern 0.028em\\raise 0.2ex\\hbox{\\the\\textfont2\\char\"0E}}"
-     "{\\ifnum\\fam=7\\kern -0.3ex\\fi"
-     "\\rlap{\\raise 1.05ex\\hbox{.}}\\rlap{\\kern 0.28em\\raise 1.05ex\\hbox{.}}"
-     "\\rlap{\\raise 0.28ex\\hbox{.}}{\\kern 0.28em\\raise 0.28ex\\hbox{.}}"
-     "}" },
+   { 0x00A4, "CURRENCY SIGN", TEX_WASY, "{\\currency}" },
    { 0x00A5, "YEN SIGN", TEX_NONE, "\\rlap Y=" },
-   { 0x00A6, "BROKEN BAR", TEX_NONE, "{\\thinspace\\rlap{\\hbox{\\vrule height 0.7ex depth 0pt}}{\\raise 0.9ex\\hbox{\\vrule height 0.7ex depth 0pt}}}" },
+   { 0x00A6, "BROKEN BAR", TEX_NONE, "{\\brokenvert}" },
    { 0x00A7, "SECTION SIGN", TEX_NONE, "{\\S}" },
    { 0x00A8, "DIAERESIS", TEX_NONE, "\\\"{}" },
    { 0x00A9, "COPYRIGHT SIGN", TEX_NONE, "{\\copyright}" },
@@ -218,7 +208,7 @@ static const struct glyph extended_latin [] =
    { 0x00CE, "LATIN CAPITAL LETTER I WITH CIRCUMFLEX", TEX_NONE, "\\^I" },
    { 0x00CF, "LATIN CAPITAL LETTER I WITH DIAERESIS", TEX_NONE, "\\\"I" },
    /* 0x00D0 and 0x0110 are indistinguishable */
-   { 0x00D0, "LATIN CAPITAL LETTER ETH", TEX_NONE, "\\rlap{\\raise0.4ex\\hbox{-}}D" },
+   { 0x00D0, "LATIN CAPITAL LETTER ETH", TEX_WASY, "{\\Dh}" },
    { 0x00D1, "LATIN CAPITAL LETTER N WITH TILDE", TEX_NONE, "\\~N" },
    { 0x00D2, "LATIN CAPITAL LETTER O WITH GRAVE", TEX_NONE, "\\`O" },
    { 0x00D3, "LATIN CAPITAL LETTER O WITH ACUTE", TEX_NONE, "\\'O" },
@@ -232,7 +222,7 @@ static const struct glyph extended_latin [] =
    { 0x00DB, "LATIN CAPITAL LETTER U WITH CIRCUMFLEX", TEX_NONE, "\\^U" },
    { 0x00DC, "LATIN CAPITAL LETTER U WITH DIAERESIS", TEX_NONE, "\\\"U" },
    { 0x00DD, "LATIN CAPITAL LETTER Y WITH ACUTE", TEX_NONE, "\\'Y" },
-   { 0x00DE, "LATIN CAPITAL LETTER THORN", TEX_THORN_UC, "{\\Thorn}" },
+   { 0x00DE, "LATIN CAPITAL LETTER THORN", TEX_WASY, "{\\Thorn}" },
    { 0x00DF, "LATIN SMALL LETTER SHARP S", TEX_NONE, "{\\ss}" },
    { 0x00E0, "LATIN SMALL LETTER A WITH GRAVE", TEX_NONE, "\\`a" },
    { 0x00E1, "LATIN SMALL LETTER A WITH ACUTE", TEX_NONE, "\\'a" },
@@ -250,7 +240,7 @@ static const struct glyph extended_latin [] =
    { 0x00ED, "LATIN SMALL LETTER I WITH ACUTE", TEX_NONE, "{\\'\\i}" },
    { 0x00EE, "LATIN SMALL LETTER I WITH CIRCUMFLEX", TEX_NONE, "{\\^\\i}" },
    { 0x00EF, "LATIN SMALL LETTER I WITH DIAERESIS", TEX_NONE, "{\\\"\\i}" },
-   { 0x00F0, "LATIN SMALL LETTER ETH", TEX_ETH, "{\\eth}" },
+   { 0x00F0, "LATIN SMALL LETTER ETH", TEX_WASY, "{\\dh}" },
    { 0x00F1, "LATIN SMALL LETTER N WITH TILDE", TEX_NONE, "\\~n" },
    { 0x00F2, "LATIN SMALL LETTER O WITH GRAVE", TEX_NONE, "\\`o" },
    { 0x00F3, "LATIN SMALL LETTER O WITH ACUTE", TEX_NONE, "\\'o" },
@@ -264,7 +254,7 @@ static const struct glyph extended_latin [] =
    { 0x00FB, "LATIN SMALL LETTER U WITH CIRCUMFLEX", TEX_NONE, "\\^u" },
    { 0x00FC, "LATIN SMALL LETTER U WITH DIAERESIS", TEX_NONE, "\\\"u" },
    { 0x00FD, "LATIN SMALL LETTER Y WITH ACUTE", TEX_NONE, "\\'y" },
-   { 0x00FE, "LATIN SMALL LETTER THORN", TEX_THORN_LC, "{\\thorn}" },
+   { 0x00FE, "LATIN SMALL LETTER THORN", TEX_WASY, "{\\thorn}" },
    { 0x00FF, "LATIN SMALL LETTER Y WITH DIAERESIS", TEX_NONE, "\\\"y" },
    { 0x0100, "LATIN CAPITAL LETTER A WITH MACRON", TEX_NONE, "\\=A" },
    { 0x0101, "LATIN SMALL LETTER A WITH MACRON", TEX_NONE, "\\=a" },
@@ -436,7 +426,7 @@ static const struct glyph punctuation [] =
    {0x2020, "DAGGER", TEX_NONE, "{\\dag}" },
    {0x2021, "DOUBLE DAGGER", TEX_NONE, "{\\ddag}" },
    {0x2022, "BULLET", TEX_NONE, "{\\the\\textfont2 \\char\"0F}" },
-   {0x2023, "TRIANGULAR BULLET", TEX_NONE, "{\\the\\textfont1 \\char\"2E}" },
+   {0x2023, "TRIANGULAR BULLET", TEX_WASY, "{\\RIGHTarrow}" },
    {0x2024, "ONE DOT LEADER", TEX_NONE, "\\hbox{.}" },
    {0x2025, "TWO DOT LEADER", TEX_NONE, "\\hbox{.\\kern 0.15em.}" },
    /* Ellipsis could be done with $\dots$ but that means a font change which we
