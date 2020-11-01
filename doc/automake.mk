@@ -188,8 +188,6 @@ doc/examples/tutorial7b.spv: doc/examples/tutorial7.spv $(pspp_output)
 	$(convert) --commands=regression --nth-command=2 --subtypes=coefficients
 
 # Convert an output file into a text file or HTML file.
-#
-# (For HTML, use sed to include only the contents of <body>.)
 $(EXAMPLE_TXTS) $(EXAMPLE_HTML): $(pspp_output)
 .spv.txt:
 	$(AM_V_GEN)utilities/pspp-output convert $< $@
