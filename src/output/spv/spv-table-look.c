@@ -487,7 +487,7 @@ spv_table_look_write (const char *filename, const struct pivot_table_look *look)
   if (look->continuation && look->continuation[0]
       && (look->top_continuation || look->bottom_continuation))
     {
-      write_attr_format (xml, "continuationText", look->continuation);
+      write_attr (xml, "continuationText", look->continuation);
       write_attr_bool (xml, "continuationTextAtTop", look->top_continuation);
       write_attr_bool (xml, "continuationTextAtBottom",
                        look->bottom_continuation);
