@@ -2050,10 +2050,10 @@ xr_draw_png_chart (const struct chart_item *item,
 
   number_pos = strchr (file_name_template, '#');
   if (number_pos != NULL)
-    file_name = xasprintf ("%.*s%d%s", (int) (number_pos - file_name_template),
+    file_name = xasprintf ("%.*s%d%s.png", (int) (number_pos - file_name_template),
                            file_name_template, number, number_pos + 1);
   else
-    file_name = xstrdup (file_name_template);
+    file_name = xasprintf ("%s.png", file_name_template);
 
   surface = cairo_image_surface_create (CAIRO_FORMAT_RGB24, width, length);
   cr = cairo_create (surface);
@@ -2075,7 +2075,48 @@ xr_draw_png_chart (const struct chart_item *item,
 
   return file_name;
 }
+
+
+char *
+xr_draw_eps_chart (const struct chart_item *item,
+                   const char *file_name_template, int number,
+		   const struct cell_color *fg,
+		   const struct cell_color *bg)
+{
+  const int width = 640;
+  const int length = 480;
+
+  cairo_surface_t *surface;
+  const char *number_pos;
+  char *file_name;
+  cairo_t *cr;
+
+  number_pos = strchr (file_name_template, '#');
+  if (number_pos != NULL)
+    file_name = xasprintf ("%.*s%d%s.eps", (int) (number_pos - file_name_template),
+                           file_name_template, number, number_pos + 1);
+  else
+    file_name = xasprintf ("%s.eps", file_name_template);
+
+  surface = cairo_ps_surface_create (file_name, width, length);
+  cairo_ps_surface_set_eps (surface, true);
+  cr = cairo_create (surface);
+
+  cairo_set_source_rgb (cr, bg->r / 255.0, bg->g / 255.0, bg->b / 255.0);
+  cairo_paint (cr);
+
+  cairo_set_source_rgb (cr, fg->r / 255.0, fg->g / 255.0, fg->b / 255.0);
+
+  xr_draw_chart (item, cr, 0.0, 0.0, width, length);
+
+  cairo_destroy (cr);
+  cairo_surface_destroy (surface);
+
+  return file_name;
+}
+
 
+
 struct xr_table_state
   {
     struct xr_render_fsm fsm;

@@ -96,6 +96,12 @@ char *xr_draw_png_chart (const struct chart_item *,
                          const struct cell_color *fg,
 			 const struct cell_color *bg);
 
+char *xr_draw_eps_chart (const struct chart_item *item,
+                         const char *file_name_template, int number,
+                         const struct cell_color *fg,
+                         const struct cell_color *bg);
+
+
 /* Render to a svg file */
 bool xr_draw_svg_file (struct xr_rendering *r,
 		       const char *filename);

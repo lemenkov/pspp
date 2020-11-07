@@ -288,7 +288,7 @@ default_chart_file_name (const char *file_name)
     {
       const char *extension = strrchr (file_name, '.');
       int stem_length = extension ? extension - file_name : strlen (file_name);
-      return xasprintf ("%.*s-#.png", stem_length, file_name);
+      return xasprintf ("%.*s-#", stem_length, file_name);
     }
   else
     return NULL;
