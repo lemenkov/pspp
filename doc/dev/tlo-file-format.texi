@@ -1,0 +1,331 @@
+@c PSPP - a program for statistical analysis.
+@c Copyright (C) 2020 Free Software Foundation, Inc.
+@c Permission is granted to copy, distribute and/or modify this document
+@c under the terms of the GNU Free Documentation License, Version 1.3
+@c or any later version published by the Free Software Foundation;
+@c with no Invariant Sections, no Front-Cover Texts, and no Back-Cover Texts.
+@c A copy of the license is included in the section entitled "GNU
+@c Free Documentation License".
+@c
+
+@node SPSS TableLook File Formats
+@appendix SPSS TableLook File Formats
+
+SPSS has a concept called a TableLook to control the styling of pivot
+tables in output.  SPSS 15 and earlier used @file{.tlo} files with a
+special binary format to save TableLooks to disk; SPSS 16 and later
+use @file{.stt} files in an XML format to save them.  Both formats
+expose roughly the same features, although the older @file{.tlo}
+format does have some features that @file{.stt} does not.
+
+This appendix describes both formats.
+
+@menu
+* SPSS TableLook STT Format::
+* SPSS TableLook TLO Format::
+@end menu
+
+@node SPSS TableLook STT Format
+@section The @file{.stt} Format
+
+The @file{.stt} file format is an XML file that contains a subset of
+the SPV structure member format (@pxref{SPV Structure Member Format}).
+Its root element is a @code{tableProperties} element (@pxref{SPV
+Detail Legacy Properties}).
+
+@node SPSS TableLook TLO Format
+@section The @file{.tlo} Format
+
+A @file{.tlo} file has a custom binary format.  This section describes
+it using the syntax used previously for SPV binary members (@pxref{SPV
+Light Detail Member Format}).  There is one new convention: TLO files
+express colors as @code{int32} values in which the low 8 bits are the
+red component, the next 8 bits are green, and next 8 bits are blue,
+and the high bits are zeros.
+
+TLO files support various features that SPV files do not.  PSPP
+implements the SPV feature set, so it mostly ignores the added TLO
+features.  The details of this mapping are explained below.
+
+At the top level, a TLO file consists of five sections.  The first
+four are always present and the last one is optional:
+
+@example
+TableLook =>
+   PTTableLook[tl]
+   PVSeparatorStyle[ss]
+   PVCellStyle[cs]
+   PVTextStyle[ts]
+   V2Styles?
+@end example
+
+Each section is described below.
+
+@menu
+* PTTableLook in SPSS TLO Files::
+* PVSeparatorStyle in SPSS TLO Files::
+* PVCellStyle and PVTextStyle in SPSS TLO Files::
+* V2Styles in SPSS TLO Files::
+@end menu
+
+@node PTTableLook in SPSS TLO Files
+@subsection @code{PTTableLook}
+
+@example
+PTTableLook =>
+   ff ff 00 00 "PTTableLook" (00|02)[version]
+   int16[flags]
+   00 00
+   bool[nested-row-labels] 00
+   bool[footnote-marker-subscripts] 00
+   i54 i18
+@end example
+
+In PTTableLook, @code{version} is 00 or 02.  The only difference is
+that version 00 lacks V2Styles (@pxref{V2Styles in SPSS TLO Files})
+and that version 02 includes it.  Both TLO versions are seen in the
+wild.
+
+@code{flags} is a bit-mapped field.  Its bits have the following
+meanings:
+
+@table @asis
+@item 0x2
+If set to 1, hide empty rows and columns; otherwise, show them.
+
+@item 0x4
+If set to 1, use numeric footnote markers; otherwise, use alphabetic
+footnote markers.
+
+@item 0x8
+If set to 1, print all layers; otherwise, print only the current
+layer.
+
+@item 0x10
+If set to 1, scale the table to fit the page width; otherwise, break
+it horizontally if necessary.
+
+@item 0x20
+If set to 1, scale the table to fit the page length; otherwise, break
+it vertically if necessary.
+
+@item 0x40
+If set to 1, print each layer on a separate page (only if all layers
+are being printed); otherwise, paginate layers naturally.
+
+@item 0x80
+If set to 1, print a continuation string at the top of a table that is
+split between pages.
+
+@item 0x100
+If set to 1, print a continuation string at the bottom of a table that
+is split between pages.
+@end table
+
+When @code{nested-row-labels} is 1, row dimension labels appear
+nested; otherwise, they are put into the upper-left corner of the
+pivot table.
+
+When @code{footnote-marker-subscripts} is 1, footnote markers are
+shown as subscripts; otherwise, they are shown as superscripts.
+
+@node PVSeparatorStyle in SPSS TLO Files
+@subsection @code{PVSeparatorStyle}
+
+@example
+PVSeparatorStyle =>
+   ff ff 00 00 "PVSeparatorStyle" 00
+   Separator*4[sep1]
+   03 80 00
+   Separator*4[sep2]
+
+Separator =>
+   case(
+       00 00
+     | 01 00 int32[color] int16[style] int16[width]
+   )[type]
+@end example
+
+PVSeparatorStyle contains eight Separators, in two groups.  Each
+Separator represents a border between pivot table elements.  TLO and
+SPV files have the same concepts for borders.  @xref{SPV Light Member
+Borders}, for the treatment of borders in SPV files.
+
+A Separator's @code{type} is 00 if the border is not drawn, 01
+otherwise.  For a border that is drawn, @code{color} is the color that
+it is drawn in.  @code{style} and @code{width} have the following
+meanings:
+
+@table @asis
+@item @code{style} = 0 and 0 @leq{} @code{width} @leq{} 3
+An increasingly thick single line.  SPV files only have three line
+thicknesses.  PSPP treats @code{width} 0 as a thin line, @code{width}
+1 as a solid (normal width) line, and @code{width} 2 or 3 as a thick
+line.
+
+@item @code{style} = 1 and 0 @leq{} @code{width} @leq{} 1
+A doubled line, composed of normal-width (0) or thick (1) lines.  SPV
+files only have ``normal'' width double lines, so PSPP maps both
+variants the same way.
+
+@item @code{style} = 2
+A dashed line.
+@end table
+
+The first group, @code{sep1}, represents the following borders within
+the pivot table, by index:
+
+@enumerate 0
+@item Horizontal dimension rows
+@item Vertical dimension rows
+@item Horizontal category rows
+@item Vertical category rows
+@end enumerate
+
+The second group, @code{sep2}, represents the following borders within
+the pivot table, by index:
+
+@enumerate 0
+@item Horizontal dimension columns
+@item Vertical dimension columns
+@item Horizontal category columns
+@item Vertical category columns
+@end enumerate
+
+@node PVCellStyle and PVTextStyle in SPSS TLO Files
+@subsection @code{PVCellStyle} and @code{PVTextStyle}
+
+@example
+PVCellStyle =>
+   ff ff 00 00 "PVCellStyle"
+   AreaColor[title-color]
+
+PVTextStyle =>
+   ff ff 00 00 "PVTextStyle" 00
+   AreaStyle[title-style] MostAreas*7[most-areas]
+
+MostAreas =>
+   06 80
+   AreaColor[color] 08 80 00 AreaStyle[style]
+@end example
+
+These sections hold the styling and coloring for each of the 8 areas
+in a pivot table.  They are conceptually similar to the area style
+information in SPV light members (@pxref{SPV Light Member Areas}).
+
+The styling and coloring for the title area is split between
+PVCellStyle and PVTextStyle: the former holds @code{title-color}, the
+latter holds @code{title-style}.  The style for the remaining 7 areas
+is in @code{most-areas} in PVTextStyle, in the following order:
+layers, corner, row labels, column labels, data, caption, and footer.
+
+@example
+AreaColor =>
+   00 01 00 int32[color10] int32[color0] byte[shading] 00
+@end example
+
+AreaColor represents the background color of an area.  TLO files, but
+not SPV files, describe backgrounds that are a shaded combination of
+two colors: @code{shading} of 0 is pure @code{color0}, @code{shading}
+of 10 is pure @code{color10}, and value in between mix pixels of the
+two different colors in linear degree.  PSPP does not implement
+shading, so for 1 @leq{} @code{shading} @leq{} 9 it interpolates RGB
+values between colors to arrive at an intermediate shade.
+
+@example
+AreaStyle =>
+   int16[valign] int16[halign] int16[decimal-offset]
+   int16[left-margin] int16[right-margin] int16[top-margin] int16[bottom-margin]
+   00 00 01 00
+   int32[font-size] int16[stretch]
+   00*2
+   int32[rotation-angle]
+   00*4
+   int16[weight]
+   00*2
+   bool[italic] bool[underline] bool[strikethrough]
+   int32[rtf-charset-number]
+   22
+   byte[font-name-len] byte*[font-name-len][font-name]
+   int32[text-color]
+   00*2
+@end example
+
+AreaStyle represents style properties of an area.
+
+@code{valign} is 0 for top alignment, 1 for bottom alginment, 2 for
+center.
+
+@code{halign} is 0 for left alignment, 1 for right, 2 for center, 3
+for mixed, 4 for decimal.  For decimal alignment,
+@code{decimal-offset} is the offset of the decimal point in 20ths of a
+point.
+
+@code{left-margin}, @code{right-margin}, @code{top-margin}, and
+@code{bottom-margin} are also measured in 20ths of a point.
+
+@code{font-size} is negative 96ths of an inch, e.g. 9 point is -12 or
+0xfffffff3.
+
+@code{stretch} has something to do with font size or stretch.  The
+usual value is 01 and values larger than that do weird things.  A
+reader can safely ignore it.
+
+@code{rotation-angle} is a font rotation angle.  A reader can safely
+ignore it.
+
+@code{weight} is 400 for a normal-weight font, 700 indicates bold.
+(This is a Windows API convention.)
+
+@code{italic} and @code{underline} have the obvious meanings.  So does
+@code{strikethrough}, which PSPP ignores.
+
+@code{rtf-charset-number} is a character set number from RTF.  A
+reader can safely ignore it.
+
+The @code{font-name} is the name of a font, such as @code{Arial}.
+Only US-ASCII characters have been observed here.
+
+@code{text-color} is the color of the text itself.
+
+@node V2Styles in SPSS TLO Files
+@subsection @code{V2Styles}
+
+@example
+V2Styles =>
+   Separator*11[sep3]
+   byte[continuation-len] byte*[continuation-len][continuation]
+   int32[min-col-width] int32[max-col-width]
+   int32[min-row-height] int32[max-row-height]
+@end example
+
+This final, optional, part of the TLO file format contains some
+additional style information.  It begins with @code{sep3}, which
+represents the following borders within the pivot table, by index:
+
+@table @asis
+@item 0
+Title.
+@item 1@dots{}4
+Left, right, top, and bottom inner frame.
+@item 5@dots{}8
+Left, right, top, and bottom outer frame.
+@item 9, 10
+Left and top of data area.
+@end table
+
+When V2Styles is absent, the inner frame borders default to a solid
+line and the others listed above to no line.
+
+@code{continuation} is the string that goes at the top or bottom
+of a table broken across pages.  When V2Styles is absent, the
+default is @code{(Cont.)}.
+
+@code{min-col-width} is the minimum width that a column will be
+assigned automatically.  @code{max-col-width} is the maximum width
+that a column will be assigned to accommodate a long column label.
+@code{min-row-width} and @code{max-row-width} are a similar range for
+the width of row labels.  All of these measurements are in points.
+When V2Styles is absent, the defaults are 36 for @code{min-col-width} and
+@code{min-row-height}, 72 for @code{max-col-width}, and 120 for
+@code{max-row-height}.

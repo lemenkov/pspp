@@ -3630,6 +3630,7 @@ XML, which has the following @code{tableProperties} element:
 
 @example
 tableProperties
+   :name?
 => generalProperties footnoteProperties cellFormatProperties borderProperties printingProperties
 
 generalProperties
@@ -3688,3 +3689,6 @@ printingProperties
    :printEachLayerOnSeparatePage=bool?
 => EMPTY
 @end example
+
+The @code{name} attribute appears only in standalone @file{.stt} files
+(@pxref{SPSS TableLook STT Format}).

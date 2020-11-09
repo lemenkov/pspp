@@ -24,12 +24,15 @@
 #include <libxml/xmlwriter.h>
 #include <string.h>
 
+#include "libpspp/i18n.h"
 #include "output/spv/structure-xml-parser.h"
+#include "output/spv/tlo-parser.h"
 #include "output/pivot-table.h"
 #include "output/table.h"
 
 #include "gl/read-file.h"
 #include "gl/xalloc.h"
+#include "gl/xmemdup0.h"
 
 #include "gettext.h"
 #define _(msgid) gettext (msgid)
@@ -279,7 +282,216 @@ error:
   *outp = NULL;
   return error;
 }
+
+static struct cell_color
+tlo_decode_color (uint32_t c)
+{
+  return (struct cell_color) CELL_COLOR (c, c >> 8, c >> 16);
+}
 
+static void
+tlo_decode_border (const struct tlo_separator *in,
+                   struct table_border_style *out)
+{
+  if (in->type == 0)
+    {
+      out->stroke = TABLE_STROKE_NONE;
+      return;
+    }
+
+  out->color = tlo_decode_color (in->type_01.color);
+
+  switch (in->type_01.style)
+    {
+    case 0:
+      out->stroke = (in->type_01.width == 0 ? TABLE_STROKE_THIN
+                     : in->type_01.width == 1 ? TABLE_STROKE_SOLID
+                     : TABLE_STROKE_THICK);
+      break;
+
+    case 1:
+      out->stroke = TABLE_STROKE_DOUBLE;
+      break;
+
+    case 2:
+      out->stroke = TABLE_STROKE_DASHED;
+      break;
+    }
+}
+
+static struct cell_color
+interpolate_colors (struct cell_color c0, struct cell_color c1, int shading)
+{
+  if (shading <= 0)
+    return c0;
+  else if (shading >= 10)
+    return c1;
+  else
+    {
+      int x0 = 10 - shading;
+      int x1 = shading;
+
+      return (struct cell_color) CELL_COLOR ((c0.r * x0 + c1.r * x1) / 10,
+                                             (c0.g * x0 + c1.g * x1) / 10,
+                                             (c0.b * x0 + c1.b * x1) / 10);
+    }
+}
+
+static void
+tlo_decode_area (const struct tlo_area_color *color,
+                 const struct tlo_area_style *style,
+                 struct table_area_style *out)
+{
+  out->cell_style.halign = (style->halign == 0 ? TABLE_HALIGN_LEFT
+                            : style->halign == 1 ? TABLE_HALIGN_RIGHT
+                            : style->halign == 2 ? TABLE_HALIGN_CENTER
+                            : style->halign == 4 ? TABLE_HALIGN_DECIMAL
+                            : TABLE_HALIGN_MIXED);
+  out->cell_style.valign = (style->valign == 0 ? TABLE_VALIGN_TOP
+                            : style->valign == 1 ? TABLE_VALIGN_BOTTOM
+                            : TABLE_VALIGN_CENTER);
+  out->cell_style.decimal_offset = style->decimal_offset / 20;
+  out->cell_style.decimal_char = '.';                  /* XXX */
+  out->cell_style.margin[TABLE_HORZ][0] = style->left_margin / 20;
+  out->cell_style.margin[TABLE_HORZ][1] = style->right_margin / 20;
+  out->cell_style.margin[TABLE_VERT][0] = style->top_margin / 20;
+  out->cell_style.margin[TABLE_VERT][1] = style->bottom_margin / 20;
+
+  out->font_style.bold = style->weight > 400;
+  out->font_style.italic = style->italic;
+  out->font_style.underline = style->underline;
+  out->font_style.markup = false;
+
+  out->font_style.fg[0] = out->font_style.fg[1]
+    = tlo_decode_color (style->text_color);
+
+  struct cell_color c0 = tlo_decode_color (color->color0);
+  struct cell_color c10 = tlo_decode_color (color->color10);
+  struct cell_color bg = interpolate_colors (c0, c10, color->shading);
+  out->font_style.bg[0] = out->font_style.bg[1] = bg;
+
+  free (out->font_style.typeface);
+  out->font_style.typeface = recode_string (
+    "UTF-8", "ISO-8859-1",
+    CHAR_CAST (char *, style->font_name), style->font_name_len);
+  out->font_style.size = -style->font_size * 3 / 4;
+}
+
+static struct pivot_table_look *
+tlo_decode (const struct tlo_table_look *in)
+{
+  struct pivot_table_look *out = xmalloc (sizeof *out);
+  pivot_table_look_init (out);
+
+  const uint16_t flags = in->tl->flags;
+
+  out->omit_empty = (flags & 0x02) != 0;
+  out->row_labels_in_corner = !in->tl->nested_row_labels;
+  if (in->v2_styles)
+    {
+      out->width_ranges[TABLE_HORZ][0] = in->v2_styles->min_col_width;
+      out->width_ranges[TABLE_HORZ][1] = in->v2_styles->max_col_width;
+      out->width_ranges[TABLE_VERT][0] = in->v2_styles->min_row_height;
+      out->width_ranges[TABLE_VERT][1] = in->v2_styles->max_row_height;
+    }
+  else
+    {
+      out->width_ranges[TABLE_HORZ][0] = 36;
+      out->width_ranges[TABLE_HORZ][1] = 72;
+      out->width_ranges[TABLE_VERT][0] = 36;
+      out->width_ranges[TABLE_VERT][1] = 120;
+    }
+
+  out->show_numeric_markers = flags & 0x04;
+  out->footnote_marker_superscripts = !in->tl->footnote_marker_subscripts;
+
+  for (int i = 0; i < 4; i++)
+    {
+      static const enum pivot_border map[4] =
+        {
+          PIVOT_BORDER_DIM_ROW_HORZ,
+          PIVOT_BORDER_DIM_ROW_VERT,
+          PIVOT_BORDER_CAT_ROW_HORZ,
+          PIVOT_BORDER_CAT_ROW_VERT,
+        };
+      tlo_decode_border (in->ss->sep1[i], &out->borders[map[i]]);
+    }
+
+  for (int i = 0; i < 4; i++)
+    {
+      static const enum pivot_border map[4] =
+        {
+          PIVOT_BORDER_DIM_COL_HORZ,
+          PIVOT_BORDER_DIM_COL_VERT,
+          PIVOT_BORDER_CAT_COL_HORZ,
+          PIVOT_BORDER_CAT_COL_VERT,
+        };
+      tlo_decode_border (in->ss->sep2[i], &out->borders[map[i]]);
+    }
+
+  if (in->v2_styles)
+    for (int i = 0; i < 11; i++)
+      {
+        static const enum pivot_border map[11] =
+          {
+            PIVOT_BORDER_TITLE,
+            PIVOT_BORDER_INNER_LEFT,
+            PIVOT_BORDER_INNER_RIGHT,
+            PIVOT_BORDER_INNER_TOP,
+            PIVOT_BORDER_INNER_BOTTOM,
+            PIVOT_BORDER_OUTER_LEFT,
+            PIVOT_BORDER_OUTER_RIGHT,
+            PIVOT_BORDER_OUTER_TOP,
+            PIVOT_BORDER_OUTER_BOTTOM,
+            PIVOT_BORDER_DATA_LEFT,
+            PIVOT_BORDER_DATA_TOP,
+          };
+        tlo_decode_border (in->v2_styles->sep3[i], &out->borders[map[i]]);
+      }
+  else
+    {
+      out->borders[PIVOT_BORDER_TITLE].stroke = TABLE_STROKE_NONE;
+      out->borders[PIVOT_BORDER_INNER_LEFT].stroke = TABLE_STROKE_SOLID;
+      out->borders[PIVOT_BORDER_INNER_TOP].stroke = TABLE_STROKE_SOLID;
+      out->borders[PIVOT_BORDER_INNER_RIGHT].stroke = TABLE_STROKE_SOLID;
+      out->borders[PIVOT_BORDER_INNER_BOTTOM].stroke = TABLE_STROKE_SOLID;
+      out->borders[PIVOT_BORDER_OUTER_LEFT].stroke = TABLE_STROKE_NONE;
+      out->borders[PIVOT_BORDER_OUTER_TOP].stroke = TABLE_STROKE_NONE;
+      out->borders[PIVOT_BORDER_OUTER_RIGHT].stroke = TABLE_STROKE_NONE;
+      out->borders[PIVOT_BORDER_OUTER_BOTTOM].stroke = TABLE_STROKE_NONE;
+      out->borders[PIVOT_BORDER_DATA_LEFT].stroke = TABLE_STROKE_NONE;
+      out->borders[PIVOT_BORDER_DATA_TOP].stroke = TABLE_STROKE_NONE;
+    }
+
+  tlo_decode_area (in->cs->title_color, in->ts->title_style,
+                   &out->areas[PIVOT_AREA_TITLE]);
+  for (int i = 0; i < 7; i++)
+    {
+      static const enum pivot_area map[7] = {
+        PIVOT_AREA_LAYERS,
+        PIVOT_AREA_CORNER,
+        PIVOT_AREA_ROW_LABELS,
+        PIVOT_AREA_COLUMN_LABELS,
+        PIVOT_AREA_DATA,
+        PIVOT_AREA_CAPTION,
+        PIVOT_AREA_FOOTER
+      };
+      tlo_decode_area (in->ts->most_areas[i]->color,
+                       in->ts->most_areas[i]->style,
+                       &out->areas[map[i]]);
+    }
+
+  out->print_all_layers = flags & 0x08;
+  out->paginate_layers = flags & 0x40;
+  out->shrink_to_fit[TABLE_HORZ] = flags & 0x10;
+  out->shrink_to_fit[TABLE_VERT] = flags & 0x20;
+  out->top_continuation = flags & 0x80;
+  out->bottom_continuation = flags & 0x100;
+  /* n_orphan_lines isn't in .tlo files AFAICT. */
+
+  return out;
+}
+
 char * WARN_UNUSED_RESULT
 spv_table_look_read (const char *filename, struct pivot_table_look **outp)
 {
@@ -291,23 +503,42 @@ spv_table_look_read (const char *filename, struct pivot_table_look **outp)
     return xasprintf ("%s: failed to read file (%s)",
                       filename, strerror (errno));
 
-  xmlDoc *doc = xmlReadMemory (file, length, NULL, NULL, XML_PARSE_NOBLANKS);
-  free (file);
-  if (!doc)
-    return xasprintf ("%s: failed to parse XML", filename);
+  if ((uint8_t) file[0] == 0xff)
+    {
+      struct spvbin_input input;
+      spvbin_input_init (&input, file, length);
 
-  struct spvxml_context ctx = SPVXML_CONTEXT_INIT (ctx);
-  struct spvsx_table_properties *tp;
-  spvsx_parse_table_properties (&ctx, xmlDocGetRootElement (doc), &tp);
-  char *error = spvxml_context_finish (&ctx, &tp->node_);
+      struct tlo_table_look *look;
+      char *error = NULL;
+      if (!tlo_parse_table_look (&input, &look))
+        error = spvbin_input_to_error (&input, NULL);
+      else
+        {
+          *outp = tlo_decode (look);
+          tlo_free_table_look (look);
+        }
+      return error;
+    }
+  else
+    {
+      xmlDoc *doc = xmlReadMemory (file, length, NULL, NULL, XML_PARSE_NOBLANKS);
+      free (file);
+      if (!doc)
+        return xasprintf ("%s: failed to parse XML", filename);
 
-  if (!error)
-    error = spv_table_look_decode (tp, outp);
+      struct spvxml_context ctx = SPVXML_CONTEXT_INIT (ctx);
+      struct spvsx_table_properties *tp;
+      spvsx_parse_table_properties (&ctx, xmlDocGetRootElement (doc), &tp);
+      char *error = spvxml_context_finish (&ctx, &tp->node_);
 
-  spvsx_free_table_properties (tp);
-  xmlFreeDoc (doc);
+      if (!error)
+        error = spv_table_look_decode (tp, outp);
 
-  return error;
+      spvsx_free_table_properties (tp);
+      xmlFreeDoc (doc);
+
+      return error;
+    }
 }
 
 static void

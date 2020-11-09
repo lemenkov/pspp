@@ -202,7 +202,7 @@ pivot_table_look_init (struct pivot_table_look *look)
 
   look->omit_empty = false;
   look->row_labels_in_corner = true;
-  look->width_ranges[TABLE_HORZ][0] = 50;
+  look->width_ranges[TABLE_HORZ][0] = 36;
   look->width_ranges[TABLE_HORZ][1] = 72;
   look->width_ranges[TABLE_VERT][0] = 36;
   look->width_ranges[TABLE_VERT][1] = 120;

@@ -106,3 +106,19 @@ nodist_src_output_liboutput_la_SOURCES += $(structure_xml_out)
 BUILT_SOURCES += $(structure_xml_out)
 CLEANFILES += $(structure_xml_out)
 EXTRA_DIST += $(structure_xml_in)
+
+tlo_in = \
+	src/output/spv/binary-parser-generator \
+	src/output/spv/tlo.grammar
+tlo_out = \
+	src/output/spv/tlo-parser.c \
+	src/output/spv/tlo-parser.h
+src/output/spv/tlo-parser.c: $(tlo_in)
+	$(AM_V_GEN)$(PYTHON) $^ code tlo '"output/spv/tlo-parser.h"' > $@.tmp
+	$(AM_V_at)mv $@.tmp $@
+src/output/spv/tlo-parser.h: $(tlo_in)
+	$(AM_V_GEN)$(PYTHON) $^ header tlo > $@.tmp && mv $@.tmp $@
+nodist_src_output_liboutput_la_SOURCES += $(tlo_out)
+BUILT_SOURCES += $(tlo_out)
+CLEANFILES += $(tlo_out)
+EXTRA_DIST += $(tlo_in)

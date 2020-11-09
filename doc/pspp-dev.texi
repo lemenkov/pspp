@@ -94,6 +94,7 @@ Free Documentation License".
 * System File Format::          Format of PSPP system files.
 * SPSS/PC+ System File Format:: Format of SPSS/PC+ system files.
 * SPSS Viewer File Format::     Format of SPSS Viewer (SPV) files.
+* SPSS TableLook File Formats:: Formats of .stt and .tlo files.
 * Encrypted File Wrappers::     Common wrapper for encrypted SPSS files.
 * q2c Input Format::            Format of syntax accepted by q2c.
 
@@ -114,6 +115,7 @@ Free Documentation License".
 @include dev/system-file-format.texi
 @include dev/pc+-file-format.texi
 @include dev/spv-file-format.texi
+@include dev/tlo-file-format.texi
 @include dev/encrypted-file-wrappers.texi
 @include dev/q2c.texi
 

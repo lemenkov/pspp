@@ -104,6 +104,13 @@ def get_token():
     elif line.startswith('...'):
         token = (line[:3], )
         line = line[3:]
+    elif line.startswith('"'):
+        n = 1
+        while n < len(line) and (line[n] != '"'):
+            n += 1
+        s = line[1:n].encode()
+        line = line[n+1:]
+        token = ('bytes', struct.pack('<h', len(s)) + s)
     elif line[0].isalnum() or line[0] == '-':
         n = 1
         while n < len(line) and (line[n].isalnum() or line[n] == '-'):
@@ -136,9 +143,11 @@ def usage():
     argv0 = os.path.basename(sys.argv[0])
     print('''\
 %(argv0)s, parser generator for SPV binary members
-usage: %(argv0)s GRAMMAR header
-       %(argv0)s GRAMMAR code HEADER_NAME
-  where GRAMMAR contains grammar definitions\
+usage: %(argv0)s GRAMMAR header PREFIX
+       %(argv0)s GRAMMAR code PREFIX HEADER_NAME
+  where GRAMMAR contains grammar definitions,
+        PREFIX is the identifier prefix to use,
+    and HEADER_NAME is the name of the header to include.
 ''' % {"argv0": argv0})
     sys.exit(0)
 

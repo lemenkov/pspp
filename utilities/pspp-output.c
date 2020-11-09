@@ -363,6 +363,22 @@ run_get_table_look (int argc UNUSED, char **argv)
 }
 
 static void
+run_convert_table_look (int argc UNUSED, char **argv)
+{
+  struct pivot_table_look *look;
+  char *err = spv_table_look_read (argv[1], &look);
+  if (err)
+    error (1, 0, "%s", err);
+
+  err = spv_table_look_write (argv[2], look);
+  if (err)
+    error (1, 0, "%s", err);
+
+  pivot_table_look_uninit (look);
+  free (look);
+}
+
+static void
 run_dump (int argc UNUSED, char **argv)
 {
   struct spv_reader *spv;
@@ -710,6 +726,7 @@ static const struct command commands[] =
     { "dir", 1, 1, run_directory },
     { "convert", 2, 2, run_convert },
     { "get-table-look", 2, 2, run_get_table_look },
+    { "convert-table-look", 2, 2, run_convert_table_look },
 
     /* Undocumented commands. */
     { "dump", 1, 1, run_dump },
@@ -1101,6 +1118,7 @@ The following commands are available:\n\
   dir FILE               List tables and other items in FILE.\n\
   convert SOURCE DEST    Convert .spv SOURCE to DEST.\n\
   get-table-look SOURCE DEST  Copies first selected TableLook into DEST\n\
+  convert-table-look SOURCE DEST  Copies .tlo or .stt SOURCE into DEST\n\
 \n\
 Input selection options for \"dir\" and \"convert\":\n\
   --select=CLASS...   include only some kinds of objects\n\
