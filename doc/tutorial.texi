@@ -23,6 +23,8 @@ This chapter does not attempt to introduce the theory behind the
 statistical analysis,
 but it shows how such analysis can be performed using @pspp{}.
 
+@image{doc/examples/autorecode}
+
 For the purposes of this tutorial, it is assumed that you are using @pspp{} in its
 interactive mode from the command line.
 However, the example commands can also be typed into a file and executed in

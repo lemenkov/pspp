@@ -147,12 +147,14 @@ EXAMPLE_SPVS = $(EXAMPLE_SYNTAX:.sps=.spv) \
 EXAMPLE_TXTS = $(EXAMPLE_SPVS:.spv=.txt)
 EXAMPLE_TEXIS = $(EXAMPLE_TXTS:.txt=.texi)
 EXAMPLE_HTML = $(EXAMPLE_SPVS:.spv=.html)
+EXAMPLE_PDF = $(EXAMPLE_SPVS:.spv=.pdf)
 
 example-spv: $(EXAMPLE_SPVS)
 example-txts: $(EXAMPLE_TXTS)
 example-texis: $(EXAMPLE_TEXIS)
 example-html: $(EXAMPLE_HTML)
-PHONY += example-spv example-txts example-texis example-html
+example-pdf: $(EXAMPLE_PDF)
+PHONY += example-spv example-txts example-texis example-html example-pdf
 
 $(top_builddir)/doc/pspp.info:  $(EXAMPLE_TEXIS)
 $(top_builddir)/doc/pspp.ps:    $(EXAMPLE_TEXIS)
@@ -162,7 +164,7 @@ $(top_builddir)/doc/pspp.pdf:   $(EXAMPLE_TEXIS)
 $(top_builddir)/doc/pspp.xml:   $(EXAMPLE_TEXIS)
 
 CLEANFILES += $(EXAMPLE_TXTS) $(EXAMPLE_SPVS) $(EXAMPLE_TEXIS) $(EXAMPLE_HTML)
-SUFFIXES += .sps .spv .txt .html .texi
+SUFFIXES += .sps .spv .txt .html .texi .pdf
 
 # Use pspp to process a syntax file into an output file.
 pspp = src/ui/terminal/pspp$(EXEEXT)
@@ -192,6 +194,8 @@ doc/examples/tutorial7b.spv: doc/examples/tutorial7.spv $(pspp_output)
 $(EXAMPLE_TXTS) $(EXAMPLE_HTML): $(pspp_output)
 .spv.txt:
 	$(AM_V_GEN)utilities/pspp-output convert $< $@
+.spv.pdf:
+	$(AM_V_GEN)utilities/pspp-output convert $< $@ -O left-margin=0pt -O right-margin=0pt -O top-margin=0pt -O bottom-margin=0pt -O paper-size=6x20in -O font-size=12000 --table-look=$(HOME)/pspp/spss15/Looks/report.tlo
 .spv.html:
 	$(AM_V_GEN)utilities/pspp-output convert $< $@ -O format=html -O bare=true
 
