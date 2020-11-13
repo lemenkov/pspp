@@ -68,7 +68,7 @@ AreaStyle =>
    00*2
    bool[italic] bool[underline] bool[strikethrough]
    int32[rtf-charset-number]
-   22
+   byte[x]
    byte[font-name-len] byte*[font-name-len][font-name]
    int32[text-color]
    00*2

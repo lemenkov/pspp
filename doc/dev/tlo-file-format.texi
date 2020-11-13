@@ -245,7 +245,7 @@ AreaStyle =>
    00*2
    bool[italic] bool[underline] bool[strikethrough]
    int32[rtf-charset-number]
-   22
+   byte[x]
    byte[font-name-len] byte*[font-name-len][font-name]
    int32[text-color]
    00*2
@@ -282,6 +282,9 @@ ignore it.
 
 @code{rtf-charset-number} is a character set number from RTF.  A
 reader can safely ignore it.
+
+The meaning of @code{x} is unknown.  Values 12, 22, 31, and 32 have
+been observed.
 
 The @code{font-name} is the name of a font, such as @code{Arial}.
 Only US-ASCII characters have been observed here.
