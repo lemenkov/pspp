@@ -1,7 +1,7 @@
 ## -*-perl-*-
 
 ## PSPP - a program for statistical analysis.
-## Copyright (C) 2019 Free Software Foundation, Inc.
+## Copyright (C) 2019, 2020 Free Software Foundation, Inc.
 ##
 ## This program is free software: you can redistribute it and/or modify
 ## it under the terms of the GNU General Public License as published by
@@ -25,9 +25,10 @@
 
 # change 'tests => 1' to 'tests => last_test_to_print';
 
-use Test::More tests => 37;
+use Test::More tests => 38;
 use Text::Diff;
 use File::Temp qw/ tempfile tempdir /;
+use Memory::Usage;
 BEGIN { use_ok('PSPP') };
 
 #########################
@@ -622,4 +623,49 @@ EOF
  my $n = $sf->get_case_cnt ();
 
  ok ($n == 5, "Case count");
+}
+
+
+# Check for a leak in append_case
+{
+    my $record_count = 10_000;
+    my $var_count = 10;
+
+    # Record amount of memory used by current process
+    my $mu = Memory::Usage->new();
+
+    my $dict = PSPP::Dict->new();
+    foreach my $i (1..$var_count)
+    {
+        my $var = PSPP::Var->new ($dict, "var$i", fmt => 12, width => 2);
+        $var->set_label ("var $i");
+    }
+
+    my $sysfile = PSPP::Sysfile->new ('testfile.sav', $dict, compress => 1);
+
+    $mu->record('');
+
+    foreach my $i (1..$record_count)
+    {
+        my @data = map { int(rand() * 100) } (1..$var_count);
+        $sysfile->append_case (\@data);
+    }
+
+    $mu->record('');
+
+    $sysfile->close;
+
+    my @memstate = @{$mu->state()};
+
+    my @array0 = @{$memstate[0]};
+    my @array1 = @{$memstate[1]};
+
+    # ignore the timestamps
+    $array0[0] = 0;
+    $array1[0] = 0;
+
+    my $result0 = join(",",@array0);
+    my $result1 = join(",",@array1);
+
+    ok (($result0 eq $result1), "Memory management of append_case");
 }

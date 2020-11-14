@@ -1,5 +1,6 @@
 /* PSPP - computes sample statistics.
-   Copyright (C) 2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014 Free Software Foundation, Inc.
+   Copyright (C) 2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014,
+   2020 Free Software Foundation, Inc.
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -686,7 +687,6 @@ CODE:
  const struct variable **vv;
  size_t nv;
  struct ccase *c;
- SV *sv;
 
  if ( av_len (av_case) >= dict_get_var_cnt (swi->dict->dict))
    XSRETURN_UNDEF;
@@ -696,37 +696,37 @@ CODE:
  dict_get_vars (swi->dict->dict, &vv, &nv,
                 1u << DC_ORDINARY | 1u << DC_SYSTEM);
 
- for (sv = av_shift (av_case); SvOK (sv);  sv = av_shift (av_case))
- {
+ for (SV *sv = av_shift (av_case); SvOK (sv);  sv = av_shift (av_case))
+  {
     const struct variable *v = vv[i++];
     const struct fmt_spec *ifmt = find_input_format (swi->dict, v);
 
     /* If an input format has been set, then use it.
-       Otherwise just convert the raw value.
-    */
-    if ( ifmt )
+       Otherwise just convert the raw value.    */
+    if (ifmt)
       {
-	struct substring ss = ss_cstr (SvPV_nolen (sv));
-	char *error;
-	bool ok;
-
-	error = data_in (ss, SvUTF8(sv) ? UTF8: "iso-8859-1", ifmt->type,
- 	       	         case_data_rw (c, v), var_get_width (v),
-			 dict_get_encoding (swi->dict->dict));
-        ok = error == NULL;
-        free (error);
-
-	if ( !ok )
-	  {
-	    RETVAL = 0;
-	    goto finish;
-	  }
+        struct substring ss = ss_cstr (SvPV_nolen (sv));
+        char *error = data_in (ss,
+                               SvUTF8(sv) ? UTF8: "iso-8859-1",
+                               ifmt->type,
+                               case_data_rw (c, v),
+                               var_get_width (v),
+                               dict_get_encoding (swi->dict->dict));
+        if (error)
+          {
+            free (error);
+            RETVAL = 0;
+            SvREFCNT_dec_NN (sv);
+            case_unref (c);
+            goto finish;
+          }
       }
     else
       {
-	scalar_to_value (case_data_rw (c, v), sv, v);
+        scalar_to_value (case_data_rw (c, v), sv, v);
       }
- }
+    SvREFCNT_dec_NN (sv);
+  }
 
  /* The remaining variables must be sysmis or blank string */
  while (i < dict_get_var_cnt (swi->dict->dict))
