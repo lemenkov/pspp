@@ -165,7 +165,7 @@ CLEANFILES += $(EXAMPLE_TXTS) $(EXAMPLE_SPVS) $(EXAMPLE_TEXIS) $(EXAMPLE_HTML)
 SUFFIXES += .sps .spv .txt .html .texi
 
 # Use pspp to process a syntax file into an output file.
-pspp = src/ui/terminal/pspp
+pspp = src/ui/terminal/pspp$(EXEEXT)
 $(EXAMPLE_SPVS): $(pspp)
 .sps.spv:
 	$(AM_V_GEN)(cd $(top_srcdir)/examples \
