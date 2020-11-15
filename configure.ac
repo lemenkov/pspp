@@ -48,6 +48,8 @@ PSPP_PERL
 PSPP_PYTHON
 AC_CHECK_PROGS([TEX], [tex], [no])
 AC_SUBST([TEX])
+AC_CHECK_PROGS([GWC], [gwc wc], [no])
+AC_SUBST([GWC])
 
 # This suppresses an error in gl/careadlinkat.c that otherwise can't be
 # avoided in GCC 10.x:
