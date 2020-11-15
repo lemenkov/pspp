@@ -38,7 +38,11 @@
 /* Mark a function as taking a printf- or scanf-like format
    string as its FMT'th argument and that the FIRST'th argument
    is the first one to be checked against the format string. */
+#if defined(__GNUC__) && ((__GNUC__ == 4 && __GNUC_MINOR__>= 4) || __GNUC__ > 4)
 #define PRINTF_FORMAT(FMT, FIRST) ATTRIBUTE ((format (gnu_printf, FMT, FIRST)))
+#else
+#define PRINTF_FORMAT(FMT, FIRST) ATTRIBUTE ((format (__printf__, FMT, FIRST)))
+#endif
 #define SCANF_FORMAT(FMT, FIRST) ATTRIBUTE ((format (__scanf__, FMT, FIRST)))
 
 /* Tells the compiler that a function may be treated as if any
