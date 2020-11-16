@@ -24,7 +24,7 @@ esac
 echo "Converting" $1 "to" $3 "size" $width"x"$width
 
 comment=`cat $2`
-gimp -i -b "\
+gimp -i -d -b "\
 (let* ((image (car (file-svg-load 1 \"$1\" \"$1\" 90 $width $width 0 ))))
       (gimp-image-attach-parasite image '(\"gimp-comment\" 0 \"$comment\"))
       (gimp-file-save 1 image (car (gimp-image-get-active-drawable image))
