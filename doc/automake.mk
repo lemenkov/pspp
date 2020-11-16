@@ -200,6 +200,8 @@ $(EXAMPLE_TXTS) $(EXAMPLE_HTML): $(pspp_output)
 	$(AM_V_GEN)$(SED) -e 's/@/@@/g' $< > $@
 
 AM_MAKEINFOHTMLFLAGS = $(AM_MAKEINFOFLAGS) --css-ref=pspp-manual.css
+html-local:
+
 install-html-local: html-local
 	$(MKDIR_P) $(DESTDIR)$(prefix)/share/doc/pspp/pspp.html
 	$(INSTALL_DATA) ${top_srcdir}/doc/pspp-manual.css $(DESTDIR)$(prefix)/share/doc/pspp/pspp.html
