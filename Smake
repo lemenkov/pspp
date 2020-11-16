@@ -293,6 +293,9 @@ everything: prep_ph  icons
 	$(MAKE) -f Smake Makefile.in configure
 
 icons: $(ICONS)
+clean-icons:
+	rm -f $(ICONS)
+.PHONY: icons clean-icons
 
 src/ui/gui/icons/manifest: $(MAKEFILE_LIST)
 	$(RM) $@
@@ -383,7 +386,7 @@ po/cat-id-tbl.c po/en@boldquot.header po/en@quot.header			\
 po/insert-header.sin po/quot.sed po/remove-potcdate.sin po/stamp-po	\
 po/Makevars.template po/pspp.pot
 
-clean:
+clean: clean-icons
 	rm -f config.sub config.guess config.rpath
 	rm -fr autom4te.cache
 	rm -f aclocal.m4
