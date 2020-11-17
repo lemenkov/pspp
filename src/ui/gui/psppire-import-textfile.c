@@ -616,8 +616,11 @@ reset_separators_page (PsppireImportAssistant *ia)
 /* Called just before the separators page becomes visible in the
    assistant. */
 static void
-prepare_separators_page (PsppireImportAssistant *ia)
+prepare_separators_page (PsppireImportAssistant *ia, GtkWidget *new_page, enum IMPORT_ASSISTANT_DIRECTION dir)
 {
+  if (dir != IMPORT_ASSISTANT_FORWARDS)
+    return;
+
   gtk_tree_view_set_model (GTK_TREE_VIEW (ia->fields_tree_view),
 			   GTK_TREE_MODEL (ia->delimiters_model));
 
