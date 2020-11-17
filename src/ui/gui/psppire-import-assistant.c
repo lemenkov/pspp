@@ -323,7 +323,6 @@ chooser_page_leave (PsppireImportAssistant *ia, GtkWidget *page, enum IMPORT_ASS
 
   if (!ia->spreadsheet)
     {
-      g_print ("%s:%d Where does this belong?\n", __FILE__, __LINE__);
       gchar *encoding = psppire_encoding_selector_get_encoding (ia->encoding_selector);
       ia->text_file = psppire_text_file_new (ia->file_name, encoding);
       gtk_tree_view_set_model (GTK_TREE_VIEW (ia->first_line_tree_view),
