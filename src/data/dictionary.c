@@ -1094,6 +1094,9 @@ make_hinted_name (const struct dictionary *dict, const char *hint)
   size_t ofs;
   int mblen;
 
+  if (hint_len > ID_MAX_LEN)
+    hint_len = ID_MAX_LEN;
+
   /* The allocation size here is OK: characters that are copied directly fit
      OK, and characters that are not copied directly are replaced by a single
      '_' byte.  If u8_mbtouc() replaces bad input by 0xfffd, then that will get
@@ -1200,6 +1203,7 @@ dict_make_unique_var_name (const struct dictionary *dict, const char *hint,
       if (hinted_name != NULL)
         return hinted_name;
     }
+
   return make_numeric_name (dict, num_start);
 }
 
