@@ -33,5 +33,7 @@ void separators_page_create (PsppireImportAssistant *ia);
 /* Set the data model for both the data sheet and the variable sheet.  */
 void textfile_set_data_models (PsppireImportAssistant *ia);
 
+void text_spec_gen_syntax (PsppireImportAssistant *ia, struct string *s);
+
 
 #endif
