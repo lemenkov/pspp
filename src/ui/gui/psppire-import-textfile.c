@@ -74,10 +74,9 @@ choose_likely_separators (PsppireImportAssistant *ia)
 
   gboolean valid;
   GtkTreeIter iter;
-  int j;
 
   struct hmap count_map[SEPARATOR_CNT];
-  for (j = 0; j < SEPARATOR_CNT; ++j)
+  for (int j = 0; j < SEPARATOR_CNT; ++j)
     hmap_init (count_map + j);
 
   GtkTreePath *p = gtk_tree_path_new_from_indices (first_line, -1);
@@ -140,7 +139,7 @@ choose_likely_separators (PsppireImportAssistant *ia)
     {
       int most_frequent = -1;
       int largest = 0;
-      for (j = 0; j < SEPARATOR_CNT; ++j)
+      for (int j = 0; j < SEPARATOR_CNT; ++j)
         {
           struct separator_count_node *cn;
           struct separator_count_node *next;
@@ -882,9 +881,8 @@ static void
 apply_dict (const struct dictionary *dict, struct string *s)
 {
   size_t var_cnt = dict_get_var_cnt (dict);
-  size_t i;
 
-  for (i = 0; i < var_cnt; i++)
+  for (size_t i = 0; i < var_cnt; i++)
     {
       struct variable *var = dict_get_var (dict, i);
       const char *name = var_get_name (var);
@@ -923,12 +921,11 @@ apply_dict (const struct dictionary *dict, struct string *s)
           const struct val_labs *vls = var_get_value_labels (var);
           const struct val_lab **labels = val_labs_sorted (vls);
           size_t n_labels = val_labs_count (vls);
-          size_t i;
 
           syntax_gen_pspp (s, "VALUE LABELS %ss", name);
-          for (i = 0; i < n_labels; i++)
+          for (size_t j = 0; j < n_labels; j++)
             {
-              const struct val_lab *vl = labels[i];
+              const struct val_lab *vl = labels[j];
               ds_put_cstr (s, "\n  ");
               syntax_gen_value (s, &vl->value, width, format);
               ds_put_byte (s, ' ');
