@@ -578,7 +578,7 @@ on_separators_custom_cb_toggle (GtkToggleButton *custom_cb,
 static void
 on_quote_combo_change (GtkComboBox *combo, PsppireImportAssistant *ia)
 {
-  //  revise_fields_preview (ia);
+  revise_fields_preview (ia);
 }
 
 /* Called when the user toggles the checkbox that enables
