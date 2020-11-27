@@ -158,11 +158,11 @@ distfiles: Makefile
 	      -e "s|^$$topsrcdirstrip/|$(top_builddir)/|;t" \
 	  | LC_ALL=C sort -u > $@
 CLEANFILES += distfiles gitfiles missing-distfiles
-PHONY += dist-hook-git dummy-prerequisistes
+PHONY += dist-hook-git dummy-prerequisites
 
--include dummy-prerequisistes
+-include dummy-prerequisites
 
-dummy-prerequisistes: $(BUILT_SOURCES) gl/libgl.la
+dummy-prerequisites: $(BUILT_SOURCES) gl/libgl.la
 
 
 
