@@ -328,7 +328,7 @@ PSPP_CHECK_PREREQS
 AC_CONFIG_FILES(
   [Makefile gl/Makefile po/Makefile tests/atlocal perl-module/lib/PSPP.pm])
 
-AC_CONFIG_COMMANDS([doc/examples/dummy], [:])
+AC_CONFIG_COMMANDS([doc/pspp-figures/dummy], [:])
 
 m4_ifdef([AM_SILENT_RULES], [AM_SILENT_RULES])
 

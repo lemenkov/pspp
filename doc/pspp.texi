@@ -25,7 +25,7 @@ graphic user interface
 @end html
 @cartouche
 @smallexample
-@verbatiminclude \FILE\
+@verbatiminclude pspp-figures/\FILE\
 @end smallexample
 @end cartouche
 @html

@@ -107,91 +107,91 @@ EXTRA_DIST += \
 	doc/pspp-manual.css
 
 
-AM_MAKEINFOFLAGS=-I $(top_srcdir)/doc/examples -I $(top_builddir)/doc/examples
-am__TEXINFO_TEX_DIR=:$(top_srcdir)/doc/examples:$(top_builddir)/doc/examples
+AM_MAKEINFOFLAGS=-I $(top_srcdir)/doc/pspp-figures -I $(top_builddir)/doc/pspp-figures
+am__TEXINFO_TEX_DIR=:$(top_srcdir)/doc/pspp-figures:$(top_builddir)/doc/pspp-figures
 
 ################# Example programs ##############################
 
-EXAMPLE_SYNTAX = \
- doc/examples/autorecode.sps \
- doc/examples/chisquare.sps \
- doc/examples/compute.sps \
- doc/examples/count.sps \
- doc/examples/descriptives.sps \
- doc/examples/flip.sps \
- doc/examples/frequencies.sps \
- doc/examples/means.sps \
- doc/examples/one-sample-t.sps \
- doc/examples/independent-samples-t.sps \
- doc/examples/reliability.sps \
- doc/examples/split.sps \
- doc/examples/tutorial1.sps \
- doc/examples/tutorial2.sps \
- doc/examples/tutorial3.sps \
- doc/examples/tutorial4.sps \
- doc/examples/tutorial5.sps \
- doc/examples/tutorial6.sps \
- doc/examples/tutorial7.sps \
- doc/examples/weight.sps
+FIGURE_SYNTAX = \
+ doc/pspp-figures/autorecode.sps \
+ doc/pspp-figures/chisquare.sps \
+ doc/pspp-figures/compute.sps \
+ doc/pspp-figures/count.sps \
+ doc/pspp-figures/descriptives.sps \
+ doc/pspp-figures/flip.sps \
+ doc/pspp-figures/frequencies.sps \
+ doc/pspp-figures/means.sps \
+ doc/pspp-figures/one-sample-t.sps \
+ doc/pspp-figures/independent-samples-t.sps \
+ doc/pspp-figures/reliability.sps \
+ doc/pspp-figures/split.sps \
+ doc/pspp-figures/tutorial1.sps \
+ doc/pspp-figures/tutorial2.sps \
+ doc/pspp-figures/tutorial3.sps \
+ doc/pspp-figures/tutorial4.sps \
+ doc/pspp-figures/tutorial5.sps \
+ doc/pspp-figures/tutorial6.sps \
+ doc/pspp-figures/tutorial7.sps \
+ doc/pspp-figures/weight.sps
 
 
-EXTRA_DIST += $(EXAMPLE_SYNTAX)
+EXTRA_DIST += $(FIGURE_SYNTAX)
 
-EXAMPLE_SPVS = $(EXAMPLE_SYNTAX:.sps=.spv) \
-	doc/examples/tutorial2a.spv \
-	doc/examples/tutorial2b.spv \
-	doc/examples/tutorial5a.spv \
-	doc/examples/tutorial5b.spv \
-	doc/examples/tutorial7a.spv \
-	doc/examples/tutorial7b.spv
-EXAMPLE_TXTS = $(EXAMPLE_SPVS:.spv=.txt)
-EXAMPLE_TEXIS = $(EXAMPLE_TXTS:.txt=.texi)
-EXAMPLE_HTML = $(EXAMPLE_SPVS:.spv=.html)
-EXAMPLE_PDF = $(EXAMPLE_SPVS:.spv=.pdf)
+FIGURE_SPVS = $(FIGURE_SYNTAX:.sps=.spv) \
+	doc/pspp-figures/tutorial2a.spv \
+	doc/pspp-figures/tutorial2b.spv \
+	doc/pspp-figures/tutorial5a.spv \
+	doc/pspp-figures/tutorial5b.spv \
+	doc/pspp-figures/tutorial7a.spv \
+	doc/pspp-figures/tutorial7b.spv
+FIGURE_TXTS = $(FIGURE_SPVS:.spv=.txt)
+FIGURE_TEXIS = $(FIGURE_TXTS:.txt=.texi)
+FIGURE_HTML = $(FIGURE_SPVS:.spv=.html)
+FIGURE_PDF = $(FIGURE_SPVS:.spv=.pdf)
 
-example-spv: $(EXAMPLE_SPVS)
-example-txts: $(EXAMPLE_TXTS)
-example-texis: $(EXAMPLE_TEXIS)
-example-html: $(EXAMPLE_HTML)
-example-pdf: $(EXAMPLE_PDF)
-PHONY += example-spv example-txts example-texis example-html example-pdf
+figure-spv: $(FIGURE_SPVS)
+figure-txts: $(FIGURE_TXTS)
+figure-texis: $(FIGURE_TEXIS)
+figure-html: $(FIGURE_HTML)
+figure-pdf: $(FIGURE_PDF)
+PHONY += figure-spv figure-txts figure-texis figure-html figure-pdf
 
-$(top_builddir)/doc/pspp.info:  $(EXAMPLE_TEXIS)
-$(top_builddir)/doc/pspp.ps:    $(EXAMPLE_TEXIS)
-$(top_builddir)/doc/pspp.dvi:   $(EXAMPLE_TEXIS)
-$(top_builddir)/doc/pspp.html:  $(EXAMPLE_HTML)
-$(top_builddir)/doc/pspp.pdf:   $(EXAMPLE_TEXIS)
-$(top_builddir)/doc/pspp.xml:   $(EXAMPLE_TEXIS)
+$(top_builddir)/doc/pspp.info:  $(FIGURE_TEXIS)
+$(top_builddir)/doc/pspp.ps:    $(FIGURE_TEXIS)
+$(top_builddir)/doc/pspp.dvi:   $(FIGURE_TEXIS)
+$(top_builddir)/doc/pspp.html:  $(FIGURE_HTML)
+$(top_builddir)/doc/pspp.pdf:   $(FIGURE_TEXIS)
+$(top_builddir)/doc/pspp.xml:   $(FIGURE_TEXIS)
 
-CLEANFILES += $(EXAMPLE_TXTS) $(EXAMPLE_SPVS) $(EXAMPLE_TEXIS) $(EXAMPLE_HTML)
+CLEANFILES += $(FIGURE_TXTS) $(FIGURE_SPVS) $(FIGURE_TEXIS) $(FIGURE_HTML)
 SUFFIXES += .sps .spv .txt .html .texi .pdf
 
 # Use pspp to process a syntax file into an output file.
 pspp = src/ui/terminal/pspp
-$(EXAMPLE_SPVS): $(pspp)$(EXEEXT)
+$(FIGURE_SPVS): $(pspp)$(EXEEXT)
 .sps.spv:
 	$(AM_V_GEN)(cd $(top_srcdir)/examples \
-         && $(abs_top_builddir)/$(pspp) ../doc/examples/$(<F) -o - -O format=spv) > $@.tmp
+         && $(abs_top_builddir)/$(pspp) ../doc/pspp-figures/$(<F) -o - -O format=spv) > $@.tmp
 	$(AM_V_at)mv $@.tmp $@
 
 # In some cases, the tutorial only wants some parts of the output.
 pspp_output = utilities/pspp-output
 convert = $(AM_V_GEN)$(pspp_output) convert $< $@
-doc/examples/tutorial2a.spv: doc/examples/tutorial2.spv $(pspp_output)
+doc/pspp-figures/tutorial2a.spv: doc/pspp-figures/tutorial2.spv $(pspp_output)
 	$(convert) --command='Descriptives'
-doc/examples/tutorial2b.spv: doc/examples/tutorial2.spv $(pspp_output)
+doc/pspp-figures/tutorial2b.spv: doc/pspp-figures/tutorial2.spv $(pspp_output)
 	$(convert) --label='Extreme Values'
-doc/examples/tutorial5a.spv: doc/examples/tutorial5.spv $(pspp_output)
+doc/pspp-figures/tutorial5a.spv: doc/pspp-figures/tutorial5.spv $(pspp_output)
 	$(convert) --commands=examine --nth-command=1 --labels=descriptives
-doc/examples/tutorial5b.spv: doc/examples/tutorial5.spv $(pspp_output)
+doc/pspp-figures/tutorial5b.spv: doc/pspp-figures/tutorial5.spv $(pspp_output)
 	$(convert) --commands=examine --nth-command=2 --labels=descriptives
-doc/examples/tutorial7a.spv: doc/examples/tutorial7.spv $(pspp_output)
+doc/pspp-figures/tutorial7a.spv: doc/pspp-figures/tutorial7.spv $(pspp_output)
 	$(convert) --commands=regression --nth-command=1 --subtypes=coefficients
-doc/examples/tutorial7b.spv: doc/examples/tutorial7.spv $(pspp_output)
+doc/pspp-figures/tutorial7b.spv: doc/pspp-figures/tutorial7.spv $(pspp_output)
 	$(convert) --commands=regression --nth-command=2 --subtypes=coefficients
 
 # Convert an output file into a text file or HTML file.
-$(EXAMPLE_TXTS) $(EXAMPLE_HTML): $(pspp_output)
+$(FIGURE_TXTS) $(FIGURE_HTML): $(pspp_output)
 .spv.txt:
 	$(AM_V_GEN)utilities/pspp-output convert $< $@
 .spv.pdf:
