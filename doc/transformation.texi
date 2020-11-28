@@ -841,10 +841,33 @@ cases.
 @cmd{SORT CASES} is a procedure.  It causes the data to be read.
 
 @cmd{SORT CASES} attempts to sort the entire active dataset in main memory.
-If workspace is exhausted, it falls back to a merge sort algorithm that
-involves creates numerous temporary files.
+If workspace is exhausted, it falls back to a merge sort algorithm which
+creates numerous temporary files.
 
 @cmd{SORT CASES} may not be specified following @cmd{TEMPORARY}.
 
 @subsection Sorting Example
 
+In @ref{sort-cases:ex} the data from the file @file {physiology.sav} is sorted
+by two variables, @i{viz@:} @exvar{sex} in descending order and @exvar{temperature} in
+ascending order.
+
+@float Example, sort-cases:ex
+@psppsyntax {sort-cases.sps}
+@caption {Sorting cases  by two variables.}
+@end float
+
+In @ref{sort-cases:res} you can see that all the cases with a @exvar{sex} of
+@samp{1} (female) appear before those with a sex of @samp{0} (male).
+This is because they have been sorted in descending order.
+Within each sex, the data is sorted on the @exvar{temperature} variable,
+this time in ascending order.
+
+@float Results, sort-cases:res
+@psppoutput {sort-cases}
+@caption {The @file{physiology.sav} file after sorting.}
+@end float
+
+Note that @cmd{SORT CASES}, like all other transformations, affects only the active file.
+It does not have any effect upon the @file{physiology.sav} file itself. For that, you
+would have to rewrite the file using the @cmd{SAVE} command (@pxref{SAVE}).

@@ -124,6 +124,7 @@ doc/pspp-figures/autorecode.sps \
  doc/pspp-figures/independent-samples-t.sps \
  doc/pspp-figures/reliability.sps \
  doc/pspp-figures/select-if.sps \
+ doc/pspp-figures/sort-cases.sps \
  doc/pspp-figures/split.sps \
  doc/pspp-figures/temporary.sps \
  doc/pspp-figures/tutorial1.sps \
