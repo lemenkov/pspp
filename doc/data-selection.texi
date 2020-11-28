@@ -156,10 +156,37 @@ deleted from the data stream.
 Place @cmd{SELECT IF} as early in the command file as
 possible.  Cases that are deleted early can be processed more
 efficiently in time and space.
+Once cases have been deleted from the active dataset using @cmd{SELECT IF} they
+cannot be re-instated.
+If you want to be able to re-instate cases, then use @cmd{FILTER} (@pxref{FILTER})
+instead.
 
 When @cmd{SELECT IF} is specified following @cmd{TEMPORARY}
 (@pxref{TEMPORARY}), the @cmd{LAG} function may not be used
 (@pxref{LAG}).
+
+@subsection Example Select-If
+
+A shop steward is interested in the salaries of younger personnel in a firm.
+The file @file{personnel.sav} provides the salaries of all the workers and their
+dates of birth.  The syntax in @ref{select-if:ex} shows how @cmd{SELECT IF} can
+be used to limit analysis only to those persons born after December 31, 1999.
+
+@float Example, select-if:ex
+@psppsyntax {select-if.sps}
+@caption {Using @cmd{SELECT IF} to select persons born on or after a certain date.}
+@end float
+
+From @ref{select-if:res} one can see that there are 56 persons listed in the dataset,
+and 17 of them were born after December 31, 1999.
+
+@float Result, select-if:res
+@psppoutput {select-if}
+@caption {Salary descriptives before and after the @cmd{SELECT IF} transformation.}
+@end float
+
+Note that the @file{personnel.sav} file from which the data were read is unaffected.
+The transformation affects only the active file.
 
 @node SPLIT FILE
 @section SPLIT FILE
