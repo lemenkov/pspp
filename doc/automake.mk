@@ -81,8 +81,8 @@ doc/pspp.xml: doc/pspp.texi $(doc_pspp_TEXINFOS) doc/help-pages-list
 if BROKEN_DOCBOOK_XML
 	touch $@
 else
-	$(AM_V_GEN)$(MAKEINFO) $(AM_MAKEINFOFLAGS) --docbook -I $(top_srcdir) \
-		$< -o $@
+	$(AM_V_GEN)$(MAKEINFO) --docbook $(AM_MAKEINFOFLAGS) $(MAKEINFOFLAGS) \
+		-I doc -I $(srcdir)/doc $< -o $@
 endif
 
 docbookdir = $(docdir)
@@ -106,9 +106,7 @@ EXTRA_DIST += \
 	doc/help-pages-list \
 	doc/pspp-manual.css
 
-
-AM_MAKEINFOFLAGS=-I $(top_srcdir)/doc/pspp-figures -I $(top_builddir)/doc/pspp-figures
-am__TEXINFO_TEX_DIR=:$(top_srcdir)/doc/pspp-figures:$(top_builddir)/doc/pspp-figures
+am__TEXINFO_TEX_DIR=:$(top_srcdir)/doc:$(top_builddir)/doc
 
 ################# Example programs ##############################
 
