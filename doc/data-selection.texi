@@ -249,31 +249,30 @@ procedure-like commands.
 
 Scratch variables cannot be used following @cmd{TEMPORARY}.
 
-An example may help to clarify:
+@subsection Example Temporary
 
-@example
-DATA LIST /X 1-2.
-BEGIN DATA.
- 2
- 4
-10
-15
-20
-24
-END DATA.
+In @ref{temporary:ex} there are two @cmd{COMPUTE} transformation.  One
+of them immediatly follows a @cmd{TEMPORARY} command, and therefore has
+effect only for the next procedure, which in this case is the first
+@cmd{DESCRIPTIVES} command.
 
-COMPUTE X=X/2.
+@float Example, temporary:ex
+@psppsyntax {temporary.sps}
+@caption {Running a @cmd{COMPUTE} transformation after @cmd{TEMPORARY}}
+@end float
 
-TEMPORARY.
-COMPUTE X=X+3.
+The data read by the first @cmd{DESCRIPTIVES} procedure are 4, 5, 8,
+10.5, 13, 15.  The data read by the second @cmd{DESCRIPTIVES} procedure are 1, 2,
+5, 7.5, 10, 12.   This is because the second @cmd{COMPUTE} transformation
+has no effect on the second @cmd{DESCRIPTIVES} procedure.   You can check these
+figures in @ref{temporary:res}.
 
-DESCRIPTIVES X.
-DESCRIPTIVES X.
-@end example
+@float Result, temporary:res
+@psppoutput {temporary}
+@caption {The results of running two consecutive @cmd{DESCRIPTIVES} commands after
+         a temporary transformation}
+@end float
 
-The data read by the first @cmd{DESCRIPTIVES} are 4, 5, 8,
-10.5, 13, 15.  The data read by the first @cmd{DESCRIPTIVES} are 1, 2,
-5, 7.5, 10, 12.
 
 @node WEIGHT
 @section WEIGHT
