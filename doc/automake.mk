@@ -146,24 +146,24 @@ FIGURE_SPVS = $(FIGURE_SYNTAX:.sps=.spv) \
 	doc/pspp-figures/tutorial7b.spv
 FIGURE_TXTS = $(FIGURE_SPVS:.spv=.txt)
 FIGURE_TEXIS = $(FIGURE_TXTS:.txt=.texi)
-FIGURE_HTML = $(FIGURE_SPVS:.spv=.html)
-FIGURE_PDF = $(FIGURE_SPVS:.spv=.pdf)
+FIGURE_HTMLS = $(FIGURE_SPVS:.spv=.html)
+FIGURE_PDFS = $(FIGURE_SPVS:.spv=.pdf)
 
-figure-spv: $(FIGURE_SPVS)
+figure-spvs: $(FIGURE_SPVS)
 figure-txts: $(FIGURE_TXTS)
 figure-texis: $(FIGURE_TEXIS)
-figure-html: $(FIGURE_HTML)
-figure-pdf: $(FIGURE_PDF)
-PHONY += figure-spv figure-txts figure-texis figure-html figure-pdf
+figure-htmls: $(FIGURE_HTMLS)
+figure-pdfs: $(FIGURE_PDFS)
+PHONY += figure-spv figure-txts figure-texis figure-htmls figure-pdfs
 
 $(top_builddir)/doc/pspp.info:  $(FIGURE_TEXIS)
 $(top_builddir)/doc/pspp.ps:    $(FIGURE_TEXIS)
 $(top_builddir)/doc/pspp.dvi:   $(FIGURE_TEXIS)
-$(top_builddir)/doc/pspp.html:  $(FIGURE_HTML)
+$(top_builddir)/doc/pspp.html:  $(FIGURE_HTMLS)
 $(top_builddir)/doc/pspp.pdf:   $(FIGURE_TEXIS)
 $(top_builddir)/doc/pspp.xml:   $(FIGURE_TEXIS)
 
-CLEANFILES += $(FIGURE_TXTS) $(FIGURE_SPVS) $(FIGURE_TEXIS) $(FIGURE_HTML)
+CLEANFILES += $(FIGURE_TXTS) $(FIGURE_SPVS) $(FIGURE_TEXIS) $(FIGURE_HTMLS)
 SUFFIXES += .sps .spv .txt .html .texi .pdf
 
 # Use pspp to process a syntax file into an output file.
@@ -191,7 +191,7 @@ doc/pspp-figures/tutorial7b.spv: doc/pspp-figures/tutorial7.spv $(pspp_output)
 	$(convert) --commands=regression --nth-command=2 --subtypes=coefficients
 
 # Convert an output file into a text file or HTML file.
-$(FIGURE_TXTS) $(FIGURE_HTML): $(pspp_output)
+$(FIGURE_TXTS) $(FIGURE_HTMLS): $(pspp_output)
 .spv.txt:
 	$(AM_V_GEN)utilities/pspp-output convert $< $@
 .spv.pdf:
