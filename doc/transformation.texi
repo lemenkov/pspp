@@ -224,6 +224,34 @@ causes the period to be interpreted as the end of the command.)
 @cmd{AGGREGATE} both ignores and cancels the current @cmd{SPLIT FILE}
 settings (@pxref{SPLIT FILE}).
 
+@subsection Aggregate Example
+
+The @file{personnel.sav} dataset provides the occupations and salaries of
+many individuals.  For many purposes however such detailed information is
+not interesting, but often the aggregated statistics of each occupation are
+of interest.  In @ref{aggregate:ex} the @cmd{AGGREGATE} command is used
+to calculate the mean, the median and the standard deviation of each
+occupation.
+
+@float Example, aggregate:ex
+@psppsyntax {aggregate.sps}
+@caption {Calculating aggregated statistics from the @file{personnel.sav} file.}
+@end float
+
+Since we chose the @samp{MODE = REPLACE} option, in @ref{aggregate:res} cases
+for the individual persons are no longer present.  They have each been replaced
+by a single case per aggregated value.
+
+@float Results, aggregate:res
+@psppoutput {aggregate}
+@caption {Aggregated mean, median and standard deviation per @exvar{occupation}.}
+@end float
+
+Note that some values for the standard deviation are blank.
+This is because there is only one case with the respective
+occupation.
+
+
 @node AUTORECODE
 @section AUTORECODE
 @vindex AUTORECODE
