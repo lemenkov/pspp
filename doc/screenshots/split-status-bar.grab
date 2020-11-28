@@ -1,0 +1,36 @@
+## PSPP - a program for statistical analysis.
+## Copyright (C) 2020 Free Software Foundation, Inc.
+##
+## This program is free software: you can redistribute it and/or modify
+## it under the terms of the GNU General Public License as published by
+## the Free Software Foundation, either version 3 of the License, or
+## (at your option) any later version.
+##
+## This program is distributed in the hope that it will be useful,
+## but WITHOUT ANY WARRANTY; without even the implied warranty of
+## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+## GNU General Public License for more details.
+##
+## You should have received a copy of the GNU General Public License
+## along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+xdotool key ctrl+o
+hard_type $topsrcdir/examples/horticulture.sav
+xdotool key Return
+xdotool sleep 1
+xdotool key alt+d p
+xdotool search --sync --name "Split File" windowfocus --sync
+xdotool sleep 1
+xdotool key alt+t
+xdotool key shift+Tab
+xdotool sleep 1
+xdotool key Down Return
+xdotool key Tab Tab Tab Tab Tab space
+
+xdotool sleep 1
+tfile=`mktemp --suffix=.xwd`
+xwd -root > $tfile
+convert -crop 700x100+0+800 $tfile $output,tmp
+rm -f $tfile
+
+if test $? -ne 0; then fail; fi

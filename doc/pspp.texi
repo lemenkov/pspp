@@ -33,6 +33,20 @@ graphic user interface
 @end html
 @end macro
 
+@macro psppimage{FILE}
+@cartouche
+@ifhtml
+@image{screenshots/\FILE\-ad} @c Adwaita theme is better for web pages.
+@end ifhtml
+@iftex
+@image{screenshots/\FILE\-hc,433.62pt} @c High Contrast theme, width \\the\\hsize
+@end iftex
+@ifinfo
+@image{screenshots/\FILE\-ad} @c Adwaita theme for stand aloneinfo
+@end ifinfo
+@end cartouche
+@end macro
+
 @macro psppoutput{FILE}
 @ifnothtml
 @smallexample

@@ -142,6 +142,11 @@ first @cmd{DESCRIPTIVES} command.
 @caption {Running two @cmd{DESCRIPTIVES} commands, one with the @subcmd{SAVE} subcommand}
 @end float
 
+@float Screenshot, descriptives:scr
+@psppimage {descriptives}
+@caption {The Descriptives dialog box with two variables and Z-Scores option selected}
+@end float
+
 In @ref{descriptives:res}, we can see that there are 40 valid data for each of the variables
 and no missing values.   The mean average of the height and temperature is 16677.12
 and 37.02 respectively.  The descriptive statistics for temperature seem reasonable.
@@ -289,6 +294,11 @@ variables are distributed.
 If you are using the graphic user interface, the dialog box is set up such that
 by default, several statistics are calculated.   Some are not particularly useful
 for categorical variables, so you may want to disable those.
+
+@float Screenshot, frequencies:scr
+@psppimage {frequencies}
+@caption {The frequencies dialog box with the @exvar{sex} and @exvar{occupation} variables selected}
+@end float
 
 From @ref{frequencies:res} it is evident that there are 33 males, 21 females and
 2 persons for whom their sex has not been entered.
@@ -1464,6 +1474,11 @@ The analysis is performed as shown in @ref{chisquare:ex}.
 There is only one test variable, @i{viz:} @exvar{sex}.  The other variables in the dataset
 are ignored.
 
+@float Screenshot, chisquare:scr
+@psppimage {chisquare}
+@caption {Performing a chi-square test using the graphic user interface}
+@end float
+
 In @ref{chisquare:res} the summary box shows that in the sample, there are more males
 than females.  However the significance of chi-square result is greater than 0.05
 --- the most commonly accepted p-value --- and therefore
@@ -1843,6 +1858,12 @@ using the @cmd{SELECT} command.
 @caption {Running a one sample T-Test after excluding all non-positive values}
 @end float
 
+@float Screenshot, one-sample-t:scr
+@psppimage {one-sample-t}
+@caption {Using the One Sample T-Test dialog box to test @exvar{weight} for a mean of 76.8kg}
+@end float
+
+
 @ref{one-sample-t:res} shows that the mean of our sample differs from the test value
 by -1.40kg.  However the significance is very high (0.610).  So one cannot
 reject the null hypothesis, and must conclude there is not enough evidence
@@ -1902,13 +1923,28 @@ using the @cmd{SELECT} command.
 The null hypothesis is that both males and females are on average
 of equal height.
 
+@float Screenshot, independent-samples-t:scr
+@psppimage {independent-samples-t}
+@caption {Using the Independent Sample T-test dialog, to test for differences of @exvar{height} between values of @exvar{sex}}
+@end float
+
+
 In this case, the grouping variable is @exvar{sex}, so this is entered
 as the variable for the @subcmd{GROUP} subcommand.  The group values are  0 (male) and
 1 (female).
 
 If you are running the proceedure using syntax, then you need to enter
 the values corresponding to each group within parentheses.
+If you are using the graphic user interface, then you have to open
+the ``Define Groups'' dialog box and enter the values corresponding
+to each group as shown in @ref{define-groups-t:scr}.  If, as in this case, the dataset has defined value
+labels for the group variable, then you can enter them by label
+or by value.
 
+@float Screenshot, define-groups-t:scr
+@psppimage {define-groups-t}
+@caption {Setting the values of the grouping variable for an Independent Samples T-test}
+@end float
 
 From @ref{independent-samples-t:res}, one can clearly see that the @emph{sample} mean height
 is greater for males than for females.  However in order to see if this
@@ -2229,6 +2265,11 @@ to use @cmd{COMPUTE} (@pxref{COMPUTE}) and this is what is done in @ref{reliabil
 
 In this case, all variables in the data set are used.  So we can use the special
 keyword @samp{ALL} (@pxref{BNF}).
+
+@float Screenshot, reliability:src
+@psppimage {reliability}
+@caption {Reliability dialog box with all variables selected}
+@end float
 
 @ref{reliability:res} shows that Cronbach's Alpha is 0.11  which is a value normally considered too
 low to indicate consistency within the data.  This is possibly due to the small number of

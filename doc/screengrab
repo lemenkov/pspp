@@ -1,0 +1,133 @@
+#!/bin/bash
+## PSPP - a program for statistical analysis.
+## Copyright (C) 2020 Free Software Foundation, Inc.
+##
+## This program is free software: you can redistribute it and/or modify
+## it under the terms of the GNU General Public License as published by
+## the Free Software Foundation, either version 3 of the License, or
+## (at your option) any later version.
+##
+## This program is distributed in the hope that it will be useful,
+## but WITHOUT ANY WARRANTY; without even the implied warranty of
+## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+## GNU General Public License for more details.
+##
+## You should have received a copy of the GNU General Public License
+## along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+fail ()
+{
+    kill $pid;
+    echo FAILED to grab image for $payload
+    cat $errfile
+    rm -f $errfile
+    exit 1;
+}
+
+pass ()
+{
+    kill $pid;
+    rm -f $errfile
+    exit 0;
+}
+
+# Types the argument, with a pause after the first character.
+hard_type ()
+{
+    xdotool type "${1:0:1}"
+    xdotool sleep 0.5
+    xdotool type "${1:1}"
+}
+
+theme=Aidwaita
+
+while test $# -gt 0; do
+    case "$1" in
+        --topsrcdir=*)
+            topsrcdir=${1/--topsrcdir=/}
+        ;;
+        --application=*)
+            application=${1/--application=/}
+            ;;
+        --x-server=*)
+            xserver=${1/--x-server=/}
+            ;;
+        --payload=*)
+            payload=${1/--payload=/}
+        ;;
+        --theme=*)
+            theme=${1/--theme=/}
+        ;;
+        *)
+            output=$1;
+        ;;
+    esac
+    shift 1;
+done
+
+rm -f $output
+export LC_ALL=C
+
+width=1440
+height=900
+
+temp=`mktemp -d`
+export HOME=$temp
+
+mkdir -p $HOME/.config
+cat > $HOME/.config/psppirerc <<EOF
+[PsppireOutputWindow]
+maximize=true
+
+[PsppireDataWindow]
+maximize=true
+height=$height
+width=$width
+
+[PsppireSyntaxWindow]
+maximize=true
+EOF
+
+
+# xserver=xephyr
+
+case "$xserver" in
+    xvfb)
+        display=:$RANDOM
+        Xvfb +extension XTEST \
+             -screen 0 "$width"x"$height"x24 \
+             $display &
+        ;;
+    xephyr)
+        display=:$RANDOM
+        Xephyr -screen "$width"x"$height" \
+               +extension XTEST \
+               -noxv \
+               -dumb $display &
+        ;;
+    native)
+        display=$DISPLAY
+        ;;
+    *)
+        printf "Unknown X server type\n";
+        exit 1;
+        ;;
+esac
+pid=$!
+export DISPLAY=$display
+export GTK_THEME=$theme
+
+sleep 1
+
+errfile=`mktemp`
+$application -q -n 2> $errfile &
+if test "$xserver"x = "native"x; then pid=$!; fi
+
+xdotool sleep 0.5
+if test $? -ne 0 ; then fail; fi
+
+trap fail ERR
+. $payload
+
+mv $output,tmp $output
+pass;

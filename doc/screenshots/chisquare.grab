@@ -1,0 +1,31 @@
+## PSPP - a program for statistical analysis.
+## Copyright (C) 2020 Free Software Foundation, Inc.
+##
+## This program is free software: you can redistribute it and/or modify
+## it under the terms of the GNU General Public License as published by
+## the Free Software Foundation, either version 3 of the License, or
+## (at your option) any later version.
+##
+## This program is distributed in the hope that it will be useful,
+## but WITHOUT ANY WARRANTY; without even the implied warranty of
+## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+## GNU General Public License for more details.
+##
+## You should have received a copy of the GNU General Public License
+## along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+xdotool key ctrl+o
+hard_type $topsrcdir/examples/physiology.sav
+xdotool key Return
+xdotool sleep 1
+xdotool mousemove --sync 300 10 click 1
+xdotool sleep 1
+xdotool key Down Down Down Down Down Down Down Down Down Right Return
+xdotool sleep 10
+xdotool key Down Return
+xdotool sleep 1
+xdotool key Tab Tab Tab Tab
+
+xdotool sleep 1
+xwd -name "Chi-Square Test" > $output,tmp
+if test $? -ne 0; then fail; fi

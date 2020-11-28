@@ -254,6 +254,17 @@ split.
 
 Unless @cmd{TEMPORARY} was used, after a split has been defined for
 a dataset it remains active until explicitly disabled.
+In the graphical user interface, the active split variable (if any) is
+displayed in the status bar (@pxref{split-status-bar:scr}.
+If a dataset is saved to a system file (@pxref{SAVE}) whilst a split
+is active, the split stastus is stored in the file and will be
+automatically loaded when that file is loaded.
+
+@float Screenshot, split-status-bar:scr
+@psppimage {split-status-bar}
+@caption {The status bar indicating that the data set is split using the @exvar{treatment} variable}
+@end float
+
 
 @node TEMPORARY
 @section TEMPORARY

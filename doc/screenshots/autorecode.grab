@@ -1,0 +1,39 @@
+## PSPP - a program for statistical analysis.
+## Copyright (C) 2020 Free Software Foundation, Inc.
+##
+## This program is free software: you can redistribute it and/or modify
+## it under the terms of the GNU General Public License as published by
+## the Free Software Foundation, either version 3 of the License, or
+## (at your option) any later version.
+##
+## This program is distributed in the hope that it will be useful,
+## but WITHOUT ANY WARRANTY; without even the implied warranty of
+## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+## GNU General Public License for more details.
+##
+## You should have received a copy of the GNU General Public License
+## along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+xdotool key ctrl+o
+hard_type $topsrcdir/examples/personnel.sav
+xdotool key Return
+xdotool sleep 1
+#xdotool mousemove --sync 240 10 click 1
+xdotool key alt+t
+#xdotool key Down Down Down Return
+xdotool key m
+xdotool search --sync --name "Automatic Recode" windowfocus --sync
+xdotool sleep 2
+xdotool key Down
+xdotool key Down Down Down Down Return
+xdotool sleep 1
+
+xdotool key shift+Tab Return
+xdotool key alt+n
+xdotool type occ
+
+
+
+xdotool sleep 1
+xwd -name "Automatic Recode" > $output,tmp
+if test $? -ne 0; then fail; fi

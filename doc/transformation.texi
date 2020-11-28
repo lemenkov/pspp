@@ -338,6 +338,11 @@ after correcting a data entry error}
 @end float
 
 
+@float Screenshot, autorecode:scr
+@psppimage {autorecode}
+@caption {Autorecode dialog box set to recode @exvar{occupation} to @exvar{occ}}
+@end float
+
 Notice in @ref{autorecode:res}, how  the new variable has been automatically
 allocated value labels which correspond to the strings of the old variable.
 This means that in future analyses the descriptive strings are reported instead
@@ -414,8 +419,17 @@ It also shows how you can add a label to this new variable (@pxref{VARIABLE LABE
 so that a more descriptive label appears in subsequent analyses, and this can be seen
 in the ouput from the @cmd{DESCRIPTIVES} command in @ref{bmi:res}.
 
+@float Screenshot, bmi:scr
+@psppimage {compute}
+@caption {Using the dialog box to generate a new variable and compute its values}
+@end float
+
 The expression which follows the @samp{=} sign can be as complicated as necessary.
 @xref{Expressions} for a precise description of the language accepted.
+Normally it is easiest to enter the code directly, however there is a dialog box
+available if desired.  This is illustrated in @ref{bmi:scr}.
+One advantage is that it offers a list of mathematical
+functions which can be selected and pasted into the expression.
 
 @float Results, bmi:res
 @psppoutput {compute}
@@ -498,6 +512,28 @@ are 2 or lower.
 
 In @ref{count:ex} the @cmd{COUNT} transformation creates a new variable, @exvar{low_counts} and
 its values are shown using the @cmd{LIST} command.
+
+If using the graphic user interface, a two step process must be used to set
+up the @cmd{COUNT} transformation.  The first dialog box (@ref{count:scr}) provides for the
+variables to be chosen.
+Then, one must click on the button marked ``Define Values...'' to reveal
+the dialog box for selecting the values to count.
+
+@float Screenshot, count:scr
+@psppimage {count}
+@caption {The variables @exvar{v1}, @exvar{v2} and @exvar{v3} selected, ready
+to define values to count}
+@end float
+
+In this dialog box, you must select the values you wish to count
+--- in this case all values up to and including 2 --- as shown in @ref{count-define:scr}
+and click ``Add''.  As many ranges or may be added as you desire.
+When all desired ranges have been added click ``Continue''.
+
+@float Screenshot, count-define:scr
+@psppimage {count-define}
+@caption {Count ``Define Values'' dialog with @samp{lowest thru 2} selected}
+@end float
 
 In @ref{count:res} we can see the values of @exvar{low_counts} after the @cmd{COUNT}
 transformation has completed.  The first value is 1, because there is only one
@@ -871,3 +907,28 @@ this time in ascending order.
 Note that @cmd{SORT CASES}, like all other transformations, affects only the active file.
 It does not have any effect upon the @file{physiology.sav} file itself. For that, you
 would have to rewrite the file using the @cmd{SAVE} command (@pxref{SAVE}).
+
+When using the graphic user interface, it is often simpler to perform a sort
+directly from the data view.
+To do this, switch to the data view.  Select the column corresponding to the
+variable by which you want to sort and click button 1 and then click button 3.
+A popup menu will appear like that shown in @ref{sort-simple:scr}.  Select
+either ``Sort Ascending'' or ``Sort Descending'' from this menu.
+
+@float Screenshot, sort-simple:scr
+@psppimage {sort-simple}
+@caption {Sorting the data on a single variable @exvar{height}}
+@end float
+
+However, sometimes you will want to sort on two or more variables, and that is
+not possible using this method.  In this case, you must either use some code or
+the ``Sort Cases'' dialog from the Data menu.  @ref{sort:scr} shows the dialog
+box set up to perform a sort on both @exvar{sex} and @exvar{height}.
+Note that the order in which you enter the variables is important.  In this case,
+the data will be first sorted on @exvar{sex}, and then all cases for which @exvar{sex}
+is the same will then be sorted by @exvar{height}.
+
+@float Screenshot, sort:scr
+@psppimage {sort}
+@caption {Sorting the data on two variables @exvar{sex} and  @exvar{height}}
+@end float

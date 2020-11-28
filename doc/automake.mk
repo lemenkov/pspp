@@ -112,7 +112,7 @@ am__TEXINFO_TEX_DIR=:$(top_srcdir)/doc:$(top_builddir)/doc
 
 FIGURE_SYNTAX = \
  doc/pspp-figures/aggregate.sps \
-doc/pspp-figures/autorecode.sps \
+ doc/pspp-figures/autorecode.sps \
  doc/pspp-figures/chisquare.sps \
  doc/pspp-figures/compute.sps \
  doc/pspp-figures/count.sps \
@@ -206,12 +206,21 @@ $(FIGURE_TXTS) $(FIGURE_HTMLS): $(pspp_output)
 	$(AM_V_GEN)$(SED) -e 's/@/@@/g' $< > $@
 
 AM_MAKEINFOHTMLFLAGS = $(AM_MAKEINFOFLAGS) --css-ref=pspp-manual.css
+# Adjust the path for screenshot images.
+# But make sure these operations are idempotent.
 html-local:
+	for h in doc/pspp.html/*.html; do \
+		if grep -Fq '<img src="screenshots/' $$h; then continue; fi ; \
+		$(SED) -i -e 's|<img src="\([^"]*\)"|<img src="screenshots/\1"|' $$h; \
+	done
 
-install-html-local: html-local
+install-html-local: html-local $(HTML_SCREENSHOTS)
 	$(MKDIR_P) $(DESTDIR)$(prefix)/share/doc/pspp/pspp.html
+	$(INSTALL) -d $(DESTDIR)$(prefix)/share/doc/pspp/pspp.html/screenshots
+	for p in $(HTML_SCREENSHOTS); do \
+		$(INSTALL_DATA) $$p $(DESTDIR)$(prefix)/share/doc/pspp/pspp.html/screenshots ;\
+	done
 	$(INSTALL_DATA) ${top_srcdir}/doc/pspp-manual.css $(DESTDIR)$(prefix)/share/doc/pspp/pspp.html
-
 
 
 
@@ -234,3 +243,54 @@ dist_appdata_DATA = doc/org.fsf.pspp.metainfo.xml
 
 EXTRA_DIST += doc/org.fsf.pspp.metainfo.xml.in \
 	doc/org.fsf.pspp.desktop.in
+
+
+
+SCREENSHOTS = \
+$(top_srcdir)/doc/screenshots/autorecode.grab \
+$(top_srcdir)/doc/screenshots/chisquare.grab \
+$(top_srcdir)/doc/screenshots/count.grab \
+$(top_srcdir)/doc/screenshots/count-define.grab \
+$(top_srcdir)/doc/screenshots/compute.grab \
+$(top_srcdir)/doc/screenshots/descriptives.grab \
+$(top_srcdir)/doc/screenshots/one-sample-t.grab \
+$(top_srcdir)/doc/screenshots/independent-samples-t.grab \
+$(top_srcdir)/doc/screenshots/define-groups-t.grab \
+$(top_srcdir)/doc/screenshots/frequencies.grab \
+$(top_srcdir)/doc/screenshots/reliability.grab \
+$(top_srcdir)/doc/screenshots/split-status-bar.grab \
+$(top_srcdir)/doc/screenshots/sort-simple.grab \
+$(top_srcdir)/doc/screenshots/sort.grab
+
+
+PDF_SCREENSHOTS =  $(SCREENSHOTS:.grab=-hc.png)
+EPS_SCREENSHOTS =  $(SCREENSHOTS:.grab=-hc.eps)
+HTML_SCREENSHOTS = $(SCREENSHOTS:.grab=-ad.png)
+INFO_SCREENSHOTS = $(SCREENSHOTS:.grab=-ad.png)
+
+doc-make: doc/doc-make.in Makefile
+	$(SED) -e 's|%top_srcdir%|@top_srcdir@|g' \
+	-e 's|%abs_builddir%|@abs_builddir@|g' \
+	-e 's|%MKDIR_P%|@MKDIR_P@|g' \
+	-e 's|%src_ui_gui_psppiredir%|$(src_ui_gui_psppiredir)|g' \
+	-e 's|%UI_FILES%|$(UI_FILES)|g' \
+	-e 's|%IMAGES%|$(INFO_SCREENSHOTS) $(HTML_SCREENSHOTS) $(EPS_SCREENSHOTS) $(PDF_SCREENSHOTS)|g' \
+	$< > $@
+
+
+# Install all the PNG files so that info readers can recognise them
+install-info-local:
+	$(MKDIR_P) $(DESTDIR)$(prefix)/share/info/
+	for p in $(INFO_SCREENSHOTS); do \
+		$(INSTALL_DATA) $$p $(DESTDIR)$(prefix)/share/info/ ;\
+	done
+
+uninstall-local:
+	for p in $(INFO_SCREENSHOTS); do \
+		f=`basename $$p ` ; \
+		$(RM) $(DESTDIR)$(prefix)/share/info/$$f ; \
+	done
+
+EXTRA_DIST+= $(SCREENSHOTS) doc/doc-make.in doc/screengrab
+
+EXTRA_DIST+= $(EPS_SCREENSHOTS) $(PDF_SCREENSHOTS) $(INFO_SCREENSHOTS)

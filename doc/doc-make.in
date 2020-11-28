@@ -1,0 +1,88 @@
+# -*- makefile -*-
+## PSPP - a program for statistical analysis.
+## Copyright (C) 2020 Free Software Foundation, Inc.
+##
+## This program is free software: you can redistribute it and/or modify
+## it under the terms of the GNU General Public License as published by
+## the Free Software Foundation, either version 3 of the License, or
+## (at your option) any later version.
+##
+## This program is distributed in the hope that it will be useful,
+## but WITHOUT ANY WARRANTY; without even the implied warranty of
+## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+## GNU General Public License for more details.
+##
+## You should have received a copy of the GNU General Public License
+## along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+# This makefile is used to generate the artifacts needed by the
+# user manual.
+
+
+# In order to get this makefile to work there are several programs
+# which need to be found on $PATH.  Using debian 10.5 you can install
+# these with:
+#  apt-get install xdotool xvfb imagemagick x11-apps
+# and optionally:
+#  apt-get install xserver-xephyr
+
+
+MKDIR_P=%MKDIR_P%
+top_srcdir=%top_srcdir%
+abs_builddir=%abs_builddir%
+src_ui_gui_psppiredir=%src_ui_gui_psppiredir%
+
+IMAGES=%IMAGES%
+
+UI_FILES=%UI_FILES%
+
+all: $(IMAGES)
+
+## The ui files must be installed in order for screenshots to succeed
+installed_ui_files=${subst src/ui/gui,$(src_ui_gui_psppiredir),$(UI_FILES)}
+
+src/ui/gui/psppire:
+	$(MAKE) -f Makefile $@
+
+XSERVER?=xvfb
+
+# Generate a X11 window dump based on a .grab file
+
+# Default theme for web pages
+$(top_srcdir)/doc/screenshots/%-ad.xwd: src/ui/gui/psppire $(top_srcdir)/doc/screengrab $(top_srcdir)/doc/screenshots/%.grab $(installed_ui_files)
+	@$(MKDIR_P) ${dir $@}
+	bash ${word 2,$^} --application=$< --topsrcdir=$(top_srcdir) --x-server=$(XSERVER) --theme=Adwaita --payload=${word 3,$^} $@
+
+# High Contrast theme for printed manuals
+$(top_srcdir)/doc/screenshots/%-hc.xwd: src/ui/gui/psppire $(top_srcdir)/doc/screengrab $(top_srcdir)/doc/screenshots/%.grab $(installed_ui_files)
+	@$(MKDIR_P) ${dir $@}
+	bash ${word 2,$^} --application=$< --topsrcdir=$(top_srcdir) --x-server=$(XSERVER) --theme=HighContrast --payload=${word 3,$^} $@
+
+.PRECIOUS: $(top_srcdir)/doc/screenshots/%-ad.xwd $(top_srcdir)/doc/screenshots/%-hc.xwd
+
+
+%.png: %.xwd
+	convert $< $@
+
+%.eps: %.xwd
+	convert $< $@
+
+
+$(src_ui_gui_psppiredir)/%.ui: $(top_srcdir)/src/ui/gui/%.ui
+	@$(MKDIR_P) ${dir $@}
+	cp $< $@
+
+
+# Syntax examples
+
+src/ui/terminal/pspp:
+	$(MAKE) -f Makefile $@
+
+.PHONY: md5
+md5:
+	(cd $(top_srcdir)/doc/screenshots; md5sum *.xwd)
+
+.PHONY: clean
+clean:
+	$(RM) $(IMAGES)
+	$(RM) $(top_srcdir)/doc/screenshots/*.xwd
