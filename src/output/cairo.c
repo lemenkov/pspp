@@ -817,17 +817,13 @@ xr_set_cairo (struct xr_driver *xr, cairo_t *cairo)
 }
 
 static struct output_driver *
-xr_create (const char *file_name, enum settings_output_devices device_type,
+xr_create (struct file_handle *fh, enum settings_output_devices device_type,
            struct string_map *o, enum xr_output_type file_type)
 {
-  struct xr_driver *xr;
-  cairo_status_t status;
-  double width_pt, length_pt;
-
-  xr = xr_allocate (file_name, device_type, o, 72.0 / 128.0);
-
-  width_pt = xr_to_pt (xr->width + xr->left_margin + xr->right_margin);
-  length_pt = xr_to_pt (xr->length + xr->top_margin + xr->bottom_margin);
+  const char *file_name = fh_get_file_name (fh);
+  struct xr_driver *xr = xr_allocate (file_name, device_type, o, 72.0 / 128.0);
+  double width_pt = xr_to_pt (xr->width + xr->left_margin + xr->right_margin);
+  double length_pt = xr_to_pt (xr->length + xr->top_margin + xr->bottom_margin);
   if (file_type == XR_PDF)
     xr->surface = cairo_pdf_surface_create (file_name, width_pt, length_pt);
   else if (file_type == XR_PS)
@@ -837,20 +833,22 @@ xr_create (const char *file_name, enum settings_output_devices device_type,
   else
     NOT_REACHED ();
 
-  status = cairo_surface_status (xr->surface);
+  cairo_status_t status = cairo_surface_status (xr->surface);
   if (status != CAIRO_STATUS_SUCCESS)
     {
       msg (ME, _("error opening output file `%s': %s"),
-             file_name, cairo_status_to_string (status));
+           file_name, cairo_status_to_string (status));
       goto error;
     }
 
   if (!xr_check_fonts (xr->surface, xr->fonts, xr->width, xr->length))
     goto error;
 
+  fh_unref (fh);
   return &xr->driver;
 
  error:
+  fh_unref (fh);
   output_driver_destroy (&xr->driver);
   return NULL;
 }
@@ -859,27 +857,21 @@ static struct output_driver *
 xr_pdf_create (struct  file_handle *fh, enum settings_output_devices device_type,
                struct string_map *o)
 {
-  struct output_driver *od = xr_create (fh_get_file_name (fh), device_type, o, XR_PDF);
-  fh_unref (fh);
-  return od ;
+  return xr_create (fh, device_type, o, XR_PDF);
 }
 
 static struct output_driver *
 xr_ps_create (struct  file_handle *fh, enum settings_output_devices device_type,
                struct string_map *o)
 {
-  struct output_driver *od =  xr_create (fh_get_file_name (fh), device_type, o, XR_PS);
-  fh_unref (fh);
-  return od ;
+  return xr_create (fh, device_type, o, XR_PS);
 }
 
 static struct output_driver *
 xr_svg_create (struct file_handle *fh, enum settings_output_devices device_type,
                struct string_map *o)
 {
-  struct output_driver *od = xr_create (fh_get_file_name (fh), device_type, o, XR_SVG);
-  fh_unref (fh);
-  return od ;
+  return xr_create (fh, device_type, o, XR_SVG);
 }
 
 static void
