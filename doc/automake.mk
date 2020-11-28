@@ -193,11 +193,11 @@ doc/pspp-figures/tutorial7b.spv: doc/pspp-figures/tutorial7.spv $(pspp_output)
 # Convert an output file into a text file or HTML file.
 $(FIGURE_TXTS) $(FIGURE_HTMLS): $(pspp_output)
 .spv.txt:
-	$(AM_V_GEN)utilities/pspp-output convert $< $@
+	$(convert)
 .spv.pdf:
-	$(AM_V_GEN)utilities/pspp-output convert $< $@ -O left-margin=0pt -O right-margin=0pt -O top-margin=0pt -O bottom-margin=0pt -O paper-size=6x20in -O font-size=12000 --table-look=$(HOME)/pspp/spss15/Looks/report.tlo
+	$(convert) -O left-margin=0pt -O right-margin=0pt -O top-margin=0pt -O bottom-margin=0pt -O paper-size=6x20in -O font-size=12000 --table-look=$(HOME)/pspp/spss15/Looks/report.tlo
 .spv.html:
-	$(AM_V_GEN)utilities/pspp-output convert $< $@ -O format=html -O bare=true
+	$(convert) -O format=html -O bare=true
 
 # Convert a text file into a Texinfo file.
 .txt.texi:
