@@ -173,7 +173,6 @@ struct xr_driver
     int page_number;		/* Current page number. */
     int x, y;
     struct xr_render_fsm *fsm;
-    struct string_map heading_vars;
   };
 
 static const struct output_driver_class cairo_driver_class;
@@ -601,8 +600,6 @@ xr_allocate (const char *name, int device_type, struct string_map *o,
   struct output_driver *d = &xr->driver;
 
   output_driver_init (d, &cairo_driver_class, name, device_type);
-
-  string_map_init (&xr->heading_vars);
 
   /* This is a nasty kluge for an issue that does not make sense.  On any
      surface other than a screen (e.g. for output to PDF or PS or SVG), the
@@ -2234,12 +2231,10 @@ static struct xr_render_fsm *
 xr_render_text (struct xr_driver *xr, const struct text_item *text_item)
 {
   enum text_item_type type = text_item_get_type (text_item);
-  const char *text = text_item_get_text (text_item);
 
   switch (type)
     {
     case TEXT_ITEM_PAGE_TITLE:
-      string_map_replace (&xr->heading_vars, "PageTitle", text);
       break;
 
     case TEXT_ITEM_EJECT_PAGE:
