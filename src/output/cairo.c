@@ -168,9 +168,6 @@ struct xr_driver
     struct render_params *params;
     double font_scale;
     int char_width, char_height;
-    char *command_name;
-    char *title;
-    char *subtitle;
     cairo_t *cairo;
     cairo_surface_t *surface;
     int page_number;		/* Current page number. */
