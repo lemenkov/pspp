@@ -171,7 +171,7 @@ struct xr_driver
     cairo_t *cairo;
     cairo_surface_t *surface;
     int page_number;		/* Current page number. */
-    int x, y;
+    int y;
     struct xr_render_fsm *fsm;
   };
 
@@ -1010,7 +1010,7 @@ xr_driver_next_page (struct xr_driver *xr, cairo_t *cairo)
 
   xr->page_number++;
   xr->cairo = cairo;
-  xr->x = xr->y = 0;
+  xr->y = 0;
 
   xr_render_page_heading (xr->cairo, xr->fonts[XR_FONT_PROPORTIONAL].desc,
                           &xr->headings[0], xr->page_number, xr->width, true,
@@ -1092,8 +1092,8 @@ dump_line (struct xr_driver *xr, int x0, int y0, int x1, int y1, int style,
     xr_to_pt (style == RENDER_LINE_THICK ? XR_LINE_WIDTH * 2
               : style == RENDER_LINE_THIN ? XR_LINE_WIDTH / 2
               : XR_LINE_WIDTH));
-  cairo_move_to (xr->cairo, xr_to_pt (x0 + xr->x), xr_to_pt (y0 + xr->y));
-  cairo_line_to (xr->cairo, xr_to_pt (x1 + xr->x), xr_to_pt (y1 + xr->y));
+  cairo_move_to (xr->cairo, xr_to_pt (x0), xr_to_pt (y0 + xr->y));
+  cairo_line_to (xr->cairo, xr_to_pt (x1), xr_to_pt (y1 + xr->y));
   cairo_stroke (xr->cairo);
 }
 
@@ -1102,12 +1102,12 @@ dump_rectangle (struct xr_driver *xr, int x0, int y0, int x1, int y1)
 {
   cairo_new_path (xr->cairo);
   cairo_set_line_width (xr->cairo, xr_to_pt (XR_LINE_WIDTH));
-  cairo_move_to (xr->cairo, xr_to_pt (x0 + xr->x), xr_to_pt (y0 + xr->y));
-  cairo_line_to (xr->cairo, xr_to_pt (x1 + xr->x), xr_to_pt (y0 + xr->y));
-  cairo_line_to (xr->cairo, xr_to_pt (x1 + xr->x), xr_to_pt (y1 + xr->y));
-  cairo_line_to (xr->cairo, xr_to_pt (x0 + xr->x), xr_to_pt (y1 + xr->y));
   cairo_close_path (xr->cairo);
   cairo_stroke (xr->cairo);
+  cairo_move_to (xr->cairo, xr_to_pt (x0), xr_to_pt (y0 + xr->y));
+  cairo_line_to (xr->cairo, xr_to_pt (x1), xr_to_pt (y0 + xr->y));
+  cairo_line_to (xr->cairo, xr_to_pt (x1), xr_to_pt (y1 + xr->y));
+  cairo_line_to (xr->cairo, xr_to_pt (x0), xr_to_pt (y1 + xr->y));
 }
 
 static void
@@ -1116,7 +1116,7 @@ fill_rectangle (struct xr_driver *xr, int x0, int y0, int x1, int y1)
   cairo_new_path (xr->cairo);
   cairo_set_line_width (xr->cairo, xr_to_pt (XR_LINE_WIDTH));
   cairo_rectangle (xr->cairo,
-                   xr_to_pt (x0 + xr->x), xr_to_pt (y0 + xr->y),
+                   xr_to_pt (x0), xr_to_pt (y0 + xr->y),
                    xr_to_pt (x1 - x0), xr_to_pt (y1 - y0));
   cairo_fill (xr->cairo);
 }
@@ -1419,9 +1419,9 @@ xr_clip (struct xr_driver *xr, int clip[TABLE_N_AXES][2])
 {
   if (clip[H][1] != INT_MAX || clip[V][1] != INT_MAX)
     {
-      double x0 = xr_to_pt (clip[H][0] + xr->x);
+      double x0 = xr_to_pt (clip[H][0]);
       double y0 = xr_to_pt (clip[V][0] + xr->y);
-      double x1 = xr_to_pt (clip[H][1] + xr->x);
+      double x1 = xr_to_pt (clip[H][1]);
       double y1 = xr_to_pt (clip[V][1] + xr->y);
 
       cairo_rectangle (xr->cairo, x0, y0, x1 - x0, y1 - y0);
@@ -1691,13 +1691,13 @@ xr_layout_cell_text (struct xr_driver *xr, const struct table_cell *cell,
       if (options & TAB_ROTATE)
         {
           cairo_translate (xr->cairo,
-                           xr_to_pt (bb[H][0] + xr->x),
+                           xr_to_pt (bb[H][0]),
                            xr_to_pt (bb[V][1] + xr->y));
           cairo_rotate (xr->cairo, -M_PI_2);
         }
       else
         cairo_translate (xr->cairo,
-                         xr_to_pt (bb[H][0] + xr->x),
+                         xr_to_pt (bb[H][0]),
                          xr_to_pt (bb[V][0] + xr->y));
       pango_cairo_show_layout (xr->cairo, font->layout);
 
@@ -1716,9 +1716,9 @@ xr_layout_cell_text (struct xr_driver *xr, const struct table_cell *cell,
               cairo_save (xr->cairo);
               cairo_set_source_rgb (xr->cairo, 1, 0, 0);
               dump_rectangle (xr,
-                              pango_to_xr (extents.x) - xr->x,
+                              pango_to_xr (extents.x),
                               pango_to_xr (extents.y) - xr->y,
-                              pango_to_xr (extents.x + extents.width) - xr->x,
+                              pango_to_xr (extents.x + extents.width),
                               pango_to_xr (extents.y + extents.height) - xr->y);
               cairo_restore (xr->cairo);
             }
