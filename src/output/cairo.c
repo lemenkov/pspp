@@ -176,7 +176,6 @@ struct xr_driver
     int page_number;		/* Current page number. */
     int x, y;
     struct xr_render_fsm *fsm;
-    int nest;
     struct string_map heading_vars;
   };
 
@@ -1779,7 +1778,7 @@ xr_layout_cell_text (struct xr_driver *xr, const struct table_cell *cell,
          be useful for debugging issues with breaking.  */
       if (0)
         {
-          if (best && !xr->nest)
+          if (best)
             dump_line (xr, -xr->left_margin, best,
                        xr->width + xr->right_margin, best,
                        RENDER_LINE_SINGLE,
@@ -1812,13 +1811,9 @@ xr_layout_cell (struct xr_driver *xr, const struct table_cell *cell,
     {
       if (clip[H][0] != clip[H][1])
         {
-          int offset = (xr->nest) * XR_POINT;
-
           cairo_save (xr->cairo);
           cairo_set_source_rgb (xr->cairo, 0, 0, 1);
-          dump_rectangle (xr,
-                          bb[H][0] + offset, bb[V][0] + offset,
-                          bb[H][1] - offset, bb[V][1] - offset);
+          dump_rectangle (xr, bb[H][0], bb[V][0], bb[H][1], bb[V][1]);
           cairo_restore (xr->cairo);
         }
     }
