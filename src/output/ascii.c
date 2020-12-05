@@ -292,8 +292,8 @@ ascii_create (struct  file_handle *fh, enum settings_output_devices device_type,
   a->min_hbreak = parse_int (opt (d, o, "min-hbreak", "-1"), -1, INT_MAX);
 
 #ifdef HAVE_CAIRO
-  parse_color (d, o, "background-color", "#FFFFFFFFFFFF", &a->bg);
-  parse_color (d, o, "foreground-color", "#000000000000", &a->fg);
+  a->bg = parse_color (opt (d, o, "background-color", "#FFFFFFFFFFFF"));
+  a->fg = parse_color (opt (d, o, "foreground-color", "#000000000000"));
 #endif
 
   const char *default_box = (terminal && (!strcmp (locale_charset (), "UTF-8")

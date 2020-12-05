@@ -51,5 +51,6 @@ int parse_int (struct driver_option *, int min_value, int max_value);
 int parse_dimension (struct driver_option *);
 char *parse_string (struct driver_option *);
 char *parse_chart_file_name (struct driver_option *);
+struct cell_color parse_color (struct driver_option *);
 
 #endif /* output/options.h */

@@ -195,8 +195,8 @@ html_create (struct file_handle *fh, enum settings_output_devices device_type,
   html->file = NULL;
   html->chart_cnt = 1;
 #ifdef HAVE_CAIRO
-  parse_color (d, o, "background-color", "#FFFFFFFFFFFF", &html->bg);
-  parse_color (d, o, "foreground-color", "#000000000000", &html->fg);
+  html->bg = parse_color (opt (d, o, "background-color", "#FFFFFFFFFFFF"));
+  html->fg = parse_color (opt (d, o, "foreground-color", "#000000000000"));
 #endif
   html->file = fn_open (html->handle, "w");
   if (html->file == NULL)

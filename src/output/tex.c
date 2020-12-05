@@ -133,8 +133,8 @@ tex_create (struct file_handle *fh, enum settings_output_devices device_type,
                                                       fh_get_file_name (fh)));
   tex->chart_cnt = 1;
 #ifdef HAVE_CAIRO
-  parse_color (d, o, "background-color", "#FFFFFFFFFFFF", &tex->bg);
-  parse_color (d, o, "foreground-color", "#000000000000", &tex->fg);
+  tex->bg = parse_color (opt (d, o, "background-color", "#FFFFFFFFFFFF"));
+  tex->fg = parse_color (opt (d, o, "foreground-color", "#000000000000"));
 #endif
 
   tex->file = fn_open (tex->handle, "w");
