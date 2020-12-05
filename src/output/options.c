@@ -324,7 +324,7 @@ parse_chart_file_name (struct driver_option *o)
         {
           msg (MW, _("%s: `%s' is `%s' but a file name that contains "
                          "`#' is required."),
-                 o->name, o->value, o->driver_name);
+               o->driver_name, o->name, o->value);
           chart_file_name = default_chart_file_name (o->default_value);
         }
     }
