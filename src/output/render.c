@@ -1472,6 +1472,10 @@ struct render_pager
   {
     const struct render_params *params;
 
+    /* An array of "render_page"s to be rendered, in order, vertically.  From
+       the user's perspective, there's only one table per render_pager, but the
+       implementation treats the title, table body, caption, footnotes,
+       etc. each as a table, and that's why we have an array here. */
     struct render_page **pages;
     size_t n_pages, allocated_pages;
 
