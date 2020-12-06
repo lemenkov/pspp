@@ -24,6 +24,7 @@
 #include "libpspp/assertion.h"
 #include "libpspp/pool.h"
 #include "output/table.h"
+#include "output/page-eject-item.h"
 #include "output/table-item.h"
 #include "output/text-item.h"
 #include "output/table-provider.h"
@@ -532,7 +533,7 @@ pivot_table_submit (struct pivot_table *pt)
       PIVOT_AXIS_FOR_EACH (layer_indexes, &pt->axes[PIVOT_AXIS_LAYER])
         {
           if (pt->look.paginate_layers)
-            text_item_submit (text_item_create (TEXT_ITEM_EJECT_PAGE, ""));
+            page_eject_item_submit (page_eject_item_create ());
           pivot_table_submit_layer (pt, layer_indexes);
         }
     }

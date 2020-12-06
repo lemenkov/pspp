@@ -294,9 +294,6 @@ void
 spv_writer_put_text (struct spv_writer *w, const struct text_item *text,
                      const char *command_id)
 {
-  if (text->type == TEXT_ITEM_EJECT_PAGE)
-    w->need_page_break = true;
-
   bool initial_depth = w->heading_depth;
   if (!initial_depth)
     spv_writer_open_file (w);
@@ -324,6 +321,12 @@ spv_writer_put_text (struct spv_writer *w, const struct text_item *text,
 
   if (!initial_depth)
     spv_writer_close_file (w, "");
+}
+
+void
+spv_writer_eject_page (struct spv_writer *w)
+{
+  w->need_page_break = true;
 }
 
 #define H TABLE_HORZ

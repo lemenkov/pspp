@@ -30,6 +30,7 @@
 #include "output/driver-provider.h"
 #include "output/options.h"
 #include "output/message-item.h"
+#include "output/page-eject-item.h"
 #include "output/table-item.h"
 #include "output/table-provider.h"
 
@@ -297,6 +298,11 @@ csv_submit (struct output_driver *driver,
         }
       else
         csv_output_lines (csv, text);
+    }
+  else if (is_page_eject_item (output_item))
+    {
+      csv_put_separator (csv);
+      csv_output_lines (csv, "");
     }
   else if (is_message_item (output_item))
     {

@@ -40,4 +40,6 @@ void spv_writer_put_text (struct spv_writer *, const struct text_item *,
                           const char *command_id);
 void spv_writer_put_table (struct spv_writer *, const struct pivot_table *);
 
+void spv_writer_eject_page (struct spv_writer *);
+
 #endif /* output/spv/spv-writer.h */

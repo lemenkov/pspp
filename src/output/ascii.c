@@ -518,7 +518,7 @@ ascii_submit (struct output_driver *driver,
       const struct text_item *text_item = to_text_item (output_item);
       enum text_item_type type = text_item_get_type (text_item);
 
-      if (type != TEXT_ITEM_PAGE_TITLE && type != TEXT_ITEM_EJECT_PAGE)
+      if (type != TEXT_ITEM_PAGE_TITLE)
         ascii_output_table_item_unref (
           a, text_item_to_table_item (text_item_ref (text_item)));
     }

@@ -50,9 +50,6 @@ text_item_type_to_string (enum text_item_type type)
     case TEXT_ITEM_LOG:
       return _("Log");
 
-    case TEXT_ITEM_EJECT_PAGE:
-      return _("Page Break");
-
     default:
       return _("Text");
     }

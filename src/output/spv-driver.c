@@ -23,6 +23,7 @@
 #include "data/file-handle-def.h"
 #include "libpspp/cast.h"
 #include "output/group-item.h"
+#include "output/page-eject-item.h"
 #include "output/page-setup-item.h"
 #include "output/table-item.h"
 #include "output/text-item.h"
@@ -109,6 +110,8 @@ spv_submit (struct output_driver *driver,
   else if (is_text_item (output_item))
     spv_writer_put_text (spv->writer, to_text_item (output_item),
                          output_get_command_name ());
+  else if (is_page_eject_item (output_item))
+    spv_writer_eject_page (spv->writer);
   else if (is_page_setup_item (output_item))
     spv_writer_set_page_setup (spv->writer,
                                to_page_setup_item (output_item)->page_setup);

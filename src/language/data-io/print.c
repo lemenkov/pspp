@@ -42,6 +42,7 @@
 #include "libpspp/u8-line.h"
 #include "output/pivot-table.h"
 #include "output/table.h"
+#include "output/page-eject-item.h"
 #include "output/text-item.h"
 
 #include "gl/xalloc.h"
@@ -555,7 +556,7 @@ print_text_flush_records (struct print_trns *trns, struct u8_line *line,
         {
           *eject = false;
           if (trns->writer == NULL)
-            text_item_submit (text_item_create (TEXT_ITEM_EJECT_PAGE, ""));
+            page_eject_item_submit (page_eject_item_create ());
           else
             leader = '1';
         }

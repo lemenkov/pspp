@@ -43,6 +43,7 @@
 #include "output/group-item.h"
 #include "output/message-item.h"
 #include "output/options.h"
+#include "output/page-eject-item.h"
 #include "output/page-setup-item.h"
 #include "output/render.h"
 #include "output/table-item.h"
@@ -1961,11 +1962,6 @@ xr_render_text (struct xr_driver *xr, const struct text_item *text_item)
     case TEXT_ITEM_PAGE_TITLE:
       break;
 
-    case TEXT_ITEM_EJECT_PAGE:
-      if (xr->y > 0)
-        return xr_render_eject ();
-      break;
-
     default:
       return xr_render_table (
         xr, text_item_to_table_item (text_item_ref (text_item)));
@@ -1994,6 +1990,8 @@ xr_render_output_item (struct xr_driver *xr,
     return xr_render_chart (to_chart_item (output_item));
   else if (is_text_item (output_item))
     return xr_render_text (xr, to_text_item (output_item));
+  else if (is_page_eject_item (output_item))
+    return xr->y > 0 ? xr_render_eject () : NULL;
   else if (is_message_item (output_item))
     return xr_render_message (xr, to_message_item (output_item));
   else

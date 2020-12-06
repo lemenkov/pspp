@@ -305,10 +305,6 @@ html_submit (struct output_driver *driver,
         case TEXT_ITEM_LOG:
           print_title_tag (html->file, "pre", s); /* should be <P><TT> */
           break;
-
-        case TEXT_ITEM_EJECT_PAGE:
-          /* Nothing to do. */
-          break;
         }
     }
   else if (is_message_item (output_item))

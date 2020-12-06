@@ -353,10 +353,6 @@ tex_submit (struct output_driver *driver,
           shipout (&tex->token_list, "}\\par\n\n");
           break;
 
-        case TEXT_ITEM_EJECT_PAGE:
-          /* Nothing to do. */
-          break;
-
         case TEXT_ITEM_SYNTAX:
           /* So far as I'm aware, this can never happen.  */
         default:

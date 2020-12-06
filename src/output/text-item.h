@@ -34,7 +34,6 @@ enum text_item_type
     TEXT_ITEM_TITLE,            /* Title. */
     TEXT_ITEM_SYNTAX,           /* Syntax printback logging. */
     TEXT_ITEM_LOG,              /* Other logging. */
-    TEXT_ITEM_EJECT_PAGE        /* Eject page. */
   };
 
 const char *text_item_type_to_string (enum text_item_type);
