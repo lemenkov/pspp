@@ -174,6 +174,9 @@ get_xr_options (struct psppire_output_view *view, struct string_map *options)
   string_map_insert (options, "right-margin", "0");
   string_map_insert (options, "top-margin", "0");
   string_map_insert (options, "bottom-margin", "0");
+
+  string_map_insert (options, "transparent", "true");
+  string_map_insert (options, "systemcolors", "true");
 }
 
 static void
@@ -310,11 +313,6 @@ create_drawing_area (struct psppire_output_view *view,
                      GtkWidget *drawing_area, struct xr_rendering *r,
                      int tw, int th, const struct output_item *item)
 {
-  struct string_map options = STRING_MAP_INITIALIZER (options);
-  string_map_insert (&options, "transparent", "true");
-  string_map_insert (&options, "systemcolors", "true");
-  xr_rendering_apply_options (r, &options);
-
   g_object_set_data_full (G_OBJECT (drawing_area),
                           "rendering", r, free_rendering);
   g_signal_connect (drawing_area, "button-press-event",

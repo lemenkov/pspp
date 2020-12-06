@@ -42,7 +42,6 @@ struct xr_rendering *xr_rendering_create (struct xr_driver *,
                                           cairo_t *);
 void xr_rendering_destroy (struct xr_rendering *);
 
-void xr_rendering_apply_options (struct xr_rendering *, struct string_map *o);
 void xr_rendering_measure (const struct xr_rendering *, int *w, int *h);
 void xr_rendering_draw (struct xr_rendering *r, cairo_t *cr,
                         int x0, int y0, int x1, int y1);
