@@ -109,7 +109,6 @@ enum xr_output_type
 enum xr_font_type
   {
     XR_FONT_PROPORTIONAL,
-    XR_FONT_EMPHASIS,
     XR_FONT_FIXED,
     XR_N_FONTS
   };
@@ -288,8 +287,6 @@ apply_options (struct xr_driver *xr, struct string_map *o)
     (d, o, "fixed-font", "monospace", font_size, false, false);
   xr->fonts[XR_FONT_PROPORTIONAL].desc = parse_font_option (
     d, o, "prop-font", "sans serif", font_size, false, false);
-  xr->fonts[XR_FONT_EMPHASIS].desc = parse_font_option (
-    d, o, "emph-font", "sans serif", font_size, false, true);
 
   xr->fg = parse_color (opt (d, o, "foreground-color", "#000000000000"));
   xr->bg = parse_color (opt (d, o, "background-color", "#FFFFFFFFFFFF"));
