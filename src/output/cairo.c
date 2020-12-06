@@ -148,9 +148,6 @@ struct xr_driver
     int top_margin;             /* Top margin in inch/(72 * XR_POINT). */
     int bottom_margin;          /* Bottom margin in inch/(72 * XR_POINT). */
 
-    int line_space;		/* Space between lines. */
-    int line_width;		/* Width of lines. */
-
     int min_break[TABLE_N_AXES]; /* Min cell size to break across pages. */
     int object_spacing;         /* Space between output objects. */
 
