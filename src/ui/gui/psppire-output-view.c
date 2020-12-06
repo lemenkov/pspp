@@ -18,6 +18,7 @@
 
 #include "ui/gui/psppire-output-view.h"
 
+#include <cairo/cairo-svg.h>
 #include <errno.h>
 #include <stdbool.h>
 
@@ -26,6 +27,7 @@
 #endif
 #include "libpspp/assertion.h"
 #include "libpspp/string-map.h"
+#include "output/cairo-fsm.h"
 #include "output/cairo.h"
 #include "output/driver-provider.h"
 #include "output/driver.h"
@@ -53,15 +55,14 @@ struct output_view_item
 
 struct psppire_output_view
   {
-    struct xr_driver *xr;
-    int font_height;
+    struct xr_fsm_style *style;
+    int object_spacing;
 
     GtkLayout *output;
     int render_width;
     int max_width;
     glong y;
 
-    struct string_map render_opts;
     GtkTreeView *overview;
     GtkTreePath *cur_group;
 
@@ -114,7 +115,7 @@ draw_callback (GtkWidget *widget, cairo_t *cr, gpointer data)
   if (!gdk_cairo_get_clip_rectangle (cr, &clip))
     return TRUE;
 
-  struct xr_rendering *r = g_object_get_data (G_OBJECT (widget), "rendering");
+  struct xr_fsm *fsm = g_object_get_data (G_OBJECT (widget), "fsm");
 
   /* Draw the background based on the state of the widget
      which can be selected or not selected */
@@ -127,83 +128,47 @@ draw_callback (GtkWidget *widget, cairo_t *cr, gpointer data)
   GdkRGBA color;
   gtk_style_context_get_color (context, state, &color);
   cairo_set_source_rgba (cr, color.red, color.green, color.blue, color.alpha);
-  xr_rendering_draw (r, cr, clip.x, clip.y,
-                     clip.x + clip.width, clip.y + clip.height);
+  xr_fsm_draw_region (fsm, cr, clip.x, clip.y, clip.width, clip.height);
 
   return TRUE;
 }
 
 static void
-free_rendering (gpointer rendering_)
+free_fsm (gpointer fsm_)
 {
-  struct xr_rendering *rendering = rendering_;
-  xr_rendering_destroy (rendering);
+  struct xr_fsm *fsm = fsm_;
+  xr_fsm_destroy (fsm);
 }
 
-static void
-get_xr_options (struct psppire_output_view *view, struct string_map *options)
+static struct xr_fsm_style *
+get_xr_fsm_style (struct psppire_output_view *view)
 {
-  string_map_clear (options);
-
   GtkStyleContext *context
     = gtk_widget_get_style_context (GTK_WIDGET (view->output));
   GtkStateFlags state = gtk_widget_get_state_flags (GTK_WIDGET (view->output));
 
-  /* Use GTK+ default font as proportional font. */
-  PangoFontDescription *font_desc;
-  gtk_style_context_get (context, state, "font", &font_desc, NULL);
-  char *font_name = pango_font_description_to_string (font_desc);
-  string_map_insert (options, "prop-font", font_name);
-  g_free (font_name);
+  int xr_width = view->render_width * 1000;
 
-  /* Derived emphasized font from proportional font. */
-  pango_font_description_set_style (font_desc, PANGO_STYLE_ITALIC);
-  font_name = pango_font_description_to_string (font_desc);
-  string_map_insert (options, "emph-font", font_name);
-  g_free (font_name);
-  pango_font_description_free (font_desc);
+  PangoFontDescription *pf;
+  gtk_style_context_get (context, state, "font", &pf, NULL);
+  PangoFontDescription *ff = pango_font_description_from_string ("Monospace");
+  pango_font_description_set_size (ff, pango_font_description_get_size (pf));
 
-  /* Pretend that the "page" has a reasonable width and a very big length,
-     so that most tables can be conveniently viewed on-screen with vertical
-     scrolling only.  (The length should not be increased very much because
-     it is already close enough to INT_MAX when expressed as thousands of a
-     point.) */
-  string_map_insert_nocopy (options, xstrdup ("paper-size"),
-                            xasprintf ("%dx1000000pt", view->render_width));
-  string_map_insert (options, "left-margin", "0");
-  string_map_insert (options, "right-margin", "0");
-  string_map_insert (options, "top-margin", "0");
-  string_map_insert (options, "bottom-margin", "0");
+  struct xr_fsm_style *style = xmalloc (sizeof *style);
+  *style = (struct xr_fsm_style) {
+    .ref_cnt = 1,
+    .size = { [TABLE_HORZ] = xr_width, [TABLE_VERT] = INT_MAX },
+    .min_break = { [TABLE_HORZ] = xr_width / 2, [TABLE_VERT] = 0 },
+    .fonts = {
+      [XR_FONT_PROPORTIONAL] = pf,
+      [XR_FONT_FIXED] = ff,
+    },
+    .use_system_colors = true,
+    .transparent = true,
+    .font_scale = 1.0,
+  };
 
-  string_map_insert (options, "transparent", "true");
-  string_map_insert (options, "systemcolors", "true");
-}
-
-static void
-create_xr (struct psppire_output_view *view)
-{
-  get_xr_options (view, &view->render_opts);
-
-  struct string_map options;
-  string_map_clone (&options, &view->render_opts);
-
-  GdkWindow *win = gtk_layout_get_bin_window (view->output);
-  cairo_region_t *region = gdk_window_get_visible_region (win);
-  GdkDrawingContext *ctx = gdk_window_begin_draw_frame (win, region);
-  cairo_t *cr = gdk_drawing_context_get_cairo_context (ctx);
-
-  view->xr = xr_driver_create (cr, &options);
-  string_map_destroy (&options);
-
-  struct text_item *text_item = text_item_create (TEXT_ITEM_LOG, "X");
-  struct xr_rendering *r
-    = xr_rendering_create (view->xr, text_item_super (text_item), cr);
-  xr_rendering_measure (r, NULL, &view->font_height);
-  xr_rendering_destroy (r);
-  text_item_unref (text_item);
-
-  gdk_window_end_draw_frame (win, ctx);
-  cairo_region_destroy (region);
+  return style;
 }
 
 /* Return the horizontal position to place a widget whose
@@ -310,11 +275,11 @@ drag_data_get_cb (GtkWidget *widget, GdkDragContext *context,
 
 static void
 create_drawing_area (struct psppire_output_view *view,
-                     GtkWidget *drawing_area, struct xr_rendering *r,
+                     GtkWidget *drawing_area, struct xr_fsm *r,
                      int tw, int th, const struct output_item *item)
 {
   g_object_set_data_full (G_OBJECT (drawing_area),
-                          "rendering", r, free_rendering);
+                          "fsm", r, free_fsm);
   g_signal_connect (drawing_area, "button-press-event",
 		    G_CALLBACK (button_press_event_cb), view);
   gtk_widget_add_events (drawing_area, GDK_BUTTON_PRESS_MASK);
@@ -351,8 +316,8 @@ rerender (struct psppire_output_view *view)
   if (!view->n_items || ! gdkw)
     return;
 
-  if (view->xr == NULL)
-    create_xr (view);
+  if (!view->style)
+    view->style = get_xr_fsm_style (view);
 
   GdkWindow *win = gtk_layout_get_bin_window (view->output);
   cairo_region_t *region = gdk_window_get_visible_region (win);
@@ -363,24 +328,24 @@ rerender (struct psppire_output_view *view)
   view->max_width = 0;
   for (item = view->items; item < &view->items[view->n_items]; item++)
     {
-      struct xr_rendering *r;
+      struct xr_fsm *r;
       GtkAllocation alloc;
       int tw, th;
 
       if (view->y > 0)
-        view->y += view->font_height / 2;
+        view->y += view->object_spacing;
 
       if (is_group_open_item (item->item))
         continue;
 
-      r = xr_rendering_create (view->xr, item->item, cr);
+      r = xr_fsm_create (item->item, view->style, cr);
       if (r == NULL)
         {
           g_warn_if_reached ();
           continue;
         }
 
-      xr_rendering_measure (r, &tw, &th);
+      xr_fsm_measure (r, cr, &tw, &th);
 
       gint xpos = get_xpos (view, tw);
 
@@ -392,7 +357,7 @@ rerender (struct psppire_output_view *view)
       else
         {
           g_object_set_data_full (G_OBJECT (item->drawing_area),
-                                  "rendering", r, free_rendering);
+                                  "fsm", r, free_fsm);
           gtk_widget_set_size_request (item->drawing_area, tw, th);
           gtk_layout_move (view->output, item->drawing_area, xpos, view->y);
         }
@@ -421,8 +386,8 @@ rerender (struct psppire_output_view *view)
     }
 
   gtk_layout_set_size (view->output,
-                       view->max_width + view->font_height,
-                       view->y + view->font_height);
+                       view->max_width + view->object_spacing,
+                       view->y + view->object_spacing);
 
   gdk_window_end_draw_frame (win, ctx);
   cairo_region_destroy (region);
@@ -472,17 +437,17 @@ psppire_output_view_put (struct psppire_output_view *view,
     {
       view_item->drawing_area = drawing_area = gtk_drawing_area_new ();
 
-      if (view->xr == NULL)
-        create_xr (view);
+      if (!view->style)
+        view->style = get_xr_fsm_style (view);
 
       cairo_region_t *region = gdk_window_get_visible_region (win);
       GdkDrawingContext *ctx = gdk_window_begin_draw_frame (win, region);
       cairo_t *cr = gdk_drawing_context_get_cairo_context (ctx);
 
       if (view->y > 0)
-        view->y += view->font_height / 2;
+        view->y += view->object_spacing;
 
-      struct xr_rendering *r = xr_rendering_create (view->xr, item, cr);
+      struct xr_fsm *r = xr_fsm_create (item, view->style, cr);
       if (r == NULL)
 	{
 	  gdk_window_end_draw_frame (win, ctx);
@@ -490,7 +455,7 @@ psppire_output_view_put (struct psppire_output_view *view,
 	  return;
 	}
 
-      xr_rendering_measure (r, &tw, &th);
+      xr_fsm_measure (r, cr, &tw, &th);
       create_drawing_area (view, drawing_area, r, tw, th, item);
       gdk_window_end_draw_frame (win, ctx);
       cairo_region_destroy (region);
@@ -613,18 +578,16 @@ on_style_updated (GtkWidget *toplevel, struct psppire_output_view *view)
     return;
 
   /* GTK+ fires this signal for trivial changes like the mouse moving in or out
-     of the window.  Check whether the actual rendering options changed and
+     of the window.  Check whether the actual fsm options changed and
      re-render only if they did. */
-  struct string_map options = STRING_MAP_INITIALIZER (options);
-  get_xr_options (view, &options);
-  if (!string_map_equals (&options, &view->render_opts))
+  struct xr_fsm_style *style = get_xr_fsm_style (view);
+  if (!view->style || !xr_fsm_style_equals (style, view->style))
     {
-      xr_driver_destroy (view->xr);
-      view->xr = NULL;
-
+      xr_fsm_style_unref (view->style);
+      view->style = xr_fsm_style_ref (style);
       rerender (view);
     }
-  string_map_destroy (&options);
+  xr_fsm_style_unref (style);
 }
 
 enum {
@@ -729,8 +692,29 @@ clipboard_get_cb (GtkClipboard     *clipboard,
       (info == SELECT_FMT_SVG) )
     {
       GtkWidget *widget = view->selected_item->drawing_area;
-      struct xr_rendering *r = g_object_get_data (G_OBJECT (widget), "rendering");
-      xr_draw_svg_file (r, filename);
+      struct xr_fsm *fsm = g_object_get_data (G_OBJECT (widget), "fsm");
+
+      GdkWindow *win = gtk_layout_get_bin_window (view->output);
+      cairo_region_t *region = gdk_window_get_visible_region (win);
+      GdkDrawingContext *ctx =  gdk_window_begin_draw_frame (win, region);
+      cairo_t *cr = gdk_drawing_context_get_cairo_context (ctx);
+
+      int w, h;
+      xr_fsm_measure (fsm, cr, &w, &h);
+
+      gdk_window_end_draw_frame (win, ctx);
+      cairo_region_destroy (region);
+
+      cairo_surface_t *surface = cairo_svg_surface_create (filename, w, h);
+      if (surface)
+        {
+          cairo_t *cr = cairo_create (surface);
+          xr_fsm_draw_all (fsm, cr);
+          cairo_destroy (cr);
+          cairo_surface_destroy (surface);
+        }
+      else
+        g_error ("Could not create cairo svg surface with file %s", filename);
     }
   else
     {
@@ -876,13 +860,12 @@ psppire_output_view_new (GtkLayout *output, GtkTreeView *overview)
   GtkTreeModel *model;
 
   view = xmalloc (sizeof *view);
-  view->xr = NULL;
-  view->font_height = 0;
+  view->style = NULL;
+  view->object_spacing = 10;
   view->output = output;
   view->render_width = 0;
   view->max_width = 0;
   view->y = 0;
-  string_map_init (&view->render_opts);
   view->overview = overview;
   view->cur_group = NULL;
   view->toplevel = gtk_widget_get_toplevel (GTK_WIDGET (output));
@@ -945,7 +928,7 @@ psppire_output_view_destroy (struct psppire_output_view *view)
   g_signal_handlers_disconnect_by_func (view->output,
                                         G_CALLBACK (on_style_updated), view);
 
-  string_map_destroy (&view->render_opts);
+  xr_fsm_style_unref (view->style);
 
   for (i = 0; i < view->n_items; i++)
     output_item_unref (view->items[i].item);
@@ -955,8 +938,6 @@ psppire_output_view_destroy (struct psppire_output_view *view)
 
   if (view->print_settings != NULL)
     g_object_unref (view->print_settings);
-
-  xr_driver_destroy (view->xr);
 
   if (view->cur_group)
     gtk_tree_path_free (view->cur_group);

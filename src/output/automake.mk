@@ -93,6 +93,8 @@ if HAVE_CAIRO
 src_output_liboutput_la_SOURCES += \
 	src/output/cairo-chart.c \
 	src/output/cairo-chart.h \
+	src/output/cairo-fsm.c \
+	src/output/cairo-fsm.h \
 	src/output/cairo.c \
 	src/output/cairo.h \
 	src/output/charts/boxplot-cairo.c \

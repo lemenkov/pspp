@@ -23,6 +23,7 @@
 #include "libpspp/message.h"
 #include "output/driver.h"
 #include "output/output-item-provider.h"
+#include "output/text-item.h"
 
 #include "gl/xalloc.h"
 
@@ -42,6 +43,13 @@ const struct msg *
 message_item_get_msg (const struct message_item *item)
 {
   return item->msg;
+}
+
+struct text_item *
+message_item_to_text_item (struct message_item *message_item)
+{
+  return text_item_create_nocopy (
+    TEXT_ITEM_LOG, msg_to_string (message_item_get_msg (message_item)));
 }
 
 static void
