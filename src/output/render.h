@@ -47,15 +47,41 @@ enum render_line_style
    corner at (0,0) in device coordinates.  This is usually not the case from
    the driver's perspective, so the driver should expect to apply its own
    offset to coordinates passed to callback functions.
-
-
-   Callback functions
-   ==================
-
-   For each of the callback functions, AUX is passed as the 'aux' member of the
-   render_params structure.
 */
 struct render_params
+  {
+    /* Functional parameters and auxiliary data to pass to them. */
+    const struct render_ops *ops;
+    void *aux;
+
+    /* Page size to try to fit the rendering into.  Some tables will, of
+       course, overflow this size. */
+    int size[TABLE_N_AXES];
+
+    /* Nominal size of a character in the most common font:
+       font_size[TABLE_HORZ]: Em width.
+       font_size[TABLE_VERT]: Line spacing. */
+    int font_size[TABLE_N_AXES];
+
+    /* Width of different kinds of lines. */
+    const int *line_widths;           /* RENDER_N_LINES members. */
+
+    /* Minimum cell width or height before allowing the cell to be broken
+       across two pages.  (Joined cells may always be broken at join
+       points.) */
+    int min_break[TABLE_N_AXES];
+
+    /* True if the driver supports cell margins.  (If false, the rendering
+       engine will insert a small space betweeen adjacent cells that don't have
+       an intervening rule.)  */
+    bool supports_margins;
+
+    /* True if the local language has a right-to-left direction, otherwise
+       false.  (Use render_direction_rtl() to find out.) */
+    bool rtl;
+  };
+
+struct render_ops
   {
     /* Measures CELL's width.  Stores in *MIN_WIDTH the minimum width required
        to avoid splitting a single word across multiple lines (normally, this
@@ -111,35 +137,6 @@ struct render_params
                        int bb[TABLE_N_AXES][2], int valign_offset,
                        int spill[TABLE_N_AXES][2],
                        int clip[TABLE_N_AXES][2]);
-
-    /* Auxiliary data passed to each of the above functions. */
-    void *aux;
-
-    /* Page size to try to fit the rendering into.  Some tables will, of
-       course, overflow this size. */
-    int size[TABLE_N_AXES];
-
-    /* Nominal size of a character in the most common font:
-       font_size[TABLE_HORZ]: Em width.
-       font_size[TABLE_VERT]: Line spacing. */
-    int font_size[TABLE_N_AXES];
-
-    /* Width of different kinds of lines. */
-    int line_widths[TABLE_N_AXES][RENDER_N_LINES];
-
-    /* Minimum cell width or height before allowing the cell to be broken
-       across two pages.  (Joined cells may always be broken at join
-       points.) */
-    int min_break[TABLE_N_AXES];
-
-    /* True if the driver supports cell margins.  (If false, the rendering
-       engine will insert a small space betweeen adjacent cells that don't have
-       an intervening rule.)  */
-    bool supports_margins;
-
-    /* True if the local language has a right-to-left direction, otherwise
-       false.  (Use render_direction_rtl() to find out.) */
-    bool rtl;
   };
 
 /* An iterator for breaking render_pages into smaller chunks. */

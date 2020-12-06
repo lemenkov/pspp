@@ -511,7 +511,7 @@ measure_rule (const struct render_params *params, const struct table *table,
   int width = 0;
   for (size_t i = 0; i < TABLE_N_STROKES; i++)
     if (rules & (1u << i))
-      width = MAX (width, params->line_widths[a][rule_to_render_type (i)]);
+      width = MAX (width, params->line_widths[rule_to_render_type (i)]);
   return width;
 }
 
@@ -736,8 +736,8 @@ render_page_create (const struct render_params *params, struct table *table,
             if (table_cell_colspan (&cell) == 1)
               {
                 int w[2];
-                params->measure_cell_width (params->aux, &cell,
-                                            &w[MIN], &w[MAX]);
+                params->ops->measure_cell_width (params->aux, &cell,
+                                                 &w[MIN], &w[MAX]);
                 for (int i = 0; i < 2; i++)
                   if (columns[i][x].unspanned < w[i])
                     columns[i][x].unspanned = w[i];
@@ -760,7 +760,8 @@ render_page_create (const struct render_params *params, struct table *table,
           {
             int w[2];
 
-            params->measure_cell_width (params->aux, &cell, &w[MIN], &w[MAX]);
+            params->ops->measure_cell_width (params->aux, &cell,
+                                             &w[MIN], &w[MAX]);
             for (int i = 0; i < 2; i++)
               distribute_spanned_width (w[i], &columns[i][cell.d[H][0]],
                                         rules[H], table_cell_colspan (&cell));
@@ -820,7 +821,8 @@ render_page_create (const struct render_params *params, struct table *table,
             if (table_cell_rowspan (&cell) == 1)
               {
                 int w = joined_width (page, H, cell.d[H][0], cell.d[H][1]);
-                int h = params->measure_cell_height (params->aux, &cell, w);
+                int h = params->ops->measure_cell_height (params->aux,
+                                                          &cell, w);
                 if (h > r->unspanned)
                   r->unspanned = r->width = h;
               }
@@ -845,7 +847,7 @@ render_page_create (const struct render_params *params, struct table *table,
         if (y == cell.d[V][0] && table_cell_rowspan (&cell) > 1)
           {
             int w = joined_width (page, H, cell.d[H][0], cell.d[H][1]);
-            int h = params->measure_cell_height (params->aux, &cell, w);
+            int h = params->ops->measure_cell_height (params->aux, &cell, w);
             distribute_spanned_width (h, &rows[cell.d[V][0]], rules[V],
                                       table_cell_rowspan (&cell));
           }
@@ -1056,7 +1058,7 @@ render_rule (const struct render_page *page, const int ofs[TABLE_N_AXES],
 	}
       bb[V][0] = ofs[V] + page->cp[V][d[V]];
       bb[V][1] = ofs[V] + page->cp[V][d[V] + 1];
-      page->params->draw_line (page->params->aux, bb, styles, colors);
+      page->params->ops->draw_line (page->params->aux, bb, styles, colors);
     }
 }
 
@@ -1082,7 +1084,7 @@ render_cell (const struct render_page *page, const int ofs[TABLE_N_AXES],
   int valign_offset = 0;
   if (valign != TABLE_VALIGN_TOP)
     {
-      int height = page->params->measure_cell_height (
+      int height = page->params->ops->measure_cell_height (
         page->params->aux, cell, bb[H][1] - bb[H][0]);
       int extra = bb[V][1] - bb[V][0] - height;
       if (extra > 0)
@@ -1125,8 +1127,8 @@ render_cell (const struct render_page *page, const int ofs[TABLE_N_AXES],
                    || page->n[V] - (cell->d[V][0] + 1) < page->h[V][1]
                    ? 0
                    : (cell->d[V][0] - page->h[V][0]) & 1);
-  page->params->draw_cell (page->params->aux, cell, color_idx,
-                           bb, valign_offset, spill, clip);
+  page->params->ops->draw_cell (page->params->aux, cell, color_idx,
+                                bb, valign_offset, spill, clip);
 }
 
 /* Draws the cells of PAGE indicated in BB. */
@@ -1370,14 +1372,14 @@ render_break_next (struct render_break *b, int size)
                  being broken have a better internal breakpoint than the exact
                  number of pixels available, which might look bad e.g. because
                  it breaks in the middle of a line of text. */
-              if (axis == TABLE_VERT && page->params->adjust_break)
+              if (axis == TABLE_VERT && page->params->ops->adjust_break)
                 for (int x = 0; x < page->n[H];)
                   {
                     struct table_cell cell;
 
                     render_get_cell (page, x, z, &cell);
                     int w = joined_width (page, H, cell.d[H][0], cell.d[H][1]);
-                    int better_pixel = page->params->adjust_break (
+                    int better_pixel = page->params->ops->adjust_break (
                       page->params->aux, &cell, w, pixel);
                     x = cell.d[H][1];
 

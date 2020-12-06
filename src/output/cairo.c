@@ -506,29 +506,33 @@ xr_set_cairo (struct xr_driver *xr, cairo_t *cairo)
 
   if (xr->params == NULL)
     {
+      static const struct render_ops xr_render_ops = {
+        .draw_line = xr_draw_line,
+        .measure_cell_width = xr_measure_cell_width,
+        .measure_cell_height = xr_measure_cell_height,
+        .adjust_break = xr_adjust_break,
+        .draw_cell = xr_draw_cell,
+      };
+
       xr->params = xmalloc (sizeof *xr->params);
-      xr->params->draw_line = xr_draw_line;
-      xr->params->measure_cell_width = xr_measure_cell_width;
-      xr->params->measure_cell_height = xr_measure_cell_height;
-      xr->params->adjust_break = xr_adjust_break;
-      xr->params->draw_cell = xr_draw_cell;
+      xr->params->ops = &xr_render_ops;
       xr->params->aux = xr;
       xr->params->size[H] = xr->width;
       xr->params->size[V] = xr->length;
       xr->params->font_size[H] = xr->char_width;
       xr->params->font_size[V] = xr->char_height;
 
-      int lw = XR_LINE_WIDTH;
-      int ls = XR_LINE_SPACE;
-      for (int i = 0; i < TABLE_N_AXES; i++)
+      enum { LW = XR_LINE_WIDTH, LS = XR_LINE_SPACE };
+      static const int xr_line_widths[RENDER_N_LINES] =
         {
-          xr->params->line_widths[i][RENDER_LINE_NONE] = 0;
-          xr->params->line_widths[i][RENDER_LINE_SINGLE] = lw;
-          xr->params->line_widths[i][RENDER_LINE_DASHED] = lw;
-          xr->params->line_widths[i][RENDER_LINE_THICK] = lw * 2;
-          xr->params->line_widths[i][RENDER_LINE_THIN] = lw / 2;
-          xr->params->line_widths[i][RENDER_LINE_DOUBLE] = 2 * lw + ls;
-        }
+          [RENDER_LINE_NONE] = 0,
+          [RENDER_LINE_SINGLE] = LW,
+          [RENDER_LINE_DASHED] = LW,
+          [RENDER_LINE_THICK] = LW * 2,
+          [RENDER_LINE_THIN] = LW / 2,
+          [RENDER_LINE_DOUBLE] = 2 * LW + LS,
+        };
+      xr->params->line_widths = xr_line_widths;
 
       for (int i = 0; i < TABLE_N_AXES; i++)
         xr->params->min_break[i] = xr->min_break[i];

@@ -312,22 +312,29 @@ ascii_create (struct  file_handle *fh, enum settings_output_devices device_type,
   a->chart_cnt = 0;
   a->object_cnt = 0;
 
-  a->params.draw_line = ascii_draw_line;
-  a->params.measure_cell_width = ascii_measure_cell_width;
-  a->params.measure_cell_height = ascii_measure_cell_height;
-  a->params.adjust_break = NULL;
-  a->params.draw_cell = ascii_draw_cell;
+  static const struct render_ops ascii_render_ops = {
+    .draw_line = ascii_draw_line,
+    .measure_cell_width = ascii_measure_cell_width,
+    .measure_cell_height = ascii_measure_cell_height,
+    .adjust_break = NULL,
+    .draw_cell = ascii_draw_cell,
+  };
+  a->params.ops = &ascii_render_ops;
   a->params.aux = a;
   a->params.size[H] = a->width;
   a->params.size[V] = INT_MAX;
   a->params.font_size[H] = 1;
   a->params.font_size[V] = 1;
-  for (int i = 0; i < RENDER_N_LINES; i++)
-    {
-      int width = i == RENDER_LINE_NONE ? 0 : 1;
-      a->params.line_widths[H][i] = width;
-      a->params.line_widths[V][i] = width;
-    }
+
+  static const int ascii_line_widths[RENDER_N_LINES] = {
+    [RENDER_LINE_NONE] = 0,
+    [RENDER_LINE_SINGLE] = 1,
+    [RENDER_LINE_DASHED] = 1,
+    [RENDER_LINE_THICK] = 1,
+    [RENDER_LINE_THIN] = 1,
+    [RENDER_LINE_DOUBLE] = 1,
+  };
+  a->params.line_widths = ascii_line_widths;
   a->params.supports_margins = false;
   a->params.rtl = render_direction_rtl ();
 
