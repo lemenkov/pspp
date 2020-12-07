@@ -20,6 +20,7 @@
 #include "output/cairo-chart.h"
 #include "math/chart-geometry.h"
 
+#include <cairo/cairo-ps.h>
 #include <cairo/cairo.h>
 #include <pango/pango.h>
 #include <pango/pangocairo.h>
@@ -31,9 +32,20 @@
 #include <string.h>
 
 #include "libpspp/assertion.h"
+#include "libpspp/message.h"
 #include "math/chart-geometry.h"
 #include "output/cairo.h"
 #include "output/chart-item.h"
+#include "output/charts/barchart.h"
+#include "output/charts/boxplot.h"
+#include "output/charts/np-plot.h"
+#include "output/charts/piechart.h"
+#include "output/charts/plot-hist.h"
+#include "output/charts/roc-chart.h"
+#include "output/charts/scatterplot.h"
+#include "output/charts/scree.h"
+#include "output/charts/spreadlevel-plot.h"
+#include "output/table.h"
 
 #include "gl/xalloc.h"
 #include "gl/xvasprintf.h"
@@ -607,5 +619,122 @@ xrchart_line(cairo_t *cr, const struct xrchart_geometry *geom,
   cairo_move_to (cr, x1, y1);
   cairo_line_to (cr, x2, y2);
   cairo_stroke (cr);
+}
+
+void
+xr_draw_chart (const struct chart_item *chart_item, cairo_t *cr,
+               double width, double height)
+{
+  struct xrchart_geometry geom;
+
+  cairo_save (cr);
+  cairo_translate (cr, 0, height);
+  cairo_scale (cr, 1.0, -1.0);
+  xrchart_geometry_init (cr, &geom, width, height);
+  if (is_boxplot (chart_item))
+    xrchart_draw_boxplot (chart_item, cr, &geom);
+  else if (is_histogram_chart (chart_item))
+    xrchart_draw_histogram (chart_item, cr, &geom);
+  else if (is_np_plot_chart (chart_item))
+    xrchart_draw_np_plot (chart_item, cr, &geom);
+  else if (is_piechart (chart_item))
+    xrchart_draw_piechart (chart_item, cr, &geom);
+  else if (is_barchart (chart_item))
+    xrchart_draw_barchart (chart_item, cr, &geom);
+  else if (is_roc_chart (chart_item))
+    xrchart_draw_roc (chart_item, cr, &geom);
+  else if (is_scree (chart_item))
+    xrchart_draw_scree (chart_item, cr, &geom);
+  else if (is_spreadlevel_plot_chart (chart_item))
+    xrchart_draw_spreadlevel (chart_item, cr, &geom);
+  else if (is_scatterplot_chart (chart_item))
+    xrchart_draw_scatterplot (chart_item, cr, &geom);
+  else
+    NOT_REACHED ();
+  xrchart_geometry_free (cr, &geom);
+
+  cairo_restore (cr);
+}
+
+char *
+xr_draw_png_chart (const struct chart_item *item,
+                   const char *file_name_template, int number,
+		   const struct cell_color *fg,
+		   const struct cell_color *bg)
+{
+  const int width = 640;
+  const int length = 480;
+
+  cairo_surface_t *surface;
+  cairo_status_t status;
+  const char *number_pos;
+  char *file_name;
+  cairo_t *cr;
+
+  number_pos = strchr (file_name_template, '#');
+  if (number_pos != NULL)
+    file_name = xasprintf ("%.*s%d%s.png", (int) (number_pos - file_name_template),
+                           file_name_template, number, number_pos + 1);
+  else
+    file_name = xasprintf ("%s.png", file_name_template);
+
+  surface = cairo_image_surface_create (CAIRO_FORMAT_RGB24, width, length);
+  cr = cairo_create (surface);
+
+  cairo_set_source_rgb (cr, bg->r / 255.0, bg->g / 255.0, bg->b / 255.0);
+  cairo_paint (cr);
+
+  cairo_set_source_rgb (cr, fg->r / 255.0, fg->g / 255.0, fg->b / 255.0);
+
+  xr_draw_chart (item, cr, width, length);
+
+  status = cairo_surface_write_to_png (surface, file_name);
+  if (status != CAIRO_STATUS_SUCCESS)
+    msg (ME, _("error writing output file `%s': %s"),
+           file_name, cairo_status_to_string (status));
+
+  cairo_destroy (cr);
+  cairo_surface_destroy (surface);
+
+  return file_name;
+}
+
+
+char *
+xr_draw_eps_chart (const struct chart_item *item,
+                   const char *file_name_template, int number,
+		   const struct cell_color *fg,
+		   const struct cell_color *bg)
+{
+  const int width = 640;
+  const int length = 480;
+
+  cairo_surface_t *surface;
+  const char *number_pos;
+  char *file_name;
+  cairo_t *cr;
+
+  number_pos = strchr (file_name_template, '#');
+  if (number_pos != NULL)
+    file_name = xasprintf ("%.*s%d%s.eps", (int) (number_pos - file_name_template),
+                           file_name_template, number, number_pos + 1);
+  else
+    file_name = xasprintf ("%s.eps", file_name_template);
+
+  surface = cairo_ps_surface_create (file_name, width, length);
+  cairo_ps_surface_set_eps (surface, true);
+  cr = cairo_create (surface);
+
+  cairo_set_source_rgb (cr, bg->r / 255.0, bg->g / 255.0, bg->b / 255.0);
+  cairo_paint (cr);
+
+  cairo_set_source_rgb (cr, fg->r / 255.0, fg->g / 255.0, fg->b / 255.0);
+
+  xr_draw_chart (item, cr, width, length);
+
+  cairo_destroy (cr);
+  cairo_surface_destroy (surface);
+
+  return file_name;
 }
 

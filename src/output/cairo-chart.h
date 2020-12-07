@@ -23,6 +23,7 @@
 #include "libpspp/compiler.h"
 
 struct chart_item;
+struct cell_color;
 
 struct xrchart_colour
   {
@@ -176,5 +177,18 @@ void xrchart_draw_spreadlevel (const struct chart_item *, cairo_t *,
                          struct xrchart_geometry *);
 void xrchart_draw_scatterplot (const struct chart_item *, cairo_t *,
                          struct xrchart_geometry *);
+
+void xr_draw_chart (const struct chart_item *, cairo_t *,
+                    double width, double height);
+
+char *xr_draw_png_chart (const struct chart_item *,
+                         const char *file_name_template, int number,
+                         const struct cell_color *fg,
+			 const struct cell_color *bg);
+
+char *xr_draw_eps_chart (const struct chart_item *item,
+                         const char *file_name_template, int number,
+                         const struct cell_color *fg,
+                         const struct cell_color *bg);
 
 #endif /* output/cairo-chart.h */

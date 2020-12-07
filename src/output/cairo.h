@@ -72,15 +72,6 @@ bool xr_driver_need_new_page (const struct xr_driver *);
 bool xr_driver_is_page_blank (const struct xr_driver *);
 
 /* Render charts with Cairo. */
-char *xr_draw_png_chart (const struct chart_item *,
-                         const char *file_name_template, int number,
-                         const struct cell_color *fg,
-			 const struct cell_color *bg);
-
-char *xr_draw_eps_chart (const struct chart_item *item,
-                         const char *file_name_template, int number,
-                         const struct cell_color *fg,
-                         const struct cell_color *bg);
 
 #endif  /* HAVE_CAIRO */
 

@@ -1188,38 +1188,6 @@ xr_fsm_draw_table (struct xr_fsm *fsm, int space)
   return used;
 }
 
-static void
-xr_draw_chart (const struct chart_item *chart_item, cairo_t *cr,
-               double width, double height)
-{
-  struct xrchart_geometry geom;
-
-  cairo_translate (cr, 0, height);
-  cairo_scale (cr, 1.0, -1.0);
-  xrchart_geometry_init (cr, &geom, width, height);
-  if (is_boxplot (chart_item))
-    xrchart_draw_boxplot (chart_item, cr, &geom);
-  else if (is_histogram_chart (chart_item))
-    xrchart_draw_histogram (chart_item, cr, &geom);
-  else if (is_np_plot_chart (chart_item))
-    xrchart_draw_np_plot (chart_item, cr, &geom);
-  else if (is_piechart (chart_item))
-    xrchart_draw_piechart (chart_item, cr, &geom);
-  else if (is_barchart (chart_item))
-    xrchart_draw_barchart (chart_item, cr, &geom);
-  else if (is_roc_chart (chart_item))
-    xrchart_draw_roc (chart_item, cr, &geom);
-  else if (is_scree (chart_item))
-    xrchart_draw_scree (chart_item, cr, &geom);
-  else if (is_spreadlevel_plot_chart (chart_item))
-    xrchart_draw_spreadlevel (chart_item, cr, &geom);
-  else if (is_scatterplot_chart (chart_item))
-    xrchart_draw_scatterplot (chart_item, cr, &geom);
-  else
-    NOT_REACHED ();
-  xrchart_geometry_free (cr, &geom);
-}
-
 static int
 xr_fsm_draw_chart (struct xr_fsm *fsm, int space)
 {
