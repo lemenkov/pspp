@@ -100,20 +100,13 @@ enum xr_output_type
     XR_SVG
   };
 
-/* A font for use with Cairo. */
-struct xr_font
-  {
-    PangoFontDescription *desc;
-    PangoLayout *layout;
-  };
-
 /* Cairo output driver. */
 struct xr_driver
   {
     struct output_driver driver;
 
     /* User parameters. */
-    struct xr_font fonts[XR_N_FONTS];
+    PangoFontDescription *fonts[XR_N_FONTS];
 
     int width;                  /* Page width minus margins. */
     int length;                 /* Page length minus margins and header. */
@@ -233,17 +226,13 @@ apply_options (struct xr_driver *xr, struct string_map *o)
   int i;
 
   for (i = 0; i < XR_N_FONTS; i++)
-    {
-      struct xr_font *font = &xr->fonts[i];
-
-      if (font->desc != NULL)
-        pango_font_description_free (font->desc);
-    }
+    if (xr->fonts[i] != NULL)
+      pango_font_description_free (xr->fonts[i]);
 
   font_size = parse_int (opt (d, o, "font-size", "10000"), 1000, 1000000);
-  xr->fonts[XR_FONT_FIXED].desc = parse_font_option
+  xr->fonts[XR_FONT_FIXED] = parse_font_option
     (d, o, "fixed-font", "monospace", font_size, false, false);
-  xr->fonts[XR_FONT_PROPORTIONAL].desc = parse_font_option (
+  xr->fonts[XR_FONT_PROPORTIONAL] = parse_font_option (
     d, o, "prop-font", "sans serif", font_size, false, false);
 
   xr->fg = parse_color (opt (d, o, "foreground-color", "#000000000000"));
@@ -317,7 +306,7 @@ xr_to_pango (int xr)
 }
 
 static void
-xr_measure_fonts (cairo_t *cairo, const struct xr_font fonts[XR_N_FONTS],
+xr_measure_fonts (cairo_t *cairo, PangoFontDescription *fonts[XR_N_FONTS],
                   int *char_width, int *char_height)
 {
   *char_width = 0;
@@ -325,7 +314,7 @@ xr_measure_fonts (cairo_t *cairo, const struct xr_font fonts[XR_N_FONTS],
   for (int i = 0; i < XR_N_FONTS; i++)
     {
       PangoLayout *layout = pango_cairo_create_layout (cairo);
-      pango_layout_set_font_description (layout, fonts[i].desc);
+      pango_layout_set_font_description (layout, fonts[i]);
 
       pango_layout_set_text (layout, "0", 1);
 
@@ -414,7 +403,7 @@ xr_measure_headings (cairo_surface_t *surface,
 
 static bool
 xr_check_fonts (cairo_surface_t *surface,
-                const struct xr_font fonts[XR_N_FONTS],
+                PangoFontDescription *fonts[XR_N_FONTS],
                 int usable_width, int usable_length)
 {
   cairo_t *cairo = cairo_create (surface);
@@ -452,13 +441,6 @@ xr_set_cairo (struct xr_driver *xr, cairo_t *cairo)
 
   xr_measure_fonts (xr->cairo, xr->fonts, &xr->char_width, &xr->char_height);
 
-  for (int i = 0; i < XR_N_FONTS; i++)
-    {
-      struct xr_font *font = &xr->fonts[i];
-      font->layout = pango_cairo_create_layout (cairo);
-      pango_layout_set_font_description (font->layout, font->desc);
-    }
-
   if (xr->style == NULL)
     {
       xr->style = xmalloc (sizeof *xr->style);
@@ -472,7 +454,7 @@ xr_set_cairo (struct xr_driver *xr, cairo_t *cairo)
       };
 
       for (size_t i = 0; i < XR_N_FONTS; i++)
-        xr->style->fonts[i] = pango_font_description_copy (xr->fonts[i].desc);
+        xr->style->fonts[i] = pango_font_description_copy (xr->fonts[i]);
     }
 
   if (!xr->systemcolors)
@@ -560,14 +542,8 @@ xr_destroy (struct output_driver *driver)
     }
 
   for (i = 0; i < XR_N_FONTS; i++)
-    {
-      struct xr_font *font = &xr->fonts[i];
-
-      if (font->desc != NULL)
-        pango_font_description_free (font->desc);
-      if (font->layout != NULL)
-        g_object_unref (font->layout);
-    }
+    if (xr->fonts[i] != NULL)
+      pango_font_description_free (xr->fonts[i]);
 
   xr_fsm_style_unref (xr->style);
   free (xr);
@@ -600,7 +576,7 @@ xr_update_page_setup (struct output_driver *driver,
 
   int headings_height[2];
   usable[V] -= xr_measure_headings (
-    xr->surface, xr->fonts[XR_FONT_PROPORTIONAL].desc, ps->headings,
+    xr->surface, xr->fonts[XR_FONT_PROPORTIONAL], ps->headings,
     usable[H], xr->object_spacing, headings_height);
 
   enum table_axis h = ps->orientation == PAGE_LANDSCAPE;
@@ -683,10 +659,10 @@ xr_driver_next_page (struct xr_driver *xr, cairo_t *cairo)
   xr->cairo = cairo;
   xr->y = 0;
 
-  xr_render_page_heading (xr->cairo, xr->fonts[XR_FONT_PROPORTIONAL].desc,
+  xr_render_page_heading (xr->cairo, xr->fonts[XR_FONT_PROPORTIONAL],
                           &xr->headings[0], xr->page_number, xr->width, true,
                           -xr->headings_height[0]);
-  xr_render_page_heading (xr->cairo, xr->fonts[XR_FONT_PROPORTIONAL].desc,
+  xr_render_page_heading (xr->cairo, xr->fonts[XR_FONT_PROPORTIONAL],
                           &xr->headings[1], xr->page_number, xr->width, true,
                           xr->length);
 
