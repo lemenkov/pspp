@@ -99,14 +99,9 @@ struct xr_driver
     /* User parameters. */
     PangoFontDescription *fonts[XR_N_FONTS];
 
-    int width;                  /* Page width minus margins. */
-    int length;                 /* Page length minus margins and header. */
-
-    int left_margin;            /* Left margin in inch/(72 * XR_POINT). */
-    int right_margin;           /* Right margin in inch/(72 * XR_POINT). */
-    int top_margin;             /* Top margin in inch/(72 * XR_POINT). */
-    int bottom_margin;          /* Bottom margin in inch/(72 * XR_POINT). */
-
+    /* Measurements all in inch/(72 * XR_POINT). */
+    int size[TABLE_N_AXES];     /* Page size with margins subtracted. */
+    int margins[TABLE_N_AXES][2]; /* Margins. */
     int min_break[TABLE_N_AXES]; /* Min cell size to break across pages. */
     int object_spacing;         /* Space between output objects. */
 
@@ -205,22 +200,15 @@ apply_options (struct xr_driver *xr, struct string_map *o)
   struct output_driver *d = &xr->driver;
 
   /* In inch/72000 units used by parse_paper_size() and parse_dimension(). */
-  int left_margin, right_margin;
-  int top_margin, bottom_margin;
-  int paper_width, paper_length;
-  int font_size;
-  int min_break[TABLE_N_AXES];
 
   /* Scale factor from inch/72000 to inch/(72 * XR_POINT). */
   const double scale = XR_POINT / 1000.;
 
-  int i;
-
-  for (i = 0; i < XR_N_FONTS; i++)
+  for (int i = 0; i < XR_N_FONTS; i++)
     if (xr->fonts[i] != NULL)
       pango_font_description_free (xr->fonts[i]);
 
-  font_size = parse_int (opt (d, o, "font-size", "10000"), 1000, 1000000);
+  int font_size = parse_int (opt (d, o, "font-size", "10000"), 1000, 1000000);
   xr->fonts[XR_FONT_FIXED] = parse_font_option
     (d, o, "fixed-font", "monospace", font_size, false, false);
   xr->fonts[XR_FONT_PROPORTIONAL] = parse_font_option (
@@ -233,12 +221,16 @@ apply_options (struct xr_driver *xr, struct string_map *o)
   xr->systemcolors = parse_boolean (opt (d, o, "systemcolors", "false"));
 
   /* Get dimensions.  */
-  parse_paper_size (opt (d, o, "paper-size", ""), &paper_width, &paper_length);
-  left_margin = parse_dimension (opt (d, o, "left-margin", ".5in"));
-  right_margin = parse_dimension (opt (d, o, "right-margin", ".5in"));
-  top_margin = parse_dimension (opt (d, o, "top-margin", ".5in"));
-  bottom_margin = parse_dimension (opt (d, o, "bottom-margin", ".5in"));
+  int paper[TABLE_N_AXES];
+  parse_paper_size (opt (d, o, "paper-size", ""), &paper[H], &paper[V]);
 
+  int margins[TABLE_N_AXES][2];
+  margins[H][0] = parse_dimension (opt (d, o, "left-margin", ".5in"));
+  margins[H][1] = parse_dimension (opt (d, o, "right-margin", ".5in"));
+  margins[V][0] = parse_dimension (opt (d, o, "top-margin", ".5in"));
+  margins[V][1] = parse_dimension (opt (d, o, "bottom-margin", ".5in"));
+
+  int min_break[TABLE_N_AXES];
   min_break[H] = parse_dimension (opt (d, o, "min-hbreak", NULL)) * scale;
   min_break[V] = parse_dimension (opt (d, o, "min-vbreak", NULL)) * scale;
 
@@ -246,14 +238,13 @@ apply_options (struct xr_driver *xr, struct string_map *o)
                         * scale);
 
   /* Convert to inch/(XR_POINT * 72). */
-  xr->left_margin = left_margin * scale;
-  xr->right_margin = right_margin * scale;
-  xr->top_margin = top_margin * scale;
-  xr->bottom_margin = bottom_margin * scale;
-  xr->width = (paper_width - left_margin - right_margin) * scale;
-  xr->length = (paper_length - top_margin - bottom_margin) * scale;
-  xr->min_break[H] = min_break[H] >= 0 ? min_break[H] : xr->width / 2;
-  xr->min_break[V] = min_break[V] >= 0 ? min_break[V] : xr->length / 2;
+  for (int a = 0; a < TABLE_N_AXES; a++)
+    {
+      for (int i = 0; i < 2; i++)
+        xr->margins[a][i] = margins[a][i] * scale;
+      xr->size[a] = (paper[a] - margins[a][0] - margins[a][1]) * scale;
+      xr->min_break[a] = min_break[a] >= 0 ? min_break[a] : xr->size[a] / 2;
+    }
   xr->object_spacing = object_spacing >= 0 ? object_spacing : XR_POINT * 12;
 
   /* There are no headings so headings_height can stay 0. */
@@ -437,7 +428,7 @@ xr_set_cairo (struct xr_driver *xr, cairo_t *cairo)
       xr->style = xmalloc (sizeof *xr->style);
       *xr->style = (struct xr_fsm_style) {
         .ref_cnt = 1,
-        .size = { [H] = xr->width, [V] = xr->length },
+        .size = { [H] = xr->size[H], [V] = xr->size[V] },
         .min_break = { [H] = xr->min_break[H], [V] = xr->min_break[V] },
         .use_system_colors = xr->systemcolors,
         .transparent = xr->transparent,
@@ -459,14 +450,19 @@ xr_create (struct file_handle *fh, enum settings_output_devices device_type,
 {
   const char *file_name = fh_get_file_name (fh);
   struct xr_driver *xr = xr_allocate (file_name, device_type, o, 72.0 / 128.0);
-  double width_pt = xr_to_pt (xr->width + xr->left_margin + xr->right_margin);
-  double length_pt = xr_to_pt (xr->length + xr->top_margin + xr->bottom_margin);
+
+  double paper_pt[TABLE_N_AXES];
+  for (int a = 0; a < TABLE_N_AXES; a++)
+    paper_pt[a] = xr_to_pt (xr->size[a]
+                            + xr->margins[a][0] + xr->margins[a][1]);
   if (file_type == XR_PDF)
-    xr->surface = cairo_pdf_surface_create (file_name, width_pt, length_pt);
+    xr->surface = cairo_pdf_surface_create (file_name,
+                                            paper_pt[H], paper_pt[V]);
   else if (file_type == XR_PS)
-    xr->surface = cairo_ps_surface_create (file_name, width_pt, length_pt);
+    xr->surface = cairo_ps_surface_create (file_name, paper_pt[H], paper_pt[V]);
   else if (file_type == XR_SVG)
-    xr->surface = cairo_svg_surface_create (file_name, width_pt, length_pt);
+    xr->surface = cairo_svg_surface_create (file_name,
+                                            paper_pt[H], paper_pt[V]);
   else
     NOT_REACHED ();
 
@@ -478,7 +474,7 @@ xr_create (struct file_handle *fh, enum settings_output_devices device_type,
       goto error;
     }
 
-  if (!xr_check_fonts (xr->surface, xr->fonts, xr->width, xr->length))
+  if (!xr_check_fonts (xr->surface, xr->fonts, xr->size[H], xr->size[V]))
     goto error;
 
   fh_unref (fh);
@@ -560,19 +556,22 @@ xr_update_page_setup (struct output_driver *driver,
   if (xr->cairo)
     return;
 
-  int usable[TABLE_N_AXES];
-  for (int i = 0; i < 2; i++)
-    usable[i] = (ps->paper[i]
-                 - (ps->margins[i][0] + ps->margins[i][1])) * 72 * XR_POINT;
+  int size[TABLE_N_AXES];
+  for (int a = 0; a < TABLE_N_AXES; a++)
+    {
+      double total_margin = ps->margins[a][0] + ps->margins[a][1];
+      size[a] = (ps->paper[a] - total_margin) * 72 * XR_POINT;
+    }
 
   int headings_height[2];
-  usable[V] -= xr_measure_headings (
+  size[V] -= xr_measure_headings (
     xr->surface, xr->fonts[XR_FONT_PROPORTIONAL], ps->headings,
-    usable[H], xr->object_spacing, headings_height);
+    size[H], xr->object_spacing, headings_height);
 
-  enum table_axis h = ps->orientation == PAGE_LANDSCAPE;
-  enum table_axis v = !h;
-  if (!xr_check_fonts (xr->surface, xr->fonts, usable[h], usable[v]))
+  int swap = ps->orientation == PAGE_LANDSCAPE;
+  enum table_axis h = H ^ swap;
+  enum table_axis v = V ^ swap;
+  if (!xr_check_fonts (xr->surface, xr->fonts, size[h], size[v]))
     return;
 
   for (int i = 0; i < 2; i++)
@@ -581,12 +580,13 @@ xr_update_page_setup (struct output_driver *driver,
       page_heading_copy (&xr->headings[i], &ps->headings[i]);
       xr->headings_height[i] = headings_height[i];
     }
-  xr->width = usable[h];
-  xr->length = usable[v];
-  xr->left_margin = ps->margins[h][0] * 72 * XR_POINT;
-  xr->right_margin = ps->margins[h][1] * 72 * XR_POINT;
-  xr->top_margin = ps->margins[v][0] * 72 * XR_POINT;
-  xr->bottom_margin = ps->margins[v][1] * 72 * XR_POINT;
+
+  for (int a = 0; a < TABLE_N_AXES; a++)
+    {
+      xr->size[a] = size[a ^ swap];
+      for (int i = 0; i < 2; i++)
+        xr->margins[a][i] = ps->margins[a ^ swap][i] * 72 * XR_POINT;
+    }
   cairo_pdf_surface_set_size (xr->surface,
                               ps->paper[h] * 72.0, ps->paper[v] * 72.0);
 }
@@ -638,24 +638,24 @@ xr_driver_next_page (struct xr_driver *xr, cairo_t *cairo)
       cairo_save (cairo);
       cairo_set_source_rgb (cairo,
 			    xr->bg.r / 255.0, xr->bg.g / 255.0, xr->bg.b / 255.0);
-      cairo_rectangle (cairo, 0, 0, xr->width, xr->length);
+      cairo_rectangle (cairo, 0, 0, xr->size[H], xr->size[V]);
       cairo_fill (cairo);
       cairo_restore (cairo);
     }
   cairo_translate (cairo,
-                   xr_to_pt (xr->left_margin),
-                   xr_to_pt (xr->top_margin + xr->headings_height[0]));
+                   xr_to_pt (xr->margins[H][0]),
+                   xr_to_pt (xr->margins[V][0] + xr->headings_height[0]));
 
   xr->page_number++;
   xr->cairo = cairo;
   xr->y = 0;
 
   xr_render_page_heading (xr->cairo, xr->fonts[XR_FONT_PROPORTIONAL],
-                          &xr->headings[0], xr->page_number, xr->width, true,
+                          &xr->headings[0], xr->page_number, xr->size[H], true,
                           -xr->headings_height[0]);
   xr_render_page_heading (xr->cairo, xr->fonts[XR_FONT_PROPORTIONAL],
-                          &xr->headings[1], xr->page_number, xr->width, true,
-                          xr->length);
+                          &xr->headings[1], xr->page_number, xr->size[H], true,
+                          xr->size[V]);
 
   xr_driver_run_fsm (xr);
 }
@@ -702,7 +702,7 @@ xr_driver_run_fsm (struct xr_driver *xr)
     {
       cairo_save (xr->cairo);
       cairo_translate (xr->cairo, 0, xr_to_pt (xr->y));
-      int used = xr_fsm_draw_slice (xr->fsm, xr->cairo, xr->length - xr->y);
+      int used = xr_fsm_draw_slice (xr->fsm, xr->cairo, xr->size[V] - xr->y);
       xr->y += used;
       cairo_restore (xr->cairo);
 
