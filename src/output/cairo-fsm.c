@@ -52,7 +52,7 @@
 /* This file uses TABLE_HORZ and TABLE_VERT enough to warrant abbreviating. */
 #define H TABLE_HORZ
 #define V TABLE_VERT
-
+
 struct xr_fsm_style *
 xr_fsm_style_ref (const struct xr_fsm_style *style_)
 {
@@ -61,6 +61,24 @@ xr_fsm_style_ref (const struct xr_fsm_style *style_)
   struct xr_fsm_style *style = CONST_CAST (struct xr_fsm_style *, style_);
   style->ref_cnt++;
   return style;
+}
+
+struct xr_fsm_style *
+xr_fsm_style_unshare (struct xr_fsm_style *old)
+{
+  assert (old->ref_cnt > 0);
+  if (old->ref_cnt == 1)
+    return old;
+
+  xr_fsm_style_unref (old);
+
+  struct xr_fsm_style *new = xmemdup (old, sizeof *old);
+  new->ref_cnt = 1;
+  for (int i = 0; i < XR_N_FONTS; i++)
+    if (old->fonts[i])
+      new->fonts[i] = pango_font_description_copy (old->fonts[i]);
+
+  return new;
 }
 
 void
@@ -618,6 +636,7 @@ xr_layout_cell_text (struct xr_fsm *xr, const struct table_cell *cell,
   pango_cairo_context_set_resolution (context, xr->style->font_resolution);
   PangoLayout *layout = pango_layout_new (context);
   g_object_unref (context);
+
   pango_layout_set_font_description (layout, desc);
 
   const char *text = cell->text;
@@ -1097,7 +1116,6 @@ xr_fsm_create (const struct output_item *item_,
       .ops = &xrr_render_ops,
       .aux = fsm,
       .size = { [H] = style->size[H], [V] = style->size[V] },
-      /* XXX font_size */
       .line_widths = xr_line_widths,
       .min_break = { [H] = style->min_break[H], [V] = style->min_break[V] },
       .supports_margins = true,
@@ -1118,16 +1136,17 @@ xr_fsm_create (const struct output_item *item_,
       pango_cairo_context_set_resolution (context, style->font_resolution);
       PangoLayout *layout = pango_layout_new (context);
       g_object_unref (context);
+
       pango_layout_set_font_description (layout, style->fonts[i]);
 
       pango_layout_set_text (layout, "0", 1);
 
       int char_size[TABLE_N_AXES];
       pango_layout_get_size (layout, &char_size[H], &char_size[V]);
-      for (int j = 0; j < TABLE_N_AXES; j++)
+      for (int a = 0; a < TABLE_N_AXES; a++)
         {
-          int csj = pango_to_xr (char_size[j]);
-          fsm->rp.font_size[j] = MAX (fsm->rp.font_size[j], csj);
+          int csa = pango_to_xr (char_size[a]);
+          fsm->rp.font_size[a] = MAX (fsm->rp.font_size[a], csa);
         }
 
       g_object_unref (G_OBJECT (layout));
@@ -1148,7 +1167,6 @@ xr_fsm_destroy (struct xr_fsm *fsm)
       free (fsm);
     }
 }
-
 
 /* This is primarily meant for use with screen rendering since the result is a
    fixed value for charts. */
@@ -1181,17 +1199,9 @@ xr_fsm_measure (struct xr_fsm *fsm, cairo_t *cr, int *wp, int *hp)
 static int
 xr_fsm_draw_table (struct xr_fsm *fsm, int space)
 {
-  int used = 0;
-  while (render_pager_has_next (fsm->p))
-    {
-      int chunk = render_pager_draw_next (fsm->p, space - used);
-      if (!chunk)
-        return used;
-
-      used += chunk;
-      cairo_translate (fsm->cairo, 0, chunk);
-    }
-  return used;
+  return (render_pager_has_next (fsm->p)
+          ? render_pager_draw_next (fsm->p, space)
+          : 0);
 }
 
 static int

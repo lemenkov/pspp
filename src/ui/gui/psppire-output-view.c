@@ -28,7 +28,7 @@
 #include "libpspp/assertion.h"
 #include "libpspp/string-map.h"
 #include "output/cairo-fsm.h"
-#include "output/cairo.h"
+#include "output/cairo-pager.h"
 #include "output/driver-provider.h"
 #include "output/driver.h"
 #include "output/chart-item.h"
@@ -76,7 +76,10 @@ struct psppire_output_view
 
     /* Variables pertaining to printing */
     GtkPrintSettings *print_settings;
-    struct xr_driver *print_xrd;
+
+    struct xr_fsm_style *fsm_style;
+    struct xr_page_style *page_style;
+    struct xr_pager *pager;
     int print_item;
     int print_n_pages;
     gboolean paginated;
@@ -860,24 +863,12 @@ psppire_output_view_new (GtkLayout *output, GtkTreeView *overview)
   GtkTreeModel *model;
 
   view = xmalloc (sizeof *view);
-  view->style = NULL;
-  view->object_spacing = 10;
-  view->output = output;
-  view->render_width = 0;
-  view->max_width = 0;
-  view->y = 0;
-  view->overview = overview;
-  view->cur_group = NULL;
-  view->toplevel = gtk_widget_get_toplevel (GTK_WIDGET (output));
-  view->buttontime = 0;
-  view->items = NULL;
-  view->n_items = view->allocated_items = 0;
-  view->selected_item = NULL;
-  view->print_settings = NULL;
-  view->print_xrd = NULL;
-  view->print_item = 0;
-  view->print_n_pages = 0;
-  view->paginated = FALSE;
+  *view = (struct psppire_output_view) {
+    .object_spacing = 10,
+    .output = output,
+    .overview = overview,
+    .toplevel = gtk_widget_get_toplevel (GTK_WIDGET (output)),
+  };
 
   g_signal_connect (output, "draw", G_CALLBACK (layout_draw_callback), NULL);
 
@@ -989,55 +980,68 @@ static cairo_t *
 get_cairo_context_from_print_context (GtkPrintContext *context)
 {
   cairo_t *cr = gtk_print_context_get_cairo_context (context);
-
-  /*
-    For all platforms except windows, gtk_print_context_get_dpi_[xy] returns 72.
-    Windows returns 600.
-  */
-  double xres = gtk_print_context_get_dpi_x (context);
-  double yres = gtk_print_context_get_dpi_y (context);
-
-  /* This means that the cairo context now has its dimensions in Points */
-  cairo_scale (cr, xres / 72.0, yres / 72.0);
-
-  return cr;
+  return cairo_reference (cr);
 }
-
 
 static void
 create_xr_print_driver (GtkPrintContext *context, struct psppire_output_view *view)
 {
-  struct string_map options;
-  GtkPageSetup *page_setup;
-  double width, height;
-  double left_margin;
-  double right_margin;
-  double top_margin;
-  double bottom_margin;
+  GtkPageSetup *ps = gtk_print_context_get_page_setup (context);
 
-  page_setup = gtk_print_context_get_page_setup (context);
-  width = gtk_page_setup_get_paper_width (page_setup, GTK_UNIT_MM);
-  height = gtk_page_setup_get_paper_height (page_setup, GTK_UNIT_MM);
-  left_margin = gtk_page_setup_get_left_margin (page_setup, GTK_UNIT_MM);
-  right_margin = gtk_page_setup_get_right_margin (page_setup, GTK_UNIT_MM);
-  top_margin = gtk_page_setup_get_top_margin (page_setup, GTK_UNIT_MM);
-  bottom_margin = gtk_page_setup_get_bottom_margin (page_setup, GTK_UNIT_MM);
+  enum { H = TABLE_HORZ, V = TABLE_VERT };
+  int paper[TABLE_N_AXES] = {
+    [H] = gtk_page_setup_get_paper_width (ps, GTK_UNIT_POINTS) * XR_POINT,
+    [V] = gtk_page_setup_get_paper_height (ps, GTK_UNIT_POINTS) * XR_POINT,
+  };
 
-  string_map_init (&options);
-  string_map_insert_nocopy (&options, xstrdup ("paper-size"),
-                            c_xasprintf("%.2fx%.2fmm", width, height));
-  string_map_insert_nocopy (&options, xstrdup ("left-margin"),
-                            c_xasprintf ("%.2fmm", left_margin));
-  string_map_insert_nocopy (&options, xstrdup ("right-margin"),
-                            c_xasprintf ("%.2fmm", right_margin));
-  string_map_insert_nocopy (&options, xstrdup ("top-margin"),
-                            c_xasprintf ("%.2fmm", top_margin));
-  string_map_insert_nocopy (&options, xstrdup ("bottom-margin"),
-                            c_xasprintf ("%.2fmm", bottom_margin));
+  /* These are all 1/2 inch.  The "margins" that GTK+ gives us are useless:
+     they are the printer's imagable area. */
+  int margins[TABLE_N_AXES][2] = {
+    [H][0] = XR_POINT * 36,
+    [H][1] = XR_POINT * 36,
+    [V][0] = XR_POINT * 36,
+    [V][1] = XR_POINT * 36,
+  };
 
-  view->print_xrd = xr_driver_create (get_cairo_context_from_print_context (context), &options);
+  double size[TABLE_N_AXES];
+  for (int a = 0; a < TABLE_N_AXES; a++)
+    size[a] = paper[a] - margins[a][0] - margins[a][1];
 
-  string_map_destroy (&options);
+  PangoFontDescription *proportional_font
+    = pango_font_description_from_string ("Sans Serif 10");
+  PangoFontDescription *fixed_font
+    = pango_font_description_from_string ("Monospace 10");
+
+  view->page_style = xmalloc (sizeof *view->page_style);
+  *view->page_style = (struct xr_page_style) {
+    .ref_cnt = 1,
+
+    .margins = {
+      [H] = { margins[H][0], margins[H][1] },
+      [V] = { margins[V][0], margins[V][1] },
+    },
+    .bg = { .alpha = 0 },
+    .initial_page_number = 1,
+    .object_spacing = 12 * XR_POINT,
+  };
+
+  view->fsm_style = xmalloc (sizeof *view->fsm_style);
+  *view->fsm_style = (struct xr_fsm_style) {
+    .ref_cnt = 1,
+
+    .size = { [H] = size[H], [V] = size[V] },
+    .min_break = { [H] = size[H] / 2, [V] = size[V] / 2 },
+    .fonts = {
+      [XR_FONT_PROPORTIONAL] = proportional_font,
+      [XR_FONT_FIXED] = fixed_font,
+    },
+    .fg = CELL_COLOR_BLACK,
+    .use_system_colors = false,
+    .transparent = false,
+    .font_resolution = 72.0
+  };
+
+  view->pager = xr_pager_create (view->page_style, view->fsm_style);
 }
 
 static gboolean
@@ -1053,22 +1057,22 @@ paginate (GtkPrintOperation *operation,
     }
   else if (view->print_item < view->n_items)
     {
-      xr_driver_output_item (view->print_xrd,
-                             view->items[view->print_item++].item);
-      while (xr_driver_need_new_page (view->print_xrd))
+      xr_pager_add_item (view->pager, view->items[view->print_item++].item);
+      while (xr_pager_needs_new_page (view->pager))
 	{
-	  xr_driver_next_page (view->print_xrd, get_cairo_context_from_print_context (context));
+	  xr_pager_add_page (view->pager,
+                             get_cairo_context_from_print_context (context));
 	  view->print_n_pages ++;
 	}
       return FALSE;
     }
   else
     {
-      gtk_print_operation_set_n_pages (operation, view->print_n_pages);
+      gtk_print_operation_set_n_pages (operation, MAX (1, view->print_n_pages));
 
       /* Re-create the driver to do the real printing. */
-      xr_driver_destroy (view->print_xrd);
-      create_xr_print_driver (context, view);
+      xr_pager_destroy (view->pager);
+      view->pager = xr_pager_create (view->page_style, view->fsm_style);
       view->print_item = 0;
       view->paginated = TRUE;
 
@@ -1084,7 +1088,7 @@ begin_print (GtkPrintOperation *operation,
   create_xr_print_driver (context, view);
 
   view->print_item = 0;
-  view->print_n_pages = 1;
+  view->print_n_pages = 0;
   view->paginated = FALSE;
 }
 
@@ -1093,7 +1097,8 @@ end_print (GtkPrintOperation *operation,
 	   GtkPrintContext   *context,
 	   struct psppire_output_view *view)
 {
-  xr_driver_destroy (view->print_xrd);
+  xr_pager_destroy (view->pager);
+  view->pager = NULL;
 }
 
 
@@ -1103,10 +1108,11 @@ draw_page (GtkPrintOperation *operation,
 	   gint               page_number,
 	   struct psppire_output_view *view)
 {
-  xr_driver_next_page (view->print_xrd, get_cairo_context_from_print_context (context));
-  while (!xr_driver_need_new_page (view->print_xrd)
+  xr_pager_add_page (view->pager,
+                     get_cairo_context_from_print_context (context));
+  while (!xr_pager_needs_new_page (view->pager)
          && view->print_item < view->n_items)
-    xr_driver_output_item (view->print_xrd, view->items [view->print_item++].item);
+    xr_pager_add_item (view->pager, view->items [view->print_item++].item);
 }
 
 
@@ -1120,6 +1126,9 @@ psppire_output_view_print (struct psppire_output_view *view,
 
   if (view->print_settings != NULL)
     gtk_print_operation_set_print_settings (print, view->print_settings);
+
+  gtk_print_operation_set_use_full_page (print, TRUE);
+  gtk_print_operation_set_unit (print, GTK_UNIT_POINTS);
 
   g_signal_connect (print, "begin_print", G_CALLBACK (begin_print), view);
   g_signal_connect (print, "end_print",   G_CALLBACK (end_print),   view);

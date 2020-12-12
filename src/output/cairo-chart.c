@@ -34,7 +34,6 @@
 #include "libpspp/assertion.h"
 #include "libpspp/message.h"
 #include "math/chart-geometry.h"
-#include "output/cairo.h"
 #include "output/chart-item.h"
 #include "output/charts/barchart.h"
 #include "output/charts/boxplot.h"

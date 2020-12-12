@@ -25,6 +25,15 @@
 
 #include "gl/xalloc.h"
 
+bool
+page_paragraph_equals (const struct page_paragraph *a,
+                       const struct page_paragraph *b)
+{
+  return (!a || !b ? a == b
+          : !a->markup || !b->markup ? a->markup == b->markup
+          : !strcmp (a->markup, b->markup) && a->halign == b->halign);
+}
+
 void
 page_heading_copy (struct page_heading *dst, const struct page_heading *src)
 {
@@ -46,6 +55,23 @@ page_heading_uninit (struct page_heading *ph)
   for (size_t i = 0; i < ph->n; i++)
     free (ph->paragraphs[i].markup);
   free (ph->paragraphs);
+}
+
+bool
+page_heading_equals (const struct page_heading *a,
+                     const struct page_heading *b)
+{
+  if (!a || !b)
+    return a == b;
+
+  if (a->n != b->n)
+    return false;
+
+  for (size_t i = 0; i < a->n; i++)
+    if (!page_paragraph_equals (&a->paragraphs[i], &b->paragraphs[i]))
+      return false;
+
+  return true;
 }
 
 struct page_setup *

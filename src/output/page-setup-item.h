@@ -46,6 +46,9 @@ struct page_paragraph
     enum table_halign halign;
   };
 
+bool page_paragraph_equals (const struct page_paragraph *,
+                            const struct page_paragraph *);
+
 struct page_heading
   {
     struct page_paragraph *paragraphs;
@@ -54,6 +57,8 @@ struct page_heading
 
 void page_heading_copy (struct page_heading *, const struct page_heading *);
 void page_heading_uninit (struct page_heading *);
+bool page_heading_equals (const struct page_heading *,
+                          const struct page_heading *);
 
 struct page_setup
   {

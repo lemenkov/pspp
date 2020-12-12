@@ -28,6 +28,10 @@
 struct xr_fsm;
 struct output_item;
 
+/* The unit used for internal measurements is inch/(72 * XR_POINT).
+   (Thus, XR_POINT units represent one point.) */
+#define XR_POINT PANGO_SCALE
+
 enum xr_font_type
   {
     XR_FONT_PROPORTIONAL,
@@ -39,9 +43,10 @@ struct xr_fsm_style
   {
     int ref_cnt;
 
-    int size[TABLE_N_AXES];     /* Page size. */
+    int size[TABLE_N_AXES];      /* Page size. */
     int min_break[TABLE_N_AXES]; /* Minimum cell size to allow breaking. */
     PangoFontDescription *fonts[XR_N_FONTS];
+    struct cell_color fg;
     bool use_system_colors;
     bool transparent;
 
@@ -53,6 +58,7 @@ struct xr_fsm_style
     double font_resolution;
   };
 struct xr_fsm_style *xr_fsm_style_ref (const struct xr_fsm_style *);
+struct xr_fsm_style *xr_fsm_style_unshare (struct xr_fsm_style *);
 void xr_fsm_style_unref (struct xr_fsm_style *);
 bool xr_fsm_style_equals (const struct xr_fsm_style *,
                           const struct xr_fsm_style *);
