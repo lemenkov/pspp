@@ -227,7 +227,8 @@ $(FIGURE_TXTS) $(FIGURE_HTMLS): $(pspp_output)
 AM_MAKEINFOHTMLFLAGS = $(AM_MAKEINFOFLAGS) --css-ref=pspp-manual.css
 # Adjust the path for screenshot images.
 # But make sure these operations are idempotent.
-html-local:
+html-local: doc/pspp.html
+	test -d doc/pspp.html
 	for h in doc/pspp.html/*.html; do \
 		if grep -Fq '<img src="screenshots/' $$h; then continue; fi ; \
 		$(SED) -i -e 's|<img src="\([^"]*\)"|<img src="screenshots/\1"|' $$h; \
