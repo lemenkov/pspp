@@ -225,9 +225,17 @@ is an example:
 
      ./configure CC=c89 CFLAGS=-O0 LIBS=-lposix
 
+Cross Compiling
+===============
+
 To cross-compile PSPP, you will likely need to set the
 PKG_CONFIG_LIBDIR environment variable to point to an
 appropriate pkg-config for the cross-compilation environment.
+
+Part of cross-compiling procedure builds a native binary.  Therefore, you
+will need not only the dependent libraries for your target, but also for the
+build machine.   This is because the native version is used to create
+examples for the user manual.
 
 See "Defining Variables", below, for more details.
 

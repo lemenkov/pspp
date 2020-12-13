@@ -169,15 +169,34 @@ CLEANFILES += $(FIGURE_TXTS) $(FIGURE_SPVS) $(FIGURE_TEXIS) $(FIGURE_HTMLS)
 SUFFIXES += .sps .spv .txt .html .texi .pdf
 
 # Use pspp to process a syntax file into an output file.
-pspp = src/ui/terminal/pspp
-$(FIGURE_SPVS): $(pspp)$(EXEEXT)
+if cross_compiling
+pspp = native/src/ui/terminal/pspp
+pspp_output = native/utilities/pspp-output
+
+native/Makefile:
+	$(MKDIR_P) native
+	(cd native && $(top_srcdir)/configure --without-gui)
+
+native/gl/libgl.la: native/Makefile
+	(cd native && flock --verbose $(top_builddir)/native-lock $(MAKE) gl/libgl.la)
+
+$(pspp): native/gl/libgl.la
+	(cd native && flock --verbose $(top_builddir)/native-lock $(MAKE) src/ui/terminal/pspp)
+
+$(pspp_output): native/gl/libgl.la
+	(cd native && flock --verbose $(top_builddir)/native-lock $(MAKE) utilities/pspp-output)
+else
+pspp = src/ui/terminal/pspp$(EXEEXT)
+pspp_output = utilities/pspp-output$(EXEEXT)
+endif
+
+$(FIGURE_SPVS): $(pspp)
 .sps.spv:
 	$(AM_V_GEN)(cd $(top_srcdir)/examples \
          && $(abs_top_builddir)/$(pspp) ../doc/pspp-figures/$(<F) -o - -O format=spv) > $@.tmp
 	$(AM_V_at)mv $@.tmp $@
 
 # In some cases, the tutorial only wants some parts of the output.
-pspp_output = utilities/pspp-output
 convert = $(AM_V_GEN)$(pspp_output) convert $< $@
 doc/pspp-figures/tutorial2a.spv: doc/pspp-figures/tutorial2.spv $(pspp_output)
 	$(convert) --command='Descriptives'
