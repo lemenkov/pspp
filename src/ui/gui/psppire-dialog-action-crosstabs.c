@@ -71,7 +71,7 @@ refresh (PsppireDialogAction *rd_)
   CS (CHISQ, N_("Chisq"), N_("Pearson chi-square, "                 \
    "likelihood ratio, Fisher’s exact test, continuity correction, " \
    "linear-by-linear association."))				    \
-  CS (PHI, N_("Phi"), NULL)                                         \
+  CS (PHI, N_("Phi and Cramer's V"), NULL)                          \
   CS (CC, N_("CC"), N_("Contingency coefficient"))                  \
   CS (LAMBDA, N_("Lambda"), NULL)                                   \
   CS (UC, N_("UC"), N_("Uncertainty coefficient"))                  \
