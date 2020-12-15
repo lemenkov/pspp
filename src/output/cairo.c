@@ -117,7 +117,6 @@ struct xr_driver
 
     /* Internal state. */
     struct xr_fsm_style *style;
-    double font_scale;
     int char_width, char_height;
     cairo_t *cairo;
     cairo_surface_t *surface;
@@ -251,20 +250,12 @@ apply_options (struct xr_driver *xr, struct string_map *o)
 }
 
 static struct xr_driver *
-xr_allocate (const char *name, int device_type, struct string_map *o,
-             double font_scale)
+xr_allocate (const char *name, int device_type, struct string_map *o)
 {
   struct xr_driver *xr = xzalloc (sizeof *xr);
   struct output_driver *d = &xr->driver;
 
   output_driver_init (d, &cairo_driver_class, name, device_type);
-
-  /* This is a nasty kluge for an issue that does not make sense.  On any
-     surface other than a screen (e.g. for output to PDF or PS or SVG), the
-     fonts are way too big by default.  A "9-point" font seems to appear about
-     16 points tall.  We use a scale factor for these surfaces to help, but the
-     underlying issue is a mystery. */
-  xr->font_scale = font_scale;
 
   apply_options (xr, o);
 
@@ -295,7 +286,10 @@ xr_measure_fonts (cairo_t *cairo, PangoFontDescription *fonts[XR_N_FONTS],
   *char_height = 0;
   for (int i = 0; i < XR_N_FONTS; i++)
     {
-      PangoLayout *layout = pango_cairo_create_layout (cairo);
+      PangoContext *context = pango_cairo_create_context (cairo);
+      pango_cairo_context_set_resolution (context, 72.0);
+      PangoLayout *layout = pango_layout_new (context);
+      g_object_unref (context);
       pango_layout_set_font_description (layout, fonts[i]);
 
       pango_layout_set_text (layout, "0", 1);
@@ -322,7 +316,11 @@ xr_render_page_heading (cairo_t *cairo, const PangoFontDescription *font,
                         const struct page_heading *ph, int page_number,
                         int width, bool draw, int base_y)
 {
-  PangoLayout *layout = pango_cairo_create_layout (cairo);
+  PangoContext *context = pango_cairo_create_context (cairo);
+  pango_cairo_context_set_resolution (context, 72.0);
+  PangoLayout *layout = pango_layout_new (context);
+  g_object_unref (context);
+
   pango_layout_set_font_description (layout, font);
 
   int y = 0;
@@ -432,7 +430,7 @@ xr_set_cairo (struct xr_driver *xr, cairo_t *cairo)
         .min_break = { [H] = xr->min_break[H], [V] = xr->min_break[V] },
         .use_system_colors = xr->systemcolors,
         .transparent = xr->transparent,
-        .font_scale = xr->font_scale,
+        .font_resolution = 72.0,
       };
 
       for (size_t i = 0; i < XR_N_FONTS; i++)
@@ -449,7 +447,7 @@ xr_create (struct file_handle *fh, enum settings_output_devices device_type,
            struct string_map *o, enum xr_output_type file_type)
 {
   const char *file_name = fh_get_file_name (fh);
-  struct xr_driver *xr = xr_allocate (file_name, device_type, o, 72.0 / 128.0);
+  struct xr_driver *xr = xr_allocate (file_name, device_type, o);
 
   double paper_pt[TABLE_N_AXES];
   for (int a = 0; a < TABLE_N_AXES; a++)
@@ -729,7 +727,7 @@ static const struct output_driver_class cairo_driver_class =
 struct xr_driver *
 xr_driver_create (cairo_t *cairo, struct string_map *options)
 {
-  struct xr_driver *xr = xr_allocate ("cairo", 0, options, 1.0);
+  struct xr_driver *xr = xr_allocate ("cairo", 0, options);
   xr_set_cairo (xr, cairo);
   return xr;
 }

@@ -44,7 +44,13 @@ struct xr_fsm_style
     PangoFontDescription *fonts[XR_N_FONTS];
     bool use_system_colors;
     bool transparent;
-    double font_scale;
+
+    /* Resolution, in units per inch, used for measuring font "points".  If
+       this is 72.0, for example, then 1pt = 1 device unit, which is
+       appropriate for rendering to a surface created by
+       cairo_ps_surface_create() with its default transformation matrix of 72
+       units/inch.  For a screen-based surface, it is traditionally 96.0. */
+    double font_resolution;
   };
 struct xr_fsm_style *xr_fsm_style_ref (const struct xr_fsm_style *);
 void xr_fsm_style_unref (struct xr_fsm_style *);

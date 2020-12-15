@@ -165,7 +165,7 @@ get_xr_fsm_style (struct psppire_output_view *view)
     },
     .use_system_colors = true,
     .transparent = true,
-    .font_scale = 1.0,
+    .font_resolution = 96.0,
   };
 
   return style;

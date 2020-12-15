@@ -88,7 +88,7 @@ xr_fsm_style_equals (const struct xr_fsm_style *a,
       || a->min_break[V] != b->min_break[V]
       || a->use_system_colors != b->use_system_colors
       || a->transparent != b->transparent
-      || a->font_scale != b->font_scale)
+      || a->font_resolution != b->font_resolution)
     return false;
 
   for (size_t i = 0; i < XR_N_FONTS; i++)
@@ -608,13 +608,16 @@ xr_layout_cell_text (struct xr_fsm *xr, const struct table_cell *cell,
   if (font_style->typeface)
       desc = parse_font (
         font_style->typeface,
-        font_style->size ? font_style->size * 1000 * xr->style->font_scale : 10000,
+        font_style->size ? font_style->size * 1000 : 10000,
         font_style->bold, font_style->italic);
   if (!desc)
     desc = xr->style->fonts[font_type];
 
   assert (xr->cairo);
-  PangoLayout *layout = pango_cairo_create_layout (xr->cairo);
+  PangoContext *context = pango_cairo_create_context (xr->cairo);
+  pango_cairo_context_set_resolution (context, xr->style->font_resolution);
+  PangoLayout *layout = pango_layout_new (context);
+  g_object_unref (context);
   pango_layout_set_font_description (layout, desc);
 
   const char *text = cell->text;
@@ -1111,7 +1114,10 @@ xr_fsm_create (const struct output_item *item_,
 
   for (int i = 0; i < XR_N_FONTS; i++)
     {
-      PangoLayout *layout = pango_cairo_create_layout (cr);
+      PangoContext *context = pango_cairo_create_context (cr);
+      pango_cairo_context_set_resolution (context, style->font_resolution);
+      PangoLayout *layout = pango_layout_new (context);
+      g_object_unref (context);
       pango_layout_set_font_description (layout, style->fonts[i]);
 
       pango_layout_set_text (layout, "0", 1);
