@@ -561,8 +561,8 @@ sub parse_arg {
 	    $arg{IDX} = force ('id');
 	    if (match ('*')) {
 		$arg{TIMES} = force ('int');
-		die "multiplication factor must be positive"
-		  if $arg{TIMES} < 1;
+		die "multiplication factor must be two"
+		  if $arg{TIMES} != 2;
 	    } else {
 		$arg{TIMES} = 1;
 	    }

@@ -38,6 +38,72 @@ parse.sps:11: error: Stopping syntax file processing here to avoid a cascade of 
 ])
 AT_CLEANUP
 
+AT_SETUP([parsing numeric expression with type mismatch])
+AT_DATA([parse.sps], [dnl
+DATA LIST NOTABLE/x 1(A).
+IF 'foo'.
+])
+AT_CHECK([pspp -O format=csv parse.sps], [1], [dnl
+"parse.sps:2: error: IF: Type mismatch: expression has string type, but a numeric value is required here."
+])
+AT_CLEANUP
+
+AT_SETUP([parsing string expression with type mismatch])
+AT_KEYWORDS([expression negative])
+AT_DATA([parse.sps], [dnl
+DATA LIST NOTABLE/x 1(A).
+COMPUTE x=1.
+])
+AT_CHECK([pspp -O format=csv parse.sps], [1], [dnl
+"parse.sps:2: error: COMPUTE: Type mismatch: expression has number type, but a string value is required here."
+])
+AT_CLEANUP
+
+AT_SETUP([parse expression with unknown system variable])
+AT_KEYWORDS([expression negative])
+AT_DATA([parse.sps], [dnl
+DATA LIST NOTABLE/x 1.
+COMPUTE x=$nonexistent.
+])
+AT_CHECK([pspp -O format=csv parse.sps], [1], [dnl
+parse.sps:2: error: COMPUTE: Unknown system variable $nonexistent.
+])
+AT_CLEANUP
+
+AT_SETUP([parse expression with unknown identifier])
+AT_KEYWORDS([expression negative])
+AT_DATA([parse.sps], [dnl
+DATA LIST NOTABLE/x 1.
+COMPUTE x=y.
+])
+AT_CHECK([pspp -O format=csv parse.sps], [1], [dnl
+parse.sps:2: error: COMPUTE: Unknown identifier y.
+])
+AT_CLEANUP
+
+AT_SETUP([parse expression with extension function in compatibility mode])
+AT_KEYWORDS([expression negative])
+AT_DATA([parse.sps], [dnl
+DEBUG EVALUATE/ACOS(0)*0.
+])
+AT_CHECK([pspp --testing-mode --syntax=compatible -O format=csv parse.sps], [0], [dnl
+parse.sps:1: warning: DEBUG EVALUATE: ACOS(number) is a PSPP extension.
+0.00
+])
+AT_CLEANUP
+
+AT_SETUP([LAG expression following TEMPORARY])
+AT_KEYWORDS([expression negative])
+AT_DATA([parse.sps], [dnl
+DATA LIST NOTABLE/x 1.
+TEMPORARY
+COMPUTE y=LAG(x).
+])
+AT_CHECK([pspp -O format=csv parse.sps], [1], [dnl
+parse.sps:3: error: COMPUTE: LAG(num_variable) may not appear after TEMPORARY.
+])
+AT_CLEANUP
+
 AT_SETUP([parse expression with invalid logical expression])
 AT_DATA([parse.sps], [dnl
 INPUT PROGRAM.

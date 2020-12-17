@@ -1096,23 +1096,21 @@ coerce_function_args (struct expression *e, const struct operation *f,
 static bool
 validate_function_args (const struct operation *f, int arg_cnt, int min_valid)
 {
+  /* Count the function arguments that go into the trailing array (if any).  We
+     know that there must be at least the minimum number because
+     match_function() already checked. */
   int array_arg_cnt = arg_cnt - (f->arg_cnt - 1);
-  if (array_arg_cnt < f->array_min_elems)
-    {
-      msg (SE, _("%s must have at least %d arguments in list."),
-           f->prototype, f->array_min_elems);
-      return false;
-    }
+  assert (array_arg_cnt >= f->array_min_elems);
 
   if ((f->flags & OPF_ARRAY_OPERAND)
       && array_arg_cnt % f->array_granularity != 0)
     {
-      if (f->array_granularity == 2)
-        msg (SE, _("%s must have an even number of arguments in list."),
-             f->prototype);
-      else
-        msg (SE, _("%s must have multiple of %d arguments in list."),
-             f->prototype, f->array_granularity);
+      /* RANGE is the only case we have so far.  It has paired arguments with
+         one initial argument, and that's the only special case we deal with
+         here. */
+      assert (f->array_granularity == 2);
+      assert (arg_cnt % 2 == 0);
+      msg (SE, _("%s must have an odd number of arguments."), f->prototype);
       return false;
     }
 
@@ -1121,26 +1119,19 @@ validate_function_args (const struct operation *f, int arg_cnt, int min_valid)
       if (f->array_min_elems == 0)
         {
           assert ((f->flags & OPF_MIN_VALID) == 0);
-          msg (SE, _("%s function does not accept a minimum valid "
-                     "argument count."), f->prototype);
+          msg (SE, _("%s function cannot accept suffix .%d to specify the "
+                     "minimum number of valid arguments."),
+               f->prototype, min_valid);
           return false;
         }
       else
         {
           assert (f->flags & OPF_MIN_VALID);
-          if (array_arg_cnt < f->array_min_elems)
+          if (min_valid > array_arg_cnt)
             {
-              msg (SE, _("%s requires at least %d valid arguments in list."),
-                   f->prototype, f->array_min_elems);
-              return false;
-            }
-          else if (min_valid > array_arg_cnt)
-            {
-              msg (SE, _("With %s, "
-                         "using minimum valid argument count of %d "
-                         "does not make sense when passing only %d "
-                         "arguments in list."),
-                   f->prototype, min_valid, array_arg_cnt);
+              msg (SE, _("For %s with %d arguments, at most %d (not %d) may be "
+                         "required to be valid."),
+                   f->prototype, arg_cnt, array_arg_cnt, min_valid);
               return false;
             }
         }
