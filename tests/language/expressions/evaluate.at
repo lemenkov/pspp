@@ -13,7 +13,7 @@ dnl GNU General Public License for more details.
 dnl
 dnl You should have received a copy of the GNU General Public License
 dnl along with this program.  If not, see <http://www.gnu.org/licenses/>.
-dnl m4_define([CHECK_EXPR_EVAL],
+m4_define([CHECK_EXPR_EVAL],
   [AT_SETUP([expressions - $1])
    AT_DATA([evaluate.sps],
      [set mxwarn 1000.
