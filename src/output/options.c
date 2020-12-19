@@ -530,6 +530,7 @@ parse_color__ (const char *s, struct cell_color *color)
       color->r = r16 >> 8;
       color->g = g16 >> 8;
       color->b = b16 >> 8;
+      color->alpha = 255;
       return true;
     }
 
@@ -542,6 +543,7 @@ parse_color__ (const char *s, struct cell_color *color)
       color->r = r;
       color->g = g;
       color->b = b;
+      color->alpha = 255;
       return true;
     }
 
@@ -553,6 +555,7 @@ parse_color__ (const char *s, struct cell_color *color)
       color->r = r;
       color->g = g;
       color->b = b;
+      color->alpha = 255;
       return true;
     }
 
@@ -564,17 +567,20 @@ parse_color__ (const char *s, struct cell_color *color)
       color->r = r;
       color->g = g;
       color->b = b;
+      color->alpha = 255;
       return true;
     }
 
   /* rgba(r,g,b,a), ignoring a. */
-  if (sscanf (s, "rgba (%"SCNi8" , %"SCNi8" , %"SCNi8", %*f) %n",
-              &r, &g, &b, &len) == 3
+  double alpha;
+  if (sscanf (s, "rgba (%"SCNi8" , %"SCNi8" , %"SCNi8", %lf) %n",
+              &r, &g, &b, &alpha, &len) == 4
       && !s[len])
     {
       color->r = r;
       color->g = g;
       color->b = b;
+      color->alpha = alpha <= 0 ? 0 : alpha >= 1 ? 255 : alpha * 255.0;
       return true;
     }
 
@@ -584,6 +590,13 @@ parse_color__ (const char *s, struct cell_color *color)
       color->r = code >> 16;
       color->g = code >> 8;
       color->b = code;
+      color->alpha = 255;
+      return true;
+    }
+
+  if (!strcmp (s, "transparent"))
+    {
+      *color = (struct cell_color) { .alpha = 0 };
       return true;
     }
 
