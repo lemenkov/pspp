@@ -39,7 +39,7 @@
 
 #include "gl/c-xvasprintf.h"
 #include "gl/minmax.h"
-#include "gl/tmpdir.h"
+#include "gl/clean-temp.h"
 #include "gl/xalloc.h"
 
 #include <gettext.h>
@@ -637,12 +637,6 @@ enum {
   SELECT_FMT_ODT
 };
 
-/* GNU Hurd doesn't have PATH_MAX.  Use a fallback.
-   Temporary directory names are usually not that long.  */
-#ifndef PATH_MAX
-# define PATH_MAX 1024
-#endif
-
 /* Returns a pixbuf from a svg file      */
 /* You must unref the pixbuf after usage */
 static GdkPixbuf *
@@ -682,19 +676,20 @@ clipboard_get_cb (GtkClipboard     *clipboard,
   gsize length;
   gchar *text = NULL;
   struct output_driver *driver = NULL;
-  char dirname[PATH_MAX], *filename;
+  char *filename;
   struct string_map options;
+  struct temp_dir *td = NULL;
 
   if (view->selected_item == NULL)
     return;
 
-  if (path_search (dirname, sizeof dirname, NULL, NULL, true)
-      || mkdtemp (dirname) == NULL)
+  td = create_temp_dir ("pspp", NULL, false);
+  if (td == NULL)
     {
       msg_error (errno, _("failed to create temporary directory during clipboard operation"));
       return;
     }
-  filename = xasprintf ("%s/clip.tmp", dirname);
+  filename = xasprintf ("%s/clip.tmp", td->dir_name);
 
   string_map_init (&options);
   string_map_insert (&options, "output-file", filename);
@@ -777,7 +772,7 @@ clipboard_get_cb (GtkClipboard     *clipboard,
 
   unlink (filename);
   free (filename);
-  rmdir (dirname);
+  cleanup_temp_dir (td);
 }
 
 static void
