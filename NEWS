@@ -9,8 +9,6 @@ Changes from 1.4.1 to 1.5.2:
  * An error in the displayed signficance of oneway anova
    contrasts tests has been corrected.
 
- * PSPP can now write its results directly to a TeX source file.
-
  * Added Drag-N-Drop in output view.
 
  * The Explore GUI dialog supports the "Plots" subdialog. Boxplots, Q-Q Plots
@@ -20,7 +18,14 @@ Changes from 1.4.1 to 1.5.2:
    The new interface provides the user with a preview of the data to be imported
    and interactive methods to select the desired ranges.
 
- * The html output driver has a new option "bare".
+ * Output driver changes:
+
+   - New drivers for output to TeX source files and to PNG files.
+
+   - New option "trim" to remove empty space from PDF, PostScript, SVG,
+     and PNG output files.
+
+   - The HTML output driver has a new option "bare".
 
  * New features in pspp-output:
 

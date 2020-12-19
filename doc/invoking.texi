@@ -22,7 +22,7 @@ interface.
 
 @menu
 * Main Options::
-* PDF PostScript and SVG Output Options::
+* PDF PostScript SVG and PNG Output Options::
 * Plain Text Output Options::
 * TeX Output Options::
 * HTML Output Options::
@@ -205,25 +205,41 @@ Invoke heuristics to assist with testing @pspp{}.  For use
 by @command{make check} and similar scripts.
 @end table
 
-@node PDF PostScript and SVG Output Options
-@section PDF, PostScript, and SVG Output Options
+@node PDF PostScript SVG and PNG Output Options
+@section PDF, PostScript, SVG, and PNG Output Options
 @cindex PDF
 @cindex Postscript
 @cindex SVG
+@cindex PNG
 
-To produce output in PDF, PostScript, and SVG formats, specify
-@option{-o @var{file}} on the @pspp{} command line, optionally followed
-by any of the options shown in the table below to customize the output
-format.
+To produce output in PDF, PostScript, SVG, or PNG format, specify
+@option{-o @var{file}} on the @pspp{} command line, optionally
+followed by any of the options shown in the table below to customize
+the output format.  These output formats are only available if your
+installation of @pspp{} was compiled with the Cairo library.
 
-PDF, PostScript, and SVG output is only available if your installation
-of @pspp{} was compiled with the Cairo library.
+PDF, PostScript, and SVG use real units: each dimension among the
+options listed below may have a suffix @samp{mm} for millimeters,
+@samp{in} for inches, or @samp{pt} for points.  Lacking a suffix,
+numbers below 50 are assumed to be in inches and those about 50 are
+assumed to be in millimeters.
+
+PNG files are pixel-based, so dimensions in PNG output must ultimately
+be measured in pixels.  For output to these files, PSPP translates the
+specified dimensions to pixels at 72 pixels per inch.  For PNG output
+only, fonts are by default rendered larger than this, at 96 pixels per
+inch.
+
+An SVG or PNG file can only hold a single page.  When PSPP outputs
+more than one page to SVG or PNG, it creates multiple files.  It
+outputs the second page to a file named with a @code{-2} suffix, the
+third with a @code{-3} suffix, and so on.
 
 @table @asis
-@item @option{-O format=@{pdf|ps|svg@}}
+@item @option{-O format=@{pdf|ps|svg|png@}}
 Specify the output format.  This is only necessary if the file name
-given on @option{-o} does not end in @file{.pdf}, @file{.ps}, or
-@file{.svg}.
+given on @option{-o} does not end in @file{.pdf}, @file{.ps},
+@file{.svg}, or @file{.png}.
 
 @item @option{-O paper-size=@var{paper-size}}
 Paper size, as a name (@i{e.g.}@: @code{a4}, @code{letter}) or
@@ -238,11 +254,9 @@ the default paper size is read from it.  As a last resort, A4 paper is
 assumed.
 
 @item @option{-O foreground-color=@var{color}}
-@itemx @option{-O background-color=@var{color}}
-Sets @var{color} as the color to be used for the background or foreground.
-Color should be given in the format @code{#@var{RRRR}@var{GGGG}@var{BBBB}},
-where @var{RRRR}, @var{GGGG} and @var{BBBB} are 4 character hexadecimal
-representations of the red, green and blue components respectively.
+Sets @var{color} as the default color for lines and text.  Use a CSS
+color format (e.g.@: @code{#@var{rr}@var{gg}@var{bb}}) or name (e.g.@:
+@code{black}) as @var{color}.
 
 @item @option{-O orientation=@var{orientation}}
 Either @code{portrait} or @code{landscape}.  Default: @code{portrait}.
@@ -267,23 +281,19 @@ Default: proportional font @code{serif}, fixed-pitch font @code{monospace}.
 Sets the size of the default fonts, in thousandths of a point.  Default:
 10000 (10 point).
 
-@item @option{-O line-gutter=@var{dimension}}
-Sets the width of white space on either side of lines that border text
-or graphics objects.  Default: @code{1pt}.
+@item @option{-O trim=true}
+This option makes PSPP trim empty space around each page of output,
+before adding the margins.  This can make the output easier to include
+in other documents.
 
-@item @option{-O line-spacing=@var{dimension}}
-Sets the spacing between the lines in a double line in a table.
-Default: @code{1pt}.
-
-@item @option{-O line-width=@var{dimension}}
-Sets the width of the lines used in tables.  Default: @code{0.5pt}.
+@item @option{-O font-resolution=@var{dpi}}
+Sets the resolution for font rendering, in dots per inch.  For PDF,
+PostScript, and SVG output, the default is 72 dpi, so that a 10-point
+font is rendered with a height of 10 points.  For PNG output, the
+default is 96 dpi, so that a 10-point font is rendered with a height
+of @math{10 / 72 * 96 = 13.3} pixels.  Use a larger @var{dpi} to
+enlarge text output, or a smaller @var{dpi} to shrink it.
 @end table
-
-Each @var{dimension} value above may be specified in various units
-based on its suffix: @samp{mm} for millimeters, @samp{in} for inches,
-or @samp{pt} for points.  Lacking a suffix, numbers below 50 are
-assumed to be in inches and those about 50 are assumed to be in
-millimeters.
 
 @node Plain Text Output Options
 @section Plain Text Output Options

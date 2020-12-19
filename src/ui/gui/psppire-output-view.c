@@ -22,9 +22,6 @@
 #include <errno.h>
 #include <stdbool.h>
 
-#if HAVE_RSVG
-#include "librsvg/rsvg.h"
-#endif
 #include "libpspp/assertion.h"
 #include "libpspp/string-map.h"
 #include "output/cairo-fsm.h"
@@ -167,7 +164,6 @@ get_xr_fsm_style (struct psppire_output_view *view)
       [XR_FONT_FIXED] = ff,
     },
     .use_system_colors = true,
-    .transparent = true,
     .font_resolution = 96.0,
   };
 
@@ -603,32 +599,16 @@ enum {
   SELECT_FMT_ODT
 };
 
-/* Returns a pixbuf from a svg file      */
-/* You must unref the pixbuf after usage */
-static GdkPixbuf *
-derive_pixbuf_from_svg (const char *filename)
+static void
+clear_rectangle (cairo_surface_t *surface,
+                 double x0, double y0, double x1, double y1)
 {
-  GError *err = NULL;
-  GdkPixbuf *pixbuf = NULL;
-#if HAVE_RSVG
-  RsvgHandle *handle = rsvg_handle_new_from_file (filename, &err);
-  if (err == NULL)
-    {
-      rsvg_handle_set_dpi (handle, 300.0);
-      pixbuf = rsvg_handle_get_pixbuf (handle);
-      g_object_unref (handle);
-    }
-#else
-  pixbuf = gdk_pixbuf_new_from_file (filename, &err);
-#endif
-  if (err != NULL)
-    {
-      msg (ME, _("Could not open file %s during copy operation: %s"),
-	   filename, err->message);
-      g_error_free (err);
-      return NULL;
-    }
-  return pixbuf;
+  cairo_t *cr = cairo_create (surface);
+  cairo_set_source_rgb (cr, 1, 1, 1);
+  cairo_new_path (cr);
+  cairo_rectangle (cr, x0, y0, x1 - x0, y1 - y0);
+  cairo_fill (cr);
+  cairo_destroy (cr);
 }
 
 static void
@@ -668,6 +648,7 @@ clipboard_get_cb (GtkClipboard     *clipboard,
 
     case SELECT_FMT_TEXT:
       string_map_insert (&options, "format", "txt");
+      string_map_insert (&options, "width", "1000");
       break;
 
     case SELECT_FMT_HTML:
@@ -708,16 +689,25 @@ clipboard_get_cb (GtkClipboard     *clipboard,
       gdk_window_end_draw_frame (win, ctx);
       cairo_region_destroy (region);
 
-      cairo_surface_t *surface = cairo_svg_surface_create (filename, w, h);
-      if (surface)
+      cairo_surface_t *surface
+        = (info == SELECT_FMT_SVG
+           ? cairo_svg_surface_create (filename, w, h)
+           : cairo_image_surface_create (CAIRO_FORMAT_ARGB32, w, h));
+      clear_rectangle (surface, 0, 0, w, h);
+      cairo_t *cr2 = cairo_create (surface);
+      xr_fsm_draw_all (fsm, cr2);
+      cairo_destroy (cr2);
+      if (info == SELECT_FMT_IMG)
         {
-          cairo_t *cr = cairo_create (surface);
-          xr_fsm_draw_all (fsm, cr);
-          cairo_destroy (cr);
-          cairo_surface_destroy (surface);
+          GdkPixbuf *pixbuf = gdk_pixbuf_get_from_surface (surface,
+                                                           0, 0, w, h);
+          if (pixbuf)
+            {
+              gtk_selection_data_set_pixbuf (selection_data, pixbuf);
+              g_object_unref (pixbuf);
+            }
         }
-      else
-        g_error ("Could not create cairo svg surface with file %s", filename);
+      cairo_surface_destroy (surface);
     }
   else
     {
@@ -736,19 +726,11 @@ clipboard_get_cb (GtkClipboard     *clipboard,
       driver = NULL;
     }
 
-  if (info == SELECT_FMT_IMG)
-    {
-      GdkPixbuf *pixbuf = derive_pixbuf_from_svg (filename);
-      if (pixbuf)
-	{
-	  gtk_selection_data_set_pixbuf (selection_data, pixbuf);
-	  g_object_unref (pixbuf);
-	}
-    }
-  else if (g_file_get_contents (filename, &text, &length, NULL))
-    gtk_selection_data_set (selection_data, gtk_selection_data_get_target (selection_data),
-			    8,
-			    (const guchar *) text, length);
+  if (info != SELECT_FMT_IMG
+      && g_file_get_contents (filename, &text, &length, NULL))
+    gtk_selection_data_set (selection_data,
+                            gtk_selection_data_get_target (selection_data),
+                            8, (const guchar *) text, length);
 
  finish:
 
@@ -1020,7 +1002,6 @@ create_xr_print_driver (GtkPrintContext *context, struct psppire_output_view *vi
       [H] = { margins[H][0], margins[H][1] },
       [V] = { margins[V][0], margins[V][1] },
     },
-    .bg = { .alpha = 0 },
     .initial_page_number = 1,
     .object_spacing = 12 * XR_POINT,
   };
@@ -1037,7 +1018,6 @@ create_xr_print_driver (GtkPrintContext *context, struct psppire_output_view *vi
     },
     .fg = CELL_COLOR_BLACK,
     .use_system_colors = false,
-    .transparent = false,
     .font_resolution = 72.0
   };
 

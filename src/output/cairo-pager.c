@@ -279,16 +279,6 @@ xr_pager_add_page (struct xr_pager *p, cairo_t *cr)
 
   const struct xr_fsm_style *fs = p->fsm_style;
   const struct xr_page_style *ps = p->page_style;
-  const struct cell_color *bg = &ps->bg;
-  if (bg->alpha)
-    {
-      cairo_save (cr);
-      cairo_set_source_rgba (cr, bg->r / 255.0, bg->g / 255.0,
-                          bg->b / 255.0, bg->alpha / 255.0);
-      cairo_rectangle (cr, 0, 0, fs->size[H], fs->size[V]);
-      cairo_fill (cr);
-      cairo_restore (cr);
-    }
   cairo_translate (cr,
                    xr_to_pt (ps->margins[H][0]),
                    xr_to_pt (ps->margins[V][0]));

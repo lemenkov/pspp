@@ -105,7 +105,6 @@ xr_fsm_style_equals (const struct xr_fsm_style *a,
       || a->min_break[H] != b->min_break[H]
       || a->min_break[V] != b->min_break[V]
       || a->use_system_colors != b->use_system_colors
-      || a->transparent != b->transparent
       || a->font_resolution != b->font_resolution)
     return false;
 
@@ -451,7 +450,8 @@ xrr_draw_cell (void *xr_, const struct table_cell *cell, int color_idx,
   struct xr_fsm *xr = xr_;
   int w, h, brk;
 
-  if (!xr->style->transparent)
+  const struct cell_color *bg = &cell->style->font_style.bg[color_idx];
+  if ((bg->r != 255 || bg->g != 255 || bg->b != 255) && bg->alpha)
     {
       cairo_save (xr->cairo);
       int bg_clip[TABLE_N_AXES][2];
@@ -466,7 +466,7 @@ xrr_draw_cell (void *xr_, const struct table_cell *cell, int color_idx,
 	    bg_clip[axis][1] += spill[axis][1];
 	}
       xr_clip (xr, bg_clip);
-      xr_set_source_rgba (xr->cairo, &cell->style->font_style.bg[color_idx]);
+      xr_set_source_rgba (xr->cairo, bg);
       fill_rectangle (xr,
 		      bb[H][0] - spill[H][0],
 		      bb[V][0] - spill[V][0],

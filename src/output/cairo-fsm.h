@@ -48,7 +48,6 @@ struct xr_fsm_style
     PangoFontDescription *fonts[XR_N_FONTS];
     struct cell_color fg;
     bool use_system_colors;
-    bool transparent;
 
     /* Resolution, in units per inch, used for measuring font "points".  If
        this is 72.0, for example, then 1pt = 1 device unit, which is

@@ -64,7 +64,8 @@ enum xr_output_type
   {
     XR_PDF,
     XR_PS,
-    XR_SVG
+    XR_SVG,
+    XR_PNG
   };
 
 /* Cairo output driver. */
@@ -72,10 +73,47 @@ struct xr_driver
   {
     struct output_driver driver;
 
+    enum xr_output_type output_type;
     struct xr_fsm_style *fsm_style;
     struct xr_page_style *page_style;
     struct xr_pager *pager;
-    cairo_surface_t *surface;
+    bool trim;
+
+    /* This is the surface where we're currently drawing.  It is always
+       nonnull.
+
+       If 'trim' is true, this is a special Cairo "recording surface" that we
+       are using to save output temporarily just to find out the bounding box,
+       then later replay it into the destination surface.
+
+       If 'trim' is false:
+
+         - For output to a PDF or PostScript file, it is the same pointer as
+           'dest_surface'.
+
+         - For output to a PNG file, it is an image surface.
+
+         - For output to an SVG file, it is a recording surface.
+    */
+    cairo_surface_t *drawing_surface;
+
+    /* - For output to a PDF or PostScript file, this is the surface for the
+         PDF or PostScript file where the output is ultimately going.
+
+       - For output to a PNG file, this is NULL, because Cairo has very
+         limited support for PNG.  Cairo can't open a PNG file for writing as
+         a surface, it can only save an existing surface to a PNG file.
+
+       - For output to a SVG file, this is NULL, because Cairo does not
+         permit resizing the SVG page size after creating the file, whereas
+         this driver needs to do that sometimes.  Also, SVG is not multi-page
+         (according to https://wiki.inkscape.org/wiki/index.php/Multipage).
+    */
+    cairo_surface_t *dest_surface;
+
+    /* Used only in file names, for PNG and SVG output where we can only write
+       one page per file. */
+    int page_number;
   };
 
 static const struct output_driver_class cairo_driver_class;
@@ -145,12 +183,14 @@ parse_font_option (struct output_driver *d, struct string_map *options,
 }
 
 static struct xr_driver *
-xr_allocate (const char *name, int device_type, struct string_map *o)
+xr_allocate (const char *name, int device_type,
+             enum xr_output_type output_type, struct string_map *o)
 {
   struct xr_driver *xr = xzalloc (sizeof *xr);
   struct output_driver *d = &xr->driver;
 
   output_driver_init (d, &cairo_driver_class, name, device_type);
+  xr->output_type = output_type;
 
   /* Scale factor from inch/72000 to inch/(72 * XR_POINT). */
   const double scale = XR_POINT / 1000.;
@@ -185,18 +225,18 @@ xr_allocate (const char *name, int device_type, struct string_map *o)
 
   struct cell_color fg = parse_color (opt (d, o, "foreground-color", "black"));
 
-  bool transparent = parse_boolean (opt (d, o, "transparent", "false"));
-  struct cell_color bg = (transparent
-                          ? (struct cell_color) { .alpha = 0 }
-                          : parse_color (opt (d, o, "background-color",
-                                              "white")));
-
   bool systemcolors = parse_boolean (opt (d, o, "systemcolors", "false"));
 
   int object_spacing
     = parse_dimension (opt (d, o, "object-spacing", NULL)) * scale;
   if (object_spacing <= 0)
     object_spacing = XR_POINT * 12;
+
+  const char *default_resolution = (output_type == XR_PNG ? "96" : "72");
+  int font_resolution = parse_int (opt (d, o, "font-resolution",
+                                        default_resolution), 10, 1000);
+
+  xr->trim = parse_boolean (opt (d, o, "trim", "false"));
 
   xr->page_style = xmalloc (sizeof *xr->page_style);
   *xr->page_style = (struct xr_page_style) {
@@ -207,7 +247,6 @@ xr_allocate (const char *name, int device_type, struct string_map *o)
       [V] = { margins[V][0], margins[V][1], },
     },
 
-    .bg = bg,
     .initial_page_number = 1,
     .object_spacing = object_spacing,
   };
@@ -223,8 +262,7 @@ xr_allocate (const char *name, int device_type, struct string_map *o)
     },
     .fg = fg,
     .use_system_colors = systemcolors,
-    .transparent = transparent,
-    .font_resolution = 72.0,
+    .font_resolution = font_resolution,
   };
 
   return xr;
@@ -232,31 +270,42 @@ xr_allocate (const char *name, int device_type, struct string_map *o)
 
 static struct output_driver *
 xr_create (struct file_handle *fh, enum settings_output_devices device_type,
-           struct string_map *o, enum xr_output_type file_type)
+           struct string_map *o, enum xr_output_type output_type)
 {
   const char *file_name = fh_get_file_name (fh);
-  struct xr_driver *xr = xr_allocate (file_name, device_type, o);
+  struct xr_driver *xr = xr_allocate (file_name, device_type, output_type, o);
 
   double paper[TABLE_N_AXES];
   for (int a = 0; a < TABLE_N_AXES; a++)
     paper[a] = xr_to_pt (xr_page_style_paper_size (xr->page_style,
                                                    xr->fsm_style, a));
-  if (file_type == XR_PDF)
-    xr->surface = cairo_pdf_surface_create (file_name, paper[H], paper[V]);
-  else if (file_type == XR_PS)
-    xr->surface = cairo_ps_surface_create (file_name, paper[H], paper[V]);
-  else if (file_type == XR_SVG)
-    xr->surface = cairo_svg_surface_create (file_name, paper[H], paper[V]);
-  else
-    NOT_REACHED ();
 
-  cairo_status_t status = cairo_surface_status (xr->surface);
-  if (status != CAIRO_STATUS_SUCCESS)
+  xr->dest_surface
+    = (output_type == XR_PDF
+       ? cairo_pdf_surface_create (file_name, paper[H], paper[V])
+       : output_type == XR_PS
+       ? cairo_ps_surface_create (file_name, paper[H], paper[V])
+       : NULL);
+  if (xr->dest_surface)
     {
-      msg (ME, _("error opening output file `%s': %s"),
-           file_name, cairo_status_to_string (status));
-      goto error;
+      cairo_status_t status = cairo_surface_status (xr->dest_surface);
+      if (status != CAIRO_STATUS_SUCCESS)
+        {
+          msg (ME, _("error opening output file `%s': %s"),
+               file_name, cairo_status_to_string (status));
+          goto error;
+        }
     }
+
+  xr->drawing_surface
+    = (xr->trim || output_type == XR_SVG
+       ? cairo_recording_surface_create (CAIRO_CONTENT_COLOR_ALPHA,
+                                         &(cairo_rectangle_t) {
+                                           .width = paper[H],
+                                           .height = paper[V] })
+       : output_type == XR_PNG
+       ? cairo_image_surface_create (CAIRO_FORMAT_ARGB32, paper[H], paper[V])
+       : xr->dest_surface);
 
   fh_unref (fh);
   return &xr->driver;
@@ -288,35 +337,211 @@ xr_svg_create (struct file_handle *fh, enum settings_output_devices device_type,
   return xr_create (fh, device_type, o, XR_SVG);
 }
 
+static struct output_driver *
+xr_png_create (struct file_handle *fh, enum settings_output_devices device_type,
+               struct string_map *o)
+{
+  return xr_create (fh, device_type, o, XR_PNG);
+}
+
+static void
+xr_set_surface_size (cairo_surface_t *surface, enum xr_output_type output_type,
+                     double width, double height)
+{
+  switch (output_type)
+    {
+    case XR_PDF:
+      cairo_pdf_surface_set_size (surface, width, height);
+      break;
+
+    case XR_PS:
+      cairo_ps_surface_set_size (surface, width, height);
+      break;
+
+    case XR_SVG:
+    case XR_PNG:
+      NOT_REACHED ();
+    }
+}
+
+static void
+xr_copy_surface (cairo_surface_t *dst, cairo_surface_t *src,
+                 double x, double y)
+{
+  cairo_t *cr = cairo_create (dst);
+  cairo_set_source_surface (cr, src, x, y);
+  cairo_paint (cr);
+  cairo_destroy (cr);
+}
+
+static void
+clear_rectangle (cairo_surface_t *surface,
+                 double x0, double y0, double x1, double y1)
+{
+  cairo_t *cr = cairo_create (surface);
+  cairo_set_source_rgb (cr, 1, 1, 1);
+  cairo_new_path (cr);
+  cairo_rectangle (cr, x0, y0, x1 - x0, y1 - y0);
+  cairo_fill (cr);
+  cairo_destroy (cr);
+}
+
+static void
+xr_report_error (cairo_status_t status, const char *file_name)
+{
+  if (status != CAIRO_STATUS_SUCCESS)
+    fprintf (stderr,  "%s: %s", file_name, cairo_status_to_string (status));
+}
+
+static void
+xr_finish_page (struct xr_driver *xr)
+{
+  /* For 'trim' true:
+
+    - If the destination is PDF or PostScript, set the dest surface size, copy
+      ink extent, show_page.
+
+    - If the destination is PNG, create image surface, copy ink extent,
+      cairo_surface_write_to_png(), destroy image surface.
+
+    - If the destination is SVG, create svg surface, copy ink extent, close.
+
+    then destroy drawing_surface and make a new one.
+
+    For 'trim' false:
+
+    - If the destination is PDF or PostScript, show_page.
+
+    - If the destination is PNG, cairo_surface_write_to_png(), destroy image
+      surface, create new image surface.
+
+    - If the destination is SVG, create svg surface, copy whole thing, close.
+
+    */
+  double paper[TABLE_N_AXES];
+  for (int a = 0; a < TABLE_N_AXES; a++)
+    paper[a] = xr_to_pt (xr_page_style_paper_size (
+                           xr->page_style, xr->fsm_style, a));
+
+  xr->page_number++;
+  char *file_name = (xr->page_number > 1
+                     ? xasprintf ("%s-%d", xr->driver.name, xr->page_number)
+                     : xr->driver.name);
+
+  if (xr->trim)
+    {
+      /* Get the bounding box for the drawing surface. */
+      double ofs[TABLE_N_AXES], size[TABLE_N_AXES];
+      cairo_recording_surface_ink_extents (xr->drawing_surface,
+                                           &ofs[H], &ofs[V],
+                                           &size[H], &size[V]);
+      const int (*margins)[2] = xr->page_style->margins;
+      for (int a = 0; a < TABLE_N_AXES; a++)
+        {
+          double scale = XR_POINT;
+          size[a] += (margins[a][0] + margins[a][1]) / scale;
+          ofs[a] = -ofs[a] + margins[a][0] / scale;
+        }
+
+      switch (xr->output_type)
+        {
+        case XR_PDF:
+        case XR_PS:
+          xr_set_surface_size (xr->dest_surface, xr->output_type,
+                               size[H], size[V]);
+          xr_copy_surface (xr->dest_surface, xr->drawing_surface,
+                           ofs[H], ofs[V]);
+          cairo_surface_show_page (xr->dest_surface);
+          break;
+
+        case XR_SVG:
+          {
+            cairo_surface_t *svg = cairo_svg_surface_create (
+              file_name, size[H], size[V]);
+            xr_copy_surface (svg, xr->drawing_surface, ofs[H], ofs[V]);
+            xr_report_error (cairo_surface_status (svg), file_name);
+            cairo_surface_destroy (svg);
+          }
+          break;
+
+        case XR_PNG:
+          {
+            cairo_surface_t *png = cairo_image_surface_create (
+              CAIRO_FORMAT_ARGB32, size[H], size[V]);
+            clear_rectangle (png, 0, 0, size[H], size[V]);
+            xr_copy_surface (png, xr->drawing_surface, ofs[H], ofs[V]);
+            xr_report_error (cairo_surface_write_to_png (png, file_name),
+                             file_name);
+            cairo_surface_destroy (png);
+          }
+          break;
+        }
+
+      /* Destroy the recording surface and create a fresh one of the same
+         size. */
+      cairo_surface_destroy (xr->drawing_surface);
+      xr->drawing_surface = cairo_recording_surface_create (
+        CAIRO_CONTENT_COLOR_ALPHA,
+        &(cairo_rectangle_t) { .width = paper[H], .height = paper[V] });
+    }
+  else
+    {
+      switch (xr->output_type)
+        {
+        case XR_PDF:
+        case XR_PS:
+          cairo_surface_show_page (xr->dest_surface);
+          break;
+
+        case XR_SVG:
+          {
+            cairo_surface_t *svg = cairo_svg_surface_create (
+              file_name, paper[H], paper[V]);
+            xr_copy_surface (svg, xr->drawing_surface, 0.0, 0.0);
+            xr_report_error (cairo_surface_status (svg), file_name);
+            cairo_surface_destroy (svg);
+          }
+          break;
+
+        case XR_PNG:
+          xr_report_error (cairo_surface_write_to_png (xr->drawing_surface,
+                                                       file_name), file_name);
+          cairo_surface_destroy (xr->drawing_surface);
+          xr->drawing_surface = cairo_image_surface_create (
+            CAIRO_FORMAT_ARGB32, paper[H], paper[V]);
+          break;
+        }
+    }
+
+  if (file_name != xr->driver.name)
+    free (file_name);
+}
+
 static void
 xr_destroy (struct output_driver *driver)
 {
   struct xr_driver *xr = xr_driver_cast (driver);
 
-  if (xr->surface)
+  if (xr->pager)
+    xr_finish_page (xr);
+
+  if (xr->drawing_surface && xr->drawing_surface != xr->dest_surface)
+    cairo_surface_destroy (xr->drawing_surface);
+  if (xr->dest_surface)
     {
-      cairo_surface_finish (xr->surface);
-      cairo_status_t status = cairo_surface_status (xr->surface);
+      cairo_surface_finish (xr->dest_surface);
+      cairo_status_t status = cairo_surface_status (xr->dest_surface);
       if (status != CAIRO_STATUS_SUCCESS)
         fprintf (stderr,  _("error drawing output for %s driver: %s"),
                  output_driver_get_name (driver),
                  cairo_status_to_string (status));
-      cairo_surface_destroy (xr->surface);
+      cairo_surface_destroy (xr->dest_surface);
     }
 
   xr_pager_destroy (xr->pager);
   xr_page_style_unref (xr->page_style);
   xr_fsm_style_unref (xr->fsm_style);
   free (xr);
-}
-
-static void
-xr_flush (struct output_driver *driver)
-{
-  struct xr_driver *xr = xr_driver_cast (driver);
-
-  if (xr->surface)
-    cairo_surface_flush (xr->surface);
 }
 
 static void
@@ -341,7 +566,6 @@ xr_update_page_setup (struct output_driver *driver,
       [V] = { ps->margins[v][0] * scale, ps->margins[v][1] * scale },
     },
 
-    .bg = xr->page_style->bg,
     .initial_page_number = ps->initial_page_number,
     .object_spacing = ps->object_spacing * 72 * XR_POINT,
   };
@@ -359,15 +583,14 @@ xr_update_page_setup (struct output_driver *driver,
     },
     .fg = old_fs->fg,
     .use_system_colors = old_fs->use_system_colors,
-    .transparent = old_fs->transparent,
-    .font_resolution = 72.0,
+    .font_resolution = old_fs->font_resolution,
   };
   for (size_t i = 0; i < XR_N_FONTS; i++)
     xr->fsm_style->fonts[i] = pango_font_description_copy (old_fs->fonts[i]);
   xr_fsm_style_unref (old_fs);
 
-  cairo_pdf_surface_set_size (xr->surface, ps->paper[H] * 72.0,
-                              ps->paper[V] * 72.0);
+  xr_set_surface_size (xr->dest_surface, xr->output_type, ps->paper[H] * 72.0,
+                       ps->paper[V] * 72.0);
 }
 
 static void
@@ -386,14 +609,14 @@ xr_submit (struct output_driver *driver, const struct output_item *output_item)
   if (!xr->pager)
     {
       xr->pager = xr_pager_create (xr->page_style, xr->fsm_style);
-      xr_pager_add_page (xr->pager, cairo_create (xr->surface));
+      xr_pager_add_page (xr->pager, cairo_create (xr->drawing_surface));
     }
 
   xr_pager_add_item (xr->pager, output_item);
   while (xr_pager_needs_new_page (xr->pager))
     {
-      cairo_surface_show_page (xr->surface);
-      xr_pager_add_page (xr->pager, cairo_create (xr->surface));
+      xr_finish_page (xr);
+      xr_pager_add_page (xr->pager, cairo_create (xr->drawing_surface));
     }
 }
 
@@ -403,11 +626,13 @@ struct output_driver_factory ps_driver_factory =
   { "ps", "pspp.ps", xr_ps_create };
 struct output_driver_factory svg_driver_factory =
   { "svg", "pspp.svg", xr_svg_create };
+struct output_driver_factory png_driver_factory =
+  { "png", "pspp.png", xr_png_create };
 
 static const struct output_driver_class cairo_driver_class =
 {
   "cairo",
   xr_destroy,
   xr_submit,
-  xr_flush,
+  NULL,
 };

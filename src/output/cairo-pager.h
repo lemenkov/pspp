@@ -37,7 +37,6 @@ struct xr_page_style
 
     struct page_heading headings[2]; /* Top and bottom headings. */
 
-    struct cell_color bg;            /* Background color. */
     int initial_page_number;
     int object_spacing;
   };
