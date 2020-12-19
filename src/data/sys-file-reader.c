@@ -640,6 +640,13 @@ add_id (struct get_strings_aux *aux, const char *id, const char *title, ...)
   va_end (args);
 }
 
+static const char *
+skip_prefix (const char *s, const char *prefix)
+{
+  size_t prefix_len = strlen (prefix);
+  return !strncmp (s, prefix, prefix_len) ? s + prefix_len : s;
+}
+
 /* Retrieves significant string data from R in its raw format, to allow the
    caller to try to detect the encoding in use.
 
@@ -689,7 +696,7 @@ sfm_get_strings (const struct any_reader *r_, struct pool *pool,
 
   add_string (&aux, r->header.creation_date, _("Creation Date"));
   add_string (&aux, r->header.creation_time, _("Creation Time"));
-  add_string (&aux, r->header.eye_catcher, _("Product"));
+  add_string (&aux, skip_prefix (r->header.eye_catcher, "@(#) "), _("Product"));
   add_string (&aux, r->header.file_label, _("File Label"));
 
   if (r->extensions[EXT_PRODUCT_INFO])
