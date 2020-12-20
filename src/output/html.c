@@ -33,7 +33,9 @@
 #include "libpspp/i18n.h"
 #include "libpspp/message.h"
 #include "libpspp/version.h"
+#ifdef HAVE_CAIRO
 #include "output/cairo-chart.h"
+#endif
 #include "output/chart-item.h"
 #include "output/driver-provider.h"
 #include "output/message-item.h"

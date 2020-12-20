@@ -47,7 +47,9 @@
 #include "libpspp/u8-line.h"
 #include "libpspp/version.h"
 #include "output/ascii.h"
+#ifdef HAVE_CAIRO
 #include "output/cairo-chart.h"
+#endif
 #include "output/chart-item-provider.h"
 #include "output/driver-provider.h"
 #include "output/message-item.h"
