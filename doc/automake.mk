@@ -308,7 +308,7 @@ install-info-local:
 uninstall-local:
 	for p in $(INFO_SCREENSHOTS); do \
 		f=`basename $$p ` ; \
-		$(RM) $(DESTDIR)$(prefix)/share/info/$$f ; \
+		$(RM) $(DESTDIR)$(prefix)/share/info/screenshots/$$f ; \
 	done
 
 EXTRA_DIST+= $(SCREENSHOTS) doc/doc-make.in doc/screengrab
