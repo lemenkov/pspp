@@ -48,11 +48,18 @@ graphic user interface
 @end macro
 
 @macro psppoutput{FILE}
-@ifnothtml
-@smallexample
-@include pspp-figures/\FILE\.texi
-@end smallexample
-@end ifnothtml
+@c Use @image for Info and for plaintext output.
+@ifinfo
+
+@noindent @image{pspp-figures/\FILE\}
+
+@end ifinfo
+@ifplaintext
+
+@noindent @image{pspp-figures/\FILE\}
+
+@end ifplaintext
+@c Use HTML for HTML output.
 @ifhtml
 @cartouche
 @html
@@ -64,6 +71,15 @@ graphic user interface
 @end html
 @end cartouche
 @end ifhtml
+@c Use the Texi-fied version of the plaintext output for other output formats.
+@c Some of these could do better, but we have not yet implemented it.
+@ifnotinfo
+@ifnotplaintext
+@ifnothtml
+@include pspp-figures/\FILE\.texi
+@end ifnothtml
+@end ifnotplaintext
+@end ifnotinfo
 @end macro
 
 @macro note{param1}

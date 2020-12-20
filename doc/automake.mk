@@ -92,7 +92,7 @@ dist_docbook_DATA = doc/pspp.xml
 CLEANFILES += pspp-dev.dvi $(docbook_DATA) doc/pspp.info* doc/pspp.xml
 
 
-doc: $(INFO_DEPS) $(DVIS) $(PDFS) $(PSS) $(HTMLS) $(dist_docbook_DATA)
+doc: $(INFO_DEPS) $(DVIS) $(PDFS) $(PNGS) $(HTMLS) $(dist_docbook_DATA)
 PHONY += doc
 
 doc/help-pages-list: $(UI_FILES)
@@ -150,23 +150,36 @@ FIGURE_TXTS = $(FIGURE_SPVS:.spv=.txt)
 FIGURE_TEXIS = $(FIGURE_TXTS:.txt=.texi)
 FIGURE_HTMLS = $(FIGURE_SPVS:.spv=.html)
 FIGURE_PDFS = $(FIGURE_SPVS:.spv=.pdf)
+FIGURE_PNGS = $(FIGURE_SPVS:.spv=.png)
 
 figure-spvs: $(FIGURE_SPVS)
 figure-txts: $(FIGURE_TXTS)
 figure-texis: $(FIGURE_TEXIS)
 figure-htmls: $(FIGURE_HTMLS)
 figure-pdfs: $(FIGURE_PDFS)
-PHONY += figure-spv figure-txts figure-texis figure-htmls figure-pdfs
+figure-pngs: $(FIGURE_PNGS)
+PHONY += \
+	figure-spv \
+	figure-txts \
+	figure-texis \
+	figure-htmls \
+	figure-pdfs \
+	figure-pngs
 
-$(top_builddir)/doc/pspp.info:  $(FIGURE_TEXIS)
+$(top_builddir)/doc/pspp.info:  $(FIGURE_PNGS)
 $(top_builddir)/doc/pspp.ps:    $(FIGURE_TEXIS)
 $(top_builddir)/doc/pspp.dvi:   $(FIGURE_TEXIS)
 $(top_builddir)/doc/pspp.html:  $(FIGURE_HTMLS)
 $(top_builddir)/doc/pspp.pdf:   $(FIGURE_TEXIS)
 $(top_builddir)/doc/pspp.xml:   $(FIGURE_TEXIS)
 
-CLEANFILES += $(FIGURE_TXTS) $(FIGURE_SPVS) $(FIGURE_TEXIS) $(FIGURE_HTMLS)
-SUFFIXES += .sps .spv .txt .html .texi .pdf
+CLEANFILES += \
+	$(FIGURE_TXTS) \
+	$(FIGURE_SPVS) \
+	$(FIGURE_TEXIS) \
+	$(FIGURE_HTMLS) \
+	$(FIGURE_PNGS)
+SUFFIXES += .sps .spv .txt .html .texi .pdf .png
 
 # Use pspp to process a syntax file into an output file.
 if cross_compiling
@@ -216,7 +229,10 @@ $(FIGURE_TXTS) $(FIGURE_HTMLS): $(pspp_output)
 .spv.txt:
 	$(convert)
 .spv.pdf:
-	$(convert) -O left-margin=0pt -O right-margin=0pt -O top-margin=0pt -O bottom-margin=0pt -O paper-size=6x20in -O font-size=12000 --table-look=$(HOME)/pspp/spss15/Looks/report.tlo
+	$(convert) -O trim=true -O left-margin=0in -O right-margin=0in -O top-margin=0in -O bottom-margin=0in -O paper-size=7.5x99in --table-look=$(srcdir)/doc/tutorial.stt
+.spv.png:
+	$(convert) -O trim=true -O left-margin=0in -O right-margin=0in -O top-margin=0in -O bottom-margin=0in -O paper-size=7.5x99in --table-look=$(srcdir)/doc/tutorial.stt
+EXTRA_DIST += doc/tutorial.stt
 .spv.html:
 	$(convert) -O format=html -O bare=true
 
@@ -299,16 +315,24 @@ doc-make: doc/doc-make.in Makefile
 
 
 # Install all the PNG files so that info readers can recognise them
-install-info-local:
+install-info-local: $(FIGURE_PNGS)
 	$(MKDIR_P) $(DESTDIR)$(infodir)/screenshots
 	for p in $(INFO_SCREENSHOTS); do \
 		$(INSTALL_DATA) $$p $(DESTDIR)$(infodir)/screenshots ;\
+	done
+	$(INSTALL) -d $(DESTDIR)$(infodir)/pspp-figures
+	for p in $(FIGURE_PNGS); do \
+		$(INSTALL_DATA) $$p $(DESTDIR)$(infodir)/pspp-figures ;\
 	done
 
 uninstall-local:
 	for p in $(INFO_SCREENSHOTS); do \
 		f=`basename $$p ` ; \
 		rm -f $(DESTDIR)$(infodir)/screenshots/$$f ; \
+	done
+	for p in $(FIGURE_PNGS); do \
+		f=`basename $$p ` ; \
+		rm -f $(DESTDIR)$(infodir)/pspp-figures/$$f ; \
 	done
 
 EXTRA_DIST+= $(SCREENSHOTS) doc/doc-make.in doc/screengrab

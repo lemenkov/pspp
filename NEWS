@@ -18,6 +18,9 @@ Changes from 1.4.1 to 1.5.2:
    The new interface provides the user with a preview of the data to be imported
    and interactive methods to select the desired ranges.
 
+ * The user manual, in its Info and HTML versions, now includes
+   graphical output examples and screenshots.
+
  * Output driver changes:
 
    - New drivers for output to TeX source files and to PNG files.
