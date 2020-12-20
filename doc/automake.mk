@@ -300,15 +300,15 @@ doc-make: doc/doc-make.in Makefile
 
 # Install all the PNG files so that info readers can recognise them
 install-info-local:
-	$(MKDIR_P) $(DESTDIR)$(prefix)/share/info/screenshots
+	$(MKDIR_P) $(DESTDIR)$(infodir)/screenshots
 	for p in $(INFO_SCREENSHOTS); do \
-		$(INSTALL_DATA) $$p $(DESTDIR)$(prefix)/share/info/screenshots ;\
+		$(INSTALL_DATA) $$p $(DESTDIR)$(infodir)/screenshots ;\
 	done
 
 uninstall-local:
 	for p in $(INFO_SCREENSHOTS); do \
 		f=`basename $$p ` ; \
-		$(RM) $(DESTDIR)$(prefix)/share/info/screenshots/$$f ; \
+		$(RM) $(DESTDIR)$(infodir)/screenshots/$$f ; \
 	done
 
 EXTRA_DIST+= $(SCREENSHOTS) doc/doc-make.in doc/screengrab
