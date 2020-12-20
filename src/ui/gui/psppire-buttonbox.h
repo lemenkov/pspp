@@ -49,6 +49,17 @@ enum
     n_PsppireButtonBoxButtons
   };
 
+typedef enum
+  {
+    PSPPIRE_BUTTON_OK_MASK     = (1 << PSPPIRE_BUTTON_OK),
+    PSPPIRE_BUTTON_GOTO_MASK   = (1 << PSPPIRE_BUTTON_GOTO),
+    PSPPIRE_BUTTON_CONTINUE_MASK = (1 << PSPPIRE_BUTTON_CONTINUE),
+    PSPPIRE_BUTTON_CANCEL_MASK = (1 << PSPPIRE_BUTTON_CANCEL),
+    PSPPIRE_BUTTON_CLOSE_MASK  = (1 << PSPPIRE_BUTTON_CLOSE),
+    PSPPIRE_BUTTON_HELP_MASK   = (1 << PSPPIRE_BUTTON_HELP),
+    PSPPIRE_BUTTON_RESET_MASK  = (1 << PSPPIRE_BUTTON_RESET),
+    PSPPIRE_BUTTON_PASTE_MASK  = (1 << PSPPIRE_BUTTON_PASTE)
+  } PsppireButtonMask;
 
 struct _PsppireButtonBox
 {
@@ -65,6 +76,7 @@ struct _PsppireButtonBoxClass
 };
 
 GType          psppire_button_box_get_type        (void);
+GtkWidget*     psppire_button_box_new (void);
 
 
 #define PSPPIRE_TYPE_BUTTON_MASK psppire_button_flags_get_type()
