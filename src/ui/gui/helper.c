@@ -230,3 +230,23 @@ paste_syntax_to_window (gchar *syntax)
 
   return syntax;
 }
+
+
+/* Return the width of an upper case M (in pixels) when rendered onto
+   WIDGET with its current style.  */
+gdouble
+width_of_m (GtkWidget *widget)
+{
+  PangoContext *context = gtk_widget_create_pango_context (widget);
+  PangoLayout *layout = pango_layout_new (context);
+  PangoRectangle rect;
+
+  pango_layout_set_text (layout, "M", 1);
+  pango_layout_get_extents (layout, NULL, &rect);
+
+  g_object_unref (G_OBJECT (layout));
+  g_object_unref (G_OBJECT (context));
+
+  return rect.width / (gdouble) PANGO_SCALE;
+}
+

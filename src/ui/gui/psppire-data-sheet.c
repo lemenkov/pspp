@@ -28,6 +28,7 @@
 #include "ui/gui/executor.h"
 #include "psppire-data-window.h"
 #include "ssw-axis-model.h"
+#include "helper.h"
 
 static void
 do_sort (PsppireDataSheet *sheet, GtkSortType order)
@@ -434,7 +435,6 @@ button_post_create (GtkWidget *button, guint i, gpointer user_data)
   g_signal_connect_after (button, "draw", G_CALLBACK (indicate_filtered_case), data_store);
 }
 
-
 static gboolean
 resize_display_width (PsppireDict *dict, gint pos, gint size, gpointer user_data)
 {
@@ -442,19 +442,9 @@ resize_display_width (PsppireDict *dict, gint pos, gint size, gpointer user_data
     return FALSE;
 
   PsppireDataSheet *sheet = PSPPIRE_DATA_SHEET (user_data);
-  PangoContext *context = gtk_widget_create_pango_context (GTK_WIDGET (sheet));
-  PangoLayout *layout = pango_layout_new (context);
-  PangoRectangle rect;
+  gdouble wm = width_of_m (GTK_WIDGET (sheet));
 
-  pango_layout_set_text (layout, "M", 1);
-  pango_layout_get_extents (layout, NULL, &rect);
-
-  gdouble width_of_M = rect.width / (gdouble) PANGO_SCALE;
-
-  g_object_unref (G_OBJECT (layout));
-  g_object_unref (G_OBJECT (context));
-
-  gint Ms = round ((size / width_of_M) - 0.25);
+  gint Ms = round ((size / wm) - 0.25);
   struct variable *var = psppire_dict_get_variable (dict, pos);
   g_return_val_if_fail (var, TRUE);
   var_set_display_width (var, Ms);

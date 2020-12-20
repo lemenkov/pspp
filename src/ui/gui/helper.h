@@ -73,5 +73,10 @@ psppire_box_pack_start_defaults (GtkBox *box, GtkWidget *widget)
    implementations rely on this. */
 #define GFUNC_COMPAT_CAST(x) ((GFunc) (void (*)(void)) (x))
 
+
+/* Return the width of an upper case M (in pixels) when rendered onto
+   WIDGET with its current style.  */
+gdouble width_of_m (GtkWidget *widget);
+
 #endif
 
