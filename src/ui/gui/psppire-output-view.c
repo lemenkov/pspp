@@ -230,7 +230,7 @@ find_selected_item (struct psppire_output_view *view)
   for (item = view->items; item < &view->items[view->n_items]; item++)
     {
       GtkWidget *widget = GTK_WIDGET (item->drawing_area);
-      if GTK_IS_WIDGET (widget)
+      if (GTK_IS_WIDGET (widget))
         {
 	  GtkStateFlags state = gtk_widget_get_state_flags (widget);
 	  if (state & GTK_STATE_FLAG_SELECTED)
