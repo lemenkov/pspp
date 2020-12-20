@@ -332,6 +332,8 @@ src_ui_gui_libwidgets_essential_la_SOURCES = \
 	src/ui/gui/psppire-text-file.h \
 	src/ui/gui/psppire-val-chooser.c \
 	src/ui/gui/psppire-val-chooser.h \
+	src/ui/gui/psppire-var-info.c \
+	src/ui/gui/psppire-var-info.h \
 	src/ui/gui/psppire-var-ptr.c \
 	src/ui/gui/psppire-var-ptr.h \
 	src/ui/gui/psppire-var-view.c \

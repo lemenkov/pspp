@@ -14,7 +14,9 @@
     <glade-widget-class name="PsppireValChooser"    generic-name="val-chooser" title="Psppire Value Chooser"/>
     <glade-widget-class name="PsppireVarView"   generic-name="var-view" title="Psppire Variable View"/>
     <glade-widget-class name="PsppireVariableSheet" generic-name="variable-sheet" title="Psppire Variable Sheet"/>
+    <glade-widget-class name="PsppireVarInfo"   generic-name="var-info" title="Psppire Variable Info"/>
     <glade-widget-class name="SswSheet" generic-name="variable-sheet" title="Spread Sheet"/>
+
   </glade-widget-classes>
 
   <glade-widget-group name="psppire" title="Psppire">
@@ -29,6 +31,7 @@
     <glade-widget-class-ref name="PsppireValChooser"/>
     <glade-widget-class-ref name="PsppireVarView"/>
     <glade-widget-class-ref name="PsppireVariableSheet"/>
+    <glade-widget-class-ref name="PsppireVarInfo"/>
     <glade-widget-class-ref name="SswSheet"/>
   </glade-widget-group>
 

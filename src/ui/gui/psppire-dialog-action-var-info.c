@@ -1,6 +1,6 @@
 /* PSPPIRE - a graphical user interface for PSPP.
-   Copyright (C) 2007, 2009, 2010, 2011, 2012, 2013, 2014, 2016  Free Software Foundation
-
+   Copyright (C) 2007, 2009, 2010, 2011, 2012, 2013, 2014, 2016,
+   2020  Free Software Foundation
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -124,21 +124,9 @@ populate_output (GtkTreeSelection *selection, gpointer data)
   psppire_dict_view_get_selected_variables (PSPPIRE_DICT_VIEW (treeview),
                                             &vars, &n_vars);
 
-  if (n_vars > 0)
-    {
-      PsppireDataWindow *dw;
+  g_return_if_fail (n_vars <= 1);
 
-      g_object_get (act, "top-level", &dw, NULL);
-
-      psppire_output_view_clear (act->output);
-
-      output_engine_push ();
-      psppire_output_view_register_driver (act->output);
-      g_free (execute_syntax_string (
-                dw, generate_syntax__ (&act->parent,
-                                       "DISPLAY DICTIONARY /VARIABLES=")));
-      output_engine_pop ();
-    }
+  g_object_set (act->var_info, "variable", n_vars > 0 ? vars[0] : NULL, NULL);
 }
 
 
@@ -173,9 +161,7 @@ psppire_dialog_action_var_info_activate (PsppireDialogAction *a, GVariant *param
 
   GtkBuilder *xml = builder_new ("variable-info.ui");
 
-  act->output =
-    psppire_output_view_new (GTK_LAYOUT (get_widget_assert (xml, "layout1")),
-			     NULL);
+  act->var_info = get_widget_assert (xml, "var-info0");
 
   pda->dialog = get_widget_assert (xml, "variable-info-dialog");
   pda->source = get_widget_assert (xml, "treeview2");

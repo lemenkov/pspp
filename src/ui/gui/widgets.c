@@ -79,6 +79,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "psppire-value-entry.h"
 #include "psppire-data-sheet.h"
 #include "psppire-var-sheet-header.h"
+#include "psppire-var-info.h"
 #include "psppire-variable-sheet.h"
 #include <ssw-sheet.h>
 
@@ -224,6 +225,7 @@ preregister_widgets (void)
   psppire_data_sheet_get_type ();
   psppire_var_sheet_header_get_type ();
   psppire_variable_sheet_get_type ();
+  psppire_var_info_get_type ();
 
   preregister_actions ();
   preregister_misc ();
