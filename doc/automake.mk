@@ -224,6 +224,12 @@ doc/pspp-figures/tutorial7a.spv: doc/pspp-figures/tutorial7.spv $(pspp_output)
 doc/pspp-figures/tutorial7b.spv: doc/pspp-figures/tutorial7.spv $(pspp_output)
 	$(convert) --commands=regression --nth-command=2 --subtypes=coefficients
 
+
+$(FIGURE_PNGS): $(pspp_output)
+$(FIGURE_TXTS): $(pspp_output)
+$(FIGURE_HTMLS): $(pspp_output)
+$(FIGURE_PDFS): $(pspp_output)
+
 # Convert an output file into a text file or HTML file.
 $(FIGURE_TXTS) $(FIGURE_HTMLS): $(pspp_output)
 .spv.txt:
