@@ -54,6 +54,8 @@ struct _PsppireDictView
   gboolean prefer_labels_override;
   GtkWidget *override_button;
   GtkTreeModel *sorted_model;
+  const struct variable *var_under_cursor;
+  GtkWidget *var_info_check;
 };
 
 struct _PsppireDictViewClass

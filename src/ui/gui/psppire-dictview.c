@@ -27,6 +27,10 @@
 #include <libpspp/i18n.h>
 #include "helper.h"
 
+#include "psppire-dialog.h"
+#include "psppire-var-info.h"
+#include "psppire-buttonbox.h"
+
 #include <gettext.h>
 #define _(msgid) gettext (msgid)
 #define N_(msgid) msgid
@@ -489,11 +493,49 @@ set_tooltip_for_variable (GtkTreeView  *treeview,
   return TRUE;
 }
 
+static struct variable *
+psppire_dict_view_iter_to_var (PsppireDictView *dict_view,
+                               GtkTreeIter *top_iter)
+{
+  GtkTreeView *treeview = GTK_TREE_VIEW (dict_view);
+  GtkTreeModel *top_model = gtk_tree_view_get_model (treeview);
+
+  struct variable *var;
+  GtkTreeModel *model;
+  GtkTreeIter iter;
+
+  get_base_model (top_model, top_iter, &model, &iter);
+  g_assert (PSPPIRE_IS_DICT (model));
+
+  gtk_tree_model_get (model,
+		      &iter, DICT_TVM_COL_VAR, &var, -1);
+
+  return var;
+}
+
 static gboolean
 show_menu (PsppireDictView *dv, GdkEvent *event, gpointer data)
 {
-  if (((GdkEventButton *) event)->button != 3)
+  GdkEventButton *button_event = (GdkEventButton *) event;
+  if (button_event->button != 3)
     return FALSE;
+
+  dv->var_under_cursor = NULL;
+  GtkTreePath *path = NULL;
+  gboolean is_row =
+    gtk_tree_view_get_path_at_pos (GTK_TREE_VIEW (dv),
+                                   button_event->x, button_event->y,
+                                   &path, NULL, NULL, NULL);
+  if (is_row)
+    {
+      GtkTreeIter iter;
+      GtkTreeModel *top_model = gtk_tree_view_get_model (GTK_TREE_VIEW (dv));
+      gtk_tree_model_get_iter (top_model, &iter, path);
+      dv->var_under_cursor = psppire_dict_view_iter_to_var (dv, &iter);
+    }
+  gtk_tree_path_free (path);
+
+  gtk_widget_set_sensitive (GTK_WIDGET (dv->var_info_check), is_row);
 
   gtk_menu_popup_at_pointer (GTK_MENU (dv->menu), event);
 
@@ -565,7 +607,51 @@ set_sort_criteria_unsorted (GtkCheckMenuItem *checkbox, gpointer data)
   set_sort_criteria (checkbox, dv, unsorted);
 }
 
+static void
+check_item_set_inactive (GtkCheckMenuItem *cmi)
+{
+  gtk_check_menu_item_set_active (cmi, FALSE);
+}
 
+static void
+pop_up_down_variable_information (GtkCheckMenuItem *cmi, PsppireDictView *dv)
+{
+  gboolean active;
+  g_object_get (cmi, "active", &active, NULL);
+
+  g_return_if_fail (dv->var_under_cursor);
+
+  if (!active)
+    return;
+
+  GtkWidget *dialog = psppire_dialog_new ();
+  g_object_set (dialog,
+                "title", _("Variable Details"),
+                "help-page", "Manipulating-Variables",
+                NULL);
+
+  GtkWidget *box = gtk_box_new (GTK_ORIENTATION_VERTICAL, 5);
+  gtk_container_add (GTK_CONTAINER (dialog), box);
+
+  GtkWidget *var_info = psppire_var_info_new ();
+  g_object_set (var_info, "variable", dv->var_under_cursor, NULL);
+  gtk_box_pack_start (GTK_BOX (box), var_info, TRUE, TRUE, 5);
+
+  GtkWidget *button_box = psppire_button_box_new ();
+  g_object_set (button_box,
+                "buttons", PSPPIRE_BUTTON_CLOSE_MASK | PSPPIRE_BUTTON_HELP_MASK,
+                NULL);
+  g_object_set (button_box, "layout-style", GTK_BUTTONBOX_SPREAD, NULL);
+  gtk_box_pack_start (GTK_BOX (box), button_box, FALSE, TRUE, 5);
+
+  g_signal_connect_swapped (dialog, "unmap",
+                            G_CALLBACK (check_item_set_inactive), cmi);
+
+  gtk_widget_show_all (box);
+  gtk_window_set_modal (GTK_WINDOW (dialog), TRUE);
+
+  psppire_dialog_run (PSPPIRE_DIALOG (dialog));
+}
 
 static void
 psppire_dict_view_init (PsppireDictView *dict_view)
@@ -576,6 +662,7 @@ psppire_dict_view_init (PsppireDictView *dict_view)
 
   dict_view->prefer_labels_override = FALSE;
   dict_view->sorted_model = NULL;
+  dict_view->var_under_cursor = NULL;
 
   gtk_tree_view_column_set_title (col, _("Variable"));
 
@@ -648,33 +735,20 @@ psppire_dict_view_init (PsppireDictView *dict_view)
     group = gtk_radio_menu_item_get_group (GTK_RADIO_MENU_ITEM (item));
     gtk_menu_shell_append (GTK_MENU_SHELL (dict_view->menu), item);
     g_signal_connect (item, "toggled", G_CALLBACK (set_sort_criteria_label), dict_view);
+
+    item = gtk_separator_menu_item_new ();
+    gtk_menu_shell_append (GTK_MENU_SHELL (dict_view->menu), item);
+
+    item = gtk_check_menu_item_new_with_label (_("Variable Information"));
+    dict_view->var_info_check = item;
+    gtk_menu_shell_append (GTK_MENU_SHELL (dict_view->menu), item);
+    g_signal_connect (item, "toggled", G_CALLBACK (pop_up_down_variable_information), dict_view);
   }
 
   gtk_widget_show_all (dict_view->menu);
 
   g_signal_connect (dict_view, "button-press-event",
 		    G_CALLBACK (show_menu), NULL);
-}
-
-static struct variable *
-psppire_dict_view_iter_to_var (PsppireDictView *dict_view,
-                               GtkTreeIter *top_iter)
-{
-  GtkTreeView *treeview = GTK_TREE_VIEW (dict_view);
-  GtkTreeModel *top_model = gtk_tree_view_get_model (treeview);
-
-  struct variable *var;
-  GtkTreeModel *model;
-  GtkTreeIter iter;
-
-  get_base_model (top_model, top_iter, &model, &iter);
-
-  g_assert (PSPPIRE_IS_DICT (model));
-
-  gtk_tree_model_get (model,
-		      &iter, DICT_TVM_COL_VAR, &var, -1);
-
-  return var;
 }
 
 struct get_vars_aux
