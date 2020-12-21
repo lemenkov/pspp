@@ -823,7 +823,6 @@ cmd_rank (struct lexer *lexer, struct dataset *ds)
     {
       struct pivot_table *table = pivot_table_create (
         N_("Variables Created by RANK"));
-      table->look.omit_empty = true;
 
       pivot_dimension_create (table, PIVOT_AXIS_COLUMN, N_("New Variable"),
                               N_("New Variable"), N_("Function"),

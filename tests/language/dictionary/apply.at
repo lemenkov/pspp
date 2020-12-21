@@ -35,16 +35,16 @@ display dictionary.
 
 AT_CHECK([pspp -O format=csv apply-dict.sps], [0],  [dnl
 Table: Variables
-Name,Position,Label,Measurement Level,Role,Width,Alignment,Print Format,Write Format,Missing Values
-foo,1,,Scale,Input,8,Right,F8.2,F8.2,
-bar,2,,Scale,Input,8,Right,F8.2,F8.2,
+Name,Position,Measurement Level,Role,Width,Alignment,Print Format,Write Format
+foo,1,Scale,Input,8,Right,F8.2,F8.2
+bar,2,Scale,Input,8,Right,F8.2,F8.2
 
 "apply-dict.sps:12: warning: APPLY DICTIONARY: Variable bar is numeric in target file, but string in source file."
 
 Table: Variables
-Name,Position,Label,Measurement Level,Role,Width,Alignment,Print Format,Write Format,Missing Values
-foo,1,This is a label,Scale,Input,8,Right,TIME22.0,TIME22.0,
-bar,2,,Scale,Input,8,Right,F8.2,F8.2,
+Name,Position,Label,Measurement Level,Role,Width,Alignment,Print Format,Write Format
+foo,1,This is a label,Scale,Input,8,Right,TIME22.0,TIME22.0
+bar,2,,Scale,Input,8,Right,F8.2,F8.2
 ])
 
 AT_CLEANUP

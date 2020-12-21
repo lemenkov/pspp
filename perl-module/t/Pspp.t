@@ -194,9 +194,9 @@ sub run_pspp_syntax_cmp
 	LIST.
 SYNTAX
 Table: Variables
-Name,Position,Label,Measurement Level,Role,Width,Alignment,Print Format,Write Format,Missing Values
-id,1,,Scale,Input,8,Right,F2.0,F2.0,
-name,2,,Nominal,Input,20,Left,A20,A20,
+Name,Position,Measurement Level,Role,Width,Alignment,Print Format,Write Format
+id,1,Scale,Input,8,Right,F2.0,F2.0
+name,2,Nominal,Input,20,Left,A20,A20
 
 Table: File Label
 Label,This is the file label

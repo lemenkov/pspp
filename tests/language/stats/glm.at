@@ -227,7 +227,6 @@ AT_CHECK([pspp -O format=csv type1.sps], [0],
 Table: Tests of Between-Subjects Effects
 ,Type I Sum Of Squares,df,Mean Square,F,Sig.
 Corrected Model,216.017,7,30.860,5.046,.001
-Intercept,,,,,
 Agrp,9.579,1,9.579,1.566,.220
 Bgrp,186.225,3,62.075,10.151,.000
 Agrp × Bgrp,20.212,3,6.737,1.102,.364
@@ -238,7 +237,6 @@ Corrected Total,399.474,37,,,
 Table: Tests of Between-Subjects Effects
 ,Type I Sum Of Squares,df,Mean Square,F,Sig.
 Corrected Model,216.017,7,30.860,5.046,.001
-Intercept,,,,,
 Bgrp,193.251,3,64.417,10.534,.000
 Agrp,2.553,1,2.553,.418,.523
 Bgrp × Agrp,20.212,3,6.737,1.102,.364
@@ -262,7 +260,6 @@ AT_CHECK([pspp -O format=csv type2.sps], [0],
 Table: Tests of Between-Subjects Effects
 ,Type II Sum Of Squares,df,Mean Square,F,Sig.
 Corrected Model,216.017,7,30.860,5.046,.001
-Intercept,,,,,
 Agrp,2.553,1,2.553,.418,.523
 Bgrp,186.225,3,62.075,10.151,.000
 Agrp × Bgrp,20.212,3,6.737,1.102,.364

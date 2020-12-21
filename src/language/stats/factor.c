@@ -1750,7 +1750,6 @@ show_explained_variance (const struct cmd_factor * factor,
 
   struct pivot_table *table = pivot_table_create (
     N_("Total Variance Explained"));
-  table->look.omit_empty = true;
 
   pivot_dimension_create (table, PIVOT_AXIS_COLUMN, N_("Statistics"),
                           N_("Total"), PIVOT_RC_OTHER,

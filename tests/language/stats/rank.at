@@ -121,15 +121,15 @@ a,count,N
 b,Nb,N
 
 Table: Variables
-Name,Position,Label,Measurement Level,Role,Width,Alignment,Print Format,Write Format,Missing Values
-a,1,,Scale,Input,8,Right,F8.2,F8.2,
-b,2,,Scale,Input,8,Right,F8.2,F8.2,
-Ra,3,RANK of a,Scale,Input,8,Right,F9.3,F9.3,
-RFR001,4,RFRACTION of a,Scale,Input,8,Right,F6.4,F6.4,
-count,5,N of a,Scale,Input,8,Right,F6.0,F6.0,
-Rb,6,RANK of b,Scale,Input,8,Right,F9.3,F9.3,
-RFR002,7,RFRACTION of b,Scale,Input,8,Right,F6.4,F6.4,
-Nb,8,N of b,Scale,Input,8,Right,F6.0,F6.0,
+Name,Position,Label,Measurement Level,Role,Width,Alignment,Print Format,Write Format
+a,1,,Scale,Input,8,Right,F8.2,F8.2
+b,2,,Scale,Input,8,Right,F8.2,F8.2
+Ra,3,RANK of a,Scale,Input,8,Right,F9.3,F9.3
+RFR001,4,RFRACTION of a,Scale,Input,8,Right,F6.4,F6.4
+count,5,N of a,Scale,Input,8,Right,F6.0,F6.0
+Rb,6,RANK of b,Scale,Input,8,Right,F9.3,F9.3
+RFR002,7,RFRACTION of b,Scale,Input,8,Right,F6.4,F6.4
+Nb,8,N of b,Scale,Input,8,Right,F6.0,F6.0
 
 Table: Data List
 a,b,Ra,RFR001,count,Rb,RFR002,Nb
@@ -476,11 +476,11 @@ Existing Variable,New Variable,Function
 foo,RAN001,RANK
 
 Table: Variables
-Name,Position,Label,Measurement Level,Role,Width,Alignment,Print Format,Write Format,Missing Values
-foo,1,,Scale,Input,8,Right,F8.2,F8.2,
-rfoo,2,,Scale,Input,8,Right,F8.2,F8.2,
-ran003,3,,Scale,Input,8,Right,F8.2,F8.2,
-RAN001,4,RANK of foo,Scale,Input,8,Right,F9.3,F9.3,
+Name,Position,Label,Measurement Level,Role,Width,Alignment,Print Format,Write Format
+foo,1,,Scale,Input,8,Right,F8.2,F8.2
+rfoo,2,,Scale,Input,8,Right,F8.2,F8.2
+ran003,3,,Scale,Input,8,Right,F8.2,F8.2
+RAN001,4,RANK of foo,Scale,Input,8,Right,F9.3,F9.3
 ])
 AT_CLEANUP
 

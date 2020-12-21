@@ -27,9 +27,9 @@ DISPLAY DICTIONARY.
 ])
 AT_CHECK([pspp -O format=csv value-labels.sps], [0], [dnl
 Table: Variables
-Name,Position,Label,Measurement Level,Role,Width,Alignment,Print Format,Write Format,Missing Values
-ad,1,,Scale,Input,8,Right,ADATE10,ADATE10,
-dt,2,,Scale,Input,8,Right,DATETIME20.0,DATETIME20.0,
+Name,Position,Measurement Level,Role,Width,Alignment,Print Format,Write Format
+ad,1,Scale,Input,8,Right,ADATE10,ADATE10
+dt,2,Scale,Input,8,Right,DATETIME20.0,DATETIME20.0
 
 Table: Value Labels
 Variable Value,,Label
@@ -55,8 +55,8 @@ FREQUENCIES x/STAT=NONE.
 AT_CHECK([pspp -o pspp.csv -o pspp.txt value-labels.sps])
 AT_CHECK([cat pspp.csv], [0], [dnl
 Table: Variables
-Name,Position,Label,Measurement Level,Role,Width,Alignment,Print Format,Write Format,Missing Values
-x,1,,Scale,Input,8,Right,F8.2,F8.2,
+Name,Position,Measurement Level,Role,Width,Alignment,Print Format,Write Format
+x,1,Scale,Input,8,Right,F8.2,F8.2
 
 Table: Value Labels
 Variable Value,,Label
@@ -94,8 +94,8 @@ FREQUENCIES x/STAT=NONE.
 AT_CHECK([pspp -o pspp.csv -o pspp.txt get.sps])
 AT_CHECK([cat pspp.csv], [0], [dnl
 Table: Variables
-Name,Position,Label,Measurement Level,Role,Width,Alignment,Print Format,Write Format,Missing Values
-x,1,,Scale,Input,8,Right,F8.2,F8.2,
+Name,Position,Measurement Level,Role,Width,Alignment,Print Format,Write Format
+x,1,Scale,Input,8,Right,F8.2,F8.2
 
 Table: Value Labels
 Variable Value,,Label

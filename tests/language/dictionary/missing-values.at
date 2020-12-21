@@ -75,6 +75,7 @@ DISPLAY DICTIONARY str1 str2 longstr.
 
 * May mix variable types when clearing missing values.
 MISSING VALUES ALL ().
+MISSING VALUES num1 (1).
 DISPLAY DICTIONARY
 ])
 AT_CHECK([pspp -o pspp.csv missing-values.sps])
@@ -138,7 +139,7 @@ longstr: """abc     ""; ""def     """
 str1: @&t@
 str2: @&t@
 date1: @&t@
-num1: @&t@
+num1: 1
 longstr: @&t@
 ])
 AT_CLEANUP

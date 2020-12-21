@@ -45,7 +45,6 @@ name,A10
 
 Table: File Information
 File,pro.sav
-Label,
 Variables,2
 Cases,3
 Type,SPSS System File
@@ -55,9 +54,9 @@ Documents,"DOCUMENT A document.
    (Entered <date>)"
 
 Table: Variables
-Name,Position,Label,Measurement Level,Role,Width,Alignment,Print Format,Write Format,Missing Values
-x,1,,Scale,Input,8,Right,F8.2,F8.2,
-name,2,,Nominal,Input,10,Left,A10,A10,
+Name,Position,Measurement Level,Role,Width,Alignment,Print Format,Write Format
+x,1,Scale,Input,8,Right,F8.2,F8.2
+name,2,Nominal,Input,10,Left,A10,A10
 ])
 AT_CLEANUP
 

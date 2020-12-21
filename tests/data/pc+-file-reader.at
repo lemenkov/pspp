@@ -222,20 +222,20 @@ Table: File Label
 Label,PSPP synthetic test file
 
 Table: Variables
-Name,Position,Label,Measurement Level,Role,Width,Alignment,Print Format,Write Format,Missing Values
-NUM1,1,,Scale,Input,8,Right,F8.0,F8.0,
-NUM2,2,,Scale,Input,8,Right,F8.0,F8.0,
-NUM3,3,,Scale,Input,8,Right,F8.0,F8.0,
-NUM4,4,,Scale,Input,8,Right,F8.0,F8.0,
-NUM5,5,,Scale,Input,8,Right,F8.0,F8.0,
-STR1,6,,Nominal,Input,1,Left,A1,A1,
-STR2,7,,Nominal,Input,2,Left,A2,A2,
-STR3,8,,Nominal,Input,3,Left,A3,A3,
-STR4,9,,Nominal,Input,4,Left,A4,A4,
-STR5,10,,Nominal,Input,5,Left,A5,A5,
-STR6,11,,Nominal,Input,6,Left,A6,A6,
-STR7,12,,Nominal,Input,7,Left,A7,A7,
-STR8,13,,Nominal,Input,8,Left,A8,A8,
+Name,Position,Measurement Level,Role,Width,Alignment,Print Format,Write Format
+NUM1,1,Scale,Input,8,Right,F8.0,F8.0
+NUM2,2,Scale,Input,8,Right,F8.0,F8.0
+NUM3,3,Scale,Input,8,Right,F8.0,F8.0
+NUM4,4,Scale,Input,8,Right,F8.0,F8.0
+NUM5,5,Scale,Input,8,Right,F8.0,F8.0
+STR1,6,Nominal,Input,1,Left,A1,A1
+STR2,7,Nominal,Input,2,Left,A2,A2
+STR3,8,Nominal,Input,3,Left,A3,A3
+STR4,9,Nominal,Input,4,Left,A4,A4
+STR5,10,Nominal,Input,5,Left,A5,A5
+STR6,11,Nominal,Input,6,Left,A6,A6
+STR7,12,Nominal,Input,7,Left,A7,A7
+STR8,13,Nominal,Input,8,Left,A8,A8
 
 Table: Value Labels
 Variable Value,,Label
@@ -336,12 +336,12 @@ Table: File Label
 Label,PSPP synthetic test file
 
 Table: Variables
-Name,Position,Label,Measurement Level,Role,Width,Alignment,Print Format,Write Format,Missing Values
-NUM1,1,,Scale,Input,8,Right,F8.0,F8.0,
-NUM2,2,,Scale,Input,8,Right,F8.0,F8.0,
-STR4,3,,Nominal,Input,4,Left,A4,A4,
-STR8,4,,Nominal,Input,8,Left,A8,A8,
-STR15,5,,Nominal,Input,15,Left,A15,A15,
+Name,Position,Measurement Level,Role,Width,Alignment,Print Format,Write Format
+NUM1,1,Scale,Input,8,Right,F8.0,F8.0
+NUM2,2,Scale,Input,8,Right,F8.0,F8.0
+STR4,3,Nominal,Input,4,Left,A4,A4
+STR8,4,Nominal,Input,8,Left,A8,A8
+STR15,5,Nominal,Input,15,Left,A15,A15
 
 Table: Data List
 NUM1,NUM2,STR4,STR8,STR15
@@ -412,11 +412,11 @@ Compression,None
 Encoding,us-ascii
 
 Table: Variables
-Name,Position,Label,Measurement Level,Role,Width,Alignment,Print Format,Write Format,Missing Values
-NUM1,1,,Scale,Input,8,Right,F8.0,F8.0,
-NUM2,2,,Scale,Input,8,Right,F8.0,F8.0,
-NUM3,3,,Scale,Input,8,Right,F8.0,F8.0,
-NUM4,4,,Scale,Input,8,Right,F8.0,F8.0,
+Name,Position,Measurement Level,Role,Width,Alignment,Print Format,Write Format
+NUM1,1,Scale,Input,8,Right,F8.0,F8.0
+NUM2,2,Scale,Input,8,Right,F8.0,F8.0
+NUM3,3,Scale,Input,8,Right,F8.0,F8.0
+NUM4,4,Scale,Input,8,Right,F8.0,F8.0
 ])
 AT_CLEANUP
 
@@ -482,11 +482,11 @@ Table: File Label
 Label,PSPP synthetic test file
 
 Table: Variables
-Name,Position,Label,Measurement Level,Role,Width,Alignment,Print Format,Write Format,Missing Values
-NUM1,1,,Scale,Input,8,Right,F8.0,F8.0,
-NUM2,2,,Scale,Input,8,Right,F8.0,F8.0,
-NUM3,3,,Scale,Input,8,Right,F8.0,F8.0,
-NUM4,4,,Scale,Input,8,Right,F8.0,F8.0,
+Name,Position,Measurement Level,Role,Width,Alignment,Print Format,Write Format
+NUM1,1,Scale,Input,8,Right,F8.0,F8.0
+NUM2,2,Scale,Input,8,Right,F8.0,F8.0
+NUM3,3,Scale,Input,8,Right,F8.0,F8.0
+NUM4,4,Scale,Input,8,Right,F8.0,F8.0
 
 Table: Data List
 NUM1,NUM2,NUM3,NUM4
@@ -506,11 +506,11 @@ Compression,None
 Encoding,us-ascii
 
 Table: Variables
-Name,Position,Label,Measurement Level,Role,Width,Alignment,Print Format,Write Format,Missing Values
-NUM1,1,,Scale,Input,8,Right,F8.0,F8.0,
-NUM2,2,,Scale,Input,8,Right,F8.0,F8.0,
-NUM3,3,,Scale,Input,8,Right,F8.0,F8.0,
-NUM4,4,,Scale,Input,8,Right,F8.0,F8.0,
+Name,Position,Measurement Level,Role,Width,Alignment,Print Format,Write Format
+NUM1,1,Scale,Input,8,Right,F8.0,F8.0
+NUM2,2,Scale,Input,8,Right,F8.0,F8.0
+NUM3,3,Scale,Input,8,Right,F8.0,F8.0
+NUM4,4,Scale,Input,8,Right,F8.0,F8.0
 ])
 AT_CLEANUP
 
@@ -1250,12 +1250,12 @@ Table: File Label
 Label,PSPP synthetic test file
 
 Table: Variables
-Name,Position,Label,Measurement Level,Role,Width,Alignment,Print Format,Write Format,Missing Values
-NUM1,1,,Scale,Input,8,Right,F8.0,F8.0,
-NUM2,2,,Scale,Input,8,Right,F8.0,F8.0,
-STR4,3,,Nominal,Input,4,Left,A4,A4,
-STR8,4,,Nominal,Input,8,Left,A8,A8,
-STR15,5,,Nominal,Input,15,Left,A15,A15,
+Name,Position,Measurement Level,Role,Width,Alignment,Print Format,Write Format
+NUM1,1,Scale,Input,8,Right,F8.0,F8.0
+NUM2,2,Scale,Input,8,Right,F8.0,F8.0
+STR4,3,Nominal,Input,4,Left,A4,A4
+STR8,4,Nominal,Input,8,Left,A8,A8
+STR15,5,Nominal,Input,15,Left,A15,A15
 
 warning: `pc+-file.sav' near offset 0x308: Possible compressed data corruption: string contains compressed integer (opcode 101).
 

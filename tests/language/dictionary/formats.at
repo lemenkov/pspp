@@ -37,31 +37,31 @@ y,A2
 z,A3
 
 Table: Variables
-Name,Position,Print Format,Write Format,Missing Values
-a,1,F8.2,F8.2,
-b,2,F8.2,F8.2,
-c,3,F8.2,F8.2,
-x,4,A1,A1,
-y,5,A2,A2,
-z,6,A3,A3,
+Name,Position,Print Format,Write Format
+a,1,F8.2,F8.2
+b,2,F8.2,F8.2
+c,3,F8.2,F8.2
+x,4,A1,A1
+y,5,A2,A2
+z,6,A3,A3
 
 Table: Variables
-Name,Position,Print Format,Write Format,Missing Values
-a,1,COMMA10.0,COMMA10.0,
-b,2,N4.0,N4.0,
-c,3,F8.2,F8.2,
-x,4,A1,A1,
-y,5,A2,A2,
-z,6,A3,A3,
+Name,Position,Print Format,Write Format
+a,1,COMMA10.0,COMMA10.0
+b,2,N4.0,N4.0
+c,3,F8.2,F8.2
+x,4,A1,A1
+y,5,A2,A2
+z,6,A3,A3
 
 Table: Variables
-Name,Position,Print Format,Write Format,Missing Values
-a,1,COMMA10.0,COMMA10.0,
-b,2,N4.0,N4.0,
-c,3,E8.1,E8.1,
-x,4,A1,A1,
-y,5,AHEX4,AHEX4,
-z,6,A3,A3,
+Name,Position,Print Format,Write Format
+a,1,COMMA10.0,COMMA10.0
+b,2,N4.0,N4.0
+c,3,E8.1,E8.1
+x,4,A1,A1
+y,5,AHEX4,AHEX4
+z,6,A3,A3
 ])
 AT_CLEANUP
 

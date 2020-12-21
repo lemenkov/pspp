@@ -227,8 +227,8 @@ thingummies,6,3
 oojimiflips,7,2
 
 Table: Variables
-Name,Position,Label,Measurement Level,Role,Width,Alignment,Print Format,Write Format,Missing Values
-new,3,tracking my stuff,Scale,Input,8,Right,F1.0,F1.0,
+Name,Position,Label,Measurement Level,Role,Width,Alignment,Print Format,Write Format
+new,3,tracking my stuff,Scale,Input,8,Right,F1.0,F1.0
 
 Table: Value Labels
 Variable Value,,Label

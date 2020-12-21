@@ -1062,7 +1062,6 @@ show_coords (struct roc_state *rs, const struct cmd_roc *roc)
 {
   struct pivot_table *table = pivot_table_create (
     N_("Coordinates of the Curve"));
-  table->look.omit_empty = true;
 
   pivot_dimension_create (table, PIVOT_AXIS_COLUMN, N_("Statistics"),
                           N_("Positive if greater than or equal to"),

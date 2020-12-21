@@ -28,10 +28,10 @@ DISPLAY DICTIONARY.
 AT_CHECK([pspp -o pspp.csv var-display.sps])
 AT_CHECK([cat pspp.csv], [0], [dnl
 Table: Variables
-Name,Position,Label,Measurement Level,Role,Width,Alignment,Print Format,Write Format,Missing Values
-x,1,,Scale,Output,10,Left,F8.2,F8.2,
-y,2,,Ordinal,Both,12,Right,F8.2,F8.2,
-z,3,,Nominal,None,14,Center,F8.2,F8.2,
+Name,Position,Measurement Level,Role,Width,Alignment,Print Format,Write Format
+x,1,Scale,Output,10,Left,F8.2,F8.2
+y,2,Ordinal,Both,12,Right,F8.2,F8.2
+z,3,Nominal,None,14,Center,F8.2,F8.2
 ])
 AT_CLEANUP
 

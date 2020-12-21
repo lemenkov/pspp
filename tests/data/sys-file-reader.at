@@ -221,9 +221,9 @@ LIST.
   AT_CHECK([pspp -o pspp.csv sys-file.sps])
   AT_CHECK([cat pspp.csv], [0], [dnl
 Table: Variables
-Name,Position,Label,Measurement Level,Role,Width,Alignment,Print Format,Write Format,Missing Values
-num1,1,,Scale,Input,8,Right,F8.0,F8.0,
-num2,2,Numeric variable 2's label,Scale,Input,8,Right,F8.0,F8.0,
+Name,Position,Label,Measurement Level,Role,Width,Alignment,Print Format,Write Format
+num1,1,,Scale,Input,8,Right,F8.0,F8.0
+num2,2,Numeric variable 2's label,Scale,Input,8,Right,F8.0,F8.0
 
 Table: Data List
 num1,num2
@@ -275,9 +275,9 @@ LIST.
   AT_CHECK([pspp -o pspp.csv sys-file.sps])
   AT_CHECK([cat pspp.csv], [0], [dnl
 Table: Variables
-Name,Position,Label,Measurement Level,Role,Width,Alignment,Print Format,Write Format,Missing Values
-num1,1,,Scale,Input,8,Right,F8.0,F8.0,
-num2,2,Numeric variable 2's label,Scale,Input,8,Right,F8.0,F8.0,
+Name,Position,Label,Measurement Level,Role,Width,Alignment,Print Format,Write Format
+num1,1,,Scale,Input,8,Right,F8.0,F8.0
+num2,2,Numeric variable 2's label,Scale,Input,8,Right,F8.0,F8.0
 
 Table: Data List
 num1,num2
@@ -408,24 +408,24 @@ DISPLAY DICTIONARY.
   AT_CHECK([pspp -o pspp.csv sys-file.sps])
   AT_CHECK([cat pspp.csv], [0], [dnl
 Table: Variables
-Name,Position,Label,Measurement Level,Role,Width,Alignment,Print Format,Write Format,Missing Values
-num1,1,,Scale,Input,8,Right,F8.0,F8.0,
-num2,2,,Scale,Input,8,Right,F8.0,F8.0,
-num3,3,,Scale,Input,8,Right,F8.0,F8.0,
-num4,4,,Scale,Input,8,Right,F8.0,F8.0,
-num5,5,,Scale,Input,8,Right,F8.0,F8.0,
-str1,6,,Nominal,Input,1,Left,A1,A1,
-str2,7,,Nominal,Input,2,Left,A2,A2,
-str3,8,,Nominal,Input,3,Left,A3,A3,
-str4,9,,Nominal,Input,4,Left,A4,A4,
-str5,10,,Nominal,Input,4,Left,A4,A4,
-str6,11,,Nominal,Input,6,Left,A6,A6,
-str7,12,,Nominal,Input,7,Left,A7,A7,
-str8,13,,Nominal,Input,8,Left,A8,A8,
-str9ж,14,,Nominal,Input,9,Left,A9,A9,
-str12,15,,Nominal,Input,12,Left,A12,A12,
-str16,16,,Nominal,Input,16,Left,A16,A16,
-str17,17,,Nominal,Input,17,Left,A17,A17,
+Name,Position,Measurement Level,Role,Width,Alignment,Print Format,Write Format
+num1,1,Scale,Input,8,Right,F8.0,F8.0
+num2,2,Scale,Input,8,Right,F8.0,F8.0
+num3,3,Scale,Input,8,Right,F8.0,F8.0
+num4,4,Scale,Input,8,Right,F8.0,F8.0
+num5,5,Scale,Input,8,Right,F8.0,F8.0
+str1,6,Nominal,Input,1,Left,A1,A1
+str2,7,Nominal,Input,2,Left,A2,A2
+str3,8,Nominal,Input,3,Left,A3,A3
+str4,9,Nominal,Input,4,Left,A4,A4
+str5,10,Nominal,Input,4,Left,A4,A4
+str6,11,Nominal,Input,6,Left,A6,A6
+str7,12,Nominal,Input,7,Left,A7,A7
+str8,13,Nominal,Input,8,Left,A8,A8
+str9ж,14,Nominal,Input,9,Left,A9,A9
+str12,15,Nominal,Input,12,Left,A12,A12
+str16,16,Nominal,Input,16,Left,A16,A16
+str17,17,Nominal,Input,17,Left,A17,A17
 
 Table: Value Labels
 Variable Value,,Label
@@ -784,19 +784,19 @@ DISPLAY DICTIONARY.
   AT_CHECK([pspp -o pspp.csv sys-file.sps])
   AT_CHECK([cat pspp.csv], [0], [dnl
 Table: Variables
-Name,Position,Label,Measurement Level,Role,Width,Alignment,Print Format,Write Format,Missing Values
-a,1,,Nominal,Input,8,Left,F8.0,F8.0,
-b,2,,Ordinal,Input,8,Left,F8.0,F8.0,
-c,3,,Scale,Input,8,Left,F8.0,F8.0,
-d,4,,Nominal,Input,8,Right,F8.0,F8.0,
-h,5,,Ordinal,Input,3,Right,A3,A3,
-i,6,,Scale,Input,3,Right,A3,A3,
-j,7,,Nominal,Input,3,Center,A3,A3,
-k,8,,Ordinal,Input,3,Center,A3,A3,
-l,9,,Scale,Input,9,Center,A9,A9,
-m,10,,Nominal,Input,10,Left,A10,A10,
-n,11,,Nominal,Input,17,Right,A17,A17,
-o,12,,Nominal,Input,25,Center,A25,A25,
+Name,Position,Measurement Level,Role,Width,Alignment,Print Format,Write Format
+a,1,Nominal,Input,8,Left,F8.0,F8.0
+b,2,Ordinal,Input,8,Left,F8.0,F8.0
+c,3,Scale,Input,8,Left,F8.0,F8.0
+d,4,Nominal,Input,8,Right,F8.0,F8.0
+h,5,Ordinal,Input,3,Right,A3,A3
+i,6,Scale,Input,3,Right,A3,A3
+j,7,Nominal,Input,3,Center,A3,A3
+k,8,Ordinal,Input,3,Center,A3,A3
+l,9,Scale,Input,9,Center,A9,A9
+m,10,Nominal,Input,10,Left,A10,A10
+n,11,Nominal,Input,17,Right,A17,A17
+o,12,Nominal,Input,25,Center,A25,A25
 ])
 done
 AT_CLEANUP
@@ -867,19 +867,19 @@ DISPLAY DICTIONARY.
   AT_CHECK([pspp -o pspp.csv sys-file.sps])
   AT_CHECK([cat pspp.csv], [0], [dnl
 Table: Variables
-Name,Position,Label,Measurement Level,Role,Width,Alignment,Print Format,Write Format,Missing Values
-a,1,,Nominal,Input,1,Left,F8.0,F8.0,
-b,2,,Ordinal,Input,2,Left,F8.0,F8.0,
-c,3,,Scale,Input,3,Left,F8.0,F8.0,
-d,4,,Nominal,Input,4,Right,F8.0,F8.0,
-h,5,,Ordinal,Input,5,Right,A3,A3,
-i,6,,Scale,Input,6,Right,A3,A3,
-j,7,,Nominal,Input,7,Center,A3,A3,
-k,8,,Ordinal,Input,8,Center,A3,A3,
-l,9,,Scale,Input,9,Center,A9,A9,
-m,10,,Nominal,Input,10,Left,A10,A10,
-n,11,,Nominal,Input,11,Right,A17,A17,
-o,12,,Nominal,Input,12,Center,A25,A25,
+Name,Position,Measurement Level,Role,Width,Alignment,Print Format,Write Format
+a,1,Nominal,Input,1,Left,F8.0,F8.0
+b,2,Ordinal,Input,2,Left,F8.0,F8.0
+c,3,Scale,Input,3,Left,F8.0,F8.0
+d,4,Nominal,Input,4,Right,F8.0,F8.0
+h,5,Ordinal,Input,5,Right,A3,A3
+i,6,Scale,Input,6,Right,A3,A3
+j,7,Nominal,Input,7,Center,A3,A3
+k,8,Ordinal,Input,8,Center,A3,A3
+l,9,Scale,Input,9,Center,A9,A9
+m,10,Nominal,Input,10,Left,A10,A10
+n,11,Nominal,Input,11,Right,A17,A17
+o,12,Nominal,Input,12,Center,A25,A25
 ])
 done
 AT_CLEANUP
@@ -939,14 +939,14 @@ DISPLAY DICTIONARY.
   AT_CHECK([pspp -o pspp.csv sys-file.sps])
   AT_CHECK([cat pspp.csv], [0], [dnl
 Table: Variables
-Name,Position,Label,Measurement Level,Role,Width,Alignment,Print Format,Write Format,Missing Values
-LongVariableName1,1,,Scale,Input,8,Right,F8.0,F8.0,
-LongVariableName2,2,,Scale,Input,8,Right,F8.0,F8.0,
-LongVariableName3,3,,Scale,Input,8,Right,F8.0,F8.0,
-LongVariableName4,4,,Scale,Input,8,Right,F8.0,F8.0,
-Coördinate_X,5,,Scale,Input,8,Right,F8.0,F8.0,
-Coördinate_Y,6,,Scale,Input,8,Right,F8.0,F8.0,
-Coördinate_Z,7,,Scale,Input,8,Right,F8.0,F8.0,
+Name,Position,Measurement Level,Role,Width,Alignment,Print Format,Write Format
+LongVariableName1,1,Scale,Input,8,Right,F8.0,F8.0
+LongVariableName2,2,Scale,Input,8,Right,F8.0,F8.0
+LongVariableName3,3,Scale,Input,8,Right,F8.0,F8.0
+LongVariableName4,4,Scale,Input,8,Right,F8.0,F8.0
+Coördinate_X,5,Scale,Input,8,Right,F8.0,F8.0
+Coördinate_Y,6,Scale,Input,8,Right,F8.0,F8.0
+Coördinate_Z,7,Scale,Input,8,Right,F8.0,F8.0
 ])
 done
 AT_CLEANUP
@@ -1009,9 +1009,9 @@ LIST.
   AT_CHECK([pspp -o pspp.csv sys-file.sps])
   AT_CHECK([cat pspp.csv], [0], [dnl
 Table: Variables
-Name,Position,Label,Measurement Level,Role,Width,Alignment,Print Format,Write Format,Missing Values
-séq256,1,,Nominal,Input,32,Left,A256,A256,
-str600,2,,Nominal,Input,32,Left,A600,A600,
+Name,Position,Measurement Level,Role,Width,Alignment,Print Format,Write Format
+séq256,1,Nominal,Input,32,Left,A256,A256
+str600,2,Nominal,Input,32,Left,A600,A600
 
 Table: Data List
 séq256,str600
@@ -1104,10 +1104,10 @@ DISPLAY DICTIONARY.
   AT_CHECK([pspp -o pspp.csv sys-file.sps])
   AT_CHECK([cat pspp.csv], [0],
 [[Table: Variables
-Name,Position,Label,Measurement Level,Role,Width,Alignment,Print Format,Write Format,Missing Values
-FirstVariable,1,,Scale,Output,8,Right,F8.0,F8.0,
-SécondVariable,2,,Scale,Input,8,Right,F8.0,F8.0,
-ThirdVariable,3,,Scale,Input,8,Right,F8.0,F8.0,
+Name,Position,Measurement Level,Role,Width,Alignment,Print Format,Write Format
+FirstVariable,1,Scale,Output,8,Right,F8.0,F8.0
+SécondVariable,2,Scale,Input,8,Right,F8.0,F8.0
+ThirdVariable,3,Scale,Input,8,Right,F8.0,F8.0
 ]])
 done
 AT_CLEANUP
@@ -1168,14 +1168,14 @@ warning: `sys-file.sav': Invalid role for variable x.
 warning: `sys-file.sav': Invalid role for variable x.
 
 Table: Variables
-Name,Position,Label,Measurement Level,Role,Width,Alignment,Print Format,Write Format,Missing Values
-i,1,,Scale,Input,8,Right,F8.0,F8.0,
-o,2,,Scale,Output,8,Right,F8.0,F8.0,
-b,3,,Scale,Both,8,Right,F8.0,F8.0,
-n,4,,Scale,None,8,Right,F8.0,F8.0,
-p,5,,Scale,Partition,8,Right,F8.0,F8.0,
-s,6,,Scale,Split,8,Right,F8.0,F8.0,
-x,7,,Scale,Input,8,Right,F8.0,F8.0,
+Name,Position,Measurement Level,Role,Width,Alignment,Print Format,Write Format
+i,1,Scale,Input,8,Right,F8.0,F8.0
+o,2,Scale,Output,8,Right,F8.0,F8.0
+b,3,Scale,Both,8,Right,F8.0,F8.0
+n,4,Scale,None,8,Right,F8.0,F8.0
+p,5,Scale,Partition,8,Right,F8.0,F8.0
+s,6,Scale,Split,8,Right,F8.0,F8.0
+x,7,Scale,Input,8,Right,F8.0,F8.0
 ])
 done
 AT_CLEANUP
@@ -1227,12 +1227,12 @@ LIST.
   AT_CHECK([pspp -o pspp.csv sys-file.sps])
   AT_CHECK([cat pspp.csv], [0], [dnl
 Table: Variables
-Name,Position,Label,Measurement Level,Role,Width,Alignment,Print Format,Write Format,Missing Values
-num1,1,,Scale,Input,8,Right,F8.0,F8.0,
-num2,2,,Scale,Input,8,Right,F8.0,F8.0,
-str4,3,,Nominal,Input,4,Left,A4,A4,
-str8,4,,Nominal,Input,8,Left,A8,A8,
-str15,5,,Nominal,Input,15,Left,A15,A15,
+Name,Position,Measurement Level,Role,Width,Alignment,Print Format,Write Format
+num1,1,Scale,Input,8,Right,F8.0,F8.0
+num2,2,Scale,Input,8,Right,F8.0,F8.0
+str4,3,Nominal,Input,4,Left,A4,A4
+str8,4,Nominal,Input,8,Left,A8,A8
+str15,5,Nominal,Input,15,Left,A15,A15
 
 Table: Data List
 num1,num2,str4,str8,str15
@@ -1290,12 +1290,12 @@ LIST.
   AT_CHECK([pspp -o pspp.csv sys-file.sps], [0])
   AT_CHECK([cat pspp.csv], [0], [dnl
 Table: Variables
-Name,Position,Label,Measurement Level,Role,Width,Alignment,Print Format,Write Format,Missing Values
-num1,1,,Scale,Input,8,Right,F8.0,F8.0,
-num2,2,,Scale,Input,8,Right,F8.0,F8.0,
-str4,3,,Nominal,Input,4,Left,A4,A4,
-str8,4,,Nominal,Input,8,Left,A8,A8,
-str15,5,,Nominal,Input,15,Left,A15,A15,
+Name,Position,Measurement Level,Role,Width,Alignment,Print Format,Write Format
+num1,1,Scale,Input,8,Right,F8.0,F8.0
+num2,2,Scale,Input,8,Right,F8.0,F8.0
+str4,3,Nominal,Input,4,Left,A4,A4
+str8,4,Nominal,Input,8,Left,A8,A8
+str15,5,Nominal,Input,15,Left,A15,A15
 
 Table: Data List
 num1,num2,str4,str8,str15
@@ -1357,12 +1357,12 @@ LIST.
 "warning: `sys-file.sav' near offset 0x54: Compression bias is not the usual value of 100, or system file uses unrecognized floating-point format."
 
 Table: Variables
-Name,Position,Label,Measurement Level,Role,Width,Alignment,Print Format,Write Format,Missing Values
-num1,1,,Scale,Input,8,Right,F8.0,F8.0,
-num2,2,,Scale,Input,8,Right,F8.0,F8.0,
-str4,3,,Nominal,Input,4,Left,A4,A4,
-str8,4,,Nominal,Input,8,Left,A8,A8,
-str15,5,,Nominal,Input,15,Left,A15,A15,
+Name,Position,Measurement Level,Role,Width,Alignment,Print Format,Write Format
+num1,1,Scale,Input,8,Right,F8.0,F8.0
+num2,2,Scale,Input,8,Right,F8.0,F8.0
+str4,3,Nominal,Input,4,Left,A4,A4
+str8,4,Nominal,Input,8,Left,A8,A8
+str15,5,Nominal,Input,15,Left,A15,A15
 
 Table: Data List
 num1,num2,str4,str8,str15
@@ -1455,12 +1455,12 @@ LIST.
   AT_CHECK([pspp -o pspp.csv sys-file.sps])
   AT_CHECK([cat pspp.csv], [0], [dnl
 Table: Variables
-Name,Position,Label,Measurement Level,Role,Width,Alignment,Print Format,Write Format,Missing Values
-num1,1,,Scale,Input,8,Right,F8.0,F8.0,
-num2,2,,Scale,Input,8,Right,F8.0,F8.0,
-str4,3,,Nominal,Input,4,Left,A4,A4,
-str8,4,,Nominal,Input,8,Left,A8,A8,
-str15,5,,Nominal,Input,15,Left,A15,A15,
+Name,Position,Measurement Level,Role,Width,Alignment,Print Format,Write Format
+num1,1,Scale,Input,8,Right,F8.0,F8.0
+num2,2,Scale,Input,8,Right,F8.0,F8.0
+str4,3,Nominal,Input,4,Left,A4,A4
+str8,4,Nominal,Input,8,Left,A8,A8
+str15,5,Nominal,Input,15,Left,A15,A15
 
 Table: Data List
 num1,num2,str4,str8,str15
@@ -1724,9 +1724,9 @@ DISPLAY DICTIONARY.
    [warning: `sys-file.sav' near offset 0xd4: Renaming variable with duplicate name `VAR1' to `VAR001'.
 
 Table: Variables
-Name,Position,Label,Measurement Level,Role,Width,Alignment,Print Format,Write Format,Missing Values
-var1,1,,Scale,Input,8,Right,F8.0,F8.0,
-var001,2,,Scale,Input,8,Right,F8.0,F8.0,
+Name,Position,Measurement Level,Role,Width,Alignment,Print Format,Write Format
+var1,1,Scale,Input,8,Right,F8.0,F8.0
+var001,2,Scale,Input,8,Right,F8.0,F8.0
 ])
 done
 AT_CLEANUP
@@ -1965,11 +1965,11 @@ warning: `sys-file.sav' near offset 0x257: Ignoring long string missing value re
 "warning: `sys-file.sav' near offset 0x270: Ignoring long string missing value 0 for variable str3, with width 11, that has bad value width 12."
 
 Table: Variables
-Name,Position,Label,Measurement Level,Role,Width,Alignment,Print Format,Write Format,Missing Values
-num1,1,,Scale,Input,8,Right,F8.0,F8.0,
-str1,2,,Nominal,Input,9,Left,A9,A9,
-str2,3,,Nominal,Input,10,Left,A10,A10,"""abcdefgh""; ""ijklmnop""; ""qrstuvwx"""
-str3,4,,Nominal,Input,11,Left,A11,A11,
+Name,Position,Measurement Level,Role,Width,Alignment,Print Format,Write Format,Missing Values
+num1,1,Scale,Input,8,Right,F8.0,F8.0,
+str1,2,Nominal,Input,9,Left,A9,A9,
+str2,3,Nominal,Input,10,Left,A10,A10,"""abcdefgh""; ""ijklmnop""; ""qrstuvwx"""
+str3,4,Nominal,Input,11,Left,A11,A11,
 ])
 done
 AT_CLEANUP
@@ -2002,9 +2002,9 @@ DISPLAY DICTIONARY.
    [warning: `sys-file.sav' near offset 0x4c: Ignoring string variable `STR1' set as weighting variable.
 
 Table: Variables
-Name,Position,Label,Measurement Level,Role,Width,Alignment,Print Format,Write Format,Missing Values
-num1,1,,Scale,Input,8,Right,F8.0,F8.0,
-str1,2,,Nominal,Input,4,Left,A4,A4,
+Name,Position,Measurement Level,Role,Width,Alignment,Print Format,Write Format
+num1,1,Scale,Input,8,Right,F8.0,F8.0
+str1,2,Nominal,Input,4,Left,A4,A4
 ])
 done
 AT_CLEANUP
@@ -2247,8 +2247,8 @@ DISPLAY DICTIONARY.
 warning: \`sys-file.sav' near offset 0xd8: Integer format indicated by system file (3) differs from expected ($[2]).
 
 Table: Variables
-Name,Position,Label,Measurement Level,Role,Width,Alignment,Print Format,Write Format,Missing Values
-num1,1,,Scale,Input,8,Right,F8.0,F8.0,
+Name,Position,Measurement Level,Role,Width,Alignment,Print Format,Write Format
+num1,1,Scale,Input,8,Right,F8.0,F8.0
 ])
 done
 AT_CLEANUP

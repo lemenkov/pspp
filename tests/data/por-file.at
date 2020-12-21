@@ -105,12 +105,12 @@ LIST.
 ])
 AT_CHECK([pspp -O format=csv import.sps], [0], [dnl
 Table: Variables
-Name,Position,Label,Measurement Level,Role,Width,Alignment,Print Format,Write Format,Missing Values
-VAR1,1,,Scale,Input,8,Right,F1.0,F1.0,
-VAR2,2,,Scale,Input,8,Right,F1.0,F1.0,
-VAR3,3,,Scale,Input,8,Right,F1.0,F1.0,
-VAR4,4,,Scale,Input,8,Right,F1.0,F1.0,
-VAR5,5,,Scale,Input,8,Right,F1.0,F1.0,
+Name,Position,Measurement Level,Role,Width,Alignment,Print Format,Write Format
+VAR1,1,Scale,Input,8,Right,F1.0,F1.0
+VAR2,2,Scale,Input,8,Right,F1.0,F1.0
+VAR3,3,Scale,Input,8,Right,F1.0,F1.0
+VAR4,4,Scale,Input,8,Right,F1.0,F1.0
+VAR5,5,Scale,Input,8,Right,F1.0,F1.0
 
 Table: Value Labels
 Variable Value,,Label
@@ -134,7 +134,6 @@ AT_CHECK([pspp -O format=csv sys-file-info.sps | sed '/Encoding/d
 '], [0], [dnl
 Table: File Information
 File,data.por
-Label,
 Variables,5
 Cases,Unknown
 Type,SPSS Portable File
@@ -142,12 +141,12 @@ Weight,Not weighted
 Compression,None
 
 Table: Variables
-Name,Position,Label,Measurement Level,Role,Width,Alignment,Print Format,Write Format,Missing Values
-VAR1,1,,Scale,Input,8,Right,F1.0,F1.0,
-VAR2,2,,Scale,Input,8,Right,F1.0,F1.0,
-VAR3,3,,Scale,Input,8,Right,F1.0,F1.0,
-VAR4,4,,Scale,Input,8,Right,F1.0,F1.0,
-VAR5,5,,Scale,Input,8,Right,F1.0,F1.0,
+Name,Position,Measurement Level,Role,Width,Alignment,Print Format,Write Format
+VAR1,1,Scale,Input,8,Right,F1.0,F1.0
+VAR2,2,Scale,Input,8,Right,F1.0,F1.0
+VAR3,3,Scale,Input,8,Right,F1.0,F1.0
+VAR4,4,Scale,Input,8,Right,F1.0,F1.0
+VAR5,5,Scale,Input,8,Right,F1.0,F1.0
 
 Table: Value Labels
 Variable Value,,Label

@@ -793,7 +793,6 @@ means_shipout_multivar (const struct mtable *mt, const struct means *means,
     }
 
   struct pivot_table *pt = pivot_table_create (ds_cstr (&dss));
-  pt->look.omit_empty = true;
   ds_destroy (&dss);
 
   struct pivot_dimension *dim_cells =

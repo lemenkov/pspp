@@ -793,9 +793,9 @@ Maximum,,.  @&t@
 Sum,,.  @&t@
 
 Table: x
-,,Frequency,Percent,Valid Percent,Cumulative Percent
-Missing,.  ,3,100.0%,,
-Total,,3,.0%,,
+,,Frequency,Percent
+Missing,.  ,3,100.0%
+Total,,3,.0%
 ])
 
 AT_CLEANUP

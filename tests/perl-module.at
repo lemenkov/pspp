@@ -95,9 +95,9 @@ Table: Documents
 These Documents
 
 Table: Variables
-Name,Position,Label,Measurement Level,Role,Width,Alignment,Print Format,Write Format,Missing Values
-legal,1,,Scale,Input,8,Right,F9.2,F9.2,
-money,2,,Scale,Input,8,Right,DOLLAR6.2,DOLLAR6.2,
+Name,Position,Measurement Level,Role,Width,Alignment,Print Format,Write Format
+legal,1,Scale,Input,8,Right,F9.2,F9.2
+money,2,Scale,Input,8,Right,DOLLAR6.2,DOLLAR6.2
 
 dump-dict.sps:5: note: SHOW: WEIGHT is money.
 ])
@@ -167,9 +167,9 @@ LIST.
 ])
 AT_CHECK([pspp -O format=csv dump-dicts.sps], [0], [dnl
 Table: Variables
-Name,Position,Label,Measurement Level,Role,Width,Alignment,Print Format,Write Format,Missing Values
-id,1,,Scale,Input,8,Right,F2.0,F2.0,
-name,2,,Nominal,Input,20,Left,A20,A20,
+Name,Position,Measurement Level,Role,Width,Alignment,Print Format,Write Format
+id,1,Scale,Input,8,Right,F2.0,F2.0
+name,2,Nominal,Input,20,Left,A20,A20
 
 Table: File Label
 Label,This is the file label
@@ -182,9 +182,9 @@ id,name
 34,frederick
 
 Table: Variables
-Name,Position,Label,Measurement Level,Role,Width,Alignment,Print Format,Write Format,Missing Values
-id,1,,Scale,Input,8,Right,F2.0,F2.0,
-name,2,,Nominal,Input,20,Left,A20,A20,
+Name,Position,Measurement Level,Role,Width,Alignment,Print Format,Write Format
+id,1,Scale,Input,8,Right,F2.0,F2.0
+name,2,Nominal,Input,20,Left,A20,A20
 
 Table: File Label
 Label,This is the file label

@@ -200,7 +200,7 @@ pivot_table_look_init (struct pivot_table_look *look)
 {
   memset (look, 0, sizeof *look);
 
-  look->omit_empty = false;
+  look->omit_empty = true;
   look->row_labels_in_corner = true;
   look->width_ranges[TABLE_HORZ][0] = 36;
   look->width_ranges[TABLE_HORZ][1] = 72;
@@ -1215,6 +1215,14 @@ pivot_table_enumerate_axis (const struct pivot_table *table,
 
       memcpy (p, axis_indexes, axis->n_dimensions * sizeof *p);
       p += axis->n_dimensions;
+    }
+  if (omit_empty && p == enumeration)
+    {
+      PIVOT_AXIS_FOR_EACH (axis_indexes, axis)
+        {
+          memcpy (p, axis_indexes, axis->n_dimensions * sizeof *p);
+          p += axis->n_dimensions;
+        }
     }
   *p = SIZE_MAX;
   if (n)

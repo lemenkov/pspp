@@ -589,7 +589,6 @@ static void
 percentiles_report (const struct examine *cmd, int iact_idx)
 {
   struct pivot_table *table = pivot_table_create (N_("Percentiles"));
-  table->look.omit_empty = true;
 
   struct pivot_dimension *percentiles = pivot_dimension_create (
     table, PIVOT_AXIS_COLUMN, N_("Percentiles"));
@@ -667,7 +666,6 @@ static void
 normality_report (const struct examine *cmd, int iact_idx)
 {
   struct pivot_table *table = pivot_table_create (N_("Tests of Normality"));
-  table->look.omit_empty = true;
 
   struct pivot_dimension *test =
     pivot_dimension_create (table, PIVOT_AXIS_COLUMN, N_("Shapiro-Wilk"),
@@ -733,7 +731,6 @@ static void
 descriptives_report (const struct examine *cmd, int iact_idx)
 {
   struct pivot_table *table = pivot_table_create (N_("Descriptives"));
-  table->look.omit_empty = true;
 
   pivot_dimension_create (table, PIVOT_AXIS_COLUMN, N_("Aspect"),
                           N_("Statistic"), N_("Std. Error"));
@@ -830,7 +827,6 @@ static void
 extremes_report (const struct examine *cmd, int iact_idx)
 {
   struct pivot_table *table = pivot_table_create (N_("Extreme Values"));
-  table->look.omit_empty = true;
 
   struct pivot_dimension *statistics = pivot_dimension_create (
     table, PIVOT_AXIS_COLUMN, N_("Statistics"));
@@ -919,7 +915,6 @@ summary_report (const struct examine *cmd, int iact_idx)
 {
   struct pivot_table *table = pivot_table_create (
     N_("Case Processing Summary"));
-  table->look.omit_empty = true;
   pivot_table_set_weight_var (table, dict_get_weight (cmd->dict));
 
   pivot_dimension_create (table, PIVOT_AXIS_COLUMN, N_("Statistics"),

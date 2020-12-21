@@ -90,10 +90,10 @@ EOF
     AT_CHECK([pspp -o pspp.csv sysfile.sps])
     AT_CHECK([cat pspp.csv], [0], [dnl
 Table: Variables
-Name,Position,Label,Measurement Level,Role,Width,Alignment,Print Format,Write Format,Missing Values
-s1,1,,Nominal,Input,9,Left,A9,A9,"""0       """
-s2,2,,Nominal,Input,9,Left,A9,A9,"""12      ""; ""123     """
-s3,3,,Nominal,Input,9,Left,A9,A9,"""1234    ""; ""12345   ""; ""12345678"""
+Name,Position,Measurement Level,Role,Width,Alignment,Print Format,Write Format,Missing Values
+s1,1,Nominal,Input,9,Left,A9,A9,"""0       """
+s2,2,Nominal,Input,9,Left,A9,A9,"""12      ""; ""123     """
+s3,3,Nominal,Input,9,Left,A9,A9,"""1234    ""; ""12345   ""; ""12345678"""
 
 Table: Value Labels
 Variable Value,,Label
@@ -337,11 +337,11 @@ LIST.
 AT_CHECK([pspp -o pspp.csv sys-file.sps])
 AT_CHECK([cat pspp.csv], [0], [dnl
 Table: Variables
-Name,Position,Print Format,Write Format,Missing Values
-N,1,F8.2,F8.2,
-A255,2,A255,A255,
-A258,3,A258,A258,
-A2000,4,A2000,A2000,
+Name,Position,Print Format,Write Format
+N,1,F8.2,F8.2
+A255,2,A255,A255
+A258,3,A258,A258
+A2000,4,A2000,A2000
 
 Table: Data List
 N,A255,A258,A2000
@@ -360,11 +360,11 @@ LIST.
 AT_CHECK([pspp -o pspp.csv sys-file.sps])
 AT_CHECK([cat pspp.csv], [0], [dnl
 Table: Variables
-Name,Position,Print Format,Write Format,Missing Values
-vl255,1,A255,A255,
-vl256,2,A256,A256,
-vl1335,3,A1335,A1335,
-vl2000,4,A2000,A2000,
+Name,Position,Print Format,Write Format
+vl255,1,A255,A255
+vl256,2,A256,A256
+vl1335,3,A1335,A1335
+vl2000,4,A2000,A2000
 
 Table: Data List
 vl255,vl256,vl1335,vl2000
@@ -409,11 +409,11 @@ EXECUTE.
    AT_CHECK([pspp -o pspp.csv get.sps])
    AT_CHECK([cat pspp.csv], [0], [dnl
 Table: Variables
-Name,Position,Print Format,Write Format,Missing Values
-a,1,A10,A10,
-b,2,A256,A256,
-c,3,A200,A200,
-d,4,A32767,A32767,
+Name,Position,Print Format,Write Format
+a,1,A10,A10
+b,2,A256,A256
+c,3,A200,A200
+d,4,A32767,A32767
 ])
    AT_CLEANUP])
 
@@ -469,10 +469,10 @@ jalapeño vicuña.
    (Entered <date>)"
 
 Table: Variables
-Name,Position,Label,Measurement Level,Role,Width,Alignment,Print Format,Write Format,Missing Values
-àéîöçxyzabc,1,,Scale,Input,8,Right,F8.2,F8.2,
-roué,2,Provençal soupçon,Nominal,Input,9,Left,A9,A9,
-croûton,3,,Nominal,Input,32,Left,A1000,A1000,
+Name,Position,Label,Measurement Level,Role,Width,Alignment,Print Format,Write Format
+àéîöçxyzabc,1,,Scale,Input,8,Right,F8.2,F8.2
+roué,2,Provençal soupçon,Nominal,Input,9,Left,A9,A9
+croûton,3,,Nominal,Input,32,Left,A1000,A1000
 
 Table: Value Labels
 Variable Value,,Label

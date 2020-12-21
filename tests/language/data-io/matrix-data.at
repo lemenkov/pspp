@@ -233,14 +233,14 @@ list.
 
 AT_CHECK([pspp -O format=csv matrix-data.pspp], [0], [dnl
 Table: Variables
-Name,Position,Label,Measurement Level,Role,Width,Alignment,Print Format,Write Format,Missing Values
-s1,1,,Scale,Input,8,Right,F4.0,F4.0,
-s2,2,,Scale,Input,8,Right,F4.0,F4.0,
-ROWTYPE_,3,,Nominal,Input,8,Left,A8,A8,
-VARNAME_,4,,Nominal,Input,8,Left,A8,A8,
-var01,5,,Scale,Input,8,Right,F10.4,F10.4,
-var02,6,,Scale,Input,8,Right,F10.4,F10.4,
-var03,7,,Scale,Input,8,Right,F10.4,F10.4,
+Name,Position,Measurement Level,Role,Width,Alignment,Print Format,Write Format
+s1,1,Scale,Input,8,Right,F4.0,F4.0
+s2,2,Scale,Input,8,Right,F4.0,F4.0
+ROWTYPE_,3,Nominal,Input,8,Left,A8,A8
+VARNAME_,4,Nominal,Input,8,Left,A8,A8
+var01,5,Scale,Input,8,Right,F10.4,F10.4
+var02,6,Scale,Input,8,Right,F10.4,F10.4
+var03,7,Scale,Input,8,Right,F10.4,F10.4
 
 Table: Data List
 s1,s2,ROWTYPE_,VARNAME_,var01,var02,var03
