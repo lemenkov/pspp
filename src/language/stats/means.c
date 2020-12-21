@@ -751,7 +751,6 @@ means_shipout_single (const struct mtable *mt, const struct means *means,
 		      const struct workspace *ws)
 {
   struct pivot_table *pt = pivot_table_create (N_("Report"));
-  pt->look.omit_empty = true;
 
   struct pivot_dimension *dim_cells =
     pivot_dimension_create (pt, PIVOT_AXIS_COLUMN, N_("Statistics"));
