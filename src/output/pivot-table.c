@@ -62,70 +62,6 @@ pivot_area_to_string (enum pivot_area area)
     }
 }
 
-const struct table_area_style *
-pivot_area_get_default_style (enum pivot_area area)
-{
-#define STYLE(BOLD, H, V, L, R, T, B) {                         \
-    .cell_style = {                                             \
-      .halign = TABLE_HALIGN_##H,                               \
-      .valign = TABLE_VALIGN_##V,                               \
-      .margin = { [TABLE_HORZ][0] = L, [TABLE_HORZ][1] = R,     \
-                  [TABLE_VERT][0] = T, [TABLE_VERT][1] = B },   \
-    },                                                          \
-    .font_style = {                                             \
-      .bold = BOLD,                                             \
-      .fg = { [0] = CELL_COLOR_BLACK, [1] = CELL_COLOR_BLACK},  \
-      .bg = { [0] = CELL_COLOR_WHITE, [1] = CELL_COLOR_WHITE},  \
-      .size = 9,                                                \
-      .typeface = (char *) "Sans Serif",                        \
-    },                                                          \
-  }
-  static const struct table_area_style default_area_styles[PIVOT_N_AREAS] = {
-    [PIVOT_AREA_TITLE]         = STYLE(true, CENTER, CENTER,  8,11,1,8),
-    [PIVOT_AREA_CAPTION]       = STYLE(false, LEFT,   TOP,     8,11,1,1),
-    [PIVOT_AREA_FOOTER]        = STYLE(false, LEFT,   TOP,    11, 8,2,3),
-    [PIVOT_AREA_CORNER]        = STYLE(false, LEFT,   BOTTOM,  8,11,1,1),
-    [PIVOT_AREA_COLUMN_LABELS] = STYLE(false, CENTER, BOTTOM,  8,11,1,3),
-    [PIVOT_AREA_ROW_LABELS]    = STYLE(false, LEFT,   TOP,     8,11,1,3),
-    [PIVOT_AREA_DATA]          = STYLE(false, MIXED,  TOP,     8,11,1,1),
-    [PIVOT_AREA_LAYERS]        = STYLE(false, LEFT,   BOTTOM,  8,11,1,3),
-    };
-#undef STYLE
-
-  return &default_area_styles[area];
-}
-
-void
-pivot_border_get_default_style (enum pivot_border border,
-                                struct table_border_style *style)
-{
-  static const enum table_stroke default_strokes[PIVOT_N_BORDERS] = {
-    [PIVOT_BORDER_TITLE]        = TABLE_STROKE_NONE,
-    [PIVOT_BORDER_OUTER_LEFT]   = TABLE_STROKE_NONE,
-    [PIVOT_BORDER_OUTER_TOP]    = TABLE_STROKE_NONE,
-    [PIVOT_BORDER_OUTER_RIGHT]  = TABLE_STROKE_NONE,
-    [PIVOT_BORDER_OUTER_BOTTOM] = TABLE_STROKE_NONE,
-    [PIVOT_BORDER_INNER_LEFT]   = TABLE_STROKE_THICK,
-    [PIVOT_BORDER_INNER_TOP]    = TABLE_STROKE_THICK,
-    [PIVOT_BORDER_INNER_RIGHT]  = TABLE_STROKE_THICK,
-    [PIVOT_BORDER_INNER_BOTTOM] = TABLE_STROKE_THICK,
-    [PIVOT_BORDER_DATA_LEFT]    = TABLE_STROKE_THICK,
-    [PIVOT_BORDER_DATA_TOP]     = TABLE_STROKE_THICK,
-    [PIVOT_BORDER_DIM_ROW_HORZ] = TABLE_STROKE_SOLID,
-    [PIVOT_BORDER_DIM_ROW_VERT] = TABLE_STROKE_NONE,
-    [PIVOT_BORDER_DIM_COL_HORZ] = TABLE_STROKE_SOLID,
-    [PIVOT_BORDER_DIM_COL_VERT] = TABLE_STROKE_SOLID,
-    [PIVOT_BORDER_CAT_ROW_HORZ] = TABLE_STROKE_NONE,
-    [PIVOT_BORDER_CAT_ROW_VERT] = TABLE_STROKE_NONE,
-    [PIVOT_BORDER_CAT_COL_HORZ] = TABLE_STROKE_SOLID,
-    [PIVOT_BORDER_CAT_COL_VERT] = TABLE_STROKE_SOLID,
-  };
-  *style = (struct table_border_style) {
-      .stroke = default_strokes[border],
-      .color = CELL_COLOR_BLACK,
-  };
-}
-
 /* Returns the name of BORDER. */
 const char *
 pivot_border_to_string (enum pivot_border border)
@@ -195,59 +131,88 @@ pivot_table_sizing_uninit (struct pivot_table_sizing *sizing)
 
 /* Pivot table looks. */
 
-void
-pivot_table_look_init (struct pivot_table_look *look)
+const struct pivot_table_look *
+pivot_table_look_builtin_default (void)
 {
-  memset (look, 0, sizeof *look);
+  static struct pivot_table_look look = {
+    .ref_cnt = 1,
 
-  look->omit_empty = true;
-  look->row_labels_in_corner = true;
-  look->width_ranges[TABLE_HORZ][0] = 36;
-  look->width_ranges[TABLE_HORZ][1] = 72;
-  look->width_ranges[TABLE_VERT][0] = 36;
-  look->width_ranges[TABLE_VERT][1] = 120;
+    .omit_empty = true,
+    .row_labels_in_corner = true,
+    .width_ranges = {
+      [TABLE_HORZ] = { 36, 72 },
+      [TABLE_VERT] = { 36, 120 },
+    },
 
-  for (size_t i = 0; i < PIVOT_N_AREAS; i++)
-    table_area_style_copy (NULL, &look->areas[i],
-                           pivot_area_get_default_style (i));
+    .areas = {
+#define AREA(BOLD, H, V, L, R, T, B) {                         \
+    .cell_style = {                                             \
+      .halign = TABLE_HALIGN_##H,                               \
+      .valign = TABLE_VALIGN_##V,                               \
+      .margin = { [TABLE_HORZ][0] = L, [TABLE_HORZ][1] = R,     \
+                  [TABLE_VERT][0] = T, [TABLE_VERT][1] = B },   \
+    },                                                          \
+    .font_style = {                                             \
+      .bold = BOLD,                                             \
+      .fg = { [0] = CELL_COLOR_BLACK, [1] = CELL_COLOR_BLACK},  \
+      .bg = { [0] = CELL_COLOR_WHITE, [1] = CELL_COLOR_WHITE},  \
+      .size = 9,                                                \
+      .typeface = (char *) "Sans Serif",                        \
+    },                                                          \
+  }
+      [PIVOT_AREA_TITLE]         = AREA(true,  CENTER, CENTER,  8,11,1,8),
+      [PIVOT_AREA_CAPTION]       = AREA(false, LEFT,   TOP,     8,11,1,1),
+      [PIVOT_AREA_FOOTER]        = AREA(false, LEFT,   TOP,    11, 8,2,3),
+      [PIVOT_AREA_CORNER]        = AREA(false, LEFT,   BOTTOM,  8,11,1,1),
+      [PIVOT_AREA_COLUMN_LABELS] = AREA(false, CENTER, BOTTOM,  8,11,1,3),
+      [PIVOT_AREA_ROW_LABELS]    = AREA(false, LEFT,   TOP,     8,11,1,3),
+      [PIVOT_AREA_DATA]          = AREA(false, MIXED,  TOP,     8,11,1,1),
+      [PIVOT_AREA_LAYERS]        = AREA(false, LEFT,   BOTTOM,  8,11,1,3),
+#undef AREA
+    },
 
-  static const enum table_stroke default_strokes[PIVOT_N_BORDERS] = {
-    [PIVOT_BORDER_TITLE]        = TABLE_STROKE_NONE,
-    [PIVOT_BORDER_OUTER_LEFT]   = TABLE_STROKE_NONE,
-    [PIVOT_BORDER_OUTER_TOP]    = TABLE_STROKE_NONE,
-    [PIVOT_BORDER_OUTER_RIGHT]  = TABLE_STROKE_NONE,
-    [PIVOT_BORDER_OUTER_BOTTOM] = TABLE_STROKE_NONE,
-    [PIVOT_BORDER_INNER_LEFT]   = TABLE_STROKE_THICK,
-    [PIVOT_BORDER_INNER_TOP]    = TABLE_STROKE_THICK,
-    [PIVOT_BORDER_INNER_RIGHT]  = TABLE_STROKE_THICK,
-    [PIVOT_BORDER_INNER_BOTTOM] = TABLE_STROKE_THICK,
-    [PIVOT_BORDER_DATA_LEFT]    = TABLE_STROKE_THICK,
-    [PIVOT_BORDER_DATA_TOP]     = TABLE_STROKE_THICK,
-    [PIVOT_BORDER_DIM_ROW_HORZ] = TABLE_STROKE_SOLID,
-    [PIVOT_BORDER_DIM_ROW_VERT] = TABLE_STROKE_NONE,
-    [PIVOT_BORDER_DIM_COL_HORZ] = TABLE_STROKE_SOLID,
-    [PIVOT_BORDER_DIM_COL_VERT] = TABLE_STROKE_SOLID,
-    [PIVOT_BORDER_CAT_ROW_HORZ] = TABLE_STROKE_NONE,
-    [PIVOT_BORDER_CAT_ROW_VERT] = TABLE_STROKE_NONE,
-    [PIVOT_BORDER_CAT_COL_HORZ] = TABLE_STROKE_SOLID,
-    [PIVOT_BORDER_CAT_COL_VERT] = TABLE_STROKE_SOLID,
+    .borders = {
+#define BORDER(STROKE) { .stroke = STROKE, .color = CELL_COLOR_BLACK }
+      [PIVOT_BORDER_TITLE]        = BORDER(TABLE_STROKE_NONE),
+      [PIVOT_BORDER_OUTER_LEFT]   = BORDER(TABLE_STROKE_NONE),
+      [PIVOT_BORDER_OUTER_TOP]    = BORDER(TABLE_STROKE_NONE),
+      [PIVOT_BORDER_OUTER_RIGHT]  = BORDER(TABLE_STROKE_NONE),
+      [PIVOT_BORDER_OUTER_BOTTOM] = BORDER(TABLE_STROKE_NONE),
+      [PIVOT_BORDER_INNER_LEFT]   = BORDER(TABLE_STROKE_THICK),
+      [PIVOT_BORDER_INNER_TOP]    = BORDER(TABLE_STROKE_THICK),
+      [PIVOT_BORDER_INNER_RIGHT]  = BORDER(TABLE_STROKE_THICK),
+      [PIVOT_BORDER_INNER_BOTTOM] = BORDER(TABLE_STROKE_THICK),
+      [PIVOT_BORDER_DATA_LEFT]    = BORDER(TABLE_STROKE_THICK),
+      [PIVOT_BORDER_DATA_TOP]     = BORDER(TABLE_STROKE_THICK),
+      [PIVOT_BORDER_DIM_ROW_HORZ] = BORDER(TABLE_STROKE_SOLID),
+      [PIVOT_BORDER_DIM_ROW_VERT] = BORDER(TABLE_STROKE_NONE),
+      [PIVOT_BORDER_DIM_COL_HORZ] = BORDER(TABLE_STROKE_SOLID),
+      [PIVOT_BORDER_DIM_COL_VERT] = BORDER(TABLE_STROKE_SOLID),
+      [PIVOT_BORDER_CAT_ROW_HORZ] = BORDER(TABLE_STROKE_NONE),
+      [PIVOT_BORDER_CAT_ROW_VERT] = BORDER(TABLE_STROKE_NONE),
+      [PIVOT_BORDER_CAT_COL_HORZ] = BORDER(TABLE_STROKE_SOLID),
+      [PIVOT_BORDER_CAT_COL_VERT] = BORDER(TABLE_STROKE_SOLID),
+    },
   };
-  for (size_t i = 0; i < PIVOT_N_BORDERS; i++)
-    look->borders[i] = (struct table_border_style) {
-      .stroke = default_strokes[i],
-      .color = CELL_COLOR_BLACK,
-    };
+
+  return &look;
 }
 
-void
-pivot_table_look_uninit (struct pivot_table_look *look)
+struct pivot_table_look *
+pivot_table_look_new_builtin_default (void)
 {
-  free (look->name);
+  return pivot_table_look_unshare (
+    pivot_table_look_ref (pivot_table_look_builtin_default ()));
+}
 
-  for (size_t i = 0; i < PIVOT_N_AREAS; i++)
-    table_area_style_uninit (&look->areas[i]);
+struct pivot_table_look *
+pivot_table_look_ref (const struct pivot_table_look *look_)
+{
+  assert (look_->ref_cnt > 0);
 
-  free (look->continuation);
+  struct pivot_table_look *look = CONST_CAST (struct pivot_table_look *, look_);
+  look->ref_cnt++;
+  return look;
 }
 
 static char *
@@ -256,15 +221,40 @@ xstrdup_if_nonempty (const char *s)
   return s && s[0] ? xstrdup (s) : NULL;
 }
 
-void
-pivot_table_look_copy (struct pivot_table_look *dst,
-                       const struct pivot_table_look *src)
+struct pivot_table_look *
+pivot_table_look_unshare (struct pivot_table_look *old)
 {
-  *dst = *src;
-  dst->name = xstrdup_if_nonempty (src->name);
+  assert (old->ref_cnt > 0);
+  if (old->ref_cnt == 1)
+    return old;
+
+  pivot_table_look_unref (old);
+
+  struct pivot_table_look *new = xmemdup (old, sizeof *old);
+  new->ref_cnt = 1;
+  new->name = xstrdup_if_nonempty (old->name);
   for (size_t i = 0; i < PIVOT_N_AREAS; i++)
-    table_area_style_copy (NULL, &dst->areas[i], &src->areas[i]);
-  dst->continuation = xstrdup_if_nonempty (src->continuation);
+    table_area_style_copy (NULL, &new->areas[i], &old->areas[i]);
+  new->continuation = xstrdup_if_nonempty (old->continuation);
+
+  return new;
+}
+
+void
+pivot_table_look_unref (struct pivot_table_look *look)
+{
+  if (look)
+    {
+      assert (look->ref_cnt > 0);
+      if (!--look->ref_cnt)
+        {
+          free (look->name);
+          for (size_t i = 0; i < PIVOT_N_AREAS; i++)
+            table_area_style_uninit (&look->areas[i]);
+          free (look->continuation);
+          free (look);
+        }
+    }
 }
 
 /* Axes. */
@@ -780,8 +770,7 @@ pivot_table_create__ (struct pivot_value *title, const char *subtype)
   table->title = title;
   table->subtype = subtype ? pivot_value_new_text (subtype) : NULL;
   table->command_c = output_get_command_name ();
-
-  pivot_table_look_init (&table->look);
+  table->look = pivot_table_look_ref (pivot_table_look_builtin_default ());
 
   hmap_init (&table->cells);
 
@@ -831,7 +820,7 @@ pivot_table_unref (struct pivot_table *table)
     return;
 
   free (table->current_layer);
-  pivot_table_look_uninit (&table->look);
+  pivot_table_look_unref (table->look);
 
   for (int i = 0; i < TABLE_N_AXES; i++)
     pivot_table_sizing_uninit (&table->sizing[i]);
@@ -887,15 +876,15 @@ pivot_table_is_shared (const struct pivot_table *table)
 const struct pivot_table_look *
 pivot_table_get_look (const struct pivot_table *table)
 {
-  return &table->look;
+  return table->look;
 }
 
 void
 pivot_table_set_look (struct pivot_table *table,
                       const struct pivot_table_look *look)
 {
-  pivot_table_look_uninit (&table->look);
-  pivot_table_look_copy (&table->look, look);
+  pivot_table_look_unref (table->look);
+  table->look = pivot_table_look_ref (look);
 }
 
 /* Sets the format used for PIVOT_RC_COUNT cells to the one used for variable
@@ -1103,7 +1092,7 @@ pivot_table_create_footnote__ (struct pivot_table *table, size_t idx,
           struct pivot_footnote *f = xmalloc (sizeof *f);
           f->idx = table->n_footnotes;
           f->marker = pivot_make_default_footnote_marker (
-            f->idx, table->look.show_numeric_markers);
+            f->idx, table->look->show_numeric_markers);
           f->content = NULL;
           f->show = true;
 
@@ -1330,7 +1319,7 @@ pivot_table_assign_label_depth (struct pivot_table *table)
 {
   pivot_axis_assign_label_depth (table, PIVOT_AXIS_COLUMN, false);
   if (pivot_axis_assign_label_depth (
-        table, PIVOT_AXIS_ROW, (table->look.row_labels_in_corner
+        table, PIVOT_AXIS_ROW, (table->look->row_labels_in_corner
                                 && !table->corner_text))
       && table->axes[PIVOT_AXIS_COLUMN].label_depth == 0)
     table->axes[PIVOT_AXIS_COLUMN].label_depth = 1;
@@ -1541,7 +1530,7 @@ pivot_table_dump (const struct pivot_table *table, int indentation)
   pivot_table_dump_string (table->dataset, "dataset", indentation);
   pivot_table_dump_string (table->datafile, "datafile", indentation);
   pivot_table_dump_string (table->notes, "notes", indentation);
-  pivot_table_dump_string (table->look.name, "table-look", indentation);
+  pivot_table_dump_string (table->look->name, "table-look", indentation);
   if (table->date)
     {
       indent (indentation);
@@ -1554,20 +1543,20 @@ pivot_table_dump (const struct pivot_table *table, int indentation)
 
   indent (indentation);
   printf ("sizing:\n");
-  pivot_table_sizing_dump ("column", table->look.width_ranges[TABLE_HORZ],
+  pivot_table_sizing_dump ("column", table->look->width_ranges[TABLE_HORZ],
                            &table->sizing[TABLE_HORZ], indentation + 1);
-  pivot_table_sizing_dump ("row", table->look.width_ranges[TABLE_VERT],
+  pivot_table_sizing_dump ("row", table->look->width_ranges[TABLE_VERT],
                            &table->sizing[TABLE_VERT], indentation + 1);
 
   indent (indentation);
   printf ("areas:\n");
   for (enum pivot_area area = 0; area < PIVOT_N_AREAS; area++)
-    table_area_style_dump (area, &table->look.areas[area], indentation + 1);
+    table_area_style_dump (area, &table->look->areas[area], indentation + 1);
 
   indent (indentation);
   printf ("borders:\n");
   for (enum pivot_border border = 0; border < PIVOT_N_BORDERS; border++)
-    table_border_style_dump (border, &table->look.borders[border],
+    table_border_style_dump (border, &table->look->borders[border],
                              indentation + 1);
 
   for (size_t i = 0; i < table->n_dimensions; i++)
@@ -1637,9 +1626,9 @@ pivot_table_dump (const struct pivot_table *table, int indentation)
       putchar ('\n');
 
       size_t *column_enumeration = pivot_table_enumerate_axis (
-        table, PIVOT_AXIS_COLUMN, layer_indexes, table->look.omit_empty, NULL);
+        table, PIVOT_AXIS_COLUMN, layer_indexes, table->look->omit_empty, NULL);
       size_t *row_enumeration = pivot_table_enumerate_axis (
-        table, PIVOT_AXIS_ROW, layer_indexes, table->look.omit_empty, NULL);
+        table, PIVOT_AXIS_ROW, layer_indexes, table->look->omit_empty, NULL);
 
       char ***column_headings = compose_headings (
         &table->axes[PIVOT_AXIS_COLUMN], column_enumeration,

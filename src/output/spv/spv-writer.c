@@ -773,10 +773,10 @@ put_light_table (struct buf *buf, uint64_t table_id,
   put_bool (buf, table->rotate_outer_row_labels);
   put_bool (buf, true);
   put_u32 (buf, 0x15);
-  put_u32 (buf, table->look.width_ranges[H][0]);
-  put_u32 (buf, table->look.width_ranges[H][1]);
-  put_u32 (buf, table->look.width_ranges[V][0]);
-  put_u32 (buf, table->look.width_ranges[V][1]);
+  put_u32 (buf, table->look->width_ranges[H][0]);
+  put_u32 (buf, table->look->width_ranges[H][1]);
+  put_u32 (buf, table->look->width_ranges[V][0]);
+  put_u32 (buf, table->look->width_ranges[V][1]);
   put_u64 (buf, table_id);
 
   /* Titles. */
@@ -798,7 +798,7 @@ put_light_table (struct buf *buf, uint64_t table_id,
   /* Areas. */
   for (size_t i = 0; i < PIVOT_N_AREAS; i++)
     {
-      const struct table_area_style *a = &table->look.areas[i];
+      const struct table_area_style *a = &table->look->areas[i];
       put_byte (buf, i + 1);
       put_byte (buf, 0x31);
       put_string (buf, (a->font_style.typeface
@@ -841,7 +841,7 @@ put_light_table (struct buf *buf, uint64_t table_id,
   put_be32 (buf, PIVOT_N_BORDERS);
   for (size_t i = 0; i < PIVOT_N_BORDERS; i++)
     {
-      const struct table_border_style *b = &table->look.borders[i];
+      const struct table_border_style *b = &table->look->borders[i];
       put_be32 (buf, i);
       put_be32 (buf, (b->stroke == TABLE_STROKE_NONE ? 0
                       : b->stroke == TABLE_STROKE_SOLID ? 1
@@ -861,14 +861,14 @@ put_light_table (struct buf *buf, uint64_t table_id,
   /* Print Settings. */
   uint32_t ps_start = start_count (buf);
   put_be32 (buf, 1);
-  put_bool (buf, table->look.print_all_layers);
-  put_bool (buf, table->look.paginate_layers);
-  put_bool (buf, table->look.shrink_to_fit[H]);
-  put_bool (buf, table->look.shrink_to_fit[V]);
-  put_bool (buf, table->look.top_continuation);
-  put_bool (buf, table->look.bottom_continuation);
-  put_be32 (buf, table->look.n_orphan_lines);
-  put_bestring (buf, table->look.continuation);
+  put_bool (buf, table->look->print_all_layers);
+  put_bool (buf, table->look->paginate_layers);
+  put_bool (buf, table->look->shrink_to_fit[H]);
+  put_bool (buf, table->look->shrink_to_fit[V]);
+  put_bool (buf, table->look->top_continuation);
+  put_bool (buf, table->look->bottom_continuation);
+  put_be32 (buf, table->look->n_orphan_lines);
+  put_bestring (buf, table->look->continuation);
   end_count_u32 (buf, ps_start);
 
   /* Table Settings. */
@@ -876,10 +876,10 @@ put_light_table (struct buf *buf, uint64_t table_id,
   put_be32 (buf, 1);
   put_be32 (buf, 4);
   put_be32 (buf, 0);            /* XXX current_layer */
-  put_bool (buf, table->look.omit_empty);
-  put_bool (buf, table->look.row_labels_in_corner);
-  put_bool (buf, !table->look.show_numeric_markers);
-  put_bool (buf, table->look.footnote_marker_superscripts);
+  put_bool (buf, table->look->omit_empty);
+  put_bool (buf, table->look->row_labels_in_corner);
+  put_bool (buf, !table->look->show_numeric_markers);
+  put_bool (buf, table->look->footnote_marker_superscripts);
   put_byte (buf, 0);
   uint32_t keep_start = start_count (buf);
   put_be32 (buf, 0);            /* n-row-breaks */
@@ -890,7 +890,7 @@ put_light_table (struct buf *buf, uint64_t table_id,
   put_be32 (buf, 0);            /* n-column-point-keeps */
   end_count_be32 (buf, keep_start);
   put_bestring (buf, table->notes);
-  put_bestring (buf, table->look.name);
+  put_bestring (buf, table->look->name);
   for (size_t i = 0; i < 82; i++)
     put_byte (buf, 0);
   end_count_u32 (buf, ts_start);

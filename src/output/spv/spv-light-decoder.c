@@ -679,7 +679,7 @@ decode_spvlb_border (const struct spvlb_border *in, struct pivot_table *table)
   if (in->border_type >= PIVOT_N_BORDERS)
     return xasprintf ("bad border type %"PRIu32, in->border_type);
 
-  struct table_border_style *out = &table->look.borders[in->border_type];
+  struct table_border_style *out = &table->look->borders[in->border_type];
   out->color = decode_spvlb_color_u32 (in->color);
   return decode_spvlb_stroke (in->stroke_type, &out->stroke);
 }
@@ -825,6 +825,7 @@ decode_spvlb_table (const struct spvlb_table *in, struct pivot_table **outp)
   struct pivot_table *out = xzalloc (sizeof *out);
   out->ref_cnt = 1;
   hmap_init (&out->cells);
+  out->look = pivot_table_look_new_builtin_default ();
 
   const struct spvlb_y1 *y1 = (in->formats->x0 ? in->formats->x0->y1
                                : in->formats->x3 ? in->formats->x3->y1
@@ -839,14 +840,14 @@ decode_spvlb_table (const struct spvlb_table *in, struct pivot_table **outp)
     }
 
   /* Display settings. */
-  out->look.show_numeric_markers = !in->ts->show_alphabetic_markers;
+  out->look->show_numeric_markers = !in->ts->show_alphabetic_markers;
   out->rotate_inner_column_labels = in->header->rotate_inner_column_labels;
   out->rotate_outer_row_labels = in->header->rotate_outer_row_labels;
-  out->look.row_labels_in_corner = in->ts->show_row_labels_in_corner;
+  out->look->row_labels_in_corner = in->ts->show_row_labels_in_corner;
   out->show_grid_lines = in->borders->show_grid_lines;
   out->show_caption = true;
-  out->look.footnote_marker_superscripts = in->ts->footnote_marker_superscripts;
-  out->look.omit_empty = in->ts->omit_empty;
+  out->look->footnote_marker_superscripts = in->ts->footnote_marker_superscripts;
+  out->look->omit_empty = in->ts->omit_empty;
 
   const struct spvlb_x1 *x1 = in->formats->x1;
   if (x1)
@@ -862,10 +863,10 @@ decode_spvlb_table (const struct spvlb_table *in, struct pivot_table **outp)
     }
 
   /* Column and row display settings. */
-  out->look.width_ranges[TABLE_VERT][0] = in->header->min_row_height;
-  out->look.width_ranges[TABLE_VERT][1] = in->header->max_row_height;
-  out->look.width_ranges[TABLE_HORZ][0] = in->header->min_col_width;
-  out->look.width_ranges[TABLE_HORZ][1] = in->header->max_col_width;
+  out->look->width_ranges[TABLE_VERT][0] = in->header->min_row_height;
+  out->look->width_ranges[TABLE_VERT][1] = in->header->max_row_height;
+  out->look->width_ranges[TABLE_HORZ][0] = in->header->min_col_width;
+  out->look->width_ranges[TABLE_HORZ][1] = in->header->max_col_width;
 
   convert_widths (in->formats->widths, in->formats->n_widths,
                   &out->sizing[TABLE_HORZ].widths,
@@ -892,17 +893,17 @@ decode_spvlb_table (const struct spvlb_table *in, struct pivot_table **outp)
                  &out->sizing[TABLE_HORZ].n_keeps);
 
   out->notes = to_utf8_if_nonempty (in->ts->notes, encoding);
-  out->look.name = to_utf8_if_nonempty (in->ts->table_look, encoding);
+  out->look->name = to_utf8_if_nonempty (in->ts->table_look, encoding);
 
   /* Print settings. */
-  out->look.print_all_layers = in->ps->all_layers;
-  out->look.paginate_layers = in->ps->paginate_layers;
-  out->look.shrink_to_fit[TABLE_HORZ] = in->ps->fit_width;
-  out->look.shrink_to_fit[TABLE_VERT] = in->ps->fit_length;
-  out->look.top_continuation = in->ps->top_continuation;
-  out->look.bottom_continuation = in->ps->bottom_continuation;
-  out->look.continuation = xstrdup (in->ps->continuation_string);
-  out->look.n_orphan_lines = in->ps->n_orphan_lines;
+  out->look->print_all_layers = in->ps->all_layers;
+  out->look->paginate_layers = in->ps->paginate_layers;
+  out->look->shrink_to_fit[TABLE_HORZ] = in->ps->fit_width;
+  out->look->shrink_to_fit[TABLE_VERT] = in->ps->fit_length;
+  out->look->top_continuation = in->ps->top_continuation;
+  out->look->bottom_continuation = in->ps->bottom_continuation;
+  out->look->continuation = xstrdup (in->ps->continuation_string);
+  out->look->n_orphan_lines = in->ps->n_orphan_lines;
 
   /* Format settings. */
   out->epoch = in->formats->y0->epoch;
@@ -990,7 +991,7 @@ decode_spvlb_table (const struct spvlb_table *in, struct pivot_table **outp)
   /* Styles. */
   for (size_t i = 0; i < PIVOT_N_AREAS; i++)
     {
-      error = decode_spvlb_area (in->areas->areas[i], &out->look.areas[i],
+      error = decode_spvlb_area (in->areas->areas[i], &out->look->areas[i],
                                  encoding);
       if (error)
         goto error;

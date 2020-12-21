@@ -107,7 +107,6 @@ enum pivot_area
   };
 
 const char *pivot_area_to_string (enum pivot_area);
-const struct table_area_style *pivot_area_get_default_style (enum pivot_area);
 
 /* Table borders for styling purposes. */
 enum pivot_border
@@ -146,8 +145,6 @@ enum pivot_border
   };
 
 const char *pivot_border_to_string (enum pivot_border);
-void pivot_border_get_default_style (enum pivot_border,
-                                     struct table_border_style *);
 
 /* Sizing for rows or columns of a rendered table.  The comments below talk
    about columns and their widths but they apply equally to rows and their
@@ -376,6 +373,11 @@ bool pivot_result_class_change (const char *, const struct fmt_spec *);
    because that's how SPSS documentation and file formats do it. */
 struct pivot_table_look
   {
+    /* Reference count.  A pivot_table_look may be shared between multiple
+       owners, indicated by a reference count greater than 1.  When this is the
+       case, the pivot_table must not be modified. */
+    int ref_cnt;
+
     char *name;                 /* May be null. */
 
     /* General properties. */
@@ -400,10 +402,12 @@ struct pivot_table_look
     size_t n_orphan_lines;
   };
 
-void pivot_table_look_init (struct pivot_table_look *);
-void pivot_table_look_uninit (struct pivot_table_look *);
-void pivot_table_look_copy (struct pivot_table_look *,
-                            const struct pivot_table_look *);
+const struct pivot_table_look *pivot_table_look_builtin_default (void);
+struct pivot_table_look *pivot_table_look_new_builtin_default (void);
+struct pivot_table_look *pivot_table_look_ref (
+  const struct pivot_table_look *);
+void pivot_table_look_unref (struct pivot_table_look *);
+struct pivot_table_look *pivot_table_look_unshare (struct pivot_table_look *);
 
 /* A pivot table.  See the top of this file for more information. */
 struct pivot_table
@@ -414,7 +418,7 @@ struct pivot_table
     int ref_cnt;
 
     /* Styling. */
-    struct pivot_table_look look;
+    struct pivot_table_look *look;
 
     /* Display settings. */
     bool rotate_inner_column_labels;

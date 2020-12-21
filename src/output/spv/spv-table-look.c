@@ -128,7 +128,7 @@ char * WARN_UNUSED_RESULT
 spv_table_look_decode (const struct spvsx_table_properties *in,
                        struct pivot_table_look **outp)
 {
-  struct pivot_table_look *out = xzalloc (sizeof *out);
+  struct pivot_table_look *out = pivot_table_look_new_builtin_default ();
   char *error = NULL;
 
   out->name = in->name ? xstrdup (in->name) : NULL;
@@ -147,10 +147,6 @@ spv_table_look_decode (const struct spvsx_table_properties *in,
     = (f->marker_position != SPVSX_MARKER_POSITION_SUBSCRIPT);
   out->show_numeric_markers
     = (f->number_format == SPVSX_NUMBER_FORMAT_NUMERIC);
-
-  for (int i = 0; i < PIVOT_N_AREAS; i++)
-    table_area_style_copy (NULL, &out->areas[i],
-                           pivot_area_get_default_style (i));
 
   const struct spvsx_cell_format_properties *cfp = in->cell_format_properties;
   for (size_t i = 0; i < cfp->n_cell_style; i++)
@@ -229,9 +225,6 @@ spv_table_look_decode (const struct spvsx_table_properties *in,
                                                            1);
     }
 
-  for (int i = 0; i < PIVOT_N_BORDERS; i++)
-    pivot_border_get_default_style (i, &out->borders[i]);
-
   const struct spvsx_border_properties *bp = in->border_properties;
   for (size_t i = 0; i < bp->n_border_style; i++)
     {
@@ -269,6 +262,7 @@ spv_table_look_decode (const struct spvsx_table_properties *in,
   out->shrink_to_fit[TABLE_VERT] = pp->rescale_long_table_to_fit_page > 0;
   out->top_continuation = pp->continuation_text_at_top > 0;
   out->bottom_continuation = pp->continuation_text_at_bottom > 0;
+  free (out->continuation);
   out->continuation = xstrdup (pp->continuation_text
                                ? pp->continuation_text : "(cont.)");
   out->n_orphan_lines = optional_int (pp->window_orphan_lines, 2);
@@ -277,8 +271,7 @@ spv_table_look_decode (const struct spvsx_table_properties *in,
   return NULL;
 
 error:
-  pivot_table_look_uninit (out);
-  free (out);
+  pivot_table_look_unref (out);
   *outp = NULL;
   return error;
 }
@@ -380,8 +373,7 @@ tlo_decode_area (const struct tlo_area_color *color,
 static struct pivot_table_look *
 tlo_decode (const struct tlo_table_look *in)
 {
-  struct pivot_table_look *out = xmalloc (sizeof *out);
-  pivot_table_look_init (out);
+  struct pivot_table_look *out = pivot_table_look_new_builtin_default ();
 
   const uint16_t flags = in->tl->flags;
 
@@ -487,6 +479,12 @@ tlo_decode (const struct tlo_table_look *in)
   out->shrink_to_fit[TABLE_VERT] = flags & 0x20;
   out->top_continuation = flags & 0x80;
   out->bottom_continuation = flags & 0x100;
+  if (in->v2_styles)
+    {
+      free (out->continuation);
+      out->continuation = xmemdup0 (in->v2_styles->continuation,
+                                    in->v2_styles->continuation_len);
+    }
   /* n_orphan_lines isn't in .tlo files AFAICT. */
 
   return out;

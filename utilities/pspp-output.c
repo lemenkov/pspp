@@ -374,7 +374,7 @@ run_convert_table_look (int argc UNUSED, char **argv)
   if (err)
     error (1, 0, "%s", err);
 
-  pivot_table_look_uninit (look);
+  pivot_table_look_unref (look);
   free (look);
 }
 
@@ -808,11 +808,7 @@ main (int argc, char **argv)
 
   c->run (argc, argv);
 
-  if (table_look)
-    {
-      pivot_table_look_uninit (table_look);
-      free (table_look);
-    }
+  pivot_table_look_unref (table_look);
   i18n_done ();
 
   return n_warnings ? EXIT_FAILURE : EXIT_SUCCESS;
@@ -942,11 +938,7 @@ parse_members (const char *arg)
 static void
 parse_table_look (const char *arg)
 {
-  if (table_look)
-    {
-      pivot_table_look_uninit (table_look);
-      free (table_look);
-    }
+  pivot_table_look_unref (table_look);
 
   char *error_s = spv_table_look_read (arg, &table_look);
   if (error_s)

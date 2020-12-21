@@ -260,11 +260,7 @@ spv_item_destroy (struct spv_item *item)
       free (item->children);
 
       pivot_table_unref (item->table);
-      if (item->table_look)
-        {
-          pivot_table_look_uninit (item->table_look);
-          free (item->table_look);
-        }
+      pivot_table_look_unref (item->table_look);
       free (item->bin_member);
       free (item->xml_member);
       free (item->subtype);
