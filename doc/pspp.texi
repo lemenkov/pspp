@@ -76,7 +76,9 @@ graphic user interface
 @ifnotinfo
 @ifnotplaintext
 @ifnothtml
+@smallexample
 @include pspp-figures/\FILE\.texi
+@end smallexample
 @end ifnothtml
 @end ifnotplaintext
 @end ifnotinfo
