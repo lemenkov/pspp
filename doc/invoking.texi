@@ -52,6 +52,7 @@ corresponding short options.
 -O format=@var{format}
 -O device=@{terminal|listing@}
 --no-output
+--table-look=@var{file}
 -e, --error-file=@var{error-file}
 @end example
 
@@ -124,6 +125,23 @@ other output is considered a listing device.
 Disables output entirely, if neither @option{-o} nor @option{-O} is
 also used.  If one of those options is used, @option{--no-output} has
 no effect.
+
+@item @option{--table-look=@var{file}}
+Reads a table style from @var{file} and applies it to all @pspp{}
+table output.  The file should be a TableLook @file{.stt} or
+@file{.tlo} file.  @pspp{} searches for @var{file} in the current
+directory, then in @file{.pspp/looks} in the user's home directory,
+then in a @file{looks} subdirectory inside @pspp{}'s data directory
+(usually @file{/usr/local/share/pspp}).  If @pspp{} cannot find
+@var{file} under the given name, it also tries adding a @file{.stt}
+extension.
+
+When this option is not specified, @pspp{} looks for
+@file{default.stt} using the algorithm above, and otherwise it falls
+back to a default built-in style.
+
+Using @code{SET TLOOK} in @pspp{} syntax overrides the style set on
+the command line (@pxref{SET}).
 
 @item @option{-e @var{error-file}}
 @itemx @option{--error-file=@var{error-file}}

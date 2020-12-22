@@ -48,6 +48,7 @@
 #include "math/random.h"
 #include "output/driver.h"
 #include "output/journal.h"
+#include "output/pivot-table.h"
 
 #if HAVE_LIBTERMCAP
 #if HAVE_TERMCAP_H
@@ -113,6 +114,7 @@ int tgetnum (const char *);
      tvars=custom;
      tb1=string;
      tbfonts=string;
+     tlook=custom;
      undefined=undef:warn/nowarn;
      wib=wib:msbfirst/lsbfirst/vax/native;
      wrb=wrb:native/isl/isb/idl/idb/vf/vd/vg/zs/zl;
@@ -383,6 +385,34 @@ stc_custom_tvars (struct lexer *lexer,
   return 1;
 }
 
+static int
+stc_custom_tlook (struct lexer *lexer,
+                  struct dataset *ds UNUSED,
+                  struct cmd_set *cmd UNUSED, void *aux UNUSED)
+{
+  lex_match (lexer, T_EQUALS);
+
+  if (lex_match_id (lexer, "NONE"))
+    pivot_table_look_set_default (pivot_table_look_builtin_default ());
+  else if (lex_is_string (lexer))
+    {
+      struct pivot_table_look *look;
+      char *error = pivot_table_look_read (lex_tokcstr (lexer), &look);
+      lex_get (lexer);
+
+      if (error)
+        {
+          msg (SE, "%s", error);
+          free (error);
+          return 0;
+        }
+
+      pivot_table_look_set_default (look);
+      pivot_table_look_unref (look);
+    }
+
+  return 1;
+}
 
 /* Parses the EPOCH subcommand, which controls the epoch used for
    parsing 2-digit years. */

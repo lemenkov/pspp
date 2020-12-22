@@ -24,13 +24,17 @@
 #include "data/settings.h"
 #include "data/value.h"
 #include "data/variable.h"
+#include "data/file-name.h"
 #include "libpspp/hash-functions.h"
 #include "libpspp/i18n.h"
 #include "output/driver.h"
+#include "output/spv/spv-table-look.h"
 
 #include "gl/c-ctype.h"
+#include "gl/configmake.h"
 #include "gl/intprops.h"
 #include "gl/minmax.h"
+#include "gl/relocatable.h"
 #include "gl/xalloc.h"
 #include "gl/xmemdup0.h"
 #include "gl/xsize.h"
@@ -130,6 +134,70 @@ pivot_table_sizing_uninit (struct pivot_table_sizing *sizing)
 }
 
 /* Pivot table looks. */
+
+static const struct pivot_table_look *
+default_look (const struct pivot_table_look *new)
+{
+  static struct pivot_table_look *look;
+  if (new)
+    {
+      pivot_table_look_unref (look);
+      look = pivot_table_look_ref (new);
+    }
+  else if (!look)
+    {
+      char *error = pivot_table_look_read ("default.stt", &look);
+      if (error)
+        look = pivot_table_look_ref (pivot_table_look_builtin_default ());
+    }
+  return look;
+}
+
+const struct pivot_table_look *
+pivot_table_look_get_default (void)
+{
+  return default_look (NULL);
+}
+
+void
+pivot_table_look_set_default (const struct pivot_table_look *look)
+{
+  default_look (look);
+}
+
+char * WARN_UNUSED_RESULT
+pivot_table_look_read (const char *name, struct pivot_table_look **lookp)
+{
+  *lookp = NULL;
+
+  /* Construct search path. */
+  const char *path[4];
+  size_t n = 0;
+  path[n++] = ".";
+  const char *home = getenv ("HOME");
+  if (home != NULL)
+    path[n++] = xasprintf ("%s/.pspp/looks", home);
+  char *allocated;
+  path[n++] = relocate2 (PKGDATADIR "/looks", &allocated);
+  path[n++] = NULL;
+
+  /* Search path. */
+  char *file = fn_search_path (name, (char **) path);
+  if (!file)
+    {
+      char *name2 = xasprintf ("%s.stt", name);
+      file = fn_search_path (name2, (char **) path);
+      free (name2);
+    }
+  free (allocated);
+  if (!file)
+    return xasprintf ("%s: not found", name);
+
+  /* Read file. */
+  char *error = spv_table_look_read (file, lookp);
+  free (file);
+  return error;
+}
 
 const struct pivot_table_look *
 pivot_table_look_builtin_default (void)
@@ -770,7 +838,7 @@ pivot_table_create__ (struct pivot_value *title, const char *subtype)
   table->title = title;
   table->subtype = subtype ? pivot_value_new_text (subtype) : NULL;
   table->command_c = output_get_command_name ();
-  table->look = pivot_table_look_ref (pivot_table_look_builtin_default ());
+  table->look = pivot_table_look_ref (pivot_table_look_get_default ());
 
   hmap_init (&table->cells);
 

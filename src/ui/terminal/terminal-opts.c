@@ -22,7 +22,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-
 #include "data/settings.h"
 #include "language/lexer/include-path.h"
 #include "libpspp/argv-parser.h"
@@ -38,6 +37,7 @@
 #include "output/driver.h"
 #include "output/driver-provider.h"
 #include "output/msglog.h"
+#include "output/pivot-table.h"
 
 #include "gl/error.h"
 #include "gl/localcharset.h"
@@ -59,6 +59,7 @@ struct terminal_opts
     enum lex_syntax_mode *syntax_mode;
     bool *process_statrc;
     char **syntax_encoding;
+    char *table_look;
   };
 
 enum
@@ -72,6 +73,7 @@ enum
     OPT_INTERACTIVE,
     OPT_SYNTAX_ENCODING,
     OPT_NO_STATRC,
+    OPT_TABLE_LOOK,
     OPT_HELP,
     OPT_VERSION,
     N_TERMINAL_OPTIONS
@@ -88,6 +90,7 @@ static struct argv_option terminal_argv_options[N_TERMINAL_OPTIONS] =
     {"interactive", 'i', no_argument, OPT_INTERACTIVE},
     {"syntax-encoding", 0, required_argument, OPT_SYNTAX_ENCODING},
     {"no-statrc", 'r', no_argument, OPT_NO_STATRC},
+    {"table-look", 0, required_argument, OPT_TABLE_LOOK},
     {"help", 'h', no_argument, OPT_HELP},
     {"version", 'V', no_argument, OPT_VERSION},
   };
@@ -157,6 +160,7 @@ Output options:\n\
   -O device={terminal|listing}  override device type for previous -o\n\
   -e, --error-file=FILE     append errors, warnings, and notes to FILE\n\
   --no-output               disable default output driver\n\
+  --table-look=FILE         use output style read from FILE\n\
 Supported output formats: %s\n\
 \n\
 Language options:\n\
@@ -235,6 +239,10 @@ terminal_option_callback (int id, void *to_)
       *to->process_statrc = false;
       break;
 
+    case OPT_TABLE_LOOK:
+      to->table_look = optarg;
+      break;
+
     case OPT_HELP:
       usage ();
       exit (EXIT_SUCCESS);
@@ -290,5 +298,16 @@ terminal_opts_done (struct terminal_opts *to, int argc, char *argv[])
     msglog_create ("-");
 
   string_map_destroy (&to->options);
+
+  if (to->table_look)
+    {
+      struct pivot_table_look *look;
+      char *s = pivot_table_look_read (to->table_look, &look);
+      if (s)
+        error (1, 0, "%s", s);
+      pivot_table_look_set_default (look);
+      pivot_table_look_unref (look);
+    }
+
   free (to);
 }

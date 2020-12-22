@@ -402,6 +402,12 @@ struct pivot_table_look
     size_t n_orphan_lines;
   };
 
+const struct pivot_table_look *pivot_table_look_get_default (void);
+void pivot_table_look_set_default (const struct pivot_table_look *);
+
+char *pivot_table_look_read (const char *, struct pivot_table_look **)
+  WARN_UNUSED_RESULT;
+
 const struct pivot_table_look *pivot_table_look_builtin_default (void);
 struct pivot_table_look *pivot_table_look_new_builtin_default (void);
 struct pivot_table_look *pivot_table_look_ref (

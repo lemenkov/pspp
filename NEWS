@@ -21,12 +21,15 @@ Changes from 1.4.1 to 1.5.2:
  * The user manual, in its Info and HTML versions, now includes
    graphical output examples and screenshots.
 
- * Output driver changes:
+ * Output improvements:
 
    - New drivers for output to TeX source files and to PNG files.
 
-   - New option "trim" to remove empty space from PDF, PostScript, SVG,
-     and PNG output files.
+   - Table output styles may now be set with the new option
+     --table-look and the new SET TLOOK command.
+
+   - New driver option "trim" to remove empty space from PDF,
+     PostScript, SVG, and PNG output files.
 
    - The HTML output driver has a new option "bare".
 

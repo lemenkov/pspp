@@ -525,6 +525,7 @@ SET
         /WIDTH=@{NARROW,WIDTH,@var{n_characters}@}
         /TNUMBERS=@{VALUES,LABELS,BOTH@}
         /TVARS=@{NAMES,LABELS,BOTH@}
+        /TLOOK=@{NONE,@var{file}@}
 
 (logging)
         /JOURNAL=@{ON,OFF@} ['@var{file_name}']
@@ -840,6 +841,13 @@ has been set.  If no label has been set, then the name is used.
 (@xref{VARIABLE LABELS}.)
 If @subcmd{TVARS} is set to @subcmd{BOTH}, then variables are displayed with both their label
 (if any) and their name in parentheses.
+@item TLOOK
+The @subcmd{TLOOK} option sets the style used for subsequent table
+output.  Specifying @subcmd{NONE} makes @pspp{} use the default
+built-in style.  Otherwise, specifying @var{file} makes @pspp{} search
+for an @file{.stt} or @file{.tlo} file in the same way as specifying
+@option{--table-look=@var{file}} the @pspp{} command line (@pxref{Main
+Options}).
 @end table
 
 @cindex headers
