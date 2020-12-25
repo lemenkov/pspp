@@ -390,7 +390,7 @@ static void
 xr_report_error (cairo_status_t status, const char *file_name)
 {
   if (status != CAIRO_STATUS_SUCCESS)
-    fprintf (stderr,  "%s: %s", file_name, cairo_status_to_string (status));
+    fprintf (stderr,  "%s: %s\n", file_name, cairo_status_to_string (status));
 }
 
 static void
@@ -532,7 +532,7 @@ xr_destroy (struct output_driver *driver)
       cairo_surface_finish (xr->dest_surface);
       cairo_status_t status = cairo_surface_status (xr->dest_surface);
       if (status != CAIRO_STATUS_SUCCESS)
-        fprintf (stderr,  _("error drawing output for %s driver: %s"),
+        fprintf (stderr,  _("error drawing output for %s driver: %s\n"),
                  output_driver_get_name (driver),
                  cairo_status_to_string (status));
       cairo_surface_destroy (xr->dest_surface);
