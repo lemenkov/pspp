@@ -19,10 +19,18 @@
 #include "output/cairo-pager.h"
 
 #include <math.h>
+#include <cairo/cairo-pdf.h>
 #include <pango/pango-layout.h>
 #include <pango/pangocairo.h>
 
+#include "output/chart-item.h"
 #include "output/driver-provider.h"
+#include "output/group-item.h"
+#include "output/message-item.h"
+#include "output/page-eject-item.h"
+#include "output/page-setup-item.h"
+#include "output/table-item.h"
+#include "output/text-item.h"
 
 #include "gl/xalloc.h"
 
@@ -101,6 +109,19 @@ struct xr_pager
     /* Current output item. */
     struct xr_fsm *fsm;
     struct output_item *item;
+    int slice_idx;
+
+    /* Grouping, for constructing the outline for PDFs.
+
+       The 'group_ids' were returned by cairo_pdf_surface_add_outline() and
+       represent the groups within which upcoming output is nested.  The
+       'group_opens' will be passed to cairo_pdf_surface_add_outline() when the
+       next item is rendered (we defer it so that the location associated with
+       the outline item can be the first object actually output in it). */
+    int *group_ids;
+    size_t n_group_ids, allocated_group_ids;
+    struct group_open_item **group_opens;
+    size_t n_opens, allocated_opens;
 
     /* Current output page. */
     cairo_t *cr;
@@ -234,6 +255,11 @@ xr_pager_destroy (struct xr_pager *p)
 {
   if (p)
     {
+      free (p->group_ids);
+      for (size_t i = 0; i < p->n_opens; i++)
+        group_open_item_unref (p->group_opens[i]);
+      free (p->group_opens);
+
       xr_page_style_unref (p->page_style);
       xr_fsm_style_unref (p->fsm_style);
 
@@ -260,6 +286,7 @@ xr_pager_add_item (struct xr_pager *p, const struct output_item *item)
 {
   assert (!p->item);
   p->item = output_item_ref (item);
+  p->slice_idx = 0;
   xr_pager_run (p);
 }
 
@@ -321,6 +348,18 @@ xr_pager_needs_new_page (struct xr_pager *p)
     return false;
 }
 
+static int
+add_outline (cairo_t *cr, int parent_id,
+             const char *utf8, const char *link_attribs,
+             cairo_pdf_outline_flags_t flags)
+{
+  cairo_surface_t *surface = cairo_get_target (cr);
+  return (cairo_surface_get_type (surface) == CAIRO_SURFACE_TYPE_PDF
+          ? cairo_pdf_surface_add_outline (surface, parent_id,
+                                           utf8, link_attribs, flags)
+          : 0);
+}
+
 static void
 xr_pager_run (struct xr_pager *p)
 {
@@ -328,6 +367,27 @@ xr_pager_run (struct xr_pager *p)
     {
       if (!p->fsm)
         {
+          if (is_group_open_item (p->item))
+            {
+              if (p->n_opens >= p->allocated_opens)
+                p->group_opens = x2nrealloc (p->group_opens,
+                                             &p->allocated_opens,
+                                             sizeof p->group_opens);
+              p->group_opens[p->n_opens++] = group_open_item_ref (
+                to_group_open_item (p->item));
+            }
+          else if (is_group_close_item (p->item))
+            {
+              if (p->n_opens)
+                group_open_item_unref (p->group_opens[--p->n_opens]);
+              else if (p->n_group_ids)
+                p->n_group_ids--;
+              else
+                {
+                  /* Something wrong! */
+                }
+            }
+
           p->fsm = xr_fsm_create (p->item, p->fsm_style, p->cr);
           if (!p->fsm)
             {
@@ -340,11 +400,74 @@ xr_pager_run (struct xr_pager *p)
 
       for (;;)
         {
+          char *dest_name = NULL;
+          if (p->page_style->include_outline)
+            {
+              static int counter = 0;
+              dest_name = xasprintf ("dest%d", counter++);
+              char *attrs = xasprintf ("name='%s'", dest_name);
+              cairo_tag_begin (p->cr, CAIRO_TAG_DEST, attrs);
+              free (attrs);
+            }
+
           int spacing = p->page_style->object_spacing;
           int chunk = xr_fsm_draw_slice (p->fsm, p->cr,
                                          p->fsm_style->size[V] - p->y);
           p->y += chunk + spacing;
           cairo_translate (p->cr, 0, xr_to_pt (chunk + spacing));
+
+          if (p->page_style->include_outline)
+            {
+              cairo_tag_end (p->cr, CAIRO_TAG_DEST);
+
+              if (chunk && p->slice_idx++ == 0)
+                {
+                  char *attrs = xasprintf ("dest='%s'", dest_name);
+
+                  int parent_group_id = (p->n_group_ids
+                                         ? p->group_ids[p->n_group_ids - 1]
+                                         : CAIRO_PDF_OUTLINE_ROOT);
+                  for (size_t i = 0; i < p->n_opens; i++)
+                    {
+                      parent_group_id = add_outline (
+                        p->cr, parent_group_id,
+                        p->group_opens[i]->command_name, attrs,
+                        CAIRO_PDF_OUTLINE_FLAG_OPEN);
+                      group_open_item_unref (p->group_opens[i]);
+
+                      if (p->n_group_ids >= p->allocated_group_ids)
+                        p->group_ids = x2nrealloc (p->group_ids,
+                                                   &p->allocated_group_ids,
+                                                   sizeof *p->group_ids);
+                      p->group_ids[p->n_group_ids++] = parent_group_id;
+                    }
+                  p->n_opens = 0;
+
+                  const char *text;
+                  if (is_table_item (p->item))
+                    {
+                      const struct table_item_text *title
+                        = table_item_get_title (to_table_item (p->item));
+                      text = title ? title->content : "Table";
+                    }
+                  else if (is_chart_item (p->item))
+                    {
+                      const char *title
+                        = chart_item_get_title (to_chart_item (p->item));
+                      text = title ? title : "Chart";
+                    }
+                  else
+                    text = (is_page_eject_item (p->item) ? "Page Break"
+                            : is_page_setup_item (p->item) ? "Page Setup"
+                            : is_message_item (p->item) ? "Message"
+                            : is_text_item (p->item) ? "Text"
+                            : NULL);
+                  if (text)
+                    add_outline (p->cr, parent_group_id, text, attrs, 0);
+                  free (attrs);
+                }
+              free (dest_name);
+            }
 
           if (xr_fsm_is_empty (p->fsm))
             {

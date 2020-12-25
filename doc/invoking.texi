@@ -304,6 +304,15 @@ This option makes PSPP trim empty space around each page of output,
 before adding the margins.  This can make the output easier to include
 in other documents.
 
+@item @option{-O outline=@var{boolean}}
+For PDF output only, this option controls whether PSPP includes an
+outline in the output file.  PDF viewers usually display the outline
+as a side bar that allows for easy navigation of the file.
+The default is true unless @option{-O trim=true} is also specified.
+(The Cairo graphics library that PSPP uses to produce PDF output has a
+bug that can cause a crash when outlines and trimming are used
+together.)
+
 @item @option{-O font-resolution=@var{dpi}}
 Sets the resolution for font rendering, in dots per inch.  For PDF,
 PostScript, and SVG output, the default is 72 dpi, so that a 10-point

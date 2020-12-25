@@ -238,6 +238,14 @@ xr_allocate (const char *name, int device_type,
 
   xr->trim = parse_boolean (opt (d, o, "trim", "false"));
 
+  /* Cairo 1.16.0 has a bug that causes crashes if outlines are enabled at the
+     same time as trimming:
+     https://lists.cairographics.org/archives/cairo/2020-December/029151.html
+     For now, just disable the outline if trimming is enabled. */
+  bool include_outline
+    = (output_type == XR_PDF
+       && parse_boolean (opt (d, o, "outline", xr->trim ? "false" : "true")));
+
   xr->page_style = xmalloc (sizeof *xr->page_style);
   *xr->page_style = (struct xr_page_style) {
     .ref_cnt = 1,
@@ -249,6 +257,7 @@ xr_allocate (const char *name, int device_type,
 
     .initial_page_number = 1,
     .object_spacing = object_spacing,
+    .include_outline = include_outline,
   };
 
   xr->fsm_style = xmalloc (sizeof *xr->fsm_style);
@@ -549,40 +558,42 @@ xr_destroy (struct output_driver *driver)
 
 static void
 xr_update_page_setup (struct output_driver *driver,
-                      const struct page_setup *ps)
+                      const struct page_setup *setup)
 {
   struct xr_driver *xr = xr_driver_cast (driver);
 
   const double scale = 72 * XR_POINT;
 
-  int swap = ps->orientation == PAGE_LANDSCAPE;
+  int swap = setup->orientation == PAGE_LANDSCAPE;
   enum table_axis h = H ^ swap;
   enum table_axis v = V ^ swap;
 
-  xr_page_style_unref (xr->page_style);
+  struct xr_page_style *old_ps = xr->page_style;
   xr->page_style = xmalloc (sizeof *xr->page_style);
   *xr->page_style = (struct xr_page_style) {
     .ref_cnt = 1,
 
     .margins = {
-      [H] = { ps->margins[h][0] * scale, ps->margins[h][1] * scale },
-      [V] = { ps->margins[v][0] * scale, ps->margins[v][1] * scale },
+      [H] = { setup->margins[h][0] * scale, setup->margins[h][1] * scale },
+      [V] = { setup->margins[v][0] * scale, setup->margins[v][1] * scale },
     },
 
-    .initial_page_number = ps->initial_page_number,
-    .object_spacing = ps->object_spacing * 72 * XR_POINT,
+    .initial_page_number = setup->initial_page_number,
+    .object_spacing = setup->object_spacing * 72 * XR_POINT,
+    .include_outline = old_ps->include_outline,
   };
   for (size_t i = 0; i < 2; i++)
-    page_heading_copy (&xr->page_style->headings[i], &ps->headings[i]);
+    page_heading_copy (&xr->page_style->headings[i], &setup->headings[i]);
+  xr_page_style_unref (old_ps);
 
   struct xr_fsm_style *old_fs = xr->fsm_style;
   xr->fsm_style = xmalloc (sizeof *xr->fsm_style);
   *xr->fsm_style = (struct xr_fsm_style) {
     .ref_cnt = 1,
-    .size = { [H] = ps->paper[H] * scale, [V] = ps->paper[V] * scale },
+    .size = { [H] = setup->paper[H] * scale, [V] = setup->paper[V] * scale },
     .min_break = {
-      [H] = ps->paper[H] * scale / 2,
-      [V] = ps->paper[V] * scale / 2,
+      [H] = setup->paper[H] * scale / 2,
+      [V] = setup->paper[V] * scale / 2,
     },
     .fg = old_fs->fg,
     .use_system_colors = old_fs->use_system_colors,
@@ -592,8 +603,8 @@ xr_update_page_setup (struct output_driver *driver,
     xr->fsm_style->fonts[i] = pango_font_description_copy (old_fs->fonts[i]);
   xr_fsm_style_unref (old_fs);
 
-  xr_set_surface_size (xr->dest_surface, xr->output_type, ps->paper[H] * 72.0,
-                       ps->paper[V] * 72.0);
+  xr_set_surface_size (xr->dest_surface, xr->output_type,
+                       setup->paper[H] * 72.0, setup->paper[V] * 72.0);
 }
 
 static void

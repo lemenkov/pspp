@@ -31,6 +31,9 @@ Changes from 1.4.1 to 1.5.2:
    - New driver option "trim" to remove empty space from PDF,
      PostScript, SVG, and PNG output files.
 
+   - The PDF output driver now adds an outline to allow PDF viewers to display
+     as a "table of contents" for the file.
+
    - The HTML output driver has a new option "bare".
 
  * New features in pspp-output:
