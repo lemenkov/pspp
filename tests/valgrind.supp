@@ -20,3 +20,42 @@
     ...
     fun:XML_ParseBuffer
 }
+{
+   fontconfig4
+   Memcheck:Leak
+   match-leak-kinds: possible
+   fun:calloc
+   fun:g_malloc0
+   fun:type_class_init_Wm
+   ...
+   fun:pango_fc_font_class_init
+   fun:pango_fc_font_class_intern_init
+   ...
+}
+
+# These are effectively static allocations by glib made at startup.
+{
+   g_type_register_static
+   Memcheck:Leak
+   match-leak-kinds: possible
+   ...
+   fun:g_type_register_static
+}
+{
+   g_type_register_fundamental
+   Memcheck:Leak
+   match-leak-kinds: possible
+   ...
+   fun:g_type_register_fundamental
+   ...
+}
+{
+   type_node_fundamental_new_W
+   Memcheck:Leak
+   match-leak-kinds: possible
+   ...
+   fun:type_node_fundamental_new_W
+   ...
+   fun:_dl_init
+   ...
+}
