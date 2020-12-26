@@ -12,7 +12,7 @@ msgstr ""
 "Project-Id-Version: pspp 1.4.1\n"
 "Report-Msgid-Bugs-To: pspp-dev@gnu.org\n"
 "POT-Creation-Date: 2020-09-05 12:34-0700\n"
-"PO-Revision-Date: 2020-12-16 01:44+0100\n"
+"PO-Revision-Date: 2020-12-18 03:10+0100\n"
 "Last-Translator: Stéphane Aulery <lkppo@free.fr>\n"
 "Language-Team: French <traduc@traduc.org>\n"
 "Language: fr\n"
@@ -5414,7 +5414,7 @@ msgstr "%s doit avoir un multiple de %d arguments dans la liste."
 #: src/language/expressions/parse.c:1124
 #, c-format
 msgid "%s function does not accept a minimum valid argument count."
-msgstr ""
+msgstr "La fonction %s n'accepte pas un nombre minimum d'arguments valides."
 
 #: src/language/expressions/parse.c:1133
 #, c-format
