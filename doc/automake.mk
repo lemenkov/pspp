@@ -117,6 +117,7 @@ FIGURE_SYNTAX = \
  doc/pspp-figures/chisquare.sps \
  doc/pspp-figures/compute.sps \
  doc/pspp-figures/count.sps \
+ doc/pspp-figures/crosstabs.sps \
  doc/pspp-figures/descriptives.sps \
  doc/pspp-figures/flip.sps \
  doc/pspp-figures/frequencies.sps \
@@ -295,6 +296,7 @@ $(top_srcdir)/doc/screenshots/chisquare.grab \
 $(top_srcdir)/doc/screenshots/count.grab \
 $(top_srcdir)/doc/screenshots/count-define.grab \
 $(top_srcdir)/doc/screenshots/compute.grab \
+$(top_srcdir)/doc/screenshots/crosstabs.grab \
 $(top_srcdir)/doc/screenshots/descriptives.grab \
 $(top_srcdir)/doc/screenshots/one-sample-t.grab \
 $(top_srcdir)/doc/screenshots/independent-samples-t.grab \

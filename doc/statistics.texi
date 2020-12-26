@@ -862,6 +862,59 @@ Approximate T is not calculated for symmetric uncertainty coefficient.
 
 Fixes for any of these deficiencies would be welcomed.
 
+@subsection Crosstabs Example
+
+@cindex chi-square test of independence
+
+A researcher wishes to know if, in an industry, a person's sex is related to
+the person's occupation.  To investigate this, she has determined that the
+@file{personnel.sav} is a representative, randomly selected sample of persons.
+The researcher's null hypothesis is that a person's sex has no relation to a
+person's occupation. She uses a chi-squared test of independence to investigate
+the hypothesis.
+
+@float Example, crosstabs:ex
+@psppsyntax {crosstabs.sps}
+@caption {Running crosstabs on the @exvar{sex} and @exvar{occupation} variables}
+@end float
+
+The syntax in @ref{crosstabs:ex} conducts a chi-squared test of independence.
+The line @code{/tables = occupation by sex} indicates that @exvar{occupation}
+and @exvar{sex} are the variables to be tabulated.  To do this using the @gui{}
+you must place these variable names respectively in the @samp{Row} and
+@samp{Column} fields as shown in @ref{crosstabs:scr}.
+
+@float Screenshot, crosstabs:scr
+@psppimage {crosstabs}
+@caption {The Crosstabs dialog box with the @exvar{sex} and @exvar{occupation} variables selected}
+@end float
+
+Similarly, the @samp{Cells} button shows a dialog box to select the @code{count}
+and @code{expected} options.  All other cell options can be deselected for this
+test.
+
+You would use the @samp{Format} and @samp{Statistics}  buttons to select options
+for the @subcmd{FORMAT} and @subcmd{STATISTICS} subcommands.  In this example,
+the @samp{Statistics} requires only the @samp{Chisq} option to be checked.  All
+other options should be unchecked.  No special settings are required from the
+@samp{Format} dialog.
+
+As shown in @ref{crosstabs:res} @cmd{CROSSTABS} generates a contingency table
+containing the observed count and the expected count of each sex and each
+occupation.  The expected count is the count which would be observed if the
+null hypothesis were true.
+
+The significance of the Pearson Chi-Square value is very much larger than the
+normally accepted value of 0.05 and so one cannot reject the null hypothesis.
+Thus the researcher must conclude that a person's sex has no relation to the
+person's occupation.
+
+@float Results, crosstabs:res
+@psppoutput {crosstabs}
+@caption {The results of a test of independence between @exvar{sex} and @exvar{occupation}}
+@end float
+
+
 @node FACTOR
 @section FACTOR
 
