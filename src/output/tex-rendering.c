@@ -18,6 +18,7 @@
 
 #include "tex-rendering.h"
 #include "tex-glyphs.h"
+#include <stdio.h>
 
 #include "libpspp/hmap.h"
 #include "libpspp/hash-functions.h"
