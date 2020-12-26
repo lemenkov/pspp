@@ -62,10 +62,10 @@ $(top_srcdir)/doc/screenshots/%-hc.xwd: src/ui/gui/psppire $(top_srcdir)/doc/scr
 
 
 %.png: %.xwd
-	convert $< $@
+	convert -strip $< $@
 
 %.eps: %.xwd
-	convert $< $@,tmp.eps
+	convert -strip $< $@,tmp.eps
 	sed -e '/^%%CreationDate: /d' -e '/^%%Title: /s|$(top_srcdir)/||'  $@,tmp.eps > $@
 
 $(src_ui_gui_psppiredir)/%.ui: $(top_srcdir)/src/ui/gui/%.ui
