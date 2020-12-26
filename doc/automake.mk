@@ -51,6 +51,7 @@ doc_pspp_TEXINFOS = doc/version.texi \
 doc_pspp_dev_TEXINFOS = doc/version-dev.texi \
 	doc/dev/intro.texi \
 	doc/dev/concepts.texi \
+	doc/dev/gui.texi \
 	doc/dev/syntax.texi \
 	doc/dev/data.texi \
 	doc/dev/i18n.texi \

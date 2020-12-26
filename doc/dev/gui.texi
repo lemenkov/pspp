@@ -1,0 +1,37 @@
+@c PSPP - a program for statistical analysis.
+@c Copyright (C) 2020 Free Software Foundation, Inc.
+@c Permission is granted to copy, distribute and/or modify this document
+@c under the terms of the GNU Free Documentation License, Version 1.3
+@c or any later version published by the Free Software Foundation;
+@c with no Invariant Sections, no Front-Cover Texts, and no Back-Cover Texts.
+@c A copy of the license is included in the section entitled "GNU
+@c Free Documentation License".
+@c
+
+@node Graphic User Interface
+@chapter Graphic User Interface
+
+Files pertaining to the GUI are found in the directory @file{src/ui/gui/}.
+
+The GUI uses the Gtk+ library.  Many parts are defined using GtkBuilder files
+which have a @samp{.ui} prefix.  These are XML files and as such can be editied
+using a text editor, which is often easiest when making small changes.  More
+substantial changes however are best done using Glade.  Since however PSPP
+has many custom defined widgets, Glade must be started with certain environment
+variables set.  The easiest way to run Glade with the correct variables is as follows:
+
+@example
+make src/ui/gui/glade-wrapper
+./src/ui/gui/glade-wrapper <name-of-gtk-builder-file>
+@end example
+
+
+If you create new custom widgets for use in PSPP you must do the following to
+make sure they are available to Glade:
+
+@itemize
+@item  Add a call to its @code{_get_type} function to @code{preregister_widgets} which
+       is found in @file{src/ui/gui/widgets.c}.
+@item Add the name of the module to @code{src_ui_gui_libwidgets_essential_la_SOURCES} in
+      @file{src/ui/gui/automake.mk}.
+@end itemize
