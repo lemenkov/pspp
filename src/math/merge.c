@@ -86,7 +86,7 @@ merge_append (struct merge *m, struct casereader *r)
 struct casereader *
 merge_make_reader (struct merge *m)
 {
-  struct casereader *r;
+  struct casereader *r = NULL;
 
   if (m->input_cnt > 1)
     do_merge (m);
