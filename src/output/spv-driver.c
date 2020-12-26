@@ -108,8 +108,12 @@ spv_submit (struct output_driver *driver,
         spv_writer_put_table (spv->writer, table_item->pt);
     }
   else if (is_text_item (output_item))
-    spv_writer_put_text (spv->writer, to_text_item (output_item),
-                         output_get_command_name ());
+    {
+      char *command_id = output_get_command_name ();
+      spv_writer_put_text (spv->writer, to_text_item (output_item),
+                           command_id);
+      free (command_id);
+    }
   else if (is_page_eject_item (output_item))
     spv_writer_eject_page (spv->writer);
   else if (is_page_setup_item (output_item))

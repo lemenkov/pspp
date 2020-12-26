@@ -148,7 +148,10 @@ default_look (const struct pivot_table_look *new)
     {
       char *error = pivot_table_look_read ("default.stt", &look);
       if (error)
-        look = pivot_table_look_ref (pivot_table_look_builtin_default ());
+        {
+          free (error);
+          look = pivot_table_look_ref (pivot_table_look_builtin_default ());
+        }
     }
   return look;
 }
@@ -175,10 +178,11 @@ pivot_table_look_read (const char *name, struct pivot_table_look **lookp)
   size_t n = 0;
   path[n++] = ".";
   const char *home = getenv ("HOME");
+  char *allocated = NULL;
   if (home != NULL)
-    path[n++] = xasprintf ("%s/.pspp/looks", home);
-  char *allocated;
-  path[n++] = relocate2 (PKGDATADIR "/looks", &allocated);
+    path[n++] = allocated = xasprintf ("%s/.pspp/looks", home);
+  char *allocated2;
+  path[n++] = relocate2 (PKGDATADIR "/looks", &allocated2);
   path[n++] = NULL;
 
   /* Search path. */
@@ -190,6 +194,7 @@ pivot_table_look_read (const char *name, struct pivot_table_look **lookp)
       free (name2);
     }
   free (allocated);
+  free (allocated2);
   if (!file)
     return xasprintf ("%s: not found", name);
 

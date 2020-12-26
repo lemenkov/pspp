@@ -607,20 +607,15 @@ parse_color__ (const char *s, struct cell_color *color)
 struct cell_color
 parse_color (struct driver_option *o)
 {
+  struct cell_color color = CELL_COLOR_BLACK;
+  parse_color__ (o->default_value, &color);
   if (o->value)
     {
-      struct cell_color color;
-      if (parse_color__ (o->value, &color))
-        return color;
-
-      msg (MW, _("%s: `%s' is `%s', which could not be parsed as a color"),
-           o->driver_name, o->name, o->value);
+      if (!parse_color__ (o->value, &color))
+        msg (MW, _("%s: `%s' is `%s', which could not be parsed as a color"),
+             o->driver_name, o->name, o->value);
     }
-
-  struct cell_color color;
-  if (parse_color__ (o->default_value, &color))
-    return color;
-
-  return (struct cell_color) CELL_COLOR_BLACK;
+  driver_option_destroy (o);
+  return color;
 }
 

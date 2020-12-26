@@ -641,7 +641,9 @@ void
 i18n_init (void)
 {
   setlocale (LC_ALL, "");
-  bindtextdomain (PACKAGE, relocate(locale_dir));
+  char *allocated;
+  bindtextdomain (PACKAGE, relocate2 (locale_dir, &allocated));
+  free (allocated);
   textdomain (PACKAGE);
 
   assert (default_encoding == NULL);

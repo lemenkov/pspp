@@ -467,6 +467,7 @@ decode_spvlb_area (const struct spvlb_area *in, struct table_area_style *out,
   if (error)
     return error;
 
+  table_area_style_uninit (out);
   *out = (struct table_area_style) {
     .font_style = {
       .bold = (in->style & 1) != 0,
