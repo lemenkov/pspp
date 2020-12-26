@@ -396,6 +396,8 @@ xr_report_error (cairo_status_t status, const char *file_name)
 static void
 xr_finish_page (struct xr_driver *xr)
 {
+  xr_pager_finish_page (xr->pager);
+
   /* For 'trim' true:
 
     - If the destination is PDF or PostScript, set the dest surface size, copy
@@ -525,6 +527,8 @@ xr_destroy (struct output_driver *driver)
   if (xr->pager)
     xr_finish_page (xr);
 
+  xr_pager_destroy (xr->pager);
+
   if (xr->drawing_surface && xr->drawing_surface != xr->dest_surface)
     cairo_surface_destroy (xr->drawing_surface);
   if (xr->dest_surface)
@@ -538,7 +542,6 @@ xr_destroy (struct output_driver *driver)
       cairo_surface_destroy (xr->dest_surface);
     }
 
-  xr_pager_destroy (xr->pager);
   xr_page_style_unref (xr->page_style);
   xr_fsm_style_unref (xr->fsm_style);
   free (xr);

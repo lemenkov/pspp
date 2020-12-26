@@ -298,17 +298,23 @@ xr_pager_add_page (struct xr_pager *p, cairo_t *cr)
   xr_pager_run (p);
 }
 
+void
+xr_pager_finish_page (struct xr_pager *p)
+{
+  if (p->cr)
+    {
+      cairo_restore (p->cr);
+      cairo_destroy (p->cr);
+      p->cr = NULL;
+    }
+}
+
 bool
 xr_pager_needs_new_page (struct xr_pager *p)
 {
   if (p->item && (!p->cr || p->y >= p->fsm_style->size[V]))
     {
-      if (p->cr)
-        {
-          cairo_restore (p->cr);
-          cairo_destroy (p->cr);
-          p->cr = NULL;
-        }
+      xr_pager_finish_page (p);
       return true;
     }
   else
