@@ -114,7 +114,7 @@ main (int argc, char **argv)
         }
 
       table = tables[n_tables - 1];
-      table_item_submit (table_item_create (table, NULL, NULL));
+      table_item_submit (table_item_create (table, NULL, NULL, NULL));
       free (tables);
     }
   else

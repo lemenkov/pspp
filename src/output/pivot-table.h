@@ -467,7 +467,7 @@ struct pivot_table
     struct pivot_value *subtype;  /* Same as spv_item's subtype. */
     struct pivot_value *corner_text;
     struct pivot_value *caption;
-    char *notes;
+    char *notes;                /* Shown as tooltip. */
 
     /* Dimensions. */
     struct pivot_dimension **dimensions;

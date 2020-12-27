@@ -485,7 +485,7 @@ static void
 ascii_output_text (struct ascii_driver *a, const char *text)
 {
   ascii_output_table_item_unref (
-    a, table_item_create (table_from_string (text), NULL, NULL));
+    a, table_item_create (table_from_string (text), NULL, NULL, NULL));
 }
 
 static void

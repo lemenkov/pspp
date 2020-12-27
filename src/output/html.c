@@ -505,7 +505,14 @@ html_output_table (struct html_driver *html, const struct table_item *item)
   bool tfoot = false;
   int y;
 
-  fputs ("<table>\n", html->file);
+  fputs ("<table", html->file);
+  if (item->notes)
+    {
+      fputs (" title=\"", html->file);
+      escape_string (html->file, item->notes, " ", "\n");
+      putc ('"', html->file);
+    }
+  fputs (">\n", html->file);
 
   const struct table_item_text *caption = table_item_get_caption (item);
   if (caption)

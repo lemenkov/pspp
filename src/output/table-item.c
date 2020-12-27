@@ -120,10 +120,11 @@ table_item_layers_destroy (struct table_item_layers *layers)
 }
 
 /* Initializes ITEM as a table item for rendering TABLE.  The new table item
-   initially has the specified TITLE and CAPTION, which may each be NULL.  The
-   caller retains ownership of TITLE and CAPTION. */
+   initially has the specified TITLE, CAPTION, and NOTES, which may each be
+   NULL.  The caller retains ownership of TITLE, CAPTION, and NOTES. */
 struct table_item *
-table_item_create (struct table *table, const char *title, const char *caption)
+table_item_create (struct table *table, const char *title, const char *caption,
+                   const char *notes)
 {
   struct table_item *item = xmalloc (sizeof *item);
   output_item_init (&item->output_item, &table_item_class);
@@ -131,6 +132,7 @@ table_item_create (struct table *table, const char *title, const char *caption)
   item->title = table_item_text_create (title);
   item->layers = NULL;
   item->caption = table_item_text_create (caption);
+  item->notes = notes ? xstrdup (notes) : NULL;
   item->pt = NULL;
   return item;
 }
@@ -208,6 +210,26 @@ table_item_set_caption (struct table_item *item,
   item->caption = table_item_text_clone (caption);
 }
 
+/* Returns ITEM's notes, which is a null pointer if ITEM has no notes. */
+const char *
+table_item_get_notes (const struct table_item *item)
+{
+  return item->notes;
+}
+
+/* Sets ITEM's notes to NOTES, replacing any previous notes.  Specify NULL for
+   NOTES to clear any notes from ITEM.  The caller retains ownership of
+   NOTES.
+
+   This function may only be used on a table_item that is unshared.*/
+void
+table_item_set_notes (struct table_item *item, const char *notes)
+{
+  assert (!table_item_is_shared (item));
+  free (item->notes);
+  item->notes = notes ? xstrdup (notes) : NULL;
+}
+
 /* Submits TABLE_ITEM to the configured output drivers, and transfers ownership
    to the output subsystem. */
 void
@@ -223,6 +245,7 @@ table_item_destroy (struct output_item *output_item)
   table_item_text_destroy (item->title);
   table_item_text_destroy (item->caption);
   table_item_layers_destroy (item->layers);
+  free (item->notes);
   pivot_table_unref (item->pt);
   table_unref (item->table);
   free (item);

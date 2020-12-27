@@ -451,7 +451,7 @@ pivot_table_submit_layer (const struct pivot_table *pt,
   free (column_enumeration);
   free (row_enumeration);
 
-  struct table_item *ti = table_item_create (table, NULL, NULL);
+  struct table_item *ti = table_item_create (table, NULL, NULL, pt->notes);
 
   if (pt->title)
     {
