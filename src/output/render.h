@@ -137,6 +137,13 @@ struct render_ops
                        int bb[TABLE_N_AXES][2], int valign_offset,
                        int spill[TABLE_N_AXES][2],
                        int clip[TABLE_N_AXES][2]);
+
+    /* Scales all output by FACTOR, e.g. a FACTOR of 0.5 would cause everything
+       subsequent to be drawn half-size.  FACTOR will be greater than 0 and
+       less than or equal to 1.
+
+       Optional.  If NULL, the rendering engine won't try to scale output. */
+    void (*scale) (void *aux, double factor);
   };
 
 /* An iterator for breaking render_pages into smaller chunks. */

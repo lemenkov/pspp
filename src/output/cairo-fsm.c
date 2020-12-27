@@ -514,6 +514,13 @@ xrr_adjust_break (void *xr_, const struct table_cell *cell,
   xr_layout_cell (xr, cell, bb, clip, &w, &h, &brk);
   return brk;
 }
+
+static void
+xrr_scale (void *xr_, double scale)
+{
+  struct xr_fsm *xr = xr_;
+  cairo_scale (xr->cairo, scale, scale);
+}
 
 static void
 xr_clip (struct xr_fsm *xr, int clip[TABLE_N_AXES][2])
@@ -995,6 +1002,7 @@ xr_fsm_create (const struct output_item *item_,
     .adjust_break = xrr_adjust_break,
     .draw_line = xrr_draw_line,
     .draw_cell = xrr_draw_cell,
+    .scale = xrr_scale,
   };
 
   enum { LW = XR_LINE_WIDTH, LS = XR_LINE_SPACE };

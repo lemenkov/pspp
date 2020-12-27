@@ -26,6 +26,7 @@
 #include "libpspp/hash-functions.h"
 #include "libpspp/hmap.h"
 #include "libpspp/pool.h"
+#include "output/pivot-table.h"
 #include "output/render.h"
 #include "output/table-item.h"
 #include "output/table.h"
@@ -78,8 +79,8 @@ struct render_page
        cp[H][2] = cp[H][1] + the width of the leftmost column.
        cp[H][3] = cp[H][2] + the width of the second-from-left vertical rule.
        and so on:
-       cp[H][2 * nc] = x position of the rightmost vertical rule.
-       cp[H][2 * nc + 1] = total table width including all rules.
+       cp[H][2 * n[H]] = x position of the rightmost vertical rule.
+       cp[H][2 * n[H] + 1] = total table width including all rules.
 
        Similarly, cp[V] represents y positions within the table.
        cp[V][0] = 0.
@@ -87,8 +88,8 @@ struct render_page
        cp[V][2] = cp[V][1] + the height of the topmost row.
        cp[V][3] = cp[V][2] + the height of the second-from-top horizontal rule.
        and so on:
-       cp[V][2 * nr] = y position of the bottommost horizontal rule.
-       cp[V][2 * nr + 1] = total table height including all rules.
+       cp[V][2 * n[V]] = y position of the bottommost horizontal rule.
+       cp[V][2 * n[V] + 1] = total table height including all rules.
 
        Rules and columns can have width or height 0, in which case consecutive
        values in this array are equal. */
@@ -186,6 +187,13 @@ static int
 axis_width (const struct render_page *page, int axis, int ofs0, int ofs1)
 {
   return page->cp[axis][ofs1] - page->cp[axis][ofs0];
+}
+
+/* Returns the total width of PAGE along AXIS. */
+static int
+table_width (const struct render_page *page, int axis)
+{
+  return page->cp[axis][2 * page->n[axis] + 1];
 }
 
 /* Returns the width of the headers in PAGE along AXIS. */
@@ -1473,6 +1481,7 @@ cell_is_breakable (const struct render_break *b, int cell)
 struct render_pager
   {
     const struct render_params *params;
+    double scale;
 
     /* An array of "render_page"s to be rendered, in order, vertically.  From
        the user's perspective, there's only one table per render_pager, but the
@@ -1570,31 +1579,54 @@ render_pager_create (const struct render_params *params,
 {
   const struct table *table = table_item_get_table (table_item);
 
-  struct render_pager *p = xzalloc (sizeof *p);
-  p->params = params;
-
+  /* Figure out the width of the body of the table.  Use this to determine the
+     base scale. */
   struct render_page *page = render_page_create (params, table_ref (table), 0);
-  struct render_break b;
-  render_break_init (&b, page, H);
-  struct render_page *subpage = render_break_next (&b, p->params->size[H]);
-  int title_width = subpage ? subpage->cp[H][2 * subpage->n[H] + 1] : 0;
-  render_page_unref (subpage);
-  render_break_destroy (&b);
+  int body_width = table_width (page, H);
+  double scale = 1.0;
+  if (body_width > params->size[H])
+    {
+      if (table_item->pt
+          && table_item->pt->look->shrink_to_fit[H]
+          && params->ops->scale)
+        scale = params->size[H] / (double) body_width;
+      else
+        {
+          struct render_break b;
+          render_break_init (&b, page, H);
+          struct render_page *subpage
+            = render_break_next (&b, params->size[H]);
+          body_width = subpage ? subpage->cp[H][2 * subpage->n[H] + 1] : 0;
+          render_page_unref (subpage);
+          render_break_destroy (&b);
+        }
+    }
 
-  /* Title. */
-  add_text_page (p, table_item_get_title (table_item), title_width);
-
-  /* Layers. */
-  add_layers_page (p, table_item_get_layers (table_item), title_width);
-
-  /* Body. */
+  /* Create the pager. */
+  struct render_pager *p = xmalloc (sizeof *p);
+  *p = (struct render_pager) { .params = params, .scale = scale };
+  add_text_page (p, table_item_get_title (table_item), body_width);
+  add_layers_page (p, table_item_get_layers (table_item), body_width);
   render_pager_add_table (p, table_ref (table_item_get_table (table_item)), 0);
-
-  /* Caption. */
   add_text_page (p, table_item_get_caption (table_item), 0);
-
-  /* Footnotes. */
   add_footnote_page (p, table_item);
+
+  /* If we're shrinking tables to fit the page length, then adjust the scale
+     factor.
+
+     XXX This will sometimes shrink more than needed, because adjusting the
+     scale factor allows for cells to be "wider", which means that sometimes
+     they won't break across as much vertical space, thus shrinking the table
+     vertically more than the scale would imply.  Shrinking only as much as
+     necessary would require an iterative search. */
+  if (table_item->pt && table_item->pt->look->shrink_to_fit[V])
+    {
+      int total_height = 0;
+      for (size_t i = 0; i < p->n_pages; i++)
+        total_height += table_width (p->pages[i], V);
+      if (total_height * p->scale >= params->size[V])
+        p->scale *= params->size[V] / (double) total_height;
+    }
 
   render_pager_start_page (p);
 
@@ -1639,7 +1671,8 @@ render_pager_has_next (const struct render_pager *p_)
         }
       else
         render_break_init (
-          &p->y_break, render_break_next (&p->x_break, p->params->size[H]), V);
+          &p->y_break, render_break_next (&p->x_break,
+                                          p->params->size[H] / p->scale), V);
     }
   return true;
 }
@@ -1653,6 +1686,12 @@ render_pager_has_next (const struct render_pager *p_)
 int
 render_pager_draw_next (struct render_pager *p, int space)
 {
+  if (p->scale != 1.0)
+    {
+      p->params->ops->scale (p->params->aux, p->scale);
+      space /= p->scale;
+    }
+
   int ofs[TABLE_N_AXES] = { 0, 0 };
   size_t start_page = SIZE_MAX;
 
@@ -1671,6 +1710,10 @@ render_pager_draw_next (struct render_pager *p, int space)
       ofs[V] += render_page_get_size (page, V);
       render_page_unref (page);
     }
+
+  if (p->scale != 1.0)
+    ofs[V] *= p->scale;
+
   return ofs[V];
 }
 
