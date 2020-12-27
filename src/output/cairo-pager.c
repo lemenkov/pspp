@@ -322,6 +322,14 @@ xr_pager_add_page (struct xr_pager *p, cairo_t *cr)
                             fs->size[H], fs->size[V] + ps->object_spacing,
                             fs->font_resolution);
 
+  cairo_surface_t *surface = cairo_get_target (cr);
+  if (cairo_surface_get_type (surface) == CAIRO_SURFACE_TYPE_PDF)
+    {
+      char *page_label = xasprintf ("%d", page_number);
+      cairo_pdf_surface_set_page_label (surface, page_label);
+      free (page_label);
+    }
+
   xr_pager_run (p);
 }
 
