@@ -1619,7 +1619,9 @@ render_pager_create (const struct render_params *params,
      they won't break across as much vertical space, thus shrinking the table
      vertically more than the scale would imply.  Shrinking only as much as
      necessary would require an iterative search. */
-  if (table_item->pt && table_item->pt->look->shrink_to_fit[V])
+  if (table_item->pt
+      && table_item->pt->look->shrink_to_fit[V]
+      && params->ops->scale)
     {
       int total_height = 0;
       for (size_t i = 0; i < p->n_pages; i++)
