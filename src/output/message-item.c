@@ -20,6 +20,7 @@
 
 #include <stdlib.h>
 
+#include "libpspp/i18n.h"
 #include "libpspp/message.h"
 #include "output/driver.h"
 #include "output/output-item-provider.h"
@@ -27,15 +28,17 @@
 
 #include "gl/xalloc.h"
 
+#include "gettext.h"
+#define _(msgid) gettext (msgid)
+
 struct message_item *
 message_item_create (const struct msg *msg)
 {
-  struct message_item *item;
-
-  item = xmalloc (sizeof *msg);
-  output_item_init (&item->output_item, &message_item_class);
-  item->msg = msg_dup (msg);
-
+  struct message_item *item = xmalloc (sizeof *msg);
+  *item = (struct message_item) {
+    .output_item = OUTPUT_ITEM_INITIALIZER (&message_item_class),
+    .msg = msg_dup (msg)
+  };
   return item;
 }
 
@@ -49,9 +52,20 @@ struct text_item *
 message_item_to_text_item (struct message_item *message_item)
 {
   struct text_item *text_item = text_item_create_nocopy (
-    TEXT_ITEM_LOG, msg_to_string (message_item_get_msg (message_item)));
+    TEXT_ITEM_LOG,
+    msg_to_string (message_item_get_msg (message_item)),
+    xstrdup (output_item_get_label (message_item_super (message_item))));
   message_item_unref (message_item);
   return text_item;
+}
+
+static const char *
+message_item_get_label (const struct output_item *output_item)
+{
+  const struct message_item *item = to_message_item (output_item);
+  return (item->msg->severity == MSG_S_ERROR ? _("Error")
+          : item->msg->severity == MSG_S_WARNING ? _("Warning")
+          : _("Note"));
 }
 
 static void
@@ -72,6 +86,6 @@ message_item_submit (struct message_item *item)
 
 const struct output_item_class message_item_class =
   {
-    "message",
+    message_item_get_label,
     message_item_destroy,
   };

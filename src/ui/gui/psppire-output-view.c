@@ -84,9 +84,9 @@ struct psppire_output_view
 
 enum
   {
-    COL_NAME,                   /* Table name. */
+    COL_LABEL,                  /* Output item label. */
     COL_ADDR,                   /* Pointer to the table */
-    COL_Y,                      /* Y position of top of name. */
+    COL_Y,                      /* Y position of top of object. */
     N_COLS
   };
 
@@ -405,7 +405,6 @@ psppire_output_view_put (struct psppire_output_view *view,
 {
   struct output_view_item *view_item;
   GtkWidget *drawing_area;
-  struct string name;
   int tw, th;
 
   if (is_group_close_item (item))
@@ -473,8 +472,6 @@ psppire_output_view_put (struct psppire_output_view *view,
       GtkTreeStore *store = GTK_TREE_STORE (
         gtk_tree_view_get_model (view->overview));
 
-      ds_init_empty (&name);
-
       /* Create a new node in the tree and puts a reference to it in 'iter'. */
       GtkTreeIter iter;
       GtkTreeIter parent;
@@ -493,45 +490,11 @@ psppire_output_view_put (struct psppire_output_view *view,
                                                      &iter);
         }
 
-      ds_clear (&name);
-      if (is_text_item (item))
-        {
-          const struct text_item *text_item = to_text_item (item);
-          ds_put_cstr (&name, text_item_type_to_string (
-                         text_item_get_type (text_item)));
-        }
-      else if (is_message_item (item))
-        {
-          const struct message_item *msg_item = to_message_item (item);
-          const struct msg *msg = message_item_get_msg (msg_item);
-          ds_put_format (&name, "%s: %s", _("Message"),
-                         msg_severity_to_string (msg->severity));
-        }
-      else if (is_table_item (item))
-        {
-          const struct table_item_text *title
-            = table_item_get_title (to_table_item (item));
-          if (title != NULL)
-            ds_put_format (&name, "Table: %s", title->content);
-          else
-            ds_put_cstr (&name, "Table");
-        }
-      else if (is_chart_item (item))
-        {
-          const char *s = chart_item_get_title (to_chart_item (item));
-          if (s != NULL)
-            ds_put_format (&name, "Chart: %s", s);
-          else
-            ds_put_cstr (&name, "Chart");
-        }
-      else if (is_group_open_item (item))
-        ds_put_cstr (&name, to_group_open_item (item)->command_name);
       gtk_tree_store_set (store, &iter,
-                          COL_NAME, ds_cstr (&name),
+                          COL_LABEL, output_item_get_label (item),
 			  COL_ADDR, item,
-                          COL_Y, (view->y),
+                          COL_Y, view->y,
                           -1);
-      ds_destroy (&name);
 
       GtkTreePath *path = gtk_tree_model_get_path (
         GTK_TREE_MODEL (store), &iter);
@@ -877,7 +840,7 @@ psppire_output_view_new (GtkLayout *output, GtkTreeView *overview)
 
       model = GTK_TREE_MODEL (gtk_tree_store_new (
                                 N_COLS,
-                                G_TYPE_STRING,  /* COL_NAME */
+                                G_TYPE_STRING,  /* COL_LABEL */
                                 G_TYPE_POINTER, /* COL_ADDR */
                                 G_TYPE_LONG));  /* COL_Y */
       gtk_tree_view_set_model (overview, model);
@@ -887,7 +850,7 @@ psppire_output_view_new (GtkLayout *output, GtkTreeView *overview)
       gtk_tree_view_append_column (GTK_TREE_VIEW (overview), column);
       renderer = gtk_cell_renderer_text_new ();
       gtk_tree_view_column_pack_start (column, renderer, TRUE);
-      gtk_tree_view_column_add_attribute (column, renderer, "text", COL_NAME);
+      gtk_tree_view_column_add_attribute (column, renderer, "text", COL_LABEL);
 
       g_signal_connect (GTK_TREE_VIEW (overview),
                         "row-activated", G_CALLBACK (on_row_activate), view);

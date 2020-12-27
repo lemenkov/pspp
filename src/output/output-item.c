@@ -25,6 +25,8 @@
 #include "libpspp/cast.h"
 
 #include "gl/xalloc.h"
+
+#include "gettext.h"
 
 /* Increases ITEM's reference count, indicating that it has an additional
    owner.  An output item that is shared among multiple owners must not be
@@ -46,7 +48,11 @@ output_item_unref (struct output_item *item)
     {
       assert (item->ref_cnt > 0);
       if (--item->ref_cnt == 0)
-        item->class->destroy (item);
+        {
+          char *label = item->label;
+          item->class->destroy (item);
+          free (label);
+        }
     }
 }
 
@@ -57,17 +63,34 @@ output_item_is_shared (const struct output_item *item)
 {
   return item->ref_cnt > 1;
 }
-
-/* Initializes ITEM as an output item of the specified CLASS, initially with a
-   reference count of 1.
 
-   An output item is an abstract class, that is, a plain output_item is not
-   useful on its own.  Thus, this function is normally called from the
-   initialization function of some subclass of output_item. */
-void
-output_item_init (struct output_item *item,
-                  const struct output_item_class *class)
+/* Returns the label for ITEM, which the caller must not modify or free. */
+const char *
+output_item_get_label (const struct output_item *item)
 {
-  item->class = class;
-  item->ref_cnt = 1;
+  return item->label ? item->label : item->class->get_label (item);
+}
+
+/* Sets the label for ITEM to LABEL.  The caller retains ownership of LABEL.
+   If LABEL is nonnull, it overrides any previously set label and the default
+   label.  If LABEL is null, ITEM will now use its default label.
+
+   ITEM must not be shared. */
+void
+output_item_set_label (struct output_item *item, const char *label)
+{
+  output_item_set_label_nocopy (item, label ? xstrdup (label) : NULL);
+}
+
+/* Sets the label for ITEM to LABEL, transferring ownership of LABEL to ITEM.
+   If LABEL is nonnull, it overrides any previously set label and the default
+   label.  If LABEL is null, ITEM will now use its default label.
+
+   ITEM must not be shared. */
+void
+output_item_set_label_nocopy (struct output_item *item, char *label)
+{
+  assert (!output_item_is_shared (item));
+  free (item->label);
+  item->label = label;
 }

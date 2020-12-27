@@ -25,11 +25,16 @@
 
 #include "gl/xalloc.h"
 
+#include "gettext.h"
+#define _(msgid) gettext (msgid)
+
 struct page_eject_item *
 page_eject_item_create (void)
 {
   struct page_eject_item *item = xmalloc (sizeof *item);
-  output_item_init (&item->output_item, &page_eject_item_class);
+  *item = (struct page_eject_item) {
+    .output_item = OUTPUT_ITEM_INITIALIZER (&page_eject_item_class),
+  };
   return item;
 }
 
@@ -41,6 +46,12 @@ page_eject_item_submit (struct page_eject_item *item)
   output_submit (&item->output_item);
 }
 
+static const char *
+page_eject_item_get_label (const struct output_item *output_item UNUSED)
+{
+  return _("Page Break");
+}
+
 static void
 page_eject_item_destroy (struct output_item *output_item)
 {
@@ -49,6 +60,6 @@ page_eject_item_destroy (struct output_item *output_item)
 
 const struct output_item_class page_eject_item_class =
   {
-    "page_eject",
+    page_eject_item_get_label,
     page_eject_item_destroy,
   };

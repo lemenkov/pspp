@@ -451,27 +451,8 @@ xr_pager_run (struct xr_pager *p)
                     }
                   p->n_opens = 0;
 
-                  const char *text;
-                  if (is_table_item (p->item))
-                    {
-                      const struct table_item_text *title
-                        = table_item_get_title (to_table_item (p->item));
-                      text = title ? title->content : "Table";
-                    }
-                  else if (is_chart_item (p->item))
-                    {
-                      const char *title
-                        = chart_item_get_title (to_chart_item (p->item));
-                      text = title ? title : "Chart";
-                    }
-                  else
-                    text = (is_page_eject_item (p->item) ? "Page Break"
-                            : is_page_setup_item (p->item) ? "Page Setup"
-                            : is_message_item (p->item) ? "Message"
-                            : is_text_item (p->item) ? "Text"
-                            : NULL);
-                  if (text)
-                    add_outline (p->cr, parent_group_id, text, attrs, 0);
+                  add_outline (p->cr, parent_group_id,
+                               output_item_get_label (p->item), attrs, 0);
                   free (attrs);
                 }
               free (dest_name);

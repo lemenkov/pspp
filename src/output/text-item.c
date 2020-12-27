@@ -34,6 +34,7 @@
 
 #include "gettext.h"
 #define _(msgid) gettext (msgid)
+#define N_(msgid) msgid
 
 const char *
 text_item_type_to_string (enum text_item_type type)
@@ -55,40 +56,31 @@ text_item_type_to_string (enum text_item_type type)
     }
 }
 
-/* Creates and returns a new text item containing TEXT and the specified TYPE.
-   The new text item takes ownership of TEXT. */
+/* Creates and returns a new text item containing TEXT and the specified TYPE
+   and LABEL.  The new text item takes ownership of TEXT and LABEL.  If LABEL
+   is NULL, uses the default label for TYPE. */
 struct text_item *
-text_item_create_nocopy (enum text_item_type type, char *text)
+text_item_create_nocopy (enum text_item_type type, char *text, char *label)
 {
   struct text_item *item = xzalloc (sizeof *item);
-  output_item_init (&item->output_item, &text_item_class);
-  item->text = text;
-  item->type = type;
+  *item = (struct text_item) {
+    .output_item = OUTPUT_ITEM_INITIALIZER (&text_item_class),
+    .output_item.label = label,
+    .text = text,
+    .type = type,
+  };
   return item;
 }
 
 /* Creates and returns a new text item containing a copy of TEXT and the
-   specified TYPE.  The caller retains ownership of TEXT. */
+   specified TYPE and LABEL.  The caller retains ownership of TEXT and LABEL.
+   If LABEL is null, uses a default label for TYPE. */
 struct text_item *
-text_item_create (enum text_item_type type, const char *text)
+text_item_create (enum text_item_type type, const char *text,
+                  const char *label)
 {
-  return text_item_create_nocopy (type, xstrdup (text));
-}
-
-/* Creates and returns a new text item containing a copy of FORMAT, which is
-   formatted as if by printf(), and the specified TYPE.  The caller retains
-   ownership of FORMAT. */
-struct text_item *
-text_item_create_format (enum text_item_type type, const char *format, ...)
-{
-  struct text_item *item;
-  va_list args;
-
-  va_start (args, format);
-  item = text_item_create_nocopy (type, xvasprintf (format, args));
-  va_end (args);
-
-  return item;
+  return text_item_create_nocopy (type, xstrdup (text),
+                                  label ? xstrdup (label) : NULL);
 }
 
 /* Returns ITEM's type. */
@@ -111,6 +103,62 @@ void
 text_item_submit (struct text_item *item)
 {
   output_submit (&item->output_item);
+}
+
+struct text_item *
+text_item_unshare (struct text_item *old)
+{
+  assert (old->output_item.ref_cnt > 0);
+  if (!text_item_is_shared (old))
+    return old;
+  text_item_unref (old);
+
+  struct text_item *new = xmalloc (sizeof *new);
+  *new = (struct text_item) {
+    .output_item = OUTPUT_ITEM_CLONE_INITIALIZER (&old->output_item),
+    .text = xstrdup (old->text),
+    .type = old->type,
+    .bold = old->bold,
+    .italic = old->italic,
+    .underline = old->underline,
+    .markup = old->markup,
+    .typeface = old->typeface ? xstrdup (old->typeface) : NULL,
+    .size = old->size
+  };
+  return new;
+}
+
+/* Attempts to append the text in SRC to DST.  If successful, returns true,
+   otherwise false.
+
+   Only TEXT_ITEM_SYNTAX and TEXT_ITEM_LOG items can be combined, and not with
+   each other.
+
+   DST must not be shared. */
+bool
+text_item_append (struct text_item *dst, const struct text_item *src)
+{
+  assert (!text_item_is_shared (dst));
+  if (dst->type != src->type
+      || (dst->type != TEXT_ITEM_SYNTAX && dst->type != TEXT_ITEM_LOG)
+      || strcmp (output_item_get_label (&dst->output_item),
+                 output_item_get_label (&src->output_item))
+      || dst->bold != src->bold
+      || dst->italic != src->italic
+      || dst->underline != src->underline
+      || dst->markup
+      || src->markup
+      || strcmp (dst->typeface ? dst->typeface : "",
+                 src->typeface ? src->typeface : "")
+      || dst->size != src->size)
+    return false;
+  else
+    {
+      char *new_text = xasprintf ("%s\n%s", dst->text, src->text);
+      free (dst->text);
+      dst->text = new_text;
+      return true;
+    }
 }
 
 struct table_item *
@@ -142,6 +190,13 @@ text_item_to_table_item (struct text_item *text_item)
   return table_item;
 }
 
+static const char *
+text_item_get_label (const struct output_item *output_item)
+{
+  const struct text_item *item = to_text_item (output_item);
+  return text_item_type_to_string (item->type);
+}
+
 static void
 text_item_destroy (struct output_item *output_item)
 {
@@ -153,6 +208,6 @@ text_item_destroy (struct output_item *output_item)
 
 const struct output_item_class text_item_class =
   {
-    "text",
+    text_item_get_label,
     text_item_destroy,
   };

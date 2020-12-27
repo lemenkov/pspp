@@ -20,27 +20,32 @@
 
 #include <stdlib.h>
 
+#include "libpspp/compiler.h"
 #include "output/driver.h"
 #include "output/output-item-provider.h"
 
 #include "gl/xalloc.h"
 
+#include "gettext.h"
+#define _(msgid) gettext (msgid)
+
 struct group_open_item *
-group_open_item_create (const char *command_name)
+group_open_item_create (const char *command_name, const char *label)
 {
   return group_open_item_create_nocopy (
-    command_name ? xstrdup (command_name) : NULL);
+    command_name ? xstrdup (command_name) : NULL,
+    label ? xstrdup (label) : NULL);
 }
 
 struct group_open_item *
-group_open_item_create_nocopy (char *command_name)
+group_open_item_create_nocopy (char *command_name, char *label)
 {
-  struct group_open_item *item;
-
-  item = xmalloc (sizeof *item);
-  output_item_init (&item->output_item, &group_open_item_class);
-  item->command_name = command_name;
-
+  struct group_open_item *item = xmalloc (sizeof *item);
+  *item = (struct group_open_item) {
+    .output_item = OUTPUT_ITEM_INITIALIZER (&group_open_item_class),
+    .output_item.label = label,
+    .command_name = command_name,
+  };
   return item;
 }
 
@@ -50,6 +55,14 @@ void
 group_open_item_submit (struct group_open_item *item)
 {
   output_submit (&item->output_item);
+}
+
+static const char *
+group_open_item_get_label (const struct output_item *output_item)
+{
+  struct group_open_item *item = to_group_open_item (output_item);
+
+  return item->command_name ? item->command_name : _("Group");
 }
 
 static void
@@ -63,18 +76,17 @@ group_open_item_destroy (struct output_item *output_item)
 
 const struct output_item_class group_open_item_class =
   {
-    "group_open",
+    group_open_item_get_label,
     group_open_item_destroy,
   };
 
 struct group_close_item *
 group_close_item_create (void)
 {
-  struct group_close_item *item;
-
-  item = xmalloc (sizeof *item);
-  output_item_init (&item->output_item, &group_close_item_class);
-
+  struct group_close_item *item = xmalloc (sizeof *item);
+  *item = (struct group_close_item) {
+    .output_item = OUTPUT_ITEM_INITIALIZER (&group_close_item_class),
+  };
   return item;
 }
 
@@ -84,6 +96,13 @@ void
 group_close_item_submit (struct group_close_item *item)
 {
   output_submit (&item->output_item);
+}
+
+static const char *
+group_close_item_get_label (const struct output_item *output_item UNUSED)
+{
+  /* Not marked for translation: user should never see it. */
+  return "Group Close";
 }
 
 static void
@@ -96,6 +115,6 @@ group_close_item_destroy (struct output_item *output_item)
 
 const struct output_item_class group_close_item_class =
   {
-    "group_close",
+    group_close_item_get_label,
     group_close_item_destroy,
   };

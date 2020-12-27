@@ -50,14 +50,16 @@ struct text_item
     int size;
   };
 
-struct text_item *text_item_create (enum text_item_type, const char *text);
-struct text_item *text_item_create_nocopy (enum text_item_type, char *text);
-struct text_item *text_item_create_format (enum text_item_type,
-                                           const char *format, ...)
-  PRINTF_FORMAT (2, 3);
+struct text_item *text_item_create (enum text_item_type,
+                                    const char *text, const char *label);
+struct text_item *text_item_create_nocopy (enum text_item_type,
+                                           char *text, char *label);
 
 enum text_item_type text_item_get_type (const struct text_item *);
 const char *text_item_get_text (const struct text_item *);
+
+struct text_item *text_item_unshare (struct text_item *);
+bool text_item_append (struct text_item *dst, const struct text_item *src);
 
 struct table_item *text_item_to_table_item (struct text_item *);
 

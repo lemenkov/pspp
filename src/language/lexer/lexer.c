@@ -1444,7 +1444,8 @@ lex_source_get__ (const struct lex_source *src_)
 
       /* Submit the line as syntax. */
       text_item_submit (text_item_create_nocopy (TEXT_ITEM_SYNTAX,
-                                                 xmemdup0 (line, copy_len)));
+                                                 xmemdup0 (line, copy_len),
+                                                 NULL));
 
       src->journal_pos += line_len;
     }

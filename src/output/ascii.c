@@ -608,8 +608,10 @@ ascii_submit (struct output_driver *driver,
         {
           struct text_item *text_item;
 
-          text_item = text_item_create_format (
-            TEXT_ITEM_LOG, _("See %s for a chart."), file_name);
+          text_item = text_item_create_nocopy (
+            TEXT_ITEM_LOG,
+            xasprintf (_("See %s for a chart."), file_name),
+            NULL);
 
           ascii_submit (driver, &text_item->output_item);
           text_item_unref (text_item);

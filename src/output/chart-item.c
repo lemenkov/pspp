@@ -29,6 +29,9 @@
 
 #include "gl/xalloc.h"
 
+#include "gettext.h"
+#define _(msgid) gettext (msgid)
+
 /* Initializes ITEM as a chart item of the specified CLASS.  The new chart item
    initially has the specified TITLE, which may be NULL if no title is yet
    available.  The caller retains ownership of TITLE.
@@ -40,9 +43,11 @@ void
 chart_item_init (struct chart_item *item, const struct chart_item_class *class,
                  const char *title)
 {
-  output_item_init (&item->output_item, &chart_item_class);
-  item->class = class;
-  item->title = title != NULL ? xstrdup (title) : NULL;
+  *item = (struct chart_item) {
+    .output_item = OUTPUT_ITEM_INITIALIZER (&chart_item_class),
+    .class = class,
+    .title = title ? xstrdup (title) : NULL
+  };
 }
 
 /* Returns ITEM's title, which is a null pointer if no title has been set. */
@@ -73,6 +78,13 @@ chart_item_submit (struct chart_item *item)
   output_submit (&item->output_item);
 }
 
+static const char *
+chart_item_get_label (const struct output_item *output_item)
+{
+  const struct chart_item *item = to_chart_item (output_item);
+  return item->title ? item->title : _("Chart");
+}
+
 static void
 chart_item_destroy (struct output_item *output_item)
 {
@@ -84,6 +96,6 @@ chart_item_destroy (struct output_item *output_item)
 
 const struct output_item_class chart_item_class =
   {
-    "chart",
+    chart_item_get_label,
     chart_item_destroy,
   };

@@ -199,7 +199,7 @@ do_parse_command (struct lexer *lexer,
       goto finish;
     }
   group_open_item_submit (group_open_item_create_nocopy (
-                            utf8_to_title (command->name)));
+                            utf8_to_title (command->name), NULL));
   opened = true;
 
   if (command->function == NULL)

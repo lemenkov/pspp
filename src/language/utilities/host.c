@@ -261,7 +261,8 @@ run_command (const char *command, struct timespec timeout)
       if (end > output && end[-1] == '\n')
         end[-1] = '\0';
 
-      text_item_submit (text_item_create_nocopy (TEXT_ITEM_LOG, output));
+      text_item_submit (text_item_create_nocopy (TEXT_ITEM_LOG, output,
+                                                 xstrdup (_("Host Output"))));
     }
   free (locale_output);
 

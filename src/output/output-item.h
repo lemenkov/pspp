@@ -19,16 +19,8 @@
 
 /* Output items.
 
-   An output item is a self-contained chunk of output.  The
-   following kinds of output items currently exist:
-
-        - Tables (see output/table-item.h).
-
-        - Charts (see output/chart-item.h).
-
-        - Text strings (see output/text-item.h).
-
-        - Messages (see output/message-item.h).
+   An output item is a self-contained chunk of output.  Several kinds of output
+   items exist.  See *-item.h for details.
 */
 
 #include <stdbool.h>
@@ -43,10 +35,21 @@ struct output_item
        indicated by a reference count greater than 1.  When this is the case,
        the output item must not be modified. */
     int ref_cnt;
+
+    /* The localized label for the item that appears in the outline pane in the
+       PSPPIRE output viewer and in PDF outlines.  This is NULL if no label has
+       been explicitly set.
+
+       Use output_item_get_label() to read an item's label. */
+    char *label;
   };
 
 struct output_item *output_item_ref (const struct output_item *);
 void output_item_unref (struct output_item *);
 bool output_item_is_shared (const struct output_item *);
+
+const char *output_item_get_label (const struct output_item *);
+void output_item_set_label (struct output_item *, const char *);
+void output_item_set_label_nocopy (struct output_item *, char *);
 
 #endif /* output/output-item.h */

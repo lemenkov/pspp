@@ -54,8 +54,7 @@ struct output_engine
   {
     struct ll ll;                  /* Node for this engine. */
     struct llx_list drivers;       /* Contains "struct output_driver"s. */
-    struct string deferred_text;   /* Output text being accumulated. */
-    enum text_item_type deferred_type; /* Type of text being accumulated. */
+    struct text_item *deferred_text;   /* Output text being accumulated. */
     char *command_name;            /* Name of command being processed. */
     char *title, *subtitle;        /* Components of page title. */
 
@@ -101,7 +100,6 @@ output_engine_push (void)
   struct output_engine *e = xzalloc (sizeof (*e));
 
   llx_init (&e->drivers);
-  ds_init_empty (&e->deferred_text);
 
   string_map_init (&e->heading_vars);
 
@@ -124,7 +122,7 @@ output_engine_pop (void)
       struct output_driver *d = llx_pop_head (&e->drivers, &llx_malloc_mgr);
       output_driver_destroy (d);
     }
-  ds_destroy (&e->deferred_text);
+  text_item_unref (e->deferred_text);
   free (e->command_name);
   free (e->title);
   free (e->subtitle);
@@ -180,40 +178,30 @@ output_submit__ (struct output_engine *e, struct output_item *item)
 static void
 flush_deferred_text (struct output_engine *e)
 {
-  if (!ds_is_empty (&e->deferred_text))
+  struct text_item *deferred_text = e->deferred_text;
+  if (deferred_text)
     {
-      char *text = ds_steal_cstr (&e->deferred_text);
-      output_submit__ (e, text_item_super (text_item_create_nocopy (
-                                             e->deferred_type, text)));
+      e->deferred_text = NULL;
+      output_submit__ (e, text_item_super (deferred_text));
     }
 }
 
 static bool
-defer_text (struct output_engine *e, struct output_item *item)
+defer_text (struct output_engine *e, struct output_item *output_item)
 {
-  if (!is_text_item (item))
+  if (!is_text_item (output_item))
     return false;
 
-  struct text_item *text_item = to_text_item (item);
-  if (text_item->markup)        /* XXX */
-    return false;
-
-  enum text_item_type type = text_item_get_type (text_item);
-  if (type != TEXT_ITEM_SYNTAX && type != TEXT_ITEM_LOG)
-    return false;
-
-  if (!ds_is_empty (&e->deferred_text) && e->deferred_type != type)
-    flush_deferred_text (e);
-
-  e->deferred_type = type;
-
-  if (!ds_is_empty (&e->deferred_text))
-    ds_put_byte (&e->deferred_text, '\n');
-
-  const char *text = text_item_get_text (text_item);
-  ds_put_cstr (&e->deferred_text, text);
-  output_item_unref (item);
-
+  struct text_item *text = to_text_item (output_item);
+  if (!e->deferred_text)
+    e->deferred_text = text_item_unshare (text);
+  else if (text_item_append (e->deferred_text, text))
+    text_item_unref (text);
+  else
+    {
+      flush_deferred_text (e);
+      e->deferred_text = text_item_unshare (text);
+    }
   return true;
 }
 
@@ -326,7 +314,7 @@ output_set_title__ (struct output_engine *e, char **dst, const char *src)
        : e->subtitle ? xstrdup (e->subtitle)
        : xzalloc (1));
   text_item_submit (text_item_create_nocopy (TEXT_ITEM_PAGE_TITLE,
-                                             page_title));
+                                             page_title, NULL));
 }
 
 void

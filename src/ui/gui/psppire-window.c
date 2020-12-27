@@ -766,7 +766,8 @@ dump_heading_transition (const struct spv_item *old,
     group_close_item_submit (group_close_item_create ());
   for (size_t i = common; i < new_path.n; i++)
     group_open_item_submit (group_open_item_create (
-                              new_path.nodes[i]->command_id));
+                              new_path.nodes[i]->command_id,
+                              new_path.nodes[i]->label));
 
   free_path (&old_path);
   free_path (&new_path);

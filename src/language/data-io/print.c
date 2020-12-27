@@ -564,7 +564,8 @@ print_text_flush_records (struct print_trns *trns, struct u8_line *line,
 
       if (trns->writer == NULL)
         text_item_submit (text_item_create (TEXT_ITEM_LOG,
-                                            ds_cstr (&line->s) + 1));
+                                            ds_cstr (&line->s) + 1,
+                                            NULL));
       else
         {
           size_t len = ds_length (&line->s);

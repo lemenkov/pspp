@@ -29,6 +29,9 @@
 
 #include "gl/xalloc.h"
 
+#include "gettext.h"
+#define _(msgid) gettext (msgid)
+
 struct table_item_text *
 table_item_text_create (const char *content)
 {
@@ -78,7 +81,7 @@ table_item_layer_copy (struct table_item_layer *dst,
                             src->n_footnotes * sizeof *src->footnotes);
   dst->n_footnotes = src->n_footnotes;
 }
-
+ 
 void
 table_item_layer_uninit (struct table_item_layer *layer)
 {
@@ -127,13 +130,13 @@ table_item_create (struct table *table, const char *title, const char *caption,
                    const char *notes)
 {
   struct table_item *item = xmalloc (sizeof *item);
-  output_item_init (&item->output_item, &table_item_class);
-  item->table = table;
-  item->title = table_item_text_create (title);
-  item->layers = NULL;
-  item->caption = table_item_text_create (caption);
-  item->notes = notes ? xstrdup (notes) : NULL;
-  item->pt = NULL;
+  *item = (struct table_item) {
+    .output_item = OUTPUT_ITEM_INITIALIZER (&table_item_class),
+    .table = table,
+    .title = table_item_text_create (title),
+    .caption = table_item_text_create (caption),
+    .notes = notes ? xstrdup (notes) : NULL,
+  };
   return item;
 }
 
@@ -238,6 +241,15 @@ table_item_submit (struct table_item *table_item)
   output_submit (&table_item->output_item);
 }
 
+static const char *
+table_item_get_label (const struct output_item *output_item)
+{
+  const struct table_item *item = to_table_item (output_item);
+  return (item->title && item->title->content
+          ? item->title->content
+          : _("Table"));
+}
+
 static void
 table_item_destroy (struct output_item *output_item)
 {
@@ -253,6 +265,6 @@ table_item_destroy (struct output_item *output_item)
 
 const struct output_item_class table_item_class =
   {
-    "table",
+    table_item_get_label,
     table_item_destroy,
   };

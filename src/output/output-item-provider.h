@@ -25,13 +25,22 @@
    instance of output_item. */
 struct output_item_class
   {
-    const char *name;
+    /* Returns the localized label to use for ITEM.  This is only called when
+       ITEM does not have an explicitly set label, that is, when 'item->label'
+       is NULL. */
+    const char *(*get_label) (const struct output_item *item);
 
     /* Destroys and frees ITEM.  Called when output_item_unref() drops ITEM's
        reference count to 0. */
     void (*destroy) (struct output_item *item);
   };
 
-void output_item_init (struct output_item *, const struct output_item_class *);
+#define OUTPUT_ITEM_INITIALIZER(CLASS) { .class = CLASS, .ref_cnt = 1 }
+#define OUTPUT_ITEM_CLONE_INITIALIZER(SRC)                      \
+  {                                                             \
+    .class = (SRC)->class,                                      \
+    .ref_cnt = 1,                                               \
+    .label = (SRC)->label ? xstrdup ((SRC)->label) : NULL,      \
+  }
 
 #endif /* output/output-item-provider.h */

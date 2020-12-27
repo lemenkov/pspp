@@ -522,8 +522,10 @@ do_reliability (struct casereader *input, struct dataset *ds,
 	alpha (s->n_items, s->sum_of_variances, s->variance_of_sums);
     }
 
-  text_item_submit (text_item_create_format (TEXT_ITEM_TITLE, _("Scale: %s"),
-                                             ds_cstr (&rel->scale_name)));
+  text_item_submit (text_item_create_nocopy (
+                      TEXT_ITEM_TITLE,
+                      xasprintf (_("Scale: %s"), ds_cstr (&rel->scale_name)),
+                      NULL));
 
   case_processing_summary (n_valid, n_missing, dataset_dict (ds));
 }

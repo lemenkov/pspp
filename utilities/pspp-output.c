@@ -92,10 +92,14 @@ dump_item (const struct spv_item *item)
     {
       const char *x = item->xml_member;
       const char *b = item->bin_member;
+
+      /* The strings below are not marked for translation because they are only
+         useful to developers. */
       char *s = (x && b
-                 ? xasprintf (_("%s and %s:"), x, b)
+                 ? xasprintf ("%s and %s:", x, b)
                  : xasprintf ("%s:", x ? x : b));
-      text_item_submit (text_item_create_nocopy (TEXT_ITEM_TITLE, s));
+      text_item_submit (text_item_create_nocopy (TEXT_ITEM_TITLE, s,
+                                                 xstrdup ("Member Names")));
     }
 
   switch (spv_item_get_type (item))
@@ -268,7 +272,8 @@ dump_heading_transition (const struct spv_item *old,
     group_close_item_submit (group_close_item_create ());
   for (size_t i = common; i < new_path.n; i++)
     group_open_item_submit (group_open_item_create (
-                              new_path.nodes[i]->command_id));
+                              new_path.nodes[i]->command_id,
+                              new_path.nodes[i]->label));
 
   free_path (&old_path);
   free_path (&new_path);

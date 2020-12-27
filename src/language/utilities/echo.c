@@ -24,6 +24,9 @@
 
 #include "gl/xalloc.h"
 
+#include "gettext.h"
+#define _(msgid) gettext (msgid)
+
 /* Echos a string to the output stream */
 int
 cmd_echo (struct lexer *lexer, struct dataset *ds UNUSED)
@@ -31,7 +34,8 @@ cmd_echo (struct lexer *lexer, struct dataset *ds UNUSED)
   if (!lex_force_string (lexer))
     return CMD_FAILURE;
 
-  text_item_submit (text_item_create (TEXT_ITEM_LOG, lex_tokcstr (lexer)));
+  text_item_submit (text_item_create (TEXT_ITEM_LOG, lex_tokcstr (lexer),
+                                      _("Echo")));
   lex_get (lexer);
 
   return CMD_SUCCESS;

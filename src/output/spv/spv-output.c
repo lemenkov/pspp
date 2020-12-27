@@ -35,7 +35,8 @@ spv_text_submit (const struct spv_item *in)
   const struct pivot_value *value = spv_item_get_text (in);
   char *text = pivot_value_to_string (value, SETTINGS_VALUE_SHOW_DEFAULT,
                                       SETTINGS_VALUE_SHOW_DEFAULT);
-  struct text_item *item = text_item_create_nocopy (type, text);
+  char *label = in->label ? xstrdup (in->label) : NULL;
+  struct text_item *item = text_item_create_nocopy (type, text, label);
   const struct font_style *font = value->font_style;
   if (font)
     {

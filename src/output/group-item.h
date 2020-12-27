@@ -29,11 +29,17 @@
 struct group_open_item
   {
     struct output_item output_item;
+
+    /* Locale-invariant name of the command that produced the enclosed output.
+       May be NULL if the group doesn't enclose a particular command's
+       output. */
     char *command_name;
   };
 
-struct group_open_item *group_open_item_create (const char *command_name);
-struct group_open_item *group_open_item_create_nocopy (char *command_name);
+struct group_open_item *group_open_item_create (const char *command_name,
+                                                const char *label);
+struct group_open_item *group_open_item_create_nocopy (char *command_name,
+                                                       char *label);
 
 /* A group_close item. */
 struct group_close_item
