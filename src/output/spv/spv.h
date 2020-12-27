@@ -157,7 +157,7 @@ size_t spv_item_get_n_children (const struct spv_item *);
 struct spv_item *spv_item_get_child (const struct spv_item *, size_t idx);
 
 bool spv_item_is_table (const struct spv_item *);
-struct pivot_table *spv_item_get_table (const struct spv_item *);
+const struct pivot_table *spv_item_get_table (const struct spv_item *);
 
 bool spv_item_is_text (const struct spv_item *);
 const struct pivot_value *spv_item_get_text (const struct spv_item *);

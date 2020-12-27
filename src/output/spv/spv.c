@@ -849,7 +849,7 @@ pivot_table_open_legacy (struct spv_item *item)
   return error;
 }
 
-struct pivot_table *
+const struct pivot_table *
 spv_item_get_table (const struct spv_item *item_)
 {
   struct spv_item *item = CONST_CAST (struct spv_item *, item_);
@@ -1196,7 +1196,10 @@ spv_item_set_table_look (struct spv_item *item,
      (We can't just set item->table_look because light tables ignore it and
      legacy tables sometimes override it.) */
   if (spv_item_is_table (item))
-    pivot_table_set_look (spv_item_get_table (item), look);
+    {
+      spv_item_load (item);
+      pivot_table_set_look (item->table, look);
+    }
 
   for (size_t i = 0; i < item->n_children; i++)
     spv_item_set_table_look (item->children[i], look);

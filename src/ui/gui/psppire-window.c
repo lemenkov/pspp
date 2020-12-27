@@ -796,7 +796,7 @@ read_spv_file (const char *filename)
       if (items[i]->type == SPV_ITEM_TEXT)
         spv_text_submit (items[i]);
       else if (items[i]->type == SPV_ITEM_TABLE)
-        pivot_table_submit (spv_item_get_table (items[i]));
+        pivot_table_submit (pivot_table_ref (spv_item_get_table (items[i])));
       prev_heading = heading;
     }
   dump_heading_transition (prev_heading, spv_get_root (spv));
