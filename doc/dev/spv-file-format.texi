@@ -319,7 +319,7 @@ heading
 @end example
 
 The root of a structure member is a @code{heading}, which represents a
-section of output beginning with a title (the @code{label}) and
+section of output beginning with a @code{label} and
 ordinarily followed by content containers or further nested
 (sub)-sections of output.  Unlike heading elements in HTML and other
 common document formats, which precede the content that they head,
@@ -398,17 +398,21 @@ label => TEXT
 @end example
 
 Every @code{heading} and @code{container} holds a @code{label} as its
-first child.  The root @code{heading} in a structure member always
-contains the string ``Output'' (localized).  Otherwise, the text in
-@code{label} describes what it labels, often by naming the statistical
-procedure that was executed, e.g.@: ``Frequencies'' or ``T-Test''.
-Labels are often very generic, especially within a @code{container},
-e.g.@: ``Title'' or ``Warnings'' or ``Notes''.  Label text is
-localized according to the output language, e.g.@: in Italian a
-frequency table procedure is labeled ``Frequenze''.
+first child.  The label text is what appears in the outline pane of
+the GUI's viewer window.  PSPP also puts it into the outline of PDF
+output.  The label text doesn't appear in the output itself.
 
-The corpus contains a few examples of empty labels, ones that contain
-no text.
+The text in @code{label} describes what it labels, often by naming the
+statistical procedure that was executed, e.g.@: ``Frequencies'' or
+``T-Test''.  The root @code{heading} in a structure member is normally
+``Output''.  Labels are often very generic, especially within a
+@code{container}, e.g.@: ``Title'' or ``Warnings'' or ``Notes''.
+Label text is localized according to the output language, e.g.@: in
+Italian a frequency table procedure is labeled ``Frequenze''.
+
+The user can edit labels to be anything they want.  The corpus
+contains a few examples of empty labels, ones that contain no text,
+probably as a result of user editing.
 
 @node SPV Structure container Element
 @subsection The @code{container} Element
@@ -1271,8 +1275,9 @@ user-specified Keeps.  They seems to indicate a conversion from rows
 or columns to pixel or point offsets.
 
 @code{notes} is a text string that contains user-specified notes.  It
-is displayed when the user hovers the cursor over the table, like
-``alt text'' on a webpage.  It is not printed.  It is usually empty.
+is displayed when the user hovers the cursor over the table, like text
+in the @code{title} attribute in HTML.  It is not printed.  It is
+usually empty.
 
 @code{table-look} is the name of a SPSS ``TableLook'' table style,
 such as ``Default'' or ``Academic''; it is often empty.
