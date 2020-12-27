@@ -60,6 +60,10 @@
 #include "gettext.h"
 #define _(msgid) gettext (msgid)
 
+/* This file uses TABLE_HORZ and TABLE_VERT enough to warrant abbreviating. */
+#define H TABLE_HORZ
+#define V TABLE_VERT
+
 /* The desired maximum line length in the TeX file.  */
 #define TEX_LINE_MAX 80
 
@@ -435,11 +439,11 @@ tex_output_table (struct tex_driver *tex, const struct table_item *item)
   shipout (&tex->token_list, "\\offinterlineskip\\halign{\\strut%%\n");
 
   /* Generate the preamble */
-  for (int x = 0; x < table_nc (t); ++x)
+  for (int x = 0; x < t->n[H]; ++x)
     {
-      shipout (&tex->token_list, "{\\vbox{\\cell{%d}#}}", table_nc (t));
+      shipout (&tex->token_list, "{\\vbox{\\cell{%d}#}}", t->n[H]);
 
-      if (x < table_nc (t) - 1)
+      if (x < t->n[H] - 1)
         {
           shipout (&tex->token_list, "\\hskip\\psppcolumnspace\\hfil");
           shipout (&tex->token_list, "&\\vrule\n");
@@ -449,13 +453,13 @@ tex_output_table (struct tex_driver *tex, const struct table_item *item)
     }
 
   /* Emit the row data */
-  for (int y = 0; y < table_nr (t); y++)
+  for (int y = 0; y < t->n[V]; y++)
     {
-      bool is_column_header = (y < table_ht (t)
-                               || y >= table_nr (t) - table_hb (t));
+      enum { H = TABLE_HORZ, V = TABLE_VERT };
+      bool is_column_header = y < t->h[V][0] || y >= t->n[V] - t->h[V][1];
       int prev_x = -1;
       int skipped = 0;
-      for (int x = 0; x < table_nc (t);)
+      for (int x = 0; x < t->n[H];)
         {
           struct table_cell cell;
 
@@ -472,11 +476,10 @@ tex_output_table (struct tex_driver *tex, const struct table_item *item)
           if (x != cell.d[TABLE_HORZ][0] || y != cell.d[TABLE_VERT][0])
             goto next_1;
 
-          /* bool is_header = (y < table_ht (t) */
-          /*                   || y >= table_nr (t) - table_hb (t) */
-          /*                   || x < table_hl (t) */
-          /*                   || x >= table_nc (t) - table_hr (t)); */
-
+          /* bool is_header = (y < t->h[V][0] */
+          /*                   || y >= t->n[V] - t->h[V][1] */
+          /*                   || x < t->h[H][0] */
+          /*                   || x >= t->n[H] - t->h[H][1]); */
 
           enum table_halign halign =
             table_halign_interpret (cell.style->cell_style.halign,

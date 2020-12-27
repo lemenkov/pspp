@@ -35,6 +35,10 @@
 
 #include "gl/xalloc.h"
 
+/* This file uses TABLE_HORZ and TABLE_VERT enough to warrant abbreviating. */
+#define H TABLE_HORZ
+#define V TABLE_VERT
+
 /* Increases TABLE's reference count, indicating that it has an additional
    owner.  An table that is shared among multiple owners must not be
    modified. */
@@ -129,10 +133,10 @@ table_collect_footnotes (const struct table_item *item,
   size_t n = 0;
 
   struct table *t = item->table;
-  for (int y = 0; y < table_nr (t); y++)
+  for (int y = 0; y < t->n[V]; y++)
     {
       struct table_cell cell;
-      for (int x = 0; x < table_nc (t); x = cell.d[TABLE_HORZ][1])
+      for (int x = 0; x < t->n[H]; x = cell.d[TABLE_HORZ][1])
         {
           table_get_cell (t, x, y, &cell);
 
@@ -358,27 +362,27 @@ table_vline (struct table *t, int style, int x, int y1, int y2)
 {
   if (debugging)
     {
-      if (x < 0 || x > table_nc (t)
-          || y1 < 0 || y1 >= table_nr (t)
-          || y2 < 0 || y2 >= table_nr (t))
+      if (x < 0 || x > t->n[H]
+          || y1 < 0 || y1 >= t->n[V]
+          || y2 < 0 || y2 >= t->n[V])
         {
           printf ("bad vline: x=%d y=(%d,%d) in table size (%d,%d)\n",
-                  x, y1, y2, table_nc (t), table_nr (t));
+                  x, y1, y2, t->n[H], t->n[V]);
           return;
         }
     }
 
   assert (x >= 0);
-  assert (x <= table_nc (t));
+  assert (x <= t->n[H]);
   assert (y1 >= 0);
   assert (y2 >= y1);
-  assert (y2 <= table_nr (t));
+  assert (y2 <= t->n[V]);
 
   if (style != -1)
     {
       int y;
       for (y = y1; y <= y2; y++)
-        t->rv[x + (table_nc (t) + 1) * y] = style;
+        t->rv[x + (t->n[H] + 1) * y] = style;
     }
 }
 
@@ -389,27 +393,27 @@ table_hline (struct table *t, int style, int x1, int x2, int y)
 {
   if (debugging)
     {
-      if (y < 0 || y > table_nr (t)
-          || x1 < 0 || x1 >= table_nc (t)
-          || x2 < 0 || x2 >= table_nc (t))
+      if (y < 0 || y > t->n[V]
+          || x1 < 0 || x1 >= t->n[H]
+          || x2 < 0 || x2 >= t->n[H])
         {
           printf ("bad hline: x=(%d,%d) y=%d in table size (%d,%d)\n",
-                  x1, x2, y, table_nc (t), table_nr (t));
+                  x1, x2, y, t->n[H], t->n[V]);
           return;
         }
     }
 
   assert (y >= 0);
-  assert (y <= table_nr (t));
+  assert (y <= t->n[V]);
   assert (x2 >= x1);
   assert (x1 >= 0);
-  assert (x2 < table_nc (t));
+  assert (x2 < t->n[H]);
 
   if (style != -1)
     {
       int x;
       for (x = x1; x <= x2; x++)
-        t->rh[x + table_nc (t) * y] = style;
+        t->rh[x + t->n[H] * y] = style;
     }
 }
 
@@ -425,13 +429,13 @@ table_box (struct table *t, int f_h, int f_v, int i_h, int i_v,
 {
   if (debugging)
     {
-      if (x1 < 0 || x1 >= table_nc (t)
-          || x2 < 0 || x2 >= table_nc (t)
-          || y1 < 0 || y1 >= table_nr (t)
-          || y2 < 0 || y2 >= table_nr (t))
+      if (x1 < 0 || x1 >= t->n[H]
+          || x2 < 0 || x2 >= t->n[H]
+          || y1 < 0 || y1 >= t->n[V]
+          || y2 < 0 || y2 >= t->n[V])
         {
           printf ("bad box: (%d,%d)-(%d,%d) in table size (%d,%d)\n",
-                  x1, y1, x2, y2, table_nc (t), table_nr (t));
+                  x1, y1, x2, y2, t->n[H], t->n[V]);
           NOT_REACHED ();
         }
     }
@@ -440,16 +444,16 @@ table_box (struct table *t, int f_h, int f_v, int i_h, int i_v,
   assert (y2 >= y1);
   assert (x1 >= 0);
   assert (y1 >= 0);
-  assert (x2 < table_nc (t));
-  assert (y2 < table_nr (t));
+  assert (x2 < t->n[H]);
+  assert (y2 < t->n[V]);
 
   if (f_h != -1)
     {
       int x;
       for (x = x1; x <= x2; x++)
         {
-          t->rh[x + table_nc (t) * y1] = f_h;
-          t->rh[x + table_nc (t) * (y2 + 1)] = f_h;
+          t->rh[x + t->n[H] * y1] = f_h;
+          t->rh[x + t->n[H] * (y2 + 1)] = f_h;
         }
     }
   if (f_v != -1)
@@ -457,8 +461,8 @@ table_box (struct table *t, int f_h, int f_v, int i_h, int i_v,
       int y;
       for (y = y1; y <= y2; y++)
         {
-          t->rv[x1 + (table_nc (t) + 1) * y] = f_v;
-          t->rv[(x2 + 1) + (table_nc (t) + 1) * y] = f_v;
+          t->rv[x1 + (t->n[H] + 1) * y] = f_v;
+          t->rv[(x2 + 1) + (t->n[H] + 1) * y] = f_v;
         }
     }
 
@@ -471,7 +475,7 @@ table_box (struct table *t, int f_h, int f_v, int i_h, int i_v,
           int x;
 
           for (x = x1; x <= x2; x++)
-            t->rh[x + table_nc (t) * y] = i_h;
+            t->rh[x + t->n[H] * y] = i_h;
         }
     }
   if (i_v != -1)
@@ -483,7 +487,7 @@ table_box (struct table *t, int f_h, int f_v, int i_h, int i_v,
           int y;
 
           for (y = y1; y <= y2; y++)
-            t->rv[x + (table_nc (t) + 1) * y] = i_v;
+            t->rv[x + (t->n[H] + 1) * y] = i_v;
         }
     }
 }
@@ -495,21 +499,21 @@ do_table_text (struct table *table, int c, int r, unsigned opt, char *text)
 {
   assert (c >= 0);
   assert (r >= 0);
-  assert (c < table_nc (table));
-  assert (r < table_nr (table));
+  assert (c < table->n[H]);
+  assert (r < table->n[V]);
 
   if (debugging)
     {
-      if (c < 0 || r < 0 || c >= table_nc (table) || r >= table_nr (table))
+      if (c < 0 || r < 0 || c >= table->n[H] || r >= table->n[V])
         {
           printf ("table_text(): bad cell (%d,%d) in table size (%d,%d)\n",
-                  c, r, table_nc (table), table_nr (table));
+                  c, r, table->n[H], table->n[V]);
           return;
         }
     }
 
-  table->cc[c + r * table_nc (table)] = text;
-  table->ct[c + r * table_nc (table)] = opt;
+  table->cc[c + r * table->n[H]] = text;
+  table->ct[c + r * table->n[H]] = opt;
 }
 
 /* Sets cell (C,R) in TABLE, with options OPT, to have text value
@@ -543,19 +547,19 @@ add_joined_cell (struct table *table, int x1, int y1, int x2, int y2,
   assert (y1 >= 0);
   assert (y2 >= y1);
   assert (x2 >= x1);
-  assert (y2 < table_nr (table));
-  assert (x2 < table_nc (table));
+  assert (y2 < table->n[V]);
+  assert (x2 < table->n[H]);
 
   if (debugging)
     {
-      if (x1 < 0 || x1 >= table_nc (table)
-          || y1 < 0 || y1 >= table_nr (table)
-          || x2 < x1 || x2 >= table_nc (table)
-          || y2 < y1 || y2 >= table_nr (table))
+      if (x1 < 0 || x1 >= table->n[H]
+          || y1 < 0 || y1 >= table->n[V]
+          || x2 < x1 || x2 >= table->n[H]
+          || y2 < y1 || y2 >= table->n[V])
         {
           printf ("table_joint_text(): bad cell "
                   "(%d,%d)-(%d,%d) in table size (%d,%d)\n",
-                  x1, y1, x2, y2, table_nc (table), table_nr (table));
+                  x1, y1, x2, y2, table->n[H], table->n[V]);
           return NULL;
         }
     }
@@ -570,9 +574,9 @@ add_joined_cell (struct table *table, int x1, int y1, int x2, int y2,
     .options = opt,
   };
 
-  void **cc = &table->cc[x1 + y1 * table_nc (table)];
-  unsigned short *ct = &table->ct[x1 + y1 * table_nc (table)];
-  const int ofs = table_nc (table) - (x2 - x1);
+  void **cc = &table->cc[x1 + y1 * table->n[H]];
+  unsigned short *ct = &table->ct[x1 + y1 * table->n[H]];
+  const int ofs = table->n[H] - (x2 - x1);
   for (int y = y1; y < y2; y++)
     {
       for (int x = x1; x < x2; x++)
@@ -604,7 +608,7 @@ table_joint_text (struct table *table, int x1, int y1, int x2, int y2,
 static struct table_cell *
 get_joined_cell (struct table *table, int x, int y)
 {
-  int index = x + y * table_nc (table);
+  int index = x + y * table->n[H];
   unsigned short opt = table->ct[index];
   struct table_cell *cell;
 
@@ -694,7 +698,7 @@ table_add_style (struct table *table, int x, int y,
 bool
 table_cell_is_empty (const struct table *table, int c, int r)
 {
-  return table->cc[c + r * table_nc (table)] == NULL;
+  return table->cc[c + r * table->n[H]] == NULL;
 }
 
 /* Initializes CELL with the contents of the table cell at column X and row Y
@@ -708,7 +712,7 @@ table_get_cell (const struct table *t, int x, int y, struct table_cell *cell)
   assert (x >= 0 && x < t->n[TABLE_HORZ]);
   assert (y >= 0 && y < t->n[TABLE_VERT]);
 
-  int index = x + y * table_nc (t);
+  int index = x + y * t->n[H];
   unsigned short opt = t->ct[index];
   const void *cc = t->cc[index];
 
@@ -778,8 +782,8 @@ table_get_rule (const struct table *table, enum table_axis axis, int x, int y,
   assert (y >= 0 && y < table->n[TABLE_VERT] + (axis == TABLE_VERT));
 
   uint8_t raw = (axis == TABLE_VERT
-                 ? table->rh[x + table_nc (table) * y]
-                 : table->rv[x + (table_nc (table) + 1) * y]);
+                 ? table->rh[x + table->n[H] * y]
+                 : table->rv[x + (table->n[H] + 1) * y]);
   struct cell_color *p = table->rule_colors[(raw & TAB_RULE_STYLE_MASK)
                                             >> TAB_RULE_STYLE_SHIFT];
   *color = p ? *p : (struct cell_color) CELL_COLOR_BLACK;

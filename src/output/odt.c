@@ -51,6 +51,10 @@
 
 #define _xml(X) (CHAR_CAST (const xmlChar *, X))
 
+/* This file uses TABLE_HORZ and TABLE_VERT enough to warrant abbreviating. */
+#define H TABLE_HORZ
+#define V TABLE_VERT
+
 struct odt_driver
 {
   struct output_driver driver;
@@ -476,29 +480,29 @@ write_table (struct odt_driver *odt, const struct table_item *item)
 
   /* Start column definitions */
   xmlTextWriterStartElement (odt->content_wtr, _xml("table:table-column"));
-  xmlTextWriterWriteFormatAttribute (odt->content_wtr, _xml("table:number-columns-repeated"), "%d", table_nc (tab));
+  xmlTextWriterWriteFormatAttribute (odt->content_wtr, _xml("table:number-columns-repeated"), "%d", tab->n[H]);
   xmlTextWriterEndElement (odt->content_wtr);
 
 
   /* Deal with row headers */
-  if (table_ht (tab) > 0)
+  if (tab->h[V][0] > 0)
     xmlTextWriterStartElement (odt->content_wtr, _xml("table:table-header-rows"));
 
 
   /* Write all the rows */
-  for (r = 0 ; r < table_nr (tab); ++r)
+  for (r = 0 ; r < tab->n[V]; ++r)
     {
       /* Start row definition */
       xmlTextWriterStartElement (odt->content_wtr, _xml("table:table-row"));
 
       /* Write all the columns */
-      for (c = 0 ; c < table_nc (tab) ; ++c)
+      for (c = 0 ; c < tab->n[H] ; ++c)
 	{
           struct table_cell cell;
 
           table_get_cell (tab, c, r, &cell);
 
-          if (c == cell.d[TABLE_HORZ][0] && r == cell.d[TABLE_VERT][0])
+          if (c == cell.d[H][0] && r == cell.d[V][0])
             {
               int colspan = table_cell_colspan (&cell);
               int rowspan = table_cell_rowspan (&cell);
@@ -518,7 +522,7 @@ write_table (struct odt_driver *odt, const struct table_item *item)
 
               xmlTextWriterStartElement (odt->content_wtr, _xml("text:p"));
 
-              if (r < table_ht (tab) || c < table_hl (tab))
+              if (r < tab->h[V][0] || c < tab->h[H][0])
                 xmlTextWriterWriteAttribute (odt->content_wtr, _xml("text:style-name"), _xml("Table_20_Heading"));
               else
                 xmlTextWriterWriteAttribute (odt->content_wtr, _xml("text:style-name"), _xml("Table_20_Contents"));
@@ -548,7 +552,8 @@ write_table (struct odt_driver *odt, const struct table_item *item)
 
       xmlTextWriterEndElement (odt->content_wtr); /* row */
 
-      if (table_ht (tab) > 0 && r == table_ht (tab) - 1)
+      int ht = tab->h[V][0];
+      if (ht > 0 && r == ht - 1)
 	xmlTextWriterEndElement (odt->content_wtr); /* table-header-rows */
     }
 

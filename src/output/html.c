@@ -51,6 +51,10 @@
 #include "gettext.h"
 #define _(msgid) gettext (msgid)
 
+/* This file uses TABLE_HORZ and TABLE_VERT enough to warrant abbreviating. */
+#define H TABLE_HORZ
+#define V TABLE_VERT
+
 struct html_driver
   {
     struct output_driver driver;
@@ -448,7 +452,7 @@ put_tfoot (struct html_driver *html, const struct table *t, bool *tfoot)
     {
       fputs ("<tfoot>\n", html->file);
       fputs ("<tr>\n", html->file);
-      fprintf (html->file, "<td colspan=%d>\n", table_nc (t));
+      fprintf (html->file, "<td colspan=%d>\n", t->n[H]);
       *tfoot = true;
     }
   else
@@ -553,12 +557,12 @@ html_output_table (struct html_driver *html, const struct table_item *item)
 
   fputs ("<tbody>\n", html->file);
 
-  for (y = 0; y < table_nr (t); y++)
+  for (y = 0; y < t->n[V]; y++)
     {
       int x;
 
       fputs ("<tr>\n", html->file);
-      for (x = 0; x < table_nc (t);)
+      for (x = 0; x < t->n[H];)
         {
           struct table_cell cell;
           const char *tag;
@@ -568,10 +572,10 @@ html_output_table (struct html_driver *html, const struct table_item *item)
             goto next_1;
 
           /* output <td> or <th> tag. */
-          bool is_header = (y < table_ht (t)
-                       || y >= table_nr (t) - table_hb (t)
-                       || x < table_hl (t)
-                       || x >= table_nc (t) - table_hr (t));
+          bool is_header = (y < t->h[V][0]
+                            || y >= t->n[V] - t->h[V][1]
+                            || x < t->h[H][0]
+                            || x >= t->n[H] - t->h[H][1]);
           tag = is_header ? "th" : "td";
           fprintf (html->file, "<%s", tag);
 
@@ -610,7 +614,7 @@ html_output_table (struct html_driver *html, const struct table_item *item)
 	      int top = table_get_rule (t, TABLE_VERT, x, y, &color);
               put_border (style, top, "top");
 
-	      if (y + rowspan == table_nr (t))
+	      if (y + rowspan == t->n[V])
 		{
 		  int bottom = table_get_rule (t, TABLE_VERT, x, y + rowspan,
                                            &color);
@@ -620,7 +624,7 @@ html_output_table (struct html_driver *html, const struct table_item *item)
 	      int left = table_get_rule (t, TABLE_HORZ, x, y, &color);
               put_border (style, left, "left");
 
-	      if (x + colspan == table_nc (t))
+	      if (x + colspan == t->n[V])
 		{
 		  int right = table_get_rule (t, TABLE_HORZ, x + colspan, y,
                                           &color);

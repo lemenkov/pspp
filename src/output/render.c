@@ -714,8 +714,8 @@ render_page_create (const struct render_params *params, struct table *table,
 {
   enum { MIN, MAX };
 
-  int nc = table_nc (table);
-  int nr = table_nr (table);
+  int nc = table->n[H];
+  int nr = table->n[V];
 
   /* Figure out rule widths. */
   int *rules[TABLE_N_AXES];
@@ -790,7 +790,7 @@ render_page_create (const struct render_params *params, struct table *table,
   /* Decide final column widths. */
   int table_widths[2];
   for (int i = 0; i < 2; i++)
-    table_widths[i] = calculate_table_width (table_nc (table),
+    table_widths[i] = calculate_table_width (table->n[H],
                                              columns[i], rules[H]);
 
   struct render_page *page;

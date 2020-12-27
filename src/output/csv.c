@@ -215,9 +215,9 @@ csv_submit (struct output_driver *driver,
         csv_output_table_item_text (csv, table_item_get_title (table_item),
                                     "Table");
 
-      for (y = 0; y < table_nr (t); y++)
+      for (y = 0; y < t->n[TABLE_VERT]; y++)
         {
-          for (x = 0; x < table_nc (t); x++)
+          for (x = 0; x < t->n[TABLE_HORZ]; x++)
             {
               struct table_cell cell;
 

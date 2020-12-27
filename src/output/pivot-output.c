@@ -423,29 +423,29 @@ pivot_table_submit_layer (const struct pivot_table *pt,
                pt->corner_text, footnotes,
                pt->show_values, pt->show_variables, false);
 
-  if (table_nc (table) && table_nr (table))
+  if (table->n[H] && table->n[V])
     {
       table_hline (
         table, get_table_rule (pt->look->borders, PIVOT_BORDER_INNER_TOP),
-        0, table_nc (table) - 1, 0);
+        0, table->n[H] - 1, 0);
       table_hline (
         table, get_table_rule (pt->look->borders, PIVOT_BORDER_INNER_BOTTOM),
-        0, table_nc (table) - 1, table_nr (table));
+        0, table->n[H] - 1, table->n[V]);
       table_vline (
         table, get_table_rule (pt->look->borders, PIVOT_BORDER_INNER_LEFT),
-        0, 0, table_nr (table) - 1);
+        0, 0, table->n[V] - 1);
       table_vline (
         table, get_table_rule (pt->look->borders, PIVOT_BORDER_INNER_RIGHT),
-        table_nc (table), 0, table_nr (table) - 1);
+        table->n[H], 0, table->n[V] - 1);
 
       if (stub[V])
         table_hline (
           table, get_table_rule (pt->look->borders, PIVOT_BORDER_DATA_TOP),
-          0, table_nc (table) - 1, stub[V]);
+          0, table->n[H] - 1, stub[V]);
       if (stub[H])
         table_vline (
           table, get_table_rule (pt->look->borders, PIVOT_BORDER_DATA_LEFT),
-          stub[H], 0, table_nr (table) - 1);
+          stub[H], 0, table->n[V] - 1);
 
     }
   free (column_enumeration);
