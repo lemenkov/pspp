@@ -361,6 +361,12 @@ rerender (struct psppire_output_view *view)
           gtk_layout_move (view->output, item->drawing_area, xpos, view->y);
         }
 
+      if (is_table_item (item->item))
+        {
+          const struct table_item *ti = to_table_item (item->item);
+          gtk_widget_set_tooltip_text (item->drawing_area, ti->notes);
+        }
+
       {
 	gint minw;
 	gint minh;
