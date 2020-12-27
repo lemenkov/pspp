@@ -48,8 +48,10 @@ message_item_get_msg (const struct message_item *item)
 struct text_item *
 message_item_to_text_item (struct message_item *message_item)
 {
-  return text_item_create_nocopy (
+  struct text_item *text_item = text_item_create_nocopy (
     TEXT_ITEM_LOG, msg_to_string (message_item_get_msg (message_item)));
+  message_item_unref (message_item);
+  return text_item;
 }
 
 static void
