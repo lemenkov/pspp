@@ -482,13 +482,6 @@ ascii_output_table_item_unref (struct ascii_driver *a,
 }
 
 static void
-ascii_output_text (struct ascii_driver *a, const char *text)
-{
-  ascii_output_table_item_unref (
-    a, table_item_create (table_from_string (text), NULL, NULL, NULL));
-}
-
-static void
 ascii_submit (struct output_driver *driver,
               const struct output_item *output_item)
 {
@@ -532,12 +525,11 @@ ascii_submit (struct output_driver *driver,
           a, text_item_to_table_item (text_item_ref (text_item)));
     }
   else if (is_message_item (output_item))
-    {
-      const struct message_item *message_item = to_message_item (output_item);
-      char *s = msg_to_string (message_item_get_msg (message_item));
-      ascii_output_text (a, s);
-      free (s);
-    }
+    ascii_output_table_item_unref (
+      a, text_item_to_table_item (
+        message_item_to_text_item (
+          to_message_item (
+            output_item_ref (output_item)))));
 }
 
 const struct output_driver_factory txt_driver_factory =

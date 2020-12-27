@@ -170,22 +170,6 @@ table_collect_footnotes (const struct table_item *item,
   return n_nonnull;
 }
 
-/* Returns a table that contains a single cell, whose contents are the
-   left-aligned TEXT.  */
-struct table *
-table_from_string (const char *text)
-{
-  struct table *t = table_create (1, 1, 0, 0, 0, 0);
-  t->styles[0] = pool_alloc (t->container, sizeof *t->styles[0]);
-  *t->styles[0] = (struct table_area_style) {
-    TABLE_AREA_STYLE_INITIALIZER__,
-    .cell_style.halign = TABLE_HALIGN_LEFT,
-    .cell_style.valign = TABLE_VALIGN_TOP
-  };
-  table_text (t, 0, 0, 0 << TAB_STYLE_SHIFT, text);
-  return t;
-}
-
 const char *
 table_halign_to_string (enum table_halign halign)
 {
@@ -711,36 +695,6 @@ bool
 table_cell_is_empty (const struct table *table, int c, int r)
 {
   return table->cc[c + r * table_nc (table)] == NULL;
-}
-
-/* Editing. */
-
-/* Writes STRING to the output.  OPTIONS may be any valid combination of TAB_*
-   bits.
-
-   This function is obsolete.  Please do not add new uses of it.  Instead, use
-   a text_item (see output/text-item.h). */
-void
-table_output_text (int options UNUSED, const char *string)
-{
-  text_item_submit (text_item_create (TEXT_ITEM_LOG, string));
-}
-
-/* Same as table_output_text(), but FORMAT is passed through printf-like
-   formatting before output. */
-void
-table_output_text_format (int options, const char *format, ...)
-{
-  va_list args;
-  char *text;
-
-  va_start (args, format);
-  text = xvasprintf (format, args);
-  va_end (args);
-
-  table_output_text (options, text);
-
-  free (text);
 }
 
 /* Initializes CELL with the contents of the table cell at column X and row Y

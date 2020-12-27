@@ -563,7 +563,8 @@ print_text_flush_records (struct print_trns *trns, struct u8_line *line,
       *u8_line_reserve (line, 0, 1, 1) = leader;
 
       if (trns->writer == NULL)
-        table_output_text (TAB_FIX, ds_cstr (&line->s) + 1);
+        text_item_submit (text_item_create (TEXT_ITEM_LOG,
+                                            ds_cstr (&line->s) + 1));
       else
         {
           size_t len = ds_length (&line->s);
