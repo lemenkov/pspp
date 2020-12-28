@@ -624,7 +624,7 @@ html_output_table (struct html_driver *html, const struct table_item *item)
 	      int left = table_get_rule (t, TABLE_HORZ, x, y, &color);
               put_border (style, left, "left");
 
-	      if (x + colspan == t->n[V])
+	      if (x + colspan == t->n[H])
 		{
 		  int right = table_get_rule (t, TABLE_HORZ, x + colspan, y,
                                           &color);
