@@ -158,7 +158,6 @@ put_header (struct html_driver *html)
 	     "  border-collapse: collapse;\n"
 	     "  margin-bottom: 1em\n"
 	     "}\n"
-	     "th { background: #dddddd; font-weight: normal; font-style: oblique }\n"
 	     "caption {\n"
 	     "  text-align: left\n"
 	     "}\n"
@@ -408,33 +407,49 @@ struct css_style
   int n_styles;
 };
 
-static struct css_style *
-style_start (FILE *file)
+static void
+style_start (struct css_style *cs, FILE *file)
 {
-  struct css_style *cs = XMALLOC (struct css_style);
-  cs->file = file;
-  cs->n_styles = 0;
-  fputs (" style=\"", file);
-  return cs;
+  *cs = (struct css_style) {
+    .file = file,
+    .n_styles = 0,
+  };
 }
 
 static void
 style_end (struct css_style *cs)
 {
-  fputs ("\"", cs->file);
-  free (cs);
+  if (cs->n_styles > 0)
+    fputs ("'", cs->file);
 }
 
 static void
 put_style (struct css_style *st, const char *name, const char *value)
 {
-  if (st->n_styles++ > 0)
-    fputs ("; ", st->file);
-  fprintf (st->file, "%s: %s", name, value);
+  bool first = !st->n_styles++;
+  fprintf (st->file, "%s%s: %s", first ? " style='" : "; ", name, value);
+}
+
+static bool
+format_color (const struct cell_color color,
+              const struct cell_color default_color,
+              char *buf, size_t bufsize)
+{
+  bool retval = !cell_color_equal (&color, &default_color);
+  if (retval)
+    {
+      if (color.alpha == 255)
+        snprintf (buf, bufsize, "#%02x%02x%02x", color.r, color.g, color.b);
+      else
+        snprintf (buf, bufsize, "rgba(%d, %d, %d, %.3f)",
+                  color.r, color.g, color.b, color.alpha / 255.0);
+    }
+  return retval;
 }
 
 static void
-put_border (struct css_style *st, int style, const char *border_name)
+put_border (struct css_style *st, int style, const struct cell_color *color,
+            const char *border_name)
 {
   const char *css = border_to_css (style);
   if (css)
@@ -442,6 +457,11 @@ put_border (struct css_style *st, int style, const char *border_name)
       if (st->n_styles++ > 0)
         fputs ("; ", st->file);
       fprintf (st->file, "border-%s: %s", border_name, css);
+
+      char buf[32];
+      if (format_color (*color, (struct cell_color) CELL_COLOR_BLACK,
+                        buf, sizeof buf))
+        fprintf (st->file, " %s", buf);
     }
 }
 
@@ -485,6 +505,36 @@ html_put_table_item_text (struct html_driver *html,
 {
   escape_string (html->file, text->content, " ", "<br>");
   html_put_footnote_markers (html, text->footnotes, text->n_footnotes);
+}
+
+static void
+html_put_table_cell_text (struct html_driver *html,
+                          const struct table_cell *cell)
+{
+  const char *s = cell->text;
+  if (cell->options & TAB_FIX)
+    escape_tag (html->file, "tt", s, "&nbsp;", "<br>");
+  else
+    {
+      s += strspn (s, CC_SPACES);
+      escape_string (html->file, s, " ", "<br>");
+    }
+
+  if (cell->n_subscripts)
+    {
+      fputs ("<sub>", html->file);
+      for (size_t i = 0; i < cell->n_subscripts; i++)
+        {
+          if (i)
+            putc (',', html->file);
+          escape_string (html->file, cell->subscripts[i],
+                         "&nbsp;", "<br>");
+        }
+      fputs ("</sub>", html->file);
+    }
+  if (cell->superscript)
+    escape_tag (html->file, "sup", cell->superscript, "&nbsp;", "<br>");
+  html_put_footnote_markers (html, cell->footnotes, cell->n_footnotes);
 }
 
 static void
@@ -579,17 +629,18 @@ html_output_table (struct html_driver *html, const struct table_item *item)
           tag = is_header ? "th" : "td";
           fprintf (html->file, "<%s", tag);
 
-          struct css_style *style = style_start (html->file);
+          struct css_style style;
+          style_start (&style, html->file);
           enum table_halign halign = table_halign_interpret (
             cell.style->cell_style.halign, cell.options & TAB_NUMERIC);
 
           switch (halign)
             {
             case TABLE_HALIGN_RIGHT:
-              put_style (style, "text-align", "right");
+              put_style (&style, "text-align", "right");
               break;
             case TABLE_HALIGN_CENTER:
-              put_style (style, "text-align", "center");
+              put_style (&style, "text-align", "center");
               break;
             default:
               /* Do nothing */
@@ -598,9 +649,41 @@ html_output_table (struct html_driver *html, const struct table_item *item)
 
           if (cell.style->cell_style.valign != TABLE_VALIGN_TOP)
             {
-              put_style (style, "vertical-align",
+              put_style (&style, "vertical-align",
                          (cell.style->cell_style.valign == TABLE_VALIGN_BOTTOM
                           ? "bottom" : "middle"));
+            }
+
+          const struct font_style *fs = &cell.style->font_style;
+          char bgcolor[32];
+          if (format_color (fs->bg[y % 2],
+                            (struct cell_color) CELL_COLOR_WHITE,
+                            bgcolor, sizeof bgcolor))
+            put_style (&style, "background", bgcolor);
+
+          char fgcolor[32];
+          if (format_color (fs->fg[y % 2],
+                            (struct cell_color) CELL_COLOR_BLACK,
+                            fgcolor, sizeof fgcolor))
+            put_style (&style, "color", fgcolor);
+
+          if (fs->typeface)
+            {
+              put_style (&style, "font-family", "\"");
+              escape_string (html->file, fs->typeface, " ", "\n");
+              putc ('"', html->file);
+            }
+          if (fs->bold)
+            put_style (&style, "font-weight", "bold");
+          if (fs->italic)
+            put_style (&style, "font-style", "italic");
+          if (fs->underline)
+            put_style (&style, "text-decoration", "underline");
+          if (fs->size)
+            {
+              char buf[32];
+              snprintf (buf, sizeof buf, "%dpt", fs->size);
+              put_style (&style, "font-size", buf);
             }
 
           int colspan = table_cell_colspan (&cell);
@@ -612,26 +695,26 @@ html_output_table (struct html_driver *html, const struct table_item *item)
               struct cell_color color;
 
 	      int top = table_get_rule (t, TABLE_VERT, x, y, &color);
-              put_border (style, top, "top");
+              put_border (&style, top, &color, "top");
 
 	      if (y + rowspan == t->n[V])
 		{
 		  int bottom = table_get_rule (t, TABLE_VERT, x, y + rowspan,
                                            &color);
-                  put_border (style, bottom, "bottom");
+                  put_border (&style, bottom, &color, "bottom");
 		}
 
 	      int left = table_get_rule (t, TABLE_HORZ, x, y, &color);
-              put_border (style, left, "left");
+              put_border (&style, left, &color, "left");
 
 	      if (x + colspan == t->n[H])
 		{
 		  int right = table_get_rule (t, TABLE_HORZ, x + colspan, y,
                                           &color);
-                  put_border (style, right, "right");
+                  put_border (&style, right, &color, "right");
 		}
 	    }
-          style_end (style);
+          style_end (&style);
 
           if (colspan > 1)
             fprintf (html->file, " colspan=\"%d\"", colspan);
@@ -641,31 +724,7 @@ html_output_table (struct html_driver *html, const struct table_item *item)
 
           putc ('>', html->file);
 
-          /* Output cell contents. */
-          const char *s = cell.text;
-          if (cell.options & TAB_FIX)
-            escape_tag (html->file, "tt", s, "&nbsp;", "<br>");
-          else
-            {
-              s += strspn (s, CC_SPACES);
-              escape_string (html->file, s, " ", "<br>");
-            }
-
-          if (cell.n_subscripts)
-            {
-              fputs ("<sub>", html->file);
-              for (size_t i = 0; i < cell.n_subscripts; i++)
-                {
-                  if (i)
-                    putc (',', html->file);
-                  escape_string (html->file, cell.subscripts[i],
-                                 "&nbsp;", "<br>");
-                }
-              fputs ("</sub>", html->file);
-            }
-          if (cell.superscript)
-            escape_tag (html->file, "sup", cell.superscript, "&nbsp;", "<br>");
-          html_put_footnote_markers (html, cell.footnotes, cell.n_footnotes);
+          html_put_table_cell_text (html, &cell);
 
           /* output </th> or </td>. */
           fprintf (html->file, "</%s>\n", tag);
