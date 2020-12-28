@@ -647,6 +647,9 @@ html_output_table (struct html_driver *html, const struct table_item *item)
               break;
             }
 
+          if (cell.options & TAB_ROTATE)
+            put_style (&style, "writing-mode", "sideways-lr");
+
           if (cell.style->cell_style.valign != TABLE_VALIGN_TOP)
             {
               put_style (&style, "vertical-align",
