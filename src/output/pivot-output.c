@@ -417,7 +417,8 @@ pivot_table_submit_layer (const struct pivot_table *pt,
     }
   free (dindexes);
 
-  if (pt->corner_text && stub[H] && stub[V])
+  if ((pt->corner_text || !pt->look->row_labels_in_corner)
+      && stub[H] && stub[V])
     fill_cell (table, 0, 0, stub[H] - 1, stub[V] - 1,
                &pt->look->areas[PIVOT_AREA_CORNER], PIVOT_AREA_CORNER,
                pt->corner_text, footnotes,
