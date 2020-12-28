@@ -198,6 +198,46 @@ csv_output_table_item_text (struct csv_driver *csv,
 }
 
 static void
+csv_output_table_cell (struct csv_driver *csv,
+                       const struct table_cell *cell,
+                       const char *leader)
+{
+  if (!cell)
+    return;
+
+  if (!(cell->options & TAB_MARKUP) && !cell->n_footnotes
+      && !cell->n_subscripts && !leader)
+    csv_output_field (csv, cell->text);
+  else
+    {
+      struct string s = DS_EMPTY_INITIALIZER;
+
+      if (leader)
+        ds_put_format (&s, "%s: ", leader);
+
+      if (cell->options & TAB_MARKUP)
+        {
+          char *t = output_get_text_from_markup (cell->text);
+          ds_put_cstr (&s, t);
+          free (t);
+        }
+      else
+        ds_put_cstr (&s, cell->text);
+
+      if (cell->n_subscripts)
+        for (size_t i = 0; i < cell->n_subscripts; i++)
+          ds_put_format (&s, "%c%s",
+                         i ? ',' : '_', cell->subscripts[i]);
+      csv_format_footnotes (cell->footnotes, cell->n_footnotes, &s);
+      csv_output_field (csv, ds_cstr (&s));
+      ds_destroy (&s);
+
+      if (leader)
+        putc ('\n', csv->file);
+    }
+}
+
+static void
 csv_submit (struct output_driver *driver,
             const struct output_item *output_item)
 {
@@ -212,8 +252,7 @@ csv_submit (struct output_driver *driver,
       csv_put_separator (csv);
 
       if (csv->titles)
-        csv_output_table_item_text (csv, table_item_get_title (table_item),
-                                    "Table");
+        csv_output_table_cell (csv, table_item_get_title (table_item), "Table");
 
       for (y = 0; y < t->n[TABLE_VERT]; y++)
         {
@@ -228,30 +267,8 @@ csv_submit (struct output_driver *driver,
 
               if (x != cell.d[TABLE_HORZ][0] || y != cell.d[TABLE_VERT][0])
                 csv_output_field (csv, "");
-              else if (!(cell.options & TAB_MARKUP) && !cell.n_footnotes
-                       && !cell.n_subscripts)
-                csv_output_field (csv, cell.text);
               else
-                {
-                  struct string s = DS_EMPTY_INITIALIZER;
-
-                  if (cell.options & TAB_MARKUP)
-                    {
-                      char *t = output_get_text_from_markup (cell.text);
-                      ds_put_cstr (&s, t);
-                      free (t);
-                    }
-                  else
-                    ds_put_cstr (&s, cell.text);
-
-                  if (cell.n_subscripts)
-                    for (size_t i = 0; i < cell.n_subscripts; i++)
-                      ds_put_format (&s, "%c%s",
-                                     i ? ',' : '_', cell.subscripts[i]);
-                  csv_format_footnotes (cell.footnotes, cell.n_footnotes, &s);
-                  csv_output_field (csv, ds_cstr (&s));
-                  ds_destroy (&s);
-                }
+                csv_output_table_cell (csv, &cell, NULL);
             }
           putc ('\n', csv->file);
         }

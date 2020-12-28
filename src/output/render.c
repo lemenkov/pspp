@@ -1536,6 +1536,22 @@ add_footnote_page (struct render_pager *p, const struct table_item *item)
 }
 
 static void
+add_table_cell_page (struct render_pager *p, const struct table_cell *cell,
+                     int min_width)
+{
+  if (!cell)
+    return;
+
+  struct table *tab = table_create (1, 1, 0, 0, 0, 0);
+  table_text (tab, 0, 0, 0, cell->text);
+  for (size_t i = 0; i < cell->n_footnotes; i++)
+    table_add_footnote (tab, 0, 0, cell->footnotes[i]);
+  if (cell->style)
+    tab->styles[0] = table_area_style_clone (tab->container, cell->style);
+  render_pager_add_table (p, tab, min_width);
+}
+
+static void
 add_text_page (struct render_pager *p, const struct table_item_text *t,
                int min_width)
 {
@@ -1605,7 +1621,7 @@ render_pager_create (const struct render_params *params,
   /* Create the pager. */
   struct render_pager *p = xmalloc (sizeof *p);
   *p = (struct render_pager) { .params = params, .scale = scale };
-  add_text_page (p, table_item_get_title (table_item), body_width);
+  add_table_cell_page (p, table_item_get_title (table_item), body_width);
   add_layers_page (p, table_item_get_layers (table_item), body_width);
   render_pager_add_table (p, table_ref (table_item_get_table (table_item)), 0);
   add_text_page (p, table_item_get_caption (table_item), 0);

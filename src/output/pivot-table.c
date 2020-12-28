@@ -1904,7 +1904,10 @@ interpret_show (enum settings_value_show global_show,
 /* Appends a text representation of the body of VALUE to OUT.  SHOW_VALUES and
    SHOW_VARIABLES control whether variable and value labels are included.
 
-   The "body" omits subscripts and superscripts and footnotes. */
+   The "body" omits subscripts and superscripts and footnotes.
+
+   Returns true if OUT is a number (or a number plus a value label), false
+   otherwise.  */
 bool
 pivot_value_format_body (const struct pivot_value *value,
                          enum settings_value_show show_values,

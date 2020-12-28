@@ -93,6 +93,27 @@ table_area_style_override (struct pool *pool,
   return out;
 }
 
+static int
+format_cell (const struct pivot_value *value, int style_idx,
+             enum settings_value_show show_values,
+             enum settings_value_show show_variables,
+             bool rotate_label, struct string *s)
+{
+  int options = style_idx << TAB_STYLE_SHIFT;
+  if (value)
+    {
+      bool numeric = pivot_value_format_body (value, show_values,
+                                              show_variables, s);
+      if (numeric)
+        options |= TAB_NUMERIC;
+      if (value->font_style && value->font_style->markup)
+        options |= TAB_MARKUP;
+      if (rotate_label)
+        options |= TAB_ROTATE;
+    }
+  return options;
+}
+
 static void
 fill_cell (struct table *t, int x1, int y1, int x2, int y2,
            const struct table_area_style *style, int style_idx,
@@ -101,21 +122,10 @@ fill_cell (struct table *t, int x1, int y1, int x2, int y2,
            enum settings_value_show show_variables,
            bool rotate_label)
 {
-
   struct string s = DS_EMPTY_INITIALIZER;
-  int opts = style_idx << TAB_STYLE_SHIFT;
-  if (value)
-    {
-      bool numeric = pivot_value_format_body (value, show_values,
-                                              show_variables, &s);
-      if (numeric)
-        opts |= TAB_NUMERIC;
-      if (value->font_style && value->font_style->markup)
-        opts |= TAB_MARKUP;
-      if (rotate_label)
-        opts |= TAB_ROTATE;
-    }
-  table_joint_text (t, x1, y1, x2, y2, opts, ds_cstr (&s));
+  int options = format_cell (value, style_idx,
+                             show_values, show_variables, rotate_label, &s);
+  table_joint_text (t, x1, y1, x2, y2, options, ds_cstr (&s));
   ds_destroy (&s);
 
   if (value)
@@ -138,6 +148,51 @@ fill_cell (struct table *t, int x1, int y1, int x2, int y2,
         table_add_subscripts (t, x1, y1,
                               value->subscripts, value->n_subscripts);
     }
+}
+
+static struct table_cell *
+pivot_value_to_table_cell (const struct pivot_value *value,
+                           const struct table_area_style *style, int style_idx,
+                           struct footnote **footnotes,
+                           enum settings_value_show show_values,
+                           enum settings_value_show show_variables)
+{
+  if (!value)
+    return NULL;
+
+  struct string s = DS_EMPTY_INITIALIZER;
+  int options = format_cell (value, style_idx,
+                             show_values, show_variables, false, &s);
+
+  struct table_cell *cell = xmalloc (sizeof *cell);
+  *cell = (struct table_cell) {
+    .options = options,
+    .text = ds_steal_cstr (&s),
+    .style = table_area_style_override (
+      NULL, style, value->cell_style, value->font_style, false),
+  };
+
+  if (value->n_subscripts)
+    {
+      cell->subscripts = xnmalloc (value->n_subscripts,
+                                   sizeof *cell->subscripts);
+      cell->n_subscripts = value->n_subscripts;
+      for (size_t i = 0; i < value->n_subscripts; i++)
+        cell->subscripts[i] = xstrdup (value->subscripts[i]);
+    }
+
+  if (value->n_footnotes)
+    {
+      cell->footnotes = xnmalloc (value->n_footnotes, sizeof *cell->footnotes);
+      for (size_t i = 0; i < value->n_footnotes; i++)
+        {
+          struct footnote *f = footnotes[value->footnotes[i]->idx];
+          if (f)
+            cell->footnotes[cell->n_footnotes++] = f;
+        }
+    }
+
+  return cell;
 }
 
 static struct table_item_text *
@@ -567,11 +622,11 @@ pivot_table_submit_layer (const struct pivot_table *pt,
 
   if (pt->title && pt->show_title)
     {
-      struct table_item_text *title = pivot_value_to_table_item_text (
-        pt->title, &pt->look->areas[PIVOT_AREA_TITLE], footnotes,
-        pt->show_values, pt->show_variables);
+      struct table_cell *title = pivot_value_to_table_cell (
+        pt->title, &pt->look->areas[PIVOT_AREA_TITLE], PIVOT_AREA_TITLE,
+        footnotes, pt->show_values, pt->show_variables);
       table_item_set_title (ti, title);
-      table_item_text_destroy (title);
+      table_cell_destroy (title);
     }
 
   const struct pivot_axis *layer_axis = &pt->axes[PIVOT_AXIS_LAYER];

@@ -394,11 +394,10 @@ tex_put_footnote_markers (struct tex_driver *tex,
 }
 
 static void
-tex_put_table_item_text (struct tex_driver *tex,
-                          const struct table_item_text *text)
+tex_put_table_cell (struct tex_driver *tex, const struct table_cell *cell)
 {
-  tex_escape_string (tex, text->content, false);
-  tex_put_footnote_markers (tex, text->footnotes, text->n_footnotes);
+  tex_escape_string (tex, cell->text, false);
+  tex_put_footnote_markers (tex, cell->footnotes, cell->n_footnotes);
 }
 
 static void
@@ -421,14 +420,14 @@ tex_output_table (struct tex_driver *tex, const struct table_item *item)
   struct footnote **f;
   size_t n_footnotes = table_collect_footnotes (item, &f);
 
-  const struct table_item_text *title = table_item_get_title (item);
+  const struct table_cell *title = table_item_get_title (item);
   const struct table_item_layers *layers = table_item_get_layers (item);
   if (title || layers)
     {
       if (title)
         {
           shipout (&tex->token_list, "{\\bf ");
-          tex_put_table_item_text (tex, title);
+          tex_put_table_cell (tex, title);
           shipout (&tex->token_list, "}");
         }
       if (layers)

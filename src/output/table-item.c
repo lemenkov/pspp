@@ -26,6 +26,7 @@
 #include "output/output-item-provider.h"
 #include "output/pivot-table.h"
 #include "output/table-item.h"
+#include "output/table-provider.h"
 
 #include "gl/xalloc.h"
 
@@ -145,7 +146,7 @@ table_item_get_table (const struct table_item *table_item)
 
 /* Returns ITEM's title, which is a null pointer if no title has been
    set. */
-const struct table_item_text *
+const struct table_cell *
 table_item_get_title (const struct table_item *item)
 {
   return item->title;
@@ -156,12 +157,11 @@ table_item_get_title (const struct table_item *item)
 
    This function may only be used on a table_item that is unshared. */
 void
-table_item_set_title (struct table_item *item,
-                      const struct table_item_text *title)
+table_item_set_title (struct table_item *item, const struct table_cell *title)
 {
   assert (!table_item_is_shared (item));
-  table_item_text_destroy (item->title);
-  item->title = table_item_text_clone (title);
+  table_cell_destroy (item->title);
+  item->title = table_cell_clone (title);
 }
 
 /* Returns ITEM's layers, which will be a null pointer if no layers have been
@@ -240,8 +240,8 @@ static const char *
 table_item_get_label (const struct output_item *output_item)
 {
   const struct table_item *item = to_table_item (output_item);
-  return (item->title && item->title->content
-          ? item->title->content
+  return (item->title && item->title->text
+          ? item->title->text
           : _("Table"));
 }
 
@@ -249,7 +249,7 @@ static void
 table_item_destroy (struct output_item *output_item)
 {
   struct table_item *item = to_table_item (output_item);
-  table_item_text_destroy (item->title);
+  table_cell_destroy (item->title);
   table_item_text_destroy (item->caption);
   table_item_layers_destroy (item->layers);
   free (item->notes);

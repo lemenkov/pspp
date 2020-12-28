@@ -33,6 +33,9 @@ struct footnote
     struct table_area_style *style;
   };
 
+struct footnote *footnote_clone (const struct footnote *);
+void footnote_destroy (struct footnote *);
+
 /* A cell in a table. */
 struct table_cell
   {

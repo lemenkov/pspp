@@ -443,6 +443,22 @@ write_table_item_text (struct odt_driver *odt,
 }
 
 static void
+write_table_item_cell (struct odt_driver *odt,
+                       const struct table_cell *cell)
+{
+  if (!cell)
+    return;
+
+  xmlTextWriterStartElement (odt->content_wtr, _xml("text:h"));
+  xmlTextWriterWriteFormatAttribute (odt->content_wtr,
+                                     _xml("text:outline-level"), "%d", 2);
+  xmlTextWriterWriteString (odt->content_wtr, _xml (cell->text));
+  for (size_t i = 0; i < cell->n_footnotes; i++)
+    write_footnote (odt, cell->footnotes[i]);
+  xmlTextWriterEndElement (odt->content_wtr);
+}
+
+static void
 write_table_item_layers (struct odt_driver *odt,
                          const struct table_item_layers *layers)
 {
@@ -469,7 +485,7 @@ write_table (struct odt_driver *odt, const struct table_item *item)
   int r, c;
 
   /* Write a heading for the table */
-  write_table_item_text (odt, table_item_get_title (item));
+  write_table_item_cell (odt, table_item_get_title (item));
   write_table_item_layers (odt, table_item_get_layers (item));
 
   /* Start table */

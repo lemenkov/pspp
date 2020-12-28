@@ -91,6 +91,87 @@ table_area_style_free (struct table_area_style *style)
     }
 }
 
+struct footnote *
+footnote_clone (const struct footnote *old)
+{
+  struct footnote *new = xmalloc (sizeof *new);
+  *new = (struct footnote) {
+    .idx = old->idx,
+    .content = old->content ? xstrdup (old->content) : NULL,
+    .marker = old->marker ? xstrdup (old->marker) : NULL,
+    .style = old->style ? table_area_style_clone (NULL, old->style) : NULL,
+  };
+  return new;
+}
+
+void
+footnote_destroy (struct footnote *f)
+{
+  if (f)
+    {
+      free (f->content);
+      free (f->marker);
+      if (f->style)
+        {
+          table_area_style_uninit (f->style);
+          free (f->style);
+        }
+      free (f);
+    }
+}
+
+struct table_cell *
+table_cell_clone (const struct table_cell *old)
+{
+  struct table_cell *new = xmalloc (sizeof *new);
+  *new = *old;
+  new->text = xstrdup (new->text);
+
+  if (old->n_subscripts)
+    {
+      new->subscripts = xnmalloc (old->n_subscripts, sizeof *new->subscripts);
+      for (size_t i = 0; i < old->n_subscripts; i++)
+        new->subscripts[i] = xstrdup (old->subscripts[i]);
+    }
+  else
+    new->subscripts = NULL;
+
+  if (old->n_footnotes)
+    {
+      new->footnotes = xnmalloc (old->n_footnotes, sizeof *new->footnotes);
+      for (size_t i = 0; i < old->n_footnotes; i++)
+        new->footnotes[i] = footnote_clone (old->footnotes[i]);
+    }
+  else
+    new->footnotes = NULL;
+
+  if (old->style)
+    new->style = table_area_style_clone (NULL, old->style);
+
+  return new;
+}
+
+void
+table_cell_destroy (struct table_cell *cell)
+{
+  if (!cell)
+    return;
+
+  free (cell->text);
+  for (size_t i = 0; i < cell->n_subscripts; i++)
+    free (cell->subscripts[i]);
+  free (cell->subscripts);
+  for (size_t i = 0; i < cell->n_footnotes; i++)
+    footnote_destroy (cell->footnotes[i]);
+  free (cell->footnotes);
+  if (cell->style)
+    {
+      table_area_style_uninit (cell->style);
+      free (cell->style);
+    }
+  free (cell);
+}
+
 void
 table_cell_format_footnote_markers (const struct table_cell *cell,
                                     struct string *s)
@@ -146,7 +227,7 @@ table_collect_footnotes (const struct table_item *item,
         }
     }
 
-  const struct table_item_text *title = table_item_get_title (item);
+  const struct table_cell *title = table_item_get_title (item);
   if (title)
     footnotes = add_footnotes (title->footnotes, title->n_footnotes,
                                footnotes, &allocated, &n);
