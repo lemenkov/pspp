@@ -31,7 +31,10 @@ manifest contains the string @samp{allowPivoting=true}, without a
 new-line.  PSPP uses this string to identify an SPV file; it is
 invariant across the corpus.@footnote{SPV files always begin with the
 7-byte sequence 50 4b 03 04 14 00 08, but this is not a useful magic
-number because most Zip archives start the same way.}
+number because most Zip archives start the same way.}@footnote{SPSS
+writes @file{META-INF/MANIFEST.MF} to every SPV file, but it does not
+read it or even require it to exist, so using different contents,
+e.g.@: as @samp{allowingPivot=false} has no effect.}
 
 The rest of the members in an SPV file's Zip archive fall into two
 categories: @dfn{structure} and @dfn{detail} members.  Structure
