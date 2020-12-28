@@ -817,6 +817,9 @@ xr_layout_cell_text (struct xr_fsm *xr, const struct table_cell *cell,
     bb[X][1] == INT_MAX ? -1 : xr_to_pango (bb[X][1] - bb[X][0]));
   pango_layout_set_wrap (layout, PANGO_WRAP_WORD);
 
+  int size[TABLE_N_AXES];
+  pango_layout_get_size (layout, &size[H], &size[V]);
+
   if (clip[H][0] != clip[H][1])
     {
       cairo_save (xr->cairo);
@@ -824,8 +827,10 @@ xr_layout_cell_text (struct xr_fsm *xr, const struct table_cell *cell,
         xr_clip (xr, clip);
       if (options & TAB_ROTATE)
         {
+          int extra = bb[H][1] - bb[H][0] - size[V];
+          int halign_offset = extra > 0 ? extra / 2 : 0;
           cairo_translate (xr->cairo,
-                           xr_to_pt (bb[H][0]),
+                           xr_to_pt (bb[H][0] + halign_offset),
                            xr_to_pt (bb[V][1]));
           cairo_rotate (xr->cairo, -M_PI_2);
         }
@@ -864,8 +869,6 @@ xr_layout_cell_text (struct xr_fsm *xr, const struct table_cell *cell,
       cairo_restore (xr->cairo);
     }
 
-  int size[TABLE_N_AXES];
-  pango_layout_get_size (layout, &size[H], &size[V]);
   int w = pango_to_xr (size[X]);
   int h = pango_to_xr (size[Y]);
   if (w > *widthp)
