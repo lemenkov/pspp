@@ -1599,6 +1599,7 @@ pivot_table_dump (const struct pivot_table *table, int indentation)
     settings_set_decimal_char (table->decimal);
 
   pivot_table_dump_value (table->title, "title", indentation);
+  pivot_table_dump_value (table->subtype, "subtype", indentation);
   pivot_table_dump_string (table->command_c, "command", indentation);
   pivot_table_dump_string (table->dataset, "dataset", indentation);
   pivot_table_dump_string (table->datafile, "datafile", indentation);
