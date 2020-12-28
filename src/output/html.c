@@ -161,7 +161,7 @@ put_header (struct html_driver *html)
 	     "caption {\n"
 	     "  text-align: left\n"
 	     "}\n"
-
+	     "th { font-weight: normal }\n"
 	     "a:link {\n"
 	     "  color: #1f00ff;\n"
 	     "}\n"
