@@ -58,7 +58,8 @@ static struct table_area_style *
 table_area_style_override (struct pool *pool,
                            const struct table_area_style *in,
                            const struct cell_style *cell_,
-                           const struct font_style *font_)
+                           const struct font_style *font_,
+                           bool rotate_label)
 {
   const struct cell_style *cell = cell_ ? cell_ : &in->cell_style;
   const struct font_style *font = font_ ? font_ : &in->font_style;
@@ -67,8 +68,8 @@ table_area_style_override (struct pool *pool,
                             ? pool_alloc (pool, sizeof *out)
                             : xmalloc (sizeof *out));
   *out = (struct table_area_style) {
-    .cell_style.halign = cell->halign,
-    .cell_style.valign = cell->valign,
+    .cell_style.halign = rotate_label ? TABLE_HALIGN_CENTER : cell->halign,
+    .cell_style.valign = rotate_label ? TABLE_VALIGN_CENTER : cell->valign,
     .cell_style.decimal_offset = cell->decimal_offset,
     .cell_style.margin[H][0] = cell->margin[H][0],
     .cell_style.margin[H][1] = cell->margin[H][1],
@@ -117,11 +118,12 @@ fill_cell (struct table *t, int x1, int y1, int x2, int y2,
 
   if (value)
     {
-      if (value->cell_style || value->font_style)
+      if (value->cell_style || value->font_style || rotate_label)
         table_add_style (t, x1, y1,
                          table_area_style_override (t->container, style,
                                                     value->cell_style,
-                                                    value->font_style));
+                                                    value->font_style,
+                                                    rotate_label));
 
       for (size_t i = 0; i < value->n_footnotes; i++)
         {
@@ -154,7 +156,7 @@ pivot_value_to_table_item_text (const struct pivot_value *value,
     .content = ds_steal_cstr (&s),
     .footnotes = xnmalloc (value->n_footnotes, sizeof *text->footnotes),
     .style = table_area_style_override (
-      NULL, area, value->cell_style, value->font_style),
+      NULL, area, value->cell_style, value->font_style, false),
   };
 
   for (size_t i = 0; i < value->n_footnotes; i++)
@@ -327,7 +329,7 @@ pivot_table_submit_layer (const struct pivot_table *pt,
 
   for (size_t i = 0; i < PIVOT_N_AREAS; i++)
     table->styles[i] = table_area_style_override (
-      table->container, &pt->look->areas[i], NULL, NULL);
+      table->container, &pt->look->areas[i], NULL, NULL, false);
 
   for (size_t i = 0; i < PIVOT_N_BORDERS; i++)
     {
@@ -358,7 +360,8 @@ pivot_table_submit_layer (const struct pivot_table *pt,
         table_area_style_override (table->container,
                                    &pt->look->areas[PIVOT_AREA_FOOTER],
                                    pf->content->cell_style,
-                                   pf->content->font_style));
+                                   pf->content->font_style,
+                                   false));
       free (marker);
       free (content);
     }
@@ -375,7 +378,7 @@ pivot_table_submit_layer (const struct pivot_table *pt,
                     PIVOT_AREA_COLUMN_LABELS,
                     &pt->look->areas[PIVOT_AREA_CORNER], footnotes,
                     pt->show_values, pt->show_variables,
-                    pt->rotate_inner_column_labels, false);
+                    pt->rotate_outer_row_labels, false);
 
   compose_headings (table,
                     &pt->axes[PIVOT_AXIS_ROW], V, &pt->axes[PIVOT_AXIS_COLUMN],
@@ -389,7 +392,7 @@ pivot_table_submit_layer (const struct pivot_table *pt,
                     PIVOT_AREA_ROW_LABELS,
                     &pt->look->areas[PIVOT_AREA_CORNER], footnotes,
                     pt->show_values, pt->show_variables,
-                    false, pt->rotate_outer_row_labels);
+                    false, pt->rotate_inner_column_labels);
 
   size_t *dindexes = XCALLOC (pt->n_dimensions, size_t);
   size_t y = 0;
@@ -474,7 +477,7 @@ pivot_table_submit_layer (const struct pivot_table *pt,
             {
               layers = xzalloc (sizeof *layers);
               layers->style = table_area_style_override (
-                NULL, &pt->look->areas[PIVOT_AREA_LAYERS], NULL, NULL);
+                NULL, &pt->look->areas[PIVOT_AREA_LAYERS], NULL, NULL, false);
               layers->layers = xnmalloc (layer_axis->n_dimensions,
                                          sizeof *layers->layers);
             }
