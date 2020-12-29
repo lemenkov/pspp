@@ -122,20 +122,15 @@ table_item_layers_destroy (struct table_item_layers *layers)
     }
 }
 
-/* Initializes ITEM as a table item for rendering TABLE.  The new table item
-   initially has the specified TITLE, CAPTION, and NOTES, which may each be
-   NULL.  The caller retains ownership of TITLE, CAPTION, and NOTES. */
+/* Initializes ITEM as a table item for rendering TABLE.  Takes ownership of
+   TABLE. */
 struct table_item *
-table_item_create (struct table *table, const char *title, const char *caption,
-                   const char *notes)
+table_item_create (struct table *table)
 {
   struct table_item *item = xmalloc (sizeof *item);
   *item = (struct table_item) {
     .output_item = OUTPUT_ITEM_INITIALIZER (&table_item_class),
     .table = table,
-    .title = table_item_text_create (title),
-    .caption = table_item_text_create (caption),
-    .notes = notes ? xstrdup (notes) : NULL,
   };
   return item;
 }

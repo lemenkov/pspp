@@ -79,8 +79,7 @@ struct table_item
     struct pivot_table *pt;
   };
 
-struct table_item *table_item_create (struct table *, const char *title,
-                                      const char *caption, const char *notes);
+struct table_item *table_item_create (struct table *);
 
 const struct table *table_item_get_table (const struct table_item *);
 
