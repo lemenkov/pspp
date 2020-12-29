@@ -126,7 +126,7 @@ css_decode_key_value (const char *key, const char *value,
       font->typeface = xstrdup (value);
     }
   else if (!strcmp (key, "font-size"))
-    font->size = atoi (value);
+    font->size = atoi (value) * 3 / 4;
 
   /* fg_color, bg_color */
 
