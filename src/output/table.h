@@ -276,11 +276,9 @@ struct footnote *table_create_footnote (struct table *, size_t idx,
                                         const char *content,
                                         const char *marker,
                                         struct table_area_style *);
-void table_add_footnote (struct table *, int x, int y,
-                         const struct footnote *);
+void table_add_footnote (struct table *, int x, int y, struct footnote *);
 
-void table_add_style (struct table *, int x, int y,
-                      const struct table_area_style *);
+void table_add_style (struct table *, int x, int y, struct table_area_style *);
 
 bool table_cell_is_empty (const struct table *, int c, int r);
 

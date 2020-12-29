@@ -57,10 +57,13 @@ struct table_cell
     char *text;                 /* A paragraph of text. */
     char **subscripts;
     size_t n_subscripts;
-    const struct footnote **footnotes;
+    struct footnote **footnotes;
     size_t n_footnotes;
-    const struct table_area_style *style;
+    struct table_area_style *style;
   };
+
+struct table_cell *table_cell_clone (const struct table_cell *);
+void table_cell_destroy (struct table_cell *);
 
 void table_cell_format_footnote_markers (const struct table_cell *,
                                          struct string *);
@@ -94,7 +97,6 @@ table_cell_is_joined (const struct table_cell *cell)
 void table_get_cell (const struct table *, int x, int y, struct table_cell *);
 int table_get_rule (const struct table *, enum table_axis, int x, int y,
                     struct cell_color *);
-size_t table_collect_footnotes (const struct table_item *,
-                                const struct footnote ***);
+size_t table_collect_footnotes (const struct table_item *, struct footnote ***);
 
 #endif /* output/table-provider.h */

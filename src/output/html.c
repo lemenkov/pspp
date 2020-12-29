@@ -485,7 +485,7 @@ put_tfoot (struct html_driver *html, const struct table *t, bool *tfoot)
 
 static void
 html_put_footnote_markers (struct html_driver *html,
-                           const struct footnote **footnotes,
+                           struct footnote **footnotes,
                            size_t n_footnotes)
 {
   if (n_footnotes > 0)
@@ -576,7 +576,7 @@ html_output_table (struct html_driver *html, const struct table_item *item)
       put_tfoot (html, t, &tfoot);
       html_put_table_item_text (html, caption);
     }
-  const struct footnote **f;
+  struct footnote **f;
   size_t n_footnotes = table_collect_footnotes (item, &f);
 
   for (size_t i = 0; i < n_footnotes; i++)

@@ -473,7 +473,9 @@ read_table (FILE *stream)
               {
                 table_joint_text (tab, c, r, c + cs - 1, r + rs - 1, 0,
                                   content);
-                table_add_style (tab, c, r, style);
+                table_add_style (tab, c, r,
+                                 CONST_CAST (struct table_area_style *,
+                                             style));
               }
             else
               {

@@ -378,8 +378,8 @@ tex_submit (struct output_driver *driver,
 
 static void
 tex_put_footnote_markers (struct tex_driver *tex,
-                           const struct footnote **footnotes,
-                           size_t n_footnotes)
+                          struct footnote **footnotes,
+                          size_t n_footnotes)
 {
   if (n_footnotes > 0)
     shipout (&tex->token_list, "$^{");
@@ -418,7 +418,7 @@ tex_output_table (struct tex_driver *tex, const struct table_item *item)
       tex_escape_string (tex, caption->content, false);
       shipout (&tex->token_list, "}\n\n");
     }
-  const struct footnote **f;
+  struct footnote **f;
   size_t n_footnotes = table_collect_footnotes (item, &f);
 
   const struct table_item_text *title = table_item_get_title (item);

@@ -33,7 +33,7 @@
 struct table_item_text
   {
     char *content;
-    const struct footnote **footnotes;
+    struct footnote **footnotes;
     size_t n_footnotes;
     struct table_area_style *style;
   };
@@ -45,7 +45,7 @@ void table_item_text_destroy (struct table_item_text *);
 struct table_item_layer
   {
     char *content;
-    const struct footnote **footnotes;
+    struct footnote **footnotes;
     size_t n_footnotes;
   };
 

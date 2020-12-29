@@ -175,7 +175,7 @@ csv_output_lines (struct csv_driver *csv, const char *text_)
 }
 
 static void
-csv_format_footnotes (const struct footnote **f, size_t n, struct string *s)
+csv_format_footnotes (struct footnote **f, size_t n, struct string *s)
 {
   for (size_t i = 0; i < n; i++)
     ds_put_format (s, "[%s]", f[i]->marker);
@@ -260,7 +260,7 @@ csv_submit (struct output_driver *driver,
         csv_output_table_item_text (csv, table_item_get_caption (table_item),
                                     "Caption");
 
-      const struct footnote **f;
+      struct footnote **f;
       size_t n_footnotes = table_collect_footnotes (table_item, &f);
       if (n_footnotes)
         {

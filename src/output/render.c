@@ -1518,7 +1518,7 @@ render_pager_start_page (struct render_pager *p)
 static void
 add_footnote_page (struct render_pager *p, const struct table_item *item)
 {
-  const struct footnote **f;
+  struct footnote **f;
   size_t n_footnotes = table_collect_footnotes (item, &f);
   if (!n_footnotes)
     return;

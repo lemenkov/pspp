@@ -103,13 +103,13 @@ table_cell_format_footnote_markers (const struct table_cell *cell,
     }
 }
 
-static const struct footnote **
-add_footnotes (const struct footnote **refs, size_t n_refs,
-               const struct footnote **footnotes, size_t *allocated, size_t *n)
+static struct footnote **
+add_footnotes (struct footnote **refs, size_t n_refs,
+               struct footnote **footnotes, size_t *allocated, size_t *n)
 {
   for (size_t i = 0; i < n_refs; i++)
     {
-      const struct footnote *f = refs[i];
+      struct footnote *f = refs[i];
       if (f->idx >= *allocated)
         {
           size_t new_allocated = (f->idx + 1) * 2;
@@ -126,9 +126,9 @@ add_footnotes (const struct footnote **refs, size_t n_refs,
 
 size_t
 table_collect_footnotes (const struct table_item *item,
-                         const struct footnote ***footnotesp)
+                         struct footnote ***footnotesp)
 {
-  const struct footnote **footnotes = NULL;
+  struct footnote **footnotes = NULL;
   size_t allocated = 0;
   size_t n = 0;
 
@@ -661,8 +661,7 @@ table_create_footnote (struct table *table, size_t idx, const char *content,
 /* Attaches a reference to footnote F to the cell at column X, row Y in
    TABLE. */
 void
-table_add_footnote (struct table *table, int x, int y,
-                    const struct footnote *f)
+table_add_footnote (struct table *table, int x, int y, struct footnote *f)
 {
   assert (f->style);
 
@@ -680,7 +679,7 @@ table_add_footnote (struct table *table, int x, int y,
    TABLE->container or have a lifetime that will outlive TABLE. */
 void
 table_add_style (struct table *table, int x, int y,
-                 const struct table_area_style *style)
+                 struct table_area_style *style)
 {
   get_joined_cell (table, x, y)->style = style;
 }
@@ -704,7 +703,7 @@ table_get_cell (const struct table *t, int x, int y, struct table_cell *cell)
   unsigned short opt = t->ct[index];
   const void *cc = t->cc[index];
 
-  const struct table_area_style *style
+  struct table_area_style *style
     = t->styles[(opt & TAB_STYLE_MASK) >> TAB_STYLE_SHIFT];
   if (opt & TAB_JOIN)
     {
