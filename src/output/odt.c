@@ -427,22 +427,6 @@ write_footnote (struct odt_driver *odt, const struct footnote *f)
 }
 
 static void
-write_table_item_text (struct odt_driver *odt,
-                       const struct table_item_text *text)
-{
-  if (!text)
-    return;
-
-  xmlTextWriterStartElement (odt->content_wtr, _xml("text:h"));
-  xmlTextWriterWriteFormatAttribute (odt->content_wtr,
-                                     _xml("text:outline-level"), "%d", 2);
-  xmlTextWriterWriteString (odt->content_wtr, _xml (text->content));
-  for (size_t i = 0; i < text->n_footnotes; i++)
-    write_footnote (odt, text->footnotes[i]);
-  xmlTextWriterEndElement (odt->content_wtr);
-}
-
-static void
 write_table_item_cell (struct odt_driver *odt,
                        const struct table_cell *cell)
 {
@@ -576,7 +560,7 @@ write_table (struct odt_driver *odt, const struct table_item *item)
   xmlTextWriterEndElement (odt->content_wtr); /* table */
 
   /* Write a caption for the table */
-  write_table_item_text (odt, table_item_get_caption (item));
+  write_table_item_cell (odt, table_item_get_caption (item));
 }
 
 static void

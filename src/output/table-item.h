@@ -29,19 +29,6 @@
 #include "output/output-item.h"
 #include "output/table.h"
 
-/* Title or caption in a table item. */
-struct table_item_text
-  {
-    char *content;
-    struct footnote **footnotes;
-    size_t n_footnotes;
-    struct table_area_style *style;
-  };
-
-struct table_item_text *table_item_text_create (const char *);
-struct table_item_text *table_item_text_clone (const struct table_item_text *);
-void table_item_text_destroy (struct table_item_text *);
-
 struct table_item_layer
   {
     char *content;
@@ -73,7 +60,7 @@ struct table_item
     struct output_item output_item;   /* Superclass. */
     struct table *table;              /* The table to be rendered. */
     struct table_cell *title;         /* Null if there is no title. */
-    struct table_item_text *caption;  /* Null if there is no caption. */
+    struct table_cell *caption;       /* Null if there is no caption. */
     struct table_item_layers *layers; /* Null if there is no layer info. */
     char *notes;                      /* Shown as tooltip. */
     struct pivot_table *pt;
@@ -91,10 +78,8 @@ const struct table_item_layers *table_item_get_layers (
 void table_item_set_layers (struct table_item *,
                            const struct table_item_layers *);
 
-const struct table_item_text *table_item_get_caption (
-  const struct table_item *);
-void table_item_set_caption (struct table_item *,
-                             const struct table_item_text *);
+const struct table_cell *table_item_get_caption (const struct table_item *);
+void table_item_set_caption (struct table_item *, const struct table_cell *);
 
 const char *table_item_get_notes (const struct table_item *);
 void table_item_set_notes (struct table_item *, const char *notes);

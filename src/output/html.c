@@ -514,14 +514,6 @@ html_put_footnote_markers (struct html_driver *html,
 }
 
 static void
-html_put_table_item_text (struct html_driver *html,
-                          const struct table_item_text *text)
-{
-  escape_string (html->file, text->content, " ", "<br>");
-  html_put_footnote_markers (html, text->footnotes, text->n_footnotes);
-}
-
-static void
 html_put_table_cell_text (struct html_driver *html,
                           const struct table_cell *cell)
 {
@@ -674,11 +666,11 @@ html_output_table (struct html_driver *html, const struct table_item *item)
     }
   fputs (">\n", html->file);
 
-  const struct table_item_text *caption = table_item_get_caption (item);
+  const struct table_cell *caption = table_item_get_caption (item);
   if (caption)
     {
       put_tfoot (html, t, &tfoot);
-      html_put_table_item_text (html, caption);
+      html_put_table_cell (html, t, caption, "span", false);
     }
   struct footnote **f;
   size_t n_footnotes = table_collect_footnotes (item, &f);

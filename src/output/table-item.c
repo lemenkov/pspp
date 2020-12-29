@@ -33,46 +33,6 @@
 #include "gettext.h"
 #define _(msgid) gettext (msgid)
 
-struct table_item_text *
-table_item_text_create (const char *content)
-{
-  if (!content)
-    return NULL;
-
-  struct table_item_text *text = xmalloc (sizeof *text);
-  *text = (struct table_item_text) { .content = xstrdup (content) };
-  return text;
-}
-
-struct table_item_text *
-table_item_text_clone (const struct table_item_text *old)
-{
-  if (!old)
-    return NULL;
-
-  struct table_item_text *new = xmalloc (sizeof *new);
-  *new = (struct table_item_text) {
-    .content = xstrdup (old->content),
-    .footnotes = xmemdup (old->footnotes,
-                          old->n_footnotes * sizeof *old->footnotes),
-    .n_footnotes = old->n_footnotes,
-    .style = table_area_style_clone (NULL, old->style),
-  };
-  return new;
-}
-
-void
-table_item_text_destroy (struct table_item_text *text)
-{
-  if (text)
-    {
-      free (text->content);
-      free (text->footnotes);
-      table_area_style_free (text->style);
-      free (text);
-    }
-}
-
 void
 table_item_layer_copy (struct table_item_layer *dst,
                        const struct table_item_layer *src)
@@ -188,7 +148,7 @@ table_item_set_layers (struct table_item *item,
 
 /* Returns ITEM's caption, which is a null pointer if no caption has been
    set. */
-const struct table_item_text *
+const struct table_cell *
 table_item_get_caption (const struct table_item *item)
 {
   return item->caption;
@@ -201,11 +161,11 @@ table_item_get_caption (const struct table_item *item)
    This function may only be used on a table_item that is unshared. */
 void
 table_item_set_caption (struct table_item *item,
-                        const struct table_item_text *caption)
+                        const struct table_cell *caption)
 {
   assert (!table_item_is_shared (item));
-  table_item_text_destroy (item->caption);
-  item->caption = table_item_text_clone (caption);
+  table_cell_destroy (item->caption);
+  item->caption = table_cell_clone (caption);
 }
 
 /* Returns ITEM's notes, which is a null pointer if ITEM has no notes. */
@@ -250,7 +210,7 @@ table_item_destroy (struct output_item *output_item)
 {
   struct table_item *item = to_table_item (output_item);
   table_cell_destroy (item->title);
-  table_item_text_destroy (item->caption);
+  table_cell_destroy (item->caption);
   table_item_layers_destroy (item->layers);
   free (item->notes);
   pivot_table_unref (item->pt);

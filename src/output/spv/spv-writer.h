@@ -18,7 +18,6 @@
 #define OUTPUT_SPV_WRITER_H 1
 
 struct page_setup;
-struct table_item_text;
 struct pivot_table;
 struct spv_writer;
 struct text_item;

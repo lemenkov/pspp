@@ -182,24 +182,7 @@ csv_format_footnotes (struct footnote **f, size_t n, struct string *s)
 }
 
 static void
-csv_output_table_item_text (struct csv_driver *csv,
-                            const struct table_item_text *text,
-                            const char *leader)
-{
-  if (!text)
-    return;
-
-  struct string s = DS_EMPTY_INITIALIZER;
-  ds_put_format (&s, "%s: %s", leader, text->content);
-  csv_format_footnotes (text->footnotes, text->n_footnotes, &s);
-  csv_output_field (csv, ds_cstr (&s));
-  ds_destroy (&s);
-  putc ('\n', csv->file);
-}
-
-static void
-csv_output_table_cell (struct csv_driver *csv,
-                       const struct table_cell *cell,
+csv_output_table_cell (struct csv_driver *csv, const struct table_cell *cell,
                        const char *leader)
 {
   if (!cell)
@@ -274,8 +257,8 @@ csv_submit (struct output_driver *driver,
         }
 
       if (csv->captions)
-        csv_output_table_item_text (csv, table_item_get_caption (table_item),
-                                    "Caption");
+        csv_output_table_cell (csv, table_item_get_caption (table_item),
+                               "Caption");
 
       struct footnote **f;
       size_t n_footnotes = table_collect_footnotes (table_item, &f);

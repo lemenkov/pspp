@@ -195,37 +195,6 @@ pivot_value_to_table_cell (const struct pivot_value *value,
   return cell;
 }
 
-static struct table_item_text *
-pivot_value_to_table_item_text (const struct pivot_value *value,
-                                const struct table_area_style *area,
-                                struct footnote **footnotes,
-                                enum settings_value_show show_values,
-                                enum settings_value_show show_variables)
-{
-  if (!value)
-    return NULL;
-
-  struct string s = DS_EMPTY_INITIALIZER;
-  pivot_value_format_body (value, show_values, show_variables, &s);
-
-  struct table_item_text *text = xmalloc (sizeof *text);
-  *text = (struct table_item_text) {
-    .content = ds_steal_cstr (&s),
-    .footnotes = xnmalloc (value->n_footnotes, sizeof *text->footnotes),
-    .style = table_area_style_override (
-      NULL, area, value->cell_style, value->font_style, false),
-  };
-
-  for (size_t i = 0; i < value->n_footnotes; i++)
-    {
-      struct footnote *f = footnotes[value->footnotes[i]->idx];
-      if (f)
-        text->footnotes[text->n_footnotes++] = f;
-    }
-
-  return text;
-}
-
 static int
 get_table_rule (const struct table_border_style *styles,
                 enum pivot_border style_idx)
@@ -671,11 +640,11 @@ pivot_table_submit_layer (const struct pivot_table *pt,
 
   if (pt->caption && pt->show_caption)
     {
-      struct table_item_text *caption = pivot_value_to_table_item_text (
-        pt->caption, &pt->look->areas[PIVOT_AREA_CAPTION], footnotes,
-        pt->show_values, pt->show_variables);
+      struct table_cell *caption = pivot_value_to_table_cell (
+        pt->caption, &pt->look->areas[PIVOT_AREA_CAPTION], PIVOT_AREA_CAPTION,
+        footnotes, pt->show_values, pt->show_variables);
       table_item_set_caption (ti, caption);
-      table_item_text_destroy (caption);
+      table_cell_destroy (caption);
     }
 
   free (footnotes);

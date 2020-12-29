@@ -1552,22 +1552,6 @@ add_table_cell_page (struct render_pager *p, const struct table_cell *cell,
 }
 
 static void
-add_text_page (struct render_pager *p, const struct table_item_text *t,
-               int min_width)
-{
-  if (!t)
-    return;
-
-  struct table *tab = table_create (1, 1, 0, 0, 0, 0);
-  table_text (tab, 0, 0, 0, t->content);
-  for (size_t i = 0; i < t->n_footnotes; i++)
-    table_add_footnote (tab, 0, 0, t->footnotes[i]);
-  if (t->style)
-    tab->styles[0] = table_area_style_clone (tab->container, t->style);
-  render_pager_add_table (p, tab, min_width);
-}
-
-static void
 add_layers_page (struct render_pager *p,
                  const struct table_item_layers *layers, int min_width)
 {
@@ -1624,7 +1608,7 @@ render_pager_create (const struct render_params *params,
   add_table_cell_page (p, table_item_get_title (table_item), body_width);
   add_layers_page (p, table_item_get_layers (table_item), body_width);
   render_pager_add_table (p, table_ref (table_item_get_table (table_item)), 0);
-  add_text_page (p, table_item_get_caption (table_item), 0);
+  add_table_cell_page (p, table_item_get_caption (table_item), 0);
   add_footnote_page (p, table_item);
 
   /* If we're shrinking tables to fit the page length, then adjust the scale

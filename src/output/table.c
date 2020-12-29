@@ -241,7 +241,7 @@ table_collect_footnotes (const struct table_item *item,
                                    footnotes, &allocated, &n);
     }
 
-  const struct table_item_text *caption = table_item_get_caption (item);
+  const struct table_cell *caption = table_item_get_caption (item);
   if (caption)
     footnotes = add_footnotes (caption->footnotes, caption->n_footnotes,
                                footnotes, &allocated, &n);

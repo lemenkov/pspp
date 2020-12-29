@@ -410,11 +410,11 @@ tex_output_table (struct tex_driver *tex, const struct table_item *item)
 
   shipout (&tex->token_list, "\n{\\parindent=0pt\n");
 
-  const struct table_item_text *caption = table_item_get_caption (item);
+  const struct table_cell *caption = table_item_get_caption (item);
   if (caption)
     {
       shipout (&tex->token_list, "{\\sl ");
-      tex_escape_string (tex, caption->content, false);
+      tex_escape_string (tex, caption->text, false);
       shipout (&tex->token_list, "}\n\n");
     }
   struct footnote **f;
