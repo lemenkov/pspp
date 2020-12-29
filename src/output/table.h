@@ -144,7 +144,7 @@ struct font_style
     bool bold, italic, underline, markup;
     struct cell_color fg[2], bg[2];
     char *typeface;
-    int size;
+    int size;                   /* In 1/72" units. */
   };
 
 #define FONT_STYLE_INITIALIZER { FONT_STYLE_INITIALIZER__ }
