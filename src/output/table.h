@@ -156,6 +156,7 @@ void font_style_copy (struct pool *,
                       struct font_style *, const struct font_style *);
 void font_style_uninit (struct font_style *);
 void font_style_dump (const struct font_style *);
+bool font_style_equal (const struct font_style *, const struct font_style *);
 
 struct table_area_style
   {

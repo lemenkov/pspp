@@ -68,7 +68,15 @@ text_item_create_nocopy (enum text_item_type type, char *text, char *label)
     .output_item.label = label,
     .text = text,
     .type = type,
+    .style = FONT_STYLE_INITIALIZER,
   };
+
+  if (type == TEXT_ITEM_SYNTAX || type == TEXT_ITEM_LOG)
+    {
+      free (item->style.typeface);
+      item->style.typeface = xstrdup ("Monospaced");
+    }
+
   return item;
 }
 
@@ -118,13 +126,8 @@ text_item_unshare (struct text_item *old)
     .output_item = OUTPUT_ITEM_CLONE_INITIALIZER (&old->output_item),
     .text = xstrdup (old->text),
     .type = old->type,
-    .bold = old->bold,
-    .italic = old->italic,
-    .underline = old->underline,
-    .markup = old->markup,
-    .typeface = old->typeface ? xstrdup (old->typeface) : NULL,
-    .size = old->size
   };
+  font_style_copy (NULL, &new->style, &old->style);
   return new;
 }
 
@@ -143,14 +146,8 @@ text_item_append (struct text_item *dst, const struct text_item *src)
       || (dst->type != TEXT_ITEM_SYNTAX && dst->type != TEXT_ITEM_LOG)
       || strcmp (output_item_get_label (&dst->output_item),
                  output_item_get_label (&src->output_item))
-      || dst->bold != src->bold
-      || dst->italic != src->italic
-      || dst->underline != src->underline
-      || dst->markup
-      || src->markup
-      || strcmp (dst->typeface ? dst->typeface : "",
-                 src->typeface ? src->typeface : "")
-      || dst->size != src->size)
+      || !font_style_equal (&dst->style, &src->style)
+      || dst->style.markup)
     return false;
   else
     {
@@ -167,20 +164,15 @@ text_item_to_table_item (struct text_item *text_item)
   struct table *tab = table_create (1, 1, 0, 0, 0, 0);
 
   struct table_area_style *style = pool_alloc (tab->container, sizeof *style);
-  *style = (struct table_area_style) { TABLE_AREA_STYLE_INITIALIZER__,
-                                       .cell_style.halign = TABLE_HALIGN_LEFT };
-  struct font_style *font_style = &style->font_style;
-  if (text_item->typeface)
-    font_style->typeface = pool_strdup (tab->container, text_item->typeface);
-  font_style->size = text_item->size;
-  font_style->bold = text_item->bold;
-  font_style->italic = text_item->italic;
-  font_style->underline = text_item->underline;
-  font_style->markup = text_item->markup;
+  *style = (struct table_area_style) {
+    .cell_style = CELL_STYLE_INITIALIZER,
+    .cell_style.halign = TABLE_HALIGN_LEFT,
+  };
+  font_style_copy (tab->container, &style->font_style, &text_item->style);
   tab->styles[0] = style;
 
   int opts = 0;
-  if (text_item->markup)
+  if (text_item->style.markup)
     opts |= TAB_MARKUP;
   if (text_item->type == TEXT_ITEM_SYNTAX || text_item->type == TEXT_ITEM_LOG)
     opts |= TAB_FIX;
@@ -202,7 +194,7 @@ text_item_destroy (struct output_item *output_item)
 {
   struct text_item *item = to_text_item (output_item);
   free (item->text);
-  free (item->typeface);
+  font_style_uninit (&item->style);
   free (item);
 }
 

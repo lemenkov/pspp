@@ -381,6 +381,22 @@ font_style_dump (const struct font_style *f)
     fputs (" underline", stdout);
 }
 
+bool
+font_style_equal (const struct font_style *a, const struct font_style *b)
+{
+  return (a->bold == b->bold
+          && a->italic == b->italic
+          && a->underline == b->underline
+          && a->markup == b->markup
+          && cell_color_equal (&a->fg[0], &b->fg[0])
+          && cell_color_equal (&a->fg[1], &b->fg[1])
+          && cell_color_equal (&a->bg[0], &b->bg[0])
+          && cell_color_equal (&a->bg[1], &b->bg[1])
+          && !strcmp (a->typeface ? a->typeface : "",
+                      b->typeface ? b->typeface : "")
+          && a->size == b->size);
+}
+
 void
 cell_style_dump (const struct cell_style *c)
 {

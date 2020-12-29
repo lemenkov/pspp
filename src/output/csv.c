@@ -288,7 +288,7 @@ csv_submit (struct output_driver *driver,
 
       csv_put_separator (csv);
 
-      if (text_item->markup)
+      if (text_item->style.markup)
         {
           char *plain_text = output_get_text_from_markup (text);
           csv_output_lines (csv, plain_text);
