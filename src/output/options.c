@@ -516,7 +516,7 @@ lookup_color_name (const char *s)
   return -1;
 }
 
-static bool
+bool
 parse_color__ (const char *s, struct cell_color *color)
 {
   /* #rrrrggggbbbb */

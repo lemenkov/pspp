@@ -26,6 +26,8 @@
 #include "libpspp/compiler.h"
 #include "libpspp/hash-functions.h"
 #include "libpspp/str.h"
+#include "output/options.h"
+#include "output/table.h"
 
 #include "gl/xvasprintf.h"
 
@@ -456,182 +458,6 @@ spvxml_attr_parse_int (struct spvxml_node_context *nctx,
   return integer;
 }
 
-static int
-lookup_color_name (const char *s)
-{
-  struct color
-    {
-      struct hmap_node hmap_node;
-      const char *name;
-      int code;
-    };
-
-  static struct color colors[] =
-    {
-      { .name = "aliceblue", .code = 0xf0f8ff },
-      { .name = "antiquewhite", .code = 0xfaebd7 },
-      { .name = "aqua", .code = 0x00ffff },
-      { .name = "aquamarine", .code = 0x7fffd4 },
-      { .name = "azure", .code = 0xf0ffff },
-      { .name = "beige", .code = 0xf5f5dc },
-      { .name = "bisque", .code = 0xffe4c4 },
-      { .name = "black", .code = 0x000000 },
-      { .name = "blanchedalmond", .code = 0xffebcd },
-      { .name = "blue", .code = 0x0000ff },
-      { .name = "blueviolet", .code = 0x8a2be2 },
-      { .name = "brown", .code = 0xa52a2a },
-      { .name = "burlywood", .code = 0xdeb887 },
-      { .name = "cadetblue", .code = 0x5f9ea0 },
-      { .name = "chartreuse", .code = 0x7fff00 },
-      { .name = "chocolate", .code = 0xd2691e },
-      { .name = "coral", .code = 0xff7f50 },
-      { .name = "cornflowerblue", .code = 0x6495ed },
-      { .name = "cornsilk", .code = 0xfff8dc },
-      { .name = "crimson", .code = 0xdc143c },
-      { .name = "cyan", .code = 0x00ffff },
-      { .name = "darkblue", .code = 0x00008b },
-      { .name = "darkcyan", .code = 0x008b8b },
-      { .name = "darkgoldenrod", .code = 0xb8860b },
-      { .name = "darkgray", .code = 0xa9a9a9 },
-      { .name = "darkgreen", .code = 0x006400 },
-      { .name = "darkgrey", .code = 0xa9a9a9 },
-      { .name = "darkkhaki", .code = 0xbdb76b },
-      { .name = "darkmagenta", .code = 0x8b008b },
-      { .name = "darkolivegreen", .code = 0x556b2f },
-      { .name = "darkorange", .code = 0xff8c00 },
-      { .name = "darkorchid", .code = 0x9932cc },
-      { .name = "darkred", .code = 0x8b0000 },
-      { .name = "darksalmon", .code = 0xe9967a },
-      { .name = "darkseagreen", .code = 0x8fbc8f },
-      { .name = "darkslateblue", .code = 0x483d8b },
-      { .name = "darkslategray", .code = 0x2f4f4f },
-      { .name = "darkslategrey", .code = 0x2f4f4f },
-      { .name = "darkturquoise", .code = 0x00ced1 },
-      { .name = "darkviolet", .code = 0x9400d3 },
-      { .name = "deeppink", .code = 0xff1493 },
-      { .name = "deepskyblue", .code = 0x00bfff },
-      { .name = "dimgray", .code = 0x696969 },
-      { .name = "dimgrey", .code = 0x696969 },
-      { .name = "dodgerblue", .code = 0x1e90ff },
-      { .name = "firebrick", .code = 0xb22222 },
-      { .name = "floralwhite", .code = 0xfffaf0 },
-      { .name = "forestgreen", .code = 0x228b22 },
-      { .name = "fuchsia", .code = 0xff00ff },
-      { .name = "gainsboro", .code = 0xdcdcdc },
-      { .name = "ghostwhite", .code = 0xf8f8ff },
-      { .name = "gold", .code = 0xffd700 },
-      { .name = "goldenrod", .code = 0xdaa520 },
-      { .name = "gray", .code = 0x808080 },
-      { .name = "green", .code = 0x008000 },
-      { .name = "greenyellow", .code = 0xadff2f },
-      { .name = "grey", .code = 0x808080 },
-      { .name = "honeydew", .code = 0xf0fff0 },
-      { .name = "hotpink", .code = 0xff69b4 },
-      { .name = "indianred", .code = 0xcd5c5c },
-      { .name = "indigo", .code = 0x4b0082 },
-      { .name = "ivory", .code = 0xfffff0 },
-      { .name = "khaki", .code = 0xf0e68c },
-      { .name = "lavender", .code = 0xe6e6fa },
-      { .name = "lavenderblush", .code = 0xfff0f5 },
-      { .name = "lawngreen", .code = 0x7cfc00 },
-      { .name = "lemonchiffon", .code = 0xfffacd },
-      { .name = "lightblue", .code = 0xadd8e6 },
-      { .name = "lightcoral", .code = 0xf08080 },
-      { .name = "lightcyan", .code = 0xe0ffff },
-      { .name = "lightgoldenrodyellow", .code = 0xfafad2 },
-      { .name = "lightgray", .code = 0xd3d3d3 },
-      { .name = "lightgreen", .code = 0x90ee90 },
-      { .name = "lightgrey", .code = 0xd3d3d3 },
-      { .name = "lightpink", .code = 0xffb6c1 },
-      { .name = "lightsalmon", .code = 0xffa07a },
-      { .name = "lightseagreen", .code = 0x20b2aa },
-      { .name = "lightskyblue", .code = 0x87cefa },
-      { .name = "lightslategray", .code = 0x778899 },
-      { .name = "lightslategrey", .code = 0x778899 },
-      { .name = "lightsteelblue", .code = 0xb0c4de },
-      { .name = "lightyellow", .code = 0xffffe0 },
-      { .name = "lime", .code = 0x00ff00 },
-      { .name = "limegreen", .code = 0x32cd32 },
-      { .name = "linen", .code = 0xfaf0e6 },
-      { .name = "magenta", .code = 0xff00ff },
-      { .name = "maroon", .code = 0x800000 },
-      { .name = "mediumaquamarine", .code = 0x66cdaa },
-      { .name = "mediumblue", .code = 0x0000cd },
-      { .name = "mediumorchid", .code = 0xba55d3 },
-      { .name = "mediumpurple", .code = 0x9370db },
-      { .name = "mediumseagreen", .code = 0x3cb371 },
-      { .name = "mediumslateblue", .code = 0x7b68ee },
-      { .name = "mediumspringgreen", .code = 0x00fa9a },
-      { .name = "mediumturquoise", .code = 0x48d1cc },
-      { .name = "mediumvioletred", .code = 0xc71585 },
-      { .name = "midnightblue", .code = 0x191970 },
-      { .name = "mintcream", .code = 0xf5fffa },
-      { .name = "mistyrose", .code = 0xffe4e1 },
-      { .name = "moccasin", .code = 0xffe4b5 },
-      { .name = "navajowhite", .code = 0xffdead },
-      { .name = "navy", .code = 0x000080 },
-      { .name = "oldlace", .code = 0xfdf5e6 },
-      { .name = "olive", .code = 0x808000 },
-      { .name = "olivedrab", .code = 0x6b8e23 },
-      { .name = "orange", .code = 0xffa500 },
-      { .name = "orangered", .code = 0xff4500 },
-      { .name = "orchid", .code = 0xda70d6 },
-      { .name = "palegoldenrod", .code = 0xeee8aa },
-      { .name = "palegreen", .code = 0x98fb98 },
-      { .name = "paleturquoise", .code = 0xafeeee },
-      { .name = "palevioletred", .code = 0xdb7093 },
-      { .name = "papayawhip", .code = 0xffefd5 },
-      { .name = "peachpuff", .code = 0xffdab9 },
-      { .name = "peru", .code = 0xcd853f },
-      { .name = "pink", .code = 0xffc0cb },
-      { .name = "plum", .code = 0xdda0dd },
-      { .name = "powderblue", .code = 0xb0e0e6 },
-      { .name = "purple", .code = 0x800080 },
-      { .name = "red", .code = 0xff0000 },
-      { .name = "rosybrown", .code = 0xbc8f8f },
-      { .name = "royalblue", .code = 0x4169e1 },
-      { .name = "saddlebrown", .code = 0x8b4513 },
-      { .name = "salmon", .code = 0xfa8072 },
-      { .name = "sandybrown", .code = 0xf4a460 },
-      { .name = "seagreen", .code = 0x2e8b57 },
-      { .name = "seashell", .code = 0xfff5ee },
-      { .name = "sienna", .code = 0xa0522d },
-      { .name = "silver", .code = 0xc0c0c0 },
-      { .name = "skyblue", .code = 0x87ceeb },
-      { .name = "slateblue", .code = 0x6a5acd },
-      { .name = "slategray", .code = 0x708090 },
-      { .name = "slategrey", .code = 0x708090 },
-      { .name = "snow", .code = 0xfffafa },
-      { .name = "springgreen", .code = 0x00ff7f },
-      { .name = "steelblue", .code = 0x4682b4 },
-      { .name = "tan", .code = 0xd2b48c },
-      { .name = "teal", .code = 0x008080 },
-      { .name = "thistle", .code = 0xd8bfd8 },
-      { .name = "tomato", .code = 0xff6347 },
-      { .name = "turquoise", .code = 0x40e0d0 },
-      { .name = "violet", .code = 0xee82ee },
-      { .name = "wheat", .code = 0xf5deb3 },
-      { .name = "white", .code = 0xffffff },
-      { .name = "whitesmoke", .code = 0xf5f5f5 },
-      { .name = "yellow", .code = 0xffff00 },
-      { .name = "yellowgreen", .code = 0x9acd32 },
-    };
-
-  static struct hmap color_table = HMAP_INITIALIZER (color_table);
-
-  if (hmap_is_empty (&color_table))
-    for (size_t i = 0; i < sizeof colors / sizeof *colors; i++)
-      hmap_insert (&color_table, &colors[i].hmap_node,
-                   hash_string (colors[i].name, 0));
-
-  const struct color *color;
-  HMAP_FOR_EACH_WITH_HASH (color, struct color, hmap_node,
-                           hash_string (s, 0), &color_table)
-    if (!strcmp (color->name, s))
-      return color->code;
-  return -1;
-}
-
 int
 spvxml_attr_parse_color (struct spvxml_node_context *nctx,
                          const struct spvxml_attribute *a)
@@ -639,14 +465,9 @@ spvxml_attr_parse_color (struct spvxml_node_context *nctx,
   if (!a->value || !strcmp (a->value, "transparent"))
     return -1;
 
-  int r, g, b;
-  if (sscanf (a->value, "#%2x%2x%2x", &r, &g, &b) == 3
-      || sscanf (a->value, "%2x%2x%2x", &r, &g, &b) == 3)
-    return (r << 16) | (g << 8) | b;
-
-  int code = lookup_color_name (a->value);
-  if (code >= 0)
-    return code;
+  struct cell_color color;
+  if (parse_color__ (a->value, &color))
+    return (color.r << 16) | (color.g << 8) | color.b;
 
   spvxml_attr_error (nctx, "Attribute %s has unexpected value "
                      "\"%s\" expecting #rrggbb or rrggbb or web color name.",
