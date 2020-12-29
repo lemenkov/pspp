@@ -308,7 +308,9 @@ html_submit (struct output_driver *driver,
           break;
 
         case TEXT_ITEM_LOG:
-          print_title_tag (html->file, "pre", s); /* should be <P><TT> */
+          fprintf (html->file, "<p>");
+          escape_string (html->file, s, " ", "<br>");
+          fprintf (html->file, "</p>\n");
           break;
         }
     }
@@ -316,7 +318,9 @@ html_submit (struct output_driver *driver,
     {
       const struct message_item *message_item = to_message_item (output_item);
       char *s = msg_to_string (message_item_get_msg (message_item));
-      print_title_tag (html->file, "p", s);
+      fprintf (html->file, "<p>");
+      escape_string (html->file, s, " ", "<br>");
+      fprintf (html->file, "</p>\n");
       free (s);
     }
 }
