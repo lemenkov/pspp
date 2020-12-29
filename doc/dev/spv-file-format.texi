@@ -517,9 +517,30 @@ inclusive.
 
 The CSS in the corpus is simple.  To understand it, a parser only
 needs to be able to skip white space, @code{<!--}, and @code{-->}, and
-parse style only for @code{p} elements.  Only @code{font-weight},
-@code{font-style}, @code{font-decoration}, @code{font-family}, and
-@code{font-size} matter.
+parse style only for @code{p} elements.  Only the following properties
+matter:
+
+@table @code
+@item color
+In the form @code{@var{rr}@var{gg}@var{bb}}, e.g. @code{000000}, with
+no leading @samp{#}.
+
+@item font-weight
+Either @code{bold} or @code{normal}.
+
+@item font-style
+Either @code{italic} or @code{normal}.
+
+@item text-decoration
+Either @code{underline} or @code{normal}.
+
+@item font-family
+A font name, commonly @code{Monospaced} or @code{SansSerif}.
+
+@item font-size
+Values claim to be in points, e.g.@: @code{14pt}, but the values are
+actually in ``device-independent pixels'' (px), at 96/inch.
+@end table
 
 This element has the following attributes.
 
