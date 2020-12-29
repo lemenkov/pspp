@@ -22,6 +22,7 @@
 #include <string.h>
 
 #include "libpspp/str.h"
+#include "output/options.h"
 #include "output/pivot-table.h"
 #include "spv.h"
 
@@ -114,7 +115,13 @@ static void
 css_decode_key_value (const char *key, const char *value,
                       struct font_style *font)
 {
-  if (!strcmp (key, "font-weight"))
+  if (!strcmp (key, "color"))
+    {
+      struct cell_color color;
+      if (parse_color__ (value, &color))
+        font->fg[0] = font->bg[0] = color;
+    }
+  else if (!strcmp (key, "font-weight"))
     font->bold = !strcmp (value, "bold");
   else if (!strcmp (key, "font-style"))
     font->italic = !strcmp (value, "italic");
@@ -128,7 +135,7 @@ css_decode_key_value (const char *key, const char *value,
   else if (!strcmp (key, "font-size"))
     font->size = atoi (value) * 3 / 4;
 
-  /* fg_color, bg_color */
+  /* bg_color */
 
 }
 
