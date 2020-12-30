@@ -1678,8 +1678,7 @@ pivot_table_dump (const struct pivot_table *table, int indentation)
           pivot_value_dump (d->root->name);
           fputs (" =", stdout);
 
-          struct pivot_value **names = xnmalloc (layer_axis->label_depth,
-                                                 sizeof *names);
+          struct pivot_value **names = xnmalloc (d->n_leaves, sizeof *names);
           size_t n_names = 0;
           for (const struct pivot_category *c
                  = d->presentation_leaves[layer_indexes[i]];
