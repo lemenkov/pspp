@@ -846,6 +846,7 @@ decode_spvlb_table (const struct spvlb_table *in, struct pivot_table **outp)
   out->rotate_outer_row_labels = in->header->rotate_outer_row_labels;
   out->look->row_labels_in_corner = in->ts->show_row_labels_in_corner;
   out->show_grid_lines = in->borders->show_grid_lines;
+  out->show_title = true;
   out->show_caption = true;
   out->look->footnote_marker_superscripts = in->ts->footnote_marker_superscripts;
   out->look->omit_empty = in->ts->omit_empty;
@@ -861,6 +862,7 @@ decode_spvlb_table (const struct spvlb_table *in, struct pivot_table **outp)
         goto error;
 
       out->show_caption = x1->show_caption;
+      out->show_title = x1->show_title != 10;
     }
 
   /* Column and row display settings. */

@@ -838,6 +838,7 @@ pivot_table_create__ (struct pivot_value *title, const char *subtype)
 {
   struct pivot_table *table = xzalloc (sizeof *table);
   table->ref_cnt = 1;
+  table->show_title = true;
   table->show_caption = true;
   table->weight_format = (struct fmt_spec) { FMT_F, 40, 0 };
   table->title = title;

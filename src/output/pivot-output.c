@@ -457,7 +457,7 @@ pivot_table_submit_layer (const struct pivot_table *pt,
 
   struct table_item *ti = table_item_create (table, NULL, NULL, pt->notes);
 
-  if (pt->title)
+  if (pt->title && pt->show_title)
     {
       struct table_item_text *title = pivot_value_to_table_item_text (
         pt->title, &pt->look->areas[PIVOT_AREA_TITLE], footnotes,

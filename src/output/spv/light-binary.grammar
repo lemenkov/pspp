@@ -126,7 +126,9 @@ Y1 =>
 Y2 => CustomCurrency byte[missing] bool[x17]
 
 X1 =>
-   bool[x14] byte[x15] bool[x16]
+   bool[x14]
+   byte[show-title]
+   bool[x16]
    byte[lang]
    byte[show-variables]
    byte[show-values]

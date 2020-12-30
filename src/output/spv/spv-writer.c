@@ -714,7 +714,9 @@ put_custom_currency (struct buf *buf, const struct pivot_table *table)
 static void
 put_x1 (struct buf *buf, const struct pivot_table *table)
 {
-  put_bytes (buf, "\0\1\0", 3);
+  put_byte (buf, 0);
+  put_byte (buf, table->show_title ? 1 : 10);
+  put_byte (buf, 0);
   put_byte (buf, 0);
   put_show_values (buf, table->show_variables);
   put_show_values (buf, table->show_values);
@@ -723,7 +725,7 @@ put_x1 (struct buf *buf, const struct pivot_table *table)
   for (int i = 0; i < 17; i++)
     put_byte (buf, 0);
   put_bool (buf, false);
-  put_byte (buf, 1);
+  put_byte (buf, table->show_caption);
 }
 
 static void

@@ -430,6 +430,7 @@ struct pivot_table
     bool rotate_inner_column_labels;
     bool rotate_outer_row_labels;
     bool show_grid_lines;
+    bool show_title;
     bool show_caption;
     size_t *current_layer; /* axis[PIVOT_AXIS_LAYER].n_dimensions elements. */
     enum settings_value_show show_values;

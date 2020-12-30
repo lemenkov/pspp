@@ -1396,7 +1396,9 @@ X1 only appears in version 3 members.
 
 @example
 X1 =>
-    bool byte[x15] bool[x16]
+    bool
+    byte[show-title]
+    bool[x16]
     byte[lang]
     byte[show-variables]
     byte[show-values]
@@ -1423,9 +1425,11 @@ means to display the value, 2 to display the value label when
 available, 3 to display both.  Again, the most common value is 0,
 which probably means to use a global default.
 
+@code{show-title} is 1 to show the caption, 10 to hide it.
+
 @code{show-caption} is true to show the caption, false to hide it.
 
-A writer may safely use false for @code{x14}, 1 for @code{x15}, false
+A writer may safely use false for @code{x14}, false
 for @code{x16}, -1 for @code{x18} and @code{x19}, and false for
 @code{x20}.
 
