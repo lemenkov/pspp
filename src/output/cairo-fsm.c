@@ -185,8 +185,6 @@ xr_draw_line (struct xr_fsm *xr, int x0, int y0, int x1, int y1, int style,
               const struct cell_color *color)
 {
   cairo_new_path (xr->cairo);
-  if (!xr->style->use_system_colors)
-    xr_set_source_rgba (xr->cairo, color);
   cairo_set_line_width (
     xr->cairo,
     xr_to_pt (style == RENDER_LINE_THICK ? XR_LINE_WIDTH * 2
@@ -194,7 +192,14 @@ xr_draw_line (struct xr_fsm *xr, int x0, int y0, int x1, int y1, int style,
               : XR_LINE_WIDTH));
   cairo_move_to (xr->cairo, xr_to_pt (x0), xr_to_pt (y0));
   cairo_line_to (xr->cairo, xr_to_pt (x1), xr_to_pt (y1));
+
+  if (!xr->style->use_system_colors)
+    xr_set_source_rgba (xr->cairo, color);
+  if (style == RENDER_LINE_DASHED)
+    cairo_set_dash (xr->cairo, (double[]) { 2 }, 1, 0);
   cairo_stroke (xr->cairo);
+  if (style == RENDER_LINE_DASHED)
+    cairo_set_dash (xr->cairo, NULL, 0, 0);
 }
 
 static void UNUSED
