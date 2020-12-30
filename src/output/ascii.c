@@ -77,70 +77,96 @@ enum
     ASCII_N_LINES
   };
 
-#define N_BOX (ASCII_N_LINES * ASCII_N_LINES \
-               * ASCII_N_LINES * ASCII_N_LINES)
-
-static const ucs4_t ascii_box_chars[N_BOX] =
+struct box_chars
   {
-    ' ', '|', '#',
-    '-', '+', '#',
-    '=', '#', '#',
-    '|', '|', '#',
-    '+', '+', '#',
-    '#', '#', '#',
-    '#', '#', '#',
-    '#', '#', '#',
-    '#', '#', '#',
-    '-', '+', '#',
-    '-', '+', '#',
-    '#', '#', '#',
-    '+', '+', '#',
-    '+', '+', '#',
-    '#', '#', '#',
-    '#', '#', '#',
-    '#', '#', '#',
-    '#', '#', '#',
-    '=', '#', '#',
-    '#', '#', '#',
-    '=', '#', '#',
-    '#', '#', '#',
-    '#', '#', '#',
-    '#', '#', '#',
-    '#', '#', '#',
-    '#', '#', '#',
-    '#', '#', '#',
+    ucs4_t c[ASCII_N_LINES][ASCII_N_LINES][ASCII_N_LINES][ASCII_N_LINES];
   };
 
-static const ucs4_t unicode_box_chars[N_BOX] =
-  {
-    0x0020, 0x2575, 0x2551,
-    0x2574, 0x256f, 0x255c,
-    0x2550, 0x255b, 0x255d,
-    0x2577, 0x2502, 0x2551,
-    0x256e, 0x2524, 0x2562,
-    0x2555, 0x2561, 0x2563,
-    0x2551, 0x2551, 0x2551,
-    0x2556, 0x2562, 0x2562,
-    0x2557, 0x2563, 0x2563,
-    0x2576, 0x2570, 0x2559,
-    0x2500, 0x2534, 0x2568,
-    0x2550, 0x2567, 0x2569,
-    0x256d, 0x251c, 0x255f,
-    0x252c, 0x253c, 0x256a,
-    0x2564, 0x256a, 0x256c,
-    0x2553, 0x255f, 0x255f,
-    0x2565, 0x256b, 0x256b,
-    0x2566, 0x256c, 0x256c,
-    0x2550, 0x2558, 0x255a,
-    0x2550, 0x2567, 0x2569,
-    0x2550, 0x2567, 0x2569,
-    0x2552, 0x255e, 0x2560,
-    0x2564, 0x256a, 0x256c,
-    0x2564, 0x256a, 0x256c,
-    0x2554, 0x2560, 0x2560,
-    0x2560, 0x256c, 0x256c,
-    0x2566, 0x256c, 0x256c,
+static const struct box_chars *
+get_ascii_box (void)
+{
+  enum {
+    _ = ASCII_LINE_NONE,
+    S = ASCII_LINE_SINGLE,
+    D = ASCII_LINE_DOUBLE,
   };
+
+  static const struct box_chars ascii_box =
+    {
+      /* r  b  l   t:  _    S    D */
+      .c[_][_][_] = { ' ', '|', '#', },
+      .c[_][_][S] = { '-', '+', '#', },
+      .c[_][_][D] = { '=', '#', '#', },
+      .c[_][S][_] = { '|', '|', '#', },
+      .c[_][S][S] = { '+', '+', '#', },
+      .c[_][S][D] = { '#', '#', '#', },
+      .c[_][D][_] = { '#', '#', '#', },
+      .c[_][D][S] = { '#', '#', '#', },
+      .c[_][D][D] = { '#', '#', '#', },
+      .c[S][_][_] = { '-', '+', '#', },
+      .c[S][_][S] = { '-', '+', '#', },
+      .c[S][_][D] = { '#', '#', '#', },
+      .c[S][S][_] = { '+', '+', '#', },
+      .c[S][S][S] = { '+', '+', '#', },
+      .c[S][S][D] = { '#', '#', '#', },
+      .c[S][D][_] = { '#', '#', '#', },
+      .c[S][D][S] = { '#', '#', '#', },
+      .c[S][D][D] = { '#', '#', '#', },
+      .c[D][_][_] = { '=', '#', '#', },
+      .c[D][_][S] = { '#', '#', '#', },
+      .c[D][_][D] = { '=', '#', '#', },
+      .c[D][S][_] = { '#', '#', '#', },
+      .c[D][S][S] = { '#', '#', '#', },
+      .c[D][S][D] = { '#', '#', '#', },
+      .c[D][D][_] = { '#', '#', '#', },
+      .c[D][D][S] = { '#', '#', '#', },
+      .c[D][D][D] = { '#', '#', '#', },
+    };
+  return &ascii_box;
+}
+
+static const struct box_chars *
+get_unicode_box (void)
+{
+  enum {
+    _ = ASCII_LINE_NONE,
+    S = ASCII_LINE_SINGLE,
+    D = ASCII_LINE_DOUBLE,
+  };
+
+  static const struct box_chars unicode_box =
+    {
+      /* r  b  l   t:   _       S       D */
+      .c[_][_][_] = { 0x0020, 0x2575, 0x2551, }, /*  ╵║ */
+      .c[_][_][S] = { 0x2574, 0x256f, 0x255c, }, /* ╴╯╜ */
+      .c[_][_][D] = { 0x2550, 0x255b, 0x255d, }, /* ═╛╝ */
+      .c[_][S][_] = { 0x2577, 0x2502, 0x2551, }, /* ╷│║ */
+      .c[_][S][S] = { 0x256e, 0x2524, 0x2562, }, /* ╮┤╢ */
+      .c[_][S][D] = { 0x2555, 0x2561, 0x2563, }, /* ╕╡╣ */
+      .c[_][D][_] = { 0x2551, 0x2551, 0x2551, }, /* ║║║ */
+      .c[_][D][S] = { 0x2556, 0x2562, 0x2562, }, /* ╖╢╢ */
+      .c[_][D][D] = { 0x2557, 0x2563, 0x2563, }, /* ╗╣╣ */
+      .c[S][_][_] = { 0x2576, 0x2570, 0x2559, }, /* ╶╰╙ */
+      .c[S][_][S] = { 0x2500, 0x2534, 0x2568, }, /* ─┴╨ */
+      .c[S][_][D] = { 0x2550, 0x2567, 0x2569, }, /* ═╧╩ */
+      .c[S][S][_] = { 0x256d, 0x251c, 0x255f, }, /* ╭├╟ */
+      .c[S][S][S] = { 0x252c, 0x253c, 0x256a, }, /* ┬┼╪ */
+      .c[S][S][D] = { 0x2564, 0x256a, 0x256c, }, /* ╤╪╬ */
+      .c[S][D][_] = { 0x2553, 0x255f, 0x255f, }, /* ╓╟╟ */
+      .c[S][D][S] = { 0x2565, 0x256b, 0x256b, }, /* ╥╫╫ */
+      .c[S][D][D] = { 0x2566, 0x256c, 0x256c, }, /* ╦╬╬ */
+      .c[D][_][_] = { 0x2550, 0x2558, 0x255a, }, /* ═╘╚ */
+      .c[D][_][S] = { 0x2550, 0x2567, 0x2569, }, /* ═╧╩ */
+      .c[D][_][D] = { 0x2550, 0x2567, 0x2569, }, /* ═╧╩ */
+      .c[D][S][_] = { 0x2552, 0x255e, 0x2560, }, /* ╒╞╠ */
+      .c[D][S][S] = { 0x2564, 0x256a, 0x256c, }, /* ╤╪╬ */
+      .c[D][S][D] = { 0x2564, 0x256a, 0x256c, }, /* ╤╪╬ */
+      .c[D][D][_] = { 0x2554, 0x2560, 0x2560, }, /* ╔╠╠ */
+      .c[D][D][S] = { 0x2560, 0x256c, 0x256c, }, /* ╠╬╬ */
+      .c[D][D][D] = { 0x2566, 0x256c, 0x256c, }, /* ╦╬╬ */
+    };
+  return &unicode_box;
+}
 
 static int
 ascii_line_from_render_line (int render_line)
@@ -165,8 +191,9 @@ ascii_line_from_render_line (int render_line)
 
 }
 
-static int
-make_box_index (int left_, int right_, int top_, int bottom_)
+static ucs4_t
+box_get (const struct box_chars *box,
+         int left_, int right_, int top_, int bottom_)
 {
   bool rtl = render_direction_rtl ();
   int left = ascii_line_from_render_line (rtl ? right_ : left_);
@@ -174,11 +201,7 @@ make_box_index (int left_, int right_, int top_, int bottom_)
   int top = ascii_line_from_render_line (top_);
   int bottom = ascii_line_from_render_line (bottom_);
 
-  int idx = right;
-  idx = idx * ASCII_N_LINES + bottom;
-  idx = idx * ASCII_N_LINES + left;
-  idx = idx * ASCII_N_LINES + top;
-  return idx;
+  return box->c[right][bottom][left][top];
 }
 
 /* ASCII output driver. */
@@ -207,7 +230,7 @@ struct ascii_driver
 
     int min_hbreak;             /* Min cell size to break across pages. */
 
-    const ucs4_t *box;          /* Line & box drawing characters. */
+    const struct box_chars *box; /* Line & box drawing characters. */
 
     /* Internal state. */
     struct file_handle *handle;
@@ -305,7 +328,7 @@ ascii_create (struct  file_handle *fh, enum settings_output_devices device_type,
                     "ascii", BOX_ASCII,
                     "unicode", BOX_UNICODE,
                     NULL_SENTINEL);
-  a->box = box == BOX_ASCII ? ascii_box_chars : unicode_box_chars;
+  a->box = box == BOX_ASCII ? get_ascii_box () : get_unicode_box ();
 
   a->file = NULL;
   a->error = false;
@@ -574,8 +597,7 @@ ascii_draw_line (void *a_, int bb[TABLE_N_AXES][2],
     return;
 
   /* Draw. */
-  uc = a->box[make_box_index (styles[V][0], styles[V][1],
-                              styles[H][0], styles[H][1])];
+  uc = box_get (a->box, styles[V][0], styles[V][1], styles[H][0], styles[H][1]);
   mblen = u8_uctomb (CHAR_CAST (uint8_t *, mbchar), uc, 6);
   for (y = y0; y < y1; y++)
     {
