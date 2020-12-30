@@ -16,146 +16,126 @@
 #
 ## Process this file with automake to produce Makefile.in  -*- makefile -*-
 
-check_PROGRAMS += \
-	tests/data/datasheet-test \
-	tests/data/sack \
-	tests/data/spreadsheet-test \
-	tests/data/inexactify \
-	tests/language/lexer/command-name-test \
-	tests/language/lexer/scan-test \
-	tests/language/lexer/segment-test \
-	tests/libpspp/abt-test \
-	tests/libpspp/bt-test \
-	tests/libpspp/cmac-aes256-test \
-	tests/libpspp/encoding-guesser-test \
-	tests/libpspp/heap-test \
-	tests/libpspp/hmap-test \
-	tests/libpspp/hmapx-test \
-	tests/libpspp/i18n-test \
-	tests/libpspp/line-reader-test \
-	tests/libpspp/ll-test \
-	tests/libpspp/llx-test \
-	tests/libpspp/range-map-test \
-	tests/libpspp/range-set-test \
-	tests/libpspp/range-tower-test \
-	tests/libpspp/sparse-array-test \
-	tests/libpspp/sparse-xarray-test \
-	tests/libpspp/str-test \
-	tests/libpspp/string-map-test \
-	tests/libpspp/stringi-map-test \
-	tests/libpspp/string-set-test \
-	tests/libpspp/stringi-set-test \
-	tests/libpspp/tower-test \
-	tests/libpspp/u8-istream-test \
-	tests/libpspp/zip-test \
-	tests/math/chart-get-ticks-format-test \
-	tests/math/chart-get-scale-test \
-	tests/output/render-test \
-	tests/output/tex-glyphs \
-	tests/output/tex-strings \
-	tests/ui/syntax-gen-test
-
-
 check-programs: $(check_PROGRAMS)
 
+check_PROGRAMS += tests/data/datasheet-test
 tests_data_datasheet_test_SOURCES = \
 	tests/data/datasheet-test.c
 tests_data_datasheet_test_LDADD = src/libpspp-core.la
 tests_data_datasheet_test_CFLAGS = $(AM_CFLAGS)
 
+check_PROGRAMS += tests/data/sack
 tests_data_sack_SOURCES = \
 	tests/data/sack.c
 tests_data_sack_LDADD = src/libpspp-core.la
 tests_data_sack_CFLAGS = $(AM_CFLAGS)
 
-
+check_PROGRAMS += tests/data/spreadsheet-test
 tests_data_spreadsheet_test_SOURCES = \
 	tests/data/spreadsheet-test.c
 tests_data_spreadsheet_test_LDADD = src/libpspp-core.la
 tests_data_spreadsheet_test_CFLAGS = $(AM_CFLAGS)
 
+check_PROGRAMS += tests/libpspp/line-reader-test
 tests_libpspp_line_reader_test_SOURCES = tests/libpspp/line-reader-test.c
 tests_libpspp_line_reader_test_LDADD = src/libpspp-core.la
 
+check_PROGRAMS += tests/libpspp/ll-test
 tests_libpspp_ll_test_SOURCES = \
 	src/libpspp/ll.c \
 	tests/libpspp/ll-test.c
 tests_libpspp_ll_test_CFLAGS = $(AM_CFLAGS)
 
+check_PROGRAMS += tests/libpspp/llx-test
 tests_libpspp_llx_test_SOURCES = \
 	src/libpspp/ll.c \
 	src/libpspp/llx.c \
 	tests/libpspp/llx-test.c
 tests_libpspp_llx_test_CFLAGS = $(AM_CFLAGS)
 
+check_PROGRAMS += tests/libpspp/encoding-guesser-test
 tests_libpspp_encoding_guesser_test_SOURCES = \
 	tests/libpspp/encoding-guesser-test.c
 tests_libpspp_encoding_guesser_test_LDADD = src/libpspp-core.la
 
+check_PROGRAMS += tests/libpspp/heap-test
 tests_libpspp_heap_test_SOURCES = \
 	tests/libpspp/heap-test.c
 tests_libpspp_heap_test_CPPFLAGS = $(AM_CPPFLAGS) -DASSERT_LEVEL=10
 tests_libpspp_heap_test_LDADD = src/libpspp/liblibpspp.la gl/libgl.la
 
+check_PROGRAMS += tests/libpspp/hmap-test
 tests_libpspp_hmap_test_SOURCES = \
 	src/libpspp/hmap.c \
 	tests/libpspp/hmap-test.c
 tests_libpspp_hmap_test_CPPFLAGS = $(AM_CPPFLAGS) -DASSERT_LEVEL=10
 
+check_PROGRAMS += tests/libpspp/hmapx-test
 tests_libpspp_hmapx_test_SOURCES = \
 	src/libpspp/hmap.c \
 	src/libpspp/hmapx.c \
 	tests/libpspp/hmapx-test.c
 tests_libpspp_hmapx_test_CPPFLAGS = $(AM_CPPFLAGS) -DASSERT_LEVEL=10
 
+check_PROGRAMS += tests/libpspp/i18n-test
 tests_libpspp_i18n_test_SOURCES = tests/libpspp/i18n-test.c
 tests_libpspp_i18n_test_LDADD = src/libpspp-core.la gl/libgl.la
 
+check_PROGRAMS += tests/libpspp/abt-test
 tests_libpspp_abt_test_SOURCES = \
 	src/libpspp/abt.c \
 	tests/libpspp/abt-test.c
 tests_libpspp_abt_test_CPPFLAGS = $(AM_CPPFLAGS) -DASSERT_LEVEL=10
 
+check_PROGRAMS += tests/libpspp/bt-test
 tests_libpspp_bt_test_SOURCES = \
 	src/libpspp/bt.c \
 	tests/libpspp/bt-test.c
 tests_libpspp_bt_test_CPPFLAGS = $(AM_CPPFLAGS) -DASSERT_LEVEL=10
 
+check_PROGRAMS += tests/libpspp/cmac-aes256-test
 tests_libpspp_cmac_aes256_test_SOURCES = \
 	src/libpspp/cmac-aes256.c \
 	tests/libpspp/cmac-aes256-test.c
 tests_libpspp_cmac_aes256_test_CPPFLAGS = $(AM_CPPFLAGS) -DASSERT_LEVEL=10
 
+check_PROGRAMS += tests/libpspp/range-map-test
 tests_libpspp_range_map_test_SOURCES = \
 	src/libpspp/bt.c \
 	src/libpspp/range-map.c \
 	tests/libpspp/range-map-test.c
 tests_libpspp_range_map_test_CPPFLAGS = $(AM_CPPFLAGS) -DASSERT_LEVEL=10
 
+check_PROGRAMS += tests/libpspp/range-set-test
 tests_libpspp_range_set_test_SOURCES = \
 	tests/libpspp/range-set-test.c
 tests_libpspp_range_set_test_CPPFLAGS = $(AM_CPPFLAGS) -DASSERT_LEVEL=10
 tests_libpspp_range_set_test_LDADD = src/libpspp/liblibpspp.la gl/libgl.la
 
+check_PROGRAMS += tests/libpspp/range-tower-test
 tests_libpspp_range_tower_test_SOURCES = \
 	tests/libpspp/range-tower-test.c
 tests_libpspp_range_tower_test_CPPFLAGS = $(AM_CPPFLAGS) -DASSERT_LEVEL=10
 tests_libpspp_range_tower_test_LDADD = src/libpspp/liblibpspp.la gl/libgl.la
 
+check_PROGRAMS += tests/libpspp/str-test
 tests_libpspp_str_test_SOURCES = \
 	tests/libpspp/str-test.c
 tests_libpspp_str_test_LDADD = src/libpspp/liblibpspp.la gl/libgl.la
 
+check_PROGRAMS += tests/libpspp/string-map-test
 tests_libpspp_string_map_test_SOURCES = \
 	tests/libpspp/string-map-test.c
 tests_libpspp_string_map_test_CPPFLAGS = $(AM_CPPFLAGS) -DASSERT_LEVEL=10
 tests_libpspp_string_map_test_LDADD = src/libpspp/liblibpspp.la gl/libgl.la
 
+check_PROGRAMS += tests/libpspp/stringi-map-test
 tests_libpspp_stringi_map_test_SOURCES = \
 	tests/libpspp/stringi-map-test.c
 tests_libpspp_stringi_map_test_CPPFLAGS = $(AM_CPPFLAGS) -DASSERT_LEVEL=10
 tests_libpspp_stringi_map_test_LDADD = src/libpspp-core.la
 
+check_PROGRAMS += tests/libpspp/string-set-test
 tests_libpspp_string_set_test_SOURCES = \
 	src/libpspp/hash-functions.c \
 	src/libpspp/hmap.c \
@@ -163,24 +143,29 @@ tests_libpspp_string_set_test_SOURCES = \
 	tests/libpspp/string-set-test.c
 tests_libpspp_string_set_test_CPPFLAGS = $(AM_CPPFLAGS) -DASSERT_LEVEL=10
 
+check_PROGRAMS += tests/libpspp/stringi-set-test
 tests_libpspp_stringi_set_test_SOURCES = \
 	tests/libpspp/stringi-set-test.c
 tests_libpspp_stringi_set_test_CPPFLAGS = $(AM_CPPFLAGS) -DASSERT_LEVEL=10
 tests_libpspp_stringi_set_test_LDADD = src/libpspp-core.la
 
+check_PROGRAMS += tests/libpspp/tower-test
 tests_libpspp_tower_test_SOURCES = \
 	tests/libpspp/tower-test.c
 tests_libpspp_tower_test_CPPFLAGS = $(AM_CPPFLAGS) -DASSERT_LEVEL=10
 tests_libpspp_tower_test_LDADD = src/libpspp/liblibpspp.la gl/libgl.la
 
+check_PROGRAMS += tests/libpspp/u8-istream-test
 tests_libpspp_u8_istream_test_SOURCES = tests/libpspp/u8-istream-test.c
 tests_libpspp_u8_istream_test_LDADD = src/libpspp-core.la
 
+check_PROGRAMS += tests/libpspp/sparse-array-test
 tests_libpspp_sparse_array_test_SOURCES = \
 	tests/libpspp/sparse-array-test.c
 tests_libpspp_sparse_array_test_CPPFLAGS = $(AM_CPPFLAGS) -DASSERT_LEVEL=10
 tests_libpspp_sparse_array_test_LDADD = src/libpspp/liblibpspp.la gl/libgl.la
 
+check_PROGRAMS += tests/libpspp/sparse-xarray-test
 tests_libpspp_sparse_xarray_test_SOURCES = \
 	tests/libpspp/sparse-xarray-test.c
 tests_libpspp_sparse_xarray_test_CPPFLAGS = $(AM_CPPFLAGS) -DASSERT_LEVEL=10
@@ -188,6 +173,7 @@ tests_libpspp_sparse_xarray_test_LDADD = src/libpspp/liblibpspp.la \
 	src/libpspp-core.la \
 	gl/libgl.la
 
+check_PROGRAMS += tests/data/inexactify
 tests_data_inexactify_SOURCES = tests/data/inexactify.c
 
 check_PROGRAMS += tests/language/lexer/command-name-test
@@ -264,11 +250,13 @@ tests_ui_syntax_gen_test_LDADD = \
 	src/libpspp-core.la \
 	$(CAIRO_LIBS)
 
+check_PROGRAMS += tests/output/tex-glyphs
 tests_output_tex_glyphs_SOURCES = \
 	tests/output/tex-glyphs.c
 tests_output_tex_glyphs_LDADD = src/libpspp-core.la src/output/liboutput.la
 tests_output_tex_glyphs_CFLAGS = $(AM_CFLAGS) -I $(top_srcdir)/src/output
 
+check_PROGRAMS += tests/output/tex-strings
 tests_output_tex_strings_SOURCES = \
 	tests/output/tex-strings.c
 tests_output_tex_strings_LDADD = src/libpspp-core.la src/output/liboutput.la
