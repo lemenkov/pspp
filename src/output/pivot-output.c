@@ -356,7 +356,19 @@ compose_headings (struct table *t,
                      show_values, show_variables, false);
         }
 
-      if (dim_index > 1)
+      /* Draw the horizontal line between dimensions, e.g. the ===== line here:
+
+         +-----------------------------------------------------+ __
+         |                         bbbb                        |  |
+         +-----------------+-----------------+-----------------+  |dim "bbbb"
+         |      bbbb1      |      bbbb2      |      bbbb3      | _|
+         +=================+=================+=================+ __
+         |       aaaa      |       aaaa      |       aaaa      |  |
+         +-----+-----+-----+-----+-----+-----+-----+-----+-----+  |dim "aaaa"
+         |aaaa1|aaaa2|aaaa3|aaaa1|aaaa2|aaaa3|aaaa1|aaaa2|aaaa3| _|
+         +-----+-----+-----+-----+-----+-----+-----+-----+-----+
+      */
+      if (dim_index != a_axis->n_dimensions - 1)
         draw_line (t, borders, dim_col_horz, a, top_row, a_ofs,
                    t->n[a] - 1);
       top_row += d->label_depth;
