@@ -2007,7 +2007,7 @@ pivot_value_format_body (const struct pivot_value *value,
 /* Appends a text representation of VALUE to OUT.  SHOW_VALUES and
    SHOW_VARIABLES control whether variable and value labels are included.
 
-   Subscripts and superscripts and footnotes are included. */
+   Subscripts and footnotes are included. */
 void
 pivot_value_format (const struct pivot_value *value,
                     enum settings_value_show show_values,
@@ -2021,9 +2021,6 @@ pivot_value_format (const struct pivot_value *value,
       for (size_t i = 0; i < value->n_subscripts; i++)
         ds_put_format (out, "%c%s", i ? ',' : '_', value->subscripts[i]);
     }
-
-  if (value->superscript)
-    ds_put_format (out, "^%s", value->superscript);
 
   for (size_t i = 0; i < value->n_footnotes; i++)
     {
@@ -2061,8 +2058,6 @@ pivot_value_destroy (struct pivot_value *value)
       for (size_t i = 0; i < value->n_subscripts; i++)
         free (value->subscripts[i]);
       free (value->subscripts);
-
-      free (value->superscript);
 
       switch (value->type)
         {

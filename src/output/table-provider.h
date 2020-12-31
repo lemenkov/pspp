@@ -57,7 +57,6 @@ struct table_cell
     char *text;                 /* A paragraph of text. */
     char **subscripts;
     size_t n_subscripts;
-    char *superscript;
     const struct footnote **footnotes;
     size_t n_footnotes;
     const struct table_area_style *style;

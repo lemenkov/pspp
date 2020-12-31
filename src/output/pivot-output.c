@@ -135,9 +135,6 @@ fill_cell (struct table *t, int x1, int y1, int x2, int y2,
       if (value->n_subscripts)
         table_add_subscripts (t, x1, y1,
                               value->subscripts, value->n_subscripts);
-
-      if (value->superscript)
-        table_add_superscript (t, x1, y1, value->superscript);
     }
 }
 

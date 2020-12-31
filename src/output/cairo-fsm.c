@@ -725,7 +725,7 @@ xr_layout_cell_text (struct xr_fsm *xr, const struct table_cell *cell,
                                 PANGO_UNDERLINE_SINGLE));
     }
 
-  if (cell->n_footnotes || cell->n_subscripts || cell->superscript)
+  if (cell->n_footnotes || cell->n_subscripts)
     {
       /* If we haven't already put TEXT into tmp, do it now. */
       if (ds_is_empty (&tmp))
@@ -741,10 +741,6 @@ xr_layout_cell_text (struct xr_fsm *xr, const struct table_cell *cell,
             ds_put_byte (&tmp, ',');
           ds_put_cstr (&tmp, cell->subscripts[i]);
         }
-
-      size_t superscript_ofs = ds_length (&tmp);
-      if (cell->superscript)
-        ds_put_cstr (&tmp, cell->superscript);
 
       size_t footnote_ofs = ds_length (&tmp);
       for (size_t i = 0; i < cell->n_footnotes; i++)
@@ -793,9 +789,9 @@ xr_layout_cell_text (struct xr_fsm *xr, const struct table_cell *cell,
                 subscript_ofs, PANGO_ATTR_INDEX_TO_TEXT_END);
       if (cell->n_subscripts)
         add_attr (attrs, pango_attr_rise_new (-3000), subscript_ofs,
-                  superscript_ofs - subscript_ofs);
-      if (cell->superscript || cell->n_footnotes)
-        add_attr (attrs, pango_attr_rise_new (3000), superscript_ofs,
+                  footnote_ofs - subscript_ofs);
+      if (cell->n_footnotes)
+        add_attr (attrs, pango_attr_rise_new (3000), footnote_ofs,
                   PANGO_ATTR_INDEX_TO_TEXT_END);
     }
 

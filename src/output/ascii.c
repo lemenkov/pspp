@@ -706,7 +706,7 @@ ascii_measure_cell_width (void *a_, const struct table_cell *cell,
   ascii_layout_cell (a, cell, bb, clip, max_width, &h);
 
   if (cell->n_footnotes || strchr (cell->text, ' ')
-      || cell->n_subscripts || cell->superscript)
+      || cell->n_subscripts)
     {
       bb[H][1] = 1;
       ascii_layout_cell (a, cell, bb, clip, min_width, &h);
@@ -907,8 +907,6 @@ add_markers (const char *text, const struct table_cell *cell)
   ds_put_cstr (&s, text);
   for (size_t i = 0; i < cell->n_subscripts; i++)
     ds_put_format (&s, "%c%s", i ? ',' : '_', cell->subscripts[i]);
-  if (cell->superscript)
-    ds_put_format (&s, "^%s", cell->superscript);
   for (size_t i = 0; i < cell->n_footnotes; i++)
     ds_put_format (&s, "[%s]", cell->footnotes[i]->marker);
   return ds_steal_cstr (&s);
@@ -927,9 +925,9 @@ ascii_layout_cell (struct ascii_driver *a, const struct table_cell *cell,
                             ? output_get_text_from_markup (cell->text)
                             : cell->text);
 
-  /* Append footnotes, subscripts, superscript if any. */
+  /* Append footnotes, subscripts if any. */
   const char *text;
-  if (cell->n_footnotes || cell->n_subscripts || cell->superscript)
+  if (cell->n_footnotes || cell->n_subscripts)
     {
       text = add_markers (plain_text, cell);
       if (plain_text != cell->text)

@@ -532,8 +532,6 @@ html_put_table_cell_text (struct html_driver *html,
         }
       fputs ("</sub>", html->file);
     }
-  if (cell->superscript)
-    escape_tag (html->file, "sup", cell->superscript, "&nbsp;", "<br>");
   html_put_footnote_markers (html, cell->footnotes, cell->n_footnotes);
 }
 

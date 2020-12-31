@@ -639,8 +639,6 @@ struct pivot_value
     char **subscripts;
     size_t n_subscripts;
 
-    char *superscript;
-
     const struct pivot_footnote **footnotes;
     size_t n_footnotes;
 

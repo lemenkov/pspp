@@ -638,15 +638,6 @@ table_add_subscripts (struct table *table, int x, int y,
     cell->subscripts[i] = pool_strdup (table->container, subscripts[i]);
 }
 
-/* Sets the superscript for column X, row Y in TABLE. */
-void
-table_add_superscript (struct table *table, int x, int y,
-                       const char *superscript)
-{
-  get_joined_cell (table, x, y)->superscript
-    = pool_strdup (table->container, superscript);
-}
-
 /* Create a footnote in TABLE with MARKER (e.g. "a") as its marker and CONTENT
    as its content.  The footnote will be styled as STYLE, which is mandatory.
    IDX must uniquely identify the footnote within TABLE.
