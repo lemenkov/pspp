@@ -54,8 +54,8 @@ ONEWAY
 AT_CHECK([pspp -o pspp.csv -o pspp.txt oneway.sps])
 AT_CHECK([cat pspp.csv], [0], [dnl
 Table: Descriptives
-,,N,Mean,Std. Deviation,Std. Error,95% Confidence Interval for Mean,,Minimum,Maximum
-,Manufacturer,,,,,Lower Bound,Upper Bound,,
+,Manufacturer,N,Mean,Std. Deviation,Std. Error,95% Confidence Interval for Mean,,Minimum,Maximum
+,,,,,,Lower Bound,Upper Bound,,
 Breaking Strain,Aspeger,5,2.20,1.30,.58,.58,3.82,1.00,4.00
 ,Bloggs,5,3.20,1.30,.58,1.58,4.82,2.00,5.00
 ,Charlies,5,5.00,1.58,.71,3.04,6.96,3.00,7.00
@@ -72,8 +72,8 @@ Breaking Strain,Between Groups,20.13,2,10.07,5.12,.025
 ,Total,43.73,14,,,
 
 Table: Contrast Coefficients
-,Manufacturer,,
-Contrast,Aspeger,Bloggs,Charlies
+Contrast,Manufacturer,,
+,Aspeger,Bloggs,Charlies
 1,-2,1,1
 2,0,-1,1
 
@@ -131,8 +131,8 @@ Variable,Value
 S,1.00
 
 Table: Descriptives
-,,N,Mean,Std. Deviation,Std. Error,95% Confidence Interval for Mean,,Minimum,Maximum
-,Manufacturer,,,,,Lower Bound,Upper Bound,,
+,Manufacturer,N,Mean,Std. Deviation,Std. Error,95% Confidence Interval for Mean,,Minimum,Maximum
+,,,,,,Lower Bound,Upper Bound,,
 Breaking Strain,Aspeger,5,2.20,1.30,.58,.58,3.82,1.00,4.00
 ,Bloggs,2,3.50,2.12,1.50,-15.56,22.56,2.00,5.00
 ,Total,7,2.57,1.51,.57,1.17,3.97,1.00,5.00
@@ -148,8 +148,8 @@ Breaking Strain,Between Groups,2.41,1,2.41,1.07,.349
 ,Total,13.71,6,,,
 
 Table: Contrast Coefficients
-,Manufacturer,
-Contrast,Aspeger,Bloggs
+Contrast,Manufacturer,
+,Aspeger,Bloggs
 1,-2,2
 2,-1,1
 
@@ -165,8 +165,8 @@ Variable,Value
 S,2.00
 
 Table: Descriptives
-,,N,Mean,Std. Deviation,Std. Error,95% Confidence Interval for Mean,,Minimum,Maximum
-,Manufacturer,,,,,Lower Bound,Upper Bound,,
+,Manufacturer,N,Mean,Std. Deviation,Std. Error,95% Confidence Interval for Mean,,Minimum,Maximum
+,,,,,,Lower Bound,Upper Bound,,
 Breaking Strain,Bloggs,3,3.00,1.00,.58,.52,5.48,2.00,4.00
 ,Charlies,5,5.00,1.58,.71,3.04,6.96,3.00,7.00
 ,Total,8,4.25,1.67,.59,2.85,5.65,2.00,7.00
@@ -182,8 +182,8 @@ Breaking Strain,Between Groups,7.50,1,7.50,3.75,.101
 ,Total,19.50,7,,,
 
 Table: Contrast Coefficients
-,Manufacturer,
-Contrast,Bloggs,Charlies
+Contrast,Manufacturer,
+,Bloggs,Charlies
 1,-2,2
 2,-1,1
 
@@ -335,8 +335,8 @@ ONEWAY
 
 AT_CHECK([pspp -O format=csv oneway-descriptives.sps], [0],
 [Table: Descriptives
-,,N,Mean,Std. Deviation,Std. Error,95% Confidence Interval for Mean,,Minimum,Maximum
-,BRAND,,,,,Lower Bound,Upper Bound,,
+,BRAND,N,Mean,Std. Deviation,Std. Error,95% Confidence Interval for Mean,,Minimum,Maximum
+,,,,,,Lower Bound,Upper Bound,,
 QUALITY,11.00,5,12.20,1.30,.58,10.58,13.82,11.00,14.00
 ,25.00,5,13.20,1.30,.58,11.58,14.82,12.00,15.00
 ,301.00,5,15.00,1.58,.71,13.04,16.96,13.00,17.00
@@ -445,8 +445,8 @@ AT_CHECK([pspp -o pspp.csv -o pspp.txt multivar.sps])
 dnl Some machines return 3.88 instead of 3.87 below (see bug #31611).
 AT_CHECK([sed -e 's/^,Within Groups,3.88/,Within Groups,3.87/' pspp.csv], [0],
   [Table: Descriptives
-,,N,Mean,Std. Deviation,Std. Error,95% Confidence Interval for Mean,,Minimum,Maximum
-,g,,,,,Lower Bound,Upper Bound,,
+,g,N,Mean,Std. Deviation,Std. Error,95% Confidence Interval for Mean,,Minimum,Maximum
+,,,,,,Lower Bound,Upper Bound,,
 x,10.00,3,3.67,4.62,2.67,-7.81,15.14,1.00,9.00
 ,20.00,5,.80,.45,.20,.24,1.36,.00,1.00
 ,30.00,8,.88,.64,.23,.34,1.41,.00,2.00
@@ -482,8 +482,8 @@ z,Between Groups,17.47,3,5.82,.62,.610
 ,Total,205.33,23,,,
 
 Table: Contrast Coefficients
-,g,,,
-Contrast,10.00,20.00,30.00,40.00
+Contrast,g,,,
+,10.00,20.00,30.00,40.00
 1,3,2,0,-5
 2,2,-9,7,0
 
@@ -618,8 +618,8 @@ oneway pigmentation by family
 AT_CHECK([pspp -o pspp.csv -o pspp.txt oneway-pig.sps])
 AT_CHECK([cat pspp.csv], [0], [dnl
 Table: Descriptives
-,,N,Mean,Std. Deviation,Std. Error,95% Confidence Interval for Mean,,Minimum,Maximum
-,family,,,,,Lower Bound,Upper Bound,,
+,family,N,Mean,Std. Deviation,Std. Error,95% Confidence Interval for Mean,,Minimum,Maximum
+,,,,,,Lower Bound,Upper Bound,,
 pigmentation,1.000,5,38.600,2.702,1.208,35.245,41.955,36.000,43.000
 ,2.000,5,46.000,1.732,.775,43.849,48.151,43.000,47.000
 ,3.000,5,46.400,4.336,1.939,41.016,51.784,40.000,50.000
@@ -633,8 +633,8 @@ pigmentation,Between Groups,478.950,3,159.650,12.927,.000
 ,Total,676.550,19,,,
 
 Table: Multiple Comparisons (pigmentation)
-,,,Mean Difference (I - J),Std. Error,Sig.,95% Confidence Interval,
-,(J) Family,(J) Family,,,,Lower Bound,Upper Bound
+,(J) Family,(J) Family,Mean Difference (I - J),Std. Error,Sig.,95% Confidence Interval,
+,,,,,,Lower Bound,Upper Bound
 LSD,1.000,2.000,-7.400,2.223,.004,-12.112,-2.688
 ,,3.000,-7.800,2.223,.003,-12.512,-3.088
 ,,4.000,-13.800,2.223,.000,-18.512,-9.088
@@ -703,8 +703,8 @@ libido,Between Groups,20.133,2,10.067,5.119,.025
 ,Total,43.733,14,,,
 
 Table: Multiple Comparisons (libido)
-,,,Mean Difference (I - J),Std. Error,Sig.,95% Confidence Interval,
-,(J) Family,(J) Family,,,,Lower Bound,Upper Bound
+,(J) Family,(J) Family,Mean Difference (I - J),Std. Error,Sig.,95% Confidence Interval,
+,,,,,,Lower Bound,Upper Bound
 Tukey HSD,Placebo,1 Dose,-1.000,.887,.516,-3.366,1.366
 ,,2 Doses,-2.800,.887,.021,-5.166,-.434
 ,1 Dose,Placebo,1.000,.887,.516,-1.366,3.366
@@ -764,8 +764,8 @@ score,Between Groups,54.9500,3,18.3167,7.0449,.003
 ,Total,96.5500,19,,,
 
 Table: Multiple Comparisons (score)
-,,,Mean Difference (I - J),Std. Error,Sig.,95% Confidence Interval,
-,(J) Family,(J) Family,,,,Lower Bound,Upper Bound
+,(J) Family,(J) Family,Mean Difference (I - J),Std. Error,Sig.,95% Confidence Interval,
+,,,,,,Lower Bound,Upper Bound
 Šidák,1.0000,2.0000,3.0000,1.0198,.056,-.0575,6.0575
 ,,3.0000,-.4000,1.0198,.999,-3.4575,2.6575
 ,,4.0000,3.2000,1.0198,.038,.1425,6.2575
@@ -846,8 +846,8 @@ Days of Use,Between Groups,555.275,3,185.092,6.663,.001
 ,Total,1555.375,39,,,
 
 Table: Multiple Comparisons (Days of Use)
-,,,Mean Difference (I - J),Std. Error,Sig.,95% Confidence Interval,
-,(J) Family,(J) Family,,,,Lower Bound,Upper Bound
+,(J) Family,(J) Family,Mean Difference (I - J),Std. Error,Sig.,95% Confidence Interval,
+,,,,,,Lower Bound,Upper Bound
 Scheffé,one,two,3.800,2.357,.467,-3.112,10.712
 ,,three,10.300,2.357,.001,3.388,17.212
 ,,four,6.000,2.357,.110,-.912,12.912
@@ -909,8 +909,8 @@ temperature,Between Groups,1.80,1,1.80,.13,.733
 ,Total,86.36,7,,,
 
 Table: Contrast Coefficients
-,sex,
-Contrast,.00,1.00
+Contrast,sex,
+,.00,1.00
 1,-1,1
 2,-3,3
 3,-9,9
@@ -1126,8 +1126,8 @@ relieftime,Between Groups,146.950,3,48.983,12.723,.000
 ,Total,208.550,19,,,
 
 Table: Contrast Coefficients
-,drugs,,,
-Contrast,.000,1.000,2.000,3.000
+Contrast,drugs,,,
+,.000,1.000,2.000,3.000
 1,3,-1,-1,-1
 2,0,2,-1,-1
 3,0,0,1,-1

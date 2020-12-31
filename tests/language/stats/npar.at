@@ -1241,14 +1241,14 @@ npar tests
 
 AT_CHECK([pspp -O format=csv mcnemar.sps], [0], [dnl
 Table: v1 & v2
-,v2,
-v1,.000,1.000
+v1,v2,
+,.000,1.000
 .000,4,9
 1.000,2,5
 
 Table: v1 & junk
-,junk,
-v1,.000,1.000
+v1,junk,
+,.000,1.000
 .000,8,5
 1.000,2,5
 
@@ -1283,8 +1283,8 @@ NPAR TEST
 
 AT_CHECK([pspp -O format=csv mcnemar.sps], [0], [dnl
 Table: var1 & var2
-,var2,
-var1,0,1
+var1,var2,
+,0,1
 0,9,8
 1,1,5
 
@@ -1293,8 +1293,8 @@ Table: Test Statistics
 var1 & var2,23,.039,.020,.02
 
 Table: var2 & var1
-,var1,
-var2,0,1
+var2,var1,
+,0,1
 0,9,1
 1,8,5
 

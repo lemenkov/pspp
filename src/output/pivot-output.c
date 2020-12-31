@@ -289,7 +289,7 @@ compose_headings (struct table *t,
       if (d->root->show_label_in_corner && a_ofs > 0)
         {
           int bb[TABLE_N_AXES][2];
-          bb[a][0] = a_ofs - 1;
+          bb[a][0] = 0;
           bb[a][1] = a_ofs - 1;
           bb[b][0] = bottom_row - d->label_depth + 1;
           bb[b][1] = bottom_row;

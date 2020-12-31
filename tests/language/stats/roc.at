@@ -46,14 +46,14 @@ roc x by a (1)
 AT_CHECK([pspp -o pspp.csv roc.sps])
 AT_CHECK([cat pspp.csv], [0], [dnl
 Table: Case Summary
-,Valid N (listwise),
-a,Unweighted,Weighted
+a,Valid N (listwise),
+,Unweighted,Weighted
 Positive,5,50.000
 Negative,5,50.000
 
 Table: Area Under the Curve
-,Area,Std. Error,Asymptotic Sig.,Asymp. 99% Confidence Interval,
-Variable under test,,,,Lower Bound,Upper Bound
+Variable under test,Area,Std. Error,Asymptotic Sig.,Asymp. 99% Confidence Interval,
+,,,,Lower Bound,Upper Bound
 x,.910,.030,.000,.839,.981
 
 Table: Coordinates of the Curve
@@ -97,14 +97,14 @@ roc x y by a (1)
 AT_CHECK([pspp -o pspp.csv roc.sps])
 AT_CHECK([cat pspp.csv], [0], [dnl
 Table: Case Summary
-,Valid N (listwise),
-a,Unweighted,Weighted
+a,Valid N (listwise),
+,Unweighted,Weighted
 Positive,5,50.000
 Negative,5,50.000
 
 Table: Area Under the Curve
-,Area,Std. Error,Asymptotic Sig.,Asymp. 95% Confidence Interval,
-Variable under test,,,,Lower Bound,Upper Bound
+Variable under test,Area,Std. Error,Asymptotic Sig.,Asymp. 95% Confidence Interval,
+,,,,Lower Bound,Upper Bound
 x,.910,.030,.000,.860,.960
 y,.697,.052,.001,.611,.783
 
@@ -169,14 +169,14 @@ roc x by a (1)
 AT_CHECK([pspp -o pspp.csv -o pspp.txt roc.sps])
 AT_CHECK([cat pspp.csv], [0], [dnl
 Table: Case Summary
-,Valid N (listwise),
-a,Unweighted,Weighted
+a,Valid N (listwise),
+,Unweighted,Weighted
 Positive,14,14.000
 Negative,14,14.000
 
 Table: Area Under the Curve
-,Area,Std. Error,Asymptotic Sig.,Asymp. 95% Confidence Interval,
-Variable under test,,,,Lower Bound,Upper Bound
+Variable under test,Area,Std. Error,Asymptotic Sig.,Asymp. 95% Confidence Interval,
+,,,,Lower Bound,Upper Bound
 x,.490,.111,.927,.307,.673
 ])
 AT_CLEANUP

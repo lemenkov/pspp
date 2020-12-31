@@ -131,9 +131,9 @@ Step,-2 Log likelihood,Cox & Snell R Square,Nagelkerke R Square
 1,37.323,.455,.659
 
 Table: Classification Table
-,,,Predicted,,
+,Observed,,Predicted,,
 ,,,outcome,,Percentage Correct
-,Observed,,1.000,2.000,
+,,,1.000,2.000,
 Step 1,outcome,1.000,43,5,89.6%
 ,,2.000,4,14,77.8%
 ,Overall Percentage,,,,86.4%
@@ -294,9 +294,9 @@ Step,-2 Log likelihood,Cox & Snell R Square,Nagelkerke R Square
 1,275.637,.008,.011
 
 Table: Classification Table
-,,,Predicted,,
+,Observed,,Predicted,,
 ,,,female,,Percentage Correct
-,Observed,,.00,1.00,
+,,,.00,1.00,
 Step 1,female,.00,0,91,.0%
 ,,1.00,0,109,100.0%
 ,Overall Percentage,,,,54.5%
@@ -782,9 +782,9 @@ bcat,1.000,61,1,0,0
 ,4.000,67,0,0,0
 
 Table: Classification Table
-,,,Predicted,,
+,Observed,,Predicted,,
 ,,,y,,Percentage Correct
-,Observed,,4.000,9.000,
+,,,4.000,9.000,
 Step 1,y,4.000,254,19,93.0%
 ,,9.000,97,30,23.6%
 ,Overall Percentage,,,,71.0%
@@ -1048,9 +1048,9 @@ ses,a,47,1,0
 ,c,58,0,0
 
 Table: Classification Table
-,,,Predicted,,
+,Observed,,Predicted,,
 ,,,honcomp,,Percentage Correct
-,Observed,,.000,1.000,
+,,,.000,1.000,
 Step 1,honcomp,.000,132,15,89.8%
 ,,1.000,26,27,50.9%
 ,Overall Percentage,,,,79.5%
@@ -1468,9 +1468,9 @@ sector,1.000,117,1,
 ,2.000,79,0,
 
 Table: Classification Table
-,,,Predicted,,
+,Observed,,Predicted,,
 ,,,disease,,Percentage Correct
-,Observed,,.000,1.000,
+,,,.000,1.000,
 Step 1,disease,.000,131,8,94.2%
 ,,1.000,41,16,28.1%
 ,Overall Percentage,,,,75.0%
