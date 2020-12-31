@@ -268,6 +268,7 @@ compose_headings (struct table *t,
      +-----+-----+-----+-----+-----+-----+-----+-----+-----+
   */
   bool *vrules = xzalloc (n_columns + 1);
+  vrules[0] = vrules[n_columns] = true;
   for (int dim_index = a_axis->n_dimensions; --dim_index >= 0; )
     {
       const struct pivot_dimension *d = a_axis->dimensions[dim_index];
@@ -316,22 +317,32 @@ compose_headings (struct table *t,
                              label_style, label_style_idx, c->name, footnotes,
                              show_values, show_variables, rotate);
 
-                  if (pivot_category_is_leaf (c) && x2 + 1 <= n_columns)
+                  /* Draw all the vertical lines in our running example, other
+                     than the far left and far right ones.  Only the ones that
+                     start in the last row of the heading are drawn with the
+                     "category" style, the rest with the "dimension" style,
+                     e.g. only the # below are category style:
+
+                     +-----------------------------------------------------+
+                     |                         bbbb                        |
+                     +-----------------+-----------------+-----------------+
+                     |      bbbb1      |      bbbb2      |      bbbb3      |
+                     +-----------------+-----------------+-----------------+
+                     |       aaaa      |       aaaa      |       aaaa      |
+                     +-----+-----+-----+-----+-----+-----+-----+-----+-----+
+                     |aaaa1#aaaa2#aaaa3|aaaa1#aaaa2#aaaa3|aaaa1#aaaa2#aaaa3|
+                     +-----+-----+-----+-----+-----+-----+-----+-----+-----+
+                  */
+                  enum pivot_border style
+                    = (y1 == b_size - 1 ? cat_col_vert : dim_col_vert);
+                  if (!vrules[x2])
                     {
-                      enum pivot_border style
-                        = (y1 == 0 && a_axis->label_depth > d->label_depth
-                           ? dim_col_vert
-                           : cat_col_vert);
                       draw_line (t, borders, style, b, x2 + a_ofs, y1,
                                  t->n[b] - 1);
                       vrules[x2] = true;
                     }
-                  if (pivot_category_is_leaf (c) && x1 > 0)
+                  if (!vrules[x1])
                     {
-                      enum pivot_border style
-                        = (y1 == 0 && a_axis->label_depth > d->label_depth
-                           ? dim_col_vert
-                           : cat_col_vert);
                       draw_line (t, borders, style, b, x1 + a_ofs, y1,
                                  t->n[b] - 1);
                       vrules[x1] = true;
