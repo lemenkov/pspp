@@ -1067,6 +1067,9 @@ Footnote => Value[text] (58 @math{|} 31 Value[marker]) int32[show]
 Each footnote has @code{text} and an optional custom @code{marker}
 (such as @samp{*}).
 
+The syntax for Value would allow footnotes (and their markers) to
+reference other footnotes, but in practice this doesn't work.
+
 @code{show} is a 32-bit signed integer.  It is positive to show the
 footnote or negative to hide it.  Its magnitude is often 1, and in
 other cases tends to be the number of references to the footnote.
