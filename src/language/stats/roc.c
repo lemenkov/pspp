@@ -1094,6 +1094,13 @@ show_coords (struct roc_state *rs, const struct cmd_roc *roc)
 	  const double sp = case_data_idx (cc, ROC_TN)->f /
 	    (case_data_idx (cc, ROC_TN)->f + case_data_idx (cc, ROC_FP)->f);
 
+          if (coord_idx >= n_coords)
+            {
+              assert (coord_idx == n_coords);
+              pivot_category_create_leaf (
+                coordinates->root, pivot_value_new_integer (++n_coords));
+            }
+
           pivot_table_put3 (
             table, 0, coord_idx, var_idx,
             pivot_value_new_var_value (roc->vars[i],
@@ -1106,15 +1113,8 @@ show_coords (struct roc_state *rs, const struct cmd_roc *roc)
           coord_idx++;
 	}
 
-      if (coord_idx > n_coords)
-        n_coords = coord_idx;
-
       casereader_destroy (r);
     }
-
-  for (size_t i = 0; i < n_coords; i++)
-    pivot_category_create_leaf (coordinates->root,
-                                pivot_value_new_integer (i + 1));
 
   pivot_table_submit (table);
 }

@@ -1057,6 +1057,8 @@ pivot_table_put (struct pivot_table *table, const size_t *dindexes, size_t n,
                  struct pivot_value *value)
 {
   assert (n == table->n_dimensions);
+  for (size_t i = 0; i < n; i++)
+    assert (dindexes[i] < table->dimensions[i]->n_leaves);
 
   if (value->type == PIVOT_VALUE_NUMERIC && !value->numeric.format.w)
     {
