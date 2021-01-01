@@ -693,10 +693,7 @@ table_cell_is_empty (const struct table *table, int c, int r)
 }
 
 /* Initializes CELL with the contents of the table cell at column X and row Y
-   within TABLE.  When CELL is no longer needed, the caller is responsible for
-   freeing it by calling table_cell_free(CELL).
-
-   The caller must ensure that CELL is destroyed before TABLE is unref'ed. */
+   within TABLE. */
 void
 table_get_cell (const struct table *t, int x, int y, struct table_cell *cell)
 {

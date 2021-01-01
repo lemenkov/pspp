@@ -190,6 +190,13 @@ draw_line (struct table *t, const struct table_border_style *styles,
     table_vline (t, rule, a, b0, b1);
 }
 
+/* Fills row or column headings into T.
+
+   This function uses terminology and variable names for column headings, but
+   it also applies to row headings because it uses variables for the
+   differences, e.g. when for column headings it would use the H axis, it
+   instead uses 'h', which is set to H for column headings and V for row
+   headings.  */
 static void
 compose_headings (struct table *t,
                   const struct pivot_axis *a_axis, enum table_axis a,
@@ -348,6 +355,23 @@ compose_headings (struct table *t,
                       vrules[x1] = true;
                     }
                 }
+
+              /* Draws the horizontal lines within a dimension, that is, those
+                 that separate a separating a category (or group) from its
+                 parent group or dimension's label.  Our running example
+                 doesn't have groups but the ==== lines below show the
+                 separators between categories and their dimension label:
+
+                 +-----------------------------------------------------+
+                 |                         bbbb                        |
+                 +=================+=================+=================+
+                 |      bbbb1      |      bbbb2      |      bbbb3      |
+                 +-----------------+-----------------+-----------------+
+                 |       aaaa      |       aaaa      |       aaaa      |
+                 +=====+=====+=====+=====+=====+=====+=====+=====+=====+
+                 |aaaa1|aaaa2|aaaa3|aaaa1|aaaa2|aaaa3|aaaa1|aaaa2|aaaa3|
+                 +-----+-----+-----+-----+-----+-----+-----+-----+-----+
+              */
               if (c->parent && c->parent->show_label)
                 draw_line (t, borders, cat_col_horz, a, y1,
                            x1 + a_ofs, x2 + a_ofs - 1);

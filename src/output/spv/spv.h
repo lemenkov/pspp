@@ -116,8 +116,8 @@ struct spv_item
     char *structure_member;
 
     enum spv_item_type type;
-    char *label;
-    char *command_id;           /* Unique command identifier. */
+    char *label;                /* Localized label. */
+    char *command_id;           /* Non-localized unique command identifier. */
 
     /* Whether the item is visible.
        For SPV_ITEM_HEADING, false indicates that the item is collapsed.

@@ -428,7 +428,7 @@ struct pivot_table
     bool show_grid_lines;
     bool show_title;
     bool show_caption;
-    size_t *current_layer; /* axis[PIVOT_AXIS_LAYER].n_dimensions elements. */
+    size_t *current_layer; /* axes[PIVOT_AXIS_LAYER].n_dimensions elements. */
     enum settings_value_show show_values;
     enum settings_value_show show_variables;
     struct fmt_spec weight_format;

@@ -19,7 +19,7 @@
 
 /* Tables.
 
-.  A table is a rectangular grid of cells.  Cells can be joined to form larger
+   A table is a rectangular grid of cells.  Cells can be joined to form larger
    cells.  Rows and columns can be separated by rules of various types.  Rows
    at the top and bottom of a table and columns at the left and right edges of
    a table can be designated as headers, which means that if the table must be

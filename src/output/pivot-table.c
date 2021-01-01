@@ -1389,10 +1389,6 @@ pivot_table_assign_label_depth (struct pivot_table *table)
   pivot_axis_assign_label_depth (table, PIVOT_AXIS_LAYER, false);
 }
 
-/* Footnotes. */
-
-
-
 static void
 indent (int indentation)
 {
