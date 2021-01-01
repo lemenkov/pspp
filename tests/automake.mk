@@ -243,6 +243,13 @@ tests_output_render_test_LDADD = \
 	src/libpspp-core.la \
 	$(CAIRO_LIBS)
 
+check_PROGRAMS += tests/output/ascii-test
+tests_output_ascii_test_SOURCES = tests/output/ascii-test.c
+tests_output_ascii_test_LDADD = \
+	src/libpspp.la \
+	src/libpspp-core.la \
+	$(CAIRO_LIBS)
+
 check_PROGRAMS += tests/ui/syntax-gen-test
 tests_ui_syntax_gen_test_SOURCES = tests/ui/syntax-gen-test.c
 tests_ui_syntax_gen_test_LDADD = \

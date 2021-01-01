@@ -83,7 +83,7 @@ AT_DATA([input], [dnl
 0 18 1 か
 4 18 1 くけ
 ])
-AT_CHECK([render-test --draw-mode --emph=none input], [0], [dnl
+AT_CHECK([ascii-test --emph=none input], [0], [dnl
 aBCD
 eFGH
 iJKL
@@ -104,7 +104,7 @@ kaきくけ
 かkiくけko
 かkiくけko
 ])
-AT_CHECK([render-test --draw-mode --emph=bold input], [0], [dnl
+AT_CHECK([ascii-test --emph=bold input], [0], [dnl
 aBCD
 eFFGGHH
 iiJKL
@@ -125,7 +125,7 @@ kkaaききくくけけ
 かkkiiくけkkoo
 かかkkiiくくけけkkoo
 ])
-AT_CHECK([render-test --draw-mode --emph=underline input], [0], [dnl
+AT_CHECK([ascii-test --emph=underline input], [0], [dnl
 aBCD
 e_F_G_H
 _iJKL
@@ -279,7 +279,7 @@ AT_DATA([input], [dnl
 1 38 1 a
 5 38 1 kuke
 ])
-AT_CHECK([render-test --draw-mode --emph=none input], [0], [dnl
+AT_CHECK([ascii-test --emph=none input], [0], [dnl
 あきくけ
 あきくけ
 あきくけ
@@ -320,7 +320,7 @@ kaいkukeお
 ?aい?kuke?さ
 ?aい?kuke?さ
 ])
-AT_CHECK([render-test --draw-mode --emph=bold input], [0], [dnl
+AT_CHECK([ascii-test --emph=bold input], [0], [dnl
 あきくけ
 あききくくけけ
 ああきくけ
@@ -361,7 +361,7 @@ kkaaいいkkuukkeeおお
 ?aいい?kuke?ささ
 ?aaいい?kkuukkee?ささ
 ])
-AT_CHECK([render-test --draw-mode --emph=underline input], [0], [dnl
+AT_CHECK([ascii-test --emph=underline input], [0], [dnl
 あきくけ
 あ_き_く_け
 _あきくけ
@@ -471,7 +471,7 @@ AT_DATA([input], [dnl
 0 18 1 à
 2 18 1 îo̧ũ
 ])
-AT_CHECK([render-test --draw-mode --emph=none input], [0], [dnl
+AT_CHECK([ascii-test --emph=none input], [0], [dnl
 àxyz
 àxyz
 àxyz
@@ -492,7 +492,7 @@ àeîo̧ũy
 àeîo̧ũy
 àeîo̧ũy
 ])
-AT_CHECK([render-test --draw-mode --emph=bold input], [0], [dnl
+AT_CHECK([ascii-test --emph=bold input], [0], [dnl
 àxyz
 àxxyyzz
 aàxyz
@@ -513,7 +513,7 @@ aàeiîoo̧uũy
 àeeîo̧ũyy
 aàeeiîoo̧uũyy
 ])
-AT_CHECK([render-test --draw-mode --emph=underline input], [0], [dnl
+AT_CHECK([ascii-test --emph=underline input], [0], [dnl
 àxyz
 à_x_y_z
 _àxyz
@@ -563,7 +563,7 @@ set-length 8 2
 set-length 9 1
 set-length 10 0
 ])
-AT_CHECK([render-test --draw-mode input], [0], [dnl
+AT_CHECK([ascii-test input], [0], [dnl
 àéî
 àéî
 àé
@@ -574,26 +574,6 @@ à
 あ?
 あ
 ?
-])
-AT_CLEANUP
-
-AT_SETUP([ASCII driver Unicode box characters])
-AT_KEYWORDS([render rendering])
-AT_DATA([input], [3 3
-1*2 @abc
-2*1 @d\ne\nf
-2*1 @g\nh\ni
-@j
-1*2 @klm
-])
-AT_CHECK([render-test --box=unicode input], [0], [dnl
-╭───┬─╮
-│abc│d│
-├─┬─┤e│
-│g│j│f│
-│h├─┴─┤
-│i│klm│
-╰─┴───╯
 ])
 AT_CLEANUP
 

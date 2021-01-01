@@ -555,6 +555,27 @@ AT_CHECK([render-test input], [0],[dnl
 +-----+------+----+
 ])
 AT_CLEANUP
+
+
+AT_SETUP([ASCII driver Unicode box characters])
+AT_KEYWORDS([render rendering])
+AT_DATA([input], [3 3
+1*2 @abc
+2*1 @d\ne\nf
+2*1 @g\nh\ni
+@j
+1*2 @klm
+])
+AT_CHECK([render-test --box=unicode input], [0], [dnl
+╭───┬─╮
+│abc│d│
+├─┬─┤e│
+│g│j│f│
+│h├─┴─┤
+│i│klm│
+╰─┴───╯
+])
+AT_CLEANUP
 
 AT_BANNER([output rendering -- horizontal page breaks])
 
