@@ -136,6 +136,9 @@ selected object, extracts the TableLook from that table, and writes it
 to @var{destination} (typically with an @file{.stt} extension) in the
 TableLook XML format.
 
+Use @samp{-} for @var{source} to instead write the default look to
+@var{destination}.
+
 The user may use the TableLook file to change the style of tables in
 other files, by passing it to the @option{--table-look} option on the
 @code{convert} command.

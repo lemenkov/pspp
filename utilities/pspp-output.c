@@ -346,20 +346,30 @@ get_first_table (const struct spv_reader *spv)
 static void
 run_get_table_look (int argc UNUSED, char **argv)
 {
-  struct spv_reader *spv;
-  char *err = spv_open (argv[1], &spv);
+  struct pivot_table_look *look;
+  if (strcmp (argv[1], "-"))
+    {
+      struct spv_reader *spv;
+      char *err = spv_open (argv[1], &spv);
+      if (err)
+        error (1, 0, "%s", err);
+
+      const struct pivot_table *table = get_first_table (spv);
+      if (!table)
+        error (1, 0, "%s: no tables found", argv[1]);
+
+      look = pivot_table_look_ref (pivot_table_get_look (table));
+
+      spv_close (spv);
+    }
+  else
+    look = pivot_table_look_ref (pivot_table_look_builtin_default ());
+
+  char *err = spv_table_look_write (argv[2], look);
   if (err)
     error (1, 0, "%s", err);
 
-  const struct pivot_table *table = get_first_table (spv);
-  if (!table)
-    error (1, 0, "%s: no tables found", argv[1]);
-
-  err = spv_table_look_write (argv[2], pivot_table_get_look (table));
-  if (err)
-    error (1, 0, "%s", err);
-
-  spv_close (spv);
+  pivot_table_look_unref (look);
 }
 
 static void
