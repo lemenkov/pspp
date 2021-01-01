@@ -262,13 +262,11 @@ f[b]"
 h
 i[c][d][e]",j,
 ,klm,
-
-Footnotes:
-a,Approximation.
-b,This is a very long footnote that will have to wrap from one line to the next.  Let's see if the rendering engine does it acceptably.
-c,One
-d,Two
-e,Three
+Footnote: a. Approximation.
+Footnote: b. This is a very long footnote that will have to wrap from one line to the next.  Let's see if the rendering engine does it acceptably.
+Footnote: c. One
+Footnote: d. Two
+Footnote: e. Three
 ]])
 AT_CLEANUP
 

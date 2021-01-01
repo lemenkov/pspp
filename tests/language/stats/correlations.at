@@ -61,9 +61,7 @@ wiz,Pearson Correlation,.890[a],.519,1.000,-.344
 ,Sig. (2-tailed),.017,.291,,.505
 bang,Pearson Correlation,-.308,.118,-.344,1.000
 ,Sig. (2-tailed),.553,.824,.505,
-
-Footnotes:
-a,Significant at .05 level
+Footnote: a. Significant at .05 level
 
 Table: Correlations
 ,,bar,wiz
@@ -86,9 +84,7 @@ wiz,Pearson Correlation,.883[a],.497,1.000,-.337
 bang,Pearson Correlation,-.308,.164,-.337,1.000
 ,Sig. (2-tailed),.553,.725,.460,
 ,N,6,7,7,7
-
-Footnotes:
-a,Significant at .05 level
+Footnote: a. Significant at .05 level
 ]])
 AT_CLEANUP
 
@@ -357,9 +353,7 @@ var2,Pearson Correlation,.3792[a],-.0407
 var3,Pearson Correlation,.3699[a],-.0543
 ,Sig. (2-tailed),.000,.603
 ,N,95,94
-
-Footnotes:
-a,Significant at .05 level
+Footnote: a. Significant at .05 level
 
 Table: Correlations
 ,,var1,var2
@@ -372,9 +366,7 @@ var4,Pearson Correlation,.5693[a],.3792[a]
 var5,Pearson Correlation,-.0519,-.0407
 ,Sig. (2-tailed),.623,.698
 ,N,92,93
-
-Footnotes:
-a,Significant at .05 level
+Footnote: a. Significant at .05 level
 ]])
 
 AT_CLEANUP

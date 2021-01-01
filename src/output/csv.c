@@ -264,13 +264,11 @@ csv_submit (struct output_driver *driver,
       size_t n_footnotes = table_collect_footnotes (table_item, &f);
       if (n_footnotes)
         {
-          fputs ("\nFootnotes:\n", csv->file);
-
           for (size_t i = 0; i < n_footnotes; i++)
             {
-              csv_output_field (csv, f[i]->marker);
-              fputs (csv->separator, csv->file);
-              csv_output_field (csv, f[i]->content);
+              char *s = xasprintf ("Footnote: %s. %s", f[i]->marker, f[i]->content);
+              csv_output_field (csv, s);
+              free (s);
               putc ('\n', csv->file);
             }
 

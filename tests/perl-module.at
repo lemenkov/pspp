@@ -479,9 +479,7 @@ A Short String Variable,1111,ones
 A Numeric Variable,1,Unity
 ,2,Duality
 ,3,Thripality
-
-Footnotes:
-a,User-missing value
+Footnote: a. User-missing value
 
 Table: Variable and Dataset Attributes
 Variable and Name,,Value
@@ -516,9 +514,7 @@ A Short String Variable,1111,ones
 A Numeric Variable,1,Unity
 ,2,Duality
 ,3,Thripality
-
-Footnotes:
-a,User-missing value
+Footnote: a. User-missing value
 
 Table: Variable and Dataset Attributes
 Variable and Name,,Value
