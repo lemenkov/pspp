@@ -1483,12 +1483,11 @@ struct render_pager
     const struct render_params *params;
     double scale;
 
-    /* An array of "render_page"s to be rendered, in order, vertically.  From
-       the user's perspective, there's only one table per render_pager, but the
-       implementation treats the title, table body, caption, footnotes,
-       etc. each as a table, and that's why we have an array here. */
-    struct render_page **pages;
-    size_t n_pages, allocated_pages;
+    /* An array of "render_page"s to be rendered, in order, vertically.  There
+       may be up to 5 pages, for the pivot table's title, layers, body,
+       captions, and footnotes. */
+    struct render_page *pages[5];
+    size_t n_pages;
 
     size_t cur_page;
     struct render_break x_break;
@@ -1499,9 +1498,6 @@ static const struct render_page *
 render_pager_add_table (struct render_pager *p, struct table *table,
                         int min_width)
 {
-  if (p->n_pages >= p->allocated_pages)
-    p->pages = x2nrealloc (p->pages, &p->allocated_pages, sizeof *p->pages);
-
   struct render_page *page = render_page_create (p->params, table, min_width);
   p->pages[p->n_pages++] = page;
   return page;
@@ -1645,7 +1641,6 @@ render_pager_destroy (struct render_pager *p)
       render_break_destroy (&p->y_break);
       for (size_t i = 0; i < p->n_pages; i++)
         render_page_unref (p->pages[i]);
-      free (p->pages);
       free (p);
     }
 }
