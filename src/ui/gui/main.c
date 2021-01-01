@@ -1,6 +1,6 @@
 /* PSPPIRE - a graphical user interface for PSPP.
    Copyright (C) 2004, 2005, 2006, 2010, 2011, 2012, 2013, 2014, 2015,
-   2016, 2020  Free Software Foundation
+   2016, 2020, 2021  Free Software Foundation
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -38,6 +38,8 @@
 #include "ui/gui/psppire-syntax-window.h"
 #include "ui/gui/psppire-data-window.h"
 #include "ui/gui/psppire-output-window.h"
+#include "ui/gui/psppire-conf.h"
+#include "ui/gui/helper.h"
 
 #include "gl/configmake.h"
 #include "gl/progname.h"
@@ -94,7 +96,7 @@ init_dispatch (GSource * ss, GSourceFunc callback, gpointer user_data)
 }
 
 static GSourceFuncs init_funcs =
-  { init_prepare, init_check, init_dispatch, NULL, NULL, NULL };
+  {init_prepare, init_check, init_dispatch, NULL, NULL, NULL };
 
 static GtkWidget *wsplash = 0;
 static gint64 start_time = 0;
@@ -167,6 +169,117 @@ on_local_options (GApplication * application,
   return -1;
 }
 
+/* Use the imperitive mood for all entries in this table.
+   Each entry should end with a period.   */
+static const char *tips[] =
+  {
+   N_("Right click on variable lists to change between viewing the variables' names and their labels."),
+   N_("Click \"Paste\" instead of \"OK\" when running procedures.  This allows you to edit your commands before running them and you have better control over your work."),
+   N_("Directly import your spreadsheets using the \"File | Import Data\" menu."),
+   N_("For an easy way to convert string variables into numerically encoded variables, use \"Automatic Recode\"  which preserves the variable names as labels."),
+   N_("When browsing large data sets, use \"Windows | Split\" to see both ends of the data in the same view."),
+   N_("Export your reports to ODT format for easy editing with the Libreoffice.org suite."),
+   N_("Use \"Edit | Options\" to have your Output window automatically appear when statistics are generated."),
+   N_("To easily reorder your variables, drag and drop them in the Variable View or the Data View.")
+  };
+
+#define N_TIPS  (sizeof tips / sizeof tips[0])
+
+static void
+user_tip (GApplication *app)
+{
+  PsppireConf *conf = psppire_conf_new ();
+
+  gboolean show_tip = TRUE;
+  psppire_conf_get_boolean (conf, "startup", "show-user-tips", &show_tip);
+
+  if (!show_tip)
+    return;
+
+  GtkWindow *parent = gtk_application_get_active_window (GTK_APPLICATION (app));
+
+  GtkWidget *d =
+    gtk_dialog_new_with_buttons (_("Psppire User Hint"), parent,
+                                 GTK_DIALOG_MODAL,
+                                 GTK_MESSAGE_INFO,
+                                 0, 0,
+                                 NULL);
+
+  GtkWidget *pictogram = gtk_image_new_from_icon_name ("user-info", GTK_ICON_SIZE_DIALOG);
+
+  GtkWidget *next = gtk_button_new_with_mnemonic (_("_Next Tip"));
+  gtk_dialog_add_action_widget (GTK_DIALOG (d), next, 1);
+
+  GtkWidget *close = gtk_button_new_with_mnemonic (_("_Close"));
+  gtk_dialog_add_action_widget (GTK_DIALOG (d), close, GTK_RESPONSE_CLOSE);
+
+  gtk_window_set_transient_for (GTK_WINDOW (d), parent);
+
+  g_object_set (d,
+                "decorated", FALSE,
+                "skip-taskbar-hint", TRUE,
+                "skip-pager-hint", TRUE,
+                "application", app,
+                NULL);
+
+  GtkWidget *ca = gtk_dialog_get_content_area (GTK_DIALOG (d));
+
+  g_object_set (ca, "margin", 5, NULL);
+
+  GtkWidget *check = gtk_check_button_new_with_mnemonic ("_Show tips at startup");
+  gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (check), show_tip);
+
+  srand (time(0));
+  gint x = rand () % N_TIPS;
+  GtkWidget *label = gtk_label_new (gettext (tips[x]));
+
+  /* Make the font of the label a little larger than the other widgets.  */
+  {
+    GtkStyleContext *sc = gtk_widget_get_style_context (label);
+    GtkCssProvider *p = gtk_css_provider_new ();
+    const gchar *css = "* {font-size: 130%;}";
+    if (gtk_css_provider_load_from_data (p, css, strlen (css), NULL))
+      {
+        gtk_style_context_add_provider (sc, GTK_STYLE_PROVIDER (p),
+                                        GTK_STYLE_PROVIDER_PRIORITY_APPLICATION);
+      }
+    g_object_unref (p);
+  }
+
+  /* It's more readable if the text is not all in one long line.  */
+  g_object_set (label, "wrap", TRUE, NULL);
+  gint width = PANGO_PIXELS (50.0 * width_of_m (label) * PANGO_SCALE);
+  gtk_window_set_default_size (GTK_WINDOW (d), width, -1);
+
+
+  if (pictogram)
+    gtk_box_pack_start (GTK_BOX (ca), pictogram, FALSE, FALSE, 5);
+  gtk_box_pack_start (GTK_BOX (ca), label, FALSE, FALSE, 5);
+  gtk_box_pack_end (GTK_BOX (ca), check, FALSE, FALSE, 5);
+
+  gtk_widget_show_all (d);
+
+  g_object_set (close,
+                "has-focus", TRUE,
+                "is-focus", TRUE,
+                NULL);
+
+  while (1 == gtk_dialog_run (GTK_DIALOG (d)))
+    {
+      if (++x >= N_TIPS) x = 0;
+      g_object_set (label, "label", gettext (tips[x]), NULL);
+    }
+
+  show_tip = gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (check));
+  psppire_conf_set_boolean (conf,
+                            "startup", "show-user-tips",
+                            show_tip);
+
+  g_object_unref (conf);
+
+  gtk_widget_destroy (d);
+}
+
 
 static void
 on_startup (GApplication * app, gpointer ud)
@@ -178,6 +291,12 @@ on_startup (GApplication * app, gpointer ud)
       wsplash = create_splash_window ();
       gtk_application_add_window (GTK_APPLICATION (app),
                                   GTK_WINDOW (wsplash));
+
+      g_signal_connect_swapped (wsplash, "destroy", G_CALLBACK (user_tip), app);
+    }
+  else
+    {
+      g_signal_connect (app, "activate", G_CALLBACK (user_tip), NULL);
     }
 
   GMainLoop *loop = g_main_loop_new (context, FALSE);
