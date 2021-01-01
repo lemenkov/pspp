@@ -25,6 +25,7 @@
 #include "data/value.h"
 #include "data/variable.h"
 #include "data/file-name.h"
+#include "libpspp/assertion.h"
 #include "libpspp/hash-functions.h"
 #include "libpspp/i18n.h"
 #include "output/driver.h"
@@ -795,6 +796,12 @@ pivot_result_class_change (const char *s_, const struct fmt_spec *format)
   free (s);
 
   return rc != NULL;
+}
+
+bool
+is_pivot_result_class (const char *s)
+{
+  return pivot_result_class_find (s) != NULL;
 }
 
 /* Pivot tables. */
@@ -2039,6 +2046,78 @@ pivot_value_to_string (const struct pivot_value *value,
   return ds_steal_cstr (&s);
 }
 
+static char *
+xstrdup_if_nonnull (const char *s)
+{
+  return s ? xstrdup (s) : NULL;
+}
+
+struct pivot_value *
+pivot_value_clone (const struct pivot_value *old)
+{
+  struct pivot_value *new = xmemdup (old, sizeof *new);
+  if (old->font_style)
+    {
+      new->font_style = xmalloc (sizeof *new->font_style);
+      font_style_copy (NULL, new->font_style, old->font_style);
+    }
+  if (old->cell_style)
+    new->font_style = xmemdup (old->font_style, sizeof *new->font_style);
+  if (old->n_subscripts)
+    {
+      new->subscripts = xnmalloc (old->n_subscripts, sizeof *new->subscripts);
+      for (size_t i = 0; i < old->n_subscripts; i++)
+        new->subscripts[i] = xstrdup (old->subscripts[i]);
+    }
+  if (old->n_footnotes)
+    new->footnotes = xmemdup (old->footnotes,
+                              old->n_footnotes * sizeof *new->footnotes);
+
+  switch (new->type)
+    {
+    case PIVOT_VALUE_NUMERIC:
+      new->numeric.var_name = xstrdup_if_nonnull (new->numeric.var_name);
+      new->numeric.value_label = xstrdup_if_nonnull (new->numeric.value_label);
+      break;
+
+    case PIVOT_VALUE_STRING:
+      new->string.s = xstrdup (new->string.s);
+      new->string.var_name = xstrdup_if_nonnull (new->string.var_name);
+      new->string.value_label = xstrdup_if_nonnull (new->string.value_label);
+      break;
+
+    case PIVOT_VALUE_VARIABLE:
+      new->variable.var_name = xstrdup_if_nonnull (new->variable.var_name);
+      new->variable.var_label = xstrdup_if_nonnull (new->variable.var_label);
+      break;
+
+    case PIVOT_VALUE_TEXT:
+      new->text.local = xstrdup (old->text.local);
+      new->text.c = (old->text.c == old->text.local ? new->text.local
+                     : xstrdup (old->text.c));
+      new->text.id = (old->text.id == old->text.local ? new->text.local
+                      : old->text.id == old->text.c ? new->text.c
+                      : xstrdup (old->text.id));
+      break;
+
+    case PIVOT_VALUE_TEMPLATE:
+      new->template.local = xstrdup (old->template.local);
+      new->template.id = (old->template.id == old->template.local
+                          ? new->template.local
+                          : xstrdup (old->template.id));
+      new->template.args = xmalloc (new->template.n_args
+                                    * sizeof *new->template.args);
+      for (size_t i = 0; i < old->template.n_args; i++)
+        pivot_argument_copy (&new->template.args[i],
+                             &old->template.args[i]);
+      break;
+
+    default:
+      NOT_REACHED ();
+    }
+  return new;
+}
+
 /* Frees the data owned by V. */
 void
 pivot_value_destroy (struct pivot_value *value)
@@ -2091,6 +2170,9 @@ pivot_value_destroy (struct pivot_value *value)
             pivot_argument_uninit (&value->template.args[i]);
           free (value->template.args);
           break;
+
+        default:
+          NOT_REACHED ();
         }
       free (value);
     }
@@ -2117,15 +2199,41 @@ void
 pivot_value_set_style (struct pivot_value *value,
                        const struct table_area_style *area)
 {
+  pivot_value_set_font_style (value, &area->font_style);
+  pivot_value_set_cell_style (value, &area->cell_style);
+}
+
+void
+pivot_value_set_font_style (struct pivot_value *value,
+                            const struct font_style *font_style)
+{
   if (value->font_style)
     font_style_uninit (value->font_style);
   else
     value->font_style = xmalloc (sizeof *value->font_style);
-  font_style_copy (NULL, value->font_style, &area->font_style);
+  font_style_copy (NULL, value->font_style, font_style);
+}
 
+void
+pivot_value_set_cell_style (struct pivot_value *value,
+                            const struct cell_style *cell_style)
+{
   if (!value->cell_style)
     value->cell_style = xmalloc (sizeof *value->cell_style);
-  *value->cell_style = area->cell_style;
+  *value->cell_style = *cell_style;
+}
+
+void
+pivot_argument_copy (struct pivot_argument *dst,
+                     const struct pivot_argument *src)
+{
+  *dst = (struct pivot_argument) {
+    .n = src->n,
+    .values = xmalloc (src->n * sizeof *dst->values),
+  };
+
+  for (size_t i = 0; i < src->n; i++)
+    dst->values[i] = pivot_value_clone (src->values[i]);
 }
 
 /* Frees the data owned by ARG (but not ARG itself). */
