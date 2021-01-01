@@ -396,6 +396,13 @@ pivot_category_set_rc (struct pivot_category *category, const char *s)
     category->dimension->table, s);
   if (format)
     category->format = *format;
+
+  /* Ensure that the category itself, in addition to the cells within it, takes
+     the format.  (It's kind of rare for a category to have a numeric format
+     though.) */
+  struct pivot_value *name = category->name;
+  if (name->type == PIVOT_VALUE_NUMERIC && !name->numeric.format.w)
+    name->numeric.format = format ? *format : *settings_get_format ();
 }
 
 static void
