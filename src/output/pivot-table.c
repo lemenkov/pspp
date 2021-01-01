@@ -25,6 +25,7 @@
 #include "data/value.h"
 #include "data/variable.h"
 #include "data/file-name.h"
+#include "libpspp/array.h"
 #include "libpspp/assertion.h"
 #include "libpspp/hash-functions.h"
 #include "libpspp/i18n.h"
@@ -806,6 +807,11 @@ is_pivot_result_class (const char *s)
 
 /* Pivot tables. */
 
+static struct pivot_cell *pivot_table_insert_cell (struct pivot_table *,
+                                                   const size_t *dindexes);
+static void pivot_table_delete_cell (struct pivot_table *,
+                                     struct pivot_cell *);
+
 /* Creates and returns a new pivot table with the given TITLE.  TITLE should be
    a text string marked for translation but not actually translated yet,
    e.g. N_("Descriptive Statistics").  The un-translated text string is used as
@@ -884,6 +890,233 @@ pivot_table_ref (const struct pivot_table *table_)
   return table;
 }
 
+static char *
+xstrdup_if_nonnull (const char *s)
+{
+  return s ? xstrdup (s) : NULL;
+}
+
+static struct pivot_table_sizing
+clone_sizing (const struct pivot_table_sizing *s)
+{
+  return (struct pivot_table_sizing) {
+    .widths = (s->n_widths
+               ? xmemdup (s->widths, s->n_widths * sizeof *s->widths)
+               : NULL),
+    .n_widths = s->n_widths,
+
+    .breaks = (s->n_breaks
+               ? xmemdup (s->breaks, s->n_breaks * sizeof *s->breaks)
+               : NULL),
+    .n_breaks = s->n_breaks,
+
+    .keeps = (s->n_keeps
+              ? xmemdup (s->keeps, s->n_keeps * sizeof *s->keeps)
+              : NULL),
+    .n_keeps = s->n_keeps,
+  };
+}
+
+static struct pivot_footnote **
+clone_footnotes (struct pivot_footnote **old, size_t n)
+{
+  if (!n)
+    return NULL;
+
+  struct pivot_footnote **new = xmalloc (n * sizeof *new);
+  for (size_t i = 0; i < n; i++)
+    {
+      new[i] = xmalloc (sizeof *new[i]);
+      *new[i] = (struct pivot_footnote) {
+        .idx = old[i]->idx,
+        .content = pivot_value_clone (old[i]->content),
+        .marker = pivot_value_clone (old[i]->marker),
+        .show = old[i]->show,
+      };
+    }
+  return new;
+}
+
+static struct pivot_category *
+clone_category (struct pivot_category *old,
+                struct pivot_dimension *new_dimension,
+                struct pivot_category *new_parent)
+{
+  struct pivot_category *new = xmalloc (sizeof *new);
+  *new = (struct pivot_category) {
+    .name = pivot_value_clone (old->name),
+    .parent = new_parent,
+    .dimension = new_dimension,
+    .label_depth = old->label_depth,
+    .extra_depth = old->extra_depth,
+
+    .subs = (old->n_subs
+             ? xzalloc (old->n_subs * sizeof *new->subs)
+             : NULL),
+    .n_subs = old->n_subs,
+    .allocated_subs = old->n_subs,
+
+    .show_label = old->show_label,
+    .show_label_in_corner = old->show_label_in_corner,
+
+    .format = old->format,
+    .group_index = old->group_index,
+    .data_index = old->data_index,
+    .presentation_index = old->presentation_index,
+  };
+
+  if (pivot_category_is_leaf (old))
+    {
+      new->dimension->data_leaves[new->data_index] = new;
+      new->dimension->presentation_leaves[new->presentation_index] = new;
+    }
+
+  for (size_t i = 0; i < new->n_subs; i++)
+    new->subs[i] = clone_category (old->subs[i], new_dimension, new);
+
+  return new;
+}
+
+static struct pivot_dimension *
+clone_dimension (struct pivot_dimension *old, struct pivot_table *new_pt)
+{
+  struct pivot_dimension *new = xmalloc (sizeof *new);
+  *new = (struct pivot_dimension) {
+    .table = new_pt,
+    .axis_type = old->axis_type,
+    .level = old->level,
+    .top_index = old->top_index,
+    .data_leaves = xzalloc (old->n_leaves * sizeof *new->data_leaves),
+    .presentation_leaves = xzalloc (old->n_leaves
+                                    * sizeof *new->presentation_leaves),
+    .n_leaves = old->n_leaves,
+    .allocated_leaves = old->n_leaves,
+    .hide_all_labels = old->hide_all_labels,
+    .label_depth = old->label_depth,
+  };
+
+  new->root = clone_category (old->root, new, NULL);
+
+  return new;
+}
+
+static struct pivot_dimension **
+clone_dimensions (struct pivot_dimension **old, size_t n,
+                  struct pivot_table *new_pt)
+{
+  if (!n)
+    return NULL;
+
+  struct pivot_dimension **new = xmalloc (n * sizeof *new);
+  for (size_t i = 0; i < n; i++)
+    new[i] = clone_dimension (old[i], new_pt);
+  return new;
+}
+
+struct pivot_table *
+pivot_table_unshare (struct pivot_table *old)
+{
+  assert (old->ref_cnt > 0);
+  if (old->ref_cnt == 1)
+    return old;
+
+  pivot_table_unref (old);
+
+  struct pivot_table *new = xmalloc (sizeof *new);
+  *new = (struct pivot_table) {
+    .ref_cnt = 1,
+
+    .look = pivot_table_look_ref (old->look),
+
+    .rotate_inner_column_labels = old->rotate_inner_column_labels,
+    .rotate_outer_row_labels = old->rotate_outer_row_labels,
+    .show_grid_lines = old->show_grid_lines,
+    .show_title = old->show_title,
+    .show_caption = old->show_caption,
+    .current_layer = (old->current_layer
+                      ? xmemdup (old->current_layer,
+                                 old->axes[PIVOT_AXIS_LAYER].n_dimensions
+                                 * sizeof *new->current_layer)
+                      : NULL),
+    .show_values = old->show_values,
+    .show_variables = old->show_variables,
+    .weight_format = old->weight_format,
+
+    .sizing = {
+      [TABLE_HORZ] = clone_sizing (&old->sizing[TABLE_HORZ]),
+      [TABLE_VERT] = clone_sizing (&old->sizing[TABLE_VERT]),
+    },
+
+    .epoch = old->epoch,
+    .decimal = old->decimal,
+    .grouping = old->grouping,
+    .ccs = {
+      [0] = xstrdup_if_nonnull (old->ccs[0]),
+      [1] = xstrdup_if_nonnull (old->ccs[1]),
+      [2] = xstrdup_if_nonnull (old->ccs[2]),
+      [3] = xstrdup_if_nonnull (old->ccs[3]),
+      [4] = xstrdup_if_nonnull (old->ccs[4]),
+    },
+    .small = old->small,
+
+    .command_local = xstrdup_if_nonnull (old->command_local),
+    .command_c = xstrdup_if_nonnull (old->command_c),
+    .language = xstrdup_if_nonnull (old->language),
+    .locale = xstrdup_if_nonnull (old->locale),
+
+    .dataset = xstrdup_if_nonnull (old->dataset),
+    .datafile = xstrdup_if_nonnull (old->datafile),
+    .date = old->date,
+
+    .footnotes = clone_footnotes (old->footnotes, old->n_footnotes),
+    .n_footnotes = old->n_footnotes,
+    .allocated_footnotes = old->n_footnotes,
+
+    .title = pivot_value_clone (old->title),
+    .subtype = pivot_value_clone (old->subtype),
+    .corner_text = pivot_value_clone (old->corner_text),
+    .caption = pivot_value_clone (old->caption),
+    .notes = xstrdup_if_nonnull (old->notes),
+
+    .dimensions = clone_dimensions (old->dimensions, old->n_dimensions, new),
+    .n_dimensions = old->n_dimensions,
+
+    .cells = HMAP_INITIALIZER (new->cells),
+  };
+
+  for (size_t i = 0; i < PIVOT_N_AXES; i++)
+    {
+      struct pivot_axis *new_axis = &new->axes[i];
+      const struct pivot_axis *old_axis = &old->axes[i];
+
+      *new_axis = (struct pivot_axis) {
+        .dimensions = xmalloc (old_axis->n_dimensions
+                               * sizeof *new_axis->dimensions),
+        .n_dimensions = old_axis->n_dimensions,
+        .extent = old_axis->extent,
+        .label_depth = old_axis->label_depth,
+      };
+
+      for (size_t i = 0; i < new_axis->n_dimensions; i++)
+        new_axis->dimensions[i] = new->dimensions[
+          old_axis->dimensions[i]->top_index];
+    }
+
+  const struct pivot_cell *old_cell;
+  size_t *dindexes = xmalloc (old->n_dimensions * sizeof *dindexes);
+  HMAP_FOR_EACH (old_cell, struct pivot_cell, hmap_node, &old->cells)
+    {
+      for (size_t i = 0; i < old->n_dimensions; i++)
+        dindexes[i] = old_cell->idx[i];
+      struct pivot_cell *new_cell
+        = pivot_table_insert_cell (new, dindexes);
+      new_cell->value = pivot_value_clone (old_cell->value);
+    }
+  free (dindexes);
+
+  return new;
+}
+
 /* Decreases TABLE's reference count, indicating that it has one fewer owner.
    If TABLE no longer has any owners, it is freed. */
 void
@@ -932,11 +1165,8 @@ pivot_table_unref (struct pivot_table *table)
   struct pivot_cell *cell, *next_cell;
   HMAP_FOR_EACH_SAFE (cell, next_cell, struct pivot_cell, hmap_node,
                       &table->cells)
-    {
-      hmap_delete (&table->cells, &cell->hmap_node);
-      pivot_value_destroy (cell->value);
-      free (cell);
-    }
+    pivot_table_delete_cell (table, cell);
+
   hmap_destroy (&table->cells);
 
   free (table);
@@ -949,6 +1179,124 @@ pivot_table_is_shared (const struct pivot_table *table)
 {
   return table->ref_cnt > 1;
 }
+
+/* Swaps axes A and B in TABLE. */
+void
+pivot_table_swap_axes (struct pivot_table *table,
+                       enum pivot_axis_type a, enum pivot_axis_type b)
+{
+  if (a == b)
+    return;
+
+  struct pivot_axis tmp = table->axes[a];
+  table->axes[a] = table->axes[b];
+  table->axes[b] = tmp;
+
+  for (int a = 0; a < PIVOT_N_AXES; a++)
+    {
+      struct pivot_axis *axis = &table->axes[a];
+      for (size_t d = 0; d < axis->n_dimensions; d++)
+        axis->dimensions[d]->axis_type = a;
+    }
+
+  if (a == PIVOT_AXIS_LAYER || b == PIVOT_AXIS_LAYER)
+    {
+      free (table->current_layer);
+      table->current_layer = xzalloc (
+        table->axes[PIVOT_AXIS_LAYER].n_dimensions
+        * sizeof *table->current_layer);
+    }
+}
+
+/* Swaps the row and column axes in TABLE. */
+void
+pivot_table_transpose (struct pivot_table *table)
+{
+  pivot_table_swap_axes (table, PIVOT_AXIS_ROW, PIVOT_AXIS_COLUMN);
+}
+
+static void
+pivot_table_update_axes (struct pivot_table *table)
+{
+  for (int a = 0; a < PIVOT_N_AXES; a++)
+    {
+      struct pivot_axis *axis = &table->axes[a];
+
+      for (size_t d = 0; d < axis->n_dimensions; d++)
+        {
+          struct pivot_dimension *dim = axis->dimensions[d];
+          dim->axis_type = a;
+          dim->level = d;
+        }
+    }
+}
+
+/* Moves DIM from its current location in TABLE to POS within AXIS.  POS of 0
+   is the innermost dimension, 1 is the next one out, and so on. */
+void
+pivot_table_move_dimension (struct pivot_table *table,
+                            struct pivot_dimension *dim,
+                            enum pivot_axis_type axis, size_t pos)
+{
+  assert (dim->table == table);
+
+  struct pivot_axis *old_axis = &table->axes[dim->axis_type];
+  struct pivot_axis *new_axis = &table->axes[axis];
+  pos = MIN (pos, new_axis->n_dimensions);
+
+  if (old_axis == new_axis && pos == dim->level)
+    {
+      /* No change. */
+      return;
+    }
+
+
+  /* Update the current layer, if necessary.  If we're moving within the layer
+     axis, preserve the current layer. */
+  if (dim->axis_type == PIVOT_AXIS_LAYER)
+    {
+      if (axis == PIVOT_AXIS_LAYER)
+        {
+          /* Rearranging the layer axis. */
+          move_element (table->current_layer, old_axis->n_dimensions,
+                        sizeof *table->current_layer,
+                        dim->level, pos);
+        }
+      else
+        {
+          /* A layer is becoming a row or column. */
+          remove_element (table->current_layer, old_axis->n_dimensions,
+                          sizeof *table->current_layer, dim->level);
+        }
+    }
+  else if (axis == PIVOT_AXIS_LAYER)
+    {
+      /* A row or column is becoming a layer. */
+      table->current_layer = xrealloc (
+        table->current_layer,
+        (new_axis->n_dimensions + 1) * sizeof *table->current_layer);
+      insert_element (table->current_layer, new_axis->n_dimensions,
+                      sizeof *table->current_layer, pos);
+      table->current_layer[pos] = 0;
+    }
+
+  /* Remove DIM from its current axis. */
+  remove_element (old_axis->dimensions, old_axis->n_dimensions,
+                  sizeof *old_axis->dimensions, dim->level);
+  old_axis->n_dimensions--;
+
+  /* Insert DIM into its new axis. */
+  new_axis->dimensions = xrealloc (
+    new_axis->dimensions,
+    (new_axis->n_dimensions + 1) * sizeof *new_axis->dimensions);
+  insert_element (new_axis->dimensions, new_axis->n_dimensions,
+                  sizeof *new_axis->dimensions, pos);
+  new_axis->dimensions[pos] = dim;
+  new_axis->n_dimensions++;
+
+  pivot_table_update_axes (table);
+}
+
 
 const struct pivot_table_look *
 pivot_table_get_look (const struct pivot_table *table)
@@ -1300,9 +1648,9 @@ pivot_table_enumerate_axis (const struct pivot_table *table,
   return enumeration;
 }
 
-static const struct pivot_cell *
+static struct pivot_cell *
 pivot_table_lookup_cell (const struct pivot_table *table,
-                          const size_t *dindexes)
+                         const size_t *dindexes)
 {
   unsigned int hash = pivot_cell_hash_indexes (dindexes, table->n_dimensions);
   return pivot_table_lookup_cell__ (table, dindexes, hash);
@@ -1322,6 +1670,27 @@ pivot_table_get_rw (struct pivot_table *table, const size_t *dindexes)
   if (!cell->value)
     cell->value = pivot_value_new_user_text ("", -1);
   return cell->value;
+}
+
+static void
+pivot_table_delete_cell (struct pivot_table *table, struct pivot_cell *cell)
+{
+  hmap_delete (&table->cells, &cell->hmap_node);
+  pivot_value_destroy (cell->value);
+  free (cell);
+}
+
+bool
+pivot_table_delete (struct pivot_table *table, const size_t *dindexes)
+{
+  struct pivot_cell *cell = pivot_table_lookup_cell (table, dindexes);
+  if (cell)
+    {
+      pivot_table_delete_cell (table, cell);
+      return true;
+    }
+  else
+    return false;
 }
 
 static void
@@ -1415,8 +1784,7 @@ indent (int indentation)
 static void
 pivot_value_dump (const struct pivot_value *value)
 {
-  char *s = pivot_value_to_string (value, SETTINGS_VALUE_SHOW_DEFAULT,
-                                   SETTINGS_VALUE_SHOW_DEFAULT);
+  char *s = pivot_value_to_string_defaults (value);
   fputs (s, stdout);
   free (s);
 }
@@ -1498,10 +1866,9 @@ table_border_style_dump (enum pivot_border border,
 }
 
 static char ***
-compose_headings (const struct pivot_axis *axis,
-                  const size_t *column_enumeration,
-                  enum settings_value_show show_values,
-                  enum settings_value_show show_variables)
+compose_headings (const struct pivot_table *pt,
+                  const struct pivot_axis *axis,
+                  const size_t *column_enumeration)
 {
   if (!axis->n_dimensions || !axis->extent || !axis->label_depth)
     return NULL;
@@ -1528,8 +1895,7 @@ compose_headings (const struct pivot_axis *axis,
               if (pivot_category_is_leaf (c) || (c->show_label
                                                  && !c->show_label_in_corner))
                 {
-                  headings[row][column] = pivot_value_to_string (
-                    c->name, show_values, show_variables);
+                  headings[row][column] = pivot_value_to_string (c->name, pt);
                   if (!*headings[row][column])
                     headings[row][column] = xstrdup ("<blank>");
                   row--;
@@ -1596,6 +1962,8 @@ pivot_table_dump (const struct pivot_table *table, int indentation)
   if (!table)
     return;
 
+  pivot_table_assign_label_depth (CONST_CAST (struct pivot_table *, table));
+
   int old_decimal = settings_get_decimal_char (FMT_COMMA);
   if (table->decimal == '.' || table->decimal == ',')
     settings_set_decimal_char (table->decimal);
@@ -1650,12 +2018,9 @@ pivot_table_dump (const struct pivot_table *table, int indentation)
       for (size_t i = 0; i < layer_axis->n_dimensions; i++)
         {
           const struct pivot_dimension *d = layer_axis->dimensions[i];
-          char *name = pivot_value_to_string (d->root->name,
-                                              table->show_values,
-                                              table->show_variables);
+          char *name = pivot_value_to_string (d->root->name, table);
           char *value = pivot_value_to_string (
-            d->data_leaves[table->current_layer[i]]->name,
-            table->show_values, table->show_variables);
+            d->data_leaves[table->current_layer[i]]->name, table);
           printf (" %s=%s", name, value);
           free (value);
           free (name);
@@ -1706,8 +2071,7 @@ pivot_table_dump (const struct pivot_table *table, int indentation)
         table, PIVOT_AXIS_ROW, layer_indexes, table->look->omit_empty, NULL);
 
       char ***column_headings = compose_headings (
-        &table->axes[PIVOT_AXIS_COLUMN], column_enumeration,
-        table->show_values, table->show_variables);
+        table, &table->axes[PIVOT_AXIS_COLUMN], column_enumeration);
       for (size_t y = 0; y < table->axes[PIVOT_AXIS_COLUMN].label_depth; y++)
         {
           indent (indentation + 1);
@@ -1726,8 +2090,7 @@ pivot_table_dump (const struct pivot_table *table, int indentation)
       printf ("-----------------------------------------------\n");
 
       char ***row_headings = compose_headings (
-        &table->axes[PIVOT_AXIS_ROW], row_enumeration,
-        table->show_values, table->show_variables);
+        table, &table->axes[PIVOT_AXIS_ROW], row_enumeration);
 
       size_t x = 0;
       const size_t *pindexes[PIVOT_N_AXES]
@@ -1805,8 +2168,7 @@ static size_t
 pivot_format_inner_template (struct string *out, const char *template,
                              char escape,
                              struct pivot_value **values, size_t n_values,
-                             enum settings_value_show show_values,
-                             enum settings_value_show show_variables)
+                             const struct pivot_table *pt)
 {
   size_t args_consumed = 0;
   while (*template && *template != ':')
@@ -1822,8 +2184,7 @@ pivot_format_inner_template (struct string *out, const char *template,
           template = consume_int (template + 1, &index);
           if (index >= 1 && index <= n_values)
             {
-              pivot_value_format (values[index - 1], show_values,
-                                  show_variables, out);
+              pivot_value_format (values[index - 1], pt, out);
               args_consumed = MAX (args_consumed, index);
             }
         }
@@ -1854,8 +2215,7 @@ pivot_extract_inner_template (const char *template, const char **p)
 static void
 pivot_format_template (struct string *out, const char *template,
                        const struct pivot_argument *args, size_t n_args,
-                       enum settings_value_show show_values,
-                       enum settings_value_show show_variables)
+                       const struct pivot_table *pt)
 {
   while (*template)
     {
@@ -1869,8 +2229,7 @@ pivot_format_template (struct string *out, const char *template,
           size_t index;
           template = consume_int (template + 1, &index);
           if (index >= 1 && index <= n_args && args[index - 1].n > 0)
-            pivot_value_format (args[index - 1].values[0],
-                                show_values, show_variables, out);
+            pivot_value_format (args[index - 1].values[0], pt, out);
         }
       else if (*template == '[')
         {
@@ -1892,8 +2251,7 @@ pivot_format_template (struct string *out, const char *template,
               int tmpl_idx = left == arg->n && *tmpl[0] != ':' ? 0 : 1;
               char escape = "%^"[tmpl_idx];
               size_t used = pivot_format_inner_template (
-                out, tmpl[tmpl_idx], escape, values, left,
-                show_values, show_variables);
+                out, tmpl[tmpl_idx], escape, values, left, pt);
               if (!used || used > left)
                 break;
               left -= used;
@@ -1916,8 +2274,8 @@ interpret_show (enum settings_value_show global_show,
           : global_show);
 }
 
-/* Appends a text representation of the body of VALUE to OUT.  SHOW_VALUES and
-   SHOW_VARIABLES control whether variable and value labels are included.
+/* Appends a text representation of the body of VALUE to OUT.  Settings on
+   PT control whether variable and value labels are included.
 
    The "body" omits subscripts and superscripts and footnotes.
 
@@ -1925,8 +2283,7 @@ interpret_show (enum settings_value_show global_show,
    otherwise.  */
 bool
 pivot_value_format_body (const struct pivot_value *value,
-                         enum settings_value_show show_values,
-                         enum settings_value_show show_variables,
+                         const struct pivot_table *pt,
                          struct string *out)
 {
   enum settings_value_show show;
@@ -1936,7 +2293,7 @@ pivot_value_format_body (const struct pivot_value *value,
     {
     case PIVOT_VALUE_NUMERIC:
       show = interpret_show (settings_get_show_values (),
-                             show_values,
+                             pt->show_values,
                              value->numeric.show,
                              value->numeric.value_label != NULL);
       if (show & SETTINGS_VALUE_SHOW_VALUE)
@@ -1957,7 +2314,7 @@ pivot_value_format_body (const struct pivot_value *value,
 
     case PIVOT_VALUE_STRING:
       show = interpret_show (settings_get_show_values (),
-                             show_values,
+                             pt->show_values,
                              value->string.show,
                              value->string.value_label != NULL);
       if (show & SETTINGS_VALUE_SHOW_VALUE)
@@ -1981,7 +2338,7 @@ pivot_value_format_body (const struct pivot_value *value,
 
     case PIVOT_VALUE_VARIABLE:
       show = interpret_show (settings_get_show_variables (),
-                             show_variables,
+                             pt->show_variables,
                              value->variable.show,
                              value->variable.var_label != NULL);
       if (show & SETTINGS_VALUE_SHOW_VALUE)
@@ -2000,25 +2357,23 @@ pivot_value_format_body (const struct pivot_value *value,
 
     case PIVOT_VALUE_TEMPLATE:
       pivot_format_template (out, value->template.local, value->template.args,
-                             value->template.n_args, show_values,
-                             show_variables);
+                             value->template.n_args, pt);
       break;
     }
 
   return numeric;
 }
 
-/* Appends a text representation of VALUE to OUT.  SHOW_VALUES and
-   SHOW_VARIABLES control whether variable and value labels are included.
+/* Appends a text representation of VALUE to OUT.  Settings on
+   PT control whether variable and value labels are included.
 
    Subscripts and footnotes are included. */
 void
 pivot_value_format (const struct pivot_value *value,
-                    enum settings_value_show show_values,
-                    enum settings_value_show show_variables,
+                    const struct pivot_table *pt,
                     struct string *out)
 {
-  pivot_value_format_body (value, show_values, show_variables, out);
+  pivot_value_format_body (value, pt, out);
 
   if (value->n_subscripts)
     {
@@ -2028,9 +2383,13 @@ pivot_value_format (const struct pivot_value *value,
 
   for (size_t i = 0; i < value->n_footnotes; i++)
     {
-      ds_put_byte (out, '^');
-      pivot_value_format (value->footnotes[i]->marker,
-                          show_values, show_variables, out);
+      ds_put_byte (out, '[');
+
+      size_t idx = value->footnote_indexes[i];
+      const struct pivot_footnote *f = pt->footnotes[idx];
+      pivot_value_format (f->marker, pt, out);
+
+      ds_put_byte (out, ']');
     }
 }
 
@@ -2038,23 +2397,29 @@ pivot_value_format (const struct pivot_value *value,
    with free(). */
 char *
 pivot_value_to_string (const struct pivot_value *value,
-                       enum settings_value_show show_values,
-                       enum settings_value_show show_variables)
+                       const struct pivot_table *pt)
 {
   struct string s = DS_EMPTY_INITIALIZER;
-  pivot_value_format (value, show_values, show_variables, &s);
+  pivot_value_format (value, pt, &s);
   return ds_steal_cstr (&s);
 }
 
-static char *
-xstrdup_if_nonnull (const char *s)
+char *
+pivot_value_to_string_defaults (const struct pivot_value *value)
 {
-  return s ? xstrdup (s) : NULL;
+  static const struct pivot_table pt = {
+    .show_values = SETTINGS_VALUE_SHOW_DEFAULT,
+    .show_variables = SETTINGS_VALUE_SHOW_DEFAULT,
+  };
+  return pivot_value_to_string (value, &pt);
 }
 
 struct pivot_value *
 pivot_value_clone (const struct pivot_value *old)
 {
+  if (!old)
+    return NULL;
+
   struct pivot_value *new = xmemdup (old, sizeof *new);
   if (old->font_style)
     {
@@ -2070,8 +2435,8 @@ pivot_value_clone (const struct pivot_value *old)
         new->subscripts[i] = xstrdup (old->subscripts[i]);
     }
   if (old->n_footnotes)
-    new->footnotes = xmemdup (old->footnotes,
-                              old->n_footnotes * sizeof *new->footnotes);
+    new->footnote_indexes = xmemdup (
+      old->footnote_indexes, old->n_footnotes * sizeof *new->footnote_indexes);
 
   switch (new->type)
     {
@@ -2127,9 +2492,7 @@ pivot_value_destroy (struct pivot_value *value)
       font_style_uninit (value->font_style);
       free (value->font_style);
       free (value->cell_style);
-      /* Do not free the elements of footnotes because VALUE does not own
-         them. */
-      free (value->footnotes);
+      free (value->footnote_indexes);
 
       for (size_t i = 0; i < value->n_subscripts; i++)
         free (value->subscripts[i]);
@@ -2449,12 +2812,12 @@ pivot_value_add_footnote (struct pivot_value *v,
   /* Some legacy tables include numerous duplicate footnotes.  Suppress
      them. */
   for (size_t i = 0; i < v->n_footnotes; i++)
-    if (v->footnotes[i] == footnote)
+    if (v->footnote_indexes[i] == footnote->idx)
       return;
 
-  v->footnotes = xrealloc (v->footnotes,
-                           (v->n_footnotes + 1) * sizeof *v->footnotes);
-  v->footnotes[v->n_footnotes++] = footnote;
+  v->footnote_indexes = xrealloc (
+    v->footnote_indexes, (v->n_footnotes + 1) * sizeof *v->footnote_indexes);
+  v->footnote_indexes[v->n_footnotes++] = footnote->idx;
 }
 
 /* If VALUE is a numeric value, and RC is a result class such as

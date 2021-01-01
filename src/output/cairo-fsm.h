@@ -42,6 +42,8 @@ struct xr_fsm_style
     struct cell_color fg;
     bool use_system_colors;
 
+    int object_spacing;
+
     /* Resolution, in units per inch, used for measuring font "points".  If
        this is 72.0, for example, then 1pt = 1 device unit, which is
        appropriate for rendering to a surface created by
@@ -55,16 +57,20 @@ void xr_fsm_style_unref (struct xr_fsm_style *);
 bool xr_fsm_style_equals (const struct xr_fsm_style *,
                           const struct xr_fsm_style *);
 
-struct xr_fsm *xr_fsm_create (const struct output_item *,
-                              const struct xr_fsm_style *,
-                              cairo_t *);
-void xr_fsm_destroy (struct xr_fsm *);
-
+/* Interface used for rendering output items in a single on-screen region. */
+struct xr_fsm *xr_fsm_create_for_scrolling (const struct output_item *,
+                                            const struct xr_fsm_style *,
+                                            cairo_t *);
 void xr_fsm_measure (struct xr_fsm *, cairo_t *, int *w, int *h);
 void xr_fsm_draw_all (struct xr_fsm *, cairo_t *);
 void xr_fsm_draw_region (struct xr_fsm *, cairo_t *,
                          int x, int y, int w, int h);
 
+/* Interface used for rendering output items to a series of printed pages. */
+struct xr_fsm *xr_fsm_create_for_printing (const struct output_item *,
+                                           const struct xr_fsm_style *,
+                                           cairo_t *);
+void xr_fsm_destroy (struct xr_fsm *);
 int xr_fsm_draw_slice (struct xr_fsm *, cairo_t *, int space);
 bool xr_fsm_is_empty (const struct xr_fsm *);
 

@@ -25,6 +25,7 @@
 #include "libpspp/pool.h"
 #include "output/driver.h"
 #include "output/output-item-provider.h"
+#include "output/pivot-table.h"
 #include "output/table.h"
 #include "output/table-item.h"
 #include "output/table-provider.h"
@@ -158,26 +159,40 @@ text_item_append (struct text_item *dst, const struct text_item *src)
     }
 }
 
+static const struct pivot_table_look *
+text_item_table_look (void)
+{
+  static struct pivot_table_look *look;
+  if (!look)
+    {
+      look = pivot_table_look_new_builtin_default ();
+
+      for (int a = 0; a < PIVOT_N_AREAS; a++)
+        memset (look->areas[a].cell_style.margin, 0,
+                sizeof look->areas[a].cell_style.margin);
+      for (int b = 0; b < PIVOT_N_BORDERS; b++)
+        look->borders[b].stroke = TABLE_STROKE_NONE;
+    }
+  return look;
+}
+
 struct table_item *
 text_item_to_table_item (struct text_item *text_item)
 {
-  struct table *tab = table_create (1, 1, 0, 0, 0, 0);
+  struct pivot_table *table = pivot_table_create__ (NULL, "Text");
+  pivot_table_set_look (table, text_item_table_look ());
 
-  struct table_area_style *style = pool_alloc (tab->container, sizeof *style);
-  *style = (struct table_area_style) {
-    .cell_style = CELL_STYLE_INITIALIZER,
-    .cell_style.halign = TABLE_HALIGN_LEFT,
-  };
-  font_style_copy (tab->container, &style->font_style, &text_item->style);
-  tab->styles[0] = style;
+  struct pivot_dimension *d = pivot_dimension_create (
+    table, PIVOT_AXIS_ROW, N_("Text"));
+  d->hide_all_labels = true;
+  pivot_category_create_leaf (d->root, pivot_value_new_text ("null"));
 
-  int opts = 0;
-  if (text_item->style.markup)
-    opts |= TAB_MARKUP;
-  table_text (tab, 0, 0, opts, text_item_get_text (text_item));
-  struct table_item *table_item = table_item_create (tab);
-  text_item_unref (text_item);
-  return table_item;
+  struct pivot_value *content = pivot_value_new_user_text (
+    text_item->text, SIZE_MAX);
+  pivot_value_set_font_style (content, &text_item->style);
+  pivot_table_put1 (table, 0, content);
+
+  return table_item_create (table);
 }
 
 static const char *

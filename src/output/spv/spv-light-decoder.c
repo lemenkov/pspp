@@ -393,7 +393,8 @@ decode_spvlb_value (const struct pivot_table *table,
 
       if (vm->n_refs)
         {
-          out->footnotes = xnmalloc (vm->n_refs, sizeof *out->footnotes);
+          out->footnote_indexes = xnmalloc (vm->n_refs,
+                                            sizeof *out->footnote_indexes);
           for (size_t i = 0; i < vm->n_refs; i++)
             {
               uint16_t idx = vm->refs[i];
@@ -404,7 +405,7 @@ decode_spvlb_value (const struct pivot_table *table,
                                     idx, table->n_footnotes);
                 }
 
-              out->footnotes[out->n_footnotes++] = table->footnotes[idx];
+              out->footnote_indexes[out->n_footnotes++] = idx;
             }
         }
 

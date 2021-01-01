@@ -44,6 +44,8 @@
 #include "output/message-item.h"
 #include "output/options.h"
 #include "output/output-item-provider.h"
+#include "output/pivot-output.h"
+#include "output/pivot-table.h"
 #include "output/table-provider.h"
 #include "output/table-item.h"
 #include "output/text-item.h"
@@ -378,71 +380,92 @@ tex_submit (struct output_driver *driver,
 
 static void
 tex_put_footnote_markers (struct tex_driver *tex,
-                          struct footnote **footnotes,
+                          const struct pivot_table *pt,
+                          const size_t *footnote_indexes,
                           size_t n_footnotes)
 {
   if (n_footnotes > 0)
     shipout (&tex->token_list, "$^{");
   for (size_t i = 0; i < n_footnotes; i++)
     {
-      const struct footnote *f = footnotes[i];
-
-      tex_escape_string (tex, f->marker, true);
+      const struct pivot_footnote *f = pt->footnotes[footnote_indexes[i]];
+      char *marker = pivot_value_to_string (f->marker, pt);
+      tex_escape_string (tex, marker, true);
+      free (marker);
     }
   if (n_footnotes > 0)
     shipout (&tex->token_list, "}$");
 }
 
 static void
-tex_put_table_cell (struct tex_driver *tex, const struct table_cell *cell)
+tex_put_table_cell (struct tex_driver *tex, const struct pivot_table *pt,
+                    const struct table_cell *cell)
 {
-  tex_escape_string (tex, cell->text, false);
-  tex_put_footnote_markers (tex, cell->footnotes, cell->n_footnotes);
+  struct string s = DS_EMPTY_INITIALIZER;
+  pivot_value_format_body (cell->value, pt, &s);
+  tex_escape_string (tex, ds_cstr (&s), false);
+  ds_destroy (&s);
+
+  tex_put_footnote_markers (tex, pt,
+                            cell->value->footnote_indexes,
+                            cell->value->n_footnotes);
 }
 
 static void
-tex_output_table (struct tex_driver *tex, const struct table_item *item)
+tex_output_table_layer (struct tex_driver *tex, const struct pivot_table *pt,
+                        const size_t *layer_indexes)
 {
   /* Tables are rendered in TeX with the \halign command.
      This is described in the TeXbook Ch. 22 */
-
-  const struct table *t = table_item_get_table (item);
+  struct table *title, *layers, *body, *caption;
+  struct pivot_footnote **footnotes;
+  size_t n_footnotes;
+  pivot_output (pt, layer_indexes, true, &title, &layers, &body,
+                &caption, NULL, &footnotes, &n_footnotes);
 
   shipout (&tex->token_list, "\n{\\parindent=0pt\n");
 
-  const struct table_cell *caption = table_item_get_caption (item);
   if (caption)
     {
       shipout (&tex->token_list, "{\\sl ");
-      tex_escape_string (tex, caption->text, false);
+      struct table_cell cell;
+      table_get_cell (caption, 0, 0, &cell);
+      tex_put_table_cell (tex, pt, &cell);
       shipout (&tex->token_list, "}\n\n");
     }
-  struct footnote **f;
-  size_t n_footnotes = table_collect_footnotes (item, &f);
 
-  const struct table_cell *title = table_item_get_title (item);
-  const struct table_item_layers *layers = table_item_get_layers (item);
   if (title || layers)
     {
       if (title)
         {
           shipout (&tex->token_list, "{\\bf ");
-          tex_put_table_cell (tex, title);
-          shipout (&tex->token_list, "}");
+          struct table_cell cell;
+          table_get_cell (title, 0, 0, &cell);
+          tex_put_table_cell (tex, pt, &cell);
+          shipout (&tex->token_list, "}\\par\n");
         }
+
       if (layers)
-        abort ();
-      shipout (&tex->token_list, "\\par\n");
+        {
+          for (size_t y = 0; y < layers->n[V]; y++)
+            {
+              shipout (&tex->token_list, "{");
+              struct table_cell cell;
+              table_get_cell (layers, 0, y, &cell);
+              tex_put_table_cell (tex, pt, &cell);
+              shipout (&tex->token_list, "}\\par\n");
+            }
+        }
     }
 
   shipout (&tex->token_list, "\\offinterlineskip\\halign{\\strut%%\n");
 
   /* Generate the preamble */
-  for (int x = 0; x < t->n[H]; ++x)
+  for (int x = 0; x < body->n[H]; ++x)
     {
-      shipout (&tex->token_list, "{\\vbox{\\cell{%d}#}}", t->n[H]);
+      shipout (&tex->token_list, "{\\vbox{\\cell{%d}#}}", body->n[H]);
 
-      if (x < t->n[H] - 1)
+      if (x < body->n[H] - 1)
         {
           shipout (&tex->token_list, "\\hskip\\psppcolumnspace\\hfil");
           shipout (&tex->token_list, "&\\vrule\n");
@@ -452,17 +475,17 @@ tex_output_table (struct tex_driver *tex, const struct table_item *item)
     }
 
   /* Emit the row data */
-  for (int y = 0; y < t->n[V]; y++)
+  for (int y = 0; y < body->n[V]; y++)
     {
       enum { H = TABLE_HORZ, V = TABLE_VERT };
-      bool is_column_header = y < t->h[V][0] || y >= t->n[V] - t->h[V][1];
+      bool is_column_header = y < body->h[V][0] || y >= body->n[V] - body->h[V][1];
       int prev_x = -1;
       int skipped = 0;
-      for (int x = 0; x < t->n[H];)
+      for (int x = 0; x < body->n[H];)
         {
           struct table_cell cell;
 
-          table_get_cell (t, x, y, &cell);
+          table_get_cell (body, x, y, &cell);
 
           int colspan = table_cell_colspan (&cell);
           if (x > 0)
@@ -475,14 +498,16 @@ tex_output_table (struct tex_driver *tex, const struct table_item *item)
           if (x != cell.d[TABLE_HORZ][0] || y != cell.d[TABLE_VERT][0])
             goto next_1;
 
-          /* bool is_header = (y < t->h[V][0] */
-          /*                   || y >= t->n[V] - t->h[V][1] */
-          /*                   || x < t->h[H][0] */
-          /*                   || x >= t->n[H] - t->h[H][1]); */
+          /* bool is_header = (y < body->h[V][0] */
+          /*                   || y >= body->n[V] - body->h[V][1] */
+          /*                   || x < body->h[H][0] */
+          /*                   || x >= body->n[H] - body->h[H][1]); */
 
-          enum table_halign halign =
-            table_halign_interpret (cell.style->cell_style.halign,
-                                    cell.options & TAB_NUMERIC);
+          struct string s = DS_EMPTY_INITIALIZER;
+          bool numeric = pivot_value_format_body (cell.value, pt, &s);
+
+          enum table_halign halign = table_halign_interpret (
+            cell.cell_style->halign, numeric);
 
           /* int rowspan = table_cell_rowspan (&cell); */
 
@@ -504,8 +529,11 @@ tex_output_table (struct tex_driver *tex, const struct table_item *item)
             shipout (&tex->token_list, "\\right{");
 
           /* Output cell contents. */
-          tex_escape_string (tex, cell.text, true);
-          tex_put_footnote_markers (tex, cell.footnotes, cell.n_footnotes);
+          tex_escape_string (tex, ds_cstr (&s), true);
+          ds_destroy (&s);
+
+          tex_put_footnote_markers (tex, pt, cell.value->footnote_indexes,
+                                    cell.value->n_footnotes);
           if (halign == TABLE_HALIGN_CENTER || halign == TABLE_HALIGN_RIGHT)
             {
               shipout (&tex->token_list, "}");
@@ -529,14 +557,33 @@ tex_output_table (struct tex_driver *tex, const struct table_item *item)
 
   for (int i = 0; i < n_footnotes; ++i)
     {
+      char *marker = pivot_value_to_string (footnotes[i]->marker, pt);
+      char *content = pivot_value_to_string (footnotes[i]->content, pt);
+
       shipout (&tex->token_list, "$^{");
-      tex_escape_string (tex, f[i]->marker, false);
+      tex_escape_string (tex, marker, false);
       shipout (&tex->token_list, "}$");
-      tex_escape_string (tex, f[i]->content, false);
+      tex_escape_string (tex, content, false);
+
+      free (content);
+      free (marker);
     }
-  free (f);
 
   shipout (&tex->token_list, "}\n\\vskip 3ex\n\n");
+
+  table_unref (title);
+  table_unref (layers);
+  table_unref (body);
+  table_unref (caption);
+  free (footnotes);
+}
+
+static void
+tex_output_table (struct tex_driver *tex, const struct table_item *item)
+{
+  size_t *layer_indexes;
+  PIVOT_OUTPUT_FOR_EACH_LAYER (layer_indexes, item->pt, true)
+    tex_output_table_layer (tex, item->pt, layer_indexes);
 }
 
 struct output_driver_factory tex_driver_factory =

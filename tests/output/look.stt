@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tableProperties xmlns="http://www.ibm.com/software/analytics/spss/xml/table-looks" xmlns:vizml="http://www.ibm.com/software/analytics/spss/xml/visualization" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.ibm.com/software/analytics/spss/xml/table-looks http://www.ibm.com/software/analytics/spss/xml/table-looks/table-looks-1.4.xsd">
+    <generalProperties hideEmptyRows="true" maximumColumnWidth="72" maximumRowWidth="120" minimumColumnWidth="36" minimumRowWidth="36" rowDimensionLabels="inCorner"/>
+    <footnoteProperties markerPosition="subscript" numberFormat="alphabetic"/>
+    <cellFormatProperties>
+        <title>
+            <vizml:style color="#000000" color2="#ffffff" font-family="Sans Serif" font-size="9pt" font-weight="bold" font-underline="none" labelLocationVertical="center" margin-bottom="6pt" margin-left="6pt" margin-right="8pt" margin-top="0pt" textAlignment="left"/>
+        </title>
+        <caption>
+            <vizml:style color="#000000" color2="#ffffff" font-family="Sans Serif" font-size="9pt" font-weight="regular" font-underline="none" labelLocationVertical="positive" margin-bottom="0pt" margin-left="6pt" margin-right="8pt" margin-top="0pt" textAlignment="left"/>
+        </caption>
+        <footnotes>
+            <vizml:style color="#000000" color2="#ffffff" font-family="Sans Serif" font-size="9pt" font-weight="regular" font-underline="none" labelLocationVertical="positive" margin-bottom="2pt" margin-left="8pt" margin-right="6pt" margin-top="1pt" textAlignment="left"/>
+        </footnotes>
+        <cornerLabels>
+            <vizml:style color="#000000" color2="#ffffff" font-family="Sans Serif" font-size="9pt" font-weight="regular" font-underline="none" labelLocationVertical="negative" margin-bottom="0pt" margin-left="6pt" margin-right="8pt" margin-top="0pt" textAlignment="left"/>
+        </cornerLabels>
+        <columnLabels>
+            <vizml:style color="#000000" color2="#ffffff" font-family="Sans Serif" font-size="9pt" font-weight="regular" font-underline="none" labelLocationVertical="negative" margin-bottom="2pt" margin-left="6pt" margin-right="8pt" margin-top="0pt" textAlignment="center"/>
+        </columnLabels>
+        <rowLabels>
+            <vizml:style color="#000000" color2="#ffffff" font-family="Sans Serif" font-size="9pt" font-weight="regular" font-underline="none" labelLocationVertical="positive" margin-bottom="2pt" margin-left="6pt" margin-right="8pt" margin-top="0pt" textAlignment="left"/>
+        </rowLabels>
+        <data>
+            <vizml:style color="#000000" color2="#ffffff" font-family="Sans Serif" font-size="9pt" font-weight="regular" font-underline="none" labelLocationVertical="positive" margin-bottom="0pt" margin-left="6pt" margin-right="8pt" margin-top="0pt" textAlignment="mixed"/>
+        </data>
+        <layers>
+            <vizml:style color="#000000" color2="#ffffff" font-family="Sans Serif" font-size="9pt" font-weight="regular" font-underline="none" labelLocationVertical="negative" margin-bottom="2pt" margin-left="6pt" margin-right="8pt" margin-top="0pt" textAlignment="left"/>
+        </layers>
+    </cellFormatProperties>
+    <borderProperties>
+        <titleLayerSeparator borderStyleType="none" color="#000000"/>
+        <leftOuterFrame borderStyleType="none" color="#000000"/>
+        <topOuterFrame borderStyleType="none" color="#000000"/>
+        <rightOuterFrame borderStyleType="none" color="#000000"/>
+        <bottomOuterFrame borderStyleType="none" color="#000000"/>
+        <leftInnerFrame borderStyleType="thick" color="#000000"/>
+        <topInnerFrame borderStyleType="thick" color="#000000"/>
+        <rightInnerFrame borderStyleType="thick" color="#000000"/>
+        <bottomInnerFrame borderStyleType="thick" color="#000000"/>
+        <dataAreaLeft borderStyleType="thick" color="#000000"/>
+        <dataAreaTop borderStyleType="thick" color="#000000"/>
+        <horizontalDimensionBorderRows borderStyleType="solid" color="#000000"/>
+        <verticalDimensionBorderRows borderStyleType="none" color="#000000"/>
+        <horizontalDimensionBorderColumns borderStyleType="solid" color="#000000"/>
+        <verticalDimensionBorderColumns borderStyleType="solid" color="#000000"/>
+        <horizontalCategoryBorderRows borderStyleType="none" color="#000000"/>
+        <verticalCategoryBorderRows borderStyleType="none" color="#000000"/>
+        <horizontalCategoryBorderColumns borderStyleType="solid" color="#000000"/>
+        <verticalCategoryBorderColumns borderStyleType="solid" color="#000000"/>
+    </borderProperties>
+    <printingProperties printAllLayers="false" rescaleLongTableToFitPage="false" rescaleWideTableToFitPage="false" windowOrphanLines="0"/>
+</tableProperties>

@@ -37,6 +37,8 @@
 
 struct casereader;
 struct fmt_spec;
+struct pivot_footnote;
+struct pivot_value;
 struct pool;
 struct table_item;
 struct variable;
@@ -180,8 +182,6 @@ void table_area_style_free (struct table_area_style *);
 enum
   {
     TAB_NONE = 0,
-    TAB_MARKUP     = 1 << 2,    /* Text contains Pango markup. */
-    TAB_NUMERIC    = 1 << 3,    /* Cell contents are numeric. */
     TAB_ROTATE     = 1 << 4,    /* Rotate cell contents 90 degrees. */
 
     TAB_STYLE_SHIFT = 5,
@@ -222,7 +222,7 @@ struct table
 
     /* Table contents.
 
-       Each array element in cc[] is ordinarily a "char *" pointer to a string.
+       Each array element in cc[] is ordinarily a "struct pivot_value *".
        If TAB_JOIN (defined in table.c) is set in ct[] for the element,
        however, it is a joined cell and the corresponding element of cc[]
        points to a struct table_cell. */
@@ -257,28 +257,10 @@ void table_box (struct table *, int f_h, int f_v, int i_h, int i_v,
                 int x1, int y1, int x2, int y2);
 
 /* Cells. */
-void table_text (struct table *, int c, int r, unsigned opt, const char *);
-void table_text_format (struct table *, int c, int r, unsigned opt,
-                        const char *, ...)
-  PRINTF_FORMAT (5, 6);
-void table_joint_text (struct table *, int x1, int y1, int x2, int y2,
-                       unsigned opt, const char *);
-
-void table_add_subscripts (struct table *, int x, int y,
-                           char **subscripts, size_t n_subscripts);
-
-/* Footnotes.
-
-   Use table_create_footnote() to create the footnotes themselves, then use
-   table_add_footnote() to create a reference from a table cell to a footnote.
-   There are two steps because a footnote may have multiple references. */
-struct footnote *table_create_footnote (struct table *, size_t idx,
-                                        const char *content,
-                                        const char *marker,
-                                        struct table_area_style *);
-void table_add_footnote (struct table *, int x, int y, struct footnote *);
-
-void table_add_style (struct table *, int x, int y, struct table_area_style *);
+void table_put (struct table *, int x1, int y1, int x2, int y2,
+                unsigned opt, const struct pivot_value *);
+void table_put_owned (struct table *, int x1, int y1, int x2, int y2,
+                      unsigned opt, struct pivot_value *);
 
 bool table_cell_is_empty (const struct table *, int c, int r);
 

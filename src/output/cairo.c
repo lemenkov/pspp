@@ -254,7 +254,6 @@ xr_allocate (const char *name, int device_type,
     },
 
     .initial_page_number = 1,
-    .object_spacing = object_spacing,
     .include_outline = include_outline,
   };
 
@@ -266,6 +265,7 @@ xr_allocate (const char *name, int device_type,
     .font = font,
     .fg = fg,
     .use_system_colors = systemcolors,
+    .object_spacing = object_spacing,
     .font_resolution = font_resolution,
   };
 
@@ -574,7 +574,6 @@ xr_update_page_setup (struct output_driver *driver,
     },
 
     .initial_page_number = setup->initial_page_number,
-    .object_spacing = setup->object_spacing * 72 * XR_POINT,
     .include_outline = old_ps->include_outline,
   };
   for (size_t i = 0; i < 2; i++)
@@ -593,6 +592,7 @@ xr_update_page_setup (struct output_driver *driver,
     .font = pango_font_description_copy (old_fs->font),
     .fg = old_fs->fg,
     .use_system_colors = old_fs->use_system_colors,
+    .object_spacing = setup->object_spacing * 72 * XR_POINT,
     .font_resolution = old_fs->font_resolution,
   };
   xr_fsm_style_unref (old_fs);

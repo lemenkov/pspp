@@ -33,6 +33,7 @@
 #include "output/message-item.h"
 #include "output/output-item.h"
 #include "output/output-item-provider.h"
+#include "output/pivot-table.h"
 #include "output/table-item.h"
 #include "output/text-item.h"
 
@@ -159,6 +160,7 @@ get_xr_fsm_style (struct psppire_output_view *view)
     .min_break = { [TABLE_HORZ] = xr_width / 2, [TABLE_VERT] = 0 },
     .font = pf,
     .use_system_colors = true,
+    .object_spacing = XR_POINT * 12,
     .font_resolution = 96.0,
   };
 
@@ -332,7 +334,7 @@ rerender (struct psppire_output_view *view)
       if (is_group_open_item (item->item))
         continue;
 
-      r = xr_fsm_create (item->item, view->style, cr);
+      r = xr_fsm_create_for_scrolling (item->item, view->style, cr);
       if (r == NULL)
         {
           g_warn_if_reached ();
@@ -359,7 +361,7 @@ rerender (struct psppire_output_view *view)
       if (is_table_item (item->item))
         {
           const struct table_item *ti = to_table_item (item->item);
-          gtk_widget_set_tooltip_text (item->drawing_area, ti->notes);
+          gtk_widget_set_tooltip_text (item->drawing_area, ti->pt->notes);
         }
 
       {
@@ -446,7 +448,7 @@ psppire_output_view_put (struct psppire_output_view *view,
       if (view->y > 0)
         view->y += view->object_spacing;
 
-      struct xr_fsm *r = xr_fsm_create (item, view->style, cr);
+      struct xr_fsm *r = xr_fsm_create_for_scrolling (item, view->style, cr);
       if (r == NULL)
 	{
 	  gdk_window_end_draw_frame (win, ctx);
@@ -962,7 +964,6 @@ create_xr_print_driver (GtkPrintContext *context, struct psppire_output_view *vi
       [V] = { margins[V][0], margins[V][1] },
     },
     .initial_page_number = 1,
-    .object_spacing = 12 * XR_POINT,
   };
 
   view->fsm_style = xmalloc (sizeof *view->fsm_style);
@@ -974,6 +975,7 @@ create_xr_print_driver (GtkPrintContext *context, struct psppire_output_view *vi
     .font = pango_font_description_from_string ("Sans Serif 10"),
     .fg = CELL_COLOR_BLACK,
     .use_system_colors = false,
+    .object_spacing = 12 * XR_POINT,
     .font_resolution = 72.0
   };
 

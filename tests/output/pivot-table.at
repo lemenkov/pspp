@@ -1,0 +1,402 @@
+AT_BANNER([pivot table rendering])
+
+AT_SETUP([1-d pivot table])
+AT_DATA([pivot.txt], [[
+/col "a"*("a1", "a2", "a3")
+/cell[all]
+/title "Columns" /display
+/title "Rows" /transpose.
+]])
+AT_CHECK([pivot-table-test --table-look $srcdir/output/look.stt pivot.txt --box unicode], [0], [dnl
+Columns
+╭────────╮
+│    a   │
+├──┬──┬──┤
+│a1│a2│a3│
+├──┼──┼──┤
+│ 0│ 1│ 2│
+╰──┴──┴──╯
+
+Rows
+╭──┬─╮
+│a │ │
+├──┼─┤
+│a1│0│
+│a2│1│
+│a3│2│
+╰──┴─╯
+])
+AT_CLEANUP
+
+AT_SETUP([2-d pivot table])
+AT_DATA([pivot.txt], [[
+/col "a"("a1", "a2", "a3")
+/col "b"("b1", "b2", "b3")
+/cell[all, all]
+/title "Columns" /display
+/title "Rows" /transpose /display
+/title "Column x Row" /move "a" column /display
+/title "Row x Column" /transpose
+]])
+AT_CHECK([pivot-table-test --table-look $srcdir/output/look.stt pivot.txt --box unicode], [0], [dnl
+Columns
+╭────────┬────────┬────────╮
+│   b1   │   b2   │   b3   │
+├──┬──┬──┼──┬──┬──┼──┬──┬──┤
+│a1│a2│a3│a1│a2│a3│a1│a2│a3│
+├──┼──┼──┼──┼──┼──┼──┼──┼──┤
+│ 0│ 1│ 2│ 3│ 4│ 5│ 6│ 7│ 8│
+╰──┴──┴──┴──┴──┴──┴──┴──┴──╯
+
+Rows
+╭─────┬─╮
+│b1 a1│0│
+│   a2│1│
+│   a3│2│
+├─────┼─┤
+│b2 a1│3│
+│   a2│4│
+│   a3│5│
+├─────┼─┤
+│b3 a1│6│
+│   a2│7│
+│   a3│8│
+╰─────┴─╯
+
+Column x Row
+╭──┬──┬──┬──╮
+│  │a1│a2│a3│
+├──┼──┼──┼──┤
+│b1│ 0│ 1│ 2│
+│b2│ 3│ 4│ 5│
+│b3│ 6│ 7│ 8│
+╰──┴──┴──┴──╯
+
+Row x Column
+╭──┬──┬──┬──╮
+│  │b1│b2│b3│
+├──┼──┼──┼──┤
+│a1│ 0│ 3│ 6│
+│a2│ 1│ 4│ 7│
+│a3│ 2│ 5│ 8│
+╰──┴──┴──┴──╯
+])
+AT_CLEANUP
+
+AT_SETUP([2-d pivot table - dimension labels])
+AT_DATA([pivot.txt], [[
+/col "a"*("a1", "a2", "a3")
+/col "b"*("b1", "b2", "b3")
+/cell[all, all]
+/title "Columns" /display
+/title "Rows - Corner" /transpose /display
+/title "Rows - Nested" /look rowlabels=nested /display
+/title "Column x Row - Corner" /move "a" column /look rowlabels=corner /display
+/title "Column x Row - Nested" /look rowlabels=nested /display
+/title "Row x Column - Corner" /transpose /look rowlabels=corner /display
+/title "Row x Column - Nested" /look rowlabels=nested
+]])
+AT_CHECK([pivot-table-test --table-look $srcdir/output/look.stt pivot.txt --box unicode], [0], [dnl
+Columns
+╭──────────────────────────╮
+│             b            │
+├────────┬────────┬────────┤
+│   b1   │   b2   │   b3   │
+├────────┼────────┼────────┤
+│    a   │    a   │    a   │
+├──┬──┬──┼──┬──┬──┼──┬──┬──┤
+│a1│a2│a3│a1│a2│a3│a1│a2│a3│
+├──┼──┼──┼──┼──┼──┼──┼──┼──┤
+│ 0│ 1│ 2│ 3│ 4│ 5│ 6│ 7│ 8│
+╰──┴──┴──┴──┴──┴──┴──┴──┴──╯
+
+Rows - Corner
+╭─────┬─╮
+│b  a │ │
+├─────┼─┤
+│b1 a1│0│
+│   a2│1│
+│   a3│2│
+├─────┼─┤
+│b2 a1│3│
+│   a2│4│
+│   a3│5│
+├─────┼─┤
+│b3 a1│6│
+│   a2│7│
+│   a3│8│
+╰─────┴─╯
+
+Rows - Nested
+╭─────────┬─╮
+│b b1 a a1│0│
+│       a2│1│
+│       a3│2│
+│ ╶───────┼─┤
+│  b2 a a1│3│
+│       a2│4│
+│       a3│5│
+│ ╶───────┼─┤
+│  b3 a a1│6│
+│       a2│7│
+│       a3│8│
+╰─────────┴─╯
+
+Column x Row - Corner
+╭──┬────────╮
+│  │    a   │
+│  ├──┬──┬──┤
+│b │a1│a2│a3│
+├──┼──┼──┼──┤
+│b1│ 0│ 1│ 2│
+│b2│ 3│ 4│ 5│
+│b3│ 6│ 7│ 8│
+╰──┴──┴──┴──╯
+
+Column x Row - Nested
+╭────┬────────╮
+│    │    a   │
+│    ├──┬──┬──┤
+│    │a1│a2│a3│
+├────┼──┼──┼──┤
+│b b1│ 0│ 1│ 2│
+│  b2│ 3│ 4│ 5│
+│  b3│ 6│ 7│ 8│
+╰────┴──┴──┴──╯
+
+Row x Column - Corner
+╭──┬────────╮
+│  │    b   │
+│  ├──┬──┬──┤
+│a │b1│b2│b3│
+├──┼──┼──┼──┤
+│a1│ 0│ 3│ 6│
+│a2│ 1│ 4│ 7│
+│a3│ 2│ 5│ 8│
+╰──┴──┴──┴──╯
+
+Row x Column - Nested
+╭────┬────────╮
+│    │    b   │
+│    ├──┬──┬──┤
+│    │b1│b2│b3│
+├────┼──┼──┼──┤
+│a a1│ 0│ 3│ 6│
+│  a2│ 1│ 4│ 7│
+│  a3│ 2│ 5│ 8│
+╰────┴──┴──┴──╯
+])
+AT_CLEANUP
+
+AT_SETUP([2-d pivot table - groups])
+AT_DATA([pivot.txt], [[
+/col "a"("a1", "ag1"("a2", "a3"))
+/col "b"("bg1"("b1", "b2"), "b3")
+/cell[all, all]
+/title "Columns" /display
+/title "Rows" /transpose /display
+/title "Column x Row" /move "a" column /display
+/title "Row x Column" /transpose /display
+/title "Row x Column - delete b2" /cells[all,1]=delete /display
+/title "Row x Column - delete b2 - show empty" /look empty=show /display
+/title "Row x Column - delete b1" /cells[all,0]=delete /look empty=hide /display
+/title "Row x Column - delete b1 - show empty" /look empty=show.
+]])
+AT_CHECK([pivot-table-test --table-look $srcdir/output/look.stt pivot.txt --box unicode], [0], [dnl
+Columns
+╭─────────────────┬────────╮
+│       bg1       │        │
+├────────┬────────┤        │
+│   b1   │   b2   │   b3   │
+├──┬─────┼──┬─────┼──┬─────┤
+│  │ ag1 │  │ ag1 │  │ ag1 │
+│  ├──┬──┤  ├──┬──┤  ├──┬──┤
+│a1│a2│a3│a1│a2│a3│a1│a2│a3│
+├──┼──┼──┼──┼──┼──┼──┼──┼──┤
+│ 0│ 1│ 2│ 3│ 4│ 5│ 6│ 7│ 8│
+╰──┴──┴──┴──┴──┴──┴──┴──┴──╯
+
+Rows
+╭─────────────┬─╮
+│bg1 b1 a1    │0│
+│      ╶──────┼─┤
+│       ag1 a2│1│
+│           a3│2│
+│   ╶─────────┼─┤
+│    b2 a1    │3│
+│      ╶──────┼─┤
+│       ag1 a2│4│
+│           a3│5│
+├─────────────┼─┤
+│b3     a1    │6│
+│      ╶──────┼─┤
+│       ag1 a2│7│
+│           a3│8│
+╰─────────────┴─╯
+
+Column x Row
+╭──────┬──┬─────╮
+│      │  │ ag1 │
+│      │  ├──┬──┤
+│      │a1│a2│a3│
+├──────┼──┼──┼──┤
+│bg1 b1│ 0│ 1│ 2│
+│    b2│ 3│ 4│ 5│
+├──────┼──┼──┼──┤
+│b3    │ 6│ 7│ 8│
+╰──────┴──┴──┴──╯
+
+Row x Column
+╭──────┬─────┬──╮
+│      │ bg1 │  │
+│      ├──┬──┤  │
+│      │b1│b2│b3│
+├──────┼──┼──┼──┤
+│a1    │ 0│ 3│ 6│
+├──────┼──┼──┼──┤
+│ag1 a2│ 1│ 4│ 7│
+│    a3│ 2│ 5│ 8│
+╰──────┴──┴──┴──╯
+
+Row x Column - delete b2
+╭──────┬───┬──╮
+│      │bg1│  │
+│      ├───┤  │
+│      │ b1│b3│
+├──────┼───┼──┤
+│a1    │  0│ 6│
+├──────┼───┼──┤
+│ag1 a2│  1│ 7│
+│    a3│  2│ 8│
+╰──────┴───┴──╯
+
+Row x Column - delete b2 - show empty
+╭──────┬─────┬──╮
+│      │ bg1 │  │
+│      ├──┬──┤  │
+│      │b1│b2│b3│
+├──────┼──┼──┼──┤
+│a1    │ 0│  │ 6│
+├──────┼──┼──┼──┤
+│ag1 a2│ 1│  │ 7│
+│    a3│ 2│  │ 8│
+╰──────┴──┴──┴──╯
+
+Row x Column - delete b1
+╭──────┬──╮
+│      │b3│
+├──────┼──┤
+│a1    │ 6│
+├──────┼──┤
+│ag1 a2│ 7│
+│    a3│ 8│
+╰──────┴──╯
+
+Row x Column - delete b1 - show empty
+╭──────┬─────┬──╮
+│      │ bg1 │  │
+│      ├──┬──┤  │
+│      │b1│b2│b3│
+├──────┼──┼──┼──┤
+│a1    │  │  │ 6│
+├──────┼──┼──┼──┤
+│ag1 a2│  │  │ 7│
+│    a3│  │  │ 8│
+╰──────┴──┴──┴──╯
+])
+AT_CLEANUP
+
+AT_SETUP([2-d pivot table - layers])
+AT_DATA([pivot.txt], [[
+/col "a"("a1", "a2", "a3")
+/layer "b"("b1", "b2", "b3")
+/cell[all, all]
+/title "Column x b1" /display
+/title "Row x b1" /transpose /display
+/title "Column x b2" /show layer 1 /transpose /display
+/title "Row x b2" /transpose /display
+/title "Column (All Layers)" /look layers=all /display
+/title "Row (All Layers)" /transpose /look layers=all
+]])
+AT_CHECK([pivot-table-test --table-look $srcdir/output/look.stt pivot.txt --box unicode], [0], [dnl
+Column x b1
+b: b1
+╭──┬──┬──╮
+│a1│a2│a3│
+├──┼──┼──┤
+│ 0│ 1│ 2│
+╰──┴──┴──╯
+
+Row x b1
+b: b1
+╭──┬─╮
+│a1│0│
+│a2│1│
+│a3│2│
+╰──┴─╯
+
+Column x b2
+b: b2
+╭──┬──┬──╮
+│a1│a2│a3│
+├──┼──┼──┤
+│ 3│ 4│ 5│
+╰──┴──┴──╯
+
+Row x b2
+b: b2
+╭──┬─╮
+│a1│3│
+│a2│4│
+│a3│5│
+╰──┴─╯
+
+Column (All Layers)
+b: b1
+╭──┬─╮
+│a1│0│
+│a2│1│
+│a3│2│
+╰──┴─╯
+
+Column (All Layers)
+b: b2
+╭──┬─╮
+│a1│3│
+│a2│4│
+│a3│5│
+╰──┴─╯
+
+Column (All Layers)
+b: b3
+╭──┬─╮
+│a1│6│
+│a2│7│
+│a3│8│
+╰──┴─╯
+
+Row (All Layers)
+b: b1
+╭──┬──┬──╮
+│a1│a2│a3│
+├──┼──┼──┤
+│ 0│ 1│ 2│
+╰──┴──┴──╯
+
+Row (All Layers)
+b: b2
+╭──┬──┬──╮
+│a1│a2│a3│
+├──┼──┼──┤
+│ 3│ 4│ 5│
+╰──┴──┴──╯
+
+Row (All Layers)
+b: b3
+╭──┬──┬──╮
+│a1│a2│a3│
+├──┼──┼──┤
+│ 6│ 7│ 8│
+╰──┴──┴──╯
+])
+AT_CLEANUP

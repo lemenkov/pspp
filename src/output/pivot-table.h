@@ -485,8 +485,17 @@ struct pivot_table *pivot_table_create_for_text (struct pivot_value *title,
                                                  struct pivot_value *content);
 
 struct pivot_table *pivot_table_ref (const struct pivot_table *);
+struct pivot_table *pivot_table_unshare (struct pivot_table *);
 void pivot_table_unref (struct pivot_table *);
 bool pivot_table_is_shared (const struct pivot_table *);
+
+/* Axes. */
+void pivot_table_swap_axes (struct pivot_table *,
+                            enum pivot_axis_type, enum pivot_axis_type);
+void pivot_table_transpose (struct pivot_table *);
+void pivot_table_move_dimension (struct pivot_table *,
+                                 struct pivot_dimension *,
+                                 enum pivot_axis_type, size_t ofs);
 
 /* Styling. */
 const struct pivot_table_look *pivot_table_get_look (
@@ -523,6 +532,8 @@ const struct pivot_value *pivot_table_get (const struct pivot_table *,
 
 struct pivot_value *pivot_table_get_rw (struct pivot_table *,
                                         const size_t *dindexes);
+
+bool pivot_table_delete (struct pivot_table *, const size_t *dindexes);
 
 /* Footnotes.
 
@@ -636,7 +647,7 @@ struct pivot_value
     char **subscripts;
     size_t n_subscripts;
 
-    const struct pivot_footnote **footnotes;
+    size_t *footnote_indexes;
     size_t n_footnotes;
 
     enum pivot_value_type type;
@@ -734,15 +745,12 @@ void pivot_value_set_rc (const struct pivot_table *, struct pivot_value *,
 
 /* Converting a pivot_value to a string for display. */
 char *pivot_value_to_string (const struct pivot_value *,
-                             enum settings_value_show show_values,
-                             enum settings_value_show show_variables);
+                             const struct pivot_table *);
+char *pivot_value_to_string_defaults (const struct pivot_value *);
 void pivot_value_format (const struct pivot_value *,
-                         enum settings_value_show show_values,
-                         enum settings_value_show show_variables,
-                         struct string *);
+                         const struct pivot_table *, struct string *);
 bool pivot_value_format_body (const struct pivot_value *,
-                              enum settings_value_show show_values,
-                              enum settings_value_show show_variables,
+                              const struct pivot_table *,
                               struct string *);
 
 /* Styling. */

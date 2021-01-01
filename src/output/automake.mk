@@ -76,6 +76,7 @@ src_output_liboutput_la_SOURCES = \
 	src/output/page-setup-item.c \
 	src/output/page-setup-item.h \
 	src/output/pivot-output.c \
+	src/output/pivot-output.h \
 	src/output/pivot-table.c \
 	src/output/pivot-table.h \
 	src/output/render.c \

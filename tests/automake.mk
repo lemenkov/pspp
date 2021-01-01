@@ -236,12 +236,14 @@ tests_math_chart_get_ticks_format_test_LDADD = \
 	src/libpspp-core.la \
 	gl/libgl.la
 
-check_PROGRAMS += tests/output/render-test
-tests_output_render_test_SOURCES = tests/output/render-test.c
-tests_output_render_test_LDADD = \
+check_PROGRAMS += tests/output/pivot-table-test
+tests_output_pivot_table_test_SOURCES = tests/output/pivot-table-test.c
+tests_output_pivot_table_test_LDADD = \
 	src/libpspp.la \
 	src/libpspp-core.la \
+	gl/libgl.la \
 	$(CAIRO_LIBS)
+EXTRA_DIST += tests/output/look.stt
 
 check_PROGRAMS += tests/output/ascii-test
 tests_output_ascii_test_SOURCES = tests/output/ascii-test.c
@@ -450,6 +452,7 @@ TESTSUITE_AT = \
 	tests/output/html.at \
 	tests/output/output.at \
 	tests/output/paper-size.at \
+	tests/output/pivot-table.at \
 	tests/output/render.at \
 	tests/output/tables.at \
 	tests/output/tex.at \

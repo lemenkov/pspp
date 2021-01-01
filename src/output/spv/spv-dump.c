@@ -51,9 +51,7 @@ spv_item_dump (const struct spv_item *item, int indentation)
       break;
 
     case SPV_ITEM_TEXT:
-      printf ("text \"%s\"\n",
-              pivot_value_to_string (item->text, SETTINGS_VALUE_SHOW_DEFAULT,
-                                     SETTINGS_VALUE_SHOW_DEFAULT));
+      printf ("text \"%s\"\n", pivot_value_to_string_defaults (item->text));
       break;
 
     case SPV_ITEM_TABLE:

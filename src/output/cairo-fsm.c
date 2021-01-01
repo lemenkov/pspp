@@ -41,6 +41,8 @@
 #include "output/message-item.h"
 #include "output/page-eject-item.h"
 #include "output/page-setup-item.h"
+#include "output/pivot-output.h"
+#include "output/pivot-table.h"
 #include "output/render.h"
 #include "output/table-item.h"
 #include "output/text-item.h"
@@ -104,24 +106,40 @@ xr_fsm_style_equals (const struct xr_fsm_style *a,
       || a->min_break[V] != b->min_break[V]
       || !pango_font_description_equal (a->font, b->font)
       || a->use_system_colors != b->use_system_colors
+      || a->object_spacing != b->object_spacing
       || a->font_resolution != b->font_resolution)
     return false;
 
   return true;
 }
 
+/* Renders a single output_item to an output device in one of two ways:
+
+   - 'print == true': Broken across multiple pages if necessary.
+
+   - 'print == false': In a single region that the user may scroll around if
+     needed.
+
+   Normally 'output_item' corresponds to a single rendering.  There is a
+   special case when 'print == true' and 'output_item' is a table_item with
+   multiple layers and 'item->pt->table_look->print_all_layers == true'.  In
+   that case, each layer is rendered separately from the FSM's internal point
+   of view; from the client's point of view, it is all one operation.
+*/
 struct xr_fsm
   {
     struct xr_fsm_style *style;
     struct output_item *item;
+    bool print;
+
+    /* Print mode only. */
+    bool done;
 
     /* Table items only. */
+    size_t *layer_indexes;
     struct render_params rp;
     struct render_pager *p;
     cairo_t *cairo;             /* XXX should this be here?! */
-
-    /* Chart and page-eject items only. */
-    bool done;
   };
 
 /* The unit used for internal measurements is inch/(72 * XR_POINT).
@@ -411,31 +429,32 @@ xrr_measure_cell_width (void *xr_, const struct table_cell *cell,
   bb[H][1] = 1;
   xr_layout_cell (xr, cell, bb, clip, min_width, &h, NULL);
 
+  const int (*margin)[2] = cell->cell_style->margin;
   if (*min_width > 0)
-    *min_width += px_to_xr (cell->style->cell_style.margin[H][0]
-                            + cell->style->cell_style.margin[H][1]);
+    *min_width += px_to_xr (margin[H][0] + margin[H][1]);
   if (*max_width > 0)
-    *max_width += px_to_xr (cell->style->cell_style.margin[H][0]
-                            + cell->style->cell_style.margin[H][1]);
+    *max_width += px_to_xr (margin[H][0] + margin[H][1]);
 }
 
 static int
 xrr_measure_cell_height (void *xr_, const struct table_cell *cell, int width)
 {
   struct xr_fsm *xr = xr_;
-  int bb[TABLE_N_AXES][2];
-  int clip[TABLE_N_AXES][2];
-  int w, h;
 
-  bb[H][0] = 0;
-  bb[H][1] = width - px_to_xr (cell->style->cell_style.margin[H][0]
-                               + cell->style->cell_style.margin[H][1]);
-  bb[V][0] = 0;
-  bb[V][1] = INT_MAX;
-  clip[H][0] = clip[H][1] = clip[V][0] = clip[V][1] = 0;
+  const int (*margin)[2] = cell->cell_style->margin;
+
+  int bb[TABLE_N_AXES][2] = {
+    [H][0] = 0,
+    [H][1] = width - px_to_xr (margin[H][0] + margin[H][1]),
+    [V][0] = 0,
+    [V][1] = INT_MAX,
+  };
+
+  int clip[TABLE_N_AXES][2] = { { 0, 0 }, { 0, 0 } };
+
+  int w, h;
   xr_layout_cell (xr, cell, bb, clip, &w, &h, NULL);
-  h += px_to_xr (cell->style->cell_style.margin[V][0]
-                 + cell->style->cell_style.margin[V][1]);
+  h += px_to_xr (margin[V][0] + margin[V][1]);
   return h;
 }
 
@@ -450,7 +469,7 @@ xrr_draw_cell (void *xr_, const struct table_cell *cell, int color_idx,
   struct xr_fsm *xr = xr_;
   int w, h, brk;
 
-  const struct cell_color *bg = &cell->style->font_style.bg[color_idx];
+  const struct cell_color *bg = &cell->font_style->bg[color_idx];
   if ((bg->r != 255 || bg->g != 255 || bg->b != 255) && bg->alpha)
     {
       cairo_save (xr->cairo);
@@ -476,14 +495,14 @@ xrr_draw_cell (void *xr_, const struct table_cell *cell, int color_idx,
     }
   cairo_save (xr->cairo);
   if (!xr->style->use_system_colors)
-    xr_set_source_rgba (xr->cairo, &cell->style->font_style.fg[color_idx]);
+    xr_set_source_rgba (xr->cairo, &cell->font_style->fg[color_idx]);
 
   bb[V][0] += valign_offset;
 
   for (int axis = 0; axis < TABLE_N_AXES; axis++)
     {
-      bb[axis][0] += px_to_xr (cell->style->cell_style.margin[axis][0]);
-      bb[axis][1] -= px_to_xr (cell->style->cell_style.margin[axis][1]);
+      bb[axis][0] += px_to_xr (cell->cell_style->margin[axis][0]);
+      bb[axis][1] -= px_to_xr (cell->cell_style->margin[axis][1]);
     }
   if (bb[H][0] < bb[H][1] && bb[V][0] < bb[V][1])
     xr_layout_cell (xr, cell, bb, clip, &w, &h, &brk);
@@ -495,22 +514,24 @@ xrr_adjust_break (void *xr_, const struct table_cell *cell,
                   int width, int height)
 {
   struct xr_fsm *xr = xr_;
-  int bb[TABLE_N_AXES][2];
-  int clip[TABLE_N_AXES][2];
-  int w, h, brk;
 
   if (xrr_measure_cell_height (xr_, cell, width) < height)
     return -1;
 
-  bb[H][0] = 0;
-  bb[H][1] = width - px_to_xr (cell->style->cell_style.margin[H][0]
-                               + cell->style->cell_style.margin[H][1]);
+  const int (*margin)[2] = cell->cell_style->margin;
+
+  int bb[TABLE_N_AXES][2] = {
+    [H][0] = 0,
+    [V][0] = 0,
+    [H][1] = width - px_to_xr (margin[H][0] + margin[H][1]),
+    [V][1] = height - px_to_xr (margin[V][0] + margin[V][1]),
+  };
   if (bb[H][1] <= 0)
     return 0;
-  bb[V][0] = 0;
-  bb[V][1] = height - px_to_xr (cell->style->cell_style.margin[V][0]
-                                + cell->style->cell_style.margin[V][1]);
-  clip[H][0] = clip[H][1] = clip[V][0] = clip[V][1] = 0;
+
+  int clip[TABLE_N_AXES][2] = { { 0, 0 }, { 0, 0 } };
+
+  int w, h, brk;
   xr_layout_cell (xr, cell, bb, clip, &w, &h, &brk);
   return brk;
 }
@@ -547,10 +568,9 @@ add_attr (PangoAttrList *list, PangoAttribute *attr,
 }
 
 static void
-markup_escape (struct string *out, unsigned int options,
-               const char *in, size_t len)
+markup_escape (struct string *out, bool markup, const char *in, size_t len)
 {
-  if (!(options & TAB_MARKUP))
+  if (!markup)
     {
       ds_put_substring (out, ss_buffer (in, len == -1 ? strlen (in) : len));
       return;
@@ -618,8 +638,9 @@ xr_layout_cell_text (struct xr_fsm *xr, const struct table_cell *cell,
                      int bb[TABLE_N_AXES][2], int clip[TABLE_N_AXES][2],
                      int *widthp, int *brk)
 {
-  const struct font_style *font_style = &cell->style->font_style;
-  const struct cell_style *cell_style = &cell->style->cell_style;
+  const struct pivot_table *pt = to_table_item (xr->item)->pt;
+  const struct font_style *font_style = cell->font_style;
+  const struct cell_style *cell_style = cell->cell_style;
   unsigned int options = cell->options;
 
   enum table_axis X = options & TAB_ROTATE ? V : H;
@@ -643,14 +664,19 @@ xr_layout_cell_text (struct xr_fsm *xr, const struct table_cell *cell,
 
   pango_layout_set_font_description (layout, desc);
 
-  const char *text = cell->text;
+  struct string body = DS_EMPTY_INITIALIZER;
+  bool numeric = pivot_value_format_body (cell->value, pt, &body);
+
   enum table_halign halign = table_halign_interpret (
-    cell_style->halign, cell->options & TAB_NUMERIC);
-  if (cell_style->halign == TABLE_HALIGN_DECIMAL && !(options & TAB_ROTATE))
+    cell->cell_style->halign, numeric);
+
+  if (cell_style->halign == TABLE_HALIGN_DECIMAL
+      && !(cell->options & TAB_ROTATE))
     {
       int margin_adjustment = -px_to_xr (cell_style->decimal_offset);
 
-      const char *decimal = strrchr (text, cell_style->decimal_char);
+      const char *decimal = strrchr (ds_cstr (&body),
+                                     cell_style->decimal_char);
       if (decimal)
         {
           pango_layout_set_text (layout, decimal, strlen (decimal));
@@ -662,7 +688,6 @@ xr_layout_cell_text (struct xr_fsm *xr, const struct table_cell *cell,
         bb[H][1] += margin_adjustment;
     }
 
-  struct string tmp = DS_EMPTY_INITIALIZER;
   PangoAttrList *attrs = NULL;
 
   /* Deal with an oddity of the Unicode line-breaking algorithm (or perhaps in
@@ -679,33 +704,39 @@ xr_layout_cell_text (struct xr_fsm *xr, const struct table_cell *cell,
      happen with grouping like 1,234,567.89 or 1.234.567,89 because if groups
      are present then there will always be a digit on both sides of every
      period and comma. */
-  if (options & TAB_MARKUP)
+  bool markup = cell->font_style->markup;
+  if (markup)
     {
       PangoAttrList *new_attrs;
       char *new_text;
-      if (pango_parse_markup (text, -1, 0, &new_attrs, &new_text, NULL, NULL))
+      if (pango_parse_markup (ds_cstr (&body), -1, 0,
+                              &new_attrs, &new_text, NULL, NULL))
         {
           attrs = new_attrs;
-          tmp.ss = ss_cstr (new_text);
-          tmp.capacity = tmp.ss.length;
+          ds_destroy (&body);
+          body.ss = ss_cstr (new_text);
+          body.capacity = body.ss.length;
         }
       else
         {
           /* XXX should we report the error? */
-          ds_put_cstr (&tmp, text);
         }
     }
   else if (options & TAB_ROTATE || bb[H][1] != INT_MAX)
     {
+      const char *text = ds_cstr (&body);
       const char *decimal = text + strcspn (text, ".,");
       if (decimal[0]
           && c_isdigit (decimal[1])
           && (decimal == text || !c_isdigit (decimal[-1])))
         {
-          ds_extend (&tmp, strlen (text) + 16);
-          markup_escape (&tmp, options, text, decimal - text + 1);
+          struct string tmp = DS_EMPTY_INITIALIZER;
+          ds_extend (&tmp, ds_length (&body) + 16);
+          markup_escape (&tmp, markup, text, decimal - text + 1);
           ds_put_unichar (&tmp, 0x2060 /* U+2060 WORD JOINER */);
-          markup_escape (&tmp, options, decimal + 1, -1);
+          markup_escape (&tmp, markup, decimal + 1, -1);
+          ds_swap (&tmp, &body);
+          ds_destroy (&tmp);
         }
     }
 
@@ -717,39 +748,36 @@ xr_layout_cell_text (struct xr_fsm *xr, const struct table_cell *cell,
                                 PANGO_UNDERLINE_SINGLE));
     }
 
-  if (cell->n_footnotes || cell->n_subscripts)
+  const struct pivot_value *value = cell->value;
+  if (value->n_footnotes || value->n_subscripts)
     {
-      /* If we haven't already put TEXT into tmp, do it now. */
-      if (ds_is_empty (&tmp))
-        {
-          ds_extend (&tmp, strlen (text) + 16);
-          markup_escape (&tmp, options, text, -1);
-        }
-
-      size_t subscript_ofs = ds_length (&tmp);
-      for (size_t i = 0; i < cell->n_subscripts; i++)
+      size_t subscript_ofs = ds_length (&body);
+      for (size_t i = 0; i < value->n_subscripts; i++)
         {
           if (i)
-            ds_put_byte (&tmp, ',');
-          ds_put_cstr (&tmp, cell->subscripts[i]);
+            ds_put_byte (&body, ',');
+          ds_put_cstr (&body, value->subscripts[i]);
         }
 
-      size_t footnote_ofs = ds_length (&tmp);
-      for (size_t i = 0; i < cell->n_footnotes; i++)
+      size_t footnote_ofs = ds_length (&body);
+      for (size_t i = 0; i < value->n_footnotes; i++)
         {
           if (i)
-            ds_put_byte (&tmp, ',');
-          ds_put_cstr (&tmp, cell->footnotes[i]->marker);
+            ds_put_byte (&body, ',');
+
+          size_t idx = value->footnote_indexes[i];
+          const struct pivot_footnote *f = pt->footnotes[idx];
+          pivot_value_format (f->marker, pt, &body);
         }
 
       /* Allow footnote markers to occupy the right margin.  That way, numbers
          in the column are still aligned. */
-      if (cell->n_footnotes && halign == TABLE_HALIGN_RIGHT)
+      if (value->n_footnotes && halign == TABLE_HALIGN_RIGHT)
         {
           /* Measure the width of the footnote marker, so we know how much we
              need to make room for. */
-          pango_layout_set_text (layout, ds_cstr (&tmp) + footnote_ofs,
-                                 ds_length (&tmp) - footnote_ofs);
+          pango_layout_set_text (layout, ds_cstr (&body) + footnote_ofs,
+                                 ds_length (&body) - footnote_ofs);
 
           PangoAttrList *fn_attrs = pango_attr_list_new ();
           pango_attr_list_insert (
@@ -779,10 +807,10 @@ xr_layout_cell_text (struct xr_fsm *xr, const struct table_cell *cell,
                 PANGO_ATTR_INDEX_TO_TEXT_END);
       add_attr (attrs, pango_attr_scale_new (PANGO_SCALE_SMALL),
                 subscript_ofs, PANGO_ATTR_INDEX_TO_TEXT_END);
-      if (cell->n_subscripts)
+      if (value->n_subscripts)
         add_attr (attrs, pango_attr_rise_new (-3000), subscript_ofs,
                   footnote_ofs - subscript_ofs);
-      if (cell->n_footnotes)
+      if (value->n_footnotes)
         add_attr (attrs, pango_attr_rise_new (3000), footnote_ofs,
                   PANGO_ATTR_INDEX_TO_TEXT_END);
     }
@@ -795,11 +823,7 @@ xr_layout_cell_text (struct xr_fsm *xr, const struct table_cell *cell,
     }
 
   /* Set the text. */
-  if (ds_is_empty (&tmp))
-    pango_layout_set_text (layout, text, -1);
-  else
-    pango_layout_set_text (layout, ds_cstr (&tmp), ds_length (&tmp));
-  ds_destroy (&tmp);
+  pango_layout_set_text (layout, ds_cstr (&body), ds_length (&body));
 
   pango_layout_set_alignment (layout,
                               (halign == TABLE_HALIGN_RIGHT ? PANGO_ALIGN_RIGHT
@@ -916,6 +940,7 @@ xr_layout_cell_text (struct xr_fsm *xr, const struct table_cell *cell,
   if (desc != xr->style->font)
     pango_font_description_free (desc);
   g_object_unref (G_OBJECT (layout));
+  ds_destroy (&body);
 
   return h;
 }
@@ -949,9 +974,10 @@ xr_layout_cell (struct xr_fsm *xr, const struct table_cell *cell,
 #define CHART_WIDTH 500
 #define CHART_HEIGHT 375
 
-struct xr_fsm *
+static struct xr_fsm *
 xr_fsm_create (const struct output_item *item_,
-               const struct xr_fsm_style *style, cairo_t *cr)
+               const struct xr_fsm_style *style, cairo_t *cr,
+               bool print)
 {
   if (is_page_setup_item (item_)
       || is_group_open_item (item_)
@@ -993,6 +1019,15 @@ xr_fsm_create (const struct output_item *item_,
           || is_chart_item (item)
           || is_page_eject_item (item));
 
+  size_t *layer_indexes = NULL;
+  if (is_table_item (item))
+    {
+      const struct table_item *table_item = to_table_item (item);
+      layer_indexes = pivot_output_next_layer (table_item->pt, NULL, print);
+      if (!layer_indexes)
+        return NULL;
+    }
+
   static const struct render_ops xrr_render_ops = {
     .measure_cell_width = xrr_measure_cell_width,
     .measure_cell_height = xrr_measure_cell_height,
@@ -1017,6 +1052,8 @@ xr_fsm_create (const struct output_item *item_,
   *fsm = (struct xr_fsm) {
     .style = xr_fsm_style_ref (style),
     .item = item,
+    .print = print,
+    .layer_indexes = layer_indexes,
     .rp = {
       .ops = &xrr_render_ops,
       .aux = fsm,
@@ -1025,15 +1062,9 @@ xr_fsm_create (const struct output_item *item_,
       .min_break = { [H] = style->min_break[H], [V] = style->min_break[V] },
       .supports_margins = true,
       .rtl = render_direction_rtl (),
+      .printing = print,
     }
   };
-
-  if (is_table_item (item))
-    {
-      fsm->cairo = cr;
-      fsm->p = render_pager_create (&fsm->rp, to_table_item (item));
-      fsm->cairo = NULL;
-    }
 
   /* Get font size. */
   PangoContext *context = pango_cairo_create_context (cr);
@@ -1055,7 +1086,23 @@ xr_fsm_create (const struct output_item *item_,
 
   g_object_unref (G_OBJECT (layout));
 
+  if (is_table_item (item))
+    {
+      struct table_item *table_item = to_table_item (item);
+
+      fsm->cairo = cr;
+      fsm->p = render_pager_create (&fsm->rp, table_item, fsm->layer_indexes);
+      fsm->cairo = NULL;
+    }
+
   return fsm;
+}
+
+struct xr_fsm *
+xr_fsm_create_for_printing (const struct output_item *item,
+                            const struct xr_fsm_style *style, cairo_t *cr)
+{
+  return xr_fsm_create (item, style, cr, true);
 }
 
 void
@@ -1065,17 +1112,27 @@ xr_fsm_destroy (struct xr_fsm *fsm)
     {
       xr_fsm_style_unref (fsm->style);
       output_item_unref (fsm->item);
+      free (fsm->layer_indexes);
       render_pager_destroy (fsm->p);
       assert (!fsm->cairo);
       free (fsm);
     }
 }
+
+/* Scrolling API. */
 
-/* This is primarily meant for use with screen rendering since the result is a
-   fixed value for charts. */
+struct xr_fsm *
+xr_fsm_create_for_scrolling (const struct output_item *item,
+                             const struct xr_fsm_style *style, cairo_t *cr)
+{
+  return xr_fsm_create (item, style, cr, false);
+}
+
 void
 xr_fsm_measure (struct xr_fsm *fsm, cairo_t *cr, int *wp, int *hp)
 {
+  assert (!fsm->print);
+
   int w, h;
 
   if (is_table_item (fsm->item))
@@ -1099,12 +1156,72 @@ xr_fsm_measure (struct xr_fsm *fsm, cairo_t *cr, int *wp, int *hp)
     *hp = h;
 }
 
+void
+xr_fsm_draw_all (struct xr_fsm *fsm, cairo_t *cr)
+{
+  assert (!fsm->print);
+  xr_fsm_draw_region (fsm, cr, 0, 0, INT_MAX, INT_MAX);
+}
+
+static int
+mul_XR_POINT (int x)
+{
+  return (x >= INT_MAX / XR_POINT ? INT_MAX
+          : x <= INT_MIN / XR_POINT ? INT_MIN
+          : x * XR_POINT);
+}
+
+void
+xr_fsm_draw_region (struct xr_fsm *fsm, cairo_t *cr,
+                    int x, int y, int w, int h)
+{
+  assert (!fsm->print);
+  if (is_table_item (fsm->item))
+    {
+      fsm->cairo = cr;
+      render_pager_draw_region (fsm->p, mul_XR_POINT (x), mul_XR_POINT (y),
+                                mul_XR_POINT (w), mul_XR_POINT (h));
+      fsm->cairo = NULL;
+    }
+  else if (is_chart_item (fsm->item))
+    xr_draw_chart (to_chart_item (fsm->item), cr, CHART_WIDTH, CHART_HEIGHT);
+  else if (is_page_eject_item (fsm->item))
+    {
+      /* Nothing to do. */
+    }
+  else
+    NOT_REACHED ();
+}
+
+/* Printing API. */
+
 static int
 xr_fsm_draw_table (struct xr_fsm *fsm, int space)
 {
-  return (render_pager_has_next (fsm->p)
-          ? render_pager_draw_next (fsm->p, space)
-          : 0);
+  struct table_item *table_item = to_table_item (fsm->item);
+  int used = render_pager_draw_next (fsm->p, space);
+  if (!render_pager_has_next (fsm->p))
+    {
+      render_pager_destroy (fsm->p);
+
+      fsm->layer_indexes = pivot_output_next_layer (table_item->pt,
+                                                    fsm->layer_indexes, true);
+      if (fsm->layer_indexes)
+        {
+          fsm->p = render_pager_create (&fsm->rp, table_item,
+                                        fsm->layer_indexes);
+          if (table_item->pt->look->paginate_layers)
+            used = space;
+          else
+            used += fsm->style->object_spacing;
+        }
+      else
+        {
+          fsm->p = NULL;
+          fsm->done = true;
+        }
+    }
+  return MIN (used, space);
 }
 
 static int
@@ -1128,45 +1245,12 @@ xr_fsm_draw_eject (struct xr_fsm *fsm, int space)
   return 0;
 }
 
-void
-xr_fsm_draw_all (struct xr_fsm *fsm, cairo_t *cr)
-{
-  xr_fsm_draw_region (fsm, cr, 0, 0, INT_MAX, INT_MAX);
-}
-
-static int
-mul_XR_POINT (int x)
-{
-  return (x >= INT_MAX / XR_POINT ? INT_MAX
-          : x <= INT_MIN / XR_POINT ? INT_MIN
-          : x * XR_POINT);
-}
-
-void
-xr_fsm_draw_region (struct xr_fsm *fsm, cairo_t *cr,
-                    int x, int y, int w, int h)
-{
-  if (is_table_item (fsm->item))
-    {
-      fsm->cairo = cr;
-      render_pager_draw_region (fsm->p, mul_XR_POINT (x), mul_XR_POINT (y),
-                                mul_XR_POINT (w), mul_XR_POINT (h));
-      fsm->cairo = NULL;
-    }
-  else if (is_chart_item (fsm->item))
-    xr_draw_chart (to_chart_item (fsm->item), cr, CHART_WIDTH, CHART_HEIGHT);
-  else if (is_page_eject_item (fsm->item))
-    {
-      /* Nothing to do. */
-    }
-  else
-    NOT_REACHED ();
-}
-
 int
 xr_fsm_draw_slice (struct xr_fsm *fsm, cairo_t *cr, int space)
 {
-  if (xr_fsm_is_empty (fsm))
+  assert (fsm->print);
+
+  if (fsm->done)
     return 0;
 
   cairo_save (cr);
@@ -1181,11 +1265,10 @@ xr_fsm_draw_slice (struct xr_fsm *fsm, cairo_t *cr, int space)
   return used;
 }
 
-
 bool
 xr_fsm_is_empty (const struct xr_fsm *fsm)
 {
-  return (is_table_item (fsm->item)
-          ? !render_pager_has_next (fsm->p)
-          : fsm->done);
+  assert (fsm->print);
+
+  return fsm->done;
 }

@@ -26,6 +26,7 @@
 #include "libpspp/hash-functions.h"
 #include "libpspp/hmap.h"
 #include "libpspp/pool.h"
+#include "output/pivot-output.h"
 #include "output/pivot-table.h"
 #include "output/render.h"
 #include "output/table-item.h"
@@ -1088,7 +1089,7 @@ render_cell (const struct render_page *page, const int ofs[TABLE_N_AXES],
   bb[V][0] = clip[V][0] = ofs[V] + page->cp[V][cell->d[V][0] * 2 + 1];
   bb[V][1] = clip[V][1] = ofs[V] + page->cp[V][cell->d[V][1] * 2];
 
-  enum table_valign valign = cell->style->cell_style.valign;
+  enum table_valign valign = cell->cell_style->valign;
   int valign_offset = 0;
   if (valign != TABLE_VALIGN_TOP)
     {
@@ -1494,13 +1495,12 @@ struct render_pager
     struct render_break y_break;
   };
 
-static const struct render_page *
+static void
 render_pager_add_table (struct render_pager *p, struct table *table,
                         int min_width)
 {
-  struct render_page *page = render_page_create (p->params, table, min_width);
-  p->pages[p->n_pages++] = page;
-  return page;
+  if (table)
+    p->pages[p->n_pages++] = render_page_create (p->params, table, min_width);
 }
 
 static void
@@ -1511,74 +1511,25 @@ render_pager_start_page (struct render_pager *p)
   render_break_init_empty (&p->y_break);
 }
 
-static void
-add_footnote_page (struct render_pager *p, const struct table_item *item)
-{
-  struct footnote **f;
-  size_t n_footnotes = table_collect_footnotes (item, &f);
-  if (!n_footnotes)
-    return;
-
-  struct table *t = table_create (1, n_footnotes, 0, 0, 0, 0);
-
-  for (size_t i = 0; i < n_footnotes; i++)
-    {
-      table_text_format (t, 0, i, 0, "%s. %s", f[i]->marker, f[i]->content);
-      table_add_style (t, 0, i, f[i]->style);
-    }
-  render_pager_add_table (p, t, 0);
-
-  free (f);
-}
-
-static void
-add_table_cell_page (struct render_pager *p, const struct table_cell *cell,
-                     int min_width)
-{
-  if (!cell)
-    return;
-
-  struct table *tab = table_create (1, 1, 0, 0, 0, 0);
-  table_text (tab, 0, 0, 0, cell->text);
-  for (size_t i = 0; i < cell->n_footnotes; i++)
-    table_add_footnote (tab, 0, 0, cell->footnotes[i]);
-  if (cell->style)
-    tab->styles[0] = table_area_style_clone (tab->container, cell->style);
-  render_pager_add_table (p, tab, min_width);
-}
-
-static void
-add_layers_page (struct render_pager *p,
-                 const struct table_item_layers *layers, int min_width)
-{
-  if (!layers)
-    return;
-
-  struct table *tab = table_create (1, layers->n_layers, 0, 0, 0, 0);
-  for (size_t i = 0; i < layers->n_layers; i++)
-    {
-      const struct table_item_layer *layer = &layers->layers[i];
-      table_text (tab, 0, i, 0, layer->content);
-      for (size_t j = 0; j < layer->n_footnotes; j++)
-        table_add_footnote (tab, 0, i, layer->footnotes[j]);
-    }
-  if (layers->style)
-    tab->styles[0] = table_area_style_clone (tab->container, layers->style);
-  render_pager_add_table (p, tab, min_width);
-}
-
 /* Creates and returns a new render_pager for rendering TABLE_ITEM on the
    device with the given PARAMS. */
 struct render_pager *
 render_pager_create (const struct render_params *params,
-                     const struct table_item *table_item)
+                     const struct table_item *table_item,
+                     const size_t *layer_indexes)
 {
-  const struct table *table = table_item_get_table (table_item);
+  const struct pivot_table *pt = table_item->pt;
+  if (!layer_indexes)
+    layer_indexes = pt->current_layer;
+
+  struct table *title, *layers, *body, *caption, *footnotes;
+  pivot_output (pt, layer_indexes, params->printing,
+                &title, &layers, &body, &caption, &footnotes, NULL, NULL);
 
   /* Figure out the width of the body of the table.  Use this to determine the
      base scale. */
-  struct render_page *page = render_page_create (params, table_ref (table), 0);
-  int body_width = table_width (page, H);
+  struct render_page *body_page = render_page_create (params, body, 0);
+  int body_width = table_width (body_page, H);
   double scale = 1.0;
   if (body_width > params->size[H])
     {
@@ -1589,7 +1540,7 @@ render_pager_create (const struct render_params *params,
       else
         {
           struct render_break b;
-          render_break_init (&b, page, H);
+          render_break_init (&b, render_page_ref (body_page), H);
           struct render_page *subpage
             = render_break_next (&b, params->size[H]);
           body_width = subpage ? subpage->cp[H][2 * subpage->n[H] + 1] : 0;
@@ -1601,11 +1552,12 @@ render_pager_create (const struct render_params *params,
   /* Create the pager. */
   struct render_pager *p = xmalloc (sizeof *p);
   *p = (struct render_pager) { .params = params, .scale = scale };
-  add_table_cell_page (p, table_item_get_title (table_item), body_width);
-  add_layers_page (p, table_item_get_layers (table_item), body_width);
-  render_pager_add_table (p, table_ref (table_item_get_table (table_item)), 0);
-  add_table_cell_page (p, table_item_get_caption (table_item), 0);
-  add_footnote_page (p, table_item);
+  render_pager_add_table (p, title, body_width);
+  render_pager_add_table (p, layers, body_width);
+  p->pages[p->n_pages++] = body_page;
+  render_pager_add_table (p, caption, 0);
+  render_pager_add_table (p, footnotes, 0);
+  assert (p->n_pages <= sizeof p->pages / sizeof *p->pages);
 
   /* If we're shrinking tables to fit the page length, then adjust the scale
      factor.

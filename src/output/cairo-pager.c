@@ -95,8 +95,7 @@ xr_page_style_equals (const struct xr_page_style *a,
     if (!page_heading_equals (&a->headings[i], &b->headings[i]))
       return false;
 
-  return (a->initial_page_number == b->initial_page_number
-          && a->object_spacing == b->object_spacing);
+  return a->initial_page_number == b->initial_page_number;
 }
 
 struct xr_pager
@@ -219,7 +218,7 @@ xr_measure_headings (const struct xr_page_style *ps,
                                    &ps->headings[i], -1, fs->size[H], 0,
                                    fs->font_resolution);
       if (*h)
-        *h += ps->object_spacing;
+        *h += fs->object_spacing;
     }
   cairo_destroy (cairo);
   cairo_surface_destroy (surface);
@@ -318,7 +317,7 @@ xr_pager_add_page (struct xr_pager *p, cairo_t *cr)
 
   if (p->heading_heights[1])
     xr_render_page_heading (cr, fs->font, &ps->headings[1], page_number,
-                            fs->size[H], fs->size[V] + ps->object_spacing,
+                            fs->size[H], fs->size[V] + fs->object_spacing,
                             fs->font_resolution);
 
   cairo_surface_t *surface = cairo_get_target (cr);
@@ -395,7 +394,7 @@ xr_pager_run (struct xr_pager *p)
                 }
             }
 
-          p->fsm = xr_fsm_create (p->item, p->fsm_style, p->cr);
+          p->fsm = xr_fsm_create_for_printing (p->item, p->fsm_style, p->cr);
           if (!p->fsm)
             {
               output_item_unref (p->item);
@@ -417,7 +416,7 @@ xr_pager_run (struct xr_pager *p)
               free (attrs);
             }
 
-          int spacing = p->page_style->object_spacing;
+          int spacing = p->fsm_style->object_spacing;
           int chunk = xr_fsm_draw_slice (p->fsm, p->cr,
                                          p->fsm_style->size[V] - p->y);
           p->y += chunk + spacing;

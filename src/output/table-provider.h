@@ -25,17 +25,6 @@ struct string;
 
 enum table_halign table_halign_interpret (enum table_halign, bool numeric);
 
-struct footnote
-  {
-    size_t idx;
-    char *content;
-    char *marker;
-    struct table_area_style *style;
-  };
-
-struct footnote *footnote_clone (const struct footnote *);
-void footnote_destroy (struct footnote *);
-
 /* A cell in a table. */
 struct table_cell
   {
@@ -57,19 +46,10 @@ struct table_cell
     int d[TABLE_N_AXES][2];
 
     unsigned int options;       /* TAB_*. */
-    char *text;                 /* A paragraph of text. */
-    char **subscripts;
-    size_t n_subscripts;
-    struct footnote **footnotes;
-    size_t n_footnotes;
-    struct table_area_style *style;
+    const struct pivot_value *value;
+    const struct font_style *font_style;
+    const struct cell_style *cell_style;
   };
-
-struct table_cell *table_cell_clone (const struct table_cell *);
-void table_cell_destroy (struct table_cell *);
-
-void table_cell_format_footnote_markers (const struct table_cell *,
-                                         struct string *);
 
 /* Returns the number of columns that CELL spans.  This is 1 for an ordinary
    cell and greater than one for a cell that joins multiple columns. */
@@ -100,6 +80,5 @@ table_cell_is_joined (const struct table_cell *cell)
 void table_get_cell (const struct table *, int x, int y, struct table_cell *);
 int table_get_rule (const struct table *, enum table_axis, int x, int y,
                     struct cell_color *);
-size_t table_collect_footnotes (const struct table_item *, struct footnote ***);
 
 #endif /* output/table-provider.h */

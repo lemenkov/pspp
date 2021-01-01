@@ -528,7 +528,7 @@ put_value_mod (struct buf *buf, const struct pivot_value *value,
       /* Footnotes. */
       put_u32 (buf, value->n_footnotes);
       for (size_t i = 0; i < value->n_footnotes; i++)
-        put_u16 (buf, value->footnotes[i]->idx);
+        put_u16 (buf, value->footnote_indexes[i]);
 
       /* Subscripts. */
       put_u32 (buf, value->n_subscripts);
@@ -987,14 +987,9 @@ spv_writer_put_table (struct spv_writer *w, const struct pivot_table *table)
 
   start_container (w);
 
-  char *title = pivot_value_to_string (table->title,
-                                       SETTINGS_VALUE_SHOW_DEFAULT,
-                                       SETTINGS_VALUE_SHOW_DEFAULT);
-
-  char *subtype = pivot_value_to_string (table->subtype,
-                                         SETTINGS_VALUE_SHOW_DEFAULT,
-                                         SETTINGS_VALUE_SHOW_DEFAULT);
-
+  char *title = pivot_value_to_string (table->title, table);
+  char *subtype = pivot_value_to_string (table->subtype, table);
+  
   start_elem (w, "label");
   write_text (w, title);
   end_elem (w);

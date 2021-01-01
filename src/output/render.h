@@ -79,6 +79,10 @@ struct render_params
     /* True if the local language has a right-to-left direction, otherwise
        false.  (Use render_direction_rtl() to find out.) */
     bool rtl;
+
+    /* True if the table is being rendered for printing (as opposed to
+       on-screen display). */
+    bool printing;
   };
 
 struct render_ops
@@ -148,7 +152,8 @@ struct render_ops
 
 /* An iterator for breaking render_pages into smaller chunks. */
 struct render_pager *render_pager_create (const struct render_params *,
-                                          const struct table_item *);
+                                          const struct table_item *,
+                                          const size_t *layer_indexes);
 void render_pager_destroy (struct render_pager *);
 
 bool render_pager_has_next (const struct render_pager *);

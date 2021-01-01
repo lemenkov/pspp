@@ -47,6 +47,7 @@ GNULIB_MODULES = \
 	environ \
 	fatal-signal \
 	fcntl \
+	fnmatch \
 	fpieee \
 	fprintf-posix \
 	full-read \

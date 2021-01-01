@@ -1418,8 +1418,8 @@ apply_styles_to_value (struct pivot_table *table,
     {
       if (sf->reset > 0)
         {
-          free (value->footnotes);
-          value->footnotes = NULL;
+          free (value->footnote_indexes);
+          value->footnote_indexes = NULL;
           value->n_footnotes = 0;
         }
 

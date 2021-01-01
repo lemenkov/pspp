@@ -29,6 +29,7 @@
 #include "libpspp/compiler.h"
 #include "libpspp/pool.h"
 #include "libpspp/str.h"
+#include "output/pivot-table.h"
 #include "output/table-item.h"
 #include "output/table.h"
 #include "output/text-item.h"
@@ -89,170 +90,6 @@ table_area_style_free (struct table_area_style *style)
       free (style->font_style.typeface);
       free (style);
     }
-}
-
-struct footnote *
-footnote_clone (const struct footnote *old)
-{
-  struct footnote *new = xmalloc (sizeof *new);
-  *new = (struct footnote) {
-    .idx = old->idx,
-    .content = old->content ? xstrdup (old->content) : NULL,
-    .marker = old->marker ? xstrdup (old->marker) : NULL,
-    .style = old->style ? table_area_style_clone (NULL, old->style) : NULL,
-  };
-  return new;
-}
-
-void
-footnote_destroy (struct footnote *f)
-{
-  if (f)
-    {
-      free (f->content);
-      free (f->marker);
-      if (f->style)
-        {
-          table_area_style_uninit (f->style);
-          free (f->style);
-        }
-      free (f);
-    }
-}
-
-struct table_cell *
-table_cell_clone (const struct table_cell *old)
-{
-  struct table_cell *new = xmalloc (sizeof *new);
-  *new = *old;
-  new->text = xstrdup (new->text);
-
-  if (old->n_subscripts)
-    {
-      new->subscripts = xnmalloc (old->n_subscripts, sizeof *new->subscripts);
-      for (size_t i = 0; i < old->n_subscripts; i++)
-        new->subscripts[i] = xstrdup (old->subscripts[i]);
-    }
-  else
-    new->subscripts = NULL;
-
-  if (old->n_footnotes)
-    {
-      new->footnotes = xnmalloc (old->n_footnotes, sizeof *new->footnotes);
-      for (size_t i = 0; i < old->n_footnotes; i++)
-        new->footnotes[i] = footnote_clone (old->footnotes[i]);
-    }
-  else
-    new->footnotes = NULL;
-
-  if (old->style)
-    new->style = table_area_style_clone (NULL, old->style);
-
-  return new;
-}
-
-void
-table_cell_destroy (struct table_cell *cell)
-{
-  if (!cell)
-    return;
-
-  free (cell->text);
-  for (size_t i = 0; i < cell->n_subscripts; i++)
-    free (cell->subscripts[i]);
-  free (cell->subscripts);
-  for (size_t i = 0; i < cell->n_footnotes; i++)
-    footnote_destroy (cell->footnotes[i]);
-  free (cell->footnotes);
-  if (cell->style)
-    {
-      table_area_style_uninit (cell->style);
-      free (cell->style);
-    }
-  free (cell);
-}
-
-void
-table_cell_format_footnote_markers (const struct table_cell *cell,
-                                    struct string *s)
-{
-  for (size_t i = 0; i < cell->n_footnotes; i++)
-    {
-      if (i)
-        ds_put_byte (s, ',');
-      ds_put_cstr (s, cell->footnotes[i]->marker);
-    }
-}
-
-static struct footnote **
-add_footnotes (struct footnote **refs, size_t n_refs,
-               struct footnote **footnotes, size_t *allocated, size_t *n)
-{
-  for (size_t i = 0; i < n_refs; i++)
-    {
-      struct footnote *f = refs[i];
-      if (f->idx >= *allocated)
-        {
-          size_t new_allocated = (f->idx + 1) * 2;
-          footnotes = xrealloc (footnotes, new_allocated * sizeof *footnotes);
-          while (*allocated < new_allocated)
-            footnotes[(*allocated)++] = NULL;
-        }
-      footnotes[f->idx] = f;
-      if (f->idx >= *n)
-        *n = f->idx + 1;
-    }
-  return footnotes;
-}
-
-size_t
-table_collect_footnotes (const struct table_item *item,
-                         struct footnote ***footnotesp)
-{
-  struct footnote **footnotes = NULL;
-  size_t allocated = 0;
-  size_t n = 0;
-
-  struct table *t = item->table;
-  for (int y = 0; y < t->n[V]; y++)
-    {
-      struct table_cell cell;
-      for (int x = 0; x < t->n[H]; x = cell.d[TABLE_HORZ][1])
-        {
-          table_get_cell (t, x, y, &cell);
-
-          if (x == cell.d[TABLE_HORZ][0] && y == cell.d[TABLE_VERT][0])
-            footnotes = add_footnotes (cell.footnotes, cell.n_footnotes,
-                                       footnotes, &allocated, &n);
-        }
-    }
-
-  const struct table_cell *title = table_item_get_title (item);
-  if (title)
-    footnotes = add_footnotes (title->footnotes, title->n_footnotes,
-                               footnotes, &allocated, &n);
-
-  const struct table_item_layers *layers = table_item_get_layers (item);
-  if (layers)
-    {
-      for (size_t i = 0; i < layers->n_layers; i++)
-        footnotes = add_footnotes (layers->layers[i].footnotes,
-                                   layers->layers[i].n_footnotes,
-                                   footnotes, &allocated, &n);
-    }
-
-  const struct table_cell *caption = table_item_get_caption (item);
-  if (caption)
-    footnotes = add_footnotes (caption->footnotes, caption->n_footnotes,
-                               footnotes, &allocated, &n);
-
-  size_t n_nonnull = 0;
-  for (size_t i = 0; i < n; i++)
-    if (footnotes[i])
-      footnotes[n_nonnull++] = footnotes[i];
-
-  *footnotesp = footnotes;
-  return n_nonnull;
 }
 
 const char *
@@ -591,194 +428,58 @@ table_box (struct table *t, int f_h, int f_v, int i_h, int i_v,
 
 /* Cells. */
 
-static void
-do_table_text (struct table *table, int c, int r, unsigned opt, char *text)
-{
-  assert (c >= 0);
-  assert (r >= 0);
-  assert (c < table->n[H]);
-  assert (r < table->n[V]);
-
-  if (debugging)
-    {
-      if (c < 0 || r < 0 || c >= table->n[H] || r >= table->n[V])
-        {
-          printf ("table_text(): bad cell (%d,%d) in table size (%d,%d)\n",
-                  c, r, table->n[H], table->n[V]);
-          return;
-        }
-    }
-
-  table->cc[c + r * table->n[H]] = text;
-  table->ct[c + r * table->n[H]] = opt;
-}
-
-/* Sets cell (C,R) in TABLE, with options OPT, to have text value
-   TEXT. */
+/* Fill TABLE cells (X1,X2)-(Y1,Y2), inclusive, with VALUE and OPT. */
 void
-table_text (struct table *table, int c, int r, unsigned opt,
-          const char *text)
+table_put (struct table *table, int x1, int y1, int x2, int y2,
+           unsigned opt, const struct pivot_value *value)
 {
-  do_table_text (table, c, r, opt, pool_strdup (table->container, text));
-}
+  assert (0 <= x1 && x1 <= x2 && x2 < table->n[H]);
+  assert (0 <= y1 && y1 <= y2 && y2 < table->n[V]);
 
-/* Sets cell (C,R) in TABLE, with options OPT, to have text value
-   FORMAT, which is formatted as if passed to printf. */
-void
-table_text_format (struct table *table, int c, int r, unsigned opt,
-                   const char *format, ...)
-{
-  va_list args;
-
-  va_start (args, format);
-  do_table_text (table, c, r, opt,
-                 pool_vasprintf (table->container, format, args));
-  va_end (args);
-}
-
-static struct table_cell *
-add_joined_cell (struct table *table, int x1, int y1, int x2, int y2,
-                 unsigned opt)
-{
-  assert (x1 >= 0);
-  assert (y1 >= 0);
-  assert (y2 >= y1);
-  assert (x2 >= x1);
-  assert (y2 < table->n[V]);
-  assert (x2 < table->n[H]);
-
-  if (debugging)
-    {
-      if (x1 < 0 || x1 >= table->n[H]
-          || y1 < 0 || y1 >= table->n[V]
-          || x2 < x1 || x2 >= table->n[H]
-          || y2 < y1 || y2 >= table->n[V])
-        {
-          printf ("table_joint_text(): bad cell "
-                  "(%d,%d)-(%d,%d) in table size (%d,%d)\n",
-                  x1, y1, x2, y2, table->n[H], table->n[V]);
-          return NULL;
-        }
-    }
-
-  table_box (table, -1, -1, TABLE_STROKE_NONE, TABLE_STROKE_NONE,
-             x1, y1, x2, y2);
-
-  struct table_cell *cell = pool_alloc (table->container, sizeof *cell);
-  *cell = (struct table_cell) {
-    .d = { [TABLE_HORZ] = { x1, ++x2 },
-           [TABLE_VERT] = { y1, ++y2 } },
-    .options = opt,
-  };
-
-  void **cc = &table->cc[x1 + y1 * table->n[H]];
-  unsigned short *ct = &table->ct[x1 + y1 * table->n[H]];
-  const int ofs = table->n[H] - (x2 - x1);
-  for (int y = y1; y < y2; y++)
-    {
-      for (int x = x1; x < x2; x++)
-        {
-          *cc++ = cell;
-          *ct++ = opt | TAB_JOIN;
-        }
-
-      cc += ofs;
-      ct += ofs;
-    }
-
-  return cell;
-}
-
-/* Joins cells (X1,X2)-(Y1,Y2) inclusive in TABLE, and sets them with
-   options OPT to have text value TEXT. */
-void
-table_joint_text (struct table *table, int x1, int y1, int x2, int y2,
-                  unsigned opt, const char *text)
-{
-  char *s = pool_strdup (table->container, text);
   if (x1 == x2 && y1 == y2)
-    do_table_text (table, x1, y1, opt, s);
-  else
-    add_joined_cell (table, x1, y1, x2, y2, opt)->text = s;
-}
-
-static struct table_cell *
-get_joined_cell (struct table *table, int x, int y)
-{
-  int index = x + y * table->n[H];
-  unsigned short opt = table->ct[index];
-  struct table_cell *cell;
-
-  if (opt & TAB_JOIN)
-    cell = table->cc[index];
+    {
+      table->cc[x1 + y1 * table->n[H]] = CONST_CAST (struct pivot_value *, value);
+      table->ct[x1 + y1 * table->n[H]] = opt;
+    }
   else
     {
-      char *text = table->cc[index];
+      table_box (table, -1, -1, TABLE_STROKE_NONE, TABLE_STROKE_NONE,
+                 x1, y1, x2, y2);
 
-      cell = add_joined_cell (table, x, y, x, y, table->ct[index]);
-      cell->text = text ? text : pool_strdup (table->container, "");
+      struct table_cell *cell = pool_alloc (table->container, sizeof *cell);
+      *cell = (struct table_cell) {
+        .d = { [H] = { x1, x2 + 1 }, [V] = { y1, y2 + 1 } },
+        .options = opt,
+        .value = value,
+      };
+
+      for (int y = y1; y <= y2; y++)
+        {
+          size_t ofs = x1 + y * table->n[H];
+          void **cc = &table->cc[ofs];
+          unsigned short *ct = &table->ct[ofs];
+          for (int x = x1; x <= x2; x++)
+            {
+              *cc++ = cell;
+              *ct++ = opt | TAB_JOIN;
+            }
+        }
     }
-  return cell;
 }
 
-/* Sets the subscripts for column X, row Y in TABLE. */
+static void
+free_value (void *value_)
+{
+  struct pivot_value *value = value_;
+  pivot_value_destroy (value);
+}
+
 void
-table_add_subscripts (struct table *table, int x, int y,
-                      char **subscripts, size_t n_subscripts)
+table_put_owned (struct table *table, int x1, int y1, int x2, int y2,
+                 unsigned opt, struct pivot_value *value)
 {
-  struct table_cell *cell = get_joined_cell (table, x, y);
-
-  cell->n_subscripts = n_subscripts;
-  cell->subscripts = pool_nalloc (table->container, n_subscripts,
-                                  sizeof *cell->subscripts);
-  for (size_t i = 0; i < n_subscripts; i++)
-    cell->subscripts[i] = pool_strdup (table->container, subscripts[i]);
-}
-
-/* Create a footnote in TABLE with MARKER (e.g. "a") as its marker and CONTENT
-   as its content.  The footnote will be styled as STYLE, which is mandatory.
-   IDX must uniquely identify the footnote within TABLE.
-
-   Returns the new footnote.  The return value is the only way to get to the
-   footnote later, so it is important for the caller to remember it. */
-struct footnote *
-table_create_footnote (struct table *table, size_t idx, const char *content,
-                       const char *marker, struct table_area_style *style)
-{
-  assert (style);
-
-  struct footnote *f = pool_alloc (table->container, sizeof *f);
-  f->idx = idx;
-  f->content = pool_strdup (table->container, content);
-  f->marker = pool_strdup (table->container, marker);
-  f->style = style;
-  return f;
-}
-
-/* Attaches a reference to footnote F to the cell at column X, row Y in
-   TABLE. */
-void
-table_add_footnote (struct table *table, int x, int y, struct footnote *f)
-{
-  assert (f->style);
-
-  struct table_cell *cell = get_joined_cell (table, x, y);
-
-  cell->footnotes = pool_realloc (
-    table->container, cell->footnotes,
-    (cell->n_footnotes + 1) * sizeof *cell->footnotes);
-
-  cell->footnotes[cell->n_footnotes++] = f;
-}
-
-/* Overrides the style for column X, row Y in TABLE with STYLE.
-   Does not make a copy of STYLE, so it should either be allocated from
-   TABLE->container or have a lifetime that will outlive TABLE. */
-void
-table_add_style (struct table *table, int x, int y,
-                 struct table_area_style *style)
-{
-  get_joined_cell (table, x, y)->style = style;
+  table_put (table, x1, y1, x2, y2, opt, value);
+  pool_register (table->container, free_value, value);
 }
 
 /* Returns true if column C, row R has no contents, otherwise false. */
@@ -802,23 +503,42 @@ table_get_cell (const struct table *t, int x, int y, struct table_cell *cell)
 
   struct table_area_style *style
     = t->styles[(opt & TAB_STYLE_MASK) >> TAB_STYLE_SHIFT];
+
+  static const struct pivot_value empty_value = {
+    .type = PIVOT_VALUE_TEXT,
+    .text = {
+      .local = (char *) "",
+      .c = (char *) "",
+      .id = (char *) "",
+      .user_provided = true,
+    },
+  };
+
   if (opt & TAB_JOIN)
     {
       const struct table_cell *jc = cc;
       *cell = *jc;
-      if (!cell->style)
-        cell->style = style;
+      if (!cell->value)
+        cell->value = &empty_value;
+      if (!cell->font_style)
+        cell->font_style = &style->font_style;
+      if (!cell->cell_style)
+        cell->cell_style = &style->cell_style;
     }
   else
-    *cell = (struct table_cell) {
-      .d = { [TABLE_HORZ] = { x, x + 1 },
-             [TABLE_VERT] = { y, y + 1 } },
-      .options = opt,
-      .text = CONST_CAST (char *, cc ? cc : ""),
-      .style = style,
-    };
+    {
+      const struct pivot_value *v = cc ? cc : &empty_value;
+      *cell = (struct table_cell) {
+        .d = { [H] = { x, x + 1 }, [V] = { y, y + 1 } },
+        .options = opt,
+        .value = v,
+        .font_style = v->font_style ? v->font_style : &style->font_style,
+        .cell_style = v->cell_style ? v->cell_style : &style->cell_style,
+      };
+    }
 
-  assert (cell->style);
+  assert (cell->font_style);
+  assert (cell->cell_style);
 }
 
 /* Returns one of the TAL_* enumeration constants (declared in output/table.h)

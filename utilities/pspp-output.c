@@ -148,9 +148,7 @@ print_item_directory (const struct spv_item *item)
   if (type == SPV_ITEM_TABLE)
     {
       const struct pivot_table *table = spv_item_get_table (item);
-      char *title = pivot_value_to_string (table->title,
-                                           SETTINGS_VALUE_SHOW_DEFAULT,
-                                           SETTINGS_VALUE_SHOW_DEFAULT);
+      char *title = pivot_value_to_string (table->title, table);
       if (!label || strcmp (title, label))
         printf (" title \"%s\"", title);
       free (title);

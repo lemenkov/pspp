@@ -54,6 +54,8 @@
 #include "output/driver-provider.h"
 #include "output/message-item.h"
 #include "output/options.h"
+#include "output/pivot-output.h"
+#include "output/pivot-table.h"
 #include "output/render.h"
 #include "output/table-item.h"
 #include "output/text-item.h"
@@ -319,6 +321,7 @@ struct ascii_driver
     int allocated_lines;        /* Number of lines allocated. */
     int chart_cnt;              /* Number of charts so far. */
     int object_cnt;             /* Number of objects so far. */
+    const struct pivot_table *pt;
     struct render_params params;
   };
 
@@ -441,6 +444,7 @@ ascii_create (struct  file_handle *fh, enum settings_output_devices device_type,
   a->params.line_widths = ascii_line_widths;
   a->params.supports_margins = false;
   a->params.rtl = render_direction_rtl ();
+  a->params.printing = true;
 
   if (!update_page_size (a, true))
     goto error;
@@ -558,21 +562,25 @@ static void
 ascii_output_table_item (struct ascii_driver *a,
                          const struct table_item *table_item)
 {
-  struct render_pager *p;
-
   update_page_size (a, false);
+  a->pt = table_item->pt;
 
-  if (a->object_cnt++)
-    putc ('\n', a->file);
-
-  p = render_pager_create (&a->params, table_item);
-  for (int i = 0; render_pager_has_next (p); i++)
+  size_t *layer_indexes;
+  PIVOT_OUTPUT_FOR_EACH_LAYER (layer_indexes, table_item->pt, true)
     {
-      if (i)
-        putc ('\n', a->file);
-      ascii_output_lines (a, render_pager_draw_next (p, INT_MAX));
+      struct render_pager *p = render_pager_create (&a->params, table_item,
+                                                    layer_indexes);
+      for (int i = 0; render_pager_has_next (p); i++)
+        {
+          if (a->object_cnt++)
+            putc ('\n', a->file);
+
+          ascii_output_lines (a, render_pager_draw_next (p, INT_MAX));
+        }
+      render_pager_destroy (p);
     }
-  render_pager_destroy (p);
+
+  a->pt = NULL;
 }
 
 static void
@@ -707,14 +715,8 @@ ascii_measure_cell_width (void *a_, const struct table_cell *cell,
   clip[H][0] = clip[H][1] = clip[V][0] = clip[V][1] = 0;
   ascii_layout_cell (a, cell, bb, clip, max_width, &h);
 
-  if (cell->n_footnotes || strchr (cell->text, ' ')
-      || cell->n_subscripts)
-    {
-      bb[H][1] = 1;
-      ascii_layout_cell (a, cell, bb, clip, min_width, &h);
-    }
-  else
-    *min_width = *max_width;
+  bb[H][1] = 1;
+  ascii_layout_cell (a, cell, bb, clip, min_width, &h);
 }
 
 static int
@@ -764,7 +766,7 @@ ascii_reserve (struct ascii_driver *a, int y, int x0, int x1, int n)
 }
 
 static void
-text_draw (struct ascii_driver *a, enum table_halign halign, int options,
+text_draw (struct ascii_driver *a, enum table_halign halign, bool numeric,
            bool bold, bool underline,
            int bb[TABLE_N_AXES][2], int clip[TABLE_N_AXES][2],
            int y, const uint8_t *string, int n, size_t width)
@@ -778,7 +780,7 @@ text_draw (struct ascii_driver *a, enum table_halign halign, int options,
   if (y < y0 || y >= y1)
     return;
 
-  switch (table_halign_interpret (halign, options & TAB_NUMERIC))
+  switch (table_halign_interpret (halign, numeric))
     {
     case TABLE_HALIGN_LEFT:
       x = bb[H][0];
@@ -902,18 +904,6 @@ text_draw (struct ascii_driver *a, enum table_halign halign, int options,
     }
 }
 
-static char *
-add_markers (const char *text, const struct table_cell *cell)
-{
-  struct string s = DS_EMPTY_INITIALIZER;
-  ds_put_cstr (&s, text);
-  for (size_t i = 0; i < cell->n_subscripts; i++)
-    ds_put_format (&s, "%c%s", i ? ',' : '_', cell->subscripts[i]);
-  for (size_t i = 0; i < cell->n_footnotes; i++)
-    ds_put_format (&s, "[%s]", cell->footnotes[i]->marker);
-  return ds_steal_cstr (&s);
-}
-
 static void
 ascii_layout_cell (struct ascii_driver *a, const struct table_cell *cell,
                    int bb[TABLE_N_AXES][2], int clip[TABLE_N_AXES][2],
@@ -922,34 +912,21 @@ ascii_layout_cell (struct ascii_driver *a, const struct table_cell *cell,
   *widthp = 0;
   *heightp = 0;
 
-  /* Get the basic textual contents. */
-  const char *plain_text = (cell->options & TAB_MARKUP
-                            ? output_get_text_from_markup (cell->text)
-                            : cell->text);
-
-  /* Append footnotes, subscripts if any. */
-  const char *text;
-  if (cell->n_footnotes || cell->n_subscripts)
-    {
-      text = add_markers (plain_text, cell);
-      if (plain_text != cell->text)
-        free (CONST_CAST (char *, plain_text));
-    }
-  else
-    text = plain_text;
+  struct string body = DS_EMPTY_INITIALIZER;
+  bool numeric = pivot_value_format_body (cell->value, a->pt, &body);
 
   /* Calculate length; if it's zero, then there's nothing to do. */
-  size_t length = strlen (text);
-  if (!length)
+  if (ds_is_empty (&body))
     {
-      if (text != cell->text)
-        free (CONST_CAST (char *, text));
+      ds_destroy (&body);
       return;
     }
 
+  size_t length = ds_length (&body);
+  const uint8_t *text = CHAR_CAST (uint8_t *, ds_cstr (&body));
+
   char *breaks = xmalloc (length + 1);
-  u8_possible_linebreaks (CHAR_CAST (const uint8_t *, text), length,
-                          "UTF-8", breaks);
+  u8_possible_linebreaks (text, length, "UTF-8", breaks);
   breaks[length] = (breaks[length - 1] == UC_BREAK_MANDATORY
                     ? UC_BREAK_PROHIBITED : UC_BREAK_POSSIBLE);
 
@@ -957,7 +934,7 @@ ascii_layout_cell (struct ascii_driver *a, const struct table_cell *cell,
   int bb_width = bb[H][1] - bb[H][0];
   for (int y = bb[V][0]; y < bb[V][1] && pos < length; y++)
     {
-      const uint8_t *line = CHAR_CAST (const uint8_t *, text + pos);
+      const uint8_t *line = text + pos;
       const char *b = breaks + pos;
       size_t n = length - pos;
 
@@ -1008,9 +985,9 @@ ascii_layout_cell (struct ascii_driver *a, const struct table_cell *cell,
       width -= ofs - graph_ofs;
 
       /* Draw text. */
-      text_draw (a, cell->style->cell_style.halign, cell->options,
-                 cell->style->font_style.bold,
-                 cell->style->font_style.underline,
+      text_draw (a, cell->cell_style->halign, numeric,
+                 cell->font_style->bold,
+                 cell->font_style->underline,
                  bb, clip, y, line, graph_ofs, width);
 
       /* If a new-line ended the line, just skip the new-line.  Otherwise, skip
@@ -1028,8 +1005,7 @@ ascii_layout_cell (struct ascii_driver *a, const struct table_cell *cell,
     }
 
   free (breaks);
-  if (text != cell->text)
-    free (CONST_CAST (char *, text));
+  ds_destroy (&body);
 }
 
 void
@@ -1043,14 +1019,24 @@ ascii_test_write (struct output_driver *driver,
   if (!a->file)
     return;
 
-  struct table_area_style style = {
-    .cell_style.halign = TABLE_HALIGN_LEFT,
-    .font_style.bold = bold,
-    .font_style.underline = underline,
+  struct cell_style cell_style = { .halign = TABLE_HALIGN_LEFT };
+  struct font_style font_style = {
+    .bold = bold,
+    .underline = underline,
+  };
+  const struct pivot_value value = {
+    .type = PIVOT_VALUE_TEXT,
+    .text = {
+      .local = CONST_CAST (char *, s),
+      .c = CONST_CAST (char *, s),
+      .id = CONST_CAST (char *, s),
+      .user_provided = true,
+    },
   };
   struct table_cell cell = {
-    .text = CONST_CAST (char *, s),
-    .style = &style,
+    .value = &value,
+    .font_style = &font_style,
+    .cell_style = &cell_style,
   };
 
   bb[TABLE_HORZ][0] = x;
@@ -1058,7 +1044,13 @@ ascii_test_write (struct output_driver *driver,
   bb[TABLE_VERT][0] = y;
   bb[TABLE_VERT][1] = INT_MAX;
 
+  struct pivot_table pt = {
+    .show_values = SETTINGS_VALUE_SHOW_DEFAULT,
+    .show_variables = SETTINGS_VALUE_SHOW_DEFAULT,
+  };
+  a->pt = &pt;
   ascii_layout_cell (a, &cell, bb, bb, &width, &height);
+  a->pt = NULL;
 }
 
 void
