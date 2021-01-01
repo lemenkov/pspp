@@ -370,7 +370,8 @@ pivot_axis_iterator_next (size_t *indexes, const struct pivot_axis *axis)
           if (axis->dimensions[i]->n_leaves == 0)
             return NULL;
 
-      return xcalloc (axis->n_dimensions, sizeof *indexes);
+      size_t size = axis->n_dimensions * sizeof *indexes;
+      return xzalloc (MAX (size, 1));
     }
 
   for (size_t i = 0; i < axis->n_dimensions; i++)
