@@ -287,13 +287,11 @@ Sets the margins around the page.  See
 below for the allowed forms of @var{dimension} Default: @code{0.5in}.
 
 @item @option{-O prop-font=@var{font-name}}
-@itemx @option{-O fixed-font=@var{font-name}}
-Sets the font used for proportional, or fixed-pitch text.  Most
-systems support CSS-like font names such as ``serif'' and
-``monospace'', but a wide range of system-specific font are likely to
-be supported as well.
+Sets the default font used for ordinary text.  Most systems support
+CSS-like font names such as ``Sans Serif'', but a wide range of
+system-specific fonts are likely to be supported as well.
 
-Default: proportional font @code{serif}, fixed-pitch font @code{monospace}.
+Default: proportional font @code{Sans Serif}.
 
 @item @option{-O font-size=@var{font-size}}
 Sets the size of the default fonts, in thousandths of a point.  Default:

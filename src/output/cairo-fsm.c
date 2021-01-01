@@ -74,9 +74,8 @@ xr_fsm_style_unshare (struct xr_fsm_style *old)
 
   struct xr_fsm_style *new = xmemdup (old, sizeof *old);
   new->ref_cnt = 1;
-  for (int i = 0; i < XR_N_FONTS; i++)
-    if (old->fonts[i])
-      new->fonts[i] = pango_font_description_copy (old->fonts[i]);
+  if (old->font)
+    new->font = pango_font_description_copy (old->font);
 
   return new;
 }
@@ -89,8 +88,7 @@ xr_fsm_style_unref (struct xr_fsm_style *style)
       assert (style->ref_cnt > 0);
       if (!--style->ref_cnt)
         {
-          for (size_t i = 0; i < XR_N_FONTS; i++)
-            pango_font_description_free (style->fonts[i]);
+          pango_font_description_free (style->font);
           free (style);
         }
     }
@@ -104,13 +102,10 @@ xr_fsm_style_equals (const struct xr_fsm_style *a,
       || a->size[V] != b->size[V]
       || a->min_break[H] != b->min_break[H]
       || a->min_break[V] != b->min_break[V]
+      || !pango_font_description_equal (a->font, b->font)
       || a->use_system_colors != b->use_system_colors
       || a->font_resolution != b->font_resolution)
     return false;
-
-  for (size_t i = 0; i < XR_N_FONTS; i++)
-    if (!pango_font_description_equal (a->fonts[i], b->fonts[i]))
-      return false;
 
   return true;
 }
@@ -631,9 +626,6 @@ xr_layout_cell_text (struct xr_fsm *xr, const struct table_cell *cell,
   enum table_axis Y = !X;
   int R = options & TAB_ROTATE ? 0 : 1;
 
-  enum xr_font_type font_type = (options & TAB_FIX
-                                 ? XR_FONT_FIXED
-                                 : XR_FONT_PROPORTIONAL);
   PangoFontDescription *desc = NULL;
   if (font_style->typeface)
       desc = parse_font (
@@ -641,7 +633,7 @@ xr_layout_cell_text (struct xr_fsm *xr, const struct table_cell *cell,
         font_style->size ? font_style->size * 1000 : 10000,
         font_style->bold, font_style->italic);
   if (!desc)
-    desc = xr->style->fonts[font_type];
+    desc = xr->style->font;
 
   assert (xr->cairo);
   PangoContext *context = pango_cairo_create_context (xr->cairo);
@@ -921,7 +913,7 @@ xr_layout_cell_text (struct xr_fsm *xr, const struct table_cell *cell,
 
   pango_layout_set_attributes (layout, NULL);
 
-  if (desc != xr->style->fonts[font_type])
+  if (desc != xr->style->font)
     pango_font_description_free (desc);
   g_object_unref (G_OBJECT (layout));
 
@@ -1043,27 +1035,25 @@ xr_fsm_create (const struct output_item *item_,
       fsm->cairo = NULL;
     }
 
-  for (int i = 0; i < XR_N_FONTS; i++)
+  /* Get font size. */
+  PangoContext *context = pango_cairo_create_context (cr);
+  pango_cairo_context_set_resolution (context, style->font_resolution);
+  PangoLayout *layout = pango_layout_new (context);
+  g_object_unref (context);
+
+  pango_layout_set_font_description (layout, style->font);
+
+  pango_layout_set_text (layout, "0", 1);
+
+  int char_size[TABLE_N_AXES];
+  pango_layout_get_size (layout, &char_size[H], &char_size[V]);
+  for (int a = 0; a < TABLE_N_AXES; a++)
     {
-      PangoContext *context = pango_cairo_create_context (cr);
-      pango_cairo_context_set_resolution (context, style->font_resolution);
-      PangoLayout *layout = pango_layout_new (context);
-      g_object_unref (context);
-
-      pango_layout_set_font_description (layout, style->fonts[i]);
-
-      pango_layout_set_text (layout, "0", 1);
-
-      int char_size[TABLE_N_AXES];
-      pango_layout_get_size (layout, &char_size[H], &char_size[V]);
-      for (int a = 0; a < TABLE_N_AXES; a++)
-        {
-          int csa = pango_to_xr (char_size[a]);
-          fsm->rp.font_size[a] = MAX (fsm->rp.font_size[a], csa);
-        }
-
-      g_object_unref (G_OBJECT (layout));
+      int csa = pango_to_xr (char_size[a]);
+      fsm->rp.font_size[a] = MAX (fsm->rp.font_size[a], csa);
     }
+
+  g_object_unref (G_OBJECT (layout));
 
   return fsm;
 }

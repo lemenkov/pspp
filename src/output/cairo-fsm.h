@@ -32,20 +32,13 @@ struct output_item;
    (Thus, XR_POINT units represent one point.) */
 #define XR_POINT PANGO_SCALE
 
-enum xr_font_type
-  {
-    XR_FONT_PROPORTIONAL,
-    XR_FONT_FIXED,
-    XR_N_FONTS
-  };
-
 struct xr_fsm_style
   {
     int ref_cnt;
 
     int size[TABLE_N_AXES];      /* Page size. */
     int min_break[TABLE_N_AXES]; /* Minimum cell size to allow breaking. */
-    PangoFontDescription *fonts[XR_N_FONTS];
+    PangoFontDescription *font;
     struct cell_color fg;
     bool use_system_colors;
 

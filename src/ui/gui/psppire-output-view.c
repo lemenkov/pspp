@@ -151,18 +151,13 @@ get_xr_fsm_style (struct psppire_output_view *view)
 
   PangoFontDescription *pf;
   gtk_style_context_get (context, state, "font", &pf, NULL);
-  PangoFontDescription *ff = pango_font_description_from_string ("Monospace");
-  pango_font_description_set_size (ff, pango_font_description_get_size (pf));
 
   struct xr_fsm_style *style = xmalloc (sizeof *style);
   *style = (struct xr_fsm_style) {
     .ref_cnt = 1,
     .size = { [TABLE_HORZ] = xr_width, [TABLE_VERT] = INT_MAX },
     .min_break = { [TABLE_HORZ] = xr_width / 2, [TABLE_VERT] = 0 },
-    .fonts = {
-      [XR_FONT_PROPORTIONAL] = pf,
-      [XR_FONT_FIXED] = ff,
-    },
+    .font = pf,
     .use_system_colors = true,
     .font_resolution = 96.0,
   };
@@ -958,11 +953,6 @@ create_xr_print_driver (GtkPrintContext *context, struct psppire_output_view *vi
   for (int a = 0; a < TABLE_N_AXES; a++)
     size[a] = paper[a] - margins[a][0] - margins[a][1];
 
-  PangoFontDescription *proportional_font
-    = pango_font_description_from_string ("Sans Serif 10");
-  PangoFontDescription *fixed_font
-    = pango_font_description_from_string ("Monospace 10");
-
   view->page_style = xmalloc (sizeof *view->page_style);
   *view->page_style = (struct xr_page_style) {
     .ref_cnt = 1,
@@ -981,10 +971,7 @@ create_xr_print_driver (GtkPrintContext *context, struct psppire_output_view *vi
 
     .size = { [H] = size[H], [V] = size[V] },
     .min_break = { [H] = size[H] / 2, [V] = size[V] / 2 },
-    .fonts = {
-      [XR_FONT_PROPORTIONAL] = proportional_font,
-      [XR_FONT_FIXED] = fixed_font,
-    },
+    .font = pango_font_description_from_string ("Sans Serif 10"),
     .fg = CELL_COLOR_BLACK,
     .use_system_colors = false,
     .font_resolution = 72.0

@@ -518,13 +518,8 @@ html_put_table_cell_text (struct html_driver *html,
                           const struct table_cell *cell)
 {
   const char *s = cell->text;
-  if (cell->options & TAB_FIX)
-    escape_tag (html->file, "tt", s, "&nbsp;", "<br>");
-  else
-    {
-      s += strspn (s, CC_SPACES);
-      escape_string (html->file, s, " ", "<br>");
-    }
+  s += strspn (s, CC_SPACES);
+  escape_string (html->file, s, " ", "<br>");
 
   if (cell->n_subscripts)
     {

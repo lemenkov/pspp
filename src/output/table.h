@@ -180,7 +180,6 @@ void table_area_style_free (struct table_area_style *);
 enum
   {
     TAB_NONE = 0,
-    TAB_FIX        = 1 << 1,    /* Use fixed font. */
     TAB_MARKUP     = 1 << 2,    /* Text contains Pango markup. */
     TAB_NUMERIC    = 1 << 3,    /* Cell contents are numeric. */
     TAB_ROTATE     = 1 << 4,    /* Rotate cell contents 90 degrees. */

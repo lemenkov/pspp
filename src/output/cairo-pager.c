@@ -215,7 +215,7 @@ xr_measure_headings (const struct xr_page_style *ps,
   for (int i = 0; i < 2; i++)
     {
       int *h = &heading_heights[i];
-      *h = xr_render_page_heading (cairo, fs->fonts[XR_FONT_PROPORTIONAL],
+      *h = xr_render_page_heading (cairo, fs->font,
                                    &ps->headings[i], -1, fs->size[H], 0,
                                    fs->font_resolution);
       if (*h)
@@ -310,15 +310,14 @@ xr_pager_add_page (struct xr_pager *p, cairo_t *cr)
                    xr_to_pt (ps->margins[H][0]),
                    xr_to_pt (ps->margins[V][0]));
 
-  const PangoFontDescription *font = fs->fonts[XR_FONT_PROPORTIONAL];
   int page_number = p->page_index++ + ps->initial_page_number;
   if (p->heading_heights[0])
-    xr_render_page_heading (cr, font, &ps->headings[0], page_number,
+    xr_render_page_heading (cr, fs->font, &ps->headings[0], page_number,
                             fs->size[H], -p->heading_heights[0],
                             fs->font_resolution);
 
   if (p->heading_heights[1])
-    xr_render_page_heading (cr, font, &ps->headings[1], page_number,
+    xr_render_page_heading (cr, fs->font, &ps->headings[1], page_number,
                             fs->size[H], fs->size[V] + ps->object_spacing,
                             fs->font_resolution);
 
