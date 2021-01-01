@@ -60,15 +60,11 @@ union value;
    Creating a pivot table usually consists of the following steps:
 
    1. Create the table with pivot_table_create(), passing in the title.
-      It's commonly useful to set up a few options at this point:
 
-      - If empty rows or columns should not be displayed, set ->omit_empty to
-        true.
+   2. Optionally, set the format to use for "count" values with
+      pivot_table_set_weight_var() or pivot_table_set_weight_format().
 
-      - Set the format to use for "count" values with
-        pivot_table_set_weight_var() or pivot_table_set_weight_format().
-
-   2. Create each dimension with pivot_dimension_create() and populate it with
+   3. Create each dimension with pivot_dimension_create() and populate it with
       categories and, possibly, with groups that contain the categories.  This
       call also assigns the dimension to an axis.
 
@@ -81,14 +77,14 @@ union value;
       first cell for that variable.  In that case, creating categories and
       inserting data can be interleaved.
 
-   3. Insert data.  For each cell, supply the category indexes, which are
+   4. Insert data.  For each cell, supply the category indexes, which are
       assigned starting from 0 in the order in which the categories were
       created in step 2, and the value to go in the cell.  If the table has a
       small, fixed number of dimensions, functions like, e.g.
       pivot_table_put3() for 3 dimensions, can be used.  The general function
       pivot_table_put() works for other cases.
 
-   4. Output the table for user consumption.  Use pivot_table_submit(). */
+   5. Output the table for user consumption.  Use pivot_table_submit(). */
 
 /* Pivot table display styling. */
 

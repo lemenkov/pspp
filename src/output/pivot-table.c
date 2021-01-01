@@ -796,18 +796,10 @@ pivot_result_class_change (const char *s_, const struct fmt_spec *format)
    e.g. N_("Descriptive Statistics").  The un-translated text string is used as
    the pivot table's subtype.
 
-   Operations commonly performed on the new pivot_table:
-
-   - If empty rows or columns should not be displayed, set ->omit_empty to
-     true.
-
-   - Set the format to use for "count" values with pivot_table_set_weight_var()
-     or pivot_table_set_weight_format().
-
    This function is a shortcut for pivot_table_create__() for the most common
    case.  Use pivot_table_create__() directly if the title should be some kind
    of value other than an ordinary text string, or if the subtype should be
-different from the title.
+   different from the title.
 
    See the large comment at the top of pivot-table.h for general advice on
    creating pivot tables. */
@@ -818,18 +810,13 @@ pivot_table_create (const char *title)
 }
 
 /* Creates and returns a new pivot table with the given TITLE, and takes
-   ownership of TITLE.  The new pivot table's subtype is SUBTYPE, which
-   should be an untranslated English string that describes the contents of
-   the table at a high level without being specific about the variables or
-   other context involved.
+   ownership of TITLE.  The new pivot table's subtype is SUBTYPE, which should
+   be an untranslated English string that describes the contents of the table
+   at a high level without being specific about the variables or other context
+   involved.
 
-   Operations commonly performed on the new pivot_table:
-
-   - If empty rows or columns should not be displayed, set ->omit_empty to
-     true.
-
-   - Set the format to use for "count" values with pivot_table_set_weight_var()
-     or pivot_table_set_weight_format().
+   TITLE and SUBTYPE may be NULL, but in that case the client must add them
+   later because they are both mandatory for a pivot table.
 
    See the large comment at the top of pivot-table.h for general advice on
    creating pivot tables. */
