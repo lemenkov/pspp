@@ -44,7 +44,7 @@ find_category (const struct pivot_dimension *d, int dim_index,
   for (const struct pivot_category *c = d->presentation_leaves[index];
        c; c = c->parent)
     {
-      /* A category can covert multiple rows.  Only return the category for its
+      /* A category can cover multiple rows.  Only return the category for its
          top row. */
       if (row_ofs == c->extra_depth)
         return c;
