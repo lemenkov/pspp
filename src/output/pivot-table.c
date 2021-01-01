@@ -905,6 +905,7 @@ pivot_table_unref (struct pivot_table *table)
   pivot_value_destroy (table->subtype);
   pivot_value_destroy (table->corner_text);
   pivot_value_destroy (table->caption);
+  free (table->notes);
 
   for (size_t i = 0; i < table->n_dimensions; i++)
     pivot_dimension_destroy (table->dimensions[i]);
