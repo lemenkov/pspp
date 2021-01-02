@@ -1,5 +1,5 @@
 # PSPP - a program for statistical analysis.
-# Copyright (C) 2017, 2020 Free Software Foundation, Inc.
+# Copyright (C) 2017, 2020, 2021 Free Software Foundation, Inc.
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -66,8 +66,7 @@ $(POTFILE): $(ALL_TRANSLATABLE_FILES) Makefile
 	$(AM_V_at)test -z "$(UI_FILES)" || $(XGETTEXT) $(XGETTEXT_OPTIONS) -j $(UI_FILES) --language=Glade -o $@,tmp
 	$(AM_V_at)$(XGETTEXT) $(XGETTEXT_OPTIONS) -j doc/org.fsf.pspp.metainfo.xml.in -o $@,tmp
 	$(AM_V_at)$(XGETTEXT) $(XGETTEXT_OPTIONS) -j doc/org.fsf.pspp.desktop.in -o $@,tmp
-	$(AM_V_at)$(SED) -e '/^"POT-Creation-Date: .*/d' $@,tmp > $@
-	rm -f $@,tmp
+	$(AM_V_at)mv $@,tmp $@
 
 $(LOCALPOFILES) $(POFILES): $(POTFILE)
 	$(AM_V_GEN)$(MSGMERGE) --previous --quiet $(top_srcdir)/$@ $? -o $@,tmp
@@ -75,10 +74,8 @@ $(LOCALPOFILES) $(POFILES): $(POTFILE)
 		touch $@,tmp ; \
 		msgcat --use-first $(top_srcdir)/$@,aux $@,tmp -o $@,tmp; \
 	fi ;
-	$(AM_V_at)$(SED) -e '/^"POT-Creation-Date: /d' $@,tmp > $@,tmp2
-	$(RM) $@,tmp
-	$(MSGFMT) -c $@,tmp2 -o - > /dev/null
-	mv $@,tmp2 $@
+	$(MSGFMT) -c $@,tmp -o - > /dev/null
+	mv $@,tmp $@
 
 SUFFIXES += .po .gmo
 .po.gmo:

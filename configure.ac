@@ -1,5 +1,5 @@
 dnl PSPP - a program for statistical analysis.
-dnl Copyright (C) 2017 Free Software Foundation, Inc.
+dnl Copyright (C) 2017, 2021 Free Software Foundation, Inc.
 dnl
 dnl This program is free software: you can redistribute it and/or modify
 dnl it under the terms of the GNU General Public License as published by
@@ -66,6 +66,7 @@ CFLAGS="$CFLAGS -DGCC_LINT"
 dnl Disable automatic po/ support, because PSPP provides its own po/ support.
 AC_PROVIDE([AM_PO_SUBDIRS])
 AM_GNU_GETTEXT([external], [need-ngettext])
+
 LIBS="$LIBINTL $LIBS"
 AC_CHECK_PROGS([MSGFMT], [msgfmt])
 if test "x$MSGFMT" = x; then
@@ -76,18 +77,12 @@ AC_CHECK_PROGS([XGETTEXT], [xgettext])
 if test "x$XGETTEXT" = x; then
   PSPP_REQUIRED_PREREQ([xgettext (is usually provided with gettext)])
 fi
-dnl appstream required for metainfo.its
-dnl if metainfo.its is not there, then the following small
-dnl file will not produce an outputfile
-$as_echo '<?xml version="1.0" encoding="UTF-8"?>' > test.metainfo.xml.in
-$as_echo '<component type="desktop">' >> test.metainfo.xml.in
-$as_echo '<name>Hallo</name>' >> test.metainfo.xml.in
-$as_echo '</component>' >> test.metainfo.xml.in
-xgettext -o mifc.po test.metainfo.xml.in
-if ! test -f ./mifc.po  ; then
-  PSPP_OPTIONAL_PREREQ([org.fsf.metainfo.xml will not be translated. Install gettext >=0.20 or appstream.])
+
+PSPP_CHECK_XGETTEXT
+
+if test "$pspp_cv_progrecent_xgettext"  != "yes"; then
+   PSPP_REQUIRED_PREREQ([xgettext version 0.20 or greater])
 fi
-rm -f mifc.po test.metainfo.xml.in
 
 dnl Checks for libraries.
 AC_SYS_LARGEFILE

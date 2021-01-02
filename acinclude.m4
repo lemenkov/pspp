@@ -1,4 +1,4 @@
-dnl Copyright (C) 2005, 2006, 2007, 2009, 2014, 2015 Free Software Foundation, Inc.
+dnl Copyright (C) 2005, 2006, 2007, 2009, 2014, 2015, 2021 Free Software Foundation, Inc.
 dnl This file is free software; the Free Software Foundation
 dnl gives unlimited permission to copy and/or distribute it,
 dnl with or without modifications, as long as this notice is preserved.
@@ -352,3 +352,23 @@ AC_DEFUN([PSPP_CHECK_DOT],
        pspp_cv_dot=no
      fi])
    AM_CONDITIONAL([HAVE_DOT], [test "$pspp_cv_dot" = yes])])
+
+
+dnl Check that xgettext is sufficiently recent
+dnl Before calling this function the variable XGETTEXT must point to the xgettext binary
+AC_DEFUN([PSPP_CHECK_XGETTEXT],
+ [AC_CACHE_CHECK([whether gettext is sufficiently recent],
+   [pspp_cv_progrecent_xgettext],
+   [pspp_cv_progrecent_xgettext=maybe
+    ver=`$ac_cv_prog_XGETTEXT --version | sed -n -e '/xgettext/s/[[^0-9]]*\([[0-9\.]][[0-9\.]]*\).*/\1/p'`
+    major=${ver%%.[[0-9]][[0-9]]*}
+    majmin=${ver%.[[0-9]][[0-9]]*}
+    minor=${majmin##[0-9]*.}
+    if test "$major" -lt 0; then
+      pspp_cv_progrecent_xgettext=no;
+    elif test "$minor" -lt 20; then
+      pspp_cv_progrecent_xgettext=no
+    else
+      pspp_cv_progrecent_xgettext=yes
+    fi])])
+
