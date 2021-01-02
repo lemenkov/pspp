@@ -400,3 +400,142 @@ b: b3
 ╰──┴──┴──╯
 ])
 AT_CLEANUP
+
+AT_SETUP([pivot table title and caption])
+AT_DATA([pivot.txt], [[
+/col "a"("a1", "a2")
+/row "b"("b1", "b2")
+/cell[all, all]
+/title "Title + Caption" /caption "Title + Caption" /display
+/title "Title Only" /caption "(Not Shown)" /show title=yes caption=no /display
+/title "(Not Shown)" /caption "Caption Only" /show title=no caption=yes /display
+/title "(Not Shown)" /caption "(Not Shown)" /show title=no caption=no
+]])
+AT_CHECK([pivot-table-test --table-look $srcdir/output/look.stt pivot.txt --box unicode], [0], [dnl
+Title + Caption
+╭──┬──┬──╮
+│  │a1│a2│
+├──┼──┼──┤
+│b1│ 0│ 1│
+│b2│ 2│ 3│
+╰──┴──┴──╯
+Title + Caption
+
+Title Only
+╭──┬──┬──╮
+│  │a1│a2│
+├──┼──┼──┤
+│b1│ 0│ 1│
+│b2│ 2│ 3│
+╰──┴──┴──╯
+
+╭──┬──┬──╮
+│  │a1│a2│
+├──┼──┼──┤
+│b1│ 0│ 1│
+│b2│ 2│ 3│
+╰──┴──┴──╯
+Caption Only
+
+╭──┬──┬──╮
+│  │a1│a2│
+├──┼──┼──┤
+│b1│ 0│ 1│
+│b2│ 2│ 3│
+╰──┴──┴──╯
+])
+AT_CLEANUP
+
+AT_SETUP([pivot table with no dimensions])
+AT_DATA([pivot.txt], [[
+/title "No Dimensions"
+]])
+AT_CHECK([pivot-table-test --table-look $srcdir/output/look.stt pivot.txt --box unicode], [0], [dnl
+No Dimensions
+╭╮
+╰╯
+])
+AT_CLEANUP
+
+AT_SETUP([pivot table with empty dimensions])
+AT_DATA([pivot.txt], [[
+/col "a"()
+/look empty=show
+/title "One Empty Dimension" /display
+/title "Two Empty Dimensions" /row "b"*() /display
+/title "Three Dimensions, Two Empty" /row "c"("c1", "c2")
+]])
+AT_CHECK([pivot-table-test --table-look $srcdir/output/look.stt pivot.txt --box unicode], [0], [dnl
+One Empty Dimension
+
+Two Empty Dimensions
+
+Three Dimensions, Two Empty
+])
+AT_CLEANUP
+
+AT_SETUP([pivot table with empty groups])
+AT_DATA([pivot.txt], [[
+/col "a"("a1", "a2"(), "a3")
+/row "b"("b1"(), "b2", "b3")
+/cell[all,all]
+/look empty=show
+/display
+]])
+AT_CHECK([pivot-table-test --table-look $srcdir/output/look.stt pivot.txt --box unicode], [0], [dnl
+Default Title
+╭──┬──┬──╮
+│  │a1│a3│
+├──┼──┼──┤
+│b2│ 0│ 1│
+│b3│ 2│ 3│
+╰──┴──┴──╯
+])
+AT_CLEANUP
+
+AT_SETUP([pivot table - category and dimension borders])
+AT_DATA([pivot.txt], [[
+/col "a"("a1", "ag1"("a2", "a3"))
+/col "b"("bg1"("b1", "b2"), "b3")
+/row "c"("c1", "cg1"("c2", "c3"))
+/row "d"("dg1"("d1", "d2"), "d3")
+/cell[all, all, all, all]
+/border "*" (none)
+/border "dim-row-horz" (solid "blue")
+	"cat-row-horz" (dashed "red")
+	"dim-row-vert" (solid "blue")
+	"cat-row-vert" (dashed "red")
+	"dim-col-horz" (solid "blue")
+	"cat-col-horz" (dashed "red")
+	"dim-col-vert" (solid "blue")
+	"cat-col-vert" (dashed "red")
+/title "Category and Dimension Borders"
+]])
+AT_CHECK([pivot-table-test --table-look $srcdir/output/look.stt pivot.txt --box unicode], [0], [dnl
+Category and Dimension Borders
+                     bg1       │
+             ╶╌╌╌╌╌╌╌╌┬╌╌╌╌╌╌╌╌┤
+                 b1   │   b2   │   b3
+             ╶──┬─────┼──┬─────┼──┬─────
+                │ ag1 │  │ ag1 │  │ ag1
+                ├╌╌┬╌╌┤  ├╌╌┬╌╌┤  ├╌╌┬╌╌
+              a1│a2┊a3│a1│a2┊a3│a1│a2┊a3
+dg1┊d1│c1      0│ 1┊ 2│ 3│ 4┊ 5│ 6│ 7┊ 8
+   ┊  ├───┬─────┼──┼──┼──┼──┼──┼──┼──┼──
+   ┊  │cg1┊c2  9│10┊11│12│13┊14│15│16┊17
+   ┊  │   ├╌╌╌╌╌┼╌╌+╌╌┼╌╌┼╌╌+╌╌┼╌╌┼╌╌+╌╌
+   ┊  │   ┊c3 18│19┊20│21│22┊23│24│25┊26
+   ├──┼───┴─────┼──┼──┼──┼──┼──┼──┼──┼──
+   ┊d2│c1     27│28┊29│30│31┊32│33│34┊35
+   ┊  ├───┬─────┼──┼──┼──┼──┼──┼──┼──┼──
+   ┊  │cg1┊c2 36│37┊38│39│40┊41│42│43┊44
+   ┊  │   ├╌╌╌╌╌┼╌╌+╌╌┼╌╌┼╌╌+╌╌┼╌╌┼╌╌+╌╌
+   ┊  │   ┊c3 45│46┊47│48│49┊50│51│52┊53
+───┴──┼───┴─────┼──┼──┼──┼──┼──┼──┼──┼──
+d3    │c1     54│55┊56│57│58┊59│60│61┊62
+      ├───┬─────┼──┼──┼──┼──┼──┼──┼──┼──
+      │cg1┊c2 63│64┊65│66│67┊68│69│70┊71
+      │   ├╌╌╌╌╌┼╌╌+╌╌┼╌╌┼╌╌+╌╌┼╌╌┼╌╌+╌╌
+      │   ┊c3 72│73┊74│75│76┊77│78│79┊80
+])
+AT_CLEANUP

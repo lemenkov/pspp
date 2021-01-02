@@ -51,12 +51,9 @@ static char *box;
 /* -o, --output: Base name for output files. */
 static const char *output_base = "render";
 
-/* --dump: Print table dump to stdout? */
-static bool dump;
-
 static const char *parse_options (int argc, char **argv);
 static void usage (void) NO_RETURN;
-static struct pivot_table *read_table (struct lexer *);
+static void read_table (struct lexer *);
 static void output_msg (const struct msg *, void *);
 
 int
@@ -89,10 +86,7 @@ main (int argc, char **argv)
       if (lex_match (lexer, T_STOP))
         break;
 
-      struct pivot_table *pt = read_table (lexer);
-      if (dump)
-        pivot_table_dump (pt, 0);
-      pivot_table_submit (pt);
+      read_table (lexer);
     }
 
   lex_destroy (lexer);
@@ -146,7 +140,12 @@ configure_drivers (int width, int length UNUSED, int min_break)
   register_driver (&options, "%s.pdf", output_base);
 #endif
 
+  string_map_insert (&options, "box", "unicode");
   register_driver (&options, "%s.txt", output_base);
+
+  string_map_insert (&options, "box", "ascii");
+  register_driver (&options, "%s-ascii.txt", output_base);
+
   register_driver (&options, "%s.csv", output_base);
   register_driver (&options, "%s.odt", output_base);
   register_driver (&options, "%s.spv", output_base);
@@ -172,7 +171,6 @@ parse_options (int argc, char **argv)
         OPT_EMPHASIS,
         OPT_BOX,
         OPT_TABLE_LOOK,
-        OPT_DUMP,
         OPT_HELP
       };
       static const struct option options[] =
@@ -184,7 +182,6 @@ parse_options (int argc, char **argv)
           {"box", required_argument, NULL, OPT_BOX},
           {"output", required_argument, NULL, 'o'},
           {"table-look", required_argument, NULL, OPT_TABLE_LOOK},
-          {"dump", no_argument, NULL, OPT_DUMP},
           {"help", no_argument, NULL, OPT_HELP},
           {NULL, 0, NULL, 0},
         };
@@ -228,10 +225,6 @@ parse_options (int argc, char **argv)
             pivot_table_look_set_default (look);
             pivot_table_look_unref (look);
           }
-          break;
-
-        case OPT_DUMP:
-          dump = true;
           break;
 
         case OPT_HELP:
@@ -1129,13 +1122,16 @@ read_current_layer (struct lexer *lexer, struct pivot_table *table)
     }
 }
 
-static struct pivot_table *
+static void
 read_table (struct lexer *lexer)
 {
+  bool displayed = false;
+
   struct pivot_table *pt = pivot_table_create ("Default Title");
   while (lex_match (lexer, T_SLASH))
     {
       assert (!pivot_table_is_shared (pt));
+      displayed = false;
 
       if (lex_match_id (lexer, "ROW"))
         read_dimension (lexer, pt, PIVOT_AXIS_ROW,
@@ -1212,6 +1208,7 @@ read_table (struct lexer *lexer)
         {
           pivot_table_submit (pivot_table_ref (pt));
           pt = pivot_table_unshare (pt);
+          displayed = true;
         }
       else
         {
@@ -1220,8 +1217,12 @@ read_table (struct lexer *lexer)
         }
     }
 
+  if (!displayed)
+    pivot_table_submit (pt);
+  else
+    pivot_table_unshare (pt);
+
   force_match (lexer, T_ENDCMD);
-  return pt;
 }
 
 static void
