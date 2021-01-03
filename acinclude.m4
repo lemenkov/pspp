@@ -355,15 +355,16 @@ AC_DEFUN([PSPP_CHECK_DOT],
 
 
 dnl Check that xgettext is sufficiently recent
-dnl Before calling this function the variable XGETTEXT must point to the xgettext binary
+dnl Before calling this macro, AC_CHECK_PROGS([XGETTEXT], [xgettext]) should have been called,
+dnl which sets the ac_cv_prog_XGETTEXT cache variable.
 AC_DEFUN([PSPP_CHECK_XGETTEXT],
  [AC_CACHE_CHECK([whether gettext is sufficiently recent],
    [pspp_cv_progrecent_xgettext],
    [pspp_cv_progrecent_xgettext=maybe
     ver=`$ac_cv_prog_XGETTEXT --version | sed -n -e '/xgettext/s/[[^0-9]]*\([[0-9\.]][[0-9\.]]*\).*/\1/p'`
-    major=${ver%%.[[0-9]][[0-9]]*}
-    majmin=${ver%.[[0-9]][[0-9]]*}
-    minor=${majmin##[0-9]*.}
+    majmin=`echo $ver | sed -e 's/\.[[0-9]]*$//'`
+    major=`echo $majmin | sed -e 's/\.[[0-9]]*$//'`
+    minor=`echo $majmin | sed -e 's/^[[0-9]]*\.//'`
     if test "$major" -lt 0; then
       pspp_cv_progrecent_xgettext=no;
     elif test "$minor" -lt 20; then
@@ -371,4 +372,3 @@ AC_DEFUN([PSPP_CHECK_XGETTEXT],
     else
       pspp_cv_progrecent_xgettext=yes
     fi])])
-
