@@ -362,6 +362,10 @@ AC_DEFUN([PSPP_CHECK_XGETTEXT],
    [pspp_cv_progrecent_xgettext],
    [pspp_cv_progrecent_xgettext=maybe
     ver=`$ac_cv_prog_XGETTEXT --version | sed -n -e '/xgettext/s/[[^0-9]]*\([[0-9\.]][[0-9\.]]*\).*/\1/p'`
+    case $ver in # (
+      *.*.*) ;; # (
+      *.*) ver="$ver.0" ;;
+    esac
     majmin=`echo $ver | sed -e 's/\.[[0-9]]*$//'`
     major=`echo $majmin | sed -e 's/\.[[0-9]]*$//'`
     minor=`echo $majmin | sed -e 's/^[[0-9]]*\.//'`
