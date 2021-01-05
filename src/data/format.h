@@ -174,7 +174,7 @@ struct fmt_number_style
     char grouping;               /* Grouping character: ',', '.', or 0. */
 
     /* A fmt_affix may require more bytes than its display width; for example,
-       U+00A5 (¥) is 3 bytes in UTF-8 but occupies only one display column.
+       U+00A5 (¥) is 2 bytes in UTF-8 but occupies only one display column.
        This member is the sum of the number of bytes required by all of the
        fmt_affix members in this struct, minus their display widths.  Thus, it
        can be used to size memory allocations: for example, the formatted
