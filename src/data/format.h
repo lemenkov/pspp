@@ -139,23 +139,6 @@ bool fmt_from_u32 (uint32_t, int var_width, bool loose, struct fmt_spec *);
 const char *fmt_date_template (enum fmt_type, int width) PURE_FUNCTION;
 const char *fmt_gui_name (enum fmt_type);
 
-/* Format settings.
-
-   A fmt_settings is really just a collection of one "struct fmt_number_style"
-   for each format type. */
-struct fmt_settings *fmt_settings_create (void);
-void fmt_settings_destroy (struct fmt_settings *);
-struct fmt_settings *fmt_settings_clone (const struct fmt_settings *);
-
-void fmt_settings_set_decimal (struct fmt_settings *, char);
-
-const struct fmt_number_style *fmt_settings_get_style (
-  const struct fmt_settings *, enum fmt_type);
-void fmt_settings_set_style (struct fmt_settings *, enum fmt_type,
-                             char decimal, char grouping,
-                             const char *neg_prefix, const char *prefix,
-                             const char *suffix, const char *neg_suffix);
-
 /* A prefix or suffix for a numeric output format. */
 struct fmt_affix
   {
@@ -163,7 +146,8 @@ struct fmt_affix
     int width;                  /* Display width in columns (see wcwidth()). */
   };
 
-/* A numeric output style. */
+/* A numeric output style.  This can express the basic numeric formats (in the
+   FMT_CAT_BASIC category) and custom currency formats (FMT_CCx). */
 struct fmt_number_style
   {
     struct fmt_affix neg_prefix; /* Negative prefix. */
@@ -183,9 +167,34 @@ struct fmt_number_style
     int extra_bytes;
   };
 
+struct fmt_number_style *fmt_number_style_from_string (const char *);
+struct fmt_number_style *fmt_number_style_clone (
+  const struct fmt_number_style *);
+void fmt_number_style_destroy (struct fmt_number_style *);
+
 int fmt_affix_width (const struct fmt_number_style *);
 int fmt_neg_affix_width (const struct fmt_number_style *);
+
+/* Number of custom currency styles. */
+#define FMT_N_CCS 5             /* FMT_CCA through FMT_CCE. */
 
+struct fmt_settings
+  {
+    char decimal;                            /* '.' or ','. */
+    struct fmt_number_style *ccs[FMT_N_CCS]; /* CCA through CCE. */
+  };
+#define FMT_SETTINGS_INIT { .decimal = '.' }
+
+void fmt_settings_init (struct fmt_settings *);
+void fmt_settings_uninit (struct fmt_settings *);
+void fmt_settings_copy (struct fmt_settings *, const struct fmt_settings *);
+
+const struct fmt_number_style *fmt_settings_get_style (
+  const struct fmt_settings *, enum fmt_type);
+
+void fmt_settings_set_cc (struct fmt_settings *, enum fmt_type,
+                          struct fmt_number_style *);
+
 extern const struct fmt_spec F_8_0 ;
 extern const struct fmt_spec F_8_2 ;
 extern const struct fmt_spec F_4_3 ;

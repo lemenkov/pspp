@@ -36,14 +36,10 @@
 #include "gl/c-strcase.h"
 #include "gl/minmax.h"
 #include "gl/xalloc.h"
+#include "gl/xmemdup0.h"
 
 #include "gettext.h"
 #define _(msgid) gettext (msgid)
-
-struct fmt_settings
-  {
-    struct fmt_number_style styles[FMT_NUMBER_OF_FORMATS];
-  };
 
 bool is_fmt_type (enum fmt_type);
 
@@ -53,56 +49,39 @@ static int max_digits_for_bytes (int bytes);
 static void fmt_clamp_width (struct fmt_spec *, enum fmt_use);
 static void fmt_clamp_decimals (struct fmt_spec *, enum fmt_use);
 
-static void fmt_affix_set (struct fmt_affix *, const char *);
-static void fmt_affix_free (struct fmt_affix *);
-
-static void fmt_number_style_init (struct fmt_number_style *);
-static void fmt_number_style_clone (struct fmt_number_style *,
-                                    const struct fmt_number_style *);
-static void fmt_number_style_destroy (struct fmt_number_style *);
-
-/* Creates and returns a new struct fmt_settings with default format styles. */
-struct fmt_settings *
-fmt_settings_create (void)
-{
-  struct fmt_settings *settings;
-  int t;
-
-  settings = xzalloc (sizeof *settings);
-  for (t = 0 ; t < FMT_NUMBER_OF_FORMATS ; ++t)
-    fmt_number_style_init (&settings->styles[t]);
-  fmt_settings_set_decimal (settings, '.');
-
-  return settings;
-}
-
-/* Destroys SETTINGS. */
 void
-fmt_settings_destroy (struct fmt_settings *settings)
+fmt_settings_init (struct fmt_settings *settings)
 {
-  if (settings != NULL)
-    {
-      int t;
-
-      for (t = 0 ; t < FMT_NUMBER_OF_FORMATS ; ++t)
-        fmt_number_style_destroy (&settings->styles[t]);
-
-      free (settings->styles);
-    }
+  *settings = (struct fmt_settings) FMT_SETTINGS_INIT;
 }
 
-/* Returns a copy of SETTINGS. */
-struct fmt_settings *
-fmt_settings_clone (const struct fmt_settings *old)
+void
+fmt_settings_uninit (struct fmt_settings *settings)
 {
-  struct fmt_settings *new;
-  int t;
+  for (int i = 0; i < FMT_N_CCS; i++)
+    fmt_number_style_destroy (settings->ccs[i]);
+}
 
-  new = xmalloc (sizeof *new);
-  for (t = 0 ; t < FMT_NUMBER_OF_FORMATS ; ++t)
-    fmt_number_style_clone (&new->styles[t], &old->styles[t]);
+void
+fmt_settings_copy (struct fmt_settings *new, const struct fmt_settings *old)
+{
+  new->decimal = old->decimal;
+  for (int i = 0; i < FMT_N_CCS; i++)
+    new->ccs[i] = fmt_number_style_clone (old->ccs[i]);
+}
 
-  return new;
+static size_t
+fmt_type_to_cc_index (enum fmt_type type)
+{
+  switch (type)
+    {
+    case FMT_CCA: return 0;
+    case FMT_CCB: return 1;
+    case FMT_CCC: return 2;
+    case FMT_CCD: return 3;
+    case FMT_CCE: return 4;
+    default: NOT_REACHED ();
+    }
 }
 
 /* Returns the number formatting style associated with the given
@@ -111,59 +90,74 @@ const struct fmt_number_style *
 fmt_settings_get_style (const struct fmt_settings *settings,
                         enum fmt_type type)
 {
-  assert (is_fmt_type (type));
-  return &settings->styles[type];
+  verify (FMT_F < 6);
+  verify (FMT_COMMA < 6);
+  verify (FMT_DOT < 6);
+  verify (FMT_DOLLAR < 6);
+  verify (FMT_PCT < 6);
+  verify (FMT_E < 6);
+
+#define OPPOSITE(C) ((C) == ',' ? '.' : ',')
+#define AFFIX(S) { .s = (char *) (S), .width = sizeof (S) - 1 }
+#define NS(PREFIX, SUFFIX, DECIMAL, GROUPING) { \
+    .neg_prefix = AFFIX ("-"),                  \
+    .prefix = AFFIX (PREFIX),                   \
+    .suffix = AFFIX (SUFFIX),                   \
+    .neg_suffix = AFFIX (""),                   \
+    .decimal = DECIMAL,                         \
+    .grouping = GROUPING,                       \
+  }
+#define ANS(DECIMAL, GROUPING) {                        \
+    [FMT_F]      = NS( "",  "", DECIMAL, 0),            \
+    [FMT_E]      = NS( "",  "", DECIMAL, 0),            \
+    [FMT_COMMA]  = NS( "",  "", DECIMAL, GROUPING),     \
+    [FMT_DOT]    = NS( "",  "", GROUPING, DECIMAL),     \
+    [FMT_DOLLAR] = NS("$",  "", DECIMAL, GROUPING),     \
+    [FMT_PCT]    = NS( "", "%", DECIMAL, 0),            \
+  }
+
+  static const struct fmt_number_style period_styles[6] = ANS ('.', ',');
+  static const struct fmt_number_style comma_styles[6] = ANS (',', '.');
+  static const struct fmt_number_style default_style = NS ("", "", '.', 0);
+
+  switch (type)
+    {
+    case FMT_F:
+    case FMT_COMMA:
+    case FMT_DOT:
+    case FMT_DOLLAR:
+    case FMT_PCT:
+    case FMT_E:
+      return (settings->decimal == '.'
+              ? &period_styles[type]
+              : &comma_styles[type]);
+
+    case FMT_CCA:
+    case FMT_CCB:
+    case FMT_CCC:
+    case FMT_CCD:
+    case FMT_CCE:
+      {
+        size_t idx = fmt_type_to_cc_index (type);
+        return settings->ccs[idx] ? settings->ccs[idx] : &default_style;
+      }
+
+    default:
+      return &default_style;
+    }
 }
 
-/* Sets the number style for TYPE to have the given DECIMAL and GROUPING
-   characters, negative prefix NEG_PREFIX, prefix PREFIX, suffix SUFFIX, and
-   negative suffix NEG_SUFFIX.  All of the strings are UTF-8 encoded. */
 void
-fmt_settings_set_style (struct fmt_settings *settings, enum fmt_type type,
-                        char decimal, char grouping,
-                        const char *neg_prefix, const char *prefix,
-                        const char *suffix, const char *neg_suffix)
+fmt_settings_set_cc (struct fmt_settings *settings, enum fmt_type type,
+                     struct fmt_number_style *style)
 {
-  struct fmt_number_style *style = &settings->styles[type];
-  int total_bytes, total_width;
+  size_t idx = fmt_type_to_cc_index (type);
 
-  assert (grouping == '.' || grouping == ',' || grouping == 0);
-  assert (decimal == '.' || decimal == ',');
-  assert (decimal != grouping);
-
-  fmt_number_style_destroy (style);
-
-  fmt_affix_set (&style->neg_prefix, neg_prefix);
-  fmt_affix_set (&style->prefix, prefix);
-  fmt_affix_set (&style->suffix, suffix);
-  fmt_affix_set (&style->neg_suffix, neg_suffix);
-  style->decimal = decimal;
-  style->grouping = grouping;
-
-  total_bytes = (strlen (neg_prefix) + strlen (prefix)
-                 + strlen (suffix) + strlen (neg_suffix));
-  total_width = (style->neg_prefix.width + style->prefix.width
-                 + style->suffix.width + style->neg_suffix.width);
-  style->extra_bytes = MAX (0, total_bytes - total_width);
+  fmt_number_style_destroy (settings->ccs[idx]);
+  settings->ccs[idx] = style;
 }
 
-/* Sets the decimal point character for the settings in S to DECIMAL.
-
-   This has no effect on custom currency formats. */
-void
-fmt_settings_set_decimal (struct fmt_settings *s, char decimal)
-{
-  int grouping = decimal == '.' ? ',' : '.';
-  assert (decimal == '.' || decimal == ',');
-
-  fmt_settings_set_style (s, FMT_F,      decimal,        0, "-",  "",  "", "");
-  fmt_settings_set_style (s, FMT_E,      decimal,        0, "-",  "",  "", "");
-  fmt_settings_set_style (s, FMT_COMMA,  decimal, grouping, "-",  "",  "", "");
-  fmt_settings_set_style (s, FMT_DOT,   grouping,  decimal, "-",  "",  "", "");
-  fmt_settings_set_style (s, FMT_DOLLAR, decimal, grouping, "-", "$",  "", "");
-  fmt_settings_set_style (s, FMT_PCT,    decimal,        0, "-",  "", "%", "");
-}
-
+
 /* Returns an input format specification with type TYPE, width W,
    and D decimals. */
 struct fmt_spec
@@ -1137,12 +1131,13 @@ fmt_clamp_decimals (struct fmt_spec *fmt, enum fmt_use use)
     fmt->d = max_d;
 }
 
-/* Sets AFFIX's string value to S, a UTF-8 encoded string. */
-static void
-fmt_affix_set (struct fmt_affix *affix, const char *s)
+static struct fmt_affix
+fmt_affix_clone (const struct fmt_affix *old)
 {
-  affix->s = s[0] == '\0' ? CONST_CAST (char *, "") : xstrdup (s);
-  affix->width = u8_strwidth (CHAR_CAST (const uint8_t *, s), "UTF-8");
+  return (struct fmt_affix) {
+    .s = old->s ? xstrdup (old->s) : NULL,
+    .width = old->width,
+  };
 }
 
 /* Frees data in AFFIX. */
@@ -1153,32 +1148,99 @@ fmt_affix_free (struct fmt_affix *affix)
     free (affix->s);
 }
 
-static void
-fmt_number_style_init (struct fmt_number_style *style)
+/* Find and returns the grouping character in CC_STRING (either '.' or ',') or
+   0 on error. */
+static int
+find_cc_separators (const char *cc_string)
 {
-  fmt_affix_set (&style->neg_prefix, "");
-  fmt_affix_set (&style->prefix, "");
-  fmt_affix_set (&style->suffix, "");
-  fmt_affix_set (&style->neg_suffix, "");
-  style->decimal = '.';
-  style->grouping = 0;
+  /* Count commas and periods.  There must be exactly three of
+     one or the other, except that an apostrophe escapes a
+     following comma or period. */
+  int n_commas = 0;
+  int n_dots = 0;
+  for (const char *p = cc_string; *p; p++)
+    if (*p == ',')
+      n_commas++;
+    else if (*p == '.')
+      n_dots++;
+    else if (*p == '\'' && (p[1] == '.' || p[1] == ',' || p[1] == '\''))
+      p++;
+
+  return (n_commas == 3 ? (n_dots != 3 ? ',' : 0)
+          : n_dots == 3 ? '.'
+          : 0);
 }
 
-static void
-fmt_number_style_clone (struct fmt_number_style *new,
-                        const struct fmt_number_style *old)
+/* Extracts a token from IN into a newly allocated string AFFIXP.  Tokens are
+   delimited by GROUPING.  Returns the first character following the token. */
+static struct fmt_affix
+extract_cc_token (const char **sp, int grouping, size_t *extra_bytes)
 {
-  fmt_affix_set (&new->neg_prefix, old->neg_prefix.s);
-  fmt_affix_set (&new->prefix, old->prefix.s);
-  fmt_affix_set (&new->suffix, old->suffix.s);
-  fmt_affix_set (&new->neg_suffix, old->neg_suffix.s);
-  new->decimal = old->decimal;
-  new->grouping = old->grouping;
-  new->extra_bytes = old->extra_bytes;
+  const char *p = *sp;
+  for (; *p && *p != grouping; p++)
+    if (*p == '\'' && p[1] == grouping)
+      p++;
+
+  size_t length = p - *sp;
+  char *affix = xmemdup0 (*sp, length);
+  size_t width = u8_strwidth (CHAR_CAST (const uint8_t *, affix), "UTF-8");
+  if (length > width)
+    *extra_bytes += length - width;
+
+  *sp = p + (*p != 0);
+
+  return (struct fmt_affix) { .s = affix, .width = width };
+}
+
+struct fmt_number_style *
+fmt_number_style_from_string (const char *s)
+{
+  char grouping = find_cc_separators (s);
+  if (!grouping)
+    return NULL;
+
+  size_t extra_bytes = 0;
+  struct fmt_affix neg_prefix = extract_cc_token (&s, grouping, &extra_bytes);
+  struct fmt_affix prefix = extract_cc_token (&s, grouping, &extra_bytes);
+  struct fmt_affix suffix = extract_cc_token (&s, grouping, &extra_bytes);
+  struct fmt_affix neg_suffix = extract_cc_token (&s, grouping, &extra_bytes);
+
+  struct fmt_number_style *style = xmalloc (sizeof *style);
+  *style = (struct fmt_number_style) {
+    .neg_prefix = neg_prefix,
+    .prefix = prefix,
+    .suffix = suffix,
+    .neg_suffix = neg_suffix,
+    .decimal = grouping == '.' ? ',' : '.',
+    .grouping = grouping,
+    .extra_bytes = extra_bytes,
+  };
+  return style;
+}
+
+struct fmt_number_style *
+fmt_number_style_clone (const struct fmt_number_style *old)
+{
+  if (old)
+    {
+      struct fmt_number_style *new = xmalloc (sizeof *new);
+      *new = (struct fmt_number_style) {
+        .neg_prefix = fmt_affix_clone (&old->neg_prefix),
+        .prefix = fmt_affix_clone (&old->prefix),
+        .suffix = fmt_affix_clone (&old->suffix),
+        .neg_suffix = fmt_affix_clone (&old->neg_suffix),
+        .decimal = old->decimal,
+        .grouping = old->grouping,
+        .extra_bytes = old->extra_bytes,
+      };
+      return new;
+    }
+  else
+    return NULL;
 }
 
 /* Destroys a struct fmt_number_style. */
-static void
+void
 fmt_number_style_destroy (struct fmt_number_style *style)
 {
   if (style != NULL)
@@ -1187,6 +1249,7 @@ fmt_number_style_destroy (struct fmt_number_style *style)
       fmt_affix_free (&style->prefix);
       fmt_affix_free (&style->suffix);
       fmt_affix_free (&style->neg_suffix);
+      free (style);
     }
 }
 

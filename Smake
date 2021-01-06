@@ -136,6 +136,7 @@ GNULIB_MODULES = \
 	unitypes \
 	unlocked-io \
 	vasprintf-posix \
+	verify \
 	version-etc \
 	version-etc-fsf \
 	vfprintf-posix \

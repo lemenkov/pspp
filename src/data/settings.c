@@ -72,7 +72,7 @@ struct settings
   int global_algorithm;
   int syntax;
 
-  struct fmt_settings *styles;
+  struct fmt_settings styles;
 
   enum settings_output_devices output_routing[SETTINGS_N_OUTPUT_TYPES];
 
@@ -113,7 +113,7 @@ static struct settings the_settings = {
   ENHANCED,                     /* cmd_algorithm */
   ENHANCED,                     /* global_algorithm */
   ENHANCED,                     /* syntax */
-  NULL,                         /* styles */
+  FMT_SETTINGS_INIT,            /* styles */
 
   /* output_routing */
   {SETTINGS_DEVICE_LISTING | SETTINGS_DEVICE_TERMINAL,
@@ -130,8 +130,6 @@ void
 settings_init (void)
 {
   settings_set_epoch (-1);
-  the_settings.styles = fmt_settings_create ();
-
   settings_set_decimal_char (get_system_decimal ());
 }
 
@@ -146,7 +144,7 @@ static void
 settings_copy (struct settings *dst, const struct settings *src)
 {
   *dst = *src;
-  dst->styles = fmt_settings_clone (src->styles);
+  fmt_settings_copy (&dst->styles, &src->styles);
 }
 
 /* Returns a copy of the current settings. */
@@ -173,7 +171,7 @@ settings_destroy (struct settings *s)
 {
   if (s != NULL)
     {
-      fmt_settings_destroy (s->styles);
+      fmt_settings_uninit (&s->styles);
       if (s != &the_settings)
         free (s);
     }
@@ -544,76 +542,13 @@ settings_set_syntax (enum behavior_mode mode)
 }
 
 
-
-/* Find the grouping characters in CC_STRING and sets *GROUPING and *DECIMAL
-   appropriately.  Returns true if successful, false otherwise. */
-static bool
-find_cc_separators (const char *cc_string, char *decimal, char *grouping)
-{
-  const char *sp;
-  int comma_cnt, dot_cnt;
-
-  /* Count commas and periods.  There must be exactly three of
-     one or the other, except that an apostrophe escapes a
-     following comma or period. */
-  comma_cnt = dot_cnt = 0;
-  for (sp = cc_string; *sp; sp++)
-    if (*sp == ',')
-      comma_cnt++;
-    else if (*sp == '.')
-      dot_cnt++;
-    else if (*sp == '\'' && (sp[1] == '.' || sp[1] == ',' || sp[1] == '\''))
-      sp++;
-
-  if ((comma_cnt == 3) == (dot_cnt == 3))
-    return false;
-
-  if (comma_cnt == 3)
-    {
-      *decimal = '.';
-      *grouping = ',';
-    }
-  else
-    {
-      *decimal = ',';
-      *grouping = '.';
-    }
-  return true;
-}
-
-/* Extracts a token from IN into a newly allocated string AFFIXP.  Tokens are
-   delimited by GROUPING.  Returns the first character following the token. */
-static const char *
-extract_cc_token (const char *in, int grouping, char **affixp)
-{
-  char *out;
-
-  out = *affixp = xmalloc (strlen (in) + 1);
-  for (; *in != '\0' && *in != grouping; in++)
-    {
-      if (*in == '\'' && in[1] == grouping)
-        in++;
-      *out++ = *in;
-    }
-  *out = '\0';
-
-  if (*in == grouping)
-    in++;
-  return in;
-}
-
 /* Sets custom currency specifier CC having name CC_NAME ('A' through
    'E') to correspond to the settings in CC_STRING. */
 bool
 settings_set_cc (const char *cc_string, enum fmt_type type)
 {
-  char *neg_prefix, *prefix, *suffix, *neg_suffix;
-  char decimal, grouping;
-
-  assert (fmt_get_category (type) == FMT_CAT_CUSTOM);
-
-  /* Determine separators. */
-  if (!find_cc_separators (cc_string, &decimal, &grouping))
+  struct fmt_number_style *style = fmt_number_style_from_string (cc_string);
+  if (!style)
     {
       msg (SE, _("%s: Custom currency string `%s' does not contain "
                  "exactly three periods or commas (or it contains both)."),
@@ -621,19 +556,7 @@ settings_set_cc (const char *cc_string, enum fmt_type type)
       return false;
     }
 
-  cc_string = extract_cc_token (cc_string, grouping, &neg_prefix);
-  cc_string = extract_cc_token (cc_string, grouping, &prefix);
-  cc_string = extract_cc_token (cc_string, grouping, &suffix);
-  cc_string = extract_cc_token (cc_string, grouping, &neg_suffix);
-
-  fmt_settings_set_style (the_settings.styles, type, decimal, grouping,
-                          neg_prefix, prefix, suffix, neg_suffix);
-
-  free (neg_suffix);
-  free (suffix);
-  free (prefix);
-  free (neg_prefix);
-
+  fmt_settings_set_cc (&the_settings.styles, type, style);
   return true;
 }
 
@@ -641,13 +564,13 @@ settings_set_cc (const char *cc_string, enum fmt_type type)
 int
 settings_get_decimal_char (enum fmt_type type)
 {
-  return fmt_settings_get_style (the_settings.styles, type)->decimal;
+  return fmt_settings_get_style (&the_settings.styles, type)->decimal;
 }
 
 void
 settings_set_decimal_char (char decimal)
 {
-  fmt_settings_set_decimal (the_settings.styles, decimal);
+  the_settings.styles.decimal = decimal;
 }
 
 /* Returns the number formatting style associated with the given
@@ -656,7 +579,7 @@ const struct fmt_number_style *
 settings_get_style (enum fmt_type type)
 {
   assert (is_fmt_type (type));
-  return fmt_settings_get_style (the_settings.styles, type);
+  return fmt_settings_get_style (&the_settings.styles, type);
 }
 
 /* Returns a string of the form "$#,###.##" according to FMT,
@@ -671,7 +594,7 @@ settings_dollar_template (const struct fmt_spec *fmt)
 
   assert (fmt->type == FMT_DOLLAR);
 
-  fns = fmt_settings_get_style (the_settings.styles, fmt->type);
+  fns = fmt_settings_get_style (&the_settings.styles, fmt->type);
 
   ds_put_byte (&str, '$');
   for (c = MAX (fmt->w - fmt->d - 1, 0); c > 0;)
