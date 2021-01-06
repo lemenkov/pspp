@@ -20,6 +20,7 @@
 
 #include <ctype.h>
 #include <stdlib.h>
+#include <time.h>
 #include <uniwidth.h>
 
 #include "data/identifier.h"
@@ -65,6 +66,7 @@ fmt_settings_uninit (struct fmt_settings *settings)
 void
 fmt_settings_copy (struct fmt_settings *new, const struct fmt_settings *old)
 {
+  new->epoch = old->epoch;
   new->decimal = old->decimal;
   for (int i = 0; i < FMT_N_CCS; i++)
     new->ccs[i] = fmt_number_style_clone (old->ccs[i]);
@@ -145,6 +147,25 @@ fmt_settings_get_style (const struct fmt_settings *settings,
     default:
       return &default_style;
     }
+}
+
+static int
+default_epoch (void)
+{
+  static int epoch = 0;
+  if (!epoch)
+    {
+      time_t t = time (0);
+      struct tm *tm = localtime (&t);
+      epoch = (tm != NULL ? tm->tm_year + 1900 : 2000) - 69;
+    }
+  return epoch;
+}
+
+int
+fmt_settings_get_epoch (const struct fmt_settings *settings)
+{
+  return !settings->epoch ? default_epoch () : settings->epoch;
 }
 
 void

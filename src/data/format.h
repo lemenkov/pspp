@@ -180,6 +180,7 @@ int fmt_neg_affix_width (const struct fmt_number_style *);
 
 struct fmt_settings
   {
+    int epoch;                               /* 0 for default epoch. */
     char decimal;                            /* '.' or ','. */
     struct fmt_number_style *ccs[FMT_N_CCS]; /* CCA through CCE. */
   };
@@ -191,6 +192,7 @@ void fmt_settings_copy (struct fmt_settings *, const struct fmt_settings *);
 
 const struct fmt_number_style *fmt_settings_get_style (
   const struct fmt_settings *, enum fmt_type);
+int fmt_settings_get_epoch (const struct fmt_settings *);
 
 void fmt_settings_set_cc (struct fmt_settings *, enum fmt_type,
                           struct fmt_number_style *);

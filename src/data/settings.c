@@ -20,7 +20,6 @@
 
 #include <assert.h>
 #include <stdlib.h>
-#include <time.h>
 
 #include "data/case.h"
 #include "data/format.h"
@@ -53,7 +52,6 @@ struct settings
   int viewwidth;
   bool safer_mode;
   bool include;
-  int epoch;
   bool route_errors_to_terminal;
   bool route_errors_to_listing;
   bool scompress;
@@ -89,7 +87,6 @@ static struct settings the_settings = {
   79,                           /* viewwidth */
   false,                        /* safer_mode */
   true,                         /* include */
-  -1,                           /* epoch */
   true,                         /* route_errors_to_terminal */
   true,                         /* route_errors_to_listing */
   true,                         /* scompress */
@@ -129,7 +126,6 @@ static struct settings the_settings = {
 void
 settings_init (void)
 {
-  settings_set_epoch (-1);
   settings_set_decimal_char (get_system_decimal ());
 }
 
@@ -297,24 +293,14 @@ settings_set_include (bool include)
 int
 settings_get_epoch (void)
 {
-  assert (the_settings.epoch >= 0);
-
-  return the_settings.epoch;
+  return fmt_settings_get_epoch (&the_settings.styles);
 }
 
 /* Sets the year that starts the epoch. */
 void
 settings_set_epoch (int epoch)
 {
-  if (epoch < 0)
-    {
-      time_t t = time (0);
-      struct tm *tm = localtime (&t);
-      epoch = (tm != NULL ? tm->tm_year + 1900 : 2000) - 69;
-    }
-
-  the_settings.epoch = epoch;
-  assert (the_settings.epoch >= 0);
+  the_settings.styles.epoch = epoch;
 }
 
 /* Compress system files by default? */
