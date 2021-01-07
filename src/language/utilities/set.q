@@ -110,6 +110,7 @@ int tgetnum (const char *);
      scompression=scompress:on/off;
      scripttab=string;
      seed=custom;
+     small=double;
      tnumbers=custom;
      tvars=custom;
      tb1=string;
@@ -195,6 +196,8 @@ cmd_set (struct lexer *lexer, struct dataset *ds)
     settings_set_safer_mode ();
   if (cmd.sbc_scompression)
     settings_set_scompression (cmd.scompress == STC_ON);
+  if (cmd.sbc_small)
+    settings_set_small (cmd.n_small[0]);
   if (cmd.sbc_undefined)
     settings_set_undefined (cmd.undef == STC_WARN);
   if (cmd.sbc_wib)

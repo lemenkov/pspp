@@ -726,6 +726,7 @@ begin data.
 300 threehundred
 end data.
 
+set small=0.
 examine x
 	/statistics = extreme
 	/id = y

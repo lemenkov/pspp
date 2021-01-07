@@ -510,6 +510,7 @@ SET
         /CC@{A,B,C,D,E@}=@{'@var{npre},@var{pre},@var{suf},@var{nsuf}','@var{npre}.@var{pre}.@var{suf}.@var{nsuf}'@}
         /DECIMAL=@{DOT,COMMA@}
         /FORMAT=@var{fmt_spec}
+        /SMALL=@var{number}
         /WIB=@{NATIVE,MSBFIRST,LSBFIRST,VAX@}
         /WRB=@{NATIVE,ISL,ISB,IDL,IDB,VF,VD,VG,ZS,ZL@}
 
@@ -751,6 +752,14 @@ The default @subcmd{DOT} setting causes the decimal point character to be
 @item FORMAT
 Allows the default numeric input/output format to be specified.  The
 default is F8.2.  @xref{Input and Output Formats}.
+
+@item SMALL
+This controls how @pspp{} formats small numbers in pivot tables, in
+cases where @pspp{} does not otherwise have a well-defined format for
+the numbers.  When such a number has a magnitude less than the value
+set here, @pspp{} formats the number in scientific notation;
+otherwise, it formats it in standard notation.  The default is 0.0001.
+Set a value of 0 to disable scientific notation.
 
 @item WIB
 @anchor{SET WIB}

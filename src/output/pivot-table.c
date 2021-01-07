@@ -18,6 +18,7 @@
 
 #include "output/pivot-table.h"
 
+#include <math.h>
 #include <stdlib.h>
 
 #include "data/data-out.h"
@@ -45,8 +46,8 @@
 #define _(msgid) gettext (msgid)
 #define N_(msgid) msgid
 
-static const struct fmt_spec *pivot_table_get_format (
-  const struct pivot_table *, const char *s);
+static void pivot_table_use_rc (const struct pivot_table *, const char *s,
+                                struct fmt_spec *, bool *honor_small);
 
 /* Pivot table display styling. */
 
@@ -394,17 +395,19 @@ pivot_axis_iterator_next (size_t *indexes, const struct pivot_axis *axis)
 static void
 pivot_category_set_rc (struct pivot_category *category, const char *s)
 {
-  const struct fmt_spec *format = pivot_table_get_format (
-    category->dimension->table, s);
-  if (format)
-    category->format = *format;
+  if (!s)
+    return;
+
+  pivot_table_use_rc (category->dimension->table, s,
+                      &category->format, &category->honor_small);
 
   /* Ensure that the category itself, in addition to the cells within it, takes
      the format.  (It's kind of rare for a category to have a numeric format
      though.) */
   struct pivot_value *name = category->name;
   if (name->type == PIVOT_VALUE_NUMERIC && !name->numeric.format.w)
-    name->numeric.format = format ? *format : *settings_get_format ();
+    pivot_table_use_rc (category->dimension->table, s,
+                        &name->numeric.format, &name->numeric.honor_small);
 }
 
 static void
@@ -764,19 +767,35 @@ pivot_result_class_find (const char *s)
   return NULL;
 }
 
-static const struct fmt_spec *
-pivot_table_get_format (const struct pivot_table *table, const char *s)
+static void
+pivot_table_use_rc (const struct pivot_table *table, const char *s,
+                    struct fmt_spec *format, bool *honor_small)
 {
-  if (!s)
-    return NULL;
-  else if (!strcmp (s, PIVOT_RC_OTHER))
-    return settings_get_format ();
-  else if (!strcmp (s, PIVOT_RC_COUNT) && !overridden_count_format)
-    return &table->weight_format;
-  else
+  if (s)
     {
-      const struct result_class *rc = pivot_result_class_find (s);
-      return rc ? &rc->format : NULL;
+      if (!strcmp (s, PIVOT_RC_OTHER))
+        {
+          *format = *settings_get_format ();
+          *honor_small = true;
+        }
+      else if (!strcmp (s, PIVOT_RC_COUNT) && !overridden_count_format)
+        {
+          *format = table->weight_format;
+          *honor_small = false;
+        }
+      else
+        {
+          const struct result_class *rc = pivot_result_class_find (s);
+          if (rc)
+            {
+              *format = rc->format;
+              *honor_small = false;
+            }
+          else
+            {
+              printf ("unknown class %s\n", s);
+            }
+        }
     }
 }
 
@@ -854,6 +873,7 @@ pivot_table_create__ (struct pivot_value *title, const char *subtype)
   table->command_c = output_get_command_name ();
   table->look = pivot_table_look_ref (pivot_table_look_get_default ());
   table->settings = fmt_settings_copy (settings_get_fmt_settings ());
+  table->small = settings_get_small ();
 
   hmap_init (&table->cells);
 
@@ -1414,11 +1434,13 @@ pivot_table_put (struct pivot_table *table, const size_t *dindexes, size_t n,
               if (c->format.w)
                 {
                   value->numeric.format = c->format;
+                  value->numeric.honor_small = c->honor_small;
                   goto done;
                 }
             }
         }
       value->numeric.format = *settings_get_format ();
+      value->numeric.honor_small = true;
 
     done:;
     }
@@ -2288,8 +2310,17 @@ pivot_value_format_body (const struct pivot_value *value,
                              value->numeric.value_label != NULL);
       if (show & SETTINGS_VALUE_SHOW_VALUE)
         {
+          const struct fmt_spec *f = &value->numeric.format;
+          const struct fmt_spec *format
+            = (f->type == FMT_F
+               && value->numeric.honor_small
+               && value->numeric.x != 0
+               && fabs (value->numeric.x) < pt->small
+               ? &(struct fmt_spec) { .type = FMT_E, .w = 40, .d = f->d }
+               : f);
+
           char *s = data_out (&(union value) { .f = value->numeric.x },
-                              "UTF-8", &value->numeric.format, &pt->settings);
+                              "UTF-8", format, &pt->settings);
           ds_put_cstr (out, s + strspn (s, " "));
           free (s);
         }
@@ -2817,10 +2848,7 @@ pivot_value_set_rc (const struct pivot_table *table, struct pivot_value *value,
                     const char *rc)
 {
   if (value->type == PIVOT_VALUE_NUMERIC)
-    {
-      const struct fmt_spec *f = pivot_table_get_format (table, rc);
-      if (f)
-        value->numeric.format = *f;
-    }
+    pivot_table_use_rc (table, rc,
+                        &value->numeric.format, &value->numeric.honor_small);
 }
 

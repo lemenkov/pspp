@@ -1011,7 +1011,7 @@ AT_DATA([lr-cat2.data], [dnl
 ])
 
 AT_DATA([stringcat.sps], [dnl
-set format=F20.3.
+set format=F20.3 /small=0.
 data list notable file='lr-cat2.data' list /read honcomp wiz science *.
 
 string ses(a1).

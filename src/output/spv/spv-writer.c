@@ -555,9 +555,10 @@ put_value_mod (struct buf *buf, const struct pivot_value *value,
 }
 
 static void
-put_format (struct buf *buf, const struct fmt_spec *f)
+put_format (struct buf *buf, const struct fmt_spec *f, bool honor_small)
 {
-  put_u32 (buf, (fmt_to_io (f->type) << 16) | (f->w << 8) | f->d);
+  int type = f->type == FMT_F && honor_small ? 40 : fmt_to_io (f->type);
+  put_u32 (buf, (type << 16) | (f->w << 8) | f->d);
 }
 
 static int
@@ -585,7 +586,7 @@ put_value (struct buf *buf, const struct pivot_value *value)
         {
           put_byte (buf, 2);
           put_value_mod (buf, value, NULL);
-          put_format (buf, &value->numeric.format);
+          put_format (buf, &value->numeric.format, value->numeric.honor_small);
           put_double (buf, value->numeric.x);
           put_string (buf, value->numeric.var_name);
           put_string (buf, value->numeric.value_label);
@@ -595,7 +596,7 @@ put_value (struct buf *buf, const struct pivot_value *value)
         {
           put_byte (buf, 1);
           put_value_mod (buf, value, NULL);
-          put_format (buf, &value->numeric.format);
+          put_format (buf, &value->numeric.format, value->numeric.honor_small);
           put_double (buf, value->numeric.x);
         }
       break;
@@ -604,7 +605,8 @@ put_value (struct buf *buf, const struct pivot_value *value)
       put_byte (buf, 4);
       put_value_mod (buf, value, NULL);
       put_format (buf,
-                  &(struct fmt_spec) { FMT_A, strlen (value->string.s), 0 });
+                  &(struct fmt_spec) { FMT_A, strlen (value->string.s), 0 },
+                  false);
       put_string (buf, value->string.value_label);
       put_string (buf, value->string.var_name);
       put_show_values (buf, value->string.show);

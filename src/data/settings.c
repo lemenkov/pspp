@@ -71,6 +71,7 @@ struct settings
   int syntax;
 
   struct fmt_settings styles;
+  double small;
 
   enum settings_output_devices output_routing[SETTINGS_N_OUTPUT_TYPES];
 
@@ -111,6 +112,7 @@ static struct settings the_settings = {
   ENHANCED,                     /* global_algorithm */
   ENHANCED,                     /* syntax */
   FMT_SETTINGS_INIT,            /* styles */
+  .0001,                        /* small */
 
   /* output_routing */
   {SETTINGS_DEVICE_LISTING | SETTINGS_DEVICE_TERMINAL,
@@ -549,6 +551,18 @@ const struct fmt_settings *
 settings_get_fmt_settings (void)
 {
   return &the_settings.styles;
+}
+
+double
+settings_get_small (void)
+{
+  return the_settings.small;
+}
+
+void
+settings_set_small (double small)
+{
+  the_settings.small = small;
 }
 
 /* Returns a string of the form "$#,###.##" according to FMT,

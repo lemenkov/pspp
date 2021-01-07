@@ -146,6 +146,9 @@ void settings_set_decimal_char (char decimal);
 
 const struct fmt_settings *settings_get_fmt_settings (void);
 
+double settings_get_small (void);
+void settings_set_small (double);
+
 char * settings_dollar_template (const struct fmt_spec *fmt);
 
 /* Routing of different kinds of output. */
