@@ -222,7 +222,7 @@ CODE:
  union value uv;
  char *s;
  make_value_from_scalar (&uv, val, var);
- s = data_out (&uv, var_get_encoding (var), fmt);
+ s = data_out (&uv, var_get_encoding (var), fmt, settings_get_fmt_settings ());
  value_destroy (&uv, var_get_width (var));
  ret = newSVpv (s, fmt->w);
  free (s);
@@ -377,7 +377,7 @@ CODE:
  struct input_format *input_format;
 
  struct variable *v;
- op_fmt = fmt_for_output_from_input (&ip_fmt);
+ op_fmt = fmt_for_output_from_input (&ip_fmt, settings_get_fmt_settings ());
  v = dict_create_var (dict->dict, name,
 	fmt_is_string (op_fmt.type) ? op_fmt.w : 0);
  if ( NULL == v )
@@ -709,6 +709,7 @@ CODE:
         char *error = data_in (ss,
                                SvUTF8(sv) ? UTF8: "iso-8859-1",
                                ifmt->type,
+                               settings_get_fmt_settings (),
                                case_data_rw (c, v),
                                var_get_width (v),
                                dict_get_encoding (swi->dict->dict));
