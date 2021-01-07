@@ -29,6 +29,7 @@
 #include "libpspp/cast.h"
 #include "libpspp/i18n.h"
 #include "libpspp/message.h"
+#include "data/settings.h"
 #include "libpspp/str.h"
 #include "libpspp/misc.h"
 
@@ -156,10 +157,11 @@ syntax_gen_number (struct string *output,
       bool ok;
 
       v_in.f = number;
-      s = data_out (&v_in, "FIXME",  format);
+      s = data_out (&v_in, "FIXME", format, settings_get_fmt_settings ());
 
       /* FIXME: UTF8 encoded strings will fail here */
-      error = data_in (ss_cstr (s), C_ENCODING, format->type, &v_out, 0, NULL);
+      error = data_in (ss_cstr (s), C_ENCODING, format->type,
+                       settings_get_fmt_settings (), &v_out, 0, NULL);
       ok = error == NULL;
       free (error);
 

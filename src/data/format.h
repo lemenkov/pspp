@@ -24,6 +24,8 @@
 #include "data/val-type.h"
 #include "libpspp/str.h"
 
+struct fmt_settings;
+
 /* How a format is going to be used. */
 enum fmt_use
   {
@@ -83,7 +85,8 @@ struct fmt_spec
 /* Constructing formats. */
 struct fmt_spec fmt_for_input (enum fmt_type, int w, int d) PURE_FUNCTION;
 struct fmt_spec fmt_for_output (enum fmt_type, int w, int d) PURE_FUNCTION;
-struct fmt_spec fmt_for_output_from_input (const struct fmt_spec *);
+struct fmt_spec fmt_for_output_from_input (const struct fmt_spec *,
+                                           const struct fmt_settings *);
 struct fmt_spec fmt_default_for_width (int width);
 
 /* Verifying formats. */

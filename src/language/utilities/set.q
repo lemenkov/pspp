@@ -672,7 +672,8 @@ format_cc (struct string *out, const char *in, char grouping)
 static char *
 show_cc (enum fmt_type type)
 {
-  const struct fmt_number_style *cc = settings_get_style (type);
+  const struct fmt_number_style *cc = fmt_settings_get_style (
+    settings_get_fmt_settings (), type);
   struct string out;
 
   ds_init_empty (&out);
@@ -720,7 +721,7 @@ show_cce (const struct dataset *ds UNUSED)
 static char *
 show_decimals (const struct dataset *ds UNUSED)
 {
-  return xasprintf ("`%c'", settings_get_decimal_char (FMT_F));
+  return xasprintf ("`%c'", settings_get_fmt_settings ()->decimal);
 }
 
 static char *

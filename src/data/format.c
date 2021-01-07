@@ -208,7 +208,8 @@ fmt_for_output (enum fmt_type type, int w, int d)
 /* Returns the output format specifier corresponding to input
    format specifier INPUT. */
 struct fmt_spec
-fmt_for_output_from_input (const struct fmt_spec *input)
+fmt_for_output_from_input (const struct fmt_spec *input,
+                           const struct fmt_settings *settings)
 {
   struct fmt_spec output;
 
@@ -237,7 +238,7 @@ fmt_for_output_from_input (const struct fmt_spec *input)
     case FMT_PCT:
       {
         const struct fmt_number_style *style =
-	  settings_get_style (input->type);
+	  fmt_settings_get_style (settings, input->type);
 
         output.w += fmt_affix_width (style);
         if (style->grouping != 0 && input->w - input->d >= 3)

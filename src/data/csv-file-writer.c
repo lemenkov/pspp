@@ -225,7 +225,8 @@ static void
 csv_output_format (struct csv_writer *w, const struct csv_var *cv,
                    const union value *value)
 {
-  char *s = data_out (value, w->encoding, &cv->format);
+  char *s = data_out (value, w->encoding, &cv->format,
+                      settings_get_fmt_settings ());
   struct substring ss = ss_cstr (s);
   if (cv->format.type != FMT_A)
     ss_trim (&ss, ss_cstr (" "));

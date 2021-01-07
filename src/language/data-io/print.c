@@ -505,7 +505,7 @@ print_text_trns_proc (void *trns_, struct ccase **c,
               char *s;
 
               s = data_out (input, var_get_encoding (spec->var),
-                            &spec->format);
+                            &spec->format, settings_get_fmt_settings ());
               len = strlen (s);
               width = u8_width (CHAR_CAST (const uint8_t *, s), len, UTF8);
               x1 = x0 + width;
@@ -619,7 +619,8 @@ print_binary_trns_proc (void *trns_, struct ccase **c,
           const union value *input = case_data (*c, spec->var);
           if (!spec->sysmis_as_spaces || input->f != SYSMIS)
             data_out_recode (input, var_get_encoding (spec->var),
-                             &spec->format, &line, trns->encoding);
+                             &spec->format, settings_get_fmt_settings (),
+                             &line, trns->encoding);
           else
             ds_put_byte_multiple (&line, encoded_space, spec->format.w);
           if (spec->add_space)

@@ -53,6 +53,8 @@
 /* Information about parsing one data field. */
 struct data_in
   {
+    const struct fmt_settings *settings;
+
     struct substring input;     /* Source. */
     enum fmt_type format;       /* Input format. */
 
@@ -83,7 +85,7 @@ static int hexit_value (int c);
  */
 char *
 data_in (struct substring input, const char *input_encoding,
-         enum fmt_type format,
+         enum fmt_type format, const struct fmt_settings *settings,
          union value *output, int width, const char *output_encoding)
 {
   static data_in_parser_func *const handlers[FMT_NUMBER_OF_FORMATS] =
@@ -100,6 +102,8 @@ data_in (struct substring input, const char *input_encoding,
   char *error;
 
   assert ((width != 0) == fmt_is_string (format));
+
+  i.settings = settings;
 
   i.format = format;
 
@@ -165,10 +169,10 @@ data_in (struct substring input, const char *input_encoding,
 
 bool
 data_in_msg (struct substring input, const char *input_encoding,
-             enum fmt_type format,
+             enum fmt_type format, const struct fmt_settings *settings,
              union value *output, int width, const char *output_encoding)
 {
-  char *error = data_in (input, input_encoding, format,
+  char *error = data_in (input, input_encoding, format, settings,
                          output, width, output_encoding);
   if (error != NULL)
     {
@@ -182,9 +186,10 @@ data_in_msg (struct substring input, const char *input_encoding,
 }
 
 static bool
-number_has_implied_decimals (const char *s, enum fmt_type type)
+number_has_implied_decimals (const struct fmt_settings *settings,
+                             const char *s, enum fmt_type type)
 {
-  int decimal = settings_get_style (type)->decimal;
+  int decimal = fmt_settings_get_style (settings, type)->decimal;
   bool got_digit = false;
   for (;;)
     {
@@ -221,7 +226,8 @@ number_has_implied_decimals (const char *s, enum fmt_type type)
 
 static bool
 has_implied_decimals (struct substring input, const char *input_encoding,
-                      enum fmt_type format)
+                      enum fmt_type format,
+                      const struct fmt_settings *settings)
 {
   bool retval;
   char *s;
@@ -252,7 +258,7 @@ has_implied_decimals (struct substring input, const char *input_encoding,
                      ss_data (input), ss_length (input));
   retval = (format == FMT_Z
             ? strchr (s, '.') == NULL
-            : number_has_implied_decimals (s, format));
+            : number_has_implied_decimals (settings, s, format));
   free (s);
 
   return retval;
@@ -267,10 +273,12 @@ has_implied_decimals (struct substring input, const char *input_encoding,
    If it is appropriate, this function modifies the numeric value in OUTPUT. */
 void
 data_in_imply_decimals (struct substring input, const char *input_encoding,
-                        enum fmt_type format, int d, union value *output)
+                        enum fmt_type format, int d,
+                        const struct fmt_settings *settings,
+                        union value *output)
 {
   if (d > 0 && output->f != SYSMIS
-      && has_implied_decimals (input, input_encoding, format))
+      && has_implied_decimals (input, input_encoding, format, settings))
     output->f /= pow (10., d);
 }
 
@@ -280,18 +288,14 @@ data_in_imply_decimals (struct substring input, const char *input_encoding,
 static char *
 parse_number (struct data_in *i)
 {
-  const struct fmt_number_style *style =
-    settings_get_style (i->format);
+  const struct fmt_number_style *style = fmt_settings_get_style (
+    i->settings,
+    fmt_get_category (i->format) == FMT_CAT_CUSTOM ? FMT_F : i->format);
 
   struct string tmp;
 
   int save_errno;
   char *tail;
-
-  if  (fmt_get_category (i->format) == FMT_CAT_CUSTOM)
-    {
-      style = settings_get_style (FMT_F);
-    }
 
   /* Trim spaces and check for missing value representation. */
   if (trim_spaces_and_check_missing (i))
@@ -919,7 +923,7 @@ parse_year (struct data_in *i, long *year, size_t max_digits)
 
   if (*year >= 0 && *year <= 99)
     {
-      int epoch = settings_get_epoch ();
+      int epoch = fmt_settings_get_epoch (i->settings);
       int epoch_century = ROUND_DOWN (epoch, 100);
       int epoch_offset = epoch - epoch_century;
       if (*year >= epoch_offset)
@@ -1046,7 +1050,7 @@ parse_minute_second (struct data_in *i, double *time)
   cp = buf;
   while (c_isdigit (ss_first (i->input)))
     *cp++ = ss_get_byte (&i->input);
-  if (ss_match_byte (&i->input, settings_get_decimal_char (FMT_F)))
+  if (ss_match_byte (&i->input, i->settings->decimal))
     *cp++ = '.';
   while (c_isdigit (ss_first (i->input)))
     *cp++ = ss_get_byte (&i->input);
@@ -1224,7 +1228,8 @@ parse_date (struct data_in *i)
       char *error;
       double ofs;
 
-      ofs = calendar_gregorian_to_offset (year, month, day, &error);
+      ofs = calendar_gregorian_to_offset (
+        year, month, day, settings_get_fmt_settings (), &error);
       if (ofs == SYSMIS)
         return error;
       date = (yday - 1 + ofs) * 60. * 60. * 24.;

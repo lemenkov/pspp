@@ -77,7 +77,7 @@ cmd_save_translate (struct lexer *lexer, struct dataset *ds)
   include_var_names = false;
   use_value_labels = false;
   use_print_formats = false;
-  decimal = settings_get_decimal_char (FMT_F);
+  decimal = settings_get_fmt_settings ()->decimal;
   delimiter = 0;
   qualifier = '"';
 

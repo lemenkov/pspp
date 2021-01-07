@@ -21,21 +21,24 @@
 #include "libpspp/float-format.h"
 #include "libpspp/integer-format.h"
 
+struct fmt_settings;
 struct fmt_spec;
 struct string;
 union value;
 
 char *data_out (const union value *input, const char *input_encoding,
-                const struct fmt_spec *);
+                const struct fmt_spec *, const struct fmt_settings *);
 
 char *data_out_pool (const union value *input, const char *input_encoding,
-                     const struct fmt_spec *, struct pool *pool);
+                     const struct fmt_spec *, const struct fmt_settings *,
+                     struct pool *pool);
 
 char *data_out_stretchy (const union value *input, const char *input_encoding,
-                         const struct fmt_spec *, struct pool *);
+                         const struct fmt_spec *, const struct fmt_settings *,
+                         struct pool *);
 
 void data_out_recode (const union value *input, const char *input_encoding,
-                      const struct fmt_spec *,
+                      const struct fmt_spec *, const struct fmt_settings *,
                       struct string *output, const char *output_encoding);
 
 #endif /* data-out.h */

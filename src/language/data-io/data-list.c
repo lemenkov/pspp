@@ -242,7 +242,7 @@ cmd_data_list (struct lexer *lexer, struct dataset *ds)
                   data_parser_set_quotes (parser, ss_cstr ("'\""));
                   data_parser_set_soft_delimiters (parser,
                                                    ss_cstr (CC_SPACES));
-                  const char decimal = settings_get_decimal_char (FMT_F);
+                  const char decimal = settings_get_fmt_settings ()->decimal;
                   data_parser_set_hard_delimiters (parser,
                                                    ss_buffer (",", (decimal == '.') ? 1 : 0));
                 }
@@ -368,7 +368,8 @@ parse_fixed (struct lexer *lexer, struct dictionary *dict,
             if (v != NULL)
               {
                 /* Success. */
-                struct fmt_spec output = fmt_for_output_from_input (f);
+                struct fmt_spec output = fmt_for_output_from_input (
+                  f, settings_get_fmt_settings ());
                 var_set_both_formats (v, &output);
               }
             else
@@ -472,7 +473,8 @@ parse_free (struct lexer *lexer, struct dictionary *dict,
           if (input.type == FMT_N)
             input.type = FMT_F;
 
-	  output = fmt_for_output_from_input (&input);
+	  output = fmt_for_output_from_input (&input,
+                                              settings_get_fmt_settings ());
 	}
       else
 	{

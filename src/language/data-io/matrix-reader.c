@@ -247,7 +247,7 @@ next_matrix_from_reader (struct matrix_material *mm,
 
       struct fmt_spec fmt = {FMT_A, 0, 0};
       fmt.w = w;
-      char *vname = data_out (uvv, enc, &fmt);
+      char *vname = data_out (uvv, enc, &fmt, settings_get_fmt_settings ());
       struct substring the_name = ss_cstr (vname);
 
       int mrow = -1;

@@ -45,7 +45,8 @@ expr_ymd_to_ofs (double year, double month, double day)
       return SYSMIS;
     }
 
-  ofs = calendar_gregorian_to_offset (y, m, d, &error);
+  ofs = calendar_gregorian_to_offset (y, m, d, settings_get_fmt_settings (),
+                                      &error);
   if (error != NULL)
     {
       msg (SE, "%s", error);
@@ -363,7 +364,8 @@ add_months (double date, int months, enum date_sum_method method)
   if (method == SUM_CLOSEST && d > calendar_days_in_month (y, m))
     d = calendar_days_in_month (y, m);
 
-  output = calendar_gregorian_to_offset (y, m, d, &error);
+  output = calendar_gregorian_to_offset (y, m, d, settings_get_fmt_settings (),
+                                         &error);
   if (output != SYSMIS)
     output = (output * DAY_S) + fmod (date, DAY_S);
   else

@@ -201,7 +201,8 @@ try_missing_value(const PsppireMissingValDialog *dialog, const gchar *text, unio
 
   value_init(vp, var_width);
   error_txt = data_in (ss_cstr(text), "UTF-8", dialog->format.type,
-		       vp, var_width, dialog->encoding);
+                       settings_get_fmt_settings (), vp, var_width,
+                       dialog->encoding);
   if (error_txt)
     {
       err_dialog (error_txt, GTK_WINDOW (dialog));

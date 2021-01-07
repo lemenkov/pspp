@@ -72,7 +72,6 @@ void settings_set_safer_mode (void);
 bool settings_get_include (void);
 void settings_set_include (bool);
 
-int settings_get_epoch (void);
 void settings_set_epoch (int);
 
 bool settings_get_scompression (void);
@@ -143,11 +142,9 @@ void unset_cmd_algorithm (void);
 enum fmt_type;
 bool settings_set_cc (const char *cc_string, enum fmt_type type);
 
-int settings_get_decimal_char (enum fmt_type type);
 void settings_set_decimal_char (char decimal);
 
-
-const struct fmt_number_style * settings_get_style (enum fmt_type type);
+const struct fmt_settings *settings_get_fmt_settings (void);
 
 char * settings_dollar_template (const struct fmt_spec *fmt);
 

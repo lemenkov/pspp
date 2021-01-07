@@ -619,7 +619,8 @@ parse_get_txt (struct lexer *lexer, struct dataset *ds)
 	    {
 	      goto error;
 	    }
-          output = fmt_for_output_from_input (&input);
+          output = fmt_for_output_from_input (&input,
+                                              settings_get_fmt_settings ());
         }
       else
         {
@@ -654,7 +655,8 @@ parse_get_txt (struct lexer *lexer, struct dataset *ds)
                 goto error;
             }
           else
-            output = fmt_for_output_from_input (&input);
+            output = fmt_for_output_from_input (&input,
+                                                settings_get_fmt_settings ());
         }
       v = dict_create_var (dict, name, fmt_var_width (&input));
       if (v == NULL)

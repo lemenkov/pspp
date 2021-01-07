@@ -637,10 +637,8 @@ convert_xml_string_to_value (struct ccase *c, const struct variable *var,
 
       const struct fmt_spec *fmt = var_get_write_format (var);
 
-      char *m = data_in (ss_cstr (text), "UTF-8",
-			 fmt->type,
-			 v,
-			 var_get_width (var),
+      char *m = data_in (ss_cstr (text), "UTF-8", fmt->type,
+                         settings_get_fmt_settings (), v, var_get_width (var),
 			 "UTF-8");
 
       if (m)

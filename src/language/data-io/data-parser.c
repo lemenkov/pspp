@@ -546,12 +546,14 @@ parse_fixed (const struct data_parser *parser, struct dfm_reader *reader,
                                           f->format.w);
           union value *value = case_data_rw_idx (c, f->case_idx);
           char *error = data_in (s, input_encoding, f->format.type,
+                                 settings_get_fmt_settings (),
                                  value, fmt_var_width (&f->format),
                                  output_encoding);
 
           if (error == NULL)
             data_in_imply_decimals (s, input_encoding, f->format.type,
-                                    f->format.d, value);
+                                    f->format.d, settings_get_fmt_settings (),
+                                    value);
           else
             parse_error (reader, f, f->first_column,
                          f->first_column + f->format.w, error);
@@ -598,6 +600,7 @@ parse_delimited_span (const struct data_parser *parser,
 
       const char *input_encoding = dfm_reader_get_encoding (reader);
       error = data_in (s, input_encoding, f->format.type,
+                       settings_get_fmt_settings (),
                        case_data_rw_idx (c, f->case_idx),
                        fmt_var_width (&f->format), output_encoding);
       if (error != NULL)
@@ -643,6 +646,7 @@ parse_delimited_no_span (const struct data_parser *parser,
 
       const char *input_encoding = dfm_reader_get_encoding (reader);
       error = data_in (s, input_encoding, f->format.type,
+                       settings_get_fmt_settings (),
                        case_data_rw_idx (c, f->case_idx),
                        fmt_var_width (&f->format), output_encoding);
       if (error != NULL)

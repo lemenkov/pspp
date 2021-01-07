@@ -572,7 +572,8 @@ static void
 append_value (const struct variable *v, const union value *value,
 	      struct string *str)
 {
-  char *s = data_out (value, var_get_encoding (v), &v->print);
+  char *s = data_out (value, var_get_encoding (v), &v->print,
+                      settings_get_fmt_settings ());
   struct substring ss = ss_cstr (s);
   ss_rtrim (&ss, ss_cstr (" "));
   ds_put_substring (str, ss);

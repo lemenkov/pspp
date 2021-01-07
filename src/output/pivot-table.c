@@ -1964,7 +1964,7 @@ pivot_table_dump (const struct pivot_table *table, int indentation)
 
   pivot_table_assign_label_depth (CONST_CAST (struct pivot_table *, table));
 
-  int old_decimal = settings_get_decimal_char (FMT_COMMA);
+  int old_decimal = settings_get_fmt_settings ()->decimal;
   if (table->decimal == '.' || table->decimal == ',')
     settings_set_decimal_char (table->decimal);
 
@@ -2299,7 +2299,8 @@ pivot_value_format_body (const struct pivot_value *value,
       if (show & SETTINGS_VALUE_SHOW_VALUE)
         {
           char *s = data_out (&(union value) { .f = value->numeric.x },
-                              "UTF-8", &value->numeric.format);
+                              "UTF-8", &value->numeric.format,
+                              settings_get_fmt_settings ());
           ds_put_cstr (out, s + strspn (s, " "));
           free (s);
         }

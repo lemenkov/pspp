@@ -25,14 +25,15 @@ union value;
 struct dictionary;
 
 char *data_in (struct substring input, const char *input_encoding,
-               enum fmt_type,
+               enum fmt_type, const struct fmt_settings *,
                union value *output, int width, const char *output_encoding);
 
 bool data_in_msg (struct substring input, const char *input_encoding,
-                  enum fmt_type,
+                  enum fmt_type, const struct fmt_settings *,
                   union value *output, int width, const char *output_encoding);
 
 void data_in_imply_decimals (struct substring input, const char *encoding,
-                             enum fmt_type format, int d, union value *output);
+                             enum fmt_type format, int d,
+                             const struct fmt_settings *, union value *output);
 
 #endif /* data/data-in.h */

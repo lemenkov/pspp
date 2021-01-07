@@ -203,7 +203,9 @@ spv_map_insert (struct hmap *map, double from, const char *to,
       else
         {
           union value v = { .f = mapping->to.d };
-          mapping->to.s = data_out_stretchy (&v, NULL, format, NULL);
+          mapping->to.s = data_out_stretchy (&v, NULL, format,
+                                             settings_get_fmt_settings (),
+                                             NULL);
           mapping->to.width = strlen (mapping->to.s);
         }
     }
@@ -803,7 +805,8 @@ decode_spvdx_source_variable (const struct spvxml_node *node,
             if (label_series->values[i].width < 0)
               {
                 union value v = { .f = label_series->values[i].d };
-                dest = data_out_stretchy (&v, "UTF-8", &s->format, NULL);
+                dest = data_out_stretchy (&v, "UTF-8", &s->format,
+                                          settings_get_fmt_settings (), NULL);
               }
             else
               dest = label_series->values[i].s;
@@ -965,8 +968,8 @@ pivot_value_from_data_value (const struct spv_data_value *data,
               && len == 23
               && data->s[len] == '\0')
             {
-              double date = calendar_gregorian_to_offset (year, month, day,
-                                                          NULL);
+              double date = calendar_gregorian_to_offset (
+                year, month, day, settings_get_fmt_settings (), NULL);
               if (date != SYSMIS)
                 {
                   v->type = PIVOT_VALUE_NUMERIC;

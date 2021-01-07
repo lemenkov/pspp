@@ -404,7 +404,7 @@ add_numeric (struct fmt_guesser *g, struct substring s)
          can't tell whether the ',' or '.' is a grouping or
          decimal character.  Assume that the decimal character
          from the settings is in use. */
-      if (prev_delim == settings_get_decimal_char (FMT_F))
+      if (prev_delim == settings_get_fmt_settings ()->decimal)
         {
           decimal = prev_delim;
           precision = delim_digits;
@@ -448,7 +448,7 @@ add_numeric (struct fmt_guesser *g, struct substring s)
 static void
 guess_numeric (struct fmt_guesser *g, struct fmt_spec *f)
 {
-  int decimal_char = settings_get_decimal_char (FMT_COMMA);
+  int decimal_char = settings_get_fmt_settings ()->decimal;
 
   f->d = g->decimals / g->count;
   if (g->pct)
@@ -679,7 +679,7 @@ parse_date_number (struct substring *s, enum date_token tokens_seen,
   size_t digit_cnt = ss_get_long (s, &value);
   enum date_token token = 0;
 
-  if (ss_match_byte (s, settings_get_decimal_char (FMT_F))
+  if (ss_match_byte (s, settings_get_fmt_settings ()->decimal)
       && tokens_seen & DT_COLON
       && value <= 59)
     {

@@ -667,7 +667,8 @@ find_src_string (struct recode_trns *trns, const uint8_t *value,
             char *error;
 
             error = data_in (ss_buffer (CHAR_CAST_BUG (char *, value), width),
-                             C_ENCODING, FMT_F, &uv, 0, encoding);
+                             C_ENCODING, FMT_F, settings_get_fmt_settings (),
+                             &uv, 0, encoding);
             match = error == NULL;
             free (error);
 

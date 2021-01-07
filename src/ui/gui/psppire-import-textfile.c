@@ -721,6 +721,7 @@ my_read (struct casereader *reader, void *aux, casenumber idx)
 	      char *xx = data_in (ss_cstr (ss),
 				  "UTF-8",
 				  var_get_write_format (var)->type,
+                                  settings_get_fmt_settings (),
 				  v, var_get_width (var), "UTF-8");
 
 	      free (xx);

@@ -517,7 +517,7 @@ psppire_value_entry_get_value (PsppireValueEntry *obj,
 
       new_text = gtk_entry_get_text (entry);
       return data_in_msg (ss_cstr (new_text), UTF8,
-                          obj->format.type,
+                          obj->format.type, settings_get_fmt_settings (),
                           value, width, obj->encoding);
     }
 }

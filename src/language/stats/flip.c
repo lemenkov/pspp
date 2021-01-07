@@ -194,7 +194,7 @@ cmd_flip (struct lexer *lexer, struct dataset *ds)
             {
               name = data_out_pool (value, dict_get_encoding (old_dict),
                                     var_get_write_format (flip->new_names_var),
-                                    flip->pool);
+                                    settings_get_fmt_settings (), flip->pool);
             }
           var_names_add (flip->pool, &flip->new_names, name);
         }
@@ -421,7 +421,8 @@ flip_casereader_read (struct casereader *reader, void *flip_)
 
   c = case_create (casereader_get_proto (reader));
   data_in (ss_cstr (flip->old_names.names[flip->cases_read]), flip->encoding,
-           FMT_A, case_data_rw_idx (c, 0), 8, flip->encoding);
+           FMT_A, settings_get_fmt_settings (), case_data_rw_idx (c, 0),
+           8, flip->encoding);
 
   for (i = 0; i < flip->n_cases; i++)
     {

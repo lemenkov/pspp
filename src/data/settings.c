@@ -289,13 +289,6 @@ settings_set_include (bool include)
   the_settings.include = include;
 }
 
-/* What year to use as the start of the epoch. */
-int
-settings_get_epoch (void)
-{
-  return fmt_settings_get_epoch (&the_settings.styles);
-}
-
 /* Sets the year that starts the epoch. */
 void
 settings_set_epoch (int epoch)
@@ -546,26 +539,16 @@ settings_set_cc (const char *cc_string, enum fmt_type type)
   return true;
 }
 
-/* Returns the decimal point character for TYPE. */
-int
-settings_get_decimal_char (enum fmt_type type)
-{
-  return fmt_settings_get_style (&the_settings.styles, type)->decimal;
-}
-
 void
 settings_set_decimal_char (char decimal)
 {
   the_settings.styles.decimal = decimal;
 }
 
-/* Returns the number formatting style associated with the given
-   format TYPE. */
-const struct fmt_number_style *
-settings_get_style (enum fmt_type type)
+const struct fmt_settings *
+settings_get_fmt_settings (void)
 {
-  assert (is_fmt_type (type));
-  return fmt_settings_get_style (&the_settings.styles, type);
+  return &the_settings.styles;
 }
 
 /* Returns a string of the form "$#,###.##" according to FMT,

@@ -1239,7 +1239,8 @@ create_crosstab_table (struct crosstabs_proc *proc, struct crosstabulation *xt,
       ds_put_format (&title, ", %s=", var_to_string (var));
 
       /* Insert the formatted value of VAR without any leading spaces. */
-      s = data_out (value, var_get_encoding (var), var_get_print_format (var));
+      s = data_out (value, var_get_encoding (var), var_get_print_format (var),
+                    settings_get_fmt_settings ());
       ds_put_cstr (&title, s + strspn (s, " "));
       free (s);
     }

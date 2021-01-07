@@ -94,8 +94,9 @@ acc (struct statistic *s, const struct ccase *cx,
   if (bw->id_var)
     {
       char *s = data_out (case_data_idx (cx, bw->id_idx),
-                           var_get_encoding (bw->id_var),
-                           var_get_print_format (bw->id_var));
+                          var_get_encoding (bw->id_var),
+                          var_get_print_format (bw->id_var),
+                          settings_get_fmt_settings ());
 
       ds_put_cstr (&o->label, s);
       free (s);

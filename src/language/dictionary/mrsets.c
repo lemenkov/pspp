@@ -421,7 +421,8 @@ parse_group (struct lexer *lexer, struct dictionary *dict,
                       if (!c->warned && utf8_strcasecmp (c->label, label))
                         {
                           char *s = data_out (value, var_get_encoding (var),
-                                              var_get_print_format (var));
+                                              var_get_print_format (var),
+                                              settings_get_fmt_settings ());
                           c->warned = true;
                           msg (SW, _("Variables specified on MCGROUP should "
                                      "have the same categories, but %s and %s "

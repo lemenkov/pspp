@@ -164,7 +164,8 @@ psppire_data_store_string_to_value (GtkTreeModel *model, gint col, gint row,
   if (vp == NULL)
     {
       xx = data_in (ss_cstr (in), psppire_dict_encoding (store->dict),
-		    fmt->type, &val, width, "UTF-8");
+		    fmt->type, settings_get_fmt_settings (),
+                    &val, width, "UTF-8");
     }
 
   GVariant *vrnt = value_variant_new (&val, width);
@@ -388,11 +389,13 @@ resize_datum (const union value *old, union value *new, const void *aux_)
   int new_width = var_get_width (aux->new_variable);
   const char *enc = dict_get_encoding (aux->dict);
   const struct fmt_spec *newfmt = var_get_print_format (aux->new_variable);
-  char *s = data_out (old, enc, var_get_print_format (aux->old_variable));
+  char *s = data_out (old, enc, var_get_print_format (aux->old_variable),
+                      settings_get_fmt_settings ());
   enum fmt_type type = (fmt_usable_for_input (newfmt->type)
                         ? newfmt->type
                         : FMT_DOLLAR);
-  free (data_in (ss_cstr (s), enc, type, new, new_width, enc));
+  free (data_in (ss_cstr (s), enc, type, settings_get_fmt_settings (),
+                 new, new_width, enc));
   free (s);
 }
 
@@ -838,8 +841,8 @@ psppire_data_store_data_in (PsppireDataStore *ds, casenumber casenum, gint idx,
                         FALSE);
   value_init (&value, width);
   ok = (datasheet_get_value (ds->datasheet, casenum, idx, &value)
-        && data_in_msg (input, UTF8, fmt->type, &value, width,
-                        dict_get_encoding (dict->dict))
+        && data_in_msg (input, UTF8, fmt->type, settings_get_fmt_settings (),
+                        &value, width, dict_get_encoding (dict->dict))
         && datasheet_put_value (ds->datasheet, casenum, idx, &value));
   value_destroy (&value, width);
 

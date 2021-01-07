@@ -71,12 +71,14 @@ raw_gregorian_to_offset (int y, int m, int d)
    Gregorian calendar.  Returns SYSMIS for dates before 14 Oct
    1582. */
 double
-calendar_gregorian_to_offset (int y, int m, int d, char **errorp)
+calendar_gregorian_to_offset (int y, int m, int d,
+                              const struct fmt_settings *settings,
+                              char **errorp)
 {
   /* Normalize year. */
   if (y >= 0 && y < 100)
     {
-      int epoch = settings_get_epoch ();
+      int epoch = fmt_settings_get_epoch (settings);
       int century = epoch / 100 + (y < epoch % 100);
       y += century * 100;
     }

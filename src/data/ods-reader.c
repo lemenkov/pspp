@@ -674,11 +674,9 @@ convert_xml_to_value (struct ccase *c, const struct variable *var,
 	  const char *text = xmv->value ?
 	    CHAR_CAST (const char *, xmv->value) : CHAR_CAST (const char *, xmv->text);
 
-	  char *m = data_in (ss_cstr (text), "UTF-8",
-			 fmt->type,
-			 v,
-			 var_get_width (var),
-			 "UTF-8");
+	  char *m = data_in (ss_cstr (text), "UTF-8", fmt->type,
+                             settings_get_fmt_settings (), v,
+                             var_get_width (var), "UTF-8");
 
 	  if (m)
 	    {

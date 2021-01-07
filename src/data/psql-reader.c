@@ -286,7 +286,8 @@ psql_open_reader (struct psql_read_info *info, struct dictionary **dict)
 	}
     }
 
-  r->postgres_epoch = calendar_gregorian_to_offset (2000, 1, 1, NULL);
+  r->postgres_epoch = calendar_gregorian_to_offset (
+    2000, 1, 1, settings_get_fmt_settings (), NULL);
 
   {
     const int enc = PQclientEncoding (r->conn);

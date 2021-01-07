@@ -75,7 +75,8 @@ value_to_text__ (union value v,
 {
   gchar *s;
 
-  s = data_out_stretchy (&v, encoding, format, NULL);
+  s = data_out_stretchy (&v, encoding, format, settings_get_fmt_settings (),
+                         NULL);
   if (fmt_is_numeric (format->type))
     g_strchug (s);
   else
@@ -135,7 +136,8 @@ text_to_value__ (const gchar *text,
     }
 
   value_init (val, width);
-  char *err = data_in (ss_cstr (text), UTF8, format->type, val, width, encoding);
+  char *err = data_in (ss_cstr (text), UTF8, format->type,
+                       settings_get_fmt_settings (), val, width, encoding);
 
   if (err)
     {
