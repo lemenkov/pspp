@@ -1487,8 +1487,11 @@ X3 repeats @code{decimal}, @code{grouping}, CustomCurrency, and
 @code{command-local}, @code{language}, @code{charset}, and
 @code{locale} have the same meaning as in X0.
 
-@code{small} is a small real number, e.g.@: .001.  Numbers smaller
-than this in absolute value are displayed in scientific notation.
+@code{small} is a small real number.  In the corpus, it overwhelmingly
+takes the value 0.0001, with zero occasionally seen.  Nonzero numbers
+with format 40 (@pxref{SPV Light Member Value}) whose magnitudes are
+smaller than displayed in scientific notation.  (Thus, a @code{small}
+of zero prevents scientific notation from being chosen.)
 
 Sometimes @code{dataset}, @code{datafile}, and @code{date} are present
 and other times they are absent.  The reader can distinguish by
@@ -1682,9 +1685,14 @@ first nonzero byte in the encoding.
 @table @asis
 @item 01
 The numeric value @code{x}, intended to be presented to the user
-formatted according to @code{format}, which is in the format described
-for system files, except that format 40 is a synonym for F format
-instead of MTIME.  @xref{System File Output Formats}, for details.
+formatted according to @code{format}, which is about the same as the
+format described for system files (@pxref{System File Output
+Formats}).  The exception is that format 40 is not MTIME but instead
+approximately a synonym for F format with a different rule for whether
+a value is shown in scientific notation: a value in format 40 is shown
+in scientific notation if and only if it is nonzero and its magnitude
+is less than @code{small} (@pxref{SPV Light Member Formats}).
+
 Most commonly, @code{format} has width 40 (the maximum).
 
 An @code{x} with the maximum negative double value @code{-DBL_MAX}
