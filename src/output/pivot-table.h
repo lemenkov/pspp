@@ -278,7 +278,8 @@ struct pivot_dimension *pivot_dimension_create__ (struct pivot_table *,
 
 void pivot_dimension_destroy (struct pivot_dimension *);
 
-void pivot_dimension_dump (const struct pivot_dimension *, int indentation);
+void pivot_dimension_dump (const struct pivot_dimension *,
+                           const struct pivot_table *, int indentation);
 
 /* A pivot_category is a leaf (a category) or a group:
 
@@ -439,10 +440,8 @@ struct pivot_table
     struct pivot_table_sizing sizing[TABLE_N_AXES];
 
     /* Format settings. */
-    int epoch;
-    char decimal;               /* Usually ',' or '.'. */
+    struct fmt_settings settings;
     char grouping;              /* Usually '.' or ','. */
-    char *ccs[5];               /* Custom currency. */
     double small;
 
     /* Command information. */

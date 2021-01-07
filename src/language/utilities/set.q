@@ -655,37 +655,11 @@ show_blanks (const struct dataset *ds UNUSED)
           : xasprintf ("%.*g", DBL_DIG + 1, settings_get_blanks ()));
 }
 
-static void
-format_cc (struct string *out, const char *in, char grouping)
-{
-  while (*in != '\0')
-    {
-      char c = *in++;
-      if (c == grouping || c == '\'')
-        ds_put_byte (out, '\'');
-      else if (c == '"')
-        ds_put_byte (out, '"');
-      ds_put_byte (out, c);
-    }
-}
-
 static char *
 show_cc (enum fmt_type type)
 {
-  const struct fmt_number_style *cc = fmt_settings_get_style (
-    settings_get_fmt_settings (), type);
-  struct string out;
-
-  ds_init_empty (&out);
-  format_cc (&out, cc->neg_prefix.s, cc->grouping);
-  ds_put_byte (&out, cc->grouping);
-  format_cc (&out, cc->prefix.s, cc->grouping);
-  ds_put_byte (&out, cc->grouping);
-  format_cc (&out, cc->suffix.s, cc->grouping);
-  ds_put_byte (&out, cc->grouping);
-  format_cc (&out, cc->neg_suffix.s, cc->grouping);
-
-  return ds_cstr (&out);
+  return fmt_number_style_to_string (fmt_settings_get_style (
+                                       settings_get_fmt_settings (), type));
 }
 
 static char *

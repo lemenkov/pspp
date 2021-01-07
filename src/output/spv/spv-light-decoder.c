@@ -828,6 +828,7 @@ decode_spvlb_table (const struct spvlb_table *in, struct pivot_table **outp)
   out->ref_cnt = 1;
   hmap_init (&out->cells);
   out->look = pivot_table_look_new_builtin_default ();
+  out->settings = (struct fmt_settings) FMT_SETTINGS_INIT;
 
   const struct spvlb_y1 *y1 = (in->formats->x0 ? in->formats->x0->y1
                                : in->formats->x3 ? in->formats->x3->y1
@@ -910,13 +911,26 @@ decode_spvlb_table (const struct spvlb_table *in, struct pivot_table **outp)
   out->look->n_orphan_lines = in->ps->n_orphan_lines;
 
   /* Format settings. */
-  out->epoch = in->formats->y0->epoch;
-  out->decimal = in->formats->y0->decimal;
+  int epoch = in->formats->y0->epoch;
+  if (epoch >= 1000 && epoch <= 9999)
+    out->settings.epoch = epoch;
+  char decimal = in->formats->y0->decimal;
+  if (decimal == '.' || decimal == '.')
+    out->settings.decimal = decimal;
+  else
+    {
+      /* XXX warn about bad decimal point */
+    }
   out->grouping = in->formats->y0->grouping;
   const struct spvlb_custom_currency *cc = in->formats->custom_currency;
   for (int i = 0; i < 5; i++)
-    if (cc && i < cc->n_ccs)
-      out->ccs[i] = xstrdup (cc->ccs[i]);
+    {
+      if (cc && i < cc->n_ccs)
+        {
+          out->settings.ccs[i] = fmt_number_style_from_string (cc->ccs[i]);
+          /* XXX warn if parsing fails */
+        }
+    }
   out->small = in->formats->x3 ? in->formats->x3->small : 0;
 
   /* Command information. */

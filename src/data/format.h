@@ -175,6 +175,8 @@ struct fmt_number_style *fmt_number_style_clone (
   const struct fmt_number_style *);
 void fmt_number_style_destroy (struct fmt_number_style *);
 
+char *fmt_number_style_to_string (const struct fmt_number_style *);
+
 int fmt_affix_width (const struct fmt_number_style *);
 int fmt_neg_affix_width (const struct fmt_number_style *);
 
@@ -191,7 +193,7 @@ struct fmt_settings
 
 void fmt_settings_init (struct fmt_settings *);
 void fmt_settings_uninit (struct fmt_settings *);
-void fmt_settings_copy (struct fmt_settings *, const struct fmt_settings *);
+struct fmt_settings fmt_settings_copy (const struct fmt_settings *);
 
 const struct fmt_number_style *fmt_settings_get_style (
   const struct fmt_settings *, enum fmt_type);

@@ -853,6 +853,7 @@ pivot_table_create__ (struct pivot_value *title, const char *subtype)
   table->subtype = subtype ? pivot_value_new_text (subtype) : NULL;
   table->command_c = output_get_command_name ();
   table->look = pivot_table_look_ref (pivot_table_look_get_default ());
+  table->settings = fmt_settings_copy (settings_get_fmt_settings ());
 
   hmap_init (&table->cells);
 
@@ -1047,16 +1048,8 @@ pivot_table_unshare (struct pivot_table *old)
       [TABLE_VERT] = clone_sizing (&old->sizing[TABLE_VERT]),
     },
 
-    .epoch = old->epoch,
-    .decimal = old->decimal,
+    .settings = fmt_settings_copy (&old->settings),
     .grouping = old->grouping,
-    .ccs = {
-      [0] = xstrdup_if_nonnull (old->ccs[0]),
-      [1] = xstrdup_if_nonnull (old->ccs[1]),
-      [2] = xstrdup_if_nonnull (old->ccs[2]),
-      [3] = xstrdup_if_nonnull (old->ccs[3]),
-      [4] = xstrdup_if_nonnull (old->ccs[4]),
-    },
     .small = old->small,
 
     .command_local = xstrdup_if_nonnull (old->command_local),
@@ -1134,8 +1127,7 @@ pivot_table_unref (struct pivot_table *table)
   for (int i = 0; i < TABLE_N_AXES; i++)
     pivot_table_sizing_uninit (&table->sizing[i]);
 
-  for (int i = 0; i < sizeof table->ccs / sizeof *table->ccs; i++)
-    free (table->ccs[i]);
+  fmt_settings_uninit (&table->settings);
 
   free (table->command_local);
   free (table->command_c);
@@ -1782,22 +1774,23 @@ indent (int indentation)
 }
 
 static void
-pivot_value_dump (const struct pivot_value *value)
+pivot_value_dump (const struct pivot_value *value,
+                  const struct pivot_table *pt)
 {
-  char *s = pivot_value_to_string_defaults (value);
+  char *s = pivot_value_to_string (value, pt);
   fputs (s, stdout);
   free (s);
 }
 
 static void
 pivot_table_dump_value (const struct pivot_value *value, const char *name,
-                      int indentation)
+                        const struct pivot_table *pt, int indentation)
 {
   if (value)
     {
       indent (indentation);
       printf ("%s: ", name);
-      pivot_value_dump (value);
+      pivot_value_dump (value, pt);
       putchar ('\n');
     }
 }
@@ -1813,11 +1806,12 @@ pivot_table_dump_string (const char *string, const char *name, int indentation)
 }
 
 static void
-pivot_category_dump (const struct pivot_category *c, int indentation)
+pivot_category_dump (const struct pivot_category *c,
+                     const struct pivot_table *pt, int indentation)
 {
   indent (indentation);
   printf ("%s \"", pivot_category_is_leaf (c) ? "leaf" : "group");
-  pivot_value_dump (c->name);
+  pivot_value_dump (c->name, pt);
   printf ("\" ");
 
   if (pivot_category_is_leaf (c))
@@ -1828,18 +1822,19 @@ pivot_category_dump (const struct pivot_category *c, int indentation)
       printf ("\n");
 
       for (size_t i = 0; i < c->n_subs; i++)
-        pivot_category_dump (c->subs[i], indentation + 1);
+        pivot_category_dump (c->subs[i], pt, indentation + 1);
     }
 }
 
 void
-pivot_dimension_dump (const struct pivot_dimension *d, int indentation)
+pivot_dimension_dump (const struct pivot_dimension *d,
+                      const struct pivot_table *pt, int indentation)
 {
   indent (indentation);
   printf ("%s dimension %zu (where 0=innermost), label_depth=%d:\n",
           pivot_axis_type_to_string (d->axis_type), d->level, d->label_depth);
 
-  pivot_category_dump (d->root, indentation + 1);
+  pivot_category_dump (d->root, pt, indentation + 1);
 }
 
 static void
@@ -1964,12 +1959,8 @@ pivot_table_dump (const struct pivot_table *table, int indentation)
 
   pivot_table_assign_label_depth (CONST_CAST (struct pivot_table *, table));
 
-  int old_decimal = settings_get_fmt_settings ()->decimal;
-  if (table->decimal == '.' || table->decimal == ',')
-    settings_set_decimal_char (table->decimal);
-
-  pivot_table_dump_value (table->title, "title", indentation);
-  pivot_table_dump_value (table->subtype, "subtype", indentation);
+  pivot_table_dump_value (table->title, "title", table, indentation);
+  pivot_table_dump_value (table->subtype, "subtype", table, indentation);
   pivot_table_dump_string (table->command_c, "command", indentation);
   pivot_table_dump_string (table->dataset, "dataset", indentation);
   pivot_table_dump_string (table->datafile, "datafile", indentation);
@@ -2004,7 +1995,7 @@ pivot_table_dump (const struct pivot_table *table, int indentation)
                              indentation + 1);
 
   for (size_t i = 0; i < table->n_dimensions; i++)
-    pivot_dimension_dump (table->dimensions[i], indentation);
+    pivot_dimension_dump (table->dimensions[i], table, indentation);
 
   /* Presentation and data indexes. */
   size_t *dindexes = XCALLOC (table->n_dimensions, size_t);
@@ -2042,7 +2033,7 @@ pivot_table_dump (const struct pivot_table *table, int indentation)
           const struct pivot_dimension *d = layer_axis->dimensions[i];
 
           fputs (i == 0 ? " " : ", ", stdout);
-          pivot_value_dump (d->root->name);
+          pivot_value_dump (d->root->name, table);
           fputs (" =", stdout);
 
           struct pivot_value **names = xnmalloc (d->n_leaves, sizeof *names);
@@ -2059,7 +2050,7 @@ pivot_table_dump (const struct pivot_table *table, int indentation)
           for (size_t i = n_names; i-- > 0;)
             {
               putchar (' ');
-              pivot_value_dump (names[i]);
+              pivot_value_dump (names[i], table);
             }
           free (names);
         }
@@ -2123,7 +2114,7 @@ pivot_table_dump (const struct pivot_table *table, int indentation)
               const struct pivot_value *value = pivot_table_get (
                 table, dindexes);
               if (value)
-                pivot_value_dump (value);
+                pivot_value_dump (value, table);
             }
           printf ("\n");
 
@@ -2135,7 +2126,7 @@ pivot_table_dump (const struct pivot_table *table, int indentation)
       free_headings (&table->axes[PIVOT_AXIS_ROW], row_headings);
     }
 
-  pivot_table_dump_value (table->caption, "caption", indentation);
+  pivot_table_dump_value (table->caption, "caption", table, indentation);
 
   for (size_t i = 0; i < table->n_footnotes; i++)
     {
@@ -2143,16 +2134,15 @@ pivot_table_dump (const struct pivot_table *table, int indentation)
       indent (indentation);
       putchar ('[');
       if (f->marker)
-        pivot_value_dump (f->marker);
+        pivot_value_dump (f->marker, table);
       else
         printf ("%zu", f->idx);
       putchar (']');
-      pivot_value_dump (f->content);
+      pivot_value_dump (f->content, table);
       putchar ('\n');
     }
 
   free (dindexes);
-  settings_set_decimal_char (old_decimal);
 }
 
 static const char *
@@ -2299,8 +2289,7 @@ pivot_value_format_body (const struct pivot_value *value,
       if (show & SETTINGS_VALUE_SHOW_VALUE)
         {
           char *s = data_out (&(union value) { .f = value->numeric.x },
-                              "UTF-8", &value->numeric.format,
-                              settings_get_fmt_settings ());
+                              "UTF-8", &value->numeric.format, &pt->settings);
           ds_put_cstr (out, s + strspn (s, " "));
           free (s);
         }

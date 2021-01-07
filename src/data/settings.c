@@ -140,7 +140,7 @@ static void
 settings_copy (struct settings *dst, const struct settings *src)
 {
   *dst = *src;
-  fmt_settings_copy (&dst->styles, &src->styles);
+  dst->styles = fmt_settings_copy (&src->styles);
 }
 
 /* Returns a copy of the current settings. */

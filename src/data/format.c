@@ -63,13 +63,13 @@ fmt_settings_uninit (struct fmt_settings *settings)
     fmt_number_style_destroy (settings->ccs[i]);
 }
 
-void
-fmt_settings_copy (struct fmt_settings *new, const struct fmt_settings *old)
+struct fmt_settings
+fmt_settings_copy (const struct fmt_settings *old)
 {
-  new->epoch = old->epoch;
-  new->decimal = old->decimal;
+  struct fmt_settings new = *old;
   for (int i = 0; i < FMT_N_CCS; i++)
-    new->ccs[i] = fmt_number_style_clone (old->ccs[i]);
+    new.ccs[i] = fmt_number_style_clone (old->ccs[i]);
+  return new;
 }
 
 static size_t
@@ -1238,6 +1238,34 @@ fmt_number_style_from_string (const char *s)
     .extra_bytes = extra_bytes,
   };
   return style;
+}
+
+static void
+format_cc (struct string *out, const char *in, char grouping)
+{
+  while (*in != '\0')
+    {
+      char c = *in++;
+      if (c == grouping || c == '\'')
+        ds_put_byte (out, '\'');
+      else if (c == '"')
+        ds_put_byte (out, '"');
+      ds_put_byte (out, c);
+    }
+}
+
+char *
+fmt_number_style_to_string (const struct fmt_number_style *cc)
+{
+  struct string out = DS_EMPTY_INITIALIZER;
+  format_cc (&out, cc->neg_prefix.s, cc->grouping);
+  ds_put_byte (&out, cc->grouping);
+  format_cc (&out, cc->prefix.s, cc->grouping);
+  ds_put_byte (&out, cc->grouping);
+  format_cc (&out, cc->suffix.s, cc->grouping);
+  ds_put_byte (&out, cc->grouping);
+  format_cc (&out, cc->neg_suffix.s, cc->grouping);
+  return ds_steal_cstr (&out);
 }
 
 struct fmt_number_style *

@@ -698,8 +698,8 @@ put_category (struct buf *buf, const struct pivot_category *c)
 static void
 put_y0 (struct buf *buf, const struct pivot_table *table)
 {
-  put_u32 (buf, table->epoch);
-  put_byte (buf, table->decimal);
+  put_u32 (buf, table->settings.epoch);
+  put_byte (buf, table->settings.decimal);
   put_byte (buf, table->grouping);
 }
 
@@ -708,7 +708,13 @@ put_custom_currency (struct buf *buf, const struct pivot_table *table)
 {
   put_u32 (buf, 5);
   for (int i = 0; i < 5; i++)
-    put_string (buf, table->ccs[i]);
+    {
+      enum fmt_type types[5] = { FMT_CCA, FMT_CCB, FMT_CCC, FMT_CCD, FMT_CCE };
+      char *cc = fmt_number_style_to_string (fmt_settings_get_style (
+                                               &table->settings, types[i]));
+      put_string (buf, cc);
+      free (cc);
+    }
 }
 
 static void
