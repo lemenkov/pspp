@@ -1736,8 +1736,9 @@ case, @code{id} is always the empty string; in the latter case,
 The string value @code{s}, intended to be presented to the user
 formatted according to @code{format}.  The format for a string is not
 too interesting, and the corpus contains many clearly invalid formats
-like A16.39 or A255.127 or A134.1, so readers should probably ignore
-the format entirely.
+like A16.39 or A255.127 or A134.1, so readers should probably entirely
+disregard the format.  PSPP only checks @code{format} to distinguish
+AHEX format.
 
 @code{s} is a value of variable @code{var-name} and has value label
 @code{value-label}.  @code{var-name} is never empty but

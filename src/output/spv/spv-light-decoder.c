@@ -321,6 +321,7 @@ decode_spvlb_value (const struct pivot_table *table,
       if (error)
         return NULL;
       out->string.s = xstrdup (in->type_04.s);
+      out->string.hex = (in->type_04.format >> 16) == fmt_to_io (FMT_AHEX);
       out->string.var_name = xstrdup (in->type_04.var_name);
       out->string.value_label = xstrdup_if_nonempty (in->type_04.value_label);
       break;
