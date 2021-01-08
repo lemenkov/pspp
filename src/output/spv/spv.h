@@ -29,6 +29,11 @@
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
+
+#ifdef HAVE_CAIRO
+#include <cairo.h>
+#endif
+
 #include "libpspp/compiler.h"
 
 struct fmt_spec;
@@ -68,7 +73,7 @@ enum spv_item_type
     SPV_ITEM_TABLE,
     SPV_ITEM_GRAPH,
     SPV_ITEM_MODEL,
-    SPV_ITEM_OBJECT,
+    SPV_ITEM_IMAGE,
     SPV_ITEM_TREE,
   };
 
@@ -138,9 +143,11 @@ struct spv_item
     /* SPV_ITEM_TEXT only.  */
     struct pivot_value *text;
 
-    /* SPV_ITEM_OBJECT only. */
-    char *object_type;
-    char *uri;
+    /* SPV_ITEM_IMAGE only. */
+    char *png_member;
+#ifdef HAVE_CAIRO
+    cairo_surface_t *image;
+#endif
   };
 
 void spv_item_format_path (const struct spv_item *, struct string *);
@@ -162,6 +169,11 @@ const struct pivot_table *spv_item_get_table (const struct spv_item *);
 bool spv_item_is_text (const struct spv_item *);
 const struct pivot_value *spv_item_get_text (const struct spv_item *);
 
+bool spv_item_is_image (const struct spv_item *);
+#ifdef HAVE_CAIRO
+cairo_surface_t *spv_item_get_image (const struct spv_item *);
+#endif
+
 bool spv_item_is_visible (const struct spv_item *);
 
 #define SPV_ITEM_FOR_EACH(ITER, ROOT) \
@@ -173,7 +185,6 @@ struct spv_item *spv_item_next (const struct spv_item *);
 const struct spv_item *spv_item_get_parent (const struct spv_item *);
 size_t spv_item_get_level (const struct spv_item *);
 
-const char *spv_item_get_member_name (const struct spv_item *);
 const char *spv_item_get_command_id (const struct spv_item *);
 const char *spv_item_get_subtype (const struct spv_item *);
 

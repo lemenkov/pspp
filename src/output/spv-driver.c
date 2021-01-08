@@ -22,6 +22,10 @@
 
 #include "data/file-handle-def.h"
 #include "libpspp/cast.h"
+#ifdef HAVE_CAIRO
+#include "output/cairo-chart.h"
+#endif
+#include "output/chart-item.h"
 #include "output/group-item.h"
 #include "output/page-eject-item.h"
 #include "output/page-setup-item.h"
@@ -107,6 +111,18 @@ spv_submit (struct output_driver *driver,
       if (table_item->pt)
         spv_writer_put_table (spv->writer, table_item->pt);
     }
+#ifdef HAVE_CAIRO
+  else if (is_chart_item (output_item))
+    {
+      cairo_surface_t *surface = xr_draw_image_chart (
+        to_chart_item (output_item),
+        &(struct cell_color) CELL_COLOR_BLACK,
+        &(struct cell_color) CELL_COLOR_WHITE);
+      if (cairo_surface_status (surface) == CAIRO_STATUS_SUCCESS)
+        spv_writer_put_image (spv->writer, surface);
+      cairo_surface_destroy (surface);
+    }
+#endif
   else if (is_text_item (output_item))
     {
       char *command_id = output_get_command_name ();

@@ -181,6 +181,12 @@ void xrchart_draw_scatterplot (const struct chart_item *, cairo_t *,
 void xr_draw_chart (const struct chart_item *, cairo_t *,
                     double width, double height);
 
+cairo_surface_t *xr_draw_image_chart (const struct chart_item *,
+                                      const struct cell_color *fg,
+                                      const struct cell_color *bg);
+char *xr_write_png_image (cairo_surface_t *,
+                          const char *file_name_template, int number);
+
 char *xr_draw_png_chart (const struct chart_item *,
                          const char *file_name_template, int number,
                          const struct cell_color *fg,

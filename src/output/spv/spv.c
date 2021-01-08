@@ -77,7 +77,7 @@ spv_item_type_to_string (enum spv_item_type type)
     case SPV_ITEM_TABLE: return "table";
     case SPV_ITEM_GRAPH: return "graph";
     case SPV_ITEM_MODEL: return "model";
-    case SPV_ITEM_OBJECT: return "object";
+    case SPV_ITEM_IMAGE: return "image";
     default: return "**error**";
     }
 }
@@ -140,7 +140,7 @@ spv_item_get_class (const struct spv_item *item)
     case SPV_ITEM_MODEL:
       return SPV_CLASS_MODELS;
 
-    case SPV_ITEM_OBJECT:
+    case SPV_ITEM_IMAGE:
       return SPV_CLASS_OTHER;
 
     case SPV_ITEM_TREE:
@@ -194,6 +194,53 @@ spv_item_get_text (const struct spv_item *item)
   assert (spv_item_is_text (item));
   return item->text;
 }
+
+bool
+spv_item_is_image (const struct spv_item *item)
+{
+  return item->type == SPV_ITEM_IMAGE;
+}
+
+#ifdef HAVE_CAIRO
+static cairo_status_t
+read_from_zip_member (void *zm_, unsigned char *data, unsigned int length)
+{
+  struct zip_member *zm = zm_;
+  if (!zm)
+    return CAIRO_STATUS_READ_ERROR;
+
+  while (length > 0)
+    {
+      int n = zip_member_read (zm, data, length);
+      if (n <= 0)
+        return CAIRO_STATUS_READ_ERROR;
+
+      data += n;
+      length -= n;
+    }
+
+  return CAIRO_STATUS_SUCCESS;
+}
+
+cairo_surface_t *
+spv_item_get_image (const struct spv_item *item_)
+{
+  struct spv_item *item = CONST_CAST (struct spv_item *, item_);
+  assert (spv_item_is_image (item));
+
+  if (!item->image)
+    {
+      struct zip_member *zm = zip_member_open (item->spv->zip,
+                                               item->png_member);
+      item->image = cairo_image_surface_create_from_png_stream (
+        read_from_zip_member, zm);
+      if (zm)
+        zip_member_finish (zm);
+    }
+
+  return item->image;
+}
+#endif
 
 struct spv_item *
 spv_item_next (const struct spv_item *item)
@@ -267,8 +314,11 @@ spv_item_destroy (struct spv_item *item)
 
       pivot_value_destroy (item->text);
 
-      free (item->object_type);
-      free (item->uri);
+      free (item->png_member);
+#ifdef HAVE_CAIRO
+      if (item->image)
+        cairo_surface_destroy (item->image);
+#endif
 
       free (item);
     }
@@ -573,6 +623,10 @@ spv_item_load (const struct spv_item *item)
 {
   if (spv_item_is_table (item))
     spv_item_get_table (item);
+#ifdef HAVE_CAIRO
+  else if (spv_item_is_image (item))
+    spv_item_get_image (item);
+#endif
 }
 
 bool
@@ -934,24 +988,17 @@ spv_decode_container (const struct spvsx_container *c,
   else if (spvsx_is_object (content))
     {
       struct spvsx_object *object = spvsx_cast_object (content);
-      item->type = SPV_ITEM_OBJECT;
-      item->object_type = xstrdup (object->type);
-      item->uri = xstrdup (object->uri);
+      item->type = SPV_ITEM_IMAGE;
+      item->png_member = xstrdup (object->uri);
     }
   else if (spvsx_is_image (content))
     {
       struct spvsx_image *image = spvsx_cast_image (content);
-      item->type = SPV_ITEM_OBJECT;
-      item->object_type = xstrdup ("image");
-      item->uri = xstrdup (image->data_path->text);
+      item->type = SPV_ITEM_IMAGE;
+      item->png_member = xstrdup (image->data_path->text);
     }
   else if (spvsx_is_tree (content))
-    {
-      struct spvsx_tree *tree = spvsx_cast_tree (content);
-      item->type = SPV_ITEM_TREE;
-      item->object_type = xstrdup ("tree");
-      item->uri = xstrdup (tree->data_path->text);
-    }
+    item->type = SPV_ITEM_TREE;
   else
     NOT_REACHED ();
 

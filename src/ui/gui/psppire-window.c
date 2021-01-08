@@ -33,6 +33,7 @@
 #include "data/dataset.h"
 #include "libpspp/version.h"
 #include "output/group-item.h"
+#include "output/image-item.h"
 #include "output/pivot-table.h"
 #include "output/spv/spv.h"
 #include "output/spv/spv-output.h"
@@ -798,6 +799,12 @@ read_spv_file (const char *filename)
         spv_text_submit (items[i]);
       else if (items[i]->type == SPV_ITEM_TABLE)
         pivot_table_submit (pivot_table_ref (spv_item_get_table (items[i])));
+      else if (items[i]->type == SPV_ITEM_IMAGE)
+        {
+          cairo_surface_t *image = spv_item_get_image (items[i]);
+          image_item_submit (image_item_create (cairo_surface_reference (
+                                                  image)));
+        }
       prev_heading = heading;
     }
   dump_heading_transition (prev_heading, spv_get_root (spv));

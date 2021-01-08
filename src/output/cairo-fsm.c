@@ -38,6 +38,7 @@
 #include "output/charts/scree.h"
 #include "output/charts/spreadlevel-plot.h"
 #include "output/group-item.h"
+#include "output/image-item.h"
 #include "output/message-item.h"
 #include "output/page-eject-item.h"
 #include "output/page-setup-item.h"
@@ -987,6 +988,7 @@ xr_fsm_create (const struct output_item *item_,
   struct output_item *item;
   if (is_table_item (item_)
       || is_chart_item (item_)
+      || is_image_item (item_)
       || is_page_eject_item (item_))
     item = output_item_ref (item_);
   else if (is_message_item (item_))
@@ -1017,6 +1019,7 @@ xr_fsm_create (const struct output_item *item_,
     NOT_REACHED ();
   assert (is_table_item (item)
           || is_chart_item (item)
+          || is_image_item (item)
           || is_page_eject_item (item));
 
   size_t *layer_indexes = NULL;
@@ -1147,6 +1150,12 @@ xr_fsm_measure (struct xr_fsm *fsm, cairo_t *cr, int *wp, int *hp)
       w = CHART_WIDTH;
       h = CHART_HEIGHT;
     }
+  else if (is_image_item (fsm->item))
+    {
+      cairo_surface_t *image = to_image_item (fsm->item)->image;
+      w = cairo_image_surface_get_width (image);
+      h = cairo_image_surface_get_height (image);
+    }
   else
     NOT_REACHED ();
 
@@ -1171,6 +1180,18 @@ mul_XR_POINT (int x)
           : x * XR_POINT);
 }
 
+static void
+draw_image (cairo_surface_t *image, cairo_t *cr)
+{
+  cairo_save (cr);
+  cairo_set_source_surface (cr, image, 0, 0);
+  cairo_rectangle (cr, 0, 0, cairo_image_surface_get_width (image),
+                   cairo_image_surface_get_height (image));
+  cairo_clip (cr);
+  cairo_paint (cr);
+  cairo_restore (cr);
+}
+
 void
 xr_fsm_draw_region (struct xr_fsm *fsm, cairo_t *cr,
                     int x, int y, int w, int h)
@@ -1183,6 +1204,8 @@ xr_fsm_draw_region (struct xr_fsm *fsm, cairo_t *cr,
                                 mul_XR_POINT (w), mul_XR_POINT (h));
       fsm->cairo = NULL;
     }
+  else if (is_image_item (fsm->item))
+    draw_image (to_image_item (fsm->item)->image, cr);
   else if (is_chart_item (fsm->item))
     xr_draw_chart (to_chart_item (fsm->item), cr, CHART_WIDTH, CHART_HEIGHT);
   else if (is_page_eject_item (fsm->item))
@@ -1238,6 +1261,49 @@ xr_fsm_draw_chart (struct xr_fsm *fsm, int space)
 }
 
 static int
+xr_fsm_draw_image (struct xr_fsm *fsm, int space)
+{
+  cairo_surface_t *image = to_image_item (fsm->item)->image;
+  int width = cairo_image_surface_get_width (image) * XR_POINT;
+  int height = cairo_image_surface_get_height (image) * XR_POINT;
+  if (!width || !height)
+    goto error;
+
+  if (height > fsm->rp.size[V])
+    {
+      double scale = fsm->rp.size[V] / (double) height;
+      width *= scale;
+      height *= scale;
+      if (!width || !height)
+        goto error;
+
+      cairo_scale (fsm->cairo, scale, scale);
+    }
+
+  if (width > fsm->rp.size[H])
+    {
+      double scale = fsm->rp.size[H] / (double) width;
+      width *= scale;
+      height *= scale;
+      if (!width || !height)
+        goto error;
+
+      cairo_scale (fsm->cairo, scale, scale);
+    }
+
+  if (space < height)
+    return 0;
+
+  draw_image (image, fsm->cairo);
+  fsm->done = true;
+  return height;
+
+error:
+  fsm->done = true;
+  return 0;
+}
+
+static int
 xr_fsm_draw_eject (struct xr_fsm *fsm, int space)
 {
   if (space >= fsm->rp.size[V])
@@ -1257,6 +1323,7 @@ xr_fsm_draw_slice (struct xr_fsm *fsm, cairo_t *cr, int space)
   fsm->cairo = cr;
   int used = (is_table_item (fsm->item) ? xr_fsm_draw_table (fsm, space)
               : is_chart_item (fsm->item) ? xr_fsm_draw_chart (fsm, space)
+              : is_image_item (fsm->item) ? xr_fsm_draw_image (fsm, space)
               : is_page_eject_item (fsm->item) ? xr_fsm_draw_eject (fsm, space)
               : (abort (), 0));
   fsm->cairo = NULL;

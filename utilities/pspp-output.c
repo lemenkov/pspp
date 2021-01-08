@@ -16,6 +16,9 @@
 
 #include <config.h>
 
+#ifdef HAVE_CAIRO
+#include <cairo.h>
+#endif
 #include <getopt.h>
 #include <limits.h>
 #include <stdlib.h>
@@ -29,6 +32,7 @@
 #include "libpspp/string-set.h"
 #include "output/driver.h"
 #include "output/group-item.h"
+#include "output/image-item.h"
 #include "output/page-setup-item.h"
 #include "output/pivot-table.h"
 #include "output/spv/light-binary-parser.h"
@@ -121,7 +125,11 @@ dump_item (const struct spv_item *item)
     case SPV_ITEM_MODEL:
       break;
 
-    case SPV_ITEM_OBJECT:
+    case SPV_ITEM_IMAGE:
+#ifdef HAVE_CAIRO
+      image_item_submit (image_item_create (cairo_surface_reference (
+                                              spv_item_get_image (item))));
+#endif
       break;
 
     case SPV_ITEM_TREE:
@@ -164,14 +172,19 @@ print_item_directory (const struct spv_item *item)
 
   if (!spv_item_is_visible (item))
     printf (" (hidden)");
-  if (show_member_names && (item->xml_member || item->bin_member))
+
+  if (show_member_names)
     {
-      if (item->xml_member && item->bin_member)
-        printf (" in %s and %s", item->xml_member, item->bin_member);
-      else if (item->xml_member)
-        printf (" in %s", item->xml_member);
-      else if (item->bin_member)
-        printf (" in %s", item->bin_member);
+      const char *members[] = {
+        item->xml_member,
+        item->bin_member,
+        item->png_member,
+      };
+      size_t n = 0;
+
+      for (size_t i = 0; i < sizeof members / sizeof *members; i++)
+        if (members[i])
+          printf (" %s %s", n++ == 0 ? "in" : "and", members[i]);
     }
   putchar ('\n');
 }

@@ -41,6 +41,7 @@
 #endif
 #include "output/chart-item.h"
 #include "output/driver-provider.h"
+#include "output/image-item.h"
 #include "output/message-item.h"
 #include "output/options.h"
 #include "output/output-item-provider.h"
@@ -324,6 +325,18 @@ tex_submit (struct output_driver *driver,
       tex_output_table (tex, table_item);
     }
 #ifdef HAVE_CAIRO
+  else if (is_image_item (output_item) && tex->chart_file_name != NULL)
+    {
+      struct image_item *image_item = to_image_item (output_item);
+      char *file_name = xr_write_png_image (
+        image_item->image, tex->chart_file_name, tex->chart_cnt++);
+      if (file_name != NULL)
+        {
+          shipout (&tex->token_list, "\\includegraphics{%s}\n", file_name);
+          tex->require_graphics = true;
+          free (file_name);
+        }
+    }
   else if (is_chart_item (output_item) && tex->chart_file_name != NULL)
     {
       struct chart_item *chart_item = to_chart_item (output_item);

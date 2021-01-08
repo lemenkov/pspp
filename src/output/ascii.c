@@ -52,6 +52,7 @@
 #endif
 #include "output/chart-item-provider.h"
 #include "output/driver-provider.h"
+#include "output/image-item.h"
 #include "output/message-item.h"
 #include "output/options.h"
 #include "output/pivot-output.h"
@@ -603,6 +604,25 @@ ascii_submit (struct output_driver *driver,
   if (is_table_item (output_item))
     ascii_output_table_item (a, to_table_item (output_item));
 #ifdef HAVE_CAIRO
+  else if (is_image_item (output_item) && a->chart_file_name != NULL)
+    {
+      struct image_item *image_item = to_image_item (output_item);
+      char *file_name = xr_write_png_image (
+        image_item->image, a->chart_file_name, ++a->chart_cnt);
+      if (file_name != NULL)
+        {
+          struct text_item *text_item;
+
+          text_item = text_item_create_nocopy (
+            TEXT_ITEM_LOG,
+            xasprintf (_("See %s for an image."), file_name),
+            NULL);
+
+          ascii_submit (driver, &text_item->output_item);
+          text_item_unref (text_item);
+          free (file_name);
+        }
+    }
   else if (is_chart_item (output_item) && a->chart_file_name != NULL)
     {
       struct chart_item *chart_item = to_chart_item (output_item);

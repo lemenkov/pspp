@@ -22,6 +22,10 @@ struct pivot_table;
 struct spv_writer;
 struct text_item;
 
+#ifdef HAVE_CAIRO
+#include <cairo.h>
+#endif
+
 #include "libpspp/compiler.h"
 
 char *spv_writer_open (const char *filename, struct spv_writer **)
@@ -38,6 +42,10 @@ void spv_writer_close_heading (struct spv_writer *);
 void spv_writer_put_text (struct spv_writer *, const struct text_item *,
                           const char *command_id);
 void spv_writer_put_table (struct spv_writer *, const struct pivot_table *);
+
+#ifdef HAVE_CAIRO
+void spv_writer_put_image (struct spv_writer *, cairo_surface_t *);
+#endif
 
 void spv_writer_eject_page (struct spv_writer *);
 

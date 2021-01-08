@@ -48,6 +48,8 @@ src_output_liboutput_la_SOURCES = \
 	src/output/driver-provider.h \
 	src/output/driver.c \
 	src/output/driver.h \
+	src/output/image-item.c \
+	src/output/image-item.h \
 	src/output/tex-glyphs.c \
 	src/output/tex-glyphs.h \
 	src/output/tex-parsing.c \

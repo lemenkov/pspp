@@ -38,6 +38,7 @@
 #endif
 #include "output/chart-item.h"
 #include "output/driver-provider.h"
+#include "output/image-item.h"
 #include "output/message-item.h"
 #include "output/options.h"
 #include "output/output-item-provider.h"
@@ -266,6 +267,17 @@ html_submit (struct output_driver *driver,
       html_output_table (html, table_item);
     }
 #ifdef HAVE_CAIRO
+  else if (is_image_item (output_item) && html->chart_file_name != NULL)
+    {
+      struct image_item *image_item = to_image_item (output_item);
+      char *file_name = xr_write_png_image (
+        image_item->image, html->chart_file_name, ++html->chart_cnt);
+      if (file_name != NULL)
+        {
+          fprintf (html->file, "<img src=\"%s\">", file_name);
+          free (file_name);
+        }
+    }
   else if (is_chart_item (output_item) && html->chart_file_name != NULL)
     {
       struct chart_item *chart_item = to_chart_item (output_item);

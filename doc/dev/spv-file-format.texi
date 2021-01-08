@@ -72,6 +72,13 @@ Same format used for tables, with a different name.
 The structure of a chart plus its data.  Charts do not have a
 ``light'' format.
 
+@item @file{@var{prefix}_Imagegeneric.png}
+@itemx @file{@var{prefix}_PastedObjectgeneric.png}
+@itemx @file{@var{prefix}_imageData.bin}
+A PNG image referenced by an @code{object} element (in the first two
+cases) or an @code{image} element (in the final case).  @xref{SPV
+Structure object and image Elements}.
+
 @item @file{@var{prefix}_pmml.scf}
 @itemx @file{@var{prefix}_stats.scf}
 @item @file{@var{prefix}_model.xml}
@@ -294,6 +301,7 @@ information, and the CSS from the embedded HTML:
 * SPV Structure table Element::
 * SPV Structure graph Element::
 * SPV Structure model Element::
+* SPV Structure object and image Elements::
 * SPV Structure tree Element::
 * SPV Structure Path Elements::
 * SPV Structure pageSetup Element::
@@ -667,6 +675,26 @@ encoded text, that decodes to a binary format with some embedded text
 strings, and @code{path} names an Zip member that contains XML.
 Alternatively, @code{pmmlContainerPath} and @code{statsContainerPath}
 name Zip members with @file{.scf} extension.
+
+@node SPV Structure object and image Elements
+@subsection The @code{object} and @code{image} Elements
+
+@example
+object :type[object_type]=(unknown)? :uri => EMPTY
+
+image :VDPId :commandName => dataPath
+@end example
+
+These two elements represent an image in PNG format.  They are
+equivalent and the corpus contains examples of both.  The only
+difference is the syntax: for @code{object}, the @code{uri} attribute
+names the Zip member that contains a PNG file; for @code{image}, the
+text of the inner @code{dataPath} element names the Zip member.
+
+PSPP writes @code{object} in output but there is no strong reason to
+choose this form.
+
+The corpus only contains PNG image files.
 
 @node SPV Structure tree Element
 @subsection The @code{tree} Element

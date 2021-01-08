@@ -74,8 +74,8 @@ spv_item_dump (const struct spv_item *item, int indentation)
       printf ("model\n");
       break;
 
-    case SPV_ITEM_OBJECT:
-      printf ("object type=\"%s\" uri=\"%s\"\n", item->object_type, item->uri);
+    case SPV_ITEM_IMAGE:
+      printf ("image in %s\n", item->png_member);
       break;
 
     case SPV_ITEM_TREE:

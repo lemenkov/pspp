@@ -323,6 +323,48 @@ spv_writer_put_text (struct spv_writer *w, const struct text_item *text,
     spv_writer_close_file (w, "");
 }
 
+#ifdef HAVE_CAIRO
+static cairo_status_t
+write_to_zip (void *zw_, const unsigned char *data, unsigned int length)
+{
+  struct zip_writer *zw = zw_;
+
+  zip_writer_add_write (zw, data, length);
+  return CAIRO_STATUS_SUCCESS;
+}
+
+void
+spv_writer_put_image (struct spv_writer *w, cairo_surface_t *image)
+{
+  bool initial_depth = w->heading_depth;
+  if (!initial_depth)
+    spv_writer_open_file (w);
+
+  char *uri = xasprintf ("%010d_Imagegeneric.png", ++w->n_tables);
+
+  start_container (w);
+
+  start_elem (w, "label");
+  write_text (w, "Image");
+  end_elem (w);
+
+  start_elem (w, "object");
+  write_attr (w, "type", "unknown");
+  write_attr (w, "uri", uri);
+  end_elem (w); /* object */
+  end_elem (w); /* container */
+
+  if (!initial_depth)
+    spv_writer_close_file (w, "");
+
+  zip_writer_add_start (w->zw, uri);
+  cairo_surface_write_to_png_stream (image, write_to_zip, w->zw);
+  zip_writer_add_finish (w->zw);
+
+  free (uri);
+}
+#endif
+
 void
 spv_writer_eject_page (struct spv_writer *w)
 {
