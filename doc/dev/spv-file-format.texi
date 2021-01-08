@@ -893,8 +893,8 @@ A 32-bit IEEE floating-point number.
 @item string
 @itemx bestring
 A 32-bit unsigned integer, in little-endian or big-endian byte order,
-respectively, followed by the specified number of bytes of character
-data.  (The encoding is indicated by the Formats nonterminal.)
+respectively, followed by the specified number of bytes of UTF-8
+encoded character data.
 
 @item @var{x}?
 @var{x} is optional, e.g.@: 00? is an optional zero byte.
@@ -1336,9 +1336,8 @@ If @code{n-widths} is nonzero, then the accompanying integers are
 column widths as manually adjusted by the user.
 
 @code{locale} is a locale including an encoding, such as
-@code{en_US.windows-1252} or @code{it_IT.windows-1252}.  The rest of
-the character strings in the member use this encoding.  The encoding
-string is itself encoded in US-ASCII.
+@code{en_US.windows-1252} or @code{it_IT.windows-1252}.  The encoding
+string (like other strings in the member) is encoded in UTF-8.
 
 @code{epoch} is the year that starts the epoch.  A 2-digit year is
 interpreted as belonging to the 100 years beginning at the epoch.  The
