@@ -19,6 +19,7 @@
 #include "libpspp/zip-writer.h"
 #include "libpspp/zip-private.h"
 
+#include <assert.h>
 #include <byteswap.h>
 #include <errno.h>
 #include <stdlib.h>
@@ -44,6 +45,12 @@ struct zip_writer
     uint16_t date, time;        /* Date and time in MS-DOS format. */
 
     bool ok;
+
+    /* Member being added to the file. */
+    char *m_name;
+    uint32_t m_start;
+    uint32_t m_size;
+    uint32_t m_crc;
 
     /* Members already added to the file, so that we can summarize them to the
        central directory at the end of the ZIP file. */
@@ -89,11 +96,7 @@ put_u32 (struct zip_writer *zw, uint32_t x)
 struct zip_writer *
 zip_writer_create (const char *file_name)
 {
-  struct zip_writer *zw;
-  struct tm *tm;
-  time_t now;
   FILE *file;
-
   if (strcmp (file_name, "-"))
     {
       file = fopen (file_name, "wb");
@@ -114,22 +117,17 @@ zip_writer_create (const char *file_name)
       file = stdout;
     }
 
-  zw = xmalloc (sizeof *zw);
-  zw->file_name = xstrdup (file_name);
-  zw->file = file;
-  zw->offset = 0;
+  time_t now = time (NULL);
+  struct tm *tm = localtime (&now);
 
-  zw->ok = true;
-
-  now = time (NULL);
-  tm = localtime (&now);
-  zw->date = tm->tm_mday + ((tm->tm_mon + 1) << 5) + ((tm->tm_year - 80) << 9);
-  zw->time = tm->tm_sec / 2 + (tm->tm_min << 5) + (tm->tm_hour << 11);
-
-  zw->members = NULL;
-  zw->n_members = 0;
-  zw->allocated_members = 0;
-
+  struct zip_writer *zw = xmalloc (sizeof *zw);
+  *zw = (struct zip_writer) {
+    .file_name = xstrdup (file_name),
+    .file = file,
+    .ok = true,
+    .date = tm->tm_mday + ((tm->tm_mon + 1) << 5) + ((tm->tm_year - 80) << 9),
+    .time = tm->tm_sec / 2 + (tm->tm_min << 5) + (tm->tm_hour << 11),
+  };
   return zw;
 }
 
@@ -151,37 +149,45 @@ put_local_header (struct zip_writer *zw, const char *member_name, uint32_t crc,
   put_bytes (zw, member_name, strlen (member_name));
 }
 
-/* Adds the contents of FILE, with name MEMBER_NAME, to ZW. */
+/* Start adding a new member, named MEMBER_NAME, to ZW.  Add content to the
+   member by calling zip_writer_add_write() possibly multiple times, then
+   finish it off with zip_writer_add_finish().
+
+   Only one member may be open at a time. */
 void
-zip_writer_add (struct zip_writer *zw, FILE *file, const char *member_name)
+zip_writer_add_start (struct zip_writer *zw, const char *member_name)
 {
-  struct zip_member *member;
-  uint32_t size;
-  size_t bytes_read;
-  uint32_t crc;
-  char buf[4096];
-
-  /* Local file header. */
-  uint32_t offset = zw->offset;
+  assert (!zw->m_name);
+  zw->m_name = xstrdup (member_name);
+  zw->m_start = zw->offset;
+  zw->m_size = 0;
+  zw->m_crc = 0;
   put_local_header (zw, member_name, 0, 0, 1 << 3);
+}
 
-  /* File data. */
-  size = crc = 0;
-  fseeko (file, 0, SEEK_SET);
-  while ((bytes_read = fread (buf, 1, sizeof buf, file)) > 0)
-    {
-      put_bytes (zw, buf, bytes_read);
-      size += bytes_read;
-      crc = crc32_update (crc, buf, bytes_read);
-    }
+/* Adds the N bytes in BUF to the currently open member in ZW. */
+void
+zip_writer_add_write (struct zip_writer *zw, const void *buf, size_t n)
+{
+  assert (zw->m_name);
+  put_bytes (zw, buf, n);
+  zw->m_size += n;
+  zw->m_crc = crc32_update (zw->m_crc, buf, n);
+}
+
+/* Finishes writing the currently open member in ZW. */
+void
+zip_writer_add_finish (struct zip_writer *zw)
+{
+  assert (zw->m_name);
 
   /* Try to seek back to the local file header.  If successful, overwrite it
      with the correct file size and CRC.  Otherwise, write data descriptor. */
-  if (fseeko (zw->file, offset, SEEK_SET) == 0)
+  if (fseeko (zw->file, zw->m_start, SEEK_SET) == 0)
     {
       uint32_t save_offset = zw->offset;
-      put_local_header (zw, member_name, crc, size, 0);
-      if (fseeko (zw->file, size, SEEK_CUR)
+      put_local_header (zw, zw->m_name, zw->m_crc, zw->m_size, 0);
+      if (fseeko (zw->file, zw->m_size, SEEK_CUR)
           && zw->ok)
         {
           msg_error (errno, _("%s: error seeking in output file"), zw->file_name);
@@ -192,20 +198,41 @@ zip_writer_add (struct zip_writer *zw, FILE *file, const char *member_name)
   else
     {
       put_u32 (zw, MAGIC_DDHD);
-      put_u32 (zw, crc);
-      put_u32 (zw, size);
-      put_u32 (zw, size);
+      put_u32 (zw, zw->m_crc);
+      put_u32 (zw, zw->m_size);
+      put_u32 (zw, zw->m_size);
     }
 
   /* Add to set of members. */
   if (zw->n_members >= zw->allocated_members)
     zw->members = x2nrealloc (zw->members, &zw->allocated_members,
                               sizeof *zw->members);
-  member = &zw->members[zw->n_members++];
-  member->offset = offset;
-  member->size = size;
-  member->crc = crc;
-  member->name = xstrdup (member_name);
+  struct zip_member *member = &zw->members[zw->n_members++];
+  member->offset = zw->m_start;
+  member->size = zw->m_size;
+  member->crc = zw->m_crc;
+  member->name = zw->m_name;
+
+  zw->m_name = NULL;
+  zw->m_start = zw->m_size = zw->m_crc = 0;
+}
+
+/* Adds the contents of FILE, with name MEMBER_NAME, to ZW. */
+void
+zip_writer_add (struct zip_writer *zw, FILE *file, const char *member_name)
+{
+  zip_writer_add_start (zw, member_name);
+
+  fseeko (file, 0, SEEK_SET);
+  for (;;)
+    {
+      char buf[4096];
+      size_t n = fread (buf, 1, sizeof buf, file);
+      if (!n)
+        break;
+      zip_writer_add_write (zw, buf, n);
+    }
+  zip_writer_add_finish (zw);
 }
 
 /* Adds a member named MEMBER_NAME whose contents is the null-terminated string
@@ -223,16 +250,9 @@ void
 zip_writer_add_memory (struct zip_writer *zw, const char *member_name,
                        const void *content, size_t size)
 {
-  FILE *fp = create_temp_file ();
-  if (fp == NULL)
-    {
-      msg_error (errno, _("error creating temporary file"));
-      zw->ok = false;
-      return;
-    }
-  fwrite (content, size, 1, fp);
-  zip_writer_add (zw, fp, member_name);
-  close_temp_file (fp);
+  zip_writer_add_start (zw, member_name);
+  zip_writer_add_write (zw, content, size);
+  zip_writer_add_finish (zw);
 }
 
 /* Finalizes the contents of ZW and closes it.  Returns true if successful,
@@ -247,6 +267,8 @@ zip_writer_close (struct zip_writer *zw)
 
   if (zw == NULL)
     return true;
+
+  assert (!zw->m_name);
 
   dir_start = zw->offset;
   for (i = 0; i < zw->n_members; i++)

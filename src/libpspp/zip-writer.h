@@ -21,11 +21,17 @@
 #include <stdio.h>
 
 struct zip_writer *zip_writer_create (const char *file_name);
+
+void zip_writer_add_start (struct zip_writer *, const char *member_name);
+void zip_writer_add_write (struct zip_writer *, const void *, size_t);
+void zip_writer_add_finish (struct zip_writer *);
+
 void zip_writer_add (struct zip_writer *, FILE *, const char *member_name);
 void zip_writer_add_string (struct zip_writer *, const char *member_name,
                             const char *content);
 void zip_writer_add_memory (struct zip_writer *, const char *member_name,
                             const void *content, size_t size);
+
 bool zip_writer_close (struct zip_writer *);
 
 #endif /* libpspp/zip-writer.h */
