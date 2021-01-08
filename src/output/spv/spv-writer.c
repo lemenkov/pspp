@@ -691,7 +691,7 @@ put_category (struct buf *buf, const struct pivot_category *c)
   else
     {
       put_bytes (buf, "\0\0\1", 3);
-      put_u32 (buf, 0);
+      put_u32 (buf, 0);         /* x23 */
       put_u32 (buf, -1);
       put_u32 (buf, c->n_subs);
       for (size_t i = 0; i < c->n_subs; i++)
@@ -704,7 +704,7 @@ put_y0 (struct buf *buf, const struct pivot_table *table)
 {
   put_u32 (buf, table->settings.epoch);
   put_byte (buf, table->settings.decimal);
-  put_byte (buf, table->grouping);
+  put_byte (buf, ',');
 }
 
 static void
@@ -724,17 +724,17 @@ put_custom_currency (struct buf *buf, const struct pivot_table *table)
 static void
 put_x1 (struct buf *buf, const struct pivot_table *table)
 {
-  put_byte (buf, 0);
+  put_byte (buf, 0);            /* x14 */
   put_byte (buf, table->show_title ? 1 : 10);
-  put_byte (buf, 0);
-  put_byte (buf, 0);
+  put_byte (buf, 0);            /* x16 */
+  put_byte (buf, 0);            /* lang */
   put_show_values (buf, table->show_variables);
   put_show_values (buf, table->show_values);
-  put_u32 (buf, -1);
-  put_u32 (buf, -1);
+  put_u32 (buf, -1);            /* x18 */
+  put_u32 (buf, -1);            /* x19 */
   for (int i = 0; i < 17; i++)
     put_byte (buf, 0);
-  put_bool (buf, false);
+  put_bool (buf, false);        /* x20 */
   put_byte (buf, table->show_caption);
 }
 
@@ -748,9 +748,8 @@ put_x2 (struct buf *buf)
 }
 
 static void
-put_x3 (struct buf *buf, const struct pivot_table *table)
+put_y1 (struct buf *buf, const struct pivot_table *table)
 {
-  put_bytes (buf, "\1\0\4\0\0\0", 6);
   put_string (buf, table->command_c);
   put_string (buf, table->command_local);
   put_string (buf, table->language);
@@ -758,6 +757,26 @@ put_x3 (struct buf *buf, const struct pivot_table *table)
   put_string (buf, table->locale);
   put_bytes (buf, "\0\0\1\1", 4);
   put_y0 (buf, table);
+}
+
+static void
+put_y2 (struct buf *buf, const struct pivot_table *table)
+{
+  put_custom_currency (buf, table);
+  put_byte (buf, '.');
+  put_bool (buf, 0);
+}
+
+static void
+put_x3 (struct buf *buf, const struct pivot_table *table)
+{
+  put_byte (buf, 1);
+  put_byte (buf, 0);
+  put_byte (buf, 4);            /* x21 */
+  put_byte (buf, 0);
+  put_byte (buf, 0);
+  put_byte (buf, 0);
+  put_y1 (buf, table);
   put_double (buf, table->small);
   put_byte (buf, 1);
   put_string (buf, table->dataset);
@@ -765,11 +784,7 @@ put_x3 (struct buf *buf, const struct pivot_table *table)
   put_u32 (buf, 0);
   put_u32 (buf, table->date);
   put_u32 (buf, 0);
-
-  /* Y2. */
-  put_custom_currency (buf, table);
-  put_byte (buf, '.');
-  put_bool (buf, 0);
+  put_y2 (buf, table);
 }
 
 static void
@@ -943,9 +958,9 @@ put_light_table (struct buf *buf, uint64_t table_id,
     {
       const struct pivot_dimension *d = table->dimensions[i];
       put_value (buf, d->root->name);
-      put_byte (buf, 0);
+      put_byte (buf, 0);        /* x1 */
       put_byte (buf, x2[i]);
-      put_u32 (buf, 2);
+      put_u32 (buf, 2);         /* x3 */
       put_bool (buf, !d->root->show_label);
       put_bool (buf, d->hide_all_labels);
       put_bool (buf, 1);
