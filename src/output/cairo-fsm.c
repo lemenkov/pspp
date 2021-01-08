@@ -1250,7 +1250,7 @@ xr_fsm_draw_slice (struct xr_fsm *fsm, cairo_t *cr, int space)
 {
   assert (fsm->print);
 
-  if (fsm->done)
+  if (fsm->done || space <= 0)
     return 0;
 
   cairo_save (cr);
