@@ -21,9 +21,11 @@
 #include <limits.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include <unistr.h>
 
 #include "data/file-handle-def.h"
 #include "data/settings.h"
+#include "libpspp/encoding-guesser.h"
 #include "libpspp/i18n.h"
 #include "libpspp/message.h"
 #include "libpspp/string-map.h"
@@ -35,6 +37,7 @@
 #include "output/pivot-table.h"
 #include "output/spv/light-binary-parser.h"
 #include "output/spv/spv-legacy-data.h"
+#include "output/spv/spv-light-decoder.h"
 #include "output/spv/spv-output.h"
 #include "output/spv/spv-select.h"
 #include "output/spv/spv-table-look.h"
@@ -72,8 +75,16 @@ static bool new_criteria;
 /* --sort: Sort members under dump-light-table, to make comparisons easier. */
 static bool sort;
 
-/* --raw: Dump raw binary data in dump-light-table. */
+/* --raw: Dump raw binary data in "dump-light-table"; dump all strings in
+     "strings". */
 static bool raw;
+
+/* --no-ascii-only: Drop all-ASCII strings in "strings". */
+static bool exclude_ascii_only;
+
+/* --utf8-only: Only print strings that have UTF-8 multibyte sequences in
+ * "strings". */
+static bool include_utf8_only;
 
 /* -f, --force: Keep output file even on error. */
 static bool force;
@@ -739,6 +750,125 @@ run_is_legacy (int argc UNUSED, char **argv)
   exit (is_legacy ? EXIT_SUCCESS : EXIT_FAILURE);
 }
 
+static bool
+is_all_ascii (const char *s)
+{
+  for (; *s; s++)
+    if (!encoding_guess_is_ascii_text (*s))
+      return false;
+
+  return true;
+}
+
+static void
+dump_strings (const char *encoding, struct string_array *strings)
+{
+  string_array_sort (strings);
+  string_array_uniq (strings);
+
+  if (raw)
+    {
+      if (exclude_ascii_only || include_utf8_only)
+        {
+          size_t i = 0;
+          for (size_t j = 0; j < strings->n; j++)
+            {
+              char *s = strings->strings[j];
+              bool is_ascii = is_all_ascii (s);
+              bool is_utf8 = !u8_check (CHAR_CAST (uint8_t *, s), strlen (s));
+              if (!is_ascii && (!include_utf8_only || is_utf8))
+                strings->strings[i++] = s;
+              else
+                free (s);
+            }
+          strings->n = i;
+        }
+      for (size_t i = 0; i < strings->n; i++)
+        puts (strings->strings[i]);
+    }
+  else
+    {
+      size_t n_nonascii = 0;
+      size_t n_utf8 = 0;
+      for (size_t i = 0; i < strings->n; i++)
+        {
+          const char *s = strings->strings[i];
+          if (!is_all_ascii (s))
+            {
+              n_nonascii++;
+              if (!u8_check (CHAR_CAST (uint8_t *, s), strlen (s)))
+                n_utf8++;
+            }
+        }
+      printf ("%s: %zu unique strings, %zu non-ASCII, %zu UTF-8.\n",
+              encoding, strings->n, n_nonascii, n_utf8);
+    }
+}
+
+static void
+run_strings (int argc UNUSED, char **argv)
+{
+  struct spv_reader *spv;
+  char *err = spv_open (argv[1], &spv);
+  if (err)
+    error (1, 0, "%s", err);
+
+  struct encoded_strings
+    {
+      char *encoding;
+      struct string_array strings;
+    }
+  *es = NULL;
+  size_t n_es = 0;
+  size_t allocated_es = 0;
+
+  struct spv_item **items;
+  size_t n_items;
+  spv_select (spv, criteria, n_criteria, &items, &n_items);
+  for (size_t i = 0; i < n_items; i++)
+    {
+      if (!spv_item_is_light_table (items[i]))
+        continue;
+
+      char *error;
+      struct spvlb_table *table;
+      error = spv_item_get_light_table (items[i], &table);
+      if (error)
+        {
+          msg (ME, "%s", error);
+          free (error);
+          continue;
+        }
+
+      const char *table_encoding = spvlb_table_get_encoding (table);
+      size_t j = 0;
+      for (j = 0; j < n_es; j++)
+        if (!strcmp (es[j].encoding, table_encoding))
+          break;
+      if (j >= n_es)
+        {
+          if (n_es >= allocated_es)
+            es = x2nrealloc (es, &allocated_es, sizeof *es);
+          es[n_es++] = (struct encoded_strings) {
+            .encoding = xstrdup (table_encoding),
+            .strings = STRING_ARRAY_INITIALIZER,
+          };
+        }
+      collect_spvlb_strings (table, &es[j].strings);
+    }
+  free (items);
+
+  for (size_t i = 0; i < n_es; i++)
+    {
+      dump_strings (es[i].encoding, &es[i].strings);
+      free (es[i].encoding);
+      string_array_destroy (&es[i].strings);
+    }
+  free (es);
+
+  spv_close (spv);
+}
+
 struct command
   {
     const char *name;
@@ -761,6 +891,7 @@ static const struct command commands[] =
     { "dump-legacy-table", 1, INT_MAX, run_dump_legacy_table },
     { "dump-structure", 1, INT_MAX, run_dump_structure },
     { "is-legacy", 1, 1, run_is_legacy },
+    { "strings", 1, 1, run_strings },
   };
 static const int n_commands = sizeof commands / sizeof *commands;
 
@@ -991,6 +1122,8 @@ parse_options (int argc, char *argv[])
           OPT_OR,
           OPT_SORT,
           OPT_RAW,
+          OPT_NO_ASCII_ONLY,
+          OPT_UTF8_ONLY,
           OPT_TABLE_LOOK,
           OPT_HELP_DEVELOPER,
         };
@@ -1018,6 +1151,10 @@ parse_options (int argc, char *argv[])
           /* "dump-light-table" command options. */
           { "sort", no_argument, NULL, OPT_SORT },
           { "raw", no_argument, NULL, OPT_RAW },
+
+          /* "strings" command options. */
+          { "no-ascii-only", no_argument, NULL, OPT_NO_ASCII_ONLY },
+          { "utf8-only", no_argument, NULL, OPT_UTF8_ONLY },
 
           { "help", no_argument, NULL, 'h' },
           { "help-developer", no_argument, NULL, OPT_HELP_DEVELOPER },
@@ -1092,6 +1229,14 @@ parse_options (int argc, char *argv[])
 
         case OPT_TABLE_LOOK:
           parse_table_look (optarg);
+          break;
+
+        case OPT_NO_ASCII_ONLY:
+          exclude_ascii_only = true;
+          break;
+
+        case OPT_UTF8_ONLY:
+          include_utf8_only = true;
           break;
 
         case 'f':
@@ -1181,6 +1326,7 @@ The following developer commands are available:\n\
   dump-legacy-table FILE [XPATH]...  Dump legacy table XML\n\
   dump-structure FILE [XPATH]...  Dump structure XML\n\
   is-legacy FILE         Exit with status 0 if any legacy table selected\n\
+  strings FILE           Dump analysis of strings\n\
 \n\
 Additional input selection options:\n\
   --members=MEMBER...    include only objects with these Zip member names\n\
@@ -1188,6 +1334,11 @@ Additional input selection options:\n\
 \n\
 Additional options for \"dir\" command:\n\
   --member-names         show Zip member names with objects\n\
+\n\
+Options for the \"strings\" command:\n\
+  --raw                  Dump all (unique) strings\n\
+  --raw --no-ascii-only  Dump all strings that contain non-ASCII characters\n\
+  --raw --utf8-only      Dump all non-ASCII strings that are valid UTF-8\n\
 \n\
 Other options:\n\
   --raw                  print raw binary data instead of a parsed version\n\

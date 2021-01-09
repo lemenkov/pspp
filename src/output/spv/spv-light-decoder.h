@@ -25,9 +25,14 @@
 
 struct pivot_table;
 struct spvlb_table;
+struct string_array;
 
 char *decode_spvlb_table (const struct spvlb_table *,
                           struct pivot_table **outp)
   WARN_UNUSED_RESULT;
+
+void collect_spvlb_strings (const struct spvlb_table *, struct string_array *);
+
+const char *spvlb_table_get_encoding (const struct spvlb_table *);
 
 #endif /* output/spv/spv-light-decoder.h */

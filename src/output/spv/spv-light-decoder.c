@@ -25,6 +25,7 @@
 
 #include "libpspp/i18n.h"
 #include "libpspp/message.h"
+#include "libpspp/string-array.h"
 #include "output/pivot-table.h"
 #include "output/spv/light-binary-parser.h"
 #include "output/spv/spv.h"
@@ -1042,4 +1043,172 @@ decode_spvlb_table (const struct spvlb_table *in, struct pivot_table **outp)
 error:
   pivot_table_unref (out);
   return error;
+}
+
+/* collect_spvlb_strings */
+
+static void
+add_if_nonempty (struct string_array *strings, const char *s)
+{
+  if (s && s[0])
+    string_array_append (strings, s);
+}
+
+static void
+collect_value_mod_strings (struct string_array *strings,
+                           const struct spvlb_value_mod *vm)
+{
+  if (vm->template_string)
+    add_if_nonempty (strings, vm->template_string->id);
+
+  if (vm->style_pair && vm->style_pair->font_style)
+    add_if_nonempty (strings, vm->style_pair->font_style->typeface);
+}
+
+static void
+collect_value_strings (struct string_array *strings,
+                       const struct spvlb_value *value)
+{
+  if (!value)
+    return;
+
+  switch (value->type)
+    {
+    case 1:
+      collect_value_mod_strings (strings, value->type_01.value_mod);
+      break;
+
+    case 2:
+      collect_value_mod_strings (strings, value->type_02.value_mod);
+      add_if_nonempty (strings, value->type_02.var_name);
+      add_if_nonempty (strings, value->type_02.value_label);
+      break;
+
+    case 3:
+      collect_value_mod_strings (strings, value->type_03.value_mod);
+      add_if_nonempty (strings, value->type_03.local);
+      add_if_nonempty (strings, value->type_03.id);
+      add_if_nonempty (strings, value->type_03.c);
+      break;
+
+    case 4:
+      collect_value_mod_strings (strings, value->type_04.value_mod);
+      add_if_nonempty (strings, value->type_04.value_label);
+      add_if_nonempty (strings, value->type_04.var_name);
+      add_if_nonempty (strings, value->type_04.s);
+      break;
+
+    case 5:
+      collect_value_mod_strings (strings, value->type_05.value_mod);
+      add_if_nonempty (strings, value->type_05.var_name);
+      add_if_nonempty (strings, value->type_05.var_label);
+      break;
+
+    case 6:
+      collect_value_mod_strings (strings, value->type_06.value_mod);
+      add_if_nonempty (strings, value->type_06.local);
+      add_if_nonempty (strings, value->type_06.id);
+      add_if_nonempty (strings, value->type_06.c);
+      break;
+
+    case -1:
+      collect_value_mod_strings (strings, value->type_else.value_mod);
+      add_if_nonempty (strings, value->type_else.template);
+      for (size_t i = 0; i < value->type_else.n_args; i++)
+        {
+          const struct spvlb_argument *a = value->type_else.args[i];
+          collect_value_strings (strings, a->value);
+          for (size_t j = 0; j < a->n_values; j++)
+            collect_value_strings (strings, a->values[j]);
+        }
+      break;
+    }
+}
+
+static void
+collect_category_strings (struct string_array *strings,
+                          const struct spvlb_category *cat)
+{
+  collect_value_strings (strings, cat->name);
+  if (cat->group)
+    for (size_t i = 0; i < cat->group->n_subcategories; i++)
+      collect_category_strings (strings, cat->group->subcategories[i]);
+}
+
+/* Adds all of the characters strings in TABLE to STRINGS. */
+void
+collect_spvlb_strings (const struct spvlb_table *table,
+                       struct string_array *strings)
+{
+  add_if_nonempty (strings, table->ts->notes);
+  add_if_nonempty (strings, table->ts->table_look);
+  add_if_nonempty (strings, table->ps->continuation_string);
+
+  const struct spvlb_custom_currency *cc = table->formats->custom_currency;
+  if (cc)
+    for (int i = 0; i < cc->n_ccs; i++)
+      add_if_nonempty (strings, cc->ccs[i]);
+
+  const struct spvlb_y1 *y1 = (table->formats->x0 ? table->formats->x0->y1
+                               : table->formats->x3 ? table->formats->x3->y1
+                               : NULL);
+  if (y1)
+    {
+      add_if_nonempty (strings, y1->command_local);
+      add_if_nonempty (strings, y1->command);
+      add_if_nonempty (strings, y1->language);
+      add_if_nonempty (strings, y1->charset);
+      add_if_nonempty (strings, y1->locale);
+    }
+
+  const struct spvlb_x3 *x3 = table->formats->x3;
+  if (x3)
+    {
+      if (x3->dataset && x3->dataset[0] && x3->dataset[0] != 4)
+        add_if_nonempty (strings, x3->dataset);
+      add_if_nonempty (strings, x3->datafile);
+    }
+
+  for (size_t i = 0; i < table->footnotes->n_footnotes; i++)
+    {
+      const struct spvlb_footnote *f = table->footnotes->footnotes[i];
+      collect_value_strings (strings, f->text);
+      collect_value_strings (strings, f->marker);
+    }
+
+  collect_value_strings (strings, table->titles->user_title);
+  collect_value_strings (strings, table->titles->subtype);
+  collect_value_strings (strings, table->titles->corner_text);
+  collect_value_strings (strings, table->titles->caption);
+
+  for (size_t i = 0; i < PIVOT_N_AREAS; i++)
+    add_if_nonempty (strings, table->areas->areas[i]->typeface);
+
+  for (size_t i = 0; i < table->dimensions->n_dims; i++)
+    {
+      const struct spvlb_dimension *d = table->dimensions->dims[i];
+      collect_value_strings (strings, d->name);
+      for (size_t j = 0; j < d->n_categories; j++)
+        collect_category_strings (strings, d->categories[j]);
+    }
+
+  for (size_t i = 0; i < table->cells->n_cells; i++)
+    collect_value_strings (strings, table->cells->cells[i]->value);
+}
+
+/* Returns the encoding that TABLE declares to be in use for its strings.
+   (Watch out, it's not always correct.) */
+const char *
+spvlb_table_get_encoding (const struct spvlb_table *table)
+{
+  const struct spvlb_y1 *y1 = (table->formats->x0 ? table->formats->x0->y1
+                               : table->formats->x3 ? table->formats->x3->y1
+                               : NULL);
+  if (y1)
+    return y1->charset;
+  else
+    {
+      const char *dot = strchr (table->formats->locale, '.');
+      return dot ? dot + 1 : "windows-1252";
+    }
 }
