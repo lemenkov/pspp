@@ -2448,7 +2448,7 @@ pivot_value_clone (const struct pivot_value *old)
       font_style_copy (NULL, new->font_style, old->font_style);
     }
   if (old->cell_style)
-    new->font_style = xmemdup (old->font_style, sizeof *new->font_style);
+    new->cell_style = xmemdup (old->cell_style, sizeof *new->cell_style);
   if (old->n_subscripts)
     {
       new->subscripts = xnmalloc (old->n_subscripts, sizeof *new->subscripts);
