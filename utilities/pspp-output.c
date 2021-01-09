@@ -59,7 +59,7 @@
 static struct string_map output_options
     = STRING_MAP_INITIALIZER (output_options);
 
-/* --member-name: Include .zip member name in "dir" output. */
+/* --member-names: Include .zip member name in "dir" output. */
 static bool show_member_names;
 
 /* --show-hidden, --select, --commands, ...: Selection criteria. */
@@ -651,7 +651,7 @@ dump_xml (int argc, char **argv, const char *member_name,
               xmlXPathFreeContext (xpath_ctx);
             }
           if (any_results)
-            putchar ('\n');;
+            putchar ('\n');
         }
       xmlFreeDoc (doc);
     }
