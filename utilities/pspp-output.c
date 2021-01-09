@@ -513,6 +513,9 @@ run_dump_legacy_data (int argc UNUSED, char **argv)
   if (err)
     error (1, 0, "%s", err);
 
+  if (raw && isatty (STDOUT_FILENO))
+    error (1, 0, "not writing binary data to tty");
+
   struct spv_item **items;
   size_t n_items;
   spv_select (spv, criteria, n_criteria, &items, &n_items);
