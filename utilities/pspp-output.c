@@ -85,6 +85,7 @@ static struct pivot_table_look *table_look;
 static size_t n_warnings;
 
 static void usage (void);
+static void developer_usage (void);
 static void parse_options (int argc, char **argv);
 
 static void
@@ -988,6 +989,7 @@ parse_options (int argc, char *argv[])
           OPT_SORT,
           OPT_RAW,
           OPT_TABLE_LOOK,
+          OPT_HELP_DEVELOPER,
         };
       static const struct option long_options[] =
         {
@@ -1015,6 +1017,7 @@ parse_options (int argc, char *argv[])
           { "raw", no_argument, NULL, OPT_RAW },
 
           { "help", no_argument, NULL, 'h' },
+          { "help-developer", no_argument, NULL, OPT_HELP_DEVELOPER },
           { "version", no_argument, NULL, 'v' },
 
           { NULL, 0, NULL, 0 },
@@ -1101,6 +1104,10 @@ parse_options (int argc, char *argv[])
           usage ();
           exit (EXIT_SUCCESS);
 
+        case OPT_HELP_DEVELOPER:
+          developer_usage ();
+          exit (EXIT_SUCCESS);
+
         default:
           exit (EXIT_FAILURE);
         }
@@ -1154,7 +1161,32 @@ The following options override \"convert\" behavior:\n\
   --table-look=FILE         override tables' style with TableLook from FILE\n\
 Other options:\n\
   --help              display this help and exit\n\
+  --help-developer    display help for developer commands and exit\n\
   --version           output version information and exit\n",
           program_name, program_name, ds_cstr (&s));
   ds_destroy (&s);
+}
+
+static void
+developer_usage (void)
+{
+  printf ("\
+The following developer commands are available:\n\
+  dump FILE              Dump pivot table structure\n\
+  [--raw | --sort] dump-light-table FILE  Dump light tables\n\
+  [--raw] dump-legacy-data FILE  Dump legacy table data\n\
+  dump-legacy-table FILE [XPATH]...  Dump legacy table XML\n\
+  dump-structure FILE [XPATH]...  Dump structure XML\n\
+  is-legacy FILE         Exit with status 0 if any legacy table selected\n\
+\n\
+Additional input selection options:\n\
+  --members=MEMBER...    include only objects with these Zip member names\n\
+  --errors               include only objects that cannot be loaded\n\
+\n\
+Additional options for \"dir\" command:\n\
+  --member-names         show Zip member names with objects\n\
+\n\
+Other options:\n\
+  --raw                  print raw binary data instead of a parsed version\n\
+  --sort                 sort borders and areas for shorter \"diff\" output\n");
 }
