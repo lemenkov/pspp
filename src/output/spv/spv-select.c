@@ -178,12 +178,25 @@ select_matches (const struct spv_reader *spv, const struct spv_criteria *c,
                   &c->include.labels, &c->exclude.labels))
         continue;
 
-      if (c->members.n
-          && !((item->xml_member
-                && string_array_matches (item->xml_member, &c->members)) ||
-               (item->bin_member
-                && string_array_matches (item->bin_member, &c->members))))
-        continue;
+      if (c->members.n)
+        {
+          char *members[] = {
+            item->structure_member,
+            item->xml_member,
+            item->bin_member,
+            item->png_member
+          };
+
+          bool found = false;
+          for (size_t i = 0; i < sizeof members / sizeof *members; i++)
+            if (string_array_matches (members[i], &c->members) == true)
+              {
+                found = true;
+                break;
+              }
+          if (!found)
+            continue;
+        }
 
       if (c->n_instances)
         {
