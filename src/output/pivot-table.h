@@ -688,6 +688,8 @@ struct pivot_value
         /* PIVOT_VALUE_TEXT. */
         struct
           {
+            /* 'local', 'c', and 'id' must all be nonnull, but they are allowed
+               to be the same pointer. */
             char *local;              /* Localized. */
             char *c;                  /* English. */
             char *id;                 /* Identifier. */
@@ -698,6 +700,8 @@ struct pivot_value
         /* PIVOT_VALUE_TEMPLATE. */
         struct
           {
+            /* Both 'local' and 'id' must be nonnull, but they are allowed to
+               be the same pointer. */
             char *local;              /* Localized. */
             char *id;                 /* Identifier. */
             struct pivot_argument *args;

@@ -720,6 +720,9 @@ decode_label_frame (struct pivot_table *table,
               value->text.local = new;
             }
         }
+      if (!value->text.local)
+        value->text.local = xstrdup ("");
+      value->text.c = value->text.id = value->text.local;
       pivot_value_destroy (*target);
       *target = value;
     }
