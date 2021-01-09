@@ -2483,10 +2483,10 @@ pivot_value_clone (const struct pivot_value *old)
     case PIVOT_VALUE_TEXT:
       new->text.local = xstrdup (old->text.local);
       new->text.c = (old->text.c == old->text.local ? new->text.local
-                     : xstrdup (old->text.c));
+                     : xstrdup_if_nonnull (old->text.c));
       new->text.id = (old->text.id == old->text.local ? new->text.local
                       : old->text.id == old->text.c ? new->text.c
-                      : xstrdup (old->text.id));
+                      : xstrdup_if_nonnull (old->text.id));
       break;
 
     case PIVOT_VALUE_TEMPLATE:
