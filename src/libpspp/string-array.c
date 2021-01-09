@@ -234,6 +234,25 @@ string_array_sort (struct string_array *sa)
   qsort (sa->strings, sa->n, sizeof *sa->strings, compare_strings);
 }
 
+/* Removes all but one of any series of adjacent duplicate strings in SA. */
+void
+string_array_uniq (struct string_array *sa)
+{
+  if (!sa->n)
+    return;
+
+  size_t n = 1;
+  for (size_t i = 1; i < sa->n; i++)
+    {
+      char *s = sa->strings[i];
+      if (strcmp (sa->strings[n - 1], s))
+        sa->strings[n++] = s;
+      else
+        free (s);
+    }
+  sa->n = n;
+}
+
 /* Divides STRING into tokens at DELIMITERS and adds each token to SA. */
 void
 string_array_parse (struct string_array *sa, struct substring string,

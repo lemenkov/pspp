@@ -61,6 +61,7 @@ void string_array_terminate_null (struct string_array *);
 void string_array_shrink (struct string_array *);
 
 void string_array_sort (struct string_array *);
+void string_array_uniq (struct string_array *);
 
 void string_array_parse (struct string_array *, struct substring string,
                          struct substring delimiters);
