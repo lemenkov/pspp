@@ -921,8 +921,8 @@ A 32-bit IEEE floating-point number.
 @item string
 @itemx bestring
 A 32-bit unsigned integer, in little-endian or big-endian byte order,
-respectively, followed by the specified number of bytes of UTF-8
-encoded character data.
+respectively, followed by the specified number of bytes of character
+data.  (The encoding is indicated by the Formats nonterminal.)
 
 @item @var{x}?
 @var{x} is optional, e.g.@: 00? is an optional zero byte.
@@ -1365,8 +1365,8 @@ If @code{n-widths} is nonzero, then the accompanying integers are
 column widths as manually adjusted by the user.
 
 @code{locale} is a locale including an encoding, such as
-@code{en_US.windows-1252} or @code{it_IT.windows-1252}.  The encoding
-string (like other strings in the member) is encoded in UTF-8.
+@code{en_US.windows-1252} or @code{it_IT.windows-1252}.
+(@code{locale} is often duplicated in Y1, described below).
 
 @code{epoch} is the year that starts the epoch.  A 2-digit year is
 interpreted as belonging to the 100 years beginning at the epoch.  The
@@ -1408,7 +1408,7 @@ output, in English.  It is not necessarily the literal syntax name of
 the procedure: for example, NPAR TESTS becomes ``Nonparametric
 Tests.''  @code{command-local} is the procedure's name, translated
 into the output language; it is often empty and, when it is not,
-sometimes the same as @code{command}.q
+sometimes the same as @code{command}.
 
 @code{missing} is the character used to indicate that a cell contains
 a missing value.  It is always observed as @samp{.}.
@@ -1435,9 +1435,7 @@ X1 =>
 
 @code{lang} may indicate the language in use.  Some values seem to be
 0: @t{en}, 1: @t{de}, 2: @t{es}, 3: @t{it}, 5: @t{ko}, 6: @t{pl}, 8:
-@t{zh-tw}, 10: @t{pt_BR}, 11: @t{fr}.  The @code{locale} in Formats
-and the @code{language}, @code{charset}, and @code{locale} in X0 are
-more likely to be useful in practice.
+@t{zh-tw}, 10: @t{pt_BR}, 11: @t{fr}.
 
 @code{show-variables} determines how variables are displayed by
 default.  A value of 1 means to display variable names, 2 to display
@@ -1525,6 +1523,49 @@ will).
 
 A writer may safely use 4 for @code{x21} and omit @code{x22} and the
 other optional bytes at the end.
+
+@subsubheading Encoding
+
+Formats contains several indications of character encoding:
+
+@itemize @bullet
+@item
+@code{locale} in Formats itself.
+
+@item
+@code{locale} in Y1 (in version 1, Y1 is optionally nested inside X0;
+in version 3, Y1 is nested inside X3).
+
+@item
+@code{charset} in version 3, in Y1.
+
+@item
+@code{lang} in X1, in version 3.
+@end itemize
+
+@code{charset}, if present, is a good indication of character
+encoding, and in its absence the encoding suffix on @code{locale} in
+Formats will work.
+
+@code{locale} in Y1 can be disregarded: it is normally the same as
+@code{locale} in Formats, and it is only present if @code{charset} is
+also.
+
+@code{lang} is not helpful and should be ignored for character
+encoding purposes.
+
+However, the corpus contains many examples of light members whose
+strings are encoded in UTF-8 despite declaring some other character
+set.  Furthermore, the corpus contains several examples of light
+members in which some strings are encoded in UTF-8 (and contain
+multibyte characters) and other strings are encoded in another
+character set (and contain non-ASCII characters).  PSPP treats any
+valid UTF-8 string as UTF-8 and only falls back to the declared
+encoding for strings that are not valid UTF-8.
+
+The @command{pspp-output} program's @command{strings} command can help
+analyze the encoding in an SPV light member.  Use @code{pspp-output
+--help-dev} to see its usage.
 
 @node SPV Light Member Dimensions
 @subsection Dimensions
