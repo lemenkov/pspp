@@ -323,7 +323,6 @@ spv_writer_put_text (struct spv_writer *w, const struct text_item *text,
     spv_writer_close_file (w, "");
 }
 
-#ifdef HAVE_CAIRO
 static cairo_status_t
 write_to_zip (void *zw_, const unsigned char *data, unsigned int length)
 {
@@ -363,7 +362,6 @@ spv_writer_put_image (struct spv_writer *w, cairo_surface_t *image)
 
   free (uri);
 }
-#endif
 
 void
 spv_writer_eject_page (struct spv_writer *w)

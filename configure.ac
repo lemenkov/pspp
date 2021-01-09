@@ -94,20 +94,9 @@ AC_ARG_VAR([PSPP_LDFLAGS], [linker flags to be used for linking the pspp binary 
 AC_ARG_VAR([PSPPIRE_LDFLAGS], [linker flags to be used for linking the psppire binary only])
 
 # Support for Cairo and Pango.
-AC_ARG_WITH([cairo],
-  [AS_HELP_STRING(
-    [--without-cairo],
-    [Don't build support for charts (using Cairo and Pango);
-     implies --without-gui])],
-  [], [with_cairo=yes])
-AM_CONDITIONAL([HAVE_CAIRO], [test "$with_cairo" != no])
-if test "$with_cairo" != no; then
-  PKG_CHECK_MODULES([CAIRO], [cairo >= 1.5 pango >= 1.22 pangocairo],
-    [CPPFLAGS="$CPPFLAGS $CAIRO_CFLAGS"
-     AC_DEFINE([HAVE_CAIRO], 1,
-       [Define to 1 if Cairo and Pango are available.])],
-    [PSPP_REQUIRED_PREREQ([cairo 1.5 or later and pango 1.22 or later (or use --without-cairo)])])
-fi
+PKG_CHECK_MODULES([CAIRO], [cairo >= 1.5 pango >= 1.22 pangocairo],
+  [CPPFLAGS="$CPPFLAGS $CAIRO_CFLAGS"],
+  [PSPP_REQUIRED_PREREQ([cairo 1.5 or later and pango 1.22 or later])])
 
 dnl One of the tests uses xmllint.
 AC_CACHE_CHECK([for an xmllint program which fits our needs],[ac_cv_path_XMLLINT],
@@ -124,9 +113,8 @@ AC_ARG_WITH([gui],
   [AS_HELP_STRING([--without-gui],
                   [Don't build the PSPPIRE GUI (using GTK+)])],
   [], [with_gui=yes])
-AM_CONDITIONAL([building_gui],
-               [test "$with_cairo" != no && test "$with_gui" != "no"])
-if test "$with_cairo" != no && test "$with_gui" != "no"; then
+AM_CONDITIONAL([building_gui], [test "$with_gui" != "no"])
+if test "$with_gui" != "no"; then
   PKG_CHECK_MODULES([GTHREAD], [gthread-2.0], [],
     [PSPP_REQUIRED_PREREQ([gthread 2.0 (or use --without-gui)])])
 

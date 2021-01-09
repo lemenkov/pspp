@@ -33,9 +33,7 @@
 #include "libpspp/i18n.h"
 #include "libpspp/message.h"
 #include "libpspp/version.h"
-#ifdef HAVE_CAIRO
 #include "output/cairo-chart.h"
-#endif
 #include "output/chart-item.h"
 #include "output/driver-provider.h"
 #include "output/image-item.h"
@@ -61,10 +59,8 @@
 struct html_driver
   {
     struct output_driver driver;
-#ifdef HAVE_CAIRO
     struct cell_color fg;
     struct cell_color bg;
-#endif
     struct file_handle *handle;
     char *chart_file_name;
 
@@ -202,10 +198,8 @@ html_create (struct file_handle *fh, enum settings_output_devices device_type,
                                                       fh_get_file_name (fh)));
   html->file = NULL;
   html->chart_cnt = 1;
-#ifdef HAVE_CAIRO
   html->bg = parse_color (opt (d, o, "background-color", "#FFFFFFFFFFFF"));
   html->fg = parse_color (opt (d, o, "foreground-color", "#000000000000"));
-#endif
   html->file = fn_open (html->handle, "w");
   if (html->file == NULL)
     {
@@ -266,7 +260,6 @@ html_submit (struct output_driver *driver,
       struct table_item *table_item = to_table_item (output_item);
       html_output_table (html, table_item);
     }
-#ifdef HAVE_CAIRO
   else if (is_image_item (output_item) && html->chart_file_name != NULL)
     {
       struct image_item *image_item = to_image_item (output_item);
@@ -296,7 +289,6 @@ html_submit (struct output_driver *driver,
           free (file_name);
         }
     }
-#endif  /* HAVE_CAIRO */
   else if (is_text_item (output_item))
     {
       struct text_item *text_item = to_text_item (output_item);

@@ -129,7 +129,6 @@ configure_drivers (int width, int length UNUSED, int min_break)
   register_driver (&options, "-");
 
 
-#ifdef HAVE_CAIRO
   /* Render to <base>.pdf. */
   string_map_insert (&options, "top-margin", "0");
   string_map_insert (&options, "bottom-margin", "0");
@@ -138,7 +137,6 @@ configure_drivers (int width, int length UNUSED, int min_break)
   string_map_insert (&options, "paper-size", "99x99in");
   string_map_insert (&options, "trim", "true");
   register_driver (&options, "%s.pdf", output_base);
-#endif
 
   string_map_insert (&options, "box", "unicode");
   register_driver (&options, "%s.txt", output_base);

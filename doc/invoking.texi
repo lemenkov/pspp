@@ -233,8 +233,7 @@ by @command{make check} and similar scripts.
 To produce output in PDF, PostScript, SVG, or PNG format, specify
 @option{-o @var{file}} on the @pspp{} command line, optionally
 followed by any of the options shown in the table below to customize
-the output format.  These output formats are only available if your
-installation of @pspp{} was compiled with the Cairo library.
+the output format.
 
 PDF, PostScript, and SVG use real units: each dimension among the
 options listed below may have a suffix @samp{mm} for millimeters,
@@ -343,9 +342,7 @@ chart is output, the @samp{#} is replaced by the chart number.  The
 default is the file name specified on @option{-o} with the extension
 stripped off and replaced by @file{-#.png}.
 
-Specify @code{none} to disable chart output.  Charts are always
-disabled if your installation of @pspp{} was compiled without the
-Cairo library.
+Specify @code{none} to disable chart output.
 
 @item @option{-O foreground-color=@var{color}}
 @itemx @option{-O background-color=@var{color}}

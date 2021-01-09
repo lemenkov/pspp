@@ -29,7 +29,6 @@
 #include "gl/xalloc.h"
 #include "gl/xvasprintf.h"
 
-#ifdef HAVE_CAIRO
 /* Creates and returns a new image item containing IMAGE.  Takes ownership of
    IMAGE. */
 struct image_item *
@@ -42,7 +41,6 @@ image_item_create (cairo_surface_t *image)
   };
   return item;
 }
-#endif
 
 /* Submits ITEM to the configured output drivers, and transfers ownership to
    the output subsystem. */
@@ -63,9 +61,7 @@ image_item_unshare (struct image_item *old)
   struct image_item *new = xmalloc (sizeof *new);
   *new = (struct image_item) {
     .output_item = OUTPUT_ITEM_CLONE_INITIALIZER (&old->output_item),
-#ifdef HAVE_CAIRO
     .image = cairo_surface_reference (old->image),
-#endif
   };
   return new;
 }
@@ -80,9 +76,7 @@ static void
 image_item_destroy (struct output_item *output_item)
 {
   struct image_item *item = to_image_item (output_item);
-#ifdef HAVE_CAIRO
   cairo_surface_destroy (item->image);
-#endif
   free (item);
 }
 

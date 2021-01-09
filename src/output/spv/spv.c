@@ -201,7 +201,6 @@ spv_item_is_image (const struct spv_item *item)
   return item->type == SPV_ITEM_IMAGE;
 }
 
-#ifdef HAVE_CAIRO
 static cairo_status_t
 read_from_zip_member (void *zm_, unsigned char *data, unsigned int length)
 {
@@ -240,7 +239,6 @@ spv_item_get_image (const struct spv_item *item_)
 
   return item->image;
 }
-#endif
 
 struct spv_item *
 spv_item_next (const struct spv_item *item)
@@ -315,10 +313,8 @@ spv_item_destroy (struct spv_item *item)
       pivot_value_destroy (item->text);
 
       free (item->png_member);
-#ifdef HAVE_CAIRO
       if (item->image)
         cairo_surface_destroy (item->image);
-#endif
 
       free (item);
     }
@@ -623,10 +619,8 @@ spv_item_load (const struct spv_item *item)
 {
   if (spv_item_is_table (item))
     spv_item_get_table (item);
-#ifdef HAVE_CAIRO
   else if (spv_item_is_image (item))
     spv_item_get_image (item);
-#endif
 }
 
 bool

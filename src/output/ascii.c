@@ -47,9 +47,7 @@
 #include "libpspp/u8-line.h"
 #include "libpspp/version.h"
 #include "output/ascii.h"
-#ifdef HAVE_CAIRO
 #include "output/cairo-chart.h"
-#endif
 #include "output/chart-item-provider.h"
 #include "output/driver-provider.h"
 #include "output/image-item.h"
@@ -296,11 +294,9 @@ struct ascii_driver
     bool emphasis;              /* Enable bold and underline in output? */
     char *chart_file_name;      /* Name of files used for charts. */
 
-#ifdef HAVE_CAIRO
     /* Colours for charts */
     struct cell_color fg;
     struct cell_color bg;
-#endif
 
     /* How the page width is determined: */
     enum {
@@ -399,10 +395,8 @@ ascii_create (struct  file_handle *fh, enum settings_output_devices device_type,
                    : VIEW_WIDTH);
   a->min_hbreak = parse_int (opt (d, o, "min-hbreak", "-1"), -1, INT_MAX);
 
-#ifdef HAVE_CAIRO
   a->bg = parse_color (opt (d, o, "background-color", "#FFFFFFFFFFFF"));
   a->fg = parse_color (opt (d, o, "foreground-color", "#000000000000"));
-#endif
 
   const char *default_box = (terminal && (!strcmp (locale_charset (), "UTF-8")
                                           || term_is_utf8_xterm ())
@@ -603,7 +597,6 @@ ascii_submit (struct output_driver *driver,
 
   if (is_table_item (output_item))
     ascii_output_table_item (a, to_table_item (output_item));
-#ifdef HAVE_CAIRO
   else if (is_image_item (output_item) && a->chart_file_name != NULL)
     {
       struct image_item *image_item = to_image_item (output_item);
@@ -646,7 +639,6 @@ ascii_submit (struct output_driver *driver,
           free (file_name);
         }
     }
-#endif  /* HAVE_CAIRO */
   else if (is_text_item (output_item))
     {
       const struct text_item *text_item = to_text_item (output_item);

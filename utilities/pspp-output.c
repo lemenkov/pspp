@@ -16,9 +16,7 @@
 
 #include <config.h>
 
-#ifdef HAVE_CAIRO
 #include <cairo.h>
-#endif
 #include <getopt.h>
 #include <limits.h>
 #include <stdlib.h>
@@ -126,10 +124,8 @@ dump_item (const struct spv_item *item)
       break;
 
     case SPV_ITEM_IMAGE:
-#ifdef HAVE_CAIRO
       image_item_submit (image_item_create (cairo_surface_reference (
                                               spv_item_get_image (item))));
-#endif
       break;
 
     case SPV_ITEM_TREE:

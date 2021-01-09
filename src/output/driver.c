@@ -418,19 +418,17 @@ output_driver_is_registered (const struct output_driver *driver)
   return output_driver_get_engine (driver) != NULL;
 }
 
-extern const struct output_driver_factory txt_driver_factory;
-extern const struct output_driver_factory list_driver_factory;
-extern const struct output_driver_factory html_driver_factory;
 extern const struct output_driver_factory csv_driver_factory;
+extern const struct output_driver_factory html_driver_factory;
+extern const struct output_driver_factory list_driver_factory;
 extern const struct output_driver_factory odt_driver_factory;
-extern const struct output_driver_factory spv_driver_factory;
-#ifdef HAVE_CAIRO
 extern const struct output_driver_factory pdf_driver_factory;
-extern const struct output_driver_factory ps_driver_factory;
-extern const struct output_driver_factory svg_driver_factory;
 extern const struct output_driver_factory png_driver_factory;
-#endif
+extern const struct output_driver_factory ps_driver_factory;
+extern const struct output_driver_factory spv_driver_factory;
+extern const struct output_driver_factory svg_driver_factory;
 extern const struct output_driver_factory tex_driver_factory;
+extern const struct output_driver_factory txt_driver_factory;
 
 static const struct output_driver_factory *factories[] =
   {
@@ -440,12 +438,10 @@ static const struct output_driver_factory *factories[] =
     &csv_driver_factory,
     &odt_driver_factory,
     &spv_driver_factory,
-#ifdef HAVE_CAIRO
     &pdf_driver_factory,
     &ps_driver_factory,
     &svg_driver_factory,
     &png_driver_factory,
-#endif
     &tex_driver_factory,
     NULL
   };

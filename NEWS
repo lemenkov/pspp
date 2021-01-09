@@ -21,7 +21,11 @@ Changes from 1.4.1 to 1.5.2:
  * The user manual, in its Info and HTML versions, now includes
    graphical output examples and screenshots.
 
- * gettext 0.20 or later is required for building.
+ * Build changes:
+
+   - The Cairo and Pango libraries are now required.
+
+   - gettext 0.20 or later is now required.
 
  * Output improvements:
 

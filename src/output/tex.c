@@ -36,9 +36,7 @@
 #include "libpspp/message.h"
 #include "libpspp/temp-file.h"
 #include "libpspp/version.h"
-#ifdef HAVE_CAIRO
 #include "output/cairo-chart.h"
-#endif
 #include "output/chart-item.h"
 #include "output/driver-provider.h"
 #include "output/image-item.h"
@@ -76,10 +74,8 @@ struct tex_driver
     /* A hash table containing any Tex macros which need to be emitted.  */
     struct hmap macros;
     bool require_graphics;
-#ifdef HAVE_CAIRO
     struct cell_color fg;
     struct cell_color bg;
-#endif
     struct file_handle *handle;
     char *chart_file_name;
 
@@ -141,10 +137,8 @@ tex_create (struct file_handle *fh, enum settings_output_devices device_type,
   tex->chart_file_name = parse_chart_file_name (opt (d, o, "charts",
                                                       fh_get_file_name (fh)));
   tex->chart_cnt = 1;
-#ifdef HAVE_CAIRO
   tex->bg = parse_color (opt (d, o, "background-color", "#FFFFFFFFFFFF"));
   tex->fg = parse_color (opt (d, o, "foreground-color", "#000000000000"));
-#endif
 
   tex->file = fn_open (tex->handle, "w");
   if (tex->file == NULL)
@@ -324,7 +318,6 @@ tex_submit (struct output_driver *driver,
       struct table_item *table_item = to_table_item (output_item);
       tex_output_table (tex, table_item);
     }
-#ifdef HAVE_CAIRO
   else if (is_image_item (output_item) && tex->chart_file_name != NULL)
     {
       struct image_item *image_item = to_image_item (output_item);
@@ -354,7 +347,6 @@ tex_submit (struct output_driver *driver,
           free (file_name);
         }
     }
-#endif  /* HAVE_CAIRO */
   else if (is_text_item (output_item))
     {
       struct text_item *text_item = to_text_item (output_item);

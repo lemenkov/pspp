@@ -19,8 +19,6 @@
 
 #include <stdbool.h>
 
-#ifdef HAVE_CAIRO
-
 #include <cairo/cairo.h>
 #include <pango/pango-font.h>
 #include "output/table.h"
@@ -73,7 +71,5 @@ struct xr_fsm *xr_fsm_create_for_printing (const struct output_item *,
 void xr_fsm_destroy (struct xr_fsm *);
 int xr_fsm_draw_slice (struct xr_fsm *, cairo_t *, int space);
 bool xr_fsm_is_empty (const struct xr_fsm *);
-
-#endif  /* HAVE_CAIRO */
 
 #endif /* output/cairo-fsm.h */

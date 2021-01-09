@@ -23,42 +23,52 @@ src_output_liboutput_la_CPPFLAGS = $(LIBXML2_CFLAGS) $(AM_CPPFLAGS)
 src_output_liboutput_la_SOURCES = \
 	src/output/ascii.c \
 	src/output/ascii.h \
+	src/output/cairo-chart.c \
+	src/output/cairo-chart.h \
+	src/output/cairo-fsm.c \
+	src/output/cairo-fsm.h \
+	src/output/cairo-pager.c \
+	src/output/cairo-pager.h \
+	src/output/cairo.c \
 	src/output/chart-item-provider.h \
 	src/output/chart-item.c \
 	src/output/chart-item.h \
-	src/output/charts/boxplot.c \
-	src/output/charts/boxplot.h \
-	src/output/charts/np-plot.c \
-	src/output/charts/np-plot.h \
+	src/output/charts/barchart-cairo.c \
 	src/output/charts/barchart.c \
 	src/output/charts/barchart.h \
+	src/output/charts/boxplot-cairo.c \
+	src/output/charts/boxplot.c \
+	src/output/charts/boxplot.h \
+	src/output/charts/np-plot-cairo.c \
+	src/output/charts/np-plot.c \
+	src/output/charts/np-plot.h \
+	src/output/charts/piechart-cairo.c \
 	src/output/charts/piechart.c \
 	src/output/charts/piechart.h \
+	src/output/charts/plot-hist-cairo.c \
 	src/output/charts/plot-hist.c \
 	src/output/charts/plot-hist.h \
+	src/output/charts/roc-chart-cairo.c \
 	src/output/charts/roc-chart.c \
 	src/output/charts/roc-chart.h \
-	src/output/charts/spreadlevel-plot.c \
-	src/output/charts/spreadlevel-plot.h \
-	src/output/charts/scree.c \
-	src/output/charts/scree.h \
+	src/output/charts/scatterplot-cairo.c \
 	src/output/charts/scatterplot.c \
 	src/output/charts/scatterplot.h \
+	src/output/charts/scree-cairo.c \
+	src/output/charts/scree.c \
+	src/output/charts/scree.h \
+	src/output/charts/spreadlevel-cairo.c \
+	src/output/charts/spreadlevel-plot.c \
+	src/output/charts/spreadlevel-plot.h \
 	src/output/csv.c \
 	src/output/driver-provider.h \
 	src/output/driver.c \
 	src/output/driver.h \
-	src/output/image-item.c \
-	src/output/image-item.h \
-	src/output/tex-glyphs.c \
-	src/output/tex-glyphs.h \
-	src/output/tex-parsing.c \
-	src/output/tex-parsing.h \
-	src/output/tex-rendering.c \
-	src/output/tex-rendering.h \
 	src/output/group-item.c \
 	src/output/group-item.h \
 	src/output/html.c \
+	src/output/image-item.c \
+	src/output/image-item.h \
 	src/output/journal.c \
 	src/output/journal.h \
 	src/output/measure.c \
@@ -89,28 +99,15 @@ src_output_liboutput_la_SOURCES = \
 	src/output/table-provider.h \
 	src/output/table.c \
 	src/output/table.h \
+	src/output/tex-glyphs.c \
+	src/output/tex-glyphs.h \
+	src/output/tex-parsing.c \
+	src/output/tex-parsing.h \
+	src/output/tex-rendering.c \
+	src/output/tex-rendering.h \
 	src/output/tex.c \
 	src/output/text-item.c \
 	src/output/text-item.h
-if HAVE_CAIRO
-src_output_liboutput_la_SOURCES += \
-	src/output/cairo-chart.c \
-	src/output/cairo-chart.h \
-	src/output/cairo-fsm.c \
-	src/output/cairo-fsm.h \
-	src/output/cairo-pager.c \
-	src/output/cairo-pager.h \
-	src/output/cairo.c \
-	src/output/charts/boxplot-cairo.c \
-	src/output/charts/np-plot-cairo.c \
-	src/output/charts/barchart-cairo.c \
-	src/output/charts/piechart-cairo.c \
-	src/output/charts/plot-hist-cairo.c \
-	src/output/charts/roc-chart-cairo.c \
-	src/output/charts/scree-cairo.c \
-	src/output/charts/spreadlevel-cairo.c \
-	src/output/charts/scatterplot-cairo.c
-endif
 nodist_src_output_liboutput_la_SOURCES =
 
 EXTRA_DIST += \

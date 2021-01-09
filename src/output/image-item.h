@@ -17,24 +17,17 @@
 #ifndef OUTPUT_IMAGE_ITEM_H
 #define OUTPUT_IMAGE_ITEM_H 1
 
-#ifdef HAVE_CAIRO
 #include <cairo.h>
-#endif
 #include <stdbool.h>
 #include "output/output-item.h"
 
 struct image_item
   {
     struct output_item output_item; /* Superclass */
-#ifdef HAVE_CAIRO
     cairo_surface_t *image;
-#endif
   };
 
-#ifdef HAVE_CAIRO
 struct image_item *image_item_create (cairo_surface_t *);
-#endif
-
 struct image_item *image_item_unshare (struct image_item *);
 
 /* This boilerplate for image_item, a subclass of output_item, was

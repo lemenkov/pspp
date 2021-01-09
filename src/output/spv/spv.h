@@ -26,13 +26,10 @@
    top-level headings as a child item.
  */
 
+#include <cairo.h>
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
-
-#ifdef HAVE_CAIRO
-#include <cairo.h>
-#endif
 
 #include "libpspp/compiler.h"
 
@@ -145,9 +142,7 @@ struct spv_item
 
     /* SPV_ITEM_IMAGE only. */
     char *png_member;
-#ifdef HAVE_CAIRO
     cairo_surface_t *image;
-#endif
   };
 
 void spv_item_format_path (const struct spv_item *, struct string *);
@@ -170,9 +165,7 @@ bool spv_item_is_text (const struct spv_item *);
 const struct pivot_value *spv_item_get_text (const struct spv_item *);
 
 bool spv_item_is_image (const struct spv_item *);
-#ifdef HAVE_CAIRO
 cairo_surface_t *spv_item_get_image (const struct spv_item *);
-#endif
 
 bool spv_item_is_visible (const struct spv_item *);
 

@@ -19,8 +19,6 @@
 
 #include <stdbool.h>
 
-#ifdef HAVE_CAIRO
-
 /* Cairo output driver paginater. */
 
 #include <cairo/cairo.h>
@@ -68,7 +66,5 @@ bool xr_pager_has_page (const struct xr_pager *);
 void xr_pager_add_page (struct xr_pager *, cairo_t *);
 void xr_pager_finish_page (struct xr_pager *);
 bool xr_pager_needs_new_page (struct xr_pager *);
-
-#endif  /* HAVE_CAIRO */
 
 #endif /* output/cairo-pager.h */
