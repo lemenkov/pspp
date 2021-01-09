@@ -1265,7 +1265,6 @@ pivot_table_move_dimension (struct pivot_table *table,
       return;
     }
 
-
   /* Update the current layer, if necessary.  If we're moving within the layer
      axis, preserve the current layer. */
   if (dim->axis_type == PIVOT_AXIS_LAYER)
@@ -1584,8 +1583,8 @@ pivot_table_convert_indexes_ptod (const struct pivot_table *table,
       for (size_t j = 0; j < axis->n_dimensions; j++)
         {
           const struct pivot_dimension *d = axis->dimensions[j];
-          dindexes[d->top_index]
-            = d->presentation_leaves[pindexes[i][j]]->data_index;
+          size_t pindex = pindexes[i][j];
+          dindexes[d->top_index] = d->presentation_leaves[pindex]->data_index;
         }
     }
 }
