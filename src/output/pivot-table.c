@@ -988,7 +988,10 @@ clone_category (struct pivot_category *old,
 
   if (pivot_category_is_leaf (old))
     {
+      assert (new->data_index < new_dimension->n_leaves);
       new->dimension->data_leaves[new->data_index] = new;
+
+      assert (new->presentation_index < new_dimension->n_leaves);
       new->dimension->presentation_leaves[new->presentation_index] = new;
     }
 
