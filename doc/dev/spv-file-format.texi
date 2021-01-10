@@ -329,15 +329,22 @@ heading
 => label (container | heading)*
 @end example
 
-The root of a structure member is a @code{heading}, which represents a
-section of output beginning with a @code{label} and
-ordinarily followed by content containers or further nested
-(sub)-sections of output.  Unlike heading elements in HTML and other
-common document formats, which precede the content that they head,
-@code{heading} contains the elements that appear below the heading.
+A @code{heading} represents a tree of content that appears in an
+output viewer window.  It contains a @code{label} text string that is
+shown in the outline view ordinarily followed by content containers or
+further nested (sub)-sections of output.  Unlike heading elements in
+HTML and other common document formats, which precede the content that
+they head, @code{heading} contains the elements that appear below the
+heading.
 
-The document root heading, only, may contain a @code{pageSetup}
-element.
+The root of a structure member is a special @code{heading}.  The
+direct children of the root @code{heading} elements in all structure
+members in an SPV file are siblings.  That is, the root @code{heading}
+in all of the structure members conceptually represent the same node.
+The root heading's @code{label} is ignored (see @pxref{SPV Structure
+label Element}).  The root heading in the first structure member in
+the Zip file (typically named @file{outputViewer0000000000.xml}) may
+contain a @code{pageSetup} element.
 
 The following attributes have been observed on both document root and
 nested @code{heading} elements.
@@ -387,7 +394,11 @@ output, e.g.@: @code{Frequencies}, @code{T-Test}, @code{Non Par Corr}.
 @end defvr
 
 @defvr {Attribute} @code{visibility}
-To what degree the output represented by the element is visible.
+If this attribute is absent, the heading's content is expanded in the
+outline view.  If it is set to @code{collapsed}, it is collapsed.
+(This attribute is never present in a root @code{heading} because the
+root node is always expanded when a file is loaded, even though the UI
+can be used to collapse it interactively.)
 @end defvr
 
 @defvr {Attribute} @code{locale}
@@ -415,8 +426,7 @@ output.  The label text doesn't appear in the output itself.
 
 The text in @code{label} describes what it labels, often by naming the
 statistical procedure that was executed, e.g.@: ``Frequencies'' or
-``T-Test''.  The root @code{heading} in a structure member is normally
-``Output''.  Labels are often very generic, especially within a
+``T-Test''.  Labels are often very generic, especially within a
 @code{container}, e.g.@: ``Title'' or ``Warnings'' or ``Notes''.
 Label text is localized according to the output language, e.g.@: in
 Italian a frequency table procedure is labeled ``Frequenze''.
@@ -424,6 +434,10 @@ Italian a frequency table procedure is labeled ``Frequenze''.
 The user can edit labels to be anything they want.  The corpus
 contains a few examples of empty labels, ones that contain no text,
 probably as a result of user editing.
+
+The root @code{heading} in an SPV file has a @code{label}, like every
+@code{heading}.  It normally contains ``Output'' but its content is
+disregarded anyway.  The user cannot edit it.
 
 @node SPV Structure container Element
 @subsection The @code{container} Element
@@ -444,7 +458,7 @@ This element has the following attributes.
 
 @defvr {Attribute} @code{visibility}
 Whether the container's content is displayed.  ``Notes'' tables are
-often hidden; other data is usually
+often hidden; other data is usually visible.
 @end defvr
 
 @defvr {Attribute} @code{text-align}
