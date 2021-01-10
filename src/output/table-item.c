@@ -43,7 +43,7 @@ table_item_create (struct pivot_table *pt)
   struct table_item *item = xmalloc (sizeof *item);
   *item = (struct table_item) {
     .output_item = OUTPUT_ITEM_INITIALIZER (&table_item_class),
-    .pt = pivot_table_unshare (pt),
+    .pt = pt,
   };
   return item;
 }
