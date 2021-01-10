@@ -302,6 +302,7 @@ decode_spvlb_value (const struct pivot_table *table,
       out->type = PIVOT_VALUE_NUMERIC;
       out->numeric.x = in->type_01.x;
       error = spv_decode_fmt_spec (in->type_01.format, &out->numeric.format);
+      out->numeric.honor_small = (in->type_01.format >> 16) == 40;
       if (error)
         return error;
       break;
