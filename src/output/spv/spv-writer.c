@@ -281,7 +281,7 @@ spv_writer_close_heading (struct spv_writer *w)
 }
 
 static void
-start_container (struct spv_writer *w)
+start_container (struct spv_writer *w, const struct output_item *item)
 {
   start_elem (w, "container");
   write_attr (w, "visibility", "visible");
@@ -290,6 +290,10 @@ start_container (struct spv_writer *w)
       write_attr (w, "page-break-before", "always");
       w->need_page_break = false;
     }
+
+  start_elem (w, "label");
+  write_text (w, output_item_get_label (item));
+  end_elem (w);
 }
 
 static void
@@ -300,13 +304,7 @@ spv_writer_put_text (struct spv_writer *w, const struct text_item *text,
   if (!initial_depth)
     spv_writer_open_file (w);
 
-  start_container (w);
-
-  start_elem (w, "label");
-  write_text (w, (text->type == TEXT_ITEM_TITLE ? "Title"
-                  : text->type == TEXT_ITEM_PAGE_TITLE ? "Page Title"
-                  : "Log"));
-  end_elem (w);
+  start_container (w, &text->output_item);
 
   start_elem (w, "vtx:text");
   write_attr (w, "type", (text->type == TEXT_ITEM_TITLE ? "title"
@@ -335,7 +333,8 @@ write_to_zip (void *zw_, const unsigned char *data, unsigned int length)
 }
 
 static void
-spv_writer_put_image (struct spv_writer *w, cairo_surface_t *image)
+spv_writer_put_image (struct spv_writer *w, const struct output_item *item,
+                      cairo_surface_t *image)
 {
   bool initial_depth = w->heading_depth;
   if (!initial_depth)
@@ -343,11 +342,7 @@ spv_writer_put_image (struct spv_writer *w, cairo_surface_t *image)
 
   char *uri = xasprintf ("%010d_Imagegeneric.png", ++w->n_tables);
 
-  start_container (w);
-
-  start_elem (w, "label");
-  write_text (w, "Image");
-  end_elem (w);
+  start_container (w, item);
 
   start_elem (w, "object");
   write_attr (w, "type", "unknown");
@@ -1050,35 +1045,27 @@ put_light_table (struct buf *buf, uint64_t table_id,
 }
 
 static void
-spv_writer_put_table (struct spv_writer *w, const struct pivot_table *table)
+spv_writer_put_table (struct spv_writer *w, const struct table_item *item)
 {
-  struct pivot_table *table_rw = CONST_CAST (struct pivot_table *, table);
-  if (!table_rw->subtype)
-    table_rw->subtype = pivot_value_new_user_text ("unknown", -1);
-
   int table_id = ++w->n_tables;
 
   bool initial_depth = w->heading_depth;
   if (!initial_depth)
     spv_writer_open_file (w);
 
-  start_container (w);
+  start_container (w, &item->output_item);
 
-  char *title = pivot_value_to_string (table->title, table);
-  char *subtype = pivot_value_to_string (table->subtype, table);
-  
-  start_elem (w, "label");
-  write_text (w, title);
-  end_elem (w);
+  char *subtype = (item->pt->subtype
+                   ? pivot_value_to_string (item->pt->subtype, item->pt)
+                   : xstrdup ("unknown"));
 
   start_elem (w, "vtb:table");
-  write_attr (w, "commandName", table->command_c);
+  write_attr (w, "commandName", item->pt->command_c);
   write_attr (w, "type", "table"); /* XXX */
   write_attr (w, "subType", subtype);
   write_attr_format (w, "tableId", "%d", table_id);
 
   free (subtype);
-  free (title);
 
   start_elem (w, "vtb:tableStructure");
   start_elem (w, "vtb:dataPath");
@@ -1093,7 +1080,7 @@ spv_writer_put_table (struct spv_writer *w, const struct pivot_table *table)
     spv_writer_close_file (w, "");
 
   struct buf buf = { NULL, 0, 0 };
-  put_light_table (&buf, table_id, table);
+  put_light_table (&buf, table_id, item->pt);
   zip_writer_add_memory (w->zw, data_path, buf.data, buf.len);
   free (buf.data);
 
@@ -1110,11 +1097,7 @@ spv_writer_write (struct spv_writer *w, const struct output_item *item)
   else if (is_group_close_item (item))
     spv_writer_close_heading (w);
   else if (is_table_item (item))
-    {
-      const struct table_item *table_item = to_table_item (item);
-      if (table_item->pt)
-        spv_writer_put_table (w, table_item->pt);
-    }
+    spv_writer_put_table (w, to_table_item (item));
   else if (is_chart_item (item))
     {
       cairo_surface_t *surface = xr_draw_image_chart (
@@ -1122,11 +1105,11 @@ spv_writer_write (struct spv_writer *w, const struct output_item *item)
         &(struct cell_color) CELL_COLOR_BLACK,
         &(struct cell_color) CELL_COLOR_WHITE);
       if (cairo_surface_status (surface) == CAIRO_STATUS_SUCCESS)
-        spv_writer_put_image (w, surface);
+        spv_writer_put_image (w, item, surface);
       cairo_surface_destroy (surface);
     }
   else if (is_image_item (item))
-    spv_writer_put_image (w, to_image_item (item)->image);
+    spv_writer_put_image (w, item, to_image_item (item)->image);
   else if (is_text_item (item))
     {
       char *command_id = output_get_command_name ();
