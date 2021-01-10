@@ -812,8 +812,11 @@ xr_layout_cell_text (struct xr_fsm *xr, const struct table_cell *cell,
         add_attr (attrs, pango_attr_rise_new (-3000), subscript_ofs,
                   footnote_ofs - subscript_ofs);
       if (value->n_footnotes)
-        add_attr (attrs, pango_attr_rise_new (3000), footnote_ofs,
-                  PANGO_ATTR_INDEX_TO_TEXT_END);
+        {
+          bool superscript = pt->look->footnote_marker_superscripts;
+          add_attr (attrs, pango_attr_rise_new (superscript ? 3000 : -3000),
+                    footnote_ofs, PANGO_ATTR_INDEX_TO_TEXT_END);
+        }
     }
 
   /* Set the attributes, if any. */
