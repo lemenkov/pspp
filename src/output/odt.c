@@ -423,14 +423,18 @@ write_footnotes (struct odt_driver *odt,
 {
   for (size_t i = 0; i < n_footnotes; i++)
     {
-      xmlTextWriterStartElement (odt->content_wtr, _xml("text:span"));
-      xmlTextWriterWriteAttribute (odt->content_wtr, _xml("text:style-name"),
-                                   _xml("superscript"));
       const struct pivot_footnote *f = pt->footnotes[footnote_indexes[i]];
-      char *s = pivot_footnote_marker_string (f, pt);
-      write_xml_with_line_breaks (odt, s);
-      free (s);
-      xmlTextWriterEndElement (odt->content_wtr);
+      if (f->show)
+        {
+          xmlTextWriterStartElement (odt->content_wtr, _xml("text:span"));
+          xmlTextWriterWriteAttribute (odt->content_wtr,
+                                       _xml("text:style-name"),
+                                       _xml("superscript"));
+          char *s = pivot_footnote_marker_string (f, pt);
+          write_xml_with_line_breaks (odt, s);
+          free (s);
+          xmlTextWriterEndElement (odt->content_wtr);
+        }
     }
 }
 

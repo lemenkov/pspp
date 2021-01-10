@@ -857,9 +857,10 @@ put_light_table (struct buf *buf, uint64_t table_id,
   put_u32 (buf, table->n_footnotes);
   for (size_t i = 0; i < table->n_footnotes; i++)
     {
-      put_value (buf, table->footnotes[i]->content);
-      put_optional_value (buf, table->footnotes[i]->marker);
-      put_u32 (buf, 0);
+      const struct pivot_footnote *f = table->footnotes[i];
+      put_value (buf, f->content);
+      put_optional_value (buf, f->marker);
+      put_u32 (buf, f->show ? 1 : -1);
     }
 
   /* Areas. */

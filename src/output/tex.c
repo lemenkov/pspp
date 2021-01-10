@@ -389,16 +389,21 @@ tex_put_footnote_markers (struct tex_driver *tex,
                           const size_t *footnote_indexes,
                           size_t n_footnotes)
 {
-  if (n_footnotes > 0)
-    shipout (&tex->token_list, "$^{");
+  size_t n_visible = 0;
   for (size_t i = 0; i < n_footnotes; i++)
     {
       const struct pivot_footnote *f = pt->footnotes[footnote_indexes[i]];
-      char *marker = pivot_footnote_marker_string (f, pt);
-      tex_escape_string (tex, marker, true);
-      free (marker);
+      if (f->show)
+        {
+          if (!n_visible++)
+            shipout (&tex->token_list, "$^{");
+
+          char *marker = pivot_footnote_marker_string (f, pt);
+          tex_escape_string (tex, marker, true);
+          free (marker);
+        }
     }
-  if (n_footnotes > 0)
+  if (n_visible)
     shipout (&tex->token_list, "}$");
 }
 

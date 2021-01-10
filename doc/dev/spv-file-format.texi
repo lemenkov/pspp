@@ -1101,6 +1101,7 @@ reference other footnotes, but in practice this doesn't work.
 @code{show} is a 32-bit signed integer.  It is positive to show the
 footnote or negative to hide it.  Its magnitude is often 1, and in
 other cases tends to be the number of references to the footnote.
+It is safe to write 1 to show a footnote and -1 to hide it.
 
 @node SPV Light Member Areas
 @subsection Areas

@@ -401,7 +401,7 @@ add_references (const struct pivot_table *pt, const struct table *table,
                 size_t idx = cell.value->footnote_indexes[i];
                 assert (idx < pt->n_footnotes);
 
-                if (!refs[idx])
+                if (!refs[idx] && pt->footnotes[idx]->show)
                   {
                     refs[idx] = true;
                     (*n_refs)++;

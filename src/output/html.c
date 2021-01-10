@@ -586,17 +586,20 @@ html_put_table_cell (struct html_driver *html, const struct pivot_table *pt,
   if (cell->value->n_footnotes > 0)
     {
       fputs ("<sup>", html->file);
+      size_t n_footnotes = 0;
       for (size_t i = 0; i < cell->value->n_footnotes; i++)
         {
-          if (i > 0)
-            putc (',', html->file);
+          const struct pivot_footnote *f
+            = pt->footnotes[cell->value->footnote_indexes[i]];
+          if (f->show)
+            {
+              if (n_footnotes++ > 0)
+                putc (',', html->file);
 
-          size_t idx = cell->value->footnote_indexes[i];
-          const struct pivot_footnote *f = pt->footnotes[idx];
-
-          char *marker = pivot_footnote_marker_string (f, pt);
-          escape_string (html->file, marker, " ", "<br>");
-          free (marker);
+              char *marker = pivot_footnote_marker_string (f, pt);
+              escape_string (html->file, marker, " ", "<br>");
+              free (marker);
+            }
         }
       fputs ("</sup>", html->file);
     }

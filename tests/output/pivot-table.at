@@ -471,6 +471,9 @@ AT_DATA([pivot.txt], [[
 /display
 /title "Pivot Table with Numeric Superscript Footnotes"[footnote 0]
 /look marker=numeric level=super
+/display
+/title "Hidden Footnote"[footnote 0]
+/footnote[0] "First footnote" marker="*" hide
 ]])
 AT_CHECK([pivot-table-test --table-look $srcdir/output/look.stt pivot.txt --box unicode], [0],
 [[Pivot Table with Alphabetic Subscript Footnotes[*]
@@ -523,6 +526,18 @@ Pivot Table with Numeric Superscript Footnotes[*]
 ╰────────────┴───────┴──────────╯
 Caption[*]
 *. First footnote
+2. Second footnote
+
+Hidden Footnote[*]
+╭────────────┬──────────────────╮
+│            │       A[*]       │
+│            ├───────┬──────────┤
+│Corner[*][2]│  B[2] │  C[*][2] │
+├────────────┼───────┼──────────┤
+│D[2] E[*]   │    .00│   1.00[*]│
+│     F[*][2]│2.00[2]│3.00[*][2]│
+╰────────────┴───────┴──────────╯
+Caption[*]
 2. Second footnote
 ]])
 AT_CLEANUP

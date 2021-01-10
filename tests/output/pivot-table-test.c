@@ -934,7 +934,8 @@ read_footnote (struct lexer *lexer, struct pivot_table *pt)
   else
     marker = NULL;
 
-  pivot_table_create_footnote__ (pt, idx, marker, content);
+  bool show = !lex_match_id (lexer, "HIDE");
+  pivot_table_create_footnote__ (pt, idx, marker, content)->show = show;
 }
 
 static void
