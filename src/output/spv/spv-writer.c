@@ -18,6 +18,7 @@
 
 #include "output/spv/spv-writer.h"
 
+#include <cairo.h>
 #include <inttypes.h>
 #include <libxml/xmlwriter.h>
 #include <math.h>
@@ -32,8 +33,15 @@
 #include "libpspp/temp-file.h"
 #include "libpspp/version.h"
 #include "libpspp/zip-writer.h"
+#include "output/cairo-chart.h"
+#include "output/chart-item.h"
+#include "output/driver.h"
+#include "output/group-item.h"
+#include "output/image-item.h"
+#include "output/page-eject-item.h"
 #include "output/page-setup-item.h"
 #include "output/pivot-table.h"
+#include "output/table-item.h"
 #include "output/text-item.h"
 
 #include "gl/xalloc.h"
@@ -57,6 +65,8 @@ struct spv_writer
     struct page_setup *page_setup;
     bool need_page_break;
   };
+
+static void spv_writer_close_heading (struct spv_writer *);
 
 char * WARN_UNUSED_RESULT
 spv_writer_open (const char *filename, struct spv_writer **writerp)
@@ -91,14 +101,6 @@ spv_writer_close (struct spv_writer *w)
   page_setup_destroy (w->page_setup);
   free (w);
   return error;
-}
-
-void
-spv_writer_set_page_setup (struct spv_writer *w,
-                           const struct page_setup *page_setup)
-{
-  page_setup_destroy (w->page_setup);
-  w->page_setup = page_setup_clone (page_setup);
 }
 
 static void
@@ -224,7 +226,7 @@ spv_writer_open_file (struct spv_writer *w)
   return true;
 }
 
-void
+static void
 spv_writer_open_heading (struct spv_writer *w, const char *command_id,
                          const char *label)
 {
@@ -263,7 +265,7 @@ spv_writer_close_file (struct spv_writer *w, const char *infix)
   w->heading = NULL;
 }
 
-void
+static void
 spv_writer_close_heading (struct spv_writer *w)
 {
   const char *infix = "";
@@ -290,7 +292,7 @@ start_container (struct spv_writer *w)
     }
 }
 
-void
+static void
 spv_writer_put_text (struct spv_writer *w, const struct text_item *text,
                      const char *command_id)
 {
@@ -332,7 +334,7 @@ write_to_zip (void *zw_, const unsigned char *data, unsigned int length)
   return CAIRO_STATUS_SUCCESS;
 }
 
-void
+static void
 spv_writer_put_image (struct spv_writer *w, cairo_surface_t *image)
 {
   bool initial_depth = w->heading_depth;
@@ -361,12 +363,6 @@ spv_writer_put_image (struct spv_writer *w, cairo_surface_t *image)
   zip_writer_add_finish (w->zw);
 
   free (uri);
-}
-
-void
-spv_writer_eject_page (struct spv_writer *w)
-{
-  w->need_page_break = true;
 }
 
 #define H TABLE_HORZ
@@ -1053,7 +1049,7 @@ put_light_table (struct buf *buf, uint64_t table_id,
     }
 }
 
-void
+static void
 spv_writer_put_table (struct spv_writer *w, const struct pivot_table *table)
 {
   struct pivot_table *table_rw = CONST_CAST (struct pivot_table *, table);
@@ -1102,4 +1098,47 @@ spv_writer_put_table (struct spv_writer *w, const struct pivot_table *table)
   free (buf.data);
 
   free (data_path);
+}
+
+void
+spv_writer_write (struct spv_writer *w, const struct output_item *item)
+{
+  if (is_group_open_item (item))
+    spv_writer_open_heading (w,
+                             to_group_open_item (item)->command_name,
+                             to_group_open_item (item)->command_name);
+  else if (is_group_close_item (item))
+    spv_writer_close_heading (w);
+  else if (is_table_item (item))
+    {
+      const struct table_item *table_item = to_table_item (item);
+      if (table_item->pt)
+        spv_writer_put_table (w, table_item->pt);
+    }
+  else if (is_chart_item (item))
+    {
+      cairo_surface_t *surface = xr_draw_image_chart (
+        to_chart_item (item),
+        &(struct cell_color) CELL_COLOR_BLACK,
+        &(struct cell_color) CELL_COLOR_WHITE);
+      if (cairo_surface_status (surface) == CAIRO_STATUS_SUCCESS)
+        spv_writer_put_image (w, surface);
+      cairo_surface_destroy (surface);
+    }
+  else if (is_image_item (item))
+    spv_writer_put_image (w, to_image_item (item)->image);
+  else if (is_text_item (item))
+    {
+      char *command_id = output_get_command_name ();
+      spv_writer_put_text (w, to_text_item (item),
+                           command_id);
+      free (command_id);
+    }
+  else if (is_page_eject_item (item))
+    w->need_page_break = true;
+  else if (is_page_setup_item (item))
+    {
+      page_setup_destroy (w->page_setup);
+      w->page_setup = page_setup_clone (to_page_setup_item (item)->page_setup);
+    }
 }

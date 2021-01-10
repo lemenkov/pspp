@@ -98,42 +98,7 @@ spv_submit (struct output_driver *driver,
 {
   struct spv_driver *spv = spv_driver_cast (driver);
 
-  if (is_group_open_item (output_item))
-    spv_writer_open_heading (spv->writer,
-                             to_group_open_item (output_item)->command_name,
-                             to_group_open_item (output_item)->command_name);
-  else if (is_group_close_item (output_item))
-    spv_writer_close_heading (spv->writer);
-  else if (is_table_item (output_item))
-    {
-      const struct table_item *table_item = to_table_item (output_item);
-      if (table_item->pt)
-        spv_writer_put_table (spv->writer, table_item->pt);
-    }
-  else if (is_chart_item (output_item))
-    {
-      cairo_surface_t *surface = xr_draw_image_chart (
-        to_chart_item (output_item),
-        &(struct cell_color) CELL_COLOR_BLACK,
-        &(struct cell_color) CELL_COLOR_WHITE);
-      if (cairo_surface_status (surface) == CAIRO_STATUS_SUCCESS)
-        spv_writer_put_image (spv->writer, surface);
-      cairo_surface_destroy (surface);
-    }
-  else if (is_image_item (output_item))
-    spv_writer_put_image (spv->writer, to_image_item (output_item)->image);
-  else if (is_text_item (output_item))
-    {
-      char *command_id = output_get_command_name ();
-      spv_writer_put_text (spv->writer, to_text_item (output_item),
-                           command_id);
-      free (command_id);
-    }
-  else if (is_page_eject_item (output_item))
-    spv_writer_eject_page (spv->writer);
-  else if (is_page_setup_item (output_item))
-    spv_writer_set_page_setup (spv->writer,
-                               to_page_setup_item (output_item)->page_setup);
+  spv_writer_write (spv->writer, output_item);
 }
 
 struct output_driver_factory spv_driver_factory =

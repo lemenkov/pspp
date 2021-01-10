@@ -17,12 +17,8 @@
 #ifndef OUTPUT_SPV_WRITER_H
 #define OUTPUT_SPV_WRITER_H 1
 
-struct page_setup;
-struct pivot_table;
+struct output_item;
 struct spv_writer;
-struct text_item;
-
-#include <cairo.h>
 
 #include "libpspp/compiler.h"
 
@@ -30,19 +26,6 @@ char *spv_writer_open (const char *filename, struct spv_writer **)
   WARN_UNUSED_RESULT;
 char *spv_writer_close (struct spv_writer *) WARN_UNUSED_RESULT;
 
-void spv_writer_set_page_setup (struct spv_writer *,
-                                const struct page_setup *);
-
-void spv_writer_open_heading (struct spv_writer *, const char *command_id,
-                              const char *label);
-void spv_writer_close_heading (struct spv_writer *);
-
-void spv_writer_put_text (struct spv_writer *, const struct text_item *,
-                          const char *command_id);
-void spv_writer_put_table (struct spv_writer *, const struct pivot_table *);
-
-void spv_writer_put_image (struct spv_writer *, cairo_surface_t *);
-
-void spv_writer_eject_page (struct spv_writer *);
+void spv_writer_write (struct spv_writer *, const struct output_item *);
 
 #endif /* output/spv/spv-writer.h */
