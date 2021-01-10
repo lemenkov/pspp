@@ -16,7 +16,7 @@
 
 #include <config.h>
 
-#include "output/page-eject-item.h"
+#include "output/page-break-item.h"
 
 #include <stdlib.h>
 
@@ -28,12 +28,12 @@
 #include "gettext.h"
 #define _(msgid) gettext (msgid)
 
-struct page_eject_item *
-page_eject_item_create (void)
+struct page_break_item *
+page_break_item_create (void)
 {
-  struct page_eject_item *item = xmalloc (sizeof *item);
-  *item = (struct page_eject_item) {
-    .output_item = OUTPUT_ITEM_INITIALIZER (&page_eject_item_class),
+  struct page_break_item *item = xmalloc (sizeof *item);
+  *item = (struct page_break_item) {
+    .output_item = OUTPUT_ITEM_INITIALIZER (&page_break_item_class),
   };
   return item;
 }
@@ -41,25 +41,25 @@ page_eject_item_create (void)
 /* Submits ITEM to the configured output drivers, and transfers ownership to
    the output subsystem. */
 void
-page_eject_item_submit (struct page_eject_item *item)
+page_break_item_submit (struct page_break_item *item)
 {
   output_submit (&item->output_item);
 }
 
 static const char *
-page_eject_item_get_label (const struct output_item *output_item UNUSED)
+page_break_item_get_label (const struct output_item *output_item UNUSED)
 {
   return _("Page Break");
 }
 
 static void
-page_eject_item_destroy (struct output_item *output_item)
+page_break_item_destroy (struct output_item *output_item)
 {
-  free (to_page_eject_item (output_item));
+  free (to_page_break_item (output_item));
 }
 
-const struct output_item_class page_eject_item_class =
+const struct output_item_class page_break_item_class =
   {
-    page_eject_item_get_label,
-    page_eject_item_destroy,
+    page_break_item_get_label,
+    page_break_item_destroy,
   };

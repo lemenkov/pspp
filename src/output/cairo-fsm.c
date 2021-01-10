@@ -40,7 +40,7 @@
 #include "output/group-item.h"
 #include "output/image-item.h"
 #include "output/message-item.h"
-#include "output/page-eject-item.h"
+#include "output/page-break-item.h"
 #include "output/page-setup-item.h"
 #include "output/pivot-output.h"
 #include "output/pivot-table.h"
@@ -995,7 +995,7 @@ xr_fsm_create (const struct output_item *item_,
   if (is_table_item (item_)
       || is_chart_item (item_)
       || is_image_item (item_)
-      || is_page_eject_item (item_))
+      || is_page_break_item (item_))
     item = output_item_ref (item_);
   else if (is_message_item (item_))
     item = table_item_super (
@@ -1026,7 +1026,7 @@ xr_fsm_create (const struct output_item *item_,
   assert (is_table_item (item)
           || is_chart_item (item)
           || is_image_item (item)
-          || is_page_eject_item (item));
+          || is_page_break_item (item));
 
   size_t *layer_indexes = NULL;
   if (is_table_item (item))
@@ -1214,7 +1214,7 @@ xr_fsm_draw_region (struct xr_fsm *fsm, cairo_t *cr,
     draw_image (to_image_item (fsm->item)->image, cr);
   else if (is_chart_item (fsm->item))
     xr_draw_chart (to_chart_item (fsm->item), cr, CHART_WIDTH, CHART_HEIGHT);
-  else if (is_page_eject_item (fsm->item))
+  else if (is_page_break_item (fsm->item))
     {
       /* Nothing to do. */
     }
@@ -1310,7 +1310,7 @@ error:
 }
 
 static int
-xr_fsm_draw_eject (struct xr_fsm *fsm, int space)
+xr_fsm_draw_page_break (struct xr_fsm *fsm, int space)
 {
   if (space >= fsm->rp.size[V])
     fsm->done = true;
@@ -1330,7 +1330,8 @@ xr_fsm_draw_slice (struct xr_fsm *fsm, cairo_t *cr, int space)
   int used = (is_table_item (fsm->item) ? xr_fsm_draw_table (fsm, space)
               : is_chart_item (fsm->item) ? xr_fsm_draw_chart (fsm, space)
               : is_image_item (fsm->item) ? xr_fsm_draw_image (fsm, space)
-              : is_page_eject_item (fsm->item) ? xr_fsm_draw_eject (fsm, space)
+              : is_page_break_item (fsm->item) ? xr_fsm_draw_page_break (fsm,
+                                                                         space)
               : (abort (), 0));
   fsm->cairo = NULL;
   cairo_restore (cr);

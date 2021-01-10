@@ -23,7 +23,6 @@
 #include "data/settings.h"
 #include "libpspp/assertion.h"
 #include "libpspp/pool.h"
-#include "output/page-eject-item.h"
 #include "output/pivot-table.h"
 #include "output/table-item.h"
 #include "output/table-provider.h"

@@ -83,8 +83,8 @@ src_output_liboutput_la_SOURCES = \
 	src/output/output-item-provider.h \
 	src/output/output-item.c \
 	src/output/output-item.h \
-	src/output/page-eject-item.c \
-	src/output/page-eject-item.h \
+	src/output/page-break-item.c \
+	src/output/page-break-item.h \
 	src/output/page-setup-item.c \
 	src/output/page-setup-item.h \
 	src/output/pivot-output.c \

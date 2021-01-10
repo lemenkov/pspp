@@ -26,7 +26,6 @@
 #include "output/chart-item.h"
 #include "output/group-item.h"
 #include "output/image-item.h"
-#include "output/page-eject-item.h"
 #include "output/page-setup-item.h"
 #include "output/table-item.h"
 #include "output/text-item.h"

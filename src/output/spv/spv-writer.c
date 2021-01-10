@@ -38,7 +38,7 @@
 #include "output/driver.h"
 #include "output/group-item.h"
 #include "output/image-item.h"
-#include "output/page-eject-item.h"
+#include "output/page-break-item.h"
 #include "output/page-setup-item.h"
 #include "output/pivot-table.h"
 #include "output/table-item.h"
@@ -1117,7 +1117,7 @@ spv_writer_write (struct spv_writer *w, const struct output_item *item)
                            command_id);
       free (command_id);
     }
-  else if (is_page_eject_item (item))
+  else if (is_page_break_item (item))
     w->need_page_break = true;
   else if (is_page_setup_item (item))
     {
