@@ -2403,13 +2403,16 @@ pivot_value_format_body (const struct pivot_value *value,
 /* Appends a text representation of VALUE to OUT.  Settings on
    PT control whether variable and value labels are included.
 
-   Subscripts and footnotes are included. */
-void
+   Subscripts and footnotes are included.
+
+   Returns true if OUT is a number (or a number plus a value label), false
+   otherwise.  */
+bool
 pivot_value_format (const struct pivot_value *value,
                     const struct pivot_table *pt,
                     struct string *out)
 {
-  pivot_value_format_body (value, pt, out);
+  bool numeric = pivot_value_format_body (value, pt, out);
 
   if (value->n_subscripts)
     {
@@ -2427,6 +2430,8 @@ pivot_value_format (const struct pivot_value *value,
 
       ds_put_byte (out, ']');
     }
+
+  return numeric;
 }
 
 /* Returns a text representation of VALUE.  The caller must free the string,

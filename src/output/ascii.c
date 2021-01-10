@@ -925,7 +925,7 @@ ascii_layout_cell (struct ascii_driver *a, const struct table_cell *cell,
   *heightp = 0;
 
   struct string body = DS_EMPTY_INITIALIZER;
-  bool numeric = pivot_value_format_body (cell->value, a->pt, &body);
+  bool numeric = pivot_value_format (cell->value, a->pt, &body);
 
   /* Calculate length; if it's zero, then there's nothing to do. */
   if (ds_is_empty (&body))
