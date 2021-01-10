@@ -320,7 +320,7 @@ AT_DATA([pivot.txt], [[
 ]])
 AT_CHECK([pivot-table-test --table-look $srcdir/output/look.stt pivot.txt --box unicode], [0], [dnl
 Column x b1
-b: b1
+b1
 ╭──┬──┬──╮
 │a1│a2│a3│
 ├──┼──┼──┤
@@ -328,7 +328,7 @@ b: b1
 ╰──┴──┴──╯
 
 Row x b1
-b: b1
+b1
 ╭──┬─╮
 │a1│0│
 │a2│1│
@@ -336,7 +336,7 @@ b: b1
 ╰──┴─╯
 
 Column x b2
-b: b2
+b2
 ╭──┬──┬──╮
 │a1│a2│a3│
 ├──┼──┼──┤
@@ -344,7 +344,7 @@ b: b2
 ╰──┴──┴──╯
 
 Row x b2
-b: b2
+b2
 ╭──┬─╮
 │a1│3│
 │a2│4│
@@ -352,7 +352,7 @@ b: b2
 ╰──┴─╯
 
 Column (All Layers)
-b: b1
+b1
 ╭──┬─╮
 │a1│0│
 │a2│1│
@@ -360,7 +360,7 @@ b: b1
 ╰──┴─╯
 
 Column (All Layers)
-b: b2
+b2
 ╭──┬─╮
 │a1│3│
 │a2│4│
@@ -368,7 +368,7 @@ b: b2
 ╰──┴─╯
 
 Column (All Layers)
-b: b3
+b3
 ╭──┬─╮
 │a1│6│
 │a2│7│
@@ -376,7 +376,7 @@ b: b3
 ╰──┴─╯
 
 Row (All Layers)
-b: b1
+b1
 ╭──┬──┬──╮
 │a1│a2│a3│
 ├──┼──┼──┤
@@ -384,7 +384,7 @@ b: b1
 ╰──┴──┴──╯
 
 Row (All Layers)
-b: b2
+b2
 ╭──┬──┬──╮
 │a1│a2│a3│
 ├──┼──┼──┤
@@ -392,13 +392,54 @@ b: b2
 ╰──┴──┴──╯
 
 Row (All Layers)
-b: b3
+b3
 ╭──┬──┬──╮
 │a1│a2│a3│
 ├──┼──┼──┤
 │ 6│ 7│ 8│
 ╰──┴──┴──╯
 ])
+AT_CLEANUP
+
+AT_SETUP([3-d pivot table - layers])
+AT_DATA([pivot.txt], [[
+/layer "a"("a1", "a2", "a3")
+/layer "b"("b1", "b2", "b3", "b4")
+/col "c"("c1", "c2", "c3", "c4", "c5")
+/cell[all, all, all]
+/title "Column x b1 x a1" /display
+/title "Column x b2 x a1" /show layer 0 1 /display
+/title "Column x b3 x a2" /show layer 1 2 /display
+]])
+AT_DATA([expout], [dnl
+Column x b1 x a1
+b1
+a1
+╭──┬──┬──┬──┬──╮
+│c1│c2│c3│c4│c5│
+├──┼──┼──┼──┼──┤
+│ 0│12│24│36│48│
+╰──┴──┴──┴──┴──╯
+
+Column x b2 x a1
+b2
+a1
+╭──┬──┬──┬──┬──╮
+│c1│c2│c3│c4│c5│
+├──┼──┼──┼──┼──┤
+│ 3│15│27│39│51│
+╰──┴──┴──┴──┴──╯
+
+Column x b3 x a2
+b3
+a2
+╭──┬──┬──┬──┬──╮
+│c1│c2│c3│c4│c5│
+├──┼──┼──┼──┼──┤
+│ 7│19│31│43│55│
+╰──┴──┴──┴──┴──╯
+])
+AT_CHECK([pivot-table-test --table-look $srcdir/output/look.stt pivot.txt --box unicode], [0], [expout])
 AT_CLEANUP
 
 AT_SETUP([pivot table title and caption])

@@ -1301,8 +1301,19 @@ PointKeep => be32[offset] be32 be32
 The TableSettings reflect display settings.  The fixed value of
 @code{endian} can be used to validate the endianness.
 
-@code{current-layer} is the displayed layer.  The interpretation when
-there is more than one layer dimension is not yet known.
+@code{current-layer} is the displayed layer.  Suppose there are
+@math{d} layers, numbered 1 through @math{d} in the order given in the
+Dimensions (@pxref{SPV Light Member Dimensions}), and that the
+displayed value of dimension @math{i} is @math{d_i}, @math{0 \le x_i <
+n_i}, where @math{n_i} is the number of categories in dimension
+@math{i}.  Then @code{current-layer} is calculated by the following
+algorithm:
+
+@display
+let @code{current-layer} = 0
+for each @math{i} from @math{d} downto 1:
+    @code{current-layer} = (@math{n_i \times} @code{current-layer}) @math{+} @math{x_i}
+@end display
 
 If @code{omit-empty} is 1, empty rows or columns (ones with nothing in
 any cell) are hidden; otherwise, they are shown.
@@ -1691,7 +1702,10 @@ permutation of the 0-based dimension numbers.  The first
 layers, the next @code{n-rows} integers specify the dimensions
 represented by rows, and the final @code{n-columns} integers specify
 the dimensions represented by columns.  When there is more than one
-dimension of a given kind, the inner dimensions are given first.
+dimension of a given kind, the inner dimensions are given first.  (For
+the layer axis, this means that the first dimension is at the bottom
+of the list and the last dimension is at the top when the current
+layer is displayed.)
 
 @node SPV Light Member Cells
 @subsection Cells

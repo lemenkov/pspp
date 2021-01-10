@@ -808,19 +808,21 @@ decode_current_layer (uint64_t current_layer, struct pivot_table *table)
   table->current_layer = xnmalloc (axis->n_dimensions,
                                    sizeof *table->current_layer);
 
+  uint64_t remainder = current_layer;
   for (size_t i = 0; i < axis->n_dimensions; i++)
     {
       const struct pivot_dimension *d = axis->dimensions[i];
       if (d->n_leaves)
         {
-          table->current_layer[i] = current_layer % d->n_leaves;
-          current_layer /= d->n_leaves;
+          table->current_layer[i] = remainder % d->n_leaves;
+          remainder /= d->n_leaves;
         }
       else
         table->current_layer[i] = 0;
     }
-  if (current_layer > 0)
+  if (remainder > 0)
     return xasprintf ("out of range layer data index %"PRIu64, current_layer);
+
   return NULL;
 }
 

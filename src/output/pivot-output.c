@@ -595,7 +595,7 @@ pivot_output (const struct pivot_table *pt,
   if (n_layers > 0)
     {
       layers = create_aux_table (pt, 1, n_layers, PIVOT_AREA_LAYERS);
-      size_t y = 0;
+      size_t y = n_layers - 1;
       for (size_t i = 0; i < layer_axis->n_dimensions; i++)
         {
           const struct pivot_dimension *d = layer_axis->dimensions[i];
@@ -603,11 +603,9 @@ pivot_output (const struct pivot_table *pt,
             continue;
 
           struct string s = DS_EMPTY_INITIALIZER;
-          pivot_value_format (d->root->name, pt, &s);
-          ds_put_cstr (&s, ": ");
           pivot_value_format (d->data_leaves[layer_indexes[i]]->name, pt, &s);
           fill_cell_owned (layers, 0, y, 0, y, PIVOT_AREA_LAYERS, &s, false);
-          y++;
+          y--;
         }
     }
   else

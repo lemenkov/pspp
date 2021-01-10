@@ -827,6 +827,21 @@ put_x3 (struct buf *buf, const struct pivot_table *table)
   put_y2 (buf, table);
 }
 
+static uint32_t
+encode_current_layer (const struct pivot_table *table)
+{
+  uint32_t current_layer = 0;
+
+  const struct pivot_axis *axis = &table->axes[PIVOT_AXIS_LAYER];
+  for (size_t i = axis->n_dimensions - 1; i < axis->n_dimensions; i--)
+    {
+      const struct pivot_dimension *d = axis->dimensions[i];
+      current_layer = current_layer * d->n_leaves + table->current_layer[i];
+    }
+
+  return current_layer;
+}
+
 static void
 put_light_table (struct buf *buf, uint64_t table_id,
                  const struct pivot_table *table)
@@ -943,7 +958,7 @@ put_light_table (struct buf *buf, uint64_t table_id,
   uint32_t ts_start = start_count (buf);
   put_be32 (buf, 1);
   put_be32 (buf, 4);
-  put_be32 (buf, 0);            /* XXX current_layer */
+  put_be32 (buf, encode_current_layer (table));
   put_bool (buf, table->look->omit_empty);
   put_bool (buf, table->look->row_labels_in_corner);
   put_bool (buf, !table->look->show_numeric_markers);
