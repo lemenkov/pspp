@@ -192,6 +192,8 @@ text_item_to_table_item (struct text_item *text_item)
   pivot_value_set_font_style (content, &text_item->style);
   pivot_table_put1 (table, 0, content);
 
+  text_item_unref (text_item);
+
   return table_item_create (table);
 }
 
