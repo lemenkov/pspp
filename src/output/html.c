@@ -593,7 +593,8 @@ html_put_table_cell (struct html_driver *html, const struct pivot_table *pt,
 
           size_t idx = cell->value->footnote_indexes[i];
           const struct pivot_footnote *f = pt->footnotes[idx];
-          char *marker = pivot_value_to_string (f->marker, pt);
+
+          char *marker = pivot_footnote_marker_string (f, pt);
           escape_string (html->file, marker, " ", "<br>");
           free (marker);
         }

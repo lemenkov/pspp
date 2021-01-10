@@ -553,6 +553,12 @@ struct pivot_footnote *pivot_table_create_footnote__ (
   struct pivot_table *, size_t idx,
   struct pivot_value *marker, struct pivot_value *content);
 
+void pivot_footnote_format_marker (const struct pivot_footnote *,
+                                   const struct pivot_table *,
+                                   struct string *);
+char *pivot_footnote_marker_string (const struct pivot_footnote *,
+                                    const struct pivot_table *);
+
 void pivot_footnote_destroy (struct pivot_footnote *);
 
 /* Internals. */

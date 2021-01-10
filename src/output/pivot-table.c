@@ -1505,15 +1505,30 @@ pivot_table_create_footnote (struct pivot_table *table,
                                         NULL, content);
 }
 
-static struct pivot_value *
-pivot_make_default_footnote_marker (int idx, bool show_numeric_markers)
+void
+pivot_footnote_format_marker (const struct pivot_footnote *f,
+                              const struct pivot_table *pt,
+                              struct string *s)
 {
-  char text[INT_BUFSIZE_BOUND (size_t)];
-  if (show_numeric_markers)
-    snprintf (text, sizeof text, "%d", idx + 1);
+  if (f->marker)
+    pivot_value_format_body (f->marker, pt, s);
+  else if (pt->look->show_numeric_markers)
+    ds_put_format (s, "%zu", f->idx + 1);
   else
-    str_format_26adic (idx + 1, false, text, sizeof text);
-  return pivot_value_new_user_text (text, -1);
+    {
+      char text[INT_BUFSIZE_BOUND (size_t)];
+      str_format_26adic (f->idx + 1, false, text, sizeof text);
+      ds_put_cstr (s, text);
+    }
+}
+
+char *
+pivot_footnote_marker_string (const struct pivot_footnote *f,
+                              const struct pivot_table *pt)
+{
+  struct string s = DS_EMPTY_INITIALIZER;
+  pivot_footnote_format_marker (f, pt, &s);
+  return ds_steal_cstr (&s);
 }
 
 /* Creates or modifies a footnote in TABLE with 0-based number IDX (and creates
@@ -1533,12 +1548,10 @@ pivot_table_create_footnote__ (struct pivot_table *table, size_t idx,
       while (idx >= table->n_footnotes)
         {
           struct pivot_footnote *f = xmalloc (sizeof *f);
-          f->idx = table->n_footnotes;
-          f->marker = pivot_make_default_footnote_marker (
-            f->idx, table->look->show_numeric_markers);
-          f->content = NULL;
-          f->show = true;
-
+          *f = (struct pivot_footnote) {
+            .idx = table->n_footnotes,
+            .show = true,
+          };
           table->footnotes[table->n_footnotes++] = f;
         }
     }
@@ -2410,7 +2423,7 @@ pivot_value_format (const struct pivot_value *value,
 
       size_t idx = value->footnote_indexes[i];
       const struct pivot_footnote *f = pt->footnotes[idx];
-      pivot_value_format (f->marker, pt, out);
+      pivot_footnote_format_marker (f, pt, out);
 
       ds_put_byte (out, ']');
     }

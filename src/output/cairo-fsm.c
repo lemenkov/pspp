@@ -767,8 +767,7 @@ xr_layout_cell_text (struct xr_fsm *xr, const struct table_cell *cell,
             ds_put_byte (&body, ',');
 
           size_t idx = value->footnote_indexes[i];
-          const struct pivot_footnote *f = pt->footnotes[idx];
-          pivot_value_format (f->marker, pt, &body);
+          pivot_footnote_format_marker (pt->footnotes[idx], pt, &body);
         }
 
       /* Allow footnote markers to occupy the right margin.  That way, numbers

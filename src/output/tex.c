@@ -394,7 +394,7 @@ tex_put_footnote_markers (struct tex_driver *tex,
   for (size_t i = 0; i < n_footnotes; i++)
     {
       const struct pivot_footnote *f = pt->footnotes[footnote_indexes[i]];
-      char *marker = pivot_value_to_string (f->marker, pt);
+      char *marker = pivot_footnote_marker_string (f, pt);
       tex_escape_string (tex, marker, true);
       free (marker);
     }
@@ -562,7 +562,7 @@ tex_output_table_layer (struct tex_driver *tex, const struct pivot_table *pt,
 
   for (int i = 0; i < n_footnotes; ++i)
     {
-      char *marker = pivot_value_to_string (footnotes[i]->marker, pt);
+      char *marker = pivot_footnote_marker_string (footnotes[i], pt);
       char *content = pivot_value_to_string (footnotes[i]->content, pt);
 
       shipout (&tex->token_list, "$^{");

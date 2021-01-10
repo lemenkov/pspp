@@ -635,7 +635,7 @@ pivot_output (const struct pivot_table *pt,
       for (size_t i = 0; i < nf; i++)
         {
           struct string s = DS_EMPTY_INITIALIZER;
-          pivot_value_format (f[i]->marker, pt, &s);
+          pivot_footnote_format_marker (f[i], pt, &s);
           ds_put_cstr (&s, ". ");
           pivot_value_format (f[i]->content, pt, &s);
           fill_cell_owned (footnotes, 0, i, 0, i, PIVOT_AREA_FOOTER, &s,

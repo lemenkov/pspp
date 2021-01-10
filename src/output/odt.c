@@ -427,7 +427,7 @@ write_footnotes (struct odt_driver *odt,
       xmlTextWriterWriteAttribute (odt->content_wtr, _xml("text:style-name"),
                                    _xml("superscript"));
       const struct pivot_footnote *f = pt->footnotes[footnote_indexes[i]];
-      char *s = pivot_value_to_string (f->marker, pt);
+      char *s = pivot_footnote_marker_string (f, pt);
       write_xml_with_line_breaks (odt, s);
       free (s);
       xmlTextWriterEndElement (odt->content_wtr);
