@@ -749,6 +749,7 @@ struct pivot_value *pivot_value_new_user_text_nocopy (char *);
 
 /* Footnotes. */
 void pivot_value_add_footnote (struct pivot_value *, const struct pivot_footnote *);
+void pivot_value_sort_footnotes (struct pivot_value *);
 
 /* Numeric formats. */
 void pivot_value_set_rc (const struct pivot_table *, struct pivot_value *,

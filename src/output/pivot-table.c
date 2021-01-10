@@ -2859,6 +2859,29 @@ pivot_value_add_footnote (struct pivot_value *v,
   v->footnote_indexes = xrealloc (
     v->footnote_indexes, (v->n_footnotes + 1) * sizeof *v->footnote_indexes);
   v->footnote_indexes[v->n_footnotes++] = footnote->idx;
+  pivot_value_sort_footnotes (v);
+}
+
+static int
+compare_footnote_indexes (const void *a_, const void *b_)
+{
+  const size_t *ap = a_;
+  const size_t *bp = b_;
+  size_t a = *ap;
+  size_t b = *bp;
+  return a < b ? -1 : a > b;
+}
+
+/* Sorts the footnote references in V in the standard ascending order.
+
+   This is only necessary if code adds (plural) footnotes to a pivot_value by
+   itself, because pivot_value_add_footnote() does it automatically. */
+void
+pivot_value_sort_footnotes (struct pivot_value *v)
+{
+  if (v->n_footnotes > 1)
+    qsort (v->footnote_indexes, v->n_footnotes, sizeof *v->footnote_indexes,
+           compare_footnote_indexes);
 }
 
 /* If VALUE is a numeric value, and RC is a result class such as

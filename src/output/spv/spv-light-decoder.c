@@ -415,6 +415,7 @@ decode_spvlb_value (const struct pivot_table *table,
 
               out->footnote_indexes[out->n_footnotes++] = idx;
             }
+          pivot_value_sort_footnotes (out);
         }
 
       if (vm->style_pair)
