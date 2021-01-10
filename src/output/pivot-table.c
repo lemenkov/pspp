@@ -18,6 +18,8 @@
 
 #include "output/pivot-table.h"
 
+#include <libxml/parser.h>
+#include <libxml/tree.h>
 #include <math.h>
 #include <stdlib.h>
 
@@ -2301,6 +2303,33 @@ interpret_show (enum settings_value_show global_show,
           : global_show);
 }
 
+/* Appends to OUT the actual text content from the given Pango MARKUP. */
+static void
+get_text_from_markup (const char *markup, struct string *out)
+{
+  xmlParserCtxt *parser = xmlCreatePushParserCtxt (NULL, NULL, NULL, 0, NULL);
+  if (!parser)
+    {
+      ds_put_cstr (out, markup);
+      return;
+    }
+
+  xmlParseChunk (parser, "<xml>", strlen ("<xml>"), false);
+  xmlParseChunk (parser, markup, strlen (markup), false);
+  xmlParseChunk (parser, "</xml>", strlen ("</xml>"), true);
+
+  if (parser->wellFormed)
+    {
+      xmlChar *s = xmlNodeGetContent (xmlDocGetRootElement (parser->myDoc));
+      ds_put_cstr (out, CHAR_CAST (char *, s));
+      xmlFree (s);
+    }
+  else
+    ds_put_cstr (out, markup);
+  xmlFreeDoc (parser->myDoc);
+  xmlFreeParserCtxt (parser);
+}
+
 /* Appends a text representation of the body of VALUE to OUT.  Settings on
    PT control whether variable and value labels are included.
 
@@ -2388,7 +2417,10 @@ pivot_value_format_body (const struct pivot_value *value,
       break;
 
     case PIVOT_VALUE_TEXT:
-      ds_put_cstr (out, value->text.local);
+      if (value->font_style && value->font_style->markup)
+        get_text_from_markup (value->text.local, out);
+      else
+        ds_put_cstr (out, value->text.local);
       break;
 
     case PIVOT_VALUE_TEMPLATE:
@@ -2451,6 +2483,7 @@ pivot_value_to_string_defaults (const struct pivot_value *value)
   static const struct pivot_table pt = {
     .show_values = SETTINGS_VALUE_SHOW_DEFAULT,
     .show_variables = SETTINGS_VALUE_SHOW_DEFAULT,
+    .settings = FMT_SETTINGS_INIT,
   };
   return pivot_value_to_string (value, &pt);
 }

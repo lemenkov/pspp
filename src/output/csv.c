@@ -184,12 +184,6 @@ csv_output_table_cell (struct csv_driver *csv, const struct pivot_table *pt,
   if (leader)
     ds_put_format (&s, "%s: ", leader);
   pivot_value_format (cell->value, pt, &s);
-  if (cell->font_style->markup)
-    {
-      char *t = output_get_text_from_markup (ds_cstr (&s));
-      ds_assign_cstr (&s, t);
-      free (t);
-    }
   csv_output_field (csv, ds_cstr (&s));
   ds_destroy (&s);
 }
@@ -260,22 +254,16 @@ csv_submit (struct output_driver *driver,
   else if (is_text_item (output_item))
     {
       const struct text_item *text_item = to_text_item (output_item);
-      enum text_item_type type = text_item_get_type (text_item);
-      const char *text = text_item_get_text (text_item);
 
+      enum text_item_type type = text_item_get_type (text_item);
       if (type == TEXT_ITEM_SYNTAX || type == TEXT_ITEM_PAGE_TITLE)
         return;
 
       csv_put_separator (csv);
 
-      if (text_item->style.markup)
-        {
-          char *plain_text = output_get_text_from_markup (text);
-          csv_output_lines (csv, plain_text);
-          free (plain_text);
-        }
-      else
-        csv_output_lines (csv, text);
+      char *text = text_item_get_plain_text (text_item);
+      csv_output_lines (csv, text);
+      free (text);
     }
   else if (is_page_break_item (output_item))
     {

@@ -63,22 +63,8 @@ text_item_type_to_string (enum text_item_type type)
 struct text_item *
 text_item_create_nocopy (enum text_item_type type, char *text, char *label)
 {
-  struct text_item *item = xzalloc (sizeof *item);
-  *item = (struct text_item) {
-    .output_item = OUTPUT_ITEM_INITIALIZER (&text_item_class),
-    .output_item.label = label,
-    .text = text,
-    .type = type,
-    .style = FONT_STYLE_INITIALIZER,
-  };
-
-  if (type == TEXT_ITEM_SYNTAX || type == TEXT_ITEM_LOG)
-    {
-      free (item->style.typeface);
-      item->style.typeface = xstrdup ("Monospaced");
-    }
-
-  return item;
+  return text_item_create_value (type, pivot_value_new_user_text_nocopy (text),
+                                 label);
 }
 
 /* Creates and returns a new text item containing a copy of TEXT and the
@@ -92,6 +78,35 @@ text_item_create (enum text_item_type type, const char *text,
                                   label ? xstrdup (label) : NULL);
 }
 
+/* Creates and returns a new text item containing VALUE, TYPE, and LABEL.
+   Takes ownership of VALUE and LABEL.  If LABEL is null, uses a default label
+   for TYPE. */
+struct text_item *
+text_item_create_value (enum text_item_type type, struct pivot_value *value,
+                        char *label)
+{
+  if (type == TEXT_ITEM_SYNTAX || type == TEXT_ITEM_LOG)
+    {
+      if (!value->font_style)
+        {
+          value->font_style = xmalloc (sizeof *value->font_style);
+          *value->font_style = (struct font_style) FONT_STYLE_INITIALIZER;
+        }
+
+      free (value->font_style->typeface);
+      value->font_style->typeface = xstrdup ("Monospaced");
+    }
+
+  struct text_item *item = xzalloc (sizeof *item);
+  *item = (struct text_item) {
+    .output_item = OUTPUT_ITEM_INITIALIZER (&text_item_class),
+    .output_item.label = label,
+    .type = type,
+    .text = value,
+  };
+  return item;
+}
+
 /* Returns ITEM's type. */
 enum text_item_type
 text_item_get_type (const struct text_item *item)
@@ -99,11 +114,11 @@ text_item_get_type (const struct text_item *item)
   return item->type;
 }
 
-/* Returns ITEM's text, which the caller may not modify or free. */
-const char *
-text_item_get_text (const struct text_item *item)
+/* Returns ITEM's text, which the caller must eventually free. */
+char *
+text_item_get_plain_text (const struct text_item *item)
 {
-  return item->text;
+  return pivot_value_to_string_defaults (item->text);
 }
 
 /* Submits ITEM to the configured output drivers, and transfers ownership to
@@ -125,11 +140,17 @@ text_item_unshare (struct text_item *old)
   struct text_item *new = xmalloc (sizeof *new);
   *new = (struct text_item) {
     .output_item = OUTPUT_ITEM_CLONE_INITIALIZER (&old->output_item),
-    .text = xstrdup (old->text),
+    .text = pivot_value_clone (old->text),
     .type = old->type,
   };
-  font_style_copy (NULL, &new->style, &old->style);
   return new;
+}
+
+static bool
+nullable_font_style_equal (const struct font_style *a,
+                           const struct font_style *b)
+{
+  return a && b ? font_style_equal (a, b) : !a && !b;
 }
 
 /* Attempts to append the text in SRC to DST.  If successful, returns true,
@@ -147,14 +168,28 @@ text_item_append (struct text_item *dst, const struct text_item *src)
       || (dst->type != TEXT_ITEM_SYNTAX && dst->type != TEXT_ITEM_LOG)
       || strcmp (output_item_get_label (&dst->output_item),
                  output_item_get_label (&src->output_item))
-      || !font_style_equal (&dst->style, &src->style)
-      || dst->style.markup)
+      || !nullable_font_style_equal (dst->text->font_style,
+                                     src->text->font_style)
+      || (dst->text->font_style && dst->text->font_style->markup)
+      || src->text->type != PIVOT_VALUE_TEXT
+      || dst->text->type != PIVOT_VALUE_TEXT)
     return false;
   else
     {
-      char *new_text = xasprintf ("%s\n%s", dst->text, src->text);
-      free (dst->text);
-      dst->text = new_text;
+      char *new_text = xasprintf ("%s\n%s", dst->text->text.local,
+                                  src->text->text.local);
+
+      free (dst->text->text.local);
+      if (dst->text->text.c != dst->text->text.local)
+        free (dst->text->text.c);
+      if (dst->text->text.id != dst->text->text.local
+          && dst->text->text.id != dst->text->text.c)
+        free (dst->text->text.id);
+
+      dst->text->text.local = new_text;
+      dst->text->text.c = new_text;
+      dst->text->text.id = new_text;
+
       return true;
     }
 }
@@ -187,10 +222,7 @@ text_item_to_table_item (struct text_item *text_item)
   d->hide_all_labels = true;
   pivot_category_create_leaf (d->root, pivot_value_new_text ("null"));
 
-  struct pivot_value *content = pivot_value_new_user_text (
-    text_item->text, SIZE_MAX);
-  pivot_value_set_font_style (content, &text_item->style);
-  pivot_table_put1 (table, 0, content);
+  pivot_table_put1 (table, 0, pivot_value_clone (text_item->text));
 
   text_item_unref (text_item);
 
@@ -208,8 +240,7 @@ static void
 text_item_destroy (struct output_item *output_item)
 {
   struct text_item *item = to_text_item (output_item);
-  free (item->text);
-  font_style_uninit (&item->style);
+  pivot_value_destroy (item->text);
   free (item);
 }
 

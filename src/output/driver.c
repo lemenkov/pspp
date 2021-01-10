@@ -21,8 +21,6 @@
 
 #include <ctype.h>
 #include <errno.h>
-#include <libxml/parser.h>
-#include <libxml/tree.h>
 #include <limits.h>
 #include <stdlib.h>
 #include <string.h>
@@ -240,27 +238,21 @@ output_submit (struct output_item *item)
 
       size_t idx = --e->n_groups;
       free (e->groups[idx]);
-      if (idx >= 1 && idx <= 4)
-        {
-          char *key = xasprintf ("Head%zu", idx);
-          free (string_map_find_and_delete (&e->heading_vars, key));
-          free (key);
-        }
+
+      char *key = xasprintf ("Head%zu", idx);
+      free (string_map_find_and_delete (&e->heading_vars, key));
+      free (key);
     }
   else if (is_text_item (item))
     {
       const struct text_item *text_item = to_text_item (item);
       enum text_item_type type = text_item_get_type (text_item);
-      const char *text = text_item_get_text (text_item);
-      if (type == TEXT_ITEM_TITLE
-          && e->n_groups >= 1 && e->n_groups <= 4)
-        {
-          char *key = xasprintf ("Head%zu", e->n_groups);
-          string_map_replace (&e->heading_vars, key, text);
-          free (key);
-        }
-      else if (type == TEXT_ITEM_PAGE_TITLE)
-        string_map_replace (&e->heading_vars, "PageTitle", text);
+      char *key = (type == TEXT_ITEM_TITLE ? xasprintf ("Head%zu", e->n_groups)
+                   : type == TEXT_ITEM_PAGE_TITLE ? xstrdup ("PageTitle")
+                   : NULL);
+      if (key)
+        string_map_replace_nocopy (&e->heading_vars, key,
+                                   text_item_get_plain_text (text_item));
     }
 
   output_submit__ (e, item);
@@ -554,30 +546,6 @@ output_driver_parse_option (const char *option, struct string_map *options)
   string_map_insert_nocopy (options, key, value);
 }
 
-/* Extracts the actual text content from the given Pango MARKUP and returns it
-   as as a malloc()'d string. */
-char *
-output_get_text_from_markup (const char *markup)
-{
-  xmlParserCtxt *parser = xmlCreatePushParserCtxt (NULL, NULL, NULL, 0, NULL);
-  if (!parser)
-    return xstrdup (markup);
-
-  xmlParseChunk (parser, "<xml>", strlen ("<xml>"), false);
-  xmlParseChunk (parser, markup, strlen (markup), false);
-  xmlParseChunk (parser, "</xml>", strlen ("</xml>"), true);
-
-  char *content
-    = (parser->wellFormed
-       ? CHAR_CAST (char *,
-                    xmlNodeGetContent (xmlDocGetRootElement (parser->myDoc)))
-       : xstrdup (markup));
-  xmlFreeDoc (parser->myDoc);
-  xmlFreeParserCtxt (parser);
-
-  return content;
-}
-
 char *
 output_driver_substitute_heading_vars (const char *src, int page_number)
 {

@@ -105,6 +105,4 @@ struct output_driver_factory
                                      struct string_map *options);
   };
 
-char *output_get_text_from_markup (const char *markup);
-
 #endif /* output/driver-provider.h */

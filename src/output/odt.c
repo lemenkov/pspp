@@ -598,7 +598,11 @@ odt_submit (struct output_driver *driver,
   if (is_table_item (output_item))
     write_table (odt, to_table_item (output_item));
   else if (is_text_item (output_item))
-    odt_output_text (odt, text_item_get_text (to_text_item (output_item)));
+    {
+      char *text = text_item_get_plain_text (to_text_item (output_item));
+      odt_output_text (odt, text);
+      free (text);
+    }
   else if (is_message_item (output_item))
     {
       const struct message_item *message_item = to_message_item (output_item);

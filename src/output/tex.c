@@ -350,7 +350,7 @@ tex_submit (struct output_driver *driver,
   else if (is_text_item (output_item))
     {
       struct text_item *text_item = to_text_item (output_item);
-      const char *s = text_item_get_text (text_item);
+      char *s = text_item_get_plain_text (text_item);
 
       switch (text_item_get_type (text_item))
         {
@@ -372,6 +372,7 @@ tex_submit (struct output_driver *driver,
           printf ("Unhandled type %d\n", text_item_get_type (text_item));
           break;
         }
+      free (s);
     }
   else if (is_message_item (output_item))
     {

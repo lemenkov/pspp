@@ -109,7 +109,11 @@ journal_submit (struct output_driver *driver, const struct output_item *item)
       enum text_item_type type = text_item_get_type (text_item);
 
       if (type == TEXT_ITEM_SYNTAX)
-        journal_output (j, text_item_get_text (text_item));
+        {
+          char *text = text_item_get_plain_text (text_item);
+          journal_output (j, text);
+          free (text);
+        }
     }
   else if (is_message_item (item))
     {

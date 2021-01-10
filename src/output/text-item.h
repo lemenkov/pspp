@@ -43,18 +43,20 @@ const char *text_item_type_to_string (enum text_item_type);
 struct text_item
   {
     struct output_item output_item;
-    char *text;                 /* The content. */
-    enum text_item_type type;   /* Type. */
-    struct font_style style;
+    enum text_item_type type;
+    struct pivot_value *text;
   };
 
 struct text_item *text_item_create (enum text_item_type,
                                     const char *text, const char *label);
 struct text_item *text_item_create_nocopy (enum text_item_type,
                                            char *text, char *label);
+struct text_item *text_item_create_value (enum text_item_type,
+                                          struct pivot_value *value,
+                                          char *label);
 
 enum text_item_type text_item_get_type (const struct text_item *);
-const char *text_item_get_text (const struct text_item *);
+char *text_item_get_plain_text (const struct text_item *);
 
 struct text_item *text_item_unshare (struct text_item *);
 bool text_item_append (struct text_item *dst, const struct text_item *src);

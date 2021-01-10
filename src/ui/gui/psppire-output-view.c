@@ -419,8 +419,10 @@ psppire_output_view_put (struct psppire_output_view *view,
   else if (is_text_item (item))
     {
       const struct text_item *text_item = to_text_item (item);
-      const char *text = text_item_get_text (text_item);
-      if (text[0] == '\0')
+      char *text = text_item_get_plain_text (text_item);
+      bool text_is_empty = text[0] == '\0';
+      free (text);
+      if (text_is_empty)
         return;
     }
 

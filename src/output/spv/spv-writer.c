@@ -314,7 +314,9 @@ spv_writer_put_text (struct spv_writer *w, const struct text_item *text,
     write_attr (w, "commandName", command_id);
 
   start_elem (w, "html");
-  write_text (w, text->text);   /* XXX */
+  char *s = text_item_get_plain_text (text);
+  write_text (w, s);
+  free (s);
   end_elem (w); /* html */
   end_elem (w); /* vtx:text */
   end_elem (w); /* container */
