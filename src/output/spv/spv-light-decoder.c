@@ -729,7 +729,7 @@ decode_data_index (uint64_t in, const struct pivot_table *table,
                    size_t *out)
 {
   uint64_t remainder = in;
-  for (size_t i = table->n_dimensions - 1; i > 0; i--)
+  for (size_t i = table->n_dimensions - 1; i < table->n_dimensions; i--)
     {
       const struct pivot_dimension *d = table->dimensions[i];
       if (d->n_leaves)
@@ -740,10 +740,9 @@ decode_data_index (uint64_t in, const struct pivot_table *table,
       else
         out[i] = 0;
     }
-  if (remainder >= table->dimensions[0]->n_leaves)
+  if (remainder)
     return xasprintf ("out of range cell data index %"PRIu64, in);
 
-  out[0] = remainder;
   return NULL;
 }
 
