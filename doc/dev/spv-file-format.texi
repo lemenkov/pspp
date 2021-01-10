@@ -38,13 +38,13 @@ e.g.@: as @samp{allowingPivot=false} has no effect.}
 
 The rest of the members in an SPV file's Zip archive fall into two
 categories: @dfn{structure} and @dfn{detail} members.  Structure
-member names begin with @file{outputViewer@var{nnnnnnnnnn}}, where
-each @var{n} is a decimal digit, and end with @file{.xml}, and often
-include the string @file{_heading} in between.  Each of these members
-represents some kind of output item (a table, a heading, a block of
-text, etc.) or a group of them.  The member whose output goes at the
-beginning of the document is numbered 0, the next member in the output
-is numbered 1, and so on.
+member names take the form with @file{outputViewer@var{number}.xml} or
+@file{outputViewer@var{number}_heading.xml}, where @var{number} is an
+10-digit decimal number.  Each of these members represents some kind
+of output item (a table, a heading, a block of text, etc.) or a group
+of them.  The member whose output goes at the beginning of the
+document is numbered 0, the next member in the output is numbered 1,
+and so on.
 
 Structure members contain XML.  This XML is sometimes self-contained,
 but it often references detail members in the Zip archive, which are
@@ -88,8 +88,9 @@ Not yet investigated.  The corpus contains few examples.
 The @file{@var{prefix}} in the names of the detail members is
 typically an 11-digit decimal number that increases for each item,
 tending to skip values.  Older SPV files use different naming
-conventions.  Structure member refer to detail members by name, and so
-their exact names do not matter to readers as long as they are unique.
+conventions for detail members.  Structure member refer to detail
+members by name, and so their exact names do not matter to readers as
+long as they are unique.
 
 SPSS tolerates corrupted Zip archives that Zip reader libraries tend
 to reject.  These can be fixed up with @command{zip -FF}.
@@ -343,8 +344,15 @@ members in an SPV file are siblings.  That is, the root @code{heading}
 in all of the structure members conceptually represent the same node.
 The root heading's @code{label} is ignored (see @pxref{SPV Structure
 label Element}).  The root heading in the first structure member in
-the Zip file (typically named @file{outputViewer0000000000.xml}) may
-contain a @code{pageSetup} element.
+the Zip file may contain a @code{pageSetup} element.
+
+The schema implies that any @code{heading} may contain a sequence of
+any number of @code{heading} and @code{container} elements.  This does
+not work for the root @code{heading} in practice, which must actually
+contain exactly one @code{container} or @code{heading} child element.
+Furthermore, if the root heading's child is a @code{heading}, then the
+structure member's name must end in @file{_heading.xml}; if it is a
+@code{container} child, then it must not.
 
 The following attributes have been observed on both document root and
 nested @code{heading} elements.
