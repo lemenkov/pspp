@@ -20,7 +20,7 @@
 #include "output/charts/boxplot.h"
 
 #include "math/box-whisker.h"
-#include "output/chart-item-provider.h"
+#include "output/chart-provider.h"
 
 struct boxplot *
 boxplot_create (double y_min, double y_max, const char *title)
@@ -28,7 +28,7 @@ boxplot_create (double y_min, double y_max, const char *title)
   if (y_min >= y_max)
     return NULL;
   struct boxplot *boxplot = xmalloc (sizeof *boxplot);
-  chart_item_init (&boxplot->chart_item, &boxplot_class, title);
+  chart_init (&boxplot->chart, &boxplot_class, title);
   boxplot->y_min = y_min;
   boxplot->y_max = y_max;
   boxplot->boxes = NULL;
@@ -57,9 +57,9 @@ boxplot_add_box (struct boxplot *boxplot,
 }
 
 static void
-boxplot_chart_destroy (struct chart_item *chart_item)
+boxplot_chart_destroy (struct chart *chart)
 {
-  struct boxplot *boxplot = to_boxplot (chart_item);
+  struct boxplot *boxplot = to_boxplot (chart);
   if (boxplot == NULL)
     return;
 
@@ -76,7 +76,7 @@ boxplot_chart_destroy (struct chart_item *chart_item)
   free (boxplot);
 }
 
-const struct chart_item_class boxplot_class =
+const struct chart_class boxplot_class =
   {
     boxplot_chart_destroy
   };

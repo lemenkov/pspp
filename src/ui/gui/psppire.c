@@ -37,7 +37,7 @@
 
 #include "output/driver.h"
 #include "output/journal.h"
-#include "output/message-item.h"
+#include "output/output-item.h"
 #include "output/spv/spv.h"
 
 #include "ui/gui/dict-display.h"
@@ -162,7 +162,7 @@ handle_msg (const struct msg *m_, void *lexer_)
     }
   m.command_name = output_get_uppercase_command_name ();
 
-  message_item_submit (message_item_create (&m));
+  output_item_submit (message_item_create (&m));
 
   free (m.command_name);
 }

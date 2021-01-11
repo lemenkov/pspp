@@ -31,9 +31,7 @@
 #include "libpspp/string-map.h"
 #include "libpspp/string-set.h"
 #include "output/driver.h"
-#include "output/group-item.h"
-#include "output/image-item.h"
-#include "output/page-setup-item.h"
+#include "output/output-item.h"
 #include "output/pivot-table.h"
 #include "output/spv/light-binary-parser.h"
 #include "output/spv/spv-legacy-data.h"
@@ -42,8 +40,6 @@
 #include "output/spv/spv-select.h"
 #include "output/spv/spv-table-look.h"
 #include "output/spv/spv.h"
-#include "output/table-item.h"
-#include "output/text-item.h"
 
 #include "gl/c-ctype.h"
 #include "gl/error.h"
@@ -112,8 +108,8 @@ dump_item (const struct spv_item *item)
       char *s = (x && b
                  ? xasprintf ("%s and %s:", x, b)
                  : xasprintf ("%s:", x ? x : b));
-      text_item_submit (text_item_create_nocopy (TEXT_ITEM_TITLE, s,
-                                                 xstrdup ("Member Names")));
+      output_item_submit (text_item_create_nocopy (TEXT_ITEM_TITLE, s,
+                                                   xstrdup ("Member Names")));
     }
 
   switch (spv_item_get_type (item))
@@ -136,8 +132,8 @@ dump_item (const struct spv_item *item)
       break;
 
     case SPV_ITEM_IMAGE:
-      image_item_submit (image_item_create (cairo_surface_reference (
-                                              spv_item_get_image (item))));
+      output_item_submit (image_item_create (cairo_surface_reference (
+                                               spv_item_get_image (item))));
       break;
 
     case SPV_ITEM_TREE:
@@ -288,11 +284,11 @@ dump_heading_transition (const struct spv_item *old,
       break;
 
   for (size_t i = common; i < old_path.n; i++)
-    group_close_item_submit (group_close_item_create ());
+    output_item_submit (group_close_item_create ());
   for (size_t i = common; i < new_path.n; i++)
-    group_open_item_submit (group_open_item_create (
-                              new_path.nodes[i]->command_id,
-                              new_path.nodes[i]->label));
+    output_item_submit (group_open_item_create (
+                          new_path.nodes[i]->command_id,
+                          new_path.nodes[i]->label));
 
   free_path (&old_path);
   free_path (&new_path);
@@ -319,7 +315,7 @@ run_convert (int argc UNUSED, char **argv)
 
   const struct page_setup *ps = spv_get_page_setup (spv);
   if (ps)
-    page_setup_item_submit (page_setup_item_create (ps));
+    output_item_submit (page_setup_item_create (ps));
 
   struct spv_item **items;
   size_t n_items;

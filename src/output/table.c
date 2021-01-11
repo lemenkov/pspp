@@ -29,10 +29,9 @@
 #include "libpspp/compiler.h"
 #include "libpspp/pool.h"
 #include "libpspp/str.h"
+#include "output/output-item.h"
 #include "output/pivot-table.h"
-#include "output/table-item.h"
 #include "output/table.h"
-#include "output/text-item.h"
 
 #include "gl/xalloc.h"
 

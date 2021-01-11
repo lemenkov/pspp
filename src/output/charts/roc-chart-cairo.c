@@ -27,10 +27,10 @@
 #define _(msgid) gettext (msgid)
 
 void
-xrchart_draw_roc (const struct chart_item *chart_item, cairo_t *cr,
+xrchart_draw_roc (const struct chart *chart, cairo_t *cr,
                   struct xrchart_geometry *geom)
 {
-  const struct roc_chart *rc = to_roc_chart (chart_item);
+  const struct roc_chart *rc = to_roc_chart (chart);
   size_t i;
 
   xrchart_write_title (cr, geom, _("ROC Curve"));

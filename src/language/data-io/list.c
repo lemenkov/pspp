@@ -37,7 +37,6 @@
 #include "libpspp/message.h"
 #include "libpspp/misc.h"
 #include "output/pivot-table.h"
-#include "output/table-item.h"
 
 #include "gl/intprops.h"
 #include "gl/minmax.h"

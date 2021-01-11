@@ -32,8 +32,7 @@
 #include "data/file-handle-def.h"
 #include "data/dataset.h"
 #include "libpspp/version.h"
-#include "output/group-item.h"
-#include "output/image-item.h"
+#include "output/output-item.h"
 #include "output/pivot-table.h"
 #include "output/spv/spv.h"
 #include "output/spv/spv-output.h"
@@ -764,9 +763,9 @@ dump_heading_transition (const struct spv_item *old,
       break;
 
   for (size_t i = common; i < old_path.n; i++)
-    group_close_item_submit (group_close_item_create ());
+    output_item_submit (group_close_item_create ());
   for (size_t i = common; i < new_path.n; i++)
-    group_open_item_submit (group_open_item_create (
+    output_item_submit (group_open_item_create (
                               new_path.nodes[i]->command_id,
                               new_path.nodes[i]->label));
 
@@ -802,8 +801,8 @@ read_spv_file (const char *filename)
       else if (items[i]->type == SPV_ITEM_IMAGE)
         {
           cairo_surface_t *image = spv_item_get_image (items[i]);
-          image_item_submit (image_item_create (cairo_surface_reference (
-                                                  image)));
+          output_item_submit (image_item_create (cairo_surface_reference (
+                                                   image)));
         }
       prev_heading = heading;
     }

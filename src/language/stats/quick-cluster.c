@@ -40,7 +40,7 @@
 #include "libpspp/str.h"
 #include "math/random.h"
 #include "output/pivot-table.h"
-#include "output/text-item.h"
+#include "output/output-item.h"
 
 #include "gettext.h"
 #define _(msgid) gettext (msgid)

@@ -26,8 +26,7 @@
 #include "libpspp/assertion.h"
 #include "libpspp/str.h"
 #include "output/cairo-chart.h"
-#include "output/chart-item-provider.h"
-#include "output/chart-item.h"
+#include "output/chart-provider.h"
 #include "output/charts/barchart.h"
 #include "output/charts/boxplot.h"
 #include "output/charts/np-plot.h"
@@ -37,16 +36,10 @@
 #include "output/charts/scatterplot.h"
 #include "output/charts/scree.h"
 #include "output/charts/spreadlevel-plot.h"
-#include "output/group-item.h"
-#include "output/image-item.h"
-#include "output/message-item.h"
-#include "output/page-break-item.h"
-#include "output/page-setup-item.h"
 #include "output/pivot-output.h"
 #include "output/pivot-table.h"
 #include "output/render.h"
-#include "output/table-item.h"
-#include "output/text-item.h"
+#include "output/output-item.h"
 
 #include "gl/c-ctype.h"
 #include "gl/c-strcase.h"
@@ -639,7 +632,7 @@ xr_layout_cell_text (struct xr_fsm *xr, const struct table_cell *cell,
                      int bb[TABLE_N_AXES][2], int clip[TABLE_N_AXES][2],
                      int *widthp, int *brk)
 {
-  const struct pivot_table *pt = to_table_item (xr->item)->pt;
+  const struct pivot_table *pt = xr->item->table;
   const struct font_style *font_style = cell->font_style;
   const struct cell_style *cell_style = cell->cell_style;
   unsigned int options = cell->options;
@@ -986,45 +979,47 @@ xr_fsm_create (const struct output_item *item_,
                const struct xr_fsm_style *style, cairo_t *cr,
                bool print)
 {
-  if (is_page_setup_item (item_)
-      || is_group_open_item (item_)
-      || is_group_close_item (item_))
-    return NULL;
-
   struct output_item *item;
-  if (is_table_item (item_)
-      || is_chart_item (item_)
-      || is_image_item (item_)
-      || is_page_break_item (item_))
-    item = output_item_ref (item_);
-  else if (is_message_item (item_))
-    item = table_item_super (
-      text_item_to_table_item (
-        message_item_to_text_item (
-          to_message_item (
-            output_item_ref (item_)))));
-  else if (is_text_item (item_))
+
+  switch (item_->type)
     {
-      if (to_text_item (item_)->type == TEXT_ITEM_PAGE_TITLE)
+    case OUTPUT_ITEM_CHART:
+    case OUTPUT_ITEM_IMAGE:
+    case OUTPUT_ITEM_PAGE_BREAK:
+    case OUTPUT_ITEM_TABLE:
+      item = output_item_ref (item_);
+      break;
+
+    case OUTPUT_ITEM_GROUP_OPEN:
+    case OUTPUT_ITEM_GROUP_CLOSE:
+    case OUTPUT_ITEM_PAGE_SETUP:
+      return NULL;
+
+    case OUTPUT_ITEM_MESSAGE:
+      item = text_item_to_table_item (message_item_to_text_item (
+                                        output_item_ref (item_)));
+      break;
+
+    case OUTPUT_ITEM_TEXT:
+      if (item_->text.subtype == TEXT_ITEM_PAGE_TITLE)
         return NULL;
 
-      item = table_item_super (
-        text_item_to_table_item (
-          to_text_item (
-            output_item_ref (item_))));
+      item = text_item_to_table_item (output_item_ref (item_));
+      break;
+
+    default:
+      NOT_REACHED ();
     }
-  else
-    NOT_REACHED ();
-  assert (is_table_item (item)
-          || is_chart_item (item)
-          || is_image_item (item)
-          || is_page_break_item (item));
+
+  assert (item->type == OUTPUT_ITEM_TABLE
+          || item->type == OUTPUT_ITEM_CHART
+          || item->type == OUTPUT_ITEM_IMAGE
+          || item->type == OUTPUT_ITEM_PAGE_BREAK);
 
   size_t *layer_indexes = NULL;
-  if (is_table_item (item))
+  if (item->type == OUTPUT_ITEM_TABLE)
     {
-      const struct table_item *table_item = to_table_item (item);
-      layer_indexes = pivot_output_next_layer (table_item->pt, NULL, print);
+      layer_indexes = pivot_output_next_layer (item->table, NULL, print);
       if (!layer_indexes)
         return NULL;
     }
@@ -1087,12 +1082,10 @@ xr_fsm_create (const struct output_item *item_,
 
   g_object_unref (G_OBJECT (layout));
 
-  if (is_table_item (item))
+  if (item->type == OUTPUT_ITEM_TABLE)
     {
-      struct table_item *table_item = to_table_item (item);
-
       fsm->cairo = cr;
-      fsm->p = render_pager_create (&fsm->rp, table_item, fsm->layer_indexes);
+      fsm->p = render_pager_create (&fsm->rp, item->table, fsm->layer_indexes);
       fsm->cairo = NULL;
     }
 
@@ -1136,26 +1129,34 @@ xr_fsm_measure (struct xr_fsm *fsm, cairo_t *cr, int *wp, int *hp)
 
   int w, h;
 
-  if (is_table_item (fsm->item))
+  switch (fsm->item->type)
     {
+    case OUTPUT_ITEM_CHART:
+      w = CHART_WIDTH;
+      h = CHART_HEIGHT;
+      break;
+
+    case OUTPUT_ITEM_IMAGE:
+      w = cairo_image_surface_get_width (fsm->item->image);
+      h = cairo_image_surface_get_height (fsm->item->image);
+      break;
+
+    case OUTPUT_ITEM_TABLE:
       fsm->cairo = cr;
       w = render_pager_get_size (fsm->p, H) / XR_POINT;
       h = render_pager_get_size (fsm->p, V) / XR_POINT;
       fsm->cairo = NULL;
+      break;
+
+    case OUTPUT_ITEM_GROUP_OPEN:
+    case OUTPUT_ITEM_GROUP_CLOSE:
+    case OUTPUT_ITEM_MESSAGE:
+    case OUTPUT_ITEM_PAGE_BREAK:
+    case OUTPUT_ITEM_PAGE_SETUP:
+    case OUTPUT_ITEM_TEXT:
+    default:
+      NOT_REACHED ();
     }
-  else if (is_chart_item (fsm->item))
-    {
-      w = CHART_WIDTH;
-      h = CHART_HEIGHT;
-    }
-  else if (is_image_item (fsm->item))
-    {
-      cairo_surface_t *image = to_image_item (fsm->item)->image;
-      w = cairo_image_surface_get_width (image);
-      h = cairo_image_surface_get_height (image);
-    }
-  else
-    NOT_REACHED ();
 
   if (wp)
     *wp = w;
@@ -1195,23 +1196,31 @@ xr_fsm_draw_region (struct xr_fsm *fsm, cairo_t *cr,
                     int x, int y, int w, int h)
 {
   assert (!fsm->print);
-  if (is_table_item (fsm->item))
+  switch (fsm->item->type)
     {
+    case OUTPUT_ITEM_CHART:
+      xr_draw_chart (fsm->item->chart, cr, CHART_WIDTH, CHART_HEIGHT);
+      break;
+
+    case OUTPUT_ITEM_IMAGE:
+      draw_image (fsm->item->image, cr);
+      break;
+
+    case OUTPUT_ITEM_TABLE:
       fsm->cairo = cr;
       render_pager_draw_region (fsm->p, mul_XR_POINT (x), mul_XR_POINT (y),
                                 mul_XR_POINT (w), mul_XR_POINT (h));
       fsm->cairo = NULL;
+      break;
+
+    case OUTPUT_ITEM_GROUP_OPEN:
+    case OUTPUT_ITEM_GROUP_CLOSE:
+    case OUTPUT_ITEM_MESSAGE:
+    case OUTPUT_ITEM_PAGE_BREAK:
+    case OUTPUT_ITEM_PAGE_SETUP:
+    case OUTPUT_ITEM_TEXT:
+      NOT_REACHED ();
     }
-  else if (is_image_item (fsm->item))
-    draw_image (to_image_item (fsm->item)->image, cr);
-  else if (is_chart_item (fsm->item))
-    xr_draw_chart (to_chart_item (fsm->item), cr, CHART_WIDTH, CHART_HEIGHT);
-  else if (is_page_break_item (fsm->item))
-    {
-      /* Nothing to do. */
-    }
-  else
-    NOT_REACHED ();
 }
 
 /* Printing API. */
@@ -1219,19 +1228,18 @@ xr_fsm_draw_region (struct xr_fsm *fsm, cairo_t *cr,
 static int
 xr_fsm_draw_table (struct xr_fsm *fsm, int space)
 {
-  struct table_item *table_item = to_table_item (fsm->item);
   int used = render_pager_draw_next (fsm->p, space);
   if (!render_pager_has_next (fsm->p))
     {
       render_pager_destroy (fsm->p);
 
-      fsm->layer_indexes = pivot_output_next_layer (table_item->pt,
+      fsm->layer_indexes = pivot_output_next_layer (fsm->item->table,
                                                     fsm->layer_indexes, true);
       if (fsm->layer_indexes)
         {
-          fsm->p = render_pager_create (&fsm->rp, table_item,
+          fsm->p = render_pager_create (&fsm->rp, fsm->item->table,
                                         fsm->layer_indexes);
-          if (table_item->pt->look->paginate_layers)
+          if (fsm->item->table->look->paginate_layers)
             used = space;
           else
             used += fsm->style->object_spacing;
@@ -1253,7 +1261,7 @@ xr_fsm_draw_chart (struct xr_fsm *fsm, int space)
     return 0;
 
   fsm->done = true;
-  xr_draw_chart (to_chart_item (fsm->item), fsm->cairo,
+  xr_draw_chart (fsm->item->chart, fsm->cairo,
                  xr_to_pt (fsm->rp.size[H]), xr_to_pt (chart_height));
   return chart_height;
 }
@@ -1261,7 +1269,7 @@ xr_fsm_draw_chart (struct xr_fsm *fsm, int space)
 static int
 xr_fsm_draw_image (struct xr_fsm *fsm, int space)
 {
-  cairo_surface_t *image = to_image_item (fsm->item)->image;
+  cairo_surface_t *image = fsm->item->image;
   int width = cairo_image_surface_get_width (image) * XR_POINT;
   int height = cairo_image_surface_get_height (image) * XR_POINT;
   if (!width || !height)
@@ -1319,12 +1327,33 @@ xr_fsm_draw_slice (struct xr_fsm *fsm, cairo_t *cr, int space)
 
   cairo_save (cr);
   fsm->cairo = cr;
-  int used = (is_table_item (fsm->item) ? xr_fsm_draw_table (fsm, space)
-              : is_chart_item (fsm->item) ? xr_fsm_draw_chart (fsm, space)
-              : is_image_item (fsm->item) ? xr_fsm_draw_image (fsm, space)
-              : is_page_break_item (fsm->item) ? xr_fsm_draw_page_break (fsm,
-                                                                         space)
-              : (abort (), 0));
+  int used;
+  switch (fsm->item->type)
+    {
+    case OUTPUT_ITEM_CHART:
+      used = xr_fsm_draw_chart (fsm, space);
+      break;
+
+    case OUTPUT_ITEM_IMAGE:
+      used = xr_fsm_draw_image (fsm, space);
+      break;
+
+    case OUTPUT_ITEM_PAGE_BREAK:
+      used = xr_fsm_draw_page_break (fsm, space);
+      break;
+
+    case OUTPUT_ITEM_TABLE:
+      used = xr_fsm_draw_table (fsm, space);
+      break;
+
+    case OUTPUT_ITEM_GROUP_OPEN:
+    case OUTPUT_ITEM_GROUP_CLOSE:
+    case OUTPUT_ITEM_MESSAGE:
+    case OUTPUT_ITEM_PAGE_SETUP:
+    case OUTPUT_ITEM_TEXT:
+    default:
+      NOT_REACHED ();
+    }
   fsm->cairo = NULL;
   cairo_restore (cr);
 

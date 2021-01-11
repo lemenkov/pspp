@@ -373,7 +373,7 @@ show_npplot (const struct examine *cmd, int iact_idx)
       int grp;
       for (grp = 0; grp < n_cats; ++grp)
         {
-          struct chart_item *npp, *dnpp;
+          struct chart *npp, *dnpp;
           struct casereader *reader;
           struct np *np;
 
@@ -416,13 +416,13 @@ show_npplot (const struct examine *cmd, int iact_idx)
           if (npp == NULL || dnpp == NULL)
             {
               msg (MW, _("Not creating NP plot because data set is empty."));
-              chart_item_unref (npp);
-              chart_item_unref (dnpp);
+              chart_unref (npp);
+              chart_unref (dnpp);
             }
           else
             {
-              chart_item_submit (npp);
-              chart_item_submit (dnpp);
+              chart_submit (npp);
+              chart_submit (dnpp);
             }
 	  casereader_destroy (reader);
 
@@ -446,7 +446,7 @@ show_spreadlevel (const struct examine *cmd, int iact_idx)
   for (v = 0; v < cmd->n_dep_vars; ++v)
     {
       int grp;
-      struct chart_item *sl;
+      struct chart *sl;
 
       struct string label;
       ds_init_cstr (&label,
@@ -477,7 +477,7 @@ show_spreadlevel (const struct examine *cmd, int iact_idx)
       if (sl == NULL)
 	msg (MW, _("Not creating spreadlevel chart for %s"), ds_cstr (&label));
       else
-	chart_item_submit (sl);
+	chart_submit (sl);
 
       ds_destroy (&label);
     }
@@ -534,7 +534,7 @@ show_histogram (const struct examine *cmd, int iact_idx)
 
           moments_calculate (es[v].mom, &n, &mean, &var, NULL, NULL);
 
-          chart_item_submit
+          chart_submit
             (histogram_chart_create (es[v].histogram->gsl_hist,
                                       ds_cstr (&label), n, mean,
                                       sqrt (var), false));

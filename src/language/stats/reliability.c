@@ -32,7 +32,7 @@
 #include "libpspp/str.h"
 #include "math/moments.h"
 #include "output/pivot-table.h"
-#include "output/text-item.h"
+#include "output/output-item.h"
 
 #include "gettext.h"
 #define _(msgid) gettext (msgid)
@@ -522,10 +522,10 @@ do_reliability (struct casereader *input, struct dataset *ds,
 	alpha (s->n_items, s->sum_of_variances, s->variance_of_sums);
     }
 
-  text_item_submit (text_item_create_nocopy (
-                      TEXT_ITEM_TITLE,
-                      xasprintf (_("Scale: %s"), ds_cstr (&rel->scale_name)),
-                      NULL));
+  output_item_submit (text_item_create_nocopy (
+                        TEXT_ITEM_TITLE,
+                        xasprintf (_("Scale: %s"), ds_cstr (&rel->scale_name)),
+                        NULL));
 
   case_processing_summary (n_valid, n_missing, dataset_dict (ds));
 }

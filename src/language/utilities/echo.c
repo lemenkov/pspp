@@ -20,7 +20,8 @@
 #include "language/lexer/lexer.h"
 #include "libpspp/message.h"
 #include "libpspp/str.h"
-#include "output/text-item.h"
+#include "output/output-item.h"
+#include "output/driver.h"
 
 #include "gl/xalloc.h"
 
@@ -34,8 +35,8 @@ cmd_echo (struct lexer *lexer, struct dataset *ds UNUSED)
   if (!lex_force_string (lexer))
     return CMD_FAILURE;
 
-  text_item_submit (text_item_create (TEXT_ITEM_LOG, lex_tokcstr (lexer),
-                                      _("Echo")));
+  output_submit (text_item_create (TEXT_ITEM_LOG, lex_tokcstr (lexer),
+                                   _("Echo")));
   lex_get (lexer);
 
   return CMD_SUCCESS;

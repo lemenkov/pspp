@@ -34,17 +34,13 @@
 #include "libpspp/message.h"
 #include "libpspp/version.h"
 #include "output/cairo-chart.h"
-#include "output/chart-item.h"
+#include "output/chart.h"
 #include "output/driver-provider.h"
-#include "output/image-item.h"
-#include "output/message-item.h"
 #include "output/options.h"
-#include "output/output-item-provider.h"
+#include "output/output-item.h"
 #include "output/pivot-output.h"
 #include "output/pivot-table.h"
 #include "output/table-provider.h"
-#include "output/table-item.h"
-#include "output/text-item.h"
 
 #include "gl/minmax.h"
 #include "gl/xalloc.h"
@@ -74,7 +70,8 @@ struct html_driver
 
 static const struct output_driver_class html_driver_class;
 
-static void html_output_table (struct html_driver *, const struct table_item *);
+static void html_output_table (struct html_driver *,
+                               const struct output_item *);
 static void escape_string (FILE *file, const char *text,
                            const char *space, const char *newline);
 static void print_title_tag (FILE *file, const char *name,
@@ -250,86 +247,101 @@ html_destroy (struct output_driver *driver)
 }
 
 static void
-html_submit (struct output_driver *driver,
-             const struct output_item *output_item)
+html_submit (struct output_driver *driver, const struct output_item *item)
 {
   struct html_driver *html = html_driver_cast (driver);
 
-  if (is_table_item (output_item))
+  switch (item->type)
     {
-      struct table_item *table_item = to_table_item (output_item);
-      html_output_table (html, table_item);
-    }
-  else if (is_image_item (output_item) && html->chart_file_name != NULL)
-    {
-      struct image_item *image_item = to_image_item (output_item);
-      char *file_name = xr_write_png_image (
-        image_item->image, html->chart_file_name, ++html->chart_cnt);
-      if (file_name != NULL)
+    case OUTPUT_ITEM_CHART:
+      if (html->chart_file_name)
         {
-          fprintf (html->file, "<img src=\"%s\">", file_name);
-          free (file_name);
+          char *file_name = xr_draw_png_chart (item->chart,
+                                               html->chart_file_name,
+                                               html->chart_cnt++,
+                                               &html->fg, &html->bg);
+          if (file_name != NULL)
+            {
+              const char *title = chart_get_title (item->chart);
+              fprintf (html->file, "<img src=\"%s\" alt=\"chart: %s\">",
+                       file_name, title ? title : _("No description"));
+              free (file_name);
+            }
         }
-    }
-  else if (is_chart_item (output_item) && html->chart_file_name != NULL)
-    {
-      struct chart_item *chart_item = to_chart_item (output_item);
-      char *file_name;
+      break;
 
-      file_name = xr_draw_png_chart (chart_item, html->chart_file_name,
-                                     html->chart_cnt++,
-				     &html->fg,
-				     &html->bg
-				);
-      if (file_name != NULL)
+    case OUTPUT_ITEM_GROUP_OPEN:
+      break;
+
+    case OUTPUT_ITEM_GROUP_CLOSE:
+      break;
+
+    case OUTPUT_ITEM_IMAGE:
+      if (html->chart_file_name)
         {
-	  const char *title = chart_item_get_title (chart_item);
-          fprintf (html->file, "<img src=\"%s\" alt=\"chart: %s\">",
-		   file_name, title ? title : _("No description"));
-          free (file_name);
+          char *file_name = xr_write_png_image (
+            item->image, html->chart_file_name, ++html->chart_cnt);
+          if (file_name != NULL)
+            {
+              fprintf (html->file, "<img src=\"%s\">", file_name);
+              free (file_name);
+            }
         }
-    }
-  else if (is_text_item (output_item))
-    {
-      struct text_item *text_item = to_text_item (output_item);
-      char *s = text_item_get_plain_text (text_item);
+      break;
 
-      switch (text_item_get_type (text_item))
-        {
-        case TEXT_ITEM_PAGE_TITLE:
-          break;
-
-        case TEXT_ITEM_TITLE:
-          {
-            int level = MIN (5, output_get_group_level ()) + 1;
-            char tag[3] = { 'H', level + '1', '\0' };
-            print_title_tag (html->file, tag, s);
-          }
-          break;
-
-        case TEXT_ITEM_SYNTAX:
-          fprintf (html->file, "<pre class=\"syntax\">");
-          escape_string (html->file, s, " ", "<br>");
-          fprintf (html->file, "</pre>\n");
-          break;
-
-        case TEXT_ITEM_LOG:
-          fprintf (html->file, "<p>");
-          escape_string (html->file, s, " ", "<br>");
-          fprintf (html->file, "</p>\n");
-          break;
-        }
-
-      free (s);
-    }
-  else if (is_message_item (output_item))
-    {
-      const struct message_item *message_item = to_message_item (output_item);
-      char *s = msg_to_string (message_item_get_msg (message_item));
+    case OUTPUT_ITEM_MESSAGE:
       fprintf (html->file, "<p>");
+
+      char *s = msg_to_string (item->message);
       escape_string (html->file, s, " ", "<br>");
-      fprintf (html->file, "</p>\n");
       free (s);
+
+      fprintf (html->file, "</p>\n");
+      break;
+
+    case OUTPUT_ITEM_PAGE_BREAK:
+      break;
+
+    case OUTPUT_ITEM_PAGE_SETUP:
+      break;
+
+    case OUTPUT_ITEM_TABLE:
+      html_output_table (html, item);
+      break;
+
+    case OUTPUT_ITEM_TEXT:
+      {
+        char *s = text_item_get_plain_text (item);
+
+        switch (item->text.subtype)
+          {
+          case TEXT_ITEM_PAGE_TITLE:
+            break;
+
+          case TEXT_ITEM_TITLE:
+            {
+              int level = MIN (5, output_get_group_level ()) + 1;
+              char tag[3] = { 'H', level + '1', '\0' };
+              print_title_tag (html->file, tag, s);
+            }
+            break;
+
+          case TEXT_ITEM_SYNTAX:
+            fprintf (html->file, "<pre class=\"syntax\">");
+            escape_string (html->file, s, " ", "<br>");
+            fprintf (html->file, "</pre>\n");
+            break;
+
+          case TEXT_ITEM_LOG:
+            fprintf (html->file, "<p>");
+            escape_string (html->file, s, " ", "<br>");
+            fprintf (html->file, "</p>\n");
+            break;
+          }
+
+        free (s);
+      }
+      break;
     }
 }
 
@@ -716,11 +728,11 @@ html_output_table_layer (struct html_driver *html, const struct pivot_table *pt,
 }
 
 static void
-html_output_table (struct html_driver *html, const struct table_item *item)
+html_output_table (struct html_driver *html, const struct output_item *item)
 {
   size_t *layer_indexes;
-  PIVOT_OUTPUT_FOR_EACH_LAYER (layer_indexes, item->pt, true)
-    html_output_table_layer (html, item->pt, layer_indexes);
+  PIVOT_OUTPUT_FOR_EACH_LAYER (layer_indexes, item->table, true)
+    html_output_table_layer (html, item->table, layer_indexes);
 }
 
 struct output_driver_factory html_driver_factory =

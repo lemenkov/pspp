@@ -29,7 +29,7 @@
 #include "libpspp/cast.h"
 #include "libpspp/message.h"
 #include "output/driver-provider.h"
-#include "output/message-item.h"
+#include "output/output-item.h"
 
 #include "gl/fwriteerror.h"
 #include "gl/xalloc.h"
@@ -98,10 +98,9 @@ msglog_submit (struct output_driver *driver, const struct output_item *item)
 {
   struct msglog_driver *ml = msglog_driver_cast (driver);
 
-  if (is_message_item (item))
+  if (item->type == OUTPUT_ITEM_MESSAGE)
     {
-      const struct message_item *message_item = to_message_item (item);
-      char *s = msg_to_string (message_item_get_msg (message_item));
+      char *s = msg_to_string (item->message);
       fprintf (ml->file, "%s\n", s);
       free (s);
     }

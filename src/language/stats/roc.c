@@ -33,7 +33,6 @@
 #include "language/lexer/variable-parser.h"
 #include "libpspp/misc.h"
 #include "math/sort.h"
-#include "output/chart-item.h"
 #include "output/charts/roc-chart.h"
 #include "output/pivot-table.h"
 

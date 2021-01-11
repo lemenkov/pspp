@@ -27,14 +27,14 @@
 #define _(msgid) gettext (msgid)
 
 static void
-np_plot_chart_draw (const struct chart_item *chart_item, cairo_t *cr,
+np_plot_chart_draw (const struct chart *chart, cairo_t *cr,
                     struct xrchart_geometry *geom)
 {
-  const struct np_plot_chart *npp = to_np_plot_chart (chart_item);
+  const struct np_plot_chart *npp = to_np_plot_chart (chart);
   struct casereader *data;
   struct ccase *c;
 
-  xrchart_write_title (cr, geom, _("Normal Q-Q Plot of %s"), chart_item->title);
+  xrchart_write_title (cr, geom, _("Normal Q-Q Plot of %s"), chart->title);
   xrchart_write_xlabel (cr, geom, _("Observed Value"));
   xrchart_write_ylabel (cr, geom, _("Expected Normal"));
   if (! xrchart_write_xscale (cr, geom,
@@ -57,14 +57,14 @@ np_plot_chart_draw (const struct chart_item *chart_item, cairo_t *cr,
 }
 
 static void
-dnp_plot_chart_draw (const struct chart_item *chart_item, cairo_t *cr,
+dnp_plot_chart_draw (const struct chart *chart, cairo_t *cr,
                      struct xrchart_geometry *geom)
 {
-  const struct np_plot_chart *dnpp = to_np_plot_chart (chart_item);
+  const struct np_plot_chart *dnpp = to_np_plot_chart (chart);
   struct casereader *data;
   struct ccase *c;
 
-  xrchart_write_title (cr, geom, _("Detrended Normal Q-Q Plot of %s"), chart_item->title);
+  xrchart_write_title (cr, geom, _("Detrended Normal Q-Q Plot of %s"), chart->title);
   xrchart_write_xlabel (cr, geom, _("Observed Value"));
   xrchart_write_ylabel (cr, geom, _("Dev from Normal"));
   if (! xrchart_write_xscale (cr, geom, dnpp->y_min, dnpp->y_max))
@@ -82,13 +82,13 @@ dnp_plot_chart_draw (const struct chart_item *chart_item, cairo_t *cr,
 }
 
 void
-xrchart_draw_np_plot (const struct chart_item *chart_item, cairo_t *cr,
+xrchart_draw_np_plot (const struct chart *chart, cairo_t *cr,
                       struct xrchart_geometry *geom)
 {
-  const struct np_plot_chart *npp = to_np_plot_chart (chart_item);
+  const struct np_plot_chart *npp = to_np_plot_chart (chart);
 
   if (npp->detrended)
-    dnp_plot_chart_draw (chart_item, cr, geom);
+    dnp_plot_chart_draw (chart, cr, geom);
   else
-    np_plot_chart_draw (chart_item, cr, geom);
+    np_plot_chart_draw (chart, cr, geom);
 }

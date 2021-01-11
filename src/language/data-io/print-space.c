@@ -27,7 +27,7 @@
 #include "language/expressions/public.h"
 #include "language/lexer/lexer.h"
 #include "libpspp/message.h"
-#include "output/text-item.h"
+#include "output/output-item.h"
 
 #include "gl/xalloc.h"
 
@@ -134,7 +134,7 @@ print_space_trns_proc (void *t_, struct ccase **c,
 
   while (n--)
     if (trns->writer == NULL)
-      text_item_submit (text_item_create (TEXT_ITEM_LOG, "", NULL));
+      output_item_submit (text_item_create (TEXT_ITEM_LOG, "", NULL));
     else
       dfm_put_record (trns->writer, " ", 1); /* XXX */
 

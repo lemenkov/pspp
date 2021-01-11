@@ -145,17 +145,17 @@ boxplot_draw_box (cairo_t *cr, const struct xrchart_geometry *geom,
 }
 
 void
-xrchart_draw_boxplot (const struct chart_item *chart_item, cairo_t *cr,
+xrchart_draw_boxplot (const struct chart *chart, cairo_t *cr,
                       struct xrchart_geometry *geom)
 {
-  const struct boxplot *boxplot = to_boxplot (chart_item);
+  const struct boxplot *boxplot = to_boxplot (chart);
   double box_width;
   size_t i;
 
   if (! xrchart_write_yscale (cr, geom, boxplot->y_min, boxplot->y_max))
     return;
 
-  xrchart_write_title (cr, geom, "%s", chart_item->title);
+  xrchart_write_title (cr, geom, "%s", chart->title);
 
   box_width = (geom->axis[SCALE_ABSCISSA].data_max - geom->axis[SCALE_ABSCISSA].data_min) / boxplot->n_boxes / 2.0;
   for (i = 0; i < boxplot->n_boxes; i++)

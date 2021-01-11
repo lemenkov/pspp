@@ -44,7 +44,7 @@
 #include "libpspp/str.h"
 #include "libpspp/u8-istream.h"
 #include "output/journal.h"
-#include "output/text-item.h"
+#include "output/output-item.h"
 
 #include "gl/c-ctype.h"
 #include "gl/minmax.h"
@@ -1443,9 +1443,9 @@ lex_source_get__ (const struct lex_source *src_)
         copy_len--;
 
       /* Submit the line as syntax. */
-      text_item_submit (text_item_create_nocopy (TEXT_ITEM_SYNTAX,
-                                                 xmemdup0 (line, copy_len),
-                                                 NULL));
+      output_item_submit (text_item_create_nocopy (TEXT_ITEM_SYNTAX,
+                                                   xmemdup0 (line, copy_len),
+                                                   NULL));
 
       src->journal_pos += line_len;
     }

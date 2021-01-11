@@ -24,7 +24,7 @@
 #include <cairo/cairo.h>
 #include <pango/pango-font.h>
 #include "output/cairo-fsm.h"
-#include "output/page-setup-item.h"
+#include "output/page-setup.h"
 #include "output/table.h"
 
 struct xr_page_style

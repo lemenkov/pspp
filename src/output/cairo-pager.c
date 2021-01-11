@@ -23,13 +23,8 @@
 #include <pango/pango-layout.h>
 #include <pango/pangocairo.h>
 
-#include "output/chart-item.h"
 #include "output/driver-provider.h"
-#include "output/group-item.h"
-#include "output/message-item.h"
-#include "output/page-setup-item.h"
-#include "output/table-item.h"
-#include "output/text-item.h"
+#include "output/output-item.h"
 
 #include "gl/xalloc.h"
 
@@ -118,7 +113,7 @@ struct xr_pager
        the outline item can be the first object actually output in it). */
     int *group_ids;
     size_t n_group_ids, allocated_group_ids;
-    struct group_open_item **group_opens;
+    struct output_item **group_opens;
     size_t n_opens, allocated_opens;
 
     /* Current output page. */
@@ -255,7 +250,7 @@ xr_pager_destroy (struct xr_pager *p)
     {
       free (p->group_ids);
       for (size_t i = 0; i < p->n_opens; i++)
-        group_open_item_unref (p->group_opens[i]);
+        output_item_unref (p->group_opens[i]);
       free (p->group_opens);
 
       xr_page_style_unref (p->page_style);
@@ -372,19 +367,18 @@ xr_pager_run (struct xr_pager *p)
     {
       if (!p->fsm)
         {
-          if (is_group_open_item (p->item))
+          if (p->item->type == OUTPUT_ITEM_GROUP_OPEN)
             {
               if (p->n_opens >= p->allocated_opens)
                 p->group_opens = x2nrealloc (p->group_opens,
                                              &p->allocated_opens,
                                              sizeof p->group_opens);
-              p->group_opens[p->n_opens++] = group_open_item_ref (
-                to_group_open_item (p->item));
+              p->group_opens[p->n_opens++] = output_item_ref (p->item);
             }
-          else if (is_group_close_item (p->item))
+          else if (p->item->type == OUTPUT_ITEM_GROUP_CLOSE)
             {
               if (p->n_opens)
-                group_open_item_unref (p->group_opens[--p->n_opens]);
+                output_item_unref (p->group_opens[--p->n_opens]);
               else if (p->n_group_ids)
                 p->n_group_ids--;
               else
@@ -436,9 +430,9 @@ xr_pager_run (struct xr_pager *p)
                     {
                       parent_group_id = add_outline (
                         p->cr, parent_group_id,
-                        output_item_get_label (&p->group_opens[i]->output_item),
+                        output_item_get_label (p->group_opens[i]),
                         attrs, CAIRO_PDF_OUTLINE_FLAG_OPEN);
-                      group_open_item_unref (p->group_opens[i]);
+                      output_item_unref (p->group_opens[i]);
 
                       if (p->n_group_ids >= p->allocated_group_ids)
                         p->group_ids = x2nrealloc (p->group_ids,

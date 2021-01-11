@@ -23,12 +23,7 @@
 #include "data/file-handle-def.h"
 #include "libpspp/cast.h"
 #include "output/cairo-chart.h"
-#include "output/chart-item.h"
-#include "output/group-item.h"
-#include "output/image-item.h"
-#include "output/page-setup-item.h"
-#include "output/table-item.h"
-#include "output/text-item.h"
+#include "output/output-item.h"
 #include "output/spv/spv-writer.h"
 
 #include "gl/xalloc.h"

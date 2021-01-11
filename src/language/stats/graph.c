@@ -373,7 +373,7 @@ show_histogr (const struct graph *cmd, struct casereader *input)
 
     moments_calculate (cmd->es[0].mom, &n, &mean, &var, NULL, NULL);
 
-    chart_item_submit
+    chart_submit
       (histogram_chart_create (histogram->gsl_hist,
 				ds_cstr (&label), n, mean,
 				sqrt (var), cmd->normal));
@@ -555,9 +555,9 @@ run_barchart (struct graph *cmd, struct casereader *input)
       ds_put_cstr (&label,
 		     ag_func[cmd->agr].description);
 
-    chart_item_submit (barchart_create (cmd->by_var, cmd->n_by_vars,
-					ds_cstr (&label), false,
-					cells, n_cells));
+    chart_submit (barchart_create (cmd->by_var, cmd->n_by_vars,
+                                   ds_cstr (&label), false,
+                                   cells, n_cells));
 
     ds_destroy (&label);
   }

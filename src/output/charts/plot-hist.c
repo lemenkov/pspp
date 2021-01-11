@@ -24,7 +24,7 @@
 #include "libpspp/cast.h"
 #include "math/histogram.h"
 #include "math/moments.h"
-#include "output/chart-item-provider.h"
+#include "output/chart-provider.h"
 #include "output/charts/plot-hist.h"
 
 #include "gettext.h"
@@ -34,7 +34,7 @@
    Labels the histogram with each of N, MEAN, and STDDEV that is
    not SYSMIS.  If all three are not SYSMIS and SHOW_NORMAL is
    true, also draws a normal curve on the histogram. */
-struct chart_item *
+struct chart *
 histogram_chart_create (const gsl_histogram *hist, const char *label,
                         double n, double mean, double stddev,
                         bool show_normal)
@@ -42,26 +42,26 @@ histogram_chart_create (const gsl_histogram *hist, const char *label,
   struct histogram_chart *h;
 
   h = xmalloc (sizeof *h);
-  chart_item_init (&h->chart_item, &histogram_chart_class, label);
+  chart_init (&h->chart, &histogram_chart_class, label);
   h->gsl_hist = hist != NULL ? gsl_histogram_clone (hist) : NULL;
   h->n = n;
   h->mean = mean;
   h->stddev = stddev;
   h->show_normal = show_normal;
-  return &h->chart_item;
+  return &h->chart;
 }
 
 static void
-histogram_chart_destroy (struct chart_item *chart_item)
+histogram_chart_destroy (struct chart *chart)
 {
-  struct histogram_chart *h = UP_CAST (chart_item, struct histogram_chart,
-                                       chart_item);
+  struct histogram_chart *h = UP_CAST (chart, struct histogram_chart,
+                                       chart);
   if (h->gsl_hist != NULL)
     gsl_histogram_free (h->gsl_hist);
   free (h);
 }
 
-const struct chart_item_class histogram_chart_class =
+const struct chart_class histogram_chart_class =
   {
     histogram_chart_destroy
   };

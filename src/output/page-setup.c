@@ -16,12 +16,10 @@
 
 #include <config.h>
 
-#include "output/page-setup-item.h"
+#include "output/page-setup.h"
 
 #include <stdlib.h>
-
-#include "output/driver-provider.h"
-#include "output/output-item-provider.h"
+#include <string.h>
 
 #include "gl/xalloc.h"
 
@@ -97,43 +95,3 @@ page_setup_destroy (struct page_setup *ps)
       free (ps);
     }
 }
-
-struct page_setup_item *
-page_setup_item_create (const struct page_setup *ps)
-{
-  struct page_setup_item *item = xmalloc (sizeof *item);
-  *item = (struct page_setup_item) {
-    .output_item = OUTPUT_ITEM_INITIALIZER (&page_setup_item_class),
-    .page_setup = page_setup_clone (ps),
-  };
-  return item;
-}
-
-/* Submits ITEM to the configured output drivers, and transfers ownership to
-   the output subsystem. */
-void
-page_setup_item_submit (struct page_setup_item *item)
-{
-  output_submit (&item->output_item);
-}
-
-static const char *
-page_setup_item_get_label (const struct output_item *output_item UNUSED)
-{
-  /* Not marked for translation: user should never see it. */
-  return "Page Setup";
-}
-
-static void
-page_setup_item_destroy (struct output_item *output_item)
-{
-  struct page_setup_item *item = to_page_setup_item (output_item);
-  page_setup_destroy (item->page_setup);
-  free (item);
-}
-
-const struct output_item_class page_setup_item_class =
-  {
-    page_setup_item_get_label,
-    page_setup_item_destroy,
-  };

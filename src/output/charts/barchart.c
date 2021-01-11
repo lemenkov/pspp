@@ -24,7 +24,7 @@
 #include "libpspp/cast.h"
 #include "libpspp/str.h"
 #include "libpspp/array.h"
-#include "output/chart-item-provider.h"
+#include "output/chart-provider.h"
 
 #include "gl/xalloc.h"
 #include "data/variable.h"
@@ -170,7 +170,7 @@ barchart_dump (const struct barchart *bc, FILE *fp)
    CATS are the counts of the values of those variables. N_CATS is the
    number of distinct values.
 */
-struct chart_item *
+struct chart *
 barchart_create (const struct variable **var, int n_vars,
 		 const char *ylabel, bool percent,
 		 struct freq *const *cats, int n_cats)
@@ -191,7 +191,7 @@ barchart_create (const struct variable **var, int n_vars,
   bar->var = var;
   bar->n_vars = n_vars;
   bar->n_nzcats = n_cats;
-  chart_item_init (&bar->chart_item, &barchart_class, var_to_string (var[pidx]));
+  chart_init (&bar->chart, &barchart_class, var_to_string (var[pidx]));
 
   bar->largest = -1;
   bar->ylabel = strdup (ylabel);
@@ -341,7 +341,7 @@ barchart_create (const struct variable **var, int n_vars,
   if (settings_get_testing_mode ())
     barchart_dump (bar, stdout);
 
-  return &bar->chart_item;
+  return &bar->chart;
 }
 
 static void
@@ -361,9 +361,9 @@ destroy_cat_map (struct hmap *m)
 }
 
 static void
-barchart_destroy (struct chart_item *chart_item)
+barchart_destroy (struct chart *chart)
 {
-  struct barchart *bar = to_barchart (chart_item);
+  struct barchart *bar = to_barchart (chart);
 
   int i;
 
@@ -384,7 +384,7 @@ barchart_destroy (struct chart_item *chart_item)
   free (bar);
 }
 
-const struct chart_item_class barchart_class =
+const struct chart_class barchart_class =
   {
     barchart_destroy
   };

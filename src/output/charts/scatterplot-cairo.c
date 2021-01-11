@@ -31,10 +31,10 @@
 static const struct xrchart_colour black = {0,0,0};
 
 void
-xrchart_draw_scatterplot (const struct chart_item *chart_item, cairo_t *cr,
+xrchart_draw_scatterplot (const struct chart *chart, cairo_t *cr,
 			  struct xrchart_geometry *geom)
 {
-  const struct scatterplot_chart *spc = to_scatterplot_chart (chart_item);
+  const struct scatterplot_chart *spc = to_scatterplot_chart (chart);
   struct casereader *data;
   struct ccase *c;
   /* While reading the cases, a list with categories of the byvar is build */
@@ -54,7 +54,7 @@ xrchart_draw_scatterplot (const struct chart_item *chart_item, cairo_t *cr,
     return;
   if (! xrchart_write_yscale (cr, geom, spc->y_min, spc->y_max))
     return;
-  xrchart_write_title (cr, geom, _("Scatterplot %s"), chart_item->title);
+  xrchart_write_title (cr, geom, _("Scatterplot %s"), chart->title);
   xrchart_write_xlabel (cr, geom, spc->xlabel);
   xrchart_write_ylabel (cr, geom, spc->ylabel);
 

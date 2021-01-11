@@ -56,16 +56,16 @@ abscissa_label (const struct barchart *bc, cairo_t *cr,
 
 
 void
-xrchart_draw_barchart (const struct chart_item *chart_item, cairo_t *cr,
+xrchart_draw_barchart (const struct chart *chart, cairo_t *cr,
                        struct xrchart_geometry *geom)
 {
-  struct barchart *bc = to_barchart (chart_item);
+  struct barchart *bc = to_barchart (chart);
   int i;
 
   xrchart_write_title (cr, geom, _("Bar Chart"));
 
   xrchart_write_ylabel (cr, geom, bc->ylabel);
-  xrchart_write_xlabel (cr, geom, chart_item_get_title (chart_item));
+  xrchart_write_xlabel (cr, geom, chart_get_title (chart));
 
   if (! xrchart_write_yscale (cr, geom, 0,
                               bc->percent ? bc->largest * 100.0 / bc->total_count : bc->largest))

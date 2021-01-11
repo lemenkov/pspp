@@ -26,10 +26,10 @@
 #define _(msgid) gettext (msgid)
 
 void
-xrchart_draw_scree (const struct chart_item *chart_item, cairo_t *cr,
+xrchart_draw_scree (const struct chart *chart, cairo_t *cr,
                     struct xrchart_geometry *geom)
 {
-  const struct scree *rc = to_scree (chart_item);
+  const struct scree *rc = to_scree (chart);
   size_t i;
   double min, max;
 

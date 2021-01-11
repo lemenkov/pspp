@@ -31,7 +31,7 @@
 #include "libpspp/message.h"
 #include "libpspp/str.h"
 #include "libpspp/zip-reader.h"
-#include "output/page-setup-item.h"
+#include "output/page-setup.h"
 #include "output/pivot-table.h"
 #include "output/spv/detail-xml-parser.h"
 #include "output/spv/light-binary-parser.h"

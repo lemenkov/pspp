@@ -42,8 +42,7 @@
 #include "libpspp/u8-line.h"
 #include "output/pivot-table.h"
 #include "output/table.h"
-#include "output/page-break-item.h"
-#include "output/text-item.h"
+#include "output/output-item.h"
 
 #include "gl/xalloc.h"
 
@@ -556,16 +555,16 @@ print_text_flush_records (struct print_trns *trns, struct u8_line *line,
         {
           *eject = false;
           if (trns->writer == NULL)
-            page_break_item_submit (page_break_item_create ());
+            output_item_submit (page_break_item_create ());
           else
             leader = '1';
         }
       *u8_line_reserve (line, 0, 1, 1) = leader;
 
       if (trns->writer == NULL)
-        text_item_submit (text_item_create (TEXT_ITEM_LOG,
-                                            ds_cstr (&line->s) + 1,
-                                            NULL));
+        output_item_submit (text_item_create (TEXT_ITEM_LOG,
+                                              ds_cstr (&line->s) + 1,
+                                              NULL));
       else
         {
           size_t len = ds_length (&line->s);

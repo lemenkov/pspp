@@ -26,9 +26,9 @@
    broken across more than one page, those rows or columns are repeated on each
    page.
 
-   A table is not itself an output_item, and thus a table cannot by itself be
-   used for output, but they can be embedded inside struct table_item (see
-   table-item.h) for that purpose. */
+   Some drivers use tables as an implementation detail of rendering pivot
+   tables.
+*/
 
 #include <stdbool.h>
 #include <stdint.h>

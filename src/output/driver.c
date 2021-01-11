@@ -36,10 +36,7 @@
 #include "libpspp/string-map.h"
 #include "libpspp/string-set.h"
 #include "libpspp/str.h"
-#include "output/group-item.h"
-#include "output/message-item.h"
 #include "output/output-item.h"
-#include "output/text-item.h"
 
 #include "gl/error.h"
 #include "gl/xalloc.h"
@@ -52,7 +49,7 @@ struct output_engine
   {
     struct ll ll;                  /* Node for this engine. */
     struct llx_list drivers;       /* Contains "struct output_driver"s. */
-    struct text_item *deferred_text;   /* Output text being accumulated. */
+    struct output_item *deferred_text; /* Output text being accumulated. */
     char *command_name;            /* Name of command being processed. */
     char *title, *subtitle;        /* Components of page title. */
 
@@ -120,7 +117,7 @@ output_engine_pop (void)
       struct output_driver *d = llx_pop_head (&e->drivers, &llx_malloc_mgr);
       output_driver_destroy (d);
     }
-  text_item_unref (e->deferred_text);
+  output_item_unref (e->deferred_text);
   free (e->command_name);
   free (e->title);
   free (e->subtitle);
@@ -148,23 +145,32 @@ output_submit__ (struct output_engine *e, struct output_item *item)
   for (llx = llx_head (&e->drivers); llx != llx_null (&e->drivers); llx = next)
     {
       struct output_driver *d = llx_data (llx);
-      enum settings_output_type type;
 
       next = llx_next (llx);
 
-      if (is_message_item (item))
+      enum settings_output_type type = SETTINGS_OUTPUT_RESULT;
+      switch (item->type)
         {
-          const struct msg *m = message_item_get_msg (to_message_item (item));
-          if (m->severity == MSG_S_NOTE)
-            type = SETTINGS_OUTPUT_NOTE;
-          else
-            type = SETTINGS_OUTPUT_ERROR;
+        case OUTPUT_ITEM_MESSAGE:
+          type = (item->message->severity == MSG_S_NOTE
+                  ? SETTINGS_OUTPUT_NOTE
+                  : SETTINGS_OUTPUT_ERROR);
+          break;
+
+        case OUTPUT_ITEM_TEXT:
+          if (item->text.subtype == TEXT_ITEM_SYNTAX)
+            type = SETTINGS_OUTPUT_SYNTAX;
+          break;
+
+        case OUTPUT_ITEM_CHART:
+        case OUTPUT_ITEM_GROUP_OPEN:
+        case OUTPUT_ITEM_GROUP_CLOSE:
+        case OUTPUT_ITEM_IMAGE:
+        case OUTPUT_ITEM_PAGE_BREAK:
+        case OUTPUT_ITEM_PAGE_SETUP:
+        case OUTPUT_ITEM_TABLE:
+          break;
         }
-      else if (is_text_item (item)
-               && text_item_get_type (to_text_item (item)) == TEXT_ITEM_SYNTAX)
-        type = SETTINGS_OUTPUT_SYNTAX;
-      else
-        type = SETTINGS_OUTPUT_RESULT;
 
       if (settings_get_output_routing (type) & d->device_type)
         d->class->submit (d, item);
@@ -176,29 +182,28 @@ output_submit__ (struct output_engine *e, struct output_item *item)
 static void
 flush_deferred_text (struct output_engine *e)
 {
-  struct text_item *deferred_text = e->deferred_text;
+  struct output_item *deferred_text = e->deferred_text;
   if (deferred_text)
     {
       e->deferred_text = NULL;
-      output_submit__ (e, text_item_super (deferred_text));
+      output_submit__ (e, deferred_text);
     }
 }
 
 static bool
-defer_text (struct output_engine *e, struct output_item *output_item)
+defer_text (struct output_engine *e, struct output_item *item)
 {
-  if (!is_text_item (output_item))
+  if (item->type != OUTPUT_ITEM_TEXT)
     return false;
 
-  struct text_item *text = to_text_item (output_item);
   if (!e->deferred_text)
-    e->deferred_text = text_item_unshare (text);
-  else if (text_item_append (e->deferred_text, text))
-    text_item_unref (text);
+    e->deferred_text = output_item_unshare (item);
+  else if (text_item_append (e->deferred_text, item))
+    output_item_unref (item);
   else
     {
       flush_deferred_text (e);
-      e->deferred_text = text_item_unshare (text);
+      e->deferred_text = output_item_unshare (item);
     }
   return true;
 }
@@ -220,19 +225,17 @@ output_submit (struct output_item *item)
     return;
   flush_deferred_text (e);
 
-  if (is_group_open_item (item))
+  switch (item->type)
     {
-      const struct group_open_item *group_open_item
-        = to_group_open_item (item);
+    case OUTPUT_ITEM_GROUP_OPEN:
       if (e->n_groups >= e->allocated_groups)
         e->groups = x2nrealloc (e->groups, &e->allocated_groups,
                                 sizeof *e->groups);
-      e->groups[e->n_groups] = xstrdup_if_nonnull (
-        group_open_item->output_item.command_name);
+      e->groups[e->n_groups] = xstrdup_if_nonnull (item->command_name);
       e->n_groups++;
-    }
-  else if (is_group_close_item (item))
-    {
+      break;
+
+    case OUTPUT_ITEM_GROUP_CLOSE:
       assert (e->n_groups > 0);
 
       size_t idx = --e->n_groups;
@@ -241,17 +244,27 @@ output_submit (struct output_item *item)
       char *key = xasprintf ("Head%zu", idx);
       free (string_map_find_and_delete (&e->heading_vars, key));
       free (key);
-    }
-  else if (is_text_item (item))
-    {
-      const struct text_item *text_item = to_text_item (item);
-      enum text_item_type type = text_item_get_type (text_item);
-      char *key = (type == TEXT_ITEM_TITLE ? xasprintf ("Head%zu", e->n_groups)
-                   : type == TEXT_ITEM_PAGE_TITLE ? xstrdup ("PageTitle")
-                   : NULL);
-      if (key)
-        string_map_replace_nocopy (&e->heading_vars, key,
-                                   text_item_get_plain_text (text_item));
+      break;
+
+    case OUTPUT_ITEM_TEXT:
+      {
+        enum text_item_subtype st = item->text.subtype;
+        char *key = (st == TEXT_ITEM_TITLE ? xasprintf ("Head%zu", e->n_groups)
+                     : st == TEXT_ITEM_PAGE_TITLE ? xstrdup ("PageTitle")
+                     : NULL);
+        if (key)
+          string_map_replace_nocopy (&e->heading_vars, key,
+                                     text_item_get_plain_text (item));
+      }
+      break;
+
+    case OUTPUT_ITEM_CHART:
+    case OUTPUT_ITEM_IMAGE:
+    case OUTPUT_ITEM_MESSAGE:
+    case OUTPUT_ITEM_PAGE_BREAK:
+    case OUTPUT_ITEM_PAGE_SETUP:
+    case OUTPUT_ITEM_TABLE:
+      break;
     }
 
   output_submit__ (e, item);
@@ -309,8 +322,8 @@ output_set_title__ (struct output_engine *e, char **dst, const char *src)
        : e->title ? xstrdup (e->title)
        : e->subtitle ? xstrdup (e->subtitle)
        : xzalloc (1));
-  text_item_submit (text_item_create_nocopy (TEXT_ITEM_PAGE_TITLE,
-                                             page_title, NULL));
+  output_item_submit (text_item_create_nocopy (TEXT_ITEM_PAGE_TITLE,
+                                               page_title, NULL));
 }
 
 void

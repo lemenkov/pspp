@@ -38,13 +38,11 @@
 #include "libpspp/zip-writer.h"
 #include "data/file-handle-def.h"
 #include "output/driver-provider.h"
-#include "output/message-item.h"
 #include "output/options.h"
+#include "output/output-item.h"
 #include "output/pivot-table.h"
 #include "output/pivot-output.h"
-#include "output/table-item.h"
 #include "output/table-provider.h"
-#include "output/text-item.h"
 
 #include "gl/xalloc.h"
 
@@ -573,11 +571,11 @@ write_table_layer (struct odt_driver *odt, const struct pivot_table *pt,
 }
 
 static void
-write_table (struct odt_driver *odt, const struct table_item *item)
+write_table (struct odt_driver *odt, const struct pivot_table *pt)
 {
   size_t *layer_indexes;
-  PIVOT_OUTPUT_FOR_EACH_LAYER (layer_indexes, item->pt, true)
-    write_table_layer (odt, item->pt, layer_indexes);
+  PIVOT_OUTPUT_FOR_EACH_LAYER (layer_indexes, pt, true)
+    write_table_layer (odt, pt, layer_indexes);
 }
 
 static void
@@ -590,25 +588,49 @@ odt_output_text (struct odt_driver *odt, const char *text)
 
 /* Submit a table to the ODT driver */
 static void
-odt_submit (struct output_driver *driver,
-            const struct output_item *output_item)
+odt_submit (struct output_driver *driver, const struct output_item *item)
 {
   struct odt_driver *odt = odt_driver_cast (driver);
 
-  if (is_table_item (output_item))
-    write_table (odt, to_table_item (output_item));
-  else if (is_text_item (output_item))
+  switch (item->type)
     {
-      char *text = text_item_get_plain_text (to_text_item (output_item));
-      odt_output_text (odt, text);
-      free (text);
-    }
-  else if (is_message_item (output_item))
-    {
-      const struct message_item *message_item = to_message_item (output_item);
-      char *s = msg_to_string (message_item_get_msg (message_item));
-      odt_output_text (odt, s);
-      free (s);
+    case OUTPUT_ITEM_CHART:
+      break;
+
+    case OUTPUT_ITEM_GROUP_OPEN:
+      break;
+
+    case OUTPUT_ITEM_GROUP_CLOSE:
+      break;
+
+    case OUTPUT_ITEM_IMAGE:
+      break;
+
+    case OUTPUT_ITEM_MESSAGE:
+      {
+        char *s = msg_to_string (item->message);
+        odt_output_text (odt, s);
+        free (s);
+      }
+      break;
+
+    case OUTPUT_ITEM_PAGE_BREAK:
+      break;
+
+    case OUTPUT_ITEM_PAGE_SETUP:
+      break;
+
+    case OUTPUT_ITEM_TABLE:
+      write_table (odt, item->table);
+      break;
+
+    case OUTPUT_ITEM_TEXT:
+      {
+        char *text = text_item_get_plain_text (item);
+        odt_output_text (odt, text);
+        free (text);
+      }
+      break;
     }
 }
 

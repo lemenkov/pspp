@@ -56,7 +56,6 @@
 #include "libpspp/pool.h"
 #include "libpspp/str.h"
 #include "output/pivot-table.h"
-#include "output/chart-item.h"
 #include "output/charts/barchart.h"
 
 #include "gl/minmax.h"
@@ -786,9 +785,9 @@ postcalc (struct crosstabs_proc *proc)
           const struct variable **vars = xcalloc (n_vars, sizeof *vars);
           for (size_t i = 0; i < n_vars; i++)
             vars[i] = xt->vars[i].var;
-          chart_item_submit (barchart_create (vars, n_vars, _("Count"),
-                                              false,
-                                              xt->entries, xt->n_entries));
+          chart_submit (barchart_create (vars, n_vars, _("Count"),
+                                         false,
+                                         xt->entries, xt->n_entries));
           free (vars);
         }
     }

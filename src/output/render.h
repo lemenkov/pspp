@@ -152,7 +152,7 @@ struct render_ops
 
 /* An iterator for breaking render_pages into smaller chunks. */
 struct render_pager *render_pager_create (const struct render_params *,
-                                          const struct table_item *,
+                                          const struct pivot_table *,
                                           const size_t *layer_indexes);
 void render_pager_destroy (struct render_pager *);
 

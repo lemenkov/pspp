@@ -48,16 +48,13 @@
 #include "libpspp/version.h"
 #include "output/ascii.h"
 #include "output/cairo-chart.h"
-#include "output/chart-item-provider.h"
+#include "output/chart-provider.h"
 #include "output/driver-provider.h"
-#include "output/image-item.h"
-#include "output/message-item.h"
 #include "output/options.h"
 #include "output/pivot-output.h"
 #include "output/pivot-table.h"
 #include "output/render.h"
-#include "output/table-item.h"
-#include "output/text-item.h"
+#include "output/output-item.h"
 
 #include "gl/minmax.h"
 #include "gl/xalloc.h"
@@ -555,15 +552,15 @@ ascii_output_lines (struct ascii_driver *a, size_t n_lines)
 
 static void
 ascii_output_table_item (struct ascii_driver *a,
-                         const struct table_item *table_item)
+                         const struct output_item *item)
 {
   update_page_size (a, false);
-  a->pt = table_item->pt;
+  a->pt = item->table;
 
   size_t *layer_indexes;
-  PIVOT_OUTPUT_FOR_EACH_LAYER (layer_indexes, table_item->pt, true)
+  PIVOT_OUTPUT_FOR_EACH_LAYER (layer_indexes, item->table, true)
     {
-      struct render_pager *p = render_pager_create (&a->params, table_item,
+      struct render_pager *p = render_pager_create (&a->params, item->table,
                                                     layer_indexes);
       for (int i = 0; render_pager_has_next (p); i++)
         {
@@ -580,80 +577,85 @@ ascii_output_table_item (struct ascii_driver *a,
 
 static void
 ascii_output_table_item_unref (struct ascii_driver *a,
-                               struct table_item *table_item)
+                               struct output_item *table_item)
 {
   ascii_output_table_item (a, table_item);
-  table_item_unref (table_item);
+  output_item_unref (table_item);
 }
 
 static void
 ascii_submit (struct output_driver *driver,
-              const struct output_item *output_item)
+              const struct output_item *item)
 {
   struct ascii_driver *a = ascii_driver_cast (driver);
 
   if (a->error)
     return;
 
-  if (is_table_item (output_item))
-    ascii_output_table_item (a, to_table_item (output_item));
-  else if (is_image_item (output_item) && a->chart_file_name != NULL)
+  switch (item->type)
     {
-      struct image_item *image_item = to_image_item (output_item);
-      char *file_name = xr_write_png_image (
-        image_item->image, a->chart_file_name, ++a->chart_cnt);
-      if (file_name != NULL)
+    case OUTPUT_ITEM_TABLE:
+      ascii_output_table_item (a, item);
+      break;
+
+    case OUTPUT_ITEM_IMAGE:
+      if (a->chart_file_name != NULL)
         {
-          struct text_item *text_item;
+          char *file_name = xr_write_png_image (
+            item->image, a->chart_file_name, ++a->chart_cnt);
+          if (file_name != NULL)
+            {
+              struct output_item *text_item = text_item_create_nocopy (
+                TEXT_ITEM_LOG,
+                xasprintf (_("See %s for an image."), file_name),
+                NULL);
 
-          text_item = text_item_create_nocopy (
-            TEXT_ITEM_LOG,
-            xasprintf (_("See %s for an image."), file_name),
-            NULL);
-
-          ascii_submit (driver, &text_item->output_item);
-          text_item_unref (text_item);
-          free (file_name);
+              ascii_submit (driver, text_item);
+              output_item_unref (text_item);
+              free (file_name);
+            }
         }
-    }
-  else if (is_chart_item (output_item) && a->chart_file_name != NULL)
-    {
-      struct chart_item *chart_item = to_chart_item (output_item);
-      char *file_name;
+      break;
 
-      file_name = xr_draw_png_chart (chart_item, a->chart_file_name,
-                                     ++a->chart_cnt,
-				     &a->fg,
-				     &a->bg);
-      if (file_name != NULL)
+    case OUTPUT_ITEM_CHART:
+      if (a->chart_file_name != NULL)
         {
-          struct text_item *text_item;
+          char *file_name = xr_draw_png_chart (item->chart, a->chart_file_name,
+                                               ++a->chart_cnt, &a->fg,
+                                               &a->bg);
+          if (file_name != NULL)
+            {
+              struct output_item *text_item = text_item_create_nocopy (
+                TEXT_ITEM_LOG,
+                xasprintf (_("See %s for a chart."), file_name),
+                NULL);
 
-          text_item = text_item_create_nocopy (
-            TEXT_ITEM_LOG,
-            xasprintf (_("See %s for a chart."), file_name),
-            NULL);
-
-          ascii_submit (driver, &text_item->output_item);
-          text_item_unref (text_item);
-          free (file_name);
+              ascii_submit (driver, text_item);
+              output_item_unref (text_item);
+              free (file_name);
+            }
         }
-    }
-  else if (is_text_item (output_item))
-    {
-      const struct text_item *text_item = to_text_item (output_item);
-      enum text_item_type type = text_item_get_type (text_item);
+      break;
 
-      if (type != TEXT_ITEM_PAGE_TITLE)
+    case OUTPUT_ITEM_TEXT:
+      if (item->text.subtype != TEXT_ITEM_PAGE_TITLE)
         ascii_output_table_item_unref (
-          a, text_item_to_table_item (text_item_ref (text_item)));
+          a, text_item_to_table_item (output_item_ref (item)));
+      break;
+
+    case OUTPUT_ITEM_MESSAGE:
+      ascii_output_table_item_unref (
+        a, text_item_to_table_item (
+          message_item_to_text_item (
+              output_item_ref (item))));
+      break;
+
+    case OUTPUT_ITEM_GROUP_OPEN:
+    case OUTPUT_ITEM_GROUP_CLOSE:
+    case OUTPUT_ITEM_PAGE_BREAK:
+    case OUTPUT_ITEM_PAGE_SETUP:
+      break;
     }
-  else if (is_message_item (output_item))
-    ascii_output_table_item_unref (
-      a, text_item_to_table_item (
-        message_item_to_text_item (
-          to_message_item (
-            output_item_ref (output_item)))));
 }
 
 const struct output_driver_factory txt_driver_factory =

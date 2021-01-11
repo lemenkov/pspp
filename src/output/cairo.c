@@ -26,6 +26,7 @@
 #include "output/cairo-pager.h"
 #include "output/driver-provider.h"
 #include "output/options.h"
+#include "output/output-item.h"
 #include "output/table.h"
 
 #include <cairo/cairo-pdf.h>
@@ -602,15 +603,14 @@ xr_update_page_setup (struct output_driver *driver,
 }
 
 static void
-xr_submit (struct output_driver *driver, const struct output_item *output_item)
+xr_submit (struct output_driver *driver, const struct output_item *item)
 {
   struct xr_driver *xr = xr_driver_cast (driver);
 
-  if (is_page_setup_item (output_item))
+  if (item->type == OUTPUT_ITEM_PAGE_SETUP)
     {
       if (!xr->pager)
-        xr_update_page_setup (driver,
-                              to_page_setup_item (output_item)->page_setup);
+        xr_update_page_setup (driver, item->page_setup);
       return;
     }
 
@@ -620,7 +620,7 @@ xr_submit (struct output_driver *driver, const struct output_item *output_item)
       xr_pager_add_page (xr->pager, cairo_create (xr->drawing_surface));
     }
 
-  xr_pager_add_item (xr->pager, output_item);
+  xr_pager_add_item (xr->pager, item);
   while (xr_pager_needs_new_page (xr->pager))
     {
       xr_finish_page (xr);

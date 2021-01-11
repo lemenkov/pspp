@@ -26,13 +26,13 @@
 #define _(msgid) gettext (msgid)
 
 void
-xrchart_draw_spreadlevel (const struct chart_item *chart_item, cairo_t *cr,
-                    struct xrchart_geometry *geom)
+xrchart_draw_spreadlevel (const struct chart *chart, cairo_t *cr,
+                          struct xrchart_geometry *geom)
 {
-  const struct spreadlevel_plot_chart *sl = to_spreadlevel_plot_chart (chart_item);
+  const struct spreadlevel_plot_chart *sl = to_spreadlevel_plot_chart (chart);
   size_t i;
 
-  const char *name = chart_item_get_title (chart_item);
+  const char *name = chart_get_title (chart);
 
   xrchart_write_title (cr, geom, _("Spread vs. Level Plot of %s"), name);
   xrchart_write_xlabel (cr, geom, _("Level"));

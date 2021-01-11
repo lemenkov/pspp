@@ -23,11 +23,11 @@
 #include "data/casereader.h"
 #include "libpspp/cast.h"
 #include "math/np.h"
-#include "output/chart-item-provider.h"
+#include "output/chart-provider.h"
 
 #include "gl/minmax.h"
 
-static struct chart_item *
+static struct chart *
 make_np_plot (const struct np *np, const struct casereader *reader,
               const char *label, bool detrended)
 {
@@ -37,7 +37,7 @@ make_np_plot (const struct np *np, const struct casereader *reader,
     return NULL;
 
   npp = xzalloc (sizeof *npp);
-  chart_item_init (&npp->chart_item, &np_plot_chart_class, label);
+  chart_init (&npp->chart, &np_plot_chart_class, label);
   npp->data = casereader_clone (reader);
   npp->y_min = np->y_min;
   npp->y_max = np->y_max;
@@ -58,7 +58,7 @@ make_np_plot (const struct np *np, const struct casereader *reader,
   npp->x_upper = MAX (np->y_max, (npp->y_last  - npp->intercept) / npp->slope);
   npp->slack = (npp->x_upper - npp->x_lower) * 0.05;
 
-  return &npp->chart_item;
+  return &npp->chart;
 }
 
 /* Creates and returns a normal probability plot corresponding to
@@ -69,7 +69,7 @@ make_np_plot (const struct np *np, const struct casereader *reader,
    Returns a null pointer if the data set is empty.
 
    The caller retains ownership of NP and READER. */
-struct chart_item *
+struct chart *
 np_plot_create (const struct np *np, const struct casereader *reader,
                 const char *label)
 {
@@ -85,7 +85,7 @@ np_plot_create (const struct np *np, const struct casereader *reader,
    Returns a null pointer if the data set is empty.
 
    The caller retains ownership of NP and READER. */
-struct chart_item *
+struct chart *
 dnp_plot_create (const struct np *np, const struct casereader *reader,
                  const char *label)
 {
@@ -93,14 +93,14 @@ dnp_plot_create (const struct np *np, const struct casereader *reader,
 }
 
 static void
-np_plot_chart_destroy (struct chart_item *chart_item)
+np_plot_chart_destroy (struct chart *chart)
 {
-  struct np_plot_chart *npp = to_np_plot_chart (chart_item);
+  struct np_plot_chart *npp = to_np_plot_chart (chart);
   casereader_destroy (npp->data);
   free (npp);
 }
 
-const struct chart_item_class np_plot_chart_class =
+const struct chart_class np_plot_chart_class =
   {
     np_plot_chart_destroy
   };

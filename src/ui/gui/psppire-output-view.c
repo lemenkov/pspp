@@ -28,14 +28,8 @@
 #include "output/cairo-pager.h"
 #include "output/driver-provider.h"
 #include "output/driver.h"
-#include "output/chart-item.h"
-#include "output/group-item.h"
-#include "output/message-item.h"
 #include "output/output-item.h"
-#include "output/output-item-provider.h"
 #include "output/pivot-table.h"
-#include "output/table-item.h"
-#include "output/text-item.h"
 
 #include "gl/c-xvasprintf.h"
 #include "gl/minmax.h"
@@ -331,7 +325,7 @@ rerender (struct psppire_output_view *view)
       if (view->y > 0)
         view->y += view->object_spacing;
 
-      if (is_group_open_item (item->item))
+      if (item->item->type == OUTPUT_ITEM_GROUP_OPEN)
         continue;
 
       r = xr_fsm_create_for_scrolling (item->item, view->style, cr);
@@ -358,11 +352,9 @@ rerender (struct psppire_output_view *view)
           gtk_layout_move (view->output, item->drawing_area, xpos, view->y);
         }
 
-      if (is_table_item (item->item))
-        {
-          const struct table_item *ti = to_table_item (item->item);
-          gtk_widget_set_tooltip_text (item->drawing_area, ti->pt->notes);
-        }
+      if (item->item->type == OUTPUT_ITEM_TABLE)
+        gtk_widget_set_tooltip_text (item->drawing_area,
+                                     item->item->table->notes);
 
       {
 	gint minw;
@@ -404,7 +396,7 @@ psppire_output_view_put (struct psppire_output_view *view,
   GtkWidget *drawing_area;
   int tw, th;
 
-  if (is_group_close_item (item))
+  if (item->type == OUTPUT_ITEM_GROUP_CLOSE)
     {
       if (view->cur_group)
         {
@@ -416,10 +408,9 @@ psppire_output_view_put (struct psppire_output_view *view,
         }
       return;
     }
-  else if (is_text_item (item))
+  else if (item->type == OUTPUT_ITEM_TEXT)
     {
-      const struct text_item *text_item = to_text_item (item);
-      char *text = text_item_get_plain_text (text_item);
+      char *text = text_item_get_plain_text (item);
       bool text_is_empty = text[0] == '\0';
       free (text);
       if (text_is_empty)
@@ -434,7 +425,7 @@ psppire_output_view_put (struct psppire_output_view *view,
   view_item->drawing_area = NULL;
 
   GdkWindow *win = gtk_widget_get_window (GTK_WIDGET (view->output));
-  if (is_group_open_item (item))
+  if (item->type == OUTPUT_ITEM_GROUP_OPEN)
     tw = th = 0;
   else if (win)
     {
@@ -482,7 +473,7 @@ psppire_output_view_put (struct psppire_output_view *view,
       else
         gtk_tree_store_append (store, &iter, NULL);
 
-      if (is_group_open_item (item))
+      if (item->type == OUTPUT_ITEM_GROUP_OPEN)
         {
           gtk_tree_path_free (view->cur_group);
           view->cur_group = gtk_tree_model_get_path (GTK_TREE_MODEL (store),
@@ -745,8 +736,7 @@ build_target_list (const struct output_item *item)
 {
   GtkTargetList *tl = gtk_target_list_new (targets, G_N_ELEMENTS (targets));
   g_return_val_if_fail (tl, NULL);
-  if (is_table_item (item) ||
-      is_chart_item (item))
+  if (item->type == OUTPUT_ITEM_TABLE || item->type == OUTPUT_ITEM_CHART)
     gtk_target_list_add_image_targets (tl, SELECT_FMT_IMG, TRUE);
   return tl;
 }
@@ -1106,7 +1096,7 @@ psppire_output_view_submit (struct output_driver *this,
 {
   struct psppire_output_view_driver *povd = psppire_output_view_driver_cast (this);
 
-  if (is_table_item (item))
+  if (item->type == OUTPUT_ITEM_TABLE)
     psppire_output_view_put (povd->view, item);
 }
 

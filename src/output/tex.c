@@ -37,17 +37,12 @@
 #include "libpspp/temp-file.h"
 #include "libpspp/version.h"
 #include "output/cairo-chart.h"
-#include "output/chart-item.h"
 #include "output/driver-provider.h"
-#include "output/image-item.h"
-#include "output/message-item.h"
 #include "output/options.h"
-#include "output/output-item-provider.h"
+#include "output/output-item.h"
 #include "output/pivot-output.h"
 #include "output/pivot-table.h"
 #include "output/table-provider.h"
-#include "output/table-item.h"
-#include "output/text-item.h"
 #include "output/tex-rendering.h"
 #include "output/tex-parsing.h"
 
@@ -104,7 +99,7 @@ shipout (struct ll_list *list, const char *str, ...)
 
 static const struct output_driver_class tex_driver_class;
 
-static void tex_output_table (struct tex_driver *, const struct table_item *);
+static void tex_output_table (struct tex_driver *, const struct pivot_table *);
 
 static struct tex_driver *
 tex_driver_cast (struct output_driver *driver)
@@ -308,79 +303,96 @@ tex_escape_string (struct tex_driver *tex, const char *text,
 }
 
 static void
-tex_submit (struct output_driver *driver,
-             const struct output_item *output_item)
+tex_submit (struct output_driver *driver, const struct output_item *item)
 {
   struct tex_driver *tex = tex_driver_cast (driver);
 
-  if (is_table_item (output_item))
+  switch (item->type)
     {
-      struct table_item *table_item = to_table_item (output_item);
-      tex_output_table (tex, table_item);
-    }
-  else if (is_image_item (output_item) && tex->chart_file_name != NULL)
-    {
-      struct image_item *image_item = to_image_item (output_item);
-      char *file_name = xr_write_png_image (
-        image_item->image, tex->chart_file_name, tex->chart_cnt++);
-      if (file_name != NULL)
+    case OUTPUT_ITEM_CHART:
+      if (tex->chart_file_name != NULL)
         {
-          shipout (&tex->token_list, "\\includegraphics{%s}\n", file_name);
-          tex->require_graphics = true;
-          free (file_name);
+          char *file_name = xr_draw_png_chart (item->chart,
+                                               tex->chart_file_name,
+                                               tex->chart_cnt++,
+                                               &tex->fg, &tex->bg);
+          if (file_name != NULL)
+            {
+              //const char *title = chart_item_get_title (chart_item);
+              //          printf ("The chart title is %s\n", title);
+
+              shipout (&tex->token_list, "\\includegraphics{%s}\n", file_name);
+              tex->require_graphics = true;
+              free (file_name);
+            }
         }
-    }
-  else if (is_chart_item (output_item) && tex->chart_file_name != NULL)
-    {
-      struct chart_item *chart_item = to_chart_item (output_item);
-      char *file_name = xr_draw_png_chart (chart_item, tex->chart_file_name,
-                                           tex->chart_cnt++,
-                                           &tex->fg,
-                                           &tex->bg);
-      if (file_name != NULL)
-        {
-	  //const char *title = chart_item_get_title (chart_item);
-          //          printf ("The chart title is %s\n", title);
+      break;
 
-          shipout (&tex->token_list, "\\includegraphics{%s}\n", file_name);
-          tex->require_graphics = true;
-          free (file_name);
-        }
-    }
-  else if (is_text_item (output_item))
-    {
-      struct text_item *text_item = to_text_item (output_item);
-      char *s = text_item_get_plain_text (text_item);
+    case OUTPUT_ITEM_GROUP_OPEN:
+      break;
 
-      switch (text_item_get_type (text_item))
-        {
-        case TEXT_ITEM_PAGE_TITLE:
-          shipout (&tex->token_list, "\\headline={\\bf ");
-          tex_escape_string (tex, s, false);
-          shipout (&tex->token_list, "\\hfil}\n");
-          break;
+    case OUTPUT_ITEM_GROUP_CLOSE:
+      break;
 
-        case TEXT_ITEM_LOG:
-          shipout (&tex->token_list, "{\\tt ");
-          tex_escape_string (tex, s, false);
-          shipout (&tex->token_list, "}\\par\n\n");
-          break;
+    case OUTPUT_ITEM_IMAGE:
+      {
+        char *file_name = xr_write_png_image (
+          item->image, tex->chart_file_name, tex->chart_cnt++);
+        if (file_name != NULL)
+          {
+            shipout (&tex->token_list, "\\includegraphics{%s}\n", file_name);
+            tex->require_graphics = true;
+            free (file_name);
+          }
+      }
+      break;
 
-        case TEXT_ITEM_SYNTAX:
-          /* So far as I'm aware, this can never happen.  */
-        default:
-          printf ("Unhandled type %d\n", text_item_get_type (text_item));
-          break;
-        }
-      free (s);
-    }
-  else if (is_message_item (output_item))
-    {
-      const struct message_item *message_item = to_message_item (output_item);
-      char *s = msg_to_string (message_item_get_msg (message_item));
-      tex_escape_string (tex, s, false);
-      shipout (&tex->token_list, "\\par\n");
-      free (s);
+    case OUTPUT_ITEM_MESSAGE:
+      {
+        char *s = msg_to_string (item->message);
+        tex_escape_string (tex, s, false);
+        shipout (&tex->token_list, "\\par\n");
+        free (s);
+      }
+      break;
+
+    case OUTPUT_ITEM_PAGE_BREAK:
+      break;
+
+    case OUTPUT_ITEM_PAGE_SETUP:
+      break;
+
+    case OUTPUT_ITEM_TABLE:
+      tex_output_table (tex, item->table);
+      break;
+
+    case OUTPUT_ITEM_TEXT:
+      {
+        char *s = text_item_get_plain_text (item);
+
+        switch (item->text.subtype)
+          {
+          case TEXT_ITEM_PAGE_TITLE:
+            shipout (&tex->token_list, "\\headline={\\bf ");
+            tex_escape_string (tex, s, false);
+            shipout (&tex->token_list, "\\hfil}\n");
+            break;
+
+          case TEXT_ITEM_LOG:
+            shipout (&tex->token_list, "{\\tt ");
+            tex_escape_string (tex, s, false);
+            shipout (&tex->token_list, "}\\par\n\n");
+            break;
+
+          case TEXT_ITEM_SYNTAX:
+            /* So far as I'm aware, this can never happen.  */
+          default:
+            printf ("Unhandled type %d\n", item->text.subtype);
+            break;
+          }
+        free (s);
+      }
+      break;
     }
 }
 
@@ -590,11 +602,11 @@ tex_output_table_layer (struct tex_driver *tex, const struct pivot_table *pt,
 }
 
 static void
-tex_output_table (struct tex_driver *tex, const struct table_item *item)
+tex_output_table (struct tex_driver *tex, const struct pivot_table *pt)
 {
   size_t *layer_indexes;
-  PIVOT_OUTPUT_FOR_EACH_LAYER (layer_indexes, item->pt, true)
-    tex_output_table_layer (tex, item->pt, layer_indexes);
+  PIVOT_OUTPUT_FOR_EACH_LAYER (layer_indexes, pt, true)
+    tex_output_table_layer (tex, pt, layer_indexes);
 }
 
 struct output_driver_factory tex_driver_factory =

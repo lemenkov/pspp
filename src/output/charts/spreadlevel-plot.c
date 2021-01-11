@@ -19,7 +19,7 @@
 #include "output/charts/spreadlevel-plot.h"
 
 #include "libpspp/cast.h"
-#include "output/chart-item-provider.h"
+#include "output/chart-provider.h"
 
 #include "gl/xalloc.h"
 #include "gl/minmax.h"
@@ -28,11 +28,11 @@
 #include <float.h>
 #include <stdlib.h>
 
-struct chart_item *
+struct chart *
 spreadlevel_plot_create (const char *label, double tx_pwr)
 {
   struct spreadlevel_plot_chart *sl = xzalloc (sizeof *sl);
-  chart_item_init (&sl->chart_item, &spreadlevel_plot_chart_class, label);
+  chart_init (&sl->chart, &spreadlevel_plot_chart_class, label);
 
   sl->x_lower = DBL_MAX;
   sl->x_upper = -DBL_MAX;
@@ -45,11 +45,11 @@ spreadlevel_plot_create (const char *label, double tx_pwr)
   sl->n_data = 0;
   sl->data = NULL;
 
-  return &sl->chart_item;
+  return &sl->chart;
 }
 
 void
-spreadlevel_plot_add (struct chart_item *ci, double spread, double level)
+spreadlevel_plot_add (struct chart *ci, double spread, double level)
 {
   struct spreadlevel_plot_chart *sl = to_spreadlevel_plot_chart (ci);
 
@@ -79,15 +79,15 @@ spreadlevel_plot_add (struct chart_item *ci, double spread, double level)
 
 
 static void
-spreadlevel_plot_chart_destroy (struct chart_item *chart_item)
+spreadlevel_plot_chart_destroy (struct chart *chart)
 {
-  struct spreadlevel_plot_chart *sl = to_spreadlevel_plot_chart (chart_item);
+  struct spreadlevel_plot_chart *sl = to_spreadlevel_plot_chart (chart);
 
   free (sl->data);
   free (sl);
 }
 
-const struct chart_item_class spreadlevel_plot_chart_class =
+const struct chart_class spreadlevel_plot_chart_class =
   {
     spreadlevel_plot_chart_destroy
   };

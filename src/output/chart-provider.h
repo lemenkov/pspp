@@ -14,18 +14,17 @@
    You should have received a copy of the GNU General Public License
    along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 
-#ifndef OUTPUT_CHART_ITEM_PROVIDER_H
-#define OUTPUT_CHART_ITEM_PROVIDER_H 1
+#ifndef OUTPUT_CHART_PROVIDER_H
+#define OUTPUT_CHART_PROVIDER_H 1
 
-#include "output/chart-item.h"
-#include "output/output-item.h"
+#include "output/chart.h"
 
-struct chart_item_class
+struct chart_class
   {
-    void (*destroy) (struct chart_item *);
+    void (*destroy) (struct chart *);
   };
 
-void chart_item_init (struct chart_item *, const struct chart_item_class *,
-                      const char *title);
+void chart_init (struct chart *, const struct chart_class *,
+                 const char *title);
 
 #endif /* output/chart-provider.h */

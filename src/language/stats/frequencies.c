@@ -52,7 +52,6 @@
 #include "math/chart-geometry.h"
 
 
-#include "output/chart-item.h"
 #include "output/charts/barchart.h"
 #include "output/charts/piechart.h"
 #include "output/charts/plot-hist.h"
@@ -547,12 +546,12 @@ postcalc (struct frq_proc *frq, const struct dataset *ds)
 
 	  if (histogram)
 	    {
-	      chart_item_submit (histogram_chart_create (
-                               histogram->gsl_hist, var_to_string(vf->var),
-                               vf->tab.valid_cases,
-                               d[FRQ_ST_MEAN],
-                               d[FRQ_ST_STDDEV],
-                               frq->hist->draw_normal));
+	      chart_submit (histogram_chart_create (
+                              histogram->gsl_hist, var_to_string(vf->var),
+                              vf->tab.valid_cases,
+                              d[FRQ_ST_MEAN],
+                              d[FRQ_ST_STDDEV],
+                              frq->hist->draw_normal));
 
 	      statistic_destroy (&histogram->parent);
 	    }
@@ -1477,7 +1476,7 @@ do_piechart(const struct frq_chart *pie, const struct variable *var,
     msg (SW, _("Omitting pie chart for %s, which has over 50 unique values."),
          var_get_name (var));
   else
-    chart_item_submit (piechart_create (var, slices, n_slices));
+    chart_submit (piechart_create (var, slices, n_slices));
 
   free (slices);
 }
@@ -1490,10 +1489,10 @@ do_barchart(const struct frq_chart *bar, const struct variable **var,
   int n_slices;
   struct freq **slices = pick_cat_counts_ptr (bar, frq_tab, &n_slices);
 
-  chart_item_submit (barchart_create (var, 1,
-				      (bar->y_scale == FRQ_FREQ) ? _("Count") : _("Percent"),
-				      (bar->y_scale == FRQ_PERCENT),
-				      slices, n_slices));
+  chart_submit (barchart_create (var, 1,
+                                 (bar->y_scale == FRQ_FREQ) ? _("Count") : _("Percent"),
+                                 (bar->y_scale == FRQ_PERCENT),
+                                 slices, n_slices));
   free (slices);
 }
 

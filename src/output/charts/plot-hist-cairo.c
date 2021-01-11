@@ -100,17 +100,17 @@ hist_draw_bar (cairo_t *cr, const struct xrchart_geometry *geom,
 }
 
 void
-xrchart_draw_histogram (const struct chart_item *chart_item, cairo_t *cr,
+xrchart_draw_histogram (const struct chart *chart, cairo_t *cr,
                         struct xrchart_geometry *geom)
 {
-  struct histogram_chart *h = to_histogram_chart (chart_item);
+  struct histogram_chart *h = to_histogram_chart (chart);
   int i;
   int bins;
 
   xrchart_write_title (cr, geom, _("HISTOGRAM"));
 
   xrchart_write_ylabel (cr, geom, _("Frequency"));
-  xrchart_write_xlabel (cr, geom, chart_item_get_title (chart_item));
+  xrchart_write_xlabel (cr, geom, chart_get_title (chart));
 
   if (h->gsl_hist == NULL)
     {

@@ -29,7 +29,6 @@
 #include "output/pivot-output.h"
 #include "output/pivot-table.h"
 #include "output/render.h"
-#include "output/table-item.h"
 #include "output/table.h"
 
 #include "gl/minmax.h"
@@ -1511,14 +1510,13 @@ render_pager_start_page (struct render_pager *p)
   render_break_init_empty (&p->y_break);
 }
 
-/* Creates and returns a new render_pager for rendering TABLE_ITEM on the
-   device with the given PARAMS. */
+/* Creates and returns a new render_pager for rendering PT on the device
+   with the given PARAMS. */
 struct render_pager *
 render_pager_create (const struct render_params *params,
-                     const struct table_item *table_item,
+                     const struct pivot_table *pt,
                      const size_t *layer_indexes)
 {
-  const struct pivot_table *pt = table_item->pt;
   if (!layer_indexes)
     layer_indexes = pt->current_layer;
 
@@ -1533,9 +1531,7 @@ render_pager_create (const struct render_params *params,
   double scale = 1.0;
   if (body_width > params->size[H])
     {
-      if (table_item->pt
-          && table_item->pt->look->shrink_to_fit[H]
-          && params->ops->scale)
+      if (pt->look->shrink_to_fit[H] && params->ops->scale)
         scale = params->size[H] / (double) body_width;
       else
         {
@@ -1567,9 +1563,7 @@ render_pager_create (const struct render_params *params,
      they won't break across as much vertical space, thus shrinking the table
      vertically more than the scale would imply.  Shrinking only as much as
      necessary would require an iterative search. */
-  if (table_item->pt
-      && table_item->pt->look->shrink_to_fit[V]
-      && params->ops->scale)
+  if (pt->look->shrink_to_fit[V] && params->ops->scale)
     {
       int total_height = 0;
       for (size_t i = 0; i < p->n_pages; i++)

@@ -22,8 +22,8 @@
 #include <stdint.h>
 #include "libpspp/compiler.h"
 
-struct chart_item;
 struct cell_color;
+struct chart;
 
 struct xrchart_colour
   {
@@ -159,40 +159,40 @@ void xrchart_line (cairo_t *, const struct xrchart_geometry *,
                    double limit1, double limit2, enum xrchart_dim lim_dim);
 
 /* Drawing various kinds of charts. */
-void xrchart_draw_boxplot (const struct chart_item *, cairo_t *,
+void xrchart_draw_boxplot (const struct chart *, cairo_t *,
                            struct xrchart_geometry *);
-void xrchart_draw_roc (const struct chart_item *, cairo_t *,
+void xrchart_draw_roc (const struct chart *, cairo_t *,
                        struct xrchart_geometry *);
-void xrchart_draw_piechart (const struct chart_item *, cairo_t *,
+void xrchart_draw_piechart (const struct chart *, cairo_t *,
                             struct xrchart_geometry *);
-void xrchart_draw_barchart (const struct chart_item *, cairo_t *,
+void xrchart_draw_barchart (const struct chart *, cairo_t *,
                             struct xrchart_geometry *);
-void xrchart_draw_histogram (const struct chart_item *, cairo_t *,
+void xrchart_draw_histogram (const struct chart *, cairo_t *,
                              struct xrchart_geometry *);
-void xrchart_draw_np_plot (const struct chart_item *, cairo_t *,
+void xrchart_draw_np_plot (const struct chart *, cairo_t *,
                            struct xrchart_geometry *);
-void xrchart_draw_scree (const struct chart_item *, cairo_t *,
+void xrchart_draw_scree (const struct chart *, cairo_t *,
                          struct xrchart_geometry *);
-void xrchart_draw_spreadlevel (const struct chart_item *, cairo_t *,
+void xrchart_draw_spreadlevel (const struct chart *, cairo_t *,
                          struct xrchart_geometry *);
-void xrchart_draw_scatterplot (const struct chart_item *, cairo_t *,
+void xrchart_draw_scatterplot (const struct chart *, cairo_t *,
                          struct xrchart_geometry *);
 
-void xr_draw_chart (const struct chart_item *, cairo_t *,
+void xr_draw_chart (const struct chart *, cairo_t *,
                     double width, double height);
 
-cairo_surface_t *xr_draw_image_chart (const struct chart_item *,
+cairo_surface_t *xr_draw_image_chart (const struct chart *,
                                       const struct cell_color *fg,
                                       const struct cell_color *bg);
 char *xr_write_png_image (cairo_surface_t *,
                           const char *file_name_template, int number);
 
-char *xr_draw_png_chart (const struct chart_item *,
+char *xr_draw_png_chart (const struct chart *,
                          const char *file_name_template, int number,
                          const struct cell_color *fg,
 			 const struct cell_color *bg);
 
-char *xr_draw_eps_chart (const struct chart_item *item,
+char *xr_draw_eps_chart (const struct chart *,
                          const char *file_name_template, int number,
                          const struct cell_color *fg,
                          const struct cell_color *bg);

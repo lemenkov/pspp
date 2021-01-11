@@ -29,8 +29,8 @@
 #include "libpspp/string-map.h"
 #include "output/ascii.h"
 #include "output/driver.h"
+#include "output/output-item.h"
 #include "output/table.h"
-#include "output/table-item.h"
 
 #include "gl/error.h"
 #include "gl/progname.h"

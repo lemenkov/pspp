@@ -34,7 +34,6 @@
 #include "libpspp/assertion.h"
 #include "libpspp/message.h"
 #include "math/chart-geometry.h"
-#include "output/chart-item.h"
 #include "output/charts/barchart.h"
 #include "output/charts/boxplot.h"
 #include "output/charts/np-plot.h"
@@ -621,7 +620,7 @@ xrchart_line(cairo_t *cr, const struct xrchart_geometry *geom,
 }
 
 void
-xr_draw_chart (const struct chart_item *chart_item, cairo_t *cr,
+xr_draw_chart (const struct chart *chart, cairo_t *cr,
                double width, double height)
 {
   struct xrchart_geometry geom;
@@ -630,24 +629,24 @@ xr_draw_chart (const struct chart_item *chart_item, cairo_t *cr,
   cairo_translate (cr, 0, height);
   cairo_scale (cr, 1.0, -1.0);
   xrchart_geometry_init (cr, &geom, width, height);
-  if (is_boxplot (chart_item))
-    xrchart_draw_boxplot (chart_item, cr, &geom);
-  else if (is_histogram_chart (chart_item))
-    xrchart_draw_histogram (chart_item, cr, &geom);
-  else if (is_np_plot_chart (chart_item))
-    xrchart_draw_np_plot (chart_item, cr, &geom);
-  else if (is_piechart (chart_item))
-    xrchart_draw_piechart (chart_item, cr, &geom);
-  else if (is_barchart (chart_item))
-    xrchart_draw_barchart (chart_item, cr, &geom);
-  else if (is_roc_chart (chart_item))
-    xrchart_draw_roc (chart_item, cr, &geom);
-  else if (is_scree (chart_item))
-    xrchart_draw_scree (chart_item, cr, &geom);
-  else if (is_spreadlevel_plot_chart (chart_item))
-    xrchart_draw_spreadlevel (chart_item, cr, &geom);
-  else if (is_scatterplot_chart (chart_item))
-    xrchart_draw_scatterplot (chart_item, cr, &geom);
+  if (is_boxplot (chart))
+    xrchart_draw_boxplot (chart, cr, &geom);
+  else if (is_histogram_chart (chart))
+    xrchart_draw_histogram (chart, cr, &geom);
+  else if (is_np_plot_chart (chart))
+    xrchart_draw_np_plot (chart, cr, &geom);
+  else if (is_piechart (chart))
+    xrchart_draw_piechart (chart, cr, &geom);
+  else if (is_barchart (chart))
+    xrchart_draw_barchart (chart, cr, &geom);
+  else if (is_roc_chart (chart))
+    xrchart_draw_roc (chart, cr, &geom);
+  else if (is_scree (chart))
+    xrchart_draw_scree (chart, cr, &geom);
+  else if (is_spreadlevel_plot_chart (chart))
+    xrchart_draw_spreadlevel (chart, cr, &geom);
+  else if (is_scatterplot_chart (chart))
+    xrchart_draw_scatterplot (chart, cr, &geom);
   else
     NOT_REACHED ();
   xrchart_geometry_free (cr, &geom);
@@ -656,7 +655,7 @@ xr_draw_chart (const struct chart_item *chart_item, cairo_t *cr,
 }
 
 cairo_surface_t *
-xr_draw_image_chart (const struct chart_item *item,
+xr_draw_image_chart (const struct chart *chart,
                      const struct cell_color *fg,
                      const struct cell_color *bg)
 {
@@ -671,7 +670,7 @@ xr_draw_image_chart (const struct chart_item *item,
   cairo_paint (cr);
 
   cairo_set_source_rgb (cr, fg->r / 255.0, fg->g / 255.0, fg->b / 255.0);
-  xr_draw_chart (item, cr, width, length);
+  xr_draw_chart (chart, cr, width, length);
 
   cairo_destroy (cr);
 
@@ -700,19 +699,19 @@ xr_write_png_image (cairo_surface_t *surface,
 }
 
 char *
-xr_draw_png_chart (const struct chart_item *item,
+xr_draw_png_chart (const struct chart *chart,
                    const char *file_name_template, int number,
 		   const struct cell_color *fg,
 		   const struct cell_color *bg)
 {
-  cairo_surface_t *surface = xr_draw_image_chart (item, fg, bg);
+  cairo_surface_t *surface = xr_draw_image_chart (chart, fg, bg);
   char *file_name = xr_write_png_image (surface, file_name_template, number);
   cairo_surface_destroy (surface);
   return file_name;
 }
 
 char *
-xr_draw_eps_chart (const struct chart_item *item,
+xr_draw_eps_chart (const struct chart *chart,
                    const char *file_name_template, int number,
 		   const struct cell_color *fg,
 		   const struct cell_color *bg)
@@ -741,7 +740,7 @@ xr_draw_eps_chart (const struct chart_item *item,
 
   cairo_set_source_rgb (cr, fg->r / 255.0, fg->g / 255.0, fg->b / 255.0);
 
-  xr_draw_chart (item, cr, width, length);
+  xr_draw_chart (chart, cr, width, length);
 
   cairo_destroy (cr);
   cairo_surface_destroy (surface);

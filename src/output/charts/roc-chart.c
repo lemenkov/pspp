@@ -20,7 +20,7 @@
 
 #include "data/casereader.h"
 #include "language/stats/roc.h"
-#include "output/chart-item-provider.h"
+#include "output/chart-provider.h"
 
 #include "gl/xalloc.h"
 
@@ -31,7 +31,7 @@ struct roc_chart *
 roc_chart_create (bool reference)
 {
   struct roc_chart *rc = xmalloc (sizeof *rc);
-  chart_item_init (&rc->chart_item, &roc_chart_class, NULL);
+  chart_init (&rc->chart, &roc_chart_class, NULL);
   rc->reference = reference;
   rc->vars = NULL;
   rc->n_vars = 0;
@@ -54,9 +54,9 @@ roc_chart_add_var (struct roc_chart *rc, const char *var_name,
 }
 
 static void
-roc_chart_destroy (struct chart_item *chart_item)
+roc_chart_destroy (struct chart *chart)
 {
-  struct roc_chart *rc = UP_CAST (chart_item, struct roc_chart, chart_item);
+  struct roc_chart *rc = UP_CAST (chart, struct roc_chart, chart);
   size_t i;
 
   for (i = 0; i < rc->n_vars; i++)
@@ -69,7 +69,7 @@ roc_chart_destroy (struct chart_item *chart_item)
   free (rc);
 }
 
-const struct chart_item_class roc_chart_class =
+const struct chart_class roc_chart_class =
   {
     roc_chart_destroy
   };

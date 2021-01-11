@@ -28,8 +28,7 @@
 #include "libpspp/message.h"
 #include "libpspp/str.h"
 #include "output/driver-provider.h"
-#include "output/message-item.h"
-#include "output/text-item.h"
+#include "output/output-item.h"
 
 #include "gl/fwriteerror.h"
 #include "gl/xalloc.h"
@@ -85,17 +84,19 @@ journal_destroy (struct output_driver *driver)
 }
 
 static void
-journal_output (struct journal_driver *j, const char *s)
+journal_output (struct journal_driver *j, char *s)
 {
-  if (j->file == NULL)
-    return;
+  if (j->file)
+    {
+      fprintf (j->file, "%s\n", s);
 
-  fprintf (j->file, "%s\n", s);
+      /* Flush the journal in case the syntax we're about to write
+         causes a crash.  Having the syntax already written to disk
+         makes postmortem analysis of the problem possible. */
+      fflush (j->file);
+    }
 
-  /* Flush the journal in case the syntax we're about to write
-     causes a crash.  Having the syntax already written to disk
-     makes postmortem analysis of the problem possible. */
-  fflush (j->file);
+  free (s);
 }
 
 static void
@@ -103,24 +104,25 @@ journal_submit (struct output_driver *driver, const struct output_item *item)
 {
   struct journal_driver *j = journal_driver_cast (driver);
 
-  if (is_text_item (item))
+  switch (item->type)
     {
-      const struct text_item *text_item = to_text_item (item);
-      enum text_item_type type = text_item_get_type (text_item);
+    case OUTPUT_ITEM_MESSAGE:
+      journal_output (j, msg_to_string (item->message));
+      break;
 
-      if (type == TEXT_ITEM_SYNTAX)
-        {
-          char *text = text_item_get_plain_text (text_item);
-          journal_output (j, text);
-          free (text);
-        }
-    }
-  else if (is_message_item (item))
-    {
-      const struct message_item *message_item = to_message_item (item);
-      char *s = msg_to_string (message_item_get_msg (message_item));
-      journal_output (j, s);
-      free (s);
+    case OUTPUT_ITEM_TEXT:
+      if (item->text.subtype == TEXT_ITEM_SYNTAX)
+        journal_output (j, text_item_get_plain_text (item));
+      break;
+
+    case OUTPUT_ITEM_CHART:
+    case OUTPUT_ITEM_GROUP_OPEN:
+    case OUTPUT_ITEM_GROUP_CLOSE:
+    case OUTPUT_ITEM_IMAGE:
+    case OUTPUT_ITEM_PAGE_BREAK:
+    case OUTPUT_ITEM_PAGE_SETUP:
+    case OUTPUT_ITEM_TABLE:
+      break;
     }
 }
 

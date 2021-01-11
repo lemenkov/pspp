@@ -23,7 +23,7 @@
 #include "data/casereader.h"
 #include "data/variable.h"
 #include "libpspp/cast.h"
-#include "output/chart-item-provider.h"
+#include "output/chart-provider.h"
 
 #include "gl/minmax.h"
 
@@ -40,7 +40,7 @@ scatterplot_create (struct casereader *reader,
   struct scatterplot_chart *spc;
 
   spc = xzalloc (sizeof *spc);
-  chart_item_init (&spc->chart_item, &scatterplot_chart_class, label);
+  chart_init (&spc->chart, &scatterplot_chart_class, label);
   spc->data = reader;
 
   spc->y_min = ymin;
@@ -59,9 +59,9 @@ scatterplot_create (struct casereader *reader,
 }
 
 static void
-scatterplot_chart_destroy (struct chart_item *chart_item)
+scatterplot_chart_destroy (struct chart *chart)
 {
-  struct scatterplot_chart *spc = to_scatterplot_chart (chart_item);
+  struct scatterplot_chart *spc = to_scatterplot_chart (chart);
   casereader_destroy (spc->data);
   free (spc->xlabel);
   free (spc->ylabel);
@@ -70,7 +70,7 @@ scatterplot_chart_destroy (struct chart_item *chart_item)
   free (spc);
 }
 
-const struct chart_item_class scatterplot_chart_class =
+const struct chart_class scatterplot_chart_class =
   {
     scatterplot_chart_destroy
   };

@@ -23,11 +23,10 @@
 #include "data/settings.h"
 #include "libpspp/assertion.h"
 #include "libpspp/pool.h"
+#include "output/output-item.h"
 #include "output/pivot-table.h"
-#include "output/table-item.h"
 #include "output/table-provider.h"
 #include "output/table.h"
-#include "output/text-item.h"
 
 #include "gl/minmax.h"
 #include "gl/xalloc.h"
@@ -662,5 +661,5 @@ pivot_output (const struct pivot_table *pt,
 void
 pivot_table_submit (struct pivot_table *pt)
 {
-  table_item_submit (table_item_create (pt));
+  output_item_submit (table_item_create (pt));
 }

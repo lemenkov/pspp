@@ -26,14 +26,11 @@
 #include "libpspp/message.h"
 #include "libpspp/str.h"
 #include "libpspp/string-map.h"
-#include "output/text-item.h"
 #include "output/driver-provider.h"
 #include "output/options.h"
-#include "output/message-item.h"
-#include "output/page-break-item.h"
+#include "output/output-item.h"
 #include "output/pivot-output.h"
 #include "output/pivot-table.h"
-#include "output/table-item.h"
 #include "output/table-provider.h"
 
 #include "gl/minmax.h"
@@ -239,45 +236,59 @@ csv_output_table_layer (struct csv_driver *csv, const struct pivot_table *pt,
 
 static void
 csv_submit (struct output_driver *driver,
-            const struct output_item *output_item)
+            const struct output_item *item)
 {
   struct csv_driver *csv = csv_driver_cast (driver);
 
-  if (is_table_item (output_item))
+  switch (item->type)
     {
-      const struct pivot_table *pt = to_table_item (output_item)->pt;
+    case OUTPUT_ITEM_CHART:
+      break;
 
-      size_t *layer_indexes;
-      PIVOT_OUTPUT_FOR_EACH_LAYER (layer_indexes, pt, true)
-        csv_output_table_layer (csv, pt, layer_indexes);
-    }
-  else if (is_text_item (output_item))
-    {
-      const struct text_item *text_item = to_text_item (output_item);
+    case OUTPUT_ITEM_GROUP_OPEN:
+      break;
 
-      enum text_item_type type = text_item_get_type (text_item);
-      if (type == TEXT_ITEM_SYNTAX || type == TEXT_ITEM_PAGE_TITLE)
+    case OUTPUT_ITEM_GROUP_CLOSE:
+      break;
+
+    case OUTPUT_ITEM_IMAGE:
+      break;
+
+    case OUTPUT_ITEM_MESSAGE:
+      csv_put_separator (csv);
+      char *s = msg_to_string (item->message);
+      csv_output_field (csv, s);
+      free (s);
+      putc ('\n', csv->file);
+      break;
+
+    case OUTPUT_ITEM_PAGE_BREAK:
+      csv_put_separator (csv);
+      csv_output_lines (csv, "");
+      break;
+
+    case OUTPUT_ITEM_PAGE_SETUP:
+      break;
+
+    case OUTPUT_ITEM_TABLE:
+      {
+        size_t *layer_indexes;
+        PIVOT_OUTPUT_FOR_EACH_LAYER (layer_indexes, item->table, true)
+          csv_output_table_layer (csv, item->table, layer_indexes);
+      }
+      break;
+
+    case OUTPUT_ITEM_TEXT:
+      if (item->text.subtype == TEXT_ITEM_SYNTAX
+          || item->text.subtype == TEXT_ITEM_PAGE_TITLE)
         return;
 
       csv_put_separator (csv);
 
-      char *text = text_item_get_plain_text (text_item);
+      char *text = text_item_get_plain_text (item);
       csv_output_lines (csv, text);
       free (text);
-    }
-  else if (is_page_break_item (output_item))
-    {
-      csv_put_separator (csv);
-      csv_output_lines (csv, "");
-    }
-  else if (is_message_item (output_item))
-    {
-      const struct message_item *message_item = to_message_item (output_item);
-      char *s = msg_to_string (message_item_get_msg (message_item));
-      csv_put_separator (csv);
-      csv_output_field (csv, s);
-      free (s);
-      putc ('\n', csv->file);
+      break;
     }
 }
 

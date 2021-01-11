@@ -43,8 +43,7 @@
 #include "libpspp/pool.h"
 #include "libpspp/string-array.h"
 #include "output/pivot-table.h"
-#include "output/text-item.h"
-#include "output/table-item.h"
+#include "output/output-item.h"
 
 #include "gl/count-one-bits.h"
 #include "gl/localcharset.h"

@@ -45,7 +45,6 @@
 #include "math/correlation.h"
 #include "math/covariance.h"
 #include "math/moments.h"
-#include "output/chart-item.h"
 #include "output/charts/scree.h"
 #include "output/pivot-table.h"
 

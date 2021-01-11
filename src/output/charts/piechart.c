@@ -23,7 +23,7 @@
 #include "libpspp/cast.h"
 #include "libpspp/str.h"
 #include "data/variable.h"
-#include "output/chart-item-provider.h"
+#include "output/chart-provider.h"
 
 #include "gl/xalloc.h"
 
@@ -34,14 +34,14 @@
 
 /* Creates and returns a chart that will render a piechart with
    the of VAR and the N_SLICES described in SLICES. */
-struct chart_item *
+struct chart *
 piechart_create (const struct variable *var, const struct freq *slices, int n_slices)
 {
   struct piechart *pie;
   int i;
 
   pie = xmalloc (sizeof *pie);
-  chart_item_init (&pie->chart_item, &piechart_class, var_to_string (var));
+  chart_init (&pie->chart, &piechart_class, var_to_string (var));
   pie->slices = xnmalloc (n_slices, sizeof *pie->slices);
   for (i = 0; i < n_slices; i++)
     {
@@ -63,13 +63,13 @@ piechart_create (const struct variable *var, const struct freq *slices, int n_sl
       dst->magnitude = src->count;
     }
   pie->n_slices = n_slices;
-  return &pie->chart_item;
+  return &pie->chart;
 }
 
 static void
-piechart_destroy (struct chart_item *chart_item)
+piechart_destroy (struct chart *chart)
 {
-  struct piechart *pie = to_piechart (chart_item);
+  struct piechart *pie = to_piechart (chart);
   int i;
 
   for (i = 0; i < pie->n_slices; i++)
@@ -81,7 +81,7 @@ piechart_destroy (struct chart_item *chart_item)
   free (pie);
 }
 
-const struct chart_item_class piechart_class =
+const struct chart_class piechart_class =
   {
     piechart_destroy
   };

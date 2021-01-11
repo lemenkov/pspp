@@ -46,10 +46,10 @@ draw_segment(cairo_t *cr,
 }
 
 void
-xrchart_draw_piechart (const struct chart_item *chart_item, cairo_t *cr,
+xrchart_draw_piechart (const struct chart *chart, cairo_t *cr,
                        struct xrchart_geometry *geom)
 {
-  const struct piechart *pie = to_piechart (chart_item);
+  const struct piechart *pie = to_piechart (chart);
   double total_magnitude;
   double left_label, right_label;
   double centre_x, centre_y;
@@ -66,7 +66,7 @@ xrchart_draw_piechart (const struct chart_item *chart_item, cairo_t *cr,
   radius = MIN (5.0 / 12.0 * (geom->axis[SCALE_ORDINATE].data_max - geom->axis[SCALE_ORDINATE].data_min),
                 1.0 / 4.0 * (geom->axis[SCALE_ABSCISSA].data_max - geom->axis[SCALE_ORDINATE].data_min));
 
-  xrchart_write_title (cr, geom, "%s", chart_item_get_title (chart_item));
+  xrchart_write_title (cr, geom, "%s", chart_get_title (chart));
 
   total_magnitude = 0.0;
   for (i = 0; i < pie->n_slices; i++)

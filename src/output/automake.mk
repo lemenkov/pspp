@@ -30,9 +30,9 @@ src_output_liboutput_la_SOURCES = \
 	src/output/cairo-pager.c \
 	src/output/cairo-pager.h \
 	src/output/cairo.c \
-	src/output/chart-item-provider.h \
-	src/output/chart-item.c \
-	src/output/chart-item.h \
+	src/output/chart-provider.h \
+	src/output/chart.c \
+	src/output/chart.h \
 	src/output/charts/barchart-cairo.c \
 	src/output/charts/barchart.c \
 	src/output/charts/barchart.h \
@@ -64,29 +64,20 @@ src_output_liboutput_la_SOURCES = \
 	src/output/driver-provider.h \
 	src/output/driver.c \
 	src/output/driver.h \
-	src/output/group-item.c \
-	src/output/group-item.h \
 	src/output/html.c \
-	src/output/image-item.c \
-	src/output/image-item.h \
 	src/output/journal.c \
 	src/output/journal.h \
 	src/output/measure.c \
 	src/output/measure.h \
-	src/output/message-item.c \
-	src/output/message-item.h \
 	src/output/msglog.c \
 	src/output/msglog.h \
 	src/output/odt.c \
 	src/output/options.c \
 	src/output/options.h \
-	src/output/output-item-provider.h \
 	src/output/output-item.c \
 	src/output/output-item.h \
-	src/output/page-break-item.c \
-	src/output/page-break-item.h \
-	src/output/page-setup-item.c \
-	src/output/page-setup-item.h \
+	src/output/page-setup.c \
+	src/output/page-setup.h \
 	src/output/pivot-output.c \
 	src/output/pivot-output.h \
 	src/output/pivot-table.c \
@@ -94,8 +85,6 @@ src_output_liboutput_la_SOURCES = \
 	src/output/render.c \
 	src/output/render.h \
 	src/output/spv-driver.c \
-	src/output/table-item.c \
-	src/output/table-item.h \
 	src/output/table-provider.h \
 	src/output/table.c \
 	src/output/table.h \
@@ -105,9 +94,7 @@ src_output_liboutput_la_SOURCES = \
 	src/output/tex-parsing.h \
 	src/output/tex-rendering.c \
 	src/output/tex-rendering.h \
-	src/output/tex.c \
-	src/output/text-item.c \
-	src/output/text-item.h
+	src/output/tex.c
 nodist_src_output_liboutput_la_SOURCES =
 
 EXTRA_DIST += \

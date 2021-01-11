@@ -18,7 +18,7 @@
 
 #include "output/charts/scree.h"
 
-#include "output/chart-item-provider.h"
+#include "output/chart-provider.h"
 
 #include "gl/xalloc.h"
 
@@ -29,7 +29,7 @@ struct scree *
 scree_create (const gsl_vector *eigenvalues, const char *xlabel)
 {
   struct scree *rc = xmalloc (sizeof *rc);
-  chart_item_init (&rc->chart_item, &scree_class, NULL);
+  chart_init (&rc->chart, &scree_class, NULL);
 
   rc->eval = gsl_vector_alloc (eigenvalues->size);
   gsl_vector_memcpy (rc->eval, eigenvalues);
@@ -40,16 +40,16 @@ scree_create (const gsl_vector *eigenvalues, const char *xlabel)
 }
 
 static void
-scree_destroy (struct chart_item *chart_item)
+scree_destroy (struct chart *chart)
 {
-  struct scree *rc = to_scree (chart_item);
+  struct scree *rc = to_scree (chart);
 
   gsl_vector_free (rc->eval);
   free (rc->xlabel);
   free (rc);
 }
 
-const struct chart_item_class scree_class =
+const struct chart_class scree_class =
   {
     scree_destroy
   };

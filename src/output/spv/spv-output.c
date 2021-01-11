@@ -20,7 +20,7 @@
 
 #include "output/pivot-table.h"
 #include "output/spv/spv.h"
-#include "output/text-item.h"
+#include "output/output-item.h"
 
 #include "gl/xalloc.h"
 
@@ -28,11 +28,11 @@ void
 spv_text_submit (const struct spv_item *in)
 {
   enum spv_item_class class = spv_item_get_class (in);
-  struct text_item *item = text_item_create_value (
+  struct output_item *item = text_item_create_value (
     (class == SPV_CLASS_HEADINGS ? TEXT_ITEM_TITLE
      : class == SPV_CLASS_PAGETITLE ? TEXT_ITEM_PAGE_TITLE
      : TEXT_ITEM_LOG),
     pivot_value_clone (spv_item_get_text (in)),
     xstrdup_if_nonnull (in->label));
-  text_item_submit (item);
+  output_item_submit (item);
 }
