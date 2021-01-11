@@ -257,11 +257,9 @@ output_submit (struct output_item *item)
   output_submit__ (e, item);
 }
 
-/* Returns the name of the command currently being parsed, in all uppercase.
-   The caller must free the returned value.
-
-   Returns NULL if no command is being parsed. */
-char *
+/* Returns the name of the command currently being parsed, or NULL if no
+   command is being parsed. */
+const char *
 output_get_command_name (void)
 {
   struct output_engine *e = engine_stack_top ();
@@ -270,9 +268,16 @@ output_get_command_name (void)
 
   for (size_t i = e->n_groups; i-- > 0;)
     if (e->groups[i])
-      return utf8_to_upper (e->groups[i]);
+      return e->groups[i];
 
   return NULL;
+}
+
+char *
+output_get_uppercase_command_name (void)
+{
+  const char *command_name = output_get_command_name ();
+  return command_name ? utf8_to_upper (command_name) : NULL;
 }
 
 /* Flushes output to screen devices, so that the user can see

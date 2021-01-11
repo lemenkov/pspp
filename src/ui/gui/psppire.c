@@ -160,7 +160,7 @@ handle_msg (const struct msg *m_, void *lexer_)
       m.first_column = lex_get_first_column (lexer, 0);
       m.last_column = lex_get_last_column (lexer, 0);
     }
-  m.command_name = output_get_command_name ();
+  m.command_name = output_get_uppercase_command_name ();
 
   message_item_submit (message_item_create (&m));
 

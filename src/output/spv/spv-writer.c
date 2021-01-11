@@ -1113,12 +1113,8 @@ spv_writer_write (struct spv_writer *w, const struct output_item *item)
   else if (is_image_item (item))
     spv_writer_put_image (w, item, to_image_item (item)->image);
   else if (is_text_item (item))
-    {
-      char *command_id = output_get_command_name ();
-      spv_writer_put_text (w, to_text_item (item),
-                           command_id);
-      free (command_id);
-    }
+    spv_writer_put_text (w, to_text_item (item),
+                         output_get_command_name ());
   else if (is_page_break_item (item))
     w->need_page_break = true;
   else if (is_page_setup_item (item))

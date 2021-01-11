@@ -872,7 +872,7 @@ pivot_table_create__ (struct pivot_value *title, const char *subtype)
   table->weight_format = (struct fmt_spec) { FMT_F, 40, 0 };
   table->title = title;
   table->subtype = subtype ? pivot_value_new_text (subtype) : NULL;
-  table->command_c = output_get_command_name ();
+  table->command_c = xstrdup_if_nonempty (output_get_command_name ());
   table->look = pivot_table_look_ref (pivot_table_look_get_default ());
   table->settings = fmt_settings_copy (settings_get_fmt_settings ());
   table->small = settings_get_small ();
