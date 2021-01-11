@@ -42,6 +42,7 @@ struct output_item_class
     .class = (SRC)->class,                                      \
     .ref_cnt = 1,                                               \
     .label = xstrdup_if_nonnull ((SRC)->label),                 \
+    .command_name = xstrdup_if_nonnull ((SRC)->command_name),   \
   }
 
 #endif /* output/output-item-provider.h */

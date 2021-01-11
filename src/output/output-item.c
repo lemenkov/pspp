@@ -51,8 +51,10 @@ output_item_unref (struct output_item *item)
       if (--item->ref_cnt == 0)
         {
           char *label = item->label;
+          char *command_name = item->command_name;
           item->class->destroy (item);
           free (label);
+          free (command_name);
         }
     }
 }

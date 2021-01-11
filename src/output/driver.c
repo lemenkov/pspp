@@ -228,7 +228,7 @@ output_submit (struct output_item *item)
         e->groups = x2nrealloc (e->groups, &e->allocated_groups,
                                 sizeof *e->groups);
       e->groups[e->n_groups] = xstrdup_if_nonnull (
-        group_open_item->command_name);
+        group_open_item->output_item.command_name);
       e->n_groups++;
     }
   else if (is_group_close_item (item))

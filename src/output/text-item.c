@@ -100,6 +100,7 @@ text_item_create_value (enum text_item_type type, struct pivot_value *value,
   struct text_item *item = xzalloc (sizeof *item);
   *item = (struct text_item) {
     .output_item = OUTPUT_ITEM_INITIALIZER (&text_item_class),
+    .output_item.command_name = xstrdup_if_nonnull (output_get_command_name ()),
     .output_item.label = label,
     .type = type,
     .text = value,

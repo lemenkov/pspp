@@ -436,8 +436,8 @@ xr_pager_run (struct xr_pager *p)
                     {
                       parent_group_id = add_outline (
                         p->cr, parent_group_id,
-                        p->group_opens[i]->command_name, attrs,
-                        CAIRO_PDF_OUTLINE_FLAG_OPEN);
+                        output_item_get_label (&p->group_opens[i]->output_item),
+                        attrs, CAIRO_PDF_OUTLINE_FLAG_OPEN);
                       group_open_item_unref (p->group_opens[i]);
 
                       if (p->n_group_ids >= p->allocated_group_ids)

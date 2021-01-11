@@ -198,8 +198,9 @@ do_parse_command (struct lexer *lexer,
       result = CMD_FAILURE;
       goto finish;
     }
-  group_open_item_submit (group_open_item_create_nocopy (
-                            utf8_to_title (command->name), NULL));
+  group_open_item_submit (
+    group_open_item_create_nocopy (utf8_to_title (command->name),
+                                   utf8_to_title (command->name)));
   opened = true;
 
   if (command->function == NULL)

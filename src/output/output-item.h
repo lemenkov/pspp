@@ -42,6 +42,11 @@ struct output_item
 
        Use output_item_get_label() to read an item's label. */
     char *label;
+
+    /* A locale-invariant identifier for the command that produced the output,
+       which may be NULL if unknown or if a command did not produce this
+       output. */
+    char *command_name;
   };
 
 struct output_item *output_item_ref (const struct output_item *);

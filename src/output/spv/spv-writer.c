@@ -227,8 +227,7 @@ spv_writer_open_file (struct spv_writer *w)
 }
 
 static void
-spv_writer_open_heading (struct spv_writer *w, const char *command_id,
-                         const char *label)
+spv_writer_open_heading (struct spv_writer *w, const struct output_item *item)
 {
   if (!w->heading)
     {
@@ -238,12 +237,13 @@ spv_writer_open_heading (struct spv_writer *w, const char *command_id,
 
   w->heading_depth++;
   start_elem (w, "heading");
-  write_attr (w, "commandName", command_id);
+  if (item->command_name)
+    write_attr (w, "commandName", item->command_name);
   /* XXX locale */
   /* XXX olang */
 
   start_elem (w, "label");
-  write_text (w, label);
+  write_text (w, output_item_get_label (item));
   end_elem (w);
 }
 
@@ -281,7 +281,8 @@ spv_writer_close_heading (struct spv_writer *w)
 }
 
 static void
-start_container (struct spv_writer *w, const struct output_item *item)
+open_container (struct spv_writer *w, const struct output_item *item,
+                const char *inner_elem)
 {
   start_elem (w, "container");
   write_attr (w, "visibility", "visible");
@@ -294,32 +295,38 @@ start_container (struct spv_writer *w, const struct output_item *item)
   start_elem (w, "label");
   write_text (w, output_item_get_label (item));
   end_elem (w);
+
+  start_elem (w, inner_elem);
+  if (item->command_name)
+    write_attr (w, "commandName", item->command_name);
 }
 
 static void
-spv_writer_put_text (struct spv_writer *w, const struct text_item *text,
-                     const char *command_id)
+close_container (struct spv_writer *w)
+{
+  end_elem (w);
+  end_elem (w);
+}
+
+static void
+spv_writer_put_text (struct spv_writer *w, const struct text_item *text)
 {
   bool initial_depth = w->heading_depth;
   if (!initial_depth)
     spv_writer_open_file (w);
 
-  start_container (w, &text->output_item);
-
-  start_elem (w, "vtx:text");
+  open_container (w, &text->output_item, "vtx:text");
   write_attr (w, "type", (text->type == TEXT_ITEM_TITLE ? "title"
                           : text->type == TEXT_ITEM_PAGE_TITLE ? "page-title"
                           : "log"));
-  if (command_id)
-    write_attr (w, "commandName", command_id);
 
   start_elem (w, "html");
   char *s = text_item_get_plain_text (text);
   write_text (w, s);
   free (s);
-  end_elem (w); /* html */
-  end_elem (w); /* vtx:text */
-  end_elem (w); /* container */
+  end_elem (w);
+
+  close_container (w);
 
   if (!initial_depth)
     spv_writer_close_file (w, "");
@@ -344,13 +351,10 @@ spv_writer_put_image (struct spv_writer *w, const struct output_item *item,
 
   char *uri = xasprintf ("%010d_Imagegeneric.png", ++w->n_tables);
 
-  start_container (w, item);
-
-  start_elem (w, "object");
+  open_container (w, item, "object");
   write_attr (w, "type", "unknown");
   write_attr (w, "uri", uri);
-  end_elem (w); /* object */
-  end_elem (w); /* container */
+  close_container (w);
 
   if (!initial_depth)
     spv_writer_close_file (w, "");
@@ -1055,18 +1059,14 @@ spv_writer_put_table (struct spv_writer *w, const struct table_item *item)
   if (!initial_depth)
     spv_writer_open_file (w);
 
-  start_container (w, &item->output_item);
+  open_container (w, &item->output_item, "vtb:table");
 
+  write_attr (w, "type", "table"); /* XXX */
+  write_attr_format (w, "tableId", "%d", table_id);
   char *subtype = (item->pt->subtype
                    ? pivot_value_to_string (item->pt->subtype, item->pt)
                    : xstrdup ("unknown"));
-
-  start_elem (w, "vtb:table");
-  write_attr (w, "commandName", item->pt->command_c);
-  write_attr (w, "type", "table"); /* XXX */
   write_attr (w, "subType", subtype);
-  write_attr_format (w, "tableId", "%d", table_id);
-
   free (subtype);
 
   start_elem (w, "vtb:tableStructure");
@@ -1075,8 +1075,8 @@ spv_writer_put_table (struct spv_writer *w, const struct table_item *item)
   write_text (w, data_path);
   end_elem (w); /* vtb:dataPath */
   end_elem (w); /* vtb:tableStructure */
-  end_elem (w); /* vtb:table */
-  end_elem (w); /* container */
+
+  close_container (w);
 
   if (!initial_depth)
     spv_writer_close_file (w, "");
@@ -1093,9 +1093,7 @@ void
 spv_writer_write (struct spv_writer *w, const struct output_item *item)
 {
   if (is_group_open_item (item))
-    spv_writer_open_heading (w,
-                             to_group_open_item (item)->command_name,
-                             to_group_open_item (item)->command_name);
+    spv_writer_open_heading (w, item);
   else if (is_group_close_item (item))
     spv_writer_close_heading (w);
   else if (is_table_item (item))
@@ -1113,8 +1111,7 @@ spv_writer_write (struct spv_writer *w, const struct output_item *item)
   else if (is_image_item (item))
     spv_writer_put_image (w, item, to_image_item (item)->image);
   else if (is_text_item (item))
-    spv_writer_put_text (w, to_text_item (item),
-                         output_get_command_name ());
+    spv_writer_put_text (w, to_text_item (item));
   else if (is_page_break_item (item))
     w->need_page_break = true;
   else if (is_page_setup_item (item))

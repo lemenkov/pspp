@@ -45,7 +45,7 @@ group_open_item_create_nocopy (char *command_name, char *label)
   *item = (struct group_open_item) {
     .output_item = OUTPUT_ITEM_INITIALIZER (&group_open_item_class),
     .output_item.label = label,
-    .command_name = command_name,
+    .output_item.command_name = command_name,
   };
   return item;
 }
@@ -63,7 +63,9 @@ group_open_item_get_label (const struct output_item *output_item)
 {
   struct group_open_item *item = to_group_open_item (output_item);
 
-  return item->command_name ? item->command_name : _("Group");
+  return (item->output_item.command_name
+          ? item->output_item.command_name
+          : _("Group"));
 }
 
 static void
@@ -71,7 +73,6 @@ group_open_item_destroy (struct output_item *output_item)
 {
   struct group_open_item *item = to_group_open_item (output_item);
 
-  free (item->command_name);
   free (item);
 }
 
