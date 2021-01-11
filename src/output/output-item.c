@@ -23,6 +23,7 @@
 
 #include "libpspp/assertion.h"
 #include "libpspp/cast.h"
+#include "libpspp/str.h"
 
 #include "gl/xalloc.h"
 
@@ -79,7 +80,7 @@ output_item_get_label (const struct output_item *item)
 void
 output_item_set_label (struct output_item *item, const char *label)
 {
-  output_item_set_label_nocopy (item, label ? xstrdup (label) : NULL);
+  output_item_set_label_nocopy (item, xstrdup_if_nonnull (label));
 }
 
 /* Sets the label for ITEM to LABEL, transferring ownership of LABEL to ITEM.

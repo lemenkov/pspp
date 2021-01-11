@@ -21,6 +21,7 @@
 #include <stdlib.h>
 
 #include "libpspp/compiler.h"
+#include "libpspp/str.h"
 #include "output/driver.h"
 #include "output/output-item-provider.h"
 
@@ -33,8 +34,8 @@ struct group_open_item *
 group_open_item_create (const char *command_name, const char *label)
 {
   return group_open_item_create_nocopy (
-    command_name ? xstrdup (command_name) : NULL,
-    label ? xstrdup (label) : NULL);
+    xstrdup_if_nonnull (command_name),
+    xstrdup_if_nonnull (label));
 }
 
 struct group_open_item *

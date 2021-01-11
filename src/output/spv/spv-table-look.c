@@ -131,7 +131,7 @@ spv_table_look_decode (const struct spvsx_table_properties *in,
   struct pivot_table_look *out = pivot_table_look_new_builtin_default ();
   char *error = NULL;
 
-  out->name = in->name ? xstrdup (in->name) : NULL;
+  out->name = xstrdup_if_nonnull (in->name);
 
   const struct spvsx_general_properties *g = in->general_properties;
   out->omit_empty = g->hide_empty_rows != 0;

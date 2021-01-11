@@ -913,12 +913,6 @@ pivot_table_ref (const struct pivot_table *table_)
   return table;
 }
 
-static char *
-xstrdup_if_nonnull (const char *s)
-{
-  return s ? xstrdup (s) : NULL;
-}
-
 static struct pivot_table_sizing
 clone_sizing (const struct pivot_table_sizing *s)
 {

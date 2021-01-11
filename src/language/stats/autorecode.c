@@ -245,7 +245,7 @@ cmd_autorecode (struct lexer *lexer, struct dataset *ds)
       spec->format = *var_get_print_format (src_vars[i]);
 
       const char *label = var_get_label (src_vars[i]);
-      spec->label = label ? xstrdup (label) : NULL;
+      spec->label = xstrdup_if_nonnull (label);
 
       if (group && i > 0)
         spec->items = arc->specs[0].items;

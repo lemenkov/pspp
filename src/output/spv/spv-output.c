@@ -33,6 +33,6 @@ spv_text_submit (const struct spv_item *in)
      : class == SPV_CLASS_PAGETITLE ? TEXT_ITEM_PAGE_TITLE
      : TEXT_ITEM_LOG),
     pivot_value_clone (spv_item_get_text (in)),
-    in->label ? xstrdup (in->label) : NULL);
+    xstrdup_if_nonnull (in->label));
   text_item_submit (item);
 }

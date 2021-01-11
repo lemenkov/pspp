@@ -22,6 +22,7 @@
 #include <stdbool.h>
 #include <stdio.h>
 
+#include "libpspp/str.h"
 
 #if HAVE_READLINE
 #include <readline/readline.h>
@@ -408,7 +409,7 @@ command_generator (const char *text, int state)
   if (state == 0)
     cmd = NULL;
   name = cmd_complete (text, &cmd);
-  return name ? xstrdup (name) : NULL;
+  return xstrdup_if_nonnull (name);
 }
 
 #else  /* !HAVE_READLINE */

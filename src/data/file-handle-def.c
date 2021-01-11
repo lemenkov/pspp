@@ -224,7 +224,7 @@ create_handle (const char *id, char *handle_name, enum fh_referent referent,
   struct file_handle *handle = xzalloc (sizeof *handle);
 
   handle->ref_cnt = 1;
-  handle->id = id != NULL ? xstrdup (id) : NULL;
+  handle->id = xstrdup_if_nonnull (id);
   handle->name = handle_name;
   handle->referent = referent;
   handle->encoding = xstrdup (encoding);
@@ -261,7 +261,7 @@ fh_create_file (const char *id, const char *file_name, const char *file_name_enc
   handle_name = id != NULL ? xstrdup (id) : xasprintf ("`%s'", file_name);
   handle = create_handle (id, handle_name, FH_REF_FILE, properties->encoding);
   handle->file_name = xstrdup (file_name);
-  handle->file_name_encoding = file_name_encoding ? xstrdup (file_name_encoding) : NULL;
+  handle->file_name_encoding = xstrdup_if_nonnull (file_name_encoding);
   handle->mode = properties->mode;
   handle->line_ends = properties->line_ends;
   handle->record_width = properties->record_width;

@@ -40,7 +40,7 @@ mrset_clone (const struct mrset *old)
 
   new = xmalloc (sizeof *new);
   new->name = xstrdup (old->name);
-  new->label = old->label != NULL ? xstrdup (old->label) : NULL;
+  new->label = xstrdup_if_nonnull (old->label);
   new->type = old->type;
   new->vars = xmemdup (old->vars, old->n_vars * sizeof *old->vars);
   new->n_vars = old->n_vars;

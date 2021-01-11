@@ -787,7 +787,7 @@ decode_spvdx_source_variable (const struct spvxml_node *node,
   struct spv_series *s = xzalloc (sizeof *s);
   s->name = xstrdup (node->id);
   s->xml = node;
-  s->label = sv->label ? xstrdup (sv->label) : NULL;
+  s->label = xstrdup_if_nonnull (sv->label);
   s->label_series = label_series;
   s->values = spv_data_values_clone (var->values, var->n_values);
   s->n_values = var->n_values;

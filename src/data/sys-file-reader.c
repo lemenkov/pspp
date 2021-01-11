@@ -1999,7 +1999,7 @@ rename_var_and_save_short_names (struct sfm_reader *r, off_t pos,
   for (i = 0; i < n_short_names; i++)
     {
       const char *s = var_get_short_name (var, i);
-      short_names[i] = s != NULL ? xstrdup (s) : NULL;
+      short_names[i] = xstrdup_if_nonnull (s);
     }
 
   /* Set long name. */

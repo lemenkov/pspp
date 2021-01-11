@@ -17,6 +17,7 @@
 #ifndef OUTPUT_ITEM_PROVIDER_H
 #define OUTPUT_ITEM_PROVIDER_H 1
 
+#include "libpspp/str.h"
 #include "output/output-item.h"
 
 /* Class structure for an output item.
@@ -40,7 +41,7 @@ struct output_item_class
   {                                                             \
     .class = (SRC)->class,                                      \
     .ref_cnt = 1,                                               \
-    .label = (SRC)->label ? xstrdup ((SRC)->label) : NULL,      \
+    .label = xstrdup_if_nonnull ((SRC)->label),                 \
   }
 
 #endif /* output/output-item-provider.h */

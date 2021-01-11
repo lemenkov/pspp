@@ -141,7 +141,7 @@ void
 lex_reader_set_file_name (struct lex_reader *reader, const char *file_name)
 {
   free (reader->file_name);
-  reader->file_name = file_name != NULL ? xstrdup (file_name) : NULL;
+  reader->file_name = xstrdup_if_nonnull (file_name);
 }
 
 /* Creates and returns a new lexer. */
@@ -1610,7 +1610,7 @@ lex_reader_for_file (const char *file_name, const char *encoding,
   r->reader.syntax = syntax;
   r->reader.error = error;
   r->reader.file_name = xstrdup (file_name);
-  r->reader.encoding = encoding ? xstrdup (encoding) : NULL;
+  r->reader.encoding = xstrdup_if_nonnull (encoding);
   r->reader.line_number = 1;
   r->istream = istream;
 
@@ -1679,7 +1679,7 @@ lex_reader_for_substring_nocopy (struct substring s, const char *encoding)
   r = xmalloc (sizeof *r);
   lex_reader_init (&r->reader, &lex_string_reader_class);
   r->reader.syntax = LEX_SYNTAX_AUTO;
-  r->reader.encoding = encoding ? xstrdup (encoding) : NULL;
+  r->reader.encoding = xstrdup_if_nonnull (encoding);
   r->s = s;
   r->offset = 0;
 

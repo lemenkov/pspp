@@ -1157,7 +1157,7 @@ static struct fmt_affix
 fmt_affix_clone (const struct fmt_affix *old)
 {
   return (struct fmt_affix) {
-    .s = old->s ? xstrdup (old->s) : NULL,
+    .s = xstrdup_if_nonnull (old->s),
     .width = old->width,
   };
 }

@@ -29,6 +29,8 @@
 #include "memcasecmp.h"
 #include "xstrndup.h"
 #include "xvasprintf.h"
+
+#include "gl/xalloc.h"
 
 /* Miscellaneous. */
 
@@ -49,6 +51,8 @@ void str_lowercase (char *);
 
 bool str_format_26adic (unsigned long int number, bool uppercase,
                         char buffer[], size_t);
+
+static inline char *xstrdup_if_nonnull (const char *);
 
 void *mempset (void *, int, size_t);
 
@@ -279,6 +283,12 @@ ss_buffer (const char *buffer, size_t cnt)
   ss.string = (char *) buffer;
   ss.length = cnt;
   return ss;
+}
+
+static inline char *
+xstrdup_if_nonnull (const char *s)
+{
+  return s ? xstrdup (s) : NULL;
 }
 
 #endif /* str_h */

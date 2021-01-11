@@ -51,8 +51,8 @@ driver_option_create (const char *driver_name, const char *name,
   struct driver_option *o = xmalloc (sizeof *o);
   o->driver_name = xstrdup (driver_name);
   o->name = xstrdup (name);
-  o->value = value != NULL ? xstrdup (value) : NULL;
-  o->default_value = default_value ? xstrdup (default_value) : NULL;
+  o->value = xstrdup_if_nonnull (value);
+  o->default_value = xstrdup_if_nonnull (default_value);
   return o;
 }
 

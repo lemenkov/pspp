@@ -75,7 +75,7 @@ text_item_create (enum text_item_type type, const char *text,
                   const char *label)
 {
   return text_item_create_nocopy (type, xstrdup (text),
-                                  label ? xstrdup (label) : NULL);
+                                  xstrdup_if_nonnull (label));
 }
 
 /* Creates and returns a new text item containing VALUE, TYPE, and LABEL.

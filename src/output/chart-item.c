@@ -24,6 +24,7 @@
 
 #include "libpspp/cast.h"
 #include "libpspp/compiler.h"
+#include "libpspp/str.h"
 #include "output/driver.h"
 #include "output/output-item-provider.h"
 
@@ -46,7 +47,7 @@ chart_item_init (struct chart_item *item, const struct chart_item_class *class,
   *item = (struct chart_item) {
     .output_item = OUTPUT_ITEM_INITIALIZER (&chart_item_class),
     .class = class,
-    .title = title ? xstrdup (title) : NULL
+    .title = xstrdup_if_nonnull (title)
   };
 }
 
@@ -67,7 +68,7 @@ chart_item_set_title (struct chart_item *item, const char *title)
 {
   assert (!chart_item_is_shared (item));
   free (item->title);
-  item->title = title != NULL ? xstrdup (title) : NULL;
+  item->title = xstrdup_if_nonnull (title);
 }
 
 /* Submits ITEM to the configured output drivers, and transfers ownership to

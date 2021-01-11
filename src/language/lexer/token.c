@@ -135,8 +135,6 @@ string_representation (struct substring ss)
 char *
 token_to_string (const struct token *token)
 {
-  const char *name;
-
   switch (token->type)
     {
     case T_POS_NUM:
@@ -150,8 +148,7 @@ token_to_string (const struct token *token)
       return string_representation (token->string);
 
     default:
-      name = token_type_to_name (token->type);
-      return name != NULL ? xstrdup (name) : NULL;
+      return xstrdup_if_nonnull (token_type_to_name (token->type));
     }
 }
 

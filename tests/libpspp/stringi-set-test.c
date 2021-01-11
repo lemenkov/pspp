@@ -63,59 +63,6 @@ check_func (bool ok, int line)
    If not, prints a message citing the calling line number and
    terminates. */
 #define check(EXPR) check_func ((EXPR), __LINE__)
-
-/* Prints a message about memory exhaustion and exits with a
-   failure code. */
-static void
-xalloc_die (void)
-{
-  printf ("virtual memory exhausted\n");
-  exit (EXIT_FAILURE);
-}
-
-static void *xmalloc (size_t n) MALLOC_LIKE;
-static void *xnmalloc (size_t n, size_t m) MALLOC_LIKE;
-static void *xmemdup (const void *p, size_t n) MALLOC_LIKE;
-
-/* Allocates and returns N bytes of memory. */
-static void *
-xmalloc (size_t n)
-{
-  if (n != 0)
-    {
-      void *p = malloc (n);
-      if (p == NULL)
-        xalloc_die ();
-
-      return p;
-    }
-  else
-    return NULL;
-}
-
-static void *
-xmemdup (const void *p, size_t n)
-{
-  void *q = xmalloc (n);
-  memcpy (q, p, n);
-  return q;
-}
-
-/* Clone STRING.  */
-static char *
-xstrdup (const char *string)
-{
-  return xmemdup (string, strlen (string) + 1);
-}
-
-/* Allocates and returns N * M bytes of memory. */
-static void *
-xnmalloc (size_t n, size_t m)
-{
-  if ((size_t) -1 / m <= n)
-    xalloc_die ();
-  return xmalloc (n * m);
-}
 
 /* Support routines. */
 

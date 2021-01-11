@@ -227,9 +227,8 @@ output_submit (struct output_item *item)
       if (e->n_groups >= e->allocated_groups)
         e->groups = x2nrealloc (e->groups, &e->allocated_groups,
                                 sizeof *e->groups);
-      e->groups[e->n_groups] = (group_open_item->command_name
-                                ? xstrdup (group_open_item->command_name)
-                                : NULL);
+      e->groups[e->n_groups] = xstrdup_if_nonnull (
+        group_open_item->command_name);
       e->n_groups++;
     }
   else if (is_group_close_item (item))
@@ -298,7 +297,7 @@ static void
 output_set_title__ (struct output_engine *e, char **dst, const char *src)
 {
   free (*dst);
-  *dst = src ? xstrdup (src) : NULL;
+  *dst = xstrdup_if_nonnull (src);
 
   char *page_title
     = (e->title && e->subtitle ? xasprintf ("%s\n%s", e->title, e->subtitle)
