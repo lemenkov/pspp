@@ -191,6 +191,13 @@ pageParagraph => pageParagraph_text
 
 text[pageParagraph_text] :type=(title | text) => TEXT
 
-object :type[object_type]=(unknown)? :uri => EMPTY
+object
+   :commandName?
+   :type[object_type]=(unknown)?
+   :uri
+=> EMPTY
 
-image :VDPId :commandName => dataPath
+image
+   :commandName?
+   :VDPId
+=> dataPath

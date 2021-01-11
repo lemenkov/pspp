@@ -478,6 +478,14 @@ Alignment of text within the container.  Observed with nested
 The width of the container, e.g.@: @code{1097px}.
 @end defvr
 
+All of the elements that nest inside @code{container} (except the
+@code{label}) have the following optional attribute.
+
+@defvr {Attribute} @code{commandName}
+As on the @code{heading} element.  The corpus contains one example
+of where @code{commandName} is present but set to the empty string.
+@end defvr
+
 @node SPV Structure text Element (Inside @code{container})
 @subsection The @code{text} Element (Inside @code{container})
 
@@ -495,14 +503,13 @@ is a different @code{text} element that is nested inside a
 
 This element has the following attributes.
 
-@defvr {Attribute} @code{type}
-The semantics of the text.
+@defvr {Attribute} @code{commandName}
+@xref{SPV Structure container Element}.  For output not specific to a
+command, this is simply @code{log}.
 @end defvr
 
-@defvr {Attribute} @code{commandName}
-As on the @code{heading} element.  For output not specific to a
-command, this is simply @code{log}.  The corpus contains one example
-of where @code{commandName} is present but set to the empty string.
+@defvr {Attribute} @code{type}
+The semantics of the text.
 @end defvr
 
 @defvr {Attribute} @code{creator-version}
@@ -604,7 +611,7 @@ tableStructure => path? dataPath csvPath?
 This element has the following attributes.
 
 @defvr {Attribute} @code{commandName}
-As on the @code{heading} element.
+@xref{SPV Structure container Element}.
 @end defvr
 
 @defvr {Attribute} @code{type}
@@ -702,9 +709,16 @@ name Zip members with @file{.scf} extension.
 @subsection The @code{object} and @code{image} Elements
 
 @example
-object :type[object_type]=(unknown)? :uri => EMPTY
+object
+   :commandName?
+   :type[object_type]=(unknown)?
+   :uri
+=> EMPTY
 
-image :VDPId :commandName => dataPath
+image
+   :commandName?
+   :VDPId
+=> dataPath
 @end example
 
 These two elements represent an image in PNG format.  They are
