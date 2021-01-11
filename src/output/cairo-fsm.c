@@ -1013,14 +1013,6 @@ xr_fsm_create (const struct output_item *item_,
           to_text_item (
             output_item_ref (item_))));
     }
-  else if (is_group_open_item (item_))
-    {
-      item = table_item_super (
-        text_item_to_table_item (
-          text_item_create (TEXT_ITEM_TITLE,
-                            to_group_open_item (item_)->command_name,
-                            NULL)));
-    }
   else
     NOT_REACHED ();
   assert (is_table_item (item)
