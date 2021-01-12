@@ -276,8 +276,9 @@ EOF
       fi
       rm -f conftest.texi conftest.info])
    if test $pspp_cv_have_clicksequence = no; then
-       AM_MAKEINFOFLAGS="$AM_MAKEINFOFLAGS -DMISSING_CLICKSEQUENCE"
-       AC_SUBST([AM_MAKEINFOFLAGS])
+       AC_MSG_ERROR([$MAKEINFO does not support @clicksequence.
+Please install a newer or working version, or point the MAKEINFO variable
+to one that is already installed.])
    fi])
 
 dnl Texinfo 4.13 generates broken DocBook XML.  Probably other old

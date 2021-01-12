@@ -115,14 +115,6 @@ graphic user interface
 @sc{pspp}
 @end macro
 
-
-@ifset MISSING_CLICKSEQUENCE
-@alias clicksequence = asis
-@macro click {}
-->
-@end macro
-@end ifset
-
 @iftex
 @finalout
 @end iftex
