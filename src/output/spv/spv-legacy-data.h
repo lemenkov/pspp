@@ -33,6 +33,8 @@ struct spv_data
     size_t n_sources;
   };
 
+#define SPV_DATA_INITIALIZER { NULL, 0 }
+
 void spv_data_uninit (struct spv_data *);
 void spv_data_dump (const struct spv_data *, FILE *);
 

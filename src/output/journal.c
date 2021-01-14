@@ -115,9 +115,12 @@ journal_submit (struct output_driver *driver, const struct output_item *item)
         journal_output (j, text_item_get_plain_text (item));
       break;
 
+    case OUTPUT_ITEM_GROUP:
+      for (size_t i = 0; i < item->group.n_children; i++)
+        journal_submit (driver, item->group.children[i]);
+      break;
+
     case OUTPUT_ITEM_CHART:
-    case OUTPUT_ITEM_GROUP_OPEN:
-    case OUTPUT_ITEM_GROUP_CLOSE:
     case OUTPUT_ITEM_IMAGE:
     case OUTPUT_ITEM_PAGE_BREAK:
     case OUTPUT_ITEM_PAGE_SETUP:
@@ -128,12 +131,10 @@ journal_submit (struct output_driver *driver, const struct output_item *item)
 
 static const struct output_driver_class journal_class =
   {
-    "journal",
-    journal_destroy,
-    journal_submit,
-    NULL                        /* flush */
+    .name = "journal",
+    .destroy = journal_destroy,
+    .submit = journal_submit,
   };
-
 
 
 /* Enables journaling. */

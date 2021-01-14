@@ -101,20 +101,19 @@ struct xr_pager
 
     /* Current output item. */
     struct xr_fsm *fsm;
-    struct output_item *item;
+    struct output_iterator iter;
+    struct output_item *root_item;
     int slice_idx;
+    const char *label;
 
-    /* Grouping, for constructing the outline for PDFs.
-
-       The 'group_ids' were returned by cairo_pdf_surface_add_outline() and
-       represent the groups within which upcoming output is nested.  The
-       'group_opens' will be passed to cairo_pdf_surface_add_outline() when the
-       next item is rendered (we defer it so that the location associated with
-       the outline item can be the first object actually output in it). */
-    int *group_ids;
-    size_t n_group_ids, allocated_group_ids;
-    struct output_item **group_opens;
-    size_t n_opens, allocated_opens;
+    /* Grouping, for constructing the outline for PDFs. */
+    struct outline_node
+      {
+        const struct output_item *item;
+        int group_id;
+      }
+    *nodes;
+    size_t n_nodes, allocated_nodes;
 
     /* Current output page. */
     cairo_t *cr;
@@ -248,16 +247,14 @@ xr_pager_destroy (struct xr_pager *p)
 {
   if (p)
     {
-      free (p->group_ids);
-      for (size_t i = 0; i < p->n_opens; i++)
-        output_item_unref (p->group_opens[i]);
-      free (p->group_opens);
+      free (p->nodes);
 
       xr_page_style_unref (p->page_style);
       xr_fsm_style_unref (p->fsm_style);
 
       xr_fsm_destroy (p->fsm);
-      output_item_unref (p->item);
+      output_iterator_destroy (&p->iter);
+      output_item_unref (p->root_item);
 
       if (p->cr)
         {
@@ -271,15 +268,15 @@ xr_pager_destroy (struct xr_pager *p)
 bool
 xr_pager_has_item (const struct xr_pager *p)
 {
-  return p->item != NULL;
+  return p->root_item != NULL;
 }
 
 void
 xr_pager_add_item (struct xr_pager *p, const struct output_item *item)
 {
-  assert (!p->item);
-  p->item = output_item_ref (item);
-  p->slice_idx = 0;
+  assert (!p->root_item);
+  p->root_item = output_item_ref (item);
+  output_iterator_init (&p->iter, item);
   xr_pager_run (p);
 }
 
@@ -339,7 +336,7 @@ xr_pager_finish_page (struct xr_pager *p)
 bool
 xr_pager_needs_new_page (struct xr_pager *p)
 {
-  if (p->item && (!p->cr || p->y >= p->fsm_style->size[V]))
+  if (p->root_item && (!p->cr || p->y >= p->fsm_style->size[V]))
     {
       xr_pager_finish_page (p);
       return true;
@@ -363,106 +360,104 @@ add_outline (cairo_t *cr, int parent_id,
 static void
 xr_pager_run (struct xr_pager *p)
 {
-  if (p->item && p->cr && p->y < p->fsm_style->size[V])
+  if (!p->root_item || !p->cr || p->y >= p->fsm_style->size[V])
+    return;
+
+  for (;;)
     {
-      if (!p->fsm)
+      /* Make sure we've got an object to render. */
+      while (!p->fsm)
         {
-          if (p->item->type == OUTPUT_ITEM_GROUP_OPEN)
+          /* If there are no remaining objects to render, then we're done. */
+          if (!p->iter.cur)
             {
-              if (p->n_opens >= p->allocated_opens)
-                p->group_opens = x2nrealloc (p->group_opens,
-                                             &p->allocated_opens,
-                                             sizeof p->group_opens);
-              p->group_opens[p->n_opens++] = output_item_ref (p->item);
-            }
-          else if (p->item->type == OUTPUT_ITEM_GROUP_CLOSE)
-            {
-              if (p->n_opens)
-                output_item_unref (p->group_opens[--p->n_opens]);
-              else if (p->n_group_ids)
-                p->n_group_ids--;
-              else
-                {
-                  /* Something wrong! */
-                }
-            }
-
-          p->fsm = xr_fsm_create_for_printing (p->item, p->fsm_style, p->cr);
-          if (!p->fsm)
-            {
-              output_item_unref (p->item);
-              p->item = NULL;
-
+              output_item_unref (p->root_item);
+              p->root_item = NULL;
               return;
             }
+
+          /* Prepare to render the current object. */
+          p->fsm = xr_fsm_create_for_printing (p->iter.cur, p->fsm_style,
+                                               p->cr);
+          p->label = output_item_get_label (p->iter.cur);
+          p->slice_idx = 0;
+          while (p->n_nodes > p->iter.n)
+            p->n_nodes--;
+          while (p->n_nodes)
+            {
+              size_t i = p->n_nodes - 1;
+              if (p->nodes[i].item == p->iter.nodes[i].group)
+                break;
+
+              p->nodes--;
+            }
+          while (p->n_nodes < p->iter.n)
+            {
+              if (p->n_nodes >= p->allocated_nodes)
+                p->nodes = x2nrealloc (p->nodes, &p->allocated_nodes,
+                                       sizeof *p->nodes);
+              size_t i = p->n_nodes++;
+              p->nodes[i] = (struct outline_node) {
+                .item = p->iter.nodes[i].group,
+              };
+            }
+          output_iterator_next (&p->iter);
         }
 
-      for (;;)
+      char *dest_name = NULL;
+      if (p->page_style->include_outline)
         {
-          char *dest_name = NULL;
-          if (p->page_style->include_outline)
+          static int counter = 0;
+          dest_name = xasprintf ("dest%d", counter++);
+          char *attrs = xasprintf ("name='%s'", dest_name);
+          cairo_tag_begin (p->cr, CAIRO_TAG_DEST, attrs);
+          free (attrs);
+        }
+
+      int spacing = p->fsm_style->object_spacing;
+      int chunk = xr_fsm_draw_slice (p->fsm, p->cr,
+                                     p->fsm_style->size[V] - p->y);
+      p->y += chunk + spacing;
+      cairo_translate (p->cr, 0, xr_to_pt (chunk + spacing));
+
+      if (p->page_style->include_outline)
+        {
+          cairo_tag_end (p->cr, CAIRO_TAG_DEST);
+
+          if (chunk && p->slice_idx++ == 0)
             {
-              static int counter = 0;
-              dest_name = xasprintf ("dest%d", counter++);
-              char *attrs = xasprintf ("name='%s'", dest_name);
-              cairo_tag_begin (p->cr, CAIRO_TAG_DEST, attrs);
+              char *attrs = xasprintf ("dest='%s'", dest_name);
+
+              int parent_group_id = CAIRO_PDF_OUTLINE_ROOT;
+              for (size_t i = 0; i < p->n_nodes; i++)
+                {
+                  struct outline_node *node = &p->nodes[i];
+                  if (!node->group_id)
+                    {
+                      const char *label = output_item_get_label (node->item);
+                      node->group_id = add_outline (
+                        p->cr, parent_group_id, label, attrs,
+                        CAIRO_PDF_OUTLINE_FLAG_OPEN);
+                    }
+                  parent_group_id = node->group_id;
+                }
+
+              add_outline (p->cr, parent_group_id, p->label, attrs, 0);
               free (attrs);
             }
+          free (dest_name);
+        }
 
-          int spacing = p->fsm_style->object_spacing;
-          int chunk = xr_fsm_draw_slice (p->fsm, p->cr,
-                                         p->fsm_style->size[V] - p->y);
-          p->y += chunk + spacing;
-          cairo_translate (p->cr, 0, xr_to_pt (chunk + spacing));
-
-          if (p->page_style->include_outline)
-            {
-              cairo_tag_end (p->cr, CAIRO_TAG_DEST);
-
-              if (chunk && p->slice_idx++ == 0)
-                {
-                  char *attrs = xasprintf ("dest='%s'", dest_name);
-
-                  int parent_group_id = (p->n_group_ids
-                                         ? p->group_ids[p->n_group_ids - 1]
-                                         : CAIRO_PDF_OUTLINE_ROOT);
-                  for (size_t i = 0; i < p->n_opens; i++)
-                    {
-                      parent_group_id = add_outline (
-                        p->cr, parent_group_id,
-                        output_item_get_label (p->group_opens[i]),
-                        attrs, CAIRO_PDF_OUTLINE_FLAG_OPEN);
-                      output_item_unref (p->group_opens[i]);
-
-                      if (p->n_group_ids >= p->allocated_group_ids)
-                        p->group_ids = x2nrealloc (p->group_ids,
-                                                   &p->allocated_group_ids,
-                                                   sizeof *p->group_ids);
-                      p->group_ids[p->n_group_ids++] = parent_group_id;
-                    }
-                  p->n_opens = 0;
-
-                  add_outline (p->cr, parent_group_id,
-                               output_item_get_label (p->item), attrs, 0);
-                  free (attrs);
-                }
-              free (dest_name);
-            }
-
-          if (xr_fsm_is_empty (p->fsm))
-            {
-              xr_fsm_destroy (p->fsm);
-              p->fsm = NULL;
-              output_item_unref (p->item);
-              p->item = NULL;
-              return;
-            }
-          else if (!chunk)
-            {
-              assert (p->y > 0);
-              p->y = INT_MAX;
-              return;
-            }
+      if (xr_fsm_is_empty (p->fsm))
+        {
+          xr_fsm_destroy (p->fsm);
+          p->fsm = NULL;
+        }
+      else if (!chunk)
+        {
+          assert (p->y > 0);
+          p->y = INT_MAX;
+          return;
         }
     }
 }

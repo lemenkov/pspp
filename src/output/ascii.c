@@ -584,11 +584,9 @@ ascii_output_table_item_unref (struct ascii_driver *a,
 }
 
 static void
-ascii_submit (struct output_driver *driver,
-              const struct output_item *item)
+ascii_submit (struct output_driver *driver, const struct output_item *item)
 {
   struct ascii_driver *a = ascii_driver_cast (driver);
-
   if (a->error)
     return;
 
@@ -620,9 +618,8 @@ ascii_submit (struct output_driver *driver,
     case OUTPUT_ITEM_CHART:
       if (a->chart_file_name != NULL)
         {
-          char *file_name = xr_draw_png_chart (item->chart, a->chart_file_name,
-                                               ++a->chart_cnt, &a->fg,
-                                               &a->bg);
+          char *file_name = xr_draw_png_chart (
+            item->chart, a->chart_file_name, ++a->chart_cnt, &a->fg, &a->bg);
           if (file_name != NULL)
             {
               struct output_item *text_item = text_item_create_nocopy (
@@ -647,11 +644,12 @@ ascii_submit (struct output_driver *driver,
       ascii_output_table_item_unref (
         a, text_item_to_table_item (
           message_item_to_text_item (
-              output_item_ref (item))));
+            output_item_ref (item))));
       break;
 
-    case OUTPUT_ITEM_GROUP_OPEN:
-    case OUTPUT_ITEM_GROUP_CLOSE:
+    case OUTPUT_ITEM_GROUP:
+      NOT_REACHED ();
+
     case OUTPUT_ITEM_PAGE_BREAK:
     case OUTPUT_ITEM_PAGE_SETUP:
       break;
@@ -665,10 +663,10 @@ const struct output_driver_factory list_driver_factory =
 
 static const struct output_driver_class ascii_driver_class =
   {
-    "text",
-    ascii_destroy,
-    ascii_submit,
-    ascii_flush,
+    .name = "text",
+    .destroy = ascii_destroy,
+    .submit = ascii_submit,
+    .flush = ascii_flush,
   };
 
 static char *ascii_reserve (struct ascii_driver *, int y, int x0, int x1,

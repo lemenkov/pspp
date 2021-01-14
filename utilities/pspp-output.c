@@ -30,14 +30,15 @@
 #include "libpspp/message.h"
 #include "libpspp/string-map.h"
 #include "libpspp/string-set.h"
+#include "libpspp/zip-reader.h"
 #include "output/driver.h"
 #include "output/output-item.h"
 #include "output/pivot-table.h"
+#include "output/page-setup.h"
+#include "output/select.h"
 #include "output/spv/light-binary-parser.h"
 #include "output/spv/spv-legacy-data.h"
 #include "output/spv/spv-light-decoder.h"
-#include "output/spv/spv-output.h"
-#include "output/spv/spv-select.h"
 #include "output/spv/spv-table-look.h"
 #include "output/spv/spv.h"
 
@@ -62,7 +63,7 @@ static struct string_map output_options
 static bool show_member_names;
 
 /* --show-hidden, --select, --commands, ...: Selection criteria. */
-static struct spv_criteria *criteria;
+static struct output_criteria *criteria;
 static size_t n_criteria, allocated_criteria;
 
 /* --or: Add new element to 'criteria' array. */
@@ -95,102 +96,85 @@ static void usage (void);
 static void developer_usage (void);
 static void parse_options (int argc, char **argv);
 
-static void
-dump_item (const struct spv_item *item)
+static struct output_item *
+annotate_member_names (const struct output_item *in)
 {
-  if (show_member_names && (item->xml_member || item->bin_member))
+  if (in->type == OUTPUT_ITEM_GROUP)
     {
-      const char *x = item->xml_member;
-      const char *b = item->bin_member;
+      struct output_item *out = group_item_clone_empty (in);
+      for (size_t i = 0; i < in->group.n_children; i++)
+        {
+          const struct output_item *item = in->group.children[i];
+          const char *members[4];
+          size_t n = spv_info_get_members (item->spv_info, members,
+                                           sizeof members / sizeof *members);
+          if (n)
+            {
+              struct string s = DS_EMPTY_INITIALIZER;
+              ds_put_cstr (&s, members[0]);
+              for (size_t i = 1; i < n; i++)
+                ds_put_format (&s, " and %s", members[i]);
+              group_item_add_child (out, text_item_create_nocopy (
+                                      TEXT_ITEM_TITLE, ds_steal_cstr (&s),
+                                      xstrdup ("Member Names")));
+            }
 
-      /* The strings below are not marked for translation because they are only
-         useful to developers. */
-      char *s = (x && b
-                 ? xasprintf ("%s and %s:", x, b)
-                 : xasprintf ("%s:", x ? x : b));
-      output_item_submit (text_item_create_nocopy (TEXT_ITEM_TITLE, s,
-                                                   xstrdup ("Member Names")));
+          group_item_add_child (out, output_item_ref (item));
+        }
+      return out;
     }
-
-  switch (spv_item_get_type (item))
-    {
-    case SPV_ITEM_HEADING:
-      break;
-
-    case SPV_ITEM_TEXT:
-      spv_text_submit (item);
-      break;
-
-    case SPV_ITEM_TABLE:
-      pivot_table_submit (pivot_table_ref (spv_item_get_table (item)));
-      break;
-
-    case SPV_ITEM_GRAPH:
-      break;
-
-    case SPV_ITEM_MODEL:
-      break;
-
-    case SPV_ITEM_IMAGE:
-      output_item_submit (image_item_create (cairo_surface_reference (
-                                               spv_item_get_image (item))));
-      break;
-
-    case SPV_ITEM_TREE:
-      break;
-
-    default:
-      abort ();
-    }
+  else
+    return output_item_ref (in);
 }
 
 static void
-print_item_directory (const struct spv_item *item)
+print_item_directory (const struct output_item *item, int level)
 {
-  for (int i = 1; i < spv_item_get_level (item); i++)
+  for (int i = 0; i < level; i++)
     printf ("    ");
 
-  enum spv_item_type type = spv_item_get_type (item);
-  printf ("- %s", spv_item_type_to_string (type));
+  printf ("- %s", output_item_type_to_string (item->type));
 
-  const char *label = spv_item_get_label (item);
+  const char *label = output_item_get_label (item);
   if (label)
     printf (" \"%s\"", label);
 
-  if (type == SPV_ITEM_TABLE)
+  if (item->type == OUTPUT_ITEM_TABLE)
     {
-      const struct pivot_table *table = spv_item_get_table (item);
-      char *title = pivot_value_to_string (table->title, table);
+      char *title = pivot_value_to_string (item->table->title, item->table);
       if (!label || strcmp (title, label))
         printf (" title \"%s\"", title);
       free (title);
     }
 
-  const char *command_id = spv_item_get_command_id (item);
-  if (command_id)
-    printf (" command \"%s\"", command_id);
+  if (item->command_name)
+    printf (" command \"%s\"", item->command_name);
 
-  const char *subtype = spv_item_get_subtype (item);
-  if (subtype && (!label || strcmp (label, subtype)))
-    printf (" subtype \"%s\"", subtype);
+  char *subtype = output_item_get_subtype (item);
+  if (subtype)
+    {
+      if (!label || strcmp (label, subtype))
+        printf (" subtype \"%s\"", subtype);
+      free (subtype);
+    }
 
-  if (!spv_item_is_visible (item))
-    printf (" (hidden)");
+  if (!item->show)
+    printf (" (%s)", item->type == OUTPUT_ITEM_GROUP ? "collapsed" : "hidden");
 
   if (show_member_names)
     {
-      const char *members[] = {
-        item->xml_member,
-        item->bin_member,
-        item->png_member,
-      };
-      size_t n = 0;
+      const char *members[4];
+      size_t n = spv_info_get_members (item->spv_info, members,
+                                       sizeof members / sizeof *members);
 
-      for (size_t i = 0; i < sizeof members / sizeof *members; i++)
-        if (members[i])
-          printf (" %s %s", n++ == 0 ? "in" : "and", members[i]);
+      for (size_t i = 0; i < n; i++)
+          printf (" %s %s", i == 0 ? "in" : "and", members[i]);
     }
   putchar ('\n');
+
+  if (item->type == OUTPUT_ITEM_GROUP)
+    for (size_t i = 0; i < item->group.n_children; i++)
+      print_item_directory (item->group.children[i], level + 1);
 }
 
 static void
@@ -201,109 +185,49 @@ run_detect (int argc UNUSED, char **argv)
     error (1, 0, "%s", err);
 }
 
+static struct output_item *
+read_and_filter_spv (const char *name, struct page_setup **psp)
+{
+  struct output_item *root;
+  char *err = spv_read (name, &root, psp);
+  if (err)
+    error (1, 0, "%s", err);
+  return output_select (root, criteria, n_criteria);
+}
+
 static void
 run_directory (int argc UNUSED, char **argv)
 {
-  struct spv_reader *spv;
-  char *err = spv_open (argv[1], &spv);
-  if (err)
-    error (1, 0, "%s", err);
-
-  struct spv_item **items;
-  size_t n_items;
-  spv_select (spv, criteria, n_criteria, &items, &n_items);
-  for (size_t i = 0; i < n_items; i++)
-    print_item_directory (items[i]);
-  free (items);
-
-  spv_close (spv);
-}
-
-struct item_path
-  {
-    const struct spv_item **nodes;
-    size_t n;
-
-#define N_STUB 10
-    const struct spv_item *stub[N_STUB];
-  };
-
-static void
-swap_nodes (const struct spv_item **a, const struct spv_item **b)
-{
-  const struct spv_item *tmp = *a;
-  *a = *b;
-  *b = tmp;
+  struct output_item *root = read_and_filter_spv (argv[1], NULL);
+  for (size_t i = 0; i < root->group.n_children; i++)
+    print_item_directory (root->group.children[i], 0);
+  output_item_unref (root);
 }
 
 static void
-get_path (const struct spv_item *item, struct item_path *path)
+set_table_look_recursively (struct output_item *item,
+                            const struct pivot_table_look *look)
 {
-  size_t allocated = 10;
-  path->nodes = path->stub;
-  path->n = 0;
-
-  while (item)
-    {
-      if (path->n >= allocated)
-        {
-          if (path->nodes == path->stub)
-            path->nodes = xmemdup (path->stub, sizeof path->stub);
-          path->nodes = x2nrealloc (path->nodes, &allocated,
-                                    sizeof *path->nodes);
-        }
-      path->nodes[path->n++] = item;
-      item = item->parent;
-    }
-
-  for (size_t i = 0; i < path->n / 2; i++)
-    swap_nodes (&path->nodes[i], &path->nodes[path->n - i - 1]);
-}
-
-static void
-free_path (struct item_path *path)
-{
-  if (path && path->nodes != path->stub)
-    free (path->nodes);
-}
-
-static void
-dump_heading_transition (const struct spv_item *old,
-                         const struct spv_item *new)
-{
-  if (old == new)
-    return;
-
-  struct item_path old_path, new_path;
-  get_path (old, &old_path);
-  get_path (new, &new_path);
-
-  size_t common = 0;
-  for (; common < old_path.n && common < new_path.n; common++)
-    if (old_path.nodes[common] != new_path.nodes[common])
-      break;
-
-  for (size_t i = common; i < old_path.n; i++)
-    output_item_submit (group_close_item_create ());
-  for (size_t i = common; i < new_path.n; i++)
-    output_item_submit (group_open_item_create (
-                          new_path.nodes[i]->command_id,
-                          new_path.nodes[i]->label));
-
-  free_path (&old_path);
-  free_path (&new_path);
+  if (item->type == OUTPUT_ITEM_TABLE)
+    pivot_table_set_look (item->table, look);
+  else if (item->type == OUTPUT_ITEM_GROUP)
+    for (size_t i = 0; i < item->group.n_children; i++)
+      set_table_look_recursively (item->group.children[i], look);
 }
 
 static void
 run_convert (int argc UNUSED, char **argv)
 {
-  struct spv_reader *spv;
-  char *err = spv_open (argv[1], &spv);
-  if (err)
-    error (1, 0, "%s", err);
-
+  struct page_setup *ps;
+  struct output_item *root = read_and_filter_spv (argv[1], &ps);
   if (table_look)
-    spv_item_set_table_look (spv_get_root (spv), table_look);
+    set_table_look_recursively (root, table_look);
+  if (show_member_names)
+    {
+      struct output_item *new_root = annotate_member_names (root);
+      output_item_unref (root);
+      root = new_root;
+    }
 
   output_engine_push ();
   output_set_filename (argv[1]);
@@ -313,26 +237,12 @@ run_convert (int argc UNUSED, char **argv)
     exit (EXIT_FAILURE);
   output_driver_register (driver);
 
-  const struct page_setup *ps = spv_get_page_setup (spv);
   if (ps)
-    output_item_submit (page_setup_item_create (ps));
-
-  struct spv_item **items;
-  size_t n_items;
-  spv_select (spv, criteria, n_criteria, &items, &n_items);
-  struct spv_item *prev_heading = spv_get_root (spv);
-  for (size_t i = 0; i < n_items; i++)
     {
-      struct spv_item *heading
-        = items[i]->type == SPV_ITEM_HEADING ? items[i] : items[i]->parent;
-      dump_heading_transition (prev_heading, heading);
-      dump_item (items[i]);
-      prev_heading = heading;
+      output_item_submit (page_setup_item_create (ps));
+      page_setup_destroy (ps);
     }
-  dump_heading_transition (prev_heading, spv_get_root (spv));
-  free (items);
-
-  spv_close (spv);
+  output_item_submit_children (root);
 
   output_engine_pop ();
   fh_done ();
@@ -346,20 +256,19 @@ run_convert (int argc UNUSED, char **argv)
 }
 
 static const struct pivot_table *
-get_first_table (const struct spv_reader *spv)
+get_first_table (const struct output_item *item)
 {
-  struct spv_item **items;
-  size_t n_items;
-  spv_select (spv, criteria, n_criteria, &items, &n_items);
-
-  for (size_t i = 0; i < n_items; i++)
-    if (spv_item_is_table (items[i]))
+  if (item->type == OUTPUT_ITEM_TABLE)
+    return item->table;
+  else if (item->type == OUTPUT_ITEM_GROUP)
+    for (size_t i = 0; i < item->group.n_children; i++)
       {
-        free (items);
-        return spv_item_get_table (items[i]);
+        const struct pivot_table *table
+          = get_first_table (item->group.children[i]);
+        if (table)
+          return table;
       }
 
-  free (items);
   return NULL;
 }
 
@@ -369,18 +278,14 @@ run_get_table_look (int argc UNUSED, char **argv)
   struct pivot_table_look *look;
   if (strcmp (argv[1], "-"))
     {
-      struct spv_reader *spv;
-      char *err = spv_open (argv[1], &spv);
-      if (err)
-        error (1, 0, "%s", err);
-
-      const struct pivot_table *table = get_first_table (spv);
+      struct output_item *root = read_and_filter_spv (argv[1], NULL);
+      const struct pivot_table *table = get_first_table (root);
       if (!table)
         error (1, 0, "%s: no tables found", argv[1]);
 
       look = pivot_table_look_ref (pivot_table_get_look (table));
 
-      spv_close (spv);
+      output_item_unref (root);
     }
   else
     look = pivot_table_look_ref (pivot_table_look_builtin_default ());
@@ -411,23 +316,9 @@ run_convert_table_look (int argc UNUSED, char **argv)
 static void
 run_dump (int argc UNUSED, char **argv)
 {
-  struct spv_reader *spv;
-  char *err = spv_open (argv[1], &spv);
-  if (err)
-    error (1, 0, "%s", err);
-
-  struct spv_item **items;
-  size_t n_items;
-  spv_select (spv, criteria, n_criteria, &items, &n_items);
-  for (size_t i = 0; i < n_items; i++)
-    if (items[i]->type == SPV_ITEM_TABLE)
-      {
-        pivot_table_dump (spv_item_get_table (items[i]), 0);
-        putchar ('\n');
-      }
-  free (items);
-
-  spv_close (spv);
+  struct output_item *root = read_and_filter_spv (argv[1], NULL);
+  output_item_dump (root, 0);
+  output_item_unref (root);
 }
 
 static int
@@ -452,117 +343,108 @@ compare_cells (const void *a_, const void *b_)
   return a < b ? -1 : a > b;
 }
 
+static char * WARN_UNUSED_RESULT
+dump_raw (struct zip_reader *zr, const char *member_name)
+{
+  void *data;
+  size_t size;
+  char *error = zip_member_read_all (zr, member_name, &data, &size);
+  if (!error)
+    {
+      fwrite (data, size, 1, stdout);
+      free (data);
+    }
+  return error;
+}
+
+static void
+dump_light_table (const struct output_item *item)
+{
+  char *error;
+  if (raw)
+    error = dump_raw (item->spv_info->zip_reader,
+                      item->spv_info->bin_member);
+  else
+    {
+      struct spvlb_table *table;
+      error = spv_read_light_table (item->spv_info->zip_reader,
+                                    item->spv_info->bin_member, &table);
+      if (!error)
+        {
+          if (sort)
+            {
+              qsort (table->borders->borders, table->borders->n_borders,
+                     sizeof *table->borders->borders, compare_borders);
+              qsort (table->cells->cells, table->cells->n_cells,
+                     sizeof *table->cells->cells, compare_cells);
+            }
+          spvlb_print_table (item->spv_info->bin_member, 0, table);
+          spvlb_free_table (table);
+        }
+    }
+  if (error)
+    {
+      msg (ME, "%s", error);
+      free (error);
+    }
+}
+
 static void
 run_dump_light_table (int argc UNUSED, char **argv)
 {
   if (raw && isatty (STDOUT_FILENO))
     error (1, 0, "not writing binary data to tty");
 
-  struct spv_reader *spv;
-  char *err = spv_open (argv[1], &spv);
-  if (err)
-    error (1, 0, "%s", err);
+  struct output_item *root = read_and_filter_spv (argv[1], NULL);
+  struct output_iterator iter;
+  OUTPUT_ITEM_FOR_EACH (&iter, root)
+    if (iter.cur->type == OUTPUT_ITEM_TABLE && !iter.cur->spv_info->xml_member)
+      dump_light_table (iter.cur);
+  output_item_unref (root);
+}
 
-  struct spv_item **items;
-  size_t n_items;
-  spv_select (spv, criteria, n_criteria, &items, &n_items);
-  for (size_t i = 0; i < n_items; i++)
+static void
+dump_legacy_data (const struct output_item *item)
+{
+  char *error;
+  if (raw)
+    error = dump_raw (item->spv_info->zip_reader,
+                      item->spv_info->bin_member);
+  else
     {
-      if (!spv_item_is_light_table (items[i]))
-        continue;
-
-      char *error;
-      if (raw)
+      struct spv_data data;
+      error = spv_read_legacy_data (item->spv_info->zip_reader,
+                                    item->spv_info->bin_member, &data);
+      if (!error)
         {
-          void *data;
-          size_t size;
-          error = spv_item_get_raw_light_table (items[i], &data, &size);
-          if (!error)
-            {
-              fwrite (data, size, 1, stdout);
-              free (data);
-            }
-        }
-      else
-        {
-          struct spvlb_table *table;
-          error = spv_item_get_light_table (items[i], &table);
-          if (!error)
-            {
-              if (sort)
-                {
-                  qsort (table->borders->borders, table->borders->n_borders,
-                         sizeof *table->borders->borders, compare_borders);
-                  qsort (table->cells->cells, table->cells->n_cells,
-                         sizeof *table->cells->cells, compare_cells);
-                }
-              spvlb_print_table (items[i]->bin_member, 0, table);
-              spvlb_free_table (table);
-            }
-        }
-      if (error)
-        {
-          msg (ME, "%s", error);
-          free (error);
+          printf ("%s:\n", item->spv_info->bin_member);
+          spv_data_dump (&data, stdout);
+          spv_data_uninit (&data);
+          printf ("\n");
         }
     }
 
-  free (items);
-
-  spv_close (spv);
+  if (error)
+    {
+      msg (ME, "%s", error);
+      free (error);
+    }
 }
 
 static void
 run_dump_legacy_data (int argc UNUSED, char **argv)
 {
-  struct spv_reader *spv;
-  char *err = spv_open (argv[1], &spv);
-  if (err)
-    error (1, 0, "%s", err);
-
   if (raw && isatty (STDOUT_FILENO))
     error (1, 0, "not writing binary data to tty");
 
-  struct spv_item **items;
-  size_t n_items;
-  spv_select (spv, criteria, n_criteria, &items, &n_items);
-  for (size_t i = 0; i < n_items; i++)
-    if (spv_item_is_legacy_table (items[i]))
-      {
-        struct spv_data data;
-        char *error;
-        if (raw)
-          {
-            void *data;
-            size_t size;
-            error = spv_item_get_raw_legacy_data (items[i], &data, &size);
-            if (!error)
-              {
-                fwrite (data, size, 1, stdout);
-                free (data);
-              }
-          }
-        else
-          {
-            error = spv_item_get_legacy_data (items[i], &data);
-            if (!error)
-              {
-                printf ("%s:\n", items[i]->bin_member);
-                spv_data_dump (&data, stdout);
-                spv_data_uninit (&data);
-                printf ("\n");
-              }
-          }
-
-        if (error)
-          {
-            msg (ME, "%s", error);
-            free (error);
-          }
-      }
-  free (items);
-
-  spv_close (spv);
+  struct output_item *root = read_and_filter_spv (argv[1], NULL);
+  struct output_iterator iter;
+  OUTPUT_ITEM_FOR_EACH (&iter, root)
+    if (iter.cur->type == OUTPUT_ITEM_TABLE
+        && iter.cur->spv_info->xml_member
+        && iter.cur->spv_info->bin_member)
+      dump_legacy_data (iter.cur);
+  output_item_unref (root);
 }
 
 /* This is really bogus.
@@ -671,77 +553,78 @@ dump_xml (int argc, char **argv, const char *member_name,
 }
 
 static void
+dump_legacy_table (int argc, char **argv, const struct output_item *item)
+{
+  xmlDoc *doc;
+  char *error_s = spv_read_xml_member (item->spv_info->zip_reader,
+                                       item->spv_info->xml_member,
+                                       false, "visualization", &doc);
+  dump_xml (argc, argv, item->spv_info->xml_member, error_s, doc);
+}
+
+static void
 run_dump_legacy_table (int argc, char **argv)
 {
-  struct spv_reader *spv;
-  char *err = spv_open (argv[1], &spv);
-  if (err)
-    error (1, 0, "%s", err);
+  struct output_item *root = read_and_filter_spv (argv[1], NULL);
+  struct output_iterator iter;
+  OUTPUT_ITEM_FOR_EACH (&iter, root)
+    if (iter.cur->type == OUTPUT_ITEM_TABLE
+        && iter.cur->spv_info->xml_member)
+      dump_legacy_table (argc, argv, iter.cur);
+  output_item_unref (root);
+}
 
-  struct spv_item **items;
-  size_t n_items;
-  spv_select (spv, criteria, n_criteria, &items, &n_items);
-  for (size_t i = 0; i < n_items; i++)
-    if (spv_item_is_legacy_table (items[i]))
-      {
-        xmlDoc *doc;
-        char *error_s = spv_item_get_legacy_table (items[i], &doc);
-        dump_xml (argc, argv, items[i]->xml_member, error_s, doc);
-      }
-  free (items);
-
-  spv_close (spv);
+static void
+dump_structure (int argc, char **argv, const struct output_item *item)
+{
+  xmlDoc *doc;
+  char *error_s = spv_read_xml_member (item->spv_info->zip_reader,
+                                       item->spv_info->structure_member,
+                                       true, "heading", &doc);
+  dump_xml (argc, argv, item->spv_info->structure_member, error_s, doc);
 }
 
 static void
 run_dump_structure (int argc, char **argv)
 {
-  struct spv_reader *spv;
-  char *err = spv_open (argv[1], &spv);
-  if (err)
-    error (1, 0, "%s", err);
+  struct output_item *root = read_and_filter_spv (argv[1], NULL);
 
-  struct spv_item **items;
-  size_t n_items;
-  spv_select (spv, criteria, n_criteria, &items, &n_items);
   const char *last_structure_member = NULL;
-  for (size_t i = 0; i < n_items; i++)
-    if (!last_structure_member || strcmp (items[i]->structure_member,
-                                          last_structure_member))
-      {
-        last_structure_member = items[i]->structure_member;
+  struct output_iterator iter;
+  OUTPUT_ITEM_FOR_EACH (&iter, root)
+    {
+      const struct output_item *item = iter.cur;
+      if (item->spv_info->structure_member
+          && (!last_structure_member
+              || strcmp (item->spv_info->structure_member,
+                         last_structure_member)))
+        {
+          last_structure_member = item->spv_info->structure_member;
+          dump_structure (argc, argv, item);
+        }
+    }
+  output_item_unref (root);
+}
 
-        xmlDoc *doc;
-        char *error_s = spv_item_get_structure (items[i], &doc);
-        dump_xml (argc, argv, items[i]->structure_member, error_s, doc);
-      }
-  free (items);
+static bool
+is_any_legacy (const struct output_item *item)
+{
+  if (item->type == OUTPUT_ITEM_TABLE)
+    return item->spv_info->xml_member != NULL;
+  else if (item->type == OUTPUT_ITEM_GROUP)
+    for (size_t i = 0; i < item->group.n_children; i++)
+      if (is_any_legacy (item->group.children[i]))
+        return true;
 
-  spv_close (spv);
+  return false;
 }
 
 static void
 run_is_legacy (int argc UNUSED, char **argv)
 {
-  struct spv_reader *spv;
-  char *err = spv_open (argv[1], &spv);
-  if (err)
-    error (1, 0, "%s", err);
-
-  bool is_legacy = false;
-
-  struct spv_item **items;
-  size_t n_items;
-  spv_select (spv, criteria, n_criteria, &items, &n_items);
-  for (size_t i = 0; i < n_items; i++)
-    if (spv_item_is_legacy_table (items[i]))
-      {
-        is_legacy = true;
-        break;
-      }
-  free (items);
-
-  spv_close (spv);
+  struct output_item *root = read_and_filter_spv (argv[1], NULL);
+  bool is_legacy = is_any_legacy (root);
+  output_item_unref (root);
 
   exit (is_legacy ? EXIT_SUCCESS : EXIT_FAILURE);
 }
@@ -801,68 +684,75 @@ dump_strings (const char *encoding, struct string_array *strings)
     }
 }
 
+struct encoded_strings
+  {
+    char *encoding;
+    struct string_array strings;
+  };
+
+struct encoded_strings_table
+  {
+    struct encoded_strings *es;
+    size_t n, allocated;
+  };
+
+static void
+collect_strings (const struct output_item *item,
+                 struct encoded_strings_table *t)
+{
+  char *error;
+  struct spvlb_table *table;
+  error = spv_read_light_table (item->spv_info->zip_reader,
+                                item->spv_info->bin_member, &table);
+  if (error)
+    {
+      msg (ME, "%s", error);
+      free (error);
+      return;
+    }
+
+  const char *table_encoding = spvlb_table_get_encoding (table);
+  size_t j = 0;
+  for (j = 0; j < t->n; j++)
+    if (!strcmp (t->es[j].encoding, table_encoding))
+      break;
+  if (j >= t->n)
+    {
+      if (t->n >= t->allocated)
+        t->es = x2nrealloc (t->es, &t->allocated, sizeof *t->es);
+      t->es[t->n++] = (struct encoded_strings) {
+        .encoding = xstrdup (table_encoding),
+        .strings = STRING_ARRAY_INITIALIZER,
+      };
+    }
+  collect_spvlb_strings (table, &t->es[j].strings);
+}
+
 static void
 run_strings (int argc UNUSED, char **argv)
 {
-  struct spv_reader *spv;
-  char *err = spv_open (argv[1], &spv);
-  if (err)
-    error (1, 0, "%s", err);
+  struct output_item *root = read_and_filter_spv (argv[1], NULL);
 
-  struct encoded_strings
+  struct encoded_strings_table t = { .es = NULL };
+  struct output_iterator iter;
+  OUTPUT_ITEM_FOR_EACH (&iter, root)
     {
-      char *encoding;
-      struct string_array strings;
+      const struct output_item *item = iter.cur;
+      if (item->type == OUTPUT_ITEM_TABLE
+          && !item->spv_info->xml_member
+          && item->spv_info->bin_member)
+        collect_strings (item, &t);
     }
-  *es = NULL;
-  size_t n_es = 0;
-  size_t allocated_es = 0;
 
-  struct spv_item **items;
-  size_t n_items;
-  spv_select (spv, criteria, n_criteria, &items, &n_items);
-  for (size_t i = 0; i < n_items; i++)
+  for (size_t i = 0; i < t.n; i++)
     {
-      if (!spv_item_is_light_table (items[i]))
-        continue;
-
-      char *error;
-      struct spvlb_table *table;
-      error = spv_item_get_light_table (items[i], &table);
-      if (error)
-        {
-          msg (ME, "%s", error);
-          free (error);
-          continue;
-        }
-
-      const char *table_encoding = spvlb_table_get_encoding (table);
-      size_t j = 0;
-      for (j = 0; j < n_es; j++)
-        if (!strcmp (es[j].encoding, table_encoding))
-          break;
-      if (j >= n_es)
-        {
-          if (n_es >= allocated_es)
-            es = x2nrealloc (es, &allocated_es, sizeof *es);
-          es[n_es++] = (struct encoded_strings) {
-            .encoding = xstrdup (table_encoding),
-            .strings = STRING_ARRAY_INITIALIZER,
-          };
-        }
-      collect_spvlb_strings (table, &es[j].strings);
+      dump_strings (t.es[i].encoding, &t.es[i].strings);
+      free (t.es[i].encoding);
+      string_array_destroy (&t.es[i].strings);
     }
-  free (items);
+  free (t.es);
 
-  for (size_t i = 0; i < n_es; i++)
-    {
-      dump_strings (es[i].encoding, &es[i].strings);
-      free (es[i].encoding);
-      string_array_destroy (&es[i].strings);
-    }
-  free (es);
-
-  spv_close (spv);
+  output_item_unref (root);
 }
 
 struct command
@@ -967,7 +857,7 @@ main (int argc, char **argv)
   return n_warnings ? EXIT_FAILURE : EXIT_SUCCESS;
 }
 
-static struct spv_criteria *
+static struct output_criteria *
 get_criteria (void)
 {
   if (!n_criteria || new_criteria)
@@ -976,7 +866,8 @@ get_criteria (void)
       if (n_criteria >= allocated_criteria)
         criteria = x2nrealloc (criteria, &allocated_criteria,
                                sizeof *criteria);
-      criteria[n_criteria++] = (struct spv_criteria) SPV_CRITERIA_INITIALIZER;
+      criteria[n_criteria++]
+        = (struct output_criteria) OUTPUT_CRITERIA_INITIALIZER;
     }
 
   return &criteria[n_criteria - 1];
@@ -992,32 +883,32 @@ parse_select (char *arg)
   for (char *token = strtok (arg, ","); token; token = strtok (NULL, ","))
     {
       if (!strcmp (arg, "all"))
-        classes = SPV_ALL_CLASSES;
+        classes = OUTPUT_ALL_CLASSES;
       else if (!strcmp (arg, "help"))
         {
           puts (_("The following object classes are supported:"));
-          for (int class = 0; class < SPV_N_CLASSES; class++)
-            printf ("- %s\n", spv_item_class_to_string (class));
+          for (int class = 0; class < OUTPUT_N_CLASSES; class++)
+            printf ("- %s\n", output_item_class_to_string (class));
           exit (0);
         }
       else
         {
-          int class = spv_item_class_from_string (token);
-          if (class == SPV_N_CLASSES)
-            error (1, 0, _("%s: unknown object class (use --select=help "
+          int class = output_item_class_from_string (token);
+          if (class == OUTPUT_N_CLASSES)
+            error (1, 0, _("unknown object class \"%s\" (use --select=help "
                            "for help)"), arg);
           classes |= 1u << class;
         }
     }
 
-  struct spv_criteria *c = get_criteria ();
-  c->classes = invert ? classes ^ SPV_ALL_CLASSES : classes;
+  struct output_criteria *c = get_criteria ();
+  c->classes = invert ? classes ^ OUTPUT_ALL_CLASSES : classes;
 }
 
-static struct spv_criteria_match *
+static struct output_criteria_match *
 get_criteria_match (const char **arg)
 {
-  struct spv_criteria *c = get_criteria ();
+  struct output_criteria *c = get_criteria ();
   if ((*arg)[0] == '^')
     {
       (*arg)++;
@@ -1030,28 +921,28 @@ get_criteria_match (const char **arg)
 static void
 parse_commands (const char *arg)
 {
-  struct spv_criteria_match *cm = get_criteria_match (&arg);
+  struct output_criteria_match *cm = get_criteria_match (&arg);
   string_array_parse (&cm->commands, ss_cstr (arg), ss_cstr (","));
 }
 
 static void
 parse_subtypes (const char *arg)
 {
-  struct spv_criteria_match *cm = get_criteria_match (&arg);
+  struct output_criteria_match *cm = get_criteria_match (&arg);
   string_array_parse (&cm->subtypes, ss_cstr (arg), ss_cstr (","));
 }
 
 static void
 parse_labels (const char *arg)
 {
-  struct spv_criteria_match *cm = get_criteria_match (&arg);
+  struct output_criteria_match *cm = get_criteria_match (&arg);
   string_array_parse (&cm->labels, ss_cstr (arg), ss_cstr (","));
 }
 
 static void
 parse_instances (char *arg)
 {
-  struct spv_criteria *c = get_criteria ();
+  struct output_criteria *c = get_criteria ();
   size_t allocated_instances = c->n_instances;
 
   for (char *token = strtok (arg, ","); token; token = strtok (NULL, ","))
@@ -1068,7 +959,7 @@ parse_instances (char *arg)
 static void
 parse_nth_commands (char *arg)
 {
-  struct spv_criteria *c = get_criteria ();
+  struct output_criteria *c = get_criteria ();
   size_t allocated_commands = c->n_commands;
 
   for (char *token = strtok (arg, ","); token; token = strtok (NULL, ","))
@@ -1084,7 +975,7 @@ parse_nth_commands (char *arg)
 static void
 parse_members (const char *arg)
 {
-  struct spv_criteria *cm = get_criteria ();
+  struct output_criteria *cm = get_criteria ();
   string_array_parse (&cm->members, ss_cstr (arg), ss_cstr (","));
 }
 
@@ -1093,7 +984,7 @@ parse_table_look (const char *arg)
 {
   pivot_table_look_unref (table_look);
 
-  char *error_s = spv_table_look_read (arg, &table_look);
+  char *error_s = pivot_table_look_read (arg, &table_look);
   if (error_s)
     error (1, 0, "%s", error_s);
 }

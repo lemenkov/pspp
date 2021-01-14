@@ -328,11 +328,8 @@ tex_submit (struct output_driver *driver, const struct output_item *item)
         }
       break;
 
-    case OUTPUT_ITEM_GROUP_OPEN:
-      break;
-
-    case OUTPUT_ITEM_GROUP_CLOSE:
-      break;
+    case OUTPUT_ITEM_GROUP:
+      NOT_REACHED ();
 
     case OUTPUT_ITEM_IMAGE:
       {
@@ -614,8 +611,7 @@ struct output_driver_factory tex_driver_factory =
 
 static const struct output_driver_class tex_driver_class =
   {
-    "tex",
-    tex_destroy,
-    tex_submit,
-    NULL,
+    .name = "tex",
+    .destroy = tex_destroy,
+    .submit = tex_submit,
   };

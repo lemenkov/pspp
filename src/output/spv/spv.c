@@ -19,6 +19,7 @@
 #include "output/spv/spv.h"
 
 #include <assert.h>
+#include <cairo.h>
 #include <inttypes.h>
 #include <libxml/HTMLparser.h>
 #include <libxml/xmlreader.h>
@@ -31,6 +32,7 @@
 #include "libpspp/message.h"
 #include "libpspp/str.h"
 #include "libpspp/zip-reader.h"
+#include "output/output-item.h"
 #include "output/page-setup.h"
 #include "output/pivot-table.h"
 #include "output/spv/detail-xml-parser.h"
@@ -59,281 +61,6 @@ struct spv_reader
     struct spv_item *root;
     struct page_setup *page_setup;
   };
-
-const struct page_setup *
-spv_get_page_setup (const struct spv_reader *spv)
-{
-  return spv->page_setup;
-}
-
-const char *
-spv_item_type_to_string (enum spv_item_type type)
-{
-  switch (type)
-    {
-    case SPV_ITEM_HEADING: return "heading";
-    case SPV_ITEM_TEXT: return "text";
-    case SPV_ITEM_TABLE: return "table";
-    case SPV_ITEM_GRAPH: return "graph";
-    case SPV_ITEM_MODEL: return "model";
-    case SPV_ITEM_IMAGE: return "image";
-    default: return "**error**";
-    }
-}
-
-const char *
-spv_item_class_to_string (enum spv_item_class class)
-{
-  switch (class)
-    {
-#define SPV_CLASS(ENUM, NAME) case SPV_CLASS_##ENUM: return NAME;
-      SPV_CLASSES
-#undef SPV_CLASS
-    default: return NULL;
-    }
-}
-
-enum spv_item_class
-spv_item_class_from_string (const char *name)
-{
-#define SPV_CLASS(ENUM, NAME) \
-  if (!strcmp (name, NAME)) return SPV_CLASS_##ENUM;
-  SPV_CLASSES
-#undef SPV_CLASS
-
-  return (enum spv_item_class) SPV_N_CLASSES;
-}
-
-enum spv_item_type
-spv_item_get_type (const struct spv_item *item)
-{
-  return item->type;
-}
-
-enum spv_item_class
-spv_item_get_class (const struct spv_item *item)
-{
-  const char *label = spv_item_get_label (item);
-  if (!label)
-    label = "";
-
-  switch (item->type)
-    {
-    case SPV_ITEM_HEADING:
-      return SPV_CLASS_HEADINGS;
-
-    case SPV_ITEM_TEXT:
-      return (!strcmp (label, "Title") ? SPV_CLASS_OUTLINEHEADERS
-              : !strcmp (label, "Log") ? SPV_CLASS_LOGS
-              : !strcmp (label, "Page Title") ? SPV_CLASS_PAGETITLE
-              : SPV_CLASS_TEXTS);
-
-    case SPV_ITEM_TABLE:
-      return (!strcmp (label, "Warnings") ? SPV_CLASS_WARNINGS
-              : !strcmp (label, "Notes") ? SPV_CLASS_NOTES
-              : SPV_CLASS_TABLES);
-
-    case SPV_ITEM_GRAPH:
-      return SPV_CLASS_CHARTS;
-
-    case SPV_ITEM_MODEL:
-      return SPV_CLASS_MODELS;
-
-    case SPV_ITEM_IMAGE:
-      return SPV_CLASS_OTHER;
-
-    case SPV_ITEM_TREE:
-      return SPV_CLASS_TREES;
-
-    default:
-      return SPV_CLASS_UNKNOWN;
-    }
-}
-
-const char *
-spv_item_get_label (const struct spv_item *item)
-{
-  return item->label;
-}
-
-bool
-spv_item_is_heading (const struct spv_item *item)
-{
-  return item->type == SPV_ITEM_HEADING;
-}
-
-size_t
-spv_item_get_n_children (const struct spv_item *item)
-{
-  return item->n_children;
-}
-
-struct spv_item *
-spv_item_get_child (const struct spv_item *item, size_t idx)
-{
-  assert (idx < item->n_children);
-  return item->children[idx];
-}
-
-bool
-spv_item_is_table (const struct spv_item *item)
-{
-  return item->type == SPV_ITEM_TABLE;
-}
-
-bool
-spv_item_is_text (const struct spv_item *item)
-{
-  return item->type == SPV_ITEM_TEXT;
-}
-
-const struct pivot_value *
-spv_item_get_text (const struct spv_item *item)
-{
-  assert (spv_item_is_text (item));
-  return item->text;
-}
-
-bool
-spv_item_is_image (const struct spv_item *item)
-{
-  return item->type == SPV_ITEM_IMAGE;
-}
-
-static cairo_status_t
-read_from_zip_member (void *zm_, unsigned char *data, unsigned int length)
-{
-  struct zip_member *zm = zm_;
-  if (!zm)
-    return CAIRO_STATUS_READ_ERROR;
-
-  while (length > 0)
-    {
-      int n = zip_member_read (zm, data, length);
-      if (n <= 0)
-        return CAIRO_STATUS_READ_ERROR;
-
-      data += n;
-      length -= n;
-    }
-
-  return CAIRO_STATUS_SUCCESS;
-}
-
-cairo_surface_t *
-spv_item_get_image (const struct spv_item *item_)
-{
-  struct spv_item *item = CONST_CAST (struct spv_item *, item_);
-  assert (spv_item_is_image (item));
-
-  if (!item->image)
-    {
-      struct zip_member *zm;
-      char *error = zip_member_open (item->spv->zip, item->png_member, &zm);
-      item->image = cairo_image_surface_create_from_png_stream (
-        read_from_zip_member, zm);
-      zip_member_finish (zm);
-      free (error);
-    }
-
-  return item->image;
-}
-
-struct spv_item *
-spv_item_next (const struct spv_item *item)
-{
-  if (item->n_children)
-    return item->children[0];
-
-  while (item->parent)
-    {
-      size_t idx = item->parent_idx + 1;
-      item = item->parent;
-      if (idx < item->n_children)
-        return item->children[idx];
-    }
-
-  return NULL;
-}
-
-const struct spv_item *
-spv_item_get_parent (const struct spv_item *item)
-{
-  return item->parent;
-}
-
-size_t
-spv_item_get_level (const struct spv_item *item)
-{
-  int level = 0;
-  for (; item->parent; item = item->parent)
-    level++;
-  return level;
-}
-
-const char *
-spv_item_get_command_id (const struct spv_item *item)
-{
-  return item->command_id;
-}
-
-const char *
-spv_item_get_subtype (const struct spv_item *item)
-{
-  return item->subtype;
-}
-
-bool
-spv_item_is_visible (const struct spv_item *item)
-{
-  return item->visible;
-}
-
-static void
-spv_item_destroy (struct spv_item *item)
-{
-  if (item)
-    {
-      free (item->structure_member);
-
-      free (item->label);
-      free (item->command_id);
-
-      for (size_t i = 0; i < item->n_children; i++)
-        spv_item_destroy (item->children[i]);
-      free (item->children);
-
-      pivot_table_unref (item->table);
-      pivot_table_look_unref (item->table_look);
-      free (item->bin_member);
-      free (item->xml_member);
-      free (item->subtype);
-
-      pivot_value_destroy (item->text);
-
-      free (item->png_member);
-      if (item->image)
-        cairo_surface_destroy (item->image);
-
-      free (item);
-    }
-}
-
-static void
-spv_heading_add_child (struct spv_item *parent, struct spv_item *child)
-{
-  assert (parent->type == SPV_ITEM_HEADING);
-  assert (!child->parent);
-
-  child->parent = parent;
-  child->parent_idx = parent->n_children;
-
-  if (parent->n_children >= parent->allocated_children)
-    parent->children = x2nrealloc (parent->children,
-                                   &parent->allocated_children,
-                                   sizeof *parent->children);
-  parent->children[parent->n_children++] = child;
-}
 
 static xmlNode *
 find_xml_child_element (xmlNode *parent, const char *child_name)
@@ -550,24 +277,27 @@ decode_embedded_html (const xmlNode *node, struct font_style *font_style)
   return ds_steal_cstr (&markup);
 }
 
-static char *
-xstrdup_if_nonempty (const char *s)
+static struct output_item *
+decode_container_text (const struct spvsx_container_text *ct)
 {
-  return s && s[0] ? xstrdup (s) : NULL;
-}
+  struct font_style *font_style = xmalloc (sizeof *font_style);
+  char *text = decode_embedded_html (ct->html->node_.raw, font_style);
+  struct pivot_value *value = xmalloc (sizeof *value);
+  *value = (struct pivot_value) {
+    .font_style = font_style,
+    .type = PIVOT_VALUE_TEXT,
+    .text = {
+      .local = text,
+      .c = text,
+      .id = text,
+      .user_provided = true,
+    },
+  };
 
-static void
-decode_container_text (const struct spvsx_container_text *ct,
-                       struct spv_item *item)
-{
-  item->type = SPV_ITEM_TEXT;
-  item->command_id = xstrdup_if_nonempty (ct->command_name);
-
-  item->text = xzalloc (sizeof *item->text);
-  item->text->type = PIVOT_VALUE_TEXT;
-  item->text->font_style = xmalloc (sizeof *item->text->font_style);
-  item->text->text.local = decode_embedded_html (ct->html->node_.raw,
-                                                 item->text->font_style);
+  struct output_item *item = text_item_create_value (TEXT_ITEM_LOG,
+                                                     value, NULL);
+  output_item_set_command_name (item, ct->command_name);
+  return item;
 }
 
 static void
@@ -613,40 +343,15 @@ decode_page_paragraph (const struct spvsx_page_paragraph *page_paragraph,
   xmlFreeDoc (html_doc);
 }
 
-void
-spv_item_load (const struct spv_item *item)
-{
-  if (spv_item_is_table (item))
-    spv_item_get_table (item);
-  else if (spv_item_is_image (item))
-    spv_item_get_image (item);
-}
-
-bool
-spv_item_is_light_table (const struct spv_item *item)
-{
-  return item->type == SPV_ITEM_TABLE && !item->xml_member;
-}
-
 char * WARN_UNUSED_RESULT
-spv_item_get_raw_light_table (const struct spv_item *item,
-                              void **data, size_t *size)
-{
-  return zip_member_read_all (item->spv->zip, item->bin_member, data, size);
-}
-
-char * WARN_UNUSED_RESULT
-spv_item_get_light_table (const struct spv_item *item,
-                          struct spvlb_table **tablep)
+spv_read_light_table (struct zip_reader *zip, const char *bin_member,
+                      struct spvlb_table **tablep)
 {
   *tablep = NULL;
 
-  if (!spv_item_is_light_table (item))
-    return xstrdup ("not a light binary table object");
-
   void *data;
   size_t size;
-  char *error = spv_item_get_raw_light_table (item, &data, &size);
+  char *error = zip_member_read_all (zip, bin_member, &data, &size);
   if (error)
     return error;
 
@@ -661,57 +366,34 @@ spv_item_get_light_table (const struct spv_item *item,
            : input.ofs != input.size
            ? xasprintf ("expected end of file at offset %#zx", input.ofs)
            : NULL);
-  if (error)
-    {
-      struct string s = DS_EMPTY_INITIALIZER;
-      spv_item_format_path (item, &s);
-      ds_put_format (&s, " (%s): %s", item->bin_member, error);
-
-      free (error);
-      error = ds_steal_cstr (&s);
-    }
   free (data);
   if (!error)
     *tablep = table;
   return error;
 }
 
-static char *
-pivot_table_open_light (struct spv_item *item)
+static char * WARN_UNUSED_RESULT
+pivot_table_open_light (struct zip_reader *zip, const char *bin_member,
+                        struct pivot_table **tablep)
 {
-  assert (spv_item_is_light_table (item));
+  *tablep = NULL;
 
   struct spvlb_table *raw_table;
-  char *error = spv_item_get_light_table (item, &raw_table);
+  char *error = spv_read_light_table (zip, bin_member, &raw_table);
   if (!error)
-    error = decode_spvlb_table (raw_table, &item->table);
+    error = decode_spvlb_table (raw_table, tablep);
   spvlb_free_table (raw_table);
 
   return error;
 }
 
-bool
-spv_item_is_legacy_table (const struct spv_item *item)
-{
-  return item->type == SPV_ITEM_TABLE && item->xml_member;
-}
-
 char * WARN_UNUSED_RESULT
-spv_item_get_raw_legacy_data (const struct spv_item *item,
-                              void **data, size_t *size)
-{
-  if (!spv_item_is_legacy_table (item))
-    return xstrdup ("not a legacy table object");
-
-  return zip_member_read_all (item->spv->zip, item->bin_member, data, size);
-}
-
-char * WARN_UNUSED_RESULT
-spv_item_get_legacy_data (const struct spv_item *item, struct spv_data *data)
+spv_read_legacy_data (struct zip_reader *zip, const char *bin_member,
+                      struct spv_data *data)
 {
   void *raw;
   size_t size;
-  char *error = spv_item_get_raw_legacy_data (item, &raw, &size);
+  char *error = zip_member_read_all (zip, bin_member, &raw, &size);
   if (!error)
     {
       error = spv_legacy_data_decode (raw, size, data);
@@ -721,15 +403,15 @@ spv_item_get_legacy_data (const struct spv_item *item, struct spv_data *data)
   return error;
 }
 
-static char * WARN_UNUSED_RESULT
-spv_read_xml_member (struct spv_reader *spv, const char *member_name,
+char * WARN_UNUSED_RESULT
+spv_read_xml_member (struct zip_reader *zip, const char *xml_member,
                      bool keep_blanks, const char *root_element_name,
                      xmlDoc **docp)
 {
   *docp = NULL;
 
   struct zip_member *zm;
-  char *error = zip_member_open (spv->zip, member_name, &zm);
+  char *error = zip_member_open (zip, xml_member, &zm);
   if (error)
     return error;
 
@@ -739,7 +421,7 @@ spv_read_xml_member (struct spv_reader *spv, const char *member_name,
   if (!parser)
     {
       zip_member_finish (zm);
-      return xasprintf (_("%s: Failed to create XML parser"), member_name);
+      return xasprintf (_("%s: Failed to create XML parser"), xml_member);
     }
 
   int retval;
@@ -764,7 +446,7 @@ spv_read_xml_member (struct spv_reader *spv, const char *member_name,
   if (!well_formed)
     {
       xmlFreeDoc (doc);
-      return xasprintf(_("%s: document is not well-formed"), member_name);
+      return xasprintf(_("%s: document is not well-formed"), xml_member);
     }
 
   const xmlNode *root_node = xmlDocGetRootElement (doc);
@@ -773,7 +455,7 @@ spv_read_xml_member (struct spv_reader *spv, const char *member_name,
     {
       xmlFreeDoc (doc);
       return xasprintf(_("%s: root node is \"%s\" but \"%s\" was expected"),
-                       member_name,
+                       xml_member,
                        CHAR_CAST (char *, root_node->name), root_element_name);
     }
 
@@ -781,24 +463,9 @@ spv_read_xml_member (struct spv_reader *spv, const char *member_name,
   return NULL;
 }
 
-char * WARN_UNUSED_RESULT
-spv_item_get_legacy_table (const struct spv_item *item, xmlDoc **docp)
-{
-  assert (spv_item_is_legacy_table (item));
-
-  return spv_read_xml_member (item->spv, item->xml_member, false,
-                              "visualization", docp);
-}
-
-char * WARN_UNUSED_RESULT
-spv_item_get_structure (const struct spv_item *item, struct _xmlDoc **docp)
-{
-  return spv_read_xml_member (item->spv, item->structure_member, false,
-                              "heading", docp);
-}
-
+#if 0
 static const char *
-identify_item (const struct spv_item *item)
+identify_item (const struct output_item *item)
 {
   return (item->label ? item->label
           : item->command_id ? item->command_id
@@ -843,204 +510,240 @@ spv_item_format_path (const struct spv_item *item, struct string *s)
         }
     }
 }
+#endif
 
 static char * WARN_UNUSED_RESULT
-pivot_table_open_legacy (struct spv_item *item)
+pivot_table_open_legacy (struct zip_reader *zip, const char *bin_member,
+                         const char *xml_member, const char *subtype,
+                         const struct pivot_table_look *look,
+                         struct pivot_table **tablep)
 {
-  assert (spv_item_is_legacy_table (item));
+  *tablep = NULL;
 
-  struct spv_data data;
-  char *error = spv_item_get_legacy_data (item, &data);
+  struct spv_data data = SPV_DATA_INITIALIZER;
+  char *error = spv_read_legacy_data (zip, bin_member, &data);
   if (error)
-    {
-      struct string s = DS_EMPTY_INITIALIZER;
-      spv_item_format_path (item, &s);
-      ds_put_format (&s, " (%s): %s", item->bin_member, error);
-
-      free (error);
-      return ds_steal_cstr (&s);
-    }
+    goto exit;
 
   xmlDoc *doc;
-  error = spv_read_xml_member (item->spv, item->xml_member, false,
+  error = spv_read_xml_member (zip, xml_member, false,
                                "visualization", &doc);
   if (error)
-    {
-      spv_data_uninit (&data);
-      return error;
-    }
+    goto exit_free_data;
 
   struct spvxml_context ctx = SPVXML_CONTEXT_INIT (ctx);
   struct spvdx_visualization *v;
   spvdx_parse_visualization (&ctx, xmlDocGetRootElement (doc), &v);
   error = spvxml_context_finish (&ctx, &v->node_);
-
-  if (!error)
-    error = decode_spvdx_table (v, item->subtype, item->table_look,
-                                &data, &item->table);
-
   if (error)
-    {
-      struct string s = DS_EMPTY_INITIALIZER;
-      spv_item_format_path (item, &s);
-      ds_put_format (&s, " (%s): %s", item->xml_member, error);
+    goto exit_free_doc;
 
-      free (error);
-      error = ds_steal_cstr (&s);
-    }
+  error = decode_spvdx_table (v, subtype, look, &data, tablep);
 
-  spv_data_uninit (&data);
   spvdx_free_visualization (v);
+exit_free_doc:
   if (doc)
     xmlFreeDoc (doc);
-
+exit_free_data:
+  spv_data_uninit (&data);
+exit:
   return error;
 }
 
-const struct pivot_table *
-spv_item_get_table (const struct spv_item *item_)
+static struct output_item *
+spv_read_table_item (struct zip_reader *zip,
+                     const struct spvsx_table *table)
 {
-  struct spv_item *item = CONST_CAST (struct spv_item *, item_);
+  const struct spvsx_table_structure *ts = table->table_structure;
+  const char *bin_member = ts->data_path->text;
+  const char *xml_member = ts->path ? ts->path->text : NULL;
 
-  assert (spv_item_is_table (item));
-  if (!item->table)
+  struct pivot_table *pt = NULL;
+  char *error;
+  if (xml_member)
     {
-      char *error = (item->xml_member
-                     ? pivot_table_open_legacy (item)
-                     : pivot_table_open_light (item));
-      if (error)
+      struct pivot_table_look *look;
+      error = (table->table_properties
+               ? spv_table_look_decode (table->table_properties, &look)
+               : xstrdup ("Legacy table lacks tableProperties"));
+      if (!error)
         {
-          item->error = true;
-          msg (ME, "%s", error);
-          item->table = pivot_table_create_for_text (
-            pivot_value_new_text (N_("Error")),
-            pivot_value_new_user_text (error, -1));
-          free (error);
+          error = pivot_table_open_legacy (zip, bin_member, xml_member,
+                                           table->sub_type, look, &pt);
+          pivot_table_look_unref (look);
         }
     }
+  else
+    error = pivot_table_open_light (zip, bin_member, &pt);
+  if (error)
+    pt = pivot_table_create_for_text (
+      pivot_value_new_text (N_("Error")),
+      pivot_value_new_user_text_nocopy (error));
 
-  return item->table;
+  struct output_item *item = table_item_create (pt);
+  output_item_set_command_name (item, table->command_name);
+  output_item_add_spv_info (item);
+  item->spv_info->error = error != NULL;
+  item->spv_info->zip_reader = zip_reader_ref (zip);
+  item->spv_info->bin_member = xstrdup (bin_member);
+  item->spv_info->xml_member = xstrdup_if_nonnull (xml_member);
+  return item;
 }
 
-/* Constructs a new spv_item from XML and stores it in *ITEMP.  Returns NULL if
-   successful, otherwise an error message for the caller to use and free (with
-   free()).
-
-   XML should be a 'heading' or 'container' element. */
-static char * WARN_UNUSED_RESULT
-spv_decode_container (const struct spvsx_container *c,
-                      const char *structure_member,
-                      struct spv_item *parent)
+static cairo_status_t
+read_from_zip_member (void *zm_, unsigned char *data, unsigned int length)
 {
-  struct spv_item *item = xzalloc (sizeof *item);
-  item->spv = parent->spv;
-  item->label = xstrdup (c->label->text);
-  item->visible = c->visibility == SPVSX_VISIBILITY_VISIBLE;
-  item->structure_member = xstrdup (structure_member);
+  struct zip_member *zm = zm_;
+  if (!zm)
+    return CAIRO_STATUS_READ_ERROR;
 
+  while (length > 0)
+    {
+      int n = zip_member_read (zm, data, length);
+      if (n <= 0)
+        return CAIRO_STATUS_READ_ERROR;
+
+      data += n;
+      length -= n;
+    }
+
+  return CAIRO_STATUS_SUCCESS;
+}
+
+static char * WARN_UNUSED_RESULT
+spv_read_image (struct zip_reader *zip, const char *png_member,
+                const char *command_name, struct output_item **itemp)
+{
+  struct zip_member *zm;
+  char *error = zip_member_open (zip, png_member, &zm);
+  if (error)
+    return error;
+
+  cairo_surface_t *surface = cairo_image_surface_create_from_png_stream (
+    read_from_zip_member, zm);
+  if (zm)
+    zip_member_finish (zm);
+
+  if (cairo_surface_status (surface) != CAIRO_STATUS_SUCCESS)
+    return xstrdup ("reading image failed");
+
+  struct output_item *item = image_item_create (surface);
+  output_item_set_command_name (item, command_name);
+  output_item_add_spv_info (item);
+  item->spv_info->zip_reader = zip_reader_ref (zip);
+  item->spv_info->png_member = xstrdup (png_member);
+  *itemp = item;
+  return NULL;
+}
+
+static struct output_item *
+error_item_create (char *s)
+{
+  struct output_item *item = text_item_create_nocopy (TEXT_ITEM_LOG, s,
+                                                      xstrdup ("Error"));
+  output_item_add_spv_info (item);
+  item->spv_info->error = true;
+  return item;
+}
+
+static struct output_item *
+spv_decode_container (struct zip_reader *zip,
+                      const struct spvsx_container *c)
+{
   assert (c->n_seq == 1);
   struct spvxml_node *content = c->seq[0];
+
+  struct output_item *item = NULL;
+  char *error;
   if (spvsx_is_container_text (content))
-    decode_container_text (spvsx_cast_container_text (content), item);
+    {
+      item = decode_container_text (spvsx_cast_container_text (content));
+      error = NULL;
+    }
   else if (spvsx_is_table (content))
     {
-      item->type = SPV_ITEM_TABLE;
-
-      struct spvsx_table *table = spvsx_cast_table (content);
-      const struct spvsx_table_structure *ts = table->table_structure;
-      item->bin_member = xstrdup (ts->data_path->text);
-      item->command_id = xstrdup_if_nonempty (table->command_name);
-      item->subtype = xstrdup_if_nonempty (table->sub_type);
-      if (ts->path)
-        {
-          item->xml_member = ts->path ? xstrdup (ts->path->text) : NULL;
-          char *error = (table->table_properties
-                         ? spv_table_look_decode (table->table_properties,
-                                                  &item->table_look)
-                         : xstrdup ("Legacy table lacks tableProperties"));
-          if (error)
-            {
-              spv_item_destroy (item);
-              return error;
-            }
-        }
-    }
-  else if (spvsx_is_graph (content))
-    {
-      struct spvsx_graph *graph = spvsx_cast_graph (content);
-      item->type = SPV_ITEM_GRAPH;
-      item->command_id = xstrdup_if_nonempty (graph->command_name);
-      /* XXX */
-    }
-  else if (spvsx_is_model (content))
-    {
-      struct spvsx_model *model = spvsx_cast_model (content);
-      item->type = SPV_ITEM_MODEL;
-      item->command_id = xstrdup_if_nonempty (model->command_name);
-      /* XXX */
+      item = spv_read_table_item (zip, spvsx_cast_table (content));
+      error = NULL;
     }
   else if (spvsx_is_object (content))
     {
       struct spvsx_object *object = spvsx_cast_object (content);
-      item->type = SPV_ITEM_IMAGE;
-      item->png_member = xstrdup (object->uri);
+      error = spv_read_image (zip, object->uri, object->command_name, &item);
     }
   else if (spvsx_is_image (content))
     {
       struct spvsx_image *image = spvsx_cast_image (content);
-      item->type = SPV_ITEM_IMAGE;
-      item->png_member = xstrdup (image->data_path->text);
+      error = spv_read_image (zip, image->data_path->text, image->command_name,
+                              &item);
     }
+  else if (spvsx_is_graph (content))
+    error = xstrdup ("graphs not yet implemented");
+  else if (spvsx_is_model (content))
+    error = xstrdup ("models not yet implemented");
   else if (spvsx_is_tree (content))
-    item->type = SPV_ITEM_TREE;
+    error = xstrdup ("trees not yet implemented");
   else
     NOT_REACHED ();
 
-  spv_heading_add_child (parent, item);
-  return NULL;
+  if (error)
+    item = error_item_create (error);
+  else
+    output_item_set_label (item, c->label->text);
+  item->show = c->visibility == SPVSX_VISIBILITY_VISIBLE;
+
+  return item;
 }
 
-static char * WARN_UNUSED_RESULT
-spv_decode_children (struct spv_reader *spv, const char *structure_member,
+static void
+set_structure_member (struct output_item *item, struct zip_reader *zip,
+                      const char *structure_member)
+{
+  if (structure_member)
+    {
+      output_item_add_spv_info (item);
+      if (!item->spv_info->zip_reader)
+        item->spv_info->zip_reader = zip_reader_ref (zip);
+      if (!item->spv_info->structure_member)
+        item->spv_info->structure_member = xstrdup (structure_member);
+    }
+}
+
+static void
+spv_decode_children (struct zip_reader *zip, const char *structure_member,
                      struct spvxml_node **seq, size_t n_seq,
-                     struct spv_item *parent)
+                     struct output_item *parent)
 {
   for (size_t i = 0; i < n_seq; i++)
     {
       const struct spvxml_node *node = seq[i];
 
-      char *error = NULL;
+      struct output_item *child;
       if (spvsx_is_container (node))
         {
           const struct spvsx_container *container
             = spvsx_cast_container (node);
-          error = spv_decode_container (container, structure_member, parent);
+          child = spv_decode_container (zip, container);
         }
       else if (spvsx_is_heading (node))
         {
           const struct spvsx_heading *subheading = spvsx_cast_heading (node);
-          struct spv_item *subitem = xzalloc (sizeof *subitem);
-          subitem->structure_member = xstrdup (structure_member);
-          subitem->spv = parent->spv;
-          subitem->type = SPV_ITEM_HEADING;
-          subitem->label = xstrdup (subheading->label->text);
-          if (subheading->command_name)
-            subitem->command_id = xstrdup (subheading->command_name);
-          subitem->visible = !subheading->heading_visibility_present;
-          spv_heading_add_child (parent, subitem);
 
-          error = spv_decode_children (spv, structure_member,
-                                       subheading->seq, subheading->n_seq,
-                                       subitem);
+          child = group_item_create (subheading->command_name,
+                                     subheading->label->text);
+          child->show = !subheading->heading_visibility_present;
+
+          /* Pass NULL for 'structure_member' so that only top-level items get
+             tagged that way.  Lower-level items are always in the same
+             structure member as their parent anyway. */
+           spv_decode_children (zip, NULL, subheading->seq,
+                                subheading->n_seq, child);
         }
       else
         NOT_REACHED ();
 
-      if (error)
-        return error;
+      set_structure_member (child, zip, structure_member);
+      group_item_add_child (parent, child);
     }
-
-  return NULL;
 }
 
 static struct page_setup *
@@ -1085,44 +788,52 @@ decode_page_setup (const struct spvsx_page_setup *in, const char *file_name)
   return out;
 }
 
-static char * WARN_UNUSED_RESULT
-spv_heading_read (struct spv_reader *spv,
-                  const char *file_name, const char *member_name)
+static void
+spv_add_error_heading (struct output_item *root_item,
+                       struct zip_reader *zip, const char *structure_member,
+                       char *error)
+{
+  struct output_item *item = error_item_create (
+    xasprintf ("%s: %s", structure_member, error));
+  free (error);
+  set_structure_member (item, zip, structure_member);
+  group_item_add_child (root_item, item);
+}
+
+static void
+spv_heading_read (struct zip_reader *zip, struct output_item *root_item,
+                  struct page_setup **psp, const char *file_name,
+                  const char *structure_member)
 {
   xmlDoc *doc;
-  char *error = spv_read_xml_member (spv, member_name, true, "heading", &doc);
+  char *error = spv_read_xml_member (zip, structure_member, true,
+                                     "heading", &doc);
   if (error)
-    return error;
+    {
+      spv_add_error_heading (root_item, zip, structure_member, error);
+      return;
+    }
 
   struct spvxml_context ctx = SPVXML_CONTEXT_INIT (ctx);
   struct spvsx_root_heading *root;
   spvsx_parse_root_heading (&ctx, xmlDocGetRootElement (doc), &root);
   error = spvxml_context_finish (&ctx, &root->node_);
-
-  if (!error && root->page_setup)
-    spv->page_setup = decode_page_setup (root->page_setup, file_name);
-
-  for (size_t i = 0; !error && i < root->n_seq; i++)
-    error = spv_decode_children (spv, member_name, root->seq, root->n_seq,
-                                 spv->root);
-
   if (error)
     {
-      char *s = xasprintf ("%s: %s", member_name, error);
-      free (error);
-      error = s;
+      xmlFreeDoc (doc);
+      spv_add_error_heading (root_item, zip, structure_member, error);
+      return;
     }
+
+  if (root->page_setup && psp && !*psp)
+    *psp = decode_page_setup (root->page_setup, file_name);
+
+  for (size_t i = 0; i < root->n_seq; i++)
+    spv_decode_children (zip, structure_member, root->seq, root->n_seq,
+                         root_item);
 
   spvsx_free_root_heading (root);
   xmlFreeDoc (doc);
-
-  return error;
-}
-
-struct spv_item *
-spv_get_root (const struct spv_reader *spv)
-{
-  return spv->root;
 }
 
 static int
@@ -1165,79 +876,41 @@ spv_detect (const char *filename)
 }
 
 char * WARN_UNUSED_RESULT
-spv_open (const char *filename, struct spv_reader **spvp)
+spv_read (const char *filename, struct output_item **outp,
+          struct page_setup **psp)
 {
-  *spvp = NULL;
+  *outp = NULL;
+  if (psp)
+    *psp = NULL;
 
   struct spv_reader *spv = xzalloc (sizeof *spv);
-  char *error = zip_reader_create (filename, &spv->zip);
+  struct zip_reader *zip;
+  char *error = zip_reader_create (filename, &zip);
   if (error)
-    {
-      spv_close (spv);
-      return error;
-    }
+    return error;
 
-  int detect = spv_detect__ (spv->zip, &error);
+  int detect = spv_detect__ (zip, &error);
   if (detect <= 0)
     {
-      spv_close (spv);
-      return error ? error : xasprintf("%s: not an SPV file", filename);
+      zip_reader_unref (zip);
+      return error ? error : xasprintf ("%s: not an SPV file", filename);
     }
 
-  spv->root = xzalloc (sizeof *spv->root);
-  spv->root->spv = spv;
-  spv->root->type = SPV_ITEM_HEADING;
+  *outp = root_item_create ();
   for (size_t i = 0; ; i++)
     {
-      const char *member_name = zip_reader_get_member_name (spv->zip, i);
-      if (!member_name)
+      const char *structure_member = zip_reader_get_member_name (zip, i);
+      if (!structure_member)
         break;
 
-      struct substring member_name_ss = ss_cstr (member_name);
-      if (ss_starts_with (member_name_ss, ss_cstr ("outputViewer"))
-          && ss_ends_with (member_name_ss, ss_cstr (".xml")))
-        {
-          char *error = spv_heading_read (spv, filename, member_name);
-          if (error)
-            {
-              spv_close (spv);
-              return error;
-            }
-        }
+      struct substring structure_member_ss = ss_cstr (structure_member);
+      if (ss_starts_with (structure_member_ss, ss_cstr ("outputViewer"))
+          && ss_ends_with (structure_member_ss, ss_cstr (".xml")))
+        spv_heading_read (zip, *outp, psp, filename, structure_member);
     }
 
-  *spvp = spv;
+  zip_reader_unref (zip);
   return NULL;
-}
-
-void
-spv_close (struct spv_reader *spv)
-{
-  if (spv)
-    {
-      zip_reader_unref (spv->zip);
-      spv_item_destroy (spv->root);
-      page_setup_destroy (spv->page_setup);
-      free (spv);
-    }
-}
-
-void
-spv_item_set_table_look (struct spv_item *item,
-                         const struct pivot_table_look *look)
-{
-  /* If this is a table, install the table look in it.
-
-     (We can't just set item->table_look because light tables ignore it and
-     legacy tables sometimes override it.) */
-  if (spv_item_is_table (item))
-    {
-      spv_item_load (item);
-      pivot_table_set_look (item->table, look);
-    }
-
-  for (size_t i = 0; i < item->n_children; i++)
-    spv_item_set_table_look (item->children[i], look);
 }
 
 char * WARN_UNUSED_RESULT

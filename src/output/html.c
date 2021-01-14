@@ -247,7 +247,8 @@ html_destroy (struct output_driver *driver)
 }
 
 static void
-html_submit (struct output_driver *driver, const struct output_item *item)
+html_submit__ (struct output_driver *driver, const struct output_item *item,
+               int level)
 {
   struct html_driver *html = html_driver_cast (driver);
 
@@ -270,10 +271,9 @@ html_submit (struct output_driver *driver, const struct output_item *item)
         }
       break;
 
-    case OUTPUT_ITEM_GROUP_OPEN:
-      break;
-
-    case OUTPUT_ITEM_GROUP_CLOSE:
+    case OUTPUT_ITEM_GROUP:
+      for (size_t i = 0; i < item->group.n_children; i++)
+        html_submit__ (driver, item->group.children[i], level + 1);
       break;
 
     case OUTPUT_ITEM_IMAGE:
@@ -320,8 +320,7 @@ html_submit (struct output_driver *driver, const struct output_item *item)
 
           case TEXT_ITEM_TITLE:
             {
-              int level = MIN (5, output_get_group_level ()) + 1;
-              char tag[3] = { 'H', level + '1', '\0' };
+              char tag[3] = { 'H', MIN (5, level) + '0', '\0' };
               print_title_tag (html->file, tag, s);
             }
             break;
@@ -343,6 +342,12 @@ html_submit (struct output_driver *driver, const struct output_item *item)
       }
       break;
     }
+}
+
+static void
+html_submit (struct output_driver *driver, const struct output_item *item)
+{
+  html_submit__ (driver, item, 1);
 }
 
 /* Write TEXT to file F, escaping characters as necessary for HTML.  Spaces are
@@ -740,8 +745,8 @@ struct output_driver_factory html_driver_factory =
 
 static const struct output_driver_class html_driver_class =
   {
-    "html",
-    html_destroy,
-    html_submit,
-    NULL,
+    .name = "html",
+    .destroy = html_destroy,
+    .submit = html_submit,
+    .handles_groups = true,
   };

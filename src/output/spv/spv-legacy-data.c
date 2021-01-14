@@ -334,7 +334,7 @@ char * WARN_UNUSED_RESULT
 spv_legacy_data_decode (const uint8_t *in, size_t size, struct spv_data *out)
 {
   char *error = NULL;
-  memset (out, 0, sizeof *out);
+  *out = (struct spv_data) SPV_DATA_INITIALIZER;
 
   struct spvbin_input input;
   spvbin_input_init (&input, in, size);
@@ -394,7 +394,7 @@ spv_legacy_data_decode (const uint8_t *in, size_t size, struct spv_data *out)
 
 error:
   spv_data_uninit (out);
-  memset (out, 0, sizeof *out);
+  *out = (struct spv_data) SPV_DATA_INITIALIZER;
   spvob_free_legacy_binary (lb);
   return error;
 }

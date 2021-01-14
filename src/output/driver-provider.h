@@ -24,6 +24,7 @@
 #include "output/driver.h"
 
 struct output_item;
+struct output_iterator;
 struct string_map;
 struct file_handle;
 
@@ -73,8 +74,17 @@ struct output_driver_class
        it doesn't make sense for DRIVER to be used this way, then this function
        need not do anything. */
     void (*flush) (struct output_driver *driver);
-  };
 
+    /* Ordinarily, the core driver code will skip passing hidden output items
+       to 'submit'.  If this member is true, the core driver hands them to the
+       driver to let it handle them itself. */
+    bool handles_show;
+
+    /* Ordinarily, the core driver code will flatten groups of output items
+       before passing them to 'submit'.  If this member is true, the core
+       driver code leaves them in place for the driver to handle. */
+    bool handles_groups;
+  };
 
 /* An abstract way for the output subsystem to create an output driver. */
 struct output_driver_factory

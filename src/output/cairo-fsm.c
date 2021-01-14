@@ -990,8 +990,7 @@ xr_fsm_create (const struct output_item *item_,
       item = output_item_ref (item_);
       break;
 
-    case OUTPUT_ITEM_GROUP_OPEN:
-    case OUTPUT_ITEM_GROUP_CLOSE:
+    case OUTPUT_ITEM_GROUP:
     case OUTPUT_ITEM_PAGE_SETUP:
       return NULL;
 
@@ -1148,8 +1147,7 @@ xr_fsm_measure (struct xr_fsm *fsm, cairo_t *cr, int *wp, int *hp)
       fsm->cairo = NULL;
       break;
 
-    case OUTPUT_ITEM_GROUP_OPEN:
-    case OUTPUT_ITEM_GROUP_CLOSE:
+    case OUTPUT_ITEM_GROUP:
     case OUTPUT_ITEM_MESSAGE:
     case OUTPUT_ITEM_PAGE_BREAK:
     case OUTPUT_ITEM_PAGE_SETUP:
@@ -1213,8 +1211,7 @@ xr_fsm_draw_region (struct xr_fsm *fsm, cairo_t *cr,
       fsm->cairo = NULL;
       break;
 
-    case OUTPUT_ITEM_GROUP_OPEN:
-    case OUTPUT_ITEM_GROUP_CLOSE:
+    case OUTPUT_ITEM_GROUP:
     case OUTPUT_ITEM_MESSAGE:
     case OUTPUT_ITEM_PAGE_BREAK:
     case OUTPUT_ITEM_PAGE_SETUP:
@@ -1346,8 +1343,7 @@ xr_fsm_draw_slice (struct xr_fsm *fsm, cairo_t *cr, int space)
       used = xr_fsm_draw_table (fsm, space);
       break;
 
-    case OUTPUT_ITEM_GROUP_OPEN:
-    case OUTPUT_ITEM_GROUP_CLOSE:
+    case OUTPUT_ITEM_GROUP:
     case OUTPUT_ITEM_MESSAGE:
     case OUTPUT_ITEM_PAGE_SETUP:
     case OUTPUT_ITEM_TEXT:

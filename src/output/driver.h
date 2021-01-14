@@ -42,7 +42,8 @@ void output_set_filename (const char *);
 const char *output_get_command_name (void);
 char *output_get_uppercase_command_name (void);
 
-size_t output_get_group_level (void);
+size_t output_open_group (struct output_item *);
+void output_close_groups (size_t nesting_level);
 
 void output_driver_parse_option (const char *option,
                                  struct string_map *options);

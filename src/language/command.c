@@ -36,6 +36,7 @@
 #include "libpspp/i18n.h"
 #include "libpspp/message.h"
 #include "libpspp/str.h"
+#include "output/driver.h"
 #include "output/output-item.h"
 
 #include "xmalloca.h"
@@ -173,8 +174,8 @@ do_parse_command (struct lexer *lexer,
 		  struct dataset *ds, enum cmd_state state)
 {
   const struct command *command = NULL;
+  size_t nesting_level = SIZE_MAX;
   enum cmd_result result;
-  bool opened = false;
   int n_tokens;
 
   /* Read the command's first token. */
@@ -198,10 +199,10 @@ do_parse_command (struct lexer *lexer,
       result = CMD_FAILURE;
       goto finish;
     }
-  output_item_submit (group_open_item_create_nocopy (
-                        utf8_to_title (command->name),
-                        utf8_to_title (command->name)));
-  opened = true;
+
+  nesting_level = output_open_group (group_item_create_nocopy (
+                                       utf8_to_title (command->name),
+                                       utf8_to_title (command->name)));
 
   if (command->function == NULL)
     {
@@ -247,8 +248,8 @@ finish:
     while (lex_token (lexer) == T_ENDCMD)
       lex_get (lexer);
 
-  if (opened)
-    output_item_submit (group_close_item_create ());
+  if (nesting_level != SIZE_MAX)
+    output_close_groups (nesting_level);
 
   return result;
 }

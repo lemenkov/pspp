@@ -108,8 +108,7 @@ msglog_submit (struct output_driver *driver, const struct output_item *item)
 
 static const struct output_driver_class msglog_class =
   {
-    "msglog",
-    msglog_destroy,
-    msglog_submit,
-    NULL
+    .name = "msglog",
+    .destroy = msglog_destroy,
+    .submit = msglog_submit,
   };

@@ -100,8 +100,9 @@ struct output_driver_factory spv_driver_factory =
 
 static const struct output_driver_class spv_driver_class =
   {
-    "spv",
-    spv_destroy,
-    spv_submit,
-    NULL,
+    .name = "spv",
+    .destroy = spv_destroy,
+    .submit = spv_submit,
+    .handles_show = true,
+    .handles_groups = true,
   };

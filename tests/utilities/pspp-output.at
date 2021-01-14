@@ -17,20 +17,20 @@ AT_BANNER([pspp-output])
 
 AT_SETUP([pspp-output dir])
 AT_CHECK([pspp-output dir $srcdir/utilities/regress.spv], [0], [dnl
-- heading "Set" command "Set"
-- heading "Title" command "Title"
+- group "Set" command "Set"
+- group "Title" command "Title"
     - text "Page Title" command "Title"
-- heading "Data List" command "Data List"
+- group "Data List" command "Data List"
     - table "Reading 1 record from INLINE." command "Data List" subtype "Fixed Data Records"
-- heading "Begin Data" command "Begin Data"
-- heading "List" command "List"
+- group "Begin Data" command "Begin Data"
+- group "List" command "List"
     - table "Data List" command "List"
-- heading "Frequencies" command "Frequencies"
+- group "Frequencies" command "Frequencies"
     - table "Statistics" command "Frequencies"
     - table "v0" command "Frequencies" subtype "Frequencies"
     - table "v1" command "Frequencies" subtype "Frequencies"
     - table "v2" command "Frequencies" subtype "Frequencies"
-- heading "Regression" command "Regression"
+- group "Regression" command "Regression"
     - table "Model Summary (v2)" command "Regression" subtype "Model Summary"
     - table "ANOVA (v2)" command "Regression" subtype "ANOVA"
     - table "Coefficients (v2)" command "Regression" subtype "Coefficients"
@@ -38,38 +38,40 @@ AT_CHECK([pspp-output dir $srcdir/utilities/regress.spv], [0], [dnl
 AT_CLEANUP
 
 AT_SETUP([pspp-output --select equal])
-AT_CHECK([pspp-output dir $srcdir/utilities/regress.spv --select=headings],
+AT_CHECK([pspp-output dir $srcdir/utilities/regress.spv --select=tables],
   [0], [dnl
-- heading "Set" command "Set"
-- heading "Title" command "Title"
-- heading "Data List" command "Data List"
-- heading "Begin Data" command "Begin Data"
-- heading "List" command "List"
-- heading "Frequencies" command "Frequencies"
-- heading "Regression" command "Regression"
+- table "Reading 1 record from INLINE." command "Data List" subtype "Fixed Data Records"
+- table "Data List" command "List"
+- table "Statistics" command "Frequencies"
+- table "v0" command "Frequencies" subtype "Frequencies"
+- table "v1" command "Frequencies" subtype "Frequencies"
+- table "v2" command "Frequencies" subtype "Frequencies"
+- table "Model Summary (v2)" command "Regression" subtype "Model Summary"
+- table "ANOVA (v2)" command "Regression" subtype "ANOVA"
+- table "Coefficients (v2)" command "Regression" subtype "Coefficients"
 ])
 AT_CLEANUP
 
 AT_SETUP([pspp-output --select unequal])
-AT_CHECK([pspp-output dir $srcdir/utilities/regress.spv --select=^headings],
+AT_CHECK([pspp-output dir $srcdir/utilities/regress.spv --select=^outlineheaders],
   [0], [dnl
-    - text "Page Title" command "Title"
-    - table "Reading 1 record from INLINE." command "Data List" subtype "Fixed Data Records"
-    - table "Data List" command "List"
-    - table "Statistics" command "Frequencies"
-    - table "v0" command "Frequencies" subtype "Frequencies"
-    - table "v1" command "Frequencies" subtype "Frequencies"
-    - table "v2" command "Frequencies" subtype "Frequencies"
-    - table "Model Summary (v2)" command "Regression" subtype "Model Summary"
-    - table "ANOVA (v2)" command "Regression" subtype "ANOVA"
-    - table "Coefficients (v2)" command "Regression" subtype "Coefficients"
+- text "Page Title" command "Title"
+- table "Reading 1 record from INLINE." command "Data List" subtype "Fixed Data Records"
+- table "Data List" command "List"
+- table "Statistics" command "Frequencies"
+- table "v0" command "Frequencies" subtype "Frequencies"
+- table "v1" command "Frequencies" subtype "Frequencies"
+- table "v2" command "Frequencies" subtype "Frequencies"
+- table "Model Summary (v2)" command "Regression" subtype "Model Summary"
+- table "ANOVA (v2)" command "Regression" subtype "ANOVA"
+- table "Coefficients (v2)" command "Regression" subtype "Coefficients"
 ])
 AT_CLEANUP
 
 AT_SETUP([pspp-output --commands equal])
 AT_CHECK([pspp-output dir $srcdir/utilities/regress.spv --commands='reg*'],
   [0], [dnl
-- heading "Regression" command "Regression"
+- group "Regression" command "Regression"
     - table "Model Summary (v2)" command "Regression" subtype "Model Summary"
     - table "ANOVA (v2)" command "Regression" subtype "ANOVA"
     - table "Coefficients (v2)" command "Regression" subtype "Coefficients"
@@ -79,15 +81,15 @@ AT_CLEANUP
 AT_SETUP([pspp-output --commands unequal])
 AT_CHECK([pspp-output dir $srcdir/utilities/regress.spv --commands='^reg*'],
   [0], [dnl
-- heading "Set" command "Set"
-- heading "Title" command "Title"
+- group "Set" command "Set"
+- group "Title" command "Title"
     - text "Page Title" command "Title"
-- heading "Data List" command "Data List"
+- group "Data List" command "Data List"
     - table "Reading 1 record from INLINE." command "Data List" subtype "Fixed Data Records"
-- heading "Begin Data" command "Begin Data"
-- heading "List" command "List"
+- group "Begin Data" command "Begin Data"
+- group "List" command "List"
     - table "Data List" command "List"
-- heading "Frequencies" command "Frequencies"
+- group "Frequencies" command "Frequencies"
     - table "Statistics" command "Frequencies"
     - table "v0" command "Frequencies" subtype "Frequencies"
     - table "v1" command "Frequencies" subtype "Frequencies"
@@ -98,10 +100,10 @@ AT_CLEANUP
 AT_SETUP([pspp-output --nth-commands])
 AT_CHECK([pspp-output dir $srcdir/utilities/regress.spv --nth-commands=2,4,6],
   [0], [dnl
-- heading "Title" command "Title"
+- group "Title" command "Title"
     - text "Page Title" command "Title"
-- heading "Begin Data" command "Begin Data"
-- heading "Frequencies" command "Frequencies"
+- group "Begin Data" command "Begin Data"
+- group "Frequencies" command "Frequencies"
     - table "Statistics" command "Frequencies"
     - table "v0" command "Frequencies" subtype "Frequencies"
     - table "v1" command "Frequencies" subtype "Frequencies"
@@ -112,26 +114,26 @@ AT_CLEANUP
 AT_SETUP([pspp-output --subtypes equal])
 AT_CHECK([pspp-output dir $srcdir/utilities/regress.spv --subtypes='freq*'],
   [0], [dnl
-    - table "v0" command "Frequencies" subtype "Frequencies"
-    - table "v1" command "Frequencies" subtype "Frequencies"
-    - table "v2" command "Frequencies" subtype "Frequencies"
+- table "v0" command "Frequencies" subtype "Frequencies"
+- table "v1" command "Frequencies" subtype "Frequencies"
+- table "v2" command "Frequencies" subtype "Frequencies"
 ])
 AT_CLEANUP
 
 AT_SETUP([pspp-output --subtypes unequal])
 AT_CHECK([pspp-output dir $srcdir/utilities/regress.spv --subtypes='^freq*'],
   [0], [dnl
-- heading "Set" command "Set"
-- heading "Title" command "Title"
+- group "Set" command "Set"
+- group "Title" command "Title"
     - text "Page Title" command "Title"
-- heading "Data List" command "Data List"
+- group "Data List" command "Data List"
     - table "Reading 1 record from INLINE." command "Data List" subtype "Fixed Data Records"
-- heading "Begin Data" command "Begin Data"
-- heading "List" command "List"
+- group "Begin Data" command "Begin Data"
+- group "List" command "List"
     - table "Data List" command "List"
-- heading "Frequencies" command "Frequencies"
+- group "Frequencies" command "Frequencies"
     - table "Statistics" command "Frequencies"
-- heading "Regression" command "Regression"
+- group "Regression" command "Regression"
     - table "Model Summary (v2)" command "Regression" subtype "Model Summary"
     - table "ANOVA (v2)" command "Regression" subtype "ANOVA"
     - table "Coefficients (v2)" command "Regression" subtype "Coefficients"
@@ -141,27 +143,27 @@ AT_CLEANUP
 AT_SETUP([pspp-output --labels equal])
 AT_CHECK([pspp-output dir $srcdir/utilities/regress.spv --labels='v*'],
   [0], [dnl
-    - table "v0" command "Frequencies" subtype "Frequencies"
-    - table "v1" command "Frequencies" subtype "Frequencies"
-    - table "v2" command "Frequencies" subtype "Frequencies"
+- table "v0" command "Frequencies" subtype "Frequencies"
+- table "v1" command "Frequencies" subtype "Frequencies"
+- table "v2" command "Frequencies" subtype "Frequencies"
 ])
 AT_CLEANUP
 
 AT_SETUP([pspp-output --labels unequal])
 AT_CHECK([pspp-output dir $srcdir/utilities/regress.spv --labels='^data*'],
   [0], [dnl
-- heading "Set" command "Set"
-- heading "Title" command "Title"
+- group "Set" command "Set"
+- group "Title" command "Title"
     - text "Page Title" command "Title"
-    - table "Reading 1 record from INLINE." command "Data List" subtype "Fixed Data Records"
-- heading "Begin Data" command "Begin Data"
-- heading "List" command "List"
-- heading "Frequencies" command "Frequencies"
+- table "Reading 1 record from INLINE." command "Data List" subtype "Fixed Data Records"
+- group "Begin Data" command "Begin Data"
+- group "List" command "List"
+- group "Frequencies" command "Frequencies"
     - table "Statistics" command "Frequencies"
     - table "v0" command "Frequencies" subtype "Frequencies"
     - table "v1" command "Frequencies" subtype "Frequencies"
     - table "v2" command "Frequencies" subtype "Frequencies"
-- heading "Regression" command "Regression"
+- group "Regression" command "Regression"
     - table "Model Summary (v2)" command "Regression" subtype "Model Summary"
     - table "ANOVA (v2)" command "Regression" subtype "ANOVA"
     - table "Coefficients (v2)" command "Regression" subtype "Coefficients"
@@ -171,11 +173,11 @@ AT_CLEANUP
 AT_SETUP([pspp-output --instances])
 AT_CHECK([pspp-output dir $srcdir/utilities/regress.spv --instances=1],
   [0], [dnl
-    - text "Page Title" command "Title"
-    - table "Reading 1 record from INLINE." command "Data List" subtype "Fixed Data Records"
-    - table "Data List" command "List"
-    - table "Statistics" command "Frequencies"
-    - table "Model Summary (v2)" command "Regression" subtype "Model Summary"
+- text "Page Title" command "Title"
+- table "Reading 1 record from INLINE." command "Data List" subtype "Fixed Data Records"
+- table "Data List" command "List"
+- table "Statistics" command "Frequencies"
+- table "Model Summary (v2)" command "Regression" subtype "Model Summary"
 ])
 AT_CLEANUP
 
@@ -183,11 +185,11 @@ AT_SETUP([pspp-output --instances=last])
 AT_KEYWORDS([--instances last])
 AT_CHECK([pspp-output dir $srcdir/utilities/regress.spv --instances=last],
   [0], [dnl
-    - text "Page Title" command "Title"
-    - table "Reading 1 record from INLINE." command "Data List" subtype "Fixed Data Records"
-    - table "Data List" command "List"
-    - table "v2" command "Frequencies" subtype "Frequencies"
-    - table "Coefficients (v2)" command "Regression" subtype "Coefficients"
+- text "Page Title" command "Title"
+- table "Reading 1 record from INLINE." command "Data List" subtype "Fixed Data Records"
+- table "Data List" command "List"
+- table "v2" command "Frequencies" subtype "Frequencies"
+- table "Coefficients (v2)" command "Regression" subtype "Coefficients"
 ])
 AT_CLEANUP
 
@@ -195,18 +197,18 @@ dnl XXX Currently PSPP doesn't output hidden items so no tests
 dnl XXX for --show-hidden.
 
 AT_SETUP([pspp-output --or])
-AT_CHECK([pspp-output dir $srcdir/utilities/regress.spv --select=headings --or --labels='v*'],
+AT_CHECK([pspp-output dir $srcdir/utilities/regress.spv --select=outlineheaders --or --labels='v*'],
   [0], [dnl
-- heading "Set" command "Set"
-- heading "Title" command "Title"
-- heading "Data List" command "Data List"
-- heading "Begin Data" command "Begin Data"
-- heading "List" command "List"
-- heading "Frequencies" command "Frequencies"
+- group "Set" command "Set"
+- group "Title" command "Title"
+- group "Data List" command "Data List"
+- group "Begin Data" command "Begin Data"
+- group "List" command "List"
+- group "Frequencies" command "Frequencies"
     - table "v0" command "Frequencies" subtype "Frequencies"
     - table "v1" command "Frequencies" subtype "Frequencies"
     - table "v2" command "Frequencies" subtype "Frequencies"
-- heading "Regression" command "Regression"
+- group "Regression" command "Regression"
 ])
 AT_CLEANUP
 

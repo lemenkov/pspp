@@ -245,11 +245,8 @@ csv_submit (struct output_driver *driver,
     case OUTPUT_ITEM_CHART:
       break;
 
-    case OUTPUT_ITEM_GROUP_OPEN:
-      break;
-
-    case OUTPUT_ITEM_GROUP_CLOSE:
-      break;
+    case OUTPUT_ITEM_GROUP:
+      NOT_REACHED ();
 
     case OUTPUT_ITEM_IMAGE:
       break;
@@ -296,8 +293,8 @@ struct output_driver_factory csv_driver_factory = { "csv", "-", csv_create };
 
 static const struct output_driver_class csv_driver_class =
   {
-    "csv",
-    csv_destroy,
-    csv_submit,
-    csv_flush,
+    .name = "csv",
+    .destroy = csv_destroy,
+    .submit = csv_submit,
+    .flush = csv_flush,
   };

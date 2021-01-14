@@ -55,11 +55,8 @@ struct output_engine
     char *command_name;            /* Name of command being processed. */
     char *title, *subtitle;        /* Components of page title. */
 
-    /* Output grouping stack.
-
-       TEXT_ITEM_GROUP_OPEN pushes a group on the stack and
-       TEXT_ITEM_GROUP_CLOSE pops one off. */
-    char **groups;               /* Command names of nested sections. */
+    /* Output grouping stack. */
+    struct output_item **groups;
     size_t n_groups;
     size_t allocated_groups;
 
@@ -121,8 +118,8 @@ output_engine_pop (void)
   free (e->command_name);
   free (e->title);
   free (e->subtitle);
-  for (size_t i = 0; i < e->n_groups; i++)
-    free (e->groups[i]);
+  if (e->n_groups)
+    output_item_unref (e->groups[0]);
   free (e->groups);
   string_map_destroy (&e->heading_vars);
   free (e);
@@ -137,40 +134,85 @@ output_get_supported_formats (struct string_set *formats)
     string_set_insert (formats, (*fp)->extension);
 }
 
+static bool
+output_driver_should_show (const struct output_driver *d,
+                           const struct output_item *item)
+{
+  enum settings_output_type type = SETTINGS_OUTPUT_RESULT;
+  switch (item->type)
+    {
+    case OUTPUT_ITEM_MESSAGE:
+      type = (item->message->severity == MSG_S_NOTE
+              ? SETTINGS_OUTPUT_NOTE
+              : SETTINGS_OUTPUT_ERROR);
+      break;
+
+    case OUTPUT_ITEM_TEXT:
+      if (item->text.subtype == TEXT_ITEM_SYNTAX)
+        type = SETTINGS_OUTPUT_SYNTAX;
+      break;
+
+    case OUTPUT_ITEM_CHART:
+    case OUTPUT_ITEM_GROUP:
+    case OUTPUT_ITEM_IMAGE:
+    case OUTPUT_ITEM_PAGE_BREAK:
+    case OUTPUT_ITEM_PAGE_SETUP:
+    case OUTPUT_ITEM_TABLE:
+      break;
+    }
+
+  return (settings_get_output_routing (type) & d->device_type) != 0;
+}
+
+/* Adds to OUT the subset of IN that driver D should show, considering routing
+   and visibility of each item, and flattening groups for drivers that don't
+   handle them internally. */
+static void
+make_driver_output_subset (const struct output_item *in,
+                           const struct output_driver *d,
+                           struct output_item *out)
+{
+  if (in->type == OUTPUT_ITEM_GROUP)
+    {
+      /* If we should include the group itself, then clone IN inside OUT, and
+         add any children to the clone instead to OUT directly. */
+      if (output_driver_should_show (d, in) && d->class->handles_groups)
+        {
+          struct output_item *group = group_item_clone_empty (in);
+          group_item_add_child (out, group);
+          out = group;
+        }
+
+      for (size_t i = 0; i < in->group.n_children; i++)
+        make_driver_output_subset (in->group.children[i], d, out);
+    }
+  else
+    {
+      if (output_driver_should_show (d, in)
+          && (in->show || d->class->handles_show))
+        group_item_add_child (out, output_item_ref (in));
+    }
+}
+
 static void
 output_submit__ (struct output_engine *e, struct output_item *item)
 {
+  if (e->n_groups > 0)
+    {
+      group_item_add_child (e->groups[e->n_groups - 1], item);
+      return;
+    }
+
   struct llx *llx, *next;
   llx_for_each_safe (llx, next, &e->drivers)
     {
       struct output_driver *d = llx_data (llx);
 
-      enum settings_output_type type = SETTINGS_OUTPUT_RESULT;
-      switch (item->type)
-        {
-        case OUTPUT_ITEM_MESSAGE:
-          type = (item->message->severity == MSG_S_NOTE
-                  ? SETTINGS_OUTPUT_NOTE
-                  : SETTINGS_OUTPUT_ERROR);
-          break;
-
-        case OUTPUT_ITEM_TEXT:
-          if (item->text.subtype == TEXT_ITEM_SYNTAX)
-            type = SETTINGS_OUTPUT_SYNTAX;
-          break;
-
-        case OUTPUT_ITEM_CHART:
-        case OUTPUT_ITEM_GROUP_OPEN:
-        case OUTPUT_ITEM_GROUP_CLOSE:
-        case OUTPUT_ITEM_IMAGE:
-        case OUTPUT_ITEM_PAGE_BREAK:
-        case OUTPUT_ITEM_PAGE_SETUP:
-        case OUTPUT_ITEM_TABLE:
-          break;
-        }
-
-      if (settings_get_output_routing (type) & d->device_type)
-        d->class->submit (d, item);
+      struct output_item *root = root_item_create ();
+      make_driver_output_subset (item, d, root);
+      for (size_t i = 0; i < root->group.n_children; i++)
+        d->class->submit (d, root->group.children[i]);
+      output_item_unref (root);
     }
 
   output_item_unref (item);
@@ -222,47 +264,7 @@ output_submit (struct output_item *item)
     return;
   flush_deferred_text (e);
 
-  switch (item->type)
-    {
-    case OUTPUT_ITEM_GROUP_OPEN:
-      if (e->n_groups >= e->allocated_groups)
-        e->groups = x2nrealloc (e->groups, &e->allocated_groups,
-                                sizeof *e->groups);
-      e->groups[e->n_groups] = xstrdup_if_nonnull (item->command_name);
-      e->n_groups++;
-      break;
-
-    case OUTPUT_ITEM_GROUP_CLOSE:
-      assert (e->n_groups > 0);
-
-      size_t idx = --e->n_groups;
-      free (e->groups[idx]);
-
-      char *key = xasprintf ("Head%zu", idx);
-      free (string_map_find_and_delete (&e->heading_vars, key));
-      free (key);
-      break;
-
-    case OUTPUT_ITEM_TEXT:
-      {
-        enum text_item_subtype st = item->text.subtype;
-        char *key = (st == TEXT_ITEM_TITLE ? xasprintf ("Head%zu", e->n_groups)
-                     : st == TEXT_ITEM_PAGE_TITLE ? xstrdup ("PageTitle")
-                     : NULL);
-        if (key)
-          string_map_replace_nocopy (&e->heading_vars, key,
-                                     text_item_get_plain_text (item));
-      }
-      break;
-
-    case OUTPUT_ITEM_CHART:
-    case OUTPUT_ITEM_IMAGE:
-    case OUTPUT_ITEM_MESSAGE:
-    case OUTPUT_ITEM_PAGE_BREAK:
-    case OUTPUT_ITEM_PAGE_SETUP:
-    case OUTPUT_ITEM_TABLE:
-      break;
-    }
+  /* XXX heading_vars */
 
   output_submit__ (e, item);
 }
@@ -277,8 +279,8 @@ output_get_command_name (void)
     return NULL;
 
   for (size_t i = e->n_groups; i-- > 0;)
-    if (e->groups[i])
-      return e->groups[i];
+    if (e->groups[i]->command_name)
+      return e->groups[i]->command_name;
 
   return NULL;
 }
@@ -288,6 +290,40 @@ output_get_uppercase_command_name (void)
 {
   const char *command_name = output_get_command_name ();
   return command_name ? utf8_to_upper (command_name) : NULL;
+}
+
+size_t
+output_open_group (struct output_item *item)
+{
+  struct output_engine *e = engine_stack_top ();
+  if (e == NULL)
+    return 0;
+
+  if (e->n_groups >= e->allocated_groups)
+    e->groups = x2nrealloc (e->groups, &e->allocated_groups,
+                            sizeof *e->groups);
+  e->groups[e->n_groups++] = item;
+  if (e->n_groups > 1)
+    group_item_add_child (e->groups[e->n_groups - 2], item);
+
+  return e->n_groups - 1;
+}
+
+void
+output_close_groups (size_t nesting_level)
+{
+  struct output_engine *e = engine_stack_top ();
+  if (e == NULL)
+    return;
+
+  while (e->n_groups > nesting_level)
+    {
+      flush_deferred_text (e);
+
+      struct output_item *group = e->groups[--e->n_groups];
+      if (e->n_groups == 0)
+        output_submit__ (e, group);
+    }
 }
 
 /* Flushes output to screen devices, so that the user can see
@@ -356,14 +392,6 @@ output_set_filename (const char *filename)
   struct output_engine *e = engine_stack_top ();
 
   string_map_replace (&e->heading_vars, "Filename", filename);
-}
-
-size_t
-output_get_group_level (void)
-{
-  struct output_engine *e = engine_stack_top ();
-
-  return e->n_groups;
 }
 
 void

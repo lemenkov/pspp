@@ -639,8 +639,8 @@ struct output_driver_factory png_driver_factory =
 
 static const struct output_driver_class cairo_driver_class =
 {
-  "cairo",
-  xr_destroy,
-  xr_submit,
-  NULL,
+  .name = "cairo",
+  .destroy = xr_destroy,
+  .submit = xr_submit,
+  .handles_groups = true,
 };

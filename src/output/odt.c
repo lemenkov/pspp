@@ -597,11 +597,8 @@ odt_submit (struct output_driver *driver, const struct output_item *item)
     case OUTPUT_ITEM_CHART:
       break;
 
-    case OUTPUT_ITEM_GROUP_OPEN:
-      break;
-
-    case OUTPUT_ITEM_GROUP_CLOSE:
-      break;
+    case OUTPUT_ITEM_GROUP:
+      NOT_REACHED ();
 
     case OUTPUT_ITEM_IMAGE:
       break;
@@ -639,8 +636,7 @@ struct output_driver_factory odt_driver_factory =
 
 static const struct output_driver_class odt_driver_class =
 {
-  "odf",
-  odt_destroy,
-  odt_submit,
-  NULL,
+  .name = "odf",
+  .destroy = odt_destroy,
+  .submit = odt_submit,
 };

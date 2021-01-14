@@ -325,7 +325,7 @@ rerender (struct psppire_output_view *view)
       if (view->y > 0)
         view->y += view->object_spacing;
 
-      if (item->item->type == OUTPUT_ITEM_GROUP_OPEN)
+      if (item->item->type == OUTPUT_ITEM_GROUP)
         continue;
 
       r = xr_fsm_create_for_scrolling (item->item, view->style, cr);
@@ -396,19 +396,10 @@ psppire_output_view_put (struct psppire_output_view *view,
   GtkWidget *drawing_area;
   int tw, th;
 
-  if (item->type == OUTPUT_ITEM_GROUP_CLOSE)
-    {
-      if (view->cur_group)
-        {
-          if (!gtk_tree_path_up (view->cur_group))
-            {
-              gtk_tree_path_free (view->cur_group);
-              view->cur_group = NULL;
-            }
-        }
-      return;
-    }
-  else if (item->type == OUTPUT_ITEM_TEXT)
+  if (item->type == OUTPUT_ITEM_GROUP)
+    return;
+
+  if (item->type == OUTPUT_ITEM_TEXT)
     {
       char *text = text_item_get_plain_text (item);
       bool text_is_empty = text[0] == '\0';
@@ -425,9 +416,7 @@ psppire_output_view_put (struct psppire_output_view *view,
   view_item->drawing_area = NULL;
 
   GdkWindow *win = gtk_widget_get_window (GTK_WIDGET (view->output));
-  if (item->type == OUTPUT_ITEM_GROUP_OPEN)
-    tw = th = 0;
-  else if (win)
+  if (win)
     {
       view_item->drawing_area = drawing_area = gtk_drawing_area_new ();
 
@@ -473,13 +462,7 @@ psppire_output_view_put (struct psppire_output_view *view,
       else
         gtk_tree_store_append (store, &iter, NULL);
 
-      if (item->type == OUTPUT_ITEM_GROUP_OPEN)
-        {
-          gtk_tree_path_free (view->cur_group);
-          view->cur_group = gtk_tree_model_get_path (GTK_TREE_MODEL (store),
-                                                     &iter);
-        }
-
+      /* XXX group? */
       gtk_tree_store_set (store, &iter,
                           COL_LABEL, output_item_get_label (item),
 			  COL_ADDR, item,
@@ -1102,10 +1085,10 @@ psppire_output_view_submit (struct output_driver *this,
 
 static struct output_driver_class psppire_output_view_driver_class =
   {
-    "PSPPIRE Output View",      /* name */
-    NULL,                       /* destroy */
-    psppire_output_view_submit, /* submit */
-    NULL,                       /* flush */
+    .name = "PSPPIRE Output View",
+    .submit = psppire_output_view_submit,
+    .handles_groups = true,
+    .handles_show = true,
   };
 
 void

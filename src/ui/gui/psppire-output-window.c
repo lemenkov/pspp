@@ -156,10 +156,10 @@ psppire_output_submit (struct output_driver *this,
 
 static struct output_driver_class psppire_output_class =
   {
-    "PSPPIRE",                  /* name */
-    NULL,                       /* destroy */
-    psppire_output_submit,      /* submit */
-    NULL,                       /* flush */
+    .name = "PSPPIRE",
+    .submit = psppire_output_submit,
+    .handles_groups = true,
+    .handles_show = true,
   };
 
 void

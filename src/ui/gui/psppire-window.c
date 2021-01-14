@@ -35,8 +35,6 @@
 #include "output/output-item.h"
 #include "output/pivot-table.h"
 #include "output/spv/spv.h"
-#include "output/spv/spv-output.h"
-#include "output/spv/spv-select.h"
 
 #include "helper.h"
 #include "psppire-data-window.h"
@@ -698,86 +696,11 @@ psppire_window_file_chooser_dialog (PsppireWindow *toplevel)
   return dialog;
 }
 
-struct item_path
-  {
-    const struct spv_item **nodes;
-    size_t n;
-
-#define N_STUB 10
-    const struct spv_item *stub[N_STUB];
-  };
-
-static void
-swap_nodes (const struct spv_item **a, const struct spv_item **b)
-{
-  const struct spv_item *tmp = *a;
-  *a = *b;
-  *b = tmp;
-}
-
-static void
-get_path (const struct spv_item *item, struct item_path *path)
-{
-  size_t allocated = 10;
-  path->nodes = path->stub;
-  path->n = 0;
-
-  while (item)
-    {
-      if (path->n >= allocated)
-        {
-          if (path->nodes == path->stub)
-            path->nodes = xmemdup (path->stub, sizeof path->stub);
-          path->nodes = x2nrealloc (path->nodes, &allocated,
-                                    sizeof *path->nodes);
-        }
-      path->nodes[path->n++] = item;
-      item = item->parent;
-    }
-
-  for (size_t i = 0; i < path->n / 2; i++)
-    swap_nodes (&path->nodes[i], &path->nodes[path->n - i - 1]);
-}
-
-static void
-free_path (struct item_path *path)
-{
-  if (path && path->nodes != path->stub)
-    free (path->nodes);
-}
-
-static void
-dump_heading_transition (const struct spv_item *old,
-                         const struct spv_item *new)
-{
-  if (old == new)
-    return;
-
-  struct item_path old_path, new_path;
-  get_path (old, &old_path);
-  get_path (new, &new_path);
-
-  size_t common = 0;
-  for (; common < old_path.n && common < new_path.n; common++)
-    if (old_path.nodes[common] != new_path.nodes[common])
-      break;
-
-  for (size_t i = common; i < old_path.n; i++)
-    output_item_submit (group_close_item_create ());
-  for (size_t i = common; i < new_path.n; i++)
-    output_item_submit (group_open_item_create (
-                              new_path.nodes[i]->command_id,
-                              new_path.nodes[i]->label));
-
-  free_path (&old_path);
-  free_path (&new_path);
-}
-
 void
 read_spv_file (const char *filename)
 {
-  struct spv_reader *spv;
-  char *error = spv_open (filename, &spv);
+  struct output_item *root;
+  char *error = spv_read (filename, &root, NULL);
   if (error)
     {
       /* XXX */
@@ -785,30 +708,7 @@ read_spv_file (const char *filename)
       return;
     }
 
-  struct spv_item **items;
-  size_t n_items;
-  spv_select (spv, NULL, 0, &items, &n_items);
-  struct spv_item *prev_heading = spv_get_root (spv);
-  for (size_t i = 0; i < n_items; i++)
-    {
-      struct spv_item *heading
-        = items[i]->type == SPV_ITEM_HEADING ? items[i] : items[i]->parent;
-      dump_heading_transition (prev_heading, heading);
-      if (items[i]->type == SPV_ITEM_TEXT)
-        spv_text_submit (items[i]);
-      else if (items[i]->type == SPV_ITEM_TABLE)
-        pivot_table_submit (pivot_table_ref (spv_item_get_table (items[i])));
-      else if (items[i]->type == SPV_ITEM_IMAGE)
-        {
-          cairo_surface_t *image = spv_item_get_image (items[i]);
-          output_item_submit (image_item_create (cairo_surface_reference (
-                                                   image)));
-        }
-      prev_heading = heading;
-    }
-  dump_heading_transition (prev_heading, spv_get_root (spv));
-  free (items);
-  spv_close (spv);
+  output_item_submit_children (root);
 }
 
 /* Callback for the file_open action.

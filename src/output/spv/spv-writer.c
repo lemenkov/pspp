@@ -1106,11 +1106,10 @@ spv_writer_write (struct spv_writer *w, const struct output_item *item)
       }
       break;
 
-    case OUTPUT_ITEM_GROUP_OPEN:
+    case OUTPUT_ITEM_GROUP:
       spv_writer_open_heading (w, item);
-      break;
-
-    case OUTPUT_ITEM_GROUP_CLOSE:
+      for (size_t i = 0; i < item->group.n_children; i++)
+        spv_writer_write (w, item->group.children[i]);
       spv_writer_close_heading (w);
       break;
 

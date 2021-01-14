@@ -25,6 +25,7 @@
 #include "libpspp/cast.h"
 #include "libpspp/message.h"
 #include "libpspp/str.h"
+#include "libpspp/zip-reader.h"
 #include "output/chart.h"
 #include "output/driver.h"
 #include "output/page-setup.h"
@@ -35,6 +36,24 @@
 #include "gettext.h"
 #define _(msgid) gettext (msgid)
 #define N_(msgid) msgid
+
+const char *
+output_item_type_to_string (enum output_item_type type)
+{
+  switch (type)
+    {
+    case OUTPUT_ITEM_CHART: return "chart";
+    case OUTPUT_ITEM_GROUP: return "group";
+    case OUTPUT_ITEM_IMAGE: return "image";
+    case OUTPUT_ITEM_MESSAGE: return "message";
+    case OUTPUT_ITEM_PAGE_BREAK: return "page break";
+    case OUTPUT_ITEM_PAGE_SETUP: return "page setup";
+    case OUTPUT_ITEM_TABLE: return "table";
+    case OUTPUT_ITEM_TEXT: return "text";
+    }
+
+  NOT_REACHED ();
+}
 
 #define OUTPUT_ITEM_INITIALIZER(TYPE) .type = TYPE, .ref_cnt = 1, .show = true
 
@@ -66,10 +85,9 @@ output_item_unref (struct output_item *item)
               chart_unref (item->chart);
               break;
 
-            case OUTPUT_ITEM_GROUP_OPEN:
-              break;
-
-            case OUTPUT_ITEM_GROUP_CLOSE:
+            case OUTPUT_ITEM_GROUP:
+              for (size_t i = 0; i < item->group.n_children; i++)
+                output_item_unref (item->group.children[i]);
               break;
 
             case OUTPUT_ITEM_IMAGE:
@@ -99,6 +117,7 @@ output_item_unref (struct output_item *item)
           free (item->label);
           free (item->command_name);
           free (item->cached_label);
+          spv_info_destroy (item->spv_info);
           free (item);
         }
     }
@@ -112,6 +131,22 @@ output_item_is_shared (const struct output_item *item)
   return item->ref_cnt > 1;
 }
 
+/* Returns a clone of OLD, without initializing type-specific fields.  */
+static struct output_item *
+output_item_clone_common (const struct output_item *old)
+{
+  struct output_item *new = xmalloc (sizeof *new);
+  *new = (struct output_item) {
+    .ref_cnt = 1,
+    .label = xstrdup_if_nonnull (old->label),
+    .command_name = xstrdup_if_nonnull (old->command_name),
+    .type = old->type,
+    .show = old->show,
+    .spv_info = spv_info_clone (old->spv_info),
+  };
+  return new;
+}
+
 struct output_item *
 output_item_unshare (struct output_item *old)
 {
@@ -120,24 +155,22 @@ output_item_unshare (struct output_item *old)
     return old;
   output_item_unref (old);
 
-  struct output_item *new = xmalloc (sizeof *new);
-  *new = (struct output_item) {
-    .ref_cnt = 1,
-    .label = xstrdup_if_nonnull (old->label),
-    .command_name = xstrdup_if_nonnull (old->command_name),
-    .type = old->type,
-    .show = old->show,
-  };
+  struct output_item *new = output_item_clone_common (old);
   switch (old->type)
     {
     case OUTPUT_ITEM_CHART:
       new->chart = chart_ref (old->chart);
       break;
 
-    case OUTPUT_ITEM_GROUP_OPEN:
-      break;
+    case OUTPUT_ITEM_GROUP:
+      new->group.children = xmemdup (
+        old->group.children,
+        old->group.n_children * sizeof *old->group.children);
+      new->group.n_children = new->group.allocated_children
+        = old->group.n_children;
 
-    case OUTPUT_ITEM_GROUP_CLOSE:
+      for (size_t i = 0; i < new->group.n_children; i++)
+        output_item_ref (new->group.children[i]);
       break;
 
     case OUTPUT_ITEM_IMAGE:
@@ -173,6 +206,28 @@ output_item_submit (struct output_item *item)
   output_submit (item);
 }
 
+/* If ROOT is a group item, submits each of its children, but not ROOT itself.
+   This is useful if ROOT is being used as a container for output items but it
+   has no significance itself.
+
+   If ROOT is not a group, submits it the normal way.
+
+   Takes ownership of ROOT. */
+void
+output_item_submit_children (struct output_item *root)
+{
+  assert (!output_item_is_shared (root));
+  if (root->type == OUTPUT_ITEM_GROUP)
+    {
+      for (size_t i = 0; i < root->group.n_children; i++)
+        output_submit (root->group.children[i]);
+      root->group.n_children = 0;
+      output_item_unref (root);
+    }
+  else
+    output_submit (root);
+}
+
 /* Returns the label for ITEM, which the caller must not modify or free. */
 const char *
 output_item_get_label (const struct output_item *item)
@@ -185,12 +240,8 @@ output_item_get_label (const struct output_item *item)
     case OUTPUT_ITEM_CHART:
       return item->chart->title ? item->chart->title : _("Chart");
 
-    case OUTPUT_ITEM_GROUP_OPEN:
+    case OUTPUT_ITEM_GROUP:
       return item->command_name ? item->command_name : _("Group");
-
-    case OUTPUT_ITEM_GROUP_CLOSE:
-      /* Not marked for translation: user should never see it. */
-      return "Group Close";
 
     case OUTPUT_ITEM_IMAGE:
       return "Image";
@@ -249,6 +300,145 @@ output_item_set_label_nocopy (struct output_item *item, char *label)
   free (item->label);
   item->label = label;
 }
+
+void
+output_item_set_command_name (struct output_item *item, const char *name)
+{
+  output_item_set_command_name_nocopy (item, xstrdup_if_nonnull (name));
+}
+
+void
+output_item_set_command_name_nocopy (struct output_item *item, char *name)
+{
+  free (item->command_name);
+  item->command_name = name;
+}
+
+char *
+output_item_get_subtype (const struct output_item *item)
+{
+  return (item->type == OUTPUT_ITEM_TABLE
+          ? pivot_value_to_string (item->table->subtype, item->table)
+          : NULL);
+}
+
+void
+output_item_add_spv_info (struct output_item *item)
+{
+  assert (!output_item_is_shared (item));
+  if (!item->spv_info)
+    item->spv_info = xzalloc (sizeof *item->spv_info);
+}
+
+static void
+indent (int indentation)
+{
+  for (int i = 0; i < indentation * 2; i++)
+    putchar (' ');
+}
+
+void
+output_item_dump (const struct output_item *item, int indentation)
+{
+  indent (indentation);
+  if (item->label)
+    printf ("label=\"%s\" ", item->label);
+  if (item->command_name)
+    printf ("command=\"%s\" ", item->command_name);
+  if (!item->show)
+    printf ("(%s) ", item->type == OUTPUT_ITEM_GROUP ? "collapsed" : "hidden");
+
+  switch (item->type)
+    {
+    case OUTPUT_ITEM_CHART:
+      printf ("chart \"%s\"\n", item->chart->title ? item->chart->title : "");
+      break;
+
+    case OUTPUT_ITEM_GROUP:
+      printf ("group\n");
+      for (size_t i = 0; i < item->group.n_children; i++)
+        output_item_dump (item->group.children[i], indentation + 1);
+      break;
+
+    case OUTPUT_ITEM_IMAGE:
+      printf ("image\n");
+      break;
+
+    case OUTPUT_ITEM_MESSAGE:
+      printf ("message\n");
+      break;
+
+    case OUTPUT_ITEM_PAGE_BREAK:
+      printf ("page break\n");
+      break;
+
+    case OUTPUT_ITEM_PAGE_SETUP:
+      printf ("page setup\n");
+      break;
+
+    case OUTPUT_ITEM_TABLE:
+      pivot_table_dump (item->table, indentation + 1);
+      break;
+
+    case OUTPUT_ITEM_TEXT:
+      printf ("text %s \"%s\"\n",
+              text_item_subtype_to_string (item->text.subtype),
+              pivot_value_to_string_defaults (item->text.content));
+      break;
+    }
+}
+
+void
+output_iterator_init (struct output_iterator *iter,
+                      const struct output_item *item)
+{
+  *iter = (struct output_iterator) OUTPUT_ITERATOR_INIT (item);
+}
+
+void
+output_iterator_destroy (struct output_iterator *iter)
+{
+  if (iter)
+    {
+      free (iter->nodes);
+      iter->nodes = NULL;
+      iter->n = iter->allocated = 0;
+    }
+}
+
+void
+output_iterator_next (struct output_iterator *iter)
+{
+  const struct output_item *cur = iter->cur;
+  if (cur)
+    {
+      if (cur->type == OUTPUT_ITEM_GROUP && cur->group.n_children > 0)
+        {
+          if (iter->n >= iter->allocated)
+            iter->nodes = x2nrealloc (iter->nodes, &iter->allocated,
+                                      sizeof *iter->nodes);
+          iter->nodes[iter->n++] = (struct output_iterator_node) {
+            .group = cur,
+            .idx = 0,
+          };
+          iter->cur = cur->group.children[0];
+          return;
+        }
+
+      for (; iter->n > 0; iter->n--)
+        {
+          struct output_iterator_node *node = &iter->nodes[iter->n - 1];
+          if (++node->idx < node->group->group.n_children)
+            {
+              iter->cur = node->group->group.children[node->idx];
+              return;
+            }
+        }
+
+      iter->cur = NULL;
+      output_iterator_destroy (iter);
+    }
+}
 
 struct output_item *
 chart_item_create (struct chart *chart)
@@ -262,33 +452,55 @@ chart_item_create (struct chart *chart)
 }
 
 struct output_item *
-group_open_item_create (const char *command_name, const char *label)
+group_item_create (const char *command_name, const char *label)
 {
-  return group_open_item_create_nocopy (
+  return group_item_create_nocopy (
     xstrdup_if_nonnull (command_name),
     xstrdup_if_nonnull (label));
 }
 
 struct output_item *
-group_open_item_create_nocopy (char *command_name, char *label)
+group_item_create_nocopy (char *command_name, char *label)
 {
   struct output_item *item = xmalloc (sizeof *item);
   *item = (struct output_item) {
-    OUTPUT_ITEM_INITIALIZER (OUTPUT_ITEM_GROUP_OPEN),
+    OUTPUT_ITEM_INITIALIZER (OUTPUT_ITEM_GROUP),
     .label = label,
     .command_name = command_name,
   };
   return item;
 }
 
+/* Returns a new group item suitable as the root node of an output document.  A
+   root node is a group whose own properties are mostly disregarded.  Instead
+   of having root nodes, it would make just as much sense to just keep around
+   arrays of nodes that would serve as the top level of an output document, but
+   we'd need more special cases instead of just using the existing support for
+   group items. */
 struct output_item *
-group_close_item_create (void)
+root_item_create (void)
 {
-  struct output_item *item = xmalloc (sizeof *item);
-  *item = (struct output_item) {
-    OUTPUT_ITEM_INITIALIZER (OUTPUT_ITEM_GROUP_CLOSE),
-  };
-  return item;
+  return group_item_create ("", _("Output"));
+}
+
+/* Returns a clone of OLD but without any of its children. */
+struct output_item *
+group_item_clone_empty (const struct output_item *old)
+{
+  return output_item_clone_common (old);
+}
+
+/* Adds CHILD as a child of group item PARENT. */
+void
+group_item_add_child (struct output_item *parent, struct output_item *child)
+{
+  assert (parent->type == OUTPUT_ITEM_GROUP);
+  assert (!output_item_is_shared (parent));
+  if (parent->group.n_children >= parent->group.allocated_children)
+    parent->group.children = x2nrealloc (parent->group.children,
+                                         &parent->group.allocated_children,
+                                         sizeof *parent->group.children);
+  parent->group.children[parent->group.n_children++] = child;
 }
 
 /* Creates and returns a new output item containing IMAGE.  Takes ownership of
@@ -554,4 +766,55 @@ text_item_subtype_to_string (enum text_item_subtype subtype)
       return _("Text");
     }
 }
+
+void
+spv_info_destroy (struct spv_info *spv_info)
+{
+  if (spv_info)
+    {
+      zip_reader_unref (spv_info->zip_reader);
+      free (spv_info->structure_member);
+      free (spv_info->xml_member);
+      free (spv_info->bin_member);
+      free (spv_info->png_member);
+      free (spv_info);
+    }
+}
 
+struct spv_info *
+spv_info_clone (const struct spv_info *old)
+{
+  if (!old)
+    return NULL;
+
+  struct spv_info *new = xmalloc (sizeof *new);
+  *new = (struct spv_info) {
+    .zip_reader = old->zip_reader ? zip_reader_ref (old->zip_reader) : NULL,
+    .error = old->error,
+    .structure_member = xstrdup_if_nonnull (old->structure_member),
+    .xml_member = xstrdup_if_nonnull (old->xml_member),
+    .bin_member = xstrdup_if_nonnull (old->bin_member),
+    .png_member = xstrdup_if_nonnull (old->png_member),
+  };
+  return new;
+}
+
+size_t
+spv_info_get_members (const struct spv_info *spv_info, const char **members,
+                      size_t allocated_members)
+{
+  if (!spv_info)
+    return 0;
+
+  const char *s[] = {
+    spv_info->structure_member,
+    spv_info->xml_member,
+    spv_info->bin_member,
+    spv_info->png_member,
+  };
+  size_t n = 0;
+  for (size_t i = 0; i < sizeof s / sizeof *s; i++)
+    if (s[i] && n < allocated_members)
+      members[n++] = s[i];
+  return n;
+}

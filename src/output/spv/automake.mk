@@ -19,17 +19,12 @@
 src_output_liboutput_la_SOURCES += \
 	src/output/spv/spv-css-parser.c \
 	src/output/spv/spv-css-parser.h \
-	src/output/spv/spv-dump.c \
 	src/output/spv/spv-legacy-data.c \
 	src/output/spv/spv-legacy-data.h \
 	src/output/spv/spv-legacy-decoder.c \
 	src/output/spv/spv-legacy-decoder.h \
 	src/output/spv/spv-light-decoder.c \
 	src/output/spv/spv-light-decoder.h \
-	src/output/spv/spv-output.c \
-	src/output/spv/spv-output.h \
-	src/output/spv/spv-select.c \
-	src/output/spv/spv-select.h \
 	src/output/spv/spv-table-look.c \
 	src/output/spv/spv-table-look.h \
 	src/output/spv/spv-writer.c \
