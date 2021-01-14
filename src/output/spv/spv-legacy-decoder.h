@@ -31,7 +31,7 @@ struct pivot_table_look;
 char *decode_spvdx_table (const struct spvdx_visualization *,
                           const char *subtype,
                           const struct pivot_table_look *,
-                          struct spv_data *,
+                          const struct spv_data *,
                           struct pivot_table **outp)
   WARN_UNUSED_RESULT;
 

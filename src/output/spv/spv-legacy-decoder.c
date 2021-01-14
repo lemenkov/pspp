@@ -761,7 +761,7 @@ static char BAD_REFERENCE;
 
 static char * WARN_UNUSED_RESULT
 decode_spvdx_source_variable (const struct spvxml_node *node,
-                              struct spv_data *data,
+                              const struct spv_data *data,
                               struct hmap *series_map)
 {
   const struct spvdx_source_variable *sv = spvdx_cast_source_variable (node);
@@ -1768,7 +1768,7 @@ format_map_destroy (struct hmap *format_map)
 char * WARN_UNUSED_RESULT
 decode_spvdx_table (const struct spvdx_visualization *v, const char *subtype,
                     const struct pivot_table_look *look,
-                    struct spv_data *data, struct pivot_table **outp)
+                    const struct spv_data *data, struct pivot_table **outp)
 {
   struct pivot_table *table = pivot_table_create__ (NULL, subtype);
 
