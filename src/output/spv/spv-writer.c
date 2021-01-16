@@ -234,6 +234,8 @@ spv_writer_open_heading (struct spv_writer *w, const struct output_item *item)
   start_elem (w, "heading");
   if (item->command_name)
     write_attr (w, "commandName", item->command_name);
+  if (!item->show)
+    write_attr (w, "visibility", "collapsed");
   /* XXX locale */
   /* XXX olang */
 
@@ -280,7 +282,7 @@ open_container (struct spv_writer *w, const struct output_item *item,
                 const char *inner_elem)
 {
   start_elem (w, "container");
-  write_attr (w, "visibility", "visible");
+  write_attr (w, "visibility", item->show ? "visible" : "hidden");
   if (w->need_page_break)
     {
       write_attr (w, "page-break-before", "always");

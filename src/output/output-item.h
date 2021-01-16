@@ -59,6 +59,14 @@ struct output_item
        output. */
     char *command_name;
 
+    /* For OUTPUT_ITEM_GROUP_OPEN, this is true if the group's subtree should
+       be expanded in an outline view, false otherwise.
+
+       For other kinds of output items, this is true to show the item's
+       content, false to hide it.  The item's label is always shown in an
+       outline view. */
+    bool show;
+
     enum output_item_type type;
     union
       {

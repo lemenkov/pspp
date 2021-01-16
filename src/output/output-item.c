@@ -36,7 +36,7 @@
 #define _(msgid) gettext (msgid)
 #define N_(msgid) msgid
 
-#define OUTPUT_ITEM_INITIALIZER(TYPE) .type = TYPE, .ref_cnt = 1
+#define OUTPUT_ITEM_INITIALIZER(TYPE) .type = TYPE, .ref_cnt = 1, .show = true
 
 /* Increases ITEM's reference count, indicating that it has an additional
    owner.  An output item that is shared among multiple owners must not be
@@ -126,6 +126,7 @@ output_item_unshare (struct output_item *old)
     .label = xstrdup_if_nonnull (old->label),
     .command_name = xstrdup_if_nonnull (old->command_name),
     .type = old->type,
+    .show = old->show,
   };
   switch (old->type)
     {
