@@ -18,6 +18,8 @@
 #ifndef ZIP_READER_H
 #define ZIP_READER_H 1
 
+#include <stdbool.h>
+#include <stddef.h>
 #include "libpspp/compiler.h"
 
 struct zip_member;
@@ -26,12 +28,15 @@ struct string;
 
 /* Create zip reader to read the file called FILENAME.  If successful, stores
    the new zip_reader in *ZRP and returns NULL; on error, returns an error
-   message that the caller must free and stores NULL in *ZRP. */
+   message that the caller must free and stores NULL in *ZRP.
+
+   The client must eventually unref *ZRP. */
 char *zip_reader_create (const char *filename, struct zip_reader **zrp)
   WARN_UNUSED_RESULT;
 
-/* Destroy the zip reader */
-void zip_reader_destroy (struct zip_reader *zr);
+/* Reference counting. */
+struct zip_reader *zip_reader_ref (const struct zip_reader *);
+void zip_reader_unref (struct zip_reader *zr);
 
 /* Returns the name of ZR's member IDX, IDX >= 0.  Returns NULL if ZR has fewer
    than (IDX + 1) members. */

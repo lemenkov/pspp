@@ -163,7 +163,7 @@ ods_destroy (struct spreadsheet *s)
 
   dict_unref (r->spreadsheet.dict);
 
-  zip_reader_destroy (r->zreader);
+  zip_reader_unref (r->zreader);
   free (r->spreadsheet.sheets);
   free (s->file_name);
 
@@ -1192,7 +1192,7 @@ ods_probe (const char *filename, bool report_errors)
   return &r->spreadsheet;
 
  error:
-  zip_reader_destroy (r->zreader);
+  zip_reader_unref (r->zreader);
   free (r);
   return NULL;
 }

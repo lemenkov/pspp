@@ -16,22 +16,23 @@
 
 #include <config.h>
 
+#include "libpspp/zip-reader.h"
+#include "libpspp/zip-private.h"
+
+#include <errno.h>
 #include <inttypes.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
-#include <errno.h>
-#include <xalloc.h>
-#include <libpspp/assertion.h>
-#include <libpspp/compiler.h>
+#include "libpspp/assertion.h"
+#include "libpspp/cast.h"
+#include "libpspp/compiler.h"
+#include "libpspp/integer-format.h"
+#include "libpspp/str.h"
 
-#include "str.h"
-
-#include "integer-format.h"
-#include "zip-reader.h"
-#include "zip-private.h"
+#include "gl/xalloc.h"
 
 #include "gettext.h"
 #define _(msgid) gettext (msgid)
@@ -81,6 +82,7 @@ get_decompressor (uint16_t c)
 
 struct zip_reader
 {
+  int ref_cnt;
   char *file_name;                  /* The name of the file from which the data is read */
   uint16_t n_entries;              /* Number of directory entries. */
   struct zip_entry *entries;       /* Directory entries. */
@@ -116,17 +118,28 @@ zip_member_finish (struct zip_member *zm)
     }
 }
 
+struct zip_reader *
+zip_reader_ref (const struct zip_reader *zr_)
+{
+  struct zip_reader *zr = CONST_CAST (struct zip_reader *, zr_);
+  assert (zr->ref_cnt > 0);
+  zr->ref_cnt++;
+  return zr;
+}
+
 /* Destroy the zip reader */
 void
-zip_reader_destroy (struct zip_reader *zr)
+zip_reader_unref (struct zip_reader *zr)
 {
-  int i;
   if (zr == NULL)
+    return;
+  assert (zr->ref_cnt > 0);
+  if (--zr->ref_cnt)
     return;
 
   free (zr->file_name);
 
-  for (i = 0; i < zr->n_entries; ++i)
+  for (int i = 0; i < zr->n_entries; ++i)
     {
       struct zip_entry *ze = &zr->entries[i];
       free (ze->name);
@@ -366,6 +379,7 @@ zip_reader_create (const char *file_name, struct zip_reader **zrp)
     }
 
   struct zip_reader *zr = xzalloc (sizeof *zr);
+  zr->ref_cnt = 1;
   zr->file_name = xstrdup (file_name);
   zr->entries = xcalloc (n_members, sizeof *zr->entries);
   for (int i = 0; i < n_members; i++)
@@ -375,7 +389,7 @@ zip_reader_create (const char *file_name, struct zip_reader **zrp)
       if (error)
         {
           fclose (file);
-          zip_reader_destroy (zr);
+          zip_reader_unref (zr);
           return error;
         }
       zr->n_entries++;

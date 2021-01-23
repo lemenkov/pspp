@@ -45,6 +45,7 @@ struct output_item *
 output_item_ref (const struct output_item *item_)
 {
   struct output_item *item = CONST_CAST (struct output_item *, item_);
+  assert (item->ref_cnt > 0);
   item->ref_cnt++;
   return item;
 }

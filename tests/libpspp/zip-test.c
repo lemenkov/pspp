@@ -107,7 +107,7 @@ main (int argc, char **argv)
 	      check_die ();
 	    }
 	}
-      zip_reader_destroy (zr);
+      zip_reader_unref (zr);
     }
   else
     exit (1);

@@ -1160,7 +1160,7 @@ spv_detect (const char *filename)
 
   if (spv_detect__ (zip, &error) <= 0 && !error)
     error = xasprintf("%s: not an SPV file", filename);
-  zip_reader_destroy (zip);
+  zip_reader_unref (zip);
   return error;
 }
 
@@ -1215,7 +1215,7 @@ spv_close (struct spv_reader *spv)
 {
   if (spv)
     {
-      zip_reader_destroy (spv->zip);
+      zip_reader_unref (spv->zip);
       spv_item_destroy (spv->root);
       page_setup_destroy (spv->page_setup);
       free (spv);
