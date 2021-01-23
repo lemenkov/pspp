@@ -65,17 +65,16 @@ main (int argc, char **argv)
       const int BUFSIZE=256;
       char buf[BUFSIZE];
       int i;
-      struct string str;
-      struct zip_reader *zr = zip_reader_create (argv[2], &str);
-      if (NULL == zr)
+      struct zip_reader *zr;
+      char *error = zip_reader_create (argv[2], &zr);
+      if (error)
 	{
-	  fprintf (stderr, "Could not create zip reader: %s\n", ds_cstr (&str));
+	  fprintf (stderr, "Could not create zip reader: %s\n", error);
 	  check_die ();
 	}
       for (i = 3; i < argc; ++i)
 	{
 	  int x = 0;
-	  struct zip_member *zm ;
 	  FILE *fp = fopen (argv[i], "wb");
 	  if (NULL == fp)
 	    {
@@ -83,11 +82,13 @@ main (int argc, char **argv)
 	      fprintf (stderr, "Could not create file %s: %s\n", argv[i], strerror(e));
 	      check_die ();
 	    }
-	  zm = zip_member_open (zr, argv[i]);
-	  if (NULL == zm)
+
+	  struct zip_member *zm ;
+	  char *error = zip_member_open (zr, argv[i], &zm);
+	  if (error)
 	    {
 	      fprintf (stderr, "Could not open zip member %s from archive: %s\n",
-		       argv[i], ds_cstr (&str));
+		       argv[i], error);
 	      check_die ();
 	    }
 
@@ -95,11 +96,14 @@ main (int argc, char **argv)
 	    {
 	      fwrite (buf, x, 1, fp);
 	    }
+          error = zip_member_steal_error (zm);
           zip_member_finish (zm);
 	  fclose (fp);
+
+          assert ((error != NULL) == (x < 0));
 	  if (x < 0)
 	    {
-	      fprintf (stderr, "Unzip failed: %s\n", ds_cstr (&str));
+	      fprintf (stderr, "Unzip failed: %s\n", error);
 	      check_die ();
 	    }
 	}

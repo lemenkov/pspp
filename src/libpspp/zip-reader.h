@@ -18,15 +18,17 @@
 #ifndef ZIP_READER_H
 #define ZIP_READER_H 1
 
+#include "libpspp/compiler.h"
+
 struct zip_member;
 struct zip_reader;
 struct string;
 
-/* Create zip reader to read the file called FILENAME.
-   If ERRS is non-null if will be used to contain any error messages
-   which the reader wishes to report.
- */
-struct zip_reader *zip_reader_create (const char *filename, struct string *errs);
+/* Create zip reader to read the file called FILENAME.  If successful, stores
+   the new zip_reader in *ZRP and returns NULL; on error, returns an error
+   message that the caller must free and stores NULL in *ZRP. */
+char *zip_reader_create (const char *filename, struct zip_reader **zrp)
+  WARN_UNUSED_RESULT;
 
 /* Destroy the zip reader */
 void zip_reader_destroy (struct zip_reader *zr);
@@ -40,11 +42,15 @@ const char *zip_reader_get_member_name(const struct zip_reader *zr,
 bool zip_reader_contains_member (const struct zip_reader *zr,
                                  const char *member);
 
-/* Return the zip member in the reader ZR, called MEMBER */
-struct zip_member *zip_member_open (struct zip_reader *zr, const char *member);
+/* Opens the zip member named MEMBER in ZR.  If successful, stores the new
+   zip_member in *ZMP and returns NULL; on error, returns an error message that
+   the caller must free and stores NULL in *ZMP. */
+char *zip_member_open (struct zip_reader *zr, const char *member,
+                       struct zip_member **zmp) WARN_UNUSED_RESULT;
 
-/* Read up to N bytes from ZM, storing them in BUF.
-   Returns the number of bytes read, or -1 on error */
+/* Read up to N bytes from ZM, storing them in BUF.  Returns the number of
+   bytes read, or -1 on error.  On error, zip_member_steal_error() may be used
+   to obtain an error message. */
 int zip_member_read (struct zip_member *zm, void *buf, size_t n);
 
 /* Read all of ZM into memory, storing the data in *DATAP and its size in *NP.
@@ -52,6 +58,10 @@ int zip_member_read (struct zip_member *zm, void *buf, size_t n);
    must eventually free(). */
 char *zip_member_read_all (struct zip_reader *, const char *member_name,
                            void **datap, size_t *np) WARN_UNUSED_RESULT;
+
+/* Returns the error message in ZM (and clears it out of ZM).  The caller must
+   eventually free the returned string. */
+char *zip_member_steal_error (struct zip_member *zm) WARN_UNUSED_RESULT;
 
 void zip_member_finish (struct zip_member *zm);
 

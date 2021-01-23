@@ -55,7 +55,6 @@
 
 struct spv_reader
   {
-    struct string zip_errs;
     struct zip_reader *zip;
     struct spv_item *root;
     struct page_setup *page_setup;
@@ -229,12 +228,12 @@ spv_item_get_image (const struct spv_item *item_)
 
   if (!item->image)
     {
-      struct zip_member *zm = zip_member_open (item->spv->zip,
-                                               item->png_member);
+      struct zip_member *zm;
+      char *error = zip_member_open (item->spv->zip, item->png_member, &zm);
       item->image = cairo_image_surface_create_from_png_stream (
         read_from_zip_member, zm);
-      if (zm)
-        zip_member_finish (zm);
+      zip_member_finish (zm);
+      free (error);
     }
 
   return item->image;
@@ -729,9 +728,10 @@ spv_read_xml_member (struct spv_reader *spv, const char *member_name,
 {
   *docp = NULL;
 
-  struct zip_member *zm = zip_member_open (spv->zip, member_name);
-  if (!zm)
-    return ds_steal_cstr (&spv->zip_errs);
+  struct zip_member *zm;
+  char *error = zip_member_open (spv->zip, member_name, &zm);
+  if (error)
+    return error;
 
   xmlParserCtxt *parser;
   xmlKeepBlanksDefault (keep_blanks);
@@ -754,7 +754,7 @@ spv_read_xml_member (struct spv_reader *spv, const char *member_name,
 
   if (retval < 0)
     {
-      char *error = ds_steal_cstr (&spv->zip_errs);
+      char *error = zip_member_steal_error (zm);
       zip_member_finish (zm);
       xmlFreeDoc (doc);
       return error;
@@ -1153,16 +1153,14 @@ spv_detect__ (struct zip_reader *zip, char **errorp)
 char * WARN_UNUSED_RESULT
 spv_detect (const char *filename)
 {
-  struct string zip_error;
-  struct zip_reader *zip = zip_reader_create (filename, &zip_error);
-  if (!zip)
-    return ds_steal_cstr (&zip_error);
+  struct zip_reader *zip;
+  char *error = zip_reader_create (filename, &zip);
+  if (error)
+    return error;
 
-  char *error;
   if (spv_detect__ (zip, &error) <= 0 && !error)
     error = xasprintf("%s: not an SPV file", filename);
   zip_reader_destroy (zip);
-  ds_destroy (&zip_error);
   return error;
 }
 
@@ -1172,16 +1170,13 @@ spv_open (const char *filename, struct spv_reader **spvp)
   *spvp = NULL;
 
   struct spv_reader *spv = xzalloc (sizeof *spv);
-  ds_init_empty (&spv->zip_errs);
-  spv->zip = zip_reader_create (filename, &spv->zip_errs);
-  if (!spv->zip)
+  char *error = zip_reader_create (filename, &spv->zip);
+  if (error)
     {
-      char *error = ds_steal_cstr (&spv->zip_errs);
       spv_close (spv);
       return error;
     }
 
-  char *error;
   int detect = spv_detect__ (spv->zip, &error);
   if (detect <= 0)
     {
@@ -1220,7 +1215,6 @@ spv_close (struct spv_reader *spv)
 {
   if (spv)
     {
-      ds_destroy (&spv->zip_errs);
       zip_reader_destroy (spv->zip);
       spv_item_destroy (spv->root);
       page_setup_destroy (spv->page_setup);

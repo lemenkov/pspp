@@ -121,7 +121,6 @@ struct ods_reader
 
   struct string ods_errs;
 
-  struct string zip_errs;
   struct hmap cache;
 };
 
@@ -206,10 +205,12 @@ state_data_init (const struct ods_reader *r, struct state_data *sd)
 {
   memset (sd, 0, sizeof (*sd));
 
-  sd->zm = zip_member_open (r->zreader, "content.xml");
-
-  if (sd->zm == NULL)
-    return false;
+  char *error = zip_member_open (r->zreader, "content.xml", &sd->zm);
+  if (error)
+    {
+      free (error);
+      return false;
+    }
 
   sd->xtr =
     xmlReaderForIO (xml_reader_for_zip_member, NULL, sd->zm, NULL, NULL,
@@ -698,10 +699,12 @@ get_sheet_count (struct zip_reader *zreader)
 {
   xmlTextReaderPtr mxtr;
   struct zip_member *meta = NULL;
-  meta = zip_member_open (zreader, "meta.xml");
-
-  if (meta == NULL)
-    return -1;
+  char *error = zip_member_open (zreader, "meta.xml", &meta);
+  if (error)
+    {
+      free (error);
+      return -1;
+    }
 
   mxtr = xmlReaderForIO (xml_reader_for_zip_member, NULL, meta, NULL, NULL, 0);
 
@@ -1119,9 +1122,13 @@ init_reader (struct ods_reader *r, bool report_errors,
 
   if (state)
     {
-      struct zip_member *content = zip_member_open (r->zreader, "content.xml");
+      struct zip_member *content;
+      char *error = zip_member_open (r->zreader, "content.xml", &content);
       if (content == NULL)
-	return NULL;
+        {
+          free (error);
+          return NULL;
+        }
 
       xmlTextReaderPtr xtr = xmlReaderForIO (xml_reader_for_zip_member, NULL, content, NULL, NULL,
 					     report_errors
@@ -1155,20 +1162,17 @@ struct spreadsheet *
 ods_probe (const char *filename, bool report_errors)
 {
   struct ods_reader *r = xzalloc (sizeof *r);
+
   struct zip_reader *zr;
-
-  ds_init_empty (&r->zip_errs);
-
-  zr = zip_reader_create (filename, &r->zip_errs);
-
-  if (zr == NULL)
+  char *error = zip_reader_create (filename, &zr);
+  if (error)
     {
       if (report_errors)
 	{
 	  msg (ME, _("Cannot open %s as a OpenDocument file: %s"),
-	       filename, ds_cstr (&r->zip_errs));
+	       filename, error);
 	}
-      ds_destroy (&r->zip_errs);
+      free (error);
       free (r);
       return NULL;
     }
@@ -1188,7 +1192,6 @@ ods_probe (const char *filename, bool report_errors)
   return &r->spreadsheet;
 
  error:
-  ds_destroy (&r->zip_errs);
   zip_reader_destroy (r->zreader);
   free (r);
   return NULL;
