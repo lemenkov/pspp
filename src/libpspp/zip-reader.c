@@ -27,10 +27,9 @@
 #include <libpspp/assertion.h>
 #include <libpspp/compiler.h>
 
-#include <byteswap.h>
-
 #include "str.h"
 
+#include "integer-format.h"
 #include "zip-reader.h"
 #include "zip-private.h"
 
@@ -149,39 +148,25 @@ get_bytes (FILE *f, void *x, size_t n)
   return (n == fread (x, 1, n, f));
 }
 
-static bool get_u32 (FILE *f, uint32_t *v) WARN_UNUSED_RESULT;
-
-
 /* Read a 32 bit value from F */
-static bool
+static bool WARN_UNUSED_RESULT
 get_u32 (FILE *f, uint32_t *v)
 {
   uint32_t x;
   if (!get_bytes (f, &x, sizeof x))
     return false;
-#ifdef WORDS_BIGENDIAN
-  *v = bswap_32 (x);
-#else
-  *v = x;
-#endif
+  *v = le_to_native32 (x);
   return true;
 }
 
-static bool get_u16 (FILE *f, uint16_t *v) WARN_UNUSED_RESULT;
-
-
 /* Read a 16 bit value from F */
-static bool
+static bool WARN_UNUSED_RESULT
 get_u16 (FILE *f, uint16_t *v)
 {
   uint16_t x;
   if (!get_bytes (f, &x, sizeof x))
     return false;
-#ifdef WORDS_BIGENDIAN
-  *v = bswap_16 (x);
-#else
-  *v = x;
-#endif
+  *v = le_to_native16 (x);
   return true;
 }
 
