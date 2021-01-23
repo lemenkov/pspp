@@ -388,6 +388,7 @@ zip_reader_create (const char *file_name, struct string *errs)
       zr->n_entries++;
     }
 
+  fclose (file);
   return zr;
 }
 
