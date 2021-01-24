@@ -40,6 +40,7 @@
 #include "libpspp/misc.h"
 #include "libpspp/pool.h"
 #include "libpspp/u8-line.h"
+#include "output/driver.h"
 #include "output/pivot-table.h"
 #include "output/table.h"
 #include "output/output-item.h"
@@ -562,9 +563,7 @@ print_text_flush_records (struct print_trns *trns, struct u8_line *line,
       *u8_line_reserve (line, 0, 1, 1) = leader;
 
       if (trns->writer == NULL)
-        output_item_submit (text_item_create (TEXT_ITEM_LOG,
-                                              ds_cstr (&line->s) + 1,
-                                              NULL));
+        output_log ("%s", ds_cstr (&line->s) + 1);
       else
         {
           size_t len = ds_length (&line->s);

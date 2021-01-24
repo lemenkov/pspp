@@ -22,6 +22,7 @@
 #include <ctype.h>
 #include <errno.h>
 #include <limits.h>
+#include <stdarg.h>
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
@@ -41,6 +42,7 @@
 #include "gl/error.h"
 #include "gl/xalloc.h"
 #include "gl/xmemdup0.h"
+#include "gl/xvasprintf.h"
 
 #include "gettext.h"
 #define _(msgid) gettext (msgid)
@@ -319,6 +321,17 @@ output_set_title__ (struct output_engine *e, char **dst, const char *src)
        : xzalloc (1));
   output_item_submit (text_item_create_nocopy (TEXT_ITEM_PAGE_TITLE,
                                                page_title, NULL));
+}
+
+void PRINTF_FORMAT (1, 2)
+output_log (const char *format, ...)
+{
+  va_list args;
+  va_start (args, format);
+  char *s = xvasprintf (format, args);
+  va_end (args);
+
+  output_submit (text_item_create_nocopy (TEXT_ITEM_LOG, s, NULL));
 }
 
 void

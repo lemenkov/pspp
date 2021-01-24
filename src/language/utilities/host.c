@@ -38,7 +38,7 @@
 #include "libpspp/str.h"
 #include "libpspp/string-array.h"
 #include "libpspp/temp-file.h"
-#include "output/output-item.h"
+#include "output/driver.h"
 
 #include "gl/error.h"
 #include "gl/intprops.h"
@@ -261,8 +261,7 @@ run_command (const char *command, struct timespec timeout)
       if (end > output && end[-1] == '\n')
         end[-1] = '\0';
 
-      output_item_submit (text_item_create_nocopy (TEXT_ITEM_LOG, output,
-                                                   xstrdup (_("Host Output"))));
+      output_log ("%s", output);
     }
   free (locale_output);
 

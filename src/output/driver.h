@@ -19,6 +19,7 @@
 
 #include <stdbool.h>
 #include <stddef.h>
+#include "libpspp/compiler.h"
 
 struct output_item;
 struct string_set;
@@ -31,6 +32,8 @@ void output_engine_pop (void);
 
 void output_submit (struct output_item *);
 void output_flush (void);
+
+void output_log (const char *, ...) PRINTF_FORMAT (1, 2);
 
 void output_set_title (const char *);
 void output_set_subtitle (const char *);
