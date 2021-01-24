@@ -110,13 +110,11 @@ void
 output_engine_pop (void)
 {
   struct ll *head = ll_pop_head (&engine_stack);
-  struct output_engine *e =ll_data (head, struct output_engine, ll);
+  struct output_engine *e = ll_data (head, struct output_engine, ll);
 
-  while (!llx_is_empty (&e->drivers))
-    {
-      struct output_driver *d = llx_pop_head (&e->drivers, &llx_malloc_mgr);
-      output_driver_destroy (d);
-    }
+  struct output_driver *d;
+  llx_for_each_preremove (d, &e->drivers, &llx_malloc_mgr)
+    output_driver_destroy (d);
   output_item_unref (e->deferred_text);
   free (e->command_name);
   free (e->title);
@@ -141,12 +139,9 @@ static void
 output_submit__ (struct output_engine *e, struct output_item *item)
 {
   struct llx *llx, *next;
-
-  for (llx = llx_head (&e->drivers); llx != llx_null (&e->drivers); llx = next)
+  llx_for_each_safe (llx, next, &e->drivers)
     {
       struct output_driver *d = llx_data (llx);
-
-      next = llx_next (llx);
 
       enum settings_output_type type = SETTINGS_OUTPUT_RESULT;
       switch (item->type)
@@ -299,11 +294,11 @@ void
 output_flush (void)
 {
   struct output_engine *e = engine_stack_top ();
-  struct llx *llx;
 
   flush_deferred_text (e);
-  for (llx = llx_head (&e->drivers); llx != llx_null (&e->drivers);
-       llx = llx_next (llx))
+
+  struct llx *llx;
+  llx_for_each (llx, &e->drivers)
     {
       struct output_driver *d = llx_data (llx);
       if (d->device_type & SETTINGS_DEVICE_TERMINAL && d->class->flush != NULL)

@@ -313,5 +313,50 @@ llx_data (const struct llx *llx)
 {
   return llx->data;
 }
+/* Iteration helper macros. */
+
+/* Sets "struct llx *" NODE to each object in LIST in turn, in forward or
+   reverse order.
+
+   Behavior is undefined if NODE is removed from the list between
+   loop iterations. */
+#define llx_for_each(NODE, LIST)                \
+        for ((NODE) = llx_head (LIST);          \
+             (NODE) != llx_null (LIST);         \
+             (NODE) = llx_next (NODE))
+#define llx_for_each_reverse(NODE, LIST)        \
+        for ((NODE) = llx_tail (LIST);          \
+             (NODE) != llx_null (LIST);         \
+             (NODE) = llx_prev (NODE))
+
+/* Sets "struct llx *" NODE to each object in LIST in turn, in forward or
+   reverse order.  NEXT (or PREV) must be another "struct llx *" variable.
+
+   Behavior is well-defined even if NODE is removed from the list between
+   iterations. */
+#define llx_for_each_safe(NODE, NEXT, LIST)     \
+        for (NODE = llx_head (LIST);            \
+             ((NODE) != llx_null (LIST)         \
+              ? ((NEXT) = llx_next (NODE), 1)   \
+              : 0);                             \
+             (NODE) = (NEXT))
+#define llx_for_each_reverse_safe(NODE, PREV, LIST)     \
+        for (NODE = llx_tail (LIST);                    \
+             ((NODE) != llx_null (LIST)                 \
+              ? ((PREV) = llx_prev (NODE), 1)           \
+              : 0);                                     \
+             (NODE) = (PREV))
+
+/* Sets DATA to the data from each object in LIST in turn, in forward or
+   reverse order.  Each object is removed from LIST before its loop
+   iteration. */
+#define llx_for_each_preremove(DATA, LIST, MANAGER)             \
+        while (!llx_is_empty (LIST)                             \
+               ? ((DATA) = llx_pop_head (LIST, MANAGER), 1)     \
+               : 0)
+#define llx_for_each_reverse_preremove(DATA, LIST, MANAGER)     \
+        while (!llx_is_empty (LIST)                             \
+               ? ((DATA) = llx_pop_tail (LIST, MANAGER), 1)     \
+               : 0)
 
 #endif /* llx.h */
