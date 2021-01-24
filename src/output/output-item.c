@@ -305,7 +305,7 @@ image_item_create (cairo_surface_t *image)
 struct output_item *
 message_item_create (const struct msg *msg)
 {
-  struct output_item *item = xmalloc (sizeof *msg);
+  struct output_item *item = xmalloc (sizeof *item);
   *item = (struct output_item) {
     OUTPUT_ITEM_INITIALIZER (OUTPUT_ITEM_MESSAGE),
     .message = msg_dup (msg),
