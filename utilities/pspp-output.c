@@ -1005,7 +1005,7 @@ parse_select (char *arg)
           int class = spv_item_class_from_string (token);
           if (class == SPV_N_CLASSES)
             error (1, 0, _("%s: unknown object class (use --select=help "
-                           "for help"), arg);
+                           "for help)"), arg);
           classes |= 1u << class;
         }
     }
