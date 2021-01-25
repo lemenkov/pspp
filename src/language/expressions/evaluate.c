@@ -26,6 +26,7 @@
 #include "language/expressions/private.h"
 #include "language/lexer/value-parser.h"
 #include "libpspp/pool.h"
+#include "output/driver.h"
 
 #include "xalloc.h"
 
@@ -190,7 +191,7 @@ cmd_debug_evaluate (struct lexer *lexer, struct dataset *dsother UNUSED)
     {
       if (expr != NULL)
         expr_free (expr);
-      printf ("error\n");
+      output_log ("error");
       goto done;
     }
 
@@ -203,28 +204,25 @@ cmd_debug_evaluate (struct lexer *lexer, struct dataset *dsother UNUSED)
         {
           double d = expr_evaluate_num (expr, c, 0);
           if (d == SYSMIS)
-            printf ("sysmis\n");
+            output_log ("sysmis");
           else
-            printf ("%.2f\n", d);
+            output_log ("%.2f", d);
         }
         break;
 
       case OP_boolean:
         {
           double b = expr_evaluate_num (expr, c, 0);
-          printf ("%s\n",
-                   b == SYSMIS ? "sysmis" : b == 0.0 ? "false" : "true");
+          output_log ("%s",
+                      b == SYSMIS ? "sysmis" : b == 0.0 ? "false" : "true");
         }
         break;
 
       case OP_string:
         {
-          struct substring s;
-          expr_evaluate (expr, c, 0, &s);
-
-          putchar ('"');
-          fwrite (s.string, s.length, 1, stdout);
-          puts ("\"");
+          struct substring out;
+          expr_evaluate (expr, c, 0, &out);
+          output_log ("\"%.*s\"", (int) out.length, out.string);
           break;
         }
 
@@ -248,57 +246,58 @@ cmd_debug_evaluate (struct lexer *lexer, struct dataset *dsother UNUSED)
 void
 expr_debug_print_postfix (const struct expression *e)
 {
-  size_t i;
+  struct string s = DS_EMPTY_INITIALIZER;
 
-  for (i = 0; i < e->op_cnt; i++)
+  for (size_t i = 0; i < e->op_cnt; i++)
     {
       union operation_data *op = &e->ops[i];
       if (i > 0)
-        putc (' ', stderr);
+        ds_put_byte (&s, ' ');
       switch (e->op_types[i])
         {
         case OP_operation:
           if (op->operation == OP_return_number)
-            printf ("return_number");
+            ds_put_cstr (&s, "return_number");
           else if (op->operation == OP_return_string)
-            printf ("return_string");
+            ds_put_cstr (&s, "return_string");
           else if (is_function (op->operation))
-            printf ("%s", operations[op->operation].prototype);
+            ds_put_format (&s, "%s", operations[op->operation].prototype);
           else if (is_composite (op->operation))
-            printf ("%s", operations[op->operation].name);
+            ds_put_format (&s, "%s", operations[op->operation].name);
           else
-            printf ("%s:", operations[op->operation].name);
+            ds_put_format (&s, "%s:", operations[op->operation].name);
           break;
         case OP_number:
           if (op->number != SYSMIS)
-            printf ("n<%g>", op->number);
+            ds_put_format (&s, "n<%g>", op->number);
           else
-            printf ("n<SYSMIS>");
+            ds_put_cstr (&s, "n<SYSMIS>");
           break;
         case OP_string:
-          printf ("s<%.*s>",
-                   (int) op->string.length,
-                   op->string.string != NULL ? op->string.string : "");
+          ds_put_cstr (&s, "s<");
+          ds_put_substring (&s, op->string);
+          ds_put_byte (&s, '>');
           break;
         case OP_format:
           {
             char str[FMT_STRING_LEN_MAX + 1];
             fmt_to_string (op->format, str);
-            printf ("f<%s>", str);
+            ds_put_format (&s, "f<%s>", str);
           }
           break;
         case OP_variable:
-          printf ("v<%s>", var_get_name (op->variable));
+          ds_put_format (&s, "v<%s>", var_get_name (op->variable));
           break;
         case OP_vector:
-          printf ("vec<%s>", vector_get_name (op->vector));
+          ds_put_format (&s, "vec<%s>", vector_get_name (op->vector));
           break;
         case OP_integer:
-          printf ("i<%d>", op->integer);
+          ds_put_format (&s, "i<%d>", op->integer);
           break;
         default:
           NOT_REACHED ();
         }
     }
-  printf ("\n");
+  output_log ("%s", ds_cstr (&s));
+  ds_destroy (&s);
 }

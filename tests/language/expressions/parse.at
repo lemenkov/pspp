@@ -88,6 +88,7 @@ DEBUG EVALUATE/ACOS(0)*0.
 ])
 AT_CHECK([pspp --testing-mode --syntax=compatible -O format=csv parse.sps], [0], [dnl
 parse.sps:1: warning: DEBUG EVALUATE: ACOS(number) is a PSPP extension.
+
 0.00
 ])
 AT_CLEANUP

@@ -102,8 +102,20 @@ DEBUG EVALUATE/DATE.DMY(1,1,99) = DATE.DMY(1,1,2099).
 DEBUG EVALUATE/DATE.DMY(1,1,100).
 ])
 
-AT_CHECK([pspp --testing-mode --error-file=- --no-output epoch.sps], [1],
-  [true
+AT_CHECK([pspp --testing-mode epoch.sps -o pspp.csv], [1], [dnl
+epoch.sps:11: error: DEBUG EVALUATE: Date 0100-1-1 is before the earliest acceptable date of 1582-10-15.
+epoch.sps:18: error: DEBUG EVALUATE: Date 0100-1-1 is before the earliest acceptable date of 1582-10-15.
+epoch.sps:27: error: DEBUG EVALUATE: Date 0100-1-1 is before the earliest acceptable date of 1582-10-15.
+epoch.sps:34: error: DEBUG EVALUATE: Date 0100-1-1 is before the earliest acceptable date of 1582-10-15.
+epoch.sps:43: error: DEBUG EVALUATE: Date 0100-1-1 is before the earliest acceptable date of 1582-10-15.
+epoch.sps:50: error: DEBUG EVALUATE: Date 0100-1-1 is before the earliest acceptable date of 1582-10-15.
+epoch.sps:59: error: DEBUG EVALUATE: Date 0100-1-1 is before the earliest acceptable date of 1582-10-15.
+epoch.sps:66: error: DEBUG EVALUATE: Date 0100-1-1 is before the earliest acceptable date of 1582-10-15.
+epoch.sps:75: error: DEBUG EVALUATE: Date 0100-1-1 is before the earliest acceptable date of 1582-10-15.
+epoch.sps:82: error: DEBUG EVALUATE: Date 0100-1-1 is before the earliest acceptable date of 1582-10-15.
+])
+AT_CHECK([sed '/^$/d' < pspp.csv], [0], [dnl
+true
 true
 true
 true
