@@ -1481,7 +1481,8 @@ ds_put_cstr (struct string *st, const char *s)
 void
 ds_put_substring (struct string *st, struct substring ss)
 {
-  memcpy (ds_put_uninit (st, ss_length (ss)), ss_data (ss), ss_length (ss));
+  if (ss.length)
+    memcpy (ds_put_uninit (st, ss_length (ss)), ss_data (ss), ss_length (ss));
 }
 
 /* Returns ds_end(ST) and THEN increases the length by INCR. */
