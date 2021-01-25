@@ -463,55 +463,6 @@ spv_read_xml_member (struct zip_reader *zip, const char *xml_member,
   return NULL;
 }
 
-#if 0
-static const char *
-identify_item (const struct output_item *item)
-{
-  return (item->label ? item->label
-          : item->command_id ? item->command_id
-          : spv_item_type_to_string (item->type));
-}
-
-void
-spv_item_format_path (const struct spv_item *item, struct string *s)
-{
-  enum { MAX_STACK = 32 };
-  const struct spv_item *stack[MAX_STACK];
-  size_t n = 0;
-
-  while (item != NULL && item->parent && n < MAX_STACK)
-    {
-      stack[n++] = item;
-      item = item->parent;
-    }
-
-  while (n > 0)
-    {
-      item = stack[--n];
-      ds_put_byte (s, '/');
-
-      const char *name = identify_item (item);
-      ds_put_cstr (s, name);
-
-      if (item->parent)
-        {
-          size_t total = 1;
-          size_t index = 1;
-          for (size_t i = 0; i < item->parent->n_children; i++)
-            {
-              const struct spv_item *sibling = item->parent->children[i];
-              if (sibling == item)
-                index = total;
-              else if (!strcmp (name, identify_item (sibling)))
-                total++;
-            }
-          if (total > 1)
-            ds_put_format (s, "[%zu]", index);
-        }
-    }
-}
-#endif
-
 static char * WARN_UNUSED_RESULT
 pivot_table_open_legacy (struct zip_reader *zip, const char *bin_member,
                          const char *xml_member, const char *subtype,
