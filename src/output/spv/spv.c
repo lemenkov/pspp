@@ -673,6 +673,10 @@ spv_decode_children (struct zip_reader *zip, const char *structure_member,
         {
           const struct spvsx_container *container
             = spvsx_cast_container (node);
+
+          if (container->page_break_before_present)
+            group_item_add_child (parent, page_break_item_create ());
+
           child = spv_decode_container (zip, container);
         }
       else if (spvsx_is_heading (node))
