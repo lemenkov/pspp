@@ -123,7 +123,6 @@ journal_submit (struct output_driver *driver, const struct output_item *item)
     case OUTPUT_ITEM_CHART:
     case OUTPUT_ITEM_IMAGE:
     case OUTPUT_ITEM_PAGE_BREAK:
-    case OUTPUT_ITEM_PAGE_SETUP:
     case OUTPUT_ITEM_TABLE:
       break;
     }

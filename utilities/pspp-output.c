@@ -239,7 +239,7 @@ run_convert (int argc UNUSED, char **argv)
 
   if (ps)
     {
-      output_item_submit (page_setup_item_create (ps));
+      output_set_page_setup (ps);
       page_setup_destroy (ps);
     }
   output_item_submit_children (root);

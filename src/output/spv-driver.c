@@ -49,7 +49,7 @@ spv_driver_cast (struct output_driver *driver)
 
 static struct output_driver *
 spv_create (struct file_handle *fh, enum settings_output_devices device_type,
-             struct string_map *o UNUSED)
+            struct string_map *o UNUSED)
 {
   struct output_driver *d;
   struct spv_driver *spv;
@@ -69,7 +69,7 @@ spv_create (struct file_handle *fh, enum settings_output_devices device_type,
 
   return d;
 
- error:
+error:
   output_driver_destroy (d);
   return NULL;
 }
@@ -88,11 +88,20 @@ spv_destroy (struct output_driver *driver)
 
 static void
 spv_submit (struct output_driver *driver,
-             const struct output_item *output_item)
+            const struct output_item *output_item)
 {
   struct spv_driver *spv = spv_driver_cast (driver);
 
   spv_writer_write (spv->writer, output_item);
+}
+
+static void
+spv_setup (struct output_driver *driver,
+           const struct page_setup *ps)
+{
+  struct spv_driver *spv = spv_driver_cast (driver);
+
+  spv_writer_set_page_setup (spv->writer, ps);
 }
 
 struct output_driver_factory spv_driver_factory =
@@ -103,6 +112,7 @@ static const struct output_driver_class spv_driver_class =
     .name = "spv",
     .destroy = spv_destroy,
     .submit = spv_submit,
+    .setup = spv_setup,
     .handles_show = true,
     .handles_groups = true,
   };

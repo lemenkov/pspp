@@ -34,7 +34,6 @@ enum output_item_type
     OUTPUT_ITEM_IMAGE,
     OUTPUT_ITEM_MESSAGE,
     OUTPUT_ITEM_PAGE_BREAK,
-    OUTPUT_ITEM_PAGE_SETUP,
     OUTPUT_ITEM_TABLE,
     OUTPUT_ITEM_TEXT,
   };
@@ -89,8 +88,6 @@ struct output_item
         group;
 
         struct msg *message;
-
-        struct page_setup *page_setup;
 
         struct pivot_table *table;
 
@@ -193,10 +190,6 @@ struct output_item *message_item_to_text_item (struct output_item *);
 /* OUTPUT_ITEM_PAGE_BREAK. */
 
 struct output_item *page_break_item_create (void);
-
-/* OUTPUT_ITEM_PAGE_SETUP. */
-
-struct output_item *page_setup_item_create (const struct page_setup *);
 
 /* OUTPUT_ITEM_TABLE. */
 

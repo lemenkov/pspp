@@ -28,7 +28,6 @@
 #include "libpspp/zip-reader.h"
 #include "output/chart.h"
 #include "output/driver.h"
-#include "output/page-setup.h"
 #include "output/pivot-table.h"
 
 #include "gl/xalloc.h"
@@ -47,7 +46,6 @@ output_item_type_to_string (enum output_item_type type)
     case OUTPUT_ITEM_IMAGE: return "image";
     case OUTPUT_ITEM_MESSAGE: return "message";
     case OUTPUT_ITEM_PAGE_BREAK: return "page break";
-    case OUTPUT_ITEM_PAGE_SETUP: return "page setup";
     case OUTPUT_ITEM_TABLE: return "table";
     case OUTPUT_ITEM_TEXT: return "text";
     }
@@ -99,10 +97,6 @@ output_item_unref (struct output_item *item)
               break;
 
             case OUTPUT_ITEM_PAGE_BREAK:
-              break;
-
-            case OUTPUT_ITEM_PAGE_SETUP:
-              page_setup_destroy (item->page_setup);
               break;
 
             case OUTPUT_ITEM_TABLE:
@@ -184,10 +178,6 @@ output_item_unshare (struct output_item *old)
     case OUTPUT_ITEM_PAGE_BREAK:
       break;
 
-    case OUTPUT_ITEM_PAGE_SETUP:
-      new->page_setup = page_setup_clone (old->page_setup);
-      break;
-
     case OUTPUT_ITEM_TABLE:
       new->table = pivot_table_ref (old->table);
       break;
@@ -253,10 +243,6 @@ output_item_get_label (const struct output_item *item)
 
     case OUTPUT_ITEM_PAGE_BREAK:
       return _("Page Break");
-
-    case OUTPUT_ITEM_PAGE_SETUP:
-      /* Not marked for translation: user should never see it. */
-      return "Page Setup";
 
     case OUTPUT_ITEM_TABLE:
       if (!item->cached_label)
@@ -370,10 +356,6 @@ output_item_dump (const struct output_item *item, int indentation)
 
     case OUTPUT_ITEM_PAGE_BREAK:
       printf ("page break\n");
-      break;
-
-    case OUTPUT_ITEM_PAGE_SETUP:
-      printf ("page setup\n");
       break;
 
     case OUTPUT_ITEM_TABLE:
@@ -552,17 +534,6 @@ page_break_item_create (void)
   struct output_item *item = xmalloc (sizeof *item);
   *item = (struct output_item) {
     OUTPUT_ITEM_INITIALIZER (OUTPUT_ITEM_PAGE_BREAK),
-  };
-  return item;
-}
-
-struct output_item *
-page_setup_item_create (const struct page_setup *ps)
-{
-  struct output_item *item = xmalloc (sizeof *item);
-  *item = (struct output_item) {
-    OUTPUT_ITEM_INITIALIZER (OUTPUT_ITEM_PAGE_SETUP),
-    .page_setup = page_setup_clone (ps),
   };
   return item;
 }

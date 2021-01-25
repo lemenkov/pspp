@@ -156,7 +156,6 @@ output_driver_should_show (const struct output_driver *d,
     case OUTPUT_ITEM_GROUP:
     case OUTPUT_ITEM_IMAGE:
     case OUTPUT_ITEM_PAGE_BREAK:
-    case OUTPUT_ITEM_PAGE_SETUP:
     case OUTPUT_ITEM_TABLE:
       break;
     }
@@ -461,6 +460,20 @@ bool
 output_driver_is_registered (const struct output_driver *driver)
 {
   return output_driver_get_engine (driver) != NULL;
+}
+
+void
+output_set_page_setup (const struct page_setup *ps)
+{
+  struct output_engine *e = engine_stack_top ();
+
+  struct llx *llx;
+  llx_for_each (llx, &e->drivers)
+    {
+      struct output_driver *d = llx_data (llx);
+      if (d->class->setup)
+        d->class->setup (d, ps);
+    }
 }
 
 extern const struct output_driver_factory csv_driver_factory;

@@ -607,13 +607,6 @@ xr_submit (struct output_driver *driver, const struct output_item *item)
 {
   struct xr_driver *xr = xr_driver_cast (driver);
 
-  if (item->type == OUTPUT_ITEM_PAGE_SETUP)
-    {
-      if (!xr->pager)
-        xr_update_page_setup (driver, item->page_setup);
-      return;
-    }
-
   if (!xr->pager)
     {
       xr->pager = xr_pager_create (xr->page_style, xr->fsm_style);
@@ -626,6 +619,15 @@ xr_submit (struct output_driver *driver, const struct output_item *item)
       xr_finish_page (xr);
       xr_pager_add_page (xr->pager, cairo_create (xr->drawing_surface));
     }
+}
+
+static void
+xr_setup (struct output_driver *driver, const struct page_setup *ps)
+{
+  struct xr_driver *xr = xr_driver_cast (driver);
+
+  if (!xr->pager)
+    xr_update_page_setup (driver, ps);
 }
 
 struct output_driver_factory pdf_driver_factory =
@@ -642,5 +644,6 @@ static const struct output_driver_class cairo_driver_class =
   .name = "cairo",
   .destroy = xr_destroy,
   .submit = xr_submit,
+  .setup = xr_setup,
   .handles_groups = true,
 };

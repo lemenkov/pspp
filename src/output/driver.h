@@ -22,6 +22,7 @@
 #include "libpspp/compiler.h"
 
 struct output_item;
+struct page_setup;
 struct string_set;
 struct string_map;
 
@@ -52,5 +53,7 @@ bool output_driver_is_registered (const struct output_driver *);
 
 void output_driver_register (struct output_driver *);
 void output_driver_unregister (struct output_driver *);
+
+void output_set_page_setup (const struct page_setup *);
 
 #endif /* output/driver.h */

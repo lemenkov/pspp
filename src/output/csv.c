@@ -264,9 +264,6 @@ csv_submit (struct output_driver *driver,
       csv_output_lines (csv, "");
       break;
 
-    case OUTPUT_ITEM_PAGE_SETUP:
-      break;
-
     case OUTPUT_ITEM_TABLE:
       {
         size_t *layer_indexes;

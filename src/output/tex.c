@@ -356,9 +356,6 @@ tex_submit (struct output_driver *driver, const struct output_item *item)
     case OUTPUT_ITEM_PAGE_BREAK:
       break;
 
-    case OUTPUT_ITEM_PAGE_SETUP:
-      break;
-
     case OUTPUT_ITEM_TABLE:
       tex_output_table (tex, item->table);
       break;

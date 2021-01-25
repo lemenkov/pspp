@@ -651,7 +651,6 @@ ascii_submit (struct output_driver *driver, const struct output_item *item)
       NOT_REACHED ();
 
     case OUTPUT_ITEM_PAGE_BREAK:
-    case OUTPUT_ITEM_PAGE_SETUP:
       break;
     }
 }

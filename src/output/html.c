@@ -302,9 +302,6 @@ html_submit__ (struct output_driver *driver, const struct output_item *item,
     case OUTPUT_ITEM_PAGE_BREAK:
       break;
 
-    case OUTPUT_ITEM_PAGE_SETUP:
-      break;
-
     case OUTPUT_ITEM_TABLE:
       html_output_table (html, item);
       break;

@@ -76,9 +76,6 @@ output_item_classify (const struct output_item *item)
     case OUTPUT_ITEM_PAGE_BREAK:
       return OUTPUT_CLASS_OTHER;
 
-    case OUTPUT_ITEM_PAGE_SETUP:
-      return OUTPUT_CLASS_OTHER;
-
     case OUTPUT_ITEM_TABLE:
       return (!strcmp (label, "Warnings") ? OUTPUT_CLASS_WARNINGS
               : !strcmp (label, "Notes") ? OUTPUT_CLASS_NOTES

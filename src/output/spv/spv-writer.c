@@ -1126,11 +1126,6 @@ spv_writer_write (struct spv_writer *w, const struct output_item *item)
       w->need_page_break = true;
       break;
 
-    case OUTPUT_ITEM_PAGE_SETUP:
-      page_setup_destroy (w->page_setup);
-      w->page_setup = page_setup_clone (item->page_setup);
-      break;
-
     case OUTPUT_ITEM_TABLE:
       spv_writer_put_table (w, item);
       break;
@@ -1139,4 +1134,12 @@ spv_writer_write (struct spv_writer *w, const struct output_item *item)
       spv_writer_put_text (w, output_item_ref (item));
       break;
     }
+}
+
+void
+spv_writer_set_page_setup (struct spv_writer *w,
+                           const struct page_setup *ps)
+{
+  page_setup_destroy (w->page_setup);
+  w->page_setup = page_setup_clone (ps);
 }

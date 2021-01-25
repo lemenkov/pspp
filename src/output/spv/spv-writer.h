@@ -18,6 +18,7 @@
 #define OUTPUT_SPV_WRITER_H 1
 
 struct output_item;
+struct page_setup;
 struct spv_writer;
 
 #include "libpspp/compiler.h"
@@ -27,5 +28,7 @@ char *spv_writer_open (const char *filename, struct spv_writer **)
 char *spv_writer_close (struct spv_writer *) WARN_UNUSED_RESULT;
 
 void spv_writer_write (struct spv_writer *, const struct output_item *);
+void spv_writer_set_page_setup (struct spv_writer *,
+                                const struct page_setup *);
 
 #endif /* output/spv/spv-writer.h */

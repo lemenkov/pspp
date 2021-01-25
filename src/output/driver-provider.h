@@ -27,6 +27,7 @@ struct output_item;
 struct output_iterator;
 struct string_map;
 struct file_handle;
+struct page_setup;
 
 /* A configured output driver. */
 struct output_driver
@@ -65,6 +66,10 @@ struct output_driver_class
        reference count by calling output_item_ref). */
     void (*submit) (struct output_driver *driver,
                     const struct output_item *item);
+
+    /* Changes DRIVER's output page setup to PS, if possible.  This may be NUL
+       if the driver doesn't support page setup. */
+    void (*setup) (struct output_driver *driver, const struct page_setup *ps);
 
     /* Ensures that any output items passed to the 'submit' function for DRIVER
        have actually been displayed.

@@ -991,7 +991,6 @@ xr_fsm_create (const struct output_item *item_,
       break;
 
     case OUTPUT_ITEM_GROUP:
-    case OUTPUT_ITEM_PAGE_SETUP:
       return NULL;
 
     case OUTPUT_ITEM_MESSAGE:
@@ -1150,7 +1149,6 @@ xr_fsm_measure (struct xr_fsm *fsm, cairo_t *cr, int *wp, int *hp)
     case OUTPUT_ITEM_GROUP:
     case OUTPUT_ITEM_MESSAGE:
     case OUTPUT_ITEM_PAGE_BREAK:
-    case OUTPUT_ITEM_PAGE_SETUP:
     case OUTPUT_ITEM_TEXT:
     default:
       NOT_REACHED ();
@@ -1214,7 +1212,6 @@ xr_fsm_draw_region (struct xr_fsm *fsm, cairo_t *cr,
     case OUTPUT_ITEM_GROUP:
     case OUTPUT_ITEM_MESSAGE:
     case OUTPUT_ITEM_PAGE_BREAK:
-    case OUTPUT_ITEM_PAGE_SETUP:
     case OUTPUT_ITEM_TEXT:
       NOT_REACHED ();
     }
@@ -1345,7 +1342,6 @@ xr_fsm_draw_slice (struct xr_fsm *fsm, cairo_t *cr, int space)
 
     case OUTPUT_ITEM_GROUP:
     case OUTPUT_ITEM_MESSAGE:
-    case OUTPUT_ITEM_PAGE_SETUP:
     case OUTPUT_ITEM_TEXT:
     default:
       NOT_REACHED ();
