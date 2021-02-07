@@ -919,7 +919,7 @@ decode_spvlb_table (const struct spvlb_table *in, struct pivot_table **outp)
   if (epoch >= 1000 && epoch <= 9999)
     out->settings.epoch = epoch;
   char decimal = in->formats->y0->decimal;
-  if (decimal == '.' || decimal == '.')
+  if (decimal == '.' || decimal == ',')
     out->settings.decimal = decimal;
   else
     {
