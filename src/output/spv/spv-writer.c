@@ -194,8 +194,9 @@ spv_writer_open_file (struct spv_writer *w)
 
   time_t t = time (NULL);
   struct tm *tm = gmtime (&t);
-  char *tm_s = asctime (tm);
-  write_attr (w, "creation-date-time", tm_s);
+  char tm_s[128];
+  if (strftime (tm_s, sizeof tm_s, "%x %X", tm))
+    write_attr (w, "creation-date-time", tm_s);
 
   write_attr (w, "creator", version);
 
