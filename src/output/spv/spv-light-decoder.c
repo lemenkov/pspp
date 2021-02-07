@@ -96,7 +96,7 @@ static char * WARN_UNUSED_RESULT
 decode_spvlb_color_string (const char *s, uint8_t def,
                            struct cell_color *colorp)
 {
-  int r, g, b;
+  unsigned int r, g, b;
   if (!*s)
     r = g = b = def;
   else if (sscanf (s, "#%2x%2x%2x", &r, &g, &b) != 3)
