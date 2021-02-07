@@ -1,5 +1,5 @@
 /* PSPP - a program for statistical analysis.
-   Copyright (C) 2009 Free Software Foundation, Inc.
+   Copyright (C) 2009, 2021 Free Software Foundation, Inc.
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -86,7 +86,7 @@
    only 250,047.
 */
 static unsigned long int
-count_sums_to_W (unsigned long int n, unsigned long int w)
+count_sums_to_W (unsigned long int n, long int w)
 {
   /* The array contain ints even though everything else is long,
      but no element in the array can have a value bigger than N,
@@ -95,10 +95,11 @@ count_sums_to_W (unsigned long int n, unsigned long int w)
   unsigned long int max;
   int *array;
 
+  assert (w >= 0);
   assert (n < CHAR_BIT * sizeof (unsigned long int));
   if (n == 0)
     return 0;
-  else if (w <= 0)
+  else if (w == 0)
     return 1 << n;
   else if (w > n * (n + 1) / 2)
     return 0;
