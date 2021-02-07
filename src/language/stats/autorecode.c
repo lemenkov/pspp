@@ -1,5 +1,6 @@
 /* PSPP - a program for statistical analysis.
-   Copyright (C) 1997-9, 2000, 2009, 2010, 2012, 2013, 2014 Free Software Foundation, Inc.
+   Copyright (C) 1997-9, 2000, 2009, 2010, 2012, 2013, 2014
+   2021,  Free Software Foundation, Inc.
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -428,7 +429,7 @@ cmd_autorecode (struct lexer *lexer, struct dataset *ds)
           mv_init (&mv, 0);
           if (n_missing > 3)
             mv_add_range (&mv, lo, hi);
-          else if (n_missing > 0)
+          else
             for (size_t k = 0; k < n_missing; k++)
               mv_add_num (&mv, lo + k);
           var_set_missing_values (spec->dst, &mv);
