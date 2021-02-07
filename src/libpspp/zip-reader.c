@@ -1,5 +1,5 @@
 /* PSPP - a program for statistical analysis.
-   Copyright (C) 2011, 2013, 2014 Free Software Foundation, Inc.
+   Copyright (C) 2011, 2013, 2014, 2021 Free Software Foundation, Inc.
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -577,7 +577,7 @@ probe_magic (FILE *fp, uint32_t magic, off_t start, off_t stop, off_t *off)
 
   if (0 > fseeko (fp, start, SEEK_SET))
     {
-      return -1;
+      return false;
     }
 
   for (i = 0; i < 4 ; ++i)
