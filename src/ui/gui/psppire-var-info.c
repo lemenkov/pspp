@@ -1,5 +1,5 @@
 /* PSPPIRE - a graphical user interface for PSPP.
-   Copyright (C) 2020 Free Software Foundation, Inc.
+   Copyright (C) 2020, 2021 Free Software Foundation, Inc.
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -187,21 +187,18 @@ __set_property (GObject      *object,
                  vl;
                  vl = val_labs_next (vls, vl))
               {
-                if (vl)
-                  {
-                    struct string text;
-                    ds_init_empty (&text);
+                struct string text;
+                ds_init_empty (&text);
 
-                    const char *l = val_lab_get_label (vl);
-                    const union value *v = val_lab_get_value (vl);
+                const char *l = val_lab_get_label (vl);
+                const union value *v = val_lab_get_value (vl);
 
-                    var_append_value_name__ (var, v, SETTINGS_VALUE_SHOW_VALUE, &text);
-                    ds_put_cstr (&text, ": ");
-                    ds_put_cstr (&text, l);
+                var_append_value_name__ (var, v, SETTINGS_VALUE_SHOW_VALUE, &text);
+                ds_put_cstr (&text, ": ");
+                ds_put_cstr (&text, l);
 
-                    gtk_combo_box_text_append_text (GTK_COMBO_BOX_TEXT (var_info->combo), ds_cstr (&text));
-                    gtk_combo_box_set_active  (GTK_COMBO_BOX (var_info->combo), 0);
-                  }
+                gtk_combo_box_text_append_text (GTK_COMBO_BOX_TEXT (var_info->combo), ds_cstr (&text));
+                gtk_combo_box_set_active  (GTK_COMBO_BOX (var_info->combo), 0);
               }
           }
       }
