@@ -1,5 +1,5 @@
 /* PSPP - a program for statistical analysis.
-   Copyright (C) 1997-2000, 2006-2007, 2009-2016 Free Software Foundation, Inc.
+   Copyright (C) 1997-2000, 2006-2007, 2009-2016, 2021 Free Software Foundation, Inc.
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -995,7 +995,7 @@ read_header (struct sfm_reader *r, struct any_read_info *info,
         r->compression = ANY_COMP_NONE;
       else if (compressed == 1)
         r->compression = ANY_COMP_SIMPLE;
-      else if (compressed != 0)
+      else
         {
           sys_error (r, 0, "System file header has invalid compression "
                      "value %d.", compressed);
