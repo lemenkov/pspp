@@ -180,7 +180,8 @@ spvbin_parse_string__ (struct spvbin_input *input,
                        uint32_t (*raw_to_native32) (uint32_t),
                        char **p)
 {
-  *p = NULL;
+  if (p)
+    *p = NULL;
 
   uint32_t length;
   if (input->size - input->ofs < sizeof length)
