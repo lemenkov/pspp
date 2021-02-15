@@ -1060,47 +1060,3 @@ psppire_output_view_print (struct psppire_output_view *view,
 
   g_object_unref (print);
 }
-
-struct psppire_output_view_driver
-  {
-    struct output_driver driver;
-    struct psppire_output_view *view;
-  };
-
-static struct psppire_output_view_driver *
-psppire_output_view_driver_cast (struct output_driver *driver)
-{
-  return UP_CAST (driver, struct psppire_output_view_driver, driver);
-}
-
-static void
-psppire_output_view_submit (struct output_driver *this,
-                            const struct output_item *item)
-{
-  struct psppire_output_view_driver *povd = psppire_output_view_driver_cast (this);
-
-  if (item->type == OUTPUT_ITEM_TABLE)
-    psppire_output_view_put (povd->view, item);
-}
-
-static struct output_driver_class psppire_output_view_driver_class =
-  {
-    .name = "PSPPIRE Output View",
-    .submit = psppire_output_view_submit,
-    .handles_groups = true,
-    .handles_show = true,
-  };
-
-void
-psppire_output_view_register_driver (struct psppire_output_view *view)
-{
-  struct psppire_output_view_driver *povd;
-  struct output_driver *d;
-
-  povd = xzalloc (sizeof *povd);
-  povd->view = view;
-  d = &povd->driver;
-  output_driver_init (d, &psppire_output_view_driver_class, "PSPPIRE Output View",
-                      SETTINGS_DEVICE_UNFILTERED);
-  output_driver_register (d);
-}
