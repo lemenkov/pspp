@@ -873,25 +873,6 @@ psppire_output_view_destroy (struct psppire_output_view *view)
   free (view);
 }
 
-void
-psppire_output_view_clear (struct psppire_output_view *view)
-{
-  size_t i;
-
-  view->max_width = 0;
-  view->y = 0;
-
-  for (i = 0; i < view->n_items; i++)
-    {
-      gtk_container_remove (GTK_CONTAINER (view->output),
-                            view->items[i].drawing_area);
-      output_item_unref (view->items[i].item);
-    }
-  free (view->items);
-  view->items = NULL;
-  view->n_items = view->allocated_items = 0;
-}
-
 /* Export. */
 
 void
