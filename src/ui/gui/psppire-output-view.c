@@ -43,6 +43,7 @@ struct output_view_item
   {
     struct output_item *item;
     GtkWidget *drawing_area;
+    int width, height;
   };
 
 struct psppire_output_view
@@ -56,7 +57,6 @@ struct psppire_output_view
     glong y;
 
     GtkTreeView *overview;
-    GtkTreePath *cur_group;
 
     GtkWidget *toplevel;
 
@@ -387,39 +387,16 @@ rerender (struct psppire_output_view *view)
   cairo_region_destroy (region);
 }
 
-
-void
-psppire_output_view_put (struct psppire_output_view *view,
-                         const struct output_item *item)
+static bool
+init_output_view_item (struct output_view_item *view_item,
+                       struct psppire_output_view *view,
+                       const struct output_item *item)
 {
-  struct output_view_item *view_item;
-  GtkWidget *drawing_area;
-  int tw, th;
-
-  if (item->type == OUTPUT_ITEM_GROUP)
-    return;
-
-  if (item->type == OUTPUT_ITEM_TEXT)
-    {
-      char *text = text_item_get_plain_text (item);
-      bool text_is_empty = text[0] == '\0';
-      free (text);
-      if (text_is_empty)
-        return;
-    }
-
-  if (view->n_items >= view->allocated_items)
-    view->items = x2nrealloc (view->items, &view->allocated_items,
-                                sizeof *view->items);
-  view_item = &view->items[view->n_items++];
-  view_item->item = output_item_ref (item);
-  view_item->drawing_area = NULL;
+  *view_item = (struct output_view_item) { .item = output_item_ref (item) };
 
   GdkWindow *win = gtk_widget_get_window (GTK_WIDGET (view->output));
-  if (win)
+  if (win && item->type != OUTPUT_ITEM_GROUP)
     {
-      view_item->drawing_area = drawing_area = gtk_drawing_area_new ();
-
       if (!view->style)
         view->style = get_xr_fsm_style (view);
 
@@ -435,17 +412,45 @@ psppire_output_view_put (struct psppire_output_view *view,
 	{
 	  gdk_window_end_draw_frame (win, ctx);
 	  cairo_region_destroy (region);
-	  return;
+
+          output_item_unref (view_item->item);
+	  return false;
 	}
 
-      xr_fsm_measure (r, cr, &tw, &th);
-      create_drawing_area (view, drawing_area, r, tw, th, item);
+      xr_fsm_measure (r, cr, &view_item->width, &view_item->height);
+      view_item->drawing_area = gtk_drawing_area_new ();
+      create_drawing_area (view, view_item->drawing_area, r, view_item->width,
+                           view_item->height, item);
       gdk_window_end_draw_frame (win, ctx);
       cairo_region_destroy (region);
     }
-  else
-    tw = th = 0;
 
+  return true;
+}
+
+static void
+psppire_output_view_put__ (struct psppire_output_view *view,
+                           const struct output_item *item,
+                           GtkTreePath *parent_path)
+{
+  if (item->type == OUTPUT_ITEM_TEXT)
+    {
+      char *text = text_item_get_plain_text (item);
+      bool text_is_empty = text[0] == '\0';
+      free (text);
+      if (text_is_empty)
+        return;
+    }
+
+  if (view->n_items >= view->allocated_items)
+    view->items = x2nrealloc (view->items, &view->allocated_items,
+                              sizeof *view->items);
+  struct output_view_item *view_item = &view->items[view->n_items];
+  if (!init_output_view_item (view_item, view, item))
+    return;
+  view->n_items++;
+
+  GtkTreePath *path = NULL;
   if (view->overview)
     {
       GtkTreeStore *store = GTK_TREE_STORE (
@@ -454,32 +459,44 @@ psppire_output_view_put (struct psppire_output_view *view,
       /* Create a new node in the tree and puts a reference to it in 'iter'. */
       GtkTreeIter iter;
       GtkTreeIter parent;
-      if (view->cur_group
-          && gtk_tree_path_get_depth (view->cur_group) > 0
+      if (parent_path
+          && gtk_tree_path_get_depth (parent_path) > 0
           && gtk_tree_model_get_iter (GTK_TREE_MODEL (store),
-                                      &parent, view->cur_group))
+                                      &parent, parent_path))
         gtk_tree_store_append (store, &iter, &parent);
       else
         gtk_tree_store_append (store, &iter, NULL);
 
-      /* XXX group? */
       gtk_tree_store_set (store, &iter,
                           COL_LABEL, output_item_get_label (item),
 			  COL_ADDR, item,
                           COL_Y, view->y,
                           -1);
 
-      GtkTreePath *path = gtk_tree_model_get_path (
+      /* Get the path of the new row. */
+      path = gtk_tree_model_get_path (
         GTK_TREE_MODEL (store), &iter);
       gtk_tree_view_expand_row (view->overview, path, TRUE);
-      gtk_tree_path_free (path);
     }
 
-  if (view->max_width < tw)
-    view->max_width = tw;
-  view->y += th;
+  if (view->max_width < view_item->width)
+    view->max_width = view_item->width;
+  view->y += view_item->height;
 
   gtk_layout_set_size (view->output, view->max_width, view->y);
+
+  if (item->type == OUTPUT_ITEM_GROUP)
+    for (size_t i = 0; i < item->group.n_children; i++)
+      psppire_output_view_put__ (view, item->group.children[i], path);
+
+  gtk_tree_path_free (path);
+}
+
+void
+psppire_output_view_put (struct psppire_output_view *view,
+                         const struct output_item *item)
+{
+  psppire_output_view_put__ (view, item, NULL);
 }
 
 static void
@@ -852,9 +869,6 @@ psppire_output_view_destroy (struct psppire_output_view *view)
 
   if (view->print_settings != NULL)
     g_object_unref (view->print_settings);
-
-  if (view->cur_group)
-    gtk_tree_path_free (view->cur_group);
 
   free (view);
 }
