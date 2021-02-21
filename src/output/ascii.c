@@ -28,11 +28,8 @@
 #include <uniwidth.h>
 
 #ifdef HAVE_TERMIOS_H
-# include <termios.h>
-#endif
-
-#ifdef GWINSZ_IN_SYS_IOCTL
 # include <sys/ioctl.h>
+# include <termios.h>
 #endif
 
 #include "data/file-name.h"
