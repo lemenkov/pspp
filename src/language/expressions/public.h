@@ -19,27 +19,23 @@
 
 #include <stddef.h>
 
-/* Expression parsing flags. */
-enum expr_type
-  {
-    EXPR_NUMBER = 0xf000,       /* Number. */
-    EXPR_STRING,                /* String. */
-    EXPR_BOOLEAN,               /* Boolean (number limited to 0, 1, SYSMIS). */
-  };
+#include "data/val-type.h"
 
+struct ccase;
+struct dataset;
 struct dictionary;
 struct expression;
-struct ccase;
+struct lexer;
 struct pool;
 union value;
-struct dataset ;
-struct lexer ;
 
-struct expression *expr_parse (struct lexer *lexer, struct dataset *, enum expr_type);
-struct expression *expr_parse_pool (struct lexer *,
-				    struct pool *,
-				    struct dataset *,
-                                    enum expr_type);
+struct expression *expr_parse (struct lexer *lexer, struct pool *,
+                               struct dataset *, enum val_type);
+struct expression *expr_parse_bool (struct lexer *lexer, struct pool *,
+                                    struct dataset *);
+struct expression *expr_parse_new_variable (struct lexer *lexer, struct pool *,
+                                            struct dataset *,
+                                            const char *new_var_name);
 void expr_free (struct expression *);
 
 struct dataset;

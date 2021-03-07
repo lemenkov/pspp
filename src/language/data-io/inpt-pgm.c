@@ -304,7 +304,7 @@ cmd_reread (struct lexer *lexer, struct dataset *ds)
               goto error;
 	    }
 
-	  e = expr_parse (lexer, ds, EXPR_NUMBER);
+	  e = expr_parse (lexer, NULL, ds, VAL_NUMERIC);
 	  if (!e)
             goto error;
 	}

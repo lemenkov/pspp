@@ -194,7 +194,7 @@ parse_if_clause (struct lexer *lexer,
       return false;
     }
 
-  *condition = expr_parse_pool (lexer, loop->pool, loop->ds, EXPR_BOOLEAN);
+  *condition = expr_parse_bool (lexer, loop->pool, loop->ds);
   return *condition != NULL;
 }
 
@@ -232,8 +232,7 @@ parse_index_clause (struct dataset *ds, struct lexer *lexer,
   if (!lex_force_match (lexer, T_EQUALS))
     return false;
 
-  loop->first_expr = expr_parse_pool (lexer, loop->pool,
-				      loop->ds, EXPR_NUMBER);
+  loop->first_expr = expr_parse (lexer, loop->pool, loop->ds, VAL_NUMERIC);
   if (loop->first_expr == NULL)
     return false;
 
@@ -252,7 +251,7 @@ parse_index_clause (struct dataset *ds, struct lexer *lexer,
           lex_sbc_only_once (e == &loop->last_expr ? "TO" : "BY");
           return false;
         }
-      *e = expr_parse_pool (lexer, loop->pool, loop->ds, EXPR_NUMBER);
+      *e = expr_parse (lexer, loop->pool, loop->ds, VAL_NUMERIC);
       if (*e == NULL)
         return false;
     }

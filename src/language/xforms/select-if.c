@@ -50,7 +50,7 @@ cmd_select_if (struct lexer *lexer, struct dataset *ds)
   struct expression *e;
   struct select_if_trns *t;
 
-  e = expr_parse (lexer, ds, EXPR_BOOLEAN);
+  e = expr_parse_bool (lexer, NULL, ds);
   if (!e)
     return CMD_CASCADING_FAILURE;
 

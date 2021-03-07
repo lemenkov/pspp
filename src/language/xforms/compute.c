@@ -41,6 +41,18 @@
 struct compute_trns;
 struct lvalue;
 
+/* COMPUTE or IF target variable or vector element.
+   For a variable, the `variable' member is non-null.
+   For a vector element, the `vector' member is non-null. */
+struct lvalue
+  {
+    struct variable *variable;   /* Destination variable. */
+    bool is_new_variable;        /* Did we create the variable? */
+
+    const struct vector *vector; /* Destination vector, if any, or NULL. */
+    struct expression *element;  /* Destination vector element, or NULL. */
+  };
+
 /* Target of a COMPUTE or IF assignment, either a variable or a
    vector element. */
 static struct lvalue *lvalue_parse (struct lexer *lexer, struct dataset *);
@@ -237,7 +249,7 @@ cmd_if (struct lexer *lexer, struct dataset *ds)
   compute = compute_trns_create ();
 
   /* Test expression. */
-  compute->test = expr_parse (lexer, ds, EXPR_BOOLEAN);
+  compute->test = expr_parse_bool (lexer, NULL, ds);
   if (compute->test == NULL)
     goto fail;
 
@@ -284,9 +296,10 @@ static struct expression *
 parse_rvalue (struct lexer *lexer,
 	      const struct lvalue *lvalue, struct dataset *ds)
 {
-  bool is_numeric = lvalue_get_type (lvalue) == VAL_NUMERIC;
-
-  return expr_parse (lexer, ds, is_numeric ? EXPR_NUMBER : EXPR_STRING);
+  if (lvalue->is_new_variable)
+    return expr_parse_new_variable (lexer, NULL, ds, var_get_name (lvalue->variable));
+  else
+    return expr_parse (lexer, NULL, ds, lvalue_get_type (lvalue));
 }
 
 /* Returns a new struct compute_trns after initializing its fields. */
@@ -318,18 +331,6 @@ compute_trns_free (void *compute_)
   return true;
 }
 
-/* COMPUTE or IF target variable or vector element.
-   For a variable, the `variable' member is non-null.
-   For a vector element, the `vector' member is non-null. */
-struct lvalue
-  {
-    struct variable *variable;   /* Destination variable. */
-    bool is_new_variable;        /* Did we create the variable? */
-
-    const struct vector *vector; /* Destination vector, if any, or NULL. */
-    struct expression *element;  /* Destination vector element, or NULL. */
-  };
-
 /* Parses the target variable or vector element into a new
    `struct lvalue', which is returned. */
 static struct lvalue *
@@ -361,7 +362,7 @@ lvalue_parse (struct lexer *lexer, struct dataset *ds)
       lex_get (lexer);
       if (!lex_force_match (lexer, T_LPAREN))
 	goto lossage;
-      lvalue->element = expr_parse (lexer, ds, EXPR_NUMBER);
+      lvalue->element = expr_parse (lexer, NULL, ds, VAL_NUMERIC);
       if (lvalue->element == NULL)
         goto lossage;
       if (!lex_force_match (lexer, T_RPAREN))

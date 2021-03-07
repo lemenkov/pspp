@@ -77,7 +77,7 @@ cmd_print_space (struct lexer *lexer, struct dataset *ds)
 
   if (lex_token (lexer) != T_ENDCMD)
     {
-      expr = expr_parse (lexer, ds, EXPR_NUMBER);
+      expr = expr_parse (lexer, NULL, ds, VAL_NUMERIC);
       if (lex_token (lexer) != T_ENDCMD)
 	{
           lex_error (lexer, _("expecting end of command"));

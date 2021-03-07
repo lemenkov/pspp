@@ -201,7 +201,7 @@ parse_clause (struct lexer *lexer, struct do_if_trns *do_if, struct dataset *ds)
 {
   struct expression *condition;
 
-  condition = expr_parse (lexer, ds, EXPR_BOOLEAN);
+  condition = expr_parse_bool (lexer, NULL, ds);
   if (condition == NULL)
     return CMD_CASCADING_FAILURE;
 

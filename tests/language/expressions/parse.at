@@ -38,13 +38,23 @@ parse.sps:11: error: Stopping syntax file processing here to avoid a cascade of 
 ])
 AT_CLEANUP
 
-AT_SETUP([parsing numeric expression with type mismatch])
+AT_SETUP([parsing boolean expression with type mismatch])
 AT_DATA([parse.sps], [dnl
 DATA LIST NOTABLE/x 1(A).
 IF 'foo'.
 ])
 AT_CHECK([pspp -O format=csv parse.sps], [1], [dnl
-"parse.sps:2: error: IF: Type mismatch: expression has string type, but a numeric value is required here."
+"parse.sps:2: error: IF: Type mismatch: expression has string type, but a boolean value is required here."
+])
+AT_CLEANUP
+
+AT_SETUP([parsing numeric expression with type mismatch])
+AT_DATA([parse.sps], [dnl
+DATA LIST NOTABLE/x 1.
+COMPUTE x='foo'.
+])
+AT_CHECK([pspp -O format=csv parse.sps], [1], [dnl
+"parse.sps:2: error: COMPUTE: Type mismatch: expression has string type, but a numeric value is required here."
 ])
 AT_CLEANUP
 
@@ -56,6 +66,17 @@ COMPUTE x=1.
 ])
 AT_CHECK([pspp -O format=csv parse.sps], [1], [dnl
 "parse.sps:2: error: COMPUTE: Type mismatch: expression has number type, but a string value is required here."
+])
+AT_CLEANUP
+
+AT_SETUP([assigning string expression to new variable])
+AT_KEYWORDS([expression negative])
+AT_DATA([parse.sps], [dnl
+DATA LIST NOTABLE/x 1(A).
+COMPUTE y='a'.
+])
+AT_CHECK([pspp -O format=csv parse.sps], [1], [dnl
+"parse.sps:2: error: COMPUTE: This command tries to create a new variable y by assigning a string value to it, but this is not supported.  Use the STRING command to create the new variable with the correct width before assigning to it, e.g. STRING y(A20)."
 ])
 AT_CLEANUP
 

@@ -59,49 +59,98 @@ atom_type expr_node_returns (const union any_node *);
 static const char *atom_type_name (atom_type);
 static struct expression *finish_expression (union any_node *,
                                              struct expression *);
-static bool type_check (struct expression *, union any_node **,
-                        enum expr_type expected_type);
+static bool type_check (const union any_node *, enum val_type expected_type);
 static union any_node *allocate_unary_variable (struct expression *,
                                                 const struct variable *);
 
 /* Public functions. */
 
-/* Parses an expression of the given TYPE.
-   If DICT is nonnull then variables and vectors within it may be
-   referenced within the expression; otherwise, the expression
-   must not reference any variables or vectors.
-   Returns the new expression if successful or a null pointer
-   otherwise. */
+/* Parses an expression of the given TYPE.  If DS is nonnull then variables and
+   vectors within it may be referenced within the expression; otherwise, the
+   expression must not reference any variables or vectors.  Returns the new
+   expression if successful or a null pointer otherwise.  If POOL is nonnull,
+   then destroying POOL will free the expression; otherwise, the caller must
+   eventually free it with expr_free(). */
 struct expression *
-expr_parse (struct lexer *lexer, struct dataset *ds, enum expr_type type)
+expr_parse (struct lexer *lexer, struct pool *pool, struct dataset *ds,
+            enum val_type type)
 {
-  union any_node *n;
-  struct expression *e;
+  assert (val_type_is_valid (type));
 
-  assert (type == EXPR_NUMBER || type == EXPR_STRING || type == EXPR_BOOLEAN);
-
-  e = expr_create (ds);
-  n = parse_or (lexer, e);
-  if (n != NULL && type_check (e, &n, type))
-    return finish_expression (expr_optimize (n, e), e);
-  else
+  struct expression *e = expr_create (ds);
+  union any_node *n = parse_or (lexer, e);
+  if (!n || !type_check (n, type))
     {
       expr_free (e);
       return NULL;
     }
+
+  e = finish_expression (expr_optimize (n, e), e);
+  if (pool)
+    pool_add_subpool (pool, e->expr_pool);
+  return e;
 }
 
-/* Parses and returns an expression of the given TYPE, as
-   expr_parse(), and sets up so that destroying POOL will free
-   the expression as well. */
+/* Parses a boolean expression, otherwise similar to expr_parse(). */
 struct expression *
-expr_parse_pool (struct lexer *lexer,
-		 struct pool *pool,
-		 struct dataset *ds,
-                 enum expr_type type)
+expr_parse_bool (struct lexer *lexer, struct pool *pool, struct dataset *ds)
 {
-  struct expression *e = expr_parse (lexer, ds, type);
-  if (e != NULL)
+  struct expression *e = expr_create (ds);
+  union any_node *n = parse_or (lexer, e);
+  if (!n)
+    {
+      expr_free (e);
+      return NULL;
+    }
+
+  atom_type actual_type = expr_node_returns (n);
+  if (actual_type == OP_number)
+    n = expr_allocate_binary (e, OP_NUM_TO_BOOLEAN, n,
+                              expr_allocate_string (e, ss_empty ()));
+  else if (actual_type != OP_boolean)
+    {
+      msg (SE, _("Type mismatch: expression has %s type, "
+                 "but a boolean value is required here."),
+           atom_type_name (actual_type));
+      expr_free (e);
+      return NULL;
+    }
+
+  e = finish_expression (expr_optimize (n, e), e);
+  if (pool)
+    pool_add_subpool (pool, e->expr_pool);
+  return e;
+}
+
+/* Parses a numeric expression that is intended to be assigned to newly created
+   variable NEW_VAR_NAME.  (This allows for a better error message if the
+   expression is not numeric.)  Otherwise similar to expr_parse(). */
+struct expression *
+expr_parse_new_variable (struct lexer *lexer, struct pool *pool, struct dataset *ds,
+                         const char *new_var_name)
+{
+  struct expression *e = expr_create (ds);
+  union any_node *n = parse_or (lexer, e);
+  if (!n)
+    {
+      expr_free (e);
+      return NULL;
+    }
+
+  atom_type actual_type = expr_node_returns (n);
+  if (actual_type != OP_number && actual_type != OP_boolean)
+    {
+      msg (SE, _("This command tries to create a new variable %s by assigning a "
+                 "string value to it, but this is not supported.  Use "
+                 "the STRING command to create the new variable with the "
+                 "correct width before assigning to it, e.g. STRING %s(A20)."),
+           new_var_name, new_var_name);
+      expr_free (e);
+      return NULL;
+    }
+
+  e = finish_expression (expr_optimize (n, e), e);
+  if (pool)
     pool_add_subpool (pool, e->expr_pool);
   return e;
 }
@@ -247,15 +296,13 @@ finish_expression (union any_node *n, struct expression *e)
    converted to type EXPECTED_TYPE, inserting a conversion at *N
    if necessary.  Returns true if successful, false on failure. */
 static bool
-type_check (struct expression *e,
-            union any_node **n, enum expr_type expected_type)
+type_check (const union any_node *n, enum val_type expected_type)
 {
-  atom_type actual_type = expr_node_returns (*n);
+  atom_type actual_type = expr_node_returns (n);
 
   switch (expected_type)
     {
-    case EXPR_BOOLEAN:
-    case EXPR_NUMBER:
+    case VAL_NUMERIC:
       if (actual_type != OP_number && actual_type != OP_boolean)
 	{
 	  msg (SE, _("Type mismatch: expression has %s type, "
@@ -263,12 +310,9 @@ type_check (struct expression *e,
                atom_type_name (actual_type));
 	  return false;
 	}
-      if (actual_type == OP_number && expected_type == EXPR_BOOLEAN)
-        *n = expr_allocate_binary (e, OP_NUM_TO_BOOLEAN, *n,
-                                   expr_allocate_string (e, ss_empty ()));
       break;
 
-    case EXPR_STRING:
+    case VAL_STRING:
       if (actual_type != OP_string)
         {
           msg (SE, _("Type mismatch: expression has %s type, "
