@@ -55,7 +55,50 @@ cmd_delete_variables (struct lexer *lexer, struct dataset *ds)
   ok = proc_commit (ds) && ok;
   if (!ok)
     goto error;
+
   dict_delete_vars (dataset_dict (ds), vars, var_cnt);
+
+  /* XXX A bunch of bugs conspire to make executing transformations again here
+     necessary, even though it shouldn't be.
+
+     Consider the following (which is included in delete-variables.at):
+
+        DATA LIST NOTABLE /s1 TO s2 1-2(A).
+        BEGIN DATA
+        12
+        END DATA.
+        DELETE VARIABLES s1.
+        NUMERIC n1.
+        LIST.
+
+     The DATA LIST gives us a caseproto with widths 1,1.  DELETE VARIABLES
+     deletes the first variable so we now have -1,1.  This already is
+     technically a problem because proc_casereader_read() calls
+     case_unshare_and_resize() from the former to the latter caseproto, and
+     these caseprotos are not conformable (which is a requirement for
+     case_resize()).  It doesn't cause an assert by default because
+     case_resize() uses expensive_assert() to check for it though.  However, in
+     practice we don't see a problem yet because case_resize() only does work
+     if the number of widths in the source and dest caseproto are different.
+
+     Executing NUMERIC adds a third variable, though, so we have -1,1,0.  This
+     makes caseproto_resize() notice that there are fewer strings in the new
+     caseproto.  Therefore it destroys the second one (s2).  It should destroy
+     the first one (s1), but if the caseprotos were really conformable then it
+     would have destroyed the right one.  This mistake eventually causes a bad
+     memory reference.
+
+     Executing transformations a second time after DELETE VARIABLES, like we do
+     below, works around the problem because we can never run into a situation
+     where we've got both new variables (triggering a resize) and deleted
+     variables (triggering the bad free).
+
+     We should fix this in a better way.  Doing it cleanly seems hard.  This
+     seems to work for now. */
+  ok = casereader_destroy (proc_open_filtering (ds, false));
+  ok = proc_commit (ds) && ok;
+  if (!ok)
+    goto error;
 
   free (vars);
 

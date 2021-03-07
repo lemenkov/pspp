@@ -43,3 +43,22 @@ b
 9.00
 ])
 AT_CLEANUP
+
+dnl Checks for regression against a crash reported on pspp-users:
+dnl https://lists.gnu.org/archive/html/pspp-users/2021-03/msg00025.html
+AT_SETUP([DELETE VARIABLES with string variables])
+AT_DATA([delete-variables.sps], [dnl
+DATA LIST NOTABLE /s1 TO s2 1-2(A).
+BEGIN DATA
+12
+END DATA.
+DELETE VARIABLES s1.
+NUMERIC n1.
+LIST.
+])
+AT_CHECK([pspp -O format=csv delete-variables.sps], [0], [dnl
+Table: Data List
+s2,n1
+2,.  @&t@
+])
+AT_CLEANUP
