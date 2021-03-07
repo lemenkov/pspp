@@ -65,8 +65,8 @@ export GZIP
 WINEPREFIX=$HOME/.wine    # Work around the following kludge to keep wine happy
 export WINEPREFIX
 
-HOME=/nonexistent		# Kluge to make PSPP ignore $HOME/.pspprc.
-export HOME
+# Make PSPP ignore $HOME/.pspprc.
+alias pspp='pspp --no-statrc'
 
 # Avoids error messages during tests if $TERM is set to an unknown terminal.
 TERM=; unset TERM
