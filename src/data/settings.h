@@ -21,6 +21,7 @@
 #include <stddef.h>
 
 #include "data/format.h"
+#include "libpspp/compiler.h"
 #include "libpspp/float-format.h"
 #include "libpspp/integer-format.h"
 #include "libpspp/message.h"
@@ -106,7 +107,7 @@ void settings_set_fuzzbits (int);
 
 /* Whether to show variable or value labels or the underlying value or variable
    name. */
-enum settings_value_show
+enum ATTRIBUTE ((packed)) settings_value_show
   {
     /* Use higher-level default.
        In a pivot_value, the default is taken from the pivot_table.

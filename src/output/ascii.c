@@ -1033,8 +1033,8 @@ ascii_test_write (struct output_driver *driver,
     .underline = underline,
   };
   const struct pivot_value value = {
-    .type = PIVOT_VALUE_TEXT,
     .text = {
+      .type = PIVOT_VALUE_TEXT,
       .local = CONST_CAST (char *, s),
       .c = CONST_CAST (char *, s),
       .id = CONST_CAST (char *, s),

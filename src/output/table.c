@@ -504,8 +504,8 @@ table_get_cell (const struct table *t, int x, int y, struct table_cell *cell)
     = t->styles[(opt & TAB_STYLE_MASK) >> TAB_STYLE_SHIFT];
 
   static const struct pivot_value empty_value = {
-    .type = PIVOT_VALUE_TEXT,
     .text = {
+      .type = PIVOT_VALUE_TEXT,
       .local = (char *) "",
       .c = (char *) "",
       .id = (char *) "",

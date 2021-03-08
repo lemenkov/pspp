@@ -677,8 +677,10 @@ read_value (struct lexer *lexer, const struct pivot_table *pt,
     {
       value = xmalloc (sizeof *value);
       *value = (struct pivot_value) {
-        .type = PIVOT_VALUE_STRING,
-        .string = { .s = xstrdup (lex_tokcstr (lexer)) },
+        .string = {
+          .type = PIVOT_VALUE_STRING,
+          .s = xstrdup (lex_tokcstr (lexer))
+        },
       };
       lex_get (lexer);
     }
@@ -686,8 +688,10 @@ read_value (struct lexer *lexer, const struct pivot_table *pt,
     {
       value = xmalloc (sizeof *value);
       *value = (struct pivot_value) {
-        .type = PIVOT_VALUE_VARIABLE,
-        .variable = { .var_name = xstrdup (lex_tokcstr (lexer)) },
+        .variable = {
+          .type = PIVOT_VALUE_VARIABLE,
+          .var_name = xstrdup (lex_tokcstr (lexer))
+        },
       };
       lex_get (lexer);
     }

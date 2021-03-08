@@ -285,8 +285,8 @@ decode_container_text (const struct spvsx_container_text *ct)
   struct pivot_value *value = xmalloc (sizeof *value);
   *value = (struct pivot_value) {
     .font_style = font_style,
-    .type = PIVOT_VALUE_TEXT,
     .text = {
+      .type = PIVOT_VALUE_TEXT,
       .local = text,
       .c = text,
       .id = text,

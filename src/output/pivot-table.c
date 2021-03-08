@@ -2692,8 +2692,8 @@ pivot_value_new_user_text_nocopy (char *text)
 {
   struct pivot_value *value = xmalloc (sizeof *value);
   *value = (struct pivot_value) {
-    .type = PIVOT_VALUE_TEXT,
     .text = {
+      .type = PIVOT_VALUE_TEXT,
       .local = text,
       .c = text,
       .id = text,
@@ -2735,8 +2735,8 @@ pivot_value_new_text (const char *text)
 
   struct pivot_value *value = xmalloc (sizeof *value);
   *value = (struct pivot_value) {
-    .type = PIVOT_VALUE_TEXT,
     .text = {
+      .type = PIVOT_VALUE_TEXT,
       .local = local,
       .c = c,
       .id = c,
@@ -2762,8 +2762,8 @@ pivot_value_new_text_format (const char *format, ...)
 
   struct pivot_value *value = xmalloc (sizeof *value);
   *value = (struct pivot_value) {
-    .type = PIVOT_VALUE_TEXT,
     .text = {
+      .type = PIVOT_VALUE_TEXT,
       .local = local,
       .c = c,
       .id = xstrdup (c),
@@ -2784,8 +2784,10 @@ pivot_value_new_number (double x)
 {
   struct pivot_value *value = xmalloc (sizeof *value);
   *value = (struct pivot_value) {
-    .type = PIVOT_VALUE_NUMERIC,
-    .numeric = { .x = x, },
+    .numeric = {
+      .type = PIVOT_VALUE_NUMERIC,
+      .x = x
+    },
   };
   return value;
 }
@@ -2863,8 +2865,8 @@ pivot_value_new_variable (const struct variable *variable)
 {
   struct pivot_value *value = xmalloc (sizeof *value);
   *value = (struct pivot_value) {
-    .type = PIVOT_VALUE_VARIABLE,
     .variable = {
+      .type = PIVOT_VALUE_VARIABLE,
       .var_name = xstrdup (var_get_name (variable)),
       .var_label = xstrdup_if_nonempty (var_get_label (variable)),
     },
