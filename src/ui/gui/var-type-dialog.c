@@ -38,43 +38,43 @@
 
 static const struct fmt_spec date_format[] =
   {
-    {FMT_DATE,  11, 0},
-    {FMT_DATE,   9, 0},
-    {FMT_ADATE, 10, 0},
-    {FMT_ADATE, 8, 0},
-    {FMT_EDATE, 10, 0},
-    {FMT_EDATE, 8, 0},
-    {FMT_SDATE, 10, 0},
-    {FMT_SDATE, 8, 0},
-    {FMT_JDATE, 5, 0},
-    {FMT_JDATE, 7, 0},
-    {FMT_QYR, 8, 0},
-    {FMT_QYR, 6, 0},
-    {FMT_MOYR, 8, 0},
-    {FMT_MOYR, 6, 0},
-    {FMT_WKYR, 10, 0},
-    {FMT_WKYR, 8, 0},
-    {FMT_DATETIME, 17, 0},
-    {FMT_DATETIME, 20, 0},
-    {FMT_YMDHMS, 16, 0},
-    {FMT_YMDHMS, 20, 0}
+    { .type = FMT_DATE, .w = 11, .d = 0 },
+    { .type = FMT_DATE, .w = 9, .d = 0 },
+    { .type = FMT_ADATE, .w = 10, .d = 0 },
+    { .type = FMT_ADATE, .w = 8, .d = 0 },
+    { .type = FMT_EDATE, .w = 10, .d = 0 },
+    { .type = FMT_EDATE, .w = 8, .d = 0 },
+    { .type = FMT_SDATE, .w = 10, .d = 0 },
+    { .type = FMT_SDATE, .w = 8, .d = 0 },
+    { .type = FMT_JDATE, .w = 5, .d = 0 },
+    { .type = FMT_JDATE, .w = 7, .d = 0 },
+    { .type = FMT_QYR, .w = 8, .d = 0 },
+    { .type = FMT_QYR, .w = 6, .d = 0 },
+    { .type = FMT_MOYR, .w = 8, .d = 0 },
+    { .type = FMT_MOYR, .w = 6, .d = 0 },
+    { .type = FMT_WKYR, .w = 10, .d = 0 },
+    { .type = FMT_WKYR, .w = 8, .d = 0 },
+    { .type = FMT_DATETIME, .w = 17, .d = 0 },
+    { .type = FMT_DATETIME, .w = 20, .d = 0 },
+    { .type = FMT_YMDHMS, .w = 16, .d = 0 },
+    { .type = FMT_YMDHMS, .w = 20, .d = 0 }
   };
 
 
 static const struct fmt_spec dollar_format[] =
   {
-    {FMT_DOLLAR, 2, 0},
-    {FMT_DOLLAR, 3, 0},
-    {FMT_DOLLAR, 4, 0},
-    {FMT_DOLLAR, 7, 2},
-    {FMT_DOLLAR, 6, 0},
-    {FMT_DOLLAR, 9, 2},
-    {FMT_DOLLAR, 8, 0},
-    {FMT_DOLLAR, 11, 2},
-    {FMT_DOLLAR, 12, 0},
-    {FMT_DOLLAR, 15, 2},
-    {FMT_DOLLAR, 16, 0},
-    {FMT_DOLLAR, 19, 2}
+    { .type = FMT_DOLLAR, .w = 2, .d = 0 },
+    { .type = FMT_DOLLAR, .w = 3, .d = 0 },
+    { .type = FMT_DOLLAR, .w = 4, .d = 0 },
+    { .type = FMT_DOLLAR, .w = 7, .d = 2 },
+    { .type = FMT_DOLLAR, .w = 6, .d = 0 },
+    { .type = FMT_DOLLAR, .w = 9, .d = 2 },
+    { .type = FMT_DOLLAR, .w = 8, .d = 0 },
+    { .type = FMT_DOLLAR, .w = 11, .d = 2 },
+    { .type = FMT_DOLLAR, .w = 12, .d = 0 },
+    { .type = FMT_DOLLAR, .w = 15, .d = 2 },
+    { .type = FMT_DOLLAR, .w = 16, .d = 0 },
+    { .type = FMT_DOLLAR, .w = 19, .d = 2 }
   };
 
 static const int cc_format[] =

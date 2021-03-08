@@ -91,14 +91,14 @@ enum rank_func
   };
 
 static const struct fmt_spec dest_format[n_RANK_FUNCS] = {
-  {FMT_F, 9, 3}, /* rank */
-  {FMT_F, 6, 4}, /* normal */
-  {FMT_F, 6, 2}, /* percent */
-  {FMT_F, 6, 4}, /* rfraction */
-  {FMT_F, 6, 4}, /* proportion */
-  {FMT_F, 6, 0}, /* n */
-  {FMT_F, 3, 0}, /* ntiles */
-  {FMT_F, 8, 4}  /* savage */
+  [RANK]       = { .type = FMT_F, .w = 9, .d = 3 },
+  [NORMAL]     = { .type = FMT_F, .w = 6, .d = 4 },
+  [PERCENT]    = { .type = FMT_F, .w = 6, .d = 2 },
+  [RFRACTION]  = { .type = FMT_F, .w = 6, .d = 4 },
+  [PROPORTION] = { .type = FMT_F, .w = 6, .d = 4 },
+  [N]          = { .type = FMT_F, .w = 6, .d = 0 },
+  [NTILES]     = { .type = FMT_F, .w = 3, .d = 0 },
+  [SAVAGE]     = { .type = FMT_F, .w = 8, .d = 4 }
 };
 
 static const char * const function_name[n_RANK_FUNCS] = {

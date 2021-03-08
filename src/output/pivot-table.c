@@ -748,11 +748,11 @@ struct result_class
 /* Formats for most of the result classes. */
 static struct result_class result_classes[] =
   {
-    { PIVOT_RC_INTEGER,      { FMT_F,   40, 0 } },
-    { PIVOT_RC_PERCENT,      { FMT_PCT, 40, 1 } },
-    { PIVOT_RC_CORRELATION,  { FMT_F,   40, 3 } },
-    { PIVOT_RC_SIGNIFICANCE, { FMT_F,   40, 3 } },
-    { PIVOT_RC_RESIDUAL,     { FMT_F,   40, 2 } },
+    { PIVOT_RC_INTEGER,      { .type = FMT_F,   .w = 40, .d = 0 } },
+    { PIVOT_RC_PERCENT,      { .type = FMT_PCT, .w = 40, .d = 1 } },
+    { PIVOT_RC_CORRELATION,  { .type = FMT_F,   .w = 40, .d = 3 } },
+    { PIVOT_RC_SIGNIFICANCE, { .type = FMT_F,   .w = 40, .d = 3 } },
+    { PIVOT_RC_RESIDUAL,     { .type = FMT_F,   .w = 40, .d = 2 } },
     { PIVOT_RC_COUNT,        { 0, 0, 0 } },
     { PIVOT_RC_OTHER,        { 0, 0, 0 } },
   };

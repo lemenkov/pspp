@@ -372,7 +372,7 @@ psql_open_reader (struct psql_read_info *info, struct dictionary **dict)
   for (i = 0 ; i < n_fields ; ++i)
     {
       struct variable *var;
-      struct fmt_spec fmt = {FMT_F, 8, 2};
+      struct fmt_spec fmt = { .type = FMT_F, .w = 8, .d = 2 };
       Oid type = PQftype (qres, i);
       int width = 0;
       int length ;

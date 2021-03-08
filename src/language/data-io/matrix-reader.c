@@ -245,7 +245,7 @@ next_matrix_from_reader (struct matrix_material *mm,
       const union value *uvv  = case_data (c, mr->varname);
       int w = var_get_width (mr->varname);
 
-      struct fmt_spec fmt = {FMT_A, 0, 0};
+      struct fmt_spec fmt = { .type = FMT_A };
       fmt.w = w;
       char *vname = data_out (uvv, enc, &fmt, settings_get_fmt_settings ());
       struct substring the_name = ss_cstr (vname);

@@ -1324,7 +1324,7 @@ get_fmt_desc (enum fmt_type type)
   return &formats[type];
 }
 
-const struct fmt_spec F_8_0 = {FMT_F, 8, 0};
-const struct fmt_spec F_8_2 = {FMT_F, 8, 2};
-const struct fmt_spec F_4_3 = {FMT_F, 4, 3};
-const struct fmt_spec F_5_1 = {FMT_F, 5, 1};
+const struct fmt_spec F_8_0 = { .type = FMT_F, .w = 8, .d = 0 };
+const struct fmt_spec F_8_2 = { .type = FMT_F, .w = 8, .d = 2 };
+const struct fmt_spec F_4_3 = { .type = FMT_F, .w = 4, .d = 3 };
+const struct fmt_spec F_5_1 = { .type = FMT_F, .w = 5, .d = 1 };

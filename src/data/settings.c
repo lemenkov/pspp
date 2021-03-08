@@ -105,7 +105,7 @@ static struct settings the_settings = {
   true,                         /* mprint */
   40,                           /* mxloops */
   64L * 1024 * 1024,            /* workspace */
-  {FMT_F, 8, 2},                /* default_format */
+  { .type = FMT_F, .w = 8, .d = 2 }, /* default_format */
   false,                        /* testing_mode */
   6,                            /* fuzzbits */
   ENHANCED,                     /* cmd_algorithm */

@@ -61,7 +61,7 @@ cmd_output (struct lexer *lexer, struct dataset *ds UNUSED)
       else if (lex_match_id (lexer, "TABLECELLS"))
 	{
           string_set_clear (&rc_names);
-	  struct fmt_spec fmt = { 0, 0, 0 };
+	  struct fmt_spec fmt = { .type = 0 };
 
 	  while (lex_token (lexer) != T_SLASH &&
 		 lex_token (lexer) != T_ENDCMD)
