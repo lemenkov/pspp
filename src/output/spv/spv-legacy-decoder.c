@@ -277,7 +277,7 @@ spv_series_parse_value_map_entry (struct hmap *map,
                           vme->from);
 
       char *error = spv_map_insert (map, from, vme->to, true,
-                                    &(struct fmt_spec) { FMT_A, 40, 0 });
+                                    &(struct fmt_spec) { .type = FMT_A, .w = 40 });
       if (error)
         return error;
 
@@ -367,7 +367,7 @@ decode_number_format (const struct spvdx_number_format *nf)
   if (d < 0 || d > 15)
     d = 2;
 
-  struct fmt_spec f = (struct fmt_spec) { type, 40, d };
+  struct fmt_spec f = (struct fmt_spec) { .type = type, .w = 40, .d = d };
   fmt_fix_output (&f);
   return f;
 }

@@ -869,7 +869,7 @@ pivot_table_create__ (struct pivot_value *title, const char *subtype)
   table->ref_cnt = 1;
   table->show_title = true;
   table->show_caption = true;
-  table->weight_format = (struct fmt_spec) { FMT_F, 40, 0 };
+  table->weight_format = (struct fmt_spec) { .type = FMT_F, .w = 40 };
   table->title = title;
   table->subtype = subtype ? pivot_value_new_text (subtype) : NULL;
   table->command_c = xstrdup_if_nonempty (output_get_command_name ());
@@ -2795,7 +2795,7 @@ struct pivot_value *
 pivot_value_new_integer (double x)
 {
   struct pivot_value *value = pivot_value_new_number (x);
-  value->numeric.format = (struct fmt_spec) { FMT_F, 40, 0 };
+  value->numeric.format = (struct fmt_spec) { .type = FMT_F, .w = 40 };
   return value;
 }
 

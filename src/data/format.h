@@ -56,7 +56,7 @@ enum fmt_category
   };
 
 /* Format type. */
-enum fmt_type
+enum ATTRIBUTE ((packed)) fmt_type
   {
 #define FMT(NAME, METHOD, IMIN, OMIN, IO, CATEGORY) FMT_##NAME,
 #include "format.def"
@@ -75,8 +75,8 @@ enum fmt_type
 struct fmt_spec
   {
     enum fmt_type type;		/* One of FMT_*. */
-    int w;			/* Width. */
-    int d;			/* Number of decimal places. */
+    uint16_t w;			/* Width. */
+    uint8_t d;			/* Number of decimal places. */
   };
 
 /* Maximum width of any numeric format. */

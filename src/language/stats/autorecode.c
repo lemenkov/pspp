@@ -387,7 +387,7 @@ cmd_autorecode (struct lexer *lexer, struct dataset *ds)
                 old_values->root, pivot_value_new_value (
                   &item->from, item->width,
                   (item->width
-                   ? &(struct fmt_spec) { FMT_F, item->width, 0 }
+                   ? &(struct fmt_spec) { .type = FMT_F, .w = item->width }
                    : &spec->format),
                   dict_get_encoding (dict)));
               pivot_table_put2 (table, 0, old_value_idx,

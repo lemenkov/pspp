@@ -34,7 +34,7 @@
 static bool
 parse_abstract_format_specifier__ (struct lexer *lexer,
                                    char type[FMT_TYPE_LEN_MAX + 1],
-                                   int *width, int *decimals)
+                                   uint16_t *width, uint8_t *decimals)
 {
   struct substring s;
   struct substring type_ss, width_ss, decimals_ss;
@@ -90,7 +90,7 @@ error:
 bool
 parse_abstract_format_specifier (struct lexer *lexer,
                                  char type[FMT_TYPE_LEN_MAX + 1],
-                                 int *width, int *decimals)
+                                 uint16_t *width, uint8_t *decimals)
 {
   bool ok = parse_abstract_format_specifier__ (lexer, type, width, decimals);
   if (ok)

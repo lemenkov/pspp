@@ -22,7 +22,7 @@
 struct lexer;
 
 bool parse_abstract_format_specifier (struct lexer *, char *type,
-                                      int *width, int *decimals);
+                                      uint16_t *width, uint8_t *decimals);
 
 enum fmt_type ;
 struct fmt_spec;

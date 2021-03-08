@@ -86,8 +86,8 @@ cmd_output (struct lexer *lexer, struct dataset *ds UNUSED)
 	      else if (lex_match_id (lexer, "FORMAT"))
 		{
 		  char type[FMT_TYPE_LEN_MAX + 1];
-		  int width = -1;
-		  int decimals = -1;
+		  uint16_t width;
+		  uint8_t decimals;
 
 		  if (! lex_force_match (lexer, T_EQUALS))
 		    goto error;

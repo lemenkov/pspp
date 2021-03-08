@@ -644,9 +644,10 @@ put_value (struct buf *buf, const struct pivot_value *value)
       put_value_mod (buf, value, NULL);
       size_t len = strlen (value->string.s);
       if (value->string.hex)
-        put_format (buf, &(struct fmt_spec) { FMT_AHEX, len * 2, 0 }, false);
+        put_format (buf, &(struct fmt_spec) { .type = FMT_AHEX, .w = len * 2 },
+                    false);
       else
-        put_format (buf, &(struct fmt_spec) { FMT_A, len, 0 }, false);
+        put_format (buf, &(struct fmt_spec) { .type = FMT_A, .w = len }, false);
       put_string (buf, value->string.value_label);
       put_string (buf, value->string.var_name);
       put_show_values (buf, value->string.show);

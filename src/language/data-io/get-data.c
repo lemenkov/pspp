@@ -626,7 +626,8 @@ parse_get_txt (struct lexer *lexer, struct dataset *ds)
         {
           char fmt_type_name[FMT_TYPE_LEN_MAX + 1];
           enum fmt_type fmt_type;
-          int w, d;
+          uint16_t w;
+          uint8_t d;
 
           if (!parse_column_range (lexer, 0, &fc, &lc, NULL))
             goto error;
