@@ -587,26 +587,26 @@ html_put_table_cell (struct html_driver *html, const struct pivot_table *pt,
   escape_string (html->file, s, " ", "<br>");
   ds_destroy (&body);
 
-  if (cell->value->n_subscripts)
+  const struct pivot_value_ex *ex = pivot_value_ex (cell->value);
+  if (ex->n_subscripts)
     {
       fputs ("<sub>", html->file);
-      for (size_t i = 0; i < cell->value->n_subscripts; i++)
+      for (size_t i = 0; i < ex->n_subscripts; i++)
         {
           if (i)
             putc (',', html->file);
-          escape_string (html->file, cell->value->subscripts[i],
-                         "&nbsp;", "<br>");
+          escape_string (html->file, ex->subscripts[i], "&nbsp;", "<br>");
         }
       fputs ("</sub>", html->file);
     }
-  if (cell->value->n_footnotes > 0)
+  if (ex->n_footnotes > 0)
     {
       fputs ("<sup>", html->file);
       size_t n_footnotes = 0;
-      for (size_t i = 0; i < cell->value->n_footnotes; i++)
+      for (size_t i = 0; i < ex->n_footnotes; i++)
         {
           const struct pivot_footnote *f
-            = pt->footnotes[cell->value->footnote_indexes[i]];
+            = pt->footnotes[ex->footnote_indexes[i]];
           if (f->show)
             {
               if (n_footnotes++ > 0)

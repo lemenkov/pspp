@@ -742,23 +742,23 @@ xr_layout_cell_text (struct xr_fsm *xr, const struct table_cell *cell,
                                 PANGO_UNDERLINE_SINGLE));
     }
 
-  const struct pivot_value *value = cell->value;
-  if (value->n_footnotes || value->n_subscripts)
+  const struct pivot_value_ex *ex = pivot_value_ex (cell->value);
+  if (ex->n_footnotes || ex->n_subscripts)
     {
       size_t subscript_ofs = ds_length (&body);
-      for (size_t i = 0; i < value->n_subscripts; i++)
+      for (size_t i = 0; i < ex->n_subscripts; i++)
         {
           if (i)
             ds_put_byte (&body, ',');
-          ds_put_cstr (&body, value->subscripts[i]);
+          ds_put_cstr (&body, ex->subscripts[i]);
         }
 
       size_t footnote_ofs = ds_length (&body);
       size_t n_footnotes = 0;
-      for (size_t i = 0; i < value->n_footnotes; i++)
+      for (size_t i = 0; i < ex->n_footnotes; i++)
         {
           const struct pivot_footnote *f
-            = pt->footnotes[value->footnote_indexes[i]];
+            = pt->footnotes[ex->footnote_indexes[i]];
           if (f->show)
             {
               if (n_footnotes++)
@@ -769,7 +769,7 @@ xr_layout_cell_text (struct xr_fsm *xr, const struct table_cell *cell,
 
       /* Allow footnote markers to occupy the right margin.  That way, numbers
          in the column are still aligned. */
-      if (value->n_footnotes && halign == TABLE_HALIGN_RIGHT)
+      if (ex->n_footnotes && halign == TABLE_HALIGN_RIGHT)
         {
           /* Measure the width of the footnote marker, so we know how much we
              need to make room for. */
@@ -804,10 +804,10 @@ xr_layout_cell_text (struct xr_fsm *xr, const struct table_cell *cell,
                 PANGO_ATTR_INDEX_TO_TEXT_END);
       add_attr (attrs, pango_attr_scale_new (PANGO_SCALE_SMALL),
                 subscript_ofs, PANGO_ATTR_INDEX_TO_TEXT_END);
-      if (value->n_subscripts)
+      if (ex->n_subscripts)
         add_attr (attrs, pango_attr_rise_new (-3000), subscript_ofs,
                   footnote_ofs - subscript_ofs);
-      if (value->n_footnotes)
+      if (ex->n_footnotes)
         {
           bool superscript = pt->look->footnote_marker_superscripts;
           add_attr (attrs, pango_attr_rise_new (superscript ? 3000 : -3000),

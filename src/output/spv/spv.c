@@ -282,9 +282,9 @@ decode_container_text (const struct spvsx_container_text *ct)
 {
   struct font_style *font_style = xmalloc (sizeof *font_style);
   char *text = decode_embedded_html (ct->html->node_.raw, font_style);
+
   struct pivot_value *value = xmalloc (sizeof *value);
   *value = (struct pivot_value) {
-    .font_style = font_style,
     .text = {
       .type = PIVOT_VALUE_TEXT,
       .local = text,
@@ -293,6 +293,7 @@ decode_container_text (const struct spvsx_container_text *ct)
       .user_provided = true,
     },
   };
+  pivot_value_ex_rw (value)->font_style = font_style;
 
   struct output_item *item = text_item_create_value (TEXT_ITEM_LOG,
                                                      value, NULL);

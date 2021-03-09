@@ -647,15 +647,7 @@ enum ATTRIBUTE ((packed)) pivot_value_type
 */
 struct pivot_value
   {
-    struct font_style *font_style;
-    struct cell_style *cell_style;
-
-    char **subscripts;
-    size_t n_subscripts;
-
-    size_t *footnote_indexes;
-    size_t n_footnotes;
-
+    struct pivot_value_ex *ex;
     union
       {
         enum pivot_value_type type;
@@ -800,6 +792,33 @@ struct pivot_argument
 void pivot_argument_uninit (struct pivot_argument *);
 void pivot_argument_copy (struct pivot_argument *,
                           const struct pivot_argument *);
+
+/* Extra styling for a pivot_value.
+
+   This is logically part of pivot_value itself.  It is broken into a separate
+   structure to save memory because it is rarely used. */
+struct pivot_value_ex
+  {
+    struct font_style *font_style;
+    struct cell_style *cell_style;
+
+    char **subscripts;
+    size_t n_subscripts;
+
+    size_t *footnote_indexes;
+    size_t n_footnotes;
+  };
+
+static inline const struct pivot_value_ex *
+pivot_value_ex (const struct pivot_value *value)
+{
+  static const struct pivot_value_ex empty_ex = { .font_style = NULL };
+  return value->ex ? value->ex : &empty_ex;
+}
+
+struct pivot_value_ex *pivot_value_ex_rw (struct pivot_value *);
+struct pivot_value_ex *pivot_value_ex_clone (const struct pivot_value_ex *);
+void pivot_value_ex_destroy (struct pivot_value_ex *);
 
 /* One piece of data within a pivot table. */
 struct pivot_cell

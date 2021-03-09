@@ -393,17 +393,19 @@ decode_spvlb_value (const struct pivot_table *table,
     {
       if (vm->n_subscripts)
         {
-          out->n_subscripts = vm->n_subscripts;
-          out->subscripts = xnmalloc (vm->n_subscripts,
-                                      sizeof *out->subscripts);
+          struct pivot_value_ex *ex = pivot_value_ex_rw (out);
+          ex->n_subscripts = vm->n_subscripts;
+          ex->subscripts = xnmalloc (vm->n_subscripts, sizeof *ex->subscripts);
           for (size_t i = 0; i < vm->n_subscripts; i++)
-            out->subscripts[i] = to_utf8 (vm->subscripts[i], encoding);
+            ex->subscripts[i] = to_utf8 (vm->subscripts[i], encoding);
         }
 
       if (vm->n_refs)
         {
-          out->footnote_indexes = xnmalloc (vm->n_refs,
-                                            sizeof *out->footnote_indexes);
+          struct pivot_value_ex *ex = pivot_value_ex_rw (out);
+          ex->footnote_indexes = xnmalloc (vm->n_refs,
+                                           sizeof *ex->footnote_indexes);
+
           for (size_t i = 0; i < vm->n_refs; i++)
             {
               uint16_t idx = vm->refs[i];
@@ -414,18 +416,19 @@ decode_spvlb_value (const struct pivot_table *table,
                                     idx, table->n_footnotes);
                 }
 
-              out->footnote_indexes[out->n_footnotes++] = idx;
+              ex->footnote_indexes[ex->n_footnotes++] = idx;
             }
           pivot_value_sort_footnotes (out);
         }
 
       if (vm->style_pair)
         {
+          struct pivot_value_ex *ex = pivot_value_ex_rw (out);
           error = decode_spvlb_font_style (vm->style_pair->font_style,
-                                           encoding, &out->font_style);
+                                           encoding, &ex->font_style);
           if (!error)
             error = decode_spvlb_cell_style (vm->style_pair->cell_style,
-                                             &out->cell_style);
+                                             &ex->cell_style);
           if (error)
             {
               pivot_value_destroy (out);

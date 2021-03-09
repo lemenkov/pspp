@@ -393,13 +393,12 @@ tex_submit (struct output_driver *driver, const struct output_item *item)
 static void
 tex_put_footnote_markers (struct tex_driver *tex,
                           const struct pivot_table *pt,
-                          const size_t *footnote_indexes,
-                          size_t n_footnotes)
+                          const struct pivot_value_ex *ex)
 {
   size_t n_visible = 0;
-  for (size_t i = 0; i < n_footnotes; i++)
+  for (size_t i = 0; i < ex->n_footnotes; i++)
     {
-      const struct pivot_footnote *f = pt->footnotes[footnote_indexes[i]];
+      const struct pivot_footnote *f = pt->footnotes[ex->footnote_indexes[i]];
       if (f->show)
         {
           if (!n_visible++)
@@ -423,9 +422,7 @@ tex_put_table_cell (struct tex_driver *tex, const struct pivot_table *pt,
   tex_escape_string (tex, ds_cstr (&s), false);
   ds_destroy (&s);
 
-  tex_put_footnote_markers (tex, pt,
-                            cell->value->footnote_indexes,
-                            cell->value->n_footnotes);
+  tex_put_footnote_markers (tex, pt, pivot_value_ex (cell->value));
 }
 
 static void
@@ -549,8 +546,7 @@ tex_output_table_layer (struct tex_driver *tex, const struct pivot_table *pt,
           tex_escape_string (tex, ds_cstr (&s), true);
           ds_destroy (&s);
 
-          tex_put_footnote_markers (tex, pt, cell.value->footnote_indexes,
-                                    cell.value->n_footnotes);
+          tex_put_footnote_markers (tex, pt, pivot_value_ex (cell.value));
           if (halign == TABLE_HALIGN_CENTER || halign == TABLE_HALIGN_RIGHT)
             {
               shipout (&tex->token_list, "}");

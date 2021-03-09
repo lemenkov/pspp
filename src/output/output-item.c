@@ -586,14 +586,15 @@ text_item_create_value (enum text_item_subtype subtype,
 {
   if (subtype == TEXT_ITEM_SYNTAX || subtype == TEXT_ITEM_LOG)
     {
-      if (!value->font_style)
+      struct pivot_value_ex *ex = pivot_value_ex_rw (value);
+      if (!ex->font_style)
         {
-          value->font_style = xmalloc (sizeof *value->font_style);
-          *value->font_style = (struct font_style) FONT_STYLE_INITIALIZER;
+          ex->font_style = xmalloc (sizeof *value->ex->font_style);
+          *ex->font_style = (struct font_style) FONT_STYLE_INITIALIZER;
         }
 
-      free (value->font_style->typeface);
-      value->font_style->typeface = xstrdup ("Monospaced");
+      free (ex->font_style->typeface);
+      ex->font_style->typeface = xstrdup ("Monospaced");
     }
 
   struct output_item *item = xzalloc (sizeof *item);
@@ -652,8 +653,9 @@ text_item_append (struct output_item *dst, const struct output_item *src)
   if (ds != ss
       || (ds != TEXT_ITEM_SYNTAX && ds != TEXT_ITEM_LOG)
       || strcmp (output_item_get_label (dst), output_item_get_label (src))
-      || !nullable_font_style_equal (dc->font_style, sc->font_style)
-      || (dc->font_style && dc->font_style->markup)
+      || !nullable_font_style_equal (dc->ex ? dc->ex->font_style : NULL,
+                                     sc->ex ? sc->ex->font_style : NULL)
+      || (dc->ex && dc->ex->font_style && dc->ex->font_style->markup)
       || sc->type != PIVOT_VALUE_TEXT
       || dc->type != PIVOT_VALUE_TEXT)
     return false;

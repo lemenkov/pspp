@@ -2411,7 +2411,7 @@ pivot_value_format_body (const struct pivot_value *value,
       break;
 
     case PIVOT_VALUE_TEXT:
-      if (value->font_style && value->font_style->markup)
+      if (value->ex && value->ex->font_style && value->ex->font_style->markup)
         get_text_from_markup (value->text.local, out);
       else
         ds_put_cstr (out, value->text.local);
@@ -2440,21 +2440,25 @@ pivot_value_format (const struct pivot_value *value,
 {
   bool numeric = pivot_value_format_body (value, pt, out);
 
-  if (value->n_subscripts)
+  const struct pivot_value_ex *ex = value->ex;
+  if (ex)
     {
-      for (size_t i = 0; i < value->n_subscripts; i++)
-        ds_put_format (out, "%c%s", i ? ',' : '_', value->subscripts[i]);
-    }
+      if (ex->n_subscripts)
+        {
+          for (size_t i = 0; i < ex->n_subscripts; i++)
+            ds_put_format (out, "%c%s", i ? ',' : '_', ex->subscripts[i]);
+        }
 
-  for (size_t i = 0; i < value->n_footnotes; i++)
-    {
-      ds_put_byte (out, '[');
+      for (size_t i = 0; i < ex->n_footnotes; i++)
+        {
+          ds_put_byte (out, '[');
 
-      size_t idx = value->footnote_indexes[i];
-      const struct pivot_footnote *f = pt->footnotes[idx];
-      pivot_footnote_format_marker (f, pt, out);
+          size_t idx = ex->footnote_indexes[i];
+          const struct pivot_footnote *f = pt->footnotes[idx];
+          pivot_footnote_format_marker (f, pt, out);
 
-      ds_put_byte (out, ']');
+          ds_put_byte (out, ']');
+        }
     }
 
   return numeric;
@@ -2489,22 +2493,8 @@ pivot_value_clone (const struct pivot_value *old)
     return NULL;
 
   struct pivot_value *new = xmemdup (old, sizeof *new);
-  if (old->font_style)
-    {
-      new->font_style = xmalloc (sizeof *new->font_style);
-      font_style_copy (NULL, new->font_style, old->font_style);
-    }
-  if (old->cell_style)
-    new->cell_style = xmemdup (old->cell_style, sizeof *new->cell_style);
-  if (old->n_subscripts)
-    {
-      new->subscripts = xnmalloc (old->n_subscripts, sizeof *new->subscripts);
-      for (size_t i = 0; i < old->n_subscripts; i++)
-        new->subscripts[i] = xstrdup (old->subscripts[i]);
-    }
-  if (old->n_footnotes)
-    new->footnote_indexes = xmemdup (
-      old->footnote_indexes, old->n_footnotes * sizeof *new->footnote_indexes);
+  if (old->ex)
+    new->ex = pivot_value_ex_clone (old->ex);
 
   switch (new->type)
     {
@@ -2557,15 +2547,7 @@ pivot_value_destroy (struct pivot_value *value)
 {
   if (value)
     {
-      font_style_uninit (value->font_style);
-      free (value->font_style);
-      free (value->cell_style);
-      free (value->footnote_indexes);
-
-      for (size_t i = 0; i < value->n_subscripts; i++)
-        free (value->subscripts[i]);
-      free (value->subscripts);
-
+      pivot_value_ex_destroy (value->ex);
       switch (value->type)
         {
         case PIVOT_VALUE_NUMERIC:
@@ -2617,12 +2599,10 @@ pivot_value_get_style (struct pivot_value *value,
                        const struct cell_style *base_cell_style,
                        struct table_area_style *area)
 {
-  font_style_copy (NULL, &area->font_style, (value->font_style
-                                             ? value->font_style
-                                             : base_font_style));
-  area->cell_style = *(value->cell_style
-                       ? value->cell_style
-                       : base_cell_style);
+  const struct pivot_value_ex *ex = pivot_value_ex (value);
+  font_style_copy (NULL, &area->font_style,
+                   ex->font_style ? ex->font_style : base_font_style);
+  area->cell_style = *(ex->cell_style ? ex->cell_style : base_cell_style);
 }
 
 /* Copies AREA into VALUE's style. */
@@ -2638,20 +2618,22 @@ void
 pivot_value_set_font_style (struct pivot_value *value,
                             const struct font_style *font_style)
 {
-  if (value->font_style)
-    font_style_uninit (value->font_style);
+  struct pivot_value_ex *ex = pivot_value_ex_rw (value);
+  if (ex->font_style)
+    font_style_uninit (ex->font_style);
   else
-    value->font_style = xmalloc (sizeof *value->font_style);
-  font_style_copy (NULL, value->font_style, font_style);
+    ex->font_style = xmalloc (sizeof *ex->font_style);
+  font_style_copy (NULL, ex->font_style, font_style);
 }
 
 void
 pivot_value_set_cell_style (struct pivot_value *value,
                             const struct cell_style *cell_style)
 {
-  if (!value->cell_style)
-    value->cell_style = xmalloc (sizeof *value->cell_style);
-  *value->cell_style = *cell_style;
+  struct pivot_value_ex *ex = pivot_value_ex_rw (value);
+  if (!ex->cell_style)
+    ex->cell_style = xmalloc (sizeof *ex->cell_style);
+  *ex->cell_style = *cell_style;
 }
 
 void
@@ -2879,15 +2861,18 @@ void
 pivot_value_add_footnote (struct pivot_value *v,
                           const struct pivot_footnote *footnote)
 {
+  struct pivot_value_ex *ex = pivot_value_ex_rw (v);
+
   /* Some legacy tables include numerous duplicate footnotes.  Suppress
      them. */
-  for (size_t i = 0; i < v->n_footnotes; i++)
-    if (v->footnote_indexes[i] == footnote->idx)
+  for (size_t i = 0; i < ex->n_footnotes; i++)
+    if (ex->footnote_indexes[i] == footnote->idx)
       return;
 
-  v->footnote_indexes = xrealloc (
-    v->footnote_indexes, (v->n_footnotes + 1) * sizeof *v->footnote_indexes);
-  v->footnote_indexes[v->n_footnotes++] = footnote->idx;
+  ex->footnote_indexes = xrealloc (
+    ex->footnote_indexes,
+    (ex->n_footnotes + 1) * sizeof *ex->footnote_indexes);
+  ex->footnote_indexes[ex->n_footnotes++] = footnote->idx;
   pivot_value_sort_footnotes (v);
 }
 
@@ -2908,9 +2893,9 @@ compare_footnote_indexes (const void *a_, const void *b_)
 void
 pivot_value_sort_footnotes (struct pivot_value *v)
 {
-  if (v->n_footnotes > 1)
-    qsort (v->footnote_indexes, v->n_footnotes, sizeof *v->footnote_indexes,
-           compare_footnote_indexes);
+  if (v->ex && v->ex->n_footnotes > 1)
+    qsort (v->ex->footnote_indexes, v->ex->n_footnotes,
+           sizeof *v->ex->footnote_indexes, compare_footnote_indexes);
 }
 
 /* If VALUE is a numeric value, and RC is a result class such as
@@ -2923,4 +2908,65 @@ pivot_value_set_rc (const struct pivot_table *table, struct pivot_value *value,
     pivot_table_use_rc (table, rc,
                         &value->numeric.format, &value->numeric.honor_small);
 }
+
+/* pivot_value_ex. */
 
+struct pivot_value_ex *
+pivot_value_ex_rw (struct pivot_value *value)
+{
+  if (!value->ex)
+    value->ex = xzalloc (sizeof *value->ex);
+  return value->ex;
+}
+
+struct pivot_value_ex *
+pivot_value_ex_clone (const struct pivot_value_ex *old)
+{
+  struct font_style *font_style = NULL;
+  if (old->font_style)
+    {
+      font_style = xmalloc (sizeof *font_style);
+      font_style_copy (NULL, font_style, old->font_style);
+    }
+
+  char **subscripts = NULL;
+  if (old->n_subscripts)
+    {
+      subscripts = xnmalloc (old->n_subscripts, sizeof *subscripts);
+      for (size_t i = 0; i < old->n_subscripts; i++)
+        subscripts[i] = xstrdup (old->subscripts[i]);
+    }
+
+  struct pivot_value_ex *new = xmalloc (sizeof *new);
+  *new = (struct pivot_value_ex) {
+    .font_style = font_style,
+    .cell_style = (old->cell_style
+                   ? xmemdup (old->cell_style, sizeof *new->cell_style)
+                   : NULL),
+    .subscripts = subscripts,
+    .n_subscripts = old->n_subscripts,
+    .footnote_indexes = (
+      old->n_footnotes
+      ? xmemdup (old->footnote_indexes,
+                 old->n_footnotes * sizeof *new->footnote_indexes)
+      : NULL),
+    .n_footnotes = old->n_footnotes
+  };
+  return new;
+}
+
+void
+pivot_value_ex_destroy (struct pivot_value_ex *ex)
+{
+  if (ex)
+    {
+      font_style_uninit (ex->font_style);
+      free (ex->font_style);
+      free (ex->cell_style);
+      free (ex->footnote_indexes);
+
+      for (size_t i = 0; i < ex->n_subscripts; i++)
+        free (ex->subscripts[i]);
+      free (ex->subscripts);
+    }
+}

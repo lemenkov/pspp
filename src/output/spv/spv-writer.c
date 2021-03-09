@@ -558,20 +558,25 @@ static void
 put_value_mod (struct buf *buf, const struct pivot_value *value,
                const char *template)
 {
-  if (value->n_footnotes || value->n_subscripts
-      || template || value->font_style || value->cell_style)
+  if ((value->ex
+       && (value->ex->n_footnotes
+           || value->ex->n_subscripts
+           || value->ex->font_style
+           || value->ex->cell_style))
+      || template)
     {
+      const struct pivot_value_ex *ex = pivot_value_ex (value);
       put_byte (buf, 0x31);
 
       /* Footnotes. */
-      put_u32 (buf, value->n_footnotes);
-      for (size_t i = 0; i < value->n_footnotes; i++)
-        put_u16 (buf, value->footnote_indexes[i]);
+      put_u32 (buf, ex->n_footnotes);
+      for (size_t i = 0; i < ex->n_footnotes; i++)
+        put_u16 (buf, ex->footnote_indexes[i]);
 
       /* Subscripts. */
-      put_u32 (buf, value->n_subscripts);
-      for (size_t i = 0; i < value->n_subscripts; i++)
-        put_string (buf, value->subscripts[i]);
+      put_u32 (buf, ex->n_subscripts);
+      for (size_t i = 0; i < ex->n_subscripts; i++)
+        put_string (buf, ex->subscripts[i]);
 
       /* Template and style. */
       uint32_t v3_start = start_count (buf);
@@ -585,7 +590,7 @@ put_value_mod (struct buf *buf, const struct pivot_value *value,
           put_string (buf, template);
         }
       end_count_u32 (buf, template_string_start);
-      put_style_pair (buf, value->font_style, value->cell_style);
+      put_style_pair (buf, ex->font_style, ex->cell_style);
       end_count_u32 (buf, v3_start);
     }
   else

@@ -598,16 +598,16 @@ read_value_option (struct lexer *lexer, const struct pivot_table *pt,
   if (lex_match_id (lexer, "SUBSCRIPTS"))
     {
       lex_match (lexer, T_EQUALS);
-      size_t allocated_subscripts = value->n_subscripts;
+
+      struct pivot_value_ex *ex = pivot_value_ex_rw (value);
+      size_t allocated_subscripts = ex->n_subscripts;
       while (lex_token (lexer) == T_STRING)
         {
-          if (value->n_subscripts >= allocated_subscripts)
-            value->subscripts = x2nrealloc (value->subscripts,
-                                            &allocated_subscripts,
-                                            sizeof *value->subscripts);
+          if (ex->n_subscripts >= allocated_subscripts)
+            ex->subscripts = x2nrealloc (ex->subscripts, &allocated_subscripts,
+                                         sizeof *ex->subscripts);
 
-          value->subscripts[value->n_subscripts++] = xstrdup (
-            lex_tokcstr (lexer));
+          ex->subscripts[ex->n_subscripts++] = xstrdup (lex_tokcstr (lexer));
           lex_get (lexer);
         }
       return;
@@ -617,12 +617,13 @@ read_value_option (struct lexer *lexer, const struct pivot_table *pt,
     {
       lex_match (lexer, T_EQUALS);
 
-      if (!value->font_style)
+      struct pivot_value_ex *ex = pivot_value_ex_rw (value);
+      if (!ex->font_style)
         {
-          value->font_style = xmalloc (sizeof *value->font_style);
-          font_style_copy (NULL, value->font_style, &base_style->font_style);
+          ex->font_style = xmalloc (sizeof *ex->font_style);
+          font_style_copy (NULL, ex->font_style, &base_style->font_style);
         }
-      read_font_style (lexer, value->font_style);
+      read_font_style (lexer, ex->font_style);
       return;
     }
 
@@ -630,12 +631,13 @@ read_value_option (struct lexer *lexer, const struct pivot_table *pt,
     {
       lex_match (lexer, T_EQUALS);
 
-      if (!value->cell_style)
+      struct pivot_value_ex *ex = pivot_value_ex_rw (value);
+      if (!ex->cell_style)
         {
-          value->cell_style = xmalloc (sizeof *value->cell_style);
-          *value->cell_style = base_style->cell_style;
+          ex->cell_style = xmalloc (sizeof *ex->cell_style);
+          *ex->cell_style = base_style->cell_style;
         }
-      read_cell_style (lexer, value->cell_style);
+      read_cell_style (lexer, ex->cell_style);
       return;
     }
 

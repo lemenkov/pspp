@@ -527,12 +527,13 @@ table_get_cell (const struct table *t, int x, int y, struct table_cell *cell)
   else
     {
       const struct pivot_value *v = cc ? cc : &empty_value;
+      const struct pivot_value_ex *ex = pivot_value_ex (v);
       *cell = (struct table_cell) {
         .d = { [H] = { x, x + 1 }, [V] = { y, y + 1 } },
         .options = opt,
         .value = v,
-        .font_style = v->font_style ? v->font_style : &style->font_style,
-        .cell_style = v->cell_style ? v->cell_style : &style->cell_style,
+        .font_style = ex->font_style ? ex->font_style : &style->font_style,
+        .cell_style = ex->cell_style ? ex->cell_style : &style->cell_style,
       };
     }
 

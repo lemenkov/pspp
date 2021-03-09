@@ -446,8 +446,8 @@ write_table_item_cell (struct odt_driver *odt,
   xmlTextWriterWriteString (odt->content_wtr, _xml (ds_cstr (&body)));
   ds_destroy (&body);
 
-  write_footnotes (odt, pt, cell->value->footnote_indexes,
-                   cell->value->n_footnotes);
+  const struct pivot_value_ex *ex = pivot_value_ex (cell->value);
+  write_footnotes (odt, pt, ex->footnote_indexes, ex->n_footnotes);
 }
 
 static void

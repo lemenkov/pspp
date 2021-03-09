@@ -394,9 +394,10 @@ add_references (const struct pivot_table *pt, const struct table *table,
 
         if (x == cell.d[H][0] && y == cell.d[V][0])
           {
-            for (size_t i = 0; i < cell.value->n_footnotes; i++)
+            const struct pivot_value_ex *ex = pivot_value_ex (cell.value);
+            for (size_t i = 0; i < ex->n_footnotes; i++)
               {
-                size_t idx = cell.value->footnote_indexes[i];
+                size_t idx = ex->footnote_indexes[i];
                 assert (idx < pt->n_footnotes);
 
                 if (!refs[idx] && pt->footnotes[idx]->show)
