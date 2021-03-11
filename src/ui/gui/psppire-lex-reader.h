@@ -18,9 +18,11 @@
 #define  LEX_READER_H
 
 #include <gtk/gtk.h>
+#include "language/lexer/lexer.h"
 
-struct lex_reader;
-
-struct lex_reader *lex_reader_for_gtk_text_buffer (GtkTextBuffer *buffer, GtkTextIter start, GtkTextIter stop);
+struct lex_reader *lex_reader_for_gtk_text_buffer (
+  GtkTextBuffer *buffer,
+  GtkTextIter start, GtkTextIter stop,
+  enum lex_syntax_mode);
 
 #endif

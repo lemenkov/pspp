@@ -25,6 +25,8 @@
 
 #include <gtksourceview/gtksource.h>
 
+#include "language/lexer/lexer.h"
+
 G_BEGIN_DECLS
 
 #define PSPPIRE_SYNTAX_WINDOW_TYPE            (psppire_syntax_window_get_type ())
@@ -48,10 +50,10 @@ struct _PsppireSyntaxWindow
   /* <private> */
 
   GtkSourceBuffer *buffer;  /* The buffer which contains the text */
-  struct lexer *lexer;    /* Lexer to parse syntax */
   gchar *encoding;              /* File's encoding. */
   GtkWidget *sb;
   guint text_context;
+  enum lex_syntax_mode syntax_mode;
 
   GtkPrintSettings *print_settings;
   GtkSourcePrintCompositor *compositor;

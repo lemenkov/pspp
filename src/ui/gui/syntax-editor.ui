@@ -123,6 +123,23 @@
 	<attribute name="action">win.run-to-end</attribute>
       </item>
     </section>
+    <section>
+      <item>
+	<attribute name="label" translatable="yes">A_uto Syntax</attribute>
+        <attribute name="target">auto</attribute>
+	<attribute name="action">win.syntax</attribute>
+      </item>
+      <item>
+	<attribute name="label" translatable="yes">_Interactive Syntax</attribute>
+        <attribute name="target">interactive</attribute>
+	<attribute name="action">win.syntax</attribute>
+      </item>
+      <item>
+	<attribute name="label" translatable="yes">_Batch Syntax</attribute>
+        <attribute name="target">batch</attribute>
+	<attribute name="action">win.syntax</attribute>
+      </item>
+    </section>
   </submenu>
 </menu>
 <object class="GtkScrolledWindow" id="scrolledwindow8">

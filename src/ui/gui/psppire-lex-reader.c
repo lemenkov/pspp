@@ -54,11 +54,14 @@ lex_gtk_text_buffer_reader_cast (struct lex_reader *r)
 
 
 struct lex_reader *
-lex_reader_for_gtk_text_buffer (GtkTextBuffer *buffer, GtkTextIter start, GtkTextIter stop)
+lex_reader_for_gtk_text_buffer (GtkTextBuffer *buffer,
+                                GtkTextIter start, GtkTextIter stop,
+                                enum lex_syntax_mode syntax_mode)
 {
   struct lex_gtk_text_buffer_reader *r = xmalloc (sizeof *r);
 
   lex_reader_init (&r->reader, &lex_gtk_text_buffer_reader_class);
+  r->reader.syntax = syntax_mode;
 
   r->buffer = buffer;
   g_object_ref (buffer);
