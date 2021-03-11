@@ -200,7 +200,11 @@ editor_execute_syntax (const PsppireSyntaxWindow *sw, GtkTextIter start,
   struct lex_reader *reader = lex_reader_for_gtk_text_buffer (
     GTK_TEXT_BUFFER (sw->buffer), start, stop, sw->syntax_mode);
 
-  lex_reader_set_file_name (reader, psppire_window_get_filename (win));
+  const gchar *filename = psppire_window_get_filename (win);
+  /* TRANSLATORS: This is part of a filename.  Please avoid whitespace. */
+  gchar *untitled = xasprintf ("%s.sps", _("Untitled"));
+  lex_reader_set_file_name (reader, filename ? filename : untitled);
+  free (untitled);
 
   execute_syntax (psppire_default_data_window (), reader);
 }
