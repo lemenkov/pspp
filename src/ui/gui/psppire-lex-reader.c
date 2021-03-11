@@ -62,6 +62,7 @@ lex_reader_for_gtk_text_buffer (GtkTextBuffer *buffer,
 
   lex_reader_init (&r->reader, &lex_gtk_text_buffer_reader_class);
   r->reader.syntax = syntax_mode;
+  r->reader.line_number = gtk_text_iter_get_line (&start) + 1;
 
   r->buffer = buffer;
   g_object_ref (buffer);
