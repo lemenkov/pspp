@@ -1,5 +1,6 @@
 /* PSPP - a program for statistical analysis.
-   Copyright (C) 2006, 2009, 2010, 2011, 2012, 2013, 2014, 2015, 2016 Free Software Foundation, Inc.
+   Copyright (C) 2006, 2009, 2010, 2011, 2012, 2013, 2014, 2015,
+   2016, 2021 Free Software Foundation, Inc.
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -62,7 +63,7 @@ static struct hmapx map;
 
 /* A wrapper around iconv_open */
 static struct converter *
-create_iconv (const char* tocode, const char* fromcode)
+create_iconv (const char* tocode, const char* fromcode, bool warn)
 {
   size_t hash;
   struct hmapx_node *node;
@@ -89,10 +90,11 @@ create_iconv (const char* tocode, const char* fromcode)
      as the converters have not yet been set up */
   if (error && strcmp (tocode, fromcode))
     {
-      fprintf (stderr,
-               "Warning: "
-               "cannot create a converter for `%s' to `%s': %s\n",
-               fromcode, tocode, strerror (error));
+      if (warn)
+        fprintf (stderr,
+                 "Warning: "
+                 "cannot create a converter for `%s' to `%s': %s\n",
+                 fromcode, tocode, strerror (error));
 
       free (converter->tocode);
       free (converter->fromcode);
@@ -559,7 +561,7 @@ recode_substring_pool__ (const char *to, const char *from,
   if (from == NULL)
     from = default_encoding;
 
-  conv = create_iconv (to, from);
+  conv = create_iconv (to, from, true);
 
   if (NULL == conv)
     {
@@ -1055,8 +1057,8 @@ is_encoding_ebcdic_compatible (const char *encoding)
 bool
 is_encoding_supported (const char *encoding)
 {
-  return (create_iconv ("UTF-8", encoding)
-          && create_iconv (encoding, "UTF-8"));
+  return (create_iconv ("UTF-8", encoding, false)
+          && create_iconv (encoding, "UTF-8", false));
 }
 
 /* Returns true if E is the name of a UTF-8 encoding.
