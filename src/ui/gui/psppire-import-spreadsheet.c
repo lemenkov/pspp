@@ -31,7 +31,7 @@
 #define N_(msgid) msgid
 
 static void
-set_column_header_label (GtkWidget *button, uint i, gpointer user_data)
+set_column_header_label (GtkWidget *button, int i, gpointer user_data)
 {
   gchar *x = int_to_ps26 (i);
   gtk_button_set_label (GTK_BUTTON (button), x);
