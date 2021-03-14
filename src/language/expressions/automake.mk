@@ -43,7 +43,11 @@ $(expressions_built_sources): $(helpers)
 	$(AV_V_GEN)$(MKDIR_P) `dirname $@` && \
 	$(PERL) $< -o $@ -i $(top_srcdir)/src/language/expressions/operations.def
 
-AM_CPPFLAGS += -I$(top_builddir)/src/language/expressions \
+AM_CPPFLAGS += -I$(abs_top_builddir)/src/language/expressions \
 	-I$(top_srcdir)/src/language/expressions
 
 EXTRA_DIST += src/language/expressions/TODO
+
+# This seems to be necessary in order to prevent issues building the native
+# build when cross compiling
+src/language/expressions/evaluate.lo: $(expressions_built_sources)
