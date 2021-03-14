@@ -173,6 +173,9 @@ on_local_options (GApplication * application,
    Each entry should end with a period.   */
 static const char *tips[] =
   {
+#ifdef _WIN32
+   N_("PSPP runs best on free platforms such as GNU and GNU/Linux.  Windows is a non-free system.  As such, certain features might work sub-optimally.  For best results use a free system instead."),
+#endif
    N_("Right click on variable lists to change between viewing the variables' names and their labels."),
    N_("Click \"Paste\" instead of \"OK\" when running procedures.  This allows you to edit your commands before running them and you have better control over your work."),
    N_("Directly import your spreadsheets using the \"File | Import Data\" menu."),
