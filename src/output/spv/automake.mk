@@ -117,3 +117,20 @@ nodist_src_output_liboutput_la_SOURCES += $(tlo_out)
 BUILT_SOURCES += $(tlo_out)
 CLEANFILES += $(tlo_out)
 EXTRA_DIST += $(tlo_in)
+
+# These explicit dependencies seem to be necessary when cross building ---
+# more precisely, when building the native build necessary to build the cross.
+# Note that the use of the pspp_kludge_N variables is necessary.  Otherwise
+# automake thinks if need not emit build rules for these items.
+pspp_kludge_0=src/output/spv/liboutput_la-spv-legacy-data.lo
+$(pspp_kludge_0): src/output/spv/old-binary-parser.h
+
+pspp_kludge_1=src/output/spv/liboutput_la-spv-legacy-decoder.lo
+$(pspp_kludge_1): src/output/spv/detail-xml-parser.h \
+ src/output/spv/structure-xml-parser.h
+
+pspp_kludge_2=src/output/spv/liboutput_la-spv-light-decoder.lo
+$(pspp_kludge_2): src/output/spv/light-binary-parser.h
+
+pspp_kludge_3=src/output/spv/liboutput_la-spv-table-look.lo
+$(pspp_kludge_3): src/output/spv/tlo-parser.h
