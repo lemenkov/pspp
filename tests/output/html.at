@@ -35,7 +35,7 @@ weight by w.
 
 crosstabs
 	/tables=l96_r by l99_r by l102_r
-	/format=avalue table pivot
+	/format=avalue table
 	/statistics=none
 	/cell=count.
 ])

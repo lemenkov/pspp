@@ -254,7 +254,7 @@ SPLIT FILE SEPARATE BY v0.
 
 CROSSTABS
     /TABLES= v1 BY v2
-    /FORMAT=AVALUE TABLES PIVOT
+    /FORMAT=AVALUE TABLES
     /STATISTICS=CHISQ
     /CELLS=COUNT ROW COLUMN TOTAL.
 ])
@@ -1659,7 +1659,7 @@ end data.
 weight by w.
 
 crosstabs /table = p1 by p2
-	statistics = kappa
+	/statistics = kappa
 	.
 ])
 

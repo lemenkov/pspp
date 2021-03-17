@@ -678,12 +678,8 @@ The keyword @subcmd{ALL} is the union of @subcmd{DESCRIPTIVES} and @subcmd{XPROD
 CROSSTABS
         /TABLES=@var{var_list} BY @var{var_list} [BY @var{var_list}]@dots{}
         /MISSING=@{TABLE,INCLUDE,REPORT@}
-        /WRITE=@{NONE,CELLS,ALL@}
         /FORMAT=@{TABLES,NOTABLES@}
-                @{PIVOT,NOPIVOT@}
                 @{AVALUE,DVALUE@}
-                @{NOINDEX,INDEX@}
-                @{BOX,NOBOX@}
         /CELLS=@{COUNT,ROW,COLUMN,TOTAL,EXPECTED,RESIDUAL,SRESIDUAL,
                 ASRESIDUAL,ALL,NONE@}
         /COUNT=@{ASIS,CASE,CELL@}
@@ -728,8 +724,6 @@ tables and statistics.  When set to @subcmd{REPORT}, which is allowed only in
 integer mode, user-missing values are included in tables but marked with
 a footnote and excluded from statistical calculations.
 
-Currently the @subcmd{WRITE} subcommand is ignored.
-
 The @subcmd{FORMAT} subcommand controls the characteristics of the
 crosstabulation tables to be displayed.  It has a number of possible
 settings:
@@ -737,22 +731,11 @@ settings:
 @itemize @w{}
 @item
 @subcmd{TABLES}, the default, causes crosstabulation tables to be output.
-@subcmd{NOTABLES} suppresses them.
-
-@item
-@subcmd{PIVOT}, the default, causes each @subcmd{TABLES} subcommand to be displayed in a
-pivot table format.  @subcmd{NOPIVOT} causes the old-style crosstabulation format
-to be used.
+@subcmd{NOTABLES}, which is equivalent to @code{CELLS=NONE}, suppresses them.
 
 @item
 @subcmd{AVALUE}, the default, causes values to be sorted in ascending order.
 @subcmd{DVALUE} asserts a descending sort order.
-
-@item
-@subcmd{INDEX} and @subcmd{NOINDEX} are currently ignored.
-
-@item
-@subcmd{BOX} and @subcmd{NOBOX} is currently ignored.
 @end itemize
 
 The @subcmd{CELLS} subcommand controls the contents of each cell in the displayed

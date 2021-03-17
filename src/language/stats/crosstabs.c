@@ -66,29 +66,60 @@
 #define _(msgid) gettext (msgid)
 #define N_(msgid) msgid
 
-/* (headers) */
+/* Kinds of cells in the crosstabulation. */
+#define CRS_CELLS                                               \
+    C(COUNT, N_("Count"), PIVOT_RC_COUNT)                       \
+    C(EXPECTED, N_("Expected"), PIVOT_RC_OTHER)                 \
+    C(ROW, N_("Row %"), PIVOT_RC_PERCENT)                       \
+    C(COLUMN, N_("Column %"), PIVOT_RC_PERCENT)                 \
+    C(TOTAL, N_("Total %"), PIVOT_RC_PERCENT)                   \
+    C(RESIDUAL, N_("Residual"), PIVOT_RC_RESIDUAL)              \
+    C(SRESIDUAL, N_("Std. Residual"), PIVOT_RC_RESIDUAL)        \
+    C(ASRESIDUAL, N_("Adjusted Residual"), PIVOT_RC_RESIDUAL)
+enum crs_cell
+  {
+#define C(KEYWORD, STRING, RC) CRS_CL_##KEYWORD,
+    CRS_CELLS
+#undef C
+  };
+enum {
+#define C(KEYWORD, STRING, RC) + 1
+  CRS_N_CELLS = CRS_CELLS
+#undef C
+};
+#define CRS_ALL_CELLS ((1u << CRS_N_CELLS) - 1)
 
-/* (specification)
-   crosstabs (crs_):
-     *^tables=custom;
-     +variables=custom;
-     missing=miss:!table/include/report;
-     count=roundwhat:asis/case/!cell,
-           roundhow:!round/truncate;
-     +write[wr_]=none,cells,all;
-     +format=val:!avalue/dvalue,
-	     indx:!noindex/index,
-	     tabl:!tables/notables,
-	     box:!box/nobox,
-	     pivot:!pivot/nopivot;
-     +barchart=;
-     +cells[cl_]=count,expected,row,column,total,residual,sresidual,
-		 asresidual,all,none;
-     +statistics[st_]=chisq,phi,cc,lambda,uc,none,btau,ctau,risk,gamma,d,
-		      kappa,eta,corr,all.
-*/
-/* (declarations) */
-/* (functions) */
+/* Kinds of statistics. */
+#define CRS_STATISTICS                          \
+    S(CHISQ)                                    \
+    S(PHI)                                      \
+    S(CC)                                       \
+    S(LAMBDA)                                   \
+    S(UC)                                       \
+    S(BTAU)                                     \
+    S(CTAU)                                     \
+    S(RISK)                                     \
+    S(GAMMA)                                    \
+    S(D)                                        \
+    S(KAPPA)                                    \
+    S(ETA)                                      \
+    S(CORR)
+enum crs_statistic_index {
+#define S(KEYWORD) CRS_ST_##KEYWORD##_INDEX,
+  CRS_STATISTICS
+#undef S
+};
+enum crs_statistic_bit {
+#define S(KEYWORD) CRS_ST_##KEYWORD = 1u << CRS_ST_##KEYWORD##_INDEX,
+  CRS_STATISTICS
+#undef S
+};
+enum {
+#define S(KEYWORD) + 1
+  CRS_N_STATISTICS = CRS_STATISTICS
+#undef S
+};
+#define CRS_ALL_STATISTICS ((1u << CRS_N_STATISTICS) - 1)
 
 /* Number of chi-square statistics. */
 #define N_CHISQ 5
@@ -98,7 +129,6 @@
 
 /* Number of directional statistics. */
 #define N_DIRECTIONAL 13
-
 
 /* Indexes into the 'vars' member of struct crosstabulation and
    struct crosstab member. */
@@ -163,7 +193,6 @@ struct crosstabs_proc
     const struct dictionary *dict;
     enum { INTEGER, GENERAL } mode;
     enum mv_class exclude;
-    bool pivot;
     bool barchart;
     bool bad_warn;
     struct fmt_spec weight_format;
@@ -180,7 +209,7 @@ struct crosstabs_proc
     /* CELLS. */
     int n_cells;		/* Number of cells requested. */
     unsigned int cells;         /* Bit k is 1 if cell k is requested. */
-    int a_cells[CRS_CL_count];  /* 0...n_cells-1 are the requested cells. */
+    int a_cells[CRS_N_CELLS];   /* 0...n_cells-1 are the requested cells. */
 
     /* Rounding of cells. */
     bool round_case_weights;    /* Round case weights? */
@@ -193,8 +222,13 @@ struct crosstabs_proc
     bool descending;            /* True if descending sort order is requested. */
   };
 
-const struct var_range *get_var_range (const struct crosstabs_proc *,
-                                       const struct variable *);
+static bool parse_crosstabs_tables (struct lexer *, struct dataset *,
+                                    struct crosstabs_proc *);
+static bool parse_crosstabs_variables (struct lexer *, struct dataset *,
+                                       struct crosstabs_proc *);
+
+static const struct var_range *get_var_range (const struct crosstabs_proc *,
+                                              const struct variable *);
 
 static bool should_tabulate_case (const struct crosstabulation *,
                                   const struct ccase *, enum mv_class exclude);
@@ -241,86 +275,200 @@ next_populated_row (int r, const struct crosstabulation *xt)
 int
 cmd_crosstabs (struct lexer *lexer, struct dataset *ds)
 {
-  struct var_range *range, *next_range;
-  struct crosstabs_proc proc;
-  struct casegrouper *grouper;
-  struct casereader *input, *group;
-  struct cmd_crosstabs cmd;
-  struct crosstabulation *xt;
-  int result;
-  bool ok;
-  int i;
+  int result = CMD_FAILURE;
 
-  proc.dict = dataset_dict (ds);
-  proc.bad_warn = true;
-  proc.variables = NULL;
-  proc.n_variables = 0;
-  hmap_init (&proc.var_ranges);
-  proc.pivots = NULL;
-  proc.n_pivots = 0;
-  proc.descending = false;
-  proc.weight_format = *dict_get_weight_format (dataset_dict (ds));
+  struct crosstabs_proc proc = {
+    .dict = dataset_dict (ds),
+    .mode = GENERAL,
+    .exclude = MV_ANY,
+    .barchart = false,
+    .bad_warn = true,
+    .weight_format = *dict_get_weight_format (dataset_dict (ds)),
 
-  if (!parse_crosstabs (lexer, ds, &cmd, &proc))
+    .variables = NULL,
+    .n_variables = 0,
+    .var_ranges = HMAP_INITIALIZER (proc.var_ranges),
+
+    .pivots = NULL,
+    .n_pivots = 0,
+
+    .cells = 1u << CRS_CL_COUNT,
+    /* n_cells and a_cells will be filled in later. */
+
+    .round_case_weights = false,
+    .round_cells = false,
+    .round_down = false,
+
+    .statistics = 0,
+
+    .descending = false,
+  };
+  bool show_tables = true;
+  lex_match (lexer, T_SLASH);
+  for (;;)
     {
-      result = CMD_FAILURE;
+      if (lex_match_id (lexer, "VARIABLES"))
+        {
+          if (!parse_crosstabs_variables (lexer, ds, &proc))
+            goto exit;
+        }
+      else if (lex_match_id (lexer, "MISSING"))
+        {
+          lex_match (lexer, T_EQUALS);
+          if (lex_match_id (lexer, "TABLE"))
+            proc.exclude = MV_ANY;
+          else if (lex_match_id (lexer, "INCLUDE"))
+            proc.exclude = MV_SYSTEM;
+          else if (lex_match_id (lexer, "REPORT"))
+            proc.exclude = MV_NEVER;
+          else
+            {
+              lex_error (lexer, NULL);
+              goto exit;
+            }
+        }
+      else if (lex_match_id (lexer, "COUNT"))
+        {
+          lex_match (lexer, T_EQUALS);
+
+          /* Default is CELL. */
+          proc.round_case_weights = false;
+          proc.round_cells = true;
+
+          while (lex_token (lexer) != T_SLASH && lex_token (lexer) != T_ENDCMD)
+            {
+              if (lex_match_id (lexer, "ASIS"))
+                {
+                  proc.round_case_weights = false;
+                  proc.round_cells = false;
+                }
+              else if (lex_match_id (lexer, "CASE"))
+                {
+                  proc.round_case_weights = true;
+                  proc.round_cells = false;
+                }
+              else if (lex_match_id (lexer, "CELL"))
+                {
+                  proc.round_case_weights = false;
+                  proc.round_cells = true;
+                }
+              else if (lex_match_id (lexer, "ROUND"))
+                proc.round_down = false;
+              else if (lex_match_id (lexer, "TRUNCATE"))
+                proc.round_down = true;
+              else
+                {
+                  lex_error (lexer, NULL);
+                  goto exit;
+                }
+              lex_match (lexer, T_COMMA);
+            }
+        }
+      else if (lex_match_id (lexer, "FORMAT"))
+        {
+          lex_match (lexer, T_EQUALS);
+          while (lex_token (lexer) != T_SLASH && lex_token (lexer) != T_ENDCMD)
+            {
+              if (lex_match_id (lexer, "AVALUE"))
+                proc.descending = false;
+              else if (lex_match_id (lexer, "DVALUE"))
+                proc.descending = true;
+              else if (lex_match_id (lexer, "TABLES"))
+                show_tables = true;
+              else if (lex_match_id (lexer, "NOTABLES"))
+                show_tables = false;
+              else
+                {
+                  lex_error (lexer, NULL);
+                  goto exit;
+                }
+              lex_match (lexer, T_COMMA);
+            }
+        }
+      else if (lex_match_id (lexer, "BARCHART"))
+        proc.barchart = true;
+      else if (lex_match_id (lexer, "CELLS"))
+        {
+          lex_match (lexer, T_EQUALS);
+
+          if (lex_match_id (lexer, "NONE"))
+            proc.cells = 0;
+          else if (lex_match (lexer, T_ALL))
+            proc.cells = CRS_ALL_CELLS;
+          else
+            {
+              proc.cells = 0;
+              while (lex_token (lexer) != T_SLASH && lex_token (lexer) != T_ENDCMD)
+                {
+#define C(KEYWORD, STRING, RC)                                  \
+                  if (lex_match_id (lexer, #KEYWORD))           \
+                    {                                           \
+                      proc.cells |= 1u << CRS_CL_##KEYWORD;     \
+                      continue;                                 \
+                    }
+                  CRS_CELLS
+#undef C
+                  lex_error (lexer, NULL);
+                  goto exit;
+                }
+              if (!proc.cells)
+                proc.cells = ((1u << CRS_CL_COUNT) | (1u << CRS_CL_ROW)
+                              | (1u << CRS_CL_COLUMN) | (1u << CRS_CL_TOTAL));
+            }
+        }
+      else if (lex_match_id (lexer, "STATISTICS"))
+        {
+          lex_match (lexer, T_EQUALS);
+
+          if (lex_match_id (lexer, "NONE"))
+            proc.statistics = 0;
+          else if (lex_match (lexer, T_ALL))
+            proc.statistics = CRS_ALL_STATISTICS;
+          else
+            {
+              proc.statistics = 0;
+              while (lex_token (lexer) != T_SLASH && lex_token (lexer) != T_ENDCMD)
+                {
+#define S(KEYWORD)                                              \
+                  if (lex_match_id (lexer, #KEYWORD))           \
+                    {                                           \
+                      proc.statistics |= CRS_ST_##KEYWORD;      \
+                      continue;                                 \
+                    }
+                  CRS_STATISTICS
+#undef S
+                  lex_error (lexer, NULL);
+                  goto exit;
+                }
+              if (!proc.statistics)
+                proc.statistics = CRS_ST_CHISQ;
+            }
+        }
+      else if (!parse_crosstabs_tables (lexer, ds, &proc))
+        goto exit;
+
+      if (!lex_match (lexer, T_SLASH))
+        break;
+    }
+  if (!lex_end_of_command (lexer))
+    goto exit;
+
+  if (!proc.n_pivots)
+    {
+      msg (SE, _("At least one crosstabulation must be requested (using "
+                 "the TABLES subcommand)."));
       goto exit;
     }
 
-  proc.mode = proc.n_variables ? INTEGER : GENERAL;
-  proc.barchart = cmd.sbc_barchart > 0;
-
-  proc.descending = cmd.val == CRS_DVALUE;
-
-  proc.round_case_weights = cmd.sbc_count && cmd.roundwhat == CRS_CASE;
-  proc.round_cells = cmd.sbc_count && cmd.roundwhat == CRS_CELL;
-  proc.round_down = cmd.roundhow == CRS_TRUNCATE;
-
-  /* CELLS. */
-  if (!cmd.sbc_cells)
-    proc.cells = 1u << CRS_CL_COUNT;
-  else if (cmd.a_cells[CRS_CL_ALL])
-    proc.cells = UINT_MAX;
-  else
-    {
-      proc.cells = 0;
-      for (i = 0; i < CRS_CL_count; i++)
-	if (cmd.a_cells[i])
-	  proc.cells |= 1u << i;
-      if (proc.cells == 0)
-        proc.cells = ((1u << CRS_CL_COUNT)
-                       | (1u << CRS_CL_ROW)
-                       | (1u << CRS_CL_COLUMN)
-                       | (1u << CRS_CL_TOTAL));
-    }
-  proc.cells &= ((1u << CRS_CL_count) - 1);
-  proc.cells &= ~((1u << CRS_CL_NONE) | (1u << CRS_CL_ALL));
-  proc.n_cells = 0;
-  for (i = 0; i < CRS_CL_count; i++)
+  /* Cells. */
+  if (!show_tables)
+    proc.cells = 0;
+  for (int i = 0; i < CRS_N_CELLS; i++)
     if (proc.cells & (1u << i))
       proc.a_cells[proc.n_cells++] = i;
+  assert (proc.n_cells < CRS_N_CELLS);
 
-  /* STATISTICS. */
-  if (cmd.a_statistics[CRS_ST_ALL])
-    proc.statistics = UINT_MAX;
-  else if (cmd.sbc_statistics)
-    {
-      int i;
-
-      proc.statistics = 0;
-      for (i = 0; i < CRS_ST_count; i++)
-	if (cmd.a_statistics[i])
-	  proc.statistics |= 1u << i;
-      if (proc.statistics == 0)
-        proc.statistics |= 1u << CRS_ST_CHISQ;
-    }
-  else
-    proc.statistics = 0;
-
-  /* MISSING. */
-  proc.exclude = (cmd.miss == CRS_TABLE ? MV_ANY
-                   : cmd.miss == CRS_INCLUDE ? MV_SYSTEM
-                   : MV_NEVER);
+  /* Missing values. */
   if (proc.mode == GENERAL && proc.exclude == MV_NEVER)
     {
       msg (SE, _("Missing mode %s not allowed in general mode.  "
@@ -328,12 +476,11 @@ cmd_crosstabs (struct lexer *lexer, struct dataset *ds)
       proc.exclude = MV_ANY;
     }
 
-  /* PIVOT. */
-  proc.pivot = cmd.pivot == CRS_PIVOT;
-
-  input = casereader_create_filter_weight (proc_open (ds), dataset_dict (ds),
-                                           NULL, NULL);
-  grouper = casegrouper_create_splits (input, dataset_dict (ds));
+  struct casereader *input = casereader_create_filter_weight (proc_open (ds),
+                                                              dataset_dict (ds),
+                                                              NULL, NULL);
+  struct casegrouper *grouper = casegrouper_create_splits (input, dataset_dict (ds));
+  struct casereader *group;
   while (casegrouper_get_next_group (grouper, &group))
     {
       struct ccase *c;
@@ -347,16 +494,18 @@ cmd_crosstabs (struct lexer *lexer, struct dataset *ds)
         }
 
       /* Initialize hash tables. */
-      for (xt = &proc.pivots[0]; xt < &proc.pivots[proc.n_pivots]; xt++)
+      for (struct crosstabulation *xt = &proc.pivots[0];
+           xt < &proc.pivots[proc.n_pivots]; xt++)
         hmap_init (&xt->data);
 
       /* Tabulate. */
       for (; (c = casereader_read (group)) != NULL; case_unref (c))
-        for (xt = &proc.pivots[0]; xt < &proc.pivots[proc.n_pivots]; xt++)
+        for (struct crosstabulation *xt = &proc.pivots[0];
+             xt < &proc.pivots[proc.n_pivots]; xt++)
           {
             double weight = dict_get_case_weight (dataset_dict (ds), c,
                                                   &proc.bad_warn);
-            if (cmd.roundwhat == CRS_CASE)
+            if (proc.round_case_weights)
               {
                 weight = round_weight (&proc, weight);
                 if (weight == 0.)
@@ -377,20 +526,23 @@ cmd_crosstabs (struct lexer *lexer, struct dataset *ds)
       /* Output. */
       postcalc (&proc);
     }
-  ok = casegrouper_destroy (grouper);
+  bool ok = casegrouper_destroy (grouper);
   ok = proc_commit (ds) && ok;
 
   result = ok ? CMD_SUCCESS : CMD_CASCADING_FAILURE;
 
 exit:
   free (proc.variables);
+
+  struct var_range *range, *next_range;
   HMAP_FOR_EACH_SAFE (range, next_range, struct var_range, hmap_node,
                       &proc.var_ranges)
     {
       hmap_delete (&proc.var_ranges, &range->hmap_node);
       free (range);
     }
-  for (xt = &proc.pivots[0]; xt < &proc.pivots[proc.n_pivots]; xt++)
+  for (struct crosstabulation *xt = &proc.pivots[0];
+       xt < &proc.pivots[proc.n_pivots]; xt++)
     {
       free (xt->vars);
       free (xt->const_vars);
@@ -402,36 +554,34 @@ exit:
 }
 
 /* Parses the TABLES subcommand. */
-static int
-crs_custom_tables (struct lexer *lexer, struct dataset *ds,
-                   struct cmd_crosstabs *cmd UNUSED, void *proc_)
+static bool
+parse_crosstabs_tables (struct lexer *lexer, struct dataset *ds,
+                        struct crosstabs_proc *proc)
 {
-  struct crosstabs_proc *proc = proc_;
-  struct const_var_set *var_set;
-  int n_by;
   const struct variable ***by = NULL;
-  int *by_iter;
   size_t *by_nvar = NULL;
-  size_t nx = 1;
   bool ok = false;
-  int i;
 
   /* Ensure that this is a TABLES subcommand. */
   if (!lex_match_id (lexer, "TABLES")
       && (lex_token (lexer) != T_ID ||
 	  dict_lookup_var (dataset_dict (ds), lex_tokcstr (lexer)) == NULL)
       && lex_token (lexer) != T_ALL)
-    return 2;
+    {
+      lex_error (lexer, NULL);
+      return false;
+    }
   lex_match (lexer, T_EQUALS);
 
-  if (proc->variables != NULL)
-    var_set = const_var_set_create_from_array (proc->variables,
-                                               proc->n_variables);
-  else
-    var_set = const_var_set_create_from_dict (dataset_dict (ds));
-  assert (var_set != NULL);
+  struct const_var_set *var_set
+    = (proc->variables
+       ? const_var_set_create_from_array (proc->variables,
+                                          proc->n_variables)
+       : const_var_set_create_from_dict (dataset_dict (ds)));
 
-  for (n_by = 0; ;)
+  size_t nx = 1;
+  int n_by = 0;
+  for (;;)
     {
       by = xnrealloc (by, n_by + 1, sizeof *by);
       by_nvar = xnrealloc (by_nvar, n_by + 1, sizeof *by_nvar);
@@ -455,27 +605,28 @@ crs_custom_tables (struct lexer *lexer, struct dataset *ds,
 	}
     }
 
-  by_iter = xcalloc (n_by, sizeof *by_iter);
+  int *by_iter = xcalloc (n_by, sizeof *by_iter);
   proc->pivots = xnrealloc (proc->pivots,
                             proc->n_pivots + nx, sizeof *proc->pivots);
-  for (i = 0; i < nx; i++)
+  for (int i = 0; i < nx; i++)
     {
       struct crosstabulation *xt = &proc->pivots[proc->n_pivots++];
-      int j;
 
-      xt->proc = proc;
-      xt->weight_format = proc->weight_format;
-      xt->missing = 0.;
-      xt->n_vars = n_by;
-      xt->vars = xcalloc (n_by, sizeof *xt->vars);
-      xt->n_consts = 0;
-      xt->const_vars = NULL;
-      xt->const_indexes = NULL;
+      *xt = (struct crosstabulation) {
+        .proc = proc,
+        .weight_format = proc->weight_format,
+        .missing = 0.,
+        .n_vars = n_by,
+        .vars = xcalloc (n_by, sizeof *xt->vars),
+        .n_consts = 0,
+        .const_vars = NULL,
+        .const_indexes = NULL,
+      };
 
-      for (j = 0; j < n_by; j++)
+      for (int j = 0; j < n_by; j++)
         xt->vars[j].var = by[j][by_iter[j]];
 
-      for (j = n_by - 1; j >= 0; j--)
+      for (int j = n_by - 1; j >= 0; j--)
         {
           if (++by_iter[j] < by_nvar[j])
             break;
@@ -487,7 +638,7 @@ crs_custom_tables (struct lexer *lexer, struct dataset *ds,
 
 done:
   /* All return paths lead here. */
-  for (i = 0; i < n_by; i++)
+  for (int i = 0; i < n_by; i++)
     free (by[i]);
   free (by);
   free (by_nvar);
@@ -498,15 +649,14 @@ done:
 }
 
 /* Parses the VARIABLES subcommand. */
-static int
-crs_custom_variables (struct lexer *lexer, struct dataset *ds,
-                      struct cmd_crosstabs *cmd UNUSED, void *proc_)
+static bool
+parse_crosstabs_variables (struct lexer *lexer, struct dataset *ds,
+                           struct crosstabs_proc *proc)
 {
-  struct crosstabs_proc *proc = proc_;
   if (proc->n_pivots)
     {
       msg (SE, _("%s must be specified before %s."), "VARIABLES", "TABLES");
-      return 0;
+      return false;
     }
 
   lex_match (lexer, T_EQUALS);
@@ -522,31 +672,31 @@ crs_custom_variables (struct lexer *lexer, struct dataset *ds,
                                   &proc->variables, &proc->n_variables,
                                   (PV_APPEND | PV_NUMERIC
                                    | PV_NO_DUPLICATE | PV_NO_SCRATCH)))
-	return 0;
+	return false;
 
       if (!lex_force_match (lexer, T_LPAREN))
-	  goto lossage;
+	  goto error;
 
       if (!lex_force_int (lexer))
-	goto lossage;
+	goto error;
       min = lex_integer (lexer);
       lex_get (lexer);
 
       lex_match (lexer, T_COMMA);
 
       if (!lex_force_int (lexer))
-	goto lossage;
+	goto error;
       max = lex_integer (lexer);
       if (max < min)
 	{
 	  msg (SE, _("Maximum value (%ld) less than minimum value (%ld)."),
 	       max, min);
-	  goto lossage;
+	  goto error;
 	}
       lex_get (lexer);
 
       if (!lex_force_match (lexer, T_RPAREN))
-        goto lossage;
+        goto error;
 
       for (i = orig_nv; i < proc->n_variables; i++)
         {
@@ -565,18 +715,19 @@ crs_custom_variables (struct lexer *lexer, struct dataset *ds,
 	break;
     }
 
-  return 1;
+  proc->mode = INTEGER;
+  return true;
 
- lossage:
+ error:
   free (proc->variables);
   proc->variables = NULL;
   proc->n_variables = 0;
-  return 0;
+  return false;
 }
 
 /* Data file processing. */
 
-const struct var_range *
+static const struct var_range *
 get_var_range (const struct crosstabs_proc *proc, const struct variable *var)
 {
   if (!hmap_is_empty (&proc->var_ranges))
@@ -720,7 +871,6 @@ static bool find_crosstab (struct crosstabulation *, size_t *row0p,
 static void
 postcalc (struct crosstabs_proc *proc)
 {
-
   /* Round hash table entries, if requested
 
      If this causes any of the cell counts to fall to zero, delete those
@@ -766,19 +916,7 @@ postcalc (struct crosstabs_proc *proc)
   for (struct crosstabulation *xt = proc->pivots;
        xt < &proc->pivots[proc->n_pivots]; xt++)
     {
-      if (proc->pivot || xt->n_vars == 2)
-        output_crosstabulation (proc, xt);
-      else
-        {
-          size_t row0 = 0, row1 = 0;
-          while (find_crosstab (xt, &row0, &row1))
-            {
-              struct crosstabulation subset;
-              make_crosstabulation_subset (xt, row0, row1, &subset);
-              output_crosstabulation (proc, &subset);
-              free (subset.const_indexes);
-            }
-        }
+      output_crosstabulation (proc, xt);
       if (proc->barchart)
         {
           int n_vars = (xt->n_vars > 2 ? 2 : xt->n_vars);
@@ -970,7 +1108,7 @@ make_summary_table (struct crosstabs_proc *proc)
 
 static struct pivot_table *create_crosstab_table (
   struct crosstabs_proc *, struct crosstabulation *,
-  size_t crs_leaves[CRS_CL_count]);
+  size_t crs_leaves[CRS_N_CELLS]);
 static struct pivot_table *create_chisq_table (struct crosstabulation *);
 static struct pivot_table *create_sym_table (struct crosstabulation *);
 static struct pivot_table *create_risk_table (
@@ -979,7 +1117,7 @@ static struct pivot_table *create_direct_table (struct crosstabulation *);
 static void display_crosstabulation (struct crosstabs_proc *,
                                      struct crosstabulation *,
                                      struct pivot_table *,
-                                     size_t crs_leaves[CRS_CL_count]);
+                                     size_t crs_leaves[CRS_N_CELLS]);
 static void display_chisq (struct crosstabulation *, struct pivot_table *);
 static void display_symmetric (struct crosstabs_proc *,
                                struct crosstabulation *, struct pivot_table *);
@@ -1018,27 +1156,24 @@ output_crosstabulation (struct crosstabs_proc *proc, struct crosstabulation *xt)
       return;
     }
 
-  size_t crs_leaves[CRS_CL_count];
+  size_t crs_leaves[CRS_N_CELLS];
   struct pivot_table *table = (proc->cells
                                ? create_crosstab_table (proc, xt, crs_leaves)
                                : NULL);
-  struct pivot_table *chisq = (proc->statistics & (1u << CRS_ST_CHISQ)
+  struct pivot_table *chisq = (proc->statistics & CRS_ST_CHISQ
                                ? create_chisq_table (xt)
                                : NULL);
   struct pivot_table *sym
-    = (proc->statistics & ((1u << CRS_ST_PHI) | (1u << CRS_ST_CC)
-                           | (1u << CRS_ST_BTAU) | (1u << CRS_ST_CTAU)
-                           | (1u << CRS_ST_GAMMA) | (1u << CRS_ST_CORR)
-                           | (1u << CRS_ST_KAPPA))
+    = (proc->statistics & (CRS_ST_PHI | CRS_ST_CC | CRS_ST_BTAU | CRS_ST_CTAU
+                           | CRS_ST_GAMMA | CRS_ST_CORR | CRS_ST_KAPPA)
        ? create_sym_table (xt)
        : NULL);
   struct pivot_dimension *risk_statistics = NULL;
-  struct pivot_table *risk = (proc->statistics & (1u << CRS_ST_RISK)
+  struct pivot_table *risk = (proc->statistics & CRS_ST_RISK
                               ? create_risk_table (xt, &risk_statistics)
                               : NULL);
   struct pivot_table *direct
-    = (proc->statistics & ((1u << CRS_ST_LAMBDA) | (1u << CRS_ST_UC)
-                           | (1u << CRS_ST_D) | (1u << CRS_ST_ETA))
+    = (proc->statistics & (CRS_ST_LAMBDA | CRS_ST_UC | CRS_ST_D | CRS_ST_ETA)
        ? create_direct_table (xt)
        : NULL);
 
@@ -1219,7 +1354,7 @@ add_var_dimension (struct pivot_table *table, const struct xtab_var *var,
 
 static struct pivot_table *
 create_crosstab_table (struct crosstabs_proc *proc, struct crosstabulation *xt,
-                       size_t crs_leaves[CRS_CL_count])
+                       size_t crs_leaves[CRS_N_CELLS])
 {
   /* Title. */
   struct string title = DS_EMPTY_INITIALIZER;
@@ -1256,18 +1391,13 @@ create_crosstab_table (struct crosstabs_proc *proc, struct crosstabulation *xt,
       const char *label;
       const char *rc;
     };
-  static const struct statistic stats[CRS_CL_count] =
+  static const struct statistic stats[CRS_N_CELLS] =
     {
-      [CRS_CL_COUNT] = { N_("Count"), PIVOT_RC_COUNT },
-      [CRS_CL_ROW] = { N_("Row %"), PIVOT_RC_PERCENT },
-      [CRS_CL_COLUMN] = { N_("Column %"), PIVOT_RC_PERCENT },
-      [CRS_CL_TOTAL] = { N_("Total %"), PIVOT_RC_PERCENT },
-      [CRS_CL_EXPECTED] = { N_("Expected"), PIVOT_RC_OTHER },
-      [CRS_CL_RESIDUAL] = { N_("Residual"), PIVOT_RC_RESIDUAL },
-      [CRS_CL_SRESIDUAL] = { N_("Std. Residual"), PIVOT_RC_RESIDUAL },
-      [CRS_CL_ASRESIDUAL] = { N_("Adjusted Residual"), PIVOT_RC_RESIDUAL },
+#define C(KEYWORD, STRING, RC) { STRING, RC },
+      CRS_CELLS
+#undef C
     };
-  for (size_t i = 0; i < CRS_CL_count; i++)
+  for (size_t i = 0; i < CRS_N_CELLS; i++)
     if (proc->cells & (1u << i) && stats[i].label)
         crs_leaves[i] = pivot_category_create_leaf_rc (
           statistics->root, pivot_value_new_text (stats[i].label),
@@ -1567,7 +1697,7 @@ free_var_values (const struct crosstabulation *xt, int var_idx)
 static void
 display_crosstabulation (struct crosstabs_proc *proc,
                          struct crosstabulation *xt, struct pivot_table *table,
-                         size_t crs_leaves[CRS_CL_count])
+                         size_t crs_leaves[CRS_N_CELLS])
 {
   size_t n_rows = xt->vars[ROW_VAR].n_values;
   size_t n_cols = xt->vars[COL_VAR].n_values;
@@ -1598,7 +1728,7 @@ display_crosstabulation (struct crosstabs_proc *proc,
           double asresidual = (sresidual
                                * (1. - xt->row_tot[r] / xt->total)
                                * (1. - xt->col_tot[c] / xt->total));
-          double entries[] = {
+          double entries[CRS_N_CELLS] = {
             [CRS_CL_COUNT] = *mp,
             [CRS_CL_ROW] = *mp / xt->row_tot[r] * 100.,
             [CRS_CL_COLUMN] = *mp / xt->col_tot[c] * 100.,
@@ -1627,7 +1757,7 @@ display_crosstabulation (struct crosstabs_proc *proc,
         continue;
 
       double expected_value = xt->row_tot[r] / xt->total;
-      double entries[] = {
+      double entries[CRS_N_CELLS] = {
         [CRS_CL_COUNT] = xt->row_tot[r],
         [CRS_CL_ROW] = 100.0,
         [CRS_CL_COLUMN] = expected_value * 100.,
@@ -1659,7 +1789,7 @@ display_crosstabulation (struct crosstabs_proc *proc,
 
       double ct = c < n_cols ? xt->col_tot[c] : xt->total;
       double expected_value = ct / xt->total;
-      double entries[] = {
+      double entries[CRS_N_CELLS] = {
         [CRS_CL_COUNT] = ct,
         [CRS_CL_ROW] = expected_value * 100.0,
         [CRS_CL_COLUMN] = 100.0,
@@ -2157,7 +2287,7 @@ calc_symmetric (struct crosstabs_proc *proc, struct crosstabulation *xt,
     v[i] = ase[i] = t[i] = SYSMIS;
 
   /* Phi, Cramer's V, contingency coefficient. */
-  if (proc->statistics & ((1u << CRS_ST_PHI) | (1u << CRS_ST_CC)))
+  if (proc->statistics & (CRS_ST_PHI | CRS_ST_CC))
     {
       double Xp = 0.;	/* Pearson chi-square. */
 
@@ -2171,17 +2301,17 @@ calc_symmetric (struct crosstabs_proc *proc, struct crosstabulation *xt,
             Xp += residual * residual / expected;
           }
 
-      if (proc->statistics & (1u << CRS_ST_PHI))
+      if (proc->statistics & CRS_ST_PHI)
 	{
 	  v[0] = sqrt (Xp / xt->total);
 	  v[1] = sqrt (Xp / (xt->total * (q - 1)));
 	}
-      if (proc->statistics & (1u << CRS_ST_CC))
+      if (proc->statistics & CRS_ST_CC)
 	v[2] = sqrt (Xp / (Xp + xt->total));
     }
 
-  if (proc->statistics & ((1u << CRS_ST_BTAU) | (1u << CRS_ST_CTAU)
-                          | (1u << CRS_ST_GAMMA) | (1u << CRS_ST_D)))
+  if (proc->statistics & (CRS_ST_BTAU | CRS_ST_CTAU
+                          | CRS_ST_GAMMA | CRS_ST_D))
     {
       double *cum;
       double Dr, Dc;
@@ -2244,11 +2374,11 @@ calc_symmetric (struct crosstabs_proc *proc, struct crosstabulation *xt,
 	  }
       }
 
-      if (proc->statistics & (1u << CRS_ST_BTAU))
+      if (proc->statistics & CRS_ST_BTAU)
 	v[3] = (P - Q) / sqrt (Dr * Dc);
-      if (proc->statistics & (1u << CRS_ST_CTAU))
+      if (proc->statistics & CRS_ST_CTAU)
 	v[4] = (q * (P - Q)) / (pow2 (xt->total) * (q - 1));
-      if (proc->statistics & (1u << CRS_ST_GAMMA))
+      if (proc->statistics & CRS_ST_GAMMA)
 	v[5] = (P - Q) / (P + Q);
 
       /* ASE for tau-b, tau-c, gamma.  Calculations could be
@@ -2273,7 +2403,7 @@ calc_symmetric (struct crosstabs_proc *proc, struct crosstabulation *xt,
 	      {
 		double fij = xt->mat[j + i * n_cols];
 
-		if (proc->statistics & (1u << CRS_ST_BTAU))
+		if (proc->statistics & CRS_ST_BTAU)
 		  {
 		    const double temp = (2. * sqrt (Dr * Dc) * (Cij - Dij)
 					 + v[3] * (xt->row_tot[i] * Dc
@@ -2286,13 +2416,13 @@ calc_symmetric (struct crosstabs_proc *proc, struct crosstabulation *xt,
 		  ctau_cum += fij * temp * temp;
 		}
 
-		if (proc->statistics & (1u << CRS_ST_GAMMA))
+		if (proc->statistics & CRS_ST_GAMMA)
 		  {
 		    const double temp = Q * Cij - P * Dij;
 		    gamma_cum += fij * temp * temp;
 		  }
 
-		if (proc->statistics & (1u << CRS_ST_D))
+		if (proc->statistics & CRS_ST_D)
 		  {
 		    d_yx_cum += fij * pow2 (Dr * (Cij - Dij)
                                             - (P - Q) * (xt->total - xt->row_tot[i]));
@@ -2319,25 +2449,25 @@ calc_symmetric (struct crosstabs_proc *proc, struct crosstabulation *xt,
       btau_var = ((btau_cum
 		   - (xt->total * pow2 (xt->total * (P - Q) / sqrt (Dr * Dc) * (Dr + Dc))))
 		  / pow2 (Dr * Dc));
-      if (proc->statistics & (1u << CRS_ST_BTAU))
+      if (proc->statistics & CRS_ST_BTAU)
 	{
 	  ase[3] = sqrt (btau_var);
 	  t[3] = v[3] / (2 * sqrt ((ctau_cum - (P - Q) * (P - Q) / xt->total)
 				   / (Dr * Dc)));
 	}
-      if (proc->statistics & (1u << CRS_ST_CTAU))
+      if (proc->statistics & CRS_ST_CTAU)
 	{
 	  ase[4] = ((2 * q / ((q - 1) * pow2 (xt->total)))
 		    * sqrt (ctau_cum - (P - Q) * (P - Q) / xt->total));
 	  t[4] = v[4] / ase[4];
 	}
-      if (proc->statistics & (1u << CRS_ST_GAMMA))
+      if (proc->statistics & CRS_ST_GAMMA)
 	{
 	  ase[5] = ((4. / ((P + Q) * (P + Q))) * sqrt (gamma_cum));
 	  t[5] = v[5] / (2. / (P + Q)
 			 * sqrt (ctau_cum - (P - Q) * (P - Q) / xt->total));
 	}
-      if (proc->statistics & (1u << CRS_ST_D))
+      if (proc->statistics & CRS_ST_D)
 	{
 	  somers_d_v[0] = (P - Q) / (.5 * (Dc + Dr));
 	  somers_d_ase[0] = SYSMIS;
@@ -2360,7 +2490,7 @@ calc_symmetric (struct crosstabs_proc *proc, struct crosstabulation *xt,
     }
 
   /* Spearman correlation, Pearson's r. */
-  if (proc->statistics & (1u << CRS_ST_CORR))
+  if (proc->statistics & CRS_ST_CORR)
     {
       double *R = xmalloc (sizeof *R * n_rows);
       double *C = xmalloc (sizeof *C * n_cols);
@@ -2410,7 +2540,7 @@ calc_symmetric (struct crosstabs_proc *proc, struct crosstabulation *xt,
     }
 
   /* Cohen's kappa. */
-  if (proc->statistics & (1u << CRS_ST_KAPPA) && xt->ns_rows == xt->ns_cols)
+  if (proc->statistics & CRS_ST_KAPPA && xt->ns_rows == xt->ns_cols)
     {
       double ase_under_h0;
       double sum_fii, sum_rici, sum_fiiri_ci, sum_fijri_ci2, sum_riciri_ci;
@@ -2536,7 +2666,7 @@ calc_directional (struct crosstabs_proc *proc, struct crosstabulation *xt,
     v[i] = ase[i] = t[i] = sig[i] = SYSMIS;
 
   /* Lambda. */
-  if (proc->statistics & (1u << CRS_ST_LAMBDA))
+  if (proc->statistics & CRS_ST_LAMBDA)
     {
       /* Find maximum for each row and their sum. */
       double *fim = xnmalloc (n_rows, sizeof *fim);
@@ -2695,7 +2825,7 @@ calc_directional (struct crosstabs_proc *proc, struct crosstabulation *xt,
       }
     }
 
-  if (proc->statistics & (1u << CRS_ST_UC))
+  if (proc->statistics & CRS_ST_UC)
     {
       double UX = 0.0;
       FOR_EACH_POPULATED_ROW (i, xt)
@@ -2753,7 +2883,7 @@ calc_directional (struct crosstabs_proc *proc, struct crosstabulation *xt,
     }
 
   /* Somers' D. */
-  if (proc->statistics & (1u << CRS_ST_D))
+  if (proc->statistics & CRS_ST_D)
     {
       double v_dummy[N_SYMMETRIC];
       double ase_dummy[N_SYMMETRIC];
@@ -2776,7 +2906,7 @@ calc_directional (struct crosstabs_proc *proc, struct crosstabulation *xt,
     }
 
   /* Eta. */
-  if (proc->statistics & (1u << CRS_ST_ETA))
+  if (proc->statistics & CRS_ST_ETA)
     {
       /* X dependent. */
       double sum_Xr = 0.0;

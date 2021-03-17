@@ -380,7 +380,6 @@ TESTSUITE_AT = \
 	tests/language/expressions/parse.at \
 	tests/language/lexer/command-name.at \
 	tests/language/lexer/lexer.at \
-	tests/language/lexer/q2c.at \
 	tests/language/lexer/scan.at \
 	tests/language/lexer/segment.at \
 	tests/language/lexer/variable-parser.at \

@@ -18,9 +18,6 @@
 
 AM_CPPFLAGS += -I$(top_srcdir)/src/language/stats
 
-src_language_stats_built_sources = \
-	src/language/stats/crosstabs.c
-
 language_stats_sources = \
 	src/language/stats/aggregate.c \
 	src/language/stats/aggregate.h \
@@ -33,6 +30,7 @@ language_stats_sources = \
 	src/language/stats/cochran.c \
 	src/language/stats/cochran.h \
 	src/language/stats/correlations.c \
+	src/language/stats/crosstabs.c \
 	src/language/stats/descriptives.c \
 	src/language/stats/examine.c \
 	src/language/stats/factor.c \
@@ -86,9 +84,3 @@ language_stats_sources = \
 	src/language/stats/t-test-parser.c \
 	src/language/stats/wilcoxon.c \
 	src/language/stats/wilcoxon.h
-
-EXTRA_DIST += src/language/stats/glm.c
-
-all_q_sources += $(src_language_stats_built_sources:.c=.q)
-EXTRA_DIST += $(src_language_stats_built_sources:.c=.q)
-CLEANFILES += $(src_language_stats_built_sources)
