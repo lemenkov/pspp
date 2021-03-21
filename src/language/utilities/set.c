@@ -37,6 +37,7 @@
 #include "language/command.h"
 #include "language/lexer/format-parser.h"
 #include "language/lexer/lexer.h"
+#include "libpspp/assertion.h"
 #include "libpspp/compiler.h"
 #include "libpspp/copyleft.h"
 #include "libpspp/temp-file.h"
@@ -50,256 +51,115 @@
 #include "output/journal.h"
 #include "output/pivot-table.h"
 
-#if HAVE_LIBTERMCAP
-#if HAVE_TERMCAP_H
-#include <termcap.h>
-#else /* !HAVE_TERMCAP_H */
-int tgetent (char *, const char *);
-int tgetnum (const char *);
-#endif /* !HAVE_TERMCAP_H */
-#endif /* !HAVE_LIBTERMCAP */
-
-#include "xalloc.h"
+#include "gl/xalloc.h"
 
 #include "gettext.h"
 #define _(msgid) gettext (msgid)
 
-/* (specification)
-   "SET" (stc_):
-     blanks=custom;
-     block=string;
-     boxstring=string;
-     case=size:upper/uplow;
-     cca=string;
-     ccb=string;
-     ccc=string;
-     ccd=string;
-     cce=string;
-     compression=compress:on/off;
-     cpi=integer;
-     decimal=dec:dot/comma;
-     epoch=custom;
-     errors=custom;
-     format=custom;
-     fuzzbits=integer;
-     headers=headers:no/yes/blank;
-     highres=hires:on/off;
-     histogram=string;
-     include=inc:on/off;
-     journal=custom;
-     log=custom;
-     length=custom;
-     locale=custom;
-     lowres=lores:auto/on/off;
-     lpi=integer;
-     menus=menus:standard/extended;
-     messages=custom;
-     mexpand=mexp:on/off;
-     miterate=integer;
-     mnest=integer;
-     mprint=mprint:on/off;
-     mxerrs=integer;
-     mxloops=integer;
-     mxmemory=integer;
-     mxwarns=integer;
-     printback=custom;
-     results=custom;
-     rib=rib:msbfirst/lsbfirst/vax/native;
-     rrb=rrb:native/isl/isb/idl/idb/vf/vd/vg/zs/zl;
-     safer=safe:on;
-     scompression=scompress:on/off;
-     scripttab=string;
-     seed=custom;
-     small=double;
-     tnumbers=custom;
-     tvars=custom;
-     tb1=string;
-     tbfonts=string;
-     tlook=custom;
-     undefined=undef:warn/nowarn;
-     wib=wib:msbfirst/lsbfirst/vax/native;
-     wrb=wrb:native/isl/isb/idl/idb/vf/vd/vg/zs/zl;
-     width=custom;
-     workspace=integer;
-     xsort=xsort:yes/no.
-*/
-
-/* (headers) */
-
-/* (declarations) */
-
-/* (functions) */
-
-static enum integer_format stc_to_integer_format (int stc);
-static enum float_format stc_to_float_format (int stc);
-
-int
-cmd_set (struct lexer *lexer, struct dataset *ds)
+static bool
+match_subcommand (struct lexer *lexer, const char *name)
 {
-  struct cmd_set cmd;
-
-  if (!parse_set (lexer, ds, &cmd, NULL))
+  if (lex_match_id (lexer, name))
     {
-      return CMD_FAILURE;
+      lex_match (lexer, T_EQUALS);
+      return true;
     }
-
-  if (cmd.sbc_cca)
-    settings_set_cc ( cmd.s_cca, FMT_CCA);
-  if (cmd.sbc_ccb)
-    settings_set_cc ( cmd.s_ccb, FMT_CCB);
-  if (cmd.sbc_ccc)
-    settings_set_cc ( cmd.s_ccc, FMT_CCC);
-  if (cmd.sbc_ccd)
-    settings_set_cc ( cmd.s_ccd, FMT_CCD);
-  if (cmd.sbc_cce)
-    settings_set_cc ( cmd.s_cce, FMT_CCE);
-
-  if (cmd.sbc_decimal)
-    settings_set_decimal_char (cmd.dec == STC_DOT ? '.' : ',');
-  if (cmd.sbc_fuzzbits)
-    {
-      int fuzzbits = cmd.n_fuzzbits[0];
-      if (fuzzbits >= 0 && fuzzbits <= 20)
-        settings_set_fuzzbits (fuzzbits);
-      else
-        msg (SE, _("%s must be between 0 and 20."), "FUZZBITS");
-    }
-
-  if (cmd.sbc_include)
-    settings_set_include (cmd.inc == STC_ON);
-  if (cmd.sbc_mxerrs)
-    {
-      if (cmd.n_mxerrs[0] >= 1)
-        settings_set_max_messages (MSG_S_ERROR, cmd.n_mxerrs[0]);
-      else
-        msg (SE, _("%s must be at least 1."), "MXERRS");
-    }
-  if (cmd.sbc_mxloops)
-    {
-      if (cmd.n_mxloops[0] >= 1)
-        settings_set_mxloops (cmd.n_mxloops[0]);
-      else
-        msg (SE, _("%s must be at least 1."), "MXLOOPS");
-    }
-  if (cmd.sbc_mxwarns)
-    {
-      if (cmd.n_mxwarns[0] >= 0)
-        settings_set_max_messages (MSG_S_WARNING, cmd.n_mxwarns[0]);
-      else
-        msg (SE, _("%s must not be negative."), "MXWARNS");
-    }
-  if (cmd.sbc_rib)
-    settings_set_input_integer_format (stc_to_integer_format (cmd.rib));
-  if (cmd.sbc_rrb)
-    settings_set_input_float_format (stc_to_float_format (cmd.rrb));
-  if (cmd.sbc_safer)
-    settings_set_safer_mode ();
-  if (cmd.sbc_scompression)
-    settings_set_scompression (cmd.scompress == STC_ON);
-  if (cmd.sbc_small)
-    settings_set_small (cmd.n_small[0]);
-  if (cmd.sbc_undefined)
-    settings_set_undefined (cmd.undef == STC_WARN);
-  if (cmd.sbc_wib)
-    settings_set_output_integer_format (stc_to_integer_format (cmd.wib));
-  if (cmd.sbc_wrb)
-    settings_set_output_float_format (stc_to_float_format (cmd.wrb));
-  if (cmd.sbc_workspace)
-    {
-      if ( cmd.n_workspace[0] < 1024 && ! settings_get_testing_mode ())
-	msg (SE, _("%s must be at least 1MB"), "WORKSPACE");
-      else if (cmd.n_workspace[0] <= 0)
-	msg (SE, _("%s must be positive"), "WORKSPACE");
-      else
-	settings_set_workspace (cmd.n_workspace[0] * 1024L);
-    }
-
-  if (cmd.sbc_block)
-    msg (SW, _("%s is obsolete."), "BLOCK");
-  if (cmd.sbc_boxstring)
-    msg (SW, _("%s is obsolete."), "BOXSTRING");
-  if (cmd.sbc_cpi)
-    msg (SW, _("%s is obsolete."), "CPI");
-  if (cmd.sbc_histogram)
-    msg (SW, _("%s is obsolete."), "HISTOGRAM");
-  if (cmd.sbc_lpi)
-    msg (SW, _("%s is obsolete."), "LPI");
-  if (cmd.sbc_menus)
-    msg (SW, _("%s is obsolete."), "MENUS");
-  if (cmd.sbc_xsort)
-    msg (SW, _("%s is obsolete."), "XSORT");
-  if (cmd.sbc_mxmemory)
-    msg (SE, _("%s is obsolete."), "MXMEMORY");
-  if (cmd.sbc_scripttab)
-    msg (SE, _("%s is obsolete."), "SCRIPTTAB");
-  if (cmd.sbc_tbfonts)
-    msg (SW, _("%s is obsolete."), "TBFONTS");
-  if (cmd.sbc_tb1 && cmd.s_tb1)
-    msg (SW, _("%s is obsolete."), "TB1");
-
-  if (cmd.sbc_case)
-    msg (SW, _("%s is not yet implemented."), "CASE");
-
-  if (cmd.sbc_compression)
-    msg (SW, _("Active file compression is not implemented."));
-
-  free_set (&cmd);
-
-  return CMD_SUCCESS;
-}
-
-/* Returns the integer_format value corresponding to STC,
-   which should be the value of cmd.rib or cmd.wib. */
-static enum integer_format
-stc_to_integer_format (int stc)
-{
-  return (stc == STC_MSBFIRST ? INTEGER_MSB_FIRST
-          : stc == STC_LSBFIRST ? INTEGER_LSB_FIRST
-          : stc == STC_VAX ? INTEGER_VAX
-          : INTEGER_NATIVE);
-}
-
-/* Returns the float_format value corresponding to STC,
-   which should be the value of cmd.rrb or cmd.wrb. */
-static enum float_format
-stc_to_float_format (int stc)
-{
-  switch (stc)
-    {
-    case STC_NATIVE:
-      return FLOAT_NATIVE_DOUBLE;
-
-    case STC_ISL:
-      return FLOAT_IEEE_SINGLE_LE;
-    case STC_ISB:
-      return FLOAT_IEEE_SINGLE_BE;
-    case STC_IDL:
-      return FLOAT_IEEE_DOUBLE_LE;
-    case STC_IDB:
-      return FLOAT_IEEE_DOUBLE_BE;
-
-    case STC_VF:
-      return FLOAT_VAX_F;
-    case STC_VD:
-      return FLOAT_VAX_D;
-    case STC_VG:
-      return FLOAT_VAX_G;
-
-    case STC_ZS:
-      return FLOAT_Z_SHORT;
-    case STC_ZL:
-      return FLOAT_Z_LONG;
-    }
-
-  NOT_REACHED ();
+  else
+    return false;
 }
 
 static int
-set_output_routing (struct lexer *lexer, enum settings_output_type type)
+parse_enum_valist (struct lexer *lexer, va_list args)
+{
+  for (;;)
+    {
+      const char *name = va_arg (args, char *);
+      if (!name)
+        return -1;
+      int value = va_arg (args, int);
+
+      if (lex_match_id (lexer, name))
+        return value;
+    }
+}
+
+#define parse_enum(...) parse_enum (__VA_ARGS__, NULL_SENTINEL)
+static int SENTINEL(0)
+(parse_enum) (struct lexer *lexer, ...)
+{
+  va_list args;
+
+  va_start (args, lexer);
+  int retval = parse_enum_valist (lexer, args);
+  va_end (args);
+
+  return retval;
+}
+
+#define force_parse_enum(...) force_parse_enum (__VA_ARGS__, NULL_SENTINEL)
+static int SENTINEL(0)
+(force_parse_enum) (struct lexer *lexer, ...)
+{
+  va_list args;
+
+  va_start (args, lexer);
+  int retval = parse_enum_valist (lexer, args);
+  va_end (args);
+
+  if (retval == -1)
+    {
+      enum { MAX_OPTIONS = 9 };
+      const char *options[MAX_OPTIONS];
+      int n = 0;
+
+      va_start (args, lexer);
+      while (n < MAX_OPTIONS)
+        {
+          const char *name = va_arg (args, char *);
+          if (!name)
+            break;
+          va_arg (args, int);
+
+          options[n++] = name;
+        }
+      va_end (args);
+
+      lex_error_expecting_array (lexer, options, n);
+    }
+
+  return retval;
+}
+
+static int
+parse_bool (struct lexer *lexer)
+{
+  return parse_enum (lexer,
+                     "ON", true, "YES", true,
+                     "OFF", false, "NO", false);
+}
+
+static int
+force_parse_bool (struct lexer *lexer)
+{
+  return force_parse_enum (lexer,
+                           "ON", true, "YES", true,
+                           "OFF", false, "NO", false);
+}
+
+static bool
+force_parse_int (struct lexer *lexer, int *integerp)
+{
+  if (!lex_force_int (lexer))
+    return false;
+  *integerp = lex_integer (lexer);
+  lex_get (lexer);
+  return true;
+}
+
+static bool
+parse_output_routing (struct lexer *lexer, enum settings_output_type type)
 {
   enum settings_output_devices devices;
-
-  lex_match (lexer, T_EQUALS);
   if (lex_match_id (lexer, "ON") || lex_match_id (lexer, "BOTH"))
     devices = SETTINGS_DEVICE_LISTING | SETTINGS_DEVICE_TERMINAL;
   else if (lex_match_id (lexer, "TERMINAL"))
@@ -311,90 +171,496 @@ set_output_routing (struct lexer *lexer, enum settings_output_type type)
   else
     {
       lex_error (lexer, NULL);
-      return 0;
+      return false;
     }
 
   settings_set_output_routing (type, devices);
 
-  return 1;
+  return true;
 }
 
-/* Parses the BLANKS subcommand, which controls the value that
-   completely blank fields in numeric data imply.  X, Wnd: Syntax is
-   SYSMIS or a numeric value. */
-static int
-stc_custom_blanks (struct lexer *lexer,
-		   struct dataset *ds UNUSED,
-		   struct cmd_set *cmd UNUSED, void *aux UNUSED)
+static bool
+parse_integer_format (struct lexer *lexer,
+                      void (*set_format) (enum integer_format))
 {
-  lex_match (lexer, T_EQUALS);
+  int value = force_parse_enum (lexer,
+                                "MSBFIRST", INTEGER_MSB_FIRST,
+                                "LSBFIRST", INTEGER_LSB_FIRST,
+                                "VAX", INTEGER_VAX,
+                                "NATIVE", INTEGER_NATIVE);
+  if (value >= 0)
+    set_format (value);
+  return value >= 0;
+}
+
+static bool
+parse_real_format (struct lexer *lexer,
+                   void (*set_format) (enum float_format))
+{
+  int value = force_parse_enum (lexer,
+                                "NATIVE", FLOAT_NATIVE_DOUBLE,
+                                "ISL", FLOAT_IEEE_SINGLE_LE,
+                                "ISB", FLOAT_IEEE_SINGLE_BE,
+                                "IDL", FLOAT_IEEE_DOUBLE_LE,
+                                "IDB", FLOAT_IEEE_DOUBLE_BE,
+                                "VF", FLOAT_VAX_F,
+                                "VD", FLOAT_VAX_D,
+                                "VG", FLOAT_VAX_G,
+                                "ZS", FLOAT_Z_SHORT,
+                                "ZL", FLOAT_Z_LONG);
+  if (value >= 0)
+    set_format (value);
+  return value >= 0;
+}
+
+static bool
+parse_unimplemented (struct lexer *lexer, const char *name)
+{
+  msg (SW, _("%s is not yet implemented."), name);
+  if (lex_token (lexer) != T_SLASH && lex_token (lexer) != T_ENDCMD)
+    lex_get (lexer);
+  return true;
+}
+
+static bool
+parse_ccx (struct lexer *lexer, enum fmt_type ccx)
+{
+  if (!lex_force_string (lexer))
+    return false;
+
+  settings_set_cc (lex_tokcstr (lexer), ccx);
+  lex_get (lexer);
+  return true;
+}
+
+static bool
+parse_BASETEXTDIRECTION (struct lexer *lexer)
+{
+  return parse_unimplemented (lexer, "BASETEXTDIRECTION");
+}
+
+static bool
+parse_BLANKS (struct lexer *lexer)
+{
   if (lex_match_id (lexer, "SYSMIS"))
-    {
-      lex_get (lexer);
-      settings_set_blanks (SYSMIS);
-    }
+    settings_set_blanks (SYSMIS);
   else
     {
       if (!lex_force_num (lexer))
-	return 0;
+        return false;
       settings_set_blanks (lex_number (lexer));
       lex_get (lexer);
     }
-  return 1;
+  return true;
 }
 
-static int
-stc_custom_tnumbers (struct lexer *lexer,
-		   struct dataset *ds UNUSED,
-		   struct cmd_set *cmd UNUSED, void *aux UNUSED)
+static bool
+parse_BLOCK (struct lexer *lexer)
 {
-  lex_match (lexer, T_EQUALS);
+  return parse_unimplemented (lexer, "BLOCK");
+}
 
-  if (lex_match_id (lexer, "VALUES"))
-    settings_set_show_values (SETTINGS_VALUE_SHOW_VALUE);
-  else if (lex_match_id (lexer, "LABELS"))
-    settings_set_show_values (SETTINGS_VALUE_SHOW_LABEL);
-  else if (lex_match_id (lexer, "BOTH"))
-    settings_set_show_values (SETTINGS_VALUE_SHOW_BOTH);
+static bool
+parse_BOX (struct lexer *lexer)
+{
+  return parse_unimplemented (lexer, "BOX");
+}
+
+static bool
+parse_CACHE (struct lexer *lexer)
+{
+  return parse_unimplemented (lexer, "CACHE");
+}
+
+static bool
+parse_CCA (struct lexer *lexer)
+{
+  return parse_ccx (lexer, FMT_CCA);
+}
+
+static bool
+parse_CCB (struct lexer *lexer)
+{
+  return parse_ccx (lexer, FMT_CCB);
+}
+
+static bool
+parse_CCC (struct lexer *lexer)
+{
+  return parse_ccx (lexer, FMT_CCC);
+}
+
+static bool
+parse_CCD (struct lexer *lexer)
+{
+  return parse_ccx (lexer, FMT_CCD);
+}
+
+static bool
+parse_CCE (struct lexer *lexer)
+{
+  return parse_ccx (lexer, FMT_CCE);
+}
+
+static bool
+parse_CELLSBREAK (struct lexer *lexer)
+{
+  return parse_unimplemented (lexer, "CELLSBREAK");
+}
+
+static bool
+parse_CMPTRANS (struct lexer *lexer)
+{
+  return parse_unimplemented (lexer, "CMPTRANS");
+}
+
+static bool
+parse_COMPRESSION (struct lexer *lexer)
+{
+  return parse_unimplemented (lexer, "COMPRESSION");
+}
+
+static bool
+parse_CTEMPLATE (struct lexer *lexer)
+{
+  return parse_unimplemented (lexer, "CTEMPLATE");
+}
+
+static bool
+parse_DECIMAL (struct lexer *lexer)
+{
+  int decimal_char = force_parse_enum (lexer,
+                                       "DOT", '.',
+                                       "COMMA", ',');
+  if (decimal_char != -1)
+    settings_set_decimal_char (decimal_char);
+  return decimal_char != -1;
+}
+
+static bool
+parse_EPOCH (struct lexer *lexer)
+{
+  if (lex_match_id (lexer, "AUTOMATIC"))
+    settings_set_epoch (-1);
+  else if (lex_is_integer (lexer))
+    {
+      int new_epoch = lex_integer (lexer);
+      lex_get (lexer);
+      if (new_epoch < 1500)
+        {
+          msg (SE, _("%s must be 1500 or later."), "EPOCH");
+          return false;
+        }
+      settings_set_epoch (new_epoch);
+    }
   else
     {
-      lex_error_expecting (lexer, "VALUES", "LABELS", "BOTH");
-      return 0;
+      lex_error (lexer, _("expecting %s or year"), "AUTOMATIC");
+      return false;
     }
 
-  return 1;
+  return true;
 }
 
-
-static int
-stc_custom_tvars (struct lexer *lexer,
-                  struct dataset *ds UNUSED,
-                  struct cmd_set *cmd UNUSED, void *aux UNUSED)
+static bool
+parse_ERRORS (struct lexer *lexer)
 {
-  lex_match (lexer, T_EQUALS);
+  return parse_output_routing (lexer, SETTINGS_OUTPUT_ERROR);
+}
 
-  if (lex_match_id (lexer, "NAMES"))
-    settings_set_show_variables (SETTINGS_VALUE_SHOW_VALUE);
-  else if (lex_match_id (lexer, "LABELS"))
-    settings_set_show_variables (SETTINGS_VALUE_SHOW_LABEL);
-  else if (lex_match_id (lexer, "BOTH"))
-    settings_set_show_variables (SETTINGS_VALUE_SHOW_BOTH);
+static bool
+parse_FORMAT (struct lexer *lexer)
+{
+  struct fmt_spec fmt;
+
+  lex_match (lexer, T_EQUALS);
+  if (!parse_format_specifier (lexer, &fmt))
+    return false;
+
+  if (!fmt_check_output (&fmt))
+    return false;
+
+  if (fmt_is_string (fmt.type))
+    {
+      char str[FMT_STRING_LEN_MAX + 1];
+      msg (SE, _("%s requires numeric output format as an argument.  "
+		 "Specified format %s is of type string."),
+	   "FORMAT",
+	   fmt_to_string (&fmt, str));
+      return false;
+    }
+
+  settings_set_format (&fmt);
+  return true;
+}
+
+static bool
+parse_FUZZBITS (struct lexer *lexer)
+{
+  if (!lex_force_int (lexer))
+    return false;
+  int fuzzbits = lex_integer (lexer);
+  lex_get (lexer);
+
+  if (fuzzbits >= 0 && fuzzbits <= 20)
+    settings_set_fuzzbits (fuzzbits);
+  else
+    msg (SE, _("%s must be between 0 and 20."), "FUZZBITS");
+  return true;
+}
+
+static bool
+parse_HEADER (struct lexer *lexer)
+{
+  return parse_unimplemented (lexer, "HEADER");
+}
+
+static bool
+parse_INCLUDE (struct lexer *lexer)
+{
+  int include = force_parse_bool (lexer);
+  if (include != -1)
+    settings_set_include (include);
+  return include != -1;
+}
+
+static bool
+parse_JOURNAL (struct lexer *lexer)
+{
+  int b = parse_bool (lexer);
+  if (b == true)
+    journal_enable ();
+  else if (b == false)
+    journal_disable ();
+  else if (lex_is_string (lexer) || lex_token (lexer) == T_ID)
+    {
+      char *filename = utf8_to_filename (lex_tokcstr (lexer));
+      journal_set_file_name (filename);
+      free (filename);
+
+      lex_get (lexer);
+    }
   else
     {
-      lex_error_expecting (lexer, "NAMES", "LABELS", "BOTH");
-      return 0;
+      lex_error (lexer, NULL);
+      return false;
     }
-
-  return 1;
+  return true;
 }
 
-static int
-stc_custom_tlook (struct lexer *lexer,
-                  struct dataset *ds UNUSED,
-                  struct cmd_set *cmd UNUSED, void *aux UNUSED)
+static bool
+parse_LENGTH (struct lexer *lexer)
 {
-  lex_match (lexer, T_EQUALS);
+  int page_length;
 
+  if (lex_match_id (lexer, "NONE"))
+    page_length = -1;
+  else
+    {
+      if (!lex_force_int (lexer))
+	return false;
+      if (lex_integer (lexer) < 1)
+	{
+	  msg (SE, _("%s must be at least %d."), "LENGTH", 1);
+	  return false;
+	}
+      page_length = lex_integer (lexer);
+      lex_get (lexer);
+    }
+
+  if (page_length != -1)
+    settings_set_viewlength (page_length);
+
+  return true;
+}
+
+static bool
+parse_LOCALE (struct lexer *lexer)
+{
+  if (!lex_force_string (lexer))
+    return false;
+
+  /* Try the argument as an encoding name, then as a locale name or alias. */
+  const char *s = lex_tokcstr (lexer);
+  if (valid_encoding (s))
+    set_default_encoding (s);
+  else if (!set_encoding_from_locale (s))
+    {
+      msg (ME, _("%s is not a recognized encoding or locale name"), s);
+      return false;
+    }
+
+  lex_get (lexer);
+  return true;
+}
+
+static bool
+parse_MESSAGES (struct lexer *lexer)
+{
+  return parse_output_routing (lexer, SETTINGS_OUTPUT_NOTE);
+}
+
+static bool
+parse_MEXPAND (struct lexer *lexer)
+{
+  return parse_unimplemented (lexer, "MEXPAND");
+}
+
+static bool
+parse_MITERATE (struct lexer *lexer)
+{
+  return parse_unimplemented (lexer, "MITERATE");
+}
+
+static bool
+parse_MNEST (struct lexer *lexer)
+{
+  return parse_unimplemented (lexer, "MNEST");
+}
+
+static bool
+parse_MPRINT (struct lexer *lexer)
+{
+  return parse_unimplemented (lexer, "MPRINT");
+}
+
+static bool
+parse_MXERRS (struct lexer *lexer)
+{
+  int n;
+  if (!force_parse_int (lexer, &n))
+    return false;
+
+  if (n >= 1)
+    settings_set_max_messages (MSG_S_ERROR, n);
+  else
+    msg (SE, _("%s must be at least 1."), "MXERRS");
+  return true;
+}
+
+static bool
+parse_MXLOOPS (struct lexer *lexer)
+{
+  int n;
+  if (!force_parse_int (lexer, &n))
+    return false;
+
+  if (n >= 1)
+    settings_set_mxloops (n);
+  else
+    msg (SE, _("%s must be at least 1."), "MXLOOPS");
+  return true;
+}
+
+static bool
+parse_MXWARNS (struct lexer *lexer)
+{
+  int n;
+  if (!force_parse_int (lexer, &n))
+    return false;
+
+  if (n >= 0)
+    settings_set_max_messages (MSG_S_WARNING, n);
+  else
+    msg (SE, _("%s must not be negative."), "MXWARNS");
+  return true;
+}
+
+static bool
+parse_PRINTBACK (struct lexer *lexer)
+{
+  return parse_output_routing (lexer, SETTINGS_OUTPUT_SYNTAX);
+}
+
+static bool
+parse_RESULTS (struct lexer *lexer)
+{
+  return parse_output_routing (lexer, SETTINGS_OUTPUT_RESULT);
+}
+
+static bool
+parse_RIB (struct lexer *lexer)
+{
+  return parse_integer_format (lexer, settings_set_input_integer_format);
+}
+
+static bool
+parse_RRB (struct lexer *lexer)
+{
+  return parse_real_format (lexer, settings_set_input_float_format);
+}
+
+static bool
+parse_SAFER (struct lexer *lexer)
+{
+  bool ok = force_parse_enum (lexer, "ON", true, "YES", true) != -1;
+  if (ok)
+    settings_set_safer_mode ();
+  return ok;
+}
+
+static bool
+parse_SCOMPRESSION (struct lexer *lexer)
+{
+  int value = force_parse_bool (lexer);
+  if (value >= 0)
+    settings_set_scompression (value);
+  return value >= 0;
+}
+
+static bool
+parse_SEED (struct lexer *lexer)
+{
+  if (lex_match_id (lexer, "RANDOM"))
+    set_rng (time (0));
+  else
+    {
+      if (!lex_force_num (lexer))
+	return false;
+      set_rng (lex_number (lexer));
+      lex_get (lexer);
+    }
+
+  return true;
+}
+
+static bool
+parse_SMALL (struct lexer *lexer)
+{
+  if (!lex_force_num (lexer))
+    return false;
+  settings_set_small (lex_number (lexer));
+  lex_get (lexer);
+  return true;
+}
+
+static bool
+parse_TNUMBERS (struct lexer *lexer)
+{
+  int value = force_parse_enum (lexer,
+                                "LABELS", SETTINGS_VALUE_SHOW_LABEL,
+                                "VALUES", SETTINGS_VALUE_SHOW_VALUE,
+                                "BOTH", SETTINGS_VALUE_SHOW_BOTH);
+  if (value >= 0)
+    settings_set_show_values (value);
+  return value >= 0;
+}
+
+static bool
+parse_TVARS (struct lexer *lexer)
+{
+  int value = force_parse_enum (lexer,
+                                "LABELS", SETTINGS_VALUE_SHOW_LABEL,
+                                "NAMES", SETTINGS_VALUE_SHOW_VALUE,
+                                "BOTH", SETTINGS_VALUE_SHOW_BOTH);
+  if (value >= 0)
+    settings_set_show_variables (value);
+  return value >= 0;
+}
+
+static bool
+parse_TLOOK (struct lexer *lexer)
+{
   if (lex_match_id (lexer, "NONE"))
     pivot_table_look_set_default (pivot_table_look_builtin_default ());
   else if (lex_is_string (lexer))
@@ -407,154 +673,42 @@ stc_custom_tlook (struct lexer *lexer,
         {
           msg (SE, "%s", error);
           free (error);
-          return 0;
+          return false;
         }
 
       pivot_table_look_set_default (look);
       pivot_table_look_unref (look);
     }
 
-  return 1;
+  return true;
 }
 
-/* Parses the EPOCH subcommand, which controls the epoch used for
-   parsing 2-digit years. */
-static int
-stc_custom_epoch (struct lexer *lexer,
-		  struct dataset *ds UNUSED,
-		  struct cmd_set *cmd UNUSED, void *aux UNUSED)
+static bool
+parse_UNDEFINED (struct lexer *lexer)
 {
-  lex_match (lexer, T_EQUALS);
-  if (lex_match_id (lexer, "AUTOMATIC"))
-    settings_set_epoch (-1);
-  else if (lex_is_integer (lexer))
-    {
-      int new_epoch = lex_integer (lexer);
-      lex_get (lexer);
-      if (new_epoch < 1500)
-        {
-          msg (SE, _("%s must be 1500 or later."), "EPOCH");
-          return 0;
-        }
-      settings_set_epoch (new_epoch);
-    }
-  else
-    {
-      lex_error (lexer, _("expecting %s or year"), "AUTOMATIC");
-      return 0;
-    }
-
-  return 1;
+  int value = force_parse_enum (lexer,
+                                "WARN", true,
+                                "NOWARN", false);
+  if (value >= 0)
+    settings_set_undefined (value);
+  return value >= 0;
 }
 
-static int
-stc_custom_errors (struct lexer *lexer, struct dataset *ds UNUSED,
-                   struct cmd_set *cmd UNUSED, void *aux UNUSED)
+static bool
+parse_WIB (struct lexer *lexer)
 {
-  return set_output_routing (lexer, SETTINGS_OUTPUT_ERROR);
+  return parse_integer_format (lexer, settings_set_output_integer_format);
 }
 
-static int
-stc_custom_length (struct lexer *lexer, struct dataset *ds UNUSED, struct cmd_set *cmd UNUSED, void *aux UNUSED)
+static bool
+parse_WRB (struct lexer *lexer)
 {
-  int page_length;
-
-  lex_match (lexer, T_EQUALS);
-  if (lex_match_id (lexer, "NONE"))
-    page_length = -1;
-  else
-    {
-      if (!lex_force_int (lexer))
-	return 0;
-      if (lex_integer (lexer) < 1)
-	{
-	  msg (SE, _("%s must be at least %d."), "LENGTH", 1);
-	  return 0;
-	}
-      page_length = lex_integer (lexer);
-      lex_get (lexer);
-    }
-
-  if (page_length != -1)
-    settings_set_viewlength (page_length);
-
-  return 1;
+  return parse_real_format (lexer, settings_set_output_float_format);
 }
 
-static int
-stc_custom_locale (struct lexer *lexer, struct dataset *ds UNUSED,
-		   struct cmd_set *cmd UNUSED, void *aux UNUSED)
+static bool
+parse_WIDTH (struct lexer *lexer)
 {
-  const char *s;
-
-  lex_match (lexer, T_EQUALS);
-
-  if ( !lex_force_string (lexer))
-    return 0;
-
-  s = lex_tokcstr (lexer);
-
-  /* First try this string as an encoding name */
-  if ( valid_encoding (s))
-    set_default_encoding (s);
-
-  /* Now try as a locale name (or alias) */
-  else if (set_encoding_from_locale (s))
-    {
-    }
-  else
-    {
-      msg (ME, _("%s is not a recognized encoding or locale name"), s);
-      return 0;
-    }
-
-  lex_get (lexer);
-
-  return 1;
-}
-
-static int
-stc_custom_messages (struct lexer *lexer, struct dataset *ds UNUSED,
-                   struct cmd_set *cmd UNUSED, void *aux UNUSED)
-{
-  return set_output_routing (lexer, SETTINGS_OUTPUT_NOTE);
-}
-
-static int
-stc_custom_printback (struct lexer *lexer, struct dataset *ds UNUSED,
-                      struct cmd_set *cmd UNUSED, void *aux UNUSED)
-{
-  return set_output_routing (lexer, SETTINGS_OUTPUT_SYNTAX);
-}
-
-static int
-stc_custom_results (struct lexer *lexer, struct dataset *ds UNUSED,
-                    struct cmd_set *cmd UNUSED, void *aux UNUSED)
-{
-  return set_output_routing (lexer, SETTINGS_OUTPUT_RESULT);
-}
-
-static int
-stc_custom_seed (struct lexer *lexer, struct dataset *ds UNUSED, struct cmd_set *cmd UNUSED, void *aux UNUSED)
-{
-  lex_match (lexer, T_EQUALS);
-  if (lex_match_id (lexer, "RANDOM"))
-    set_rng (time (0));
-  else
-    {
-      if (!lex_force_num (lexer))
-	return 0;
-      set_rng (lex_number (lexer));
-      lex_get (lexer);
-    }
-
-  return 1;
-}
-
-static int
-stc_custom_width (struct lexer *lexer, struct dataset *ds UNUSED, struct cmd_set *cmd UNUSED, void *aux UNUSED)
-{
-  lex_match (lexer, T_EQUALS);
   if (lex_match_id (lexer, "NARROW"))
     settings_set_viewwidth (79);
   else if (lex_match_id (lexer, "WIDE"))
@@ -575,62 +729,105 @@ stc_custom_width (struct lexer *lexer, struct dataset *ds UNUSED, struct cmd_set
   return 1;
 }
 
-/* Parses FORMAT subcommand, which consists of a numeric format
-   specifier. */
-static int
-stc_custom_format (struct lexer *lexer, struct dataset *ds UNUSED, struct cmd_set *cmd UNUSED, void *aux UNUSED)
+static bool
+parse_WORKSPACE (struct lexer *lexer)
 {
-  struct fmt_spec fmt;
+  if (!lex_force_int (lexer))
+    return false;
+  int workspace = lex_integer (lexer);
+  lex_get (lexer);
 
-  lex_match (lexer, T_EQUALS);
-  if (!parse_format_specifier (lexer, &fmt))
-    return 0;
-
-  if (!fmt_check_output (&fmt))
-    return 0;
-
-  if (fmt_is_string (fmt.type))
-    {
-      char str[FMT_STRING_LEN_MAX + 1];
-      msg (SE, _("%s requires numeric output format as an argument.  "
-		 "Specified format %s is of type string."),
-	   "FORMAT",
-	   fmt_to_string (&fmt, str));
-      return 0;
-    }
-
-  settings_set_format (&fmt);
-  return 1;
-}
-
-static int
-stc_custom_journal (struct lexer *lexer, struct dataset *ds UNUSED, struct cmd_set *cmd UNUSED, void *aux UNUSED)
-{
-  lex_match (lexer, T_EQUALS);
-  if (lex_match_id (lexer, "ON") || lex_match_id (lexer, "YES"))
-    journal_enable ();
-  else if (lex_match_id (lexer, "OFF") || lex_match_id (lexer, "NO"))
-    journal_disable ();
-  else if (lex_is_string (lexer) || lex_token (lexer) == T_ID)
-    {
-      char *filename = utf8_to_filename (lex_tokcstr (lexer));
-      journal_set_file_name (filename);
-      free (filename);
-
-      lex_get (lexer);
-    }
+  if (workspace < 1024 && !settings_get_testing_mode ())
+    msg (SE, _("%s must be at least 1MB"), "WORKSPACE");
+  else if (workspace <= 0)
+    msg (SE, _("%s must be positive"), "WORKSPACE");
   else
+    settings_set_workspace (workspace * 1024L);
+  return true;
+}
+
+static bool
+parse_setting (struct lexer *lexer)
+{
+  struct setting
     {
-      lex_error (lexer, NULL);
-      return 0;
-    }
-  return 1;
+      const char *name;
+      bool (*function) (struct lexer *);
+    };
+  const struct setting settings[] = {
+    { "BASETEXTDIRECTION", parse_BASETEXTDIRECTION },
+    { "BLANKS", parse_BLANKS },
+    { "BLOCK", parse_BLOCK },
+    { "BOX", parse_BOX },
+    { "CACHE", parse_CACHE },
+    { "CCA", parse_CCA },
+    { "CCB", parse_CCB },
+    { "CCC", parse_CCC },
+    { "CCD", parse_CCD },
+    { "CCE", parse_CCE },
+    { "CELLSBREAK", parse_CELLSBREAK },
+    { "CMPTRANS", parse_CMPTRANS },
+    { "COMPRESSION", parse_COMPRESSION },
+    { "CTEMPLATE", parse_CTEMPLATE },
+    { "DECIMAL", parse_DECIMAL },
+    { "EPOCH", parse_EPOCH },
+    { "ERRORS", parse_ERRORS },
+    { "FORMAT", parse_FORMAT },
+    { "FUZZBITS", parse_FUZZBITS },
+    { "HEADER", parse_HEADER },
+    { "INCLUDE", parse_INCLUDE },
+    { "JOURNAL", parse_JOURNAL },
+    { "LENGTH", parse_LENGTH },
+    { "LOCALE", parse_LOCALE },
+    { "MESSAGES", parse_MESSAGES },
+    { "MEXPAND", parse_MEXPAND },
+    { "MITERATE", parse_MITERATE },
+    { "MNEST", parse_MNEST },
+    { "MPRINT", parse_MPRINT },
+    { "MXERRS", parse_MXERRS },
+    { "MXLOOPS", parse_MXLOOPS },
+    { "MXWARNS", parse_MXWARNS },
+    { "PRINTBACK", parse_PRINTBACK },
+    { "RESULTS", parse_RESULTS },
+    { "RIB", parse_RIB },
+    { "RRB", parse_RRB },
+    { "SAFER", parse_SAFER },
+    { "SCOMPRESSION", parse_SCOMPRESSION },
+    { "SEED", parse_SEED },
+    { "SMALL", parse_SMALL },
+    { "TNUMBERS", parse_TNUMBERS },
+    { "TVARS", parse_TVARS },
+    { "TLOOK", parse_TLOOK },
+    { "UNDEFINED", parse_UNDEFINED },
+    { "WIB", parse_WIB },
+    { "WRB", parse_WRB },
+    { "WIDTH", parse_WIDTH },
+    { "WORKSPACE", parse_WORKSPACE },
+  };
+  enum { N_SETTINGS = sizeof settings / sizeof *settings };
+
+  for (size_t i = 0; i < N_SETTINGS; i++)
+    if (match_subcommand (lexer, settings[i].name))
+        return settings[i].function (lexer);
+
+  lex_error (lexer, NULL);
+  return false;
 }
 
-static int
-stc_custom_log (struct lexer *lexer, struct dataset *ds UNUSED, struct cmd_set *cmd UNUSED, void *aux UNUSED)
+int
+cmd_set (struct lexer *lexer, struct dataset *ds UNUSED)
 {
-  return stc_custom_journal (lexer, ds, cmd, aux);
+  for (;;)
+    {
+      lex_match (lexer, T_SLASH);
+      if (lex_token (lexer) == T_ENDCMD)
+        break;
+
+      if (!parse_setting (lexer))
+        return CMD_FAILURE;
+    }
+
+  return CMD_SUCCESS;
 }
 
 static char *

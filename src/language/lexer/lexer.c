@@ -269,23 +269,40 @@ lex_next_error (struct lexer *lexer, int n0, int n1, const char *format, ...)
   va_end (args);
 }
 
-/* Prints a syntax error message saying that OPTION0 or one of the other
-   strings following it, up to the first NULL, is expected. */
+/* Prints a syntax error message saying that one of the strings provided as
+   varargs, up to the first NULL, is expected. */
 void
-(lex_error_expecting) (struct lexer *lexer, const char *option0, ...)
+(lex_error_expecting) (struct lexer *lexer, ...)
 {
-  enum { MAX_OPTIONS = 8 };
-  const char *options[MAX_OPTIONS + 1];
   va_list args;
-  int n;
 
-  va_start (args, option0);
-  options[0] = option0;
-  n = 0;
-  while (n + 1 < MAX_OPTIONS && options[n] != NULL)
-    options[++n] = va_arg (args, const char *);
+  va_start (args, lexer);
+  lex_error_expecting_valist (lexer, args);
   va_end (args);
+}
 
+/* Prints a syntax error message saying that one of the options provided in
+   ARGS, up to the first NULL, is expected. */
+void
+lex_error_expecting_valist (struct lexer *lexer, va_list args)
+{
+  enum { MAX_OPTIONS = 9 };
+  const char *options[MAX_OPTIONS];
+  int n = 0;
+  while (n < MAX_OPTIONS)
+    {
+      const char *option = va_arg (args, const char *);
+      if (!option)
+        break;
+
+      options[n++] = option;
+    }
+  lex_error_expecting_array (lexer, options, n);
+}
+
+void
+lex_error_expecting_array (struct lexer *lexer, const char **options, size_t n)
+{
   switch (n)
     {
     case 0:
@@ -334,7 +351,7 @@ void
       break;
 
     default:
-      NOT_REACHED ();
+      lex_error (lexer, NULL);
     }
 }
 
