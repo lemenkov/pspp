@@ -1489,10 +1489,13 @@ do_barchart(const struct frq_chart *bar, const struct variable **var,
   int n_slices;
   struct freq **slices = pick_cat_counts_ptr (bar, frq_tab, &n_slices);
 
-  chart_submit (barchart_create (var, 1,
-                                 (bar->y_scale == FRQ_FREQ) ? _("Count") : _("Percent"),
-                                 (bar->y_scale == FRQ_PERCENT),
-                                 slices, n_slices));
+  if (n_slices < 1)
+    msg (SW, _("Omitting bar chart, which has no values."));
+  else
+    chart_submit (barchart_create (var, 1,
+                                   (bar->y_scale == FRQ_FREQ) ? _("Count") : _("Percent"),
+                                   (bar->y_scale == FRQ_PERCENT),
+                                   slices, n_slices));
   free (slices);
 }
 
