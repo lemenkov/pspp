@@ -97,7 +97,6 @@ Free Documentation License".
 * SPSS Viewer File Format::     Format of SPSS Viewer (SPV) files.
 * SPSS TableLook File Formats:: Formats of .stt and .tlo files.
 * Encrypted File Wrappers::     Common wrapper for encrypted SPSS files.
-* q2c Input Format::            Format of syntax accepted by q2c.
 
 * GNU Free Documentation License:: License for copying this manual.
 @end menu
@@ -119,7 +118,6 @@ Free Documentation License".
 @include dev/spv-file-format.texi
 @include dev/tlo-file-format.texi
 @include dev/encrypted-file-wrappers.texi
-@include dev/q2c.texi
 
 @include fdl.texi
 

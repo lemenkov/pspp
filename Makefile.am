@@ -37,13 +37,6 @@ AM_CFLAGS+=-Wall -Wextra -Wwrite-strings -Wstrict-prototypes \
 -Wpointer-arith -Wno-sign-compare -Wmissing-prototypes
 endif
 
-.q.c:
-	@$(MKDIR_P) `dirname $@`
-	$(AM_V_GEN)./src/language/lexer/q2c$(EXEEXT_FOR_BUILD) $< $@
-
-$(all_q_sources:.q=.c): src/language/lexer/q2c$(EXEEXT_FOR_BUILD)
-all_q_sources =
-
 pkgsysconfdir = $(sysconfdir)/$(PACKAGE)
 
 
@@ -64,7 +57,7 @@ DIST_HOOKS =
 INSTALL_DATA_HOOKS =
 UNINSTALL_DATA_HOOKS =
 PHONY =
-SUFFIXES = .q
+SUFFIXES =
 LDADD = gl/libgl.la
 
 gl/libgl.la: config.h
