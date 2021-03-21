@@ -30,13 +30,13 @@ m4_define([PSPP_CHECK_SEGMENT],
 AT_SETUP([identifiers])
 AT_KEYWORDS([segment])
 AT_DATA([input], [dnl
-a ab abc abcd
-A AB ABC ABCD
-aB aBC aBcD
-$x $y $z
+a ab abc abcd !abcd
+A AB ABC ABCD !ABCD
+aB aBC aBcD !aBcD
+$x $y $z !$z
 grève@<00A0>@Ângstrom@<00A0>@poté
-#a #b #c ## #d
-@efg @ @@. @#@ @&t@
+#a #b #c ## #d !#d
+@efg @ @@. @#@ !@ @&t@
 ## # #12345 #.#
 f@#_.#6
 GhIjK
@@ -46,23 +46,27 @@ AT_DATA([expout-base], [dnl
 identifier      a    space
 identifier      ab    space
 identifier      abc    space
-identifier      abcd
+identifier      abcd    space
+macro_id        !abcd
 newline         \n (later)
 
 identifier      A    space
 identifier      AB    space
 identifier      ABC    space
-identifier      ABCD
+identifier      ABCD    space
+macro_id        !ABCD
 newline         \n (later)
 
 identifier      aB    space
 identifier      aBC    space
-identifier      aBcD
+identifier      aBcD    space
+macro_id        !aBcD
 newline         \n (later)
 
 identifier      $x    space
 identifier      $y    space
-identifier      $z
+identifier      $z    space
+macro_id        !$z
 newline         \n (later)
 
 identifier      grève
@@ -76,13 +80,15 @@ identifier      #a    space
 identifier      #b    space
 identifier      #c    space
 identifier      ##    space
-identifier      #d
+identifier      #d    space
+macro_id        !#d
 newline         \n (later)
 
 identifier      @efg    space
 identifier      @    space
 identifier      @@.    space
 identifier      @#@    space
+macro_id        !@    space
 newline         \n (later)
 
 identifier      ##    space
@@ -494,7 +500,7 @@ end_command     .
 newline         \n (first)
 
 identifier      #
-unexpected_char !    space
+macro_id        !    space
 punct           /
 identifier      usr
 punct           /

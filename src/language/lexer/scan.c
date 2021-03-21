@@ -453,6 +453,11 @@ scan_start__ (struct scanner *scanner, enum segment_type type,
       ss_alloc_substring (&token->string, s);
       return SCAN_DONE;
 
+    case SEG_MACRO_ID:
+      token->type = T_MACRO_ID;
+      ss_alloc_substring (&token->string, s);
+      return SCAN_DONE;
+
     case SEG_PUNCT:
       if (s.length == 1 && s.string[0] == '-')
         {

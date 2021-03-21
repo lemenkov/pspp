@@ -67,6 +67,7 @@ enum segmenter_mode
     SEG_TYPE(UNQUOTED_STRING)                   \
     SEG_TYPE(RESERVED_WORD)                     \
     SEG_TYPE(IDENTIFIER)                        \
+    SEG_TYPE(MACRO_ID)                          \
     SEG_TYPE(PUNCT)                             \
                                                 \
     SEG_TYPE(SHBANG)                            \

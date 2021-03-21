@@ -933,8 +933,8 @@ lex_next_tokcstr (const struct lexer *lexer, int n)
    The string is null-terminated (but the null terminator is not included in
    the returned substring's 'length').
 
-   Only T_ID and T_STRING tokens have meaningful strings.  For other tokens
-   this functions this function will always return NULL.
+   Only T_ID, T_MACRO_ID, T_STRING tokens have meaningful strings.  For other
+   tokens this functions this function will always return NULL.
 
    The UTF-8 encoding of the returned string is correct for variable names and
    other identifiers.  Use filename_to_utf8() to use it as a filename.  Use

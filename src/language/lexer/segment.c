@@ -651,6 +651,7 @@ next_id_in_command (const struct segmenter *s, const char *input, size_t n,
             }
           /* fall through */
 
+        case SEG_MACRO_ID:
         case SEG_NUMBER:
         case SEG_QUOTED_STRING:
         case SEG_HEX_STRING:
@@ -719,10 +720,9 @@ segmenter_parse_id__ (struct segmenter *s, const char *input, size_t n,
         ofs--;
     }
 
-  if (is_reserved_word (input, ofs))
-    *type = SEG_RESERVED_WORD;
-  else
-    *type = SEG_IDENTIFIER;
+  *type = (is_reserved_word (input, ofs) ? SEG_RESERVED_WORD
+           : input[0] == '!' ? SEG_MACRO_ID
+           : SEG_IDENTIFIER);
 
   if (s->substate & SS_START_OF_COMMAND)
     {
@@ -988,6 +988,9 @@ segmenter_parse_mid_command__ (struct segmenter *s,
     case '\'': case '"':
       return segmenter_parse_string__ (SEG_QUOTED_STRING, 0,
                                        s, input, n, eof, type);
+
+    case '!':
+      return segmenter_parse_id__ (s, input, n, eof, type);
 
     default:
       if (lex_uc_is_space (uc))

@@ -23,41 +23,42 @@
 #include "libpspp/str.h"
 
 #define TOKEN_TYPES                                                     \
-    TOKEN_TYPE(ID)                         /* Identifier. */            \
-    TOKEN_TYPE(POS_NUM)                    /* Positive number. */       \
-    TOKEN_TYPE(NEG_NUM)                    /* Negative number. */       \
-    TOKEN_TYPE(STRING)                     /* Quoted string. */         \
-    TOKEN_TYPE(STOP)                       /* End of input. */          \
+    TOKEN_TYPE(ID)                  /* Identifier. */                   \
+    TOKEN_TYPE(MACRO_ID)            /* Identifier starting with '!'. */ \
+    TOKEN_TYPE(POS_NUM)             /* Positive number. */              \
+    TOKEN_TYPE(NEG_NUM)             /* Negative number. */              \
+    TOKEN_TYPE(STRING)              /* Quoted string. */                \
+    TOKEN_TYPE(STOP)                /* End of input. */                 \
                                                                         \
-    TOKEN_TYPE(ENDCMD)                     /* . */                      \
-    TOKEN_TYPE(PLUS)                       /* + */                      \
-    TOKEN_TYPE(DASH)                       /* - */                      \
-    TOKEN_TYPE(ASTERISK)                   /* * */                      \
-    TOKEN_TYPE(SLASH)                      /* / */                      \
-    TOKEN_TYPE(EQUALS)                     /* = */                      \
-    TOKEN_TYPE(LPAREN)                     /* (*/                      \
-    TOKEN_TYPE(RPAREN)                     /*) */                      \
-    TOKEN_TYPE(LBRACK)                     /* [ */                      \
-    TOKEN_TYPE(RBRACK)                     /* ] */                      \
-    TOKEN_TYPE(COMMA)                      /* , */                      \
+    TOKEN_TYPE(ENDCMD)              /* . */                             \
+    TOKEN_TYPE(PLUS)                /* + */                             \
+    TOKEN_TYPE(DASH)                /* - */                             \
+    TOKEN_TYPE(ASTERISK)            /* * */                             \
+    TOKEN_TYPE(SLASH)               /* / */                             \
+    TOKEN_TYPE(EQUALS)              /* = */                             \
+    TOKEN_TYPE(LPAREN)              /* (*/                              \
+    TOKEN_TYPE(RPAREN)              /*) */                              \
+    TOKEN_TYPE(LBRACK)              /* [ */                             \
+    TOKEN_TYPE(RBRACK)              /* ] */                             \
+    TOKEN_TYPE(COMMA)               /* , */                             \
                                                                         \
-    TOKEN_TYPE(AND)                        /* AND */                    \
-    TOKEN_TYPE(OR)                         /* OR */                     \
-    TOKEN_TYPE(NOT)                        /* NOT */                    \
+    TOKEN_TYPE(AND)                 /* AND */                           \
+    TOKEN_TYPE(OR)                  /* OR */                            \
+    TOKEN_TYPE(NOT)                 /* NOT */                           \
                                                                         \
-    TOKEN_TYPE(EQ)                         /* EQ */                     \
-    TOKEN_TYPE(GE)                         /* GE or >= */               \
-    TOKEN_TYPE(GT)                         /* GT or > */                \
-    TOKEN_TYPE(LE)                         /* LE or <= */               \
-    TOKEN_TYPE(LT)                         /* LT or < */                \
-    TOKEN_TYPE(NE)                         /* NE or ~= */               \
+    TOKEN_TYPE(EQ)                  /* EQ */                            \
+    TOKEN_TYPE(GE)                  /* GE or >= */                      \
+    TOKEN_TYPE(GT)                  /* GT or > */                       \
+    TOKEN_TYPE(LE)                  /* LE or <= */                      \
+    TOKEN_TYPE(LT)                  /* LT or < */                       \
+    TOKEN_TYPE(NE)                  /* NE or ~= */                      \
                                                                         \
-    TOKEN_TYPE(ALL)                        /* ALL */                    \
-    TOKEN_TYPE(BY)                         /* BY */                     \
-    TOKEN_TYPE(TO)                         /* TO */                     \
-    TOKEN_TYPE(WITH)                       /* WITH */                   \
+    TOKEN_TYPE(ALL)                 /* ALL */                           \
+    TOKEN_TYPE(BY)                  /* BY */                            \
+    TOKEN_TYPE(TO)                  /* TO */                            \
+    TOKEN_TYPE(WITH)                /* WITH */                          \
                                                                         \
-    TOKEN_TYPE(EXP)                        /* ** */
+    TOKEN_TYPE(EXP)                 /* ** */
 
 /* Token types. */
 enum token_type

@@ -25,7 +25,7 @@ m4_define([PSPP_CHECK_SCAN],
 AT_SETUP([identifiers])
 AT_KEYWORDS([scan])
 AT_DATA([input], [dnl
-a aB i5 $x @efg @@. #.# .x _z.
+a aB i5 $x @efg @@. !abcd #.# .x _z.
 abcd. abcd.
 QRSTUV./* end of line comment */
 QrStUv./* end of line comment */ @&t@
@@ -44,6 +44,8 @@ SKIP
 ID "@efg"
 SKIP
 ID "@@."
+SKIP
+MACRO_ID "!abcd"
 SKIP
 ID "#.#"
 SKIP
@@ -443,7 +445,7 @@ AT_DATA([expout-base], [dnl
 SKIP
 SKIP
 ID "#"
-UNEXPECTED_CHAR 33
+MACRO_ID "!"
 SKIP
 SLASH
 ID "usr"

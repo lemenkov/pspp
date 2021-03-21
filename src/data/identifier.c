@@ -62,6 +62,7 @@ token_type_to_string (enum token_type token)
   switch (token)
     {
     case T_ID:
+    case T_MACRO_ID:
     case T_POS_NUM:
     case T_NEG_NUM:
     case T_STRING:
