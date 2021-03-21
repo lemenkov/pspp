@@ -497,10 +497,6 @@ SET
 
 (syntax execution)
         /LOCALE='@var{locale}'
-        /MEXPAND=@{ON,OFF@}
-        /MITERATE=@var{max_iterations}
-        /MNEST=@var{max_nest}
-        /MPRINT=@{ON,OFF@}
         /MXLOOPS=@var{max_loops}
         /SEED=@{RANDOM,@var{seed_value}@}
         /UNDEFINED=@{WARN,NOWARN@}
@@ -532,28 +528,25 @@ SET
         /JOURNAL=@{ON,OFF@} ['@var{file_name}']
 
 (system files)
-        /COMPRESSION=@{ON,OFF@}
         /SCOMPRESSION=@{ON,OFF@}
 
 (miscellaneous)
         /SAFER=ON
         /LOCALE='@var{string}'
 
-
-(obsolete settings accepted for compatibility, but ignored)
-        /BOXSTRING=@{'@var{xxx}','@var{xxxxxxxxxxx}'@}
-        /CASE=@{UPPER,UPLOW@}
-        /CPI=cpi_value
-        /HIGHRES=@{ON,OFF@}
-        /HISTOGRAM='@var{c}'
-        /LOWRES=@{AUTO,ON,OFF@}
-        /LPI=@var{lpi_value}
-        /MENUS=@{STANDARD,EXTENDED@}
-        /MXMEMORY=@var{max_memory}
-        /SCRIPTTAB='c'
-        /TB1=@{'@var{xxx}','@var{xxxxxxxxxxx}'@}
-        /TBFONTS='@var{string}'
-        /XSORT=@{YES,NO@}
+(settings not yet implemented, but accepted and ignored)
+        /BASETEXTDIRECTION=@{AUTOMATIC,RIGHTTOLEFT,LEFTTORIGHT@}
+        /BLOCK='@var{c}'
+        /BOX=@{'@var{xxx}','@var{xxxxxxxxxxx}'@}
+        /CACHE=@{ON,OFF@}
+        /CELLSBREAK=@var{number}
+        /COMPRESSION=@{ON,OFF@}
+        /CMPTRANS=@{ON,OFF@}
+        /HEADER=@{NO,YES,BLANK@}
+        /MEXPAND=@{ON,OFF@}
+        /MITERATE=@var{number}
+        /MNEST=@var{number}
+        /MPRINT=@{ON,OFF@}
 @end display
 
 @cmd{SET} allows the user to adjust several parameters relating to
@@ -693,12 +686,6 @@ respectively, and @var{encoding} is an @acronym{IANA} character set name.
 Example locales are @code{en_US.UTF-8} (UTF-8 encoded English as
 spoken in the United States) and @code{ja_JP.EUC-JP} (EUC-JP encoded
 Japanese as spoken in Japan).
-
-@item MEXPAND
-@itemx MITERATE
-@itemx MNEST
-@itemx MPRINT
-Currently not used.
 
 @item MXLOOPS
 The maximum number of iterations for an uncontrolled loop (@pxref{LOOP}).
@@ -887,9 +874,6 @@ System file subcommands affect the default format of system files
 produced by @pspp{}.  These subcommands are
 
 @table @asis
-@item COMPRESSION
-Not currently used.
-
 @item SCOMPRESSION
 Whether system files created by @cmd{SAVE} or @cmd{XSAVE} are
 compressed by default.  The default is @subcmd{ON}.
@@ -946,6 +930,24 @@ SET LOCALE='japanese'.
 
 Contrary to intuition, this command does not affect any aspect
 of the system's locale.
+@end table
+
+The following subcommands are not yet implemented, but PSPP accepts
+them and ignores the settings.
+
+@table @asis
+@item BASETEXTDIRECTION
+@itemx BLOCK
+@itemx BOX
+@itemx CACHE
+@itemx CELLSBREAK
+@itemx COMPRESSION
+@itemx CMPTRANS
+@itemx HEADER
+@itemx MEXPAND
+@itemx MITERATE
+@itemx MNEST
+@itemx MPRINT
 @end table
 
 @node SHOW
