@@ -46,7 +46,7 @@ u'110000'
 'foo
 'very long unterminated string that be ellipsized in its error message
 1e .x
-`
+^
 �
 ])
 AT_CHECK([pspp -O format=csv lexer.sps], [1], [dnl
@@ -72,7 +72,7 @@ lexer.sps:9.4: error: Syntax error at `.': Unexpected `.' in middle of command.
 
 lexer.sps:9: error: Unknown command `x'.
 
-lexer.sps:10.1: error: Syntax error at ``': Bad character ``' in input.
+lexer.sps:10.1: error: Syntax error at `^': Bad character `^' in input.
 
 lexer.sps:11.1: error: Syntax error at `�': Bad character U+FFFD in input.
 ])

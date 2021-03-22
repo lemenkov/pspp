@@ -143,6 +143,7 @@ token_to_string (const struct token *token)
 
     case T_ID:
     case T_MACRO_ID:
+    case T_MACRO_PUNCT:
       return ss_xstrdup (token->string);
 
     case T_STRING:

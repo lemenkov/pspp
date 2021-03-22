@@ -24,7 +24,6 @@
 
 #define TOKEN_TYPES                                                     \
     TOKEN_TYPE(ID)                  /* Identifier. */                   \
-    TOKEN_TYPE(MACRO_ID)            /* Identifier starting with '!'. */ \
     TOKEN_TYPE(POS_NUM)             /* Positive number. */              \
     TOKEN_TYPE(NEG_NUM)             /* Negative number. */              \
     TOKEN_TYPE(STRING)              /* Quoted string. */                \
@@ -37,7 +36,7 @@
     TOKEN_TYPE(SLASH)               /* / */                             \
     TOKEN_TYPE(EQUALS)              /* = */                             \
     TOKEN_TYPE(LPAREN)              /* (*/                              \
-    TOKEN_TYPE(RPAREN)              /*) */                              \
+    TOKEN_TYPE(RPAREN)              /* ) */                             \
     TOKEN_TYPE(LBRACK)              /* [ */                             \
     TOKEN_TYPE(RBRACK)              /* ] */                             \
     TOKEN_TYPE(COMMA)               /* , */                             \
@@ -58,8 +57,10 @@
     TOKEN_TYPE(TO)                  /* TO */                            \
     TOKEN_TYPE(WITH)                /* WITH */                          \
                                                                         \
-    TOKEN_TYPE(EXP)                 /* ** */
-
+    TOKEN_TYPE(EXP)                 /* ** */                            \
+                                                                        \
+    TOKEN_TYPE(MACRO_ID)            /* Identifier starting with '!'. */ \
+    TOKEN_TYPE(MACRO_PUNCT)         /* Miscellaneous punctuator. */
 /* Token types. */
 enum token_type
   {

@@ -107,7 +107,7 @@ start_command   .
 identifier      x    space
 number          1
 identifier      y    space
-unexpected_char \_
+punct           \_
 identifier      z
 -newline         \n (later)
 -
@@ -291,6 +291,7 @@ AT_KEYWORDS([segment])
 AT_DATA([input], [dnl
 ~ & | = >= > <= < ~= <> ( ) , - + * / [[ ]] **
 ~&|=>=><=<~=<>(),-+*/[[]]**
+% : ; ? _ ` { } ~
 ])
 AT_DATA([expout-base], [dnl
 punct           ~    space
@@ -335,6 +336,17 @@ punct           /
 punct           [[
 punct           ]]
 punct           **
+newline         \n (later)
+
+punct           %    space
+punct           :    space
+punct           ;    space
+punct           ?    space
+punct           \_    space
+punct           `    space
+punct           {    space
+punct           }    space
+punct           ~
 -newline         \n (later)
 -
 end

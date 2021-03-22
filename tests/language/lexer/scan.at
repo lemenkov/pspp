@@ -52,7 +52,7 @@ SKIP
 UNEXPECTED_DOT
 ID "x"
 SKIP
-UNEXPECTED_CHAR 95
+MACRO_PUNCT "_"
 ID "z"
 ENDCMD
 SKIP
@@ -187,6 +187,7 @@ AT_KEYWORDS([scan])
 AT_DATA([input], [dnl
 ~ & | = >= > <= < ~= <> ( ) , - + * / [[ ]] **
 ~&|=>=><=<~=<>(),-+*/[[]]**
+% : ; ? _ ` { } ~
 ])
 AT_DATA([expout-base], [dnl
 NOT
@@ -249,6 +250,24 @@ SLASH
 LBRACK
 RBRACK
 EXP
+SKIP
+MACRO_PUNCT "%"
+SKIP
+MACRO_PUNCT ":"
+SKIP
+MACRO_PUNCT ";"
+SKIP
+MACRO_PUNCT "?"
+SKIP
+MACRO_PUNCT "_"
+SKIP
+MACRO_PUNCT "`"
+SKIP
+MACRO_PUNCT "{"
+SKIP
+MACRO_PUNCT "}"
+SKIP
+NOT
 -SKIP
 STOP
 ])

@@ -324,6 +324,7 @@ scan_punct1__ (char c0)
     case '<': return T_LT;
     case '>': return T_GT;
     case '~': return T_NOT;
+    default: return T_MACRO_PUNCT;
     }
 
   NOT_REACHED ();
@@ -467,6 +468,8 @@ scan_start__ (struct scanner *scanner, enum segment_type type,
       else
         {
           token->type = scan_punct__ (s);
+          if (token->type == T_MACRO_PUNCT)
+            ss_alloc_substring (&token->string, s);
           return SCAN_DONE;
         }
 

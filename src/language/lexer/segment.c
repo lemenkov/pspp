@@ -1015,6 +1015,12 @@ segmenter_parse_mid_command__ (struct segmenter *s,
         }
       else if (lex_uc_is_id1 (uc))
         return segmenter_parse_id__ (s, input, n, eof, type);
+      else if (uc > 32 && uc < 127 && uc != '\\' && uc != '^')
+        {
+          *type = SEG_PUNCT;
+          s->substate = 0;
+          return 1;
+        }
       else
         {
           *type = SEG_UNEXPECTED_CHAR;
