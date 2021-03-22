@@ -679,6 +679,96 @@ lex_force_int (struct lexer *lexer)
     }
 }
 
+/* If the current token is an integer in the range MIN...MAX (inclusive), does
+   nothing and returns true.  Otherwise, reports an error and returns false.
+   If NAME is nonnull, then it is used in the error message. */
+bool
+lex_force_int_range (struct lexer *lexer, const char *name, long min, long max)
+{
+  bool is_integer = lex_is_integer (lexer);
+  bool too_small = is_integer && lex_integer (lexer) < min;
+  bool too_big = is_integer && lex_integer (lexer) > max;
+  if (is_integer && !too_small && !too_big)
+    return true;
+
+  if (min > max)
+    {
+      /* Weird, maybe a bug in the caller.  Just report that we needed an
+         integer. */
+      if (name)
+        lex_error (lexer, _("Integer expected for %s."), name);
+      else
+        lex_error (lexer, _("Integer expected."));
+    }
+  else if (min == max)
+    {
+      if (name)
+        lex_error (lexer, _("Expected %ld for %s."), min, name);
+      else
+        lex_error (lexer, _("Expected %ld."), min);
+    }
+  else if (min + 1 == max)
+    {
+      if (name)
+        lex_error (lexer, _("Expected %ld or %ld for %s."), min, min + 1, name);
+      else
+        lex_error (lexer, _("Expected %ld or %ld."), min, min + 1);
+    }
+  else
+    {
+      bool report_lower_bound = (min > INT_MIN / 2) || too_small;
+      bool report_upper_bound = (max < INT_MAX / 2) || too_big;
+
+      if (report_lower_bound && report_upper_bound)
+        {
+          if (name)
+            lex_error (lexer,
+                       _("Expected integer between %ld and %ld for %s."),
+                       min, max, name);
+          else
+            lex_error (lexer, _("Expected integer between %ld and %ld."),
+                       min, max);
+        }
+      else if (report_lower_bound)
+        {
+          if (min == 0)
+            {
+              if (name)
+                lex_error (lexer, _("Expected non-negative integer for %s."),
+                           name);
+              else
+                lex_error (lexer, _("Expected non-negative integer."));
+            }
+          else if (min == 1)
+            {
+              if (name)
+                lex_error (lexer, _("Expected positive integer for %s."),
+                           name);
+              else
+                lex_error (lexer, _("Expected positive integer."));
+            }
+        }
+      else if (report_upper_bound)
+        {
+          if (name)
+            lex_error (lexer,
+                       _("Expected integer less than or equal to %ld for %s."),
+                       max, name);
+          else
+            lex_error (lexer, _("Expected integer less than or equal to %ld."),
+                       max);
+        }
+      else
+        {
+          if (name)
+            lex_error (lexer, _("Integer expected for %s."), name);
+          else
+            lex_error (lexer, _("Integer expected."));
+        }
+    }
+  return false;
+}
+
 /* If the current token is a number, does nothing and returns true.
    Otherwise, reports an error and returns false. */
 bool
@@ -1306,7 +1396,8 @@ lex_source_error_valist (struct lex_source *src, int n0, int n1,
       ds_put_cstr (&s, ": ");
       ds_put_vformat (&s, format, args);
     }
-  ds_put_byte (&s, '.');
+  if (ds_last (&s) != '.')
+    ds_put_byte (&s, '.');
 
   struct msg m = {
     .category = MSG_C_SYNTAX,

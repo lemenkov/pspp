@@ -54,15 +54,10 @@ cmd_sort_cases (struct lexer *lexer, struct dataset *ds)
   if (settings_get_testing_mode () && lex_match (lexer, T_SLASH))
     {
       if (!lex_force_match_id (lexer, "BUFFERS") || !lex_match (lexer, T_EQUALS)
-          || !lex_force_int (lexer))
+          || !lex_force_int_range (lexer, "BUFFERS", 2, INT_MAX))
         goto done;
 
       min_buffers = max_buffers = lex_integer (lexer);
-      if (max_buffers < 2)
-        {
-          msg (SE, _("Buffer limit must be at least 2."));
-          goto done;
-        }
 
       lex_get (lexer);
     }

@@ -1314,7 +1314,7 @@ cmd_factor (struct lexer *lexer, struct dataset *ds)
 	      else if (lex_match_id (lexer, "ITERATE"))
 		{
 		  if (lex_force_match (lexer, T_LPAREN)
-                       && lex_force_int (lexer))
+                      && lex_force_int_range (lexer, "ITERATE", 0, INT_MAX))
 		    {
 		      n_iterations = lex_integer (lexer);
 		      lex_get (lexer);

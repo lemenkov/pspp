@@ -664,9 +664,6 @@ parse_crosstabs_variables (struct lexer *lexer, struct dataset *ds,
   for (;;)
     {
       size_t orig_nv = proc->n_variables;
-      size_t i;
-
-      long min, max;
 
       if (!parse_variables_const (lexer, dataset_dict (ds),
                                   &proc->variables, &proc->n_variables,
@@ -679,26 +676,20 @@ parse_crosstabs_variables (struct lexer *lexer, struct dataset *ds,
 
       if (!lex_force_int (lexer))
 	goto error;
-      min = lex_integer (lexer);
+      long min = lex_integer (lexer);
       lex_get (lexer);
 
       lex_match (lexer, T_COMMA);
 
-      if (!lex_force_int (lexer))
+      if (!lex_force_int_range (lexer, NULL, min, LONG_MAX))
 	goto error;
-      max = lex_integer (lexer);
-      if (max < min)
-	{
-	  msg (SE, _("Maximum value (%ld) less than minimum value (%ld)."),
-	       max, min);
-	  goto error;
-	}
+      long max = lex_integer (lexer);
       lex_get (lexer);
 
       if (!lex_force_match (lexer, T_RPAREN))
         goto error;
 
-      for (i = orig_nv; i < proc->n_variables; i++)
+      for (size_t i = orig_nv; i < proc->n_variables; i++)
         {
           const struct variable *var = proc->variables[i];
           struct var_range *vr = xmalloc (sizeof *vr);

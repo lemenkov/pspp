@@ -797,7 +797,7 @@ cmd_frequencies (struct lexer *lexer, struct dataset *ds)
               else if (lex_match_id (lexer, "LIMIT"))
                 {
                   if (!lex_force_match (lexer, T_LPAREN)
-                      || !lex_force_int (lexer))
+                      || !lex_force_int_range (lexer, "LIMIT", 0, INT_MAX))
                     goto error;
 
                   frq.max_categories = lex_integer (lexer);
@@ -833,12 +833,11 @@ cmd_frequencies (struct lexer *lexer, struct dataset *ds)
         {
 	  lex_match (lexer, T_EQUALS);
 
-	  if (lex_force_int (lexer))
+	  if (lex_force_int_range (lexer, "NTILES", 0, INT_MAX))
 	    {
-	      int i;
 	      int n = lex_integer (lexer);
 	      lex_get (lexer);
-	      for (i = 0; i < n + 1; ++i)
+	      for (int i = 0; i < n + 1; ++i)
 		{
 		  frq.percentiles =
 		    xrealloc (frq.percentiles,
@@ -896,13 +895,9 @@ cmd_frequencies (struct lexer *lexer, struct dataset *ds)
                   hi_scale = FRQ_FREQ;
                   if (lex_match (lexer, T_LPAREN))
                     {
-                      if (lex_force_int (lexer))
+                      if (lex_force_int_range (lexer, "FREQ", 1, INT_MAX))
                         {
 			  hi_freq = lex_integer (lexer);
-			  if (hi_freq <= 0)
-			    {
-			      lex_error (lexer, _("Histogram frequency must be greater than zero."));
-			    }
 			  lex_get (lexer);
 			  if (! lex_force_match (lexer, T_RPAREN))
 			    goto error;
@@ -914,13 +909,9 @@ cmd_frequencies (struct lexer *lexer, struct dataset *ds)
                   hi_scale = FRQ_PERCENT;
                   if (lex_match (lexer, T_LPAREN))
                     {
-                      if (lex_force_int (lexer))
+                      if (lex_force_int_range (lexer, "PERCENT", 1, INT_MAX))
 			{
 			  hi_pcnt = lex_integer (lexer);
-			  if (hi_pcnt <= 0)
-			    {
-			      lex_error (lexer, _("Histogram percentage must be greater than zero."));
-			    }
 			  lex_get (lexer);
 			  if (! lex_force_match (lexer, T_RPAREN))
 			    goto error;

@@ -103,7 +103,7 @@ AT_SETUP([lexer crash due to overflow])
 printf "DATA LIST/5555555555555555." > lexer.sps
 
 AT_CHECK([pspp -O format=csv lexer.sps], [1], [dnl
-"lexer.sps:1: error: DATA LIST: The record number specified, 5555555555555555, is at or before the previous record, 0.  Data fields must be listed in order of increasing record number."
+lexer.sps:1.11-1.27: error: DATA LIST: Syntax error at `5555555555555555.': Expected integer between 1 and 2147483647.
 ])
 
 AT_CLEANUP

@@ -175,7 +175,7 @@ internal_cmd_print (struct lexer *lexer, struct dataset *ds,
 	{
 	  lex_match (lexer, T_EQUALS);
 	  lex_match (lexer, T_LPAREN);
-	  if (!lex_force_int (lexer))
+	  if (!lex_force_int_range (lexer, "RECORDS", 0, INT_MAX))
 	    goto error;
 	  trns->record_cnt = lex_integer (lexer);
 	  lex_get (lexer);

@@ -124,13 +124,10 @@ cmd_vector (struct lexer *lexer, struct dataset *ds)
             {
               if (lex_is_integer (lexer) && var_cnt == 0)
                 {
+                  if (!lex_force_int_range (lexer, NULL, 1, INT_MAX))
+                    goto fail;
                   var_cnt = lex_integer (lexer);
                   lex_get (lexer);
-                  if (var_cnt <= 0)
-                    {
-                      msg (SE, _("Vectors must have at least one element."));
-                      goto fail;
-                    }
                 }
               else if (lex_token (lexer) == T_ID && !seen_format)
                 {

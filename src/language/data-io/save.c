@@ -269,7 +269,7 @@ parse_write_command (struct lexer *lexer, struct dataset *ds,
                && lex_match_id (lexer, "VERSION"))
 	{
 	  lex_match (lexer, T_EQUALS);
-	  if (!lex_force_int (lexer))
+	  if (!lex_force_int_range (lexer, "VERSION", 2, 3))
             goto error;
           sysfile_opts.version = lex_integer (lexer);
           lex_get (lexer);
@@ -290,7 +290,7 @@ parse_write_command (struct lexer *lexer, struct dataset *ds,
       else if (writer_type == PORFILE_WRITER && lex_match_id (lexer, "DIGITS"))
         {
           lex_match (lexer, T_EQUALS);
-          if (!lex_force_int (lexer))
+          if (!lex_force_int_range (lexer, "DIGITS", 1, INT_MAX))
             goto error;
           porfile_opts.digits = lex_integer (lexer);
           lex_get (lexer);

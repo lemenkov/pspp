@@ -97,13 +97,8 @@ parse_attribute_name (struct lexer *lexer, const char *dict_encoding,
 
   if (lex_match (lexer, T_LBRACK))
     {
-      if (!lex_force_int (lexer))
+      if (!lex_force_int_range (lexer, NULL, 1, 65535))
         goto error;
-      if (lex_integer (lexer) < 1 || lex_integer (lexer) > 65535)
-        {
-          msg (SE, _("Attribute array index must be between 1 and 65535."));
-          goto error;
-        }
       *index = lex_integer (lexer);
       lex_get (lexer);
       if (!lex_force_match (lexer, T_RBRACK))

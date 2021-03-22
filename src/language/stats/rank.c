@@ -290,7 +290,7 @@ parse_into (struct lexer *lexer, struct rank *cmd,
       if (!lex_force_match (lexer, T_LPAREN))
 	return false;
 
-      if (! lex_force_int (lexer))
+      if (! lex_force_int_range (lexer, "NTILES", 1, INT_MAX))
 	return false;
 
       cmd->k_ntiles = lex_integer (lexer);

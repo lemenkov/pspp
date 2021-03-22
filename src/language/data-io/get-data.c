@@ -164,7 +164,7 @@ parse_get_psql (struct lexer *lexer, struct dataset *ds)
       if (lex_match_id (lexer, "ASSUMEDSTRWIDTH"))
 	{
 	  lex_match (lexer, T_EQUALS);
-          if (lex_force_int (lexer))
+          if (lex_force_int_range (lexer, "ASSUMEDSTRWIDTH", 1, 32767))
             {
               psql.str_width = lex_integer (lexer);
               lex_get (lexer);
@@ -173,7 +173,7 @@ parse_get_psql (struct lexer *lexer, struct dataset *ds)
       else if (lex_match_id (lexer, "BSIZE"))
 	{
 	  lex_match (lexer, T_EQUALS);
-          if (lex_force_int (lexer))
+          if (lex_force_int_range (lexer, "BSIZE", 1, INT_MAX))
             {
               psql.bsize = lex_integer (lexer);
               lex_get (lexer);
@@ -248,7 +248,7 @@ parse_spreadsheet (struct lexer *lexer, char **filename,
       if (lex_match_id (lexer, "ASSUMEDSTRWIDTH"))
 	{
 	  lex_match (lexer, T_EQUALS);
-          if (lex_force_int (lexer))
+          if (lex_force_int_range (lexer, "ASSUMEDSTRWIDTH", 1, 32767))
             {
               opts->asw = lex_integer (lexer);
               lex_get (lexer);
@@ -269,15 +269,9 @@ parse_spreadsheet (struct lexer *lexer, char **filename,
 	    }
 	  else if (lex_match_id (lexer, "INDEX"))
 	    {
-              if (!lex_force_int (lexer))
+              if (!lex_force_int_range (lexer, "INDEX", 1, INT_MAX))
                 goto error;
-
 	      opts->sheet_index = lex_integer (lexer);
-	      if (opts->sheet_index <= 0)
-		{
-		  msg (SE, _("The sheet index must be greater than or equal to 1"));
-		  goto error;
-		}
 	      lex_get (lexer);
 	    }
 	  else
@@ -434,13 +428,8 @@ parse_get_txt (struct lexer *lexer, struct dataset *ds)
       else if (lex_match_id (lexer, "FIRSTCASE"))
         {
 	  lex_match (lexer, T_EQUALS);
-          if (!lex_force_int (lexer))
+          if (!lex_force_int_range (lexer, "FIRSTCASE", 1, INT_MAX))
             goto error;
-          if (lex_integer (lexer) < 1)
-            {
-              msg (SE, _("Value of %s must be 1 or greater."), "FIRSTCASE");
-              goto error;
-            }
           data_parser_set_skip (parser, lex_integer (lexer) - 1);
           lex_get (lexer);
         }
@@ -472,13 +461,8 @@ parse_get_txt (struct lexer *lexer, struct dataset *ds)
           if (!set_type (parser, "FIXCASE", DP_FIXED, &has_type))
             goto error;
           lex_match (lexer, T_EQUALS);
-          if (!lex_force_int (lexer))
+          if (!lex_force_int_range (lexer, "FIXCASE", 1, INT_MAX))
             goto error;
-          if (lex_integer (lexer) < 1)
-            {
-              msg (SE, _("Value of %s must be 1 or greater."), "FIXCASE");
-              goto error;
-            }
           data_parser_set_records (parser, lex_integer (lexer));
           lex_get (lexer);
         }
@@ -576,25 +560,9 @@ parse_get_txt (struct lexer *lexer, struct dataset *ds)
 
       while (type == DP_FIXED && lex_match (lexer, T_SLASH))
         {
-          if (!lex_force_int (lexer))
+          if (!lex_force_int_range (lexer, NULL, record,
+                                    data_parser_get_records (parser)))
             goto error;
-          if (lex_integer (lexer) < record)
-            {
-              msg (SE, _("The record number specified, %ld, is at or "
-                         "before the previous record, %d.  Data "
-                         "fields must be listed in order of "
-                         "increasing record number."),
-                   lex_integer (lexer), record);
-              goto error;
-            }
-          if (lex_integer (lexer) > data_parser_get_records (parser))
-            {
-              msg (SE, _("The record number specified, %ld, exceeds "
-                         "the number of records per case specified "
-                         "on FIXCASE, %d."),
-                   lex_integer (lexer), data_parser_get_records (parser));
-              goto error;
-            }
           record = lex_integer (lexer);
           lex_get (lexer);
         }

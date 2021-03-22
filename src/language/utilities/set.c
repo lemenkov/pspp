@@ -51,6 +51,7 @@
 #include "output/journal.h"
 #include "output/pivot-table.h"
 
+#include "gl/minmax.h"
 #include "gl/xalloc.h"
 
 #include "gettext.h"
@@ -344,14 +345,10 @@ parse_EPOCH (struct lexer *lexer)
     settings_set_epoch (-1);
   else if (lex_is_integer (lexer))
     {
-      int new_epoch = lex_integer (lexer);
+      if (!lex_force_int_range (lexer, "EPOCH", 1500, INT_MAX))
+        return false;
+      settings_set_epoch (lex_integer (lexer));
       lex_get (lexer);
-      if (new_epoch < 1500)
-        {
-          msg (SE, _("%s must be 1500 or later."), "EPOCH");
-          return false;
-        }
-      settings_set_epoch (new_epoch);
     }
   else
     {
@@ -397,15 +394,10 @@ parse_FORMAT (struct lexer *lexer)
 static bool
 parse_FUZZBITS (struct lexer *lexer)
 {
-  if (!lex_force_int (lexer))
+  if (!lex_force_int_range (lexer, "FUZZITS", 0, 20))
     return false;
-  int fuzzbits = lex_integer (lexer);
+  settings_set_fuzzbits (lex_integer (lexer));
   lex_get (lexer);
-
-  if (fuzzbits >= 0 && fuzzbits <= 20)
-    settings_set_fuzzbits (fuzzbits);
-  else
-    msg (SE, _("%s must be between 0 and 20."), "FUZZBITS");
   return true;
 }
 
@@ -457,13 +449,8 @@ parse_LENGTH (struct lexer *lexer)
     page_length = -1;
   else
     {
-      if (!lex_force_int (lexer))
+      if (!lex_force_int_range (lexer, "LENGTH", 1, INT_MAX))
 	return false;
-      if (lex_integer (lexer) < 1)
-	{
-	  msg (SE, _("%s must be at least %d."), "LENGTH", 1);
-	  return false;
-	}
       page_length = lex_integer (lexer);
       lex_get (lexer);
     }
@@ -715,34 +702,25 @@ parse_WIDTH (struct lexer *lexer)
     settings_set_viewwidth (131);
   else
     {
-      if (!lex_force_int (lexer))
-	return 0;
-      if (lex_integer (lexer) < 40)
-	{
-	  msg (SE, _("%s must be at least %d."), "WIDTH", 40);
-	  return 0;
-	}
+      if (!lex_force_int_range (lexer, "WIDTH", 40, INT_MAX))
+	return false;
       settings_set_viewwidth (lex_integer (lexer));
       lex_get (lexer);
     }
 
-  return 1;
+  return true;
 }
 
 static bool
 parse_WORKSPACE (struct lexer *lexer)
 {
-  if (!lex_force_int (lexer))
+  if (!lex_force_int_range (lexer, "WORKSPACE",
+                            settings_get_testing_mode () ? 1 : 1024,
+                            INT_MAX))
     return false;
   int workspace = lex_integer (lexer);
   lex_get (lexer);
-
-  if (workspace < 1024 && !settings_get_testing_mode ())
-    msg (SE, _("%s must be at least 1MB"), "WORKSPACE");
-  else if (workspace <= 0)
-    msg (SE, _("%s must be positive"), "WORKSPACE");
-  else
-    settings_set_workspace (workspace * 1024L);
+  settings_set_workspace (MIN (workspace, INT_MAX / 1024) * 1024);
   return true;
 }
 

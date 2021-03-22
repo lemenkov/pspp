@@ -94,7 +94,7 @@ cmd_file_handle (struct lexer *lexer, struct dataset *ds UNUSED)
             }
 
           lex_match (lexer, T_EQUALS);
-          if (!lex_force_int (lexer))
+          if (!lex_force_int_range (lexer, "LRECL", 1, (1UL << 31) - 1))
             goto exit;
           lrecl = lex_integer (lexer);
           lex_get (lexer);
@@ -108,7 +108,7 @@ cmd_file_handle (struct lexer *lexer, struct dataset *ds UNUSED)
             }
           lex_match (lexer, T_EQUALS);
 
-          if (!lex_force_int (lexer))
+          if (!lex_force_int_range (lexer, "TABWIDTH", 1, INT_MAX))
             goto exit;
           tabwidth = lex_integer (lexer);
           lex_get (lexer);
@@ -252,10 +252,6 @@ cmd_file_handle (struct lexer *lexer, struct dataset *ds UNUSED)
         msg (SE, _("The specified file mode requires LRECL.  "
                    "Assuming %zu-character records."),
              properties.record_width);
-      else if (lrecl < 1 || lrecl >= (1UL << 31))
-        msg (SE, _("Record length (%d) must be between 1 and %lu bytes.  "
-                   "Assuming %zu-character records."),
-             lrecl, (1UL << 31) - 1, properties.record_width);
       else
         properties.record_width = lrecl;
     }

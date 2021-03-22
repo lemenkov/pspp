@@ -928,7 +928,7 @@ cmd_logistic (struct lexer *lexer, struct dataset *ds)
 		{
 		  if (lex_force_match (lexer, T_LPAREN))
 		    {
-		      if (! lex_force_int (lexer))
+		      if (! lex_force_int_range (lexer, "ITERATE", 0, INT_MAX))
 			{
 			  lex_error (lexer, NULL);
 			  goto error;

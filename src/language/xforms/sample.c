@@ -88,17 +88,9 @@ cmd_sample (struct lexer *lexer, struct dataset *ds)
       lex_get (lexer);
       if (!lex_force_match_id (lexer, "FROM"))
 	return CMD_FAILURE;
-      if (!lex_force_int (lexer))
+      if (!lex_force_int_range (lexer, "FROM", a + 1, INT_MAX))
 	return CMD_FAILURE;
       b = lex_integer (lexer);
-      if (a >= b)
-	{
-	  msg (SE, _("Cannot sample %d observations from a population of "
-		     "%d."),
-	       a, b);
-	  return CMD_FAILURE;
-	}
-
       frac = 0;
     }
   lex_get (lexer);

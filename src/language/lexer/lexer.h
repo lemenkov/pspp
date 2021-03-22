@@ -129,6 +129,8 @@ bool lex_match_phrase (struct lexer *, const char *s);
 bool lex_force_match (struct lexer *, enum token_type) WARN_UNUSED_RESULT;
 bool lex_force_match_id (struct lexer *, const char *) WARN_UNUSED_RESULT;
 bool lex_force_int (struct lexer *) WARN_UNUSED_RESULT;
+bool lex_force_int_range (struct lexer *, const char *name,
+                          long min, long max) WARN_UNUSED_RESULT;
 bool lex_force_num (struct lexer *) WARN_UNUSED_RESULT;
 bool lex_force_id (struct lexer *) WARN_UNUSED_RESULT;
 bool lex_force_string (struct lexer *) WARN_UNUSED_RESULT;

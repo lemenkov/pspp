@@ -920,14 +920,9 @@ quick_cluster_parse (struct lexer *lexer, struct qc *qc)
 	      if (lex_match_id (lexer, "CLUSTERS"))
 		{
 		  if (lex_force_match (lexer, T_LPAREN) &&
-		      lex_force_int (lexer))
+		      lex_force_int_range (lexer, "CLUSTERS", 1, INT_MAX))
 		    {
 		      qc->ngroups = lex_integer (lexer);
-		      if (qc->ngroups <= 0)
-			{
-			  lex_error (lexer, _("The number of clusters must be positive"));
-			  return false;
-			}
 		      lex_get (lexer);
 		      if (!lex_force_match (lexer, T_RPAREN))
 			return false;
@@ -952,14 +947,9 @@ quick_cluster_parse (struct lexer *lexer, struct qc *qc)
 	      else if (lex_match_id (lexer, "MXITER"))
 		{
 		  if (lex_force_match (lexer, T_LPAREN) &&
-		      lex_force_int (lexer))
+		      lex_force_int_range (lexer, "MXITER", 1, INT_MAX))
 		    {
 		      qc->maxiter = lex_integer (lexer);
-		      if (qc->maxiter <= 0)
-			{
-			  lex_error (lexer, _("The number of iterations must be positive"));
-			  return false;
-			}
 		      lex_get (lexer);
 		      if (!lex_force_match (lexer, T_RPAREN))
 			return false;

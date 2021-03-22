@@ -120,31 +120,18 @@ cmd_data_list (struct lexer *lexer, struct dataset *ds)
 	{
 	  lex_match (lexer, T_EQUALS);
 	  lex_match (lexer, T_LPAREN);
-	  if (!lex_force_int (lexer))
+	  if (!lex_force_int_range (lexer, "RECORDS", 0, INT_MAX))
 	    goto error;
-
-	  int records = lex_integer (lexer);
-	  if (records < 0)
-	    {
-	      msg (SE, _("The %s value must be non-negative."), "RECORDS");
-	      goto error;
-	    }
-          data_parser_set_records (parser, records);
+          data_parser_set_records (parser, lex_integer (lexer));
 	  lex_get (lexer);
 	  lex_match (lexer, T_RPAREN);
 	}
       else if (lex_match_id (lexer, "SKIP"))
 	{
 	  lex_match (lexer, T_EQUALS);
-	  if (!lex_force_int (lexer))
+	  if (!lex_force_int_range (lexer, "SKIP", 0, INT_MAX))
 	    goto error;
-	  int skip = lex_integer (lexer);
-	  if (skip < 0)
-	    {
-	      msg (SE, _("The %s value must be non-negative."), "SKIP");
-	      goto error;
-	    }
-          data_parser_set_skip (parser, skip);
+          data_parser_set_skip (parser, lex_integer (lexer));
 	  lex_get (lexer);
 	}
       else if (lex_match_id (lexer, "END"))

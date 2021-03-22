@@ -1536,15 +1536,9 @@ cmd_examine (struct lexer *lexer, struct dataset *ds)
                   int extr = 5;
                   if (lex_match (lexer, T_LPAREN))
                     {
-                      if (!lex_force_int (lexer))
+                      if (!lex_force_int_range (lexer, "EXTREME", 0, INT_MAX))
                         goto error;
                       extr = lex_integer (lexer);
-
-                      if (extr < 0)
-                        {
-                          msg (MW, _("%s may not be negative. Using default value (%g)."), "EXTREME", 5.0);
-                          extr = 5;
-                        }
 
                       lex_get (lexer);
                       if (! lex_force_match (lexer, T_RPAREN))

@@ -371,23 +371,20 @@ parse_numbers (struct lexer *lexer, struct dummy_var *dv)
 
       if (lex_next_token (lexer, 1) == T_TO)
         {
-          long int a, b;
-          long int i;
-
           if (!lex_is_integer (lexer))
 	    {
 	      msg (SE, _("Ranges may only have integer bounds."));
 	      return false;
 	    }
 
-          a = lex_integer (lexer);
+          long a = lex_integer (lexer);
           lex_get (lexer);
           lex_get (lexer);
 
-          if (!lex_force_int (lexer))
+          if (!lex_force_int_range (lexer, NULL, a, LONG_MAX))
             return false;
 
-	  b = lex_integer (lexer);
+	  long b = lex_integer (lexer);
           if (b < a)
             {
               msg (SE, _("%ld TO %ld is an invalid range."), a, b);
@@ -395,7 +392,7 @@ parse_numbers (struct lexer *lexer, struct dummy_var *dv)
             }
 	  lex_get (lexer);
 
-          for (i = a; i <= b; i++)
+          for (long i = a; i <= b; i++)
             add_replacement (dv, xasprintf ("%ld", i), &allocated);
         }
       else

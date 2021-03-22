@@ -401,19 +401,9 @@ parse_record_placement (struct lexer *lexer, int *record, int *column)
     {
       if (lex_is_number (lexer))
         {
-	  double orignum = lex_number (lexer);
-	  long n = (lex_is_integer (lexer)?lex_integer (lexer):*record);
-	  bool out_of_range = orignum > INT_MAX || orignum < INT_MIN;
-          if (n <= *record || out_of_range)
-            {
-              msg (SE, _("The record number specified, %.0f, is at or "
-                         "before the previous record, %d.  Data "
-                         "fields must be listed in order of "
-                         "increasing record number."),
-                   orignum, *record);
-              return false;
-            }
-          *record = n;
+          if (!lex_force_int_range (lexer, NULL, *record + 1, INT_MAX))
+            return false;
+          *record = lex_integer (lexer);
           lex_get (lexer);
         }
       else

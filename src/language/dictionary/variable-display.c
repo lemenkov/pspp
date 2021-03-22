@@ -103,7 +103,8 @@ cmd_variable_width (struct lexer *lexer, struct dataset *ds)
       if (!parse_variables (lexer, dataset_dict (ds), &v, &nv, PV_NONE))
         return CMD_FAILURE;
 
-      if (!lex_force_match (lexer, T_LPAREN) || !lex_force_int (lexer))
+      if (!lex_force_match (lexer, T_LPAREN)
+          || !lex_force_int_range (lexer, NULL, 1, INT_MAX))
         {
           free (v);
           return CMD_FAILURE;
@@ -116,12 +117,6 @@ cmd_variable_width (struct lexer *lexer, struct dataset *ds)
           return CMD_FAILURE;
         }
 
-      if (width < 0)
-        {
-          msg (SE, _("Variable display width must be a positive integer."));
-          free (v);
-          return CMD_FAILURE;
-        }
       width = MIN (width, 2 * MAX_STRING);
 
       for(i = 0 ; i < nv ; ++i)

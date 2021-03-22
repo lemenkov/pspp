@@ -496,15 +496,12 @@ cmd_finish (struct lexer *lexer UNUSED, struct dataset *ds UNUSED)
 int
 cmd_n_of_cases (struct lexer *lexer, struct dataset *ds)
 {
-  /* Value for N. */
-  int x;
-
-  if (!lex_force_int (lexer))
+  if (!lex_force_int_range (lexer, "N OF CASES", 1, LONG_MAX))
     return CMD_FAILURE;
-  x = lex_integer (lexer);
+  long n = lex_integer (lexer);
   lex_get (lexer);
   if (!lex_match_id (lexer, "ESTIMATED"))
-    dict_set_case_limit (dataset_dict (ds), x);
+    dict_set_case_limit (dataset_dict (ds), n);
 
   return CMD_SUCCESS;
 }

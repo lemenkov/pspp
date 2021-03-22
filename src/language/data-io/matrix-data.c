@@ -479,15 +479,10 @@ cmd_matrix (struct lexer *lexer, struct dataset *ds)
 	{
 	  lex_match (lexer, T_EQUALS);
 
-	  if (! lex_force_int (lexer))
+	  if (! lex_force_int_range (lexer, "N", 0, INT_MAX))
 	    goto error;
 
 	  mformat.n = lex_integer (lexer);
-	  if (mformat.n < 0)
-	    {
-	      msg (SE, _("%s must not be negative."), "N");
-	      goto error;
-	    }
 	  lex_get (lexer);
 	}
       else if (lex_match_id (lexer, "FORMAT"))
