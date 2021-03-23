@@ -1274,6 +1274,9 @@ segmenter_subparse (struct segmenter *s,
   return ofs;
 }
 
+/* We are segmenting a DO REPEAT command, currently reading the syntax that
+   defines the stand-in variables (the head) before the lines of syntax to be
+   repeated (the body). */
 static int
 segmenter_parse_do_repeat_1__ (struct segmenter *s,
                                const char *input, size_t n, bool eof,
@@ -1283,10 +1286,14 @@ segmenter_parse_do_repeat_1__ (struct segmenter *s,
   if (ofs < 0)
     return -1;
 
-  if (*type == SEG_START_COMMAND || *type == SEG_SEPARATE_COMMANDS)
-    s->state = S_DO_REPEAT_2;
-  else if (*type == SEG_END_COMMAND)
+  if (*type == SEG_SEPARATE_COMMANDS)
     {
+      /* We reached a blank line that separates the head from the body. */
+      s->state = S_DO_REPEAT_2;
+    }
+  else if (*type == SEG_END_COMMAND || *type == SEG_START_COMMAND)
+    {
+      /* We reached the body. */
       s->state = S_DO_REPEAT_3;
       s->substate = 1;
     }
@@ -1294,6 +1301,8 @@ segmenter_parse_do_repeat_1__ (struct segmenter *s,
   return ofs;
 }
 
+/* We are segmenting a DO REPEAT command, currently reading a blank line that
+   separates the head from the body. */
 static int
 segmenter_parse_do_repeat_2__ (struct segmenter *s,
                                const char *input, size_t n, bool eof,
@@ -1305,6 +1314,7 @@ segmenter_parse_do_repeat_2__ (struct segmenter *s,
 
   if (*type == SEG_NEWLINE)
     {
+      /* We reached the body. */
       s->state = S_DO_REPEAT_3;
       s->substate = 1;
     }
@@ -1361,6 +1371,12 @@ segmenter_parse_full_line__ (const char *input, size_t n, bool eof,
     return ofs - (input[ofs - 1] == '\r');
 }
 
+/* We are in the body of DO REPEAT, segmenting the lines of syntax that are to
+   be repeated.  Report each line of syntax as a single SEG_DO_REPEAT_COMMAND.
+
+   DO REPEAT can be nested, so we look for DO REPEAT...END REPEAT blocks inside
+   the lines we're segmenting.  s->substate counts the nesting level, starting
+   at 1. */
 static int
 segmenter_parse_do_repeat_3__ (struct segmenter *s,
                                const char *input, size_t n, bool eof,
@@ -1375,6 +1391,8 @@ segmenter_parse_do_repeat_3__ (struct segmenter *s,
     return -1;
   else if (s->substate == 0)
     {
+      /* Nesting level dropped to 0, so we've finished reading the DO REPEAT
+         body. */
       s->state = S_GENERAL;
       s->substate = SS_START_OF_COMMAND | SS_START_OF_LINE;
       return segmenter_push (s, input, n, eof, type);

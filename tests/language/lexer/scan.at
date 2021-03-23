@@ -781,6 +781,85 @@ STOP
 PSPP_CHECK_SCAN([-i])
 AT_CLEANUP
 
+AT_SETUP([DO REPEAT command in batch mode])
+AT_KEYWORDS([scan])
+AT_DATA([input], [dnl
+do repeat x=a b c
+          y=d e f
+do repeat a=1 thru 5
+another command
+second command
++ third command
+end /* x */ /* y */ repeat print
+end
+ repeat
+do
+  repeat #a=1
+
+  inner command
+end repeat
+])
+AT_DATA([expout-base], [dnl
+ID "do"
+SKIP
+ID "repeat"
+SKIP
+ID "x"
+EQUALS
+ID "a"
+SKIP
+ID "b"
+SKIP
+ID "c"
+SKIP
+SKIP
+ID "y"
+EQUALS
+ID "d"
+SKIP
+ID "e"
+SKIP
+ID "f"
+SKIP
+ENDCMD
+STRING "do repeat a=1 thru 5"
+SKIP
+STRING "another command"
+SKIP
+STRING "second command"
+SKIP
+STRING "+ third command"
+SKIP
+STRING "end /* x */ /* y */ repeat print"
+SKIP
+ID "end"
+SKIP
+SKIP
+ID "repeat"
+SKIP
+ENDCMD
+ID "do"
+SKIP
+SKIP
+ID "repeat"
+SKIP
+ID "#a"
+EQUALS
+POS_NUM 1
+SKIP
+ENDCMD
+SKIP
+STRING "  inner command"
+SKIP
+ID "end"
+SKIP
+ID "repeat"
+-SKIP
+STOP
+])
+PSPP_CHECK_SCAN([-b])
+AT_CLEANUP
+
 AT_SETUP([batch mode])
 AT_KEYWORDS([scan])
 AT_DATA([input], [dnl

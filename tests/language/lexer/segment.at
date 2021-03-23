@@ -949,6 +949,90 @@ end
 PSPP_CHECK_SEGMENT([-i])
 AT_CLEANUP
 
+AT_SETUP([DO REPEAT command in batch mode])
+AT_KEYWORDS([segment])
+AT_DATA([input], [dnl
+do repeat x=a b c
+          y=d e f
+do repeat a=1 thru 5
+another command
+second command
++ third command
+end /* x */ /* y */ repeat print
+end
+ repeat
+do
+  repeat #a=1
+
+  inner command
+end repeat
+])
+AT_DATA([expout-base], [dnl
+identifier      do    space
+identifier      repeat    space
+identifier      x
+punct           =
+identifier      a    space
+identifier      b    space
+identifier      c
+newline         \n (later)
+
+spaces          __________
+identifier      y
+punct           =
+identifier      d    space
+identifier      e    space
+identifier      f
+newline         \n (later)
+
+start_command
+do_repeat_command do_repeat_a=1_thru_5
+newline         \n (DO REPEAT)
+
+do_repeat_command another_command
+newline         \n (DO REPEAT)
+
+do_repeat_command second_command
+newline         \n (DO REPEAT)
+
+do_repeat_command +_third_command
+newline         \n (DO REPEAT)
+
+do_repeat_command end_/*_x_*/_/*_y_*/_repeat_print
+newline         \n (DO REPEAT)
+
+identifier      end
+newline         \n (later)
+    space
+identifier      repeat
+newline         \n (later)
+
+start_command
+identifier      do
+newline         \n (later)
+
+spaces          __
+identifier      repeat    space
+identifier      #a
+punct           =
+number          1
+newline         \n (later)
+
+separate_commands
+newline         \n (DO REPEAT)
+
+do_repeat_command __inner_command
+newline         \n (DO REPEAT)
+
+identifier      end    space
+identifier      repeat
+-newline         \n (later)
+-
+end
+])
+PSPP_CHECK_SEGMENT([-b])
+AT_CLEANUP
+
 AT_SETUP([batch mode])
 AT_KEYWORDS([segment])
 AT_DATA([input], [dnl
