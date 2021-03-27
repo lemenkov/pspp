@@ -139,12 +139,6 @@ psppire_quit (GApplication *app)
   g_application_quit (app);
 }
 
-struct icon_size
-{
-  int resolution;  /* The dimension of the images which will be used */
-  size_t n_sizes;  /* The number of items in the array below. */
-  const GtkIconSize *usage; /* An array determining for what the icon set is used */
-};
 
 static void
 handle_msg (const struct msg *m_, void *lexer_)
