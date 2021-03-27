@@ -163,7 +163,6 @@ clone_list_store (const GtkListStore *src)
   const gint n_cols =  gtk_tree_model_get_n_columns (GTK_TREE_MODEL (src));
   GType *types = g_malloc (sizeof (*types) *  n_cols);
 
-  int row = 0;
   GtkListStore *dest;
 
   for (i = 0 ; i < n_cols; ++i)
@@ -188,7 +187,6 @@ clone_list_store (const GtkListStore *src)
 
 	  g_value_unset (&val);
 	}
-      row++;
     }
 
   g_free (types);
