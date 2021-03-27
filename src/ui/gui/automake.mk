@@ -73,7 +73,8 @@ if building_gui
 
 EXTRA_DIST += \
 	src/ui/gui/marshaller-list \
-	src/ui/gui/pspplogo.svg
+	src/ui/gui/pspplogo.svg \
+	src/ui/gui/pspp.rc.in
 
 src_ui_gui_psppire_CPPFLAGS=
 
@@ -117,6 +118,10 @@ src_ui_gui_psppire_LDADD = \
 	$(CAIRO_LIBS) \
 	$(LIBINTL) \
 	$(GSL_LIBS)
+
+if host_is_w32
+src_ui_gui_psppire_LDADD += src/ui/gui/pspp.res
+endif
 
 
 src_ui_gui_spreadsheet_test_LDADD = \
@@ -212,6 +217,10 @@ src_ui_gui_psppire_SOURCES = \
 	src/ui/gui/widget-io.h \
 	src/ui/gui/windows-menu.c \
 	src/ui/gui/windows-menu.h
+
+src/ui/gui/pspp.rc: src/ui/gui/pspp.rc.in
+	@$(MKDIR_P) src/ui/gui
+	sed -e 's/%version%/'$(PACKAGE_VERSION)'/' $< > $@
 
 noinst_LTLIBRARIES += src/ui/gui/libwidgets-essential.la
 
@@ -415,6 +424,11 @@ CLEANFILES += src/ui/gui/include/gtk/gtk.h
 EXTRA_DIST += src/ui/gui/include/gtk/gtk.in.h src/ui/gui/resources.xml
 
 include $(top_srcdir)/src/ui/gui/icons/automake.mk
+
+src/ui/gui/pspp.res: src/ui/gui/pspp.rc $(w32_icons)
+	@$(MKDIR_P) src/ui/gui
+	$(host_triplet)-windres  $< -O coff -o $@
+
 
 UNINSTALL_DATA_HOOKS += update-icon-cache
 INSTALL_DATA_HOOKS += update-icon-cache

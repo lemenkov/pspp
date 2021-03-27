@@ -45,8 +45,19 @@ uninstall-ext-icons:
 		done ; \
 	done
 
+if host_is_w32
+w32_icons=src/ui/gui/icons/pspp.ico \
+src/ui/gui/icons/pspp-sav.ico \
+src/ui/gui/icons/pspp-zsav.ico \
+src/ui/gui/icons/pspp-por.ico \
+src/ui/gui/icons/pspp-sps.ico
+endif
 
 install-icons:
+	for wicon in $(w32_icons); do \
+	  $(MKDIR_P) $(DESTDIR)$(pkgdatadir)/icons/ ; \
+	  $(INSTALL_DATA) $$wicon $(DESTDIR)$(pkgdatadir)/icons/ ; \
+	done
 	for context in actions categories ; do \
 	  $(MKDIR_P) $(DESTDIR)$(pkgdatadir)/$$context; \
 	  for size in $(sizes); do \
@@ -69,6 +80,8 @@ uninstall-icons:
 		fi ; \
 	  done ; \
 	done
+	rm -f $(DESTDIR)$(pkgdatadir)/icons/pspp*.ico
+
 
 
 INSTALL_DATA_HOOKS += install-icons install-ext-icons
@@ -87,6 +100,27 @@ src/ui/gui/icons/splash.png: $(top_srcdir)/src/ui/gui/icons/splash-t.png $(top_s
 esac
 
 EXTRA_DIST += $(top_srcdir)/src/ui/gui/artwork/splash.svg $(icons) $(icon_srcs)
+
+src/ui/gui/icons/pspp.ico: src/ui/gui/icons/16x16/apps/pspp.png src/ui/gui/icons/32x32/apps/pspp.png src/ui/gui/icons/48x48/apps/pspp.png src/ui/gui/icons/256x256/apps/pspp.png
+	$(MKDIR_P) ${@D}
+	convert $^ $@
+
+src/ui/gui/icons/pspp-sav.ico: src/ui/gui/icons/16x16/mimetypes/application-x-spss-sav.png src/ui/gui/icons/32x32/mimetypes/application-x-spss-sav.png src/ui/gui/icons/48x48/mimetypes/application-x-spss-sav.png src/ui/gui/icons/256x256/mimetypes/application-x-spss-sav.png
+	$(MKDIR_P) ${@D}
+	convert $^ $@
+
+src/ui/gui/icons/pspp-zsav.ico: src/ui/gui/icons/16x16/mimetypes/application-x-spss-zsav.png src/ui/gui/icons/32x32/mimetypes/application-x-spss-zsav.png src/ui/gui/icons/48x48/mimetypes/application-x-spss-zsav.png src/ui/gui/icons/256x256/mimetypes/application-x-spss-zsav.png
+	$(MKDIR_P) ${@D}
+	convert $^ $@
+
+src/ui/gui/icons/pspp-por.ico: src/ui/gui/icons/16x16/mimetypes/application-x-spss-por.png src/ui/gui/icons/32x32/mimetypes/application-x-spss-por.png src/ui/gui/icons/48x48/mimetypes/application-x-spss-por.png src/ui/gui/icons/256x256/mimetypes/application-x-spss-por.png
+	$(MKDIR_P) ${@D}
+	convert $^ $@
+
+src/ui/gui/icons/pspp-sps.ico: src/ui/gui/icons/16x16/mimetypes/application-x-spss-sps.png src/ui/gui/icons/32x32/mimetypes/application-x-spss-sps.png src/ui/gui/icons/48x48/mimetypes/application-x-spss-sps.png src/ui/gui/icons/256x256/mimetypes/application-x-spss-sps.png
+	$(MKDIR_P) ${@D}
+	convert $^ $@
+
 
 endif
 

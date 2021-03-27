@@ -1,0 +1,22 @@
+PSPP-SPLASH ICON "src/ui/gui/icons/pspp.ico"
+1 VERSIONINFO
+FILEVERSION 00001
+BEGIN
+  BLOCK "StringFileInfo"
+  BEGIN
+    BLOCK "080904E4"
+    BEGIN
+      VALUE "CompanyName",      "The GNU Project is not a company"
+      VALUE "FileDescription",  "PSPPIRE (PSPP+GUI)"
+      VALUE "LegalCopyright",   "Free Software Foundation, Inc"
+      VALUE "OriginalFilename", "psppire.exe"
+      VALUE "InternalName",     "psppire"
+      VALUE "ProductName",      "PSPP"
+      VALUE "ProductVersion",   "%version%"
+    END
+  END
+  BLOCK "VarFileInfo"
+  BEGIN
+    VALUE "Translation", 0x809, 1252
+  END
+END

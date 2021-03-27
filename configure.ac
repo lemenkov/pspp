@@ -48,6 +48,7 @@ PSPP_CHECK_DOT
 PSPP_ENABLE_WERROR
 
 AM_CONDITIONAL(cc_is_gcc, test x"$GCC" = x"yes" )
+AM_CONDITIONAL(host_is_w32, [case $host_os in mingw*) true;; *) false;; esac] )
 
 PSPP_PERL
 PSPP_PYTHON
