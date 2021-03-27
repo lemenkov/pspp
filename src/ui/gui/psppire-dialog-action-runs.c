@@ -54,7 +54,7 @@ static char *
 generate_syntax (const PsppireDialogAction *act)
 {
   PsppireDialogActionRuns *rd = PSPPIRE_DIALOG_ACTION_RUNS (act);
-  gchar *text;
+  gchar *str;
 
   GString *string = g_string_new ("NPAR TEST");
 
@@ -75,11 +75,11 @@ generate_syntax (const PsppireDialogAction *act)
 
   g_string_append (string, ".\n");
 
-  text = string->str;
+  str = string->str;
 
   g_string_free (string, FALSE);
 
-  return text;
+  return str;
 }
 
 
