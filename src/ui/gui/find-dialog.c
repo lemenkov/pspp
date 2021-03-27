@@ -364,7 +364,7 @@ enum iteration_type{
   n_iterators
 };
 
-static const struct casenum_iterator ip[n_iterators] =
+static const struct casenum_iterator case_iterator[n_iterators] =
   {
    /* Forward iterator (linear) */
     {cp1, last, forward},
@@ -394,16 +394,16 @@ get_iteration_params (const struct find_dialog *fd)
   if (wrap)
     {
       if (reverse)
-	return &ip[REVERSE_WRAP];
+	return &case_iterator[REVERSE_WRAP];
       else
-	return &ip[FORWARD_WRAP];
+	return &case_iterator[FORWARD_WRAP];
     }
   else
     {
       if (reverse)
-	return &ip[REVERSE];
+	return &case_iterator[REVERSE];
       else
-	return &ip[FORWARD];
+	return &case_iterator[FORWARD];
     }
 }
 
