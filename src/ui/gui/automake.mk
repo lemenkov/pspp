@@ -98,6 +98,8 @@ src_ui_gui_psppire_LDFLAGS = \
 	$(PG_LDFLAGS)
 
 
+
+
 if RELOCATABLE_VIA_LD
 src_ui_gui_psppire_LDFLAGS += `$(RELOCATABLE_LDFLAGS) $(bindir)`
 else
@@ -121,6 +123,7 @@ src_ui_gui_psppire_LDADD = \
 
 if host_is_w32
 src_ui_gui_psppire_LDADD += src/ui/gui/pspp.res
+src_ui_gui_psppire_CFLAGS += -mwindows -mwin32
 endif
 
 
