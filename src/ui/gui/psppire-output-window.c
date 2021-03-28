@@ -1,5 +1,6 @@
 /* PSPPIRE - a graphical user interface for PSPP.
-   Copyright (C) 2008, 2009, 2010, 2011, 2012, 2013, 2014, 2016  Free Software Foundation
+   Copyright (C) 2008, 2009, 2010, 2011, 2012, 2013, 2014, 2016,
+   2021  Free Software Foundation
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -228,10 +229,10 @@ enum
     FT_ASCII,
     FT_PS,
     FT_CSV,
+    FT_PNG,
+    FT_SVG,
     n_FT
   };
-
-#define N_EXTENSIONS (n_FT - 1)
 
 static const struct file_types ft[n_FT] = {
   {N_("Infer file type from extension"),  NULL},
@@ -242,7 +243,9 @@ static const struct file_types ft[n_FT] = {
   {N_("Text (*.txt)"),                    ".txt"},
   {N_("Text [plain] (*.txt)"),            ".txt"},
   {N_("PostScript (*.ps)"),               ".ps"},
-  {N_("Comma-Separated Values (*.csv)"),  ".csv"}
+  {N_("Comma-Separated Values (*.csv)"),  ".csv"},
+  {N_("Portable Network Graphics (*.png)"),  ".png"},
+  {N_("Scalable Vector Graphics (*.svg)"),   ".svg"}
 };
 
 
@@ -252,23 +255,15 @@ on_combo_change (GtkFileChooser *chooser)
   gboolean sensitive = FALSE;
   GtkWidget *combo = gtk_file_chooser_get_extra_widget (chooser);
 
-  int x = 0;
+  int file_type = FT_AUTO;
   gchar *fn = gtk_file_chooser_get_filename (chooser);
 
   if (combo &&  gtk_widget_get_realized (combo))
-    x = gtk_combo_box_get_active (GTK_COMBO_BOX (combo));
+    file_type = gtk_combo_box_get_active (GTK_COMBO_BOX (combo));
 
-  if (fn == NULL)
+  if (fn != NULL && file_type == FT_AUTO)
     {
-      sensitive = FALSE;
-    }
-  else
-    {
-      gint i;
-      if (x != 0)
-	sensitive = TRUE;
-
-      for (i = 1 ; i < N_EXTENSIONS ; ++i)
+      for (gint i = 1 ; i < n_FT ; ++i)
 	{
 	  if (g_str_has_suffix (fn, ft[i].ext))
 	    {
@@ -277,42 +272,13 @@ on_combo_change (GtkFileChooser *chooser)
 	    }
 	}
     }
+  else
+    sensitive = (fn != NULL);
 
   g_free (fn);
 
   gtk_dialog_set_response_sensitive (GTK_DIALOG (chooser), GTK_RESPONSE_ACCEPT, sensitive);
 }
-
-
-static void
-on_file_chooser_change (GObject *w, GParamSpec *pspec, gpointer data)
-{
-
-  GtkFileChooser *chooser = data;
-  const gchar *name = g_param_spec_get_name (pspec);
-
-  if (! gtk_widget_get_realized (GTK_WIDGET (chooser)))
-    return;
-
-  /* Ignore this one.  It causes recursion. */
-  if (0 == strcmp ("tooltip-text", name))
-    return;
-
-  on_combo_change (chooser);
-}
-
-
-/* Recursively descend all the children of W, connecting
-   to their "notify" signal */
-static void
-iterate_widgets (GtkWidget *w, gpointer data)
-{
-  if (GTK_IS_CONTAINER (w))
-    gtk_container_forall (GTK_CONTAINER (w), iterate_widgets, data);
-  else
-    g_signal_connect (w, "notify",  G_CALLBACK (on_file_chooser_change), data);
-}
-
 
 
 static GtkListStore *
@@ -373,11 +339,7 @@ psppire_output_window_export (PsppireOutputWindow *window)
 
   gtk_file_chooser_set_extra_widget (chooser, combo);
 
-  /* This kludge is necessary because there is no signal to tell us
-     when the candidate filename of a GtkFileChooser has changed */
-  gtk_container_forall (GTK_CONTAINER (dialog), iterate_widgets, dialog);
-
-
+  g_signal_connect (chooser, "selection-changed", G_CALLBACK (on_combo_change), NULL);
   gtk_file_chooser_set_do_overwrite_confirmation (chooser, TRUE);
 
   response = gtk_dialog_run (GTK_DIALOG (dialog));
@@ -396,7 +358,7 @@ psppire_output_window_export (PsppireOutputWindow *window)
              search for the respective type in the list.
              (It's a O(n) search, but fortunately n is small). */
 	  gint i;
-	  for (i = 1 ; i < N_EXTENSIONS ; ++i)
+	  for (i = 1 ; i < n_FT ; ++i)
 	    {
 	      if (g_str_has_suffix (filename, ft[i].ext))
 		{
@@ -439,6 +401,12 @@ psppire_output_window_export (PsppireOutputWindow *window)
 	  break;
 	case FT_CSV:
           export_output (window, &options, "csv");
+	  break;
+	case FT_PNG:
+          export_output (window, &options, "png");
+	  break;
+	case FT_SVG:
+          export_output (window, &options, "svg");
 	  break;
 
 	case FT_TXT:
