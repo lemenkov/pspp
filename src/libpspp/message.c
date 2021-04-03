@@ -33,6 +33,7 @@
 
 #include "gl/minmax.h"
 #include "gl/progname.h"
+#include "gl/relocatable.h"
 #include "gl/xalloc.h"
 #include "gl/xvasprintf.h"
 
@@ -424,7 +425,7 @@ prepare_diagnostic_information (void)
   diagnostic_information_bytes += append_message (diagnostic_information, diagnostic_information_bytes, "version:             %s\n", version);
   diagnostic_information_bytes += append_message (diagnostic_information, diagnostic_information_bytes, "host_system:         %s\n", host_system);
   diagnostic_information_bytes += append_message (diagnostic_information, diagnostic_information_bytes, "build_system:        %s\n", build_system);
-  diagnostic_information_bytes += append_message (diagnostic_information, diagnostic_information_bytes, "locale_dir:          %s\n", locale_dir);
+  diagnostic_information_bytes += append_message (diagnostic_information, diagnostic_information_bytes, "locale_dir:          %s\n", relocate (locale_dir));
   diagnostic_information_bytes += append_message (diagnostic_information, diagnostic_information_bytes, "compiler version:    %s\n",
 #ifdef __VERSION__
            __VERSION__
