@@ -1,5 +1,6 @@
 /* PSPPIRE - a graphical user interface for PSPP.
-   Copyright (C) 2006, 2007, 2010, 2011, 2012, 2013, 2015, 2016  Free Software Foundation
+   Copyright (C) 2006, 2007, 2010, 2011, 2012, 2013, 2015, 2016,
+   2021 Free Software Foundation
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -95,33 +96,71 @@ about_new (GtkMenuItem *mmm, GtkWindow *parent)
    the windows command shell for a moment. The alternative is
    to start a script via wscript. This will not be visible*/
 #ifdef _WIN32
-static gboolean open_windows_help (const gchar *helpuri,
-                                   GError **err)
+static gboolean
+open_windows_help (const gchar *helpuri, GError **err)
 {
-  gchar *vbsfilename = NULL;
-  gchar *vbs = NULL;
-  gboolean result;
-  vbsfilename = g_build_filename (g_get_tmp_dir (),
-                                  "pspp-help-open.vbs",
-                                  NULL);
-  vbs = g_strdup_printf("CreateObject(\"WScript.Shell\").Run \"%s\"",
-                        helpuri);
-  result = g_file_set_contents (vbsfilename,
-                                vbs,
-                                strlen(vbs),
-                                err);
-  g_free (vbs);
-  if (!result)
-    goto error;
+  SHELLEXECUTEINFOA info;
+  memset (&info, 0, sizeof (info));
 
-  gchar *argv[] = {CONST_CAST (gchar *, "wscript"), vbsfilename, 0};
+  info.cbSize = sizeof (info);
+  info.fMask = SEE_MASK_FLAG_NO_UI;
+  info.lpVerb = "open";
+  info.lpFile = helpuri;
+  info.nShow = SW_SHOWNORMAL;
 
-  result = g_spawn_async (NULL, argv,
-                          NULL, G_SPAWN_SEARCH_PATH,
-                          NULL, NULL, NULL, err);
- error:
-  g_free (vbsfilename);
-  return result;
+  BOOL ret = ShellExecuteExA (&info);
+
+  if (ret)
+    return TRUE;
+
+  /* Contrary to what the microsoft documentation indicates, ShellExecuteExA does
+     not seem to setLastError.  So we have to deal with errors ourselves here.  */
+  const char *msg = 0;
+  switch (GPOINTER_TO_INT (info.hInstApp))
+    {
+    case SE_ERR_FNF:
+      msg = "File not found";
+      break;
+    case SE_ERR_PNF:
+      msg = "Path not found";
+      break;
+    case SE_ERR_ACCESSDENIED:
+      msg = "Access denied";
+      break;
+    case SE_ERR_OOM:
+      msg = "Out of memory";
+      break;
+    case SE_ERR_DLLNOTFOUND:
+      msg = "Dynamic-link library not found";
+      break;
+    case SE_ERR_SHARE:
+      msg = "Cannot share an open file";
+      break;
+    case SE_ERR_ASSOCINCOMPLETE:
+      msg = "File association information not complete";
+      break;
+    case SE_ERR_DDETIMEOUT:
+      msg = "DDE operation timed out";
+      break;
+    case SE_ERR_DDEFAIL:
+      msg = "DDE operation failed";
+      break;
+    case SE_ERR_DDEBUSY:
+      msg = "DDE operation is busy";
+      break;
+    case SE_ERR_NOASSOC:
+      msg = "File association not available";
+      break;
+    default:
+      msg = "Unknown error";
+      break;
+    }
+
+  *err = g_error_new_literal (g_quark_from_static_string ("pspp-help-error"),
+                       0,
+                       msg);
+
+  return FALSE;
 }
 #endif
 
@@ -176,11 +215,6 @@ online_help (const char *page)
                                htmlfilename);
   g_free (htmlfullname);
   g_free (htmlfilename);
-
-  /* The following **SHOULD** work but it does not on 28.5.2016
-     g_app_info_launch_default_for_uri (htmluri, NULL, &err);
-     osx: wine is started to launch the uri...
-     windows: not so bad, but the first access does not work*/
 
 #ifdef _WIN32
   bool ok = open_windows_help (htmluri, &htmlerr);
