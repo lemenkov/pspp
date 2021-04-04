@@ -854,8 +854,8 @@ parse_nested_variable (struct lexer *lexer, struct glm_spec *glm)
 	return false;
     }
 
-  lex_error (lexer, "Nested variables are not yet implemented"); return false;
-  return true;
+  lex_error (lexer, "Nested variables are not yet implemented");
+  return false;
 }
 
 /* A design term is an interaction OR a nested variable */
@@ -866,7 +866,7 @@ parse_design_term (struct lexer *lexer, struct glm_spec *glm)
   if (parse_design_interaction (lexer, glm->dict, &iact))
     {
       /* Interaction parsing successful.  Add to list of interactions */
-      glm->interactions = xrealloc (glm->interactions, sizeof *glm->interactions * ++glm->n_interactions);
+      glm->interactions = xrealloc (glm->interactions, sizeof (*glm->interactions) * ++glm->n_interactions);
       glm->interactions[glm->n_interactions - 1] = iact;
       return true;
     }
@@ -896,4 +896,3 @@ parse_design_spec (struct lexer *lexer, struct glm_spec *glm)
 
   return parse_design_spec (lexer, glm);
 }
-
