@@ -35,6 +35,8 @@ prompt_style_to_string (enum prompt_style style)
       return "DOCUMENT";
     case PROMPT_DO_REPEAT:
       return "DO REPEAT";
+    case PROMPT_DEFINE:
+      return "DEFINE";
     default:
       return "unknown prompt";
     }

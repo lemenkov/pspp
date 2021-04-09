@@ -229,6 +229,9 @@ readline_prompt (enum prompt_style style)
 
     case PROMPT_DO_REPEAT:
       return "DO REPEAT> ";
+
+    case PROMPT_DEFINE:
+      return "DEFINE> ";
     }
 
   NOT_REACHED ();

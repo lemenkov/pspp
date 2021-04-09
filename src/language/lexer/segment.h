@@ -67,7 +67,6 @@ enum segmenter_mode
     SEG_TYPE(UNQUOTED_STRING)                   \
     SEG_TYPE(RESERVED_WORD)                     \
     SEG_TYPE(IDENTIFIER)                        \
-    SEG_TYPE(MACRO_ID)                          \
     SEG_TYPE(PUNCT)                             \
                                                 \
     SEG_TYPE(SHBANG)                            \
@@ -78,6 +77,9 @@ enum segmenter_mode
     SEG_TYPE(COMMENT_COMMAND)                   \
     SEG_TYPE(DO_REPEAT_COMMAND)                 \
     SEG_TYPE(INLINE_DATA)                       \
+                                                \
+    SEG_TYPE(MACRO_ID)                          \
+    SEG_TYPE(MACRO_BODY)                        \
                                                 \
     SEG_TYPE(START_DOCUMENT)                    \
     SEG_TYPE(DOCUMENT)                          \
@@ -112,6 +114,7 @@ struct segmenter
   {
     unsigned char state;
     unsigned char substate;
+    unsigned char nest;
     unsigned char mode;
   };
 

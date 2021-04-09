@@ -441,6 +441,7 @@ scan_start__ (struct scanner *scanner, enum segment_type type,
     case SEG_DO_REPEAT_COMMAND:
     case SEG_INLINE_DATA:
     case SEG_DOCUMENT:
+    case SEG_MACRO_BODY:
       token->type = T_STRING;
       ss_alloc_substring (&token->string, s);
       return SCAN_DONE;

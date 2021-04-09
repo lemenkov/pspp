@@ -881,6 +881,278 @@ STOP
 PSPP_CHECK_SCAN([-b])
 AT_CLEANUP
 
+AT_SETUP([DEFINE command - simple])
+AT_KEYWORDS([scan])
+AT_DATA([input], [dnl
+define !macro1()
+var1 var2 var3
+!enddefine.
+])
+AT_DATA([expout-base], [dnl
+ID "define"
+SKIP
+MACRO_ID "!macro1"
+LPAREN
+RPAREN
+SKIP
+STRING "var1 var2 var3"
+SKIP
+MACRO_ID "!enddefine"
+ENDCMD
+-SKIP
+STOP
+])
+PSPP_CHECK_SCAN([-i])
+AT_CLEANUP
+
+AT_SETUP([DEFINE command - empty])
+AT_KEYWORDS([scan])
+AT_DATA([input], [dnl
+define !macro1()
+!enddefine.
+])
+AT_DATA([expout-base], [dnl
+ID "define"
+SKIP
+MACRO_ID "!macro1"
+LPAREN
+RPAREN
+SKIP
+MACRO_ID "!enddefine"
+ENDCMD
+-SKIP
+STOP
+])
+PSPP_CHECK_SCAN([-i])
+AT_CLEANUP
+
+AT_SETUP([DEFINE command - arguments])
+AT_KEYWORDS([scan])
+AT_DATA([input], [dnl
+define !macro1(a(), b(), c())
+!enddefine.
+])
+AT_DATA([expout-base], [dnl
+ID "define"
+SKIP
+MACRO_ID "!macro1"
+LPAREN
+ID "a"
+LPAREN
+RPAREN
+COMMA
+SKIP
+ID "b"
+LPAREN
+RPAREN
+COMMA
+SKIP
+ID "c"
+LPAREN
+RPAREN
+RPAREN
+SKIP
+MACRO_ID "!enddefine"
+ENDCMD
+-SKIP
+STOP
+])
+PSPP_CHECK_SCAN([-i])
+AT_CLEANUP
+
+AT_SETUP([DEFINE command - multiline arguments])
+AT_KEYWORDS([scan])
+AT_DATA([input], [dnl
+define !macro1(
+  a(), b(
+  ),
+  c()
+)
+!enddefine.
+])
+AT_DATA([expout-base], [dnl
+ID "define"
+SKIP
+MACRO_ID "!macro1"
+LPAREN
+SKIP
+SKIP
+ID "a"
+LPAREN
+RPAREN
+COMMA
+SKIP
+ID "b"
+LPAREN
+SKIP
+SKIP
+RPAREN
+COMMA
+SKIP
+SKIP
+ID "c"
+LPAREN
+RPAREN
+SKIP
+RPAREN
+SKIP
+MACRO_ID "!enddefine"
+ENDCMD
+-SKIP
+STOP
+])
+PSPP_CHECK_SCAN([-i])
+AT_CLEANUP
+
+AT_SETUP([DEFINE command - arguments start on second line])
+AT_KEYWORDS([scan])
+AT_DATA([input], [dnl
+define !macro1
+(x,y,z
+)
+content 1
+content 2
+!enddefine.
+])
+AT_DATA([expout-base], [dnl
+ID "define"
+SKIP
+MACRO_ID "!macro1"
+SKIP
+LPAREN
+ID "x"
+COMMA
+ID "y"
+COMMA
+ID "z"
+SKIP
+RPAREN
+SKIP
+STRING "content 1"
+SKIP
+STRING "content 2"
+SKIP
+MACRO_ID "!enddefine"
+ENDCMD
+-SKIP
+STOP
+])
+PSPP_CHECK_SCAN([-i])
+AT_CLEANUP
+
+AT_SETUP([DEFINE command - early end of command 1])
+AT_KEYWORDS([scan])
+AT_DATA([input], [dnl
+define !macro1.
+data list /x 1.
+])
+AT_DATA([expout-base], [dnl
+ID "define"
+SKIP
+MACRO_ID "!macro1"
+ENDCMD
+SKIP
+ID "data"
+SKIP
+ID "list"
+SKIP
+SLASH
+ID "x"
+SKIP
+POS_NUM 1
+ENDCMD
+-SKIP
+STOP
+])
+PSPP_CHECK_SCAN([-i])
+AT_CLEANUP
+
+AT_SETUP([DEFINE command - early end of command 2])
+AT_KEYWORDS([scan])
+AT_DATA([input], [dnl
+define !macro1
+x.
+data list /x 1.
+])
+AT_DATA([expout-base], [dnl
+ID "define"
+SKIP
+MACRO_ID "!macro1"
+SKIP
+ID "x"
+ENDCMD
+SKIP
+ID "data"
+SKIP
+ID "list"
+SKIP
+SLASH
+ID "x"
+SKIP
+POS_NUM 1
+ENDCMD
+-SKIP
+STOP
+])
+PSPP_CHECK_SCAN([-i])
+AT_CLEANUP
+
+AT_SETUP([DEFINE command - early end of command 3])
+AT_KEYWORDS([scan])
+AT_DATA([input], [dnl
+define !macro1(.
+x.
+data list /x 1.
+])
+AT_DATA([expout-base], [dnl
+ID "define"
+SKIP
+MACRO_ID "!macro1"
+LPAREN
+ENDCMD
+SKIP
+ID "x"
+ENDCMD
+SKIP
+ID "data"
+SKIP
+ID "list"
+SKIP
+SLASH
+ID "x"
+SKIP
+POS_NUM 1
+ENDCMD
+-SKIP
+STOP
+])
+PSPP_CHECK_SCAN([-i])
+AT_CLEANUP
+
+AT_SETUP([DEFINE command - missing !ENDDEFINE])
+AT_KEYWORDS([scan])
+AT_DATA([input], [dnl
+define !macro1().
+content line 1
+content line 2
+])
+AT_DATA([expout-base], [dnl
+ID "define"
+SKIP
+MACRO_ID "!macro1"
+LPAREN
+RPAREN
+ENDCMD
+SKIP
+STRING "content line 1"
+SKIP
+STRING "content line 2"
+-SKIP
+STOP
+])
+PSPP_CHECK_SCAN([-i])
+AT_CLEANUP
+
 AT_SETUP([batch mode])
 AT_KEYWORDS([scan])
 AT_DATA([input], [dnl

@@ -24,7 +24,8 @@ enum prompt_style
     PROMPT_DATA,		/* Between BEGIN DATA and END DATA. */
     PROMPT_COMMENT,             /* COMMENT or * command. */
     PROMPT_DOCUMENT,            /* DOCUMENT command. */
-    PROMPT_DO_REPEAT            /* DO REPEAT command. */
+    PROMPT_DO_REPEAT,           /* DO REPEAT command. */
+    PROMPT_DEFINE,              /* DEFINE command. */
   };
 
 const char *prompt_style_to_string (enum prompt_style);
