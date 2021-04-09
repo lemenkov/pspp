@@ -345,7 +345,7 @@ AT_DATA([input], [dnl
 5e1 6E-1 7e+1 6E+01 6e-03
 .3E1 .4e-1 .5E+1 .6e+01 .7E-03
 1.23e1 45.6E-1 78.9e+1 99.9E+01 11.2e-03
-. 1e e1 1e+ 1e-
+. 1e e1 1e+ 1e- 1.
 ])
 AT_DATA([expout-base], [dnl
 number          0    space
@@ -395,8 +395,10 @@ start_command   .    space
 expected_exponent 1e    space
 identifier      e1    space
 expected_exponent 1e+    space
-expected_exponent 1e-
--newline         \n (later)
+expected_exponent 1e-    space
+number          1
+end_command     .
+-newline         \n (first)
 -
 end
 ])

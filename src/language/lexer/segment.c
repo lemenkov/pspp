@@ -286,20 +286,23 @@ segmenter_parse_number__ (struct segmenter *s, const char *input, size_t n,
       if (!eof)
         return -1;
       goto number;
-    };
+    }
   if (input[ofs] == '.')
     {
+      if (ofs + 1 >= n)
+        {
+          if (!eof)
+            return -1;
+          goto number;
+        }
+
       ofs = skip_digits (input, n, eof, ofs + 1);
       if (ofs < 0)
         return -1;
+      else if (ofs >= n)
+        goto number;
     }
 
-  if (ofs >= n)
-    {
-      if (!eof)
-        return -1;
-      goto number;
-    }
   if (input[ofs] == 'e' || input[ofs] == 'E')
     {
       ofs++;
