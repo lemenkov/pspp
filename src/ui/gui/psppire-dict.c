@@ -451,7 +451,6 @@ psppire_dict_delete_variables (PsppireDict *d, gint first, gint n)
 gboolean
 psppire_dict_set_name (PsppireDict* d, gint idx, const gchar *name)
 {
-  struct variable *var;
   g_assert (d);
   g_assert (PSPPIRE_IS_DICT (d));
 
@@ -461,7 +460,7 @@ psppire_dict_set_name (PsppireDict* d, gint idx, const gchar *name)
   if (idx < dict_get_var_cnt (d->dict))
     {
       /* This is an existing variable? */
-      var = dict_get_var (d->dict, idx);
+      struct variable * var = dict_get_var (d->dict, idx);
       dict_rename_var (d->dict, var, name);
     }
   else
