@@ -189,7 +189,7 @@ pspp_output = native/utilities/pspp-output
 
 native/Makefile:
 	$(MKDIR_P) native
-	(cd native && $(abs_top_srcdir)/configure --host=$$build --without-gui)
+	(cd native && $(abs_top_srcdir)/configure --host=$(build) --without-gui)
 
 native/gl/libgl.la: native/Makefile
 	(cd native && flock --verbose $(top_builddir)/native-lock $(MAKE) gl/libgl.la)
