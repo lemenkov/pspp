@@ -797,10 +797,6 @@ struct psppire_output_view *
 psppire_output_view_new (GtkLayout *output, GtkTreeView *overview)
 {
   struct psppire_output_view *view;
-  GtkTreeViewColumn *column;
-  GtkCellRenderer *renderer;
-
-  GtkTreeModel *model;
 
   view = xmalloc (sizeof *view);
   *view = (struct psppire_output_view) {
@@ -827,7 +823,7 @@ psppire_output_view_new (GtkLayout *output, GtkTreeView *overview)
     {
       g_signal_connect (overview, "realize", G_CALLBACK (on_realize), view);
 
-      model = GTK_TREE_MODEL (gtk_tree_store_new (
+      GtkTreeModel *model = GTK_TREE_MODEL (gtk_tree_store_new (
                                 N_COLS,
                                 G_TYPE_STRING,  /* COL_LABEL */
                                 G_TYPE_POINTER, /* COL_ADDR */
@@ -835,9 +831,9 @@ psppire_output_view_new (GtkLayout *output, GtkTreeView *overview)
       gtk_tree_view_set_model (overview, model);
       g_object_unref (model);
 
-      column = gtk_tree_view_column_new ();
+      GtkTreeViewColumn *column = gtk_tree_view_column_new ();
       gtk_tree_view_append_column (GTK_TREE_VIEW (overview), column);
-      renderer = gtk_cell_renderer_text_new ();
+      GtkCellRenderer * renderer = gtk_cell_renderer_text_new ();
       gtk_tree_view_column_pack_start (column, renderer, TRUE);
       gtk_tree_view_column_add_attribute (column, renderer, "text", COL_LABEL);
 
