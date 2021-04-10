@@ -1921,6 +1921,7 @@ display_risk (struct crosstabulation *xt, struct pivot_table *risk,
   union value c[2];
   if (!calc_risk (xt, risk_v, upper, lower, c, &n_valid))
     return;
+  assert (risk_statistics);
 
   size_t *indexes = xnmalloc (risk->n_dimensions, sizeof *indexes);
   assert (xt->n_vars == 2);
