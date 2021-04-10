@@ -191,8 +191,6 @@ generate_syntax (const PsppireDialogAction *a)
   PsppireDialogActionRegression *rd = PSPPIRE_DIALOG_ACTION_REGRESSION (a);
   gchar *text = NULL;
 
-  gint i;
-  int n;
   guint selected;
   GtkTreeIter iter;
   gboolean ok;
@@ -208,7 +206,7 @@ generate_syntax (const PsppireDialogAction *a)
   g_string_append (string, "\n\t/METHOD=ENTER");
 
   selected = 0;
-  for (i = 0, ok = gtk_tree_model_get_iter_first (model, &iter); ok;
+  for (gint i = 0, ok = gtk_tree_model_get_iter_first (model, &iter); ok;
        i++, ok = gtk_tree_model_iter_next (model, &iter))
     {
       gboolean toggled;
@@ -223,8 +221,8 @@ generate_syntax (const PsppireDialogAction *a)
   if (selected)
     {
       g_string_append (string, "\n\t/STATISTICS=");
-      n = 0;
-      for (i = 0; i < N_REGRESSION_STATS; i++)
+      int n = 0;
+      for (gint i = 0; i < N_REGRESSION_STATS; i++)
 	if (selected & (1u << i))
 	  {
 	    if (n++)
