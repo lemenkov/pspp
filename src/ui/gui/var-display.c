@@ -37,12 +37,12 @@ static const gchar none[] = N_("None");
 gchar *
 missing_values_to_string (const struct variable *pv, GError **err)
 {
-  gchar *s;
   const struct missing_values *miss = var_get_missing_values (pv);
   if (mv_is_empty (miss))
     return xstrdup (gettext (none));
   else
     {
+      gchar *s = NULL;
       if (! mv_has_range (miss))
 	{
 	  GString *gstr = g_string_sized_new (10);
