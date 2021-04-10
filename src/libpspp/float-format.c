@@ -480,11 +480,7 @@ extract_hex (const char *s, struct fp *fp)
           if (fp->fraction == 0)
             fp->class = ZERO;
           else if (*s == 'p')
-            {
-              char *tail;
-              fp->exponent += strtol (s + 1, &tail, 10);
-              s = tail;
-            }
+            fp->exponent += strtol (s + 1, NULL, 10);
         }
     }
 }
