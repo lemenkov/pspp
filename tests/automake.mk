@@ -262,13 +262,13 @@ tests_ui_syntax_gen_test_LDADD = \
 check_PROGRAMS += tests/output/tex-glyphs
 tests_output_tex_glyphs_SOURCES = \
 	tests/output/tex-glyphs.c
-tests_output_tex_glyphs_LDADD = src/libpspp-core.la src/output/liboutput.la
+tests_output_tex_glyphs_LDADD = src/output/liboutput.la src/libpspp-core.la
 tests_output_tex_glyphs_CFLAGS = $(AM_CFLAGS) -I $(top_srcdir)/src/output
 
 check_PROGRAMS += tests/output/tex-strings
 tests_output_tex_strings_SOURCES = \
 	tests/output/tex-strings.c
-tests_output_tex_strings_LDADD = src/libpspp-core.la src/output/liboutput.la
+tests_output_tex_strings_LDADD = src/output/liboutput.la src/libpspp-core.la
 tests_output_tex_strings_CFLAGS = $(AM_CFLAGS) -I $(top_srcdir)/src/output
 
 
