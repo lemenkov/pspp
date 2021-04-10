@@ -707,11 +707,10 @@ psppire_data_store_clear (PsppireDataStore *ds)
 struct casereader *
 psppire_data_store_get_reader (PsppireDataStore *ds)
 {
-  int i;
   struct casereader *reader ;
 
   if (ds->dict)
-    for (i = 0 ; i < n_dict_signals; ++i)
+    for (int i = 0 ; i < n_dict_signals; ++i)
       {
 	g_signal_handler_block (ds->dict,
 				ds->dict_handler_id[i]);
