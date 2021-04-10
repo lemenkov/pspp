@@ -45,53 +45,6 @@
 
 static const gchar *artists[] = { "Bastián Díaz", "Hugo Alejandro", NULL};
 
-static void
-about_new (GtkMenuItem *mmm, GtkWindow *parent)
-{
-  GtkWidget *about =  gtk_about_dialog_new ();
-
-  gtk_about_dialog_set_logo_icon_name (GTK_ABOUT_DIALOG (about), "pspp");
-
-  gtk_window_set_icon_name (GTK_WINDOW (about), "pspp");
-
-  gtk_about_dialog_set_website (GTK_ABOUT_DIALOG (about), PACKAGE_URL);
-
-  gtk_about_dialog_set_version (GTK_ABOUT_DIALOG (about),
-				announced_version);
-
-  gtk_about_dialog_set_authors (GTK_ABOUT_DIALOG (about),
-				(const gchar **) authors);
-
-  gtk_about_dialog_set_artists (GTK_ABOUT_DIALOG (about),
-				artists);
-
-  gtk_about_dialog_set_license (GTK_ABOUT_DIALOG (about),
-				copyleft);
-
-  gtk_about_dialog_set_comments (GTK_ABOUT_DIALOG (about),
-				 _("A program for the analysis of sampled data"));
-
-  gtk_about_dialog_set_copyright (GTK_ABOUT_DIALOG (about),
-				  "Free Software Foundation");
-
-  gtk_about_dialog_set_translator_credits
-    (
-     GTK_ABOUT_DIALOG (about),
-     /* TRANSLATORS: Do not translate this string.  Instead, put the names of the people
-	who have helped in the translation. */
-     _("translator-credits")
-);
-
-  gtk_window_set_transient_for (GTK_WINDOW (about), parent);
-
-  gtk_window_set_modal (GTK_WINDOW (about), TRUE);
-
-  gtk_dialog_run (GTK_DIALOG (about));
-
-  gtk_widget_hide (about);
-}
-
-
 /* Opening the htmluri in windows via cmd /start uri opens
    the windows command shell for a moment. The alternative is
    to start a script via wscript. This will not be visible*/
@@ -162,7 +115,68 @@ open_windows_help (const gchar *helpuri, GError **err)
 
   return FALSE;
 }
+
+static gboolean
+on_activate_link (GtkAboutDialog *label,
+               gchar          *uri,
+               gpointer        user_data)
+{
+  return  open_windows_help (uri, NULL);
+}
 #endif
+
+static void
+about_new (GtkMenuItem *mmm, GtkWindow *parent)
+{
+  GtkWidget *about =  gtk_about_dialog_new ();
+
+#ifdef _WIN32
+  /* The default handler for Windows doesn't appear to work.  */
+  g_signal_connect (about, "activate-link", G_CALLBACK (on_activate_link), parent);
+#endif
+
+  gtk_about_dialog_set_logo_icon_name (GTK_ABOUT_DIALOG (about), "pspp");
+
+  gtk_window_set_icon_name (GTK_WINDOW (about), "pspp");
+
+  gtk_about_dialog_set_website (GTK_ABOUT_DIALOG (about), PACKAGE_URL);
+
+  gtk_about_dialog_set_version (GTK_ABOUT_DIALOG (about),
+				announced_version);
+
+  gtk_about_dialog_set_authors (GTK_ABOUT_DIALOG (about),
+				(const gchar **) authors);
+
+  gtk_about_dialog_set_artists (GTK_ABOUT_DIALOG (about),
+				artists);
+
+  gtk_about_dialog_set_license (GTK_ABOUT_DIALOG (about),
+				copyleft);
+
+  gtk_about_dialog_set_comments (GTK_ABOUT_DIALOG (about),
+				 _("A program for the analysis of sampled data"));
+
+  gtk_about_dialog_set_copyright (GTK_ABOUT_DIALOG (about),
+				  "Free Software Foundation");
+
+  gtk_about_dialog_set_translator_credits
+    (
+     GTK_ABOUT_DIALOG (about),
+     /* TRANSLATORS: Do not translate this string.  Instead, put the names of the people
+	who have helped in the translation. */
+     _("translator-credits")
+);
+
+  gtk_window_set_transient_for (GTK_WINDOW (about), parent);
+
+  gtk_window_set_modal (GTK_WINDOW (about), TRUE);
+
+  gtk_dialog_run (GTK_DIALOG (about));
+
+  gtk_widget_hide (about);
+}
+
+
 
 /* Open the manual at PAGE with the following priorities
    First: local yelp help system
