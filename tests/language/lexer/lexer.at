@@ -68,9 +68,7 @@ lexer.sps:8.1-8.70: error: Syntax error at `'very long unterminated string that 
 
 lexer.sps:9.1-9.2: error: Syntax error at `1e': Missing exponent following `1e'.
 
-lexer.sps:9.4: error: Syntax error at `.': Unexpected `.' in middle of command.
-
-lexer.sps:9: error: Unknown command `x'.
+lexer.sps:9.4: error: Syntax error at `.': expecting command name.
 
 lexer.sps:10.1: error: Syntax error at `^': Bad character `^' in input.
 
@@ -88,8 +86,6 @@ AT_CHECK([pspp -O format=csv lexer.sps], [1], [dnl
 lexer.sps:1: error: Unknown command `datA dist'.
 
 lexer.sps:2: error: LIST: LIST is allowed only after the active dataset has been defined.
-
-lexer.sps:2.5: error: LIST: Syntax error at `.': Unexpected `.' in middle of command.
 
 lexer.sps:2.6: error: LIST: Syntax error at `...': Bad character U+0000 in input.
 ])

@@ -676,7 +676,6 @@ next_id_in_command (const struct segmenter *s, const char *input, size_t n,
         case SEG_END:
         case SEG_EXPECTED_QUOTE:
         case SEG_EXPECTED_EXPONENT:
-        case SEG_UNEXPECTED_DOT:
         case SEG_UNEXPECTED_CHAR:
           id[0] = '\0';
           return ofs + retval;
@@ -981,7 +980,7 @@ segmenter_parse_mid_command__ (struct segmenter *s,
           s->substate = SS_START_OF_COMMAND;
         }
       else
-        *type = SEG_UNEXPECTED_DOT;
+        *type = SEG_PUNCT;
       return 1;
 
     case '0': case '1': case '2': case '3': case '4':

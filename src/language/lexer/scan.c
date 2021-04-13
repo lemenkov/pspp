@@ -506,10 +506,6 @@ scan_start__ (struct scanner *scanner, enum segment_type type,
       ss_alloc_substring (&token->string, s);
       return SCAN_DONE;
 
-    case SEG_UNEXPECTED_DOT:
-      token->type = SCAN_UNEXPECTED_DOT;
-      return SCAN_DONE;
-
     case SEG_UNEXPECTED_CHAR:
       return scan_unexpected_char (&s, token);
     }

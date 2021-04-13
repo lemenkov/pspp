@@ -45,7 +45,6 @@ struct token;
                                                 \
     SCAN_TYPE(EXPECTED_QUOTE)                   \
     SCAN_TYPE(EXPECTED_EXPONENT)                \
-    SCAN_TYPE(UNEXPECTED_DOT)                   \
     SCAN_TYPE(UNEXPECTED_CHAR)                  \
                                                 \
     SCAN_TYPE(SKIP)

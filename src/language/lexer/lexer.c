@@ -1607,10 +1607,6 @@ lex_source_get__ (const struct lex_source *src_)
                      token->token.string.string);
       break;
 
-    case SCAN_UNEXPECTED_DOT:
-      lex_get_error (src, _("Unexpected `.' in middle of command"));
-      break;
-
     case SCAN_UNEXPECTED_CHAR:
       {
         char c_name[16];

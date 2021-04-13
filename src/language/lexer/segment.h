@@ -91,7 +91,6 @@ enum segmenter_mode
                                                 \
     SEG_TYPE(EXPECTED_QUOTE)                    \
     SEG_TYPE(EXPECTED_EXPONENT)                 \
-    SEG_TYPE(UNEXPECTED_DOT)                    \
     SEG_TYPE(UNEXPECTED_CHAR)
 
 /* Types of segments. */
