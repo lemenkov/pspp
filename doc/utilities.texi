@@ -534,6 +534,12 @@ SET
         /SAFER=ON
         /LOCALE='@var{string}'
 
+(macros)
+        /MEXPAND=@{ON,OFF@}
+        /MPRINT=@{ON,OFF@}
+        /MITERATE=@var{number}
+        /MNEST=@var{number}
+
 (settings not yet implemented, but accepted and ignored)
         /BASETEXTDIRECTION=@{AUTOMATIC,RIGHTTOLEFT,LEFTTORIGHT@}
         /BLOCK='@var{c}'
@@ -543,10 +549,6 @@ SET
         /COMPRESSION=@{ON,OFF@}
         /CMPTRANS=@{ON,OFF@}
         /HEADER=@{NO,YES,BLANK@}
-        /MEXPAND=@{ON,OFF@}
-        /MITERATE=@var{number}
-        /MNEST=@var{number}
-        /MPRINT=@{ON,OFF@}
 @end display
 
 @cmd{SET} allows the user to adjust several parameters relating to
@@ -932,6 +934,28 @@ Contrary to intuition, this command does not affect any aspect
 of the system's locale.
 @end table
 
+The following subcommands affect the interpretation of macros.
+
+@table @asis
+@item MEXPAND
+Controls whether macros are expanded.  The default is ON.
+
+@item MPRINT
+Controls whether the expansion of macros is included in output.  This
+is separate from whether command syntax in general is included in
+output.  The default is OFF.
+
+@item MITERATE
+Limits the number of iterations executed in @code{!DO} loops within
+macros.  This does not affect other language constructs such as
+@cmd{LOOP}.  This must be set to a positive integer.  The default is
+1000.
+
+@item MNEST
+Limits the number of levels of nested macro expansion.  This must be
+set to a positive integer.  The default is 50.
+@end table
+
 The following subcommands are not yet implemented, but PSPP accepts
 them and ignores the settings.
 
@@ -944,10 +968,6 @@ them and ignores the settings.
 @itemx COMPRESSION
 @itemx CMPTRANS
 @itemx HEADER
-@itemx MEXPAND
-@itemx MITERATE
-@itemx MNEST
-@itemx MPRINT
 @end table
 
 @node SHOW
@@ -971,6 +991,10 @@ SHOW
         [FORMAT]
         [FUZZBITS]
         [LENGTH]
+        [MEXPAND]
+        [MPRINT]
+        [MITERATE]
+        [MNEST]
         [MXERRS]
         [MXLOOPS]
         [MXWARNS]

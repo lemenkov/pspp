@@ -121,8 +121,42 @@ x,y,z
 
 AT_CLEANUP
 
-
+AT_SETUP([SET macro - MEXPAND MPRINT MITERATE MNEST])
+AT_DATA([set-macro.sps], [dnl
+show mexpand mprint miterate mnest.
+preserve.
+set mexpand=off mprint=on miterate=10 mnest=11.
+show mexpand mprint miterate mnest.
+restore.
+show mexpand mprint miterate mnest.
+])
+AT_CHECK([pspp -O format=csv set-macro.sps], [0], [dnl
+set-macro.sps:1: note: SHOW: MEXPAND is ON.
 
+set-macro.sps:1: note: SHOW: MPRINT is OFF.
+
+set-macro.sps:1: note: SHOW: MITERATE is 1000.
+
+set-macro.sps:1: note: SHOW: MNEST is 50.
+
+set-macro.sps:4: note: SHOW: MEXPAND is OFF.
+
+set-macro.sps:4: note: SHOW: MPRINT is ON.
+
+set-macro.sps:4: note: SHOW: MITERATE is 10.
+
+set-macro.sps:4: note: SHOW: MNEST is 11.
+
+set-macro.sps:6: note: SHOW: MEXPAND is ON.
+
+set-macro.sps:6: note: SHOW: MPRINT is OFF.
+
+set-macro.sps:6: note: SHOW: MITERATE is 1000.
+
+set-macro.sps:6: note: SHOW: MNEST is 50.
+])
+AT_CLEANUP
+
 AT_BANNER([PRESERVE and RESTORE])
 
 AT_SETUP([PRESERVE of SET FORMAT])

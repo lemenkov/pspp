@@ -490,25 +490,39 @@ parse_MESSAGES (struct lexer *lexer)
 static bool
 parse_MEXPAND (struct lexer *lexer)
 {
-  return parse_unimplemented (lexer, "MEXPAND");
+  int mexpand = force_parse_bool (lexer);
+  if (mexpand != -1)
+    settings_set_mexpand (mexpand);
+  return mexpand != -1;
 }
 
 static bool
 parse_MITERATE (struct lexer *lexer)
 {
-  return parse_unimplemented (lexer, "MITERATE");
+  if (!lex_force_int_range (lexer, "MITERATE", 1, INT_MAX))
+    return false;
+  settings_set_miterate (lex_integer (lexer));
+  lex_get (lexer);
+  return true;
 }
 
 static bool
 parse_MNEST (struct lexer *lexer)
 {
-  return parse_unimplemented (lexer, "MNEST");
+  if (!lex_force_int_range (lexer, "MNEST", 1, INT_MAX))
+    return false;
+  settings_set_mnest (lex_integer (lexer));
+  lex_get (lexer);
+  return true;
 }
 
 static bool
 parse_MPRINT (struct lexer *lexer)
 {
-  return parse_unimplemented (lexer, "MPRINT");
+  int mprint = force_parse_bool (lexer);
+  if (mprint != -1)
+    settings_set_mprint (mprint);
+  return mprint != -1;
 }
 
 static bool
@@ -916,6 +930,30 @@ show_locale (const struct dataset *ds UNUSED)
 }
 
 static char *
+show_mexpand (const struct dataset *ds UNUSED)
+{
+  return xstrdup (settings_get_mexpand () ? "ON" : "OFF");
+}
+
+static char *
+show_mprint (const struct dataset *ds UNUSED)
+{
+  return xstrdup (settings_get_mprint () ? "ON" : "OFF");
+}
+
+static char *
+show_miterate (const struct dataset *ds UNUSED)
+{
+  return xasprintf ("%d", settings_get_miterate ());
+}
+
+static char *
+show_mnest (const struct dataset *ds UNUSED)
+{
+  return xasprintf ("%d", settings_get_mnest ());
+}
+
+static char *
 show_messages (const struct dataset *ds UNUSED)
 {
   return show_output_routing (SETTINGS_OUTPUT_NOTE);
@@ -1141,6 +1179,10 @@ const struct show_sbc show_table[] =
     {"JOURNAL", show_journal},
     {"LENGTH", show_length},
     {"LOCALE", show_locale},
+    {"MEXPAND", show_mexpand},
+    {"MPRINT", show_mprint},
+    {"MITERATE", show_miterate},
+    {"MNEST", show_mnest},
     {"MESSAGES", show_messages},
     {"MXERRS", show_mxerrs},
     {"MXLOOPS", show_mxloops},

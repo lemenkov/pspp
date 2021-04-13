@@ -86,8 +86,18 @@ void settings_set_blanks (double);
 int settings_get_max_messages (enum msg_severity);
 void settings_set_max_messages (enum msg_severity, int max);
 
+/* Macro settings. */
+bool settings_get_mexpand (void);
+void settings_set_mexpand (bool);
+
 bool settings_get_mprint (void);
 void settings_set_mprint (bool);
+
+int settings_get_miterate (void);
+void settings_set_miterate (int);
+
+int settings_get_mnest (void);
+void settings_set_mnest (int);
 
 int settings_get_mxloops (void);
 void settings_set_mxloops (int);
