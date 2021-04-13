@@ -80,48 +80,51 @@ struct settings
 };
 
 static struct settings the_settings = {
-  INTEGER_NATIVE,               /* input_integer_format */
-  FLOAT_NATIVE_DOUBLE,          /* input_float_format */
-  INTEGER_NATIVE,               /* output_integer_format */
-  FLOAT_NATIVE_DOUBLE,          /* output_float_format */
-  24,                           /* viewlength */
-  79,                           /* viewwidth */
-  false,                        /* safer_mode */
-  true,                         /* include */
-  true,                         /* route_errors_to_terminal */
-  true,                         /* route_errors_to_listing */
-  true,                         /* scompress */
-  true,                         /* undefined */
-  SYSMIS,                       /* blanks */
+  .input_integer_format = INTEGER_NATIVE,
+  .input_float_format = FLOAT_NATIVE_DOUBLE,
+  .output_integer_format = INTEGER_NATIVE,
+  .output_float_format = FLOAT_NATIVE_DOUBLE,
+  .viewlength = 24,
+  .viewwidth = 79,
+  .safer_mode = false,
+  .include = true,
+  .route_errors_to_terminal = true,
+  .route_errors_to_listing = true,
+  .scompress = true,
+  .undefined = true,
+  .blanks = SYSMIS,
 
-  /* max_messages */
-  {
-    100,                        /* MSG_S_ERROR */
-    100,                        /* MSG_S_WARNING */
-    100                         /* MSG_S_NOTE */
+  .max_messages = {
+    [MSG_S_ERROR] = 100,
+    [MSG_S_WARNING] = 100,
+    [MSG_S_NOTE] = 100
   },
 
-  true,                         /* printback */
-  true,                         /* mprint */
-  40,                           /* mxloops */
-  64L * 1024 * 1024,            /* workspace */
-  { .type = FMT_F, .w = 8, .d = 2 }, /* default_format */
-  false,                        /* testing_mode */
-  6,                            /* fuzzbits */
-  ENHANCED,                     /* cmd_algorithm */
-  ENHANCED,                     /* global_algorithm */
-  ENHANCED,                     /* syntax */
-  FMT_SETTINGS_INIT,            /* styles */
-  .0001,                        /* small */
+  .printback = true,
+  .mprint = true,
+  .mxloops = 40,
+  .workspace = 64L * 1024 * 1024,
+  .default_format = { .type = FMT_F, .w = 8, .d = 2 },
+  .testing_mode = false,
+  .fuzzbits = 6,
+  .cmd_algorithm = ENHANCED,
+  .global_algorithm = ENHANCED,
+  .syntax = ENHANCED,
+  .styles = FMT_SETTINGS_INIT,
+  .small = .0001,
 
   /* output_routing */
-  {SETTINGS_DEVICE_LISTING | SETTINGS_DEVICE_TERMINAL,
-   SETTINGS_DEVICE_LISTING | SETTINGS_DEVICE_TERMINAL,
-   0,
-   SETTINGS_DEVICE_LISTING | SETTINGS_DEVICE_TERMINAL},
+  .output_routing = {
+#define LT (SETTINGS_DEVICE_LISTING | SETTINGS_DEVICE_TERMINAL)
+    [SETTINGS_OUTPUT_ERROR] = LT,
+    [SETTINGS_OUTPUT_NOTE] = LT,
+    [SETTINGS_OUTPUT_SYNTAX] = 0,
+    [SETTINGS_OUTPUT_RESULT] = LT
+#undef LT
+  },
 
-  SETTINGS_VALUE_SHOW_LABEL,
-  SETTINGS_VALUE_SHOW_LABEL
+  .show_values = SETTINGS_VALUE_SHOW_LABEL,
+  .show_variables = SETTINGS_VALUE_SHOW_LABEL,
 };
 
 /* Initializes the settings module. */
