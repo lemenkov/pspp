@@ -193,7 +193,6 @@ generate_syntax (const PsppireDialogAction *a)
 
   guint selected;
   GtkTreeIter iter;
-  gboolean ok;
 
   GString *string = g_string_new ("REGRESSION");
 
