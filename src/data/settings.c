@@ -305,6 +305,13 @@ settings_set_include (bool include)
   the_settings.include = include;
 }
 
+/* Returns the year that starts the epoch. */
+int
+settings_get_epoch (void)
+{
+  return the_settings.styles.epoch;
+}
+
 /* Sets the year that starts the epoch. */
 void
 settings_set_epoch (int epoch)

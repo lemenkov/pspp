@@ -23,6 +23,7 @@
 #include <time.h>
 #include <unistd.h>
 
+#include "gl/ftoastr.h"
 #include "gl/vasnprintf.h"
 
 #include "data/casereader.h"
@@ -56,6 +57,13 @@
 
 #include "gettext.h"
 #define _(msgid) gettext (msgid)
+
+struct setting
+  {
+    const char *name;
+    bool (*set) (struct lexer *);
+    char *(*show) (const struct dataset *);
+  };
 
 static bool
 match_subcommand (struct lexer *lexer, const char *name)
@@ -180,6 +188,23 @@ parse_output_routing (struct lexer *lexer, enum settings_output_type type)
   return true;
 }
 
+static char *
+show_output_routing (enum settings_output_type type)
+{
+  enum settings_output_devices devices;
+  const char *s;
+
+  devices = settings_get_output_routing (type);
+  if (devices & SETTINGS_DEVICE_LISTING)
+    s = devices & SETTINGS_DEVICE_TERMINAL ? "BOTH" : "LISTING";
+  else if (devices & SETTINGS_DEVICE_TERMINAL)
+    s = "TERMINAL";
+  else
+    s = "NONE";
+
+  return xstrdup (s);
+}
+
 static bool
 parse_integer_format (struct lexer *lexer,
                       void (*set_format) (enum integer_format))
@@ -192,6 +217,17 @@ parse_integer_format (struct lexer *lexer,
   if (value >= 0)
     set_format (value);
   return value >= 0;
+}
+
+/* Returns a name for the given INTEGER_FORMAT value. */
+static char *
+show_integer_format (enum integer_format integer_format)
+{
+  return xasprintf ("%s (%s)",
+                    (integer_format == INTEGER_MSB_FIRST ? "MSBFIRST"
+                     : integer_format == INTEGER_LSB_FIRST ? "LSBFIRST"
+                     : "VAX"),
+                    integer_format == INTEGER_NATIVE ? "NATIVE" : "nonnative");
 }
 
 static bool
@@ -212,6 +248,54 @@ parse_real_format (struct lexer *lexer,
   if (value >= 0)
     set_format (value);
   return value >= 0;
+}
+
+/* Returns a name for the given FLOAT_FORMAT value. */
+static char *
+show_real_format (enum float_format float_format)
+{
+  const char *format_name = "";
+
+  switch (float_format)
+    {
+    case FLOAT_IEEE_SINGLE_LE:
+      format_name = _("ISL (32-bit IEEE 754 single, little-endian)");
+      break;
+    case FLOAT_IEEE_SINGLE_BE:
+      format_name = _("ISB (32-bit IEEE 754 single, big-endian)");
+      break;
+    case FLOAT_IEEE_DOUBLE_LE:
+      format_name = _("IDL (64-bit IEEE 754 double, little-endian)");
+      break;
+    case FLOAT_IEEE_DOUBLE_BE:
+      format_name = _("IDB (64-bit IEEE 754 double, big-endian)");
+      break;
+
+    case FLOAT_VAX_F:
+      format_name = _("VF (32-bit VAX F, VAX-endian)");
+      break;
+    case FLOAT_VAX_D:
+      format_name = _("VD (64-bit VAX D, VAX-endian)");
+      break;
+    case FLOAT_VAX_G:
+      format_name = _("VG (64-bit VAX G, VAX-endian)");
+      break;
+
+    case FLOAT_Z_SHORT:
+      format_name = _("ZS (32-bit IBM Z hexadecimal short, big-endian)");
+      break;
+    case FLOAT_Z_LONG:
+      format_name = _("ZL (64-bit IBM Z hexadecimal long, big-endian)");
+      break;
+
+    case FLOAT_FP:
+    case FLOAT_HEX:
+      NOT_REACHED ();
+    }
+
+  return xasprintf ("%s (%s)", format_name,
+                    (float_format == FLOAT_NATIVE_DOUBLE
+                     ? "NATIVE" : "nonnative"));
 }
 
 static bool
@@ -253,6 +337,14 @@ parse_BLANKS (struct lexer *lexer)
       lex_get (lexer);
     }
   return true;
+}
+
+static char *
+show_BLANKS (const struct dataset *ds UNUSED)
+{
+  return (settings_get_blanks () == SYSMIS
+          ? xstrdup ("SYSMIS")
+          : xasprintf ("%.*g", DBL_DIG + 1, settings_get_blanks ()));
 }
 
 static bool
@@ -303,6 +395,43 @@ parse_CCE (struct lexer *lexer)
   return parse_ccx (lexer, FMT_CCE);
 }
 
+static char *
+show_cc (enum fmt_type type)
+{
+  return fmt_number_style_to_string (fmt_settings_get_style (
+                                       settings_get_fmt_settings (), type));
+}
+
+static char *
+show_CCA (const struct dataset *ds UNUSED)
+{
+  return show_cc (FMT_CCA);
+}
+
+static char *
+show_CCB (const struct dataset *ds UNUSED)
+{
+  return show_cc (FMT_CCB);
+}
+
+static char *
+show_CCC (const struct dataset *ds UNUSED)
+{
+  return show_cc (FMT_CCC);
+}
+
+static char *
+show_CCD (const struct dataset *ds UNUSED)
+{
+  return show_cc (FMT_CCD);
+}
+
+static char *
+show_CCE (const struct dataset *ds UNUSED)
+{
+  return show_cc (FMT_CCE);
+}
+
 static bool
 parse_CELLSBREAK (struct lexer *lexer)
 {
@@ -338,6 +467,12 @@ parse_DECIMAL (struct lexer *lexer)
   return decimal_char != -1;
 }
 
+static char *
+show_DECIMAL (const struct dataset *ds UNUSED)
+{
+  return xasprintf ("`%c'", settings_get_fmt_settings ()->decimal);
+}
+
 static bool
 parse_EPOCH (struct lexer *lexer)
 {
@@ -359,10 +494,22 @@ parse_EPOCH (struct lexer *lexer)
   return true;
 }
 
+static char *
+show_EPOCH (const struct dataset *ds UNUSED)
+{
+  return xasprintf ("%d", settings_get_epoch ());
+}
+
 static bool
 parse_ERRORS (struct lexer *lexer)
 {
   return parse_output_routing (lexer, SETTINGS_OUTPUT_ERROR);
+}
+
+static char *
+show_ERRORS (const struct dataset *ds UNUSED)
+{
+  return show_output_routing (SETTINGS_OUTPUT_ERROR);
 }
 
 static bool
@@ -391,6 +538,13 @@ parse_FORMAT (struct lexer *lexer)
   return true;
 }
 
+static char *
+show_FORMAT (const struct dataset *ds UNUSED)
+{
+  char str[FMT_STRING_LEN_MAX + 1];
+  return xstrdup (fmt_to_string (settings_get_format (), str));
+}
+
 static bool
 parse_FUZZBITS (struct lexer *lexer)
 {
@@ -399,6 +553,12 @@ parse_FUZZBITS (struct lexer *lexer)
   settings_set_fuzzbits (lex_integer (lexer));
   lex_get (lexer);
   return true;
+}
+
+static char *
+show_FUZZBITS (const struct dataset *ds UNUSED)
+{
+  return xasprintf ("%d", settings_get_fuzzbits ());
 }
 
 static bool
@@ -414,6 +574,12 @@ parse_INCLUDE (struct lexer *lexer)
   if (include != -1)
     settings_set_include (include);
   return include != -1;
+}
+
+static char *
+show_INCLUDE (const struct dataset *ds UNUSED)
+{
+  return xstrdup (settings_get_include () ? "ON" : "OFF");
 }
 
 static bool
@@ -440,6 +606,16 @@ parse_JOURNAL (struct lexer *lexer)
   return true;
 }
 
+static char *
+show_JOURNAL (const struct dataset *ds UNUSED)
+{
+  const char *enabled = journal_is_enabled () ? "ON" : "OFF";
+  const char *file_name = journal_get_file_name ();
+  return (file_name
+          ? xasprintf ("%s (%s)", enabled, file_name)
+          : xstrdup (enabled));
+}
+
 static bool
 parse_LENGTH (struct lexer *lexer)
 {
@@ -459,6 +635,12 @@ parse_LENGTH (struct lexer *lexer)
     settings_set_viewlength (page_length);
 
   return true;
+}
+
+static char *
+show_LENGTH (const struct dataset *ds UNUSED)
+{
+  return xasprintf ("%d", settings_get_viewlength ());
 }
 
 static bool
@@ -481,10 +663,22 @@ parse_LOCALE (struct lexer *lexer)
   return true;
 }
 
+static char *
+show_LOCALE (const struct dataset *ds UNUSED)
+{
+  return xstrdup (get_default_encoding ());
+}
+
 static bool
 parse_MESSAGES (struct lexer *lexer)
 {
   return parse_output_routing (lexer, SETTINGS_OUTPUT_NOTE);
+}
+
+static char *
+show_MESSAGES (const struct dataset *ds UNUSED)
+{
+  return show_output_routing (SETTINGS_OUTPUT_NOTE);
 }
 
 static bool
@@ -494,6 +688,12 @@ parse_MEXPAND (struct lexer *lexer)
   if (mexpand != -1)
     settings_set_mexpand (mexpand);
   return mexpand != -1;
+}
+
+static char *
+show_MEXPAND (const struct dataset *ds UNUSED)
+{
+  return xstrdup (settings_get_mexpand () ? "ON" : "OFF");
 }
 
 static bool
@@ -506,6 +706,12 @@ parse_MITERATE (struct lexer *lexer)
   return true;
 }
 
+static char *
+show_MITERATE (const struct dataset *ds UNUSED)
+{
+  return xasprintf ("%d", settings_get_miterate ());
+}
+
 static bool
 parse_MNEST (struct lexer *lexer)
 {
@@ -516,6 +722,12 @@ parse_MNEST (struct lexer *lexer)
   return true;
 }
 
+static char *
+show_MNEST (const struct dataset *ds UNUSED)
+{
+  return xasprintf ("%d", settings_get_mnest ());
+}
+
 static bool
 parse_MPRINT (struct lexer *lexer)
 {
@@ -523,6 +735,12 @@ parse_MPRINT (struct lexer *lexer)
   if (mprint != -1)
     settings_set_mprint (mprint);
   return mprint != -1;
+}
+
+static char *
+show_MPRINT (const struct dataset *ds UNUSED)
+{
+  return xstrdup (settings_get_mprint () ? "ON" : "OFF");
 }
 
 static bool
@@ -539,6 +757,12 @@ parse_MXERRS (struct lexer *lexer)
   return true;
 }
 
+static char *
+show_MXERRS (const struct dataset *ds UNUSED)
+{
+  return xasprintf ("%d", settings_get_max_messages (MSG_S_ERROR));
+}
+
 static bool
 parse_MXLOOPS (struct lexer *lexer)
 {
@@ -551,6 +775,12 @@ parse_MXLOOPS (struct lexer *lexer)
   else
     msg (SE, _("%s must be at least 1."), "MXLOOPS");
   return true;
+}
+
+static char *
+show_MXLOOPS (const struct dataset *ds UNUSED)
+{
+  return xasprintf ("%d", settings_get_mxloops ());
 }
 
 static bool
@@ -567,10 +797,22 @@ parse_MXWARNS (struct lexer *lexer)
   return true;
 }
 
+static char *
+show_MXWARNS (const struct dataset *ds UNUSED)
+{
+  return xasprintf ("%d", settings_get_max_messages (MSG_S_WARNING));
+}
+
 static bool
 parse_PRINTBACK (struct lexer *lexer)
 {
   return parse_output_routing (lexer, SETTINGS_OUTPUT_SYNTAX);
+}
+
+static char *
+show_PRINTBACK (const struct dataset *ds UNUSED)
+{
+  return show_output_routing (SETTINGS_OUTPUT_SYNTAX);
 }
 
 static bool
@@ -579,16 +821,34 @@ parse_RESULTS (struct lexer *lexer)
   return parse_output_routing (lexer, SETTINGS_OUTPUT_RESULT);
 }
 
+static char *
+show_RESULTS (const struct dataset *ds UNUSED)
+{
+  return show_output_routing (SETTINGS_OUTPUT_RESULT);
+}
+
 static bool
 parse_RIB (struct lexer *lexer)
 {
   return parse_integer_format (lexer, settings_set_input_integer_format);
 }
 
+static char *
+show_RIB (const struct dataset *ds UNUSED)
+{
+  return show_integer_format (settings_get_input_integer_format ());
+}
+
 static bool
 parse_RRB (struct lexer *lexer)
 {
   return parse_real_format (lexer, settings_set_input_float_format);
+}
+
+static char *
+show_RRB (const struct dataset *ds UNUSED)
+{
+  return show_real_format (settings_get_input_float_format ());
 }
 
 static bool
@@ -600,6 +860,12 @@ parse_SAFER (struct lexer *lexer)
   return ok;
 }
 
+static char *
+show_SAFER (const struct dataset *ds UNUSED)
+{
+  return xstrdup (settings_get_safer_mode () ? "ON" : "OFF");
+}
+
 static bool
 parse_SCOMPRESSION (struct lexer *lexer)
 {
@@ -607,6 +873,12 @@ parse_SCOMPRESSION (struct lexer *lexer)
   if (value >= 0)
     settings_set_scompression (value);
   return value >= 0;
+}
+
+static char *
+show_SCOMPRESSION (const struct dataset *ds UNUSED)
+{
+  return xstrdup (settings_get_scompression () ? "ON" : "OFF");
 }
 
 static bool
@@ -635,6 +907,27 @@ parse_SMALL (struct lexer *lexer)
   return true;
 }
 
+static char *
+show_SMALL (const struct dataset *ds UNUSED)
+{
+  char buf[DBL_BUFSIZE_BOUND];
+  if (dtoastr (buf, sizeof buf, 0, 0, settings_get_small ()) < 0)
+    abort ();
+  return xstrdup (buf);
+}
+
+static char *
+show_SYSTEM (const struct dataset *ds UNUSED)
+{
+  return strdup (host_system);
+}
+
+static char *
+show_TEMPDIR (const struct dataset *ds UNUSED)
+{
+  return strdup (temp_dir_name ());
+}
+
 static bool
 parse_TNUMBERS (struct lexer *lexer)
 {
@@ -647,6 +940,15 @@ parse_TNUMBERS (struct lexer *lexer)
   return value >= 0;
 }
 
+static char *
+show_TNUMBERS (const struct dataset *ds UNUSED)
+{
+  enum settings_value_show tnumbers = settings_get_show_values ();
+  return xstrdup (tnumbers == SETTINGS_VALUE_SHOW_LABEL ? "LABELS"
+                  : tnumbers == SETTINGS_VALUE_SHOW_VALUE ? "VALUES"
+                  : "BOTH");
+}
+
 static bool
 parse_TVARS (struct lexer *lexer)
 {
@@ -657,6 +959,15 @@ parse_TVARS (struct lexer *lexer)
   if (value >= 0)
     settings_set_show_variables (value);
   return value >= 0;
+}
+
+static char *
+show_TVARS (const struct dataset *ds UNUSED)
+{
+  enum settings_value_show tvars = settings_get_show_variables ();
+  return xstrdup (tvars == SETTINGS_VALUE_SHOW_LABEL ? "LABELS"
+                  : tvars == SETTINGS_VALUE_SHOW_VALUE ? "NAMES"
+                  : "BOTH");
 }
 
 static bool
@@ -695,16 +1006,47 @@ parse_UNDEFINED (struct lexer *lexer)
   return value >= 0;
 }
 
+static char *
+show_UNDEFINED (const struct dataset *ds UNUSED)
+{
+  return xstrdup (settings_get_undefined () ? "WARN" : "NOWARN");
+}
+
+static char *
+show_VERSION (const struct dataset *ds UNUSED)
+{
+  return strdup (announced_version);
+}
+
+static char *
+show_WEIGHT (const struct dataset *ds)
+{
+  const struct variable *var = dict_get_weight (dataset_dict (ds));
+  return xstrdup (var != NULL ? var_get_name (var) : "OFF");
+}
+
 static bool
 parse_WIB (struct lexer *lexer)
 {
   return parse_integer_format (lexer, settings_set_output_integer_format);
 }
 
+static char *
+show_WIB (const struct dataset *ds UNUSED)
+{
+  return show_integer_format (settings_get_output_integer_format ());
+}
+
 static bool
 parse_WRB (struct lexer *lexer)
 {
   return parse_real_format (lexer, settings_set_output_float_format);
+}
+
+static char *
+show_WRB (const struct dataset *ds UNUSED)
+{
+  return show_real_format (settings_get_output_float_format ());
 }
 
 static bool
@@ -725,6 +1067,12 @@ parse_WIDTH (struct lexer *lexer)
   return true;
 }
 
+static char *
+show_WIDTH (const struct dataset *ds UNUSED)
+{
+  return xasprintf ("%d", settings_get_viewwidth ());
+}
+
 static bool
 parse_WORKSPACE (struct lexer *lexer)
 {
@@ -737,70 +1085,124 @@ parse_WORKSPACE (struct lexer *lexer)
   settings_set_workspace (MIN (workspace, INT_MAX / 1024) * 1024);
   return true;
 }
+
+static char *
+show_WORKSPACE (const struct dataset *ds UNUSED)
+{
+  size_t ws = settings_get_workspace () / 1024L;
+  return xasprintf ("%zu", ws);
+}
 
+static char *
+show_DIRECTORY (const struct dataset *ds UNUSED)
+{
+  char *buf = NULL;
+  char *wd = NULL;
+  size_t len = 256;
+
+  do
+    {
+      len <<= 1;
+      buf = xrealloc (buf, len);
+    }
+  while (NULL == (wd = getcwd (buf, len)));
+
+  return wd;
+}
+
+static char *
+show_N (const struct dataset *ds)
+{
+  const struct casereader *reader = dataset_source (ds);
+  return (reader
+          ? xasprintf ("%lld", (long long int) casereader_count_cases (reader))
+          : xstrdup (_("Unknown")));
+}
+
+static void
+do_show (const struct dataset *ds, const struct setting *s)
+{
+  char *value = s->show (ds);
+  msg (SN, _("%s is %s."), s->name, value);
+  free (value);
+}
+
+static void
+show_warranty (const struct dataset *ds UNUSED)
+{
+  fputs (lack_of_warranty, stdout);
+}
+
+static void
+show_copying (const struct dataset *ds UNUSED)
+{
+  fputs (copyleft, stdout);
+}
+
+static const struct setting settings[] = {
+  { "BASETEXTDIRECTION", parse_BASETEXTDIRECTION, NULL },
+  { "BLANKS", parse_BLANKS, show_BLANKS },
+  { "BLOCK", parse_BLOCK, NULL },
+  { "BOX", parse_BOX, NULL },
+  { "CACHE", parse_CACHE, NULL },
+  { "CCA", parse_CCA, show_CCA },
+  { "CCB", parse_CCB, show_CCB },
+  { "CCC", parse_CCC, show_CCC },
+  { "CCD", parse_CCD, show_CCD },
+  { "CCE", parse_CCE, show_CCE },
+  { "CELLSBREAK", parse_CELLSBREAK, NULL },
+  { "CMPTRANS", parse_CMPTRANS, NULL },
+  { "COMPRESSION", parse_COMPRESSION, NULL },
+  { "CTEMPLATE", parse_CTEMPLATE, NULL },
+  { "DECIMAL", parse_DECIMAL, show_DECIMAL },
+  { "DIRECTORY", NULL, show_DIRECTORY },
+  { "EPOCH", parse_EPOCH, show_EPOCH },
+  { "ERRORS", parse_ERRORS, show_ERRORS },
+  { "FORMAT", parse_FORMAT, show_FORMAT },
+  { "FUZZBITS", parse_FUZZBITS, show_FUZZBITS },
+  { "HEADER", parse_HEADER, NULL },
+  { "INCLUDE", parse_INCLUDE, show_INCLUDE },
+  { "JOURNAL", parse_JOURNAL, show_JOURNAL },
+  { "LENGTH", parse_LENGTH, show_LENGTH },
+  { "LOCALE", parse_LOCALE, show_LOCALE },
+  { "MESSAGES", parse_MESSAGES, show_MESSAGES },
+  { "MEXPAND", parse_MEXPAND, show_MEXPAND },
+  { "MITERATE", parse_MITERATE, show_MITERATE },
+  { "MNEST", parse_MNEST, show_MNEST },
+  { "MPRINT", parse_MPRINT, show_MPRINT },
+  { "MXERRS", parse_MXERRS, show_MXERRS },
+  { "MXLOOPS", parse_MXLOOPS, show_MXLOOPS },
+  { "MXWARNS", parse_MXWARNS, show_MXWARNS },
+  { "N", NULL, show_N },
+  { "PRINTBACK", parse_PRINTBACK, show_PRINTBACK },
+  { "RESULTS", parse_RESULTS, show_RESULTS },
+  { "RIB", parse_RIB, show_RIB },
+  { "RRB", parse_RRB, show_RRB },
+  { "SAFER", parse_SAFER, show_SAFER },
+  { "SCOMPRESSION", parse_SCOMPRESSION, show_SCOMPRESSION },
+  { "SEED", parse_SEED, NULL },
+  { "SMALL", parse_SMALL, show_SMALL },
+  { "SYSTEM", NULL, show_SYSTEM },
+  { "TEMPDIR", NULL, show_TEMPDIR },
+  { "TNUMBERS", parse_TNUMBERS, show_TNUMBERS },
+  { "TVARS", parse_TVARS, show_TVARS },
+  { "TLOOK", parse_TLOOK, NULL },
+  { "UNDEFINED", parse_UNDEFINED, show_UNDEFINED },
+  { "VERSION", NULL, show_VERSION },
+  { "WEIGHT", NULL, show_WEIGHT },
+  { "WIB", parse_WIB, show_WIB },
+  { "WRB", parse_WRB, show_WRB },
+  { "WIDTH", parse_WIDTH, show_WIDTH },
+  { "WORKSPACE", parse_WORKSPACE, show_WORKSPACE },
+};
+enum { N_SETTINGS = sizeof settings / sizeof *settings };
+
 static bool
 parse_setting (struct lexer *lexer)
 {
-  struct setting
-    {
-      const char *name;
-      bool (*function) (struct lexer *);
-    };
-  const struct setting settings[] = {
-    { "BASETEXTDIRECTION", parse_BASETEXTDIRECTION },
-    { "BLANKS", parse_BLANKS },
-    { "BLOCK", parse_BLOCK },
-    { "BOX", parse_BOX },
-    { "CACHE", parse_CACHE },
-    { "CCA", parse_CCA },
-    { "CCB", parse_CCB },
-    { "CCC", parse_CCC },
-    { "CCD", parse_CCD },
-    { "CCE", parse_CCE },
-    { "CELLSBREAK", parse_CELLSBREAK },
-    { "CMPTRANS", parse_CMPTRANS },
-    { "COMPRESSION", parse_COMPRESSION },
-    { "CTEMPLATE", parse_CTEMPLATE },
-    { "DECIMAL", parse_DECIMAL },
-    { "EPOCH", parse_EPOCH },
-    { "ERRORS", parse_ERRORS },
-    { "FORMAT", parse_FORMAT },
-    { "FUZZBITS", parse_FUZZBITS },
-    { "HEADER", parse_HEADER },
-    { "INCLUDE", parse_INCLUDE },
-    { "JOURNAL", parse_JOURNAL },
-    { "LENGTH", parse_LENGTH },
-    { "LOCALE", parse_LOCALE },
-    { "MESSAGES", parse_MESSAGES },
-    { "MEXPAND", parse_MEXPAND },
-    { "MITERATE", parse_MITERATE },
-    { "MNEST", parse_MNEST },
-    { "MPRINT", parse_MPRINT },
-    { "MXERRS", parse_MXERRS },
-    { "MXLOOPS", parse_MXLOOPS },
-    { "MXWARNS", parse_MXWARNS },
-    { "PRINTBACK", parse_PRINTBACK },
-    { "RESULTS", parse_RESULTS },
-    { "RIB", parse_RIB },
-    { "RRB", parse_RRB },
-    { "SAFER", parse_SAFER },
-    { "SCOMPRESSION", parse_SCOMPRESSION },
-    { "SEED", parse_SEED },
-    { "SMALL", parse_SMALL },
-    { "TNUMBERS", parse_TNUMBERS },
-    { "TVARS", parse_TVARS },
-    { "TLOOK", parse_TLOOK },
-    { "UNDEFINED", parse_UNDEFINED },
-    { "WIB", parse_WIB },
-    { "WRB", parse_WRB },
-    { "WIDTH", parse_WIDTH },
-    { "WORKSPACE", parse_WORKSPACE },
-  };
-  enum { N_SETTINGS = sizeof settings / sizeof *settings };
-
   for (size_t i = 0; i < N_SETTINGS; i++)
-    if (match_subcommand (lexer, settings[i].name))
-        return settings[i].function (lexer);
+    if (settings[i].set && match_subcommand (lexer, settings[i].name))
+        return settings[i].set (lexer);
 
   lex_error (lexer, NULL);
   return false;
@@ -821,430 +1223,25 @@ cmd_set (struct lexer *lexer, struct dataset *ds UNUSED)
 
   return CMD_SUCCESS;
 }
-
-static char *
-show_output_routing (enum settings_output_type type)
-{
-  enum settings_output_devices devices;
-  const char *s;
-
-  devices = settings_get_output_routing (type);
-  if (devices & SETTINGS_DEVICE_LISTING)
-    s = devices & SETTINGS_DEVICE_TERMINAL ? "BOTH" : "LISTING";
-  else if (devices & SETTINGS_DEVICE_TERMINAL)
-    s = "TERMINAL";
-  else
-    s = "NONE";
-
-  return xstrdup (s);
-}
-
-static char *
-show_blanks (const struct dataset *ds UNUSED)
-{
-  return (settings_get_blanks () == SYSMIS
-          ? xstrdup ("SYSMIS")
-          : xasprintf ("%.*g", DBL_DIG + 1, settings_get_blanks ()));
-}
-
-static char *
-show_cc (enum fmt_type type)
-{
-  return fmt_number_style_to_string (fmt_settings_get_style (
-                                       settings_get_fmt_settings (), type));
-}
-
-static char *
-show_cca (const struct dataset *ds UNUSED)
-{
-  return show_cc (FMT_CCA);
-}
-
-static char *
-show_ccb (const struct dataset *ds UNUSED)
-{
-  return show_cc (FMT_CCB);
-}
-
-static char *
-show_ccc (const struct dataset *ds UNUSED)
-{
-  return show_cc (FMT_CCC);
-}
-
-static char *
-show_ccd (const struct dataset *ds UNUSED)
-{
-  return show_cc (FMT_CCD);
-}
-
-static char *
-show_cce (const struct dataset *ds UNUSED)
-{
-  return show_cc (FMT_CCE);
-}
-
-static char *
-show_decimals (const struct dataset *ds UNUSED)
-{
-  return xasprintf ("`%c'", settings_get_fmt_settings ()->decimal);
-}
-
-static char *
-show_errors (const struct dataset *ds UNUSED)
-{
-  return show_output_routing (SETTINGS_OUTPUT_ERROR);
-}
-
-static char *
-show_format (const struct dataset *ds UNUSED)
-{
-  char str[FMT_STRING_LEN_MAX + 1];
-  return xstrdup (fmt_to_string (settings_get_format (), str));
-}
-
-static char *
-show_fuzzbits (const struct dataset *ds UNUSED)
-{
-  return xasprintf ("%d", settings_get_fuzzbits ());
-}
-
-static char *
-show_journal (const struct dataset *ds UNUSED)
-{
-  return (journal_is_enabled ()
-          ? xasprintf ("\"%s\"", journal_get_file_name ())
-          : xstrdup ("disabled"));
-}
-
-static char *
-show_length (const struct dataset *ds UNUSED)
-{
-  return xasprintf ("%d", settings_get_viewlength ());
-}
-
-static char *
-show_locale (const struct dataset *ds UNUSED)
-{
-  return xstrdup (get_default_encoding ());
-}
-
-static char *
-show_mexpand (const struct dataset *ds UNUSED)
-{
-  return xstrdup (settings_get_mexpand () ? "ON" : "OFF");
-}
-
-static char *
-show_mprint (const struct dataset *ds UNUSED)
-{
-  return xstrdup (settings_get_mprint () ? "ON" : "OFF");
-}
-
-static char *
-show_miterate (const struct dataset *ds UNUSED)
-{
-  return xasprintf ("%d", settings_get_miterate ());
-}
-
-static char *
-show_mnest (const struct dataset *ds UNUSED)
-{
-  return xasprintf ("%d", settings_get_mnest ());
-}
-
-static char *
-show_messages (const struct dataset *ds UNUSED)
-{
-  return show_output_routing (SETTINGS_OUTPUT_NOTE);
-}
-
-static char *
-show_printback (const struct dataset *ds UNUSED)
-{
-  return show_output_routing (SETTINGS_OUTPUT_SYNTAX);
-}
-
-static char *
-show_results (const struct dataset *ds UNUSED)
-{
-  return show_output_routing (SETTINGS_OUTPUT_RESULT);
-}
-
-static char *
-show_mxerrs (const struct dataset *ds UNUSED)
-{
-  return xasprintf ("%d", settings_get_max_messages (MSG_S_ERROR));
-}
-
-static char *
-show_mxloops (const struct dataset *ds UNUSED)
-{
-  return xasprintf ("%d", settings_get_mxloops ());
-}
-
-static char *
-show_mxwarns (const struct dataset *ds UNUSED)
-{
-  return xasprintf ("%d", settings_get_max_messages (MSG_S_WARNING));
-}
-
-/* Returns a name for the given INTEGER_FORMAT value. */
-static char *
-show_integer_format (enum integer_format integer_format)
-{
-  return xasprintf ("%s (%s)",
-                    (integer_format == INTEGER_MSB_FIRST ? "MSBFIRST"
-                     : integer_format == INTEGER_LSB_FIRST ? "LSBFIRST"
-                     : "VAX"),
-                    integer_format == INTEGER_NATIVE ? "NATIVE" : "nonnative");
-}
-
-/* Returns a name for the given FLOAT_FORMAT value. */
-static char *
-show_float_format (enum float_format float_format)
-{
-  const char *format_name = "";
-
-  switch (float_format)
-    {
-    case FLOAT_IEEE_SINGLE_LE:
-      format_name = _("ISL (32-bit IEEE 754 single, little-endian)");
-      break;
-    case FLOAT_IEEE_SINGLE_BE:
-      format_name = _("ISB (32-bit IEEE 754 single, big-endian)");
-      break;
-    case FLOAT_IEEE_DOUBLE_LE:
-      format_name = _("IDL (64-bit IEEE 754 double, little-endian)");
-      break;
-    case FLOAT_IEEE_DOUBLE_BE:
-      format_name = _("IDB (64-bit IEEE 754 double, big-endian)");
-      break;
-
-    case FLOAT_VAX_F:
-      format_name = _("VF (32-bit VAX F, VAX-endian)");
-      break;
-    case FLOAT_VAX_D:
-      format_name = _("VD (64-bit VAX D, VAX-endian)");
-      break;
-    case FLOAT_VAX_G:
-      format_name = _("VG (64-bit VAX G, VAX-endian)");
-      break;
-
-    case FLOAT_Z_SHORT:
-      format_name = _("ZS (32-bit IBM Z hexadecimal short, big-endian)");
-      break;
-    case FLOAT_Z_LONG:
-      format_name = _("ZL (64-bit IBM Z hexadecimal long, big-endian)");
-      break;
-
-    case FLOAT_FP:
-    case FLOAT_HEX:
-      NOT_REACHED ();
-    }
-
-  return xasprintf ("%s (%s)", format_name,
-                    (float_format == FLOAT_NATIVE_DOUBLE
-                     ? "NATIVE" : "nonnative"));
-}
-
-static char *
-show_rib (const struct dataset *ds UNUSED)
-{
-  return show_integer_format (settings_get_input_integer_format ());
-}
-
-static char *
-show_rrb (const struct dataset *ds UNUSED)
-{
-  return show_float_format (settings_get_input_float_format ());
-}
-
-static char *
-show_scompression (const struct dataset *ds UNUSED)
-{
-  return xstrdup (settings_get_scompression () ? "ON" : "OFF");
-}
-
-static char *
-show_undefined (const struct dataset *ds UNUSED)
-{
-  return xstrdup (settings_get_undefined () ? "WARN" : "NOWARN");
-}
-
-static char *
-show_weight (const struct dataset *ds)
-{
-  const struct variable *var = dict_get_weight (dataset_dict (ds));
-  return xstrdup (var != NULL ? var_get_name (var) : "OFF");
-}
-
-static char *
-show_wib (const struct dataset *ds UNUSED)
-{
-  return show_integer_format (settings_get_output_integer_format ());
-}
-
-static char *
-show_wrb (const struct dataset *ds UNUSED)
-{
-  return show_float_format (settings_get_output_float_format ());
-}
-
-static char *
-show_width (const struct dataset *ds UNUSED)
-{
-  return xasprintf ("%d", settings_get_viewwidth ());
-}
-
-static char *
-show_workspace (const struct dataset *ds UNUSED)
-{
-  size_t ws = settings_get_workspace () / 1024L;
-  return xasprintf ("%zu", ws);
-}
-
-static char *
-show_current_directory (const struct dataset *ds UNUSED)
-{
-  char *buf = NULL;
-  char *wd = NULL;
-  size_t len = 256;
-
-  do
-    {
-      len <<= 1;
-      buf = xrealloc (buf, len);
-    }
-  while (NULL == (wd = getcwd (buf, len)));
-
-  return wd;
-}
-
-static char *
-show_tempdir (const struct dataset *ds UNUSED)
-{
-  return strdup (temp_dir_name ());
-}
-
-static char *
-show_version (const struct dataset *ds UNUSED)
-{
-  return strdup (announced_version);
-}
-
-static char *
-show_system (const struct dataset *ds UNUSED)
-{
-  return strdup (host_system);
-}
-
-static char *
-show_n (const struct dataset *ds)
-{
-  casenumber n;
-  size_t l;
-
-  const struct casereader *reader = dataset_source (ds);
-
-  if (reader == NULL)
-    return strdup (_("Unknown"));
-
-  n =  casereader_count_cases (reader);
-
-  return  asnprintf (NULL, &l, "%ld", n);
-}
-
-
-struct show_sbc
-  {
-    const char *name;
-    char *(*function) (const struct dataset *);
-  };
-
-const struct show_sbc show_table[] =
-  {
-    {"BLANKS", show_blanks},
-    {"CCA", show_cca},
-    {"CCB", show_ccb},
-    {"CCC", show_ccc},
-    {"CCD", show_ccd},
-    {"CCE", show_cce},
-    {"DECIMALS", show_decimals},
-    {"DIRECTORY", show_current_directory},
-    {"ENVIRONMENT", show_system},
-    {"ERRORS", show_errors},
-    {"FORMAT", show_format},
-    {"FUZZBITS", show_fuzzbits},
-    {"JOURNAL", show_journal},
-    {"LENGTH", show_length},
-    {"LOCALE", show_locale},
-    {"MEXPAND", show_mexpand},
-    {"MPRINT", show_mprint},
-    {"MITERATE", show_miterate},
-    {"MNEST", show_mnest},
-    {"MESSAGES", show_messages},
-    {"MXERRS", show_mxerrs},
-    {"MXLOOPS", show_mxloops},
-    {"MXWARNS", show_mxwarns},
-    {"N", show_n},
-    {"PRINTBACk", show_printback},
-    {"RESULTS", show_results},
-    {"RIB", show_rib},
-    {"RRB", show_rrb},
-    {"SCOMPRESSION", show_scompression},
-    {"TEMPDIR", show_tempdir},
-    {"UNDEFINED", show_undefined},
-    {"VERSION", show_version},
-    {"WEIGHT", show_weight},
-    {"WIB", show_wib},
-    {"WRB", show_wrb},
-    {"WIDTH", show_width},
-    {"WORKSPACE", show_workspace},
-  };
-
-static void
-do_show (const struct dataset *ds, const struct show_sbc *sbc)
-{
-  char *value = sbc->function (ds);
-  msg (SN, _("%s is %s."), sbc->name, value);
-  free (value);
-}
 
 static void
 show_all (const struct dataset *ds)
 {
-  size_t i;
-
-  for (i = 0; i < sizeof show_table / sizeof *show_table; i++)
-    do_show (ds, &show_table[i]);
+  for (size_t i = 0; i < sizeof settings / sizeof *settings; i++)
+    if (settings[i].show)
+      do_show (ds, &settings[i]);
 }
 
 static void
 show_all_cc (const struct dataset *ds)
 {
-  int i;
-
-  for (i = 0; i < sizeof show_table / sizeof *show_table; i++)
+  for (size_t i = 0; i < sizeof settings / sizeof *settings; i++)
     {
-      const struct show_sbc *sbc = &show_table[i];
-      if (!strncmp (sbc->name, "CC", 2))
-        do_show (ds, sbc);
+      const struct setting *s = &settings[i];
+      if (s->show && !strncmp (s->name, "CC", 2))
+        do_show (ds, s);
     }
 }
-
-static void
-show_warranty (const struct dataset *ds UNUSED)
-{
-  fputs (lack_of_warranty, stdout);
-}
-
-static void
-show_copying (const struct dataset *ds UNUSED)
-{
-  fputs (copyleft, stdout);
-}
-
 
 int
 cmd_show (struct lexer *lexer, struct dataset *ds)
@@ -1269,12 +1266,12 @@ cmd_show (struct lexer *lexer, struct dataset *ds)
         {
           int i;
 
-          for (i = 0; i < sizeof show_table / sizeof *show_table; i++)
+          for (i = 0; i < sizeof settings / sizeof *settings; i++)
             {
-              const struct show_sbc *sbc = &show_table[i];
-              if (lex_match_id (lexer, sbc->name))
+              const struct setting *s = &settings[i];
+              if (s->show && lex_match_id (lexer, s->name))
                 {
-                  do_show (ds, sbc);
+                  do_show (ds, s);
                   goto found;
                 }
               }

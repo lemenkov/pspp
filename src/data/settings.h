@@ -73,6 +73,7 @@ void settings_set_safer_mode (void);
 bool settings_get_include (void);
 void settings_set_include (bool);
 
+int settings_get_epoch (void);
 void settings_set_epoch (int);
 
 bool settings_get_scompression (void);
