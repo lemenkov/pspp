@@ -1308,10 +1308,37 @@ end
 PSPP_CHECK_SEGMENT([-i])
 AT_CLEANUP
 
+AT_SETUP([DEFINE command - early end of command 4])
+AT_KEYWORDS([segment])
+AT_DATA([input], [dnl
+dnl Notice the command terminator at the end of the DEFINE command,
+dnl which should not be there and ends it early.
+define !macro1.
+data list /x 1.
+])
+AT_DATA([expout-base], [dnl
+identifier      define    space
+macro_id        !macro1
+end_command     .
+newline         \n (first)
+
+identifier      data    space
+identifier      list    space
+punct           /
+identifier      x    space
+number          1
+end_command     .
+-newline         \n (first)
+-
+end
+])
+PSPP_CHECK_SEGMENT([-i])
+AT_CLEANUP
+
 AT_SETUP([DEFINE command - missing !ENDDEFINE])
 AT_KEYWORDS([segment])
 AT_DATA([input], [dnl
-define !macro1().
+define !macro1()
 content line 1
 content line 2
 ])
@@ -1320,7 +1347,6 @@ identifier      define    space
 macro_id        !macro1
 punct           (
 punct           )
-end_command     .
 newline         \n (DEFINE)
 
 macro_body      content_line_1

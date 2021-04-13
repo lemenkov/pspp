@@ -1129,10 +1129,39 @@ STOP
 PSPP_CHECK_SCAN([-i])
 AT_CLEANUP
 
+AT_SETUP([DEFINE command - early end of command 4])
+AT_KEYWORDS([segment])
+AT_DATA([input], [dnl
+dnl Notice the command terminator at the end of the DEFINE command,
+dnl which should not be there and ends it early.
+define !macro1.
+data list /x 1.
+])
+AT_DATA([expout-base], [dnl
+ID "define"
+SKIP
+MACRO_ID "!macro1"
+ENDCMD
+SKIP
+ID "data"
+SKIP
+ID "list"
+SKIP
+SLASH
+ID "x"
+SKIP
+POS_NUM 1
+ENDCMD
+-SKIP
+STOP
+])
+PSPP_CHECK_SCAN([-i])
+AT_CLEANUP
+
 AT_SETUP([DEFINE command - missing !ENDDEFINE])
 AT_KEYWORDS([scan])
 AT_DATA([input], [dnl
-define !macro1().
+define !macro1()
 content line 1
 content line 2
 ])
@@ -1142,7 +1171,6 @@ SKIP
 MACRO_ID "!macro1"
 LPAREN
 RPAREN
-ENDCMD
 SKIP
 STRING "content line 1"
 SKIP

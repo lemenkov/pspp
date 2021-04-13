@@ -1516,7 +1516,15 @@ segmenter_parse_define_3__ (struct segmenter *s,
   if (ofs < 0)
     return -1;
 
-  if (*type == SEG_NEWLINE)
+  if (*type == SEG_END_COMMAND)
+    {
+      /* The DEFINE command is malformed because there was a command terminator
+         before the first line of the body.  Transition back to general
+         parsing. */
+      s->state = S_GENERAL;
+      return ofs;
+    }
+  else if (*type == SEG_NEWLINE)
     s->state = S_DEFINE_4;
 
   return ofs;
