@@ -645,7 +645,7 @@ ascii_submit (struct output_driver *driver, const struct output_item *item)
       break;
 
     case OUTPUT_ITEM_GROUP:
-      NOT_REACHED ();
+      break;
 
     case OUTPUT_ITEM_PAGE_BREAK:
       break;

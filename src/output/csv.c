@@ -246,7 +246,7 @@ csv_submit (struct output_driver *driver,
       break;
 
     case OUTPUT_ITEM_GROUP:
-      NOT_REACHED ();
+      break;
 
     case OUTPUT_ITEM_IMAGE:
       break;
