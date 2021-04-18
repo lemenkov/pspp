@@ -23,8 +23,8 @@ nsis_installer_deps=$(DESTDIR)$(prefix)/share/doc/pspp/pspp.html \
 	$(DESTDIR)$(prefix)/share/doc/pspp/pspp.pdf \
 	Windows/AdvUninstLog.nsh Windows/MUI_EXTRAPAGES.nsh
 
-environment_dir=${shell echo $(LDFLAGS) | sed -e 's/^-L//' -e 's|/lib$$||'}
-libgcc_dir=${dir ${shell $(CC) -print-libgcc-file-name}}
+environment_dir = $$(echo $(LDFLAGS) | $(SED) -e 's/^-L//' -e 's|/lib$$||')
+libgcc_dir = $$(dirname $$($(CC) -print-libgcc-file-name))
 
 # Note that install is a PHONY target.  Therefore this rule is always executed.
 Windows/nsis-bin: install
