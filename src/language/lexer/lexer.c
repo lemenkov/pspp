@@ -1428,7 +1428,7 @@ lex_get_error (struct lex_source *src, const char *format, ...)
 }
 
 /* Attempts to append an additional token into SRC's deque, reading more from
-   the underlying lex_reader if necessary..  Returns true if successful, false
+   the underlying lex_reader if necessary.  Returns true if successful, false
    if the deque already represents (a suffix of) the whole lex_reader's
    contents, */
 static bool
