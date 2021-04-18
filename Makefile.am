@@ -88,6 +88,7 @@ include $(top_srcdir)/src/automake.mk
 include $(top_srcdir)/utilities/automake.mk
 include $(top_srcdir)/tests/automake.mk
 include $(top_srcdir)/doc/automake.mk
+include $(top_srcdir)/Windows/automake.mk
 
 if WITH_PERL_MODULE
 include $(top_srcdir)/perl-module/automake.mk

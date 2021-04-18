@@ -39,6 +39,12 @@ AC_LIBTOOL_WIN32_DLL
 AC_LIBTOOL_DLOPEN
 AC_PROG_LIBTOOL
 AC_HEADER_TIOCGWINSZ
+
+AC_CHECK_SIZEOF([ptrdiff_t])
+binary_width=`expr 8 '*' $ac_cv_sizeof_ptrdiff_t`
+AC_SUBST([binary_width])
+
+
 PKG_PROG_PKG_CONFIG
 m4_pattern_forbid([PKG_CHECK_MODULES])
 PSPP_CHECK_CLICKSEQUENCE
