@@ -57,7 +57,7 @@ struct box_whisker * box_whisker_create (const struct tukey_hinges *,
 
 void box_whisker_whiskers (const struct box_whisker *bw, double whiskers[2]);
 
-void box_whisker_hinges (const struct box_whisker *bw, double hinges[2]);
+void box_whisker_hinges (const struct box_whisker *bw, double hinges[3]);
 
 const struct ll_list * box_whisker_outliers (const struct box_whisker *bw);
 
