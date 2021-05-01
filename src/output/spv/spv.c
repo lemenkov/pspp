@@ -839,7 +839,6 @@ spv_read (const char *filename, struct output_item **outp,
   if (psp)
     *psp = NULL;
 
-  struct spv_reader *spv = xzalloc (sizeof *spv);
   struct zip_reader *zip;
   char *error = zip_reader_create (filename, &zip);
   if (error)
