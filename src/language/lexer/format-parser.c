@@ -16,13 +16,14 @@
 
 #include <config.h>
 
+#include "language/lexer/format-parser.h"
+
 #include <ctype.h>
 #include <stdint.h>
 #include <stdlib.h>
 
 #include "data/format.h"
 #include "data/variable.h"
-#include "language/lexer/format-parser.h"
 #include "language/lexer/lexer.h"
 #include "libpspp/message.h"
 #include "libpspp/misc.h"

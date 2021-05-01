@@ -19,9 +19,12 @@
 
 #include <stdbool.h>
 
+#include "data/format.h"
+
 struct lexer;
 
-bool parse_abstract_format_specifier (struct lexer *, char *type,
+bool parse_abstract_format_specifier (struct lexer *,
+                                      char type[FMT_TYPE_LEN_MAX + 1],
                                       uint16_t *width, uint8_t *decimals);
 
 enum fmt_type ;
