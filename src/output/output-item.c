@@ -164,7 +164,7 @@ output_item_unshare (struct output_item *old)
         = old->group.n_children;
 
       for (size_t i = 0; i < new->group.n_children; i++)
-        output_item_ref (new->group.children[i]);
+        new->group.children[i] = output_item_ref (new->group.children[i]);
       break;
 
     case OUTPUT_ITEM_IMAGE:
