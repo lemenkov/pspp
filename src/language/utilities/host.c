@@ -262,6 +262,7 @@ run_command (const char *command, struct timespec timeout)
         end[-1] = '\0';
 
       output_log ("%s", output);
+      free (output);
     }
   free (locale_output);
 
