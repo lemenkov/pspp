@@ -213,6 +213,7 @@ select_matches (const struct output_item **items,
       char *subtype = output_item_get_subtype (item);
       bool match_subtype = match (subtype,
                                   &c->include.subtypes, &c->exclude.subtypes);
+      free (subtype);
       if (!match_subtype)
         continue;
 
