@@ -44,6 +44,7 @@ struct output_view_item
     struct output_item *item;
     GtkWidget *drawing_area;
     int width, height;
+    int nesting_depth;
   };
 
 struct psppire_output_view
@@ -390,9 +391,13 @@ rerender (struct psppire_output_view *view)
 static bool
 init_output_view_item (struct output_view_item *view_item,
                        struct psppire_output_view *view,
-                       const struct output_item *item)
+                       const struct output_item *item,
+                       int nesting_depth)
 {
-  *view_item = (struct output_view_item) { .item = output_item_ref (item) };
+  *view_item = (struct output_view_item) {
+    .item = output_item_ref (item),
+    .nesting_depth = nesting_depth
+  };
 
   GdkWindow *win = gtk_widget_get_window (GTK_WIDGET (view->output));
   if (win && item->type != OUTPUT_ITEM_GROUP)
@@ -446,7 +451,8 @@ psppire_output_view_put__ (struct psppire_output_view *view,
     view->items = x2nrealloc (view->items, &view->allocated_items,
                               sizeof *view->items);
   struct output_view_item *view_item = &view->items[view->n_items];
-  if (!init_output_view_item (view_item, view, item))
+  if (!init_output_view_item (view_item, view, item,
+                              gtk_tree_path_get_depth (parent_path)))
     return;
   view->n_items++;
 
@@ -883,7 +889,8 @@ psppire_output_view_export (struct psppire_output_view *view,
       size_t i;
 
       for (i = 0; i < view->n_items; i++)
-        driver->class->submit (driver, view->items[i].item);
+        if (view->items[i].nesting_depth == 0)
+          driver->class->submit (driver, view->items[i].item);
       output_driver_destroy (driver);
     }
 }
@@ -959,29 +966,32 @@ paginate (GtkPrintOperation *operation,
          complete.  Don't let that screw up printing. */
       return TRUE;
     }
-  else if (view->print_item < view->n_items)
-    {
-      xr_pager_add_item (view->pager, view->items[view->print_item++].item);
-      while (xr_pager_needs_new_page (view->pager))
-	{
-	  xr_pager_add_page (view->pager,
-                             get_cairo_context_from_print_context (context));
-	  view->print_n_pages ++;
-	}
-      return FALSE;
-    }
-  else
-    {
-      gtk_print_operation_set_n_pages (operation, MAX (1, view->print_n_pages));
 
-      /* Re-create the driver to do the real printing. */
-      xr_pager_destroy (view->pager);
-      view->pager = xr_pager_create (view->page_style, view->fsm_style);
-      view->print_item = 0;
-      view->paginated = TRUE;
-
-      return TRUE;
+  while (view->print_item < view->n_items)
+    {
+      const struct output_view_item *item = &view->items[view->print_item++];
+      if (item->nesting_depth == 0)
+        {
+          xr_pager_add_item (view->pager, item->item);
+          while (xr_pager_needs_new_page (view->pager))
+            {
+              xr_pager_add_page (view->pager,
+                                 get_cairo_context_from_print_context (context));
+              view->print_n_pages ++;
+            }
+          return FALSE;
+        }
     }
+
+  gtk_print_operation_set_n_pages (operation, MAX (1, view->print_n_pages));
+
+  /* Re-create the driver to do the real printing. */
+  xr_pager_destroy (view->pager);
+  view->pager = xr_pager_create (view->page_style, view->fsm_style);
+  view->print_item = 0;
+  view->paginated = TRUE;
+
+  return TRUE;
 }
 
 static void
@@ -1016,7 +1026,11 @@ draw_page (GtkPrintOperation *operation,
                      get_cairo_context_from_print_context (context));
   while (!xr_pager_needs_new_page (view->pager)
          && view->print_item < view->n_items)
-    xr_pager_add_item (view->pager, view->items [view->print_item++].item);
+    {
+      const struct output_view_item *item = &view->items [view->print_item++];
+      if (item->nesting_depth == 0)
+        xr_pager_add_item (view->pager, item->item);
+    }
 }
 
 
