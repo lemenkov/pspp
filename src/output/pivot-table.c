@@ -2968,5 +2968,6 @@ pivot_value_ex_destroy (struct pivot_value_ex *ex)
       for (size_t i = 0; i < ex->n_subscripts; i++)
         free (ex->subscripts[i]);
       free (ex->subscripts);
+      free (ex);
     }
 }
