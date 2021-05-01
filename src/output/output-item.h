@@ -109,7 +109,7 @@ struct output_item
     char *cached_label;
   };
 
-struct output_item *output_item_ref (const struct output_item *);
+struct output_item *output_item_ref (const struct output_item *) WARN_UNUSED_RESULT;
 void output_item_unref (struct output_item *);
 bool output_item_is_shared (const struct output_item *);
 struct output_item *output_item_unshare (struct output_item *);
