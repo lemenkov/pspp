@@ -1156,7 +1156,7 @@ fmt_affix_clone (const struct fmt_affix *old)
 static void
 fmt_affix_free (struct fmt_affix *affix)
 {
-  if (affix->s[0])
+  if (affix->s)
     free (affix->s);
 }
 
