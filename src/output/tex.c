@@ -175,7 +175,11 @@ post_process_tokens (FILE *file, struct ll_list *list)
               if (nt->cat == CAT_SPACE || nt->cat == CAT_EOL)
                 break;
               if (prev_x && (prev_x->cat == CAT_COMMENT) && (nt->cat != CAT_COMMENT))
-                break;
+                {
+                  ds_destroy (&prev_x->str);
+                  free (prev_x);
+                  break;
+                }
               word_len += ds_length (&nt->str);
               prev_x = nt;
             }
@@ -184,6 +188,11 @@ post_process_tokens (FILE *file, struct ll_list *list)
             {
               fputs ("\n", file);
               line_len = 0;
+              if (tt)
+                {
+                  ds_destroy (&tt->str);
+                  free (tt);
+                }
               continue;
             }
         }
