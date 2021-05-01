@@ -86,6 +86,7 @@ output_item_unref (struct output_item *item)
             case OUTPUT_ITEM_GROUP:
               for (size_t i = 0; i < item->group.n_children; i++)
                 output_item_unref (item->group.children[i]);
+              free (item->group.children);
               break;
 
             case OUTPUT_ITEM_IMAGE:
