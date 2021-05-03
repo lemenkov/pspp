@@ -23,19 +23,12 @@
 
 #include "data/identifier.h"
 #include "data/variable.h"
+#include "language/lexer/segment.h"
 #include "libpspp/cast.h"
 #include "libpspp/compiler.h"
 #include "libpspp/prompt.h"
 
 struct lexer;
-
-/* The syntax mode for which a syntax file is intended. */
-enum lex_syntax_mode
-  {
-    LEX_SYNTAX_AUTO,            /* Try to guess intent. */
-    LEX_SYNTAX_INTERACTIVE,     /* Interactive mode. */
-    LEX_SYNTAX_BATCH            /* Batch mode. */
-  };
 
 /* Handling of errors. */
 enum lex_error_mode
@@ -52,7 +45,7 @@ enum lex_error_mode
 struct lex_reader
   {
     const struct lex_reader_class *class;
-    enum lex_syntax_mode syntax;
+    enum segmenter_mode syntax;
     enum lex_error_mode error;
     char *encoding;
     char *file_name;            /* NULL if not associated with a file. */
@@ -86,7 +79,7 @@ void lex_reader_set_file_name (struct lex_reader *, const char *file_name);
 /* Creating various kinds of lex_readers. */
 struct lex_reader *lex_reader_for_file (const char *file_name,
                                         const char *encoding,
-                                        enum lex_syntax_mode syntax,
+                                        enum segmenter_mode syntax,
                                         enum lex_error_mode error);
 struct lex_reader *lex_reader_for_string (const char *, const char *encoding);
 struct lex_reader *lex_reader_for_format (const char *, const char *, ...)
@@ -184,7 +177,7 @@ void lex_next_error_valist (struct lexer *lexer, int n0, int n1,
   PRINTF_FORMAT (4, 0);
 
 /* Error handling. */
-enum lex_syntax_mode lex_get_syntax_mode (const struct lexer *);
+enum segmenter_mode lex_get_syntax_mode (const struct lexer *);
 enum lex_error_mode lex_get_error_mode (const struct lexer *);
 void lex_discard_rest_of_command (struct lexer *);
 void lex_interactive_reset (struct lexer *);

@@ -53,7 +53,7 @@ struct _PsppireSyntaxWindow
   gchar *encoding;              /* File's encoding. */
   GtkWidget *sb;
   guint text_context;
-  enum lex_syntax_mode syntax_mode;
+  enum segmenter_mode syntax_mode;
 
   GtkPrintSettings *print_settings;
   GtkSourcePrintCompositor *compositor;

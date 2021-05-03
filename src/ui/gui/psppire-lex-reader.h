@@ -23,6 +23,6 @@
 struct lex_reader *lex_reader_for_gtk_text_buffer (
   GtkTextBuffer *buffer,
   GtkTextIter start, GtkTextIter stop,
-  enum lex_syntax_mode);
+  enum segmenter_mode);
 
 #endif

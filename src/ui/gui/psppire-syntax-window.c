@@ -527,11 +527,11 @@ on_syntax (GAction *action, GVariant *param, PsppireSyntaxWindow *sw)
 
   const gchar *what = g_variant_get_string (new_state, NULL);
   if (0 == g_strcmp0 (what, "auto"))
-    sw->syntax_mode = LEX_SYNTAX_AUTO;
+    sw->syntax_mode = SEG_MODE_AUTO;
   else if (0 == g_strcmp0 (what, "interactive"))
-    sw->syntax_mode = LEX_SYNTAX_INTERACTIVE;
+    sw->syntax_mode = SEG_MODE_INTERACTIVE;
   else if (0 == g_strcmp0 (what, "batch"))
-    sw->syntax_mode = LEX_SYNTAX_BATCH;
+    sw->syntax_mode = SEG_MODE_BATCH;
   else
     g_warn_if_reached ();
 }
@@ -783,7 +783,7 @@ psppire_syntax_window_init (PsppireSyntaxWindow *window)
 		NULL);
 
   window->encoding = NULL;
-  window->syntax_mode = LEX_SYNTAX_AUTO;
+  window->syntax_mode = SEG_MODE_AUTO;
 
   window->cliptext = NULL;
   window->dispose_has_run = FALSE;

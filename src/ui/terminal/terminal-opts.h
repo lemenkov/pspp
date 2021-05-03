@@ -26,7 +26,7 @@ struct lexer;
 struct terminal_opts;
 
 struct terminal_opts *terminal_opts_init (struct argv_parser *,
-                                          enum lex_syntax_mode *,
+                                          enum segmenter_mode *,
                                           bool *process_statrc,
                                           char **syntax_encoding);
 void terminal_opts_done (struct terminal_opts *, int argc, char *argv[]);

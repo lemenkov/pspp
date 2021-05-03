@@ -62,7 +62,7 @@
 static struct session *the_session;
 
 static void add_syntax_reader (struct lexer *, const char *file_name,
-                               const char *encoding, enum lex_syntax_mode);
+                               const char *encoding, enum segmenter_mode);
 static void bug_handler(int sig);
 static void fpu_init (void);
 static void output_msg (const struct msg *, void *);
@@ -73,7 +73,7 @@ main (int argc, char **argv)
 {
   struct terminal_opts *terminal_opts;
   struct argv_parser *parser;
-  enum lex_syntax_mode syntax_mode;
+  enum segmenter_mode syntax_mode;
   char *syntax_encoding;
   bool process_statrc;
   struct lexer *lexer;
@@ -118,7 +118,7 @@ main (int argc, char **argv)
       char *rc = include_path_search ("rc");
       if (rc != NULL)
         {
-          add_syntax_reader (lexer, rc, "Auto", LEX_SYNTAX_AUTO);
+          add_syntax_reader (lexer, rc, "Auto", SEG_MODE_AUTO);
           free (rc);
         }
     }
@@ -236,7 +236,7 @@ output_msg (const struct msg *m_, void *lexer_)
 
 static void
 add_syntax_reader (struct lexer *lexer, const char *file_name,
-                   const char *encoding, enum lex_syntax_mode syntax_mode)
+                   const char *encoding, enum segmenter_mode syntax_mode)
 {
   struct lex_reader *reader;
 

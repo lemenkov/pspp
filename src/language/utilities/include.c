@@ -46,7 +46,7 @@ enum variant
 static int
 do_insert (struct lexer *lexer, struct dataset *ds, enum variant variant)
 {
-  enum lex_syntax_mode syntax_mode;
+  enum segmenter_mode syntax_mode;
   enum lex_error_mode error_mode;
   char *relative_name;
   char *filename;
@@ -76,7 +76,7 @@ do_insert (struct lexer *lexer, struct dataset *ds, enum variant variant)
     }
   lex_get (lexer);
 
-  syntax_mode = LEX_SYNTAX_INTERACTIVE;
+  syntax_mode = SEG_MODE_INTERACTIVE;
   error_mode = LEX_ERROR_CONTINUE;
   cd = false;
   status = CMD_FAILURE;
@@ -98,11 +98,11 @@ do_insert (struct lexer *lexer, struct dataset *ds, enum variant variant)
 	{
 	  lex_match (lexer, T_EQUALS);
 	  if (lex_match_id (lexer, "INTERACTIVE"))
-	    syntax_mode = LEX_SYNTAX_INTERACTIVE;
+	    syntax_mode = SEG_MODE_INTERACTIVE;
 	  else if (lex_match_id (lexer, "BATCH"))
-	    syntax_mode = LEX_SYNTAX_BATCH;
+	    syntax_mode = SEG_MODE_BATCH;
 	  else if (lex_match_id (lexer, "AUTO"))
-	    syntax_mode = LEX_SYNTAX_AUTO;
+	    syntax_mode = SEG_MODE_AUTO;
 	  else
 	    {
 	      lex_error_expecting (lexer, "BATCH", "INTERACTIVE", "AUTO");

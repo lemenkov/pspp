@@ -68,7 +68,7 @@ main (int argc, char **argv)
   settings_init ();
 
   struct lex_reader *reader = lex_reader_for_file (input_file_name, NULL,
-                                                   LEX_SYNTAX_AUTO,
+                                                   SEG_MODE_AUTO,
                                                    LEX_ERROR_CONTINUE);
   if (!reader)
     exit (1);

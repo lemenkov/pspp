@@ -56,7 +56,7 @@ struct terminal_opts
     bool has_output_driver;
     bool has_terminal_driver;
     bool has_error_file;
-    enum lex_syntax_mode *syntax_mode;
+    enum segmenter_mode *syntax_mode;
     bool *process_statrc;
     char **syntax_encoding;
     char *table_look;
@@ -224,11 +224,11 @@ terminal_option_callback (int id, void *to_)
       break;
 
     case OPT_BATCH:
-      *to->syntax_mode = LEX_SYNTAX_BATCH;
+      *to->syntax_mode = SEG_MODE_BATCH;
       break;
 
     case OPT_INTERACTIVE:
-      *to->syntax_mode = LEX_SYNTAX_INTERACTIVE;
+      *to->syntax_mode = SEG_MODE_INTERACTIVE;
       break;
 
     case OPT_SYNTAX_ENCODING:
@@ -260,12 +260,12 @@ terminal_option_callback (int id, void *to_)
 
 struct terminal_opts *
 terminal_opts_init (struct argv_parser *ap,
-                    enum lex_syntax_mode *syntax_mode, bool *process_statrc,
+                    enum segmenter_mode *syntax_mode, bool *process_statrc,
                     char **syntax_encoding)
 {
   struct terminal_opts *to;
 
-  *syntax_mode = LEX_SYNTAX_AUTO;
+  *syntax_mode = SEG_MODE_AUTO;
   *process_statrc = true;
   *syntax_encoding = "Auto";
 

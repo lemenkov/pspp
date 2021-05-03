@@ -252,8 +252,6 @@ do_parse_commands (struct substring s, enum segmenter_mode mode,
 static bool
 parse_commands (struct lexer *lexer, struct hmap *dummies)
 {
-  enum lex_syntax_mode syntax_mode;
-  enum segmenter_mode mode;
   struct string *outputs;
   struct string input;
   size_t n_values;
@@ -281,16 +279,8 @@ parse_commands (struct lexer *lexer, struct hmap *dummies)
   for (i = 0; i < n_values; i++)
     ds_init_empty (&outputs[i]);
 
-  syntax_mode = lex_get_syntax_mode (lexer);
-  if (syntax_mode == LEX_SYNTAX_AUTO)
-    mode = SEG_MODE_AUTO;
-  else if (syntax_mode == LEX_SYNTAX_INTERACTIVE)
-    mode = SEG_MODE_INTERACTIVE;
-  else if (syntax_mode == LEX_SYNTAX_BATCH)
-    mode = SEG_MODE_BATCH;
-  else
-    NOT_REACHED ();
-  do_parse_commands (ds_ss (&input), mode, dummies, outputs, n_values);
+  do_parse_commands (ds_ss (&input), lex_get_syntax_mode (lexer),
+                     dummies, outputs, n_values);
 
   ds_destroy (&input);
 

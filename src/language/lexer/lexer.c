@@ -127,7 +127,7 @@ lex_reader_init (struct lex_reader *reader,
                  const struct lex_reader_class *class)
 {
   reader->class = class;
-  reader->syntax = LEX_SYNTAX_AUTO;
+  reader->syntax = SEG_MODE_AUTO;
   reader->error = LEX_ERROR_CONTINUE;
   reader->file_name = NULL;
   reader->encoding = NULL;
@@ -1162,17 +1162,17 @@ lex_get_encoding (const struct lexer *lexer)
 
 
 /* Returns the syntax mode for the syntax file from which the current drawn is
-   drawn.  Returns LEX_SYNTAX_AUTO for a T_STOP token or if the command's
-   source does not have line numbers.
+   drawn.  Returns SEG_MODE_AUTO for a T_STOP token or if the command's source
+   does not have line numbers.
 
    There is no version of this function that takes an N argument because
    lookahead only works to the end of a command and any given command is always
    within a single syntax file. */
-enum lex_syntax_mode
+enum segmenter_mode
 lex_get_syntax_mode (const struct lexer *lexer)
 {
   struct lex_source *src = lex_source__ (lexer);
-  return src == NULL ? LEX_SYNTAX_AUTO : src->reader->syntax;
+  return src == NULL ? SEG_MODE_AUTO : src->reader->syntax;
 }
 
 /* Returns the error mode for the syntax file from which the current drawn is
@@ -1638,21 +1638,10 @@ static struct lex_source *
 lex_source_create (struct lex_reader *reader)
 {
   struct lex_source *src;
-  enum segmenter_mode mode;
 
   src = xzalloc (sizeof *src);
   src->reader = reader;
-
-  if (reader->syntax == LEX_SYNTAX_AUTO)
-    mode = SEG_MODE_AUTO;
-  else if (reader->syntax == LEX_SYNTAX_INTERACTIVE)
-    mode = SEG_MODE_INTERACTIVE;
-  else if (reader->syntax == LEX_SYNTAX_BATCH)
-    mode = SEG_MODE_BATCH;
-  else
-    NOT_REACHED ();
-  segmenter_init (&src->segmenter, mode);
-
+  segmenter_init (&src->segmenter, reader->syntax);
   src->tokens = deque_init (&src->deque, 4, sizeof *src->tokens);
 
   lex_source_push_endcmd__ (src);
@@ -1694,7 +1683,7 @@ static struct lex_reader_class lex_file_reader_class;
    Returns a null pointer if FILE_NAME cannot be opened. */
 struct lex_reader *
 lex_reader_for_file (const char *file_name, const char *encoding,
-                     enum lex_syntax_mode syntax,
+                     enum segmenter_mode syntax,
                      enum lex_error_mode error)
 {
   struct lex_file_reader *r;
@@ -1782,7 +1771,7 @@ lex_reader_for_substring_nocopy (struct substring s, const char *encoding)
 
   r = xmalloc (sizeof *r);
   lex_reader_init (&r->reader, &lex_string_reader_class);
-  r->reader.syntax = LEX_SYNTAX_AUTO;
+  r->reader.syntax = SEG_MODE_AUTO;
   r->reader.encoding = xstrdup_if_nonnull (encoding);
   r->s = s;
   r->offset = 0;
