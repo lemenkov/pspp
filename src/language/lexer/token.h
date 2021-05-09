@@ -36,7 +36,7 @@ struct token
         { TYPE, NUMBER, SS_LITERAL_INITIALIZER (STRING) }
 
 void token_init (struct token *);
-void token_destroy (struct token *);
+void token_uninit (struct token *);
 
 char *token_to_string (const struct token *);
 

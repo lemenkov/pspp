@@ -203,13 +203,13 @@ lex_push_token__ (struct lex_source *src)
 static void
 lex_source_pop__ (struct lex_source *src)
 {
-  token_destroy (&src->tokens[deque_pop_back (&src->deque)].token);
+  token_uninit (&src->tokens[deque_pop_back (&src->deque)].token);
 }
 
 static void
 lex_source_pop_front (struct lex_source *src)
 {
-  token_destroy (&src->tokens[deque_pop_front (&src->deque)].token);
+  token_uninit (&src->tokens[deque_pop_front (&src->deque)].token);
 }
 
 /* Advances LEXER to the next token, consuming the current token. */
@@ -989,7 +989,7 @@ lex_match_phrase (struct lexer *lexer, const char *s)
     if (token.type != SCAN_SKIP)
       {
         bool match = lex_tokens_match (lex_next (lexer, i++), &token);
-        token_destroy (&token);
+        token_uninit (&token);
         if (!match)
           return false;
       }

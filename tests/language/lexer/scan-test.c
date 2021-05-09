@@ -94,7 +94,7 @@ main (int argc, char *argv[])
         printf (" \"%.*s\"", (int) token.string.length, token.string.string);
       printf ("\n");
 
-      token_destroy (&token);
+      token_uninit (&token);
     }
   while (more);
 

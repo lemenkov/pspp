@@ -42,7 +42,7 @@ token_init (struct token *token)
 
 /* Frees the string that TOKEN contains. */
 void
-token_destroy (struct token *token)
+token_uninit (struct token *token)
 {
   if (token != NULL)
     ss_dealloc (&token->string);
