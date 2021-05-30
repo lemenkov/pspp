@@ -16,7 +16,8 @@ dnl along with this program.  If not, see <http://www.gnu.org/licenses/>.
 dnl
 AT_BANNER([syntax segmentation])
 m4_define([PSPP_CHECK_SEGMENT],
-  [for strip in "" "-s"; do
+  [AT_CAPTURE_FILE([input])
+   for strip in "" "-s"; do
      case $strip in # (
         '') sed 's/^-//' < expout-base > expout ;; # (
 	-s) sed '/^-/d' < expout-base > expout ;;

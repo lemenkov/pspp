@@ -70,6 +70,8 @@ main (int argc, char *argv[])
   set_program_name (argv[0]);
   file_name = parse_options (argc, argv);
 
+  setvbuf (stdout, NULL, _IONBF, 0);
+
   /* Read from stdin into 'input'.  Ensure that 'input' ends in a new-line
      followed by a null byte. */
   input = (!strcmp (file_name, "-")
@@ -157,12 +159,15 @@ check_segmentation (const char *input, size_t length, bool print_segments)
 
       if (type == SEG_NEWLINE)
         {
-          assert ((n == 1 && input[offset] == '\n')
-                  || (n == 2
-                      && input[offset] == '\r' && input[offset + 1] == '\n'));
+          if (n == 1 ? input[offset] != '\n'
+              : n == 2 ? input[offset] != '\r' || input[offset + 1] != '\n'
+              : false)
+            error (EXIT_FAILURE, 0, "NEWLINE segment at offset %zu contains "
+                   "non-newline content \"%.*s\"", offset, n, &input[offset]);
         }
-      else
-        assert (memchr (&input[offset], '\n', n) == NULL);
+      else if (memchr (&input[offset], '\n', n))
+        error (EXIT_FAILURE, 0, "%s segment \"%.*s\" contains new-line",
+               segment_type_to_string (type), n, &input[offset]);
 
       if (!print_segments)
         {
@@ -274,6 +279,7 @@ check_segmentation (const char *input, size_t length, bool print_segments)
           prompt = segmenter_get_prompt (&s);
           printf (" (%s)\n", prompt_style_to_string (prompt));
         }
+      fflush (stdout);
     }
   while (type != SEG_END);
 
