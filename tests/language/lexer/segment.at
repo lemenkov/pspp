@@ -1066,11 +1066,79 @@ identifier      define    space
 macro_id        !macro1
 punct           (
 punct           )
+macro_body
 newline         \n (DEFINE)
 
 macro_body      var1_var2_var3
 newline         \n (DEFINE)
 
+macro_id        !enddefine
+end_command     .
+-newline         \n (first)
+-
+end
+])
+PSPP_CHECK_SEGMENT([-i])
+AT_CLEANUP
+
+AT_SETUP([DEFINE command - no newline after parentheses])
+AT_KEYWORDS([segment])
+AT_DATA([input], [dnl
+define !macro1() var1 var2 var3
+!enddefine.
+])
+AT_DATA([expout-base], [dnl
+identifier      define    space
+macro_id        !macro1
+punct           (
+punct           )
+macro_body      _var1_var2_var3
+newline         \n (DEFINE)
+
+macro_id        !enddefine
+end_command     .
+-newline         \n (first)
+-
+end
+])
+PSPP_CHECK_SEGMENT([-i])
+AT_CLEANUP
+
+AT_SETUP([DEFINE command - no newline before !ENDDEFINE])
+AT_KEYWORDS([segment ENDDEFINE])
+AT_DATA([input], [dnl
+define !macro1()
+var1 var2 var3!enddefine.
+])
+AT_DATA([expout-base], [dnl
+identifier      define    space
+macro_id        !macro1
+punct           (
+punct           )
+macro_body
+newline         \n (DEFINE)
+
+macro_body      var1_var2_var3
+macro_id        !enddefine
+end_command     .
+-newline         \n (first)
+-
+end
+])
+PSPP_CHECK_SEGMENT([-i])
+AT_CLEANUP
+
+AT_SETUP([DEFINE command - all on one line])
+AT_KEYWORDS([segment])
+AT_DATA([input], [dnl
+define !macro1()var1 var2 var3!enddefine.
+])
+AT_DATA([expout-base], [dnl
+identifier      define    space
+macro_id        !macro1
+punct           (
+punct           )
+macro_body      var1_var2_var3
 macro_id        !enddefine
 end_command     .
 -newline         \n (first)
@@ -1091,6 +1159,38 @@ identifier      define    space
 macro_id        !macro1
 punct           (
 punct           )
+macro_body
+newline         \n (DEFINE)
+
+macro_id        !enddefine
+end_command     .
+-newline         \n (first)
+-
+end
+])
+PSPP_CHECK_SEGMENT([-i])
+AT_CLEANUP
+
+AT_SETUP([DEFINE command - blank lines])
+AT_KEYWORDS([segment])
+AT_DATA([input], [dnl
+define !macro1()
+
+
+!enddefine.
+])
+AT_DATA([expout-base], [dnl
+identifier      define    space
+macro_id        !macro1
+punct           (
+punct           )
+macro_body
+newline         \n (DEFINE)
+
+macro_body
+newline         \n (DEFINE)
+
+macro_body
 newline         \n (DEFINE)
 
 macro_id        !enddefine
@@ -1124,6 +1224,7 @@ identifier      c
 punct           (
 punct           )
 punct           )
+macro_body
 newline         \n (DEFINE)
 
 macro_id        !enddefine
@@ -1172,6 +1273,7 @@ punct           )
 newline         \n (later)
 
 punct           )
+macro_body
 newline         \n (DEFINE)
 
 macro_id        !enddefine
@@ -1207,6 +1309,7 @@ identifier      z
 newline         \n (later)
 
 punct           )
+macro_body
 newline         \n (DEFINE)
 
 macro_body      content_1
@@ -1348,6 +1451,7 @@ identifier      define    space
 macro_id        !macro1
 punct           (
 punct           )
+macro_body
 newline         \n (DEFINE)
 
 macro_body      content_line_1

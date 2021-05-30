@@ -894,9 +894,75 @@ SKIP
 MACRO_ID "!macro1"
 LPAREN
 RPAREN
+STRING ""
 SKIP
 STRING "var1 var2 var3"
 SKIP
+MACRO_ID "!enddefine"
+ENDCMD
+-SKIP
+STOP
+])
+PSPP_CHECK_SCAN([-i])
+AT_CLEANUP
+
+AT_SETUP([DEFINE command - no newline after parentheses])
+AT_KEYWORDS([scan])
+AT_DATA([input], [dnl
+define !macro1() var1 var2 var3
+!enddefine.
+])
+AT_DATA([expout-base], [dnl
+ID "define"
+SKIP
+MACRO_ID "!macro1"
+LPAREN
+RPAREN
+STRING " var1 var2 var3"
+SKIP
+MACRO_ID "!enddefine"
+ENDCMD
+-SKIP
+STOP
+])
+PSPP_CHECK_SCAN([-i])
+AT_CLEANUP
+
+AT_SETUP([DEFINE command - no newline before !ENDDEFINE])
+AT_KEYWORDS([scan ENDDEFINE])
+AT_DATA([input], [dnl
+define !macro1()
+var1 var2 var3!enddefine.
+])
+AT_DATA([expout-base], [dnl
+ID "define"
+SKIP
+MACRO_ID "!macro1"
+LPAREN
+RPAREN
+STRING ""
+SKIP
+STRING "var1 var2 var3"
+MACRO_ID "!enddefine"
+ENDCMD
+-SKIP
+STOP
+])
+PSPP_CHECK_SCAN([-i])
+AT_CLEANUP
+
+AT_SETUP([DEFINE command - all on one line])
+AT_KEYWORDS([scan])
+AT_DATA([input], [dnl
+define !macro1()var1 var2 var3!enddefine.
+])
+AT_DATA([expout-base], [dnl
+ID "define"
+SKIP
+MACRO_ID "!macro1"
+LPAREN
+RPAREN
+STRING "var1 var2 var3"
 MACRO_ID "!enddefine"
 ENDCMD
 -SKIP
@@ -917,6 +983,7 @@ SKIP
 MACRO_ID "!macro1"
 LPAREN
 RPAREN
+STRING ""
 SKIP
 MACRO_ID "!enddefine"
 ENDCMD
@@ -951,6 +1018,7 @@ ID "c"
 LPAREN
 RPAREN
 RPAREN
+STRING ""
 SKIP
 MACRO_ID "!enddefine"
 ENDCMD
@@ -995,6 +1063,7 @@ LPAREN
 RPAREN
 SKIP
 RPAREN
+STRING ""
 SKIP
 MACRO_ID "!enddefine"
 ENDCMD
@@ -1027,6 +1096,7 @@ COMMA
 ID "z"
 SKIP
 RPAREN
+STRING ""
 SKIP
 STRING "content 1"
 SKIP
@@ -1171,6 +1241,7 @@ SKIP
 MACRO_ID "!macro1"
 LPAREN
 RPAREN
+STRING ""
 SKIP
 STRING "content line 1"
 SKIP

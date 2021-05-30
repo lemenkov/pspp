@@ -46,7 +46,6 @@ enum segmenter_state
     S_DEFINE_2,
     S_DEFINE_3,
     S_DEFINE_4,
-    S_DEFINE_5,
     S_BEGIN_DATA_1,
     S_BEGIN_DATA_2,
     S_BEGIN_DATA_3,
@@ -217,6 +216,22 @@ at_end_of_line (const char *input, size_t n, bool eof, int ofs)
     return -1;
 
   return is_end_of_line (input, n, eof, ofs);
+}
+
+static bool
+is_all_spaces (const char *input_, size_t n)
+{
+  const uint8_t *input = CHAR_CAST (const uint8_t *, input_);
+
+  int mblen;
+  for (int ofs = 0; ofs < n; ofs += mblen)
+    {
+      ucs4_t uc;
+      mblen = u8_mbtouc (&uc, input, n);
+      if (!lex_uc_is_space (uc))
+        return false;
+    }
+  return true;
 }
 
 static int
@@ -1435,13 +1450,11 @@ segmenter_parse_do_repeat_3__ (struct segmenter *s,
   - "(" followed by a sequence of tokens possibly including balanced parentheses
     up to a final ")".
 
-  - A newline.
-
-  - A sequence of lines that don't start with "!ENDDEFINE", one string per line,
-    each ending in a newline.
-
-  - "!ENDDEFINE".
-
+  - A sequence of any number of lines, one string per line, ending with
+    "!ENDDEFINE".  The first line is usually blank (that is, a newline follows
+    the "(").  The last line usually just has "!ENDDEFINE." on it, but it can
+    start with other tokens.  The whole DEFINE...!ENDDEFINE can be on a single
+    line, even.
    */
 static int
 segmenter_parse_define_1__ (struct segmenter *s,
@@ -1506,49 +1519,71 @@ segmenter_parse_define_2__ (struct segmenter *s,
   return ofs;
 }
 
+static size_t
+find_enddefine (struct substring input)
+{
+  size_t n = input.length;
+  const struct substring enddefine = ss_cstr ("!ENDDEFINE");
+  for (size_t i = 0; i + enddefine.length <= n; i++)
+    if (input.string[i] == '!'
+        && ss_equals_case (ss_substr (input, i, enddefine.length), enddefine))
+      return i;
+  return SIZE_MAX;
+}
+
+/* We are in the body of a macro definition, looking for additional lines of
+   the body or !ENDDEFINE. */
 static int
 segmenter_parse_define_3__ (struct segmenter *s,
                             const char *input, size_t n, bool eof,
                             enum segment_type *type)
 {
-  int ofs = segmenter_subparse (s, input, n, eof, type);
+  /* Gather a whole line. */
+  const char *newline = memchr (input, '\n', n);
+  int ofs = (newline ? newline - input - (newline > input && newline[-1] == '\r')
+             : eof ? n
+             : -1);
   if (ofs < 0)
     return -1;
 
-  if (*type == SEG_END_COMMAND)
+  /* Does the line contain !ENDDEFINE? */
+  size_t end = find_enddefine (ss_buffer (input, ofs));
+  if (end == SIZE_MAX)
     {
-      /* The DEFINE command is malformed because there was a command terminator
-         before the first line of the body.  Transition back to general
-         parsing. */
-      s->state = S_GENERAL;
+      /* No !ENDDEFINE.  We have a full line of macro body.
+
+         The line might be blank, whether completely empty or just spaces and
+         comments.  That's OK: we need to report blank lines because they can
+         have significance. */
+      *type = SEG_MACRO_BODY;
+      s->state = S_DEFINE_4;
       return ofs;
     }
-  else if (*type == SEG_NEWLINE)
-    s->state = S_DEFINE_4;
-
-  return ofs;
-}
-
-static bool
-is_enddefine (const char *input, size_t n)
-{
-  int ofs = skip_spaces_and_comments (input, n, true, 0);
-  assert (ofs >= 0);
-
-  const struct substring enddefine = ss_cstr ("!ENDDEFINE");
-  if (n - ofs < enddefine.length)
-    return false;
-
-  if (!ss_equals_case (ss_buffer (input + ofs, enddefine.length), enddefine))
-    return false;
-
-  if (ofs + enddefine.length >= n)
-    return true;
-
-  const uint8_t *u_input = CHAR_CAST (const uint8_t *, input);
-  ucs4_t uc;
-  u8_mbtouc (&uc, u_input + ofs, n - ofs);
-  return uc == '.' || !lex_uc_is_idn (uc);
+  else
+    {
+      /* Macro ends at the !ENDDEFINE on this line. */
+      s->state = S_GENERAL;
+      s->substate = 0;
+      if (!end)
+        {
+          /* Line starts with !ENDDEFINE. */
+          return segmenter_push (s, input, n, eof, type);
+        }
+      else
+        {
+          if (is_all_spaces (input, end))
+            {
+              /* Line starts with spaces followed by !ENDDEFINE. */
+              *type = SEG_SPACES;
+            }
+          else
+            {
+              /* Line starts with some content followed by !ENDDEFINE. */
+              *type = SEG_MACRO_BODY;
+            }
+          return end;
+        }
+    }
 }
 
 static int
@@ -1556,37 +1591,11 @@ segmenter_parse_define_4__ (struct segmenter *s,
                             const char *input, size_t n, bool eof,
                             enum segment_type *type)
 {
-  int ofs;
-
-  ofs = segmenter_parse_full_line__ (input, n, eof, type);
-  if (ofs < 0)
-    return -1;
-  else if (is_enddefine (input, ofs))
-    {
-      s->state = S_GENERAL;
-      s->substate = SS_START_OF_COMMAND | SS_START_OF_LINE;
-      return segmenter_push (s, input, n, eof, type);
-    }
-  else
-    {
-      *type = SEG_MACRO_BODY;
-      s->state = S_DEFINE_5;
-      return input[ofs - 1] == '\n' ? 0 : ofs;
-    }
-}
-
-static int
-segmenter_parse_define_5__ (struct segmenter *s,
-                            const char *input, size_t n, bool eof,
-                            enum segment_type *type)
-{
-  int ofs;
-
-  ofs = segmenter_parse_newline__ (input, n, eof, type);
+  int ofs = segmenter_parse_newline__ (input, n, eof, type);
   if (ofs < 0)
     return -1;
 
-  s->state = S_DEFINE_4;
+  s->state = S_DEFINE_3;
   return ofs;
 }
 
@@ -1881,8 +1890,6 @@ segmenter_push (struct segmenter *s, const char *input, size_t n, bool eof,
       return segmenter_parse_define_3__ (s, input, n, eof, type);
     case S_DEFINE_4:
       return segmenter_parse_define_4__ (s, input, n, eof, type);
-    case S_DEFINE_5:
-      return segmenter_parse_define_5__ (s, input, n, eof, type);
 
     case S_BEGIN_DATA_1:
       return segmenter_parse_begin_data_1__ (s, input, n, eof, type);
@@ -1938,10 +1945,9 @@ segmenter_get_prompt (const struct segmenter *s)
 
     case S_DEFINE_1:
     case S_DEFINE_2:
-    case S_DEFINE_3:
       return s->substate & SS_START_OF_COMMAND ? PROMPT_FIRST : PROMPT_LATER;
+    case S_DEFINE_3:
     case S_DEFINE_4:
-    case S_DEFINE_5:
       return PROMPT_DEFINE;
 
     case S_BEGIN_DATA_1:
