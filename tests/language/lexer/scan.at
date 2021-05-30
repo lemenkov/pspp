@@ -894,7 +894,7 @@ SKIP
 MACRO_ID "!macro1"
 LPAREN
 RPAREN
-STRING ""
+SKIP
 SKIP
 STRING "var1 var2 var3"
 SKIP
@@ -940,7 +940,7 @@ SKIP
 MACRO_ID "!macro1"
 LPAREN
 RPAREN
-STRING ""
+SKIP
 SKIP
 STRING "var1 var2 var3"
 MACRO_ID "!enddefine"
@@ -983,6 +983,34 @@ SKIP
 MACRO_ID "!macro1"
 LPAREN
 RPAREN
+SKIP
+SKIP
+MACRO_ID "!enddefine"
+ENDCMD
+-SKIP
+STOP
+])
+PSPP_CHECK_SCAN([-i])
+AT_CLEANUP
+
+AT_SETUP([DEFINE command - blank lines])
+AT_KEYWORDS([scan])
+AT_DATA([input], [dnl
+define !macro1()
+
+
+!enddefine.
+])
+AT_DATA([expout-base], [dnl
+ID "define"
+SKIP
+MACRO_ID "!macro1"
+LPAREN
+RPAREN
+SKIP
+SKIP
+STRING ""
+SKIP
 STRING ""
 SKIP
 MACRO_ID "!enddefine"
@@ -1018,7 +1046,7 @@ ID "c"
 LPAREN
 RPAREN
 RPAREN
-STRING ""
+SKIP
 SKIP
 MACRO_ID "!enddefine"
 ENDCMD
@@ -1063,7 +1091,7 @@ LPAREN
 RPAREN
 SKIP
 RPAREN
-STRING ""
+SKIP
 SKIP
 MACRO_ID "!enddefine"
 ENDCMD
@@ -1096,7 +1124,7 @@ COMMA
 ID "z"
 SKIP
 RPAREN
-STRING ""
+SKIP
 SKIP
 STRING "content 1"
 SKIP
@@ -1241,7 +1269,7 @@ SKIP
 MACRO_ID "!macro1"
 LPAREN
 RPAREN
-STRING ""
+SKIP
 SKIP
 STRING "content line 1"
 SKIP

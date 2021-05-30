@@ -1512,7 +1512,10 @@ segmenter_parse_define_2__ (struct segmenter *s,
     {
       s->nest--;
       if (!s->nest)
-        s->state = S_DEFINE_3;
+        {
+          s->state = S_DEFINE_3;
+          s->substate = 0;
+        }
       return ofs;
     }
 
@@ -1554,9 +1557,15 @@ segmenter_parse_define_3__ (struct segmenter *s,
 
          The line might be blank, whether completely empty or just spaces and
          comments.  That's OK: we need to report blank lines because they can
-         have significance. */
-      *type = SEG_MACRO_BODY;
+         have significance.
+
+         However, if the first line of the macro body (the same line as the
+         closing parenthesis in the argument definition) is blank, we just
+         report it as spaces because it's not significant. */
+      *type = (s->substate == 0 && is_all_spaces (input, ofs)
+               ? SEG_SPACES : SEG_MACRO_BODY);
       s->state = S_DEFINE_4;
+      s->substate = 1;
       return ofs;
     }
   else

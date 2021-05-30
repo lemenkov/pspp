@@ -1066,7 +1066,7 @@ identifier      define    space
 macro_id        !macro1
 punct           (
 punct           )
-macro_body
+spaces
 newline         \n (DEFINE)
 
 macro_body      var1_var2_var3
@@ -1115,7 +1115,7 @@ identifier      define    space
 macro_id        !macro1
 punct           (
 punct           )
-macro_body
+spaces
 newline         \n (DEFINE)
 
 macro_body      var1_var2_var3
@@ -1159,7 +1159,7 @@ identifier      define    space
 macro_id        !macro1
 punct           (
 punct           )
-macro_body
+spaces
 newline         \n (DEFINE)
 
 macro_id        !enddefine
@@ -1184,7 +1184,7 @@ identifier      define    space
 macro_id        !macro1
 punct           (
 punct           )
-macro_body
+spaces
 newline         \n (DEFINE)
 
 macro_body
@@ -1224,7 +1224,7 @@ identifier      c
 punct           (
 punct           )
 punct           )
-macro_body
+spaces
 newline         \n (DEFINE)
 
 macro_id        !enddefine
@@ -1273,7 +1273,7 @@ punct           )
 newline         \n (later)
 
 punct           )
-macro_body
+spaces
 newline         \n (DEFINE)
 
 macro_id        !enddefine
@@ -1309,7 +1309,7 @@ identifier      z
 newline         \n (later)
 
 punct           )
-macro_body
+spaces
 newline         \n (DEFINE)
 
 macro_body      content_1
@@ -1451,7 +1451,7 @@ identifier      define    space
 macro_id        !macro1
 punct           (
 punct           )
-macro_body
+spaces
 newline         \n (DEFINE)
 
 macro_body      content_line_1
