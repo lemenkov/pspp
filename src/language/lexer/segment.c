@@ -227,7 +227,7 @@ is_all_spaces (const char *input_, size_t n)
   for (int ofs = 0; ofs < n; ofs += mblen)
     {
       ucs4_t uc;
-      mblen = u8_mbtouc (&uc, input, n);
+      mblen = u8_mbtouc (&uc, input + ofs, n - ofs);
       if (!lex_uc_is_space (uc))
         return false;
     }
