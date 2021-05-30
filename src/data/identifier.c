@@ -46,7 +46,6 @@ token_type_to_name (enum token_type type)
 #define TOKEN_TYPE(TYPE) case T_##TYPE: return #TYPE;
       TOKEN_TYPES
 #undef TOKEN_TYPE
-    case TOKEN_N_TYPES:
     default:
       return "unknown token type";
     }
@@ -144,9 +143,6 @@ token_type_to_string (enum token_type token)
 
     case T_EXP:
       return "**";
-
-    case TOKEN_N_TYPES:
-      NOT_REACHED ();
     }
 
   NOT_REACHED ();

@@ -66,9 +66,12 @@ enum token_type
   {
 #define TOKEN_TYPE(TYPE) T_##TYPE,
     TOKEN_TYPES
-    TOKEN_N_TYPES
 #undef TOKEN_TYPE
   };
+
+#define TOKEN_TYPE(TYPE) + 1
+enum { TOKEN_N_TYPES = TOKEN_TYPES };
+#undef TOKEN_TYPE
 
 const char *token_type_to_name (enum token_type);
 const char *token_type_to_string (enum token_type);
