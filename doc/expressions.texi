@@ -1554,7 +1554,7 @@ subtraction.
 
 @enumerate
 @item
-@code{(  )}
+@code{()}
 @item
 @code{**}
 @item
@@ -1564,7 +1564,11 @@ subtraction.
 @item
 @code{+  -}
 @item
-@code{EQ  GE  GT  LE  LT  NE}
+@code{=  >=  >  <=  <  <>}
 @item
-@code{AND  NOT  OR}
+@code{NOT}
+@item
+@code{AND}
+@item
+@code{OR}
 @end enumerate
