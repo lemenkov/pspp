@@ -491,15 +491,14 @@ lex_integer (const struct lexer *lexer)
 bool
 lex_next_is_number (const struct lexer *lexer, int n)
 {
-  enum token_type next_token = lex_next_token (lexer, n);
-  return next_token == T_POS_NUM || next_token == T_NEG_NUM;
+  return token_is_number (lex_next (lexer, n));
 }
 
 /* Returns true if the token N ahead of the current token is a string. */
 bool
 lex_next_is_string (const struct lexer *lexer, int n)
 {
-  return lex_next_token (lexer, n) == T_STRING;
+  return token_is_string (lex_next (lexer, n));
 }
 
 /* Returns the value of the token N ahead of the current token, which must be a
@@ -507,21 +506,14 @@ lex_next_is_string (const struct lexer *lexer, int n)
 double
 lex_next_number (const struct lexer *lexer, int n)
 {
-  assert (lex_next_is_number (lexer, n));
-  return lex_next_tokval (lexer, n);
+  return token_number (lex_next (lexer, n));
 }
 
 /* Returns true if the token N ahead of the current token is an integer. */
 bool
 lex_next_is_integer (const struct lexer *lexer, int n)
 {
-  double value;
-
-  if (!lex_next_is_number (lexer, n))
-    return false;
-
-  value = lex_next_tokval (lexer, n);
-  return value > LONG_MIN && value <= LONG_MAX && floor (value) == value;
+  return token_is_integer (lex_next (lexer, n));
 }
 
 /* Returns the value of the token N ahead of the current token, which must be
@@ -529,8 +521,7 @@ lex_next_is_integer (const struct lexer *lexer, int n)
 long
 lex_next_integer (const struct lexer *lexer, int n)
 {
-  assert (lex_next_is_integer (lexer, n));
-  return lex_next_tokval (lexer, n);
+  return token_integer (lex_next (lexer, n));
 }
 
 /* Token matching functions. */
@@ -910,8 +901,7 @@ lex_next_token (const struct lexer *lexer, int n)
 double
 lex_next_tokval (const struct lexer *lexer, int n)
 {
-  const struct token *token = lex_next (lexer, n);
-  return token->number;
+  return token_number (lex_next (lexer, n));
 }
 
 /* Returns the null-terminated string in the token N after the current one, in

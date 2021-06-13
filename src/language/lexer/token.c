@@ -172,3 +172,19 @@ token_print (const struct token *token, FILE *stream)
              (int) token->string.length, token->string.string);
   putc ('\n', stream);
 }
+
+bool
+token_is_integer (const struct token *t)
+{
+  return (token_is_number (t)
+          && t->number > LONG_MIN
+          && t->number <= LONG_MAX
+          && floor (t->number) == t->number);
+}
+
+long
+token_integer (const struct token *t)
+{
+  assert (token_is_integer (t));
+  return t->number;
+}

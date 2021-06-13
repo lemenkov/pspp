@@ -18,6 +18,7 @@
 #define TOKEN_H 1
 
 #include <stdio.h>
+#include "libpspp/assertion.h"
 #include "libpspp/str.h"
 #include "data/identifier.h"
 
@@ -41,5 +42,30 @@ void token_uninit (struct token *);
 char *token_to_string (const struct token *);
 
 void token_print (const struct token *, FILE *);
+
+static inline bool token_is_number (const struct token *);
+static inline double token_number (const struct token *);
+bool token_is_integer (const struct token *);
+long token_integer (const struct token *);
+static inline bool token_is_string (const struct token *);
+
+static inline bool
+token_is_number (const struct token *t)
+{
+  return t->type == T_POS_NUM || t->type == T_NEG_NUM;
+}
+
+static inline double
+token_number (const struct token *t)
+{
+  assert (token_is_number (t));
+  return t->number;
+}
+
+static inline bool
+token_is_string (const struct token *t)
+{
+  return t->type == T_STRING;
+}
 
 #endif /* token.h */
