@@ -508,7 +508,8 @@ shbang          #!_/usr/bin/pspp
 newline         \n (first)
 
 identifier      title    space
-unquoted_string my_title
+identifier      my    space
+identifier      title
 end_command     .
 newline         \n (first)
 
@@ -674,18 +675,9 @@ end
 PSPP_CHECK_SEGMENT([-i])
 AT_CLEANUP
 
-AT_SETUP([TITLE, SUBTITLE, FILE LABEL commands])
+AT_SETUP([FILE LABEL command])
 AT_KEYWORDS([segment])
 AT_DATA([input], [dnl
-title/**/'Quoted string title'.
-tit /*
-"Quoted string on second line".
-sub "Quoted string subtitle"
- .
-
-TITL /* Not a */ quoted string title.
-SUBT Not a quoted string /* subtitle
-
 FIL label isn't quoted.
 FILE
   lab 'is quoted'.
@@ -694,42 +686,6 @@ FILE /*
 
 ])
 AT_DATA([expout-base], [dnl
-identifier      title
-comment         /**/
-quoted_string   'Quoted_string_title'
-end_command     .
-newline         \n (first)
-
-identifier      tit    space
-comment         /*
-newline         \n (later)
-
-quoted_string   "Quoted_string_on_second_line"
-end_command     .
-newline         \n (first)
-
-identifier      sub    space
-quoted_string   "Quoted_string_subtitle"
-newline         \n (later)
-    space
-end_command     .
-newline         \n (first)
-
-separate_commands
-newline         \n (first)
-
-identifier      TITL    space
-unquoted_string /*_Not_a_*/_quoted_string_title
-end_command     .
-newline         \n (first)
-
-identifier      SUBT    space
-unquoted_string Not_a_quoted_string_/*_subtitle
-newline         \n (later)
-
-separate_commands
-newline         \n (first)
-
 identifier      FIL    space
 identifier      label    space
 unquoted_string isn't_quoted

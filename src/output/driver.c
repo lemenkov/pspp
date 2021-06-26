@@ -369,12 +369,24 @@ output_log (const char *format, ...)
   output_submit (text_item_create_nocopy (TEXT_ITEM_LOG, s, NULL));
 }
 
+const char *
+output_get_title (void)
+{
+  return engine_stack_top ()->title;
+}
+
 void
 output_set_title (const char *title)
 {
   struct output_engine *e = engine_stack_top ();
 
   output_set_title__ (e, &e->title, title);
+}
+
+const char *
+output_get_subtitle (void)
+{
+  return engine_stack_top ()->subtitle;
 }
 
 void

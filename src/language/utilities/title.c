@@ -24,11 +24,13 @@
 #include "data/variable.h"
 #include "language/command.h"
 #include "language/lexer/lexer.h"
+#include "language/lexer/token.h"
 #include "libpspp/message.h"
 #include "libpspp/start-date.h"
 #include "libpspp/version.h"
 #include "output/driver.h"
 
+#include "gl/c-ctype.h"
 #include "gl/xalloc.h"
 
 #include "gettext.h"
@@ -37,10 +39,34 @@
 static int
 parse_title (struct lexer *lexer, void (*set_title) (const char *))
 {
-  if (!lex_force_string (lexer))
-    return CMD_FAILURE;
-  set_title (lex_tokcstr (lexer));
-  lex_get (lexer);
+  if (lex_token (lexer) == T_STRING)
+    {
+      set_title (lex_tokcstr (lexer));
+      lex_get (lexer);
+    }
+  else if (lex_token (lexer) == T_ENDCMD)
+    {
+      /* This would be a bad special case below because n-1 would be
+         SIZE_MAX. */
+      set_title ("");
+    }
+  else
+    {
+      /* Count the tokens in the title. */
+      size_t n = 0;
+      while (lex_next (lexer, n)->type != T_ENDCMD)
+        n++;
+
+      /* Get the raw representation of all the tokens, including any space
+         between them, and use it as the title. */
+      char *title = ss_xstrdup (lex_next_representation (lexer, 0, n - 1));
+      set_title (title);
+      free (title);
+
+      /* Skip past the tokens. */
+      for (size_t i = 0; i < n; i++)
+        lex_get (lexer);
+    }
   return CMD_SUCCESS;
 }
 

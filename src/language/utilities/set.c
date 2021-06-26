@@ -917,15 +917,27 @@ show_SMALL (const struct dataset *ds UNUSED)
 }
 
 static char *
+show_SUBTITLE (const struct dataset *ds UNUSED)
+{
+  return xstrdup (output_get_subtitle ());
+}
+
+static char *
 show_SYSTEM (const struct dataset *ds UNUSED)
 {
-  return strdup (host_system);
+  return xstrdup (host_system);
 }
 
 static char *
 show_TEMPDIR (const struct dataset *ds UNUSED)
 {
-  return strdup (temp_dir_name ());
+  return xstrdup (temp_dir_name ());
+}
+
+static char *
+show_TITLE (const struct dataset *ds UNUSED)
+{
+  return xstrdup (output_get_title ());
 }
 
 static bool
@@ -1123,7 +1135,7 @@ static void
 do_show (const struct dataset *ds, const struct setting *s)
 {
   char *value = s->show (ds);
-  msg (SN, _("%s is %s."), s->name, value);
+  msg (SN, _("%s is %s."), s->name, value ? value : _("empty"));
   free (value);
 }
 
@@ -1262,6 +1274,16 @@ cmd_show (struct lexer *lexer, struct dataset *ds)
         show_warranty (ds);
       else if (lex_match_id (lexer, "COPYING") || lex_match_id (lexer, "LICENSE"))
         show_copying (ds);
+      else if (lex_match_id (lexer, "TITLE"))
+        {
+          struct setting s = { .name = "TITLE", .show = show_TITLE };
+          do_show (ds, &s);
+        }
+      else if (lex_match_id (lexer, "SUBTITLE"))
+        {
+          struct setting s = { .name = "SUBTITLE", .show = show_SUBTITLE };
+          do_show (ds, &s);
+        }
       else if (lex_token (lexer) == T_ID)
         {
           int i;

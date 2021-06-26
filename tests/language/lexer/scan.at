@@ -604,18 +604,9 @@ STOP
 PSPP_CHECK_SCAN([-i])
 AT_CLEANUP
 
-AT_SETUP([TITLE, SUBTITLE, FILE LABEL commands])
+AT_SETUP([FILE LABEL commands])
 AT_KEYWORDS([scan])
 AT_DATA([input], [dnl
-title/**/'Quoted string title'.
-tit /*
-"Quoted string on second line".
-sub "Quoted string subtitle"
- .
-
-TITL /* Not a */ quoted string title.
-SUBT Not a quoted string /* subtitle
-
 FIL label isn't quoted.
 FILE
   lab 'is quoted'.
@@ -624,38 +615,6 @@ FILE /*
 
 ])
 AT_DATA([expout-base], [dnl
-ID "title"
-SKIP
-STRING "Quoted string title"
-ENDCMD
-SKIP
-ID "tit"
-SKIP
-SKIP
-SKIP
-STRING "Quoted string on second line"
-ENDCMD
-SKIP
-ID "sub"
-SKIP
-STRING "Quoted string subtitle"
-SKIP
-SKIP
-ENDCMD
-SKIP
-ENDCMD
-SKIP
-ID "TITL"
-SKIP
-STRING "/* Not a */ quoted string title"
-ENDCMD
-SKIP
-ID "SUBT"
-SKIP
-STRING "Not a quoted string /* subtitle"
-SKIP
-ENDCMD
-SKIP
 ID "FIL"
 SKIP
 ID "label"

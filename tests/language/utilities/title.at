@@ -127,3 +127,21 @@ Table: File Label
 Label,This is a test file label
 ])
 AT_CLEANUP
+
+AT_SETUP([TITLE and SUBTITLE])
+for command in TITLE SUBTITLE; do
+    cat >title.sps <<EOF
+$command foo  bar.
+SHOW $command.
+
+$command 'foo bar baz quux'.
+SHOW $command.
+EOF
+    cat >expout <<EOF
+title.sps:2: note: SHOW: $command is foo  bar.
+
+title.sps:5: note: SHOW: $command is foo bar baz quux.
+EOF
+    AT_CHECK([pspp -O format=csv title.sps], [0], [expout])
+done
+AT_CLEANUP

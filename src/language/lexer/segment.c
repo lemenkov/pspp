@@ -38,7 +38,9 @@ enum segmenter_state
     S_DOCUMENT_1,
     S_DOCUMENT_2,
     S_DOCUMENT_3,
-    S_FILE_LABEL,
+    S_FILE_LABEL_1,
+    S_FILE_LABEL_2,
+    S_FILE_LABEL_3,
     S_DO_REPEAT_1,
     S_DO_REPEAT_2,
     S_DO_REPEAT_3,
@@ -50,8 +52,6 @@ enum segmenter_state
     S_BEGIN_DATA_2,
     S_BEGIN_DATA_3,
     S_BEGIN_DATA_4,
-    S_TITLE_1,
-    S_TITLE_2
   };
 
 #define SS_START_OF_LINE (1u << 0)
@@ -759,18 +759,6 @@ segmenter_parse_id__ (struct segmenter *s, const char *input, size_t n,
           *type = SEG_START_DOCUMENT;
           return 0;
         }
-      else if (lex_id_match (ss_cstr ("TITLE"), word)
-               || lex_id_match (ss_cstr ("SUBTITLE"), word))
-        {
-          int result = segmenter_unquoted (input, n, eof, ofs);
-          if (result < 0)
-            return -1;
-          else if (result)
-            {
-              s->state = S_TITLE_1;
-              return ofs;
-            }
-        }
       else if (lex_id_match_n (ss_cstr ("DEFINE"), word, 6))
         {
           s->state = S_DEFINE_1;
@@ -784,7 +772,7 @@ segmenter_parse_id__ (struct segmenter *s, const char *input, size_t n,
             return -1;
           else if (lex_id_match (ss_cstr ("LABEL"), ss_cstr (id)))
             {
-              s->state = S_FILE_LABEL;
+              s->state = S_FILE_LABEL_1;
               s->substate = 0;
               return ofs;
             }
@@ -1257,9 +1245,9 @@ segmenter_parse_start_of_line__ (struct segmenter *s,
 }
 
 static int
-segmenter_parse_file_label__ (struct segmenter *s,
-                              const char *input, size_t n, bool eof,
-                              enum segment_type *type)
+segmenter_parse_file_label_1__ (struct segmenter *s,
+                                const char *input, size_t n, bool eof,
+                                enum segment_type *type)
 {
   struct segmenter sub;
   int ofs;
@@ -1282,7 +1270,7 @@ segmenter_parse_file_label__ (struct segmenter *s,
       else
         {
           if (result)
-            s->state = S_TITLE_1;
+            s->state = S_FILE_LABEL_2;
           else
             *s = sub;
           return ofs;
@@ -1293,6 +1281,70 @@ segmenter_parse_file_label__ (struct segmenter *s,
       s->substate = sub.substate;
       return ofs;
     }
+}
+
+static int
+segmenter_parse_file_label_2__ (struct segmenter *s,
+                                const char *input, size_t n, bool eof,
+                                enum segment_type *type)
+{
+  int ofs;
+
+  ofs = skip_spaces (input, n, eof, 0);
+  if (ofs < 0)
+    return -1;
+  s->state = S_FILE_LABEL_3;
+  *type = SEG_SPACES;
+  return ofs;
+}
+
+static int
+segmenter_parse_file_label_3__ (struct segmenter *s,
+                                const char *input, size_t n, bool eof,
+                                enum segment_type *type)
+{
+  int endcmd;
+  int ofs;
+
+  endcmd = -1;
+  ofs = 0;
+  while (ofs < n)
+    {
+      ucs4_t uc;
+      int mblen;
+
+      mblen = segmenter_u8_to_uc__ (&uc, input, n, eof, ofs);
+      if (mblen < 0)
+        return -1;
+
+      switch (uc)
+        {
+        case '\n':
+          goto end_of_line;
+
+        case '.':
+          endcmd = ofs;
+          break;
+
+        default:
+          if (!lex_uc_is_space (uc))
+            endcmd = -1;
+          break;
+        }
+
+      ofs += mblen;
+    }
+
+  if (eof)
+    {
+    end_of_line:
+      s->state = S_GENERAL;
+      s->substate = 0;
+      *type = SEG_UNQUOTED_STRING;
+      return endcmd >= 0 ? endcmd : ofs;
+    }
+
+  return -1;
 }
 
 static int
@@ -1717,70 +1769,6 @@ segmenter_parse_begin_data_4__ (struct segmenter *s,
   return ofs;
 }
 
-static int
-segmenter_parse_title_1__ (struct segmenter *s,
-                           const char *input, size_t n, bool eof,
-                           enum segment_type *type)
-{
-  int ofs;
-
-  ofs = skip_spaces (input, n, eof, 0);
-  if (ofs < 0)
-    return -1;
-  s->state = S_TITLE_2;
-  *type = SEG_SPACES;
-  return ofs;
-}
-
-static int
-segmenter_parse_title_2__ (struct segmenter *s,
-                           const char *input, size_t n, bool eof,
-                           enum segment_type *type)
-{
-  int endcmd;
-  int ofs;
-
-  endcmd = -1;
-  ofs = 0;
-  while (ofs < n)
-    {
-      ucs4_t uc;
-      int mblen;
-
-      mblen = segmenter_u8_to_uc__ (&uc, input, n, eof, ofs);
-      if (mblen < 0)
-        return -1;
-
-      switch (uc)
-        {
-        case '\n':
-          goto end_of_line;
-
-        case '.':
-          endcmd = ofs;
-          break;
-
-        default:
-          if (!lex_uc_is_space (uc))
-            endcmd = -1;
-          break;
-        }
-
-      ofs += mblen;
-    }
-
-  if (eof)
-    {
-    end_of_line:
-      s->state = S_GENERAL;
-      s->substate = 0;
-      *type = SEG_UNQUOTED_STRING;
-      return endcmd >= 0 ? endcmd : ofs;
-    }
-
-  return -1;
-}
-
 /* Returns the name of segment TYPE as a string.  The caller must not modify
    or free the returned string.
 
@@ -1881,8 +1869,12 @@ segmenter_push (struct segmenter *s, const char *input, size_t n, bool eof,
     case S_DOCUMENT_3:
       return segmenter_parse_document_3__ (s, type);
 
-    case S_FILE_LABEL:
-      return segmenter_parse_file_label__ (s, input, n, eof, type);
+    case S_FILE_LABEL_1:
+      return segmenter_parse_file_label_1__ (s, input, n, eof, type);
+    case S_FILE_LABEL_2:
+      return segmenter_parse_file_label_2__ (s, input, n, eof, type);
+    case S_FILE_LABEL_3:
+      return segmenter_parse_file_label_3__ (s, input, n, eof, type);
 
     case S_DO_REPEAT_1:
       return segmenter_parse_do_repeat_1__ (s, input, n, eof, type);
@@ -1908,11 +1900,6 @@ segmenter_push (struct segmenter *s, const char *input, size_t n, bool eof,
       return segmenter_parse_begin_data_3__ (s, input, n, eof, type);
     case S_BEGIN_DATA_4:
       return segmenter_parse_begin_data_4__ (s, input, n, eof, type);
-
-    case S_TITLE_1:
-      return segmenter_parse_title_1__ (s, input, n, eof, type);
-    case S_TITLE_2:
-      return segmenter_parse_title_2__ (s, input, n, eof, type);
     }
 
   NOT_REACHED ();
@@ -1943,8 +1930,11 @@ segmenter_get_prompt (const struct segmenter *s)
     case S_DOCUMENT_3:
       return PROMPT_FIRST;
 
-    case S_FILE_LABEL:
+    case S_FILE_LABEL_1:
       return PROMPT_LATER;
+    case S_FILE_LABEL_2:
+    case S_FILE_LABEL_3:
+      return PROMPT_FIRST;
 
     case S_DO_REPEAT_1:
     case S_DO_REPEAT_2:
@@ -1967,9 +1957,6 @@ segmenter_get_prompt (const struct segmenter *s)
     case S_BEGIN_DATA_4:
       return PROMPT_DATA;
 
-    case S_TITLE_1:
-    case S_TITLE_2:
-      return PROMPT_FIRST;
     }
 
   NOT_REACHED ();

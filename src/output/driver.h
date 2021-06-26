@@ -36,7 +36,9 @@ void output_flush (void);
 
 void output_log (const char *, ...) PRINTF_FORMAT (1, 2);
 
+const char *output_get_title (void);
 void output_set_title (const char *);
+const char *output_get_subtitle (void);
 void output_set_subtitle (const char *);
 void output_set_filename (const char *);
 
