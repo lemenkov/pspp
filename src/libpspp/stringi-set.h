@@ -60,8 +60,13 @@ static inline size_t stringi_set_count (const struct stringi_set *);
 static inline bool stringi_set_is_empty (const struct stringi_set *);
 
 bool stringi_set_contains (const struct stringi_set *, const char *);
+bool stringi_set_contains_len (const struct stringi_set *, const char *,
+                               size_t length);
 struct stringi_set_node *stringi_set_find_node (const struct stringi_set *,
-                                              const char *);
+                                                const char *);
+struct stringi_set_node *stringi_set_find_node_len (const struct stringi_set *,
+                                                    const char *,
+                                                    size_t length);
 
 bool stringi_set_insert (struct stringi_set *, const char *);
 bool stringi_set_insert_nocopy (struct stringi_set *, char *);

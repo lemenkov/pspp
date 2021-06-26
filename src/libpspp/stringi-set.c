@@ -32,6 +32,8 @@
 
 static struct stringi_set_node *stringi_set_find_node__ (
   const struct stringi_set *, const char *, unsigned int hash);
+static struct stringi_set_node *stringi_set_find_node_len__ (
+  const struct stringi_set *, const char *, size_t length, unsigned int hash);
 static void stringi_set_insert__ (struct stringi_set *, char *,
                                  unsigned int hash);
 static bool stringi_set_delete__ (struct stringi_set *, const char *,
@@ -81,7 +83,16 @@ stringi_set_destroy (struct stringi_set *set)
 bool
 stringi_set_contains (const struct stringi_set *set, const char *s)
 {
-  return stringi_set_find_node (set, s) != NULL;
+  return stringi_set_contains_len (set, s, strlen (s));
+}
+
+/* Returns true if SET contains S with the given LENGTH (or a similar string
+   with different case), false otherwise. */
+bool
+stringi_set_contains_len (const struct stringi_set *set, const char *s,
+                          size_t length)
+{
+  return stringi_set_find_node_len (set, s, length) != NULL;
 }
 
 /* Returns the node in SET that contains S, or a null pointer if SET does not
@@ -89,7 +100,17 @@ stringi_set_contains (const struct stringi_set *set, const char *s)
 struct stringi_set_node *
 stringi_set_find_node (const struct stringi_set *set, const char *s)
 {
-  return stringi_set_find_node__ (set, s, utf8_hash_case_string (s, 0));
+  return stringi_set_find_node_len (set, s, strlen (s));
+}
+
+/* Returns the node in SET that contains S with the given LENGTH, or a null
+   pointer if SET does not contain S. */
+struct stringi_set_node *
+stringi_set_find_node_len (const struct stringi_set *set, const char *s,
+                           size_t length)
+{
+  return stringi_set_find_node_len__ (set, s, length,
+                                      utf8_hash_case_bytes (s, length, 0));
 }
 
 /* Inserts a copy of S into SET.  Returns true if successful, false if SET
@@ -281,13 +302,20 @@ stringi_set_get_sorted_array (const struct stringi_set *set)
 
 static struct stringi_set_node *
 stringi_set_find_node__ (const struct stringi_set *set, const char *s,
-                        unsigned int hash)
+                         unsigned int hash)
+{
+  return stringi_set_find_node_len__ (set, s, strlen (s), hash);
+}
+
+static struct stringi_set_node *
+stringi_set_find_node_len__ (const struct stringi_set *set, const char *s,
+                             size_t length, unsigned int hash)
 {
   struct stringi_set_node *node;
 
   HMAP_FOR_EACH_WITH_HASH (node, struct stringi_set_node, hmap_node,
                            hash, &set->hmap)
-    if (!utf8_strcasecmp (s, node->string))
+    if (!utf8_strncasecmp (s, length, node->string, strlen (node->string)))
       return node;
 
   return NULL;
