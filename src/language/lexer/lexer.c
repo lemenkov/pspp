@@ -109,6 +109,8 @@ struct lexer
   };
 
 static struct lex_source *lex_source__ (const struct lexer *);
+static struct substring lex_source_get_syntax__ (const struct lex_source *,
+                                                 int n0, int n1);
 static const struct lex_token *lex_next__ (const struct lexer *, int n);
 static void lex_source_push_endcmd__ (struct lex_source *);
 
@@ -935,6 +937,18 @@ lex_next_tokss (const struct lexer *lexer, int n)
   return lex_next (lexer, n)->string;
 }
 
+/* Returns the text of the syntax in tokens N0 ahead of the current one,
+   through N1 ahead of the current one, inclusive.  (For example, if N0 and N1
+   are both zero, this requests the syntax for the current token.)  The caller
+   must not modify or free the returned string.  The syntax is encoded in UTF-8
+   and in the original form supplied to the lexer so that, for example, it may
+   include comments, spaces, and new-lines if it spans multiple tokens. */
+struct substring
+lex_next_representation (const struct lexer *lexer, int n0, int n1)
+{
+  return lex_source_get_syntax__ (lex_source__ (lexer), n0, n1);
+}
+
 static bool
 lex_tokens_match (const struct token *actual, const struct token *expected)
 {
@@ -1310,14 +1324,22 @@ lex_source__ (const struct lexer *lexer)
 }
 
 static struct substring
-lex_source_get_syntax__ (const struct lex_source *src, int n0, int n1)
+lex_tokens_get_syntax__ (const struct lex_source *src,
+                         const struct lex_token *token0,
+                         const struct lex_token *token1)
 {
-  const struct lex_token *token0 = lex_source_next__ (src, n0);
-  const struct lex_token *token1 = lex_source_next__ (src, MAX (n0, n1));
   size_t start = token0->token_pos;
   size_t end = token1->token_pos + token1->token_len;
 
   return ss_buffer (&src->buffer[start - src->tail], end - start);
+}
+
+static struct substring
+lex_source_get_syntax__ (const struct lex_source *src, int n0, int n1)
+{
+  return lex_tokens_get_syntax__ (src,
+                                  lex_source_next__ (src, n0),
+                                  lex_source_next__ (src, MAX (n0, n1)));
 }
 
 static void

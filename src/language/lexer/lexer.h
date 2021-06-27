@@ -142,6 +142,10 @@ const char *lex_next_tokcstr (const struct lexer *, int n);
 double lex_next_tokval (const struct lexer *, int n);
 struct substring lex_next_tokss (const struct lexer *, int n);
 
+/* Token representation. */
+struct substring lex_next_representation (const struct lexer *,
+                                          int n0, int n1);
+
 /* Current position. */
 int lex_get_first_line_number (const struct lexer *, int n);
 int lex_get_last_line_number (const struct lexer *, int n);
