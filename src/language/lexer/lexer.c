@@ -1157,6 +1157,34 @@ lex_get_file_name (const struct lexer *lexer)
   return src == NULL ? NULL : src->reader->file_name;
 }
 
+/* Returns a newly allocated msg_location for the syntax that represents tokens
+   with 0-based offsets N0...N1, inclusive, from the current token.  The caller
+   must eventually free the location (with msg_location_destroy()). */
+struct msg_location *
+lex_get_location (const struct lexer *lexer, int n0, int n1)
+{
+  struct msg_location *loc = lex_get_lines (lexer, n0, n1);
+  loc->first_column = lex_get_first_column (lexer, n0);
+  loc->last_column = lex_get_last_column (lexer, n1);
+  return loc;
+}
+
+/* Returns a newly allocated msg_location for the syntax that represents tokens
+   with 0-based offsets N0...N1, inclusive, from the current token.  The
+   location only covers the tokens' lines, not the columns.  The caller must
+   eventually free the location (with msg_location_destroy()). */
+struct msg_location *
+lex_get_lines (const struct lexer *lexer, int n0, int n1)
+{
+  struct msg_location *loc = xmalloc (sizeof *loc);
+  *loc = (struct msg_location) {
+    .file_name = xstrdup_if_nonnull (lex_get_file_name (lexer)),
+    .first_line = lex_get_first_line_number (lexer, n0),
+    .last_line = lex_get_last_line_number (lexer, n1),
+  };
+  return loc;
+}
+
 const char *
 lex_get_encoding (const struct lexer *lexer)
 {
@@ -1411,14 +1439,17 @@ lex_source_error_valist (struct lex_source *src, int n0, int n1,
   if (ds_last (&s) != '.')
     ds_put_byte (&s, '.');
 
-  struct msg m = {
-    .category = MSG_C_SYNTAX,
-    .severity = MSG_S_ERROR,
+  struct msg_location location = {
     .file_name = src->reader->file_name,
     .first_line = lex_source_get_first_line_number (src, n0),
     .last_line = lex_source_get_last_line_number (src, n1),
     .first_column = lex_source_get_first_column (src, n0),
     .last_column = lex_source_get_last_column (src, n1),
+  };
+  struct msg m = {
+    .category = MSG_C_SYNTAX,
+    .severity = MSG_S_ERROR,
+    .location = &location,
     .text = ds_steal_cstr (&s),
   };
   msg_emit (&m);

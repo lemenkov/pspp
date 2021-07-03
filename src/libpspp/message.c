@@ -86,7 +86,6 @@ msg_error (int errnum, const char *format, ...)
   struct msg m = {
     .category = MSG_C_GENERAL,
     .severity = MSG_S_ERROR,
-    .file_name = NULL,
     .text = xasprintf (_("%s: %s"), e, strerror (errnum)),
   };
   msg_emit (&m);
@@ -101,6 +100,100 @@ msg_set_handler (void (*handler) (const struct msg *, void *aux), void *aux)
 {
   msg_handler = handler;
   msg_aux = aux;
+}
+
+/* msg_location. */
+
+void
+msg_location_destroy (struct msg_location *loc)
+{
+  if (loc)
+    {
+      free (loc->file_name);
+      free (loc);
+    }
+}
+
+struct msg_location *
+msg_location_dup (const struct msg_location *src)
+{
+  if (!src)
+    return NULL;
+
+  struct msg_location *dst = xmalloc (sizeof *dst);
+  *dst = (struct msg_location) {
+    .file_name = xstrdup_if_nonnull (src->file_name),
+    .first_line = src->first_line,
+    .last_line = src->last_line,
+    .first_column = src->first_column,
+    .last_column = src->last_column,
+  };
+  return dst;
+}
+
+bool
+msg_location_is_empty (const struct msg_location *loc)
+{
+  return !loc || (!loc->file_name
+                  && loc->first_line <= 0
+                  && loc->first_column <= 0);
+}
+
+void
+msg_location_format (const struct msg_location *loc, struct string *s)
+{
+  if (!loc)
+    return;
+
+  if (loc->file_name)
+    ds_put_cstr (s, loc->file_name);
+
+  int l1 = loc->first_line;
+  int l2 = MAX (loc->first_line, loc->last_line - 1);
+  int c1 = loc->first_column;
+  int c2 = MAX (loc->first_column, loc->last_column - 1);
+
+  if (l1 > 0)
+    {
+      if (loc->file_name)
+        ds_put_byte (s, ':');
+
+      if (l2 > l1)
+        {
+          if (c1 > 0)
+            ds_put_format (s, "%d.%d-%d.%d", l1, c1, l2, c2);
+          else
+            ds_put_format (s, "%d-%d", l1, l2);
+        }
+      else
+        {
+          if (c1 > 0)
+            {
+              if (c2 > c1)
+                {
+                  /* The GNU coding standards say to use
+                     LINENO-1.COLUMN-1-COLUMN-2 for this case, but GNU
+                     Emacs interprets COLUMN-2 as LINENO-2 if I do that.
+                     I've submitted an Emacs bug report:
+                     http://debbugs.gnu.org/cgi/bugreport.cgi?bug=7725.
+
+                     For now, let's be compatible. */
+                  ds_put_format (s, "%d.%d-%d.%d", l1, c1, l1, c2);
+                }
+              else
+                ds_put_format (s, "%d.%d", l1, c1);
+            }
+          else
+            ds_put_format (s, "%d", l1);
+        }
+    }
+  else if (c1 > 0)
+    {
+      if (c2 > c1)
+        ds_put_format (s, ".%d-%d", c1, c2);
+      else
+        ds_put_format (s, ".%d", c1);
+    }
 }
 
 /* Working with messages. */
@@ -122,18 +215,17 @@ msg_severity_to_string (enum msg_severity severity)
 
 /* Duplicate a message */
 struct msg *
-msg_dup (const struct msg *m)
+msg_dup (const struct msg *src)
 {
-  struct msg *new_msg;
-
-  new_msg = xmemdup (m, sizeof *m);
-  if (m->file_name != NULL)
-    new_msg->file_name = xstrdup (m->file_name);
-  if (m->command_name != NULL)
-    new_msg->command_name = xstrdup (m->command_name);
-  new_msg->text = xstrdup (m->text);
-
-  return new_msg;
+  struct msg *dst = xmalloc (sizeof *dst);
+  *dst = (struct msg) {
+    .category = src->category,
+    .severity = src->severity,
+    .location = msg_location_dup (src->location),
+    .command_name = xstrdup_if_nonnull (src->command_name),
+    .text = xstrdup (src->text),
+  };
+  return dst;
 }
 
 /* Frees a message created by msg_dup().
@@ -144,10 +236,13 @@ msg_dup (const struct msg *m)
 void
 msg_destroy (struct msg *m)
 {
-  free (m->file_name);
-  free (m->text);
-  free (m->command_name);
-  free (m);
+  if (m)
+    {
+      msg_location_destroy (m->location);
+      free (m->text);
+      free (m->command_name);
+      free (m);
+    }
 }
 
 char *
@@ -157,58 +252,9 @@ msg_to_string (const struct msg *m)
 
   ds_init_empty (&s);
 
-  if (m->category != MSG_C_GENERAL
-      && (m->file_name || m->first_line > 0 || m->first_column > 0))
+  if (m->category != MSG_C_GENERAL && !msg_location_is_empty (m->location))
     {
-      int l1 = m->first_line;
-      int l2 = MAX (m->first_line, m->last_line - 1);
-      int c1 = m->first_column;
-      int c2 = MAX (m->first_column, m->last_column - 1);
-
-      if (m->file_name)
-        ds_put_format (&s, "%s", m->file_name);
-
-      if (l1 > 0)
-        {
-          if (!ds_is_empty (&s))
-            ds_put_byte (&s, ':');
-
-          if (l2 > l1)
-            {
-              if (c1 > 0)
-                ds_put_format (&s, "%d.%d-%d.%d", l1, c1, l2, c2);
-              else
-                ds_put_format (&s, "%d-%d", l1, l2);
-            }
-          else
-            {
-              if (c1 > 0)
-                {
-                  if (c2 > c1)
-                    {
-                      /* The GNU coding standards say to use
-                         LINENO-1.COLUMN-1-COLUMN-2 for this case, but GNU
-                         Emacs interprets COLUMN-2 as LINENO-2 if I do that.
-                         I've submitted an Emacs bug report:
-                         http://debbugs.gnu.org/cgi/bugreport.cgi?bug=7725.
-
-                         For now, let's be compatible. */
-                      ds_put_format (&s, "%d.%d-%d.%d", l1, c1, l1, c2);
-                    }
-                  else
-                    ds_put_format (&s, "%d.%d", l1, c1);
-                }
-              else
-                ds_put_format (&s, "%d", l1);
-            }
-        }
-      else if (c1 > 0)
-        {
-          if (c2 > c1)
-            ds_put_format (&s, ".%d-%d", c1, c2);
-          else
-            ds_put_format (&s, ".%d", c1);
-        }
+      msg_location_format (m->location, &s);
       ds_put_cstr (&s, ": ");
     }
 

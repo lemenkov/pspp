@@ -21,6 +21,8 @@
 #include <stdbool.h>
 #include "libpspp/compiler.h"
 
+struct string;
+
 /* What kind of message is this? */
 enum msg_category
   {
@@ -69,17 +71,28 @@ msg_class_from_category_and_severity (enum msg_category category,
   return category * 3 + severity;
 }
 
+struct msg_location
+  {
+    char *file_name;            /* Name of file containing error, or NULL. */
+    int first_line;             /* 1-based line number, or 0 if none. */
+    int last_line;              /* 1-based exclusive last line (0=none). */
+    int first_column;           /* 1-based first column, or 0 if none. */
+    int last_column;            /* 1-based exclusive last column (0=none). */
+  };
+
+void msg_location_destroy (struct msg_location *);
+struct msg_location *msg_location_dup (const struct msg_location *);
+
+bool msg_location_is_empty (const struct msg_location *);
+void msg_location_format (const struct msg_location *, struct string *);
+
 /* A message. */
 struct msg
   {
     enum msg_category category; /* Message category. */
     enum msg_severity severity; /* Message severity. */
-    char *file_name;            /* Name of file containing error, or NULL. */
+    struct msg_location *location; /* Code location. */
     char *command_name;         /* Name of erroneous command, or NULL.  */
-    int first_line;             /* 1-based line number, or 0 if none. */
-    int last_line;             /* 1-based exclusive last line (0=none). */
-    int first_column;           /* 1-based first column, or 0 if none. */
-    int last_column;            /* 1-based exclusive last column (0=none). */
     char *text;                 /* Error text. */
   };
 

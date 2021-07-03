@@ -145,21 +145,21 @@ static void
 handle_msg (const struct msg *m_, void *lexer_)
 {
   struct lexer *lexer = lexer_;
-  struct msg m = *m_;
-
-  if (lexer != NULL && m.file_name == NULL)
-    {
-      m.file_name = CONST_CAST (char *, lex_get_file_name (lexer));
-      m.first_line = lex_get_first_line_number (lexer, 0);
-      m.last_line = lex_get_last_line_number (lexer, 0);
-      m.first_column = lex_get_first_column (lexer, 0);
-      m.last_column = lex_get_last_column (lexer, 0);
-    }
-  m.command_name = output_get_uppercase_command_name ();
+  struct msg m = {
+    .category = m_->category,
+    .severity = m_->severity,
+    .location = (m_->location ? m_->location
+                 : lexer ? lex_get_location (lexer, 0, 0)
+                 : NULL),
+    .command_name = output_get_uppercase_command_name (),
+    .text = m_->text,
+  };
 
   output_item_submit (message_item_create (&m));
 
   free (m.command_name);
+  if (m.location != m_->location)
+    msg_location_destroy (m.location);
 }
 
 void

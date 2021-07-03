@@ -152,6 +152,8 @@ int lex_get_last_line_number (const struct lexer *, int n);
 int lex_get_first_column (const struct lexer *, int n);
 int lex_get_last_column (const struct lexer *, int n);
 const char *lex_get_file_name (const struct lexer *);
+struct msg_location *lex_get_location (const struct lexer *, int n0, int n1);
+struct msg_location *lex_get_lines (const struct lexer *, int n0, int n1);
 const char *lex_get_encoding (const struct lexer *);
 
 /* Issuing errors. */

@@ -708,15 +708,19 @@ dfm_get_column (const struct dfm_reader *r, const char *p)
 const char *
 dfm_get_file_name (const struct dfm_reader *r)
 {
-  return (fh_get_referent (r->fh) == FH_REF_FILE
-          ? fh_get_file_name (r->fh)
+  enum fh_referent referent = fh_get_referent (r->fh);
+  return (referent == FH_REF_FILE ? fh_get_file_name (r->fh)
+          : referent == FH_REF_INLINE ? lex_get_file_name (r->lexer)
           : NULL);
 }
 
 int
 dfm_get_line_number (const struct dfm_reader *r)
 {
-  return fh_get_referent (r->fh) == FH_REF_FILE ? r->line_number : -1;
+  enum fh_referent referent = fh_get_referent (r->fh);
+  return (referent == FH_REF_FILE ? r->line_number
+          : referent == FH_REF_INLINE ? lex_get_first_line_number (r->lexer, 0)
+          : -1);
 }
 
 /* BEGIN DATA...END DATA procedure. */
