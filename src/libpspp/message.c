@@ -268,24 +268,26 @@ msg_ui_any_errors (void)
 }
 
 
-static int entrances = 0;
-
 static void
 ship_message (struct msg *m)
 {
-  entrances++;
-  if (! m->shipped)
-    {
-      if (msg_handler && entrances <= 1)
-	msg_handler (m, msg_aux);
-      else
-	{
-	  fwrite (m->text, 1, strlen (m->text), stderr);
-	  fwrite ("\n", 1, 1, stderr);
-	}
-    }
-  m->shipped = true;
-  entrances--;
+  enum { MAX_STACK = 4 };
+  static struct msg *stack[MAX_STACK];
+  static size_t n;
+
+  /* If we're recursing on a given message, or recursing deeply, drop it. */
+  if (n >= MAX_STACK)
+    return;
+  for (size_t i = 0; i < n; i++)
+    if (stack[i] == m)
+      return;
+
+  stack[n++] = m;
+  if (msg_handler && n <= 1)
+    msg_handler (m, msg_aux);
+  else
+    fprintf (stderr, "%s\n", m->text);
+  n--;
 }
 
 static void
@@ -348,7 +350,6 @@ process_msg (struct msg *m)
 void
 msg_emit (struct msg *m)
 {
-  m->shipped = false;
   if (!messages_disabled)
      process_msg (m);
 

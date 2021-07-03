@@ -81,7 +81,6 @@ struct msg
     int first_column;           /* 1-based first column, or 0 if none. */
     int last_column;            /* 1-based exclusive last column (0=none). */
     char *text;                 /* Error text. */
-    bool shipped;               /* True if this message has been emitted */
   };
 
 /* Initialization. */
