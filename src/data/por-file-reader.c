@@ -112,12 +112,13 @@ error (struct pfm_reader *r, const char *msg, ...)
   ds_put_vformat (&text, msg, args);
   va_end (args);
 
-  struct msg m = {
+  struct msg *m = xmalloc (sizeof *m);
+  *m = (struct msg) {
     .category = MSG_C_GENERAL,
     .severity = MSG_S_ERROR,
-    .text = ds_cstr (&text),
+    .text = ds_steal_cstr (&text),
   };
-  msg_emit (&m);
+  msg_emit (m);
 
   r->ok = false;
 
@@ -139,12 +140,13 @@ warning (struct pfm_reader *r, const char *msg, ...)
   ds_put_vformat (&text, msg, args);
   va_end (args);
 
-  struct msg m = {
+  struct msg *m = xmalloc (sizeof *m);
+  *m = (struct msg) {
     .category = MSG_C_GENERAL,
     .severity = MSG_S_WARNING,
-    .text = ds_cstr (&text),
+    .text = ds_steal_cstr (&text),
   };
-  msg_emit (&m);
+  msg_emit (m);
 }
 
 /* Close and destroy R.

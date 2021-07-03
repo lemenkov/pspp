@@ -1439,20 +1439,22 @@ lex_source_error_valist (struct lex_source *src, int n0, int n1,
   if (ds_last (&s) != '.')
     ds_put_byte (&s, '.');
 
-  struct msg_location location = {
-    .file_name = src->reader->file_name,
+  struct msg_location *location = xmalloc (sizeof *location);
+  *location = (struct msg_location) {
+    .file_name = xstrdup_if_nonnull (src->reader->file_name),
     .first_line = lex_source_get_first_line_number (src, n0),
     .last_line = lex_source_get_last_line_number (src, n1),
     .first_column = lex_source_get_first_column (src, n0),
     .last_column = lex_source_get_last_column (src, n1),
   };
-  struct msg m = {
+  struct msg *m = xmalloc (sizeof *m);
+  *m = (struct msg) {
     .category = MSG_C_SYNTAX,
     .severity = MSG_S_ERROR,
-    .location = &location,
+    .location = location,
     .text = ds_steal_cstr (&s),
   };
-  msg_emit (&m);
+  msg_emit (m);
 }
 
 static void PRINTF_FORMAT (2, 3)

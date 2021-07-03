@@ -3244,12 +3244,13 @@ sys_msg (struct sfm_reader *r, off_t offset,
     ds_put_format (&text, _("`%s': "), fh_get_file_name (r->fh));
   ds_put_vformat (&text, format, args);
 
-  struct msg m = {
+  struct msg *m = xmalloc (sizeof *m);
+  *m = (struct msg) {
     .category = msg_class_to_category (class),
     .severity = msg_class_to_severity (class),
-    .text = ds_cstr (&text),
+    .text = ds_steal_cstr (&text),
   };
-  msg_emit (&m);
+  msg_emit (m);
 }
 
 /* Displays a warning for offset OFFSET in the file. */

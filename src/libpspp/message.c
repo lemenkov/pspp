@@ -53,13 +53,13 @@ static int messages_disabled;
 void
 vmsg (enum msg_class class, const char *format, va_list args)
 {
-  struct msg m = {
+  struct msg *m = xmalloc (sizeof *m);
+  *m = (struct msg) {
     .category = msg_class_to_category (class),
     .severity = msg_class_to_severity (class),
     .text = xvasprintf (format, args),
   };
-
-  msg_emit (&m);
+  msg_emit (m);
 }
 
 /* Writes error message in CLASS, with text FORMAT, formatted with
@@ -80,17 +80,18 @@ msg_error (int errnum, const char *format, ...)
 {
   va_list args;
   va_start (args, format);
-  char *e = xvasprintf (format, args);
+  struct string s = DS_EMPTY_INITIALIZER;
+  ds_put_vformat (&s, format, args);
   va_end (args);
+  ds_put_format (&s, ": %s", strerror (errnum));
 
-  struct msg m = {
+  struct msg *m = xmalloc (sizeof *m);
+  *m = (struct msg) {
     .category = MSG_C_GENERAL,
     .severity = MSG_S_ERROR,
-    .text = xasprintf (_("%s: %s"), e, strerror (errnum)),
+    .text = ds_steal_cstr (&s),
   };
-  msg_emit (&m);
-
-  free (e);
+  msg_emit (m);
 }
 
 
@@ -315,10 +316,10 @@ msg_ui_any_errors (void)
 
 
 static void
-ship_message (struct msg *m)
+ship_message (const struct msg *m)
 {
   enum { MAX_STACK = 4 };
-  static struct msg *stack[MAX_STACK];
+  static const struct msg *stack[MAX_STACK];
   static size_t n;
 
   /* If we're recursing on a given message, or recursing deeply, drop it. */
@@ -348,8 +349,6 @@ submit_note (char *s)
 
   free (s);
 }
-
-
 
 static void
 process_msg (struct msg *m)
@@ -391,16 +390,13 @@ process_msg (struct msg *m)
 }
 
 
-/* Emits M as an error message.
-   Frees allocated data in M. */
+/* Emits M as an error message.  Takes ownership of M. */
 void
 msg_emit (struct msg *m)
 {
   if (!messages_disabled)
-     process_msg (m);
-
-  free (m->text);
-  free (m->command_name);
+    process_msg (m);
+  msg_destroy (m);
 }
 
 /* Disables message output until the next call to msg_enable.  If
