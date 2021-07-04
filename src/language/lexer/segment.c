@@ -1579,11 +1579,33 @@ find_enddefine (struct substring input)
 {
   size_t n = input.length;
   const struct substring enddefine = ss_cstr ("!ENDDEFINE");
-  for (size_t i = 0; i + enddefine.length <= n; i++)
-    if (input.string[i] == '!'
-        && ss_equals_case (ss_substr (input, i, enddefine.length), enddefine))
-      return i;
-  return SIZE_MAX;
+  for (int ofs = 0;;)
+    {
+      /* Skip !ENDDEFINE in comment. */
+      ofs = skip_spaces_and_comments (input.string, n, true, ofs);
+      if (ofs + enddefine.length > n)
+        return SIZE_MAX;
+
+      char c = input.string[ofs];
+      if (c == '!'
+               && ss_equals_case (ss_substr (input, ofs, enddefine.length),
+                                  enddefine))
+        return ofs;
+      else if (c == '\'' || c == '"')
+        {
+          /* Skip quoted !ENDDEFINE. */
+          ofs++;
+          for (;;)
+            {
+              if (ofs >= n)
+                return SIZE_MAX;
+              else if (input.string[ofs++] == c)
+                break;
+            }
+        }
+      else
+        ofs++;
+    }
 }
 
 /* We are in the body of a macro definition, looking for additional lines of

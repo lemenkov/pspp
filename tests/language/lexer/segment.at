@@ -1014,7 +1014,7 @@ AT_SETUP([DEFINE command - simple])
 AT_KEYWORDS([segment])
 AT_DATA([input], [dnl
 define !macro1()
-var1 var2 var3
+var1 var2 var3 "!enddefine"
 !enddefine.
 ])
 AT_DATA([expout-base], [dnl
@@ -1025,7 +1025,7 @@ punct           )
 spaces
 newline         \n (DEFINE)
 
-macro_body      var1_var2_var3
+macro_body      var1_var2_var3_"!enddefine"
 newline         \n (DEFINE)
 
 macro_id        !enddefine
@@ -1040,7 +1040,7 @@ AT_CLEANUP
 AT_SETUP([DEFINE command - no newline after parentheses])
 AT_KEYWORDS([segment])
 AT_DATA([input], [dnl
-define !macro1() var1 var2 var3
+define !macro1() var1 var2 var3 /* !enddefine
 !enddefine.
 ])
 AT_DATA([expout-base], [dnl
@@ -1048,7 +1048,7 @@ identifier      define    space
 macro_id        !macro1
 punct           (
 punct           )
-macro_body      _var1_var2_var3
+macro_body      _var1_var2_var3_/*_!enddefine
 newline         \n (DEFINE)
 
 macro_id        !enddefine
