@@ -459,9 +459,11 @@ scan_token_to_error (const struct token *token)
                         token->string.string);
 
     case SCAN_UNEXPECTED_CHAR:
+     {
       char c_name[16];
       return xasprintf (_("Bad character %s in input."),
                         uc_name (token->number, c_name));
+     }
     }
 
   return NULL;

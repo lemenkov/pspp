@@ -1775,10 +1775,12 @@ lex_source_try_get__ (struct lex_source *src)
     case SCAN_EXPECTED_QUOTE:
     case SCAN_EXPECTED_EXPONENT:
     case SCAN_UNEXPECTED_CHAR:
+     {
       char *msg = scan_token_to_error (&token->token);
       lex_get_error (src, msg);
       free (msg);
       return false;
+     }
 
     case SCAN_SKIP:
       lex_source_pop_front (src);
