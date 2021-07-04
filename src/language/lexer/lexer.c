@@ -31,6 +31,7 @@
 #include <uniwidth.h>
 
 #include "language/command.h"
+#include "language/lexer/macro.h"
 #include "language/lexer/scan.h"
 #include "language/lexer/segment.h"
 #include "language/lexer/token.h"
@@ -61,13 +62,42 @@ struct lex_token
     /* The regular token information. */
     struct token token;
 
-    /* Location of token in terms of the lex_source's buffer.
+    /* For a token obtained through the lexer in an ordinary way, this is the
+       location of the token in terms of the lex_source's buffer.
+
+       For a token produced through macro expansion, this is the entire macro
+       call.
+
        src->tail <= line_pos <= token_pos <= src->head. */
     size_t token_pos;           /* Start of token. */
     size_t token_len;           /* Length of source for token in bytes. */
     size_t line_pos;            /* Start of line containing token_pos. */
     int first_line;             /* Line number at token_pos. */
+
+    /* For a token obtained through macro expansion, this is just this token.
+
+       For a token obtained through the lexer in an ordinary way, these are
+       nulls and zeros. */
+    char *macro_rep;        /* The whole macro expansion. */
+    size_t ofs;             /* Offset of this token in macro_rep. */
+    size_t len;             /* Length of this token in macro_rep. */
+    size_t *ref_cnt;        /* Number of lex_tokens that refer to macro_rep. */
   };
+
+static void
+lex_token_uninit (struct lex_token *t)
+{
+  token_uninit (&t->token);
+  if (t->ref_cnt)
+    {
+      assert (*t->ref_cnt > 0);
+      if (!--*t->ref_cnt)
+        {
+          free (t->macro_rep);
+          free (t->ref_cnt);
+        }
+    }
+}
 
 /* A source of tokens, corresponding to a syntax file.
 
@@ -77,6 +107,7 @@ struct lex_source
   {
     struct ll ll;               /* In lexer's list of sources. */
     struct lex_reader *reader;
+    struct lexer *lexer;
     struct segmenter segmenter;
     bool eof;                   /* True if T_STOP was read from 'reader'. */
 
@@ -94,28 +125,45 @@ struct lex_source
     int n_newlines;             /* Number of new-lines up to seg_pos. */
     bool suppress_next_newline;
 
-    /* Tokens. */
-    struct deque deque;         /* Indexes into 'tokens'. */
-    struct lex_token *tokens;   /* Lookahead tokens for parser. */
+    /* Tokens.
+
+       This is mostly like a deque, with the invariant that 'back <= middle <=
+       front' (modulo SIZE_MAX+1).  The tokens available for parsing are
+       between 'back' and 'middle': the token at 'back' is the current token,
+       the token at 'back + 1' is the next token, and so on.  There are usually
+       no tokens between 'middle' and 'front'; if there are, then they need to
+       go through macro expansion and are not yet available for parsing.
+
+       'capacity' is the current number of elements in 'tokens'.  It is always
+       a power of 2.  'front', 'middle', and 'back' refer to indexes in
+       'tokens' modulo 'capacity'. */
+    size_t front;
+    size_t middle;
+    size_t back;
+    size_t capacity;
+    size_t mask;                /* capacity - 1 */
+    struct lex_token *tokens;
   };
 
-static struct lex_source *lex_source_create (struct lex_reader *);
+static struct lex_source *lex_source_create (struct lexer *,
+                                             struct lex_reader *);
 static void lex_source_destroy (struct lex_source *);
 
 /* Lexer. */
 struct lexer
   {
     struct ll_list sources;     /* Contains "struct lex_source"s. */
+    struct macro_set *macros;
   };
 
 static struct lex_source *lex_source__ (const struct lexer *);
-static struct substring lex_source_get_syntax__ (const struct lex_source *,
-                                                 int n0, int n1);
+static char *lex_source_get_syntax__ (const struct lex_source *,
+                                      int n0, int n1);
 static const struct lex_token *lex_next__ (const struct lexer *, int n);
 static void lex_source_push_endcmd__ (struct lex_source *);
 
-static void lex_source_pop__ (struct lex_source *);
-static bool lex_source_get__ (const struct lex_source *);
+static void lex_source_pop_back (struct lex_source *);
+static bool lex_source_get (const struct lex_source *);
 static void lex_source_error_valist (struct lex_source *, int n0, int n1,
                                      const char *format, va_list)
    PRINTF_FORMAT (4, 0);
@@ -150,8 +198,11 @@ lex_reader_set_file_name (struct lex_reader *reader, const char *file_name)
 struct lexer *
 lex_create (void)
 {
-  struct lexer *lexer = xzalloc (sizeof *lexer);
-  ll_init (&lexer->sources);
+  struct lexer *lexer = xmalloc (sizeof *lexer);
+  *lexer = (struct lexer) {
+    .sources = LL_INITIALIZER (lexer->sources),
+    .macros = macro_set_create (),
+  };
   return lexer;
 }
 
@@ -165,8 +216,17 @@ lex_destroy (struct lexer *lexer)
 
       ll_for_each_safe (source, next, struct lex_source, ll, &lexer->sources)
         lex_source_destroy (source);
+      macro_set_destroy (lexer->macros);
       free (lexer);
     }
+}
+
+/* Adds M to LEXER's set of macros.  M replaces any existing macro with the
+   same name.  Takes ownership of M. */
+void
+lex_define_macro (struct lexer *lexer, struct macro *m)
+{
+  macro_set_add (lexer->macros, m);
 }
 
 /* Inserts READER into LEXER so that the next token read by LEXER comes from
@@ -176,7 +236,7 @@ void
 lex_include (struct lexer *lexer, struct lex_reader *reader)
 {
   assert (ll_is_empty (&lexer->sources) || lex_token (lexer) == T_ENDCMD);
-  ll_push_head (&lexer->sources, &lex_source_create (reader)->ll);
+  ll_push_head (&lexer->sources, &lex_source_create (lexer, reader)->ll);
 }
 
 /* Appends READER to LEXER, so that it will be read after all other current
@@ -184,34 +244,52 @@ lex_include (struct lexer *lexer, struct lex_reader *reader)
 void
 lex_append (struct lexer *lexer, struct lex_reader *reader)
 {
-  ll_push_tail (&lexer->sources, &lex_source_create (reader)->ll);
+  ll_push_tail (&lexer->sources, &lex_source_create (lexer, reader)->ll);
 }
 
 /* Advancing. */
 
+/* Adds a new token at the front of SRC and returns a pointer to it.  The
+   caller should initialize it.  Does not advance the middle pointer, so the
+   token isn't immediately available to the parser. */
 static struct lex_token *
 lex_push_token__ (struct lex_source *src)
 {
-  struct lex_token *token;
+  if (src->front - src->back >= src->capacity)
+    {
+      /* Expansion works just like a deque, so we reuse the code. */
+      struct deque deque = {
+        .capacity = src->capacity,
+        .front = src->front,
+        .back = src->back,
+      };
+      src->tokens = deque_expand (&deque, src->tokens, sizeof *src->tokens);
+      src->capacity = deque.capacity;
+      src->mask = src->capacity - 1;
+    }
 
-  if (deque_is_full (&src->deque))
-    src->tokens = deque_expand (&src->deque, src->tokens, sizeof *src->tokens);
-
-  token = &src->tokens[deque_push_front (&src->deque)];
+  struct lex_token *token = &src->tokens[src->front++ & src->mask];
   token->token = (struct token) { .type = T_STOP };
+  token->macro_rep = NULL;
+  token->ref_cnt = NULL;
   return token;
 }
 
+/* Removes the current token from SRC and uninitializes it. */
 static void
-lex_source_pop__ (struct lex_source *src)
+lex_source_pop_back (struct lex_source *src)
 {
-  token_uninit (&src->tokens[deque_pop_back (&src->deque)].token);
+  assert (src->middle - src->back > 0);
+  lex_token_uninit (&src->tokens[src->back++ & src->mask]);
 }
 
+/* Removes the token at the greatest lookahead from SRC and uninitializes
+   it. */
 static void
 lex_source_pop_front (struct lex_source *src)
 {
-  token_uninit (&src->tokens[deque_pop_front (&src->deque)].token);
+  assert (src->front - src->middle > 0);
+  lex_token_uninit (&src->tokens[--src->front & src->mask]);
 }
 
 /* Advances LEXER to the next token, consuming the current token. */
@@ -224,11 +302,11 @@ lex_get (struct lexer *lexer)
   if (src == NULL)
     return;
 
-  if (!deque_is_empty (&src->deque))
-    lex_source_pop__ (src);
+  if (src->middle - src->back > 0)
+    lex_source_pop_back (src);
 
-  while (deque_is_empty (&src->deque))
-    if (!lex_source_get__ (src))
+  while (src->back == src->middle)
+    if (!lex_source_get (src))
       {
         lex_source_destroy (src);
         src = lex_source__ (lexer);
@@ -857,24 +935,30 @@ lex_next__ (const struct lexer *lexer_, int n)
     }
 }
 
+/* Returns the token in SRC with the greatest lookahead. */
+static const struct lex_token *
+lex_source_middle (const struct lex_source *src)
+{
+  assert (src->middle - src->back > 0);
+  return &src->tokens[(src->middle - 1) & src->mask];
+}
+
 static const struct lex_token *
 lex_source_next__ (const struct lex_source *src, int n)
 {
-  while (deque_count (&src->deque) <= n)
+  while (src->middle - src->back <= n)
     {
-      if (!deque_is_empty (&src->deque))
+      if (src->middle - src->back > 0)
         {
-          struct lex_token *front;
-
-          front = &src->tokens[deque_front (&src->deque, 0)];
-          if (front->token.type == T_STOP || front->token.type == T_ENDCMD)
-            return front;
+          const struct lex_token *middle = lex_source_middle (src);
+          if (middle->token.type == T_STOP || middle->token.type == T_ENDCMD)
+            return middle;
         }
 
-      lex_source_get__ (src);
+      lex_source_get (src);
     }
 
-  return &src->tokens[deque_back (&src->deque, n)];
+  return &src->tokens[(src->back + n) & src->mask];
 }
 
 /* Returns the "struct token" of the token N after the current one in LEXER.
@@ -938,13 +1022,22 @@ lex_next_tokss (const struct lexer *lexer, int n)
 /* Returns the text of the syntax in tokens N0 ahead of the current one,
    through N1 ahead of the current one, inclusive.  (For example, if N0 and N1
    are both zero, this requests the syntax for the current token.)  The caller
-   must not modify or free the returned string.  The syntax is encoded in UTF-8
-   and in the original form supplied to the lexer so that, for example, it may
-   include comments, spaces, and new-lines if it spans multiple tokens. */
-struct substring
+   must eventually free the returned string (with free()).  The syntax is
+   encoded in UTF-8 and in the original form supplied to the lexer so that, for
+   example, it may include comments, spaces, and new-lines if it spans multiple
+   tokens.  Macro expansion, however, has already been performed. */
+char *
 lex_next_representation (const struct lexer *lexer, int n0, int n1)
 {
   return lex_source_get_syntax__ (lex_source__ (lexer), n0, n1);
+}
+
+/* Returns true if the token N ahead of the current one was produced by macro
+   expansion, false otherwise. */
+bool
+lex_next_is_from_macro (const struct lexer *lexer, int n)
+{
+  return lex_next__ (lexer, n)->macro_rep != NULL;
 }
 
 static bool
@@ -1190,7 +1283,6 @@ lex_get_encoding (const struct lexer *lexer)
   return src == NULL ? NULL : src->reader->encoding;
 }
 
-
 /* Returns the syntax mode for the syntax file from which the current drawn is
    drawn.  Returns SEG_MODE_AUTO for a T_STOP token or if the command's source
    does not have line numbers.
@@ -1238,8 +1330,10 @@ lex_interactive_reset (struct lexer *lexer)
       src->suppress_next_newline = false;
       src->segmenter = segmenter_init (segmenter_get_mode (&src->segmenter),
                                        false);
-      while (!deque_is_empty (&src->deque))
-        lex_source_pop__ (src);
+      while (src->middle - src->back > 0)
+        lex_source_pop_back (src);
+      while (src->front - src->middle > 0)
+        lex_source_pop_front (src);
       lex_source_push_endcmd__ (src);
     }
 }
@@ -1262,8 +1356,8 @@ lex_discard_noninteractive (struct lexer *lexer)
 
   if (src != NULL)
     {
-      while (!deque_is_empty (&src->deque))
-        lex_source_pop__ (src);
+      while (src->middle - src->back > 0)
+        lex_source_pop_back (src);
 
       for (; src != NULL && src->reader->error != LEX_ERROR_TERMINAL;
            src = lex_source__ (lexer))
@@ -1283,7 +1377,7 @@ lex_source_max_tail__ (const struct lex_source *src)
   /* Use the oldest token also.  (We know that src->deque cannot be empty
      because we are in the process of adding a new token, which is already
      initialized enough to use here.) */
-  token = &src->tokens[deque_back (&src->deque, 0)];
+  token = &src->tokens[src->back & src->mask];
   assert (token->token_pos >= token->line_pos);
   max_tail = MIN (max_tail, token->line_pos);
 
@@ -1350,23 +1444,86 @@ lex_source__ (const struct lexer *lexer)
           : ll_data (ll_head (&lexer->sources), struct lex_source, ll));
 }
 
-static struct substring
-lex_tokens_get_syntax__ (const struct lex_source *src,
-                         const struct lex_token *token0,
-                         const struct lex_token *token1)
+/* Returns the text of the syntax in SRC for tokens N0 ahead of the current
+   one, through N1 ahead of the current one, inclusive.  (For example, if N0
+   and N1 are both zero, this requests the syntax for the current token.)  The
+   caller must eventually free the returned string (with free()).  The syntax
+   is encoded in UTF-8 and in the original form supplied to the lexer so that,
+   for example, it may include comments, spaces, and new-lines if it spans
+   multiple tokens.  Macro expansion, however, has already been performed. */
+static char *
+lex_source_get_syntax__ (const struct lex_source *src, int n0, int n1)
 {
+  struct string s = DS_EMPTY_INITIALIZER;
+  for (size_t i = n0; i <= n1; )
+    {
+      /* Find [I,J) as the longest sequence of tokens not produced by macro
+         expansion, or otherwise the longest sequence expanded from a single
+         macro call. */
+      const struct lex_token *first = lex_source_next__ (src, i);
+      size_t j;
+      for (j = i + 1; j <= n1; j++)
+        {
+          const struct lex_token *cur = lex_source_next__ (src, j);
+          if ((first->macro_rep != NULL) != (cur->macro_rep != NULL)
+              || first->macro_rep != cur->macro_rep)
+            break;
+        }
+      const struct lex_token *last = lex_source_next__ (src, j - 1);
+
+      /* Now add the syntax for this sequence of tokens to SRC. */
+      if (!ds_is_empty (&s))
+        ds_put_byte (&s, ' ');
+      if (!first->macro_rep)
+        {
+          size_t start = first->token_pos;
+          size_t end = last->token_pos + last->token_len;
+          ds_put_substring (&s, ss_buffer (&src->buffer[start - src->tail],
+                                           end - start));
+        }
+      else
+        {
+          size_t start = first->ofs;
+          size_t end = last->ofs + last->len;
+          ds_put_substring (&s, ss_buffer (first->macro_rep + start,
+                                           end - start));
+        }
+
+      i = j;
+    }
+  return ds_steal_cstr (&s);
+}
+
+static bool
+lex_source_contains_macro_call (struct lex_source *src, int n0, int n1)
+{
+  for (size_t i = n0; i <= n1; i++)
+    if (lex_source_next__ (src, i)->macro_rep)
+      return true;
+  return false;
+}
+
+/* If tokens N0...N1 (inclusive) in SRC contains a macro call, this returns the
+   raw UTF-8 syntax for the macro call (not for the expansion) and for any
+   other tokens included in that range.  The syntax is encoded in UTF-8 and in
+   the original form supplied to the lexer so that, for example, it may include
+   comments, spaces, and new-lines if it spans multiple tokens.
+
+   Returns an empty string if the token range doesn't include a macro call.
+
+   The caller must not modify or free the returned string. */
+static struct substring
+lex_source_get_macro_call (struct lex_source *src, int n0, int n1)
+{
+  if (!lex_source_contains_macro_call (src, n0, n1))
+    return ss_empty ();
+
+  const struct lex_token *token0 = lex_source_next__ (src, n0);
+  const struct lex_token *token1 = lex_source_next__ (src, MAX (n0, n1));
   size_t start = token0->token_pos;
   size_t end = token1->token_pos + token1->token_len;
 
   return ss_buffer (&src->buffer[start - src->tail], end - start);
-}
-
-static struct substring
-lex_source_get_syntax__ (const struct lex_source *src, int n0, int n1)
-{
-  return lex_tokens_get_syntax__ (src,
-                                  lex_source_next__ (src, n0),
-                                  lex_source_next__ (src, MAX (n0, n1)));
 }
 
 static void
@@ -1383,16 +1540,35 @@ lex_source_error_valist (struct lex_source *src, int n0, int n1,
     ds_put_cstr (&s, _("Syntax error at end of command"));
   else
     {
-      struct substring syntax = lex_source_get_syntax__ (src, n0, n1);
-      if (!ss_is_empty (syntax))
-        {
-          char syntax_cstr[64];
+      /* Get the syntax that caused the error. */
+      char *raw_syntax = lex_source_get_syntax__ (src, n0, n1);
+      char syntax[64];
+      str_ellipsize (ss_cstr (raw_syntax), syntax, sizeof syntax);
+      free (raw_syntax);
 
-          str_ellipsize (syntax, syntax_cstr, sizeof syntax_cstr);
-          ds_put_format (&s, _("Syntax error at `%s'"), syntax_cstr);
+      /* Get the macro call(s) that expanded to the syntax that caused the
+         error. */
+      char call[64];
+      str_ellipsize (lex_source_get_macro_call (src, n0, n1),
+                     call, sizeof call);
+
+      if (syntax[0])
+        {
+          if (call[0])
+            ds_put_format (&s,
+                           _("Syntax error at `%s' (in expansion of `%s')"),
+                           syntax, call);
+          else
+            ds_put_format (&s, _("Syntax error at `%s'"), syntax);
         }
       else
-        ds_put_cstr (&s, _("Syntax error"));
+        {
+          if (call[0])
+            ds_put_format (&s, _("Syntax error in syntax expanded from `%s'"),
+                           call);
+          else
+            ds_put_cstr (&s, _("Syntax error"));
+        }
     }
 
   if (format)
@@ -1434,22 +1610,26 @@ lex_source_error (struct lex_source *src, int n0, int n1,
 static void
 lex_get_error (struct lex_source *src, const char *s)
 {
-  int n = deque_count (&src->deque) - 1;
+  size_t old_middle = src->middle;
+  src->middle = src->front;
+  size_t n = src->front - src->back - 1;
   lex_source_error (src, n, n, "%s", s);
+  src->middle = old_middle;
+
   lex_source_pop_front (src);
 }
 
-/* Attempts to append an additional token into SRC's deque, reading more from
-   the underlying lex_reader if necessary.  Returns true if successful, false
-   if the deque already represents (a suffix of) the whole lex_reader's
-   contents, */
-static bool
-lex_source_get__ (const struct lex_source *src_)
-{
-  struct lex_source *src = CONST_CAST (struct lex_source *, src_);
-  if (src->eof)
-    return false;
+/* Attempts to append an additional token at the front of SRC, reading more
+   from the underlying lex_reader if necessary.  Returns true if a new token
+   was added to SRC's deque, false otherwise.  The caller should retry failures
+   unless SRC's 'eof' marker was set to true indicating that there will be no
+   more tokens from this source.
 
+   Does not make the new token available for lookahead yet; the caller must
+   adjust SRC's 'middle' pointer to do so. */
+static bool
+lex_source_try_get__ (struct lex_source *src)
+{
   /* State maintained while scanning tokens.  Usually we only need a single
      state, but scanner_push() can return SCAN_SAVE to indicate that the state
      needs to be saved and possibly restored later with SCAN_BACK. */
@@ -1580,12 +1760,12 @@ lex_source_get__ (const struct lex_source *src_)
   switch (token->token.type)
     {
     default:
-      break;
+      return true;
 
     case T_STOP:
       token->token.type = T_ENDCMD;
       src->eof = true;
-      break;
+      return true;
 
     case SCAN_BAD_HEX_LENGTH:
     case SCAN_BAD_HEX_DIGIT:
@@ -1598,12 +1778,181 @@ lex_source_get__ (const struct lex_source *src_)
       char *msg = scan_token_to_error (&token->token);
       lex_get_error (src, msg);
       free (msg);
-      break;
+      return false;
 
     case SCAN_SKIP:
       lex_source_pop_front (src);
-      break;
+      return false;
     }
+
+  NOT_REACHED ();
+}
+
+/* Attempts to add a new token at the front of SRC.  Returns true if
+   successful, false on failure.  On failure, the end of SRC has been reached
+   and no more tokens will be forthcoming from it.
+
+   Does not make the new token available for lookahead yet; the caller must
+   adjust SRC's 'middle' pointer to do so. */
+static bool
+lex_source_get__ (struct lex_source *src)
+{
+  while (!src->eof)
+    if (lex_source_try_get__ (src))
+      return true;
+  return false;
+}
+
+/* Attempts to obtain a new token for SRC, in particular expanding the number
+   of lookahead tokens (the tokens between 'back' and 'middle').
+
+   Returns true if successful, false on failure.  In the latter case, SRC is
+   exhausted and 'src->eof' is now true. */
+static bool
+lex_source_get (const struct lex_source *src_)
+{
+  struct lex_source *src = CONST_CAST (struct lex_source *, src_);
+
+  /* In the common case, call into the scanner and segmenter to obtain a new
+     token between 'middle' and 'front'.  In the uncommon case, there can be one
+     or a few tokens there already, leftovers from a macro expansion.
+
+     If we call into the scanner and it fails, then we've hit EOF and we're
+     done. */
+  if (src->front - src->middle == 0 && !lex_source_get__ (src))
+    return false;
+
+  /* We have at least one token available between 'middle' and 'front'.
+
+     The remaining complication is all about macro expansion.  If macro
+     expansion is disabled, we're done.  */
+  if (!settings_get_mexpand ())
+    {
+      src->middle++;
+      return true;
+    }
+
+  /* Now pass tokens one-by-one to the macro expander.
+
+     In the common case where there is no macro to expand, the loop is not
+     entered.  */
+  struct macro_call *mc;
+  int n_call = macro_call_create (
+    src->lexer->macros, &src->tokens[src->middle & src->mask].token,
+    &mc);
+  for (int middle_ofs = 1; !n_call; middle_ofs++)
+    {
+      if (src->front - src->middle <= middle_ofs && !lex_source_get__ (src))
+        {
+          /* This should not be reachable because we always get a T_ENDCMD at
+             the end of an input file (transformed from T_STOP by
+             lex_source_try_get__()) and the macro_expander should always
+             terminate expansion on T_ENDCMD. */
+          NOT_REACHED ();
+        }
+
+      const struct lex_token *t = &src->tokens[(src->middle + middle_ofs)
+                                               & src->mask];
+      size_t start = t->token_pos;
+      size_t end = t->token_pos + t->token_len;
+      const struct macro_token mt = {
+        .token = t->token,
+        .syntax = ss_buffer (&src->buffer[start - src->tail], end - start),
+      };
+
+      /* We temporarily add the tokens to the source to avoid re-entry if
+         macro_expander_add() reports an error and to give better error
+         messages. */
+      src->middle += middle_ofs + 1;
+      n_call = macro_call_add (mc, &mt);
+      src->middle -= middle_ofs + 1;
+    }
+  if (n_call < 0)
+    {
+      /* False alarm: no macro expansion after all.  Use first token as
+         lookahead.  We'll retry macro expansion from the second token next
+         time around. */
+      macro_call_destroy (mc);
+      src->middle++;
+      return true;
+    }
+
+  /* Now expand the macro.
+
+     We temporarily add the macro call's tokens to the source in case the macro
+     expansion calls msg() to report an error and error processing tries to get
+     the location of the error with, e.g. lex_get_first_line_number(), which
+     would re-enter this code.  This is a kluge; it might be cleaner to pass
+     the line number into macro_expander_get_expansion(). */
+  src->middle += n_call;
+  struct macro_tokens expansion = { .n = 0 };
+  macro_call_expand (mc, src->reader->syntax, &expansion);
+  macro_call_destroy (mc);
+  src->middle -= n_call;
+
+  /* Convert the macro expansion into syntax for possible error messages later. */
+  size_t *ofs = xnmalloc (expansion.n, sizeof *ofs);
+  size_t *len = xnmalloc (expansion.n, sizeof *len);
+  struct string s = DS_EMPTY_INITIALIZER;
+  macro_tokens_to_syntax (&expansion, &s, ofs, len);
+
+  if (settings_get_mprint ())
+    output_item_submit (text_item_create (TEXT_ITEM_LOG, ds_cstr (&s),
+                                          _("Macro Expansion")));
+
+  /* The first 'n_call' tokens starting at 'middle' will be replaced by the
+     macro expansion.  There might be more tokens after that, up to 'front'.
+
+     Figure out the boundary of the macro call in the syntax, to go into the
+     lex_tokens for the expansion so that later error messages can report what
+     macro was called. */
+  const struct lex_token *call_first = &src->tokens[src->middle & src->mask];
+  const struct lex_token *call_last
+    = &src->tokens[(src->middle + n_call - 1) & src->mask];
+  size_t call_pos = call_first->token_pos;
+  size_t call_len = (call_last->token_pos + call_last->token_len) - call_pos;
+  size_t line_pos = call_first->line_pos;
+  int first_line = call_first->first_line;
+
+  /* Destroy the tokens for the call, and save any tokens following the call so
+     we can add them back later. */
+  for (size_t i = src->middle; i != src->middle + n_call; i++)
+    lex_token_uninit (&src->tokens[i & src->mask]);
+  size_t n_save = src->front - (src->middle + n_call);
+  struct lex_token *save_tokens = xnmalloc (n_save, sizeof *save_tokens);
+  for (size_t i = 0; i < n_save; i++)
+    save_tokens[i] = src->tokens[(src->middle + n_call + i) & src->mask];
+  src->front = src->middle;
+
+  /* Append the macro expansion tokens to the lookahead. */
+  char *macro_rep = ds_steal_cstr (&s);
+  size_t *ref_cnt = xmalloc (sizeof *ref_cnt);
+  *ref_cnt = expansion.n;
+  for (size_t i = 0; i < expansion.n; i++)
+    {
+      *lex_push_token__ (src) = (struct lex_token) {
+        .token = expansion.mts[i].token,
+        .token_pos = call_pos,
+        .token_len = call_len,
+        .line_pos = line_pos,
+        .first_line = first_line,
+        .macro_rep = macro_rep,
+        .ofs = ofs[i],
+        .len = len[i],
+        .ref_cnt = ref_cnt,
+      };
+      src->middle++;
+
+      ss_dealloc (&expansion.mts[i].syntax);
+    }
+  free (expansion.mts);
+  free (ofs);
+  free (len);
+
+  /* Finally, put the saved tokens back. */
+  for (size_t i = 0; i < n_save; i++)
+    *lex_push_token__ (src) = save_tokens[i];
+  free (save_tokens);
 
   return true;
 }
@@ -1611,22 +1960,20 @@ lex_source_get__ (const struct lex_source *src_)
 static void
 lex_source_push_endcmd__ (struct lex_source *src)
 {
-  struct lex_token *token = lex_push_token__ (src);
-  token->token.type = T_ENDCMD;
-  token->token_pos = 0;
-  token->token_len = 0;
-  token->line_pos = 0;
-  token->first_line = 0;
+  assert (src->back == src->middle && src->middle == src->front);
+  *lex_push_token__ (src) = (struct lex_token) {
+    .token = { .type = T_ENDCMD } };
+  src->middle++;
 }
 
 static struct lex_source *
-lex_source_create (struct lex_reader *reader)
+lex_source_create (struct lexer *lexer, struct lex_reader *reader)
 {
   struct lex_source *src = xmalloc (sizeof *src);
   *src = (struct lex_source) {
     .reader = reader,
     .segmenter = segmenter_init (reader->syntax, false),
-    .tokens = deque_init (&src->deque, 4, sizeof *src->tokens),
+    .lexer = lexer,
   };
 
   lex_source_push_endcmd__ (src);
@@ -1644,8 +1991,10 @@ lex_source_destroy (struct lex_source *src)
   free (file_name);
   free (encoding);
   free (src->buffer);
-  while (!deque_is_empty (&src->deque))
-    lex_source_pop__ (src);
+  while (src->middle - src->back > 0)
+    lex_source_pop_back (src);
+  while (src->front - src->middle > 0)
+    lex_source_pop_front (src);
   free (src->tokens);
   ll_remove (&src->ll);
   free (src);

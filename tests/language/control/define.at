@@ -1,0 +1,1686 @@
+dnl PSPP - a program for statistical analysis.
+dnl Copyright (C) 2017 Free Software Foundation, Inc.
+dnl
+dnl This program is free software: you can redistribute it and/or modify
+dnl it under the terms of the GNU General Public License as published by
+dnl the Free Software Foundation, either version 3 of the License, or
+dnl (at your option) any later version.
+dnl
+dnl This program is distributed in the hope that it will be useful,
+dnl but WITHOUT ANY WARRANTY; without even the implied warranty of
+dnl MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+dnl GNU nGeneral Public License for more details.
+dnl
+dnl You should have received a copy of the GNU General Public License
+dnl along with this program.  If not, see <http://www.gnu.org/licenses/>.
+dnl
+AT_BANNER([DEFINE])
+
+m4_define([PSPP_CHECK_MACRO_EXPANSION],
+  [AT_SETUP([macro expansion - $1])
+   AT_KEYWORDS([m4_bpatsubst([$1], [!], [])])
+   AT_DATA([define.sps], [$2
+DEBUG EXPAND.
+$3
+])
+   AT_CAPTURE_FILE([define.sps])
+   AT_DATA([expout], [$4
+])
+   AT_CHECK([pspp --testing-mode define.sps | sed '/^$/d'], [$6], [expout])
+   AT_CLEANUP])
+
+AT_SETUP([simple macro expansion])
+AT_DATA([define.sps], [dnl
+DEFINE !macro()
+a b c d
+e f g h.
+i j k l
+1,2,3,4.
+5+6+7.
+m(n,o).
+"a" "b" "c" 'a' 'b' 'c'.
+"x "" y".
+!ENDDEFINE.
+DEBUG EXPAND.
+!macro
+])
+AT_CHECK([pspp --testing-mode define.sps], [0], [dnl
+a b c d e f g h.
+i j k l 1, 2, 3, 4.
+5 + 6 + 7.
+m(n, o).
+"a" "b" "c" 'a' 'b' 'c'.
+"x "" y".
+])
+AT_CLEANUP
+
+PSPP_CHECK_MACRO_EXPANSION([one !TOKENS(1) positional argument],
+  [DEFINE !t1(!positional !tokens(1)) t1 (!1) !ENDDEFINE.],
+  [!t1 a.
+!t1 b.
+!t1 a b.],
+  [t1(a)
+t1(b)
+t1(a)
+note: unexpanded token "b"])
+
+AT_SETUP([macro expansion with positional arguments])
+AT_DATA([define.sps], [dnl
+DEFINE !title(!positional !tokens(1)) !1 !ENDDEFINE.
+DEFINE !t1(!positional !tokens(1)) t1 (!1) !ENDDEFINE.
+DEFINE !t2(!positional !tokens(2)) t2 (!1) !ENDDEFINE.
+
+DEFINE !ce(!positional !charend('/')) ce (!1) !ENDDEFINE.
+DEFINE !ce2(!positional !charend('(')
+           /!positional !charend(')'))
+ce2 (!1, !2)
+!ENDDEFINE.
+
+DEFINE !e(!positional !enclose('{','}')) e (!1) !ENDDEFINE.
+
+DEFINE !cmd(!positional !cmdend) cmd(!1) !ENDDEFINE.
+DEFINE !cmd2(!positional !cmdend
+            /!positional !tokens(1))
+cmd2(!1, !2)
+!ENDDEFINE.
+
+DEFINE !p(!positional !tokens(1)
+         /!positional !tokens(1)
+	 /!positional !tokens(1))
+p(!1, !2, !3)(!*)
+!ENDDEFINE.
+
+DEBUG EXPAND.
+!title "!TOKENS(1) argument."
+!t1 a.
+!t1 b.
+!t1 a b.
+
+!title "!TOKENS(2) argument."
+!t2 a b.
+!t2 b c d.
+
+!title "!CHAREND argument."
+!ce/.
+!ce x/.
+!ce x y/.
+!ce x y z/.
+
+!title "Two !CHAREND arguments."
+!ce2 x(y).
+!ce2 1 2 3 4().
+
+!title "!ENCLOSE argument."
+!e {}.
+!e {a}.
+!e {a b}.
+
+!title "!CMDEND argument."
+!cmd 1 2 3 4.
+!cmd2 5 6.
+7.
+
+!title "Three !TOKENS(1) arguments."
+!p a b c.
+!p 1 -2 -3.
+])
+AT_CHECK([pspp --testing-mode define.sps], [0], [dnl
+"!TOKENS(1) argument."
+
+t1(a)
+
+t1(b)
+
+t1(a)
+
+note: unexpanded token "b"
+
+"!TOKENS(2) argument."
+
+t2(a b)
+
+t2(b c)
+
+note: unexpanded token "d"
+
+"!CHAREND argument."
+
+ce( )
+
+ce(x)
+
+ce(x y)
+
+ce(x y z)
+
+"Two !CHAREND arguments."
+
+ce2(x, y)
+
+ce2(1 2 3 4, )
+
+"!ENCLOSE argument."
+
+e( )
+
+e(a)
+
+e(a b)
+
+"!CMDEND argument."
+
+cmd(1 2 3 4)
+
+cmd2(5 6, 7)
+
+"Three !TOKENS(1) arguments."
+
+p(a, b, c) (a b c)
+
+p(1, -2, -3) (1 -2 -3)
+])
+AT_CLEANUP
+
+AT_SETUP([macro expansion with positional arguments - negative])
+AT_DATA([define.sps], [dnl
+DEFINE !title(!positional !tokens(1)) !1 !ENDDEFINE.
+DEFINE !p(!positional !tokens(1)
+         /!positional !tokens(1)
+	 /!positional !tokens(1))
+(!1, !2, !3)
+!ENDDEFINE.
+
+DEFINE !ce(!positional !charend('/')) ce(!1) !ENDDEFINE.
+
+DEFINE !enc1(!positional !enclose('{', '}')) enc1(!1) !ENDDEFINE.
+DEBUG EXPAND.
+!title "Too few tokens for !TOKENS."
+!p a b.
+!p a.
+!p.
+
+!title "Missing charend delimiter."
+!ce a b c.
+
+!title "Missing start delimiter."
+!enc1 a b c.
+
+!title "Missing end delimiter."
+!enc1{a b c.
+])
+AT_CHECK([pspp --testing-mode define.sps], [1], [dnl
+"Too few tokens for !TOKENS."
+
+define.sps:13: error: DEBUG EXPAND: Unexpected end of command reading
+argument !3 to macro !p.
+
+note: unexpanded token "!p"
+
+note: unexpanded token "a"
+
+note: unexpanded token "b"
+
+define.sps:14: error: DEBUG EXPAND: Unexpected end of command reading
+argument !2 to macro !p.
+
+note: unexpanded token "!p"
+
+note: unexpanded token "a"
+
+define.sps:15: error: DEBUG EXPAND: Unexpected end of command reading
+argument !1 to macro !p.
+
+note: unexpanded token "!p"
+
+"Missing charend delimiter."
+
+define.sps:18: error: DEBUG EXPAND: Unexpected end of command reading
+argument !1 to macro !ce.
+
+note: unexpanded token "!ce"
+
+note: unexpanded token "a"
+
+note: unexpanded token "b"
+
+note: unexpanded token "c"
+
+"Missing start delimiter."
+
+define.sps:21: error: DEBUG EXPAND: Found `a' while expecting `{' reading
+argument !1 to macro !enc1.
+
+note: unexpanded token "!enc1"
+
+note: unexpanded token "a"
+
+note: unexpanded token "b"
+
+note: unexpanded token "c"
+
+"Missing end delimiter."
+
+define.sps:24: error: DEBUG EXPAND: Unexpected end of command reading
+argument !1 to macro !enc1.
+
+note: unexpanded token "!enc1"
+
+note: unexpanded token "{"
+
+note: unexpanded token "a"
+
+note: unexpanded token "b"
+
+note: unexpanded token "c"
+])
+AT_CLEANUP
+
+AT_SETUP([keyword macro argument name with ! prefix])
+AT_DATA([define.sps], [dnl
+DEFINE !macro(!x=!TOKENS(1).
+])
+AT_CHECK([pspp -O format=csv define.sps], [1], [dnl
+"define.sps:1.15-1.16: error: DEFINE: Syntax error at `!x': Keyword macro parameter must be named in definition without ""!"" prefix."
+])
+AT_CLEANUP
+
+AT_SETUP([reserved macro keyword argument name])
+AT_DATA([define.sps], [dnl
+DEFINE !macro(if=!TOKENS(1).
+])
+AT_CHECK([pspp -O format=csv define.sps], [1], [dnl
+"define.sps:1.15-1.16: error: DEFINE: Syntax error at `if': Cannot use macro keyword ""if"" as an argument name."
+])
+AT_CLEANUP
+
+PSPP_CHECK_MACRO_EXPANSION([one !TOKENS(1) keyword argument],
+  [DEFINE !k(arg1 = !TOKENS(1)) k(!arg1) !ENDDEFINE.],
+  [!k arg1=x.
+!k arg1=x y.
+!k.],
+  [k(x)
+k(x)
+note: unexpanded token "y"
+k( )])
+
+PSPP_CHECK_MACRO_EXPANSION([one !TOKENS(1) keyword argument - negative],
+  [DEFINE !k(arg1 = !TOKENS(1)) k(!arg1) !ENDDEFINE.],
+  [!k arg1.
+!k arg1=.], [dnl
+define.sps:3: error: DEBUG EXPAND: Found `.' while expecting `=' reading
+argument !arg1 to macro !k.
+note: unexpanded token "!k"
+note: unexpanded token "arg1"
+define.sps:4: error: DEBUG EXPAND: Unexpected end of command reading argument !
+arg1 to macro !k.
+note: unexpanded token "!k"
+note: unexpanded token "arg1"
+note: unexpanded token "="], [1])
+
+PSPP_CHECK_MACRO_EXPANSION([!CHAREND('/') keyword arguments], [dnl
+DEFINE !k(arg1 = !CHAREND('/')
+         /arg2 = !CHAREND('/'))
+k(!arg1, !arg2)
+!ENDDEFINE.],
+  [!k arg1=x/ arg2=y/.
+!k arg1=x/.
+!k arg2=y/.
+!k.],
+  [k(x, y)
+k(x, )
+k(, y)
+k(, )])
+
+PSPP_CHECK_MACRO_EXPANSION([!CHAREND('/') keyword arguments - negative], [dnl
+DEFINE !k(arg1 = !CHAREND('/')
+         /arg2 = !CHAREND('/'))
+k(!arg1, !arg2)
+!ENDDEFINE.],
+  [!k arg1.
+!k arg1=.
+!k arg1=x.
+!k arg1=x/ arg2=y.],
+  [define.sps:6: error: DEBUG EXPAND: Found `.' while expecting `=' reading
+argument !arg1 to macro !k.
+note: unexpanded token "!k"
+note: unexpanded token "arg1"
+define.sps:7: error: DEBUG EXPAND: Unexpected end of command reading argument !
+arg1 to macro !k.
+note: unexpanded token "!k"
+note: unexpanded token "arg1"
+note: unexpanded token "="
+define.sps:8: error: DEBUG EXPAND: Unexpected end of command reading argument !
+arg1 to macro !k.
+note: unexpanded token "!k"
+note: unexpanded token "arg1"
+note: unexpanded token "="
+note: unexpanded token "x"
+define.sps:9: error: DEBUG EXPAND: Unexpected end of command reading argument !
+arg2 to macro !k.
+note: unexpanded token "!k"
+note: unexpanded token "arg1"
+note: unexpanded token "="
+note: unexpanded token "x"
+note: unexpanded token "/"
+note: unexpanded token "arg2"
+note: unexpanded token "="
+note: unexpanded token "y"])
+
+PSPP_CHECK_MACRO_EXPANSION([default keyword arguments],
+  [DEFINE !k(arg1 = !DEFAULT(a b c) !CMDEND) k(!arg1) !ENDDEFINE],
+  [!k arg1=x.
+!k],
+  [k(x)
+k(a b c)])
+
+dnl Keep this test in sync with the examples for !BLANKS in the manual.
+PSPP_CHECK_MACRO_EXPANSION([!BLANKS],
+  [DEFINE !b()
+!BLANKS(0).
+!QUOTE(!BLANKS(0)).
+!BLANKS(1).
+!QUOTE(!BLANKS(1)).
+!BLANKS(2).
+!QUOTE(!BLANKS(2)).
+!BLANKS(5).
+!QUOTE(!BLANKS(5)).
+!ENDDEFINE],
+  [!b.],
+  [.
+''.
+.
+' '.
+.
+'  '.
+.
+'     '.])
+
+dnl Keep this test in sync with the examples for !CONCAT in the manual.
+PSPP_CHECK_MACRO_EXPANSION([!CONCAT],
+  [DEFINE !c()
+!CONCAT(x, y).
+!CONCAT('x', 'y').
+!CONCAT(12, 34).
+!CONCAT(!NULL, 123).
+!CONCAT(x, 0).
+!CONCAT(x, 0, y).
+!CONCAT(0, x).
+!CONCAT(0, x, y).
+!ENDDEFINE],
+  [!c.],
+  [xy.
+xy.
+1234.
+123.
+x0.
+x0y.
+0 x.
+0 xy.])
+
+dnl Keep this test in sync with the examples for !EVAL in the manual.
+PSPP_CHECK_MACRO_EXPANSION([!EVAL],
+  [DEFINE !vars() a b c !ENDDEFINE.
+DEFINE !e()
+!vars.
+!QUOTE(!vars).
+!EVAL(!vars).
+!QUOTE(!EVAL(!vars)).
+!ENDDEFINE
+DEFINE !e2(!positional !enclose('(',')'))
+!1.
+!QUOTE(!1).
+!EVAL(!1).
+!QUOTE(!EVAL(!1)).
+!ENDDEFINE],
+  [!e.
+!e2(!vars)],
+  [a b c.
+'!vars'.
+a b c.
+'a b c'.
+a b c.
+'!vars'.
+a b c.
+'a b c'.])
+
+dnl Keep this test in sync with the examples for !HEAD in the manual.
+PSPP_CHECK_MACRO_EXPANSION([!HEAD],
+  [DEFINE !h()
+!HEAD('a b c').
+!HEAD('a').
+!HEAD(!NULL).
+!HEAD('').
+!ENDDEFINE],
+  [!h.],
+  [a.
+a.
+.
+.])
+
+dnl Keep this test in sync with the examples for !TAIL in the manual.
+PSPP_CHECK_MACRO_EXPANSION([!TAIL],
+  [DEFINE !t()
+!TAIL('a b c').
+!TAIL('a').
+!TAIL(!NULL).
+!TAIL('').
+!ENDDEFINE],
+  [!t.],
+  [b c.
+.
+.
+.])
+
+dnl Keep this test in sync with the examples for !INDEX in the manual.
+PSPP_CHECK_MACRO_EXPANSION([!INDEX],
+  [DEFINE !i()
+!INDEX(banana, an).
+!INDEX(banana, nan).
+!INDEX(banana, apple).
+!INDEX("banana", nan).
+!INDEX("banana", "nan").
+!INDEX(!UNQUOTE("banana"), !UNQUOTE("nan")).
+!ENDDEFINE],
+  [!i.],
+  [2.
+3.
+0.
+4.
+0.
+3.])
+
+dnl Keep this test in sync with the examples for !LENGTH in the manual.
+PSPP_CHECK_MACRO_EXPANSION([!LENGTH],
+  [DEFINE !l()
+!LENGTH(123).
+!LENGTH(123.00).
+!LENGTH( 123 ).
+!LENGTH("123").
+!LENGTH(xyzzy).
+!LENGTH("xyzzy").
+!LENGTH("xy""zzy").
+!LENGTH(!UNQUOTE("xyzzy")).
+!LENGTH(!UNQUOTE("xy""zzy")).
+!LENGTH(!NULL).
+!ENDDEFINE.
+DEFINE !la(!positional !enclose('(',')'))
+!LENGTH(!1).
+!ENDDEFINE.],
+  [!l.
+!la(a b c).
+!la().],
+  [3.
+6.
+3.
+5.
+5.
+7.
+9.
+5.
+6.
+0.
+5.
+0.])
+
+dnl Keep this test in sync with the examples for !SUBSTR in the manual.
+PSPP_CHECK_MACRO_EXPANSION([!SUBSTR],
+  [DEFINE !s()
+!SUBSTR(banana, 3).
+!SUBSTR(banana, 3, 3).
+!SUBSTR("banana", 1, 3).
+!SUBSTR(!UNQUOTE("banana"), 3).
+!SUBSTR("banana", 3, 3).
+!SUBSTR(banana, 3, 0).
+!SUBSTR(banana, 3, 10).
+!SUBSTR(banana, 10, 3).
+!ENDDEFINE.],
+  [!s.],
+  [define.sps:1-10: At `"ba' in the expansion of `!s',dnl "
+
+define.sps:12: error: DEBUG EXPAND: Unterminated string constant.
+nana.
+nan.
+.
+nana.
+ana.
+.
+nana.
+.])
+
+dnl Keep this test in sync with the examples for !UPCASE in the manual.
+PSPP_CHECK_MACRO_EXPANSION([!UPCASE],
+  [DEFINE !u()
+!UPCASE(freckle).
+!UPCASE('freckle').
+!UPCASE('a b c').
+!UPCASE('A B C').
+!ENDDEFINE.],
+  [!u.],
+  [FRECKLE.
+FRECKLE.
+A B C.
+A B C.])
+
+
+dnl !* is implemented separately inside and outside function arguments
+dnl so this test makes sure to include both.
+PSPP_CHECK_MACRO_EXPANSION([!*], [dnl
+DEFINE !m(!POSITIONAL !TOKENS(1)
+         /!POSITIONAL !TOKENS(1))
+!*/
+!LENGTH(!*)/
+!SUBSTR(!*, 3)/
+!QUOTE(!*).
+!ENDDEFINE.],
+  [!m 123 b
+!m 2 3
+!m '' 'b'.
+], [123 b / 5 / 3 b / '123 b'.
+2 3 / 3 / 3 / '2 3'.
+'' 'b' / 6 / 'b' / ''''' ''b'''.])
+
+AT_SETUP([macro maximum nesting level (MNEST)])
+AT_KEYWORDS([MNEST])
+AT_DATA([define.sps], [dnl
+DEFINE !macro()
+!macro
+!ENDDEFINE.
+!macro.
+])
+AT_CHECK([pspp -O format=csv define.sps], [1], [dnl
+"define.sps:1-3: In the expansion of `!macro',
+define.sps:1-3: inside the expansion of `!macro',
+define.sps:1-3: inside the expansion of `!macro',
+define.sps:1-3: inside the expansion of `!macro',
+define.sps:1-3: inside the expansion of `!macro',
+define.sps:1-3: inside the expansion of `!macro',
+define.sps:1-3: inside the expansion of `!macro',
+define.sps:1-3: inside the expansion of `!macro',
+define.sps:1-3: inside the expansion of `!macro',
+define.sps:1-3: inside the expansion of `!macro',
+define.sps:1-3: inside the expansion of `!macro',
+define.sps:1-3: inside the expansion of `!macro',
+define.sps:1-3: inside the expansion of `!macro',
+define.sps:1-3: inside the expansion of `!macro',
+define.sps:1-3: inside the expansion of `!macro',
+define.sps:1-3: inside the expansion of `!macro',
+define.sps:1-3: inside the expansion of `!macro',
+define.sps:1-3: inside the expansion of `!macro',
+define.sps:1-3: inside the expansion of `!macro',
+define.sps:1-3: inside the expansion of `!macro',
+define.sps:1-3: inside the expansion of `!macro',
+define.sps:1-3: inside the expansion of `!macro',
+define.sps:1-3: inside the expansion of `!macro',
+define.sps:1-3: inside the expansion of `!macro',
+define.sps:1-3: inside the expansion of `!macro',
+define.sps:1-3: inside the expansion of `!macro',
+define.sps:1-3: inside the expansion of `!macro',
+define.sps:1-3: inside the expansion of `!macro',
+define.sps:1-3: inside the expansion of `!macro',
+define.sps:1-3: inside the expansion of `!macro',
+define.sps:1-3: inside the expansion of `!macro',
+define.sps:1-3: inside the expansion of `!macro',
+define.sps:1-3: inside the expansion of `!macro',
+define.sps:1-3: inside the expansion of `!macro',
+define.sps:1-3: inside the expansion of `!macro',
+define.sps:1-3: inside the expansion of `!macro',
+define.sps:1-3: inside the expansion of `!macro',
+define.sps:1-3: inside the expansion of `!macro',
+define.sps:1-3: inside the expansion of `!macro',
+define.sps:1-3: inside the expansion of `!macro',
+define.sps:1-3: inside the expansion of `!macro',
+define.sps:1-3: inside the expansion of `!macro',
+define.sps:1-3: inside the expansion of `!macro',
+define.sps:1-3: inside the expansion of `!macro',
+define.sps:1-3: inside the expansion of `!macro',
+define.sps:1-3: inside the expansion of `!macro',
+define.sps:1-3: inside the expansion of `!macro',
+define.sps:1-3: inside the expansion of `!macro',
+define.sps:1-3: inside the expansion of `!macro',
+define.sps:1-3: inside the expansion of `!macro',
+define.sps:1-3: inside the expansion of `!macro',
+define.sps:4: error: DEFINE: Maximum nesting level 50 exceeded.  (Use SET MNEST to change the limit.)"
+
+define.sps:4.1-4.6: error: Syntax error at `!macro' (in expansion of `!macro'): expecting command name.
+])
+AT_CLEANUP
+
+AT_SETUP([macro !IF condition])
+AT_KEYWORDS([if])
+for operators in \
+    '!eq !ne !lt !gt !le !ge' \
+    '  =  <>   <   >  <=  >='
+do
+    set $operators
+    AS_BOX([$operators])
+    cat > define.sps <<EOF
+DEFINE !test(!positional !tokens(1))
+!if (!1 $1 1) !then true !else false !ifend
+!if (!1 $2 1) !then true !else false !ifend
+!if (!1 $3 1) !then true !else false !ifend
+!if (!1 $4 1) !then true !else false !ifend
+!if (!1 $5 1) !then true !else false !ifend
+!if (!1 $6 1) !then true !else false !ifend.
+!ENDDEFINE.
+DEBUG EXPAND.
+!test 0
+!test 1
+!test 2
+!test '1'
+!test 1.0
+EOF
+    AT_CAPTURE_FILE([define.sps])
+    AT_CHECK([pspp --testing-mode define.sps], [0], [dnl
+false true true false true false.
+
+true false false false true true.
+
+false true false true false true.
+
+true false false false true true.
+
+false true false true false true.
+])
+done
+AT_CLEANUP
+
+AT_SETUP([macro !IF condition -- case sensitivity])
+AT_KEYWORDS([if])
+for operators in \
+    '!eq !ne !lt !gt !le !ge' \
+    '  =  <>   <   >  <=  >='
+do
+    set $operators
+    AS_BOX([$operators])
+    cat > define.sps <<EOF
+DEFINE !test(!positional !tokens(1))
+!if (!1 $1 a) !then true !else false !ifend
+!if (!1 $1 A) !then true !else false !ifend
+!if (!1 $2 a) !then true !else false !ifend
+!if (!1 $2 A) !then true !else false !ifend
+!if (!1 $3 a) !then true !else false !ifend
+!if (!1 $3 A) !then true !else false !ifend
+!if (!1 $4 a) !then true !else false !ifend
+!if (!1 $4 A) !then true !else false !ifend
+!if (!1 $5 a) !then true !else false !ifend
+!if (!1 $5 A) !then true !else false !ifend
+!if (!1 $6 a) !then true !else false !ifend
+!if (!1 $6 A) !then true !else false !ifend
+!if (!1 $1 !null) !then true !else false !ifend
+!if (!1 $2 !null) !then true !else false !ifend.
+!ENDDEFINE.
+DEBUG EXPAND.
+!test a
+!test A
+!test b
+!test B
+EOF
+    AT_CAPTURE_FILE([define.sps])
+    AT_CHECK([pspp --testing-mode define.sps], [0], [dnl
+true false false true false false false true true false true true false true.
+
+false true true false true false false false true true false true false true.
+
+false false true true false false true true false false true true false true.
+
+false false true true true false false true true false false true false true.
+])
+done
+AT_CLEANUP
+
+AT_SETUP([macro !IF condition -- logical operators])
+AT_KEYWORDS([if])
+for operators in \
+    '!and !or !not' \
+    '   &   |    ~'
+do
+    set $operators
+    AS_BOX([$operators])
+    cat > define.sps <<EOF
+DEFINE !test_binary(!positional !tokens(1)/!positional !tokens(1))
+!if !1 $1 !2 !then true !else false !ifend
+!if !1 $2 !2 !then true !else false !ifend.
+!ENDDEFINE.
+
+DEFINE !test_unary(!positional !tokens(1))
+!if $3 !1 !then true !else false !ifend.
+!ENDDEFINE.
+
+* These are:
+  ((not A) and B) or C
+  not (A and B) or C
+  not A and (B or C)
+DEFINE !test_prec(!pos !tokens(1)/!pos !tokens(1)/!pos !tokens(1))
+!if $3 !1 $1 !2 $2 !3 !then true !else false !ifend
+!if $3 (!1 $1 !2) $2 !3 !then true !else false !ifend
+!if $3 !1 $1 (!2 $2 !3) !then true !else false !ifend
+!ENDDEFINE.
+
+DEBUG EXPAND.
+!test_binary 0 0
+!test_binary 0 1
+!test_binary 1 0
+!test_binary 1 1
+!test_unary 0
+!test_unary 1
+!test_prec 0 0 0 !test_prec 0 0 1 !test_prec 0 1 0 !test_prec 0 1 1.
+!test_prec 1 0 0 !test_prec 1 0 1 !test_prec 1 1 0 !test_prec 1 1 1.
+EOF
+    AT_CAPTURE_FILE([define.sps])
+    AT_CHECK([pspp --testing-mode define.sps], [0], [dnl
+false false.
+
+false true.
+
+false true.
+
+true true.
+
+true.
+
+false.
+
+false true false
+true true true
+true true true
+true true true
+
+false true false
+true true false
+false false false
+true true false
+])
+done
+AT_CLEANUP
+
+AT_SETUP([macro !LET])
+AT_KEYWORDS([let])
+AT_DATA([define.sps], [dnl
+DEFINE !macro(!POS !CMDEND)
+!LET !v1 = !CONCAT('x',!1,'y')
+!LET !v2 = !QUOTE(!v1)
+!LET !v3 = (!LENGTH(!1) = 1)
+!LET !v4 = (!SUBSTR(!1, 3) = !NULL)
+v1=!v1.
+v2=!v2.
+v3=!v3.
+v4=!v4.
+!ENDDEFINE.
+DEBUG EXPAND.
+!macro 0.
+!macro.
+!macro xyzzy.
+])
+AT_CHECK([pspp --testing-mode define.sps], [0], [dnl
+v1 = x0y.
+v2 = x0y.
+v3 = 1.
+v4 = 1.
+
+v1 = xy.
+v2 = xy.
+v3 = 0.
+v4 = 1.
+
+v1 = xxyzzyy.
+v2 = xxyzzyy.
+v3 = 0.
+v4 = 0.
+])
+AT_CLEANUP
+
+AT_SETUP([macro indexed !DO])
+AT_KEYWORDS([index do])
+AT_DATA([define.sps], [dnl
+DEFINE !title(!POS !TOKENS(1)) !1. !ENDDEFINE.
+
+DEFINE !for(!POS !TOKENS(1) / !POS !TOKENS(1))
+!DO !var = !1 !TO !2 !var !DOEND.
+!ENDDEFINE.
+
+DEFINE !forby(!POS !TOKENS(1) / !POS !TOKENS(1) / !POS !TOKENS(1))
+!DO !var = !1 !TO !2 !BY !3 !var !DOEND.
+!ENDDEFINE.
+
+DEBUG EXPAND.
+!title "increasing".
+!for 1 5.
+!forby 1 5 1.
+!forby 1 5 2.
+!forby 1 5 2.5.
+!forby 1 5 -1.
+
+!title "decreasing".
+!for 5 1.
+!forby 5 1 1.
+!forby 5 1 -1.
+!forby 5 1 -2.
+!forby 5 1 -3.
+
+!title "non-integer".
+!for 1.5 3.5.
+])
+AT_CHECK([pspp --testing-mode define.sps], [0], [dnl
+"increasing".
+
+1 2 3 4 5.
+
+1 2 3 4 5.
+
+1 3 5.
+
+1 3.5.
+
+.
+
+"decreasing".
+
+.
+
+.
+
+5 4 3 2 1.
+
+5 3 1.
+
+5 2.
+
+"non-integer".
+
+1.5 2.5 3.5.
+])
+AT_CLEANUP
+
+AT_SETUP([macro !DO invalid variable names])
+AT_KEYWORDS([index do])
+AT_DATA([define.sps], [dnl
+DEFINE !for(x=!TOKENS(1) / y=!TOKENS(1))
+!DO !x = !x !TO !y !var !DOEND.
+!ENDDEFINE.
+
+DEFINE !for2(x=!TOKENS(1) / y=!TOKENS(1))
+!DO !noexpand = !x !TO !y !var !DOEND.
+!ENDDEFINE.
+
+DEBUG EXPAND.
+!for x=1 y=5.
+!for2 x=1 y=5.
+])
+AT_CHECK([pspp --testing-mode define.sps], [1], [dnl
+define.sps:1-3: At `!x' in the expansion of `!for',
+define.sps:10: error: DEBUG EXPAND: Cannot use argument name or macro keyword
+as !DO variable.
+
+!DO 1 = 1 !TO 5 !var !DOEND.
+
+define.sps:5-7: At `!noexpand' in the expansion of `!for2',
+define.sps:11: error: DEBUG EXPAND: Cannot use argument name or macro keyword
+as !DO variable.
+
+!DO !noexpand = 1 !TO 5 !var !DOEND.
+])
+AT_CLEANUP
+
+AT_SETUP([macro indexed !DO reaches MITERATE])
+AT_KEYWORDS([index do])
+AT_DATA([define.sps], [dnl
+DEFINE !title(!POS !TOKENS(1)) !1. !ENDDEFINE.
+
+DEFINE !for(!POS !TOKENS(1) / !POS !TOKENS(1))
+!DO !var = !1 !TO !2 !var !DOEND.
+!ENDDEFINE.
+
+DEFINE !forby(!POS !TOKENS(1) / !POS !TOKENS(1) / !POS !TOKENS(1))
+!DO !var = !1 !TO !2 !BY !3 !var !DOEND.
+!ENDDEFINE.
+
+SET MITERATE=3.
+DEBUG EXPAND.
+!title "increasing".
+!for 1 5.
+!forby 1 5 1.
+!forby 1 5 2.
+!forby 1 5 2.5.
+!forby 1 5 -1.
+
+!title "decreasing".
+!for 5 1.
+!forby 5 1 1.
+!forby 5 1 -1.
+!forby 5 1 -2.
+!forby 5 1 -3.
+
+!title "non-integer".
+!for 1.5 3.5.
+])
+AT_CHECK([pspp --testing-mode define.sps], [1], [dnl
+"increasing".
+
+In the expansion of `!DO',
+define.sps:3-5: inside the expansion of `!for',
+define.sps:14: error: DEBUG EXPAND: Numerical !DO loop exceeded maximum number
+of iterations 3.  (Use SET MITERATE to change the limit.)
+
+1 2 3 4.
+
+In the expansion of `!DO',
+define.sps:7-9: inside the expansion of `!forby',
+define.sps:15: error: DEBUG EXPAND: Numerical !DO loop exceeded maximum number
+of iterations 3.  (Use SET MITERATE to change the limit.)
+
+1 2 3 4.
+
+1 3 5.
+
+1 3.5.
+
+.
+
+"decreasing".
+
+.
+
+.
+
+In the expansion of `!DO',
+define.sps:7-9: inside the expansion of `!forby',
+define.sps:23: error: DEBUG EXPAND: Numerical !DO loop exceeded maximum number
+of iterations 3.  (Use SET MITERATE to change the limit.)
+
+5 4 3 2.
+
+5 3 1.
+
+5 2.
+
+"non-integer".
+
+1.5 2.5 3.5.
+])
+AT_CLEANUP
+
+AT_SETUP([!BREAK with macro indexed !DO])
+AT_KEYWORDS([index do break])
+AT_DATA([define.sps], [dnl
+DEFINE !title(!POS !TOKENS(1)) !1. !ENDDEFINE.
+
+DEFINE !for(!POS !TOKENS(1) / !POS !TOKENS(1) / !POS !TOKENS(1))
+!DO !var = !1 !TO !2
+  !var
+  !IF 1 !THEN
+    !IF !var = !3 !THEN
+      x
+      !BREAK
+      y
+    !IFEND
+    ,
+  !IFEND
+!DOEND.
+!ENDDEFINE.
+
+DEBUG EXPAND.
+!for 1 5 4.
+])
+AT_CHECK([pspp --testing-mode define.sps], [0], [dnl
+1, 2, 3, 4 x.
+])
+AT_CLEANUP
+
+AT_SETUP([macro list !DO])
+AT_KEYWORDS([index do])
+AT_DATA([define.sps], [dnl
+DEFINE !for(!POS !CMDEND)
+(!DO !i !IN (!1) (!i) !DOEND).
+!ENDDEFINE.
+
+DEBUG EXPAND.
+!for a b c.
+!for 'foo bar baz quux'.
+!for.
+])
+AT_CHECK([pspp --testing-mode define.sps], [0], [dnl
+( (a) (b) (c) ).
+
+( (foo) (bar) (baz) (quux) ).
+
+( ).
+])
+AT_CLEANUP
+
+AT_SETUP([macro list !DO reaches MITERATE])
+AT_KEYWORDS([index do])
+AT_DATA([define.sps], [dnl
+DEFINE !for(!POS !CMDEND)
+(!DO !i !IN (!1) (!i) !DOEND).
+!ENDDEFINE.
+
+SET MITERATE=2.
+DEBUG EXPAND.
+!for a b c.
+!for 'foo bar baz quux'.
+!for.
+])
+AT_CHECK([pspp --testing-mode define.sps], [1], [dnl
+In the expansion of `!DO',
+define.sps:1-3: inside the expansion of `!for',
+define.sps:7: error: DEBUG EXPAND: !DO loop over list exceeded maximum number
+of iterations 2.  (Use SET MITERATE to change the limit.)
+
+( (a) (b) ).
+
+In the expansion of `!DO',
+define.sps:1-3: inside the expansion of `!for',
+define.sps:8: error: DEBUG EXPAND: !DO loop over list exceeded maximum number
+of iterations 2.  (Use SET MITERATE to change the limit.)
+
+( (foo) (bar) ).
+
+( ).
+])
+AT_CLEANUP
+
+AT_SETUP([!BREAK with macro list !DO])
+AT_KEYWORDS([index break do])
+AT_DATA([define.sps], [dnl
+DEFINE !for(!POS !TOKENS(1) / !POS !CMDEND)
+(!DO !i !IN (!2)
+  (!i)
+  !IF 1 !THEN
+    !IF !i = !1 !THEN
+      x
+      !BREAK
+      y
+    !IFEND
+    ,
+  !IFEND
+!DOEND).
+!ENDDEFINE.
+
+DEBUG EXPAND.
+!for d a b c.
+!for baz 'foo bar baz quux'.
+!for e.
+])
+AT_CHECK([pspp --testing-mode define.sps], [0], [dnl
+( (a), (b), (c), ).
+
+( (foo), (bar), (baz)x).
+
+( ).
+])
+AT_CLEANUP
+
+AT_SETUP([macro !LET])
+AT_DATA([define.sps], [dnl
+DEFINE !macro(!pos !enclose('(',')'))
+!LET !x=!1
+!LET !y=!QUOTE(!1)
+!LET !z=(!y="abc")
+!y !z
+!ENDDEFINE.
+
+DEBUG EXPAND.
+!macro(1+2).
+!macro(abc).
+])
+AT_CHECK([pspp --testing-mode define.sps -O format=csv], [0], [dnl
+1 + 2 0
+
+abc 1
+])
+AT_CLEANUP
+
+AT_SETUP([macro !LET invalid variable names])
+AT_DATA([define.sps], [dnl
+DEFINE !macro(x=!tokens(1))
+!LET !x=!x
+!ENDDEFINE.
+
+DEFINE !macro2()
+!LET !do=x
+!ENDDEFINE.
+
+DEBUG EXPAND.
+!macro x=1.
+!macro2.
+])
+AT_CHECK([pspp --testing-mode define.sps -O format=csv], [1], [dnl
+"define.sps:1-3: At `!x' in the expansion of `!macro',
+define.sps:10: error: DEBUG EXPAND: Cannot use argument name or macro keyword ""!x"" as !LET variable."
+
+!LET 1 = 1
+
+"define.sps:5-7: At `!do' in the expansion of `!macro2',
+define.sps:11: error: DEBUG EXPAND: Cannot use argument name or macro keyword ""!do"" as !LET variable."
+
+"define.sps:5-7: At `=' in the expansion of `!macro2',
+define.sps:11: error: DEBUG EXPAND: Expected macro variable name following !DO."
+
+!LET !do = x
+])
+AT_CLEANUP
+
+AT_SETUP([BEGIN DATA inside a macro])
+AT_DATA([define.sps], [dnl
+DEFINE !macro()
+DATA LIST NOTABLE /x 1.
+BEGIN DATA
+1
+2
+3
+END DATA.
+LIST.
+!ENDDEFINE.
+
+!macro
+])
+AT_CHECK([pspp define.sps -O format=csv], [0], [dnl
+Table: Data List
+x
+1
+2
+3
+])
+AT_CLEANUP
+
+AT_SETUP([TITLE and SUBTITLE with macros])
+AT_KEYWORDS([macro])
+for command in TITLE SUBTITLE; do
+    cat >title.sps <<EOF
+DEFINE !paste(!POS !TOKENS(1) / !POS !TOKENS(1))
+!CONCAT(!1,!2)
+!ENDDEFINE.
+$command prefix !paste foo bar suffix.
+SHOW $command.
+EOF
+    cat >expout <<EOF
+title.sps:5: note: SHOW: $command is prefix foobar suffix.
+EOF
+    AT_CHECK([pspp -O format=csv title.sps], [0], [expout])
+done
+AT_CLEANUP
+
+AT_SETUP([error message within macro expansion])
+AT_DATA([define.sps], [dnl
+DEFINE !vars(!POS !TOKENS(1)) a b C !ENDDEFINE.
+DATA LIST NOTABLE /a b 1-2.
+COMPUTE x = !vars x.
+])
+AT_CHECK([pspp -O format=csv define.sps], [1], [dnl
+define.sps:3.13-3.19: error: COMPUTE: Syntax error at `b' (in expansion of `!vars x'): expecting end of command.
+])
+AT_CLEANUP
+
+dnl A macro with keyword arguments needs a token of lookahead
+dnl to find out whether another keyword is present.  Test that
+dnl this special case works OK.
+AT_SETUP([macro calls in each others' lookahead])
+AT_DATA([define.sps], [dnl
+DEFINE !k(x=!DEFAULT(0) !TOKENS(1)/y=!DEFAULT(0) !TOKENS(1))
+(x=!x)(y=!y)
+!ENDDEFINE.
+DEBUG EXPAND.
+!k
+!k x=1
+!k y=2
+!k y=2 x=1
+!k x=1 y=2.
+])
+AT_CHECK([pspp -O format=csv define.sps --testing-mode], [0], [dnl
+(x = 0) (y = 0)
+
+(x = 1) (y = 0)
+
+(x = 0) (y = 2)
+(x = 1) (y = 2)
+
+(x = 1) (y = 2)
+])
+AT_CLEANUP
+
+AT_SETUP([bad token in macro body])
+AT_DATA([define.sps], [dnl
+DEFINE !x()
+x'123'
+!ENDDEFINE.
+])
+AT_CHECK([pspp define.sps], [1], [dnl
+define.sps:3: error: DEFINE: String of hex digits has 3 characters, which is
+not a multiple of 2.
+])
+AT_CLEANUP
+
+AT_SETUP([generic macro function syntax errors])
+AT_DATA([define.sps], [dnl
+DEFINE !a() !SUBSTR !ENDDEFINE.
+DEFINE !b() !SUBSTR x !ENDDEFINE.
+DEFINE !c() !SUBSTR(1x) !ENDDEFINE.
+DEFINE !d() !SUBSTR(1 !ENDDEFINE.
+DEFINE !narg_blanks() !BLANKS() !ENDDEFINE.
+DEFINE !narg_concat() !CONCAT() !ENDDEFINE.
+DEFINE !narg_eval() !EVAL() !ENDDEFINE.
+DEFINE !narg_head() !HEAD() !ENDDEFINE.
+DEFINE !narg_index() !INDEX() !ENDDEFINE.
+DEFINE !narg_length() !LENGTH() !ENDDEFINE.
+DEFINE !narg_null() !NULL() !ENDDEFINE.
+DEFINE !narg_quote() !QUOTE() !ENDDEFINE.
+DEFINE !narg_substr() !SUBSTR() !ENDDEFINE.
+DEFINE !narg_tail() !TAIL() !ENDDEFINE.
+DEFINE !narg_unquote() !UNQUOTE() !ENDDEFINE.
+DEFINE !narg_upcase() !UPCASE() !ENDDEFINE.
+dnl )
+DEBUG EXPAND.
+!a.
+!b.
+!c.
+!d.
+!narg_blanks.
+!narg_concat.
+!narg_eval.
+!narg_head.
+!narg_index.
+!narg_length.
+!narg_null.
+!narg_quote.
+!narg_substr.
+!narg_tail.
+!narg_unquote.
+!narg_upcase.
+])
+AT_CHECK([pspp --testing-mode define.sps], [1], [dnl
+define.sps:1: In the expansion of `!a',
+define.sps:18: error: DEBUG EXPAND: `@{:@' expected following !SUBSTR.
+
+!SUBSTR
+
+define.sps:2: At `x' in the expansion of `!b',
+define.sps:19: error: DEBUG EXPAND: `@{:@' expected following !SUBSTR.
+
+!SUBSTR x
+
+define.sps:3: At `x' in the expansion of `!c',
+define.sps:20: error: DEBUG EXPAND: `,' or `@:}@' expected in call to macro
+function !SUBSTR.
+
+!SUBSTR(1 x)
+
+define.sps:4: In the expansion of `!d',
+define.sps:21: error: DEBUG EXPAND: Missing `@:}@' in call to macro function !
+SUBSTR.
+
+!SUBSTR@{:@1
+
+define.sps:5: In the expansion of `!narg_blanks',
+define.sps:22: error: DEBUG EXPAND: Macro function !BLANKS takes one argument
+(not 0).
+
+!BLANKS( )
+
+define.sps:6: In the expansion of `!narg_concat',
+define.sps:23: error: DEBUG EXPAND: Macro function !CONCAT needs at least one
+argument.
+
+!CONCAT( )
+
+define.sps:7: In the expansion of `!narg_eval',
+define.sps:24: error: DEBUG EXPAND: Macro function !EVAL takes one argument
+(not 0).
+
+!EVAL( )
+
+define.sps:8: In the expansion of `!narg_head',
+define.sps:25: error: DEBUG EXPAND: Macro function !HEAD takes one argument
+(not 0).
+
+!HEAD( )
+
+define.sps:9: In the expansion of `!narg_index',
+define.sps:26: error: DEBUG EXPAND: Macro function !INDEX takes two arguments
+(not 0).
+
+!INDEX( )
+
+define.sps:10: In the expansion of `!narg_length',
+define.sps:27: error: DEBUG EXPAND: Macro function !LENGTH takes one argument
+(not 0).
+
+!LENGTH( )
+
+( )
+
+define.sps:12: In the expansion of `!narg_quote',
+define.sps:29: error: DEBUG EXPAND: Macro function !QUOTE takes one argument
+(not 0).
+
+!QUOTE( )
+
+define.sps:13: In the expansion of `!narg_substr',
+define.sps:30: error: DEBUG EXPAND: Macro function !SUBSTR takes two or three
+arguments (not 0).
+
+!SUBSTR( )
+
+define.sps:14: In the expansion of `!narg_tail',
+define.sps:31: error: DEBUG EXPAND: Macro function !TAIL takes one argument
+(not 0).
+
+!TAIL( )
+
+define.sps:15: In the expansion of `!narg_unquote',
+define.sps:32: error: DEBUG EXPAND: Macro function !UNQUOTE takes one argument
+(not 0).
+
+!UNQUOTE( )
+
+define.sps:16: In the expansion of `!narg_upcase',
+define.sps:33: error: DEBUG EXPAND: Macro function !UPCASE takes one argument
+(not 0).
+
+!UPCASE( )
+])
+AT_CLEANUP
+
+AT_SETUP([specific macro function syntax errors])
+AT_DATA([define.sps], [dnl
+DEFINE !a() !BLANKS(x). !ENDDEFINE.
+DEFINE !b() !SUBSTR(x, y). !ENDDEFINE.
+DEFINE !c() !SUBSTR(x, 1, z). !ENDDEFINE.
+DEBUG EXPAND.
+!a.
+!b.
+!c.
+])
+AT_CHECK([pspp --testing-mode define.sps], [1], [dnl
+define.sps:1: In the expansion of `!a',
+define.sps:5: error: DEBUG EXPAND: Argument to !BLANKS must be non-negative
+integer (not "x").
+
+!BLANKS(x).
+
+define.sps:2: In the expansion of `!b',
+define.sps:6: error: DEBUG EXPAND: Second argument of !SUBSTR must be positive
+integer (not "y").
+
+!SUBSTR(x, y).
+
+define.sps:3: In the expansion of `!c',
+define.sps:7: error: DEBUG EXPAND: Third argument of !SUBSTR must be non-
+negative integer (not "z").
+
+!SUBSTR(x, 1, z).
+])
+AT_CLEANUP
+
+AT_SETUP([macro expression errors])
+AT_DATA([define.sps], [dnl
+DEFINE !a() !LET !x = (1. !ENDDEFINE dnl )
+
+DEFINE !b() !DO !x = x. !ENDDEFINE.
+DEFINE !c() !LET !x = (). !ENDDEFINE.
+DEBUG EXPAND.
+!a.
+!b.
+!c.
+])
+AT_CHECK([pspp --testing-mode define.sps], [1], [dnl
+define.sps:1-2: At `.' in the expansion of `!a',
+define.sps:5: error: DEBUG EXPAND: Expecting ')' in macro expression.
+
+!LET !x = (1.
+
+At `x' in the expansion of `!DO',
+define.sps:2: inside the expansion of `!b',
+define.sps:6: error: DEBUG EXPAND: Macro expression must evaluate to a number
+(not "x").
+
+!DO !x = x.
+
+define.sps:3: At `)' in the expansion of `!c',
+define.sps:7: error: DEBUG EXPAND: Expecting literal or function invocation in
+macro expression.
+
+!LET !x = ( ).
+])
+AT_CLEANUP
+
+AT_SETUP([macro !IF errors])
+AT_KEYWORDS([IF])
+AT_DATA([define.sps], [dnl
+DEFINE !a() !IF 1 !ENDDEFINE.
+DEFINE !b() !IF 1 !THEN !ENDDEFINE.
+DEFINE !c() !IF 1 !THEN !ELSE !ENDDEFINE.
+DEBUG EXPAND.
+!a.
+!b.
+!c.
+])
+AT_CHECK([pspp --testing-mode define.sps], [1], [dnl
+define.sps:1: In the expansion of `!a',
+define.sps:5: error: DEBUG EXPAND: !THEN expected in macro !IF construct.
+
+!IF 1
+
+define.sps:2: In the expansion of `!b',
+define.sps:6: error: DEBUG EXPAND: !ELSE or !IFEND expected in macro !IF
+construct.
+
+!IF 1 !THEN
+
+define.sps:3: In the expansion of `!c',
+define.sps:7: error: DEBUG EXPAND: !IFEND expected in macro !IF construct.
+
+!IF 1 !THEN !ELSE
+])
+AT_CLEANUP
+
+AT_SETUP([macro !LET errors])
+AT_KEYWORDS([LET])
+AT_DATA([define.sps], [dnl
+DEFINE !a() !LET !ENDDEFINE.
+DEFINE !b() !LET 0 !ENDDEFINE.
+DEFINE !c() !LET !x !ENDDEFINE.
+DEFINE !d() !LET !x y !ENDDEFINE.
+DEBUG EXPAND.
+!a.
+!b.
+!c.
+!d.
+])
+AT_CHECK([pspp --testing-mode define.sps], [1], [dnl
+define.sps:1: In the expansion of `!a',
+define.sps:6: error: DEBUG EXPAND: Expected macro variable name following !LET.
+
+!LET
+
+define.sps:2: At `0' in the expansion of `!b',
+define.sps:7: error: DEBUG EXPAND: Expected macro variable name following !LET.
+
+!LET 0
+
+define.sps:3: In the expansion of `!c',
+define.sps:8: error: DEBUG EXPAND: Expected `=' following !LET.
+
+!LET !x
+
+define.sps:4: At `y' in the expansion of `!d',
+define.sps:9: error: DEBUG EXPAND: Expected `=' following !LET.
+
+!LET !x y
+])
+AT_CLEANUP
+
+AT_SETUP([macro !DO errors])
+AT_KEYWORDS([DO])
+AT_DATA([define.sps], [dnl
+DEFINE !a() !DO !ENDDEFINE.
+DEFINE !b() !DO 0 !ENDDEFINE.
+DEFINE !c() !DO !x !ENDDEFINE.
+DEFINE !d() !DO !x !in (x) !ENDDEFINE.
+DEFINE !e() !DO !x = x. !ENDDEFINE.
+DEFINE !f() !DO !x = 5 x !ENDDEFINE.
+DEFINE !g() !DO !x = 5 !TO 6 !BY 0 !ENDDEFINE.
+DEFINE !h() !DO !x !ENDDEFINE.
+DEFINE !i() !DO !x 0 !ENDDEFINE.
+DEFINE !j() !BREAK !ENDDEFINE.
+DEBUG EXPAND.
+!a.
+!b.
+!c.
+!d.
+!e.
+!f.
+!g.
+!h.
+!i.
+!j.
+])
+AT_CHECK([pspp --testing-mode define.sps], [1], [dnl
+define.sps:1: In the expansion of `!a',
+define.sps:12: error: DEBUG EXPAND: Expected macro variable name following !DO.
+
+!DO
+
+define.sps:2: At `0' in the expansion of `!b',
+define.sps:13: error: DEBUG EXPAND: Expected macro variable name following !DO.
+
+!DO 0
+
+define.sps:3: In the expansion of `!c',
+define.sps:14: error: DEBUG EXPAND: Expected `=' or !IN in !DO loop.
+
+!DO !x
+
+In the expansion of `!DO',
+define.sps:4: inside the expansion of `!d',
+define.sps:15: error: DEBUG EXPAND: Missing !DOEND.
+
+!DO !x !in(x)
+
+At `x' in the expansion of `!DO',
+define.sps:5: inside the expansion of `!e',
+define.sps:16: error: DEBUG EXPAND: Macro expression must evaluate to a number
+(not "x").
+
+!DO !x = x.
+
+At `x' in the expansion of `!DO',
+define.sps:6: inside the expansion of `!f',
+define.sps:17: error: DEBUG EXPAND: Expected !TO in numerical !DO loop.
+
+!DO !x = 5 x
+
+In the expansion of `!DO',
+define.sps:7: inside the expansion of `!g',
+define.sps:18: error: DEBUG EXPAND: !BY value cannot be zero.
+
+!DO !x = 5 !TO 6 !BY 0
+
+define.sps:8: In the expansion of `!h',
+define.sps:19: error: DEBUG EXPAND: Expected `=' or !IN in !DO loop.
+
+!DO !x
+
+define.sps:9: At `0' in the expansion of `!i',
+define.sps:20: error: DEBUG EXPAND: Expected `=' or !IN in !DO loop.
+
+!DO !x 0
+
+define.sps:10: At `!BREAK' in the expansion of `!j',
+define.sps:21: error: DEBUG EXPAND: !BREAK outside !DO.
+
+])
+AT_CLEANUP
+
+AT_SETUP([macros in comments])
+AT_KEYWORDS([macro])
+AT_DATA([define.sps], [dnl
+DEFINE !macro() x y z !ENDDEFINE.
+/* !macro.
+*!macro.
+DEBUG EXPAND.
+!macro.
+])
+AT_CHECK([pspp --testing-mode define.sps], [0], [dnl
+x y z
+])
+AT_CLEANUP
+
+AT_SETUP([DEFINE syntax errors])
+AT_KEYWORDS([macro])
+AT_DATA([define.sps], [dnl
+DEFINE !macro(!POSITIONAL !CHAREND('x y')) !ENDDEFINE.
+DEFINE !macro(a=!TOKENS(1)/!POSITIONAL !TOKENS(1)) !ENDDEFINE.
+DEFINE !macro(!a=!TOKENS(1)) !ENDDEFINE.
+DEFINE !macro(do=!TOKENS(1)) !ENDDEFINE.
+DEFINE 0() !ENDDEFINE.
+DEFINE x y () !ENDDEFINE.
+DEFINE !macro(1) !ENDDEFINE.
+DEFINE !macro(x 2) !ENDDEFINE.
+DEFINE !macro(x=!DEFAULT 3) !ENDDEFINE.
+DEFINE !macro(x=!TOKENS 4) !ENDDEFINE.
+DEFINE !macro(x=!TOKENS(x)) !ENDDEFINE.
+DEFINE !macro(x=!TOKENS(1 5)) !ENDDEFINE.
+DEFINE !macro(x=!ENCLOSE 6) !ENDDEFINE.
+DEFINE !macro(x=!ENCLOSE('x' y)) !ENDDEFINE.
+DEFINE !macro(x=!ENCLOSE('x',y)) !ENDDEFINE.
+DEFINE !macro(x=!ENCLOSE('x','y' z)) !ENDDEFINE.
+DEFINE !macro(x=!CHAREND 7) !ENDDEFINE.
+DEFINE !macro(x=!CHAREND(8)) !ENDDEFINE.
+DEFINE !macro(x=!CHAREND('x' 9)) !ENDDEFINE.
+DEFINE !macro(x=!WTF) !ENDDEFINE.
+DEFINE !macro(x=!TOKENS(1) x) !ENDDEFINE.
+DEFINE !macro()
+])
+AT_CHECK([pspp define.sps], [1], [dnl
+define.sps:1.36-1.40: error: DEFINE: Syntax error at `'x y'': String must
+contain exactly one token.
+
+define.sps:2.40-2.46: error: DEFINE: Syntax error at `!TOKENS': Positional
+parameters must precede keyword parameters.
+
+define.sps:3.15-3.16: error: DEFINE: Syntax error at `!a': Keyword macro
+parameter must be named in definition without "!" prefix.
+
+define.sps:4.15-4.16: error: DEFINE: Syntax error at `do': Cannot use macro
+keyword "do" as an argument name.
+
+define.sps:5.8: error: DEFINE: Syntax error at `0': expecting identifier.
+
+define.sps:6.10: error: DEFINE: Syntax error at `y': expecting `@{:@'.
+
+define.sps:7.15: error: DEFINE: Syntax error at `1': expecting identifier.
+
+define.sps:8.17: error: DEFINE: Syntax error at `2': expecting `='.
+
+define.sps:9.26: error: DEFINE: Syntax error at `3': expecting `@{:@'.
+
+define.sps:10.25: error: DEFINE: Syntax error at `4': expecting `('.
+
+define.sps:11.25: error: DEFINE: Syntax error at `x': Expected positive integer
+for !TOKENS.
+
+define.sps:12.27: error: DEFINE: Syntax error at `5': expecting `)'.
+
+define.sps:13.26: error: DEFINE: Syntax error at `6': expecting `('.
+
+define.sps:14.30: error: DEFINE: Syntax error at `y': expecting `,'.
+
+define.sps:15.30: error: DEFINE: Syntax error at `y': expecting string.
+
+define.sps:16.34: error: DEFINE: Syntax error at `z': expecting `)'.
+
+define.sps:17.26: error: DEFINE: Syntax error at `7': expecting `('.
+
+define.sps:18.26: error: DEFINE: Syntax error at `8': expecting string.
+
+define.sps:19.30: error: DEFINE: Syntax error at `9': expecting `)'.
+
+define.sps:20.17-20.20: error: DEFINE: Syntax error at `!WTF': expecting !
+TOKENS, !CHAREND, !ENCLOSE, or !CMDEND.
+
+define.sps:21.28: error: DEFINE: Syntax error at `x': expecting `/'.
+
+define.sps:23.1: error: DEFINE: Syntax error at end of command: Expecting macro
+body or !ENDDEFINE.
+])
+AT_CLEANUP

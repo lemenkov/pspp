@@ -29,6 +29,7 @@
 #include "libpspp/prompt.h"
 
 struct lexer;
+struct macro;
 
 /* Handling of errors. */
 enum lex_error_mode
@@ -90,6 +91,9 @@ struct lex_reader *lex_reader_for_substring_nocopy (struct substring, const char
 struct lexer *lex_create (void);
 void lex_destroy (struct lexer *);
 
+/* Macros. */
+void lex_define_macro (struct lexer *, struct macro *);
+
 /* Files. */
 void lex_include (struct lexer *, struct lex_reader *);
 void lex_append (struct lexer *, struct lex_reader *);
@@ -143,8 +147,8 @@ double lex_next_tokval (const struct lexer *, int n);
 struct substring lex_next_tokss (const struct lexer *, int n);
 
 /* Token representation. */
-struct substring lex_next_representation (const struct lexer *,
-                                          int n0, int n1);
+char *lex_next_representation (const struct lexer *, int n0, int n1);
+bool lex_next_is_from_macro (const struct lexer *, int n);
 
 /* Current position. */
 int lex_get_first_line_number (const struct lexer *, int n);

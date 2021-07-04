@@ -59,7 +59,7 @@ parse_title (struct lexer *lexer, void (*set_title) (const char *))
 
       /* Get the raw representation of all the tokens, including any space
          between them, and use it as the title. */
-      char *title = ss_xstrdup (lex_next_representation (lexer, 0, n - 1));
+      char *title = lex_next_representation (lexer, 0, n - 1);
       set_title (title);
       free (title);
 

@@ -221,6 +221,8 @@ output_msg (const struct msg *m_, void *lexer_)
   struct msg m = {
     .category = m_->category,
     .severity = m_->severity,
+    .stack = m_->stack,
+    .n_stack = m_->n_stack,
     .location = (m_->location ? m_->location
                  : lexer ? lex_get_lines (lexer, 0, 0)
                  : NULL),

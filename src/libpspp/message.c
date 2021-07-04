@@ -106,11 +106,17 @@ msg_set_handler (void (*handler) (const struct msg *, void *aux), void *aux)
 /* msg_location. */
 
 void
+msg_location_uninit (struct msg_location *loc)
+{
+  free (loc->file_name);
+}
+
+void
 msg_location_destroy (struct msg_location *loc)
 {
   if (loc)
     {
-      free (loc->file_name);
+      msg_location_uninit (loc);
       free (loc);
     }
 }
@@ -197,6 +203,31 @@ msg_location_format (const struct msg_location *loc, struct string *s)
     }
 }
 
+/* msg_stack */
+
+void
+msg_stack_destroy (struct msg_stack *stack)
+{
+  if (stack)
+    {
+      msg_location_uninit (&stack->location);
+      free (stack->description);
+      free (stack);
+    }
+}
+
+struct msg_stack *
+msg_stack_dup (const struct msg_stack *src)
+{
+  struct msg_stack *dst = xmalloc (sizeof *src);
+  *dst = (struct msg_stack) {
+    .location = src->location,
+    .description = xstrdup_if_nonnull (src->description),
+  };
+  dst->location.file_name = xstrdup_if_nonnull (dst->location.file_name);
+  return dst;
+}
+
 /* Working with messages. */
 
 const char *
@@ -218,10 +249,16 @@ msg_severity_to_string (enum msg_severity severity)
 struct msg *
 msg_dup (const struct msg *src)
 {
+  struct msg_stack **ms = xmalloc (src->n_stack * sizeof *ms);
+  for (size_t i = 0; i < src->n_stack; i++)
+    ms[i] = msg_stack_dup (src->stack[i]);
+
   struct msg *dst = xmalloc (sizeof *dst);
   *dst = (struct msg) {
     .category = src->category,
     .severity = src->severity,
+    .stack = ms,
+    .n_stack = src->n_stack,
     .location = msg_location_dup (src->location),
     .command_name = xstrdup_if_nonnull (src->command_name),
     .text = xstrdup (src->text),
@@ -239,6 +276,9 @@ msg_destroy (struct msg *m)
 {
   if (m)
     {
+      for (size_t i = 0; i < m->n_stack; i++)
+        msg_stack_destroy (m->stack[i]);
+      free (m->stack);
       msg_location_destroy (m->location);
       free (m->text);
       free (m->command_name);
@@ -253,6 +293,16 @@ msg_to_string (const struct msg *m)
 
   ds_init_empty (&s);
 
+  for (size_t i = 0; i < m->n_stack; i++)
+    {
+      const struct msg_stack *ms = m->stack[i];
+      if (!msg_location_is_empty (&ms->location))
+        {
+          msg_location_format (&ms->location, &s);
+          ds_put_cstr (&s, ": ");
+        }
+      ds_put_format (&s, "%s\n", ms->description);
+    }
   if (m->category != MSG_C_GENERAL && !msg_location_is_empty (m->location))
     {
       msg_location_format (m->location, &s);

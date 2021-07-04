@@ -339,6 +339,7 @@ TESTSUITE_AT = \
 	tests/data/sys-file.at \
 	tests/data/encrypted-file.at \
 	tests/language/command.at \
+	tests/language/control/define.at \
 	tests/language/control/do-if.at \
 	tests/language/control/do-repeat.at \
 	tests/language/control/loop.at \

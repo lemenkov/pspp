@@ -6,6 +6,8 @@ Please send PSPP bug reports to bug-gnu-pspp@gnu.org.
 
 Changes from 1.4.1 to 1.5.3:
 
+ * The DEFINE command is now supported.
+
  * An error in the displayed signficance of oneway anova
    contrasts tests has been corrected.
 

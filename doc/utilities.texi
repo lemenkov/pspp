@@ -938,21 +938,25 @@ The following subcommands affect the interpretation of macros.
 
 @table @asis
 @item MEXPAND
+@anchor{SET MEXPAND}
 Controls whether macros are expanded.  The default is ON.
 
 @item MPRINT
+@anchor{SET MPRINT}
 Controls whether the expansion of macros is included in output.  This
 is separate from whether command syntax in general is included in
 output.  The default is OFF.
 
 @item MITERATE
+@anchor{SET MITERATE}
 Limits the number of iterations executed in @code{!DO} loops within
 macros.  This does not affect other language constructs such as
 @cmd{LOOP}.  This must be set to a positive integer.  The default is
 1000.
 
 @item MNEST
-Limits the number of levels of nested macro expansion.  This must be
+@anchor{SET MNEST}
+Limits the number of levels of nested macro expansions.  This must be
 set to a positive integer.  The default is 50.
 @end table
 

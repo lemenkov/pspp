@@ -24,6 +24,8 @@ language_lexer_sources = \
 	src/language/lexer/include-path.h \
 	src/language/lexer/lexer.c \
 	src/language/lexer/lexer.h \
+	src/language/lexer/macro.c \
+	src/language/lexer/macro.h \
 	src/language/lexer/format-parser.c \
 	src/language/lexer/format-parser.h \
 	src/language/lexer/scan.c \

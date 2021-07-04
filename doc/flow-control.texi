@@ -20,6 +20,7 @@ looping, and flow of control.
 
 @menu
 * BREAK::                       Exit a loop.
+* DEFINE::                      Define a macro.
 * DO IF::                       Conditionally execute a block of code.
 * DO REPEAT::                   Textually repeat a code block.
 * LOOP::                        Repeat a block of code.
@@ -38,6 +39,799 @@ BREAK.
 
 @cmd{BREAK} is allowed only inside @cmd{LOOP}@dots{}@cmd{END LOOP}.
 @xref{LOOP}, for more details.
+
+@node DEFINE
+@section DEFINE
+@vindex DEFINE
+@cindex macro
+
+@subsection Overview
+
+@display
+@t{DEFINE} @i{macro_name}@t{(}@r{[}@i{argument}@r{[}@t{/}@i{argument}@r{]@dots{}]}@t{)}
+@dots{}@i{body}@dots{}
+@t{!ENDDEFINE.}
+@end display
+
+Each @i{argument} takes the following form:
+@display
+@r{@{}@i{!arg_name} @t{=},@t{!POSITIONAL}@r{@}}
+@r{[}@t{!DEFAULT(}@i{default}@t{)}@r{]}
+@r{[}@t{!NOEXPAND}@r{]}
+@r{@{}@t{!TOKENS(}@i{count}@t{)},@t{!CHAREND('}@i{token}@t{')},@t{!ENCLOSE('}@i{start}@t{','}@i{end}@t{')},@t{!CMDEND}@}
+@end display
+
+The following directives may be used within @i{body}:
+@example
+!OFFEXPAND
+!ONEXPAND
+@end example
+
+The following functions may be used within the body:
+@display
+@t{!BLANKS(}@i{count}@t{)}
+@t{!CONCAT(}@i{arg}@dots{}@t{)}
+@t{!EVAL(}@i{arg}@t{)}
+@t{!HEAD(}@i{arg}@t{)}
+@t{!INDEX(}@i{haystack}@t{,} @i{needle}@t{)}
+@t{!LENGTH(}@i{arg}@t{)}
+@t{!NULL}
+@t{!QUOTE(}@i{arg}@t{)}
+@t{!SUBSTR(}@i{arg}@t{,} @i{start}[@t{,} @i{count}]@t{)}
+@t{!TAIL(}@i{arg}@t{)}
+@t{!UNQUOTE(}@i{arg}@t{)}
+@t{!UPCASE(}@i{arg}@t{)}
+@end display
+
+The body may also include the following constructs:
+@display
+@t{!IF (}@i{condition}@t{) !THEN} @i{true-expansion} @t{!ENDIF}
+@t{!IF (}@i{condition}@t{) !THEN} @i{true-expansion} @t{!ELSE} @i{false-expansion} @t{!ENDIF}
+
+@t{!DO} @i{!var} @t{=} @i{start} @t{!TO} @i{end} [@t{!BY} @i{step}]
+  @i{body}
+@t{!DOEND}
+@t{!DO} @i{!var} @t{!IN} @t{(}@i{expression}@t{)}
+  @i{body}
+@t{!DOEND}
+
+@t{!LET} @i{!var} @t{=} @i{expression}
+@end display
+
+@subsection Introduction
+
+The DEFINE command creates a @dfn{macro}, which is a name for a
+fragment of PSPP syntax called the macro's @dfn{body}.  Following the
+DEFINE command, syntax may @dfn{call} the macro by name any number of
+times.  Each call substitutes, or @dfn{expands}, the macro's body in
+place of the call, as if the body had been written in its place.
+
+The following syntax defines a macro named @code{!vars} that expands
+to the variable names @code{v1 v2 v3}.  The macro's name begins with
+@samp{!}, which is optional for macro names.  The @code{()} following
+the macro name are required:
+
+@example
+DEFINE !vars()
+v1 v2 v3
+!ENDDEFINE.
+@end example
+
+Here are two ways that @code{!vars} might be called given the
+preceding definition:
+
+@example
+DESCRIPTIVES !vars.
+FREQUENCIES /VARIABLES=!vars.
+@end example
+
+With macro expansion, the above calls are equivalent to the following:
+
+@example
+DESCRIPTIVES v1 v2 v3.
+FREQUENCIES /VARIABLES=v1 v2 v3.
+@end example
+
+The @code{!vars} macro expands to a fixed body.  Macros may have more
+sophisticated contents:
+
+@itemize @bullet
+@item
+Macro @dfn{arguments} that are substituted into the body whenever they
+are named.  The values of a macro's arguments are specified each time
+it is called.  @xref{Macro Arguments}.
+
+@item
+Macro @dfn{functions}, expanded when the macro is called.  @xref{Macro
+Functions}.
+
+@item
+@code{!IF} constructs, for conditional expansion.  @xref{Macro
+Conditional Expansion}.
+
+@item
+Two forms of @code{!DO} construct, for looping over a numerical range
+or a collection of tokens.  @xref{Macro Loops}.
+
+@item
+@code{!LET} constructs, for assigning to macro variables.  @xref{Macro
+Variable Assignment}.
+@end itemize
+
+Many identifiers associated with macros begin with @samp{!}, a
+character not normally allowed in identifiers.  These identifiers are
+reserved only for use with macros, which helps keep them from being
+confused with other kinds of identifiers.
+
+The following sections provide more details on macro syntax and
+semantics.
+
+@node Macro Bodies
+@subsection Macro Bodies
+
+As previously shown, a macro body may contain a fragment of a PSPP
+command (such as a variable name).  A macro body may also contain full
+PSPP commands.  In the latter case, the macro body should also contain
+the command terminators.
+
+Most PSPP commands may occur within a macro.  The @code{DEFINE}
+command itself is one exception, because the inner @code{!ENDDEFINE}
+ends the outer macro definition.  For compatibility, @code{BEGIN
+DATA}@dots{}@code{END DATA.} should not be used within a macro.
+
+The body of a macro may call another macro.  The following shows one
+way that could work:
+
+@example
+DEFINE !commands()
+DESCRIPTIVES !vars.
+FREQUENCIES /VARIABLES=!vars.
+!ENDDEFINE.
+
+DEFINE !vars() v1 v2 v3 !ENDDEFINE.
+!commands
+
+* We can redefine the variables macro to analyze different variables:
+DEFINE !vars() v4 v5 !ENDDEFINE.
+!commands
+@end example
+
+The @code{!commands} macro would be easier to use if it took the
+variables to analyze as an argument rather than through another macro.
+The following section shows how to do that.
+
+@node Macro Arguments
+@subsection Macro Arguments
+
+This section explains how to use macro arguments.  As an initial
+example, the following syntax defines a macro named @code{!analyze}
+that takes all the syntax up to the first command terminator as an
+argument:
+
+@example
+DEFINE !analyze(!POSITIONAL !CMDEND)
+DESCRIPTIVES !1.
+FREQUENCIES /VARIABLES=!1.
+!ENDDEFINE.
+@end example
+
+@noindent When @code{!analyze} is called, it expands to a pair of analysis
+commands with each @code{!1} in the body replaced by the argument.
+That is, these calls:
+
+@example
+!analyze v1 v2 v3.
+!analyze v4 v5.
+@end example
+
+@noindent act like the following:
+
+@example
+DESCRIPTIVES v1 v2 v3.
+FREQUENCIES /VARIABLES=v1 v2 v3.
+DESCRIPTIVES v4 v5.
+FREQUENCIES /VARIABLES=v4 v5.
+@end example
+
+Macros may take any number of arguments, described within the
+parentheses in the DEFINE command.  Arguments come in two varieties
+based on how their values are specified when the macro is called:
+
+@itemize @bullet
+@item
+A @dfn{positional} argument has a required value that follows the
+macro's name.  Use the @code{!POSITIONAL} keyword to declare a
+positional argument.
+
+When a macro is called, every positional argument must be given a
+value in the same order as the defintion.
+
+References to a positional argument in a macro body are numbered:
+@code{!1} is the first positional argument, @code{!2} the second, and
+so on.  In addition, @code{!*} expands to all of the positional
+arguments' values, separated by spaces.
+
+The following example uses a positional argument:
+
+@example
+DEFINE !analyze(!POSITIONAL !CMDEND)
+DESCRIPTIVES !1.
+FREQUENCIES /VARIABLES=!1.
+!ENDDEFINE.
+
+!analyze v1 v2 v3.
+!analyze v4 v5.
+@end example
+
+@item
+A @dfn{keyword} argument has a name.  In the macro call, its value is
+specified with the syntax @code{@i{name}=@i{value}}.  The names allow
+keyword argument values to take any order in the call, and even to be
+omitted.  When one is omitted, a default value is used: either the
+value specified in @code{!DEFAULT(@i{value})}, or an empty value
+otherwise.
+
+In declaration and calls, a keyword argument's name may not begin with
+@samp{!}, but references to it in the macro body do start with a
+leading @samp{!}.
+
+The following example uses a keyword argument that defaults to ALL if
+the argument is not assigned a value:
+
+@example
+DEFINE !analyze_kw(vars=!DEFAULT(ALL) !CMDEND)
+DESCRIPTIVES !vars.
+FREQUENCIES /VARIABLES=!vars.
+!ENDDEFINE.
+
+!analyze_kw vars=v1 v2 v3.  /* Analyze specified variables.
+!analyze_kw.                /* Analyze all variables.
+@end example
+@end itemize
+
+If a macro has both positional and keyword arguments, then the
+positional arguments must come first in the DEFINE command, and their
+values also come first in macro calls.
+
+Each argument declaration specifies the form of its value:
+
+@table @code
+@item !TOKENS(@i{count})
+Exactly @var{count} tokens, e.g.@: @code{!TOKENS(1)} for a single
+token.  Each identifier, number, quoted string, operator, or
+punctuator is a token.  @xref{Tokens}, for a complete definition.
+
+The following variant of @code{!analyze_kw} accepts only a single
+variable name (or @code{ALL}) as its argument:
+
+@example
+DEFINE !analyze_one_var(!POSITIONAL !TOKENS(1))
+DESCRIPTIVES !1.
+FREQUENCIES /VARIABLES=!1.
+!ENDDEFINE.
+
+!analyze_one_var v1.
+@end example
+
+@item !CHAREND('@var{token}')
+Any number of tokens up to @var{token}, which should be an operator or
+punctuator token such as @samp{/} or @samp{+}.  The @var{token} does
+not become part of the value.
+
+With the following variant of @code{!analyze_kw}, the variables must
+be following by @samp{/}:
+
+@example
+DEFINE !analyze_parens(vars=!CHARNED('/'))
+DESCRIPTIVES !vars.
+FREQUENCIES /VARIABLES=!vars.
+!ENDDEFINE.
+
+!analyze_parens vars=v1 v2 v3/.
+@end example
+
+@item !ENCLOSE('@var{start}','@var{end}')
+Any number of tokens enclosed between @var{start} and @var{end}, which
+should each be operator or punctuator tokens.  For example, use
+@code{!ENCLOSE('(',')')} for a value enclosed within parentheses.
+(Such a value could never have right parentheses inside it, even
+paired with left parentheses.)  The start and end tokens are not part
+of the value.
+
+With the following variant of @code{!analyze_kw}, the variables must
+be specified within parentheses:
+
+@example
+DEFINE !analyze_parens(vars=!ENCLOSE('(',')'))
+DESCRIPTIVES !vars.
+FREQUENCIES /VARIABLES=!vars.
+!ENDDEFINE.
+
+!analyze_parens vars=(v1 v2 v3).
+@end example
+
+@item !CMDEND
+Any number of tokens up to the end of the command.  This should be
+used only for the last positional parameter, since it consumes all of
+the tokens in the command calling the macro.
+
+The following variant of @code{!analyze_kw} takes all the variable
+names up to the end of the command as its argument:
+
+@example
+DEFINE !analyze_kw(vars=!CMDEND)
+DESCRIPTIVES !vars.
+FREQUENCIES /VARIABLES=!vars.
+!ENDDEFINE.
+
+!analyze_kw vars=v1 v2 v3.
+@end example
+@end table
+
+By default, when an argument's value contains a macro call, the call
+is expanded each time the argument appears in the macro's body.  The
+@code{!NOEXPAND} keyword in an argument declaration suppresses this
+expansion.  @xref{Controlling Macro Expansion}.
+
+@node Controlling Macro Expansion
+@subsection Controlling Macro Expansion
+
+Multiple factors control whether macro calls are expanded in different
+situations.  At the highest level, @code{SET MEXPAND} controls whether
+macro calls are expanded.  By default, it is enabled.  @xref{SET
+MEXPAND}, for details.
+
+A macro body may contain macro calls.  By default, these are expanded.
+If a macro body contains @code{!OFFEXPAND} or @code{!ONEXPAND}
+directives, then @code{!OFFEXPAND} disables expansion of macro calls
+until the following @code{!ONEXPAND}.
+
+A macro argument's value may contain a macro call.  These macro calls
+are expanded, unless the argument was declared with the
+@code{!NOEXPAND} keyword.
+
+The argument to a macro function is a special context that does not
+expand macro calls.  For example, if @code{!vars} is the name of a
+macro, then @code{!LENGTH(!vars)} expands to 5, as does
+@code{!LENGTH(!1)} if positional argument 1 has value @code{!vars}.
+To expand macros in these cases, use the @code{!EVAL} macro function,
+e.g.@: @code{!LENGTH(!EVAL(!vars))} or @code{!LENGTH(!EVAL(!1))}.
+@xref{Macro Functions}, for details.
+
+These rules apply to macro calls, not to uses of macro functions and
+macro arguments within a macro body, which are always expanded.
+
+@node Macro Functions
+@subsection Macro Functions
+
+Macro bodies may manipulate syntax using macro functions.  Macro
+functions accept tokens as arguments and expand to sequences of
+characters.
+
+The arguments to macro functions have a restricted form.  They may
+only be a single token (such as an identifier or a string), a macro
+argument, or a call to a macro function.  Thus, the following are
+valid macro arguments:
+@example
+x    5.0    x    !1    "5 + 6"    !CONCAT(x,y)
+@end example
+@noindent and the following are not:
+@example
+x y    5+6
+@end example
+
+Macro functions expand to sequences of characters.  When these
+character strings are processed further as character strings, e.g.@:
+with @code{!LENGTH}, any character string is valid.  When they are
+interpreted as PSPP syntax, e.g.@: when the expansion becomes part of
+a command, they need to be valid for that purpose.  For example,
+@code{!UNQUOTE("It's")} will yield an error if the expansion
+@code{It's} becomes part of a PSPP command, because it contains
+unbalanced single quotes, but @code{!LENGTH(!UNQUOTE("It's"))} expands
+to 4.
+
+The following macro functions are available.  Each function's
+documentation includes examples in the form @code{@var{call}
+@expansion{} @var{expansion}}.
+
+@deffn {Macro Function} !BLANKS (count)
+Expands to @var{count} unquoted spaces, where @var{count} is a
+nonnegative integer.  Outside quotes, any positive number of spaces
+are equivalent; for a quoted string of spaces, use
+@code{!QUOTE(!BLANKS(@var{count}))}.
+
+In the examples below, @samp{_} stands in for a space to make the
+results visible.
+
+@c Keep these examples in sync with the test for !BLANKS in
+@c tests/language/control/define.at:
+@example
+!BLANKS(0)                  @expansion{} @r{empty}
+!BLANKS(1)                  @expansion{} _
+!BLANKS(2)                  @expansion{} __
+!QUOTE(!BLANKS(5))          @expansion{} '_____'
+@end example
+@end deffn
+
+@deffn {Macro Function} !CONCAT (arg@dots{})
+Expands to the concatenation of all of the arguments.  Before
+concatenation, each quoted string argument is unquoted, as if
+@code{!UNQUOTE} were applied.  This allows for ``token pasting'',
+combining two (or more) tokens into a single one:
+
+@c Keep these examples in sync with the test for !CONCAT in
+@c tests/language/control/define.at:
+@example
+!CONCAT(x, y)                @expansion{} xy
+!CONCAT('x', 'y')            @expansion{} xy
+!CONCAT(12, 34)              @expansion{} 1234
+!CONCAT(!NULL, 123)          @expansion{} 123
+@end example
+
+@code{!CONCAT} is often used for constructing a series of similar
+variable names from a prefix followed by a number and perhaps a
+suffix.  For example:
+
+@c Keep these examples in sync with the test for !CONCAT in
+@c tests/language/control/define.at:
+@example
+!CONCAT(x, 0)                @expansion{} x0
+!CONCAT(x, 0, y)             @expansion{} x0y
+@end example
+
+An identifier token must begin with a letter (or @samp{#} or
+@samp{@@}), which means that attempting to use a number as the first
+part of an identifier will produce a pair of distinct tokens rather
+than a single one.  For example:
+
+@c Keep these examples in sync with the test for !CONCAT in
+@c tests/language/control/define.at:
+@example
+!CONCAT(0, x)                @expansion{} 0 x
+!CONCAT(0, x, y)             @expansion{} 0 xy
+@end example
+@end deffn
+
+@deffn {Macro Function} !EVAL (arg)
+Expands macro calls in @var{arg}.  This is especially useful if
+@var{arg} is the name of a macro or a macro argument that expands to
+one, because arguments to macro functions are not expanded by default
+(@pxref{Controlling Macro Expansion}).
+
+The following examples assume that @code{!vars} is a macro that
+expands to @code{a b c}:
+
+@example
+!vars                        @expansion{} a b c
+!QUOTE(!vars)                @expansion{} '!vars'
+!EVAL(!vars)                 @expansion{} a b c
+!QUOTE(!EVAL(!vars))         @expansion{} 'a b c'
+@end example
+
+These examples additionally assume that argument @code{!1} has value
+@code{!vars}:
+
+@example
+!1                           @expansion{} a b c
+!QUOTE(!1)                   @expansion{} '!vars'
+!EVAL(!1)                    @expansion{} a b c
+!QUOTE(!EVAL(!1))            @expansion{} 'a b c'
+@end example
+@end deffn
+
+@deffn {Macro Function} !HEAD (arg)
+@deffnx {Macro Function} !TAIL (arg)
+@code{!HEAD} expands to just the first token in an unquoted version of
+@var{arg}, and @code{!TAIL} to all the tokens after the first.
+
+@example
+!HEAD('a b c')               @expansion{} a
+!HEAD('a')                   @expansion{} a
+!HEAD(!NULL)                 @expansion{} @r{empty}
+!HEAD('')                    @expansion{} @r{empty}
+
+!TAIL('a b c')               @expansion{} b c
+!TAIL('a')                   @expansion{} @r{empty}
+!TAIL(!NULL)                 @expansion{} @r{empty}
+!TAIL('')                    @expansion{} @r{empty}
+@end example
+@end deffn
+
+@deffn {Macro Function} !INDEX (haystack, needle)
+Looks for @var{needle} in @var{haystack}.  If it is present, expands
+to the 1-based index of its first occurrence; if not, expands to 0.
+
+@example
+!INDEX(banana, an)           @expansion{} 2
+!INDEX(banana, nan)          @expansion{} 3
+!INDEX(banana, apple)        @expansion{} 0
+!INDEX("banana", nan)        @expansion{} 4
+!INDEX("banana", "nan")      @expansion{} 0
+!INDEX(!UNQUOTE("banana"), !UNQUOTE("nan")) @expansion{} 3
+@end example
+@end deffn
+
+@deffn {Macro Function} !LENGTH (arg)
+Expands to a number token representing the number of characters in
+@var{arg}.
+
+@example
+!LENGTH(123)                 @expansion{} 3
+!LENGTH(123.00)              @expansion{} 6
+!LENGTH( 123 )               @expansion{} 3
+!LENGTH("123")               @expansion{} 5
+!LENGTH(xyzzy)               @expansion{} 5
+!LENGTH("xyzzy")             @expansion{} 7
+!LENGTH("xy""zzy")           @expansion{} 9
+!LENGTH(!UNQUOTE("xyzzy"))   @expansion{} 5
+!LENGTH(!UNQUOTE("xy""zzy")) @expansion{} 6
+!LENGTH(!1)                  @expansion{} 5 @r{if @t{!1} is @t{a b c}}
+!LENGTH(!1)                  @expansion{} 0 @r{if @t{!1} is empty}
+!LENGTH(!NULL)               @expansion{} 0
+@end example
+@end deffn
+
+@deffn {Macro Function} !NULL
+Expands to an empty character sequence.
+
+@example
+!NULL                        @expansion{} @r{empty}
+!QUOTE(!NULL)                @expansion{} ''
+@end example
+@end deffn
+
+@deffn {Macro Function} !QUOTE (arg)
+@deffnx {Macro Function} !UNQUOTE (arg)
+The @code{!QUOTE} function expands to its argument surrounded by
+apostrophes, doubling any apostrophes inside the argument to make sure
+that it is valid PSPP syntax for a string.  If the argument was
+already a quoted string, @code{!QUOTE} expands to it unchanged.
+
+Given a quoted string argument, the @code{!UNQUOTED} function expands
+to the string's contents, with the quotes removed and any doubled
+quote marks reduced to singletons.  If the argument was not a quoted
+string, @code{!UNQUOTE} expands to the argument unchanged.
+
+@example
+!QUOTE(123.0)                @expansion{} '123.0'
+!QUOTE( 123 )                @expansion{} '123'
+!QUOTE('a b c')              @expansion{} 'a b c'
+!QUOTE("a b c")              @expansion{} "a b c"
+!QUOTE(!1)                   @expansion{} 'a ''b'' c' @r{if @t{!1} is @t{a 'b' c}}
+
+!UNQUOTE(123.0)              @expansion{} 123.0
+!UNQUOTE( 123 )              @expansion{} 123
+!UNQUOTE('a b c')            @expansion{} a b c
+!UNQUOTE("a b c")            @expansion{} a b c
+!UNQUOTE(!1)                 @expansion{} a 'b' c @r{if @t{!1} is @t{a 'b' c}}
+
+!QUOTE(!UNQUOTE(123.0))      @expansion{} '123.0'
+!QUOTE(!UNQUOTE( 123 ))      @expansion{} '123'
+!QUOTE(!UNQUOTE('a b c'))    @expansion{} 'a b c'
+!QUOTE(!UNQUOTE("a b c"))    @expansion{} 'a b c'
+!QUOTE(!UNQUOTE(!1))         @expansion{} 'a ''b'' c' @r{if @t{!1} is @t{a 'b' c}}
+@end example
+@end deffn
+
+@deffn {Macro Function} !SUBSTR (arg, start[, count])
+Expands to a substring of @var{arg} starting from 1-based position
+@var{start}.  If @var{count} is given, it limits the number of
+characters in the expansion; if it is omitted, then the expansion
+extends to the end of @var{arg}.
+
+@example
+!SUBSTR(banana, 3)           @expansion{} nana
+!SUBSTR(banana, 3, 3)        @expansion{} nan
+!SUBSTR("banana", 1, 3)         @expansion{} @r{error (@code{"ba} is not a valid token)}
+!SUBSTR(!UNQUOTE("banana"), 3) @expansion{} nana
+!SUBSTR("banana", 3, 3)      @expansion{} ana
+
+!SUBSTR(banana, 3, 0)        @expansion{} @r{empty}
+!SUBSTR(banana, 3, 10)       @expansion{} nana
+!SUBSTR(banana, 10, 3)       @expansion{} @r{empty}
+@end example
+@end deffn
+
+@deffn {Macro Function} !UPCASE (arg)
+Expands to an unquoted version of @var{arg} with all letters converted
+to uppercase.
+
+@example
+!UPCASE(freckle)             @expansion{} FRECKLE
+!UPCASE('freckle')           @expansion{} FRECKLE
+!UPCASE('a b c')             @expansion{} A B C
+!UPCASE('A B C')             @expansion{} A B C
+@end example
+@end deffn
+
+@node Macro Expressions
+@subsection Macro Expressions
+
+Macro expressions are used in conditional expansion and loops, which
+are described in the following sections.  A macro expression may use
+the following operators, listed in descending order of operator
+precedence:
+
+@table @code
+@item ()
+Parentheses override the default operator precedence.
+
+@item !EQ !NE !GT !LT !GE !LE = ~= <> > < >= <=
+Relational operators compare their operands and yield a Boolean
+result, either @samp{0} for false or @samp{1} for true.
+
+These operators always compare their operands as strings.  This can be
+surprising when the strings are numbers because, e.g.,@: @code{1 <
+1.0} and @code{10 < 2} both evaluate to @samp{1} (true).
+
+Comparisons are case sensitive, so that @code{a = A} evaluates to
+@samp{0} (false).
+
+@item !NOT ~
+@itemx !AND &
+@itemx !OR |
+Logical operators interpret their operands as Boolean values, where
+quoted or unquoted @samp{0} is false and anything else is true, and
+yield a Boolean result, either @samp{0} for false or @samp{1} for
+true.
+@end table
+
+Macro expressions do not include any arithmetic operators.
+
+An operand in an expression may be a single token (including a macro
+argument name) or a macro function invocation.  Either way, the
+expression evaluator unquotes the operand, so that @code{1 = '1'} is
+true.
+
+@node Macro Conditional Expansion
+@subsection Macro Conditional Expansion
+
+The @code{!IF} construct may be used inside a macro body to allow for
+conditional expansion.  It takes the following forms:
+
+@example
+!IF (@var{expression}) !THEN @var{true-expansion} !IFEND
+!IF (@var{expression}) !THEN @var{true-expansion} !ELSE @var{false-expansion} !IFEND
+@end example
+
+When @var{expression} evaluates to true, the macro processor expands
+@var{true-expansion}; otherwise, it expands @var{false-expansion}, if
+it is present.  The macro processor considers quoted or unquoted
+@samp{0} to be false, and anything else to be true.
+
+@node Macro Loops
+@subsection Macro Loops
+
+The body of a macro may include two forms of loops: loops over
+numerical ranges and loops over tokens.  Both forms expand a @dfn{loop
+body} multiple times, each time setting a named @dfn{loop variable} to
+a different value.  The loop body typically expands the loop variable
+at least once.
+
+The MITERATE setting (@pxref{SET MITERATE}) limits the number of
+iterations in a loop.  This is a safety measure to ensure that macro
+expansion terminates.  PSPP issues a warning when the MITERATE limit
+is exceeded.
+
+@subsubheading Loops Over Ranges
+
+@example
+!DO @var{!var} = @var{start} !TO @var{end} [!BY @var{step}]
+  @var{body}
+!DOEND
+@end example
+
+A loop over a numerical range has the form shown above.  @var{start},
+@var{end}, and @var{step} (if included) must be expressions with
+numeric values.  The macro processor accepts both integers and real
+numbers.  The macro processor expands @var{body} for each numeric
+value from @var{start} to @var{end}, inclusive.
+
+The default value for @var{step} is 1.  If @var{step} is positive and
+@math{@var{first} > @var{last}}, or if @var{step} is negative and
+@math{@var{first} < @var{last}}, then the macro processor doesn't
+expand the body at all.  @var{step} may not be zero.
+
+@subsubheading Loops Over Tokens
+
+@example
+!DO @var{!var} !IN (@var{expression})
+  @var{body}
+!DOEND
+@end example
+
+A loop over tokens takes the form shown above.  The macro processor
+evaluates @var{expression} and expands @var{body} once per token in
+the result, substituting the token for @var{!var} each time it
+appears.
+
+@node Macro Variable Assignment
+@subsection Macro Variable Assignment
+
+The @code{!LET} construct evaluates an expression and assigns the
+result to a macro variable.  It may create a new macro variable or
+change the value of one created by a previous @code{!LET} or
+@code{!DO}, but it may not change the value of a macro argument.
+@code{!LET} has the following form:
+
+@example
+!LET @var{!var} = @var{expression}
+@end example
+
+If @var{expression} is more than one token, it must be enclosed in
+parentheses.
+
+@node Macro Settings
+@subsection Macro Settings
+
+Some macro behavior is controlled through the SET command
+(@pxref{SET}).  This section describes these settings.
+
+Any SET command that changes these settings within a macro body only
+takes effect following the macro.  This is because PSPP expands a
+macro's entire body at once, so that the SET command inside the body
+only executes afterwards.
+
+The MEXPAND setting (@pxref{SET MEXPAND}) controls whether macros will
+be expanded at all.  By default, macro expansion is on.  To avoid
+expansion of macros called within a macro body, use @code{!OFFEXPAND}
+and @code{!ONEXPAND} (@pxref{Controlling Macro Expansion}).
+
+When MPRINT (@pxref{SET MPRINT}) is turned on, PSPP outputs an
+expansion of each macro called.  This feature can be useful for
+debugging macro definitions.  For reading the expanded version, note
+that macro expansion removes comments and standardizes white space.
+
+MNEST (@pxref{SET MNEST}) limits the depth of expansion of macro
+calls, that is, the nesting level of macro expansion.  The default is
+50.  This is mainly useful to avoid infinite expansion in the case of
+a macro that calls itself.
+
+MITERATE (@pxref{SET MITERATE}) limits the number of iterations in a
+@code{!DO} construct.  The default is 1000.
+
+PRESERVE...RESTORE
+
+SET MEXPAND, etc. doesn't work inside macro bodies.
+
+@node Macro Notes
+@subsection Additional Notes
+
+@subsubsection Command Terminators
+
+Macros and command terminators require care.  Macros honor the syntax
+differences between interactive and batch syntax (@pxref{Syntax
+Variants}), which means that the interpretation of a macro can vary
+depending on the syntax mode in use.  We assume here that interactive
+mode is in use, in which @samp{.}@: at the end of a line is the
+primary way to end a command.
+
+The @code{DEFINE} command needs to end with @samp{.}@: following the
+@code{!ENDDEFINE}.  The macro body may contain @samp{.}@: if it is
+intended to expand to whole commands, but using @samp{.}@: within a
+macro body that expands to just syntax fragments (such as a list of
+variables) will cause syntax errors.
+
+Macro directives such as @code{!IF} and @code{!DO} do not end with
+@samp{.}.
+
+@subsubsection Expansion Contexts
+
+Macros do not expand within comments, whether introduced within a line
+by @code{/*} or as a separate COMMENT or @samp{*} commands
+(@pxref{COMMENT}).  (SPSS does expand macros in COMMENT and @samp{*}.)
+
+Macros do not expand within quoted strings.
+
+Macros are expanded in the @code{TITLE} and @code{SUBTITLE} commands
+as long as their arguments are not quoted strings.
+
+@subsubsection PRESERVE and RESTORE
+
+Some macro bodies might use the SET command to change certain
+settings.  When this is the case, consider using the PRESERVE and
+RESTORE commands to save and then restore these settings.
+@xref{PRESERVE and RESTORE}.
 
 @node DO IF
 @section DO IF

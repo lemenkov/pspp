@@ -19,6 +19,7 @@
 
 #include <stdarg.h>
 #include <stdbool.h>
+#include <stddef.h>
 #include "libpspp/compiler.h"
 
 struct string;
@@ -80,11 +81,21 @@ struct msg_location
     int last_column;            /* 1-based exclusive last column (0=none). */
   };
 
+void msg_location_uninit (struct msg_location *);
 void msg_location_destroy (struct msg_location *);
 struct msg_location *msg_location_dup (const struct msg_location *);
 
 bool msg_location_is_empty (const struct msg_location *);
 void msg_location_format (const struct msg_location *, struct string *);
+
+struct msg_stack
+  {
+    struct msg_location location;
+    char *description;
+  };
+
+void msg_stack_destroy (struct msg_stack *);
+struct msg_stack *msg_stack_dup (const struct msg_stack *);
 
 /* A message. */
 struct msg
@@ -92,6 +103,8 @@ struct msg
     enum msg_category category; /* Message category. */
     enum msg_severity severity; /* Message severity. */
     struct msg_location *location; /* Code location. */
+    struct msg_stack **stack;
+    size_t n_stack;
     char *command_name;         /* Name of erroneous command, or NULL.  */
     char *text;                 /* Error text. */
   };
