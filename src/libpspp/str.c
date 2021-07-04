@@ -301,6 +301,39 @@ overflow:
   return false;
 }
 
+/* Copies IN to buffer OUT with size OUT_SIZE, appending a null terminator.  If
+   IN is too long for OUT, or if IN contains a new-line, replaces the tail with
+   "...".
+
+   OUT_SIZE must be at least 16. */
+void
+str_ellipsize (struct substring in, char *out, size_t out_size)
+{
+  assert (out_size >= 16);
+
+  size_t out_maxlen = out_size - 1;
+  if (in.length > out_maxlen - 3)
+    out_maxlen -= 3;
+
+  size_t out_len = 0;
+  while (out_len < in.length
+         && in.string[out_len] != '\n'
+         && in.string[out_len] != '\0'
+         && (in.string[out_len] != '\r'
+             || out_len + 1 >= in.length
+             || in.string[out_len + 1] != '\n'))
+    {
+      int mblen = u8_mblen (CHAR_CAST (const uint8_t *, in.string + out_len),
+                            in.length - out_len);
+      if (mblen < 0 || out_len + mblen > out_maxlen)
+        break;
+      out_len += mblen;
+    }
+
+  memcpy (out, in.string, out_len);
+  strcpy (&out[out_len], out_len < in.length ? "..." : "");
+}
+
 /* Sets the SIZE bytes starting at BLOCK to C,
    and returns the byte following BLOCK. */
 void *

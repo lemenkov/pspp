@@ -1370,41 +1370,6 @@ lex_source_get_syntax__ (const struct lex_source *src, int n0, int n1)
 }
 
 static void
-lex_ellipsize__ (struct substring in, char *out, size_t out_size)
-{
-  size_t out_maxlen;
-  size_t out_len;
-  int mblen;
-
-  assert (out_size >= 16);
-  out_maxlen = out_size - 1;
-  if (in.length > out_maxlen - 3)
-    out_maxlen -= 3;
-
-  for (out_len = 0; out_len < in.length; out_len += mblen)
-    {
-      if (in.string[out_len] == '\n'
-          || in.string[out_len] == '\0'
-          || (in.string[out_len] == '\r'
-              && out_len + 1 < in.length
-              && in.string[out_len + 1] == '\n'))
-        break;
-
-      mblen = u8_mblen (CHAR_CAST (const uint8_t *, in.string + out_len),
-                        in.length - out_len);
-
-      if (mblen < 0)
-        break;
-
-      if (out_len + mblen > out_maxlen)
-        break;
-    }
-
-  memcpy (out, in.string, out_len);
-  strcpy (&out[out_len], out_len < in.length ? "..." : "");
-}
-
-static void
 lex_source_error_valist (struct lex_source *src, int n0, int n1,
                          const char *format, va_list args)
 {
@@ -1423,7 +1388,7 @@ lex_source_error_valist (struct lex_source *src, int n0, int n1,
         {
           char syntax_cstr[64];
 
-          lex_ellipsize__ (syntax, syntax_cstr, sizeof syntax_cstr);
+          str_ellipsize (syntax, syntax_cstr, sizeof syntax_cstr);
           ds_put_format (&s, _("Syntax error at `%s'"), syntax_cstr);
         }
       else

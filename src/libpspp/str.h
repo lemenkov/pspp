@@ -34,6 +34,8 @@
 
 /* Miscellaneous. */
 
+struct substring;
+
 void buf_reverse (char *, size_t);
 int buf_compare_case (const char *, const char *, size_t);
 int buf_compare_rpad (const char *, size_t, const char *, size_t);
@@ -51,6 +53,8 @@ void str_lowercase (char *);
 
 bool str_format_26adic (unsigned long int number, bool uppercase,
                         char buffer[], size_t);
+
+void str_ellipsize (struct substring in, char *out, size_t out_size);
 
 static inline char *xstrdup_if_nonnull (const char *);
 
