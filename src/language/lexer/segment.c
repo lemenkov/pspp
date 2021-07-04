@@ -1786,17 +1786,28 @@ segment_type_to_string (enum segment_type type)
     }
 }
 
-/* Initializes S as a segmenter with the given syntax MODE.
+/* Returns a segmenter with the given syntax MODE.
+
+   If IS_SNIPPET is false, then the segmenter will parse as if it's being given
+   a whole file.  This means, for example, that it will interpret - or + at the
+   beginning of the syntax as a separator between commands (since - or + at the
+   beginning of a line has this meaning).
+
+   If IS_SNIPPET is true, then the segmenter will parse as if it's being given
+   an isolated piece of syntax.  This means that, for example, that it will
+   interpret - or + at the beginning of the syntax as an operator token or (if
+   followed by a digit) as part of a number.
 
    A segmenter does not contain any external references, so nothing needs to be
    done to destroy one.  For the same reason, segmenters may be copied with
    plain struct assignment (or memcpy). */
-void
-segmenter_init (struct segmenter *s, enum segmenter_mode mode)
+struct segmenter
+segmenter_init (enum segmenter_mode mode, bool is_snippet)
 {
-  s->state = S_SHBANG;
-  s->substate = 0;
-  s->mode = mode;
+  return (struct segmenter) {
+    .state = is_snippet ? S_GENERAL : S_SHBANG,
+    .mode = mode,
+  };
 }
 
 /* Returns the mode passed to segmenter_init() for S. */

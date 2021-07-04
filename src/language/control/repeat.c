@@ -201,10 +201,7 @@ do_parse_commands (struct substring s, enum segmenter_mode mode,
                    struct hmap *dummies,
                    struct string *outputs, size_t n_outputs)
 {
-  struct segmenter segmenter;
-
-  segmenter_init (&segmenter, mode);
-
+  struct segmenter segmenter = segmenter_init (mode, false);
   while (!ss_is_empty (s))
     {
       enum segment_type type;

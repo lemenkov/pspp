@@ -651,12 +651,14 @@ scanner_push (struct scanner *scanner, enum segment_type type,
    INPUT must not be modified or freed while SLEX is still in use. */
 void
 string_lexer_init (struct string_lexer *slex, const char *input, size_t length,
-                   enum segmenter_mode mode)
+                   enum segmenter_mode mode, bool is_snippet)
 {
-  slex->input = input;
-  slex->length = length;
-  slex->offset = 0;
-  segmenter_init (&slex->segmenter, mode);
+  *slex = (struct string_lexer) {
+    .input = input,
+    .length = length,
+    .offset = 0,
+    .segmenter = segmenter_init (mode, is_snippet),
+  };
 }
 
 /*  */

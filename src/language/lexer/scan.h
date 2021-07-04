@@ -102,7 +102,7 @@ struct string_lexer
   };
 
 void string_lexer_init (struct string_lexer *, const char *input,
-                        size_t length, enum segmenter_mode);
+                        size_t length, enum segmenter_mode, bool is_snippet);
 bool string_lexer_next (struct string_lexer *, struct token *);
 
 #endif /* scan.h */

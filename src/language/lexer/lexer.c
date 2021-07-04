@@ -988,7 +988,7 @@ lex_match_phrase (struct lexer *lexer, const char *s)
   int i;
 
   i = 0;
-  string_lexer_init (&slex, s, strlen (s), SEG_MODE_INTERACTIVE);
+  string_lexer_init (&slex, s, strlen (s), SEG_MODE_INTERACTIVE, true);
   while (string_lexer_next (&slex, &token))
     if (token.type != SCAN_SKIP)
       {
@@ -1238,7 +1238,8 @@ lex_interactive_reset (struct lexer *lexer)
       src->journal_pos = src->seg_pos = src->line_pos = 0;
       src->n_newlines = 0;
       src->suppress_next_newline = false;
-      segmenter_init (&src->segmenter, segmenter_get_mode (&src->segmenter));
+      src->segmenter = segmenter_init (segmenter_get_mode (&src->segmenter),
+                                       false);
       while (!deque_is_empty (&src->deque))
         lex_source_pop__ (src);
       lex_source_push_endcmd__ (src);
@@ -1658,12 +1659,12 @@ lex_source_push_endcmd__ (struct lex_source *src)
 static struct lex_source *
 lex_source_create (struct lex_reader *reader)
 {
-  struct lex_source *src;
-
-  src = xzalloc (sizeof *src);
-  src->reader = reader;
-  segmenter_init (&src->segmenter, reader->syntax);
-  src->tokens = deque_init (&src->deque, 4, sizeof *src->tokens);
+  struct lex_source *src = xmalloc (sizeof *src);
+  *src = (struct lex_source) {
+    .reader = reader,
+    .segmenter = segmenter_init (reader->syntax, false),
+    .tokens = deque_init (&src->deque, 4, sizeof *src->tokens),
+  };
 
   lex_source_push_endcmd__ (src);
 

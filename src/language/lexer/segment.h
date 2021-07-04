@@ -117,7 +117,7 @@ struct segmenter
     unsigned char mode;
   };
 
-void segmenter_init (struct segmenter *, enum segmenter_mode);
+struct segmenter segmenter_init (enum segmenter_mode, bool is_snippet);
 
 enum segmenter_mode segmenter_get_mode (const struct segmenter *);
 

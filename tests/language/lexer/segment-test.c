@@ -108,8 +108,7 @@ main (int argc, char *argv[])
 static void
 check_segmentation (const char *input, size_t length, bool print_segments)
 {
-  struct segmenter s;
-  segmenter_init (&s, mode);
+  struct segmenter s = segmenter_init (mode, false);
 
   size_t line_number = 1;
   size_t line_offset = 0;

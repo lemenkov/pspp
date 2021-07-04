@@ -73,7 +73,7 @@ main (int argc, char *argv[])
         length--;
     }
 
-  string_lexer_init (&slex, input, length, mode);
+  string_lexer_init (&slex, input, length, mode, false);
   do
     {
       struct token token;
