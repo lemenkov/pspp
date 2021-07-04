@@ -223,7 +223,7 @@ check_map_contains (struct stringi_map *map,
 
   check (stringi_map_contains (map, key));
 
-  node = stringi_map_find_node (map, key);
+  node = stringi_map_find_node (map, key, strlen (key));
   check (node != NULL);
   check (!utf8_strcasecmp (key, stringi_map_node_get_key (node)));
   check (!strcmp (value, stringi_map_node_get_value (node)));
@@ -271,7 +271,7 @@ check_stringi_map (struct stringi_map *map, const int data[], size_t cnt)
 
   check (!stringi_map_contains (map, "xxx"));
   check (stringi_map_find (map, "0") == NULL);
-  check (stringi_map_find_node (map, "") == NULL);
+  check (stringi_map_find_node (map, "", 0) == NULL);
   check (!stringi_map_delete (map, "xyz"));
 
   if (cnt == 0)
@@ -689,11 +689,12 @@ node_swap_value_cb (struct stringi_map *map, int data[], int n)
 
   for (i = 0; i < n; i++)
     {
+      const char *key = make_key (data[i]);
       const char *value = make_value (data[i]);
       struct stringi_map_node *node;
       char *old_value;
 
-      node = stringi_map_find_node (map, make_key (data[i]));
+      node = stringi_map_find_node (map, key, strlen (key));
       check (node != NULL);
       check (!strcmp (stringi_map_node_get_value (node), value));
       data[i] = (data[i] & KEY_MASK) | random_value (i, 15);

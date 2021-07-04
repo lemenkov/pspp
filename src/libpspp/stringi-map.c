@@ -27,11 +27,13 @@
 #include "libpspp/stringi-set.h"
 
 #include "gl/xalloc.h"
+#include "gl/xmemdup0.h"
 
 static struct stringi_map_node *stringi_map_find_node__ (
-  const struct stringi_map *, const char *key, unsigned int hash);
+  const struct stringi_map *, const char *key, size_t key_len,
+  unsigned int hash);
 static bool stringi_map_delete__ (struct stringi_map *, const char *key,
-                                  unsigned int hash);
+                                  size_t key_len, unsigned int hash);
 static struct stringi_map_node *stringi_map_insert__ (struct stringi_map *,
                                                       char *key, char *value,
                                                       unsigned int hash);
@@ -132,7 +134,7 @@ stringi_map_destroy (struct stringi_map *map)
 bool
 stringi_map_contains (const struct stringi_map *map, const char *key)
 {
-  return stringi_map_find_node (map, key) != NULL;
+  return stringi_map_find_node (map, key, strlen (key)) != NULL;
 }
 
 /* If MAP contains KEY (or an equivalent with different case) as a key, returns
@@ -140,16 +142,30 @@ stringi_map_contains (const struct stringi_map *map, const char *key)
 const char *
 stringi_map_find (const struct stringi_map *map, const char *key)
 {
-  const struct stringi_map_node *node = stringi_map_find_node (map, key);
+  return stringi_map_find__ (map, key, strlen (key));
+}
+
+/* If MAP contains KEY with the specified KEY_LEN (or an equivalent with
+   different case) as a key, returns the corresponding value.  Otherwise,
+   returns a null pointer. */
+const char *
+stringi_map_find__ (const struct stringi_map *map, const char *key,
+                    size_t key_len)
+{
+  const struct stringi_map_node *node = stringi_map_find_node (map, key,
+                                                               key_len);
   return node != NULL ? node->value : NULL;
 }
 
-/* If MAP contains KEY (or an equivalent with different case) as a key, returns
-   the corresponding node.  Otherwise, returns a null pointer. */
+/* If MAP contains KEY with the specified KEY_LEN (or an equivalent with
+   different case) as a key, returns the corresponding node.  Otherwise,
+   returns a null pointer. */
 struct stringi_map_node *
-stringi_map_find_node (const struct stringi_map *map, const char *key)
+stringi_map_find_node (const struct stringi_map *map, const char *key,
+                       size_t key_len)
 {
-  return stringi_map_find_node__ (map, key, utf8_hash_case_string (key, 0));
+  return stringi_map_find_node__ (map, key, key_len,
+                                  utf8_hash_case_bytes (key, key_len, 0));
 }
 
 /* If MAP contains KEY (or an equivalent with different case) as a key, deletes
@@ -158,7 +174,8 @@ stringi_map_find_node (const struct stringi_map *map, const char *key)
 char *
 stringi_map_find_and_delete (struct stringi_map *map, const char *key)
 {
-  struct stringi_map_node *node = stringi_map_find_node (map, key);
+  struct stringi_map_node *node = stringi_map_find_node (map, key,
+                                                         strlen (key));
   char *value = NULL;
   if (node != NULL)
     {
@@ -176,10 +193,13 @@ struct stringi_map_node *
 stringi_map_insert (struct stringi_map *map, const char *key,
                     const char *value)
 {
-  unsigned int hash = utf8_hash_case_string (key, 0);
-  struct stringi_map_node *node = stringi_map_find_node__ (map, key, hash);
+  size_t key_len = strlen (key);
+  unsigned int hash = utf8_hash_case_bytes (key, key_len, 0);
+  struct stringi_map_node *node = stringi_map_find_node__ (map, key, key_len,
+                                                           hash);
   if (node == NULL)
-    node = stringi_map_insert__ (map, xstrdup (key), xstrdup (value), hash);
+    node = stringi_map_insert__ (map, xmemdup0 (key, key_len),
+                                 xstrdup (value), hash);
   return node;
 }
 
@@ -190,8 +210,10 @@ stringi_map_insert (struct stringi_map *map, const char *key,
 struct stringi_map_node *
 stringi_map_insert_nocopy (struct stringi_map *map, char *key, char *value)
 {
-  unsigned int hash = utf8_hash_case_string (key, 0);
-  struct stringi_map_node *node = stringi_map_find_node__ (map, key, hash);
+  size_t key_len = strlen (key);
+  unsigned int hash = utf8_hash_case_bytes (key, key_len, 0);
+  struct stringi_map_node *node = stringi_map_find_node__ (map, key, key_len,
+                                                           hash);
   if (node == NULL)
     node = stringi_map_insert__ (map, key, value, hash);
   else
@@ -209,8 +231,10 @@ struct stringi_map_node *
 stringi_map_replace (struct stringi_map *map, const char *key,
                      const char *value)
 {
-  unsigned int hash = utf8_hash_case_string (key, 0);
-  struct stringi_map_node *node = stringi_map_find_node__ (map, key, hash);
+  size_t key_len = strlen (key);
+  unsigned int hash = utf8_hash_case_bytes (key, key_len, 0);
+  struct stringi_map_node *node = stringi_map_find_node__ (map, key, key_len,
+                                                           hash);
   if (node == NULL)
     node = stringi_map_insert__ (map, xstrdup (key), xstrdup (value), hash);
   else
@@ -225,8 +249,10 @@ stringi_map_replace (struct stringi_map *map, const char *key,
 struct stringi_map_node *
 stringi_map_replace_nocopy (struct stringi_map *map, char *key, char *value)
 {
-  unsigned int hash = utf8_hash_case_string (key, 0);
-  struct stringi_map_node *node = stringi_map_find_node__ (map, key, hash);
+  size_t key_len = strlen (key);
+  unsigned int hash = utf8_hash_case_bytes (key, key_len, 0);
+  struct stringi_map_node *node = stringi_map_find_node__ (map, key, key_len,
+                                                           hash);
   if (node == NULL)
     node = stringi_map_insert__ (map, key, value, hash);
   else
@@ -243,7 +269,9 @@ stringi_map_replace_nocopy (struct stringi_map *map, char *key, char *value)
 bool
 stringi_map_delete (struct stringi_map *map, const char *key)
 {
-  return stringi_map_delete__ (map, key, utf8_hash_case_string (key, 0));
+  size_t key_len = strlen (key);
+  return stringi_map_delete__ (map, key, key_len,
+                               utf8_hash_case_bytes (key, key_len, 0));
 }
 
 /* Deletes NODE from MAP and destroys the node and its key and value. */
@@ -284,8 +312,11 @@ stringi_map_insert_map (struct stringi_map *dst, const struct stringi_map *src)
 
   STRINGI_MAP_FOR_EACH_NODE (node, src)
     {
-      if (!stringi_map_find_node__ (dst, node->key, node->hmap_node.hash))
-        stringi_map_insert__ (dst, xstrdup (node->key), xstrdup (node->value),
+      size_t key_len = strlen (node->key);
+      if (!stringi_map_find_node__ (dst, node->key, key_len,
+                                    node->hmap_node.hash))
+        stringi_map_insert__ (dst, xmemdup0 (node->key, key_len),
+                              xstrdup (node->value),
                               node->hmap_node.hash);
     }
 }
@@ -301,13 +332,15 @@ stringi_map_replace_map (struct stringi_map *dst,
 
   STRINGI_MAP_FOR_EACH_NODE (snode, src)
     {
+      size_t key_len = strlen (snode->key);
       struct stringi_map_node *dnode;
-      dnode = stringi_map_find_node__ (dst, snode->key, snode->hmap_node.hash);
+      dnode = stringi_map_find_node__ (dst, snode->key, key_len,
+                                       snode->hmap_node.hash);
       if (dnode != NULL)
         stringi_map_node_set_value (dnode, snode->value);
       else
-        stringi_map_insert__ (dst,
-                              xstrdup (snode->key), xstrdup (snode->value),
+        stringi_map_insert__ (dst, xmemdup0 (snode->key, key_len),
+                              xstrdup (snode->value),
                               snode->hmap_node.hash);
     }
 }
@@ -339,13 +372,13 @@ stringi_map_get_values (const struct stringi_map *map,
 
 static struct stringi_map_node *
 stringi_map_find_node__ (const struct stringi_map *map, const char *key,
-                         unsigned int hash)
+                         size_t key_len, unsigned int hash)
 {
   struct stringi_map_node *node;
 
   HMAP_FOR_EACH_WITH_HASH (node, struct stringi_map_node, hmap_node,
                            hash, &map->hmap)
-    if (!utf8_strcasecmp (key, node->key))
+    if (!utf8_strncasecmp (key, key_len, node->key, strlen (node->key)))
       return node;
 
   return NULL;
@@ -353,9 +386,10 @@ stringi_map_find_node__ (const struct stringi_map *map, const char *key,
 
 static bool
 stringi_map_delete__ (struct stringi_map *map, const char *key,
-                      unsigned int hash)
+                      size_t key_len, unsigned int hash)
 {
-  struct stringi_map_node *node = stringi_map_find_node__ (map, key, hash);
+  struct stringi_map_node *node = stringi_map_find_node__ (map, key, key_len,
+                                                           hash);
   if (node != NULL)
     {
       stringi_map_delete_node (map, node);

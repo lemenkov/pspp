@@ -90,8 +90,11 @@ static inline bool stringi_map_is_empty (const struct stringi_map *);
 
 bool stringi_map_contains (const struct stringi_map *, const char *);
 const char *stringi_map_find (const struct stringi_map *, const char *);
+const char *stringi_map_find__ (const struct stringi_map *, const char *key,
+                                size_t key_len);
 struct stringi_map_node *stringi_map_find_node (const struct stringi_map *,
-                                                const char *);
+                                                const char *key,
+                                                size_t key_len);
 char *stringi_map_find_and_delete (struct stringi_map *, const char *key);
 
 struct stringi_map_node *stringi_map_insert (struct stringi_map *,
