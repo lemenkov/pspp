@@ -66,6 +66,8 @@ enum scan_type
 const char *scan_type_to_string (enum scan_type);
 bool is_scan_type (enum scan_type);
 
+char *scan_token_to_error (const struct token *);
+
 /* A scanner.  Opaque. */
 struct scanner
   {

@@ -25,10 +25,14 @@
 #include "language/lexer/token.h"
 #include "libpspp/assertion.h"
 #include "libpspp/cast.h"
+#include "libpspp/i18n.h"
 
 #include "gl/c-ctype.h"
 #include "gl/c-strtod.h"
 #include "gl/xmemdup0.h"
+
+#include "gettext.h"
+#define _(msgid) gettext (msgid)
 
 enum
   {
@@ -419,6 +423,48 @@ bool
 is_scan_type (enum scan_type type)
 {
   return type > SCAN_FIRST && type < SCAN_LAST;
+}
+
+/* If TOKEN has the type of a scan error (a subset of those identified by
+   is_scan_type()), returns an appropriate error message.  Otherwise, returns
+   NULL. */
+char *
+scan_token_to_error (const struct token *token)
+{
+  switch (token->type)
+    {
+    case SCAN_BAD_HEX_LENGTH:
+      return xasprintf (_("String of hex digits has %d characters, which "
+                          "is not a multiple of 2."), (int) token->number);
+
+    case SCAN_BAD_HEX_DIGIT:
+    case SCAN_BAD_UNICODE_DIGIT:
+      return xasprintf (_("`%c' is not a valid hex digit."),
+                        (int) token->number);
+
+    case SCAN_BAD_UNICODE_LENGTH:
+      return xasprintf (_("Unicode string contains %d bytes, which is "
+                          "not in the valid range of 1 to 8 bytes."),
+                        (int) token->number);
+
+    case SCAN_BAD_UNICODE_CODE_POINT:
+      return xasprintf (_("U+%04X is not a valid Unicode code point."),
+                        (int) token->number);
+
+    case SCAN_EXPECTED_QUOTE:
+      return xasprintf (_("Unterminated string constant."));
+
+    case SCAN_EXPECTED_EXPONENT:
+      return xasprintf (_("Missing exponent following `%s'."),
+                        token->string.string);
+
+    case SCAN_UNEXPECTED_CHAR:
+      char c_name[16];
+      return xasprintf (_("Bad character %s in input."),
+                        uc_name (token->number, c_name));
+    }
+
+  return NULL;
 }
 
 static enum scan_result

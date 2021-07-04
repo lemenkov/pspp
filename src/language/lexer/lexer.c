@@ -1457,19 +1457,22 @@ lex_source_error_valist (struct lex_source *src, int n0, int n1,
   msg_emit (m);
 }
 
-static void PRINTF_FORMAT (2, 3)
-lex_get_error (struct lex_source *src, const char *format, ...)
+static void PRINTF_FORMAT (4, 5)
+lex_source_error (struct lex_source *src, int n0, int n1,
+                  const char *format, ...)
 {
   va_list args;
-  int n;
-
   va_start (args, format);
-
-  n = deque_count (&src->deque) - 1;
-  lex_source_error_valist (src, n, n, format, args);
-  lex_source_pop_front (src);
-
+  lex_source_error_valist (src, n0, n1, format, args);
   va_end (args);
+}
+
+static void
+lex_get_error (struct lex_source *src, const char *s)
+{
+  int n = deque_count (&src->deque) - 1;
+  lex_source_error (src, n, n, "%s", s);
+  lex_source_pop_front (src);
 }
 
 /* Attempts to append an additional token into SRC's deque, reading more from
@@ -1621,43 +1624,16 @@ lex_source_get__ (const struct lex_source *src_)
       break;
 
     case SCAN_BAD_HEX_LENGTH:
-      lex_get_error (src, _("String of hex digits has %d characters, which "
-                            "is not a multiple of 2"),
-                     (int) token->token.number);
-      break;
-
     case SCAN_BAD_HEX_DIGIT:
     case SCAN_BAD_UNICODE_DIGIT:
-      lex_get_error (src, _("`%c' is not a valid hex digit"),
-                     (int) token->token.number);
-      break;
-
     case SCAN_BAD_UNICODE_LENGTH:
-      lex_get_error (src, _("Unicode string contains %d bytes, which is "
-                            "not in the valid range of 1 to 8 bytes"),
-                     (int) token->token.number);
-      break;
-
     case SCAN_BAD_UNICODE_CODE_POINT:
-      lex_get_error (src, _("U+%04X is not a valid Unicode code point"),
-                     (int) token->token.number);
-      break;
-
     case SCAN_EXPECTED_QUOTE:
-      lex_get_error (src, _("Unterminated string constant"));
-      break;
-
     case SCAN_EXPECTED_EXPONENT:
-      lex_get_error (src, _("Missing exponent following `%s'"),
-                     token->token.string.string);
-      break;
-
     case SCAN_UNEXPECTED_CHAR:
-      {
-        char c_name[16];
-        lex_get_error (src, _("Bad character %s in input"),
-                       uc_name (token->token.number, c_name));
-      }
+      char *msg = scan_token_to_error (&token->token);
+      lex_get_error (src, msg);
+      free (msg);
       break;
 
     case SCAN_SKIP:
