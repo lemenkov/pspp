@@ -17,6 +17,7 @@
 #ifndef TOKEN_H
 #define TOKEN_H 1
 
+#include <stdbool.h>
 #include <stdio.h>
 #include "libpspp/assertion.h"
 #include "libpspp/str.h"
@@ -33,11 +34,10 @@ struct token
     struct substring string;
   };
 
-#define TOKEN_INITIALIZER(TYPE, NUMBER, STRING) \
-        { TYPE, NUMBER, SS_LITERAL_INITIALIZER (STRING) }
-
-void token_init (struct token *);
+void token_copy (struct token *, const struct token *);
 void token_uninit (struct token *);
+
+bool token_equal (const struct token *, const struct token *);
 
 char *token_to_string (const struct token *);
 

@@ -594,7 +594,7 @@ void
 scanner_init (struct scanner *scanner, struct token *token)
 {
   scanner->state = S_START;
-  token_init (token);
+  *token = (struct token) { .type = T_STOP };
 }
 
 /* Adds the segment with type TYPE and UTF-8 text S to SCANNER.  TOKEN must be

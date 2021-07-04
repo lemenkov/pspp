@@ -198,7 +198,7 @@ lex_push_token__ (struct lex_source *src)
     src->tokens = deque_expand (&src->deque, src->tokens, sizeof *src->tokens);
 
   token = &src->tokens[deque_push_front (&src->deque)];
-  token_init (&token->token);
+  token->token = (struct token) { .type = T_STOP };
   return token;
 }
 
@@ -852,9 +852,7 @@ lex_next__ (const struct lexer *lexer_, int n)
     return lex_source_next__ (src, n);
   else
     {
-      static const struct lex_token stop_token =
-        { TOKEN_INITIALIZER (T_STOP, 0.0, ""), 0, 0, 0, 0 };
-
+      static const struct lex_token stop_token = { .token = { .type = T_STOP } };
       return &stop_token;
     }
 }

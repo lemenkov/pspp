@@ -27,17 +27,18 @@
 #include "libpspp/cast.h"
 #include "libpspp/misc.h"
 
-
 #include "gl/ftoastr.h"
 #include "gl/xalloc.h"
 
-/* Initializes TOKEN with an arbitrary type, number 0, and a null string. */
+/* Initializes DST as a copy of SRC. */
 void
-token_init (struct token *token)
+token_copy (struct token *dst, const struct token *src)
 {
-  token->type = 0;
-  token->number = 0.0;
-  token->string = ss_empty ();
+  *dst = (struct token) {
+    .type = src->type,
+    .number = src->number,
+  };
+  ss_alloc_substring (&dst->string, src->string);
 }
 
 /* Frees the string that TOKEN contains. */
@@ -45,7 +46,34 @@ void
 token_uninit (struct token *token)
 {
   if (token != NULL)
-    ss_dealloc (&token->string);
+    {
+      ss_dealloc (&token->string);
+      *token = (struct token) { .type = T_STOP };
+    }
+}
+
+/* Returns true if A and B are the same token, false otherwise. */
+bool
+token_equal (const struct token *a, const struct token *b)
+{
+  if (a->type != b->type)
+    return false;
+
+  switch (a->type)
+    {
+    case T_POS_NUM:
+    case T_NEG_NUM:
+      return a->number == b->number;
+
+    case T_ID:
+    case T_MACRO_ID:
+    case T_MACRO_PUNCT:
+    case T_STRING:
+      return ss_equals (a->string, b->string);
+
+    default:
+      return true;
+    }
 }
 
 static char *
@@ -150,7 +178,7 @@ token_to_string (const struct token *token)
       return string_representation (token->string);
 
     default:
-      return xstrdup_if_nonnull (token_type_to_name (token->type));
+      return xstrdup_if_nonnull (token_type_to_string (token->type));
     }
 }
 
@@ -173,6 +201,8 @@ token_print (const struct token *token, FILE *stream)
   putc ('\n', stream);
 }
 
+/* Returns true if T is a numeric token for an integer in the range of "long",
+   except that LONG_MIN is excluded. */
 bool
 token_is_integer (const struct token *t)
 {
@@ -182,6 +212,7 @@ token_is_integer (const struct token *t)
           && floor (t->number) == t->number);
 }
 
+/* Returns the "long int" value of T, which must satisfy token_is_integer(T). */
 long
 token_integer (const struct token *t)
 {
