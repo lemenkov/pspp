@@ -274,7 +274,7 @@ STOP
 PSPP_CHECK_SCAN([-i])
 AT_CLEANUP
 
-AT_SETUP([numbers])
+AT_SETUP([positive numbers])
 AT_KEYWORDS([scan])
 AT_DATA([input], [dnl
 0 1 01 001. 1.
@@ -356,6 +356,117 @@ EXPECTED_EXPONENT "1e-"
 -SKIP
 STOP
 ])
+PSPP_CHECK_SCAN([-i])
+AT_CLEANUP
+
+AT_SETUP([negative numbers])
+AT_KEYWORDS([scan])
+AT_DATA([input-base], [dnl
+ -0 -1 -01 -001. -1.
+ -123. /* comment 1 */ /* comment 2 */
+ -.1 -0.1 -00.1 -00.10
+ -5e1 -6E-1 -7e+1 -6E+01 -6e-03
+ -.3E1 -.4e-1 -.5E+1 -.6e+01 -.7E-03
+ -1.23e1 -45.6E-1 -78.9e+1 -99.9E+01 -11.2e-03
+ -/**/1
+ -. -1e -e1 -1e+ -1e- -1.
+])
+AT_DATA([expout-base0], [dnl
+SKIP
+NEG_NUM
+SKIP
+NEG_NUM -1
+SKIP
+NEG_NUM -1
+SKIP
+NEG_NUM -1
+SKIP
+NEG_NUM -1
+ENDCMD
+SKIP
+SKIP
+NEG_NUM -123
+ENDCMD
+SKIP
+SKIP
+SKIP
+SKIP
+SKIP
+SKIP
+NEG_NUM -0.1
+SKIP
+NEG_NUM -0.1
+SKIP
+NEG_NUM -0.1
+SKIP
+NEG_NUM -0.1
+SKIP
+SKIP
+NEG_NUM -50
+SKIP
+NEG_NUM -0.6
+SKIP
+NEG_NUM -70
+SKIP
+NEG_NUM -60
+SKIP
+NEG_NUM -0.006
+SKIP
+SKIP
+NEG_NUM -3
+SKIP
+NEG_NUM -0.04
+SKIP
+NEG_NUM -5
+SKIP
+NEG_NUM -6
+SKIP
+NEG_NUM -0.0007
+SKIP
+SKIP
+NEG_NUM -12.3
+SKIP
+NEG_NUM -4.56
+SKIP
+NEG_NUM -789
+SKIP
+NEG_NUM -999
+SKIP
+NEG_NUM -0.0112
+SKIP
+SKIP
+NEG_NUM -1
+SKIP
+SKIP
+DASH
++SKIP
+MACRO_PUNCT "."
+SKIP
+EXPECTED_EXPONENT "-1e"
+SKIP
+DASH
++SKIP
+ID "e1"
+SKIP
+EXPECTED_EXPONENT "-1e+"
+SKIP
+EXPECTED_EXPONENT "-1e-"
+SKIP
+NEG_NUM -1
+ENDCMD
+-SKIP
+STOP
+])
+
+AS_BOX([without extra spaces])
+cp input-base input
+sed '/^+/d' < expout-base0 > expout-base
+PSPP_CHECK_SCAN([-i])
+
+AS_BOX([with extra spaces])
+sed 's/ -/ - /g' < input-base > input
+sed 's/EXPONENT "-/EXPONENT "- /
+     s/^+//' < expout-base0 > expout-base
 PSPP_CHECK_SCAN([-i])
 AT_CLEANUP
 

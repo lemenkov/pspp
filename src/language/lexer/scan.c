@@ -369,11 +369,10 @@ scan_punct__ (struct substring s)
           : scan_punct2__ (s.string[0], s.string[1]));
 }
 
-static double
-scan_number__ (struct substring s)
+static void
+scan_number__ (struct substring s, struct token *token)
 {
   char buf[128];
-  double number;
   char *p;
 
   if (s.length < sizeof buf)
@@ -385,12 +384,15 @@ scan_number__ (struct substring s)
   else
     p = xmemdup0 (s.string, s.length);
 
-  number = c_strtod (p, NULL);
+  bool negative = *p == '-';
+  double x = c_strtod (p + negative, NULL);
+  *token = (struct token) {
+    .type = negative ? T_NEG_NUM : T_POS_NUM,
+    .number = negative ? -x : x,
+  };
 
   if (p != buf)
     free (p);
-
-  return number;
 }
 
 static enum scan_result
@@ -476,8 +478,7 @@ scan_start__ (struct scanner *scanner, enum segment_type type,
   switch (type)
     {
     case SEG_NUMBER:
-      token->type = T_POS_NUM;
-      token->number = scan_number__ (s);
+      scan_number__ (s, token);
       return SCAN_DONE;
 
     case SEG_QUOTED_STRING:
@@ -571,8 +572,9 @@ scan_dash__ (enum segment_type type, struct substring s, struct token *token)
       return SCAN_MORE;
 
     case SEG_NUMBER:
+      scan_number__ (s, token);
       token->type = T_NEG_NUM;
-      token->number = -scan_number__ (s);
+      token->number = -token->number;
       return SCAN_DONE;
 
     default:

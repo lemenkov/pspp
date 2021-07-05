@@ -291,13 +291,11 @@ skip_digits (const char *input, size_t n, bool eof, int ofs)
 
 static int
 segmenter_parse_number__ (struct segmenter *s, const char *input, size_t n,
-                          bool eof, enum segment_type *type)
+                          bool eof, enum segment_type *type, int ofs)
 {
-  int ofs;
-
   assert (s->state == S_GENERAL);
 
-  ofs = skip_digits (input, n, eof, 0);
+  ofs = skip_digits (input, n, eof, ofs);
   if (ofs < 0)
     return -1;
 
@@ -939,7 +937,24 @@ segmenter_parse_mid_command__ (struct segmenter *s,
       *type = SEG_PUNCT;
       return 1;
 
-    case '(': case ')': case ',': case '=': case '-':
+    case '-':
+      ofs = skip_spaces (input, n, eof, 1);
+      if (ofs < 0)
+        return -1;
+      else if (c_isdigit (input[ofs]))
+        return segmenter_parse_number__ (s, input, n, eof, type, ofs);
+      else if (input[ofs] == '.')
+        {
+          if (ofs + 1 >= n)
+            {
+              if (!eof)
+                return -1;
+            }
+          else if (c_isdigit (input[ofs + 1]))
+            return segmenter_parse_number__ (s, input, n, eof, type, ofs);
+        }
+      /* Fall through. */
+    case '(': case ')': case ',': case '=':
     case '[': case ']': case '&': case '|': case '+':
       *type = SEG_PUNCT;
       s->substate = 0;
@@ -971,7 +986,7 @@ segmenter_parse_mid_command__ (struct segmenter *s,
             return -1;
         }
       else if (c_isdigit (input[1]))
-        return segmenter_parse_number__ (s, input, n, eof, type);
+        return segmenter_parse_number__ (s, input, n, eof, type, 0);
 
       int eol = at_end_of_line (input, n, eof, 1);
       if (eol < 0)
@@ -988,7 +1003,7 @@ segmenter_parse_mid_command__ (struct segmenter *s,
 
     case '0': case '1': case '2': case '3': case '4':
     case '5': case '6': case '7': case '8': case '9':
-      return segmenter_parse_number__ (s, input, n, eof, type);
+      return segmenter_parse_number__ (s, input, n, eof, type, 0);
 
     case 'u': case 'U':
       return segmenter_maybe_parse_string__ (SEG_UNICODE_STRING,

@@ -355,7 +355,7 @@ end
 PSPP_CHECK_SEGMENT([-i])
 AT_CLEANUP
 
-AT_SETUP([numbers])
+AT_SETUP([positive numbers])
 AT_KEYWORDS([segment])
 AT_DATA([input], [dnl
 0 1 01 001. 1.
@@ -423,6 +423,83 @@ end
 ])
 PSPP_CHECK_SEGMENT([-i])
 AT_CLEANUP
+
+AT_SETUP([negative numbers])
+AT_KEYWORDS([segment])
+AT_DATA([input], [dnl
+ -0 -1 -01 -001. -1.
+ -123. /* comment 1 */ /* comment 2 */
+ -.1 -0.1 -00.1 -00.10
+ -5e1 -6E-1 -7e+1 -6E+01 -6e-03
+ -.3E1 -.4e-1 -.5E+1 -.6e+01 -.7E-03
+ -1.23e1 -45.6E-1 -78.9e+1 -99.9E+01 -11.2e-03
+ -/**/1
+ -. -1e -e1 -1e+ -1e- -1.
+])
+AT_DATA([expout-base], [dnl
+spaces          _
+number          -0    space
+number          -1    space
+number          -01    space
+number          -001.    space
+number          -1
+end_command     .
+newline         \n (first)
+    space
+number          -123
+end_command     .    space
+comment         /*_comment_1_*/    space
+comment         /*_comment_2_*/
+newline         \n (first)
+    space
+number          -.1    space
+number          -0.1    space
+number          -00.1    space
+number          -00.10
+newline         \n (later)
+    space
+number          -5e1    space
+number          -6E-1    space
+number          -7e+1    space
+number          -6E+01    space
+number          -6e-03
+newline         \n (later)
+    space
+number          -.3E1    space
+number          -.4e-1    space
+number          -.5E+1    space
+number          -.6e+01    space
+number          -.7E-03
+newline         \n (later)
+    space
+number          -1.23e1    space
+number          -45.6E-1    space
+number          -78.9e+1    space
+number          -99.9E+01    space
+number          -11.2e-03
+newline         \n (later)
+    space
+punct           -
+comment         /**/
+number          1
+newline         \n (later)
+    space
+punct           -
+punct           .    space
+expected_exponent -1e    space
+punct           -
+identifier      e1    space
+expected_exponent -1e+    space
+expected_exponent -1e-    space
+number          -1
+end_command     .
+-newline         \n (first)
+-
+end
+])
+PSPP_CHECK_SEGMENT([-i])
+AT_CLEANUP
+
 
 AT_SETUP([strings])
 AT_KEYWORDS([segment])
