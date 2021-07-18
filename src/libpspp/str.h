@@ -103,6 +103,7 @@ void ss_dealloc (struct substring *);
 /* Mutators.
    Functions that advance the beginning of a string should not be
    used if a substring is to be deallocated. */
+void ss_swap (struct substring *, struct substring *);
 void ss_truncate (struct substring *, size_t);
 size_t ss_rtrim (struct substring *, struct substring trim_set);
 size_t ss_ltrim (struct substring *, struct substring trim_set);

@@ -425,6 +425,15 @@ ss_dealloc (struct substring *ss)
   free (ss->string);
 }
 
+/* Exchanges the contents of A and B. */
+void
+ss_swap (struct substring *a, struct substring *b)
+{
+  struct substring tmp = *a;
+  *a = *b;
+  *b = tmp;
+}
+
 /* Truncates SS to at most CNT bytes in length. */
 void
 ss_truncate (struct substring *ss, size_t cnt)
