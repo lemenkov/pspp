@@ -54,7 +54,6 @@ main (int argc, char *argv[])
   char *input;
 
   struct string_lexer slex;
-  bool more;
 
   set_program_name (argv[0]);
   file_name = parse_options (argc, argv);
@@ -73,31 +72,66 @@ main (int argc, char *argv[])
         length--;
     }
 
+  struct token *tokens = NULL;
+  size_t n_tokens = 0;
+  size_t allocated_tokens = 0;
   string_lexer_init (&slex, input, length, mode, false);
-  do
+  for (;;)
     {
-      struct token token;
+      if (n_tokens >= allocated_tokens)
+        tokens = x2nrealloc (tokens, &allocated_tokens, sizeof *tokens);
+      enum string_lexer_result result
+        = string_lexer_next (&slex, &tokens[n_tokens]);
 
-      more = string_lexer_next (&slex, &token);
+      if (result == SLR_ERROR)
+        tokens[n_tokens].type = T_STOP;
+      n_tokens++;
 
-      printf ("%s", scan_type_to_string (token.type));
-      if (token.number != 0.0)
+      if (result == SLR_END)
+        break;
+    }
+
+  for (size_t i = 0; i < n_tokens; )
+    {
+      struct merger m = MERGER_INIT;
+      int retval;
+      struct token out;
+      for (size_t j = i; ; j++)
         {
-          double x = token.number;
+          assert (j < n_tokens);
+          retval = merger_add (&m, &tokens[j], &out);
+          if (retval != -1)
+            break;
+        }
+
+      const struct token *t = retval ? &out : &tokens[i];
+
+      fputs (token_type_to_name (t->type), stdout);
+      if (t->number != 0.0)
+        {
+          double x = t->number;
 
           if (x > LONG_MIN && x <= LONG_MAX && floor (x) == x)
             printf (" %ld", (long int) x);
           else
             printf (" %.3g", x);
         }
-      if (token.string.string != NULL || token.string.length > 0)
-        printf (" \"%.*s\"", (int) token.string.length, token.string.string);
+      if (t->string.string != NULL || t->string.length > 0)
+        printf (" \"%.*s\"", (int) t->string.length, t->string.string);
       printf ("\n");
 
-      token_uninit (&token);
+      if (retval)
+        {
+          i += retval;
+          token_uninit (&out);
+        }
+      else
+        i++;
     }
-  while (more);
 
+  for (size_t i = 0; i < n_tokens; i++)
+    token_uninit (&tokens[i]);
+  free (tokens);
   free (input);
 
   return 0;

@@ -87,7 +87,7 @@ lexer.sps:1: error: Unknown command `datA dist'.
 
 lexer.sps:2: error: LIST: LIST is allowed only after the active dataset has been defined.
 
-lexer.sps:2.6: error: LIST: Syntax error: Bad character U+0000 in input.
+lexer.sps:2.6: error: LIST: Syntax error at `...': Bad character U+0000 in input.
 ])
 AT_CLEANUP
 

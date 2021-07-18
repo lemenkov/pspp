@@ -65,8 +65,8 @@ parse_quoted_token (struct lexer *lexer, struct token *token)
   struct string_lexer slex;
   string_lexer_init (&slex, s.string, s.length, SEG_MODE_INTERACTIVE, true);
   struct token another_token = { .type = T_STOP };
-  if (!string_lexer_next (&slex, token)
-      || string_lexer_next (&slex, &another_token))
+  if (string_lexer_next (&slex, token) != SLR_TOKEN
+      || string_lexer_next (&slex, &another_token) != SLR_END)
     {
       token_uninit (token);
       token_uninit (&another_token);
@@ -87,6 +87,9 @@ cmd_define (struct lexer *lexer, struct dataset *ds UNUSED)
   struct macro *m = xmalloc (sizeof *m);
   *m = (struct macro) {
     .name = ss_xstrdup (lex_tokss (lexer)),
+    .location = xmalloc (sizeof *m->location),
+  };
+  *m->location = (struct msg_location) {
     .file_name = xstrdup_if_nonnull (lex_get_file_name (lexer)),
     .first_line = lex_get_first_line_number (lexer, 0),
   };
@@ -235,7 +238,7 @@ cmd_define (struct lexer *lexer, struct dataset *ds UNUSED)
       ds_put_byte (&body, '\n');
       lex_get (lexer);
     }
-  m->last_line = lex_get_last_line_number (lexer, 0);
+  m->location->last_line = lex_get_last_line_number (lexer, 0);
 
   macro_tokens_from_string (&m->body, body.ss, lex_get_syntax_mode (lexer));
   ds_destroy (&body);

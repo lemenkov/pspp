@@ -25,6 +25,8 @@
 #include "language/lexer/segment.h"
 #include "language/lexer/token.h"
 
+struct msg_location;
+
 /* A token along with the syntax that was tokenized to produce it.  The syntax
    allows the token to be turned back into syntax accurately. */
 struct macro_token
@@ -94,9 +96,7 @@ struct macro
     char *name;
 
     /* Source code location of macro definition, for error reporting. */
-    char *file_name;
-    int first_line;
-    int last_line;
+    struct msg_location *location;
 
     /* Parameters. */
     struct macro_param *params;
@@ -131,11 +131,12 @@ macro_set_is_empty (const struct macro_set *set)
 struct macro_call;
 
 int macro_call_create (const struct macro_set *, const struct token *,
-                      struct macro_call **);
-int macro_call_add (struct macro_call *, const struct macro_token *);
+                       struct macro_call **);
+int macro_call_add (struct macro_call *, const struct macro_token *,
+                    const struct msg_location *);
 
 void macro_call_expand (struct macro_call *, enum segmenter_mode segmenter_mode,
-                        struct macro_tokens *);
+                        const struct msg_location *call_loc, struct macro_tokens *);
 
 void macro_call_destroy (struct macro_call *);
 

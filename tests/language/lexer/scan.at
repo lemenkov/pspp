@@ -34,52 +34,29 @@ WXYZ. /* unterminated end of line comment
 ])
 AT_DATA([expout-base], [dnl
 ID "a"
-SKIP
 ID "aB"
-SKIP
 ID "i5"
-SKIP
 ID "$x"
-SKIP
 ID "@efg"
-SKIP
 ID "@@."
-SKIP
 MACRO_ID "!abcd"
-SKIP
 ID "#.#"
-SKIP
 MACRO_PUNCT "."
 ID "x"
-SKIP
 MACRO_PUNCT "_"
 ID "z"
 ENDCMD
-SKIP
 ID "abcd."
-SKIP
 ID "abcd"
 ENDCMD
-SKIP
 ID "QRSTUV"
 ENDCMD
-SKIP
-SKIP
 ID "QrStUv"
 ENDCMD
-SKIP
-SKIP
-SKIP
 ID "WXYZ"
 ENDCMD
-SKIP
-SKIP
-SKIP
-UNEXPECTED_CHAR 65533
+STOP "Bad character U+FFFD in input."
 ENDCMD
-SKIP
-SKIP
--SKIP
 STOP
 ])
 PSPP_CHECK_SCAN([-i])
@@ -95,88 +72,47 @@ and. with.
 ])
 AT_DATA([expout-base], [dnl
 AND
-SKIP
 OR
-SKIP
 NOT
-SKIP
 EQ
-SKIP
 GE
-SKIP
 GT
-SKIP
 LE
-SKIP
 LT
-SKIP
 NE
-SKIP
 ALL
-SKIP
 BY
-SKIP
 TO
-SKIP
 WITH
-SKIP
 AND
-SKIP
 OR
-SKIP
 NOT
-SKIP
 EQ
-SKIP
 GE
-SKIP
 GT
-SKIP
 LE
-SKIP
 LT
-SKIP
 NE
-SKIP
 ALL
-SKIP
 BY
-SKIP
 TO
-SKIP
 WITH
-SKIP
 ID "andx"
-SKIP
 ID "orx"
-SKIP
 ID "notx"
-SKIP
 ID "eqx"
-SKIP
 ID "gex"
-SKIP
 ID "gtx"
-SKIP
 ID "lex"
-SKIP
 ID "ltx"
-SKIP
 ID "nex"
-SKIP
 ID "allx"
-SKIP
 ID "byx"
-SKIP
 ID "tox"
-SKIP
 ID "withx"
-SKIP
 ID "and."
-SKIP
 WITH
 ENDCMD
--SKIP
 STOP
 ])
 PSPP_CHECK_SCAN([-i])
@@ -191,45 +127,25 @@ AT_DATA([input], [dnl
 ])
 AT_DATA([expout-base], [dnl
 NOT
-SKIP
 AND
-SKIP
 OR
-SKIP
 EQUALS
-SKIP
 GE
-SKIP
 GT
-SKIP
 LE
-SKIP
 LT
-SKIP
 NE
-SKIP
 NE
-SKIP
 LPAREN
-SKIP
 RPAREN
-SKIP
 COMMA
-SKIP
 DASH
-SKIP
 PLUS
-SKIP
 ASTERISK
-SKIP
 SLASH
-SKIP
 LBRACK
-SKIP
 RBRACK
-SKIP
 EXP
-SKIP
 NOT
 AND
 OR
@@ -250,25 +166,15 @@ SLASH
 LBRACK
 RBRACK
 EXP
-SKIP
 MACRO_PUNCT "%"
-SKIP
 MACRO_PUNCT ":"
-SKIP
 MACRO_PUNCT ";"
-SKIP
 MACRO_PUNCT "?"
-SKIP
 MACRO_PUNCT "_"
-SKIP
 MACRO_PUNCT "`"
-SKIP
 MACRO_PUNCT "{"
-SKIP
 MACRO_PUNCT "}"
-SKIP
 NOT
--SKIP
 STOP
 ])
 PSPP_CHECK_SCAN([-i])
@@ -287,73 +193,39 @@ AT_DATA([input], [dnl
 ])
 AT_DATA([expout-base], [dnl
 POS_NUM
-SKIP
 POS_NUM 1
-SKIP
 POS_NUM 1
-SKIP
 POS_NUM 1
-SKIP
 POS_NUM 1
 ENDCMD
-SKIP
 POS_NUM 123
 ENDCMD
-SKIP
-SKIP
-SKIP
-SKIP
-SKIP
 ENDCMD
 POS_NUM 1
-SKIP
 POS_NUM 0.1
-SKIP
 POS_NUM 0.1
-SKIP
 POS_NUM 0.1
-SKIP
 POS_NUM 50
-SKIP
 POS_NUM 0.6
-SKIP
 POS_NUM 70
-SKIP
 POS_NUM 60
-SKIP
 POS_NUM 0.006
-SKIP
 ENDCMD
 POS_NUM 30
-SKIP
 POS_NUM 0.04
-SKIP
 POS_NUM 5
-SKIP
 POS_NUM 6
-SKIP
 POS_NUM 0.0007
-SKIP
 POS_NUM 12.3
-SKIP
 POS_NUM 4.56
-SKIP
 POS_NUM 789
-SKIP
 POS_NUM 999
-SKIP
 POS_NUM 0.0112
-SKIP
 ENDCMD
-SKIP
-EXPECTED_EXPONENT "1e"
-SKIP
+STOP "Missing exponent following `1e'."
 ID "e1"
-SKIP
-EXPECTED_EXPONENT "1e+"
-SKIP
-EXPECTED_EXPONENT "1e-"
--SKIP
+STOP "Missing exponent following `1e+'."
+STOP "Missing exponent following `1e-'."
 STOP
 ])
 PSPP_CHECK_SCAN([-i])
@@ -372,101 +244,52 @@ AT_DATA([input-base], [dnl
  -. -1e -e1 -1e+ -1e- -1.
 ])
 AT_DATA([expout-base0], [dnl
-SKIP
 NEG_NUM
-SKIP
 NEG_NUM -1
-SKIP
 NEG_NUM -1
-SKIP
 NEG_NUM -1
-SKIP
 NEG_NUM -1
 ENDCMD
-SKIP
-SKIP
 NEG_NUM -123
 ENDCMD
-SKIP
-SKIP
-SKIP
-SKIP
-SKIP
-SKIP
 NEG_NUM -0.1
-SKIP
 NEG_NUM -0.1
-SKIP
 NEG_NUM -0.1
-SKIP
 NEG_NUM -0.1
-SKIP
-SKIP
 NEG_NUM -50
-SKIP
 NEG_NUM -0.6
-SKIP
 NEG_NUM -70
-SKIP
 NEG_NUM -60
-SKIP
 NEG_NUM -0.006
-SKIP
-SKIP
 NEG_NUM -3
-SKIP
 NEG_NUM -0.04
-SKIP
 NEG_NUM -5
-SKIP
 NEG_NUM -6
-SKIP
 NEG_NUM -0.0007
-SKIP
-SKIP
 NEG_NUM -12.3
-SKIP
 NEG_NUM -4.56
-SKIP
 NEG_NUM -789
-SKIP
 NEG_NUM -999
-SKIP
 NEG_NUM -0.0112
-SKIP
-SKIP
 NEG_NUM -1
-SKIP
-SKIP
 DASH
-+SKIP
 MACRO_PUNCT "."
-SKIP
-EXPECTED_EXPONENT "-1e"
-SKIP
+STOP "Missing exponent following `-1e'."
 DASH
-+SKIP
 ID "e1"
-SKIP
-EXPECTED_EXPONENT "-1e+"
-SKIP
-EXPECTED_EXPONENT "-1e-"
-SKIP
+STOP "Missing exponent following `-1e+'."
+STOP "Missing exponent following `-1e-'."
 NEG_NUM -1
 ENDCMD
--SKIP
 STOP
 ])
 
-AS_BOX([without extra spaces])
 cp input-base input
-sed '/^+/d' < expout-base0 > expout-base
+cp expout-base0 expout-base
 PSPP_CHECK_SCAN([-i])
 
-AS_BOX([with extra spaces])
 sed 's/ -/ - /g' < input-base > input
-sed 's/EXPONENT "-/EXPONENT "- /
-     s/^+//' < expout-base0 > expout-base
+sed 's/following `-/following `- /' < expout-base0 > expout-base
 PSPP_CHECK_SCAN([-i])
 AT_CLEANUP
 
@@ -505,61 +328,33 @@ x"4142"
 ])
 AT_DATA([expout-base], [dnl
 STRING "x"
-SKIP
 STRING "y"
-SKIP
 STRING "abc"
-SKIP
 STRING "Don't"
-SKIP
 STRING "Can't"
-SKIP
 STRING "Won't"
-SKIP
 STRING ""quoted""
-SKIP
 STRING ""quoted""
-SKIP
 STRING ""
-SKIP
 STRING ""
-SKIP
 STRING "'"
-SKIP
 STRING """
-SKIP
-EXPECTED_QUOTE
-SKIP
-EXPECTED_QUOTE
-SKIP
+STOP "Unterminated string constant."
+STOP "Unterminated string constant."
 STRING "xyzabcde"
-SKIP
 STRING "foobar"
-SKIP
 STRING "foobar"
-SKIP
 STRING "foo"
-SKIP
 PLUS
-SKIP
 ENDCMD
-SKIP
 STRING "bar"
-SKIP
 ENDCMD
-SKIP
 PLUS
-SKIP
 STRING "AB5152"
-SKIP
 STRING "4142QR"
-SKIP
 STRING "ABお"
-SKIP
 STRING "�あいうえお"
-SKIP
 STRING "abc�えxyz"
--SKIP
 STOP
 ])
 PSPP_CHECK_SCAN([-i])
@@ -572,18 +367,14 @@ AT_DATA([input], [dnl
 #! /usr/bin/pspp
 ])
 AT_DATA([expout-base], [dnl
-SKIP
-SKIP
 ID "#"
 MACRO_ID "!"
-SKIP
 SLASH
 ID "usr"
 SLASH
 ID "bin"
 SLASH
 ID "pspp"
--SKIP
 STOP
 ])
 PSPP_CHECK_SCAN([-i])
@@ -610,57 +401,27 @@ next command.
 
 ])
 AT_DATA([expout-base], [dnl
-SKIP
-SKIP
-SKIP
 ENDCMD
-SKIP
 ENDCMD
-SKIP
-SKIP
 ENDCMD
-SKIP
-SKIP
 ENDCMD
-SKIP
 ENDCMD
-SKIP
-SKIP
 ENDCMD
-SKIP
-SKIP
 ENDCMD
-SKIP
 ID "com"
-SKIP
 ID "is"
-SKIP
 ID "ambiguous"
-SKIP
 WITH
-SKIP
 ID "COMPUTE"
 ENDCMD
-SKIP
 ENDCMD
-SKIP
-SKIP
-SKIP
 ENDCMD
-SKIP
 ENDCMD
-SKIP
-SKIP
-SKIP
 ENDCMD
-SKIP
 ID "next"
-SKIP
 ID "command"
 ENDCMD
-SKIP
 -ENDCMD
--SKIP
 STOP
 ])
 PSPP_CHECK_SCAN([-i])
@@ -685,31 +446,21 @@ ID "DOCUMENT"
 STRING "DOCUMENT one line."
 ENDCMD
 ENDCMD
-SKIP
 ID "DOCUMENT"
 STRING "DOC more"
-SKIP
 STRING "    than"
-SKIP
 STRING "        one"
-SKIP
 STRING "            line."
 ENDCMD
 ENDCMD
-SKIP
 ID "DOCUMENT"
 STRING "docu"
-SKIP
 STRING "first.paragraph"
-SKIP
 STRING "isn't parsed as tokens"
-SKIP
 STRING ""
-SKIP
 STRING "second paragraph."
 -ENDCMD
 -ENDCMD
--SKIP
 STOP
 ])
 PSPP_CHECK_SCAN([-i])
@@ -727,32 +478,17 @@ FILE /*
 ])
 AT_DATA([expout-base], [dnl
 ID "FIL"
-SKIP
 ID "label"
-SKIP
 STRING "isn't quoted"
 ENDCMD
-SKIP
 ID "FILE"
-SKIP
-SKIP
 ID "lab"
-SKIP
 STRING "is quoted"
 ENDCMD
-SKIP
 ID "FILE"
-SKIP
-SKIP
-SKIP
-SKIP
-SKIP
 ID "lab"
-SKIP
 STRING "not quoted here either"
-SKIP
 -ENDCMD
--SKIP
 STOP
 ])
 PSPP_CHECK_SCAN([-i])
@@ -775,41 +511,22 @@ end data
 ])
 AT_DATA([expout-base], [dnl
 ID "begin"
-SKIP
 ID "data"
 ENDCMD
-SKIP
 STRING "123"
-SKIP
 STRING "xxx"
-SKIP
 ID "end"
-SKIP
 ID "data"
 ENDCMD
-SKIP
 ENDCMD
-SKIP
 ID "BEG"
-SKIP
-SKIP
-SKIP
 ID "DAT"
-SKIP
-SKIP
-SKIP
 STRING "5 6 7 /* x"
-SKIP
 STRING ""
-SKIP
 STRING "end  data"
-SKIP
 ID "end"
-SKIP
 ID "data"
-SKIP
 ENDCMD
--SKIP
 STOP
 ])
 PSPP_CHECK_SCAN([-i])
@@ -830,43 +547,26 @@ end
 ])
 AT_DATA([expout-base], [dnl
 ID "do"
-SKIP
 ID "repeat"
-SKIP
 ID "x"
 EQUALS
 ID "a"
-SKIP
 ID "b"
-SKIP
 ID "c"
-SKIP
-SKIP
 ID "y"
 EQUALS
 ID "d"
-SKIP
 ID "e"
-SKIP
 ID "f"
 ENDCMD
-SKIP
 STRING "  do repeat a=1 thru 5."
-SKIP
 STRING "another command."
-SKIP
 STRING "second command"
-SKIP
 STRING "+ third command."
-SKIP
 STRING "end /* x */ /* y */ repeat print."
-SKIP
 ID "end"
-SKIP
-SKIP
 ID "repeat"
 ENDCMD
--SKIP
 STOP
 ])
 PSPP_CHECK_SCAN([-i])
@@ -892,60 +592,35 @@ end repeat
 ])
 AT_DATA([expout-base], [dnl
 ID "do"
-SKIP
 ID "repeat"
-SKIP
 ID "x"
 EQUALS
 ID "a"
-SKIP
 ID "b"
-SKIP
 ID "c"
-SKIP
-SKIP
 ID "y"
 EQUALS
 ID "d"
-SKIP
 ID "e"
-SKIP
 ID "f"
-SKIP
 ENDCMD
 STRING "do repeat a=1 thru 5"
-SKIP
 STRING "another command"
-SKIP
 STRING "second command"
-SKIP
 STRING "+ third command"
-SKIP
 STRING "end /* x */ /* y */ repeat print"
-SKIP
 ID "end"
-SKIP
-SKIP
 ID "repeat"
-SKIP
 ENDCMD
 ID "do"
-SKIP
-SKIP
 ID "repeat"
-SKIP
 ID "#a"
 EQUALS
 POS_NUM 1
-SKIP
 ENDCMD
-SKIP
 STRING "  inner command"
-SKIP
 ID "end"
-SKIP
 ID "repeat"
--SKIP
 STOP
 ])
 PSPP_CHECK_SCAN([-b])
@@ -960,17 +635,12 @@ var1 var2 var3
 ])
 AT_DATA([expout-base], [dnl
 ID "define"
-SKIP
 MACRO_ID "!macro1"
 LPAREN
 RPAREN
-SKIP
-SKIP
 STRING "var1 var2 var3"
-SKIP
 MACRO_ID "!enddefine"
 ENDCMD
--SKIP
 STOP
 ])
 PSPP_CHECK_SCAN([-i])
@@ -984,15 +654,12 @@ define !macro1() var1 var2 var3
 ])
 AT_DATA([expout-base], [dnl
 ID "define"
-SKIP
 MACRO_ID "!macro1"
 LPAREN
 RPAREN
 STRING " var1 var2 var3"
-SKIP
 MACRO_ID "!enddefine"
 ENDCMD
--SKIP
 STOP
 ])
 PSPP_CHECK_SCAN([-i])
@@ -1006,16 +673,12 @@ var1 var2 var3!enddefine.
 ])
 AT_DATA([expout-base], [dnl
 ID "define"
-SKIP
 MACRO_ID "!macro1"
 LPAREN
 RPAREN
-SKIP
-SKIP
 STRING "var1 var2 var3"
 MACRO_ID "!enddefine"
 ENDCMD
--SKIP
 STOP
 ])
 PSPP_CHECK_SCAN([-i])
@@ -1028,14 +691,12 @@ define !macro1()var1 var2 var3!enddefine.
 ])
 AT_DATA([expout-base], [dnl
 ID "define"
-SKIP
 MACRO_ID "!macro1"
 LPAREN
 RPAREN
 STRING "var1 var2 var3"
 MACRO_ID "!enddefine"
 ENDCMD
--SKIP
 STOP
 ])
 PSPP_CHECK_SCAN([-i])
@@ -1049,15 +710,11 @@ define !macro1()
 ])
 AT_DATA([expout-base], [dnl
 ID "define"
-SKIP
 MACRO_ID "!macro1"
 LPAREN
 RPAREN
-SKIP
-SKIP
 MACRO_ID "!enddefine"
 ENDCMD
--SKIP
 STOP
 ])
 PSPP_CHECK_SCAN([-i])
@@ -1073,19 +730,13 @@ define !macro1()
 ])
 AT_DATA([expout-base], [dnl
 ID "define"
-SKIP
 MACRO_ID "!macro1"
 LPAREN
 RPAREN
-SKIP
-SKIP
 STRING ""
-SKIP
 STRING ""
-SKIP
 MACRO_ID "!enddefine"
 ENDCMD
--SKIP
 STOP
 ])
 PSPP_CHECK_SCAN([-i])
@@ -1099,28 +750,22 @@ define !macro1(a(), b(), c())
 ])
 AT_DATA([expout-base], [dnl
 ID "define"
-SKIP
 MACRO_ID "!macro1"
 LPAREN
 ID "a"
 LPAREN
 RPAREN
 COMMA
-SKIP
 ID "b"
 LPAREN
 RPAREN
 COMMA
-SKIP
 ID "c"
 LPAREN
 RPAREN
 RPAREN
-SKIP
-SKIP
 MACRO_ID "!enddefine"
 ENDCMD
--SKIP
 STOP
 ])
 PSPP_CHECK_SCAN([-i])
@@ -1138,34 +783,22 @@ define !macro1(
 ])
 AT_DATA([expout-base], [dnl
 ID "define"
-SKIP
 MACRO_ID "!macro1"
 LPAREN
-SKIP
-SKIP
 ID "a"
 LPAREN
 RPAREN
 COMMA
-SKIP
 ID "b"
 LPAREN
-SKIP
-SKIP
 RPAREN
 COMMA
-SKIP
-SKIP
 ID "c"
 LPAREN
 RPAREN
-SKIP
 RPAREN
-SKIP
-SKIP
 MACRO_ID "!enddefine"
 ENDCMD
--SKIP
 STOP
 ])
 PSPP_CHECK_SCAN([-i])
@@ -1183,26 +816,18 @@ content 2
 ])
 AT_DATA([expout-base], [dnl
 ID "define"
-SKIP
 MACRO_ID "!macro1"
-SKIP
 LPAREN
 ID "x"
 COMMA
 ID "y"
 COMMA
 ID "z"
-SKIP
 RPAREN
-SKIP
-SKIP
 STRING "content 1"
-SKIP
 STRING "content 2"
-SKIP
 MACRO_ID "!enddefine"
 ENDCMD
--SKIP
 STOP
 ])
 PSPP_CHECK_SCAN([-i])
@@ -1216,20 +841,14 @@ data list /x 1.
 ])
 AT_DATA([expout-base], [dnl
 ID "define"
-SKIP
 MACRO_ID "!macro1"
 ENDCMD
-SKIP
 ID "data"
-SKIP
 ID "list"
-SKIP
 SLASH
 ID "x"
-SKIP
 POS_NUM 1
 ENDCMD
--SKIP
 STOP
 ])
 PSPP_CHECK_SCAN([-i])
@@ -1244,22 +863,15 @@ data list /x 1.
 ])
 AT_DATA([expout-base], [dnl
 ID "define"
-SKIP
 MACRO_ID "!macro1"
-SKIP
 ID "x"
 ENDCMD
-SKIP
 ID "data"
-SKIP
 ID "list"
-SKIP
 SLASH
 ID "x"
-SKIP
 POS_NUM 1
 ENDCMD
--SKIP
 STOP
 ])
 PSPP_CHECK_SCAN([-i])
@@ -1274,24 +886,17 @@ data list /x 1.
 ])
 AT_DATA([expout-base], [dnl
 ID "define"
-SKIP
 MACRO_ID "!macro1"
 LPAREN
 ENDCMD
-SKIP
 ID "x"
 ENDCMD
-SKIP
 ID "data"
-SKIP
 ID "list"
-SKIP
 SLASH
 ID "x"
-SKIP
 POS_NUM 1
 ENDCMD
--SKIP
 STOP
 ])
 PSPP_CHECK_SCAN([-i])
@@ -1307,20 +912,14 @@ data list /x 1.
 ])
 AT_DATA([expout-base], [dnl
 ID "define"
-SKIP
 MACRO_ID "!macro1"
 ENDCMD
-SKIP
 ID "data"
-SKIP
 ID "list"
-SKIP
 SLASH
 ID "x"
-SKIP
 POS_NUM 1
 ENDCMD
--SKIP
 STOP
 ])
 PSPP_CHECK_SCAN([-i])
@@ -1335,16 +934,11 @@ content line 2
 ])
 AT_DATA([expout-base], [dnl
 ID "define"
-SKIP
 MACRO_ID "!macro1"
 LPAREN
 RPAREN
-SKIP
-SKIP
 STRING "content line 1"
-SKIP
 STRING "content line 2"
--SKIP
 STOP
 ])
 PSPP_CHECK_SCAN([-i])
@@ -1363,44 +957,25 @@ fourth command.
 ])
 AT_DATA([expout-base], [dnl
 ID "first"
-SKIP
 ID "command"
-SKIP
-SKIP
 ID "another"
-SKIP
 ID "line"
-SKIP
 ID "of"
-SKIP
 ID "first"
-SKIP
 ID "command"
-SKIP
 ENDCMD
-SKIP
 ID "second"
-SKIP
 ID "command"
-SKIP
 ENDCMD
 ID "third"
-SKIP
 ID "command"
-SKIP
 ENDCMD
-SKIP
 ID "fourth"
-SKIP
 ID "command"
 ENDCMD
-SKIP
-SKIP
 ID "fifth"
-SKIP
 ID "command"
 ENDCMD
--SKIP
 STOP
 ])
 PSPP_CHECK_SCAN([-b])

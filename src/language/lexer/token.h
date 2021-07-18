@@ -23,13 +23,10 @@
 #include "libpspp/str.h"
 #include "data/identifier.h"
 
-/* A PSPP syntax token.
-
-   The 'type' member is used by the scanner (see scan.h) for SCAN_* values as
-   well, which is why it is not declared as type "enum token_type". */
+/* A PSPP syntax token. */
 struct token
   {
-    int type;                   /* Usually a "enum token_type" value. */
+    enum token_type type;
     double number;
     struct substring string;
   };

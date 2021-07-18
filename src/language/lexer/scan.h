@@ -35,61 +35,23 @@ struct token;
    types.
 */
 
-#define SCAN_TYPES                              \
-    SCAN_TYPE(BAD_HEX_LENGTH)                   \
-    SCAN_TYPE(BAD_HEX_DIGIT)                    \
-                                                \
-    SCAN_TYPE(BAD_UNICODE_LENGTH)               \
-    SCAN_TYPE(BAD_UNICODE_DIGIT)                \
-    SCAN_TYPE(BAD_UNICODE_CODE_POINT)           \
-                                                \
-    SCAN_TYPE(EXPECTED_QUOTE)                   \
-    SCAN_TYPE(EXPECTED_EXPONENT)                \
-    SCAN_TYPE(UNEXPECTED_CHAR)                  \
-                                                \
-    SCAN_TYPE(SKIP)
-
-/* Types of scan tokens.
-
-   Scan token types are a superset of enum token_type.  Only the additional
-   scan token types are defined here, so see the definition of enum token_type
-   for the others. */
-enum scan_type
+enum tokenize_result
   {
-#define SCAN_TYPE(TYPE) SCAN_##TYPE,
-    SCAN_FIRST = 255,
-    SCAN_TYPES
-    SCAN_LAST
-#undef SCAN_TYPE
+    TOKENIZE_EMPTY,
+    TOKENIZE_TOKEN,
+    TOKENIZE_ERROR
   };
 
-const char *scan_type_to_string (enum scan_type);
-bool is_scan_type (enum scan_type);
+enum tokenize_result token_from_segment (enum segment_type, struct substring,
+                                         struct token *);
 
-char *scan_token_to_error (const struct token *);
-
-/* A scanner.  Opaque. */
-struct scanner
+struct merger
   {
-    unsigned char state;
-    unsigned char substate;
+    unsigned int state;
   };
+#define MERGER_INIT { 0 }
 
-/* scanner_push() return type. */
-enum scan_result
-  {
-    /* Complete token. */
-    SCAN_DONE,                  /* Token successfully scanned. */
-    SCAN_MORE,                  /* More segments needed to scan token. */
-
-    /* Incomplete token. */
-    SCAN_BACK,                  /* Done, but go back to saved position too. */
-    SCAN_SAVE                   /* Need more segments, and save position. */
-  };
-
-void scanner_init (struct scanner *, struct token *);
-enum scan_result scanner_push (struct scanner *, enum segment_type,
-                               struct substring, struct token *);
+int merger_add (struct merger *m, const struct token *in, struct token *out);
 
 /* A simplified lexer for handling syntax in a string. */
 
@@ -101,8 +63,16 @@ struct string_lexer
     struct segmenter segmenter;
   };
 
+enum string_lexer_result
+  {
+    SLR_END,
+    SLR_TOKEN,
+    SLR_ERROR
+  };
+
 void string_lexer_init (struct string_lexer *, const char *input,
                         size_t length, enum segmenter_mode, bool is_snippet);
-bool string_lexer_next (struct string_lexer *, struct token *);
+enum string_lexer_result string_lexer_next (struct string_lexer *,
+                                            struct token *);
 
 #endif /* scan.h */

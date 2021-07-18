@@ -34,17 +34,6 @@
 #include "gettext.h"
 #define _(msgid) gettext (msgid)
 
-enum
-  {
-    S_START,
-    S_DASH,
-    S_STRING
-  };
-
-#define SS_NL_BEFORE_PLUS (1u << 0)
-#define SS_PLUS           (1u << 1)
-#define SS_NL_AFTER_PLUS  (1u << 2)
-
 /* Returns the integer value of (hex) digit C. */
 static int
 digit_value (int c)
@@ -71,205 +60,84 @@ digit_value (int c)
     }
 }
 
-static bool
-scan_quoted_string__ (struct substring s, struct token *token)
+static void
+scan_quoted_string (struct substring in, struct token *token)
 {
-  int quote;
-
   /* Trim ' or " from front and back. */
-  quote = s.string[s.length - 1];
-  s.string++;
-  s.length -= 2;
+  int quote = in.string[0];
+  in.string++;
+  in.length -= 2;
 
-  ss_realloc (&token->string, token->string.length + s.length + 1);
+  struct substring out = { .string = xmalloc (in.length + 1) };
 
   for (;;)
     {
-      size_t pos = ss_find_byte (s, quote);
+      size_t pos = ss_find_byte (in, quote);
       if (pos == SIZE_MAX)
         break;
 
-      memcpy (ss_end (token->string), s.string, pos + 1);
-      token->string.length += pos + 1;
-      ss_advance (&s, pos + 2);
+      memcpy (ss_end (out), in.string, pos + 1);
+      out.length += pos + 1;
+      ss_advance (&in, pos + 2);
     }
 
-  memcpy (ss_end (token->string), s.string, ss_length (s));
-  token->string.length += ss_length (s);
+  memcpy (ss_end (out), in.string, in.length);
+  out.length += in.length;
+  out.string[out.length] = '\0';
 
-  return true;
+  *token = (struct token) { .type = T_STRING, .string = out };
 }
 
-static bool
-scan_hex_string__ (struct substring s, struct token *token)
+static char *
+scan_hex_string__ (struct substring in, struct substring *out)
 {
-  uint8_t *dst;
-  size_t i;
+  if (in.length % 2 != 0)
+    return xasprintf (_("String of hex digits has %zu characters, which "
+                        "is not a multiple of 2."), in.length);
 
-  /* Trim X' from front and ' from back. */
-  s.string += 2;
-  s.length -= 3;
-
-  if (s.length % 2 != 0)
+  ss_realloc (out, in.length / 2 + 1);
+  uint8_t *dst = CHAR_CAST (uint8_t *, out->string);
+  out->length = in.length / 2;
+  for (size_t i = 0; i < in.length; i += 2)
     {
-      token->type = SCAN_BAD_HEX_LENGTH;
-      token->number = s.length;
-      return false;
-    }
-
-  ss_realloc (&token->string, token->string.length + s.length / 2 + 1);
-  dst = CHAR_CAST (uint8_t *, ss_end (token->string));
-  token->string.length += s.length / 2;
-  for (i = 0; i < s.length; i += 2)
-    {
-      int hi = digit_value (s.string[i]);
-      int lo = digit_value (s.string[i + 1]);
+      int hi = digit_value (in.string[i]);
+      int lo = digit_value (in.string[i + 1]);
 
       if (hi >= 16 || lo >= 16)
-        {
-          token->type = SCAN_BAD_HEX_DIGIT;
-          token->number = s.string[hi >= 16 ? i : i + 1];
-          return false;
-        }
+        return xasprintf (_("`%c' is not a valid hex digit."),
+                          in.string[hi >= 16 ? i : i + 1]);
 
       *dst++ = hi * 16 + lo;
     }
 
-  return true;
+  return NULL;
 }
 
-static bool
-scan_unicode_string__ (struct substring s, struct token *token)
+static char *
+scan_unicode_string__ (struct substring in, struct substring *out)
 {
-  uint8_t *dst;
-  ucs4_t uc;
-  size_t i;
+  if (in.length < 1 || in.length > 8)
+    return xasprintf (_("Unicode string contains %zu bytes, which is "
+                        "not in the valid range of 1 to 8 bytes."),
+                      in.length);
 
-  /* Trim U' from front and ' from back. */
-  s.string += 2;
-  s.length -= 3;
-
-  if (s.length < 1 || s.length > 8)
+  ucs4_t uc = 0;
+  for (size_t i = 0; i < in.length; i++)
     {
-      token->type = SCAN_BAD_UNICODE_LENGTH;
-      token->number = s.length;
-      return 0;
-    }
-
-  ss_realloc (&token->string, token->string.length + 4 + 1);
-
-  uc = 0;
-  for (i = 0; i < s.length; i++)
-    {
-      int digit = digit_value (s.string[i]);
+      int digit = digit_value (in.string[i]);
       if (digit >= 16)
-        {
-          token->type = SCAN_BAD_UNICODE_DIGIT;
-          token->number = s.string[i];
-          return 0;
-        }
+        return xasprintf (_("`%c' is not a valid hex digit."), in.string[i]);
       uc = uc * 16 + digit;
     }
 
   if ((uc >= 0xd800 && uc < 0xe000) || uc > 0x10ffff)
-    {
-      token->type = SCAN_BAD_UNICODE_CODE_POINT;
-      token->number = uc;
-      return 0;
-    }
+    return xasprintf (_("U+%04llX is not a valid Unicode code point."),
+                      (long long) uc);
 
-  dst = CHAR_CAST (uint8_t *, ss_end (token->string));
-  token->string.length += u8_uctomb (dst, uc, 4);
+  ss_realloc (out, 4 + 1);
+  out->length = u8_uctomb (CHAR_CAST (uint8_t *, ss_end (*out)), uc, 4);
 
-  return true;
-}
-
-static enum scan_result
-scan_string_segment__ (struct scanner *scanner, enum segment_type type,
-                       struct substring s, struct token *token)
-{
-  bool ok;
-
-  switch (type)
-    {
-    case SEG_QUOTED_STRING:
-      ok = scan_quoted_string__ (s, token);
-      break;
-
-    case SEG_HEX_STRING:
-      ok = scan_hex_string__ (s, token);
-      break;
-
-    case SEG_UNICODE_STRING:
-      ok = scan_unicode_string__ (s, token);
-      break;
-
-    default:
-      NOT_REACHED ();
-    }
-
-  if (ok)
-    {
-      token->type = T_STRING;
-      token->string.string[token->string.length] = '\0';
-      scanner->state = S_STRING;
-      scanner->substate = 0;
-      return SCAN_SAVE;
-    }
-  else
-    {
-      /* The function we called above should have filled in token->type and
-         token->number properly to describe the error. */
-      ss_dealloc (&token->string);
-      token->string = ss_empty ();
-      return SCAN_DONE;
-    }
-
-}
-
-static enum scan_result
-add_bit (struct scanner *scanner, unsigned int bit)
-{
-  if (!(scanner->substate & bit))
-    {
-      scanner->substate |= bit;
-      return SCAN_MORE;
-    }
-  else
-    return SCAN_BACK;
-}
-
-static enum scan_result
-scan_string__ (struct scanner *scanner, enum segment_type type,
-               struct substring s, struct token *token)
-{
-  switch (type)
-    {
-    case SEG_SPACES:
-    case SEG_COMMENT:
-      return SCAN_MORE;
-
-    case SEG_NEWLINE:
-      if (scanner->substate & SS_PLUS)
-        return add_bit (scanner, SS_NL_AFTER_PLUS);
-      else
-        return add_bit (scanner, SS_NL_BEFORE_PLUS);
-
-    case SEG_PUNCT:
-      return (s.length == 1 && s.string[0] == '+'
-              ? add_bit (scanner, SS_PLUS)
-              : SCAN_BACK);
-
-    case SEG_QUOTED_STRING:
-    case SEG_HEX_STRING:
-    case SEG_UNICODE_STRING:
-      return (scanner->substate & SS_PLUS
-              ? scan_string_segment__ (scanner, type, s, token)
-              : SCAN_BACK);
-
-    default:
-      return SCAN_BACK;
-    }
+  return NULL;
 }
 
 static enum token_type
@@ -394,259 +262,136 @@ scan_number__ (struct substring s, struct token *token)
   if (p != buf)
     free (p);
 }
+
+static void
+tokenize_error__ (struct token *token, char *error)
+{
+  *token = (struct token) { .type = T_STRING, .string = ss_cstr (error) };
+}
 
-static enum scan_result
-scan_unexpected_char (const struct substring *s, struct token *token)
+static enum tokenize_result
+tokenize_string_segment__ (enum segment_type type,
+                           struct substring s, struct token *token)
+{
+  /* Trim X' or U' from front and ' from back. */
+  s.string += 2;
+  s.length -= 3;
+
+  struct substring out = SS_EMPTY_INITIALIZER;
+  char *error = (type == SEG_HEX_STRING
+                 ? scan_hex_string__ (s, &out)
+                 : scan_unicode_string__ (s, &out));
+  if (!error)
+    {
+      out.string[out.length] = '\0';
+      *token = (struct token) { .type = T_STRING, .string = out };
+      return TOKENIZE_TOKEN;
+    }
+  else
+    {
+      tokenize_error__ (token, error);
+      return TOKENIZE_ERROR;
+    }
+}
+
+static void
+tokenize_unexpected_char (const struct substring *s, struct token *token)
 {
   ucs4_t uc;
-
-  token->type = SCAN_UNEXPECTED_CHAR;
   u8_mbtouc (&uc, CHAR_CAST (const uint8_t *, s->string), s->length);
-  token->number = uc;
 
-  return SCAN_DONE;
+  char c_name[16];
+  tokenize_error__ (token, xasprintf (_("Bad character %s in input."),
+                                      uc_name (uc, c_name)));
 }
 
-const char *
-scan_type_to_string (enum scan_type type)
-{
-  switch (type)
-    {
-#define SCAN_TYPE(NAME) case SCAN_##NAME: return #NAME;
-      SCAN_TYPES
-#undef SCAN_TYPE
-
-    default:
-      return token_type_to_name ((enum token_type) type);
-    }
-}
-
-bool
-is_scan_type (enum scan_type type)
-{
-  return type > SCAN_FIRST && type < SCAN_LAST;
-}
-
-/* If TOKEN has the type of a scan error (a subset of those identified by
-   is_scan_type()), returns an appropriate error message.  Otherwise, returns
-   NULL. */
-char *
-scan_token_to_error (const struct token *token)
-{
-  switch (token->type)
-    {
-    case SCAN_BAD_HEX_LENGTH:
-      return xasprintf (_("String of hex digits has %d characters, which "
-                          "is not a multiple of 2."), (int) token->number);
-
-    case SCAN_BAD_HEX_DIGIT:
-    case SCAN_BAD_UNICODE_DIGIT:
-      return xasprintf (_("`%c' is not a valid hex digit."),
-                        (int) token->number);
-
-    case SCAN_BAD_UNICODE_LENGTH:
-      return xasprintf (_("Unicode string contains %d bytes, which is "
-                          "not in the valid range of 1 to 8 bytes."),
-                        (int) token->number);
-
-    case SCAN_BAD_UNICODE_CODE_POINT:
-      return xasprintf (_("U+%04X is not a valid Unicode code point."),
-                        (int) token->number);
-
-    case SCAN_EXPECTED_QUOTE:
-      return xasprintf (_("Unterminated string constant."));
-
-    case SCAN_EXPECTED_EXPONENT:
-      return xasprintf (_("Missing exponent following `%s'."),
-                        token->string.string);
-
-    case SCAN_UNEXPECTED_CHAR:
-     {
-      char c_name[16];
-      return xasprintf (_("Bad character %s in input."),
-                        uc_name (token->number, c_name));
-     }
-    }
-
-  return NULL;
-}
-
-static enum scan_result
-scan_start__ (struct scanner *scanner, enum segment_type type,
-              struct substring s, struct token *token)
+enum tokenize_result
+token_from_segment (enum segment_type type, struct substring s,
+                    struct token *token)
 {
   switch (type)
     {
     case SEG_NUMBER:
       scan_number__ (s, token);
-      return SCAN_DONE;
+      return TOKENIZE_TOKEN;
 
     case SEG_QUOTED_STRING:
+      scan_quoted_string (s, token);
+      return TOKENIZE_TOKEN;
+
     case SEG_HEX_STRING:
     case SEG_UNICODE_STRING:
-      return scan_string_segment__ (scanner, type, s, token);
+      return tokenize_string_segment__ (type, s, token);
 
     case SEG_UNQUOTED_STRING:
     case SEG_DO_REPEAT_COMMAND:
     case SEG_INLINE_DATA:
     case SEG_DOCUMENT:
     case SEG_MACRO_BODY:
-      token->type = T_STRING;
+      *token = (struct token) { .type = T_STRING };
       ss_alloc_substring (&token->string, s);
-      return SCAN_DONE;
+      return TOKENIZE_TOKEN;
 
     case SEG_RESERVED_WORD:
-      token->type = scan_reserved_word__ (s);
-      return SCAN_DONE;
+      *token = (struct token) { .type = scan_reserved_word__ (s) };
+      return TOKENIZE_TOKEN;
 
     case SEG_IDENTIFIER:
-      token->type = T_ID;
+      *token = (struct token) { .type = T_ID };
       ss_alloc_substring (&token->string, s);
-      return SCAN_DONE;
+      return TOKENIZE_TOKEN;
 
     case SEG_MACRO_ID:
-      token->type = T_MACRO_ID;
+      *token = (struct token) { .type = T_MACRO_ID };
       ss_alloc_substring (&token->string, s);
-      return SCAN_DONE;
+      return TOKENIZE_TOKEN;
 
     case SEG_PUNCT:
-      if (s.length == 1 && s.string[0] == '-')
-        {
-          scanner->state = S_DASH;
-          return SCAN_SAVE;
-        }
-      else
-        {
-          token->type = scan_punct__ (s);
-          if (token->type == T_MACRO_PUNCT)
-            ss_alloc_substring (&token->string, s);
-          return SCAN_DONE;
-        }
+      *token = (struct token) { .type = scan_punct__ (s) };
+      if (token->type == T_MACRO_PUNCT)
+        ss_alloc_substring (&token->string, s);
+      return TOKENIZE_TOKEN;
 
     case SEG_SHBANG:
     case SEG_SPACES:
     case SEG_COMMENT:
     case SEG_NEWLINE:
     case SEG_COMMENT_COMMAND:
-      token->type = SCAN_SKIP;
-      return SCAN_DONE;
+      return TOKENIZE_EMPTY;
 
     case SEG_START_DOCUMENT:
-      token->type = T_ID;
+      *token = (struct token) { .type = T_ID };
       ss_alloc_substring (&token->string, ss_cstr ("DOCUMENT"));
-      return SCAN_DONE;
+      return TOKENIZE_TOKEN;
 
     case SEG_START_COMMAND:
     case SEG_SEPARATE_COMMANDS:
     case SEG_END_COMMAND:
-      token->type = T_ENDCMD;
-      return SCAN_DONE;
+      *token = (struct token) { .type = T_ENDCMD };
+      return TOKENIZE_TOKEN;
 
     case SEG_END:
-      token->type = T_STOP;
-      return SCAN_DONE;
+      *token = (struct token) { .type = T_STOP };
+      return TOKENIZE_TOKEN;
 
     case SEG_EXPECTED_QUOTE:
-      token->type = SCAN_EXPECTED_QUOTE;
-      return SCAN_DONE;
+      tokenize_error__ (token, xasprintf (_("Unterminated string constant.")));
+      return TOKENIZE_ERROR;
 
     case SEG_EXPECTED_EXPONENT:
-      token->type = SCAN_EXPECTED_EXPONENT;
-      ss_alloc_substring (&token->string, s);
-      return SCAN_DONE;
+      tokenize_error__ (token,
+                        xasprintf (_("Missing exponent following `%.*s'."),
+                                   (int) s.length, s.string));
+      return TOKENIZE_ERROR;
 
     case SEG_UNEXPECTED_CHAR:
-      return scan_unexpected_char (&s, token);
+      tokenize_unexpected_char (&s, token);
+      return TOKENIZE_ERROR;
     }
 
   NOT_REACHED ();
 }
 
-static enum scan_result
-scan_dash__ (enum segment_type type, struct substring s, struct token *token)
-{
-  switch (type)
-    {
-    case SEG_SPACES:
-    case SEG_COMMENT:
-      return SCAN_MORE;
-
-    case SEG_NUMBER:
-      scan_number__ (s, token);
-      token->type = T_NEG_NUM;
-      token->number = -token->number;
-      return SCAN_DONE;
-
-    default:
-      token->type = T_DASH;
-      return SCAN_BACK;
-    }
-}
-
-/* Initializes SCANNER for scanning a token from a sequence of segments.
-   Initializes TOKEN as the output token.  (The client retains ownership of
-   TOKEN, but it must be preserved across subsequent calls to scanner_push()
-   for SCANNER.)
-
-   A scanner only produces a single token.  To obtain the next token,
-   re-initialize it by calling this function again.
-
-   A scanner does not contain any external references, so nothing needs to be
-   done to destroy one.  For the same reason, scanners may be copied with plain
-   struct assignment (or memcpy). */
-void
-scanner_init (struct scanner *scanner, struct token *token)
-{
-  scanner->state = S_START;
-  *token = (struct token) { .type = T_STOP };
-}
-
-/* Adds the segment with type TYPE and UTF-8 text S to SCANNER.  TOKEN must be
-   the same token passed to scanner_init() for SCANNER, or a copy of it.
-   scanner_push() may modify TOKEN.  The client retains ownership of TOKEN,
-
-   The possible return values are:
-
-     - SCAN_DONE: All of the segments that have been passed to scanner_push()
-       form the token now stored in TOKEN.  SCANNER is now "used up" and must
-       be reinitialized with scanner_init() if it is to be used again.
-
-       Most tokens only consist of a single segment, so this is the most common
-       return value.
-
-     - SCAN_MORE: The segments passed to scanner_push() don't yet determine a
-       token.  The caller should call scanner_push() again with the next token.
-       (This won't happen if TYPE is SEG_END indicating the end of input.)
-
-     - SCAN_SAVE: This is similar to SCAN_MORE, with one difference: the caller
-       needs to "save its place" in the stream of segments for a possible
-       future SCAN_BACK return.  This value can be returned more than once in a
-       sequence of scanner_push() calls for SCANNER, but the caller only needs
-       to keep track of the most recent position.
-
-     - SCAN_BACK: This is similar to SCAN_DONE, but the token consists of only
-       the segments up to and including the segment for which SCAN_SAVE was
-       most recently returned.  Segments following that one should be passed to
-       the next scanner to be initialized.
-*/
-enum scan_result
-scanner_push (struct scanner *scanner, enum segment_type type,
-              struct substring s, struct token *token)
-{
-  switch (scanner->state)
-    {
-    case S_START:
-      return scan_start__ (scanner, type, s, token);
-
-    case S_DASH:
-      return scan_dash__ (type, s, token);
-
-    case S_STRING:
-      return scan_string__ (scanner, type, s, token);
-    }
-
-  NOT_REACHED ();
-}
 
 /* Initializes SLEX for parsing INPUT, which is LENGTH bytes long, in the
    specified MODE.
@@ -666,15 +411,9 @@ string_lexer_init (struct string_lexer *slex, const char *input, size_t length,
 }
 
 /*  */
-bool
+enum string_lexer_result
 string_lexer_next (struct string_lexer *slex, struct token *token)
 {
-  struct segmenter saved_segmenter;
-  size_t saved_offset = 0;
-
-  struct scanner scanner;
-
-  scanner_init (&scanner, token);
   for (;;)
     {
       const char *s = slex->input + slex->offset;
@@ -686,22 +425,120 @@ string_lexer_next (struct string_lexer *slex, struct token *token)
       assert (n >= 0);
 
       slex->offset += n;
-      switch (scanner_push (&scanner, type, ss_buffer (s, n), token))
+      switch (token_from_segment (type, ss_buffer (s, n), token))
         {
-        case SCAN_BACK:
-          slex->segmenter = saved_segmenter;
-          slex->offset = saved_offset;
-          /* Fall through. */
-        case SCAN_DONE:
-          return token->type != T_STOP;
+        case TOKENIZE_TOKEN:
+          return token->type == T_STOP ? SLR_END : SLR_TOKEN;
 
-        case SCAN_MORE:
-          break;
+        case TOKENIZE_ERROR:
+          return SLR_ERROR;
 
-        case SCAN_SAVE:
-          saved_segmenter = slex->segmenter;
-          saved_offset = slex->offset;
+        case TOKENIZE_EMPTY:
           break;
         }
+    }
+}
+
+static struct substring
+concat (struct substring a, struct substring b)
+{
+  size_t length = a.length + b.length;
+  struct substring out = { .string = xmalloc (length + 1), .length = length };
+  memcpy (out.string, a.string, a.length);
+  memcpy (out.string + a.length, b.string, b.length);
+  out.string[length] = '\0';
+  return out;
+}
+
+/* Attempts to merge a sequence of tokens together into a single token.  The
+   caller feeds tokens in one by one and the merger FSM reports progress.  The
+   caller must supply a merger structure M that is set to MERGER_INIT before
+   the first call.  The caller must also supply a token OUT for storage, which
+   need not be initialized.
+
+   Returns:
+
+   * -1 if more tokens are needed.  Token OUT might be in use for temporary
+      storage; to ensure that it is freed, continue calling merger_add() until
+      it returns something other than -1.  (T_STOP or T_ENDCMD will make it do
+      that.)
+
+   * 0 if the first token submitted to the merger is the output.  This is the
+     common case for the first call, and it can be returned for subsequent
+     calls as well.
+
+   * A positive number if OUT is initialized to the output token.  The return
+     value is the number of tokens being merged to produce this one. */
+int
+merger_add (struct merger *m, const struct token *in, struct token *out)
+{
+  /* We perform two different kinds of token merging:
+
+     - String concatenation, where syntax like "a" + "b" is converted into a
+       single string token.  This is definitely needed because the parser
+       relies on it.
+
+     - Negative number merging, where syntax like -5 is converted from a pair
+       of tokens (T_DASH then T_POS_NUM) into a single token (T_NEG_NUM).  This
+       might not be needed anymore because the segmenter directly treats a dash
+       followed by a number, with optional intervening white space, as a
+       negative number.  It's only needed if we want intervening comments to be
+       allowed or for part of the negative number token to be produced by macro
+       expansion. */
+  switch (++m->state)
+    {
+    case 1:
+      if (in->type == T_DASH || in->type == T_STRING)
+        {
+          *out = *in;
+          return -1;
+        }
+      else
+        return 0;
+
+    case 2:
+      if (out->type == T_DASH)
+        {
+          if (in->type == T_POS_NUM)
+            {
+              *out = (struct token) {
+                .type = T_NEG_NUM,
+                .number = -in->number
+              };
+              return 2;
+            }
+          else
+            return 0;
+        }
+      else
+        return in->type == T_PLUS ? -1 : 0;
+      NOT_REACHED ();
+
+    case 3:
+      if (in->type == T_STRING)
+        {
+          out->string = concat (out->string, in->string);
+          return -1;
+        }
+      else
+        return 0;
+      NOT_REACHED ();
+
+    default:
+      if (!(m->state % 2))
+        return in->type == T_PLUS ? -1 : m->state - 1;
+      else
+        {
+          if (in->type == T_STRING)
+            {
+              struct substring s = concat (out->string, in->string);
+              ss_swap (&s, &out->string);
+              ss_dealloc (&s);
+              return -1;
+            }
+          else
+            return m->state - 2;
+        }
+      NOT_REACHED ();
     }
 }

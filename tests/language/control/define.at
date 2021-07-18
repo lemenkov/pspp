@@ -211,7 +211,7 @@ DEBUG EXPAND.
 AT_CHECK([pspp --testing-mode define.sps], [1], [dnl
 "Too few tokens for !TOKENS."
 
-define.sps:13: error: DEBUG EXPAND: Unexpected end of command reading
+define.sps:13.7: error: DEBUG EXPAND: Unexpected end of command reading
 argument !3 to macro !p.
 
 note: unexpanded token "!p"
@@ -220,21 +220,21 @@ note: unexpanded token "a"
 
 note: unexpanded token "b"
 
-define.sps:14: error: DEBUG EXPAND: Unexpected end of command reading
+define.sps:14.5: error: DEBUG EXPAND: Unexpected end of command reading
 argument !2 to macro !p.
 
 note: unexpanded token "!p"
 
 note: unexpanded token "a"
 
-define.sps:15: error: DEBUG EXPAND: Unexpected end of command reading
+define.sps:15.3: error: DEBUG EXPAND: Unexpected end of command reading
 argument !1 to macro !p.
 
 note: unexpanded token "!p"
 
 "Missing charend delimiter."
 
-define.sps:18: error: DEBUG EXPAND: Unexpected end of command reading
+define.sps:18.10: error: DEBUG EXPAND: Unexpected end of command reading
 argument !1 to macro !ce.
 
 note: unexpanded token "!ce"
@@ -247,7 +247,7 @@ note: unexpanded token "c"
 
 "Missing start delimiter."
 
-define.sps:21: error: DEBUG EXPAND: Found `a' while expecting `{' reading
+define.sps:21.7: error: DEBUG EXPAND: Found `a' while expecting `{' reading
 argument !1 to macro !enc1.
 
 note: unexpanded token "!enc1"
@@ -260,7 +260,7 @@ note: unexpanded token "c"
 
 "Missing end delimiter."
 
-define.sps:24: error: DEBUG EXPAND: Unexpected end of command reading
+define.sps:24.12: error: DEBUG EXPAND: Unexpected end of command reading
 argument !1 to macro !enc1.
 
 note: unexpanded token "!enc1"
@@ -307,12 +307,12 @@ PSPP_CHECK_MACRO_EXPANSION([one !TOKENS(1) keyword argument - negative],
   [DEFINE !k(arg1 = !TOKENS(1)) k(!arg1) !ENDDEFINE.],
   [!k arg1.
 !k arg1=.], [dnl
-define.sps:3: error: DEBUG EXPAND: Found `.' while expecting `=' reading
+define.sps:3.8: error: DEBUG EXPAND: Found `.' while expecting `=' reading
 argument !arg1 to macro !k.
 note: unexpanded token "!k"
 note: unexpanded token "arg1"
-define.sps:4: error: DEBUG EXPAND: Unexpected end of command reading argument !
-arg1 to macro !k.
+define.sps:4.9: error: DEBUG EXPAND: Unexpected end of command reading argument
+!arg1 to macro !k.
 note: unexpanded token "!k"
 note: unexpanded token "arg1"
 note: unexpanded token "="], [1])
@@ -340,23 +340,23 @@ k(!arg1, !arg2)
 !k arg1=.
 !k arg1=x.
 !k arg1=x/ arg2=y.],
-  [define.sps:6: error: DEBUG EXPAND: Found `.' while expecting `=' reading
+  [define.sps:6.8: error: DEBUG EXPAND: Found `.' while expecting `=' reading
 argument !arg1 to macro !k.
 note: unexpanded token "!k"
 note: unexpanded token "arg1"
-define.sps:7: error: DEBUG EXPAND: Unexpected end of command reading argument !
-arg1 to macro !k.
+define.sps:7.9: error: DEBUG EXPAND: Unexpected end of command reading argument
+!arg1 to macro !k.
 note: unexpanded token "!k"
 note: unexpanded token "arg1"
 note: unexpanded token "="
-define.sps:8: error: DEBUG EXPAND: Unexpected end of command reading argument !
-arg1 to macro !k.
+define.sps:8.10: error: DEBUG EXPAND: Unexpected end of command reading
+argument !arg1 to macro !k.
 note: unexpanded token "!k"
 note: unexpanded token "arg1"
 note: unexpanded token "="
 note: unexpanded token "x"
-define.sps:9: error: DEBUG EXPAND: Unexpected end of command reading argument !
-arg2 to macro !k.
+define.sps:9.18: error: DEBUG EXPAND: Unexpected end of command reading
+argument !arg2 to macro !k.
 note: unexpanded token "!k"
 note: unexpanded token "arg1"
 note: unexpanded token "="
@@ -537,7 +537,7 @@ PSPP_CHECK_MACRO_EXPANSION([!SUBSTR],
   [!s.],
   [define.sps:1-10: At `"ba' in the expansion of `!s',dnl "
 
-define.sps:12: error: DEBUG EXPAND: Unterminated string constant.
+define.sps:12.1-12.2: error: DEBUG EXPAND: Unterminated string constant.
 nana.
 nan.
 .
@@ -639,7 +639,7 @@ define.sps:1-3: inside the expansion of `!macro',
 define.sps:1-3: inside the expansion of `!macro',
 define.sps:1-3: inside the expansion of `!macro',
 define.sps:1-3: inside the expansion of `!macro',
-define.sps:4: error: DEFINE: Maximum nesting level 50 exceeded.  (Use SET MNEST to change the limit.)"
+define.sps:4.1-4.6: error: DEFINE: Maximum nesting level 50 exceeded.  (Use SET MNEST to change the limit.)"
 
 define.sps:4.1-4.6: error: Syntax error at `!macro' (in expansion of `!macro'): expecting command name.
 ])
@@ -908,14 +908,14 @@ DEBUG EXPAND.
 ])
 AT_CHECK([pspp --testing-mode define.sps], [1], [dnl
 define.sps:1-3: At `!x' in the expansion of `!for',
-define.sps:10: error: DEBUG EXPAND: Cannot use argument name or macro keyword
-as !DO variable.
+define.sps:10.1-10.12: error: DEBUG EXPAND: Cannot use argument name or macro
+keyword as !DO variable.
 
 !DO 1 = 1 !TO 5 !var !DOEND.
 
 define.sps:5-7: At `!noexpand' in the expansion of `!for2',
-define.sps:11: error: DEBUG EXPAND: Cannot use argument name or macro keyword
-as !DO variable.
+define.sps:11.1-11.13: error: DEBUG EXPAND: Cannot use argument name or macro
+keyword as !DO variable.
 
 !DO !noexpand = 1 !TO 5 !var !DOEND.
 ])
@@ -958,15 +958,15 @@ AT_CHECK([pspp --testing-mode define.sps], [1], [dnl
 
 In the expansion of `!DO',
 define.sps:3-5: inside the expansion of `!for',
-define.sps:14: error: DEBUG EXPAND: Numerical !DO loop exceeded maximum number
-of iterations 3.  (Use SET MITERATE to change the limit.)
+define.sps:14.1-14.8: error: DEBUG EXPAND: Numerical !DO loop exceeded maximum
+number of iterations 3.  (Use SET MITERATE to change the limit.)
 
 1 2 3 4.
 
 In the expansion of `!DO',
 define.sps:7-9: inside the expansion of `!forby',
-define.sps:15: error: DEBUG EXPAND: Numerical !DO loop exceeded maximum number
-of iterations 3.  (Use SET MITERATE to change the limit.)
+define.sps:15.1-15.12: error: DEBUG EXPAND: Numerical !DO loop exceeded maximum
+number of iterations 3.  (Use SET MITERATE to change the limit.)
 
 1 2 3 4.
 
@@ -984,8 +984,8 @@ of iterations 3.  (Use SET MITERATE to change the limit.)
 
 In the expansion of `!DO',
 define.sps:7-9: inside the expansion of `!forby',
-define.sps:23: error: DEBUG EXPAND: Numerical !DO loop exceeded maximum number
-of iterations 3.  (Use SET MITERATE to change the limit.)
+define.sps:23.1-23.13: error: DEBUG EXPAND: Numerical !DO loop exceeded maximum
+number of iterations 3.  (Use SET MITERATE to change the limit.)
 
 5 4 3 2.
 
@@ -1063,15 +1063,15 @@ DEBUG EXPAND.
 AT_CHECK([pspp --testing-mode define.sps], [1], [dnl
 In the expansion of `!DO',
 define.sps:1-3: inside the expansion of `!for',
-define.sps:7: error: DEBUG EXPAND: !DO loop over list exceeded maximum number
-of iterations 2.  (Use SET MITERATE to change the limit.)
+define.sps:7.1-7.11: error: DEBUG EXPAND: !DO loop over list exceeded maximum
+number of iterations 2.  (Use SET MITERATE to change the limit.)
 
 ( (a) (b) ).
 
 In the expansion of `!DO',
 define.sps:1-3: inside the expansion of `!for',
-define.sps:8: error: DEBUG EXPAND: !DO loop over list exceeded maximum number
-of iterations 2.  (Use SET MITERATE to change the limit.)
+define.sps:8.1-8.24: error: DEBUG EXPAND: !DO loop over list exceeded maximum
+number of iterations 2.  (Use SET MITERATE to change the limit.)
 
 ( (foo) (bar) ).
 
@@ -1146,15 +1146,15 @@ DEBUG EXPAND.
 ])
 AT_CHECK([pspp --testing-mode define.sps -O format=csv], [1], [dnl
 "define.sps:1-3: At `!x' in the expansion of `!macro',
-define.sps:10: error: DEBUG EXPAND: Cannot use argument name or macro keyword ""!x"" as !LET variable."
+define.sps:10.1-10.10: error: DEBUG EXPAND: Cannot use argument name or macro keyword ""!x"" as !LET variable."
 
 !LET 1 = 1
 
 "define.sps:5-7: At `!do' in the expansion of `!macro2',
-define.sps:11: error: DEBUG EXPAND: Cannot use argument name or macro keyword ""!do"" as !LET variable."
+define.sps:11.1-11.7: error: DEBUG EXPAND: Cannot use argument name or macro keyword ""!do"" as !LET variable."
 
 "define.sps:5-7: At `=' in the expansion of `!macro2',
-define.sps:11: error: DEBUG EXPAND: Expected macro variable name following !DO."
+define.sps:11.1-11.7: error: DEBUG EXPAND: Expected macro variable name following !DO."
 
 !LET !do = x
 ])
@@ -1289,92 +1289,92 @@ DEBUG EXPAND.
 ])
 AT_CHECK([pspp --testing-mode define.sps], [1], [dnl
 define.sps:1: In the expansion of `!a',
-define.sps:18: error: DEBUG EXPAND: `@{:@' expected following !SUBSTR.
+define.sps:18.1-18.2: error: DEBUG EXPAND: `@{:@' expected following !SUBSTR.
 
 !SUBSTR
 
 define.sps:2: At `x' in the expansion of `!b',
-define.sps:19: error: DEBUG EXPAND: `@{:@' expected following !SUBSTR.
+define.sps:19.1-19.2: error: DEBUG EXPAND: `@{:@' expected following !SUBSTR.
 
 !SUBSTR x
 
 define.sps:3: At `x' in the expansion of `!c',
-define.sps:20: error: DEBUG EXPAND: `,' or `@:}@' expected in call to macro
+define.sps:20.1-20.2: error: DEBUG EXPAND: `,' or `@:}@' expected in call to macro
 function !SUBSTR.
 
 !SUBSTR(1 x)
 
 define.sps:4: In the expansion of `!d',
-define.sps:21: error: DEBUG EXPAND: Missing `@:}@' in call to macro function !
-SUBSTR.
+define.sps:21.1-21.2: error: DEBUG EXPAND: Missing `@:}@' in call to macro
+function !SUBSTR.
 
 !SUBSTR@{:@1
 
 define.sps:5: In the expansion of `!narg_blanks',
-define.sps:22: error: DEBUG EXPAND: Macro function !BLANKS takes one argument
-(not 0).
+define.sps:22.1-22.12: error: DEBUG EXPAND: Macro function !BLANKS takes one
+argument (not 0).
 
 !BLANKS( )
 
 define.sps:6: In the expansion of `!narg_concat',
-define.sps:23: error: DEBUG EXPAND: Macro function !CONCAT needs at least one
-argument.
+define.sps:23.1-23.12: error: DEBUG EXPAND: Macro function !CONCAT needs at
+least one argument.
 
 !CONCAT( )
 
 define.sps:7: In the expansion of `!narg_eval',
-define.sps:24: error: DEBUG EXPAND: Macro function !EVAL takes one argument
-(not 0).
+define.sps:24.1-24.10: error: DEBUG EXPAND: Macro function !EVAL takes one
+argument (not 0).
 
 !EVAL( )
 
 define.sps:8: In the expansion of `!narg_head',
-define.sps:25: error: DEBUG EXPAND: Macro function !HEAD takes one argument
-(not 0).
+define.sps:25.1-25.10: error: DEBUG EXPAND: Macro function !HEAD takes one
+argument (not 0).
 
 !HEAD( )
 
 define.sps:9: In the expansion of `!narg_index',
-define.sps:26: error: DEBUG EXPAND: Macro function !INDEX takes two arguments
-(not 0).
+define.sps:26.1-26.11: error: DEBUG EXPAND: Macro function !INDEX takes two
+arguments (not 0).
 
 !INDEX( )
 
 define.sps:10: In the expansion of `!narg_length',
-define.sps:27: error: DEBUG EXPAND: Macro function !LENGTH takes one argument
-(not 0).
+define.sps:27.1-27.12: error: DEBUG EXPAND: Macro function !LENGTH takes one
+argument (not 0).
 
 !LENGTH( )
 
 ( )
 
 define.sps:12: In the expansion of `!narg_quote',
-define.sps:29: error: DEBUG EXPAND: Macro function !QUOTE takes one argument
-(not 0).
+define.sps:29.1-29.11: error: DEBUG EXPAND: Macro function !QUOTE takes one
+argument (not 0).
 
 !QUOTE( )
 
 define.sps:13: In the expansion of `!narg_substr',
-define.sps:30: error: DEBUG EXPAND: Macro function !SUBSTR takes two or three
-arguments (not 0).
+define.sps:30.1-30.12: error: DEBUG EXPAND: Macro function !SUBSTR takes two or
+three arguments (not 0).
 
 !SUBSTR( )
 
 define.sps:14: In the expansion of `!narg_tail',
-define.sps:31: error: DEBUG EXPAND: Macro function !TAIL takes one argument
-(not 0).
+define.sps:31.1-31.10: error: DEBUG EXPAND: Macro function !TAIL takes one
+argument (not 0).
 
 !TAIL( )
 
 define.sps:15: In the expansion of `!narg_unquote',
-define.sps:32: error: DEBUG EXPAND: Macro function !UNQUOTE takes one argument
-(not 0).
+define.sps:32.1-32.13: error: DEBUG EXPAND: Macro function !UNQUOTE takes one
+argument (not 0).
 
 !UNQUOTE( )
 
 define.sps:16: In the expansion of `!narg_upcase',
-define.sps:33: error: DEBUG EXPAND: Macro function !UPCASE takes one argument
-(not 0).
+define.sps:33.1-33.12: error: DEBUG EXPAND: Macro function !UPCASE takes one
+argument (not 0).
 
 !UPCASE( )
 ])
@@ -1392,19 +1392,19 @@ DEBUG EXPAND.
 ])
 AT_CHECK([pspp --testing-mode define.sps], [1], [dnl
 define.sps:1: In the expansion of `!a',
-define.sps:5: error: DEBUG EXPAND: Argument to !BLANKS must be non-negative
-integer (not "x").
+define.sps:5.1-5.2: error: DEBUG EXPAND: Argument to !BLANKS must be non-
+negative integer (not "x").
 
 !BLANKS(x).
 
 define.sps:2: In the expansion of `!b',
-define.sps:6: error: DEBUG EXPAND: Second argument of !SUBSTR must be positive
-integer (not "y").
+define.sps:6.1-6.2: error: DEBUG EXPAND: Second argument of !SUBSTR must be
+positive integer (not "y").
 
 !SUBSTR(x, y).
 
 define.sps:3: In the expansion of `!c',
-define.sps:7: error: DEBUG EXPAND: Third argument of !SUBSTR must be non-
+define.sps:7.1-7.2: error: DEBUG EXPAND: Third argument of !SUBSTR must be non-
 negative integer (not "z").
 
 !SUBSTR(x, 1, z).
@@ -1424,20 +1424,20 @@ DEBUG EXPAND.
 ])
 AT_CHECK([pspp --testing-mode define.sps], [1], [dnl
 define.sps:1-2: At `.' in the expansion of `!a',
-define.sps:5: error: DEBUG EXPAND: Expecting ')' in macro expression.
+define.sps:5.1-5.2: error: DEBUG EXPAND: Expecting ')' in macro expression.
 
 !LET !x = (1.
 
 At `x' in the expansion of `!DO',
 define.sps:2: inside the expansion of `!b',
-define.sps:6: error: DEBUG EXPAND: Macro expression must evaluate to a number
-(not "x").
+define.sps:6.1-6.2: error: DEBUG EXPAND: Macro expression must evaluate to a
+number (not "x").
 
 !DO !x = x.
 
 define.sps:3: At `)' in the expansion of `!c',
-define.sps:7: error: DEBUG EXPAND: Expecting literal or function invocation in
-macro expression.
+define.sps:7.1-7.2: error: DEBUG EXPAND: Expecting literal or function
+invocation in macro expression.
 
 !LET !x = ( ).
 ])
@@ -1456,18 +1456,19 @@ DEBUG EXPAND.
 ])
 AT_CHECK([pspp --testing-mode define.sps], [1], [dnl
 define.sps:1: In the expansion of `!a',
-define.sps:5: error: DEBUG EXPAND: !THEN expected in macro !IF construct.
+define.sps:5.1-5.2: error: DEBUG EXPAND: !THEN expected in macro !IF construct.
 
 !IF 1
 
 define.sps:2: In the expansion of `!b',
-define.sps:6: error: DEBUG EXPAND: !ELSE or !IFEND expected in macro !IF
+define.sps:6.1-6.2: error: DEBUG EXPAND: !ELSE or !IFEND expected in macro !IF
 construct.
 
 !IF 1 !THEN
 
 define.sps:3: In the expansion of `!c',
-define.sps:7: error: DEBUG EXPAND: !IFEND expected in macro !IF construct.
+define.sps:7.1-7.2: error: DEBUG EXPAND: !IFEND expected in macro !IF
+construct.
 
 !IF 1 !THEN !ELSE
 ])
@@ -1488,22 +1489,24 @@ DEBUG EXPAND.
 ])
 AT_CHECK([pspp --testing-mode define.sps], [1], [dnl
 define.sps:1: In the expansion of `!a',
-define.sps:6: error: DEBUG EXPAND: Expected macro variable name following !LET.
+define.sps:6.1-6.2: error: DEBUG EXPAND: Expected macro variable name following
+!LET.
 
 !LET
 
 define.sps:2: At `0' in the expansion of `!b',
-define.sps:7: error: DEBUG EXPAND: Expected macro variable name following !LET.
+define.sps:7.1-7.2: error: DEBUG EXPAND: Expected macro variable name following
+!LET.
 
 !LET 0
 
 define.sps:3: In the expansion of `!c',
-define.sps:8: error: DEBUG EXPAND: Expected `=' following !LET.
+define.sps:8.1-8.2: error: DEBUG EXPAND: Expected `=' following !LET.
 
 !LET !x
 
 define.sps:4: At `y' in the expansion of `!d',
-define.sps:9: error: DEBUG EXPAND: Expected `=' following !LET.
+define.sps:9.1-9.2: error: DEBUG EXPAND: Expected `=' following !LET.
 
 !LET !x y
 ])
@@ -1536,57 +1539,59 @@ DEBUG EXPAND.
 ])
 AT_CHECK([pspp --testing-mode define.sps], [1], [dnl
 define.sps:1: In the expansion of `!a',
-define.sps:12: error: DEBUG EXPAND: Expected macro variable name following !DO.
+define.sps:12.1-12.2: error: DEBUG EXPAND: Expected macro variable name
+following !DO.
 
 !DO
 
 define.sps:2: At `0' in the expansion of `!b',
-define.sps:13: error: DEBUG EXPAND: Expected macro variable name following !DO.
+define.sps:13.1-13.2: error: DEBUG EXPAND: Expected macro variable name
+following !DO.
 
 !DO 0
 
 define.sps:3: In the expansion of `!c',
-define.sps:14: error: DEBUG EXPAND: Expected `=' or !IN in !DO loop.
+define.sps:14.1-14.2: error: DEBUG EXPAND: Expected `=' or !IN in !DO loop.
 
 !DO !x
 
 In the expansion of `!DO',
 define.sps:4: inside the expansion of `!d',
-define.sps:15: error: DEBUG EXPAND: Missing !DOEND.
+define.sps:15.1-15.2: error: DEBUG EXPAND: Missing !DOEND.
 
 !DO !x !in(x)
 
 At `x' in the expansion of `!DO',
 define.sps:5: inside the expansion of `!e',
-define.sps:16: error: DEBUG EXPAND: Macro expression must evaluate to a number
-(not "x").
+define.sps:16.1-16.2: error: DEBUG EXPAND: Macro expression must evaluate to a
+number (not "x").
 
 !DO !x = x.
 
 At `x' in the expansion of `!DO',
 define.sps:6: inside the expansion of `!f',
-define.sps:17: error: DEBUG EXPAND: Expected !TO in numerical !DO loop.
+define.sps:17.1-17.2: error: DEBUG EXPAND: Expected !TO in numerical !DO loop.
 
 !DO !x = 5 x
 
 In the expansion of `!DO',
 define.sps:7: inside the expansion of `!g',
-define.sps:18: error: DEBUG EXPAND: !BY value cannot be zero.
+define.sps:18.1-18.2: error: DEBUG EXPAND: !BY value cannot be zero.
 
 !DO !x = 5 !TO 6 !BY 0
 
 define.sps:8: In the expansion of `!h',
-define.sps:19: error: DEBUG EXPAND: Expected `=' or !IN in !DO loop.
+define.sps:19.1-19.2: error: DEBUG EXPAND: Expected `=' or !IN in !DO loop.
 
 !DO !x
 
 define.sps:9: At `0' in the expansion of `!i',
-define.sps:20: error: DEBUG EXPAND: Expected `=' or !IN in !DO loop.
+define.sps:20.1-20.2: error: DEBUG EXPAND: Expected `=' or !IN in !DO loop.
 
 !DO !x 0
 
 define.sps:10: At `!BREAK' in the expansion of `!j',
-define.sps:21: error: DEBUG EXPAND: !BREAK outside !DO.
+define.sps:21.1-21.2: error: DEBUG EXPAND: !BREAK outside !DO.
 
 ])
 AT_CLEANUP
@@ -1682,5 +1687,59 @@ define.sps:21.28: error: DEFINE: Syntax error at `x': expecting `/'.
 
 define.sps:23.1: error: DEFINE: Syntax error at end of command: Expecting macro
 body or !ENDDEFINE.
+])
+AT_CLEANUP
+
+AT_SETUP([macro expansion with token merging])
+AT_DATA([define.sps], [dnl
+DEFINE !foo() "foo" !ENDDEFINE.
+DEFINE !bar() "bar" !ENDDEFINE.
+DEFINE !plus() + !ENDDEFINE.
+DEFINE !minus() - !ENDDEFINE.
+DEFINE !one() 1 !ENDDEFINE.
+ECHO "foo" + "bar".
+ECHO !foo.
+ECHO !bar.
+ECHO !foo + "quux".
+ECHO "baz" + !bar.
+ECHO !foo + !bar.
+ECHO !foo !plus !bar.
+ECHO "two" "strings".
+N OF CASES -/**/1.
+N OF CASES !minus 1.
+N OF CASES - !one.
+N OF CASES !minus !one.
+])
+AT_CHECK([pspp define.sps], [1], [dnl
+foobar
+
+foo
+
+bar
+
+fooquux
+
+bazbar
+
+foobar
+
+foobar
+
+two
+
+define.sps:13.12-13.20: error: ECHO: Syntax error at `"strings"': expecting end
+of command.
+
+define.sps:14.12-14.17: error: N OF CASES: Syntax error at `-/**/1': Expected
+positive integer for N OF CASES.
+
+define.sps:15.12-15.19: error: N OF CASES: Syntax error at `!minus 1': Expected
+positive integer for N OF CASES.
+
+define.sps:16.12-16.17: error: N OF CASES: Syntax error at `- !one': Expected
+positive integer for N OF CASES.
+
+define.sps:17.12-17.22: error: N OF CASES: Syntax error at `!minus !one':
+Expected positive integer for N OF CASES.
 ])
 AT_CLEANUP

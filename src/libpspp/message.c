@@ -210,7 +210,7 @@ msg_stack_destroy (struct msg_stack *stack)
 {
   if (stack)
     {
-      msg_location_uninit (&stack->location);
+      msg_location_destroy (stack->location);
       free (stack->description);
       free (stack);
     }
@@ -221,10 +221,9 @@ msg_stack_dup (const struct msg_stack *src)
 {
   struct msg_stack *dst = xmalloc (sizeof *src);
   *dst = (struct msg_stack) {
-    .location = src->location,
+    .location = msg_location_dup (src->location),
     .description = xstrdup_if_nonnull (src->description),
   };
-  dst->location.file_name = xstrdup_if_nonnull (dst->location.file_name);
   return dst;
 }
 
@@ -296,9 +295,9 @@ msg_to_string (const struct msg *m)
   for (size_t i = 0; i < m->n_stack; i++)
     {
       const struct msg_stack *ms = m->stack[i];
-      if (!msg_location_is_empty (&ms->location))
+      if (!msg_location_is_empty (ms->location))
         {
-          msg_location_format (&ms->location, &s);
+          msg_location_format (ms->location, &s);
           ds_put_cstr (&s, ": ");
         }
       ds_put_format (&s, "%s\n", ms->description);

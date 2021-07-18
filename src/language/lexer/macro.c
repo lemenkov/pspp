@@ -43,34 +43,31 @@
 
 /* An entry in the stack of macros and macro directives being expanded.  The
    stack is maintained as a linked list.  Entries are not dynamically allocated
-   but on the program stack. */
+   but on the program stack.
+
+   The outermost entry, where 'next' is NULL, represents the source location of
+   the call to the macro. */
 struct macro_expansion_stack
   {
-    /* Points to an outer stack entry, or NULL if this is the outermost. */
-    const struct macro_expansion_stack *next;
-
-    /* A macro name or !IF, !DO, etc. */
-    const char *name;
-
-    /* Location of the macro definition, if available. */
-    const char *file_name;
-    int first_line;
-    int last_line;
+    const struct macro_expansion_stack *next; /* Next outer stack entry. */
+    const char *name;                    /* A macro name or !IF, !DO, etc. */
+    const struct msg_location *location; /* Source location if available. */
   };
 
 /* Reports an error during macro expansion.  STACK is the stack for reporting
    the location of the error, MT is the optional token at which the error was
    detected, and FORMAT along with the varargs is the message to report. */
-static void PRINTF_FORMAT (3, 4)
-macro_error (const struct macro_expansion_stack *stack,
-             const struct macro_token *mt,
-             const char *format, ...)
+static void PRINTF_FORMAT (3, 0)
+macro_error_valist (const struct macro_expansion_stack *stack,
+                    const struct macro_token *mt, const char *format,
+                    va_list args)
 {
   struct msg_stack **ms = NULL;
   size_t allocated_ms = 0;
   size_t n_ms = 0;
 
-  for (const struct macro_expansion_stack *p = stack; p; p = p->next)
+  const struct macro_expansion_stack *p;
+  for (p = stack; p && p->next; p = p->next)
     {
       if (n_ms >= allocated_ms)
         ms = x2nrealloc (ms, &allocated_ms, sizeof *ms);
@@ -104,20 +101,11 @@ macro_error (const struct macro_expansion_stack *stack,
 
       ms[n_ms] = xmalloc (sizeof *ms[n_ms]);
       *ms[n_ms] = (struct msg_stack) {
-        .location = {
-          .file_name = xstrdup_if_nonnull (p->file_name),
-          .first_line = p->first_line,
-          .last_line = p->last_line,
-        },
+        .location = msg_location_dup (p->location),
         .description = description,
       };
       n_ms++;
     }
-
-  va_list args;
-  va_start (args, format);
-  char *s = xvasprintf (format, args);
-  va_end (args);
 
   struct msg *m = xmalloc (sizeof *m);
   *m = (struct msg) {
@@ -125,9 +113,23 @@ macro_error (const struct macro_expansion_stack *stack,
     .severity = MSG_S_ERROR,
     .stack = ms,
     .n_stack = n_ms,
-    .text = s,
+    .location = msg_location_dup (p ? p->location : NULL),
+    .text = xvasprintf (format, args),
   };
   msg_emit (m);
+}
+
+/* Reports an error during macro expansion.  STACK is the stack for reporting
+   the location of the error, MT is the optional token at which the error was
+   detected, and FORMAT along with the varargs is the message to report. */
+static void PRINTF_FORMAT (3, 4)
+macro_error (const struct macro_expansion_stack *stack,
+             const struct macro_token *mt, const char *format, ...)
+{
+  va_list args;
+  va_start (args, format);
+  macro_error_valist (stack, mt, format, args);
+  va_end (args);
 }
 
 void
@@ -225,70 +227,42 @@ macro_tokens_from_string__ (struct macro_tokens *mts, const struct substring src
                             enum segmenter_mode mode,
                             const struct macro_expansion_stack *stack)
 {
-  struct state
-    {
-      struct segmenter segmenter;
-      struct substring body;
-    };
+  struct segmenter segmenter = segmenter_init (mode, true);
+  struct substring body = src;
 
-  struct state state = {
-    .segmenter = segmenter_init (mode, true),
-    .body = src,
-  };
-  struct state saved = state;
-
-  while (state.body.length > 0)
+  while (body.length > 0)
     {
       struct macro_token mt = {
         .token = { .type = T_STOP },
-        .syntax = { .string = state.body.string },
+        .syntax = { .string = body.string },
       };
       struct token *token = &mt.token;
 
-      struct scanner scanner;
-      scanner_init (&scanner, token);
+      enum segment_type type;
+      int seg_len = segmenter_push (&segmenter, body.string,
+                                    body.length, true, &type);
+      assert (seg_len >= 0);
 
-      for (;;)
+      struct substring segment = ss_head (body, seg_len);
+      enum tokenize_result result = token_from_segment (type, segment, token);
+      ss_advance (&body, seg_len);
+
+      switch (result)
         {
-          enum segment_type type;
-          int seg_len = segmenter_push (&state.segmenter, state.body.string,
-                                        state.body.length, true, &type);
-          assert (seg_len >= 0);
+        case TOKENIZE_EMPTY:
+          break;
 
-          struct substring segment = ss_head (state.body, seg_len);
-          ss_advance (&state.body, seg_len);
+        case TOKENIZE_TOKEN:
+          mt.syntax.length = body.string - mt.syntax.string;
+          macro_tokens_add (mts, &mt);
+          break;
 
-          enum scan_result result = scanner_push (&scanner, type, segment, token);
-          if (result == SCAN_SAVE)
-            saved = state;
-          else if (result == SCAN_BACK)
-            {
-              state = saved;
-              break;
-            }
-          else if (result == SCAN_DONE)
-            break;
+        case TOKENIZE_ERROR:
+          mt.syntax.length = body.string - mt.syntax.string;
+          macro_error (stack, &mt, "%s", token->string.string);
+          break;
         }
 
-      /* We have a token in 'token'. */
-      mt.syntax.length = state.body.string - mt.syntax.string;
-      if (is_scan_type (token->type))
-        {
-          if (token->type != SCAN_SKIP)
-            {
-              char *s = scan_token_to_error (token);
-              if (stack)
-                {
-                  mt.token.type = T_STRING;
-                  macro_error (stack, &mt, "%s", s);
-                }
-              else
-                msg (SE, "%s", s);
-              free (s);
-            }
-        }
-      else
-        macro_tokens_add (mts, &mt);
       token_uninit (token);
     }
 }
@@ -437,7 +411,7 @@ macro_destroy (struct macro *m)
     return;
 
   free (m->name);
-  free (m->file_name);
+  msg_location_destroy (m->location);
   for (size_t i = 0; i < m->n_params; i++)
     {
       struct macro_param *p = &m->params[i];
@@ -568,6 +542,7 @@ struct macro_call
     const struct macro_set *macros;
     const struct macro *macro;
     struct macro_tokens **args;
+    const struct macro_expansion_stack *stack;
 
     enum mc_state state;
     size_t n_tokens;
@@ -619,15 +594,25 @@ mc_next_arg (struct macro_call *mc)
     }
 }
 
-static int
-mc_error (struct macro_call *mc)
+static void PRINTF_FORMAT (3, 4)
+mc_error (const struct macro_call *mc, const struct msg_location *loc,
+          const char *format, ...)
 {
-  mc->state = MC_ERROR;
-  return -1;
+  va_list args;
+  va_start (args, format);
+  if (!mc->stack)
+    {
+      const struct macro_expansion_stack stack = { .location = loc };
+      macro_error_valist (&stack, NULL, format, args);
+    }
+  else
+    macro_error_valist (mc->stack, NULL, format, args);
+  va_end (args);
 }
 
 static int
-mc_add_arg (struct macro_call *mc, const struct macro_token *mt)
+mc_add_arg (struct macro_call *mc, const struct macro_token *mt,
+            const struct msg_location *loc)
 {
   const struct macro_param *p = mc->param;
 
@@ -635,10 +620,12 @@ mc_add_arg (struct macro_call *mc, const struct macro_token *mt)
   if ((token->type == T_ENDCMD || token->type == T_STOP)
       && p->arg_type != ARG_CMDEND)
     {
-      msg (SE, _("Unexpected end of command reading argument %s "
-                 "to macro %s."), mc->param->name, mc->macro->name);
+      mc_error (mc, loc,
+                _("Unexpected end of command reading argument %s "
+                  "to macro %s."), mc->param->name, mc->macro->name);
 
-      return mc_error (mc);
+      mc->state = MC_ERROR;
+      return -1;
     }
 
   mc->n_tokens++;
@@ -674,22 +661,25 @@ mc_add_arg (struct macro_call *mc, const struct macro_token *mt)
 
 static int
 mc_expected (struct macro_call *mc, const struct macro_token *actual,
-             const struct token *expected)
+             const struct msg_location *loc, const struct token *expected)
 {
   const struct substring actual_s = (actual->syntax.length ? actual->syntax
                                      : ss_cstr (_("<end of input>")));
   char *expected_s = token_to_string (expected);
-  msg (SE, _("Found `%.*s' while expecting `%s' reading argument %s "
-             "to macro %s."),
-       (int) actual_s.length, actual_s.string, expected_s,
-       mc->param->name, mc->macro->name);
+  mc_error (mc, loc,
+            _("Found `%.*s' while expecting `%s' reading argument %s "
+              "to macro %s."),
+            (int) actual_s.length, actual_s.string, expected_s,
+            mc->param->name, mc->macro->name);
   free (expected_s);
 
-  return mc_error (mc);
+  mc->state = MC_ERROR;
+  return -1;
 }
 
 static int
-mc_enclose (struct macro_call *mc, const struct macro_token *mt)
+mc_enclose (struct macro_call *mc, const struct macro_token *mt,
+            const struct msg_location *loc)
 {
   const struct token *token = &mt->token;
   mc->n_tokens++;
@@ -700,7 +690,7 @@ mc_enclose (struct macro_call *mc, const struct macro_token *mt)
       return 0;
     }
 
-  return mc_expected (mc, mt, &mc->param->enclose[0]);
+  return mc_expected (mc, mt, loc, &mc->param->enclose[0]);
 }
 
 static const struct macro_param *
@@ -723,7 +713,8 @@ macro_find_parameter_by_name (const struct macro *m, struct substring name)
 }
 
 static int
-mc_keyword (struct macro_call *mc, const struct macro_token *mt)
+mc_keyword (struct macro_call *mc, const struct macro_token *mt,
+            const struct msg_location *loc)
 {
   const struct token *token = &mt->token;
   if (token->type != T_ID)
@@ -737,10 +728,11 @@ mc_keyword (struct macro_call *mc, const struct macro_token *mt)
       mc->param = p;
       if (mc->args[arg_index])
         {
-          msg (SE,
-               _("Argument %s multiply specified in call to macro %s."),
-               p->name, mc->macro->name);
-          return mc_error (mc);
+          mc_error (mc, loc,
+                    _("Argument %s multiply specified in call to macro %s."),
+                    p->name, mc->macro->name);
+          mc->state = MC_ERROR;
+          return -1;
         }
 
       mc->n_tokens++;
@@ -752,7 +744,8 @@ mc_keyword (struct macro_call *mc, const struct macro_token *mt)
 }
 
 static int
-mc_equals (struct macro_call *mc, const struct macro_token *mt)
+mc_equals (struct macro_call *mc, const struct macro_token *mt,
+           const struct msg_location *loc)
 {
   const struct token *token = &mt->token;
   mc->n_tokens++;
@@ -763,20 +756,14 @@ mc_equals (struct macro_call *mc, const struct macro_token *mt)
       return 0;
     }
 
-  return mc_expected (mc, mt, &(struct token) { .type = T_EQUALS });
+  return mc_expected (mc, mt, loc, &(struct token) { .type = T_EQUALS });
 }
 
-/* If TOKEN is the first token of a call to a macro in MACROS, create a new
-   macro expander, initializes *MCP to it.  Returns 0 if more tokens are needed
-   and should be added via macro_call_add() or 1 if the caller should next call
-   macro_call_get_expansion().
-
-   If TOKEN is not the first token of a macro call, returns -1 and sets *MCP to
-   NULL. */
-int
-macro_call_create (const struct macro_set *macros,
-                   const struct token *token,
-                   struct macro_call **mcp)
+static int
+macro_call_create__ (const struct macro_set *macros,
+                     const struct macro_expansion_stack *stack,
+                     const struct token *token,
+                     struct macro_call **mcp)
 {
   const struct macro *macro = (token->type == T_ID || token->type == T_MACRO_ID
                                ? macro_set_find (macros, token->string.string)
@@ -798,10 +785,26 @@ macro_call_create (const struct macro_set *macros,
               : MC_ARG),
     .args = macro->n_params ? xcalloc (macro->n_params, sizeof *mc->args) : NULL,
     .param = macro->params,
+    .stack = stack,
   };
   *mcp = mc;
 
   return mc->state == MC_FINISHED ? 1 : 0;
+}
+
+/* If TOKEN is the first token of a call to a macro in MACROS, create a new
+   macro expander, initializes *MCP to it.  Returns 0 if more tokens are needed
+   and should be added via macro_call_add() or 1 if the caller should next call
+   macro_call_get_expansion().
+
+   If TOKEN is not the first token of a macro call, returns -1 and sets *MCP to
+   NULL. */
+int
+macro_call_create (const struct macro_set *macros,
+                   const struct token *token,
+                   struct macro_call **mcp)
+{
+  return macro_call_create__ (macros, NULL, token, mcp);
 }
 
 void
@@ -840,7 +843,8 @@ macro_call_destroy (struct macro_call *mc)
    macro invocation is finished.  The caller should call
    macro_call_get_expansion() to obtain the expansion. */
 int
-macro_call_add (struct macro_call *mc, const struct macro_token *mt)
+macro_call_add (struct macro_call *mc, const struct macro_token *mt,
+                const struct msg_location *loc)
 {
   switch (mc->state)
     {
@@ -848,16 +852,16 @@ macro_call_add (struct macro_call *mc, const struct macro_token *mt)
       return -1;
 
     case MC_ARG:
-      return mc_add_arg (mc, mt);
+      return mc_add_arg (mc, mt, loc);
 
     case MC_ENCLOSE:
-      return mc_enclose (mc, mt);
+      return mc_enclose (mc, mt, loc);
 
     case MC_KEYWORD:
-      return mc_keyword (mc, mt);
+      return mc_keyword (mc, mt, loc);
 
     case MC_EQUALS:
-      return mc_equals (mc, mt);
+      return mc_equals (mc, mt, loc);
 
     default:
       NOT_REACHED ();
@@ -874,7 +878,7 @@ struct macro_expander
     int nesting_countdown;              /* Remaining nesting levels. */
     const struct macro_expansion_stack *stack; /* Stack for error reporting. */
     bool *expand;                       /* May macro calls be expanded? */
-    struct stringi_map *vars;           /* Variables from !DO and !LET. */
+    struct stringi_map *vars;           /* Variables from !do and !let. */
 
     /* Only nonnull if inside a !DO loop. */
     bool *break_;                       /* Set to true to break out of loop. */
@@ -1016,17 +1020,15 @@ unquote_string (const char *s, enum segmenter_mode segmenter_mode,
   string_lexer_init (&slex, s, strlen (s), segmenter_mode, true);
 
   struct token token1;
-  if (!string_lexer_next (&slex, &token1))
-    return false;
-
-  if (token1.type != T_STRING)
+  if (string_lexer_next (&slex, &token1) != SLR_TOKEN
+      || token1.type != T_STRING)
     {
       token_uninit (&token1);
       return false;
     }
 
   struct token token2;
-  if (string_lexer_next (&slex, &token2))
+  if (string_lexer_next (&slex, &token2) != SLR_END)
     {
       token_uninit (&token1);
       token_uninit (&token2);
@@ -1944,21 +1946,19 @@ macro_expand__ (const struct macro_token *mts, size_t n,
   if (*me->expand)
     {
       struct macro_call *submc;
-      int n_call = macro_call_create (me->macros, token, &submc);
+      int n_call = macro_call_create__ (me->macros, me->stack, token, &submc);
       for (size_t j = 1; !n_call; j++)
         {
           const struct macro_token endcmd
             = { .token = { .type = T_ENDCMD } };
-          n_call = macro_call_add (submc, j < n ? &mts[j] : &endcmd);
+          n_call = macro_call_add (submc, j < n ? &mts[j] : &endcmd, NULL);
         }
       if (n_call > 0)
         {
           struct stringi_map vars = STRINGI_MAP_INITIALIZER (vars);
           struct macro_expansion_stack stack = {
             .name = submc->macro->name,
-            .file_name = submc->macro->file_name,
-            .first_line = submc->macro->first_line,
-            .last_line = submc->macro->last_line,
+            .location = submc->macro->location,
             .next = me->stack,
           };
           struct macro_expander subme = {
@@ -2084,17 +2084,20 @@ macro_expand (const struct macro_token *mts, size_t n,
 
 void
 macro_call_expand (struct macro_call *mc, enum segmenter_mode segmenter_mode,
+                   const struct msg_location *call_loc,
                    struct macro_tokens *exp)
 {
   assert (mc->state == MC_FINISHED);
 
   bool expand = true;
   struct stringi_map vars = STRINGI_MAP_INITIALIZER (vars);
-  struct macro_expansion_stack stack = {
+  struct macro_expansion_stack stack0 = {
+    .location = call_loc,
+  };
+  struct macro_expansion_stack stack1 = {
+    .next = &stack0,
     .name = mc->macro->name,
-    .file_name = mc->macro->file_name,
-    .first_line = mc->macro->first_line,
-    .last_line = mc->macro->last_line,
+    .location = mc->macro->location,
   };
   struct macro_expander me = {
     .macros = mc->macros,
@@ -2105,7 +2108,7 @@ macro_call_expand (struct macro_call *mc, enum segmenter_mode segmenter_mode,
     .break_ = NULL,
     .vars = &vars,
     .nesting_countdown = settings_get_mnest (),
-    .stack = &stack,
+    .stack = &stack1,
   };
 
   const struct macro_tokens *body = &mc->macro->body;

@@ -90,7 +90,7 @@ void msg_location_format (const struct msg_location *, struct string *);
 
 struct msg_stack
   {
-    struct msg_location location;
+    struct msg_location *location;
     char *description;
   };
 
