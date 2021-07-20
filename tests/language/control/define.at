@@ -44,7 +44,7 @@ AT_CLEANUP
 AT_SETUP([macro expansion - one !TOKENS(1) positional argument])
 AT_KEYWORDS([TOKENS])
 AT_DATA([define.sps], [dnl
-DEFINE !t1(!positional !tokens(1)) t1 (!1) !ENDDEFINE.
+DEFINE !t1(!positional=!tokens(1)) t1 (!1) !ENDDEFINE.
 DEBUG EXPAND.
 !t1 a.
 !t1 b.
@@ -68,8 +68,8 @@ DEFINE !title(!positional !tokens(1)) !1 !ENDDEFINE.
 DEFINE !t1(!positional !tokens(1)) t1 (!1) !ENDDEFINE.
 DEFINE !t2(!positional !tokens(2)) t2 (!1) !ENDDEFINE.
 
-DEFINE !ce(!positional !charend('/')) ce (!1) !ENDDEFINE.
-DEFINE !ce2(!positional !charend('(')
+DEFINE !ce(!positional=!charend('/')) ce (!1) !ENDDEFINE.
+DEFINE !ce2(!positional=!charend('(')
            /!positional !charend(')'))
 ce2 (!1, !2)
 !ENDDEFINE.
@@ -275,7 +275,7 @@ AT_CLEANUP
 
 AT_SETUP([keyword macro argument name with ! prefix])
 AT_DATA([define.sps], [dnl
-DEFINE !macro(!x=!TOKENS(1).
+DEFINE !macro(!x !TOKENS(1).
 ])
 AT_CHECK([pspp -O format=csv define.sps], [1], [dnl
 "define.sps:1.15-1.16: error: DEFINE: Syntax error at `!x': Keyword macro parameter must be named in definition without ""!"" prefix."
@@ -315,7 +315,7 @@ AT_CLEANUP
 AT_SETUP([macro expansion - one !TOKENS(1) keyword argument - negative])
 AT_KEYWORDS([TOKENS])
 AT_DATA([define.sps], [dnl
-DEFINE !k(arg1 = !TOKENS(1)) k(!arg1) !ENDDEFINE.
+DEFINE !k(arg1 !TOKENS(1)) k(!arg1) !ENDDEFINE.
 DEBUG EXPAND.
 !k arg1.
 !k arg1=.
@@ -1964,7 +1964,8 @@ define.sps:6.10: error: DEFINE: Syntax error at `y': expecting `@{:@'.
 
 define.sps:7.15: error: DEFINE: Syntax error at `1': expecting identifier.
 
-define.sps:8.17: error: DEFINE: Syntax error at `2': expecting `='.
+define.sps:8.17: error: DEFINE: Syntax error at `2': expecting !TOKENS, !
+CHAREND, !ENCLOSE, or !CMDEND.
 
 define.sps:9.26: error: DEFINE: Syntax error at `3': expecting `@{:@'.
 

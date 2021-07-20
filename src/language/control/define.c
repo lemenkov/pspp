@@ -160,10 +160,8 @@ cmd_define (struct lexer *lexer, struct dataset *ds UNUSED)
           p->positional = false;
           p->name = xasprintf ("!%s", lex_tokcstr (lexer));
           lex_get (lexer);
-
-          if (!lex_force_match (lexer, T_EQUALS))
-            goto error;
         }
+      lex_match (lexer, T_EQUALS);
 
       bool saw_default = false;
       bool saw_arg_type = false;
