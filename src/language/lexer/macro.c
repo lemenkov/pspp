@@ -510,7 +510,7 @@ macro_set_add (struct macro_set *set, struct macro *m)
   hmap_insert (&set->macros, &m->hmap_node, hash_macro_name (m->name));
 }
 
-/* Macro call parsing.. */
+/* Macro call parsing. */
 
 enum mc_state
   {
@@ -752,7 +752,7 @@ mc_equals (struct macro_call *mc, const struct macro_token *mt,
 
   if (token->type == T_EQUALS)
     {
-      mc->state = MC_ARG;
+      mc->state = mc->param->arg_type == ARG_ENCLOSE ? MC_ENCLOSE : MC_ARG;
       return 0;
     }
 

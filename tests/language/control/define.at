@@ -340,7 +340,7 @@ note: unexpanded token "="
 ])
 AT_CLEANUP
 
-AT_SETUP([macro expansion - !CHAREND('/') keyword arguments])
+AT_SETUP([macro expansion - !CHAREND keyword arguments])
 AT_KEYWORDS([CHAREND])
 AT_DATA([define.sps], [dnl
 DEFINE !k(arg1 = !CHAREND('/')
@@ -365,7 +365,7 @@ k(, )
 ])
 AT_CLEANUP
 
-AT_SETUP([macro expansion - !CHAREND('/') keyword arguments - negative])
+AT_SETUP([macro expansion - !CHAREND keyword arguments - negative])
 AT_KEYWORDS([CHAREND])
 AT_DATA([define.sps], [dnl
 DEFINE !k(arg1 = !CHAREND('/')
@@ -423,6 +423,172 @@ note: unexpanded token "/"
 note: unexpanded token "arg2"
 
 note: unexpanded token "="
+
+note: unexpanded token "y"
+])
+AT_CLEANUP
+
+AT_SETUP([macro expansion - !ENCLOSE keyword arguments])
+AT_KEYWORDS([ENCLOSE])
+AT_DATA([define.sps], [dnl
+DEFINE !k(arg1 = !ENCLOSE('(',')')
+         /arg2 = !ENCLOSE('{','}'))
+k(!arg1, !arg2)
+!ENDDEFINE.
+DEBUG EXPAND.
+!k arg1=(x) arg2={y}.
+!k arg1=(x).
+!k arg2={y}.
+!k.
+])
+AT_CAPTURE_FILE([define.sps])
+AT_CHECK([pspp --testing-mode define.sps], [0], [dnl
+k(x, y)
+
+k(x, )
+
+k(, y)
+
+k(, )
+])
+AT_CLEANUP
+
+AT_SETUP([macro expansion - !ENCLOSE keyword arguments - negative])
+AT_KEYWORDS([ENCLOSE])
+AT_DATA([define.sps], [dnl
+DEFINE !k(arg1 = !ENCLOSE('(',')')
+         /arg2 = !ENCLOSE('{','}'))
+k(!arg1, !arg2)
+!ENDDEFINE.
+DEBUG EXPAND.
+!k arg1.
+!k arg1=.
+!k arg1=x.
+!k arg1=(x.
+!k arg1=(x) arg2.
+!k arg1=(x) arg2=.
+!k arg1=(x) arg2=y.
+!k arg1=(x) arg2=(y.
+])
+AT_CAPTURE_FILE([define.sps])
+AT_CHECK([pspp --testing-mode define.sps], [1], [dnl
+define.sps:6.8: error: DEBUG EXPAND: Found `.' while expecting `=' reading
+argument !arg1 to macro !k.
+
+note: unexpanded token "!k"
+
+note: unexpanded token "arg1"
+
+define.sps:7.9: error: DEBUG EXPAND: Found `.' while expecting `@{:@' reading
+argument !arg1 to macro !k.
+
+note: unexpanded token "!k"
+
+note: unexpanded token "arg1"
+
+note: unexpanded token "="
+
+define.sps:8.9: error: DEBUG EXPAND: Found `x' while expecting `@{:@' reading
+argument !arg1 to macro !k.
+
+note: unexpanded token "!k"
+
+note: unexpanded token "arg1"
+
+note: unexpanded token "="
+
+note: unexpanded token "x"
+
+define.sps:9.11: error: DEBUG EXPAND: Unexpected end of command reading
+argument !arg1 to macro !k.
+
+note: unexpanded token "!k"
+
+note: unexpanded token "arg1"
+
+note: unexpanded token "="
+
+note: unexpanded token "@{:@"
+
+note: unexpanded token "x"
+
+define.sps:10.17: error: DEBUG EXPAND: Found `.' while expecting `=' reading
+argument !arg2 to macro !k.
+
+note: unexpanded token "!k"
+
+note: unexpanded token "arg1"
+
+note: unexpanded token "="
+
+note: unexpanded token "@{:@"
+
+note: unexpanded token "x"
+
+note: unexpanded token "@:}@"
+
+note: unexpanded token "arg2"
+
+define.sps:11.18: error: DEBUG EXPAND: Found `.' while expecting `{' reading
+argument !arg2 to macro !k.
+
+note: unexpanded token "!k"
+
+note: unexpanded token "arg1"
+
+note: unexpanded token "="
+
+note: unexpanded token "@{:@"
+
+note: unexpanded token "x"
+
+note: unexpanded token "@:}@"
+
+note: unexpanded token "arg2"
+
+note: unexpanded token "="
+
+define.sps:12.18: error: DEBUG EXPAND: Found `y' while expecting `{' reading
+argument !arg2 to macro !k.
+
+note: unexpanded token "!k"
+
+note: unexpanded token "arg1"
+
+note: unexpanded token "="
+
+note: unexpanded token "@{:@"
+
+note: unexpanded token "x"
+
+note: unexpanded token "@:}@"
+
+note: unexpanded token "arg2"
+
+note: unexpanded token "="
+
+note: unexpanded token "y"
+
+define.sps:13.18: error: DEBUG EXPAND: Found `@{:@' while expecting `{' reading
+argument !arg2 to macro !k.
+
+note: unexpanded token "!k"
+
+note: unexpanded token "arg1"
+
+note: unexpanded token "="
+
+note: unexpanded token "@{:@"
+
+note: unexpanded token "x"
+
+note: unexpanded token "@:}@"
+
+note: unexpanded token "arg2"
+
+note: unexpanded token "="
+
+note: unexpanded token "@{:@"
 
 note: unexpanded token "y"
 ])
