@@ -367,7 +367,7 @@ note: unexpanded token "="
 note: unexpanded token "y"])
 
 PSPP_CHECK_MACRO_EXPANSION([default keyword arguments],
-  [DEFINE !k(arg1 = !DEFAULT(a b c) !CMDEND) k(!arg1) !ENDDEFINE],
+  [DEFINE !k(arg1 = !CMDEND !DEFAULT(a b c)) k(!arg1) !ENDDEFINE],
   [!k arg1=x.
 !k],
   [k(x)
@@ -1634,6 +1634,8 @@ DEFINE !macro(x=!CHAREND(8)) !ENDDEFINE.
 DEFINE !macro(x=!CHAREND('x' 9)) !ENDDEFINE.
 DEFINE !macro(x=!WTF) !ENDDEFINE.
 DEFINE !macro(x=!TOKENS(1) x) !ENDDEFINE.
+DEFINE !macro(x=!DEFAULT() !DEFAULT()) !ENDDEFINE.
+DEFINE !macro(x=!TOKENS(1) !CMDEND) !ENDDEFINE.
 DEFINE !macro()
 ])
 AT_CHECK([pspp define.sps], [1], [dnl
@@ -1685,7 +1687,13 @@ TOKENS, !CHAREND, !ENCLOSE, or !CMDEND.
 
 define.sps:21.28: error: DEFINE: Syntax error at `x': expecting `/'.
 
-define.sps:23.1: error: DEFINE: Syntax error at end of command: Expecting macro
+define.sps:22.36: error: DEFINE: Syntax error at `(': !DEFAULT is allowed only
+once per argument.
+
+define.sps:23.35: error: DEFINE: Syntax error at `)': Only one of !TOKENS, !
+CHAREND, !ENCLOSE, or !CMDEND is allowed.
+
+define.sps:25.1: error: DEFINE: Syntax error at end of command: Expecting macro
 body or !ENDDEFINE.
 ])
 AT_CLEANUP

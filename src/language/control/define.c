@@ -77,6 +77,22 @@ parse_quoted_token (struct lexer *lexer, struct token *token)
   return true;
 }
 
+static bool
+dup_arg_type (struct lexer *lexer, bool *saw_arg_type)
+{
+  if (*saw_arg_type)
+    {
+      lex_error (lexer, _("Only one of !TOKENS, !CHAREND, !ENCLOSE, or "
+                          "!CMDEND is allowed."));
+      return false;
+    }
+  else
+    {
+      *saw_arg_type = true;
+      return true;
+    }
+}
+
 int
 cmd_define (struct lexer *lexer, struct dataset *ds UNUSED)
 {
@@ -149,74 +165,98 @@ cmd_define (struct lexer *lexer, struct dataset *ds UNUSED)
             goto error;
         }
 
-      /* Parse default value. */
-      if (match_macro_id (lexer, "!DEFAULT"))
+      bool saw_default = false;
+      bool saw_arg_type = false;
+      for (;;)
         {
-          if (!lex_force_match (lexer, T_LPAREN))
-            goto error;
-
-          /* XXX Should this handle balanced inner parentheses? */
-          while (!lex_match (lexer, T_RPAREN))
+          if (match_macro_id (lexer, "!DEFAULT"))
             {
-              if (lex_token (lexer) == T_ENDCMD)
+              if (saw_default)
                 {
-                  lex_error_expecting (lexer, ")");
+                  lex_error (lexer,
+                             _("!DEFAULT is allowed only once per argument."));
                   goto error;
                 }
-              char *syntax = lex_next_representation (lexer, 0, 0);
-              const struct macro_token mt = {
-                .token = *lex_next (lexer, 0),
-                .syntax = ss_cstr (syntax),
-              };
-              macro_tokens_add (&p->def, &mt);
-              free (syntax);
+              saw_default = true;
 
-              lex_get (lexer);
+              if (!lex_force_match (lexer, T_LPAREN))
+                goto error;
+
+              /* XXX Should this handle balanced inner parentheses? */
+              while (!lex_match (lexer, T_RPAREN))
+                {
+                  if (lex_token (lexer) == T_ENDCMD)
+                    {
+                      lex_error_expecting (lexer, ")");
+                      goto error;
+                    }
+                  char *syntax = lex_next_representation (lexer, 0, 0);
+                  const struct macro_token mt = {
+                    .token = *lex_next (lexer, 0),
+                    .syntax = ss_cstr (syntax),
+                  };
+                  macro_tokens_add (&p->def, &mt);
+                  free (syntax);
+
+                  lex_get (lexer);
+                }
             }
-        }
+          else if (match_macro_id (lexer, "!NOEXPAND"))
+            p->expand_arg = false;
+          else if (match_macro_id (lexer, "!TOKENS"))
+            {
+              if (!dup_arg_type (lexer, &saw_arg_type)
+                  || !lex_force_match (lexer, T_LPAREN)
+                  || !lex_force_int_range (lexer, "!TOKENS", 1, INT_MAX))
+                goto error;
+              p->arg_type = ARG_N_TOKENS;
+              p->n_tokens = lex_integer (lexer);
+              lex_get (lexer);
+              if (!lex_force_match (lexer, T_RPAREN))
+                goto error;
+            }
+          else if (match_macro_id (lexer, "!CHAREND"))
+            {
+              if (!dup_arg_type (lexer, &saw_arg_type))
+                goto error;
 
-      if (match_macro_id (lexer, "!NOEXPAND"))
-        p->expand_arg = false;
+              p->arg_type = ARG_CHAREND;
+              p->charend = (struct token) { .type = T_STOP };
 
-      if (match_macro_id (lexer, "!TOKENS"))
-        {
-          if (!lex_force_match (lexer, T_LPAREN)
-              || !lex_force_int_range (lexer, "!TOKENS", 1, INT_MAX))
-            goto error;
-          p->arg_type = ARG_N_TOKENS;
-          p->n_tokens = lex_integer (lexer);
-          lex_get (lexer);
-          if (!lex_force_match (lexer, T_RPAREN))
-            goto error;
-        }
-      else if (match_macro_id (lexer, "!CHAREND"))
-        {
-          p->arg_type = ARG_CHAREND;
-          p->charend = (struct token) { .type = T_STOP };
+              if (!lex_force_match (lexer, T_LPAREN)
+                  || !parse_quoted_token (lexer, &p->charend)
+                  || !lex_force_match (lexer, T_RPAREN))
+                goto error;
+            }
+          else if (match_macro_id (lexer, "!ENCLOSE"))
+            {
+              if (!dup_arg_type (lexer, &saw_arg_type))
+                goto error;
 
-          if (!lex_force_match (lexer, T_LPAREN)
-              || !parse_quoted_token (lexer, &p->charend)
-              || !lex_force_match (lexer, T_RPAREN))
-            goto error;
-        }
-      else if (match_macro_id (lexer, "!ENCLOSE"))
-        {
-          p->arg_type = ARG_ENCLOSE;
-          p->enclose[0] = p->enclose[1] = (struct token) { .type = T_STOP };
+              p->arg_type = ARG_ENCLOSE;
+              p->enclose[0] = p->enclose[1] = (struct token) { .type = T_STOP };
 
-          if (!lex_force_match (lexer, T_LPAREN)
-              || !parse_quoted_token (lexer, &p->enclose[0])
-              || !lex_force_match (lexer, T_COMMA)
-              || !parse_quoted_token (lexer, &p->enclose[1])
-              || !lex_force_match (lexer, T_RPAREN))
-            goto error;
+              if (!lex_force_match (lexer, T_LPAREN)
+                  || !parse_quoted_token (lexer, &p->enclose[0])
+                  || !lex_force_match (lexer, T_COMMA)
+                  || !parse_quoted_token (lexer, &p->enclose[1])
+                  || !lex_force_match (lexer, T_RPAREN))
+                goto error;
+            }
+          else if (match_macro_id (lexer, "!CMDEND"))
+            {
+              if (!dup_arg_type (lexer, &saw_arg_type))
+                goto error;
+
+              p->arg_type = ARG_CMDEND;
+            }
+          else
+            break;
         }
-      else if (match_macro_id (lexer, "!CMDEND"))
-        p->arg_type = ARG_CMDEND;
-      else
+      if (!saw_arg_type)
         {
-          lex_error_expecting (lexer, "!TOKENS", "!CHAREND",
-                               "!ENCLOSE", "!CMDEND");
+          lex_error_expecting (lexer, "!TOKENS", "!CHAREND", "!ENCLOSE",
+                               "!CMDEND");
           goto error;
         }
 
