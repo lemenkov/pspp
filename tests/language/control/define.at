@@ -16,19 +16,6 @@ dnl along with this program.  If not, see <http://www.gnu.org/licenses/>.
 dnl
 AT_BANNER([DEFINE])
 
-m4_define([PSPP_CHECK_MACRO_EXPANSION],
-  [AT_SETUP([macro expansion - $1])
-   AT_KEYWORDS([m4_bpatsubst([$1], [!], [])])
-   AT_DATA([define.sps], [$2
-DEBUG EXPAND.
-$3
-])
-   AT_CAPTURE_FILE([define.sps])
-   AT_DATA([expout], [$4
-])
-   AT_CHECK([pspp --testing-mode define.sps | sed '/^$/d'], [$6], [expout])
-   AT_CLEANUP])
-
 AT_SETUP([simple macro expansion])
 AT_DATA([define.sps], [dnl
 DEFINE !macro()
@@ -54,15 +41,26 @@ m(n, o).
 ])
 AT_CLEANUP
 
-PSPP_CHECK_MACRO_EXPANSION([one !TOKENS(1) positional argument],
-  [DEFINE !t1(!positional !tokens(1)) t1 (!1) !ENDDEFINE.],
-  [!t1 a.
+AT_SETUP([macro expansion - one !TOKENS(1) positional argument])
+AT_KEYWORDS([TOKENS])
+AT_DATA([define.sps], [dnl
+DEFINE !t1(!positional !tokens(1)) t1 (!1) !ENDDEFINE.
+DEBUG EXPAND.
+!t1 a.
 !t1 b.
-!t1 a b.],
-  [t1(a)
-t1(b)
+!t1 a b.
+])
+AT_CAPTURE_FILE([define.sps])
+AT_CHECK([pspp --testing-mode define.sps], [0], [dnl
 t1(a)
-note: unexpanded token "b"])
+
+t1(b)
+
+t1(a)
+
+note: unexpanded token "b"
+])
+AT_CLEANUP
 
 AT_SETUP([macro expansion with positional arguments])
 AT_DATA([define.sps], [dnl
@@ -293,89 +291,148 @@ AT_CHECK([pspp -O format=csv define.sps], [1], [dnl
 ])
 AT_CLEANUP
 
-PSPP_CHECK_MACRO_EXPANSION([one !TOKENS(1) keyword argument],
-  [DEFINE !k(arg1 = !TOKENS(1)) k(!arg1) !ENDDEFINE.],
-  [!k arg1=x.
+AT_SETUP([macro expansion - one !TOKENS(1) keyword argument])
+AT_KEYWORDS([TOKENS])
+AT_DATA([define.sps], [dnl
+DEFINE !k(arg1 = !TOKENS(1)) k(!arg1) !ENDDEFINE.
+DEBUG EXPAND.
+!k arg1=x.
 !k arg1=x y.
-!k.],
-  [k(x)
+!k.
+])
+AT_CAPTURE_FILE([define.sps])
+AT_CHECK([pspp --testing-mode define.sps], [0], [dnl
 k(x)
-note: unexpanded token "y"
-k( )])
 
-PSPP_CHECK_MACRO_EXPANSION([one !TOKENS(1) keyword argument - negative],
-  [DEFINE !k(arg1 = !TOKENS(1)) k(!arg1) !ENDDEFINE.],
-  [!k arg1.
-!k arg1=.], [dnl
+k(x)
+
+note: unexpanded token "y"
+
+k( )
+])
+AT_CLEANUP
+
+AT_SETUP([macro expansion - one !TOKENS(1) keyword argument - negative])
+AT_KEYWORDS([TOKENS])
+AT_DATA([define.sps], [dnl
+DEFINE !k(arg1 = !TOKENS(1)) k(!arg1) !ENDDEFINE.
+DEBUG EXPAND.
+!k arg1.
+!k arg1=.
+])
+AT_CAPTURE_FILE([define.sps])
+AT_CHECK([pspp --testing-mode define.sps], [1], [dnl
 define.sps:3.8: error: DEBUG EXPAND: Found `.' while expecting `=' reading
 argument !arg1 to macro !k.
+
 note: unexpanded token "!k"
+
 note: unexpanded token "arg1"
+
 define.sps:4.9: error: DEBUG EXPAND: Unexpected end of command reading argument
 !arg1 to macro !k.
-note: unexpanded token "!k"
-note: unexpanded token "arg1"
-note: unexpanded token "="], [1])
 
-PSPP_CHECK_MACRO_EXPANSION([!CHAREND('/') keyword arguments], [dnl
+note: unexpanded token "!k"
+
+note: unexpanded token "arg1"
+
+note: unexpanded token "="
+])
+AT_CLEANUP
+
+AT_SETUP([macro expansion - !CHAREND('/') keyword arguments])
+AT_KEYWORDS([CHAREND])
+AT_DATA([define.sps], [dnl
 DEFINE !k(arg1 = !CHAREND('/')
          /arg2 = !CHAREND('/'))
 k(!arg1, !arg2)
-!ENDDEFINE.],
-  [!k arg1=x/ arg2=y/.
+!ENDDEFINE.
+DEBUG EXPAND.
+!k arg1=x/ arg2=y/.
 !k arg1=x/.
 !k arg2=y/.
-!k.],
-  [k(x, y)
-k(x, )
-k(, y)
-k(, )])
+!k.
+])
+AT_CAPTURE_FILE([define.sps])
+AT_CHECK([pspp --testing-mode define.sps], [0], [dnl
+k(x, y)
 
-PSPP_CHECK_MACRO_EXPANSION([!CHAREND('/') keyword arguments - negative], [dnl
+k(x, )
+
+k(, y)
+
+k(, )
+])
+AT_CLEANUP
+
+AT_SETUP([macro expansion - !CHAREND('/') keyword arguments - negative])
+AT_KEYWORDS([CHAREND])
+AT_DATA([define.sps], [dnl
 DEFINE !k(arg1 = !CHAREND('/')
          /arg2 = !CHAREND('/'))
 k(!arg1, !arg2)
-!ENDDEFINE.],
-  [!k arg1.
+!ENDDEFINE.
+DEBUG EXPAND.
+!k arg1.
 !k arg1=.
 !k arg1=x.
-!k arg1=x/ arg2=y.],
-  [define.sps:6.8: error: DEBUG EXPAND: Found `.' while expecting `=' reading
+!k arg1=x/ arg2=y.
+])
+AT_CAPTURE_FILE([define.sps])
+AT_CHECK([pspp --testing-mode define.sps], [1], [dnl
+define.sps:6.8: error: DEBUG EXPAND: Found `.' while expecting `=' reading
 argument !arg1 to macro !k.
+
 note: unexpanded token "!k"
+
 note: unexpanded token "arg1"
+
 define.sps:7.9: error: DEBUG EXPAND: Unexpected end of command reading argument
 !arg1 to macro !k.
+
 note: unexpanded token "!k"
+
 note: unexpanded token "arg1"
+
 note: unexpanded token "="
+
 define.sps:8.10: error: DEBUG EXPAND: Unexpected end of command reading
 argument !arg1 to macro !k.
+
 note: unexpanded token "!k"
+
 note: unexpanded token "arg1"
+
 note: unexpanded token "="
+
 note: unexpanded token "x"
+
 define.sps:9.18: error: DEBUG EXPAND: Unexpected end of command reading
 argument !arg2 to macro !k.
-note: unexpanded token "!k"
-note: unexpanded token "arg1"
-note: unexpanded token "="
-note: unexpanded token "x"
-note: unexpanded token "/"
-note: unexpanded token "arg2"
-note: unexpanded token "="
-note: unexpanded token "y"])
 
-PSPP_CHECK_MACRO_EXPANSION([default keyword arguments],
-  [DEFINE !k(arg1 = !CMDEND !DEFAULT(a b c)) k(!arg1) !ENDDEFINE],
-  [!k arg1=x.
-!k],
-  [k(x)
-k(a b c)])
+note: unexpanded token "!k"
+
+note: unexpanded token "arg1"
+
+note: unexpanded token "="
+
+note: unexpanded token "x"
+
+note: unexpanded token "/"
+
+note: unexpanded token "arg2"
+
+note: unexpanded token "="
+
+note: unexpanded token "y"
+])
+AT_CLEANUP
 
 dnl Keep this test in sync with the examples for !BLANKS in the manual.
-PSPP_CHECK_MACRO_EXPANSION([!BLANKS],
-  [DEFINE !b()
+AT_SETUP([macro expansion - !BLANKS])
+AT_KEYWORDS([BLANKS])
+AT_DATA([define.sps], [dnl
+DEFINE !b()
 !BLANKS(0).
 !QUOTE(!BLANKS(0)).
 !BLANKS(1).
@@ -384,20 +441,28 @@ PSPP_CHECK_MACRO_EXPANSION([!BLANKS],
 !QUOTE(!BLANKS(2)).
 !BLANKS(5).
 !QUOTE(!BLANKS(5)).
-!ENDDEFINE],
-  [!b.],
-  [.
+!ENDDEFINE.
+DEBUG EXPAND.
+!b.
+])
+AT_CAPTURE_FILE([define.sps])
+AT_CHECK([pspp --testing-mode define.sps], [0], [dnl
+.
 ''.
 .
 ' '.
 .
 '  '.
 .
-'     '.])
+'     '.
+])
+AT_CLEANUP
 
 dnl Keep this test in sync with the examples for !CONCAT in the manual.
-PSPP_CHECK_MACRO_EXPANSION([!CONCAT],
-  [DEFINE !c()
+AT_SETUP([macro expansion - !CONCAT])
+AT_KEYWORDS([CONCAT])
+AT_DATA([define.sps], [dnl
+DEFINE !c()
 !CONCAT(x, y).
 !CONCAT('x', 'y').
 !CONCAT(12, 34).
@@ -406,92 +471,135 @@ PSPP_CHECK_MACRO_EXPANSION([!CONCAT],
 !CONCAT(x, 0, y).
 !CONCAT(0, x).
 !CONCAT(0, x, y).
-!ENDDEFINE],
-  [!c.],
-  [xy.
+!ENDDEFINE.
+DEBUG EXPAND.
+!c
+])
+AT_CAPTURE_FILE([define.sps])
+AT_CHECK([pspp --testing-mode define.sps], [0], [dnl
+xy.
 xy.
 1234.
 123.
 x0.
 x0y.
 0 x.
-0 xy.])
+0 xy.
+])
+AT_CLEANUP
 
 dnl Keep this test in sync with the examples for !EVAL in the manual.
-PSPP_CHECK_MACRO_EXPANSION([!EVAL],
-  [DEFINE !vars() a b c !ENDDEFINE.
+AT_SETUP([macro expansion - !EVAL])
+AT_KEYWORDS([EVAL])
+AT_DATA([define.sps], [dnl
+DEFINE !vars() a b c !ENDDEFINE.
+
 DEFINE !e()
 !vars.
 !QUOTE(!vars).
 !EVAL(!vars).
 !QUOTE(!EVAL(!vars)).
 !ENDDEFINE
+
 DEFINE !e2(!positional !enclose('(',')'))
 !1.
 !QUOTE(!1).
 !EVAL(!1).
 !QUOTE(!EVAL(!1)).
-!ENDDEFINE],
-  [!e.
-!e2(!vars)],
-  [a b c.
+!ENDDEFINE.
+DEBUG EXPAND.
+!e.
+!e2(!vars).
+])
+AT_CAPTURE_FILE([define.sps])
+AT_CHECK([pspp --testing-mode define.sps], [0], [dnl
+a b c.
 '!vars'.
 a b c.
 'a b c'.
+
 a b c.
 '!vars'.
 a b c.
-'a b c'.])
+'a b c'.
+])
+AT_CLEANUP
 
 dnl Keep this test in sync with the examples for !HEAD in the manual.
-PSPP_CHECK_MACRO_EXPANSION([!HEAD],
-  [DEFINE !h()
+AT_SETUP([macro expansion - !HEAD])
+AT_KEYWORDS([HEAD])
+AT_DATA([define.sps], [dnl
+DEFINE !h()
 !HEAD('a b c').
 !HEAD('a').
 !HEAD(!NULL).
 !HEAD('').
-!ENDDEFINE],
-  [!h.],
-  [a.
+!ENDDEFINE.
+DEBUG EXPAND.
+!h.
+])
+AT_CAPTURE_FILE([define.sps])
+AT_CHECK([pspp --testing-mode define.sps], [0], [dnl
+a.
 a.
 .
-.])
+.
+])
+AT_CLEANUP
 
 dnl Keep this test in sync with the examples for !TAIL in the manual.
-PSPP_CHECK_MACRO_EXPANSION([!TAIL],
-  [DEFINE !t()
+AT_SETUP([macro expansion - !TAIL])
+AT_KEYWORDS([TAIL])
+AT_DATA([define.sps], [dnl
+DEFINE !t()
 !TAIL('a b c').
 !TAIL('a').
 !TAIL(!NULL).
 !TAIL('').
-!ENDDEFINE],
-  [!t.],
-  [b c.
+!ENDDEFINE.
+DEBUG EXPAND.
+!t.
+])
+AT_CAPTURE_FILE([define.sps])
+AT_CHECK([pspp --testing-mode define.sps], [0], [dnl
+b c.
 .
 .
-.])
+.
+])
+AT_CLEANUP
 
 dnl Keep this test in sync with the examples for !INDEX in the manual.
-PSPP_CHECK_MACRO_EXPANSION([!INDEX],
-  [DEFINE !i()
+AT_SETUP([macro expansion - !INDEX])
+AT_KEYWORDS([INDEX])
+AT_DATA([define.sps], [dnl
+DEFINE !i()
 !INDEX(banana, an).
 !INDEX(banana, nan).
 !INDEX(banana, apple).
 !INDEX("banana", nan).
 !INDEX("banana", "nan").
 !INDEX(!UNQUOTE("banana"), !UNQUOTE("nan")).
-!ENDDEFINE],
-  [!i.],
-  [2.
+!ENDDEFINE.
+DEBUG EXPAND.
+!i.
+])
+AT_CAPTURE_FILE([define.sps])
+AT_CHECK([pspp --testing-mode define.sps], [0], [dnl
+2.
 3.
 0.
 4.
 0.
-3.])
+3.
+])
+AT_CLEANUP
 
 dnl Keep this test in sync with the examples for !LENGTH in the manual.
-PSPP_CHECK_MACRO_EXPANSION([!LENGTH],
-  [DEFINE !l()
+AT_SETUP([macro expansion - !LENGTH])
+AT_KEYWORDS([LENGTH])
+AT_DATA([define.sps], [dnl
+DEFINE !l()
 !LENGTH(123).
 !LENGTH(123.00).
 !LENGTH( 123 ).
@@ -505,11 +613,15 @@ PSPP_CHECK_MACRO_EXPANSION([!LENGTH],
 !ENDDEFINE.
 DEFINE !la(!positional !enclose('(',')'))
 !LENGTH(!1).
-!ENDDEFINE.],
-  [!l.
+!ENDDEFINE.
+DEBUG EXPAND.
+!l.
 !la(a b c).
-!la().],
-  [3.
+!la().
+])
+AT_CAPTURE_FILE([define.sps])
+AT_CHECK([pspp --testing-mode define.sps], [0], [dnl
+3.
 6.
 3.
 5.
@@ -519,12 +631,18 @@ DEFINE !la(!positional !enclose('(',')'))
 5.
 6.
 0.
+
 5.
-0.])
+
+0.
+])
+AT_CLEANUP
 
 dnl Keep this test in sync with the examples for !SUBSTR in the manual.
-PSPP_CHECK_MACRO_EXPANSION([!SUBSTR],
-  [DEFINE !s()
+AT_SETUP([macro expansion - !SUBSTR])
+AT_KEYWORDS([SUBSTR])
+AT_DATA([define.sps], [dnl
+DEFINE !s()
 !SUBSTR(banana, 3).
 !SUBSTR(banana, 3, 3).
 !SUBSTR("banana", 1, 3).
@@ -533,11 +651,16 @@ PSPP_CHECK_MACRO_EXPANSION([!SUBSTR],
 !SUBSTR(banana, 3, 0).
 !SUBSTR(banana, 3, 10).
 !SUBSTR(banana, 10, 3).
-!ENDDEFINE.],
-  [!s.],
-  [define.sps:1-10: At `"ba' in the expansion of `!s',dnl "
+!ENDDEFINE.
+DEBUG EXPAND.
+!s.
+])
+AT_CAPTURE_FILE([define.sps])
+AT_CHECK([pspp --testing-mode define.sps], [1], [dnl
+define.sps:1-10: At `"ba' in the expansion of `!s',dnl "
 
 define.sps:12.1-12.2: error: DEBUG EXPAND: Unterminated string constant.
+
 nana.
 nan.
 .
@@ -545,39 +668,57 @@ nana.
 ana.
 .
 nana.
-.])
+.
+])
+AT_CLEANUP
 
 dnl Keep this test in sync with the examples for !UPCASE in the manual.
-PSPP_CHECK_MACRO_EXPANSION([!UPCASE],
-  [DEFINE !u()
+AT_SETUP([macro expansion - !UPCASE])
+AT_KEYWORDS([UPCASE])
+AT_DATA([define.sps], [dnl
+DEFINE !u()
 !UPCASE(freckle).
 !UPCASE('freckle').
 !UPCASE('a b c').
 !UPCASE('A B C').
-!ENDDEFINE.],
-  [!u.],
-  [FRECKLE.
+!ENDDEFINE.
+DEBUG EXPAND.
+!u.
+])
+AT_CAPTURE_FILE([define.sps])
+AT_CHECK([pspp --testing-mode define.sps], [0], [dnl
+FRECKLE.
 FRECKLE.
 A B C.
-A B C.])
-
+A B C.
+])
+AT_CLEANUP
 
 dnl !* is implemented separately inside and outside function arguments
 dnl so this test makes sure to include both.
-PSPP_CHECK_MACRO_EXPANSION([!*], [dnl
+AT_SETUP([macro expansion - !*])
+AT_DATA([define.sps], [dnl
 DEFINE !m(!POSITIONAL !TOKENS(1)
          /!POSITIONAL !TOKENS(1))
 !*/
 !LENGTH(!*)/
 !SUBSTR(!*, 3)/
 !QUOTE(!*).
-!ENDDEFINE.],
-  [!m 123 b
+!ENDDEFINE.
+DEBUG EXPAND.
+!m 123 b
 !m 2 3
 !m '' 'b'.
-], [123 b / 5 / 3 b / '123 b'.
+])
+AT_CAPTURE_FILE([define.sps])
+AT_CHECK([pspp --testing-mode define.sps], [0], [dnl
+123 b / 5 / 3 b / '123 b'.
+
 2 3 / 3 / 3 / '2 3'.
-'' 'b' / 6 / 'b' / ''''' ''b'''.])
+
+'' 'b' / 6 / 'b' / ''''' ''b'''.
+])
+AT_CLEANUP
 
 AT_SETUP([macro maximum nesting level (MNEST)])
 AT_KEYWORDS([MNEST])
