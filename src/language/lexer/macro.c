@@ -897,16 +897,6 @@ expand_macro_function (const struct macro_expander *me,
                        const struct macro_token *input, size_t n_input,
                        struct string *output);
 
-/* Returns true if the N tokens within MTS start with !*, false otherwise. */
-static bool
-is_bang_star (const struct macro_token *mts, size_t n)
-{
-  return (n > 1
-          && mts[0].token.type == T_MACRO_ID
-          && ss_equals (mts[0].token.string, ss_cstr ("!"))
-          && mts[1].token.type == T_ASTERISK);
-}
-
 /* Parses one function argument from the N_INPUT tokens in INPUT
    Each argument to a macro function is one of:
 
@@ -941,7 +931,7 @@ parse_function_arg (const struct macro_expander *me,
           return 1;
         }
 
-      if (is_bang_star (input, n_input))
+      if (ss_equals (token->string, ss_cstr ("!*")))
         {
           for (size_t i = 0; i < me->macro->n_params; i++)
             {
@@ -951,7 +941,7 @@ parse_function_arg (const struct macro_expander *me,
                 ds_put_byte (farg, ' ');
               macro_tokens_to_syntax (me->args[i], farg, NULL, NULL);
             }
-          return 2;
+          return 1;
         }
 
       const char *var = stringi_map_find__ (me->vars,
@@ -1998,11 +1988,11 @@ macro_expand__ (const struct macro_token *mts, size_t n,
           macro_expand_arg (me, param - me->macro->params, exp);
           return 1;
         }
-      else if (is_bang_star (mts, n))
+      else if (ss_equals (token->string, ss_cstr ("!*")))
         {
           for (size_t j = 0; j < me->macro->n_params; j++)
             macro_expand_arg (me, j, exp);
-          return 2;
+          return 1;
         }
     }
 

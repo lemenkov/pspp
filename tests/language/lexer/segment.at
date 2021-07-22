@@ -291,8 +291,8 @@ AT_SETUP([punctuation])
 AT_KEYWORDS([segment])
 AT_DATA([input], [dnl
 ~ & | = >= > <= < ~= <> ( ) , - + * / [[ ]] **
-~&|=>=><=<~=<>(),-+*/[[]]**
-% : ; ? _ ` { } ~
+~&|=>=><=<~=<>(),-+*/[[]]**!*
+% : ; ? _ ` { } ~ !*
 ])
 AT_DATA([expout-base], [dnl
 punct           ~    space
@@ -337,6 +337,7 @@ punct           /
 punct           [[
 punct           ]]
 punct           **
+macro_id        !*
 newline         \n (later)
 
 punct           %    space
@@ -347,7 +348,8 @@ punct           \_    space
 punct           `    space
 punct           {    space
 punct           }    space
-punct           ~
+punct           ~    space
+macro_id        !*
 -newline         \n (later)
 -
 end

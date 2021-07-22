@@ -25,7 +25,7 @@ m4_define([PSPP_CHECK_SCAN],
 AT_SETUP([identifiers])
 AT_KEYWORDS([scan])
 AT_DATA([input], [dnl
-a aB i5 $x @efg @@. !abcd #.# .x _z.
+a aB i5 $x @efg @@. !abcd !* !*a #.# .x _z.
 abcd. abcd.
 QRSTUV./* end of line comment */
 QrStUv./* end of line comment */ @&t@
@@ -40,6 +40,9 @@ ID "$x"
 ID "@efg"
 ID "@@."
 MACRO_ID "!abcd"
+MACRO_ID "!*"
+MACRO_ID "!*"
+ID "a"
 ID "#.#"
 MACRO_PUNCT "."
 ID "x"

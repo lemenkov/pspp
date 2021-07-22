@@ -1018,7 +1018,20 @@ segmenter_parse_mid_command__ (struct segmenter *s,
                                        s, input, n, eof, type);
 
     case '!':
-      return segmenter_parse_id__ (s, input, n, eof, type);
+      if (n < 2)
+        {
+          if (!eof)
+            return -1;
+          *type = SEG_PUNCT;
+          return 1;
+        }
+      else if (input[1] == '*')
+        {
+          *type = SEG_MACRO_ID;
+          return 2;
+        }
+      else
+        return segmenter_parse_id__ (s, input, n, eof, type);
 
     default:
       if (lex_uc_is_space (uc))
