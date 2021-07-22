@@ -2059,3 +2059,19 @@ define.sps:17.12-17.22: error: N OF CASES: Syntax error at `!minus !one':
 Expected positive integer for N OF CASES.
 ])
 AT_CLEANUP
+
+AT_SETUP([one macro calls another])
+AT_DATA([define.sps], [dnl
+DEFINE !a(!pos !enclose('(',')')) [[!1]] !ENDDEFINE.
+DEFINE !b(!pos !enclose('{','}')) !a(x !1 z) !ENDDEFINE.
+DEFINE !c(!pos !enclose('{','}')) !let !tmp=!quote(!concat('<',!1,'>')) !a(!tmp) !ENDDEFINE.
+DEBUG EXPAND.
+!b{y}.
+!c{y}.
+])
+AT_CHECK([pspp --testing-mode define.sps], [0], [dnl
+[[x y z]]
+
+[[ < y > ]]
+])
+AT_CLEANUP

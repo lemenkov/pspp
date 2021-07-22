@@ -543,11 +543,16 @@ struct macro_call
     const struct macro *macro;
     struct macro_tokens **args;
     const struct macro_expansion_stack *stack;
+    const struct macro_expander *me;
 
     enum mc_state state;
     size_t n_tokens;
     const struct macro_param *param; /* Parameter currently being parsed. */
   };
+
+static bool macro_expand_arg (const struct token *,
+                              const struct macro_expander *,
+                              struct macro_tokens *exp);
 
 /* Completes macro expansion by initializing arguments that weren't supplied to
    their defaults. */
@@ -633,30 +638,29 @@ mc_add_arg (struct macro_call *mc, const struct macro_token *mt,
   struct macro_tokens **argp = &mc->args[p - mc->macro->params];
   if (!*argp)
     *argp = xzalloc (sizeof **argp);
-  struct macro_tokens *arg = *argp;
+
+  bool add_token;               /* Should we add 'mt' to the current arg? */
+  bool next_arg;                /* Should we advance to the next arg? */
   if (p->arg_type == ARG_N_TOKENS)
     {
-      macro_tokens_add (arg, mt);
-      if (arg->n >= p->n_tokens)
-        return mc_next_arg (mc);
-      return 0;
-    }
-  else if (p->arg_type == ARG_CMDEND)
-    {
-      if (token->type == T_ENDCMD || token->type == T_STOP)
-        return mc_next_arg (mc);
-      macro_tokens_add (arg, mt);
-      return 0;
+      next_arg = (*argp)->n + 1 >= p->n_tokens;
+      add_token = true;
     }
   else
     {
-      const struct token *end
-        = p->arg_type == ARG_CHAREND ? &p->charend : &p->enclose[1];
-      if (token_equal (token, end))
-        return mc_next_arg (mc);
-      macro_tokens_add (arg, mt);
-      return 0;
+      next_arg = (p->arg_type == ARG_CMDEND
+                  ? token->type == T_ENDCMD || token->type == T_STOP
+                  : token_equal (token, (p->arg_type == ARG_CHAREND
+                                         ? &p->charend : &p->enclose[1])));
+      add_token = !next_arg;
     }
+
+  if (add_token)
+    {
+      if (!macro_expand_arg (&mt->token, mc->me, *argp))
+        macro_tokens_add (*argp, mt);
+    }
+  return next_arg ? mc_next_arg (mc) : 0;
 }
 
 static int
@@ -762,6 +766,7 @@ mc_equals (struct macro_call *mc, const struct macro_token *mt,
 static int
 macro_call_create__ (const struct macro_set *macros,
                      const struct macro_expansion_stack *stack,
+                     const struct macro_expander *me,
                      const struct token *token,
                      struct macro_call **mcp)
 {
@@ -786,6 +791,7 @@ macro_call_create__ (const struct macro_set *macros,
     .args = macro->n_params ? xcalloc (macro->n_params, sizeof *mc->args) : NULL,
     .param = macro->params,
     .stack = stack,
+    .me = me,
   };
   *mcp = mc;
 
@@ -804,7 +810,7 @@ macro_call_create (const struct macro_set *macros,
                    const struct token *token,
                    struct macro_call **mcp)
 {
-  return macro_call_create__ (macros, NULL, token, mcp);
+  return macro_call_create__ (macros, NULL, NULL, token, mcp);
 }
 
 void
@@ -1893,7 +1899,7 @@ macro_expand_do (const struct macro_token *tokens, size_t n_tokens,
 }
 
 static void
-macro_expand_arg (const struct macro_expander *me, size_t idx,
+macro_expand_arg__ (const struct macro_expander *me, size_t idx,
                   struct macro_tokens *exp)
 {
   const struct macro_param *param = &me->macro->params[idx];
@@ -1925,6 +1931,44 @@ macro_expand_arg (const struct macro_expander *me, size_t idx,
       macro_tokens_add (exp, &arg->mts[i]);
 }
 
+static bool
+macro_expand_arg (const struct token *token, const struct macro_expander *me,
+                  struct macro_tokens *exp)
+{
+  if (!me || token->type != T_MACRO_ID)
+    return false;
+
+  /* Macro arguments. */
+  if (me->macro)
+    {
+      const struct macro_param *param = macro_find_parameter_by_name (
+        me->macro, token->string);
+      if (param)
+        {
+          macro_expand_arg__ (me, param - me->macro->params, exp);
+          return true;
+        }
+      else if (ss_equals (token->string, ss_cstr ("!*")))
+        {
+          for (size_t j = 0; j < me->macro->n_params; j++)
+            macro_expand_arg__ (me, j, exp);
+          return true;
+        }
+    }
+
+  /* Variables set by !DO or !LET. */
+  const char *var = stringi_map_find__ (me->vars, token->string.string,
+                                        token->string.length);
+  if (var)
+    {
+      macro_tokens_from_string__ (exp, ss_cstr (var),
+                                  me->segmenter_mode, me->stack);
+      return true;
+    }
+
+  return false;
+}
+
 static size_t
 macro_expand__ (const struct macro_token *mts, size_t n,
                 const struct macro_expander *me,
@@ -1936,7 +1980,8 @@ macro_expand__ (const struct macro_token *mts, size_t n,
   if (*me->expand)
     {
       struct macro_call *submc;
-      int n_call = macro_call_create__ (me->macros, me->stack, token, &submc);
+      int n_call = macro_call_create__ (me->macros, me->stack, me,
+                                        token, &submc);
       for (size_t j = 1; !n_call; j++)
         {
           const struct macro_token endcmd
@@ -1978,33 +2023,9 @@ macro_expand__ (const struct macro_token *mts, size_t n,
       return 1;
     }
 
-  /* Parameters. */
-  if (me->macro)
-    {
-      const struct macro_param *param = macro_find_parameter_by_name (
-        me->macro, token->string);
-      if (param)
-        {
-          macro_expand_arg (me, param - me->macro->params, exp);
-          return 1;
-        }
-      else if (ss_equals (token->string, ss_cstr ("!*")))
-        {
-          for (size_t j = 0; j < me->macro->n_params; j++)
-            macro_expand_arg (me, j, exp);
-          return 1;
-        }
-    }
-
-  /* Variables set by !DO or !LET. */
-  const char *var = stringi_map_find__ (me->vars, token->string.string,
-                                        token->string.length);
-  if (var)
-    {
-      macro_tokens_from_string__ (exp, ss_cstr (var),
-                                  me->segmenter_mode, me->stack);
-      return 1;
-    }
+  /* Parameters and macro variables. */
+  if (macro_expand_arg (token, me, exp))
+    return 1;
 
   /* Macro functions. */
   struct string function_output = DS_EMPTY_INITIALIZER;

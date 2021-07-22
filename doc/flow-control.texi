@@ -398,8 +398,9 @@ To expand macros in these cases, use the @code{!EVAL} macro function,
 e.g.@: @code{!LENGTH(!EVAL(!vars))} or @code{!LENGTH(!EVAL(!1))}.
 @xref{Macro Functions}, for details.
 
-These rules apply to macro calls, not to uses of macro functions and
-macro arguments within a macro body, which are always expanded.
+These rules apply to macro calls, not to uses within a macro body of
+macro functions, macro arguments, and macro variables created by
+@code{!DO} or @code{!LET}, which are always expanded.
 
 @node Macro Functions
 @subsection Macro Functions
@@ -796,6 +797,24 @@ SET MEXPAND, etc. doesn't work inside macro bodies.
 
 @node Macro Notes
 @subsection Additional Notes
+
+@subsubsection Calling Macros from Macros
+
+If the body of macro A includes a call to macro B, the call can use
+macro arguments (including @code{!*}) and macro variables as part of
+arguments to B.  For @code{!TOKENS} arguments, the argument or
+variable name counts as one token regardless of the number that
+expands into, for @code{!CHAREND} and @code{!ENCLOSE} arguments the
+delimiters come only from the call, not the expansions, and
+@code{!CMDEND} ends at the calling command, not any end of command
+within an argument or variable.
+
+Macro functions are not supported as part of the arguments in a macro
+call.  To get the same effect, use @code{!LET} to define a macro
+variable, then pass the macro variable to the macro.
+
+When macro A calls macro B, the order of their @code{DEFINE} commands
+doesn't matter, as long as macro B has been defined when A is called.
 
 @subsubsection Command Terminators
 
