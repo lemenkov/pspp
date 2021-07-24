@@ -505,9 +505,7 @@ AT_CHECK([pspp --testing-mode define.sps], [1], [dnl
 define.sps:3.8: error: DEBUG EXPAND: Found `.' while expecting `=' reading
 argument !arg1 to macro !k.
 
-note: unexpanded token "!k"
-
-note: unexpanded token "arg1"
+k( )
 
 define.sps:4.9: error: DEBUG EXPAND: Reached end of command expecting 1 more
 token in argument !arg1 to macro !k.
@@ -559,9 +557,7 @@ AT_CHECK([pspp --testing-mode define.sps], [1], [dnl
 define.sps:6.8: error: DEBUG EXPAND: Found `.' while expecting `=' reading
 argument !arg1 to macro !k.
 
-note: unexpanded token "!k"
-
-note: unexpanded token "arg1"
+k(, )
 
 define.sps:7.9: error: DEBUG EXPAND: Reached end of command expecting "/" in
 argument !arg1 to macro !k.
@@ -627,27 +623,17 @@ AT_CHECK([pspp --testing-mode define.sps], [1], [dnl
 define.sps:6.8: error: DEBUG EXPAND: Found `.' while expecting `=' reading
 argument !arg1 to macro !k.
 
-note: unexpanded token "!k"
-
-note: unexpanded token "arg1"
+k(, )
 
 define.sps:7.9: error: DEBUG EXPAND: Found `.' while expecting `@{:@' reading
 argument !arg1 to macro !k.
 
-note: unexpanded token "!k"
-
-note: unexpanded token "arg1"
-
-note: unexpanded token "="
+k(, )
 
 define.sps:8.9: error: DEBUG EXPAND: Found `x' while expecting `@{:@' reading
 argument !arg1 to macro !k.
 
-note: unexpanded token "!k"
-
-note: unexpanded token "arg1"
-
-note: unexpanded token "="
+k(, )
 
 note: unexpanded token "x"
 
@@ -659,78 +645,24 @@ k(x, )
 define.sps:10.17: error: DEBUG EXPAND: Found `.' while expecting `=' reading
 argument !arg2 to macro !k.
 
-note: unexpanded token "!k"
-
-note: unexpanded token "arg1"
-
-note: unexpanded token "="
-
-note: unexpanded token "@{:@"
-
-note: unexpanded token "x"
-
-note: unexpanded token "@:}@"
-
-note: unexpanded token "arg2"
+k(x, )
 
 define.sps:11.18: error: DEBUG EXPAND: Found `.' while expecting `{' reading
 argument !arg2 to macro !k.
 
-note: unexpanded token "!k"
-
-note: unexpanded token "arg1"
-
-note: unexpanded token "="
-
-note: unexpanded token "@{:@"
-
-note: unexpanded token "x"
-
-note: unexpanded token "@:}@"
-
-note: unexpanded token "arg2"
-
-note: unexpanded token "="
+k(x, )
 
 define.sps:12.18: error: DEBUG EXPAND: Found `y' while expecting `{' reading
 argument !arg2 to macro !k.
 
-note: unexpanded token "!k"
-
-note: unexpanded token "arg1"
-
-note: unexpanded token "="
-
-note: unexpanded token "@{:@"
-
-note: unexpanded token "x"
-
-note: unexpanded token "@:}@"
-
-note: unexpanded token "arg2"
-
-note: unexpanded token "="
+k(x, )
 
 note: unexpanded token "y"
 
 define.sps:13.18: error: DEBUG EXPAND: Found `@{:@' while expecting `{' reading
 argument !arg2 to macro !k.
 
-note: unexpanded token "!k"
-
-note: unexpanded token "arg1"
-
-note: unexpanded token "="
-
-note: unexpanded token "@{:@"
-
-note: unexpanded token "x"
-
-note: unexpanded token "@:}@"
-
-note: unexpanded token "arg2"
-
-note: unexpanded token "="
+k(x, )
 
 note: unexpanded token "@{:@"
 

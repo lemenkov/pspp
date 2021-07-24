@@ -498,9 +498,6 @@ macro_set_add (struct macro_set *set, struct macro *m)
 
 enum mc_state
   {
-    /* Error state. */
-    MC_ERROR,
-
     /* Accumulating tokens in mc->params toward the end of any type of
        argument. */
     MC_ARG,
@@ -696,20 +693,19 @@ mc_expected (struct macro_call *mc, const struct macro_token *actual,
             mc->param->name, mc->macro->name);
   free (expected_s);
 
-  mc->state = MC_ERROR;
-  return -1;
+  return mc_finished (mc);
 }
 
 static int
 mc_enclose (struct macro_call *mc, const struct macro_token *mt,
             const struct msg_location *loc)
 {
-  mc->n_tokens++;
-
   const struct token *token = &mt->token;
   const struct macro_param *p = mc->param;
   if (token_equal (&p->start, token))
     {
+      mc->n_tokens++;
+
       struct macro_tokens **argp = &mc->args[p - mc->macro->params];
       *argp = xzalloc (sizeof **argp);
       mc->state = MC_ARG;
@@ -754,13 +750,9 @@ mc_keyword (struct macro_call *mc, const struct macro_token *mt,
     {
       struct macro_tokens **argp = &mc->args[p - mc->macro->params];
       if (*argp)
-        {
-          mc_error (mc, loc,
-                    _("Argument %s multiply specified in call to macro %s."),
-                    p->name, mc->macro->name);
-          mc->state = MC_ERROR;
-          return -1;
-        }
+        mc_error (mc, loc,
+                  _("Argument %s multiply specified in call to macro %s."),
+                  p->name, mc->macro->name);
 
       *argp = xzalloc (sizeof **argp);
       mc->param = p;
@@ -776,11 +768,9 @@ static int
 mc_equals (struct macro_call *mc, const struct macro_token *mt,
            const struct msg_location *loc)
 {
-  const struct token *token = &mt->token;
-  mc->n_tokens++;
-
-  if (token->type == T_EQUALS)
+  if (mt->token.type == T_EQUALS)
     {
+      mc->n_tokens++;
       mc->state = mc->param->arg_type == ARG_ENCLOSE ? MC_ENCLOSE : MC_ARG;
       return 0;
     }
@@ -879,9 +869,6 @@ macro_call_add (struct macro_call *mc, const struct macro_token *mt,
 {
   switch (mc->state)
     {
-    case MC_ERROR:
-      return -1;
-
     case MC_ARG:
       return mc_add_arg (mc, mt, loc);
 
