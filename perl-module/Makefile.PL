@@ -28,6 +28,7 @@ do './pspp-module-config' || do {
 };
 
 WriteMakefile(
+    MAKEFILE          => 'MakefileX',
     FULLPERL          => "PSPP_TEST_CMD=\"$Locations{BuildDir}/src/ui/terminal/pspp\" \$(PERL)",
     NAME              => 'PSPP',
     DISTNAME          => 'PSPP-Perl',

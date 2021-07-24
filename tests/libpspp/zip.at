@@ -22,36 +22,36 @@ here=`pwd`
 dir1=$here/original
 dir2=$here/recovered
 
-mkdir -p $dir1
+mkdir -p "$dir1"
 
 # Generate files of differing sizes with random data in them
 names=""
 s=1;
 while test $s -le 8192 ; do
-	name=$dir1/$s
-	dd if=/dev/urandom of=$name count=1 bs=$s 2> /dev/null
+	name="$dir1/$s"
+	dd if=/dev/urandom of="$name" count=1 bs=$s 2> /dev/null
 	s=$(($s * 2));
-	bn=`basename $name`;
+	bn=`basename "$name"`;
         names="$names $bn";
 done
 
-AT_CHECK([cd $dir1 && zip-test w foo.zip $names])
+AT_CHECK([cd "$dir1" && zip-test w foo.zip $names])
 
 # If zipinfo is installed, make sure it can read the zipfile.
 if (zipinfo -v) >/dev/null 2>&1; then
-    AT_CHECK([zipinfo $dir1/foo.zip], [0], [ignore])
+    AT_CHECK([zipinfo "$dir1/foo.zip"], [0], [ignore])
 fi
 
-mkdir -p $dir2
-cp $dir1/foo.zip $dir2
-cd $dir2
+mkdir -p "$dir2"
+cp "$dir1/foo.zip" "$dir2"
+cd "$dir2"
 
 AT_CHECK([zip-test r foo.zip $names])
 
 AT_CHECK([
     # Compare the files to their originals
     for f in $names; do
-     diff $dir1/$f $dir2/$f;
+     diff "$dir1/$f" "$dir2/$f";
      if test $? -ne 0 ; then exit 1; fi;
     done
 ])
@@ -64,38 +64,38 @@ here=`pwd`
 dir1=$here/original
 dir2=$here/recovered
 
-mkdir -p $dir1
+mkdir -p "$dir1"
 
 # Generate files of differing sizes with random data in them
 names=""
 s=1;
 while test $s -le 8192 ; do
-	name=$dir1/$s
-	dd if=/dev/urandom of=$name count=1 bs=$s 2> /dev/null
+	name="$dir1/$s"
+	dd if=/dev/urandom of="$name" count=1 bs=$s 2> /dev/null
 	s=$(($s * 2));
-	bn=`basename $name`;
+	bn=`basename "$name"`;
         names="$names $bn";
 done
 
 # The pipe through "cat" below is essential because it makes the
 # output file un-seekable.
-AT_CHECK([cd $dir1 && zip-test w - $names | cat > foo.zip])
+AT_CHECK([cd "$dir1" && zip-test w - $names | cat > foo.zip])
 
 # If zipinfo is installed, make sure it can read the zipfile.
 if (zipinfo -v) >/dev/null 2>&1; then
-    AT_CHECK([zipinfo $dir1/foo.zip], [0], [ignore])
+    AT_CHECK([zipinfo "$dir1/foo.zip"], [0], [ignore])
 fi
 
-mkdir -p $dir2
-cp $dir1/foo.zip $dir2
-cd $dir2
+mkdir -p "$dir2"
+cp "$dir1/foo.zip" "$dir2"
+cd "$dir2"
 
 AT_CHECK([zip-test r foo.zip $names])
 
 AT_CHECK([
     # Compare the files to their originals
     for f in $names; do
-     diff $dir1/$f $dir2/$f;
+     diff "$dir1/$f" "$dir2/$f";
      if test $? -ne 0 ; then exit 1; fi;
     done
 ])

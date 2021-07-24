@@ -1,5 +1,5 @@
 dnl PSPP - a program for statistical analysis.
-dnl Copyright (C) 2017, 2020 Free Software Foundation, Inc.
+dnl Copyright (C) 2017, 2020, 2021 Free Software Foundation, Inc.
 dnl
 dnl This program is free software: you can redistribute it and/or modify
 dnl it under the terms of the GNU General Public License as published by
@@ -19,8 +19,8 @@ AT_BANNER([Perl module tests])
 m4_divert_push([PREPARE_TESTS])
 # Find the Address Sanitizer library that PSPP is linked against, if any.
 # If it exists, it needs to be preloaded when we run Perl.
-asan_lib=$($abs_top_builddir/libtool --mode=execute ldd \
-               $abs_top_builddir/src/ui/terminal/pspp 2>/dev/null \
+asan_lib=$("$abs_top_builddir/libtool" --mode=execute ldd \
+               "$abs_top_builddir/src/ui/terminal/pspp" 2>/dev/null \
 	   | grep asan \
 	   | awk '{print $3}')
 if test ! -e "$asan_lib"; then
@@ -33,12 +33,12 @@ dnl equivalent to "use ExtUtils::testlib;" inside the Perl program, but it does
 dnl not need to be run with the perl-module build directory as the current
 dnl working directory.
 run_perl_module () {
-    LD_PRELOAD=$asan_lib:$LD_PRELOAD \
-    LD_LIBRARY_PATH=$abs_top_builddir/src/.libs \
-    DYLD_LIBRARY_PATH=$abs_top_builddir/src/.libs \
+    LD_PRELOAD="$asan_lib":"$LD_PRELOAD" \
+    LD_LIBRARY_PATH="$abs_top_builddir/src/.libs" \
+    DYLD_LIBRARY_PATH="$abs_top_builddir/src/.libs" \
     ASAN_OPTIONS="$ASAN_OPTIONS detect_leaks=false" \
-    $PERL -I$abs_top_builddir/perl-module/blib/arch \
-          -I$abs_top_builddir/perl-module/blib/lib "$@"
+    $PERL -I"$abs_top_builddir/perl-module/blib/arch" \
+          -I"$abs_top_builddir/perl-module/blib/lib" "$@"
 }
 m4_divert_pop([PREPARE_TESTS])
 
@@ -676,7 +676,7 @@ AT_SKIP_IF([test "$WITH_PERL_MODULE" = no])
 AT_CHECK([perl -MText::Diff -e '' || exit 77])
 # Skip this test if Perl's Memory::Usage module is not installed.
 AT_CHECK([perl -MMemory::Usage -e '' || exit 77])
-AT_CHECK([run_perl_module $abs_top_builddir/perl-module/t/Pspp.t], [0],
+AT_CHECK([run_perl_module "$abs_top_builddir/perl-module/t/Pspp.t"], [0],
   [[1..38
 ok 1 - use PSPP;
 ok 2 - Dictionary Creation

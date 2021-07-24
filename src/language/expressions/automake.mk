@@ -43,8 +43,8 @@ $(expressions_built_sources): $(helpers)
 	$(AV_V_GEN)$(MKDIR_P) `dirname $@` && \
 	$(PERL) $< -o $@ -i $(top_srcdir)/src/language/expressions/operations.def
 
-AM_CPPFLAGS += -I$(abs_top_builddir)/src/language/expressions \
-	-I$(top_srcdir)/src/language/expressions
+AM_CPPFLAGS += -I"$(abs_top_builddir)/src/language/expressions" \
+	-I"$(top_srcdir)/src/language/expressions"
 
 EXTRA_DIST += src/language/expressions/TODO
 

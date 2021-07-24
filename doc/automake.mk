@@ -206,8 +206,8 @@ endif
 
 $(FIGURE_SPVS): $(pspp)
 .sps.spv:
-	$(AM_V_GEN)(cd $(top_srcdir)/examples \
-         && $(abs_top_builddir)/$(pspp) ../doc/pspp-figures/$(<F) -o - -O format=spv) > $@.tmp
+	$(AM_V_GEN)(cd "$(top_srcdir)/examples" \
+         && "$(abs_top_builddir)/$(pspp)" ../doc/pspp-figures/$(<F) -o - -O format=spv) > $@.tmp
 	$(AM_V_at)mv $@.tmp $@
 
 # In some cases, the tutorial only wants some parts of the output.

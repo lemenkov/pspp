@@ -199,7 +199,7 @@ AT_CLEANUP
 
 AT_SETUP([tex another example])
 
-AT_CHECK([pspp -O format=tex $abs_top_srcdir/examples/regress.sps], [0], [])
+AT_CHECK([pspp -O format=tex "$abs_top_srcdir/examples/regress.sps"], [0], [])
 AT_CHECK([test $($GWC -L pspp.tex | awk '{print $1}') -le 80], [0], [ignore])
 
 AT_SKIP_IF([test "$TEX" = no])

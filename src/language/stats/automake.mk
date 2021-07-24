@@ -16,7 +16,7 @@
 #
 ## Process this file with automake to produce Makefile.in  -*- makefile -*-
 
-AM_CPPFLAGS += -I$(top_srcdir)/src/language/stats
+AM_CPPFLAGS += -I"$(top_srcdir)/src/language/stats"
 
 language_stats_sources = \
 	src/language/stats/aggregate.c \

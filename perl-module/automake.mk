@@ -36,12 +36,15 @@ PERL_MAKEFLAGS = $(AM_MAKEFLAGS) LD_RUN_PATH=$(pkglibdir)
 perl-module/pspp-module-config: Makefile
 	$(AM_V_GEN)(echo '%Locations = (';\
 	 printf "  SourceDir => '";\
-	 (cd $(top_srcdir) && echo `pwd`\', ) ;\
+	 (cd "$(top_srcdir)" && echo `pwd`\', ) ;\
 	 printf "  BuildDir => '";\
-	 (cd $(top_builddir) && echo `pwd`\' );\
-	 echo ');') > $(top_builddir)/perl-module/pspp-module-config
+	 (cd "$(top_builddir)" && echo `pwd`\' );\
+	 echo ');') > "$(top_builddir)/perl-module/pspp-module-config"
 
-perl-module/Makefile: perl-module/Makefile.PL perl-module/pspp-module-config $(module_sources)
+perl-module/Makefile: perl-module/MakefileX
+	$(SED)  -e "/^INC/s/\([^=]\)  *-I/\1\" -I/g" -e "/^INC/s/  *-I */ -I\"/g" -e "/^INC/s/ *$$/\"/" -e "/^MYEXTLIB/s/\([^=]\) \([^=]\)/\1\\\\ \2/g" $< > $@
+
+perl-module/MakefileX: perl-module/Makefile.PL perl-module/pspp-module-config $(module_sources)
 	$(AM_V_GEN)cd perl-module && $(PERL) Makefile.PL PREFIX=$(prefix) \
                                                          OPTIMIZE="$(CFLAGS) $(CPPFLAGS)" \
                                                          LD="`$(PERL) -e 'use Config::Perl::V;print Config::Perl::V::myconfig()->{config}{ld};'` $(LDFLAGS)"
@@ -80,7 +83,7 @@ perl_module_clean:
 	if test x"$(top_builddir)" != x"$(top_srcdir)" ; then \
 	  rm -f $(module_sources) ; \
 	fi
-	rm -f perl-module/Makefile.old
+	rm -f perl-module/Makefile.old perl-module/MakefileX perl-module/MakefileX.old perl-module/Makefile
 
 CLEANFILES += \
         perl-module/PSPP-Perl-$(VERSION_FOR_PERL).tar.gz \

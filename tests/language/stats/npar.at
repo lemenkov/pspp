@@ -1045,7 +1045,7 @@ AT_SETUP([NPAR TESTS Mann-Whitney Multiple])
 dnl Check for a bug where the ranks were inappropriately allocated, when
 dnl multiple variables were tested and MISSING=ANALYSIS chosen.
 
-cp $abs_srcdir/language/mann-whitney.txt .
+cp "$abs_srcdir/language/mann-whitney.txt" .
 
 AT_DATA([npar-mann-whitney.sps], [dnl
 SET FORMAT     = F11.3

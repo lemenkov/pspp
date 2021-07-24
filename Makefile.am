@@ -24,8 +24,8 @@ BUILT_SOURCES =
 built-sources: $(BUILT_SOURCES)
 
 AM_CPPFLAGS = \
-	-I$(top_srcdir)/gl \
-	-I$(top_builddir)/gl \
+	-I"$(top_srcdir)/gl" \
+	-I"$(top_builddir)/gl" \
 	-DINSTALLDIR=\"$(bindir)\"
 
 AM_V_P ?= :

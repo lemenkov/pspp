@@ -18,7 +18,7 @@ AT_BANNER([SYNTAX GENERATOR])
 
 AT_SETUP([Syntax Generation - printf like])
 
-AT_CHECK([$abs_top_builddir/tests/ui/syntax-gen-test],[0],[dnl
+AT_CHECK(["$abs_top_builddir/tests/ui/syntax-gen-test"],[0],[dnl
 A simple string: Hello worldEND
 A syntax string: "Hello world"END
 A syntax string containing ": 'here"is the quote'END
