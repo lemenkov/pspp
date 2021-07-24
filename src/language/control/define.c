@@ -219,10 +219,9 @@ cmd_define (struct lexer *lexer, struct dataset *ds UNUSED)
                 goto error;
 
               p->arg_type = ARG_CHAREND;
-              p->charend = (struct token) { .type = T_STOP };
 
               if (!lex_force_match (lexer, T_LPAREN)
-                  || !parse_quoted_token (lexer, &p->charend)
+                  || !parse_quoted_token (lexer, &p->end)
                   || !lex_force_match (lexer, T_RPAREN))
                 goto error;
             }
@@ -232,12 +231,11 @@ cmd_define (struct lexer *lexer, struct dataset *ds UNUSED)
                 goto error;
 
               p->arg_type = ARG_ENCLOSE;
-              p->enclose[0] = p->enclose[1] = (struct token) { .type = T_STOP };
 
               if (!lex_force_match (lexer, T_LPAREN)
-                  || !parse_quoted_token (lexer, &p->enclose[0])
+                  || !parse_quoted_token (lexer, &p->start)
                   || !lex_force_match (lexer, T_COMMA)
-                  || !parse_quoted_token (lexer, &p->enclose[1])
+                  || !parse_quoted_token (lexer, &p->end)
                   || !lex_force_match (lexer, T_RPAREN))
                 goto error;
             }

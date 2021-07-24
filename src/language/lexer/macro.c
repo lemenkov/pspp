@@ -418,24 +418,8 @@ macro_destroy (struct macro *m)
       free (p->name);
 
       macro_tokens_uninit (&p->def);
-
-      switch (p->arg_type)
-        {
-        case ARG_N_TOKENS:
-          break;
-
-        case ARG_CHAREND:
-          token_uninit (&p->charend);
-          break;
-
-        case ARG_ENCLOSE:
-          token_uninit (&p->enclose[0]);
-          token_uninit (&p->enclose[1]);
-          break;
-
-        case ARG_CMDEND:
-          break;
-        }
+      token_uninit (&p->start);
+      token_uninit (&p->end);
     }
   free (m->params);
   macro_tokens_uninit (&m->body);
@@ -650,8 +634,7 @@ mc_add_arg (struct macro_call *mc, const struct macro_token *mt,
     {
       next_arg = (p->arg_type == ARG_CMDEND
                   ? token->type == T_ENDCMD || token->type == T_STOP
-                  : token_equal (token, (p->arg_type == ARG_CHAREND
-                                         ? &p->charend : &p->enclose[1])));
+                  : token_equal (token, &p->end));
       add_token = !next_arg;
     }
 
@@ -688,13 +671,13 @@ mc_enclose (struct macro_call *mc, const struct macro_token *mt,
   const struct token *token = &mt->token;
   mc->n_tokens++;
 
-  if (token_equal (&mc->param->enclose[0], token))
+  if (token_equal (&mc->param->start, token))
     {
       mc->state = MC_ARG;
       return 0;
     }
 
-  return mc_expected (mc, mt, loc, &mc->param->enclose[0]);
+  return mc_expected (mc, mt, loc, &mc->param->start);
 }
 
 static const struct macro_param *

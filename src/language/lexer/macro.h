@@ -81,12 +81,10 @@ struct macro_param
         ARG_CMDEND
       }
     arg_type;
-    union
-      {
-        int n_tokens;            /* ARG_N_TOKENS. */
-        struct token charend;    /* ARG_CHAREND. */
-        struct token enclose[2]; /* ARG_ENCLOSE. */
-      };
+
+    int n_tokens;               /* ARG_N_TOKENS only. */
+    struct token start;         /* ARG_ENCLOSE only. */
+    struct token end;           /* ARG_ENCLOSE and ARG_CHAREND only. */
   };
 
 /* A macro. */
