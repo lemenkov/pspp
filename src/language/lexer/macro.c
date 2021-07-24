@@ -604,38 +604,74 @@ mc_add_arg (struct macro_call *mc, const struct macro_token *mt,
             const struct msg_location *loc)
 {
   const struct macro_param *p = mc->param;
+  struct macro_tokens **argp = &mc->args[p - mc->macro->params];
 
   const struct token *token = &mt->token;
-  if ((token->type == T_ENDCMD || token->type == T_STOP)
-      && p->arg_type != ARG_CMDEND)
+  if (token->type == T_ENDCMD || token->type == T_STOP)
     {
-      mc_error (mc, loc,
-                _("Unexpected end of command reading argument %s "
-                  "to macro %s."), mc->param->name, mc->macro->name);
+      if (*argp)
+        {
+          switch (p->arg_type)
+            {
+            case ARG_CMDEND:
+              /* This is OK, it's the expected way to end the argument. */
+              break;
 
-      mc->state = MC_ERROR;
-      return -1;
+            case ARG_N_TOKENS:
+              mc_error (mc, loc,
+                        ngettext (_("Reached end of command expecting %zu "
+                                    "more token in argument %s to macro %s."),
+                                  _("Reached end of command expecting %zu "
+                                    "more tokens in argument %s to macro %s."),
+                                  p->n_tokens - (*argp)->n),
+                        p->n_tokens - (*argp)->n, p->name, mc->macro->name);
+              break;
+
+            case ARG_CHAREND:
+            case ARG_ENCLOSE:
+              {
+                char *end = token_to_string (&p->end);
+                mc_error (mc, loc, _("Reached end of command expecting \"%s\" "
+                                     "in argument %s to macro %s."),
+                          end, p->name, mc->macro->name);
+                free (end);
+              }
+              break;
+            }
+        }
+
+      /* The end of a command ends the current argument, precludes any further
+         arguments, and is not itself part of the argument. */
+      return mc_finished (mc);
     }
 
   mc->n_tokens++;
 
-  struct macro_tokens **argp = &mc->args[p - mc->macro->params];
   if (!*argp)
     *argp = xzalloc (sizeof **argp);
 
   bool add_token;               /* Should we add 'mt' to the current arg? */
   bool next_arg;                /* Should we advance to the next arg? */
-  if (p->arg_type == ARG_N_TOKENS)
+  switch (p->arg_type)
     {
+    case ARG_N_TOKENS:
       next_arg = (*argp)->n + 1 >= p->n_tokens;
       add_token = true;
-    }
-  else
-    {
-      next_arg = (p->arg_type == ARG_CMDEND
-                  ? token->type == T_ENDCMD || token->type == T_STOP
-                  : token_equal (token, &p->end));
+      break;
+
+    case ARG_CHAREND:
+    case ARG_ENCLOSE:
+      next_arg = token_equal (token, &p->end);
       add_token = !next_arg;
+      break;
+
+    case ARG_CMDEND:
+      next_arg = false;
+      add_token = true;
+      break;
+
+    default:
+      NOT_REACHED ();
     }
 
   if (add_token)
@@ -668,16 +704,21 @@ static int
 mc_enclose (struct macro_call *mc, const struct macro_token *mt,
             const struct msg_location *loc)
 {
-  const struct token *token = &mt->token;
   mc->n_tokens++;
 
-  if (token_equal (&mc->param->start, token))
+  const struct token *token = &mt->token;
+  const struct macro_param *p = mc->param;
+  if (token_equal (&p->start, token))
     {
+      struct macro_tokens **argp = &mc->args[p - mc->macro->params];
+      *argp = xzalloc (sizeof **argp);
       mc->state = MC_ARG;
       return 0;
     }
-
-  return mc_expected (mc, mt, loc, &mc->param->start);
+  else if (p->positional && (token->type == T_ENDCMD || token->type == T_STOP))
+    return mc_finished (mc);
+  else
+    return mc_expected (mc, mt, loc, &p->start);
 }
 
 static const struct macro_param *
@@ -711,9 +752,8 @@ mc_keyword (struct macro_call *mc, const struct macro_token *mt,
                                                               token->string);
   if (p)
     {
-      size_t arg_index = p - mc->macro->params;
-      mc->param = p;
-      if (mc->args[arg_index])
+      struct macro_tokens **argp = &mc->args[p - mc->macro->params];
+      if (*argp)
         {
           mc_error (mc, loc,
                     _("Argument %s multiply specified in call to macro %s."),
@@ -722,6 +762,8 @@ mc_keyword (struct macro_call *mc, const struct macro_token *mt,
           return -1;
         }
 
+      *argp = xzalloc (sizeof **argp);
+      mc->param = p;
       mc->n_tokens++;
       mc->state = MC_EQUALS;
       return 0;

@@ -169,7 +169,9 @@ e(a b)
 
 cmd(1 2 3 4)
 
-cmd2(5 6, 7)
+cmd2(5 6, )
+
+note: unexpanded token "7"
 
 "Three !TOKENS(1) arguments."
 
@@ -179,97 +181,275 @@ p(1, -2, -3) (1 -2 -3)
 ])
 AT_CLEANUP
 
-AT_SETUP([macro expansion with positional arguments - negative])
+AT_SETUP([macro call missing positional !TOKENS arguments])
+AT_KEYWORDS([TOKENS])
 AT_DATA([define.sps], [dnl
-DEFINE !title(!positional !tokens(1)) !1 !ENDDEFINE.
-DEFINE !p(!positional !tokens(1)
-         /!positional !tokens(1)
-	 /!positional !tokens(1))
+DEFINE !p(!positional !tokens(1) !default(x)
+         /!positional !tokens(1) !default(y)
+	 /!positional !tokens(1) !default(z))
 (!1, !2, !3)
 !ENDDEFINE.
-
-DEFINE !ce(!positional !charend('/')) ce(!1) !ENDDEFINE.
-
-DEFINE !enc1(!positional !enclose('{', '}')) enc1(!1) !ENDDEFINE.
 DEBUG EXPAND.
-!title "Too few tokens for !TOKENS."
+!p a b c.
 !p a b.
 !p a.
 !p.
+])
+AT_CHECK([pspp --testing-mode define.sps], [0], [dnl
+(a, b, c)
 
-!title "Missing charend delimiter."
-!ce a b c.
+(a, b, z)
 
-!title "Missing start delimiter."
-!enc1 a b c.
+(a, y, z)
 
-!title "Missing end delimiter."
-!enc1{a b c.
+(x, y, z)
+])
+AT_CLEANUP
+
+AT_SETUP([macro call incomplete positional !TOKENS arguments])
+AT_KEYWORDS([TOKENS])
+AT_DATA([define.sps], [dnl
+DEFINE !p(!positional !tokens(2) !default(x)
+         /!positional !tokens(2) !default(y)
+	 /!positional !tokens(2) !default(z))
+(!1, !2, !3)
+!ENDDEFINE.
+DEBUG EXPAND.
+!p a1 a2 b1 b2 c1 c2.
+!p a1 a2 b1 b2 c1.
+!p a1 a2 b1 b2.
+!p a1 a2 b1.
+!p a1 a2.
+!p a1.
+!p.
 ])
 AT_CHECK([pspp --testing-mode define.sps], [1], [dnl
-"Too few tokens for !TOKENS."
+(a1 a2, b1 b2, c1 c2)
 
-define.sps:13.7: error: DEBUG EXPAND: Unexpected end of command reading
+define.sps:8.18: error: DEBUG EXPAND: Reached end of command expecting 1 more
+token in argument !3 to macro !p.
+
+(a1 a2, b1 b2, c1)
+
+(a1 a2, b1 b2, z)
+
+define.sps:10.12: error: DEBUG EXPAND: Reached end of command expecting 1 more
+token in argument !2 to macro !p.
+
+(a1 a2, b1, z)
+
+(a1 a2, y, z)
+
+define.sps:12.6: error: DEBUG EXPAND: Reached end of command expecting 1 more
+token in argument !1 to macro !p.
+
+(a1, y, z)
+
+(x, y, z)
+])
+AT_CLEANUP
+
+AT_SETUP([macro call empty positional !CHAREND arguments])
+AT_KEYWORDS([CHAREND])
+AT_DATA([define.sps], [dnl
+DEFINE !p(!positional !charend(',') !default(x)
+         /!positional !charend(';') !default(y)
+	 /!positional !charend(':') !default(z))
+(!1, !2, !3)
+!ENDDEFINE.
+DEBUG EXPAND.
+!p a,b;c:.
+!p a,b;:.
+!p a,;c:.
+!p a,;:.
+!p,b;c:.
+!p,b;:.
+!p,;c:.
+!p,;:.
+])
+AT_CHECK([pspp --testing-mode define.sps], [0], [dnl
+(a, b, c)
+
+(a, b, )
+
+(a, , c)
+
+(a, , )
+
+(, b, c)
+
+(, b, )
+
+(, , c)
+
+(, , )
+])
+AT_CLEANUP
+
+AT_SETUP([macro call missing positional !CHAREND arguments])
+AT_DATA([define.sps], [dnl
+DEFINE !p(!positional !charend(',') !default(x)
+         /!positional !charend(';') !default(y)
+	 /!positional !charend(':') !default(z))
+(!1, !2, !3)
+!ENDDEFINE.
+DEBUG EXPAND.
+!p a,b;c:.
+!p a,b;.
+!p a,;.
+!p ,b;.
+!p ,;.
+
+!p a,.
+!p ,.
+
+!p.
+])
+AT_CHECK([pspp --testing-mode define.sps], [0], [dnl
+(a, b, c)
+
+(a, b, z)
+
+(a, , z)
+
+(, b, z)
+
+(, , z)
+
+(a, y, z)
+
+(, y, z)
+
+(x, y, z)
+])
+AT_CLEANUP
+
+AT_SETUP([macro call incomplete positional !CHAREND arguments])
+AT_KEYWORDS([CHAREND])
+AT_DATA([define.sps], [dnl
+DEFINE !p(!positional !charend(',') !default(x)
+         /!positional !charend(';') !default(y)
+	 /!positional !charend(':') !default(z))
+(!1, !2, !3)
+!ENDDEFINE.
+DEBUG EXPAND.
+!p a,b;c:.
+!p a,b;c.
+!p a,b;.
+!p a,b.
+!p a,.
+!p a.
+!p.
+])
+AT_CHECK([pspp --testing-mode define.sps], [1], [dnl
+(a, b, c)
+
+define.sps:8.9: error: DEBUG EXPAND: Reached end of command expecting ":" in
 argument !3 to macro !p.
 
-note: unexpanded token "!p"
+(a, b, c)
 
-note: unexpanded token "a"
+(a, b, z)
 
-note: unexpanded token "b"
-
-define.sps:14.5: error: DEBUG EXPAND: Unexpected end of command reading
+define.sps:10.7: error: DEBUG EXPAND: Reached end of command expecting ";" in
 argument !2 to macro !p.
 
-note: unexpanded token "!p"
+(a, b, z)
 
-note: unexpanded token "a"
+(a, y, z)
 
-define.sps:15.3: error: DEBUG EXPAND: Unexpected end of command reading
+define.sps:12.5: error: DEBUG EXPAND: Reached end of command expecting "," in
 argument !1 to macro !p.
 
-note: unexpanded token "!p"
+(a, y, z)
 
-"Missing charend delimiter."
+(x, y, z)
+])
+AT_CLEANUP
 
-define.sps:18.10: error: DEBUG EXPAND: Unexpected end of command reading
-argument !1 to macro !ce.
+AT_SETUP([macro call missing positional !ENCLOSE arguments])
+AT_KEYWORDS([ENCLOSE])
+AT_DATA([define.sps], [dnl
+DEFINE !p(!positional !enclose('(',')') !default(x)
+         /!positional !enclose('<','>') !default(y)
+	 /!positional !enclose('{','}') !default(z))
+(!1, !2, !3)
+!ENDDEFINE.
+DEBUG EXPAND.
+!p (a)<b>{c}.
+!p (a)<b>.
+!p (a).
+!p.
+])
+AT_CHECK([pspp --testing-mode define.sps], [0], [dnl
+(a, b, c)
 
-note: unexpanded token "!ce"
+(a, b, z)
 
-note: unexpanded token "a"
+(a, y, z)
 
-note: unexpanded token "b"
+(x, y, z)
+])
+AT_CLEANUP
 
-note: unexpanded token "c"
+AT_SETUP([macro call incomplete positional !ENCLOSE arguments])
+AT_KEYWORDS([ENCLOSE])
+AT_DATA([define.sps], [dnl
+DEFINE !p(!positional !enclose('(',')') !default(x)
+         /!positional !enclose('<','>') !default(y)
+	 /!positional !enclose('{','}') !default(z))
+(!1, !2, !3)
+!ENDDEFINE.
+DEBUG EXPAND.
+!p (a)<b>{c}.
+!p (a)<b>{c.
+!p (a)<b>{.
+!p (a)<b>.
+!p (a)<b.
+!p (a)<.
+!p (a).
+!p (a.
+!p (.
+!p.
+])
+AT_CHECK([pspp --testing-mode define.sps], [1], [dnl
+(a, b, c)
 
-"Missing start delimiter."
+define.sps:8.12: error: DEBUG EXPAND: Reached end of command expecting "}" in
+argument !3 to macro !p.
 
-define.sps:21.7: error: DEBUG EXPAND: Found `a' while expecting `{' reading
-argument !1 to macro !enc1.
+(a, b, c)
 
-note: unexpanded token "!enc1"
+define.sps:9.11: error: DEBUG EXPAND: Reached end of command expecting "}" in
+argument !3 to macro !p.
 
-note: unexpanded token "a"
+(a, b, )
 
-note: unexpanded token "b"
+(a, b, z)
 
-note: unexpanded token "c"
+define.sps:11.9: error: DEBUG EXPAND: Reached end of command expecting ">" in
+argument !2 to macro !p.
 
-"Missing end delimiter."
+(a, b, z)
 
-define.sps:24.12: error: DEBUG EXPAND: Unexpected end of command reading
-argument !1 to macro !enc1.
+define.sps:12.8: error: DEBUG EXPAND: Reached end of command expecting ">" in
+argument !2 to macro !p.
 
-note: unexpanded token "!enc1"
+(a, , z)
 
-note: unexpanded token "{"
+(a, y, z)
 
-note: unexpanded token "a"
+define.sps:14.6: error: DEBUG EXPAND: Reached end of command expecting ")" in
+argument !1 to macro !p.
 
-note: unexpanded token "b"
+(a, y, z)
 
-note: unexpanded token "c"
+define.sps:15.5: error: DEBUG EXPAND: Reached end of command expecting ")" in
+argument !1 to macro !p.
+
+(, y, z)
+
+(x, y, z)
 ])
 AT_CLEANUP
 
@@ -329,14 +509,10 @@ note: unexpanded token "!k"
 
 note: unexpanded token "arg1"
 
-define.sps:4.9: error: DEBUG EXPAND: Unexpected end of command reading argument
-!arg1 to macro !k.
+define.sps:4.9: error: DEBUG EXPAND: Reached end of command expecting 1 more
+token in argument !arg1 to macro !k.
 
-note: unexpanded token "!k"
-
-note: unexpanded token "arg1"
-
-note: unexpanded token "="
+k( )
 ])
 AT_CLEANUP
 
@@ -387,44 +563,20 @@ note: unexpanded token "!k"
 
 note: unexpanded token "arg1"
 
-define.sps:7.9: error: DEBUG EXPAND: Unexpected end of command reading argument
-!arg1 to macro !k.
-
-note: unexpanded token "!k"
-
-note: unexpanded token "arg1"
-
-note: unexpanded token "="
-
-define.sps:8.10: error: DEBUG EXPAND: Unexpected end of command reading
+define.sps:7.9: error: DEBUG EXPAND: Reached end of command expecting "/" in
 argument !arg1 to macro !k.
 
-note: unexpanded token "!k"
+k(, )
 
-note: unexpanded token "arg1"
+define.sps:8.10: error: DEBUG EXPAND: Reached end of command expecting "/" in
+argument !arg1 to macro !k.
 
-note: unexpanded token "="
+k(x, )
 
-note: unexpanded token "x"
-
-define.sps:9.18: error: DEBUG EXPAND: Unexpected end of command reading
+define.sps:9.18: error: DEBUG EXPAND: Reached end of command expecting "/" in
 argument !arg2 to macro !k.
 
-note: unexpanded token "!k"
-
-note: unexpanded token "arg1"
-
-note: unexpanded token "="
-
-note: unexpanded token "x"
-
-note: unexpanded token "/"
-
-note: unexpanded token "arg2"
-
-note: unexpanded token "="
-
-note: unexpanded token "y"
+k(x, y)
 ])
 AT_CLEANUP
 
@@ -499,18 +651,10 @@ note: unexpanded token "="
 
 note: unexpanded token "x"
 
-define.sps:9.11: error: DEBUG EXPAND: Unexpected end of command reading
+define.sps:9.11: error: DEBUG EXPAND: Reached end of command expecting "@:}@" in
 argument !arg1 to macro !k.
 
-note: unexpanded token "!k"
-
-note: unexpanded token "arg1"
-
-note: unexpanded token "="
-
-note: unexpanded token "@{:@"
-
-note: unexpanded token "x"
+k(x, )
 
 define.sps:10.17: error: DEBUG EXPAND: Found `.' while expecting `=' reading
 argument !arg2 to macro !k.
@@ -1370,14 +1514,14 @@ DEBUG EXPAND.
 AT_CHECK([pspp --testing-mode define.sps], [1], [dnl
 In the expansion of `!DO',
 define.sps:1-3: inside the expansion of `!for',
-define.sps:7.1-7.11: error: DEBUG EXPAND: !DO loop over list exceeded maximum
+define.sps:7.1-7.10: error: DEBUG EXPAND: !DO loop over list exceeded maximum
 number of iterations 2.  (Use SET MITERATE to change the limit.)
 
 ( (a) (b) ).
 
 In the expansion of `!DO',
 define.sps:1-3: inside the expansion of `!for',
-define.sps:8.1-8.24: error: DEBUG EXPAND: !DO loop over list exceeded maximum
+define.sps:8.1-8.23: error: DEBUG EXPAND: !DO loop over list exceeded maximum
 number of iterations 2.  (Use SET MITERATE to change the limit.)
 
 ( (foo) (bar) ).

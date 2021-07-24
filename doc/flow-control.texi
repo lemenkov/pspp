@@ -243,8 +243,8 @@ A @dfn{positional} argument has a required value that follows the
 macro's name.  Use the @code{!POSITIONAL} keyword to declare a
 positional argument.
 
-When a macro is called, every positional argument must be given a
-value in the same order as the defintion.
+When a macro is called, the positional argument values appear in the
+same order as their definitions, before any keyword argument values.
 
 References to a positional argument in a macro body are numbered:
 @code{!1} is the first positional argument, @code{!2} the second, and
@@ -266,10 +266,7 @@ FREQUENCIES /VARIABLES=!1.
 @item
 A @dfn{keyword} argument has a name.  In the macro call, its value is
 specified with the syntax @code{@i{name}=@i{value}}.  The names allow
-keyword argument values to take any order in the call, and even to be
-omitted.  When one is omitted, a default value is used: either the
-value specified in @code{!DEFAULT(@i{value})}, or an empty value
-otherwise.
+keyword argument values to take any order in the call.
 
 In declaration and calls, a keyword argument's name may not begin with
 @samp{!}, but references to it in the macro body do start with a
@@ -291,7 +288,13 @@ FREQUENCIES /VARIABLES=!vars.
 
 If a macro has both positional and keyword arguments, then the
 positional arguments must come first in the DEFINE command, and their
-values also come first in macro calls.
+values also come first in macro calls.  A keyword argument may be
+omitted by leaving its keyword out of the call, and a positional
+argument may be omitted by putting a command terminator where it would
+appear.  (The latter case also omits any following positional
+arguments and all keyword arguments, if there are any.)  When an
+argument is omitted, a default value is used: either the value
+specified in @code{!DEFAULT(@i{value})}, or an empty value otherwise.
 
 Each argument declaration specifies the form of its value:
 
