@@ -21,13 +21,15 @@
 #include <stdbool.h>
 #include <unitypes.h>
 #include "libpspp/str.h"
+#include "gl/verify.h"
 
 #define TOKEN_TYPES                                                     \
+    TOKEN_TYPE(STOP)                /* End of input. */                 \
+                                                                        \
     TOKEN_TYPE(ID)                  /* Identifier. */                   \
     TOKEN_TYPE(POS_NUM)             /* Positive number. */              \
     TOKEN_TYPE(NEG_NUM)             /* Negative number. */              \
     TOKEN_TYPE(STRING)              /* Quoted string. */                \
-    TOKEN_TYPE(STOP)                /* End of input. */                 \
                                                                         \
     TOKEN_TYPE(ENDCMD)              /* . */                             \
     TOKEN_TYPE(PLUS)                /* + */                             \
@@ -68,6 +70,7 @@ enum token_type
     TOKEN_TYPES
 #undef TOKEN_TYPE
   };
+verify(T_STOP == 0);
 
 #define TOKEN_TYPE(TYPE) + 1
 enum { TOKEN_N_TYPES = TOKEN_TYPES };
