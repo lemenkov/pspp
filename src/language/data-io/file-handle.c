@@ -366,9 +366,3 @@ fh_parse (struct lexer *lexer, enum fh_referent referent_mask,
 
   return handle;
 }
-
-/*
-   Local variables:
-   mode: c
-   End:
-*/

@@ -1354,9 +1354,3 @@ cmd_restore (struct lexer *lexer UNUSED, struct dataset *ds UNUSED)
       return CMD_FAILURE;
     }
 }
-
-/*
-   Local Variables:
-   mode: c
-   End:
-*/

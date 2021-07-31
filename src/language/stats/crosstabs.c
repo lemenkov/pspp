@@ -2956,9 +2956,3 @@ calc_directional (struct crosstabs_proc *proc, struct crosstabulation *xt,
 
   return 1;
 }
-
-/*
-   Local Variables:
-   mode: c
-   End:
-*/
