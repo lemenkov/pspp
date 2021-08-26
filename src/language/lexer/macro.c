@@ -986,12 +986,7 @@ parse_function_args (const struct macro_expander *me,
                      const char *function,
                      struct string_array *args)
 {
-  if (n < 2 || mts[1].token.type != T_LPAREN)
-    {
-      macro_error (me->stack, n > 1 ? &mts[1] : NULL,
-                   _("`(' expected following %s."), function);
-      return 0;
-    }
+  assert (n >= 2 && mts[1].token.type == T_LPAREN);
 
   for (size_t i = 2; i < n; )
     {
@@ -1090,7 +1085,6 @@ expand_macro_function (const struct macro_expander *me,
       MF_HEAD,
       MF_INDEX,
       MF_LENGTH,
-      MF_NULL,
       MF_QUOTE,
       MF_SUBSTR,
       MF_TAIL,
@@ -1104,7 +1098,6 @@ expand_macro_function (const struct macro_expander *me,
     [MF_HEAD]    = { "!HEAD",    1, 1 },
     [MF_INDEX]   = { "!INDEX",   2, 2 },
     [MF_LENGTH]  = { "!LENGTH",  1, 1 },
-    [MF_NULL]    = { "!NULL",    0, 0 },
     [MF_QUOTE]   = { "!QUOTE",   1, 1 },
     [MF_SUBSTR]  = { "!SUBSTR",  2, 3 },
     [MF_TAIL]    = { "!TAIL",    1, 1 },
@@ -1112,7 +1105,16 @@ expand_macro_function (const struct macro_expander *me,
     [MF_UPCASE]  = { "!UPCASE",  1, 1 },
   };
 
-  /* Is this a macro function? */
+  if (lex_id_match_n (ss_cstr ("!NULL"), input[0].token.string, 4))
+    return 1;
+
+  if (n_input < 2 || input[1].token.type != T_LPAREN)
+    {
+      /* Only consider macro functions when the name is followed by '('. */
+      return 0;
+    }
+
+  /* Is this a macro function name? */
   const struct macro_function *mf;
   for (mf = mfs; ; mf++)
     {
@@ -1127,8 +1129,6 @@ expand_macro_function (const struct macro_expander *me,
     }
 
   enum macro_function_id id = mf - mfs;
-  if (id == MF_NULL)
-    return 1;
 
   struct string_array args = STRING_ARRAY_INITIALIZER;
   size_t n_consumed = parse_function_args (me, input, n_input, mf->name, &args);

@@ -1633,10 +1633,26 @@ not a multiple of 2.
 ])
 AT_CLEANUP
 
+AT_SETUP([macro name overlaps with macro function name])
+dnl !len is short for macro function !LENGTH.  PSPP used to
+dnl reject the following with "`(' expected following !LENGTH".
+dnl Now PSPP only consider macro functions when the name is
+dnl followed by '('.
+AT_DATA([define.sps], [dnl
+DEFINE !len() 5 !ENDDEFINE.
+DEFINE !x() !eval(!len) !ENDDEFINE.
+DEBUG EXPAND.
+!x
+])
+AT_CHECK([pspp -O format=csv define.sps --testing-mode], [0], [dnl
+5
+])
+AT_CLEANUP
+
 AT_SETUP([generic macro function syntax errors])
 AT_DATA([define.sps], [dnl
-DEFINE !a() !SUBSTR !ENDDEFINE.
-DEFINE !b() !SUBSTR x !ENDDEFINE.
+
+
 DEFINE !c() !SUBSTR(1x) !ENDDEFINE.
 DEFINE !d() !SUBSTR(1 !ENDDEFINE.
 DEFINE !narg_blanks() !BLANKS() !ENDDEFINE.
@@ -1653,8 +1669,8 @@ DEFINE !narg_unquote() !UNQUOTE() !ENDDEFINE.
 DEFINE !narg_upcase() !UPCASE() !ENDDEFINE.
 dnl )
 DEBUG EXPAND.
-!a.
-!b.
+
+
 !c.
 !d.
 !narg_blanks.
@@ -1671,16 +1687,6 @@ DEBUG EXPAND.
 !narg_upcase.
 ])
 AT_CHECK([pspp --testing-mode define.sps], [1], [dnl
-define.sps:1: In the expansion of `!a',
-define.sps:18.1-18.2: error: DEBUG EXPAND: `@{:@' expected following !SUBSTR.
-
-!SUBSTR
-
-define.sps:2: At `x' in the expansion of `!b',
-define.sps:19.1-19.2: error: DEBUG EXPAND: `@{:@' expected following !SUBSTR.
-
-!SUBSTR x
-
 define.sps:3: At `x' in the expansion of `!c',
 define.sps:20.1-20.2: error: DEBUG EXPAND: `,' or `@:}@' expected in call to macro
 function !SUBSTR.
