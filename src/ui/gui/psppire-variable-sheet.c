@@ -48,6 +48,9 @@ set_var_type (PsppireVariableSheet *sheet)
   struct variable *var =
     psppire_dict_get_variable (PSPPIRE_DICT (dict), row);
 
+  if (var == NULL)
+    return;
+
   const struct fmt_spec *format = var_get_write_format (var);
   struct fmt_spec fmt = *format;
   GtkWindow *win = GTK_WINDOW (gtk_widget_get_toplevel (GTK_WIDGET (sheet)));
@@ -68,6 +71,9 @@ set_missing_values (PsppireVariableSheet *sheet)
 
   struct variable *var =
     psppire_dict_get_variable (PSPPIRE_DICT (dict), row);
+
+  if (var == NULL)
+    return;
 
   struct missing_values mv;
   if (GTK_RESPONSE_OK ==
@@ -91,6 +97,9 @@ set_value_labels (PsppireVariableSheet *sheet)
 
   struct variable *var =
     psppire_dict_get_variable (PSPPIRE_DICT (dict), row);
+
+  if (var == NULL)
+    return;
 
   struct val_labs *vls =
     psppire_val_labs_dialog_run (GTK_WINDOW (gtk_widget_get_toplevel (GTK_WIDGET (sheet))), var);
@@ -325,6 +334,8 @@ change_var_property (PsppireVariableSheet *var_sheet, gint col, gint row, const 
 
   if (NULL == var)
     var = psppire_dict_insert_variable (dict, row, NULL);
+
+  g_return_if_fail (var);
 
   switch (col)
     {
