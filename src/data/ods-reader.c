@@ -1,5 +1,5 @@
 /* PSPP - a program for statistical analysis.
-   Copyright (C) 2011, 2012, 2013, 2016, 2020 Free Software Foundation, Inc.
+   Copyright (C) 2011, 2012, 2013, 2016, 2020, 2021 Free Software Foundation, Inc.
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -909,24 +909,26 @@ ods_make_reader (struct spreadsheet *spreadsheet,
 	{
 	  if (idx >= n_var_specs)
 	    {
-	      var_spec = xrealloc (var_spec, sizeof (*var_spec) * (idx + 1));
+	      var_spec = xrealloc (var_spec, sizeof (*var_spec) * (idx + r->rsd.col_span));
 	      memset (var_spec + n_var_specs,
-		      0,
-		      (idx - n_var_specs + 1) * sizeof (*var_spec));
+	              0,
+	              (idx + r->rsd.col_span - n_var_specs) * sizeof (*var_spec));
 
 	      var_spec [idx].name = NULL;
 	      n_var_specs = idx + 1;
 	    }
 
-	  var_spec [idx].firstval.type = type;
-	  var_spec [idx].firstval.text = xmlTextReaderValue (r->rsd.xtr);
-	  var_spec [idx].firstval.value = val_string;
+          for (int x = 0; x < r->rsd.col_span; ++x)
+          {
+            var_spec [idx - x].firstval.type = xmlStrdup (type);
+            var_spec [idx - x].firstval.text = xmlTextReaderValue (r->rsd.xtr);
+            var_spec [idx - x].firstval.value = xmlStrdup (val_string);
+          }
 
-	  val_string = NULL;
-	  type = NULL;
+          free (val_string);
+          free (type);
 	}
     }
-
 
   /* Create the dictionary and populate it */
   r->spreadsheet.dict = dict_create (

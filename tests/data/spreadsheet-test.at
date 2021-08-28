@@ -1,5 +1,5 @@
 dnl PSPP - a program for statistical analysis.
-dnl Copyright (C) 2020 Free Software Foundation, Inc.
+dnl Copyright (C) 2020, 2021 Free Software Foundation, Inc.
 dnl
 dnl This program is free software: you can redistribute it and/or modify
 dnl it under the terms of the GNU General Public License as published by
@@ -67,7 +67,6 @@ Rows 1; Columns 8
 		hi	ho			hum	hee
 ])
 
-
 dnl If this test takes an unreasonably long time, then probably the caching
 dnl code is not working.
 dnl On my machine, this test takes about 7 seconds
@@ -83,3 +82,46 @@ Number of sheets: 3
 SPREADSHEET_TEST([simple], [--metadata], [dnl
 Number of sheets: 1
 ])
+
+
+
+AT_SETUP([spreadsheet ODS with repeating data])
+cp "$top_srcdir/tests/data/repeating-2.ods" .
+AT_DATA([ods-import.sps], [dnl
+get data /type=ods
+   /file="repeating-2.ods"
+   /sheet=index 1
+   /cellrange=range "a1:j8"
+   /readnames=on.
+
+display variables.
+list.
+])
+
+dnl Test for bug #61078
+AT_CHECK([pspp -O format=csv ods-import.sps], [0], [dnl
+Table: Variables
+Name,Position,Print Format,Write Format
+s2,1,F8.2,F8.2
+s3,2,F8.2,F8.2
+s4,3,F8.2,F8.2
+s5,4,F8.2,F8.2
+s6,5,F8.2,F8.2
+s7,6,F8.2,F8.2
+s6_A,7,F8.2,F8.2
+s7_A,8,F8.2,F8.2
+s8,9,F8.2,F8.2
+s9,10,F8.2,F8.2
+
+Table: Data List
+s2,s3,s4,s5,s6,s7,s6_A,s7_A,s8,s9
+31.00,5.00,1.00,1.00,4.00,5.00,4.00,5.00,5.00,4.00
+38.00,1.00,.00,2.00,5.00,5.00,4.00,4.00,5.00,4.00
+24.00,1.00,.00,3.00,5.00,5.00,4.00,4.00,5.00,3.00
+49.00,5.00,2.00,3.00,4.00,5.00,4.00,5.00,5.00,5.00
+30.00,1.00,.00,2.00,5.00,5.00,5.00,5.00,5.00,5.00
+33.00,5.00,2.00,2.00,5.00,5.00,5.00,5.00,5.00,5.00
+32.00,1.00,23.00,2.00,4.00,5.00,3.00,4.00,4.00,3.00
+])
+
+AT_CLEANUP
