@@ -163,7 +163,9 @@ test -z "$at_arg_xdvi" || AT_CHECK([$at_arg_xdvi -s 3 pspp.dvi], [0], [ignore])
 
 AT_CLEANUP
 
-
+dnl Check that no line exceeds 79 characters
+m4_define([CHECK_MAX_LINE_LENGTH],
+[[(while IFS= read -r line; do max=$(( max > ${#line} ? max : ${#line} )); done; test $max -le 80)]][ < $1])
 
 AT_SETUP([tex simple example])
 
@@ -181,7 +183,7 @@ descriptives /score.
 
 
 AT_CHECK([pspp -O format=tex simple.sps], [0], [])
-AT_CHECK([test $($GWC -L pspp.tex | awk '{print $1}') -le 80], [0], [ignore])
+AT_CHECK([CHECK_MAX_LINE_LENGTH([pspp.tex])],[0],[ignore])
 
 AT_SKIP_IF([test "$TEX" = no])
 AT_CHECK([$TEX --halt-on-error pspp.tex], [0], [ignore])
@@ -200,7 +202,8 @@ AT_CLEANUP
 AT_SETUP([tex another example])
 
 AT_CHECK([pspp -O format=tex "$abs_top_srcdir/examples/regress.sps"], [0], [])
-AT_CHECK([test $($GWC -L pspp.tex | awk '{print $1}') -le 80], [0], [ignore])
+AT_CHECK([CHECK_MAX_LINE_LENGTH([pspp.tex])],[0],[ignore])
+
 
 AT_SKIP_IF([test "$TEX" = no])
 AT_CHECK([$TEX --halt-on-error pspp.tex], [0], [ignore])
@@ -234,7 +237,7 @@ correlations
 ])
 
 AT_CHECK([pspp -O format=tex footnote.sps], [0], [])
-AT_CHECK([test $($GWC -L pspp.tex | awk '{print $1}') -le 80], [0], [ignore])
+AT_CHECK([CHECK_MAX_LINE_LENGTH([pspp.tex])],[0],[ignore])
 
 AT_SKIP_IF([test "$TEX" = no])
 AT_CHECK([$TEX --halt-on-error pspp.tex], [0], [ignore])
@@ -275,7 +278,7 @@ frequencies items.
 ])
 
 AT_CHECK([LC_ALL=C.UTF-8 pspp -O format=tex utf8.sps], [0], [])
-AT_CHECK([test $($GWC -L pspp.tex | awk '{print $1}') -le 80], [0], [ignore])
+AT_CHECK([CHECK_MAX_LINE_LENGTH([pspp.tex])],[0],[ignore])
 
 dnl The string "??" should not be present in pspp.tex
 AT_CHECK([grep -F '??' pspp.tex], [1])
@@ -315,7 +318,7 @@ t-test /variables=score /group=group("this", "that").
 ])
 
 AT_CHECK([pspp -O format=tex t-test.sps], [0], [])
-AT_CHECK([test $($GWC -L pspp.tex | awk '{print $1}') -le 80], [0], [ignore])
+AT_CHECK([CHECK_MAX_LINE_LENGTH([pspp.tex])],[0],[ignore])
 
 AT_SKIP_IF([test "$TEX" = no])
 AT_CHECK([$TEX --halt-on-error pspp.tex], [0], [ignore])
