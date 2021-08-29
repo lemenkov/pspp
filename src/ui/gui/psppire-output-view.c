@@ -452,7 +452,7 @@ psppire_output_view_put__ (struct psppire_output_view *view,
                               sizeof *view->items);
   struct output_view_item *view_item = &view->items[view->n_items];
   if (!init_output_view_item (view_item, view, item,
-                              gtk_tree_path_get_depth (parent_path)))
+                              parent_path ? gtk_tree_path_get_depth (parent_path) : 0))
     return;
   view->n_items++;
 
