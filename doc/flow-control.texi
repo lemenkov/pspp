@@ -578,6 +578,8 @@ Expands to a number token representing the number of characters in
 @deffn {Macro Function} !NULL
 Expands to an empty character sequence.
 
+@c Keep these examples in sync with the test for !NULL in
+@c tests/language/control/define.at:
 @example
 !NULL                        @expansion{} @r{empty}
 !QUOTE(!NULL)                @expansion{} ''
@@ -596,6 +598,8 @@ to the string's contents, with the quotes removed and any doubled
 quote marks reduced to singletons.  If the argument was not a quoted
 string, @code{!UNQUOTE} expands to the argument unchanged.
 
+@c Keep these examples in sync with the test for !QUOTE and !UNQUOTE in
+@c tests/language/control/define.at:
 @example
 !QUOTE(123.0)                @expansion{} '123.0'
 !QUOTE( 123 )                @expansion{} '123'

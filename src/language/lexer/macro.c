@@ -1038,7 +1038,8 @@ unquote_string (const char *s, enum segmenter_mode segmenter_mode,
       return false;
     }
 
-  ds_put_substring (content, token1.string);
+  if (content)
+    ds_put_substring (content, token1.string);
   token_uninit (&token1);
   return true;
 }

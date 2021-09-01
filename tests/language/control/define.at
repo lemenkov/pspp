@@ -880,6 +880,72 @@ AT_CHECK([pspp --testing-mode define.sps], [0], [dnl
 ])
 AT_CLEANUP
 
+dnl Keep this test in sync with the examples for !NULL in the manual.
+AT_SETUP([macro expansion - !NULL])
+AT_KEYWORDS([NULL])
+AT_DATA([define.sps], [dnl
+DEFINE !n()
+!NULL.
+!QUOTE(!NULL).
+!ENDDEFINE.
+DEBUG EXPAND.
+!n.
+])
+AT_CAPTURE_FILE([define.sps])
+AT_CHECK([pspp --testing-mode define.sps], [0], [dnl
+.
+''.
+])
+AT_CLEANUP
+
+dnl Keep this test in sync with the examples for !QUOTE and !UNQUOTE in the manual.
+AT_SETUP([macro expansion - !QUOTE and !UNQUOTE])
+AT_KEYWORDS([QUOTE UNQUOTE])
+AT_DATA([define.sps], [dnl
+DEFINE !q(!POS !CMDEND)
+!QUOTE(123.0).
+!QUOTE( 123 ).
+!QUOTE('a b c').
+!QUOTE("a b c").
+!QUOTE(!1).
+
+!UNQUOTE(123.0).
+!UNQUOTE( 123 ).
+!UNQUOTE('a b c').
+!UNQUOTE("a b c").
+!UNQUOTE(!1).
+
+!QUOTE(!UNQUOTE(123.0)).
+!QUOTE(!UNQUOTE( 123 )).
+!QUOTE(!UNQUOTE('a b c')).
+!QUOTE(!UNQUOTE("a b c")).
+!QUOTE(!UNQUOTE(!1)).
+!ENDDEFINE.
+DEBUG EXPAND.
+!q a 'b' c.
+])
+AT_CAPTURE_FILE([define.sps])
+AT_CHECK([pspp --testing-mode define.sps], [0], [dnl
+'123.0'.
+'123'.
+'a b c'.
+"a b c".
+'a ''b'' c'.
+
+123.0.
+123.
+a b c.
+a b c.
+a 'b' c.
+
+'123.0'.
+'123'.
+'a b c'.
+'a b c'.
+'a ''b'' c'.
+])
+AT_CLEANUP
+
 dnl Keep this test in sync with the examples for !SUBSTR in the manual.
 AT_SETUP([macro expansion - !SUBSTR])
 AT_KEYWORDS([SUBSTR])
