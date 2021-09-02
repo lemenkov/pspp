@@ -48,6 +48,7 @@ enum segmenter_state
     S_DEFINE_2,
     S_DEFINE_3,
     S_DEFINE_4,
+    S_DEFINE_5,
     S_BEGIN_DATA_1,
     S_BEGIN_DATA_2,
     S_BEGIN_DATA_3,
@@ -680,6 +681,7 @@ next_id_in_command (const struct segmenter *s, const char *input, size_t n,
         case SEG_DO_REPEAT_COMMAND:
         case SEG_INLINE_DATA:
         case SEG_MACRO_ID:
+        case SEG_MACRO_NAME:
         case SEG_MACRO_BODY:
         case SEG_START_DOCUMENT:
         case SEG_DOCUMENT:
@@ -1525,6 +1527,10 @@ segmenter_parse_do_repeat_3__ (struct segmenter *s,
 
   - The DEFINE keyword.
 
+  - An identifier.  We transform this into SEG_MACRO_NAME instead of
+    SEG_IDENTIFIER or SEG_MACRO_NAME because this identifier must never be
+    macro-expanded.
+
   - Anything but "(".
 
   - "(" followed by a sequence of tokens possibly including balanced parentheses
@@ -1537,15 +1543,21 @@ segmenter_parse_do_repeat_3__ (struct segmenter *s,
     line, even.
    */
 static int
-segmenter_parse_define_1__ (struct segmenter *s,
-                            const char *input, size_t n, bool eof,
-                            enum segment_type *type)
+segmenter_parse_define_1_2__ (struct segmenter *s,
+                              const char *input, size_t n, bool eof,
+                              enum segment_type *type)
 {
   int ofs = segmenter_subparse (s, input, n, eof, type);
   if (ofs < 0)
     return -1;
 
-  if (*type == SEG_SEPARATE_COMMANDS
+  if (s->state == S_DEFINE_1
+      && (*type == SEG_IDENTIFIER || *type == SEG_MACRO_ID))
+    {
+      *type = SEG_MACRO_NAME;
+      s->state = S_DEFINE_2;
+    }
+  else if (*type == SEG_SEPARATE_COMMANDS
       || *type == SEG_END_COMMAND
       || *type == SEG_START_COMMAND)
     {
@@ -1556,7 +1568,7 @@ segmenter_parse_define_1__ (struct segmenter *s,
     }
   else if (*type == SEG_PUNCT && input[0] == '(')
     {
-      s->state = S_DEFINE_2;
+      s->state = S_DEFINE_3;
       s->nest = 1;
       return ofs;
     }
@@ -1565,7 +1577,7 @@ segmenter_parse_define_1__ (struct segmenter *s,
 }
 
 static int
-segmenter_parse_define_2__ (struct segmenter *s,
+segmenter_parse_define_3__ (struct segmenter *s,
                             const char *input, size_t n, bool eof,
                             enum segment_type *type)
 {
@@ -1593,7 +1605,7 @@ segmenter_parse_define_2__ (struct segmenter *s,
       s->nest--;
       if (!s->nest)
         {
-          s->state = S_DEFINE_3;
+          s->state = S_DEFINE_4;
           s->substate = 0;
         }
       return ofs;
@@ -1639,7 +1651,7 @@ find_enddefine (struct substring input)
 /* We are in the body of a macro definition, looking for additional lines of
    the body or !ENDDEFINE. */
 static int
-segmenter_parse_define_3__ (struct segmenter *s,
+segmenter_parse_define_4__ (struct segmenter *s,
                             const char *input, size_t n, bool eof,
                             enum segment_type *type)
 {
@@ -1666,7 +1678,7 @@ segmenter_parse_define_3__ (struct segmenter *s,
          report it as spaces because it's not significant. */
       *type = (s->substate == 0 && is_all_spaces (input, ofs)
                ? SEG_SPACES : SEG_MACRO_BODY);
-      s->state = S_DEFINE_4;
+      s->state = S_DEFINE_5;
       s->substate = 1;
       return ofs;
     }
@@ -1698,7 +1710,7 @@ segmenter_parse_define_3__ (struct segmenter *s,
 }
 
 static int
-segmenter_parse_define_4__ (struct segmenter *s,
+segmenter_parse_define_5__ (struct segmenter *s,
                             const char *input, size_t n, bool eof,
                             enum segment_type *type)
 {
@@ -1706,7 +1718,7 @@ segmenter_parse_define_4__ (struct segmenter *s,
   if (ofs < 0)
     return -1;
 
-  s->state = S_DEFINE_3;
+  s->state = S_DEFINE_4;
   return ofs;
 }
 
@@ -1945,13 +1957,14 @@ segmenter_push (struct segmenter *s, const char *input, size_t n, bool eof,
       return segmenter_parse_do_repeat_3__ (s, input, n, eof, type);
 
     case S_DEFINE_1:
-      return segmenter_parse_define_1__ (s, input, n, eof, type);
     case S_DEFINE_2:
-      return segmenter_parse_define_2__ (s, input, n, eof, type);
+      return segmenter_parse_define_1_2__ (s, input, n, eof, type);
     case S_DEFINE_3:
       return segmenter_parse_define_3__ (s, input, n, eof, type);
     case S_DEFINE_4:
       return segmenter_parse_define_4__ (s, input, n, eof, type);
+    case S_DEFINE_5:
+      return segmenter_parse_define_5__ (s, input, n, eof, type);
 
     case S_BEGIN_DATA_1:
       return segmenter_parse_begin_data_1__ (s, input, n, eof, type);
@@ -2005,9 +2018,10 @@ segmenter_get_prompt (const struct segmenter *s)
 
     case S_DEFINE_1:
     case S_DEFINE_2:
-      return s->substate & SS_START_OF_COMMAND ? PROMPT_FIRST : PROMPT_LATER;
     case S_DEFINE_3:
+      return s->substate & SS_START_OF_COMMAND ? PROMPT_FIRST : PROMPT_LATER;
     case S_DEFINE_4:
+    case S_DEFINE_5:
       return PROMPT_DEFINE;
 
     case S_BEGIN_DATA_1:

@@ -79,6 +79,7 @@ enum segmenter_mode
     SEG_TYPE(INLINE_DATA)                       \
                                                 \
     SEG_TYPE(MACRO_ID)                          \
+    SEG_TYPE(MACRO_NAME)                        \
     SEG_TYPE(MACRO_BODY)                        \
                                                 \
     SEG_TYPE(START_DOCUMENT)                    \

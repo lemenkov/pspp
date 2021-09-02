@@ -638,7 +638,7 @@ var1 var2 var3
 ])
 AT_DATA([expout-base], [dnl
 ID "define"
-MACRO_ID "!macro1"
+STRING "!macro1"
 LPAREN
 RPAREN
 STRING "var1 var2 var3"
@@ -657,7 +657,7 @@ define !macro1() var1 var2 var3
 ])
 AT_DATA([expout-base], [dnl
 ID "define"
-MACRO_ID "!macro1"
+STRING "!macro1"
 LPAREN
 RPAREN
 STRING " var1 var2 var3"
@@ -676,7 +676,7 @@ var1 var2 var3!enddefine.
 ])
 AT_DATA([expout-base], [dnl
 ID "define"
-MACRO_ID "!macro1"
+STRING "!macro1"
 LPAREN
 RPAREN
 STRING "var1 var2 var3"
@@ -694,7 +694,7 @@ define !macro1()var1 var2 var3!enddefine.
 ])
 AT_DATA([expout-base], [dnl
 ID "define"
-MACRO_ID "!macro1"
+STRING "!macro1"
 LPAREN
 RPAREN
 STRING "var1 var2 var3"
@@ -713,7 +713,7 @@ define !macro1()
 ])
 AT_DATA([expout-base], [dnl
 ID "define"
-MACRO_ID "!macro1"
+STRING "!macro1"
 LPAREN
 RPAREN
 MACRO_ID "!enddefine"
@@ -733,7 +733,7 @@ define !macro1()
 ])
 AT_DATA([expout-base], [dnl
 ID "define"
-MACRO_ID "!macro1"
+STRING "!macro1"
 LPAREN
 RPAREN
 STRING ""
@@ -753,7 +753,7 @@ define !macro1(a(), b(), c())
 ])
 AT_DATA([expout-base], [dnl
 ID "define"
-MACRO_ID "!macro1"
+STRING "!macro1"
 LPAREN
 ID "a"
 LPAREN
@@ -786,7 +786,7 @@ define !macro1(
 ])
 AT_DATA([expout-base], [dnl
 ID "define"
-MACRO_ID "!macro1"
+STRING "!macro1"
 LPAREN
 ID "a"
 LPAREN
@@ -819,7 +819,7 @@ content 2
 ])
 AT_DATA([expout-base], [dnl
 ID "define"
-MACRO_ID "!macro1"
+STRING "!macro1"
 LPAREN
 ID "x"
 COMMA
@@ -844,7 +844,7 @@ data list /x 1.
 ])
 AT_DATA([expout-base], [dnl
 ID "define"
-MACRO_ID "!macro1"
+STRING "!macro1"
 ENDCMD
 ID "data"
 ID "list"
@@ -866,7 +866,7 @@ data list /x 1.
 ])
 AT_DATA([expout-base], [dnl
 ID "define"
-MACRO_ID "!macro1"
+STRING "!macro1"
 ID "x"
 ENDCMD
 ID "data"
@@ -889,7 +889,7 @@ data list /x 1.
 ])
 AT_DATA([expout-base], [dnl
 ID "define"
-MACRO_ID "!macro1"
+STRING "!macro1"
 LPAREN
 ENDCMD
 ID "x"
@@ -915,7 +915,7 @@ data list /x 1.
 ])
 AT_DATA([expout-base], [dnl
 ID "define"
-MACRO_ID "!macro1"
+STRING "!macro1"
 ENDCMD
 ID "data"
 ID "list"
@@ -937,7 +937,7 @@ content line 2
 ])
 AT_DATA([expout-base], [dnl
 ID "define"
-MACRO_ID "!macro1"
+STRING "!macro1"
 LPAREN
 RPAREN
 STRING "content line 1"

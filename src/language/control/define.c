@@ -31,12 +31,6 @@
 #define _(msgid) gettext (msgid)
 
 static bool
-force_macro_id (struct lexer *lexer)
-{
-  return lex_token (lexer) == T_MACRO_ID || lex_force_id (lexer);
-}
-
-static bool
 match_macro_id (struct lexer *lexer, const char *keyword)
 {
   if (keyword[0] != '!')
@@ -96,13 +90,26 @@ dup_arg_type (struct lexer *lexer, bool *saw_arg_type)
 int
 cmd_define (struct lexer *lexer, struct dataset *ds UNUSED)
 {
-  if (!force_macro_id (lexer))
-    return CMD_FAILURE;
+  /* Parse macro name.
 
-  /* Parse macro name. */
+     The macro name is a T_STRING token, even though it's an identifier,
+     because that's the way that the segmenter prevents it from getting
+     macro-expanded. */
+  if (lex_token (lexer) != T_STRING)
+    {
+      lex_error (lexer, _("expecting identifier"));
+      return CMD_FAILURE;
+    }
+  const char *name = lex_tokcstr (lexer);
+  if (!id_is_plausible (name + (name[0] == '!'), false))
+    {
+      lex_error (lexer, _("expecting identifier"));
+      return CMD_FAILURE;
+    }
+
   struct macro *m = xmalloc (sizeof *m);
   *m = (struct macro) {
-    .name = ss_xstrdup (lex_tokss (lexer)),
+    .name = xstrdup (name),
     .location = xmalloc (sizeof *m->location),
   };
   *m->location = (struct msg_location) {

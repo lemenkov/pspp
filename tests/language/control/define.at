@@ -41,6 +41,18 @@ m(n, o).
 ])
 AT_CLEANUP
 
+AT_SETUP([redefining a macro])
+AT_DATA([define.sps], [dnl
+DEFINE !macro() 0 !ENDDEFINE.
+DEFINE !macro() 1 !ENDDEFINE.
+DEBUG EXPAND.
+!macro.
+])
+AT_CHECK([pspp --testing-mode define.sps], [0], [dnl
+1
+])
+AT_CLEANUP
+
 AT_SETUP([macro expansion - one !TOKENS(1) positional argument])
 AT_KEYWORDS([TOKENS])
 AT_DATA([define.sps], [dnl

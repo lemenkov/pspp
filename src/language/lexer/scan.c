@@ -328,6 +328,7 @@ token_from_segment (enum segment_type type, struct substring s,
     case SEG_INLINE_DATA:
     case SEG_DOCUMENT:
     case SEG_MACRO_BODY:
+    case SEG_MACRO_NAME:
       *token = (struct token) { .type = T_STRING };
       ss_alloc_substring (&token->string, s);
       return TOKENIZE_TOKEN;
